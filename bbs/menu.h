@@ -24,6 +24,8 @@
 #pragma once
 #endif
 
+#include "wtypes.h"
+
 #ifdef _WIN32
   #pragma pack(push, 1)
 #elif defined (_UNIX)
