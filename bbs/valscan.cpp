@@ -29,21 +29,21 @@ void valscan()
     }
 
     int ac = 0;
-    int os = sess->GetCurrentMessageArea();
+    int os = GetSession()->GetCurrentMessageArea();
 
-    if ( uconfsub[1].confnum != -1 && okconf( &sess->thisuser ) )
+    if ( uconfsub[1].confnum != -1 && okconf( &GetSession()->thisuser ) )
     {
         ac = 1;
         tmp_disable_conf( true );
     }
     bool done = false;
-    for ( int sn = 0; sn < sess->num_subs && !hangup && !done; sn++ )
+    for ( int sn = 0; sn < GetSession()->num_subs && !hangup && !done; sn++ )
     {
         if ( !iscan( sn ) )
         {
             continue;
         }
-        if ( sess->GetCurrentReadMessageArea() < 0 )
+        if ( GetSession()->GetCurrentReadMessageArea() < 0 )
         {
             return;
         }
@@ -51,7 +51,7 @@ void valscan()
         unsigned long sq = qsc_p[sn];
 
         // Must be sub with validation "on"
-        if ( !(xsubs[sess->GetCurrentReadMessageArea()].num_nets ) || !( subboards[sess->GetCurrentReadMessageArea()].anony & anony_val_net ) )
+        if ( !(xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets ) || !( subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net ) )
         {
             continue;
         }
@@ -59,27 +59,27 @@ void valscan()
         nl();
         ansic( 2 );
         ClearEOL();
-        sess->bout << "{{ ValScanning " << subboards[sess->GetCurrentReadMessageArea()].name << " }}\r\n";
+        GetSession()->bout << "{{ ValScanning " << subboards[GetSession()->GetCurrentReadMessageArea()].name << " }}\r\n";
         lines_listed = 0;
         ClearEOL();
         if ( okansi() && !newline )
         {
-            sess->bout << "\r\x1b[2A";
+            GetSession()->bout << "\r\x1b[2A";
         }
 
-        for ( int i = 1; i <= sess->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++ )	// was i = 0
+        for ( int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++ )	// was i = 0
         {
             if ( get_post( i )->status & status_pending_net )
             {
                 CheckForHangup();
                 GetApplication()->GetLocalIO()->tleft( true );
-                if ( i > 0 && i <= sess->GetNumMessagesInCurrentMessageArea() )
+                if ( i > 0 && i <= GetSession()->GetNumMessagesInCurrentMessageArea() )
                 {
                     bool next;
                     int val;
                     read_message( i, &next, &val );
-                    sess->bout << "|#4[|#4Subboard: " << subboards[sess->GetCurrentReadMessageArea()].name << "|#1]\r\n";
-                    sess->bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
+                    GetSession()->bout << "|#4[|#4Subboard: " << subboards[GetSession()->GetCurrentReadMessageArea()].name << "|#1]\r\n";
+                    GetSession()->bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
                     char ch = onek( "QDVMR" );
                     switch ( ch )
                     {
@@ -92,29 +92,29 @@ void valscan()
                     case 'V':
                         {
                             open_sub( true );
-                            resynch( sess->GetCurrentReadMessageArea(), &i, NULL );
+                            resynch( GetSession()->GetCurrentReadMessageArea(), &i, NULL );
                             postrec *p1 = get_post( i );
                             p1->status &= ~status_pending_net;
                             write_post( i, p1 );
                             close_sub();
-                            send_net_post( p1, subboards[sess->GetCurrentReadMessageArea()].filename, sess->GetCurrentReadMessageArea() );
+                            send_net_post( p1, subboards[GetSession()->GetCurrentReadMessageArea()].filename, GetSession()->GetCurrentReadMessageArea() );
                             nl();
-                            sess->bout << "|#7Message sent.\r\n\n";
+                            GetSession()->bout << "|#7Message sent.\r\n\n";
                         }
                         break;
                     case 'M':
-                        if ( lcs() && i > 0 && i <= sess->GetNumMessagesInCurrentMessageArea() &&
-                             subboards[sess->GetCurrentReadMessageArea()].anony & anony_val_net &&
-                             xsubs[sess->GetCurrentReadMessageArea()].num_nets )
+                        if ( lcs() && i > 0 && i <= GetSession()->GetNumMessagesInCurrentMessageArea() &&
+                             subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net &&
+                             xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets )
                         {
                             open_sub( true );
-                            resynch( sess->GetCurrentReadMessageArea(), &i, NULL );
+                            resynch( GetSession()->GetCurrentReadMessageArea(), &i, NULL );
                             postrec *p1 = get_post( i );
                             p1->status &= ~status_pending_net;
                             write_post( i, p1 );
                             close_sub();
                             nl();
-                            sess->bout << "|#9Not set for net pending now.\r\n\n";
+                            GetSession()->bout << "|#9Not set for net pending now.\r\n\n";
                         }
                         break;
                     case 'D':
@@ -123,7 +123,7 @@ void valscan()
                             if ( i > 0 )
                             {
                                 open_sub( true );
-                                resynch( sess->GetCurrentReadMessageArea(), &i, NULL );
+                                resynch( GetSession()->GetCurrentReadMessageArea(), &i, NULL );
                                 postrec p2 = *get_post( i );
                                 delete_message( i );
                                 close_sub();
@@ -136,7 +136,7 @@ void valscan()
                                         if ( static_cast<unsigned long>( date_to_daten( tu.GetFirstOn() ) ) < p2.daten )
                                         {
                                             nl();
-                                            sess->bout << "|#2Remove how many posts credit? ";
+                                            GetSession()->bout << "|#2Remove how many posts credit? ";
                                             char szNumCredits[ 11 ];
                                             input( szNumCredits, 3, true );
                                             int nNumPostCredits = 1;
@@ -150,14 +150,14 @@ void valscan()
                                                 tu.SetNumMessagesPosted( tu.GetNumMessagesPosted() - static_cast<unsigned short>( nNumPostCredits ) );
                                             }
                                             nl();
-											sess->bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
+											GetSession()->bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
                                             tu.SetNumDeletedPosts( tu.GetNumDeletedPosts() + 1 );
                                             GetApplication()->GetUserManager()->WriteUser( &tu, p2.owneruser );
                                             GetApplication()->GetLocalIO()->UpdateTopScreen();
                                         }
                                     }
                                 }
-                                resynch( sess->GetCurrentReadMessageArea(), &i, &p2 );
+                                resynch( GetSession()->GetCurrentReadMessageArea(), &i, &p2 );
                             }
                         }
                         break;
@@ -173,6 +173,6 @@ void valscan()
         tmp_disable_conf( false );
     }
 
-    sess->SetCurrentMessageArea( os );
+    GetSession()->SetCurrentMessageArea( os );
     nl( 2 );
 }

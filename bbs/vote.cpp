@@ -32,7 +32,7 @@ void print_quest(int mapp, int map[21])
     }
     else
     {
-        sess->bout << "|10Voting Questions:\r\n\n";
+        GetSession()->bout << "|10Voting Questions:\r\n\n";
     }
     bool abort = false;
     WFile voteFile( syscfg.datadir, VOTING_DAT );
@@ -48,7 +48,7 @@ void print_quest(int mapp, int map[21])
 
         char szBuffer[255];
         snprintf( szBuffer, sizeof( szBuffer ), "|12%c |#2%2d|#7) |#1%s",
-                 sess->thisuser.GetVote( map[ i ] ) ? ' ' : '*', i, v.question );
+                 GetSession()->thisuser.GetVote( map[ i ] ) ? ' ' : '*', i, v.question );
         pla( szBuffer, &abort );
     }
     voteFile.Close();
@@ -130,7 +130,7 @@ void vote_question(int i, int ii)
     votingrec v;
 
     bool pqo = print_question(i, ii);
-    if ( sess->thisuser.isRestrictionVote() || sess->GetEffectiveSl() <= 10 ||!pqo )
+    if ( GetSession()->thisuser.isRestrictionVote() || GetSession()->GetEffectiveSl() <= 10 ||!pqo )
     {
         return;
     }
@@ -151,23 +151,23 @@ void vote_question(int i, int ii)
     }
 
 	std::string message = "|#9Your vote: |#1";
-    if ( sess->thisuser.GetVote( ii ) )
+    if ( GetSession()->thisuser.GetVote( ii ) )
     {
-		message.append(  v.responses[ sess->thisuser.GetVote( ii ) - 1 ].response );
+		message.append(  v.responses[ GetSession()->thisuser.GetVote( ii ) - 1 ].response );
     }
     else
     {
 		message +=  "No Comment";
     }
-    sess->bout <<  message;
+    GetSession()->bout <<  message;
     nl( 2 );
-    sess->bout << "|#5Change it? ";
+    GetSession()->bout << "|#5Change it? ";
     if (!yesno())
     {
         return;
     }
 
-	sess->bout << "|10Which (0-" << static_cast<int>( v.numanswers ) << ")? ";
+	GetSession()->bout << "|10Which (0-" << static_cast<int>( v.numanswers ) << ")? ";
     mpl( 2 );
     char* pszAnswer = mmkey( 2 );
     int i1 = atoi( pszAnswer );
@@ -192,14 +192,14 @@ void vote_question(int i, int ii)
         voteFile.Close();
         return;
     }
-    if ( sess->thisuser.GetVote( ii ) )
+    if ( GetSession()->thisuser.GetVote( ii ) )
     {
-        v.responses[ sess->thisuser.GetVote( ii ) - 1 ].numresponses--;
+        v.responses[ GetSession()->thisuser.GetVote( ii ) - 1 ].numresponses--;
     }
-    sess->thisuser.SetVote( ii, i1 );
+    GetSession()->thisuser.SetVote( ii, i1 );
     if (i1)
     {
-        v.responses[ sess->thisuser.GetVote( ii ) - 1 ].numresponses++;
+        v.responses[ GetSession()->thisuser.GetVote( ii ) - 1 ].numresponses++;
     }
     voteFile.Seek( ii * sizeof( votingrec ), WFile::seekBegin );
     voteFile.Write( &v, sizeof( votingrec ) );
@@ -254,7 +254,7 @@ void vote()
     strcpy( sodc, odc );
     if ( mapp == 0 )
     {
-        sess->bout << "\r\n\n|12No voting questions currently.\r\n\n";
+        GetSession()->bout << "\r\n\n|12No voting questions currently.\r\n\n";
         return;
     }
     bool done = false;
@@ -262,7 +262,7 @@ void vote()
     {
         print_quest( mapp, &map[0] );
         nl();
-        sess->bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
+        GetSession()->bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
         strcpy( odc, sodc );
         mpl( 2 );
         char* pszAnswer = mmkey( 2 );

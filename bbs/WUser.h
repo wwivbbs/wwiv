@@ -117,7 +117,11 @@ public:
     void SetInactFlag( int nFlag )          { data.inact |= nFlag; }
     void ToggleInactFlag( int nFlag )       { data.inact ^= nFlag; }
     void ClearInactFlag( int nFlag )        { data.inact &= ~nFlag; }
-    bool isUserDeleted() const              { return ( data.inact & WUser::userDeleted ) != 0; }
+    bool isUserDeleted() const              
+    { 
+        /* printf( "DEBUG: User %s is deleted!\r\n", data.name );  */
+        return ( data.inact & WUser::userDeleted ) != 0; 
+    }
     bool isUserInactive() const             { return ( data.inact & WUser::userInactive ) != 0; }
 
     // USERREC.sysstatus

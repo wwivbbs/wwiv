@@ -32,19 +32,19 @@ void wwivnode( WUser *pUser, int mode)
 	if (!mode)
 	{
 		nl();
-		sess->bout << "|#7Are you an active WWIV SysOp (y/N): ";
+		GetSession()->bout << "|#7Are you an active WWIV SysOp (y/N): ";
 		if (!yesno())
 		{
 			return;
 		}
 	}
 	nl();
-	sess->bout << "|#7Node:|#0 ";
+	GetSession()->bout << "|#7Node:|#0 ";
 	input(sysnum, 5);
 	if ( sysnum[0] == 'L' && mode )
 	{
 		print_net_listing( false );
-		sess->bout << "|#7Node:|#0 ";
+		GetSession()->bout << "|#7Node:|#0 ";
 		input(sysnum, 5);
 	}
 	if ( sysnum[0] == '0' && mode )
@@ -58,12 +58,12 @@ void wwivnode( WUser *pUser, int mode)
 	parse_email_info(s, &nUserNumber, &nSystemNumber);
 	if (nSystemNumber == 0)
 	{
-		sess->bout << "|#2No match for " << sysnum << "." << wwiv::endl;
+		GetSession()->bout << "|#2No match for " << sysnum << "." << wwiv::endl;
 		pausescr();
 		return;
 	}
 	net_system_list_rec *csne = next_system( nSystemNumber );
-	sprintf( s, "Sysop @%u %s %s", nSystemNumber, csne->name, sess->GetNetworkName() );
+	sprintf( s, "Sysop @%u %s %s", nSystemNumber, csne->name, GetSession()->GetNetworkName() );
     std::string ph, ph1;
 	if ( !mode )
 	{
@@ -99,10 +99,10 @@ void wwivnode( WUser *pUser, int mode)
 	}
 	sysoplog("-+ WWIV SysOp");
 	sysoplog(s);
-    pUser->SetRestriction( sess->asv.restrict );
-    pUser->SetExempt( sess->asv.exempt );
-    pUser->SetAr( sess->asv.ar );
-	pUser->SetDar( sess->asv.dar );
+    pUser->SetRestriction( GetSession()->asv.restrict );
+    pUser->SetExempt( GetSession()->asv.exempt );
+    pUser->SetAr( GetSession()->asv.ar );
+	pUser->SetDar( GetSession()->asv.dar );
 	if (!mode)
 	{
 		nl();
@@ -115,13 +115,13 @@ void wwivnode( WUser *pUser, int mode)
     if ( wwiv::stringUtils::IsEquals( pUser->GetDataPhoneNumber(),
                                       reinterpret_cast<char*>( csne->phone ) ) )
 	{
-		if ( pUser->GetSl() < sess->asv.sl )
+		if ( pUser->GetSl() < GetSession()->asv.sl )
 		{
-			pUser->SetSl( sess->asv.sl );
+			pUser->SetSl( GetSession()->asv.sl );
 		}
-		if ( pUser->GetDsl() < sess->asv.dsl )
+		if ( pUser->GetDsl() < GetSession()->asv.dsl )
 		{
-			pUser->SetDsl( sess->asv.dsl );
+			pUser->SetDsl( GetSession()->asv.dsl );
 		}
 	}
 	else
@@ -137,7 +137,7 @@ void wwivnode( WUser *pUser, int mode)
 			}
 		}
 	}
-    pUser->SetForwardNetNumber( sess->GetNetworkNumber() );
+    pUser->SetForwardNetNumber( GetSession()->GetNetworkNumber() );
 	pUser->SetHomeUserNumber( 1 );
 	pUser->SetHomeSystemNumber( nSystemNumber );
 	if ( !mode )
@@ -178,7 +178,7 @@ int callback()
 	{
 		ok = 1;
 		nl();
-		sess->bout << "|#2MODEM PH:";
+		GetSession()->bout << "|#2MODEM PH:";
 		input( s1, 14, true );
 		if (!(syscfg.sysconfig & sysconfig_free_phone))
 		{
@@ -204,7 +204,7 @@ int callback()
 					if (s1[0] == '1')
 					{
 						ok = 3;
-						if (!(sess->cbv.longdistance))
+						if (!(GetSession()->cbv.longdistance))
 						{
 							return ok;
 						}
@@ -254,7 +254,7 @@ int callback()
 	{
 		return ok;
 	}
-    sprintf(s, "    CBV ATTEMPT %s / %s / %s / %s", sess->thisuser.GetName(), s1, fulldate(), sess->GetCurrentSpeed().c_str() );
+    sprintf(s, "    CBV ATTEMPT %s / %s / %s / %s", GetSession()->thisuser.GetName(), s1, fulldate(), GetSession()->GetCurrentSpeed().c_str() );
 	sysoplog(s, false);
 	nl();
 	printfile(CBV3_NOEXT);                       // instructions
@@ -267,14 +267,14 @@ int callback()
 		imodem( false );
 		wait1(20);
 		hangup = false;
-		sess->bout << "Attempt " << count << " of " << sess->cbv.repeat << "." << wwiv::endl;
+		GetSession()->bout << "Attempt " << count << " of " << GetSession()->cbv.repeat << "." << wwiv::endl;
 		res = connect_to1(s1, 0);
 		if (res)
 		{
 			hangup = false;
-			count = sess->cbv.repeat;
+			count = GetSession()->cbv.repeat;
 		}
-	} while ((ok_modem_stuff) && (count++ < sess->cbv.repeat));
+	} while ((ok_modem_stuff) && (count++ < GetSession()->cbv.repeat));
 	if ( !GetApplication()->GetComm()->carrier() )
 	{
 		hangup = true;
@@ -289,9 +289,9 @@ int callback()
 			nl();
             std::string password;
             input_password( "|#7PW: ", password, 8 );
-			if ( password == sess->thisuser.GetPassword() )
+			if ( password == GetSession()->thisuser.GetPassword() )
 			{
-				sprintf( s, "    CBV SUCCESS %s / %s / %s / %s", sess->thisuser.GetName(), s1, date(), sess->GetCurrentSpeed().c_str() );
+				sprintf( s, "    CBV SUCCESS %s / %s / %s / %s", GetSession()->thisuser.GetName(), s1, date(), GetSession()->GetCurrentSpeed().c_str() );
 				sysoplog( s, false );
 				ssm( 1, 0, s );
 				return ok;
@@ -356,7 +356,7 @@ bool connect_to1(char *phone, int dy)
 {
 #ifndef _UNIX
 
-	sess->SetCurrentSpeed( "" );
+	GetSession()->SetCurrentSpeed( "" );
 	int spd = 0;
 	dial( phone, dy );
 
@@ -378,7 +378,7 @@ bool connect_to1(char *phone, int dy)
 	Wait(1.0);
 	if (spd)
 	{
-        std::cout << "Connected at " << sess->GetCurrentSpeed() << "." << std::endl;
+        std::cout << "Connected at " << GetSession()->GetCurrentSpeed() << "." << std::endl;
 		return true;
 	}
 	else
@@ -389,9 +389,9 @@ bool connect_to1(char *phone, int dy)
 		}
 		else
 		{
-            if ( sess->GetCurrentSpeed().length() > 0 )
+            if ( GetSession()->GetCurrentSpeed().length() > 0 )
 			{
-                std::cout << "No connection (" << sess->GetCurrentSpeed() << ")." << std::endl;
+                std::cout << "No connection (" << GetSession()->GetCurrentSpeed() << ")." << std::endl;
 			}
 			else
 			{

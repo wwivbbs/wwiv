@@ -44,13 +44,13 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
 	}
 	else
 	{
-		sprintf( szFileName, "%s%s", sess->pszLanguageDir, pszFileName );
+		sprintf( szFileName, "%s%s", GetSession()->pszLanguageDir, pszFileName );
 		if ( strchr( szFileName, '.' ) == NULL )
 		{
 			char* pszTempFileName = szFileName + strlen( szFileName );
-			if ( sess->thisuser.hasAnsi() )
+			if ( GetSession()->thisuser.hasAnsi() )
 			{
-				if ( sess->thisuser.hasColor() )
+				if ( GetSession()->thisuser.hasColor() )
 				{
 					strcpy( pszTempFileName, ".ans" );
 					if ( !WFile::Exists( szFileName ) )
@@ -79,9 +79,9 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
 		if ( strchr( szFileName, '.' ) == NULL )
 		{
 			char* pszTempFileName2 = szFileName + strlen( szFileName );
-			if ( sess->thisuser.hasAnsi() )
+			if ( GetSession()->thisuser.hasAnsi() )
 			{
-				if ( sess->thisuser.hasColor() )
+				if ( GetSession()->thisuser.hasColor() )
 				{
 					strcpy( pszTempFileName2, ".ans" );
 					if ( !WFile::Exists( szFileName ) )
@@ -209,7 +209,7 @@ void print_local_file( const char *ss, const char *ss1 )
 			}
 		}
 		ExecuteExternalProgram( szCmdLine, EFLAG_NONE );
-		if ( sess->IsUserOnline() )
+		if ( GetSession()->IsUserOnline() )
 		{
 			GetApplication()->GetLocalIO()->LocalCls();
 			GetApplication()->GetLocalIO()->UpdateTopScreen();

@@ -212,7 +212,7 @@ void sl1(int cmd, const char *pszLogText)
 
 void sysopchar(const char *pszLogText)
 {
-    if ( ( incom || sess->GetEffectiveSl() != 255 ) && pszLogText[0] )
+    if ( ( incom || GetSession()->GetEffectiveSl() != 255 ) && pszLogText[0] )
 	{
 		sl1( LOG_CHAR, pszLogText );
 	}

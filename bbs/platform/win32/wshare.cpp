@@ -40,7 +40,7 @@ FILE *fsh_open(const char *path, char *mode)
 {
 	FILE *f;
 
-	if ( sess->GetGlobalDebugLevel() > 2 )
+	if ( GetSession()->GetGlobalDebugLevel() > 2 )
 	{
 		std::cout << "\rfsh_open " << path << ", access=" << mode << ".\r\n";
 	}
@@ -85,14 +85,14 @@ FILE *fsh_open(const char *path, char *mode)
 			while ( ( (fd < 0) && (errno == EACCES) ) && (count < TRIES) )
 			{
 				WWIV_Delay(WAIT_TIME);
-				if ( sess->GetGlobalDebugLevel() > 0 )
+				if ( GetSession()->GetGlobalDebugLevel() > 0 )
 				{
 					std::cout << "\rWaiting to access " << path << " " << TRIES - count << ".  \r";
 				}
 				count++;
 				fd = _sopen( path, md, share, S_IREAD | S_IWRITE );
 			}
-			if ( fd < 0 && sess->GetGlobalDebugLevel() > 0 )
+			if ( fd < 0 && GetSession()->GetGlobalDebugLevel() > 0 )
 			{
 				std::cout << "\rThe file " << path << " is busy.  Try again later.\r\n";
 			}
@@ -117,7 +117,7 @@ FILE *fsh_open(const char *path, char *mode)
 		f = 0;
 	}
 
-	if ( sess->GetGlobalDebugLevel() > 1 )
+	if ( GetSession()->GetGlobalDebugLevel() > 1 )
 	{
 		std::cout << "\rfsh_open " << path << ", access=" << mode << ".\r\n";
 	}

@@ -35,7 +35,7 @@ void wfc_cls()
 	{
 		reset_colors();
 		GetApplication()->GetLocalIO()->LocalCls();
-		sess->wfc_status = 0;
+		GetSession()->wfc_status = 0;
 		GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );
 	}
 }
@@ -45,7 +45,7 @@ void wfc_init()
 {
     for ( int i = 0; i < 5; i++ )
     {
-        sess->wfcdrvs[ i ] = 0;
+        GetSession()->wfcdrvs[ i ] = 0;
     }
 
     if ( ini_init( WWIV_INI, INI_TAG, NULL ) )
@@ -55,23 +55,23 @@ void wfc_init()
         {
             for ( int j = 0; j < wwiv::stringUtils::GetStringLength( ss ); j++ )
             {
-                sess->wfcdrvs[ j ] = ss[ j ] - '@';
-                if ( sess->wfcdrvs[ j ] < 2 )
+                GetSession()->wfcdrvs[ j ] = ss[ j ] - '@';
+                if ( GetSession()->wfcdrvs[ j ] < 2 )
                 {
-                    sess->wfcdrvs[ j ] = 2;
+                    GetSession()->wfcdrvs[ j ] = 2;
                 }
             }
         }
         else
         {
-            sess->wfcdrvs[ 0 ] = 2;
+            GetSession()->wfcdrvs[ 0 ] = 2;
         }
     }
 
 	GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );            // add 4.31 Build3
 	if ( GetApplication()->HasConfigFlag( OP_FLAGS_WFC_SCREEN ) )
 	{
-		sess->wfc_status = 0;
+		GetSession()->wfc_status = 0;
 		inst_num = 1;
 	}
 }
@@ -140,9 +140,9 @@ void wfc_screen()
 		return;
 	}
 
-	int nNumNewMessages = check_new_mail( sess->usernum );
+	int nNumNewMessages = check_new_mail( GetSession()->usernum );
 
-	if ( sess->wfc_status == 0 )
+	if ( GetSession()->wfc_status == 0 )
 	{
 		GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNone );
 		GetApplication()->GetLocalIO()->LocalCls();
@@ -208,18 +208,18 @@ void wfc_screen()
 		int i = 0, i1 = 0;
 		char szCurDir[MAX_PATH];
 		strcpy( szCurDir, GetApplication()->GetHomeDir() );
-		while ( sess->wfcdrvs[i] > 0 && sess->wfcdrvs[i] < szCurDir[0] && i1 < 5 )
+		while ( GetSession()->wfcdrvs[i] > 0 && GetSession()->wfcdrvs[i] < szCurDir[0] && i1 < 5 )
 		{
-			if ( iscdrom( static_cast<char>( sess->wfcdrvs[i] ) ) )
+			if ( iscdrom( static_cast<char>( GetSession()->wfcdrvs[i] ) ) )
 			{
-				GetApplication()->GetLocalIO()->LocalXYAPrintf( 2, 16 + i1, 3, "CDROM %c..", sess->wfcdrvs[i] + '@' );
+				GetApplication()->GetLocalIO()->LocalXYAPrintf( 2, 16 + i1, 3, "CDROM %c..", GetSession()->wfcdrvs[i] + '@' );
 				GetApplication()->GetLocalIO()->LocalXYAPrintf( 12 - 1, 17 + i1 - 1, 14, "%10.1f MB", 0.0f);
 				i1++;
 			}
 			else
 			{
 				char szTmpPath[4];
-				sprintf( szTmpPath, "%c:\\", sess->wfcdrvs[i] + '@' );
+				sprintf( szTmpPath, "%c:\\", GetSession()->wfcdrvs[i] + '@' );
 				long lFreeDiskSpace = static_cast<long>( freek1( szTmpPath ) );
 				char szTempDiskSize[81];
 				if ( lFreeDiskSpace > 0 )
@@ -232,7 +232,7 @@ void wfc_screen()
 					{
 						sprintf( szTempDiskSize, "%10.1f MB", static_cast<float>( lFreeDiskSpace ) / 1024.0 );
 					}
-					GetApplication()->GetLocalIO()->LocalXYAPrintf( 2, 16 + i1, 3, "Drive %c..", sess->wfcdrvs[i] + '@' );
+					GetApplication()->GetLocalIO()->LocalXYAPrintf( 2, 16 + i1, 3, "Drive %c..", GetSession()->wfcdrvs[i] + '@' );
 					GetApplication()->GetLocalIO()->LocalXYAPrintf( 12 - 1, 17 + i1 - 1, 14, "%s", szTempDiskSize );
 					i1++;
 				}
@@ -251,14 +251,14 @@ void wfc_screen()
 			GetApplication()->GetLocalIO()->LocalXYAPrintf( 33, 16, 14, "%-20.20s", "Nobody" );
 		}
 
-		sess->wfc_status = 1;
+		GetSession()->wfc_status = 1;
 		wfc_update();
 		poll_time = wfc_time = timer();
   }
   else
   {
-	  if ( ( timer() - wfc_time < sess->screen_saver_time ) ||
-		   ( sess->screen_saver_time == 0 ) )
+	  if ( ( timer() - wfc_time < GetSession()->screen_saver_time ) ||
+		   ( GetSession()->screen_saver_time == 0 ) )
 	  {
 		  GetApplication()->GetLocalIO()->LocalXYAPrintf( 28, 1, 14, times() );
 		  GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 11, 14, sysop2() ? "Available    " : "Not Available" );
@@ -270,15 +270,15 @@ void wfc_screen()
 	  }
 	  else
 	  {
-		  if ( ( timer() - poll_time > 10 ) || sess->wfc_status == 1 )
+		  if ( ( timer() - poll_time > 10 ) || GetSession()->wfc_status == 1 )
 		  {
-			  sess->wfc_status = 2;
+			  GetSession()->wfc_status = 2;
 			  GetApplication()->GetLocalIO()->LocalCls();
 			  GetApplication()->GetLocalIO()->LocalXYAPrintf(	WWIV_GetRandomNumber(38),
 						                    WWIV_GetRandomNumber(24),
 						                    WWIV_GetRandomNumber( 14 ) + 1,
 						                    "WWIV Screen Saver - Press Any Key For WWIV" );
-			  wfc_time = timer() - sess->screen_saver_time - 1;
+			  wfc_time = timer() - GetSession()->screen_saver_time - 1;
 			  poll_time = timer();
 		  }
 	  }

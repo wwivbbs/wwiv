@@ -199,12 +199,12 @@ bool WUserManager::ReadUser( WUser *pUser, int nUserNumber, bool bForceRead )
 #ifndef NOT_BBS
     if ( !bForceRead )
     {
-        bool userOnAndCurrentUser = ( sess->IsUserOnline() && ( nUserNumber == sess->usernum ) );
+        bool userOnAndCurrentUser = ( GetSession()->IsUserOnline() && ( nUserNumber == GetSession()->usernum ) );
         int nWfcStatus = GetApplication()->GetLocalIO()->GetWfcStatus();
         bool wfcStatusAndUserOne = ( nWfcStatus && nUserNumber == 1 );
         if ( userOnAndCurrentUser || wfcStatusAndUserOne )
         {
-            *pUser = sess->thisuser;
+            *pUser = GetSession()->thisuser;
             pUser->FixUp();
             return true;
         }
@@ -237,12 +237,12 @@ bool WUserManager::WriteUser( WUser *pUser, int nUserNumber )
     }
 
 #ifndef NOT_BBS
-    if ( ( sess->IsUserOnline() && nUserNumber == static_cast<int>( sess->usernum ) ) ||
+    if ( ( GetSession()->IsUserOnline() && nUserNumber == static_cast<int>( GetSession()->usernum ) ) ||
         ( GetApplication()->GetLocalIO()->GetWfcStatus() && nUserNumber == 1 ) )
     {
-        if ( &pUser->data != &sess->thisuser.data )
+        if ( &pUser->data != &GetSession()->thisuser.data )
         {
-            sess->thisuser.data = pUser->data;
+            GetSession()->thisuser.data = pUser->data;
         }
     }
 #endif // NOT_BBS

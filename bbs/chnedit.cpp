@@ -64,7 +64,7 @@ void showchains()
     bool abort = false;
     pla("|#2NN Description                   Path Name                      SL  ANSI AR", &abort);
     pla("|#7== ----------------------------  ============================== --- ==== --", &abort);
-    for (int nChainNum = 0; nChainNum < sess->GetNumberOfChains() && !abort; nChainNum++)
+    for (int nChainNum = 0; nChainNum < GetSession()->GetNumberOfChains() && !abort; nChainNum++)
     {
         chaindata( nChainNum, szChainData );
         pla( szChainData, &abort );
@@ -74,22 +74,22 @@ void showchains()
 
 void ShowChainCommandLineHelp()
 {
-    sess->bout << "|#2  Macro   Value\r\n";
-    sess->bout << "|#7 ======== =======================================\r\n";
-    sess->bout << "|#1   %     |#9 A single \'%\' Character\r\n";
-    sess->bout << "|#1   %1    |#9 CHAIN.TXT full pathname (legacy parameter)\r\n";
-    sess->bout << "|#1   %A    |#9 CALLINFO.BBS full pathname \r\n";
-    sess->bout << "|#1   %C    |#9 CHAIN.TXT full pathname \r\n";
-    sess->bout << "|#1   %D    |#9 DORIFOx.DEF full pathname \r\n";
-    sess->bout << "|#1   %E    |#9 DOOR32.SYS full pathname \r\n";
-    sess->bout << "|#1   %K    |#9 GFiles Comment File For Archives\r\n";
-    sess->bout << "|#1   %M    |#9 Modem Baud Rate\r\n";
-    sess->bout << "|#1   %N    |#9 Node (Instance) number\r\n";
-    sess->bout << "|#1   %O    |#9 PCBOARD.SYS full pathname\r\n";
-    sess->bout << "|#1   %P    |#9 ComPort Number\r\n";
-    sess->bout << "|#1   %R    |#9 DOOR.SYS Full Pathname\r\n";
-    sess->bout << "|#1   %S    |#9 Com Port Baud Rate\r\n";
-    sess->bout << "|#1   %T    |#9 Minutes Remaining\r\n";
+    GetSession()->bout << "|#2  Macro   Value\r\n";
+    GetSession()->bout << "|#7 ======== =======================================\r\n";
+    GetSession()->bout << "|#1   %     |#9 A single \'%\' Character\r\n";
+    GetSession()->bout << "|#1   %1    |#9 CHAIN.TXT full pathname (legacy parameter)\r\n";
+    GetSession()->bout << "|#1   %A    |#9 CALLINFO.BBS full pathname \r\n";
+    GetSession()->bout << "|#1   %C    |#9 CHAIN.TXT full pathname \r\n";
+    GetSession()->bout << "|#1   %D    |#9 DORIFOx.DEF full pathname \r\n";
+    GetSession()->bout << "|#1   %E    |#9 DOOR32.SYS full pathname \r\n";
+    GetSession()->bout << "|#1   %K    |#9 GFiles Comment File For Archives\r\n";
+    GetSession()->bout << "|#1   %M    |#9 Modem Baud Rate\r\n";
+    GetSession()->bout << "|#1   %N    |#9 Node (Instance) number\r\n";
+    GetSession()->bout << "|#1   %O    |#9 PCBOARD.SYS full pathname\r\n";
+    GetSession()->bout << "|#1   %P    |#9 ComPort Number\r\n";
+    GetSession()->bout << "|#1   %R    |#9 DOOR.SYS Full Pathname\r\n";
+    GetSession()->bout << "|#1   %S    |#9 Com Port Baud Rate\r\n";
+    GetSession()->bout << "|#1   %T    |#9 Minutes Remaining\r\n";
     nl();
 }
 
@@ -115,9 +115,9 @@ void modify_chain( int nCurrentChainNumber )
         bprintf( "%-85s", szChainNum );
         nl( 2 );
         ansic( 0 );
-        sess->bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
-        sess->bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
-        sess->bout << "|#9C) SL           : |#2" << static_cast<int>( c.sl ) << wwiv::endl;
+        GetSession()->bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
+        GetSession()->bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
+        GetSession()->bout << "|#9C) SL           : |#2" << static_cast<int>( c.sl ) << wwiv::endl;
         strcpy(s, "None.");
         if (c.ar != 0)
         {
@@ -130,13 +130,13 @@ void modify_chain( int nCurrentChainNumber )
             }
             s[1] = 0;
         }
-        sess->bout << "|#9D) AR           : |#2" << s << wwiv::endl;
-        sess->bout << "|#9E) ANSI         : |#2" << ( ( c.ansir & ansir_ansi ) ? "|12Required" : "|#1Optional" ) << wwiv::endl;
-        sess->bout << "|#9F) DOS Interrupt: |#2" << ( ( c.ansir & ansir_no_DOS ) ? "NOT Used" : "Used" ) << wwiv::endl;
-        sess->bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString( ( c.ansir & ansir_emulate_fossil ) ? true : false ) << wwiv::endl;
-        //sess->bout << "|#9I) Disable pause: |#2%s\r\n", YesNoString( ( c.ansir & ansir_no_pause ) ) << wwiv::endl;
-        sess->bout << "|#9J) Local only   : |#2" << YesNoString( ( c.ansir & ansir_local_only ) ? true : false ) << wwiv::endl;
-        sess->bout << "|#9K) Multi user   : |#2" << YesNoString( ( c.ansir & ansir_multi_user ) ? true : false ) << wwiv::endl;
+        GetSession()->bout << "|#9D) AR           : |#2" << s << wwiv::endl;
+        GetSession()->bout << "|#9E) ANSI         : |#2" << ( ( c.ansir & ansir_ansi ) ? "|12Required" : "|#1Optional" ) << wwiv::endl;
+        GetSession()->bout << "|#9F) DOS Interrupt: |#2" << ( ( c.ansir & ansir_no_DOS ) ? "NOT Used" : "Used" ) << wwiv::endl;
+        GetSession()->bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString( ( c.ansir & ansir_emulate_fossil ) ? true : false ) << wwiv::endl;
+        //GetSession()->bout << "|#9I) Disable pause: |#2%s\r\n", YesNoString( ( c.ansir & ansir_no_pause ) ) << wwiv::endl;
+        GetSession()->bout << "|#9J) Local only   : |#2" << YesNoString( ( c.ansir & ansir_local_only ) ? true : false ) << wwiv::endl;
+        GetSession()->bout << "|#9K) Multi user   : |#2" << YesNoString( ( c.ansir & ansir_multi_user ) ? true : false ) << wwiv::endl;
         if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
         {
             WUser regUser;
@@ -144,29 +144,29 @@ void modify_chain( int nCurrentChainNumber )
             {
                 GetApplication()->GetUserManager()->ReadUser( &regUser, r.regby[0] );
             }
-            sess->bout << "|#9L) Registered by: |#2" << ( ( r.regby[0] ) ? regUser.GetName() : "AVAILABLE" ) << wwiv::endl;
+            GetSession()->bout << "|#9L) Registered by: |#2" << ( ( r.regby[0] ) ? regUser.GetName() : "AVAILABLE" ) << wwiv::endl;
             for (i = 1; i < 5; i++)
             {
                 if ( r.regby[i] != 0 )
                 {
                     GetApplication()->GetUserManager()->ReadUser( &regUser, r.regby[i] );
-                    sess->bout << charstr(18, ' ') << regUser.GetName() << wwiv::endl;
+                    GetSession()->bout << charstr(18, ' ') << regUser.GetName() << wwiv::endl;
                 }
             }
-            sess->bout << "|#9M) Usage        : |#2" << r.usage << wwiv::endl;
+            GetSession()->bout << "|#9M) Usage        : |#2" << r.usage << wwiv::endl;
             if ( r.maxage == 0 && r.minage == 0 )
             {
                 r.maxage = 255;
             }
-            sess->bout << "|#9N) Age limit    : |#2" << static_cast<int>( r.minage ) << " - " << static_cast<int>( r.maxage ) << wwiv::endl;
+            GetSession()->bout << "|#9N) Age limit    : |#2" << static_cast<int>( r.minage ) << " - " << static_cast<int>( r.maxage ) << wwiv::endl;
             nl();
-            sess->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
+            GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
             ch = onek( "QABCDEFGJKLMN[]", true );   // removed i
         }
         else
         {
             nl();
-            sess->bout << "|#9Which (A-K,R,[,],Q) ? ";
+            GetSession()->bout << "|#9Which (A-K,R,[,],Q) ? ";
             ch = onek( "QABCDEFGJK[]", true ); // removed i
         }
         switch (ch)
@@ -182,8 +182,8 @@ void modify_chain( int nCurrentChainNumber )
             }
             if ( --nCurrentChainNumber < 0 )
             {
-                nCurrentChainNumber = sess->GetNumberOfChains() - 1;
-                sess->SetNumberOfChains( nCurrentChainNumber );
+                nCurrentChainNumber = GetSession()->GetNumberOfChains() - 1;
+                GetSession()->SetNumberOfChains( nCurrentChainNumber );
             }
             c = chains[ nCurrentChainNumber ];
             if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
@@ -197,7 +197,7 @@ void modify_chain( int nCurrentChainNumber )
             {
                 chains_reg[ nCurrentChainNumber ] = r;
             }
-            if ( ++nCurrentChainNumber >= sess->GetNumberOfChains() )
+            if ( ++nCurrentChainNumber >= GetSession()->GetNumberOfChains() )
             {
                 nCurrentChainNumber = 0;
             }
@@ -209,7 +209,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
         case 'A':
             nl();
-            sess->bout << "|#7New Description? ";
+            GetSession()->bout << "|#7New Description? ";
             Input1( s, c.description, 40, true, MIXED );
             if (s[0])
             {
@@ -219,7 +219,7 @@ void modify_chain( int nCurrentChainNumber )
         case 'B':
             ClearScreen();
             ShowChainCommandLineHelp();
-            sess->bout << "\r\n|#9Enter Command Line.\r\n|#7:";
+            GetSession()->bout << "\r\n|#9Enter Command Line.\r\n|#7:";
             Input1( s, c.filename, 79, true, MIXED );
             if (s[0] != 0)
             {
@@ -228,7 +228,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
         case 'C':
             nl();
-            sess->bout << "|#7New SL? ";
+            GetSession()->bout << "|#7New SL? ";
             input( s, 3, true );
             i = atoi(s);
             if ((i >= 0) && (i < 256) && (s[0]))
@@ -238,7 +238,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
         case 'D':
             nl();
-            sess->bout << "|#7New AR (<SPC>=None) ? ";
+            GetSession()->bout << "|#7New AR (<SPC>=None) ? ";
             ch2 = onek(" ABCDEFGHIJKLMNOP");
             if (ch2 == SPACE)
             {
@@ -251,7 +251,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
         case 'E':
             nl();
-            sess->bout << "|#5Require ANSI? ";
+            GetSession()->bout << "|#5Require ANSI? ";
             if (yesno())
             {
                 c.ansir |= ansir_ansi;
@@ -263,7 +263,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
             case 'F':
             nl();
-            sess->bout << "|#5Have BBS intercept DOS calls? ";
+            GetSession()->bout << "|#5Have BBS intercept DOS calls? ";
             if (noyes())
             {
                 c.ansir &= ~ansir_no_DOS;
@@ -275,7 +275,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
         case 'G':
             nl();
-            sess->bout << "|#5Under Windows Use Emulated FOSSIL Support? ";
+            GetSession()->bout << "|#5Under Windows Use Emulated FOSSIL Support? ";
             if (noyes())
             {
                 c.ansir |= ansir_emulate_fossil;
@@ -288,7 +288,7 @@ void modify_chain( int nCurrentChainNumber )
 /*
         case 'I':
             nl();
-            sess->bout << "|#5Disable screen pause in program? ";
+            GetSession()->bout << "|#5Disable screen pause in program? ";
             if (yesno())
             {
                 c.ansir |= ansir_no_pause;
@@ -301,7 +301,7 @@ void modify_chain( int nCurrentChainNumber )
 */
         case 'J':
             nl();
-            sess->bout << "|#5Allow program to be run locally only? ";
+            GetSession()->bout << "|#5Allow program to be run locally only? ";
             if (yesno())
             {
                 c.ansir |= ansir_local_only;
@@ -313,7 +313,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
         case 'K':
             nl();
-            sess->bout << "|#5Chain is multi-user? ";
+            GetSession()->bout << "|#5Chain is multi-user? ";
             if (yesno())
             {
                 c.ansir |= ansir_multi_user;
@@ -331,7 +331,7 @@ void modify_chain( int nCurrentChainNumber )
             for (i = 0; i < 5; i++)
             {
                 nl();
-                sess->bout << "|#9(Q=Quit, 0=None) User name/number: : ";
+                GetSession()->bout << "|#9(Q=Quit, 0=None) User name/number: : ";
                 input( s1, 30, true );
                 if ( s1[0] != 'Q' && s1[0] != 'q' )
                 {
@@ -348,7 +348,7 @@ void modify_chain( int nCurrentChainNumber )
                             GetApplication()->GetUserManager()->ReadUser( &regUser, nUserNumber );
                             r.regby[i] = static_cast< short > ( nUserNumber );
                             nl();
-                            sess->bout << "|#1Registered by       |#2" << nUserNumber << " " << ( ( r.regby[i] ) ? regUser.GetName() : "AVAILABLE" );
+                            GetSession()->bout << "|#1Registered by       |#2" << nUserNumber << " " << ( ( r.regby[i] ) ? regUser.GetName() : "AVAILABLE" );
                         }
                     }
                 }
@@ -361,7 +361,7 @@ void modify_chain( int nCurrentChainNumber )
         case 'M':
             r.usage = 0;
             nl();
-            sess->bout << "|#5Times Run : ";
+            GetSession()->bout << "|#5Times Run : ";
             input(s, 3);
             if (s[0] != 0)
             {
@@ -370,7 +370,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
         case 'N':
             nl();
-            sess->bout << "|#5New minimum age? ";
+            GetSession()->bout << "|#5New minimum age? ";
             input(s, 3);
             if (s[0])
             {
@@ -382,7 +382,7 @@ void modify_chain( int nCurrentChainNumber )
                 {
                     r.minage = wwiv::stringUtils::StringToUnsignedChar(s);
                 }
-                sess->bout << "|#5New maximum age? ";
+                GetSession()->bout << "|#5New maximum age? ";
                 input(s, 3);
                 if (s[0])
                 {
@@ -416,7 +416,7 @@ void insert_chain( int nCurrentChainNumber )
     chainfilerec c;
     chainregrec r;
 
-    for ( int i = sess->GetNumberOfChains() - 1; i >= nCurrentChainNumber; i-- )
+    for ( int i = GetSession()->GetNumberOfChains() - 1; i >= nCurrentChainNumber; i-- )
     {
         chains[i + 1] = chains[i];
         if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
@@ -431,7 +431,7 @@ void insert_chain( int nCurrentChainNumber )
     c.ansir = 0;
     chains[ nCurrentChainNumber ] = c;
     c.ansir |= ansir_no_DOS;
-    sess->SetNumberOfChains( sess->GetNumberOfChains() + 1 );
+    GetSession()->SetNumberOfChains( GetSession()->GetNumberOfChains() + 1 );
     if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
     {
         memset(&r, 0, sizeof(r));
@@ -444,7 +444,7 @@ void insert_chain( int nCurrentChainNumber )
 
 void delete_chain( int nCurrentChainNumber )
 {
-    for ( int i = nCurrentChainNumber; i < sess->GetNumberOfChains(); i++ )
+    for ( int i = nCurrentChainNumber; i < GetSession()->GetNumberOfChains(); i++ )
     {
         chains[i] = chains[i + 1];
         if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
@@ -452,7 +452,7 @@ void delete_chain( int nCurrentChainNumber )
             chains_reg[i] = chains_reg[i + 1];
         }
     }
-    sess->SetNumberOfChains( sess->GetNumberOfChains() - 1 );
+    GetSession()->SetNumberOfChains( GetSession()->GetNumberOfChains() - 1 );
 }
 
 
@@ -470,7 +470,7 @@ void chainedit()
     do
     {
         nl();
-        sess->bout << "|#7Chains: (D)elete, (I)nsert, (M)odify, (Q)uit, ? : ";
+        GetSession()->bout << "|#7Chains: (D)elete, (I)nsert, (M)odify, (Q)uit, ? : ";
         char ch = onek("QDIM?");
         switch (ch) {
         case '?':
@@ -481,22 +481,22 @@ void chainedit()
             break;
         case 'M':
             nl();
-            sess->bout << "|#2Chain number? ";
+            GetSession()->bout << "|#2Chain number? ";
             input(s, 2);
             i = atoi(s);
-            if ( s[0] != '\0' && i >= 0 && i < sess->GetNumberOfChains() )
+            if ( s[0] != '\0' && i >= 0 && i < GetSession()->GetNumberOfChains() )
             {
                 modify_chain( i );
             }
             break;
         case 'I':
-            if ( sess->GetNumberOfChains() < sess->max_chains )
+            if ( GetSession()->GetNumberOfChains() < GetSession()->max_chains )
             {
                 nl();
-                sess->bout << "|#2Insert before which chain? ";
+                GetSession()->bout << "|#2Insert before which chain? ";
                 input(s, 2);
                 i = atoi(s);
-                if ( s[0] != '\0' && i >= 0 && i <= sess->GetNumberOfChains() )
+                if ( s[0] != '\0' && i >= 0 && i <= GetSession()->GetNumberOfChains() )
                 {
                     insert_chain(i);
                 }
@@ -504,13 +504,13 @@ void chainedit()
             break;
         case 'D':
             nl();
-            sess->bout << "|#2Delete which chain? ";
+            GetSession()->bout << "|#2Delete which chain? ";
             input(s, 2);
             i = atoi(s);
-            if ( s[0] != '\0' && i >= 0 && i < sess->GetNumberOfChains() )
+            if ( s[0] != '\0' && i >= 0 && i < GetSession()->GetNumberOfChains() )
             {
                 nl();
-                sess->bout << "|10Delete " << chains[i].description << "? ";
+                GetSession()->bout << "|10Delete " << chains[i].description << "? ";
                 if (yesno())
                 {
                     delete_chain(i);
@@ -523,7 +523,7 @@ void chainedit()
     WFile chainsFile( syscfg.datadir, CHAINS_DAT );
     if ( chainsFile.Open( WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) )
     {
-        chainsFile.Write( chains, sess->GetNumberOfChains() * sizeof( chainfilerec ) );
+        chainsFile.Write( chains, GetSession()->GetNumberOfChains() * sizeof( chainfilerec ) );
         chainsFile.Close();
     }
     if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
@@ -531,7 +531,7 @@ void chainedit()
         WFile regFile( syscfg.datadir, CHAINS_REG );
         if ( regFile.Open( WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite ) )
         {
-            regFile.Write( chains_reg, sess->GetNumberOfChains() * sizeof( chainregrec ) );
+            regFile.Write( chains_reg, GetSession()->GetNumberOfChains() * sizeof( chainregrec ) );
             regFile.Close();
         }
     }

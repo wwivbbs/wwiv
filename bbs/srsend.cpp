@@ -211,7 +211,7 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
     {
         if (!bUseYModemBatch)
         {
-            sess->bout << "\r\nFile not found.\r\n\n";
+            GetSession()->bout << "\r\nFile not found.\r\n\n";
         }
         *sent = false;
         *percent = 0.0;
@@ -226,7 +226,7 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
 
     if (!bUseYModemBatch)
     {
-        sess->bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
+        GetSession()->bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
     }
     int xx1 = GetApplication()->GetLocalIO()->WhereX();
     int yy1 = GetApplication()->GetLocalIO()->WhereY();
@@ -327,7 +327,7 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
     GetApplication()->GetLocalIO()->LocalGotoXY(xx1, yy1);
     if ( *sent && !bUseYModemBatch )
     {
-        sess->bout << "-=> File transmission complete.\r\n\n";
+        GetSession()->bout << "-=> File transmission complete.\r\n\n";
     }
 }
 

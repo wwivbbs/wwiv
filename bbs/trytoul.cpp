@@ -37,7 +37,7 @@ int try_to_ul(char *pszFileName)
 {
     bool ac = false;
 
-    if ( uconfsub[1].confnum != -1 && okconf( &sess->thisuser ) )
+    if ( uconfsub[1].confnum != -1 && okconf( &GetSession()->thisuser ) )
     {
         ac = true;
         tmp_disable_conf( true );
@@ -61,7 +61,7 @@ int try_to_ul(char *pszFileName)
 
 	GetApplication()->CdHome();		// ensure we are in the correct directory
 
-    sess->bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
+    GetSession()->bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
     sysoplogf( "Failed to upload %s, moving to TRY2UL dir", pszFileName);
 
@@ -76,7 +76,7 @@ int try_to_ul(char *pszFileName)
     // it clean and up to date
     copyfile(src, dest, true);                   // copy file from batch dir,to try2ul dir */
 
-    if ( sess->IsUserOnline() )
+    if ( GetSession()->IsUserOnline() )
     {
         GetApplication()->GetLocalIO()->UpdateTopScreen();
     }
@@ -110,10 +110,10 @@ int try_to_ul_wh(char *pszFileName)
     nl( 3 );
 
     bool done = false;
-    if ( sess->thisuser.isRestrictionValidate() || sess->thisuser.isRestrictionUpload() ||
+    if ( GetSession()->thisuser.isRestrictionValidate() || GetSession()->thisuser.isRestrictionUpload() ||
         ( syscfg.sysconfig & sysconfig_all_sysop ) )
     {
-        dn = (syscfg.newuploads < sess->num_dirs) ? syscfg.newuploads : 0;
+        dn = (syscfg.newuploads < GetSession()->num_dirs) ? syscfg.newuploads : 0;
     }
     else
     {
@@ -125,7 +125,7 @@ int try_to_ul_wh(char *pszFileName)
         {
             if (hangup)
             {
-                if (syscfg.newuploads < sess->num_dirs)
+                if (syscfg.newuploads < GetSession()->num_dirs)
                 {
                     dn = syscfg.newuploads;
                 }
@@ -139,7 +139,7 @@ int try_to_ul_wh(char *pszFileName)
             {
                 // The WWIV_Delay used to be a wait_sec_or_hit( 1 )
                 WWIV_Delay(500);
-                sess->bout << "\r\nUpload " << pszFileName << " to which dir? <CR>=0 ?=List \r\n";
+                GetSession()->bout << "\r\nUpload " << pszFileName << " to which dir? <CR>=0 ?=List \r\n";
                 input( temp, 5, true );
                 StringTrim(temp);
                 if (temp[0] == '?')
@@ -160,7 +160,7 @@ int try_to_ul_wh(char *pszFileName)
                         d = directories[dn];
                         if ((d.mask & mask_no_uploads) && (!dcs()))
                         {
-                            sess->bout << "Can't upload there...\r\n";
+                            GetSession()->bout << "Can't upload there...\r\n";
                             pausescr();
                         }
                         else
@@ -176,7 +176,7 @@ int try_to_ul_wh(char *pszFileName)
 
     dliscan1(dn);
     d = directories[dn];
-    if (sess->numf >= d.maxfiles)
+    if (GetSession()->numf >= d.maxfiles)
     {
         t2u_error(pszFileName, "This directory is currently full.");
         return 1;
@@ -191,7 +191,7 @@ int try_to_ul_wh(char *pszFileName)
         if (so())
         {
             nl();
-            sess->bout << "|#5In filename database - add anyway? ";
+            GetSession()->bout << "|#5In filename database - add anyway? ";
             if (!yesno())
             {
                 t2u_error(pszFileName, "|12File either already here or unwanted.");
@@ -232,8 +232,8 @@ int try_to_ul_wh(char *pszFileName)
         if (!ok)
         {
             nl();
-            sess->bout << "Sorry, all uploads to this directory must be archived.  Supported types are:\r\n";
-            sess->bout << s1;
+            GetSession()->bout << "Sorry, all uploads to this directory must be archived.  Supported types are:\r\n";
+            GetSession()->bout << s1;
             nl( 2 );
 
             t2u_error(pszFileName, "Unsupported archive");
@@ -241,12 +241,12 @@ int try_to_ul_wh(char *pszFileName)
         }
     }
     strcpy(u.filename, s);
-    u.ownerusr  = static_cast<unsigned short>( sess->usernum );
+    u.ownerusr  = static_cast<unsigned short>( GetSession()->usernum );
     u.ownersys  = 0;
     u.numdloads = 0;
     u.filetype  = 0;
     u.mask      = 0;
-    strncpy( u.upby, sess->thisuser.GetUserNameAndNumber( sess->usernum ), sizeof( u.upby ) );
+    strncpy( u.upby, GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ), sizeof( u.upby ) );
     u.upby[36]  = '\0';
     strcpy(u.date, date());
 
@@ -256,7 +256,7 @@ int try_to_ul_wh(char *pszFileName)
         if (dcs())
         {
             nl( 2 );
-            sess->bout << "File already exists.\r\n|#5Add to database anyway? ";
+            GetSession()->bout << "File already exists.\r\n|#5Add to database anyway? ";
             if (yesno() == 0)
             {
                 t2u_error(pszFileName, "That file is already here.");
@@ -272,10 +272,10 @@ int try_to_ul_wh(char *pszFileName)
     if ( ok && (!GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) ) )
     {
         nl();
-        sess->bout << "Checking for same file in other directories...\r\n\n";
+        GetSession()->bout << "Checking for same file in other directories...\r\n\n";
         i2 = 0;
 
-        for (i = 0; (i < sess->num_dirs) && (udir[i].subnum != -1); i++)
+        for (i = 0; (i < GetSession()->num_dirs) && (udir[i].subnum != -1); i++)
         {
             strcpy(s1, "Scanning ");
             strcat(s1, directories[udir[i].subnum].name);
@@ -287,7 +287,7 @@ int try_to_ul_wh(char *pszFileName)
             }
 
             i2 = i4;
-            sess->bout << s1;
+            GetSession()->bout << s1;
             bputch('\r');
 
             dliscan1(udir[i].subnum);
@@ -295,12 +295,12 @@ int try_to_ul_wh(char *pszFileName)
             if (i1 >= 0)
             {
                 nl();
-				sess->bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
+				GetSession()->bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
 
                 if (dcs())
                 {
                     nl();
-                    sess->bout << "|#5Upload anyway? ";
+                    GetSession()->bout << "|#5Upload anyway? ";
                     if (!yesno())
                     {
                         t2u_error(pszFileName, "That file is already here.");
@@ -322,7 +322,7 @@ int try_to_ul_wh(char *pszFileName)
             s1[i1] = ' ';
         }
         s1[i1] = '\0';
-        sess->bout << s1 << "\r";
+        GetSession()->bout << s1 << "\r";
 
         dliscan1(dn);
         nl();
@@ -347,17 +347,17 @@ int try_to_ul_wh(char *pszFileName)
 
         ClearScreen();
         nl();
-        sess->bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
-		sess->bout << "   |#1Filename    |01: |#7" << pszFileName << wwiv::endl;
-		sess->bout << "|#2A|#7] |#1Description |01: |#7" << u.description << wwiv::endl;
-        sess->bout << "|#2B|#7] |#1Modify extended description\r\n\n";
+        GetSession()->bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
+		GetSession()->bout << "   |#1Filename    |01: |#7" << pszFileName << wwiv::endl;
+		GetSession()->bout << "|#2A|#7] |#1Description |01: |#7" << u.description << wwiv::endl;
+        GetSession()->bout << "|#2B|#7] |#1Modify extended description\r\n\n";
         print_extended(u.filename, &abort, 10, 0);
-        sess->bout << "|#2<|#7CR|#2> |#1to continue, |#7Q|#1 to abort upload: ";
+        GetSession()->bout << "|#2<|#7CR|#2> |#1to continue, |#7Q|#1 to abort upload: ";
         key = onek( "\rQABC", true );
         switch (key)
         {
         case 'Q':
-            sess->bout << "Are you sure, file will be lost? ";
+            GetSession()->bout << "Are you sure, file will be lost? ";
             if (yesno())
             {
                 t2u_error(pszFileName, "Changed mind");
@@ -369,20 +369,20 @@ int try_to_ul_wh(char *pszFileName)
 
         case 'A':
             nl();
-			sess->bout << "Please enter a one line description.\r\n:";
+			GetSession()->bout << "Please enter a one line description.\r\n:";
             inputl(u.description, 58);
             break;
 
         case 'B':
             nl();
             ss = read_extended_description(u.filename);
-            sess->bout << "|#5Modify extended description? ";
+            GetSession()->bout << "|#5Modify extended description? ";
             if (yesno())
             {
                 nl();
                 if (ss)
                 {
-                    sess->bout << "|#5Delete it? ";
+                    GetSession()->bout << "|#5Delete it? ";
                     if (yesno())
                     {
                         BbsFreeMemory(ss);
@@ -392,7 +392,7 @@ int try_to_ul_wh(char *pszFileName)
                     else
                     {
                         u.mask |= mask_extended;
-                        modify_extended_description( &ss, directories[udir[sess->GetCurrentFileArea()].subnum].name, u.filename );
+                        modify_extended_description( &ss, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, u.filename );
                         if (ss)
                         {
                             delete_extended_description(u.filename);
@@ -403,7 +403,7 @@ int try_to_ul_wh(char *pszFileName)
                 }
                 else
                 {
-                    modify_extended_description(&ss, directories[udir[sess->GetCurrentFileArea()].subnum].name, u.filename);
+                    modify_extended_description(&ss, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, u.filename);
                     if (ss)
                     {
                         add_extended_description(u.filename, ss);
@@ -449,7 +449,7 @@ int try_to_ul_wh(char *pszFileName)
     if (syscfg.upload_c[0])
     {
 		file.Close();
-        sess->bout << "Please wait...\r\n";
+        GetSession()->bout << "Please wait...\r\n";
         if ( !check_ul_event( dn, &u ) )
         {
             if (u.mask & mask_extended)
@@ -467,13 +467,13 @@ int try_to_ul_wh(char *pszFileName)
 	long l = file.GetLength();
     u.numbytes = l;
 	file.Close();
-    sess->thisuser.SetFilesUploaded( sess->thisuser.GetFilesUploaded() + 1 );
+    GetSession()->thisuser.SetFilesUploaded( GetSession()->thisuser.GetFilesUploaded() + 1 );
 
     time(&l);
     u.daten = l;
 	WFile fileDownload( g_szDownloadFileName );
 	fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
-    for (i = sess->numf; i >= 1; i--)
+    for (i = GetSession()->numf; i >= 1; i--)
     {
         FileAreaSetRecord( fileDownload, i );
 		fileDownload.Read( &u1, sizeof( uploadsrec ) );
@@ -483,19 +483,19 @@ int try_to_ul_wh(char *pszFileName)
 
     FileAreaSetRecord( fileDownload, 1 );
 	fileDownload.Write( &u, sizeof( uploadsrec ) );
-    ++sess->numf;
+    ++GetSession()->numf;
     FileAreaSetRecord( fileDownload, 0 );
 	fileDownload.Read( &u1, sizeof( uploadsrec ) );
-    u1.numbytes = sess->numf;
+    u1.numbytes = GetSession()->numf;
     u1.daten = l;
-    sess->m_DirectoryDateCache[dn] = l;
+    GetSession()->m_DirectoryDateCache[dn] = l;
     FileAreaSetRecord( fileDownload, 0 );
 	fileDownload.Write( &u1, sizeof( uploadsrec ) );
 	fileDownload.Close();
 
     modify_database(u.filename, true);
 
-    sess->thisuser.SetUploadK( sess->thisuser.GetUploadK() + bytes_to_k( u.numbytes ) );
+    GetSession()->thisuser.SetUploadK( GetSession()->thisuser.GetUploadK() + bytes_to_k( u.numbytes ) );
 
     GetApplication()->GetStatusManager()->Lock();
     ++status.uptoday;
@@ -512,12 +512,12 @@ void t2u_error(char *pszFileName, char *msg)
 
     nl( 2 );
     sprintf(szBuffer, "**  %s failed T2U qualifications", pszFileName);
-    sess->bout << szBuffer;
+    GetSession()->bout << szBuffer;
 	nl();
     sysoplog(szBuffer);
 
     sprintf(szBuffer, "** Reason : %s", msg);
-    sess->bout << szBuffer;
+    GetSession()->bout << szBuffer;
 	nl();
     sysoplog(szBuffer);
 }

@@ -98,11 +98,11 @@ void do_result(result_info * ri)
     {
 		if (ri->flag_value & flag_append)
         {
-            sess->SetCurrentSpeed( ri->description );
+            GetSession()->SetCurrentSpeed( ri->description );
         }
 		else
         {
-            sess->SetCurrentSpeed( ri->description );
+            GetSession()->SetCurrentSpeed( ri->description );
         }
     }
 
@@ -383,7 +383,7 @@ void answer_phone()
 
 	GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );
 	GetApplication()->GetLocalIO()->LocalXYPuts( 3, 24, "Answering phone, 'H' to abort." );
-	sess->wfc_status = 0;
+	GetSession()->wfc_status = 0;
 	do_result( &modem_i->defl );
 #ifdef _DEBUG
     std::cout << "DEBUG: " << modem_i->ansr << std::endl;
@@ -407,7 +407,7 @@ void answer_phone()
 		}
 		else
 		{
-            GetApplication()->GetLocalIO()->LocalFastPuts( sess->GetCurrentSpeed().c_str() );
+            GetApplication()->GetLocalIO()->LocalFastPuts( GetSession()->GetCurrentSpeed().c_str() );
 			imodem( false );
 			imodem( false );
 		}

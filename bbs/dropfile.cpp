@@ -111,31 +111,31 @@ void create_drop_files()
 	{
         fprintf(pFile, "%s\n%s\n\nCOM%d\n", syscfg.systemname, syscfg.sysopname,
             incom ? syscfgovr.primaryport : 0);
-        fprintf(pFile, "%lu ", ((sess->using_modem) ? com_speed : 0));
+        fprintf(pFile, "%lu ", ((GetSession()->using_modem) ? com_speed : 0));
         fprintf(pFile, "BAUD,N,8,1\n0\n");
         if (syscfg.sysconfig & sysconfig_no_alias)
 		{
-            strcpy( s, sess->thisuser.GetRealName() );
+            strcpy( s, GetSession()->thisuser.GetRealName() );
             GetNamePartForDropFile( false, s );
             fprintf( pFile, "%s\n", s );
-            strcpy( s, sess->thisuser.GetRealName() );
+            strcpy( s, GetSession()->thisuser.GetRealName() );
             GetNamePartForDropFile( true, s );
             fprintf( pFile, "%s\n", s );
         }
 		else
 		{
-            fprintf( pFile, "%s\n\n", sess->thisuser.GetName() );
+            fprintf( pFile, "%s\n\n", GetSession()->thisuser.GetName() );
 		}
         if (syscfg.sysconfig & sysconfig_extended_info)
 		{
-            fprintf( pFile, "%s, %s\n", sess->thisuser.GetCity(), sess->thisuser.GetState() );
+            fprintf( pFile, "%s, %s\n", GetSession()->thisuser.GetCity(), GetSession()->thisuser.GetState() );
 		}
         else
 		{
             fprintf(pFile, "\n");
 		}
-        fprintf( pFile, "%c\n%d\n%ld\n", sess->thisuser.hasAnsi() ? '1' : '0',
-                 sess->thisuser.GetSl(), l );
+        fprintf( pFile, "%c\n%d\n%ld\n", GetSession()->thisuser.hasAnsi() ? '1' : '0',
+                 GetSession()->thisuser.GetSl(), l );
         fsh_close( pFile );
     }
 
@@ -175,15 +175,15 @@ void create_drop_files()
 		{
             sprintf( pcb.connectbps, "%-5.5u", modem_speed );
 		}
-        pcb.usernum = static_cast<short>( sess->usernum );
-        sprintf( s, "%-25.25s", sess->thisuser.GetName() );
+        pcb.usernum = static_cast<short>( GetSession()->usernum );
+        sprintf( s, "%-25.25s", GetSession()->thisuser.GetName() );
         ss = strtok(s, " \t");
         sprintf(pcb.firstname, "%-15.15s", ss);
 		// Don't write password  security
         strcpy(pcb.password, "XXX");
-        pcb.time_on = static_cast<short>( sess->thisuser.GetTimeOn() / 60 );
+        pcb.time_on = static_cast<short>( GetSession()->thisuser.GetTimeOn() / 60 );
         pcb.prev_used = 0;
-        double d = sess->thisuser.GetTimeOn() / 60;
+        double d = GetSession()->thisuser.GetTimeOn() / 60;
         int h1 = static_cast<int>(d / 60) / 10;
         int h2 = static_cast<int>(d / 60) - (h1 * 10);
         int m1 = static_cast<int>(d - ((h1 * 10 + h2) * 60)) / 10;
@@ -195,9 +195,9 @@ void create_drop_files()
         pcb.time_logged[4] = static_cast<char>( m2 + '0' );
         pcb.time_limit = static_cast<short>( nsl() );
         pcb.down_limit = 1024;
-        pcb.curconf = static_cast<char>( sess->GetCurrentConferenceMessageArea() );
+        pcb.curconf = static_cast<char>( GetSession()->GetCurrentConferenceMessageArea() );
         strcpy(pcb.slanguage, cur_lang_name);
-        strcpy( pcb.name, sess->thisuser.GetName() );
+        strcpy( pcb.name, GetSession()->thisuser.GetName() );
         pcb.sminsleft = pcb.time_limit;
 		pcb.snodenum = static_cast<char>( (num_instances() > 1) ? GetApplication()->GetInstanceNumber() : 0 );
         strcpy(pcb.seventtime, "01:00");
@@ -211,7 +211,7 @@ void create_drop_files()
         strcpy(pcb.lastevent, status.date1);
         pcb.exittodos = '0';
         pcb.eventupcoming = '0';
-        pcb.lastconfarea = static_cast<short>( sess->GetCurrentConferenceMessageArea() );
+        pcb.lastconfarea = static_cast<short>( GetSession()->GetCurrentConferenceMessageArea() );
         // End Additions
 
         pcbFile.Write( &pcb, sizeof( pcb ) );
@@ -225,7 +225,7 @@ void create_drop_files()
     pFile = fsh_open(s, "wt");
     if (pFile)
 	{
-        fprintf( pFile, "%s\n", sess->thisuser.GetRealName() );
+        fprintf( pFile, "%s\n", GetSession()->thisuser.GetRealName() );
         switch (modem_speed)
 		{
         case 300:
@@ -240,28 +240,28 @@ void create_drop_files()
             fprintf(pFile, "3\n");
         }
         fprintf(pFile, " \n%d\n%ld\n%s\n%s\n%ld\n%ld\n%.5s\n0\nABCD\n0\n0\n0\n0\n",
-            sess->thisuser.GetSl(), l,
-            sess->thisuser.hasAnsi() ? "COLOR" : "MONO",
-            "X" /* sess->thisuser.GetPassword() */ , sess->usernum, static_cast<long>( timeon / 60 ), times());
+            GetSession()->thisuser.GetSl(), l,
+            GetSession()->thisuser.hasAnsi() ? "COLOR" : "MONO",
+            "X" /* GetSession()->thisuser.GetPassword() */ , GetSession()->usernum, static_cast<long>( timeon / 60 ), times());
         fprintf(pFile, "%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
-                sess->thisuser.GetVoicePhoneNumber(),
-                sess->thisuser.GetLastOn(),
-                sess->thisuser.GetLastOn(),
-                sess->thisuser.GetNumLogons(),
-                sess->thisuser.GetScreenLines(),
-                sess->thisuser.GetFilesUploaded(),
-                sess->thisuser.GetFilesDownloaded(),
+                GetSession()->thisuser.GetVoicePhoneNumber(),
+                GetSession()->thisuser.GetLastOn(),
+                GetSession()->thisuser.GetLastOn(),
+                GetSession()->thisuser.GetNumLogons(),
+                GetSession()->thisuser.GetScreenLines(),
+                GetSession()->thisuser.GetFilesUploaded(),
+                GetSession()->thisuser.GetFilesDownloaded(),
                 "8N1",
                 (incom) ? "REMOTE" : "LOCAL",
                 (incom) ? 0 : syscfgovr.primaryport );
         strcpy(s1, "00/00/00");
-        sprintf(s2, "%d", sess->thisuser.GetBirthdayMonth() );
+        sprintf(s2, "%d", GetSession()->thisuser.GetBirthdayMonth() );
         s2[2] = '\0';
         memmove(&(s1[2 - strlen(s2)]), &(s2[0]), strlen(s2));
-        sprintf(s2, "%d", sess->thisuser.GetBirthdayDay() );
+        sprintf(s2, "%d", GetSession()->thisuser.GetBirthdayDay() );
         s2[2] = '\0';
         memmove( &( s1[ 5 - strlen( s2 ) ] ), &( s2[0] ), strlen( s2 ) );
-        sprintf( s2, "%d", sess->thisuser.GetBirthdayYear() );
+        sprintf( s2, "%d", GetSession()->thisuser.GetBirthdayYear() );
         s2[2] = '\0';
         memmove( &( s1[ 8 - strlen( s2 ) ] ), &( s2[0] ), strlen( s2 ) );
         fprintf( pFile, "%s\n", s1 );
@@ -309,9 +309,9 @@ void create_drop_files()
 		fprintf( pFile, "%s\n",		    cspeed.c_str() );
 		fprintf( pFile, "WWIV %s\n",    wwiv_version );
 		fprintf( pFile, "999999\n");    // we don't want to share this
-		fprintf( pFile, "%s\n",	        sess->thisuser.GetRealName() );
-		fprintf( pFile, "%s\n",		    sess->thisuser.GetName() );
-		fprintf( pFile, "%d\n",		    sess->thisuser.GetSl() );
+		fprintf( pFile, "%s\n",	        GetSession()->thisuser.GetRealName() );
+		fprintf( pFile, "%s\n",		    GetSession()->thisuser.GetName() );
+		fprintf( pFile, "%d\n",		    GetSession()->thisuser.GetSl() );
 		fprintf( pFile, "%d\n",		    GetDoor32TimeLeft( nsl() ) );
 		fprintf( pFile, "%d\n",		    GetDoor32Emulation() );
 		fprintf( pFile, "%u\n",		    GetApplication()->GetInstanceNumber() );
@@ -326,52 +326,52 @@ void create_drop_files()
     if (pFile)
 	{
         sprintf(s3, "COM%d\n%s\n%c\n%u\n%u\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
-            (sess->using_modem) ? syscfgovr.primaryport : 0,
+            (GetSession()->using_modem) ? syscfgovr.primaryport : 0,
 			cspeed.c_str(),
             '8',
             GetApplication()->GetInstanceNumber(),                       // node
-            (sess->using_modem) ? modem_speed : 14400,
+            (GetSession()->using_modem) ? modem_speed : 14400,
             'Y',                            // screen display
             'N',							// log to printer
             'N',                            // page bell
             'N',                            // caller alarm
-            sess->thisuser.GetRealName(),
-            sess->thisuser.GetCity(),
-            sess->thisuser.GetState() );
+            GetSession()->thisuser.GetRealName(),
+            GetSession()->thisuser.GetCity(),
+            GetSession()->thisuser.GetState() );
         fprintf(pFile, s3);
         sprintf(s3, "%s\n%s\n%s\n%d\n%u\n%s\n%ld\n%ld\n",
-            sess->thisuser.GetVoicePhoneNumber(),
-            sess->thisuser.GetDataPhoneNumber(),
-            "X",                            // sess->thisuser.GetPassword()
-            sess->thisuser.GetSl(),
-            sess->thisuser.GetNumLogons(),
-            sess->thisuser.GetLastOn(),
+            GetSession()->thisuser.GetVoicePhoneNumber(),
+            GetSession()->thisuser.GetDataPhoneNumber(),
+            "X",                            // GetSession()->thisuser.GetPassword()
+            GetSession()->thisuser.GetSl(),
+            GetSession()->thisuser.GetNumLogons(),
+            GetSession()->thisuser.GetLastOn(),
             static_cast<unsigned long>( 60L * l ),
             l);
         fprintf(pFile, s3);
         sprintf(s1, "%s", okansi() ? "GR" : "NG");
         sprintf(s3, "%s\n%u\n%c\n%s\n%lu\n%s\n%lu\n%c\n%u\n%u\n%u\n%u\n",
                 s1,
-                sess->thisuser.GetScreenLines(),
-                sess->thisuser.isExpert() ? 'Y' : 'N',
+                GetSession()->thisuser.GetScreenLines(),
+                GetSession()->thisuser.isExpert() ? 'Y' : 'N',
                 "1,2,3",                        // conferences
-                sess->GetCurrentMessageArea(),  // current 'conference'
+                GetSession()->GetCurrentMessageArea(),  // current 'conference'
                 "12/31/99",                     // expiration date
-                sess->usernum,
+                GetSession()->usernum,
                 'Y',                            // default protocol
-                sess->thisuser.GetFilesUploaded(),
-                sess->thisuser.GetFilesDownloaded(),
+                GetSession()->thisuser.GetFilesUploaded(),
+                GetSession()->thisuser.GetFilesDownloaded(),
                 0,                              // kb dl today
                 0 );                            // kb dl/day max
         fprintf(pFile, s3);
         strcpy(s1, "00/00/00");
-        sprintf( s2, "%d", sess->thisuser.GetBirthdayMonth() );
+        sprintf( s2, "%d", GetSession()->thisuser.GetBirthdayMonth() );
         s2[2] = '\0';
         memmove(&(s1[2 - strlen(s2)]), &(s2[0]), strlen(s2));
-        sprintf(s2, "%d", sess->thisuser.GetBirthdayDay() );
+        sprintf(s2, "%d", GetSession()->thisuser.GetBirthdayDay() );
         s2[2] = '\0';
         memmove(&(s1[5 - strlen(s2)]), &(s2[0]), strlen(s2));
-        sprintf(s2, "%d", sess->thisuser.GetBirthdayYear() );
+        sprintf(s2, "%d", GetSession()->thisuser.GetBirthdayYear() );
         s2[2] = '\0';
         memmove(&(s1[8 - strlen(s2)]), &(s2[0]), strlen(s2));
         s1[9] = '\0';
@@ -380,25 +380,25 @@ void create_drop_files()
             syscfg.datadir,
             syscfg.gfilesdir,
             syscfg.sysopname,
-            sess->thisuser.GetName(),
+            GetSession()->thisuser.GetName(),
             "00:01",                        // event time
             (modem_flag & flag_ec) ? 'Y' : 'N',
             ( okansi() ) ? 'N' : 'Y',         // ansi ok but graphics turned off
             'N',                            // record-locking
-            sess->thisuser.GetColor( 0 ),
-            sess->thisuser.GetTimeBankMinutes(),
-            sess->thisuser.GetLastOn(),                // last n-scan date
+            GetSession()->thisuser.GetColor( 0 ),
+            GetSession()->thisuser.GetTimeBankMinutes(),
+            GetSession()->thisuser.GetLastOn(),                // last n-scan date
             times(),
             "00:01");                       // time last call
         fprintf(pFile, s3);
         sprintf(s3, "%u\n%u\n%ld\n%ld\n%s\n%u\n%d\n",
             99,                             // max files dl/day
             0,                              // files dl today so far
-            sess->thisuser.GetUploadK(),
-            sess->thisuser.GetDownloadK(),
-            sess->thisuser.GetNote(),
-            sess->thisuser.GetNumChainsRun(),
-            sess->thisuser.GetNumMessagesPosted() );
+            GetSession()->thisuser.GetUploadK(),
+            GetSession()->thisuser.GetDownloadK(),
+            GetSession()->thisuser.GetNote(),
+            GetSession()->thisuser.GetNumChainsRun(),
+            GetSession()->thisuser.GetNumMessagesPosted() );
         fprintf(pFile, s3);
         fsh_close(pFile);
     }
@@ -451,20 +451,20 @@ char *create_chain_file()
 	{
         fprintf(pFile,
                 "%ld\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%u\n",
-				sess->usernum,
-                sess->thisuser.GetName(),
-                sess->thisuser.GetRealName(),
-                sess->thisuser.GetCallsign(),
-				sess->thisuser.GetAge(),
-                sess->thisuser.GetGender(),
-                sess->thisuser.GetGold(),
-                sess->thisuser.GetLastOn(),
-				sess->thisuser.GetScreenChars(),
-                sess->thisuser.GetScreenLines(),
-                sess->thisuser.GetSl() );
+				GetSession()->usernum,
+                GetSession()->thisuser.GetName(),
+                GetSession()->thisuser.GetRealName(),
+                GetSession()->thisuser.GetCallsign(),
+				GetSession()->thisuser.GetAge(),
+                GetSession()->thisuser.GetGender(),
+                GetSession()->thisuser.GetGold(),
+                GetSession()->thisuser.GetLastOn(),
+				GetSession()->thisuser.GetScreenChars(),
+                GetSession()->thisuser.GetScreenLines(),
+                GetSession()->thisuser.GetSl() );
         fprintf( pFile, "%d\n%d\n%d\n%u\n%10.2f\n%s\n%s\n%s\n",
 				cs(), so(), okansi(), incom, nsl(), syscfg.gfilesdir, syscfg.datadir, s );
-        if (sess->using_modem)
+        if (GetSession()->using_modem)
 		{
             fprintf(pFile, "%u\n", modem_speed);
 		}
@@ -478,15 +478,15 @@ char *create_chain_file()
                 syscfg.sysopname,
                 l,
                 l1,
-				sess->thisuser.GetUploadK(),
-                sess->thisuser.GetFilesUploaded(),
-                sess->thisuser.GetDownloadK(),
-                sess->thisuser.GetFilesDownloaded(),
+				GetSession()->thisuser.GetUploadK(),
+                GetSession()->thisuser.GetFilesUploaded(),
+                GetSession()->thisuser.GetDownloadK(),
+                GetSession()->thisuser.GetFilesDownloaded(),
 				"8N1",
 				cspeed.c_str(),
                 net_sysnum );
         fprintf(pFile, "N\nN\nN\n");
-        fprintf( pFile, "%u\n%u\n", sess->thisuser.GetAr(), sess->thisuser.GetDar() );
+        fprintf( pFile, "%u\n%u\n", GetSession()->thisuser.GetAr(), GetSession()->thisuser.GetDar() );
         fsh_close( pFile );
     }
     syscfgovr.primaryport = nSaveComPortNum;
@@ -498,11 +498,11 @@ char *create_chain_file()
 unsigned long GetSockOrCommHandle()
 {
 #ifdef _WIN32
-	if (sess->hSocket == NULL)
+	if (GetSession()->hSocket == NULL)
 	{
-		return reinterpret_cast<unsigned long>( sess->hCommHandle );
+		return reinterpret_cast<unsigned long>( GetSession()->hCommHandle );
 	}
-	return static_cast<unsigned long>( sess->hDuplicateSocket );
+	return static_cast<unsigned long>( GetSession()->hDuplicateSocket );
 #else
 	return 0L;
 #endif
@@ -511,12 +511,12 @@ unsigned long GetSockOrCommHandle()
 
 int GetDoor32CommType()
 {
-	if (!sess->using_modem)
+	if (!GetSession()->using_modem)
 	{
 		return 0;
 	}
 #ifdef _WIN32
-	return (sess->hSocket == NULL) ? 1 : 2;
+	return (GetSession()->hSocket == NULL) ? 1 : 2;
 #else
 	return 0;
 #endif

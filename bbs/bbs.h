@@ -111,6 +111,12 @@ private:
     double          m_fShutDownTime;
 
 
+    WComm* comm;
+    StatusMgr* statusMgr;
+    WLocalIO *localIO;
+    WUserManager* userManager;
+
+
 protected:
 
     /*!
@@ -156,29 +162,12 @@ public:
 	 */
     int  Run(int argc, char *argv[]);
 
-    /*!
-	 * @var comm pointer to Communications class (either serial or telnet)
-	 * See class <code>WComm</code>
-	 */
-    WComm* comm;
     WComm* GetComm();
 
-	/*!
-	 * @var statusMgr pointer to the StatusMgr class.
-	 */
-	StatusMgr* statusMgr;
-	StatusMgr* GetStatusManager();
+    StatusMgr* GetStatusManager();
 
-    /*!
-	 * @var localIO pointer to Local IO class
-	 */
-    WLocalIO *localIO;
     WLocalIO* GetLocalIO(); 
 
-    /*!
-     * @var userManager pointer to the User Manager class
-     */
-    WUserManager* userManager;
     WUserManager* GetUserManager();
 
     /*!
@@ -278,6 +267,11 @@ private:
 
 // Function Prototypes
 WBbsApp* GetApplication();
+
+
+class WSession;
+
+WSession* GetSession();
 
 
 

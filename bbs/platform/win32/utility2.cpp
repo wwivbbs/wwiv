@@ -32,10 +32,10 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
 
     _splitpath(pszDirectoryName, drive, direc, file, ext);
     _snprintf(s, sizeof( s ), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
-    int i = ( sess->thisuser.GetScreenChars() - 1 ) / 2 - strlen(stripcolors(s)) / 2;
-    sess->bout << "|#7" << charstr( i, c ) << s;
-    i = sess->thisuser.GetScreenChars() - 1 - i - strlen(stripcolors(s));
-    sess->bout << "|#7" << charstr( i, c );
+    int i = ( GetSession()->thisuser.GetScreenChars() - 1 ) / 2 - strlen(stripcolors(s)) / 2;
+    GetSession()->bout << "|#7" << charstr( i, c ) << s;
+    i = GetSession()->thisuser.GetScreenChars() - 1 - i - strlen(stripcolors(s));
+    GetSession()->bout << "|#7" << charstr( i, c );
 
     char szFullPathName[ MAX_PATH ];
     _snprintf( szFullPathName, sizeof( szFullPathName ), "%s%s", pszDirectoryName, strupr( stripfn(pszFileName ) ) );
@@ -46,17 +46,17 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
         strcpy(s, fnd.GetFileName());
         align(s);
         _snprintf( szFullPathName, sizeof( szFullPathName ), "|#7[|#2%s|#7]|#1 ", s );
-        if ( GetApplication()->localIO->WhereX() > ( sess->thisuser.GetScreenChars() - 15 ) )
+        if ( GetApplication()->GetLocalIO()->WhereX() > ( GetSession()->thisuser.GetScreenChars() - 15 ) )
         {
             nl();
         }
-        sess->bout << szFullPathName;
+        GetSession()->bout << szFullPathName;
         bFound = fnd.next();
     }
 
     nl();
     ansic( 7 );
-    sess->bout << charstr( sess->thisuser.GetScreenChars() - 1, c );
+    GetSession()->bout << charstr( GetSession()->thisuser.GetScreenChars() - 1, c );
     nl( 2 );
 }
 

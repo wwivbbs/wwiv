@@ -126,7 +126,7 @@ unsigned char WBbsApp::stryn2tf(const char *s)
 // end callback addition
 
 
-#define OFFOF(x) ( reinterpret_cast<long>( &sess->thisuser.data.x ) - reinterpret_cast<long>( &sess->thisuser.data ) )
+#define OFFOF(x) ( reinterpret_cast<long>( &GetSession()->thisuser.data.x ) - reinterpret_cast<long>( &GetSession()->thisuser.data ) )
 
 
 // Reads WWIV.INI info from [WWIV] subsection, overrides some config.dat
@@ -179,29 +179,29 @@ static const char *get_key_str( int n )
 
 #define INI_INIT_A(n,i,f,s) \
 {if (((ss=ini_get(get_key_str(n), i, s))!=NULL) && (atoi(ss)>0)) \
-{sess->f[i] = atoi(ss);}}
+{GetSession()->f[i] = atoi(ss);}}
 #define INI_INIT(n,f) \
 {if (((ss=ini_get(get_key_str(n), -1, NULL))!=NULL) && (atoi(ss)>0)) \
-sess->f = atoi(ss);}
+GetSession()->f = atoi(ss);}
 #define INI_INIT_N(n,f) \
 {if (((ss=ini_get(get_key_str(n), -1, NULL))!=NULL)) \
-sess->f = atoi(ss);}
+GetSession()->f = atoi(ss);}
 #define INI_GET_ASV(s, f, func, d) \
 {if ((ss=ini_get(get_key_str(INI_STR_SIMPLE_ASV), -1, s))!=NULL) \
-    sess->asv.f = func (ss); \
+    GetSession()->asv.f = func (ss); \
     else \
-sess->asv.f = d;}
+GetSession()->asv.f = d;}
 #define INI_GET_ADVANCED_ASV(s, f, func, d) \
 {if ((ss=ini_get(get_key_str(INI_STR_ADVANCED_ASV), -1, s))!=NULL) \
-    sess->advasv.f = func (ss); \
+    GetSession()->advasv.f = func (ss); \
     else \
-sess->advasv.f = d;}
+GetSession()->advasv.f = d;}
 #define INI_GET_CALLBACK(s, f, func, d) \
 {if ((ss=ini_get(get_key_str(INI_STR_CALLBACK), -1, s))!=NULL) \
-    sess->cbv.f = func (ss); \
+    GetSession()->cbv.f = func (ss); \
     else \
-sess->cbv.f = d;}
-#define INI_INIT_TF(n,f) { if (((ss=ini_get(get_key_str(n), -1, NULL))!=NULL)) sess->f = stryn2tf(ss); }
+GetSession()->cbv.f = d;}
+#define INI_INIT_TF(n,f) { if (((ss=ini_get(get_key_str(n), -1, NULL))!=NULL)) GetSession()->f = stryn2tf(ss); }
 
 #define NEL(s) (sizeof(s) / sizeof((s)[0]))
 
@@ -267,35 +267,35 @@ bool WBbsApp::ReadINIFile()
     char *ss;
 
     // can't allow user to change these on-the-fly
-    unsigned short omb = sess->max_batch;
-    unsigned short omc = sess->max_chains;
-    unsigned short omg = sess->max_gfilesec;
+    unsigned short omb = GetSession()->max_batch;
+    unsigned short omc = GetSession()->max_chains;
+    unsigned short omg = GetSession()->max_gfilesec;
 
-    // Setup default sess-> data
+    // Setup default GetSession()-> data
 
     for ( int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++ )
     {
-        sess->newuser_colors[ nTempColorNum ] = nucol[ nTempColorNum ];
-        sess->newuser_bwcolors[ nTempColorNum ] = nucolbw[ nTempColorNum ];
+        GetSession()->newuser_colors[ nTempColorNum ] = nucol[ nTempColorNum ];
+        GetSession()->newuser_bwcolors[ nTempColorNum ] = nucolbw[ nTempColorNum ];
     }
 
-    sess->SetTopScreenColor( 31 );
-    sess->SetUserEditorColor( 31 );
-    sess->SetEditLineColor( 112 );
-    sess->SetChatNameSelectionColor( 95 );
-    sess->SetMessageColor( 2 );
-    sess->max_batch = 50;
-    sess->max_extend_lines = 10;
-    sess->max_chains = 50;
-    sess->max_gfilesec = 32;
-    sess->mail_who_field_len = 35;
-    sess->SetBeginDayNodeNumber( 1 );
-    sess->SetUseInternalZmodem( true );
-	sess->SetExecUseWaitForInputIdle( true );
-    sess->SetExecWaitForInputTimeout( 2000 );
-	sess->SetExecChildProcessWaitTime( 500 );
-	sess->SetExecLogSyncFoss( true );
-	sess->SetNewScanAtLogin( false );
+    GetSession()->SetTopScreenColor( 31 );
+    GetSession()->SetUserEditorColor( 31 );
+    GetSession()->SetEditLineColor( 112 );
+    GetSession()->SetChatNameSelectionColor( 95 );
+    GetSession()->SetMessageColor( 2 );
+    GetSession()->max_batch = 50;
+    GetSession()->max_extend_lines = 10;
+    GetSession()->max_chains = 50;
+    GetSession()->max_gfilesec = 32;
+    GetSession()->mail_who_field_len = 35;
+    GetSession()->SetBeginDayNodeNumber( 1 );
+    GetSession()->SetUseInternalZmodem( true );
+	GetSession()->SetExecUseWaitForInputIdle( true );
+    GetSession()->SetExecWaitForInputTimeout( 2000 );
+	GetSession()->SetExecChildProcessWaitTime( 500 );
+	GetSession()->SetExecLogSyncFoss( true );
+	GetSession()->SetNewScanAtLogin( false );
 
     for ( size_t nTempEventNum = 0; nTempEventNum < NEL( eventinfo ); nTempEventNum++ )
     {
@@ -440,7 +440,7 @@ bool WBbsApp::ReadINIFile()
         if ( ( ( ss = ini_get( get_key_str( INI_STR_MAIL_WHO_LEN ), -1, NULL ) ) != NULL ) &&
             ( atoi(ss) > 0 || ss[0] == '0' ) )
         {
-            sess->mail_who_field_len = atoi( ss );
+            GetSession()->mail_who_field_len = atoi( ss );
         }
         if ( ( ss = ini_get( get_key_str( INI_STR_RATIO ), -1, NULL ) ) != NULL )
         {
@@ -466,22 +466,22 @@ bool WBbsApp::ReadINIFile()
         ini_done();
     }
 
-	sess->max_extend_lines    = std::min<unsigned short>( sess->max_extend_lines, 99 );
-    sess->max_batch           = std::min<unsigned short>( sess->max_batch , 999 );
-    sess->max_chains          = std::min<unsigned short>( sess->max_chains, 999 );
-    sess->max_gfilesec        = std::min<unsigned short>( sess->max_gfilesec, 999 );
+	GetSession()->max_extend_lines    = std::min<unsigned short>( GetSession()->max_extend_lines, 99 );
+    GetSession()->max_batch           = std::min<unsigned short>( GetSession()->max_batch , 999 );
+    GetSession()->max_chains          = std::min<unsigned short>( GetSession()->max_chains, 999 );
+    GetSession()->max_gfilesec        = std::min<unsigned short>( GetSession()->max_gfilesec, 999 );
 
     if ( omb )
 	{
-        sess->max_batch = omb;
+        GetSession()->max_batch = omb;
 	}
     if ( omc )
 	{
-        sess->max_chains = omc;
+        GetSession()->max_chains = omc;
 	}
     if ( omg )
 	{
-       sess->max_gfilesec = omg;
+       GetSession()->max_gfilesec = omg;
 	}
 
     set_strings_fn( INI_STRFILE, NULL, NULL, 0 );
@@ -753,7 +753,7 @@ bool WBbsApp::SaveConfig()
 
 void WBbsApp::read_nextern()
 {
-    sess->SetNumberOfExternalProtocols( 0 );
+    GetSession()->SetNumberOfExternalProtocols( 0 );
     if ( externs )
     {
         BbsFreeMemory(externs);
@@ -770,7 +770,7 @@ void WBbsApp::read_nextern()
         }
         externs = static_cast<newexternalrec *>( BbsAllocWithComment(l + 10, "external protocols") );
 		WWIV_ASSERT( externs != NULL );
-        sess->SetNumberOfExternalProtocols( externalFile.Read( externs, l ) / sizeof( newexternalrec ) );
+        GetSession()->SetNumberOfExternalProtocols( externalFile.Read( externs, l ) / sizeof( newexternalrec ) );
     }
 }
 
@@ -804,7 +804,7 @@ void WBbsApp::read_editors()
         BbsFreeMemory( editors );
         editors = NULL;
     }
-    sess->SetNumberOfEditors( 0 );
+    GetSession()->SetNumberOfEditors( 0 );
 
     WFile file( syscfg.datadir, EDITORS_DAT );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
@@ -816,7 +816,7 @@ void WBbsApp::read_editors()
         }
         editors = static_cast<editorrec *>( BbsAllocWithComment(l + 10, "external editors") );
 		WWIV_ASSERT( editors != NULL );
-        sess->SetNumberOfEditors( file.Read( editors, l ) / sizeof( editorrec ) );
+        GetSession()->SetNumberOfEditors( file.Read( editors, l ) / sizeof( editorrec ) );
     }
 }
 
@@ -846,8 +846,8 @@ bool WBbsApp::read_subs()
         BbsFreeMemory( subboards );
     }
     subboards = NULL;
-    sess->SetMaxNumberMessageAreas( syscfg.max_subs );
-    subboards = static_cast< subboardrec * >( BbsAllocWithComment( sess->GetMaxNumberMessageAreas() * sizeof( subboardrec ), "subboards" ) );
+    GetSession()->SetMaxNumberMessageAreas( syscfg.max_subs );
+    subboards = static_cast< subboardrec * >( BbsAllocWithComment( GetSession()->GetMaxNumberMessageAreas() * sizeof( subboardrec ), "subboards" ) );
 	WWIV_ASSERT( subboards != NULL );
 
     WFile file( syscfg.datadir, SUBS_DAT );
@@ -856,17 +856,17 @@ bool WBbsApp::read_subs()
         std::cout << file.GetName() << " NOT FOUND.\r\n";
         return false;
     }
-    sess->num_subs = ( file.Read( subboards, ( sess->GetMaxNumberMessageAreas() * sizeof( subboardrec ) ) ) ) / sizeof( subboardrec );
-    return ( read_subs_xtr( sess->GetMaxNumberMessageAreas(), sess->num_subs, subboards ) );
+    GetSession()->num_subs = ( file.Read( subboards, ( GetSession()->GetMaxNumberMessageAreas() * sizeof( subboardrec ) ) ) ) / sizeof( subboardrec );
+    return ( read_subs_xtr( GetSession()->GetMaxNumberMessageAreas(), GetSession()->num_subs, subboards ) );
 }
 
 
 void WBbsApp::read_networks()
 {
-    sess->internetEmailName = "";
-    sess->internetEmailDomain = "";
-    sess->internetPopDomain = "";
-    sess->SetInternetUseRealNames( false );
+    GetSession()->internetEmailName = "";
+    GetSession()->internetEmailDomain = "";
+    GetSession()->internetPopDomain = "";
+    GetSession()->SetInternetUseRealNames( false );
 
     FILE *fp = fsh_open( "NET.INI", "rt" );
     if ( fp )
@@ -877,30 +877,30 @@ void WBbsApp::read_networks()
             fgets(szBuffer, 80, fp);
             szBuffer[strlen(szBuffer) - 1] = 0;
             StringRemoveWhitespace(szBuffer);
-            if ( !strnicmp( szBuffer, "DOMAIN=", 7 ) && sess->internetEmailDomain.empty() )
+            if ( !strnicmp( szBuffer, "DOMAIN=", 7 ) && GetSession()->internetEmailDomain.empty() )
             {
-                sess->internetEmailDomain = &(szBuffer[7]);
+                GetSession()->internetEmailDomain = &(szBuffer[7]);
             }
-            else if ( !strnicmp(szBuffer, "POPNAME=", 8 ) && sess->internetEmailName.empty() )
+            else if ( !strnicmp(szBuffer, "POPNAME=", 8 ) && GetSession()->internetEmailName.empty() )
             {
-                sess->internetEmailName = &( szBuffer[8] );
+                GetSession()->internetEmailName = &( szBuffer[8] );
             }
             else if ( !strnicmp(szBuffer, "FWDDOM=", 7) )
             {
-                sess->internetEmailDomain = &(szBuffer[7]);
+                GetSession()->internetEmailDomain = &(szBuffer[7]);
             }
             else if ( !strnicmp(szBuffer, "FWDNAME=", 8) )
             {
-                sess->internetEmailName = &(szBuffer[8]);
+                GetSession()->internetEmailName = &(szBuffer[8]);
             }
             else if ( !strnicmp(szBuffer, "POPDOMAIN=", 10) )
             {
-                sess->internetPopDomain = &( szBuffer[10] );
+                GetSession()->internetPopDomain = &( szBuffer[10] );
             }
             else if ( !strnicmp(szBuffer, "REALNAME=", 9 ) &&
                       ( szBuffer[9] == 'Y' || szBuffer[9] == 'y' ) )
             {
-                sess->SetInternetUseRealNames( true );
+                GetSession()->SetInternetUseRealNames( true );
             }
         }
         fsh_close( fp );
@@ -913,16 +913,16 @@ void WBbsApp::read_networks()
     WFile file( syscfg.datadir, NETWORKS_DAT );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        sess->SetMaxNetworkNumber( file.GetLength() / sizeof( net_networks_rec ) );
-        if ( sess->GetMaxNetworkNumber() )
+        GetSession()->SetMaxNetworkNumber( file.GetLength() / sizeof( net_networks_rec ) );
+        if ( GetSession()->GetMaxNetworkNumber() )
         {
-            net_networks = static_cast<net_networks_rec *>( BbsAllocWithComment( sess->GetMaxNetworkNumber() * sizeof( net_networks_rec ), "networks.dat" ) );
+            net_networks = static_cast<net_networks_rec *>( BbsAllocWithComment( GetSession()->GetMaxNetworkNumber() * sizeof( net_networks_rec ), "networks.dat" ) );
 			WWIV_ASSERT(net_networks != NULL);
 
-            file.Read( net_networks, sess->GetMaxNetworkNumber() * sizeof( net_networks_rec ) );
+            file.Read( net_networks, GetSession()->GetMaxNetworkNumber() * sizeof( net_networks_rec ) );
         }
         file.Close();
-        for ( int nTempNetNumber = 0; nTempNetNumber < sess->GetMaxNetworkNumber(); nTempNetNumber++ )
+        for ( int nTempNetNumber = 0; nTempNetNumber < GetSession()->GetMaxNetworkNumber(); nTempNetNumber++ )
         {
             char* ss = strchr( net_networks[nTempNetNumber].name, ' ' );
             if ( ss )
@@ -935,7 +935,7 @@ void WBbsApp::read_networks()
     {
         net_networks = static_cast<net_networks_rec *>( BbsAllocWithComment( sizeof( net_networks_rec ), "networks.dat" ) );
 		WWIV_ASSERT( net_networks != NULL );
-        sess->SetMaxNetworkNumber( 1 );
+        GetSession()->SetMaxNetworkNumber( 1 );
         strcpy( net_networks->name, "WWIVnet" );
         strcpy( net_networks->dir, syscfg.datadir );
         net_networks->sysnum = syscfg.systemnumber;
@@ -999,8 +999,8 @@ bool WBbsApp::read_dirs()
         BbsFreeMemory( directories );
     }
     directories = NULL;
-    sess->SetMaxNumberFileAreas( syscfg.max_dirs );
-    directories = static_cast<directoryrec *>( BbsAllocWithComment(static_cast<long>(sess->GetMaxNumberFileAreas()) * static_cast<long>( sizeof( directoryrec ) ), "directories" ) );
+    GetSession()->SetMaxNumberFileAreas( syscfg.max_dirs );
+    directories = static_cast<directoryrec *>( BbsAllocWithComment(static_cast<long>(GetSession()->GetMaxNumberFileAreas()) * static_cast<long>( sizeof( directoryrec ) ), "directories" ) );
 	WWIV_ASSERT(directories != NULL);
 
     WFile file( syscfg.datadir, DIRS_DAT );
@@ -1009,7 +1009,7 @@ bool WBbsApp::read_dirs()
         std::cout << file.GetName() << "%s NOT FOUND.\r\n";
         return false;
     }
-    sess->num_dirs = file.Read( directories, (sizeof(directoryrec) * sess->GetMaxNumberFileAreas()) ) / sizeof(directoryrec);
+    GetSession()->num_dirs = file.Read( directories, (sizeof(directoryrec) * GetSession()->GetMaxNumberFileAreas()) ) / sizeof(directoryrec);
     return true;
 }
 
@@ -1021,12 +1021,12 @@ void WBbsApp::read_chains()
         BbsFreeMemory( chains );
     }
     chains = NULL;
-    chains = static_cast<chainfilerec *>( BbsAllocWithComment( sess->max_chains * sizeof( chainfilerec ), "chains" ) );
+    chains = static_cast<chainfilerec *>( BbsAllocWithComment( GetSession()->max_chains * sizeof( chainfilerec ), "chains" ) );
 	WWIV_ASSERT( chains != NULL );
     WFile file( syscfg.datadir, CHAINS_DAT );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        sess->SetNumberOfChains( file.Read( chains, sess->max_chains * sizeof( chainfilerec ) ) / sizeof( chainfilerec ) );
+        GetSession()->SetNumberOfChains( file.Read( chains, GetSession()->max_chains * sizeof( chainfilerec ) ) / sizeof( chainfilerec ) );
     }
     file.Close();
     if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
@@ -1036,18 +1036,18 @@ void WBbsApp::read_chains()
             BbsFreeMemory( chains_reg );
         }
         chains_reg = NULL;
-        chains_reg = static_cast<chainregrec *>( BbsAllocWithComment( sess->max_chains * sizeof( chainregrec ),
+        chains_reg = static_cast<chainregrec *>( BbsAllocWithComment( GetSession()->max_chains * sizeof( chainregrec ),
             "chain registration" ) );
 		WWIV_ASSERT( chains_reg != NULL );
 
         WFile regFile( syscfg.datadir, CHAINS_REG );
         if ( regFile.Open( WFile::modeBinary | WFile::modeReadOnly ) )
         {
-            regFile.Read( chains_reg, sess->max_chains * sizeof( chainregrec ) );
+            regFile.Read( chains_reg, GetSession()->max_chains * sizeof( chainregrec ) );
         }
         else
         {
-            for ( int nTempChainNum = 0; nTempChainNum < sess->GetNumberOfChains(); nTempChainNum++ )
+            for ( int nTempChainNum = 0; nTempChainNum < GetSession()->GetNumberOfChains(); nTempChainNum++ )
             {
                 for ( size_t nTempRegByNum = 0; nTempRegByNum < sizeof( chains_reg[ nTempChainNum ].regby ) / sizeof( chains_reg[ nTempChainNum ].regby[0] ); nTempRegByNum++ )
                 {
@@ -1058,7 +1058,7 @@ void WBbsApp::read_chains()
                 chains_reg[ nTempChainNum ].maxage  = 255;
             }
             regFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
-            regFile.Write( chains_reg , sizeof( chainregrec ) * sess->GetNumberOfChains() );
+            regFile.Write( chains_reg , sizeof( chainregrec ) * GetSession()->GetNumberOfChains() );
         }
         regFile.Close();
     }
@@ -1075,26 +1075,26 @@ bool WBbsApp::read_language()
     WFile file( syscfg.datadir, LANGUAGE_DAT );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        sess->num_languages = file.GetLength() / sizeof(languagerec);
-        if ( sess->num_languages )
+        GetSession()->num_languages = file.GetLength() / sizeof(languagerec);
+        if ( GetSession()->num_languages )
         {
-            languages = static_cast<languagerec *>( BbsAllocWithComment(sess->num_languages * sizeof(languagerec), "language.dat") );
+            languages = static_cast<languagerec *>( BbsAllocWithComment(GetSession()->num_languages * sizeof(languagerec), "language.dat") );
 			WWIV_ASSERT(languages != NULL);
 
-            file.Read( languages, sess->num_languages * sizeof( languagerec ) );
+            file.Read( languages, GetSession()->num_languages * sizeof( languagerec ) );
         }
         file.Close();
     }
-    if ( !sess->num_languages )
+    if ( !GetSession()->num_languages )
     {
         languages = static_cast<languagerec *>( BbsAllocWithComment( sizeof( languagerec ), "language.dat" ) );
 		WWIV_ASSERT( languages != NULL );
-        sess->num_languages = 1;
+        GetSession()->num_languages = 1;
         strcpy( languages->name, "English" );
         strncpy( languages->dir, syscfg.gfilesdir, sizeof( languages->dir ) - 1 );
         strncpy( languages->mdir, syscfg.menudir, sizeof( languages->mdir ) - 1 );
     }
-    sess->SetCurrentLanguageNumber( -1 );
+    GetSession()->SetCurrentLanguageNumber( -1 );
     if ( !set_language( 0 ) )
     {
         std::cout << "You need the default language installed to run the BBS.\r\n";
@@ -1150,16 +1150,16 @@ void WBbsApp::read_gfile()
         BbsFreeMemory(gfilesec);
 		gfilesec = NULL;
     }
-    gfilesec = static_cast<gfiledirrec *>( BbsAllocWithComment(static_cast<long>(sess->max_gfilesec * sizeof(gfiledirrec)), "gfiles") );
+    gfilesec = static_cast<gfiledirrec *>( BbsAllocWithComment(static_cast<long>(GetSession()->max_gfilesec * sizeof(gfiledirrec)), "gfiles") );
 	WWIV_ASSERT(gfilesec != NULL);
     WFile file( syscfg.datadir, GFILE_DAT );
     if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        sess->num_sec = 0;
+        GetSession()->num_sec = 0;
     }
     else
     {
-        sess->num_sec = file.Read( gfilesec, sess->max_gfilesec * sizeof( gfiledirrec ) ) / sizeof(gfiledirrec);
+        GetSession()->num_sec = file.Read( gfilesec, GetSession()->max_gfilesec * sizeof( gfiledirrec ) ) / sizeof(gfiledirrec);
     }
 }
 
@@ -1193,14 +1193,14 @@ void WBbsApp::InitializeBBS()
 {
     char *ss, szFileName[MAX_PATH], newprompt[ 255 ];
 
-    sess->screenbottom = defscreenbottom = GetLocalIO()->GetDefaultScreenBottom();
+    GetSession()->screenbottom = defscreenbottom = GetLocalIO()->GetDefaultScreenBottom();
 
     GetLocalIO()->LocalCls();
 #if !defined( _UNIX )
     std::cout << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2004, WWIV Software Services.\r\n\n";
 	std::cout << "\r\nInitializing BBS...\r\n";
 #endif // _UNIX
-    sess->SetCurrentReadMessageArea( -1 );
+    GetSession()->SetCurrentReadMessageArea( -1 );
     use_workspace = false;
     chat_file = false;
     GetLocalIO()->SetSysopAlert( false );
@@ -1208,8 +1208,8 @@ void WBbsApp::InitializeBBS()
     GetLocalIO()->set_global_handle( false, true );
     bquote = 0;
     equote = 0;
-    sess->SetQuoting( false );
-    sess->tagptr = 0;
+    GetSession()->SetQuoting( false );
+    GetSession()->tagptr = 0;
 
     snprintf( m_szWWIVEnvironmentVariable, sizeof( m_szWWIVEnvironmentVariable ), "BBS=%s", wwiv_version );
 
@@ -1311,7 +1311,7 @@ void WBbsApp::InitializeBBS()
     }
 
     net_networks = NULL;
-    sess->SetNetworkNumber( 0 );
+    GetSession()->SetNetworkNumber( 0 );
     read_networks();
     set_net_num( 0 );
 
@@ -1364,7 +1364,7 @@ void WBbsApp::InitializeBBS()
     }
 
     XINIT_PRINTF( "* Reading Chains.\r\n" );
-    sess->SetNumberOfChains( 0 );
+    GetSession()->SetNumberOfChains( 0 );
     chains = NULL;
     read_chains();
 
@@ -1397,7 +1397,7 @@ void WBbsApp::InitializeBBS()
         {
             if ( wwiv::UpperCase<char>( ss[0] == 'Y' ) )
             {
-                sess->SetMessageThreadingEnabled( true );
+                GetSession()->SetMessageThreadingEnabled( true );
             }
         }
     }
@@ -1408,7 +1408,7 @@ void WBbsApp::InitializeBBS()
         {
             if (wwiv::UpperCase<char>(ss[0]) == 'Y')
             {
-                sess->SetCarbonCopyEnabled( true );
+                GetSession()->SetCarbonCopyEnabled( true );
             }
         }
     }
@@ -1427,22 +1427,22 @@ void WBbsApp::InitializeBBS()
     // allocate sub cache
     iscan1(-1, false);
 
-    batch = static_cast<batchrec *>( BbsAllocWithComment(sess->max_batch * sizeof(batchrec), "batch list") );
+    batch = static_cast<batchrec *>( BbsAllocWithComment(GetSession()->max_batch * sizeof(batchrec), "batch list") );
 	WWIV_ASSERT(batch != NULL);
 
     XINIT_PRINTF("* Reading User Information.\r\n");
-    sess->ReadCurrentUser( 1, false );
-    fwaiting = ( sess->thisuser.isUserDeleted() ) ? 0 : sess->thisuser.GetNumMailWaiting();
+    GetSession()->ReadCurrentUser( 1, false );
+    fwaiting = ( GetSession()->thisuser.isUserDeleted() ) ? 0 : GetSession()->thisuser.GetNumMailWaiting();
 
     statusMgr->Read();
 
     if (syscfg.sysconfig & sysconfig_no_local)
     {
-        sess->topdata = WLocalIO::topdataNone;
+        GetSession()->topdata = WLocalIO::topdataNone;
     }
     else
     {
-        sess->topdata = WLocalIO::topdataUser;
+        GetSession()->topdata = WLocalIO::topdataUser;
     }
     ss = getenv("PROMPT");
     strcpy(newprompt, "PROMPT=WWIV: ");
@@ -1492,15 +1492,15 @@ void WBbsApp::InitializeBBS()
 
     XINIT_PRINTF("* Allocating Memory for Message/File Areas.\r\n");
     do_event = 0;
-    usub = static_cast<usersubrec *>( BbsAllocWithComment( sess->GetMaxNumberMessageAreas() * sizeof( usersubrec ), "usub" ) );
+    usub = static_cast<usersubrec *>( BbsAllocWithComment( GetSession()->GetMaxNumberMessageAreas() * sizeof( usersubrec ), "usub" ) );
 	WWIV_ASSERT(usub != NULL);
-    sess->m_SubDateCache = static_cast<UINT32 *>( BbsAllocWithComment(sess->GetMaxNumberMessageAreas() * sizeof(long), "sess->m_SubDateCache") );
-	WWIV_ASSERT(sess->m_SubDateCache != NULL);
+    GetSession()->m_SubDateCache = static_cast<UINT32 *>( BbsAllocWithComment(GetSession()->GetMaxNumberMessageAreas() * sizeof(long), "GetSession()->m_SubDateCache") );
+	WWIV_ASSERT(GetSession()->m_SubDateCache != NULL);
 
-    udir = static_cast<usersubrec *>( BbsAllocWithComment(sess->GetMaxNumberFileAreas() * sizeof(usersubrec), "udir") );
+    udir = static_cast<usersubrec *>( BbsAllocWithComment(GetSession()->GetMaxNumberFileAreas() * sizeof(usersubrec), "udir") );
 	WWIV_ASSERT(udir != NULL);
-    sess->m_DirectoryDateCache = static_cast<UINT32 *>( BbsAllocWithComment(sess->GetMaxNumberFileAreas() * sizeof(long), "sess->m_DirectoryDateCache") );
-	WWIV_ASSERT(sess->m_DirectoryDateCache != NULL);
+    GetSession()->m_DirectoryDateCache = static_cast<UINT32 *>( BbsAllocWithComment(GetSession()->GetMaxNumberFileAreas() * sizeof(long), "GetSession()->m_DirectoryDateCache") );
+	WWIV_ASSERT(GetSession()->m_DirectoryDateCache != NULL);
 
     uconfsub = static_cast<userconfrec *>( BbsAllocWithComment(MAX_CONFERENCES * sizeof(userconfrec), "uconfsub") );
 	WWIV_ASSERT(uconfsub != NULL);
@@ -1510,8 +1510,8 @@ void WBbsApp::InitializeBBS()
     qsc = static_cast<unsigned long *>( BbsAllocWithComment(syscfg.qscn_len, "quickscan") );
 	WWIV_ASSERT(qsc != NULL);
     qsc_n = qsc + 1;
-    qsc_q = qsc_n + (sess->GetMaxNumberFileAreas() + 31) / 32;
-    qsc_p = qsc_q + (sess->GetMaxNumberMessageAreas() + 31) / 32;
+    qsc_q = qsc_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
+    qsc_p = qsc_q + (GetSession()->GetMaxNumberMessageAreas() + 31) / 32;
 
     ss = getenv("WWIV_INSTANCE");
     strcpy( m_szNetworkExtension, ".NET" );

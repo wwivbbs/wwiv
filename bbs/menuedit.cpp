@@ -35,7 +35,7 @@ void EditMenus()
 
 
 	ClearScreen();
-	sess->bout << "|#2WWIV Menu Editor|#0\r\n";
+	GetSession()->bout << "|#2WWIV Menu Editor|#0\r\n";
 
 	if (!GetMenuDir(szDirectoryName))
 	{
@@ -53,10 +53,10 @@ void EditMenus()
 	WFile fileEditMenu( szFile );
 	if (!WFile::Exists(szFile))
 	{
-		sess->bout << "Creating menu...\r\n";
+		GetSession()->bout << "Creating menu...\r\n";
 		if ( !fileEditMenu.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite ) )
 		{
-			sess->bout << "Unable to create menu.\r\n";
+			GetSession()->bout << "Unable to create menu.\r\n";
 			return;
 		}
 		memset(&header, 0, sizeof(MenuHeader));
@@ -152,7 +152,7 @@ void EditMenus()
 				OpenMenuDescriptions();
 				GetMenuDescription(szDirectoryName, szDesc);
 
-				sess->bout << "|10New desc     : ";
+				GetSession()->bout << "|10New desc     : ";
 				ansic( 0 );
 				inputl(szDesc, 60);
 				if (szDesc[0])
@@ -162,7 +162,7 @@ void EditMenus()
 				CloseMenuDescriptions();
 				break;
 			case '1':
-				sess->bout << "Is menu deleted? (N) ";
+				GetSession()->bout << "Is menu deleted? (N) ";
 				if (yesno())
 				{
 					((MenuHeader *) (&Menu))->nFlags |= MENU_FLAG_DELETED;
@@ -173,7 +173,7 @@ void EditMenus()
 				}
 				break;
 			case '2':
-				sess->bout << "Is menu a main menu? (Y) ";
+				GetSession()->bout << "Is menu a main menu? (Y) ";
 				if (noyes())
 				{
 					((MenuHeader *) (&Menu))->nFlags |= MENU_FLAG_MAINMENU;
@@ -212,19 +212,19 @@ void EditMenus()
 				}
 				break;
 			case 'E':
-				sess->bout << "Pulldown menu title : ";
+				GetSession()->bout << "Pulldown menu title : ";
 				inputl(((MenuHeader *) (&Menu))->szMenuTitle, 20);
 				break;
 			case 'F':
-				sess->bout << "Command to execute : ";
+				GetSession()->bout << "Command to execute : ";
 				inputl(((MenuHeader *) (&Menu))->szScript, 100);
 				break;
 			case 'G':
-				sess->bout << "Script for when menu ends : ";
+				GetSession()->bout << "Script for when menu ends : ";
 				inputl(((MenuHeader *) (&Menu))->szExitScript, 100);
 				break;
 			case 'H':
-				sess->bout << "Min SL : ";
+				GetSession()->bout << "Min SL : ";
 				input(szTemp1, 3);
 				if (szTemp1[0])
 				{
@@ -232,7 +232,7 @@ void EditMenus()
 				}
 				break;
 			case 'I':
-				sess->bout << "Min DSL : ";
+				GetSession()->bout << "Min DSL : ";
 				input(szTemp1, 3);
 				if (szTemp1[0])
 				{
@@ -240,7 +240,7 @@ void EditMenus()
 				}
 				break;
 			case 'J':
-				sess->bout << "AR : ";
+				GetSession()->bout << "AR : ";
 				input(szTemp1, 5);
 				if (szTemp1[0])
 				{
@@ -248,7 +248,7 @@ void EditMenus()
 				}
 				break;
 			case 'K':
-				sess->bout << "DAR : ";
+				GetSession()->bout << "DAR : ";
 				input(szTemp1, 5);
 				if (szTemp1[0])
 				{
@@ -256,7 +256,7 @@ void EditMenus()
 				}
 				break;
 			case 'L':
-				sess->bout << "Restrictions : ";
+				GetSession()->bout << "Restrictions : ";
 				input(szTemp1, 5);
 				if (szTemp1[0])
 				{
@@ -272,7 +272,7 @@ void EditMenus()
 			case 'O':
 				if (incom && ((MenuHeader *) (&Menu))->szPassWord[0])
 				{
-					sess->bout << "Current PW: ";
+					GetSession()->bout << "Current PW: ";
 					input(szPW, 20);
 					if ( !wwiv::stringUtils::IsEqualsIgnoreCase(szPW, ((MenuHeader *) (&Menu))->szPassWord ) )
 					{
@@ -280,7 +280,7 @@ void EditMenus()
 						break;
 					}
 				}
-				sess->bout << "   New PW : ";
+				GetSession()->bout << "   New PW : ";
 				input(((MenuHeader *) (&Menu))->szPassWord, 20);
 				break;
 			case 'P':
@@ -333,7 +333,7 @@ void EditMenus()
 				ReadMenuRec(fileEditMenu, &Menu, nCur);
 				break;
 			case '1':
-				sess->bout << "Is record deleted? (N) ";
+				GetSession()->bout << "Is record deleted? (N) ";
 				if (yesno())
 				{
 					Menu.nFlags |= MENU_FLAG_DELETED;
@@ -344,7 +344,7 @@ void EditMenus()
 				}
 				break;
 			case 'A':
-				sess->bout << "Key to cause execution : ";
+				GetSession()->bout << "Key to cause execution : ";
 				input(Menu.szKey, MENU_MAX_KEYS);
 				if (!(Menu.szSysopLog[0]))
 				{
@@ -352,7 +352,7 @@ void EditMenus()
 				}
 				break;
 			case 'B':
-				sess->bout << "Command to execute : ";
+				GetSession()->bout << "Command to execute : ";
 				inputl(Menu.szExecute, 100);
 				if (!(Menu.szMenuText[0]))
 				{
@@ -364,7 +364,7 @@ void EditMenus()
 				}
 				break;
 			case 'C':
-				sess->bout << "Menu Text : ";
+				GetSession()->bout << "Menu Text : ";
 				inputl(Menu.szMenuText, 40);
 				if (!(Menu.szPDText[0]))
 				{
@@ -372,23 +372,23 @@ void EditMenus()
 				}
 				break;
 			case 'D':
-				sess->bout << "Pulldown Menu Text : ";
+				GetSession()->bout << "Pulldown Menu Text : ";
 				inputl(Menu.szPDText, 40);
 				break;
 			case 'E':
-				sess->bout << "Help Text : ";
+				GetSession()->bout << "Help Text : ";
 				inputl(Menu.szHelp, 80);
 				break;
 			case 'F':
-				sess->bout << "Instance Message : ";
+				GetSession()->bout << "Instance Message : ";
 				inputl(Menu.szInstanceMessage, 80);
 				break;
 			case 'G':
-				sess->bout << "Sysoplog Message : ";
+				GetSession()->bout << "Sysoplog Message : ";
 				inputl(Menu.szSysopLog, 50);
 				break;
 			case 'K':
-				sess->bout << "Min SL : ";
+				GetSession()->bout << "Min SL : ";
 				input(szTemp1, 3);
 				if (szTemp1[0])
 				{
@@ -396,7 +396,7 @@ void EditMenus()
 				}
 				break;
 			case 'L':
-				sess->bout << "Max SL : ";
+				GetSession()->bout << "Max SL : ";
 				input(szTemp1, 3);
 				if (szTemp1[0])
 				{
@@ -404,7 +404,7 @@ void EditMenus()
 				}
 				break;
 			case 'M':
-				sess->bout << "Min DSL : ";
+				GetSession()->bout << "Min DSL : ";
 				input(szTemp1, 3);
 				if (szTemp1[0])
 				{
@@ -412,7 +412,7 @@ void EditMenus()
 				}
 				break;
 			case 'N':
-				sess->bout << "Max DSL : ";
+				GetSession()->bout << "Max DSL : ";
 				input(szTemp1, 3);
 				if (szTemp1[0])
 				{
@@ -420,7 +420,7 @@ void EditMenus()
 				}
 				break;
 			case 'O':
-				sess->bout << "AR : ";
+				GetSession()->bout << "AR : ";
 				input(szTemp1, 5);
 				if (szTemp1[0])
 				{
@@ -428,7 +428,7 @@ void EditMenus()
 				}
 				break;
 			case 'P':
-				sess->bout << "DAR : ";
+				GetSession()->bout << "DAR : ";
 				input(szTemp1, 5);
 				if (szTemp1[0])
 				{
@@ -436,7 +436,7 @@ void EditMenus()
 				}
 				break;
 			case 'R':
-				sess->bout << "Restrictions : ";
+				GetSession()->bout << "Restrictions : ";
 				input(szTemp1, 5);
 				if (szTemp1[0])
 				{
@@ -452,7 +452,7 @@ void EditMenus()
 			case 'U':
 				if (incom && Menu.szPassWord[0])
 				{
-					sess->bout << "Current PW: ";
+					GetSession()->bout << "Current PW: ";
 					input(szPW, 20);
 					if ( !wwiv::stringUtils::IsEqualsIgnoreCase( szPW, Menu.szPassWord ) )
 					{
@@ -460,7 +460,7 @@ void EditMenus()
 						break;
 					}
 				}
-				sess->bout << "   New PW : ";
+				GetSession()->bout << "   New PW : ";
 				input(Menu.szPassWord, 20);
 				break;
 
@@ -472,7 +472,7 @@ void EditMenus()
 				}
 				break;
 			case 'W':
-				sess->bout << "Clear screen before command is run? (Y) ";
+				GetSession()->bout << "Clear screen before command is run? (Y) ";
 				if (noyes())
 				{
 					Menu.nPDFlags &= ~PDFLAGS_NOCLEAR;
@@ -482,7 +482,7 @@ void EditMenus()
 					Menu.nPDFlags |= PDFLAGS_NOCLEAR;
 				}
 
-				sess->bout << "Pause screen after command is run? (Y) ";
+				GetSession()->bout << "Pause screen after command is run? (Y) ";
 				if (noyes())
 				{
 					Menu.nPDFlags &= ~PDFLAGS_NOPAUSEAFTER;
@@ -492,7 +492,7 @@ void EditMenus()
 					Menu.nPDFlags |= PDFLAGS_NOPAUSEAFTER;
 				}
 
-				sess->bout << "Restore screen after command is run? (Y) ";
+				GetSession()->bout << "Restore screen after command is run? (Y) ";
 				if (noyes())
 				{
 					Menu.nPDFlags &= ~PDFLAGS_NORESTORE;
@@ -503,7 +503,7 @@ void EditMenus()
 				}
 				break;
 			case 'X':
-				sess->bout << "Filename for detailed help on item : ";
+				GetSession()->bout << "Filename for detailed help on item : ";
 				input( Menu.szExtendedHelp, 12 );
 				break;
 			}
@@ -526,12 +526,12 @@ void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *
 
 	sprintf( szFile, "%s%s%c%s.idx", MenuDir(szMenuDir), pszDirectoryName, WWIV_FILE_SEPERATOR_CHAR, pszMenuName );
 
-	sess->bout << "Indexing Menu...\r\n";
+	GetSession()->bout << "Indexing Menu...\r\n";
 
 	WFile fileIdx( szFile );
 	if ( !fileIdx.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate|WFile::modeReadWrite, WFile::shareDenyWrite, WFile::permReadWrite ) )
 	{
-		sess->bout << "Unable to reindex\r\n";
+		GetSession()->bout << "Unable to reindex\r\n";
 		pausescr();
 		return;
 	}
@@ -576,7 +576,7 @@ void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur)
 
 	/*
 	if (lock(iEditMenu, nCur * sizeof(MenuRec), sizeof(MenuRec)) != 0) {
-	sess->bout << "Unable to lock record for write\r\n";
+	GetSession()->bout << "Unable to lock record for write\r\n";
 	pausescr();
 	return;
 	}
@@ -606,7 +606,7 @@ bool GetMenuDir( char *pszBuffer )
 	while (!hangup)
 	{
 		nl();
-		sess->bout << "|#9Enter menuset to edit ?=List : |#0";
+		GetSession()->bout << "|#9Enter menuset to edit ?=List : |#0";
 		input(pszBuffer, 8);
 
 		if (pszBuffer[0] == '?')
@@ -622,7 +622,7 @@ bool GetMenuDir( char *pszBuffer )
 			sprintf(szPath, "%s%s", MenuDir(szMenuDir), pszBuffer);
 			if (chdir(szPath) != 0)
 			{
-				sess->bout << "The path " << szPath << wwiv::endl <<
+				GetSession()->bout << "The path " << szPath << wwiv::endl <<
 					          "does not exist, create it? (Y) : ";
 				if (noyes())
 				{
@@ -631,19 +631,19 @@ bool GetMenuDir( char *pszBuffer )
 					if (chdir(szPath) != 0)
 					{
 						GetApplication()->CdHome();
-						sess->bout << "Created\r\n";
+						GetSession()->bout << "Created\r\n";
 						return true;
 					}
 					else
 					{
 						GetApplication()->CdHome();
-						sess->bout << "Unable to create\r\n";
+						GetSession()->bout << "Unable to create\r\n";
 						return true;
 					}
 				}
 				else
 				{
-					sess->bout << "Not created\r\n";
+					GetSession()->bout << "Not created\r\n";
 					return true;
 				}
 			}
@@ -667,7 +667,7 @@ bool GetMenuMenu( const char *pszDirectoryName, char *pszBuffer )
 	while (!hangup)
 	{
 		nl();
-		sess->bout << "|#9Enter menu file to edit ?=List : |#0";
+		GetSession()->bout << "|#9Enter menu file to edit ?=List : |#0";
 		input(pszBuffer, 8);
 
 		if (pszBuffer[0] == '?')
@@ -684,7 +684,7 @@ bool GetMenuMenu( const char *pszDirectoryName, char *pszBuffer )
 				WWIV_FILE_SEPERATOR_CHAR, pszBuffer);
 			if (!WFile::Exists(szPath))
 			{
-				sess->bout << "File does not exist, create it? (yNq) : ";
+				GetSession()->bout << "File does not exist, create it? (yNq) : ";
 				x = ynq();
 
 				if (x == 'Q')
@@ -715,35 +715,35 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount)
 {
 	ClearScreen();
 
-	sess->bout << "|02(|#9" << nCur << "|02/|#9" << nAmount << "|02)" << wwiv::endl;
+	GetSession()->bout << "|02(|#9" << nCur << "|02/|#9" << nAmount << "|02)" << wwiv::endl;
 
 	if (nCur > 0 && nCur <= nAmount)
     {
-		sess->bout << "|#91) Deleted        : |#2" << ( Menu->nFlags & MENU_FLAG_DELETED ? "Yes" : "No " ) << wwiv::endl;
-		sess->bout << "|#9A) Key            : |#2" << Menu->szKey << wwiv::endl;
-		sess->bout << "|#9B) Command        : |#2" << Menu->szExecute << wwiv::endl;
-		sess->bout << "|#9C) Menu Text      : |#2" << Menu->szMenuText << wwiv::endl;
-		sess->bout << "|#9D) PD Menu Text   : |#2" << Menu->szPDText << wwiv::endl;
-		sess->bout << "|#9E) Help Text      : |#2" << Menu->szHelp << wwiv::endl;
-		sess->bout << "|#9F) Inst Msg       : |#2" << Menu->szInstanceMessage << wwiv::endl;
-		sess->bout << "|#9G) Sysop Log      : |#2" << Menu->szSysopLog << wwiv::endl;
-		sess->bout << "|#9K) Min SL         : |#2" << Menu->nMinSL << wwiv::endl;
-		sess->bout << "|#9L) Max SL         : |#2" << Menu->iMaxSL << wwiv::endl;
-		sess->bout << "|#9M) Min DSL        : |#2" << Menu->nMinDSL << wwiv::endl;
-		sess->bout << "|#9N) Max DSL        : |#2" << Menu->iMaxDSL << wwiv::endl;
-		sess->bout << "|#9O) AR             : |#2" << Menu->uAR << wwiv::endl;
-		sess->bout << "|#9P) DAR            : |#2" << Menu->uDAR << wwiv::endl;
-		sess->bout << "|#9R) Restrictions   : |#2" << Menu->uRestrict << wwiv::endl;
-		sess->bout << "|#9S) Sysop          : |#2" << ( Menu->nSysop ? "Yes" : "No" )  << wwiv::endl;
-		sess->bout << "|#9T) Co-Sysop       : |#2" << ( Menu->nCoSysop ? "Yes" : "No" ) << wwiv::endl;
-		sess->bout << "|#9U) Password       : |#2" << ( incom ? "<Remote>" : Menu->szPassWord ) << wwiv::endl;
-		sess->bout << "|#9V) Hide text from : |#2" << ( Menu->nHide == MENU_HIDE_NONE ? "None" : Menu->nHide == MENU_HIDE_PULLDOWN ? "Pulldown Menus" : Menu->nHide == MENU_HIDE_REGULAR ? "Regular Menus" : Menu->nHide == MENU_HIDE_BOTH ? "Both Menus" : "Out of Range" ) << wwiv::endl;
+		GetSession()->bout << "|#91) Deleted        : |#2" << ( Menu->nFlags & MENU_FLAG_DELETED ? "Yes" : "No " ) << wwiv::endl;
+		GetSession()->bout << "|#9A) Key            : |#2" << Menu->szKey << wwiv::endl;
+		GetSession()->bout << "|#9B) Command        : |#2" << Menu->szExecute << wwiv::endl;
+		GetSession()->bout << "|#9C) Menu Text      : |#2" << Menu->szMenuText << wwiv::endl;
+		GetSession()->bout << "|#9D) PD Menu Text   : |#2" << Menu->szPDText << wwiv::endl;
+		GetSession()->bout << "|#9E) Help Text      : |#2" << Menu->szHelp << wwiv::endl;
+		GetSession()->bout << "|#9F) Inst Msg       : |#2" << Menu->szInstanceMessage << wwiv::endl;
+		GetSession()->bout << "|#9G) Sysop Log      : |#2" << Menu->szSysopLog << wwiv::endl;
+		GetSession()->bout << "|#9K) Min SL         : |#2" << Menu->nMinSL << wwiv::endl;
+		GetSession()->bout << "|#9L) Max SL         : |#2" << Menu->iMaxSL << wwiv::endl;
+		GetSession()->bout << "|#9M) Min DSL        : |#2" << Menu->nMinDSL << wwiv::endl;
+		GetSession()->bout << "|#9N) Max DSL        : |#2" << Menu->iMaxDSL << wwiv::endl;
+		GetSession()->bout << "|#9O) AR             : |#2" << Menu->uAR << wwiv::endl;
+		GetSession()->bout << "|#9P) DAR            : |#2" << Menu->uDAR << wwiv::endl;
+		GetSession()->bout << "|#9R) Restrictions   : |#2" << Menu->uRestrict << wwiv::endl;
+		GetSession()->bout << "|#9S) Sysop          : |#2" << ( Menu->nSysop ? "Yes" : "No" )  << wwiv::endl;
+		GetSession()->bout << "|#9T) Co-Sysop       : |#2" << ( Menu->nCoSysop ? "Yes" : "No" ) << wwiv::endl;
+		GetSession()->bout << "|#9U) Password       : |#2" << ( incom ? "<Remote>" : Menu->szPassWord ) << wwiv::endl;
+		GetSession()->bout << "|#9V) Hide text from : |#2" << ( Menu->nHide == MENU_HIDE_NONE ? "None" : Menu->nHide == MENU_HIDE_PULLDOWN ? "Pulldown Menus" : Menu->nHide == MENU_HIDE_REGULAR ? "Regular Menus" : Menu->nHide == MENU_HIDE_BOTH ? "Both Menus" : "Out of Range" ) << wwiv::endl;
 		bprintf( "|#9W) Pulldown flags : |10%-20.20s |#1%-18.18s |12%-20.20s", Menu->nPDFlags & PDFLAGS_NOCLEAR ? "No Clear before run" : "Clear before run", Menu->nPDFlags & PDFLAGS_NOPAUSEAFTER ? "No Pause after run" : "Pause after run", Menu->nPDFlags & PDFLAGS_NORESTORE ? "No Restore after run" : "Restore after run" );
-		sess->bout << "|#9X) Extended Help  : |#2%s" << Menu->szExtendedHelp << wwiv::endl;
+		GetSession()->bout << "|#9X) Extended Help  : |#2%s" << Menu->szExtendedHelp << wwiv::endl;
 
 	}
 	nl( 2 );
-	sess->bout << "|041|#0,|04A|#0-|04F|#0,|04K|#0-|04U|#0, |04Z|#0=Add new record, |04[|#0=Prev, |04]|#0=Next, |04Q|#0=Quit : ";
+	GetSession()->bout << "|041|#0,|04A|#0-|04F|#0,|04K|#0-|04U|#0, |04Z|#0=Add new record, |04[|#0=Prev, |04]|#0=Next, |04Q|#0=Quit : ";
 }
 
 
@@ -755,35 +755,35 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
 
 	OpenMenuDescriptions();
 
-	sess->bout << "(" << nCur << "/" << nAmount << ")" << wwiv::endl;
+	GetSession()->bout << "(" << nCur << "/" << nAmount << ")" << wwiv::endl;
 
 	if ( nCur == 0 )
     {
-		sess->bout << "   Menu Version         : " <<
+		GetSession()->bout << "   Menu Version         : " <<
 			          static_cast<int>( HIBYTE(pHeader->nVersion ) ) <<
 					  static_cast<int>( LOBYTE( pHeader->nVersion ) ) << wwiv::endl;
-		sess->bout << "0) Menu Description     : " << GetMenuDescription( pszDirectoryName, szDesc ) << wwiv::endl;
-		sess->bout << "1) Deleted              : " << ( ( pHeader->nFlags & MENU_FLAG_DELETED ) ? "Yes" : "No" ) << wwiv::endl;
-		sess->bout << "2) Main Menu            : " << ( ( pHeader->nFlags & MENU_FLAG_MAINMENU ) ? "Yes" : "No" ) << wwiv::endl;;
-		sess->bout << "A) What do Numbers do   : " << ( pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" : pHeader->nNumbers == MENU_NUMFLAG_SUBNUMBER ? "Set sub number" : pHeader->nNumbers == MENU_NUMFLAG_DIRNUMBER ? "Set dir number" : "Out of range" ) << wwiv::endl;
-		sess->bout << "B) What type of logging : " << ( pHeader->nLogging == MENU_LOGTYPE_KEY ? "Key entered" : pHeader->nLogging == MENU_LOGTYPE_NONE ? "No logging" : pHeader->nLogging == MENU_LOGTYPE_COMMAND ? "Command being executeed" : pHeader->nLogging == MENU_LOGTYPE_DESC ? "Desc of Command" : "Out of range" ) << wwiv::endl;
-		sess->bout << "C) Force help to be on  : " << ( pHeader->nForceHelp == MENU_HELP_DONTFORCE ? "Not forced" : pHeader->nForceHelp == MENU_HELP_FORCE ? "Forced On" : pHeader->nForceHelp == MENU_HELP_ONENTRANCE ? "Forced on entrance" : "Out of range" ) << wwiv::endl;
-		sess->bout << "D) Allowed menu type    : " << ( pHeader->nAllowedMenu == MENU_ALLOWED_BOTH ? "Regular/Pulldown" : pHeader->nAllowedMenu == MENU_ALLOWED_PULLDOWN ? "Pulldown" : pHeader->nAllowedMenu == MENU_ALLOWED_REGULAR ? "Regular" : "Out of range" ) << wwiv::endl;
-		sess->bout << "E) Pulldown menu title  : " << pHeader->szMenuTitle << wwiv::endl;
-		sess->bout << "F) Enter Script         : " << pHeader->szScript << wwiv::endl;
-		sess->bout << "G) Exit Script          : " << pHeader->szExitScript << wwiv::endl;
-		sess->bout << "H) Min SL               : " << static_cast<unsigned int>( pHeader->nMinSL ) << wwiv::endl;
-		sess->bout << "I) Min DSL              : " << static_cast<unsigned int>( pHeader->nMinDSL ) << wwiv::endl;
-		sess->bout << "J) AR                   : " << static_cast<unsigned int>( pHeader->uAR ) << wwiv::endl;
-		sess->bout << "K) DAR                  : " << static_cast<unsigned int>( pHeader->uDAR ) << wwiv::endl;
-		sess->bout << "L) Restrictions         : " << static_cast<unsigned int>( pHeader->uRestrict ) << wwiv::endl;
-		sess->bout << "M) Sysop                : " << ( pHeader->nSysop ? "Yes" : "No" ) << wwiv::endl;
-		sess->bout << "N) Co-Sysop             : " << ( pHeader->nCoSysop ? "Yes" : "No" ) << wwiv::endl;
-		sess->bout << "O) Password             : " << ( incom ? "<Remote>" : pHeader->szPassWord ) << wwiv::endl;
-		sess->bout << "P) Change pulldown colors" << wwiv::endl;
+		GetSession()->bout << "0) Menu Description     : " << GetMenuDescription( pszDirectoryName, szDesc ) << wwiv::endl;
+		GetSession()->bout << "1) Deleted              : " << ( ( pHeader->nFlags & MENU_FLAG_DELETED ) ? "Yes" : "No" ) << wwiv::endl;
+		GetSession()->bout << "2) Main Menu            : " << ( ( pHeader->nFlags & MENU_FLAG_MAINMENU ) ? "Yes" : "No" ) << wwiv::endl;;
+		GetSession()->bout << "A) What do Numbers do   : " << ( pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" : pHeader->nNumbers == MENU_NUMFLAG_SUBNUMBER ? "Set sub number" : pHeader->nNumbers == MENU_NUMFLAG_DIRNUMBER ? "Set dir number" : "Out of range" ) << wwiv::endl;
+		GetSession()->bout << "B) What type of logging : " << ( pHeader->nLogging == MENU_LOGTYPE_KEY ? "Key entered" : pHeader->nLogging == MENU_LOGTYPE_NONE ? "No logging" : pHeader->nLogging == MENU_LOGTYPE_COMMAND ? "Command being executeed" : pHeader->nLogging == MENU_LOGTYPE_DESC ? "Desc of Command" : "Out of range" ) << wwiv::endl;
+		GetSession()->bout << "C) Force help to be on  : " << ( pHeader->nForceHelp == MENU_HELP_DONTFORCE ? "Not forced" : pHeader->nForceHelp == MENU_HELP_FORCE ? "Forced On" : pHeader->nForceHelp == MENU_HELP_ONENTRANCE ? "Forced on entrance" : "Out of range" ) << wwiv::endl;
+		GetSession()->bout << "D) Allowed menu type    : " << ( pHeader->nAllowedMenu == MENU_ALLOWED_BOTH ? "Regular/Pulldown" : pHeader->nAllowedMenu == MENU_ALLOWED_PULLDOWN ? "Pulldown" : pHeader->nAllowedMenu == MENU_ALLOWED_REGULAR ? "Regular" : "Out of range" ) << wwiv::endl;
+		GetSession()->bout << "E) Pulldown menu title  : " << pHeader->szMenuTitle << wwiv::endl;
+		GetSession()->bout << "F) Enter Script         : " << pHeader->szScript << wwiv::endl;
+		GetSession()->bout << "G) Exit Script          : " << pHeader->szExitScript << wwiv::endl;
+		GetSession()->bout << "H) Min SL               : " << static_cast<unsigned int>( pHeader->nMinSL ) << wwiv::endl;
+		GetSession()->bout << "I) Min DSL              : " << static_cast<unsigned int>( pHeader->nMinDSL ) << wwiv::endl;
+		GetSession()->bout << "J) AR                   : " << static_cast<unsigned int>( pHeader->uAR ) << wwiv::endl;
+		GetSession()->bout << "K) DAR                  : " << static_cast<unsigned int>( pHeader->uDAR ) << wwiv::endl;
+		GetSession()->bout << "L) Restrictions         : " << static_cast<unsigned int>( pHeader->uRestrict ) << wwiv::endl;
+		GetSession()->bout << "M) Sysop                : " << ( pHeader->nSysop ? "Yes" : "No" ) << wwiv::endl;
+		GetSession()->bout << "N) Co-Sysop             : " << ( pHeader->nCoSysop ? "Yes" : "No" ) << wwiv::endl;
+		GetSession()->bout << "O) Password             : " << ( incom ? "<Remote>" : pHeader->szPassWord ) << wwiv::endl;
+		GetSession()->bout << "P) Change pulldown colors" << wwiv::endl;
 	}
 	nl( 2 );
-	sess->bout << "0-2, A-O, Z=Add new Record, [=Prev, ]=Next, Q=Quit : ";
+	GetSession()->bout << "0-2, A-O, Z=Add new Record, [=Prev, ]=Next, Q=Quit : ";
 
 	CloseMenuDescriptions();
 }
@@ -804,49 +804,49 @@ void EditPulldownColors(MenuHeader * pMenuHeader)
 		{
 			setc( pMenuHeader->nTitleColor );
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nTitleColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nTitleColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "B) Main border color");
 		if (pMenuHeader->nMainBorderColor)
 		{
 			setc(pMenuHeader->nMainBorderColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nMainBorderColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nMainBorderColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "C) Main box color");
 		if (pMenuHeader->nMainBoxColor)
 		{
 			setc(pMenuHeader->nMainBoxColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nMainBoxColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nMainBoxColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "D) Main text color");
 		if (pMenuHeader->nMainTextColor)
 		{
 			setc(pMenuHeader->nMainTextColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nMainTextColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nMainTextColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "E) Main text highlight color");
 		if (pMenuHeader->nMainTextHLColor)
 		{
 			setc(pMenuHeader->nMainTextHLColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nMainTextHLColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nMainTextHLColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "F) Main selected color");
 		if (pMenuHeader->nMainSelectedColor)
 		{
 			setc(pMenuHeader->nMainSelectedColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nMainSelectedColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nMainSelectedColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "G) Main selected hightlight color");
 		if (pMenuHeader->nMainSelectedHLColor)
 		{
 			setc(pMenuHeader->nMainSelectedHLColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nMainSelectedHLColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nMainSelectedHLColor ) << wwiv::endl;
 		ansic( 0 );
 
 		bprintf("%-35.35s", "K) Item border color");
@@ -854,53 +854,53 @@ void EditPulldownColors(MenuHeader * pMenuHeader)
 		{
 			setc(pMenuHeader->nItemBorderColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nItemBorderColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nItemBorderColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "L) Item box color");
 		if (pMenuHeader->nItemBoxColor)
 		{
 			setc(pMenuHeader->nItemBoxColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nItemBoxColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nItemBoxColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "M) Item text color");
 		if (pMenuHeader->nItemTextColor)
 		{
 			setc(pMenuHeader->nItemTextColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nItemTextColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nItemTextColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "N) Item text highlight color");
 		if (pMenuHeader->nItemTextHLColor)
 		{
 			setc(pMenuHeader->nItemTextHLColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nItemTextHLColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nItemTextHLColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "O) Item selected color");
 		if (pMenuHeader->nItemSelectedColor)
 		{
 			setc(pMenuHeader->nItemSelectedColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nItemSelectedColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nItemSelectedColor ) << wwiv::endl;
 		ansic( 0 );
 		bprintf("%-35.35s", "P) Item selected hightlight color");
 		if (pMenuHeader->nItemSelectedHLColor)
 		{
 			setc(pMenuHeader->nItemSelectedHLColor);
 		}
-		sess->bout << static_cast<int>( pMenuHeader->nItemSelectedHLColor ) << wwiv::endl;
+		GetSession()->bout << static_cast<int>( pMenuHeader->nItemSelectedHLColor ) << wwiv::endl;
 		ansic( 0 );
 
 		nl( 2 );
-		sess->bout << "A-G,K-P, Q=Quit : ";
+		GetSession()->bout << "A-G,K-P, Q=Quit : ";
 		char chKey = onek("QABCDEFGKLMNOP");
 
 		if (chKey != 'Q')
 		{
 			ListAllColors();
 			nl();
-			sess->bout << "Select a color : ";
+			GetSession()->bout << "Select a color : ";
 		}
 		switch (chKey)
 		{
@@ -1017,8 +1017,8 @@ void ListMenuDirs()
 	OpenMenuDescriptions();
 
 	nl();
-	sess->bout << "|#7Available Menus Sets\r\n";
-	sess->bout << "|10============================\r\n";
+	GetSession()->bout << "|#7Available Menus Sets\r\n";
+	GetSession()->bout << "|10============================\r\n";
 
 	bFound = fnd.open(szPath, 0);
 	while (bFound && !hangup)
@@ -1051,8 +1051,8 @@ void ListMenuMenus( const char *pszDirectoryName )
 		WWIV_FILE_SEPERATOR_CHAR);
 
 	nl();
-	sess->bout << "|#7Available Menus\r\n";
-	sess->bout << "|10===============|06\r\n";
+	GetSession()->bout << "|#7Available Menus\r\n";
+	GetSession()->bout << "|10===============|06\r\n";
 
 	bFound = fnd.open(szPath, 0);
 	while (bFound && !hangup)
@@ -1061,7 +1061,7 @@ void ListMenuMenus( const char *pszDirectoryName )
 		if (fnd.IsFile())
 		{
 			ss = strtok(szFileName, ".");
-			sess->bout << ss << wwiv::endl;
+			GetSession()->bout << ss << wwiv::endl;
 		}
 		bFound = fnd.next();
 	}

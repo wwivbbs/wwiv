@@ -39,17 +39,17 @@ void multimail(int *pnUserNumber, int numu)
 	if (freek1(syscfg.msgsdir) < 10.0)
 	{
 		nl();
-		sess->bout << "Sorry, not enough disk space left.\r\n\n";
+		GetSession()->bout << "Sorry, not enough disk space left.\r\n\n";
 		return;
 	}
 	nl();
 
 	int i = 0;
-	if (getslrec( sess->GetEffectiveSl() ).ability & ability_email_anony)
+	if (getslrec( GetSession()->GetEffectiveSl() ).ability & ability_email_anony)
 	{
 		i = anony_enable_anony;
 	}
-	sess->bout << "|#5Show all recipients in mail? ";
+	GetSession()->bout << "|#5Show all recipients in mail? ";
 	bool show_all = yesno();
 	int j = 0;
 	strcpy(s1, "\003""6CC: \003""1");
@@ -65,7 +65,7 @@ void multimail(int *pnUserNumber, int numu)
 	}
 	strcpy( m.title, t );
 
-	sess->bout <<  "Mail sent to:\r\n";
+	GetSession()->bout <<  "Mail sent to:\r\n";
 	sysoplog( "Multi-Mail to:" );
 
 	lineadd( &m.msg, "\003""7----", "email" );
@@ -81,13 +81,13 @@ void multimail(int *pnUserNumber, int numu)
 			( ( user.GetSl() != 255) && ( user.GetNumMailWaiting() > syscfg.maxwaiting ) ) ||
 			user.GetNumMailWaiting() > 200 )
 		{
-            sess->bout << user.GetUserNameAndNumber( pnUserNumber[cv] ) << " mailbox full, not sent.";
+            GetSession()->bout << user.GetUserNameAndNumber( pnUserNumber[cv] ) << " mailbox full, not sent.";
 			pnUserNumber[cv] = -1;
 			continue;
 		}
         if ( user.isUserDeleted() )
 		{
-			sess->bout << "User deleted, not sent.\r\n";
+			GetSession()->bout << "User deleted, not sent.\r\n";
 			pnUserNumber[cv] = -1;
 			continue;
 		}
@@ -103,19 +103,19 @@ void multimail(int *pnUserNumber, int numu)
 		if (pnUserNumber[cv] == 1)
 		{
 			++status.fbacktoday;
-            sess->thisuser.SetNumFeedbackSentToday( sess->thisuser.GetNumFeedbackSentToday() + 1 );
-            sess->thisuser.SetNumFeedbackSent( sess->thisuser.GetNumFeedbackSent() + 1 );
+            GetSession()->thisuser.SetNumFeedbackSentToday( GetSession()->thisuser.GetNumFeedbackSentToday() + 1 );
+            GetSession()->thisuser.SetNumFeedbackSent( GetSession()->thisuser.GetNumFeedbackSent() + 1 );
 			++fsenttoday;
 		}
 		else
 		{
 			++status.emailtoday;
-            sess->thisuser.SetNumEmailSent( sess->thisuser.GetNumEmailSent() + 1 );
-            sess->thisuser.SetNumEmailSentToday( sess->thisuser.GetNumEmailSentToday() + 1 );
+            GetSession()->thisuser.SetNumEmailSent( GetSession()->thisuser.GetNumEmailSent() + 1 );
+            GetSession()->thisuser.SetNumEmailSentToday( GetSession()->thisuser.GetNumEmailSentToday() + 1 );
 		}
 		GetApplication()->GetStatusManager()->Write();
 		sysoplog(s);
-		sess->bout << s;
+		GetSession()->bout << s;
 		nl();
 		if (show_all)
 		{
@@ -143,7 +143,7 @@ void multimail(int *pnUserNumber, int numu)
 
 	m.anony = static_cast< unsigned char >( i );
 	m.fromsys = 0;
-	m.fromuser = static_cast<unsigned short>( sess->usernum );
+	m.fromuser = static_cast<unsigned short>( GetSession()->usernum );
 	m.tosys = 0;
 	m.touser = 0;
 	m.status = status_multimail;
@@ -167,7 +167,7 @@ void multimail(int *pnUserNumber, int numu)
 			i1 = pFileEmail->Read( &m1, sizeof( mailrec ) );
 			if (i1 == -1)
 			{
-				sess->bout << "|#6DIDN'T READ WRITE!\r\n";
+				GetSession()->bout << "|#6DIDN'T READ WRITE!\r\n";
 			}
 		}
 		if ((m1.tosys) || (m1.touser))
@@ -224,7 +224,7 @@ int oneuser()
 	}
 	else
 	{
-		sess->bout << "|#2>";
+		GetSession()->bout << "|#2>";
 		input(s, 40);
 	}
 	nUserNumber = finduser1(s);
@@ -239,25 +239,25 @@ int oneuser()
 	if (nUserNumber <= 0)
 	{
 		nl();
-		sess->bout << "Unknown user.\r\n\n";
+		GetSession()->bout << "Unknown user.\r\n\n";
 		return 0;
 	}
 	nSystemNumber = 0;
 	if (ForwardMessage(&nUserNumber, &nSystemNumber))
 	{
 		nl();
-		sess->bout << "Forwarded.\r\n\n";
+		GetSession()->bout << "Forwarded.\r\n\n";
 		if (nSystemNumber)
 		{
-			sess->bout << "Forwarded to another system.\r\n";
-			sess->bout << "Can't send multi-mail to another system.\r\n\n";
+			GetSession()->bout << "Forwarded to another system.\r\n";
+			GetSession()->bout << "Can't send multi-mail to another system.\r\n\n";
 			return 0;
 		}
 	}
 	if (nUserNumber == 0)
 	{
 		nl();
-		sess->bout << "Unknown user.\r\n\n";
+		GetSession()->bout << "Unknown user.\r\n\n";
 		return 0;
 	}
     GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
@@ -266,16 +266,16 @@ int oneuser()
         ( user.GetNumMailWaiting() > 200))
 	{
 		nl();
-		sess->bout << "Mailbox full.\r\n\n";
+		GetSession()->bout << "Mailbox full.\r\n\n";
 		return 0;
 	}
     if ( user.isUserDeleted() )
 	{
 		nl();
-		sess->bout << "Deleted user.\r\n\n";
+		GetSession()->bout << "Deleted user.\r\n\n";
 		return 0;
 	}
-	sess->bout << "     -> " << user.GetUserNameAndNumber( nUserNumber ) << wwiv::endl;
+	GetSession()->bout << "     -> " << user.GetUserNameAndNumber( nUserNumber ) << wwiv::endl;
 	return nUserNumber;
 }
 
@@ -305,7 +305,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup)
 					if (pnUserNumber[i1] == i)
 					{
 						nl();
-						sess->bout << "Already in list, not added.\r\n\n";
+						GetSession()->bout << "Already in list, not added.\r\n\n";
 						i = 0;
 					}
 					if (i)
@@ -319,7 +319,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup)
 	if (*numu == maxu)
 	{
 		nl();
-		sess->bout << "List full.\r\n\n";
+		GetSession()->bout << "List full.\r\n\n";
 	}
 }
 
@@ -339,18 +339,18 @@ void slash_e()
 	if (freek1(syscfg.msgsdir) < 10.0)
 	{
 		nl();
-		sess->bout << "Sorry, not enough disk space left.\r\n\n";
+		GetSession()->bout << "Sorry, not enough disk space left.\r\n\n";
 		return;
 	}
-    if (((fsenttoday >= 5) || (sess->thisuser.GetNumFeedbackSentToday() >= 10) ||
-		(sess->thisuser.GetNumEmailSentToday() >= getslrec( sess->GetEffectiveSl() ).emails)) && (!cs()))
+    if (((fsenttoday >= 5) || (GetSession()->thisuser.GetNumFeedbackSentToday() >= 10) ||
+		(GetSession()->thisuser.GetNumEmailSentToday() >= getslrec( GetSession()->GetEffectiveSl() ).emails)) && (!cs()))
 	{
-		sess->bout << "Too much mail sent today.\r\n\n";
+		GetSession()->bout << "Too much mail sent today.\r\n\n";
 		return;
 	}
-	if ( sess->thisuser.isRestrictionEmail() )
+	if ( GetSession()->thisuser.isRestrictionEmail() )
 	{
-		sess->bout << "You can't send mail.\r\n";
+		GetSession()->bout << "You can't send mail.\r\n";
 		return;
 	}
 	bool done = false;
@@ -358,7 +358,7 @@ void slash_e()
 	do
 	{
 		nl( 2 );
-		sess->bout << "|#2Multi-Mail: A,M,D,L,E,Q,? : ";
+		GetSession()->bout << "|#2Multi-Mail: A,M,D,L,E,Q,? : ";
 		ch = onek("QAMDEL?");
 		switch (ch)
 		{
@@ -370,7 +370,7 @@ void slash_e()
 			break;
 		case 'A':
 			nl();
-			sess->bout << "Enter names/numbers for users, one per line, max 20.\r\n\n";
+			GetSession()->bout << "Enter names/numbers for users, one per line, max 20.\r\n\n";
 			mml_s = NULL;
 			add_list(nUserNumber, &numu, MAX_LIST, so());
 			break;
@@ -381,11 +381,11 @@ void slash_e()
 				if (bFound)
 				{
 					nl();
-					sess->bout << "No mailing lists available.\r\n\n";
+					GetSession()->bout << "No mailing lists available.\r\n\n";
 					break;
 				}
 				nl();
-				sess->bout << "Available mailing lists:\r\n\n";
+				GetSession()->bout << "Available mailing lists:\r\n\n";
 				while (bFound)
 				{
 					strcpy(s, fnd.GetFileName());
@@ -394,21 +394,21 @@ void slash_e()
 					{
 						*sss = 0;
 					}
-					sess->bout << s;
+					GetSession()->bout << s;
 					nl();
 
 					bFound = fnd.next();
 				}
 
 				nl();
-				sess->bout << "|#2Which? ";
+				GetSession()->bout << "|#2Which? ";
 				input(s, 8);
 
 				WFile fileMailList( syscfg.datadir, s );
 				if ( !fileMailList.Open( WFile::modeBinary | WFile::modeReadOnly ) )
 				{
 					nl();
-					sess->bout << "Unknown mailing list.\r\n\n";
+					GetSession()->bout << "Unknown mailing list.\r\n\n";
 				}
 				else
 				{
@@ -432,7 +432,7 @@ void slash_e()
 			if (!numu)
 			{
 				nl();
-				sess->bout << "Need to specify some users first - use A or M\r\n\n";
+				GetSession()->bout << "Need to specify some users first - use A or M\r\n\n";
 			}
 			else
 			{
@@ -444,7 +444,7 @@ void slash_e()
 			if (numu)
 			{
 				nl();
-				sess->bout << "|#2Delete which? ";
+				GetSession()->bout << "|#2Delete which? ";
 				input(s, 2);
 				i = atoi(s);
 				if ((i > 0) && (i <= numu))
@@ -462,7 +462,7 @@ void slash_e()
 			{
                 WUser user;
                 GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber[i] );
-				sess->bout << i + 1 << ". " << user.GetUserNameAndNumber( nUserNumber[i] ) << wwiv::endl;
+				GetSession()->bout << i + 1 << ". " << user.GetUserNameAndNumber( nUserNumber[i] ) << wwiv::endl;
 			}
 			break;
 		}

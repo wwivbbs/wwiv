@@ -54,8 +54,8 @@ void WWIV_MakeLocalWindow(int x, int y, int xlen, int ylen)
         y = screenbottom + 1 - ylen;
     }
     
-    xx = app->localIO->WhereX();
-    yy = app->localIO->WhereY();
+    xx = GetApplication()->GetLocalIO()->WhereX();
+    yy = GetApplication()->GetLocalIO()->WhereY();
 
     unsigned char s[81];
     
@@ -66,12 +66,12 @@ void WWIV_MakeLocalWindow(int x, int y, int xlen, int ylen)
     s[0] = 218;
     s[xlen - 1] = 191;  // ¿
     s[xlen] = 0;
-    app->localIO->LocalGotoXY(x, y);
-    app->localIO->LocalFastPuts((char*) s);
+    GetApplication()->GetLocalIO()->LocalGotoXY(x, y);
+    GetApplication()->GetLocalIO()->LocalFastPuts((char*) s);
     s[0] = 192; // À
     s[xlen - 1] = 217;  // Ù
-    app->localIO->LocalGotoXY(x, y + ylen - 1);
-    app->localIO->LocalFastPuts((char*) s);
+    GetApplication()->GetLocalIO()->LocalGotoXY(x, y + ylen - 1);
+    GetApplication()->GetLocalIO()->LocalFastPuts((char*) s);
     for (i = 1; i < xlen - 1; i++)
     {
         s[i] = 32;
@@ -80,8 +80,8 @@ void WWIV_MakeLocalWindow(int x, int y, int xlen, int ylen)
     s[xlen - 1] = 179;  // ³
     for (i = 1; i < ylen - 1; i++) 
     {
-        app->localIO->LocalGotoXY(x, i + y);
-        app->localIO->LocalFastPuts((char*) s);
+        GetApplication()->GetLocalIO()->LocalGotoXY(x, i + y);
+        GetApplication()->GetLocalIO()->LocalFastPuts((char*) s);
     }
 
     //
@@ -98,7 +98,7 @@ void WWIV_MakeLocalWindow(int x, int y, int xlen, int ylen)
         set_attr_xy(x + xlen, y + 1 + i, 0x08);
     }
     
-    app->localIO->LocalGotoXY(xx, yy);
+    GetApplication()->GetLocalIO()->LocalGotoXY(xx, yy);
 
 
 }

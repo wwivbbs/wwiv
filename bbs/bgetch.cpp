@@ -125,7 +125,7 @@ char bgetch()
     if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
     {
         ch = GetApplication()->GetLocalIO()->getchd1();
-        sess->SetLastKeyLocal( true );
+        GetSession()->SetLastKeyLocal( true );
         if (!(g_flags & g_flag_allow_extended))
         {
             if (!ch)
@@ -140,7 +140,7 @@ char bgetch()
     else if (incom && bkbhitraw())
     {
         ch = bgetchraw();
-        sess->SetLastKeyLocal( false );
+        GetSession()->SetLastKeyLocal( false );
     }
 
     if (!(g_flags & g_flag_allow_extended))
@@ -170,7 +170,7 @@ void HandleControlKey( char *ch )
               if (okmacro && (!charbufferpointer))
               {
 				  int macroNum = MACRO_KEY_TABLE[(int)c];
-				  strcpy(charbuffer, &(sess->thisuser.GetMacro(macroNum)[0]));
+				  strcpy(charbuffer, &(GetSession()->thisuser.GetMacro(macroNum)[0]));
 				  c = charbuffer[0];
                   if (c)
 				  {
@@ -212,7 +212,7 @@ void HandleControlKey( char *ch )
               toggle_avail();
               break;
           case CY:
-              sess->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+              GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
               break;
         }
     }
@@ -234,11 +234,11 @@ void PrintTime()
 	//Remove the ending \n character.
 	currentTime.erase( currentTime.find_last_of( "\r\n" ) );
 
-	sess->bout << "|#2" << currentTime << wwiv::endl;
-    if ( sess->IsUserOnline() )
+	GetSession()->bout << "|#2" << currentTime << wwiv::endl;
+    if ( GetSession()->IsUserOnline() )
     {
-		sess->bout << "|#9Time on   = |#1" << ctim( timer() - timeon ) << wwiv::endl;
-		sess->bout << "|#9Time left = |#1" << ctim( nsl() ) << wwiv::endl;
+		GetSession()->bout << "|#9Time on   = |#1" << ctim( timer() - timeon ) << wwiv::endl;
+		GetSession()->bout << "|#9Time left = |#1" << ctim( nsl() ) << wwiv::endl;
     }
     nl();
 

@@ -37,34 +37,34 @@ void asv()
     int nAllowAnon = 0;
 
     nl();
-    sess->bout << "|#5Are you the SysOp of a BBS? ";
+    GetSession()->bout << "|#5Are you the SysOp of a BBS? ";
     if (yesno())
     {
         printasv(ASV_HLP, 1, false);
         nl();
-        sess->bout << "|#5Select |#7[|#21-4,Q|#7]|#0 : ";
+        GetSession()->bout << "|#5Select |#7[|#21-4,Q|#7]|#0 : ";
         ch = onek("Q1234");
         nl();
         switch (ch)
         {
         case '1':
-            sess->bout << "|#5Select a network you are in [Q=Quit].";
+            GetSession()->bout << "|#5Select a network you are in [Q=Quit].";
             nl( 2 );
-            for ( i = 0; i < sess->GetMaxNetworkNumber(); i++ )
+            for ( i = 0; i < GetSession()->GetMaxNetworkNumber(); i++ )
             {
                 if (net_networks[i].sysnum)
                 {
-                    sess->bout << " |#3" << i + 1 << "|#1.  |#1" << net_networks[i].name << wwiv::endl;
+                    GetSession()->bout << " |#3" << i + 1 << "|#1.  |#1" << net_networks[i].name << wwiv::endl;
                 }
             }
             nl();
-            sess->bout << "|#1:";
+            GetSession()->bout << "|#1:";
             input( s, 2, true );
             i = atoi(s);
-            if ( i < 1 || i > sess->GetMaxNetworkNumber() )
+            if ( i < 1 || i > GetSession()->GetMaxNetworkNumber() )
             {
                 nl();
-                sess->bout << "|12Aborted!";
+                GetSession()->bout << "|12Aborted!";
                 break;
             }
             set_net_num(i - 1);
@@ -72,34 +72,34 @@ void asv()
             do
             {
                 nl();
-                sess->bout << "|#5Enter your node number [Q=Quit].\r\n|#1: |#4@";
+                GetSession()->bout << "|#5Enter your node number [Q=Quit].\r\n|#1: |#4@";
                 input( snode, 5, true );
                 inode = atoi(snode);
                 csne = next_system(inode);
                 if ((!csne) && (inode > 0))
                 {
                     nl();
-                    sess->bout << "|#6Unknown System!\r\n";
+                    GetSession()->bout << "|#6Unknown System!\r\n";
                 }
             } while ((!csne) && (wwiv::UpperCase<char>(snode[0]) != 'Q'));
             if (wwiv::UpperCase<char>(snode[0] == 'Q'))
             {
                 nl();
-                sess->bout << "|12Aborted!";
+                GetSession()->bout << "|12Aborted!";
                 break;
             }
             strcpy(ph, csne->phone);
             strcpy(sysname, csne->name);
 
             ph1[0] = 0;
-            if ( sess->thisuser.GetDataPhoneNumber()[0] &&
-                 !wwiv::stringUtils::IsEquals( sess->thisuser.GetDataPhoneNumber(), "999-999-9999" ) )
+            if ( GetSession()->thisuser.GetDataPhoneNumber()[0] &&
+                 !wwiv::stringUtils::IsEquals( GetSession()->thisuser.GetDataPhoneNumber(), "999-999-9999" ) )
             {
                 nl();
-                sess->bout << "|#9Is |#2" << sess->thisuser.GetDataPhoneNumber() << "|#9 the number of your BBS? ";
+                GetSession()->bout << "|#9Is |#2" << GetSession()->thisuser.GetDataPhoneNumber() << "|#9 the number of your BBS? ";
                 if (yesno())
                 {
-                    strcpy( ph1, sess->thisuser.GetDataPhoneNumber() );
+                    strcpy( ph1, GetSession()->thisuser.GetDataPhoneNumber() );
                 }
                 nl();
             }
@@ -109,8 +109,8 @@ void asv()
                 i = 3;
                 do
                 {
-                    sess->bout << "|#5Enter your BBS phone number.\r\n";
-                    sess->bout << "|#3 ###-###-####\r\n|#1:";
+                    GetSession()->bout << "|#5Enter your BBS phone number.\r\n";
+                    GetSession()->bout << "|#3 ###-###-####\r\n|#1:";
                     mpl(12);
                     for (i2 = 0; i2 < 12; i2++)
                     {
@@ -118,7 +118,7 @@ void asv()
                         if ( i2 == 3 || i2 == 7 )
                         {
                             ph1[i2] = 45;
-                            sess->bout << "|#4-";
+                            GetSession()->bout << "|#4-";
                         }
                         else
                         {
@@ -151,7 +151,7 @@ void asv()
                     if (!ok)
                     {
                         nl();
-                        sess->bout << "|#6Improper Format!\r\n";
+                        GetSession()->bout << "|#6Improper Format!\r\n";
                     }
                 } while ( !ok && ( --i > 0 ) );
 
@@ -171,7 +171,7 @@ void asv()
                     if ( wwiv::stringUtils::IsEquals( s1, "SERVER" ) )
                     {
                         nl();
-						sess->bout << "|#5Is " << sysname << " a server in " << sess->GetNetworkName() << "? ";
+						GetSession()->bout << "|#5Is " << sysname << " a server in " << GetSession()->GetNetworkName() << "? ";
                         if ( noyes() )
                         {
                             sysoplog( "* Claims to run a network server." );
@@ -183,14 +183,14 @@ void asv()
                 else if ((*reg_num > 0) && (*reg_num <= 99999))
                 {
                     nl();
-                    sess->bout << "|#5Have you registered WWIV? ";
+                    GetSession()->bout << "|#5Have you registered WWIV? ";
                     if (noyes())
                     {
                         i = 2;
                         do
                         {
                             nl();
-                            sess->bout << "|#5Enter your registration number: ";
+                            GetSession()->bout << "|#5Enter your registration number: ";
                             input( s, 5, true );
                             reg_num1 = atol(s);
                             if (*reg_num == reg_num1)
@@ -201,7 +201,7 @@ void asv()
                             {
                                 reg = 0;
                                 nl();
-                                sess->bout << "|#6Incorrect!\r\n";
+                                GetSession()->bout << "|#6Incorrect!\r\n";
                             }
                         } while ((--i > 0) && !reg );
                     }
@@ -211,43 +211,43 @@ void asv()
                         break;
                     }
                 }
-                sprintf(s, "%s 1@%d (%s)", sess->GetNetworkName(), inode, sysname);
+                sprintf(s, "%s 1@%d (%s)", GetSession()->GetNetworkName(), inode, sysname);
                 s[40] = '\0';
-                sess->thisuser.SetNote( s );
-                sess->thisuser.SetName( s );
+                GetSession()->thisuser.SetNote( s );
+                GetSession()->thisuser.SetName( s );
                 properize(s);
-                ssm(1, 0, "%s validated as %s 1@%d on %s.", s, sess->GetNetworkName(), inode, fulldate());
-                sprintf(s1, "* Validated as %s 1@%d", sess->GetNetworkName(), inode);
+                ssm(1, 0, "%s validated as %s 1@%d on %s.", s, GetSession()->GetNetworkName(), inode, fulldate());
+                sprintf(s1, "* Validated as %s 1@%d", GetSession()->GetNetworkName(), inode);
                 sysoplog(s1);
                 sysoplog(s);
-                sess->thisuser.setStatusFlag( WUser::expert );
-                sess->thisuser.SetExempt( 0 );
-                sess->thisuser.SetForwardSystemNumber( inode );
-                sess->thisuser.SetHomeSystemNumber( inode );
-                sess->thisuser.SetForwardUserNumber( 1 );
-                sess->thisuser.SetHomeUserNumber( 1 );
-                sess->thisuser.SetForwardNetNumber( sess->GetNetworkNumber() );
-                sess->thisuser.SetHomeNetNumber( sess->GetNetworkNumber() );
+                GetSession()->thisuser.setStatusFlag( WUser::expert );
+                GetSession()->thisuser.SetExempt( 0 );
+                GetSession()->thisuser.SetForwardSystemNumber( inode );
+                GetSession()->thisuser.SetHomeSystemNumber( inode );
+                GetSession()->thisuser.SetForwardUserNumber( 1 );
+                GetSession()->thisuser.SetHomeUserNumber( 1 );
+                GetSession()->thisuser.SetForwardNetNumber( GetSession()->GetNetworkNumber() );
+                GetSession()->thisuser.SetHomeNetNumber( GetSession()->GetNetworkNumber() );
                 nl();
                 if (reg != 2)
                 {
                     if (reg)
                     {
-                        set_autoval(sess->advasv.reg_wwiv);
-                        sess->thisuser.SetWWIVRegNumber( *reg_num );
+                        set_autoval(GetSession()->advasv.reg_wwiv);
+                        GetSession()->thisuser.SetWWIVRegNumber( *reg_num );
                         valfile = 7;
                     }
                     else
                     {
-                        set_autoval(sess->advasv.nonreg_wwiv);
+                        set_autoval(GetSession()->advasv.nonreg_wwiv);
                         valfile = 8;
                     }
                 }
                 else
                 {
-                    set_autoval(sess->advasv.reg_wwiv);
+                    set_autoval(GetSession()->advasv.reg_wwiv);
                 }
-                sprintf( irt, "%s %s SysOp Auto Validation", syscfg.systemname, sess->GetNetworkName() );
+                sprintf( irt, "%s %s SysOp Auto Validation", syscfg.systemname, GetSession()->GetNetworkName() );
                 if ( strlen( irt ) > 60 )
                 {
                     irt[60] = '\0';
@@ -257,13 +257,13 @@ void asv()
                 {
                     LoadFileIntoWorkspace( s1, true );
                     msg.storage_type = 2;
-                    sess->SetNewMailWaiting( true );
+                    GetSession()->SetNewMailWaiting( true );
                     sprintf( net_email_name, "%s #1@%u", syscfg.sysopname, net_sysnum );
                     inmsg( &msg, irt, &nAllowAnon, false, "email", INMSG_NOFSED, snode, MSGED_FLAG_NONE, true );
-                    sendout_email( irt, &msg, 0, 1, inode, 0, 1, net_sysnum, 1, sess->GetNetworkNumber() );
+                    sendout_email( irt, &msg, 0, 1, inode, 0, 1, net_sysnum, 1, GetSession()->GetNetworkNumber() );
                 }
                 irt[0] = '\0';
-                sess->SetNewMailWaiting( false );
+                GetSession()->SetNewMailWaiting( false );
             }
             else
             {
@@ -276,18 +276,18 @@ void asv()
             nl();
             do
             {
-                sess->bout <<  "|#3Enter your BBS name, phone and modem speed.\r\n\n|#1:";
+                GetSession()->bout <<  "|#3Enter your BBS name, phone and modem speed.\r\n\n|#1:";
                 inputl( s, 28, true );
             } while ( !s[0] );
             properize( s );
 			sprintf( s1, "WWIV SysOp: %s", s );
-            sess->thisuser.SetNote( s1 );
-            strcpy( s, sess->thisuser.GetName() );
+            GetSession()->thisuser.SetNote( s1 );
+            strcpy( s, GetSession()->thisuser.GetName() );
             properize( s );
             ssm( 1, 0, "%s validated as a WWIV SysOp on %s.", s, fulldate() );
             sysoplog( "* Validated as a WWIV SysOp" );
-            sess->thisuser.setStatusFlag( WUser::expert );
-            set_autoval( sess->advasv.nonreg_wwiv );
+            GetSession()->thisuser.setStatusFlag( WUser::expert );
+            set_autoval( GetSession()->advasv.nonreg_wwiv );
             nl();
             valfile = 9;
             break;
@@ -295,18 +295,18 @@ void asv()
             nl();
             do
             {
-                sess->bout << "|#3Enter your BBS name, phone, software and modem speed.\r\n\n|#1:";
+                GetSession()->bout << "|#3Enter your BBS name, phone, software and modem speed.\r\n\n|#1:";
                 inputl( s, 33, true );
             } while ( !s[0] );
             properize( s );
             sprintf( s1, "SysOp: %s", s );
-            sess->thisuser.SetNote( s1 );
-            strcpy( s, sess->thisuser.GetName() );
+            GetSession()->thisuser.SetNote( s1 );
+            strcpy( s, GetSession()->thisuser.GetName() );
             properize( s );
             ssm( 1, 0, "%s validated as a Non-WWIV SysOp on %s.", s, fulldate() );
             sysoplog( "* Validation of a Non-WWIV SysOp" );
-            sess->thisuser.SetExempt( 0 );
-            set_autoval( sess->advasv.non_wwiv );
+            GetSession()->thisuser.SetExempt( 0 );
+            set_autoval( GetSession()->advasv.non_wwiv );
             nl();
             valfile = 10;
             break;
@@ -314,17 +314,17 @@ void asv()
             nl();
             do
             {
-                sess->bout << "|#3Enter the BBS name, phone, software and modem speed.\r\n\n|#1:";
+                GetSession()->bout << "|#3Enter the BBS name, phone, software and modem speed.\r\n\n|#1:";
                 inputl( s, 30, true );
             }
             while ( !s[0] );
             properize( s );
 
             sprintf( s1, "Co-SysOp: %s", s );
-            sess->thisuser.SetNote( s1 );
-            sprintf( s1, "* Co-SysOp of %s", sess->thisuser.GetNote() );
+            GetSession()->thisuser.SetNote( s1 );
+            sprintf( s1, "* Co-SysOp of %s", GetSession()->thisuser.GetNote() );
             sysoplog( s1 );
-            set_autoval( sess->advasv.cosysop );
+            set_autoval( GetSession()->advasv.cosysop );
         case 'Q':
             break;
         }
@@ -353,9 +353,9 @@ int printasv( char *pszFileName, int num, bool abort )
 	sprintf( szFileName, "%s%s", syscfg.gfilesdir, pszFileName );
     if ( !strrchr( szFileName, '.' ) )
     {
-        if ( sess->thisuser.hasAnsi() )
+        if ( GetSession()->thisuser.hasAnsi() )
         {
-            if ( sess->thisuser.hasColor() )
+            if ( GetSession()->thisuser.hasColor() )
             {
 				sprintf( szFileName1, "%s%s", szFileName, ".ans");
                 if ( WFile::Exists( szFileName1 ) )
@@ -516,7 +516,7 @@ int printasv( char *pszFileName, int num, bool abort )
     }
     if ( !found )
     {
-        sess->bout << "\r\n%s\r\nPlease report this to the SysOp in Feedback.\r\n";
+        GetSession()->bout << "\r\n%s\r\nPlease report this to the SysOp in Feedback.\r\n";
         ssm( 1, 0, "Subfile #%d not found in %s.\r\n", num, szFileName );
         return -1;
     }
@@ -526,8 +526,8 @@ int printasv( char *pszFileName, int num, bool abort )
 
 void set_autoval( int n )
 {
-    auto_val( n, &sess->thisuser );
-    sess->ResetEffectiveSl();
+    auto_val( n, &GetSession()->thisuser );
+    GetSession()->ResetEffectiveSl();
     changedsl();
 }
 
