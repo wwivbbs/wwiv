@@ -59,6 +59,8 @@ Rushfan - Changed global app to GetApplication(), sess to GetSession().  Added
           and updated all access through the accessors
 Rushfan - Update size test code to handle Mac OS X as well as Linux/Win32 and
           MSDOS.
+Rushfan - Updated Copyright statement in header files to 2005
+Rushfan - removed unused files extrn.cpp and extrn1.cpp from CVS finally.
 
 ==============================================================================
 
