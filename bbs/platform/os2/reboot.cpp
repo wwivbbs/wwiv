@@ -1,7 +1,7 @@
 /****************************************************************************/
 /*                                                                          */
 /*                             WWIV Version 5.0x                            */
-/*            Copyright (C) 1998-2003 by WWIV Software Services             */
+/*            Copyright (C) 1998-2005 by WWIV Software Services             */
 /*                       Copyright (c) 1996, Mike Deweese                   */
 /*                           Used with permission                           */
 /*                                                                          */

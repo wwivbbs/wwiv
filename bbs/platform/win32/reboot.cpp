@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2004, WWIV Software Services             */
+/*             Copyright (C)1998-2005, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
