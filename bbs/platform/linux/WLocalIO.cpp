@@ -355,14 +355,7 @@ char xlate[] =
 
 char WLocalIO::scan_to_char( int nKeyCode )
 {
-    if ((ch >= 16) && (ch <= 50))
-    {
-        return xlate[ch - 16];
-    }
-    else
-    {
-        return 0;
-    }
+    return ( nKeyCode >= 16 && nKeyCode <= 50 ) ? xlate[ nKeyCode - 16 ] : '\x00';
 }
 
 
