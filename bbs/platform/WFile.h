@@ -22,6 +22,10 @@
 
 #include <string>
 
+#ifndef MAX_PATH
+#define MAX_PATH 256
+#endif
+
 class WLogger
 {
 public:
