@@ -656,17 +656,17 @@ TOGGLE_EXTENDED:
 }
 
 
-void drawfile(int filepos, int filenum)
+void drawfile( int filepos, int filenum )
 {
 	lines_listed = 0;
-	goxy(4, filepos + first_file_pos());
+	goxy( 4, filepos + first_file_pos() );
 	setc( lp_config.current_file_color);
-	bprintf("%3d|#0", filenum);
-	goxy(4, filepos + first_file_pos());
+	bprintf( "%3d|#0", filenum );
+	goxy( 4, filepos + first_file_pos() );
 }
 
 
-int compare_criteria(struct search_record * sr, uploadsrec * ur)
+int compare_criteria( struct search_record * sr, uploadsrec * ur )
 {
 	// "        .   "
 	if ( !wwiv::stringUtils::IsEquals( sr->filemask, "        .   " ) )
@@ -730,12 +730,12 @@ int compare_criteria(struct search_record * sr, uploadsrec * ur)
 		strcat(buff, " ");
 		strcat(buff, ur->description);
 
-		if (lp_compare_strings(buff, sr->search))
+		if ( lp_compare_strings( buff, sr->search ) )
         {
-			BbsFreeMemory(buff);
+			BbsFreeMemory( buff );
 			return 1;
 		}
-		BbsFreeMemory(buff);
+		BbsFreeMemory( buff );
 
 		return 0;                               // if we get here, we failed search test, so exit with 0 */
 

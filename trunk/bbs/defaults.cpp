@@ -681,7 +681,7 @@ void list_macro(const char *pszMacroText)
                     bputch('|');
                     break;
                 case TAB:
-                    bputch( static_cast< unsigned char >( 'ù' ) );
+                    bputch( 'ù' );
                     break;
                 default:
                     bputch('^');
@@ -709,7 +709,7 @@ char *macroedit( char *pszMacroText )
 	do
 	{
 		char ch = getkey();
-		switch (ch)
+		switch ( ch )
 		{
 		case CZ:
 			done = true;
@@ -730,22 +730,22 @@ char *macroedit( char *pszMacroText )
 		case RETURN:
 			pszMacroText[i++] = ch;
 			ansic( 0 );
-			bputch('|');
-			ansic(textclr);
+			bputch( '|' );
+			ansic( textclr );
 			break;
 		case TAB:
 			pszMacroText[i++] = ch;
 			ansic( 0 );
-			bputch( static_cast< unsigned char >( 'ù' ) ) ;
-			ansic(textclr);
+			bputch( 'ù' ) ;
+			ansic( textclr );
 			break;
 		default:
 			pszMacroText[i++] = ch;
-			if (toggle)
+			if ( toggle )
 			{
 				toggle = false;
 				textclr = ch - 48;
-				ansic(textclr);
+				ansic( textclr );
 			}
 			else
 			{

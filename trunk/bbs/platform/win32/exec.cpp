@@ -495,12 +495,12 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
 			int nLp = 0;
             for( nLp = 0; nLp < nNumReadFromComm; nLp++ )
             {
-                fprintf( hLogFile, "[%u]", ( unsigned char ) szReadBuffer[ nLp ], ( unsigned char ) szReadBuffer[ nLp ] );
+                fprintf( hLogFile, "[%u]", static_cast<unsigned char>( szReadBuffer[ nLp ] ), ( unsigned char ) szReadBuffer[ nLp ] );
             }
             fprintf( hLogFile, "   " );
             for( nLp = 0; nLp < nNumReadFromComm; nLp++ )
             {
-                fprintf( hLogFile, "[%c]", ( unsigned char ) szReadBuffer[ nLp ] );
+                fprintf( hLogFile, "[%c]", static_cast<unsigned char>( szReadBuffer[ nLp ] ) );
             }
             fprintf( hLogFile, "\r\n" );
 #endif // 0

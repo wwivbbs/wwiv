@@ -23,7 +23,7 @@
 #if !defined ( _UNIX )
 
 // Local Functions
-void DisplayWFCScreen(const char *pszBuffer);
+void DisplayWFCScreen( const char *pszBuffer );
 static char * pszScreenBuffer = NULL;
 
 static int inst_num;
@@ -135,18 +135,18 @@ void wfc_screen()
 	WUser u;
 	static double wfc_time=0, poll_time=0;
 
-	if (!app->HasConfigFlag( OP_FLAGS_WFC_SCREEN))
+	if ( !app->HasConfigFlag( OP_FLAGS_WFC_SCREEN ) )
 	{
 		return;
 	}
 
-	int nNumNewMessages = check_new_mail(sess->usernum);
+	int nNumNewMessages = check_new_mail( sess->usernum );
 
-	if (sess->wfc_status == 0)
+	if ( sess->wfc_status == 0 )
 	{
 		app->localIO->SetCursor( WLocalIO::cursorNone );
 		app->localIO->LocalCls();
-		if (pszScreenBuffer == NULL)
+		if ( pszScreenBuffer == NULL )
 		{
 			pszScreenBuffer = new char[4000];
             WFile wfcFile( syscfg.datadir, WFC_DAT );
@@ -276,8 +276,8 @@ void wfc_screen()
 			  app->localIO->LocalCls();
 			  app->localIO->LocalXYAPrintf(	WWIV_GetRandomNumber(38),
 						                    WWIV_GetRandomNumber(24),
-						                    static_cast<unsigned char>( WWIV_GetRandomNumber( 14 ) + 1 ),
-						                    "WWIV Screen Saver - Press Any Key For WWIV");
+						                    WWIV_GetRandomNumber( 14 ) + 1,
+						                    "WWIV Screen Saver - Press Any Key For WWIV" );
 			  wfc_time = timer() - sess->screen_saver_time - 1;
 			  poll_time = timer();
 		  }

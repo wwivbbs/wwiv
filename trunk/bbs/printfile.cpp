@@ -45,74 +45,74 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
 	else
 	{
 		sprintf( szFileName, "%s%s", sess->pszLanguageDir, pszFileName );
-		if (strchr(szFileName, '.') == NULL)
+		if ( strchr( szFileName, '.' ) == NULL )
 		{
-			char* pszTempFileName = szFileName + strlen(szFileName);
+			char* pszTempFileName = szFileName + strlen( szFileName );
 			if ( sess->thisuser.hasAnsi() )
 			{
 				if ( sess->thisuser.hasColor() )
 				{
-					strcpy(pszTempFileName, ".ans");
-					if (!WFile::Exists(szFileName))
+					strcpy( pszTempFileName, ".ans" );
+					if ( !WFile::Exists( szFileName ) )
 					{
 						*pszTempFileName = '\0';
 					}
 				}
-				if (!(*pszTempFileName))
+				if ( !( *pszTempFileName ) )
 				{
-					strcpy(pszTempFileName, ".b&w");
-					if (!WFile::Exists(szFileName))
+					strcpy( pszTempFileName, ".b&w" );
+					if ( !WFile::Exists( szFileName ) )
 					{
-						strcpy(pszTempFileName, ".msg");
+						strcpy( pszTempFileName, ".msg" );
 					}
 				}
 			}
 			else
 			{
-				strcpy(pszTempFileName, ".msg");
+				strcpy( pszTempFileName, ".msg" );
 			}
 		}
 		if ( !WFile::Exists( pszFileName ) )
 		{
 			sprintf( szFileName, "%s%s", syscfg.gfilesdir, pszFileName );
 		}
-		if (strchr(szFileName, '.') == NULL)
+		if ( strchr( szFileName, '.' ) == NULL )
 		{
-			char* pszTempFileName2 = szFileName + strlen(szFileName);
+			char* pszTempFileName2 = szFileName + strlen( szFileName );
 			if ( sess->thisuser.hasAnsi() )
 			{
 				if ( sess->thisuser.hasColor() )
 				{
-					strcpy(pszTempFileName2, ".ans");
-					if (!WFile::Exists(szFileName))
+					strcpy( pszTempFileName2, ".ans" );
+					if ( !WFile::Exists( szFileName ) )
 					{
-						pszTempFileName2[0] = 0;
+						pszTempFileName2[0] = '\0';
 					}
 				}
-				if (!pszTempFileName2[0])
+				if ( !pszTempFileName2[0] )
 				{
-					strcpy(pszTempFileName2, ".b&w");
-					if (!WFile::Exists(szFileName))
+					strcpy( pszTempFileName2, ".b&w" );
+					if ( !WFile::Exists( szFileName ) )
 					{
-						strcpy(pszTempFileName2, ".msg");
+						strcpy( pszTempFileName2, ".msg" );
 					}
 				}
 			}
 			else
 			{
-				strcpy(pszTempFileName2, ".msg");
+				strcpy( pszTempFileName2, ".msg" );
 			}
 		}
 	}
 
 	long lFileSize;
-	char* ss = get_file(szFileName, &lFileSize);
+	char* ss = get_file( szFileName, &lFileSize );
 
 	if ( ss != NULL )
 	{
 		long lCurPos = 0;
     	bool bHasAnsi = false;
-		while (lCurPos < lFileSize && !hangup)
+		while ( lCurPos < lFileSize && !hangup )
 		{
 			if ( ss[lCurPos] == ESC )
 			{
@@ -139,7 +139,7 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
 			    if ( bkbhit() )
 			    {
 				    char ch = bgetch();
-				    if (ch == ' ')
+				    if ( ch == ' ' )
 				    {
 					    break;
 				    }
@@ -148,8 +148,7 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
 		}
         FlushOutComChBuffer();
 		BbsFreeMemory( ss );
-		// If the file is empty, lets' return false here since nothing
-        // was displayed.
+		// If the file is empty, lets' return false here since nothing was displayed.
 		return ( lFileSize > 0 ) ? true : false;
 	}
 	return false;
@@ -160,7 +159,7 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
  * Displays a file locally, using LIST util if so defined in WWIV.INI,
  * otherwise uses normal TTY output.
  */
-void print_local_file(const char *ss, const char *ss1)
+void print_local_file( const char *ss, const char *ss1 )
 {
     char szCmdLine[ MAX_PATH ];
 	char szCmdLine2[ MAX_PATH ];
@@ -171,43 +170,41 @@ void print_local_file(const char *ss, const char *ss1)
 	char *bs = strchr( pszTempSS, WWIV_FILE_SEPERATOR_CHAR );
 	if ( ( syscfg.sysconfig & sysconfig_list ) && !incom )
 	{
-		if (!bs)
+		if ( !bs )
 		{
             char * pszTempSS1 = strdup( ss1 );
-			sprintf(szCmdLine, "%s %s%s", "LIST", syscfg.gfilesdir, ss);
-			if (ss1[0])
+			sprintf( szCmdLine, "%s %s%s", "LIST", syscfg.gfilesdir, ss );
+			if ( ss1[0] )
 			{
-				bs = strchr( pszTempSS1, WWIV_FILE_SEPERATOR_CHAR);
-				if (!bs)
+				bs = strchr( pszTempSS1, WWIV_FILE_SEPERATOR_CHAR );
+				if ( !bs )
 				{
-					sprintf( szCmdLine2, "%s %s%s", szCmdLine,
-                             syscfg.gfilesdir, ss1);
+					sprintf( szCmdLine2, "%s %s%s", szCmdLine, syscfg.gfilesdir, ss1 );
 				}
 				else
 				{
-					sprintf(szCmdLine2, "%s %s", szCmdLine, ss1);
+					sprintf( szCmdLine2, "%s %s", szCmdLine, ss1 );
 				}
-				strcpy(szCmdLine, szCmdLine2);
+				strcpy( szCmdLine, szCmdLine2 );
 			}
             BbsFreeMemory( pszTempSS1 );
 		}
 		else
 		{
-			sprintf(szCmdLine, "%s %s", "LIST", ss);
-			if (ss1[0])
+			sprintf( szCmdLine, "%s %s", "LIST", ss );
+			if ( ss1[0] )
 			{
                 char * pszTempSS1 = strdup( ss1 );
-				bs = strchr(pszTempSS1, WWIV_FILE_SEPERATOR_CHAR);
-				if (!bs)
+				bs = strchr( pszTempSS1, WWIV_FILE_SEPERATOR_CHAR );
+				if ( !bs )
 				{
-					sprintf( szCmdLine2, "%s %s%s", szCmdLine,
-                             syscfg.gfilesdir, ss1);
+					sprintf( szCmdLine2, "%s %s%s", szCmdLine, syscfg.gfilesdir, ss1);
 				}
 				else
 				{
-					sprintf(szCmdLine2, "%s %s", szCmdLine, ss1);
+					sprintf( szCmdLine2, "%s %s", szCmdLine, ss1 );
 				}
-				strcpy(szCmdLine, szCmdLine2);
+				strcpy( szCmdLine, szCmdLine2 );
                 BbsFreeMemory ( pszTempSS1 );
 			}
 		}
@@ -220,7 +217,7 @@ void print_local_file(const char *ss, const char *ss1)
 	}
 	else
 	{
-		printfile(ss);
+		printfile( ss );
 		nl( 2 );
 		pausescr();
 	}

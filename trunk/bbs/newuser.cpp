@@ -143,6 +143,8 @@ void input_language()
 
 bool check_name( char *pszUserName )
 {
+    // Since finduser is called with pszUserName, it can not be const.  A better idea may be
+    // to change this behaviour in the future.
     char s[255], s1[255], s2[MAX_PATH];
 
     if ( pszUserName[ strlen( pszUserName ) - 1 ] == 32   ||
@@ -1602,7 +1604,7 @@ void DoMinimalNewUser()
                     ok = true;
                     if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (d >= 31)) ||
                         ((m == 2) && (((!isleap(y)) && (d == 29)) || (d == 30))) ||
-                        (years_old((unsigned char) m, (unsigned char) d, (unsigned char) (y - 1900)) < 5) ||
+                        ( years_old( m, d, y - 1900 ) < 5 ) ||
                         (d > 31) || ((m == 0) || (y == 0) || (d == 0)))
                     {
                         ok = false;

@@ -28,7 +28,15 @@ extern char cid_num[], cid_name[];
 
 static char g_szLastLoginDate[9];
 
+/* 
+ * Enable the following line if you need remote.exe or to be able to launch
+ * commands specified in remotes.dat.  This is disabled by default
+ */
+// #define ENABLE_REMOTE_VIA_SPECIAL_LOGINS
+
+//
 // Local functions
+//
 
 void CleanUserInfo()
 {
@@ -344,6 +352,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
             set_net_num( 0 );
         }
         break;
+#ifdef ENABLE_REMOTE_VIA_SPECIAL_LOGINS
     case -3:
         {
 			std::stringstream networkCommand;
@@ -386,6 +395,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
             }
         }
         break;
+#endif // ENABLE_REMOTE_VIA_SPECIAL_LOGINS
     }
     app->statusMgr->Read();
     hangup = true;
@@ -1097,7 +1107,7 @@ void DisplayUserLoginInformation()
         read_inet_addr( szInternetEmailAddress, sess->usernum );
         sess->bout << "Mail forwarded to Internet "<< szInternetEmailAddress << ".\r\n";
     }
-    if ( ltime )
+    if ( sess->IsTimeOnlineLimited() )
     {
         sess->bout << "\r\n|13Your on-line time is limited by an external event.\r\n\n";
     }

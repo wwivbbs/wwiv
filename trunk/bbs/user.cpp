@@ -55,12 +55,12 @@ char *WUser::nam( int nUserNumber ) const
     static char s_szNamBuffer[81];
     bool f = true;
     unsigned int p = 0;
-    for (p = 0; p < strlen( this->GetName() ); p++)
+    for ( p = 0; p < strlen( this->GetName() ); p++ )
     {
-        if (f)
+        if ( f )
         {
             unsigned char* ss = reinterpret_cast<unsigned char*>( strchr( reinterpret_cast<char*>( translate_letters[1] ), data.name[p] ) );
-            if (ss)
+            if ( ss )
             {
                 f = false;
             }
@@ -69,13 +69,13 @@ char *WUser::nam( int nUserNumber ) const
         else
         {
             char* ss = strchr( reinterpret_cast<char*>( translate_letters[1] ), data.name[p] );
-            if (ss)
+            if ( ss )
             {
-                s_szNamBuffer[p] = locase(data.name[p]);
+                s_szNamBuffer[p] = locase( data.name[p] );
             }
             else
             {
-                if (((data.name[p] >= ' ') && (data.name[p] <= '/')) && (data.name[p] != 39))
+                if ( ( data.name[p] >= ' ' && data.name[p] <= '/' ) && data.name[p] != 39 )
                 {
                     f = true;
                 }
@@ -143,7 +143,7 @@ void InsertSmallRecord(int nUserNumber, const char *pszName)
 // Deletes a record from NAMES.LST (DeleteSmallRec)
 //
 
-void DeleteSmallRecord(const char *pszName)
+void DeleteSmallRecord( const char *pszName )
 {
     int cp = 0;
     app->statusMgr->Lock();
@@ -154,11 +154,11 @@ void DeleteSmallRecord(const char *pszName)
     if ( !wwiv::stringUtils::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) )
     {
         app->statusMgr->Write();
-        sysoplogfi( false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", pszName);
-        sysoplog("#*#*#*# Run //resetf to fix it", false);
+        sysoplogfi( false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", pszName );
+        sysoplog( "#*#*#*# Run //resetf to fix it", false );
         return;
     }
-    for (int i = cp; i < status.users - 1; i++)
+    for ( int i = cp; i < status.users - 1; i++ )
     {
         smallist[i] = smallist[i + 1];
     }
@@ -181,6 +181,9 @@ void DeleteSmallRecord(const char *pszName)
 //      or 0 if user not found
 //      or special value
 //
+// This function will remove the special characters from arround the pszSearchString that are
+// used by the network and remote, etc.
+//
 // Special values:
 //
 //  -1      = NEW USER
@@ -188,7 +191,7 @@ void DeleteSmallRecord(const char *pszName)
 //  -3      = Remote Command
 //  -4      = Unknown Special Login
 //
-int finduser(char *pszSearchString)
+int finduser( char *pszSearchString )
 {
     WUser user;
 
@@ -205,17 +208,17 @@ int finduser(char *pszSearchString)
     {
         return -3;
     }
-    if (strncmp(pszSearchString, "!=@", 3) == 0)
+    if ( strncmp( pszSearchString, "!=@", 3 ) == 0 )
     {
-        char* ss = pszSearchString + strlen(pszSearchString) - 3;
+        char* ss = pszSearchString + strlen( pszSearchString ) - 3;
         if ( wwiv::stringUtils::IsEquals( ss, "@=!" ) )
         {
-            strcpy(pszSearchString, pszSearchString + 3);
-            pszSearchString[strlen(pszSearchString) - 3] = 0;
+            strcpy( pszSearchString, pszSearchString + 3 );
+            pszSearchString[ strlen( pszSearchString ) - 3 ] = '\0';
             return -4;
         }
     }
-    int nUserNumber = atoi(pszSearchString);
+    int nUserNumber = atoi( pszSearchString );
     if ( nUserNumber > 0 )
     {
         app->userManager->ReadUser( &user, nUserNumber );
@@ -226,13 +229,13 @@ int finduser(char *pszSearchString)
         return nUserNumber;
     }
     app->statusMgr->Read();
-    smalrec *sr = (smalrec *) bsearch((void *) pszSearchString,
-                    (void *) smallist,
-                    (size_t) status.users,
-                    (size_t) sizeof(smalrec),
-                    (int (*) (const void *, const void *)) strcmp);
+    smalrec *sr = ( smalrec * ) bsearch( ( void * ) pszSearchString,
+                    ( void * ) smallist,
+                    ( size_t ) status.users,
+                    ( size_t ) sizeof( smalrec ),
+                    ( int (*) ( const void *, const void * ) ) strcmp );
 
-    if (sr == 0L)
+    if ( sr == 0L )
     {
         return 0;
     }
@@ -269,11 +272,11 @@ int finduser1(const char *pszSearchString)
         return nFindUserNum;
     }
 
-    char szUserNamePart[81];
+    char szUserNamePart[ 255 ];
     strcpy( szUserNamePart, pszSearchString );
-    for (int i = 0; szUserNamePart[i] != 0; i++)
+    for ( int i = 0; szUserNamePart[i] != 0; i++ )
     {
-        szUserNamePart[i] = upcase(szUserNamePart[i]);
+        szUserNamePart[i] = upcase( szUserNamePart[i] );
     }
     app->statusMgr->Read();
     for ( int i1 = 0; i1 < status.users; i1++ )
@@ -285,11 +288,11 @@ int finduser1(const char *pszSearchString)
             app->userManager->ReadUser( &user, nCurrentUserNum );
             sess->bout << "|#5Do you mean " << user.GetUserNameAndNumber( nCurrentUserNum ) << " (Y/N/Q)? ";
             char ch = ynq();
-            if (ch == 'Y')
+            if ( ch == 'Y' )
             {
                 return nCurrentUserNum;
             }
-            if (ch == 'Q')
+            if ( ch == 'Q' )
             {
                 return 0;
             }

@@ -268,8 +268,8 @@ public:
     void SetBirthdayYear( int n )           { data.year = static_cast<unsigned char>( n ); }
     const int GetLanguage() const           { return data.language; }
     void SetLanguage( int n )               { data.language = static_cast<unsigned char>( n ); }
-    const int GetCbv() const            { return data.cbv; }
-    void SetCbv( int n )                { data.cbv = static_cast<unsigned char>( n ); }
+    const int GetCbv() const                { return data.cbv; }
+    void SetCbv( int n )                    { data.cbv = static_cast<unsigned char>( n ); }
 
     const int GetHomeUserNumber() const     { return data.homeuser; }
     void SetHomeUserNumber( int n )         { data.homeuser = static_cast<unsigned short>( n ); }

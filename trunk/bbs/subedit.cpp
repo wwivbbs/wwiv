@@ -776,12 +776,12 @@ void insert_sub(int n)
 	r.type = 0;
 	r.storage_type = 2;
 	subboards[n] = r;
-	memset((void *) &(xsubs[n]), 0, sizeof(xtrasubsrec));
+	memset( &(xsubs[n]), 0, sizeof( xtrasubsrec ) );
 	++sess->num_subs;
 	int nNumUserRecords = number_userrecs();
 
 	unsigned long* pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len ) );
-	if (pTempQScan)
+	if ( pTempQScan )
     {
 		pTempQScan_n = pTempQScan + 1;
 		pTempQScan_q = pTempQScan_n + (sess->GetMaxNumberFileAreas() + 31) / 32;
