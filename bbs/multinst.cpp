@@ -43,7 +43,7 @@ void GetInstanceActivityString( instancerec &ir, char *pszOutActivity );
 void make_inst_str( int nInstanceNum, char *pszOutInstanceString, int nInstanceFormat )
 {
     char s[255];
-    sprintf( s, "|#1Instance %-3d: |#2", nInstanceNum );
+    snprintf( s, sizeof( s ), "|#1Instance %-3d: |#2", nInstanceNum );
 
     instancerec ir;
     get_inst_info(nInstanceNum, &ir);
@@ -75,12 +75,12 @@ void make_inst_str( int nInstanceNum, char *pszOutInstanceString, int nInstanceF
             {
                 WUser userRecord;
                 app->userManager->ReadUser( &userRecord, ir.user );
-                sprintf(szNodeActivity, "%-30.30s", userRecord.GetUserNameAndNumber( ir.user ) );
+                snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%-30.30s", userRecord.GetUserNameAndNumber( ir.user ) );
                 strncat( s, szNodeActivity, sizeof( s ) );
             }
             else
             {
-                sprintf( szNodeActivity, "%-30.30s", "Nobody" );
+                snprintf( szNodeActivity, sizeof( szNodeActivity ), "%-30.30s", "Nobody" );
                 strncat( s, szNodeActivity, sizeof( s ) );
             }
 
@@ -108,12 +108,12 @@ void make_inst_str( int nInstanceNum, char *pszOutInstanceString, int nInstanceF
                     userName = "(Nobody)";
                 }
                 char szBuffer[ 255 ];
-                sprintf( szBuffer, "|#5%-4d |#2%-35.35s |#1%-37.37s", nInstanceNum, userName.c_str(), szNodeActivity );
+                snprintf( szBuffer, sizeof( szBuffer ), "|#5%-4d |#2%-35.35s |#1%-37.37s", nInstanceNum, userName.c_str(), szNodeActivity );
                 strcpy( pszOutInstanceString, szBuffer );
             }
             break;
         default:
-            sprintf( pszOutInstanceString, "** INVALID INSTANCE FORMAT PASSED [%d] **", nInstanceFormat );
+            snprintf( pszOutInstanceString, sizeof( pszOutInstanceString ), "** INVALID INSTANCE FORMAT PASSED [%d] **", nInstanceFormat );
             break;
     }
 }
@@ -189,183 +189,183 @@ void GetInstanceActivityString( instancerec &ir, char *pszOutActivity )
 
     if ( ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10 )
     {
-        sprintf(szNodeActivity,"%s","WWIV Chatroom");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ), "%s","WWIV Chatroom");
     }
     else switch (ir.loc)
     {
     case INST_LOC_DOWN:
-        sprintf(szNodeActivity, "%s", "Offline");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Offline");
         break;
     case INST_LOC_INIT:
-        sprintf(szNodeActivity, "%s", "Initializing BBS");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Initializing BBS");
         break;
     case INST_LOC_EMAIL:
-        sprintf(szNodeActivity, "%s", "Sending Email");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Sending Email");
         break;
     case INST_LOC_MAIN:
-        sprintf(szNodeActivity, "%s", "Main Menu");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Main Menu");
         break;
     case INST_LOC_XFER:
-        sprintf(szNodeActivity, "%s", "Transfer Area");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Transfer Area");
         if ( so() && ir.subloc < sess->num_dirs )
         {
             char szTemp2[ 100 ];
-            sprintf(szTemp2, "%s: %s", "Dir ", stripcolors(directories[ir.subloc].name));
-            strncat(szNodeActivity, szTemp2, sizeof(szNodeActivity));
+            snprintf( szTemp2, sizeof( szTemp2 ), "%s: %s", "Dir ", stripcolors( directories[ ir.subloc ].name ) );
+            strncat(szNodeActivity, szTemp2, sizeof( szNodeActivity ) );
         }
         break;
     case INST_LOC_CHAINS:
-        sprintf( szNodeActivity, "%s", "Chains" );
+        snprintf( szNodeActivity, sizeof( szNodeActivity ), "%s", "Chains" );
         if ( ir.subloc > 0 && ir.subloc <= sess->GetNumberOfChains() )
         {
             char szTemp2[ 100 ];
-            sprintf(szTemp2, "Door: %s", stripcolors(chains[ir.subloc - 1].description));
-            strncat(szNodeActivity, szTemp2, sizeof(szNodeActivity));
+            snprintf( szTemp2, sizeof( szTemp2 ), "Door: %s", stripcolors( chains[ ir.subloc - 1 ].description ) );
+            strncat( szNodeActivity, szTemp2, sizeof( szNodeActivity ) );
         }
         break;
     case INST_LOC_NET:
-        sprintf(szNodeActivity, "%s", "Network Transmission");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Network Transmission");
         break;
     case INST_LOC_GFILES:
-        sprintf(szNodeActivity, "%s", "GFiles");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "GFiles");
         break;
     case INST_LOC_BEGINDAY:
-        sprintf(szNodeActivity, "%s", "Running BeginDay");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Running BeginDay");
         break;
     case INST_LOC_EVENT:
-        sprintf(szNodeActivity, "%s", "Executing Event");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Executing Event");
         break;
     case INST_LOC_CHAT:
-        sprintf(szNodeActivity, "%s", "Normal Chat");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Normal Chat");
         break;
     case INST_LOC_CHAT2:
-        sprintf(szNodeActivity, "%s", "SplitScreen Chat");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "SplitScreen Chat");
         break;
     case INST_LOC_CHATROOM:
-        sprintf(szNodeActivity, "%s", "ChatRoom");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "ChatRoom");
         break;
     case INST_LOC_LOGON:
-        sprintf(szNodeActivity, "%s", "Logging On");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Logging On");
         break;
     case INST_LOC_LOGOFF:
-        sprintf(szNodeActivity, "%s", "Logging off");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Logging off");
         break;
     case INST_LOC_FSED:
-        sprintf(szNodeActivity, "%s", "FullScreen Editor");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "FullScreen Editor");
         break;
     case INST_LOC_UEDIT:
-        sprintf(szNodeActivity, "%s", "In UEDIT");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In UEDIT");
         break;
     case INST_LOC_CHAINEDIT:
-        sprintf(szNodeActivity, "%s", "In CHAINEDIT");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In CHAINEDIT");
         break;
     case INST_LOC_BOARDEDIT:
-        sprintf(szNodeActivity, "%s", "In BOARDEDIT");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In BOARDEDIT");
         break;
     case INST_LOC_DIREDIT:
-        sprintf(szNodeActivity, "%s", "In DIREDIT");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In DIREDIT");
         break;
     case INST_LOC_GFILEEDIT:
-        sprintf(szNodeActivity, "%s", "In GFILEEDIT");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In GFILEEDIT");
         break;
     case INST_LOC_CONFEDIT:
-        sprintf(szNodeActivity, "%s", "In CONFEDIT");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In CONFEDIT");
         break;
     case INST_LOC_DOS:
-        sprintf(szNodeActivity, "%s", "In DOS");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In DOS");
         break;
     case INST_LOC_DEFAULTS:
-        sprintf(szNodeActivity, "%s", "In Defaults");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In Defaults");
         break;
     case INST_LOC_REBOOT:
-        sprintf(szNodeActivity, "%s", "Rebooting");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Rebooting");
         break;
     case INST_LOC_RELOAD:
-        sprintf(szNodeActivity, "%s", "Reloading BBS data");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Reloading BBS data");
         break;
     case INST_LOC_VOTE:
-        sprintf(szNodeActivity, "%s", "Voting");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Voting");
         break;
     case INST_LOC_BANK:
-        sprintf(szNodeActivity, "%s", "In TimeBank");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In TimeBank");
         break;
     case INST_LOC_AMSG:
-        sprintf(szNodeActivity, "%s", "AutoMessage");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "AutoMessage");
         break;
     case INST_LOC_SUBS:
-        sprintf(szNodeActivity, "%s", "Reading Messages");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Reading Messages");
         if ( so() && ir.subloc < sess->num_subs )
         {
             char szTemp2[ 100 ];
-            sprintf(szTemp2, "(Sub: %s)", stripcolors(subboards[ir.subloc].name));
-            strncat(szNodeActivity, szTemp2, sizeof(szNodeActivity));
+            snprintf( szTemp2, sizeof( szTemp2 ), "(Sub: %s)", stripcolors( subboards[ ir.subloc ].name ) );
+            strncat( szNodeActivity, szTemp2, sizeof( szNodeActivity ) );
         }
         break;
     case INST_LOC_CHUSER:
-        sprintf(szNodeActivity, "%s", "Changing User");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Changing User");
         break;
     case INST_LOC_TEDIT:
-        sprintf(szNodeActivity, "%s", "In TEDIT");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In TEDIT");
         break;
     case INST_LOC_MAILR:
-        sprintf(szNodeActivity, "%s", "Reading All Mail");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Reading All Mail");
         break;
     case INST_LOC_RESETQSCAN:
-        sprintf(szNodeActivity, "%s", "Resetting QSCAN pointers");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Resetting QSCAN pointers");
         break;
     case INST_LOC_VOTEEDIT:
-        sprintf(szNodeActivity, "%s", "In VOTEEDIT");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In VOTEEDIT");
         break;
     case INST_LOC_VOTEPRINT:
-        sprintf(szNodeActivity, "%s", "Printing Voting Data");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Printing Voting Data");
         break;
     case INST_LOC_RESETF:
-        sprintf(szNodeActivity, "%s", "Resetting NAMES.LST");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Resetting NAMES.LST");
         break;
     case INST_LOC_FEEDBACK:
-        sprintf(szNodeActivity, "%s", "Leaving Feedback");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Leaving Feedback");
         break;
     case INST_LOC_KILLEMAIL:
-        sprintf(szNodeActivity, "%s", "Viewing Old Email");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Viewing Old Email");
         break;
     case INST_LOC_POST:
-        sprintf(szNodeActivity, "%s", "Posting a Message");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Posting a Message");
         if ( so() && ir.subloc < sess->num_subs )
         {
             char szTemp2[ 100 ];
-            sprintf(szTemp2, "(Sub: %s)", stripcolors( subboards[ir.subloc].name ) );
-            strncat(szNodeActivity, szTemp2, sizeof(szNodeActivity));
+            snprintf( szTemp2, sizeof( szTemp2 ), "(Sub: %s)", stripcolors( subboards[ir.subloc].name ) );
+            strncat( szNodeActivity, szTemp2, sizeof( szNodeActivity ) );
         }
         break;
     case INST_LOC_NEWUSER:
-        sprintf(szNodeActivity, "%s", "Registering a Newuser");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Registering a Newuser");
         break;
     case INST_LOC_RMAIL:
-        sprintf(szNodeActivity, "%s", "Reading Email");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Reading Email");
         break;
     case INST_LOC_DOWNLOAD:
-        sprintf(szNodeActivity, "%s", "Downloading");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Downloading");
         break;
     case INST_LOC_UPLOAD:
-        sprintf(szNodeActivity, "%s", "Uploading");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Uploading");
         break;
     case INST_LOC_BIXFER:
-        sprintf(szNodeActivity, "%s", "Bi-directional Transfer");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Bi-directional Transfer");
         break;
     case INST_LOC_NETLIST:
-        sprintf(szNodeActivity, "%s", "Listing Net Info");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Listing Net Info");
         break;
     case INST_LOC_TERM:
-        sprintf(szNodeActivity, "%s", "In a terminal program");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "In a terminal program");
         break;
     case INST_LOC_GETUSER:
-        sprintf(szNodeActivity, "%s", "Getting User ID");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Getting User ID");
         break;
     case INST_LOC_WFC:
-        sprintf(szNodeActivity, "%s", "Waiting for Call");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Waiting for Call");
         break;
     default:
-        sprintf(szNodeActivity, "%s", "Unknown BBS Location!");
+        snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Unknown BBS Location!");
         break;
     }
     strcpy( pszOutActivity, szNodeActivity );

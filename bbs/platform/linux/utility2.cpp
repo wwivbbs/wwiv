@@ -28,7 +28,7 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
 	char c = ( okansi() ) ? '\xCD' : '=';
 	nl();
 
-    sprintf( s, "|#7[|#4FileSpec: %s    Dir: %s  |#7]", stripfn( pszFileName ), pszFileName );
+    snprintf( s, sizeof( s ), "|#7[|#4FileSpec: %s    Dir: %s  |#7]", stripfn( pszFileName ), pszFileName );
 
 	int i = ( sess->thisuser.GetScreenChars() - 1 ) / 2 - strlen( stripcolors( s ) ) / 2;
 	sess->bout << "|#7" << charstr( i, c ) << s;
@@ -36,14 +36,14 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
 	i = sess->thisuser.GetScreenChars() - 1 - i - strlen( stripcolors( s ) );
 	sess->bout << "|#7%s" << charstr( i, c );
 
-	sprintf(s1,"%s%s",pszDirectoryName,stripfn(pszFileName));
+	snprintf( s1, sizeof( s1 ), "%s%s", pszDirectoryName, stripfn( pszFileName ) );
 	WFindFile fnd;
 	bool bFound = fnd.open(s1, 0);
 	while (bFound)
 	{
-		strcpy(s,fnd.GetFileName());
-		align(s);
-		sprintf(s1,"|#7[|#2%s|#7]|#1 ",s);
+		strcpy( s, fnd.GetFileName() );
+		align( s );
+		snprintf( s1, sizeof( s1 ), "|#7[|#2%s|#7]|#1 ", s );
 		if ( app->localIO->WhereX()> ( sess->thisuser.GetScreenChars() - 15 ) )
 		{
 			nl();
@@ -59,35 +59,35 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
 }
 
 
-char *WWIV_make_abs_cmd(char *out)
+char *WWIV_make_abs_cmd( char *pszOutBuffer )
 {
-  if (strchr(out, '/'))
+  if ( strchr( pszOutBuffer, '/' ) )
   {
-    return out;
+    return pszOutBuffer;
   }
 
-  char s[MAX_PATH];
-  strcpy(s, out);
-  sprintf(out, "%s%s", app->GetHomeDir(), s);
+  char s[ MAX_PATH ];
+  strcpy( s, pszOutBuffer );
+  snprintf( pszOutBuffer, MAX_PATH, "%s%s", app->GetHomeDir(), s );
 
-  return(out);
+  return pszOutBuffer;
 }
 
 
 // Reverses a string
-char *strrev(char *s)
+char *strrev( char *pszBufer )
 {
-	WWIV_ASSERT( s );
-	char s1[255];
-	int str = strlen( s );
+	WWIV_ASSERT( pszBufer );
+	char szTempBuffer[255];
+	int str = strlen( pszBufer );
 	WWIV_ASSERT( str <= 255 );
 
 	for ( int i = str; i >- 1; i-- )
 	{
-		s[i] = s1[str-i];
+		pszBufer[i] = szTempBuffer[str-i];
 	}
-	strcpy( s,s1 );
-	return s;
+	strcpy( pszBufer, szTempBuffer );
+	return pszBufer;
 }
 
 #define LAST(s) s[strlen(s)-1]

@@ -156,9 +156,9 @@ void broadcast( const char *fmt, ... )
     va_list ap;
     char szBuffer[2048];
 
-    va_start(ap, fmt);
-    vsnprintf(szBuffer, 2048, fmt, ap);
-    va_end(ap);
+    va_start( ap, fmt );
+    vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
+    va_end( ap );
     _broadcast( szBuffer );
 }
 

@@ -106,7 +106,9 @@ char *filedate( const char *pszFileName, char *pszReturnValue )
 	close( i );
 
 	struct tm *ptm = localtime( &buf.st_mtime );
-	sprintf( pszReturnValue, "%02d/%02d/%02d", ptm->tm_mon, ptm->tm_mday, ( ptm->tm_year % 100 ) );
+    
+    // We use 9 here since that is the size of the date format MM/DD/YY + NUL
+	snprintf( pszReturnValue, 9, "%02d/%02d/%02d", ptm->tm_mon, ptm->tm_mday, ( ptm->tm_year % 100 ) );
 
 	return pszReturnValue;
 }

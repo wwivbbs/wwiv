@@ -186,7 +186,7 @@ public:
 	 * @var m_szWWIVEnvironmentVariable Environment variable for the WWIV
      *      version (set as BBS env variable)
 	 */
-    char m_szWWIVEnvironmentVariable[51];
+    char m_szWWIVEnvironmentVariable[ 255 ];
 
 	/*!
 	 * @function GetHomeDir Returns the current home directory
@@ -213,7 +213,7 @@ public:
 
     int  GetInstanceNumber() { return m_nInstance; }
 
-    char* GetNetworkExtension() { return m_szNetworkExtension; }
+    const char* GetNetworkExtension() { return m_szNetworkExtension; }
 
     // From WLogger
     virtual bool LogMessage( const char* pszFormat, ... );
