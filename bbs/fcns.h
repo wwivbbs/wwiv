@@ -365,16 +365,6 @@ void extract_out(char *b, long len, const char *title, long daten);
 bool upload_mod(int dn, const char *pszFileName, const char *pszDescription);
 
 
-// File: extrn.cpp
-
-// ** NOTHING HERE **
-
-
-// File: extrn1.cpp
-
-// ** NOTHING HERE **
-
-
 // File: finduser.cpp
 
 int  finduser( char *pszSearchString );

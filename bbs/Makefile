@@ -119,9 +119,7 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/exec.o        	\
 	$(OBJ)/execexternal.o   \
 	$(OBJ)/extract.o	\
-	$(OBJ)/extrn.o         	\
 	$(OBJ)/FindUser.o       \
-	$(OBJ)/extrn1.o        	\
 	$(OBJ)/gfiles.o        	\
 	$(OBJ)/gfledit.o       	\
 	$(OBJ)/hop.o      	\
