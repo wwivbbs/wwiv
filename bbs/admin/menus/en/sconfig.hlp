@@ -1,0 +1,90 @@
+(N)ext:  
+Go on to next page.  If you have conferencing enabled, you have to press } to
+go on to the next conference.  If there are more than one page of subs in the
+current conference, choosing (N)ext will take you on to the next page, leaving
+you in the current conference.  
+
+(P)revious:  
+Take you back one page.  Works like (N)ext but in reverse.  If you want to go
+back one conference, press {
+
+(T)oggle:  
+Toggles the current status of the sub.  Spacebar will do this as well.
+
+(C)lear All:  
+Clears all subs currently displayed on the screen.
+
+(S)et All:  
+Toggles on all subs on trhe current page.
+
+(Q):  
+Quit to the main Defaults menu.
+
+
+
+
+Press your SPACE BAR to 'Tag' the subs/dirs that you want to include into your
+'New Scan' Scanning.
+
+Upon doing so, you will be presented with something that looks like this:
+
+Configure QSCAN -- Local Discussion            -- Press <SPACE> to toggle a sub
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+[ş] Sam Sez
+[ş] The Never-Ending Story (Written
+[ ] Local User Get Together Discussi
+[ş] Best Local Restraunts
+[ ] South East Texas Talk
+
+
+Next  Prev  Toggle  Clear ALL  Set ALL  Read New  { Conf  } Conf  Quit
+^^^^
+
+The "Next" above the carets will be highlighted.  What this "Next" means is
+the Next Page of the current conference.  In this particular conference
+("Local Discussion", as indicated at the top of the page) there is no "Next
+page"...there are only the five subs shown on this page in this particular
+conference.  Using your up and down arrows, navigate up and down the list of
+subs, using your spacebar to toggle off or on any you want to read.  (You may
+have to use either the numbers on your numeric keypad, or the ones between the
+right Ctrl and Shift keys, or both sets may work.)  The [ş] indicates your
+desire to read that particular sub. It will change to [ ] when that particular
+sub is turned off.
+
+After you finish this page, press } to go to the next conference, and repeat
+the process.  The next conference should look something like this:
+
+
+Configure QSCAN -- Of Interest to Sysops       -- Press <SPACE> to toggle a sub
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+[ş] WWIV Support Board Sub             [ş] QWKMod and WWIV QWK Readers Dicu
+[ş] WWIV 4.24 Development Sub          [ş] Hackers Elite (How to Protect Yo
+[ş] WWIV Modifications Sub             [ş] JAFO's Support Sub
+[ş] Group Four Sysops                  [ş] WWIV Sysops Magazine
+[ş] Modnet                             [ş] Netlog Support Sub
+[ş] Mod Talk and Requests              [ş] Mod Companion Sub
+
+Next  Prev  Toggle  Clear ALL  Set ALL  Read New  { Conf  } Conf  Quit
+^^^^
+
+In this particular case, most all of the subs are related to Sysops, and you
+may not be interested in them at all, or a very few of them.  In this case, you
+will benefit by selecting "Clear ALL", which will de-select them all, then
+turn on the ones you want to include (again by using your arrow keys and
+spacebar).  Also, in this conference, there is probably more than one page.
+
+"Prev" will take you back a page in the current conference.
+"Toggle" does the same thing as the spacebar.
+"Set ALL" will turn on all subs in the current conference.
+"Read New" will show you the messages in whatever sub you have highlighted at
+      the time.  This is good if you want to see a sample of the messages in a
+      sub where the title may be unclear of what the sub is about.
+"{ and } Conf" will go backwards or forwards one conference.
+"Quit" takes you back the the main QWK menu.
+
+Once you select all the subs you wish to read, you will not need to do this
+again unless I have mechanical problems with my computer.  So please don't
+think this is something you'll have to do each time you log on.  Also, if/when
+I add more message bases, they are automatically added into your scan so that
+you will know they are there.  If I add something new and you don't like it or
+don't care to read it, you simply turn it off in the above manner.
