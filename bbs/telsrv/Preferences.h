@@ -53,6 +53,7 @@ public:
     int m_nLocalNode;
     bool m_bLaunchMinimized;
     bool m_bRunBeginDayEvent;
+    bool m_bUseBalloons;
     CString m_strLastBeginEventDate;
 	// // Should the NNTP server be enabled
 	bool m_bEnableNNTPServer;

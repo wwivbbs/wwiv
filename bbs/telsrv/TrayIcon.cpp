@@ -7,24 +7,79 @@
 #include "stdafx.h"
 #include "trayicon.h"
 #include <afxpriv.h>		// for AfxLoadString
+#include <shellapi.h>
+//#define _WIN32_IE 0x0500
+#include <commctrl.h>
+#include <shlwapi.h>
+#include ".\trayicon.h"
 
-IMPLEMENT_DYNAMIC(CTrayIcon, CCmdTarget)
-CTrayIcon::CTrayIcon(UINT uID)
+HRESULT CALLBACK DllGetVersion( DLLVERSIONINFO *pdvi );
+
+#define PACKVERSION(major,minor) MAKELONG(minor,major)
+DWORD GetDllVersion(LPCTSTR lpszDllName)
+{
+    DWORD dwVersion = 0;
+    /* For security purposes, LoadLibrary should be provided with a 
+       fully-qualified path to the DLL. The lpszDllName variable should be
+       tested to ensure that it is a fully qualified path before it is used. */
+    HINSTANCE hinstDll = LoadLibrary( lpszDllName );
+	
+    if( hinstDll )
+    {
+        DLLGETVERSIONPROC pDllGetVersion;
+        pDllGetVersion = reinterpret_cast<DLLGETVERSIONPROC>( GetProcAddress( hinstDll, _T( "DllGetVersion" ) ) );
+
+        /* Because some DLLs might not implement this function, you
+        must test for it explicitly. Depending on the particular 
+        DLL, the lack of a DllGetVersion function can be a useful
+        indicator of the version. */
+
+        if ( pDllGetVersion )
+        {
+            DLLVERSIONINFO dvi;
+
+            ZeroMemory( &dvi, sizeof( dvi ) );
+            dvi.cbSize = sizeof( dvi );
+
+            HRESULT hr = ( *pDllGetVersion )( &dvi );
+
+            if( SUCCEEDED( hr ) )
+            {
+               dwVersion = PACKVERSION( dvi.dwMajorVersion, dvi.dwMinorVersion );
+            }
+        }
+
+        FreeLibrary( hinstDll );
+    }
+    return dwVersion;
+}
+
+
+IMPLEMENT_DYNAMIC( CTrayIcon, CCmdTarget )
+CTrayIcon::CTrayIcon( UINT uID )
 {
 	// Initialize NOTIFYICONDATA
-	memset( &m_nid, 0 , sizeof( m_nid ) );
-	m_nid.cbSize = sizeof( m_nid );
+    ZeroMemory( &m_nid, sizeof( NOTIFYICONDATA ) );
+    DWORD dwVersion = GetDllVersion( _T( "Shell32.dll" ) );
+    if( dwVersion >= PACKVERSION( 5,0 ) )
+    {
+        m_nid.cbSize = sizeof( NOTIFYICONDATA );
+    }
+    else 
+    {
+        m_nid.cbSize = NOTIFYICONDATA_V1_SIZE;
+    }
 	m_nid.uID = uID;	// never changes after construction
 
 	// Use resource string as tip if there is one
-	AfxLoadString(uID, m_nid.szTip, sizeof(m_nid.szTip));
+	AfxLoadString( uID, m_nid.szTip, sizeof( m_nid.szTip ) );
 }
 
 
 CTrayIcon::~CTrayIcon()
 {
 	// remove icon from system tray
-	SetIcon(0); 
+	SetIcon( 0 ); 
 }
 
 // Set notification window. It must created already.
@@ -35,14 +90,15 @@ void CTrayIcon::SetNotificationWnd(CWnd* pNotifyWnd, UINT uCbMsg)
 	ASSERT(pNotifyWnd==NULL || ::IsWindow(pNotifyWnd->GetSafeHwnd()));
 	m_nid.hWnd = pNotifyWnd->GetSafeHwnd();
 
-	ASSERT(uCbMsg==0 || uCbMsg>=WM_USER);
+	ASSERT( uCbMsg==0 || uCbMsg>=WM_USER );
 	m_nid.uCallbackMessage = uCbMsg;
 }
+
 
 // This is the main variant for setting the icon.
 // Sets both the icon and tooltip from resource ID
 // To remove the icon, call SetIcon(0)
-BOOL CTrayIcon::SetIcon(UINT uID)
+BOOL CTrayIcon::SetIcon( UINT uID, LPCTSTR lpszToolTip )
 { 
 	HICON hicon = NULL;
 	if (uID) 
@@ -50,19 +106,19 @@ BOOL CTrayIcon::SetIcon(UINT uID)
 		AfxLoadString( uID, m_nid.szTip, sizeof( m_nid.szTip ) );
 		hicon = AfxGetApp()->LoadIcon( uID );
 	}
-	return SetIcon( hicon, NULL );
+	return SetIcon( hicon, lpszToolTip );
 }
 
 //////////////////
 // Common SetIcon for all overloads. 
 //
-BOOL CTrayIcon::SetIcon(HICON hicon, LPCSTR lpTip) 
+BOOL CTrayIcon::SetIcon( HICON hicon, LPCSTR lpszToolTip, LPCTSTR lpszBalloonTitle, LPCTSTR lpszBalloonText )
 {
 	UINT msg;
 	m_nid.uFlags = 0;
 
 	// Set the icon
-	if (hicon) 
+	if ( hicon )
 	{
 		// Add or replace icon in system tray
 		msg = m_nid.hIcon ? NIM_MODIFY : NIM_ADD;
@@ -72,7 +128,7 @@ BOOL CTrayIcon::SetIcon(HICON hicon, LPCSTR lpTip)
 	else 
 	{ 
 		// remove icon from tray
-		if (m_nid.hIcon==NULL)
+		if ( m_nid.hIcon==NULL )
 		{
 			// already deleted
 			return TRUE;		
@@ -80,15 +136,21 @@ BOOL CTrayIcon::SetIcon(HICON hicon, LPCSTR lpTip)
 		msg = NIM_DELETE;
 	}
 
-	// Use the tip, if any
-	if (lpTip)
+	// Tooltip Support
+	if ( lpszToolTip )
 	{
-		strncpy( m_nid.szTip, lpTip, sizeof( m_nid.szTip ) );
-	}
-	if ( m_nid.szTip[0] )
-	{
+		strncpy( m_nid.szTip, lpszToolTip, sizeof( m_nid.szTip ) );
 		m_nid.uFlags |= NIF_TIP;
 	}
+
+    // Balloon Support
+    if ( lpszBalloonText && lpszBalloonTitle )
+    {
+        strncpy( m_nid.szInfoTitle, lpszBalloonTitle, sizeof( m_nid.szInfoTitle ) );
+        strncpy( m_nid.szInfo, lpszBalloonText, sizeof( m_nid.szInfo ) );
+        m_nid.uFlags |= NIF_INFO;
+        m_nid.uTimeout = 2000; // 2 seconds.
+    }
 
 	// Use callback if any
 	if ( m_nid.uCallbackMessage && m_nid.hWnd )
@@ -96,9 +158,9 @@ BOOL CTrayIcon::SetIcon(HICON hicon, LPCSTR lpTip)
 		m_nid.uFlags |= NIF_MESSAGE;
 	}
 
-	// Do it
-	BOOL bRet = Shell_NotifyIcon(msg, &m_nid);
-	if (msg==NIM_DELETE || !bRet)
+	// Let the taskbar know what we want it to do now.
+	BOOL bRet = Shell_NotifyIcon( msg, &m_nid );
+	if ( msg == NIM_DELETE || !bRet )
 	{
 		// failed
 		m_nid.hIcon = NULL;	
@@ -130,7 +192,7 @@ LRESULT CTrayIcon::OnTrayNotification(WPARAM wID, LPARAM lEvent)
 		return 0;
 	}
 
-	if ( lEvent == WM_RBUTTONUP )
+	if ( lEvent == WM_RBUTTONUP || lEvent == WM_CONTEXTMENU )
 	{
 		// Make first menu item the default (bold font)
 		::SetMenuDefaultItem( pSubMenu->m_hMenu, 0, TRUE );
@@ -152,4 +214,16 @@ LRESULT CTrayIcon::OnTrayNotification(WPARAM wID, LPARAM lEvent)
 	}
 
 	return 1; // handled
+}
+
+
+BOOL CTrayIcon::RefreshIcon()
+{
+    return SetIcon( m_nid.hIcon, m_nid.szTip );
+}
+
+
+BOOL CTrayIcon::ShowBalloon( LPCTSTR pszTitle, LPCTSTR pszText )
+{
+    return SetIcon( m_nid.hIcon, m_nid.szTip, pszTitle, pszText );
 }

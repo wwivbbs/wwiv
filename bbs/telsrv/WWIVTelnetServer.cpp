@@ -240,8 +240,8 @@ END_MESSAGE_MAP()
 void CWWIVTelnetServerApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
-    aboutDlg.m_version.Format( "%s%s", wwiv_version, beta_version );
-	aboutDlg.m_copyright.Format( "Copyright (c) 2001-2004 Rushfan" );
+    aboutDlg.m_version.Format( _T( "%s%s" ), wwiv_version, beta_version );
+	aboutDlg.m_copyright.Format( _T( "Copyright (c) 2001-2004 Rushfan" ) );
 
     aboutDlg.DoModal();
 }

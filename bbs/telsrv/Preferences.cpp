@@ -40,6 +40,7 @@ Preferences::Preferences()
 , m_bRunBeginDayEvent( false )
 , m_strLastBeginEventDate( _T( "" ) )
 , m_bEnableNNTPServer( false )
+, m_bUseBalloons( false )
 {
 	this->Load();
 }
@@ -58,26 +59,27 @@ BOOL Preferences::Commit()
 	CWinApp *app = ::AfxGetApp();
 	
 	LPCTSTR pszSectionName = _T( "Preferences" );
-	app->WriteProfileInt( pszSectionName, "AutoStart",	( m_bAutoStart ) ? 1 : 0 );
-	app->WriteProfileInt( pszSectionName, "PortNumber", m_nPortNum );
-	app->WriteProfileInt( pszSectionName, "StartNode",	m_nStartNode );
-	app->WriteProfileInt( pszSectionName, "EndNode",	m_nEndNode );
-	app->WriteProfileString( pszSectionName, "CommandLine", m_cmdLine );
-	app->WriteProfileString( pszSectionName, "WorkingDir", m_workDir );
-	app->WriteProfileString( pszSectionName, "Parameters", m_parameters );
-    app->WriteProfileInt( pszSectionName, "LocalNodeNum",	m_nLocalNode );
-	app->WriteProfileInt( pszSectionName, "LaunchMinimized",	( m_bLaunchMinimized ) ? 1 : 0 );
+	app->WriteProfileInt( pszSectionName,       _T( "AutoStart" ),	( m_bAutoStart ) ? 1 : 0 );
+	app->WriteProfileInt( pszSectionName,       _T( "PortNumber" ), m_nPortNum );
+	app->WriteProfileInt( pszSectionName,       _T( "StartNode" ),	m_nStartNode );
+	app->WriteProfileInt( pszSectionName,       _T( "EndNode" ),	m_nEndNode );
+	app->WriteProfileString( pszSectionName,    _T( "CommandLine" ), m_cmdLine );
+	app->WriteProfileString( pszSectionName,    _T( "WorkingDir" ), m_workDir );
+	app->WriteProfileString( pszSectionName,    _T( "Parameters" ), m_parameters );
+    app->WriteProfileInt( pszSectionName,       _T( "LocalNodeNum" ),	m_nLocalNode );
+	app->WriteProfileInt( pszSectionName,       _T( "LaunchMinimized" ),	( m_bLaunchMinimized ) ? 1 : 0 );
 
-	app->WriteProfileInt( pszSectionName, "LogStyle", m_nLogStyle );
-	app->WriteProfileString( pszSectionName, "LogFileName", m_strLogFileName );
+	app->WriteProfileInt( pszSectionName,       _T( "LogStyle" ), m_nLogStyle );
+	app->WriteProfileString( pszSectionName,    _T( "LogFileName" ), m_strLogFileName );
 
-	app->WriteProfileInt( pszSectionName, "EnableSounds",	( m_bUseSounds ) ? 1 : 0 );
-    app->WriteProfileString( pszSectionName, "LogonSound", m_strLogonSound );
-    app->WriteProfileString( pszSectionName, "LogoffSound", m_strLogoffSound );
+	app->WriteProfileInt( pszSectionName,       _T( "EnableSounds" ),	( m_bUseSounds ) ? 1 : 0 );
+    app->WriteProfileString( pszSectionName,    _T( "LogonSound" ), m_strLogonSound );
+    app->WriteProfileString( pszSectionName,    _T( "LogoffSound" ), m_strLogoffSound );
 
-    app->WriteProfileInt( pszSectionName, "RunBeginDayEvent", ( m_bRunBeginDayEvent ) ? 1 : 0 );
+    app->WriteProfileInt( pszSectionName,       _T( "RunBeginDayEvent" ), ( m_bRunBeginDayEvent ) ? 1 : 0 );
+    app->WriteProfileInt( pszSectionName,       _T( "UseBalloons" ), ( m_bUseBalloons ) ? 1 : 0 );
 
-    app->WriteProfileString( pszSectionName, "LastBeginEventDate", m_strLastBeginEventDate );
+    app->WriteProfileString( pszSectionName,    _T( "LastBeginEventDate" ), m_strLastBeginEventDate );
 
 	return TRUE;
 }
@@ -87,30 +89,33 @@ BOOL Preferences::Load()
 	CWinApp *app = ::AfxGetApp();
 
 	LPCTSTR pszSectionName = _T( "Preferences" );
-	int nAutoStart = app->GetProfileInt( pszSectionName, "AutoStart", 0 );
+	int nAutoStart = app->GetProfileInt( pszSectionName, _T( "AutoStart" ), 0 );
 	m_bAutoStart = ( nAutoStart ) ? 1 : 0;
-	m_nPortNum = app->GetProfileInt( pszSectionName, "PortNumber", 23 );
-	m_nStartNode = app->GetProfileInt( pszSectionName, "StartNode", 2 );
-	m_nEndNode = app->GetProfileInt( pszSectionName, "EndNode", 4 );
-	m_cmdLine = app->GetProfileString( pszSectionName, "CommandLine", "C:\\wwiv\\wwiv50.exe" );
-	m_workDir = app->GetProfileString( pszSectionName, "WorkingDir", "C:\\wwiv" );
-	m_parameters = app->GetProfileString( pszSectionName, "Parameters", "-XT -H@H -N@N" );
-    m_nLocalNode = app->GetProfileInt( pszSectionName, "LocalNodeNum", 1 );
-	int nLaunchMinimized = app->GetProfileInt( pszSectionName, "LaunchMinimized", 0 );
+	m_nPortNum = app->GetProfileInt( pszSectionName, _T( "PortNumber" ), 23 );
+	m_nStartNode = app->GetProfileInt( pszSectionName, _T( "StartNode" ), 2 );
+	m_nEndNode = app->GetProfileInt( pszSectionName, _T( "EndNode" ), 4 );
+	m_cmdLine = app->GetProfileString( pszSectionName, _T( "CommandLine" ), _T( "C:\\wwiv\\wwiv50.exe" ) );
+	m_workDir = app->GetProfileString( pszSectionName, _T( "WorkingDir" ), _T( "C:\\wwiv" ) );
+	m_parameters = app->GetProfileString( pszSectionName, _T( "Parameters" ), "-XT -H@H -N@N" );
+    m_nLocalNode = app->GetProfileInt( pszSectionName, _T( "LocalNodeNum" ), 1 );
+	int nLaunchMinimized = app->GetProfileInt( pszSectionName, _T( "LaunchMinimized" ), 0 );
 	m_bLaunchMinimized = ( nLaunchMinimized ) ? 1 : 0;
 	
-	m_nLogStyle = app->GetProfileInt( pszSectionName, "LogStyle", Preferences::LOG_NONE );
-	m_strLogFileName = app->GetProfileString( pszSectionName, "LogFileName", "" );
+	m_nLogStyle = app->GetProfileInt( pszSectionName, _T( "LogStyle" ), Preferences::LOG_NONE );
+	m_strLogFileName = app->GetProfileString( pszSectionName, _T( "LogFileName" ), "" );
 
-	int nUseSounds = app->GetProfileInt( pszSectionName, "EnableSounds", 0 );
+	int nUseSounds = app->GetProfileInt( pszSectionName, _T( "EnableSounds" ), 0 );
     m_bUseSounds = ( nUseSounds ) ? true : false;
-    m_strLogonSound = app->GetProfileString( pszSectionName, "LogonSound", "" );
-    m_strLogoffSound = app->GetProfileString( pszSectionName, "LogoffSound", "" );
+    m_strLogonSound = app->GetProfileString( pszSectionName, _T( "LogonSound" ), "" );
+    m_strLogoffSound = app->GetProfileString( pszSectionName, _T( "LogoffSound" ), "" );
 
-    int nRunBeginDayEvent = app->GetProfileInt( pszSectionName, "RunBeginDayEvent", 0 );
+    int nRunBeginDayEvent = app->GetProfileInt( pszSectionName, _T( "RunBeginDayEvent" ), 0 );
     m_bRunBeginDayEvent = ( nRunBeginDayEvent ) ? true : false;
+    
+    int nUseBalloons = app->GetProfileInt( pszSectionName, _T( "UseBalloons" ), 1 );
+    m_bUseBalloons = ( nUseBalloons ) ? true : false;
 
-    m_strLastBeginEventDate = app->GetProfileString( pszSectionName, "LastBeginEventDate", "20020101" );
+    m_strLastBeginEventDate = app->GetProfileString( pszSectionName, _T( "LastBeginEventDate" ), "20020101" );
 
 	return TRUE;
 }

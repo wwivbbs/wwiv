@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "wwivtelnetserver.h"
 #include "GeneralPage.h"
+#include ".\generalpage.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -33,6 +34,7 @@ GeneralPage::GeneralPage() : CPropertyPage(GeneralPage::IDD)
 , m_nLocalNode(0)
 , m_bLaunchMinimized(FALSE)
 , m_BeginDayEvent(FALSE)
+, m_bUseBalloons(FALSE)
 {
 	//{{AFX_DATA_INIT(GeneralPage)
 	m_bAutoStart = FALSE;
@@ -74,6 +76,7 @@ void GeneralPage::DoDataExchange(CDataExchange* pDX)
     DDV_MinMaxInt(pDX, m_nLocalNode, 0, 1024);
     DDX_Check(pDX, IDC_PREF_MINIMIZE, m_bLaunchMinimized);
     DDX_Check(pDX, IDC_PREF_BEGINDAYEVENT, m_BeginDayEvent);
+    DDX_Check(pDX, IDC_PREF_USEBALLOONS, m_bUseBalloons);
 }
 
 
@@ -83,6 +86,7 @@ BEGIN_MESSAGE_MAP(GeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_BUTTON_BROWSE2, OnButtonBrowse2)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDC_PREF_AUTOSTART, OnBnClickedPrefAutostart)
+    ON_BN_CLICKED(IDC_PREF_USEBALLOONS, OnBnClickedPrefUseballoons)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -98,7 +102,7 @@ BOOL GeneralPage::OnKillActive()
 		// Extra validation above and beyond the DDV provided by MFC
 		if ( m_nEndNode < m_nStartNode )
 		{
-			MessageBox("Your end node must be greater than your start node");
+			MessageBox( _T( "Your end node must be greater than your start node" ) );
 			return FALSE;
 		}
 
@@ -148,4 +152,9 @@ void GeneralPage::GetDirFromPath(LPCTSTR szPath, CString &dir)
 void GeneralPage::OnBnClickedPrefAutostart()
 {
 	// TODO: Add your control notification handler code here
+}
+
+void GeneralPage::OnBnClickedPrefUseballoons()
+{
+    // TODO: Add your control notification handler code here
 }
