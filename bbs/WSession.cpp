@@ -56,6 +56,7 @@ WSession::WSession( WBbsApp *pApplication )
     m_bAllowCC                              = false;
     m_bUserOnline                           = false;
     m_bQuoting                              = false;
+    m_bTimeOnlineLimited                    = false;
     wfcdrvs[0] = wfcdrvs[1] = wfcdrvs[2] = wfcdrvs[3] = wfcdrvs[4] = wfc_status = 0;
 
     m_nCurrentFileArea                      = 0;
@@ -90,7 +91,6 @@ WSession::WSession( WBbsApp *pApplication )
     num_sys_list = 0;
     screenbottom = 0;
     screenlinest = 0;
-    bbsshutdown = 0;
     subchg = 0;
     tagging = 0;
     tagptr = 0;
@@ -104,7 +104,6 @@ WSession::WSession( WBbsApp *pApplication )
     m_nExecChildProcessWaitTime = 0;
     m_bNewScanAtLogin = 0;
     usernum = 0;
-    shutdowntime = 0.0;
 }
 
 

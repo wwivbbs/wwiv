@@ -31,36 +31,10 @@
 #pragma warning( disable : 4244 )
 #endif
 
-
-//
-// Local function prototypes
-//
-
-/*
-unsigned short WBbsApp::str2spawnopt(char *s);
-unsigned short WBbsApp::str2restrict(char *s);
-unsigned char WBbsApp::stryn2tf(char *s);
-void WBbsApp::read_nextern();
-void WBbsApp::read_arcs();
-void WBbsApp::read_editors();
-void WBbsApp::read_nintern();
-void WBbsApp::read_networks();
-bool WBbsApp::read_names();
-void WBbsApp::read_voting();
-bool WBbsApp::read_dirs();
-void WBbsApp::read_chains();
-bool WBbsApp::read_language();
-bool WBbsApp::read_modem();
-void WBbsApp::read_gfile();
-bool WBbsApp::make_abs_path(char *pszDirectory);
-void WBbsApp::check_phonenum();
-void WBbsApp::create_phone_file();
-*/
-
 #ifdef _UNIX
-#define XINIT_PRINTF(x)
+#define XINIT_PRINTF( x )
 #else
-#define XINIT_PRINTF(x) std::cout << (x)
+#define XINIT_PRINTF( x ) std::cout << ( x )
 #endif // _UNIX
 
 #define INI_STRFILE 7
@@ -68,12 +42,12 @@ void WBbsApp::create_phone_file();
 
 // Turns a string into a bitmapped unsigned short flag for use with
 // ExecuteExternalProgram calls.
-unsigned short WBbsApp::str2spawnopt(char *s)
+unsigned short WBbsApp::str2spawnopt( const char *s )
 {
-    char ts[128];
+    char ts[ 255 ];
 
     unsigned short return_val = 0;
-    strcpy( ts, (const char*) s );
+    strcpy( ts, s );
     strupr( ts );
 
     if (strstr(ts, "ABORT") != NULL)
@@ -114,7 +88,7 @@ unsigned short WBbsApp::str2spawnopt(char *s)
 
 
 // Takes string s and creates restrict val
-unsigned short WBbsApp::str2restrict(char *s)
+unsigned short WBbsApp::str2restrict( const char *s )
 {
     char *rs = restrict_string;
     char s1[81];
@@ -136,7 +110,7 @@ unsigned short WBbsApp::str2restrict(char *s)
 
 // begin callback addition
 
-unsigned char WBbsApp::stryn2tf(char *s)
+unsigned char WBbsApp::stryn2tf(const char *s)
 {
 	char ch = wwiv::UpperCase<char>( *s );
 
@@ -323,7 +297,7 @@ bool WBbsApp::ReadINIFile()
 	sess->SetExecLogSyncFoss( true );
 	sess->SetNewScanAtLogin( false );
 
-    for ( unsigned int i1 = 0; i1 < NEL( eventinfo ); i1++ )
+    for ( size_t i1 = 0; i1 < NEL( eventinfo ); i1++ )
     {
         app->spawn_opts[ i1 ] = eventinfo[ i1 ].eflags;
     }
@@ -341,7 +315,7 @@ bool WBbsApp::ReadINIFile()
     }
 
     // initialize ini communication
-    char szInstanceName[81];
+    char szInstanceName[255];
     sprintf( szInstanceName, "WWIV-%u", GetInstanceNumber() );
     if ( ini_init( WWIV_INI, szInstanceName, INI_TAG ) )
     {
@@ -359,9 +333,9 @@ bool WBbsApp::ReadINIFile()
         //
 
         // pull out event flags
-        for ( unsigned int i = 0; i < NEL( app->spawn_opts ); i++ )
+        for ( size_t i = 0; i < NEL( app->spawn_opts ); i++ )
         {
-            if ( (unsigned int)i < NEL( eventinfo ) )
+            if ( i < NEL( eventinfo ) )
             {
                 if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), i, eventinfo[i].name ) ) != NULL )
                 {
@@ -460,7 +434,7 @@ bool WBbsApp::ReadINIFile()
 
         // sysconfig flags
         syscfg.sysconfig = static_cast<unsigned short>( ini_flags( 'Y', get_key_str, sysconfig_flags,
-            NEL( sysconfig_flags ), syscfg.sysconfig ) );
+                            NEL( sysconfig_flags ), syscfg.sysconfig ) );
 
         // misc stuff
         if ( ( ( ss = ini_get( get_key_str( INI_STR_MAIL_WHO_LEN ), -1, NULL ) ) != NULL ) &&
@@ -468,7 +442,7 @@ bool WBbsApp::ReadINIFile()
         {
             sess->mail_who_field_len = atoi( ss );
         }
-        if ((ss = ini_get(get_key_str(INI_STR_RATIO), -1, NULL)) != NULL)
+        if ( ( ss = ini_get( get_key_str( INI_STR_RATIO ), -1, NULL ) ) != NULL )
         {
             syscfg.req_ratio = static_cast<float>( atof( ss ) );
         }
@@ -570,10 +544,10 @@ bool WBbsApp::ReadConfig()
     make_abs_path(full_syscfg.menudir);
 
     make_abs_path(syscfgovr.tempdir);
-    strncpy(full_syscfg.tempdir, syscfgovr.tempdir, sizeof(full_syscfg.tempdir));
+    strncpy( full_syscfg.tempdir, syscfgovr.tempdir, sizeof( full_syscfg.tempdir ) );
 
     make_abs_path(syscfgovr.batchdir);
-    strncpy(full_syscfg.batchdir, syscfgovr.batchdir, sizeof(full_syscfg.batchdir));
+    strncpy( full_syscfg.batchdir, syscfgovr.batchdir, sizeof( full_syscfg.batchdir ) );
 
 
     // update user info data
@@ -585,12 +559,12 @@ bool WBbsApp::ReadConfig()
     int fsoffset = OFFOF(forwardsys);
     int fnoffset = OFFOF(net_num);
 
-    if ( userreclen != full_syscfg.userreclen       ||
-         waitingoffset != full_syscfg.waitingoffset    ||
-         inactoffset != full_syscfg.inactoffset      ||
-         sysstatusoffset != full_syscfg.sysstatusoffset  ||
-         fuoffset != full_syscfg.fuoffset         ||
-         fsoffset != full_syscfg.fsoffset         ||
+    if ( userreclen != full_syscfg.userreclen           ||
+         waitingoffset != full_syscfg.waitingoffset     ||
+         inactoffset != full_syscfg.inactoffset         ||
+         sysstatusoffset != full_syscfg.sysstatusoffset ||
+         fuoffset != full_syscfg.fuoffset               ||
+         fsoffset != full_syscfg.fsoffset               ||
          fnoffset != full_syscfg.fnoffset )
     {
         full_syscfg.userreclen      = userreclen;
@@ -621,70 +595,70 @@ bool WBbsApp::ReadConfig()
         ovrFile2.Close();
     }
 
-    syscfg.newuserpw = strdup(full_syscfg.newuserpw);
-    syscfg.systempw = strdup(full_syscfg.systempw);
+    syscfg.newuserpw        = strdup(full_syscfg.newuserpw);
+    syscfg.systempw         = strdup(full_syscfg.systempw);
 
-    syscfg.msgsdir = strdup(full_syscfg.msgsdir);
-    syscfg.gfilesdir = strdup(full_syscfg.gfilesdir);
-    syscfg.datadir = strdup(full_syscfg.datadir);
-    syscfg.dloadsdir = strdup(full_syscfg.dloadsdir);
-    syscfg.batchdir = strdup(full_syscfg.batchdir);
-    syscfg.menudir = strdup(full_syscfg.menudir);
-    syscfg.terminal = strdup(full_syscfg.terminal);
+    syscfg.msgsdir          = strdup(full_syscfg.msgsdir);
+    syscfg.gfilesdir        = strdup(full_syscfg.gfilesdir);
+    syscfg.datadir          = strdup(full_syscfg.datadir);
+    syscfg.dloadsdir        = strdup(full_syscfg.dloadsdir);
+    syscfg.batchdir         = strdup(full_syscfg.batchdir);
+    syscfg.menudir          = strdup(full_syscfg.menudir);
+    syscfg.terminal         = strdup(full_syscfg.terminal);
 
-    syscfg.systemname = strdup(full_syscfg.systemname);
-    syscfg.systemphone = strdup(full_syscfg.systemphone);
-    syscfg.sysopname = strdup(full_syscfg.sysopname);
-    syscfg.executestr = strdup(full_syscfg.executestr);
+    syscfg.systemname       = strdup(full_syscfg.systemname);
+    syscfg.systemphone      = strdup(full_syscfg.systemphone);
+    syscfg.sysopname        = strdup(full_syscfg.sysopname);
+    syscfg.executestr       = strdup(full_syscfg.executestr);
 
-    syscfg.beginday_c = strdup(full_syscfg.beginday_c);
-    syscfg.logon_c = strdup(full_syscfg.logon_c);
-    syscfg.logoff_c = strdup(full_syscfg.logoff_c);
-    syscfg.newuser_c = strdup(full_syscfg.newuser_c);
-    syscfg.upload_c = strdup(full_syscfg.upload_c);
-    syscfg.v_scan_c = strdup(full_syscfg.v_scan_c);
-    syscfg.dszbatchdl = strdup(full_syscfg.dszbatchdl);
-    syscfg.dial_prefix = strdup(full_syscfg.dial_prefix);
+    syscfg.beginday_c       = strdup(full_syscfg.beginday_c);
+    syscfg.logon_c          = strdup(full_syscfg.logon_c);
+    syscfg.logoff_c         = strdup(full_syscfg.logoff_c);
+    syscfg.newuser_c        = strdup(full_syscfg.newuser_c);
+    syscfg.upload_c         = strdup(full_syscfg.upload_c);
+    syscfg.v_scan_c         = strdup(full_syscfg.v_scan_c);
+    syscfg.dszbatchdl       = strdup(full_syscfg.dszbatchdl);
+    syscfg.dial_prefix      = strdup(full_syscfg.dial_prefix);
 
-    syscfg.newusersl = full_syscfg.newusersl;
-    syscfg.newuserdsl = full_syscfg.newuserdsl;
-    syscfg.maxwaiting = full_syscfg.maxwaiting;
-    syscfg.newuploads = full_syscfg.newuploads;
-    syscfg.closedsystem = full_syscfg.closedsystem;
+    syscfg.newusersl        = full_syscfg.newusersl;
+    syscfg.newuserdsl       = full_syscfg.newuserdsl;
+    syscfg.maxwaiting       = full_syscfg.maxwaiting;
+    syscfg.newuploads       = full_syscfg.newuploads;
+    syscfg.closedsystem     = full_syscfg.closedsystem;
 
-    syscfg.systemnumber = full_syscfg.systemnumber;
-    syscfg.maxusers = full_syscfg.maxusers;
+    syscfg.systemnumber     = full_syscfg.systemnumber;
+    syscfg.maxusers         = full_syscfg.maxusers;
     syscfg.newuser_restrict = full_syscfg.newuser_restrict;
-    syscfg.sysconfig = full_syscfg.sysconfig;
-    syscfg.sysoplowtime = full_syscfg.sysoplowtime;
-    syscfg.sysophightime = full_syscfg.sysophightime;
-    syscfg.executetime = full_syscfg.executetime;
-    syscfg.netlowtime = full_syscfg.netlowtime;
-    syscfg.nethightime = full_syscfg.nethightime;
-    syscfg.max_subs = full_syscfg.max_subs;
-    syscfg.max_dirs = full_syscfg.max_dirs;
-    syscfg.qscn_len = full_syscfg.qscn_len;
-    syscfg.userreclen = full_syscfg.userreclen;
+    syscfg.sysconfig        = full_syscfg.sysconfig;
+    syscfg.sysoplowtime     = full_syscfg.sysoplowtime;
+    syscfg.sysophightime    = full_syscfg.sysophightime;
+    syscfg.executetime      = full_syscfg.executetime;
+    syscfg.netlowtime       = full_syscfg.netlowtime;
+    syscfg.nethightime      = full_syscfg.nethightime;
+    syscfg.max_subs         = full_syscfg.max_subs;
+    syscfg.max_dirs         = full_syscfg.max_dirs;
+    syscfg.qscn_len         = full_syscfg.qscn_len;
+    syscfg.userreclen       = full_syscfg.userreclen;
 
-    syscfg.post_call_ratio = full_syscfg.post_call_ratio;
-    syscfg.req_ratio = full_syscfg.req_ratio;
-    syscfg.newusergold = full_syscfg.newusergold;
+    syscfg.post_call_ratio  = full_syscfg.post_call_ratio;
+    syscfg.req_ratio        = full_syscfg.req_ratio;
+    syscfg.newusergold      = full_syscfg.newusergold;
 
-    syscfg.autoval[0] = full_syscfg.autoval[0];
-    syscfg.autoval[1] = full_syscfg.autoval[1];
-    syscfg.autoval[2] = full_syscfg.autoval[2];
-    syscfg.autoval[3] = full_syscfg.autoval[3];
-    syscfg.autoval[4] = full_syscfg.autoval[4];
-    syscfg.autoval[5] = full_syscfg.autoval[5];
-    syscfg.autoval[6] = full_syscfg.autoval[6];
-    syscfg.autoval[7] = full_syscfg.autoval[7];
-    syscfg.autoval[8] = full_syscfg.autoval[8];
-    syscfg.autoval[9] = full_syscfg.autoval[9];
+    syscfg.autoval[0]       = full_syscfg.autoval[0];
+    syscfg.autoval[1]       = full_syscfg.autoval[1];
+    syscfg.autoval[2]       = full_syscfg.autoval[2];
+    syscfg.autoval[3]       = full_syscfg.autoval[3];
+    syscfg.autoval[4]       = full_syscfg.autoval[4];
+    syscfg.autoval[5]       = full_syscfg.autoval[5];
+    syscfg.autoval[6]       = full_syscfg.autoval[6];
+    syscfg.autoval[7]       = full_syscfg.autoval[7];
+    syscfg.autoval[8]       = full_syscfg.autoval[8];
+    syscfg.autoval[9]       = full_syscfg.autoval[9];
 
-    syscfg.wwiv_reg_number = full_syscfg.wwiv_reg_number;
-    syscfg.regcode = full_syscfg.regcode;
-    syscfg.sysconfig1 = full_syscfg.sysconfig1;
-    syscfg.rrd = full_syscfg.rrd;
+    syscfg.wwiv_reg_number  = full_syscfg.wwiv_reg_number;
+    syscfg.regcode          = full_syscfg.regcode;
+    syscfg.sysconfig1       = full_syscfg.sysconfig1;
+    syscfg.rrd              = full_syscfg.rrd;
 
     return true;
 }
@@ -722,42 +696,42 @@ bool WBbsApp::SaveConfig()
         strcpy(full_syscfg.dszbatchdl, syscfg.dszbatchdl);
         strcpy(full_syscfg.dial_prefix, syscfg.dial_prefix);
 
-        full_syscfg.newusersl = syscfg.newusersl;
-        full_syscfg.newuserdsl = syscfg.newuserdsl;
-        full_syscfg.maxwaiting = syscfg.maxwaiting;
-        full_syscfg.newuploads = syscfg.newuploads;
-        full_syscfg.closedsystem = syscfg.closedsystem;
+        full_syscfg.newusersl       = syscfg.newusersl;
+        full_syscfg.newuserdsl      = syscfg.newuserdsl;
+        full_syscfg.maxwaiting      = syscfg.maxwaiting;
+        full_syscfg.newuploads      = syscfg.newuploads;
+        full_syscfg.closedsystem    = syscfg.closedsystem;
 
-        full_syscfg.systemnumber = syscfg.systemnumber;
-        full_syscfg.maxusers = syscfg.maxusers;
+        full_syscfg.systemnumber    = syscfg.systemnumber;
+        full_syscfg.maxusers        = syscfg.maxusers;
         full_syscfg.newuser_restrict = syscfg.newuser_restrict;
-        full_syscfg.sysconfig = syscfg.sysconfig;
-        full_syscfg.sysoplowtime = syscfg.sysoplowtime;
-        full_syscfg.sysophightime = syscfg.sysophightime;
-        full_syscfg.executetime = syscfg.executetime;
-        full_syscfg.netlowtime = syscfg.netlowtime;
-        full_syscfg.nethightime = syscfg.nethightime;
-        full_syscfg.max_subs = syscfg.max_subs;
-        full_syscfg.max_dirs = syscfg.max_dirs;
-        full_syscfg.qscn_len = syscfg.qscn_len;
-        full_syscfg.userreclen = syscfg.userreclen;
+        full_syscfg.sysconfig       = syscfg.sysconfig;
+        full_syscfg.sysoplowtime    = syscfg.sysoplowtime;
+        full_syscfg.sysophightime   = syscfg.sysophightime;
+        full_syscfg.executetime     = syscfg.executetime;
+        full_syscfg.netlowtime      = syscfg.netlowtime;
+        full_syscfg.nethightime     = syscfg.nethightime;
+        full_syscfg.max_subs        = syscfg.max_subs;
+        full_syscfg.max_dirs        = syscfg.max_dirs;
+        full_syscfg.qscn_len        = syscfg.qscn_len;
+        full_syscfg.userreclen      = syscfg.userreclen;
 
         full_syscfg.post_call_ratio = syscfg.post_call_ratio;
-        full_syscfg.req_ratio = syscfg.req_ratio;
-        full_syscfg.newusergold = syscfg.newusergold;
+        full_syscfg.req_ratio       = syscfg.req_ratio;
+        full_syscfg.newusergold     = syscfg.newusergold;
 
-        full_syscfg.autoval[0] = syscfg.autoval[0];
-        full_syscfg.autoval[1] = syscfg.autoval[1];
-        full_syscfg.autoval[2] = syscfg.autoval[2];
-        full_syscfg.autoval[3] = syscfg.autoval[3];
-        full_syscfg.autoval[4] = syscfg.autoval[4];
-        full_syscfg.autoval[5] = syscfg.autoval[5];
-        full_syscfg.autoval[6] = syscfg.autoval[6];
-        full_syscfg.autoval[7] = syscfg.autoval[7];
-        full_syscfg.autoval[8] = syscfg.autoval[8];
-        full_syscfg.autoval[9] = syscfg.autoval[9];
+        full_syscfg.autoval[0]      = syscfg.autoval[0];
+        full_syscfg.autoval[1]      = syscfg.autoval[1];
+        full_syscfg.autoval[2]      = syscfg.autoval[2];
+        full_syscfg.autoval[3]      = syscfg.autoval[3];
+        full_syscfg.autoval[4]      = syscfg.autoval[4];
+        full_syscfg.autoval[5]      = syscfg.autoval[5];
+        full_syscfg.autoval[6]      = syscfg.autoval[6];
+        full_syscfg.autoval[7]      = syscfg.autoval[7];
+        full_syscfg.autoval[8]      = syscfg.autoval[8];
+        full_syscfg.autoval[9]      = syscfg.autoval[9];
 
-        for (int i = 0; i < 4; i++)
+        for ( int i = 0; i < 4; i++ )
         {
             strcpy(full_syscfg.arcs[i].extension, arcs[i].extension);
             strcpy(full_syscfg.arcs[i].arca, arcs[i].arca);
@@ -766,8 +740,8 @@ bool WBbsApp::SaveConfig()
         }
 
         full_syscfg.wwiv_reg_number = syscfg.wwiv_reg_number;
-        full_syscfg.sysconfig1 = syscfg.sysconfig1;
-        full_syscfg.rrd = syscfg.rrd;
+        full_syscfg.sysconfig1      = syscfg.sysconfig1;
+        full_syscfg.rrd             = syscfg.rrd;
 
         configFile.Seek( 0, WFile::seekBegin );
         configFile.Write( &full_syscfg, sizeof( configrec ) );
@@ -790,12 +764,12 @@ void WBbsApp::read_nextern()
     if ( externalFile.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         unsigned long l = externalFile.GetLength();
-        if (l > 15 * sizeof(newexternalrec))
+        if ( l > 15 * sizeof( newexternalrec ) )
         {
-            l = 15 * sizeof(newexternalrec);
+            l = 15 * sizeof( newexternalrec );
         }
         externs = static_cast<newexternalrec *>( BbsAllocWithComment(l + 10, "external protocols") );
-		WWIV_ASSERT(externs != NULL);
+		WWIV_ASSERT( externs != NULL );
         sess->SetNumberOfExternalProtocols( externalFile.Read( externs, l ) / sizeof( newexternalrec ) );
     }
 }
@@ -836,29 +810,29 @@ void WBbsApp::read_editors()
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         unsigned long l = file.GetLength();
-        if (l > 10 * sizeof(editorrec))
+        if ( l > 10 * sizeof( editorrec ) )
         {
-            l = 10 * sizeof(editorrec);
+            l = 10 * sizeof( editorrec );
         }
         editors = static_cast<editorrec *>( BbsAllocWithComment(l + 10, "external editors") );
 		WWIV_ASSERT( editors != NULL );
-        sess->SetNumberOfEditors( ( file.Read( editors, l ) ) / sizeof( editorrec ) );
+        sess->SetNumberOfEditors( file.Read( editors, l ) / sizeof( editorrec ) );
     }
 }
 
 
 void WBbsApp::read_nintern()
 {
-    if (over_intern)
+    if ( over_intern )
     {
-        BbsFreeMemory(over_intern);
+        BbsFreeMemory( over_intern );
         over_intern = NULL;
     }
     WFile file( syscfg.datadir, NINTERN_DAT );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         over_intern = static_cast<newexternalrec *>( BbsAllocWithComment( 3 * sizeof( newexternalrec ), "internal protocol overrides" ) );
-		WWIV_ASSERT(over_intern != NULL);
+		WWIV_ASSERT( over_intern != NULL );
 
         file.Read( over_intern, 3 * sizeof( newexternalrec ) );
     }
@@ -907,33 +881,33 @@ void WBbsApp::read_networks()
             {
                 sess->internetEmailDomain = &(szBuffer[7]);
             }
-            else if ((!strnicmp(szBuffer, "POPNAME=", 8)) && sess->internetEmailName.empty() )
+            else if ( !strnicmp(szBuffer, "POPNAME=", 8 ) && sess->internetEmailName.empty() )
             {
                 sess->internetEmailName = &( szBuffer[8] );
             }
-            else if (!strnicmp(szBuffer, "FWDDOM=", 7))
+            else if ( !strnicmp(szBuffer, "FWDDOM=", 7) )
             {
                 sess->internetEmailDomain = &(szBuffer[7]);
             }
-            else if (!strnicmp(szBuffer, "FWDNAME=", 8))
+            else if ( !strnicmp(szBuffer, "FWDNAME=", 8) )
             {
                 sess->internetEmailName = &(szBuffer[8]);
             }
-            else if (!strnicmp(szBuffer, "POPDOMAIN=", 10))
+            else if ( !strnicmp(szBuffer, "POPDOMAIN=", 10) )
             {
                 sess->internetPopDomain = &( szBuffer[10] );
             }
-            else if ((!strnicmp(szBuffer, "REALNAME=", 9)) &&
-                ((szBuffer[9] == 'Y') || (szBuffer[9] == 'y')))
+            else if ( !strnicmp(szBuffer, "REALNAME=", 9 ) &&
+                      ( szBuffer[9] == 'Y' || szBuffer[9] == 'y' ) )
             {
                 sess->SetInternetUseRealNames( true );
             }
         }
-        fsh_close(fp);
+        fsh_close( fp );
     }
-    if (net_networks)
+    if ( net_networks )
     {
-        BbsFreeMemory(net_networks);
+        BbsFreeMemory( net_networks );
     }
     net_networks = NULL;
     WFile file( syscfg.datadir, NETWORKS_DAT );
@@ -960,10 +934,10 @@ void WBbsApp::read_networks()
     if ( !net_networks )
     {
         net_networks = static_cast<net_networks_rec *>( BbsAllocWithComment( sizeof( net_networks_rec ), "networks.dat" ) );
-		WWIV_ASSERT(net_networks != NULL);
+		WWIV_ASSERT( net_networks != NULL );
         sess->SetMaxNetworkNumber( 1 );
-        strcpy(net_networks->name, "WWIVnet");
-        strcpy(net_networks->dir, syscfg.datadir);
+        strcpy( net_networks->name, "WWIVnet" );
+        strcpy( net_networks->dir, syscfg.datadir );
         net_networks->sysnum = syscfg.systemnumber;
     }
 }
@@ -971,14 +945,14 @@ void WBbsApp::read_networks()
 
 bool WBbsApp::read_names()
 {
-    if (smallist)
+    if ( smallist )
     {
-        BbsFreeMemory((void *) smallist);
+        BbsFreeMemory( smallist );
     }
     smallist = NULL;
-    smallist = static_cast< smalrec * >( BbsAllocWithComment( static_cast<long>( syscfg.maxusers ) * static_cast<long>( sizeof( smalrec ) ),
+    smallist = static_cast<smalrec *>( BbsAllocWithComment( static_cast<long>( syscfg.maxusers ) * static_cast<long>( sizeof( smalrec ) ),
         "names.lst - try decreasing max users in INIT" ) );
-	WWIV_ASSERT(smallist != NULL);
+	WWIV_ASSERT( smallist != NULL );
 
     WFile file( syscfg.datadir, NAMES_LST );
     if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
@@ -1075,7 +1049,7 @@ void WBbsApp::read_chains()
         {
             for ( int i = 0; i < sess->GetNumberOfChains(); i++ )
             {
-                for ( unsigned int i1 = 0; i1 < sizeof( chains_reg[i].regby ) / sizeof( chains_reg[i].regby[0] ); i1++ )
+                for ( size_t i1 = 0; i1 < sizeof( chains_reg[i].regby ) / sizeof( chains_reg[i].regby[0] ); i1++ )
                 {
                     chains_reg[i].regby[i1] = 0;
                 }

@@ -139,7 +139,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
 			do
 			{
 				sess->bout << "|#2" << i << ": |#0";
-				s1[0] = 0;
+				s1[0] = '\0';
 				bool bAllowPrevious = ( i4 > 0 ) ? true : false;
 				while ( inli( s1, s, 90, true, bAllowPrevious ) )
 				{
@@ -199,20 +199,20 @@ void modify_extended_description(char **sss, const char *dest, const char *title
 }
 
 
-bool valid_desc(const unsigned char *pszDescription)
+bool valid_desc( const char *pszDescription )
 {
     // I don't think this function is really doing what it should
     // be doing, but am not sure what it should be doing instead.
-	unsigned int i = 0;
+	size_t i = 0;
 
 	do
 	{
-		if (pszDescription[i] > 64 && pszDescription[i] < 123)
+        if ( pszDescription[i] > '@' && pszDescription[i] < '{' )
 		{
 			return true;
 		}
 		i++;
-	} while ( i < strlen( reinterpret_cast<char*>( const_cast<unsigned char*>( pszDescription ) ) ) );
+	} while ( i < strlen( pszDescription ) );
 	return false;
 }
 
@@ -303,12 +303,12 @@ bool get_file_idz(uploadsrec * u, int dn)
 						ss[i] = '\x20';
 					}
 				}
-				if (!valid_desc((unsigned char *) ss))
+				if ( !valid_desc( ss ) )
 				{
 					do
 					{
-						ss = strtok(NULL, "\n");
-					} while (!valid_desc((unsigned char *) ss));
+						ss = strtok( NULL, "\n" );
+					} while ( !valid_desc( ss ) );
 				}
 			}
 			if (ss[strlen(ss) - 1] == '\r')
@@ -798,7 +798,7 @@ void tag_files()
 
 int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs)
 {
-	unsigned char ch;
+	char ch;
 	char s1[81], s2[81];
 	int i;
 
@@ -1212,6 +1212,8 @@ char fancy_prompt( const char *pszPrompt, const char *pszAcceptChars )
 
 void endlist(int mode)
 {
+    // if mode == 1, list files
+    // if mode == 2, new files
 	if (sess->tagging != 0)
 	{
 		if (g_num_listed)
@@ -1247,27 +1249,11 @@ void endlist(int mode)
 					}
 				}
 			}
-			switch (mode)
-			{
-			case 1:
-				sess->bout << "\r|#9Files listed: |#2 " << g_num_listed;
-				break;
-			case 2:
-				sess->bout << "\r|#9Files listed: |#2 " << g_num_listed;
-				break;
-			}
+			sess->bout << "\r|#9Files listed: |#2 " << g_num_listed;
 		}
 		else
 		{
-			switch (mode)
-			{
-			case 1:
-				sess->bout << "\r|13No matching files found.\r\n\n";
-				break;
-			case 2:
-				sess->bout << "\r|#1No new files found.\r\n\n";
-				break;
-			}
+            sess->bout << ( mode == 1 ) ? "\r|13No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n";
 		}
 	}
 }
@@ -1276,11 +1262,10 @@ void endlist(int mode)
 void SetNewFileScanDate()
 {
 	char ag[10];
-	int m, dd, y;
 	bool ok = true;
 
 	nl();
-	struct tm *pTm = localtime(&nscandate);
+	struct tm *pTm = localtime( &nscandate );
 
 	bprintf("|#9Current limiting date: |#2%02d/%02d/%02d\r\n", pTm->tm_mon + 1, pTm->tm_mday, (pTm->tm_year % 100));
 	nl();
@@ -1313,10 +1298,10 @@ void SetNewFileScanDate()
 				ch = onek_ncr("0123456789\b");
 				break;
 			}
-			if (hangup)
+			if ( hangup )
 			{
 				ok = false;
-				ag[0] = 0;
+				ag[0] = '\0';
 				break;
 			}
 			switch (ch)
@@ -1328,17 +1313,17 @@ void SetNewFileScanDate()
 					ok = false;
 					break;
 				case 8:
-					ag[8] = 0;
+					ag[8] = '\0';
 					break;
 				default:
-					ch = 0;
+					ch = '\0';
 					break;
 				}
 				break;
 			case BACKSPACE:
 					sess->bout << " \b";
 					--i;
-					if ( ( i == 2 ) || ( i == 5 ) )
+					if ( i == 2 || i == 5 )
 					{
 						BackSpace();
 						--i;
@@ -1352,11 +1337,11 @@ void SetNewFileScanDate()
 	} while ( ch != '\r' && !hangup );
 
 	nl();
-	if (ok)
+	if ( ok )
 	{
-		m = atoi(ag);
-		dd = atoi(&(ag[3]));
-		y = atoi(&(ag[6])) + 1900;
+		int m = atoi(ag);
+		int dd = atoi(&(ag[3]));
+		int y = atoi(&(ag[6])) + 1900;
 		if (y < 1920)
 		{
 			y += 100;
@@ -1385,8 +1370,8 @@ void SetNewFileScanDate()
 		nscandate = mktime( &newTime );
 
 		// Display the new nscan date
-		struct tm *pNewTime = localtime(&nscandate);
-		bprintf("|#9New Limiting Date: |#2%02d/%02d/%04d\r\n", pNewTime->tm_mon + 1, pNewTime->tm_mday, (pNewTime->tm_year +1900));
+		struct tm *pNewTime = localtime( &nscandate );
+		bprintf( "|#9New Limiting Date: |#2%02d/%02d/%04d\r\n", pNewTime->tm_mon + 1, pNewTime->tm_mday, ( pNewTime->tm_year +1900 ) );
 
 		// Hack to make sure the date covers everythig since we had to increment the hour by one
 		// to show the right date on some versions of MSVC
@@ -1399,59 +1384,59 @@ void SetNewFileScanDate()
 }
 
 
-void removefilesnotthere(int dn, int *autodel)
+void removefilesnotthere( int dn, int *autodel )
 {
-	char ch = 0;
-	char s[MAX_PATH];
-	char s1[MAX_PATH];
+	char ch = '\0';
 	uploadsrec u;
 
-	dliscan1(dn);
-	strcpy(s, "*.*");
-	align(s);
-	int i = recno(s);
+	dliscan1( dn );
+	char szAllFilesFileMask[MAX_PATH];
+	strcpy( szAllFilesFileMask, "*.*" );
+	align( szAllFilesFileMask );
+	int i = recno( szAllFilesFileMask );
 	bool abort = false;
 	while ( !hangup && i > 0 && !abort )
 	{
+        char szCandidateFileName[ MAX_PATH ];
 		WFile fileDownload( g_szDownloadFileName );
 		fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
 		FileAreaSetRecord( fileDownload, i );
 		fileDownload.Read( &u, sizeof( uploadsrec ) );
 		fileDownload.Close();
-		sprintf(s1, "%s%s", directories[dn].path, u.filename);
-        StringRemoveWhitespace( s1 );
-		if (!WFile::Exists(s1))
+		sprintf( szCandidateFileName, "%s%s", directories[dn].path, u.filename );
+        StringRemoveWhitespace( szCandidateFileName );
+		if ( !WFile::Exists( szCandidateFileName ) )
 		{
 			StringTrim(u.description);
-			sprintf(s1, "|#2%s :|#1 %-40.40s", u.filename, u.description);
+			sprintf( szCandidateFileName, "|#2%s :|#1 %-40.40s", u.filename, u.description );
 			if (!*autodel)
 			{
 				BackLine();
-				sess->bout << s1;
+				sess->bout << szCandidateFileName;
 				nl();
 				sess->bout << "|#5Remove Entry (Yes/No/Quit/All) : ";
-				ch = onek_ncr("QYNA");
+				ch = onek_ncr( "QYNA" );
 			}
 			else
 			{
 				nl();
-                sess->bout << "|#1Removing entry " << s1;
+                sess->bout << "|#1Removing entry " << szCandidateFileName;
 				ch = 'Y';
 			}
 			if ( ch == 'Y' || ch == 'A' )
 			{
-				if (ch == 'A')
+				if ( ch == 'A' )
 				{
 					sess->bout << "ll";
 					*autodel = 1;
 				}
-				if (u.mask & mask_extended)
+				if ( u.mask & mask_extended )
 				{
-					delete_extended_description(u.filename);
+					delete_extended_description( u.filename );
 				}
-				sysoplogf("-%s Removed from %s", u.filename, directories[dn].name);
+				sysoplogf( "-%s Removed from %s", u.filename, directories[dn].name );
 				fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
-				for (int i1 = i; i1 < sess->numf; i1++)
+				for ( int i1 = i; i1 < sess->numf; i1++ )
 				{
 					FileAreaSetRecord( fileDownload, i1 + 1 );
 					fileDownload.Read( &u, sizeof( uploadsrec ) );
@@ -1467,15 +1452,15 @@ void removefilesnotthere(int dn, int *autodel)
 				fileDownload.Write( &u, sizeof( uploadsrec ) );
 				fileDownload.Close();
 			}
-			else if (ch == 'Q')
+			else if ( ch == 'Q' )
 			{
 				abort = true;
 			}
 		}
-		i = nrecno(s, i);
+		i = nrecno( szAllFilesFileMask, i );
         bool next = true;
-		checka(&abort, &next);
-        if (!next)
+		checka( &abort, &next );
+        if ( !next )
         {
             i = 0;
         }

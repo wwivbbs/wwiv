@@ -49,8 +49,8 @@ private:
 
 private:
     void ExecuteTemporaryCommand( const char *pszCommand );
-    char scan_to_char(unsigned char ch);
-    void alt_key(unsigned char ch);
+    char scan_to_char( int nKeyCode );
+    void alt_key( int nKeyCode );
     int  GetEditLineStringLength( const char *pszText );
 
 protected:

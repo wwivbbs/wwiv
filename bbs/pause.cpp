@@ -67,8 +67,7 @@ void pausescr()
         if ( okansi() )
         {
             i = curatr;
-            setc( sess->thisuser.hasColor() ? sess->thisuser.GetColor( 3 ) :
-                                                sess->thisuser.GetBWColor( 3 ) );
+            setc( sess->thisuser.hasColor() ? sess->thisuser.GetColor( 3 ) : sess->thisuser.GetBWColor( 3 ) );
         }
         for (i3 = 0; i3 < i2; i3++)
         {
@@ -77,20 +76,20 @@ void pausescr()
                 i1 -= 2;
             }
 			sess->bout << ss;
-            for (i3 = 0; i3 < i1; i3++)
+            for ( i3 = 0; i3 < i1; i3++ )
             {
                 BackSpace();
             }
             if ( okansi() )
             {
-                setc(i);
+                setc( i );
             }
         }
     }
 
     if ( okansi() )
     {
-        time(&tstart);
+        time( &tstart );
 
         lines_listed = 0;
         warned = 0;
@@ -109,33 +108,33 @@ void pausescr()
                         setc( sess->thisuser.hasColor() ? sess->thisuser.GetColor( 6 ) :
                         sess->thisuser.GetBWColor( 6 ) );
                         sess->bout << ss;
-                        for (i3 = 0; i3 < i2; i3++)
+                        for ( i3 = 0; i3 < i2; i3++ )
                         {
-                            if ((s[i3] == 3) && (i1 > 1))
+                            if ( s[i3] == 3 && i1 > 1 )
                             {
                                 i1 -= 2;
                             }
                         }
                         sess->bout << "\x1b[" << i1 << "D";
-                        setc(i);
+                        setc( i );
                     }
                 }
                 else
                 {
-                    if (ttotal > 180)
+                    if ( ttotal > 180 )
                     {
-                        bputch(CG);
-                        for (i3 = 0; i3 < i1; i3++)
+                        bputch( CG );
+                        for ( i3 = 0; i3 < i1; i3++ )
                         {
-                            bputch(' ');
+                            bputch( ' ' );
                         }
                         sess->bout << "\x1b[" << i1 << "D";
-                        setc(i);
-                        setiia(oiia);
+                        setc( i );
+                        setiia( oiia );
                         return;
                     }
                 }
-                WWIV_Delay(100);
+                WWIV_Delay( 100 );
                 WWIV_Delay( 0 );
                 CheckForHangup();
             }

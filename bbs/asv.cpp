@@ -31,7 +31,8 @@ void asv()
     char ch, s[41], s1[81], ph1[12], ph[12], sysname[35], snode[6];
     net_system_list_rec *csne;
     long *reg_num, reg_num1;
-    unsigned char i2, ok = 0, reg = 0, valfile = 0;
+    int i2 = 0, reg = 0, valfile = 0;
+    bool ok = false;
     messagerec msg;
     int nAllowAnon = 0;
 
@@ -202,7 +203,7 @@ void asv()
                                 nl();
                                 sess->bout << "|#6Incorrect!\r\n";
                             }
-                        } while ((--i > 0) && (!reg));
+                        } while ((--i > 0) && !reg );
                     }
                     if (!reg)
                     {

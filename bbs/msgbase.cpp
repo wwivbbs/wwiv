@@ -555,7 +555,7 @@ WFile *OpenEmailFile( bool bAllowWrite )
 }
 
 
-void sendout_email(char *pszTitle, messagerec * pMessageRec, int anony, int nUserNumber, int nSystemNumber, int an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber )
+void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, int nUserNumber, int nSystemNumber, int an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber )
 {
 	mailrec m, messageRecord;
 	net_header_rec nh;
@@ -583,7 +583,7 @@ void sendout_email(char *pszTitle, messagerec * pMessageRec, int anony, int nUse
 	{
 		m.status |= status_new_net;
 		m.title[79] = '\0';
-		m.title[80] = static_cast< unsigned char >( nFromNetworkNumber );
+		m.title[80] = static_cast<char>( nFromNetworkNumber );
 	}
 
 	if (nSystemNumber == 0)

@@ -267,13 +267,13 @@ void valuser( int nUserNumber )
 				if ( ch1 != RETURN )
 				{
 					ch1 -= 'A';
-					if ( s[(int)ch1] == SPACE )
+					if ( s[ch1] == SPACE )
 					{
-						s[(int)ch1] = ch1 + 'A';
+						s[ch1] = ch1 + 'A';
 					}
 					else
 					{
-						s[(int)ch1] = SPACE;
+						s[ch1] = SPACE;
 					}
 					user.toggleArFlag(1 << ch1);
 					ch1 = 0;
@@ -292,13 +292,13 @@ void valuser( int nUserNumber )
 				if (ch1 != RETURN)
 				{
 					ch1 -= 'A';
-					if (s1[(int)ch1] == SPACE)
+					if (s1[ch1] == SPACE)
 					{
-						s1[(int)ch1] = ch1 + 'A';
+						s1[ch1] = ch1 + 'A';
 					}
 					else
 					{
-						s1[(int)ch1] = SPACE;
+						s1[ch1] = SPACE;
 					}
 					user.toggleDarFlag(1 << ch1);
 					ch1 = 0;

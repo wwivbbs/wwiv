@@ -167,7 +167,7 @@ void vote_question(int i, int ii)
         return;
     }
 
-	sess->bout << "|10Which (0-" << v.numanswers << ")? ";
+	sess->bout << "|10Which (0-" << static_cast<int>( v.numanswers ) << ")? ";
     mpl( 2 );
     char* pszAnswer = mmkey( 2 );
     int i1 = atoi( pszAnswer );
@@ -235,7 +235,7 @@ void vote()
     }
 
     int map[21], mapp = 0;
-    for (int i1 = 0; i1 < 20; i1++)
+    for ( int i1 = 0; i1 < 20; i1++ )
     {
         voteFile.Seek( i1 * sizeof( votingrec ), WFile::seekBegin );
         voteFile.Read( &v, sizeof( votingrec ) );
@@ -244,15 +244,15 @@ void vote()
             map[++mapp] = i1;
             if ((mapp % 10) == 0)
             {
-                odc[(mapp / 10) - 1] = '0' + (char)(mapp / 10);
+                odc[(mapp / 10) - 1] = '0' + static_cast<char>( mapp / 10 );
             }
         }
     }
     voteFile.Close();
 
     char sodc[ 10 ];
-    strcpy(sodc, odc);
-    if (mapp == 0)
+    strcpy( sodc, odc );
+    if ( mapp == 0 )
     {
         sess->bout << "\r\n\n|12No voting questions currently.\r\n\n";
         return;
@@ -260,10 +260,10 @@ void vote()
     bool done = false;
     do
     {
-        print_quest(mapp, &map[0]);
+        print_quest( mapp, &map[0] );
         nl();
         sess->bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
-        strcpy(odc, sodc);
+        strcpy( odc, sodc );
         mpl( 2 );
         char* pszAnswer = mmkey( 2 );
         int nQuestionNum = atoi( pszAnswer );

@@ -384,7 +384,7 @@ char * sname2(ZMState state)
 		"YTFile", "YTDataWait", "YTData", "YTEOF", "YTFin", "YRStart",
 		"YRDataWait", "YRData", "YREOF"
 	};
-	return names[(int)state];
+	return names[state];
 }
 
 

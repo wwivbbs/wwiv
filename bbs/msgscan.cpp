@@ -1198,7 +1198,7 @@ void HandleMessageMove( int &nMessageNumber )
 			close_sub();
 			iscan(nTempSubNum);
 			open_sub( true );
-			p2.msg.storage_type = (unsigned char) subboards[sess->GetCurrentReadMessageArea()].storage_type;
+			p2.msg.storage_type = static_cast<unsigned char>( subboards[sess->GetCurrentReadMessageArea()].storage_type );
 			savefile(b, lMessageLen, &(p2.msg), (subboards[sess->GetCurrentReadMessageArea()].filename));
 			app->statusMgr->Lock();
 			p2.qscan = status.qscanptr++;

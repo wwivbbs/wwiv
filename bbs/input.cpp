@@ -97,12 +97,12 @@ void input1( char *pszOutText, int maxlen, int lc, bool crend, bool bAutoMpl )
                     break;
                 case PROPER:
                     chCurrent = upcase( chCurrent );
-                    if (curpos)
+                    if ( curpos )
                     {
                         unsigned char *ss = reinterpret_cast<unsigned char*>( strchr( reinterpret_cast<const char*>( valid_letters ), pszOutText[curpos - 1] ) );
-                        if ((ss != NULL) || (pszOutText[curpos - 1] == 39))
+                        if ( ss != NULL || pszOutText[curpos - 1] == 39 )
                         {
-                            if ( ( curpos < 2 ) || ( pszOutText[curpos - 2] != 77 ) || ( pszOutText[curpos - 1] != 99 ) )
+                            if ( curpos < 2 || pszOutText[curpos - 2] != 77 || pszOutText[curpos - 1] != 99 )
                             {
                                 chCurrent = locase( chCurrent );
                             }
@@ -292,8 +292,8 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
 {
     char szTemp[ 255 ];
     int len, pos, i;
-    const unsigned char dash = '-';
-    const unsigned char slash = '/';
+    const char dash = '-';
+    const char slash = '/';
 
 #if defined( _UNIX )
 	input1(szTemp, maxlen, mode, true);

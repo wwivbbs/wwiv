@@ -732,7 +732,7 @@ int load_config_listing(int config)
 	int len;
 
 	unload_config_listing();
-	memset((void *) &config_listing, 0, sizeof(user_config));
+	memset( &config_listing, 0, sizeof( user_config ) );
 
 	for (int fh = 0; fh < 32; fh++)
 	{
@@ -813,15 +813,11 @@ void unload_config_listing()
 
 int print_extended_plus(const char *pszFileName, int numlist, int indent, int color, struct search_record * search_rec)
 {
-	char *new_ss;
-	unsigned char numl = 0;
+	int numl = 0;
 	int cpos = 0;
-	char ch;
-	int i;
-	int chars_this_line = 0, will_fit;
-	int strip_pos;
+	int chars_this_line = 0;
 
-	will_fit = 80 - abs(indent) - 2;
+	int will_fit = 80 - abs(indent) - 2;
 
 	char * ss = READ_EXTENDED_DESCRIPTION(pszFileName);
 
@@ -830,15 +826,14 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 		return 0;
 	}
 
-	strip_pos = strlen(ss);
-	--strip_pos;
+	int strip_pos = strlen( ss ) - 1;
 
 	while ( ss[strip_pos] && strip_pos > 0 )
 	{
-		unsigned char temp_char = static_cast<unsigned char>( ss[strip_pos] );
+		int temp_char = ss[strip_pos];
 		if (isspace(temp_char))
 		{
-			ss[strip_pos] = 0;
+			ss[strip_pos] = '\0';
 		}
 		else
 		{
@@ -847,32 +842,32 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 		--strip_pos;
 	}
 
-	if (ss)
+	if ( ss )
 	{
-		i = strlen(ss);
-		if (i > MAX_EXTENDED_SIZE)
+		int nBufferSize = strlen( ss );
+		if ( nBufferSize > MAX_EXTENDED_SIZE )
 		{
-			i = MAX_EXTENDED_SIZE;
-			ss[i] = 0;
+			nBufferSize = MAX_EXTENDED_SIZE;
+			ss[nBufferSize] = '\0';
 		}
-		new_ss = static_cast<char *>( BbsAllocA( ( i * 4 ) + 30 ) );
-		WWIV_ASSERT(new_ss);
-		if (new_ss)
+		char* new_ss = static_cast<char *>( BbsAllocA( ( nBufferSize * 4 ) + 30 ) );
+		WWIV_ASSERT( new_ss );
+		if ( new_ss )
 		{
-			strcpy(new_ss, ss);
-			if (search_rec)
+			strcpy( new_ss, ss );
+			if ( search_rec )
 			{
-				colorize_foundtext(new_ss, search_rec, color);
+				colorize_foundtext( new_ss, search_rec, color );
 			}
-			if ((indent > -1) && (indent != 16))
+			if ( indent > -1 && indent != 16 )
 			{
 				sess->bout << "  |#1Extended Description:\n\r";
 			}
-			ch = SOFTRETURN;
+			char ch = SOFTRETURN;
 
-			while ((new_ss[cpos]) && (numl < numlist) && !hangup)
+			while ( new_ss[cpos] && numl < numlist && !hangup )
 			{
-				if ( ( ch == SOFTRETURN ) && indent )
+				if ( ch == SOFTRETURN && indent )
 				{
 					setc(color);
 					bputch('\r');
@@ -889,27 +884,27 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 					chars_this_line = 0;
 					++numl;
 				}
-				else if (chars_this_line > will_fit)
+				else if ( chars_this_line > will_fit )
 				{
 					do
 					{
 						ch = new_ss[cpos++];
-					} while (ch != '\n' && ch != 0);
+					} while ( ch != '\n' && ch != 0 );
 					--cpos;
 				}
 				else
 				{
-						chars_this_line += bputch(ch);
+						chars_this_line += bputch( ch );
 				}
 			}
 
-			if (app->localIO->WhereX())
+			if ( app->localIO->WhereX() )
 			{
 				nl();
 				++numl;
 			}
-			BbsFreeMemory(new_ss);
-			BbsFreeMemory(ss);	// frank's gpf is here.
+			BbsFreeMemory( new_ss );
+			BbsFreeMemory( ss );	// frank's gpf is here.
 		}
 	}
 	ansic( 0 );
@@ -2358,41 +2353,32 @@ void load_lp_config()
 		WFile fileConfig( syscfg.datadir, LISTPLUS_CFG );
 		if ( !fileConfig.Open( WFile::modeBinary | WFile::modeReadOnly ) )
 		{
-			memset((void *) &lp_config, 0, sizeof(struct listplus_config));
+			memset( &lp_config, 0, sizeof( struct listplus_config ) );
 			lp_config.fi = lp_config.lssm = time(NULL);
 
-
-			lp_config.normal_highlight = (YELLOW + (BLACK << 4));
-			lp_config.normal_menu_item = (CYAN + (BLACK << 4));
+			lp_config.normal_highlight  = (YELLOW + (BLACK << 4));
+			lp_config.normal_menu_item  = (CYAN + (BLACK << 4));
 			lp_config.current_highlight = (BLUE + (LIGHTGRAY << 4));
 			lp_config.current_menu_item = (BLACK + (LIGHTGRAY << 4));
 
-			lp_config.tagged_color = LIGHTGRAY;
-			lp_config.file_num_color = GREEN;
+			lp_config.tagged_color      = LIGHTGRAY;
+			lp_config.file_num_color    = GREEN;
 
-			lp_config.found_fore_color = RED;
-			lp_config.found_back_color = (LIGHTGRAY) + 16;
+			lp_config.found_fore_color  = RED;
+			lp_config.found_back_color  = (LIGHTGRAY) + 16;
 
 			lp_config.current_file_color = BLACK + (LIGHTGRAY << 4);
 
 			lp_config.max_screen_lines_to_show = 24;
 			lp_config.show_at_least_extended = 5;
 
-			lp_config.edit_enable = 1;            // Do or don't let users edit
-			// their config
+			lp_config.edit_enable = 1;            // Do or don't let users edit their config
 			lp_config.request_file = 1;           // Do or don't use file request
 			lp_config.colorize_found_text = 1;    // Do or don't colorize found text
-			lp_config.search_extended_on = 0;     // Defaults to either on or off
-			// in adv search, or is either on
-			// or off in simple search
-			lp_config.simple_search = 1;          // Which one is entered when
-			// searching, can switch to other
-			// still
-			lp_config.no_configuration = 0;       // Toggles configurable menus on
-			// and off
-			lp_config.check_exist = 1;            // Will check to see if the file
-			// exists on hardrive and put N/A
-			// if not
+			lp_config.search_extended_on = 0;     // Defaults to either on or off in adv search, or is either on or off in simple search
+			lp_config.simple_search = 1;          // Which one is entered when searching, can switch to other still
+			lp_config.no_configuration = 0;       // Toggles configurable menus on and off
+			lp_config.check_exist = 1;            // Will check to see if the file exists on hardrive and put N/A if not
 			lp_config_loaded = 1;
 			lp_config.forced_config = 0;
 

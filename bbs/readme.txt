@@ -49,6 +49,19 @@ GENERAL INFORMATION:
 
 ==============================================================================
 
+LABEL: WWIV-5_0_57
+DATE:  ??/??/????
+
+Rushfan - Moved shutdown information and variables from WSession to WBbsApp.
+Rushfan - Changed skey to take an int vs. unsigned char.
+Rushfan - More ongoing work on removing unneeded unsigned data type usages.
+Rushfan - Disabled remote.exe and remotes.dat support by default.
+Rushfan - Fixed display bug in voting booth.
+
+
+
+==============================================================================
+
 LABEL: WWIV-5_0_56 (Beta-3)
 DATE:  9/8/2004
 

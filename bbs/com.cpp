@@ -35,12 +35,12 @@ void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const c
 	}
     for ( int i = 0; cl[i] != 0; i++ )
 	{
-        setc(atr[i]);
+        setc( atr[i] );
         bputch( cl[i], true );
     }
     FlushOutComChBuffer();
-    setc(*cc);
-    strcpy(endofline, xl);
+    setc( *cc );
+    strcpy( endofline, xl );
 }
 
 
@@ -354,27 +354,27 @@ char getkey()
                 beepyet = 1;
                 bputch( CG );
             }
-            if (sess->bbsshutdown)
+            if ( app->IsShutDownActive() )
             {
-                if (((sess->shutdowntime - timer()) < 120) && ((sess->shutdowntime - timer()) > 60))
+                if ((( app->GetShutDownTime() - timer()) < 120) && ((app->GetShutDownTime() - timer()) > 60))
                 {
-                    if (sess->bbsshutdown != 2)
+                    if ( app->GetShutDownStatus() != WBbsApp::shutdownTwoMinutes )
                     {
-                        shut_down( 2 );
-                        sess->bbsshutdown = 2;
+                        shut_down( WBbsApp::shutdownTwoMinutes );
+                        app->SetShutDownStatus( WBbsApp::shutdownTwoMinutes );
                     }
                 }
-                if (((sess->shutdowntime - timer()) < 60) && ((sess->shutdowntime - timer()) > 0))
+                if (((app->GetShutDownTime() - timer()) < 60) && ((app->GetShutDownTime() - timer()) > 0))
                 {
-                    if (sess->bbsshutdown != 3)
+                    if ( app->GetShutDownStatus() != WBbsApp::shutdownOneMinute )
                     {
-                        shut_down( 3 );
-                        sess->bbsshutdown = 3;
+                        shut_down( WBbsApp::shutdownOneMinute );
+                        app->SetShutDownStatus( WBbsApp::shutdownOneMinute );
                     }
                 }
-                if ((sess->shutdowntime - timer()) <= 0)
+                if ( ( app->GetShutDownTime() - timer() ) <= 0 )
                 {
-                    shut_down( 4 );
+                    shut_down( WBbsApp::shutdownImmediate );
                 }
             }
             if (labs(dd - timelastchar1) > tv)
@@ -605,7 +605,7 @@ int bputs(const char *pszText)
 
         while (pszText[i])
         {
-            bputch( static_cast<unsigned char>( pszText[i++] ), true );
+            bputch( pszText[i++], true );
         }
         FlushOutComChBuffer();
     }
