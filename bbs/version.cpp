@@ -21,7 +21,7 @@
 const char *wwiv_version = "v5.00";
 
 // Build Information 
-const char *beta_version = " (Build 58)";
+const char *beta_version = " (Build 59)";
 
 // this is used to set the status.wwiv_version
 // leaving at 431 until we break file compatability
@@ -40,4 +40,4 @@ const char *wwiv_date = __DATE__ ", " __TIME__;
 // Example: 5.01 build 20 = 500010020
 //
 //                              M11223333
-const long lWWIVVersionNumber = 500000058;
+const long lWWIVVersionNumber = 500000059;
