@@ -101,7 +101,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
         CreateSyncFosCommandLine( szWorkingCmdLine, szSyncFosTempFile, nSyncMode );
         bUsingSync = true;
         char szTempLogFileName[ MAX_PATH ];
-        sprintf( szTempLogFileName, "%swwivsync.log", app->GetHomeDir() );
+        _snprintf( szTempLogFileName, sizeof( szTempLogFileName ), "%swwivsync.log", app->GetHomeDir() );
         hLogFile = fopen( szTempLogFileName, "at" );
         fprintf( hLogFile, charstr( 78, '=' ) );
         fprintf( hLogFile, "\r\n\r\n" );
@@ -122,7 +122,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
     }
 
     char * pszTitle = new char[ 255 ];
-    sprintf( pszTitle, "%s in door on node %d",
+    _snprintf( pszTitle, sizeof( pszTitle), "%s in door on node %d",
              sess->thisuser.GetName(), app->GetInstanceNumber() );
     si.lpTitle = pszTitle;
 
@@ -161,7 +161,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
         hSyncHangupEvent = INVALID_HANDLE_VALUE;     // Event to hangup program
 
         char szSbbsExecVxdName[ MAX_PATH ];
-        sprintf( szSbbsExecVxdName, "\\\\.\\%ssbbsexec.vxd", app->GetHomeDir() );
+        _snprintf( szSbbsExecVxdName, sizeof( szSbbsExecVxdName ), "\\\\.\\%ssbbsexec.vxd", app->GetHomeDir() );
         fprintf( hLogFile, "Opening VXD: [%s]\r\n", szSbbsExecVxdName );
         hSbbsExecVxd = CreateFile( szSbbsExecVxdName, 0, 0, 0, CREATE_NEW, FILE_FLAG_DELETE_ON_CLOSE, 0 );
         if ( hSbbsExecVxd == INVALID_HANDLE_VALUE )
@@ -215,7 +215,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
     {
         // Create Hangup Event.
         char szHangupEventName[ MAX_PATH + 1 ];
-        sprintf( szHangupEventName, "sbbsexec_hungup%d", app->GetInstanceNumber() );
+        _snprintf( szHangupEventName, sizeof( szHangupEventName ), "sbbsexec_hungup%d", app->GetInstanceNumber() );
         hSyncHangupEvent = CreateEvent( NULL, TRUE, FALSE, szHangupEventName );
         if ( hSyncHangupEvent == INVALID_HANDLE_VALUE )
         {
@@ -226,7 +226,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
         // Create Read Mail Slot
         char szReadSlotName[ MAX_PATH + 1];
-        sprintf( szReadSlotName, "\\\\.\\mailslot\\sbbsexec\\rd%d", app->GetInstanceNumber() );
+        _snprintf( szReadSlotName, sizeof( szReadSlotName ), "\\\\.\\mailslot\\sbbsexec\\rd%d", app->GetInstanceNumber() );
         hSyncReadSlot = CreateMailslot( szReadSlotName, CONST_SBBSFOS_BUFFER_SIZE, 0, NULL );
         if ( hSyncReadSlot == INVALID_HANDLE_VALUE )
         {
@@ -376,7 +376,7 @@ bool CreateSyncTempFile( char *pszOutTempFileName, const char *pszCommandLine )
 
 char* GetSyncFosTempFilePath( char *pszOutTempFileName )
 {
-    sprintf( pszOutTempFileName, "%sWWIVSYNC.ENV", syscfgovr.tempdir );
+    _snprintf( pszOutTempFileName, MAX_PATH, "%sWWIVSYNC.ENV", syscfgovr.tempdir );
     return pszOutTempFileName;
 }
 
@@ -388,7 +388,8 @@ void CreateSyncFosCommandLine( char* pszOutCommandLine, const char* pszTempFileP
     char szOSMode[ 8 ];
     GetDosXtrnPath( szDosXtrnPath );
 
-    sprintf( szBuffer,
+    _snprintf( szBuffer,
+            sizeof( szBuffer ),
             "%s %s %s %d %d %d",
             GetDosXtrnPath( szDosXtrnPath ),
             pszTempFilePath,
@@ -409,7 +410,7 @@ bool VerifyDosXtrnExists()
 
 char* GetDosXtrnPath( char *pszDosXtrnPath )
 {
-    sprintf( pszDosXtrnPath, "%sDOSXTRN.EXE", app->GetHomeDir() );
+    _snprintf( pszDosXtrnPath, MAX_PATH, "%sDOSXTRN.EXE", app->GetHomeDir() );
     return pszDosXtrnPath;
 }
 
@@ -510,7 +511,7 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
                 // Create Write handle.
                 char szWriteSlotName[ MAX_PATH ];
                 ::Sleep(500);
-                sprintf( szWriteSlotName, "\\\\.\\mailslot\\sbbsexec\\wr%d", app->GetInstanceNumber() );
+                _snprintf( szWriteSlotName, sizeof( szWriteSlotName ), "\\\\.\\mailslot\\sbbsexec\\wr%d", app->GetInstanceNumber() );
                 fprintf( hLogFile, "Creating Mail Slot [%s]\r\n", szWriteSlotName );
 
                 hSyncWriteSlot = CreateFile( szWriteSlotName,

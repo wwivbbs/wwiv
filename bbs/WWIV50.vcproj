@@ -610,6 +610,9 @@
 					RelativePath="extract.cpp">
 				</File>
 				<File
+					RelativePath=".\FindUser.cpp">
+				</File>
+				<File
 					RelativePath=".\gfiles.cpp">
 				</File>
 				<File
@@ -704,6 +707,9 @@
 				</File>
 				<File
 					RelativePath=".\shortmsg.cpp">
+				</File>
+				<File
+					RelativePath=".\SmallRecord.cpp">
 				</File>
 				<File
 					RelativePath=".\sr.cpp">
@@ -967,9 +973,6 @@
 					RelativePath=".\vars.h">
 				</File>
 				<File
-					RelativePath=".\wwivassert.h">
-				</File>
-				<File
 					RelativePath=".\WConstants.h">
 				</File>
 				<File
@@ -989,6 +992,9 @@
 				</File>
 				<File
 					RelativePath=".\wwiv.h">
+				</File>
+				<File
+					RelativePath=".\wwivassert.h">
 				</File>
 				<File
 					RelativePath=".\xinitini.h">

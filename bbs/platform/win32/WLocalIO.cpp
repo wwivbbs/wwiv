@@ -108,7 +108,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable )
 		if ( !fileGlobalCap.IsOpen() )
         {
 			char szFileName[MAX_PATH];
-			sprintf(szFileName, "%sglobal-%d.txt", syscfg.gfilesdir, app->GetInstanceNumber() );
+			_snprintf(szFileName, sizeof( szFileName ), "%sglobal-%d.txt", syscfg.gfilesdir, app->GetInstanceNumber() );
 			fileGlobalCap.SetName( szFileName );
 
 			bool bOpen = fileGlobalCap.Open( WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
@@ -187,7 +187,7 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr)
             x_only = true;
             wx = 0;
     		char szTempFileName[MAX_PATH];
-            sprintf(szTempFileName, "%s%s", syscfgovr.tempdir, pszFileName);
+            _snprintf( szTempFileName, sizeof( szTempFileName ), "%s%s", syscfgovr.tempdir, pszFileName);
 			fileGlobalCap.SetName( szTempFileName );
 
             if (ovwr)
@@ -314,21 +314,23 @@ void WLocalIO::LocalLf()
 
 
 
+/**
+ * Returns the local cursor to the left-most position on the screen.
+ */
 void WLocalIO::LocalCr()
-/* This short function returns the local cursor to the left-most position
-* on the screen.
-*/
 {
     m_cursorPosition.X = 0;
     SetConsoleCursorPosition(m_hConOut,m_cursorPosition);
 }
 
+
+/**
+ * Clears the local logical screen 
+ */
 void WLocalIO::LocalCls()
-/* This clears the local logical screen */
 {
     int nOldCurrentAttribute = curatr;
     curatr = 0x07;
-    // TODO Debugging hack - REMOVE THIS!!
     SMALL_RECT scrollRect;
     COORD dest;
     CHAR_INFO fill;
@@ -422,26 +424,25 @@ void WLocalIO::LocalPutchRaw(unsigned char ch)
 }
 
 
-
-
-void WLocalIO::LocalPutch(unsigned char ch)
-/* This function outputs one character to the local screen.  C/R, L/F, TOF,
-* BS, and BELL are interpreted as commands instead of characters.
-*/
+/**
+ * This function outputs one character to the local screen.  C/R, L/F, TOF,
+ * BS, and BELL are interpreted as commands instead of characters.
+ */
+void WLocalIO::LocalPutch( unsigned char ch )
 {
-    if (x_only)
+    if ( x_only )
     {
-        if (ch > 31)
+        if ( ch > 31 )
         {
-            wx = (wx + 1) % 80;
+            wx = ( wx + 1 ) % 80;
         }
         else if ( ch == RETURN || ch == CL )
         {
             wx = 0;
         }
-        else if (ch == BACKSPACE)
+        else if ( ch == BACKSPACE )
         {
-            if (wx)
+            if ( wx )
             {
                 wx--;
             }
@@ -449,23 +450,23 @@ void WLocalIO::LocalPutch(unsigned char ch)
         return;
     }
 
-    if (ch > 31)
+    if ( ch > 31 )
     {
         LocalPutchRaw(ch);
     }
-    else if (ch == CM)
+    else if ( ch == CM )
     {
         LocalCr();
     }
-    else if (ch == CJ)
+    else if ( ch == CJ )
     {
         LocalLf();
     }
-    else if (ch == CL)
+    else if ( ch == CL )
     {
         LocalCls();
     }
-    else if (ch == BACKSPACE)
+    else if ( ch == BACKSPACE )
     {
         LocalBackspace();
     }
@@ -474,26 +475,26 @@ void WLocalIO::LocalPutch(unsigned char ch)
         if ( !outcom )
         {
             // TODO Make the bell sound configurable.
-			WWIV_Sound(500, 4);
+			WWIV_Sound( 500, 4 );
         }
     }
 }
 
 
-void WLocalIO::LocalPuts(const char *s)
+void WLocalIO::LocalPuts( const char *pszText )
 // This (obviously) outputs a string TO THE SCREEN ONLY
 {
-    while ( *s )
+    while ( *pszText )
     {
-        LocalPutch( *s++ );
+        LocalPutch( *pszText++ );
     }
 }
 
 
 void WLocalIO::LocalXYPuts( int x, int y, const char *pszText )
 {
-    app->localIO->LocalGotoXY( x, y );
-    app->localIO->LocalFastPuts( pszText );
+    LocalGotoXY( x, y );
+    LocalFastPuts( pszText );
 }
 
 
@@ -517,7 +518,7 @@ int  WLocalIO::LocalPrintf( const char *pszFormattedText, ... )
     va_start( ap, pszFormattedText );
     int nNumWritten = vsnprintf( szBuffer, 1024, pszFormattedText, ap );
     va_end( ap );
-    app->localIO->LocalFastPuts( szBuffer );
+    LocalFastPuts( szBuffer );
     return nNumWritten;
 }
 
@@ -530,7 +531,7 @@ int  WLocalIO::LocalXYPrintf( int x, int y, const char *pszFormattedText, ... )
     va_start( ap, pszFormattedText );
     int nNumWritten = vsnprintf( szBuffer, 1024, pszFormattedText, ap );
     va_end( ap );
-    app->localIO->LocalXYPuts( x, y, szBuffer );
+    LocalXYPuts( x, y, szBuffer );
     return nNumWritten;
 }
 
@@ -544,7 +545,7 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
     int nNumWritten = vsnprintf( szBuffer, 1024, pszFormattedText, ap );
     va_end( ap );
     setc( nAttribute );
-    app->localIO->LocalXYPuts( x, y, szBuffer );
+    LocalXYPuts( x, y, szBuffer );
     return nNumWritten;
 }
 
@@ -1080,7 +1081,7 @@ void WLocalIO::UpdateTopScreenImpl()
     {
         // Only set the titlebar if the user wanted it that way.
         char szConsoleTitle[ 255 ];
-        sprintf( szConsoleTitle, "WWIV Node %d (User: %s)", app->GetInstanceNumber(), sess->thisuser.GetUserNameAndNumber( sess->usernum ) );
+        _snprintf( szConsoleTitle, sizeof( szConsoleTitle ), "WWIV Node %d (User: %s)", app->GetInstanceNumber(), sess->thisuser.GetUserNameAndNumber( sess->usernum ) );
         ::SetConsoleTitle( szConsoleTitle );
     }
 
@@ -1181,7 +1182,7 @@ void WLocalIO::UpdateTopScreenImpl()
             }
             else
             {
-                sprintf( lo, "Today:%2d", sess->thisuser.GetTimesOnToday() );
+                _snprintf( lo, sizeof( lo ), "Today:%2d", sess->thisuser.GetTimesOnToday() );
             }
 
             LocalXYAPrintf( 0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
@@ -1196,7 +1197,7 @@ void WLocalIO::UpdateTopScreenImpl()
             char szCallSignOrRegNum[ 41 ];
             if ( sess->thisuser.GetWWIVRegNumber() )
             {
-                sprintf( szCallSignOrRegNum, "%lu", sess->thisuser.GetWWIVRegNumber() );
+                _snprintf( szCallSignOrRegNum, sizeof( szCallSignOrRegNum ), "%lu", sess->thisuser.GetWWIVRegNumber() );
             }
             else
             {
@@ -1334,8 +1335,8 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc)
             atr[i] = static_cast<char>( Attr[i] ); // atr is 8bit char, Attr is 16bit
         }
     }
-    cl[app->localIO->WhereX()]	= 0;
-    atr[app->localIO->WhereX()] = 0;
+    cl[ WhereX() ]	= 0;
+    atr[ WhereX() ] = 0;
 }
 
 
@@ -1494,16 +1495,16 @@ void WLocalIO::LocalClrEol()
 {
 	CONSOLE_SCREEN_BUFFER_INFO ConInfo;
 	DWORD cb;
-	int len = 80 - app->localIO->WhereX();
+	int len = 80 - WhereX();
 
-	GetConsoleScreenBufferInfo(m_hConOut,&ConInfo);
-	FillConsoleOutputCharacter(m_hConOut, ' ', len, ConInfo.dwCursorPosition, &cb);
-	FillConsoleOutputAttribute(m_hConOut, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb);
+	GetConsoleScreenBufferInfo( m_hConOut,&ConInfo );
+	FillConsoleOutputCharacter( m_hConOut, ' ', len, ConInfo.dwCursorPosition, &cb );
+	FillConsoleOutputAttribute( m_hConOut, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb );
 }
 
 
 
-void WLocalIO::LocalWriteScreenBuffer(const char *pszBuffer)
+void WLocalIO::LocalWriteScreenBuffer( const char *pszBuffer )
 {
     CHAR_INFO ci[2000];
 
@@ -1516,13 +1517,13 @@ void WLocalIO::LocalWriteScreenBuffer(const char *pszBuffer)
         ci[i].Char.AsciiChar = (char) *(pszBuffer + ((i*2)+0));
         ci[i].Attributes     = (unsigned char) *(pszBuffer + ((i*2)+1));
 	}
-    WriteConsoleOutput(m_hConOut, ci, size, pos, &rect);
+    WriteConsoleOutput( m_hConOut, ci, size, pos, &rect );
 }
 
 
 int WLocalIO::GetDefaultScreenBottom()
 {
-	return (m_consoleBufferInfo.dwSize.Y - 1);
+	return ( m_consoleBufferInfo.dwSize.Y - 1 );
 }
 
 
@@ -1530,6 +1531,10 @@ bool HasKeyBeenPressed()
 {
     return ( kbhit() ) ? true : false;
 
+    // TODO - This code below doesn't work, hence we aren't using it.
+    // Ideally, we should support mouse input, and try to not use the
+    // generic CRT functions whenever possible to get a better Win32 
+    // feel to everything, but until the code works, it's disabled.
 #if 0
 
     PINPUT_RECORD pIRBuf;
@@ -1595,21 +1600,22 @@ unsigned char GetKeyboardChar()
     return static_cast< unsigned char >( getch() );
 }
 
-void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, char *ss )
+
+void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *returncode, char *pszAllowedSet )
 {
-    WWIV_ASSERT(s);
-    WWIV_ASSERT(ss);
+    WWIV_ASSERT( pszInOutText );
+    WWIV_ASSERT( pszAllowedSet );
 
     int oldatr = curatr;
     int cx = WhereX();
     int cy = WhereY();
-    for (int i = strlen(s); i < len; i++)
+    for ( int i = strlen( pszInOutText ); i < len; i++ )
     {
-        s[i] = static_cast<unsigned char>( 176 );
+        pszInOutText[i] = static_cast<unsigned char>( 176 );
     }
-    s[len] = '\0';
+    pszInOutText[len] = '\0';
     curatr = sess->GetEditLineColor();
-    LocalFastPuts( s );
+    LocalFastPuts( pszInOutText );
     LocalGotoXY( cx, cy );
     bool done = false;
     int pos = 0;
@@ -1620,7 +1626,7 @@ void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, cha
         if ( ch == 0 || ch == 224 )
         {
             ch = getchd();
-            switch (ch)
+            switch ( ch )
             {
             case F1:
                 done = true;
@@ -1631,11 +1637,11 @@ void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, cha
                 LocalGotoXY( cx, cy );
                 break;
             case END:
-                pos = GetEditLineStringLength( s ); // len;
+                pos = GetEditLineStringLength( pszInOutText );
                 LocalGotoXY( cx + pos, cy );
                 break;
             case RARROW:
-                if ( pos < GetEditLineStringLength( s ) )
+                if ( pos < GetEditLineStringLength( pszInOutText ) )
                 {
                     pos++;
                     LocalGotoXY( cx + pos, cy );
@@ -1664,15 +1670,15 @@ void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, cha
                 }
                 break;
             case KEY_DELETE:
-                if (status != SET)
+                if ( status != SET )
                 {
-                    for (int i = pos; i < len; i++)
+                    for ( int i = pos; i < len; i++ )
                     {
-                        s[i] = s[i + 1];
+                        pszInOutText[ i ] = pszInOutText[ i + 1 ];
                     }
-                    s[len - 1] = static_cast<unsigned char>( 176 );
-                    LocalXYPuts( cx, cy, s );
-                    LocalGotoXY(cx + pos, cy);
+                    pszInOutText[ len - 1 ] = static_cast<unsigned char>( 176 );
+                    LocalXYPuts( cx, cy, pszInOutText );
+                    LocalGotoXY( cx + pos, cy );
                 }
                 break;
             }
@@ -1688,19 +1694,19 @@ void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, cha
                 if (status == SET)
                 {
                     ch = wwiv::UpperCase<unsigned char>(ch);
-                    if (ch != SPACE)
+                    if ( ch != SPACE )
                     {
                         bool bLookingForSpace = true;
-                        for (int i = 0; i < len; i++)
+                        for ( int i = 0; i < len; i++ )
                         {
-                            if ( ch == ss[i] && bLookingForSpace )
+                            if ( ch == pszAllowedSet[i] && bLookingForSpace )
                             {
                                 bLookingForSpace = false;
                                 pos = i;
-                                LocalGotoXY(cx + pos, cy);
-                                if (s[pos] == SPACE)
+                                LocalGotoXY( cx + pos, cy );
+                                if ( pszInOutText[pos] == SPACE )
                                 {
-                                    ch = ss[pos];
+                                    ch = pszAllowedSet[pos];
                                 }
                                 else
                                 {
@@ -1710,27 +1716,27 @@ void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, cha
                         }
                         if ( bLookingForSpace )
                         {
-                            ch = ss[pos];
+                            ch = pszAllowedSet[pos];
                         }
                     }
                 }
                 if ((pos < len) && ((status == ALL) || (status == UPPER_ONLY) || (status == SET) ||
                     ((status == NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == SPACE)))))
                 {
-                    if (insert)
+                    if ( insert )
                     {
-                        for (int i = len - 1; i > pos; i--)
+                        for ( int i = len - 1; i > pos; i-- )
                         {
-                            s[i] = s[i - 1];
+                            pszInOutText[i] = pszInOutText[i - 1];
                         }
-                        s[pos++] = ch;
-                        LocalXYPuts( cx, cy, s );
+                        pszInOutText[ pos++ ] = ch;
+                        LocalXYPuts( cx, cy, pszInOutText );
                         LocalGotoXY( cx + pos, cy );
                     }
                     else
                     {
-                        s[pos++] = ch;
-                        LocalPutch(ch);
+                        pszInOutText[pos++] = ch;
+                        LocalPutch( ch );
                     }
                 }
             }
@@ -1753,37 +1759,37 @@ void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, cha
                     LocalGotoXY( cx, cy );
                     break;
                 case CE:
-                    pos = GetEditLineStringLength( s ); // len;
+                    pos = GetEditLineStringLength( pszInOutText ); // len;
                     LocalGotoXY( cx + pos, cy );
                     break;
                 case BACKSPACE:
-                    if (pos > 0)
+                    if ( pos > 0 )
                     {
-                        if (insert)
+                        if ( insert )
                         {
                             for ( int i = pos - 1; i < len; i++ )
                             {
-                                s[i] = s[i + 1];
+                                pszInOutText[i] = pszInOutText[i + 1];
                             }
-                            s[len - 1] = static_cast<unsigned char>( 176 );
+                            pszInOutText[len - 1] = static_cast<unsigned char>( 176 );
                             pos--;
-                            LocalXYPuts( cx, cy, s );
+                            LocalXYPuts( cx, cy, pszInOutText );
                             LocalGotoXY(cx + pos, cy);
                         }
                         else
                         {
-                            int nStringLen = GetEditLineStringLength( s );
+                            int nStringLen = GetEditLineStringLength( pszInOutText );
                             pos--;
                             if ( pos == ( nStringLen - 1 ) )
                             {
-                                s[pos] = static_cast<unsigned char>( 176 );
+                                pszInOutText[ pos ] = static_cast<unsigned char>( 176 );
                             }
                             else
                             {
-                                s[pos] = SPACE;
+                                pszInOutText[ pos ] = SPACE;
                             }
-                            LocalXYPuts( cx, cy, s );
-                            LocalGotoXY(cx + pos, cy);
+                            LocalXYPuts( cx, cy, pszInOutText );
+                            LocalGotoXY( cx + pos, cy );
                         }
                     }
                     break;
@@ -1792,15 +1798,15 @@ void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, cha
         }
     } while ( !done );
 
-    int z = strlen( s );
-    while ( z >= 0 && static_cast<unsigned char>( s[z-1] ) == 176 )
+    int z = strlen( pszInOutText );
+    while ( z >= 0 && static_cast<unsigned char>( pszInOutText[z-1] ) == 176 )
     {
         --z;
     }
-    s[z] = '\0';
+    pszInOutText[z] = '\0';
 
     char szFinishedString[ 260 ];
-    sprintf( szFinishedString, "%-255s", s );
+    _snprintf( szFinishedString, sizeof( szFinishedString ), "%-255s", pszInOutText );
     szFinishedString[ len ] = '\0';
     LocalGotoXY( cx, cy );
     curatr=oldatr;

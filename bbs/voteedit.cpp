@@ -102,7 +102,7 @@ void set_question( int ii )
 
     WUser u;
     app->userManager->ReadUser( &u, 1 );
-    int nNumUsers = number_userrecs();
+    int nNumUsers = app->userManager->GetNumberOfUserRecords();
     for ( int i1 = 1; i1 <= nNumUsers; i1++ )
     {
         app->userManager->ReadUser( &u, i1 );
@@ -155,7 +155,7 @@ void voteprint()
     char s[MAX_PATH];
     votingrec v;
 
-    int nNumUserRecords = number_userrecs();
+    int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
 	char *x = static_cast<char *>( BbsAllocA( 20 * ( 2 + nNumUserRecords ) ) );
     if ( x == NULL )
     {

@@ -373,7 +373,7 @@ private:
 class WUserManager
 {
 public:
-    int GetNumberOfUsers() const;
+    int GetNumberOfUserRecords() const;
     bool ReadUserNoCache( WUser *pUser, int nUserNumber );
     bool ReadUser( WUser *pUser, int nUserNumber, bool bForceRead = false );
     bool WriteUserNoCache( WUser *pUser, int nUserNumber );

@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifdef _MSC_VER
+#pragma once
+#endif
 
 #ifndef __INCLUDED_BBS_H__
 #define __INCLUDED_BBS_H__

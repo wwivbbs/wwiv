@@ -17,7 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+
+#include "incl1.h"
+#include "WConstants.h"
+#include "filenames.h"
+#include "WFile.h"
+#include "WUser.h"
+#include "WStringUtils.h"
+#include "vars.h"
 
 const int WUser::userDeleted                = 0x01;
 const int WUser::userInactive               = 0x02;
@@ -63,6 +70,8 @@ const int WUser::listPlus                   = 0x00010000;
 const int WUser::autoQuote                  = 0x00020000;
 const int WUser::twentyFourHourClock        = 0x00040000;
 const int WUser::msgPriority                = 0x00080000;
+
+extern unsigned char *translate_letters[];
 
 
 WUser::WUser()
@@ -143,9 +152,15 @@ const char *WUser::GetUserNameNumberAndSystem( int nUserNumber, int nSystemNumbe
 //
 //
 
-int  WUserManager::GetNumberOfUsers() const
+int  WUserManager::GetNumberOfUserRecords() const
 {
-    return number_userrecs();
+    WFile userList( syscfg.datadir, USER_LST );
+    if ( userList.Open( WFile::modeReadOnly | WFile::modeBinary ) )
+    {
+        int nNumRecords = ( static_cast<int>( userList.GetLength() / syscfg.userreclen) - 1 );
+        return nNumRecords;
+    }
+    return 0;
 }
 
 
@@ -176,6 +191,7 @@ bool WUserManager::ReadUserNoCache( WUser *pUser, int nUserNumber )
 
 bool WUserManager::ReadUser( WUser *pUser, int nUserNumber, bool bForceRead )
 {
+#ifndef NOT_BBS
     if ( !bForceRead )
     {
         bool userOnAndCurrentUser = ( sess->IsUserOnline() && ( nUserNumber == sess->usernum ) );
@@ -187,6 +203,7 @@ bool WUserManager::ReadUser( WUser *pUser, int nUserNumber, bool bForceRead )
             return true;
         }
     }
+#endif // NOT_BBS
     return this->ReadUserNoCache( pUser, nUserNumber );
 }
 
@@ -213,6 +230,7 @@ bool WUserManager::WriteUser( WUser *pUser, int nUserNumber )
         return true;
     }
 
+#ifndef NOT_BBS
     if ( ( sess->IsUserOnline() && nUserNumber == static_cast<int>( sess->usernum ) ) ||
         ( app->localIO->GetWfcStatus() && nUserNumber == 1 ) )
     {
@@ -221,5 +239,61 @@ bool WUserManager::WriteUser( WUser *pUser, int nUserNumber )
             sess->thisuser.data = pUser->data;
         }
     }
+#endif // NOT_BBS
     return this->WriteUserNoCache( pUser, nUserNumber );
 }
+
+char *WUser::nam( int nUserNumber ) const
+{
+    static char s_szNamBuffer[81];
+    bool f = true;
+    unsigned int p = 0;
+    for ( p = 0; p < strlen( this->GetName() ); p++ )
+    {
+        if ( f )
+        {
+            unsigned char* ss = reinterpret_cast<unsigned char*>( strchr( reinterpret_cast<char*>( translate_letters[1] ), data.name[p] ) );
+            if ( ss )
+            {
+                f = false;
+            }
+            s_szNamBuffer[p] = data.name[p];
+        }
+        else
+        {
+            char* ss = strchr( reinterpret_cast<char*>( translate_letters[1] ), data.name[p] );
+            if ( ss )
+            {
+                s_szNamBuffer[p] = locase( data.name[p] );
+            }
+            else
+            {
+                if ( ( data.name[p] >= ' ' && data.name[p] <= '/' ) && data.name[p] != 39 )
+                {
+                    f = true;
+                }
+                s_szNamBuffer[p] = data.name[p];
+            }
+        }
+    }
+    s_szNamBuffer[p++] = SPACE;
+    s_szNamBuffer[p++] = '#';
+    sprintf( &s_szNamBuffer[p], "%d", nUserNumber );
+    return s_szNamBuffer;
+}
+
+
+char *WUser::nam1( int nUserNumber, int nSystemNumber ) const
+{
+    static char s_szNamBuffer[ 255 ];
+
+    strcpy( s_szNamBuffer, nam( nUserNumber ) );
+    if ( nSystemNumber )
+    {
+        char szBuffer[10];
+        sprintf( szBuffer, " @%u", nSystemNumber );
+        strcat( s_szNamBuffer, szBuffer );
+    }
+    return s_szNamBuffer;
+}
+

@@ -395,7 +395,7 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)
 	}
 	while (!bDone)
 	{
-		DWORD dwWaitRet = WSAWaitForMultipleEvents( 2, hArray, false, 10000, false );    // was 15 seconds (15000) but I had a TODO to change it back.
+        DWORD dwWaitRet = WSAWaitForMultipleEvents( 2, hArray, false, 10000, false );    
         if ( dwWaitRet == ( WSA_WAIT_EVENT_0 + 1 ) )
         {
             if ( !ResetEvent( pTelnet->hReadStopEvent ) )
@@ -487,28 +487,28 @@ void WIOTelnet::HandleTelnetIAC( unsigned char nCmd, unsigned char nParam )
     case TELNET_OPTION_WILL:
         {
             char szBuffer[ 255 ];
-            sprintf( szBuffer, "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam );
+            _snprintf( szBuffer, sizeof( szBuffer ), "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WILL", nParam );
             ::OutputDebugString( szBuffer );
         }
 		break;
     case TELNET_OPTION_WONT:
         {
             char szBuffer[ 255 ];
-            sprintf( szBuffer, "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam );
+            _snprintf( szBuffer, sizeof( szBuffer ), "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_WONT", nParam );
             ::OutputDebugString( szBuffer );
         }
 		break;
     case TELNET_OPTION_DO:
         {
             char szBuffer[ 255 ];
-            sprintf( szBuffer, "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam );
+            _snprintf( szBuffer, sizeof( szBuffer ), "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DO", nParam );
             ::OutputDebugString( szBuffer );
             switch ( nParam )
             {
             case TELNET_OPTION_SUPPRESSS_GA:
                 {
                     char szTelnetOptionBuffer[ 255 ];
-                    sprintf( szTelnetOptionBuffer, "%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA );
+                    _snprintf( szTelnetOptionBuffer, sizeof( szTelnetOptionBuffer ), "%c%c%c", TELNET_OPTION_IAC, TELNET_OPTION_WILL, TELNET_OPTION_SUPPRESSS_GA );
                     write( szTelnetOptionBuffer, 3, true );
                     ::OutputDebugString( "Sent TELNET IAC WILL SUPPRESSS GA\r\n" );
                 }
@@ -519,7 +519,7 @@ void WIOTelnet::HandleTelnetIAC( unsigned char nCmd, unsigned char nParam )
     case TELNET_OPTION_DONT:
         {
             char szBuffer[ 255 ];
-            sprintf( szBuffer, "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam );
+            _snprintf( szBuffer, sizeof( szBuffer ), "[Command: %s] [Option: {%d}]\n", "TELNET_OPTION_DONT", nParam );
             ::OutputDebugString( szBuffer );
         }
 		break;

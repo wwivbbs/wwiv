@@ -316,7 +316,7 @@ bool WBbsApp::ReadINIFile()
 
     // initialize ini communication
     char szInstanceName[255];
-    sprintf( szInstanceName, "WWIV-%u", GetInstanceNumber() );
+    snprintf( szInstanceName, sizeof( szInstanceName ), "WWIV-%u", GetInstanceNumber() );
     if ( ini_init( WWIV_INI, szInstanceName, INI_TAG ) )
     {
         ///////////////////////////////////////////////////////////////////////////////
@@ -457,7 +457,7 @@ bool WBbsApp::ReadINIFile()
         }
         else
         {
-            sprintf( g_szAttachmentDirectory, "%s%s%c", GetHomeDir(), ATTACH_DIR, WWIV_FILE_SEPERATOR_CHAR );
+            snprintf( g_szAttachmentDirectory, sizeof( g_szAttachmentDirectory ), "%s%s%c", GetHomeDir(), ATTACH_DIR, WWIV_FILE_SEPERATOR_CHAR );
         }
 
         INI_INIT_N( INI_STR_SCREEN_SAVER_TIME, screen_saver_time );
@@ -1120,11 +1120,11 @@ bool WBbsApp::read_modem()
     char szFileName[ MAX_PATH ];
     if (app->GetInstanceNumber() > 1)
     {
-        sprintf( szFileName, "%s%s.%3.3d", syscfg.datadir, MODEM_XXX, app->GetInstanceNumber() );
+        snprintf( szFileName, sizeof( szFileName ), "%s%s.%3.3d", syscfg.datadir, MODEM_XXX, app->GetInstanceNumber() );
     }
     else
     {
-        sprintf( szFileName, "%s%s", syscfg.datadir, MODEM_DAT );
+        snprintf( szFileName, sizeof( szFileName ), "%s%s", syscfg.datadir, MODEM_DAT );
     }
     WFile file( szFileName );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
@@ -1212,13 +1212,13 @@ void WBbsApp::InitializeBBS()
     sess->SetQuoting( false );
     sess->tagptr = 0;
 
-    sprintf( m_szWWIVEnvironmentVariable, "BBS=%s", wwiv_version );
+    snprintf( m_szWWIVEnvironmentVariable, sizeof( m_szWWIVEnvironmentVariable ), "BBS=%s", wwiv_version );
 
     time_t t;
-    time(&t);
+    time( &t );
     // Struct tm_year is -= 1900
-    struct tm * pTm = localtime(&t);
-    if (pTm->tm_year < 88)
+    struct tm * pTm = localtime( &t );
+    if ( pTm->tm_year < 88 )
     {
         std::cout << "You need to set the date [" << pTm->tm_year << "] & time before running the BBS.\r\n";
         AbortBBS();
@@ -1228,9 +1228,9 @@ void WBbsApp::InitializeBBS()
         AbortBBS( true );
     }
 
-    strcpy(szFileName, syscfgovr.tempdir);
+    strcpy( szFileName, syscfgovr.tempdir );
     int i = strlen(szFileName);
-    if (szFileName[0] == 0)
+    if ( szFileName[0] == '\0' )
     {
         i1 = 1;
     }
@@ -1278,11 +1278,11 @@ void WBbsApp::InitializeBBS()
         CdHome();
     }
 
-    write_inst(INST_LOC_INIT, 0, INST_FLAGS_NONE);
+    write_inst( INST_LOC_INIT, 0, INST_FLAGS_NONE );
 
     // make sure it is the new USERREC structure
     XINIT_PRINTF("* Reading user scan pointers.\r\n");
-    sprintf(szFileName, "%s%s", syscfg.datadir, USER_QSC);
+    snprintf( szFileName, sizeof( szFileName ), "%s%s", syscfg.datadir, USER_QSC );
     if (!WFile::Exists(szFileName))
     {
      	std::cout << "Could not open file '" << szFileName << "'\r\n";
@@ -1291,7 +1291,7 @@ void WBbsApp::InitializeBBS()
     }
 
 #if !defined( _UNIX )
-    if (!syscfgovr.primaryport)
+    if ( !syscfgovr.primaryport )
     {
         ok_modem_stuff = false;
     }
@@ -1315,11 +1315,11 @@ void WBbsApp::InitializeBBS()
     read_networks();
     set_net_num( 0 );
 
-    XINIT_PRINTF("* Reading status information.\r\n");
-    statusMgr->Get(false, true);
+    XINIT_PRINTF( "* Reading status information.\r\n" );
+    statusMgr->Get( false, true );
 
     XINIT_PRINTF("* Reading color information.\r\n");
-    sprintf(szFileName, "%s%s", syscfg.datadir, COLOR_DAT);
+    snprintf( szFileName, sizeof( szFileName ), "%s%s", syscfg.datadir, COLOR_DAT );
     if ( !WFile::Exists( szFileName ) )
 	{
         buildcolorfile();
@@ -1327,75 +1327,75 @@ void WBbsApp::InitializeBBS()
     get_colordata();
 
     status.wwiv_version = wwiv_num_version;
-    if (status.callernum != 65535)
+    if ( status.callernum != 65535 )
     {
         status.callernum1 = static_cast<unsigned long>( status.callernum );
         status.callernum = 65535;
     }
     statusMgr->Write();
 
-    gat = static_cast<unsigned short *>( BbsAllocWithComment(2048 * sizeof(short), "gat") );
-	WWIV_ASSERT(gat != NULL);
+    gat = static_cast<unsigned short *>( BbsAllocWithComment( 2048 * sizeof( short ), "gat" ) );
+	WWIV_ASSERT( gat != NULL );
 
-    XINIT_PRINTF("* Reading Gfiles.\r\n");
+    XINIT_PRINTF( "* Reading Gfiles.\r\n" );
     gfilesec = NULL;
     read_gfile();
 
     smallist = NULL;
 
-    XINIT_PRINTF("* Reading user names.\r\n");
-    if (!read_names())
+    XINIT_PRINTF( "* Reading user names.\r\n" );
+    if ( !read_names() )
     {
         AbortBBS();
     }
 
-    XINIT_PRINTF("* Reading Message Areas.\r\n");
+    XINIT_PRINTF( "* Reading Message Areas.\r\n" );
     subboards = NULL;
-    if (!read_subs())
+    if ( !read_subs() )
     {
         AbortBBS();
     }
 
-    XINIT_PRINTF("* Reading File Areas.\r\n");
+    XINIT_PRINTF( "* Reading File Areas.\r\n" );
     directories = NULL;
-    if (!read_dirs())
+    if ( !read_dirs() )
     {
         AbortBBS();
     }
 
-    XINIT_PRINTF("* Reading Chains.\r\n");
+    XINIT_PRINTF( "* Reading Chains.\r\n" );
     sess->SetNumberOfChains( 0 );
     chains = NULL;
     read_chains();
 
 #ifndef _UNIX
-    XINIT_PRINTF("* Reading Modem Configuration.\r\n");
+    XINIT_PRINTF( "* Reading Modem Configuration.\r\n" );
     modem_i = NULL;
-    if (!read_modem())
+    if ( !read_modem() )
     {
         AbortBBS();
     }
 #endif
-    XINIT_PRINTF("* Reading File Transfer Protocols.\r\n");
+    XINIT_PRINTF( "* Reading File Transfer Protocols.\r\n" );
     externs = NULL;
     read_nextern();
 
     over_intern = NULL;
     read_nintern();
 
-    XINIT_PRINTF("* Reading File Archivers.\r\n");
+    XINIT_PRINTF( "* Reading File Archivers.\r\n" );
     read_arcs();
     SaveConfig();
 
-    XINIT_PRINTF("* Reading Full Screen Message Editors.\r\n");
+    XINIT_PRINTF(" * Reading Full Screen Message Editors.\r\n" );
     read_editors();
 
     XINIT_PRINTF("* Parsing WWIV.INI.\r\n");
-    if (ini_init(WWIV_INI, INI_TAG, NULL))
+    if ( ini_init( WWIV_INI, INI_TAG, NULL ) )
     {
-        if ((ss = ini_get("THREAD_SUBS", -1, NULL)) != NULL)
+        if ( ( ss = ini_get( "THREAD_SUBS", -1, NULL ) ) != NULL )
         {
-            if (wwiv::UpperCase<char>(ss[0] == 'Y'))
+            if ( wwiv::UpperCase<char>( ss[0] == 'Y' ) )
             {
                 sess->SetMessageThreadingEnabled( true );
             }
@@ -1458,14 +1458,14 @@ void WBbsApp::InitializeBBS()
     // put in our environment since passing the xenviron wasn't working
     // with sync emulated fossil
     putenv( newprompt );
-    sprintf(g_szDSZLogFileName, "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber());
+    snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber() );
 
 #if !defined (_UNIX)
-    sprintf(szFileName, "DSZLOG=%s", g_szDSZLogFileName);
+    snprintf( szFileName, sizeof( szFileName ), "DSZLOG=%s", g_szDSZLogFileName );
     int pk = i = i1 = 0;
-    ss = getenv("DSZLOG");
+    ss = getenv( "DSZLOG" );
 
-    if (!ss)
+    if ( !ss )
     {
         putenv( szFileName );
     }

@@ -329,7 +329,7 @@ void swap_dirs(int dir1, int dir2)
 	dir1 = static_cast<int>( dir1conv );
 	dir2 = static_cast<int>( dir2conv );
 
-	int nNumUserRecords = number_userrecs();
+	int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
 
 	unsigned long *pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len ) );
 	WWIV_ASSERT( pTempQScan != NULL );
@@ -404,7 +404,7 @@ void insert_dir(int n)
 	directories[n] = r;
 	++sess->num_dirs;
 
-	int nNumUserRecords = number_userrecs();
+	int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
 
 	unsigned long * pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len ) );
 	WWIV_ASSERT( pTempQScan != NULL );
@@ -459,7 +459,7 @@ void delete_dir(int n)
 	}
 	--sess->num_dirs;
 
-	int nNumUserRecords = number_userrecs();
+	int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
 
 	pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len ) );
 	WWIV_ASSERT( pTempQScan != NULL );

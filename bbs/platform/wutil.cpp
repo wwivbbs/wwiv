@@ -78,23 +78,23 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 	case VER_PLATFORM_WIN32_WINDOWS:
 		if ((os.dwMajorVersion == 4) && (os.dwMinorVersion == 0))
 		{
-			sprintf(szBuffer, "Windows 95");
+			snprintf( szBuffer, sizeof( szBuffer ), "Windows 95" );
 		}
-		else if ((os.dwMajorVersion == 4) && (os.dwMinorVersion == 10))
+		else if ( os.dwMajorVersion == 4 && os.dwMinorVersion == 10 )
 		{
-			sprintf(szBuffer, "Windows 98");
+			snprintf( szBuffer, sizeof( szBuffer ), "Windows 98" );
 			if ( os.szCSDVersion[1] == 'A' )
 			{
                 strcat( szBuffer, "SE " );
 			}
 		}
-		else if ((os.dwMajorVersion == 4) && (os.dwMinorVersion == 90))
+		else if ( os.dwMajorVersion == 4 && os.dwMinorVersion == 90 )
 		{
-			sprintf(szBuffer, "Windows ME");
+			snprintf( szBuffer, sizeof( szBuffer ), "Windows ME" );
 		}
 		else
 		{
-			sprintf(szBuffer, "Windows %ld%c%ld", os.dwMajorVersion, '.', os.dwMinorVersion);
+			snprintf( szBuffer, sizeof( szBuffer ), "Windows %ld%c%ld", os.dwMajorVersion, '.', os.dwMinorVersion );
 		}
 		break;
 	case VER_PLATFORM_WIN32_NT:
@@ -103,31 +103,31 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 			switch ( os.dwMinorVersion )
 			{
 			case 0:
-				sprintf(szBuffer, "Windows 2000 %s", (bFullVersion ? os.szCSDVersion : ""));
+				snprintf( szBuffer, sizeof( szBuffer ), "Windows 2000 %s", ( bFullVersion ? os.szCSDVersion : "" ) );
 				break;
 			case 1:
-				sprintf(szBuffer, "Windows XP %s", (bFullVersion ? os.szCSDVersion : ""));
+				snprintf( szBuffer, sizeof( szBuffer ), "Windows XP %s", ( bFullVersion ? os.szCSDVersion : "" ) );
 				break;
 			case 2:
-				sprintf(szBuffer, "Windows Server Family %s", (bFullVersion ? os.szCSDVersion : ""));
+				snprintf( szBuffer, sizeof( szBuffer ), "Windows Server Family %s", ( bFullVersion ? os.szCSDVersion : "" ) );
 				break;
 			}
 		}
         else if (os.dwMajorVersion == 6)
         {
-			sprintf(szBuffer, "**UNKNOWN** %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, (bFullVersion ? os.szCSDVersion : ""));
+			snprintf( szBuffer, sizeof( szBuffer ), "**UNKNOWN** %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, ( bFullVersion ? os.szCSDVersion : "" ) );
         }
 		else
 		{
-			sprintf(szBuffer, "Windows NT %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, (bFullVersion ? os.szCSDVersion : ""));
+			snprintf( szBuffer, sizeof( szBuffer ), "Windows NT %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, ( bFullVersion ? os.szCSDVersion : "" ) );
 		}
 		break;
 	case VER_PLATFORM_WIN32s:
         // Don't know why we need this, we won't run here.
-		sprintf(szBuffer, "WIN32s on Windows 3.1");
+		snprintf( szBuffer, sizeof( szBuffer ), "WIN32s on Windows 3.1" );
 		break;
 	default:
-		sprintf(szBuffer, "WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
+		snprintf( szBuffer, sizeof( szBuffer ), "WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion );
 	}
 
 	if ( nBufferSize < wwiv::stringUtils::GetStringLength( szBuffer ) )

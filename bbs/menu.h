@@ -20,6 +20,10 @@
 #ifndef __INCLUDED_MENU_H__
 #define __INCLUDED_MENU_H__
 
+#ifdef _MSC_VER
+#pragma once
+#endif
+
 #ifdef _WIN32
   #pragma pack(push, 1)
 #elif defined (_UNIX)

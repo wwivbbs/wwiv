@@ -648,7 +648,7 @@ void ResetQscan()
     if ( yesno() )
     {
         write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
-        for ( int i = 0; i <= number_userrecs(); i++ )
+        for ( int i = 0; i <= app->userManager->GetNumberOfUserRecords(); i++ )
         {
             read_qscn( i, qsc, true );
             memset( qsc_p, 0, syscfg.qscn_len - 4 * ( 1 + ( ( sess->GetMaxNumberFileAreas() + 31 ) / 32 ) + ( ( sess->GetMaxNumberMessageAreas() + 31 ) / 32 ) ) );
