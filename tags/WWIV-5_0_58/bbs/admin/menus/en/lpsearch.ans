@@ -1,0 +1,10 @@
+[40m[2J[0;1;34mÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿³ [0;1;33mOption [A] searches [s
+[ufor a specific filename.  Wildcards (*,?) are okay, but  [0;1;34m³³ [0;1;33mmust match, e.g. "WILD" will [0;1;31mNOT [s
+[u[0;1;33mfind "WILDCAT.ZIP" but "WILD*" will![8C[0;1;34m³³[78C³³ [0;1;35mOption [B] searches for text in filenames [s
+[u[0;1;31mAND [0;1;35mdescriptions.  You can use[5C[0;1;34m³³ [0;1;35mmultiple search parameters using the logical expressi[s
+[uons described below.    [0;1;34m³³[78C³³ [0;1;36mThe operators | (or), & (and), and ! (not) can be used to tailor your sear[s
+[uch [0;1;34m³³ [0;1;36mvery specifically.  Some examples are:[39C[0;1;34m³³[78C³³ [0;1;32mcat | dog[10C<- find "cat" OR [s
+[u"dog" in the filename or description.    [0;1;34m³³ [0;1;32mcat & dog[10C<- show if "cat" AND "dog" are both found in descr[s
+[uiption. [0;1;34m³³ [0;1;32mrip & !description <- show "rip" but skip if the full word is "description". [0;1;34m³ÀÄÄÄÄÄÄÄÄÄ[s
+[uÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ[16;1H
+[0m[255D
