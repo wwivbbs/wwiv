@@ -50,7 +50,7 @@ GENERAL INFORMATION:
 ==============================================================================
 
 LABEL: WWIV-5_0_58
-DATE:  ??/??/????
+DATE:  11/30/2004
 
 Rushfan - Fixed a typo/bug in the sending the initial telnet sequences, look
           for echo being broken or linemode being enabled on some lesser
