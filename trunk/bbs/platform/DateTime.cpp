@@ -27,7 +27,7 @@ char *date()
   time_t t = time( NULL );
   struct tm * pTm = localtime( &t );
 
-  sprintf( szDateString, "%02d/%02d/%02d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year % 100 );
+  snprintf( szDateString, sizeof( szDateString ), "%02d/%02d/%02d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year % 100 );
   return szDateString;
 }
 
@@ -38,7 +38,7 @@ char *fulldate()
   time_t t = time( NULL );
   struct tm * pTm = localtime( &t );
 
-  sprintf( szDateString, "%02d/%02d/%4d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year + 1900 );
+  snprintf( szDateString, sizeof( szDateString ), "%02d/%02d/%4d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year + 1900 );
   return szDateString;
 }
 
@@ -49,7 +49,7 @@ char *times()
 
 	time_t tim = time( NULL );
 	struct tm *t = localtime( &tim );
-	sprintf( szTimeString, "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec );
+	snprintf( szTimeString, sizeof( szTimeString ), "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec );
 	return szTimeString;
 }
 
@@ -90,7 +90,7 @@ time_t date_to_daten(const char *datet)
  */
 char *filedate( const char *pszFileName, char *pszReturnValue )
 {
-	if (!WFile::Exists(pszFileName))
+	if ( !WFile::Exists( pszFileName ) )
 	{
 		return "";
 	}
@@ -122,7 +122,7 @@ double timer()
 #define SECSINMINUTE 60
 #define SECSINHOUR (60 * SECSINMINUTE)
   SYSTEMTIME st;
-  GetLocalTime(&st);
+  GetLocalTime( &st );
 
   long l = ( st.wHour * SECSINHOUR ) + ( st.wMinute * SECSINMINUTE ) + st.wSecond;
   double cputim = static_cast<double>( l ) +
@@ -226,7 +226,7 @@ char *ctim( double d )
     long lMinute = static_cast<long>( d / MINUTES_PER_HOUR_FLOAT );
 	d -= static_cast<double>( lMinute * MINUTES_PER_HOUR );
     long lSecond = static_cast<long>( d );
-    sprintf( szCurrentTime, "%2.2ld:%2.2ld:%2.2ld", lHour, lMinute, lSecond );
+    snprintf( szCurrentTime, sizeof( szCurrentTime ), "%2.2ld:%2.2ld:%2.2ld", lHour, lMinute, lSecond );
 
     return szCurrentTime;
 }
@@ -252,7 +252,7 @@ char *ctim2( double d, char *ch2 )
     }
     else
     {
-        sprintf(szHours, "|#1%ld |#9%s", h, (h > 1) ? "hours" : "hour");
+        snprintf( szHours, sizeof( szHours ), "|#1%ld |#9%s", h, (h > 1) ? "hours" : "hour" );
     }
     if (m == 0)
     {
@@ -260,7 +260,7 @@ char *ctim2( double d, char *ch2 )
     }
     else
     {
-        sprintf(szMinutes, "|#1%ld |#9%s", m, (m > 1) ? "minutes" : "minute");
+        snprintf( szMinutes, sizeof( szMinutes ), "|#1%ld |#9%s", m, (m > 1) ? "minutes" : "minute" );
     }
     if (s == 0)
     {
@@ -268,7 +268,7 @@ char *ctim2( double d, char *ch2 )
     }
     else
     {
-        sprintf(szSeconds, "|#1%ld |#9%s", s, (s > 1) ? "seconds" : "second");
+        snprintf( szSeconds, sizeof( szSeconds ), "|#1%ld |#9%s", s, (s > 1) ? "seconds" : "second" );
     }
 
     if (h == 0)

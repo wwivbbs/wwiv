@@ -231,7 +231,7 @@ void feedback( bool bNewUserFeedback )
         return;
     }
     strcpy( irt, "|#1Feedback" );
-    int nNumUserRecords = number_userrecs();
+    int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
     int i1 = 0;
 
     for ( i = 2; i < 10 && i < nNumUserRecords; i++ )

@@ -16,13 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifdef _MSC_VER
+#pragma once
+#endif
 
 #ifndef __INCLUDED_LISTPLUS_H__
 #define __INCLUDED_LISTPLUS_H__
 
 #ifdef _WIN32
- #pragma pack(push, 1)
-#elif defined (_UNIX)
+ #pragma pack( push,  1)
+#elif defined ( _UNIX )
 #pragma pack( 1 )
 #endif
 

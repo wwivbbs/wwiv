@@ -253,7 +253,7 @@ int WFile::Read( void * pBuffer, int nCount )
 	{
         std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
 	}
-	// %%TODO: Make this an WWIV_ASSERT once we get rid of these issues
+	// TODO: Make this an WWIV_ASSERT once we get rid of these issues
 	return nRet;
 }
 
@@ -265,7 +265,7 @@ int WFile::Write( void * pBuffer, int nCount )
 	{
         std::cout <<"[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
 	}
-	// %%TODO: Make this an WWIV_ASSERT once we get rid of these issues
+	// TODO: Make this an WWIV_ASSERT once we get rid of these issues
 	return nRet;
 }
 

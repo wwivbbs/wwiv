@@ -20,6 +20,12 @@
 #ifndef __INCLUDED_VARS_H__
 #define __INCLUDED_VARS_H__
 
+#ifdef _MSC_VER
+#pragma once
+#endif
+
+#include "vardec.h"
+#include "net.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 

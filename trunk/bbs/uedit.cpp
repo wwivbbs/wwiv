@@ -606,7 +606,7 @@ void uedit( int usern, int other )
     int nUserNumber = usern;
     bool bDoneWithUEdit = false;
     app->userManager->ReadUser( &user, nUserNumber );
-    int nNumUserRecords = number_userrecs();
+    int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
     do
     {
         app->userManager->ReadUser( &user, nUserNumber );

@@ -51,7 +51,7 @@ void reset_files()
 	app->statusMgr->Read();
 	status.users = 0;
 	nl();
-	int nNumUsers = number_userrecs();
+	int nNumUsers = app->userManager->GetNumberOfUserRecords();
     WFile userFile( syscfg.datadir, USER_LST );
     if ( userFile.Open( WFile::modeBinary | WFile::modeReadWrite ) )
 	{

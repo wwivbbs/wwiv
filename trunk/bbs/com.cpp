@@ -157,10 +157,10 @@ bool CheckForHangup()
 
 void addto( char *pszAnsiString, int nNumber )
 {
-    char szBuffer[20];
+    char szBuffer[ 20 ];
 
-	strcat( pszAnsiString, (pszAnsiString[0]) ? ";" : "\x1b[" );
-    sprintf( szBuffer, "%d", nNumber );
+	strcat( pszAnsiString, ( pszAnsiString[0]) ? ";" : "\x1b[" );
+    snprintf( szBuffer, sizeof( szBuffer ), "%d", nNumber );
     strcat( pszAnsiString, szBuffer );
 }
 
@@ -590,7 +590,7 @@ void BackLine()
  * if applicable).  The com port is also checked first to see if a remote
  * user has hung up
  */
-int bputs(const char *pszText)
+int bputs( const char *pszText )
 {
     if ( !pszText || !( *pszText ) )
     {
@@ -599,11 +599,11 @@ int bputs(const char *pszText)
     int displayed = strlen( pszText );
 
     CheckForHangup();
-    if (!hangup)
+    if ( !hangup )
     {
         int i = 0;
 
-        while (pszText[i])
+        while ( pszText[i] )
         {
             bputch( pszText[i++], true );
         }
@@ -618,46 +618,46 @@ int bputs(const char *pszText)
  * printf sytle output function.  Most code should use this when writing
  * locally + remotely.
  */
-int bprintf(const char *fmt,...)
+int bprintf( const char *pszFormatText,... )
 {
     va_list ap;
-    char szBuffer[2048];
+    char szBuffer[ 2048 ];
 
-    va_start(ap, fmt);
-    vsnprintf(szBuffer, 2048, fmt, ap);
-    va_end(ap);
+    va_start( ap, pszFormatText );
+    vsnprintf( szBuffer, 2048, pszFormatText, ap );
+    va_end( ap );
     return bputs( szBuffer );
 }
 
 
 /**
- * Outputs title bar containing variable argument text contained in 'fmt' in
+ * Outputs title bar containing variable argument text contained in 'pszFormatText' in
  * a 'steely-bar' fashion.  Non-ANSI outputs B&W, centered on screen.
  */
-void DisplayLiteBar(const char *fmt,...)
+void DisplayLiteBar( const char *pszFormatText,... )
 {
     va_list ap;
     char s[1024], s1[1024];
 
-    va_start(ap, fmt);
-    vsnprintf(s, 1024, fmt, ap);
-    va_end(ap);
+    va_start( ap, pszFormatText );
+    vsnprintf( s, 1024, pszFormatText, ap );
+    va_end( ap );
 
-    if (strlen(s) % 2 != 0)
+    if ( strlen( s ) % 2 != 0 )
     {
-        strcat(s, " ");
+        strcat( s, " " );
     }
-    int i = (74 - strlen(s)) / 2;
+    int i = ( 74 - strlen( s ) ) / 2;
     if ( okansi() )
     {
-        sprintf(s1, "%s%s%s", charstr(i, ' '), stripcolors(s), charstr(i, ' '));
-		sess->bout << "\x1B[0;1;37m" << charstr(strlen(s1) + 4, 'Ü' ) << wwiv::endl;
+        snprintf( s1, sizeof( s1 ), "%s%s%s", charstr( i, ' ' ), stripcolors( s ), charstr( i, ' ' ) );
+		sess->bout << "\x1B[0;1;37m" << charstr( strlen( s1 ) + 4, 'Ü' ) << wwiv::endl;
         sess->bout << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
-		sess->bout << "\x1B[0;1;30m" << charstr(strlen(s1) + 4, 'ß' ) << wwiv::endl;
+		sess->bout << "\x1B[0;1;30m" << charstr( strlen( s1 ) + 4, 'ß' ) << wwiv::endl;
     }
     else
     {
-		sess->bout << charstr(i, ' ') << s << wwiv::endl;
+		sess->bout << charstr( i, ' ' ) << s << wwiv::endl;
     }
 }
 
