@@ -413,7 +413,7 @@ void download_temp_arc(const char *pszFileName, int xfer)
             sysoplogf( "Downloaded %ldk of \"%s\"", bytes_to_k( lFileSize ), szFileToSend );
             if ( sess->IsUserOnline() )
             {
-                app->localIO->UpdateTopScreen();
+                GetApplication()->GetLocalIO()->UpdateTopScreen();
             }
         }
     }
@@ -443,18 +443,18 @@ void add_arc( const char *arc, const char *pszFileName, int dos )
     if ( szAddArchiveCommand[0] )
     {
         WWIV_ChangeDirTo(syscfgovr.tempdir);
-        app->localIO->LocalPuts( szAddArchiveCommand );
-        app->localIO->LocalPuts( "\r\n" );
+        GetApplication()->GetLocalIO()->LocalPuts( szAddArchiveCommand );
+        GetApplication()->GetLocalIO()->LocalPuts( "\r\n" );
         if (dos)
         {
-            ExecuteExternalProgram( szAddArchiveCommand, app->GetSpawnOptions( SPWANOPT_ARCH_A ) );
+            ExecuteExternalProgram( szAddArchiveCommand, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_A ) );
         }
         else
         {
             ExecuteExternalProgram( szAddArchiveCommand, EFLAG_NONE );
-            app->localIO->UpdateTopScreen();
+            GetApplication()->GetLocalIO()->UpdateTopScreen();
         }
-        app->CdHome();
+        GetApplication()->CdHome();
         sysoplogf( "Added \"%s\" to %s", pszFileName, szArchiveFileName );
 
     }
@@ -622,7 +622,7 @@ void temp_extract()
             }
             WWIV_GetDir(s4, true);
             strcat(s4, stripfn(u.filename));
-            app->CdHome();
+            GetApplication()->CdHome();
             if (!check_for_files(s4))
             {
                 bool ok1 = false;
@@ -671,14 +671,14 @@ void temp_extract()
                         }
                         if (s3[0])
                         {
-                            ExecuteExternalProgram(s3, app->GetSpawnOptions( SPWANOPT_ARCH_E ) );
+                            ExecuteExternalProgram(s3, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_E ) );
                             sprintf(s2, "Extracted out \"%s\" from \"%s\"", s1, u.filename);
                         }
                         else
                         {
                             s2[0] = '\0';
                         }
-                        app->CdHome();
+                        GetApplication()->CdHome();
                         if (s2[0])
                         {
                             sysoplog(s2);
@@ -1068,7 +1068,7 @@ void removefile()
                             sess->bout << "|#5Remove DL points? ";
                             bRemoveDlPoints = yesno();
                         }
-                        if ( app->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
+                        if ( GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
                         {
                             nl();
                             sess->bout << "|#5Remove from ALLOW.DAT? ";
@@ -1091,14 +1091,14 @@ void removefile()
                         WFile::Remove( szFileNameToDelete );
                         if ( bRemoveDlPoints && u.ownersys == 0 )
                         {
-                            app->userManager->ReadUser( &uu, u.ownerusr );
+                            GetApplication()->GetUserManager()->ReadUser( &uu, u.ownerusr );
                             if ( !uu.isUserDeleted() )
                             {
                                 if ( date_to_daten( uu.GetFirstOn() ) < static_cast<signed int>( u.daten ) )
                                 {
                                     uu.SetFilesUploaded( uu.GetFilesUploaded() - 1 );
                                     uu.SetUploadK( uu.GetUploadK() - bytes_to_k( u.numbytes ) );
-                                    app->userManager->WriteUser( &uu, u.ownerusr );
+                                    GetApplication()->GetUserManager()->WriteUser( &uu, u.ownerusr );
                                 }
                             }
                         }

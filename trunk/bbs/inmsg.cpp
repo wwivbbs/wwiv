@@ -221,7 +221,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 			}
 		}
 
-		if ( app->HasConfigFlag( OP_FLAGS_MSG_TAG ) )
+		if ( GetApplication()->HasConfigFlag( OP_FLAGS_MSG_TAG ) )
 		{
             UpdateMessageBufferTagLine( b, &lCurrentMessageSize, aux );
 		}

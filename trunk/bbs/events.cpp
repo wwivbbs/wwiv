@@ -98,7 +98,7 @@ void get_next_forced_event()
     }
     for ( int i = 0; i < sess->num_events; i++ ) 
     {
-        if ( ( events[i].instance == app->GetInstanceNumber() || events[i].instance == 0 ) &&
+        if ( ( events[i].instance == GetApplication()->GetInstanceNumber() || events[i].instance == 0 ) &&
              events[i].status & EVENT_FORCED )
         {
             if ( first < 0 && events[i].time < tl && ( ( events[i].days & ( 1 << day ) ) > 0 ) )
@@ -175,7 +175,7 @@ void check_event()
     {
         if (((events[i].status & EVENT_RUNTODAY) == 0) && (events[i].time <= tl) &&
             ((events[i].days & (1 << dow())) > 0) &&
-            ((events[i].instance == app->GetInstanceNumber()) ||
+            ((events[i].instance == GetApplication()->GetInstanceNumber()) ||
             (events[i].instance == 0)))
         {
             // make sure the event hasn't already been executed on another node,then mark it as run
@@ -202,7 +202,7 @@ void run_event( int evnt )
 
     write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
 #ifndef _UNIX
-    app->localIO->SetCursor( WLocalIO::cursorNormal );
+    GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );
 #endif
     ClearScreen();
     sess->bout << "\r\nNow running external event.\r\n\n";
@@ -214,9 +214,9 @@ void run_event( int evnt )
 	{
         exitlevel = static_cast<int>( events[evnt].cmd[0] );
         close_strfiles();
-        if ( ok_modem_stuff && app->comm != NULL )
+        if ( ok_modem_stuff && GetApplication()->GetComm() != NULL )
         {
-            app->comm->close();
+            GetApplication()->GetComm()->close();
         }
         exit( exitlevel );
     }
@@ -637,7 +637,7 @@ void eventedit()
 
 				do
 				{
-					app->localIO->LocalCls();
+					GetApplication()->GetLocalIO()->LocalCls();
                     std::string title = "|B1|15System Events Configuration";
                     bprintf( "%-85s", title.c_str() );
 					ansic ( 0 );
@@ -653,7 +653,7 @@ void eventedit()
 					nl();
 					sess->bout << "|#7(|#2Q|#7=|#1Quit|#7, |#2?|#7=|#1Help|#7) Which? (|#11|#7-|#18|#7) :";
 					ch = onek( "Q1345678?" );
-					app->localIO->LocalGotoXY( 26, ch - 47 );
+					GetApplication()->GetLocalIO()->LocalGotoXY( 26, ch - 47 );
 					switch( ch )
 					{
 					case '1':
@@ -678,13 +678,13 @@ void eventedit()
 						Input1( syscfg.v_scan_c, syscfg.v_scan_c, 51, true, UPPER );
 						break;
 					case '?':
-						app->localIO->LocalCls();
+						GetApplication()->GetLocalIO()->LocalCls();
 						printfile( CMDPARAM_NOEXT );
 						pausescr();
 						break;
 					case 'Q':
 						bSysEventsDone = true;
-						app->SaveConfig();
+						GetApplication()->SaveConfig();
 						break;
 					}
 				} while( !bSysEventsDone );

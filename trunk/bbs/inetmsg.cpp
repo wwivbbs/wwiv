@@ -234,9 +234,9 @@ char *read_inet_addr( char *addr, int nUserNumber )
 			{
 				sprintf(addr, "User #%d", nUserNumber);
                 WUser user;
-                app->userManager->ReadUser( &user, nUserNumber );
+                GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
                 user.SetEmailAddress( "" );
-                app->userManager->WriteUser( &user, nUserNumber );
+                GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
 			}
 		}
         inetAddrFile.Close();

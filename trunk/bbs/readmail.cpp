@@ -221,7 +221,7 @@ int read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, un
 	if ( !same_email( mloc + rec, m ) )
 	{
 		pFileEmail->Close();
-		app->statusMgr->Read();
+		GetApplication()->GetStatusManager()->Read();
 		if ( emchg )
 		{
 			resynch_email( mloc, mw, rec, m, del, stat );
@@ -523,7 +523,7 @@ void readmail( int mode )
 					else
 					{
 	                    WUser u;
-                        app->userManager->ReadUser( &u, m.fromuser );
+                        GetApplication()->GetUserManager()->ReadUser( &u, m.fromuser );
                         strcat( s, u.GetUserNameAndNumber( m.fromuser ) );
 					}
 				}
@@ -786,7 +786,7 @@ void readmail( int mode )
 			set_net_num( nn );
 			i1 = 1;
 			irt_name[0] = '\0';
-			if ( !app->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
+			if ( !GetApplication()->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
 			{
 				strcpy( mnu, EMAIL_NOEXT );
 				sess->bout << "|#2Mail {?} : ";
@@ -794,7 +794,7 @@ void readmail( int mode )
 			if ( so() )
 			{
 				strcpy(mnu, SY_EMAIL_NOEXT);
-				if ( app->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
+				if ( GetApplication()->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
 				{
 					sess->bout << "|#2Mail |#7{|#1QSRIDAF?-+GEZPVUOLCNY@|#7} |#2: ";
 				}
@@ -805,7 +805,7 @@ void readmail( int mode )
 				if ( cs() )
 				{
 					strcpy( mnu, CS_EMAIL_NOEXT );
-					if ( app->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
+					if ( GetApplication()->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
 					{
 						sess->bout << "|#2Mail |#7{|#1QSRIDAF?-+GZPVUOCY@|#7} |#2: ";
 					}
@@ -816,7 +816,7 @@ void readmail( int mode )
 					if ( !okmail )
 					{
 						strcpy( mnu, RS_EMAIL_NOEXT );
-						if ( app->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
+						if ( GetApplication()->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
 						{
 							sess->bout << "|#2Mail |#7{|#1QI?-+GY|#7} |#2: ";
 						}
@@ -825,7 +825,7 @@ void readmail( int mode )
 					else
 					{
 						strcpy( mnu, EMAIL_NOEXT );
-						if ( app->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
+						if ( GetApplication()->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
 						{
 							sess->bout << "|#2Mail |#7{|#1QSRIDAF?+-GY@|#7} |#2: ";
 						}
@@ -835,7 +835,7 @@ void readmail( int mode )
 			}
 			if ( ( m.status & status_file ) && found && attach_exists )
 			{
-				if ( app->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
+				if ( GetApplication()->HasConfigFlag( OP_FLAGS_MAIL_PROMPT ) )
 				{
 					sess->bout << "\b\b|#7{|#1T|#7} |#2: |#0";
 				}
@@ -1064,9 +1064,9 @@ void readmail( int mode )
 						}
 						p.msg.storage_type = (BYTE) subboards[sess->GetCurrentReadMessageArea()].storage_type;
 						savefile(b, len, &(p.msg), subboards[sess->GetCurrentReadMessageArea()].filename );
-						app->statusMgr->Lock();
+						GetApplication()->GetStatusManager()->Lock();
 						p.qscan = status.qscanptr++;
-						app->statusMgr->Write();
+						GetApplication()->GetStatusManager()->Write();
 						if ( sess->GetNumMessagesInCurrentMessageArea() >= subboards[sess->GetCurrentReadMessageArea()].maxmsgs )
 						{
 							i1 = 1;
@@ -1241,7 +1241,7 @@ void readmail( int mode )
 						{
 							set_net_num(nn);
                             WUser u;
-                            app->userManager->ReadUser( &u, nUserNumber );
+                            GetApplication()->GetUserManager()->ReadUser( &u, nUserNumber );
                             strcpy( s1, u.GetUserNameNumberAndSystem( nUserNumber, net_sysnum ) );
 						}
 						if (ok_to_mail(nUserNumber, nSystemNumber, false))

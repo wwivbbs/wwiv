@@ -129,7 +129,7 @@ void stuff_in( char *pszOutCommandLine, const char *pszInCommandLine,
                 break;
             case 'N':
                 {
-                    stuff_in_num( pszOutCommandLine, "%u", app->GetInstanceNumber() );
+                    stuff_in_num( pszOutCommandLine, "%u", GetApplication()->GetInstanceNumber() );
                 }
                 break;
             case 'S':

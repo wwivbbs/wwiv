@@ -101,7 +101,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
         CreateSyncFosCommandLine( szWorkingCmdLine, szSyncFosTempFile, nSyncMode );
         bUsingSync = true;
         char szTempLogFileName[ MAX_PATH ];
-        _snprintf( szTempLogFileName, sizeof( szTempLogFileName ), "%swwivsync.log", app->GetHomeDir() );
+        _snprintf( szTempLogFileName, sizeof( szTempLogFileName ), "%swwivsync.log", GetApplication()->GetHomeDir() );
         hLogFile = fopen( szTempLogFileName, "at" );
         fprintf( hLogFile, charstr( 78, '=' ) );
         fprintf( hLogFile, "\r\n\r\n" );
@@ -123,12 +123,12 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
     char * pszTitle = new char[ 255 ];
     _snprintf( pszTitle, sizeof( pszTitle), "%s in door on node %d",
-             sess->thisuser.GetName(), app->GetInstanceNumber() );
+             sess->thisuser.GetName(), GetApplication()->GetInstanceNumber() );
     si.lpTitle = pszTitle;
 
 	if ( ok_modem_stuff && !bUsingSync )
     {
-		app->comm->close( true );
+		GetApplication()->GetComm()->close( true );
 	}
 
     HMODULE hKernel32 = NULL;
@@ -161,7 +161,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
         hSyncHangupEvent = INVALID_HANDLE_VALUE;     // Event to hangup program
 
         char szSbbsExecVxdName[ MAX_PATH ];
-        _snprintf( szSbbsExecVxdName, sizeof( szSbbsExecVxdName ), "\\\\.\\%ssbbsexec.vxd", app->GetHomeDir() );
+        _snprintf( szSbbsExecVxdName, sizeof( szSbbsExecVxdName ), "\\\\.\\%ssbbsexec.vxd", GetApplication()->GetHomeDir() );
         fprintf( hLogFile, "Opening VXD: [%s]\r\n", szSbbsExecVxdName );
         hSbbsExecVxd = CreateFile( szSbbsExecVxdName, 0, 0, 0, CREATE_NEW, FILE_FLAG_DELETE_ON_CLOSE, 0 );
         if ( hSbbsExecVxd == INVALID_HANDLE_VALUE )
@@ -215,7 +215,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
     {
         // Create Hangup Event.
         char szHangupEventName[ MAX_PATH + 1 ];
-        _snprintf( szHangupEventName, sizeof( szHangupEventName ), "sbbsexec_hungup%d", app->GetInstanceNumber() );
+        _snprintf( szHangupEventName, sizeof( szHangupEventName ), "sbbsexec_hungup%d", GetApplication()->GetInstanceNumber() );
         hSyncHangupEvent = CreateEvent( NULL, TRUE, FALSE, szHangupEventName );
         if ( hSyncHangupEvent == INVALID_HANDLE_VALUE )
         {
@@ -226,7 +226,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
         // Create Read Mail Slot
         char szReadSlotName[ MAX_PATH + 1];
-        _snprintf( szReadSlotName, sizeof( szReadSlotName ), "\\\\.\\mailslot\\sbbsexec\\rd%d", app->GetInstanceNumber() );
+        _snprintf( szReadSlotName, sizeof( szReadSlotName ), "\\\\.\\mailslot\\sbbsexec\\rd%d", GetApplication()->GetInstanceNumber() );
         hSyncReadSlot = CreateMailslot( szReadSlotName, CONST_SBBSFOS_BUFFER_SIZE, 0, NULL );
         if ( hSyncReadSlot == INVALID_HANDLE_VALUE )
         {
@@ -250,7 +250,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
         NULL,
         TRUE,
         dwCreationFlags,
-        NULL, // app->xenviron not using NULL causes things to not work.
+        NULL, // GetApplication()->xenviron not using NULL causes things to not work.
         szCurDir,
         &si,
         &pi );
@@ -294,8 +294,8 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
     if ( bUsingSync )
     {
-        bool bSavedBinaryMode = app->comm->GetBinaryMode();
-        app->comm->SetBinaryMode( true );
+        bool bSavedBinaryMode = GetApplication()->GetComm()->GetBinaryMode();
+        GetApplication()->GetComm()->SetBinaryMode( true );
         bool bSyncLoopStatus = false;
         if ( IsWindowsNT() )
         {
@@ -324,7 +324,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
                 TerminateProcess( pi.hProcess, 0 );
             }
         }
-        app->comm->SetBinaryMode( bSavedBinaryMode );
+        GetApplication()->GetComm()->SetBinaryMode( bSavedBinaryMode );
     }
     else
     {
@@ -343,8 +343,8 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 	// reengage comm stuff
 	if ( ok_modem_stuff && !bUsingSync )
     {
-		app->comm->open();
-		app->comm->dtr( true );
+		GetApplication()->GetComm()->open();
+		GetApplication()->GetComm()->dtr( true );
     }
 
     return static_cast< int >( dwExitCode );
@@ -394,7 +394,7 @@ void CreateSyncFosCommandLine( char* pszOutCommandLine, const char* pszTempFileP
             GetDosXtrnPath( szDosXtrnPath ),
             pszTempFilePath,
             GetSyncFosOSMode( szOSMode ),
-            app->GetInstanceNumber(),
+            GetApplication()->GetInstanceNumber(),
             nSyncMode, // CONST_SBBSFOS_FOSSIL_MODE,
             CONST_SBBSFOS_LOOPS_BEFORE_YIELD );
 
@@ -410,7 +410,7 @@ bool VerifyDosXtrnExists()
 
 char* GetDosXtrnPath( char *pszDosXtrnPath )
 {
-    _snprintf( pszDosXtrnPath, MAX_PATH, "%sDOSXTRN.EXE", app->GetHomeDir() );
+    _snprintf( pszDosXtrnPath, MAX_PATH, "%sDOSXTRN.EXE", GetApplication()->GetHomeDir() );
     return pszDosXtrnPath;
 }
 
@@ -463,7 +463,7 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
     for( ;; )
     {
         nCounter++;
-        if ( sess->using_modem && ( !app->comm->carrier() ) )
+        if ( sess->using_modem && ( !GetApplication()->GetComm()->carrier() ) )
         {
             SetEvent( hSyncHangupEvent );
             fprintf( hLogFile, "Setting Hangup Event and Sleeping\r\n" );
@@ -486,11 +486,11 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
             }
         }
 
-		if ( app->comm->incoming() )
+		if ( GetApplication()->GetComm()->incoming() )
         {
             nCounter = 0;
             // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-            int nNumReadFromComm = app->comm->read( szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE );
+            int nNumReadFromComm = GetApplication()->GetComm()->read( szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE );
             fprintf( hLogFile, "Read [%d] from comm\r\n", nNumReadFromComm );
 #if 1
 			int nLp = 0;
@@ -511,7 +511,7 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
                 // Create Write handle.
                 char szWriteSlotName[ MAX_PATH ];
                 ::Sleep(500);
-                _snprintf( szWriteSlotName, sizeof( szWriteSlotName ), "\\\\.\\mailslot\\sbbsexec\\wr%d", app->GetInstanceNumber() );
+                _snprintf( szWriteSlotName, sizeof( szWriteSlotName ), "\\\\.\\mailslot\\sbbsexec\\wr%d", GetApplication()->GetInstanceNumber() );
                 fprintf( hLogFile, "Creating Mail Slot [%s]\r\n", szWriteSlotName );
 
                 hSyncWriteSlot = CreateFile( szWriteSlotName,
@@ -594,12 +594,12 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
                     sess->bout << szReadBuffer;
 
                     //ExpandWWIVHeartCodes( szReadBuffer );
-                    //int nNumWritten = app->comm->write( szReadBuffer, strlen( szReadBuffer )  );
+                    //int nNumWritten = GetApplication()->GetComm()->write( szReadBuffer, strlen( szReadBuffer )  );
                     //fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
                 }
                 else
                 {
-                    int nNumWritten = app->comm->write( szReadBuffer, nBufferPtr );
+                    int nNumWritten = GetApplication()->GetComm()->write( szReadBuffer, nBufferPtr );
                     fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
                 }
 
@@ -693,7 +693,7 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
     {
         fprintf( hLogFile, " IN LOOP\r\n" );
         nCounter++;
-        if ( sess->using_modem && ( !app->comm->carrier() ) )
+        if ( sess->using_modem && ( !GetApplication()->GetComm()->carrier() ) )
         {
             SetEvent( hSyncHangupEvent );
             nCounter += CONST_WIN9X_NUM_LOOPS_BEFORE_EXIT_CHECK;
@@ -716,11 +716,11 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
             }
         }
 
-		if ( app->comm->incoming() )
+		if ( GetApplication()->GetComm()->incoming() )
         {
             nCounter = 0;
             // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-            int nNumReadFromComm = app->comm->read( ( szReadBuffer + sizeof( hVM ) ), CONST_SBBSFOS_BUFFER_SIZE - sizeof( hVM ) );
+            int nNumReadFromComm = GetApplication()->GetComm()->read( ( szReadBuffer + sizeof( hVM ) ), CONST_SBBSFOS_BUFFER_SIZE - sizeof( hVM ) );
             fprintf( hLogFile, "nNumReadFromComm = [%d]\r\n", nNumReadFromComm );
             for( int i = sizeof( hVM ); i < static_cast<int>( nNumReadFromComm + sizeof( hVM ) ); i++ )
             {
@@ -775,7 +775,7 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
             {
                 ExpandWWIVHeartCodes( szReadBuffer );
             }
-            app->comm->write( szReadBuffer, dwNumReadFromVXD );
+            GetApplication()->GetComm()->write( szReadBuffer, dwNumReadFromVXD );
         }
 
         if ( nCounter > 0 )

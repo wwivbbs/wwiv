@@ -168,7 +168,7 @@ void frequent_init()
     hangup = false;
     hungup = false;
     chatcall = false;
-    app->localIO->ClearChatReason();
+    GetApplication()->GetLocalIO()->ClearChatReason();
 	sess->SetUserOnline( false );
     change_color = 0;
     chatting = 0;
@@ -187,11 +187,11 @@ void frequent_init()
     use_workspace = false;
     extratimecall = 0.0;
     sess->using_modem = 0;
-    app->localIO->set_global_handle( false );
+    GetApplication()->GetLocalIO()->set_global_handle( false );
     WFile::SetFilePermissions( g_szDSZLogFileName, WFile::permReadWrite );
     WFile::Remove( g_szDSZLogFileName );
     sess->SetTimeOnlineLimited( false );
-    app->localIO->set_x_only( 0, NULL, 0 );
+    GetApplication()->GetLocalIO()->set_x_only( 0, NULL, 0 );
     set_net_num( 0 );
     set_language( sess->thisuser.GetLanguage() );
     reset_disable_conf();
@@ -339,7 +339,7 @@ void send_net( net_header_rec * nh, unsigned short int *list, const char *text, 
 	WWIV_ASSERT( nh );
 
     char szFileName[MAX_PATH];
-    sprintf( szFileName, "%sP1%s", sess->GetNetworkDataDirectory(), app->GetNetworkExtension() );
+    sprintf( szFileName, "%sP1%s", sess->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
     WFile file( szFileName );
     if ( !file.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) )
     {
@@ -583,7 +583,7 @@ int side_menu( int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, i
 	WWIV_ASSERT( menu_items );
 	WWIV_ASSERT( smc );
 
-    app->localIO->tleft( true );
+    GetApplication()->GetLocalIO()->tleft( true );
 
     if ( bNeedsRedraw )
     {
@@ -726,11 +726,11 @@ slrec getslrec(int nSl)
 	}
 
     configrec c;
-    WFile file( app->GetHomeDir(), CONFIG_DAT );
+    WFile file( GetApplication()->GetHomeDir(), CONFIG_DAT );
     if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         // Bad ju ju here.
-        app->AbortBBS();
+        GetApplication()->AbortBBS();
     }
     file.Read( &c, sizeof( configrec ) );
 
@@ -744,13 +744,13 @@ slrec getslrec(int nSl)
 void shut_down( int nShutDownStatus )
 {
     char xl[81], cl[81], atr[81], cc;
-    app->localIO->SaveCurrentLine( cl, atr, xl, &cc );
+    GetApplication()->GetLocalIO()->SaveCurrentLine( cl, atr, xl, &cc );
 
     switch ( nShutDownStatus )
 	{
     case 1:
-        app->SetShutDownStatus( WBbsApp::shutdownThreeMinutes );
-        app->SetShutDownTime( timer() + 180.0 );
+        GetApplication()->SetShutDownStatus( WBbsApp::shutdownThreeMinutes );
+        GetApplication()->SetShutDownTime( timer() + 180.0 );
     case 2:
     case 3:
         nl( 2 );
@@ -765,7 +765,7 @@ void shut_down( int nShutDownStatus )
 		sess->bout << "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
         printfile( LOGOFF_NOEXT );
         hangup = true;
-        app->SetShutDownStatus( WBbsApp::shutdownNone );
+        GetApplication()->SetShutDownStatus( WBbsApp::shutdownNone );
         break;
 	default:
         std::cout << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus << std::endl;

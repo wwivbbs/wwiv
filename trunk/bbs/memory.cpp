@@ -43,7 +43,7 @@ void* BbsAllocWithComment( size_t lNumBytes, char *pszComment )
         snprintf( szBuffer, sizeof( szBuffer ), "Insufficient memory (%ld bytes) for %s.\n", lNumBytes, pszComment );
 		std::cout << szBuffer;
 		WWIV_OutputDebugString( szBuffer );
-        app->AbortBBS();
+        GetApplication()->AbortBBS();
     }
     memset( ( void * ) pBuffer, 0, lNumBytes );
     return pBuffer;

@@ -29,7 +29,7 @@ void addto( char *pszAnsiString, int nNumber );
 
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc)
 {
-    if ( app->localIO->WhereX() )
+    if ( GetApplication()->GetLocalIO()->WhereX() )
 	{
         nl();
 	}
@@ -53,7 +53,7 @@ void FlushOutComChBuffer()
 {
     if ( s_nOutComChBufferPosition > 0 )
     {
-        app->comm->write( s_szOutComChBuffer, s_nOutComChBufferPosition );
+        GetApplication()->GetComm()->write( s_szOutComChBuffer, s_nOutComChBufferPosition );
         s_nOutComChBufferPosition = 0;
         memset( s_szOutComChBuffer, 0, OUTCOMCH_BUFFER_SIZE + 1 );
     }
@@ -63,7 +63,7 @@ void FlushOutComChBuffer()
 void rputch( char ch, bool bUseInternalBuffer )
 {
 
-    if ( ok_modem_stuff && NULL != app->comm )
+    if ( ok_modem_stuff && NULL != GetApplication()->GetComm() )
     {
         if ( bUseInternalBuffer )
         {
@@ -75,7 +75,7 @@ void rputch( char ch, bool bUseInternalBuffer )
         }
         else
         {
-            app->comm->putW(ch);
+            GetApplication()->GetComm()->putW(ch);
         }
     }
 }
@@ -90,7 +90,7 @@ char rpeek_wfconly()
 {
     if ( ok_modem_stuff && !global_xx )
     {
-        return ( ( char ) app->comm->peek() );
+        return ( ( char ) GetApplication()->GetComm()->peek() );
     }
     return 0;
 }
@@ -98,15 +98,15 @@ char rpeek_wfconly()
 
 char bgetchraw()
 {
-    if ( ok_modem_stuff && !global_xx && NULL != app->comm )
+    if ( ok_modem_stuff && !global_xx && NULL != GetApplication()->GetComm() )
     {
-        if ( app->comm->incoming() )
+        if ( GetApplication()->GetComm()->incoming() )
         {
-            return ( app->comm->getW() );
+            return ( GetApplication()->GetComm()->getW() );
         }
-        if ( app->localIO->LocalKeyPressed() )
+        if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
         {
-            return ( app->localIO->getchd1() );
+            return ( GetApplication()->GetLocalIO()->getchd1() );
         }
     }
     return 0;
@@ -117,9 +117,9 @@ bool bkbhitraw()
 {
     if ( ok_modem_stuff && !global_xx )
     {
-        return ( app->comm->incoming() || app->localIO->LocalKeyPressed() );
+        return ( GetApplication()->GetComm()->incoming() || GetApplication()->GetLocalIO()->LocalKeyPressed() );
     }
-    else if ( app->localIO->LocalKeyPressed() )
+    else if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
     {
         return true;
     }
@@ -131,8 +131,8 @@ void dump()
 {
     if ( ok_modem_stuff )
     {
-		app->comm->purgeOut();
-		app->comm->purgeIn();
+		GetApplication()->GetComm()->purgeOut();
+		GetApplication()->GetComm()->purgeIn();
     }
 }
 
@@ -142,7 +142,7 @@ bool CheckForHangup()
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of hangup
 {
-    if ( !hangup && sess->using_modem && !app->comm->carrier() )
+    if ( !hangup && sess->using_modem && !GetApplication()->GetComm()->carrier() )
     {
         hangup = hungup = true;
         if ( sess->IsUserOnline() )
@@ -286,7 +286,7 @@ bool bkbhit()
         return false;
     }
 
-    if ( ( app->localIO->LocalKeyPressed() || ( incom && bkbhitraw() ) ||
+    if ( ( GetApplication()->GetLocalIO()->LocalKeyPressed() || ( incom && bkbhitraw() ) ||
          ( charbufferpointer && charbuffer[charbufferpointer] ) ) ||
 		 bquote )
     {
@@ -354,25 +354,25 @@ char getkey()
                 beepyet = 1;
                 bputch( CG );
             }
-            if ( app->IsShutDownActive() )
+            if ( GetApplication()->IsShutDownActive() )
             {
-                if ((( app->GetShutDownTime() - timer()) < 120) && ((app->GetShutDownTime() - timer()) > 60))
+                if ((( GetApplication()->GetShutDownTime() - timer()) < 120) && ((GetApplication()->GetShutDownTime() - timer()) > 60))
                 {
-                    if ( app->GetShutDownStatus() != WBbsApp::shutdownTwoMinutes )
+                    if ( GetApplication()->GetShutDownStatus() != WBbsApp::shutdownTwoMinutes )
                     {
                         shut_down( WBbsApp::shutdownTwoMinutes );
-                        app->SetShutDownStatus( WBbsApp::shutdownTwoMinutes );
+                        GetApplication()->SetShutDownStatus( WBbsApp::shutdownTwoMinutes );
                     }
                 }
-                if (((app->GetShutDownTime() - timer()) < 60) && ((app->GetShutDownTime() - timer()) > 0))
+                if (((GetApplication()->GetShutDownTime() - timer()) < 60) && ((GetApplication()->GetShutDownTime() - timer()) > 0))
                 {
-                    if ( app->GetShutDownStatus() != WBbsApp::shutdownOneMinute )
+                    if ( GetApplication()->GetShutDownStatus() != WBbsApp::shutdownOneMinute )
                     {
                         shut_down( WBbsApp::shutdownOneMinute );
-                        app->SetShutDownStatus( WBbsApp::shutdownOneMinute );
+                        GetApplication()->SetShutDownStatus( WBbsApp::shutdownOneMinute );
                     }
                 }
-                if ( ( app->GetShutDownTime() - timer() ) <= 0 )
+                if ( ( GetApplication()->GetShutDownTime() - timer() ) <= 0 )
                 {
                     shut_down( WBbsApp::shutdownImmediate );
                 }
@@ -577,7 +577,7 @@ void BackLine()
 {
     ansic( 0 );
     bputch(SPACE);
-    for (int i = app->localIO->WhereX(); i > 0; i--)
+    for (int i = GetApplication()->GetLocalIO()->WhereX(); i > 0; i--)
     {
         BackSpace();
     }

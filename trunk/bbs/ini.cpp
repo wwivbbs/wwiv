@@ -286,7 +286,7 @@ void ini_done()
 bool ini_init(const char *pszFileName, const char *prim, const char *sec)
 {
     char szIniFile[MAX_PATH+MAX_FNAME];
-    snprintf( szIniFile, sizeof( szIniFile ), "%s%s", app->GetHomeDir(), pszFileName );
+    snprintf( szIniFile, sizeof( szIniFile ), "%s%s", GetApplication()->GetHomeDir(), pszFileName );
 
     // first, zap anything there currently
     ini_done();

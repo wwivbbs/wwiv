@@ -252,7 +252,7 @@ void LastCallers()
 {
     if (status.callstoday > 0)
     {
-		if ( app->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
+		if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
 			 ( syscfg.sysconfig & sysconfig_extended_info ) )
         {
             sess->bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
@@ -332,7 +332,7 @@ void GoodBye()
             case 'F':
                 write_inst(INST_LOC_FEEDBACK, 0, INST_FLAGS_ONLINE);
                 feedback( false );
-                app->localIO->UpdateTopScreen();
+                GetApplication()->GetLocalIO()->UpdateTopScreen();
                 break;
             case 'T':
                 write_inst(INST_LOC_BANK, 0, INST_FLAGS_ONLINE);
@@ -524,7 +524,7 @@ void ToggleChat()
     {
         sess->bout << "|12Unable to toggle Sysop availability (hours restriction)\r\n";
     }
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
 }
 
 
@@ -648,7 +648,7 @@ void ResetQscan()
     if ( yesno() )
     {
         write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
-        for ( int i = 0; i <= app->userManager->GetNumberOfUserRecords(); i++ )
+        for ( int i = 0; i <= GetApplication()->GetUserManager()->GetNumberOfUserRecords(); i++ )
         {
             read_qscn( i, qsc, true );
             memset( qsc_p, 0, syscfg.qscn_len - 4 * ( 1 + ( ( sess->GetMaxNumberFileAreas() + 31 ) / 32 ) + ( ( sess->GetMaxNumberMessageAreas() + 31 ) / 32 ) ) );
@@ -662,7 +662,7 @@ void ResetQscan()
 
 void MemoryStatus()
 {
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     nl();
     sess->bout << "Qscanptr        : " << status.qscanptr << wwiv::endl;
 }
@@ -743,7 +743,7 @@ void VotePrint()
 
 void YesturdaysLog()
 {
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     print_local_file( status.log1, "" );
 }
 
@@ -861,7 +861,7 @@ void ChatRoom()
     if ( WFile::Exists( "WWIVCHAT.EXE" ) )
     {
         sprintf( szCommandLine, "WWIVCHAT.EXE %s", create_chain_file() );
-        ExecuteExternalProgram( szCommandLine, app->GetSpawnOptions( SPWANOPT_CHAT ) );
+        ExecuteExternalProgram( szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_CHAT ) );
     }
     else
     {
@@ -872,16 +872,16 @@ void ChatRoom()
 
 void DownloadPosts()
 {
-    if ( app->HasConfigFlag( OP_FLAGS_SLASH_SZ ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_SLASH_SZ ) )
     {
         sess->bout << "|#5This could take quite a while.  Are you sure? ";
         if ( yesno() )
         {
             sess->bout << "Please wait...\r\n";
-            app->localIO->set_x_only(1, "posts.txt", 0);
+            GetApplication()->GetLocalIO()->set_x_only(1, "posts.txt", 0);
             preload_subs();
             nscan();
-            app->localIO->set_x_only( 0, NULL, 0 );
+            GetApplication()->GetLocalIO()->set_x_only( 0, NULL, 0 );
             add_arc( "offline", "posts.txt", 0 );
             download_temp_arc( "offline", 0 );
         }
@@ -891,15 +891,15 @@ void DownloadPosts()
 
 void DownloadFileList()
 {
-    if ( app->HasConfigFlag( OP_FLAGS_SLASH_SZ ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_SLASH_SZ ) )
     {
         sess->bout << "|#5This could take quite a while.  Are you sure? ";
         if ( yesno() )
         {
             sess->bout << "Please wait...\r\n";
-            app->localIO->set_x_only( 1, "files.txt", 1 );
+            GetApplication()->GetLocalIO()->set_x_only( 1, "files.txt", 1 );
             searchall();
-            app->localIO->set_x_only( 0, NULL, 0 );
+            GetApplication()->GetLocalIO()->set_x_only( 0, NULL, 0 );
             add_arc( "temp", "files.txt", 0 );
             download_temp_arc( "temp", 0 );
         }
@@ -919,7 +919,7 @@ void ClearQScan()
         break;
     case 'A':
     {
-        app->statusMgr->Read();
+        GetApplication()->GetStatusManager()->Read();
         for ( int i = 0; i < sess->GetMaxNumberMessageAreas(); i++ )
         {
             qsc_p[i] = status.qscanptr - 1L;
@@ -929,7 +929,7 @@ void ClearQScan()
     }
     break;
     case 'C':
-        app->statusMgr->Read();
+        GetApplication()->GetStatusManager()->Read();
         nl();
         qsc_p[usub[sess->GetCurrentMessageArea()].subnum] = status.qscanptr - 1L;
         sess->bout << "Messages on " << subboards[usub[sess->GetCurrentMessageArea()].subnum].name << " marked as read.\r\n";
@@ -1280,7 +1280,7 @@ void ListFiles()
 
 void NewFileScan()
 {
-    if ( app->HasConfigFlag( OP_FLAGS_SETLDATE ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_SETLDATE ) )
     {
         SetNewFileScanDate();
     }

@@ -33,7 +33,7 @@ void read_automessage()
 
     WFile file( syscfg.gfilesdir, AUTO_MSG );
     nl();
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     char anon = status.amsganon;
 
     if ( !file.Open( WFile::modeReadOnly | WFile::modeBinary ) )
@@ -140,10 +140,10 @@ void write_automessage1()
     sess->bout << "|#9Is this OK? ";
     if ( yesno() )
     {
-        app->statusMgr->Lock();
+        GetApplication()->GetStatusManager()->Lock();
         status.amsganon = static_cast<char>( nAnonStatus );
         status.amsguser = static_cast<unsigned short>( sess->usernum );
-        app->statusMgr->Write();
+        GetApplication()->GetStatusManager()->Write();
         WFile file( syscfg.gfilesdir, AUTO_MSG );
         file.Open( WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
         char szAuthorName[ 81 ];
@@ -225,7 +225,7 @@ void do_automessage()
             break;
         case 'A':
             grab_quotes(NULL, NULL);
-            app->statusMgr->Read();
+            GetApplication()->GetStatusManager()->Read();
             if (status.amsguser)
             {
                 strcpy(irt, "Re: AutoMessage");

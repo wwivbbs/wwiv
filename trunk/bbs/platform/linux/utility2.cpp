@@ -44,7 +44,7 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
 		strcpy( s, fnd.GetFileName() );
 		align( s );
 		snprintf( s1, sizeof( s1 ), "|#7[|#2%s|#7]|#1 ", s );
-		if ( app->localIO->WhereX()> ( sess->thisuser.GetScreenChars() - 15 ) )
+		if ( GetApplication()->GetLocalIO()->WhereX()> ( sess->thisuser.GetScreenChars() - 15 ) )
 		{
 			nl();
 		}
@@ -68,7 +68,7 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
 
   char s[ MAX_PATH ];
   strcpy( s, pszOutBuffer );
-  snprintf( pszOutBuffer, MAX_PATH, "%s%s", app->GetHomeDir(), s );
+  snprintf( pszOutBuffer, MAX_PATH, "%s%s", GetApplication()->GetHomeDir(), s );
 
   return pszOutBuffer;
 }

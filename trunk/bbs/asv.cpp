@@ -476,7 +476,7 @@ int printasv( char *pszFileName, int num, bool abort )
                     okprint = 0;
                 }
             }
-            if ( app->localIO->LocalKeyPressed() )
+            if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
             {
                 switch ( wwiv::UpperCase<char>( getkey() ) )
                 {

@@ -38,7 +38,7 @@ void InsertSmallRecord(int nUserNumber, const char *pszName)
 {
     smalrec sr;
     int cp = 0;
-    app->statusMgr->Lock();
+    GetApplication()->GetStatusManager()->Lock();
     while ( cp < status.users &&
             wwiv::stringUtils::StringCompare( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) > 0 )
     {
@@ -55,13 +55,13 @@ void InsertSmallRecord(int nUserNumber, const char *pszName)
     if ( !namesList.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate ) )
     {
         std::cout << namesList.GetFullPathName() << " NOT FOUND" << std::endl;
-        app->AbortBBS();
+        GetApplication()->AbortBBS();
     }
     ++status.users;
     ++status.filechange[filechange_names];
     namesList.Write( smallist, ( sizeof( smalrec ) * status.users ) );
     namesList.Close();
-    app->statusMgr->Write();
+    GetApplication()->GetStatusManager()->Write();
 }
 
 
@@ -72,14 +72,14 @@ void InsertSmallRecord(int nUserNumber, const char *pszName)
 void DeleteSmallRecord( const char *pszName )
 {
     int cp = 0;
-    app->statusMgr->Lock();
+    GetApplication()->GetStatusManager()->Lock();
     while ( cp < status.users && !wwiv::stringUtils::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) )
     {
         ++cp;
     }
     if ( !wwiv::stringUtils::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) )
     {
-        app->statusMgr->Write();
+        GetApplication()->GetStatusManager()->Write();
         sysoplogfi( false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", pszName );
         sysoplog( "#*#*#*# Run //resetf to fix it", false );
         return;
@@ -92,11 +92,11 @@ void DeleteSmallRecord( const char *pszName )
     if ( !namesList.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate ) )
     {
         std::cout << namesList.GetFullPathName() << " COULD NOT BE CREATED" << std::endl;
-        app->AbortBBS();
+        GetApplication()->AbortBBS();
     }
     --status.users;
     ++status.filechange[filechange_names];
     namesList.Write( smallist, ( sizeof( smalrec ) * status.users ) );
     namesList.Close();
-    app->statusMgr->Write();
+    GetApplication()->GetStatusManager()->Write();
 }

@@ -173,7 +173,7 @@ void remove_link( messagerec * pMessageRecord, const char *aux )
  */
 WFile * OpenMessageFile( const char *pszMessageAreaFileName )
 {
-	app->statusMgr->Read();
+	GetApplication()->GetStatusManager()->Read();
 
 	std::string strFullPathName;
 	wwiv::stringUtils::FormatString( strFullPathName, "%s%s.dat", syscfg.msgsdir, pszMessageAreaFileName );
@@ -239,9 +239,9 @@ void save_gat( WFile *pMessageFile )
 	long lSectionPos = static_cast<long>( gat_section ) * GATSECLEN;
 	pMessageFile->Seek( lSectionPos, WFile::seekBegin );
 	pMessageFile->Write( gat, GAT_SECTION_SIZE );
-	app->statusMgr->Lock();
+	GetApplication()->GetStatusManager()->Lock();
 	status.filechange[ filechange_posts ]++;
-	app->statusMgr->Write();
+	GetApplication()->GetStatusManager()->Write();
 }
 
 
@@ -416,7 +416,7 @@ bool ForwardMessage( int *pUserNumber, int *pSystemNumber )
 	}
 
 	WUser userRecord;
-    app->userManager->ReadUser( &userRecord, *pUserNumber );
+    GetApplication()->GetUserManager()->ReadUser( &userRecord, *pUserNumber );
     if ( userRecord.isUserDeleted() )
 	{
 		return false;
@@ -482,7 +482,7 @@ bool ForwardMessage( int *pUserNumber, int *pSystemNumber )
 		ss[i] = '\0';
 	}
 	ss[*pUserNumber] = 1;
-    app->userManager->ReadUser( &userRecord, nCurrentUser );
+    GetApplication()->GetUserManager()->ReadUser( &userRecord, nCurrentUser );
     while ( userRecord.GetForwardUserNumber() || userRecord.GetForwardSystemNumber() )
 	{
 		if ( userRecord.GetForwardSystemNumber() )
@@ -521,7 +521,7 @@ bool ForwardMessage( int *pUserNumber, int *pSystemNumber )
 			return false;
 		}
 		nCurrentUser = userRecord.GetForwardUserNumber() ;
-        app->userManager->ReadUser( &userRecord, nCurrentUser );
+        GetApplication()->GetUserManager()->ReadUser( &userRecord, nCurrentUser );
 	}
 	BbsFreeMemory( ss );
 	*pSystemNumber = 0;
@@ -693,11 +693,11 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
             char szNetFileName[MAX_PATH];
 			if ( nForwardedCode )
 			{
-                sprintf( szNetFileName, "%sp1%s", sess->GetNetworkDataDirectory(), app->GetNetworkExtension() );
+                sprintf( szNetFileName, "%sp1%s", sess->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
 			}
 			else
 			{
-				sprintf( szNetFileName, "%sp0%s", sess->GetNetworkDataDirectory(), app->GetNetworkExtension() );
+				sprintf( szNetFileName, "%sp0%s", sess->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
 			}
 			WFile fileNetworkPacket( szNetFileName );
 			fileNetworkPacket.Open( WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
@@ -713,9 +713,9 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 	if (nSystemNumber == 0)
 	{
     	WUser userRecord;
-        app->userManager->ReadUser( &userRecord, nUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &userRecord, nUserNumber );
         userRecord.SetNumMailWaiting( userRecord.GetNumMailWaiting() + 1 );
-        app->userManager->WriteUser( &userRecord, nUserNumber );
+        GetApplication()->GetUserManager()->WriteUser( &userRecord, nUserNumber );
 		if (nUserNumber == 1)
 		{
 			++fwaiting;
@@ -783,7 +783,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 		sysoplog( logMessage.c_str() );
 	}
 
-	app->statusMgr->Lock();
+	GetApplication()->GetStatusManager()->Lock();
 	if ( nUserNumber == 1 && nSystemNumber == 0 )
 	{
 		++status.fbacktoday;
@@ -804,7 +804,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
             sess->thisuser.SetNumNetEmailSent( sess->thisuser.GetNumNetEmailSent() + 1 );
 		}
 	}
-	app->statusMgr->Write();
+	GetApplication()->GetStatusManager()->Write();
 	if ( !sess->IsNewMailWatiting() )
 	{
         ansic( 3 );
@@ -828,7 +828,7 @@ bool ok_to_mail( int nUserNumber, int nSystemNumber, bool bForceit )
 			return false;
 		}
 		WUser userRecord;
-        app->userManager->ReadUser( &userRecord, nUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &userRecord, nUserNumber );
 		if ( ( userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (syscfg.maxwaiting * 5) ) ||
 			 ( userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > syscfg.maxwaiting ) ||
 			 userRecord.GetNumMailWaiting() > 200 )
@@ -942,7 +942,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 		set_net_num( 0 );
 		if ( an )
 		{
-            app->userManager->ReadUser( &userRecord, nUserNumber );
+            GetApplication()->GetUserManager()->ReadUser( &userRecord, nUserNumber );
             strcpy( szDestination, userRecord.GetUserNameAndNumber( nUserNumber ) );
 		}
 		else
@@ -1101,7 +1101,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 				if ( carbon_copy[j].nSystemNumber == 0 )
 				{
 					set_net_num( 0 );
-                    app->userManager->ReadUser( &userRecord, carbon_copy[j].nUserNumber );
+                    GetApplication()->GetUserManager()->ReadUser( &userRecord, carbon_copy[j].nUserNumber );
                     strcpy( szDestination, userRecord.GetUserNameAndNumber( carbon_copy[j].nUserNumber ) );
 				}
 				else
@@ -1217,7 +1217,7 @@ void imail( int nUserNumber, int nSystemNumber )
 	int i = 1;
 	if ( nSystemNumber == 0 )
 	{
-        app->userManager->ReadUser( &userRecord, nUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &userRecord, nUserNumber );
         if ( !userRecord.isUserDeleted() )
 		{
             sess->bout << "|#5E-mail " << userRecord.GetUserNameAndNumber( nUserNumber ) << "? ";
@@ -1472,7 +1472,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 						lines_listed = 0;
 						if ( sess->topline && sess->screenbottom == 24 )
 						{
-							app->localIO->set_protect( 0 );
+							GetApplication()->GetLocalIO()->set_protect( 0 );
 						}
 					}
 					s[nNumCharsPtr++] = ch;
@@ -1490,14 +1490,14 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 				{
 					if ( centre && ( ctrld != -1 ) )
 					{
-						int nSpacesToCenter = ( sess->thisuser.GetScreenChars() - app->localIO->WhereX() - nLineLenPtr ) / 2;
+						int nSpacesToCenter = ( sess->thisuser.GetScreenChars() - GetApplication()->GetLocalIO()->WhereX() - nLineLenPtr ) / 2;
                         osan( charstr( nSpacesToCenter, ' ' ), &abort, next);
 					}
 					if ( nNumCharsPtr )
 					{
 						if ( ctrld != -1 )
 						{
-							if ( ( app->localIO->WhereX() + nLineLenPtr >= sess->thisuser.GetScreenChars() ) && !centre && !ansi )
+							if ( ( GetApplication()->GetLocalIO()->WhereX() + nLineLenPtr >= sess->thisuser.GetScreenChars() ) && !centre && !ansi )
 							{
 								nl();
 							}
@@ -1505,7 +1505,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 							osan( s, &abort, next );
 							if ( ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi )
 							{
-								if ( app->localIO->WhereX() < sess->thisuser.GetScreenChars() - 1 )
+								if ( GetApplication()->GetLocalIO()->WhereX() < sess->thisuser.GetScreenChars() - 1 )
 								{
 									bputch( SPACE );
 								}
@@ -1568,7 +1568,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 	tmp_disable_pause( false );
 	if ( ansi && sess->topdata && sess->IsUserOnline() )
 	{
-		app->localIO->UpdateTopScreen();
+		GetApplication()->GetLocalIO()->UpdateTopScreen();
 	}
 	if ( syscfg.sysconfig & sysconfig_enable_mci )
 	{
@@ -1655,12 +1655,12 @@ void read_message(int n, bool *next, int *val)
     }
 	if ( p.qscan >= status.qscanptr )
     {
-		app->statusMgr->Lock();
+		GetApplication()->GetStatusManager()->Lock();
 		if ( p.qscan >= status.qscanptr )
         {
 			status.qscanptr = p.qscan + 1;
         }
-		app->statusMgr->Write();
+		GetApplication()->GetStatusManager()->Write();
 	}
 }
 

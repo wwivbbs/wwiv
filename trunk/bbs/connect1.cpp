@@ -59,7 +59,7 @@ void read_call_out_list()
 		if ( ( ss = static_cast<char*>( BbsAllocA( lFileLength + 512 ) ) ) == NULL )
 		{
 			WWIV_ASSERT( ss != NULL );
-            app->AbortBBS( true );
+            GetApplication()->AbortBBS( true );
 		}
 		fileCallout.Read( ss, lFileLength );
 		fileCallout.Close();
@@ -76,7 +76,7 @@ void read_call_out_list()
 			sizeof(net_call_out_rec) ) )) == NULL)
 		{
 			WWIV_ASSERT(net_networks[sess->GetNetworkNumber()].con != NULL);
-			app->AbortBBS( true );
+			GetApplication()->AbortBBS( true );
 		}
 		con = net_networks[sess->GetNetworkNumber()].con;
 		con--;
@@ -84,7 +84,7 @@ void read_call_out_list()
 		if ( ( ss = static_cast<char*>( BbsAllocA(lFileLength + 512 ) ) ) == NULL )
 		{
 			WWIV_ASSERT(ss != NULL);
-			app->AbortBBS( true );
+			GetApplication()->AbortBBS( true );
 		}
 		fileCallout.Read( ss, lFileLength );
 		fileCallout.Close();
@@ -252,7 +252,7 @@ void read_bbs_list()
 		if ( ( csn = static_cast<net_system_list_rec *>( BbsAllocA( lFileLength + 512L ) ) ) == NULL )
 		{
 			WWIV_ASSERT( csn != NULL );
-			app->AbortBBS( true );
+			GetApplication()->AbortBBS( true );
 		}
 		for ( int i = 0; i < sess->num_sys_list; i += 256 )
 		{
@@ -280,7 +280,7 @@ void read_bbs_list_index()
 		if ( ( csn_index = static_cast<unsigned short *>( BbsAllocA( lFileLength ) ) ) == NULL )
 		{
 			WWIV_ASSERT( csn_index != NULL );
-			app->AbortBBS( true );
+			GetApplication()->AbortBBS( true );
 		}
 		fileBbsData.Read( csn_index, lFileLength );
 		fileBbsData.Close();
@@ -379,7 +379,7 @@ void read_contacts()
 			static_cast<net_contact_rec *>( BbsAllocA((net_networks[sess->GetNetworkNumber()].num_ncn + 2) * sizeof(net_contact_rec)))) == NULL)
 		{
 			WWIV_ASSERT(net_networks[sess->GetNetworkNumber()].ncn != NULL);
-			app->AbortBBS( true );
+			GetApplication()->AbortBBS( true );
 		}
 		fileContact.Seek( 0L, WFile::seekBegin );
 		fileContact.Read( net_networks[sess->GetNetworkNumber()].ncn, net_networks[sess->GetNetworkNumber()].num_ncn * sizeof( net_contact_rec ) );
@@ -397,7 +397,7 @@ void set_net_num( int nNetworkNumber )
 		//sess->pszNetworkDataDir = net_networks[sess->GetNetworkNumber()].dir;
 		net_sysnum = net_networks[sess->GetNetworkNumber()].sysnum;
 		sess->SetCurrentNetworkType( net_networks[ sess->GetNetworkNumber() ].type );
-		snprintf( app->m_szEnvironVarWwivNetworkNumber, sizeof( app->m_szEnvironVarWwivNetworkNumber ), "WWIV_NET=%ld", sess->GetNetworkNumber() );
+		snprintf( GetApplication()->m_szEnvironVarWwivNetworkNumber, sizeof( GetApplication()->m_szEnvironVarWwivNetworkNumber ), "WWIV_NET=%ld", sess->GetNetworkNumber() );
 	}
 }
 

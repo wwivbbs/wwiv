@@ -56,7 +56,7 @@ int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
         write_qscn(sess->usernum, qsc, false);
     }
     close_strfiles();
-    app->localIO->set_global_handle( false );
+    GetApplication()->GetLocalIO()->set_global_handle( false );
 
     // extra processing for net programs
     if (nFlags & EFLAG_NETPROG)
@@ -66,14 +66,14 @@ int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
 
     // Execute the program and make sure the workingdir is reset
     int nExecRetCode = ExecExternalProgram( pszCommandLine, nFlags );
-    app->CdHome();
+    GetApplication()->CdHome();
 
     // Reread the user record.
     if ( sess->IsUserOnline() )
 	{
-        app->userManager->ReadUser( &sess->thisuser, sess->usernum, true );
+        GetApplication()->GetUserManager()->ReadUser( &sess->thisuser, sess->usernum, true );
         read_qscn( sess->usernum, qsc, false, true );
-        app->localIO->UpdateTopScreen();
+        GetApplication()->GetLocalIO()->UpdateTopScreen();
     }
 
     // return to caller

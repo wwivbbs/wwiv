@@ -322,7 +322,7 @@ void sort_all(int type)
 {
 	tmp_disable_conf( true );
 	for ( int i = 0; ( i < sess->num_dirs ) && ( udir[i].subnum != -1 ) &&
-		( !app->localIO->LocalKeyPressed() ); i++ )
+		( !GetApplication()->GetLocalIO()->LocalKeyPressed() ); i++ )
 	{
 		sess->bout << "\r\n|#1Sorting " << directories[udir[i].subnum].name << wwiv::endl;
 		sortdir( i, type );
@@ -587,12 +587,12 @@ bool upload_file( const char *pszFileName, int nDirectoryNum, const char *pszDes
 		FileAreaSetRecord( fileDownload, 0 );
 		fileDownload.Write( &u1, sizeof( uploadsrec ) );
 		fileDownload.Close();
-		app->statusMgr->Lock();
+		GetApplication()->GetStatusManager()->Lock();
 		++status.uptoday;
 		++status.filechange[filechange_upload];
-		app->statusMgr->Write();
+		GetApplication()->GetStatusManager()->Write();
 		sysoplogf( "+ \"%s\" uploaded on %s", u.filename, d.name);
-		app->localIO->UpdateTopScreen();
+		GetApplication()->GetLocalIO()->UpdateTopScreen();
 	}
 	return true;
 }
@@ -611,7 +611,7 @@ bool maybe_upload( const char *pszFileName, int nDirectoryNum, const char *pszDe
 
 	if (i == -1)
 	{
-		if ( app->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) && ( !is_uploadable(pszFileName) && dcs() ) )
+		if ( GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) && ( !is_uploadable(pszFileName) && dcs() ) )
         {
             bprintf("|#2%-12s: ", pszFileName);
 			sess->bout << "|#5In filename database - add anyway? ";
@@ -874,7 +874,7 @@ void relist()
 	lines_listed = 0;
 	otag = sess->tagging;
 	sess->tagging = 0;
-	if ( app->HasConfigFlag( OP_FLAGS_FAST_TAG_RELIST ) )
+	if ( GetApplication()->HasConfigFlag( OP_FLAGS_FAST_TAG_RELIST ) )
 	{
 		ansic( sess->thisuser.isUseExtraColor() ? FRAME_COLOR : 0 );
 		if ( okansi() )
@@ -888,7 +888,7 @@ void relist()
 	}
 	for (i = 0; i < sess->tagptr; i++)
 	{
-		if ( !app->HasConfigFlag( OP_FLAGS_FAST_TAG_RELIST ) )
+		if ( !GetApplication()->HasConfigFlag( OP_FLAGS_FAST_TAG_RELIST ) )
 		{
 			if (tcd != filelist[i].directory)
 			{
@@ -963,7 +963,7 @@ void relist()
 		osan((okansi() ? "º" : ":"), &abort, &next);
 
         sprintf( s1, "%ld""k", bytes_to_k( filelist[i].u.numbytes ) );
-		if ( !app->HasConfigFlag( OP_FLAGS_FAST_TAG_RELIST ) )
+		if ( !GetApplication()->HasConfigFlag( OP_FLAGS_FAST_TAG_RELIST ) )
 		{
 			if (!(directories[tcd].mask & mask_cdrom))
 			{
@@ -1032,7 +1032,7 @@ void edit_database()
 	char ch, s[20];
 	bool done = false;
 
-	if ( !app->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
+	if ( !GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
 	{
 		return;
 	}
@@ -1152,7 +1152,7 @@ void modify_database(const char *pszFileName, bool add)
 	unsigned int nb;
 	long l, l1, cp;
 
-	if ( !app->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
+	if ( !GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
 	{
 		return;
 	}
@@ -1250,7 +1250,7 @@ void modify_database(const char *pszFileName, bool add)
 
 bool is_uploadable(const char *pszFileName)
 {
-	if ( !app->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
+	if ( !GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
 	{
 		return true;
 	}

@@ -275,7 +275,7 @@ int callback()
 			count = sess->cbv.repeat;
 		}
 	} while ((ok_modem_stuff) && (count++ < sess->cbv.repeat));
-	if ( !app->comm->carrier() )
+	if ( !GetApplication()->GetComm()->carrier() )
 	{
 		hangup = true;
 	}

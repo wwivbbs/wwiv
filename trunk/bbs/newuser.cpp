@@ -719,7 +719,7 @@ int find_new_usernum( const WUser* pUser, unsigned long *qsc )
     userFile.Seek( syscfg.userreclen, WFile::seekBegin );
     int nUserNumber = 1;
 
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     if (nNewUserNumber == status.users)
     {
         nUserNumber = nNewUserNumber + 1;
@@ -913,11 +913,11 @@ void DoFullNewUser()
     input_name();
     input_realname();
     input_phone();
-    if ( app->HasConfigFlag( OP_FLAGS_CHECK_DUPE_PHONENUM ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHECK_DUPE_PHONENUM ) )
     {
         if ( check_dupes( sess->thisuser.GetVoicePhoneNumber() ) )
         {
-            if ( app->HasConfigFlag( OP_FLAGS_HANGUP_DUPE_PHONENUM ) )
+            if ( GetApplication()->HasConfigFlag( OP_FLAGS_HANGUP_DUPE_PHONENUM ) )
             {
                 hangup = true;
                 hang_it_up();
@@ -958,11 +958,11 @@ void DoFullNewUser()
         }
         input_dataphone();
 
-        if ( app->HasConfigFlag( OP_FLAGS_CHECK_DUPE_PHONENUM ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHECK_DUPE_PHONENUM ) )
         {
             if ( check_dupes( sess->thisuser.GetDataPhoneNumber() ) )
             {
-                if ( app->HasConfigFlag( OP_FLAGS_HANGUP_DUPE_PHONENUM ) )
+                if ( GetApplication()->HasConfigFlag( OP_FLAGS_HANGUP_DUPE_PHONENUM ) )
                 {
                     hangup = true;
                     hang_it_up();
@@ -1015,12 +1015,12 @@ void DoFullNewUser()
 
 void DoNewUserASV()
 {
-    if ( app->HasConfigFlag( OP_FLAGS_ADV_ASV ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_ADV_ASV ) )
     {
         asv();
         return;
     }
-    if ( app->HasConfigFlag( OP_FLAGS_SIMPLE_ASV ) &&
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_SIMPLE_ASV ) &&
          sess->asv.sl > syscfg.newusersl && sess->asv.sl < 90 )
     {
         nl();
@@ -1220,7 +1220,7 @@ void SendNewUserFeedbackIfRequired()
         return;
     }
 
-    if ( app->HasConfigFlag( OP_FLAGS_FORCE_NEWUSER_FEEDBACK ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_FORCE_NEWUSER_FEEDBACK ) )
     {
         noabort( FEEDBACK_NOEXT );
     }
@@ -1229,7 +1229,7 @@ void SendNewUserFeedbackIfRequired()
         sysoplog( "", false );
     }
     feedback( true );
-    if ( app->HasConfigFlag( OP_FLAGS_FORCE_NEWUSER_FEEDBACK ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_FORCE_NEWUSER_FEEDBACK ) )
     {
         if ( !sess->thisuser.GetNumEmailSent() && !sess->thisuser.GetNumFeedbackSent() )
         {
@@ -1255,7 +1255,7 @@ void ExecNewUserCommand()
         sysoplog( szCommandLine, true );
 
         sess->WriteCurrentUser( sess->usernum );
-        ExecuteExternalProgram(szCommandLine, app->GetSpawnOptions( SPWANOPT_NEWUSER ) );
+        ExecuteExternalProgram(szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_NEWUSER ) );
         sess->ReadCurrentUser( sess->usernum );
     }
 }
@@ -1271,8 +1271,8 @@ void newuser()
     input_language();
 
     sysoplog( "", false );
-    sysoplogfi( false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), sess->GetCurrentSpeed().c_str(), app->GetInstanceNumber() );
-    app->statusMgr->Read();
+    sysoplogfi( false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), sess->GetCurrentSpeed().c_str(), GetApplication()->GetInstanceNumber() );
+    GetApplication()->GetStatusManager()->Read();
 
     if ( !CanCreateNewUserAccountHere() || hangup )
     {
@@ -1352,7 +1352,7 @@ void newuser()
 
     WriteNewUserInfoToSysopLog();
 
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
 
     VerifyNewUserPassword();
 
@@ -1492,7 +1492,7 @@ bool check_dupes( const char *pszPhoneNumber )
         ssm(1, 0, szBuffer);
 
         WUser user;
-        app->userManager->ReadUser( &user, nUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
         sprintf( szBuffer, "      also entered by %s", user.GetName() );
 		sysoplog( szBuffer, false );
         ssm( 1, 0, szBuffer );
@@ -1527,7 +1527,7 @@ void noabort( const char *pszFileName )
 void cln_nu()
 {
     ansic( 0 );
-    int i1 = app->localIO->WhereX();
+    int i1 = GetApplication()->GetLocalIO()->WhereX();
     if ( i1 > 28 )
     {
         for (int i = i1; i > 28; i--)
@@ -1564,7 +1564,7 @@ void DoMinimalNewUser()
     bool done = false;
     int nSaveTopData = sess->topdata;
     sess->topdata = WLocalIO::topdataNone;
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
     do
     {
         ClearScreen();
@@ -1784,7 +1784,7 @@ void DoMinimalNewUser()
         sess->thisuser.SetDefaultEditor( 1 );
     }
     sess->topdata = nSaveTopData;
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
     newline = true;
 }
 

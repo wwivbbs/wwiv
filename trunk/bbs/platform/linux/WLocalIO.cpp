@@ -40,6 +40,12 @@ WLocalIO::WLocalIO()
 }
 
 
+WLocalIO::WLocalIO( const WLocalIO& copy )
+{
+    printf("OOPS! - WLocalIO Copy Constructor called!\r\n" );
+}
+
+
 WLocalIO::~WLocalIO()
 {
 }
@@ -58,7 +64,7 @@ void WLocalIO::set_global_handle( bool bOpenFile, bool bOnlyUpdateVariable )
     {
         if (!fileGlobalCap.IsOpen())
         {
-            snprintf( szFileName, sizeof( szFileName ), "%sglobal-%d.txt", syscfg.gfilesdir, app->GetInstanceNumber() );
+            snprintf( szFileName, sizeof( szFileName ), "%sglobal-%d.txt", syscfg.gfilesdir, GetApplication()->GetInstanceNumber() );
             fileGlobalCap.SetName( szFileName );
             bool bOpen = fileGlobalCap.Open( WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
             global_ptr = 0;

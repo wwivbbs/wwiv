@@ -38,7 +38,7 @@ void StatusMgr::Get(bool bFailOnFailure, bool bLockFile)
 		{
 			sysoplog( "CANNOT READ STATUS" );
             std::cout << m_statusFile.GetName() << " NOT FOUND" << std::endl;
-			app->AbortBBS();
+			GetApplication()->AbortBBS();
 		}
 		else
 		{

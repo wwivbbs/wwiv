@@ -74,7 +74,7 @@ void make_inst_str( int nInstanceNum, char *pszOutInstanceString, int nInstanceF
             if ( ir.user < syscfg.maxusers && ir.user > 0 )
             {
                 WUser userRecord;
-                app->userManager->ReadUser( &userRecord, ir.user );
+                GetApplication()->GetUserManager()->ReadUser( &userRecord, ir.user );
                 snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%-30.30s", userRecord.GetUserNameAndNumber( ir.user ) );
                 strncat( s, szNodeActivity, sizeof( s ) );
             }
@@ -92,7 +92,7 @@ void make_inst_str( int nInstanceNum, char *pszOutInstanceString, int nInstanceF
                 if ( ir.user < syscfg.maxusers && ir.user > 0 )
                 {
                     WUser user;
-                    app->userManager->ReadUser( &user, ir.user );
+                    GetApplication()->GetUserManager()->ReadUser( &user, ir.user );
                     if (ir.flags & INST_FLAGS_ONLINE)
                     {
                         userName = user.GetUserNameAndNumber( ir.user );
@@ -173,7 +173,7 @@ int inst_ok( int loc, int subloc )
             instFile.Close();
             if ( instance_temp.loc == loc &&
                  instance_temp.subloc == subloc &&
-                 instance_temp.number != app->GetInstanceNumber() )
+                 instance_temp.number != GetApplication()->GetInstanceNumber() )
             {
                 nInstNum = instance_temp.number;
             }

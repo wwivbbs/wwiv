@@ -441,7 +441,7 @@ void changedsl()
 {
     int ocurconfsub = uconfsub[sess->GetCurrentConferenceMessageArea()].confnum;
     int ocurconfdir = uconfdir[sess->GetCurrentConferenceFileArea()].confnum;
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
 
     userconfrec c1;
     c1.confnum = -1;

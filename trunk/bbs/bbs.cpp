@@ -18,14 +18,13 @@
 /*                                                                        */
 /**************************************************************************/
 
-#define _DEFINE_GLOBALS_
+#define _DEFINE_GLOBALS_ 
 #include "wwiv.h"
 #include "WStringUtils.h"
 #include <sstream>
 #undef _DEFINE_GLOBALS_
 
 #include "bbs.h"
-
 
 extern char cid_num[], cid_name[];
 static bool bUsingPppProject = true;
@@ -51,6 +50,34 @@ const int WBbsApp::shutdownOneMinute    = 3;
 const int WBbsApp::shutdownImmediate    = 4;
 
 
+WBbsApp* GetApplication() 
+{
+    return app;
+}
+
+
+WLocalIO* WBbsApp::GetLocalIO() 
+{ 
+    return localIO; 
+}
+
+
+WComm* WBbsApp::GetComm()
+{
+    return comm;
+}
+
+
+StatusMgr* WBbsApp::GetStatusManager()
+{
+    return statusMgr;
+}
+
+
+WUserManager* WBbsApp::GetUserManager()
+{
+    return userManager;
+}
 
 
 #ifndef _UNIX
@@ -65,11 +92,11 @@ void WBbsApp::GetCaller()
     frequent_init();
     if (sess->wfc_status == 0)
     {
-        app->localIO->LocalCls();
+        GetLocalIO()->LocalCls();
     }
     imodem( false );
     sess->usernum = 0;
-    app->localIO->SetWfcStatus( 0 );
+    GetLocalIO()->SetWfcStatus( 0 );
     write_inst( INST_LOC_WFC, 0, INST_FLAGS_NONE );
     sess->ReadCurrentUser( 1 );
     read_qscn( 1, qsc, false );
@@ -85,7 +112,7 @@ void WBbsApp::GetCaller()
 
     int lokb = doWFCEvents();
 
-    if ( lokb )
+    If ( lokb )
     {
         if ( ok_modem_stuff )
         {
@@ -104,11 +131,11 @@ void WBbsApp::GetCaller()
     }
 
     okskey = true;
-    app->localIO->LocalCls();
-    app->localIO->LocalPrintf( "%s %s ...\r\n",
+    GetLocalIO()->LocalCls();
+    GetLocalIO()->LocalPrintf( "%s %s ...\r\n",
                                 ( ( modem_mode == mode_fax ) ? "Fax connection at" : "Logging on at" ),
                                 sess->GetCurrentSpeed().c_str() );
-	app->localIO->SetWfcStatus( 0 );
+    GetLocalIO()->SetWfcStatus( 0 );
 }
 #else
 
@@ -128,7 +155,7 @@ int WBbsApp::doWFCEvents()
         write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
         set_net_num( 0 );
         bool any = false;
-        app->localIO->SetWfcStatus( 1 );
+        GetLocalIO()->SetWfcStatus( 1 );
         if ( !wwiv::stringUtils::IsEquals( date(), status.date1 ) )
         {
             if ( ( sess->GetBeginDayNodeNumber() == 0 ) || ( m_nInstance == sess->GetBeginDayNodeNumber() ) )
@@ -166,18 +193,18 @@ int WBbsApp::doWFCEvents()
         }
         wfc_screen();
         okskey = false;
-        if (app->localIO->LocalKeyPressed())
+        if (GetLocalIO()->LocalKeyPressed())
         {
-            app->localIO->SetWfcStatus( 0 );
+            GetLocalIO()->SetWfcStatus( 0 );
             sess->ReadCurrentUser( 1 );
             read_qscn(1, qsc, false);
             fwaiting = sess->thisuser.GetNumMailWaiting();
-            app->localIO->SetWfcStatus( 1 );
-			ch = wwiv::UpperCase<char>( app->localIO->getchd1() );
+            GetLocalIO()->SetWfcStatus( 1 );
+            ch = wwiv::UpperCase<char>( GetLocalIO()->getchd1() );
             if (!ch)
             {
-                ch = app->localIO->getchd1();
-                app->localIO->skey(ch);
+                ch = GetLocalIO()->getchd1();
+                GetLocalIO()->skey(ch);
                 ch=0;
             }
         }
@@ -188,11 +215,11 @@ int WBbsApp::doWFCEvents()
         }
         if (ch)
         {
-            app->localIO->SetWfcStatus( 2 );
+            GetLocalIO()->SetWfcStatus( 2 );
             any = true;
             okskey = true;
             resetnsp();
-            app->localIO->SetCursor( WLocalIO::cursorNormal );
+            GetLocalIO()->SetCursor( WLocalIO::cursorNormal );
             switch ( ch )
             {
             // Local Logon
@@ -216,7 +243,7 @@ int WBbsApp::doWFCEvents()
                     char chHelp = ESC;
                     do
                     {
-                        app->localIO->LocalCls();
+                        GetLocalIO()->LocalCls();
                         nl();
                         printfile( helpFileName.c_str() );
                         chHelp = getkey();
@@ -261,7 +288,7 @@ int WBbsApp::doWFCEvents()
             case ',':
                 if ( net_sysnum > 0 || sess->GetMaxNetworkNumber() > 1 && AllowLocalSysop() )
                 {
-                    app->localIO->LocalGotoXY( 2, 23 );
+                    GetLocalIO()->LocalGotoXY( 2, 23 );
                     sess->bout << "|#9(|#2Q|#9=|#2Quit|#9) Display Which NETDAT Log File (|#10|#9-|#12|#9): ";
                     ch = onek( "Q012" );
                     switch ( ch )
@@ -299,13 +326,13 @@ int WBbsApp::doWFCEvents()
                 break;
                 // [ESC] Quit the BBS
             case ESC:
-		        app->localIO->LocalGotoXY( 2, 23 );
+		        GetLocalIO()->LocalGotoXY( 2, 23 );
                 sess->bout << "|#7Exit the BBS? ";
                 if ( yesno() )
                 {
                     QuitBBS();
                 }
-                app->localIO->LocalCls();
+                GetLocalIO()->LocalCls();
                 break;
                 // Answer Phone
             case 'A':
@@ -313,7 +340,7 @@ int WBbsApp::doWFCEvents()
                 {
                     break;
                 }
-				app->localIO->LocalGotoXY( 2, 23 );
+				GetLocalIO()->LocalGotoXY( 2, 23 );
                 answer_phone();
                 break;
                 // BoardEdit
@@ -424,8 +451,8 @@ int WBbsApp::doWFCEvents()
                 if ( AllowLocalSysop() )
                 {
                     wfc_cls();
-                    statusMgr->Read();
-					char szBuffer[ 255 ];
+                    GetStatusManager()->Read();
+                    char szBuffer[ 255 ];
                     slname( date(), szBuffer );
                     print_local_file( szBuffer, status.log1 );
                 }
@@ -513,7 +540,7 @@ int WBbsApp::doWFCEvents()
                 }
 				else
 				{
-					app->localIO->LocalGotoXY( 2, 23 );
+					GetLocalIO()->LocalGotoXY( 2, 23 );
 					sess->bout << "|12No terminal program defined.";
 				}
                 break;
@@ -563,8 +590,8 @@ int WBbsApp::doWFCEvents()
                 if ( AllowLocalSysop() )
                 {
                     wfc_cls();
-                    this->statusMgr->Read();
-					char szDate[ 255 ];
+                    GetStatusManager()->Read();
+                    char szDate[ 255 ];
                     slname( date(), szDate );
                     print_local_file( status.log1, szDate );
                 }
@@ -593,7 +620,7 @@ int WBbsApp::doWFCEvents()
             write_inst( INST_LOC_WFC, 0, INST_FLAGS_NONE );
         }
 #ifndef _UNIX
-        if ( ok_modem_stuff && app->comm->incoming() && !lokb )
+        if ( ok_modem_stuff && comm->incoming() && !lokb )
         {
             any = true;
             if ( rpeek_wfconly() == SOFTRETURN )
@@ -606,7 +633,7 @@ int WBbsApp::doWFCEvents()
                 {
                     if ( sess->wfc_status == 1 )
                     {
-                        app->localIO->LocalXYAPrintf( 58, 13, 14, "%-20s", "Ringing...." );
+                        GetLocalIO()->LocalXYAPrintf( 58, 13, 14, "%-20s", "Ringing...." );
                     }
                     answer_phone();
                 }
@@ -649,7 +676,7 @@ int WBbsApp::doWFCEvents()
                 }
                 else
                 {
-					if ( app->IsCleanNetNeeded() || labs( timer1() - mult_time ) > 1000L )
+                    if ( this->IsCleanNetNeeded() || labs( timer1() - mult_time ) > 1000L )
                     {
                         cleanup_net();
                         mult_time = timer1();
@@ -669,30 +696,30 @@ int WBbsApp::doWFCEvents()
 
 int WBbsApp::LocalLogon()
 {
-    app->localIO->LocalGotoXY( 2, 23 );
+    GetLocalIO()->LocalGotoXY( 2, 23 );
     sess->bout << "|#9Log on to the BBS?";
     double d = timer();
     int lokb = 0;
-    while ( !app->localIO->LocalKeyPressed() && ( fabs( timer() - d ) < SECONDS_PER_MINUTE_FLOAT ) )
+    while ( !GetLocalIO()->LocalKeyPressed() && ( fabs( timer() - d ) < SECONDS_PER_MINUTE_FLOAT ) )
         ;
 
-    if ( app->localIO->LocalKeyPressed() )
+    if ( GetLocalIO()->LocalKeyPressed() )
     {
-        char ch = wwiv::UpperCase<char>( app->localIO->getchd1() );
+        char ch = wwiv::UpperCase<char>( GetLocalIO()->getchd1() );
         if ( ch == 'Y' )
         {
-            app->localIO->LocalFastPuts( YesNoString( true ) );
+            GetLocalIO()->LocalFastPuts( YesNoString( true ) );
             sess->bout << wwiv::endl;
             lokb = 1;
             if ( ( syscfg.sysconfig & sysconfig_off_hook ) == 0 )
             {
-                app->comm->dtr( false );
+                comm->dtr( false );
             }
         }
         else if ( ch == 0 || static_cast<unsigned char>( ch ) == 224 )
         {
             // The ch == 224 is a Win32'ism
-            app->localIO->getchd1();
+            GetLocalIO()->getchd1();
         }
         else
         {
@@ -725,31 +752,31 @@ int WBbsApp::LocalLogon()
                     break;
                 }
             }
-            this->statusMgr->Read();
+            GetStatusManager()->Read();
             if ( !fast || ( m_unx > status.users ) )
             {
                 return lokb;
             }
 
             WUser tu;
-            app->userManager->ReadUserNoCache( &tu, m_unx );
+            GetUserManager()->ReadUserNoCache( &tu, m_unx );
             if ( tu.GetSl() != 255 || tu.isUserDeleted() )
             {
                 return lokb;
             }
 
             sess->usernum = m_unx;
-            int nSavedWFCStatus = app->localIO->GetWfcStatus();
-            app->localIO->SetWfcStatus( 0 );
+            int nSavedWFCStatus = GetLocalIO()->GetWfcStatus();
+            GetLocalIO()->SetWfcStatus( 0 );
             sess->ReadCurrentUser( sess->usernum );
             read_qscn( sess->usernum, qsc, false );
-            app->localIO->SetWfcStatus( nSavedWFCStatus );
+            GetLocalIO()->SetWfcStatus( nSavedWFCStatus );
             bputch( ch );
-            app->localIO->LocalPuts( "\r\n\r\n\r\n\r\n\r\n\r\n" );
+            GetLocalIO()->LocalPuts( "\r\n\r\n\r\n\r\n\r\n\r\n" );
             lokb = 2;
             if ( ( syscfg.sysconfig & sysconfig_off_hook ) == 0 )
             {
-                app->comm->dtr( false );
+                comm->dtr( false );
             }
             sess->ResetEffectiveSl();
             changedsl();
@@ -763,12 +790,12 @@ int WBbsApp::LocalLogon()
         if ( ch == 0 || static_cast<unsigned char>( ch ) == 224 )
         {
             // The 224 is a Win32'ism
-            app->localIO->getchd1();
+            GetLocalIO()->getchd1();
         }
     }
     if ( lokb == 0 )
     {
-        app->localIO->LocalCls();
+        GetLocalIO()->LocalCls();
     }
     return lokb;
 }
@@ -779,7 +806,7 @@ void WBbsApp::GotCaller( unsigned int ms, unsigned long cs )
     frequent_init();
     if ( sess->wfc_status == 0 )
     {
-        app->localIO->LocalCls();
+        GetLocalIO()->LocalCls();
     }
     com_speed   = cs;
     modem_speed = static_cast<unsigned short>( ms );
@@ -793,13 +820,13 @@ void WBbsApp::GotCaller( unsigned int ms, unsigned long cs )
         sess->thisuser.SetScreenLines( 25 );
     }
     sess->screenlinest = 25;
-    app->localIO->LocalCls();
-    app->localIO->LocalPrintf( "Logging on at %s...\r\n", sess->GetCurrentSpeed().c_str() );
+    GetLocalIO()->LocalCls();
+    GetLocalIO()->LocalPrintf( "Logging on at %s...\r\n", sess->GetCurrentSpeed().c_str() );
     if ( ms )
     {
-        if ( ok_modem_stuff && NULL != app->comm )
+        if ( ok_modem_stuff && NULL != comm )
         {
-            app->comm->setup( 'N', 8, 1, cs );
+            comm->setup( 'N', 8, 1, cs );
         }
         incom   = true;
         outcom  = true;
@@ -1180,7 +1207,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
 			case 'K':
 				{
 					this->InitializeBBS();
-					app->localIO->LocalCls();
+					GetLocalIO()->LocalCls();
 					if ( ( i + 1 ) < argc )
 					{
 						i++;
@@ -1298,7 +1325,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
 	    // could care less about the com port... So set it back to true here
 	    // ... the better solution would just be to tell init to "get bent"
 	    ok_modem_stuff = true;
-        app->comm->open();
+        comm->open();
 
         SOCKADDR_IN addr;
         int nAddrSize = sizeof( SOCKADDR);
@@ -1311,11 +1338,11 @@ int WBbsApp::BBSmain(int argc, char *argv[])
 
         char szTempTelnet[ 21 ];
         snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_ECHO );
-        app->comm->write( szTempTelnet, 3, true );
+        comm->write( szTempTelnet, 3, true );
         snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_WILL, WIOTelnet::TELNET_OPTION_ECHO );
-        app->comm->write( szTempTelnet, 3, true );
+        comm->write( szTempTelnet, 3, true );
         snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_LINEMODE );
-        app->comm->write( szTempTelnet, 3, true );
+        comm->write( szTempTelnet, 3, true );
     }
 #endif
 
@@ -1455,7 +1482,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
         frequent_init();
         if ( sess->wfc_status == 0 )
         {
-            app->localIO->LocalCls();
+            GetLocalIO()->LocalCls();
         }
         cleanup_net();
 
@@ -1465,26 +1492,26 @@ int WBbsApp::BBSmain(int argc, char *argv[])
         }
         if ( !no_hangup && ok_modem_stuff )
         {
-            app->comm->dtr( false );
+            comm->dtr( false );
         }
         m_bUserAlreadyOn = false;
-        if ( app->localIO->GetSysopAlert() && (!app->localIO->LocalKeyPressed() ) )
+        if ( GetLocalIO()->GetSysopAlert() && (!GetLocalIO()->LocalKeyPressed() ) )
         {
-            app->comm->dtr( true );
+            comm->dtr( true );
             wait1( 2 );
             holdphone( true );
             double dt = timer();
-            app->localIO->LocalCls();
+            GetLocalIO()->LocalCls();
             sess->bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
-            while ( !app->localIO->LocalKeyPressed() && ( fabs( timer() - dt ) < SECONDS_PER_MINUTE_FLOAT ) )
+            while ( !GetLocalIO()->LocalKeyPressed() && ( fabs( timer() - dt ) < SECONDS_PER_MINUTE_FLOAT ) )
             {
 				WWIV_Sound( 500, 250 );
 				WWIV_Delay( 1 );
             }
-            app->localIO->LocalCls();
+            GetLocalIO()->LocalCls();
             holdphone( false );
         }
-        app->localIO->SetSysopAlert( false );
+        GetLocalIO()->SetSysopAlert( false );
     } while ( !ooneuser );
 
     return m_nOkLevel;
@@ -1529,9 +1556,9 @@ void WBbsApp::ShowUsage()
 
 WBbsApp::WBbsApp()
 {
-    comm				    = NULL;
-    sess				    = new WSession( this );
-    localIO				    = new WLocalIO();
+    comm			    = NULL;
+    sess			    = new WSession( this );
+    localIO			    = new WLocalIO();
     statusMgr			    = new StatusMgr();
     userManager			    = new WUserManager();
     m_nOkLevel			    = WBbsApp::exitLevelOK;
@@ -1549,6 +1576,23 @@ WBbsApp::WBbsApp()
 	// Set the home directory
 	getcwd( m_szCurrentDirectory, MAX_PATH );
 
+}
+
+
+WBbsApp::WBbsApp( const WBbsApp& copy )
+{
+    comm = copy.comm;
+    localIO = copy.localIO;
+    statusMgr = copy.statusMgr;
+    userManager = copy.userManager;
+    m_nOkLevel = copy.m_nOkLevel;
+    m_nErrorLevel = copy.m_nErrorLevel;
+    m_nInstance = copy.m_nInstance;
+    m_bUserAlreadyOn = copy.m_bUserAlreadyOn;
+    m_fShutDownTime = copy.m_fShutDownTime;
+    
+    strcpy( m_szCurrentDirectory, copy.m_szCurrentDirectory );
+    
 }
 
 
@@ -1640,7 +1684,7 @@ void WBbsApp::QuitBBS()
 
 void WBbsApp::ExitBBSImpl( int nExitLevel )
 {
-    app->localIO->LocalCls();
+    localIO->LocalCls();
 
     char szBuffer[81];
     snprintf( szBuffer, sizeof( szBuffer ), "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
@@ -1651,14 +1695,14 @@ void WBbsApp::ExitBBSImpl( int nExitLevel )
     catsl();
     close_strfiles();
     write_inst( INST_LOC_DOWN, 0, INST_FLAGS_NONE );
-    if ( ok_modem_stuff && app->comm != NULL )
+    if ( ok_modem_stuff && comm != NULL )
     {
         comm->close();
-		if ( app->comm != NULL )
-		{
-			delete comm;
-			comm = NULL;
-		}
+	if ( comm != NULL )
+	{
+	    delete comm;
+	    comm = NULL;
+	}
     }
     char szMessage[ 255 ];
     snprintf( szMessage, sizeof( szMessage ), "WWIV Bulletin Board System %s%s exiting at error level %d\r\n\n", wwiv_version, beta_version, nExitLevel );
@@ -1721,7 +1765,7 @@ WBbsApp::~WBbsApp()
 int main( int argc, char *argv[] )
 {
     app = new WBbsApp();
-    int nRetCode = app->Run( argc, argv );
+    int nRetCode = GetApplication()->Run( argc, argv );
     return nRetCode;
 }
 

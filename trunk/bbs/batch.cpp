@@ -142,7 +142,7 @@ void downloaded( char *pszFileName, long lCharsPerSecond )
                 if (syscfg.sysconfig & sysconfig_log_dl)
                 {
                     WUser user;
-                    app->userManager->ReadUser( &user, u.ownerusr );
+                    GetApplication()->GetUserManager()->ReadUser( &user, u.ownerusr );
                     if ( !user.isUserDeleted() )
                     {
                         if ( date_to_daten( user.GetFirstOn() ) < static_cast<signed int>( u.daten ) )
@@ -292,10 +292,10 @@ void uploaded( char *pszFileName, long lCharsPerSecond )
                             modify_database(u.filename, true);
                             sess->thisuser.SetUploadK( sess->thisuser.GetUploadK() +
                                                        static_cast<int>( bytes_to_k( u.numbytes ) ) );
-                            app->statusMgr->Lock();
+                            GetApplication()->GetStatusManager()->Lock();
                             ++status.uptoday;
                             ++status.filechange[filechange_upload];
-                            app->statusMgr->Write();
+                            GetApplication()->GetStatusManager()->Write();
 							WFile fileDn( g_szDownloadFileName );
 							fileDn.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
                             FileAreaSetRecord( fileDn, nRecNum );
@@ -353,13 +353,13 @@ void zmbatchdl(bool bHangupAfterDl)
 
 //    char szTempTelnet[21];
 //    sprintf(szTempTelnet, "%c%c%c", 255, 253, 0); // DO BINARY
-//    app->comm->write(szTempTelnet, 3, true);
+//    GetApplication()->GetComm()->write(szTempTelnet, 3, true);
 
     bool bRatioBad = false;
     bool ok = true;
     do
     {
-        app->localIO->tleft( true );
+        GetApplication()->GetLocalIO()->tleft( true );
         if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio))
         {
             bRatioBad = true;
@@ -384,7 +384,7 @@ void zmbatchdl(bool bHangupAfterDl)
             else
             {
                 sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", sess->numbatchdl, ctim( batchtime ) );
-                app->localIO->LocalPuts( szMessage );
+                GetApplication()->GetLocalIO()->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
                 FileAreaSetRecord( file, i );
@@ -434,7 +434,7 @@ if ( ok && !hangup )
     }
 
 //    sprintf(szTempTelnet, "%c%c%c", 255, 254, 0); // DONT BINARY
-//    app->comm->write(szTempTelnet, 3, true);
+//    GetApplication()->GetComm()->write(szTempTelnet, 3, true);
 }
 
 
@@ -462,7 +462,7 @@ void ymbatchdl(bool bHangupAfterDl)
     bool ok = true;
     do
     {
-        app->localIO->tleft( true );
+        GetApplication()->GetLocalIO()->tleft( true );
         if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio))
         {
             bRatioBad = true;
@@ -487,7 +487,7 @@ void ymbatchdl(bool bHangupAfterDl)
             else
             {
                 sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", sess->numbatchdl, ctim( batchtime ) );
-                app->localIO->LocalPuts( szMessage );
+                GetApplication()->GetLocalIO()->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
                 FileAreaSetRecord( file, i );
@@ -605,7 +605,7 @@ double ratio1( long a )
 
 void make_ul_batch_list(char *pszListFileName)
 {
-    sprintf( pszListFileName, "%s%s.%3.3u", app->GetHomeDir(), FILESUL_NOEXT, app->GetInstanceNumber() );
+    sprintf( pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir(), FILESUL_NOEXT, GetApplication()->GetInstanceNumber() );
 
     WFile::SetFilePermissions(pszListFileName, WFile::permWrite );
     WFile::Remove(pszListFileName);
@@ -623,7 +623,7 @@ void make_ul_batch_list(char *pszListFileName)
             char szBatchFileName[MAX_PATH], szCurrentDirectory[MAX_PATH];
             WWIV_ChangeDirTo(directories[batch[i].dir].path);
             WWIV_GetDir( szCurrentDirectory, true );
-            app->CdHome();
+            GetApplication()->CdHome();
             sprintf( szBatchFileName, "%s%s\r\n", szCurrentDirectory, stripfn( batch[i].filename ) );
 			fileList.Write( szBatchFileName, strlen( szBatchFileName ) );
         }
@@ -634,7 +634,7 @@ void make_ul_batch_list(char *pszListFileName)
 
 void make_dl_batch_list(char *pszListFileName)
 {
-    sprintf( pszListFileName, "%s%s.%3.3u", app->GetHomeDir(), FILESDL_NOEXT, app->GetInstanceNumber() );
+    sprintf( pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir(), FILESDL_NOEXT, GetApplication()->GetInstanceNumber() );
 
     WFile::SetFilePermissions(pszListFileName, WFile::permWrite );
     WFile::Remove( pszListFileName );
@@ -677,7 +677,7 @@ void make_dl_batch_list(char *pszListFileName)
                 sprintf( szFileNameToSend, "%s%s\r\n", szCurrentDirectory, stripfn( batch[i].filename ) );
             }
             bool ok = true;
-			app->CdHome();
+			GetApplication()->CdHome();
             if (nsl() < (batch[i].time + at))
             {
                 ok = false;
@@ -733,25 +733,25 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
     if ( szCommandLine[0] )
     {
         WWIV_make_abs_cmd( szCommandLine );
-        app->localIO->LocalCls();
+        GetApplication()->GetLocalIO()->LocalCls();
 		char szMessage[ 1024 ];
         sprintf( szMessage,
                  "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
                  sess->thisuser.GetUserNameAndNumber( sess->usernum ),
                  modem_speed, dl, szCommandLine );
-        app->localIO->LocalPuts( szMessage );
+        GetApplication()->GetLocalIO()->LocalPuts( szMessage );
         if ( incom )
         {
             WFile::SetFilePermissions( g_szDSZLogFileName, WFile::permWrite );
             WFile::Remove( g_szDSZLogFileName );
             WWIV_ChangeDirTo( syscfgovr.batchdir );
-            ExecuteExternalProgram( szCommandLine, app->GetSpawnOptions( SPWANOPT_PROT_BATCH ) );
+            ExecuteExternalProgram( szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_PROT_BATCH ) );
             if ( bHangupAfterDl )
             {
                 bihangup( 1 );
-                if (!app->comm->carrier())
+                if (!GetApplication()->GetComm()->carrier())
                 {
-                    app->comm->dtr( true );
+                    GetApplication()->GetComm()->dtr( true );
                     wait1( 5 );
                     holdphone( true );
                 }
@@ -761,7 +761,7 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
 				sess->bout << "\r\n|#9Please wait...\r\n\n";
             }
             ProcessDSZLogFile();
-            app->localIO->UpdateTopScreen();
+            GetApplication()->GetLocalIO()->UpdateTopScreen();
         }
     }
     if ( downlist[0] )
@@ -1128,14 +1128,14 @@ void bihangup(int up)
                 nl();
                 sess->bout << "Thank you for calling.";
                 nl();
-                app->comm->dtr( false );
+                GetApplication()->GetComm()->dtr( false );
                 hangup = true;
                 if (up)
                 {
                     wait1( 2 );
-                    if (!app->comm->carrier())
+                    if (!GetApplication()->GetComm()->carrier())
                     {
-                        app->comm->dtr( true );
+                        GetApplication()->GetComm()->dtr( true );
                         wait1( 2 );
                         holdphone( true );
                     }
