@@ -30,8 +30,14 @@
 
 #if defined ( __APPLE__ )
 #define _UNIX
+#if !defined( __BIG_ENDIAN__ )
+#define __BIG_ENDIAN__
+#endif // __BIG_ENDIAN__
 #endif // defined ( __APPLE__ )
 
+#if defined( WORDS_BIGENDIAN )
+#define __BIG_ENDIAN__
+#endif // WORDS_BIGENDIAN
 
 //
 // Sanity check the #defines
