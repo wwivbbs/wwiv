@@ -186,6 +186,12 @@ enum COLORS
 #define UNREFERENCED_PARAMETER( X )   ( X )
 #endif // UNREFERENCED_PARAMETER
 
+#if defined( __APPLE__ )
+#define SWAP16( X ) OSSwapInt16( X )
+#define SWAP32( X ) OSSwapInt32( X )
+#define SWAP64( X ) OSSwapInt64( X )
+
+#endif // __APPLE__
 
 enum COLORS
 {
