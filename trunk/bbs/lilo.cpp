@@ -231,7 +231,7 @@ int ShowLoginAndGetUserNumber( int nNetworkOnly, char* pszUserName )
                 if ( wwiv::stringUtils::IsEquals( szUserName, strupr( szTempUserName ) ) &&
                      !sess->thisuser.isUserDeleted() )
                 {
-                    sess->bout << "Do you mean " << sess->thisuser.GetUserNameAndNumber( i ) << "? ";
+                    sess->bout << "|#5Do you mean " << sess->thisuser.GetUserNameAndNumber( i ) << "? ";
                     if ( yesno() )
                     {
                         nUserNumber = nTempUserNumber;

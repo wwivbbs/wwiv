@@ -471,8 +471,10 @@ void WWIVVersion()
 	sess->bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
     sess->bout << "|#9Copyright (C) 1998-2004, WWIV Software Services.\r\n";
     sess->bout << "|#9All Rights Reserved.\r\n\r\n";
+    sess->bout << "|#9Licensed under the Apache License.  " << wwiv::endl;
+    sess->bout << "|#9Please see |#1http://wwiv.sourceforge.net |#9for more information" << wwiv::endl << wwiv::endl;
 	sess->bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
-    sess->bout << "|#9SysOp Name:    |#2%s" << syscfg.sysopname << wwiv::endl;
+    sess->bout << "|#9SysOp Name:   : |#2" << syscfg.sysopname << wwiv::endl;
     nl( 3 );
     pausescr();
 }
