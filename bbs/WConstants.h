@@ -17,8 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_VARDEC1_H__
-#define __INCLUDED_VARDEC1_H__
+#ifndef __INCLUDED_WCONSTANTS_H__
+#define __INCLUDED_WCONSTANTS_H__
+
 
 
 #define COMMAND_F1        (F1+256)
@@ -381,4 +382,4 @@ enum COMPRESSIONS
     COMPRESSION_RAR,
 };
 
-#endif // __INCLUDED_VARDEC1_H__
+#endif // __INCLUDED_WCONSTANTS_H__

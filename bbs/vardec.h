@@ -1425,7 +1425,6 @@ struct arch
 
 #ifndef bbsmalloc
 #define bbsmalloc(x) malloc(x)
-//#define BbsAllocA(x) malloc(x)
 #define BbsFreeMemory(x) free(x)
 #endif // bbsmaloc
 

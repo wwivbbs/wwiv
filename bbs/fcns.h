@@ -17,12 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 
-//#ifndef __INCLUDED_FCNS_H__
-//#define __INCLUDED_FCNS_H__
+#ifndef __INCLUDED_FCNS_H__
+#define __INCLUDED_FCNS_H__
 
 #ifdef _MSC_VER
 #pragma once
 #endif
+
+#include "menu.h"
+#include "instmsg.h"
 
 // File: asv.cpp
 
@@ -370,6 +373,12 @@ bool upload_mod(int dn, const char *pszFileName, const char *pszDescription);
 // File: extrn1.cpp
 
 // ** NOTHING HERE **
+
+
+// File: finduser.cpp
+
+int  finduser( char *pszSearchString );
+int  finduser1( const char *pszSearchString );
 
 
 // File: gfiles.cpp
@@ -862,6 +871,12 @@ void rsm( int nUserNum, WUser * pUser, bool bAskToSaveMsgs );
 void ssm( int nUserNum, int nSystemNum, const char *pszFormat, ... );
 
 
+// File: SmallRecord.cpp
+
+void InsertSmallRecord(int nUserNumber, const char *name);
+void DeleteSmallRecord(const char *name);
+
+
 // File: sr.cpp
 
 void calc_CRC(unsigned char b);
@@ -1001,12 +1016,7 @@ void print_affil( WUser *pUser );
 
 // File: user.cpp
 
-int  number_userrecs();
 bool okconf( WUser *pUser );
-void InsertSmallRecord(int nUserNumber, const char *name);
-void DeleteSmallRecord(const char *name);
-int  finduser( char *pszSearchString );
-int  finduser1( const char *pszSearchString );
 void add_ass(int nNumPoints, const char *pszReason);
 
 
@@ -1079,23 +1089,7 @@ void wfc_screen();
 
 // File: WStringUtils.cpp
 
-const char *charstr( int nStringLength, int chRepeatChar );
-void StringTrimEnd( char *pszString );
-char *stripcolors( const char *pszOrig );
-unsigned char upcase( unsigned char ch );
-unsigned char locase( unsigned char ch );
-char *StringJustify(char *pszString, int nLength, int bg, int nJustificationType);
-char *StringTrim(char *pszString);
-std::string& StringTrim( std::string& s );
-std::string& StringTrimEnd( std::string& s );
-std::string& StringTrimBegin( std::string& s );
-char *stristr(char *pszString, char *pszPattern);
-void single_space(char *pszText);
-char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, char *brk);
-char *StringRemoveWhitespace(char *str);
-char *StringRemoveChar( const char *pszString, char chCharacterToRemove );
-char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, char *pszNewString);
-
+// Moved to WStringUtils.h
 
 // File: xfer.cpp
 
@@ -1207,4 +1201,4 @@ void removefile();
 
 
 
-//#endif // __INCLUDED_FCNS_H__
+#endif // __INCLUDED_FCNS_H__

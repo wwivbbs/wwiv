@@ -31,21 +31,21 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
     nl();
 
     _splitpath(pszDirectoryName, drive, direc, file, ext);
-    sprintf(s, "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
+    _snprintf(s, sizeof( s ), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
     int i = ( sess->thisuser.GetScreenChars() - 1 ) / 2 - strlen(stripcolors(s)) / 2;
     sess->bout << "|#7" << charstr( i, c ) << s;
     i = sess->thisuser.GetScreenChars() - 1 - i - strlen(stripcolors(s));
     sess->bout << "|#7" << charstr( i, c );
 
     char szFullPathName[ MAX_PATH ];
-    sprintf( szFullPathName, "%s%s", pszDirectoryName, strupr( stripfn(pszFileName ) ) );
+    _snprintf( szFullPathName, sizeof( szFullPathName ), "%s%s", pszDirectoryName, strupr( stripfn(pszFileName ) ) );
     WFindFile fnd;
     bool bFound = fnd.open( szFullPathName, 0 );
     while (bFound)
     {
         strcpy(s, fnd.GetFileName());
         align(s);
-        sprintf( szFullPathName, "|#7[|#2%s|#7]|#1 ", s );
+        _snprintf( szFullPathName, sizeof( szFullPathName ), "|#7[|#2%s|#7]|#1 ", s );
         if ( app->localIO->WhereX() > ( sess->thisuser.GetScreenChars() - 15 ) )
         {
             nl();
@@ -95,17 +95,17 @@ char *WWIV_make_abs_cmd(char *out)
             _getdcwd( wwiv::UpperCase<char>(s1[0]) - 'A' + 1, s, MAX_PATH );
             if (s[0])
             {
-                sprintf( s1, "%c:\\%s\\%s", s1[0], s, out + 2 );
+                _snprintf( s1, sizeof( s1 ), "%c:\\%s\\%s", s1[0], s, out + 2 );
             }
             else
             {
-                sprintf( s1, "%c:\\%s", s1[0], out + 2 );
+                _snprintf( s1, sizeof( s1 ), "%c:\\%s", s1[0], out + 2 );
             }
         }
     }
     else if ( s1[0] == '\\' )
     {
-        sprintf( s1, "%c:%s", szWWIVHome[0], out );
+        _snprintf( s1, sizeof( s1 ), "%c:%s", szWWIVHome[0], out );
     }
     else
     {
@@ -113,15 +113,15 @@ char *WWIV_make_abs_cmd(char *out)
         strtok(s2, " \t");
         if (strchr(s2, '\\'))
         {
-            sprintf(s1, "%s%s", app->GetHomeDir(), out);
+            _snprintf( s1, sizeof( s1 ), "%s%s", app->GetHomeDir(), out );
         }
     }
 
-    char* ss = strchr(s1, ' ');
-    if (ss)
+    char* ss = strchr( s1, ' ' );
+    if ( ss )
     {
         *ss = '\0';
-        sprintf(s2, " %s", ss + 1);
+        _snprintf( s2, sizeof( s2 ), " %s", ss + 1 );
     }
     else
     {
@@ -141,12 +141,12 @@ char *WWIV_make_abs_cmd(char *out)
                 continue;
             }
         }
-        sprintf(s, "%s%s", s1, exts[i]);
-        if (s1[1] == ':')
+        _snprintf( s, sizeof( s ), "%s%s", s1, exts[i] );
+        if ( s1[1] == ':' )
         {
-            if (WFile::Exists(s))
+            if ( WFile::Exists( s ) )
             {
-                sprintf(out, "%s%s", s, s2);
+                sprintf( out, "%s%s", s, s2 );
                 goto got_cmd;
             }
         }
@@ -154,7 +154,7 @@ char *WWIV_make_abs_cmd(char *out)
         {
             if (WFile::Exists(s))
             {
-                sprintf(out, "%s%s%s", app->GetHomeDir(), s, s2);
+                sprintf( out, "%s%s%s", app->GetHomeDir(), s, s2 );
                 goto got_cmd;
             }
             else
@@ -163,7 +163,7 @@ char *WWIV_make_abs_cmd(char *out)
                 ss1 = szTempBuf;
                 if ((ss1) && (strlen(ss1)>0))
                 {
-                    sprintf(out, "%s%s", ss1, s2);
+                    sprintf( out, "%s%s", ss1, s2 );
                     goto got_cmd;
                 }
             }

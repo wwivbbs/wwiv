@@ -681,7 +681,7 @@ void swap_subs(int sub1, int sub2)
 	sub1 = static_cast<int>( sub1conv );
 	sub2 = static_cast<int>( sub2conv );
 
-	int nNumUserRecords = number_userrecs();
+	int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
 
 	unsigned long *pTempQScan = static_cast< unsigned long *>(  BbsAllocA( syscfg.qscn_len ) );
 	if (pTempQScan)
@@ -778,7 +778,7 @@ void insert_sub(int n)
 	subboards[n] = r;
 	memset( &(xsubs[n]), 0, sizeof( xtrasubsrec ) );
 	++sess->num_subs;
-	int nNumUserRecords = number_userrecs();
+	int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
 
 	unsigned long* pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len ) );
 	if ( pTempQScan )
@@ -857,7 +857,7 @@ void delete_sub(int n)
 		xsubs[i] = xsubs[i + 1];
 	}
 	--sess->num_subs;
-	nNumUserRecords = number_userrecs();
+	nNumUserRecords = app->userManager->GetNumberOfUserRecords();
 
 	pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len + 4 ) );
 	if (pTempQScan)

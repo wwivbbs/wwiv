@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifdef _MSC_VER
+#pragma once
+#endif
 
 
 //
@@ -32,6 +35,7 @@
 #define __INCLUDED_WSESSION_H__
 
 
+
 #include "vardec.h"
 #include "WUser.h"
 #include "bbs.h"
@@ -46,6 +50,7 @@
 
 extern net_networks_rec *net_networks;
 
+class WBbsApp;
 
 class WSession
 {

@@ -20,6 +20,10 @@
 #ifndef __INCLUDED_INSTMSG_H__
 #define __INCLUDED_INSTMSG_H__
 
+#ifdef _MSC_VER
+#pragma once
+#endif
+
 #define INST_MSG_STRING      1  // A string to print out to the user
 #define INST_MSG_SHUTDOWN    2  // Hangs up, ends BBS execution
 #define INST_MSG_SYSMSG      3  // Message from the system, not a user

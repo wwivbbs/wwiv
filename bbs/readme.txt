@@ -57,8 +57,12 @@ Rushfan - Changed skey to take an int vs. unsigned char.
 Rushfan - More ongoing work on removing unneeded unsigned data type usages.
 Rushfan - Disabled remote.exe and remotes.dat support by default.
 Rushfan - Fixed display bug in voting booth.
-
-
+Rushfan - got rid of number_userrecs for WUserManager::GetNumberOfUserRecords
+Rushfan - split out code from user.cpp to SmallRecord.cpp and FindUser.cpp
+Rushfan - Moved function prototypes from fcns.h to WStringUtils.h for the
+          string functions contained in that file.
+Rushfan - Started making WUser and WUserManager self-contained so it can be
+          used outside of the main bbs code more easily.
 
 ==============================================================================
 

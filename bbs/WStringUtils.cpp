@@ -215,8 +215,6 @@ bool IsColorCode( char c )
 
 
 
-// %%TODO: Can pszOrig be const char*?
-
 /**
  * Removes the WWIV color codes and pipe codes from the string
  *
@@ -224,7 +222,6 @@ bool IsColorCode( char c )
  * @return A new string without the color codes
  */
 char *stripcolors( const char *pszOrig )
-// Takes input string and returns same string stripped of color codes.
 {
 	WWIV_ASSERT( pszOrig );
     static char szNewString[ 255 ];

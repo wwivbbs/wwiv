@@ -39,19 +39,19 @@
 
 static char szLogStr[255];
 
-#define WIOS_TRACE(x)			{ sysoplog((x)); }
-#define WIOS_TRACE1(x,y)		{ sprintf(szLogStr, (x),(y)); sysoplog(szLogStr); }
-#define WIOS_TRACE2(x,y,z)		{ sprintf(szLogStr, (x),(y),(z)); sysoplog(szLogStr); }
-#define WIOS_TRACE3(x,y,z, z2)	{ sprintf(szLogStr, (x),(y),(z), (z2)); sysoplog(szLogStr); }
+#define WIOS_TRACE(x)			{ sysoplog( ( x ) ); }
+#define WIOS_TRACE1(x,y)		{ _snprintf( szLogStr, sizeof( szLogStr ), (x),(y)); sysoplog( szLogStr ); }
+#define WIOS_TRACE2(x,y,z)		{ _snprintf( szLogStr, sizeof(szLogStr), (x),(y),(z)); sysoplog(szLogStr); }
+#define WIOS_TRACE3(x,y,z, z2)	{ _snprintf( szLogStr, sizeof( szLogStr ), (x),(y),(z), (z2)); sysoplog( szLogStr ); }
 
 #elif defined TRACE_DEBUGSTRING
 
 static char szLogStr[255];
 
-#define WIOS_TRACE(x)			{ OutputDebugString((x)); }
-#define WIOS_TRACE1(x,y)		{ sprintf(szLogStr, (x),(y)); OutputDebugString(szLogStr); }
-#define WIOS_TRACE2(x,y,z)		{ sprintf(szLogStr, (x),(y),(z)); OutputDebugString(szLogStr); }
-#define WIOS_TRACE3(x,y,z, z2)	{ sprintf(szLogStr, (x),(y),(z), (z2)); OutputDebugString(szLogStr); }
+#define WIOS_TRACE(x)			{ OutputDebugString( ( x ) ); }
+#define WIOS_TRACE1(x,y)		{ _snprintf(szLogStr, sizeof( szLogStr ), (x),(y)); OutputDebugString(szLogStr); }
+#define WIOS_TRACE2(x,y,z)		{ _snprintf(szLogStr, sizeof( szLogStr ), (x),(y),(z)); OutputDebugString(szLogStr); }
+#define WIOS_TRACE3(x,y,z, z2)	{ _snprintf(szLogStr, sizeof( szLogStr ), (x),(y),(z), (z2)); OutputDebugString(szLogStr); }
 
 #else
 
@@ -90,7 +90,7 @@ bool WIOSerial::setup(char parity, int wordlen, int stopbits, unsigned long baud
 	// Get the current parameters
     if ( !GetCommState( hComm, &dcb ) )
     {
-        WIOS_TRACE2("rc from GetCommState is %lu - '%s' \n", GetLastError(), GetLastErrorText());
+        WIOS_TRACE2( "rc from GetCommState is %lu - '%s' \n", GetLastError(), GetLastErrorText() );
 		return false;
     }
 
@@ -141,16 +141,17 @@ unsigned int WIOSerial::open()
 		WIOS_TRACE("Port already open");
         return true;
     }
+    
+    
+    char szComPortFileName[FILENAME_MAX];
 
-    char    fileName[FILENAME_MAX];
-
-    sprintf(fileName, "\\\\.\\COM%d", m_ComPort);
+    _snprintf( szComPortFileName, sizeof( szComPortFileName ), "\\\\.\\COM%d", m_ComPort );
 
 	int nOpenTries	= 0;
 	bool bOpened	= false;
 	while ( !bOpened && ( nOpenTries < 6 ) )
 	{
-		WIOS_TRACE1( "Attempt to open comport %s", fileName );
+		WIOS_TRACE1( "Attempt to open comport %s", szComPortFileName );
 		// Try up to 6 times to open the com port if it failed
 		// with ERROR_ACCESS_DENIED
 		//
@@ -162,7 +163,7 @@ unsigned int WIOSerial::open()
 		// %%JZ Added = NULL to report if port isn't available.
 		hComm = NULL;
 		hComm = CreateFile(
-					fileName,
+					szComPortFileName,
 					GENERIC_READ | GENERIC_WRITE,
 					0,
 					NULL,

@@ -101,6 +101,7 @@ enum COLORS
 #endif // __GNUC__
 
 #define vsnprintf _vsnprintf
+#define snprintf _snprintf
 
 #endif	 // _WIN32
 
