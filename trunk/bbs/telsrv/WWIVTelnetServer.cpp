@@ -124,7 +124,7 @@ BOOL CWWIVTelnetServerApp::InitInstance()
 	ParseCommandLine(cmdInfo);
 
 	// Check to see if launched as OLE server
-	if (cmdInfo.m_bRunEmbedded || cmdInfo.m_bRunAutomated)
+	if ( cmdInfo.m_bRunEmbedded || cmdInfo.m_bRunAutomated)
 	{
 		// Register all OLE server (factories) as running.  This enables the
 		//  OLE libraries to create objects from other applications.
