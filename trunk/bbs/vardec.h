@@ -20,6 +20,7 @@
 #ifndef __INCLUDED_VARDEC_H__
 #define __INCLUDED_VARDEC_H__
 
+
 #ifdef _WIN32
  #pragma pack(push, 1)
 #elif defined (_UNIX)
