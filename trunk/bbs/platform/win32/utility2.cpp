@@ -77,16 +77,16 @@ char *exts[] =
 
 
 
-char *WWIV_make_abs_cmd(char *out)
+char *WWIV_make_abs_cmd( char *pszOutBuffer )
 {
-    // TODO Move this into platform specific code
+    // pszOutBuffer must be at least MAX_PATH in size.
     char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH], *ss1;
     char szTempBuf[MAX_PATH];
 
     char szWWIVHome[MAX_PATH];
     strcpy( szWWIVHome, app->GetHomeDir() );
 
-    strcpy( s1, out );
+    strcpy( s1, pszOutBuffer );
 
     if ( s1[1] == ':' )
     {
@@ -95,17 +95,17 @@ char *WWIV_make_abs_cmd(char *out)
             _getdcwd( wwiv::UpperCase<char>(s1[0]) - 'A' + 1, s, MAX_PATH );
             if (s[0])
             {
-                _snprintf( s1, sizeof( s1 ), "%c:\\%s\\%s", s1[0], s, out + 2 );
+                _snprintf( s1, sizeof( s1 ), "%c:\\%s\\%s", s1[0], s, pszOutBuffer + 2 );
             }
             else
             {
-                _snprintf( s1, sizeof( s1 ), "%c:\\%s", s1[0], out + 2 );
+                _snprintf( s1, sizeof( s1 ), "%c:\\%s", s1[0], pszOutBuffer + 2 );
             }
         }
     }
     else if ( s1[0] == '\\' )
     {
-        _snprintf( s1, sizeof( s1 ), "%c:%s", szWWIVHome[0], out );
+        _snprintf( s1, sizeof( s1 ), "%c:%s", szWWIVHome[0], pszOutBuffer );
     }
     else
     {
@@ -113,7 +113,7 @@ char *WWIV_make_abs_cmd(char *out)
         strtok(s2, " \t");
         if (strchr(s2, '\\'))
         {
-            _snprintf( s1, sizeof( s1 ), "%s%s", app->GetHomeDir(), out );
+            _snprintf( s1, sizeof( s1 ), "%s%s", app->GetHomeDir(), pszOutBuffer );
         }
     }
 
@@ -146,7 +146,7 @@ char *WWIV_make_abs_cmd(char *out)
         {
             if ( WFile::Exists( s ) )
             {
-                sprintf( out, "%s%s", s, s2 );
+                _snprintf( pszOutBuffer, MAX_PATH, "%s%s", s, s2 );
                 goto got_cmd;
             }
         }
@@ -154,26 +154,26 @@ char *WWIV_make_abs_cmd(char *out)
         {
             if (WFile::Exists(s))
             {
-                sprintf( out, "%s%s%s", app->GetHomeDir(), s, s2 );
+                _snprintf( pszOutBuffer, MAX_PATH, "%s%s%s", app->GetHomeDir(), s, s2 );
                 goto got_cmd;
             }
             else
             {
-                _searchenv(s, "PATH", szTempBuf);
+                _searchenv( s, "PATH", szTempBuf );
                 ss1 = szTempBuf;
-                if ((ss1) && (strlen(ss1)>0))
+                if ( ss1 && strlen( ss1 ) > 0 )
                 {
-                    sprintf( out, "%s%s", ss1, s2 );
+                    _snprintf( pszOutBuffer, MAX_PATH, "%s%s", ss1, s2 );
                     goto got_cmd;
                 }
             }
         }
     }
 
-    sprintf(out, "%s%s%s", app->GetHomeDir(), s1, s2);
+    _snprintf( pszOutBuffer, MAX_PATH, "%s%s%s", app->GetHomeDir(), s1, s2 );
 
 got_cmd:
-    return out;
+    return pszOutBuffer;
 }
 
 

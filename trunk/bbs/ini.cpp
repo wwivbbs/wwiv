@@ -62,10 +62,10 @@ static char *mallocin_subsection(const char *pszFileName, long begin, long end)
 // If subsection not found then *begin and *end are both set to -1L.
 static void find_subsection_area(const char *pszFileName, const char *ssn, long *begin, long *end)
 {
-    char s[255], tmphdr[81], *ss;
+    char s[255], szTempHeader[81], *ss;
 
     *begin = *end = -1L;
-    sprintf(tmphdr, "[%s]", ssn);
+    snprintf( szTempHeader, sizeof( szTempHeader ), "[%s]", ssn );
 
     FILE *f = fsh_open( pszFileName, "rt");
     if (!f)
@@ -94,7 +94,7 @@ static void find_subsection_area(const char *pszFileName, const char *ssn, long 
             if ((strlen(s) > 2) && (s[0] == '[') && (s[strlen(s) - 1] == ']'))
             {
                 // Does it match requested subsection name (ssn)?
-                if (strnicmp(&s[0], &tmphdr[0], strlen(tmphdr)) == 0)
+                if ( strnicmp(&s[0], &szTempHeader[0], strlen( szTempHeader ) ) == 0 )
                 {
                     if (*begin == -1L)
                     {
@@ -286,7 +286,7 @@ void ini_done()
 bool ini_init(const char *pszFileName, const char *prim, const char *sec)
 {
     char szIniFile[MAX_PATH+MAX_FNAME];
-    sprintf(szIniFile, "%s%s", app->GetHomeDir(), pszFileName);
+    snprintf( szIniFile, sizeof( szIniFile ), "%s%s", app->GetHomeDir(), pszFileName );
 
     // first, zap anything there currently
     ini_done();
@@ -310,14 +310,14 @@ bool ini_init(const char *pszFileName, const char *prim, const char *sec)
     else
     {
         // read in the secondary info, as the primary one
-        pBuffer = read_ini_file(szIniFile, sec);
-        if (pBuffer)
+        pBuffer = read_ini_file( szIniFile, sec );
+        if ( pBuffer )
         {
-            parse_ini_file(pBuffer, &ini_prim);
+            parse_ini_file( pBuffer, &ini_prim );
         }
     }
 
-    return (ini_prim.buf) ? true : false;
+    return ( ini_prim.buf ) ? true : false;
 }
 
 
@@ -328,28 +328,28 @@ bool ini_init(const char *pszFileName, const char *prim, const char *sec)
 // doesn't exist in this INI file subsection, then *val is NULL, else *val
 // will be set to the string value of that value name. If *val has been set
 // to something, then this function returns 1, else it returns 0.
-char *ini_get(const char *key, int index, char *index1)
+char *ini_get( const char *key, int index, char *index1 )
 {
     char key1[81], key2[81];
     ini_info_t *info;
 
-    if (!ini_prim.buf || !key || !(*key))
+    if ( !ini_prim.buf || !key || !( *key ) )
     {
         return NULL;
     }
 
-    if (index == -1)
+    if ( index == -1 )
     {
-        strcpy(key1, key);
+        strcpy( key1, key );
     }
     else
     {
-        sprintf(key1, "%s[%d]", key, index);
+        snprintf( key1, sizeof( key1 ), "%s[%d]", key, index );
     }
 
-    if (index1)
+    if ( index1 )
     {
-        sprintf(key2, "%s[%s]", key, index1);
+        snprintf( key2, sizeof( key2 ), "%s[%s]", key, index1 );
     }
     else
     {
@@ -357,14 +357,14 @@ char *ini_get(const char *key, int index, char *index1)
     }
 
     // loop through both sets of data and search them, in order
-    for (int i = 0; i <= 1; i++)
+    for ( int i = 0; i <= 1; i++ )
     {
         // get pointer to data area to use
-        if (i == 0)
+        if ( i == 0 )
         {
             info = &ini_prim;
         }
-        else if (ini_sec.buf)
+        else if ( ini_sec.buf )
         {
             info = &ini_sec;
         }
@@ -374,11 +374,11 @@ char *ini_get(const char *key, int index, char *index1)
         }
 
         // search for it
-        for (int i1 = 0; i1 < info->num; i1++)
+        for ( int i1 = 0; i1 < info->num; i1++ )
         {
-            if ( IsEqualsIgnoreCase(info->key[i1], key1) || IsEqualsIgnoreCase(info->key[i1], key2) )
+            if ( IsEqualsIgnoreCase( info->key[ i1 ], key1 ) || IsEqualsIgnoreCase( info->key[ i1 ], key2 ) )
             {
-                return info->value[i1];
+                return info->value[ i1 ];
             }
         }
     }

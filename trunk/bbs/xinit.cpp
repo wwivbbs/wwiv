@@ -273,10 +273,10 @@ bool WBbsApp::ReadINIFile()
 
     // Setup default sess-> data
 
-    for (int i = 0; i < 10; i++)
+    for ( int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++ )
     {
-        sess->newuser_colors[i] = nucol[i];
-        sess->newuser_bwcolors[i] = nucolbw[i];
+        sess->newuser_colors[ nTempColorNum ] = nucol[ nTempColorNum ];
+        sess->newuser_bwcolors[ nTempColorNum ] = nucolbw[ nTempColorNum ];
     }
 
     sess->SetTopScreenColor( 31 );
@@ -297,9 +297,9 @@ bool WBbsApp::ReadINIFile()
 	sess->SetExecLogSyncFoss( true );
 	sess->SetNewScanAtLogin( false );
 
-    for ( size_t i1 = 0; i1 < NEL( eventinfo ); i1++ )
+    for ( size_t nTempEventNum = 0; nTempEventNum < NEL( eventinfo ); nTempEventNum++ )
     {
-        app->spawn_opts[ i1 ] = eventinfo[ i1 ].eflags;
+        app->spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
     }
 
     // put in default WBbsApp::flags
@@ -333,29 +333,29 @@ bool WBbsApp::ReadINIFile()
         //
 
         // pull out event flags
-        for ( size_t i = 0; i < NEL( app->spawn_opts ); i++ )
+        for ( size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL( app->spawn_opts ); nTempSpawnOptNum++ )
         {
-            if ( i < NEL( eventinfo ) )
+            if ( nTempSpawnOptNum < NEL( eventinfo ) )
             {
-                if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), i, eventinfo[i].name ) ) != NULL )
+                if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), nTempSpawnOptNum, eventinfo[nTempSpawnOptNum].name ) ) != NULL )
                 {
-                    app->spawn_opts[i] = str2spawnopt( ss );
+                    app->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
                 }
             }
             else
             {
-                if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), i, eventinfo[i].name ) ) != NULL )
+                if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), nTempSpawnOptNum, eventinfo[nTempSpawnOptNum].name ) ) != NULL )
                 {
-                    app->spawn_opts[i] = str2spawnopt( ss );
+                    app->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
                 }
             }
         }
 
         // pull out newuser colors
-        for ( int i1 = 0; i1 < 10; i1++ )
+        for ( int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++ )
         {
-            INI_INIT_A( INI_STR_NUCOLOR, i1, newuser_colors, NULL );
-            INI_INIT_A( INI_STR_NUCOLORBW, i1, newuser_bwcolors, NULL );
+            INI_INIT_A( INI_STR_NUCOLOR, nTempColorNum, newuser_colors, NULL );
+            INI_INIT_A( INI_STR_NUCOLORBW, nTempColorNum, newuser_bwcolors, NULL );
         }
 
         // pull out sysop-side colors
@@ -517,12 +517,12 @@ bool WBbsApp::ReadConfig()
     if ( !bIsConfigObvOpen )
     {
         // slap in the defaults, although this is not used anymore
-        for ( int i = 0; i < 4; i++ )
+        for ( int nTempPortNum = 0; nTempPortNum < 4; nTempPortNum++ )
         {
-            syscfgovr.com_ISR[i + 1]	= full_syscfg.com_ISR[i + 1];
-            syscfgovr.com_base[i + 1]	= full_syscfg.com_base[i + 1];
-            syscfgovr.com_ISR[i + 5]	= full_syscfg.com_ISR[i + 1];
-            syscfgovr.com_base[i + 5]	= full_syscfg.com_base[i + 1];
+            syscfgovr.com_ISR[ nTempPortNum + 1 ]   = full_syscfg.com_ISR[ nTempPortNum + 1 ];
+            syscfgovr.com_base[ nTempPortNum + 1 ]  = full_syscfg.com_base[ nTempPortNum + 1 ];
+            syscfgovr.com_ISR[ nTempPortNum + 5 ]   = full_syscfg.com_ISR[ nTempPortNum + 1 ];
+            syscfgovr.com_base[ nTempPortNum + 5 ]  = full_syscfg.com_base[ nTempPortNum + 1 ];
         }
 
         syscfgovr.primaryport = full_syscfg.primaryport;
@@ -731,12 +731,12 @@ bool WBbsApp::SaveConfig()
         full_syscfg.autoval[8]      = syscfg.autoval[8];
         full_syscfg.autoval[9]      = syscfg.autoval[9];
 
-        for ( int i = 0; i < 4; i++ )
+        for ( int nTempArcNum = 0; nTempArcNum < 4; nTempArcNum++ )
         {
-            strcpy(full_syscfg.arcs[i].extension, arcs[i].extension);
-            strcpy(full_syscfg.arcs[i].arca, arcs[i].arca);
-            strcpy(full_syscfg.arcs[i].arce, arcs[i].arce);
-            strcpy(full_syscfg.arcs[i].arcl, arcs[i].arcl);
+            strcpy( full_syscfg.arcs[ nTempArcNum ].extension, arcs[ nTempArcNum ].extension );
+            strcpy( full_syscfg.arcs[ nTempArcNum ].arca, arcs[ nTempArcNum ].arca );
+            strcpy( full_syscfg.arcs[ nTempArcNum ].arce, arcs[ nTempArcNum ].arce );
+            strcpy( full_syscfg.arcs[ nTempArcNum ].arcl, arcs[ nTempArcNum ].arcl );
         }
 
         full_syscfg.wwiv_reg_number = syscfg.wwiv_reg_number;
@@ -922,10 +922,10 @@ void WBbsApp::read_networks()
             file.Read( net_networks, sess->GetMaxNetworkNumber() * sizeof( net_networks_rec ) );
         }
         file.Close();
-        for (int i = 0; i < sess->GetMaxNetworkNumber(); i++)
+        for ( int nTempNetNumber = 0; nTempNetNumber < sess->GetMaxNetworkNumber(); nTempNetNumber++ )
         {
-            char* ss = strchr(net_networks[i].name, ' ');
-            if (ss)
+            char* ss = strchr( net_networks[nTempNetNumber].name, ' ' );
+            if ( ss )
             {
                 *ss = 0;
             }
@@ -969,23 +969,23 @@ bool WBbsApp::read_names()
 
 void WBbsApp::read_voting()
 {
-    for ( int i = 0; i < 20; i++ )
+    for ( int nTempQuestionNumber = 0; nTempQuestionNumber < 20; nTempQuestionNumber++ )
     {
-        questused[i] = 0;
+        questused[ nTempQuestionNumber ] = 0;
     }
 
     WFile file( syscfg.datadir, VOTING_DAT );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         int n = static_cast<int>( file.GetLength() / sizeof( votingrec ) ) - 1;
-        for (int i = 0; i < n; i++)
+        for ( int nTempQuestUsedNum = 0; nTempQuestUsedNum < n; nTempQuestUsedNum++ )
         {
             votingrec v;
-            file.Seek( static_cast<long>( i ) * sizeof(votingrec), WFile::seekBegin );
+            file.Seek( static_cast<long>( nTempQuestUsedNum ) * sizeof(votingrec), WFile::seekBegin );
             file.Read( &v, sizeof( votingrec ) );
             if (v.numanswers)
             {
-                questused[i] = 1;
+                questused[ nTempQuestUsedNum ] = 1;
             }
         }
     }
@@ -1018,11 +1018,11 @@ void WBbsApp::read_chains()
 {
     if ( chains )
     {
-        BbsFreeMemory(chains);
+        BbsFreeMemory( chains );
     }
     chains = NULL;
     chains = static_cast<chainfilerec *>( BbsAllocWithComment( sess->max_chains * sizeof( chainfilerec ), "chains" ) );
-	WWIV_ASSERT(chains != NULL);
+	WWIV_ASSERT( chains != NULL );
     WFile file( syscfg.datadir, CHAINS_DAT );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
@@ -1031,13 +1031,13 @@ void WBbsApp::read_chains()
     file.Close();
     if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
     {
-        if (chains_reg)
+        if ( chains_reg )
         {
-            BbsFreeMemory(chains_reg);
+            BbsFreeMemory( chains_reg );
         }
         chains_reg = NULL;
         chains_reg = static_cast<chainregrec *>( BbsAllocWithComment( sess->max_chains * sizeof( chainregrec ),
-            "chain registration") );
+            "chain registration" ) );
 		WWIV_ASSERT( chains_reg != NULL );
 
         WFile regFile( syscfg.datadir, CHAINS_REG );
@@ -1047,15 +1047,15 @@ void WBbsApp::read_chains()
         }
         else
         {
-            for ( int i = 0; i < sess->GetNumberOfChains(); i++ )
+            for ( int nTempChainNum = 0; nTempChainNum < sess->GetNumberOfChains(); nTempChainNum++ )
             {
-                for ( size_t i1 = 0; i1 < sizeof( chains_reg[i].regby ) / sizeof( chains_reg[i].regby[0] ); i1++ )
+                for ( size_t nTempRegByNum = 0; nTempRegByNum < sizeof( chains_reg[ nTempChainNum ].regby ) / sizeof( chains_reg[ nTempChainNum ].regby[0] ); nTempRegByNum++ )
                 {
-                    chains_reg[i].regby[i1] = 0;
+                    chains_reg[ nTempChainNum ].regby[ nTempRegByNum ] = 0;
                 }
-                chains_reg[i].usage     = 0;
-                chains_reg[i].minage    = 0;
-                chains_reg[i].maxage    = 255;
+                chains_reg[ nTempChainNum ].usage   = 0;
+                chains_reg[ nTempChainNum ].minage  = 0;
+                chains_reg[ nTempChainNum ].maxage  = 255;
             }
             regFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
             regFile.Write( chains_reg , sizeof( chainregrec ) * sess->GetNumberOfChains() );
@@ -1067,16 +1067,16 @@ void WBbsApp::read_chains()
 
 bool WBbsApp::read_language()
 {
-    if (languages)
+    if ( languages )
     {
-        BbsFreeMemory(languages);
+        BbsFreeMemory( languages );
     }
     languages = NULL;
     WFile file( syscfg.datadir, LANGUAGE_DAT );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         sess->num_languages = file.GetLength() / sizeof(languagerec);
-        if (sess->num_languages)
+        if ( sess->num_languages )
         {
             languages = static_cast<languagerec *>( BbsAllocWithComment(sess->num_languages * sizeof(languagerec), "language.dat") );
 			WWIV_ASSERT(languages != NULL);
@@ -1085,14 +1085,14 @@ bool WBbsApp::read_language()
         }
         file.Close();
     }
-    if (!sess->num_languages)
+    if ( !sess->num_languages )
     {
-        languages = static_cast<languagerec *>( BbsAllocWithComment(sizeof(languagerec), "language.dat") );
-		WWIV_ASSERT(languages != NULL);
+        languages = static_cast<languagerec *>( BbsAllocWithComment( sizeof( languagerec ), "language.dat" ) );
+		WWIV_ASSERT( languages != NULL );
         sess->num_languages = 1;
-        strcpy(languages->name, "English");
-        strncpy(languages->dir, syscfg.gfilesdir, sizeof(languages->dir) - 1);
-        strncpy(languages->mdir, syscfg.menudir, sizeof(languages->mdir) - 1);
+        strcpy( languages->name, "English" );
+        strncpy( languages->dir, syscfg.gfilesdir, sizeof( languages->dir ) - 1 );
+        strncpy( languages->mdir, syscfg.menudir, sizeof( languages->mdir ) - 1 );
     }
     sess->SetCurrentLanguageNumber( -1 );
     if ( !set_language( 0 ) )
@@ -1192,7 +1192,6 @@ bool WBbsApp::make_abs_path( char *pszDirectory )
 void WBbsApp::InitializeBBS()
 {
     char *ss, szFileName[MAX_PATH], newprompt[ 255 ];
-    int i1 = 0;
 
 	sess->screenbottom = defscreenbottom = localIO->GetDefaultScreenBottom();
 
@@ -1228,21 +1227,22 @@ void WBbsApp::InitializeBBS()
         AbortBBS( true );
     }
 
+    bool bDirectoryInvalid = false;
     strcpy( szFileName, syscfgovr.tempdir );
-    int i = strlen(szFileName);
+    int nFileNameLength = strlen( szFileName );
     if ( szFileName[0] == '\0' )
     {
-        i1 = 1;
+        bDirectoryInvalid = true;
     }
     else
     {
-        if (szFileName[i - 1] == WWIV_FILE_SEPERATOR_CHAR)
+        if ( szFileName[ nFileNameLength - 1 ] == WWIV_FILE_SEPERATOR_CHAR )
         {
-            szFileName[i - 1] = 0;
+            szFileName[ nFileNameLength - 1 ] = '\0';
         }
-        i1 = chdir(szFileName);
+        bDirectoryInvalid = chdir( szFileName ) ? true : false;
     }
-    if (i1)
+    if ( bDirectoryInvalid )
     {
         std::cout << "\r\nYour temp dir isn't valid.\r\n";
         std::cout << "It is now set to: '%" << syscfgovr.tempdir << "'\r\n\n";
@@ -1253,21 +1253,21 @@ void WBbsApp::InitializeBBS()
         CdHome();
     }
 
-    strcpy(szFileName, syscfgovr.batchdir);
-    i = strlen(szFileName);
-    if (szFileName[0] == 0)
+    strcpy( szFileName, syscfgovr.batchdir );
+    nFileNameLength = strlen( szFileName );
+    if ( szFileName[ 0 ] == '\0' )
     {
-        i1 = 1;
+        bDirectoryInvalid = true;
     }
     else
     {
-        if (szFileName[i - 1] == WWIV_FILE_SEPERATOR_CHAR)
+        if ( szFileName[ nFileNameLength - 1 ] == WWIV_FILE_SEPERATOR_CHAR )
         {
-            szFileName[i - 1] = 0;
+            szFileName[ nFileNameLength - 1 ] = '\0';
         }
-        i1 = chdir(szFileName);
+        bDirectoryInvalid = chdir( szFileName ) ? true : false;
     }
-    if (i1)
+    if ( bDirectoryInvalid )
     {
         std::cout << "\r\nYour batch dir isn't valid.\r\n";
         std::cout << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
@@ -1462,7 +1462,7 @@ void WBbsApp::InitializeBBS()
 
 #if !defined (_UNIX)
     snprintf( szFileName, sizeof( szFileName ), "DSZLOG=%s", g_szDSZLogFileName );
-    int pk = i = i1 = 0;
+    int pk = 0;
     ss = getenv( "DSZLOG" );
 
     if ( !ss )
@@ -1515,21 +1515,21 @@ void WBbsApp::InitializeBBS()
 
     ss = getenv("WWIV_INSTANCE");
     strcpy( m_szNetworkExtension, ".NET" );
-    if (ss)
+    if ( ss )
     {
-        i = atoi(ss);
-        if (i > 0)
+        int nTempInstanceNumber = atoi( ss );
+        if ( nTempInstanceNumber > 0 )
         {
-            sprintf( m_szNetworkExtension, ".%3.3d", i );
+            snprintf( m_szNetworkExtension, sizeof( m_szNetworkExtension ), ".%3.3d", nTempInstanceNumber );
             // Fix... Set the global instance variable to match this.  When you run WWIV with the -n<instance> parameter
             // it sets the WWIV_INSTANCE environment variable, however it wasn't doing the reverse.
-            m_nInstance = i;
+            m_nInstance = nTempInstanceNumber;
         }
     }
 
     read_bbs_list_index();
     frequent_init();
-    if (!m_bUserAlreadyOn)
+    if ( !m_bUserAlreadyOn )
     {
         tmp_disable_pause( true );
         remove_from_temp( "*.*", syscfgovr.tempdir, true );
@@ -1542,31 +1542,31 @@ void WBbsApp::InitializeBBS()
 
     subconfnum = dirconfnum = 0;
 
-	XINIT_PRINTF("* Reading Conferences.\r\n");
+	XINIT_PRINTF( "* Reading Conferences.\r\n" );
     read_all_conferences();
 
-    if (!m_bUserAlreadyOn)
+    if ( !m_bUserAlreadyOn )
     {
-		sysoplog("", false);
+		sysoplog( "", false );
         sysoplogf( "WWIV %s, inst %ld, brought up at %s on %s.", wwiv_version, GetInstanceNumber(), times(), fulldate() );
-		sysoplog("", false);
+		sysoplog( "", false );
     }
-    if (GetInstanceNumber() > 1)
+    if ( GetInstanceNumber() > 1 )
 	{
-        sprintf(szFileName, "%s.%3.3u", WWIV_NET_NOEXT, GetInstanceNumber());
+        snprintf( szFileName, sizeof( szFileName ), "%s.%3.3u", WWIV_NET_NOEXT, GetInstanceNumber() );
 	}
 	else
 	{
-        strcpy(szFileName, WWIV_NET_DAT);
+        strcpy( szFileName, WWIV_NET_DAT );
 	}
     WFile::Remove(szFileName);
 
-    srand(time(NULL));
+    srand( time( NULL ) );
 
     catsl();
 
-    XINIT_PRINTF("* Saving Instance information.\r\n");
-    write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
+    XINIT_PRINTF( "* Saving Instance information.\r\n" );
+    write_inst( INST_LOC_WFC, 0, INST_FLAGS_NONE );
 }
 
 
@@ -1603,13 +1603,13 @@ void WBbsApp::create_phone_file()
         return;
     }
 
-    for (int i = 1; i <= num; i++)
+    for ( int nTempUserNumber = 1; nTempUserNumber <= num; nTempUserNumber++ )
     {
         WUser user;
-        app->userManager->ReadUser( &user, i );
+        app->userManager->ReadUser( &user, nTempUserNumber );
         if ( !user.isUserDeleted() )
         {
-            p.usernum = i;
+            p.usernum = nTempUserNumber;
             char szTempVoiceNumber[ 255 ], szTempDataNumber[ 255 ];
             strcpy( szTempVoiceNumber, user.GetVoicePhoneNumber() );
             strcpy( szTempDataNumber, user.GetDataPhoneNumber() );

@@ -271,7 +271,7 @@ int WBbsApp::doWFCEvents()
                     case '2':
 						{
 							char szNetDatFileName[ MAX_PATH ];
-							sprintf( szNetDatFileName, "netdat%c.log", ch );
+							snprintf( szNetDatFileName, sizeof( szNetDatFileName ), "netdat%c.log", ch );
 							print_local_file( szNetDatFileName, "" );
 						}
                         break;
@@ -461,7 +461,7 @@ int WBbsApp::doWFCEvents()
                     sess->bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
                     char szFileName[ MAX_PATH ];
                     getcwd(szFileName, MAX_PATH);
-                    sprintf( szFileName, "%c", WWIV_FILE_SEPERATOR_CHAR );
+                    snprintf( szFileName, sizeof( szFileName ), "%c", WWIV_FILE_SEPERATOR_CHAR );
                     std::string newFileName;
                     Input1( newFileName, szFileName, 50, true, UPPER );
                     if ( !newFileName.empty() )
@@ -921,7 +921,7 @@ void WBbsApp::TelnetMainLoop()
         if( hSock != INVALID_SOCKET )
         {
             char buffer[20];
-            sprintf( buffer, "-H%u", hSock );
+            snprintf( buffer, sizeof( buffer ), "-H%u", hSock );
             char **szParameters;
             szParameters = new char *[3];
             szParameters[0] = new char [1];
@@ -1062,7 +1062,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
                 {
                     ui = static_cast<unsigned int>( atol(&(s[2]) ));
                     char szCurrentSpeed[ 21 ];
-                    sprintf( szCurrentSpeed, "%u",  ui );
+                    snprintf( szCurrentSpeed, sizeof( szCurrentSpeed ), "%u",  ui );
                     sess->SetCurrentSpeed( szCurrentSpeed );
                     if (!us)
                     {
@@ -1236,11 +1236,11 @@ int WBbsApp::BBSmain(int argc, char *argv[])
     // Add the environment variable or overwrite the existing one
     char szInstanceEnvVar[81];
 #ifndef _UNIX
-    sprintf( szInstanceEnvVar, "WWIV_INSTANCE=%ld", GetInstanceNumber() );
+    snprintf( szInstanceEnvVar, sizeof( szInstanceEnvVar ), "WWIV_INSTANCE=%ld", GetInstanceNumber() );
     _putenv( szInstanceEnvVar );
 #else
     // For some reason putenv() doesn't work sometimes when setenv() does...
-    sprintf( szInstanceEnvVar, "%u", GetInstanceNumber() );
+    snprintf( szInstanceEnvVar, sizeof( szInstanceEnvVar ), "%u", GetInstanceNumber() );
     setenv( "WWIV_INSTANCE", szInstanceEnvVar, 1 );
     m_bUserAlreadyOn = true;
 #endif
@@ -1309,12 +1309,12 @@ int WBbsApp::BBSmain(int argc, char *argv[])
         strcpy( cid_num, pszIPAddress );
         strcpy( cid_name, "Internet TELNET Session" );
 
-        char szTempTelnet[21];
-        sprintf( szTempTelnet, "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_ECHO );
+        char szTempTelnet[ 21 ];
+        snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_ECHO );
         app->comm->write( szTempTelnet, 3, true );
-        sprintf( szTempTelnet, "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_WILL, WIOTelnet::TELNET_OPTION_ECHO );
+        snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_WILL, WIOTelnet::TELNET_OPTION_ECHO );
         app->comm->write( szTempTelnet, 3, true );
-        sprintf( szTempTelnet, "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_LINEMODE );
+        snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_LINEMODE );
         app->comm->write( szTempTelnet, 3, true );
     }
 #endif
@@ -1560,8 +1560,8 @@ void WBbsApp::CdHome()
 
 const char* WBbsApp::GetHomeDir()
 {
-	static char szDir[MAX_PATH];
-	sprintf( szDir, "%s%c", m_szCurrentDirectory, WWIV_FILE_SEPERATOR_CHAR );
+	static char szDir[ MAX_PATH ];
+	snprintf( szDir, sizeof( szDir ), "%s%c", m_szCurrentDirectory, WWIV_FILE_SEPERATOR_CHAR );
 	return szDir;
 }
 
@@ -1643,8 +1643,8 @@ void WBbsApp::ExitBBSImpl( int nExitLevel )
     app->localIO->LocalCls();
 
     char szBuffer[81];
-    sprintf( szBuffer, "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
-			 wwiv_version, GetInstanceNumber(), times(), fulldate(), nExitLevel );
+    snprintf( szBuffer, sizeof( szBuffer ), "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
+			  wwiv_version, GetInstanceNumber(), times(), fulldate(), nExitLevel );
     sysoplog( "", false );
     sysoplog( szBuffer, false );
     sysoplog( "", false );
@@ -1660,8 +1660,8 @@ void WBbsApp::ExitBBSImpl( int nExitLevel )
 			comm = NULL;
 		}
     }
-    char szMessage[ 512 ];
-    sprintf( szMessage, "WWIV Bulletin Board System %s%s exiting at error level %d\r\n\n", wwiv_version, beta_version, nExitLevel );
+    char szMessage[ 255 ];
+    snprintf( szMessage, sizeof( szMessage ), "WWIV Bulletin Board System %s%s exiting at error level %d\r\n\n", wwiv_version, beta_version, nExitLevel );
     localIO->LocalPuts( szMessage );
     localIO->SetCursor( WLocalIO::cursorNormal );
     delete this;
@@ -1676,7 +1676,7 @@ bool WBbsApp::LogMessage( const char* pszFormat, ... )
     char szBuffer[2048];
 
     va_start( ap, pszFormat );
-    vsnprintf( szBuffer, 2048, pszFormat, ap );
+    vsnprintf( szBuffer, sizeof( szBuffer ), pszFormat, ap );
     va_end( ap );
     sysoplog( szBuffer );
     return true;

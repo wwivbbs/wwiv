@@ -165,7 +165,7 @@ void AddBBSListEntryImpl()
             input( bbsType, 4, true );
 
             char szBbsListLine[ 255 ];
-            sprintf( szBbsListLine, "%12s  %-50s  [%4s] (%4s)\r\n",
+            snprintf( szBbsListLine, sizeof( szBbsListLine ), "%12s  %-50s  [%4s] (%4s)\r\n",
                      bbsPhoneNumber.c_str(), bbsName.c_str(), bbsSpeed.c_str(), bbsType.c_str() );
             nl( 2 );
             sess->bout << szBbsListLine;

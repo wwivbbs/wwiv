@@ -37,26 +37,26 @@ char *interpret( char chKey )
         strcpy( s, directories[udir[sess->GetCurrentFileArea()].subnum].name );
         break;
     case '~':                               // Total mails/feedbacks sent
-        sprintf( s, "%u", sess->thisuser.GetNumEmailSent() +
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetNumEmailSent() +
             sess->thisuser.GetNumFeedbackSent() + sess->thisuser.GetNumNetEmailSent() );
         break;
     case '/':                               // Today's date
         strcpy( s, fulldate() );
         break;
     case '%':                               // Time left today
-        sprintf( s, "%d", static_cast<int>( nsl() / 60) );
+        snprintf( s, sizeof( s ), "%d", static_cast<int>( nsl() / 60) );
         break;
     case '#':                               // User's number
-        sprintf( s, "%lu", sess->usernum );
+        snprintf( s, sizeof( s ), "%lu", sess->usernum );
         break;
     case '$':                               // File points
-        sprintf( s, "%lu", sess->thisuser.GetFilePoints() );
+        snprintf( s, sizeof( s ), "%lu", sess->thisuser.GetFilePoints() );
         break;
     case '*':                               // User reg num
-        sprintf( s, "%lu", sess->thisuser.GetWWIVRegNumber() );
+        snprintf( s, sizeof( s ), "%lu", sess->thisuser.GetWWIVRegNumber() );
         break;
     case '-':                               // Aggravation points
-        sprintf( s, "%u", sess->thisuser.GetAssPoints() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetAssPoints() );
         break;
     case ':':                               // Sub number
         strcpy( s, usub[sess->GetCurrentMessageArea()].keys );
@@ -73,17 +73,17 @@ char *interpret( char chKey )
         }
         break;
     case 'A':                               // User's age
-        sprintf( s, "%d", sess->thisuser.GetAge() );
+        snprintf( s, sizeof( s ), "%d", sess->thisuser.GetAge() );
         break;
     case 'a':                               // User's language
         strcpy( s, cur_lang_name );
         break;
     case 'B':                               // User's birthday
-        sprintf( s, "%d/%d/%d", sess->thisuser.GetBirthdayMonth(),
+        snprintf( s, sizeof( s ), "%d/%d/%d", sess->thisuser.GetBirthdayMonth(),
                  sess->thisuser.GetBirthdayDay(), sess->thisuser.GetBirthdayYear() );
         break;
     case 'b':                               // Minutes in bank
-        sprintf( s, "%u", sess->thisuser.GetTimeBankMinutes() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetTimeBankMinutes() );
         break;
     case 'C':                               // User's city
         strcpy( s, sess->thisuser.GetCity() );
@@ -92,34 +92,34 @@ char *interpret( char chKey )
         strcpy( s, sess->thisuser.GetCountry() );
         break;
     case 'D':                               // Files downloaded
-        sprintf( s, "%u", sess->thisuser.GetFilesDownloaded() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetFilesDownloaded() );
         break;
     case 'd':                               // User's DSL
-        sprintf( s, "%d", sess->thisuser.GetDsl() );
+        snprintf( s, sizeof( s ), "%d", sess->thisuser.GetDsl() );
         break;
     case 'E':                               // E-mails sent
-        sprintf( s, "%u", sess->thisuser.GetNumEmailSent() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetNumEmailSent() );
         break;
     case 'e':                               // Net E-mails sent
-        sprintf( s, "%u", sess->thisuser.GetNumNetEmailSent() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetNumNetEmailSent() );
         break;
     case 'F':
-        sprintf( s, "%u", sess->thisuser.GetNumFeedbackSent() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetNumFeedbackSent() );
         break;
     case 'f':                               // First time user called
         strcpy( s, sess->thisuser.GetFirstOn() );
         break;
     case 'G':                               // MessaGes read
-        sprintf( s, "%lu", sess->thisuser.GetNumMessagesRead() );
+        snprintf( s, sizeof( s ), "%lu", sess->thisuser.GetNumMessagesRead() );
         break;
     case 'g':                               // Gold
-        sprintf( s, "%f", sess->thisuser.GetGold() );
+        snprintf( s, sizeof( s ), "%f", sess->thisuser.GetGold() );
         break;
     case 'I':                               // User's call sIgn
         strcpy( s, sess->thisuser.GetCallsign() );
         break;
     case 'i':                               // Illegal log-ons
-        sprintf( s, "%u", sess->thisuser.GetNumIllegalLogons() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetNumIllegalLogons() );
         break;
     case 'J':                               // Message conference
         strcpy( s, reinterpret_cast<char*>( subconfs[uconfsub[sess->GetCurrentConferenceMessageArea()].confnum].name ) );
@@ -128,22 +128,22 @@ char *interpret( char chKey )
         strcpy( s, reinterpret_cast<char*>( dirconfs[uconfdir[sess->GetCurrentConferenceFileArea()].confnum].name ) );
         break;
     case 'K':                               // Kb uploaded
-        sprintf( s, "%lu", sess->thisuser.GetUploadK() );
+        snprintf( s, sizeof( s ), "%lu", sess->thisuser.GetUploadK() );
         break;
     case 'k':                               // Kb downloaded
-        sprintf( s, "%lu", sess->thisuser.GetDownloadK() );
+        snprintf( s, sizeof( s ), "%lu", sess->thisuser.GetDownloadK() );
         break;
     case 'L':                               // Last call
         strcpy( s, sess->thisuser.GetLastOn() );
         break;
     case 'l':                               // Number of logons
-        sprintf( s, "%u", sess->thisuser.GetNumLogons() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetNumLogons() );
         break;
     case 'M':                               // Mail waiting
-        sprintf( s, "%d", sess->thisuser.GetNumMailWaiting() );
+        snprintf( s, sizeof( s ), "%d", sess->thisuser.GetNumMailWaiting() );
         break;
     case 'm':                               // Messages posted
-        sprintf( s, "%u", sess->thisuser.GetNumMessagesPosted() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetNumMessagesPosted() );
         break;
     case 'N':                               // User's name
         strcpy( s, sess->thisuser.GetName() );
@@ -152,10 +152,10 @@ char *interpret( char chKey )
         strcpy( s, sess->thisuser.GetNote() );
         break;
     case 'O':                               // Times on today
-        sprintf( s, "%d", sess->thisuser.GetTimesOnToday() );
+        snprintf( s, sizeof( s ), "%d", sess->thisuser.GetTimesOnToday() );
         break;
     case 'o':                               // Time on today
-        sprintf( s, "%ld", static_cast<long>( ( sess->thisuser.GetTimeOn() +
+        snprintf( s, sizeof( s ), "%ld", static_cast<long>( ( sess->thisuser.GetTimeOn() +
             timer() - timeon ) /
             SECONDS_PER_MINUTE_FLOAT ) );
         break;
@@ -169,10 +169,10 @@ char *interpret( char chKey )
         strcpy( s, sess->thisuser.GetRealName() );
         break;
     case 'r':                               // Last baud rate
-        sprintf( s, "%d", sess->thisuser.GetLastBaudRate() );
+        snprintf( s, sizeof( s ), "%d", sess->thisuser.GetLastBaudRate() );
         break;
     case 'S':                               // User's SL
-        sprintf( s, "%d", sess->thisuser.GetSl() );
+        snprintf( s, sizeof( s ), "%d", sess->thisuser.GetSl() );
         break;
     case 's':                               // User's street address
         strcpy( s, sess->thisuser.GetStreet() );
@@ -184,16 +184,16 @@ char *interpret( char chKey )
         strcpy( s, times() );
         break;
     case 'U':                               // Files uploaded
-        sprintf( s, "%u", sess->thisuser.GetFilesUploaded() );
+        snprintf( s, sizeof( s ), "%u", sess->thisuser.GetFilesUploaded() );
         break;
     case 'u':                               // Current sub
         strcpy( s, subboards[usub[sess->GetCurrentMessageArea()].subnum].name );
         break;
     case 'W':                               // Total # of messages in sub
-        sprintf( s, "%ld", sess->GetNumMessagesInCurrentMessageArea() );
+        snprintf( s, sizeof( s ), "%ld", sess->GetNumMessagesInCurrentMessageArea() );
         break;
     case 'X':                               // User's sex
-        sprintf( s, "%c", sess->thisuser.GetGender() );
+        snprintf( s, sizeof( s ), "%c", sess->thisuser.GetGender() );
         break;
     case 'Y':                               // Your BBS name
         strcpy( s, syscfg.systemname );

@@ -245,10 +245,10 @@ void sysoplogf( const char *pszFormat, ... )
     va_list ap;
     char szBuffer[2048];
 
-    va_start(ap, pszFormat);
-    vsnprintf(szBuffer, 2048, pszFormat, ap);
-    va_end(ap);
-    sysoplog(szBuffer);
+    va_start( ap, pszFormat );
+    vsnprintf( szBuffer, sizeof( szBuffer ), pszFormat, ap );
+    va_end( ap );
+    sysoplog( szBuffer );
 }
 
 
@@ -258,9 +258,9 @@ void sysoplogfi( bool bIndent, const char *pszFormat, ... )
     va_list ap;
     char szBuffer[2048];
 
-    va_start(ap, pszFormat);
-    vsnprintf(szBuffer, 2048, pszFormat, ap);
-    va_end(ap);
+    va_start( ap, pszFormat );
+    vsnprintf( szBuffer, sizeof( szBuffer ), pszFormat, ap );
+    va_end( ap );
     sysoplog( szBuffer, bIndent );
 }
 

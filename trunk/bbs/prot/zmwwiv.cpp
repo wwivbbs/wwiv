@@ -131,7 +131,7 @@ int ZModemWindowStatus(const char *fmt,...)
     char szBuffer[2048];
 
     va_start( ap, fmt );
-    vsnprintf( szBuffer, 255, fmt, ap );
+    vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
     va_end( ap );
     int oldX = app->localIO->WhereX();
     int oldY = app->localIO->WhereY();
@@ -150,9 +150,9 @@ int ZModemWindowXferStatus(const char *fmt,...)
     va_list ap;
     char szBuffer[2048];
 
-    va_start(ap, fmt);
-    vsnprintf(szBuffer, 255, fmt, ap);
-    va_end(ap);
+    va_start( ap, fmt );
+    vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
+    va_end( ap );
     int oldX = app->localIO->WhereX();
     int oldY = app->localIO->WhereY();
 	app->localIO->LocalXYPrintf( 1, 1, "%s                           ", szBuffer );
