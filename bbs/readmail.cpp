@@ -1551,7 +1551,7 @@ int check_new_mail( int nUserNumber )
 
 	WFile *pFileEmail = OpenEmailFile( false );
 	WWIV_ASSERT( pFileEmail );
-	if ( pFileEmail->IsOpen() )
+    if ( pFileEmail->Exists() && pFileEmail->IsOpen() )
 	{
 		int mfLength = pFileEmail->GetLength() / sizeof( mailrec );
 		int mWaiting = 0;   // number of mail waiting
