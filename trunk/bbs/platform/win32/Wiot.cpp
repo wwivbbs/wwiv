@@ -76,7 +76,7 @@ void WIOTelnet::close( bool bIsTemporary )
     if ( !bIsTemporary )
     {
         // this will stop the threads
-	    closesocket( sess->hSocket );
+	    closesocket( GetSession()->hSocket );
     }
     else
     {
@@ -87,7 +87,7 @@ void WIOTelnet::close( bool bIsTemporary )
 
 unsigned int WIOTelnet::putW(unsigned char ch)
 {
-	if ( sess->hSocket == INVALID_SOCKET )
+	if ( GetSession()->hSocket == INVALID_SOCKET )
 	{
 #ifdef _DEBUG
         std::cout << "pw(INVALID-SOCKET) ";
@@ -105,7 +105,7 @@ unsigned int WIOTelnet::putW(unsigned char ch)
 
 	for( ;; )
 	{
-		int nRet = send( sess->hSocket, szBuffer, strlen( szBuffer ), 0 );
+		int nRet = send( GetSession()->hSocket, szBuffer, strlen( szBuffer ), 0 );
 		if( nRet == SOCKET_ERROR )
 		{
 			if( WSAGetLastError() != WSAEWOULDBLOCK )
@@ -144,10 +144,10 @@ bool WIOTelnet::dtr(bool raise)
 {
 	if (!raise)
 	{
-		closesocket(sess->hSocket);
-		closesocket(sess->hDuplicateSocket);
-		sess->hSocket = INVALID_SOCKET;
-		sess->hDuplicateSocket = INVALID_SOCKET;
+		closesocket(GetSession()->hSocket);
+		closesocket(GetSession()->hDuplicateSocket);
+		GetSession()->hSocket = INVALID_SOCKET;
+		GetSession()->hDuplicateSocket = INVALID_SOCKET;
 	}
 	return true;
 }
@@ -255,7 +255,7 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
 
 	for( ;; )
 	{
-		nRet = send( sess->hSocket, pszBuffer, nCount, 0 );
+		nRet = send( GetSession()->hSocket, pszBuffer, nCount, 0 );
 		if( nRet == SOCKET_ERROR )
 		{
 			if( WSAGetLastError() != WSAEWOULDBLOCK )
@@ -280,7 +280,7 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
 
 bool WIOTelnet::carrier()
 {
-    return ( sess->hSocket != INVALID_SOCKET ) ? true : false;
+    return ( GetSession()->hSocket != INVALID_SOCKET ) ? true : false;
 }
 
 
@@ -295,7 +295,7 @@ bool WIOTelnet::incoming()
 
 bool WIOTelnet::startup()
 {
-    if ( sess->hSocket != 0 && sess->hSocket != INVALID_SOCKET )
+    if ( GetSession()->hSocket != 0 && GetSession()->hSocket != INVALID_SOCKET )
     {
         // Make sure our signal event is not set to the "signaled" state
         hReadStopEvent = CreateEvent( NULL, true, false, NULL );
@@ -383,7 +383,7 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)
 	WSANETWORKEVENTS events;
 	char szBuffer[4096];
 	bool bDone = false;
-	SOCKET hSocket = static_cast<SOCKET>( sess->hSocket );
+	SOCKET hSocket = static_cast<SOCKET>( GetSession()->hSocket );
 	int nRet = WSAEventSelect(hSocket, hEvent, FD_READ | FD_CLOSE);
     HANDLE hArray[2];
     hArray[0] = hEvent;
@@ -455,10 +455,10 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)
 
 	if ( hSocket == INVALID_SOCKET )
 	{
-		closesocket( sess->hSocket );
-		closesocket( sess->hDuplicateSocket );
-		sess->hSocket = INVALID_SOCKET;
-		sess->hDuplicateSocket = INVALID_SOCKET;
+		closesocket( GetSession()->hSocket );
+		closesocket( GetSession()->hDuplicateSocket );
+		GetSession()->hSocket = INVALID_SOCKET;
+		GetSession()->hDuplicateSocket = INVALID_SOCKET;
 	}
 
 	WSACloseEvent( hEvent );

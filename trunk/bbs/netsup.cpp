@@ -52,7 +52,7 @@ void rename_pend( const char *pszDirectory, const char *pszFileName )
 
 int checkup2( const time_t tFileTime, const char *pszFileName )
 {
-    WFile file( sess->GetNetworkDataDirectory(), pszFileName );
+    WFile file( GetSession()->GetNetworkDataDirectory(), pszFileName );
 
 	if ( file.Open( WFile::modeReadOnly ) )
 	{
@@ -69,21 +69,21 @@ int check_bbsdata()
 	char s[MAX_PATH];
 	int ok = 0, ok2 = 0;
 
-	sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), CONNECT_UPD);
+	sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CONNECT_UPD);
 	if ((ok = WFile::Exists(s)) == 0)
     {
-		sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), BBSLIST_UPD);
+		sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), BBSLIST_UPD);
         ok = WFile::Exists(s) ? 1 : 0;
 	}
 	if (ok && status.net_edit_stuff)
     {
 		holdphone( true );
-		sprintf( s, "NETEDIT .%ld /U", sess->GetNetworkNumber() );
+		sprintf( s, "NETEDIT .%ld /U", GetSession()->GetNetworkNumber() );
 		ExecuteExternalProgram(s, EFLAG_NETPROG);
 	}
     else
     {
-        WFile bbsdataNet( sess->GetNetworkDataDirectory(), BBSDATA_NET );
+        WFile bbsdataNet( GetSession()->GetNetworkDataDirectory(), BBSDATA_NET );
 		if ( bbsdataNet.Open( WFile::modeReadOnly ) )
 		{
             time_t tFileTime = bbsdataNet.GetFileTime();
@@ -96,24 +96,24 @@ int check_bbsdata()
 			ok = ok2 = 1;
         }
 	}
-	sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), BBSDATA_NET);
+	sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
 	if (!WFile::Exists(s))
     {
 		ok = ok2 = 0;
     }
-	sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), CONNECT_NET);
+	sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CONNECT_NET);
 	if (!WFile::Exists(s))
     {
 		ok = ok2 = 0;
     }
-	sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), CALLOUT_NET);
+	sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CALLOUT_NET);
 	if (!WFile::Exists(s))
     {
 		ok = ok2 = 0;
     }
 	if (ok || ok2)
     {
-		sprintf( s, "network3 %s .%ld", (ok ? " Y" : ""), sess->GetNetworkNumber() );
+		sprintf( s, "network3 %s .%ld", (ok ? " Y" : ""), GetSession()->GetNetworkNumber() );
 		holdphone( true );
 
 		ExecuteExternalProgram(s, EFLAG_NETPROG);
@@ -140,7 +140,7 @@ void cleanup_net()
 
 	if ( cleanup_net1() && GetApplication()->HasConfigFlag( OP_FLAGS_NET_CALLOUT ) )
     {
-		if ( sess->wfc_status == 0 )                    // WFC addition
+		if ( GetSession()->wfc_status == 0 )                    // WFC addition
         {
 			GetApplication()->GetLocalIO()->LocalCls();
         }
@@ -190,7 +190,7 @@ int cleanup_net1()
 
 	GetApplication()->SetCleanNetNeeded( false );
 
-    if ( net_networks[0].sysnum == 0 && sess->GetMaxNetworkNumber() == 1 )
+    if ( net_networks[0].sysnum == 0 && GetSession()->GetMaxNetworkNumber() == 1 )
     {
         return 0;
     }
@@ -201,7 +201,7 @@ int cleanup_net1()
     {
         any = 0;
 
-        for ( int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++ )
+        for ( int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++ )
         {
             set_net_num( nNetNumber );
 
@@ -219,13 +219,13 @@ int cleanup_net1()
                 ok2 = 0;
                 ok = 0;
                 WFindFile fnd;
-                sprintf( s, "%s""p*.%3.3d", sess->GetNetworkDataDirectory(), GetApplication()->GetInstanceNumber() );
+                sprintf( s, "%s""p*.%3.3d", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetInstanceNumber() );
                 bool bFound = fnd.open( s, 0 );
                 while ( bFound )
                 {
                     ok = 1;
                     ++i;
-                    rename_pend( sess->GetNetworkDataDirectory(), fnd.GetFileName() );
+                    rename_pend( GetSession()->GetNetworkDataDirectory(), fnd.GetFileName() );
                     anynew = 1;
                     bFound = fnd.next();
                 }
@@ -234,14 +234,14 @@ int cleanup_net1()
                 {
                     if ( !ok )
                     {
-                        sprintf( s, "%s""p*.net", sess->GetNetworkDataDirectory() );
+                        sprintf( s, "%s""p*.net", GetSession()->GetNetworkDataDirectory() );
                         WFindFile fnd;
                         ok = fnd.open( s, 0 );
                     }
                     if ( ok )
                     {
 #ifndef _UNIX
-                        if ( sess->wfc_status == 0 )
+                        if ( GetSession()->wfc_status == 0 )
                         {
                             // WFC addition
                             GetApplication()->GetLocalIO()->LocalCls();
@@ -254,8 +254,8 @@ int cleanup_net1()
                         holdphone( true );
                         ++i;
                         hangup = false;
-                        sess->using_modem = 0;
-                        sprintf( cl, "network1 .%ld", sess->GetNetworkNumber() );
+                        GetSession()->using_modem = 0;
+                        sprintf( cl, "network1 .%ld", GetSession()->GetNetworkNumber() );
                         if ( ExecuteExternalProgram( cl, EFLAG_NETPROG ) < 0 )
                         {
                             abort = true;
@@ -266,11 +266,11 @@ int cleanup_net1()
                         }
                         ok2 = 1;
                     }
-                    sprintf( s, "%s%s", sess->GetNetworkDataDirectory(), LOCAL_NET );
+                    sprintf( s, "%s%s", GetSession()->GetNetworkDataDirectory(), LOCAL_NET );
                     if ( WFile::Exists( s ) )
                     {
 #ifndef _UNIX
-                        if ( sess->wfc_status == 0 )
+                        if ( GetSession()->wfc_status == 0 )
                         {
                             // WFC addition
                             GetApplication()->GetLocalIO()->LocalCls();
@@ -285,8 +285,8 @@ int cleanup_net1()
                         any = 1;
                         ok = 1;
                         hangup = false;
-                        sess->using_modem = 0;
-                        sprintf( cl, "network2 .%ld", sess->GetNetworkNumber() );
+                        GetSession()->using_modem = 0;
+                        sprintf( cl, "network2 .%ld", GetSession()->GetNetworkNumber() );
                         if ( ExecuteExternalProgram( cl, EFLAG_NETPROG ) < 0 )
                         {
                             abort = true;
@@ -297,9 +297,9 @@ int cleanup_net1()
                         }
                         ok2 = 1;
                         GetApplication()->GetStatusManager()->Read();
-                        sess->SetCurrentReadMessageArea( -1 );
-                        sess->ReadCurrentUser( 1 );
-                        fwaiting = sess->thisuser.GetNumMailWaiting();
+                        GetSession()->SetCurrentReadMessageArea( -1 );
+                        GetSession()->ReadCurrentUser( 1 );
+                        fwaiting = GetSession()->thisuser.GetNumMailWaiting();
                     }
                     if ( check_bbsdata() )
                     {
@@ -331,25 +331,25 @@ void do_callout( int sn )
 	time( &l );
 	int i = -1;
 	int i2 = -1;
-	if ( !net_networks[sess->GetNetworkNumber()].con )
+	if ( !net_networks[GetSession()->GetNetworkNumber()].con )
     {
 		read_call_out_list();
     }
     int i1;
-	for ( i1 = 0; i1 < net_networks[sess->GetNetworkNumber()].num_con; i1++ )
+	for ( i1 = 0; i1 < net_networks[GetSession()->GetNetworkNumber()].num_con; i1++ )
     {
-		if ( net_networks[sess->GetNetworkNumber()].con[i1].sysnum == sn )
+		if ( net_networks[GetSession()->GetNetworkNumber()].con[i1].sysnum == sn )
         {
 			i = i1;
         }
     }
-	if ( !net_networks[sess->GetNetworkNumber()].ncn )
+	if ( !net_networks[GetSession()->GetNetworkNumber()].ncn )
     {
 		read_contacts();
     }
-	for ( i1 = 0; i1 < net_networks[sess->GetNetworkNumber()].num_ncn; i1++ )
+	for ( i1 = 0; i1 < net_networks[GetSession()->GetNetworkNumber()].num_ncn; i1++ )
     {
-		if ( net_networks[sess->GetNetworkNumber()].ncn[i1].systemnumber == sn )
+		if ( net_networks[GetSession()->GetNetworkNumber()].ncn[i1].systemnumber == sn )
         {
 			i2 = i1;
         }
@@ -357,31 +357,31 @@ void do_callout( int sn )
 
 	if ( i != -1 )
     {
-	    net_system_list_rec *csne = next_system( net_networks[sess->GetNetworkNumber()].con[i].sysnum );
+	    net_system_list_rec *csne = next_system( net_networks[GetSession()->GetNetworkNumber()].con[i].sysnum );
 		if ( csne )
         {
 			sprintf( s, "network /N%u /A%s /P%s /S%u /T%ld",
-				     sn, ( net_networks[sess->GetNetworkNumber()].con[i].options & options_sendback ) ? "1" : "0",
+				     sn, ( net_networks[GetSession()->GetNetworkNumber()].con[i].options & options_sendback ) ? "1" : "0",
 				     csne->phone, ( NULL != modem_i ) ? modem_i->defl.com_speed : 0, l );
             // if modem_i is null, we are on a telnet node, and PPP project, so we don't care...
-			if ( net_networks[sess->GetNetworkNumber()].con[i].macnum )
+			if ( net_networks[GetSession()->GetNetworkNumber()].con[i].macnum )
             {
-				sprintf( s1, " /M%d", static_cast<int>( net_networks[sess->GetNetworkNumber()].con[i].macnum ) );
+				sprintf( s1, " /M%d", static_cast<int>( net_networks[GetSession()->GetNetworkNumber()].con[i].macnum ) );
 				strcat( s, s1 );
 			}
-			sprintf( s1, " .%ld", sess->GetNetworkNumber() );
+			sprintf( s1, " .%ld", GetSession()->GetNetworkNumber() );
 			strcat( s, s1 );
 			if ( strncmp( csne->phone, "000", 3 ) )
             {
 #ifndef _UNUX
 				run_exp();
 #endif
-				sess->bout << "|#7Calling out to: |#2" << csne->name << " - ";
-				if ( sess->GetMaxNetworkNumber() > 1 )
+				GetSession()->bout << "|#7Calling out to: |#2" << csne->name << " - ";
+				if ( GetSession()->GetMaxNetworkNumber() > 1 )
                 {
-					sess->bout << sess->GetNetworkName() << " ";
+					GetSession()->bout << GetSession()->GetNetworkName() << " ";
                 }
-				sess->bout << "@" << sn << wwiv::endl;
+				GetSession()->bout << "@" << sn << wwiv::endl;
                 char szRegionsFileName[ MAX_PATH ];
 				sprintf( szRegionsFileName, "%s%s%c%s.%-3u", syscfg.datadir,
 						 REGIONS_DAT, WWIV_FILE_SEPERATOR_CHAR, REGIONS_DAT, atoi( csne->phone ) );
@@ -394,20 +394,20 @@ void do_callout( int sn )
                 {
 					describe_area_code( atoi( csne->phone ), s1 );
                 }
-				sess->bout << "|#7Sys located in: |#2" << s1 << wwiv::endl;
-				if ( i2 != -1 && net_networks[sess->GetNetworkNumber()].ncn[i2].bytes_waiting )
+				GetSession()->bout << "|#7Sys located in: |#2" << s1 << wwiv::endl;
+				if ( i2 != -1 && net_networks[GetSession()->GetNetworkNumber()].ncn[i2].bytes_waiting )
                 {
-					sess->bout << "|#7Amount pending: |#2" <<
-						bytes_to_k( net_networks[sess->GetNetworkNumber()].ncn[i2].bytes_waiting ) <<
+					GetSession()->bout << "|#7Amount pending: |#2" <<
+						bytes_to_k( net_networks[GetSession()->GetNetworkNumber()].ncn[i2].bytes_waiting ) <<
 						"k" << wwiv::endl;
 				}
 				else
 				{
 					nl();
 				}
-				sess->bout << "|#7Commandline is: |#2" << s << wwiv::endl;
+				GetSession()->bout << "|#7Commandline is: |#2" << s << wwiv::endl;
 				ansic( 7 );
-				sess->bout << charstr( 80, 205 );
+				GetSession()->bout << charstr( 80, 205 );
 #ifndef _UNIX
 				holdphone( true );
 				Wait( 2.5 );
@@ -434,7 +434,7 @@ void do_callout( int sn )
 
 bool ok_to_call(int i)
 {
-	net_call_out_rec *con = &( net_networks[sess->GetNetworkNumber()].con[i] );
+	net_call_out_rec *con = &( net_networks[GetSession()->GetNetworkNumber()].con[i] );
 
     bool ok = ( ( con->options & options_no_call ) == 0 ) ? true : false;
 	if ( con->options & options_receive_only )
@@ -554,7 +554,7 @@ void free_vars( float **weight, int **try1 )
 {
 	if ( weight || try1 )
 	{
-		for ( int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++ )
+		for ( int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++ )
 		{
 			if ( try1 && try1[nNetNumber] )
 			{
@@ -623,22 +623,22 @@ void attempt_callout()
         last_time_c = l;
         return;
     }
-    if ( ( try1 = static_cast<int **>( BbsAllocA( sizeof(int *) * sess->GetMaxNetworkNumber() ) ) ) == NULL )
+    if ( ( try1 = static_cast<int **>( BbsAllocA( sizeof(int *) * GetSession()->GetMaxNetworkNumber() ) ) ) == NULL )
     {
         return;
     }
-    if ( ( weight = static_cast<float **>( BbsAllocA( sizeof( float * ) * sess->GetMaxNetworkNumber() ) ) ) == NULL )
+    if ( ( weight = static_cast<float **>( BbsAllocA( sizeof( float * ) * GetSession()->GetMaxNetworkNumber() ) ) ) == NULL )
     {
         BbsFreeMemory(try1);
         return;
     }
-    memset( try1, 0, sizeof(int *) * sess->GetMaxNetworkNumber() );
-    memset( weight, 0, sizeof(float *) * sess->GetMaxNetworkNumber() );
+    memset( try1, 0, sizeof(int *) * GetSession()->GetMaxNetworkNumber() );
+    memset( weight, 0, sizeof(float *) * GetSession()->GetMaxNetworkNumber() );
 
     float fl2 = 0.0;
     int any = 0;
 
-    for ( int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++ )
+    for ( int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++ )
     {
         set_net_num( nNetNumber );
         if ( !net_sysnum )
@@ -646,15 +646,15 @@ void attempt_callout()
             continue;
         }
 
-        // if (!net_networks[sess->GetNetworkNumber()].con)
+        // if (!net_networks[GetSession()->GetNetworkNumber()].con)
         read_call_out_list();
-        // if (!net_networks[sess->GetNetworkNumber()].ncn)
+        // if (!net_networks[GetSession()->GetNetworkNumber()].ncn)
         read_contacts();
 
-        con = net_networks[sess->GetNetworkNumber()].con;
-        ncn = net_networks[sess->GetNetworkNumber()].ncn;
-        num_call_sys = net_networks[sess->GetNetworkNumber()].num_con;
-        num_ncn = net_networks[sess->GetNetworkNumber()].num_ncn;
+        con = net_networks[GetSession()->GetNetworkNumber()].con;
+        ncn = net_networks[GetSession()->GetNetworkNumber()].ncn;
+        num_call_sys = net_networks[GetSession()->GetNetworkNumber()].num_con;
+        num_ncn = net_networks[GetSession()->GetNetworkNumber()].num_ncn;
 
         try1[nNetNumber] = static_cast<int *>( BbsAllocA( sizeof( int ) * num_call_sys ) );
         if ( !try1[nNetNumber] )
@@ -757,7 +757,7 @@ void attempt_callout()
     {
         fl = static_cast<float>( fl2 ) * static_cast<float>( rand() ) / static_cast<float>( 32767.0 );
         fl1 = 0.0;
-        for (int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
+        for (int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
         {
             set_net_num(nNetNumber);
             if (!net_sysnum)
@@ -766,7 +766,7 @@ void attempt_callout()
             }
 
             i1 = -1;
-            for (i = 0; (i < net_networks[sess->GetNetworkNumber()].num_con); i++)
+            for (i = 0; (i < net_networks[GetSession()->GetNetworkNumber()].num_con); i++)
             {
                 if (try1[nNetNumber][i])
                 {
@@ -783,7 +783,7 @@ void attempt_callout()
                 free_vars(weight, try1);
                 weight = NULL;
                 try1 = NULL;
-                do_callout(net_networks[sess->GetNetworkNumber()].con[i1].sysnum);
+                do_callout(net_networks[GetSession()->GetNetworkNumber()].con[i1].sysnum);
                 time(&l);
                 last_time_c = l;
                 break;
@@ -816,11 +816,11 @@ void print_pending_list()
 	time(&t);
 	struct tm * pTm = localtime(&t);
 
-	long ss = sess->thisuser.GetStatus();
+	long ss = GetSession()->thisuser.GetStatus();
 
 	int nDow = dow();
 
-	if ( net_networks[0].sysnum == 0 && sess->GetMaxNetworkNumber() == 1 )
+	if ( net_networks[0].sysnum == 0 && GetSession()->GetMaxNetworkNumber() == 1 )
     {
 		return;
     }
@@ -828,15 +828,15 @@ void print_pending_list()
 	time(&l);
 
 	nl( 2 );
-	sess->bout << "                           |#3ฤ> |#9Network Status |#3<ฤ\r\n";
+	GetSession()->bout << "                           |#3ฤ> |#9Network Status |#3<ฤ\r\n";
 	nl();
 
-	sess->bout << "|#7ษอออออัออออออออออัอออออออัอออออออออัอออออออออัออออออัอออออัอออออออออออัอออออป\r\n";
-	sess->bout << "|#7บ |#1Ok? |#7ณ |#1Network  |#7ณ |#1 Node |#7ณ  |#1 Sent  |#7ณ|#1Received |#7ณ|#1Ready |#7ณ|#1Fails|#7ณ  |#1Elapsed  |#7ณ|#1/HrWt|#7บ\r\n";
-	sess->bout << "|#7ฬอออออุออออออออออุอออออออุอออออออออุอออออออออุออออออุอออออุอออออออออออุอออออน\r\n";
+	GetSession()->bout << "|#7ษอออออัออออออออออัอออออออัอออออออออัอออออออออัออออออัอออออัอออออออออออัอออออป\r\n";
+	GetSession()->bout << "|#7บ |#1Ok? |#7ณ |#1Network  |#7ณ |#1 Node |#7ณ  |#1 Sent  |#7ณ|#1Received |#7ณ|#1Ready |#7ณ|#1Fails|#7ณ  |#1Elapsed  |#7ณ|#1/HrWt|#7บ\r\n";
+	GetSession()->bout << "|#7ฬอออออุออออออออออุอออออออุอออออออออุอออออออออุออออออุอออออุอออออออออออุอออออน\r\n";
 
 	int nNetNumber;
-	for (nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
+	for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
     {
 		set_net_num(nNetNumber);
 
@@ -845,20 +845,20 @@ void print_pending_list()
 			continue;
         }
 
-		if (!net_networks[sess->GetNetworkNumber()].con)
+		if (!net_networks[GetSession()->GetNetworkNumber()].con)
         {
 			read_call_out_list();
         }
 
-		if (!net_networks[sess->GetNetworkNumber()].ncn)
+		if (!net_networks[GetSession()->GetNetworkNumber()].ncn)
         {
 			read_contacts();
         }
 
-		con = net_networks[sess->GetNetworkNumber()].con;
-		ncn = net_networks[sess->GetNetworkNumber()].ncn;
-		num_call_sys = net_networks[sess->GetNetworkNumber()].num_con;
-		num_ncn = net_networks[sess->GetNetworkNumber()].num_ncn;
+		con = net_networks[GetSession()->GetNetworkNumber()].con;
+		ncn = net_networks[GetSession()->GetNetworkNumber()].ncn;
+		num_call_sys = net_networks[GetSession()->GetNetworkNumber()].num_con;
+		num_ncn = net_networks[GetSession()->GetNetworkNumber()].num_ncn;
 
 		for (i1 = 0; i1 < num_call_sys; i1++)
         {
@@ -935,7 +935,7 @@ void print_pending_list()
 
 				bprintf( "|#7บ %-3s |#7ณ |#2%-8.8s |#7ณ |#2%5u |#7ณ|#2%8s |#7ณ|#2%8s |#7ณ|#2%5s |#7ณ|#2%4d |#7ณ|#2%13.13s |#7ณ|#2%4d |#7บ\r\n",
 					     s2,
-					     sess->GetNetworkName(),
+					     GetSession()->GetNetworkName(),
 					     ncn[i2].systemnumber,
 					     s3,
 					     s4,
@@ -943,7 +943,7 @@ void print_pending_list()
 					     ncn[i2].numfails,
 					     s1,
 					     i3 );
-				if ( !sess->thisuser.hasPause() && ( ( lines++ ) == 20 ) )
+				if ( !GetSession()->thisuser.hasPause() && ( ( lines++ ) == 20 ) )
 				{
 					pausescr();
 					lines = 0;
@@ -952,7 +952,7 @@ void print_pending_list()
 		}
 	}
 
-	for (nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
+	for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
 	{
 		set_net_num(nNetNumber);
 
@@ -961,18 +961,18 @@ void print_pending_list()
 			continue;
 		}
 
-		sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), DEAD_NET);
+		sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), DEAD_NET);
 		int hFileDeadNet = open(s, O_RDONLY | O_BINARY);
 		if ( hFileDeadNet > 0 )
         {
 			l = filelength( hFileDeadNet );
 			close( hFileDeadNet );
             sprintf( s3, "%ld""k", ( l + 1023 ) / 1024 );
-			bprintf( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6DEAD! |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", sess->GetNetworkName(), s3);
+			bprintf( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6DEAD! |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", GetSession()->GetNetworkName(), s3);
 		}
 	}
 
-	for (nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
+	for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
 	{
 		set_net_num(nNetNumber);
 
@@ -981,7 +981,7 @@ void print_pending_list()
 			continue;
         }
 
-		sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), CHECK_NET);
+		sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CHECK_NET);
 		int hFileCheckNet = open(s, O_RDONLY | O_BINARY);
 		if ( hFileCheckNet > 0 )
 		{
@@ -989,14 +989,14 @@ void print_pending_list()
 			close( hFileCheckNet );
             sprintf( s3, "%ld""k", ( l + 1023 ) / 1024 );
 			strcat(s3, "k");
-			bprintf( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6CHECK |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", sess->GetNetworkName(), s3);
+			bprintf( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6CHECK |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", GetSession()->GetNetworkName(), s3);
 		}
 	}
 
-	sess->bout << "|#7ศอออออฯออออออออออฯอออออออฯอออออออออฯอออออออออฯออออออฯอออออฯอออออออออออฯอออออผ\r\n";
+	GetSession()->bout << "|#7ศอออออฯออออออออออฯอออออออฯอออออออออฯอออออออออฯออออออฯอออออฯอออออออออออฯอออออผ\r\n";
 	nl();
-	sess->thisuser.SetStatus( ss );
-	if ( !sess->IsUserOnline() && lines_listed )
+	GetSession()->thisuser.SetStatus( ss );
+	if ( !GetSession()->IsUserOnline() && lines_listed )
 	{
 		pausescr();
 	}
@@ -1183,7 +1183,7 @@ void print_call(int sn, int nNetNumber, int i2)
 	read_call_out_list();
 	read_contacts();
 
-    net_contact_rec *ncn = net_networks[sess->GetNetworkNumber()].ncn;
+    net_contact_rec *ncn = net_networks[GetSession()->GetNetworkNumber()].ncn;
 	net_system_list_rec *csne = next_system(sn);
 
 	if (!got_color)
@@ -1283,7 +1283,7 @@ void print_call(int sn, int nNetNumber, int i2)
 	GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 18, color, "%-10.16s", s1 );
 	describe_area_code(atoi(csne->phone), s1);
 	GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 19, color, "%-17.17s", stripcolors( s1 ) );
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 14, 3, color, "%-11.16s", sess->GetNetworkName() );
+	GetApplication()->GetLocalIO()->LocalXYAPrintf( 14, 3, color, "%-11.16s", GetSession()->GetNetworkName() );
 }
 
 void fill_call(int color, int row, int netmax, int *nodenum)
@@ -1370,16 +1370,16 @@ int ansicallout()
         nodenum = static_cast<int *>( BbsAllocA(MAX_CONNECTS * 2 ) );
         netpos = static_cast<int *>( BbsAllocA(MAX_CONNECTS * 2 ) );
         ipos = static_cast<int *>( BbsAllocA(MAX_CONNECTS * 2 ) );
-        for (nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
+        for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
         {
             set_net_num(nNetNumber);
             read_call_out_list();
             read_contacts();
 
-            con = net_networks[sess->GetNetworkNumber()].con;
-            ncn = net_networks[sess->GetNetworkNumber()].ncn;
-            num_call_sys = net_networks[sess->GetNetworkNumber()].num_con;
-            num_ncn = net_networks[sess->GetNetworkNumber()].num_ncn;
+            con = net_networks[GetSession()->GetNetworkNumber()].con;
+            ncn = net_networks[GetSession()->GetNetworkNumber()].ncn;
+            num_call_sys = net_networks[GetSession()->GetNetworkNumber()].num_con;
+            num_ncn = net_networks[GetSession()->GetNetworkNumber()].num_ncn;
 
             for (i1 = 0; i1 < num_call_sys; i1++)
             {
@@ -1597,7 +1597,7 @@ int ansicallout()
     else
     {
         nl();
-        sess->bout << "|#2Which system: ";
+        GetSession()->bout << "|#2Which system: ";
         char szSystemNumber[ 11 ];
         input( szSystemNumber, 5, true );
         sn = atoi( szSystemNumber );
@@ -1635,11 +1635,11 @@ void force_callout(int dw)
     onx[1]  = '\0';
     int onxi = 1;
     int nv = 0;
-    char *ss = static_cast<char *>( BbsAllocA( sess->GetMaxNetworkNumber() * 3 ) );
-    char *ss1 = ss + sess->GetMaxNetworkNumber();
-    char *ss2 = ss1 + sess->GetMaxNetworkNumber();
+    char *ss = static_cast<char *>( BbsAllocA( GetSession()->GetMaxNetworkNumber() * 3 ) );
+    char *ss1 = ss + GetSession()->GetMaxNetworkNumber();
+    char *ss2 = ss1 + GetSession()->GetMaxNetworkNumber();
 
-    for ( int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++ )
+    for ( int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++ )
     {
         set_net_num( nNetNumber );
         if ( !net_sysnum || net_sysnum == sn )
@@ -1647,15 +1647,15 @@ void force_callout(int dw)
             continue;
         }
 
-        if ( !net_networks[sess->GetNetworkNumber()].con )
+        if ( !net_networks[GetSession()->GetNetworkNumber()].con )
         {
             read_call_out_list();
         }
 
         i = -1;
-        for ( i1 = 0; i1 < net_networks[sess->GetNetworkNumber()].num_con; i1++ )
+        for ( i1 = 0; i1 < net_networks[GetSession()->GetNetworkNumber()].num_con; i1++ )
         {
-            if ( net_networks[sess->GetNetworkNumber()].con[i1].sysnum == sn )
+            if ( net_networks[GetSession()->GetNetworkNumber()].con[i1].sysnum == sn )
             {
                 i = i1;
                 break;
@@ -1664,15 +1664,15 @@ void force_callout(int dw)
 
         if ( i != -1 )
         {
-            if ( !net_networks[sess->GetNetworkNumber()].ncn )
+            if ( !net_networks[GetSession()->GetNetworkNumber()].ncn )
             {
                 read_contacts();
             }
 
             i2 = -1;
-            for ( i1 = 0; i1 < net_networks[sess->GetNetworkNumber()].num_ncn; i1++ )
+            for ( i1 = 0; i1 < net_networks[GetSession()->GetNetworkNumber()].num_ncn; i1++ )
             {
-                if ( net_networks[sess->GetNetworkNumber()].ncn[i1].systemnumber == sn )
+                if ( net_networks[GetSession()->GetNetworkNumber()].ncn[i1].systemnumber == sn )
                 {
                     i2 = i1;
                     break;
@@ -1715,7 +1715,7 @@ void force_callout(int dw)
                         odc[odci - 1] = static_cast< char >( odci + '0' );
                         odc[odci] = 0;
                     }
-                    if ( wwiv::stringUtils::IsEqualsIgnoreCase( net_networks[netw].name, sess->GetNetworkName() ) )
+                    if ( wwiv::stringUtils::IsEqualsIgnoreCase( net_networks[netw].name, GetSession()->GetNetworkName() ) )
                     {
                         nitu = i;
                     }
@@ -1731,7 +1731,7 @@ void force_callout(int dw)
         if ( !ok )
         {
             nl();
-            sess->bout <<  "|#5Are you sure? ";
+            GetSession()->bout <<  "|#5Are you sure? ";
             if ( yesno() )
             {
                 ok = true;
@@ -1739,9 +1739,9 @@ void force_callout(int dw)
         }
         if ( ok )
         {
-            if ( net_networks[sess->GetNetworkNumber()].ncn[ss2[nitu]].bytes_waiting == 0L )
+            if ( net_networks[GetSession()->GetNetworkNumber()].ncn[ss2[nitu]].bytes_waiting == 0L )
             {
-                if ( !( net_networks[sess->GetNetworkNumber()].con[ss1[nitu]].options & options_sendback ) )
+                if ( !( net_networks[GetSession()->GetNetworkNumber()].con[ss1[nitu]].options & options_sendback ) )
                 {
                     ok = false;
                 }
@@ -1750,17 +1750,17 @@ void force_callout(int dw)
                     if ( dw )
                     {
                         nl();
-                        sess->bout << "|#2Num Retries : ";
+                        GetSession()->bout << "|#2Num Retries : ";
                         input( s, 5, true );
                         nr = atoi( s );
                     }
                     if ( dw == 2 )
                     {
-                        if ( sess->IsUserOnline() )
+                        if ( GetSession()->IsUserOnline() )
                         {
-                            sess->WriteCurrentUser( sess->usernum );
-                            write_qscn(sess->usernum, qsc, false);
-                            sess->SetUserOnline( false );
+                            GetSession()->WriteCurrentUser( GetSession()->usernum );
+                            write_qscn(GetSession()->usernum, qsc, false);
+                            GetSession()->SetUserOnline( false );
                         }
                         hang_it_up();
                         wait1( 90 );
@@ -1771,7 +1771,7 @@ void force_callout(int dw)
                     }
 
                     read_contacts();
-                    lc = net_networks[sess->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
+                    lc = net_networks[GetSession()->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
                     while ((tc < nr) && (!abort))
                     {
                         if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
@@ -1788,7 +1788,7 @@ void force_callout(int dw)
                         tc++;
                         set_net_num( ss[nitu] );
                         read_contacts();
-                        cc = net_networks[sess->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
+                        cc = net_networks[GetSession()->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
                         if ( abort || cc != lc )
                         {
                             break;
@@ -1796,7 +1796,7 @@ void force_callout(int dw)
                         else
                         {
                             GetApplication()->GetLocalIO()->LocalCls();
-                            sess->bout << "|#9Retries |#0= |#2" << nr << "|#9, Current |#0= |#2" << tc << "|#9, Remaining |#0= |#2" << nr - tc << "|#9. ESC to abort.\r\n";
+                            GetSession()->bout << "|#9Retries |#0= |#2" << nr << "|#9, Current |#0= |#2" << tc << "|#9, Remaining |#0= |#2" << nr - tc << "|#9. ESC to abort.\r\n";
                             if ( nr == tc )
                             {
                                 BbsFreeMemory( ss );
@@ -1821,18 +1821,18 @@ long *next_system_reg( int ts )
 {
 	static long reg_num;
 
-	if ( sess->GetNetworkNumber() != -1 )
+	if ( GetSession()->GetNetworkNumber() != -1 )
     {
 		read_bbs_list_index();
     }
 
 	if ( csn )
     {
-		for ( int i = 0; i < sess->num_sys_list; i++ )
+		for ( int i = 0; i < GetSession()->num_sys_list; i++ )
         {
 			if ( i == ts )
             {
-				if ( i == ( sess->num_sys_list - 1 ) )
+				if ( i == ( GetSession()->num_sys_list - 1 ) )
                 {
 					return NULL;
                 }
@@ -1845,16 +1845,16 @@ long *next_system_reg( int ts )
 	}
     else
     {
-		for ( int i = 0; i < sess->num_sys_list; i++ )
+		for ( int i = 0; i < GetSession()->num_sys_list; i++ )
         {
 			if ( csn_index[i] == ts )
             {
-                WFile bbsdataReg( sess->GetNetworkDataDirectory(), BBSDATA_REG );
+                WFile bbsdataReg( GetSession()->GetNetworkDataDirectory(), BBSDATA_REG );
                 bbsdataReg.Open( WFile::modeBinary | WFile::modeReadOnly );
                 bbsdataReg.Seek( i * sizeof( long ), WFile::seekBegin );
                 bbsdataReg.Read( &reg_num, sizeof( long ) );
                 bbsdataReg.Close();
-				if ( i == sess->num_sys_list - 1 )
+				if ( i == GetSession()->num_sys_list - 1 )
                 {
 					return NULL;
                 }
@@ -1872,7 +1872,7 @@ long *next_system_reg( int ts )
 #ifndef _UNUX
 void run_exp()
 {
-	int nOldNetworkNumber = sess->GetNetworkNumber();
+	int nOldNetworkNumber = GetSession()->GetNetworkNumber();
 	int nFileNetNetworkNumber = getnetnum("FILEnet");
 	if ( nFileNetNetworkNumber == -1 )
     {
@@ -1881,7 +1881,7 @@ void run_exp()
 	set_net_num( nFileNetNetworkNumber );
 
 	char szExpCommand[MAX_PATH];
-    sprintf( szExpCommand, "EXP S32767.NET %s %d %s %s %s", sess->GetNetworkDataDirectory(), net_sysnum, sess->internetEmailName.c_str(), sess->internetEmailDomain.c_str(), sess->GetNetworkName() );
+    sprintf( szExpCommand, "EXP S32767.NET %s %d %s %s %s", GetSession()->GetNetworkDataDirectory(), net_sysnum, GetSession()->internetEmailName.c_str(), GetSession()->internetEmailDomain.c_str(), GetSession()->GetNetworkName() );
 	ExecuteExternalProgram( szExpCommand, EFLAG_NETPROG );
 
 	set_net_num( nOldNetworkNumber );

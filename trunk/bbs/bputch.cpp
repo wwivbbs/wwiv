@@ -222,9 +222,9 @@ int bputch( char c, bool bUseInternalBuffer )
 			if ( c == SOFTRETURN )
 			{
 				++lines_listed;
-				if ( lines_listed >= sess->screenlinest - 3 )
+				if ( lines_listed >= GetSession()->screenlinest - 3 )
 				{
-					if ( sess->tagging && !sess->thisuser.isUseNoTagging() && filelist && !chatting )
+					if ( GetSession()->tagging && !GetSession()->thisuser.isUseNoTagging() && filelist && !chatting )
 					{
 						if ( g_num_listed != 0 )
 						{
@@ -233,9 +233,9 @@ int bputch( char c, bool bUseInternalBuffer )
 						lines_listed = 0;
 					}
 				}
-				if ( lines_listed >= ( sess->screenlinest - 1 ) )       // change Build3 + 5.0 to fix message read
+				if ( lines_listed >= ( GetSession()->screenlinest - 1 ) )       // change Build3 + 5.0 to fix message read
 				{
-                    if ( sess->thisuser.hasPause() && !x_only )
+                    if ( GetSession()->thisuser.hasPause() && !x_only )
 					{
 						pausescr();
 					}

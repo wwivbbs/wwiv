@@ -488,8 +488,8 @@ void gfile_sec( int sn )
     while ( !done && !hangup )
     {
         GetApplication()->GetLocalIO()->tleft( true );
-        sess->bout << "|#9Current G|#1-|#9File Section |#1: |#5" << gfilesec[sn].name << "|#0\r\n";
-        sess->bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf << "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
+        GetSession()->bout << "|#9Current G|#1-|#9File Section |#1: |#5" << gfilesec[sn].name << "|#0\r\n";
+        GetSession()->bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf << "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
         ss = mmkey( 2 );
         i = atoi(ss);
         if ( wwiv::stringUtils::IsEquals( ss, "Q" ) )
@@ -522,15 +522,15 @@ void gfile_sec( int sn )
         else if ( wwiv::stringUtils::IsEquals(ss, "R") && so() )
         {
             nl();
-            sess->bout << "|#2G-file number to delete? ";
+            GetSession()->bout << "|#2G-file number to delete? ";
             ss1 = mmkey( 2 );
             i = atoi( ss1 );
             if ( i > 0 && i <= nf )
             {
-				sess->bout << "|#9Remove " << g[i - 1].description << "|#1? |#5";
+				GetSession()->bout << "|#9Remove " << g[i - 1].description << "|#1? |#5";
                 if ( yesno() )
                 {
-                    sess->bout << "|#5Erase file too? ";
+                    GetSession()->bout << "|#5Erase file too? ";
                     if ( yesno() )
                     {
                         sprintf( szFileName, "%s%s%c%s", syscfg.gfilesdir,
@@ -547,7 +547,7 @@ void gfile_sec( int sn )
                     file.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
                     file.Write( g, nf * sizeof( gfilerec ) );
                     file.Close();
-                    sess->bout << "\r\nDeleted.\r\n\n";
+                    GetSession()->bout << "\r\nDeleted.\r\n\n";
                 }
             }
         }
@@ -563,7 +563,7 @@ void gfile_sec( int sn )
         {
             sprintf( szFileName, "%s%c%s", gfilesec[sn].filename, WWIV_FILE_SEPERATOR_CHAR, g[i - 1].filename );
             i1 = printfile( szFileName );
-            sess->thisuser.SetNumGFilesRead( sess->thisuser.GetNumGFilesRead() + 1 );
+            GetSession()->thisuser.SetNumGFilesRead( GetSession()->thisuser.GetNumGFilesRead() + 1 );
             if ( i1 == 0 )
             {
                 sysoplogf( "Read G-file '%s'", g[i - 1].filename );
@@ -574,14 +574,14 @@ void gfile_sec( int sn )
             bool done1 = false;
             while ( !done1 && !hangup )
             {
-                sess->bout << "|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5";
+                GetSession()->bout << "|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5";
                 ss = mmkey( 2 );
                 i2 = atoi( ss );
                 abort = false;
                 if ( wwiv::stringUtils::IsEquals( ss, "?" ) )
                 {
                     list_gfiles( g, nf, sn );
-					sess->bout << "|#9Current G|#1-|#9File Section |#1: |#5" << gfilesec[sn].name << wwiv::endl;
+					GetSession()->bout << "|#9Current G|#1-|#9File Section |#1: |#5" << gfilesec[sn].name << wwiv::endl;
                 }
                 else if ( wwiv::stringUtils::IsEquals( ss, "Q" ) )
                 {
@@ -596,7 +596,7 @@ void gfile_sec( int sn )
                         WFile file( szFileName );
                         if ( !file.Open( WFile::modeReadOnly | WFile::modeBinary ) )
                         {
-                            sess->bout << "|12File not found : [" << file.GetFullPathName() << "]";
+                            GetSession()->bout << "|12File not found : [" << file.GetFullPathName() << "]";
                         }
                         else
                         {
@@ -617,7 +617,7 @@ void gfile_sec( int sn )
                                 done1 = true;
                             }
 							nl();
-                            sess->bout << s1;
+                            GetSession()->bout << s1;
 							nl();
                             sysoplog( s1 );
                         }
@@ -655,7 +655,7 @@ void gfiles3(int n)
 
 void gfiles()
 {
-    int * map = static_cast<int *>( BbsAllocA( sess->max_gfilesec * sizeof( int ) ) );
+    int * map = static_cast<int *>( BbsAllocA( GetSession()->max_gfilesec * sizeof( int ) ) );
     WWIV_ASSERT( map );
     if ( !map )
     {
@@ -669,18 +669,18 @@ void gfiles()
     {
         odc[i] = 0;
     }
-    for ( i = 0; i < sess->num_sec; i++ )
+    for ( i = 0; i < GetSession()->num_sec; i++ )
     {
         bool ok = true;
-        if ( sess->thisuser.GetAge() < gfilesec[i].age )
+        if ( GetSession()->thisuser.GetAge() < gfilesec[i].age )
         {
             ok = false;
         }
-        if ( sess->GetEffectiveSl() < gfilesec[i].sl )
+        if ( GetSession()->GetEffectiveSl() < gfilesec[i].sl )
         {
             ok = false;
         }
-        if ( !sess->thisuser.hasArFlag( gfilesec[i].ar) && gfilesec[i].ar )
+        if ( !GetSession()->thisuser.hasArFlag( gfilesec[i].ar) && gfilesec[i].ar )
         {
             ok = false;
         }
@@ -695,7 +695,7 @@ void gfiles()
     }
     if ( nmap == 0 )
     {
-        sess->bout << "\r\nNo G-file sections available.\r\n\n";
+        GetSession()->bout << "\r\nNo G-file sections available.\r\n\n";
         BbsFreeMemory( map );
         return;
     }
@@ -703,8 +703,8 @@ void gfiles()
     while ( !done && !hangup )
     {
         GetApplication()->GetLocalIO()->tleft( true );
-        sess->bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
-        sess->bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap << "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
+        GetSession()->bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
+        GetSession()->bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap << "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
         char * ss = mmkey( 2 );
         if ( wwiv::stringUtils::IsEquals( ss, "Q" ) )
         {
@@ -721,7 +721,7 @@ void gfiles()
             for ( i = 0; i < nmap && !bIsSectionFull; i++ )
             {
                 nl();
-                sess->bout << "Now loading files for " << gfilesec[map[i]].name << "\r\n\n";
+                GetSession()->bout << "Now loading files for " << gfilesec[map[i]].name << "\r\n\n";
                 bIsSectionFull = fill_sec( map[i] );
             }
         }

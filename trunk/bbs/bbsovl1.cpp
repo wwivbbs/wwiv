@@ -51,33 +51,33 @@ void YourInfo()
     }
     else
     {
-        sess->bout << "|10Your User Information:\r\n";
+        GetSession()->bout << "|10Your User Information:\r\n";
     }
     nl();
-	sess->bout << "|#9Your name      : |#2" << sess->thisuser.GetUserNameAndNumber( sess->usernum ) << wwiv::endl;
-	sess->bout << "|#9Phone number   : |#2" << sess->thisuser.GetVoicePhoneNumber() << wwiv::endl;
-    if ( sess->thisuser.GetNumMailWaiting() > 0 )
+	GetSession()->bout << "|#9Your name      : |#2" << GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) << wwiv::endl;
+	GetSession()->bout << "|#9Phone number   : |#2" << GetSession()->thisuser.GetVoicePhoneNumber() << wwiv::endl;
+    if ( GetSession()->thisuser.GetNumMailWaiting() > 0 )
     {
-		sess->bout << "|#9Mail Waiting   : |#2" << sess->thisuser.GetNumMailWaiting() << wwiv::endl;
+		GetSession()->bout << "|#9Mail Waiting   : |#2" << GetSession()->thisuser.GetNumMailWaiting() << wwiv::endl;
     }
-	sess->bout << "|#9Security Level : |#2" << sess->thisuser.GetSl() << wwiv::endl;
-    if ( sess->GetEffectiveSl() != sess->thisuser.GetSl() )
+	GetSession()->bout << "|#9Security Level : |#2" << GetSession()->thisuser.GetSl() << wwiv::endl;
+    if ( GetSession()->GetEffectiveSl() != GetSession()->thisuser.GetSl() )
     {
-		sess->bout << "|#1 (temporarily |#2" << sess->GetEffectiveSl() << "|#1)";
+		GetSession()->bout << "|#1 (temporarily |#2" << GetSession()->GetEffectiveSl() << "|#1)";
     }
     nl();
-	sess->bout << "|#9Transfer SL    : |#2" << sess->thisuser.GetDsl() << wwiv::endl;
-    sess->bout << "|#9Date Last On   : |#2" << sess->thisuser.GetLastOn() << wwiv::endl;
-    sess->bout << "|#9Times on       : |#2" << sess->thisuser.GetNumLogons() << wwiv::endl;
-    sess->bout << "|#9On today       : |#2" << sess->thisuser.GetTimesOnToday() << wwiv::endl;
-    sess->bout << "|#9Messages posted: |#2" << sess->thisuser.GetNumMessagesPosted() << wwiv::endl;
-    sess->bout << "|#9E-mail sent    : |#2" << ( sess->thisuser.GetNumEmailSent() + sess->thisuser.GetNumFeedbackSent() + sess->thisuser.GetNumNetEmailSent() );
-    sess->bout << "|#9Time spent on  : |#2" << static_cast<long>( ( sess->thisuser.GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ) << " |#9Minutes" << wwiv::endl;
+	GetSession()->bout << "|#9Transfer SL    : |#2" << GetSession()->thisuser.GetDsl() << wwiv::endl;
+    GetSession()->bout << "|#9Date Last On   : |#2" << GetSession()->thisuser.GetLastOn() << wwiv::endl;
+    GetSession()->bout << "|#9Times on       : |#2" << GetSession()->thisuser.GetNumLogons() << wwiv::endl;
+    GetSession()->bout << "|#9On today       : |#2" << GetSession()->thisuser.GetTimesOnToday() << wwiv::endl;
+    GetSession()->bout << "|#9Messages posted: |#2" << GetSession()->thisuser.GetNumMessagesPosted() << wwiv::endl;
+    GetSession()->bout << "|#9E-mail sent    : |#2" << ( GetSession()->thisuser.GetNumEmailSent() + GetSession()->thisuser.GetNumFeedbackSent() + GetSession()->thisuser.GetNumNetEmailSent() );
+    GetSession()->bout << "|#9Time spent on  : |#2" << static_cast<long>( ( GetSession()->thisuser.GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ) << " |#9Minutes" << wwiv::endl;
 
     // Transfer Area Statistics
-    sess->bout << "|#9Uploads        : |#2" << sess->thisuser.GetUploadK() << "|#9k in|#2 " << sess->thisuser.GetFilesUploaded() << " |#9files\r\n";
-    sess->bout << "|#9Downloads      : |#2" << sess->thisuser.GetDownloadK()<< "|#9k in|#2 " << sess->thisuser.GetFilesDownloaded() << " |#9files\r\n";
-	sess->bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
+    GetSession()->bout << "|#9Uploads        : |#2" << GetSession()->thisuser.GetUploadK() << "|#9k in|#2 " << GetSession()->thisuser.GetFilesUploaded() << " |#9files\r\n";
+    GetSession()->bout << "|#9Downloads      : |#2" << GetSession()->thisuser.GetDownloadK()<< "|#9k in|#2 " << GetSession()->thisuser.GetFilesDownloaded() << " |#9files\r\n";
+	GetSession()->bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
     nl();
     pausescr();
 }
@@ -109,7 +109,7 @@ void upload_post()
     WFile file( syscfgovr.tempdir, INPUT_MSG );
     long lMaxBytes = 250 * static_cast<long>( GetMaxMessageLinesAllowed() );
 
-	sess->bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
+	GetSession()->bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
     char ch = '\0';
     int i = 0;
     receive_file( file.GetFullPathName(), &i, &ch, INPUT_MSG, -1 );
@@ -118,7 +118,7 @@ void upload_post()
         long lFileSize = file.GetLength();
         if ( lFileSize > lMaxBytes )
         {
-			sess->bout << "\r\n|12Sorry, your message is too long.  Not saved.\r\n\n";
+			GetSession()->bout << "\r\n|12Sorry, your message is too long.  Not saved.\r\n\n";
             file.Close();
             file.Delete();
         }
@@ -126,12 +126,12 @@ void upload_post()
         {
             file.Close();
             use_workspace = true;
-            sess->bout << "\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n";
+            GetSession()->bout << "\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n";
         }
     }
     else
     {
-        sess->bout << "\r\n|13Nothing saved.\r\n\n";
+        GetSession()->bout << "\r\n|13Nothing saved.\r\n\n";
     }
 }
 
@@ -144,7 +144,7 @@ void send_email()
     char szUserName[81];
 
     write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
-	sess->bout << "\r\n\n|#9Enter user name or number:\r\n:";
+	GetSession()->bout << "\r\n\n|#9Enter user name or number:\r\n:";
     input( szUserName, 75, true );
     irt[0] = '\0';
     irt_name[0] = '\0';
@@ -179,10 +179,10 @@ void edit_confs()
 
     while ( !hangup )
     {
-        sess->bout << "\r\n\n|10Edit Which Conferences:\r\n\n";
-        sess->bout << "|#21|#9)|#1 Subs\r\n";
-        sess->bout << "|#22|#9)|#1 Dirs\r\n";
-        sess->bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";
+        GetSession()->bout << "\r\n\n|10Edit Which Conferences:\r\n\n";
+        GetSession()->bout << "|#21|#9)|#1 Subs\r\n";
+        GetSession()->bout << "|#22|#9)|#1 Dirs\r\n";
+        GetSession()->bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";
         char ch = onek( "Q12", true );
         switch (ch)
         {
@@ -203,7 +203,7 @@ void edit_confs()
  * Sends Feedback to the SysOp.  If  bNewUserFeedback is true then this is
  * newuser feedback, otherwise it is "normal" feedback.
  * The user can choose to email anyone listed.
- * Users with sess->usernum < 10 who have sysop privs will be listed, so
+ * Users with GetSession()->usernum < 10 who have sysop privs will be listed, so
  * this user can select which sysop to leave feedback to.
  */
 void feedback( bool bNewUserFeedback )
@@ -261,14 +261,14 @@ void feedback( bool bNewUserFeedback )
             if ( ( user.GetSl() == 255 || (getslrec( user.GetSl() ).ability & ability_cosysop ) ) &&
                  !user.isUserDeleted() )
             {
-				sess->bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber( i ) << wwiv::endl;
+				GetSession()->bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber( i ) << wwiv::endl;
                 onek_str[i1++] = static_cast< char >( '0' + i );
             }
         }
         onek_str[i1++] = *str_quit;
         onek_str[i1] = '\0';
         nl();
-        sess->bout << "|#1Feedback to (" << onek_str << "): ";
+        GetSession()->bout << "|#1Feedback to (" << onek_str << "): ";
         ch = onek( onek_str, true );
         if ( ch == *str_quit )
         {
@@ -288,7 +288,7 @@ void feedback( bool bNewUserFeedback )
 void text_edit()
 {
     nl();
-    sess->bout << "|#9Enter Filename: ";
+    GetSession()->bout << "|#9Enter Filename: ";
     char szFileName[ MAX_PATH ];
     input( szFileName, 12, true );
     if ( strstr( szFileName, ".log" ) != NULL || !okfn( szFileName ) )
@@ -300,7 +300,7 @@ void text_edit()
     sysoplog( logText.str().c_str() );
     if ( okfsed() )
 	{
-		external_edit( szFileName, syscfg.gfilesdir, sess->thisuser.GetDefaultEditor() - 1, 500, syscfg.gfilesdir, logText.str().c_str(), MSGED_FLAG_NO_TAGLINE );
+		external_edit( szFileName, syscfg.gfilesdir, GetSession()->thisuser.GetDefaultEditor() - 1, 500, syscfg.gfilesdir, logText.str().c_str(), MSGED_FLAG_NO_TAGLINE );
 	}
 }
 

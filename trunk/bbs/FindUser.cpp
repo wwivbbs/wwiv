@@ -25,6 +25,7 @@
 #include "WUser.h"
 #include "WStringUtils.h"
 #include "vars.h"
+#include "bbs.h"
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"
@@ -77,6 +78,7 @@ int finduser( char *pszSearchString )
         GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
         if ( user.isUserDeleted() )
         {
+	    //printf( "DEBUG: User %s is deleted!\r\n", user.GetName() );
             return 0;
         }
         return nUserNumber;
@@ -139,7 +141,7 @@ int finduser1(const char *pszSearchString)
             int nCurrentUserNum = smallist[i1].number;
             WUser user;
             GetApplication()->GetUserManager()->ReadUser( &user, nCurrentUserNum );
-            sess->bout << "|#5Do you mean " << user.GetUserNameAndNumber( nCurrentUserNum ) << " (Y/N/Q)? ";
+            GetSession()->bout << "|#5Do you mean " << user.GetUserNameAndNumber( nCurrentUserNum ) << " (Y/N/Q)? ";
             char ch = ynq();
             if ( ch == 'Y' )
             {

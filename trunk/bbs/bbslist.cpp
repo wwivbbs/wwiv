@@ -40,12 +40,12 @@ char ShowBBSListMenuAndGetChoice()
     nl();
     if ( so() )
     {
-        sess->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
+        GetSession()->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
         return onek("QRNAD");
     }
     else
     {
-        sess->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
+        GetSession()->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
         return onek("QRNA");
     }
 }
@@ -147,7 +147,7 @@ void AddBBSListLine( const char* pszBbsListLine )
 
 void AddBBSListEntryImpl()
 {
-	sess->bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
+	GetSession()->bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
     std::string bbsPhoneNumber;
     input( bbsPhoneNumber, 12, true );
     if ( IsBBSPhoneNumberValid( bbsPhoneNumber.c_str() ) )
@@ -155,50 +155,50 @@ void AddBBSListEntryImpl()
         if ( IsBBSPhoneNumberUnique( bbsPhoneNumber.c_str() ) )
         {
             std::string bbsName, bbsSpeed, bbsType;
-            sess->bout << "|13This number can be added! It is not yet in BBS list.\r\n\n\n"
+            GetSession()->bout << "|13This number can be added! It is not yet in BBS list.\r\n\n\n"
                        << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
             inputl( bbsName, 50, true );
-            sess->bout << "\r\n|#7Enter maximum speed of the BBS:\r\n"
+            GetSession()->bout << "\r\n|#7Enter maximum speed of the BBS:\r\n"
 				       << "|#7(|#1example: 14.4,28.8, 33.6, 56k|#7)\r\n:";
             input( bbsSpeed, 4, true );
-			sess->bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
+			GetSession()->bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
             input( bbsType, 4, true );
 
             char szBbsListLine[ 255 ];
             snprintf( szBbsListLine, sizeof( szBbsListLine ), "%12s  %-50s  [%4s] (%4s)\r\n",
                      bbsPhoneNumber.c_str(), bbsName.c_str(), bbsSpeed.c_str(), bbsType.c_str() );
             nl( 2 );
-            sess->bout << szBbsListLine;
+            GetSession()->bout << szBbsListLine;
             nl( 2 );
-            sess->bout << "|10Is this information correct? ";
+            GetSession()->bout << "|10Is this information correct? ";
             if ( yesno() )
             {
                 AddBBSListLine( szBbsListLine );
-                sess->bout << "\r\n|13This entry was added to BBS list.\r\n";
+                GetSession()->bout << "\r\n|13This entry was added to BBS list.\r\n";
             }
 			nl();
         }
         else
         {
-            sess->bout << "|12Sorry, It's already in the BBS list.\r\n\n\n";
+            GetSession()->bout << "|12Sorry, It's already in the BBS list.\r\n\n\n";
         }
     }
     else
     {
-        sess->bout << "\r\n|12 Error: Please enter number in correct format.\r\n\n";
+        GetSession()->bout << "\r\n|12 Error: Please enter number in correct format.\r\n\n";
     }
 }
 
 
 void AddBBSListEntry()
 {
-    if ( sess->GetEffectiveSl() <= 10 )
+    if ( GetSession()->GetEffectiveSl() <= 10 )
     {
-        sess->bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
+        GetSession()->bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
     }
-    else if ( sess->thisuser.isRestrictionAutomessage() )
+    else if ( GetSession()->thisuser.isRestrictionAutomessage() )
     {
-        sess->bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
+        GetSession()->bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
     }
     else
     {
@@ -210,8 +210,8 @@ void AddBBSListEntry()
 
 void DeleteBBSListEntry()
 {
-    sess->bout << "\r\n|#7Please enter phone number in the following format:\r\n";
-	sess->bout << "|#1 ###-###-####\r\n:";
+    GetSession()->bout << "\r\n|#7Please enter phone number in the following format:\r\n";
+	GetSession()->bout << "|#1 ###-###-####\r\n:";
     std::string bbsPhoneNumber;
     input( bbsPhoneNumber, 12, true );
     if ( bbsPhoneNumber[3] != '-' || bbsPhoneNumber[7] != '-' )
@@ -252,17 +252,17 @@ void DeleteBBSListEntry()
         {
             WFile::Remove(szFileName);
             WFile::Rename(szTempFileName, szFileName);
-            sess->bout << "|#7* |#1Number removed.\r\n";
+            GetSession()->bout << "|#7* |#1Number removed.\r\n";
         }
         else
         {
             WFile::Remove(szTempFileName);
-            sess->bout << "|12Error: Couldn't find that in the bbslist file.\r\n";
+            GetSession()->bout << "|12Error: Couldn't find that in the bbslist file.\r\n";
 		}
     }
     else
     {
-        sess->bout << "\r\n|12Error: Please enter number in correct format.\r\n\n";
+        GetSession()->bout << "\r\n|12Error: Please enter number in correct format.\r\n\n";
     }
 }
 

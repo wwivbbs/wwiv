@@ -33,12 +33,12 @@
 void dirlist( int mode )
 {
     bool next   = false;
-    int oc      = sess->GetCurrentConferenceFileArea();
-    int os      = udir[sess->GetCurrentFileArea()].subnum;
+    int oc      = GetSession()->GetCurrentConferenceFileArea();
+    int os      = udir[GetSession()->GetCurrentFileArea()].subnum;
     int tally   = 0;
     int nd      = 0;
-    int sn      = sess->GetCurrentConferenceFileArea();
-    int en      = sess->GetCurrentConferenceFileArea();
+    int sn      = GetSession()->GetCurrentConferenceFileArea();
+    int en      = GetSession()->GetCurrentConferenceFileArea();
 	bool done   = false;
 
     do
@@ -52,7 +52,7 @@ void dirlist( int mode )
         while ( i <= en && uconfdir[i].confnum != -1 && !abort )
         {
             int i1 = 0;
-            while ( i1 < sess->num_dirs && udir[i1].subnum != -1 && !abort )
+            while ( i1 < GetSession()->num_dirs && udir[i1].subnum != -1 && !abort )
             {
                 char s[ 255 ];
                 int firstp = 0;
@@ -61,7 +61,7 @@ void dirlist( int mode )
                     p = 0;
                     firstp = i1;
                     ClearScreen();
-                    if ( uconfdir[1].confnum != -1 && okconf( &sess->thisuser ) )
+                    if ( uconfdir[1].confnum != -1 && okconf( &GetSession()->thisuser ) )
                     {
                         sprintf( s, " [ %s %c ] [ %s ] ", "Conference",
                                 dirconfs[uconfdir[i].confnum].designator,
@@ -73,7 +73,7 @@ void dirlist( int mode )
                     }
                     DisplayLiteBar( s );
                     DisplayHorizontalBar( 78, 7 );
-                    sess->bout << "|#2 Dir Qscan?     Directory Name                          Total Files\r\n";
+                    GetSession()->bout << "|#2 Dir Qscan?     Directory Name                          Total Files\r\n";
                     DisplayHorizontalBar( 78, 7 );
                 }
                 ++nd;
@@ -88,17 +88,17 @@ void dirlist( int mode )
                     scanme = "|10Yes";
                 }
                 dliscan1( nDirectoryNumber );
-                if ( udir[sess->GetCurrentFileArea()].subnum == udir[i1].subnum )
+                if ( udir[GetSession()->GetCurrentFileArea()].subnum == udir[i1].subnum )
                 {
                     sprintf( s, " |#9%3s |#9³ |12%3s |#9³|B1|15 %-40.40s |#9³ |#9%4ld|B0",
-                        udir[i1].keys, scanme.c_str(), directories[ nDirectoryNumber ].name, sess->numf );
+                        udir[i1].keys, scanme.c_str(), directories[ nDirectoryNumber ].name, GetSession()->numf );
                 }
                 else
                 {
                     sprintf( s, " |#9%3s |#9³ |12%3s |#9³ %s%-40.40s |#9³ |#9%4ld",
                             udir[i1].keys, scanme.c_str(),
                             (((mode == 1) && (directories[udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
-                            directories[ nDirectoryNumber ].name, sess->numf );
+                            directories[ nDirectoryNumber ].name, GetSession()->numf );
                 }
                 if ( okansi() )
                 {
@@ -108,10 +108,10 @@ void dirlist( int mode )
                 {
                     osan( stripcolors( s ), &abort, &next );
                 }
-                tally += sess->numf;
+                tally += GetSession()->numf;
                 int lastp = i1++;
                 nl();
-                if ( lines_listed >= sess->screenlinest - 2 && mode == 0 )
+                if ( lines_listed >= GetSession()->screenlinest - 2 && mode == 0 )
                 {
                     p = 1;
                     lines_listed = 0;
@@ -120,12 +120,12 @@ void dirlist( int mode )
                     ss = mmkey( 1, true );
                     if ( isdigit( ss[0] ) )
                     {
-                        for ( int i3 = 0; i3 < sess->num_dirs; i3++ )
+                        for ( int i3 = 0; i3 < GetSession()->num_dirs; i3++ )
                         {
                             if ( wwiv::stringUtils::IsEquals(udir[i3].keys, ss) )
                             {
-                                sess->SetCurrentFileArea( i3 );
-                                os      = udir[sess->GetCurrentFileArea()].subnum;
+                                GetSession()->SetCurrentFileArea( i3 );
+                                os      = udir[GetSession()->GetCurrentFileArea()].subnum;
                                 done    = true;
                                 abort   = true;
                             }
@@ -136,7 +136,7 @@ void dirlist( int mode )
                         switch ( ss[0] )
                         {
                         case 'Q':
-                            if ( okconf( &sess->thisuser) )
+                            if ( okconf( &GetSession()->thisuser) )
                             {
                                 setuconf(CONF_DIRS, oc, os);
                             }
@@ -154,7 +154,7 @@ void dirlist( int mode )
             {
                 i++;
             }
-            if ( !okconf( &sess->thisuser ) )
+            if ( !okconf( &GetSession()->thisuser ) )
             {
                 break;
             }
@@ -168,7 +168,7 @@ void dirlist( int mode )
         {
             p = 1;
             DisplayHorizontalBar( 78, 7 );
-            if ( okconf( &sess->thisuser ) )
+            if ( okconf( &GetSession()->thisuser ) )
             {
                 if (uconfdir[1].confnum != -1)
                 {
@@ -188,7 +188,7 @@ void dirlist( int mode )
                  wwiv::stringUtils::IsEquals( ss, "Q" ) ||
                  wwiv::stringUtils::IsEquals( ss, "\r" ) )
             {
-                if ( okconf( &sess->thisuser ) )
+                if ( okconf( &GetSession()->thisuser ) )
                 {
                     setuconf(CONF_DIRS, oc, os);
                 }
@@ -196,22 +196,22 @@ void dirlist( int mode )
             }
             if ( wwiv::stringUtils::IsEquals( ss, "J" ) )
             {
-                if ( okconf( &sess->thisuser ) )
+                if ( okconf( &GetSession()->thisuser ) )
                 {
                     jump_conf(CONF_DIRS);
                 }
-                sn = en = oc = sess->GetCurrentConferenceFileArea();
+                sn = en = oc = GetSession()->GetCurrentConferenceFileArea();
                 nd = i = 0;
                 is = false;
             }
             if ( isdigit( ss[0] ) )
             {
-                for ( int i3 = 0; i3 < sess->num_dirs; i3++ )
+                for ( int i3 = 0; i3 < GetSession()->num_dirs; i3++ )
                 {
                     if ( wwiv::stringUtils::IsEquals( udir[i3].keys, ss ) )
                     {
-                        sess->SetCurrentFileArea( i3 );
-                        os = udir[sess->GetCurrentFileArea()].subnum;
+                        GetSession()->SetCurrentFileArea( i3 );
+                        os = udir[GetSession()->GetCurrentFileArea()].subnum;
                         done = true;
                     }
                 }
@@ -220,7 +220,7 @@ void dirlist( int mode )
         }
         else
         {
-            if ( okconf( &sess->thisuser ) )
+            if ( okconf( &GetSession()->thisuser ) )
             {
                 setuconf(CONF_DIRS, oc, os);
             }

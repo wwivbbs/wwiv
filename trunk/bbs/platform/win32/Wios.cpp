@@ -215,7 +215,7 @@ unsigned int WIOSerial::open()
 
 
     this->dtr( true );
-    sess->hCommHandle = hComm;
+    GetSession()->hCommHandle = hComm;
 
     // Make sure our signal event is not set to the "signaled" state
     hReadStopEvent = CreateEvent(NULL, true, false, NULL);
@@ -642,7 +642,7 @@ unsigned int __stdcall WIOSerial::InboundSerialProc(LPVOID pSerialVoid)
     bool        fWaitingOnRead  = false;
     bool        bDone           = false;
     OVERLAPPED  osReader        = {0};
-	HANDLE      hComm			= static_cast<HANDLE>( sess->hCommHandle );
+	HANDLE      hComm			= static_cast<HANDLE>( GetSession()->hCommHandle );
 	int			loopNum			= 0;
     HANDLE      hArray[2];
     char        szBuf[READ_BUF_SIZE+1];

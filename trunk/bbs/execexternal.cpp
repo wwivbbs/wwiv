@@ -50,10 +50,10 @@ int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
     create_chain_file();
 
     // get ready to run it
-    if ( sess->IsUserOnline() )
+    if ( GetSession()->IsUserOnline() )
 	{
-        sess->WriteCurrentUser( sess->usernum );
-        write_qscn(sess->usernum, qsc, false);
+        GetSession()->WriteCurrentUser( GetSession()->usernum );
+        write_qscn(GetSession()->usernum, qsc, false);
     }
     close_strfiles();
     GetApplication()->GetLocalIO()->set_global_handle( false );
@@ -61,7 +61,7 @@ int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
     // extra processing for net programs
     if (nFlags & EFLAG_NETPROG)
     {
-        write_inst(INST_LOC_NET, sess->GetNetworkNumber() + 1, INST_FLAGS_NONE);
+        write_inst(INST_LOC_NET, GetSession()->GetNetworkNumber() + 1, INST_FLAGS_NONE);
     }
 
     // Execute the program and make sure the workingdir is reset
@@ -69,10 +69,10 @@ int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
     GetApplication()->CdHome();
 
     // Reread the user record.
-    if ( sess->IsUserOnline() )
+    if ( GetSession()->IsUserOnline() )
 	{
-        GetApplication()->GetUserManager()->ReadUser( &sess->thisuser, sess->usernum, true );
-        read_qscn( sess->usernum, qsc, false, true );
+        GetApplication()->GetUserManager()->ReadUser( &GetSession()->thisuser, GetSession()->usernum, true );
+        read_qscn( GetSession()->usernum, qsc, false, true );
         GetApplication()->GetLocalIO()->UpdateTopScreen();
     }
 

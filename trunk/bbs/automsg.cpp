@@ -38,7 +38,7 @@ void read_automessage()
 
     if ( !file.Open( WFile::modeReadOnly | WFile::modeBinary ) )
     {
-        sess->bout << "|13No auto-message.\r\n";
+        GetSession()->bout << "|13No auto-message.\r\n";
     }
     else
     {
@@ -86,7 +86,7 @@ void read_automessage()
         char szAuthorName[ 81 ];
         if ( anon )
         {
-            if ( getslrec( sess->GetEffectiveSl() ).ability & ability_read_post_anony )
+            if ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_read_post_anony )
             {
                 sprintf(szAuthorName, "<<< %s >>>", &(l[0][0]));
             }
@@ -99,12 +99,12 @@ void read_automessage()
         {
             strcpy( szAuthorName, &(l[ 0 ][ 0 ]) );
         }
-        sess->bout << "\r\n|#9Auto message by: |#2" << szAuthorName << "|#0\r\n\n";
+        GetSession()->bout << "\r\n|#9Auto message by: |#2" << szAuthorName << "|#0\r\n\n";
         int nLineNum = 1;
         while ( ptrend[ nLineNum ] && nLineNum < 6 )
         {
             ansic( 9 );
-            sess->bout << &( l[ nLineNum ][ 0 ] );
+            GetSession()->bout << &( l[ nLineNum ][ 0 ] );
 			nl();
             ++nLineNum;
         }
@@ -122,32 +122,32 @@ void write_automessage1()
 
     szRollOverLine[ 0 ] = '\0';
 
-    sess->bout << "\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n";
+    GetSession()->bout << "\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n";
     for (int i = 0; i < 5; i++)
     {
-        sess->bout << "|#7" << i + 1 << ":|#0";
+        GetSession()->bout << "|#7" << i + 1 << ":|#0";
         inli( &(l[i][0]), szRollOverLine, 70, true, false );
         strcat( &(l[i][0]), "\r\n" );
     }
     nl();
     int nAnonStatus = 0;
-    if ( getslrec( sess->GetEffectiveSl() ).ability & ability_post_anony )
+    if ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_post_anony )
     {
-        sess->bout << "|#9Anonymous? ";
+        GetSession()->bout << "|#9Anonymous? ";
         nAnonStatus = yesno() ? anony_sender : 0;
     }
 
-    sess->bout << "|#9Is this OK? ";
+    GetSession()->bout << "|#9Is this OK? ";
     if ( yesno() )
     {
         GetApplication()->GetStatusManager()->Lock();
         status.amsganon = static_cast<char>( nAnonStatus );
-        status.amsguser = static_cast<unsigned short>( sess->usernum );
+        status.amsguser = static_cast<unsigned short>( GetSession()->usernum );
         GetApplication()->GetStatusManager()->Write();
         WFile file( syscfg.gfilesdir, AUTO_MSG );
         file.Open( WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
         char szAuthorName[ 81 ];
-		sprintf( szAuthorName, "%s\r\n", sess->thisuser.GetUserNameAndNumber( sess->usernum ) );
+		sprintf( szAuthorName, "%s\r\n", GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) );
         file.Write( szAuthorName, strlen( szAuthorName ) );
         for (int j = 0; j < 5; j++)
         {
@@ -162,7 +162,7 @@ void write_automessage1()
             strcat(szLogLine, &(l[k][0]));
             sysoplog(szLogLine);
         }
-        sess->bout << "\r\n|10Auto-message saved.\r\n\n";
+        GetSession()->bout << "\r\n|10Auto-message saved.\r\n\n";
         file.Close();
     }
 }
@@ -171,25 +171,25 @@ void write_automessage1()
 char ShowAMsgMenuAndGetInput( const char *pszAutoMessageLockFileName )
 {
     bool bCanWrite = false;
-    if ( !sess->thisuser.isRestrictionAutomessage() && !WFile::Exists( pszAutoMessageLockFileName ) )
+    if ( !GetSession()->thisuser.isRestrictionAutomessage() && !WFile::Exists( pszAutoMessageLockFileName ) )
     {
-        bCanWrite = ( getslrec( sess->GetEffectiveSl() ).posts ) ? true : false;
+        bCanWrite = ( getslrec( GetSession()->GetEffectiveSl() ).posts ) ? true : false;
     }
 
     char cmdKey = 0;
     if (cs())
     {
-        sess->bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, (|#2D|#9)el, (|#2U|#9)nlock : ";
+        GetSession()->bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, (|#2D|#9)el, (|#2U|#9)nlock : ";
         cmdKey = onek( "QRWALDU", true );
     }
     else if (bCanWrite)
     {
-        sess->bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite : ";
+        GetSession()->bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite : ";
         cmdKey = onek( "QRWA", true );
     }
     else
     {
-        sess->bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply : ";
+        GetSession()->bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply : ";
         cmdKey = onek( "QRA", true );
     }
     return cmdKey;
@@ -233,7 +233,7 @@ void do_automessage()
             }
             break;
         case 'D':
-            sess->bout << "\r\n|13Delete Auto-message, Are you sure? ";
+            GetSession()->bout << "\r\n|13Delete Auto-message, Are you sure? ";
             if (yesno())
             {
                 WFile::Remove(aMsgFile);
@@ -243,11 +243,11 @@ void do_automessage()
         case 'L':
             if (WFile::Exists(aMsgLockFile))
             {
-                sess->bout << "\r\n|13Message is already locked.\r\n\n";
+                GetSession()->bout << "\r\n|13Message is already locked.\r\n\n";
             }
             else
             {
-                sess->bout <<  "|#9Do you want to lock the Auto-message? ";
+                GetSession()->bout <<  "|#9Do you want to lock the Auto-message? ";
                 if ( yesno() )
                 {
                     /////////////////////////////////////////////////////////
@@ -264,11 +264,11 @@ void do_automessage()
         case 'U':
             if (!WFile::Exists(aMsgLockFile))
             {
-                sess->bout << "Message not locked.\r\n";
+                GetSession()->bout << "Message not locked.\r\n";
             }
             else
             {
-                sess->bout << "|#5Unlock message? ";
+                GetSession()->bout << "|#5Unlock message? ";
                 if (yesno())
                 {
                     WFile::Remove(aMsgLockFile);

@@ -199,13 +199,10 @@ __EXTRN__ int iia;
 
 __EXTRN__ long last_iia;
 
-#ifndef NOT_BBS
-#include "bbs.h"
-#include "WSession.h"
-
-__EXTRN__ WBbsApp *app;
-__EXTRN__  WSession *sess;
-#endif // NOT_BBS
+//#ifndef NOT_BBS
+//#include "bbs.h"
+//#include "WSession.h"
+//#endif // NOT_BBS
 
 // from version.cpp
 extern const char *wwiv_version;

@@ -142,10 +142,10 @@ bool CheckForHangup()
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of hangup
 {
-    if ( !hangup && sess->using_modem && !GetApplication()->GetComm()->carrier() )
+    if ( !hangup && GetSession()->using_modem && !GetApplication()->GetComm()->carrier() )
     {
         hangup = hungup = true;
-        if ( sess->IsUserOnline() )
+        if ( GetSession()->IsUserOnline() )
         {
             sysoplog( "Hung Up." );
             std::cout << "Hung Up!";
@@ -236,7 +236,7 @@ void nl( int nNumLines )
     {
         if (endofline[0])
 	    {
-            sess->bout << endofline;
+            GetSession()->bout << endofline;
             endofline[0] = 0;
         }
         bputs("\r\n");
@@ -270,9 +270,9 @@ void setc( int nColor )
 
 void resetnsp()
 {
-    if ( nsp == 1 && !( sess->thisuser.hasPause() ) )
+    if ( nsp == 1 && !( GetSession()->thisuser.hasPause() ) )
     {
-        sess->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+        GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
     }
     nsp=0;
 }
@@ -310,7 +310,7 @@ void mpl( int nNumberOfChars )
             bputch( ' ', true );
         }
         FlushOutComChBuffer();
-        sess->bout << "\x1b[" << nNumberOfChars << "D";
+        GetSession()->bout << "\x1b[" << nNumberOfChars << "D";
     }
 }
 
@@ -326,10 +326,10 @@ char getkey()
     timelastchar1 = timer1();
 
     using namespace wwiv::stringUtils;
-    long tv = ( so() || IsEqualsIgnoreCase( sess->GetCurrentSpeed().c_str(), "TELNET" ) ) ? 10920L : 3276L;
+    long tv = ( so() || IsEqualsIgnoreCase( GetSession()->GetCurrentSpeed().c_str(), "TELNET" ) ) ? 10920L : 3276L;
     long tv1 = tv - 1092L;     // change 4.31 Build3
 
-    if ( !sess->tagging || sess->thisuser.isUseNoTagging() )
+    if ( !GetSession()->tagging || GetSession()->thisuser.isUseNoTagging() )
     {
         lines_listed = 0;
     }
@@ -380,7 +380,7 @@ char getkey()
             if (labs(dd - timelastchar1) > tv)
             {
                 nl();
-                sess->bout << "Call back later when you are there.\r\n";
+                GetSession()->bout << "Call back later when you are there.\r\n";
                 hangup = true;
             }
             CheckForHangup();
@@ -398,7 +398,7 @@ static void print_yn(int i)
 
     if (num_strings(i))
     {
-        sess->bout << getrandomstring(i);
+        GetSession()->bout << getrandomstring(i);
 		nl();
     }
     else
@@ -407,10 +407,10 @@ static void print_yn(int i)
 	switch (i)
 	{
 	case 2:
-		sess->bout << YesNoString( true );
+		GetSession()->bout << YesNoString( true );
 		break;
 	case 3:
-		sess->bout << YesNoString( false );
+		GetSession()->bout << YesNoString( false );
 		break;
 	}
 	nl();
@@ -486,7 +486,7 @@ char ynq()
     else if ( ch == *str_quit )
     {
         ch = 'Q';
-        sess->bout << str_quit;
+        GetSession()->bout << str_quit;
 		nl();
     }
     else
@@ -504,18 +504,18 @@ void ansic(int wwivColor)
 
     if ( wwivColor <= -1 && wwivColor >= -16 )
     {
-        c = ( sess->thisuser.hasColor() ?
-        rescolor.resx[207 + abs(wwivColor)] : sess->thisuser.GetBWColor( 0 ) );
+        c = ( GetSession()->thisuser.hasColor() ?
+        rescolor.resx[207 + abs(wwivColor)] : GetSession()->thisuser.GetBWColor( 0 ) );
     }
     if ( wwivColor >= 0 && wwivColor <= 9 )
     {
-        c = ( sess->thisuser.hasColor() ?
-        sess->thisuser.GetColor( wwivColor ) : sess->thisuser.GetBWColor( wwivColor ) );
+        c = ( GetSession()->thisuser.hasColor() ?
+        GetSession()->thisuser.GetColor( wwivColor ) : GetSession()->thisuser.GetBWColor( wwivColor ) );
     }
     if ( wwivColor >= 10 && wwivColor <= 207 )
     {
-        c = ( sess->thisuser.hasColor() ?
-        rescolor.resx[wwivColor - 10] : sess->thisuser.GetBWColor( 0 ) );
+        c = ( GetSession()->thisuser.hasColor() ?
+        rescolor.resx[wwivColor - 10] : GetSession()->thisuser.GetBWColor( 0 ) );
     }
     if ( c == curatr )
     {
@@ -524,8 +524,8 @@ void ansic(int wwivColor)
 
     setc( c );
 
-    makeansi( sess->thisuser.hasColor() ?
-        sess->thisuser.GetColor( 0 ) : sess->thisuser.GetBWColor( 0 ), endofline, false );
+    makeansi( GetSession()->thisuser.hasColor() ?
+        GetSession()->thisuser.GetColor( 0 ) : GetSession()->thisuser.GetBWColor( 0 ), endofline, false );
 }
 
 char onek( const char *pszAllowableChars, bool bAutoMpl )
@@ -544,15 +544,15 @@ char onek( const char *pszAllowableChars, bool bAutoMpl )
 void reset_colors()
 {
     // ANSI Clear Attributes String
-    sess->bout << "\x1b[0m";
+    GetSession()->bout << "\x1b[0m";
 }
 
 void goxy(int x, int y)
 {
     if ( okansi() )
     {
-		y = std::min<int>( y, sess->screenlinest );	// Don't get Y get too big or mTelnet will not be happy
-        sess->bout << "\x1b[" << y << ";" << x << "H";
+		y = std::min<int>( y, GetSession()->screenlinest );	// Don't get Y get too big or mTelnet will not be happy
+        GetSession()->bout << "\x1b[" << y << ";" << x << "H";
     }
 }
 char onek1(const char *pszAllowableChars)
@@ -651,13 +651,13 @@ void DisplayLiteBar( const char *pszFormatText,... )
     if ( okansi() )
     {
         snprintf( s1, sizeof( s1 ), "%s%s%s", charstr( i, ' ' ), stripcolors( s ), charstr( i, ' ' ) );
-		sess->bout << "\x1B[0;1;37m" << charstr( strlen( s1 ) + 4, 'Ü' ) << wwiv::endl;
-        sess->bout << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
-		sess->bout << "\x1B[0;1;30m" << charstr( strlen( s1 ) + 4, 'ß' ) << wwiv::endl;
+		GetSession()->bout << "\x1B[0;1;37m" << charstr( strlen( s1 ) + 4, 'Ü' ) << wwiv::endl;
+        GetSession()->bout << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
+		GetSession()->bout << "\x1B[0;1;30m" << charstr( strlen( s1 ) + 4, 'ß' ) << wwiv::endl;
     }
     else
     {
-		sess->bout << charstr( i, ' ' ) << s << wwiv::endl;
+		GetSession()->bout << charstr( i, ' ' ) << s << wwiv::endl;
     }
 }
 

@@ -80,7 +80,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
 
         if (bTitle)
         {
-			sess->bout << "Directory  : " << directories[dn].name << wwiv::endl;
+			GetSession()->bout << "Directory  : " << directories[dn].name << wwiv::endl;
         }
         bOkToDL = printfileinfo(&u, dn);
 
@@ -98,7 +98,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
         }
         if ( bOkToDL || bFreeDL )
         {
-            write_inst( INST_LOC_DOWNLOAD, udir[sess->GetCurrentFileArea()].subnum, INST_FLAGS_NONE );
+            write_inst( INST_LOC_DOWNLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE );
             sprintf( s1, "%s%s", directories[dn].path, u.filename );
             if (directories[dn].mask & mask_cdrom)
             {
@@ -123,8 +123,8 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
             {
                 if (!bFreeDL)
                 {
-                    sess->thisuser.SetFilesDownloaded( sess->thisuser.GetFilesDownloaded() + 1 );
-                    sess->thisuser.SetDownloadK( sess->thisuser.GetDownloadK() + static_cast<int>( bytes_to_k( u.numbytes ) ) );
+                    GetSession()->thisuser.SetFilesDownloaded( GetSession()->thisuser.GetFilesDownloaded() + 1 );
+                    GetSession()->thisuser.SetDownloadK( GetSession()->thisuser.GetDownloadK() + static_cast<int>( bytes_to_k( u.numbytes ) ) );
                 }
                 ++u.numdloads;
 				fileDownload.Open( WFile::modeBinary|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
@@ -142,7 +142,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
                         if ( date_to_daten( ur.GetFirstOn() ) < static_cast<time_t>( u.daten ) )
                         {
                             ssm( u.ownerusr, 0, "%s downloaded '%s' on %s",
-                                 sess->thisuser.GetUserNameAndNumber( sess->usernum ),
+                                 GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
                                  u.filename, date() );
                         }
                     }
@@ -152,14 +152,14 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
             nl( 2 );
             bprintf("Your ratio is now: %-6.3f\r\n", ratio());
 
-            if ( sess->IsUserOnline() )
+            if ( GetSession()->IsUserOnline() )
             {
                 GetApplication()->GetLocalIO()->UpdateTopScreen();
             }
         }
         else
         {
-            sess->bout << "\r\n\nNot enough time left to D/L.\r\n";
+            GetSession()->bout << "\r\n\nNot enough time left to D/L.\r\n";
         }
         if (abort)
         {
@@ -176,7 +176,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
 
 int FindDN( char *pszDownloadFileName )
 {
-    for (int i = 0; (i < sess->num_dirs); i++)
+    for (int i = 0; (i < GetSession()->num_dirs); i++)
     {
         if ( wwiv::stringUtils::IsEqualsIgnoreCase( directories[i].filename, pszDownloadFileName ) )
         {
@@ -219,7 +219,7 @@ bool MenuRunDoorNumber(int nDoorNumber, int bFree)
 
 int FindDoorNo( char *pszDoor )
 {
-    for ( int i = 0; i < sess->GetNumberOfChains(); i++ )
+    for ( int i = 0; i < GetSession()->GetNumberOfChains(); i++ )
     {
         if ( wwiv::stringUtils::IsEqualsIgnoreCase( chains[i].description, pszDoor ) )
         {
@@ -240,12 +240,12 @@ bool ValidateDoorAccess( int nDoorNumber )
 		sprintf( szChainInUse,  "|#2Chain %s is in use on instance %d.  ", chains[nDoorNumber].description, inst );
         if (!(chains[nDoorNumber].ansir & ansir_multi_user))
         {
-            sess->bout << szChainInUse << " Try again later.\r\n";
+            GetSession()->bout << szChainInUse << " Try again later.\r\n";
             return false;
         }
         else
         {
-            sess->bout << szChainInUse << " Care to join in? ";
+            GetSession()->bout << szChainInUse << " Care to join in? ";
             if (!(yesno()))
             {
                 return false;
@@ -257,24 +257,24 @@ bool ValidateDoorAccess( int nDoorNumber )
     {
         return false;
     }
-    if ((c.ansir & ansir_local_only) && (sess->using_modem))
+    if ((c.ansir & ansir_local_only) && (GetSession()->using_modem))
     {
         return false;
     }
-    if (c.sl > sess->GetEffectiveSl())
+    if (c.sl > GetSession()->GetEffectiveSl())
     {
         return false;
     }
-    if ( c.ar && !sess->thisuser.hasArFlag( c.ar ) )
+    if ( c.ar && !GetSession()->thisuser.hasArFlag( c.ar ) )
     {
         return false;
     }
-    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg && sess->GetEffectiveSl() < 255 )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg && GetSession()->GetEffectiveSl() < 255 )
     {
         chainregrec r = chains_reg[ nDoorNumber ];
         if ( r.maxage )
         {
-            if ( r.minage > sess->thisuser.GetAge() || r.maxage < sess->thisuser.GetAge() )
+            if ( r.minage > GetSession()->thisuser.GetAge() || r.maxage < GetSession()->thisuser.GetAge() )
             {
                 return false;
             }
@@ -290,14 +290,14 @@ bool ValidateDoorAccess( int nDoorNumber )
 /* ----------------------- */
 void ChangeSubNumber()
 {
-    sess->bout << "|#7Select Sub number : |#0";
+    GetSession()->bout << "|#7Select Sub number : |#0";
 
     char* s = mmkey( 0 );
-    for (int i = 0; (i < sess->num_subs) && (usub[i].subnum != -1); i++)
+    for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1); i++)
     {
         if ( wwiv::stringUtils::IsEquals( usub[i].keys, s ) )
         {
-            sess->SetCurrentMessageArea( i );
+            GetSession()->SetCurrentMessageArea( i );
         }
     }
 }
@@ -308,7 +308,7 @@ void ChangeDirNumber()
     bool done = false;
     while (!done && !hangup)
     {
-        sess->bout << "|#7Select Dir number : |#0";
+        GetSession()->bout << "|#7Select Dir number : |#0";
 
         char* s = mmkey( 1 );
 
@@ -318,11 +318,11 @@ void ChangeDirNumber()
             nl();
             continue;
         }
-        for (int i = 0; i < sess->num_dirs; i++)
+        for (int i = 0; i < GetSession()->num_dirs; i++)
         {
             if ( wwiv::stringUtils::IsEquals( udir[i].keys, s ) )
             {
-                sess->SetCurrentFileArea( i );
+                GetSession()->SetCurrentFileArea( i );
                 done = true;
             }
         }
@@ -392,7 +392,7 @@ void ReadMessages()
 {
     char szWhere[15];
 
-    sess->bout << "\r\n|#8Which messages?\r\n|#7(N)ew (A)ll (Q)uit : ";
+    GetSession()->bout << "\r\n|#8Which messages?\r\n|#7(N)ew (A)ll (Q)uit : ";
     int iWhich = onek("QNA");
     if (iWhich == 'Q')
     {
@@ -401,8 +401,8 @@ void ReadMessages()
 
     while (!hangup)
     {
-        sess->bout << "|#8Which Subs?\r\n";
-        sess->bout << "|#7(S)elected  (A)ll Subs  (L)ist  (Q)uit or Sub# : |#0";
+        GetSession()->bout << "|#8Which Subs?\r\n";
+        GetSession()->bout << "|#7(S)elected  (A)ll Subs  (L)ist  (Q)uit or Sub# : |#0";
 
         input(szWhere, 3);
 
@@ -448,21 +448,21 @@ void ReadMessages()
         }
         if (isdigit(szWhere[0]))
         {
-            for (int iTemp = 0; (iTemp < sess->num_subs) && (usub[iTemp].subnum != -1); iTemp++)
+            for (int iTemp = 0; (iTemp < GetSession()->num_subs) && (usub[iTemp].subnum != -1); iTemp++)
             {
                 if ( wwiv::stringUtils::IsEquals( usub[iTemp].keys, szWhere ) )
                 {
-                    sess->SetCurrentMessageArea( iTemp );
+                    GetSession()->SetCurrentMessageArea( iTemp );
 
                     if ( iWhich == 'N' )
                     {
                         // read new messages in the current sub
-                        ReadSelectedMessages( RM_QSCAN_MSGS, sess->GetCurrentMessageArea() );
+                        ReadSelectedMessages( RM_QSCAN_MSGS, GetSession()->GetCurrentMessageArea() );
                     }
                     if ( iWhich == 'A' )
                     {
                         // Read all messages in the current sub
-                        ReadSelectedMessages( RM_ALL_MSGS, sess->GetCurrentMessageArea() );
+                        ReadSelectedMessages( RM_ALL_MSGS, GetSession()->GetCurrentMessageArea() );
                     }
                 }
             }
@@ -474,7 +474,7 @@ void ReadMessages()
 
 void ReadSelectedMessages(int iWhich, int iWhere)
 {
-    int iSaveSub = sess->GetCurrentMessageArea();
+    int iSaveSub = GetSession()->GetCurrentMessageArea();
     int i, nextsub;
     bool abort, next;
 
@@ -486,11 +486,11 @@ void ReadSelectedMessages(int iWhich, int iWhere)
 
         nextsub = 1;
 
-		sess->bout << "|#3-=< Q-Scan All >=-\r\n";
-        for (i = 0; (usub[i].subnum != -1) && (i < sess->num_subs) && (nextsub) && (!hangup); i++)
+		GetSession()->bout << "|#3-=< Q-Scan All >=-\r\n";
+        for (i = 0; (usub[i].subnum != -1) && (i < GetSession()->num_subs) && (nextsub) && (!hangup); i++)
         {
-            sess->SetCurrentMessageArea( i );
-            iscan( sess->GetCurrentMessageArea() );
+            GetSession()->SetCurrentMessageArea( i );
+            iscan( GetSession()->GetCurrentMessageArea() );
             if (iWhere == RM_QSCAN_SUBS)
             {
                 if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32)))
@@ -523,11 +523,11 @@ void ReadSelectedMessages(int iWhich, int iWhere)
                 nextsub = 0;
         }
         nl();
-        sess->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
+        GetSession()->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
         break;
 
     default:                                /* sub # */
-        sess->SetCurrentMessageArea( iWhere );
+        GetSession()->SetCurrentMessageArea( iWhere );
 
         if ( iWhich == RM_QSCAN_MSGS )
         {
@@ -540,6 +540,6 @@ void ReadSelectedMessages(int iWhich, int iWhere)
         break;
     }
 
-    sess->SetCurrentMessageArea( iSaveSub );
-    iscan( sess->GetCurrentMessageArea() );
+    GetSession()->SetCurrentMessageArea( iSaveSub );
+    iscan( GetSession()->GetCurrentMessageArea() );
 }

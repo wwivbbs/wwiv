@@ -342,7 +342,7 @@ bool copyfile(const char *pszSourceFileName, const char *pszDestFileName, bool s
 {
 	if ( stats )
 	{
-		sess->bout << "|#7File movement ";
+		GetSession()->bout << "|#7File movement ";
 	}
 
 	WWIV_ASSERT(pszSourceFileName);

@@ -60,12 +60,12 @@ void showdirs()
 	char s[180], s1[21];
 
 	ClearScreen();
-	sess->bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
+	GetSession()->bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
 	input( s1, 20, true );
 	bool abort = false;
 	pla("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
 	pla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
-	for (int i = 0; i < sess->num_dirs && !abort; i++)
+	for (int i = 0; i < GetSession()->num_dirs && !abort; i++)
 	{
 		sprintf(s, "%s %s", directories[i].name, directories[i].filename);
 		if (stristr(s, s1))
@@ -115,26 +115,26 @@ void modify_dir(int n)
 		bprintf("%-85s", szSubNum);
         ansic( 0 );
 		nl( 2 );
-		sess->bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
-		sess->bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
-		sess->bout << "|#9C) Path       : |#2" << r.path << wwiv::endl;
-		sess->bout << "|#9D) DSL        : |#2" << static_cast<int>( r.dsl ) << wwiv::endl;
-		sess->bout << "|#9E) Min. Age   : |#2" << static_cast<int>( r.age ) << wwiv::endl;
-		sess->bout << "|#9F) Max Files  : |#2" << r.maxfiles << wwiv::endl;
-		sess->bout << "|#9G) DAR        : |#2" << GetAttributeString( r, s )  << wwiv::endl;
-		sess->bout << "|#9H) Require PD : |#2" << YesNoString( ( r.mask & mask_PD ) ? true : false ) << wwiv::endl;
-		sess->bout << "|#9I) Dir Type   : |#2" <<  r.type << wwiv::endl;
-		sess->bout << "|#9J) Uploads    : |#2" << ( ( r.mask & mask_no_uploads ) ? "Disallowed" : "Allowed" ) << wwiv::endl;
-		sess->bout << "|#9K) Arch. only : |#2" << YesNoString( ( r.mask & mask_archive ) ? true : false ) << wwiv::endl;
-        sess->bout << "|#9L) Drive Type : |#2" << ( ( r.mask & mask_cdrom ) ? "|13CD ROM" : "HARD DRIVE" ) << wwiv::endl;
+		GetSession()->bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
+		GetSession()->bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
+		GetSession()->bout << "|#9C) Path       : |#2" << r.path << wwiv::endl;
+		GetSession()->bout << "|#9D) DSL        : |#2" << static_cast<int>( r.dsl ) << wwiv::endl;
+		GetSession()->bout << "|#9E) Min. Age   : |#2" << static_cast<int>( r.age ) << wwiv::endl;
+		GetSession()->bout << "|#9F) Max Files  : |#2" << r.maxfiles << wwiv::endl;
+		GetSession()->bout << "|#9G) DAR        : |#2" << GetAttributeString( r, s )  << wwiv::endl;
+		GetSession()->bout << "|#9H) Require PD : |#2" << YesNoString( ( r.mask & mask_PD ) ? true : false ) << wwiv::endl;
+		GetSession()->bout << "|#9I) Dir Type   : |#2" <<  r.type << wwiv::endl;
+		GetSession()->bout << "|#9J) Uploads    : |#2" << ( ( r.mask & mask_no_uploads ) ? "Disallowed" : "Allowed" ) << wwiv::endl;
+		GetSession()->bout << "|#9K) Arch. only : |#2" << YesNoString( ( r.mask & mask_archive ) ? true : false ) << wwiv::endl;
+        GetSession()->bout << "|#9L) Drive Type : |#2" << ( ( r.mask & mask_cdrom ) ? "|13CD ROM" : "HARD DRIVE" ) << wwiv::endl;
 		if ( r.mask & mask_cdrom )
 		{
-			sess->bout << "|#9M) Available  : |#2" << YesNoString( ( r.mask & mask_offline ) ? true : false ) << wwiv::endl;
+			GetSession()->bout << "|#9M) Available  : |#2" << YesNoString( ( r.mask & mask_offline ) ? true : false ) << wwiv::endl;
 		}
-		sess->bout << "|#9N) //UPLOADALL: |#2" << YesNoString( ( r.mask & mask_uploadall ) ? true : false ) << wwiv::endl;
-		sess->bout << "|#9O) WWIV Reg   : |#2" << YesNoString( ( r.mask & mask_wwivreg ) ? true : false ) << wwiv::endl;
+		GetSession()->bout << "|#9N) //UPLOADALL: |#2" << YesNoString( ( r.mask & mask_uploadall ) ? true : false ) << wwiv::endl;
+		GetSession()->bout << "|#9O) WWIV Reg   : |#2" << YesNoString( ( r.mask & mask_wwivreg ) ? true : false ) << wwiv::endl;
 		nl();
-		sess->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1M|#7,|#1[|#7,|#1]|#7) : ";
+		GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1M|#7,|#1[|#7,|#1]|#7) : ";
 		ch = onek( "QABCDEFGHIJKLMNO[]", true );
 		switch (ch)
 		{
@@ -145,13 +145,13 @@ void modify_dir(int n)
 			directories[n] = r;
 			if (--n < 0)
 			{
-				n = sess->num_dirs - 1;
+				n = GetSession()->num_dirs - 1;
 			}
 			r = directories[n];
 			break;
 		case ']':
 			directories[n] = r;
-			if (++n >= sess->num_dirs)
+			if (++n >= GetSession()->num_dirs)
 			{
 				n = 0;
 			}
@@ -159,7 +159,7 @@ void modify_dir(int n)
 			break;
 		case 'A':
 			nl();
-			sess->bout << "|#2New name? ";
+			GetSession()->bout << "|#2New name? ";
 			Input1(s, r.name, 40, true, MIXED);
 			if (s[0])
 			{
@@ -168,7 +168,7 @@ void modify_dir(int n)
 			break;
 		case 'B':
 			nl();
-			sess->bout << "|#2New filename? ";
+			GetSession()->bout << "|#2New filename? ";
 			Input1(s, r.filename, 8, true, FILE_NAME);
 			if ((s[0] != 0) && (strchr(s, '.') == 0))
 			{
@@ -177,11 +177,11 @@ void modify_dir(int n)
 			break;
 		case 'C':
 			nl();
-			sess->bout << "|#9Enter new path, optionally with drive specifier.\r\n" <<
+			GetSession()->bout << "|#9Enter new path, optionally with drive specifier.\r\n" <<
 						  "|#9No backslash on end.\r\n\n" <<
 						  "|#9The current path is:\r\n" <<
 						  "|#1" << r.path << wwiv::endl << wwiv::endl;
-			sess->bout << " \b";
+			GetSession()->bout << " \b";
 			Input1(s, r.path, 79, true, MIXED);
 			if (s[0])
 			{
@@ -190,7 +190,7 @@ void modify_dir(int n)
 					GetApplication()->CdHome();
 					if (mkdir(s))
 					{
-						sess->bout << "|#6Unable to create or change to directory." << wwiv::endl;
+						GetSession()->bout << "|#6Unable to create or change to directory." << wwiv::endl;
 						pausescr();
 						s[0] = 0;
 					}
@@ -207,8 +207,8 @@ void modify_dir(int n)
 					}
 					strcpy(r.path, s);
                     nl( 2 );
-					sess->bout << "|13The path for this directory is changed.\r\n";
-                    sess->bout << "|#9If there are any files in it, you must manually move them to the new directory.\r\n";
+					GetSession()->bout << "|13The path for this directory is changed.\r\n";
+                    GetSession()->bout << "|#9If there are any files in it, you must manually move them to the new directory.\r\n";
                     pausescr();
 				}
 			}
@@ -216,7 +216,7 @@ void modify_dir(int n)
 		case 'D':
 			{
 				nl();
-				sess->bout << "|#2New DSL? ";
+				GetSession()->bout << "|#2New DSL? ";
 				input(s, 3);
 				int dsl = atoi( s );
 				if ( dsl >= 0 && dsl < 256 && s[0] )
@@ -228,7 +228,7 @@ void modify_dir(int n)
 		case 'E':
 			{
 				nl();
-				sess->bout << "|#2New Min Age? ";
+				GetSession()->bout << "|#2New Min Age? ";
 				input(s, 3);
 				int age = atoi( s );
 				if ( age >= 0 && age < 128 && s[0] )
@@ -239,7 +239,7 @@ void modify_dir(int n)
 			break;
 		case 'F':
 			nl();
-			sess->bout << "|#2New max files? ";
+			GetSession()->bout << "|#2New max files? ";
 			input(s, 4);
 			i = atoi(s);
 			if ((i > 0) && (i < 10000) && (s[0]))
@@ -249,7 +249,7 @@ void modify_dir(int n)
 			break;
 		case 'G':
 			nl();
-			sess->bout << "|#2New DAR (<SPC>=None) ? ";
+			GetSession()->bout << "|#2New DAR (<SPC>=None) ? ";
 			ch2 = onek("ABCDEFGHIJKLMNOP ");
 			if (ch2 == SPACE)
 			{
@@ -264,7 +264,7 @@ void modify_dir(int n)
 			r.mask ^= mask_PD;
 			break;
 		case 'I':
-			sess->bout << "|#2New Dir Type? ";
+			GetSession()->bout << "|#2New Dir Type? ";
 			input(s, 4);
 			i = atoi(s);
 			if ((s[0]) && (i != r.type))
@@ -301,7 +301,7 @@ void modify_dir(int n)
 		case 'O':
 			r.mask &= ~mask_wwivreg;
 			nl();
-			sess->bout << "|#5Require WWIV registration? ";
+			GetSession()->bout << "|#5Require WWIV registration? ";
 			if (yesno())
 			{
 				r.mask |= mask_wwivreg;
@@ -319,7 +319,7 @@ void swap_dirs(int dir1, int dir2)
 	SUBCONF_TYPE dir1conv = static_cast<SUBCONF_TYPE>( dir1 );
 	SUBCONF_TYPE dir2conv = static_cast<SUBCONF_TYPE>( dir2 );
 
-	if ( dir1 < 0 || dir1 >= sess->num_dirs || dir2 < 0 || dir2 >= sess->num_dirs )
+	if ( dir1 < 0 || dir1 >= GetSession()->num_dirs || dir2 < 0 || dir2 >= GetSession()->num_dirs )
 	{
 		return;
 	}
@@ -365,9 +365,9 @@ void swap_dirs(int dir1, int dir2)
 	directories[dir1] = directories[dir2];
 	directories[dir2] = drt;
 
-	unsigned long tl = sess->m_DirectoryDateCache[dir1];
-	sess->m_DirectoryDateCache[dir1] = sess->m_DirectoryDateCache[dir2];
-	sess->m_DirectoryDateCache[dir2] = tl;
+	unsigned long tl = GetSession()->m_DirectoryDateCache[dir1];
+	GetSession()->m_DirectoryDateCache[dir1] = GetSession()->m_DirectoryDateCache[dir2];
+	GetSession()->m_DirectoryDateCache[dir2] = tl;
 }
 
 
@@ -375,7 +375,7 @@ void insert_dir(int n)
 {
 	SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>( n );
 
-	if ( n < 0 || n > sess->num_dirs )
+	if ( n < 0 || n > GetSession()->num_dirs )
 	{
 		return;
 	}
@@ -385,10 +385,10 @@ void insert_dir(int n)
 	n = static_cast< int >( nconv );
 
 	int i;
-	for (i = sess->num_dirs - 1; i >= n; i--)
+	for (i = GetSession()->num_dirs - 1; i >= n; i--)
 	{
 		directories[i + 1] = directories[i];
-		sess->m_DirectoryDateCache[i + 1] = sess->m_DirectoryDateCache[i];
+		GetSession()->m_DirectoryDateCache[i + 1] = GetSession()->m_DirectoryDateCache[i];
 	}
 
 	directoryrec r;
@@ -402,7 +402,7 @@ void insert_dir(int n)
 	r.type = 0;
 	r.mask = 0;
 	directories[n] = r;
-	++sess->num_dirs;
+	++GetSession()->num_dirs;
 
 	int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
@@ -421,7 +421,7 @@ void insert_dir(int n)
 			read_qscn( i, pTempQScan, true );
 
 			int i1;
-			for (i1 = sess->num_dirs / 32; i1 > n / 32; i1--)
+			for (i1 = GetSession()->num_dirs / 32; i1 > n / 32; i1--)
 			{
 				pTempQScan_n[i1] = (pTempQScan_n[i1] << 1) | (pTempQScan_n[i1 - 1] >> 31);
 			}
@@ -443,7 +443,7 @@ void delete_dir(int n)
 
 	nconv = static_cast< SUBCONF_TYPE >( n );
 
-	if ((n < 0) || (n >= sess->num_dirs))
+	if ((n < 0) || (n >= GetSession()->num_dirs))
 	{
 		return;
 	}
@@ -452,12 +452,12 @@ void delete_dir(int n)
 
 	n = static_cast<int>( nconv );
 
-	for (i = n; i < sess->num_dirs; i++)
+	for (i = n; i < GetSession()->num_dirs; i++)
 	{
 		directories[i] = directories[i + 1];
-		sess->m_DirectoryDateCache[i] = sess->m_DirectoryDateCache[i + 1];
+		GetSession()->m_DirectoryDateCache[i] = GetSession()->m_DirectoryDateCache[i + 1];
 	}
-	--sess->num_dirs;
+	--GetSession()->num_dirs;
 
 	int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
@@ -477,7 +477,7 @@ void delete_dir(int n)
 			pTempQScan_n[n / 32] = (pTempQScan_n[n / 32] & m3) | ((pTempQScan_n[n / 32] >> 1) & m2) |
 				(pTempQScan_n[(n / 32) + 1] << 31);
 
-			for (i1 = (n / 32) + 1; i1 <= (sess->num_dirs / 32); i1++)
+			for (i1 = (n / 32) + 1; i1 <= (GetSession()->num_dirs / 32); i1++)
 			{
 				pTempQScan_n[i1] = (pTempQScan_n[i1] >> 1) | (pTempQScan_n[i1 + 1] << 31);
 			}
@@ -505,7 +505,7 @@ void dlboardedit()
 	do
 	{
 		nl();
-		sess->bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapDirs : ";
+		GetSession()->bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapDirs : ";
 		ch = onek("QSDIM?");
 		switch (ch)
 		{
@@ -517,30 +517,30 @@ void dlboardedit()
 			break;
 		case 'M':
 			nl();
-			sess->bout << "|#2Dir number? ";
+			GetSession()->bout << "|#2Dir number? ";
 			input(s, 4);
 			i = atoi(s);
-			if ((s[0] != 0) && (i >= 0) && (i < sess->num_dirs))
+			if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_dirs))
 			{
 				modify_dir(i);
 			}
 			break;
 		case 'S':
-			if ( sess->num_dirs < sess->GetMaxNumberFileAreas() )
+			if ( GetSession()->num_dirs < GetSession()->GetMaxNumberFileAreas() )
 			{
 				nl();
-				sess->bout << "|#2Take dir number? ";
+				GetSession()->bout << "|#2Take dir number? ";
 				input( s, 4 );
 				i1 = atoi( s );
-				if ( !s[0] || i1 < 0 || i1 >= sess->num_dirs )
+				if ( !s[0] || i1 < 0 || i1 >= GetSession()->num_dirs )
 				{
 					break;
 				}
 				nl();
-				sess->bout << "|#2And put before dir number? ";
+				GetSession()->bout << "|#2And put before dir number? ";
 				input(s, 4);
 				i2 = atoi(s);
-				if ((!s[0]) || (i2 < 0) || (i2 % 32 == 0) || (i2 > sess->num_dirs) || (i1 == i2))
+				if ((!s[0]) || (i2 < 0) || (i2 % 32 == 0) || (i2 > GetSession()->num_dirs) || (i1 == i2))
 				{
 					break;
 				}
@@ -549,8 +549,8 @@ void dlboardedit()
 				{
 					i1++;
 				}
-				write_qscn(sess->usernum, qsc, true);
-				sess->bout << "|#1Moving dir now...Please wait...";
+				write_qscn(GetSession()->usernum, qsc, true);
+				GetSession()->bout << "|#1Moving dir now...Please wait...";
 				insert_dir(i2);
 				swap_dirs(i1, i2);
 				delete_dir(i1);
@@ -559,17 +559,17 @@ void dlboardedit()
 			}
 			else
 			{
-				sess->bout << "\r\n|12You must increase the number of dirs in INIT.EXE first.\r\n";
+				GetSession()->bout << "\r\n|12You must increase the number of dirs in INIT.EXE first.\r\n";
 			}
 			break;
 		case 'I':
-			if ( sess->num_dirs < sess->GetMaxNumberFileAreas() )
+			if ( GetSession()->num_dirs < GetSession()->GetMaxNumberFileAreas() )
 			{
 				nl();
-				sess->bout << "|#2Insert before which dir? ";
+				GetSession()->bout << "|#2Insert before which dir? ";
 				input(s, 4);
 				i = atoi(s);
-				if ((s[0] != 0) && (i >= 0) && (i <= sess->num_dirs))
+				if ((s[0] != 0) && (i >= 0) && (i <= GetSession()->num_dirs))
 				{
 					insert_dir(i);
 					modify_dir(i);
@@ -603,20 +603,20 @@ void dlboardedit()
 			break;
 		case 'D':
 			nl();
-			sess->bout << "|#2Delete which dir? ";
+			GetSession()->bout << "|#2Delete which dir? ";
 			input(s, 4);
 			i = atoi(s);
-			if ((s[0] != 0) && (i >= 0) && (i < sess->num_dirs))
+			if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_dirs))
 			{
 				nl();
-				sess->bout << "|10Delete " << directories[i].name << "? ";
+				GetSession()->bout << "|10Delete " << directories[i].name << "? ";
 				if ( yesno() )
 				{
 					strcpy(s, directories[i].filename);
 					delete_dir(i);
 					confchg = 1;
 					nl();
-					sess->bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
+					GetSession()->bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
 					if (yesno())
 					{
 						sprintf(s1, "%s%s.dir", syscfg.datadir, s);
@@ -637,7 +637,7 @@ void dlboardedit()
   }
   else
   {
-    dirsFile.Write( directories, sizeof(directoryrec) * sess->num_dirs );
+    dirsFile.Write( directories, sizeof(directoryrec) * GetSession()->num_dirs );
     dirsFile.Close();
   }
   if (confchg)

@@ -25,6 +25,7 @@
 #include "WUser.h"
 #include "WStringUtils.h"
 #include "vars.h"
+#include "bbs.h"
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"
@@ -48,7 +49,7 @@ void add_ass( int nNumPoints, const char *pszReason )
 {
     sysoplog(  "***" );
     sysoplogf( "*** ASS-PTS: %d, Reason: [%s]", nNumPoints, pszReason );
-    sess->thisuser.SetAssPoints( sess->thisuser.GetAssPoints() + static_cast<unsigned short>( nNumPoints ) );
+    GetSession()->thisuser.SetAssPoints( GetSession()->thisuser.GetAssPoints() + static_cast<unsigned short>( nNumPoints ) );
 }
 
 

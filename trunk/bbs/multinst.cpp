@@ -126,7 +126,7 @@ void multi_instance()
     int nNumInstances = num_instances();
     if (nNumInstances < 1)
     {
-        sess->bout << "|#6Couldn't find instance data file.\r\n";
+        GetSession()->bout << "|#6Couldn't find instance data file.\r\n";
         return;
     }
 
@@ -141,7 +141,7 @@ void multi_instance()
     {
         char szBuffer[255];
         make_inst_str(nInstance, szBuffer, INST_FORMAT_LIST );
-        sess->bout << szBuffer;
+        GetSession()->bout << szBuffer;
 		nl();
     }
 }
@@ -207,7 +207,7 @@ void GetInstanceActivityString( instancerec &ir, char *pszOutActivity )
         break;
     case INST_LOC_XFER:
         snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Transfer Area");
-        if ( so() && ir.subloc < sess->num_dirs )
+        if ( so() && ir.subloc < GetSession()->num_dirs )
         {
             char szTemp2[ 100 ];
             snprintf( szTemp2, sizeof( szTemp2 ), "%s: %s", "Dir ", stripcolors( directories[ ir.subloc ].name ) );
@@ -216,7 +216,7 @@ void GetInstanceActivityString( instancerec &ir, char *pszOutActivity )
         break;
     case INST_LOC_CHAINS:
         snprintf( szNodeActivity, sizeof( szNodeActivity ), "%s", "Chains" );
-        if ( ir.subloc > 0 && ir.subloc <= sess->GetNumberOfChains() )
+        if ( ir.subloc > 0 && ir.subloc <= GetSession()->GetNumberOfChains() )
         {
             char szTemp2[ 100 ];
             snprintf( szTemp2, sizeof( szTemp2 ), "Door: %s", stripcolors( chains[ ir.subloc - 1 ].description ) );
@@ -294,7 +294,7 @@ void GetInstanceActivityString( instancerec &ir, char *pszOutActivity )
         break;
     case INST_LOC_SUBS:
         snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Reading Messages");
-        if ( so() && ir.subloc < sess->num_subs )
+        if ( so() && ir.subloc < GetSession()->num_subs )
         {
             char szTemp2[ 100 ];
             snprintf( szTemp2, sizeof( szTemp2 ), "(Sub: %s)", stripcolors( subboards[ ir.subloc ].name ) );
@@ -330,7 +330,7 @@ void GetInstanceActivityString( instancerec &ir, char *pszOutActivity )
         break;
     case INST_LOC_POST:
         snprintf( szNodeActivity, sizeof( szNodeActivity ),  "%s", "Posting a Message");
-        if ( so() && ir.subloc < sess->num_subs )
+        if ( so() && ir.subloc < GetSession()->num_subs )
         {
             char szTemp2[ 100 ];
             snprintf( szTemp2, sizeof( szTemp2 ), "(Sub: %s)", stripcolors( subboards[ir.subloc].name ) );

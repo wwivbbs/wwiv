@@ -100,7 +100,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     GetMessageTitle( pszTitle, force_title );
 	if ( pszTitle[0] == '\0' && needtitle )
 	{
-		sess->bout << "|12Aborted.\r\n";
+		GetSession()->bout << "|12Aborted.\r\n";
 		pMessageRecord->stored_as = 0xffffffff;
 		if (!fsed)
 		{
@@ -121,9 +121,9 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 	else if ( fsed == INMSG_FSED_WORKSPACE )   // "auto-send mail message"
 	{
 		bSaveMessage = WFile::Exists(szExtEdFileName);
-		if ( bSaveMessage && !sess->IsNewMailWatiting() )
+		if ( bSaveMessage && !GetSession()->IsNewMailWatiting() )
 		{
-			sess->bout << "Reading in file...\r\n";
+			GetSession()->bout << "Reading in file...\r\n";
 		}
 		use_workspace = false;
 	}
@@ -134,7 +134,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     	bool real_name = false;
         GetMessageAnonStatus( real_name, anony, setanon );
 		BackLine();
-		if ( !sess->IsNewMailWatiting() )
+		if ( !GetSession()->IsNewMailWatiting() )
 		{
 			SpinPuts( "Saving...", 2 );
 		}
@@ -160,7 +160,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 				fileExtEd.Close();
             }
 			BbsFreeMemory(lin);
-			sess->bout << "Out of memory.\r\n";
+			GetSession()->bout << "Out of memory.\r\n";
 			pMessageRecord->stored_as = 0xffffffff;
 			setiia(oiia);
 			return;
@@ -170,11 +170,11 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
         // Add author name
 		if (real_name)
 		{
-			AddLineToMessageBuffer( b, sess->thisuser.GetRealName(), &lCurrentMessageSize );
+			AddLineToMessageBuffer( b, GetSession()->thisuser.GetRealName(), &lCurrentMessageSize );
 		}
 		else
 		{
-			if ( sess->IsNewMailWatiting() )
+			if ( GetSession()->IsNewMailWatiting() )
 			{
                 char szSysopName[ 255 ];
 				sprintf( szSysopName, "%s #1", syscfg.sysopname );
@@ -182,7 +182,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 			}
 			else
 			{
-				AddLineToMessageBuffer( b, sess->thisuser.GetUserNameNumberAndSystem( sess->usernum, net_sysnum ), &lCurrentMessageSize );
+				AddLineToMessageBuffer( b, GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ), &lCurrentMessageSize );
 			}
 		}
 
@@ -196,7 +196,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 
         UpdateMessageBufferQuotesCtrlLines( b, &lCurrentMessageSize );
 
-		if ( sess->IsMessageThreadingEnabled() )
+		if ( GetSession()->IsMessageThreadingEnabled() )
         {
             UpdateMessageBufferTheadsInfo( b, &lCurrentMessageSize, aux );
 		}
@@ -241,7 +241,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 		{
 			WFile::Remove(szExtEdFileName);
 		}
-		sess->bout << "|12Aborted.\r\n";
+		GetSession()->bout << "|12Aborted.\r\n";
 		pMessageRecord->stored_as = 0xffffffff;
 	}
 	if (!fsed)
@@ -285,11 +285,11 @@ void ReplaceString(char *pszResult, char *pszOld, char *pszNew)
 
 bool GetMessageToName( const char *aux )
 {
-	// If sess->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
+	// If GetSession()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
 	// also, if we are using e-mail, this is definately NOT a FidoNet
 	// post so there's no reason in wasting everyone's time in the loop...
     WWIV_ASSERT( aux );
-    if ( sess->GetCurrentReadMessageArea() == -1 ||
+    if ( GetSession()->GetCurrentReadMessageArea() == -1 ||
          wwiv::stringUtils::IsEqualsIgnoreCase( aux, "email" ) )
 	{
 		return 0;
@@ -298,16 +298,16 @@ bool GetMessageToName( const char *aux )
 	bool bHasAddress = false;
     bool newlsave = newline;
 
-	if (xsubs[sess->GetCurrentReadMessageArea()].num_nets)
+	if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets)
 	{
-		for ( int i = 0; i < xsubs[sess->GetCurrentReadMessageArea()].num_nets; i++ )
+		for ( int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++ )
 		{
-        	xtrasubsnetrec *xnp = &xsubs[sess->GetCurrentReadMessageArea()].nets[i];
+        	xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
 			if ( net_networks[xnp->net_num].type == net_type_fidonet &&
                  !wwiv::stringUtils::IsEqualsIgnoreCase( aux, "email" ) )
 			{
 				bHasAddress = true;
-				sess->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
+				GetSession()->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
 				newline = false;
                 std::string toName;
 				input1( toName, 40, MIXED, false, true );
@@ -315,7 +315,7 @@ bool GetMessageToName( const char *aux )
                 if ( toName.empty() )
 				{
 					strcpy(irt_name, "ALL");
-                    sess->bout << "|#4All\r\n";
+                    GetSession()->bout << "|#4All\r\n";
 					ansic( 0 );
 				}
 				else
@@ -337,18 +337,18 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
     char s1[ 255 ];
 
     nl( 2 );
-    sess->bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
-    sess->bout << "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""AA\003""BB\003""CC\003""DD\003""EE\003""FF\003""GG\003""HH\003""II\003""JJ\003""KK\003""LL\003""MM\003""NN\003""OO\003""PP\003""QQ\003""RR\003""SS\003""""\003""0";
-    sess->bout << "\003""TT\003""UU\003""VV\003""WW\003""XX\003""YY\003""ZZ\003""aa\003""bb\003""cc\003""dd\003""ee\003""ff\003""gg\003""hh\003""ii\003""jj\003""kk\003""ll\003""mm\003""nn\003""oo\003""pp\003""qq\003""rr\003""ss\003""tt\003""uu\003""vv\003""ww\003""xx\003""yy\003""zz\r\n";
+    GetSession()->bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
+    GetSession()->bout << "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""AA\003""BB\003""CC\003""DD\003""EE\003""FF\003""GG\003""HH\003""II\003""JJ\003""KK\003""LL\003""MM\003""NN\003""OO\003""PP\003""QQ\003""RR\003""SS\003""""\003""0";
+    GetSession()->bout << "\003""TT\003""UU\003""VV\003""WW\003""XX\003""YY\003""ZZ\003""aa\003""bb\003""cc\003""dd\003""ee\003""ff\003""gg\003""hh\003""ii\003""jj\003""kk\003""ll\003""mm\003""nn\003""oo\003""pp\003""qq\003""rr\003""ss\003""tt\003""uu\003""vv\003""ww\003""xx\003""yy\003""zz\r\n";
     nl();
-    sess->bout << "|#1Enter |#2/Q|#1 to quote previous message, |#2/HELP|#1 for other editor commands.\r\n";
+    GetSession()->bout << "|#1Enter |#2/Q|#1 to quote previous message, |#2/HELP|#1 for other editor commands.\r\n";
     strcpy(s, "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]");
-    if ( sess->thisuser.GetScreenChars() < 80 )
+    if ( GetSession()->thisuser.GetScreenChars() < 80 )
     {
-        s[ sess->thisuser.GetScreenChars() ] = '\0';
+        s[ GetSession()->thisuser.GetScreenChars() ] = '\0';
     }
     ansic( 7 );
-    sess->bout << s;
+    GetSession()->bout << s;
     nl();
 
     bool bCheckMessageSize = true;
@@ -363,9 +363,9 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
         {
             --curli;
             strcpy(szRollOverLine, &(lin[(curli) * LEN]));
-            if (wwiv::stringUtils::GetStringLength(szRollOverLine) > sess->thisuser.GetScreenChars() - 1)
+            if (wwiv::stringUtils::GetStringLength(szRollOverLine) > GetSession()->thisuser.GetScreenChars() - 1)
             {
-                szRollOverLine[ sess->thisuser.GetScreenChars() - 2 ] = '\0';
+                szRollOverLine[ GetSession()->thisuser.GetScreenChars() - 2 ] = '\0';
             }
         }
         if (hangup)
@@ -400,7 +400,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
                 }
                 else
                 {
-                    sess->bout << "|#5With line numbers? ";
+                    GetSession()->bout << "|#5With line numbers? ";
                     next = yesno();
                 }
                 abort = false;
@@ -408,7 +408,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
                 {
                     if (next)
                     {
-						sess->bout << i + 1 << ":" << wwiv::endl;
+						GetSession()->bout << i + 1 << ":" << wwiv::endl;
                     }
                     strcpy(s1, &(lin[i * LEN]));
                     int i3 = strlen(s1);
@@ -432,7 +432,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
                                 ++i5;
                             }
                         }
-                        for (i4 = 0; (i4 < (sess->thisuser.GetScreenChars() - i5) / 2) && (!abort); i4++)
+                        for (i4 = 0; (i4 < (GetSession()->thisuser.GetScreenChars() - i5) / 2) && (!abort); i4++)
                         {
                             osan(" ", &abort, &next);
                         }
@@ -442,7 +442,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
                 if ( !okansi() || next )
                 {
                     nl();
-                    sess->bout << "Continue...\r\n";
+                    GetSession()->bout << "Continue...\r\n";
                 }
             }
             else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/ES" ) ||
@@ -478,7 +478,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
             {
                 bCheckMessageSize = false;
                 curli = 0;
-                sess->bout << "Message cleared... Start over...\r\n\n";
+                GetSession()->bout << "Message cleared... Start over...\r\n\n";
             }
             else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/RL" ) )
             {
@@ -486,11 +486,11 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
                 if (curli)
                 {
                     --curli;
-                    sess->bout << "Replace:\r\n";
+                    GetSession()->bout << "Replace:\r\n";
                 }
                 else
                 {
-                    sess->bout << "Nothing to replace.\r\n";
+                    GetSession()->bout << "Nothing to replace.\r\n";
                 }
             }
             else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/TI" ) )
@@ -498,16 +498,16 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
                 bCheckMessageSize = false;
                 if ( okansi() )
                 {
-                    sess->bout << "|#1Subj|#7: |#2" ;
+                    GetSession()->bout << "|#1Subj|#7: |#2" ;
                     inputl( pszTitle, 60, true );
                 }
                 else
                 {
-                    sess->bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
-                    sess->bout << "|#1Subj|#7: |#2";
+                    GetSession()->bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
+                    GetSession()->bout << "|#1Subj|#7: |#2";
                     inputl(pszTitle, 60);
                 }
-                sess->bout << "Continue...\r\n\n";
+                GetSession()->bout << "Continue...\r\n\n";
             }
             strcpy( s1, s );
             s1[3] = '\0';
@@ -527,7 +527,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
                     char *ss1 = &(ss[1]);
                     ss[0] = '\0';
                     ReplaceString(&(lin[(curli - 1) * LEN]), s1, ss1);
-                    sess->bout << "Last line:\r\n" << &(lin[(curli - 1) * LEN]) << "\r\nContinue...\r\n";
+                    GetSession()->bout << "Last line:\r\n" << &(lin[(curli - 1) * LEN]) << "\r\nContinue...\r\n";
                 }
                 bCheckMessageSize = false;
             }
@@ -538,16 +538,16 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
             strcpy( &( lin[ ( curli++ ) * LEN ] ), s );
             if ( curli == ( maxli + 1 ) )
             {
-                sess->bout << "\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n";
+                GetSession()->bout << "\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n";
                 --curli;
             }
             else if (curli == maxli)
             {
-                sess->bout << "-= Message limit reached, /S to save =-\r\n";
+                GetSession()->bout << "-= Message limit reached, /S to save =-\r\n";
             }
             else if ((curli + 5) == maxli)
             {
-                sess->bout << "-= 5 lines left =-\r\n";
+                GetSession()->bout << "-= 5 lines left =-\r\n";
             }
         }
     }
@@ -563,9 +563,9 @@ void GetMessageTitle( char *pszTitle, bool force_title )
 {
     if ( okansi() )
     {
-        if ( !sess->IsNewMailWatiting() )
+        if ( !GetSession()->IsNewMailWatiting() )
         {
-            sess->bout << "|#2Title: ";
+            GetSession()->bout << "|#2Title: ";
             mpl( 60 );
         }
         if ( irt[0] != '«' && irt[0] )
@@ -575,7 +575,7 @@ void GetMessageTitle( char *pszTitle, bool force_title )
             StringTrim( irt );
             if ( strnicmp( stripcolors( irt ), "re:", 3 ) != 0 )
             {
-                if ( sess->IsNewMailWatiting() )
+                if ( GetSession()->IsNewMailWatiting() )
                 {
                     sprintf(s1, "%s", irt);
                     irt[0] = '\0';
@@ -590,9 +590,9 @@ void GetMessageTitle( char *pszTitle, bool force_title )
                 sprintf( s1, "%s", irt );
             }
             s1[60] = '\0';
-            if ( !sess->IsNewMailWatiting() && !force_title )
+            if ( !GetSession()->IsNewMailWatiting() && !force_title )
             {
-                sess->bout << s1;
+                GetSession()->bout << s1;
                 ch = getkey();
                 if (ch == 10)
                 {
@@ -607,12 +607,12 @@ void GetMessageTitle( char *pszTitle, bool force_title )
             force_title = false;
             if ( ch != RETURN )
             {
-                sess->bout << "\r";
+                GetSession()->bout << "\r";
                 if ( ch == SPACE || ch == ESC )
                 {
                     ch = '\0';
                 }
-                sess->bout << "|#2Title: ";
+                GetSession()->bout << "|#2Title: ";
                 mpl( 60 );
                 char szRollOverLine[ 81 ];
                 sprintf( szRollOverLine, "%c", ch );
@@ -632,14 +632,14 @@ void GetMessageTitle( char *pszTitle, bool force_title )
     }
     else
     {
-        if ( sess->IsNewMailWatiting() || force_title )
+        if ( GetSession()->IsNewMailWatiting() || force_title )
         {
             strcpy( pszTitle, irt );
         }
         else
         {
-            sess->bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
-            sess->bout << "Title: ";
+            GetSession()->bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
+            GetSession()->bout << "Title: ";
             inputl( pszTitle, 60 );
         }
     }
@@ -665,7 +665,7 @@ bool ExternalMessageEditor( int maxli, int &setanon, char *pszTitle, const char 
         fsh_write(&fedit_data, sizeof(fedit_data), 1, result);
         fsh_close(result);
     }
-    bool bSaveMessage = external_edit( INPUT_MSG, syscfgovr.tempdir, sess->thisuser.GetDefaultEditor() - 1,
+    bool bSaveMessage = external_edit( INPUT_MSG, syscfgovr.tempdir, GetSession()->thisuser.GetDefaultEditor() - 1,
                                        maxli, pszDestination, pszTitle, flags );
     if ( bSaveMessage )
     {
@@ -718,17 +718,17 @@ void UpdateMessageBufferTheadsInfo( char *pszMessageBuffer, long *plBufferLength
         AddLineToMessageBuffer( pszMessageBuffer, szBuffer, plBufferLength );
         if ( thread )
         {
-            thread [sess->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short> ( sess->GetNumMessagesInCurrentMessageArea() + 1 );
-            strcpy( thread[sess->GetNumMessagesInCurrentMessageArea() + 1].message_code, &szBuffer[4] );
+            thread [GetSession()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short> ( GetSession()->GetNumMessagesInCurrentMessageArea() + 1 );
+            strcpy( thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &szBuffer[4] );
         }
-		if ( sess->threadID.length() > 0 )
+		if ( GetSession()->threadID.length() > 0 )
         {
-			sprintf( szBuffer, "0W %s", sess->threadID.c_str() );
+			sprintf( szBuffer, "0W %s", GetSession()->threadID.c_str() );
             AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
             if ( thread )
             {
-                strcpy( thread[sess->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &szBuffer[4] );
-                thread[ sess->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
+                strcpy( thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &szBuffer[4] );
+                thread[ GetSession()->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
             }
         }
     }
@@ -740,11 +740,11 @@ void UpdateMessageBufferInReplyToInfo( char *pszMessageBuffer, long *plBufferLen
     char szBuffer[ 255 ];
     if ( irt_name[0] &&
          !wwiv::stringUtils::IsEqualsIgnoreCase(aux, "email") &&
-         xsubs[sess->GetCurrentReadMessageArea()].num_nets)
+         xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets)
     {
-        for (int i = 0; i < xsubs[sess->GetCurrentReadMessageArea()].num_nets; i++)
+        for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++)
         {
-	        xtrasubsnetrec *xnp = &xsubs[sess->GetCurrentReadMessageArea()].nets[i];
+	        xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
             if (net_networks[xnp->net_num].type == net_type_fidonet)
             {
                 sprintf(szBuffer, "0FidoAddr: %s", irt_name);
@@ -753,14 +753,14 @@ void UpdateMessageBufferInReplyToInfo( char *pszMessageBuffer, long *plBufferLen
             }
         }
     }
-    if ((strnicmp("internet", sess->GetNetworkName(), 8) == 0) ||
-        (strnicmp("filenet", sess->GetNetworkName(), 7) == 0))
+    if ((strnicmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
+        (strnicmp("filenet", GetSession()->GetNetworkName(), 7) == 0))
     {
-		if (sess->usenetReferencesLine.length() > 0 )
+		if (GetSession()->usenetReferencesLine.length() > 0 )
         {
-			sprintf(szBuffer, "%c0RReferences: %s", CD, sess->usenetReferencesLine.c_str() );
+			sprintf(szBuffer, "%c0RReferences: %s", CD, GetSession()->usenetReferencesLine.c_str() );
             AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
-            sess->usenetReferencesLine = "";
+            GetSession()->usenetReferencesLine = "";
         }
     }
     if (irt[0] != '"')
@@ -791,15 +791,15 @@ void UpdateMessageBufferInReplyToInfo( char *pszMessageBuffer, long *plBufferLen
 void UpdateMessageBufferTagLine( char *pszMessageBuffer, long *plBufferLength, const char *aux )
 {
     char szMultiMail[] = "Multi-Mail";
-    if ( xsubs[sess->GetCurrentReadMessageArea()].num_nets &&
+    if ( xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets &&
          !wwiv::stringUtils::IsEqualsIgnoreCase( aux, "email" ) &&
-         (! ( subboards[sess->GetCurrentReadMessageArea()].anony & anony_no_tag ) ) &&
+         (! ( subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_no_tag ) ) &&
          !wwiv::stringUtils::IsEquals( strupr( irt ), strupr( szMultiMail ) ) )
     {
         char szFileName[ MAX_PATH ];
-        for (int i = 0; i < xsubs[sess->GetCurrentReadMessageArea()].num_nets; i++)
+        for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++)
         {
-            xtrasubsnetrec *xnp = &xsubs[sess->GetCurrentReadMessageArea()].nets[i];
+            xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
             char *nd = net_networks[xnp->net_num].dir;
             sprintf(szFileName, "%s%s.tag", nd, xnp->stype);
             if (WFile::Exists(szFileName))
@@ -916,7 +916,7 @@ void GetMessageAnonStatus( bool &real_name, int *anony, int setanon )
         }
         else
         {
-            sess->bout << "|#5Anonymous? ";
+            GetSession()->bout << "|#5Anonymous? ";
             if (yesno())
             {
                 *anony = anony_sender;
@@ -930,10 +930,10 @@ void GetMessageAnonStatus( bool &real_name, int *anony, int setanon )
     case anony_enable_dear_abby:
         {
             nl();
-			sess->bout << "1. " << sess->thisuser.GetUserNameAndNumber( sess->usernum ) << wwiv::endl;
-            sess->bout << "2. Abby\r\n";
-            sess->bout << "3. Problemed Person\r\n\n";
-            sess->bout << "|#5Which? ";
+			GetSession()->bout << "1. " << GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) << wwiv::endl;
+            GetSession()->bout << "2. Abby\r\n";
+            GetSession()->bout << "3. Problemed Person\r\n\n";
+            GetSession()->bout << "|#5Which? ";
             char chx = onek( "\r123" );
             switch ( chx )
             {

@@ -78,13 +78,13 @@ void reset_files()
 			if ( ( i % 10 ) == 0 )
 			{
                 userFile.Close();
-				sess->bout << i << "\r ";
+				GetSession()->bout << i << "\r ";
                 userFile.Open( WFile::modeBinary | WFile::modeReadWrite );
 			}
 		}
         userFile.Close();
 	}
-	sess->bout << "\r\n\r\n";
+	GetSession()->bout << "\r\n\r\n";
 
 	GetApplication()->GetStatusManager()->Lock();
 
@@ -108,28 +108,28 @@ void prstatus( bool bIsWFC )
 	ClearScreen();
 	if ( syscfg.newuserpw[0] != '\0' )
 	{
-		sess->bout << "|#9New User Pass   : " << syscfg.newuserpw << wwiv::endl;
+		GetSession()->bout << "|#9New User Pass   : " << syscfg.newuserpw << wwiv::endl;
 	}
-	sess->bout << "|#9Board is        : " << ( syscfg.closedsystem ? "Closed" : "Open" ) << wwiv::endl;
+	GetSession()->bout << "|#9Board is        : " << ( syscfg.closedsystem ? "Closed" : "Open" ) << wwiv::endl;
 
 	if ( !bIsWFC )
 	{
 		// All of this information is on the WFC Screen
-        sess->bout << "|#9Number Users    : |#2" << status.users << wwiv::endl;
-		sess->bout << "|#9Number Calls    : |#2" << status.callernum1 << wwiv::endl;
-		sess->bout << "|#9Last Date       : |#2" << status.date1 << wwiv::endl;
-		sess->bout << "|#9Time            : |#2" << times() << wwiv::endl;
-		sess->bout << "|#9Active Today    : |#2" << status.activetoday << wwiv::endl;
-		sess->bout << "|#9Calls Today     : |#2" << status.callstoday << wwiv::endl;
-		sess->bout << "|#9Net Posts Today : |#2" << ( status.msgposttoday - status.localposts ) << wwiv::endl;
-		sess->bout << "|#9Local Post Today: |#2" << status.localposts << wwiv::endl;
-		sess->bout << "|#9E Sent Today    : |#2" << status.emailtoday << wwiv::endl;
-		sess->bout << "|#9F Sent Today    : |#2" << status.fbacktoday << wwiv::endl;
-		sess->bout << "|#9Uploads Today   : |#2" << status.uptoday << wwiv::endl;
-		sess->bout << "|#9Feedback Waiting: |#2" << fwaiting << wwiv::endl;
-        sess->bout << "|#9Sysop           : |#2" << ( ( sysop2() ) ? "Available" : "NOT Available" ) << wwiv::endl;
+        GetSession()->bout << "|#9Number Users    : |#2" << status.users << wwiv::endl;
+		GetSession()->bout << "|#9Number Calls    : |#2" << status.callernum1 << wwiv::endl;
+		GetSession()->bout << "|#9Last Date       : |#2" << status.date1 << wwiv::endl;
+		GetSession()->bout << "|#9Time            : |#2" << times() << wwiv::endl;
+		GetSession()->bout << "|#9Active Today    : |#2" << status.activetoday << wwiv::endl;
+		GetSession()->bout << "|#9Calls Today     : |#2" << status.callstoday << wwiv::endl;
+		GetSession()->bout << "|#9Net Posts Today : |#2" << ( status.msgposttoday - status.localposts ) << wwiv::endl;
+		GetSession()->bout << "|#9Local Post Today: |#2" << status.localposts << wwiv::endl;
+		GetSession()->bout << "|#9E Sent Today    : |#2" << status.emailtoday << wwiv::endl;
+		GetSession()->bout << "|#9F Sent Today    : |#2" << status.fbacktoday << wwiv::endl;
+		GetSession()->bout << "|#9Uploads Today   : |#2" << status.uptoday << wwiv::endl;
+		GetSession()->bout << "|#9Feedback Waiting: |#2" << fwaiting << wwiv::endl;
+        GetSession()->bout << "|#9Sysop           : |#2" << ( ( sysop2() ) ? "Available" : "NOT Available" ) << wwiv::endl;
 	}
-	sess->bout << "|#9Q-Scan Pointer  : |#2" << status.qscanptr << wwiv::endl;
+	GetSession()->bout << "|#9Q-Scan Pointer  : |#2" << status.qscanptr << wwiv::endl;
 
     if ( num_instances() > 1 )
 	{
@@ -147,24 +147,24 @@ void valuser( int nUserNumber )
     if ( !user.isUserDeleted() )
 	{
 		nl();
-        sess->bout << "|#9Name: |#2" << user.GetUserNameAndNumber( nUserNumber ) << wwiv::endl;
-        sess->bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
-        sess->bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
-        sess->bout << "|#9Age : |#2" << user.GetAge() << " " << user.GetGender() << wwiv::endl;
-        sess->bout << "|#9Comp: |#2" << ctypes( user.GetComputerType() ) << wwiv::endl;
+        GetSession()->bout << "|#9Name: |#2" << user.GetUserNameAndNumber( nUserNumber ) << wwiv::endl;
+        GetSession()->bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
+        GetSession()->bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
+        GetSession()->bout << "|#9Age : |#2" << user.GetAge() << " " << user.GetGender() << wwiv::endl;
+        GetSession()->bout << "|#9Comp: |#2" << ctypes( user.GetComputerType() ) << wwiv::endl;
         if ( user.GetNote()[0] )
 		{
-            sess->bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
+            GetSession()->bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
 		}
-        sess->bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
-		if ( user.GetSl() != 255 && user.GetSl() < sess->GetEffectiveSl() )
+        GetSession()->bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
+		if ( user.GetSl() != 255 && user.GetSl() < GetSession()->GetEffectiveSl() )
 		{
-            sess->bout << "|#9New : ";
+            GetSession()->bout << "|#9New : ";
 			input( s, 3, true );
 			if (s[0])
 			{
 				int nSl = atoi( s );
-				if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nSl >= sess->GetEffectiveSl() )
+				if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nSl >= GetSession()->GetEffectiveSl() )
 				{
 					nSl = -2;
 				}
@@ -175,32 +175,32 @@ void valuser( int nUserNumber )
 				if ( nSl == -1 )
 				{
 					nl();
-					sess->bout << "|#9Delete? ";
+					GetSession()->bout << "|#9Delete? ";
 					if ( yesno() )
 					{
 						deluser( nUserNumber );
 						nl();
-						sess->bout << "|12Deleted.\r\n\n";
+						GetSession()->bout << "|12Deleted.\r\n\n";
 					}
 					else
 					{
 						nl();
-						sess->bout << "|13NOT deleted.\r\n";
+						GetSession()->bout << "|13NOT deleted.\r\n";
 					}
 					return;
 				}
 			}
 		}
 		nl();
-		sess->bout << "|#9DSL : |#2" << user.GetDsl() << wwiv::endl;
-		if ( user.GetDsl() != 255 && user.GetDsl() < sess->thisuser.GetDsl() )
+		GetSession()->bout << "|#9DSL : |#2" << user.GetDsl() << wwiv::endl;
+		if ( user.GetDsl() != 255 && user.GetDsl() < GetSession()->thisuser.GetDsl() )
 		{
-			sess->bout << "|#9New ? ";
+			GetSession()->bout << "|#9New ? ";
 			input( s, 3, true );
 			if (s[0])
 			{
 				int nDsl = atoi(s);
-				if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nDsl >= sess->thisuser.GetDsl() )
+				if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nDsl >= GetSession()->thisuser.GetDsl() )
 				{
 					nDsl = -1;
 				}
@@ -225,7 +225,7 @@ void valuser( int nUserNumber )
 			{
 				s[i] = SPACE;
 			}
-			if ( sess->thisuser.hasArFlag( 1 << i ) )
+			if ( GetSession()->thisuser.hasArFlag( 1 << i ) )
 			{
 				ar1[ar2++] = static_cast<char>( 'A' + i );
 			}
@@ -237,7 +237,7 @@ void valuser( int nUserNumber )
 			{
 				s1[i] = SPACE;
 			}
-			if ( sess->thisuser.hasDarFlag( 1 << i ) )
+			if ( GetSession()->thisuser.hasDarFlag( 1 << i ) )
 			{
 				dar1[dar2++] = static_cast<char>( 'A' + i );
 			}
@@ -261,8 +261,8 @@ void valuser( int nUserNumber )
 		{
 			do
 			{
-				sess->bout << "|#9AR  : |#2" << s << wwiv::endl;
-				sess->bout << "|#9Togl? ";
+				GetSession()->bout << "|#9AR  : |#2" << s << wwiv::endl;
+				GetSession()->bout << "|#9Togl? ";
 				ch1 = onek( ar1 );
 				if ( ch1 != RETURN )
 				{
@@ -286,8 +286,8 @@ void valuser( int nUserNumber )
 		{
 			do
 			{
-				sess->bout << "|#9DAR : |#2" << s1 << wwiv::endl;
-				sess->bout << "|#9Togl? ";
+				GetSession()->bout << "|#9DAR : |#2" << s1 << wwiv::endl;
+				GetSession()->bout << "|#9Togl? ";
 				ch1 = onek( dar1 );
 				if (ch1 != RETURN)
 				{
@@ -312,9 +312,9 @@ void valuser( int nUserNumber )
 		strcpy(&(s[2]), restrict_string);
 		do
 		{
-			sess->bout << "      |#2" << s3 << wwiv::endl;
-			sess->bout << "|#9Rstr: |#2" << s2 << wwiv::endl;
-			sess->bout << "|#9Togl? ";
+			GetSession()->bout << "      |#2" << s3 << wwiv::endl;
+			GetSession()->bout << "|#9Rstr: |#2" << s2 << wwiv::endl;
+			GetSession()->bout << "|#9Togl? ";
 			ch1 = onek( s );
 			if ( ch1 != RETURN && ch1 != SPACE && ch1 != '?' )
 			{
@@ -351,7 +351,7 @@ void valuser( int nUserNumber )
   }
   else
   {
-	  sess->bout << "\r\n|12No Such User.\r\n\n";
+	  GetSession()->bout << "\r\n|12No Such User.\r\n\n";
   }
 }
 
@@ -381,7 +381,7 @@ void print_net_listing( bool bForcePause )
 
 	GetApplication()->GetStatusManager()->Read();
 
-	if (!sess->GetMaxNetworkNumber())
+	if (!GetSession()->GetMaxNetworkNumber())
 	{
 		return;
 	}
@@ -390,17 +390,17 @@ void print_net_listing( bool bForcePause )
 
 	if ( bForcePause )
 	{
-		bHadPause  = sess->thisuser.hasPause();
+		bHadPause  = GetSession()->thisuser.hasPause();
 		if ( bHadPause )
 		{
-            sess->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+            GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
 		}
 	}
 	bool done = false;
 	while (!done && !hangup)
 	{
 		ClearScreen();
-		if (sess->GetMaxNetworkNumber() > 1)
+		if (GetSession()->GetMaxNetworkNumber() > 1)
 		{
 			odc[0] = 0;
 			int odci = 0;
@@ -408,7 +408,7 @@ void print_net_listing( bool bForcePause )
 			onx[1] = 0;
 			int onxi = 1;
 			nl();
-			for (i = 0; i < sess->GetMaxNetworkNumber(); i++)
+			for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++)
 			{
 				if (i < 9)
 				{
@@ -421,11 +421,11 @@ void print_net_listing( bool bForcePause )
 					odc[odci - 1] = static_cast<char>( odci + '0' );
 					odc[odci] = 0;
 				}
-                sess->bout << "|#2" << i + 1 << "|#9)|#1 " << net_networks[i].name << wwiv::endl;
+                GetSession()->bout << "|#2" << i + 1 << "|#9)|#1 " << net_networks[i].name << wwiv::endl;
 			}
-			sess->bout << "|#2Q|#9)|#1 Quit\r\n\n";
-			sess->bout << "|#9Which network? |#2";
-			if (sess->GetMaxNetworkNumber() < 9)
+			GetSession()->bout << "|#2Q|#9)|#1 Quit\r\n\n";
+			GetSession()->bout << "|#9Which network? |#2";
+			if (GetSession()->GetMaxNetworkNumber() < 9)
 			{
 				char ch = onek(onx);
 				if (ch == 'Q')
@@ -455,7 +455,7 @@ void print_net_listing( bool bForcePause )
 				break;
 			}
 
-			if ( ( i < 0 ) || ( i > sess->GetMaxNetworkNumber() ) )
+			if ( ( i < 0 ) || ( i > GetSession()->GetMaxNetworkNumber() ) )
 			{
 				continue;
 			}
@@ -483,28 +483,28 @@ void print_net_listing( bool bForcePause )
 
 			ClearScreen();
 			nl();
-            sess->bout << "|#9Network|#2: |#1" << sess->GetNetworkName() << wwiv::endl;
+            GetSession()->bout << "|#9Network|#2: |#1" << GetSession()->GetNetworkName() << wwiv::endl;
 			nl();
 
-			sess->bout << "|#21|#9) = |#1List All\r\n";
-			sess->bout << "|#22|#9) = |#1Area Code\r\n";
-			sess->bout << "|#23|#9) = |#1Group\r\n";
-			sess->bout << "|#24|#9) = |#1Subs Coordinators\r\n";
-			sess->bout << "|#25|#9) = |#1Area Coordinators\r\n";
-			sess->bout << "|#26|#9) = |#1Group Coordinators\r\n";
-			sess->bout << "|#27|#9) = |#1Net Coordinator\r\n";
-			sess->bout << "|#28|#9) = |#1BBS Name SubString\r\n";
-			sess->bout << "|#29|#9) = |#1Phone SubString\r\n";
-			sess->bout << "|#20|#9) = |#1Unconnected Systems\r\n";
-			sess->bout << "|#2Q|#9) = |#1Quit NetList\r\n";
+			GetSession()->bout << "|#21|#9) = |#1List All\r\n";
+			GetSession()->bout << "|#22|#9) = |#1Area Code\r\n";
+			GetSession()->bout << "|#23|#9) = |#1Group\r\n";
+			GetSession()->bout << "|#24|#9) = |#1Subs Coordinators\r\n";
+			GetSession()->bout << "|#25|#9) = |#1Area Coordinators\r\n";
+			GetSession()->bout << "|#26|#9) = |#1Group Coordinators\r\n";
+			GetSession()->bout << "|#27|#9) = |#1Net Coordinator\r\n";
+			GetSession()->bout << "|#28|#9) = |#1BBS Name SubString\r\n";
+			GetSession()->bout << "|#29|#9) = |#1Phone SubString\r\n";
+			GetSession()->bout << "|#20|#9) = |#1Unconnected Systems\r\n";
+			GetSession()->bout << "|#2Q|#9) = |#1Quit NetList\r\n";
 			nl();
-			sess->bout << "|#9Select: |#2";
+			GetSession()->bout << "|#9Select: |#2";
 			char cmd = onek("Q1234567890");
 
 			switch (cmd)
 			{
 			case 'Q':
-				if (sess->GetMaxNetworkNumber() < 2)
+				if (GetSession()->GetMaxNetworkNumber() < 2)
 				{
 					done = true;
 				}
@@ -516,7 +516,7 @@ void print_net_listing( bool bForcePause )
 			case '2':
 				cmdbit = NET_SEARCH_AREACODE;
 				nl();
-				sess->bout << "|#1Enter Area Code|#2: |#0";
+				GetSession()->bout << "|#1Enter Area Code|#2: |#0";
 				input(acstr, 3);
 				if (strlen(acstr) != 3)
 				{
@@ -534,7 +534,7 @@ void print_net_listing( bool bForcePause )
 				}
 				if (abort)
 				{
-					sess->bout << "|12Area code must be a 3-digit number!\r\n";
+					GetSession()->bout << "|12Area code must be a 3-digit number!\r\n";
 					pausescr();
 					cmdbit = 0;
 				}
@@ -542,11 +542,11 @@ void print_net_listing( bool bForcePause )
 			case '3':
 				cmdbit = NET_SEARCH_GROUP;
 				nl();
-				sess->bout << "|#1Enter group number|#2: |#0";
+				GetSession()->bout << "|#1Enter group number|#2: |#0";
 				input(s, 2);
 				if ((s[0] == 0) || (atoi(s) < 1))
 				{
-					sess->bout << "|12Invalid group number!\r\n";
+					GetSession()->bout << "|12Invalid group number!\r\n";
 					pausescr();
 					cmdbit = 0;
 					break;
@@ -568,11 +568,11 @@ void print_net_listing( bool bForcePause )
 			case '8':
 				cmdbit = NET_SEARCH_SUBSTR;
 				nl();
-				sess->bout << "|#1Enter SubString|#2: |#0";
+				GetSession()->bout << "|#1Enter SubString|#2: |#0";
 				input(substr, 40);
 				if (substr[0] == 0)
 				{
-					sess->bout << "|12Enter a substring!\r\n";
+					GetSession()->bout << "|12Enter a substring!\r\n";
 					pausescr();
 					cmdbit = 0;
 				}
@@ -580,11 +580,11 @@ void print_net_listing( bool bForcePause )
 			case '9':
 				cmdbit = NET_SEARCH_PHSUBSTR;
 				nl();
-				sess->bout << "|#1Enter phone substring|#2: |#0";
+				GetSession()->bout << "|#1Enter phone substring|#2: |#0";
 				input(phstr, 12);
 				if (phstr[0] == 0)
 				{
-					sess->bout << "|12Enter a phone substring!\r\n";
+					GetSession()->bout << "|12Enter a phone substring!\r\n";
 					pausescr();
 					cmdbit = 0;
 				}
@@ -605,20 +605,20 @@ void print_net_listing( bool bForcePause )
 			}
 
 			nl();
-			sess->bout << "|#1Print BBS region info? ";
+			GetSession()->bout << "|#1Print BBS region info? ";
 			bool useregion = yesno();
 
-            WFile bbsListFile( sess->GetNetworkDataDirectory(), BBSDATA_NET );
+            WFile bbsListFile( GetSession()->GetNetworkDataDirectory(), BBSDATA_NET );
             if ( !bbsListFile.Open( WFile::modeReadOnly | WFile::modeBinary ) )
 			{
-                sess->bout << "|12Error opening " << bbsListFile.GetFullPathName() << "!\r\n";
+                GetSession()->bout << "|12Error opening " << bbsListFile.GetFullPathName() << "!\r\n";
 				pausescr();
 				continue;
 			}
 			strcpy(s, "000-000-0000");
 			nl( 2 );
 
-			for (i = 0; (i < sess->num_sys_list) && (!abort); i++)
+			for (i = 0; (i < GetSession()->num_sys_list) && (!abort); i++)
 			{
 				bool matched = false;
                 bbsListFile.Read( &csne, sizeof( net_system_list_rec ) );
@@ -771,7 +771,7 @@ void print_net_listing( bool bForcePause )
       if ( !abort && slist )
 	  {
 		  nl();
-		  sess->bout << "|#1Systems Listed |#7: |#2" << slist;
+		  GetSession()->bout << "|#1Systems Listed |#7: |#2" << slist;
       }
       nl( 2 );
       pausescr();
@@ -779,7 +779,7 @@ void print_net_listing( bool bForcePause )
   }
   if ( bForcePause && bHadPause)
   {
-      sess->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+      GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
   }
 }
 
@@ -787,13 +787,13 @@ void print_net_listing( bool bForcePause )
 void read_new_stuff()
 {
 	zap_bbs_list();
-	for ( int i = 0; i < sess->GetMaxNetworkNumber(); i++ )
+	for ( int i = 0; i < GetSession()->GetMaxNetworkNumber(); i++ )
 	{
 		set_net_num( i );
 		zap_call_out_list();
 		zap_contacts();
 	}
-	set_language_1( sess->GetCurrentLanguageNumber() );
+	set_language_1( GetSession()->GetCurrentLanguageNumber() );
 }
 
 
@@ -819,7 +819,7 @@ void mailr()
 				{
                     WUser user;
                     GetApplication()->GetUserManager()->ReadUser( &user, m.touser );
-                    sess->bout << "|#1  To|#7: |#" << sess->GetMessageColor() << user.GetUserNameAndNumber( m.touser ) << wwiv::endl;
+                    GetSession()->bout << "|#1  To|#7: |#" << GetSession()->GetMessageColor() << user.GetUserNameAndNumber( m.touser ) << wwiv::endl;
 					int tp = 80;
 					int nn = 0;
 					if (m.status & status_source_verified)
@@ -843,7 +843,7 @@ void mailr()
 						nn = 0;
 					}
 					set_net_num(nn);
-                    sess->bout << "|#1Subj|#7: |#" << sess->GetMessageColor() << m.title << wwiv::endl;
+                    GetSession()->bout << "|#1Subj|#7: |#" << GetSession()->GetMessageColor() << m.title << wwiv::endl;
 					if (m.status & status_file)
 					{
 						WFile attachDat( syscfg.datadir, ATTACH_DAT );
@@ -855,7 +855,7 @@ void mailr()
 							{
 								if ( m.daten == static_cast<unsigned long>( fsr.id ) )
 								{
-                                    sess->bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
+                                    GetSession()->bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
 									found = true;
 								}
 								if ( !found )
@@ -865,18 +865,18 @@ void mailr()
 							}
 							if ( !found )
 							{
-								sess->bout << "|#1Filename|#0.... |#2File : Unknown or Missing|#0\r\n";
+								GetSession()->bout << "|#1Filename|#0.... |#2File : Unknown or Missing|#0\r\n";
 							}
 							attachDat.Close();
 						}
 						else
 						{
-							sess->bout << "|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n";
+							GetSession()->bout << "|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n";
 						}
 					}
 					bool next;
 					read_message1(&(m.msg), (char) (m.anony & 0x0f), true, &next, "email", m.fromsys, m.fromuser );
-					sess->bout << "|#2R,D,Q,<space>  : ";
+					GetSession()->bout << "|#2R,D,Q,<space>  : ";
 					if (next)
 					{
 						c = ' ';
@@ -921,12 +921,12 @@ void mailr()
 						}
 						else
 						{
-							sess->bout << "Mail file changed; try again.\r\n";
+							GetSession()->bout << "Mail file changed; try again.\r\n";
 						}
 						pFileEmail->Close();
-						if ( !sess->IsUserOnline() && m.touser == 1 && m.tosys == 0 )
+						if ( !GetSession()->IsUserOnline() && m.touser == 1 && m.tosys == 0 )
 						{
-                            sess->thisuser.SetNumMailWaiting( sess->thisuser.GetNumMailWaiting() - 1 );
+                            GetSession()->thisuser.SetNumMailWaiting( GetSession()->thisuser.GetNumMailWaiting() - 1 );
 						}
 					}
 					nl( 2 );
@@ -954,25 +954,25 @@ void chuser()
 		return;
 	}
 
-    sess->bout << "|#9Enter user to change to: ";
+    GetSession()->bout << "|#9Enter user to change to: ";
     char szUserName[81];
 	input( szUserName, 30, true );
 	int nUserNumber = finduser1( szUserName );
 	if ( nUserNumber > 0 )
 	{
-		sess->WriteCurrentUser( sess->usernum );
-		write_qscn(sess->usernum, qsc, false);
-        sess->ReadCurrentUser( nUserNumber );
+		GetSession()->WriteCurrentUser( GetSession()->usernum );
+		write_qscn(GetSession()->usernum, qsc, false);
+        GetSession()->ReadCurrentUser( nUserNumber );
 		read_qscn(nUserNumber, qsc, false);
-		sess->usernum = static_cast<unsigned short>( nUserNumber );
-		sess->SetEffectiveSl( 255 );
-		sysoplogf( "#*#*#* Changed to %s", sess->thisuser.GetUserNameAndNumber( sess->usernum ) );
+		GetSession()->usernum = static_cast<unsigned short>( nUserNumber );
+		GetSession()->SetEffectiveSl( 255 );
+		sysoplogf( "#*#*#* Changed to %s", GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) );
 		changedsl();
 		GetApplication()->GetLocalIO()->UpdateTopScreen();
 	}
 	else
 	{
-		sess->bout << "|12Unknown user.\r\n";
+		GetSession()->bout << "|12Unknown user.\r\n";
 	}
 }
 
@@ -1005,12 +1005,12 @@ void zlog()
 		// alternate colors to make it easier to read across the lines
 		if (i % 2)
 		{
-			sess->bout << "|#1";
+			GetSession()->bout << "|#1";
 			pla(szBuffer, &abort);
 		}
 		else
 		{
-			sess->bout << "|13";
+			GetSession()->bout << "|13";
 			pla(szBuffer, &abort);
 		}
 		++i;
@@ -1102,7 +1102,7 @@ void auto_purge()
 
 void beginday( bool displayStatus )
 {
-    if ( ( sess->GetBeginDayNodeNumber() > 0 ) && ( GetApplication()->GetInstanceNumber() != sess->GetBeginDayNodeNumber() ) )
+    if ( ( GetSession()->GetBeginDayNodeNumber() > 0 ) && ( GetApplication()->GetInstanceNumber() != GetSession()->GetBeginDayNodeNumber() ) )
 	{
         // If BEGINDAYNODENUMBER is > 0 or defined in WWIV.INI only handle beginday events on that node number
 		GetApplication()->GetStatusManager()->Read();
@@ -1124,10 +1124,10 @@ void beginday( bool displayStatus )
 		GetApplication()->GetStatusManager()->Write();
 		return;
 	}
-	sess->bout << "|#7* |#1Running Daily Maintenance...\r\n";
+	GetSession()->bout << "|#7* |#1Running Daily Maintenance...\r\n";
 	if ( displayStatus )
     {
-        sess->bout << "  |#7* |#1Updating system activity...\r\n";
+        GetSession()->bout << "  |#7* |#1Updating system activity...\r\n";
     }
 
 	zlogrec z;
@@ -1160,14 +1160,14 @@ void beginday( bool displayStatus )
 
 	if ( displayStatus )
     {
-        sess->bout << "  |#7* |#1Cleaning up log files...\r\n";
+        GetSession()->bout << "  |#7* |#1Cleaning up log files...\r\n";
     }
 	WFile::Remove( syscfg.gfilesdir, status.log2 );
 	WFile::Remove( syscfg.gfilesdir, USER_LOG );
 
 	if ( displayStatus )
     {
-        sess->bout << "  |#7* |#1Updating ZLOG information...\r\n";
+        GetSession()->bout << "  |#7* |#1Updating ZLOG information...\r\n";
     }
     WFile fileZLog( syscfg.datadir, ZLOG_DAT );
 	zlogrec z1;
@@ -1202,12 +1202,12 @@ void beginday( bool displayStatus )
 
 	if ( displayStatus )
     {
-        sess->bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
+        GetSession()->bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
     }
 	GetApplication()->GetStatusManager()->Write();
 	if ( displayStatus )
     {
-        sess->bout << "  |#7* |#1Checking system directories and user space...\r\n";
+        GetSession()->bout << "  |#7* |#1Checking system directories and user space...\r\n";
     }
 
 	double fk   = freek1(syscfg.datadir);
@@ -1229,17 +1229,17 @@ void beginday( bool displayStatus )
 	}
 	if ( displayStatus )
     {
-        sess->bout << "  |#7* |#1Purging inactive users (if enabled)...\r\n";
+        GetSession()->bout << "  |#7* |#1Purging inactive users (if enabled)...\r\n";
     }
 	auto_purge();
 	if ( displayStatus )
     {
-        sess->bout << "  |#7* |#1Updating user ages...\r\n";
+        GetSession()->bout << "  |#7* |#1Updating user ages...\r\n";
     }
 	set_user_age();
     if ( displayStatus )
     {
-        sess->bout << "|#7* |#1Done!\r\n";
+        GetSession()->bout << "|#7* |#1Done!\r\n";
     }
 
     sysoplog( "", false );

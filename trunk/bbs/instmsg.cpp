@@ -64,7 +64,7 @@ void send_inst_str1( int m, int whichinst, const char *pszSendString )
     ih.main = static_cast<unsigned short>( m );
     ih.minor = 0;
     ih.from_inst = static_cast<unsigned short>( GetApplication()->GetInstanceNumber() );
-    ih.from_user = static_cast<unsigned short>( sess->usernum );
+    ih.from_user = static_cast<unsigned short>( GetSession()->usernum );
     ih.msg_size = strlen( szTempSendString ) + 1;
     ih.dest_inst = static_cast<unsigned short>( whichinst );
     time((long *) &ih.daten);
@@ -92,7 +92,7 @@ void send_inst_shutdown(int whichinst)
     ih.main = INST_MSG_SHUTDOWN;
     ih.minor = 0;
     ih.from_inst = static_cast<unsigned short>( GetApplication()->GetInstanceNumber() );
-    ih.from_user = static_cast<unsigned short>( sess->usernum );
+    ih.from_user = static_cast<unsigned short>( GetSession()->usernum );
     ih.msg_size = 0;
     ih.dest_inst = static_cast<unsigned short>( whichinst );
     time((long *) &ih.daten);
@@ -181,7 +181,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg)
     {
     case INST_MSG_STRING:
     case INST_MSG_SYSMSG:
-        if ( ih->msg_size > 0 && sess->IsUserOnline() && !hangup )
+        if ( ih->msg_size > 0 && GetSession()->IsUserOnline() && !hangup )
         {
             GetApplication()->GetLocalIO()->SaveCurrentLine( cl, atr, xl, &cc );
             nl( 2 );
@@ -204,7 +204,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg)
             }
             else
             {
-                sess->bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
+                GetSession()->bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
             }
             i = 0;
             while (i < ih->msg_size)
@@ -276,25 +276,25 @@ void process_inst_msgs()
             }
             if ( hi == INST_MSG_SHUTDOWN )
             {
-                if ( sess->IsUserOnline() )
+                if ( GetSession()->IsUserOnline() )
                 {
                     tmp_disable_pause( true );
                     nl( 2 );
                     printfile( OFFLINE_NOEXT );
-                    if ( sess->IsUserOnline() )
+                    if ( GetSession()->IsUserOnline() )
                     {
-                        if (sess->usernum == 1)
+                        if (GetSession()->usernum == 1)
                         {
-                            fwaiting = sess->thisuser.GetNumMailWaiting();
+                            fwaiting = GetSession()->thisuser.GetNumMailWaiting();
                         }
-                        sess->WriteCurrentUser( sess->usernum );
-                        write_qscn(sess->usernum, qsc, false);
+                        GetSession()->WriteCurrentUser( GetSession()->usernum );
+                        write_qscn(GetSession()->usernum, qsc, false);
                     }
                     tmp_disable_pause( false );
                 }
                 file.Close();
                 file.Delete();
-                sess->topline = 0;
+                GetSession()->topline = 0;
                 GetApplication()->GetLocalIO()->LocalCls();
                 hangup = true;
                 hang_it_up();
@@ -386,7 +386,7 @@ int num_instances()
 
 
 /*
- * Returns 1 if sess->usernum nUserNumber is online, and returns instance user is on in
+ * Returns 1 if GetSession()->usernum nUserNumber is online, and returns instance user is on in
  * wi, else returns 0.
  */
 bool user_online(int nUserNumber, int *wi)
@@ -437,24 +437,24 @@ void instance_edit()
     {
         CheckForHangup();
         nl();
-        sess->bout << "|#21|#7)|#1 Multi-Instance Status\r\n";
-        sess->bout << "|#22|#7)|#1 Shut Down One Instance\r\n";
-        sess->bout << "|#23|#7)|#1 Shut Down ALL Instances\r\n";
-        sess->bout << "|#2Q|#7)|#1 Quit\r\n";
+        GetSession()->bout << "|#21|#7)|#1 Multi-Instance Status\r\n";
+        GetSession()->bout << "|#22|#7)|#1 Shut Down One Instance\r\n";
+        GetSession()->bout << "|#23|#7)|#1 Shut Down ALL Instances\r\n";
+        GetSession()->bout << "|#2Q|#7)|#1 Quit\r\n";
         nl();
-        sess->bout << "|#1Select: ";
+        GetSession()->bout << "|#1Select: ";
         char ch = onek("Q123");
         switch (ch)
         {
         case '1':
             nl();
-            sess->bout << "|#1Instance Status:\r\n";
+            GetSession()->bout << "|#1Instance Status:\r\n";
             multi_instance();
             break;
         case '2':
             {
                 nl();
-                sess->bout << "|#2Which Instance: ";
+                GetSession()->bout << "|#2Which Instance: ";
                 char szInst[ 10 ];
                 input( szInst, 3, true );
                 if (!szInst[0])
@@ -465,12 +465,12 @@ void instance_edit()
                 if ( !i || i > ni )
                 {
                     nl();
-                    sess->bout << "|#6Instance unavailable.\r\n";
+                    GetSession()->bout << "|#6Instance unavailable.\r\n";
                     break;
                 }
                 if (i == GetApplication()->GetInstanceNumber())
                 {
-                    sess->topline = 0;
+                    GetSession()->topline = 0;
                     GetApplication()->GetLocalIO()->LocalCls();
                     hangup = true;
                     hang_it_up();
@@ -484,26 +484,26 @@ void instance_edit()
                     if (ir.loc != INST_LOC_DOWN)
                     {
                         nl();
-						sess->bout << "|#2Shutting down instance " << i << wwiv::endl;
+						GetSession()->bout << "|#2Shutting down instance " << i << wwiv::endl;
                         send_inst_shutdown(i);
                     }
                     else
                     {
-                        sess->bout << "\r\n|#6Instance already shut down.\r\n";
+                        GetSession()->bout << "\r\n|#6Instance already shut down.\r\n";
                     }
                 }
                 else
                 {
-                    sess->bout << "\r\n|#6Instance unavailable.\r\n";
+                    GetSession()->bout << "\r\n|#6Instance unavailable.\r\n";
                 }
             }
             break;
         case '3':
             nl();
-            sess->bout << "|#5Are you sure? ";
+            GetSession()->bout << "|#5Are you sure? ";
             if (yesno())
             {
-                sess->bout << "\r\n|#2Shutting down all instances.\r\n";
+                GetSession()->bout << "\r\n|#2Shutting down all instances.\r\n";
                 for (int i1 = 1; i1 <= ni; i1++)
                 {
                     if (i1 != GetApplication()->GetInstanceNumber())
@@ -514,7 +514,7 @@ void instance_edit()
                         }
                     }
                 }
-                sess->topline = 0;
+                GetSession()->topline = 0;
                 GetApplication()->GetLocalIO()->LocalCls();
                 hangup = true;
                 hang_it_up();
@@ -558,14 +558,14 @@ void write_inst( int loc, int subloc, int flags )
     }
 
     unsigned short cf = ti.flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
-    if ( sess->IsUserOnline() )
+    if ( GetSession()->IsUserOnline() )
     {
         cf |= INST_FLAGS_ONLINE;
         if (invis)
         {
             cf |= INST_FLAGS_INVIS;
         }
-        if ( !sess->thisuser.isIgnoreNodeMessages() )
+        if ( !GetSession()->thisuser.isIgnoreNodeMessages() )
         {
             switch (loc)
             {
@@ -588,7 +588,7 @@ void write_inst( int loc, int subloc, int flags )
                 break;
             }
         }
-        unsigned short ms = (sess->using_modem) ? modem_speed : 0;
+        unsigned short ms = (GetSession()->using_modem) ? modem_speed : 0;
         if (ti.modem_speed != ms)
         {
             ti.modem_speed = ms;
@@ -637,14 +637,14 @@ void write_inst( int loc, int subloc, int flags )
     }
     else
     {
-        if ( sess->IsUserOnline() )
+        if ( GetSession()->IsUserOnline() )
         {
-            if (ti.user != sess->usernum)
+            if (ti.user != GetSession()->usernum)
             {
                 re_write = 1;
-                if ((sess->usernum > 0) && (sess->usernum <= syscfg.maxusers))
+                if ((GetSession()->usernum > 0) && (GetSession()->usernum <= syscfg.maxusers))
                 {
-                    ti.user = static_cast<short>( sess->usernum );
+                    ti.user = static_cast<short>( GetSession()->usernum );
                 }
             }
         }

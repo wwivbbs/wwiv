@@ -256,7 +256,7 @@ void inputl( std::string &strOutText, int len, bool bAutoMpl )
 
 void input_password( const char *pszPromptText, char *pszOutPassword, int len )
 {
-    sess->bout << pszPromptText;
+    GetSession()->bout << pszPromptText;
     mpl( len );
     echo = false;
     input1( pszOutPassword, len, UPPER, true );
@@ -265,7 +265,7 @@ void input_password( const char *pszPromptText, char *pszOutPassword, int len )
 
 void input_password( const char *pszPromptText, std::string &strOutPassword, int len )
 {
-    sess->bout << pszPromptText;
+    GetSession()->bout << pszPromptText;
     mpl( len );
     echo = false;
     input1( strOutPassword, len, UPPER, true );
@@ -307,18 +307,18 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
         strcpy(pszOutText, szTemp);
         return static_cast<unsigned char>( strlen( szTemp ) );
     }
-	int nTopDataSaved = sess->topdata;
-	if ( sess->topdata != WLocalIO::topdataNone )
+	int nTopDataSaved = GetSession()->topdata;
+	if ( GetSession()->topdata != WLocalIO::topdataNone )
     {
-        sess->topdata = WLocalIO::topdataNone;
+        GetSession()->topdata = WLocalIO::topdataNone;
 		GetApplication()->GetLocalIO()->UpdateTopScreen();
     }
     if ( mode == DATE || mode == PHONE )
     {
         bInsert = 0;
     }
-    int nTopLineSaved = sess->topline;
-    sess->topline = 0;
+    int nTopLineSaved = GetSession()->topline;
+    GetSession()->topline = 0;
     pos = len = 0;
     szTemp[0] = '\0';
     if (maxlen > 80)
@@ -332,13 +332,13 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
     goxy(x, y);
     for (i = 0; i < maxlen; i++)
     {
-        sess->bout << "±";
+        GetSession()->bout << "±";
     }
     goxy( x, y );
     if ( pszOrigText[0] )
     {
         strcpy( szTemp, pszOrigText );
-        sess->bout << szTemp;
+        GetSession()->bout << szTemp;
         goxy( x, y );
         pos = len = strlen(szTemp);
     }
@@ -433,19 +433,19 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
 						{
                             bputch( szTemp[i] );
 						}
-                        sess->bout << "±";
+                        GetSession()->bout << "±";
                     }
                 }
                 else
                 {
                     goxy(pos - 1 + x, y);
-                    sess->bout << "±";
+                    GetSession()->bout << "±";
                     pos = --len;
                     if (((mode == DATE) && ((pos == 2) || (pos == 5))) ||
                         ((mode == PHONE) && ((pos == 3) || (pos == 7))))
                     {
                         goxy(pos - 1 + x, y);
-                        sess->bout << "±";
+                        GetSession()->bout << "±";
                         pos = --len;
                     }
                 }
@@ -486,7 +486,7 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
 					}
                     szTemp[pos++] = slash;
                     goxy( pos + x, y );
-                    sess->bout << &szTemp[pos];
+                    GetSession()->bout << &szTemp[pos];
                 }
                 if ( mode == PHONE && ( pos == 3 || pos == 7 ) )
                 {
@@ -497,7 +497,7 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
 					}
                     szTemp[pos++] = dash;
                     goxy(pos + x, y);
-                    sess->bout << &szTemp[pos];
+                    GetSession()->bout << &szTemp[pos];
                 }
                 if ( ( mode == DATE  && c != slash ||
 					   mode == PHONE && c != dash ) ||
@@ -521,7 +521,7 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
 						}
                         szTemp[pos++] = ( char ) c;
                         goxy(pos + x, y);
-                        sess->bout << &szTemp[pos];
+                        GetSession()->bout << &szTemp[pos];
                     }
                 }
             }
@@ -539,8 +539,8 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
       pszOutText[0] = '\0';
   }
 
-  sess->topdata = nTopDataSaved;
-  sess->topline = nTopLineSaved;
+  GetSession()->topdata = nTopDataSaved;
+  GetSession()->topline = nTopLineSaved;
 
   ansic( 0 );
   return len;

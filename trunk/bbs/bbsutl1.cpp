@@ -31,7 +31,7 @@ bool AllowLocalSysop()
 
 
 /**
- * Finds sess->usernum and system number from pszEmailAddress, sets network number as
+ * Finds GetSession()->usernum and system number from pszEmailAddress, sets network number as
  * appropriate.
  * @param pszEmailAddress The text of the email address.
  * @param pUserNumber OUT The User Number
@@ -65,16 +65,16 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
         }
 		else
 		{
-			sess->bout << "Unknown user.\r\n";
+			GetSession()->bout << "Unknown user.\r\n";
 		}
 	}
     else if (atoi(ss + 1) == 0)
 	{
-		for (i = 0; i < sess->GetMaxNetworkNumber(); i++)
+		for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++)
 		{
 			set_net_num(i);
-			if ((strnicmp("internet", sess->GetNetworkName(), 8) == 0) ||
-				((strnicmp("filenet", sess->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767)))
+			if ((strnicmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
+				((strnicmp("filenet", GetSession()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767)))
 			{
 				strcpy(net_email_name, szEmailAddress);
 				for (ss1 = net_email_name; *ss1; ss1++)
@@ -88,9 +88,9 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 				break;
 			}
 		}
-		if ( i >= sess->GetMaxNetworkNumber() )
+		if ( i >= GetSession()->GetMaxNetworkNumber() )
 		{
-			sess->bout << "Unknown user.\r\n";
+			GetSession()->bout << "Unknown user.\r\n";
 		}
 	}
 	else
@@ -133,7 +133,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 			}
 			else
 			{
-				sess->bout << "Unknown user.\r\n";
+				GetSession()->bout << "Unknown user.\r\n";
 			}
 		}
 		else
@@ -143,15 +143,15 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 		}
 		if (*pSystemNumber && ss1)
 		{
-			for (i = 0; i < sess->GetMaxNetworkNumber(); i++)
+			for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++)
 			{
 				set_net_num(i);
-				if ( wwiv::stringUtils::IsEqualsIgnoreCase( ss1, sess->GetNetworkName() ) )
+				if ( wwiv::stringUtils::IsEqualsIgnoreCase( ss1, GetSession()->GetNetworkName() ) )
 				{
 					if (!valid_system(*pSystemNumber))
 					{
 						nl();
-						sess->bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
+						GetSession()->bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
 						*pSystemNumber = *pUserNumber = 0;
 					}
 					else
@@ -166,21 +166,21 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 							if ( *pUserNumber == 0 || *pUserNumber > 32767 )
 							{
 								*pUserNumber = 0;
-								sess->bout << "Unknown user.\r\n";
+								GetSession()->bout << "Unknown user.\r\n";
 							}
 						}
 					}
 					break;
 				}
 			}
-			if ( i >= sess->GetMaxNetworkNumber() )
+			if ( i >= GetSession()->GetMaxNetworkNumber() )
 			{
 				nl();
-				sess->bout << "This system isn't connected to "<< ss1 << "\r\n";
+				GetSession()->bout << "This system isn't connected to "<< ss1 << "\r\n";
 				*pSystemNumber = *pUserNumber = 0;
 			}
 		}
-		else if ( *pSystemNumber && sess->GetMaxNetworkNumber() > 1 )
+		else if ( *pSystemNumber && GetSession()->GetMaxNetworkNumber() > 1 )
 		{
 			odc[0] = 0;
 			odci = 0;
@@ -188,11 +188,11 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 			onx[1] = 0;
 			onxi = 1;
 			nv = 0;
-			on = sess->GetNetworkNumber();
-			ss = static_cast<char *>( BbsAllocA( sess->GetMaxNetworkNumber() ) );
+			on = GetSession()->GetNetworkNumber();
+			ss = static_cast<char *>( BbsAllocA( GetSession()->GetMaxNetworkNumber() ) );
 			WWIV_ASSERT(ss != NULL);
 			xx = -1;
-			for ( i = 0; i < sess->GetMaxNetworkNumber(); i++ )
+			for ( i = 0; i < GetSession()->GetMaxNetworkNumber(); i++ )
 			{
 				set_net_num( i );
 				if ( net_sysnum == *pSystemNumber )
@@ -217,14 +217,14 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 						if ( *pUserNumber == 0 || *pUserNumber > 32767 )
 						{
 							*pUserNumber = 0;
-							sess->bout << "Unknown user.\r\n";
+							GetSession()->bout << "Unknown user.\r\n";
 						}
 					}
 				}
 				else
 				{
 					nl();
-					sess->bout << "Unknown system\r\n";
+					GetSession()->bout << "Unknown system\r\n";
 					*pSystemNumber = *pUserNumber = 0;
 				}
 			}
@@ -252,11 +252,11 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 							odc[odci - 1] = static_cast< char >( odci + '0' );
 							odc[odci] = 0;
 						}
-						sess->bout << i + 1 << ". " << sess->GetNetworkName() << " (" << csne->name << ")\r\n";
+						GetSession()->bout << i + 1 << ". " << GetSession()->GetNetworkName() << " (" << csne->name << ")\r\n";
 					}
 				}
-				sess->bout << "Q. Quit\r\n\n";
-				sess->bout << "|#2Which network (number): ";
+				GetSession()->bout << "Q. Quit\r\n\n";
+				GetSession()->bout << "|#2Which network (number): ";
 				if (nv < 9) {
 					ch = onek(onx);
 					if (ch == 'Q')
@@ -286,7 +286,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 				}
 				else
 				{
-					sess->bout << "\r\n|12Aborted.\r\n\n";
+					GetSession()->bout << "\r\n|12Aborted.\r\n\n";
 					*pUserNumber = *pSystemNumber = 0;
 				}
 			}
@@ -304,12 +304,12 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 			if ( *pUserNumber == 0 || *pUserNumber > 32767 )
 			{
 				*pUserNumber = 0;
-				sess->bout << "Unknown user.\r\n";
+				GetSession()->bout << "Unknown user.\r\n";
 			}
 		}
 		else if (!valid_system(*pSystemNumber))
 		{
-			sess->bout << "\r\nUnknown user.\r\n";
+			GetSession()->bout << "\r\nUnknown user.\r\n";
 			*pSystemNumber = *pUserNumber = 0;
         }
     }

@@ -33,13 +33,13 @@ void HopSub()
 
     if ( okansi() )
     {
-        sess->bout << "\r\x1b[K";
+        GetSession()->bout << "\r\x1b[K";
     }
     else
     {
         nl();
     }
-    sess->bout << "|#9Enter name or partial name of sub to hop to:\r\n:";
+    GetSession()->bout << "|#9Enter name or partial name of sub to hop to:\r\n:";
     if ( okansi() )
     {
         newline = false;
@@ -55,17 +55,17 @@ void HopSub()
     }
 
     int c = 0;
-    int oc = sess->GetCurrentConferenceMessageArea();
-    int os = usub[sess->GetCurrentMessageArea()].subnum;
+    int oc = GetSession()->GetCurrentConferenceMessageArea();
+    int os = usub[GetSession()->GetCurrentMessageArea()].subnum;
 
     while ((c < nc) && !abort )
     {
-        if ( okconf( &sess->thisuser ) )
+        if ( okconf( &GetSession()->thisuser ) )
         {
             setuconf(CONF_SUBS, c, -1);
         }
         int i = 0;
-        while ((i < sess->num_subs) && (usub[i].subnum != -1) && !abort )
+        while ((i < GetSession()->num_subs) && (usub[i].subnum != -1) && !abort )
         {
             strcpy(s2, subboards[usub[i].subnum].name);
             for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
@@ -74,24 +74,24 @@ void HopSub()
             {
                 if ( okansi() )
                 {
-                    sess->bout << "\r\x1b[K";
+                    GetSession()->bout << "\r\x1b[K";
                 }
                 if ( !okansi() )
                 {
                     nl();
                 }
-                sess->bout << "|#5Do you mean \"" << subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
+                GetSession()->bout << "|#5Do you mean \"" << subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
                 char ch = onek_ncr("QYN\r");
                 if (ch == 'Y')
                 {
                     abort = true;
-                    sess->SetCurrentMessageArea( i );
+                    GetSession()->SetCurrentMessageArea( i );
                     break;
                 }
                 else if (ch == 'Q')
                 {
                     abort = true;
-                    if ( okconf( &sess->thisuser ) )
+                    if ( okconf( &GetSession()->thisuser ) )
                     {
                         setuconf(CONF_SUBS, oc, os);
                     }
@@ -101,12 +101,12 @@ void HopSub()
             ++i;
         }
         c++;
-        if ( !okconf( &sess->thisuser ) )
+        if ( !okconf( &GetSession()->thisuser ) )
         {
             break;
         }
     }
-    if ( okconf( &sess->thisuser ) && !abort )
+    if ( okconf( &GetSession()->thisuser ) && !abort )
     {
         setuconf(CONF_SUBS, oc, os);
     }
@@ -126,13 +126,13 @@ void HopDir()
 
     if ( okansi() )
     {
-        sess->bout << "\r\x1b[K";
+        GetSession()->bout << "\r\x1b[K";
     }
     else
     {
         nl();
     }
-	sess->bout << "|#9Enter name or partial name of dir to hop to:\r\n:";
+	GetSession()->bout << "|#9Enter name or partial name of dir to hop to:\r\n:";
     if ( okansi() )
     {
         newline = false;
@@ -148,17 +148,17 @@ void HopDir()
     }
 
     int c = 0;
-    int oc = sess->GetCurrentConferenceFileArea();
-    int os = udir[sess->GetCurrentFileArea()].subnum;
+    int oc = GetSession()->GetCurrentConferenceFileArea();
+    int os = udir[GetSession()->GetCurrentFileArea()].subnum;
 
     while ( c < nc && !abort )
     {
-        if ( okconf( &sess->thisuser ) )
+        if ( okconf( &GetSession()->thisuser ) )
         {
             setuconf(CONF_DIRS, c, -1);
         }
         int i = 0;
-        while ((i < sess->num_dirs) && (udir[i].subnum != -1) && (!abort))
+        while ((i < GetSession()->num_dirs) && (udir[i].subnum != -1) && (!abort))
         {
             strcpy(s2, directories[udir[i].subnum].name);
             for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
@@ -167,24 +167,24 @@ void HopDir()
             {
                 if ( okansi() )
                 {
-                    sess->bout << "\r\x1b[K";
+                    GetSession()->bout << "\r\x1b[K";
                 }
                 else
                 {
                     nl();
                 }
-                sess->bout << "|#5Do you mean \"" << directories[udir[i].subnum].name << "\" (Y/N/Q)? ";
+                GetSession()->bout << "|#5Do you mean \"" << directories[udir[i].subnum].name << "\" (Y/N/Q)? ";
                 char ch = onek_ncr("QYN\r");
                 if (ch == 'Y')
                 {
                     abort = true;
-                    sess->SetCurrentFileArea( i );
+                    GetSession()->SetCurrentFileArea( i );
                     break;
                 }
                 else if (ch == 'Q')
                 {
                     abort = true;
-                    if ( okconf( &sess->thisuser ) )
+                    if ( okconf( &GetSession()->thisuser ) )
                     {
                         setuconf(CONF_DIRS, oc, os);
                     }
@@ -194,12 +194,12 @@ void HopDir()
             ++i;
         }
         c++;
-        if ( !okconf( &sess->thisuser ) )
+        if ( !okconf( &GetSession()->thisuser ) )
         {
             break;
         }
     }
-    if ( okconf( &sess->thisuser ) && !abort )
+    if ( okconf( &GetSession()->thisuser ) && !abort )
     {
         setuconf(CONF_DIRS, oc, os);
     }

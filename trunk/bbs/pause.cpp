@@ -57,9 +57,9 @@ void pausescr()
 
         i1 = strlen( reinterpret_cast<char*>( stripcolors( ss ) ) );
         i = curatr;
-        setc( sess->thisuser.hasColor() ? sess->thisuser.GetColor( 3 ) :
-              sess->thisuser.GetBWColor( 3 ) );
-        sess->bout << ss << "\x1b[" << i1 << "D";
+        setc( GetSession()->thisuser.hasColor() ? GetSession()->thisuser.GetColor( 3 ) :
+              GetSession()->thisuser.GetBWColor( 3 ) );
+        GetSession()->bout << ss << "\x1b[" << i1 << "D";
         setc( i );
     }
     else
@@ -67,7 +67,7 @@ void pausescr()
         if ( okansi() )
         {
             i = curatr;
-            setc( sess->thisuser.hasColor() ? sess->thisuser.GetColor( 3 ) : sess->thisuser.GetBWColor( 3 ) );
+            setc( GetSession()->thisuser.hasColor() ? GetSession()->thisuser.GetColor( 3 ) : GetSession()->thisuser.GetBWColor( 3 ) );
         }
         for (i3 = 0; i3 < i2; i3++)
         {
@@ -75,7 +75,7 @@ void pausescr()
             {
                 i1 -= 2;
             }
-			sess->bout << ss;
+			GetSession()->bout << ss;
             for ( i3 = 0; i3 < i1; i3++ )
             {
                 BackSpace();
@@ -105,9 +105,9 @@ void pausescr()
                     {
                         warned = 1;
                         bputch( CG );
-                        setc( sess->thisuser.hasColor() ? sess->thisuser.GetColor( 6 ) :
-                        sess->thisuser.GetBWColor( 6 ) );
-                        sess->bout << ss;
+                        setc( GetSession()->thisuser.hasColor() ? GetSession()->thisuser.GetColor( 6 ) :
+                        GetSession()->thisuser.GetBWColor( 6 ) );
+                        GetSession()->bout << ss;
                         for ( i3 = 0; i3 < i2; i3++ )
                         {
                             if ( s[i3] == 3 && i1 > 1 )
@@ -115,7 +115,7 @@ void pausescr()
                                 i1 -= 2;
                             }
                         }
-                        sess->bout << "\x1b[" << i1 << "D";
+                        GetSession()->bout << "\x1b[" << i1 << "D";
                         setc( i );
                     }
                 }
@@ -128,7 +128,7 @@ void pausescr()
                         {
                             bputch( ' ' );
                         }
-                        sess->bout << "\x1b[" << i1 << "D";
+                        GetSession()->bout << "\x1b[" << i1 << "D";
                         setc( i );
                         setiia( oiia );
                         return;
@@ -152,10 +152,10 @@ void pausescr()
                 break;
             case 'C':
             case '=':
-                if ( sess->thisuser.hasPause() )
+                if ( GetSession()->thisuser.hasPause() )
                 {
                     nsp = 1;
-                    sess->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+                    GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
                 }
                 break;
             default:
@@ -166,7 +166,7 @@ void pausescr()
         {
             bputch(' ');
         }
-        sess->bout << "\x1b[" << i1 << "D";
+        GetSession()->bout << "\x1b[" << i1 << "D";
         setc( i );
         setiia( oiia );
     }

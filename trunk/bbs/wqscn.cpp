@@ -50,7 +50,7 @@ void read_qscn( int nUserNumber, unsigned long *qscn, bool bStayOpen, bool bForc
 {
     if ( !bForceRead )
     {
-        if ( ( sess->IsUserOnline() && nUserNumber == sess->usernum ) ||
+        if ( ( GetSession()->IsUserOnline() && nUserNumber == GetSession()->usernum ) ||
 			 ( GetApplication()->GetLocalIO()->GetWfcStatus() && nUserNumber == 1 ) )
 	    {
             if ( qscn != qsc )
@@ -96,7 +96,7 @@ void write_qscn( int nUserNumber, unsigned long *qscn, bool bStayOpen )
         return;
 	}
 
-    if ( ( sess->IsUserOnline() && (nUserNumber == sess->usernum) ) ||
+    if ( ( GetSession()->IsUserOnline() && (nUserNumber == GetSession()->usernum) ) ||
          ( GetApplication()->GetLocalIO()->GetWfcStatus() && nUserNumber == 1 ) )
 	{
         if ( qsc != qscn )

@@ -163,9 +163,9 @@ void grab_quotes(messagerec * m, const char *aux)
             {
                 l3 = l2 = 0;
                 ss1 = NULL;
-                sess->internetFullEmailAddress = "";
-                if ((strnicmp("internet", sess->GetNetworkName(), 8) == 0) ||
-                    (strnicmp("filenet", sess->GetNetworkName(), 7) == 0))
+                GetSession()->internetFullEmailAddress = "";
+                if ((strnicmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
+                    (strnicmp("filenet", GetSession()->GetNetworkName(), 7) == 0))
                 {
                         for (l1 = 0; l1 < l; l1++)
                         {
@@ -190,7 +190,7 @@ void grab_quotes(messagerec * m, const char *aux)
                                             }
                                             if (ss1)
                                             {
-                                                sess->usenetReferencesLine = ss1;
+                                                GetSession()->usenetReferencesLine = ss1;
                                             }
                                         }
                                     }
@@ -200,18 +200,18 @@ void grab_quotes(messagerec * m, const char *aux)
                     }
                     l3 = l2 = 0;
                     ss1 = NULL;
-                    if ( sess->IsMessageThreadingEnabled() )
+                    if ( GetSession()->IsMessageThreadingEnabled() )
                     {
                         for (l1 = 0; l1 < l; l1++)
                         {
                             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'P'))
                             {
                                 l1 += 4;
-                                sess->threadID = "";
+                                GetSession()->threadID = "";
                                 while ((ss[l1] != '\r') && (l1 < l))
                                 {
                                     sprintf(temp, "%c", ss[l1]);
-                                    sess->threadID += temp;
+                                    GetSession()->threadID += temp;
                                     l1++;
                                 }
                                 l1 = l;
@@ -444,7 +444,7 @@ void auto_quote(char *org, long len, int type, long daten)
         char ch = CZ;
 		fileInputMsg.Write( &ch, 1 );
 		fileInputMsg.Close();
-		if ( sess->thisuser.GetNumMessagesPosted() < 10 )
+		if ( GetSession()->thisuser.GetNumMessagesPosted() < 10 )
 		{
 			printfile(QUOTE_NOEXT);
 		}
@@ -460,23 +460,23 @@ void get_quote(int fsed)
     static int i, i1, i2, i3, rl;
     static int l1, l2;
 
-    sess->SetQuoting( ( fsed ) ? true : false );
+    GetSession()->SetQuoting( ( fsed ) ? true : false );
     if ( quotes_ind == NULL )
     {
         if ( fsed )
         {
-            sess->bout << "\x0c";
+            GetSession()->bout << "\x0c";
         }
         else
         {
             nl();
         }
-        sess->bout << "Not replying to a message!  Nothing to quote!\r\n\n";
+        GetSession()->bout << "Not replying to a message!  Nothing to quote!\r\n\n";
         if ( fsed )
         {
             pausescr();
         }
-        sess->SetQuoting( false );
+        GetSession()->SetQuoting( false );
         return;
     }
     rl = 1;
@@ -484,7 +484,7 @@ void get_quote(int fsed)
     {
         if (fsed)
         {
-            sess->bout << "\x0c";
+            GetSession()->bout << "\x0c";
         }
         if (rl)
         {
@@ -551,7 +551,7 @@ void get_quote(int fsed)
             do
             {
                 sprintf(s,"Quote from line 1-%d? (?=relist, Q=quit) ",i);
-				sess->bout << "|#2" << s;
+				GetSession()->bout << "|#2" << s;
                 input(s, 3);
             } while ((!s[0]) && (!hangup));
             if (s[0] == 'Q')
@@ -576,7 +576,7 @@ void get_quote(int fsed)
         {
             do
             {
-				sess->bout << "|#2through line " << i1 << "-" << i << "? (Q=quit) ";
+				GetSession()->bout << "|#2through line " << i1 << "-" << i << "? (Q=quit) ";
                 input(s, 3);
             } while ( !s[0] && !hangup );
             if (s[0] == 'Q')
@@ -600,11 +600,11 @@ void get_quote(int fsed)
         {
             if (i1 == i2)
             {
-                sess->bout << "|#5Quote line " << i1 << "? ";
+                GetSession()->bout << "|#5Quote line " << i1 << "? ";
             }
             else
             {
-                sess->bout << "|#5Quote lines " << i1 << "-" << i2 << "? ";
+                GetSession()->bout << "|#5Quote lines " << i1 << "-" << i2 << "? ";
             }
             if (!noyes())
             {
@@ -613,7 +613,7 @@ void get_quote(int fsed)
             }
         }
     } while ( !hangup && rl && !i2 );
-    sess->SetQuoting( false );
+    GetSession()->SetQuoting( false );
     charbufferpointer = 0;
     if ( i1 > 0 && i2 >= i1 && i2 <= i && rl && !hangup )
     {
