@@ -80,7 +80,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
     bool bShouldUseSync = false;
     int nSyncMode = 0;
-    if ( sess->using_modem && ( flags & EFLAG_FOSSIL ) )
+    if ( GetSession()->using_modem && ( flags & EFLAG_FOSSIL ) )
     {
         bShouldUseSync = true;
     }
@@ -123,7 +123,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
     char * pszTitle = new char[ 255 ];
     _snprintf( pszTitle, sizeof( pszTitle), "%s in door on node %d",
-             sess->thisuser.GetName(), GetApplication()->GetInstanceNumber() );
+             GetSession()->thisuser.GetName(), GetApplication()->GetInstanceNumber() );
     si.lpTitle = pszTitle;
 
 	if ( ok_modem_stuff && !bUsingSync )
@@ -266,10 +266,10 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
         return -1;
     }
 
-	// If we are on Windows NT and sess->IsExecUseWaitForInputIdle() is true use this.
-    if ( IsWindowsNT() && sess->IsExecUseWaitForInputIdle() )
+	// If we are on Windows NT and GetSession()->IsExecUseWaitForInputIdle() is true use this.
+    if ( IsWindowsNT() && GetSession()->IsExecUseWaitForInputIdle() )
     {
-		int dwWaitRet = ::WaitForInputIdle( pi.hProcess, sess->GetExecWaitForInputTimeout() );
+		int dwWaitRet = ::WaitForInputIdle( pi.hProcess, GetSession()->GetExecWaitForInputTimeout() );
         if ( dwWaitRet != 0 )
         {
             if ( bUsingSync )
@@ -281,7 +281,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
     }
     else
     {
-		::Sleep( sess->GetExecWaitForInputTimeout() );
+		::Sleep( GetSession()->GetExecWaitForInputTimeout() );
         ::Sleep( 0 );
         ::Sleep( 0 );
         ::Sleep( 0 );
@@ -463,7 +463,7 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
     for( ;; )
     {
         nCounter++;
-        if ( sess->using_modem && ( !GetApplication()->GetComm()->carrier() ) )
+        if ( GetSession()->using_modem && ( !GetApplication()->GetComm()->carrier() ) )
         {
             SetEvent( hSyncHangupEvent );
             fprintf( hLogFile, "Setting Hangup Event and Sleeping\r\n" );
@@ -591,7 +591,7 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
                     // For some reason this doesn't write twice locally, so it works pretty well.
                     szReadBuffer[ nBufferPtr ] = '\0';
                     fprintf( hLogFile, "{%s}\r\n", szReadBuffer );
-                    sess->bout << szReadBuffer;
+                    GetSession()->bout << szReadBuffer;
 
                     //ExpandWWIVHeartCodes( szReadBuffer );
                     //int nNumWritten = GetApplication()->GetComm()->write( szReadBuffer, strlen( szReadBuffer )  );
@@ -693,7 +693,7 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
     {
         fprintf( hLogFile, " IN LOOP\r\n" );
         nCounter++;
-        if ( sess->using_modem && ( !GetApplication()->GetComm()->carrier() ) )
+        if ( GetSession()->using_modem && ( !GetApplication()->GetComm()->carrier() ) )
         {
             SetEvent( hSyncHangupEvent );
             nCounter += CONST_WIN9X_NUM_LOOPS_BEFORE_EXIT_CHECK;
@@ -825,7 +825,7 @@ bool ExpandWWIVHeartCodes( char *pszBuffer )
             {
                 char szTempColor[ 81 ];
                 int nColor = *pIn - '0';
-                makeansi( sess->thisuser.GetColor( nColor ), szTempColor, false );
+                makeansi( GetSession()->thisuser.GetColor( nColor ), szTempColor, false );
                 char *pColor = szTempColor;
                 while ( *pColor )
                 {

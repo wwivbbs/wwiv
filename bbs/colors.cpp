@@ -49,41 +49,41 @@ void save_colordata()
 void list_ext_colors()
 {
     goxy(40, 7);
-    sess->bout << "|#7ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿";
+    GetSession()->bout << "|#7ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿";
     goxy(40, 8);
-    sess->bout << "|#7³        |#2COLOR LIST|#7       ³";
+    GetSession()->bout << "|#7³        |#2COLOR LIST|#7       ³";
     goxy(40, 9);
-    sess->bout << "|#7ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´";
+    GetSession()->bout << "|#7ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´";
     goxy(40, 10);
-    sess->bout << "|#7³ .  \003 \003!!\0030 \003\"\"\0030 \003##\0030 \003$$\0030 \003%%\0030 \003&&\0030" <<
+    GetSession()->bout << "|#7³ .  \003 \003!!\0030 \003\"\"\0030 \003##\0030 \003$$\0030 \003%%\0030 \003&&\0030" <<
         " \003''\0030 \003((\0030 \003))\0030 \003**\0030 \003++\0037 ³";
     goxy(40, 11);
-    sess->bout << "|#7³ \003,,\0030 \003--\0030 \003..\0030 \003//\0030 0 \00311\0030 \00322\0030" <<
+    GetSession()->bout << "|#7³ \003,,\0030 \003--\0030 \003..\0030 \003//\0030 0 \00311\0030 \00322\0030" <<
         " \00333\0030 \00344\0030 \00355\0030 \00366\0030 \00377 ³";
     goxy(40, 12);
-    sess->bout << "|#7³ \00388\0030 \00399\0030 \003::\0030 \003;;\0030 \003<<\0030 \003==\0030 \003>>\0030" <<
+    GetSession()->bout << "|#7³ \00388\0030 \00399\0030 \003::\0030 \003;;\0030 \003<<\0030 \003==\0030 \003>>\0030" <<
         " \003??\0030 \003@@\0030 \003AA\0030 \003BB\0030 \003CC\0037 ³";
     goxy(40, 13);
-    sess->bout << "|#7³ \003DD\0030 \003EE\0030 \003FF\0030 \003GG\0030 \003HH\0030 \003II\0030 \003JJ\0030" <<
+    GetSession()->bout << "|#7³ \003DD\0030 \003EE\0030 \003FF\0030 \003GG\0030 \003HH\0030 \003II\0030 \003JJ\0030" <<
         " \003KK\0030 \003LL\0030 \003MM\0030 \003NN\0030 \003OO\0037 ³";
     goxy(40, 14);
-    sess->bout << "|#7³ \003PP\0030 \003QQ\0030 \003RR\0030 \003SS\0030 \003TT\0030 \003UU\0030 \003VV\0030" <<
+    GetSession()->bout << "|#7³ \003PP\0030 \003QQ\0030 \003RR\0030 \003SS\0030 \003TT\0030 \003UU\0030 \003VV\0030" <<
         " \003WW\0030 \003XX\0030 \003YY\0030 \003ZZ\0030 \003[[\0037 ³";
     goxy(40, 15);
-    sess->bout << "|#7³ \003\\\\\0030 \003]]\0030 \003^^\0030 \003__\0030 \003``\0030 \003aa\0030 \003bb\0030" <<
+    GetSession()->bout << "|#7³ \003\\\\\0030 \003]]\0030 \003^^\0030 \003__\0030 \003``\0030 \003aa\0030 \003bb\0030" <<
         " \003cc\0030 \003dd\0030 \003ee\0030 \003ff\0030 \003gg\0037 ³";
     goxy(40, 16);
-    sess->bout << "|#7³ \003hh\0030 \003ii\0030 \003jj\0030 \003kk\0030 \003ll\0030 \003mm\0030 \003nn\0030" <<
+    GetSession()->bout << "|#7³ \003hh\0030 \003ii\0030 \003jj\0030 \003kk\0030 \003ll\0030 \003mm\0030 \003nn\0030" <<
         " \003oo\0030 \003pp\0030 \003qq\0030 \003rr\0030 \003ss\0037 ³";
     goxy(40, 17);
-    sess->bout << "|#7³ \003tt\0030 \003uu\0030 \003vv\0030 \003ww\0030 \003xx\0030 \003yy\0030 \003zz\0030" <<
+    GetSession()->bout << "|#7³ \003tt\0030 \003uu\0030 \003vv\0030 \003ww\0030 \003xx\0030 \003yy\0030 \003zz\0030" <<
         " \003{{\0030 \003||\0030 \003}}\0030 \003~~\0030 \003[[\0037 ³";
     goxy(40, 18);
-    sess->bout << "|#7ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´";
+    GetSession()->bout << "|#7ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´";
     goxy(40, 19);
-    sess->bout << "|#7³                         ³";
+    GetSession()->bout << "|#7³                         ³";
     goxy(40, 20);
-    sess->bout << "|#7ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ";
+    GetSession()->bout << "|#7ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ";
 }
 
 #if defined( _MSC_VER )
@@ -102,7 +102,7 @@ void color_config()
     do
     {
         bputch( CL );
-		sess->bout << "Extended Color Configuration - Enter Choice, ^Z to Quit, ^R to Relist\r\n:";
+		GetSession()->bout << "Extended Color Configuration - Enter Choice, ^Z to Quit, ^R to Relist\r\n:";
         list_ext_colors();
         goxy(2, 2);
         ch = getkey();
@@ -123,35 +123,35 @@ void color_config()
             color_list();
             ansic( 0 );
             nl();
-            sess->bout << "|#2Foreground? ";
+            GetSession()->bout << "|#2Foreground? ";
             ch1 = onek("01234567");
             c = static_cast< unsigned char > ( ch1 - '0' );
             goxy(41, 19);
             setc( c );
-            sess->bout << s;
+            GetSession()->bout << s;
             ansic( 0 );
             goxy(1, 16);
-            sess->bout << "|#2Background? ";
+            GetSession()->bout << "|#2Background? ";
             ch1 = onek("01234567");
             c = static_cast< unsigned char > ( c | ((ch1 - '0') << 4) );
             goxy(41, 19);
             setc( c );
-            sess->bout << s;
+            GetSession()->bout << s;
             ansic( 0 );
             goxy(1, 17);
             nl();
-            sess->bout << "|#5Intensified? ";
+            GetSession()->bout << "|#5Intensified? ";
             if (yesno())
             {
                 c |= 0x08;
             }
             goxy( 41, 19 );
             setc( c );
-            sess->bout << s;
+            GetSession()->bout << s;
             ansic( 0 );
             goxy( 1, 18 );
             nl();
-            sess->bout << "|#5Blinking? ";
+            GetSession()->bout << "|#5Blinking? ";
             if ( yesno() )
             {
                 c |= 0x80;
@@ -159,24 +159,24 @@ void color_config()
             nl();
             goxy(41, 19);
             setc( c );
-            sess->bout << s;
+            GetSession()->bout << s;
             ansic( 0 );
             goxy(1, 21);
             setc( c );
-            sess->bout << DescribeColorCode( c );
+            GetSession()->bout << DescribeColorCode( c );
             ansic( 0 );
             nl( 2 );
-            sess->bout << "|#5Is this OK? ";
+            GetSession()->bout << "|#5Is this OK? ";
             if (yesno())
             {
-                sess->bout << "\r\nColor saved.\r\n\n";
+                GetSession()->bout << "\r\nColor saved.\r\n\n";
                 if ((n <= -1) && (n >= -16))
                 {
                     rescolor.resx[207 + abs(n)] = static_cast< unsigned char > ( c );
                 }
                 else if ((n >= 0) && (n <= 9))
                 {
-                    sess->thisuser.SetColor( n, c );
+                    GetSession()->thisuser.SetColor( n, c );
                 }
                 else
                 {
@@ -185,12 +185,12 @@ void color_config()
             }
             else
             {
-                sess->bout << "\r\nNot saved, then.\r\n\n";
+                GetSession()->bout << "\r\nNot saved, then.\r\n\n";
             }
         }
     } while ( !done && !hangup );
     nl( 2 );
-    sess->bout << "|#5Save changes? ";
+    GetSession()->bout << "|#5Save changes? ";
     if ( yesno() )
     {
         save_colordata();

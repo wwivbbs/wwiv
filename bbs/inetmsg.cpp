@@ -60,21 +60,21 @@ unsigned char *valid_name(unsigned char *s)
 
 void get_user_ppp_addr()
 {
-	sess->internetFullEmailAddress = "";
+	GetSession()->internetFullEmailAddress = "";
 	bool found = false;
     int nNetworkNumber = getnetnum( "FILEnet" );
-    sess->SetNetworkNumber( nNetworkNumber );
+    GetSession()->SetNetworkNumber( nNetworkNumber );
 	if ( nNetworkNumber == -1 )
 	{
 		return;
 	}
-	set_net_num( sess->GetNetworkNumber() );
-	wwiv::stringUtils::FormatString( sess->internetFullEmailAddress,
+	set_net_num( GetSession()->GetNetworkNumber() );
+	wwiv::stringUtils::FormatString( GetSession()->internetFullEmailAddress,
 		                             "%s@%s",
-                                     sess->internetEmailName.c_str(),
-                                     sess->internetEmailDomain.c_str() );
+                                     GetSession()->internetEmailName.c_str(),
+                                     GetSession()->internetEmailDomain.c_str() );
     char szAcctFileName[ MAX_PATH ];
-	sprintf(szAcctFileName, "%s%s", sess->GetNetworkDataDirectory(), ACCT_INI);
+	sprintf(szAcctFileName, "%s%s", GetSession()->GetNetworkDataDirectory(), ACCT_INI);
     FILE* fp = fsh_open(szAcctFileName, "rt");
     char szLine[ 255 ];
 	if ( fp != NULL )
@@ -84,7 +84,7 @@ void get_user_ppp_addr()
 			if (strnicmp(szLine, "USER", 4) == 0)
 			{
 				int nUserNum = atoi(&szLine[4]);
-				if (nUserNum == sess->usernum)
+				if (nUserNum == GetSession()->usernum)
 				{
 					char* ss = strtok(szLine, "=");
 					ss = strtok(NULL, "\r\n");
@@ -97,7 +97,7 @@ void get_user_ppp_addr()
 						StringTrimEnd(ss);
 						if (ss)
 						{
-							sess->internetFullEmailAddress = ss;
+							GetSession()->internetFullEmailAddress = ss;
 							found = true;
 						}
 					}
@@ -106,11 +106,11 @@ void get_user_ppp_addr()
 		}
 		fclose(fp);
 	}
-    if ( !found && !sess->internetPopDomain.empty() )
+    if ( !found && !GetSession()->internetPopDomain.empty() )
 	{
 		int j = 0;
         char szLocalUserName[ 255 ];
-        strcpy( szLocalUserName, sess->thisuser.GetName() );
+        strcpy( szLocalUserName, GetSession()->thisuser.GetName() );
 		for ( int i = 0; ( i < wwiv::stringUtils::GetStringLength( szLocalUserName ) ) && ( i < 61 ); i++ )
 		{
 			if ( szLocalUserName[ i ] != '.' )
@@ -119,33 +119,33 @@ void get_user_ppp_addr()
 			}
 		}
 		szLine[ j ] = '\0';
-        wwiv::stringUtils::FormatString( sess->internetFullEmailAddress, "%s@%s", szLine, sess->internetPopDomain.c_str() );
+        wwiv::stringUtils::FormatString( GetSession()->internetFullEmailAddress, "%s@%s", szLine, GetSession()->internetPopDomain.c_str() );
 	}
 }
 
 
 void send_inet_email()
 {
-	if ( sess->thisuser.GetNumEmailSentToday() > getslrec( sess->GetEffectiveSl() ).emails )
+	if ( GetSession()->thisuser.GetNumEmailSentToday() > getslrec( GetSession()->GetEffectiveSl() ).emails )
 	{
 		nl();
-		sess->bout << "|#6Too much mail sent today.\r\n";
+		GetSession()->bout << "|#6Too much mail sent today.\r\n";
 		return;
 	}
 	write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
     int nNetworkNumber = getnetnum( "FILEnet" );
-    sess->SetNetworkNumber( nNetworkNumber );
+    GetSession()->SetNetworkNumber( nNetworkNumber );
 	if ( nNetworkNumber == -1 )
 	{
 		return;
 	}
-	set_net_num( sess->GetNetworkNumber() );
+	set_net_num( GetSession()->GetNetworkNumber() );
 	nl();
-	sess->bout << "|#9Your Internet Address:|#1 " <<
-	      ( sess->IsInternetUseRealNames() ? sess->thisuser.GetRealName() : sess->thisuser.GetName() ) <<
-		  " <" << sess->internetFullEmailAddress << ">";
+	GetSession()->bout << "|#9Your Internet Address:|#1 " <<
+	      ( GetSession()->IsInternetUseRealNames() ? GetSession()->thisuser.GetRealName() : GetSession()->thisuser.GetName() ) <<
+		  " <" << GetSession()->internetFullEmailAddress << ">";
     nl( 2 );
-	sess->bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
+	GetSession()->bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
 	inputl( net_email_name, 75, true );
 	if (check_inet_addr(net_email_name))
 	{
@@ -164,11 +164,11 @@ void send_inet_email()
 		nl();
 		if (net_email_name[0])
 		{
-            sess->bout << "|#6Invalid address format!\r\n";
+            GetSession()->bout << "|#6Invalid address format!\r\n";
 		}
 		else
 		{
-			sess->bout << "|12Aborted.\r\n";
+			GetSession()->bout << "|12Aborted.\r\n";
 		}
 	}
 }
@@ -200,9 +200,9 @@ char *read_inet_addr( char *addr, int nUserNumber )
 		return NULL;
 	}
 
-	if ( nUserNumber == sess->usernum && check_inet_addr( sess->thisuser.GetEmailAddress() ) )
+	if ( nUserNumber == GetSession()->usernum && check_inet_addr( GetSession()->thisuser.GetEmailAddress() ) )
 	{
-		strcpy( addr, sess->thisuser.GetEmailAddress() );
+		strcpy( addr, GetSession()->thisuser.GetEmailAddress() );
 	}
 	else
 	{
@@ -260,12 +260,12 @@ void write_inet_addr( const char *addr, int nUserNumber )
     inetAddrFile.Close();
     char szDefaultUserAddr[ 255 ];
 	sprintf(szDefaultUserAddr, "USER%d", nUserNumber);
-    sess->SetNetworkNumber( getnetnum( "FILEnet" ) );
-	if ( sess->GetNetworkNumber() != -1 )
+    GetSession()->SetNetworkNumber( getnetnum( "FILEnet" ) );
+	if ( GetSession()->GetNetworkNumber() != -1 )
 	{
         char szInputFileName[ MAX_PATH ], szOutputFileName[ MAX_PATH ];
-		set_net_num( sess->GetNetworkNumber() );
-		sprintf(szInputFileName, "%s%s", sess->GetNetworkDataDirectory(), ACCT_INI);
+		set_net_num( GetSession()->GetNetworkNumber() );
+		sprintf(szInputFileName, "%s%s", GetSession()->GetNetworkDataDirectory(), ACCT_INI);
 		FILE* in = fsh_open(szInputFileName, "rt");
 		sprintf(szOutputFileName, "%s%s", syscfgovr.tempdir, ACCT_INI);
 		FILE* out = fsh_open(szOutputFileName, "wt+");

@@ -53,7 +53,7 @@ void set_question( int ii )
     char s[81];
     voting_response vr;
 
-    sess->bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
+    GetSession()->bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
     inputl( s, 75, true );
     strcpy(v.question, s);
     v.numanswers = 0;
@@ -67,7 +67,7 @@ void set_question( int ii )
     if ( !s[0] )
     {
         nl();
-        sess->bout << "|12Delete Question #" << ii + 1 << ", Are you sure? ";
+        GetSession()->bout << "|12Delete Question #" << ii + 1 << ", Are you sure? ";
         if (!yesno())
         {
             return;
@@ -76,11 +76,11 @@ void set_question( int ii )
     else
     {
         nl();
-        sess->bout << "|10Enter answer choices, Enter a blank line when finished.";
+        GetSession()->bout << "|10Enter answer choices, Enter a blank line when finished.";
         nl( 2 );
         while ( v.numanswers < 19 && s[0] )
         {
-            sess->bout << "|#2" << v.numanswers + 1 << "#7: ";
+            GetSession()->bout << "|#2" << v.numanswers + 1 << "#7: ";
             inputl( s, 63, true );
             strcpy(vr.response, s);
             vr.numresponses = 0;
@@ -134,7 +134,7 @@ void ivotes()
     {
         print_quests();
         nl();
-        sess->bout << "|#2Which (Q=Quit) ? ";
+        GetSession()->bout << "|#2Which (Q=Quit) ? ";
         char szQuestionNum[81];
         input( szQuestionNum, 2 );
         if ( wwiv::stringUtils::IsEquals( szQuestionNum, "Q" ) )
@@ -188,7 +188,7 @@ void voteprint()
         votingDat.Close();
         if (v.numanswers)
         {
-            sess->bout << v.question;
+            GetSession()->bout << v.question;
 			nl();
             sprintf(s, "\r\n%s\r\n", v.question);
             votingText.Write( s, strlen( s ) );

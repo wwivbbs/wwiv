@@ -61,16 +61,16 @@ void StatusMgr::Get(bool bFailOnFailure, bool bLockFile)
 
 		if ( lQScanPtr != status.qscanptr )
 		{
-			if (sess->m_SubDateCache)
+			if (GetSession()->m_SubDateCache)
 			{
 				// kill subs cache
-				for (int i1 = 0; i1 < sess->num_subs; i1++)
+				for (int i1 = 0; i1 < GetSession()->num_subs; i1++)
 				{
-					sess->m_SubDateCache[i1] = 0L;
+					GetSession()->m_SubDateCache[i1] = 0L;
 				}
 			}
-            sess->SetMessageAreaCacheNumber( 0 );
-			sess->subchg = 1;
+            GetSession()->SetMessageAreaCacheNumber( 0 );
+			GetSession()->subchg = 1;
 			g_szMessageGatFileName[0] = 0;
 		}
 		for (int i = 0; i < 7; i++)
@@ -92,18 +92,18 @@ void StatusMgr::Get(bool bFailOnFailure, bool bLockFile)
 					break;
 				case filechange_upload:           // kill dirs cache
                     {
-					    if (sess->m_DirectoryDateCache)
+					    if (GetSession()->m_DirectoryDateCache)
 					    {
-						    for (int i1 = 0; i1 < sess->num_dirs; i1++)
+						    for (int i1 = 0; i1 < GetSession()->num_dirs; i1++)
 						    {
-							    sess->m_DirectoryDateCache[i1] = 0L;
+							    GetSession()->m_DirectoryDateCache[i1] = 0L;
 						    }
 					    }
-					    sess->SetFileAreaCacheNumber( 0 );
+					    GetSession()->SetFileAreaCacheNumber( 0 );
                     }
 					break;
 				case filechange_posts:
-					sess->subchg = 1;
+					GetSession()->subchg = 1;
 					g_szMessageGatFileName[0] = 0;
 					break;
 				case filechange_email:
@@ -112,9 +112,9 @@ void StatusMgr::Get(bool bFailOnFailure, bool bLockFile)
 					break;
 				case filechange_net:
                     {
-					    int nOldNetNum = sess->GetNetworkNumber();
+					    int nOldNetNum = GetSession()->GetNetworkNumber();
 					    zap_bbs_list();
-					    for ( int i1 = 0; i1 < sess->GetMaxNetworkNumber(); i1++ )
+					    for ( int i1 = 0; i1 < GetSession()->GetMaxNetworkNumber(); i1++ )
 					    {
 						    set_net_num( i1 );
 						    zap_call_out_list();

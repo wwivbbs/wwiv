@@ -53,7 +53,12 @@ LABEL: WWIV-5_0_59
 DATE:  ??/??/????
 
 Rushfan - Started working on Mac OS X Support
-
+Rushfan - Changed global app to GetApplication(), sess to GetSession().  Added
+          GetComm(), GetUserManager(), GetLocalIO(), and GetStatusManager() 
+          to WBbsApp and made the previously public member variables private 
+          and updated all access through the accessors
+Rushfan - Update size test code to handle Mac OS X as well as Linux/Win32 and
+          MSDOS.
 
 ==============================================================================
 

@@ -45,7 +45,7 @@ int listfiles_plus_function( int type )
 	int file_handle[51];
 	char vert_pos[51];
 	int file_pos = 0, save_file_pos = 0, menu_pos = 0;
-	int save_dir = sess->GetCurrentFileArea();
+	int save_dir = GetSession()->GetCurrentFileArea();
 	bool sysop_mode = false;
 	struct side_menu_colors smc;
 	struct search_record search_rec;
@@ -67,7 +67,7 @@ int listfiles_plus_function( int type )
 
 	prep_menu_items(menu_items);
 
-	file_recs = (uploadsrec(*)[1]) ( BbsAllocA( ( sess->thisuser.GetScreenLines() + 20 ) * sizeof( uploadsrec ) ) );
+	file_recs = (uploadsrec(*)[1]) ( BbsAllocA( ( GetSession()->thisuser.GetScreenLines() + 20 ) * sizeof( uploadsrec ) ) );
 	WWIV_ASSERT(file_recs);
 	if (!file_recs)
 	{
@@ -84,7 +84,7 @@ int listfiles_plus_function( int type )
 
 	g_num_listed = 0;
     bool all_done = false;
-	for (int this_dir = 0; (this_dir < sess->num_dirs) && (!hangup) && (udir[this_dir].subnum != -1) && !all_done; this_dir++)
+	for (int this_dir = 0; (this_dir < GetSession()->num_dirs) && (!hangup) && (udir[this_dir].subnum != -1) && !all_done; this_dir++)
 	{
 		int also_this_dir = udir[this_dir].subnum;
 		bool scan_dir = false;
@@ -113,7 +113,7 @@ int listfiles_plus_function( int type )
 		int save_first_file = 0;
 		if ( scan_dir )
 		{
-			sess->SetCurrentFileArea( this_dir );
+			GetSession()->SetCurrentFileArea( this_dir );
 			dliscan();
 			g_num_listed = 0;
 			int first_file = save_first_file = 1;
@@ -136,7 +136,7 @@ int listfiles_plus_function( int type )
 					}
 					print_searching(&search_rec);
 				}
-				if (sess->numf)
+				if (GetSession()->numf)
 				{
 					changedir = 0;
 					bool force_menu = false;
@@ -175,7 +175,7 @@ int listfiles_plus_function( int type )
 						++amount;
 					}
 
-					if ((lines >= max_lines) || (sess->numf < first_file + amount) || force_menu)
+					if ((lines >= max_lines) || (GetSession()->numf < first_file + amount) || force_menu)
 					{
 						fileDownload.Close();
 						if (matches)
@@ -252,7 +252,7 @@ int listfiles_plus_function( int type )
 									case 0:
 										save_first_file = first_file;
 										first_file += amount;
-										if (first_file > sess->numf)
+										if (first_file > GetSession()->numf)
 										{
 											done = true;
 										}
@@ -299,13 +299,13 @@ ADD_OR_REMOVE_BATCH:
 										}
 #ifdef FILE_POINTS
 										else if ( ( ( !( file_recs[file_pos]->mask & mask_validated ) ) ||
-                                                    ( ( file_recs[file_pos]->filepoints > sess->thisuser.GetFilePoints() ) ) &&
-												    !sess->thisuser.isExemptRatio() ) &&
+                                                    ( ( file_recs[file_pos]->filepoints > GetSession()->thisuser.GetFilePoints() ) ) &&
+												    !GetSession()->thisuser.isExemptRatio() ) &&
                                                     !sysop_mode)
 										{
 											ClearScreen();
-											sess->bout << "You don't have enough file points to download this file\r\n";
-											sess->bout << "Or this file is not validated yet.\r\n";
+											GetSession()->bout << "You don't have enough file points to download this file\r\n";
+											GetSession()->bout << "Or this file is not validated yet.\r\n";
 #else
 											else if (!ratio_ok() && !sysop_mode)
 											{
@@ -319,18 +319,18 @@ ADD_OR_REMOVE_BATCH:
 											{
 												char szTempFile[MAX_PATH];
 												redraw = false;
-												if (!(directories[udir[sess->GetCurrentFileArea()].subnum].mask & mask_cdrom) && !sysop_mode)
+												if (!(directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask & mask_cdrom) && !sysop_mode)
 												{
-													strcpy(szTempFile, directories[udir[sess->GetCurrentFileArea()].subnum].path);
+													strcpy(szTempFile, directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
 													strcat(szTempFile, file_recs[file_pos]->filename);
                                                     unalign( szTempFile );
-													if (sysop_mode || !sess->using_modem || WFile::Exists(szTempFile))
+													if (sysop_mode || !GetSession()->using_modem || WFile::Exists(szTempFile))
 													{
 #ifdef FILE_POINTS
 														fpts = 0;
 														fpts = (file_recs[file_pos]->filepoints);
 #endif
-														lp_add_batch(file_recs[file_pos]->filename, udir[sess->GetCurrentFileArea()].subnum, file_recs[file_pos]->numbytes);
+														lp_add_batch(file_recs[file_pos]->filename, udir[GetSession()->GetCurrentFileArea()].subnum, file_recs[file_pos]->numbytes);
 													}
 													else if (lp_config.request_file)
 													{
@@ -341,7 +341,7 @@ ADD_OR_REMOVE_BATCH:
 												}
 												else
 												{
-													lp_add_batch(file_recs[file_pos]->filename, udir[sess->GetCurrentFileArea()].subnum, file_recs[file_pos]->numbytes);
+													lp_add_batch(file_recs[file_pos]->filename, udir[GetSession()->GetCurrentFileArea()].subnum, file_recs[file_pos]->numbytes);
 												}
 											}
 #ifdef KBPERDAY
@@ -394,19 +394,19 @@ ADD_OR_REMOVE_BATCH:
 										menu_pos = 0;
 										break;
 									case 5:
-										if (!sysop_mode && sess->using_modem)
+										if (!sysop_mode && GetSession()->using_modem)
 										{
 											ClearScreen();
 											menu_done = true;
 											save_file_pos = file_pos;
 											amount = lines = matches = 0;
 #ifdef FILE_POINTS
-                                            if (((!(file_recs[file_pos]->mask & mask_validated)) || ((file_recs[file_pos]->filepoints > sess->thisuser.GetFilePoints() ) ) &&
-                                                !sess->thisuser.isExemptRatio() ) && !sysop_mode)
+                                            if (((!(file_recs[file_pos]->mask & mask_validated)) || ((file_recs[file_pos]->filepoints > GetSession()->thisuser.GetFilePoints() ) ) &&
+                                                !GetSession()->thisuser.isExemptRatio() ) && !sysop_mode)
 											{
 												ClearScreen();
-												sess->bout << "You don't have enough file points to download this file\r\n";
-												sess->bout << "Or this file is not validated yet.\r\n";
+												GetSession()->bout << "You don't have enough file points to download this file\r\n";
+												GetSession()->bout << "Or this file is not validated yet.\r\n";
 #else
 												if (!ratio_ok())
 												{
@@ -426,18 +426,18 @@ ADD_OR_REMOVE_BATCH:
 													{
 														char szTempFile[MAX_PATH];
 														redraw = false;
-														if (!(directories[udir[sess->GetCurrentFileArea()].subnum].mask & mask_cdrom) && !sysop_mode)
+														if (!(directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask & mask_cdrom) && !sysop_mode)
 														{
-															strcpy(szTempFile, directories[udir[sess->GetCurrentFileArea()].subnum].path);
+															strcpy(szTempFile, directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
 															strcat(szTempFile, file_recs[file_pos]->filename);
                                                             unalign( szTempFile );
-															if (sysop_mode || !sess->using_modem || WFile::Exists(szTempFile))
+															if (sysop_mode || !GetSession()->using_modem || WFile::Exists(szTempFile))
 															{
 #ifdef FILE_POINTS
 																fpts = 0;
 																fpts = (file_recs[file_pos]->filepoints);
 #endif
-																lp_add_batch(file_recs[file_pos]->filename, udir[sess->GetCurrentFileArea()].subnum, file_recs[file_pos]->numbytes);
+																lp_add_batch(file_recs[file_pos]->filename, udir[GetSession()->GetCurrentFileArea()].subnum, file_recs[file_pos]->numbytes);
 															}
 															else if (lp_config.request_file)
 															{
@@ -448,7 +448,7 @@ ADD_OR_REMOVE_BATCH:
 														}
 														else
 														{
-															lp_add_batch(file_recs[file_pos]->filename, udir[sess->GetCurrentFileArea()].subnum, file_recs[file_pos]->numbytes);
+															lp_add_batch(file_recs[file_pos]->filename, udir[GetSession()->GetCurrentFileArea()].subnum, file_recs[file_pos]->numbytes);
 														}
 														download_plus(file_recs[file_pos]->filename);
 													}
@@ -480,19 +480,19 @@ ADD_OR_REMOVE_BATCH:
 										amount = lines = matches = 0;
 										first_file = 1;
 										changedir = 1;
-										if ((sess->GetCurrentFileArea() < sess->num_dirs - 1) && (udir[sess->GetCurrentFileArea() + 1].subnum >= 0))
+										if ((GetSession()->GetCurrentFileArea() < GetSession()->num_dirs - 1) && (udir[GetSession()->GetCurrentFileArea() + 1].subnum >= 0))
 										{
-											sess->SetCurrentFileArea( sess->GetCurrentFileArea() + 1 );
+											GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() + 1 );
 											++this_dir;
 										}
 										else
 										{
-											sess->SetCurrentFileArea( 0 );
+											GetSession()->SetCurrentFileArea( 0 );
 											this_dir = 0;
 										}
 										if (!type)
 										{
-											save_dir = sess->GetCurrentFileArea();
+											save_dir = GetSession()->GetCurrentFileArea();
 										}
 										dliscan();
 										menu_pos = 0;
@@ -502,28 +502,28 @@ ADD_OR_REMOVE_BATCH:
 										amount = lines = matches = 0;
 										first_file = 1;
 										changedir = -1;
-										if (sess->GetCurrentFileArea() > 0)
+										if (GetSession()->GetCurrentFileArea() > 0)
 										{
-											sess->SetCurrentFileArea( sess->GetCurrentFileArea() - 1 );
+											GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() - 1 );
 											--this_dir;
 										}
 										else
 										{
-											while ((udir[sess->GetCurrentFileArea() + 1].subnum >= 0) && (sess->GetCurrentFileArea() < sess->num_dirs - 1))
+											while ((udir[GetSession()->GetCurrentFileArea() + 1].subnum >= 0) && (GetSession()->GetCurrentFileArea() < GetSession()->num_dirs - 1))
 											{
-												sess->SetCurrentFileArea( sess->GetCurrentFileArea() + 1 );
+												GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() + 1 );
 											}
-											this_dir = sess->GetCurrentFileArea();
+											this_dir = GetSession()->GetCurrentFileArea();
 										}
 										if (!type)
-											save_dir = sess->GetCurrentFileArea();
+											save_dir = GetSession()->GetCurrentFileArea();
 										dliscan();
 										menu_pos = 0;
 										break;
 									case 8:
 TOGGLE_EXTENDED:
 									ext_is_on = !ext_is_on;
-									sess->thisuser.SetFullFileDescriptions( !sess->thisuser.GetFullFileDescriptions() );
+									GetSession()->thisuser.SetFullFileDescriptions( !GetSession()->thisuser.GetFullFileDescriptions() );
 									menu_done = true;
 									amount = lines = matches = 0;
 									file_pos = 0;
@@ -582,27 +582,27 @@ TOGGLE_EXTENDED:
 				}
 				else if (changedir == 1)
 				{
-					if ((sess->GetCurrentFileArea() < sess->num_dirs - 1) && (udir[sess->GetCurrentFileArea() + 1].subnum >= 0))
+					if ((GetSession()->GetCurrentFileArea() < GetSession()->num_dirs - 1) && (udir[GetSession()->GetCurrentFileArea() + 1].subnum >= 0))
 					{
-						sess->SetCurrentFileArea( sess->GetCurrentFileArea() + 1 );
+						GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() + 1 );
 					}
 					else
 					{
-						sess->SetCurrentFileArea( 0 );
+						GetSession()->SetCurrentFileArea( 0 );
 					}
 					dliscan();
 				}
 				else
 				{
-					if (sess->GetCurrentFileArea() > 0)
+					if (GetSession()->GetCurrentFileArea() > 0)
 					{
-                        sess->SetCurrentFileArea( sess->GetCurrentFileArea() - 1 );
+                        GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() - 1 );
 					}
 					else
 					{
-						while ((udir[sess->GetCurrentFileArea() + 1].subnum >= 0) && (sess->GetCurrentFileArea() < sess->num_dirs - 1))
+						while ((udir[GetSession()->GetCurrentFileArea() + 1].subnum >= 0) && (GetSession()->GetCurrentFileArea() < GetSession()->num_dirs - 1))
 						{
-                            sess->SetCurrentFileArea( sess->GetCurrentFileArea() + 1 );
+                            GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() + 1 );
 						}
 					}
 					dliscan();
@@ -619,27 +619,27 @@ TOGGLE_EXTENDED:
 			}
 			else if (changedir == 1)
 			{
-				if ((sess->GetCurrentFileArea() < sess->num_dirs - 1) && (udir[sess->GetCurrentFileArea() + 1].subnum >= 0))
+				if ((GetSession()->GetCurrentFileArea() < GetSession()->num_dirs - 1) && (udir[GetSession()->GetCurrentFileArea() + 1].subnum >= 0))
 				{
-					sess->SetCurrentFileArea( sess->GetCurrentFileArea() + 1 );
+					GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() + 1 );
 				}
 				else
 				{
-                    sess->SetCurrentFileArea( 0 );
+                    GetSession()->SetCurrentFileArea( 0 );
 				}
 				dliscan();
 			}
 			else
 			{
-				if (sess->GetCurrentFileArea() > 0)
+				if (GetSession()->GetCurrentFileArea() > 0)
 				{
-                    sess->SetCurrentFileArea( sess->GetCurrentFileArea() - 1 );
+                    GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() - 1 );
 				}
 				else
 				{
-					while ((udir[sess->GetCurrentFileArea() + 1].subnum >= 0) && (sess->GetCurrentFileArea() < sess->num_dirs - 1))
+					while ((udir[GetSession()->GetCurrentFileArea() + 1].subnum >= 0) && (GetSession()->GetCurrentFileArea() < GetSession()->num_dirs - 1))
 					{
-						sess->SetCurrentFileArea( sess->GetCurrentFileArea() + 1 );
+						GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() + 1 );
 					}
 				}
 				dliscan();

@@ -139,7 +139,7 @@ void show_chains(int *mapp, int *map)
     {
         sprintf( szBuffer, " [ %s Online Programs ] ", syscfg.systemname );
         DisplayLiteBar( szBuffer );
-        sess->bout << "|#7ÉÄÄËÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄËÄÄËÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ»\r\n";
+        GetSession()->bout << "|#7ÉÄÄËÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄËÄÄËÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ»\r\n";
         for ( int i = 0; i < *mapp && !abort && !hangup; i++ )
         {
             sprintf( szBuffer, "|#7³|#2%2d|#7³ |#1%-33.33s|#7³", i + 1, chains[map[i]].description );
@@ -159,7 +159,7 @@ void show_chains(int *mapp, int *map)
 				pla( szBuffer, &abort );
 			}
         }
-        sess->bout << "|#7ÈÄÄÊÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÊÄÄÊÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¼\r\n\n";
+        GetSession()->bout << "|#7ÈÄÄÊÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÊÄÄÊÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¼\r\n\n";
     }
 }
 
@@ -180,13 +180,13 @@ void run_chain( int nChainNumber )
         if ( !( chains[nChainNumber].ansir & ansir_multi_user ) )
         {
             strcat( szMessage, "Try again later.\r\n" );
-            sess->bout << szMessage;
+            GetSession()->bout << szMessage;
             return;
         }
         else
         {
             strcat( szMessage, "Care to join in? " );
-            sess->bout << szMessage;
+            GetSession()->bout << szMessage;
             if ( !yesno() )
             {
                 return;
@@ -200,7 +200,7 @@ void run_chain( int nChainNumber )
         WFile regFile( syscfg.datadir, CHAINS_REG );
         if ( regFile.Open( WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite ) )
         {
-            regFile.Write( chains_reg, sess->GetNumberOfChains() * sizeof( chainregrec ) );
+            regFile.Write( chains_reg, GetSession()->GetNumberOfChains() * sizeof( chainregrec ) );
         }
     }
     char szComSpeed[ 11 ];
@@ -219,7 +219,7 @@ void run_chain( int nChainNumber )
     stuff_in( szChainCmdLine, chains[nChainNumber].filename, create_chain_file(), szComSpeed, szComPortNum, szModemSpeed, "" );
 
     sysoplogf( "!Ran \"%s\"", chains[nChainNumber].description );
-    sess->thisuser.SetNumChainsRun( sess->thisuser.GetNumChainsRun() + 1 );
+    GetSession()->thisuser.SetNumChainsRun( GetSession()->thisuser.GetNumChainsRun() + 1 );
 
     unsigned short flags = 0;
     if ( !( chains[nChainNumber].ansir & ansir_no_DOS ) )
@@ -249,7 +249,7 @@ void run_chain( int nChainNumber )
 
 void do_chains()
 {
-    int *map = static_cast<int*>( BbsAllocA(sess->max_chains * sizeof( int ) ) );
+    int *map = static_cast<int*>( BbsAllocA(GetSession()->max_chains * sizeof( int ) ) );
     WWIV_ASSERT( map != NULL );
     if ( !map )
 	{
@@ -259,7 +259,7 @@ void do_chains()
     GetApplication()->GetLocalIO()->tleft( true );
     int mapp = 0;
     memset( odc, 0, sizeof( odc ) );
-    for ( int i = 0; i < sess->GetNumberOfChains(); i++ )
+    for ( int i = 0; i < GetSession()->GetNumberOfChains(); i++ )
     {
         bool ok = true;
         chainfilerec c = chains[i];
@@ -267,24 +267,24 @@ void do_chains()
 		{
             ok = false;
 		}
-        if ( ( c.ansir & ansir_local_only ) && sess->using_modem )
+        if ( ( c.ansir & ansir_local_only ) && GetSession()->using_modem )
 		{
             ok = false;
 		}
-        if ( c.sl > sess->GetEffectiveSl() )
+        if ( c.sl > GetSession()->GetEffectiveSl() )
 		{
             ok = false;
 		}
-        if ( c.ar && !sess->thisuser.hasArFlag( c.ar ) )
+        if ( c.ar && !GetSession()->thisuser.hasArFlag( c.ar ) )
 		{
             ok = false;
 		}
-        if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg && ( sess->GetEffectiveSl() < 255 ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg && ( GetSession()->GetEffectiveSl() < 255 ) )
         {
 			chainregrec r = chains_reg[ i ];
             if ( r.maxage )
             {
-                if ( r.minage > sess->thisuser.GetAge() || r.maxage < sess->thisuser.GetAge() )
+                if ( r.minage > GetSession()->thisuser.GetAge() || r.maxage < GetSession()->thisuser.GetAge() )
 				{
                     ok = false;
 				}
@@ -304,24 +304,24 @@ void do_chains()
     }
     if ( mapp == 0 )
     {
-        sess->bout << "\r\n\n|#5Sorry, no external programs available.\r\n";
+        GetSession()->bout << "\r\n\n|#5Sorry, no external programs available.\r\n";
         BbsFreeMemory( map );
-        sess->SetMMKeyArea( WSession::mmkeyMessageAreas );
+        GetSession()->SetMMKeyArea( WSession::mmkeyMessageAreas );
         return;
     }
     show_chains( &mapp, map );
 
     bool done		= false;
-    sess->SetMMKeyArea( WSession::mmkeyMessageAreas );
+    GetSession()->SetMMKeyArea( WSession::mmkeyMessageAreas );
     int start		= 0;
     char *ss		= NULL;
 
     do
     {
-        sess->SetMMKeyArea( WSession::mmkeyChains );
+        GetSession()->SetMMKeyArea( WSession::mmkeyChains );
         GetApplication()->GetLocalIO()->tleft( true );
         nl();
-        sess->bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
+        GetSession()->bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 
 		int nChainNumber = -1;
         if ( mapp < 100 )
@@ -338,13 +338,13 @@ void do_chains()
         if ( nChainNumber > 0 && nChainNumber <= mapp )
         {
             done = true;
-            sess->SetMMKeyArea( WSession::mmkeyChains );
-            sess->bout << "\r\n|#6Please wait...\r\n";
+            GetSession()->SetMMKeyArea( WSession::mmkeyChains );
+            GetSession()->bout << "\r\n|#6Please wait...\r\n";
             run_chain( map[ nChainNumber - 1 ] );
         }
         else if ( wwiv::stringUtils::IsEquals(ss, "Q") )
         {
-            sess->SetMMKeyArea( WSession::mmkeyMessageAreas );
+            GetSession()->SetMMKeyArea( WSession::mmkeyMessageAreas );
             done = true;
         }
         else if ( wwiv::stringUtils::IsEquals(ss, "?") )

@@ -51,13 +51,13 @@ bool bad_filename( const char *pszFileName )
     {
         if (strstr(pszFileName, bad_words[i]))
         {
-			sess->bout << "Can't extract from that because it has " << pszFileName << wwiv::endl;
+			GetSession()->bout << "Can't extract from that because it has " << pszFileName << wwiv::endl;
             return true;
         }
     }
     if (!okfn(pszFileName))
     {
-		sess->bout << "Can't extract from that because it has " << pszFileName << wwiv::endl;
+		GetSession()->bout << "Can't extract from that because it has " << pszFileName << wwiv::endl;
         return true;
     }
     return false;
@@ -77,7 +77,7 @@ int check_for_files_arc(const char *pszFileName)
         if ( a.type != 26 )
         {
 			file.Close();
-            sess->bout << stripfn( pszFileName ) << " is not a valid .ARC file.";
+            GetSession()->bout << stripfn( pszFileName ) << " is not a valid .ARC file.";
             return 1;
         }
         while (lFilePos < lFileSize)
@@ -116,7 +116,7 @@ int check_for_files_arc(const char *pszFileName)
 				file.Close();
                 if (a.type != 0)
                 {
-                    sess->bout << stripfn( pszFileName ) << " is not a valid .ARC file.";
+                    GetSession()->bout << stripfn( pszFileName ) << " is not a valid .ARC file.";
                     return 1;
                 }
                 else
@@ -129,7 +129,7 @@ int check_for_files_arc(const char *pszFileName)
 		file.Close();
         return 0;
     }
-	sess->bout << "File not found: " << stripfn( pszFileName ) << wwiv::endl;
+	GetSession()->bout << "File not found: " << stripfn( pszFileName ) << wwiv::endl;
     return 1;
 }
 
@@ -186,14 +186,14 @@ int check_for_files_zip(const char *pszFileName)
                 return 0;
             default:
 				file.Close();
-                sess->bout << "Error examining that; can't extract from it.\r\n";
+                GetSession()->bout << "Error examining that; can't extract from it.\r\n";
                 return 1;
             }
         }
 		file.Close();
         return 0;
     }
-	sess->bout << "File not found: " << stripfn( pszFileName ) << wwiv::endl;
+	GetSession()->bout << "File not found: " << stripfn( pszFileName ) << wwiv::endl;
     return 1;
 }
 
@@ -219,7 +219,7 @@ int check_for_files_lzh( const char *pszFileName )
 	WFile file( pszFileName );
 	if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-		sess->bout << "File not found: " << stripfn( pszFileName ) << wwiv::endl;
+		GetSession()->bout << "File not found: " << stripfn( pszFileName ) << wwiv::endl;
         return 1;
     }
 	long lFileSize = file.GetLength();
@@ -238,7 +238,7 @@ int check_for_files_lzh( const char *pszFileName )
 		int nNumRead = file.Read( &a, sizeof( lharc_header ) );
         if ( nNumRead != sizeof( lharc_header ) )
         {
-            sess->bout << stripfn( pszFileName ) << " is not a valid .LZH file.";
+            GetSession()->bout << stripfn( pszFileName ) << " is not a valid .LZH file.";
             err = 1;
             break;
         }
@@ -246,7 +246,7 @@ int check_for_files_lzh( const char *pszFileName )
 		nNumRead = file.Read( szBuffer, a.fn_len );
 		if ( nNumRead != a.fn_len)
         {
-            sess->bout << stripfn( pszFileName ) << " is not a valid .LZH file.";
+            GetSession()->bout << stripfn( pszFileName ) << " is not a valid .LZH file.";
             err = 1;
             break;
         }
@@ -279,7 +279,7 @@ int check_for_files_arj( const char *pszFileName )
             if ( nNumRead != 2 || sh != 0xea60  )
             {
 				file.Close();
-                sess->bout << stripfn( pszFileName ) << " is not a valid .ARJ file.";
+                GetSession()->bout << stripfn( pszFileName ) << " is not a valid .ARJ file.";
                 return 1;
             }
             lCurPos += nNumRead + 2;
@@ -296,7 +296,7 @@ int check_for_files_arj( const char *pszFileName )
             if ( strlen(szBuffer) > 240 )
             {
 				file.Close();
-                sess->bout << stripfn( pszFileName ) << " is not a valid .ARJ file.";
+                GetSession()->bout << stripfn( pszFileName ) << " is not a valid .ARJ file.";
                 return 1;
             }
             lCurPos += 4 + static_cast<long>( sh );
@@ -322,7 +322,7 @@ int check_for_files_arj( const char *pszFileName )
         return 0;
     }
 
-    sess->bout << "File not found: " << stripfn( pszFileName );
+    GetSession()->bout << "File not found: " << stripfn( pszFileName );
     return 1;
 }
 
@@ -362,7 +362,7 @@ int check_for_files(const char *pszFileName)
     else
     {
         // no extension?
-        sess->bout << "No extension.\r\n";
+        GetSession()->bout << "No extension.\r\n";
         return 1;
     }
     return 0;
@@ -371,10 +371,10 @@ int check_for_files(const char *pszFileName)
 
 void download_temp_arc(const char *pszFileName, int xfer)
 {
-    sess->bout << "Downloading " << pszFileName << "." << arcs[ARC_NUMBER].extension << ":\r\n\r\n";
+    GetSession()->bout << "Downloading " << pszFileName << "." << arcs[ARC_NUMBER].extension << ":\r\n\r\n";
     if ( xfer && !ratio_ok() )
     {
-        sess->bout << "Ratio too low.\r\n";
+        GetSession()->bout << "Ratio too low.\r\n";
         return;
     }
 	char szDownloadFileName[ MAX_PATH ];
@@ -382,20 +382,20 @@ void download_temp_arc(const char *pszFileName, int xfer)
 	WFile file( szDownloadFileName );
 	if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        sess->bout << "No such file.\r\n\n";
+        GetSession()->bout << "No such file.\r\n\n";
         return;
     }
 	long lFileSize = file.GetLength();
 	file.Close();
     if (lFileSize == 0L)
     {
-        sess->bout << "File has nothing in it.\r\n\n";
+        GetSession()->bout << "File has nothing in it.\r\n\n";
         return;
     }
     double d = XFER_TIME( lFileSize );
     if (d <= nsl())
     {
-		sess->bout << "Approx. time: " << ctim( d ) << wwiv::endl;
+		GetSession()->bout << "Approx. time: " << ctim( d ) << wwiv::endl;
         bool sent = false;
         bool abort = false;
         char szFileToSend[81];
@@ -405,13 +405,13 @@ void download_temp_arc(const char *pszFileName, int xfer)
         {
             if (xfer)
             {
-                sess->thisuser.SetFilesDownloaded( sess->thisuser.GetFilesDownloaded() + 1 );
-                sess->thisuser.SetDownloadK( sess->thisuser.GetDownloadK() + bytes_to_k( lFileSize ) );
+                GetSession()->thisuser.SetFilesDownloaded( GetSession()->thisuser.GetFilesDownloaded() + 1 );
+                GetSession()->thisuser.SetDownloadK( GetSession()->thisuser.GetDownloadK() + bytes_to_k( lFileSize ) );
                 nl( 2 );
                 bprintf("Your ratio is now: %-6.3f\r\n", ratio());
             }
             sysoplogf( "Downloaded %ldk of \"%s\"", bytes_to_k( lFileSize ), szFileToSend );
-            if ( sess->IsUserOnline() )
+            if ( GetSession()->IsUserOnline() )
             {
                 GetApplication()->GetLocalIO()->UpdateTopScreen();
             }
@@ -420,7 +420,7 @@ void download_temp_arc(const char *pszFileName, int xfer)
     else
     {
         nl( 2 );
-        sess->bout << "Not enough time left to D/L.\r\n\n";
+        GetSession()->bout << "Not enough time left to D/L.\r\n\n";
     }
 }
 
@@ -460,7 +460,7 @@ void add_arc( const char *arc, const char *pszFileName, int dos )
     }
     else
     {
-        sess->bout << "Sorry, can't add to temp archive.\r\n\n";
+        GetSession()->bout << "Sorry, can't add to temp archive.\r\n\n";
     }
 }
 
@@ -470,7 +470,7 @@ void add_temp_arc()
     char szInputFileMask[ MAX_PATH ], szFileMask[ MAX_PATH];
 
     nl();
-    sess->bout << "|#7Enter filename to add to temporary archive file.  May contain wildcards.\r\n|#7:";
+    GetSession()->bout << "|#7Enter filename to add to temporary archive file.  May contain wildcards.\r\n|#7:";
     input( szInputFileMask, 12 );
     if ( !okfn( szInputFileMask ) )
     {
@@ -504,7 +504,7 @@ void del_temp()
     char szFileName[MAX_PATH];
 
     nl();
-    sess->bout << "|#9Enter file name to delete: ";
+    GetSession()->bout << "|#9Enter file name to delete: ";
     input( szFileName, 12, true );
     if ( !okfn( szFileName ) )
     {
@@ -529,7 +529,7 @@ void list_temp_dir()
 	WFindFile fnd;
 	bool bFound = fnd.open( szFileMask, 0 );
 	nl();
-	sess->bout << "Files in temporary directory:\r\n\n";
+	GetSession()->bout << "Files in temporary directory:\r\n\n";
 	int i1 = 0;
 	bool abort = false;
 	while ( bFound && !hangup && !abort )
@@ -550,12 +550,12 @@ void list_temp_dir()
 	}
 	if (!i1)
 	{
-		sess->bout << "None.\r\n";
+		GetSession()->bout << "None.\r\n";
 	}
 	nl();
 	if ( !abort && !hangup )
 	{
-		sess->bout << "Free space: " << static_cast<long>( freek1( syscfgovr.tempdir ) ) << wwiv::endl;
+		GetSession()->bout << "Free space: " << static_cast<long>( freek1( syscfgovr.tempdir ) ) << wwiv::endl;
 		nl();
 	}
 }
@@ -569,8 +569,8 @@ void temp_extract()
 
     dliscan();
     nl();
-    sess->bout << "Extract to temporary directory:\r\n\n";
-    sess->bout << "|#2Filename: ";
+    GetSession()->bout << "Extract to temporary directory:\r\n\n";
+    GetSession()->bout << "|#2Filename: ";
     input(s, 12);
     if ( !okfn(s) || s[0] == '\0' )
     {
@@ -590,11 +590,11 @@ void temp_extract()
         FileAreaSetRecord( fileDownload, i );
 		fileDownload.Read( &u, sizeof( uploadsrec ) );
 		fileDownload.Close();
-        sprintf(s2, "%s%s", directories[udir[sess->GetCurrentFileArea()].subnum].path, u.filename);
+        sprintf(s2, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
         StringRemoveWhitespace( s2 );
-        if (directories[udir[sess->GetCurrentFileArea()].subnum].mask & mask_cdrom)
+        if (directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask & mask_cdrom)
         {
-            sprintf(s1, "%s%s", directories[udir[sess->GetCurrentFileArea()].subnum].path, u.filename);
+            sprintf(s1, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
             sprintf(s2, "%s%s", syscfgovr.tempdir, u.filename);
             StringRemoveWhitespace( s1 );
             if (!WFile::Exists(s2))
@@ -607,18 +607,18 @@ void temp_extract()
         {
             nl( 2 );
             bool abort = false;
-            ot = sess->tagging;
-            sess->tagging = 2;
+            ot = GetSession()->tagging;
+            GetSession()->tagging = 2;
             printinfo(&u, &abort);
-            sess->tagging = ot;
+            GetSession()->tagging = ot;
             nl();
-            if (directories[udir[sess->GetCurrentFileArea()].subnum].mask & mask_cdrom)
+            if (directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask & mask_cdrom)
             {
                 WWIV_ChangeDirTo(syscfgovr.tempdir);
             }
             else
             {
-                WWIV_ChangeDirTo(directories[udir[sess->GetCurrentFileArea()].subnum].path);
+                WWIV_ChangeDirTo(directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
             }
             WWIV_GetDir(s4, true);
             strcat(s4, stripfn(u.filename));
@@ -628,7 +628,7 @@ void temp_extract()
                 bool ok1 = false;
                 do
                 {
-                    sess->bout << "|#2Extract what (?=list,Q=abort) ? ";
+                    GetSession()->bout << "|#2Extract what (?=list,Q=abort) ? ";
                     input(s1, 12);
                     ok1 = ( s1[0] == '\0' ) ? false : true;
                     if (!okfn(s1))
@@ -637,7 +637,7 @@ void temp_extract()
                     }
                     if ( wwiv::stringUtils::IsEquals( s1, "?" ) )
                     {
-                        list_arc_out(stripfn(u.filename), directories[udir[sess->GetCurrentFileArea()].subnum].path);
+                        list_arc_out(stripfn(u.filename), directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
                         s1[0] = '\0';
                     }
                     if ( wwiv::stringUtils::IsEquals( s1, "Q" ) )
@@ -690,7 +690,7 @@ void temp_extract()
         else if (s1[0])
         {
             nl();
-            sess->bout << "That file currently isn't there.\r\n\n";
+            GetSession()->bout << "That file currently isn't there.\r\n\n";
         }
         if (ok)
         {
@@ -707,7 +707,7 @@ void list_temp_text()
 	char szFileName[MAX_PATH];
 
 	nl();
-    sess->bout << "|#2List what file(s) : ";
+    GetSession()->bout << "|#2List what file(s) : ";
 	input( s, 12, true );
 	if (!okfn(s))
 	{
@@ -732,7 +732,7 @@ void list_temp_text()
                  !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "door.sys" ) )
 			{
 				nl();
-				sess->bout << "Listing " << szFileName << wwiv::endl;
+				GetSession()->bout << "Listing " << szFileName << wwiv::endl;
 				nl();
                 bool sent;
 				ascii_send(s, &sent, &percent);
@@ -768,7 +768,7 @@ void temporary_stuff()
     do
     {
         nl();
-        sess->bout << "|#9Archive: Q,D,R,A,V,L,T: ";
+        GetSession()->bout << "|#9Archive: Q,D,R,A,V,L,T: ";
         char ch = onek("Q?DRAVLT");
         switch ( ch )
         {
@@ -811,13 +811,13 @@ void move_file_t()
     tmp_disable_conf( true );
 
     nl();
-    if (sess->numbatch == 0)
+    if (GetSession()->numbatch == 0)
     {
         nl();
-        sess->bout << "|12No files have been tagged for movement.\r\n";
+        GetSession()->bout << "|12No files have been tagged for movement.\r\n";
         pausescr();
     }
-    for ( int nCurBatchPos = sess->numbatch - 1; nCurBatchPos >= 0; nCurBatchPos-- )
+    for ( int nCurBatchPos = GetSession()->numbatch - 1; nCurBatchPos >= 0; nCurBatchPos-- )
     {
         bool ok = false;
         char szCurBatchFileName[ MAX_PATH ];
@@ -827,7 +827,7 @@ void move_file_t()
         int nTempRecordNum = recno( szCurBatchFileName );
         if (nTempRecordNum < 0)
         {
-            sess->bout << "File not found.\r\n";
+            GetSession()->bout << "File not found.\r\n";
             pausescr();
         }
         bool done = false;
@@ -841,7 +841,7 @@ void move_file_t()
 			fileDownload.Read( &u, sizeof( uploadsrec ) );
 			fileDownload.Close();
             printfileinfo(&u, batch[nCurBatchPos].dir);
-            sess->bout << "|#5Move this (Y/N/Q)? ";
+            GetSession()->bout << "|#5Move this (Y/N/Q)? ";
             char ch = ynq();
             if (ch == 'Q')
             {
@@ -857,7 +857,7 @@ void move_file_t()
                 char *pszDirectoryNum = NULL;
                 do
                 {
-                    sess->bout << "|#2To which directory? ";
+                    GetSession()->bout << "|#2To which directory? ";
                     pszDirectoryNum = mmkey( 1 );
                     if (pszDirectoryNum[0] == '?')
                     {
@@ -868,7 +868,7 @@ void move_file_t()
                 d1 = -1;
                 if (pszDirectoryNum[0])
                 {
-                    for (int i1 = 0; (i1 < sess->num_dirs) && (udir[i1].subnum != -1); i1++)
+                    for (int i1 = 0; (i1 < GetSession()->num_dirs) && (udir[i1].subnum != -1); i1++)
                     {
                         if ( wwiv::stringUtils::IsEquals( udir[i1].keys, pszDirectoryNum ) )
                         {
@@ -884,17 +884,17 @@ void move_file_t()
                     if (recno(u.filename) > 0)
                     {
                         ok = false;
-                        sess->bout << "Filename already in use in that directory.\r\n";
+                        GetSession()->bout << "Filename already in use in that directory.\r\n";
                     }
-                    if (sess->numf >= directories[d1].maxfiles)
+                    if (GetSession()->numf >= directories[d1].maxfiles)
                     {
                         ok = false;
-                        sess->bout << "Too many files in that directory.\r\n";
+                        GetSession()->bout << "Too many files in that directory.\r\n";
                     }
                     if (freek1(directories[d1].path) < static_cast<double>((u.numbytes / 1024L) + 3) )
                     {
                         ok = false;
-                        sess->bout << "Not enough disk space to move it.\r\n";
+                        GetSession()->bout << "Not enough disk space to move it.\r\n";
                     }
                     dliscan();
                 }
@@ -909,24 +909,24 @@ void move_file_t()
             }
             if (ok && !done)
             {
-                sess->bout << "|#5Reset upload time for file? ";
+                GetSession()->bout << "|#5Reset upload time for file? ";
                 if (yesno())
                 {
                     time((long *) &u.daten);
                 }
                 --nCurPos;
 				fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
-                for (int i1 = nTempRecordNum; i1 < sess->numf; i1++)
+                for (int i1 = nTempRecordNum; i1 < GetSession()->numf; i1++)
                 {
                     FileAreaSetRecord( fileDownload, i1 + 1 );
 					fileDownload.Read( &u1, sizeof( uploadsrec ) );
                     FileAreaSetRecord( fileDownload, i1 );
 					fileDownload.Write( &u1, sizeof( uploadsrec ) );
                 }
-                --sess->numf;
+                --GetSession()->numf;
                 FileAreaSetRecord( fileDownload, 0 );
 				fileDownload.Read( &u1, sizeof( uploadsrec ) );
-                u1.numbytes = sess->numf;
+                u1.numbytes = GetSession()->numf;
                 FileAreaSetRecord( fileDownload, 0 );
 				fileDownload.Write( &u1, sizeof( uploadsrec ) );
 				fileDownload.Close();
@@ -940,7 +940,7 @@ void move_file_t()
                 StringRemoveWhitespace( s2 );
                 dliscan1(d1);
 				fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
-                for (int i = sess->numf; i >= 1; i--)
+                for (int i = GetSession()->numf; i >= 1; i--)
                 {
                     FileAreaSetRecord( fileDownload, i );
 					fileDownload.Read( &u1, sizeof( uploadsrec ) );
@@ -949,14 +949,14 @@ void move_file_t()
                 }
                 FileAreaSetRecord( fileDownload, 1 );
 				fileDownload.Write( &u, sizeof( uploadsrec ) );
-                ++sess->numf;
+                ++GetSession()->numf;
                 FileAreaSetRecord( fileDownload, 0 );
 				fileDownload.Read( &u1, sizeof( uploadsrec ) );
-                u1.numbytes = sess->numf;
+                u1.numbytes = GetSession()->numf;
                 if (u.daten > u1.daten)
                 {
                     u1.daten = u.daten;
-                    sess->m_DirectoryDateCache[d1] = u.daten;
+                    GetSession()->m_DirectoryDateCache[d1] = u.daten;
                 }
                 FileAreaSetRecord( fileDownload, 0 );
 				fileDownload.Write( &u1, sizeof( uploadsrec ) );
@@ -1001,7 +1001,7 @@ void move_file_t()
                     didnt_upload(nCurBatchPos);
                     delbatch(nCurBatchPos);
                 }
-                sess->bout << "File moved.\r\n";
+                GetSession()->bout << "File moved.\r\n";
             }
             dliscan();
             nTempRecordNum = nrecno( szCurBatchFileName, nCurPos );
@@ -1018,7 +1018,7 @@ void removefile()
 
     dliscan();
     nl();
-	sess->bout << "|#9Enter filename to remove.\r\n:";
+	GetSession()->bout << "|#9Enter filename to remove.\r\n:";
     char szFileToRemove[ MAX_PATH ];
     input( szFileToRemove, 12, true );
     if ( szFileToRemove[0] == '\0' )
@@ -1039,17 +1039,17 @@ void removefile()
         FileAreaSetRecord( fileDownload, i );
 		fileDownload.Read( &u, sizeof( uploadsrec ) );
 		fileDownload.Close();
-        if ((dcs()) || ((u.ownersys == 0) && (u.ownerusr == sess->usernum)))
+        if ((dcs()) || ((u.ownersys == 0) && (u.ownerusr == GetSession()->usernum)))
         {
             nl();
             if (check_batch_queue(u.filename))
             {
-                sess->bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
+                GetSession()->bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
             }
             else
             {
-                printfileinfo(&u, udir[sess->GetCurrentFileArea()].subnum);
-                sess->bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
+                printfileinfo(&u, udir[GetSession()->GetCurrentFileArea()].subnum);
+                GetSession()->bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
                 char ch = ynq();
                 if (ch == 'Q')
                 {
@@ -1061,17 +1061,17 @@ void removefile()
                     bool bDeleteFileToo = false;
                     if (dcs())
                     {
-                        sess->bout << "|#5Delete file too? ";
+                        GetSession()->bout << "|#5Delete file too? ";
                         bDeleteFileToo = yesno();
                         if ( bDeleteFileToo && (u.ownersys == 0) )
                         {
-                            sess->bout << "|#5Remove DL points? ";
+                            GetSession()->bout << "|#5Remove DL points? ";
                             bRemoveDlPoints = yesno();
                         }
                         if ( GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
                         {
                             nl();
-                            sess->bout << "|#5Remove from ALLOW.DAT? ";
+                            GetSession()->bout << "|#5Remove from ALLOW.DAT? ";
                             if (yesno())
                             {
                                 modify_database(u.filename, false);
@@ -1086,7 +1086,7 @@ void removefile()
                     if ( bDeleteFileToo )
                     {
                         char szFileNameToDelete[ MAX_PATH ];
-                        sprintf(szFileNameToDelete, "%s%s", directories[udir[sess->GetCurrentFileArea()].subnum].path, u.filename);
+                        sprintf(szFileNameToDelete, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
                         StringRemoveWhitespace( szFileNameToDelete );
                         WFile::Remove( szFileNameToDelete );
                         if ( bRemoveDlPoints && u.ownersys == 0 )
@@ -1107,9 +1107,9 @@ void removefile()
                     {
                         delete_extended_description(u.filename);
                     }
-                    sysoplogf("- \"%s\" removed off of %s", u.filename, directories[udir[sess->GetCurrentFileArea()].subnum].name);
+                    sysoplogf("- \"%s\" removed off of %s", u.filename, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name);
 					fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
-                    for (int i1 = i; i1 < sess->numf; i1++)
+                    for (int i1 = i; i1 < GetSession()->numf; i1++)
                     {
                         FileAreaSetRecord( fileDownload, i1 + 1 );
 						fileDownload.Read( &u, sizeof( uploadsrec ) );
@@ -1117,10 +1117,10 @@ void removefile()
 						fileDownload.Write( &u, sizeof( uploadsrec ) );
                     }
                     --i;
-                    --sess->numf;
+                    --GetSession()->numf;
                     FileAreaSetRecord( fileDownload, 0 );
 					fileDownload.Read( &u, sizeof( uploadsrec ) );
-                    u.numbytes = sess->numf;
+                    u.numbytes = GetSession()->numf;
                     FileAreaSetRecord( fileDownload, 0 );
 					fileDownload.Write( &u, sizeof( uploadsrec ) );
 					fileDownload.Close();

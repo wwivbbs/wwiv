@@ -51,7 +51,7 @@ void ClearScreen()
 {
     if ( okansi() )
     {
-        sess->bout << "\x1b[2J";
+        GetSession()->bout << "\x1b[2J";
         goxy( 1, 1 );
     }
     else
@@ -73,7 +73,7 @@ void ClearScreen()
 void repeat_char( char x, int amount, int nColor, bool bAddNL )
 {
     ansic( nColor );
-    sess->bout << charstr( amount, x );
+    GetSession()->bout << charstr( amount, x );
     if ( bAddNL )
     {
         nl();

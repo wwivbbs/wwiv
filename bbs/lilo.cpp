@@ -40,26 +40,26 @@ static char g_szLastLoginDate[9];
 
 void CleanUserInfo()
 {
-    if ( okconf( &sess->thisuser ) )
+    if ( okconf( &GetSession()->thisuser ) )
     {
-        setuconf( CONF_SUBS, sess->thisuser.GetLastSubConf(), 0 );
-        setuconf( CONF_DIRS, sess->thisuser.GetLastDirConf(), 0 );
+        setuconf( CONF_SUBS, GetSession()->thisuser.GetLastSubConf(), 0 );
+        setuconf( CONF_DIRS, GetSession()->thisuser.GetLastDirConf(), 0 );
     }
-    if ( sess->thisuser.GetLastSubNum() > sess->GetMaxNumberMessageAreas() )
+    if ( GetSession()->thisuser.GetLastSubNum() > GetSession()->GetMaxNumberMessageAreas() )
     {
-        sess->thisuser.SetLastSubNum( 0 );
+        GetSession()->thisuser.SetLastSubNum( 0 );
     }
-    if ( sess->thisuser.GetLastDirNum() > sess->GetMaxNumberFileAreas() )
+    if ( GetSession()->thisuser.GetLastDirNum() > GetSession()->GetMaxNumberFileAreas() )
     {
-        sess->thisuser.SetLastDirNum( 0 );
+        GetSession()->thisuser.SetLastDirNum( 0 );
     }
-    if (usub[sess->thisuser.GetLastSubNum()].subnum != -1)
+    if (usub[GetSession()->thisuser.GetLastSubNum()].subnum != -1)
     {
-        sess->SetCurrentMessageArea( sess->thisuser.GetLastSubNum() );
+        GetSession()->SetCurrentMessageArea( GetSession()->thisuser.GetLastSubNum() );
     }
-    if (udir[sess->thisuser.GetLastDirNum()].subnum != -1)
+    if (udir[GetSession()->thisuser.GetLastDirNum()].subnum != -1)
     {
-        sess->SetCurrentFileArea( sess->thisuser.GetLastDirNum() );
+        GetSession()->SetCurrentFileArea( GetSession()->thisuser.GetLastDirNum() );
     }
 
 }
@@ -68,13 +68,13 @@ void CleanUserInfo()
 bool random_screen( const char *mpfn )
 {
     char szBuffer[ 255 ];
-    sprintf( szBuffer, "%s%s%s", sess->pszLanguageDir, mpfn, ".0" );
+    sprintf( szBuffer, "%s%s%s", GetSession()->pszLanguageDir, mpfn, ".0" );
     if ( WFile::Exists( szBuffer ) )
     {
         int nNumberOfScreens = 0;
         for ( int i = 0; i < 1000; i++ )
         {
-            sprintf( szBuffer, "%s%s.%d", sess->pszLanguageDir, mpfn, i );
+            sprintf( szBuffer, "%s%s.%d", GetSession()->pszLanguageDir, mpfn, i );
             if ( WFile::Exists( szBuffer ) )
             {
                 nNumberOfScreens++;
@@ -84,7 +84,7 @@ bool random_screen( const char *mpfn )
                 break;
             }
         }
-        sprintf( szBuffer, "%s%s.%d", sess->pszLanguageDir, mpfn, WWIV_GetRandomNumber( nNumberOfScreens ) );
+        sprintf( szBuffer, "%s%s.%d", GetSession()->pszLanguageDir, mpfn, WWIV_GetRandomNumber( nNumberOfScreens ) );
         printfile( szBuffer );
         return true;
     }
@@ -131,28 +131,28 @@ int GetAnsiStatusAndShowWelcomeScreen( int nNetworkOnly )
     int ans = -1;
     if ( !nNetworkOnly && incom )
     {
-        if ( sess->GetCurrentSpeed().length() > 0 )
+        if ( GetSession()->GetCurrentSpeed().length() > 0 )
 	    {
             char szCurrentSpeed[ 81 ];
-            strcpy( szCurrentSpeed, sess->GetCurrentSpeed().c_str() );
-            sess->bout << "CONNECT " << strupr( szCurrentSpeed ) << "\r\n\r\n";
+            strcpy( szCurrentSpeed, GetSession()->GetCurrentSpeed().c_str() );
+            GetSession()->bout << "CONNECT " << strupr( szCurrentSpeed ) << "\r\n\r\n";
 	    }
 	    char szOSVersion[ 255 ];
         WWIV_GetOSVersion( szOSVersion, 250, true );
-        sess->bout << "\r\nWWIV " << wwiv_version << "/" << szOSVersion << " " << beta_version << wwiv::endl;
-        sess->bout << "Copyright (c) 1998-2004 WWIV Software Services." << wwiv::endl;
-        sess->bout << "All Rights Reserved." << wwiv::endl;
+        GetSession()->bout << "\r\nWWIV " << wwiv_version << "/" << szOSVersion << " " << beta_version << wwiv::endl;
+        GetSession()->bout << "Copyright (c) 1998-2004 WWIV Software Services." << wwiv::endl;
+        GetSession()->bout << "All Rights Reserved." << wwiv::endl;
 
         ans = check_ansi();
         char szFileName[ MAX_PATH ];
-        sprintf( szFileName, "%s%s", sess->pszLanguageDir, WELCOME_ANS );
+        sprintf( szFileName, "%s%s", GetSession()->pszLanguageDir, WELCOME_ANS );
         if ( WFile::Exists( szFileName ) )
         {
             nl();
             if ( ans > 0 )
             {
-                sess->thisuser.setStatusFlag( WUser::ansi );
-                sess->thisuser.setStatusFlag( WUser::color );
+                GetSession()->thisuser.setStatusFlag( WUser::ansi );
+                GetSession()->thisuser.setStatusFlag( WUser::color );
                 if ( !random_screen( WELCOME_NOEXT ) )
                 {
                     printfile( WELCOME_ANS );
@@ -167,7 +167,7 @@ int GetAnsiStatusAndShowWelcomeScreen( int nNetworkOnly )
         {
             if ( ans )
             {
-                sprintf( szFileName, "%s%s.0", sess->pszLanguageDir, WELCOME_NOEXT );
+                sprintf( szFileName, "%s%s.0", GetSession()->pszLanguageDir, WELCOME_NOEXT );
                 if ( WFile::Exists( szFileName ) )
                 {
                     random_screen( WELCOME_NOEXT );
@@ -198,40 +198,40 @@ int ShowLoginAndGetUserNumber( int nNetworkOnly, char* pszUserName )
     nl();
     if ( nNetworkOnly )
     {
-        sess->bout << "This time is reserved for net-mail ONLY.  Please try calling back again later.\r\n";
+        GetSession()->bout << "This time is reserved for net-mail ONLY.  Please try calling back again later.\r\n";
     }
     else
     {
-        sess->bout << "Enter number or name or 'NEW'\r\n";
+        GetSession()->bout << "Enter number or name or 'NEW'\r\n";
     }
 
     memset( &szUserName, 0, 255 );
 
-    sess->bout << "NN: ";
+    GetSession()->bout << "NN: ";
     input( szUserName, 30 );
     StringTrim( szUserName );
 
     int nUserNumber = finduser( szUserName );
     if ( nUserNumber == 0 && szUserName[ 0 ] != '\0' )
     {
-        sess->bout << "Searching...";
+        GetSession()->bout << "Searching...";
         bool abort = false, next = false;
         for ( int i = 1; i < status.users && nUserNumber == 0 && !hangup && !abort; i++ )
         {
             if ( i % 25 == 0 )  // changed from 15 since computers are faster now-a-days
             {
-                sess->bout << ".";
+                GetSession()->bout << ".";
             }
             int nTempUserNumber = smallist[i].number;
-            sess->ReadCurrentUser( nTempUserNumber );
-            if ( szUserName[ 0 ] == sess->thisuser.GetRealName()[ 0 ] )
+            GetSession()->ReadCurrentUser( nTempUserNumber );
+            if ( szUserName[ 0 ] == GetSession()->thisuser.GetRealName()[ 0 ] )
             {
                 char szTempUserName[ 255 ];
-                strcpy( szTempUserName, sess->thisuser.GetRealName() );
+                strcpy( szTempUserName, GetSession()->thisuser.GetRealName() );
                 if ( wwiv::stringUtils::IsEquals( szUserName, strupr( szTempUserName ) ) &&
-                     !sess->thisuser.isUserDeleted() )
+                     !GetSession()->thisuser.isUserDeleted() )
                 {
-                    sess->bout << "|#5Do you mean " << sess->thisuser.GetUserNameAndNumber( i ) << "? ";
+                    GetSession()->bout << "|#5Do you mean " << GetSession()->thisuser.GetUserNameAndNumber( i ) << "? ";
                     if ( yesno() )
                     {
                         nUserNumber = nTempUserNumber;
@@ -271,16 +271,16 @@ bool IsPhoneRequired()
 
 bool VerifyPhoneNumber()
 {
-    if ( IsPhoneNumberUSAFormat( &sess->thisuser ) || !sess->thisuser.GetCountry()[0] )
+    if ( IsPhoneNumberUSAFormat( &GetSession()->thisuser ) || !GetSession()->thisuser.GetCountry()[0] )
     {
         std::string phoneNumber;
         input_password( "PH: ###-###-", phoneNumber, 4 );
 
-        if ( phoneNumber != &sess->thisuser.GetVoicePhoneNumber()[8] )
+        if ( phoneNumber != &GetSession()->thisuser.GetVoicePhoneNumber()[8] )
         {
             if ( phoneNumber.length() == 4 && phoneNumber[3] == '-' )
             {
-                sess->bout << "\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n";
+                GetSession()->bout << "\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n";
             }
             return false;
         }
@@ -296,7 +296,7 @@ bool VerifyPassword()
     std::string password;
     input_password( "PW: ", password, 8 );
 
-    return ( password == sess->thisuser.GetPassword() ) ? true : false;
+    return ( password == GetSession()->thisuser.GetPassword() ) ? true : false;
 }
 
 
@@ -310,18 +310,18 @@ bool VerifySysopPassword()
 
 void DoFailedLoginAttempt()
 {
-    sess->thisuser.SetNumIllegalLogons( sess->thisuser.GetNumIllegalLogons( ) + 1 );
-    sess->WriteCurrentUser( sess->usernum );
-    sess->bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
+    GetSession()->thisuser.SetNumIllegalLogons( GetSession()->thisuser.GetNumIllegalLogons( ) + 1 );
+    GetSession()->WriteCurrentUser( GetSession()->usernum );
+    GetSession()->bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
 	std::stringstream logLine;
 	logLine << "### ILLEGAL LOGON for " <<
-             sess->thisuser.GetUserNameAndNumber( sess->usernum ) << " (" <<
+             GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) << " (" <<
              ctim( timer() ) << ")";
     sysoplog( "", false );
     sysoplog( logLine.str().c_str(), false );
     sysoplog( "", false );
-    sess->usernum = 0;
+    GetSession()->usernum = 0;
 }
 
 
@@ -337,7 +337,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
 
     GetApplication()->GetStatusManager()->Read();
     long lTime = time( NULL );
-    switch ( sess->usernum )
+    switch ( GetSession()->usernum )
     {
     case -2:
         {
@@ -414,63 +414,63 @@ void LeaveBadPasswordFeedback( int ans )
 {
     if ( ans > 0 )
     {
-        sess->thisuser.setStatusFlag( WUser::ansi );
+        GetSession()->thisuser.setStatusFlag( WUser::ansi );
     }
     else
     {
-        sess->thisuser.clearStatusFlag( WUser::ansi );
+        GetSession()->thisuser.clearStatusFlag( WUser::ansi );
     }
-    sess->bout << "|12Too many logon attempts!!\r\n\n";
-    sess->bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
+    GetSession()->bout << "|12Too many logon attempts!!\r\n\n";
+    GetSession()->bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
     if ( yesno() )
     {
         nl();
-        sess->bout << "What is your NAME or HANDLE? ";
+        GetSession()->bout << "What is your NAME or HANDLE? ";
         std::string tempName;
 	    input1( tempName, 31, PROPER, true );
         if ( !tempName.empty() )
         {
             nl();
-            sess->usernum = 1;
+            GetSession()->usernum = 1;
             sprintf( irt, "** Illegal logon feedback from %s", tempName.c_str() );
-            sess->thisuser.SetName( tempName.c_str() );
-            sess->thisuser.SetMacro( 0, "" );
-            sess->thisuser.SetMacro( 1, "" );
-            sess->thisuser.SetMacro( 2, "" );
-            sess->thisuser.SetSl( syscfg.newusersl );
-            sess->thisuser.SetScreenChars( 80 );
+            GetSession()->thisuser.SetName( tempName.c_str() );
+            GetSession()->thisuser.SetMacro( 0, "" );
+            GetSession()->thisuser.SetMacro( 1, "" );
+            GetSession()->thisuser.SetMacro( 2, "" );
+            GetSession()->thisuser.SetSl( syscfg.newusersl );
+            GetSession()->thisuser.SetScreenChars( 80 );
             if ( ans > 0 )
             {
                 select_editor();
             }
             else
             {
-                sess->thisuser.SetDefaultEditor( 0 );
+                GetSession()->thisuser.SetDefaultEditor( 0 );
             }
-            sess->thisuser.SetNumEmailSent( 0 );
-            bool bSaveAllowCC = sess->IsCarbonCopyEnabled();
-            sess->SetCarbonCopyEnabled( false );
+            GetSession()->thisuser.SetNumEmailSent( 0 );
+            bool bSaveAllowCC = GetSession()->IsCarbonCopyEnabled();
+            GetSession()->SetCarbonCopyEnabled( false );
             email( 1, 0, true, 0, true );
-            sess->SetCarbonCopyEnabled( bSaveAllowCC );
-            if ( sess->thisuser.GetNumEmailSent() > 0 )
+            GetSession()->SetCarbonCopyEnabled( bSaveAllowCC );
+            if ( GetSession()->thisuser.GetNumEmailSent() > 0 )
             {
                 ssm( 1, 0, "Check your mailbox.  Someone forgot their password again!" );
             }
         }
     }
-    sess->usernum = 0;
+    GetSession()->usernum = 0;
     hangup = 1;
 }
 
 
 void CheckCallRestrictions()
 {
-    if ( !hangup && sess->usernum > 0 && sess->thisuser.isRestrictionLogon() &&
-        wwiv::stringUtils::IsEquals( date(), sess->thisuser.GetLastOn() ) &&
-        sess->thisuser.GetTimesOnToday() > 0 )
+    if ( !hangup && GetSession()->usernum > 0 && GetSession()->thisuser.isRestrictionLogon() &&
+        wwiv::stringUtils::IsEquals( date(), GetSession()->thisuser.GetLastOn() ) &&
+        GetSession()->thisuser.GetTimesOnToday() > 0 )
     {
         nl();
-        sess->bout << "|12Sorry, you can only logon once per day.\r\n";
+        GetSession()->bout << "|12Sorry, you can only logon once per day.\r\n";
         hangup = true;
     }
 }
@@ -479,12 +479,12 @@ void CheckCallRestrictions()
 void DoCallBackVerification()
 {
     int cbv = 0;
-    if ( !sess->cbv.forced )
+    if ( !GetSession()->cbv.forced )
     {
-        sess->bout << "|#1Callback verification now (y/N):|#0 ";
+        GetSession()->bout << "|#1Callback verification now (y/N):|#0 ";
         if ( yesno() )
         {
-            if ( sess->thisuser.GetCbv() & 4 )
+            if ( GetSession()->thisuser.GetCbv() & 4 )
             {
                 printfile( CBV6_NOEXT );               // user explains and
                 feedback( false );                     // makes excuses
@@ -498,7 +498,7 @@ void DoCallBackVerification()
     }
     else
     {
-        if ( sess->thisuser.GetCbv() & 4 )
+        if ( GetSession()->thisuser.GetCbv() & 4 )
         {
             printfile( CBV6_NOEXT );                 // user explains and
             feedback( false );                       // makes excuses
@@ -507,29 +507,29 @@ void DoCallBackVerification()
     }
     if ( cbv & 1 )
     {
-        sess->thisuser.SetCbv( sess->thisuser.GetCbv() | 1 );
-        if ( sess->thisuser.GetSl() < sess->cbv.sl )
+        GetSession()->thisuser.SetCbv( GetSession()->thisuser.GetCbv() | 1 );
+        if ( GetSession()->thisuser.GetSl() < GetSession()->cbv.sl )
         {
-            sess->thisuser.SetSl( sess->cbv.sl );
+            GetSession()->thisuser.SetSl( GetSession()->cbv.sl );
         }
-        if ( sess->thisuser.GetDsl() < sess->cbv.dsl )
+        if ( GetSession()->thisuser.GetDsl() < GetSession()->cbv.dsl )
         {
-            sess->thisuser.SetDsl( sess->cbv.dsl );
+            GetSession()->thisuser.SetDsl( GetSession()->cbv.dsl );
         }
-        sess->thisuser.SetArFlag( sess->cbv.ar );
-        sess->thisuser.SetDarFlag( sess->cbv.dar );
-        sess->thisuser.setExemptFlag( sess->cbv.exempt );
-        sess->thisuser.setRestrictionFlag( sess->cbv.restrict );
-        sess->WriteCurrentUser( sess->usernum );
+        GetSession()->thisuser.SetArFlag( GetSession()->cbv.ar );
+        GetSession()->thisuser.SetDarFlag( GetSession()->cbv.dar );
+        GetSession()->thisuser.setExemptFlag( GetSession()->cbv.exempt );
+        GetSession()->thisuser.setRestrictionFlag( GetSession()->cbv.restrict );
+        GetSession()->WriteCurrentUser( GetSession()->usernum );
     }
     else
     {
-        sess->thisuser.SetCbv( sess->thisuser.GetCbv() | 4 );
-        sess->WriteCurrentUser( sess->usernum );
+        GetSession()->thisuser.SetCbv( GetSession()->thisuser.GetCbv() | 4 );
+        GetSession()->WriteCurrentUser( GetSession()->usernum );
     }
     if ( cbv & 2 )
     {
-        if ( sess->cbv.longdistance )
+        if ( GetSession()->cbv.longdistance )
         {
             printfile( CBV4_NOEXT );	// long distance verified
             pausescr();
@@ -558,38 +558,38 @@ void getuser()
     bool ok = false;
 
     okmacro = false;
-    sess->SetCurrentConferenceMessageArea( 0 );
-    sess->SetCurrentConferenceFileArea( 0 );
-    sess->SetEffectiveSl( syscfg.newusersl );
-    sess->thisuser.SetStatus( 0 );
+    GetSession()->SetCurrentConferenceMessageArea( 0 );
+    GetSession()->SetCurrentConferenceFileArea( 0 );
+    GetSession()->SetEffectiveSl( syscfg.newusersl );
+    GetSession()->thisuser.SetStatus( 0 );
 
     int ans = GetAnsiStatusAndShowWelcomeScreen( nNetworkOnly );
 
     do
     {
-        sess->usernum = ShowLoginAndGetUserNumber( nNetworkOnly, szUserName );
+        GetSession()->usernum = ShowLoginAndGetUserNumber( nNetworkOnly, szUserName );
 
-        if ( nNetworkOnly && sess->usernum != -2 )
+        if ( nNetworkOnly && GetSession()->usernum != -2 )
         {
-            if ( sess->usernum != -4 ||
+            if ( GetSession()->usernum != -4 ||
                  !wwiv::stringUtils::IsEquals( szUserName, "DNM" ) )
             {
-                sess->usernum = 0;
+                GetSession()->usernum = 0;
             }
         }
-        if ( sess->usernum > 0 )
+        if ( GetSession()->usernum > 0 )
         {
-            sess->ReadCurrentUser( sess->usernum );
-            read_qscn( sess->usernum, qsc, false );
-            if ( !set_language( sess->thisuser.GetLanguage() ) )
+            GetSession()->ReadCurrentUser( GetSession()->usernum );
+            read_qscn( GetSession()->usernum, qsc, false );
+            if ( !set_language( GetSession()->thisuser.GetLanguage() ) )
             {
-                sess->thisuser.SetLanguage( 0 );
+                GetSession()->thisuser.SetLanguage( 0 );
                 set_language( 0 );
             }
             int nInstanceNumber;
-            if ( sess->thisuser.GetSl() < 255 && user_online( sess->usernum, &nInstanceNumber ) )
+            if ( GetSession()->thisuser.GetSl() < 255 && user_online( GetSession()->usernum, &nInstanceNumber ) )
             {
-                sess->bout << "\r\n|12You are already online on instance " << nInstanceNumber << "!\r\n\n";
+                GetSession()->bout << "\r\n|12You are already online on instance " << nInstanceNumber << "!\r\n\n";
                 continue;
             }
             ok = true;
@@ -599,7 +599,7 @@ void getuser()
             }
             else
             {
-                sess->SetEffectiveSl( syscfg.newusersl );
+                GetSession()->SetEffectiveSl( syscfg.newusersl );
                 if ( !VerifyPassword() )
                 {
                     ok = false;
@@ -612,7 +612,7 @@ void getuser()
                         ok = false;
                     }
                 }
-                if ( sess->thisuser.GetSl() == 255 && incom && ok )
+                if ( GetSession()->thisuser.GetSl() == 255 && incom && ok )
                 {
                     if ( !VerifySysopPassword() )
                     {
@@ -622,7 +622,7 @@ void getuser()
             }
             if ( ok )
             {
-                sess->ResetEffectiveSl();
+                GetSession()->ResetEffectiveSl();
                 changedsl();
             }
             else
@@ -630,22 +630,22 @@ void getuser()
                 DoFailedLoginAttempt();
             }
         }
-        else if ( sess->usernum == 0 )
+        else if ( GetSession()->usernum == 0 )
         {
             nl();
             if ( !nNetworkOnly )
             {
-                sess->bout << "|12Unknown user.\r\n";
+                GetSession()->bout << "|12Unknown user.\r\n";
             }
         }
-        else if ( sess->usernum == -1 )
+        else if ( GetSession()->usernum == -1 )
         {
             write_inst( INST_LOC_NEWUSER, 0, INST_FLAGS_NONE );
             play_sdf( NEWUSER_NOEXT, false );
             newuser();
             ok = true;
         }
-        else if ( sess->usernum == -2 || sess->usernum == -3 || sess->usernum == -4 )
+        else if ( GetSession()->usernum == -2 || GetSession()->usernum == -3 || GetSession()->usernum == -4 )
         {
             ExecuteWWIVNetworkRequest( szUserName );
         }
@@ -660,7 +660,7 @@ void getuser()
 
     CheckCallRestrictions();
 
-    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CALLBACK ) && ( sess->thisuser.GetCbv() & 1 ) == 0 )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CALLBACK ) && ( GetSession()->thisuser.GetCbv() & 1 ) == 0 )
     {
         DoCallBackVerification();
     }
@@ -669,46 +669,46 @@ void getuser()
 
 void FixUserLinesAndColors()
 {
-    if ( sess->thisuser.GetNumExtended() > sess->max_extend_lines )
+    if ( GetSession()->thisuser.GetNumExtended() > GetSession()->max_extend_lines )
     {
-        sess->thisuser.SetNumExtended( sess->max_extend_lines );
+        GetSession()->thisuser.SetNumExtended( GetSession()->max_extend_lines );
     }
-    if ( sess->thisuser.GetColor( 8 ) == 0 || sess->thisuser.GetColor( 9 ) == 0 )
+    if ( GetSession()->thisuser.GetColor( 8 ) == 0 || GetSession()->thisuser.GetColor( 9 ) == 0 )
     {
-        sess->thisuser.SetColor( 8, sess->newuser_colors[8] );
-        sess->thisuser.SetColor( 9, sess->newuser_colors[9] );
+        GetSession()->thisuser.SetColor( 8, GetSession()->newuser_colors[8] );
+        GetSession()->thisuser.SetColor( 9, GetSession()->newuser_colors[9] );
     }
 }
 
 void UpdateUserStatsForLogin()
 {
     strcpy( g_szLastLoginDate, date() );
-    if ( wwiv::stringUtils::IsEquals( g_szLastLoginDate, sess->thisuser.GetLastOn() ) )
+    if ( wwiv::stringUtils::IsEquals( g_szLastLoginDate, GetSession()->thisuser.GetLastOn() ) )
     {
-        sess->thisuser.SetTimesOnToday( sess->thisuser.GetTimesOnToday() + 1 );
+        GetSession()->thisuser.SetTimesOnToday( GetSession()->thisuser.GetTimesOnToday() + 1 );
     }
     else
     {
-        sess->thisuser.SetTimesOnToday( 1 );
-        sess->thisuser.SetTimeOnToday( 0.0 );
-        sess->thisuser.SetExtraTime( 0.0 );
-        sess->thisuser.SetNumPostsToday( 0 );
-        sess->thisuser.SetNumEmailSentToday( 0 );
-        sess->thisuser.SetNumFeedbackSentToday( 0 );
+        GetSession()->thisuser.SetTimesOnToday( 1 );
+        GetSession()->thisuser.SetTimeOnToday( 0.0 );
+        GetSession()->thisuser.SetExtraTime( 0.0 );
+        GetSession()->thisuser.SetNumPostsToday( 0 );
+        GetSession()->thisuser.SetNumEmailSentToday( 0 );
+        GetSession()->thisuser.SetNumFeedbackSentToday( 0 );
     }
-    sess->thisuser.SetNumLogons( sess->thisuser.GetNumLogons() + 1 );
-    sess->SetCurrentMessageArea( 0 );
-    sess->SetNumMessagesReadThisLogon( 0 );
+    GetSession()->thisuser.SetNumLogons( GetSession()->thisuser.GetNumLogons() + 1 );
+    GetSession()->SetCurrentMessageArea( 0 );
+    GetSession()->SetNumMessagesReadThisLogon( 0 );
     if ( udir[0].subnum == 0 && udir[1].subnum > 0 )
     {
-        sess->SetCurrentFileArea( 1 );
+        GetSession()->SetCurrentFileArea( 1 );
     }
     else
     {
-        sess->SetCurrentFileArea( 0 );
+        GetSession()->SetCurrentFileArea( 0 );
     }
-    sess->SetMMKeyArea( WSession::mmkeyMessageAreas );
-    if ( sess->GetEffectiveSl() != 255 && !guest_user )
+    GetSession()->SetMMKeyArea( WSession::mmkeyMessageAreas );
+    if ( GetSession()->GetEffectiveSl() != 255 && !guest_user )
     {
         GetApplication()->GetStatusManager()->Lock();
         ++status.callernum1;
@@ -738,11 +738,11 @@ void UpdateLastOnFileAndUserLog()
 
     sprintf( szLogLine, "%ld: %s %s %s   %s - %d (%u)",
              status.callernum1,
-             sess->thisuser.GetUserNameAndNumber( sess->usernum ),
+             GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
              times(),
              fulldate(),
-             sess->GetCurrentSpeed().c_str(),
-             sess->thisuser.GetTimesOnToday(),
+             GetSession()->GetCurrentSpeed().c_str(),
+             GetSession()->thisuser.GetTimesOnToday(),
              GetApplication()->GetInstanceNumber() );
     sprintf( szLastOnTxtFileName, "%s%s", syscfg.gfilesdir, LASTON_TXT );
     char *ss = get_file( szLastOnTxtFileName, &len );
@@ -764,21 +764,21 @@ void UpdateLastOnFileAndUserLog()
             {
                 if ( i )
                 {
-                    sess->bout << "\r\n\n|#1Last few callers|#7: |#0\r\n\n";
+                    GetSession()->bout << "\r\n\n|#1Last few callers|#7: |#0\r\n\n";
                     if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
 						 ( syscfg.sysconfig & sysconfig_extended_info ) )
                     {
-						sess->bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
+						GetSession()->bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
                     }
                     else
                     {
-                        sess->bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
+                        GetSession()->bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
                     }
                     unsigned char chLine = ( okansi() ) ? 205 : '=';
-                    sess->bout << "|#7" << charstr( 79, chLine ) << wwiv::endl;
+                    GetSession()->bout << "|#7" << charstr( 79, chLine ) << wwiv::endl;
                     i = 0;
                 }
-                sess->bout << s1;
+                GetSession()->bout << s1;
 				nl();
             }
         } while ( pos < len );
@@ -786,7 +786,7 @@ void UpdateLastOnFileAndUserLog()
         pausescr();
     }
 
-    if ( sess->GetEffectiveSl() != 255 || incom )
+    if ( GetSession()->GetEffectiveSl() != 255 || incom )
     {
 		sysoplog( "", false );
         sysoplog( stripcolors( szLogLine ), false );
@@ -804,28 +804,28 @@ void UpdateLastOnFileAndUserLog()
 		{
             sprintf( szLogLine, "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
                         status.callernum1,
-                        sess->thisuser.GetUserNameAndNumber( sess->usernum ),
+                        GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
                         times(),
                         fulldate(),
-                        sess->thisuser.GetCity(),
-                        sess->thisuser.GetState(),
-                        sess->thisuser.GetCountry(),
-                        sess->GetCurrentSpeed().c_str(),
-                        sess->thisuser.GetTimesOnToday() );
+                        GetSession()->thisuser.GetCity(),
+                        GetSession()->thisuser.GetState(),
+                        GetSession()->thisuser.GetCountry(),
+                        GetSession()->GetCurrentSpeed().c_str(),
+                        GetSession()->thisuser.GetTimesOnToday() );
 		}
         else
 		{
             sprintf( szLogLine, "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
                         status.callernum1,
-                        sess->thisuser.GetUserNameAndNumber( sess->usernum ),
+                        GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
                         cur_lang_name,
                         times(),
                         fulldate(),
-                        sess->GetCurrentSpeed().c_str(),
-                        sess->thisuser.GetTimesOnToday() );
+                        GetSession()->GetCurrentSpeed().c_str(),
+                        GetSession()->thisuser.GetTimesOnToday() );
 		}
 
-        if ( sess->GetEffectiveSl() != 255 )
+        if ( GetSession()->GetEffectiveSl() != 255 )
 		{
             WFile userLog( syscfg.gfilesdir, USER_LOG );
             if ( userLog.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
@@ -867,26 +867,26 @@ void UpdateLastOnFileAndUserLog()
 void CheckAndUpdateUserInfo()
 {
     fsenttoday = 0;
-    if ( sess->thisuser.GetBirthdayYear() == 0 )
+    if ( GetSession()->thisuser.GetBirthdayYear() == 0 )
     {
-        sess->bout << "\r\nPlease enter the following information:\r\n";
+        GetSession()->bout << "\r\nPlease enter the following information:\r\n";
         do
         {
             nl();
-            input_age( &sess->thisuser );
+            input_age( &GetSession()->thisuser );
             nl();
             bprintf( "%02d/%02d/%02d -- Correct? ",
-                     sess->thisuser.GetBirthdayMonth(),
-                     sess->thisuser.GetBirthdayDay(),
-                     sess->thisuser.GetBirthdayYear() );
+                     GetSession()->thisuser.GetBirthdayMonth(),
+                     GetSession()->thisuser.GetBirthdayDay(),
+                     GetSession()->thisuser.GetBirthdayYear() );
             if ( !yesno() )
             {
-                sess->thisuser.SetBirthdayYear( 0 );
+                GetSession()->thisuser.SetBirthdayYear( 0 );
             }
-        } while ( !hangup && sess->thisuser.GetBirthdayYear() == 0 );
+        } while ( !hangup && GetSession()->thisuser.GetBirthdayYear() == 0 );
     }
 
-    if ( !sess->thisuser.GetRealName()[0] )
+    if ( !GetSession()->thisuser.GetRealName()[0] )
     {
         input_realname();
     }
@@ -894,31 +894,31 @@ void CheckAndUpdateUserInfo()
     {
         return;
     }
-    if ( !sess->thisuser.GetStreet()[0] )
+    if ( !GetSession()->thisuser.GetStreet()[0] )
     {
         input_street();
     }
-    if ( !sess->thisuser.GetCity()[0] )
+    if ( !GetSession()->thisuser.GetCity()[0] )
     {
         input_city();
     }
-    if ( !sess->thisuser.GetState()[0] )
+    if ( !GetSession()->thisuser.GetState()[0] )
     {
         input_state();
     }
-    if ( !sess->thisuser.GetCountry()[0] )
+    if ( !GetSession()->thisuser.GetCountry()[0] )
     {
         input_country();
     }
-    if ( !sess->thisuser.GetZipcode()[0] )
+    if ( !GetSession()->thisuser.GetZipcode()[0] )
     {
         input_zipcode();
     }
-    if ( !sess->thisuser.GetDataPhoneNumber()[0] )
+    if ( !GetSession()->thisuser.GetDataPhoneNumber()[0] )
     {
         input_dataphone();
     }
-    if ( sess->thisuser.GetComputerType() == -1 )
+    if ( GetSession()->thisuser.GetComputerType() == -1 )
     {
         input_comptype();
     }
@@ -928,54 +928,54 @@ void CheckAndUpdateUserInfo()
         return;
     }
 
-    if ( sess->thisuser.GetRegisteredDateNum() == 0 )
+    if ( GetSession()->thisuser.GetRegisteredDateNum() == 0 )
     {
         return;
     }
 
     time_t lTime = time( NULL );
-    if ((sess->thisuser.GetExpiresDateNum() < static_cast<unsigned long>(lTime + 30 * SECS_PER_DAY))
-        && (sess->thisuser.GetExpiresDateNum() > static_cast<unsigned long>(lTime + 10 * SECS_PER_DAY)))
+    if ((GetSession()->thisuser.GetExpiresDateNum() < static_cast<unsigned long>(lTime + 30 * SECS_PER_DAY))
+        && (GetSession()->thisuser.GetExpiresDateNum() > static_cast<unsigned long>(lTime + 10 * SECS_PER_DAY)))
     {
-        sess->bout << "Your registration expires in " <<
-                      static_cast<int>((sess->thisuser.GetExpiresDateNum() - lTime) / SECS_PER_DAY) <<
+        GetSession()->bout << "Your registration expires in " <<
+                      static_cast<int>((GetSession()->thisuser.GetExpiresDateNum() - lTime) / SECS_PER_DAY) <<
                       "days";
     }
-    else if ( ( sess->thisuser.GetExpiresDateNum() > static_cast<unsigned long>( lTime ) ) &&
-              ( sess->thisuser.GetExpiresDateNum() < static_cast<unsigned long>( lTime + 10 * SECS_PER_DAY ) ))
+    else if ( ( GetSession()->thisuser.GetExpiresDateNum() > static_cast<unsigned long>( lTime ) ) &&
+              ( GetSession()->thisuser.GetExpiresDateNum() < static_cast<unsigned long>( lTime + 10 * SECS_PER_DAY ) ))
     {
-        if ( static_cast<int>( ( sess->thisuser.GetExpiresDateNum() - lTime ) / static_cast<unsigned long>( SECS_PER_DAY ) ) > 1 )
+        if ( static_cast<int>( ( GetSession()->thisuser.GetExpiresDateNum() - lTime ) / static_cast<unsigned long>( SECS_PER_DAY ) ) > 1 )
         {
-            sess->bout << "|#6Your registration expires in " <<
-                        static_cast<int>((sess->thisuser.GetExpiresDateNum() - lTime) / static_cast<unsigned long>( SECS_PER_DAY ) )
+            GetSession()->bout << "|#6Your registration expires in " <<
+                        static_cast<int>((GetSession()->thisuser.GetExpiresDateNum() - lTime) / static_cast<unsigned long>( SECS_PER_DAY ) )
                         << " days";
         }
         else
         {
-            sess->bout << "|#6Your registration expires in " <<
-                            static_cast<int>( ( sess->thisuser.GetExpiresDateNum() - lTime ) / static_cast<unsigned long>( 3600L ) )
+            GetSession()->bout << "|#6Your registration expires in " <<
+                            static_cast<int>( ( GetSession()->thisuser.GetExpiresDateNum() - lTime ) / static_cast<unsigned long>( 3600L ) )
                             << " hours.";
         }
         nl( 2 );
         pausescr();
     }
-    if ( sess->thisuser.GetExpiresDateNum() < static_cast<unsigned long>( lTime ) )
+    if ( GetSession()->thisuser.GetExpiresDateNum() < static_cast<unsigned long>( lTime ) )
     {
         if ( !so() )
         {
-            if ( sess->thisuser.GetSl() > syscfg.newusersl ||
-                 sess->thisuser.GetDsl() > syscfg.newuserdsl )
+            if ( GetSession()->thisuser.GetSl() > syscfg.newusersl ||
+                 GetSession()->thisuser.GetDsl() > syscfg.newuserdsl )
             {
-                sess->thisuser.SetSl( syscfg.newusersl );
-                sess->thisuser.SetDsl( syscfg.newuserdsl );
-                sess->thisuser.SetExempt( 0 );
-                ssm( 1, 0, "%s%s", sess->thisuser.GetUserNameAndNumber( sess->usernum ), "'s registration has expired." );
-                sess->WriteCurrentUser( sess->usernum );
-                sess->ResetEffectiveSl();
+                GetSession()->thisuser.SetSl( syscfg.newusersl );
+                GetSession()->thisuser.SetDsl( syscfg.newuserdsl );
+                GetSession()->thisuser.SetExempt( 0 );
+                ssm( 1, 0, "%s%s", GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ), "'s registration has expired." );
+                GetSession()->WriteCurrentUser( GetSession()->usernum );
+                GetSession()->ResetEffectiveSl();
                 changedsl();
             }
         }
-        sess->bout << "|#6Your registration has expired.\r\n\n";
+        GetSession()->bout << "|#6Your registration has expired.\r\n\n";
         pausescr();
     }
 }
@@ -986,60 +986,60 @@ void DisplayUserLoginInformation()
     char s1[255];
     nl();
 
-    sess->bout << "|#9Name/Handle|#0....... |#2" << sess->thisuser.GetUserNameAndNumber( sess->usernum ) << wwiv::endl;
-    sess->bout << "|#9Internet Address|#0.. |#2";
-    if ( check_inet_addr(sess->thisuser.GetEmailAddress() ) )
+    GetSession()->bout << "|#9Name/Handle|#0....... |#2" << GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) << wwiv::endl;
+    GetSession()->bout << "|#9Internet Address|#0.. |#2";
+    if ( check_inet_addr(GetSession()->thisuser.GetEmailAddress() ) )
     {
-        sess->bout << sess->thisuser.GetEmailAddress() << wwiv::endl;
+        GetSession()->bout << GetSession()->thisuser.GetEmailAddress() << wwiv::endl;
     }
-    else if ( !sess->internetEmailName.empty() )
+    else if ( !GetSession()->internetEmailName.empty() )
     {
-        sess->bout << ( sess->IsInternetUseRealNames() ? sess->thisuser.GetRealName() : sess->thisuser.GetName() )
-                    << "<" << sess->internetFullEmailAddress << ">\r\n";
-    }
-    else
-    {
-        sess->bout << "None.\r\n";
-    }
-    sess->bout << "|#9Time allowed on|#0... |#2" << static_cast<int>( ( nsl() + 30 ) / SECONDS_PER_MINUTE_FLOAT ) << wwiv::endl;
-    if ( sess->thisuser.GetNumIllegalLogons() > 0 )
-    {
-        sess->bout << "|#9Illegal logons|#0.... |#2" << sess->thisuser.GetNumIllegalLogons() << wwiv::endl;
-    }
-    if ( sess->thisuser.GetNumMailWaiting() > 0 )
-    {
-        sess->bout << "|#9Mail waiting|#0...... |#2" << sess->thisuser.GetNumMailWaiting() << wwiv::endl;
-    }
-    if ( sess->thisuser.GetTimesOnToday() == 1 )
-    {
-        sess->bout << "|#9Date last on|#0...... |#2" << sess->thisuser.GetLastOn() << wwiv::endl;
+        GetSession()->bout << ( GetSession()->IsInternetUseRealNames() ? GetSession()->thisuser.GetRealName() : GetSession()->thisuser.GetName() )
+                    << "<" << GetSession()->internetFullEmailAddress << ">\r\n";
     }
     else
     {
-        sess->bout << "|#9Times on today|#0.... |#2" << sess->thisuser.GetTimesOnToday() << wwiv::endl;
+        GetSession()->bout << "None.\r\n";
     }
-    sess->bout << "|#9Sysop currently|#0... |#2";
+    GetSession()->bout << "|#9Time allowed on|#0... |#2" << static_cast<int>( ( nsl() + 30 ) / SECONDS_PER_MINUTE_FLOAT ) << wwiv::endl;
+    if ( GetSession()->thisuser.GetNumIllegalLogons() > 0 )
+    {
+        GetSession()->bout << "|#9Illegal logons|#0.... |#2" << GetSession()->thisuser.GetNumIllegalLogons() << wwiv::endl;
+    }
+    if ( GetSession()->thisuser.GetNumMailWaiting() > 0 )
+    {
+        GetSession()->bout << "|#9Mail waiting|#0...... |#2" << GetSession()->thisuser.GetNumMailWaiting() << wwiv::endl;
+    }
+    if ( GetSession()->thisuser.GetTimesOnToday() == 1 )
+    {
+        GetSession()->bout << "|#9Date last on|#0...... |#2" << GetSession()->thisuser.GetLastOn() << wwiv::endl;
+    }
+    else
+    {
+        GetSession()->bout << "|#9Times on today|#0.... |#2" << GetSession()->thisuser.GetTimesOnToday() << wwiv::endl;
+    }
+    GetSession()->bout << "|#9Sysop currently|#0... |#2";
     if ( sysop2() )
     {
-        sess->bout << "Available\r\n";
+        GetSession()->bout << "Available\r\n";
     }
     else
     {
-        sess->bout << "NOT Available\r\n";
+        GetSession()->bout << "NOT Available\r\n";
     }
 
-    sess->bout << "|#9System is|#0......... |#2WWIV " << wwiv_version << beta_version << "  " << wwiv::endl;
+    GetSession()->bout << "|#9System is|#0......... |#2WWIV " << wwiv_version << beta_version << "  " << wwiv::endl;
 
     /////////////////////////////////////////////////////////////////////////
     GetApplication()->GetStatusManager()->Read();
-    for ( int i = 0; i < sess->GetMaxNetworkNumber(); i++ )
+    for ( int i = 0; i < GetSession()->GetMaxNetworkNumber(); i++ )
     {
         if ( net_networks[i].sysnum )
         {
             sprintf( s1, "|#9%s node|#0%s|#2 @%u", net_networks[i].name, charstr(13 - strlen(net_networks[i].name), '.'), net_networks[i].sysnum );
             if ( i )
             {
-                sess->bout << s1;
+                GetSession()->bout << s1;
 				nl();
             }
             else
@@ -1050,78 +1050,78 @@ void DisplayUserLoginInformation()
                     s1[i1] = ' ';
                 }
                 s1[i1] = '\0';
-                sess->bout << s1 << "(net" << status.net_version << ")\r\n";
+                GetSession()->bout << s1 << "(net" << status.net_version << ")\r\n";
             }
         }
     }
 
     char szOSVersion[100];
     WWIV_GetOSVersion( szOSVersion, 100, true );
-    sess->bout << "|#9OS|#0................ |#2" << szOSVersion << wwiv::endl;
+    GetSession()->bout << "|#9OS|#0................ |#2" << szOSVersion << wwiv::endl;
 
-    sess->bout << "|#9Instance|#0.......... |#2" << GetApplication()->GetInstanceNumber() << "\r\n\n";
-    if ( sess->thisuser.GetForwardUserNumber() )
+    GetSession()->bout << "|#9Instance|#0.......... |#2" << GetApplication()->GetInstanceNumber() << "\r\n\n";
+    if ( GetSession()->thisuser.GetForwardUserNumber() )
     {
-        if ( sess->thisuser.GetForwardSystemNumber() != 0 )
+        if ( GetSession()->thisuser.GetForwardSystemNumber() != 0 )
         {
-            set_net_num( sess->thisuser.GetForwardNetNumber() );
-            if ( !valid_system( sess->thisuser.GetForwardSystemNumber() ) )
+            set_net_num( GetSession()->thisuser.GetForwardNetNumber() );
+            if ( !valid_system( GetSession()->thisuser.GetForwardSystemNumber() ) )
             {
-                sess->thisuser.SetForwardUserNumber( 0 );
-                sess->thisuser.SetForwardSystemNumber( 0 );
-                sess->bout << "Forwarded to unknown system; forwarding reset.\r\n";
+                GetSession()->thisuser.SetForwardUserNumber( 0 );
+                GetSession()->thisuser.SetForwardSystemNumber( 0 );
+                GetSession()->bout << "Forwarded to unknown system; forwarding reset.\r\n";
             }
             else
             {
-                sess->bout << "Mail set to be forwarded to ";
-                if ( sess->GetMaxNetworkNumber() > 1 )
+                GetSession()->bout << "Mail set to be forwarded to ";
+                if ( GetSession()->GetMaxNetworkNumber() > 1 )
                 {
-                    sess->bout << "#" << sess->thisuser.GetForwardUserNumber()
+                    GetSession()->bout << "#" << GetSession()->thisuser.GetForwardUserNumber()
 							   << " @"
-							   << sess->thisuser.GetForwardSystemNumber()
-							   << "." << sess->GetNetworkName() << "."
+							   << GetSession()->thisuser.GetForwardSystemNumber()
+							   << "." << GetSession()->GetNetworkName() << "."
 							   << wwiv::endl;
                 }
                 else
                 {
-                    sess->bout << "#" << sess->thisuser.GetForwardUserNumber() << " @"
-							   << sess->thisuser.GetForwardSystemNumber() << "." << wwiv::endl;
+                    GetSession()->bout << "#" << GetSession()->thisuser.GetForwardUserNumber() << " @"
+							   << GetSession()->thisuser.GetForwardSystemNumber() << "." << wwiv::endl;
                 }
             }
         }
         else
         {
-            if ( sess->thisuser.GetForwardUserNumber() == 65535 )
+            if ( GetSession()->thisuser.GetForwardUserNumber() == 65535 )
             {
-                sess->bout << "Your mailbox is closed.\r\n\n";
+                GetSession()->bout << "Your mailbox is closed.\r\n\n";
             }
             else
             {
-                sess->bout << "Mail set to be forwarded to #" << sess->thisuser.GetForwardUserNumber() << wwiv::endl;
+                GetSession()->bout << "Mail set to be forwarded to #" << GetSession()->thisuser.GetForwardUserNumber() << wwiv::endl;
             }
         }
     }
-    else if ( sess->thisuser.GetForwardSystemNumber() != 0 )
+    else if ( GetSession()->thisuser.GetForwardSystemNumber() != 0 )
     {
 		char szInternetEmailAddress[ 255 ];
-        read_inet_addr( szInternetEmailAddress, sess->usernum );
-        sess->bout << "Mail forwarded to Internet "<< szInternetEmailAddress << ".\r\n";
+        read_inet_addr( szInternetEmailAddress, GetSession()->usernum );
+        GetSession()->bout << "Mail forwarded to Internet "<< szInternetEmailAddress << ".\r\n";
     }
-    if ( sess->IsTimeOnlineLimited() )
+    if ( GetSession()->IsTimeOnlineLimited() )
     {
-        sess->bout << "\r\n|13Your on-line time is limited by an external event.\r\n\n";
+        GetSession()->bout << "\r\n|13Your on-line time is limited by an external event.\r\n\n";
     }
 }
 
 void LoginCheckForNewMail()
 {
-    sess->bout << "|#9Scanning for new mail... ";
-    if ( sess->thisuser.GetNumMailWaiting() > 0 )
+    GetSession()->bout << "|#9Scanning for new mail... ";
+    if ( GetSession()->thisuser.GetNumMailWaiting() > 0 )
     {
-        int nNumNewMessages = check_new_mail( sess->usernum );
+        int nNumNewMessages = check_new_mail( GetSession()->usernum );
         if ( nNumNewMessages )
         {
-            sess->bout << "|#9You have |#2" << nNumNewMessages << "|#9 new message(s).\r\n\r\n" <<
+            GetSession()->bout << "|#9You have |#2" << nNumNewMessages << "|#9 new message(s).\r\n\r\n" <<
 					      "|#9Read your mail now? ";
             if ( noyes() )
             {
@@ -1130,25 +1130,25 @@ void LoginCheckForNewMail()
         }
         else
         {
-            sess->bout << "|#9You have |#2" << sess->thisuser.GetNumMailWaiting() << "|#9 old message(s) in your mailbox.\r\n";
+            GetSession()->bout << "|#9You have |#2" << GetSession()->thisuser.GetNumMailWaiting() << "|#9 old message(s) in your mailbox.\r\n";
         }
     }
     else
     {
-        sess->bout << " |#9No mail found.\r\n";
+        GetSession()->bout << " |#9No mail found.\r\n";
     }
 }
 
 void CheckUserForVotingBooth()
 {
-    if (!sess->thisuser.isRestrictionVote() && sess->GetEffectiveSl() > syscfg.newusersl )
+    if (!GetSession()->thisuser.isRestrictionVote() && GetSession()->GetEffectiveSl() > syscfg.newusersl )
     {
         for (int i = 0; i < 20; i++)
         {
-            if ( questused[i] && sess->thisuser.GetVote( i ) == 0 )
+            if ( questused[i] && GetSession()->thisuser.GetVote( i ) == 0 )
             {
                 nl();
-                sess->bout << "|#9You haven't voted yet.\r\n";
+                GetSession()->bout << "|#9You haven't voted yet.\r\n";
                 return;
             }
         }
@@ -1157,12 +1157,12 @@ void CheckUserForVotingBooth()
 
 void logon()
 {
-    if (sess->usernum < 1)
+    if (GetSession()->usernum < 1)
     {
         hangup = true;
         return;
     }
-	sess->SetUserOnline( true );
+	GetSession()->SetUserOnline( true );
     write_inst( INST_LOC_LOGON, 0, INST_FLAGS_NONE );
     get_user_ppp_addr();
     get_next_forced_event();
@@ -1198,33 +1198,33 @@ void logon()
 
     GetApplication()->GetLocalIO()->UpdateTopScreen();
     GetApplication()->read_subs();
-    rsm( sess->usernum, &sess->thisuser, true );
+    rsm( GetSession()->usernum, &GetSession()->thisuser, true );
 
     LoginCheckForNewMail();
 
-    if ( sess->thisuser.GetNewScanDateNumber() )
+    if ( GetSession()->thisuser.GetNewScanDateNumber() )
     {
-        nscandate = sess->thisuser.GetNewScanDateNumber();
+        nscandate = GetSession()->thisuser.GetNewScanDateNumber();
     }
     else
     {
-        nscandate = sess->thisuser.GetLastOnDateNumber();
+        nscandate = GetSession()->thisuser.GetLastOnDateNumber();
     }
     batchtime = 0.0;
-    sess->numbatchdl = sess->numbatch = 0;
+    GetSession()->numbatchdl = GetSession()->numbatch = 0;
 
     CheckUserForVotingBooth();
 
-    if ( ( incom || sysop1() ) && sess->thisuser.GetSl() < 255 )
+    if ( ( incom || sysop1() ) && GetSession()->thisuser.GetSl() < 255 )
     {
-        broadcast( "%s Just logged on!", sess->thisuser.GetName() );
+        broadcast( "%s Just logged on!", GetSession()->thisuser.GetName() );
     }
     setiia( 90 );
 
 	// New Message Scan
-	if ( sess->IsNewScanAtLogin() )
+	if ( GetSession()->IsNewScanAtLogin() )
 	{
-		sess->bout << "\r\n|10Scan All Message Areas For New Messages? ";
+		GetSession()->bout << "\r\n|10Scan All Message Areas For New Messages? ";
 		if ( yesno() )
 		{
 			NewMsgsAllConfs();
@@ -1232,11 +1232,11 @@ void logon()
 	}
 
     // Handle case of first conf with no subs avail
-    if ( usub[0].subnum == -1 && okconf( &sess->thisuser ) )
+    if ( usub[0].subnum == -1 && okconf( &GetSession()->thisuser ) )
     {
-        for (sess->SetCurrentConferenceMessageArea( 0 ); (sess->GetCurrentConferenceMessageArea() < subconfnum) && (uconfsub[sess->GetCurrentConferenceMessageArea()].confnum != -1); sess->SetCurrentConferenceMessageArea( sess->GetCurrentConferenceMessageArea() + 1 ) )
+        for (GetSession()->SetCurrentConferenceMessageArea( 0 ); (GetSession()->GetCurrentConferenceMessageArea() < subconfnum) && (uconfsub[GetSession()->GetCurrentConferenceMessageArea()].confnum != -1); GetSession()->SetCurrentConferenceMessageArea( GetSession()->GetCurrentConferenceMessageArea() + 1 ) )
         {
-            setuconf( CONF_SUBS, sess->GetCurrentConferenceMessageArea(), -1 );
+            setuconf( CONF_SUBS, GetSession()->GetCurrentConferenceMessageArea(), -1 );
             if ( usub[0].subnum != -1 )
             {
                 break;
@@ -1244,8 +1244,8 @@ void logon()
         }
         if ( usub[0].subnum == -1 )
         {
-            sess->SetCurrentConferenceMessageArea( 0 );
-            setuconf( CONF_SUBS, sess->GetCurrentConferenceMessageArea(), -1 );
+            GetSession()->SetCurrentConferenceMessageArea( 0 );
+            setuconf( CONF_SUBS, GetSession()->GetCurrentConferenceMessageArea(), -1 );
         }
     }
     g_preloaded = false;
@@ -1253,15 +1253,15 @@ void logon()
     if ( GetApplication()->HasConfigFlag( OP_FLAGS_USE_FORCESCAN ) )
     {
         int nNextSubNumber = 0;
-        if ( sess->thisuser.GetSl() < 255 )
+        if ( GetSession()->thisuser.GetSl() < 255 )
         {
             forcescansub = true;
-            qscan( sess->GetForcedReadSubNumber(), &nNextSubNumber );
+            qscan( GetSession()->GetForcedReadSubNumber(), &nNextSubNumber );
             forcescansub = false;
         }
         else
         {
-            qscan( sess->GetForcedReadSubNumber(), &nNextSubNumber );
+            qscan( GetSession()->GetForcedReadSubNumber(), &nNextSubNumber );
         }
     }
     CleanUserInfo();
@@ -1277,58 +1277,58 @@ void logoff()
         play_sdf( LOGOFF_NOEXT, false );
     }
 
-    if ( sess->usernum > 0 )
+    if ( GetSession()->usernum > 0 )
     {
-        if ( ( incom || sysop1() ) && sess->thisuser.GetSl() < 255 )
+        if ( ( incom || sysop1() ) && GetSession()->thisuser.GetSl() < 255 )
         {
-            broadcast( "%s Just logged off!", sess->thisuser.GetName() );
+            broadcast( "%s Just logged off!", GetSession()->thisuser.GetName() );
         }
     }
     setiia(90);
     GetApplication()->GetComm()->dtr( false );
     hangup = true;
-    if (sess->usernum < 1)
+    if (GetSession()->usernum < 1)
     {
         return;
     }
 
     std::string text = "  Logged Off At ";
     text += times();
-    if ( sess->GetEffectiveSl() != 255 || incom )
+    if ( GetSession()->GetEffectiveSl() != 255 || incom )
     {
 		sysoplog( "", false );
         sysoplog( stripcolors( text.c_str() ), false );
     }
-    sess->thisuser.SetLastBaudRate( modem_speed );
+    GetSession()->thisuser.SetLastBaudRate( modem_speed );
 
 	// put this back here where it belongs... (not sure why it te
-    sess->thisuser.SetLastOn( g_szLastLoginDate );
+    GetSession()->thisuser.SetLastOn( g_szLastLoginDate );
 
-    sess->thisuser.SetNumIllegalLogons( 0 );
+    GetSession()->thisuser.SetNumIllegalLogons( 0 );
     if ( ( timer() - timeon ) < -30.0 )
     {
         timeon -= HOURS_PER_DAY_FLOAT * SECONDS_PER_DAY_FLOAT;
     }
     double ton = timer() - timeon;
-    sess->thisuser.SetTimeOn( sess->thisuser.GetTimeOn() + static_cast<float>( ton ) );
-    sess->thisuser.SetTimeOnToday( sess->thisuser.GetTimeOnToday() + static_cast<float>( ton - extratimecall ) );
+    GetSession()->thisuser.SetTimeOn( GetSession()->thisuser.GetTimeOn() + static_cast<float>( ton ) );
+    GetSession()->thisuser.SetTimeOnToday( GetSession()->thisuser.GetTimeOnToday() + static_cast<float>( ton - extratimecall ) );
     GetApplication()->GetStatusManager()->Lock();
     status.activetoday = status.activetoday + static_cast<unsigned short>( ton / MINUTES_PER_HOUR_FLOAT );
     GetApplication()->GetStatusManager()->Write();
     if (g_flags & g_flag_scanned_files)
     {
-        sess->thisuser.SetNewScanDateNumber( sess->thisuser.GetLastOnDateNumber() );
+        GetSession()->thisuser.SetNewScanDateNumber( GetSession()->thisuser.GetLastOnDateNumber() );
     }
     long lTime = time( NULL );
-    sess->thisuser.SetLastOnDateNumber( lTime );
-    sysoplogfi( false, "Read: %lu   Time on: %u", sess->GetNumMessagesReadThisLogon(), static_cast<int>( ( timer() - timeon ) / MINUTES_PER_HOUR_FLOAT ) );
+    GetSession()->thisuser.SetLastOnDateNumber( lTime );
+    sysoplogfi( false, "Read: %lu   Time on: %u", GetSession()->GetNumMessagesReadThisLogon(), static_cast<int>( ( timer() - timeon ) / MINUTES_PER_HOUR_FLOAT ) );
     if (mailcheck)
     {
 		WFile* pFileEmail = OpenEmailFile( true );
         WWIV_ASSERT( pFileEmail );
 		if ( pFileEmail->IsOpen() )
         {
-            sess->thisuser.SetNumMailWaiting( 0 );
+            GetSession()->thisuser.SetNumMailWaiting( 0 );
 			int t = static_cast< int >( pFileEmail->GetLength() / sizeof( mailrec ) );
             int r = 0;
             int w = 0;
@@ -1338,11 +1338,11 @@ void logoff()
 				pFileEmail->Read( &m, sizeof( mailrec ) );
                 if ( m.tosys != 0 || m.touser != 0 )
                 {
-                    if ( m.tosys == 0 && m.touser == sess->usernum )
+                    if ( m.tosys == 0 && m.touser == GetSession()->usernum )
                     {
-                        if ( sess->thisuser.GetNumMailWaiting() != 255 )
+                        if ( GetSession()->thisuser.GetNumMailWaiting() != 255 )
                         {
-                            sess->thisuser.SetNumMailWaiting( sess->thisuser.GetNumMailWaiting() + 1 );
+                            GetSession()->thisuser.SetNumMailWaiting( GetSession()->thisuser.GetNumMailWaiting() + 1 );
                         }
                     }
                     if ( r != w )
@@ -1380,15 +1380,15 @@ void logoff()
 		if ( pFileEmail->IsOpen() )
         {
 			int nTotalEmailMessages = static_cast<int>( pFileEmail->GetLength() / sizeof( mailrec ) );
-            sess->thisuser.SetNumMailWaiting( 0 );
+            GetSession()->thisuser.SetNumMailWaiting( 0 );
             for ( int i = 0; i < nTotalEmailMessages; i++ )
             {
 				pFileEmail->Read( &m, sizeof( mailrec ) );
-                if ( m.tosys == 0 && m.touser == sess->usernum )
+                if ( m.tosys == 0 && m.touser == GetSession()->usernum )
                 {
-                    if ( sess->thisuser.GetNumMailWaiting() != 255 )
+                    if ( GetSession()->thisuser.GetNumMailWaiting() != 255 )
                     {
-                        sess->thisuser.SetNumMailWaiting( sess->thisuser.GetNumMailWaiting() + 1 );
+                        GetSession()->thisuser.SetNumMailWaiting( GetSession()->thisuser.GetNumMailWaiting() + 1 );
                     }
                 }
             }
@@ -1411,9 +1411,9 @@ void logoff()
                 smwFile.Read( &sm, sizeof( shortmsgrec ) );
                 if ( sm.tosys != 0 || sm.touser != 0 )
                 {
-                    if ( sm.tosys == 0 && sm.touser == sess->usernum )
+                    if ( sm.tosys == 0 && sm.touser == GetSession()->usernum )
                     {
-                        sess->thisuser.setStatusFlag( WUser::SMW );
+                        GetSession()->thisuser.setStatusFlag( WUser::SMW );
                     }
                     if ( r != w )
                     {
@@ -1428,17 +1428,17 @@ void logoff()
             smwFile.Close();
         }
     }
-    if ( sess->usernum == 1 )
+    if ( GetSession()->usernum == 1 )
     {
-        fwaiting = sess->thisuser.GetNumMailWaiting();
+        fwaiting = GetSession()->thisuser.GetNumMailWaiting();
     }
-    sess->WriteCurrentUser( sess->usernum );
-    write_qscn( sess->usernum, qsc, false );
+    GetSession()->WriteCurrentUser( GetSession()->usernum );
+    write_qscn( GetSession()->usernum, qsc, false );
     remove_from_temp( "*.*", syscfgovr.tempdir, false );
     remove_from_temp( "*.*", syscfgovr.batchdir, false );
-    if ( sess->numbatch && ( sess->numbatch != sess->numbatchdl ) )
+    if ( GetSession()->numbatch && ( GetSession()->numbatch != GetSession()->numbatchdl ) )
     {
-        for ( int i = 0; i < sess->numbatch; i++ )
+        for ( int i = 0; i < GetSession()->numbatch; i++ )
         {
             if ( !batch[i].sending )
             {
@@ -1446,7 +1446,7 @@ void logoff()
             }
         }
     }
-    sess->numbatch = sess->numbatchdl = 0;
+    GetSession()->numbatch = GetSession()->numbatchdl = 0;
 }
 
 
@@ -1463,10 +1463,10 @@ void logon_guest()
     do
     {
         nl();
-        sess->bout << "|#5Enter your real name : ";
+        GetSession()->bout << "|#5Enter your real name : ";
         input( userName, 25, true );
         nl();
-        sess->bout << "|#5Purpose of your call?\r\n";
+        GetSession()->bout << "|#5Purpose of your call?\r\n";
         input( reason, 79, true );
         if ( !userName.empty() && !reason.empty() )
         {

@@ -172,7 +172,7 @@ bool WFile::Open( int nFileMode, int nShareMode, int nPermissions )
 			while ( ( m_hFile < 0 && errno == EACCES ) && count < TRIES )
 			{
 				WWIV_Delay( ( count % 2 ) ? WAIT_TIME : 0 );
-				if ( sess->GetGlobalDebugLevel() > 0 )
+				if ( GetSession()->GetGlobalDebugLevel() > 0 )
 				{
 					std::cout << "\rWaiting to access " << m_szFileName << " " << TRIES - count << ".  \r";
 				}

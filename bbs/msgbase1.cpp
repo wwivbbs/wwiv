@@ -32,7 +32,7 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber)
 	}
 
 	int nNetNumber;
-	int nOrigNetNumber = sess->GetNetworkNumber();
+	int nOrigNetNumber = GetSession()->GetNetworkNumber();
 	if ( pPostRecord->status & status_post_new_net )
 	{
 		nNetNumber = pPostRecord->title[80];
@@ -43,7 +43,7 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber)
 	}
 	else
 	{
-		nNetNumber = sess->GetNetworkNumber();
+		nNetNumber = GetSession()->GetNetworkNumber();
 	}
 
 	int nn1 = nNetNumber;
@@ -107,7 +107,7 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber)
 		{
 			nh.main_type = main_type_post;
 			char szFileName[ MAX_PATH ];
-			sprintf( szFileName, "%sn%s.net", sess->GetNetworkDataDirectory(), xnp->stype );
+			sprintf( szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory(), xnp->stype );
 			WFile file( szFileName );
 			if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
 			{
@@ -135,7 +135,7 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber)
 					if ((b[len2] >= '0') && (b[len2] <= '9') && (len2 < len1))
 					{
 						int i = atoi(&(b[len2]));
-						if (((sess->GetNetworkNumber() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum))
+						if (((GetSession()->GetNetworkNumber() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum))
 						{
 							if (valid_system(i))
 							{
@@ -163,7 +163,7 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber)
 		{
 			nh.main_type = main_type_new_post;
 		}
-		if ( nn1 == sess->GetNetworkNumber() )
+		if ( nn1 == GetSession()->GetNetworkNumber() )
 		{
 			send_net( &nh, pList, b1, xnp->type ? NULL : xnp->stype );
 		}
@@ -184,84 +184,84 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber)
 
 void post()
 {
-	if ( !iscan( sess->GetCurrentMessageArea() ) )
+	if ( !iscan( GetSession()->GetCurrentMessageArea() ) )
 	{
-		sess->bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n";
+		GetSession()->bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n";
 		return;
 	}
-	if ( sess->GetCurrentReadMessageArea() < 0 )
+	if ( GetSession()->GetCurrentReadMessageArea() < 0 )
 	{
-		sess->bout << "\r\nNo subs available.\r\n\n";
+		GetSession()->bout << "\r\nNo subs available.\r\n\n";
 		return;
 	}
 
 	if ( freek1( syscfg.msgsdir ) < 10.0 )
 	{
-		sess->bout << "\r\nSorry, not enough disk space left.\r\n\n";
+		GetSession()->bout << "\r\nSorry, not enough disk space left.\r\n\n";
 		return;
 	}
-    if ( sess->thisuser.isRestrictionPost() || sess->thisuser.GetNumPostsToday() >= getslrec( sess->GetEffectiveSl() ).posts )
+    if ( GetSession()->thisuser.isRestrictionPost() || GetSession()->thisuser.GetNumPostsToday() >= getslrec( GetSession()->GetEffectiveSl() ).posts )
 	{
-		sess->bout << "\r\nToo many messages posted today.\r\n\n";
+		GetSession()->bout << "\r\nToo many messages posted today.\r\n\n";
 		return;
 	}
-	if ( sess->GetEffectiveSl() < subboards[sess->GetCurrentReadMessageArea()].postsl )
+	if ( GetSession()->GetEffectiveSl() < subboards[GetSession()->GetCurrentReadMessageArea()].postsl )
 	{
-		sess->bout << "\r\nYou can't post here.\r\n\n";
+		GetSession()->bout << "\r\nYou can't post here.\r\n\n";
 		return;
 	}
 
 	messagerec m;
-	m.storage_type = static_cast<unsigned char>( subboards[sess->GetCurrentReadMessageArea()].storage_type );
-	int a = subboards[ sess->GetCurrentReadMessageArea() ].anony & 0x0f;
-	if ( a == 0 && getslrec( sess->GetEffectiveSl() ).ability & ability_post_anony )
+	m.storage_type = static_cast<unsigned char>( subboards[GetSession()->GetCurrentReadMessageArea()].storage_type );
+	int a = subboards[ GetSession()->GetCurrentReadMessageArea() ].anony & 0x0f;
+	if ( a == 0 && getslrec( GetSession()->GetEffectiveSl() ).ability & ability_post_anony )
 	{
 		a = anony_enable_anony;
 	}
-	if ( a == anony_enable_anony && sess->thisuser.isRestrictionAnonymous() )
+	if ( a == anony_enable_anony && GetSession()->thisuser.isRestrictionAnonymous() )
 	{
 		a = 0;
 	}
-	if ( xsubs[ sess->GetCurrentReadMessageArea() ].num_nets )
+	if ( xsubs[ GetSession()->GetCurrentReadMessageArea() ].num_nets )
 	{
 		a &= (anony_real_name);
-		if ( sess->thisuser.isRestrictionNet() )
+		if ( GetSession()->thisuser.isRestrictionNet() )
 		{
-			sess->bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
+			GetSession()->bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
 			return;
 		}
 		if ( net_sysnum )
 		{
-			sess->bout << "\r\nThis post will go out on ";
-			for ( int i = 0; i < xsubs[ sess->GetCurrentReadMessageArea() ].num_nets; i++ )
+			GetSession()->bout << "\r\nThis post will go out on ";
+			for ( int i = 0; i < xsubs[ GetSession()->GetCurrentReadMessageArea() ].num_nets; i++ )
 			{
 				if ( i )
 				{
-					sess->bout << ", ";
+					GetSession()->bout << ", ";
 				}
-				sess->bout << net_networks[xsubs[sess->GetCurrentReadMessageArea()].nets[i].net_num].name;
+				GetSession()->bout << net_networks[xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i].net_num].name;
 			}
-			sess->bout << ".\r\n\n";
+			GetSession()->bout << ".\r\n\n";
 		}
 	}
 	time_t lStartTime = time( NULL );
 
-	write_inst( INST_LOC_POST, sess->GetCurrentReadMessageArea(), INST_FLAGS_NONE );
+	write_inst( INST_LOC_POST, GetSession()->GetCurrentReadMessageArea(), INST_FLAGS_NONE );
 
 	postrec p;
-	inmsg( &m, p.title, &a, true, (subboards[sess->GetCurrentReadMessageArea()].filename), INMSG_FSED,
-           subboards[sess->GetCurrentReadMessageArea()].name, (subboards[sess->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE );
+	inmsg( &m, p.title, &a, true, (subboards[GetSession()->GetCurrentReadMessageArea()].filename), INMSG_FSED,
+           subboards[GetSession()->GetCurrentReadMessageArea()].name, (subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE );
 	if (m.stored_as != 0xffffffff)
 	{
 		p.anony		= static_cast< unsigned char >( a );
 		p.msg		= m;
 		p.ownersys	= 0;
-		p.owneruser = static_cast<unsigned short>( sess->usernum );
+		p.owneruser = static_cast<unsigned short>( GetSession()->usernum );
 		GetApplication()->GetStatusManager()->Lock();
 		p.qscan = status.qscanptr++;
 		GetApplication()->GetStatusManager()->Write();
 		time((long *) (&p.daten));
-        if ( sess->thisuser.isRestrictionValidate() )
+        if ( GetSession()->thisuser.isRestrictionValidate() )
 		{
 			p.status = status_unvalidated;
 		}
@@ -272,12 +272,12 @@ void post()
 
 		open_sub( true );
 
-		if ( ( xsubs[sess->GetCurrentReadMessageArea()].num_nets ) &&
-			( subboards[sess->GetCurrentReadMessageArea()].anony & anony_val_net ) && ( !lcs() || irt[0]) )
+		if ( ( xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets ) &&
+			( subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net ) && ( !lcs() || irt[0]) )
 		{
 			p.status |= status_pending_net;
 			int dm = 1;
-			for ( int i = sess->GetNumMessagesInCurrentMessageArea(); (i >= 1) && (i > (sess->GetNumMessagesInCurrentMessageArea() - 28)); i-- )
+			for ( int i = GetSession()->GetNumMessagesInCurrentMessageArea(); (i >= 1) && (i > (GetSession()->GetNumMessagesInCurrentMessageArea() - 28)); i-- )
 			{
 				if (get_post(i)->status & status_pending_net)
 				{
@@ -287,14 +287,14 @@ void post()
 			}
 			if (dm)
 			{
-				ssm(1, 0, "Unvalidated net posts on %s.", subboards[sess->GetCurrentReadMessageArea()].name);
+				ssm(1, 0, "Unvalidated net posts on %s.", subboards[GetSession()->GetCurrentReadMessageArea()].name);
 			}
 		}
-		if ( sess->GetNumMessagesInCurrentMessageArea() >= subboards[sess->GetCurrentReadMessageArea()].maxmsgs )
+		if ( GetSession()->GetNumMessagesInCurrentMessageArea() >= subboards[GetSession()->GetCurrentReadMessageArea()].maxmsgs )
 		{
 			int i = 1;
 			int dm = 0;
-			while ( i <= sess->GetNumMessagesInCurrentMessageArea() )
+			while ( i <= GetSession()->GetNumMessagesInCurrentMessageArea() )
 			{
 				postrec* pp = get_post(i);
 				if ( !pp )
@@ -302,7 +302,7 @@ void post()
 					break;
 				}
 				else if ( ( ( pp->status & status_no_delete ) == 0 ) ||
-					        ( pp->msg.storage_type != subboards[sess->GetCurrentReadMessageArea()].storage_type ) )
+					        ( pp->msg.storage_type != subboards[GetSession()->GetCurrentReadMessageArea()].storage_type ) )
 				{
 					dm = i;
 					break;
@@ -317,8 +317,8 @@ void post()
 		}
 		add_post(&p);
 
-        sess->thisuser.SetNumMessagesPosted( sess->thisuser.GetNumMessagesPosted() + 1 );
-        sess->thisuser.SetNumPostsToday( sess->thisuser.GetNumPostsToday() + 1 );
+        GetSession()->thisuser.SetNumMessagesPosted( GetSession()->thisuser.GetNumMessagesPosted() + 1 );
+        GetSession()->thisuser.SetNumPostsToday( GetSession()->thisuser.GetNumPostsToday() + 1 );
 		GetApplication()->GetStatusManager()->Lock();
 		++status.msgposttoday;
 		++status.localposts;
@@ -331,24 +331,24 @@ void post()
 				lEndTime += HOURS_PER_DAY * SECONDS_PER_DAY;
 			}
 			lStartTime = static_cast<long>( lEndTime - lStartTime );
-			if ((lStartTime / MINUTES_PER_HOUR_FLOAT ) > getslrec( sess->GetEffectiveSl() ).time_per_logon)
+			if ((lStartTime / MINUTES_PER_HOUR_FLOAT ) > getslrec( GetSession()->GetEffectiveSl() ).time_per_logon)
 			{
-				lStartTime = static_cast<long>( static_cast<float>( getslrec( sess->GetEffectiveSl() ).time_per_logon * MINUTES_PER_HOUR_FLOAT ) );
+				lStartTime = static_cast<long>( static_cast<float>( getslrec( GetSession()->GetEffectiveSl() ).time_per_logon * MINUTES_PER_HOUR_FLOAT ) );
 			}
-			sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() + static_cast<float>( lStartTime ) );
+			GetSession()->thisuser.SetExtraTime( GetSession()->thisuser.GetExtraTime() + static_cast<float>( lStartTime ) );
 		}
 		GetApplication()->GetStatusManager()->Write();
 		close_sub();
 
 		GetApplication()->GetLocalIO()->UpdateTopScreen();
-		sysoplogf( "+ \"%s\" posted on %s", p.title, subboards[sess->GetCurrentReadMessageArea()].name );
-		sess->bout << "Posted on " << subboards[sess->GetCurrentReadMessageArea()].name << wwiv::endl;
-		if (xsubs[sess->GetCurrentReadMessageArea()].num_nets)
+		sysoplogf( "+ \"%s\" posted on %s", p.title, subboards[GetSession()->GetCurrentReadMessageArea()].name );
+		GetSession()->bout << "Posted on " << subboards[GetSession()->GetCurrentReadMessageArea()].name << wwiv::endl;
+		if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets)
 		{
-            sess->thisuser.SetNumNetPosts( sess->thisuser.GetNumNetPosts() + 1 );
+            GetSession()->thisuser.SetNumNetPosts( GetSession()->thisuser.GetNumNetPosts() + 1 );
 			if (!(p.status & status_pending_net))
 			{
-				send_net_post(&p, subboards[sess->GetCurrentReadMessageArea()].filename, sess->GetCurrentReadMessageArea());
+				send_net_post(&p, subboards[GetSession()->GetCurrentReadMessageArea()].filename, GetSession()->GetCurrentReadMessageArea());
 			}
 		}
 	}
@@ -409,52 +409,52 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber)
 
 	unsigned long lQuickScanPointer = qsc_p[nSubNumber];
 
-	if (!sess->m_SubDateCache[nSubNumber])
+	if (!GetSession()->m_SubDateCache[nSubNumber])
 	{
 		iscan1(nSubNumber, true);
 	}
 
-	unsigned long lSubDate = sess->m_SubDateCache[nSubNumber];
+	unsigned long lSubDate = GetSession()->m_SubDateCache[nSubNumber];
 	if ( !lSubDate || lSubDate > lQuickScanPointer )
 	{
 		int nNextSubNumber = *pnNextSubNumber;
-		int nOldSubNumber = sess->GetCurrentMessageArea();
-		sess->SetCurrentMessageArea( nBeginSubNumber );
+		int nOldSubNumber = GetSession()->GetCurrentMessageArea();
+		GetSession()->SetCurrentMessageArea( nBeginSubNumber );
 
-		if ( !iscan( sess->GetCurrentMessageArea() ) )
+		if ( !iscan( GetSession()->GetCurrentMessageArea() ) )
 		{
-			sess->bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
+			GetSession()->bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
 			return;
 		}
 		lQuickScanPointer = qsc_p[nSubNumber];
 
-		bprintf( "\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n", subboards[sess->GetCurrentReadMessageArea()].name,
-             usub[sess->GetCurrentMessageArea()].keys, sess->GetNumMessagesInCurrentMessageArea() );
+		bprintf( "\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n", subboards[GetSession()->GetCurrentReadMessageArea()].name,
+             usub[GetSession()->GetCurrentMessageArea()].keys, GetSession()->GetNumMessagesInCurrentMessageArea() );
 
         int i;
-		for (i = sess->GetNumMessagesInCurrentMessageArea(); (i > 1) && (get_post(i - 1)->qscan > lQuickScanPointer); i--)
+		for (i = GetSession()->GetNumMessagesInCurrentMessageArea(); (i > 1) && (get_post(i - 1)->qscan > lQuickScanPointer); i--)
 			;
 
-		if ( sess->GetNumMessagesInCurrentMessageArea() > 0 && i <= sess->GetNumMessagesInCurrentMessageArea() && get_post(i)->qscan > qsc_p[sess->GetCurrentReadMessageArea()] )
+		if ( GetSession()->GetNumMessagesInCurrentMessageArea() > 0 && i <= GetSession()->GetNumMessagesInCurrentMessageArea() && get_post(i)->qscan > qsc_p[GetSession()->GetCurrentReadMessageArea()] )
 		{
 			scan( i, SCAN_OPTION_READ_MESSAGE, &nNextSubNumber, false );
 		}
 		else
 		{
 			GetApplication()->GetStatusManager()->Read();
-			qsc_p[sess->GetCurrentReadMessageArea()] = status.qscanptr - 1;
+			qsc_p[GetSession()->GetCurrentReadMessageArea()] = status.qscanptr - 1;
 		}
 
-		sess->SetCurrentMessageArea( nOldSubNumber );
+		GetSession()->SetCurrentMessageArea( nOldSubNumber );
 		*pnNextSubNumber = nNextSubNumber;
-		bprintf( "|#1< %s Q-Scan Done >", subboards[sess->GetCurrentReadMessageArea()].name );
+		bprintf( "|#1< %s Q-Scan Done >", subboards[GetSession()->GetCurrentReadMessageArea()].name );
 		ClearEOL();
 		nl();
 		lines_listed = 0;
 		ClearEOL();
 		if ( okansi() && !newline )
 		{
-			sess->bout << "\r\x1b[4A";
+			GetSession()->bout << "\r\x1b[4A";
 		}
 	}
 	else
@@ -466,7 +466,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber)
 		ClearEOL();
 		if ( okansi() && !newline )
 		{
-			sess->bout << "\r\x1b[3A";
+			GetSession()->bout << "\r\x1b[3A";
 		}
 	}
 	nl();
@@ -477,8 +477,8 @@ void nscan( int nStartingSubNum )
 {
 	int nNextSubNumber = 1;
 
-	sess->bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
-	for ( int i = nStartingSubNum; usub[i].subnum != -1 && i < sess->num_subs && nNextSubNumber && !hangup; i++ )
+	GetSession()->bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
+	for ( int i = nStartingSubNum; usub[i].subnum != -1 && i < GetSession()->num_subs && nNextSubNumber && !hangup; i++ )
 	{
 		if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32)))
 		{
@@ -493,17 +493,17 @@ void nscan( int nStartingSubNum )
 	}
 	nl();
 	ClearEOL();
-	sess->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
-	if ( nNextSubNumber && sess->thisuser.isNewScanFiles() &&
+	GetSession()->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
+	if ( nNextSubNumber && GetSession()->thisuser.isNewScanFiles() &&
 		 ( syscfg.sysconfig & sysconfig_no_xfer ) == 0 &&
          ( !( g_flags & g_flag_scanned_files ) ) )
 	{
 		lines_listed = 0;
-		sess->tagging = 1;
+		GetSession()->tagging = 1;
 		tmp_disable_conf( true );
 		nscanall();
 		tmp_disable_conf( false );
-		sess->tagging = 0;
+		GetSession()->tagging = 0;
 	}
 }
 
@@ -511,23 +511,23 @@ void nscan( int nStartingSubNum )
 
 void ScanMessageTitles()
 {
-	if ( !iscan( sess->GetCurrentMessageArea() ) )
+	if ( !iscan( GetSession()->GetCurrentMessageArea() ) )
 	{
-		sess->bout << "\r\n|#7A file required is in use by another instance. Try again later.\r\n";
+		GetSession()->bout << "\r\n|#7A file required is in use by another instance. Try again later.\r\n";
 		return;
 	}
 	nl();
-	if ( sess->GetCurrentReadMessageArea() < 0 )
+	if ( GetSession()->GetCurrentReadMessageArea() < 0 )
 	{
-		sess->bout << "No subs available.\r\n";
+		GetSession()->bout << "No subs available.\r\n";
 		return;
 	}
-	bprintf("|#2%d |#9messages in area |#2%s\r\n", sess->GetNumMessagesInCurrentMessageArea(), subboards[sess->GetCurrentReadMessageArea()].name);
-	if ( sess->GetNumMessagesInCurrentMessageArea() == 0 )
+	bprintf("|#2%d |#9messages in area |#2%s\r\n", GetSession()->GetNumMessagesInCurrentMessageArea(), subboards[GetSession()->GetCurrentReadMessageArea()].name);
+	if ( GetSession()->GetNumMessagesInCurrentMessageArea() == 0 )
 	{
 		return;
 	}
-    bprintf( "|#9Start listing at (|#21|#9-|#2%d|#9): ", sess->GetNumMessagesInCurrentMessageArea() );
+    bprintf( "|#9Start listing at (|#21|#9-|#2%d|#9): ", GetSession()->GetNumMessagesInCurrentMessageArea() );
     std::string messageNumber;
 	input( messageNumber, 5, true );
     int nMessageNumber = atoi( messageNumber.c_str() );
@@ -535,9 +535,9 @@ void ScanMessageTitles()
 	{
 		nMessageNumber = 0;
 	}
-	else if (nMessageNumber > sess->GetNumMessagesInCurrentMessageArea())
+	else if (nMessageNumber > GetSession()->GetNumMessagesInCurrentMessageArea())
 	{
-		nMessageNumber = sess->GetNumMessagesInCurrentMessageArea();
+		nMessageNumber = GetSession()->GetNumMessagesInCurrentMessageArea();
 	}
 	else
 	{
@@ -622,21 +622,21 @@ void delmail( WFile *pFile, int loc )
 
 void remove_post()
 {
-    if ( !iscan( sess->GetCurrentMessageArea() ) )
+    if ( !iscan( GetSession()->GetCurrentMessageArea() ) )
 	{
-		sess->bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n\n";
+		GetSession()->bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n\n";
 		return;
 	}
-	if (sess->GetCurrentReadMessageArea() < 0)
+	if (GetSession()->GetCurrentReadMessageArea() < 0)
 	{
-		sess->bout << "\r\nNo subs available.\r\n\n";
+		GetSession()->bout << "\r\nNo subs available.\r\n\n";
 		return;
 	}
 	bool any = false, abort = false;
-	bprintf("\r\n\nPosts by you on %s\r\n\n", subboards[sess->GetCurrentReadMessageArea()].name);
-	for ( int j = 1; j <= sess->GetNumMessagesInCurrentMessageArea() && !abort; j++ )
+	bprintf("\r\n\nPosts by you on %s\r\n\n", subboards[GetSession()->GetCurrentReadMessageArea()].name);
+	for ( int j = 1; j <= GetSession()->GetNumMessagesInCurrentMessageArea() && !abort; j++ )
 	{
-		if ( get_post( j )->ownersys == 0 && get_post( j )->owneruser == sess->usernum )
+		if ( get_post( j )->ownersys == 0 && get_post( j )->owneruser == GetSession()->usernum )
 		{
 			any = true;
             std::string buffer;
@@ -646,22 +646,22 @@ void remove_post()
 	}
 	if ( !any )
 	{
-		sess->bout << "None.\r\n";
+		GetSession()->bout << "None.\r\n";
 		if (!cs())
 		{
 			return;
 		}
 	}
-	sess->bout << "\r\n|#2Remove which? ";
+	GetSession()->bout << "\r\n|#2Remove which? ";
     std::string postNumberToRemove;
 	input( postNumberToRemove, 5 );
 	int nPostNumber = atoi( postNumberToRemove.c_str() );
 	open_sub( true );
-	if ( nPostNumber > 0 && nPostNumber <= sess->GetNumMessagesInCurrentMessageArea() )
+	if ( nPostNumber > 0 && nPostNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() )
 	{
-		if ( ( ( get_post( nPostNumber )->ownersys == 0 ) && ( get_post( nPostNumber )->owneruser == sess->usernum ) ) || lcs() )
+		if ( ( ( get_post( nPostNumber )->ownersys == 0 ) && ( get_post( nPostNumber )->owneruser == GetSession()->usernum ) ) || lcs() )
 		{
-			if ( ( get_post( nPostNumber )->owneruser == sess->usernum ) && ( get_post( nPostNumber )->ownersys == 0 ) )
+			if ( ( get_post( nPostNumber )->owneruser == GetSession()->usernum ) && ( get_post( nPostNumber )->ownersys == 0 ) )
 			{
                 WUser tu;
                 GetApplication()->GetUserManager()->ReadUser( &tu, get_post( nPostNumber )->owneruser  );
@@ -677,9 +677,9 @@ void remove_post()
 					}
 				}
 			}
-			sysoplogf("- \"%s\" removed from %s", get_post( nPostNumber )->title, subboards[sess->GetCurrentReadMessageArea()].name);
+			sysoplogf("- \"%s\" removed from %s", get_post( nPostNumber )->title, subboards[GetSession()->GetCurrentReadMessageArea()].name);
 			delete_message( nPostNumber );
-			sess->bout << "\r\nMessage removed.\r\n\n";
+			GetSession()->bout << "\r\nMessage removed.\r\n\n";
 		}
 	}
 	close_sub();
@@ -693,16 +693,16 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 	time_t tFileTime = 0;
 	FILE *fpFile;
 
-	if ( nEditorNumber >= sess->GetNumberOfEditors() || !okansi() )
+	if ( nEditorNumber >= GetSession()->GetNumberOfEditors() || !okansi() )
 	{
-		sess->bout << "\r\nYou can't use that full screen editor.\r\n\n";
+		GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
 		return false;
 	}
 	strcpy( szEditorCommand, ( incom ) ? editors[ nEditorNumber ].filename : editors[ nEditorNumber ].filenamecon );
 
 	if ( szEditorCommand[0] == '\0' )
 	{
-		sess->bout << "\r\nYou can't use that full screen editor.\r\n\n";
+		GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
 		return false;
 	}
 	WWIV_make_abs_cmd( szEditorCommand );
@@ -734,12 +734,12 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 	{
 		tFileTime = fileTempForTime.GetFileTime();
 	}
-    sprintf( sx1, "%d", sess->thisuser.GetScreenChars() );
-	int newtl = ( sess->screenlinest > defscreenbottom - sess->topline ) ? 0 : sess->topline;
+    sprintf( sx1, "%d", GetSession()->thisuser.GetScreenChars() );
+	int newtl = ( GetSession()->screenlinest > defscreenbottom - GetSession()->topline ) ? 0 : GetSession()->topline;
 
-	if ( sess->using_modem )
+	if ( GetSession()->using_modem )
 	{
-		sprintf( sx2, "%d", sess->thisuser.GetScreenLines() );
+		sprintf( sx2, "%d", GetSession()->thisuser.GetScreenLines() );
 	}
 	else
 	{
@@ -762,13 +762,13 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 					"%s\n%s\n%lu\n%s\n%s\n%u\n%u\n%lu\n%u\n",
 		            pszTitle,
 		            pszDestination,
-		            sess->usernum,
-		            sess->thisuser.GetName(),
-		            sess->thisuser.GetRealName(),
-		            sess->thisuser.GetSl(),
+		            GetSession()->usernum,
+		            GetSession()->thisuser.GetName(),
+		            GetSession()->thisuser.GetRealName(),
+		            GetSession()->thisuser.GetSl(),
 		            flags,
-		            sess->topline,
-		            sess->thisuser.GetLanguage() );
+		            GetSession()->topline,
+		            GetSession()->thisuser.GetLanguage() );
 		fsh_close(fpFile);
 	}
 	if ( flags & 1 )

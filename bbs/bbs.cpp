@@ -29,6 +29,8 @@
 extern char cid_num[], cid_name[];
 static bool bUsingPppProject = true;
 extern int last_time_c;
+static WBbsApp *app;
+static WSession* sess;
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -53,6 +55,12 @@ const int WBbsApp::shutdownImmediate    = 4;
 WBbsApp* GetApplication() 
 {
     return app;
+}
+
+
+WSession* GetSession()
+{
+    return sess;
 }
 
 
@@ -83,32 +91,32 @@ WUserManager* WBbsApp::GetUserManager()
 #ifndef _UNIX
 void WBbsApp::GetCaller()
 {
-    sess->SetMessageAreaCacheNumber( 0 );
-    sess->SetFileAreaCacheNumber( 0 );
+    GetSession()->SetMessageAreaCacheNumber( 0 );
+    GetSession()->SetFileAreaCacheNumber( 0 );
     SetShutDownStatus( WBbsApp::shutdownNone );
     wfc_init();
     cid_num[0] = 0;
     cid_name[0] = 0;
     frequent_init();
-    if (sess->wfc_status == 0)
+    if (GetSession()->wfc_status == 0)
     {
         GetLocalIO()->LocalCls();
     }
     imodem( false );
-    sess->usernum = 0;
+    GetSession()->usernum = 0;
     GetLocalIO()->SetWfcStatus( 0 );
     write_inst( INST_LOC_WFC, 0, INST_FLAGS_NONE );
-    sess->ReadCurrentUser( 1 );
+    GetSession()->ReadCurrentUser( 1 );
     read_qscn( 1, qsc, false );
-    sess->usernum = 1;
-    sess->ResetEffectiveSl();
-    fwaiting = sess->thisuser.GetNumMailWaiting();
-    if ( sess->thisuser.isUserDeleted() )
+    GetSession()->usernum = 1;
+    GetSession()->ResetEffectiveSl();
+    fwaiting = GetSession()->thisuser.GetNumMailWaiting();
+    if ( GetSession()->thisuser.isUserDeleted() )
     {
-        sess->thisuser.SetScreenChars( 80 );
-        sess->thisuser.SetScreenLines( 25 );
+        GetSession()->thisuser.SetScreenChars( 80 );
+        GetSession()->thisuser.SetScreenLines( 25 );
     }
-    sess->screenlinest = defscreenbottom + 1;
+    GetSession()->screenlinest = defscreenbottom + 1;
 
     int lokb = doWFCEvents();
 
@@ -124,17 +132,17 @@ void WBbsApp::GetCaller()
         }
     }
 
-    sess->using_modem = incom;
+    GetSession()->using_modem = incom;
     if ( lokb == 2 )
     {
-        sess->using_modem = -1;
+        GetSession()->using_modem = -1;
     }
 
     okskey = true;
     GetLocalIO()->LocalCls();
     GetLocalIO()->LocalPrintf( "%s %s ...\r\n",
                                 ( ( modem_mode == mode_fax ) ? "Fax connection at" : "Logging on at" ),
-                                sess->GetCurrentSpeed().c_str() );
+                                GetSession()->GetCurrentSpeed().c_str() );
     GetLocalIO()->SetWfcStatus( 0 );
 }
 #else
@@ -158,7 +166,7 @@ int WBbsApp::doWFCEvents()
         GetLocalIO()->SetWfcStatus( 1 );
         if ( !wwiv::stringUtils::IsEquals( date(), status.date1 ) )
         {
-            if ( ( sess->GetBeginDayNodeNumber() == 0 ) || ( m_nInstance == sess->GetBeginDayNodeNumber() ) )
+            if ( ( GetSession()->GetBeginDayNodeNumber() == 0 ) || ( m_nInstance == GetSession()->GetBeginDayNodeNumber() ) )
             {
                 cleanup_events();
                 holdphone( true );
@@ -181,7 +189,7 @@ int WBbsApp::doWFCEvents()
         }
 
         lokb = 0;
-        sess->SetCurrentSpeed( "KB" );
+        GetSession()->SetCurrentSpeed( "KB" );
         time_t lCurrentTime = time( NULL );
         if ( !any && (((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) &&
             (net_sysnum) && (ok_modem_stuff || bUsingPppProject) &&
@@ -196,9 +204,9 @@ int WBbsApp::doWFCEvents()
         if (GetLocalIO()->LocalKeyPressed())
         {
             GetLocalIO()->SetWfcStatus( 0 );
-            sess->ReadCurrentUser( 1 );
+            GetSession()->ReadCurrentUser( 1 );
             read_qscn(1, qsc, false);
-            fwaiting = sess->thisuser.GetNumMailWaiting();
+            fwaiting = GetSession()->thisuser.GetNumMailWaiting();
             GetLocalIO()->SetWfcStatus( 1 );
             ch = wwiv::UpperCase<char>( GetLocalIO()->getchd1() );
             if (!ch)
@@ -286,10 +294,10 @@ int WBbsApp::doWFCEvents()
                 break;
                 // Print NetLogs
             case ',':
-                if ( net_sysnum > 0 || sess->GetMaxNetworkNumber() > 1 && AllowLocalSysop() )
+                if ( net_sysnum > 0 || GetSession()->GetMaxNetworkNumber() > 1 && AllowLocalSysop() )
                 {
                     GetLocalIO()->LocalGotoXY( 2, 23 );
-                    sess->bout << "|#9(|#2Q|#9=|#2Quit|#9) Display Which NETDAT Log File (|#10|#9-|#12|#9): ";
+                    GetSession()->bout << "|#9(|#2Q|#9=|#2Quit|#9) Display Which NETDAT Log File (|#10|#9-|#12|#9): ";
                     ch = onek( "Q012" );
                     switch ( ch )
                     {
@@ -327,7 +335,7 @@ int WBbsApp::doWFCEvents()
                 // [ESC] Quit the BBS
             case ESC:
 		        GetLocalIO()->LocalGotoXY( 2, 23 );
-                sess->bout << "|#7Exit the BBS? ";
+                GetSession()->bout << "|#7Exit the BBS? ";
                 if ( yesno() )
                 {
                     QuitBBS();
@@ -379,11 +387,11 @@ int WBbsApp::doWFCEvents()
                 if ( AllowLocalSysop() )
                 {
                     wfc_cls();
-                    sess->usernum = 1;
+                    GetSession()->usernum = 1;
                     holdphone( true );
-                    sess->bout << "|#1Send Email:";
+                    GetSession()->bout << "|#1Send Email:";
                     send_email();
-                    sess->WriteCurrentUser( 1 );
+                    GetSession()->WriteCurrentUser( 1 );
                     cleanup_net();
                     holdphone( false );
                 }
@@ -434,14 +442,14 @@ int WBbsApp::doWFCEvents()
                 if ( AllowLocalSysop() )
                 {
                     wfc_cls();
-                    sess->usernum = 1;
+                    GetSession()->usernum = 1;
                     holdphone( true );
-                    sess->bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
+                    GetSession()->bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
                     std::string buffer;
                     input( buffer, 50 );
                     LoadFileIntoWorkspace( buffer.c_str(), false );
                     send_email();
-                    sess->WriteCurrentUser( 1 );
+                    GetSession()->WriteCurrentUser( 1 );
                     cleanup_net();
                     holdphone( false );
                 }
@@ -462,10 +470,10 @@ int WBbsApp::doWFCEvents()
                 if ( AllowLocalSysop() )
                 {
                     wfc_cls();
-                    sess->usernum = 1;
+                    GetSession()->usernum = 1;
                     holdphone( true );
                     readmail( 0 );
-                    sess->WriteCurrentUser( 1 );
+                    GetSession()->WriteCurrentUser( 1 );
                     cleanup_net();
                     holdphone( false );
                 }
@@ -485,7 +493,7 @@ int WBbsApp::doWFCEvents()
                     wfc_cls();
                     holdphone( true );
                     write_inst( INST_LOC_TEDIT, 0, INST_FLAGS_NONE );
-                    sess->bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
+                    GetSession()->bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
                     char szFileName[ MAX_PATH ];
                     getcwd(szFileName, MAX_PATH);
                     snprintf( szFileName, sizeof( szFileName ), "%c", WWIV_FILE_SEPERATOR_CHAR );
@@ -493,7 +501,7 @@ int WBbsApp::doWFCEvents()
                     Input1( newFileName, szFileName, 50, true, UPPER );
                     if ( !newFileName.empty() )
 					{
-                        external_edit( newFileName.c_str(), "", sess->thisuser.GetDefaultEditor() - 1, 500, ".", szFileName, MSGED_FLAG_NO_TAGLINE );
+                        external_edit( newFileName.c_str(), "", GetSession()->thisuser.GetDefaultEditor() - 1, 500, ".", szFileName, MSGED_FLAG_NO_TAGLINE );
 					}
                     holdphone( false );
                 }
@@ -541,7 +549,7 @@ int WBbsApp::doWFCEvents()
 				else
 				{
 					GetLocalIO()->LocalGotoXY( 2, 23 );
-					sess->bout << "|12No terminal program defined.";
+					GetSession()->bout << "|12No terminal program defined.";
 				}
                 break;
                 // UserEdit
@@ -559,13 +567,13 @@ int WBbsApp::doWFCEvents()
                 if ( AllowLocalSysop() )
                 {
                     wfc_cls();
-                    sess->usernum=1;
-                    sess->SetUserOnline( true );
+                    GetSession()->usernum=1;
+                    GetSession()->SetUserOnline( true );
                     holdphone( true );
                     get_user_ppp_addr();
                     send_inet_email();
-                    sess->SetUserOnline( false );
-                    sess->WriteCurrentUser( 1 );
+                    GetSession()->SetUserOnline( false );
+                    GetSession()->WriteCurrentUser( 1 );
                     cleanup_net();
                     holdphone( false );
                 }
@@ -577,7 +585,7 @@ int WBbsApp::doWFCEvents()
                     wfc_cls();
                     write_inst( INST_LOC_TEDIT, 0, INST_FLAGS_NONE );
                     holdphone( true );
-                    sess->bout << "|#1Edit " << syscfg.gfilesdir << "<filename>: \r\n";
+                    GetSession()->bout << "|#1Edit " << syscfg.gfilesdir << "<filename>: \r\n";
                     text_edit();
                     holdphone( false );
                 }
@@ -610,11 +618,11 @@ int WBbsApp::doWFCEvents()
             if ( !incom && !lokb )
             {
                 frequent_init();
-                sess->ReadCurrentUser( 1 );
+                GetSession()->ReadCurrentUser( 1 );
                 read_qscn( 1, qsc, false );
-                fwaiting = sess->thisuser.GetNumMailWaiting();
-                sess->ResetEffectiveSl();
-                sess->usernum = 1;
+                fwaiting = GetSession()->thisuser.GetNumMailWaiting();
+                GetSession()->ResetEffectiveSl();
+                GetSession()->usernum = 1;
             }
             catsl();
             write_inst( INST_LOC_WFC, 0, INST_FLAGS_NONE );
@@ -631,7 +639,7 @@ int WBbsApp::doWFCEvents()
             {
                 if ( mode_switch( 1.0, 0 ) == mode_ring )
                 {
-                    if ( sess->wfc_status == 1 )
+                    if ( GetSession()->wfc_status == 1 )
                     {
                         GetLocalIO()->LocalXYAPrintf( 58, 13, 14, "%-20s", "Ringing...." );
                     }
@@ -654,25 +662,25 @@ int WBbsApp::doWFCEvents()
 #endif // !_UNIX
         if ( !any )
         {
-            if ( sess->GetMessageAreaCacheNumber() < sess->num_subs )
+            if ( GetSession()->GetMessageAreaCacheNumber() < GetSession()->num_subs )
             {
-                if ( !sess->m_SubDateCache[sess->GetMessageAreaCacheNumber()] )
+                if ( !GetSession()->m_SubDateCache[GetSession()->GetMessageAreaCacheNumber()] )
                 {
                     any = true;
-                    iscan1( sess->GetMessageAreaCacheNumber(), true );
+                    iscan1( GetSession()->GetMessageAreaCacheNumber(), true );
                 }
-                sess->SetMessageAreaCacheNumber( sess->GetMessageAreaCacheNumber() + 1);
+                GetSession()->SetMessageAreaCacheNumber( GetSession()->GetMessageAreaCacheNumber() + 1);
             }
             else
             {
-                if ( sess->GetFileAreaCacheNumber() < sess->num_dirs )
+                if ( GetSession()->GetFileAreaCacheNumber() < GetSession()->num_dirs )
                 {
-                    if ( !sess->m_DirectoryDateCache[sess->GetFileAreaCacheNumber()] )
+                    if ( !GetSession()->m_DirectoryDateCache[GetSession()->GetFileAreaCacheNumber()] )
                     {
                         any = true;
-                        dliscan_hash( sess->GetFileAreaCacheNumber() );
+                        dliscan_hash( GetSession()->GetFileAreaCacheNumber() );
                     }
-                    sess->SetFileAreaCacheNumber( sess->GetFileAreaCacheNumber() + 1 );
+                    GetSession()->SetFileAreaCacheNumber( GetSession()->GetFileAreaCacheNumber() + 1 );
                 }
                 else
                 {
@@ -697,7 +705,7 @@ int WBbsApp::doWFCEvents()
 int WBbsApp::LocalLogon()
 {
     GetLocalIO()->LocalGotoXY( 2, 23 );
-    sess->bout << "|#9Log on to the BBS?";
+    GetSession()->bout << "|#9Log on to the BBS?";
     double d = timer();
     int lokb = 0;
     while ( !GetLocalIO()->LocalKeyPressed() && ( fabs( timer() - d ) < SECONDS_PER_MINUTE_FLOAT ) )
@@ -709,7 +717,7 @@ int WBbsApp::LocalLogon()
         if ( ch == 'Y' )
         {
             GetLocalIO()->LocalFastPuts( YesNoString( true ) );
-            sess->bout << wwiv::endl;
+            GetSession()->bout << wwiv::endl;
             lokb = 1;
             if ( ( syscfg.sysconfig & sysconfig_off_hook ) == 0 )
             {
@@ -765,11 +773,11 @@ int WBbsApp::LocalLogon()
                 return lokb;
             }
 
-            sess->usernum = m_unx;
+            GetSession()->usernum = m_unx;
             int nSavedWFCStatus = GetLocalIO()->GetWfcStatus();
             GetLocalIO()->SetWfcStatus( 0 );
-            sess->ReadCurrentUser( sess->usernum );
-            read_qscn( sess->usernum, qsc, false );
+            GetSession()->ReadCurrentUser( GetSession()->usernum );
+            read_qscn( GetSession()->usernum, qsc, false );
             GetLocalIO()->SetWfcStatus( nSavedWFCStatus );
             bputch( ch );
             GetLocalIO()->LocalPuts( "\r\n\r\n\r\n\r\n\r\n\r\n" );
@@ -778,11 +786,11 @@ int WBbsApp::LocalLogon()
             {
                 comm->dtr( false );
             }
-            sess->ResetEffectiveSl();
+            GetSession()->ResetEffectiveSl();
             changedsl();
-            if ( !set_language( sess->thisuser.GetLanguage() ) )
+            if ( !set_language( GetSession()->thisuser.GetLanguage() ) )
             {
-                sess->thisuser.SetLanguage( 0 );
+                GetSession()->thisuser.SetLanguage( 0 );
                 set_language( 0 );
             }
             return lokb;
@@ -804,24 +812,24 @@ int WBbsApp::LocalLogon()
 void WBbsApp::GotCaller( unsigned int ms, unsigned long cs )
 {
     frequent_init();
-    if ( sess->wfc_status == 0 )
+    if ( GetSession()->wfc_status == 0 )
     {
         GetLocalIO()->LocalCls();
     }
     com_speed   = cs;
     modem_speed = static_cast<unsigned short>( ms );
-    sess->ReadCurrentUser( 1 );
+    GetSession()->ReadCurrentUser( 1 );
     read_qscn( 1, qsc, false );
-    sess->ResetEffectiveSl();
-    sess->usernum = 1;
-    if ( sess->thisuser.isUserDeleted() )
+    GetSession()->ResetEffectiveSl();
+    GetSession()->usernum = 1;
+    if ( GetSession()->thisuser.isUserDeleted() )
     {
-        sess->thisuser.SetScreenChars( 80 );
-        sess->thisuser.SetScreenLines( 25 );
+        GetSession()->thisuser.SetScreenChars( 80 );
+        GetSession()->thisuser.SetScreenLines( 25 );
     }
-    sess->screenlinest = 25;
+    GetSession()->screenlinest = 25;
     GetLocalIO()->LocalCls();
-    GetLocalIO()->LocalPrintf( "Logging on at %s...\r\n", sess->GetCurrentSpeed().c_str() );
+    GetLocalIO()->LocalPrintf( "Logging on at %s...\r\n", GetSession()->GetCurrentSpeed().c_str() );
     if ( ms )
     {
         if ( ok_modem_stuff && NULL != comm )
@@ -830,11 +838,11 @@ void WBbsApp::GotCaller( unsigned int ms, unsigned long cs )
         }
         incom   = true;
         outcom  = true;
-        sess->using_modem = 1;
+        GetSession()->using_modem = 1;
     }
     else
     {
-        sess->using_modem = 0;
+        GetSession()->using_modem = 0;
         incom   = false;
         outcom  = false;
     }
@@ -852,12 +860,12 @@ void CreateListener()
     SOCKET hSock;
     SOCKADDR_IN pstSockName;
 
-    if ( sess->hSocket != INVALID_SOCKET )
+    if ( GetSession()->hSocket != INVALID_SOCKET )
     {
         // close all allocated resources
-        shutdown( sess->hSocket, 2 );
-        closesocket( sess->hSocket );
-        sess->hSocket = INVALID_SOCKET;
+        shutdown( GetSession()->hSocket, 2 );
+        closesocket( GetSession()->hSocket );
+        GetSession()->hSocket = INVALID_SOCKET;
     }
     // Start Listening Thread Socket
     hSock = socket( AF_INET, SOCK_STREAM, 0 );
@@ -1061,7 +1069,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
     m_nInstance                 = 1;
     no_hangup                   = false;
     ok_modem_stuff              = true;
-    sess->SetGlobalDebugLevel( 0 );
+    GetSession()->SetGlobalDebugLevel( 0 );
 
 #ifdef _UNIX
     // HACK to make WWIV5/X just work w/o any command line
@@ -1090,7 +1098,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
                     ui = static_cast<unsigned int>( atol(&(s[2]) ));
                     char szCurrentSpeed[ 21 ];
                     snprintf( szCurrentSpeed, sizeof( szCurrentSpeed ), "%u",  ui );
-                    sess->SetCurrentSpeed( szCurrentSpeed );
+                    GetSession()->SetCurrentSpeed( szCurrentSpeed );
                     if (!us)
                     {
                         us = ui;
@@ -1101,7 +1109,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
             case 'C':
                 break;
             case 'D':
-                sess->SetGlobalDebugLevel( atoi( &( s[2] ) ) );
+                GetSession()->SetGlobalDebugLevel( atoi( &( s[2] ) ) );
                 break;
             case 'E':
                 event_only = true;
@@ -1155,7 +1163,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
                 this_usernum = wwiv::stringUtils::StringToUnsignedShort(&(s[2]));
                 if ( !m_bUserAlreadyOn )
                 {
-                    sess->SetCurrentSpeed( "KB" );
+                    GetSession()->SetCurrentSpeed( "KB" );
                 }
                 m_bUserAlreadyOn = true;
                 break;
@@ -1170,13 +1178,13 @@ int WBbsApp::BBSmain(int argc, char *argv[])
                 {
                     // This more of a hack to make sure the Telnet
                     // Server's -Bxxx parameter doesn't hose us.
-                    sess->SetCurrentSpeed( "115200" );
-                    sess->SetUserOnline( false );
+                    GetSession()->SetCurrentSpeed( "115200" );
+                    GetSession()->SetUserOnline( false );
                     us                  = 115200U;
                     ui                  = us;
                     m_bUserAlreadyOn    = true;
                     ooneuser            = true;
-                    sess->using_modem   = 0;
+                    GetSession()->using_modem   = 0;
                     hangup              = false;
                     incom               = true;
                     outcom              = false;
@@ -1211,7 +1219,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
 					if ( ( i + 1 ) < argc )
 					{
 						i++;
-						sess->bout << "\r\n|#7\xFE |10Packing specified subs: \r\n";
+						GetSession()->bout << "\r\n|#7\xFE |10Packing specified subs: \r\n";
 						while ( i < argc )
 						{
 							int nSubNumToPack = atoi( argv[ i ] );
@@ -1222,7 +1230,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
 					}
 					else
 					{
-						sess->bout << "\r\n|#7\xFE |10Packing all subs: \r\n";
+						GetSession()->bout << "\r\n|#7\xFE |10Packing all subs: \r\n";
 						sysoplogf( "* Packing All Message Areas" );
 						pack_all_subs( true );
 					}
@@ -1277,10 +1285,10 @@ int WBbsApp::BBSmain(int argc, char *argv[])
     if ( bTelnetInstance )
     {
         // If this is a telnet Node...
-		sess->hCommHandle   = static_cast<HANDLE>( NULL );
-        sess->hSocket		= static_cast<SOCKET>( hSockOrComm );
-		if ( !DuplicateHandle(  GetCurrentProcess(), reinterpret_cast<HANDLE>( sess->hSocket ),
-			                    GetCurrentProcess(), reinterpret_cast<HANDLE*>( &sess->hDuplicateSocket ),
+		GetSession()->hCommHandle   = static_cast<HANDLE>( NULL );
+        GetSession()->hSocket		= static_cast<SOCKET>( hSockOrComm );
+		if ( !DuplicateHandle(  GetCurrentProcess(), reinterpret_cast<HANDLE>( GetSession()->hSocket ),
+			                    GetCurrentProcess(), reinterpret_cast<HANDLE*>( &GetSession()->hDuplicateSocket ),
 			                    0, TRUE, DUPLICATE_SAME_ACCESS ) )
         {
 			std::cout << "Error creating duplicate socket: " << GetLastError() << "\r\n\n";
@@ -1288,8 +1296,8 @@ int WBbsApp::BBSmain(int argc, char *argv[])
     }
     else
     {
-		sess->hSocket		= (SOCKET)( NULL );
-        sess->hCommHandle   = (HANDLE)( hSockOrComm );
+		GetSession()->hSocket		= (SOCKET)( NULL );
+        GetSession()->hCommHandle   = (HANDLE)( hSockOrComm );
     }
 
 #endif
@@ -1318,7 +1326,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
     SetConsoleTitle( consoleTitleStream.str().c_str() );
 
     // If we are telnet...
-    if ( sess->hSocket )
+    if ( GetSession()->hSocket )
     {
 	    // If the com port is set to 0 here, then ok_modem_stuff is cleared
 	    // in the call to init.  Well.. If we are running native sockets, we
@@ -1330,7 +1338,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
         SOCKADDR_IN addr;
         int nAddrSize = sizeof( SOCKADDR);
 
-        getpeername( sess->hSocket, reinterpret_cast<SOCKADDR *>( &addr ), &nAddrSize );
+        getpeername( GetSession()->hSocket, reinterpret_cast<SOCKADDR *>( &addr ), &nAddrSize );
 
         char * pszIPAddress = inet_ntoa( addr.sin_addr );
         strcpy( cid_num, pszIPAddress );
@@ -1384,23 +1392,23 @@ int WBbsApp::BBSmain(int argc, char *argv[])
     {
         if ( this_usernum )
         {
-            sess->usernum = this_usernum;
-            sess->ReadCurrentUser( sess->usernum );
-            if ( !sess->thisuser.isUserDeleted() )
+            GetSession()->usernum = this_usernum;
+            GetSession()->ReadCurrentUser( GetSession()->usernum );
+            if ( !GetSession()->thisuser.isUserDeleted() )
             {
                 GotCaller( ui, us );
-                sess->usernum = this_usernum;
-                sess->ReadCurrentUser( sess->usernum );
-                read_qscn( sess->usernum, qsc, false );
-                sess->ResetEffectiveSl();
+                GetSession()->usernum = this_usernum;
+                GetSession()->ReadCurrentUser( GetSession()->usernum );
+                read_qscn( GetSession()->usernum, qsc, false );
+                GetSession()->ResetEffectiveSl();
                 changedsl();
                 okmacro = true;
-                if ( !hangup && sess->usernum > 0 &&
-                     sess->thisuser.isRestrictionLogon() &&
-                     wwiv::stringUtils::IsEquals( date(), sess->thisuser.GetLastOn() ) &&
-                     sess->thisuser.GetTimesOnToday() > 0 )
+                if ( !hangup && GetSession()->usernum > 0 &&
+                     GetSession()->thisuser.isRestrictionLogon() &&
+                     wwiv::stringUtils::IsEquals( date(), GetSession()->thisuser.GetLastOn() ) &&
+                     GetSession()->thisuser.GetTimesOnToday() > 0 )
                 {
-                    sess->bout << "\r\n|12Sorry, you can only logon once per day.\r\n\n";
+                    GetSession()->bout << "\r\n|12Sorry, you can only logon once per day.\r\n\n";
                     hangup = true;
                 }
             }
@@ -1433,9 +1441,9 @@ int WBbsApp::BBSmain(int argc, char *argv[])
             }
             goto hanging_up;
         }
-        if ( sess->using_modem > -1 )
+        if ( GetSession()->using_modem > -1 )
         {
-            if ( !sess->using_modem )
+            if ( !GetSession()->using_modem )
             {
                 holdphone( true );
             }
@@ -1447,10 +1455,10 @@ int WBbsApp::BBSmain(int argc, char *argv[])
         else
         {
             holdphone( true );
-            sess->using_modem = 0;
+            GetSession()->using_modem = 0;
             okmacro = true;
-            sess->usernum = m_unx;
-            sess->ResetEffectiveSl();
+            GetSession()->usernum = m_unx;
+            GetSession()->ResetEffectiveSl();
             changedsl();
         }
         this_usernum = 0;
@@ -1467,26 +1475,26 @@ int WBbsApp::BBSmain(int argc, char *argv[])
                     filelist = NULL;
                 }
                 zap_ed_info();
-                write_inst( INST_LOC_MAIN, usub[sess->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE );
+                write_inst( INST_LOC_MAIN, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE );
                 mainmenu();
             }
             logoff();
         }
     hanging_up:
 
-        if ( !no_hangup && sess->using_modem && ok_modem_stuff )
+        if ( !no_hangup && GetSession()->using_modem && ok_modem_stuff )
         {
             hang_it_up();
         }
         catsl();
         frequent_init();
-        if ( sess->wfc_status == 0 )
+        if ( GetSession()->wfc_status == 0 )
         {
             GetLocalIO()->LocalCls();
         }
         cleanup_net();
 
-        if ( !sess->using_modem )
+        if ( !GetSession()->using_modem )
         {
             holdphone( false );
         }
@@ -1502,7 +1510,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
             holdphone( true );
             double dt = timer();
             GetLocalIO()->LocalCls();
-            sess->bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
+            GetSession()->bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
             while ( !GetLocalIO()->LocalKeyPressed() && ( fabs( timer() - dt ) < SECONDS_PER_MINUTE_FLOAT ) )
             {
 				WWIV_Sound( 500, 250 );
@@ -1569,7 +1577,7 @@ WBbsApp::WBbsApp()
     m_fShutDownTime         = 0.0;
 
     WFile::SetLogger( this );
-    WFile::SetDebugLevel( sess->GetGlobalDebugLevel() );
+    WFile::SetDebugLevel( GetSession()->GetGlobalDebugLevel() );
 
     tzset();
 

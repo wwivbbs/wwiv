@@ -68,7 +68,7 @@ public:
 
 
 public:
-	WUser thisuser;
+    WUser thisuser;
     bool IsLastKeyLocal() const                     { return m_bLastKeyLocal; }
     void SetLastKeyLocal( bool b )                  { m_bLastKeyLocal = b; }
 

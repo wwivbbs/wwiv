@@ -30,10 +30,10 @@ void show_files(char *fn, char *dir)
     strcat(s, drive);
     strcat(s, direc);
     strcat(s, " |B0|09]");
-    i = (sess->thisuser.screenchars - 1) / 2 - strlen(stripcolors(s)) / 2;
+    i = (GetSession()->thisuser.screenchars - 1) / 2 - strlen(stripcolors(s)) / 2;
     npr("|09%s", charstr(i, c));
     npr(s);
-    i = sess->thisuser.screenchars - 1 - i - strlen(stripcolors(s));
+    i = GetSession()->thisuser.screenchars - 1 - i - strlen(stripcolors(s));
     npr("|09%s", charstr(i, c));
     
     sprintf(s1, "%s%s", dir, strupr(stripfn(fn)));
@@ -44,7 +44,7 @@ void show_files(char *fn, char *dir)
         strcpy(s, fnd.GetFileName());
         align(s);
         sprintf(s1, "|09[|14%s|09]|11 ", s);
-        if (app->localIO->WhereX() > (sess->thisuser.screenchars - 15))
+        if (GetApplication()->GetLocalIO()->WhereX() > (GetSession()->thisuser.screenchars - 15))
         {
             nl();
         }
@@ -54,7 +54,7 @@ void show_files(char *fn, char *dir)
     
     nl();
     ansic(7);
-    pl(charstr(sess->thisuser.screenchars - 1, c));
+    pl(charstr(GetSession()->thisuser.screenchars - 1, c));
     nl();
 }
 
@@ -73,7 +73,7 @@ char *WWIV_make_abs_cmd(char *out)
   char szTempBuf[MAX_PATH];
   int i;
 
-  char *pszHome = app->GetHomeDir();
+  char *pszHome = GetApplication()->GetHomeDir();
 
   strcpy(s1, out);
 
@@ -92,7 +92,7 @@ char *WWIV_make_abs_cmd(char *out)
     strcpy(s2, s1);
     strtok(s2, " \t");
     if (strchr(s2, '\\')) {
-      sprintf(s1, "%s%s", app->GetHomeDir(), out);
+      sprintf(s1, "%s%s", GetApplication()->GetHomeDir(), out);
     }
   }
 
@@ -119,7 +119,7 @@ char *WWIV_make_abs_cmd(char *out)
       }
     } else {
       if (exist(s)) {
-        sprintf(out, "%s%s%s", app->GetHomeDir(), s, s2);
+        sprintf(out, "%s%s%s", GetApplication()->GetHomeDir(), s, s2);
         goto got_cmd;
       } else {
 		_searchenv(s, "PATH", szTempBuf);
@@ -132,7 +132,7 @@ char *WWIV_make_abs_cmd(char *out)
     }
   }
 
-  sprintf(out, "%s%s%s", app->GetHomeDir(), s1, s2);
+  sprintf(out, "%s%s%s", GetApplication()->GetHomeDir(), s1, s2);
 
 got_cmd:
   return (out);

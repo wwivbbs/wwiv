@@ -225,8 +225,8 @@ void WLocalIO::LocalGotoXY(int x, int y)
 	x = std::max<int>( x, 0 );
     x = std::min<int>( x, 79 );
     y = std::max<int>( y, 0 );
-    y += sess->topline;
-	y = std::min<int>( y, sess->screenbottom );
+    y += GetSession()->topline;
+	y = std::min<int>( y, GetSession()->screenbottom );
 
     if (x_only)
     {
@@ -277,7 +277,7 @@ int WLocalIO::WhereY()
     m_cursorPosition.X = m_consoleBufferInfo.dwCursorPosition.X;
     m_cursorPosition.Y = m_consoleBufferInfo.dwCursorPosition.Y;
 
-    return m_cursorPosition.Y - sess->topline;
+    return m_cursorPosition.Y - GetSession()->topline;
 }
 
 
@@ -292,12 +292,12 @@ void WLocalIO::LocalLf()
     COORD dest;
     CHAR_INFO fill;
 
-    if (m_cursorPosition.Y >= sess->screenbottom)
+    if (m_cursorPosition.Y >= GetSession()->screenbottom)
     {
         dest.X = 0;
-        dest.Y = static_cast< short > ( sess->topline );
-        scrollRect.Top = static_cast< short > ( sess->topline + 1 );
-        scrollRect.Bottom = static_cast< short > ( sess->screenbottom );
+        dest.Y = static_cast< short > ( GetSession()->topline );
+        scrollRect.Top = static_cast< short > ( GetSession()->topline + 1 );
+        scrollRect.Bottom = static_cast< short > ( GetSession()->screenbottom );
         scrollRect.Left = 0;
         scrollRect.Right = 79;
         fill.Attributes = static_cast< short > ( curatr );
@@ -337,8 +337,8 @@ void WLocalIO::LocalCls()
 
     dest.X = 32767;
     dest.Y = 0;
-    scrollRect.Top = static_cast< short > ( sess->topline );
-    scrollRect.Bottom = static_cast< short > ( sess->screenbottom );
+    scrollRect.Top = static_cast< short > ( GetSession()->topline );
+    scrollRect.Bottom = static_cast< short > ( GetSession()->screenbottom );
     scrollRect.Left = 0;
     scrollRect.Right = 79;
     fill.Attributes = static_cast< short > ( curatr );
@@ -364,7 +364,7 @@ void WLocalIO::LocalBackspace()
     {
         m_cursorPosition.X--;
     }
-    else if ( m_cursorPosition.Y != sess->topline )
+    else if ( m_cursorPosition.Y != GetSession()->topline )
     {
         m_cursorPosition.Y--;
         m_cursorPosition.X = 79;
@@ -396,15 +396,15 @@ void WLocalIO::LocalPutchRaw(unsigned char ch)
 
     // Need to scroll the screen up one.
     m_cursorPosition.X = 0;
-    if ( m_cursorPosition.Y == sess->screenbottom )
+    if ( m_cursorPosition.Y == GetSession()->screenbottom )
     {
         COORD dest;
         SMALL_RECT MoveRect;
         CHAR_INFO fill;
 
         // rushfan scrolling fix (was no +1)
-        MoveRect.Top    = static_cast< short > ( sess->topline + 1 );
-        MoveRect.Bottom = static_cast< short > ( sess->screenbottom );
+        MoveRect.Top    = static_cast< short > ( GetSession()->topline + 1 );
+        MoveRect.Bottom = static_cast< short > ( GetSession()->screenbottom );
         MoveRect.Left   = 0;
         MoveRect.Right  = 79;
 
@@ -413,7 +413,7 @@ void WLocalIO::LocalPutchRaw(unsigned char ch)
 
         dest.X = 0;
 		// rushfan scrolling fix (was -1)
-        dest.Y = static_cast< short > ( sess->topline );
+        dest.Y = static_cast< short > ( GetSession()->topline );
 
         ScrollConsoleScreenBuffer(m_hConOut,&MoveRect,&MoveRect,dest,&fill);
     }
@@ -568,14 +568,14 @@ void WLocalIO::pr_Wait(int i1)
         if ( okansi() )
         {
             i = curatr;
-            setc( sess->thisuser.hasColor() ? sess->thisuser.GetColor( 3 ) : sess->thisuser.GetBWColor( 3 ) );
-            sess->bout << ss;
-            sess->bout << "\x1b[" << i2 << "D";
+            setc( GetSession()->thisuser.hasColor() ? GetSession()->thisuser.GetColor( 3 ) : GetSession()->thisuser.GetBWColor( 3 ) );
+            GetSession()->bout << ss;
+            GetSession()->bout << "\x1b[" << i2 << "D";
             setc( static_cast< unsigned char > ( i ) );
         }
         else
         {
-            sess->bout << ss;
+            GetSession()->bout << ss;
         }
     }
     else
@@ -586,7 +586,7 @@ void WLocalIO::pr_Wait(int i1)
             {
                 bputch(' ');
             }
-            sess->bout << "\x1b[" << i2 << "D";
+            GetSession()->bout << "\x1b[" << i2 << "D";
         }
         else
         {
@@ -603,22 +603,22 @@ void WLocalIO::pr_Wait(int i1)
 void WLocalIO::set_protect(int l) //JZ Set_Protect Fix
 // set_protect sets the number of lines protected at the top of the screen.
 {
-	if ( l != sess->topline )
+	if ( l != GetSession()->topline )
 	{
         COORD coord;
 		coord.X = 0;
 		coord.Y = static_cast< short > ( l );
 
-        if (l > sess->topline)
+        if (l > GetSession()->topline)
         {
-            if ( ( WhereY() + sess->topline - l ) < 0 )
+            if ( ( WhereY() + GetSession()->topline - l ) < 0 )
             {
 	            CHAR_INFO lpFill;
 	            SMALL_RECT scrnl;
 
-				scrnl.Top = static_cast< short > ( sess->topline );
+				scrnl.Top = static_cast< short > ( GetSession()->topline );
 				scrnl.Left = 0;
-				scrnl.Bottom = static_cast< short > ( sess->screenbottom );
+				scrnl.Bottom = static_cast< short > ( GetSession()->screenbottom );
 				scrnl.Right = 79; //%%TODO - JZ Make the console size user defined
 
 				lpFill.Char.AsciiChar = ' ';
@@ -627,19 +627,19 @@ void WLocalIO::set_protect(int l) //JZ Set_Protect Fix
 				coord.X = 0;
 				coord.Y = static_cast< short > ( l );
 				ScrollConsoleScreenBuffer(m_hConOut, &scrnl, NULL, coord, &lpFill);
-                LocalGotoXY( WhereX(), WhereY() + l - sess->topline );
+                LocalGotoXY( WhereX(), WhereY() + l - GetSession()->topline );
             }
-            oldy += (sess->topline - l);
+            oldy += (GetSession()->topline - l);
         }
         else
         {
         	DWORD written;
-			FillConsoleOutputAttribute(m_hConOut,0,(sess->topline - l) * 80,coord,&written);
-            oldy += (sess->topline - l);
+			FillConsoleOutputAttribute(m_hConOut,0,(GetSession()->topline - l) * 80,coord,&written);
+            oldy += (GetSession()->topline - l);
         }
     }
-    sess->topline = l;
-	sess->screenlinest = ( sess->using_modem ) ? sess->thisuser.GetScreenLines() : defscreenbottom + 1 - sess->topline;
+    GetSession()->topline = l;
+	GetSession()->screenlinest = ( GetSession()->using_modem ) ? GetSession()->thisuser.GetScreenLines() : defscreenbottom + 1 - GetSession()->topline;
 }
 
 
@@ -666,7 +666,7 @@ void WLocalIO::savescreen(screentype * pScreenType)
 
     pScreenType->x1 = static_cast< short > ( WhereX() );
     pScreenType->y1 = static_cast< short > ( WhereY() );
-    pScreenType->topline1 = static_cast< short > ( sess->topline );
+    pScreenType->topline1 = static_cast< short > ( GetSession()->topline );
     pScreenType->curatr1 = static_cast< short > ( curatr );
 }
 
@@ -692,7 +692,7 @@ void WLocalIO::restorescreen(screentype * pScreenType)
         BbsFreeMemory(pScreenType->scrn1);
         pScreenType->scrn1 = NULL;
     }
-    sess->topline = pScreenType->topline1;
+    GetSession()->topline = pScreenType->topline1;
     curatr = pScreenType->curatr1;
     LocalGotoXY(pScreenType->x1, pScreenType->y1);
 }
@@ -702,13 +702,13 @@ void WLocalIO::ExecuteTemporaryCommand( const char *pszCommand )
 {
     pr_Wait( 1 );
     savescreen( &screensave );
-    int i = sess->topline;
-    sess->topline = 0;
+    int i = GetSession()->topline;
+    GetSession()->topline = 0;
     curatr = 0x07;
     LocalCls();
     ExecuteExternalProgram( pszCommand, EFLAG_TOPSCREEN );
     restorescreen( &screensave );
-    sess->topline = i;
+    GetSession()->topline = i;
     pr_Wait( 0 );
 }
 
@@ -835,15 +835,15 @@ void WLocalIO::skey( char ch )
                     }
                     break;
                 case F2:                          /* F2 */
-                    sess->topdata++;
-                    if ( sess->topdata > WLocalIO::topdataUser )
+                    GetSession()->topdata++;
+                    if ( GetSession()->topdata > WLocalIO::topdataUser )
                     {
-                        sess->topdata = WLocalIO::topdataNone;
+                        GetSession()->topdata = WLocalIO::topdataNone;
                     }
                     UpdateTopScreen();
                     break;
                 case F3:                          /* F3 */
-                    if ( sess->using_modem )
+                    if ( GetSession()->using_modem )
                     {
                         incom = !incom;
                         dump();
@@ -868,7 +868,7 @@ void WLocalIO::skey( char ch )
                     GetApplication()->GetComm()->dtr( false );
                     break;
                 case CF5:                          /* Ctrl-F5 */
-                    sess->bout << "\r\nCall back later when you are there.\r\n\n";
+                    GetSession()->bout << "\r\nCall back later when you are there.\r\n\n";
                     hangup = true;
                     GetApplication()->GetComm()->dtr( false );
                     break;
@@ -877,25 +877,25 @@ void WLocalIO::skey( char ch )
                     tleft( false );
                     break;
                 case F7:                          /* F7 */
-                    sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() -
+                    GetSession()->thisuser.SetExtraTime( GetSession()->thisuser.GetExtraTime() -
                                                  static_cast<float>( 5.0 * SECONDS_PER_MINUTE_FLOAT ) );
                     tleft( false );
                     break;
                 case F8:                          /* F8 */
-                    sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() +
+                    GetSession()->thisuser.SetExtraTime( GetSession()->thisuser.GetExtraTime() +
                                                  static_cast<float>( 5.0 * SECONDS_PER_MINUTE_FLOAT ) );
                     tleft( false );
                     break;
                 case F9:                          /* F9 */
-                    if ( sess->thisuser.GetSl() != 255 )
+                    if ( GetSession()->thisuser.GetSl() != 255 )
                     {
-                        if ( sess->GetEffectiveSl() != 255)
+                        if ( GetSession()->GetEffectiveSl() != 255)
                         {
-                            sess->SetEffectiveSl( 255 );
+                            GetSession()->SetEffectiveSl( 255 );
                         }
                         else
                         {
-                            sess->ResetEffectiveSl();
+                            GetSession()->ResetEffectiveSl();
                         }
                         changedsl();
                         tleft( false );
@@ -977,34 +977,34 @@ void WLocalIO::tleft(bool bCheckForTimeOut)
     }
     int cx = WhereX();
     int cy = WhereY();
-    int ctl = sess->topline;
+    int ctl = GetSession()->topline;
     int cc = curatr;
-    curatr = sess->GetTopScreenColor();
-    sess->topline = 0;
+    curatr = GetSession()->GetTopScreenColor();
+    GetSession()->topline = 0;
     double nsln = nsl();
-    int nLineNumber = (chatcall && (sess->topdata == WLocalIO::topdataUser)) ? 5 : 4;
+    int nLineNumber = (chatcall && (GetSession()->topdata == WLocalIO::topdataUser)) ? 5 : 4;
 
 
-    if (sess->topdata)
+    if (GetSession()->topdata)
     {
-        if ((sess->using_modem) && (!incom))
+        if ((GetSession()->using_modem) && (!incom))
         {
             LocalXYPuts( 1, nLineNumber, ss[0] );
-			for ( std::string::size_type i = 19; i < sess->GetCurrentSpeed().length(); i++ )
+			for ( std::string::size_type i = 19; i < GetSession()->GetCurrentSpeed().length(); i++ )
             {
                 LocalPutch( static_cast< unsigned char > ( 'Í' ) );
             }
         }
         else
         {
-            LocalXYPuts( 1, nLineNumber, sess->GetCurrentSpeed().c_str() );
+            LocalXYPuts( 1, nLineNumber, GetSession()->GetCurrentSpeed().c_str() );
             for (int i = WhereX(); i < 23; i++)
             {
                 LocalPutch( static_cast< unsigned char > ( 'Í' ) );
             }
         }
 
-        if ((sess->thisuser.GetSl() != 255) && ( sess->GetEffectiveSl() == 255))
+        if ((GetSession()->thisuser.GetSl() != 255) && ( GetSession()->GetEffectiveSl() == 255))
         {
             LocalXYPuts( 23, nLineNumber, ss[1] );
         }
@@ -1030,35 +1030,35 @@ void WLocalIO::tleft(bool bCheckForTimeOut)
             LocalXYPuts( 64, nLineNumber, ss[6] );
         }
     }
-    switch (sess->topdata)
+    switch (GetSession()->topdata)
     {
     case WLocalIO::topdataSystem:
-        if ( sess->IsUserOnline() )
+        if ( GetSession()->IsUserOnline() )
         {
             LocalXYPrintf( 18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT );
         }
         break;
     case WLocalIO::topdataUser:
         {
-			if ( sess->IsUserOnline() )
+			if ( GetSession()->IsUserOnline() )
             {
                 LocalXYPrintf( 18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT );
             }
             else
             {
-                LocalXYPrintf( 18, 3, sess->thisuser.GetPassword() );
+                LocalXYPrintf( 18, 3, GetSession()->thisuser.GetPassword() );
             }
         }
         break;
     }
-    sess->topline = ctl;
+    GetSession()->topline = ctl;
     curatr = cc;
     LocalGotoXY( cx, cy );
-    if ( bCheckForTimeOut && sess->IsUserOnline() )
+    if ( bCheckForTimeOut && GetSession()->IsUserOnline() )
     {
         if ( nsln == 0.0 )
         {
-            sess->bout << "\r\nTime expired.\r\n\n";
+            GetSession()->bout << "\r\nTime expired.\r\n\n";
             hangup = true;
         }
     }
@@ -1074,18 +1074,18 @@ void WLocalIO::UpdateTopScreenImpl()
 
     if ( so() && !incom )
     {
-        sess->topdata = WLocalIO::topdataNone;
+        GetSession()->topdata = WLocalIO::topdataNone;
     }
 
     if ( syscfg.sysconfig & sysconfig_titlebar )
     {
         // Only set the titlebar if the user wanted it that way.
         char szConsoleTitle[ 255 ];
-        _snprintf( szConsoleTitle, sizeof( szConsoleTitle ), "WWIV Node %d (User: %s)", GetApplication()->GetInstanceNumber(), sess->thisuser.GetUserNameAndNumber( sess->usernum ) );
+        _snprintf( szConsoleTitle, sizeof( szConsoleTitle ), "WWIV Node %d (User: %s)", GetApplication()->GetInstanceNumber(), GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) );
         ::SetConsoleTitle( szConsoleTitle );
     }
 
-    switch ( sess->topdata )
+    switch ( GetSession()->topdata )
     {
     case WLocalIO::topdataNone:
         set_protect( 0 );
@@ -1100,7 +1100,7 @@ void WLocalIO::UpdateTopScreenImpl()
         }
         else
         {
-            if ( sess->topline == 6 )
+            if ( GetSession()->topline == 6 )
             {
                 set_protect( 0 );
             }
@@ -1110,17 +1110,17 @@ void WLocalIO::UpdateTopScreenImpl()
     }
     int cx = WhereX();
     int cy = WhereY();
-    int nOldTopLine = sess->topline;
+    int nOldTopLine = GetSession()->topline;
     int cc = curatr;
-    curatr = sess->GetTopScreenColor();
-    sess->topline = 0;
+    curatr = GetSession()->GetTopScreenColor();
+    GetSession()->topline = 0;
     for ( i = 0; i < 80; i++ )
     {
         sl[i] = '\xCD';
     }
     sl[80] = '\0';
 
-    switch (sess->topdata)
+    switch (GetSession()->topdata)
     {
     case WLocalIO::topdataNone:
         break;
@@ -1133,13 +1133,13 @@ void WLocalIO::UpdateTopScreenImpl()
                            status.users, status.callernum1, status.callstoday, status.localposts );
 
             LocalXYPrintf( 0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-                           sess->thisuser.GetUserNameAndNumber( sess->usernum ),
+                           GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
                            status.activetoday,
                            static_cast<int>( 10 * status.activetoday / 144 ),
                            status.emailtoday );
 
             LocalXYPrintf( 0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
-                           sess->thisuser.GetSl(), sess->thisuser.GetDsl(),
+                           GetSession()->thisuser.GetSl(), GetSession()->thisuser.GetDsl(),
                            fwaiting, status.uptoday, status.fbacktoday );
         }
         break;
@@ -1148,7 +1148,7 @@ void WLocalIO::UpdateTopScreenImpl()
             strcpy(rst, restrict_string);
             for (i = 0; i <= 15; i++)
             {
-                if ( sess->thisuser.hasArFlag( 1 << i ) )
+                if ( GetSession()->thisuser.hasArFlag( 1 << i ) )
                 {
                     ar[i] = static_cast< char > ('A' + i );
                 }
@@ -1156,7 +1156,7 @@ void WLocalIO::UpdateTopScreenImpl()
                 {
                     ar[i] = SPACE;
                 }
-                if ( sess->thisuser.hasDarFlag( 1 << i ) )
+                if ( GetSession()->thisuser.hasDarFlag( 1 << i ) )
                 {
                     dar[i] = static_cast< char > ( 'A' + i );
                 }
@@ -1164,7 +1164,7 @@ void WLocalIO::UpdateTopScreenImpl()
                 {
                     dar[i] = SPACE;
                 }
-                if ( sess->thisuser.hasRestrictionFlag( 1 << i ) )
+                if ( GetSession()->thisuser.hasRestrictionFlag( 1 << i ) )
                 {
                     restrict[i] = rst[i];
                 }
@@ -1176,52 +1176,52 @@ void WLocalIO::UpdateTopScreenImpl()
             dar[16] = '\0';
             ar[16] = '\0';
             restrict[16] = '\0';
-            if ( !wwiv::stringUtils::IsEquals( sess->thisuser.GetLastOn(), date() ) )
+            if ( !wwiv::stringUtils::IsEquals( GetSession()->thisuser.GetLastOn(), date() ) )
             {
-                strcpy( lo, sess->thisuser.GetLastOn() );
+                strcpy( lo, GetSession()->thisuser.GetLastOn() );
             }
             else
             {
-                _snprintf( lo, sizeof( lo ), "Today:%2d", sess->thisuser.GetTimesOnToday() );
+                _snprintf( lo, sizeof( lo ), "Today:%2d", GetSession()->thisuser.GetTimesOnToday() );
             }
 
             LocalXYAPrintf( 0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
-                            sess->thisuser.GetUserNameAndNumber( sess->usernum ),
-                            sess->thisuser.GetNumMailWaiting(),
-                            sess->thisuser.GetFilesUploaded(),
-                            sess->thisuser.GetUploadK(),
-                            sess->thisuser.GetSl(),
-                            sess->thisuser.GetNumLogons(),
-                            sess->thisuser.GetNumMessagesPosted() );
+                            GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
+                            GetSession()->thisuser.GetNumMailWaiting(),
+                            GetSession()->thisuser.GetFilesUploaded(),
+                            GetSession()->thisuser.GetUploadK(),
+                            GetSession()->thisuser.GetSl(),
+                            GetSession()->thisuser.GetNumLogons(),
+                            GetSession()->thisuser.GetNumMessagesPosted() );
 
             char szCallSignOrRegNum[ 41 ];
-            if ( sess->thisuser.GetWWIVRegNumber() )
+            if ( GetSession()->thisuser.GetWWIVRegNumber() )
             {
-                _snprintf( szCallSignOrRegNum, sizeof( szCallSignOrRegNum ), "%lu", sess->thisuser.GetWWIVRegNumber() );
+                _snprintf( szCallSignOrRegNum, sizeof( szCallSignOrRegNum ), "%lu", GetSession()->thisuser.GetWWIVRegNumber() );
             }
             else
             {
-                strcpy( szCallSignOrRegNum, sess->thisuser.GetCallsign() );
+                strcpy( szCallSignOrRegNum, GetSession()->thisuser.GetCallsign() );
             }
             LocalXYPrintf(  0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u",
-                            sess->thisuser.GetRealName(),
-                            sess->thisuser.GetVoicePhoneNumber(),
+                            GetSession()->thisuser.GetRealName(),
+                            GetSession()->thisuser.GetVoicePhoneNumber(),
                             szCallSignOrRegNum,
-                            sess->thisuser.GetFilesDownloaded(),
-                            sess->thisuser.GetDownloadK(),
-                            sess->thisuser.GetDsl(),
-                            static_cast<long>( ( sess->thisuser.GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ),
-                            sess->thisuser.GetNumEmailSent() + sess->thisuser.GetNumNetEmailSent() );
+                            GetSession()->thisuser.GetFilesDownloaded(),
+                            GetSession()->thisuser.GetDownloadK(),
+                            GetSession()->thisuser.GetDsl(),
+                            static_cast<long>( ( GetSession()->thisuser.GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ),
+                            GetSession()->thisuser.GetNumEmailSent() + GetSession()->thisuser.GetNumNetEmailSent() );
 
             LocalXYPrintf( 0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u",
-                ar, dar, restrict, sess->thisuser.GetExempt(),
-                lo, sess->thisuser.GetNumFeedbackSent() );
+                ar, dar, restrict, GetSession()->thisuser.GetExempt(),
+                lo, GetSession()->thisuser.GetNumFeedbackSent() );
 
             LocalXYPrintf( 0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
-                            sess->thisuser.GetNote(),
-                            sess->thisuser.GetGender(),
-                            sess->thisuser.GetAge(),
-                            ctypes( sess->thisuser.GetComputerType() ), fwaiting );
+                            GetSession()->thisuser.GetNote(),
+                            GetSession()->thisuser.GetGender(),
+                            GetSession()->thisuser.GetAge(),
+                            ctypes( GetSession()->thisuser.GetComputerType() ), fwaiting );
 
             if (chatcall)
             {
@@ -1236,7 +1236,7 @@ void WLocalIO::UpdateTopScreenImpl()
     {
         LocalXYPuts( 0, nOldTopLine - 1, sl );
     }
-    sess->topline = nOldTopLine;
+    GetSession()->topline = nOldTopLine;
     LocalGotoXY( cx, cy );
     curatr = cc;
     tleft( false );
@@ -1354,26 +1354,26 @@ int  WLocalIO::LocalGetChar()
 
 void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen)
 {
-    // Make sure that we are within the range of {(0,0), (80,sess->screenbottom)}
+    // Make sure that we are within the range of {(0,0), (80,GetSession()->screenbottom)}
 	xlen = std::min<int>( xlen, 80 );
-    if (ylen > (sess->screenbottom + 1 - sess->topline))
+    if (ylen > (GetSession()->screenbottom + 1 - GetSession()->topline))
     {
-        ylen = (sess->screenbottom + 1 - sess->topline);
+        ylen = (GetSession()->screenbottom + 1 - GetSession()->topline);
     }
     if ((x + xlen) > 80)
     {
         x = 80 - xlen;
     }
-    if ((y + ylen) > sess->screenbottom + 1)
+    if ((y + ylen) > GetSession()->screenbottom + 1)
     {
-        y = sess->screenbottom + 1 - ylen;
+        y = GetSession()->screenbottom + 1 - ylen;
     }
 
     int xx = WhereX();
     int yy = WhereY();
 
-    // we expect to be offset by sess->topline
-    y += sess->topline;
+    // we expect to be offset by GetSession()->topline
+    y += GetSession()->topline;
 
     // large enough to hold 80x50
     CHAR_INFO ci[4000];
@@ -1614,7 +1614,7 @@ void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *retu
         pszInOutText[i] = static_cast<unsigned char>( 176 );
     }
     pszInOutText[len] = '\0';
-    curatr = sess->GetEditLineColor();
+    curatr = GetSession()->GetEditLineColor();
     LocalFastPuts( pszInOutText );
     LocalGotoXY( cx, cy );
     bool done = false;

@@ -53,7 +53,7 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
             if ( sm.touser == nUserNum && sm.tosys == 0 )
             {
                 ansic( 9 );
-				sess->bout << sm.message;
+				GetSession()->bout << sm.message;
 				nl();
                 bool bHandledMessage = false;
                 bShownAnyMessage = true;
@@ -67,7 +67,7 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
                     {
                         if ( !bHandledMessage && bAskToSaveMsgs )
                         {
-                            sess->bout << "|10Would you like to save this notification? ";
+                            GetSession()->bout << "|10Would you like to save this notification? ";
                             bHandledMessage = !yesno();
                         }
                     }
@@ -157,7 +157,7 @@ void SendRemoteShortMessage( int nUserNum, int nSystemNum, char *pszMessageText 
     nh.tosys = static_cast<unsigned short>( nSystemNum );
     nh.touser = static_cast<unsigned short>( nUserNum );
     nh.fromsys = net_sysnum;
-    nh.fromuser = static_cast<unsigned short>( sess->usernum );
+    nh.fromuser = static_cast<unsigned short>( GetSession()->usernum );
     nh.main_type = main_type_ssm;
     nh.minor_type = 0;
     nh.list_len = 0;
@@ -169,7 +169,7 @@ void SendRemoteShortMessage( int nUserNum, int nSystemNum, char *pszMessageText 
     nh.length = strlen(pszMessageText);
     nh.method = 0;
     char szPacketName[MAX_PATH];
-    sprintf( szPacketName, "%sP0%s", sess->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
+    sprintf( szPacketName, "%sP0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
     WFile file( szPacketName );
     file.Open( WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
     file.Seek( 0L, WFile::seekBegin );
