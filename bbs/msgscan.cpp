@@ -39,7 +39,6 @@ void HandleListReplies( int nMessageNumber );
 
 static char s_szFindString[21];
 
-
 void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan )
 {
 	int j, k;
