@@ -24,6 +24,7 @@
 #pragma once
 #endif
 
+#include "wtypes.h"
 #include "vardec.h"
 #include "net.h"
 
