@@ -24,16 +24,18 @@
 //
 
 #include <stdio.h>
-#ifndef linux
+#ifdef __MSDOS__
 #include <io.h>
 #endif
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define STRICT
+#include <io.h>
 #include <windows.h>
 #endif // _WIN32
 
+#include "../platform/testos.h"
 #include "../vardec.h"
 #include "../net.h"
 
