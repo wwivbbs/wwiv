@@ -80,7 +80,7 @@ void HopSub()
                 {
                     nl();
                 }
-                sess->bout << "|#5Do you mean\"" << subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
+                sess->bout << "|#5Do you mean \"" << subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
                 char ch = onek_ncr("QYN\r");
                 if (ch == 'Y')
                 {

@@ -5,6 +5,8 @@
 
 * More C++ classes around C data structures
 * More STL string usages
+* Move bputch, makeansi, bputs, ansic, and etc to WOutStream 
+  (aka instead of bputs(x), sess->bout->puts(x)) [maybe]
 * Let WUser take string& parameters in addition to const char * parameters
 * move g_flags into WSession
 * More streams usages
