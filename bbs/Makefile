@@ -86,7 +86,7 @@ $(OBJ)/%.o : %.cpp
 
 COMMON_BBS_OBJS =	       	\
 	$(OBJ)/asv.o		\
-	$(OBJ)/attach.o	\
+	$(OBJ)/attach.o		\
 	$(OBJ)/automsg.o	\
 	$(OBJ)/batch.o         	\
 	$(OBJ)/bbs.o           	\
@@ -100,10 +100,10 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/bgetch.o       	\
 	$(OBJ)/bputch.o       	\
 	$(OBJ)/callback.o      	\
-	$(OBJ)/chains.o	\
+	$(OBJ)/chains.o		\
 	$(OBJ)/chat.o          	\
 	$(OBJ)/chnedit.o       	\
-	$(OBJ)/colors.o	\
+	$(OBJ)/colors.o		\
 	$(OBJ)/com.o           	\
 	$(OBJ)/conf.o          	\
 	$(OBJ)/confutil.o	\
@@ -112,14 +112,15 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/DateTime.o	\
 	$(OBJ)/defaults.o      	\
 	$(OBJ)/diredit.o       	\
-	$(OBJ)/dirlist.o		\
+	$(OBJ)/dirlist.o	\
 	$(OBJ)/dropfile.o	\
 	$(OBJ)/dupphone.o	\
 	$(OBJ)/events.o        	\
 	$(OBJ)/exec.o        	\
-	$(OBJ)/execexternal.o        	\
+	$(OBJ)/execexternal.o   \
 	$(OBJ)/extract.o	\
 	$(OBJ)/extrn.o         	\
+	$(OBJ)/FindUser.o       \
 	$(OBJ)/extrn1.o        	\
 	$(OBJ)/gfiles.o        	\
 	$(OBJ)/gfledit.o       	\
@@ -129,11 +130,11 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/inmsg.o       	\
 	$(OBJ)/input.o       	\
 	$(OBJ)/instmsg.o       	\
-	$(OBJ)/interpret.o       	\
+	$(OBJ)/interpret.o      \
 	$(OBJ)/lilo.o          	\
 	$(OBJ)/listplus.o      	\
 	$(OBJ)/lpfunc.o      	\
-	$(OBJ)/memory.o	\
+	$(OBJ)/memory.o		\
 	$(OBJ)/menu.o      	\
 	$(OBJ)/menuedit.o      	\
 	$(OBJ)/menuspec.o      	\
@@ -147,13 +148,14 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/multmail.o      	\
 	$(OBJ)/netsup.o        	\
 	$(OBJ)/newuser.o       	\
-	$(OBJ)/normupld.o       	\
+	$(OBJ)/normupld.o       \
 	$(OBJ)/pause.o       	\
-	$(OBJ)/printfile.o       	\
+	$(OBJ)/printfile.o      \
 	$(OBJ)/quote.o      	\
 	$(OBJ)/readmail.o      	\
-	$(OBJ)/reboot.o	\
+	$(OBJ)/reboot.o		\
 	$(OBJ)/shortmsg.o	\
+	$(OBJ)/SmallRecord.o	\
 	$(OBJ)/sr.o            	\
 	$(OBJ)/srrcv.o         	\
 	$(OBJ)/srsend.o        	\
