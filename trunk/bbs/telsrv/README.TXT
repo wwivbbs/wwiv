@@ -16,7 +16,7 @@ GENERAL INFORMATION:
 
 ==============================================================================
 
-LABEL: WWIV-5_0_45
+LABEL: WWIV-5_0_57
 DATE:  ??/??/????
 
 Moved WSAStartup to the Document Initialization (in preparation for more than
@@ -31,6 +31,16 @@ filename), but now it's None.
 Fixed help file generation under Visual Studio.NET 2003
 
 Created an XML manifest for Windows XP so it will use the ComCtrl6 if present.
+
+Added listener to respawn the icon when the taskbar is recreated (i.e. when
+explorer crashes)
+
+Added support for showing a popup balloon when WTS is minimized.
+
+Added new preference to support showing balloon popups on connect/disconnect 
+when WTS is minimized (it defaults to ON)
+
+A couple of UNICODE fixes.
 
 ==============================================================================
 
