@@ -111,10 +111,7 @@ CWWIVTelnetServerDoc* CNodeDetailsView::GetDocument() // non-debug version is in
 
 /////////////////////////////////////////////////////////////////////////////
 // CNodeDetailsView message handlers
-void CNodeDetailsView::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
-{
-	//TODO: add code to react to the user changing the view style of your window
-}
+
 
 void CNodeDetailsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
@@ -168,8 +165,3 @@ void CNodeDetailsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	}	
 }
 
-BOOL CNodeDetailsView::DestroyWindow()
-{
-    // TODO: Add your specialized code here and/or call the base class
-    return CListView::DestroyWindow();
-}
