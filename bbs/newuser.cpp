@@ -1249,6 +1249,11 @@ void ExecNewUserCommand()
     {
         char szCommandLine[ MAX_PATH ];
         stuff_in(szCommandLine, syscfg.newuser_c, create_chain_file(), "", "", "", "");
+        
+        // Log what is happening here.
+        sysoplog( "Executing New User Event: ", false );
+        sysoplog( szCommandLine, true );
+
         sess->WriteCurrentUser( sess->usernum );
         ExecuteExternalProgram(szCommandLine, app->GetSpawnOptions( SPWANOPT_NEWUSER ) );
         sess->ReadCurrentUser( sess->usernum );
