@@ -17,7 +17,8 @@ GENERAL INFORMATION:
 ==============================================================================
 
 LABEL: WWIV-5_0_57
-DATE:  ??/??/????
+DATE:  10/22/2004
+
 
 Moved WSAStartup to the Document Initialization (in preparation for more than
 one socket listener being in place)
@@ -40,7 +41,13 @@ Added support for showing a popup balloon when WTS is minimized.
 Added new preference to support showing balloon popups on connect/disconnect 
 when WTS is minimized (it defaults to ON)
 
+Note: the toolbar balloon support requires WTS be compiled against a Platform
+SDK that supports Windows XP *AND* you are on Windows XP.  MSVC.NET 2003
+includes a Platform SDK supports XP, however MSVC6 does NOT out of the box.
+
 A couple of UNICODE fixes.
+
+Fixed build under MSVC 6.0
 
 ==============================================================================
 
