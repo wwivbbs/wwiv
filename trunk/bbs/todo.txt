@@ -1,6 +1,6 @@
 ==============================================================================
                              WWIV 5.0 TODO List
-                 Copyright 2002-2004 WWIV Software Services
+                 Copyright 2002-2005 WWIV Software Services
 ==============================================================================
 
 * More C++ classes around C data structures

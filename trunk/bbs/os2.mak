@@ -1,3 +1,10 @@
+##############################################################################
+#
+# WWIV 5.0 MAKEFILE for OS/2
+# Copyright (c) 2000-2005 WWIV Software Services
+# All Rights Reserved.
+##
+
 OBJFILES = bbs.o batch.o bbsovl1.o bbsovl2.o \
 	 bbsovl3.o \
     bbsutl.o bbsutl1.o bbsutl2.o callback.o \
