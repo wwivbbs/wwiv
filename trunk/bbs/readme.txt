@@ -10,17 +10,17 @@ GENERAL INFORMATION:
         MS Visual C++ .NET 2003 (Standard/Professional/Enterprise/Architect)
         MS Visual C++ .NET (Standard/Professional/Enterprise/Architect)
         MS Visual C++ .NET (Standard/Professional/Enterprise/Architect)
-        MS Visual C++ 6.0 (Standard/Professional/Enterprise)
-        Borland C++ Builder 5.0 (Standard/Professional/Enterprise)
-        Borland C++ 5.5 (Free Command Line Tools Edition from
+        MS Visual C++ 6.0 (Standard/Professional/Enterprise) [Not tested lately]
+        Borland C++ Builder 5.0 (Standard/Professional/Enterprise) [Not tested lately]
+        Borland C++ 5.5 (Free Command Line Tools Edition from [Not tested lately]
             http://community.borland.com)
-        GCC 2.95.2-Mingw32 (You need to patch the libraries with the
+        GCC 2.95.2-Mingw32 (You need to patch the libraries with the  [Not tested lately]
             binary release from 020300 or later, as well as add a
             few missing functions into winsock2.h)
             MinGW is available at: http://www.mingw.org/
 
-    I recommend using MSVC .NET, MSVC 6.0 or Borland C++ Builder so 
-    that you can debug into it.
+    I recommend using MSVC .NET 2003 or MSVC 6.0 as these are the only ones 
+    used normally. (feel free to maintain the makefiles for another compiler)
 
     The command line parameters have changed quite a bit, I suggest
     running "WWIV50 -? | MORE" to see the list of changes.  Currently
@@ -50,7 +50,7 @@ GENERAL INFORMATION:
 ==============================================================================
 
 LABEL: WWIV-5_0_57
-DATE:  ??/??/????
+DATE:  10/22/2004
 
 Rushfan - Moved shutdown information and variables from WSession to WBbsApp.
 Rushfan - Changed skey to take an int vs. unsigned char.
