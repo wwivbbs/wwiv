@@ -23,7 +23,7 @@
 void valscan()
 {
     // Must be local cosysop or better
-    if (!lcs())
+    if ( !lcs() )
     {
         return;
     }
@@ -118,7 +118,7 @@ void valscan()
                         }
                         break;
                     case 'D':
-                        if ( lcs( ))
+                        if ( lcs() )
                         {
                             if ( i > 0 )
                             {
@@ -133,7 +133,7 @@ void valscan()
                                     app->userManager->ReadUser( &tu, p2.owneruser );
                                     if ( !tu.isUserDeleted() )
                                     {
-                                        if (static_cast<unsigned long>( date_to_daten( tu.GetFirstOn() ) ) < p2.daten)
+                                        if ( static_cast<unsigned long>( date_to_daten( tu.GetFirstOn() ) ) < p2.daten )
                                         {
                                             nl();
                                             sess->bout << "|#2Remove how many posts credit? ";

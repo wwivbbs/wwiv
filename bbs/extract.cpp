@@ -475,7 +475,7 @@ void extract_out (char *b, long len, const char *title, long daten )
 							}
 						}
 						file.Write( const_cast<char*>( title ), strlen( title ) );
-						file.Write( (void *)"\r\n", 2 );
+						file.Write( "\r\n", 2 );
 						file.Write( b, len );
 						file.Write( &ch, 1 );
 						file.Close();
@@ -553,7 +553,7 @@ void extract_out (char *b, long len, const char *title, long daten )
 					}
 				}
 				file.Write( const_cast<char*>( title ), strlen( title ) );
-				file.Write( (void *)"\r\n", 2 );
+				file.Write( "\r\n", 2 );
 				file.Write( b, len );
 				file.Write( &ch, 1 );
 				file.Close();

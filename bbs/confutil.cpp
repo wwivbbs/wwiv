@@ -413,10 +413,10 @@ void setuconf(int nConferenceType, int num, int nOldSubNumber)
     switch (nConferenceType)
     {
     case CONF_SUBS:
-        if ((num >= 0) && (num < MAX_CONFERENCES) && (uconfsub[num].confnum != -1))
+        if ( num >= 0 && num < MAX_CONFERENCES && uconfsub[num].confnum != -1 )
         {
             sess->SetCurrentConferenceMessageArea( num );
-            setconf(nConferenceType, uconfsub[sess->GetCurrentConferenceMessageArea()].confnum, nOldSubNumber);
+            setconf( nConferenceType, uconfsub[sess->GetCurrentConferenceMessageArea()].confnum, nOldSubNumber );
             return;
         }
         break;
@@ -433,44 +433,43 @@ void setuconf(int nConferenceType, int num, int nOldSubNumber)
 		WWIV_ASSERT( true );
 		break;
     }
-    setconf(nConferenceType, -1, nOldSubNumber);
+    setconf( nConferenceType, -1, nOldSubNumber );
 }
 
 
 void changedsl()
 {
-    int i, i2;
-    userconfrec c1;
-
     int ocurconfsub = uconfsub[sess->GetCurrentConferenceMessageArea()].confnum;
     int ocurconfdir = uconfdir[sess->GetCurrentConferenceFileArea()].confnum;
     app->localIO->UpdateTopScreen();
 
+    userconfrec c1;
     c1.confnum = -1;
 
-    for (i = 0; i < MAX_CONFERENCES; i++)
+    int i;
+    for ( i = 0; i < MAX_CONFERENCES; i++ )
     {
         uconfsub[i] = c1;
         uconfdir[i] = c1;
     }
 
-    i2 = 0;
-    for (i = 0; i < subconfnum; i++)
+    int nTempSubConferenceNumber = 0;
+    for ( i = 0; i < subconfnum; i++ )
     {
-        if (access_conf(&sess->thisuser, sess->GetEffectiveSl(), &(subconfs[i])))
+        if ( access_conf( &sess->thisuser, sess->GetEffectiveSl(), &(subconfs[i] ) ) )
         {
             c1.confnum = static_cast< short >( i );
-            uconfsub[i2++] = c1;
+            uconfsub[ nTempSubConferenceNumber++ ] = c1;
         }
     }
 
-    i2 = 0;
-    for (i = 0; i < dirconfnum; i++)
+    int nTempDirConferenceNumber = 0;
+    for ( i = 0; i < dirconfnum; i++ )
     {
-        if (access_conf(&sess->thisuser, sess->GetEffectiveSl(), &(dirconfs[i])))
+        if ( access_conf( &sess->thisuser, sess->GetEffectiveSl(), &( dirconfs[i ]) ) )
         {
             c1.confnum = static_cast< short >( i );
-            uconfdir[i2++] = c1;
+            uconfdir[ nTempDirConferenceNumber++ ] = c1;
         }
     }
 

@@ -686,7 +686,7 @@ int ZProtocol(  ZModem *info )
 	info->timeoutCount = 0;
 	info->noiseCount = 0;
 
-	table = tables[(int)info->state];
+	table = tables[info->state];
 	while( table->type != 99  &&  table->type != info->hdrData[0] )
 	{
 		++table;

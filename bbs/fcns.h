@@ -747,7 +747,7 @@ char *readfile(messagerec * pMessageRecord, const char *aux, long *plMessageLeng
 void LoadFileIntoWorkspace( const char *pszFileName, bool bNoEditAllowed );
 bool ForwardMessage( int *pUserNumber, int *pSystemNumber );
 WFile *OpenEmailFile( bool bAllowWrite );
-void sendout_email(char *title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber );
+void sendout_email(const char *title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber );
 bool ok_to_mail( int nUserNumber, int nSystemNumber, bool bForceit );
 void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool force_title = false, bool bAllowFSED = true );
 void imail( int nUserNumber, int nSystemNumber );
@@ -1035,7 +1035,7 @@ void preload_subs();
 char *get_wildlist(char *pszFileMask);
 int side_menu(int *menu_pos, bool redraw, char *menu_items[], int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);
-void shut_down(int type);
+void shut_down( int nShutDownStatus );
 void WWIV_SetFileTime(const char* pszFileName, const time_t tTime);
 bool okfsed();
 char* W_DateString(long daten, char* mode , char* delim);
@@ -1156,7 +1156,7 @@ void arc_l();
 // File: xferovl1.cpp
 
 void modify_extended_description(char **sss, const char *dest, const char *title);
-bool valid_desc( const unsigned char *pszDescription );
+bool valid_desc( const char *pszDescription );
 bool get_file_idz(uploadsrec * pUploadRecord, int dn);
 int  read_idz_all();
 int  read_idz(int mode, int tempdir);

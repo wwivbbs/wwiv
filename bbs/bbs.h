@@ -80,6 +80,12 @@ public:
     static const int exitLevelNotOK;
     static const int exitLevelQuit;
 
+    static const int shutdownNone;
+    static const int shutdownThreeMinutes;
+    static const int shutdownTwoMinutes;
+    static const int shutdownOneMinute;
+    static const int shutdownImmediate;
+
 public:
     // former global variables and system_operation_rec members
     // to be moved
@@ -88,16 +94,18 @@ public:
 
 
 private:
-	unsigned short m_unx;
+	unsigned short  m_unx;
 	/*! @var m_szCurrentDirectory The current directory where WWIV lives */
-	char m_szCurrentDirectory[ MAX_PATH ];
-    int  m_nOkLevel;
-    int  m_nErrorLevel;
-    int  m_nInstance;
-    char m_szNetworkExtension[ 5 ];
-    double last_time;
-	bool m_bUserAlreadyOn;
-	bool m_bNeedToCleanNetwork;
+	char            m_szCurrentDirectory[ MAX_PATH ];
+    int             m_nOkLevel;
+    int             m_nErrorLevel;
+    int             m_nInstance;
+    char            m_szNetworkExtension[ 5 ];
+    double          last_time;
+	bool            m_bUserAlreadyOn;
+	bool            m_bNeedToCleanNetwork;
+    int             m_nBbsShutdownStatus;
+    double          m_fShutDownTime;
 
 
 protected:
@@ -221,6 +229,13 @@ public:
 	bool IsCleanNetNeeded() const			{ return m_bNeedToCleanNetwork; }
 	void SetCleanNetNeeded( bool b )		{ m_bNeedToCleanNetwork = b; }
 
+    bool IsShutDownActive() const           { return m_nBbsShutdownStatus > 0; }
+    int  GetShutDownStatus() const          { return m_nBbsShutdownStatus; }
+    void SetShutDownStatus( int n )         { m_nBbsShutdownStatus = n; }
+
+    double GetShutDownTime() const          { return m_fShutDownTime; }
+    void   SetShutDownTime( double d )      { m_fShutDownTime = d; }
+
     bool read_subs();
 
 private:
@@ -232,9 +247,9 @@ private:
 
     int LocalLogon();
 
-    unsigned short str2spawnopt(char *s);
-    unsigned short str2restrict(char *s);
-    unsigned char stryn2tf(char *s);
+    unsigned short str2spawnopt( const char *s );
+    unsigned short str2restrict( const char *s );
+    unsigned char stryn2tf( const char *s );
     void read_nextern();
     void read_arcs();
     void read_editors();

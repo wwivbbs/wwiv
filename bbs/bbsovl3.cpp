@@ -20,22 +20,22 @@
 #include "wwiv.h"
 #include "WStringUtils.h"
 
-unsigned char pd_getkey();
+int pd_getkey();
 
 
-unsigned char pd_getkey()
+int pd_getkey()
 {
     g_flags |= g_flag_allow_extended;
-    unsigned short x = getkey();
+    int x = getkey();
     g_flags &= ~g_flag_allow_extended;
 
-    return static_cast< unsigned char >( x );
+    return x;
 }
 
 
 int get_kb_event( int nNumLockMode )
 {
-    unsigned key = 0;
+    int key = 0;
     app->localIO->tleft( true );
     time_t time1 = time( NULL );
 

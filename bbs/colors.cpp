@@ -145,24 +145,24 @@ void color_config()
             {
                 c |= 0x08;
             }
-            goxy(41, 19);
-            setc(c);
+            goxy( 41, 19 );
+            setc( c );
             sess->bout << s;
             ansic( 0 );
-            goxy(1, 18);
+            goxy( 1, 18 );
             nl();
             sess->bout << "|#5Blinking? ";
-            if (yesno())
+            if ( yesno() )
             {
                 c |= 0x80;
             }
             nl();
             goxy(41, 19);
-            setc(c);
+            setc( c );
             sess->bout << s;
             ansic( 0 );
             goxy(1, 21);
-            setc(c);
+            setc( c );
             sess->bout << DescribeColorCode( c );
             ansic( 0 );
             nl( 2 );

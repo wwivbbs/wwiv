@@ -97,7 +97,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards)
                 BbsFreeMemory(xsubs[i].nets);
             }
         }
-        BbsFreeMemory((void *) xsubs);
+        BbsFreeMemory( xsubs );
         if (xsubsn)
         {
             BbsFreeMemory(xsubsn);
@@ -117,13 +117,13 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards)
     {
         if (l > 32768)
         {
-            memset((void *) xx, 0, 32768);
+            memset( xx, 0, 32768 );
             l -= 32768;
             xx += 32768;
         }
         else
         {
-            memset((void *) xx, 0, l);
+            memset( xx, 0, l );
             break;
         }
     }

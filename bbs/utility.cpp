@@ -190,7 +190,7 @@ void frequent_init()
     app->localIO->set_global_handle( false );
     WFile::SetFilePermissions( g_szDSZLogFileName, WFile::permReadWrite );
     WFile::Remove( g_szDSZLogFileName );
-    ltime = 0;
+    sess->SetTimeOnlineLimited( false );
     app->localIO->set_x_only( 0, NULL, 0 );
     set_net_num( 0 );
     set_language( sess->thisuser.GetLanguage() );
@@ -264,7 +264,7 @@ double nsl()
     {
         rtn = 1.00;
     }
-    ltime = 0;
+    sess->SetTimeOnlineLimited( false );
     if ( syscfg.executetime )
     {
         double tlt = time_event - dd;
@@ -275,7 +275,7 @@ double nsl()
         if ( rtn > tlt )
         {
             rtn = tlt;
-            ltime = 1;
+            sess->SetTimeOnlineLimited( true );
         }
         check_event();
         if ( do_event )
@@ -741,37 +741,37 @@ slrec getslrec(int nSl)
 }
 
 
-void shut_down(int type)
+void shut_down( int nShutDownStatus )
 {
     char xl[81], cl[81], atr[81], cc;
+    app->localIO->SaveCurrentLine( cl, atr, xl, &cc );
 
-    app->localIO->SaveCurrentLine(cl, atr, xl, &cc);
-    switch (type)
+    switch ( nShutDownStatus )
 	{
     case 1:
-        sess->bbsshutdown = 1;
-        sess->shutdowntime = timer() + 180.0;
+        app->SetShutDownStatus( WBbsApp::shutdownThreeMinutes );
+        app->SetShutDownTime( timer() + 180.0 );
     case 2:
     case 3:
         nl( 2 );
-        bprintf("|#7***\r\n|#7To All Users, System will shut down in %d min%s for maintenance.\r \n",
-            4 - type, (type == 3) ? "," : "s,");
-        sess->bout << "|#7Please finish your session and log off. Thank you\r\n|#7***\r\n";
+        sess->bout << "|#7***\r\n|#7To All Users, System will shut down in " <<
+                      4 - nShutDownStatus << " minunte(s) for maintenance.\r \n" <<
+                      "|#7Please finish your session and log off. Thank you\r\n|#7***\r\n";
         break;
     case 4:
         nl( 2 );
         sess->bout << "|#7***\r\n|#7Please call back later.\r\n|#7***\r\n\n";
         sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() + static_cast<float>( nsl() ) );
 		sess->bout << "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
-        printfile(LOGOFF_NOEXT);
+        printfile( LOGOFF_NOEXT );
         hangup = true;
-        sess->bbsshutdown = 0;
+        app->SetShutDownStatus( WBbsApp::shutdownNone );
         break;
 	default:
-        std::cout << "[utility.cpp] shutdown called with illegal type: " << type << std::endl;
+        std::cout << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus << std::endl;
 		WWIV_ASSERT( true );
     }
-    RestoreCurrentLine(cl, atr, xl, &cc);
+    RestoreCurrentLine( cl, atr, xl, &cc );
 }
 
 

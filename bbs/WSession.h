@@ -180,6 +180,9 @@ public:
     bool IsNewMailWatiting() const                  { return m_bNewMailWaiting; }
     void SetNewMailWaiting( bool b )                { m_bNewMailWaiting = b; }
 
+    bool IsTimeOnlineLimited() const                { return m_bTimeOnlineLimited; }
+    void SetTimeOnlineLimited( bool b )             { m_bTimeOnlineLimited = b; }
+
     int  GetCurrentNetworkType() const              { return m_nCurrentNetworkType; }
     void SetCurrentNetworkType( int n )             { m_nCurrentNetworkType = n; }
 
@@ -225,6 +228,7 @@ public:
     bool        m_bUserOnline;
     bool        m_bQuoting;
     bool        m_bNewMailWaiting;
+    bool        m_bTimeOnlineLimited;
 
     int         m_nMMKeyArea,
                 m_nNumMessagesReadThisLogon,
@@ -262,7 +266,6 @@ public:
                 num_sys_list,
                 screenbottom,
                 screenlinest,
-                bbsshutdown,
                 subchg,
                 tagging,
                 tagptr,
@@ -292,7 +295,6 @@ public:
 				wfc_status;
 
 	int         usernum;
-	double		shutdowntime;
 
     asv_rec		asv;
     adv_asv_rec	advasv;

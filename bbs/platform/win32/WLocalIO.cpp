@@ -720,15 +720,15 @@ char xlate[] =
 };
 
 
-char WLocalIO::scan_to_char(unsigned char ch)
+char WLocalIO::scan_to_char( int nKeyCode )
 {
-    return ( ch >= 16 && ch <= 50 ) ? xlate[ch - 16] : '\x00';
+    return ( nKeyCode >= 16 && nKeyCode <= 50 ) ? xlate[ nKeyCode - 16 ] : '\x00';
 }
 
 
-void WLocalIO::alt_key(unsigned char ch)
+void WLocalIO::alt_key( int nKeyCode )
 {
-    char ch1 = scan_to_char(ch);
+    char ch1 = scan_to_char( nKeyCode );
     if (ch1)
     {
         char szCommand[ MAX_PATH ];
@@ -799,40 +799,41 @@ void WLocalIO::alt_key(unsigned char ch)
 /*
  * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
  */
-void WLocalIO::skey(char ch)
+void WLocalIO::skey( char ch )
 {
+    int nKeyCode = static_cast<unsigned char>( ch );
     int i, i1;
 
     if ( (syscfg.sysconfig & sysconfig_no_local) == 0 )
     {
         if (okskey)
         {
-            if ((ch >= 104) && (ch <= 113))
+            if ( nKeyCode >= AF1 && nKeyCode <= AF10 )
             {
-                set_autoval(ch - 104);
+                set_autoval( nKeyCode - 104 );
             }
             else
             {
-                switch ((unsigned char) ch)
+                switch ( nKeyCode )
                 {
-                case 59:                          /* F1 */
+                case F1:                          /* F1 */
                     OnlineUserEditor();
                     break;
-                case 84:                          /* Shift-F1 */
+                case SF1:                          /* Shift-F1 */
 					set_global_handle( ( fileGlobalCap.IsOpen() ) ? false : true );
                     UpdateTopScreen();
                     break;
-                case 94:                          /* Ctrl-F1 */
-                    if ( sess->bbsshutdown )
+                case CF1:                          /* Ctrl-F1 */
+                    if ( app->IsShutDownActive() )
                     {
-                        sess->bbsshutdown = 0;
+                        app->SetShutDownStatus( WBbsApp::shutdownNone );
                     }
                     else
                     {
-                        shut_down( 1 );
+                        shut_down( WBbsApp::shutdownThreeMinutes );
                     }
                     break;
-                case 60:                          /* F2 */
+                case F2:                          /* F2 */
                     sess->topdata++;
                     if ( sess->topdata > WLocalIO::topdataUser )
                     {
@@ -840,7 +841,7 @@ void WLocalIO::skey(char ch)
                     }
                     UpdateTopScreen();
                     break;
-                case 61:                          /* F3 */
+                case F3:                          /* F3 */
                     if ( sess->using_modem )
                     {
                         incom = !incom;
@@ -848,15 +849,15 @@ void WLocalIO::skey(char ch)
                         tleft( false );
                     }
                     break;
-                case 62:                          /* F4 */
+                case F4:                          /* F4 */
                     chatcall = false;
                     UpdateTopScreen();
                     break;
-                case 63:                          /* F5 */
+                case F5:                          /* F5 */
                     hangup = true;
                     app->comm->dtr( false );
                     break;
-                case 88:                          /* Shift-F5 */
+                case SF5:                          /* Shift-F5 */
                     i1 = (rand() % 20) + 10;
                     for (i = 0; i < i1; i++)
                     {
@@ -865,26 +866,26 @@ void WLocalIO::skey(char ch)
                     hangup = true;
                     app->comm->dtr( false );
                     break;
-                case 98:                          /* Ctrl-F5 */
+                case CF5:                          /* Ctrl-F5 */
                     sess->bout << "\r\nCall back later when you are there.\r\n\n";
                     hangup = true;
                     app->comm->dtr( false );
                     break;
-                case 64:                          /* F6 */
+                case F6:                          /* F6 */
                     ToggleSysopAlert();
                     tleft( false );
                     break;
-                case 65:                          /* F7 */
+                case F7:                          /* F7 */
                     sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() -
                                                  static_cast<float>( 5.0 * SECONDS_PER_MINUTE_FLOAT ) );
                     tleft( false );
                     break;
-                case 66:                          /* F8 */
+                case F8:                          /* F8 */
                     sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() +
                                                  static_cast<float>( 5.0 * SECONDS_PER_MINUTE_FLOAT ) );
                     tleft( false );
                     break;
-                case 67:                          /* F9 */
+                case F9:                          /* F9 */
                     if ( sess->thisuser.GetSl() != 255 )
                     {
                         if ( sess->GetEffectiveSl() != 255)
@@ -899,7 +900,7 @@ void WLocalIO::skey(char ch)
                         tleft( false );
                     }
                     break;
-                case 68:                          /* F10 */
+                case F10:                          /* F10 */
                     if (chatting == 0)
                     {
                         if (syscfg.sysconfig & sysconfig_2_way)
@@ -916,12 +917,7 @@ void WLocalIO::skey(char ch)
                         chatting = 0;
                     }
                     break;
-/* No need on a multi-tasking OS
-                case 93:                          // Shift-F10
-                    ExecuteTemporaryCommand(getenv("COMSPEC"));
-                    break;
-*/
-                case 103:                         /* Ctrl-F10 */
+                case CF10:                         /* Ctrl-F10 */
                     if (chatting == 0)
                     {
                         chat1("", false);
@@ -931,21 +927,21 @@ void WLocalIO::skey(char ch)
                         chatting = 0;
                     }
                     break;
-                case 71:                          /* HOME */
+                case HOME:                          /* HOME */
                     if (chatting == 1)
                     {
                         chat_file = !chat_file;
                     }
                     break;
                 default:
-                    alt_key( static_cast<unsigned char>( ch ) );
+                    alt_key( nKeyCode );
                     break;
                 }
             }
         }
         else
         {
-            alt_key((unsigned char) ch);
+            alt_key( nKeyCode );
         }
     }
 }
@@ -1320,7 +1316,7 @@ unsigned char WLocalIO::getchd1()
 
 void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc)
 {
-    *cc = (char) curatr;
+    *cc = static_cast<char>( curatr );
     strcpy(xl, endofline);
     {
         WORD Attr[80];
@@ -1335,7 +1331,7 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc)
 
         for (int i = 0; i < len; i++)
         {
-            atr[i] = (char) Attr[i]; // atr is 8bit char, Attr is 16bit
+            atr[i] = static_cast<char>( Attr[i] ); // atr is 8bit char, Attr is 16bit
         }
     }
     cl[app->localIO->WhereX()]	= 0;

@@ -353,7 +353,7 @@ char xlate[] =
 };
 
 
-char WLocalIO::scan_to_char(unsigned char ch)
+char WLocalIO::scan_to_char( int nKeyCode )
 {
     if ((ch >= 16) && (ch <= 50))
     {
@@ -366,7 +366,7 @@ char WLocalIO::scan_to_char(unsigned char ch)
 }
 
 
-void WLocalIO::alt_key(unsigned char ch)
+void WLocalIO::alt_key( int nKeyCode )
 {
 }
 
@@ -439,8 +439,8 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc)
 {
 	*cl = 0;
 	*atr= 0;
-	*cc = (char) curatr;
-	strcpy(xl, endofline);
+	*cc = static_cast<char>( curatr );
+	strcpy( xl, endofline );
 }
 
 

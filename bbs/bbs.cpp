@@ -40,9 +40,17 @@ extern int last_time_c;
 //
 
 
-const int WBbsApp::exitLevelOK      = 0;
-const int WBbsApp::exitLevelNotOK   = 1;
-const int WBbsApp::exitLevelQuit    = 2;
+const int WBbsApp::exitLevelOK          = 0;
+const int WBbsApp::exitLevelNotOK       = 1;
+const int WBbsApp::exitLevelQuit        = 2;
+
+const int WBbsApp::shutdownNone         = 0;
+const int WBbsApp::shutdownThreeMinutes = 1;
+const int WBbsApp::shutdownTwoMinutes   = 2;
+const int WBbsApp::shutdownOneMinute    = 3;
+const int WBbsApp::shutdownImmediate    = 4;
+
+
 
 
 #ifndef _UNIX
@@ -50,7 +58,7 @@ void WBbsApp::GetCaller()
 {
     sess->SetMessageAreaCacheNumber( 0 );
     sess->SetFileAreaCacheNumber( 0 );
-    sess->bbsshutdown = 0;
+    SetShutDownStatus( WBbsApp::shutdownNone );
     wfc_init();
     cid_num[0] = 0;
     cid_name[0] = 0;
@@ -312,7 +320,7 @@ int WBbsApp::doWFCEvents()
             case 'B':
                 if ( AllowLocalSysop() )
                 {
-                    write_inst(INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE);
+                    write_inst( INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE );
                     holdphone( true );
                     boardedit();
                     cleanup_net();
@@ -1521,15 +1529,17 @@ void WBbsApp::ShowUsage()
 
 WBbsApp::WBbsApp()
 {
-    comm				= NULL;
-    sess				= new WSession( this );
-    localIO				= new WLocalIO();
-    statusMgr			= new StatusMgr();
-    userManager			= new WUserManager();
-    m_nOkLevel			= WBbsApp::exitLevelOK;
-    m_nErrorLevel		= WBbsApp::exitLevelNotOK;
-    m_nInstance			= 1;
-	m_bUserAlreadyOn	= false;
+    comm				    = NULL;
+    sess				    = new WSession( this );
+    localIO				    = new WLocalIO();
+    statusMgr			    = new StatusMgr();
+    userManager			    = new WUserManager();
+    m_nOkLevel			    = WBbsApp::exitLevelOK;
+    m_nErrorLevel		    = WBbsApp::exitLevelNotOK;
+    m_nInstance			    = 1;
+	m_bUserAlreadyOn	    = false;
+    m_nBbsShutdownStatus    = WBbsApp::shutdownNone;
+    m_fShutDownTime         = 0.0;
 
     WFile::SetLogger( this );
     WFile::SetDebugLevel( sess->GetGlobalDebugLevel() );

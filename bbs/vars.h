@@ -77,7 +77,6 @@ __EXTRN__ int	ansiptr,
 				fsenttoday,
 				fwaiting,
 				lines_listed,
-				ltime,
 				questused[20],
 				nsp;
 
