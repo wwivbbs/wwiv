@@ -1,0 +1,314 @@
+
+   These routines are intended to be incorportated into other programs,
+   and do not constitute a zmodem program by themselves, although a
+   demo zmodem program that uses these routines has been included.
+
+   All information pertaining to a transfer session is kept in a data
+   structure defined by the caller.  This makes it possible for the
+   caller to drive multiple simultaneous sessions.
+
+   Caller provides I/O, timing and query routines.  Caller remains
+   in control at all times.  Typical use is to call these routines
+   from a select(2) loop.
+
+   Overview:
+
+    Transmit files:
+
+      1 Init ZModem structure and open communications channel.
+      2 Call ZmodemTInit() to begin protocol.
+      3 Read characters from remote end and pass them to
+	ZmodemRcv() until ZmodemRcv() returns ZmDone or an error.
+      4 Call ZmodemTFile() to begin transfer of a file.
+      5 Read characters from remote end and pass them to
+	ZmodemRcv() until ZmodemRcv() returns ZmDone or an error.
+      6 repeat steps 4&5 for all files.
+      7 Call ZmodemTFinish() to indicate that all files have been
+	transfered.
+      8 Read characters from remote end and pass them to
+	ZmodemRcv() until ZmodemRcv() returns ZmDone or an error.
+
+    Receive files:
+
+      1 Init ZModem structure and open communications channel.
+      2 Call ZmodemRInit() to begin protocol.
+      3 Read characters from remote end and pass them to
+	ZmodemRcv() until ZmodemRcv() returns ZmDone or an error.
+
+
+
+   In detail:
+
+   1) Create a ZModem structure as defined below and fill it in.
+
+      'ifd', 'ofd' are the file descriptors used for input and output.
+	The interpretation of ifd and ofd is entirely up to the calling
+	routines, since the caller will be providing I/O functions.
+
+      'zrinitflags' is composed of the flags described below.
+	They describe the receive channel capabilities
+	and affect how the protocol will be carried out.
+	Define these to receive files.  When sending files, these
+	flags will be defined from the remote end.
+
+      'zsinitflags' is composed of the flags described below.
+	They describe the transmit channel capabilities
+	and affect how the protocol will be carried out.
+	Define these to send files.  When receiving files, these
+	flags will be defined from the remote end.
+
+      'attn': For transmit, this is the optional nul-terminated
+	attention string to be sent by the receiver to interrupt the
+	transmission.  For example, it might simply contain ^O to flush
+	the buffers, or it might interrupt the sending program.  Caller
+	needs to handle this interrupt properly and call ZmodemAttention().
+
+	For receive, this is the optional nul-terminated attention string
+	defined at the remote end.  Caller needs to provide a function that
+	can execute this sequence.
+
+      'timeout' is read-only, set by the zmodem package.  It is the
+	timeout value in seconds.  If this much time passes without
+	anything being received, caller should call the ZmodemTimeout()
+	function.  Note that timeout may be zero, in which case the
+	ZTimeout function should be called immediately if no characters
+	are ready to be received.
+
+      'packetsize' is set to the preferred data packet size.  Define
+	this when sending files.  Recommended length values are 256
+	bytes below 2400 bps, 512 at 2400 bps, and 1024 above 4800 bps
+	or when the data link is known to be relatively error free.
+	Ignored during receive.
+
+      'bufsize' is set to the size of the receive buffer size.  Define
+	this when receiving files.  When sending files, this will be
+	defined at the other end.
+
+      'windowsize' is used to prevent network connections from
+	buffering too many characters during transmit.  Setting
+	'windowsize' to nonzero causes zmodem to request status reports
+	from the receiver during transmit, and to pause if more than
+	this many bytes have been sent but not yet acknowledged.  Set
+	to zero to turn off windowing.  Ignored during receive.
+
+      Other fields are used to track the internal state of the zmodem
+      driver functions.
+
+     Since this is a source package, you are, of course, free to extend
+     the ZModem structure as you see fit.
+
+
+   2) Define the following functions:
+
+	int
+	ZXmitStr(u_char *str, int len, ZModem *info)
+		Transmit a buffer.  Return 0 on success, ZmErrSys on error.
+
+	void
+	ZIFlush(ZModem *info)
+		Flush all unread input on receive channel.  Do nothing if
+		this is not possible.
+
+	void
+	ZOFlush(ZModem *info)
+		Flush all buffered but not-yet-transmitted output
+		on transmit channel.  Do nothing if this is not possible.
+
+	int
+	ZAttn(ZModem *info)
+		Send attention signal defined in ZModem->attn.  Do
+		nothing if this field is NULL.  Otherwise, this field
+		is a nul-terminated character string to be
+		transmitted.  There are two special characters defined
+		below: ATTNBRK (0335) indicates that a BREAK signal
+		should be sent, and ATTNPSE (0336) represents a
+		1-second pause.
+
+	void
+	ZFlowControl(int onoff, ZModem *info)
+		Turn flow control on or off depending on the onoff flag.
+
+	void
+	ZStatus(int type, int value, char *status)
+		Called to provide status information.  Ignore or display
+		at your option.  Status string is not static, so copy
+		it if you need it beyond this call.  Type is defined
+		below under "ZStatus() types".
+
+	FILE *
+	ZOpenFile(char *name, u_long crc, ZModem *info)
+
+		Called when receiving files, this function decides
+		whether or not to accept the specified file, and
+		if so, opens it for writing and returns the stdio
+		file handle.  If this function decides not to accept
+		the file, or cannot open the file, it returns NULL
+		and the remote sender is told to skip this file.
+
+		info->f0-f3 are the transfer flags, described below under
+		"ZFILE transfer flags".  These describe the type of
+		transfer desired (binary/ascii), and conditions for the
+		transfer, such as 'transfer if source newer or longer'.
+
+		info->len is the length of the file in bytes.  info->date is
+		the last modification date of the file, in seconds since
+		1-jan-1970.  info->mode is the unix file mode + 01000000, or
+		zero if not known.  info->filesRem and info->bytesRem are the
+		number of files and bytes remaining to be transferred
+		if known, zero otherwise.  'crc' is the file crc-32 value.
+		This is only provided if F1 contains ZMCRC.
+
+	int
+	ZWriteFile(u_char *buffer, int len, FILE *file, ZModem *info)
+		Write a buffer of data to the file.  Normally, you would
+		simply call fwrite(buffer, 1, len, file), but you may
+		want to translate line endings, etc.  File transfer
+		flags are available as info->f0,f1,f2,f3.
+
+		Return 0 on success, ZmErrSys on failure, with errno
+		describing the failure.
+
+
+	int
+	ZCloseFile(ZModem *info)
+		Close file after successful completion.  File modification
+		date and modes should be set at this time.	
+
+	void
+	ZIdleStr(u_char *buffer, int len, ZModem *info)
+		Called to pass text that is received out-of-protocol.
+		This function may ignore or display this text at your
+		option.
+
+
+  3) Open the communications channel.
+
+	If possible, this should be a full-duplex channel with full
+	8-bit transmission.  Hardware flow control and/or XON/XOFF
+	flow control should be enabled.
+
+
+  4) Call these routines:
+
+	All functions return 0 on success, nonzero on failure.  See
+	"error code definitions", below.
+
+    Send:
+
+	int
+	ZmodemTInit(ZModem *info)
+		Begin a Zmodem transmit session.
+
+	int
+	ZmodemRcv(u_char *buffer, int len, ZModem *info)
+		Call whenever characters are received.  If this function
+		returns ZmDone, previous function has completed successfully,
+		either call ZmodemTFile() to start next file, or call
+		ZmodemTFinish() to terminate the session.
+
+	int
+	ZmodemTimeout(ZModem *info)
+		Call whenever the timeout period expires and no
+		characters have been received.
+
+	int
+	ZmodemAttention(ZModem *info)
+		Call whenever the attention sequence has been received
+		from the remote end.  It is safe to call this function
+		from an interrupt handler.
+
+	int
+	ZmodemTFile(char *filename, char *rfilename, 
+	  u_char f0,f1,f2,f3, int filesRem, int bytesRem, ZModem *info)
+		Begin transmitting a file.  If filename is not NULL,
+		then this function will open it.  Otherwise, info->file
+		must point to a stdio stream that is open for input.
+		It is preferable to provide the filename, so that
+		Zmodem can transmit file size and other information.
+		'rfilename' is the filename given to the remote end.
+		This may be the same as filename, the file part of
+		filename, or something else alltogether.  'rfilename'
+		must not be longer than the smallest data packet the
+		remote end might be willing to receive (about 200
+		characters).  f0-f3 are transfer flags, see "ZCBIN"
+		below.  'filesRem' and 'bytesRem' are the number of files
+		and bytes remaining to be transmitted, if known; zero if
+		not.
+
+		If 'filename' cannot be accessed, ZmodemTFile() returns
+		ZmErrCantOpen.  The link is still established, so you
+		need to either proceed with the next file or call
+		ZmodemTFinish().
+
+	int
+	ZmodemTFinish(ZModem *info)
+		Call after final file transfer has completed successfully.
+
+	int
+	ZmodemAbort(ZModem *info)
+		Call to abort transfer.  Physical connection remains
+		open until you close it.
+
+
+    Receive:
+
+	int
+	ZmodemRInit(ZModem *info)
+		Call to get ready to receive first file.  This function
+		will inform the sender that we are ready to receive.
+
+	int
+	ZmodemRcv(u_char *buffer, int len, ZModem *info)
+		Call whenever characters are received.  If this
+		function returns ZmDone, all file transfers have
+		completed successfully.
+
+	int
+	ZmodemTimeout(ZModem *info)
+		Call whenever the timeout period expires and no
+		characters have been received.
+
+	int
+	ZmodemAbort(ZModem *info)
+		Call to abort transfer.
+
+    Ymodem and Xmodem:
+
+	int YmodemTInit(ZModem *info)
+	int XmodemTInit(ZModem *info)
+	int YmodemRInit(ZModem *info)
+	int XmodemRInit(ZModem *info)
+		Same semantics as ZmodemTInit and ZmodemRInit.  It is
+		not normally necessary to call the Ymodem*Init() functions
+		as the Zmodem protocol will automatically switch to Ymodem
+		when needed.
+
+
+    Utility:
+
+	u_long
+	FileCrc(char *name)
+		Return CRC-32 of file.
+
+  5) Return Values:
+
+	ZmDone		Done.  Proceed with next file or ZmodemTFinish
+			(transmit) or exit (receive).
+
+	ZmErrInt	Internal error.  Link has been closed.
+	ZmErrSys	System error, see errno.  Link is closed.
+	ZmErrNotOpen	not used.
+	ZmFileTooLong	not used.
+	ZmFileCantWrite	not used.
+	ZmErrCantOpen	Can not open file, see errno.  Link is still open.
+	ZmErrInitTo	Transmitter failed to respond to init req.  Link closed.
+	ZmErrSequence	Packet received out of sequence.  Link is closed.
+	ZmErrCancel	Cancelled by remote end.  Link is closed.
+	ZmErrRcvTo	Remote end timed out during transfer.  Link is closed.
+	ZmErrSndTo	Remote end timed out during transfer.  Link is closed.
+	ZmErrCmdTo	Remote end timed out during transfer.  Link is closed.
+
+	Note that "link is closed" means that the remote end is (presumably)
+	no longer operating.  The actual communications channel is not
+	closed unless you close it.  "Link is still open" means that the
+	remote end is still ready to receive the next file.

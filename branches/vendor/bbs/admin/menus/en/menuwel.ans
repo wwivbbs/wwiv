@@ -1,0 +1,11 @@
+[40m[2J[0;1;36mWWIV v5.00 uses a new menu system that allows you to select from a variety
+of menu types, providing you with a new level of individual configuration.
+Each menu set provides an option for both standard and pulldown styles, as
+well as a "hot-key" support toggle.
+
+[0;1;35mAfter selecting your default menu set, you can change them by typing [0;1;31m//CM
+[0;1;35m('Change Menus') from the main menu. Remember, if hotkey support is turned
+off, you do not need the '//' before multi-letter commands.
+
+[0;1;32mPlease select a menu set from the menus listed below:
+[0m[255D

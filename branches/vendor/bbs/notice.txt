@@ -1,0 +1,6 @@
+ =========================================================================
+ ==      Example file for use with the Apache License, Version 2.0      ==
+ =========================================================================
+
+   This product includes software developed by
+   WWIV Software Services (http://wss.wwiv.com).
