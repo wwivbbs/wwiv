@@ -40,7 +40,7 @@ void* BbsAllocWithComment( size_t lNumBytes, char *pszComment )
     if ( !pBuffer )
     {
 		char szBuffer[ 255 ];
-        sprintf( szBuffer, "Insufficient memory (%ld bytes) for %s.\n", lNumBytes, pszComment );
+        snprintf( szBuffer, sizeof( szBuffer ), "Insufficient memory (%ld bytes) for %s.\n", lNumBytes, pszComment );
 		std::cout << szBuffer;
 		WWIV_OutputDebugString( szBuffer );
         app->AbortBBS();
@@ -68,7 +68,7 @@ void *BbsAllocA( size_t lNumBytes )
     {
         sess->bout << "\r\nNot enough memory, needed " << lNumBytes << " bytes.\r\n\n";
         char szLogLine[ 255 ];
-        sprintf( szLogLine, "!!! Ran out of memory, needed %ld bytes !!!", lNumBytes );
+        snprintf( szLogLine, sizeof( szLogLine ), "!!! Ran out of memory, needed %ld bytes !!!", lNumBytes );
         sysoplog( szLogLine );
 		WWIV_OutputDebugString( szLogLine );
     }

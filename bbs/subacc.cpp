@@ -128,10 +128,10 @@ bool iscan1(int si, bool quick)
     believe_cache = false;
 
     // set sub filename
-    sprintf( subdat_fn, "%s%s.sub", syscfg.datadir, subboards[si].filename );
+    snprintf( subdat_fn, sizeof( subdat_fn ), "%s%s.sub", syscfg.datadir, subboards[si].filename );
 
     // open file, and create it if necessary
-    if (!WFile::Exists(subdat_fn))
+    if ( !WFile::Exists( subdat_fn ) )
     {
         if ( !open_sub( true ) )
         {

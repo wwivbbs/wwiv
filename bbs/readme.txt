@@ -46,11 +46,17 @@ GENERAL INFORMATION:
     Synchronet for the VXD/VDD and also tons of help using it), you MUST
     get the WWIVSYNC.ZIP and unzip it into your WWIV50 directory.
 
+
 ==============================================================================
 
-LABEL: WWIV-5_0_
-DATE:  
+LABEL: WWIV-5_0_58
+DATE:  ??/??/????
 
+Rushfan - Fixed a typo/bug in the sending the initial telnet sequences, look
+          for echo being broken or linemode being enabled on some lesser
+          telnet clients
+Rushfan - More conversion of sprintf to snprintf and replacing hard coded sizes
+          with sizeof for non-pointer strings.
 Atani   - Fixed linux build, added MAX_PATH to WFile.h (if not defined)
 
 ==============================================================================

@@ -47,7 +47,7 @@ void print_quest(int mapp, int map[21])
         voteFile.Read( &v, sizeof( votingrec ) );
 
         char szBuffer[255];
-        sprintf( szBuffer, "|12%c |#2%2d|#7) |#1%s",
+        snprintf( szBuffer, sizeof( szBuffer ), "|12%c |#2%2d|#7) |#1%s",
                  sess->thisuser.GetVote( map[ i ] ) ? ' ' : '*', i, v.question );
         pla( szBuffer, &abort );
     }

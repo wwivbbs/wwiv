@@ -375,16 +375,16 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
                 xtc[tp++] = static_cast< char >( '0' + ( i1 / 100 ) );
             }
         }
-        sprintf( ss1[i].keys, "%d", i1++ );
+        snprintf( ss1[i].keys, sizeof( ss1[i].keys ), "%d", i1++ );
     }
 
 
-    xdc[dp] = 0;
-    xtc[tp] = 0;
+    xdc[dp] = '\0';
+    xtc[tp] = '\0';
 
-    for (i1 = 0; (i1 < ns) && (ss1[i1].subnum != -1); i1++)
+    for ( i1 = 0; ( i1 < ns ) && ( ss1[i1].subnum != -1 ); i1++ )
     {
-        if (ss1[i1].subnum == osub)
+        if ( ss1[i1].subnum == osub )
         {
             break;
         }

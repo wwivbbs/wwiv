@@ -117,9 +117,9 @@ void stuff_in( char *pszOutCommandLine, const char *pszInCommandLine,
                 break;
             case 'K':
                 {
-                    char szFileName[MAX_PATH];
-                    sprintf(szFileName,"%s%s", syscfg.gfilesdir, COMMENT_TXT);
-                    strcat(pszOutCommandLine, szFileName);
+                    char szFileName[ MAX_PATH ];
+                    snprintf( szFileName, sizeof( szFileName ), "%s%s", syscfg.gfilesdir, COMMENT_TXT );
+                    strcat( pszOutCommandLine, szFileName );
                 }
                 break;
             case 'P':
@@ -209,7 +209,7 @@ static void stuff_in_num( char *pszOutBuffer, char *pszFormatString,
 	WWIV_ASSERT( pszOutBuffer );
 	WWIV_ASSERT( pszFormatString );
 
-    sprintf( szTemp, pszFormatString, nNumber );
+    snprintf( szTemp, sizeof( szTemp ), pszFormatString, nNumber );
     strcat( pszOutBuffer, szTemp );
 }
 

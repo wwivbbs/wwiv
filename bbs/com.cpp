@@ -624,7 +624,7 @@ int bprintf( const char *pszFormatText,... )
     char szBuffer[ 2048 ];
 
     va_start( ap, pszFormatText );
-    vsnprintf( szBuffer, 2048, pszFormatText, ap );
+    vsnprintf( szBuffer, sizeof( szBuffer ), pszFormatText, ap );
     va_end( ap );
     return bputs( szBuffer );
 }
@@ -640,7 +640,7 @@ void DisplayLiteBar( const char *pszFormatText,... )
     char s[1024], s1[1024];
 
     va_start( ap, pszFormatText );
-    vsnprintf( s, 1024, pszFormatText, ap );
+    vsnprintf( s, sizeof( s ), pszFormatText, ap );
     va_end( ap );
 
     if ( strlen( s ) % 2 != 0 )

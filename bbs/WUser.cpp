@@ -245,40 +245,40 @@ bool WUserManager::WriteUser( WUser *pUser, int nUserNumber )
 
 char *WUser::nam( int nUserNumber ) const
 {
-    static char s_szNamBuffer[81];
+    static char s_szNamBuffer[ 255 ];
     bool f = true;
     unsigned int p = 0;
     for ( p = 0; p < strlen( this->GetName() ); p++ )
     {
         if ( f )
         {
-            unsigned char* ss = reinterpret_cast<unsigned char*>( strchr( reinterpret_cast<char*>( translate_letters[1] ), data.name[p] ) );
+            unsigned char* ss = reinterpret_cast<unsigned char*>( strchr( reinterpret_cast<char*>( translate_letters[ 1 ] ), data.name[ p ] ) );
             if ( ss )
             {
                 f = false;
             }
-            s_szNamBuffer[p] = data.name[p];
+            s_szNamBuffer[ p ] = data.name[ p ];
         }
         else
         {
-            char* ss = strchr( reinterpret_cast<char*>( translate_letters[1] ), data.name[p] );
+            char* ss = strchr( reinterpret_cast<char*>( translate_letters[ 1 ] ), data.name[ p ] );
             if ( ss )
             {
-                s_szNamBuffer[p] = locase( data.name[p] );
+                s_szNamBuffer[ p ] = locase( data.name[ p ] );
             }
             else
             {
-                if ( ( data.name[p] >= ' ' && data.name[p] <= '/' ) && data.name[p] != 39 )
+                if ( ( data.name[ p ] >= ' ' && data.name[ p ] <= '/' ) && data.name[ p ] != 39 )
                 {
                     f = true;
                 }
-                s_szNamBuffer[p] = data.name[p];
+                s_szNamBuffer[ p ] = data.name[ p ];
             }
         }
     }
-    s_szNamBuffer[p++] = SPACE;
-    s_szNamBuffer[p++] = '#';
-    sprintf( &s_szNamBuffer[p], "%d", nUserNumber );
+    s_szNamBuffer[ p++ ] = SPACE;
+    s_szNamBuffer[ p++ ] = '#';
+    snprintf( &s_szNamBuffer[p], sizeof( s_szNamBuffer ) - p, "%d", nUserNumber );
     return s_szNamBuffer;
 }
 
@@ -290,8 +290,8 @@ char *WUser::nam1( int nUserNumber, int nSystemNumber ) const
     strcpy( s_szNamBuffer, nam( nUserNumber ) );
     if ( nSystemNumber )
     {
-        char szBuffer[10];
-        sprintf( szBuffer, " @%u", nSystemNumber );
+        char szBuffer[ 10 ];
+        snprintf( szBuffer, sizeof( szBuffer ), " @%u", nSystemNumber );
         strcat( s_szNamBuffer, szBuffer );
     }
     return s_szNamBuffer;

@@ -58,9 +58,9 @@ void WLocalIO::set_global_handle( bool bOpenFile, bool bOnlyUpdateVariable )
     {
         if (!fileGlobalCap.IsOpen())
         {
-            sprintf(szFileName, "%sglobal-%d.txt", syscfg.gfilesdir, app->GetInstanceNumber());
-            fileGlobalCap.SetName(szFileName);
-            bool bOpen = fileGlobalCap.Open(WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
+            snprintf( szFileName, sizeof( szFileName ), "%sglobal-%d.txt", syscfg.gfilesdir, app->GetInstanceNumber() );
+            fileGlobalCap.SetName( szFileName );
+            bool bOpen = fileGlobalCap.Open( WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
             global_ptr = 0;
             global_buf = static_cast<char *>( BbsAllocA(GLOBAL_SIZE) );
             if (!bOpen || (!global_buf))
@@ -136,8 +136,8 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr)
             set_global_handle( false );
             x_only = true;
             wx = 0;
-            sprintf(szTempFileName, "%s%s", syscfgovr.tempdir, pszFileName);
-            fileGlobalCap.SetName(szTempFileName);
+            snprintf( szTempFileName, sizeof( szTempFileName ), "%s%s", syscfgovr.tempdir, pszFileName );
+            fileGlobalCap.SetName( szTempFileName );
             if (ovwr)
             {
                 fileGlobalCap.Open(WFile::modeBinary | WFile::modeText | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);

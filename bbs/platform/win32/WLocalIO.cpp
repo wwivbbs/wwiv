@@ -516,7 +516,7 @@ int  WLocalIO::LocalPrintf( const char *pszFormattedText, ... )
     char szBuffer[ 1024 ];
 
     va_start( ap, pszFormattedText );
-    int nNumWritten = vsnprintf( szBuffer, 1024, pszFormattedText, ap );
+    int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
     va_end( ap );
     LocalFastPuts( szBuffer );
     return nNumWritten;
@@ -529,7 +529,7 @@ int  WLocalIO::LocalXYPrintf( int x, int y, const char *pszFormattedText, ... )
     char szBuffer[ 1024 ];
 
     va_start( ap, pszFormattedText );
-    int nNumWritten = vsnprintf( szBuffer, 1024, pszFormattedText, ap );
+    int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
     va_end( ap );
     LocalXYPuts( x, y, szBuffer );
     return nNumWritten;
@@ -542,7 +542,7 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
     char szBuffer[ 1024 ];
 
     va_start( ap, pszFormattedText );
-    int nNumWritten = vsnprintf( szBuffer, 1024, pszFormattedText, ap );
+    int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
     va_end( ap );
     setc( nAttribute );
     LocalXYPuts( x, y, szBuffer );
