@@ -46,6 +46,12 @@ GENERAL INFORMATION:
     Synchronet for the VXD/VDD and also tons of help using it), you MUST
     get the WWIVSYNC.ZIP and unzip it into your WWIV50 directory.
 
+==============================================================================
+
+LABEL: WWIV-5_0_
+DATE:  
+
+Atani   - Fixed linux build, added MAX_PATH to WLocalIO.h (if not defined)
 
 ==============================================================================
 
