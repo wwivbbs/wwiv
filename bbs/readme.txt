@@ -58,6 +58,8 @@ Rushfan - Fixed a typo/bug in the sending the initial telnet sequences, look
 Rushfan - More conversion of sprintf to snprintf and replacing hard coded sizes
           with sizeof for non-pointer strings.
 Atani   - Fixed linux build, added MAX_PATH to WFile.h (if not defined)
+Rushfan - Fixed bug [ 1059251 ] user can't login -- Issue with the phone number
+          verification support.  This should be fixed now.
 
 ==============================================================================
 
