@@ -112,7 +112,7 @@ void WBbsApp::GetCaller()
 
     int lokb = doWFCEvents();
 
-    If ( lokb )
+    if ( lokb )
     {
         if ( ok_modem_stuff )
         {
