@@ -102,7 +102,7 @@ void LoggingPage::OnButtonBrowseLogfilename()
 	
 	// Create an Open dialog; the default file name extension is ".my".
 	DWORD dwFlags = OFN_HIDEREADONLY;
-	CFileDialog fileDlg (TRUE, "log", m_strFileName, dwFlags, szFilters, this);
+	CFileDialog fileDlg (TRUE, _T( "log" ), m_strFileName, dwFlags, szFilters, this);
 	
 	// Display the file dialog. When user clicks OK, fileDlg.DoModal() 
 	// returns IDOK.

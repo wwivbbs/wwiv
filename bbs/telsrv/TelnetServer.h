@@ -30,7 +30,7 @@ class TelnetServer
 public:
 	SOCKET m_Socket;
 	HANDLE m_hExit;
-	NodeStatus* m_nodeStatus;
+	NodeStatus* m_pNodeStatus;
 	NodeStatus* GetNodeStatus();
 
 	BOOL StopServer();
@@ -46,5 +46,6 @@ private:
 	unsigned long m_dwListeningThread;
     CWWIVTelnetServerDoc *m_pDoc;
     BOOL LogMessage( LPCTSTR pszMessage );
+public:
 };
 

@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0361 */
-/* at Wed Dec 10 20:03:53 2003
+/* at Sun Oct 03 20:59:17 2004
  */
 /* Compiler settings for .\WWIVTelnetServer.odl:
     Oicf, W1, Zp8, env=Win32 (32b run)
