@@ -54,7 +54,7 @@ void show_chains(int *mapp, int *map)
     nl();
     bool abort = false;
     bool next = false;
-    if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg )
     {
         sprintf( szBuffer, "|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage" );
         pla( szBuffer, &abort );
@@ -74,7 +74,7 @@ void show_chains(int *mapp, int *map)
             strcat( szBuffer, ". " );
             if ( okansi() )
             {
-                app->userManager->ReadUser( &user, chains_reg[map[i]].regby[0] );
+                GetApplication()->GetUserManager()->ReadUser( &user, chains_reg[map[i]].regby[0] );
                 sprintf( szBuffer, " |#%dº|10%3d|#%dº|#1%-41s|#%dº|%2.2d%-21s|#%dº|#1%5d|#%dº",
 						 FRAME_COLOR,
 						 i + 1,
@@ -93,7 +93,7 @@ void show_chains(int *mapp, int *map)
                     {
                         if ( chains_reg[map[i]].regby[i1] != 0 )
                         {
-                            app->userManager->ReadUser( &user, chains_reg[map[i]].regby[i1] );
+                            GetApplication()->GetUserManager()->ReadUser( &user, chains_reg[map[i]].regby[i1] );
                             sprintf( szBuffer, " |#%dº   º%-41sº|#2%-21s|#%º%5.5sº",
                                      FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " " );
                             pla( szBuffer, &abort );
@@ -103,7 +103,7 @@ void show_chains(int *mapp, int *map)
             }
             else
             {
-                app->userManager->ReadUser( &user, chains_reg[map[i]].regby[0] );
+                GetApplication()->GetUserManager()->ReadUser( &user, chains_reg[map[i]].regby[0] );
                 sprintf( szBuffer, " |%3d|%-41.41s|%-21.21s|%5d|",
 						 i + 1, chains[map[i]].description,
 						 ( chains_reg[map[i]].regby[0] ) ? user.GetName() : "Available",
@@ -115,7 +115,7 @@ void show_chains(int *mapp, int *map)
                     {
                         if ( chains_reg[map[i]].regby[i1] != 0 )
                         {
-                            app->userManager->ReadUser( &user, chains_reg[map[i]].regby[i1] );
+                            GetApplication()->GetUserManager()->ReadUser( &user, chains_reg[map[i]].regby[i1] );
                             sprintf( szBuffer, " |   |                                         |%-21.21s|     |",
 									 (chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available" );
                             pla( szBuffer, &abort );
@@ -194,7 +194,7 @@ void run_chain( int nChainNumber )
         }
     }
     write_inst( INST_LOC_CHAINS, static_cast< unsigned short >( nChainNumber + 1 ), INST_FLAGS_NONE );
-    if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg )
     {
         chains_reg[nChainNumber].usage++;
         WFile regFile( syscfg.datadir, CHAINS_REG );
@@ -237,7 +237,7 @@ void run_chain( int nChainNumber )
 
     ExecuteExternalProgram( szChainCmdLine, flags );
     write_inst( INST_LOC_CHAINS, 0, INST_FLAGS_NONE );
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
 }
 
 
@@ -256,7 +256,7 @@ void do_chains()
         return;
 	}
 
-    app->localIO->tleft( true );
+    GetApplication()->GetLocalIO()->tleft( true );
     int mapp = 0;
     memset( odc, 0, sizeof( odc ) );
     for ( int i = 0; i < sess->GetNumberOfChains(); i++ )
@@ -279,7 +279,7 @@ void do_chains()
 		{
             ok = false;
 		}
-        if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg && ( sess->GetEffectiveSl() < 255 ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg && ( sess->GetEffectiveSl() < 255 ) )
         {
 			chainregrec r = chains_reg[ i ];
             if ( r.maxage )
@@ -319,7 +319,7 @@ void do_chains()
     do
     {
         sess->SetMMKeyArea( WSession::mmkeyChains );
-        app->localIO->tleft( true );
+        GetApplication()->GetLocalIO()->tleft( true );
         nl();
         sess->bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 

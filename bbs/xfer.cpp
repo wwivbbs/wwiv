@@ -128,7 +128,7 @@ bool check_ul_event( int nDirectoryNum, uploadsrec * u )
 
         char szCmdLine[ MAX_PATH ];
         stuff_in(szCmdLine, syscfg.upload_c, create_chain_file(), directories[nDirectoryNum].path, stripfn(u->filename), szComPort, "");
-        ExecuteExternalProgram(szCmdLine, app->GetSpawnOptions( SPWANOPT_ULCHK ) );
+        ExecuteExternalProgram(szCmdLine, GetApplication()->GetSpawnOptions( SPWANOPT_ULCHK ) );
 
 		WFile file( directories[nDirectoryNum].path, stripfn( u->filename ) );
 		if ( !file.Exists() )
@@ -305,13 +305,13 @@ int list_arc_out(const char *pszFileName, const char *pszDirectory)
         nl( 2 );
 		sess->bout << "Archive listing for " << pszFileName << wwiv::endl;
         nl();
-        nRetCode = ExecuteExternalProgram(szArchiveCmd, app->GetSpawnOptions( SPWANOPT_ARCH_L ) );
+        nRetCode = ExecuteExternalProgram(szArchiveCmd, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_L ) );
         nl();
     }
     else
     {
         nl();
-        app->localIO->LocalPuts("Unknown archive: ");
+        GetApplication()->GetLocalIO()->LocalPuts("Unknown archive: ");
         sess->bout << pszFileName;
         nl( 2 );
         nRetCode = 0;
@@ -647,19 +647,19 @@ void print_extended(const char *pszFileName, bool *abort, int numlist, int inden
             {
                 ++numl;
             }
-            else if ( ch != RETURN && app->localIO->WhereX() >= 78 )
+            else if ( ch != RETURN && GetApplication()->GetLocalIO()->WhereX() >= 78 )
             {
                 osan( "\r\n", abort, &next );
                 ch = SOFTRETURN;
             }
         }
-        if ( app->localIO->WhereX() )
+        if ( GetApplication()->GetLocalIO()->WhereX() )
         {
             nl();
         }
         BbsFreeMemory( ss );
     }
-    else if ( app->localIO->WhereX() )
+    else if ( GetApplication()->GetLocalIO()->WhereX() )
     {
         nl();
     }

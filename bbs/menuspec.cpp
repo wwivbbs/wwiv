@@ -70,7 +70,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
     bool ok = true;
     while ( ( nRecordNumber > 0 ) && ok && !hangup )
     {
-        app->localIO->tleft( true );
+        GetApplication()->GetLocalIO()->tleft( true );
 		WFile fileDownload( g_szDownloadFileName );
 		fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
         FileAreaSetRecord( fileDownload, nRecordNumber );
@@ -85,7 +85,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
         bOkToDL = printfileinfo(&u, dn);
 
 
-        if ( strncmp(u.filename, "WWIV4", 5) == 0 && !app->HasConfigFlag( OP_FLAGS_NO_EASY_DL ) )
+        if ( strncmp(u.filename, "WWIV4", 5) == 0 && !GetApplication()->HasConfigFlag( OP_FLAGS_NO_EASY_DL ) )
         {
             bOkToDL = 1;
         }
@@ -136,7 +136,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
 
                 if (syscfg.sysconfig & sysconfig_log_dl)
                 {
-                    app->userManager->ReadUser( &ur, u.ownerusr );
+                    GetApplication()->GetUserManager()->ReadUser( &ur, u.ownerusr );
                     if ( !ur.isUserDeleted() )
                     {
                         if ( date_to_daten( ur.GetFirstOn() ) < static_cast<time_t>( u.daten ) )
@@ -154,7 +154,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
 
             if ( sess->IsUserOnline() )
             {
-                app->localIO->UpdateTopScreen();
+                GetApplication()->GetLocalIO()->UpdateTopScreen();
             }
         }
         else
@@ -269,7 +269,7 @@ bool ValidateDoorAccess( int nDoorNumber )
     {
         return false;
     }
-    if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg && sess->GetEffectiveSl() < 255 )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg && sess->GetEffectiveSl() < 255 )
     {
         chainregrec r = chains_reg[ nDoorNumber ];
         if ( r.maxage )

@@ -110,15 +110,15 @@ WSession::WSession( WBbsApp *pApplication )
 bool WSession::ReadCurrentUser( int nUserNumber, bool bForceRead )
 {
     WWIV_ASSERT( m_pApplication );
-    WWIV_ASSERT( m_pApplication->userManager );
-    return m_pApplication->userManager->ReadUser( &thisuser, nUserNumber, bForceRead );
+    WWIV_ASSERT( m_pApplication->GetUserManager() );
+    return m_pApplication->GetUserManager()->ReadUser( &thisuser, nUserNumber, bForceRead );
 }
 
 
 bool WSession::WriteCurrentUser( int nUserNumber )
 {
     WWIV_ASSERT( m_pApplication );
-    WWIV_ASSERT( m_pApplication->userManager );
-    return m_pApplication->userManager->WriteUser( &thisuser, nUserNumber );
+    WWIV_ASSERT( m_pApplication->GetUserManager() );
+    return m_pApplication->GetUserManager()->WriteUser( &thisuser, nUserNumber );
 }
 

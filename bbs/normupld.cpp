@@ -186,7 +186,7 @@ void normalupload(int dn)
                 u.mask = mask_PD;
             }
         }
-        if ( ok && !app->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
+        if ( ok && !GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
         {
             nl();
             sess->bout << "Checking for same file in other directories...\r\n\n";
@@ -338,17 +338,17 @@ void normalupload(int dn)
 					fileDownload.Close();
                     if (ok == 1)
                     {
-                        app->statusMgr->Lock();
+                        GetApplication()->GetStatusManager()->Lock();
                         ++status.uptoday;
                         ++status.filechange[filechange_upload];
-                        app->statusMgr->Write();
+                        GetApplication()->GetStatusManager()->Write();
                         sysoplogf( "+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
                         nl( 2 );
                         bprintf( "File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio() );
                         nl( 2 );
                         if ( sess->IsUserOnline() )
                         {
-                            app->localIO->UpdateTopScreen();
+                            GetApplication()->GetLocalIO()->UpdateTopScreen();
                         }
                     }
                 }

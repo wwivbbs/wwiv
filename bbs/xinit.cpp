@@ -299,19 +299,19 @@ bool WBbsApp::ReadINIFile()
 
     for ( size_t nTempEventNum = 0; nTempEventNum < NEL( eventinfo ); nTempEventNum++ )
     {
-        app->spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
+        GetApplication()->spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
     }
 
     // put in default WBbsApp::flags
-    app->SetConfigFlags( OP_FLAGS_FIDO_PROCESS );
+    GetApplication()->SetConfigFlags( OP_FLAGS_FIDO_PROCESS );
 
     if ( ok_modem_stuff )
     {
-        app->SetConfigFlag( OP_FLAGS_NET_CALLOUT );
+        GetApplication()->SetConfigFlag( OP_FLAGS_NET_CALLOUT );
     }
     else
     {
-        app->ClearConfigFlag( OP_FLAGS_NET_CALLOUT );
+        GetApplication()->ClearConfigFlag( OP_FLAGS_NET_CALLOUT );
     }
 
     // initialize ini communication
@@ -333,20 +333,20 @@ bool WBbsApp::ReadINIFile()
         //
 
         // pull out event flags
-        for ( size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL( app->spawn_opts ); nTempSpawnOptNum++ )
+        for ( size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL( GetApplication()->spawn_opts ); nTempSpawnOptNum++ )
         {
             if ( nTempSpawnOptNum < NEL( eventinfo ) )
             {
                 if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), nTempSpawnOptNum, eventinfo[nTempSpawnOptNum].name ) ) != NULL )
                 {
-                    app->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
+                    GetApplication()->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
                 }
             }
             else
             {
                 if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), nTempSpawnOptNum, eventinfo[nTempSpawnOptNum].name ) ) != NULL )
                 {
-                    app->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
+                    GetApplication()->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
                 }
             }
         }
@@ -393,13 +393,13 @@ bool WBbsApp::ReadINIFile()
 
 
         // pull out sysinfo_flags
-        app->SetConfigFlags( ini_flags( 'Y', get_key_str, sysinfo_flags, NEL(sysinfo_flags), app->GetConfigFlags() ) );
+        GetApplication()->SetConfigFlags( ini_flags( 'Y', get_key_str, sysinfo_flags, NEL(sysinfo_flags), GetApplication()->GetConfigFlags() ) );
 
         // allow override of WSession::m_nMessageColor
         INI_INIT( INI_STR_MSG_COLOR, m_nMessageColor );
 
         // get asv values
-        if ( app->HasConfigFlag( OP_FLAGS_SIMPLE_ASV ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_SIMPLE_ASV ) )
         {
             INI_GET_ASV("SL", sl, atoi, syscfg.autoval[9].sl);
             INI_GET_ASV("DSL", dsl, atoi, syscfg.autoval[9].dsl);
@@ -408,7 +408,7 @@ bool WBbsApp::ReadINIFile()
             INI_GET_ASV("DAR", dar, str_to_arword, syscfg.autoval[9].dar);
             INI_GET_ASV("RESTRICT", restrict, str2restrict, 0);
         }
-        if ( app->HasConfigFlag( OP_FLAGS_ADV_ASV ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_ADV_ASV ) )
         {
             INI_GET_ADVANCED_ASV("REG_WWIV", reg_wwiv, atoi, 1);
             INI_GET_ADVANCED_ASV("NONREG_WWIV", nonreg_wwiv, atoi, 1);
@@ -418,7 +418,7 @@ bool WBbsApp::ReadINIFile()
 
 
         // get callback values
-        if (app->HasConfigFlag( OP_FLAGS_CALLBACK ) )
+        if (GetApplication()->HasConfigFlag( OP_FLAGS_CALLBACK ) )
         {
             INI_GET_CALLBACK("SL", sl, atoi, syscfg.autoval[2].sl);
             INI_GET_CALLBACK("DSL", dsl, atoi, syscfg.autoval[2].dsl);
@@ -962,7 +962,7 @@ bool WBbsApp::read_names()
     }
     file.Read( smallist, ( sizeof( smalrec ) * status.users ) );
     file.Close();
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     return true;
 }
 
@@ -1029,7 +1029,7 @@ void WBbsApp::read_chains()
         sess->SetNumberOfChains( file.Read( chains, sess->max_chains * sizeof( chainfilerec ) ) / sizeof( chainfilerec ) );
     }
     file.Close();
-    if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
     {
         if ( chains_reg )
         {
@@ -1118,9 +1118,9 @@ bool WBbsApp::read_modem()
         return true;
     }
     char szFileName[ MAX_PATH ];
-    if (app->GetInstanceNumber() > 1)
+    if (GetApplication()->GetInstanceNumber() > 1)
     {
-        snprintf( szFileName, sizeof( szFileName ), "%s%s.%3.3d", syscfg.datadir, MODEM_XXX, app->GetInstanceNumber() );
+        snprintf( szFileName, sizeof( szFileName ), "%s%s.%3.3d", syscfg.datadir, MODEM_XXX, GetApplication()->GetInstanceNumber() );
     }
     else
     {
@@ -1179,7 +1179,7 @@ bool WBbsApp::make_abs_path( char *pszDirectory )
 #endif
     {
         WWIV_GetDir( szOldDirectory, true );
-        app->CdHome();
+        GetApplication()->CdHome();
         WWIV_ChangeDirTo( pszDirectory );
         WWIV_GetDir( pszDirectory, true );
         WWIV_ChangeDirTo( szOldDirectory );
@@ -1193,9 +1193,9 @@ void WBbsApp::InitializeBBS()
 {
     char *ss, szFileName[MAX_PATH], newprompt[ 255 ];
 
-	sess->screenbottom = defscreenbottom = localIO->GetDefaultScreenBottom();
+    sess->screenbottom = defscreenbottom = GetLocalIO()->GetDefaultScreenBottom();
 
-	localIO->LocalCls();
+    GetLocalIO()->LocalCls();
 #if !defined( _UNIX )
     std::cout << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2004, WWIV Software Services.\r\n\n";
 	std::cout << "\r\nInitializing BBS...\r\n";
@@ -1203,9 +1203,9 @@ void WBbsApp::InitializeBBS()
     sess->SetCurrentReadMessageArea( -1 );
     use_workspace = false;
     chat_file = false;
-    localIO->SetSysopAlert( false );
+    GetLocalIO()->SetSysopAlert( false );
     nsp = 0;
-    localIO->set_global_handle( false, true );
+    GetLocalIO()->set_global_handle( false, true );
     bquote = 0;
     equote = 0;
     sess->SetQuoting( false );
@@ -1245,7 +1245,7 @@ void WBbsApp::InitializeBBS()
     if ( bDirectoryInvalid )
     {
         std::cout << "\r\nYour temp dir isn't valid.\r\n";
-        std::cout << "It is now set to: '%" << syscfgovr.tempdir << "'\r\n\n";
+        std::cout << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
         AbortBBS();
     }
     else
@@ -1606,7 +1606,7 @@ void WBbsApp::create_phone_file()
     for ( int nTempUserNumber = 1; nTempUserNumber <= num; nTempUserNumber++ )
     {
         WUser user;
-        app->userManager->ReadUser( &user, nTempUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &user, nTempUserNumber );
         if ( !user.isUserDeleted() )
         {
             p.usernum = nTempUserNumber;

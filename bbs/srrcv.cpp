@@ -203,16 +203,16 @@ void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC )
     bool done = false;
     double tpb = (12.656) / ((double) (modem_speed));
     sess->bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
-    int nOldXPos = app->localIO->WhereX();
-    int nOldYPos = app->localIO->WhereY();
-    app->localIO->LocalXYPuts(52, 0, "³ Filename :               ");
-    app->localIO->LocalXYPuts(52, 1, "³ Xfer Time:               ");
-    app->localIO->LocalXYPuts(52, 2, "³ File Size:               ");
-    app->localIO->LocalXYPuts(52, 3, "³ Cur Block: 1 - 1k        ");
-    app->localIO->LocalXYPuts(52, 4, "³ Consec Errors: 0         ");
-    app->localIO->LocalXYPuts(52, 5, "³ Total Errors : 0         ");
-    app->localIO->LocalXYPuts(52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
-    app->localIO->LocalXYPuts(65, 0, stripfn( pszFileName ) );
+    int nOldXPos = GetApplication()->GetLocalIO()->WhereX();
+    int nOldYPos = GetApplication()->GetLocalIO()->WhereY();
+    GetApplication()->GetLocalIO()->LocalXYPuts(52, 0, "³ Filename :               ");
+    GetApplication()->GetLocalIO()->LocalXYPuts(52, 1, "³ Xfer Time:               ");
+    GetApplication()->GetLocalIO()->LocalXYPuts(52, 2, "³ File Size:               ");
+    GetApplication()->GetLocalIO()->LocalXYPuts(52, 3, "³ Cur Block: 1 - 1k        ");
+    GetApplication()->GetLocalIO()->LocalXYPuts(52, 4, "³ Consec Errors: 0         ");
+    GetApplication()->GetLocalIO()->LocalXYPuts(52, 5, "³ Total Errors : 0         ");
+    GetApplication()->GetLocalIO()->LocalXYPuts(52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
+    GetApplication()->GetLocalIO()->LocalXYPuts(65, 0, stripfn( pszFileName ) );
     int nNumStartTries = 0;
     do
     {
@@ -236,12 +236,12 @@ void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC )
         while ( fabs(timer() - d1) < 10.0 && !bkbhitraw() && !hangup )
         {
             CheckForHangup();
-            if (app->localIO->LocalKeyPressed())
+            if (GetApplication()->GetLocalIO()->LocalKeyPressed())
             {
-                ch = app->localIO->getchd();
+                ch = GetApplication()->GetLocalIO()->getchd();
                 if (ch == 0)
                 {
-                    app->localIO->getchd();
+                    GetApplication()->GetLocalIO()->getchd();
                 }
                 else if (ch == ESC)
                 {
@@ -256,12 +256,12 @@ void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC )
     do
     {
         bln = 255;
-        app->localIO->LocalXYPrintf( 69, 4, "%d  ", nConsecErrors );
-        app->localIO->LocalXYPrintf( 69, 5, "%d", nTotalErrors );
-        app->localIO->LocalXYPrintf( 65, 3, "%ld - %ldk", pos / 128 + 1, pos / 1024 + 1);
+        GetApplication()->GetLocalIO()->LocalXYPrintf( 69, 4, "%d  ", nConsecErrors );
+        GetApplication()->GetLocalIO()->LocalXYPrintf( 69, 5, "%d", nTotalErrors );
+        GetApplication()->GetLocalIO()->LocalXYPrintf( 65, 3, "%ld - %ldk", pos / 128 + 1, pos / 1024 + 1);
         if (reallen)
         {
-            app->localIO->LocalXYPuts( 65, 1, ctim( ( static_cast<double>( reallen - pos ) ) * tpb ) );
+            GetApplication()->GetLocalIO()->LocalXYPuts( 65, 1, ctim( ( static_cast<double>( reallen - pos ) ) * tpb ) );
         }
         i = receive_block(b, &bln, bUseCRC);
         if ( i == 0 || i == 1 )
@@ -276,7 +276,7 @@ void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC )
                 }
                 x[i3 - i1] = '\0';
                 reallen = atol(x);
-                app->localIO->LocalXYPrintf( 65, 2, "%ld - %ldk", ( reallen + 127 ) / 128, bytes_to_k( reallen ) );
+                GetApplication()->GetLocalIO()->LocalXYPrintf( 65, 2, "%ld - %ldk", ( reallen + 127 ) / 128, bytes_to_k( reallen ) );
                 while ((b[i1] != SPACE) && (i1 < 64))
                 {
                     ++i1;
@@ -391,7 +391,7 @@ void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC )
             lasteot = false;
         }
     } while ( !hangup && !done );
-    app->localIO->LocalGotoXY(nOldXPos, nOldYPos);
+    GetApplication()->GetLocalIO()->LocalGotoXY(nOldXPos, nOldYPos);
     if (ok)
     {
         if (filedatetime)
@@ -414,10 +414,10 @@ void zmodem_receive(char *pszFileName, char *ft, bool *received )
 {
 	StringRemoveWhitespace( pszFileName );
 
-    bool bOldBinaryMode = app->comm->GetBinaryMode();
-	app->comm->SetBinaryMode( true );
+    bool bOldBinaryMode = GetApplication()->GetComm()->GetBinaryMode();
+	GetApplication()->GetComm()->SetBinaryMode( true );
 	bool bResult = NewZModemReceiveFile( pszFileName );
-	app->comm->SetBinaryMode( bOldBinaryMode );
+	GetApplication()->GetComm()->SetBinaryMode( bOldBinaryMode );
 
     *received = ( bResult ) ? true : false;
 }

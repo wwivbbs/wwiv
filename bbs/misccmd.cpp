@@ -81,7 +81,7 @@ void kill_old_email()
 
 				if ( m.tosys == 0 )
 				{
-                    app->userManager->ReadUser( &user, m.touser );
+                    GetApplication()->GetUserManager()->ReadUser( &user, m.touser );
                     std::string tempName = user.GetUserNameAndNumber( m.touser );
 					if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) && ((getslrec( sess->GetEffectiveSl() ).ability & ability_read_email_anony) == 0))
 					{
@@ -287,7 +287,7 @@ void list_users( int mode )
     int color   = 3;
     sess->WriteCurrentUser( sess->usernum );
     write_qscn(sess->usernum, qsc, false);
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
 
 	WFile userList( syscfg.datadir, USER_LST );
 	int nNumUserRecords = ( static_cast<int>( userList.GetLength() / syscfg.userreclen ) - 1 );
@@ -346,7 +346,7 @@ void list_users( int mode )
         }
 
         int nUserNumber = ( bSortByUserNumber ) ? i + 1 : smallist[i].number;
-        app->userManager->ReadUser( &user, nUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
         read_qscn(nUserNumber, qsc, false);
         changedsl();
         bool in_qscan = (qsc_q[usub[sess->GetCurrentMessageArea()].subnum / 32] & (1L << (usub[sess->GetCurrentMessageArea()].subnum % 32))) ? true : false;
@@ -539,7 +539,7 @@ void time_bank()
 				}
                 sess->thisuser.SetTimeBankMinutes( sess->thisuser.GetTimeBankMinutes() + static_cast<unsigned short>( i ) );
                 sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() - static_cast<float>( i * SECONDS_PER_MINUTE_FLOAT ) );
-                app->localIO->tleft( false );
+                GetApplication()->GetLocalIO()->tleft( false );
             }
             break;
         case 'W':
@@ -560,7 +560,7 @@ void time_bank()
 				}
                 sess->thisuser.SetTimeBankMinutes( sess->thisuser.GetTimeBankMinutes() - static_cast<unsigned short>( i ) );
                 sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() + static_cast<float>( i * SECONDS_PER_MINUTE_FLOAT ) );
-                app->localIO->tleft( false );
+                GetApplication()->GetLocalIO()->tleft( false );
             }
             break;
         case 'Q':
@@ -616,17 +616,17 @@ void Packers()
         {
         case '1':
             {
-                app->statusMgr->Write();
-                app->localIO->set_protect( 0 );
+                GetApplication()->GetStatusManager()->Write();
+                GetApplication()->GetLocalIO()->set_protect( 0 );
                 sysoplog("@ Ran WWIVMail/QWK");
                 char szCommandLine[ MAX_PATH ];
-                if (app->GetInstanceNumber()==1)
+                if (GetApplication()->GetInstanceNumber()==1)
                 {
                     sprintf(szCommandLine, "wwivqwk chain.txt");
                 }
                 else
                 {
-                    sprintf(szCommandLine, "wwivqwk chain.%03u", app->GetInstanceNumber());
+                    sprintf(szCommandLine, "wwivqwk chain.%03u", GetApplication()->GetInstanceNumber());
                 }
                 ExecuteExternalProgram( szCommandLine, EFLAG_NONE );
                 done = true;
@@ -638,9 +638,9 @@ void Packers()
             {
                 tmp_disable_pause( true );
                 sess->bout << "\r\nPlease wait...\r\n";
-                app->localIO->set_x_only(1, "posts.txt", 0);
+                GetApplication()->GetLocalIO()->set_x_only(1, "posts.txt", 0);
                 nscan();
-                app->localIO->set_x_only(0, NULL, 0);
+                GetApplication()->GetLocalIO()->set_x_only(0, NULL, 0);
                 add_arc("offline", "posts.txt", 0);
                 download_temp_arc("offline", 0);
             }

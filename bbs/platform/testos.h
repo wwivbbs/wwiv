@@ -28,6 +28,10 @@
 #define _UNIX
 #endif // defined (linux)
 
+#if defined ( __APPLE__ )
+#define _UNIX
+#endif // defined ( __APPLE__ )
+
 
 //
 // Sanity check the #defines

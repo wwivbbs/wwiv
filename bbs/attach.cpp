@@ -83,7 +83,7 @@ void attach_file(int mode)
                 if ( m.tosys == 0 )
                 {
                     char szBuffer[ 255 ];
-                    app->userManager->ReadUser( &u, m.touser );
+                    GetApplication()->GetUserManager()->ReadUser( &u, m.touser );
                     sess->bout << "|#1  To|#7: |#2";
                     strcpy( szBuffer, u.GetUserNameAndNumber( m.touser ) );
                     if ( ( m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da ) ) &&

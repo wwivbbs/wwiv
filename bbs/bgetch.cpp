@@ -122,16 +122,16 @@ char bgetch()
             return charbuffer[charbufferpointer++];
         }
     }
-    if ( app->localIO->LocalKeyPressed() )
+    if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
     {
-        ch = app->localIO->getchd1();
+        ch = GetApplication()->GetLocalIO()->getchd1();
         sess->SetLastKeyLocal( true );
         if (!(g_flags & g_flag_allow_extended))
         {
             if (!ch)
             {
-                ch = app->localIO->getchd1();
-                app->localIO->skey(ch);
+                ch = GetApplication()->GetLocalIO()->getchd1();
+                GetApplication()->GetLocalIO()->skey(ch);
                 ch = static_cast< char >(((ch == F10) || (ch == CF10)) ? 2 : 0);
             }
         }
@@ -188,7 +188,7 @@ void HandleControlKey( char *ch )
 			  if ( echo )
 			  {
                   char xl[81], cl[81], atr[81], cc;
-				  app->localIO->SaveCurrentLine(cl, atr, xl, &cc);
+				  GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
 				  ansic( 0 );
 				  nl( 2 );
 				  multi_instance();
@@ -224,7 +224,7 @@ void PrintTime()
 {
     char xl[81], cl[81], atr[81], cc;
 
-    app->localIO->SaveCurrentLine( cl, atr, xl, &cc );
+    GetApplication()->GetLocalIO()->SaveCurrentLine( cl, atr, xl, &cc );
 
     ansic( 0 );
     nl( 2 );
@@ -255,7 +255,7 @@ void RedrawCurrentLine()
     ansistr[ansiptr_1] = 0;
     strcpy(ansistr_1, ansistr);
 
-    app->localIO->SaveCurrentLine(cl, atr, xl, &cc);
+    GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
     nl();
     RestoreCurrentLine(cl, atr, xl, &cc);
 

@@ -50,12 +50,12 @@ char gettimeout(double d, bool *abort)
     double d1 = timer();
     while ( fabs(timer() - d1) < d && !bkbhitraw()&& !hangup && !*abort )
     {
-        if (app->localIO->LocalKeyPressed())
+        if (GetApplication()->GetLocalIO()->LocalKeyPressed())
         {
-            char ch = app->localIO->getchd();
+            char ch = GetApplication()->GetLocalIO()->getchd();
             if (ch == 0)
             {
-                app->localIO->getchd();
+                GetApplication()->GetLocalIO()->getchd();
             }
             else if (ch == ESC)
             {
@@ -118,21 +118,21 @@ int extern_prot( int nProtocolNum, char *pszFileNameToSend, bool bSending )
     stuff_in(s, s1, sx1, sx2, szFileName, sx3, "");
     if (s[0])
     {
-        app->localIO->set_protect( 0 );
+        GetApplication()->GetLocalIO()->set_protect( 0 );
         sprintf( s2, "%s is currently online at %u bps", sess->thisuser.GetUserNameAndNumber( sess->usernum ), modem_speed );
-        app->localIO->LocalPuts(s2);
-        app->localIO->LocalPuts("\r\n\r\n");
-        app->localIO->LocalPuts(s);
-        app->localIO->LocalPuts("\r\n");
+        GetApplication()->GetLocalIO()->LocalPuts(s2);
+        GetApplication()->GetLocalIO()->LocalPuts("\r\n\r\n");
+        GetApplication()->GetLocalIO()->LocalPuts(s);
+        GetApplication()->GetLocalIO()->LocalPuts("\r\n");
         if (incom)
         {
-            int nRetCode = ExecuteExternalProgram(s, app->GetSpawnOptions( SPWANOPT_PROT_SINGLE ) );
-            app->localIO->UpdateTopScreen();
+            int nRetCode = ExecuteExternalProgram(s, GetApplication()->GetSpawnOptions( SPWANOPT_PROT_SINGLE ) );
+            GetApplication()->GetLocalIO()->UpdateTopScreen();
             return nRetCode;
         }
         else
         {
-            app->localIO->UpdateTopScreen();
+            GetApplication()->GetLocalIO()->UpdateTopScreen();
             return -5;
         }
     }
@@ -830,8 +830,8 @@ void endbatch()
 {
     bool abort = false;
     int terr = 0;
-    int oldx = app->localIO->WhereX();
-    int oldy = app->localIO->WhereY();
+    int oldx = GetApplication()->GetLocalIO()->WhereX();
+    int oldy = GetApplication()->GetLocalIO()->WhereY();
     bool ucrc = false;
     if ( !okstart( &ucrc, &abort ) )
     {
@@ -858,5 +858,5 @@ void endbatch()
 		}
         */
     }
-    app->localIO->LocalGotoXY( oldx, oldy );
+    GetApplication()->GetLocalIO()->LocalGotoXY( oldx, oldy );
 }

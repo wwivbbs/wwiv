@@ -70,7 +70,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
 
     int cm = chatting;
 
-    int begx = app->localIO->WhereX();
+    int begx = GetApplication()->GetLocalIO()->WhereX();
     if (pszRollover[0] != 0)
     {
         char* ss = szRollOver;
@@ -125,18 +125,18 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
         }
         if ( ch >= SPACE )
         {
-            if ( ( app->localIO->WhereX() < ( sess->thisuser.GetScreenChars() - 1 ) ) && ( cp < nMaxLen ) )
+            if ( ( GetApplication()->GetLocalIO()->WhereX() < ( sess->thisuser.GetScreenChars() - 1 ) ) && ( cp < nMaxLen ) )
             {
                 pszBuffer[cp++] = ch;
                 bputch(ch);
-                if ( app->localIO->WhereX() == ( sess->thisuser.GetScreenChars() - 1 ) )
+                if ( GetApplication()->GetLocalIO()->WhereX() == ( sess->thisuser.GetScreenChars() - 1 ) )
                 {
                     done = true;
                 }
             }
             else
             {
-                if ( app->localIO->WhereX() >= ( sess->thisuser.GetScreenChars() - 1 ) )
+                if ( GetApplication()->GetLocalIO()->WhereX() >= ( sess->thisuser.GetScreenChars() - 1 ) )
                 {
                     done = true;
                 }
@@ -206,7 +206,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
             }
             break;
         case CX:                            // Ctrl-X
-            while ( app->localIO->WhereX() > begx )
+            while ( GetApplication()->GetLocalIO()->WhereX() > begx )
             {
                 BackSpace();
                 cp = 0;
@@ -237,7 +237,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
             }
             break;
         case CN:                            // Ctrl-N
-            if ( app->localIO->WhereX() && cp < nMaxLen )
+            if ( GetApplication()->GetLocalIO()->WhereX() && cp < nMaxLen )
             {
                 bputch( BACKSPACE );
                 pszBuffer[cp++] = BACKSPACE;
@@ -270,9 +270,9 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
             break;
         case TAB:                             // Tab
             i = 5 - (cp % 5);
-            if ( (cp + i) < nMaxLen && (app->localIO->WhereX() + i) < sess->thisuser.GetScreenChars() )
+            if ( (cp + i) < nMaxLen && (GetApplication()->GetLocalIO()->WhereX() + i) < sess->thisuser.GetScreenChars() )
             {
-                i = 5 - ((app->localIO->WhereX() + 1) % 5);
+                i = 5 - ((GetApplication()->GetLocalIO()->WhereX() + 1) % 5);
                 for (i1 = 0; i1 < i; i1++)
                 {
                     pszBuffer[cp++] = SPACE;
@@ -290,7 +290,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
       {
           i--;
       }
-      if ( i > (app->localIO->WhereX() / 2) && i != (cp - 1) )
+      if ( i > (GetApplication()->GetLocalIO()->WhereX() / 2) && i != (cp - 1) )
       {
           i1 = cp - i - 1;
           for (i = 0; i < i1; i++)

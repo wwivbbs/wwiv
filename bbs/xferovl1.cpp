@@ -46,7 +46,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
 		if ( ii )
 		{
 			nl();
-			if ( okfsed() && app->HasConfigFlag( OP_FLAGS_FSED_EXT_DESC ) )
+			if ( okfsed() && GetApplication()->HasConfigFlag( OP_FLAGS_FSED_EXT_DESC ) )
 			{
 				sess->bout << "|#5Modify the extended description? ";
 			}
@@ -68,7 +68,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
 				return;
 			}
 		}
-		if ( okfsed() && app->HasConfigFlag( OP_FLAGS_FSED_EXT_DESC ) )
+		if ( okfsed() && GetApplication()->HasConfigFlag( OP_FLAGS_FSED_EXT_DESC ) )
 		{
 			sprintf(s, "%sEXTENDED.DSC", syscfgovr.tempdir);
 			if ( *sss )
@@ -223,7 +223,7 @@ bool get_file_idz(uploadsrec * u, int dn)
 	int i;
 	bool ok = false;
 
-	if ( app->HasConfigFlag( OP_FLAGS_READ_CD_IDZ) && (directories[dn].mask & mask_cdrom))
+	if ( GetApplication()->HasConfigFlag( OP_FLAGS_READ_CD_IDZ) && (directories[dn].mask & mask_cdrom))
 	{
 		return false;
 	}
@@ -253,11 +253,11 @@ bool get_file_idz(uploadsrec * u, int dn)
 	WWIV_ChangeDirTo(directories[dn].path);
 	WWIV_GetDir(s, true);
 	strcat(s, stripfn(u->filename));
-	app->CdHome();
+	GetApplication()->CdHome();
 	get_arc_cmd(cmd, s, 1, "FILE_ID.DIZ DESC.SDI");
 	WWIV_ChangeDirTo(syscfgovr.tempdir);
 	ExecuteExternalProgram(cmd, EFLAG_TOPSCREEN | EFLAG_NOHUP);
-	app->CdHome();
+	GetApplication()->CdHome();
 	sprintf(s, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
 	if (!WFile::Exists(s))
 	{
@@ -291,7 +291,7 @@ bool get_file_idz(uploadsrec * u, int dn)
 			b[ sess->max_extend_lines * 256 ] = 0;
 		}
 		file.Close();
-		if ( app->HasConfigFlag( OP_FLAGS_IDZ_DESC ) )
+		if ( GetApplication()->HasConfigFlag( OP_FLAGS_IDZ_DESC ) )
 		{
 			ss = strtok(b, "\n");
 			if (ss)
@@ -349,15 +349,15 @@ int read_idz_all()
 
 	tmp_disable_conf( true );
 	tmp_disable_pause( true );
-	app->localIO->set_protect( 0 );
+	GetApplication()->GetLocalIO()->set_protect( 0 );
 	for (int i = 0; (i < sess->num_dirs) && (udir[i].subnum != -1) &&
-		(!app->localIO->LocalKeyPressed()); i++)
+		(!GetApplication()->GetLocalIO()->LocalKeyPressed()); i++)
 	{
 		count += read_idz(0, i);
 	}
 	tmp_disable_conf( false );
 	tmp_disable_pause( false );
-	app->localIO->UpdateTopScreen();
+	GetApplication()->GetLocalIO()->UpdateTopScreen();
 	return count;
 }
 
@@ -372,7 +372,7 @@ int read_idz(int mode, int tempdir)
 	if (mode)
 	{
 		tmp_disable_pause( true );
-		app->localIO->set_protect( 0 );
+		GetApplication()->GetLocalIO()->set_protect( 0 );
 		dliscan();
 		file_mask(s);
 	}
@@ -398,7 +398,7 @@ int read_idz(int mode, int tempdir)
 			WWIV_ChangeDirTo(directories[udir[tempdir].subnum].path);
 			WWIV_GetDir(s1, true);
 			strcat(s1, stripfn(u.filename));
-			app->CdHome();
+			GetApplication()->CdHome();
 			if (WFile::Exists(s1))
 			{
 				if (get_file_idz(&u, udir[tempdir].subnum))
@@ -414,7 +414,7 @@ int read_idz(int mode, int tempdir)
 	fileDownload.Close();
 	if (mode)
 	{
-		app->localIO->UpdateTopScreen();
+		GetApplication()->GetLocalIO()->UpdateTopScreen();
 		tmp_disable_pause( false );
 	}
 	return count;
@@ -569,7 +569,7 @@ void tag_files()
 		sess->tagptr = 0;
 		return;
 	}
-	app->localIO->tleft( true );
+	GetApplication()->GetLocalIO()->tleft( true );
 	if (hangup)
 	{
 		return;
@@ -769,11 +769,11 @@ void tag_files()
 				{
 					nl();
 					sess->tagging = 0;
-					ExecuteExternalProgram(s, app->GetSpawnOptions( SPWANOPT_ARCH_L ) );
+					ExecuteExternalProgram(s, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_L ) );
 					nl();
 					pausescr();
 					sess->tagging = 1;
-					app->localIO->UpdateTopScreen();
+					GetApplication()->GetLocalIO()->UpdateTopScreen();
 					ClearScreen();
 					relist();
 				}
@@ -929,7 +929,7 @@ int try_to_download(const char *pszFileMask, int dn)
 	foundany = 1;
 	do
 	{
-		app->localIO->tleft( true );
+		GetApplication()->GetLocalIO()->tleft( true );
 		WFile fileDownload( g_szDownloadFileName );
 		fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
 		FileAreaSetRecord( fileDownload, i );
@@ -937,7 +937,7 @@ int try_to_download(const char *pszFileMask, int dn)
 		fileDownload.Close();
 
 		bool ok2 = false;
-		if ( strncmp(u.filename, "WWIV4", 5) == 0 && !app->HasConfigFlag( OP_FLAGS_NO_EASY_DL ) )
+		if ( strncmp(u.filename, "WWIV4", 5) == 0 && !GetApplication()->HasConfigFlag( OP_FLAGS_NO_EASY_DL ) )
 		{
 			ok2 = true;
 		}
@@ -1180,12 +1180,12 @@ char fancy_prompt( const char *pszPrompt, const char *pszAcceptChars )
 	char s1[81], s2[81], s3[81];
 	char ch = 0;
 
-	app->localIO->tleft( true );
+	GetApplication()->GetLocalIO()->tleft( true );
 	sprintf(s1, "\r|#2%s (|#1%s|#2)? |#0", pszPrompt, pszAcceptChars );
 	sprintf(s2, "%s (%s)? ", pszPrompt, pszAcceptChars );
 	int i1 = strlen(s2);
 	sprintf(s3, "%s%s", pszAcceptChars, " \r");
-	app->localIO->tleft( true );
+	GetApplication()->GetLocalIO()->tleft( true );
 	if ( okansi() )
 	{
 		sess->bout << s1;
@@ -1483,7 +1483,7 @@ void removenotthere()
 	if (yesno())
 	{
 		for (int i = 0; ((i < sess->num_dirs) && (udir[i].subnum != -1) &&
-			(!app->localIO->LocalKeyPressed())); i++)
+			(!GetApplication()->GetLocalIO()->LocalKeyPressed())); i++)
 		{
 			nl();
             sess->bout << "|#1Removing N/A|#0 in " << directories[udir[i].subnum].name;
@@ -1500,7 +1500,7 @@ void removenotthere()
 	}
 	tmp_disable_conf( false );
 	tmp_disable_pause( false );
-	app->localIO->UpdateTopScreen();
+	GetApplication()->GetLocalIO()->UpdateTopScreen();
 }
 
 

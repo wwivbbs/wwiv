@@ -291,7 +291,7 @@ bool VerifyPhoneNumber()
 
 bool VerifyPassword()
 {
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
 
     std::string password;
     input_password( "PW: ", password, 8 );
@@ -335,7 +335,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
         return;
     }
 
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     long lTime = time( NULL );
     switch ( sess->usernum )
     {
@@ -345,7 +345,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
 			networkCommand << "NETWORK /B" << modem_speed << " /T" << lTime << " /F" << modem_flag;
             write_inst( INST_LOC_NET, 0, INST_FLAGS_NONE );
             ExecuteExternalProgram( networkCommand.str().c_str(), EFLAG_NONE );
-            if ( app->GetInstanceNumber() != 1 )
+            if ( GetApplication()->GetInstanceNumber() != 1 )
             {
                 send_inst_cleannet();
             }
@@ -397,12 +397,12 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
         break;
 #endif // ENABLE_REMOTE_VIA_SPECIAL_LOGINS
     }
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     hangup = true;
-    app->comm->dtr( false );
+    GetApplication()->GetComm()->dtr( false );
     global_xx = false;
     Wait(1.0);
-    app->comm->dtr( true );
+    GetApplication()->GetComm()->dtr( true );
     Wait(0.1);
     cleanup_net();
     imodem( false );
@@ -660,7 +660,7 @@ void getuser()
 
     CheckCallRestrictions();
 
-    if ( app->HasConfigFlag( OP_FLAGS_CALLBACK ) && ( sess->thisuser.GetCbv() & 1 ) == 0 )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CALLBACK ) && ( sess->thisuser.GetCbv() & 1 ) == 0 )
     {
         DoCallBackVerification();
     }
@@ -710,10 +710,10 @@ void UpdateUserStatsForLogin()
     sess->SetMMKeyArea( WSession::mmkeyMessageAreas );
     if ( sess->GetEffectiveSl() != 255 && !guest_user )
     {
-        app->statusMgr->Lock();
+        GetApplication()->GetStatusManager()->Lock();
         ++status.callernum1;
         ++status.callstoday;
-        app->statusMgr->Write();
+        GetApplication()->GetStatusManager()->Write();
     }
 }
 
@@ -743,7 +743,7 @@ void UpdateLastOnFileAndUserLog()
              fulldate(),
              sess->GetCurrentSpeed().c_str(),
              sess->thisuser.GetTimesOnToday(),
-             app->GetInstanceNumber() );
+             GetApplication()->GetInstanceNumber() );
     sprintf( szLastOnTxtFileName, "%s%s", syscfg.gfilesdir, LASTON_TXT );
     char *ss = get_file( szLastOnTxtFileName, &len );
     long pos = 0;
@@ -765,7 +765,7 @@ void UpdateLastOnFileAndUserLog()
                 if ( i )
                 {
                     sess->bout << "\r\n\n|#1Last few callers|#7: |#0\r\n\n";
-                    if ( app->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
+                    if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
 						 ( syscfg.sysconfig & sysconfig_extended_info ) )
                     {
 						sess->bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
@@ -799,7 +799,7 @@ void UpdateLastOnFileAndUserLog()
         {
             sysoplogf( "CID NAME: %s", cid_name );
         }
-        if ( app->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
 			 ( syscfg.sysconfig & sysconfig_extended_info ) )
 		{
             sprintf( szLogLine, "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
@@ -923,7 +923,7 @@ void CheckAndUpdateUserInfo()
         input_comptype();
     }
 
-    if ( !app->HasConfigFlag( OP_FLAGS_USER_REGISTRATION ) )
+    if ( !GetApplication()->HasConfigFlag( OP_FLAGS_USER_REGISTRATION ) )
     {
         return;
     }
@@ -1031,7 +1031,7 @@ void DisplayUserLoginInformation()
     sess->bout << "|#9System is|#0......... |#2WWIV " << wwiv_version << beta_version << "  " << wwiv::endl;
 
     /////////////////////////////////////////////////////////////////////////
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     for ( int i = 0; i < sess->GetMaxNetworkNumber(); i++ )
     {
         if ( net_networks[i].sysnum )
@@ -1059,7 +1059,7 @@ void DisplayUserLoginInformation()
     WWIV_GetOSVersion( szOSVersion, 100, true );
     sess->bout << "|#9OS|#0................ |#2" << szOSVersion << wwiv::endl;
 
-    sess->bout << "|#9Instance|#0.......... |#2" << app->GetInstanceNumber() << "\r\n\n";
+    sess->bout << "|#9Instance|#0.......... |#2" << GetApplication()->GetInstanceNumber() << "\r\n\n";
     if ( sess->thisuser.GetForwardUserNumber() )
     {
         if ( sess->thisuser.GetForwardSystemNumber() != 0 )
@@ -1180,7 +1180,7 @@ void logon()
 
     read_automessage();
     timeon = timer();
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
     nl( 2 );
     pausescr();
     if ( syscfg.logon_c[0] )
@@ -1188,7 +1188,7 @@ void logon()
         nl();
         char szCommand[ MAX_PATH ];
         stuff_in( szCommand, syscfg.logon_c, create_chain_file(), "", "", "", "" );
-        ExecuteExternalProgram( szCommand, app->GetSpawnOptions( SPWANOPT_LOGON ) );
+        ExecuteExternalProgram( szCommand, GetApplication()->GetSpawnOptions( SPWANOPT_LOGON ) );
         nl( 2 );
     }
 
@@ -1196,8 +1196,8 @@ void logon()
 
     CheckAndUpdateUserInfo();
 
-    app->localIO->UpdateTopScreen();
-    app->read_subs();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
+    GetApplication()->read_subs();
     rsm( sess->usernum, &sess->thisuser, true );
 
     LoginCheckForNewMail();
@@ -1250,7 +1250,7 @@ void logon()
     }
     g_preloaded = false;
 
-    if ( app->HasConfigFlag( OP_FLAGS_USE_FORCESCAN ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_USE_FORCESCAN ) )
     {
         int nNextSubNumber = 0;
         if ( sess->thisuser.GetSl() < 255 )
@@ -1285,7 +1285,7 @@ void logoff()
         }
     }
     setiia(90);
-    app->comm->dtr( false );
+    GetApplication()->GetComm()->dtr( false );
     hangup = true;
     if (sess->usernum < 1)
     {
@@ -1312,9 +1312,9 @@ void logoff()
     double ton = timer() - timeon;
     sess->thisuser.SetTimeOn( sess->thisuser.GetTimeOn() + static_cast<float>( ton ) );
     sess->thisuser.SetTimeOnToday( sess->thisuser.GetTimeOnToday() + static_cast<float>( ton - extratimecall ) );
-    app->statusMgr->Lock();
+    GetApplication()->GetStatusManager()->Lock();
     status.activetoday = status.activetoday + static_cast<unsigned short>( ton / MINUTES_PER_HOUR_FLOAT );
-    app->statusMgr->Write();
+    GetApplication()->GetStatusManager()->Write();
     if (g_flags & g_flag_scanned_files)
     {
         sess->thisuser.SetNewScanDateNumber( sess->thisuser.GetLastOnDateNumber() );
@@ -1365,9 +1365,9 @@ void logoff()
                 }
             }
 			pFileEmail->SetLength( static_cast<long>( sizeof( mailrec ) ) * static_cast<long>( w ) );
-            app->statusMgr->Lock();
+            GetApplication()->GetStatusManager()->Lock();
             status.filechange[filechange_email]++;
-            app->statusMgr->Write();
+            GetApplication()->GetStatusManager()->Write();
 			pFileEmail->Close();
 			delete pFileEmail;
         }

@@ -94,7 +94,7 @@ bool print_question( int i, int ii )
         t += vr.numresponses;
     }
 
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     sprintf( szBuffer , "|#9Users voting: |#2%4.1f%%\r\n",
              static_cast<double>( t ) / static_cast<double>( status.users ) * 100.0 );
     pla( szBuffer, &abort );

@@ -311,7 +311,7 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
 	if ( sess->topdata != WLocalIO::topdataNone )
     {
         sess->topdata = WLocalIO::topdataNone;
-		app->localIO->UpdateTopScreen();
+		GetApplication()->GetLocalIO()->UpdateTopScreen();
     }
     if ( mode == DATE || mode == PHONE )
     {
@@ -326,8 +326,8 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
         maxlen = 80;
     }
     ansic( 4 );
-    int x = app->localIO->WhereX() + 1;
-    int y = app->localIO->WhereY() + 1;
+    int x = GetApplication()->GetLocalIO()->WhereX() + 1;
+    int y = GetApplication()->GetLocalIO()->WhereY() + 1;
 
     goxy(x, y);
     for (i = 0; i < maxlen; i++)
@@ -342,7 +342,7 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
         goxy( x, y );
         pos = len = strlen(szTemp);
     }
-    x = app->localIO->WhereX() + 1;
+    x = GetApplication()->GetLocalIO()->WhereX() + 1;
 
     bool done = false;
     do

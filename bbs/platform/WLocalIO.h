@@ -79,6 +79,7 @@ public:
 
 	// Constructor/Destructor
     WLocalIO();
+    WLocalIO( const WLocalIO& copy );
 	virtual ~WLocalIO();
 
 	void SetWfcStatus( int nStatus ) { m_nWfcStatus = nStatus; }

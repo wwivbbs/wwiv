@@ -43,7 +43,7 @@ void slname(const char *d, char *pszLogFileName)
 
 void islname(char *pszInstanceLogFileName)
 {
-	sprintf(pszInstanceLogFileName, "inst-%3.3u.log", app->GetInstanceNumber());
+	sprintf(pszInstanceLogFileName, "inst-%3.3u.log", GetApplication()->GetInstanceNumber());
 }
 
 #define CAT_BUFSIZE 8192

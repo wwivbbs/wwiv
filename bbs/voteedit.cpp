@@ -101,13 +101,13 @@ void set_question( int ii )
     questused[ii] = (v.numanswers) ? 1 : 0;
 
     WUser u;
-    app->userManager->ReadUser( &u, 1 );
-    int nNumUsers = app->userManager->GetNumberOfUserRecords();
+    GetApplication()->GetUserManager()->ReadUser( &u, 1 );
+    int nNumUsers = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
     for ( int i1 = 1; i1 <= nNumUsers; i1++ )
     {
-        app->userManager->ReadUser( &u, i1 );
+        GetApplication()->GetUserManager()->ReadUser( &u, i1 );
         u.SetVote( nNumUsers, 0 );
-        app->userManager->WriteUser( &u, i1 );
+        GetApplication()->GetUserManager()->WriteUser( &u, i1 );
     }
 }
 
@@ -155,7 +155,7 @@ void voteprint()
     char s[MAX_PATH];
     votingrec v;
 
-    int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
+    int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 	char *x = static_cast<char *>( BbsAllocA( 20 * ( 2 + nNumUserRecords ) ) );
     if ( x == NULL )
     {
@@ -164,7 +164,7 @@ void voteprint()
     for ( int i = 0; i <= nNumUserRecords; i++ )
     {
         WUser u;
-        app->userManager->ReadUser( &u, i );
+        GetApplication()->GetUserManager()->ReadUser( &u, i );
         for ( int i1 = 0; i1 < 20; i1++ )
         {
             x[ i1 + i * 20 ] = static_cast<char>( u.GetVote( i1 ) );
@@ -178,7 +178,7 @@ void voteprint()
 
     WFile votingDat( syscfg.datadir, VOTING_DAT );
 
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
 
     for (int i1 = 0; i1 < 20; i1++)
     {

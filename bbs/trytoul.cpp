@@ -55,11 +55,11 @@ int try_to_ul(char *pszFileName)
 	sprintf(dest, "%sTRY2UL", syscfg.dloadsdir);
     if (chdir(dest))
 	{
-        app->CdHome();  // get back to our bbs dir
+        GetApplication()->CdHome();  // get back to our bbs dir
 		mkdir(dest);	// create the \DLOADS\TRY2UL dir
     }
 
-	app->CdHome();		// ensure we are in the correct directory
+	GetApplication()->CdHome();		// ensure we are in the correct directory
 
     sess->bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
@@ -78,7 +78,7 @@ int try_to_ul(char *pszFileName)
 
     if ( sess->IsUserOnline() )
     {
-        app->localIO->UpdateTopScreen();
+        GetApplication()->GetLocalIO()->UpdateTopScreen();
     }
 
     if (ac)
@@ -269,7 +269,7 @@ int try_to_ul_wh(char *pszFileName)
             return 1;
         }
     }
-    if ( ok && (!app->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) ) )
+    if ( ok && (!GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) ) )
     {
         nl();
         sess->bout << "Checking for same file in other directories...\r\n\n";
@@ -497,10 +497,10 @@ int try_to_ul_wh(char *pszFileName)
 
     sess->thisuser.SetUploadK( sess->thisuser.GetUploadK() + bytes_to_k( u.numbytes ) );
 
-    app->statusMgr->Lock();
+    GetApplication()->GetStatusManager()->Lock();
     ++status.uptoday;
     ++status.filechange[filechange_upload];
-    app->statusMgr->Write();
+    GetApplication()->GetStatusManager()->Write();
     sysoplogf( "+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
     return 0;                                 // This means success
 }

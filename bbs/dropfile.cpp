@@ -153,7 +153,7 @@ void create_drop_files()
         strcpy(pcb.display, "-1");
         strcpy(pcb.printer, "0");	// -1 if logging is to the printer, 0 otherwise;
         strcpy(pcb.page_bell, " 0");
-        strcpy(pcb.alarm, ( app->localIO->GetSysopAlert() ) ? "-1" : " 0");
+        strcpy(pcb.alarm, ( GetApplication()->GetLocalIO()->GetSysopAlert() ) ? "-1" : " 0");
         strcpy(pcb.errcheck, (modem_flag & flag_ec) ? "-1" : " 0");
         if ( okansi() )
 		{
@@ -199,7 +199,7 @@ void create_drop_files()
         strcpy(pcb.slanguage, cur_lang_name);
         strcpy( pcb.name, sess->thisuser.GetName() );
         pcb.sminsleft = pcb.time_limit;
-		pcb.snodenum = static_cast<char>( (num_instances() > 1) ? app->GetInstanceNumber() : 0 );
+		pcb.snodenum = static_cast<char>( (num_instances() > 1) ? GetApplication()->GetInstanceNumber() : 0 );
         strcpy(pcb.seventtime, "01:00");
         strcpy(pcb.seventactive, (syscfg.executetime && syscfg.executestr[0]) ?
             "-1" : " 0");
@@ -314,7 +314,7 @@ void create_drop_files()
 		fprintf( pFile, "%d\n",		    sess->thisuser.GetSl() );
 		fprintf( pFile, "%d\n",		    GetDoor32TimeLeft( nsl() ) );
 		fprintf( pFile, "%d\n",		    GetDoor32Emulation() );
-		fprintf( pFile, "%u\n",		    app->GetInstanceNumber() );
+		fprintf( pFile, "%u\n",		    GetApplication()->GetInstanceNumber() );
 		fsh_close( pFile );
     }
 
@@ -329,7 +329,7 @@ void create_drop_files()
             (sess->using_modem) ? syscfgovr.primaryport : 0,
 			cspeed.c_str(),
             '8',
-            app->GetInstanceNumber(),                       // node
+            GetApplication()->GetInstanceNumber(),                       // node
             (sess->using_modem) ? modem_speed : 14400,
             'Y',                            // screen display
             'N',							// log to printer

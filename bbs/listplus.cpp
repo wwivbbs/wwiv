@@ -134,7 +134,7 @@ void printtitle_plus_old()
 
 void printtitle_plus()
 {
-	if (app->localIO->WhereY() != 0 || app->localIO->WhereX() != 0)
+	if (GetApplication()->GetLocalIO()->WhereY() != 0 || GetApplication()->GetLocalIO()->WhereX() != 0)
 	{
 		ClearScreen();
 	}
@@ -258,7 +258,7 @@ int lp_configured_lines()
 
 void print_searching(struct search_record * search_rec)
 {
-	if (app->localIO->WhereY() != 0 || app->localIO->WhereX() != 0)
+	if (GetApplication()->GetLocalIO()->WhereY() != 0 || GetApplication()->GetLocalIO()->WhereX() != 0)
 	{
 		ClearScreen();
 	}
@@ -295,7 +295,7 @@ int listfiles_plus(int type)
 	signal(SIGFPE, catch_divide_by_zero);
 
 	sess->topdata = WLocalIO::topdataNone;
-	app->localIO->UpdateTopScreen();
+	GetApplication()->GetLocalIO()->UpdateTopScreen();
 	ClearScreen();
 
 	int nReturn = listfiles_plus_function(type);
@@ -324,7 +324,7 @@ int listfiles_plus(int type)
 	dliscan();
 
 	sess->topdata = save_topdata;
-	app->localIO->UpdateTopScreen();
+	GetApplication()->GetLocalIO()->UpdateTopScreen();
 
 	return nReturn;
 }
@@ -659,7 +659,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 			char_printed = 0;
 		}
 	}
-	if (app->localIO->WhereX())
+	if (GetApplication()->GetLocalIO()->WhereX())
 	{
 		if (char_printed)
 		{
@@ -751,7 +751,7 @@ int load_config_listing(int config)
     if ( fileConfig.Exists() )
     {
 	    WUser user;
-        app->userManager->ReadUser( &user, config );
+        GetApplication()->GetUserManager()->ReadUser( &user, config );
 		if ( fileConfig.Open( WFile::modeBinary | WFile::modeReadOnly ) )
 		{
 			fileConfig.Seek( config * sizeof(user_config), WFile::seekBegin );
@@ -786,7 +786,7 @@ void write_config_listing(int config)
 	}
 
     WUser user;
-    app->userManager->ReadUser( &user, config );
+    GetApplication()->GetUserManager()->ReadUser( &user, config );
     strcpy( config_listing.name, user.GetName() );
 
 	WFile fileUserConfig( syscfg.datadir, CONFIG_USR );
@@ -898,7 +898,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 				}
 			}
 
-			if ( app->localIO->WhereX() )
+			if ( GetApplication()->GetLocalIO()->WhereX() )
 			{
 				nl();
 				++numl;
@@ -1940,7 +1940,7 @@ int remove_filename( const char *pszFileName, int dn )
 						sess->bout << "|#5Remove DL points? ";
 						rdlp = yesno();
 					}
-					if ( app->HasConfigFlag( OP_FLAGS_FAST_SEARCH) )
+					if ( GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH) )
 					{
 						sess->bout << "|#5Remove from ALLOW.DAT? ";
 						if ( yesno() )
@@ -1960,7 +1960,7 @@ int remove_filename( const char *pszFileName, int dn )
 					if ( rdlp && u.ownersys == 0 )
 					{
                         WUser user;
-                        app->userManager->ReadUser( &user, u.ownerusr );
+                        GetApplication()->GetUserManager()->ReadUser( &user, u.ownerusr );
                         if ( !user.isUserDeleted() )
 						{
                             if ( date_to_daten( user.GetFirstOn() ) < static_cast<signed int>( u.daten ) )
@@ -1982,7 +1982,7 @@ int remove_filename( const char *pszFileName, int dn )
 								}
 								sess->bout << "Removed " << (u.filepoints * 2) << " file points\r\n";
 #endif
-                                app->userManager->WriteUser( &user, u.ownerusr );
+                                GetApplication()->GetUserManager()->WriteUser( &user, u.ownerusr );
 							}
 						}
 					}
@@ -2593,7 +2593,7 @@ void view_file(const char *pszFileName)
         {
 			sprintf( szCommandLine, "AVIEWCOM.EXE %s%s com0 -o%u -p%s -a1 -d",
 				     directories[udir[sess->GetCurrentFileArea()].subnum].path, szBuffer,
-				     app->GetInstanceNumber(), syscfgovr.tempdir);
+				     GetApplication()->GetInstanceNumber(), syscfgovr.tempdir);
 			ExecuteExternalProgram( szCommandLine, EFLAG_NOPAUSE | EFLAG_TOPSCREEN );
 		}
 	}
@@ -2649,7 +2649,7 @@ int lp_try_to_download( const char *pszFileMask, int dn )
 	foundany = 1;
 	do
     {
-		app->localIO->tleft( true );
+		GetApplication()->GetLocalIO()->tleft( true );
 		WFile fileDownload( g_szDownloadFileName );
 		fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
 		FileAreaSetRecord( fileDownload, i );
@@ -2658,7 +2658,7 @@ int lp_try_to_download( const char *pszFileMask, int dn )
 
 		ok2 = 0;
 		if ( strncmp( u.filename, "WWIV4", 5 ) == 0 &&
-			 !app->HasConfigFlag( OP_FLAGS_NO_EASY_DL ) )
+			 !GetApplication()->HasConfigFlag( OP_FLAGS_NO_EASY_DL ) )
         {
 			ok2 = 1;
         }

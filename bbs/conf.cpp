@@ -1273,7 +1273,7 @@ void conf_edit(int conftype)
             break;
         }
     } while ( !done && !hangup );
-    if ( !app->localIO->GetWfcStatus() )
+    if ( !GetApplication()->GetLocalIO()->GetWfcStatus() )
     {
         changedsl();
     }
@@ -1313,7 +1313,7 @@ void list_confs(int conftype, int ssc)
         strcat(s, s1);
         ansic( 7 );
         pla(s, &abort);
-        if ( app->HasConfigFlag( OP_FLAGS_SHOW_HIER ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_HIER ) )
         {
             if ((cp[i].num > 0) && (cp[i].subs != NULL) && (ssc))
             {
@@ -1692,14 +1692,14 @@ void read_in_conferences(int conftype)
         if (!create_conf_file(conftype))
         {
             std::cout << "Problem creating conferences." << std::endl;
-            app->AbortBBS();
+            GetApplication()->AbortBBS();
         }
     }
     *cpp = read_conferences(s, np, max);
     if (!(*cpp))
     {
         std::cout << "Problem reading conferences." << std::endl;
-        app->AbortBBS();
+        GetApplication()->AbortBBS();
 
     }
 }

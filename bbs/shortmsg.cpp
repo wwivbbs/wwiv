@@ -63,7 +63,7 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
                 }
                 else
                 {
-                    if ( app->HasConfigFlag( OP_FLAGS_CAN_SAVE_SSM ) )
+                    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CAN_SAVE_SSM ) )
                     {
                         if ( !bHandledMessage && bAskToSaveMsgs )
                         {
@@ -108,7 +108,7 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
 void SendLocalShortMessage( unsigned int nUserNum, unsigned int nSystemNum, char *pszMessageText )
 {
     WUser user;
-    app->userManager->ReadUser( &user, nUserNum );
+    GetApplication()->GetUserManager()->ReadUser( &user, nUserNum );
     if ( !user.isUserDeleted() )
     {
         WFile file( syscfg.datadir, SMW_DAT );
@@ -147,7 +147,7 @@ void SendLocalShortMessage( unsigned int nUserNum, unsigned int nSystemNum, char
         file.Write( &sm, sizeof( shortmsgrec ) );
         file.Close();
         user.setStatusFlag( WUser::SMW );
-        app->userManager->WriteUser( &user, nUserNum );
+        GetApplication()->GetUserManager()->WriteUser( &user, nUserNum );
     }
 }
 
@@ -169,7 +169,7 @@ void SendRemoteShortMessage( int nUserNum, int nSystemNum, char *pszMessageText 
     nh.length = strlen(pszMessageText);
     nh.method = 0;
     char szPacketName[MAX_PATH];
-    sprintf( szPacketName, "%sP0%s", sess->GetNetworkDataDirectory(), app->GetNetworkExtension() );
+    sprintf( szPacketName, "%sP0%s", sess->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
     WFile file( szPacketName );
     file.Open( WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
     file.Seek( 0L, WFile::seekBegin );

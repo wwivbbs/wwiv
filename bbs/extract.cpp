@@ -70,9 +70,9 @@ void compress_file( char *pszFileName, char *pszDirectoryName )
     strcpy( s4, pszDirectoryName );
     strcat( s4, szFullFileName );
     stuff_in( szFullFileName, s5, s3, s4, "", "", "" );
-    ExecuteExternalProgram( szFullFileName, app->GetSpawnOptions( SPWANOPT_ARCH_A ) );
+    ExecuteExternalProgram( szFullFileName, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_A ) );
     WFile::Remove( s4 );
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
 }
 
 
@@ -351,7 +351,7 @@ void extract_out (char *b, long len, const char *title, long daten )
 	WWIV_ASSERT(b);
 	char s1[81], s2[81], s3[81], ch = 26, ch1, s4[81];
 
-	if ( app->HasConfigFlag( OP_FLAGS_NEW_EXTRACT ) )
+	if ( GetApplication()->HasConfigFlag( OP_FLAGS_NEW_EXTRACT ) )
 	{
 		printfile(MEXTRACT_NOEXT);
 		bool done = false;
