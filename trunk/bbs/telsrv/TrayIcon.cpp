@@ -5,17 +5,16 @@
 // If not, I don't know who wrote it.
 
 #include "stdafx.h"
-#include "trayicon.h"
 #include <afxpriv.h>		// for AfxLoadString
 #include <shellapi.h>
-//#define _WIN32_IE 0x0500
 #include <commctrl.h>
 #include <shlwapi.h>
-#include ".\trayicon.h"
+#include "trayicon.h"
 
 HRESULT CALLBACK DllGetVersion( DLLVERSIONINFO *pdvi );
 
 #define PACKVERSION(major,minor) MAKELONG(minor,major)
+
 DWORD GetDllVersion(LPCTSTR lpszDllName)
 {
     DWORD dwVersion = 0;
@@ -58,17 +57,23 @@ DWORD GetDllVersion(LPCTSTR lpszDllName)
 IMPLEMENT_DYNAMIC( CTrayIcon, CCmdTarget )
 CTrayIcon::CTrayIcon( UINT uID )
 {
+#if _MSC_VER > 1200 
 	// Initialize NOTIFYICONDATA
-    ZeroMemory( &m_nid, sizeof( NOTIFYICONDATA ) );
     DWORD dwVersion = GetDllVersion( _T( "Shell32.dll" ) );
     if( dwVersion >= PACKVERSION( 5,0 ) )
     {
+        ZeroMemory( &m_nid, sizeof( NOTIFYICONDATA ) );
         m_nid.cbSize = sizeof( NOTIFYICONDATA );
     }
     else 
     {
+        ZeroMemory( &m_nid, NOTIFYICONDATA_V1_SIZE );
         m_nid.cbSize = NOTIFYICONDATA_V1_SIZE;
     }
+#else
+	ZeroMemory( &m_nid, sizeof( NOTIFYICONDATA ) );
+	m_nid.cbSize = sizeof( NOTIFYICONDATA );
+#endif
 	m_nid.uID = uID;	// never changes after construction
 
 	// Use resource string as tip if there is one
@@ -82,12 +87,13 @@ CTrayIcon::~CTrayIcon()
 	SetIcon( 0 ); 
 }
 
+
 // Set notification window. It must created already.
 void CTrayIcon::SetNotificationWnd(CWnd* pNotifyWnd, UINT uCbMsg)
 {
 	// If the following assert fails, you're probably
 	// calling me before you created your window. Oops.
-	ASSERT(pNotifyWnd==NULL || ::IsWindow(pNotifyWnd->GetSafeHwnd()));
+	ASSERT( pNotifyWnd==NULL || ::IsWindow( pNotifyWnd->GetSafeHwnd() ) );
 	m_nid.hWnd = pNotifyWnd->GetSafeHwnd();
 
 	ASSERT( uCbMsg==0 || uCbMsg>=WM_USER );
@@ -101,7 +107,7 @@ void CTrayIcon::SetNotificationWnd(CWnd* pNotifyWnd, UINT uCbMsg)
 BOOL CTrayIcon::SetIcon( UINT uID, LPCTSTR lpszToolTip )
 { 
 	HICON hicon = NULL;
-	if (uID) 
+	if ( uID ) 
 	{
 		AfxLoadString( uID, m_nid.szTip, sizeof( m_nid.szTip ) );
 		hicon = AfxGetApp()->LoadIcon( uID );
@@ -112,17 +118,17 @@ BOOL CTrayIcon::SetIcon( UINT uID, LPCTSTR lpszToolTip )
 //////////////////
 // Common SetIcon for all overloads. 
 //
-BOOL CTrayIcon::SetIcon( HICON hicon, LPCSTR lpszToolTip, LPCTSTR lpszBalloonTitle, LPCTSTR lpszBalloonText )
+BOOL CTrayIcon::SetIcon( HICON hIcon, LPCSTR lpszToolTip, LPCTSTR lpszBalloonTitle, LPCTSTR lpszBalloonText )
 {
 	UINT msg;
 	m_nid.uFlags = 0;
 
 	// Set the icon
-	if ( hicon )
+	if ( hIcon )
 	{
 		// Add or replace icon in system tray
 		msg = m_nid.hIcon ? NIM_MODIFY : NIM_ADD;
-		m_nid.hIcon = hicon;
+		m_nid.hIcon = hIcon;
 		m_nid.uFlags |= NIF_ICON;
 	} 
 	else 
@@ -143,6 +149,7 @@ BOOL CTrayIcon::SetIcon( HICON hicon, LPCSTR lpszToolTip, LPCTSTR lpszBalloonTit
 		m_nid.uFlags |= NIF_TIP;
 	}
 
+#if _MSC_VER > 1200 
     // Balloon Support
     if ( lpszBalloonText && lpszBalloonTitle )
     {
@@ -151,6 +158,7 @@ BOOL CTrayIcon::SetIcon( HICON hicon, LPCSTR lpszToolTip, LPCTSTR lpszBalloonTit
         m_nid.uFlags |= NIF_INFO;
         m_nid.uTimeout = 2000; // 2 seconds.
     }
+#endif // _MSC_VER > 1200
 
 	// Use callback if any
 	if ( m_nid.uCallbackMessage && m_nid.hWnd )
@@ -182,16 +190,18 @@ LRESULT CTrayIcon::OnTrayNotification(WPARAM wID, LPARAM lEvent)
 	// the right-button popup menu. CTrayIcon will interprets the first
 	// item in the menu as the default command for WM_LBUTTONDBLCLK
 	CMenu menu;
-	if (!menu.LoadMenu(m_nid.uID))
+	if ( !menu.LoadMenu( m_nid.uID ) )
 	{
 		return 0;
 	}
 	CMenu* pSubMenu = menu.GetSubMenu( 0 );
-	if (!pSubMenu) 
+	if ( !pSubMenu )
 	{
 		return 0;
 	}
 
+    // 5.0 of the common control may send WM_CONTEXTMENU according to the MSDN docs, 
+    // so we now need to listen for both just to be safe.
 	if ( lEvent == WM_RBUTTONUP || lEvent == WM_CONTEXTMENU )
 	{
 		// Make first menu item the default (bold font)
@@ -200,7 +210,6 @@ LRESULT CTrayIcon::OnTrayNotification(WPARAM wID, LPARAM lEvent)
 		// Display the menu at the current mouse location. There's a "bug"
 		// (Microsoft calls it a feature) in Windows 95 that requires calling
 		// SetForegroundWindow. To find out more, search for Q135788 in MSDN.
-		//
 		CPoint mouse;
 		GetCursorPos( &mouse );
 		::SetForegroundWindow( m_nid.hWnd );
@@ -210,7 +219,7 @@ LRESULT CTrayIcon::OnTrayNotification(WPARAM wID, LPARAM lEvent)
 	else  
 	{
 		// double click: execute first menu item
-		::SendMessage(m_nid.hWnd, WM_COMMAND, pSubMenu->GetMenuItemID(0), 0);
+		::SendMessage( m_nid.hWnd, WM_COMMAND, pSubMenu->GetMenuItemID( 0 ), 0 );
 	}
 
 	return 1; // handled
