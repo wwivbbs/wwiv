@@ -25,4 +25,4 @@
 #DEFAULT (echo ""; id; echo %s; date; cat) >> $CVSROOT/CVSROOT/commitlog
 # or
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
-^bbs /cvsroot/sitedocs/CVSROOT/cvstools/syncmail -u --subject-prefix=`{id}`%{sVv} wwiv-cvs@lists.sourceforge.net
+^bbs /cvsroot/sitedocs/CVSROOT/cvstools/syncmail -u --subject-prefix=`{id}` %{sVv} wwiv-cvs@lists.sourceforge.net
