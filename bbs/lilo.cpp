@@ -276,7 +276,7 @@ bool VerifyPhoneNumber()
         std::string phoneNumber;
         input_password( "PH: ###-###-", phoneNumber, 4 );
 
-        if ( phoneNumber == &sess->thisuser.GetVoicePhoneNumber()[8] )
+        if ( phoneNumber != &sess->thisuser.GetVoicePhoneNumber()[8] )
         {
             if ( phoneNumber.length() == 4 && phoneNumber[3] == '-' )
             {

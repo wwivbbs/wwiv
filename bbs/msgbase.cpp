@@ -534,6 +534,13 @@ WFile *OpenEmailFile( bool bAllowWrite )
 {
 	WFile *file = new WFile( syscfg.datadir, EMAIL_DAT );
 
+    // If the file doesn't exist, just return the opaque handle now instead of flailing 
+    // around trying to open it
+    if ( !file->Exists() )
+    {
+        return file;
+    }
+
 	for ( int nAttempNum = 0; nAttempNum < NUM_ATTEMPTS_TO_OPEN_EMAIL; nAttempNum++ )
 	{
 		if ( bAllowWrite )
