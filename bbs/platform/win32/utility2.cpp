@@ -46,7 +46,7 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
         strcpy(s, fnd.GetFileName());
         align(s);
         _snprintf( szFullPathName, sizeof( szFullPathName ), "|#7[|#2%s|#7]|#1 ", s );
-        if ( app->localIO->WhereX() > ( sess->thisuser.GetScreenChars() - 15 ) )
+        if ( GetApplication()->localIO->WhereX() > ( sess->thisuser.GetScreenChars() - 15 ) )
         {
             nl();
         }
@@ -84,7 +84,7 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
     char szTempBuf[MAX_PATH];
 
     char szWWIVHome[MAX_PATH];
-    strcpy( szWWIVHome, app->GetHomeDir() );
+    strcpy( szWWIVHome, GetApplication()->GetHomeDir() );
 
     strcpy( s1, pszOutBuffer );
 
@@ -113,7 +113,7 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
         strtok(s2, " \t");
         if (strchr(s2, '\\'))
         {
-            _snprintf( s1, sizeof( s1 ), "%s%s", app->GetHomeDir(), pszOutBuffer );
+            _snprintf( s1, sizeof( s1 ), "%s%s", GetApplication()->GetHomeDir(), pszOutBuffer );
         }
     }
 
@@ -154,7 +154,7 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
         {
             if (WFile::Exists(s))
             {
-                _snprintf( pszOutBuffer, MAX_PATH, "%s%s%s", app->GetHomeDir(), s, s2 );
+                _snprintf( pszOutBuffer, MAX_PATH, "%s%s%s", GetApplication()->GetHomeDir(), s, s2 );
                 goto got_cmd;
             }
             else
@@ -170,7 +170,7 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
         }
     }
 
-    _snprintf( pszOutBuffer, MAX_PATH, "%s%s%s", app->GetHomeDir(), s1, s2 );
+    _snprintf( pszOutBuffer, MAX_PATH, "%s%s%s", GetApplication()->GetHomeDir(), s1, s2 );
 
 got_cmd:
     return pszOutBuffer;

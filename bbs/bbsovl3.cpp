@@ -36,7 +36,7 @@ int pd_getkey()
 int get_kb_event( int nNumLockMode )
 {
     int key = 0;
-    app->localIO->tleft( true );
+    GetApplication()->GetLocalIO()->tleft( true );
     time_t time1 = time( NULL );
 
     do
@@ -53,12 +53,12 @@ int get_kb_event( int nNumLockMode )
             return 0;
         }
 
-        if ( bkbhitraw() || app->localIO->LocalKeyPressed() )
+        if ( bkbhitraw() || GetApplication()->GetLocalIO()->LocalKeyPressed() )
         {
-            if ( !incom || app->localIO->LocalKeyPressed() )
+            if ( !incom || GetApplication()->GetLocalIO()->LocalKeyPressed() )
             {
                 // Check for local keys
-                key = app->localIO->LocalGetChar();
+                key = GetApplication()->GetLocalIO()->LocalGetChar();
                 if ( key == CBACKSPACE )
                 {
                     return COMMAND_DELETE;
@@ -71,10 +71,10 @@ int get_kb_event( int nNumLockMode )
                 {
                     return EXECUTE;
                 }
-                if ( ( key == 0 || key == 224 ) && app->localIO->LocalKeyPressed() )
+                if ( ( key == 0 || key == 224 ) && GetApplication()->GetLocalIO()->LocalKeyPressed() )
                 {
                     // again, the 224 is an artifact of Win32, I dunno why.
-                    key = app->localIO->LocalGetChar();
+                    key = GetApplication()->GetLocalIO()->LocalGetChar();
                     return key + 256;
                 }
                 else
@@ -190,9 +190,9 @@ int get_kb_event( int nNumLockMode )
                 {
                     if ( !key )
                     {
-                        if ( app->localIO->LocalKeyPressed() )
+                        if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
                         {
-                            key = app->localIO->LocalGetChar();
+                            key = GetApplication()->GetLocalIO()->LocalGetChar();
                             return ( key + 256 );
                         }
                     }
@@ -315,7 +315,7 @@ bool do_sysop_command( int nCommandID )
 			ClearScreen();
 		}
 
-		app->localIO->skey( static_cast<char>( nKeyStroke ) );
+		GetApplication()->GetLocalIO()->skey( static_cast<char>( nKeyStroke ) );
 
 		if ( bNeedToRedraw )
 		{

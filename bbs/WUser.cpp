@@ -24,7 +24,12 @@
 #include "WFile.h"
 #include "WUser.h"
 #include "WStringUtils.h"
+#ifndef NOT_BBS
+#include "wtypes.h"
+#include "bbs.h"
+#endif // NOT_BBS
 #include "vars.h"
+
 
 const int WUser::userDeleted                = 0x01;
 const int WUser::userInactive               = 0x02;
@@ -195,7 +200,8 @@ bool WUserManager::ReadUser( WUser *pUser, int nUserNumber, bool bForceRead )
     if ( !bForceRead )
     {
         bool userOnAndCurrentUser = ( sess->IsUserOnline() && ( nUserNumber == sess->usernum ) );
-        bool wfcStatusAndUserOne = ( app->localIO->GetWfcStatus() && nUserNumber == 1 );
+        int nWfcStatus = GetApplication()->GetLocalIO()->GetWfcStatus();
+        bool wfcStatusAndUserOne = ( nWfcStatus && nUserNumber == 1 );
         if ( userOnAndCurrentUser || wfcStatusAndUserOne )
         {
             *pUser = sess->thisuser;
@@ -232,7 +238,7 @@ bool WUserManager::WriteUser( WUser *pUser, int nUserNumber )
 
 #ifndef NOT_BBS
     if ( ( sess->IsUserOnline() && nUserNumber == static_cast<int>( sess->usernum ) ) ||
-        ( app->localIO->GetWfcStatus() && nUserNumber == 1 ) )
+        ( GetApplication()->GetLocalIO()->GetWfcStatus() && nUserNumber == 1 ) )
     {
         if ( &pUser->data != &sess->thisuser.data )
         {

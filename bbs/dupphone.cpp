@@ -108,7 +108,7 @@ int find_phone_number(const char *phone)
 		if ( wwiv::stringUtils::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) )
 		{
         	WUser user;
-            app->userManager->ReadUser( &user, p[i].usernum );
+            GetApplication()->GetUserManager()->ReadUser( &user, p[i].usernum );
             if ( !user.isUserDeleted() )
 			{
 				break;

@@ -72,7 +72,7 @@ void valscan()
             if ( get_post( i )->status & status_pending_net )
             {
                 CheckForHangup();
-                app->localIO->tleft( true );
+                GetApplication()->GetLocalIO()->tleft( true );
                 if ( i > 0 && i <= sess->GetNumMessagesInCurrentMessageArea() )
                 {
                     bool next;
@@ -130,7 +130,7 @@ void valscan()
                                 if ( p2.ownersys == 0 )
                                 {
                                     WUser tu;
-                                    app->userManager->ReadUser( &tu, p2.owneruser );
+                                    GetApplication()->GetUserManager()->ReadUser( &tu, p2.owneruser );
                                     if ( !tu.isUserDeleted() )
                                     {
                                         if ( static_cast<unsigned long>( date_to_daten( tu.GetFirstOn() ) ) < p2.daten )
@@ -152,8 +152,8 @@ void valscan()
                                             nl();
 											sess->bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
                                             tu.SetNumDeletedPosts( tu.GetNumDeletedPosts() + 1 );
-                                            app->userManager->WriteUser( &tu, p2.owneruser );
-                                            app->localIO->UpdateTopScreen();
+                                            GetApplication()->GetUserManager()->WriteUser( &tu, p2.owneruser );
+                                            GetApplication()->GetLocalIO()->UpdateTopScreen();
                                         }
                                     }
                                 }

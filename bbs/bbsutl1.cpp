@@ -359,26 +359,26 @@ void hang_it_up()
 		return;
 	}
 
-	app->comm->dtr( false );
-	if (!app->comm->carrier())
+	GetApplication()->GetComm()->dtr( false );
+	if (!GetApplication()->GetComm()->carrier())
     {
         return;
     }
 
 	wait1( 9 );
-	if (!app->comm->carrier())
+	if (!GetApplication()->GetComm()->carrier())
     {
         return;
     }
 
 	wait1( 9 );
-	if (!app->comm->carrier())
+	if (!GetApplication()->GetComm()->carrier())
     {
         return;
     }
     int i = 0;
-	app->comm->dtr( true );
-	while ( i++ < 2 && app->comm->carrier() )
+	GetApplication()->GetComm()->dtr( true );
+	while ( i++ < 2 && GetApplication()->GetComm()->carrier() )
 	{
 		wait1( 27 );
 		rputs("\x1\x1\x1");
@@ -386,7 +386,7 @@ void hang_it_up()
         rputs( (modem_i->hang[0]) ? modem_i->hang : "ATH\r" );
 		wait1( 6 );
 	}
-	app->comm->dtr( true );
+	GetApplication()->GetComm()->dtr( true );
 #endif
 }
 

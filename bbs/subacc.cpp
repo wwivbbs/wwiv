@@ -112,7 +112,7 @@ bool iscan1(int si, bool quick)
 #endif
 
         // see if a sub has changed
-        app->statusMgr->Read();
+        GetApplication()->GetStatusManager()->Read();
         if ( sess->subchg )
         {
             sess->SetCurrentReadMessageArea( -1 );
@@ -206,7 +206,7 @@ postrec *get_post( int mn )
 
     if (sess->subchg == 1)
     {
-        // sub has changed (detected in app->statusMgr->Read); invalidate cache
+        // sub has changed (detected in GetApplication()->GetStatusManager()->Read); invalidate cache
         believe_cache = false;
 
         // kludge: subch==2 leaves subch indicating change, but the '2' value
@@ -340,7 +340,7 @@ void add_post(postrec * pp)
 	if ( fileSub.IsOpen() )
     {
         // get updated info
-        app->statusMgr->Read();
+        GetApplication()->GetStatusManager()->Read();
 		fileSub.Seek( 0L, WFile::seekBegin );
 		fileSub.Read( &p, sizeof( postrec ) );
 
@@ -383,7 +383,7 @@ void delete_message(int mn)
         bCloseSubFile = true;
     }
     // see if anything changed
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
 
 	if ( fileSub.IsOpen() )
     {
@@ -472,7 +472,7 @@ void resynch(int subnum, int *msgnum, postrec * pp)
 		p = *pp1;
 	}
 
-	app->statusMgr->Read();
+	GetApplication()->GetStatusManager()->Read();
 
 	if (sess->subchg || pp)
 	{

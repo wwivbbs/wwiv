@@ -112,7 +112,8 @@ char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUs
         nb = 128;
         strcpy(b, stripfn(pszFileName));
         sprintf( szTempBuffer, "%ld ", pos );
-        sprintf( szFileDate, "%ld", file.GetFileTime() - timezone );
+		// We neede dthis cast to (long) to compile with XCode 1.5 on OS X
+        sprintf( szFileDate, "%ld", (long)file.GetFileTime() - (long)timezone );
 
         strcat(szTempBuffer, szFileDate);
         strcpy(&(b[strlen(b) + 1]), szTempBuffer);
@@ -142,8 +143,8 @@ char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUs
             {
                 done = true;
             }
-            app->localIO->LocalXYPrintf( 69, 4, "%d", nNumErrors );
-            app->localIO->LocalXYPrintf( 69, 5, "%d", *terr );
+            GetApplication()->GetLocalIO()->LocalXYPrintf( 69, 4, "%d", nNumErrors );
+            GetApplication()->GetLocalIO()->LocalXYPrintf( 69, 5, "%d", *terr );
         }
     } while ( !done && !hangup && !*abort );
 
@@ -227,17 +228,17 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
     {
         sess->bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
     }
-    int xx1 = app->localIO->WhereX();
-    int yy1 = app->localIO->WhereY();
-    app->localIO->LocalXYPuts( 52, 0, "³ Filename :               ");
-    app->localIO->LocalXYPuts( 52, 1, "³ Xfer Time:               ");
-    app->localIO->LocalXYPuts( 52, 2, "³ File Size:               ");
-    app->localIO->LocalXYPuts( 52, 3, "³ Cur Block: 1 - 1k        ");
-    app->localIO->LocalXYPuts( 52, 4, "³ Consec Errors: 0         ");
-    app->localIO->LocalXYPuts( 52, 5, "³ Total Errors : 0         ");
-    app->localIO->LocalXYPuts( 52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
-    app->localIO->LocalXYPuts( 65, 0, stripfn(pszFileName));
-    app->localIO->LocalXYPrintf(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k( lFileSize ) );
+    int xx1 = GetApplication()->GetLocalIO()->WhereX();
+    int yy1 = GetApplication()->GetLocalIO()->WhereY();
+    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 0, "³ Filename :               ");
+    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 1, "³ Xfer Time:               ");
+    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 2, "³ File Size:               ");
+    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 3, "³ Cur Block: 1 - 1k        ");
+    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 4, "³ Consec Errors: 0         ");
+    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 5, "³ Total Errors : 0         ");
+    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
+    GetApplication()->GetLocalIO()->LocalXYPuts( 65, 0, stripfn(pszFileName));
+    GetApplication()->GetLocalIO()->LocalXYPrintf(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k( lFileSize ) );
 
     if (!okstart(&bUseCRC, &abort))
     {
@@ -277,9 +278,9 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
         {
             bUse1kBlocks = false;
         }
-        app->localIO->LocalXYPrintf( 65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1 );
-        app->localIO->LocalXYPuts( 65, 1, ctim(((double) (lFileSize - cp)) * tpb ) );
-        app->localIO->LocalXYPuts( 69, 4, "0" );
+        GetApplication()->GetLocalIO()->LocalXYPrintf( 65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1 );
+        GetApplication()->GetLocalIO()->LocalXYPuts( 65, 1, ctim(((double) (lFileSize - cp)) * tpb ) );
+        GetApplication()->GetLocalIO()->LocalXYPuts( 69, 4, "0" );
 
         ch = send_b(file, cp, ( bUse1kBlocks ) ? 1 : 0, byBlockNumber, &bUseCRC, pszFileName, &terr, &abort);
         if (ch == CX)
@@ -323,7 +324,7 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
         }
     }
 	file.Close();
-    app->localIO->LocalGotoXY(xx1, yy1);
+    GetApplication()->GetLocalIO()->LocalGotoXY(xx1, yy1);
     if ( *sent && !bUseYModemBatch )
     {
         sess->bout << "-=> File transmission complete.\r\n\n";
@@ -338,10 +339,10 @@ void zmodem_send(char *pszFileName, bool *sent, double *percent, char ft  )
 
     StringRemoveWhitespace( pszFileName );
 
-    bool bOldBinaryMode = app->comm->GetBinaryMode();
-	app->comm->SetBinaryMode( true );
+    bool bOldBinaryMode = GetApplication()->GetComm()->GetBinaryMode();
+	GetApplication()->GetComm()->SetBinaryMode( true );
 	bool bResult = NewZModemSendFile( pszFileName );
-	app->comm->SetBinaryMode( bOldBinaryMode );
+	GetApplication()->GetComm()->SetBinaryMode( bOldBinaryMode );
 
 	if ( bResult )
 	{

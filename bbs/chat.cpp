@@ -126,7 +126,7 @@ void chat_room()
             process_inst_msgs();
         }
         sess->bout << "|#1: " << szColorString;
-        app->localIO->tleft( true );
+        GetApplication()->GetLocalIO()->tleft( true );
         bChatLine = false;
         char szMessage[ 300 ];
         inputl(szMessage, 250);
@@ -319,7 +319,7 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
         int nTempUserNum = finduser1(szText);
         if (nTempUserNum > 0)
         {
-            app->userManager->ReadUser( &u, nTempUserNum );
+            GetApplication()->GetUserManager()->ReadUser( &u, nTempUserNum );
             print_data( nTempUserNum, &u, true, false );
         }
         else
@@ -393,7 +393,7 @@ void who_online(int *nodes, int loc)
     {
         get_inst_info(i, &ir);
         if ((!(ir.flags & INST_FLAGS_INVIS)) || so())
-            if ((ir.loc == loc) && (i != app->GetInstanceNumber()))
+            if ((ir.loc == loc) && (i != GetApplication()->GetInstanceNumber()))
             {
                 c++;
                 nodes[c] = ir.user;
@@ -416,7 +416,7 @@ void intro(int loc)
         for (int i = 1; i <= nodes[0]; i++)
         {
             WUser u;
-            app->userManager->ReadUser( &u, nodes[i] );
+            GetApplication()->GetUserManager()->ReadUser( &u, nodes[i] );
             if (((nodes[0] - i) == 1) && (nodes[0] >= 2))
             {
                 sess->bout << "|#1" << u.GetName() << " |#7and ";
@@ -470,7 +470,7 @@ void ch_direct(char *pszMessage, int loc, char *pszColorString, int node, int nO
             return;
         }
         WUser u;
-        app->userManager->ReadUser( &u, ir.user );
+        GetApplication()->GetUserManager()->ReadUser( &u, ir.user );
         char szUserName[ 81 ];
         strcpy( szUserName, u.GetName() );
         sprintf( szMessage, "|#9From %.12s|#6 [to %s]|#1: %s%s",
@@ -479,7 +479,7 @@ void ch_direct(char *pszMessage, int loc, char *pszColorString, int node, int nO
         for ( int i = 1; i <= num_instances(); i++ )
         {
             get_inst_info( i, &ir );
-            if ( ir.loc == loc &&  i != app->GetInstanceNumber() )
+            if ( ir.loc == loc &&  i != GetApplication()->GetInstanceNumber() )
             {
                 send_inst_str( i, szMessage );
             }
@@ -521,7 +521,7 @@ void ch_whisper(char *pszMessage, char *pszColorString, int node, int nOffSet)
     }
     send_inst_str(node, szText);
     WUser u;
-    app->userManager->ReadUser( &u, ir.user );
+    GetApplication()->GetUserManager()->ReadUser( &u, ir.user );
     sess->bout << "|#1[|#9Message sent only to " << u.GetName() << "|#1]\r\n";
 }
 
@@ -537,7 +537,7 @@ int wusrinst(char *n)
         if (ir.flags & INST_FLAGS_ONLINE)
         {
             WUser user;
-            app->userManager->ReadUser( &user, ir.user );
+            GetApplication()->GetUserManager()->ReadUser( &user, ir.user );
             if ( wwiv::stringUtils::IsEqualsIgnoreCase( user.GetName(), n ) )
             {
                 return i;
@@ -620,7 +620,7 @@ void page_user(int loc)
         }
         i = atoi(s);
     }
-    if (i == app->GetInstanceNumber())
+    if (i == GetApplication()->GetInstanceNumber())
     {
         sess->bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
         return;
@@ -666,7 +666,7 @@ void out_msg(char *pszMessage, int loc)
     {
         instancerec ir;
         get_inst_info(i, &ir);
-        if ((ir.loc == loc) && (i != app->GetInstanceNumber()))
+        if ((ir.loc == loc) && (i != GetApplication()->GetInstanceNumber()))
         {
             send_inst_str(i, pszMessage);
         }
@@ -679,7 +679,7 @@ void get_colors(char *pszColorString)
 {
     char szKey[10];
 
-    sprintf( szKey, "C%u", app->GetInstanceNumber() );
+    sprintf( szKey, "C%u", GetApplication()->GetInstanceNumber() );
     strcpy( pszColorString, ini_get(szKey, -1, NULL) );
 }
 
@@ -831,7 +831,7 @@ void exec_action(char *pszMessage, char *pszColorString, int loc, int nact)
     if (bOk)
     {
         get_inst_info(p, &ir);
-        app->userManager->ReadUser( &u, ir.user );
+        GetApplication()->GetUserManager()->ReadUser( &u, ir.user );
         sprintf( tmsg, actions[nact]->toperson, sess->thisuser.GetName() );
     }
     else if (actions[nact]->r)
@@ -857,7 +857,7 @@ void exec_action(char *pszMessage, char *pszColorString, int loc, int nact)
         for (int c = 1; c <= num_instances(); c++)
         {
             get_inst_info(c, &ir);
-            if ((ir.loc == loc) && (c != app->GetInstanceNumber()) && (c != p))
+            if ((ir.loc == loc) && (c != GetApplication()->GetInstanceNumber()) && (c != p))
             {
                 send_inst_str(c, final);
             }
@@ -911,8 +911,8 @@ void toggle_avail()
     instancerec ir;
     char xl[81], cl[81], atr[81], cc;
 
-    app->localIO->SaveCurrentLine(cl, atr, xl, &cc);
-    get_inst_info(app->GetInstanceNumber(), &ir);
+    GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
+    get_inst_info(GetApplication()->GetInstanceNumber(), &ir);
     avail = !avail;
 
     sess->bout << "\n\rYou are now ";
@@ -928,8 +928,8 @@ void toggle_invis()
     instancerec ir;
     char xl[81], cl[81], atr[81], cc;
 
-    app->localIO->SaveCurrentLine(cl, atr, xl, &cc);
-    get_inst_info(app->GetInstanceNumber(), &ir);
+    GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
+    get_inst_info(GetApplication()->GetInstanceNumber(), &ir);
     invis = !invis;
 
 	sess->bout << "\r\n|#1You are now ";
@@ -980,7 +980,7 @@ void list_channels()
                 sess->bout << "    |#9Users in channel: ";
                 for (int i2 = 1; i2 <= nodes[0]; i2++)
                 {
-                    app->userManager->ReadUser( &u, nodes[i2] );
+                    GetApplication()->GetUserManager()->ReadUser( &u, nodes[i2] );
                     if ( ( ( nodes[0] - i2 ) == 1 ) && ( nodes[0] >= 2 ) )
                     {
 						sess->bout << "|#1" << u.GetName() << " |#7and ";
@@ -1273,7 +1273,7 @@ int grabname(char *pszMessage, int ch)
                 {
                     continue;
                 }
-                app->userManager->ReadUser( &u, ir.user );
+                GetApplication()->GetUserManager()->ReadUser( &u, ir.user );
                 int t1 = strlen(name);
                 int t2 = strlen( u.GetName() );
                 if (t1 > t2)

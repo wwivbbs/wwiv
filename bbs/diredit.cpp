@@ -187,7 +187,7 @@ void modify_dir(int n)
 			{
 				if (chdir(s))
 				{
-					app->CdHome();
+					GetApplication()->CdHome();
 					if (mkdir(s))
 					{
 						sess->bout << "|#6Unable to create or change to directory." << wwiv::endl;
@@ -197,7 +197,7 @@ void modify_dir(int n)
 				}
 				else
 				{
-					app->CdHome();
+					GetApplication()->CdHome();
 				}
 				if (s[0])
                 {
@@ -329,7 +329,7 @@ void swap_dirs(int dir1, int dir2)
 	dir1 = static_cast<int>( dir1conv );
 	dir2 = static_cast<int>( dir2conv );
 
-	int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
+	int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
 	unsigned long *pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len ) );
 	WWIV_ASSERT( pTempQScan != NULL );
@@ -404,7 +404,7 @@ void insert_dir(int n)
 	directories[n] = r;
 	++sess->num_dirs;
 
-	int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
+	int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
 	unsigned long * pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len ) );
 	WWIV_ASSERT( pTempQScan != NULL );
@@ -459,7 +459,7 @@ void delete_dir(int n)
 	}
 	--sess->num_dirs;
 
-	int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
+	int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
 	pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len ) );
 	WWIV_ASSERT( pTempQScan != NULL );
@@ -644,7 +644,7 @@ void dlboardedit()
   {
 	  save_confs(CONF_DIRS, -1, NULL);
   }
-  if ( !app->localIO->GetWfcStatus() )
+  if ( !GetApplication()->GetLocalIO()->GetWfcStatus() )
   {
 	  changedsl();
   }

@@ -103,7 +103,7 @@ void modify_chain( int nCurrentChainNumber )
     memset( &r, 0, sizeof( chainregrec ) );
 
     chainfilerec c = chains[ nCurrentChainNumber ];
-    if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
     {
         r = chains_reg[ nCurrentChainNumber ];
     }
@@ -137,19 +137,19 @@ void modify_chain( int nCurrentChainNumber )
         //sess->bout << "|#9I) Disable pause: |#2%s\r\n", YesNoString( ( c.ansir & ansir_no_pause ) ) << wwiv::endl;
         sess->bout << "|#9J) Local only   : |#2" << YesNoString( ( c.ansir & ansir_local_only ) ? true : false ) << wwiv::endl;
         sess->bout << "|#9K) Multi user   : |#2" << YesNoString( ( c.ansir & ansir_multi_user ) ? true : false ) << wwiv::endl;
-        if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
         {
             WUser regUser;
             if ( r.regby[0] )
             {
-                app->userManager->ReadUser( &regUser, r.regby[0] );
+                GetApplication()->GetUserManager()->ReadUser( &regUser, r.regby[0] );
             }
             sess->bout << "|#9L) Registered by: |#2" << ( ( r.regby[0] ) ? regUser.GetName() : "AVAILABLE" ) << wwiv::endl;
             for (i = 1; i < 5; i++)
             {
                 if ( r.regby[i] != 0 )
                 {
-                    app->userManager->ReadUser( &regUser, r.regby[i] );
+                    GetApplication()->GetUserManager()->ReadUser( &regUser, r.regby[i] );
                     sess->bout << charstr(18, ' ') << regUser.GetName() << wwiv::endl;
                 }
             }
@@ -176,7 +176,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
         case '[':
             chains[ nCurrentChainNumber ] = c;
-            if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+            if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
             {
                 chains_reg[ nCurrentChainNumber ] = r;
             }
@@ -186,14 +186,14 @@ void modify_chain( int nCurrentChainNumber )
                 sess->SetNumberOfChains( nCurrentChainNumber );
             }
             c = chains[ nCurrentChainNumber ];
-            if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+            if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
             {
                 r = chains_reg[ nCurrentChainNumber ];
             }
             break;
         case ']':
             chains[ nCurrentChainNumber ] = c;
-            if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+            if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
             {
                 chains_reg[ nCurrentChainNumber ] = r;
             }
@@ -202,7 +202,7 @@ void modify_chain( int nCurrentChainNumber )
                 nCurrentChainNumber = 0;
             }
             c = chains[ nCurrentChainNumber ];
-            if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+            if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
             {
                 r = chains_reg[ nCurrentChainNumber ];
             }
@@ -324,7 +324,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
         case 'L':
-            if ( !app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+            if ( !GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
             {
                 break;
             }
@@ -345,7 +345,7 @@ void modify_chain( int nCurrentChainNumber )
                         if (nUserNumber > 0)
                         {
                             WUser regUser;
-                            app->userManager->ReadUser( &regUser, nUserNumber );
+                            GetApplication()->GetUserManager()->ReadUser( &regUser, nUserNumber );
                             r.regby[i] = static_cast< short > ( nUserNumber );
                             nl();
                             sess->bout << "|#1Registered by       |#2" << nUserNumber << " " << ( ( r.regby[i] ) ? regUser.GetName() : "AVAILABLE" );
@@ -404,7 +404,7 @@ void modify_chain( int nCurrentChainNumber )
         }
     } while ( !done && !hangup );
     chains[ nCurrentChainNumber ] = c;
-    if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
     {
         chains_reg[ nCurrentChainNumber ] = r;
     }
@@ -419,7 +419,7 @@ void insert_chain( int nCurrentChainNumber )
     for ( int i = sess->GetNumberOfChains() - 1; i >= nCurrentChainNumber; i-- )
     {
         chains[i + 1] = chains[i];
-        if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
         {
             chains_reg[i + 1] = chains_reg[i];
         }
@@ -432,7 +432,7 @@ void insert_chain( int nCurrentChainNumber )
     chains[ nCurrentChainNumber ] = c;
     c.ansir |= ansir_no_DOS;
     sess->SetNumberOfChains( sess->GetNumberOfChains() + 1 );
-    if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
     {
         memset(&r, 0, sizeof(r));
         r.maxage = 255;
@@ -447,7 +447,7 @@ void delete_chain( int nCurrentChainNumber )
     for ( int i = nCurrentChainNumber; i < sess->GetNumberOfChains(); i++ )
     {
         chains[i] = chains[i + 1];
-        if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
         {
             chains_reg[i] = chains_reg[i + 1];
         }
@@ -526,7 +526,7 @@ void chainedit()
         chainsFile.Write( chains, sess->GetNumberOfChains() * sizeof( chainfilerec ) );
         chainsFile.Close();
     }
-    if ( app->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
+    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) )
     {
         WFile regFile( syscfg.datadir, CHAINS_REG );
         if ( regFile.Open( WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite ) )

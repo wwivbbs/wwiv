@@ -74,14 +74,14 @@ int finduser( char *pszSearchString )
     int nUserNumber = atoi( pszSearchString );
     if ( nUserNumber > 0 )
     {
-        app->userManager->ReadUser( &user, nUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
         if ( user.isUserDeleted() )
         {
             return 0;
         }
         return nUserNumber;
     }
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     smalrec *sr = ( smalrec * ) bsearch( ( void * ) pszSearchString,
                     ( void * ) smallist,
                     ( size_t ) status.users,
@@ -94,7 +94,7 @@ int finduser( char *pszSearchString )
     }
     else
     {
-        app->userManager->ReadUser( &user, sr->number );
+        GetApplication()->GetUserManager()->ReadUser( &user, sr->number );
         if ( user.isUserDeleted() )
         {
             return 0;
@@ -131,14 +131,14 @@ int finduser1(const char *pszSearchString)
     {
         szUserNamePart[i] = upcase( szUserNamePart[i] );
     }
-    app->statusMgr->Read();
+    GetApplication()->GetStatusManager()->Read();
     for ( int i1 = 0; i1 < status.users; i1++ )
     {
         if ( strstr( reinterpret_cast<char*>( smallist[i1].name ), szUserNamePart) != NULL )
         {
             int nCurrentUserNum = smallist[i1].number;
             WUser user;
-            app->userManager->ReadUser( &user, nCurrentUserNum );
+            GetApplication()->GetUserManager()->ReadUser( &user, nCurrentUserNum );
             sess->bout << "|#5Do you mean " << user.GetUserNameAndNumber( nCurrentUserNum ) << " (Y/N/Q)? ";
             char ch = ynq();
             if ( ch == 'Y' )

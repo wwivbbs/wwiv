@@ -36,7 +36,7 @@ void rputs(const char *pszText )
 	// Rob fix for COM/IP weirdness
 	if ( ok_modem_stuff )
     {
-        app->comm->write( pszText, strlen( pszText ) );
+        GetApplication()->GetComm()->write( pszText, strlen( pszText ) );
     }
 
 }
@@ -58,7 +58,7 @@ void get_modem_line(char *pszLine, double d, bool allowa)
 	t = timer();
 	do
 	{
-		if (app->comm->incoming())
+		if (GetApplication()->GetComm()->incoming())
 		{
 			ch = bgetchraw();
 		}
@@ -66,9 +66,9 @@ void get_modem_line(char *pszLine, double d, bool allowa)
 		{
 			ch = 0;
 		}
-		if (app->localIO->LocalKeyPressed() && allowa)
+		if (GetApplication()->GetLocalIO()->LocalKeyPressed() && allowa)
 		{
-			ch1 = app->localIO->getchd1();
+			ch1 = GetApplication()->GetLocalIO()->getchd1();
 			if (wwiv::UpperCase<char>(ch1) == 'H')
 			{
 				ch = RETURN;
@@ -126,9 +126,9 @@ void do_result(result_info * ri)
 	if (ri->com_speed)
     {
 		com_speed = ri->com_speed;
-        if ( ok_modem_stuff && NULL != app->comm )
+        if ( ok_modem_stuff && NULL != GetApplication()->GetComm() )
         {
-            app->comm->setup( 'N', 8, 1, com_speed );
+            GetApplication()->GetComm()->setup( 'N', 8, 1, com_speed );
         }
 	}
 	if (ri->modem_speed)
@@ -191,7 +191,7 @@ int mode_switch(double d, bool allowa)
 	double t = timer();
 	modem_mode = 0;
 
-	if ( app->comm != NULL )
+	if ( GetApplication()->GetComm() != NULL )
 	{
 
 	while ( modem_mode == 0 && fabs( timer() - t ) < d && !abort )
@@ -212,8 +212,8 @@ int mode_switch(double d, bool allowa)
 	}
 	if ( abort )
 	{                   /* make sure modem hangs up */
-		app->comm->dtr( false );
-		while ((fabs(timer() - t) < d) && (!app->comm->incoming()))
+		GetApplication()->GetComm()->dtr( false );
+		while ((fabs(timer() - t) < d) && (!GetApplication()->GetComm()->incoming()))
 		{
 			wait1(18);
 			rputch('\r');
@@ -244,12 +244,12 @@ void holdphone(bool bPickUpPhone)
         return;
     }
 
-    if (app->comm == NULL)
+    if (GetApplication()->GetComm() == NULL)
     {
 	    return ;
     }
 
-    app->comm->dtr( true );
+    GetApplication()->GetComm()->dtr( true );
 
     if (bPickUpPhone)
     {
@@ -271,10 +271,10 @@ void holdphone(bool bPickUpPhone)
             if (global_xx)
             {
                 global_xx = false;
-                app->comm->dtr( true );
+                GetApplication()->GetComm()->dtr( true );
                 if (fabs(xtime - timer()) < modem_time)
                 {
-                    app->localIO->LocalPuts("\r\n\r\nWaiting for modem...");
+                    GetApplication()->GetLocalIO()->LocalPuts("\r\n\r\nWaiting for modem...");
                 }
                 while (fabs(xtime - timer()) < modem_time)
                     ;
@@ -299,7 +299,7 @@ void imodem(bool bSetup)
 
 	if (!ok_modem_stuff)
 	{
-		//app->localIO->LocalPuts("\x0c");
+		//GetApplication()->GetLocalIO()->LocalPuts("\x0c");
 		return;
 	}
 
@@ -318,8 +318,8 @@ void imodem(bool bSetup)
 		return;
 	}
 
-	app->localIO->LocalPuts( "Waiting..." );
-	app->comm->dtr( true );
+	GetApplication()->GetLocalIO()->LocalPuts( "Waiting..." );
+	GetApplication()->GetComm()->dtr( true );
 	do_result( &modem_i->defl );
 	int i = 0;
 	bool done = false;
@@ -359,14 +359,14 @@ void imodem(bool bSetup)
 				s = "(%d)...", modem_mode;
 				break;
 			}
-			app->localIO->LocalPuts( s.c_str() );
+			GetApplication()->GetLocalIO()->LocalPuts( s.c_str() );
 		}
 		if ( i > 5 )
         {
 			done = true;
         }
 	}
-	app->localIO->LocalCls();
+	GetApplication()->GetLocalIO()->LocalCls();
 #endif
 }
 
@@ -381,8 +381,8 @@ void answer_phone()
 	cid_num[0]  = '\0';
 	cid_name[0] = '\0';
 
-	app->localIO->SetCursor( WLocalIO::cursorNormal );
-	app->localIO->LocalXYPuts( 3, 24, "Answering phone, 'H' to abort." );
+	GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );
+	GetApplication()->GetLocalIO()->LocalXYPuts( 3, 24, "Answering phone, 'H' to abort." );
 	sess->wfc_status = 0;
 	do_result( &modem_i->defl );
 #ifdef _DEBUG
@@ -407,7 +407,7 @@ void answer_phone()
 		}
 		else
 		{
-            app->localIO->LocalFastPuts( sess->GetCurrentSpeed().c_str() );
+            GetApplication()->GetLocalIO()->LocalFastPuts( sess->GetCurrentSpeed().c_str() );
 			imodem( false );
 			imodem( false );
 		}
@@ -437,11 +437,11 @@ bool InitializeComPort( int nComPortNumber )
     }
 
     std::cout << "\nChecking status of COM Port 'COM" << nComPortNumber << "'... ";
-    app->comm->SetComPort(nComPortNumber);
+    GetApplication()->GetComm()->SetComPort(nComPortNumber);
 
 	// TODO check to see if it's opened 1st.
-	app->comm->close();
-    if ( !app->comm->open() )
+	GetApplication()->GetComm()->close();
+    if ( !GetApplication()->GetComm()->open() )
     {
         std::cout << "\nUnable to Initialize Serial Port!" << std::endl <<
             "Continuing in local-only mode..." << std::endl;
@@ -449,8 +449,8 @@ bool InitializeComPort( int nComPortNumber )
     }
     std::cout << "Port available!" << std::endl;
 
-    app->comm->setup( 'N', 8, 1, com_speed );
-    app->comm->dtr( true );
+    GetApplication()->GetComm()->setup( 'N', 8, 1, com_speed );
+    GetApplication()->GetComm()->dtr( true );
 #endif
     return true;
 }

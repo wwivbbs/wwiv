@@ -37,7 +37,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
 	if (ok_modem_stuff)
     {
-		app->comm->close( true );
+		GetApplication()->GetComm()->close( true );
 	}
 
     char s[256];
@@ -47,8 +47,8 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 	// reengage comm stuff
 	if (ok_modem_stuff)
     {
-		app->comm->open();
-		app->comm->dtr( true );
+		GetApplication()->GetComm()->open();
+		GetApplication()->GetComm()->dtr( true );
     }
 
     return i;

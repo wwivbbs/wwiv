@@ -148,6 +148,7 @@ protected:
 
 public:
     WBbsApp();
+    WBbsApp( const WBbsApp& copy );
     virtual ~WBbsApp();
 
     /*!
@@ -160,21 +161,25 @@ public:
 	 * See class <code>WComm</code>
 	 */
     WComm* comm;
+    WComm* GetComm();
 
 	/*!
 	 * @var statusMgr pointer to the StatusMgr class.
 	 */
 	StatusMgr* statusMgr;
+	StatusMgr* GetStatusManager();
 
     /*!
 	 * @var localIO pointer to Local IO class
 	 */
     WLocalIO *localIO;
+    WLocalIO* GetLocalIO(); 
 
     /*!
      * @var userManager pointer to the User Manager class
      */
     WUserManager* userManager;
+    WUserManager* GetUserManager();
 
     /*!
 	 * @var m_szEnvironVarWwivNetworkNumber Environment variable style
@@ -270,6 +275,10 @@ private:
     void create_phone_file();
 
 };
+
+// Function Prototypes
+WBbsApp* GetApplication();
+
 
 
 #endif // __INCLUDED_BBS_H__

@@ -204,7 +204,7 @@ __EXTRN__ long last_iia;
 #include "WSession.h"
 
 __EXTRN__ WBbsApp *app;
-__EXTRN__ WSession *sess;
+__EXTRN__  WSession *sess;
 #endif // NOT_BBS
 
 // from version.cpp

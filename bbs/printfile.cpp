@@ -211,8 +211,8 @@ void print_local_file( const char *ss, const char *ss1 )
 		ExecuteExternalProgram( szCmdLine, EFLAG_NONE );
 		if ( sess->IsUserOnline() )
 		{
-			app->localIO->LocalCls();
-			app->localIO->UpdateTopScreen();
+			GetApplication()->GetLocalIO()->LocalCls();
+			GetApplication()->GetLocalIO()->UpdateTopScreen();
 		}
 	}
 	else

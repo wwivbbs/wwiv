@@ -108,7 +108,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable )
 		if ( !fileGlobalCap.IsOpen() )
         {
 			char szFileName[MAX_PATH];
-			_snprintf(szFileName, sizeof( szFileName ), "%sglobal-%d.txt", syscfg.gfilesdir, app->GetInstanceNumber() );
+			_snprintf(szFileName, sizeof( szFileName ), "%sglobal-%d.txt", syscfg.gfilesdir, GetApplication()->GetInstanceNumber() );
 			fileGlobalCap.SetName( szFileName );
 
 			bool bOpen = fileGlobalCap.Open( WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
@@ -825,9 +825,9 @@ void WLocalIO::skey( char ch )
                     UpdateTopScreen();
                     break;
                 case CF1:                          /* Ctrl-F1 */
-                    if ( app->IsShutDownActive() )
+                    if ( GetApplication()->IsShutDownActive() )
                     {
-                        app->SetShutDownStatus( WBbsApp::shutdownNone );
+                        GetApplication()->SetShutDownStatus( WBbsApp::shutdownNone );
                     }
                     else
                     {
@@ -856,7 +856,7 @@ void WLocalIO::skey( char ch )
                     break;
                 case F5:                          /* F5 */
                     hangup = true;
-                    app->comm->dtr( false );
+                    GetApplication()->GetComm()->dtr( false );
                     break;
                 case SF5:                          /* Shift-F5 */
                     i1 = (rand() % 20) + 10;
@@ -865,12 +865,12 @@ void WLocalIO::skey( char ch )
                         bputch( static_cast< unsigned char > ( rand() % 256 ) );
                     }
                     hangup = true;
-                    app->comm->dtr( false );
+                    GetApplication()->GetComm()->dtr( false );
                     break;
                 case CF5:                          /* Ctrl-F5 */
                     sess->bout << "\r\nCall back later when you are there.\r\n\n";
                     hangup = true;
-                    app->comm->dtr( false );
+                    GetApplication()->GetComm()->dtr( false );
                     break;
                 case F6:                          /* F6 */
                     ToggleSysopAlert();
@@ -1081,7 +1081,7 @@ void WLocalIO::UpdateTopScreenImpl()
     {
         // Only set the titlebar if the user wanted it that way.
         char szConsoleTitle[ 255 ];
-        _snprintf( szConsoleTitle, sizeof( szConsoleTitle ), "WWIV Node %d (User: %s)", app->GetInstanceNumber(), sess->thisuser.GetUserNameAndNumber( sess->usernum ) );
+        _snprintf( szConsoleTitle, sizeof( szConsoleTitle ), "WWIV Node %d (User: %s)", GetApplication()->GetInstanceNumber(), sess->thisuser.GetUserNameAndNumber( sess->usernum ) );
         ::SetConsoleTitle( szConsoleTitle );
     }
 
@@ -1126,7 +1126,7 @@ void WLocalIO::UpdateTopScreenImpl()
         break;
     case WLocalIO::topdataSystem:
         {
-            app->statusMgr->Read();
+            GetApplication()->GetStatusManager()->Read();
             LocalXYPrintf( 0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, status.date1 );
 
             LocalXYPrintf( 0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",

@@ -216,7 +216,7 @@ void feedback( bool bNewUserFeedback )
 
     if ( bNewUserFeedback )
     {
-        app->statusMgr->Read();
+        GetApplication()->GetStatusManager()->Read();
         sprintf( irt, "|#1Validation Feedback (|12%d|#2 slots left|#1)", syscfg.maxusers - status.users );
         // We disable the fsed here since it was hanging on some systems.  Not sure why
         // but it's better to be safe -- Rushfan 2003-12-04
@@ -225,19 +225,19 @@ void feedback( bool bNewUserFeedback )
     }
     if ( guest_user )
     {
-        app->statusMgr->Read();
+        GetApplication()->GetStatusManager()->Read();
         strcpy( irt, "Guest Account Feedback" );
         email( 1, 0, true, 0, true, true );
         return;
     }
     strcpy( irt, "|#1Feedback" );
-    int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
+    int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
     int i1 = 0;
 
     for ( i = 2; i < 10 && i < nNumUserRecords; i++ )
     {
         WUser user;
-        app->userManager->ReadUser( &user, i );
+        GetApplication()->GetUserManager()->ReadUser( &user, i );
         if ( ( user.GetSl() == 255 || ( getslrec( user.GetSl() ).ability & ability_cosysop ) ) &&
             !user.isUserDeleted() )
         {
@@ -257,7 +257,7 @@ void feedback( bool bNewUserFeedback )
         for ( i = 1; ( i < 10 && i < nNumUserRecords ); i++ )
         {
             WUser user;
-            app->userManager->ReadUser( &user, i );
+            GetApplication()->GetUserManager()->ReadUser( &user, i );
             if ( ( user.GetSl() == 255 || (getslrec( user.GetSl() ).ability & ability_cosysop ) ) &&
                  !user.isUserDeleted() )
             {

@@ -73,7 +73,7 @@ bool exist_dir(const char *pszDirectoryName)
 	{
 		ok = true;
 	}
-	app->CdHome();
+	GetApplication()->CdHome();
 	return ok;
 }
 
@@ -173,7 +173,7 @@ void modify_sec(int n)
 					{
 						WWIV_ChangeDirTo(syscfg.gfilesdir);
 						mkdir(r.filename);
-						app->CdHome();
+						GetApplication()->CdHome();
 					}
 					else
 					{
@@ -413,9 +413,9 @@ bool fill_sec(int sn)
         gflFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
         gflFile.Write( g, nf * sizeof( gfilerec ) );
         gflFile.Close();
-		app->statusMgr->Lock();
+		GetApplication()->GetStatusManager()->Lock();
 		strcpy(status.gfiledate, date());
-		app->statusMgr->Write();
+		GetApplication()->GetStatusManager()->Write();
 	}
 	BbsFreeMemory( g );
 	return !ok;

@@ -121,7 +121,7 @@ const char* GetMailBoxStatus( char* pszStatusOut )
     }
 
     WUser ur;
-    app->userManager->ReadUser( &ur, sess->thisuser.GetForwardUserNumber() );
+    GetApplication()->GetUserManager()->ReadUser( &ur, sess->thisuser.GetForwardUserNumber() );
     if ( ur.isUserDeleted() )
     {
         sess->thisuser.SetForwardUserNumber( 0 );
@@ -936,7 +936,7 @@ void defaults( MenuInstanceData * MenuData )
     do
     {
         print_cur_stat();
-        app->localIO->tleft( true );
+        GetApplication()->GetLocalIO()->tleft( true );
         if (hangup)
         {
             return;
@@ -1172,7 +1172,7 @@ void config_scan_plus(int type)
 
     int useconf = ( subconfnum > 1 && okconf( &sess->thisuser ) );
     sess->topdata = WLocalIO::topdataNone;
-    app->localIO->UpdateTopScreen();
+    GetApplication()->GetLocalIO()->UpdateTopScreen();
 
     menu_items = static_cast<char **>( BbsAlloc2D( 10, 10, sizeof( char ) ) );
     strcpy(menu_items[0], "Next");

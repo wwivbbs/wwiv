@@ -879,7 +879,7 @@ bool LoadMenuSetup( int nUserNum )
     if ( userConfig.Exists() )
     {
         WUser user;
-        app->userManager->ReadUser( &user, nUserNum );
+        GetApplication()->GetUserManager()->ReadUser( &user, nUserNum );
         if ( userConfig.Open( WFile::modeReadOnly | WFile::modeBinary ) )
         {
             userConfig.Seek( nUserNum * sizeof(user_config), WFile::seekBegin );
@@ -912,7 +912,7 @@ void WriteMenuSetup(int nUserNum)
     }
 
     WUser user;
-    app->userManager->ReadUser( &user, nUserNum );
+    GetApplication()->GetUserManager()->ReadUser( &user, nUserNum );
     strcpy(pSecondUserRec->name, user.GetName() );
 
     WFile userConfig( syscfg.datadir, CONFIG_USR );

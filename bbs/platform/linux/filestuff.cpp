@@ -20,7 +20,13 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
+
+#ifdef __APPLE__
+#include <sys/param.h>
+#include <sys/mount.h>
+#else
 #include <sys/vfs.h>
+#endif // __APPLE__
 
 // Returns the length of an open file handle in bytes
 

@@ -32,7 +32,7 @@ char *daten_to_date(time_t dt);
 void deluser( int nUserNumber )
 {
     WUser user;
-    app->userManager->ReadUser( &user, nUserNumber );
+    GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
 
     if ( !user.isUserDeleted() )
     {
@@ -40,7 +40,7 @@ void deluser( int nUserNumber )
         DeleteSmallRecord( user.GetName() );
         user.SetInactFlag( WUser::userDeleted );
         user.SetNumMailWaiting( 0 );
-        app->userManager->WriteUser( &user, nUserNumber );
+        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
 		WFile *pFileEmail = OpenEmailFile( true );
 		WWIV_ASSERT( pFileEmail );
 		if ( pFileEmail->IsOpen() )
@@ -85,7 +85,7 @@ void deluser( int nUserNumber )
             }
         }
         voteFile.Close();
-        app->userManager->WriteUser( &user, nUserNumber );
+        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
         delete_phone_number( nUserNumber, user.GetVoicePhoneNumber() ); // dupphone addition
         delete_phone_number( nUserNumber, user.GetDataPhoneNumber() );  // dupphone addition
     }
@@ -170,7 +170,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
         sess->bout << "|#2H|#9) Password     : |#1";
         if ( AllowLocalSysop() )
         {
-            app->localIO->LocalPuts( pUser->GetPassword() );
+            GetApplication()->GetLocalIO()->LocalPuts( pUser->GetPassword() );
         }
 
         if ( incom && sess->thisuser.GetSl() == 255 )
@@ -276,12 +276,12 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
     if (bLongFormat)
     {
         print_affil( pUser );
-        if ( app->HasConfigFlag( OP_FLAGS_CALLBACK ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_CALLBACK ) )
         {
             bprintf( "|#1User has%s been callback verified.  ",
                      ( pUser->GetCbv() & 1) == 0 ? " |#6not" : "");
         }
-        if ( app->HasConfigFlag( OP_FLAGS_VOICE_VAL ) )
+        if ( GetApplication()->HasConfigFlag( OP_FLAGS_VOICE_VAL ) )
         {
             bprintf( "|#1User has%s been voice verified.",
                      ( pUser->GetCbv() & 2) == 0 ? " |#6not" : "");
@@ -295,7 +295,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
 int matchuser(int nUserNumber)
 {
     WUser user;
-    app->userManager->ReadUser( &user, nUserNumber );
+    GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
     sp = search_pattern;
     return matchuser( &user );
 }
@@ -605,11 +605,11 @@ void uedit( int usern, int other )
     }
     int nUserNumber = usern;
     bool bDoneWithUEdit = false;
-    app->userManager->ReadUser( &user, nUserNumber );
-    int nNumUserRecords = app->userManager->GetNumberOfUserRecords();
+    GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
+    int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
     do
     {
-        app->userManager->ReadUser( &user, nUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
         read_qscn( nUserNumber, u_qsc, false );
         bool bDoneWithUser = false;
         bool temp_full = false;
@@ -619,7 +619,7 @@ void uedit( int usern, int other )
             nl();
             sess->bout << "|#9(|#2Q|#9=|#1Quit, |#2?|#9=|#1Help|#9) User Editor Command: ";
             char ch = 0;
-            if ( sess->thisuser.GetSl() == 255 || app->localIO->GetWfcStatus() )
+            if ( sess->thisuser.GetSl() == 255 || GetApplication()->GetLocalIO()->GetWfcStatus() )
 			{
                 ch = onek( "ACDEFGHILMNOPQRSTUVWXYZ0123456789[]{}/,.?~%:", true );
 			}
@@ -637,10 +637,10 @@ void uedit( int usern, int other )
                     if (ch1 != RETURN)
                     {
                         ch1 -= 'A';
-                        if ( app->localIO->GetWfcStatus() || (sess->thisuser.hasArFlag(1 << ch1)))
+                        if ( GetApplication()->GetLocalIO()->GetWfcStatus() || (sess->thisuser.hasArFlag(1 << ch1)))
                         {
                             user.toggleArFlag( 1 << ch1 );
-                            app->userManager->WriteUser( &user, nUserNumber );
+                            GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                         }
                     }
                 }
@@ -652,7 +652,7 @@ void uedit( int usern, int other )
                 if ( s[0] )
                 {
                     user.SetCallsign( s );
-                    app->userManager->WriteUser( &user, nUserNumber );
+                    GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                 }
                 else
                 {
@@ -660,7 +660,7 @@ void uedit( int usern, int other )
                     if (yesno())
                     {
                         user.SetCallsign( "" );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -673,7 +673,7 @@ void uedit( int usern, int other )
                         if (yesno())
                         {
                             deluser(nUserNumber);
-                            app->userManager->ReadUser( &user, nUserNumber );
+                            GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
                         }
                     }
                 }
@@ -687,7 +687,7 @@ void uedit( int usern, int other )
                     if ( nExemption >= 0 && nExemption <= 255 && s[0] )
                     {
                         user.SetExempt( nExemption );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -724,7 +724,7 @@ void uedit( int usern, int other )
                                 user.SetEmailAddress( "" );
                             }
                         }
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -736,7 +736,7 @@ void uedit( int usern, int other )
                     bprintf( "Current birthdate: %02d/%02d/%02d\r\n",
                              user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear() );
                     input_age( &user );
-                    app->userManager->WriteUser( &user, nUserNumber );
+                    GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                 }
                 break;
             case 'H':
@@ -744,7 +744,7 @@ void uedit( int usern, int other )
                 if (yesno())
                 {
                     input_pw( &user );
-                    app->userManager->WriteUser( &user, nUserNumber );
+                    GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                 }
                 break;
             case 'I':
@@ -755,10 +755,10 @@ void uedit( int usern, int other )
                     if (ch1 != RETURN)
                     {
                         ch1 -= 'A';
-                        if ( app->localIO->GetWfcStatus() || (sess->thisuser.hasDarFlag(1 << ch1)))
+                        if ( GetApplication()->GetLocalIO()->GetWfcStatus() || (sess->thisuser.hasDarFlag(1 << ch1)))
 					    {
                             user.toggleDarFlag( 1 << ch1 );
-                            app->userManager->WriteUser( &user, nUserNumber );
+                            GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                         }
                     }
                 }
@@ -772,7 +772,7 @@ void uedit( int usern, int other )
                     if ( !realName.empty() )
                     {
                         user.SetRealName( realName.c_str() );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -793,7 +793,7 @@ void uedit( int usern, int other )
                     if ( nComputerType > 0 && nComputerType <= nNumCompTypes )
                     {
                         user.SetComputerType( nComputerType );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -808,7 +808,7 @@ void uedit( int usern, int other )
                         DeleteSmallRecord( user.GetName() );
                         user.SetName( s );
                         InsertSmallRecord( nUserNumber, user.GetName() );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -817,7 +817,7 @@ void uedit( int usern, int other )
                 sess->bout << "|#7New note? ";
                 inputl( s, 60 );
                 user.SetNote( s );
-                app->userManager->WriteUser( &user, nUserNumber );
+                GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                 break;
 
             case 'P':
@@ -859,14 +859,14 @@ void uedit( int usern, int other )
                     }
                     if (bWriteUser)
                     {
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
             case 'V':
                 {
                     bool bWriteUser = false;
-                    if ( app->HasConfigFlag( OP_FLAGS_CALLBACK ) )
+                    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CALLBACK ) )
                     {
                         sess->bout << "|#7Toggle callback verify flag (y/N) ? ";
                         if (yesno())
@@ -900,7 +900,7 @@ void uedit( int usern, int other )
                             bWriteUser = true;
                         }
                     }
-                    if ( app->HasConfigFlag( OP_FLAGS_VOICE_VAL ) )
+                    if ( GetApplication()->HasConfigFlag( OP_FLAGS_VOICE_VAL ) )
                     {
                         sess->bout << "|#7Toggle voice validated flag (y/N) ? ";
                         if (yesno())
@@ -918,7 +918,7 @@ void uedit( int usern, int other )
                     }
                     if (bWriteUser)
                     {
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -931,7 +931,7 @@ void uedit( int usern, int other )
                 {
                     user.ToggleInactFlag( WUser::userDeleted );
                     InsertSmallRecord( nUserNumber, user.GetName() );
-                    app->userManager->WriteUser( &user, nUserNumber );
+                    GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
 
                     // begin dupphone additions
 
@@ -960,7 +960,7 @@ void uedit( int usern, int other )
                     std::string sl;
                     input( sl, 3 );
                     int nNewSL = atoi( sl.c_str() );
-                    if ( !app->localIO->GetWfcStatus() && nNewSL >= sess->GetEffectiveSl() && nUserNumber != 1 )
+                    if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nNewSL >= sess->GetEffectiveSl() && nUserNumber != 1 )
                     {
                         sess->bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
                         pausescr();
@@ -969,7 +969,7 @@ void uedit( int usern, int other )
                     if ( nNewSL >= 0 && nNewSL < 255 && sl[0] )
                     {
                         user.SetSl( nNewSL );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                         if ( nUserNumber == sess->usernum )
                         {
                             sess->SetEffectiveSl( nNewSL );
@@ -988,7 +988,7 @@ void uedit( int usern, int other )
                     std::string dsl;
                     input( dsl, 3 );
                     int nNewDSL = atoi( dsl.c_str() );
-                    if ( !app->localIO->GetWfcStatus() && nNewDSL >= sess->thisuser.GetDsl() && nUserNumber != 1 )
+                    if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nNewDSL >= sess->thisuser.GetDsl() && nUserNumber != 1 )
                     {
                         sess->bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
                         pausescr();
@@ -997,7 +997,7 @@ void uedit( int usern, int other )
                     if ( nNewDSL >= 0 && nNewDSL < 255 && dsl[0] )
                     {
                         user.SetDsl( nNewDSL );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -1018,13 +1018,13 @@ void uedit( int usern, int other )
                 // begin callback additions
             case 'W':
                 wwivnode( &user, 1 );
-                app->userManager->WriteUser( &user, nUserNumber );
+                GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                 break;
                 // end callback additions
             case 'X':
                 {
                     std::string regDate, expDate;
-                    if ( !app->HasConfigFlag( OP_FLAGS_USER_REGISTRATION ) )
+                    if ( !GetApplication()->HasConfigFlag( OP_FLAGS_USER_REGISTRATION ) )
                     {
                         break;
                     }
@@ -1085,7 +1085,7 @@ void uedit( int usern, int other )
                     {
                         user.SetExpiresDateNum( date_to_daten( newExpDate.c_str() ) );
                     }
-                    app->userManager->WriteUser( &user, nUserNumber );
+                    GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                 }
                 break;
             case 'Y':
@@ -1137,7 +1137,7 @@ void uedit( int usern, int other )
                             if (nRestriction > -1)
                             {
                                 user.toggleRestrictionFlag( 1 << nRestriction );
-                                app->userManager->WriteUser( &user, nUserNumber );
+                                GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                             }
                         }
                     } while ( !hangup && ch1 == '?' );
@@ -1165,7 +1165,7 @@ void uedit( int usern, int other )
                         (((~sess->thisuser.GetDar()) & syscfg.autoval[nAutoValNum].dar) == 0))
                     {
                         auto_val( nAutoValNum, &user );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -1242,7 +1242,7 @@ void uedit( int usern, int other )
                 break;
             case '~':
                 user.SetAssPoints( 0 );
-                app->userManager->WriteUser( &user, nUserNumber );
+                GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                 break;
             case '%':
                 {
@@ -1253,42 +1253,42 @@ void uedit( int usern, int other )
                     if (s1[0])
                     {
                         user.SetStreet( s1 );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                     sess->bout << "|#7New City? ";
                     inputl( s1, 30 );
                     if (s1[0])
                     {
                         user.SetCity( s1 );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                     sess->bout << "|#7New State? ";
                     input( s1, 2 );
                     if (s1[0])
                     {
                         user.SetState( s1 );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                     sess->bout << "|#7New Country? ";
                     input( s1, 3 );
                     if (s1[0])
                     {
                         user.SetCountry( s1 );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                     sess->bout << "|#7New Zip? ";
                     input( s1, 10 );
                     if (s1[0])
                     {
                         user.SetZipcode( s1 );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                     sess->bout << "|#7New DataPhone (0=none)? ";
                     input( s1, 12 );
                     if (s1[0])
                     {
                         user.SetDataPhoneNumber( s1 );
-                        app->userManager->WriteUser( &user, nUserNumber );
+                        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                     }
                 }
                 break;
@@ -1347,7 +1347,7 @@ void uedit( int usern, int other )
                             break;
                         }
                     } while (!done2);
-                    app->userManager->WriteUser( &user, nUserNumber );
+                    GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                 }
                 break;
       }

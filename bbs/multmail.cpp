@@ -76,7 +76,7 @@ void multimail(int *pnUserNumber, int numu)
 		{
 			continue;
 		}
-        app->userManager->ReadUser( &user, pnUserNumber[cv] );
+        GetApplication()->GetUserManager()->ReadUser( &user, pnUserNumber[cv] );
         if ( ( user.GetSl() == 255 && ( user.GetNumMailWaiting() > (syscfg.maxwaiting * 5) ) ) ||
 			( ( user.GetSl() != 255) && ( user.GetNumMailWaiting() > syscfg.maxwaiting ) ) ||
 			user.GetNumMailWaiting() > 200 )
@@ -93,13 +93,13 @@ void multimail(int *pnUserNumber, int numu)
 		}
 		strcpy(s, "  ");
         user.SetNumMailWaiting( user.GetNumMailWaiting() + 1 );
-        app->userManager->WriteUser( &user, pnUserNumber[cv] );
+        GetApplication()->GetUserManager()->WriteUser( &user, pnUserNumber[cv] );
 		if (pnUserNumber[cv] == 1)
 		{
 			++fwaiting;
 		}
         strcat(s, user.GetUserNameAndNumber( pnUserNumber[cv] ) );
-		app->statusMgr->Lock();
+		GetApplication()->GetStatusManager()->Lock();
 		if (pnUserNumber[cv] == 1)
 		{
 			++status.fbacktoday;
@@ -113,7 +113,7 @@ void multimail(int *pnUserNumber, int numu)
             sess->thisuser.SetNumEmailSent( sess->thisuser.GetNumEmailSent() + 1 );
             sess->thisuser.SetNumEmailSentToday( sess->thisuser.GetNumEmailSentToday() + 1 );
 		}
-		app->statusMgr->Write();
+		GetApplication()->GetStatusManager()->Write();
 		sysoplog(s);
 		sess->bout << s;
 		nl();
@@ -260,7 +260,7 @@ int oneuser()
 		sess->bout << "Unknown user.\r\n\n";
 		return 0;
 	}
-    app->userManager->ReadUser( &user, nUserNumber );
+    GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
     if ((( user.GetSl() == 255) && ( user.GetNumMailWaiting() > (syscfg.maxwaiting * 5))) ||
         (( user.GetSl() != 255) && ( user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
         ( user.GetNumMailWaiting() > 200))
@@ -461,7 +461,7 @@ void slash_e()
 			for (i = 0; i < numu; i++)
 			{
                 WUser user;
-                app->userManager->ReadUser( &user, nUserNumber[i] );
+                GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber[i] );
 				sess->bout << i + 1 << ". " << user.GetUserNameAndNumber( nUserNumber[i] ) << wwiv::endl;
 			}
 			break;

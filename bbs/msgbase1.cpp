@@ -257,9 +257,9 @@ void post()
 		p.msg		= m;
 		p.ownersys	= 0;
 		p.owneruser = static_cast<unsigned short>( sess->usernum );
-		app->statusMgr->Lock();
+		GetApplication()->GetStatusManager()->Lock();
 		p.qscan = status.qscanptr++;
-		app->statusMgr->Write();
+		GetApplication()->GetStatusManager()->Write();
 		time((long *) (&p.daten));
         if ( sess->thisuser.isRestrictionValidate() )
 		{
@@ -319,11 +319,11 @@ void post()
 
         sess->thisuser.SetNumMessagesPosted( sess->thisuser.GetNumMessagesPosted() + 1 );
         sess->thisuser.SetNumPostsToday( sess->thisuser.GetNumPostsToday() + 1 );
-		app->statusMgr->Lock();
+		GetApplication()->GetStatusManager()->Lock();
 		++status.msgposttoday;
 		++status.localposts;
 
-		if ( app->HasConfigFlag( OP_FLAGS_POSTTIME_COMPENSATE ) )
+		if ( GetApplication()->HasConfigFlag( OP_FLAGS_POSTTIME_COMPENSATE ) )
 		{
 			time_t lEndTime = time(NULL);
 			if (lStartTime > lEndTime)
@@ -337,10 +337,10 @@ void post()
 			}
 			sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() + static_cast<float>( lStartTime ) );
 		}
-		app->statusMgr->Write();
+		GetApplication()->GetStatusManager()->Write();
 		close_sub();
 
-		app->localIO->UpdateTopScreen();
+		GetApplication()->GetLocalIO()->UpdateTopScreen();
 		sysoplogf( "+ \"%s\" posted on %s", p.title, subboards[sess->GetCurrentReadMessageArea()].name );
 		sess->bout << "Posted on " << subboards[sess->GetCurrentReadMessageArea()].name << wwiv::endl;
 		if (xsubs[sess->GetCurrentReadMessageArea()].num_nets)
@@ -441,7 +441,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber)
 		}
 		else
 		{
-			app->statusMgr->Read();
+			GetApplication()->GetStatusManager()->Read();
 			qsc_p[sess->GetCurrentReadMessageArea()] = status.qscanptr - 1;
 		}
 
@@ -598,11 +598,11 @@ void delmail( WFile *pFile, int loc )
 
 	if ( m.tosys == 0 )
 	{
-        app->userManager->ReadUser( &user, m.touser );
+        GetApplication()->GetUserManager()->ReadUser( &user, m.touser );
         if ( user.GetNumMailWaiting() )
 		{
             user.SetNumMailWaiting( user.GetNumMailWaiting() - 1 );
-            app->userManager->WriteUser( &user, m.touser );
+            GetApplication()->GetUserManager()->WriteUser( &user, m.touser );
 		}
 		if ( m.touser == 1 )
 		{
@@ -664,7 +664,7 @@ void remove_post()
 			if ( ( get_post( nPostNumber )->owneruser == sess->usernum ) && ( get_post( nPostNumber )->ownersys == 0 ) )
 			{
                 WUser tu;
-                app->userManager->ReadUser( &tu, get_post( nPostNumber )->owneruser  );
+                GetApplication()->GetUserManager()->ReadUser( &tu, get_post( nPostNumber )->owneruser  );
                 if ( !tu.isUserDeleted() )
 				{
                     if ( date_to_daten( tu.GetFirstOn() ) < ( signed ) get_post( nPostNumber )->daten )
@@ -672,7 +672,7 @@ void remove_post()
                         if ( tu.GetNumMessagesPosted() )
 						{
 							tu.SetNumMessagesPosted( tu.GetNumMessagesPosted() -1 );
-                            app->userManager->WriteUser( &tu, get_post( nPostNumber )->owneruser  );
+                            GetApplication()->GetUserManager()->WriteUser( &tu, get_post( nPostNumber )->owneruser  );
 						}
 					}
 				}
@@ -789,7 +789,7 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 		WFile::Remove( QUOTES_TXT );
 		WFile::Remove( QUOTES_IND );
 	}
-	ExecuteExternalProgram(szCmdLine, app->GetSpawnOptions( SPWANOPT_FSED ) );
+	ExecuteExternalProgram(szCmdLine, GetApplication()->GetSpawnOptions( SPWANOPT_FSED ) );
 	lines_listed = 0;
 	WWIV_ChangeDirTo( pszNewDirectory );
 	WFile::Remove( EDITOR_INF );

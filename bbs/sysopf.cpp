@@ -48,10 +48,10 @@ void reset_files()
 	WUser user;
 	unsigned short users = 0;
 
-	app->statusMgr->Read();
+	GetApplication()->GetStatusManager()->Read();
 	status.users = 0;
 	nl();
-	int nNumUsers = app->userManager->GetNumberOfUserRecords();
+	int nNumUsers = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
     WFile userFile( syscfg.datadir, USER_LST );
     if ( userFile.Open( WFile::modeBinary | WFile::modeReadWrite ) )
 	{
@@ -86,25 +86,25 @@ void reset_files()
 	}
 	sess->bout << "\r\n\r\n";
 
-	app->statusMgr->Lock();
+	GetApplication()->GetStatusManager()->Lock();
 
     WFile namesFile( syscfg.datadir, NAMES_LST );
     if ( !namesFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate ) )
 	{
         std::cout << namesFile.GetFullPathName() << " NOT FOUND" << std::endl;
-		app->AbortBBS( true );
+		GetApplication()->AbortBBS( true );
 	}
     namesFile.Write( smallist, sizeof(smalrec) * status.users );
     namesFile.Close();
 	status.users = users;
-	app->statusMgr->Write();
+	GetApplication()->GetStatusManager()->Write();
 }
 
 
 
 void prstatus( bool bIsWFC )
 {
-	app->statusMgr->Read();
+	GetApplication()->GetStatusManager()->Read();
 	ClearScreen();
 	if ( syscfg.newuserpw[0] != '\0' )
 	{
@@ -143,7 +143,7 @@ void valuser( int nUserNumber )
 	char s[81], s1[81], s2[81], s3[81], ar1[20], dar1[20];
 
 	WUser user;
-    app->userManager->ReadUser( &user, nUserNumber );
+    GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
     if ( !user.isUserDeleted() )
 	{
 		nl();
@@ -164,7 +164,7 @@ void valuser( int nUserNumber )
 			if (s[0])
 			{
 				int nSl = atoi( s );
-				if ( !app->localIO->GetWfcStatus() && nSl >= sess->GetEffectiveSl() )
+				if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nSl >= sess->GetEffectiveSl() )
 				{
 					nSl = -2;
 				}
@@ -200,7 +200,7 @@ void valuser( int nUserNumber )
 			if (s[0])
 			{
 				int nDsl = atoi(s);
-				if ( !app->localIO->GetWfcStatus() && nDsl >= sess->thisuser.GetDsl() )
+				if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nDsl >= sess->thisuser.GetDsl() )
 				{
 					nDsl = -1;
 				}
@@ -346,7 +346,7 @@ void valuser( int nUserNumber )
 				printfile(SRESTRCT_NOEXT);
 			}
 		} while ( !hangup && ch1 == 0 );
-        app->userManager->WriteUser( &user, nUserNumber );
+        GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
 		nl();
   }
   else
@@ -379,7 +379,7 @@ void print_net_listing( bool bForcePause )
 	char s[255], s1[101], s2[101], s3[101], s4[101], bbstype;
 	bool bHadPause = false;
 
-	app->statusMgr->Read();
+	GetApplication()->GetStatusManager()->Read();
 
 	if (!sess->GetMaxNetworkNumber())
 	{
@@ -818,7 +818,7 @@ void mailr()
 				do
 				{
                     WUser user;
-                    app->userManager->ReadUser( &user, m.touser );
+                    GetApplication()->GetUserManager()->ReadUser( &user, m.touser );
                     sess->bout << "|#1  To|#7: |#" << sess->GetMessageColor() << user.GetUserNameAndNumber( m.touser ) << wwiv::endl;
 					int tp = 80;
 					int nn = 0;
@@ -968,7 +968,7 @@ void chuser()
 		sess->SetEffectiveSl( 255 );
 		sysoplogf( "#*#*#* Changed to %s", sess->thisuser.GetUserNameAndNumber( sess->usernum ) );
 		changedsl();
-		app->localIO->UpdateTopScreen();
+		GetApplication()->GetLocalIO()->UpdateTopScreen();
 	}
 	else
 	{
@@ -1030,12 +1030,12 @@ void set_user_age()
 	do
 	{
     	WUser user;
-        app->userManager->ReadUser( &user, nUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
         int nAge = years_old( user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear() );
         if ( nAge != user.GetAge() )
 		{
             user.SetAge( nAge );
-            app->userManager->WriteUser( &user, nUserNumber );
+            GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
 		}
 		++nUserNumber;
 	} while ( nUserNumber <= status.users );
@@ -1082,7 +1082,7 @@ void auto_purge()
 	do
 	{
         WUser user;
-        app->userManager->ReadUser( &user, nUserNumber );
+        GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
         if ( !user.isExemptAutoDelete() )
 		{
             unsigned int d = static_cast<unsigned int>( ( lTime - user.GetLastOnDateNumber() ) / SECONDS_PER_DAY_FLOAT );
@@ -1102,13 +1102,13 @@ void auto_purge()
 
 void beginday( bool displayStatus )
 {
-    if ( ( sess->GetBeginDayNodeNumber() > 0 ) && ( app->GetInstanceNumber() != sess->GetBeginDayNodeNumber() ) )
+    if ( ( sess->GetBeginDayNodeNumber() > 0 ) && ( GetApplication()->GetInstanceNumber() != sess->GetBeginDayNodeNumber() ) )
 	{
         // If BEGINDAYNODENUMBER is > 0 or defined in WWIV.INI only handle beginday events on that node number
-		app->statusMgr->Read();
+		GetApplication()->GetStatusManager()->Read();
 		return;
 	}
-	app->statusMgr->Lock();
+	GetApplication()->GetStatusManager()->Lock();
 
 	// TODO remove this hack once Dean fixes INIT
 	// If the date1 field is hosed, fix up the year to 00 (since it would be 10 as in part of 100).
@@ -1121,7 +1121,7 @@ void beginday( bool displayStatus )
 
     if ( wwiv::stringUtils::IsEquals( date(), status.date1 ) )
 	{
-		app->statusMgr->Write();
+		GetApplication()->GetStatusManager()->Write();
 		return;
 	}
 	sess->bout << "|#7* |#1Running Daily Maintenance...\r\n";
@@ -1204,7 +1204,7 @@ void beginday( bool displayStatus )
     {
         sess->bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
     }
-	app->statusMgr->Write();
+	GetApplication()->GetStatusManager()->Write();
 	if ( displayStatus )
     {
         sess->bout << "  |#7* |#1Checking system directories and user space...\r\n";
@@ -1225,7 +1225,7 @@ void beginday( bool displayStatus )
 	{
         char szCommandLine[ MAX_PATH ];
 		stuff_in(szCommandLine, syscfg.beginday_c, create_chain_file(), "", "", "", "");
-		ExecuteExternalProgram(szCommandLine, app->GetSpawnOptions( SPWANOPT_BEGINDAY ) );
+		ExecuteExternalProgram(szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_BEGINDAY ) );
 	}
 	if ( displayStatus )
     {

@@ -79,7 +79,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 				}
 			}
 		}
-		app->localIO->tleft( true );
+		GetApplication()->GetLocalIO()->tleft( true );
 		CheckForHangup();
 		set_net_num( (xsubs[sess->GetCurrentReadMessageArea()].num_nets) ? xsubs[sess->GetCurrentReadMessageArea()].nets[0].net_num : 0 );
 		if ( nScanOptionType != SCAN_OPTION_READ_PROMPT )
@@ -965,7 +965,7 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 			}
 			if (!(nTempMsgNum % 100))
 			{
-				app->localIO->tleft( true );
+				GetApplication()->GetLocalIO()->tleft( true );
 				CheckForHangup();
 			}
 		}
@@ -1200,9 +1200,9 @@ void HandleMessageMove( int &nMessageNumber )
 			open_sub( true );
 			p2.msg.storage_type = static_cast<unsigned char>( subboards[sess->GetCurrentReadMessageArea()].storage_type );
 			savefile(b, lMessageLen, &(p2.msg), (subboards[sess->GetCurrentReadMessageArea()].filename));
-			app->statusMgr->Lock();
+			GetApplication()->GetStatusManager()->Lock();
 			p2.qscan = status.qscanptr++;
-			app->statusMgr->Write();
+			GetApplication()->GetStatusManager()->Write();
 			if (sess->GetNumMessagesInCurrentMessageArea() >= subboards[sess->GetCurrentReadMessageArea()].maxmsgs)
 			{
 				int nTempMsgNum = 1;
@@ -1318,7 +1318,7 @@ void HandleMessageDelete( int &nMessageNumber )
 			if (p2.ownersys == 0)
 			{
 				WUser tu;
-                app->userManager->ReadUser( &tu, p2.owneruser );
+                GetApplication()->GetUserManager()->ReadUser( &tu, p2.owneruser );
                 if ( !tu.isUserDeleted() )
 				{
 					if (date_to_daten( tu.GetFirstOn() ) < static_cast<signed int>( p2.daten ) )
@@ -1340,8 +1340,8 @@ void HandleMessageDelete( int &nMessageNumber )
 						nl();
 						sess->bout << "|#7Post credit removed = " << nNumCredits << wwiv::endl;
 						tu.SetNumDeletedPosts( tu.GetNumDeletedPosts() - 1 );
-                        app->userManager->WriteUser( &tu, p2.owneruser );
-						app->localIO->UpdateTopScreen();
+                        GetApplication()->GetUserManager()->WriteUser( &tu, p2.owneruser );
+						GetApplication()->GetLocalIO()->UpdateTopScreen();
 					}
 				}
 			}

@@ -166,7 +166,7 @@ int bputch( char c, bool bUseInternalBuffer )
 	}
 	if ( echo )
 	{
-		app->localIO->global_char( c );
+		GetApplication()->GetLocalIO()->global_char( c );
 	}
 	if ( outcom && !x_only && c != TAB )
 	{
@@ -208,7 +208,7 @@ int bputch( char c, bool bUseInternalBuffer )
 	{
 		if ( c == TAB )
 		{
-			int nScreenPos = app->localIO->WhereX();
+			int nScreenPos = GetApplication()->GetLocalIO()->WhereX();
 			for ( int i = nScreenPos; i < (((nScreenPos / 8) + 1) * 8); i++ )
 			{
 				displayed += bputch( SPACE );
@@ -217,7 +217,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		else if ( echo || AllowLocalSysop() )
 		{
 			displayed = 1;
-			app->localIO->LocalPutch( echo ? c : '\xFE' );
+			GetApplication()->GetLocalIO()->LocalPutch( echo ? c : '\xFE' );
 
 			if ( c == SOFTRETURN )
 			{
@@ -245,7 +245,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		}
 		else
 		{
-			app->localIO->LocalPutch( 'X' );
+			GetApplication()->GetLocalIO()->LocalPutch( 'X' );
 			displayed = 1;
 		}
 	}
@@ -310,29 +310,29 @@ void execute_ansi()
 		{
         case 'f':
         case 'H':
-            app->localIO->LocalGotoXY(args[1] - 1, args[0] - 1);
+            GetApplication()->GetLocalIO()->LocalGotoXY(args[1] - 1, args[0] - 1);
             g_flags |= g_flag_ansi_movement;
             break;
         case 'A':
-            app->localIO->LocalGotoXY(app->localIO->WhereX(), app->localIO->WhereY() - args[0]);
+            GetApplication()->GetLocalIO()->LocalGotoXY(GetApplication()->GetLocalIO()->WhereX(), GetApplication()->GetLocalIO()->WhereY() - args[0]);
             g_flags |= g_flag_ansi_movement;
             break;
         case 'B':
-            app->localIO->LocalGotoXY(app->localIO->WhereX(), app->localIO->WhereY() + args[0]);
+            GetApplication()->GetLocalIO()->LocalGotoXY(GetApplication()->GetLocalIO()->WhereX(), GetApplication()->GetLocalIO()->WhereY() + args[0]);
             g_flags |= g_flag_ansi_movement;
             break;
         case 'C':
-            app->localIO->LocalGotoXY(app->localIO->WhereX() + args[0], app->localIO->WhereY());
+            GetApplication()->GetLocalIO()->LocalGotoXY(GetApplication()->GetLocalIO()->WhereX() + args[0], GetApplication()->GetLocalIO()->WhereY());
             break;
         case 'D':
-            app->localIO->LocalGotoXY(app->localIO->WhereX() - args[0], app->localIO->WhereY());
+            GetApplication()->GetLocalIO()->LocalGotoXY(GetApplication()->GetLocalIO()->WhereX() - args[0], GetApplication()->GetLocalIO()->WhereY());
             break;
         case 's':
-            oldx = app->localIO->WhereX();
-            oldy = app->localIO->WhereY();
+            oldx = GetApplication()->GetLocalIO()->WhereX();
+            oldy = GetApplication()->GetLocalIO()->WhereY();
             break;
         case 'u':
-            app->localIO->LocalGotoXY(oldx, oldy);
+            GetApplication()->GetLocalIO()->LocalGotoXY(oldx, oldy);
             oldx = oldy = 0;
             g_flags |= g_flag_ansi_movement;
             break;
@@ -343,11 +343,11 @@ void execute_ansi()
                 g_flags |= g_flag_ansi_movement;
                 if ( x_only )
 				{
-                    app->localIO->LocalGotoXY(0, 0);
+                    GetApplication()->GetLocalIO()->LocalGotoXY(0, 0);
 				}
                 else
 				{
-                    app->localIO->LocalCls();
+                    GetApplication()->GetLocalIO()->LocalCls();
 				}
             }
             break;
@@ -355,7 +355,7 @@ void execute_ansi()
         case 'K':
             if (!x_only)
 			{
-				app->localIO->LocalClrEol();
+				GetApplication()->GetLocalIO()->LocalClrEol();
             }
             break;
         case 'm':
