@@ -51,7 +51,7 @@ GENERAL INFORMATION:
 LABEL: WWIV-5_0_
 DATE:  
 
-Atani   - Fixed linux build, added MAX_PATH to WLocalIO.h (if not defined)
+Atani   - Fixed linux build, added MAX_PATH to WFile.h (if not defined)
 
 ==============================================================================
 
