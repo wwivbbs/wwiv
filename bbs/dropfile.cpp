@@ -88,7 +88,7 @@ void create_drop_files()
     char s[150], s1[255], s2[81], s3[150], *ss;
 
 	std::string cspeed;
-	wwiv::stringUtils::FormatString( cspeed, "%ul", com_speed );
+	wwiv::stringUtils::FormatString( cspeed, "%u", com_speed );
     if ( com_speed == 1 || com_speed == 49664 )
 	{
         cspeed = "115200";

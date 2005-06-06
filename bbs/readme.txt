@@ -52,6 +52,7 @@ GENERAL INFORMATION:
 LABEL: WWIV-5_0_59
 DATE:  ??/??/????
 
+Atani   - sf-bug 1215436 - door32.sys contained extra "l" after baud rate
 Rushfan - Started working on Mac OS X Support
 Rushfan - Changed global app to GetApplication(), sess to GetSession().  Added
           GetComm(), GetUserManager(), GetLocalIO(), and GetStatusManager() 
