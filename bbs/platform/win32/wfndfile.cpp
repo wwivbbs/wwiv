@@ -35,11 +35,11 @@ bool WFindFile::open(const char * pszFileSpec, UINT32 nTypeMask)
 
 	if (ffdata.cAlternateFileName[0] == '\0')
 	{
-		strcpy(szFileName,ffdata.cFileName);
+		strncpy(szFileName,ffdata.cFileName, sizeof(szFileName));
 	}
 	else
 	{
-		strcpy(szFileName,ffdata.cAlternateFileName);
+		strncpy(szFileName,ffdata.cAlternateFileName, sizeof(szFileName));
 	}
 
 	lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
@@ -64,11 +64,11 @@ bool WFindFile::next()
 
 	if (ffdata.cAlternateFileName[0] == '\0')
 	{
-		strcpy(szFileName,ffdata.cFileName);
+		strncpy(szFileName,ffdata.cFileName, sizeof(szFileName));
 	}
 	else
 	{
-		strcpy(szFileName,ffdata.cAlternateFileName);
+		strncpy(szFileName,ffdata.cAlternateFileName, sizeof(szFileName));
 	}
 
 	lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;

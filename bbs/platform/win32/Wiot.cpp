@@ -533,7 +533,7 @@ void WIOTelnet::AddStringToInputBuffer( int nStart, int nEnd, char *pszBuffer )
     WaitForSingleObject( hInBufferMutex, INFINITE );
 
     char szBuffer[4096];
-    strcpy( szBuffer, pszBuffer );
+    strncpy( szBuffer, pszBuffer, sizeof(szBuffer) );
 	memcpy( szBuffer, pszBuffer, nEnd );
 	bool bBinaryMode = GetBinaryMode();
     for ( int i = nStart; i < nEnd; i++ )
