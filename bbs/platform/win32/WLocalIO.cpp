@@ -754,7 +754,7 @@ void WLocalIO::alt_key( int nKeyCode )
                         ss1 = strtok(NULL, "\r\n");
                         if (ss1 && (strlen(ss1) < 128))
                         {
-                            strcpy(szCommand, ss1);
+                            strncpy(szCommand, ss1, sizeof(szCommand));
                         }
                         ss1 = NULL;
                     }

@@ -24,7 +24,7 @@
 void show_files( const char *pszFileName, const char *pszDirectoryName )
 // Displays list of files matching filespec pszFileName in directory pszDirectoryName.
 {
-    char s[255];
+    char s[MAX_PATH];
     char drive[MAX_DRIVE], direc[MAX_DIR], file[MAX_FNAME], ext[MAX_EXT];
 
     char c = ( okansi() ) ? '\xCD' : '=';
@@ -43,7 +43,7 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
     bool bFound = fnd.open( szFullPathName, 0 );
     while (bFound)
     {
-        strcpy(s, fnd.GetFileName());
+        strncpy(s, fnd.GetFileName(), MAX_PATH);
         align(s);
         _snprintf( szFullPathName, sizeof( szFullPathName ), "|#7[|#2%s|#7]|#1 ", s );
         if ( GetApplication()->GetLocalIO()->WhereX() > ( GetSession()->thisuser.GetScreenChars() - 15 ) )
@@ -84,9 +84,9 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
     char szTempBuf[MAX_PATH];
 
     char szWWIVHome[MAX_PATH];
-    strcpy( szWWIVHome, GetApplication()->GetHomeDir() );
+    strncpy( szWWIVHome, GetApplication()->GetHomeDir(), MAX_PATH );
 
-    strcpy( s1, pszOutBuffer );
+    strncpy( s1, pszOutBuffer, MAX_PATH );
 
     if ( s1[1] == ':' )
     {
@@ -109,7 +109,7 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
     }
     else
     {
-        strcpy(s2, s1);
+        strncpy(s2, s1, sizeof(s2));
         strtok(s2, " \t");
         if (strchr(s2, '\\'))
         {

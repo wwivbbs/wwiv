@@ -71,11 +71,11 @@ void init_events()
     events = static_cast<eventsrec *>( BbsAllocWithComment(MAX_EVENT * sizeof(eventsrec), "external events") );
     WWIV_ASSERT( events != NULL );
 
-    WFile file( syscfg.datadir, EVENTS_DAT );
-    if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
+    WFile eventsFile( syscfg.datadir, EVENTS_DAT );
+    if ( eventsFile.Open( WFile::modeBinary | WFile::modeReadOnly ) )
 	{
-        GetSession()->num_events = file.GetLength() / sizeof( eventsrec );
-        file.Read( events, GetSession()->num_events * sizeof( eventsrec ) );
+        GetSession()->num_events = eventsFile.GetLength() / sizeof( eventsrec );
+        eventsFile.Read( events, GetSession()->num_events * sizeof( eventsrec ) );
         get_next_forced_event();
     }
 	else
@@ -240,7 +240,7 @@ void show_events()
     pla("|#1                                         Hold   Force   Run", &abort);
     pla("|#1Evnt Time  Command                 Node  Phone  Event  Today  Shrink", &abort);
     pla("|#7=============================================================================", &abort);
-    for (int i = 0; (i < GetSession()->num_events) && (!abort); i++)
+    for (int i = 0; (i < GetSession()->num_events) && !abort; i++)
     {
         if (events[i].status & EVENT_EXIT)
         {
@@ -248,7 +248,7 @@ void show_events()
         }
         else
         {
-            strcpy(s1, events[i].cmd);
+            strncpy(s1, events[i].cmd, sizeof(s1));
         }
         strcpy(daystr, "SMTWTFS");
         for (int j = 0; j <= 6; j++)
@@ -520,7 +520,7 @@ void insert_event()
     events[GetSession()->num_events].instance = 0;
     events[GetSession()->num_events].days = 127;                // Default to all 7 days
     modify_event(GetSession()->num_events);
-    ++GetSession()->num_events;
+	GetSession()->num_events = GetSession()->num_events + 1;
 }
 
 
@@ -530,7 +530,7 @@ void delete_event(int n)
 	{
         events[i] = events[i + 1];
 	}
-    --GetSession()->num_events;
+    GetSession()->num_events = GetSession()->num_events - 1;
 }
 
 
@@ -697,14 +697,12 @@ void eventedit()
 	WFile eventsFile( syscfg.datadir, EVENTS_DAT );
 	if ( GetSession()->num_events )
 	{
-		// %%TODO: Shouldn't a mode create be in here somewhere too?
-		eventsFile.Open( WFile::modeReadWrite | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite );
+		eventsFile.Open( WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
 		eventsFile.Write( events, GetSession()->num_events * sizeof( eventsrec ) );
 		eventsFile.Close();
 	}
 	else
 	{
-		// %%TODO: Fix this, it looks like this is a bug...
-		WFile::Remove( s );
+		eventsFile.Delete();
 	}
 }
