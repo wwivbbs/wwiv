@@ -398,7 +398,7 @@ void CreateSyncFosCommandLine( char* pszOutCommandLine, const char* pszTempFileP
             nSyncMode, // CONST_SBBSFOS_FOSSIL_MODE,
             CONST_SBBSFOS_LOOPS_BEFORE_YIELD );
 
-    strcpy( pszOutCommandLine, szBuffer );
+    strncpy( pszOutCommandLine, szBuffer, MAX_PATH );
 }
 
 bool VerifyDosXtrnExists()

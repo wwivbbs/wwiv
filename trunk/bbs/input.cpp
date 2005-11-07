@@ -321,10 +321,8 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
     GetSession()->topline = 0;
     pos = len = 0;
     szTemp[0] = '\0';
-    if (maxlen > 80)
-    {
-        maxlen = 80;
-    }
+	
+	maxlen = std::max<int>(maxlen, 80);
     ansic( 4 );
     int x = GetApplication()->GetLocalIO()->WhereX() + 1;
     int y = GetApplication()->GetLocalIO()->WhereY() + 1;

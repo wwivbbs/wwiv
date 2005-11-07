@@ -170,7 +170,7 @@ void HandleControlKey( char *ch )
               if (okmacro && (!charbufferpointer))
               {
 				  int macroNum = MACRO_KEY_TABLE[(int)c];
-				  strcpy(charbuffer, &(GetSession()->thisuser.GetMacro(macroNum)[0]));
+				  strncpy(charbuffer, &(GetSession()->thisuser.GetMacro(macroNum)[0]), sizeof(charbuffer)-1);
 				  c = charbuffer[0];
                   if (c)
 				  {
@@ -253,7 +253,7 @@ void RedrawCurrentLine()
     int ansiptr_1 = ansiptr;
     ansiptr = 0;
     ansistr[ansiptr_1] = 0;
-    strcpy(ansistr_1, ansistr);
+    strncpy(ansistr_1, ansistr, sizeof(ansistr_1)-1);
 
     GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
     nl();
