@@ -138,7 +138,7 @@ typedef enum zmstate {
 
 
 
-typedef	struct {
+struct ZModem {
 	  int	ifd ;		/* input fd, for use by caller's routines */
 	  int	ofd ;		/* output fd, for use by caller's routines */
 	  FILE	*file ;		/* file being transfered */
@@ -190,18 +190,16 @@ typedef	struct {
 	  int	interrupt ;	/* received attention signal */
 	  int	waitflag ;	/* next send should wait */
 	  			/* parser state */
-	  enum {Idle, Padding, Inhdr, Indata, Finish, Ysend, Yrcv} InputState ;
-	  enum {XMODEM, YMODEM, ZMODEM} Protocol ;
+	  enum  InputState {Idle, Padding, Inhdr, Indata, Finish, Ysend, Yrcv};
+	  enum Protocol {XMODEM, YMODEM, ZMODEM};
 	  u_char hdrData[9] ;	/* header type and data */
 	  u_char fileFlags[4] ;	/* file xfer flags */
 	  u_long crc ;		/* crc of incoming header/data */
-	  enum {Full, StrWindow, SlidingWindow, Segmented} Streaming ;
-	} ZModem ;
+	  enum Streaming {Full, StrWindow, SlidingWindow, Segmented};
+	};
 
 
-
-	/* ZRINIT flags.  Describe receiver capabilities */
-
+/* ZRINIT flags.  Describe receiver capabilities */
 #define	CANFDX	1	/* Rx is Full duplex */
 #define	CANOVIO	2	/* Rx can overlap I/O */
 #define	CANBRK	4	/* Rx can send a break */
@@ -422,13 +420,13 @@ extern	u_long	ZDec4( u_char buf[4] );
 	 * Extra ZRINIT headers are the receiver trying to resync.
 	 */
 
-typedef	struct {
+struct StateTable {
 	  int	type ;		/* frame type */
 	  int	(*func)( ZModem * ) ;	/* transition function */
 	  int	IFlush ;	/* flag: flush input first */
 	  int	OFlush ;	/* flag: flush output first */
 	  ZMState newstate ;	/* new state.  May be overridden by func */
-	} StateTable ;
+	};
 
 
 

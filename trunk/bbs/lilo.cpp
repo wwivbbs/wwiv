@@ -1309,11 +1309,11 @@ void logoff()
     {
         timeon -= HOURS_PER_DAY_FLOAT * SECONDS_PER_DAY_FLOAT;
     }
-    double ton = timer() - timeon;
-    GetSession()->thisuser.SetTimeOn( GetSession()->thisuser.GetTimeOn() + static_cast<float>( ton ) );
-    GetSession()->thisuser.SetTimeOnToday( GetSession()->thisuser.GetTimeOnToday() + static_cast<float>( ton - extratimecall ) );
+    double dTimeOnNow = timer() - timeon;
+    GetSession()->thisuser.SetTimeOn( GetSession()->thisuser.GetTimeOn() + static_cast<float>( dTimeOnNow ) );
+    GetSession()->thisuser.SetTimeOnToday( GetSession()->thisuser.GetTimeOnToday() + static_cast<float>( dTimeOnNow - extratimecall ) );
     GetApplication()->GetStatusManager()->Lock();
-    status.activetoday = status.activetoday + static_cast<unsigned short>( ton / MINUTES_PER_HOUR_FLOAT );
+    status.activetoday = status.activetoday + static_cast<unsigned short>( dTimeOnNow / MINUTES_PER_HOUR_FLOAT );
     GetApplication()->GetStatusManager()->Write();
     if (g_flags & g_flag_scanned_files)
     {

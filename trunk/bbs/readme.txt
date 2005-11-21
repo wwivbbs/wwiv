@@ -50,7 +50,7 @@ GENERAL INFORMATION:
 ==============================================================================
 
 LABEL: WWIV-5_0_59
-DATE:  ??/??/????
+DATE:  11/20/2005
 
 Atani   - sf-bug 1215436 - door32.sys contained extra "l" after baud rate
 Rushfan - Started working on Mac OS X Support
@@ -62,6 +62,7 @@ Rushfan - Update size test code to handle Mac OS X as well as Linux/Win32 and
           MSDOS.
 Rushfan - Updated Copyright statement in header files to 2005
 Rushfan - removed unused files extrn.cpp and extrn1.cpp from CVS finally.
+Rushfan - Updated code to compile under VS.NET 2005 (using VC++ Express)
 
 ==============================================================================
 

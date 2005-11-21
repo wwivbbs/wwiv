@@ -308,7 +308,7 @@ public:
 
     unsigned short
                 mail_who_field_len,
-                m_nMaxFilesPerBatch,
+                max_batch,
                 max_extend_lines,
                 max_chains,
                 max_gfilesec,
