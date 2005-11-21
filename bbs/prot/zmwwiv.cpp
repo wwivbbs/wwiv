@@ -1,9 +1,9 @@
 #include "wwiv.h"
 
 #include "zmodem.h"
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdarg>
+#include <cstdlib>
+#include <cstring>
 
 #ifndef ATANIS_UNIX_NETWORK_STUFF
 //void rputch(char ch, bool bUseInternalBuffer = false);

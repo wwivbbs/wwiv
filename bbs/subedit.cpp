@@ -377,7 +377,7 @@ void modify_sub(int n)
 				    {
 					    for (int i = 0; i < GetSession()->num_subs; i++)
 					    {
-						    if (strnicmp(subboards[i].filename, szSubBaseName, strlen(szSubBaseName)) == 0)
+						    if (WWIV_STRNICMP(subboards[i].filename, szSubBaseName, strlen(szSubBaseName)) == 0)
 						    {
 							    strcpy(szOldSubFileName, subboards[i].name);
 							    break;

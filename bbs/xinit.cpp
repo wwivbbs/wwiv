@@ -48,7 +48,7 @@ unsigned short WBbsApp::str2spawnopt( const char *s )
 
     unsigned short return_val = 0;
     strcpy( ts, s );
-    strupr( ts );
+    WWIV_STRUPR( ts );
 
     if (strstr(ts, "ABORT") != NULL)
     {
@@ -94,7 +94,7 @@ unsigned short WBbsApp::str2restrict( const char *s )
     char s1[81];
 
     strcpy(s1, s);
-    strupr(s1);
+    WWIV_STRUPR(s1);
     int r = 0;
     for ( int i = strlen(rs) - 1; i >= 0; i-- )
     {
@@ -595,30 +595,30 @@ bool WBbsApp::ReadConfig()
         ovrFile2.Close();
     }
 
-    syscfg.newuserpw        = strdup(full_syscfg.newuserpw);
-    syscfg.systempw         = strdup(full_syscfg.systempw);
+    syscfg.newuserpw        = WWIV_STRDUP(full_syscfg.newuserpw);
+    syscfg.systempw         = WWIV_STRDUP(full_syscfg.systempw);
 
-    syscfg.msgsdir          = strdup(full_syscfg.msgsdir);
-    syscfg.gfilesdir        = strdup(full_syscfg.gfilesdir);
-    syscfg.datadir          = strdup(full_syscfg.datadir);
-    syscfg.dloadsdir        = strdup(full_syscfg.dloadsdir);
-    syscfg.batchdir         = strdup(full_syscfg.batchdir);
-    syscfg.menudir          = strdup(full_syscfg.menudir);
-    syscfg.terminal         = strdup(full_syscfg.terminal);
+    syscfg.msgsdir          = WWIV_STRDUP(full_syscfg.msgsdir);
+    syscfg.gfilesdir        = WWIV_STRDUP(full_syscfg.gfilesdir);
+    syscfg.datadir          = WWIV_STRDUP(full_syscfg.datadir);
+    syscfg.dloadsdir        = WWIV_STRDUP(full_syscfg.dloadsdir);
+    syscfg.batchdir         = WWIV_STRDUP(full_syscfg.batchdir);
+    syscfg.menudir          = WWIV_STRDUP(full_syscfg.menudir);
+    syscfg.terminal         = WWIV_STRDUP(full_syscfg.terminal);
 
-    syscfg.systemname       = strdup(full_syscfg.systemname);
-    syscfg.systemphone      = strdup(full_syscfg.systemphone);
-    syscfg.sysopname        = strdup(full_syscfg.sysopname);
-    syscfg.executestr       = strdup(full_syscfg.executestr);
+    syscfg.systemname       = WWIV_STRDUP(full_syscfg.systemname);
+    syscfg.systemphone      = WWIV_STRDUP(full_syscfg.systemphone);
+    syscfg.sysopname        = WWIV_STRDUP(full_syscfg.sysopname);
+    syscfg.executestr       = WWIV_STRDUP(full_syscfg.executestr);
 
-    syscfg.beginday_c       = strdup(full_syscfg.beginday_c);
-    syscfg.logon_c          = strdup(full_syscfg.logon_c);
-    syscfg.logoff_c         = strdup(full_syscfg.logoff_c);
-    syscfg.newuser_c        = strdup(full_syscfg.newuser_c);
-    syscfg.upload_c         = strdup(full_syscfg.upload_c);
-    syscfg.v_scan_c         = strdup(full_syscfg.v_scan_c);
-    syscfg.dszbatchdl       = strdup(full_syscfg.dszbatchdl);
-    syscfg.dial_prefix      = strdup(full_syscfg.dial_prefix);
+    syscfg.beginday_c       = WWIV_STRDUP(full_syscfg.beginday_c);
+    syscfg.logon_c          = WWIV_STRDUP(full_syscfg.logon_c);
+    syscfg.logoff_c         = WWIV_STRDUP(full_syscfg.logoff_c);
+    syscfg.newuser_c        = WWIV_STRDUP(full_syscfg.newuser_c);
+    syscfg.upload_c         = WWIV_STRDUP(full_syscfg.upload_c);
+    syscfg.v_scan_c         = WWIV_STRDUP(full_syscfg.v_scan_c);
+    syscfg.dszbatchdl       = WWIV_STRDUP(full_syscfg.dszbatchdl);
+    syscfg.dial_prefix      = WWIV_STRDUP(full_syscfg.dial_prefix);
 
     syscfg.newusersl        = full_syscfg.newusersl;
     syscfg.newuserdsl       = full_syscfg.newuserdsl;
@@ -877,27 +877,27 @@ void WBbsApp::read_networks()
             fgets(szBuffer, 80, fp);
             szBuffer[strlen(szBuffer) - 1] = 0;
             StringRemoveWhitespace(szBuffer);
-            if ( !strnicmp( szBuffer, "DOMAIN=", 7 ) && GetSession()->internetEmailDomain.empty() )
+            if ( !WWIV_STRNICMP( szBuffer, "DOMAIN=", 7 ) && GetSession()->internetEmailDomain.empty() )
             {
                 GetSession()->internetEmailDomain = &(szBuffer[7]);
             }
-            else if ( !strnicmp(szBuffer, "POPNAME=", 8 ) && GetSession()->internetEmailName.empty() )
+            else if ( !WWIV_STRNICMP(szBuffer, "POPNAME=", 8 ) && GetSession()->internetEmailName.empty() )
             {
                 GetSession()->internetEmailName = &( szBuffer[8] );
             }
-            else if ( !strnicmp(szBuffer, "FWDDOM=", 7) )
+            else if ( !WWIV_STRNICMP(szBuffer, "FWDDOM=", 7) )
             {
                 GetSession()->internetEmailDomain = &(szBuffer[7]);
             }
-            else if ( !strnicmp(szBuffer, "FWDNAME=", 8) )
+            else if ( !WWIV_STRNICMP(szBuffer, "FWDNAME=", 8) )
             {
                 GetSession()->internetEmailName = &(szBuffer[8]);
             }
-            else if ( !strnicmp(szBuffer, "POPDOMAIN=", 10) )
+            else if ( !WWIV_STRNICMP(szBuffer, "POPDOMAIN=", 10) )
             {
                 GetSession()->internetPopDomain = &( szBuffer[10] );
             }
-            else if ( !strnicmp(szBuffer, "REALNAME=", 9 ) &&
+            else if ( !WWIV_STRNICMP(szBuffer, "REALNAME=", 9 ) &&
                       ( szBuffer[9] == 'Y' || szBuffer[9] == 'y' ) )
             {
                 GetSession()->SetInternetUseRealNames( true );

@@ -67,11 +67,16 @@
 *	January, 1995
 **********/
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
+
+#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _MSC_VER 
+
+#include <cstdio>
+#include <cstdarg>
+#include <cstring>
 #include <ctype.h>
-#include <time.h>
+#include <ctime>
 
 #include "zmodem.h"
 #include "crctab.h"

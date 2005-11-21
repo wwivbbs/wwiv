@@ -21,7 +21,9 @@
 #include "WStringUtils.h"
 
 static int netw;
-int last_time_c;
+time_t last_time_c;
+
+void fixup_long( unsigned long *f, time_t l );
 
 
 void rename_pend( const char *pszDirectory, const char *pszFileName )
@@ -327,8 +329,8 @@ void do_callout( int sn )
 {
 	char s[81], s1[81], town[5];
 
-	long l;
-	time( &l );
+	time_t tCurrentTime;
+	time( &tCurrentTime );
 	int i = -1;
 	int i2 = -1;
 	if ( !net_networks[GetSession()->GetNetworkNumber()].con )
@@ -362,7 +364,7 @@ void do_callout( int sn )
         {
 			sprintf( s, "network /N%u /A%s /P%s /S%u /T%ld",
 				     sn, ( net_networks[GetSession()->GetNetworkNumber()].con[i].options & options_sendback ) ? "1" : "0",
-				     csne->phone, ( NULL != modem_i ) ? modem_i->defl.com_speed : 0, l );
+				     csne->phone, ( NULL != modem_i ) ? modem_i->defl.com_speed : 0, tCurrentTime );
             // if modem_i is null, we are on a telnet node, and PPP project, so we don't care...
 			if ( net_networks[GetSession()->GetNetworkNumber()].con[i].macnum )
             {
@@ -415,7 +417,7 @@ void do_callout( int sn )
 				ExecuteExternalProgram( s, EFLAG_NETPROG );
 				zap_contacts();
 				GetApplication()->GetStatusManager()->Read();
-				last_time_c = l;
+				last_time_c = static_cast<int>(tCurrentTime);
 				global_xx = false;
 				cleanup_net();
 #ifndef _UNUX
@@ -536,7 +538,7 @@ bool ok_to_call(int i)
 
 #define WEIGHT 30.0
 
-void fixup_long( long *f, long l )
+void fixup_long( unsigned long *f, time_t l )
 {
 	if ( *f > l )
     {
@@ -580,7 +582,8 @@ void attempt_callout()
 {
     int **try1, i, i1, i2, num_call_sys, num_ncn;
     float **weight, fl, fl1;
-    long l, l1;
+    time_t tLastContactTime;
+	time_t tCurrentTime;
     net_call_out_rec *con;
     net_contact_rec *ncn;
 
@@ -609,18 +612,18 @@ void attempt_callout()
     {
         net_only = false;
     }
-    time( &l );
-    if ( last_time_c > l )
+    time( &tCurrentTime );
+    if ( last_time_c > tCurrentTime )
     {
         last_time_c = 0L;
     }
-    if ( labs(last_time_c - l ) < 120 )
+    if ( labs(last_time_c - tCurrentTime ) < 120 )
     {
         return;
     }
     if ( last_time_c == 0L )
     {
-        last_time_c = l;
+        last_time_c = tCurrentTime;
         return;
     }
     if ( ( try1 = static_cast<int **>( BbsAllocA( sizeof(int *) * GetSession()->GetMaxNetworkNumber() ) ) ) == NULL )
@@ -687,13 +690,13 @@ void attempt_callout()
                     {
                         if ( con[i].call_anyway > 0 )
                         {
-                            l1 = ncn[i2].lastcontact + SECONDS_PER_HOUR * con[i].call_anyway;
+                            tLastContactTime = ncn[i2].lastcontact + SECONDS_PER_HOUR * con[i].call_anyway;
                         }
                         else
                         {
-                            l1 = ncn[i2].lastcontact + SECONDS_PER_HOUR / (-con[i].call_anyway);
+                            tLastContactTime = ncn[i2].lastcontact + SECONDS_PER_HOUR / (-con[i].call_anyway);
                         }
-                        if ( l < l1 )
+                        if ( tCurrentTime < tLastContactTime )
                         {
                             ok = false;
                         }
@@ -705,7 +708,7 @@ void attempt_callout()
                 }
                 if ( con[i].options & options_once_per_day )
                 {
-                    if ( labs( l - ncn[i2].lastcontactsent ) <
+                    if ( labs( tCurrentTime - ncn[i2].lastcontactsent ) <
                         ( 20L * SECONDS_PER_HOUR / con[i].times_per_day ) )
                     {
                         ok = false;
@@ -714,13 +717,13 @@ void attempt_callout()
                 if ( ok )
                 {
                     if ( ( bytes_to_k(ncn[i2].bytes_waiting ) < con[i].min_k )
-                        && ( labs( l - ncn[i2].lastcontact ) < SECONDS_PER_DAY ) )
+                        && ( labs( tCurrentTime - ncn[i2].lastcontact ) < SECONDS_PER_DAY ) )
                     {
                         ok = false;
                     }
                 }
-                fixup_long( ( long * ) &( ncn[i2].lastcontactsent ), l );
-                fixup_long( ( long * ) &( ncn[i2].lasttry ), l );
+                fixup_long( &( ncn[i2].lastcontactsent ), tCurrentTime );
+                fixup_long( &( ncn[i2].lasttry ), tCurrentTime );
                 if ( ok )
                 {
                     if ( ncn[i2].bytes_waiting == 0L )
@@ -731,7 +734,7 @@ void attempt_callout()
                     {
                         fl = (float) 1024.0 / ((float) ncn[i2].bytes_waiting) * (float) WEIGHT * (float) 60.0;
                     }
-                    fl1 = (float) (l - ncn[i2].lasttry);
+                    fl1 = (float) (tCurrentTime - ncn[i2].lasttry);
                     if ( ( fl < fl1 ) || net_only )
                     {
                         try1[nNetNumber][i] = 1;
@@ -784,8 +787,8 @@ void attempt_callout()
                 weight = NULL;
                 try1 = NULL;
                 do_callout(net_networks[GetSession()->GetNetworkNumber()].con[i1].sysnum);
-                time(&l);
-                last_time_c = l;
+                time(&tCurrentTime);
+                last_time_c = tCurrentTime;
                 break;
             }
         }
@@ -803,13 +806,10 @@ void print_pending_list()
         i2 = 0,
         i3 = 0,
         num_ncn = 0,
-        num_call_sys = 0,
-        h = 0,
-        m = 0,
-        se = 0;
+        num_call_sys = 0;
 	int adjust = 0, lines = 0;
 	char s[255], s1[81], s2[81], s3[81], s4[81], s5[81];
-	long l, l1;
+	time_t tCurrentTime;
 	net_call_out_rec *con;
 	net_contact_rec *ncn;
 	time_t t;
@@ -825,7 +825,7 @@ void print_pending_list()
 		return;
     }
 
-	time(&l);
+	time(&tCurrentTime);
 
 	nl( 2 );
 	GetSession()->bout << "                           |#3Ä> |#9Network Status |#3<Ä\r\n";
@@ -886,14 +886,15 @@ void print_pending_list()
                 {
 					strcpy(s2, "|#3---");
                 }
-
+				
+				int h=0,m=0;
 				if (ncn[i2].lastcontactsent)
 				{
-					l1 = l - ncn[i2].lastcontactsent;
-					se = l1 % 60;
-					l1 = (l1 - se) / 60;
-					m = l1 % 60;
-					h = l1 / 60;
+					time_t tLastContactTime = tCurrentTime - ncn[i2].lastcontactsent;
+					int se = tLastContactTime % 60;
+					tLastContactTime = (tLastContactTime - se) / 60;
+					m = tLastContactTime % 60;
+					h = tLastContactTime / 60;
 					sprintf(s1, "|#2%02d:%02d:%02d", h, m, se);
 				}
 				else
@@ -965,9 +966,9 @@ void print_pending_list()
 		int hFileDeadNet = open(s, O_RDONLY | O_BINARY);
 		if ( hFileDeadNet > 0 )
         {
-			l = filelength( hFileDeadNet );
+			long lFileSize = filelength( hFileDeadNet );
 			close( hFileDeadNet );
-            sprintf( s3, "%ld""k", ( l + 1023 ) / 1024 );
+            sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
 			bprintf( "|#7º |#3--- |#7³ |#2%-8s |#7³ |#6DEAD! |#7³ |#2------- |#7³ |#2------- |#7³|#2%5s |#7³|#2 --- |#7³ |#2--------- |#7³|#2 --- |#7º\r\n", GetSession()->GetNetworkName(), s3);
 		}
 	}
@@ -985,9 +986,9 @@ void print_pending_list()
 		int hFileCheckNet = open(s, O_RDONLY | O_BINARY);
 		if ( hFileCheckNet > 0 )
 		{
-			l = filelength( hFileCheckNet );
+			long lFileSize = filelength( hFileCheckNet );
 			close( hFileCheckNet );
-            sprintf( s3, "%ld""k", ( l + 1023 ) / 1024 );
+            sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
 			strcat(s3, "k");
 			bprintf( "|#7º |#3--- |#7³ |#2%-8s |#7³ |#6CHECK |#7³ |#2------- |#7³ |#2------- |#7³|#2%5s |#7³|#2 --- |#7³ |#2--------- |#7³|#2 --- |#7º\r\n", GetSession()->GetNetworkName(), s3);
 		}
@@ -1175,9 +1176,9 @@ void print_call(int sn, int nNetNumber, int i2)
 	static int color, got_color = 0;
 
 	char s[100], s1[100];
-	long l, l2;
+	time_t tCurrentTime;
 
-	time(&l);
+	time(&tCurrentTime);
 
 	set_net_num(nNetNumber);
 	read_call_out_list();
@@ -1213,10 +1214,10 @@ void print_call(int sn, int nNetNumber, int i2)
 
 	if (ncn[i2].firstcontact)
     {
-		sprintf(s1, "%ld:", (l - ncn[i2].firstcontact) / SECONDS_PER_HOUR);
-		l2 = (((l - ncn[i2].firstcontact) % SECONDS_PER_HOUR) / 60);
-        sprintf( s, "%d", l2 );
-		if ( l2 < 10 )
+		sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].firstcontact) / SECONDS_PER_HOUR);
+		time_t tTime = (((tCurrentTime - ncn[i2].firstcontact) % SECONDS_PER_HOUR) / 60);
+        sprintf( s, "%ld", tTime );
+		if ( tTime < 10 )
         {
 			strcat(s1, "0");
 			strcat(s1, s);
@@ -1235,10 +1236,10 @@ void print_call(int sn, int nNetNumber, int i2)
 
 	if (ncn[i2].lastcontactsent)
     {
-		sprintf(s1, "%ld:", (l - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR);
-		l2 = (((l - ncn[i2].lastcontactsent) % SECONDS_PER_HOUR) / 60);
-		sprintf( s, "%d", l2 );
-		if (l2 < 10)
+		sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR);
+		time_t tTime = (((tCurrentTime - ncn[i2].lastcontactsent) % SECONDS_PER_HOUR) / 60);
+		sprintf( s, "%ld", tTime );
+		if (tTime < 10)
         {
 			strcat(s1, "0");
 			strcat(s1, s);
@@ -1257,10 +1258,10 @@ void print_call(int sn, int nNetNumber, int i2)
 
 	if (ncn[i2].lasttry)
     {
-		sprintf(s1, "%ld:", (l - ncn[i2].lasttry) / SECONDS_PER_HOUR);
-		l2 = (((l - ncn[i2].lasttry) % SECONDS_PER_HOUR) / 60);
-		sprintf( s, "%d", l2 );
-		if (l2 < 10)
+		sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].lasttry) / SECONDS_PER_HOUR);
+		time_t tTime = (((tCurrentTime - ncn[i2].lasttry) % SECONDS_PER_HOUR) / 60);
+		sprintf( s, "%d", tTime );
+		if (tTime < 10)
         {
 			strcat(s1, "0");
 			strcat(s1, s);
@@ -1617,12 +1618,12 @@ void force_callout(int dw)
     bool  abort = false;
     bool ok;
     unsigned int nr = 1, tc = 0;
-    long l;
+    time_t tCurrentTime;
     char ch, s[101], onx[20];
     net_system_list_rec *csne;
     unsigned long lc, cc;
 
-    time(&l);
+    time(&tCurrentTime);
     int sn = ansicallout();
     if (!sn)
     {

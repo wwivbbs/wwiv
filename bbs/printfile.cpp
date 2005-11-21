@@ -166,13 +166,13 @@ void print_local_file( const char *ss, const char *ss1 )
 
 	WWIV_ASSERT( ss );
 
-    char *pszTempSS = strdup( ss );
+    char *pszTempSS = WWIV_STRDUP( ss );
 	char *bs = strchr( pszTempSS, WWIV_FILE_SEPERATOR_CHAR );
 	if ( ( syscfg.sysconfig & sysconfig_list ) && !incom )
 	{
 		if ( !bs )
 		{
-            char * pszTempSS1 = strdup( ss1 );
+            char * pszTempSS1 = WWIV_STRDUP( ss1 );
 			sprintf( szCmdLine, "%s %s%s", "LIST", syscfg.gfilesdir, ss );
 			if ( ss1[0] )
 			{
@@ -194,7 +194,7 @@ void print_local_file( const char *ss, const char *ss1 )
 			sprintf( szCmdLine, "%s %s", "LIST", ss );
 			if ( ss1[0] )
 			{
-                char * pszTempSS1 = strdup( ss1 );
+                char * pszTempSS1 = WWIV_STRDUP( ss1 );
 				bs = strchr( pszTempSS1, WWIV_FILE_SEPERATOR_CHAR );
 				if ( !bs )
 				{

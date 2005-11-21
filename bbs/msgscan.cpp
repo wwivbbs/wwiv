@@ -779,7 +779,7 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 				{
 					if (strstr(szUserNameOrNumber, "@32767") == NULL)
 					{
-						strlwr(szUserNameOrNumber);
+						WWIV_STRLWR(szUserNameOrNumber);
 						strcat(szUserNameOrNumber, " @32767");
 					}
 				}
@@ -876,7 +876,7 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 	char *pszTempFindString = NULL;
 	if (!(g_flags & g_flag_made_find_str))
 	{
-		pszTempFindString = strupr( stripcolors( get_post( nMessageNumber )->title ) );
+		pszTempFindString = WWIV_STRUPR( stripcolors( get_post( nMessageNumber )->title ) );
 		strncpy(s_szFindString, pszTempFindString, sizeof(s_szFindString) - 1);
 		g_flags |= g_flag_made_find_str;
 	}
@@ -972,8 +972,8 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 		char *b = readfile(&(get_post(nTempMsgNum)->msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename, &lMessageLen);
 		if (b)
 		{
-			b = strupr(b);
-			fnd = (strstr(strupr(stripcolors(get_post(nTempMsgNum)->title)), szFindString) || strstr(b, szFindString)) ? true : false;
+			b = WWIV_STRUPR(b);
+			fnd = (strstr(WWIV_STRUPR(stripcolors(get_post(nTempMsgNum)->title)), szFindString) || strstr(b, szFindString)) ? true : false;
 			BbsFreeMemory(b);
 		}
 	}

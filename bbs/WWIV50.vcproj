@@ -1,24 +1,45 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="WWIV50"
+	ProjectGUID="{5C49251E-D238-474E-A469-41E63BA86283}"
 	RootNamespace="WWIV50"
-	SccProjectName=""
-	SccLocalPath="">
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\Debug"
 			IntermediateDirectory=".\Debug"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName=".\Debug/WWIV50.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -26,10 +47,10 @@
 				PreprocessorDefinitions="WIN32,_DEBUG,_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
-				UsePrecompiledHeader="2"
+				BufferSecurityCheck="true"
+				EnableFunctionLevelLinking="true"
+				ForceConformanceInForLoopScope="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="wwiv.h"
 				PrecompiledHeaderFile=".\Debug/WWIV50.pch"
 				AssemblerListingLocation=".\Debug/"
@@ -37,119 +58,178 @@
 				ProgramDataBaseFileName=".\Debug/"
 				BrowseInformation="1"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				ForcedIncludeFiles=""
-				ShowIncludes="FALSE"/>
+				ShowIncludes="false"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ws2_32.lib odbc32.lib odbccp32.lib"
 				OutputFile="C:\bbs\wwiv50.exe"
 				LinkIncremental="2"
-				SuppressStartupBanner="TRUE"
-				GenerateDebugInformation="TRUE"
+				SuppressStartupBanner="true"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/wwiv50.pdb"
-				SubSystem="1"/>
+				SubSystem="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/WWIV50.tlb"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName=".\Release/WWIV50.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
-				EnableIntrinsicFunctions="TRUE"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)\platform&quot;;&quot;$(ProjectDir)\platform\WIN32&quot;"
 				PreprocessorDefinitions="WIN32,NDEBUG,_CONSOLE"
-				StringPooling="TRUE"
+				StringPooling="true"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="TRUE"
-				DisableLanguageExtensions="FALSE"
-				ForceConformanceInForLoopScope="TRUE"
-				UsePrecompiledHeader="2"
+				EnableFunctionLevelLinking="true"
+				DisableLanguageExtensions="false"
+				ForceConformanceInForLoopScope="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="wwiv.h"
 				PrecompiledHeaderFile=".\Release/WWIV50.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
-				SuppressStartupBanner="TRUE"/>
+				SuppressStartupBanner="true"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib"
 				OutputFile="C:\bbs\wwiv50nd.exe"
 				LinkIncremental="1"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\Release/wwiv50nd.pdb"
-				SubSystem="1"/>
+				SubSystem="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/WWIV50.tlb"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug-Warn4|Win32"
 			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TypeLibraryName=".\Debug/WWIV50.tlb"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -157,10 +237,10 @@
 				PreprocessorDefinitions="WIN32,_DEBUG,_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
-				ForceConformanceInForLoopScope="TRUE"
-				UsePrecompiledHeader="2"
+				BufferSecurityCheck="true"
+				EnableFunctionLevelLinking="true"
+				ForceConformanceInForLoopScope="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="wwiv.h"
 				PrecompiledHeaderFile=".\Debug/WWIV50.pch"
 				AssemblerListingLocation=".\Debug/"
@@ -168,45 +248,57 @@
 				ProgramDataBaseFileName=".\Debug/"
 				BrowseInformation="1"
 				WarningLevel="4"
-				SuppressStartupBanner="TRUE"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				ForcedIncludeFiles=""
-				ShowIncludes="FALSE"/>
+				ShowIncludes="false"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ws2_32.lib odbc32.lib odbccp32.lib"
 				OutputFile="C:\bbs\wwiv50.exe"
 				LinkIncremental="2"
-				SuppressStartupBanner="TRUE"
-				GenerateDebugInformation="TRUE"
+				SuppressStartupBanner="true"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/wwiv50.pdb"
-				SubSystem="1"/>
+				SubSystem="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/WWIV50.tlb"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -214,865 +306,1136 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			>
 			<Filter
 				Name="platform Source"
-				Filter="">
+				>
 				<Filter
 					Name="Win32"
-					Filter="">
+					>
 					<File
-						RelativePath="platform\WIN32\exec.cpp">
+						RelativePath="platform\WIN32\exec.cpp"
+						>
 						<FileConfiguration
-							Name="Debug|Win32">
+							Name="Debug|Win32"
+							>
 							<Tool
 								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+								ObjectFile="$(IntDir)/$(InputName)1.obj"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Release|Win32">
+							Name="Release|Win32"
+							>
 							<Tool
 								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+								ObjectFile="$(IntDir)/$(InputName)1.obj"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
-							Name="Debug-Warn4|Win32">
+							Name="Debug-Warn4|Win32"
+							>
 							<Tool
 								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+								ObjectFile="$(IntDir)/$(InputName)1.obj"
+							/>
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\filesupp.cpp">
+						RelativePath=".\platform\WIN32\filesupp.cpp"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\reboot.cpp">
+						RelativePath=".\platform\WIN32\reboot.cpp"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\utility2.cpp">
+						RelativePath=".\platform\WIN32\utility2.cpp"
+						>
 					</File>
 					<File
-						RelativePath="platform\WIN32\WFile.cpp">
+						RelativePath="platform\WIN32\WFile.cpp"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\wfndfile.cpp">
+						RelativePath=".\platform\WIN32\wfndfile.cpp"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\Wios.cpp">
+						RelativePath=".\platform\WIN32\Wios.cpp"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\Wiot.cpp">
+						RelativePath=".\platform\WIN32\Wiot.cpp"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\WLocalIO.cpp">
+						RelativePath=".\platform\WIN32\WLocalIO.cpp"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\wshare.cpp">
+						RelativePath=".\platform\WIN32\wshare.cpp"
+						>
 					</File>
 				</Filter>
 				<Filter
 					Name="linux"
-					Filter="">
+					>
 					<File
-						RelativePath="platform\linux\exec.cpp">
+						RelativePath="platform\linux\exec.cpp"
+						>
 						<FileConfiguration
 							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\platform\linux\filestuff.cpp">
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\platform\linux\reboot.cpp">
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\platform\linux\stringstuff.cpp">
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath=".\platform\linux\utility2.cpp">
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
-							<Tool
-								Name="VCCLCompilerTool"/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="platform\linux\WFile.cpp">
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
 								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
 								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
 								Name="VCCLCompilerTool"
-								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							/>
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath=".\platform\linux\wfndfile.cpp">
+						RelativePath=".\platform\linux\filestuff.cpp"
+						>
 						<FileConfiguration
 							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath=".\platform\linux\Wiou.cpp">
+						RelativePath=".\platform\linux\reboot.cpp"
+						>
 						<FileConfiguration
 							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath=".\platform\linux\WLocalIO.cpp">
+						RelativePath=".\platform\linux\stringstuff.cpp"
+						>
 						<FileConfiguration
 							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath=".\platform\linux\wshare.cpp">
+						RelativePath=".\platform\linux\utility2.cpp"
+						>
 						<FileConfiguration
 							Name="Debug|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Debug-Warn4|Win32"
-							ExcludedFromBuild="TRUE">
+							ExcludedFromBuild="true"
+							>
 							<Tool
-								Name="VCCLCompilerTool"/>
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="platform\linux\WFile.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)/$(InputName)1.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)/$(InputName)1.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Warn4|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)/$(InputName)1.obj"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\platform\linux\wfndfile.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Warn4|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\platform\linux\Wiou.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Warn4|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\platform\linux\WLocalIO.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Warn4|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\platform\linux\wshare.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug-Warn4|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
 						</FileConfiguration>
 					</File>
 				</Filter>
 				<Filter
 					Name="common platform source"
-					Filter="">
+					>
 					<File
-						RelativePath="platform\DateTime.cpp">
+						RelativePath="platform\DateTime.cpp"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\wutil.cpp">
+						RelativePath=".\platform\wutil.cpp"
+						>
 					</File>
 				</Filter>
 			</Filter>
 			<Filter
 				Name="Generic Source"
-				Filter="">
+				>
 				<File
-					RelativePath=".\asv.cpp">
+					RelativePath=".\asv.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\attach.cpp">
+					RelativePath=".\attach.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\automsg.cpp">
+					RelativePath=".\automsg.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\batch.cpp">
+					RelativePath=".\batch.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\bbs.cpp">
+					RelativePath=".\bbs.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\bbslist.cpp">
+					RelativePath=".\bbslist.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\bbsovl1.cpp">
+					RelativePath=".\bbsovl1.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\bbsovl2.cpp">
+					RelativePath=".\bbsovl2.cpp"
+					>
 					<FileConfiguration
-						Name="Debug|Win32">
+						Name="Debug|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							WarningLevel="4"/>
+							WarningLevel="4"
+						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug-Warn4|Win32">
+						Name="Debug-Warn4|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							WarningLevel="4"/>
+							WarningLevel="4"
+						/>
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bbsovl3.cpp">
+					RelativePath=".\bbsovl3.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\bbsutl.cpp">
+					RelativePath=".\bbsutl.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\bbsutl1.cpp">
+					RelativePath=".\bbsutl1.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\bbsutl2.cpp">
+					RelativePath=".\bbsutl2.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\bgetch.cpp">
+					RelativePath=".\bgetch.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\bputch.cpp">
+					RelativePath=".\bputch.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\callback.cpp">
+					RelativePath=".\callback.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\chains.cpp">
+					RelativePath=".\chains.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\chat.cpp">
+					RelativePath=".\chat.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\chnedit.cpp">
+					RelativePath=".\chnedit.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\colors.cpp">
+					RelativePath=".\colors.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\com.cpp">
+					RelativePath=".\com.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\conf.cpp">
+					RelativePath=".\conf.cpp"
+					>
 				</File>
 				<File
-					RelativePath="confutil.cpp">
+					RelativePath="confutil.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\connect1.cpp">
+					RelativePath=".\connect1.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\crc.cpp">
+					RelativePath=".\crc.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\defaults.cpp">
+					RelativePath=".\defaults.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\diredit.cpp">
+					RelativePath=".\diredit.cpp"
+					>
 				</File>
 				<File
-					RelativePath="dirlist.cpp">
+					RelativePath="dirlist.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\dropfile.cpp">
+					RelativePath=".\dropfile.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\dupphone.cpp">
+					RelativePath=".\dupphone.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\events.cpp">
+					RelativePath=".\events.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\execexternal.cpp">
+					RelativePath=".\execexternal.cpp"
+					>
 				</File>
 				<File
-					RelativePath="extract.cpp">
+					RelativePath="extract.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\FindUser.cpp">
+					RelativePath=".\FindUser.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\gfiles.cpp">
+					RelativePath=".\gfiles.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\gfledit.cpp">
+					RelativePath=".\gfledit.cpp"
+					>
 				</File>
 				<File
-					RelativePath="hop.cpp">
+					RelativePath="hop.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\inetmsg.cpp">
+					RelativePath=".\inetmsg.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\ini.cpp">
+					RelativePath=".\ini.cpp"
+					>
 				</File>
 				<File
-					RelativePath="inmsg.cpp">
+					RelativePath="inmsg.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\input.cpp">
+					RelativePath=".\input.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\instmsg.cpp">
+					RelativePath=".\instmsg.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\interpret.cpp">
+					RelativePath=".\interpret.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\lilo.cpp">
+					RelativePath=".\lilo.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\listplus.cpp">
+					RelativePath=".\listplus.cpp"
+					>
 				</File>
 				<File
-					RelativePath="lpfunc.cpp">
+					RelativePath="lpfunc.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\memory.cpp">
+					RelativePath=".\memory.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\menu.cpp">
+					RelativePath=".\menu.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\menuedit.cpp">
+					RelativePath=".\menuedit.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\menuspec.cpp">
+					RelativePath=".\menuspec.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\menusupp.cpp">
+					RelativePath=".\menusupp.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\misccmd.cpp">
+					RelativePath=".\misccmd.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\modem.cpp">
+					RelativePath=".\modem.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\msgbase.cpp">
+					RelativePath=".\msgbase.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\msgbase1.cpp">
+					RelativePath=".\msgbase1.cpp"
+					>
 				</File>
 				<File
-					RelativePath="msgscan.cpp">
+					RelativePath="msgscan.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\multinst.cpp">
+					RelativePath=".\multinst.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\multmail.cpp">
+					RelativePath=".\multmail.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\netsup.cpp">
+					RelativePath=".\netsup.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\newuser.cpp">
+					RelativePath=".\newuser.cpp"
+					>
 				</File>
 				<File
-					RelativePath="normupld.cpp">
+					RelativePath="normupld.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\pause.cpp">
+					RelativePath=".\pause.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\printfile.cpp">
+					RelativePath=".\printfile.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\quote.cpp">
+					RelativePath=".\quote.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\readmail.cpp">
+					RelativePath=".\readmail.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\shortmsg.cpp">
+					RelativePath=".\shortmsg.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\SmallRecord.cpp">
+					RelativePath=".\SmallRecord.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\sr.cpp">
+					RelativePath=".\sr.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\srrcv.cpp">
+					RelativePath=".\srrcv.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\srsend.cpp">
+					RelativePath=".\srsend.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\status.cpp">
+					RelativePath=".\status.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\strings.cpp">
+					RelativePath=".\strings.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\stuffin.cpp">
+					RelativePath=".\stuffin.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\subacc.cpp">
+					RelativePath=".\subacc.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\subedit.cpp">
+					RelativePath=".\subedit.cpp"
+					>
 				</File>
 				<File
-					RelativePath="sublist.cpp">
+					RelativePath="sublist.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\subreq.cpp">
+					RelativePath=".\subreq.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\subxtr.cpp">
+					RelativePath=".\subxtr.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\syschat.cpp">
+					RelativePath=".\syschat.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\sysopf.cpp">
+					RelativePath=".\sysopf.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\sysoplog.cpp">
+					RelativePath=".\sysoplog.cpp"
+					>
 				</File>
 				<File
-					RelativePath="trytoul.cpp">
+					RelativePath="trytoul.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\uedit.cpp">
+					RelativePath=".\uedit.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\user.cpp">
+					RelativePath=".\user.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\utility.cpp">
+					RelativePath=".\utility.cpp"
+					>
 				</File>
 				<File
-					RelativePath="valscan.cpp">
+					RelativePath="valscan.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\version.cpp">
+					RelativePath=".\version.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\vote.cpp">
+					RelativePath=".\vote.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\voteedit.cpp">
+					RelativePath=".\voteedit.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\WComm.cpp">
+					RelativePath=".\WComm.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\wfc.cpp">
+					RelativePath=".\wfc.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\wqscn.cpp">
+					RelativePath=".\wqscn.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\WSession.cpp">
+					RelativePath=".\WSession.cpp"
+					>
 				</File>
 				<File
-					RelativePath="WStringUtils.cpp">
+					RelativePath="WStringUtils.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\WUser.cpp">
+					RelativePath=".\WUser.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\xfer.cpp">
+					RelativePath=".\xfer.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\xferovl.cpp">
+					RelativePath=".\xferovl.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\xferovl1.cpp">
+					RelativePath=".\xferovl1.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\xfertmp.cpp">
+					RelativePath=".\xfertmp.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\xinit.cpp">
+					RelativePath=".\xinit.cpp"
+					>
 				</File>
 			</Filter>
 			<Filter
 				Name="ZModem"
-				Filter="">
+				>
 				<File
-					RelativePath=".\prot\crctab.cpp">
+					RelativePath=".\prot\crctab.cpp"
+					>
 				</File>
 				<File
-					RelativePath=".\prot\zmodem.cpp">
+					RelativePath=".\prot\zmodem.cpp"
+					>
 					<FileConfiguration
-						Name="Debug|Win32">
+						Name="Debug|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Release|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug-Warn4|Win32">
+						Name="Debug-Warn4|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\prot\zmodemcrc.cpp">
-				</File>
-				<File
-					RelativePath=".\prot\zmodemr.cpp">
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug-Warn4|Win32">
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\prot\zmodemt.cpp">
+					RelativePath=".\prot\zmodemcrc.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\prot\zmodemr.cpp"
+					>
 					<FileConfiguration
-						Name="Debug|Win32">
+						Name="Debug|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Release|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug-Warn4|Win32">
+						Name="Debug-Warn4|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\prot\zmutil.cpp">
+					RelativePath=".\prot\zmodemt.cpp"
+					>
 					<FileConfiguration
-						Name="Debug|Win32">
+						Name="Debug|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Release|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug-Warn4|Win32">
+						Name="Debug-Warn4|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\prot\zmwwiv.cpp">
+					RelativePath=".\prot\zmutil.cpp"
+					>
 					<FileConfiguration
-						Name="Debug|Win32">
+						Name="Debug|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release|Win32">
+						Name="Release|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Debug-Warn4|Win32">
+						Name="Debug-Warn4|Win32"
+						>
 						<Tool
 							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\prot\zmwwiv.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug-Warn4|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
 					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl">
+			Filter="h;hpp;hxx;hm;inl"
+			>
 			<Filter
 				Name="Generic Headers"
-				Filter="">
+				>
 				<File
-					RelativePath=".\bbs.h">
+					RelativePath=".\bbs.h"
+					>
 				</File>
 				<File
-					RelativePath=".\common.h">
+					RelativePath=".\common.h"
+					>
 				</File>
 				<File
-					RelativePath=".\fcns.h">
+					RelativePath=".\fcns.h"
+					>
 				</File>
 				<File
-					RelativePath="filenames.h">
+					RelativePath="filenames.h"
+					>
 				</File>
 				<File
-					RelativePath=".\ini.h">
+					RelativePath=".\ini.h"
+					>
 				</File>
 				<File
-					RelativePath=".\instmsg.h">
+					RelativePath=".\instmsg.h"
+					>
 				</File>
 				<File
-					RelativePath=".\listplus.h">
+					RelativePath=".\listplus.h"
+					>
 				</File>
 				<File
-					RelativePath=".\menu.h">
+					RelativePath=".\menu.h"
+					>
 				</File>
 				<File
-					RelativePath=".\net.h">
+					RelativePath=".\net.h"
+					>
 				</File>
 				<File
-					RelativePath=".\subxtr.h">
+					RelativePath=".\subxtr.h"
+					>
 				</File>
 				<File
-					RelativePath=".\platform\testos.h">
+					RelativePath=".\platform\testos.h"
+					>
 				</File>
 				<File
-					RelativePath=".\vardec.h">
+					RelativePath=".\vardec.h"
+					>
 				</File>
 				<File
-					RelativePath=".\vars.h">
+					RelativePath=".\vars.h"
+					>
 				</File>
 				<File
-					RelativePath=".\WConstants.h">
+					RelativePath=".\WConstants.h"
+					>
 				</File>
 				<File
-					RelativePath=".\WOutStreamBuffer.h">
+					RelativePath=".\WOutStreamBuffer.h"
+					>
 				</File>
 				<File
-					RelativePath=".\WSession.h">
+					RelativePath=".\WSession.h"
+					>
 				</File>
 				<File
-					RelativePath="WStringUtils.h">
+					RelativePath="WStringUtils.h"
+					>
 				</File>
 				<File
-					RelativePath=".\WUser.h">
+					RelativePath=".\WUser.h"
+					>
 				</File>
 				<File
-					RelativePath=".\platform\wutil.h">
+					RelativePath=".\platform\wutil.h"
+					>
 				</File>
 				<File
-					RelativePath=".\wwiv.h">
+					RelativePath=".\wwiv.h"
+					>
 				</File>
 				<File
-					RelativePath=".\wwivassert.h">
+					RelativePath=".\wwivassert.h"
+					>
 				</File>
 				<File
-					RelativePath=".\xinitini.h">
+					RelativePath=".\xinitini.h"
+					>
 				</File>
 			</Filter>
 			<Filter
 				Name="platform Headers"
-				Filter="">
+				>
 				<Filter
 					Name="Win32 platform Headers"
-					Filter="">
+					>
 					<File
-						RelativePath=".\platform\WIN32\Wios.h">
+						RelativePath=".\platform\WIN32\Wios.h"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\Wiot.h">
+						RelativePath=".\platform\WIN32\Wiot.h"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WIN32\wshare.h">
+						RelativePath=".\platform\WIN32\wshare.h"
+						>
 					</File>
 				</Filter>
 				<Filter
 					Name="platform Headers"
-					Filter="">
+					>
 					<File
-						RelativePath=".\platform\incl1.h">
+						RelativePath=".\platform\incl1.h"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\incl2.h">
+						RelativePath=".\platform\incl2.h"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\incl3.h">
+						RelativePath=".\platform\incl3.h"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\platformfcns.h">
+						RelativePath=".\platform\platformfcns.h"
+						>
 					</File>
 					<File
-						RelativePath=".\wcomm.h">
+						RelativePath=".\wcomm.h"
+						>
 					</File>
 					<File
-						RelativePath="platform\WFile.h">
+						RelativePath="platform\WFile.h"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\wfndfile.h">
+						RelativePath=".\platform\wfndfile.h"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\WLocalIO.h">
+						RelativePath=".\platform\WLocalIO.h"
+						>
 					</File>
 					<File
-						RelativePath=".\wtypes.h">
+						RelativePath=".\wtypes.h"
+						>
 					</File>
 				</Filter>
 				<Filter
 					Name="linux platform headers"
-					Filter="">
+					>
 					<File
-						RelativePath=".\platform\linux\linuxplatform.h">
+						RelativePath=".\platform\linux\linuxplatform.h"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\linux\Wiou.h">
+						RelativePath=".\platform\linux\Wiou.h"
+						>
 					</File>
 					<File
-						RelativePath=".\platform\linux\wshare.h">
+						RelativePath=".\platform\linux\wshare.h"
+						>
 					</File>
 				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+			>
 			<File
-				RelativePath="readme.txt">
+				RelativePath="readme.txt"
+				>
 			</File>
 			<File
-				RelativePath=".\todo.txt">
+				RelativePath=".\todo.txt"
+				>
 			</File>
 			<File
-				RelativePath=".\whatsnew.txt">
+				RelativePath=".\whatsnew.txt"
+				>
 			</File>
 		</Filter>
 	</Files>

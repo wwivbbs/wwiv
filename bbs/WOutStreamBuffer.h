@@ -21,6 +21,10 @@
 #define __INCLUDED_WStreamBuffer_H__
 
 
+#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _MSC_VER 
+
 #include <iostream>
 #include <streambuf>
 #include <ios>

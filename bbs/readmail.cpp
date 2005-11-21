@@ -1189,7 +1189,7 @@ void readmail( int mode )
 				{
 					if (strstr(s, "@32767") == NULL)
 					{
-						strlwr(s1);
+						WWIV_STRLWR(s1);
 						strcat(s, " @32767");
 					}
 				}
@@ -1375,7 +1375,7 @@ void readmail( int mode )
 						{
 							if (strstr(s, "@32767") == NULL)
 							{
-								strlwr(s);
+								WWIV_STRLWR(s);
 								strcat(s, " @32767");
 							}
 						}

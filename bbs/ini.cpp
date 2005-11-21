@@ -94,7 +94,7 @@ static void find_subsection_area(const char *pszFileName, const char *ssn, long 
             if ((strlen(s) > 2) && (s[0] == '[') && (s[strlen(s) - 1] == ']'))
             {
                 // Does it match requested subsection name (ssn)?
-                if ( strnicmp(&s[0], &szTempHeader[0], strlen( szTempHeader ) ) == 0 )
+                if ( WWIV_STRNICMP(&s[0], &szTempHeader[0], strlen( szTempHeader ) ) == 0 )
                 {
                     if (*begin == -1L)
                     {

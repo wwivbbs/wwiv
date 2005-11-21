@@ -96,7 +96,7 @@ int WWIV_make_path(char *s)
 {
   char current_path[MAX_PATH], *p, *flp;
 
-  p = flp = strdup(s);
+  p = flp = WWIV_STRDUP(s);
   getcwd(current_path, MAX_PATH);
   if(LAST(p) == WWIV_FILE_SEPERATOR_CHAR)
     LAST(p) = 0;

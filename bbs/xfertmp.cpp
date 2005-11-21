@@ -99,7 +99,7 @@ int check_for_files_arc(const char *pszFileName)
                     char szArcFileName[ MAX_PATH ];
                     strncpy(szArcFileName, a.name, 13);
                     szArcFileName[13] = 0;
-                    strupr( szArcFileName );
+                    WWIV_STRUPR( szArcFileName );
                     if (bad_filename(szArcFileName))
                     {
 						file.Close();
@@ -159,7 +159,7 @@ int check_for_files_zip(const char *pszFileName)
             case ZIP_LOCAL_SIG:
 				file.Read( &zl, sizeof( zl ) );
                 READ_FN(zl.filename_len);
-                strupr( s );
+                WWIV_STRUPR( s );
                 if (bad_filename(s))
                 {
 					file.Close();
@@ -171,7 +171,7 @@ int check_for_files_zip(const char *pszFileName)
             case ZIP_CENT_START_SIG:
 				file.Read( &zc, sizeof( zc ) );
                 READ_FN(zc.filename_len);
-                strupr( s );
+                WWIV_STRUPR( s );
                 if (bad_filename(s))
                 {
 					file.Close();
@@ -251,7 +251,7 @@ int check_for_files_lzh( const char *pszFileName )
             break;
         }
         szBuffer[a.fn_len] = '\0';
-        strupr( szBuffer );
+        WWIV_STRUPR( szBuffer );
         if ( bad_filename( szBuffer ) )
         {
             err = 1;
@@ -310,7 +310,7 @@ int check_for_files_arj( const char *pszFileName )
 				file.Read( &sh, 2 );
             }
             lCurPos += l2;
-            strupr( szBuffer );
+            WWIV_STRUPR( szBuffer );
             if ( bad_filename( szBuffer ) )
             {
 				file.Close();
@@ -347,7 +347,7 @@ arc_testers arc_t[] =
 
 int check_for_files(const char *pszFileName)
 {
-    char * ss = strrchr(pszFileName, '.');
+    const char * ss = strrchr(pszFileName, '.');
     if (ss)
     {
         ss++;
@@ -912,7 +912,7 @@ void move_file_t()
                 GetSession()->bout << "|#5Reset upload time for file? ";
                 if (yesno())
                 {
-                    time((long *) &u.daten);
+                    time((time_t *) &u.daten);
                 }
                 --nCurPos;
 				fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );

@@ -33,6 +33,11 @@
 
 #if defined (_MSC_VER)
 #pragma component(browser, off)
+
+#if !defined( _CRT_SECURE_NO_DEPRECATE )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _MSC_VER 
+
 #endif // defined (_MSC_VER)
 
 #define	 WIN32_LEAN_AND_MEAN
@@ -179,7 +184,6 @@ enum COLORS
 #define WWIV_FILE_SEPERATOR_STRING	"/"
 
 #define _putenv(s)	putenv(s)
-#define strnicmp(x,y,z)	strncasecmp(x, y, z)
 #define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
 
 #ifndef UNREFERENCED_PARAMETER

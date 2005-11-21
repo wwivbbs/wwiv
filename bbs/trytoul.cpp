@@ -464,13 +464,14 @@ int try_to_ul_wh(char *pszFileName)
 			file.Open( WFile::modeBinary | WFile::modeReadOnly );
         }
     }
-	long l = file.GetLength();
-    u.numbytes = l;
+	long lFileLength = file.GetLength();
+    u.numbytes = lFileLength;
 	file.Close();
     GetSession()->thisuser.SetFilesUploaded( GetSession()->thisuser.GetFilesUploaded() + 1 );
 
-    time(&l);
-    u.daten = l;
+	time_t tCurrentDate;
+    time(&tCurrentDate);
+    u.daten = static_cast<unsigned long>(tCurrentDate);
 	WFile fileDownload( g_szDownloadFileName );
 	fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
     for (i = GetSession()->numf; i >= 1; i--)
@@ -487,8 +488,8 @@ int try_to_ul_wh(char *pszFileName)
     FileAreaSetRecord( fileDownload, 0 );
 	fileDownload.Read( &u1, sizeof( uploadsrec ) );
     u1.numbytes = GetSession()->numf;
-    u1.daten = l;
-    GetSession()->m_DirectoryDateCache[dn] = l;
+    u1.daten = static_cast<unsigned long>(tCurrentDate);
+    GetSession()->m_DirectoryDateCache[dn] = static_cast<UINT32>(tCurrentDate);
     FileAreaSetRecord( fileDownload, 0 );
 	fileDownload.Write( &u1, sizeof( uploadsrec ) );
 	fileDownload.Close();
