@@ -190,12 +190,12 @@ struct ZModem {
 	  int	interrupt ;	/* received attention signal */
 	  int	waitflag ;	/* next send should wait */
 	  			/* parser state */
-	  enum  InputState {Idle, Padding, Inhdr, Indata, Finish, Ysend, Yrcv};
-	  enum Protocol {XMODEM, YMODEM, ZMODEM};
+	  enum  {Idle, Padding, Inhdr, Indata, Finish, Ysend, Yrcv} InputState;
+	  enum  {XMODEM, YMODEM, ZMODEM} Protocol;
 	  u_char hdrData[9] ;	/* header type and data */
 	  u_char fileFlags[4] ;	/* file xfer flags */
 	  u_long crc ;		/* crc of incoming header/data */
-	  enum Streaming {Full, StrWindow, SlidingWindow, Segmented};
+	  enum {Full, StrWindow, SlidingWindow, Segmented} Streaming ;
 	};
 
 
