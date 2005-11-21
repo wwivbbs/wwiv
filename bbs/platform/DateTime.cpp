@@ -165,11 +165,11 @@ void ToggleScrollLockKey()
 }
 
 
-bool sysop1()
 /* This function returns the status of scoll lock.  If scroll lock is active
  * (ie, the user has hit scroll lock + the light is lit if there is a
  * scoll lock LED), the sysop is assumed to be available.
  */
+bool sysop1()
 {
 #if defined (__OS2__)
 #if !defined(KBDSTF_SCROLLLOCK_ON)
