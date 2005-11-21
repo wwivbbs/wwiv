@@ -153,7 +153,7 @@ void send_email()
     {
         if (strstr(szUserName, "@32767") == NULL)
         {
-            strlwr(szUserName);
+            WWIV_STRLWR(szUserName);
             strcat(szUserName, " @32767");
         }
     }

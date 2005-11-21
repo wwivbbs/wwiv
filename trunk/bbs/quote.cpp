@@ -164,8 +164,8 @@ void grab_quotes(messagerec * m, const char *aux)
                 l3 = l2 = 0;
                 ss1 = NULL;
                 GetSession()->internetFullEmailAddress = "";
-                if ((strnicmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-                    (strnicmp("filenet", GetSession()->GetNetworkName(), 7) == 0))
+                if ((WWIV_STRNICMP("internet", GetSession()->GetNetworkName(), 8) == 0) ||
+                    (WWIV_STRNICMP("filenet", GetSession()->GetNetworkName(), 7) == 0))
                 {
                         for (l1 = 0; l1 < l; l1++)
                         {
@@ -179,7 +179,7 @@ void grab_quotes(messagerec * m, const char *aux)
                                         l1++;
                                     }
                                     temp[l3] = 0;
-                                    if (strnicmp(temp, "Message-ID", 10) == 0)
+                                    if (WWIV_STRNICMP(temp, "Message-ID", 10) == 0)
                                     {
                                         if (temp[0] != 0)
                                         {

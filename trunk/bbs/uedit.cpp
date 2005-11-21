@@ -306,7 +306,7 @@ int matchuser( WUser *pUser )
     int ok = 1, _not = 0, less = 0, cpf = 0, cpp = 0;
     int  _and = 1, gotfcn = 0, evalit = 0, tmp, tmp1, tmp2;
     char fcn[20], parm[80], ts[40];
-    long l;
+    time_t l;
 
     bool done = false;
     do
@@ -488,7 +488,7 @@ int matchuser( WUser *pUser )
                     else if ( wwiv::stringUtils::IsEquals( fcn, "REALNAME" ) )
                     {
                         strcpy( ts, pUser->GetRealName() );
-                        strupr( ts );
+                        WWIV_STRUPR( ts );
                         tmp = ( strstr( ts, parm ) != NULL );
                     }
                     else if ( wwiv::stringUtils::IsEquals( fcn, "BAUD" ) )

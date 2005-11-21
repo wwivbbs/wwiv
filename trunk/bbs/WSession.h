@@ -69,6 +69,7 @@ public:
 
 public:
     WUser thisuser;
+	WUser* GetCurrentUser()							{ return &thisuser; }
     bool IsLastKeyLocal() const                     { return m_bLastKeyLocal; }
     void SetLastKeyLocal( bool b )                  { m_bLastKeyLocal = b; }
 
@@ -307,7 +308,7 @@ public:
 
     unsigned short
                 mail_who_field_len,
-                max_batch,
+                m_nMaxFilesPerBatch,
                 max_extend_lines,
                 max_chains,
                 max_gfilesec,

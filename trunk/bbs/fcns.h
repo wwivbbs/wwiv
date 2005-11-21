@@ -791,7 +791,6 @@ void cleanup_net();
 int  cleanup_net1();
 void do_callout(int sn);
 bool ok_to_call(int i);
-void fixup_long(long *f, long l);
 void free_vars(float **weight, int **try1);
 void attempt_callout();
 void print_pending_list();

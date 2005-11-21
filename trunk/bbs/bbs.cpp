@@ -28,7 +28,7 @@
 
 extern char cid_num[], cid_name[];
 static bool bUsingPppProject = true;
-extern int last_time_c;
+extern time_t last_time_c;
 static WBbsApp *app;
 static WSession* sess;
 
@@ -1116,7 +1116,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
                 break;
             case 'F':
                 strcpy( szFullResultCode, s + 2 );
-                strupr( szFullResultCode );
+                WWIV_STRUPR( szFullResultCode );
                 m_bUserAlreadyOn = true;
                 break;
             case 'S':
@@ -1140,7 +1140,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
                 break;
             case 'P':
                 strcpy( szSystemPassword, s + 2 );
-                strupr( szSystemPassword );
+                WWIV_STRUPR( szSystemPassword );
                 break;
             case 'I':
             case 'N':

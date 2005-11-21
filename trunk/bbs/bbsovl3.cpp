@@ -380,8 +380,8 @@ bool movefile(const char *pszSourceFileName, const char *pszDestFileName, bool s
 
 	strcpy( szSourceFileName, pszSourceFileName );
 	strcpy( szDestFileName, pszDestFileName );
-	strupr( szSourceFileName );
-	strupr( szDestFileName );
+	WWIV_STRUPR( szSourceFileName );
+	WWIV_STRUPR( szDestFileName );
 	if ( !wwiv::stringUtils::IsEquals( szSourceFileName, szDestFileName ) &&
         WFile::Exists( szSourceFileName ) )
 	{

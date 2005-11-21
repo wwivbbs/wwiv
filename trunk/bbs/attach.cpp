@@ -99,8 +99,8 @@ void attach_file(int mode)
 					GetSession()->bout << "|#1To|#7: |#2User " << m.tosys << " System " << m.touser << wwiv::endl;
                 }
 				GetSession()->bout << "|#1Subj|#7: |#2" << m.title << wwiv::endl;
-                long lTimeNow = time( NULL );
-				int nDaysAgo = static_cast<int>( ( lTimeNow - m.daten ) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT );
+                time_t tTimeNow = time( NULL );
+				int nDaysAgo = static_cast<int>( ( tTimeNow - m.daten ) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT );
 				GetSession()->bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
                 if (m.status & status_file)
                 {

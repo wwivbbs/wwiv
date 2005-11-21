@@ -2160,12 +2160,12 @@ int move_filename( const char *pszFileName, int dn )
                 GetSession()->bout << "|#5Reset upload time for file? ";
                 if (yesno())
                 {
-                    time((long *) &u.daten);
+                    time((time_t *) &u.daten);
                 }
             }
             else
             {
-                time((long *) &u.daten);
+                time((time_t *) &u.daten);
             }
             --cp;
 			if ( fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite ) )
@@ -2354,7 +2354,7 @@ void load_lp_config()
 		if ( !fileConfig.Open( WFile::modeBinary | WFile::modeReadOnly ) )
 		{
 			memset( &lp_config, 0, sizeof( struct listplus_config ) );
-			lp_config.fi = lp_config.lssm = time(NULL);
+			lp_config.fi = lp_config.lssm = static_cast<long>(time(NULL));
 
 			lp_config.normal_highlight  = (YELLOW + (BLACK << 4));
 			lp_config.normal_menu_item  = (CYAN + (BLACK << 4));

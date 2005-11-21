@@ -584,7 +584,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 	m.tosys		= static_cast< unsigned short >( nSystemNumber );
 	m.touser	= static_cast< unsigned short >( nUserNumber );
 	m.status	= 0;
-	time((long *) &(m.daten));
+	time((time_t *) &(m.daten));
 
 	if (m.fromsys && GetSession()->GetMaxNetworkNumber() > 1 )
 	{

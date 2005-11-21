@@ -81,7 +81,7 @@ void get_user_ppp_addr()
 	{
 		while ( fgets(szLine, 100, fp) && !found )
 		{
-			if (strnicmp(szLine, "USER", 4) == 0)
+			if (WWIV_STRNICMP(szLine, "USER", 4) == 0)
 			{
 				int nUserNum = atoi(&szLine[4]);
 				if (nUserNum == GetSession()->usernum)

@@ -313,9 +313,9 @@ void normalupload(int dn)
                     {
                         u.numbytes = 0;
                     }
-                    long lCurrentTime;
+                    time_t lCurrentTime;
                     time( &lCurrentTime );
-                    u.daten = lCurrentTime;
+                    u.daten = static_cast<unsigned long>(lCurrentTime);
 					WFile fileDownload( g_szDownloadFileName );
 					fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
                     for (int j = GetSession()->numf; j >= 1; j--)

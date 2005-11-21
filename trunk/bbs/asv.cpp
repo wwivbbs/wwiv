@@ -167,7 +167,7 @@ void asv()
                 if ( *reg_num == 0 )
                 {
                     strcpy(s, sysname);
-                    strcpy(s1, (strstr(strupr(s), "SERVER")));
+                    strcpy(s1, (strstr(WWIV_STRUPR(s), "SERVER")));
                     if ( wwiv::stringUtils::IsEquals( s1, "SERVER" ) )
                     {
                         nl();

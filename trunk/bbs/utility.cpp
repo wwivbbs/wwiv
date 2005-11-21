@@ -820,14 +820,14 @@ char* W_DateString(long daten, char* mode , char* delim)
     static char str[50];            // the DateString
 
 	//time_t t;
-	time((long *) &(daten));
-	struct tm * pTm = localtime(&daten);	// used to be 't', but that bombed
+	time((time_t *) &(daten));
+	struct tm * pTm = localtime((time_t *)&daten);	// used to be 't', but that bombed
 
 	WWIV_ASSERT(mode);
 	WWIV_ASSERT(delim);
 
     // convert mode string to uppercase
-    strupr(mode);
+    WWIV_STRUPR(mode);
 
     // initialize return string
     strcpy(str, "");

@@ -28,14 +28,6 @@
 #include "WConstants.h"
 #include "incl1.h"
 
-#ifdef _WIN32
-#define WWIV_STRICMP( a, b ) stricmp( a, b )
-#define WWIV_STRNICMP( a, b, c) strnicmp( a, b, c )
-#else
-#define WWIV_STRICMP( a, b ) strcasecmp( a, b )
-#define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
-#endif
-
 extern unsigned char *translate_letters[];
 
 

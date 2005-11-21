@@ -260,7 +260,7 @@ void post()
 		GetApplication()->GetStatusManager()->Lock();
 		p.qscan = status.qscanptr++;
 		GetApplication()->GetStatusManager()->Write();
-		time((long *) (&p.daten));
+		time((time_t *) (&p.daten));
         if ( GetSession()->thisuser.isRestrictionValidate() )
 		{
 			p.status = status_unvalidated;

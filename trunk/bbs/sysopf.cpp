@@ -1075,7 +1075,7 @@ void auto_purge()
 		return;
 	}
 
-	long lTime = time( NULL );
+	time_t tTime = time( NULL );
 	unsigned int nUserNumber = 1;
 	sysoplogfi( false, "Auto-Purged Inactive Users (over %d days, SL less than %d)", days, skipsl );
 
@@ -1085,7 +1085,7 @@ void auto_purge()
         GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
         if ( !user.isExemptAutoDelete() )
 		{
-            unsigned int d = static_cast<unsigned int>( ( lTime - user.GetLastOnDateNumber() ) / SECONDS_PER_DAY_FLOAT );
+            unsigned int d = static_cast<unsigned int>( ( tTime - user.GetLastOnDateNumber() ) / SECONDS_PER_DAY_FLOAT );
 			// if user is not already deleted && SL<NO_PURGE_SL && last_logon
 			// greater than AUTO_USER_PURGE days ago
             if ( !user.isUserDeleted() && user.GetSl() < skipsl && d > days )

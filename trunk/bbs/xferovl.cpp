@@ -138,7 +138,7 @@ void move_file()
 			GetSession()->bout << "|#5Reset upload time for file? ";
 			if (yesno())
 			{
-				time((long *) &u.daten);
+				time((time_t *) &u.daten);
 			}
 			--nCurrentPos;
 			fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );

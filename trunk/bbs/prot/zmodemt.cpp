@@ -30,9 +30,9 @@
 */
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <sys/stat.h>
 #include "zmodem.h"
 #include "crctab.h"
@@ -40,7 +40,11 @@
 #if defined(_MSC_VER)
 #pragma warning( push )
 #pragma warning( disable : 4706 4127 4244 4100 )
-#endif
+
+#if !defined( _CRT_SECURE_NO_DEPRECATE )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _CRT_SECURE_NO_DEPRECATE
+#endif	// _MSC_VER
 
 int	SendMoreFileData( ZModem *info );
 extern	int	ZXmitData(int, int, u_char, u_char *data, ZModem *);

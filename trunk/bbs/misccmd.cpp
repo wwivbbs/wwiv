@@ -95,7 +95,7 @@ void kill_old_email()
 					GetSession()->bout << "#" << m.tosys << " @" << m.tosys << wwiv::endl;
 				}
                 bprintf( "|#1Subj|#7: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title );
-				long lCurrentTime;
+				time_t lCurrentTime;
 				time( &lCurrentTime );
 				int nDaysAgo = static_cast<int>( ( lCurrentTime - m.daten ) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT );
 				GetSession()->bout << "|#1Sent|#7: |#" << GetSession()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
@@ -390,7 +390,7 @@ void list_users( int mode )
             char s5[ 41 ];
             strcpy( s5, user.GetCity() );
             if ( !strstr( user.GetName(), szFindText ) &&
-                 !strstr( strupr( s5 ), szFindText ) &&
+                 !strstr( WWIV_STRUPR( s5 ), szFindText ) &&
                  !strstr( user.GetState(), szFindText ) )
 			{
                 ok = false;

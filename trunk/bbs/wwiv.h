@@ -26,6 +26,10 @@
 // be included after testos.h has been included.
 //
 
+#if defined( _MSC_VER )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _MSC_VER 
+
 #include "testos.h"
 
 #include "wwivassert.h"
