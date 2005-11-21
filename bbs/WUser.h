@@ -26,6 +26,11 @@
 #pragma pack( 1 )
 #endif
 
+#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _MSC_VER 
+
+
 #include "vardec.h"
 
 /**

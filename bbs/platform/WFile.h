@@ -20,7 +20,13 @@
 #ifndef __INCLUDED_PLATFORM_WFILLE_H__
 #define __INCLUDED_PLATFORM_WFILLE_H__
 
+#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _MSC_VER 
+
+
 #include <string>
+#include "WStringUtils.h"
 
 #ifndef MAX_PATH
 #define MAX_PATH 256
@@ -140,7 +146,7 @@ public:
 
     virtual char *GetParent()
     {
-        char *tmpCopy = strdup(m_szFileName);
+		char *tmpCopy = WWIV_STRDUP(m_szFileName);
         char *p = &tmpCopy[strlen(tmpCopy)-1];
 	    while(*p != WFile::pathSeparatorChar)
         {

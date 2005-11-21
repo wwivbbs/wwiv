@@ -375,9 +375,9 @@ void dliscan1(int nDirectoryNum)
     {
         memset(&u, 0, sizeof(uploadsrec));
         strcpy(u.filename, "|MARKER|");
-        long l;
-        time(&l);
-        u.daten = l;
+        time_t tNow;
+        time(&tNow);
+        u.daten = static_cast<unsigned long>(tNow);
         FileAreaSetRecord( fileDownload, 0 );
 		fileDownload.Write( &u, sizeof( uploadsrec ) );
     }
@@ -390,9 +390,9 @@ void dliscan1(int nDirectoryNum)
             GetSession()->numf = u.numbytes;
             memset(&u, 0, sizeof(uploadsrec));
             strcpy(u.filename, "|MARKER|");
-            long l;
+            time_t l;
             time(&l);
-            u.daten = l;
+            u.daten = static_cast<unsigned long>(l);
             u.numbytes = GetSession()->numf;
             FileAreaSetRecord( fileDownload, 0 );
 			fileDownload.Write( &u, sizeof( uploadsrec ) );
@@ -420,13 +420,13 @@ void dliscan_hash(int nDirectoryNum)
 	WFile file( syscfg.datadir, directories[nDirectoryNum].filename );
 	if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        time((long *) &(GetSession()->m_DirectoryDateCache[nDirectoryNum]));
+        time((time_t *) &(GetSession()->m_DirectoryDateCache[nDirectoryNum]));
         return;
     }
 	int nNumRecords = file.GetLength() / sizeof(uploadsrec);
     if (nNumRecords < 1)
     {
-        time((long *) &(GetSession()->m_DirectoryDateCache[nDirectoryNum]));
+        time((time_t *) &(GetSession()->m_DirectoryDateCache[nDirectoryNum]));
     }
     else
     {
@@ -438,7 +438,7 @@ void dliscan_hash(int nDirectoryNum)
         }
         else
         {
-            time((long *) &(GetSession()->m_DirectoryDateCache[nDirectoryNum]));
+            time((time_t *) &(GetSession()->m_DirectoryDateCache[nDirectoryNum]));
         }
     }
 	file.Close();

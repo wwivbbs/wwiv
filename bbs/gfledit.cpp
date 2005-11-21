@@ -387,7 +387,7 @@ bool fill_sec(int sn)
 				gfilerec g1;
 				strcpy(g1.filename, s);
 				strcpy(g1.description, s1);
-				time(&(g1.daten));
+				time((time_t*)&(g1.daten));
 				g[i] = g1;
 			}
 			else

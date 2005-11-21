@@ -1,6 +1,12 @@
 /*
 *  Crc - 32 BIT ANSI X3.66 CRC checksum files
 */
+
+
+#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _MSC_VER 
+
 #include <cstdio>
 #include <cstring>
 #include <iostream>

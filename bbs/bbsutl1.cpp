@@ -73,8 +73,8 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 		for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++)
 		{
 			set_net_num(i);
-			if ((strnicmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-				((strnicmp("filenet", GetSession()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767)))
+			if ((WWIV_STRNICMP("internet", GetSession()->GetNetworkName(), 8) == 0) ||
+				((WWIV_STRNICMP("filenet", GetSession()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767)))
 			{
 				strcpy(net_email_name, szEmailAddress);
 				for (ss1 = net_email_name; *ss1; ss1++)

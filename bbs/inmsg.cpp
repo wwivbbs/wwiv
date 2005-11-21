@@ -187,7 +187,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 		}
 
         // Add date to message body
-        long lTime;
+        time_t lTime;
 		time( &lTime );
         char szTime[ 255 ];
         strcpy( szTime, asctime( localtime( &lTime ) ) );
@@ -573,7 +573,7 @@ void GetMessageTitle( char *pszTitle, bool force_title )
             char s1[ 255 ];
             char ch = '\0';
             StringTrim( irt );
-            if ( strnicmp( stripcolors( irt ), "re:", 3 ) != 0 )
+            if ( WWIV_STRNICMP( stripcolors( irt ), "re:", 3 ) != 0 )
             {
                 if ( GetSession()->IsNewMailWatiting() )
                 {
@@ -753,8 +753,8 @@ void UpdateMessageBufferInReplyToInfo( char *pszMessageBuffer, long *plBufferLen
             }
         }
     }
-    if ((strnicmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-        (strnicmp("filenet", GetSession()->GetNetworkName(), 7) == 0))
+    if ((WWIV_STRNICMP("internet", GetSession()->GetNetworkName(), 8) == 0) ||
+        (WWIV_STRNICMP("filenet", GetSession()->GetNetworkName(), 7) == 0))
     {
 		if (GetSession()->usenetReferencesLine.length() > 0 )
         {
@@ -794,7 +794,7 @@ void UpdateMessageBufferTagLine( char *pszMessageBuffer, long *plBufferLength, c
     if ( xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets &&
          !wwiv::stringUtils::IsEqualsIgnoreCase( aux, "email" ) &&
          (! ( subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_no_tag ) ) &&
-         !wwiv::stringUtils::IsEquals( strupr( irt ), strupr( szMultiMail ) ) )
+		 !wwiv::stringUtils::IsEqualsIgnoreCase( irt, szMultiMail ) )
     {
         char szFileName[ MAX_PATH ];
         for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++)

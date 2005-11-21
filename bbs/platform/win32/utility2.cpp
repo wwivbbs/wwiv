@@ -31,14 +31,14 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
     nl();
 
     _splitpath(pszDirectoryName, drive, direc, file, ext);
-    _snprintf(s, sizeof( s ), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
+    _snprintf(s, sizeof( s ), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", WWIV_STRUPR(stripfn(pszFileName)), drive, direc);
     int i = ( GetSession()->thisuser.GetScreenChars() - 1 ) / 2 - strlen(stripcolors(s)) / 2;
     GetSession()->bout << "|#7" << charstr( i, c ) << s;
     i = GetSession()->thisuser.GetScreenChars() - 1 - i - strlen(stripcolors(s));
     GetSession()->bout << "|#7" << charstr( i, c );
 
     char szFullPathName[ MAX_PATH ];
-    _snprintf( szFullPathName, sizeof( szFullPathName ), "%s%s", pszDirectoryName, strupr( stripfn(pszFileName ) ) );
+    _snprintf( szFullPathName, sizeof( szFullPathName ), "%s%s", pszDirectoryName, WWIV_STRUPR( stripfn(pszFileName ) ) );
     WFindFile fnd;
     bool bFound = fnd.open( szFullPathName, 0 );
     while (bFound)
@@ -184,7 +184,7 @@ int WWIV_make_path(char *s)
 {
     char drive, current_path[MAX_PATH], current_drive, *p, *flp;
 
-    p = flp = strdup(s);
+    p = flp = WWIV_STRDUP(s);
     _getdcwd(0, current_path, MAX_PATH);
     current_drive = static_cast< char >( *current_path - '@' );
     if (LAST(p) == WWIV_FILE_SEPERATOR_CHAR)

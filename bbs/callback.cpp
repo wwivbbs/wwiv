@@ -186,7 +186,7 @@ int callback()
 				(strlen(s1) == 12) || (strlen(s1) == 14))
 			{
 				strcpy(tempphone, s1);
-				strrev(tempphone);
+				WWIV_STRREV(tempphone);
 				if (tempphone[4] != '-')
 				{
 					ok = 0;

@@ -20,6 +20,11 @@
 #if !defined ( __INCLUDED_WStringUtils_H__ )
 #define __INCLUDED_WStringUtils_H__
 
+#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _MSC_VER 
+
+
 #include <string>
 
 namespace wwiv
@@ -76,12 +81,34 @@ char *StringRemoveChar( const char *pszString, char chCharacterToRemove );
 char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, char *pszNewString);
 
 
-
-#if defined ( _WIN32 ) && ( _MSC_VER < 1300 )
-#define CLEAR_STRING( s ) (s).erase( (s).begin(), (s).end() )
-#else
+#if defined ( _WIN32 ) && ( _MSC_VER > 1310 )
+#define WWIV_STRDUP( s ) _strdup( s )
+#define WWIV_STRUPR( s ) _strupr( s )
+#define WWIV_STRREV( s ) _strrev( s )
+#define WWIV_STRLWR( s ) _strlwr( s )
+#define WWIV_STRICMP( a, b ) _stricmp( a, b )
+#define WWIV_STRNICMP( a, b, c) _strnicmp( a, b, c )
 #define CLEAR_STRING( s ) (s).clear()
-#endif // MSVC6
+
+#elif defined( _WIN32 ) && ( _MSC_VER <= 1310 )
+#define WWIV_STRDUP( s ) strdup( s )
+#define WWIV_STRUPR( s ) strupr( s )
+#define WWIV_STRREV( s ) strrev( s )
+#define WWIV_STRLWR( s ) strlwr( s )
+#define WWIV_STRICMP( a, b ) stricmp( a, b )
+#define WWIV_STRNICMP( a, b, c) strnicmp( a, b, c )
+#define CLEAR_STRING( s ) (s).erase( (s).begin(), (s).end() )
+
+#else
+#define WWIV_STRDUP( s ) strdup( s )
+#define WWIV_STRUPR( s ) strupr( s )
+#define WWIV_STRREV( s ) strrev( s )
+#define WWIV_STRLWR( s ) strlwr( s )
+#define WWIV_STRICMP( a, b ) strcasecmp( a, b )
+#define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
+#define CLEAR_STRING( s ) (s).clear()
+#endif 
+
 
 #endif // __INCLUDED_WStringUtils_H__
 

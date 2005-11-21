@@ -163,7 +163,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
 					}
 					*(sss[0] + i4) = 0;
 					s[i2] = 0;
-					strrev(s);
+					WWIV_STRREV(s);
 					if (strlen(s) > static_cast<unsigned int>( GetSession()->thisuser.GetScreenChars() - 1 ) )
 					{
 						s[ GetSession()->thisuser.GetScreenChars() - 2 ] = '\0';

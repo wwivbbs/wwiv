@@ -99,7 +99,7 @@ void input1( char *pszOutText, int maxlen, int lc, bool crend, bool bAutoMpl )
                     chCurrent = upcase( chCurrent );
                     if ( curpos )
                     {
-                        unsigned char *ss = reinterpret_cast<unsigned char*>( strchr( reinterpret_cast<const char*>( valid_letters ), pszOutText[curpos - 1] ) );
+                        const char *ss = strchr( reinterpret_cast<const char*>( valid_letters ), pszOutText[curpos - 1] );
                         if ( ss != NULL || pszOutText[curpos - 1] == 39 )
                         {
                             if ( curpos < 2 || pszOutText[curpos - 2] != 77 || pszOutText[curpos - 1] != 99 )
@@ -468,7 +468,7 @@ int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, 
                 }
                 if ( mode == PROPER && pos )
                 {
-                    char *ss = strchr( reinterpret_cast<char*>( const_cast<unsigned char*>( valid_letters ) ), c );
+                    const char *ss = strchr( reinterpret_cast<char*>( const_cast<unsigned char*>( valid_letters ) ), c );
                     // if it's a valid char and the previous char was a space
                     if ( ss != NULL && szTemp[pos - 1] != 32 )
                     {

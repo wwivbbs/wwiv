@@ -621,7 +621,7 @@ void input_pw( WUser *pUser )
         strcpy( s1, GetSession()->thisuser.GetRealName() );
         if( strlen(s) < 3 ||
             strstr( pUser->GetName(), s ) != NULL ||
-            strstr( strupr( s1 ), s ) != NULL ||
+            strstr( WWIV_STRUPR( s1 ), s ) != NULL ||
             strstr( pUser->GetVoicePhoneNumber(), s ) != NULL ||
             strstr( pUser->GetDataPhoneNumber(), s ) != NULL )
         {
@@ -990,7 +990,7 @@ void DoFullNewUser()
             {
                 char szEditorDesc[ 121 ];
                 strcpy( szEditorDesc, editors[nEditor].description );
-                if ( strstr( strupr( szEditorDesc ) , "WWIVEDIT") != NULL )
+                if ( strstr( WWIV_STRUPR( szEditorDesc ) , "WWIVEDIT") != NULL )
                 {
                     GetSession()->thisuser.SetDefaultEditor( nEditor + 1 );
                     nEditor = GetSession()->GetNumberOfEditors();

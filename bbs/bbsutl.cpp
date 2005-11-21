@@ -444,7 +444,7 @@ void plal(const char *pszText, int limit, bool *abort)
     bool next;
     checka(abort, &next);
 
-	char* temp = strdup( pszText );
+	char* temp = WWIV_STRDUP( pszText );
     limit += strlen( pszText ) - strlen(stripcolors(temp));
 	BbsFreeMemory(temp);
 
