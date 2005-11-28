@@ -135,7 +135,7 @@ void purge_sent(int days)
 {
 	char s[121];
 	int howmany = 0;
-	long age = 0;
+	time_t age = 0;
 	struct _finddata_t ff;
 	struct _stat fileinfo;
 	
@@ -148,10 +148,10 @@ void purge_sent(int days)
 		if ( _stat( s, &fileinfo ) == 0 ) 
 		{
 			age = ( time(NULL) - fileinfo.st_atime );
-			if ( age > ( 86400L * days ) ) 
+			if ( age > ( SECONDS_PER_DAY * days ) ) 
 			{
 				++howmany;
-				unlink( s );
+				_unlink( s );
 			}
 		}
 		nFindNext = _findnext( hFind, &ff );
@@ -189,7 +189,7 @@ void trim_log(char *ol)
 			{
 				fclose(new_log);
 			}
-			unlink(nl);
+			_unlink(nl);
 			return;
 		}
 		kill_lines = total_lines - MAX_LOG;
@@ -217,7 +217,7 @@ void trim_log(char *ol)
 	{
 		fclose(new_log);
 	}
-	unlink(ol);
+	_unlink(ol);
 	rename(nl, ol);
 }
 
@@ -230,7 +230,7 @@ int open_netlog(char *fn)
 	
 	do 
 	{
-		f = open(fn, O_RDWR | O_BINARY | SH_DENYRW | O_CREAT, S_IREAD | S_IWRITE);
+		f = _open(fn, O_RDWR | O_BINARY | SH_DENYRW | O_CREAT, S_IREAD | S_IWRITE);
 	} while ((f < 0) && (errno == EACCES) && (count++ < 500));
 	
 	return (f);
@@ -290,21 +290,21 @@ int write_netlog(int sn, long sent, long recd, char *tmused)
 	
 	sprintf(fn, "%sNET.LOG", syscfg.gfilesdir);
 	f = open_netlog(fn);
-	lseek(f, 0L, SEEK_SET);
-	l = (long) (read(f, (void *) (&(ss[strlen(s)])), (int) MAX_LEN) + strlen(s));
+	_lseek(f, 0L, SEEK_SET);
+	l = (long) (_read(f, (void *) (&(ss[strlen(s)])), (int) MAX_LEN) + strlen(s));
 	while ((l > 0L) && (ss[(int) l] != '\n'))
 	{
 		--l;
 	}
-	lseek(f, 0L, SEEK_SET);
-	write(f, (void *) ss, (int) l + 1);
-	chsize(f, l + 1);
+	_lseek(f, 0L, SEEK_SET);
+	_write(f, (void *) ss, (int) l + 1);
+	_chsize(f, l + 1);
 	if (ss) 
 	{
 		free(ss);
 		ss = NULL;
 	}
-	close(f);
+	_close(f);
 	return 0;
 }
 
@@ -315,13 +315,13 @@ int main(int argc, char *argv[])
 
     char szConfigFileName[ _MAX_PATH ];
 	strcpy(szConfigFileName, "CONFIG.DAT");
-	int f = open(szConfigFileName, O_RDONLY | O_BINARY);
+	int f = _open(szConfigFileName, O_RDONLY | O_BINARY);
 	if (f < 0)
 	{
 		return 1;
 	}
-	read(f, (void *) (&syscfg), sizeof(configrec));
-	close(f);
+	_read(f, (void *) (&syscfg), sizeof(configrec));
+	_close(f);
 	
 	if (strncmp(argv[1], "NETLOG", 6) == 0) 
 	{
@@ -357,7 +357,7 @@ int main(int argc, char *argv[])
 		sprintf(szBuffer, "%sINBOUND\\%s", net_data, argv[3]);
 		if (!chunk(szBuffer))
 		{
-			unlink(szBuffer);
+			_unlink(szBuffer);
 		}
 	}
 	

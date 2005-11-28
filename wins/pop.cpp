@@ -17,6 +17,8 @@
 #include "pop.h"
 #include "socketwrapper.h"
 
+#define MEGA_DEBUG_LOG_INFO
+
 #if defined ( MEGA_DEBUG_LOG_INFO )
 #define DEBUG_LOG_IT(s) log_it( 1, s )
 #define DEBUG_LOG_IT_1(s, a) log_it( 1, s, a )
@@ -73,17 +75,17 @@ void statusbar(statusbarrec * sb, int now, int tot)
         x = 0;
         go_back(WhereX(), 1);
         output(" * File %3.3d/%3.3d ", now, tot);
-        putch(sb->side_char1);
+        _putch(sb->side_char1);
         while (x < sb->width) 
         {
-            putch(sb->empty_space);
+            _putch(sb->empty_space);
             ++x;
         }
-        putch(sb->side_char2);
+        _putch(sb->side_char2);
         x = 0;
         while (x < sb->width) 
         {
-            putch('\b');
+            _putch('\b');
             ++x;
         }
         sb->last_maj_pos = 0;
@@ -111,13 +113,13 @@ void statusbar(statusbarrec * sb, int now, int tot)
         {
             return;
         }
-        putch('\b');
-        putch(sb->square_list[min_pos]);
+        _putch('\b');
+        _putch(sb->square_list[min_pos]);
         sb->last_min_pos = min_pos;
         return;
     }
-    putch('\b');
-    putch(sb->square_list[sb->amount_per_square - 1]);
+    _putch('\b');
+    _putch(sb->square_list[sb->amount_per_square - 1]);
     sb->last_min_pos = min_pos;
 
     ++sb->last_maj_pos;
@@ -126,12 +128,12 @@ void statusbar(statusbarrec * sb, int now, int tot)
         ++sb->last_maj_pos;
         if (WhereX() < 80)
         {
-            putch(sb->square_list[sb->amount_per_square - 1]);
+            _putch(sb->square_list[sb->amount_per_square - 1]);
         }
     }
     if (WhereX() < 80)
     {
-        putch(sb->square_list[min_pos]);
+        _putch(sb->square_list[min_pos]);
     }
 
     sb->last_maj_pos = maj_pos;
@@ -153,7 +155,7 @@ SOCKET smtp_start( char *host, char *dom )
 	SOCKADDR_IN sockAddr;
 	ZeroMemory(&sockAddr, sizeof(sockAddr));
 	sockAddr.sin_family = AF_INET;
-	sockAddr.sin_port = htons((u_short) SMTP_PORT );
+	sockAddr.sin_port = htons(SMTPPORT );
 	sockAddr.sin_addr.s_addr = inet_addr( host );
 	if (sockAddr.sin_addr.s_addr == INADDR_NONE)
 	{
@@ -174,7 +176,7 @@ SOCKET smtp_start( char *host, char *dom )
 	if ( connect( sock, ( SOCKADDR *) &sockAddr, sizeof ( sockAddr ) ) == SOCKET_ERROR )
 	{
 		SMTP_Err_Cond = SMTP_FAILED;
-		log_it(1, "\n \xFE Error : Unable to connect to %s", host);
+		log_it(1, "\n \xFE Error : Unable to connect to %s : %d", host, SMTPPORT);
 		return NULL;
 	}
 
@@ -212,7 +214,7 @@ char *smtp_parse_from_line(FILE * f)
 		{
 			done = true;
 		}
-		else if ( strnicmp(s, "from:", 5) == 0 && strchr(s, '@') != NULL ) 
+		else if ( _strnicmp(s, "from:", 5) == 0 && strchr(s, '@') != NULL ) 
 		{
 			found = true;
 			done = true;
@@ -231,7 +233,7 @@ char *smtp_parse_from_line(FILE * f)
 		{
 			beginfocus = 5;
 		}
-		return trim( strdup( &s[beginfocus] ) );
+		return trim( _strdup( &s[beginfocus] ) );
 	}
 	return 0;
 }
@@ -250,7 +252,7 @@ int find_listname(FILE * f)
 		{
 			done = true;
 		}
-		else if ((strnicmp(s, "x-reply-to", 10) == 0) && (strchr(s, '@') != 0) && (strchr(s, '\"') != 0)) 
+		else if ((_strnicmp(s, "x-reply-to", 10) == 0) && (strchr(s, '@') != 0) && (strchr(s, '\"') != 0)) 
 		{
 			found = true;
 			done = true;
@@ -288,9 +290,9 @@ char **smtp_parse_to_line(FILE * f)
 		{
 			done = 1;
 		}
-		else if ((strnicmp(_temp_buffer, "to:", 3) == 0) ||
-			(strnicmp(_temp_buffer, "cc:", 3) == 0) ||
-			(strnicmp(_temp_buffer, "bcc:", 4) == 0)) 
+		else if ((_strnicmp(_temp_buffer, "to:", 3) == 0) ||
+			(_strnicmp(_temp_buffer, "cc:", 3) == 0) ||
+			(_strnicmp(_temp_buffer, "bcc:", 4) == 0)) 
 		{
 			fix_quoted_commas(_temp_buffer);
 			addr = strtok(_temp_buffer, ":");
@@ -314,7 +316,7 @@ char **smtp_parse_to_line(FILE * f)
 				addr = buf;
 			}
 			list = (char **) realloc(list, sizeof(char *) * ((current) + 2));
-			list[current] = strdup(addr);
+			list[current] = _strdup(addr);
 			list[current + 1] = NULL;
 			current++;
 		}
@@ -360,7 +362,7 @@ int smtp_send_MAIL_FROM_line(SOCKET sock, FILE * f)
 	return 1;
 }
 
-#define FREE_ALL for (i=0; to_list[i]!=NULL; i++) if (to_list[i]) free(to_list[i]); if (to_list) free(to_list);
+#define FREE_ALL for (int i=0; to_list[i]!=NULL; i++) if (to_list[i]) free(to_list[i]); if (to_list) free(to_list);
 
 int smtp_send_RCPT_TO_line(SOCKET sock, FILE * f)
 {
@@ -454,7 +456,7 @@ int smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bS
 	{
 		sb.current_item += strlen(_temp_buffer);
 		rip(_temp_buffer);
-		trim(temp = strdup(_temp_buffer));
+		trim(temp = _strdup(_temp_buffer));
 		if (strlen(temp) == 0)
 		{
 			in_header = 0;
@@ -467,7 +469,7 @@ int smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bS
 			*_temp_buffer = '.';
 		}
 		
-		if (bSkip && *LISTNAME && (strnicmp(_temp_buffer, "to:", 3) == 0) && in_header ) 
+		if (bSkip && *LISTNAME && (_strnicmp(_temp_buffer, "to:", 3) == 0) && in_header ) 
 		{
 			if (!sent_from) 
 			{
@@ -514,7 +516,7 @@ int smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bS
 			statusbar(&sb, cf, tf);
 		}
 		
-		if (kbhit()) 
+		if (_kbhit()) 
 		{
 			go_back(WhereX(), pos);
 			output(" aborted.");
@@ -573,7 +575,7 @@ SOCKET pop_init(char *host)
 	SOCKADDR_IN sockAddr;
 	ZeroMemory(&sockAddr, sizeof(sockAddr));
 	sockAddr.sin_family = AF_INET;
-	sockAddr.sin_port = htons((u_short) POP_PORT );
+	sockAddr.sin_port = htons(POPPORT );
 	sockAddr.sin_addr.s_addr = inet_addr( host );
 	if (sockAddr.sin_addr.s_addr == INADDR_NONE)
 	{
@@ -767,7 +769,7 @@ bool checkspam(char *text)
 				}
 				if (buf[0] == '[') 
 				{
-					if ((strnicmp(buf, "[GLOBAL]", 8) == 0) || (strnicmp(buf, "[MAIL]", 6) == 0))
+					if ((_strnicmp(buf, "[GLOBAL]", 8) == 0) || (_strnicmp(buf, "[MAIL]", 6) == 0))
 					{
 						ok = true;
 					}
@@ -832,7 +834,7 @@ int compact_msgid(void)
 
     num_ids = 0;
     sprintf(oldfn, "%sMSGID.OLD", net_data);
-    unlink(oldfn);
+    _unlink(oldfn);
     sprintf(szFileName, "%sMSGID.DAT", net_data);
     rename(szFileName, oldfn);
     f1 = sh_open(oldfn, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
@@ -857,7 +859,7 @@ int compact_msgid(void)
     }
     f1 = sh_close(f1);
     f2 = sh_close(f2);
-    unlink(oldfn);
+    _unlink(oldfn);
     return 0;
 }
 
@@ -875,7 +877,7 @@ int check_messageid(int add, char *msgid)
         log_it(1, "\n ! Unable to create %s.", szFileName);
         return -1;
     }
-    num_ids = (int) (filelength(f) / sizeof(Message_ID));
+    num_ids = (int) (_filelength(f) / sizeof(Message_ID));
 
     if (num_ids > MAX_IDS)
     {
@@ -948,11 +950,11 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
 #endif // MEGA_DEBUG_LOG_INFO
         if (usernum == 0) 
         {
-            if (strnicmp(_temp_buffer, "NET: ", 5) == 0)
+            if (_strnicmp(_temp_buffer, "NET: ", 5) == 0)
             {
                 strcpy(net_pkt, &_temp_buffer[5]);
             }
-            if ( strnicmp(_temp_buffer, "begin 6", 7) == 0 &&
+            if ( _strnicmp(_temp_buffer, "begin 6", 7) == 0 &&
                 stristr(_temp_buffer, "WINMAIL") == NULL ) 
             {
                 if (okpkt != 4)
@@ -988,12 +990,12 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
                     }
                 }
             }
-            if (strnicmp(_temp_buffer, "FDL Type:", 9) == 0)
+            if (_strnicmp(_temp_buffer, "FDL Type:", 9) == 0)
             {
                 fdl = 1;
             }
         }
-        if ( strnicmp(_temp_buffer, "from:", 5) == 0 && !found_from )
+        if ( _strnicmp(_temp_buffer, "from:", 5) == 0 && !found_from )
         {
             if ( ( stristr(_temp_buffer, "mailer-daemon") != NULL ||
                 stristr(_temp_buffer, "mail delivery") != NULL ||
@@ -1019,7 +1021,7 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
             }
             found_from = 1;
         }
-        if ((strnicmp(_temp_buffer, "subject:", 8) == 0) && (!found_subj)) 
+        if ((_strnicmp(_temp_buffer, "subject:", 8) == 0) && (!found_subj)) 
         {
             if (_temp_buffer[9] != 0)
             {
@@ -1033,7 +1035,7 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
         }
         if (usernum == 0) 
         {
-            if ((strnicmp(_temp_buffer, "Message-ID:", 11) == 0) && (!found_subj)) 
+            if ((_strnicmp(_temp_buffer, "Message-ID:", 11) == 0) && (!found_subj)) 
             {
                 if (_temp_buffer[11] != 0) 
                 {
@@ -1063,8 +1065,8 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
     }
     if (found_subj) 
     {
-        if ((strnicmp(subject, "subscribe", 9) == 0) ||
-            (strnicmp(subject, "unsubscribe", 11) == 0))
+        if ((_strnicmp(subject, "subscribe", 9) == 0) ||
+            (_strnicmp(subject, "unsubscribe", 11) == 0))
         {
             okpkt = 6;
         }
@@ -1129,12 +1131,12 @@ int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
 		{
 			ctld = 0;
 		}
-		if ((strnicmp(_temp_buffer, "begin ", 6) == 0) &&
+		if ((_strnicmp(_temp_buffer, "begin ", 6) == 0) &&
 			(stristr(_temp_buffer, "WINMAIL") != NULL))
 		{
 			ctld = 2;
 		}
-		if ((ctld == 2) && (strnicmp(_temp_buffer, "end", 3) == 0))
+		if ((ctld == 2) && (_strnicmp(_temp_buffer, "end", 3) == 0))
 		{
 			ctld = 0;
 		}
@@ -1213,7 +1215,7 @@ int pop_get_nextf(SOCKET sock, char *pszFileName, int msgnum, int usernum)
 {
     if (!pop_getf(sock, pszFileName, msgnum, usernum)) 
     {
-        unlink(pszFileName);
+        _unlink(pszFileName);
         return 0;
     }
     return (pop_delete(sock, msgnum));
@@ -1234,7 +1236,7 @@ int find_acct(char *username, char *hostname, char *password)
 
     while ((fgets(s, 120, fp)) && (num == 0)) 
     {
-        if (strnicmp(s, "ACCT", 4) == 0) 
+        if (_strnicmp(s, "ACCT", 4) == 0) 
         {
             if ( strstr(s, username) != 0 && 
                 strstr(s, hostname) != 0 &&
@@ -1283,7 +1285,7 @@ int count_accts(int build)
 
     while (fgets(s, 100, fp)) 
     {
-        if (strnicmp(s, "ACCT", 4) == 0) 
+        if (_strnicmp(s, "ACCT", 4) == 0) 
         {
             if (build) 
             {
@@ -1323,7 +1325,7 @@ int count_accts(int build)
 }
 
 
-int parse_net_ini(void)
+bool parse_net_ini()
 {
     char s[_MAX_PATH], line[121], *ss;
     FILE *fp;
@@ -1332,9 +1334,11 @@ int parse_net_ini(void)
     if ((fp = fsh_open(s, "rt")) == NULL) 
     {
         output("\n \xFE Unable to open %s.", s);
-        return 1;
+        return false;
     }
     *POPHOST = *PROXY = *POPNAME = *POPPASS = *DOMAIN = *NODEPASS = 0;
+	POPPORT = DEFAULT_POP_PORT;
+	SMTPPORT = DEFAULT_SMTP_PORT;
     while (fgets(line, 120, fp)) 
     {
         ss = NULL;
@@ -1346,7 +1350,7 @@ int parse_net_ini(void)
             {
                 ss = strtok(NULL, "\r\n");
                 trimstr1(ss);
-                if (strnicmp(line, "POPHOST", 7) == 0) 
+                if (_strnicmp(line, "POPHOST", 7) == 0) 
                 {
                     if (ss) 
                     {
@@ -1354,7 +1358,24 @@ int parse_net_ini(void)
                         continue;
                     }
                 }
-                if (strnicmp(line, "PROXY", 5) == 0) 
+				if (_strnicmp(line, "POPPORT", 7) == 0) 
+				{
+					if (atoi(ss))
+					{
+						POPPORT = atoi(ss);
+					}
+					continue;
+				}
+				if (_strnicmp(line, "SMTPPORT", 8) == 0) 
+				{
+					if (atoi(ss))
+					{
+						SMTPPORT = atoi(ss);
+						DEBUG_LOG_IT_1("\n [DEBUG] SMTPPORT=%d", SMTPPORT);
+					}
+					continue;
+				}
+                if (_strnicmp(line, "PROXY", 5) == 0) 
                 {
                     if (ss) 
                     {
@@ -1362,7 +1383,7 @@ int parse_net_ini(void)
                         continue;
                     }
                 }
-                if (strnicmp(line, "POPNAME", 7) == 0) 
+                if (_strnicmp(line, "POPNAME", 7) == 0) 
                 {
                     if (ss) 
                     {
@@ -1370,7 +1391,7 @@ int parse_net_ini(void)
                         continue;
                     }
                 }
-                if (strnicmp(line, "POPPASS", 7) == 0) 
+                if (_strnicmp(line, "POPPASS", 7) == 0) 
                 {
                     if (ss) 
                     {
@@ -1378,7 +1399,7 @@ int parse_net_ini(void)
                         continue;
                     }
                 }
-                if (strnicmp(line, "DOMAIN", 6) == 0) 
+                if (_strnicmp(line, "DOMAIN", 6) == 0) 
                 {
                     if (ss) 
                     {
@@ -1386,7 +1407,7 @@ int parse_net_ini(void)
                         continue;
                     }
                 }
-                if (strnicmp(line, "NODEPASS", 8) == 0) 
+                if (_strnicmp(line, "NODEPASS", 8) == 0) 
                 {
                     if (ss) 
                     {
@@ -1403,9 +1424,9 @@ int parse_net_ini(void)
     }
     if ( !*POPHOST || !*POPNAME || !*POPPASS || !*DOMAIN )
     {
-        return 1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 
@@ -1423,697 +1444,698 @@ int move_bad(char *path, char *pszFileName, int why)
 }
 
 
+int SendMail(int argc, char *argv[])
+{
+	char szFileName[_MAX_PATH], mqueue[_MAX_PATH];
+	char ext[_MAX_EXT];
+	int failed, ok, result;
+	int jdater, jdatec, skipit, firstrun;
+	long total_bytes, current_bytes;
+	int total_files, current_files;
+	unsigned count;
+	FILE *fp;
+	struct _finddata_t ff;
+	SOCKET smtp_sock;
+
+	if (argc < 5) 
+	{
+		output("\n \xFE %s", version);
+		log_it(1, "\n \xFE Invalid arguments for %s\n", argv[0]);
+		return EXIT_FAILURE;
+	}
+	if (argc >= 6)
+	{
+		DEBUG = atoi(argv[5]);
+	}
+	// %%HACK: by rob to keep debug mode enabled.
+	if (!DEBUG) DEBUG=1;
+	bool bSkip = ( argc == 7 && atoi(argv[6]) == 1 ) ? true : false;
+
+	strcpy(mqueue, argv[4]);
+	strcpy(net_data, argv[4]);
+	LAST(net_data) = '\0';
+	while ( LAST(net_data) != '\\' )
+	{
+		LAST(net_data) = '\0';
+	}
+	output("\n");
+	DEBUG_LOG_IT_1( "\n [DEBUG] net_data = [%s]", net_data );
+	DEBUG_LOG_IT_2( "\n [DEBUG] Before smtp_start [%s] [%s]", argv[2], argv[3] );
+	if ((smtp_sock = smtp_start(argv[2], argv[3])) != NULL) 
+	{
+		total_bytes = total_files = current_bytes = current_files = failed = count = aborted = skipit = 0;
+		firstrun = 1;
+		sprintf(szFileName, "%s*.*", mqueue);
+		DEBUG_LOG_IT_1( "\n [DEBUG] Looking in [%s]", szFileName );
+		long hFind = _findfirst( szFileName, &ff ); //, FA_ARCH);
+		int nFindNext = ( hFind != -1 ) ? 0 : -1;
+		while (nFindNext == 0) 
+		{
+			if ( ff.attrib & _A_ARCH )
+			{
+				total_bytes += ff.size;
+				++total_files;
+			}
+			nFindNext = _findnext( hFind, &ff );
+		}
+		_findclose( hFind );
+		hFind = -1;
+		hFind = _findfirst(szFileName, &ff ); // , FA_ARCH);
+		nFindNext = ( hFind != -1 ) ? 0 : -1;
+		time_t ltime;
+		_tzset();
+		time( &ltime );
+		struct tm *today;
+		today = localtime( &ltime );
+		jdater = jdate(today->tm_year, today->tm_mday, today->tm_wday);
+		while ((count < 3) && (nFindNext == 0) && (failed < 5) && (!aborted)) 
+		{
+			DEBUG_LOG_IT_1( "\n [DEBUG] Thinking about file [%s]", ff.name );
+			bool bDoThisFile = false;
+			if ( ff.attrib & _A_ARCH ) bDoThisFile=true;
+			if ( ff.attrib & _A_SUBDIR) bDoThisFile=false;
+			if ( bDoThisFile )
+			{
+				DEBUG_LOG_IT_1( "\n [DEBUG] Doing file [%s]", ff.name );
+				if (count > 1) 
+				{
+					DEBUG = 1;
+					output("\n \xFE SMTP pass %d...\n", count);
+				}
+				sprintf(szFileName, "%s%s", mqueue, ff.name);
+				if ((fp = fsh_open(szFileName, "r")) != NULL) 
+				{
+					SMTP_Err_Cond = SMTP_OK;
+					ok = find_listname(fp);
+					if (DEBUG) 
+					{
+						output("\n");
+						if (!ok)
+						{
+							output("\r \xFE SND : %-12s : %-18.18s : [Space] aborts : ", ff.name, argv[2]);
+						}
+						else
+						{
+							output("\r \xFE SND : %-12s : %-18.18s : [Space] aborts : ", LISTNAME, argv[2]);
+						}
+					}
+					ok = 1;
+					if (!smtp_send_MAIL_FROM_line(smtp_sock, fp))
+					{
+						DEBUG_LOG_IT( "\n [DEBUG] Bad smtp_send_MAIL_FROM_line");
+						ok = 0;
+					}
+					if (!smtp_send_RCPT_TO_line(smtp_sock, fp))
+					{
+						DEBUG_LOG_IT( "\n [DEBUG] Bad smtp_send_RCPT_TO_line");
+						ok = 0;
+					}
+					aborted = result = 0;
+					if (ok) 
+					{
+						++current_files;
+						DEBUG_LOG_IT( "\n [DEBUG] About to call smtp_sendf");
+						result = smtp_sendf(smtp_sock, fp, current_bytes, total_bytes, current_files, total_files, bSkip);
+						if ( !result || aborted )
+						{
+							if (fp != NULL)
+							{
+								fclose(fp);
+							}
+							if ( SMTP_Err_Cond == SMTP_FULL    || 
+								SMTP_Err_Cond == SMTP_FAILED  ||
+								SMTP_Err_Cond == SMTP_ACCESS  || 
+								SMTP_Err_Cond == SMTP_BAD_NAM ||
+								SMTP_Err_Cond == SMTP_YOU_FWD )
+							{
+								if (move_bad(mqueue, ff.name, SMTP_Err_Cond))
+								{
+									_unlink( szFileName );
+								}
+							}
+							++failed;
+						} 
+						else 
+						{
+							if (fp != NULL)
+							{
+								fclose(fp);
+							}
+							if (!skipit)
+							{
+								_unlink( szFileName );
+							}
+							current_bytes += ff.size;
+						}
+					} 
+					else if (fp != NULL)
+					{
+						fclose(fp);
+					}
+				} 
+				else
+				{
+					log_it( 1, "\n ! Unable to open %s.", szFileName );
+				}
+				nFindNext = _findnext( hFind, &ff );
+
+				if ((nFindNext != 0) && (firstrun)) 
+				{
+					sprintf( szFileName, "%s*.*", mqueue );
+					_findclose( hFind );
+					hFind = -1;
+					hFind = _findfirst( szFileName, &ff ); // , FA_ARCH);
+					nFindNext = ( hFind != -1 ) ? 0 : -1;
+					if (nFindNext == 0 && ff.attrib & _A_ARCH )
+					{
+						++count;
+					}
+				}
+				if (nFindNext != 0) 
+				{
+					if (firstrun) 
+					{
+						strcat(mqueue, "DIGEST\\");
+						firstrun = 0;
+					}
+					sprintf( szFileName, "%s*.*", mqueue );
+					hFind = _findfirst( szFileName, &ff );	// FA_ARCH);
+					nFindNext = ( hFind != -1 ) ? 0 : -1;
+					skipit = 1;
+					while ((nFindNext == 0) && (skipit)) 
+					{
+						if ( ff.attrib & _A_ARCH )
+						{
+							_splitpath(ff.name, NULL, NULL, NULL, ext);
+							jdatec = atoi(&(ext[1]));
+							if (jdatec < jdater) 
+							{
+								skipit = 0;
+								break;
+							} 
+							else 
+							{
+								skipit = 1;
+								log_it(0, "\n \xFE Digest %s not ready.", ff.name);
+							}
+						}
+						nFindNext = _findnext(hFind, &ff);
+					}
+				}
+			}
+			else
+			{
+				nFindNext = _findnext( hFind, &ff );
+			}
+		}
+		if ( hFind != -1 )
+		{
+			_findclose( hFind );
+		}
+		if (failed >= 5)
+		{
+			log_it(1, "\n \xFE Too many SMTP failures.  Try again later.");
+		}
+		smtp_shutdown(smtp_sock);
+	} 
+	else
+	{
+		log_it(1, "\n \xFE SMTP connection failed.");
+	}
+	_fcloseall();
+	return EXIT_SUCCESS;
+}
+
+int ReceiveMail(int argc, char *argv[])
+{
+	char temp[181], s[21], s1[21];
+	char nodepass[40], nodename[20], host[60];
+	char pophost[60], poppass[20], popname[40];
+	int i, i1, okpkt, result, usernum, num_accts, accts;
+	int wingate, once, checknode;
+	unsigned long size;
+	unsigned count;
+	SOCKET pop_sock;
+
+	strcpy(temp, argv[0]);
+	while (LAST(temp) != '\\')
+	{
+		LAST(temp) = '\0';
+	}
+	strcpy(maindir, temp);
+
+	wingate = 0;
+	strcpy(pophost, POPHOST);
+	strcpy(popname, POPNAME);
+	strcpy(poppass, POPPASS);
+	if (argc < 6) 
+	{
+		output("\n \xFE %s", version);
+		output("\n \xFE Invalid arguments for %s\n", argv[0]);
+		return EXIT_FAILURE;
+	}
+	sprintf(from_user, "%s@%s", popname, pophost);
+	DEBUG = atoi(argv[4]);
+	ALLMAIL = atoi(argv[3]);
+	strcpy(net_data, argv[2]);
+	LAST(net_data) = '\0';
+	while (LAST(net_data) != '\\')
+	{
+		LAST(net_data) = '\0';
+	}
+	POP_Err_Cond = POP_OK;
+	num_accts = accts = usernum = checknode = once = 0;
+	*nodepass = *nodename = 0;
+	if (*NODEPASS) 
+	{
+		strcpy(nodepass, NODEPASS);
+		strcpy(nodename, argv[5]);
+		checknode = once = 1;
+	}
+	while ( num_accts >= 0 || once ) 
+	{
+		if (*PROXY) 
+		{
+			wingate = 1;
+			strcpy(host, PROXY);
+		} 
+		else
+		{
+			strcpy(host, pophost);
+		}
+		log_it(1, "\n \xFE Checking %s... ", pophost);
+		if ((pop_sock = pop_init(host)) != NULL) 
+		{
+			if (pop_login(pop_sock, popname, poppass, pophost, wingate)) 
+			{
+				if (pop_status(pop_sock, &count, &size)) 
+				{
+					okpkt = 0;
+					output("%s has %u message%s (%luK).", popname, count,
+						count == 1 ? "" : "s", ((size + 1023) / 1024));
+					i1 = 1;
+					pktowner[0] = 0;
+					while ( i1 <= ( int ) count ) 
+					{
+						okpkt = 0;
+						okpkt = pop_top(pop_sock, i1, usernum);
+						if ( okpkt != 1 )
+						{
+							log_it( 1, "** Pop top returned %d", okpkt );
+						}
+						switch (okpkt) 
+						{
+						case -1:
+							if ((!ALLMAIL) && (!fdl))
+							{
+								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+							}
+							else 
+							{
+								i = 0;
+								sprintf(temp, "%sUNK-%03d.MSG", argv[2], i);
+								while (exist(temp))
+								{
+									sprintf(temp, "%sUNK-%03d.MSG", argv[2], ++i);
+								}
+								_splitpath(temp, NULL, NULL, s, s1);
+								log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, pktowner[0] == 0 ?
+									"non-network packet" : pktowner, s, s1);
+								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								switch (result) 
+								{
+								case 0:
+									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+									_fcloseall();
+									return EXIT_FAILURE;
+								case 1:
+									if (usernum == 0)
+									{
+										check_messageid(1, id);
+									}
+									break;
+								case 2:
+									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+									return EXIT_FAILURE;
+								}
+							}
+							break;
+						case 0:
+							log_it(1, "\n \xFE Error accessing message %d", i1);
+							_fcloseall();
+							return EXIT_FAILURE;
+						case 1:
+							i = 0;
+							sprintf(temp, "%sPKT-%03d.UUE", argv[2], i);
+							while (exist(temp))
+							{
+								sprintf(temp, "%sPKT-%03d.UUE", argv[2], ++i);
+							}
+							_splitpath(temp, NULL, NULL, s, s1);
+							log_it(1, "\n \xFE %s : %3.3d : %-20.20s : %s%s",
+								*net_pkt ? net_pkt : "Receive", i1, pktowner, s, s1);
+							result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+							switch (result) 
+							{
+							case 0:
+								log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+								_fcloseall();
+								return EXIT_FAILURE;
+							case 1:
+								if (usernum == 0)
+								{
+									check_messageid(1, id);
+								}
+								break;
+							case 2:
+								log_it(1, "\n \xFE Unable to delete message %d on host!", i1);
+								return EXIT_FAILURE;
+							}
+							break;
+						case 2:
+							if ( !ALLMAIL && !fdl )
+							{
+								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+							}
+							else 
+							{
+								i = 0;
+								sprintf(temp, "%sARC-%03d.UUE", argv[2], i);
+								while (exist(temp))
+								{
+									sprintf(temp, "%sARC-%03d.UUE", argv[2], ++i);
+								}
+								_splitpath(temp, NULL, NULL, s, s1);
+								if (*fdlfn)
+								{
+									log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s", i1, "archived file", fdlfn);
+								}
+								else
+								{
+									log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "archived file", s, s1);
+								}
+								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								switch (result) 
+								{
+								case 0:
+									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+									_fcloseall();
+									return EXIT_FAILURE;
+								case 1:
+									if (usernum == 0)
+									{
+										check_messageid(1, id);
+									}
+									break;
+								case 2:
+									log_it(1, "\n \xFE Unable to delete message %d on host!", i1);
+									return EXIT_FAILURE;
+								}
+							}
+							break;
+						case 3:
+							if ( !ALLMAIL && !fdl )
+							{
+								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+							}
+							else 
+							{
+								i = 0;
+								sprintf(temp, "%sGIF-%03d.UUE", argv[2], i);
+								while ( exist( temp ) )
+								{
+									sprintf(temp, "%sGIF-%03d.UUE", argv[2], ++i);
+								}
+								_splitpath(temp, NULL, NULL, s, s1);
+								log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "graphic/image file", s, s1);
+								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								switch (result) 
+								{
+								case 0:
+									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+									_fcloseall();
+									return EXIT_FAILURE;
+								case 1:
+									if (usernum == 0)
+									{
+										check_messageid(1, id);
+									}
+									break;
+								case 2:
+									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+									return EXIT_FAILURE;
+								}
+							}
+							break;
+						case 4:
+							i = 0;
+							sprintf(temp, "%sBAD-%03d.UUE", argv[2], i);
+							while (exist(temp))
+							{
+								sprintf(temp, "%sBAD-%03d.UUE", argv[2], ++i);
+							}
+							_splitpath(temp, NULL, NULL, s, s1);
+							log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "mailer-daemon/bounced", s, s1);
+							result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+							switch (result) 
+							{
+							case 0:
+								log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+								_fcloseall();
+								return EXIT_FAILURE;
+							case 1:
+								if (usernum == 0)
+								{
+									check_messageid(1, id);
+								}
+								break;
+							case 2:
+								log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+								return EXIT_FAILURE;
+							}
+							break;
+						case 5:
+							if ( !ALLMAIL && !fdl )
+							{
+								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+							}
+							else 
+							{
+								i = 0;
+								sprintf(temp, "%sSPM-%03d.MSG", argv[2], i);
+								while (exist(temp))
+								{
+									sprintf(temp, "%sSPM-%03d.MSG", argv[2], ++i);
+								}
+								_splitpath(temp, NULL, NULL, s, s1);
+								log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "matched NOSPAM.TXT", s, s1);
+								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								switch (result) 
+								{
+								case 0:
+									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+									_fcloseall();
+									return EXIT_FAILURE;
+								case 1:
+									if (usernum == 0)
+									{
+										check_messageid(1, id);
+									}
+									break;
+								case 2:
+									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+									return EXIT_FAILURE;
+								}
+							}
+							break;
+						case 6:
+							if ( !ALLMAIL && !fdl )
+							{
+								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+							}
+							else 
+							{
+								i = 0;
+								sprintf(temp, "%sSUB-%03d.MSG", argv[2], i);
+								while (exist(temp))
+								{
+									sprintf(temp, "%sSUB-%03d.MSG", argv[2], ++i);
+								}
+								_splitpath(temp, NULL, NULL, s, s1);
+								log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "subscribe request", s, s1);
+								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								switch (result) 
+								{
+								case 0:
+									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+									_fcloseall();
+									return EXIT_FAILURE;
+								case 1:
+									if (usernum == 0)
+									{
+										check_messageid(1, id);
+									}
+									break;
+								case 2:
+									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+									return EXIT_FAILURE;
+								}
+							}
+							break;
+						case 7:
+							if ( !ALLMAIL && !fdl )
+							{
+								log_it(1, "\n \xFE Duplicate message %d left on server.", i1);
+							}
+							else 
+							{
+								result = (pop_delete(pop_sock, i1));
+								switch (result) 
+								{
+								case 0:
+									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+									_fcloseall();
+									return EXIT_FAILURE;
+								case 1:
+									break;
+								case 2:
+									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+									return EXIT_FAILURE;
+								}
+							}
+							break;
+						case 8:
+							i = 0;
+							sprintf(temp, "%sFIW-%03d.MSG", argv[2], i);
+							while (exist(temp))
+							{
+								sprintf(temp, "%sFIW-%03d.MSG", argv[2], ++i);
+							}
+							_splitpath(temp, NULL, NULL, s, s1);
+							log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, pktowner[0] == 0 ?
+								"non-network packet" : pktowner, s, s1);
+							result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+							switch (result) 
+							{
+							case 0:
+								log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+								_fcloseall();
+								return EXIT_FAILURE;
+							case 1:
+								break;
+							case 2:
+								log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+								return EXIT_FAILURE;
+							}
+							break;
+						}
+						i1++;
+						_fcloseall();
+					}
+					if (compact_ids) 
+					{
+						log_it(1, "\n \xFE Compacting Message-ID database...");
+						compact_msgid();
+						compact_ids = 0;
+					}
+				} 
+				else
+				{
+					log_it(1, "\n \xFE Unknown POP _access error - try again later.");
+				}
+				pop_shutdown(pop_sock);
+			} 
+			else 
+			{
+				log_it(1, "\n \xFE Unable to log into POP server!");
+				pop_shutdown(pop_sock);
+			}
+		} 
+		else
+		{
+			log_it(1, "\n \xFE POP socket connect failed.");
+		}
+		if ( checknode && once ) 
+		{
+			strcpy(pophost, "mail.filenet.wwiv.net");
+			strcpy(popname, nodename);
+			strcpy(poppass, nodepass);
+			ALLMAIL = 1;
+			once = 0;
+		} 
+		else 
+		{
+			if (!accts) 
+			{
+				num_accts = count_accts(0);
+				log_it(DEBUG, "\n - Found %d extra account%s.", num_accts, num_accts == 1 ? "" : "s");
+				if (num_accts) 
+				{
+					acct = (ACCT *) malloc(sizeof(ACCT) * num_accts);
+					if (acct != NULL) 
+					{
+						num_accts = count_accts(1);
+					} 
+					else 
+					{
+						log_it(DEBUG, "\n ! Insufficient memory for extra accounts.");
+						num_accts = 0;
+					}
+					accts = 1;
+				}
+			}
+			if (num_accts) 
+			{
+				strcpy(pophost, acct[num_accts - 1].pophost);
+				strcpy(popname, acct[num_accts - 1].popname);
+				strcpy(poppass, acct[num_accts - 1].poppass);
+				ALLMAIL = 1;
+				usernum = find_acct(popname, pophost, poppass);
+				--num_accts;
+			} 
+			else
+			{
+				num_accts = -1;
+			}
+		}
+	}
+	if (acct != NULL) 
+	{
+		free((void *) acct);
+		acct = NULL;
+	}
+	return EXIT_SUCCESS;
+}
+
 int main(int argc, char *argv[])
 {
-    char szFileName[_MAX_PATH], temp[181], mqueue[_MAX_PATH], s[21], s1[21];
-    char nodepass[40], nodename[20], host[60], ext[_MAX_EXT];
-    char pophost[60], poppass[20], popname[40];
-    int failed, ok, i, i1, okpkt, result, usernum, num_accts, accts;
-    int wingate, once, checknode, jdater, jdatec, skipit, firstrun;
-    long total_bytes, current_bytes;
-    int total_files, current_files;
-    unsigned long size;
-    unsigned count;
-    FILE *fp;
-    struct _finddata_t ff;
-    SOCKET smtp_sock;
-    SOCKET pop_sock;
+	DEBUG_LOG_IT_1( "\n [DEBUG] CommandLine=[%s]", GetCommandLine() );
 
-    if ( !InitializeWinsock() )
+    if (!parse_net_ini()) 
+    {
+        output("\n ! Missing critical NET.INI settings!");
+        WSACleanup();
+        return EXIT_FAILURE;
+    }
+
+	if ( !InitializeWinsock() )
     {
         log_it( 1, "\n Unable to initialize WinSock, Exiting...\n" );
         WSACleanup();
         return EXIT_FAILURE;
     }
 
-    if (argc > 1 && strnicmp(argv[1], "-send", strlen(argv[1])) == 0) 
+	int nResultCode = EXIT_SUCCESS;
+    if (argc > 1 && _strnicmp(argv[1], "-send", strlen(argv[1])) == 0) 
+	{
+		nResultCode = SendMail(argc, argv);
+	}
+    else if (argc > 1 && _strnicmp(argv[1], "-r", strlen(argv[1])) == 0) 
     {
-        if (argc < 5) 
-        {
-            output("\n \xFE %s", version);
-            log_it(1, "\n \xFE Invalid arguments for %s\n", argv[0]);
-            WSACleanup();
-            return EXIT_FAILURE;
-        }
-        if (argc >= 6)
-        {
-            DEBUG = atoi(argv[5]);
-        }
-        // %%HACK: by rob to keep debug mode enabled.
-        if (!DEBUG) DEBUG=1;
-        bool bSkip = ( argc == 7 && atoi(argv[6]) == 1 ) ? true : false;
-
-        strcpy(mqueue, argv[4]);
-        strcpy(net_data, argv[4]);
-        LAST(net_data) = '\0';
-        while ( LAST(net_data) != '\\' )
-        {
-            LAST(net_data) = '\0';
-        }
-        output("\n");
-        DEBUG_LOG_IT_2( "DEBUG: Before smtp_start [%s] [%s]", argv[2], argv[3] );
-        if ((smtp_sock = smtp_start(argv[2], argv[3])) != NULL) 
-        {
-            total_bytes = total_files = current_bytes = current_files = failed = count = aborted = skipit = 0;
-            firstrun = 1;
-            sprintf(szFileName, "%s*.*", mqueue);
-            DEBUG_LOG_IT_1( "\n [DEBUG] Looking in [%s]", szFileName );
-            long hFind = _findfirst( szFileName, &ff ); //, FA_ARCH);
-            int nFindNext = ( hFind != -1 ) ? 0 : -1;
-            while (nFindNext == 0) 
-            {
-                if ( ff.attrib & _A_ARCH )
-                {
-                    total_bytes += ff.size;
-                    ++total_files;
-                }
-                nFindNext = _findnext( hFind, &ff );
-            }
-            _findclose( hFind );
-            hFind = -1;
-            hFind = _findfirst(szFileName, &ff ); // , FA_ARCH);
-            nFindNext = ( hFind != -1 ) ? 0 : -1;
-            time_t ltime;
-            _tzset();
-            time( &ltime );
-            struct tm *today;
-            today = localtime( &ltime );
-            jdater = jdate(today->tm_year, today->tm_mday, today->tm_wday);
-            while ((count < 3) && (nFindNext == 0) && (failed < 5) && (!aborted)) 
-            {
-                DEBUG_LOG_IT_1( "\n [DEBUG] Thinking about file [%s]", ff.name );
-                bool bDoThisFile = false;
-                if ( ff.attrib & _A_ARCH ) bDoThisFile=true;
-                if ( ff.attrib & _A_SUBDIR) bDoThisFile=false;
-                if ( bDoThisFile )
-                {
-                    DEBUG_LOG_IT_1( "\n [DEBUG] Doing file [%s]", ff.name );
-                    if (count > 1) 
-                    {
-                        DEBUG = 1;
-                        output("\n \xFE SMTP pass %d...\n", count);
-                    }
-                    sprintf(szFileName, "%s%s", mqueue, ff.name);
-                    if ((fp = fsh_open(szFileName, "r")) != NULL) 
-                    {
-                        SMTP_Err_Cond = SMTP_OK;
-                        ok = find_listname(fp);
-                        if (DEBUG) 
-                        {
-                            output("\n");
-                            if (!ok)
-                            {
-                                output("\r \xFE SND : %-12s : %-18.18s : [Space] aborts : ", ff.name, argv[2]);
-                            }
-                            else
-                            {
-                                output("\r \xFE SND : %-12s : %-18.18s : [Space] aborts : ", LISTNAME, argv[2]);
-                            }
-                        }
-                        ok = 1;
-                        if (!smtp_send_MAIL_FROM_line(smtp_sock, fp))
-                        {
-                            DEBUG_LOG_IT( "\n [DEBUG] Bad smtp_send_MAIL_FROM_line");
-                            ok = 0;
-                        }
-                        if (!smtp_send_RCPT_TO_line(smtp_sock, fp))
-                        {
-                            DEBUG_LOG_IT( "\n [DEBUG] Bad smtp_send_RCPT_TO_line");
-                            ok = 0;
-                        }
-                        aborted = result = 0;
-                        if (ok) 
-                        {
-                            ++current_files;
-                            DEBUG_LOG_IT( "\n [DEBUG] About to call smtp_sendf");
-                            result = smtp_sendf(smtp_sock, fp, current_bytes, total_bytes, current_files, total_files, bSkip);
-                            if ( !result || aborted )
-                            {
-                                if (fp != NULL)
-                                {
-                                    fclose(fp);
-                                }
-                                if ( SMTP_Err_Cond == SMTP_FULL    || 
-                                    SMTP_Err_Cond == SMTP_FAILED  ||
-                                    SMTP_Err_Cond == SMTP_ACCESS  || 
-                                    SMTP_Err_Cond == SMTP_BAD_NAM ||
-                                    SMTP_Err_Cond == SMTP_YOU_FWD )
-                                {
-                                    if (move_bad(mqueue, ff.name, SMTP_Err_Cond))
-                                    {
-                                        unlink( szFileName );
-                                    }
-                                }
-                                ++failed;
-                            } 
-                            else 
-                            {
-                                if (fp != NULL)
-                                {
-                                    fclose(fp);
-                                }
-                                if (!skipit)
-                                {
-                                    unlink( szFileName );
-                                }
-                                current_bytes += ff.size;
-                            }
-                        } 
-                        else if (fp != NULL)
-                        {
-                            fclose(fp);
-                        }
-                    } 
-                    else
-                    {
-                        log_it( 1, "\n ! Unable to open %s.", szFileName );
-                    }
-                    nFindNext = _findnext( hFind, &ff );
-
-                    if ((nFindNext != 0) && (firstrun)) 
-                    {
-                        sprintf( szFileName, "%s*.*", mqueue );
-                        _findclose( hFind );
-                        hFind = -1;
-                        hFind = _findfirst( szFileName, &ff ); // , FA_ARCH);
-                        nFindNext = ( hFind != -1 ) ? 0 : -1;
-                        if (nFindNext == 0 && ff.attrib & _A_ARCH )
-                        {
-                            ++count;
-                        }
-                    }
-                    if (nFindNext != 0) 
-                    {
-                        if (firstrun) 
-                        {
-                            strcat(mqueue, "DIGEST\\");
-                            firstrun = 0;
-                        }
-                        sprintf( szFileName, "%s*.*", mqueue );
-                        hFind = _findfirst( szFileName, &ff );	// FA_ARCH);
-                        nFindNext = ( hFind != -1 ) ? 0 : -1;
-                        skipit = 1;
-                        while ((nFindNext == 0) && (skipit)) 
-                        {
-                            if ( ff.attrib & _A_ARCH )
-                            {
-                                _splitpath(ff.name, NULL, NULL, NULL, ext);
-                                jdatec = atoi(&(ext[1]));
-                                if (jdatec < jdater) 
-                                {
-                                    skipit = 0;
-                                    break;
-                                } 
-                                else 
-                                {
-                                    skipit = 1;
-                                    log_it(0, "\n \xFE Digest %s not ready.", ff.name);
-                                }
-                            }
-                            nFindNext = _findnext(hFind, &ff);
-                        }
-                    }
-                }
-                else
-                {
-                    nFindNext = _findnext( hFind, &ff );
-                }
-            }
-            if ( hFind != -1 )
-            {
-                _findclose( hFind );
-            }
-            if (failed >= 5)
-            {
-                log_it(1, "\n \xFE Too many SMTP failures.  Try again later.");
-            }
-            smtp_shutdown(smtp_sock);
-        } 
-        else
-        {
-            log_it(1, "\n \xFE SMTP connection failed.");
-        }
-        fcloseall();
-    } 
-    else if (argc > 1 && strnicmp(argv[1], "-r", strlen(argv[1])) == 0) 
-    {
-        strcpy(temp, argv[0]);
-        while (LAST(temp) != '\\')
-        {
-            LAST(temp) = '\0';
-        }
-        strcpy(maindir, temp);
-        if (parse_net_ini()) 
-        {
-            output("\n ! Missing critical NET.INI settings!");
-            WSACleanup();
-            return EXIT_FAILURE;
-        }
-        wingate = 0;
-        strcpy(pophost, POPHOST);
-        strcpy(popname, POPNAME);
-        strcpy(poppass, POPPASS);
-        if (argc < 6) 
-        {
-            output("\n \xFE %s", version);
-            output("\n \xFE Invalid arguments for %s\n", argv[0]);
-            WSACleanup();
-            return EXIT_FAILURE;
-        }
-        sprintf(from_user, "%s@%s", popname, pophost);
-        DEBUG = atoi(argv[4]);
-        ALLMAIL = atoi(argv[3]);
-        strcpy(net_data, argv[2]);
-        LAST(net_data) = '\0';
-        while (LAST(net_data) != '\\')
-        {
-            LAST(net_data) = '\0';
-        }
-        POP_Err_Cond = POP_OK;
-        num_accts = accts = usernum = checknode = once = 0;
-        *nodepass = *nodename = 0;
-        if (*NODEPASS) 
-        {
-            strcpy(nodepass, NODEPASS);
-            strcpy(nodename, argv[5]);
-            checknode = once = 1;
-        }
-        while ((num_accts >= 0) || (once)) 
-        {
-            if (*PROXY) 
-            {
-                wingate = 1;
-                strcpy(host, PROXY);
-            } 
-            else
-            {
-                strcpy(host, pophost);
-            }
-            log_it(1, "\n \xFE Checking %s... ", pophost);
-            if ((pop_sock = pop_init(host)) != NULL) 
-            {
-                if (pop_login(pop_sock, popname, poppass, pophost, wingate)) 
-                {
-                    if (pop_status(pop_sock, &count, &size)) 
-                    {
-                        okpkt = 0;
-                        output("%s has %u message%s (%luK).", popname, count,
-                            count == 1 ? "" : "s", ((size + 1023) / 1024));
-                        i1 = 1;
-                        pktowner[0] = 0;
-                        while ( i1 <= ( int ) count ) 
-                        {
-                            okpkt = 0;
-                            okpkt = pop_top(pop_sock, i1, usernum);
-                            if ( okpkt != 1 )
-                            {
-                                log_it( 1, "** Pop top returned %d", okpkt );
-                            }
-                            switch (okpkt) 
-                            {
-                            case -1:
-                                if ((!ALLMAIL) && (!fdl))
-                                {
-                                    log_it(1, "\n \xFE Non-network message %d left on server.", i1);
-                                }
-                                else 
-                                {
-                                    i = 0;
-                                    sprintf(temp, "%sUNK-%03d.MSG", argv[2], i);
-                                    while (exist(temp))
-                                    {
-                                        sprintf(temp, "%sUNK-%03d.MSG", argv[2], ++i);
-                                    }
-                                    _splitpath(temp, NULL, NULL, s, s1);
-                                    log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, pktowner[0] == 0 ?
-                                        "non-network packet" : pktowner, s, s1);
-                                    result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-                                    switch (result) 
-                                    {
-                                    case 0:
-                                        log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-                                        fcloseall();
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    case 1:
-                                        if (usernum == 0)
-                                        {
-                                            check_messageid(1, id);
-                                        }
-                                        break;
-                                    case 2:
-                                        log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    }
-                                }
-                                break;
-                            case 0:
-                                log_it(1, "\n \xFE Error accessing message %d", i1);
-                                fcloseall();
-                                WSACleanup();
-                                return EXIT_FAILURE;
-                            case 1:
-                                i = 0;
-                                sprintf(temp, "%sPKT-%03d.UUE", argv[2], i);
-                                while (exist(temp))
-                                {
-                                    sprintf(temp, "%sPKT-%03d.UUE", argv[2], ++i);
-                                }
-                                _splitpath(temp, NULL, NULL, s, s1);
-                                log_it(1, "\n \xFE %s : %3.3d : %-20.20s : %s%s",
-                                    *net_pkt ? net_pkt : "Receive", i1, pktowner, s, s1);
-                                result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-                                switch (result) 
-                                {
-                                case 0:
-                                    log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-                                    fcloseall();
-                                    WSACleanup();
-                                    return EXIT_FAILURE;
-                                case 1:
-                                    if (usernum == 0)
-                                    {
-                                        check_messageid(1, id);
-                                    }
-                                    break;
-                                case 2:
-                                    log_it(1, "\n \xFE Unable to delete message %d on host!", i1);
-                                    WSACleanup();
-                                    return EXIT_FAILURE;
-                                }
-                                break;
-                            case 2:
-                                if ((!ALLMAIL) && (!fdl))
-                                {
-                                    log_it(1, "\n \xFE Non-network message %d left on server.", i1);
-                                }
-                                else 
-                                {
-                                    i = 0;
-                                    sprintf(temp, "%sARC-%03d.UUE", argv[2], i);
-                                    while (exist(temp))
-                                    {
-                                        sprintf(temp, "%sARC-%03d.UUE", argv[2], ++i);
-                                    }
-                                    _splitpath(temp, NULL, NULL, s, s1);
-                                    if (*fdlfn)
-                                    {
-                                        log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s", i1, "archived file", fdlfn);
-                                    }
-                                    else
-                                    {
-                                        log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "archived file", s, s1);
-                                    }
-                                    result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-                                    switch (result) 
-                                    {
-                                    case 0:
-                                        log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-                                        fcloseall();
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    case 1:
-                                        if (usernum == 0)
-                                        {
-                                            check_messageid(1, id);
-                                        }
-                                        break;
-                                    case 2:
-                                        log_it(1, "\n \xFE Unable to delete message %d on host!", i1);
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    }
-                                }
-                                break;
-                            case 3:
-                                if ( !ALLMAIL && !fdl )
-                                {
-                                    log_it(1, "\n \xFE Non-network message %d left on server.", i1);
-                                }
-                                else 
-                                {
-                                    i = 0;
-                                    sprintf(temp, "%sGIF-%03d.UUE", argv[2], i);
-                                    while ( exist( temp ) )
-                                    {
-                                        sprintf(temp, "%sGIF-%03d.UUE", argv[2], ++i);
-                                    }
-                                    _splitpath(temp, NULL, NULL, s, s1);
-                                    log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "graphic/image file", s, s1);
-                                    result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-                                    switch (result) 
-                                    {
-                                    case 0:
-                                        log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-                                        fcloseall();
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    case 1:
-                                        if (usernum == 0)
-                                        {
-                                            check_messageid(1, id);
-                                        }
-                                        break;
-                                    case 2:
-                                        log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    }
-                                }
-                                break;
-                            case 4:
-                                i = 0;
-                                sprintf(temp, "%sBAD-%03d.UUE", argv[2], i);
-                                while (exist(temp))
-                                {
-                                    sprintf(temp, "%sBAD-%03d.UUE", argv[2], ++i);
-                                }
-                                _splitpath(temp, NULL, NULL, s, s1);
-                                log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "mailer-daemon/bounced", s, s1);
-                                result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-                                switch (result) 
-                                {
-                                case 0:
-                                    log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-                                    fcloseall();
-                                    WSACleanup();
-                                    return EXIT_FAILURE;
-                                case 1:
-                                    if (usernum == 0)
-                                    {
-                                        check_messageid(1, id);
-                                    }
-                                    break;
-                                case 2:
-                                    log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-                                    WSACleanup();
-                                    return EXIT_FAILURE;
-                                }
-                                break;
-                            case 5:
-                                if ( !ALLMAIL && !fdl )
-                                {
-                                    log_it(1, "\n \xFE Non-network message %d left on server.", i1);
-                                }
-                                else 
-                                {
-                                    i = 0;
-                                    sprintf(temp, "%sSPM-%03d.MSG", argv[2], i);
-                                    while (exist(temp))
-                                    {
-                                        sprintf(temp, "%sSPM-%03d.MSG", argv[2], ++i);
-                                    }
-                                    _splitpath(temp, NULL, NULL, s, s1);
-                                    log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "matched NOSPAM.TXT", s, s1);
-                                    result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-                                    switch (result) 
-                                    {
-                                    case 0:
-                                        log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-                                        fcloseall();
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    case 1:
-                                        if (usernum == 0)
-                                        {
-                                            check_messageid(1, id);
-                                        }
-                                        break;
-                                    case 2:
-                                        log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    }
-                                }
-                                break;
-                            case 6:
-                                if ( !ALLMAIL && !fdl )
-                                {
-                                    log_it(1, "\n \xFE Non-network message %d left on server.", i1);
-                                }
-                                else 
-                                {
-                                    i = 0;
-                                    sprintf(temp, "%sSUB-%03d.MSG", argv[2], i);
-                                    while (exist(temp))
-                                    {
-                                        sprintf(temp, "%sSUB-%03d.MSG", argv[2], ++i);
-                                    }
-                                    _splitpath(temp, NULL, NULL, s, s1);
-                                    log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "subscribe request", s, s1);
-                                    result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-                                    switch (result) 
-                                    {
-                                    case 0:
-                                        log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-                                        fcloseall();
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    case 1:
-                                        if (usernum == 0)
-                                        {
-                                            check_messageid(1, id);
-                                        }
-                                        break;
-                                    case 2:
-                                        log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    }
-                                }
-                                break;
-                            case 7:
-                                if ( !ALLMAIL && !fdl )
-                                {
-                                    log_it(1, "\n \xFE Duplicate message %d left on server.", i1);
-                                }
-                                else 
-                                {
-                                    result = (pop_delete(pop_sock, i1));
-                                    switch (result) 
-                                    {
-                                    case 0:
-                                        log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-                                        fcloseall();
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    case 1:
-                                        break;
-                                    case 2:
-                                        log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-                                        WSACleanup();
-                                        return EXIT_FAILURE;
-                                    }
-                                }
-                                break;
-                            case 8:
-                                i = 0;
-                                sprintf(temp, "%sFIW-%03d.MSG", argv[2], i);
-                                while (exist(temp))
-                                {
-                                    sprintf(temp, "%sFIW-%03d.MSG", argv[2], ++i);
-                                }
-                                _splitpath(temp, NULL, NULL, s, s1);
-                                log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, pktowner[0] == 0 ?
-                                    "non-network packet" : pktowner, s, s1);
-                                result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-                                switch (result) 
-                                {
-                                case 0:
-                                    log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-                                    fcloseall();
-                                    WSACleanup();
-                                    return EXIT_FAILURE;
-                                case 1:
-                                    break;
-                                case 2:
-                                    log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-                                    WSACleanup();
-                                    return EXIT_FAILURE;
-                                }
-                                break;
-                            }
-                            i1++;
-                            fcloseall();
-                        }
-                        if (compact_ids) 
-                        {
-                            log_it(1, "\n \xFE Compacting Message-ID database...");
-                            compact_msgid();
-                            compact_ids = 0;
-                        }
-                    } 
-                    else
-                    {
-                        log_it(1, "\n \xFE Unknown POP access error - try again later.");
-                    }
-                    pop_shutdown(pop_sock);
-                } 
-                else 
-                {
-                    log_it(1, "\n \xFE Unable to log into POP server!");
-                    pop_shutdown(pop_sock);
-                }
-            } 
-            else
-            {
-                log_it(1, "\n \xFE POP socket connect failed.");
-            }
-            if ((checknode) && (once)) 
-            {
-                strcpy(pophost, "mail.filenet.wwiv.net");
-                strcpy(popname, nodename);
-                strcpy(poppass, nodepass);
-                ALLMAIL = 1;
-                once = 0;
-            } 
-            else 
-            {
-                if (!accts) 
-                {
-                    num_accts = count_accts(0);
-                    log_it(DEBUG, "\n - Found %d extra account%s.", num_accts, num_accts == 1 ? "" : "s");
-                    if (num_accts) 
-                    {
-                        acct = (ACCT *) malloc(sizeof(ACCT) * num_accts);
-                        if (acct != NULL) 
-                        {
-                            num_accts = count_accts(1);
-                        } 
-                        else 
-                        {
-                            log_it(DEBUG, "\n ! Insufficient memory for extra accounts.");
-                            num_accts = 0;
-                        }
-                        accts = 1;
-                    }
-                }
-                if (num_accts) 
-                {
-                    strcpy(pophost, acct[num_accts - 1].pophost);
-                    strcpy(popname, acct[num_accts - 1].popname);
-                    strcpy(poppass, acct[num_accts - 1].poppass);
-                    ALLMAIL = 1;
-                    usernum = find_acct(popname, pophost, poppass);
-                    --num_accts;
-                } 
-                else
-                {
-                    num_accts = -1;
-                }
-            }
-        }
-        if (acct != NULL) 
-        {
-            free((void *) acct);
-            acct = NULL;
-        }
-        WSACleanup();
-        return EXIT_SUCCESS;
+		nResultCode = ReceiveMail(argc, argv);
     }
     WSACleanup();
-    return EXIT_FAILURE;
+    return nResultCode;
 }
 
 
