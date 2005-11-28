@@ -89,9 +89,10 @@ ACCT *acct;
 
 
 int POP_Err_Cond, SMTP_Err_Cond;
-char from_user[81], net_data[161], net_pkt[21], maindir[160], fdlfn[21], id[81];
+char from_user[81], net_data[_MAX_PATH], net_pkt[21], maindir[160], fdlfn[21], id[81];
 char LISTNAME[45], MAILFROM[60], PROXY[40], listaddr[25];
 char POPHOST[60], POPNAME[40], POPPASS[20], DOMAIN[60], NODEPASS[20];
+int POPPORT, SMTPPORT;
 int fdl;
 char _temp_buffer[_TEMP_BUFFER_LEN];
 static int POP_stat, SMTP_stat;

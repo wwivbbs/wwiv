@@ -24,7 +24,7 @@ typedef BOOL (WINAPI *P_GDFSE)(LPCTSTR, PULARGE_INTEGER,
                                   PULARGE_INTEGER, PULARGE_INTEGER);
 
 
-extern char net_data[MAX_PATH];
+extern char net_data[_MAX_PATH];
 
 
 void giveup_timeslice(void)
@@ -83,7 +83,7 @@ int log_it( int display, char *fmt, ... )
 		vsprintf(s, fmt, v);
 		va_end(v);
 
-		if ( net_data[0] == '\0' )
+		if ( net_data[0] == '\0' && !display )
 		{
 			printf( "\n ! can not log a message, net_data is not set!!\n\n" );
 			if ( s && *s )
@@ -131,7 +131,7 @@ int do_spawn(const char *cl)
 	char *ss1, *ss[30];
 	SEH_PUSH("do_spawn()");
 	
-	ss1 = strdup(cl);
+	ss1 = _strdup(cl);
 	ss[0] = ss1;
 	i = 1;
 	l = strlen(ss1);
@@ -150,7 +150,7 @@ int do_spawn(const char *cl)
 	output( "\n" );
 #endif // #ifdef MEGA_DEBUG_LOG_INFO
 
-	i = (spawnvpe(P_WAIT, ss[0], ss, environ) & 0x00ff);
+	i = (_spawnvpe(P_WAIT, ss[0], ss, environ) & 0x00ff);
 	if (ss1 != NULL)
 	{
 		free(ss1);
@@ -179,13 +179,13 @@ void cd_to( const char *s )
     {
         s1[i] = 0;
     }
-    chdir( s1 );
+    _chdir( s1 );
     if ( s[1] == ':' ) 
     {
         _chdrive( s[0] - 'A' + 1 );	// FIX, On Win32, _chdrive is 'A' = 1, etc..
         if ( s[2] == 0 )
         {
-            chdir( "\\" );
+            _chdir( "\\" );
         }
     }
 }
@@ -268,7 +268,7 @@ char *make_abs_path(char *checkdir, const char* maindir)
 bool exist(const char *s)
 {
 	SEH_PUSH("exist()");
-	return (access(s, 0) == -1) ? false : true;
+	return (_access(s, 0) == -1) ? false : true;
 }
 
 
@@ -288,7 +288,7 @@ int make_path(char *s)
 	SEH_PUSH("make_path");
     char drive, current_path[MAX_PATH], current_drive, *p, *flp;
 
-    p = flp = strdup(s);
+    p = flp = _strdup(s);
     _getdcwd(0, current_path, MAX_PATH);
     current_drive = ( char ) ( *current_path - '@' );
     if (LAST(p) == WWIV_FILE_SEPERATOR_CHAR)
@@ -300,7 +300,7 @@ int make_path(char *s)
         drive = ( char ) ( toupper(p[0]) - 'A' + 1 );
         if (_chdrive(drive)) 
 		{
-            chdir(current_path);
+            _chdir(current_path);
             _chdrive(current_drive);
             return -2;  
         }
@@ -308,23 +308,23 @@ int make_path(char *s)
     }
     if ( *p == WWIV_FILE_SEPERATOR_CHAR ) 
 	{
-        chdir( WWIV_FILE_SEPERATOR_STRING );
+        _chdir( WWIV_FILE_SEPERATOR_STRING );
         p++;
     }
     for (; (p = strtok(p, WWIV_FILE_SEPERATOR_STRING)) != 0; p = 0) 
 	{
-        if (chdir(p)) 
+        if (_chdir(p)) 
 		{
-            if (mkdir(p)) 
+            if (_mkdir(p)) 
 			{
-                chdir(current_path);
+                _chdir(current_path);
                 _chdrive(current_drive);
                 return -1;
             }
-            chdir(p);
+            _chdir(p);
         }   
     }
-    chdir(current_path);
+    _chdir(current_path);
     if (flp)
 	{
         free(flp);
@@ -602,8 +602,8 @@ int WhereY()
 bool SetFileToCurrentTime(LPCTSTR pszFileName)
 {
 	SEH_PUSH("SetFileToCurrentTime()");
-	// The file must be opened with write access.
-	// That's why GENERIC_WRITE is used for the access flag.
+	// The file must be opened with write _access.
+	// That's why GENERIC_WRITE is used for the _access flag.
 	HANDLE hFile = CreateFile( pszFileName,
 							   GENERIC_WRITE, 
                                FILE_SHARE_READ | FILE_SHARE_WRITE, 
@@ -665,7 +665,7 @@ void SEH_PushStack( char *name )
     }
 	if ( top != -1 )
 	{
-		SEH_Stack[top] = strdup( name );
+		SEH_Stack[top] = _strdup( name );
 	}
 	else
 	{
@@ -677,7 +677,7 @@ void SEH_PushStack( char *name )
 		{
 			SEH_Stack[j-1] = SEH_Stack[j];
 		}
-		SEH_Stack[SEH_STACK_SIZE-1] = strdup( name );
+		SEH_Stack[SEH_STACK_SIZE-1] = _strdup( name );
 	}
 }
 

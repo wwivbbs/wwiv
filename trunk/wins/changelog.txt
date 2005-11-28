@@ -1,6 +1,19 @@
 WWIV Internet Network Support version 5.0 Change Log
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+5.0.11 (Alpha) 2005-??-??
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Added net NET.INI settings "SMTPPORT=nn" and "POPPORT=nn".  This is used
+to override the POP and SMTP port numbers used by your mail server.
+
+Switched the compiler to visual studio 2005.  If you need to build this, please
+use visual studio express or any of the vs.net 2005 releases.
+
+Cleaned up compiler warnings and errors under vs2005.
+
+
+
+
 5.0.10 (Alpha) 2004-11-21
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Added new NET.INI setting "RASDIAL=[Y|N]".  If Y, then it will dial the 
@@ -33,10 +46,10 @@ methods.
 
 Code cleanup in exp.cpp
 
-Fixed access violation in exp.cpp when the to: parsing dies and doesn't
+Fixed _access violation in exp.cpp when the to: parsing dies and doesn't
 check for null before calling strcpy.
 
-Added SEH function listing when an access violation happens.
+Added SEH function listing when an _access violation happens.
 
 Fixed an issue where news.exe would keep trying a host after the connect
 failed (just making it take a very long time)
@@ -140,7 +153,7 @@ v5.0 Alpha-3 2001-05-13
 * Added guards around include files.
 * Removed create_wattcp_cfg function.
 * removed duplicate "char* stristr(char*, char*)".
-* Removed unused variables from being read from NET.INI. These are:
+* Removed unused variables from being _read from NET.INI. These are:
 	IPADDDR
 	NETMASK
 	DNS
@@ -220,7 +233,7 @@ v5.0 Alpha-1 2001-05-03
 * Changed how uu.cpp handles the copyfile function since its return value
   was the opposite in uu.cpp than everywhere else.
 * Changed copyfile to use the WIN32 API call CopyFile.
-* Reformatted some source code to make it easier to read.  No tab characters
+* Reformatted some source code to make it easier to _read.  No tab characters
   in the source code, and the indentation is 4 characters in the reformatted
   areas.
 * Changed many parameters and return values from 'int' to 'bool' when it 
@@ -234,7 +247,7 @@ v5.0 Alpha-1 2001-05-03
   function did)
 * Added stubbed #defines for many wattcp functions that aren't needed. These
   will be removed in a future revision.
-* WinNT/2k is picky on memory access, Every place the code did  "if (*x)" I 
+* WinNT/2k is picky on memory _access, Every place the code did  "if (*x)" I 
   changed it to "if (x && *x)" so that it doesn't GPF if x == NULL.
 * Added NULL tests before accessing anything in argv[] if it may not exist.
 * Added NULL tests before accessing the result of a strtok operation (since
