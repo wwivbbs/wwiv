@@ -23,7 +23,7 @@ int sh_close(int f);
 void fsh_close(FILE *f);
 
 int sh_open(const char *path, int file_access, unsigned mode);
-int sh_open1(const char *path, int access);
+int sh_open1(const char *path, int _access);
 int sh_read(int handle, void *buf, unsigned len);
 long sh_lseek(int handle, long offset, int fromwhere);
 size_t fsh_read(void *ptr, size_t size, size_t n, FILE * stream);

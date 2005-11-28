@@ -71,14 +71,14 @@ void get_list_addr(char *list_addr, char *list_name)
 	{
 		while ((fgets(s, 100, fp)) && (!found)) 
 		{
-			if (strnicmp(s, "LIST", 4) == 0) 
+			if (_strnicmp(s, "LIST", 4) == 0) 
 			{
 				ss = strtok(s, "=");
 				if (s[4] == '-') 
 				{
 					strcpy(buf, &s[5]);
 					trimstr1(buf);
-					if (stricmp(buf, list_name) == 0) 
+					if (_stricmp(buf, list_name) == 0) 
 					{
 						ss = strtok(NULL, "\r\n");
 						trimstr1(ss);
@@ -175,7 +175,7 @@ int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 		{
 			while ((fgets(s, 100, fp)) && (!found)) 
 			{
-				if (strnicmp(s, "USER", 4) == 0) 
+				if (_strnicmp(s, "USER", 4) == 0) 
 				{
 					ss = strtok(s, "=");
 					strcpy(buf, &s[4]);
@@ -209,7 +209,7 @@ int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 		log_it(1, "\n * Cannot open %s.", fn);
 		return (found);
 	}
-	int num_users = static_cast<int>( filelength( userfile ) / sizeof( userrec ) );
+	int num_users = static_cast<int>( _filelength( userfile ) / sizeof( userrec ) );
 	
 	if (whichuser > num_users) 
 	{
@@ -217,7 +217,7 @@ int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 		return (found);
 	}
 	pos = ((long) sizeof(userrec) * ((long) whichuser));
-	lseek(userfile, pos, SEEK_SET);
+	_lseek(userfile, pos, SEEK_SET);
 	sh_read(userfile, &ur, sizeof(userrec));
 	if (ur.realname[0] == 0)
 	{
@@ -295,13 +295,13 @@ void parse_net_ini()
 		{
 			continue;
 		}
-		if (strnicmp(line, "[MAILLIST]", 10) == 0) 
+		if (_strnicmp(line, "[MAILLIST]", 10) == 0) 
 		{
 			fptr = ftell(fp);
 			while ((fgets(line, 80, fp)) && (line[0] != '[')) 
 			{
 				if ((line[0] != '[') && (line[0] != ';') && (line[0] != 0) &&
-					(strnicmp(line, "DIGEST", 6) != 0))
+					(_strnicmp(line, "DIGEST", 6) != 0))
 				{
 					++nlists;
 				}
@@ -326,7 +326,7 @@ void parse_net_ini()
 		}
 		if (inlist) 
 		{
-			if ((line[0] != ';') && (line[0] != 0) && (strnicmp(line, "DIGEST", 6) != 0)) 
+			if ((line[0] != ';') && (line[0] != 0) && (_strnicmp(line, "DIGEST", 6) != 0)) 
 			{
 				ss = strtok(line, "\"");
 				trimstr1(ss);
@@ -350,7 +350,7 @@ void parse_net_ini()
 				trimstr1(ss);
 				if (ss && *ss) 
 				{
-					strlwr(maillist[nlists].ownername);
+					_strlwr(maillist[nlists].ownername);
 					strcpy(maillist[nlists++].subtype, ss);
 				} 
 				else
@@ -361,7 +361,7 @@ void parse_net_ini()
 			} 
 			else 
 			{
-				if (strnicmp(line, "DIGEST", 6) == 0) 
+				if (_strnicmp(line, "DIGEST", 6) == 0) 
 				{
 					ss = strtok(line, "=");
 					if (ss && *ss) 
@@ -377,7 +377,7 @@ void parse_net_ini()
 			}
 			continue;
 		}
-		if (strnicmp(line, "POSTMASTER", 10) == 0) 
+		if (_strnicmp(line, "POSTMASTER", 10) == 0) 
 		{
 			ss = strtok(line, "=");
 			if (ss) 
@@ -390,7 +390,7 @@ void parse_net_ini()
 			}
 			continue;
 		}
-		if (strnicmp(line, "SPAMCONTROL", 11) == 0) 
+		if (_strnicmp(line, "SPAMCONTROL", 11) == 0) 
 		{
 			ss = strtok(line, "=");
 			if (ss) 
@@ -403,7 +403,7 @@ void parse_net_ini()
 			}
 			continue;
 		}
-		if (strnicmp(line, "USERMAIL", 8) == 0) 
+		if (_strnicmp(line, "USERMAIL", 8) == 0) 
 		{
 			ss = strtok(line, "=");
 			if (ss) 
@@ -416,7 +416,7 @@ void parse_net_ini()
 			}
 			continue;
 		}
-		if (strnicmp(line, "USERNUM", 7) == 0) 
+		if (_strnicmp(line, "USERNUM", 7) == 0) 
 		{
 			ss = strtok(line, "=");
 			if (ss) 
@@ -429,7 +429,7 @@ void parse_net_ini()
 			}
 			continue;
 		}
-		if (strnicmp(line, "SPAMADDRESS", 9) == 0) 
+		if (_strnicmp(line, "SPAMADDRESS", 9) == 0) 
 		{
 			ss = strtok(line, "=");
 			if (ss) 
@@ -437,14 +437,14 @@ void parse_net_ini()
 				ss = strtok(NULL, "\n");
 				trimstr1(ss);
 				strcpy(spamname, ss);
-				if (stricmp(spamname, "DEFAULT") == 0)
+				if (_stricmp(spamname, "DEFAULT") == 0)
 				{
 					strcpy(spamname, "WWIV_BBS@nospam.net");
 				}
 			}
 			continue;
 		}
-		if (strnicmp(line, "POPDOMAIN", 9) == 0) 
+		if (_strnicmp(line, "POPDOMAIN", 9) == 0) 
 		{
 			ss = strtok(line, "=");
 			if (ss) 
@@ -455,7 +455,7 @@ void parse_net_ini()
 			}
 			continue;
 		}
-		if (strnicmp(line, "REPLYTO", 7) == 0) 
+		if (_strnicmp(line, "REPLYTO", 7) == 0) 
 		{
 			ss = strtok(origline, "=");
 			if (ss) 
@@ -466,7 +466,7 @@ void parse_net_ini()
 			}
 			continue;
 		}
-		if (strnicmp(line, "SIGNATURE", 9) == 0) 
+		if (_strnicmp(line, "SIGNATURE", 9) == 0) 
 		{
 			ss = strtok(line, "=");
 			if (ss) 
@@ -483,7 +483,7 @@ void parse_net_ini()
 			}
 			continue;
 		}
-		if (strnicmp(line, "REALNAME", 8) == 0) 
+		if (_strnicmp(line, "REALNAME", 8) == 0) 
 		{
 			ss = strtok(line, "=");
 			if (ss) 
@@ -544,17 +544,17 @@ unsigned int name_to_num(char *name)
 	{
 		log_it(1, "\n \xFE Searching for user \"%s\"...", name);
 	}
-	num_users = ((int) (filelength(userfile) / sizeof(userrec)));
+	num_users = ((int) (_filelength(userfile) / sizeof(userrec)));
 	
 	int usernum = 1;
 	for (usernum = 1; usernum < num_users; usernum++) 
 	{
 		long lUserRecFilePos = ((long) sizeof(userrec) * ((long) usernum));
-		lseek(userfile, lUserRecFilePos, SEEK_SET);
+		_lseek(userfile, lUserRecFilePos, SEEK_SET);
 		sh_read(userfile, &ur, sizeof(userrec));
 		strcpy(ur_realname, valid_name( ( char * ) ur.realname));
 		strcpy(ur_name, valid_name( ( char * ) ur.name));
-		if ((strcmpi(ur_realname, name) == 0) || (strcmpi(ur_name, name) == 0)) 
+		if ((_strcmpi(ur_realname, name) == 0) || (_strcmpi(ur_name, name) == 0)) 
 		{
 			if (ur.inact == inact_deleted) 
 			{
@@ -726,7 +726,7 @@ void ssm(char *s)
 	{
 		return;
 	}
-	int i1 = (int) (filelength(hSMWfile) / sizeof(shortmsgrec)) - 1;
+	int i1 = (int) (_filelength(hSMWfile) / sizeof(shortmsgrec)) - 1;
 	if (i1 >= 0) 
 	{
 		sh_lseek(hSMWfile, ((long) (i1)) * sizeof(shortmsgrec), SEEK_SET);
@@ -778,7 +778,7 @@ int import(char *fn)
     {
         return 1;
     }
-    textlen = filelength(f);
+    textlen = _filelength(f);
     if (textlen > 32767L) 
     {
         sh_close(f);
@@ -854,7 +854,7 @@ int import(char *fn)
                 free(p);
                 return 1;
             }
-            if (strnicmp(s, "x-wwiv-user", 11) == 0) 
+            if (_strnicmp(s, "x-wwiv-user", 11) == 0) 
             {
                 ss1 = strtok(s, "#");
                 if (ss1) 
@@ -863,7 +863,7 @@ int import(char *fn)
                     mailuser = atoi(ss1);
                 }
             } 
-            else if (strnicmp(s, "x-wwiv-list", 11) == 0) 
+            else if (_strnicmp(s, "x-wwiv-list", 11) == 0) 
             {
                 ss1 = strtok(s, "*");
                 if (ss1) 
@@ -877,35 +877,35 @@ int import(char *fn)
                     tolist = 1;
                 }
             } 
-            else if (strnicmp(s, "from:", 5) == 0)
+            else if (_strnicmp(s, "from:", 5) == 0)
             {
                 from = FROM_FROM;
             }
-            else if (strnicmp(s, "return-path:", 12) == 0)
+            else if (_strnicmp(s, "return-path:", 12) == 0)
             {
                 from = FROM_RETURN;
             }
-            else if (strnicmp(s, "sender:", 7) == 0)
+            else if (_strnicmp(s, "sender:", 7) == 0)
             {
                 from = FROM_RETURN;
             }
-            else if (strnicmp(s, "x-sender:", 9) == 0)
+            else if (_strnicmp(s, "x-sender:", 9) == 0)
             {
                 from = FROM_RETURN;
             }
-            else if (strnicmp(s, "x-to:", 5) == 0)
+            else if (_strnicmp(s, "x-to:", 5) == 0)
             {
                 from = FROM_RETURN;
             }
-            else if (strnicmp(s, "x-mailing-list:", 15) == 0)
+            else if (_strnicmp(s, "x-mailing-list:", 15) == 0)
             {
                 from = FROM_RETURN;
             }
-            else if (strnicmp(s, "reply-to:", 9) == 0)
+            else if (_strnicmp(s, "reply-to:", 9) == 0)
             {
                 from = FROM_REPLY;
             }
-            else if (strnicmp(s, "x-reply-to:", 11) == 0)
+            else if (_strnicmp(s, "x-reply-to:", 11) == 0)
             {
                 from = FROM_REPLY;
             }
@@ -927,7 +927,7 @@ int import(char *fn)
                 if (from && (nh.main_type == main_type_email)) 
                 {
                     strcpy(s1, ss);
-                    strlwr(s1);
+                    _strlwr(s1);
                     for (i = 0; (i < nlists) && (nh.main_type == main_type_email); i++) 
                     {
                         if (stristr(s1, maillist[i].ownername) != NULL) 
@@ -984,7 +984,7 @@ int import(char *fn)
                     }
                 }
             } 
-            else if ( strnicmp(s, "subject:", 8) == 0 && !subj ) 
+            else if ( _strnicmp(s, "subject:", 8) == 0 && !subj ) 
             {
                 ss = strtok(s, ": ");
                 ss = strtok(NULL, "\r\n");
@@ -993,7 +993,7 @@ int import(char *fn)
                 mh.subject[72] = 0;
                 subj = 1;
             } 
-            else if (strnicmp(s, "date:", 5) == 0) 
+            else if (_strnicmp(s, "date:", 5) == 0) 
             {
                 ss = strtok(s, ": ");
                 ss = strtok(NULL, "\r\n");
@@ -1002,7 +1002,7 @@ int import(char *fn)
                 msgdate[58] = '\0';
                 strcat(msgdate, "\r\n");
             } 
-            else if (strnicmp(s, "message-id:", 11) == 0) 
+            else if (_strnicmp(s, "message-id:", 11) == 0) 
             {
                 sprintf(s1, "%s@wwivbbs.org", POPNAME);
                 if (stristr(s, s1) != NULL)
@@ -1010,7 +1010,7 @@ int import(char *fn)
                     bounce = 1;
                 }
             } 
-            else if (strnicmp(s, "apparently-to:", 14) == 0) 
+            else if (_strnicmp(s, "apparently-to:", 14) == 0) 
             {
                 ss = strtok(s, ": ");
                 ss = strtok(NULL, "\r\n");
@@ -1044,7 +1044,7 @@ int import(char *fn)
                     nh.touser = ( unsigned short ) curuser;
                 }
             } 
-            else if ( strnicmp(s, "to:", 3) == 0 || strnicmp(s, "cc:", 3) == 0 )
+            else if ( _strnicmp(s, "to:", 3) == 0 || _strnicmp(s, "cc:", 3) == 0 )
             {
                 in_to = 1;
             }
@@ -1148,7 +1148,7 @@ int import(char *fn)
         done = 0;
         for (i = 0; i < nlists; i++)
         {
-            if (strcmpi(alphasubtype, maillist[i].subtype) == 0)
+            if (_strcmpi(alphasubtype, maillist[i].subtype) == 0)
             {
                 done = 1;
             }
@@ -1189,7 +1189,7 @@ int import(char *fn)
     } 
     else
     {
-        log_it(1, " \xFE Sent to : %s #%hd", strupr(mh.toUserName), nh.touser);
+        log_it(1, " \xFE Sent to : %s #%hd", _strupr(mh.toUserName), nh.touser);
     }
     log_it(1, "\n \xFE Subject : %s", mh.subject);
     CreatePacketName(pktname);
@@ -1270,16 +1270,16 @@ void move_dead(net_header_rec * nh, char *text)
 	int hDeadNetFile = sh_open(szDeadNetFileName, O_RDWR | O_BINARY | SH_DENYRW | O_CREAT, S_IREAD | S_IWRITE);
 	if (hDeadNetFile > 0) 
 	{
-		lseek(hDeadNetFile, 0L, SEEK_END);
+		_lseek(hDeadNetFile, 0L, SEEK_END);
 		long l, l1;
-		l = l1 = tell(hDeadNetFile);
-		write(hDeadNetFile, (void *) nh, sizeof(net_header_rec));
+		l = l1 = _tell(hDeadNetFile);
+		_write(hDeadNetFile, (void *) nh, sizeof(net_header_rec));
 		l1 += sizeof(net_header_rec);
-		write(hDeadNetFile, (void *) text, (int) (nh->length));
+		_write(hDeadNetFile, (void *) text, (int) (nh->length));
 		l1 += nh->length;
-		if (l1 != tell(hDeadNetFile))
+		if (l1 != _tell(hDeadNetFile))
 		{
-			chsize(hDeadNetFile, l);
+			_chsize(hDeadNetFile, l);
 		}
 		hDeadNetFile = sh_close(hDeadNetFile);
 	} 
@@ -1320,7 +1320,7 @@ void get_subtype(int sub, char *where)
 			{
 				fclose(fp);
 			}
-			if ((stricmp(net_name, "FILENET") == 0)) 
+			if ((_stricmp(net_name, "FILENET") == 0)) 
 			{
 				trimstr1(ss);
 				strcpy(where, ss);
@@ -1349,7 +1349,7 @@ unsigned find_anony(char *stype)
 	sprintf(fn, "%sSUBS.DAT", syscfg.datadir);
 	if ((fp = fsh_open(fn, "rb")) == NULL) 
 	{
-		log_it(1, "\n \xFE Unable to read %s.", fn);
+		log_it(1, "\n \xFE Unable to _read %s.", fn);
 		return 0;
 	} 
 	else 
@@ -1364,7 +1364,7 @@ unsigned find_anony(char *stype)
 			fseek(fp, (long) i * sizeof(subboardrec), SEEK_SET);
 			fread(&sub, sizeof(subboardrec), 1, fp);
 			get_subtype(i, subtype);
-			if (stricmp(subtype, stype) == 0) 
+			if (_stricmp(subtype, stype) == 0) 
 			{
 				int anony = sub.anony & 0x0f;
 				output("\b\b\b\b%s - ", sub.name);
@@ -1395,7 +1395,7 @@ unsigned find_anony(char *stype)
 	return result;
 }
 
-int export(char *fn)
+int ExportMessages(char *fn)
 {
 	char fn1[121], tagfn[121], groupname[81], outfn[121], savefn[121], _temp_buffer[256], acct_addr[80], list_addr[80];
 	char *ss = NULL, *buffer = NULL, *text = NULL, mytype[12], alphatype[21], hold[21], tempoutfn[21], savename[81], savesubj[81];
@@ -1437,7 +1437,7 @@ int export(char *fn)
 		"new post",
 		"new external"
 	};
-	SEH_PUSH("export()");
+	SEH_PUSH("Export()");
 	
 	if ((infile = sh_open1(fn, O_RDONLY | O_BINARY)) == -1)
 	{
@@ -1573,12 +1573,12 @@ int export(char *fn)
 			inloc++;
 			
 			/* Look here */
-			if (strnicmp(&buffer[inloc], "RE: ", 4) == 0) 
+			if (_strnicmp(&buffer[inloc], "RE: ", 4) == 0) 
 			{
 				for (term = inloc; buffer[term] != '\r'; term++);
 				buffer[term] = '\0';
 				strncpy(mh.subject, &buffer[inloc + 4], sizeof(mh.subject));
-				if (strnicmp(mh.subject, "RE: ", 4) != 0) 
+				if (_strnicmp(mh.subject, "RE: ", 4) != 0) 
 				{
 					strcpy(_temp_buffer, "Re: ");
 					strcat(_temp_buffer, mh.subject);
@@ -1711,7 +1711,7 @@ int export(char *fn)
 				{
 					if (nhr.main_type == main_type_new_post) 
 					{
-						if (strcmpi(alphasubtype, maillist[i].subtype) == 0) 
+						if (_strcmpi(alphasubtype, maillist[i].subtype) == 0) 
 						{
 							nhr.main_type = main_type_email_name;
 							forlist = 1;
@@ -1833,7 +1833,7 @@ int export(char *fn)
 								if (nhr.main_type == main_type_new_post) 
 								{
 									strcpy(alphatype, ss);
-									if (strnicmp(alphasubtype, alphatype, strlen(alphasubtype)) == 0)
+									if (_strnicmp(alphasubtype, alphatype, strlen(alphasubtype)) == 0)
 									{
 										ok = 1;
 									}
@@ -1877,7 +1877,7 @@ int export(char *fn)
 									if (nhr.main_type == main_type_new_post) 
 									{
 										strcpy(alphatype, ss);
-										if (strnicmp(alphasubtype, alphatype, strlen(alphasubtype)) == 0)
+										if (_strnicmp(alphasubtype, alphatype, strlen(alphasubtype)) == 0)
 										{
 											ok = 1;
 										}
@@ -1903,8 +1903,8 @@ int export(char *fn)
 							fprintf(stderr, "\n ! %s not found.", fn1);
 						}
 					}
-					if ((strnicmp(groupname, "rime.", 5) == 0) ||
-						(strnicmp(groupname, "prime.", 6) == 0)) 
+					if ((_strnicmp(groupname, "rime.", 5) == 0) ||
+						(_strnicmp(groupname, "prime.", 6) == 0)) 
 					{
 						rime = 1;
 						sprintf(tagfn, "%sRIME.TAG", syscfg.gfilesdir);
@@ -1977,7 +1977,7 @@ int export(char *fn)
 				{
 					sprintf(fn1, "%sM%s.NET", net_data, alphasubtype);
 					f = sh_open1(fn1, O_RDONLY | O_BINARY);
-					if (filelength(f) <= 0) 
+					if (_filelength(f) <= 0) 
 					{
 						log_it(1, "\n \xFE Mailing list %s has no subscribers.", alphasubtype);
 						f = sh_close(f);
@@ -2016,7 +2016,7 @@ int export(char *fn)
 			if ((nhr.fromsys == 32767) || (rime)) 
 			{
 				//        fprintf(stderr, "\nDBG: RelayNet(tm) message...");
-				sprintf(_temp_buffer, "From: %s\n", strupr(mh.fromUserName));
+				sprintf(_temp_buffer, "From: %s\n", _strupr(mh.fromUserName));
 				rime = 0;
 			} 
 			else if (nhr.fromsys != g_nNetworkSystemNumber) 
@@ -2381,7 +2381,7 @@ int export(char *fn)
 		}
 	}
 	sh_close(infile);
-	unlink(fn);
+	_unlink(fn);
 	if (text)
 	{
 		free(text);
@@ -2578,7 +2578,7 @@ int subscribe(char *fn)
 		{
 			strcpy(s, s1);
 		}
-		if (strnicmp(s, "from:", 5) == 0) 
+		if (_strnicmp(s, "from:", 5) == 0) 
 		{
 			ss = strtok(s, ":");
 			if (ss) 
@@ -2597,7 +2597,7 @@ int subscribe(char *fn)
 				}
 			}
 		}
-		if (strnicmp(s, "subject:", 8) == 0) 
+		if (_strnicmp(s, "subject:", 8) == 0) 
 		{
 			done = 1;
 			ss = strtok(s, ":");
@@ -2606,7 +2606,7 @@ int subscribe(char *fn)
 				ss = strtok(NULL, "\r\n");
 				trimstr1(ss);
 				strcpy(s1, ss);
-				if (strnicmp(s1, "subscribe", 9) == 0) 
+				if (_strnicmp(s1, "subscribe", 9) == 0) 
 				{
 					ss = strtok(s1, " ");
 					if (ss) 
@@ -2616,7 +2616,7 @@ int subscribe(char *fn)
 						strcpy(subtype, ss);
 					}
 				}
-				if (strnicmp(s1, "unsubscribe", 11) == 0) 
+				if (_strnicmp(s1, "unsubscribe", 11) == 0) 
 				{
 					unsubscribe = 1;
 					ss = strtok(s1, " ");
@@ -2649,7 +2649,7 @@ int subscribe(char *fn)
 		ssm(s);
 		return 1;
 	}
-	if (strnicmp(subtype, "LISTS", 5) == 0) 
+	if (_strnicmp(subtype, "LISTS", 5) == 0) 
 	{
 		send_note(6, mailname, subtype);
 		return 0;
@@ -2678,7 +2678,7 @@ int subscribe(char *fn)
 	}
 	sprintf(s1, "%sM%s.TMP", net_data, subtype);
 	if (exist(s1))
-		unlink(s1);
+		_unlink(s1);
 	
 	if ((newfp = fsh_open(s1, "wt+")) == NULL) 
 	{
@@ -2749,18 +2749,18 @@ int subscribe(char *fn)
 	sprintf(s1, "%sM%s.NET", net_data, subtype);
 	if (exist(s1))
 	{
-		unlink(s1);
+		_unlink(s1);
 	}
 	copyfile(s, s1);
 	if (exist(s))
 	{
-		unlink(s);
+		_unlink(s);
 	}
 	return 0;
 }
 
 
-int Main( int argc, char *argv[] )
+int ExportMain( int argc, char *argv[] )
 {
 	char fn[_MAX_PATH], s[201], ext[5], *ss;
 	SEH_PUSH("main()");
@@ -2817,12 +2817,12 @@ int Main( int argc, char *argv[] )
 	today = localtime( &cur_daten );
 	jdater = jdate( today->tm_year, today->tm_mday, today->tm_wday );
 	
-	strupr(postmaster);
+	_strupr(postmaster);
 	DEBUG_PUTS( "main(7) " );
-	export(fn);
+	ExportMessages(fn);
 	DEBUG_PUTS( "main(8) " );
 	
-	sprintf(fn, "%sSPOOL\\UNK*.*", net_data);
+	_snprintf(fn, _MAX_PATH, "%sSPOOL\\UNK*.*", net_data);
 	struct _finddata_t ff;
 	long hFind = _findfirst( fn, &ff );
 	int nFindNext = ( hFind != -1 ) ? 0 : -1;
@@ -2834,7 +2834,7 @@ int Main( int argc, char *argv[] )
 		log_it(1, szRob );
 		if ((!import(fn)) || (ff.size == 0L))
 		{
-			unlink(fn);
+			_unlink(fn);
 		}
 		nFindNext = _findnext( hFind, &ff );
 	}
@@ -2849,7 +2849,7 @@ int Main( int argc, char *argv[] )
 	{
 		sprintf(fn, "%sINBOUND\\%s", net_data, ff.name);
 		_splitpath(fn, NULL, NULL, NULL, ext);
-		if (strnicmp(ext, ".BAD", 4) == 0) 
+		if (_strnicmp(ext, ".BAD", 4) == 0) 
 		{
 			sprintf(s, "\n! * Unvalidated subscribe request %s.", fn);
 			log_it(1, s);
@@ -2861,7 +2861,7 @@ int Main( int argc, char *argv[] )
 			log_it( 1, s );
 			if ( !subscribe( fn ) || ff.size == 0 )
 			{
-				unlink(fn);
+				_unlink(fn);
 			}
 			else 
 			{
@@ -2892,7 +2892,7 @@ int main(int argc, char* argv[])
 	__try
 	{
 		SEH_Init();
-		return Main( argc, argv );
+		return ExportMain( argc, argv );
 	}
 	__except( GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION )
 	{

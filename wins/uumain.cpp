@@ -77,15 +77,15 @@ long huge_xfer(int fd, void * buf, unsigned sz, unsigned nel, int wr)
 }
 
 
-void *mallocx(unsigned long l)
+void *mallocx(unsigned long lNumberOfBytes)
 {
-	void * x = malloc( ( l > 0 ) ? l : 1 );
+	void * x = malloc( ( lNumberOfBytes > 0 ) ? lNumberOfBytes : 1 );
 	if (!x) 
 	{
-		log_it(1, "\n ! Insufficient memory (%ld bytes) to read all directories.", l);
+		log_it(1, "\n ! Insufficient memory (%ld bytes) to read all directories.", lNumberOfBytes);
 		return NULL;
 	}
-	memset( ( void *)  x, 0, ( size_t ) l );
+	memset( ( void *)  x, 0, ( size_t ) lNumberOfBytes );
 	return x;
 }
 
@@ -95,14 +95,14 @@ int scanfor(char *token, FILE * in)
 	char buf[MAX_BUF];
 
 	long pos = ftell(in);
-	while (fgets(buf, MAX_BUF, in) && strnicmp(buf, token, strlen(token))) 
+	while (fgets(buf, MAX_BUF, in) && _strnicmp(buf, token, strlen(token))) 
 	{
 		pos = ftell(in);
 	}
 	rewind(in);
 	fseek(in, pos, 0);
 	pos = ftell(in);
-	return (!strnicmp(buf, "begin 6", 7));
+	return (!_strnicmp(buf, "begin 6", 7));
 }
 
 
@@ -114,7 +114,7 @@ void scanfdl(FILE * in)
 	while ((fgets(buf, MAX_BUF, in)) && !done) 
 	{
 		ss = NULL;
-		if (strnicmp(buf, "subject:", 8) == 0) 
+		if (_strnicmp(buf, "subject:", 8) == 0) 
 		{
 			if (strstr(buf, "FILE TRANSFER")) 
 			{
@@ -136,7 +136,7 @@ void scanfdl(FILE * in)
 				}
 			}
 		} 
-		else if (strnicmp(buf, "Description:", 12) == 0) 
+		else if (_strnicmp(buf, "Description:", 12) == 0) 
 		{
 			ss = strtok(buf, " ");
 			if (ss) 
@@ -145,7 +145,7 @@ void scanfdl(FILE * in)
 				strcpy(fdldesc, ss);
 			}
 		} 
-		else if (strnicmp(buf, "FDL Type:", 9) == 0) 
+		else if (_strnicmp(buf, "FDL Type:", 9) == 0) 
 		{
 			ss = strtok(buf, ":");
 			if (ss) 
@@ -155,7 +155,7 @@ void scanfdl(FILE * in)
 				fdltype = ( unsigned short ) atoi(ss);
 			}
 		} 
-		else if (strnicmp(buf, "Originating System:", 19) == 0) 
+		else if (_strnicmp(buf, "Originating System:", 19) == 0) 
 		{
 			ss = strtok(buf, ":");
 			if (ss) 
@@ -165,7 +165,7 @@ void scanfdl(FILE * in)
 				strcpy(fdlupby, ss);
 			}
 		} 
-		else if (strnicmp(buf, "begin 600", 9) == 0)
+		else if (_strnicmp(buf, "begin 600", 9) == 0)
 		{
 			done = 1;
 		}
@@ -233,7 +233,7 @@ void ssm(char *s)
 	{
 		return;
 	}
-	int i = (int) (filelength(f) / sizeof(shortmsgrec));
+	int i = (int) (_filelength(f) / sizeof(shortmsgrec));
 	int i1 = i - 1;
 	if (i1 >= 0) 
 	{
@@ -354,7 +354,7 @@ void align(char *s)
 	s1[8] = '.';
 	strcpy(&(s1[9]), e);
 	strcpy(s, s1);
-	strupr(s);
+	_strupr(s);
 }
 
 
@@ -494,7 +494,7 @@ void get_arc_cmd(char *out, char *arcfn, int cmd, char *ofn)
 	++ss;
 	for (i = 0; i < 4; i++)
 	{
-		if (stricmp(ss, syscfg.arcs[i].extension) == 0) 
+		if (_stricmp(ss, syscfg.arcs[i].extension) == 0) 
 		{
 			switch (cmd) 
 			{
@@ -550,7 +550,7 @@ int get_file_idz(uploadsrec * u, directoryrec * d)
 	{
 		if (!ok)
 		{
-			ok = (stricmp(ss, syscfg.arcs[i].extension) == 0);
+			ok = (_stricmp(ss, syscfg.arcs[i].extension) == 0);
 		}
 	}
 	if (!ok)
@@ -558,9 +558,9 @@ int get_file_idz(uploadsrec * u, directoryrec * d)
 		return 1;
 	}
 	sprintf(s4, "%sFILE_ID.DIZ", temp_dir);
-	unlink(s4);
+	_unlink(s4);
 	sprintf(s4, "%sDESC.SDI", temp_dir);
-	unlink(s4);
+	_unlink(s4);
 	strcpy(s3, d->path);
 	cd_to(s3);
 	get_dir(s4, true);
@@ -584,10 +584,10 @@ int get_file_idz(uploadsrec * u, directoryrec * d)
 			return 1;
 		}
 		f = sh_open1(s4, O_RDONLY | O_BINARY);
-		if (filelength(f) < (MAX_DIZ_LINES * 256)) 
+		if (_filelength(f) < (MAX_DIZ_LINES * 256)) 
 		{
-			sh_read(f, b, (int) filelength(f));
-			b[(int)filelength(f)] = 0;
+			sh_read(f, b, (int) _filelength(f));
+			b[(int)_filelength(f)] = 0;
 		} 
 		else 
 		{
@@ -619,9 +619,9 @@ int get_file_idz(uploadsrec * u, directoryrec * d)
 			free(b);
 		}
 		sprintf(s4, "%sFILE_ID.DIZ", temp_dir);
-		unlink(s4);
+		_unlink(s4);
 		sprintf(s4, "%sDESC.SDI", temp_dir);
-		unlink(s4);
+		_unlink(s4);
 	}
 	return 0;
 }
@@ -653,20 +653,20 @@ int compare(char *s1, char *s2)
 
 void dliscan(int dn)
 {
-	long l;
+	time_t tNow;
 	uploadsrec u;
 	directoryrec d = dirs[dn];
 	sprintf(dlfn, "%s%s.DIR", syscfg.datadir, d.filename);
 	sprintf(edlfn, "%s%s.EXT", syscfg.datadir, d.filename);
 	int f = sh_open(dlfn, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-	int i = (int)(filelength(f) / sizeof(uploadsrec));
+	int i = (int)(_filelength(f) / sizeof(uploadsrec));
 	if (i == 0) 
 	{
 		log_it(1, "\n \xFE Creating new directory %s.", dlfn);
 		memset(&u, 0, sizeof(uploadsrec));
 		strcpy(u.filename, "|MARKER|");
-		time(&l);
-		u.daten = l;
+		time(&tNow);
+		u.daten = static_cast<unsigned long>(tNow);
 		SETREC(f, 0);
 		sh_write(f, (void *) &u, sizeof(uploadsrec));
 	} 
@@ -679,8 +679,8 @@ void dliscan(int dn)
 			numf = (int)u.numbytes;
 			memset(&u, 0, sizeof(uploadsrec));
 			strcpy(u.filename, "|MARKER|");
-			time(&l);
-			u.daten = l;
+			time(&tNow);
+			u.daten = static_cast<unsigned long>(tNow);
 			u.numbytes = numf;
 			SETREC(f, 0);
 			sh_write(f, &u, sizeof(uploadsrec));
@@ -723,7 +723,6 @@ void upload_file(int dn, char *pszFileName, char *desc, char *upby)
 {
 	char s1[_MAX_PATH], ff[_MAX_PATH], temppath[_MAX_PATH];
 	int f;
-	long l;
 	uploadsrec u, u1;
 
 	directoryrec d = dirs[dn];
@@ -739,14 +738,15 @@ void upload_file(int dn, char *pszFileName, char *desc, char *upby)
 	make_abs_path(temppath, maindir);
 	sprintf(ff, "%s%s", temppath, pszFileName);
 	f = sh_open1(ff, O_RDONLY | O_BINARY);
-	l = filelength(f);
-	u.numbytes = l;
+	long lFileSize = _filelength(f);
+	u.numbytes = lFileSize;
 	sh_close(f);
 	strcpy(u.upby, upby);
 	strcpy(u.date, fdldate());
 	strcpy(u.description, desc);
-	time(&l);
-	u.daten = l;
+	time_t tNow;
+	time(&tNow);
+	u.daten = static_cast<unsigned long>(tNow);
 	get_file_idz(&u, &d);
 	f = sh_open(dlfn, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 	SETREC(f, 0);
@@ -758,7 +758,7 @@ void upload_file(int dn, char *pszFileName, char *desc, char *upby)
 	SETREC(f, 0);
 	sh_read(f, &u1, sizeof(uploadsrec));
 	u1.numbytes = numf;
-	u1.daten = l;
+	u1.daten = static_cast<unsigned long>(tNow);
 	SETREC(f, 0);
 	sh_write(f, (void *) &u1, sizeof(uploadsrec));
 	f = sh_close(f);
@@ -810,7 +810,7 @@ void move_bad(char *src)
 
 	if (copyfile(src, dest))
 	{
-		unlink(src);
+		_unlink(src);
 	}
 }
 
@@ -840,7 +840,7 @@ int match_net(char *pszFileName)
 	if ((fp = fsh_open(pszFileName, "rt")) != NULL) {
 		while (!feof(fp) && (!found)) {
 			fgets(line, 160, fp);
-			if (strnicmp(line, "NET: ", 5) == 0) {
+			if (_strnicmp(line, "NET: ", 5) == 0) {
 				strcpy(net_pkt, &line[5]);
 				trimstr1(net_pkt);
 				found = 1;
@@ -860,7 +860,7 @@ int read_networks(void)
 	f = sh_open1(s, O_RDONLY | O_BINARY);
 	max = 0;
 	if (f > 0)
-		max = (int) (filelength(f) / sizeof(net_networks_rec));
+		max = (int) (_filelength(f) / sizeof(net_networks_rec));
 	sh_close(f);
 	return max;
 }
@@ -874,9 +874,9 @@ void set_net_num(int n)
 	f = sh_open1(s, O_RDONLY | O_BINARY);
 	if (f < 0)
 		return;
-	lseek(f, ((long) (n)) * sizeof(net_networks_rec), SEEK_SET);
+	_lseek(f, ((long) (n)) * sizeof(net_networks_rec), SEEK_SET);
 	sh_read(f, &netcfg, sizeof(net_networks_rec));
-	close(f);
+	_close(f);
 	net_num = n;
 	//  net_sysnum = netcfg.sysnum;
 	strcpy(net_name, netcfg.name);
@@ -891,7 +891,7 @@ int main(int argc, char *argv[])
 	char outname[181], buf[_MAX_PATH], dirfn[21], dirpath[_MAX_PATH], junk[80];
 	char *ss, argfile[21], s1[181], s2[181], s3[21], s4[21], s5[21], szFileName[_MAX_PATH];
 	int i, f, ok = 0, found = 0, ok1, dn, result, num_dirs, net_num_max;
-	long l = 0;
+	long lFileSize = 0;
 	unsigned short dirtype;
 	FILE *in = NULL, *out = NULL, *fp = NULL;
 
@@ -899,7 +899,7 @@ int main(int argc, char *argv[])
 
 	if (argc == 4 || argc == 5) 
 	{
-		if (strcmpi(argv[1], "-encode") == 0 && argc == 4) 
+		if (_strcmpi(argv[1], "-encode") == 0 && argc == 4) 
 		{
 			if (((in = fsh_open(argv[2], "r")) != NULL) && ((out = fsh_open(argv[3], "at+")) != NULL)) {
 				output(" %ld bytes.", uuencode(in, out, argv[2]));
@@ -911,7 +911,7 @@ int main(int argc, char *argv[])
 			} else
 				ok1 = EXIT_FAILURE;
 		} 
-		else if (strcmpi(argv[1], "-decode") == 0 && argc == 5) 
+		else if (_strcmpi(argv[1], "-decode") == 0 && argc == 5) 
 		{
 			strcpy(argfile, argv[2]);
 			strcpy(temp_dir, argv[3]);
@@ -947,7 +947,7 @@ int main(int argc, char *argv[])
 					log_it(1, "\n \xFE %s", s1);
 					ssm(s1);
 					sprintf(s1, "%s%s", netdata, outname);
-					unlink(s1);
+					_unlink(s1);
 					ok1 = EXIT_FAILURE;
 					break;
 				case UU_BAD_BEGIN:
@@ -956,10 +956,10 @@ int main(int argc, char *argv[])
 					if (!copyfile(s1, s2))
 						move_bad(s2);
 					else
-						unlink(s1);
+						_unlink(s1);
 					cd_to(maindir);
 					sprintf(s1, "%s%s", netdata, outname);
-					unlink(s1);
+					_unlink(s1);
 					ok1 = EXIT_FAILURE;
 					break;
 				case UU_CANT_OPEN:
@@ -975,7 +975,7 @@ int main(int argc, char *argv[])
 					log_it(1, "\n \xFE %s", s1);
 					ssm(s1);
 					sprintf(s1, "%s%s", netdata, outname);
-					unlink(s1);
+					_unlink(s1);
 					ok1 = EXIT_FAILURE;
 					break;
 				case UU_BAD_END:
@@ -986,13 +986,13 @@ int main(int argc, char *argv[])
 					log_it(1, "\n \xFE %s", s1);
 					ssm(s1);
 					sprintf(s1, "%s%s", netdata, outname);
-					unlink(s1);
+					_unlink(s1);
 					ok1 = EXIT_FAILURE;
 					break;
 				case UU_SUCCESS:
 					sprintf(s1, "%s%s", temp_dir, argfile);
 					found = (match_net(s1));
-					unlink(s1);
+					_unlink(s1);
 					stripfn(outname);
 #ifdef MEGA_DEBUG_LOG_INFO
 					output( "\nDEBUG: outname = %s\n", outname );
@@ -1005,7 +1005,7 @@ int main(int argc, char *argv[])
 					output( "\nDEBUG: argfile = %s\n", argfile );
 					output( "\nDEBUG: net_name = %s\n", net_name );
 #endif // #ifdef MEGA_DEBUG_LOG_INFO
-					if ((strcmpi(s3, ".NET") == NULL) && (strnicmp(argfile, "PKT", 3) == NULL)) 
+					if ((_strcmpi(s3, ".NET") == NULL) && (_strnicmp(argfile, "PKT", 3) == NULL)) 
 					{
 						if (found) {
 							found = 0;
@@ -1013,7 +1013,7 @@ int main(int argc, char *argv[])
 							for (i = 0; ((i < net_num_max) && (!found)); i++) 
 							{
 								set_net_num(i);
-								if (strnicmp(net_name, net_pkt, strlen(net_name)) == 0) 
+								if (_strnicmp(net_name, net_pkt, strlen(net_name)) == 0) 
 								{
 									strcpy(netname, net_name);
 									strcpy(netdata, net_data);
@@ -1037,7 +1037,7 @@ int main(int argc, char *argv[])
 							ok1 = EXIT_FAILURE;
 							break;
 						} else
-							unlink(s1);
+							_unlink(s1);
 					} 
 					else 
 					{
@@ -1051,20 +1051,30 @@ int main(int argc, char *argv[])
 						dirs = (directoryrec *) mallocx(((long) syscfg.max_dirs) *
 							((long) sizeof(directoryrec)));
 						if (dirs == NULL)
+						{
 							log_it(0, "\n - Insufficient memory to read directories!");
-						else {
+						}
+						else 
+						{
 							sprintf(szFileName, "%sDIRS.DAT", syscfg.datadir);
 							f = sh_open1(szFileName, O_RDONLY | O_BINARY);
 							if (f < 0)
+							{
 								log_it(1, "\n ! Unable to read %s", szFileName);
-							else {
+							}
+							else 
+							{
 								num_dirs = (int) huge_xfer(f, dirs, sizeof(directoryrec),
 									syscfg.max_dirs, 0) / sizeof(directoryrec);
 								log_it(0, "\n - Total dirs %d", num_dirs);
-								if (num_dirs)
-									l = filelength(f) / num_dirs;
-								if (l != sizeof(directoryrec))
+								if (num_dirs) 
+								{
+									lFileSize = _filelength(f) / num_dirs;
+								}
+								if (lFileSize != sizeof(directoryrec))
+								{
 									num_dirs = 0;
+								}
 							}
 							f =sh_close(f);
 						}
@@ -1092,13 +1102,13 @@ int main(int argc, char *argv[])
 										while ((fgets(buf, 80, fp)) && !ok) {
 											if (buf[0] == ':')
 												continue;
-											if (strnicmp(buf, "FDL", 3) == 0) {
+											if (_strnicmp(buf, "FDL", 3) == 0) {
 												sscanf(buf, "%s %hu %s %s", junk, &dirtype, dirfn, dirpath);
 												trimstr1(dirfn);
 												if (dirtype == fdltype) {
 													for (i = 0; i < num_dirs; i++) 
 													{
-														if (strnicmp((char *)dirs[i].filename, dirfn, strlen(dirfn)) == 0) {
+														if (_strnicmp((char *)dirs[i].filename, dirfn, strlen(dirfn)) == 0) {
 															dn = i;
 															ok = 1;
 															break;
@@ -1124,7 +1134,7 @@ int main(int argc, char *argv[])
 								} else {
 									ok = 0;
 									while ((fgets(buf, 80, fp)) && !ok) {
-										if (strnicmp(buf, "NOREQUEST_DIR", 13) == 0) {
+										if (_strnicmp(buf, "NOREQUEST_DIR", 13) == 0) {
 											ss = strtok(buf, " ");
 											if (ss) {
 												ss = strtok(NULL, "\r\n");
@@ -1134,7 +1144,7 @@ int main(int argc, char *argv[])
 													ok = 1;
 													for (i = 0; i < num_dirs; i++) 
 													{
-														if (strnicmp(dirs[i].filename, dirfn, strlen(dirfn)) == 0) {
+														if (_strnicmp(dirs[i].filename, dirfn, strlen(dirfn)) == 0) {
 															dn = i;
 															break;
 														}
@@ -1171,7 +1181,7 @@ int main(int argc, char *argv[])
 										log_it(1, "\n \xFE %s already in %s.", szFileName, dirs[dn].name);
 								}
 							}
-							unlink(s1);
+							_unlink(s1);
 						} else {
 							log_it(1, "\n \xFE Moving %s to CHECKNET", s1);
 							move_bad(s1);
@@ -1191,7 +1201,7 @@ int main(int argc, char *argv[])
 					if (!copyfile(s1, s2))
 						log_it(1, "\n \xFE Error during copy...");
 					else
-						unlink(s1);
+						_unlink(s1);
 					cd_to(maindir);
 					sprintf(s1, "Unknown error %s...", s2);
 					ssm(s1);

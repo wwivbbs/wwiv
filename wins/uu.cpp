@@ -69,9 +69,9 @@ long uuencode(FILE *in, FILE *out, char *name)
   int mode;
   char s[12], s1[5];
 
-  setmode(fileno(in), O_BINARY);
-  if (fstat(fileno(in), &sbuf) < 0)
-    mode = 0666 & ~umask(0666);
+  _setmode(_fileno(in), O_BINARY);
+  if (fstat(_fileno(in), &sbuf) < 0)
+    mode = 0666 & ~_umask(0666);
   else
     mode = sbuf.st_mode & 0777;
   _splitpath(name, NULL, NULL, s, s1);
@@ -121,7 +121,7 @@ int uudecode(FILE *in, char *path, char *name)
   }
   while (fgets(buf, MAXLINE, in)) {
     trim(buf);
-    if (strcmpi(buf, "end") == 0) {
+    if (_strcmpi(buf, "end") == 0) {
       done = 1;
       break;
     }
@@ -131,7 +131,7 @@ int uudecode(FILE *in, char *path, char *name)
       UU_FREE_ALL;
       if (out != NULL)
         fclose(out);
-      unlink(fname);
+      _unlink(fname);
       return (UU_CHECKSUM);
     }
     wlen=UUDEC(buf[0]);
@@ -145,6 +145,6 @@ int uudecode(FILE *in, char *path, char *name)
     fclose(out);
   if (done)
     return (UU_SUCCESS);
-  unlink(fname);
+  _unlink(fname);
   return (UU_BAD_END);
 }

@@ -26,9 +26,9 @@ void set_net_num(int nNetNumber)
 	{
 		return;
 	}
-	lseek(f, ((long) nNetNumber) * sizeof(net_networks_rec), SEEK_SET);
+	_lseek(f, ((long) nNetNumber) * sizeof(net_networks_rec), SEEK_SET);
 	sh_read(f, &netcfg, sizeof(net_networks_rec));
-	close(f);
+	_close(f);
 	g_nNetworkSystemNumber = netcfg.sysnum;
 	strcpy(net_name, netcfg.name);
 	strcpy(net_data, make_abs_path(netcfg.dir, maindir));
@@ -276,7 +276,7 @@ int update_contact(int sy, unsigned long sb, unsigned long rb, int set_time)
 	int f = sh_open1(s, O_RDONLY | O_BINARY);
 	if (f >= 0) 
 	{
-		long l = filelength(f);
+		long l = _filelength(f);
 		netcfg.num_ncn = (short) (l / sizeof(net_contact_rec));
 		if ((netcfg.ncn = (net_contact_rec *) malloc((netcfg.num_ncn + 2) *
 			sizeof(net_contact_rec))) == NULL) 
@@ -297,9 +297,9 @@ int update_contact(int sy, unsigned long sb, unsigned long rb, int set_time)
 	}
 	if (set_time) 
 	{
-		long cur_time;
+		time_t cur_time;
 		time(&cur_time);
-		netcfg.ncn[i1].lasttry = cur_time;
+		netcfg.ncn[i1].lasttry = static_cast<unsigned long>(cur_time);
 		++netcfg.ncn[i1].numcontacts;
 		if (!netcfg.ncn[i1].firstcontact)
 		{
@@ -322,8 +322,8 @@ int update_contact(int sy, unsigned long sb, unsigned long rb, int set_time)
 	f = sh_open1(s, O_RDONLY | O_BINARY);
 	if (f > 0) 
 	{
-		netcfg.ncn[i1].bytes_waiting += (long) filelength(f);
-		close(f);
+		netcfg.ncn[i1].bytes_waiting += (long) _filelength(f);
+		_close(f);
 	}
 	sprintf(s, "%sCONTACT.NET", net_data);
 	f = sh_open1(s, O_RDWR | O_CREAT | O_BINARY);
@@ -388,18 +388,17 @@ int uu_packets(void)
 {
 	char pktname[21], s[121], s1[121], s2[121], s3[121], temp[121];
 	int sz, f, f1, i;
-	unsigned long sbytes = 0, basename = 0;
 	net_address_rec curaddr;
 	FILE *fc = NULL;
 	
 	int num_sys_list = 0;
 	bool bFound = false;
-	basename = time(NULL);
+	time_t basename = time(NULL);
 	sprintf(s, "%sBBSDATA.NET", net_data);
 	f = sh_open1(s, O_RDONLY | O_BINARY);
 	if (f > 0) 
 	{
-		num_sys_list = (int) (filelength(f) / sizeof(net_system_list_rec));
+		num_sys_list = (int) (_filelength(f) / sizeof(net_system_list_rec));
 		if ((netsys = (net_system_list_rec *) malloc((num_sys_list + 2) * sizeof(net_system_list_rec))) == NULL) 
 		{
 			log_it(1, "\n \xFE Unable to allocate %d bytes of memory for BBSDATA.NET",
@@ -456,7 +455,7 @@ int uu_packets(void)
 			while (exist(temp));
 			backline();
 			output("\r \xFE Encoding %s%hd.NET as %s.UUE -",
-				sz ? "Z" : "S", curaddr.sysnum, strupr(pktname));
+				sz ? "Z" : "S", curaddr.sysnum, _strupr(pktname));
 			if ((uu(s1, pktname, curaddr.address)) != EXIT_SUCCESS) 
 			{
 				output("\n \xFE %s %sMQUEUE\\%s.UUE", strings[0], net_data, pktname);
@@ -469,11 +468,12 @@ int uu_packets(void)
 			} 
 			else 
 			{
+				unsigned long sbytes = 0;
 				sprintf(s3, "%sMQUEUE\\%s.UUE", net_data, pktname);
 				f1 = sh_open1(s3, O_RDONLY | O_BINARY);
 				if (f1 > 0) 
 				{
-					sbytes = (long) filelength(f1);
+					sbytes = (long) _filelength(f1);
 					f = sh_close(f1);
 				}
 				if (KEEPSENT) 
@@ -484,7 +484,7 @@ int uu_packets(void)
 						output("\n \xFE %s %s%hd.NET", strings[0], sz ? "Z" : "S", curaddr.sysnum);
 					}
 				}
-				unlink(s1);
+				_unlink(s1);
 				update_contact(curaddr.sysnum, sbytes, 0, 0);
 			}
 		}
@@ -524,21 +524,21 @@ int parse_net_ini( int &ini_section )
         {
             continue;
         }
-        if ( strnicmp(line, "[FILENET]", 9) == 0  ||
-            strnicmp(line, "[PPPNET]", 8) == 0   ||
-            strnicmp(line, "[NETWORK]", 8) == 0 )
+        if ( _strnicmp(line, "[FILENET]", 9) == 0  ||
+            _strnicmp(line, "[PPPNET]", 8) == 0   ||
+            _strnicmp(line, "[NETWORK]", 8) == 0 )
         {
             cursect = INI_NETWORK;
             ini_section |= INI_NETWORK;
             continue;
         }
-        if (strnicmp(line, "[GENERAL]", 9) == 0) 
+        if (_strnicmp(line, "[GENERAL]", 9) == 0) 
         {
             cursect = INI_GENERAL;
             ini_section |= INI_GENERAL;
             continue;
         }
-        if (strnicmp(line, "[NEWS]", 6) == 0) 
+        if (_strnicmp(line, "[NEWS]", 6) == 0) 
         {
             cursect = INI_NEWS;
             ini_section |= INI_NEWS;
@@ -546,7 +546,7 @@ int parse_net_ini( int &ini_section )
         }
         if (cursect & INI_NETWORK) 
         {
-            if (strnicmp(line, "TIMEHOST", 8) == 0) 
+            if (_strnicmp(line, "TIMEHOST", 8) == 0) 
             {
                 if (ss)
                 {
@@ -554,7 +554,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "QOTDHOST", 8) == 0) 
+            if (_strnicmp(line, "QOTDHOST", 8) == 0) 
             {
                 if (ss)
                 {
@@ -562,7 +562,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "QOTDFILE", 8) == 0) 
+            if (_strnicmp(line, "QOTDFILE", 8) == 0) 
             {
                 if (ss)
                 {
@@ -570,7 +570,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "PRIMENET", 8) == 0) 
+            if (_strnicmp(line, "PRIMENET", 8) == 0) 
             {
                 if (ss)
                 {
@@ -578,7 +578,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "SMTPHOST", 8) == 0) 
+            if (_strnicmp(line, "SMTPHOST", 8) == 0) 
             {
                 if (ss)
                 {
@@ -586,7 +586,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "POPHOST", 7) == 0) 
+            if (_strnicmp(line, "POPHOST", 7) == 0) 
             {
                 if (ss)
                 {
@@ -594,7 +594,23 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "PROXY", 5) == 0) 
+			if (_strnicmp(line, "POPPORT", 7) == 0) 
+			{
+				if (atoi(ss))
+				{
+					POPPORT = atoi(ss);
+				}
+				continue;
+			}
+			if (_strnicmp(line, "SMTPPORT", 8) == 0) 
+			{
+				if (atoi(ss))
+				{
+					SMTPPORT = atoi(ss);
+				}
+				continue;
+			}
+            if (_strnicmp(line, "PROXY", 5) == 0) 
             {
                 if (ss)
                 {
@@ -602,7 +618,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "POPNAME", 7) == 0) 
+            if (_strnicmp(line, "POPNAME", 7) == 0) 
             {
                 if (ss)
                 {
@@ -610,7 +626,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "POPPASS", 7) == 0) 
+            if (_strnicmp(line, "POPPASS", 7) == 0) 
             {
                 if (ss)
                 {
@@ -619,7 +635,7 @@ int parse_net_ini( int &ini_section )
                 continue;
             }
         }
-        if (strnicmp(line, "NODEPASS", 8) == 0) 
+        if (_strnicmp(line, "NODEPASS", 8) == 0) 
         {
             if (ss) 
             {
@@ -630,7 +646,7 @@ int parse_net_ini( int &ini_section )
         }
         if (cursect & INI_GENERAL) 
         {
-            if (strnicmp(line, "KEEPSENT", 8) == 0) 
+            if (_strnicmp(line, "KEEPSENT", 8) == 0) 
             {
                 if (atoi(ss))
                 {
@@ -638,7 +654,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "PURGE", 5) == 0) 
+            if (_strnicmp(line, "PURGE", 5) == 0) 
             {
                 if (toupper(ss[0]) == 'N')
                 {
@@ -646,7 +662,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "ALLMAIL", 7) == 0) 
+            if (_strnicmp(line, "ALLMAIL", 7) == 0) 
             {
                 if (toupper(ss[0]) == 'N')
                 {
@@ -654,7 +670,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "ONECALL", 7) == 0) 
+            if (_strnicmp(line, "ONECALL", 7) == 0) 
             {
                 if (toupper(ss[0]) == 'Y')
                 {
@@ -662,7 +678,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "RASDIAL", 7) == 0) 
+            if (_strnicmp(line, "RASDIAL", 7) == 0) 
             {
                 if (toupper(ss[0]) == 'Y')
                 {
@@ -670,7 +686,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "MOREINFO", 8) == 0) 
+            if (_strnicmp(line, "MOREINFO", 8) == 0) 
             {
                 if (toupper(ss[0]) == 'Y')
                 {
@@ -678,7 +694,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "NOLISTNAMES", 11) == 0) 
+            if (_strnicmp(line, "NOLISTNAMES", 11) == 0) 
             {
                 if (toupper(ss[0]) == 'Y')
                 {
@@ -686,7 +702,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "CLEANUP", 7) == 0) 
+            if (_strnicmp(line, "CLEANUP", 7) == 0) 
             {
                 if (toupper(ss[0]) == 'Y')
                 {
@@ -694,7 +710,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "DOMAIN", 6) == 0) 
+            if (_strnicmp(line, "DOMAIN", 6) == 0) 
             {
                 if (ss)
                 {
@@ -702,7 +718,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "FWDNAME", 7) == 0) 
+            if (_strnicmp(line, "FWDNAME", 7) == 0) 
             {
                 if (ss)
                 {
@@ -710,7 +726,7 @@ int parse_net_ini( int &ini_section )
                 }
                 continue;
             }
-            if (strnicmp(line, "FWDDOM", 6) == 0) 
+            if (_strnicmp(line, "FWDDOM", 6) == 0) 
             {
                 if (ss)
                 {
@@ -721,7 +737,7 @@ int parse_net_ini( int &ini_section )
         }
         if (cursect & INI_NEWS) 
         {
-            if (strnicmp(line, "NEWSHOST", 8) == 0) 
+            if (_strnicmp(line, "NEWSHOST", 8) == 0) 
             {
                 if (!isdigit(line[8])) 
                 {
@@ -760,7 +776,7 @@ int read_networks(void)
 	
 	sprintf( s, "%sNETWORKS.DAT", syscfg.datadir );
 	int hFile = sh_open1( s, O_RDONLY | O_BINARY );
-	int nMaxNetworkNumber = ( hFile > 0 ) ? ( int ) ( filelength( hFile ) / sizeof( net_networks_rec ) ) : 0;
+	int nMaxNetworkNumber = ( hFile > 0 ) ? ( int ) ( _filelength( hFile ) / sizeof( net_networks_rec ) ) : 0;
 	sh_close(hFile);
 	return nMaxNetworkNumber;
 }
@@ -789,19 +805,19 @@ bool check_encode( char *pszFileName )
 		{
 			strcpy( s1, s );
 		}
-		if ( strnicmp( s1, "begin 6", 7 ) == 0 ) 
+		if ( _strnicmp( s1, "begin 6", 7 ) == 0 ) 
 		{
 			bEncoded = true;
 			break;
 		}
-		if ( strnicmp( s1, "Content-Type", 12 ) == 0 ) 
+		if ( _strnicmp( s1, "Content-Type", 12 ) == 0 ) 
 		{
 			if ( stristr( s1, "text/plain" ) == 0 )
 			{
 				bEncoded = true;
 			}
 		}
-		if ( strnicmp( s1, "Content-Transfer-Encoding", 25 ) == 0 ) 
+		if ( _strnicmp( s1, "Content-Transfer-Encoding", 25 ) == 0 ) 
 		{
 			if (stristr(s1, "8bit")) 
 			{
@@ -843,7 +859,7 @@ void check_unk(void)
 	{
 		sprintf( szFileName, "%sINBOUND\\%s", net_data, ff.name );
 		int f = sh_open1(szFileName, O_RDONLY | O_BINARY);
-		long l = filelength(f);
+		long l = _filelength(f);
 		f = sh_close(f);
 		if (l > 32767L) 
 		{
@@ -868,7 +884,7 @@ void check_unk(void)
 			}
 			if ( copyfile( szFileName, szNewFileName ) )
 			{
-				unlink(szFileName);
+				_unlink(szFileName);
 			}
 		}
 		nFindNext = _findnext( hFind, &ff );
@@ -1110,7 +1126,7 @@ int main(int argc, char *argv[])
 	if ( argc > 1 )
 	{
 		ss = argv[1];
-		if (strnicmp(ss, "/N", 2))
+		if (_strnicmp(ss, "/N", 2))
 		{
 			ok = false;
 		}
@@ -1134,6 +1150,8 @@ int main(int argc, char *argv[])
 	*DOMAIN = *FWDNAME = *FWDDOM = 0;
 	KEEPSENT = CLEANUP = MOREINFO = NOLISTNAMES = ONECALL = MULTINEWS = 0;
 	BBSNODE = ALLMAIL = PURGE = 1;
+	POPPORT = DEFAULT_POP_PORT;
+	SMTPPORT = DEFAULT_SMTP_PORT;
 	int ini_section = 0;
 	if (parse_net_ini( ini_section )) 
 	{
@@ -1364,7 +1382,7 @@ int main(int argc, char *argv[])
 	}
 	if ( sy != 32767 || ONECALL ) 
 	{
-		if ( *PRIMENET && strnicmp(net_name, PRIMENET, strlen(net_name) != 0 ) ) 
+		if ( *PRIMENET && _strnicmp(net_name, PRIMENET, strlen(net_name) != 0 ) ) 
 		{
 			if (MOREINFO)
 			{
@@ -1395,7 +1413,7 @@ int main(int argc, char *argv[])
 						sprintf(temp, "%s\\UU.EXE -decode %s %s %s", maindir, ff.name, temp_dir, net_data);
 						if (!do_spawn(temp))
 						{ 
-							unlink(s1);
+							_unlink(s1);
 						}
 					}
 					nFindNext = _findnext( hFind, &ff);

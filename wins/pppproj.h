@@ -16,6 +16,7 @@
 #if !defined( __PPPPROJ_H_INCLUDED__ )
 #define __PPPPROJ_H_INCLUDED__ 
 
+#define _CRT_SECURE_NO_DEPRECATE
 
 #include <cstdio>
 #include <stdlib.h>
@@ -57,8 +58,8 @@ extern "C"
 #define QOTD_PORT 17
 #define TIME_PORT 37
 #define NNTP_PORT 119
-#define POP_PORT 110
-#define SMTP_PORT 25
+#define DEFAULT_POP_PORT 110
+#define DEFAULT_SMTP_PORT 25
 
 
 //
