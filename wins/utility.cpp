@@ -70,7 +70,7 @@ void output(const char *fmt,...)
 	}
 }
 
-int log_it( int display, char *fmt, ... )
+void log_it( bool display, char *fmt, ... )
 {
 	va_list v;
 	char s[255], szFileName[_MAX_PATH];
@@ -96,7 +96,7 @@ int log_it( int display, char *fmt, ... )
 		if ((fp = fsh_open(szFileName, "at")) == NULL) 
 		{
 			output("\n ! Error accessing %s.", szFileName);
-			return 1;
+			return;
 		}
 		if ( s && *s )
 		{
@@ -110,10 +110,7 @@ int log_it( int display, char *fmt, ... )
 		{
 			printf(s);
 		}
-		return 0;
 	}
-	// error...
-	return 1;
 }
 
 
