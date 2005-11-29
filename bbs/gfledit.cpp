@@ -65,7 +65,7 @@ bool exist_dir(const char *pszDirectoryName)
 	bool ok = false;
 
 	WWIV_ChangeDirTo(syscfg.gfilesdir);
-	if ( chdir( pszDirectoryName ) )
+	if ( _chdir( pszDirectoryName ) )
 	{
 		ok = false;
 	}
@@ -172,7 +172,7 @@ void modify_sec(int n)
 					if (yesno())
 					{
 						WWIV_ChangeDirTo(syscfg.gfilesdir);
-						mkdir(r.filename);
+						_mkdir(r.filename);
 						GetApplication()->CdHome();
 					}
 					else
@@ -387,7 +387,7 @@ bool fill_sec(int sn)
 				gfilerec g1;
 				strcpy(g1.filename, s);
 				strcpy(g1.description, s1);
-				time((time_t*)&(g1.daten));
+				g1.daten = static_cast<long>(time(NULL));
 				g[i] = g1;
 			}
 			else

@@ -161,7 +161,7 @@ void SendRemoteShortMessage( int nUserNum, int nSystemNum, char *pszMessageText 
     nh.main_type = main_type_ssm;
     nh.minor_type = 0;
     nh.list_len = 0;
-    time( ( time_t * ) &nh.daten );
+    nh.daten = static_cast<unsigned long>(time(NULL));
     if (strlen(pszMessageText) > 80)
     {
         pszMessageText[80] = '\0';

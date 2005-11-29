@@ -67,7 +67,7 @@ void send_inst_str1( int m, int whichinst, const char *pszSendString )
     ih.from_user = static_cast<unsigned short>( GetSession()->usernum );
     ih.msg_size = strlen( szTempSendString ) + 1;
     ih.dest_inst = static_cast<unsigned short>( whichinst );
-    time((time_t *) &ih.daten);
+    ih.daten = static_cast<unsigned long>(time(NULL));
 
     send_inst_msg( &ih, szTempSendString );
 }
@@ -95,7 +95,7 @@ void send_inst_shutdown(int whichinst)
     ih.from_user = static_cast<unsigned short>( GetSession()->usernum );
     ih.msg_size = 0;
     ih.dest_inst = static_cast<unsigned short>( whichinst );
-    time((time_t *) &ih.daten);
+    ih.daten = static_cast<unsigned long>(time(NULL));
 
     send_inst_msg(&ih, NULL);
 }
@@ -120,7 +120,7 @@ void send_inst_cleannet()
         ih.from_user = 1;
         ih.msg_size = 0;
         ih.dest_inst = 1;
-        time((time_t *) &ih.daten);
+        ih.daten = static_cast<unsigned long>(time(NULL));
 
         send_inst_msg(&ih, NULL);
     }
@@ -553,7 +553,7 @@ void write_inst( int loc, int subloc, int flags )
         {
             ti.user = 1;
         }
-        time((time_t *) &ti.inst_started);
+        ti.inst_started = static_cast<unsigned long>(time(NULL));
         re_write = 1;
     }
 
@@ -670,7 +670,7 @@ void write_inst( int loc, int subloc, int flags )
     }
     if (re_write)
     {
-        time((time_t *) &ti.last_update);
+        ti.last_update = static_cast<unsigned long>(time(NULL));
         WFile instFile( syscfg.datadir, INSTANCE_DAT );
         if ( instFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) )
         {
