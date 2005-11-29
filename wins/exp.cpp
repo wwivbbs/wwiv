@@ -52,7 +52,8 @@ char net_name[31], postmaster[31], net_data[_MAX_PATH];
 #define EMPTY_STRING_LEN 200
 char szEmptyString[EMPTY_STRING_LEN];
 char POPNAME[21], REPLYTO[81], DOMAIN[81], POPDOMAIN[81], deftagfile[_MAX_PATH], tagfile[_MAX_PATH], maindir[_MAX_PATH], spamname[81];
-unsigned short g_nNetworkSystemNumber, defuser, use_alias, usermail, instance, spam, use_usernum;
+unsigned short g_nNetworkSystemNumber, defuser, use_alias, usermail, instance, use_usernum;
+bool spam;
 int curuser, num_users;
 int nlists = 0, jdater, DIGEST;
 char alphasubtype[8];
@@ -61,29 +62,29 @@ time_t cur_daten;
 void get_list_addr(char *list_addr, char *list_name)
 {
 	SEH_PUSH("get_list_addr()");
-	char *ss, fn[_MAX_PATH], s[101], buf[60];
+	char *ss, szFileName[_MAX_PATH], s[101], szBuffer[60];
 	FILE *fp;
 	
-	int found = 0;
+	bool found = false;
 	*list_addr = 0;
-	sprintf(fn, "%sACCT.INI", net_data);
-	if ((fp = fsh_open(fn, "rt")) != NULL) 
+	sprintf(szFileName, "%sACCT.INI", net_data);
+	if ((fp = fsh_open(szFileName, "rt")) != NULL) 
 	{
-		while ((fgets(s, 100, fp)) && (!found)) 
+		while (fgets(s, sizeof(s)-1, fp) && !found) 
 		{
 			if (_strnicmp(s, "LIST", 4) == 0) 
 			{
 				ss = strtok(s, "=");
 				if (s[4] == '-') 
 				{
-					strcpy(buf, &s[5]);
-					trimstr1(buf);
-					if (_stricmp(buf, list_name) == 0) 
+					strcpy(szBuffer, &s[5]);
+					trimstr1(szBuffer);
+					if (_stricmp(szBuffer, list_name) == 0) 
 					{
 						ss = strtok(NULL, "\r\n");
 						trimstr1(ss);
 						strcpy(list_addr, ss);
-						found = 1;
+						found = true;
 					}
 				}
 			}
@@ -150,10 +151,9 @@ char *valid_name( char *pszName )
 }
 
 
-int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
+bool num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 {
-	char *ss, fn[_MAX_PATH], s[101], buf[60];
-	int i, userfile, found;
+	char *ss, szFileName[_MAX_PATH], s[101], szBuffer[60];
 	long pos;
 	FILE *fp;
 	userrec ur;
@@ -164,24 +164,24 @@ int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 	{
 		strcpy(user_name, "Anonymous");
 		strcpy(user_addr, "user@wwivbbs.org");
-		return 1;
+		return true;
 	}
-	found = 0;
+	bool found = false;
 	if (user_addr && *user_addr) 
 	{
 		*user_addr = 0;
-		sprintf(fn, "%sACCT.INI", net_data);
-		if ((fp = fsh_open(fn, "rt")) != NULL) 
+		sprintf(szFileName, "%sACCT.INI", net_data);
+		if ((fp = fsh_open(szFileName, "rt")) != NULL) 
 		{
-			while ((fgets(s, 100, fp)) && (!found)) 
+			while (fgets(s, sizeof(s)-1, fp) && !found)
 			{
 				if (_strnicmp(s, "USER", 4) == 0) 
 				{
 					ss = strtok(s, "=");
-					strcpy(buf, &s[4]);
-					if (isdigit(buf[0])) 
+					strcpy(szBuffer, &s[4]);
+					if (isdigit(szBuffer[0])) 
 					{
-						i = atoi(buf);
+						int i = atoi(szBuffer);
 						if (i == whichuser) 
 						{
 							ss = strtok(NULL, "\r\n");
@@ -189,7 +189,7 @@ int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 							{
 								trimstr1(ss);
 								strcpy(user_addr, ss);
-								found = 1;
+								found = true;
 							}
 						}
 					}
@@ -201,33 +201,33 @@ int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 			}
 		}
 	}
-	found = 0;
-	sprintf( fn, "%suser.lst", syscfg.datadir );
-	userfile = sh_open1(fn, O_RDONLY | O_BINARY);
-	if (userfile < 0) 
+	found = false;
+	sprintf( szFileName, "%suser.lst", syscfg.datadir );
+	int hUserFile = sh_open1(szFileName, O_RDONLY | O_BINARY);
+	if (hUserFile < 0) 
 	{
-		log_it(1, "\n * Cannot open %s.", fn);
-		return (found);
+		log_it( true, "\n * Cannot open %s.", szFileName);
+		return found;
 	}
-	int num_users = static_cast<int>( _filelength( userfile ) / sizeof( userrec ) );
+	int num_users = static_cast<int>( _filelength( hUserFile ) / sizeof( userrec ) );
 	
 	if (whichuser > num_users) 
 	{
-		log_it(1, "\n \xFE User #%d out of range.", whichuser);
-		return (found);
+		log_it( true, "\n \xFE User #%d out of range.", whichuser);
+		return found;
 	}
 	pos = ((long) sizeof(userrec) * ((long) whichuser));
-	_lseek(userfile, pos, SEEK_SET);
-	sh_read(userfile, &ur, sizeof(userrec));
+	_lseek(hUserFile, pos, SEEK_SET);
+	sh_read(hUserFile, &ur, sizeof(userrec));
 	if (ur.realname[0] == 0)
 	{
-		log_it(1, "\n \xFE User #%d has blank real name field!", whichuser);
+		log_it( true, "\n \xFE User #%d has blank real name field!", whichuser);
 	}
 	else 
 	{
 		if (ur.inact == inact_deleted)
 		{
-			log_it(1, "\n \xFE User #%d is marked as deleted!", whichuser);
+			log_it( true, "\n \xFE User #%d is marked as deleted!", whichuser);
 		}
 		else 
 		{
@@ -240,7 +240,7 @@ int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 				strcpy(user_name, ( char * ) ur.name);
 				properize(user_name);
 			}
-			found = 1;
+			found = true;
 		}
 	}
 	DEBUG_PUTS("nn20");
@@ -258,7 +258,7 @@ int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 		}
 	}
 	DEBUG_PUTS("nn23");
-	sh_close(userfile);
+	sh_close(hUserFile);
 	DEBUG_PUTS("nn24");
 	return found;
 }
@@ -266,9 +266,7 @@ int num_to_name(char *user_addr, char *user_name, int whichuser, int alias)
 
 void parse_net_ini()
 {
-	char s[_MAX_PATH], origline[121], line[121], *ss, inlist = 0;
-	FILE *fp;
-	long fptr;
+	char szFileName[_MAX_PATH], origline[121], line[121], *ss;
 	SEH_PUSH("parse_net_ini()");
 	
 	defuser = 1;
@@ -280,13 +278,16 @@ void parse_net_ini()
 	*POPDOMAIN = 0;
 	*spamname = 0;
 	use_usernum = 0;
-	sprintf(s, "%snet.ini", maindir);
-	if ((fp = fsh_open(s, "rt")) == NULL) 
+	sprintf(szFileName, "%snet.ini", maindir);
+	FILE *fp;
+	if ((fp = fsh_open(szFileName, "rt")) == NULL) 
 	{
-		log_it(1, "\n \xFE Unable to open %s.", s);
+		log_it( true, "\n \xFE Unable to open %s.", szFileName);
 		return;
 	}
-	while (fgets(line, 80, fp)) 
+
+	bool inlist = false;
+	while (fgets(line, sizeof(line)-1, fp)) 
 	{
 		ss = NULL;
 		strcpy(origline, line);
@@ -297,8 +298,8 @@ void parse_net_ini()
 		}
 		if (_strnicmp(line, "[MAILLIST]", 10) == 0) 
 		{
-			fptr = ftell(fp);
-			while ((fgets(line, 80, fp)) && (line[0] != '[')) 
+			long fptr = ftell(fp);
+			while ((fgets(line, sizeof(line)-1, fp)) && (line[0] != '[')) 
 			{
 				if ((line[0] != '[') && (line[0] != ';') && (line[0] != 0) &&
 					(_strnicmp(line, "DIGEST", 6) != 0))
@@ -310,23 +311,23 @@ void parse_net_ini()
 			maillist = (MAILLISTREC *) malloc((nlists + 1) * sizeof(MAILLISTREC));
 			if (maillist == NULL)
 			{
-				log_it(1, "\n \xFE Not enough memory to process %d mailing lists.", nlists);
+				log_it( true, "\n \xFE Not enough memory to process %d mailing lists.", nlists);
 			}
 			else
 			{
-				inlist = 1;
+				inlist = true;
 			}
 			nlists = 0;
 			continue;
 		} 
 		else if (line[0] == '[') 
 		{
-			inlist = 0;
+			inlist = false;
 			continue;
 		}
 		if (inlist) 
 		{
-			if ((line[0] != ';') && (line[0] != 0) && (_strnicmp(line, "DIGEST", 6) != 0)) 
+			if (line[0] != ';' && line[0] != 0 && _strnicmp(line, "DIGEST", 6) != 0)
 			{
 				ss = strtok(line, "\"");
 				trimstr1(ss);
@@ -355,7 +356,7 @@ void parse_net_ini()
 				} 
 				else
 				{
-					log_it(1, "\n \xFE Missing *subtype in maillist for %s.",
+					log_it( true, "\n \xFE Missing *subtype in maillist for %s.",
 						maillist[nlists].ownername);
 				}
 			} 
@@ -398,7 +399,7 @@ void parse_net_ini()
 				ss = strtok(NULL, "\n");
 				if ((ss[0] == 'y') || (ss[0] == 'Y'))
 				{
-					spam = 1;
+					spam = true;
 				}
 			}
 			continue;
@@ -476,7 +477,7 @@ void parse_net_ini()
 				strcpy(tagfile, ss);
 				if (!exist(tagfile)) 
 				{
-					log_it(1, "\n \xFE Default signature file %s not found!", tagfile);
+					log_it( true, "\n \xFE Default signature file %s not found!", tagfile);
 					tagfile[0] = 0;
 				}
 				strcpy(deftagfile, tagfile);
@@ -510,7 +511,7 @@ void parse_net_ini()
 unsigned int name_to_num(char *name)
 {
 	userrec ur;
-	char fn[_MAX_PATH], ur_name[60], ur_realname[60];
+	char szFileName[_MAX_PATH], ur_name[60], ur_realname[60];
 	SEH_PUSH("name_to_num()");
 	
 	if ((stristr(name, "Multiple recipients of") != NULL) || (strlen(name) == 0))
@@ -519,10 +520,10 @@ unsigned int name_to_num(char *name)
 	}
 	if ((strstr(name, " ") == NULL) && (strlen(name) < 8)) 
 	{
-		sprintf(fn, "%sM%s.NET", net_data, name);
-		if (exist(fn)) 
+		sprintf(szFileName, "%sM%s.NET", net_data, name);
+		if (exist(szFileName)) 
 		{
-			log_it(1, "\n \xFE Matched \"%s\" mailing list.", name);
+			log_it( true, "\n \xFE Matched \"%s\" mailing list.", name);
 			strcpy(alphasubtype, name);
 			return static_cast<unsigned int>( 65535 );
 		}
@@ -530,53 +531,53 @@ unsigned int name_to_num(char *name)
 	if (((name[0] == 'u') || (name[0] == 'U')) && (isdigit(name[1])) && (*POPDOMAIN)) 
 	{
 		int nEmbeddedUserNumber = atoi(&name[1]);
-		log_it(1, "\n \xFE User #%d addressed by domain.", nEmbeddedUserNumber);
+		log_it( true, "\n \xFE User #%d addressed by domain.", nEmbeddedUserNumber);
 		return nEmbeddedUserNumber;
 	}
-	sprintf(fn, "%sUSER.LST", syscfg.datadir);
-	int userfile = sh_open1(fn, O_RDONLY | O_BINARY);
-	if (userfile < 0) 
+	sprintf(szFileName, "%sUSER.LST", syscfg.datadir);
+	int hUserFile = sh_open1(szFileName, O_RDONLY | O_BINARY);
+	if (hUserFile < 0) 
 	{
-		log_it(1, "\n \xFE Cannot open %s", fn);
+		log_it( true, "\n \xFE Cannot open %s", szFileName);
 		return 0;
 	} 
 	else
 	{
-		log_it(1, "\n \xFE Searching for user \"%s\"...", name);
+		log_it( true, "\n \xFE Searching for user \"%s\"...", name);
 	}
-	num_users = ((int) (_filelength(userfile) / sizeof(userrec)));
+	num_users = ((int) (_filelength(hUserFile) / sizeof(userrec)));
 	
 	int usernum = 1;
 	for (usernum = 1; usernum < num_users; usernum++) 
 	{
 		long lUserRecFilePos = ((long) sizeof(userrec) * ((long) usernum));
-		_lseek(userfile, lUserRecFilePos, SEEK_SET);
-		sh_read(userfile, &ur, sizeof(userrec));
+		_lseek(hUserFile, lUserRecFilePos, SEEK_SET);
+		sh_read(hUserFile, &ur, sizeof(userrec));
 		strcpy(ur_realname, valid_name( ( char * ) ur.realname));
 		strcpy(ur_name, valid_name( ( char * ) ur.name));
 		if ((_strcmpi(ur_realname, name) == 0) || (_strcmpi(ur_name, name) == 0)) 
 		{
 			if (ur.inact == inact_deleted) 
 			{
-				log_it(1, " user #%d is deleted account.", usernum);
+				log_it( true, " user #%d is deleted account.", usernum);
 				usernum = 0;
 				break;
 			} 
 			else 
 			{
-				log_it(1, " matched to user #%d.", usernum);
+				log_it( true, " matched to user #%d.", usernum);
 				break;
 			}
 		}
 	}
-	userfile = sh_close(userfile);
+	hUserFile = sh_close(hUserFile);
 	
 	if (usernum >= num_users) 
 	{
-		log_it(1, "... no match found.");
+		log_it( true, "... no match found.");
 		return 0;
 	}
-	return (usernum);
+	return usernum;
 }
 
 char *find_focus(char *name)
@@ -602,7 +603,7 @@ char *find_focus(char *name)
 			trimstr1(ss);
 		}
 	}
-	return (ss);
+	return ss;
 }
 
 char *find_name(char *name)
@@ -716,12 +717,12 @@ void CreateCheckMessageName( char *pszFileName )
 
 void ssm(char *s)
 {
-	char s1[161];
+	char szFileName[_MAX_PATH];
 	shortmsgrec sm;
 	SEH_PUSH("ssm()");
 	
-	sprintf(s1, "%sSMW.DAT", syscfg.datadir);
-	int hSMWfile = sh_open(s1, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+	sprintf(szFileName, "%sSMW.DAT", syscfg.datadir);
+	int hSMWfile = sh_open(szFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 	if (hSMWfile < 0)
 	{
 		return;
@@ -755,12 +756,12 @@ void ssm(char *s)
 	sh_close(hSMWfile);
 }
 
-int import(char *fn)
+int import(char *pszFileName)
 {
     char *ss = NULL, *ss1, *p, *id, *name;
     char s[513], s1[121], pktname[_MAX_PATH], msgdate[61];
     char alphatype[21], recvdate[81], realfrom[205], s2[121];
-    int i, f, from, towhom, match, subj, in_to, intext, done, tolist, mailuser, bounce;
+    int i, from, towhom, match, subj, in_to, intext, done, tolist, mailuser, bounce;
     long textlen, reallen;
     struct msghdr mh;
     net_header_rec nh;
@@ -773,28 +774,28 @@ int import(char *fn)
     in_to = 0;
     mailuser = 0;
     bounce = 0;
-    f = sh_open1(fn, O_RDONLY | O_BINARY);
-    if (f < 0)
+    int hFile = sh_open1(pszFileName, O_RDONLY | O_BINARY);
+    if (hFile < 0)
     {
         return 1;
     }
-    textlen = _filelength(f);
+    textlen = _filelength(hFile);
     if (textlen > 32767L) 
     {
-        sh_close(f);
-        sprintf(s2, "\n \xFE Skipped UU/Base64 %s.", fn);
-        log_it(1, s2);
+        sh_close(hFile);
+        sprintf(s2, "\n \xFE Skipped UU/Base64 %s.", pszFileName);
+        log_it( true, s2);
         return 1;
     }
     p = (char *) malloc((int) (textlen + 1));
     if (p == NULL) 
     {
-        sh_close(f);
-        log_it(1, "\n \xFE Unable to allocate %ld bytes.", textlen);
+        sh_close(hFile);
+        log_it( true, "\n \xFE Unable to allocate %ld bytes.", textlen);
         return 1;
     }
-    sh_read(f, (void *) p, (int) textlen);
-    sh_close(f);
+    sh_read(hFile, p, (int) textlen);
+    sh_close(hFile);
 
     nh.tosys = g_nNetworkSystemNumber;
     nh.fromsys = 32767;
@@ -816,13 +817,13 @@ int import(char *fn)
     strcpy(mh.subject, "None");
     realfrom[0] = 0;
 
-    if ((fp = fsh_open(fn, "rb")) == NULL) 
+    if ((fp = fsh_open(pszFileName, "rb")) == NULL) 
     {
         free(p);
         return 1;
     }
     match = subj = done = from = 0;
-    while ((!done) && (fgets(s, 254, fp))) 
+    while (!done && fgets(s, sizeof(s)-1, fp))
     {
         if (s[0] == 4) 
         {
@@ -968,7 +969,7 @@ int import(char *fn)
                             trimstr1(mh.fromUserName);
                             if (strcspn(ss, " ") != strlen(ss))
                             {
-                                log_it(1, "\n ! Error parsing return address \"%s\"", mh.fromUserName);
+                                log_it( true, "\n ! Error parsing return address \"%s\"", mh.fromUserName);
                             }
                         }
                     } 
@@ -1133,15 +1134,15 @@ int import(char *fn)
     }
     trimstr1(mh.fromUserName);
     strcat(mh.fromUserName, "\r\n");
-    log_it(1, "\n \xFE From    : %s", mh.fromUserName);
+    log_it( true, "\n \xFE From    : %s", mh.fromUserName);
     if ( nh.main_type == main_type_pre_post ||
         nh.main_type == main_type_new_post ) 
     {
         nh.touser = 0;
-        log_it(1, " \xFE Post to : Sub %s", alphasubtype);
+        log_it( true, " \xFE Post to : Sub %s", alphasubtype);
         if (bounce) 
         {
-            log_it(1, "\n \xFE Return Post from Listserv - not reposted.");
+            log_it( true, "\n \xFE Return Post from Listserv - not reposted.");
             free(p);
             return 0;
         }
@@ -1162,7 +1163,7 @@ int import(char *fn)
             }
             strcpy(s1, find_focus(realfrom));
             trimstr1(s1);
-            while ((done == 0) && (fgets(s, 254, fp))) 
+            while ( done == 0 && fgets(s, sizeof(s)-1, fp))
             {
                 trimstr1(s);
                 if (stristr(s, s1) != 0)
@@ -1178,10 +1179,10 @@ int import(char *fn)
         if (done < 1) 
         {
             CreateCheckMessageName(pktname);
-            rename(fn, pktname);
+            rename(pszFileName, pktname);
             sprintf(s2, "\n \xFE No \"%s\" in M%s.NET... message %s not posted.",
                 s1, alphasubtype, pktname);
-            log_it(1, s2);
+            log_it( true, s2);
             ssm(s2);
             free(p);
             return 0;
@@ -1189,13 +1190,13 @@ int import(char *fn)
     } 
     else
     {
-        log_it(1, " \xFE Sent to : %s #%hd", _strupr(mh.toUserName), nh.touser);
+        log_it( true, " \xFE Sent to : %s #%hd", _strupr(mh.toUserName), nh.touser);
     }
-    log_it(1, "\n \xFE Subject : %s", mh.subject);
+    log_it( true, "\n \xFE Subject : %s", mh.subject);
     CreatePacketName(pktname);
     if ((fp = fsh_open(pktname, "wb")) == NULL) 
     {
-        log_it(1, "\n \xFE Unable to create packet %s", pktname);
+        log_it( true, "\n \xFE Unable to create packet %s", pktname);
         free(p);
         return 1;
     }
@@ -1219,7 +1220,7 @@ int import(char *fn)
         reallen = fsh_write(p, sizeof(char), (int) textlen, fp);
         if (reallen != textlen)
         {
-            log_it(1, "\n \xFE Expected %ld bytes, wrote %ld bytes.", textlen, reallen);
+            log_it( true, "\n \xFE Expected %ld bytes, wrote %ld bytes.", textlen, reallen);
         }
         nh.tosys = 32767;
         --tolist;
@@ -1285,24 +1286,24 @@ void move_dead(net_header_rec * nh, char *text)
 	} 
 	else
 	{
-		log_it(1, "\n ! Couldn't open '%s'", szDeadNetFileName);
+		log_it( true, "\n ! Couldn't open '%s'", szDeadNetFileName);
 	}
 }
 
 void get_subtype(int sub, char *where)
 {
-	char fn[181], s[81], net_name[21], *ss;
+	char szFileName[181], s[81], net_name[21], *ss;
 	SEH_PUSH("get_subtype()");
 	
-	where[0] = 0;
-	sprintf(fn, "%sSUBS.XTR", syscfg.datadir);
+	where[0] = '\0';
+	sprintf(szFileName, "%sSUBS.XTR", syscfg.datadir);
 	FILE *fp;
-	if ((fp = fsh_open(fn, "r")) == NULL)
+	if ((fp = fsh_open(szFileName, "r")) == NULL)
 	{
 		return;
 	}
 	bool ok = false;
-	while (fgets(s, 80, fp)) 
+	while (fgets(s, sizeof(s)-1, fp)) 
 	{
 		if (s && *s == '!') 
 		{
@@ -1340,16 +1341,16 @@ void get_subtype(int sub, char *where)
 
 unsigned find_anony(char *stype)
 {
-	char fn[_MAX_PATH], subtype[12];
+	char szFileName[_MAX_PATH], subtype[12];
 	subboardrec sub;
 	FILE *fp;
 	SEH_PUSH("find_anony()");
 	
 	int result = 0;
-	sprintf(fn, "%sSUBS.DAT", syscfg.datadir);
-	if ((fp = fsh_open(fn, "rb")) == NULL) 
+	sprintf(szFileName, "%sSUBS.DAT", syscfg.datadir);
+	if ((fp = fsh_open(szFileName, "rb")) == NULL) 
 	{
-		log_it(1, "\n \xFE Unable to _read %s.", fn);
+		log_it( true, "\n \xFE Unable to _read %s.", szFileName);
 		return 0;
 	} 
 	else 
@@ -1395,13 +1396,14 @@ unsigned find_anony(char *stype)
 	return result;
 }
 
-int ExportMessages(char *fn)
+int ExportMessages(char *pszFileName)
 {
 	char fn1[121], tagfn[121], groupname[81], outfn[121], savefn[121], _temp_buffer[256], acct_addr[80], list_addr[80];
 	char *ss = NULL, *buffer = NULL, *text = NULL, mytype[12], alphatype[21], hold[21], tempoutfn[21], savename[81], savesubj[81];
 	char references[255], reftest[255];
 	unsigned stype, ttype, rime;
-	int infile, outfile, savefile = -1, inloc, outloc, term, ok, a = -1, f, i, j, k, ns, i6, tolist, forlist, hdr;
+	int infile, outfile, savefile = -1, inloc, outloc, term, a = -1, i, j, k, ns, i6, tolist, forlist, hdr;
+	bool ok;
 	net_header_rec nhr;
 	struct msghdr mh;
 	struct tm *time_msg;
@@ -1439,7 +1441,7 @@ int ExportMessages(char *fn)
 	};
 	SEH_PUSH("Export()");
 	
-	if ((infile = sh_open1(fn, O_RDONLY | O_BINARY)) == -1)
+	if ((infile = sh_open1(pszFileName, O_RDONLY | O_BINARY)) == -1)
 	{
 		return 1;
 	}
@@ -1447,12 +1449,12 @@ int ExportMessages(char *fn)
 	if ((buffer = (char *) malloc(32 * 1024)) == NULL) 
 	{
 		sh_close(infile);
-		log_it(1, "\n \xFE Out of memory allocating input buffer!");
+		log_it( true, "\n \xFE Out of memory allocating input buffer!");
 		return 1;
 	}
 	if ((text = (char *) malloc(32 * 1024)) == NULL) 
 	{
-		log_it(1, "\n \xFE Out of memory allocating output buffer!");
+		log_it( true, "\n \xFE Out of memory allocating output buffer!");
 		sh_close(infile);
 		if (buffer != NULL)
 		{
@@ -1468,7 +1470,7 @@ int ExportMessages(char *fn)
 		sh_read(infile, buffer, (int) nhr.length);
 		if (nhr.tosys != 32767) 
 		{
-			log_it(1, "\n \xFE System @%hd routing through @32767... moving to DEAD.NET.",
+			log_it( true, "\n \xFE System @%hd routing through @32767... moving to DEAD.NET.",
 				nhr.fromsys);
 			move_dead(&nhr, buffer);
 			continue;
@@ -1546,7 +1548,7 @@ int ExportMessages(char *fn)
 				}
 				if (!num_to_name(acct_addr, mh.fromUserName, nhr.fromuser, a)) 
 				{
-					log_it(1, "\n \xFE No match for user #%hd... skipping message!", nhr.fromuser);
+					log_it( true, "\n \xFE No match for user #%hd... skipping message!", nhr.fromuser);
 					continue;
 				}
 			} 
@@ -1774,10 +1776,10 @@ int ExportMessages(char *fn)
 				continue;
 			}
 			
-			log_it(1, "\n \xFE Creating: %s", outfn);
+			log_it( true, "\n \xFE Creating: %s", outfn);
 			if (nhr.fromsys != g_nNetworkSystemNumber) 
 			{
-				log_it(1, "\n \xFE From    : %s", mh.fromUserName);
+				log_it( true, "\n \xFE From    : %s", mh.fromUserName);
 			} 
 			else 
 			{
@@ -1785,16 +1787,16 @@ int ExportMessages(char *fn)
 				{
 					if ((*acct_addr) && (!forlist))
 					{
-						log_it(1, "\n \xFE From    : \"%s\" <%s>", mh.fromUserName, acct_addr);
+						log_it( true, "\n \xFE From    : \"%s\" <%s>", mh.fromUserName, acct_addr);
 					}
 					else
 					{
-						log_it(1, "\n \xFE From    : \"%s\" <%s@%s>", mh.fromUserName, POPNAME, DOMAIN);
+						log_it( true, "\n \xFE From    : \"%s\" <%s@%s>", mh.fromUserName, POPNAME, DOMAIN);
 					}
 				} 
 				else
 				{
-					log_it(1, "\n \xFE From    : <%s@%s>", POPNAME, DOMAIN);
+					log_it( true, "\n \xFE From    : <%s@%s>", POPNAME, DOMAIN);
 				}
 			}
 			if ((nhr.main_type == main_type_post) ||
@@ -1806,7 +1808,7 @@ int ExportMessages(char *fn)
 				{
 					if ((fp = fsh_open(fn1, "rt")) == NULL) 
 					{
-						log_it(1, "\n \xFE %s not found!", fn1);
+						log_it( true, "\n \xFE %s not found!", fn1);
 						sh_close(infile);
 						if (text)
 						{
@@ -1820,8 +1822,8 @@ int ExportMessages(char *fn)
 					} 
 					else 
 					{
-						ok = 0;
-						while ((fgets(_temp_buffer, 80, fp) != NULL) && (!ok)) 
+						ok = false;
+						while ( (fgets(_temp_buffer, sizeof(_temp_buffer)-1, fp) != NULL) && !ok ) 
 						{
 							groupname[0] = 0;
 							ss = strtok(_temp_buffer, " ");
@@ -1835,7 +1837,7 @@ int ExportMessages(char *fn)
 									strcpy(alphatype, ss);
 									if (_strnicmp(alphasubtype, alphatype, strlen(alphasubtype)) == 0)
 									{
-										ok = 1;
+										ok = true;
 									}
 								} 
 								else 
@@ -1843,7 +1845,7 @@ int ExportMessages(char *fn)
 									ttype = atoi(ss);
 									if (ttype == stype)
 									{
-										ok = 1;
+										ok = true;
 									}
 								}
 							}
@@ -1857,15 +1859,15 @@ int ExportMessages(char *fn)
 				} 
 				else 
 				{
-					ok = 0;
-					for (k = 0; k < 10 && (!ok); k++) 
+					ok = false;
+					for (k = 0; k < 10 && !ok; k++) 
 					{
 						sprintf(fn1, "%sNEWS%d", net_data, k);
 						strcat(fn1, ".RC");
 						if (exist(fn1)) 
 						{
 							fp = fsh_open(fn1, "rt");
-							while ((fgets(_temp_buffer, 80, fp) != NULL) && (!ok)) 
+							while ((fgets(_temp_buffer, 80, fp) != NULL) && !ok) 
 							{
 								groupname[0] = 0;
 								ss = strtok(_temp_buffer, " ");
@@ -1879,7 +1881,7 @@ int ExportMessages(char *fn)
 										strcpy(alphatype, ss);
 										if (_strnicmp(alphasubtype, alphatype, strlen(alphasubtype)) == 0)
 										{
-											ok = 1;
+											ok = true;
 										}
 									} 
 									else 
@@ -1887,7 +1889,7 @@ int ExportMessages(char *fn)
 										ttype = atoi(ss);
 										if (ttype == stype)
 										{
-											ok = 1;
+											ok = true;
 										}
 									}
 								}
@@ -1921,7 +1923,7 @@ int ExportMessages(char *fn)
 					{
 						sprintf(alphatype, "%u", stype);
 					}
-					log_it(1, "\n \xFE Subtype %s not found in NEWS.RC!", alphatype);
+					log_it( true, "\n \xFE Subtype %s not found in NEWS.RC!", alphatype);
 					sh_close(infile);
 					if (text)
 					{
@@ -1940,16 +1942,16 @@ int ExportMessages(char *fn)
 			{
 				if (tolist)
 				{
-					log_it(1, "\n \xFE Sent to : %s Mailing List", alphasubtype);
+					log_it( true, "\n \xFE Sent to : %s Mailing List", alphasubtype);
 				}
 				else
 				{
-					log_it(1, "\n \xFE Rcpt to : %s", mh.toUserName);
+					log_it( true, "\n \xFE Rcpt to : %s", mh.toUserName);
 				}
 			} 
 			else
 			{
-				log_it(1, "\n \xFE Post to : %s", groupname);
+				log_it( true, "\n \xFE Post to : %s", groupname);
 			}
 			
 			strcpy(_temp_buffer, mh.subject);
@@ -1967,7 +1969,7 @@ int ExportMessages(char *fn)
 			}
 			mh.subject[j] = '\0';
 			
-			log_it(1, "\n \xFE Subject : %s", mh.subject);
+			log_it( true, "\n \xFE Subject : %s", mh.subject);
 			
 			if ((nhr.main_type == main_type_email) ||
 				(nhr.main_type == main_type_email_name) ||
@@ -1976,14 +1978,14 @@ int ExportMessages(char *fn)
 				if (tolist) 
 				{
 					sprintf(fn1, "%sM%s.NET", net_data, alphasubtype);
-					f = sh_open1(fn1, O_RDONLY | O_BINARY);
-					if (_filelength(f) <= 0) 
+					int hFile = sh_open1(fn1, O_RDONLY | O_BINARY);
+					if (_filelength(hFile) <= 0) 
 					{
-						log_it(1, "\n \xFE Mailing list %s has no subscribers.", alphasubtype);
-						f = sh_close(f);
+						log_it( true, "\n \xFE Mailing list %s has no subscribers.", alphasubtype);
+						hFile = sh_close(hFile);
 						continue;
 					}
-					f = sh_close(f);
+					hFile = sh_close(hFile);
 				}
 			}
 			outfile = sh_open(outfn, O_RDWR | O_BINARY | O_CREAT | O_APPEND, S_IWRITE);
@@ -1998,7 +2000,7 @@ int ExportMessages(char *fn)
 				{
 					free(text);
 				}
-				log_it(1, "\n \xFE Unable to open output file %s", outfn);
+				log_it( true, "\n \xFE Unable to open output file %s", outfn);
 				return 1;
 			}
 			if (!tolist)
@@ -2025,7 +2027,7 @@ int ExportMessages(char *fn)
 			} 
 			else 
 			{
-				if ((spam) && ((nhr.main_type == main_type_post) || (nhr.main_type == main_type_new_post))) 
+				if (spam && ((nhr.main_type == main_type_post) || (nhr.main_type == main_type_new_post))) 
 				{
 					if ((!*acct_addr) || (forlist)) 
 					{
@@ -2103,7 +2105,7 @@ int ExportMessages(char *fn)
 						sprintf(fn1, "%sM%s.NET", net_data, alphasubtype);
 						if ((fp = fsh_open(fn1, "rt")) != NULL) 
 						{
-							while (fgets(_temp_buffer, 80, fp) != NULL) 
+							while (fgets(_temp_buffer, sizeof(_temp_buffer)-1, fp) != NULL) 
 							{
 								if (strstr(_temp_buffer, "@")) 
 								{
@@ -2138,7 +2140,7 @@ int ExportMessages(char *fn)
 							{
 								free(text);
 							}
-							log_it(1, "\n \xFE Error processing mailing list %s.", alphasubtype);
+							log_it( true, "\n \xFE Error processing mailing list %s.", alphasubtype);
 							return 1;
 						} 
 						else 
@@ -2338,7 +2340,7 @@ int ExportMessages(char *fn)
 				{
 					if ((fp = fsh_open(tagfile, "rt")) == NULL)
 					{
-						log_it(1, "\n \xFE Error reading %s.", tagfile);
+						log_it( true, "\n \xFE Error reading %s.", tagfile);
 					}
 					else 
 					{
@@ -2372,16 +2374,16 @@ int ExportMessages(char *fn)
 		{
 			if ((nhr.main_type >= 0x01) && (nhr.main_type <= 0x1b))
 			{
-				log_it(1, "\n \xFE %s message skipped", main_type[nhr.main_type - 1]);
+				log_it( true, "\n \xFE %s message skipped", main_type[nhr.main_type - 1]);
 			}
 			else
 			{
-				log_it(1, "\n \xFE Unknown Main_type %hd skipped", nhr.main_type);
+				log_it( true, "\n \xFE Unknown Main_type %hd skipped", nhr.main_type);
 			}
 		}
 	}
 	sh_close(infile);
-	_unlink(fn);
+	_unlink(pszFileName);
 	if (text)
 	{
 		free(text);
@@ -2406,20 +2408,20 @@ int ExportMessages(char *fn)
 
 void send_note(int action, char *mailname, char *listname)
 {
-	char s[81], fn[_MAX_PATH];
+	char s[81], szFileName[_MAX_PATH];
 	FILE *fp, *rlz;
 	SEH_PUSH("send_note()");
 	
 	int i = 1;
-	sprintf(fn, "%sMQUEUE\\MSG.%d", net_data, i);
-	while (exist(fn))
+	sprintf(szFileName, "%sMQUEUE\\MSG.%d", net_data, i);
+	while (exist(szFileName))
 	{
-		sprintf(fn, "%sMQUEUE\\MSG.%d", net_data, ++i);
+		sprintf(szFileName, "%sMQUEUE\\MSG.%d", net_data, ++i);
 	}
 	
-	if ((fp = fsh_open(fn, "wt+")) == NULL) 
+	if ((fp = fsh_open(szFileName, "wt+")) == NULL) 
 	{
-		log_it(1, "\n ! Unable to create %s.", fn);
+		log_it( true, "\n ! Unable to create %s.", szFileName);
 		return;
 	}
 	if (action != 5)
@@ -2438,44 +2440,44 @@ void send_note(int action, char *mailname, char *listname)
     case 1:
 		sprintf(s, "%s removed from mailing list: %s", mailname, listname);
 		fprintf(fp, "\n%s\n\n", s);
-		log_it(1, "\n \xFE %s", s);
+		log_it( true, "\n \xFE %s", s);
 		ssm(s);
 		break;
     case 2:
-		sprintf(fn, "%sR%s.RLZ", net_data, listname);
-		if (!(exist(fn)))
+		sprintf(szFileName, "%sR%s.RLZ", net_data, listname);
+		if (!exist(szFileName))
 		{
-			sprintf(fn, "%sGLOBAL.RLZ", net_data);
+			sprintf(szFileName, "%sGLOBAL.RLZ", net_data);
 		}
-		if ((rlz = fsh_open(fn, "rt")) != NULL) 
+		if ((rlz = fsh_open(szFileName, "rt")) != NULL) 
 		{
-			while (fgets(s, 80, rlz))
+			while (fgets(s, sizeof(s)-1, rlz))
 			{
 				fprintf(fp, s);
 			}
 			fprintf(fp, "\n\n");
 			fclose(rlz);
 			sprintf(s, "%s added to mailing list: %s", mailname, listname);
-			log_it(1, "\n%s", s);
+			log_it( true, "\n%s", s);
 			ssm(s);
 		} 
 		else 
 		{
 			sprintf(s, "%s added to mailing list: %s", mailname, listname);
 			fprintf(fp, "\n%s\n\n", s);
-			log_it(1, "\n \xFE %s", s);
+			log_it( true, "\n \xFE %s", s);
 			ssm(s);
 		}
 		break;
     case 3:
-		sprintf(fn, "%sR%s.RLZ", net_data, listname);
-		if (!(exist(fn)))
+		sprintf(szFileName, "%sR%s.RLZ", net_data, listname);
+		if (!exist(szFileName))
 		{
-			sprintf(fn, "%sGLOBAL.RLZ", net_data);
+			sprintf(szFileName, "%sGLOBAL.RLZ", net_data);
 		}
-		if ((rlz = fsh_open(fn, "rt")) != NULL) 
+		if ((rlz = fsh_open(szFileName, "rt")) != NULL) 
 		{
-			while (fgets(s, 80, rlz))
+			while (fgets(s, sizeof(s)-1, rlz))
 			{
 				fprintf(fp, s);
 			}
@@ -2495,14 +2497,14 @@ void send_note(int action, char *mailname, char *listname)
     case 5:
 		sprintf(s, "%s requested an invalid mailing list: %s", mailname, listname);
 		fprintf(fp, "\n%s\n\n", s);
-		log_it(1, "\n \xFE %s", s);
+		log_it( true, "\n \xFE %s", s);
 		ssm(s);
 		break;
     case 6:
-		sprintf(fn, "%sMAILLIST.TXT", syscfg.gfilesdir);
-		if ((rlz = fsh_open(fn, "rt")) != NULL) 
+		sprintf(szFileName, "%sMAILLIST.TXT", syscfg.gfilesdir);
+		if ((rlz = fsh_open(szFileName, "rt")) != NULL) 
 		{
-			while (fgets(s, 80, rlz))
+			while (fgets(s, sizeof(s)-1, rlz))
 			{
 				fprintf(fp, s);
 			}
@@ -2515,7 +2517,7 @@ void send_note(int action, char *mailname, char *listname)
 			sprintf(s, "No mailing list file found.  Notify system operator.");
 		}
 		fprintf(fp, "\n%s\n\n", s);
-		log_it(1, "\n \xFE %s", s);
+		log_it( true, "\n \xFE %s", s);
 		ssm(s);
 		break;
 	}
@@ -2554,21 +2556,20 @@ bool okfn(char *s)
 	return true;
 }
 
-int subscribe(char *fn)
+int subscribe(char *pszFileName)
 {
 	char *ss, s[161], s1[161], mailname[81], corename[81], subtype[81];
-	int done, found, unsubscribe;
 	FILE *fp, *oldfp, *newfp;
 	SEH_PUSH("subscribe()");
 	
-	if ((fp = fsh_open(fn, "rt")) == NULL) 
+	if ((fp = fsh_open(pszFileName, "rt")) == NULL) 
 	{
-		log_it(1, "\n ! Unable to open %s.", fn);
+		log_it( true, "\n ! Unable to open %s.", pszFileName);
 		return 1;
 	}
-	done = unsubscribe = 0;
+	bool done = false, unsubscribe = false;
 	
-	while ((fgets(s1, 80, fp)) && (!done)) 
+	while (fgets(s1, sizeof(s)-1, fp) && !done) 
 	{
 		if ((s1[0] == '') && (s1[3] != 0))
 		{
@@ -2599,7 +2600,7 @@ int subscribe(char *fn)
 		}
 		if (_strnicmp(s, "subject:", 8) == 0) 
 		{
-			done = 1;
+			done = true;
 			ss = strtok(s, ":");
 			if (ss) 
 			{
@@ -2618,7 +2619,7 @@ int subscribe(char *fn)
 				}
 				if (_strnicmp(s1, "unsubscribe", 11) == 0) 
 				{
-					unsubscribe = 1;
+					unsubscribe = true;
 					ss = strtok(s1, " ");
 					if (ss) 
 					{
@@ -2639,13 +2640,13 @@ int subscribe(char *fn)
 	
 	if ((mailname[0] == 0) || (subtype[0] == 0)) 
 	{
-		log_it(1, "\n ! Invalid subscription request %s.", fn);
+		log_it( true, "\n ! Invalid subscription request %s.", pszFileName);
 		return 1;
 	}
 	if ((strlen(subtype) == 1) || (strlen(subtype) > 7)) 
 	{
 		sprintf(s, "\n ! %s attempted to write to M%s.NET!", mailname, subtype);
-		log_it(1, s);
+		log_it( true, s);
 		ssm(s);
 		return 1;
 	}
@@ -2658,7 +2659,7 @@ int subscribe(char *fn)
 	if (!okfn(s1)) 
 	{
 		sprintf(s, "\n ! %s attempted to create invalid filename %s!", mailname, s1);
-		log_it(1, s);
+		log_it( true, s);
 		ssm(s);
 		return 1;
 	}
@@ -2666,14 +2667,14 @@ int subscribe(char *fn)
 	if (!exist(s1)) 
 	{
 		sprintf(s, "\n ! Mail list %s not found (subtype %s).", s1, subtype);
-		log_it(1, s);
+		log_it( true, s);
 		ssm(s);
 		send_note(5, mailname, subtype);
 		return 1;
 	}
 	if ((oldfp = fsh_open(s1, "rt")) == NULL) 
 	{
-		log_it(1, "\n ! Unable to open input file %s.", s1);
+		log_it( true, "\n ! Unable to open input file %s.", s1);
 		return 1;
 	}
 	sprintf(s1, "%sM%s.TMP", net_data, subtype);
@@ -2682,24 +2683,24 @@ int subscribe(char *fn)
 	
 	if ((newfp = fsh_open(s1, "wt+")) == NULL) 
 	{
-		log_it(1, "\n ! Unable to open output file %s.", s1);
+		log_it( true, "\n ! Unable to open output file %s.", s1);
 		if (oldfp != NULL)
 		{
 			fclose(oldfp);
 		}
 		return 1;
 	}
-	found = 0;
-	while (fgets(s, 100, oldfp)) 
+	bool found = false;
+	while (fgets(s, sizeof(s)-1, oldfp)) 
 	{
 		trimstr1(s);
 		if (unsubscribe) 
 		{
 			if (stristr(s, corename) != 0) 
 			{
-				log_it(1, "\n \xFE Removing %s from %s mailing list.", mailname, subtype);
+				log_it( true, "\n \xFE Removing %s from %s mailing list.", mailname, subtype);
 				send_note(1, mailname, subtype);
-				found = 1;
+				found = true;
 			} 
 			else
 			{
@@ -2711,10 +2712,10 @@ int subscribe(char *fn)
 			if (stristr(s, corename) != 0) 
 			{
 				sprintf(s1, "\n \xFE %s already in %s mailing list.", mailname, subtype);
-				log_it(1, s1);
+				log_it( true, s1);
 				ssm(s1);
 				send_note(3, mailname, subtype);
-				found = 1;
+				found = true;
 			}
 			fprintf(newfp, "%s\n", s);
 		}
@@ -2728,14 +2729,14 @@ int subscribe(char *fn)
 		if (unsubscribe) 
 		{
 			sprintf(s, "\n \xFE Unsubscribe %s - not a member of %s list.", mailname, subtype);
-			log_it(1, s);
+			log_it( true, s);
 			ssm(s);
 			send_note(4, mailname, subtype);
 		} 
 		else 
 		{
 			sprintf(s, "\n \xFE Added new subscriber %s to %s list.", mailname, subtype);
-			log_it(1, s);
+			log_it( true, s);
 			ssm(s);
 			fprintf(newfp, "%s\n", mailname);
 			send_note(2, mailname, subtype);
@@ -2762,7 +2763,7 @@ int subscribe(char *fn)
 
 int ExportMain( int argc, char *argv[] )
 {
-	char fn[_MAX_PATH], s[201], ext[5], *ss;
+	char szFileName[_MAX_PATH], s[201], szFileExtension[5], *ss;
 	SEH_PUSH("main()");
 	
 	output("\n \xFE WWIV Internet Network Support (WINS) Import/Export %s", VERSION);
@@ -2774,25 +2775,25 @@ int ExportMain( int argc, char *argv[] )
 
 	ZeroMemory( szEmptyString, EMPTY_STRING_LEN );
 	strcpy(net_data, argv[2]);
-	int f = sh_open1("CONFIG.DAT", O_RDONLY | O_BINARY);
-	if (f < 0) 
+	int hFile = sh_open1("CONFIG.DAT", O_RDONLY | O_BINARY);
+	if (hFile < 0) 
 	{
 		puts( "Could not open CONFIG.DAT!\n\n" );
-		log_it(0, "Could not open CONFIG.DAT!\n\n");
+		log_it( false, "Could not open CONFIG.DAT!\n\n");
 		return 1;
 	}
-	sh_read(f, (void *) &syscfg, sizeof(configrec));
-	sh_close(f);
+	sh_read(hFile, &syscfg, sizeof(configrec));
+	sh_close(hFile);
 	
 	get_dir(maindir, true);
-	sprintf(fn, "%s%s", net_data, argv[1]);
+	sprintf(szFileName, "%s%s", net_data, argv[1]);
 	strcpy(net_name, argv[6]);
 	strcpy(POPNAME, argv[4]);
 	strcpy(DOMAIN, argv[5]);
 	g_nNetworkSystemNumber = ( unsigned short ) atoi(argv[3]);
 	DIGEST = 0;
 	tagfile[0] = 0;
-	spam = 0;
+	spam = false;
 	
 	ss = getenv("WWIV_INSTANCE");
 	if (ss) 
@@ -2800,7 +2801,7 @@ int ExportMain( int argc, char *argv[] )
 		instance = ( unsigned short ) atoi(ss);
 		if (instance >= 1000) 
 		{
-			log_it(1, "\n \xFE WWIV_INSTANCE set to %hd.  Can only be 1..999!", instance);
+			log_it( true, "\n \xFE WWIV_INSTANCE set to %hd.  Can only be 1..999!", instance);
 			instance = 1;
 		}
 	} 
@@ -2819,22 +2820,22 @@ int ExportMain( int argc, char *argv[] )
 	
 	_strupr(postmaster);
 	DEBUG_PUTS( "main(7) " );
-	ExportMessages(fn);
+	ExportMessages(szFileName);
 	DEBUG_PUTS( "main(8) " );
 	
-	_snprintf(fn, _MAX_PATH, "%sSPOOL\\UNK*.*", net_data);
+	_snprintf(szFileName, _MAX_PATH, "%sSPOOL\\UNK*.*", net_data);
 	struct _finddata_t ff;
-	long hFind = _findfirst( fn, &ff );
+	long hFind = _findfirst( szFileName, &ff );
 	int nFindNext = ( hFind != -1 ) ? 0 : -1;
 	while ( nFindNext == 0) 
 	{
-		sprintf(fn, "%sSPOOL\\%s", net_data, ff.name);
+		sprintf(szFileName, "%sSPOOL\\%s", net_data, ff.name);
 		char szRob[512];
-		sprintf( szRob, "\n\nImporting %s\n", fn );
-		log_it(1, szRob );
-		if ((!import(fn)) || (ff.size == 0L))
+		sprintf( szRob, "\n\nImporting %s\n", szFileName );
+		log_it( true, szRob );
+		if (!import(szFileName) || ff.size == 0L)
 		{
-			_unlink(fn);
+			_unlink(szFileName);
 		}
 		nFindNext = _findnext( hFind, &ff );
 	}
@@ -2842,32 +2843,32 @@ int ExportMain( int argc, char *argv[] )
 	hFind = -1;
 	DEBUG_PUTS( "main(9) " );
 	
-	sprintf(fn, "%sINBOUND\\SUB*.*", net_data);
-	hFind = _findfirst( fn, &ff );
+	sprintf(szFileName, "%sINBOUND\\SUB*.*", net_data);
+	hFind = _findfirst( szFileName, &ff );
 	nFindNext = ( hFind != -1 ) ? 0 : -1;
 	while ( nFindNext == 0 )
 	{
-		sprintf(fn, "%sINBOUND\\%s", net_data, ff.name);
-		_splitpath(fn, NULL, NULL, NULL, ext);
-		if (_strnicmp(ext, ".BAD", 4) == 0) 
+		sprintf(szFileName, "%sINBOUND\\%s", net_data, ff.name);
+		_splitpath(szFileName, NULL, NULL, NULL, szFileExtension);
+		if (_strnicmp(szFileExtension, ".BAD", 4) == 0) 
 		{
-			sprintf(s, "\n! * Unvalidated subscribe request %s.", fn);
-			log_it(1, s);
+			sprintf(s, "\n! * Unvalidated subscribe request %s.", szFileName);
+			log_it( true, s);
 			ssm(s);
 		} 
 		else 
 		{
-			sprintf( s, "\n * Processing subscribe request %s.", fn );
-			log_it( 1, s );
-			if ( !subscribe( fn ) || ff.size == 0 )
+			sprintf( s, "\n * Processing subscribe request %s.", szFileName );
+			log_it( true, s );
+			if ( !subscribe( szFileName ) || ff.size == 0 )
 			{
-				_unlink(fn);
+				_unlink(szFileName);
 			}
 			else 
 			{
 				char newfn[_MAX_PATH];
 				CreateMessageName(newfn);
-				rename(fn, newfn);
+				rename(szFileName, newfn);
 			}
 		}
 		nFindNext = _findnext( hFind, &ff );

@@ -35,26 +35,25 @@ void name_chunk(char *chunkname)
 }
 
 
-int chunk(char *fn)
+int chunk(char *pszFileName)
 {
 	char s[255], outfn[_MAX_PATH];
 	long textlen, curpos;
 	size_t hdrlen = 0;
-	FILE *in, *out;
 	
-	fprintf(stderr, "\n \xFE Splitting %s into 32K chunks.", fn);
+	fprintf(stderr, "\n \xFE Splitting %s into 32K chunks.", pszFileName);
 	
-	in = fopen(fn, "rb");
+	FILE* in = fopen(pszFileName, "rb");
 	if (in == NULL) 
 	{
-		fprintf(stderr, "\n ! Unable to open %s.", fn);
+		fprintf(stderr, "\n ! Unable to open %s.", pszFileName);
 		return 1;
 	}
 	
 	bool done = false;
 	do 
 	{
-		fgets(s, 254, in);
+		fgets(s, sizeof(s)-1, in);
 		if (*s == '')
 		{
 			hdrlen = (size_t) ftell(in);
@@ -86,6 +85,7 @@ int chunk(char *fn)
 	curpos = hdrlen;
 	done = false;
 	rewind(in);
+	FILE *out;
 	while (!done) 
 	{
 		name_chunk(outfn);
@@ -101,7 +101,7 @@ int chunk(char *fn)
 		textlen = 0L;
 		do 
 		{
-			fgets(s, 254, in);
+			fgets(s, sizeof(s)-1, in);
 			textlen += fprintf(out, s);
 		} while ((textlen < (long) (32000 - hdrlen)) && (feof(in) == 0));
 		
@@ -177,7 +177,7 @@ void trim_log(char *ol)
 	total_lines = 0;
 	if (old_log != NULL) 
 	{
-		while (!(fgets(s, 160, old_log) == NULL))
+		while (!(fgets(s, sizeof(s)-1, old_log) == NULL))
 		{
 			++total_lines;
 		}
@@ -194,7 +194,7 @@ void trim_log(char *ol)
 		}
 		kill_lines = total_lines - MAX_LOG;
 		num_lines = 0;
-		while ((fgets(s, 160, old_log)) && (num_lines < kill_lines))
+		while ((fgets(s, sizeof(s)-1, old_log)) && (num_lines < kill_lines))
 		{
 			num_lines++;
 		}
@@ -202,11 +202,11 @@ void trim_log(char *ol)
 		while ((strstr(s, "WWIV Internet Network Support (WINS)") == NULL) &&
 			(num_lines < total_lines)) 
 		{
-			fgets(s, 160, old_log);
+			fgets(s, sizeof(s)-1, old_log);
 			num_lines++;
 		}
 		fputs(s, new_log);
-		while ((!(fgets(s, 160, old_log) == NULL)))
+		while ((!(fgets(s, sizeof(s)-1, old_log) == NULL)))
 			fputs(s, new_log);
 	}
 	if (old_log != NULL)
@@ -224,42 +224,37 @@ void trim_log(char *ol)
 
 #define MAX_LEN 12288L
 
-int open_netlog(char *fn)
+int open_netlog(char *pszFileName)
 {
-	int f, count = 0;
+	int hFile, count = 0;
 	
 	do 
 	{
-		f = _open(fn, O_RDWR | O_BINARY | SH_DENYRW | O_CREAT, S_IREAD | S_IWRITE);
-	} while ((f < 0) && (errno == EACCES) && (count++ < 500));
+		hFile = _open(pszFileName, O_RDWR | O_BINARY | SH_DENYRW | O_CREAT, S_IREAD | S_IWRITE);
+	} while (hFile < 0 && errno == EACCES && count++ < 500);
 	
-	return (f);
+	return hFile;
 }
 
 
-int write_netlog(int sn, long sent, long recd, char *tmused)
+bool write_netlog(int sn, long sent, long recd, char *tmused)
 {
-	int f;
-	char s[101], s1[81], s2[81], fn[121];
-	long l;
-	struct tm *time_now;
-	time_t some;
-
+	char s[101], s1[81], s2[81];
 	//printf(" write_netlog: %d %ld %ld %s", sn, sent, recd, tmused );
 	
-	time(&some);
-	time_now = localtime(&some);
+	time_t some = time(NULL);
+	struct tm *time_now = localtime(&some);
 	strftime(s1, 35, "%m/%d/%y %H:%M:%S", time_now);
 	
-	if ((sent) || (recd)) 
+	if (sent || recd) 
 	{
-		if ((recd) && (!sent))
+		if (recd && !sent)
 		{
 			sprintf(s2, "       , R:%4ldk,", recd);
 		}
 		else 
 		{
-			if ((recd) && (sent))
+			if (recd && sent)
 			{
 				sprintf(s2, "S:%4ldk, R:%4ldk,", sent, recd);
 			}
@@ -284,28 +279,29 @@ int write_netlog(int sn, long sent, long recd, char *tmused)
 	char* ss = (char *) malloc(MAX_LEN + 1024L);
 	if (ss == NULL)
 	{
-		return 1;
+		return false;
 	}
 	strcpy(ss, s);
 	
-	sprintf(fn, "%sNET.LOG", syscfg.gfilesdir);
-	f = open_netlog(fn);
-	_lseek(f, 0L, SEEK_SET);
-	l = (long) (_read(f, (void *) (&(ss[strlen(s)])), (int) MAX_LEN) + strlen(s));
-	while ((l > 0L) && (ss[(int) l] != '\n'))
+	char szFileName[_MAX_PATH];
+	sprintf(szFileName, "%sNET.LOG", syscfg.gfilesdir);
+	int hFile = open_netlog(szFileName);
+	_lseek(hFile, 0L, SEEK_SET);
+	int nLength = _read(hFile, (void *) (&(ss[strlen(s)])), (int) MAX_LEN) + strlen(s);
+	while (nLength > 0 && ss[nLength] != '\n')
 	{
-		--l;
+		--nLength;
 	}
-	_lseek(f, 0L, SEEK_SET);
-	_write(f, (void *) ss, (int) l + 1);
-	_chsize(f, l + 1);
+	_lseek(hFile, 0L, SEEK_SET);
+	_write(hFile, ss, nLength + 1);
+	_chsize(hFile, nLength + 1);
 	if (ss) 
 	{
 		free(ss);
 		ss = NULL;
 	}
-	_close(f);
-	return 0;
+	_close(hFile);
+	return true;
 }
 
 
@@ -315,13 +311,13 @@ int main(int argc, char *argv[])
 
     char szConfigFileName[ _MAX_PATH ];
 	strcpy(szConfigFileName, "CONFIG.DAT");
-	int f = _open(szConfigFileName, O_RDONLY | O_BINARY);
-	if (f < 0)
+	int hConfigFile = _open(szConfigFileName, O_RDONLY | O_BINARY);
+	if (hConfigFile < 0)
 	{
 		return 1;
 	}
-	_read(f, (void *) (&syscfg), sizeof(configrec));
-	_close(f);
+	_read(hConfigFile, &syscfg, sizeof(configrec));
+	_close(hConfigFile);
 	
 	if (strncmp(argv[1], "NETLOG", 6) == 0) 
 	{
@@ -329,7 +325,7 @@ int main(int argc, char *argv[])
 		unsigned int sy = atoi(argv[2]);
 		unsigned long sent = atol(argv[3]);
 		unsigned long recd = atol(argv[4]);
-		if (write_netlog(sy, sent, recd, argv[5]))
+		if (!write_netlog(sy, sent, recd, argv[5]))
 		{
 			return 1;
 		}

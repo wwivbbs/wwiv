@@ -11,6 +11,7 @@ use visual studio express or any of the vs.net 2005 releases.
 
 Cleaned up compiler warnings and errors under vs2005.
 
+Made more int types that should be bool's into bool types
 
 
 

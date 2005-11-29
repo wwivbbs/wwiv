@@ -33,13 +33,14 @@ char cur_path[STRING], cur_from[STR], cur_subject[STR], cur_replyto[STR];
 char cur_newsgroups[BIGSTR], cur_message_ID[STR], cur_organization[STR];
 char cur_articleid[STR], cur_references[STRING], cur_lines[STR], cur_date[STR];
 static char whichrc, g_szMainDirectory[_MAX_PATH];
-int instance, crossposts, newsrc_upd, binxpost, MOREINFO, QUIET;
+int instance, crossposts, newsrc_upd, binxpost;
+bool MOREINFO,  QUIET;
 static int spooltodisk, NNTP_stat;
 unsigned long reparticle, cur_numa, cur_first, cur_last;
 time_t cur_daten;
 unsigned short reply, sy;
 static char NEWSNAME[60], NEWSPASS[60];
-static int DEBUG = 1;
+static bool DEBUG = true;
 char net_data[MAX_PATH];
 
 
@@ -292,7 +293,7 @@ int read_groups()
 				}
 				if (!ok)
 				{
-					log_it(1, "\n \xFE @32767 not listed as a subscriber in N%s.NET!",
+					log_it( true, "\n \xFE @32767 not listed as a subscriber in N%s.NET!",
 					grouprec[i].subtype);
 				}
 			}
@@ -329,13 +330,13 @@ bool sendauthinfo(SOCKET sock)
 			} 
 			else 
 			{
-				log_it(1, "\n \xFE Authentication failed.  Aborting news session.");
+				log_it( true, "\n \xFE Authentication failed.  Aborting news session.");
 				return false;
 			}
 		} 
 		else 
 		{
-			log_it(1, "\n \xFE Unknown AUTHINFO response %s.", g_szTempBuffer);
+			log_it( true, "\n \xFE Unknown AUTHINFO response %s.", g_szTempBuffer);
 			return false;
 		}
 	}
@@ -560,7 +561,7 @@ int savebody(SOCKET sock, char *pszFileName, int cug, unsigned long cur_article,
 		sh_write(hFile, "\n", sizeof(char));
 		if (spooltodisk) 
 		{
-			if ((MOREINFO) && (!QUIET))
+			if ( MOREINFO && !QUIET )
 			{
 				output("\n \xFE NEWS%d.UUE - [Esc], [Space], [Tab], ] = +10, } = +100, + = User Input [-]", cug);
 			}
@@ -745,7 +746,7 @@ int savebody(SOCKET sock, char *pszFileName, int cug, unsigned long cur_article,
 					log_it(MOREINFO, "\n \xFE Unable to create %s", pszFileName);
 					return 0;
 				}
-				if ((MOREINFO) && (!QUIET)) 
+				if (MOREINFO && !QUIET) 
 				{
 					backline();
 					output("\r \xFE Breaking into %d%s part [ ]", (part), ordinal_text(part));
@@ -887,13 +888,13 @@ SOCKET netsocket(char *host)
 		}
 		else
 		{
-			log_it(1, "\n \xFE Error : Cannot resolve host %s", host);
+			log_it( true, "\n \xFE Error : Cannot resolve host %s", host);
 			return INVALID_SOCKET;
 		}
 	}
 	if ( connect( sock, ( SOCKADDR *) &sockAddr, sizeof ( sockAddr ) ) == SOCKET_ERROR )
 	{
-		log_it(1, "\n \xFE Error : Unable to connect to %s", host);
+		log_it( true, "\n \xFE Error : Unable to connect to %s", host);
 		return INVALID_SOCKET;
 	}
 
@@ -906,13 +907,13 @@ SOCKET netsocket(char *host)
 		log_it(MOREINFO, "\n \xFE Connection to %s accepted...", host);
 		return sock;
     case 502:
-		log_it(1, "\n \xFE Connection to %s refused... try again later.", host);
+		log_it( true, "\n \xFE Connection to %s refused... try again later.", host);
 		break;
     case 503:
-		log_it(1, "\n \xFE NNTP service unavailable. Connection to %s refused.", host);
+		log_it( true, "\n \xFE NNTP service unavailable. Connection to %s refused.", host);
 		break;
     default:
-		log_it(1, "\n \xFE Unknown NNTP error. Connection to %s failed.", host);
+		log_it( true, "\n \xFE Unknown NNTP error. Connection to %s failed.", host);
 		break;
 	}
 	NEWS_SOCK_READ_ERR(NNTP);
@@ -1016,15 +1017,15 @@ int saveactive(SOCKET sock, int forced)
 		fnday = ft->tm_mday+1;
 		fnmonth = ft->tm_mon+1;
 		fnyear = ft->tm_year + 1900;
-		log_it( 1, "\n \xFE NEWSRC last updated %02u/%02u/%04u %.2u:%.2u:%.2u... ", fnmonth, fnday, fnyear, fnhour, fnminute, fnsecond );
+		log_it( true, "\n \xFE NEWSRC last updated %02u/%02u/%04u %.2u:%.2u:%.2u... ", fnmonth, fnday, fnyear, fnhour, fnminute, fnsecond );
 		if ( d->tm_mday == ft->tm_mday && d->tm_mon == ft->tm_mon && d->tm_year == ft->tm_year ) 
 		{
-			log_it(1, "no update required.");
+			log_it( true, "no update required.");
 			return 0;
 		} 
 		else
 		{
-			log_it(1, "updating.");
+			log_it( true, "updating.");
 		}
 		if ( d->tm_mon == ft->tm_mon && d->tm_mday != ft->tm_mday )
 		{
@@ -1086,7 +1087,7 @@ int saveactive(SOCKET sock, int forced)
                 }
 				if (inloop > 10) 
                 {
-					log_it(1, "Looping problem at %s", g_szTempBuffer);
+					log_it( true, "Looping problem at %s", g_szTempBuffer);
 					if (fp != NULL)
                     {
 						fclose(fp);
@@ -1108,11 +1109,11 @@ int saveactive(SOCKET sock, int forced)
             {
 				if (count == 0)
                 {
-					log_it(1, "\b\b\b\b\b\b\bNo new groups.");
+					log_it( true, "\b\b\b\b\b\b\bNo new groups.");
                 }
 				else
                 {
-					log_it(1, "\b\b\b\b\b\b\b%lu group%s added to NEWSRC.", count,
+					log_it( true, "\b\b\b\b\b\b\b%lu group%s added to NEWSRC.", count,
 					count == 1 ? "" : "s");
                 }
 			} 
@@ -1161,15 +1162,15 @@ int saveactive(SOCKET sock, int forced)
 	return 0;
 }
 
-int checkx(int cug)
+bool checkx(int cug)
 {
 	char *ptr, *ptr2, *ptr3, szFileName[_MAX_PATH], buf[256], tmp[STR];
-	int i, spam, max;
+	int i, max;
 	FILE *fp;
 	
 	if ((stristr(grouprec[cug].groupname, "binaries")) && (binxpost))
 	{
-		return 1;
+		return true;
 	}
 	
 	sprintf(buf, "%s!%s", POPNAME, POPDOMAIN);
@@ -1180,7 +1181,7 @@ int checkx(int cug)
 		{
 			output("%-53.53s", buf);
 		}
-		return 0;
+		return true;
 	}
 	if (stristr(cur_organization, syscfg.systemname) != 0) 
 	{
@@ -1189,14 +1190,14 @@ int checkx(int cug)
 		{
 			output("%-53.53s", buf);
 		}
-		return 0;
+		return true;
 	}
 	bool ok = true;
-	spam = 0;
+	bool spam = false;
 	sprintf(szFileName, "%sNOSPAM.TXT", net_data);
 	if ((fp = fsh_open(szFileName, "r")) != NULL) 
 	{
-		while ((!feof(fp)) && (!spam)) 
+		while (!feof(fp) && !spam) 
 		{
 			fgets(buf, 80, fp);
 			trimstr1(buf);
@@ -1219,21 +1220,21 @@ int checkx(int cug)
 						ok = false;
 					}
 				}
-				if ((ok) && ((stristr(cur_subject, buf)) || (stristr(cur_from, buf)))) 
+				if (ok && ((stristr(cur_subject, buf)) || (stristr(cur_from, buf)))) 
 				{
 					sprintf(tmp, "SPAM - %s - skipped.", buf);
 					if (!QUIET)
 					{
 						output("%-53.53s", tmp);
 					}
-					spam = 1;
+					spam = true;
 				}
 			}
 		}
 		fclose(fp);
 		if (spam)
 		{
-			return 0;
+			return false;
 		}
 	}
 	ptr = cur_newsgroups;
@@ -1279,7 +1280,7 @@ int checkx(int cug)
 				{
 					output("%-53.53s", buf);
 				}
-				return 0;
+				return false;
 			}
 		}
 		if ((crossposts > 0) && (max > crossposts)) 
@@ -1289,10 +1290,10 @@ int checkx(int cug)
 			{
 				output("%-53.53s", buf);
 			}
-			return 0;
+			return false;
 		}
 	}
-	return 1;
+	return true;
 }
 
 
@@ -1345,7 +1346,7 @@ int postnews( SOCKET sock, int cug )
 			}
 			else
 			{
-				log_it(1, "\n \xFE Remote error: %s", g_szTempBuffer);
+				log_it( true, "\n \xFE Remote error: %s", g_szTempBuffer);
 			}
 			return 0;
 		}
@@ -1384,7 +1385,7 @@ int postnews( SOCKET sock, int cug )
 		}
 		fclose(fp);
 		sock_puts(sock, ".");
-		if ((MOREINFO) && (!QUIET))
+		if (MOREINFO && !QUIET)
 		{
 			output("\n \xFE Awaiting acknowledgement - may take several minutes...");
 		}
@@ -1403,7 +1404,7 @@ int postnews( SOCKET sock, int cug )
 					_unlink(s);
 				}
 				_splitpath(s, NULL, NULL, s1, s2);
-				log_it(MOREINFO, "\n \xFE %s%s not accepted by server - nothing posted", s1, s2);
+				log_it( true, s2);
 				if (_unlink(s) == 0)
 				{
 					log_it(MOREINFO, "\n \xFE Deleted message - %s", s);
@@ -1441,7 +1442,7 @@ void get_subtype(int sub, char *where)
 		return;
     }
 	bool ok = false;
-	while (fgets(s, 80, fp)) 
+	while (fgets(s, sizeof(s)-1, fp)) 
     {
 		if (*s == '!') 
         {
@@ -1544,7 +1545,8 @@ unsigned long max_on_sub(int cug)
 
 int getnews(SOCKET sock)
 {
-    int nup, nug, cug, abort, ok, done, firstrun, parts, skipped, bogus;
+    int nup, nug, cug, abort, ok, done, parts, skipped, bogus;
+	bool firstrun;
     char *p, szFileName[_MAX_PATH], mailname[121], reline[121], pktname[_MAX_PATH];
     char ch, orig_subj[STRING], buf[STR];
     unsigned int text_len;
@@ -1576,7 +1578,7 @@ int getnews(SOCKET sock)
     skipped = 0;
     cslave(sock);
     name_packet(pktname);
-    if ((!MOREINFO) && (!QUIET))
+    if (!MOREINFO && !QUIET)
     {
         output("\n \xFE [Esc] aborts session - [Space] skips group - [Tab] catches up group");
     }
@@ -1616,7 +1618,7 @@ int getnews(SOCKET sock)
                     }
                     if (++bogus > 10) 
                     {
-                        log_it(1, "\n \xFE Too many invalid newsgroups... NEWS.RC error?");
+                        log_it( true, "\n \xFE Too many invalid newsgroups... NEWS.RC error?");
                         return false;
                     }
                     log_it(!QUIET, "\n \xFE Error accessing - %s", grouprec[cug].groupname);
@@ -1782,7 +1784,7 @@ int getnews(SOCKET sock)
                         parts = 1;
                         done = 0;
                     }
-                    firstrun = 1;
+                    firstrun = true;
                     while (!done) 
                     {
                         sprintf(szFileName, "%sSPOOL\\%s", net_data, ff.name);
@@ -1837,7 +1839,7 @@ int getnews(SOCKET sock)
 						}
                         if (firstrun) 
                         {
-                            firstrun = 0;
+                            firstrun = false;
                             if (_strnicmp(cur_articleid, "re: ", 4) == 0) 
                             {
                                 strncpy(reline, cur_articleid, 60);
@@ -1992,7 +1994,7 @@ int getnews(SOCKET sock)
     nntp_shutdown(sock);
     if (abort)
     {
-        log_it(1, "\n \xFE Session aborted from keyboard");
+        log_it( true, "\n \xFE Session aborted from keyboard");
     }
     return true;
 }
@@ -2084,7 +2086,7 @@ int GetInstanceNumber()
         nInstanceNumber = atoi(ss);
         if ( nInstanceNumber <= 0 || nInstanceNumber >= 1000 )
         {
-            log_it(1, "\n \xFE WWIV_INSTANCE set to %d.  Can only be 1..999!", nInstanceNumber);
+            log_it( true, "\n \xFE WWIV_INSTANCE set to %d.  Can only be 1..999!", nInstanceNumber);
             nInstanceNumber = 1;
         }
     } 
@@ -2117,7 +2119,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
     if ((fp = fsh_open(szFileName, "rt")) == NULL)
     {
         output("\n \xFE Unable to read %s", szFileName);
-        log_it( 1, "\n \xFE Unable to read %s", szFileName);
+        log_it( true, "\n \xFE Unable to read %s", szFileName);
         return false;
     }
 
@@ -2196,7 +2198,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 trimstr1(ss);
                 if ((ss[0] == 'n') || (ss[0] == 'N'))
                 {
-                    MOREINFO = 0;
+                    MOREINFO = false;
                 }
             }
         }
@@ -2209,7 +2211,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 trimstr1(ss);
                 if ((ss[0] == 'y') || (ss[0] == 'Y'))
                 {
-                    QUIET = 1;
+                    QUIET = true;
                 }
             }
         }
@@ -2294,8 +2296,8 @@ int main(int argc, char *argv[])
     crossposts = 10;
     binxpost = 0;
     newsrc_upd = 0;
-    MOREINFO = 1;
-    QUIET = 0;
+    MOREINFO = true;
+    QUIET = false;
     POPNAME[0] = 0;
     POPDOMAIN[0] = 0;
     whichrc = '\0';
@@ -2351,7 +2353,7 @@ int main(int argc, char *argv[])
 
     if ( !InitializeWinsock() )
     {
-        log_it( 1, "\n Unable to initialize WinSock, Exiting...\n" );
+        log_it( true, "\n Unable to initialize WinSock, Exiting...\n" );
         WSACleanup();
         return EXIT_FAILURE;
     }
@@ -2379,12 +2381,12 @@ int main(int argc, char *argv[])
 
         if (_stricmp(grouprec[0].groupname, "newsrc") == 0)
         {
-            log_it(1, "\n \xFE Forced retrieval of newsgroup listing from %s.",
+            log_it( true, "\n \xFE Forced retrieval of newsgroup listing from %s.",
                 serverhost);
         }
         else
         {
-            log_it(0, "\n \xFE %u newsgroup%s defined in NEWS.RC.", ngroups,
+            log_it( false, "\n \xFE %u newsgroup%s defined in NEWS.RC.", ngroups,
                 ngroups == 1 ? "" : "s");
         }
 
@@ -2406,12 +2408,12 @@ int main(int argc, char *argv[])
             }
             if (!ok)
             {
-                log_it(1, "\n \xFE NEWS exited with an error.");
+                log_it( true, "\n \xFE NEWS exited with an error.");
             }
             sock = INVALID_SOCKET;
         }
         cd_to(g_szMainDirectory);
-        log_it(1, "\n \xFE NEWS completed processing %d newsgroups", ngroups);
+        log_it( true, "\n \xFE NEWS completed processing %d newsgroups", ngroups);
         if (grouprec)
         {
             free(grouprec);

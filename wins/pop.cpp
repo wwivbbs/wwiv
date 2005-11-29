@@ -20,12 +20,12 @@
 #define MEGA_DEBUG_LOG_INFO
 
 #if defined ( MEGA_DEBUG_LOG_INFO )
-#define DEBUG_LOG_IT(s) log_it( 1, s )
-#define DEBUG_LOG_IT_1(s, a) log_it( 1, s, a )
-#define DEBUG_LOG_IT_2(s, a, b) log_it( 1, s, a, b )
-#define DEBUG_LOG_IT_3(s, a, b, c) log_it( 1, s, a, b, c )
-#define DEBUG_LOG_IT_4(s, a, b, c, d) log_it( 1, s, a, b, c, d );
-#define DEBUG_LOG_IT_5(s, a, b, d, e) log_it( 1, s, a, b, c, d, e );
+#define DEBUG_LOG_IT(s) log_it( true, s )
+#define DEBUG_LOG_IT_1(s, a) log_it( true, s, a )
+#define DEBUG_LOG_IT_2(s, a, b) log_it( true, s, a, b )
+#define DEBUG_LOG_IT_3(s, a, b, c) log_it( true, s, a, b, c )
+#define DEBUG_LOG_IT_4(s, a, b, c, d) log_it( true, s, a, b, c, d );
+#define DEBUG_LOG_IT_5(s, a, b, d, e) log_it( true, s, a, b, c, d, e );
 #else	// MEGA_DEBUG_LOG_INFO
 #define DEBUG_LOG_IT(s) 
 #define DEBUG_LOG_IT_1(s, a)
@@ -61,10 +61,6 @@ char *fix_quoted_commas(char *string)
 
 void statusbar(statusbarrec * sb, int now, int tot)
 {
-    float pos;
-    int maj_pos, min_pos, x;
-    int total_fractions = (sb->width) * sb->amount_per_square;
-
     if (DEBUG)
     {
         return;
@@ -72,7 +68,7 @@ void statusbar(statusbarrec * sb, int now, int tot)
 
     if (sb->current_item == 0) 
     {
-        x = 0;
+        int x = 0;
         go_back(WhereX(), 1);
         output(" * File %3.3d/%3.3d ", now, tot);
         _putch(sb->side_char1);
@@ -93,10 +89,11 @@ void statusbar(statusbarrec * sb, int now, int tot)
         return;
     }
 
-    pos = ((float)sb->current_item / sb->total_items);
+    float pos = (static_cast<float>(sb->current_item) / sb->total_items);
+    const int total_fractions = (sb->width) * sb->amount_per_square;
     pos = pos * total_fractions;
-    maj_pos = ( int ) pos / sb->amount_per_square;
-    min_pos = ( int ) pos - (maj_pos * sb->amount_per_square);
+    int maj_pos = static_cast<int>(pos / sb->amount_per_square);
+    int min_pos = static_cast<int>(pos - (maj_pos * sb->amount_per_square));
 
     if (min_pos == 0)
     {
@@ -143,24 +140,22 @@ void statusbar(statusbarrec * sb, int now, int tot)
 
 SOCKET smtp_start( char *host, char *dom )
 {
-    SOCKET sock;
-	sock = socket( AF_INET, SOCK_STREAM, 0 );
+    SOCKET sock = socket( AF_INET, SOCK_STREAM, 0 );
 	if ( sock == INVALID_SOCKET )
 	{
 		int nWSAErrorCode = WSAGetLastError();
-		log_it( 1, "\n [SMTP] INVALID_SOCKET trying to create socket WSAGetLastError = [%d]", nWSAErrorCode );
+		log_it( true, "\n [SMTP] INVALID_SOCKET trying to create socket WSAGetLastError = [%d]", nWSAErrorCode );
 		return NULL;
 	}
 	
 	SOCKADDR_IN sockAddr;
 	ZeroMemory(&sockAddr, sizeof(sockAddr));
 	sockAddr.sin_family = AF_INET;
-	sockAddr.sin_port = htons(SMTPPORT );
+	sockAddr.sin_port = htons( SMTPPORT );
 	sockAddr.sin_addr.s_addr = inet_addr( host );
 	if (sockAddr.sin_addr.s_addr == INADDR_NONE)
 	{
-		LPHOSTENT lphost;
-		lphost = gethostbyname( host );
+		LPHOSTENT lphost = gethostbyname( host );
 		if (lphost != NULL)
 		{
 			sockAddr.sin_addr.s_addr = ((LPIN_ADDR)lphost->h_addr)->s_addr;
@@ -168,7 +163,7 @@ SOCKET smtp_start( char *host, char *dom )
 		else
 		{
 			SMTP_Err_Cond = SMTP_FAILED;
-			log_it(1, "\n \xFE Error : Cannot resolve host %s", host);
+			log_it( true, "\n \xFE Error : Cannot resolve host %s", host);
 			return NULL;
 		}
 	}
@@ -176,7 +171,7 @@ SOCKET smtp_start( char *host, char *dom )
 	if ( connect( sock, ( SOCKADDR *) &sockAddr, sizeof ( sockAddr ) ) == SOCKET_ERROR )
 	{
 		SMTP_Err_Cond = SMTP_FAILED;
-		log_it(1, "\n \xFE Error : Unable to connect to %s : %d", host, SMTPPORT);
+		log_it( true, "\n \xFE Error : Unable to connect to %s : %d", host, SMTPPORT);
 		return NULL;
 	}
 
@@ -201,15 +196,15 @@ SOCKET smtp_start( char *host, char *dom )
 
 }
 
-char *smtp_parse_from_line(FILE * f)
+char *smtp_parse_from_line(FILE * fpMessageFile)
 {
 	char s[161];
 	bool found = false, done = false;
 	
-	rewind( f );
-	while ( !feof(f) && !done ) 
+	rewind( fpMessageFile );
+	while ( !feof(fpMessageFile) && !done ) 
 	{
-		fgets( s, 160, f );
+		fgets( s, sizeof(s)-1, fpMessageFile );
 		if ( s && *s == '\n' )
 		{
 			done = true;
@@ -235,19 +230,20 @@ char *smtp_parse_from_line(FILE * f)
 		}
 		return trim( _strdup( &s[beginfocus] ) );
 	}
-	return 0;
+	return NULL;
 }
 
 
-int find_listname(FILE * f)
+bool find_listname(FILE * fpMessageFile)
 {
 	char *ss = NULL, s[161];
 	bool found = false, done = false;
 	
 	*LISTNAME = 0;
-	rewind(f);
-	while (!feof(f) && !done) {
-		fgets(s, 160, f);
+	rewind(fpMessageFile);
+	while (!feof(fpMessageFile) && !done) 
+	{
+		fgets(s, sizeof(s)-1, fpMessageFile);
 		if (*s == '\n')
 		{
 			done = true;
@@ -269,26 +265,27 @@ int find_listname(FILE * f)
 		}
 		if (ss)
 		{
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 
-char **smtp_parse_to_line(FILE * f)
+char **smtp_parse_to_line(FILE * fpMessageFile)
 {
-	int i, i1, done = 0, current = 0;
+	int current = 0;
 	char **list = NULL;
 	char *addr, _temp_addr[120], buf[120];
+	bool done = false;
 	
-	rewind(f);
-	while (!feof(f) && !done) 
+	rewind(fpMessageFile);
+	while (!feof(fpMessageFile) && !done) 
 	{
-		fgets(_temp_buffer, sizeof(_temp_buffer), f);
+		fgets(_temp_buffer, sizeof(_temp_buffer), fpMessageFile);
 		if (*_temp_buffer == '\n')
 		{
-			done = 1;
+			done = true;
 		}
 		else if ((_strnicmp(_temp_buffer, "to:", 3) == 0) ||
 			(_strnicmp(_temp_buffer, "cc:", 3) == 0) ||
@@ -302,17 +299,17 @@ char **smtp_parse_to_line(FILE * f)
 			if ((strchr(_temp_addr, ' ')) || (strchr(_temp_addr, ')')) || (strchr(_temp_addr, '\"'))) 
 			{
 				*buf = 0;
-				i1 = 0;
-				i = strcspn(_temp_addr, "@");
-				while ((i > 0) && (_temp_addr[i - 1] != ' ') && (_temp_addr[i - 1] != '<'))
+				int i1 = 0;
+				int i = strcspn(_temp_addr, "@");
+				while (i > 0 && _temp_addr[i - 1] != ' ' && _temp_addr[i - 1] != '<')
 				{
 					--i;
 				}
-				while (*_temp_addr && (_temp_addr[i] != ' ') && (_temp_addr[i] != '>'))
+				while (*_temp_addr && _temp_addr[i] != ' ' && _temp_addr[i] != '>')
 				{
 					buf[i1++] = _temp_addr[i++];
 				}
-				buf[i1] = 0;
+				buf[i1] = '\0';
 				addr = buf;
 			}
 			list = (char **) realloc(list, sizeof(char *) * ((current) + 2));
@@ -325,9 +322,9 @@ char **smtp_parse_to_line(FILE * f)
 }
 
 
-int smtp_send_MAIL_FROM_line(SOCKET sock, FILE * f)
+int smtp_send_MAIL_FROM_line(SOCKET sock, FILE * fpMessageFile)
 {
-	char *from = smtp_parse_from_line(f);
+	char *from = smtp_parse_from_line(fpMessageFile);
 	if (from) 
 	{
 		sprintf(_temp_buffer, "RSET");
@@ -364,17 +361,17 @@ int smtp_send_MAIL_FROM_line(SOCKET sock, FILE * f)
 
 #define FREE_ALL for (int i=0; to_list[i]!=NULL; i++) if (to_list[i]) free(to_list[i]); if (to_list) free(to_list);
 
-int smtp_send_RCPT_TO_line(SOCKET sock, FILE * f)
+int smtp_send_RCPT_TO_line(SOCKET sock, FILE * fpMessageFile)
 {
     char **to_list;
     bool done = false;
 
-    to_list = smtp_parse_to_line(f);
-    for (int i = 0; ((to_list[i] != NULL) && (!done)); i++) 
+    to_list = smtp_parse_to_line(fpMessageFile);
+    for (int i = 0; (to_list[i] != NULL && !done); i++) 
     {
         if ((strchr(to_list[i], '@') == NULL) || (strchr(to_list[i], '.') == NULL)) 
         {
-            log_it(1, "\n ! Invalid recipient - %s - aborting message.", to_list[i]);
+            log_it( true, "\n ! Invalid recipient - %s - aborting message.", to_list[i]);
             sock_puts(sock, "RSET");
             done = true;
         } 
@@ -404,11 +401,8 @@ int smtp_send_RCPT_TO_line(SOCKET sock, FILE * f)
 
 #undef FREE_ALL
 
-int smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bSkip)
+bool smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bSkip)
 {
-	int pos, in_header = 1, sent_from = 0;
-	long nbytes, obytes, rbytes, cbytes;
-	char *temp;
 	statusbarrec sb;
 	
 	sb.width = 59;
@@ -425,7 +419,7 @@ int smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bS
 	statusbar(&sb, cf, tf);
 	
 	fseek(fp, 0L, SEEK_END);
-	obytes = ftell(fp);
+	long obytes = ftell(fp);
 	rewind(fp);
 	sock_puts(sock, "DATA");
 	while (sock_tbused(sock) > 0) 
@@ -444,24 +438,27 @@ int smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bS
 		SMTP_RESET_ON(SMTP_FAILED,NOOP);
 		SMTP_RESET_ON(SMTP_ERROR,NOOP);
 	}
-	nbytes = 0L;
-	rbytes = cbytes = 256L;
-	pos = WhereX();
+	long nbytes = 0L;
+	long rbytes = 256L, cbytes = 256L;
+	int pos = WhereX();
 	if (DEBUG) 
 	{
 		output("               ");
 		go_back(WhereX(), pos);
 	}
-	while ((feof(fp) == 0) && (fgets(_temp_buffer, sizeof(_temp_buffer), fp))) 
+	bool in_header = true;
+	bool sent_from = false;
+	while (feof(fp) == 0 && fgets(_temp_buffer, sizeof(_temp_buffer), fp))
 	{
 		sb.current_item += strlen(_temp_buffer);
 		rip(_temp_buffer);
-		trim(temp = _strdup(_temp_buffer));
-		if (strlen(temp) == 0)
+		char *pszTemp = _strdup(_temp_buffer);
+		trim(pszTemp);
+		if (strlen(pszTemp) == 0)
 		{
-			in_header = 0;
+			in_header = false;
 		}
-		free(temp);
+		free(pszTemp);
 		
 		if (*_temp_buffer == '.') 
 		{
@@ -475,7 +472,7 @@ int smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bS
 			{
 				sprintf(_temp_buffer, "To: \"Multiple Recipients of Mailing List %s\" <%s>",
 					LISTNAME, MAILFROM);
-				sent_from = 1;
+				sent_from = true;
 			} 
 			else
 			{
@@ -520,8 +517,8 @@ int smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bS
 		{
 			go_back(WhereX(), pos);
 			output(" aborted.");
-			aborted = 1;
-			return 0;
+			aborted = true;
+			return false;
 		}
 	}
 	sock_puts(sock, "");
@@ -544,12 +541,12 @@ int smtp_sendf(SOCKET sock, FILE * fp, long cb, long tb, int cf, int tf, bool bS
 		go_back(WhereX(), pos);
 		output("accepted.");
 	}
-	return 1;
+	return true;
 	
 }
 
 
-int smtp_shutdown(SOCKET sock)
+void smtp_shutdown(SOCKET sock)
 {
 	if (sock) 
 	{
@@ -560,7 +557,6 @@ int smtp_shutdown(SOCKET sock)
 	}
 	output(" ");
 	SOCK_READ_ERR(SMTP, closesocket(sock));
-	return 0;
 }
 
 
@@ -579,8 +575,7 @@ SOCKET pop_init(char *host)
 	sockAddr.sin_addr.s_addr = inet_addr( host );
 	if (sockAddr.sin_addr.s_addr == INADDR_NONE)
 	{
-		LPHOSTENT lphost;
-		lphost = gethostbyname( host );
+		LPHOSTENT lphost = gethostbyname( host );
 		if (lphost != NULL)
 		{
 			sockAddr.sin_addr.s_addr = ((LPIN_ADDR)lphost->h_addr)->s_addr;
@@ -588,7 +583,7 @@ SOCKET pop_init(char *host)
 		else
 		{
 			SMTP_Err_Cond = SMTP_FAILED;
-			log_it(1, "\n \xFE Error : Cannot resolve host %s", host);
+			log_it( true, "\n \xFE Error : Cannot resolve host %s", host);
 			return NULL;
 		}
 	}
@@ -596,7 +591,7 @@ SOCKET pop_init(char *host)
 	if ( connect( sock, ( SOCKADDR *) &sockAddr, sizeof ( sockAddr ) ) == SOCKET_ERROR )
 	{
 		SMTP_Err_Cond = SMTP_FAILED;
-		log_it(1, "\n \xFE Error : Unable to connect to %s", host);
+		log_it( true, "\n \xFE Error : Unable to connect to %s", host);
 		return NULL;
 	}
 	
@@ -606,7 +601,7 @@ SOCKET pop_init(char *host)
 	if (*_temp_buffer != '+') 
 	{
 		POP_Err_Cond = POP_HOST_UNAVAILABLE;
-		log_it(1, "\n \xFE Error : Host %s is unavailable.", host);
+		log_it( true, "\n \xFE Error : Host %s is unavailable.", host);
 		return NULL;
 	} 
 	else 
@@ -617,7 +612,7 @@ SOCKET pop_init(char *host)
 	}
 }
 
-int pop_login(SOCKET sock, char *userid, char *password, char *host, int wingate)
+int pop_login(SOCKET sock, char *userid, char *password, char *host, bool wingate)
 {
     if (wingate)
     {
@@ -633,7 +628,7 @@ int pop_login(SOCKET sock, char *userid, char *password, char *host, int wingate
     if (*_temp_buffer != '+') 
     {
         POP_Err_Cond = POP_BAD_MBOX;
-        log_it(1, "\n \xFE Error : host report mailbox %s does not exist", userid);
+        log_it( true, "\n \xFE Error : host report mailbox %s does not exist", userid);
         if (sock) 
         {
             sock_puts(sock, "QUIT");
@@ -648,7 +643,7 @@ int pop_login(SOCKET sock, char *userid, char *password, char *host, int wingate
     if (*_temp_buffer != '+') 
     {
         POP_Err_Cond = POP_BAD_PASS;
-        log_it(1, "\n \xFE Error : Host reports password incorrect or account locked.");
+        log_it( true, "\n \xFE Error : Host reports password incorrect or account locked.");
         if (sock) 
         {
             sock_puts(sock, "QUIT");
@@ -718,7 +713,7 @@ long pop_length(SOCKET sock, unsigned int msg_num, unsigned long *size)
     SOCK_READ_ERR(POP,NOOP);
     if (*size == 0L) 
     {
-        log_it(1, "\n \xFE Mailbox contains a zero byte file -- deleting Message #%u!", msg_num);
+        log_it( true, "\n \xFE Mailbox contains a zero byte file -- deleting Message #%u!", msg_num);
         sprintf(_temp_buffer, "DELE %u", msg_num);
         sock_puts(sock, _temp_buffer);
         sock_gets(sock, _temp_buffer, sizeof(_temp_buffer));
@@ -726,14 +721,14 @@ long pop_length(SOCKET sock, unsigned int msg_num, unsigned long *size)
         if (*_temp_buffer != '+') 
         {
             POP_Err_Cond = POP_NOT_MSG;
-            log_it(1, "\n \xFE Error : No message #%u", msg_num);
+            log_it( true, "\n \xFE Error : No message #%u", msg_num);
         }
         sock_puts(sock, "QUIT");
         sock_gets(sock, _temp_buffer, sizeof(_temp_buffer));
         if (*_temp_buffer != '+') 
         {
             POP_Err_Cond = POP_UNKNOWN;
-            log_it(1, "\n \xFE Error : Unable to update mailbox.");
+            log_it( true, "\n \xFE Error : Unable to update mailbox.");
         } 
         else
         {
@@ -745,9 +740,9 @@ long pop_length(SOCKET sock, unsigned int msg_num, unsigned long *size)
 }
 
 
-bool checkspam(char *text)
+bool checkspam(char *pszText)
 {
-	char szFileName[161], buf[81], tmp[81];
+	char szFileName[_MAX_PATH], buf[81], tmp[81];
 	FILE *fp;
 	
 	bool spam = false;
@@ -755,9 +750,9 @@ bool checkspam(char *text)
 	if ((fp = fsh_open(szFileName, "r")) != NULL) 
 	{
 		bool ok = false;
-		while ((!feof(fp)) && (!spam)) 
+		while (!feof(fp) && !spam) 
 		{
-			fgets(buf, 80, fp);
+			fgets(buf, sizeof(buf)-1, fp);
 			trimstr1(buf);
 			if (strlen(buf) > 2) 
 			{
@@ -778,7 +773,7 @@ bool checkspam(char *text)
 						ok = false;
 					}
 				}
-				if ((ok) && (stristr(text, buf)))
+				if (ok && stristr(pszText, buf))
 				{
 					spam = true;
 				}
@@ -789,7 +784,7 @@ bool checkspam(char *text)
 	return spam;
 }
 
-bool checkfido(char *text)
+bool checkfido(char *pszText)
 {
     char szFileName[161], buf[81], tmp[81];
     FILE *fp;
@@ -798,9 +793,9 @@ bool checkfido(char *text)
     sprintf(szFileName, "%sFIWPKT.TXT", net_data);
     if ((fp = fsh_open(szFileName, "r")) != NULL) 
     {
-        while ((!feof(fp)) && (!spam)) 
+        while (!feof(fp) && !spam) 
         {
-            fgets(buf, 80, fp);
+            fgets(buf, sizeof(buf)-1, fp);
             trimstr1(buf);
             if (strlen(buf) > 2) 
             {
@@ -810,7 +805,7 @@ bool checkfido(char *text)
                     LAST(tmp) = '\0';
                     strcpy(buf, tmp);
                 }
-                if (stristr(text, buf))
+                if (stristr(pszText, buf))
                 {
                     spam = true;
                 }
@@ -826,73 +821,72 @@ bool checkfido(char *text)
 
 #define MAX_IDS 250
 
-int compact_msgid(void)
+bool compact_msgid()
 {
-    char szFileName[_MAX_PATH], oldfn[_MAX_PATH];
-    int i, f1, f2, num_ids;
+    char szNewFileName[_MAX_PATH], szOldFileName[_MAX_PATH];
     Message_ID messageid;
 
-    num_ids = 0;
-    sprintf(oldfn, "%sMSGID.OLD", net_data);
-    _unlink(oldfn);
-    sprintf(szFileName, "%sMSGID.DAT", net_data);
-    rename(szFileName, oldfn);
-    f1 = sh_open(oldfn, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-    if (f1 < 0) 
+    int num_ids = 0;
+    sprintf(szOldFileName, "%sMSGID.OLD", net_data);
+    _unlink(szOldFileName);
+    sprintf(szNewFileName, "%sMSGID.DAT", net_data);
+    rename(szNewFileName, szOldFileName);
+    int hOldFile = sh_open(szOldFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+    if (hOldFile < 0) 
     {
-        log_it(1, "\n ! Unable to read %s.", oldfn);
-        return 1;
+        log_it( true, "\n ! Unable to read %s.", szOldFileName);
+        return false;
     }
-    f2 = sh_open(szFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
-    if (f2 < 0) 
+    int hNewFile = sh_open(szNewFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+    if (hNewFile < 0) 
     {
-        log_it(1, "\n ! Unable to create %s.", szFileName);
-        return 1;
+        log_it( true, "\n ! Unable to create %s.", szNewFileName);
+        return false;
     }
-    for (i = 50; i < MAX_IDS; i++) 
+    for (int i = 50; i < MAX_IDS; i++) 
     {
-        sh_lseek(f1, ((long) (i)) * ((long) sizeof(Message_ID)), SEEK_SET);
-        sh_read(f1, (void *) &messageid, sizeof(Message_ID));
-        sh_lseek(f2, ((long) (num_ids++)) * ((long) sizeof(Message_ID)), SEEK_SET);
-        sh_write(f2, &messageid, sizeof(Message_ID));
+        sh_lseek(hOldFile, i * sizeof(Message_ID), SEEK_SET);
+        sh_read(hOldFile, &messageid, sizeof(Message_ID));
+        sh_lseek(hNewFile, num_ids++ * sizeof(Message_ID), SEEK_SET);
+        sh_write(hNewFile, &messageid, sizeof(Message_ID));
     }
-    f1 = sh_close(f1);
-    f2 = sh_close(f2);
-    _unlink(oldfn);
-    return 0;
+    hOldFile = sh_close(hOldFile);
+    hNewFile = sh_close(hNewFile);
+    _unlink(szOldFileName);
+    return true;
 }
 
-int check_messageid(int add, char *msgid)
+/** returns false if the message is a dupe, true otherwise */
+bool check_messageid(bool add, char *msgid)
 {
     char szFileName[_MAX_PATH];
-    int i, dupe, num_ids;
-    Message_ID messageid;
-
-    num_ids = dupe = 0;
-    sprintf(szFileName, "%sMSGID.DAT", net_data);
-    int f = sh_open(szFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-    if (f < 0) 
+	_snprintf(szFileName, _MAX_PATH, "%sMSGID.DAT", net_data);
+    int hMsgIdFile = sh_open(szFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+    if (hMsgIdFile < 0) 
     {
-        log_it(1, "\n ! Unable to create %s.", szFileName);
-        return -1;
+        log_it( true, "\n ! Unable to create %s.", szFileName);
+        return true;	// -1
     }
-    num_ids = (int) (_filelength(f) / sizeof(Message_ID));
 
+	int num_ids = static_cast<int>(_filelength(hMsgIdFile) / sizeof(Message_ID));
     if (num_ids > MAX_IDS)
     {
-        compact_ids = 1;
+        compact_ids = true;
     }
+
+    Message_ID messageid;
+	bool messageNotDupe = true;
     if (!add) 
     {
         log_it(DEBUG, "\n - Scanning previous %d Message-IDs.", num_ids);
-        for (i = 0; ((i < num_ids) && (!dupe)); i++) 
+        for (int i = 0; (i < num_ids && messageNotDupe ); i++) 
         {
-            sh_lseek(f, ((long) (i)) * ((long) sizeof(Message_ID)), SEEK_SET);
-            sh_read(f, (void *) &messageid, sizeof(Message_ID));
+            sh_lseek(hMsgIdFile, ((long) (i)) * ((long) sizeof(Message_ID)), SEEK_SET);
+            sh_read(hMsgIdFile, (void *) &messageid, sizeof(Message_ID));
             if (strcmp(messageid.msgid, msgid) == 0)
             {
-                dupe = 1;
+                messageNotDupe = false;
             }
         }
     } 
@@ -901,32 +895,31 @@ int check_messageid(int add, char *msgid)
         strncpy(messageid.msgid, msgid, 80);
         messageid.msgid[80] = '\0';
         log_it(DEBUG, "\n \xFE Adding new Message-ID:%s", messageid.msgid);
-        sh_lseek(f, ((long) (num_ids)) * ((long) sizeof(Message_ID)), SEEK_SET);
-        sh_write(f, &messageid, sizeof(Message_ID));
+        sh_lseek(hMsgIdFile, ((long) (num_ids)) * ((long) sizeof(Message_ID)), SEEK_SET);
+        sh_write(hMsgIdFile, &messageid, sizeof(Message_ID));
     }
-    f = sh_close(f);
-    return dupe;
+    hMsgIdFile = sh_close(hMsgIdFile);
+	return messageNotDupe;
 }
 
 int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
 {
-    int okpkt, found_from, found_subj, dupe;
-    char *ss, subject[81];
+    bool found_from = false, found_subj = false, dupe = false;
+    char *ss, subject[255];
 
     sprintf(_temp_buffer, "TOP %u 40", msg_num);
     sock_puts(sock, _temp_buffer);
     sock_gets(sock, _temp_buffer, sizeof(_temp_buffer));
+    int nPacketState = STATE_ERROR;
     if (*_temp_buffer != '+') 
     {
         POP_Err_Cond = POP_NOT_MSG;
-        log_it(1, "\n \xFE Error : No message #%u.", msg_num);
-        return -1;
+        log_it( true, "\n \xFE Error : No message #%u.", msg_num);
+        return nPacketState;
     }
-    okpkt = -1;
 
-    dupe = 0;
-    found_from = found_subj = fdl = 0;
-    net_pkt[0] = 0;
+    fdl = false;
+    net_pkt[0] = '\0';
     int nEmptyCount = 0;
     for( ;; )
     {
@@ -957,22 +950,22 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
             if ( _strnicmp(_temp_buffer, "begin 6", 7) == 0 &&
                 stristr(_temp_buffer, "WINMAIL") == NULL ) 
             {
-                if (okpkt != 4)
+                if (nPacketState != STATE_BAD)
                 {
-                    okpkt = 1;
+                    nPacketState = STATE_UUENCODE;
                 }
                 if ( stristr(_temp_buffer, ".ZIP") != NULL ||
                     stristr(_temp_buffer, ".ARJ") != NULL ||
                     stristr(_temp_buffer, ".LZH") != NULL )
                 {
-                    okpkt = 2;
+                    nPacketState = STATE_ARCHIVE;
                 }
                 if ( stristr(_temp_buffer, ".GIF") != NULL ||
                     stristr(_temp_buffer, ".JPG") != NULL )
                 {
-                    okpkt = 3;
+                    nPacketState = STATE_IMAGE;
                 }
-                if ((okpkt == 2) || (okpkt == 3) || (fdl)) 
+                if ( nPacketState == STATE_ARCHIVE || nPacketState == STATE_IMAGE || fdl) 
                 {
                     ss = strtok(_temp_buffer, "6");
                     if (ss) 
@@ -992,7 +985,7 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
             }
             if (_strnicmp(_temp_buffer, "FDL Type:", 9) == 0)
             {
-                fdl = 1;
+                fdl = true;
             }
         }
         if ( _strnicmp(_temp_buffer, "from:", 5) == 0 && !found_from )
@@ -1004,7 +997,7 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
                 stristr(_temp_buffer, from_user) != NULL ) 
                 && usernum == 0 )
             {
-                okpkt = 4;
+                nPacketState = STATE_BAD;
             }
             else 
             {
@@ -1012,16 +1005,16 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
                 {
                     strncpy(pktowner, &_temp_buffer[6], 35);
                     trimstr1(pktowner);
-                    pktowner[25] = 0;
+                    pktowner[25] = '\0';
                 } 
                 else
                 {
                     strcpy(pktowner, "Unknown");
                 }
             }
-            found_from = 1;
+            found_from = true;
         }
-        if ((_strnicmp(_temp_buffer, "subject:", 8) == 0) && (!found_subj)) 
+        if (_strnicmp(_temp_buffer, "subject:", 8) == 0 && !found_subj)
         {
             if (_temp_buffer[9] != 0)
             {
@@ -1031,19 +1024,19 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
             {
                 strcpy(subject, "Unknown");
             }
-            found_subj = 1;
+            found_subj = true;
         }
         if (usernum == 0) 
         {
-            if ((_strnicmp(_temp_buffer, "Message-ID:", 11) == 0) && (!found_subj)) 
+            if ((_strnicmp(_temp_buffer, "Message-ID:", 11) == 0) && !found_subj )
             {
                 if (_temp_buffer[11] != 0) 
                 {
                     strncpy(id, &_temp_buffer[11], 80);
                     id[80] = '\0';
-                    if (check_messageid(0, id))
+                    if (!check_messageid(false, id))
                     {
-                        dupe = 1;
+                        dupe = true;
                     }
                 }
             }
@@ -1051,15 +1044,15 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
     }
     if (found_from && found_subj) 
     {
-        if (okpkt == -1) 
+        if (nPacketState == STATE_UNKNOWN) 
         {
             if ( checkspam( pktowner ) || checkspam( subject ) )
             {
-                okpkt = 5;
+                nPacketState = STATE_SPAM;
             }
             if ( checkfido( subject ) )
             {
-                okpkt = 8;
+                nPacketState = STATE_FIDONET;
             }
         }
     }
@@ -1068,12 +1061,12 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
         if ((_strnicmp(subject, "subscribe", 9) == 0) ||
             (_strnicmp(subject, "unsubscribe", 11) == 0))
         {
-            okpkt = 6;
+            nPacketState = STATE_SUBSCRIBE;
         }
     }
     if (dupe)
     {
-        okpkt = 7;
+		nPacketState = STATE_DUPLICATE;
     }
     SOCK_READ_ERR(POP,NOOP);
     
@@ -1081,7 +1074,7 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
     Sleep( 100 );
     sock_flushbuffer( sock );
 
-    return okpkt;
+    return nPacketState;
 }
 
 int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
@@ -1093,8 +1086,8 @@ int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
 	
 	if (!pop_length(sock, msg_num, &size))
 	{
-		log_it(1, "\n \xFE Error : Unable to get size of message #%u", msg_num);
-		return 0;
+		log_it( true, "\n \xFE Error : Unable to get size of message #%u", msg_num);
+		return STATE_ERROR_RETREIVE;
 	}
 	sprintf(_temp_buffer, "RETR %u", msg_num);
 	sock_puts(sock, _temp_buffer);
@@ -1102,8 +1095,8 @@ int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
 	if (*_temp_buffer != '+') 
 	{
 		POP_Err_Cond = POP_NOT_MSG;
-		log_it(1, "\n \xFE Error : No message #%u", msg_num);
-		return 0;
+		log_it( true, "\n \xFE Error : No message #%u", msg_num);
+		return STATE_ERROR_RETREIVE;
 	}
 	nbytes = 0L;
 	
@@ -1112,8 +1105,8 @@ int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
 	pos = WhereX();
 	if ((fp = fsh_open(pszFileName, "w")) == NULL) 
 	{
-		log_it(1, "\n \xFE Unable to create %s... aborting!", pszFileName);
-		return 0;
+		log_it( true, "\n \xFE Unable to create %s... aborting!", pszFileName);
+		return STATE_ERROR_RETREIVE;
 	}
 	if (usernum > 0)
 	{
@@ -1150,7 +1143,7 @@ int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
 			{
 				fclose(fp);
 			}
-			return 0;
+			return STATE_ERROR_RETREIVE;
 		}
 		if (nbytes > rbytes) 
 		{
@@ -1167,7 +1160,7 @@ int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
 	go_back(WhereX(), pos);
 	output("%lu bytes.", size);
 	SOCK_READ_ERR(POP,NOOP);
-	return 1;
+	return STATE_SUCCESS;
 }
 
 int pop_delete(SOCKET sock, unsigned int msg_num)
@@ -1180,16 +1173,16 @@ int pop_delete(SOCKET sock, unsigned int msg_num)
     if (*_temp_buffer != '+') 
     {
         POP_Err_Cond = POP_NOT_MSG;
-        log_it(1, "\n \xFE Error : No message #%u", msg_num);
-        return 2;
+        log_it( true, "\n \xFE Error : No message #%u", msg_num);
+        return STATE_ERROR_DELETE;
     }
     SOCK_READ_ERR(POP,NOOP);
 #endif // __NO_POP_DELETE__
-    return 1;
+	return STATE_SUCCESS;
 }
 
 
-int pop_shutdown(SOCKET sock)
+bool pop_shutdown(SOCKET sock)
 {
     if ( sock != INVALID_SOCKET ) 
     {
@@ -1198,16 +1191,16 @@ int pop_shutdown(SOCKET sock)
         if (*_temp_buffer != '+') 
         {
             POP_Err_Cond = POP_UNKNOWN;
-            log_it(1, "\n \xFE Error : Unable to update mailbox.");
+            log_it( true, "\n \xFE Error : Unable to update mailbox.");
             closesocket(sock);
-            return 0;
+            return false;
         } 
         log_it(DEBUG, "\n \xFE Closed and updated mailbox.");
         closesocket(sock);
-        return 1;
+        return true;
     }
     closesocket(sock);
-    return 0;
+    return false;
 }
 
 
@@ -1216,7 +1209,7 @@ int pop_get_nextf(SOCKET sock, char *pszFileName, int msgnum, int usernum)
     if (!pop_getf(sock, pszFileName, msgnum, usernum)) 
     {
         _unlink(pszFileName);
-        return 0;
+        return STATE_ERROR_RETREIVE;
     }
     return (pop_delete(sock, msgnum));
 }
@@ -1234,7 +1227,7 @@ int find_acct(char *username, char *hostname, char *password)
         return 0;
     }
 
-    while ((fgets(s, 120, fp)) && (num == 0)) 
+    while (fgets(s, sizeof(s)-1, fp) && num == 0)
     {
         if (_strnicmp(s, "ACCT", 4) == 0) 
         {
@@ -1283,7 +1276,7 @@ int count_accts(int build)
         return 0;
     }
 
-    while (fgets(s, 100, fp)) 
+    while (fgets(s, sizeof(s)-1, fp)) 
     {
         if (_strnicmp(s, "ACCT", 4) == 0) 
         {
@@ -1339,7 +1332,7 @@ bool parse_net_ini()
     *POPHOST = *PROXY = *POPNAME = *POPPASS = *DOMAIN = *NODEPASS = 0;
 	POPPORT = DEFAULT_POP_PORT;
 	SMTPPORT = DEFAULT_SMTP_PORT;
-    while (fgets(line, 120, fp)) 
+    while (fgets(line, sizeof(s)-1, fp)) 
     {
         ss = NULL;
         stripspace(line);
@@ -1434,7 +1427,7 @@ int move_bad(char *path, char *pszFileName, int why)
 {
     char src[_MAX_PATH], dest[_MAX_PATH];
 
-    log_it(1, "\n \xFE %s failed - SMTP error condition %d", pszFileName, why);
+    log_it( true, "\n \xFE %s failed - SMTP error condition %d", pszFileName, why);
     sprintf(src, "%s%s", path, pszFileName);
     sprintf(dest, "%sFAILED\\%s", path, pszFileName);
     trimstr1(src);
@@ -1446,32 +1439,22 @@ int move_bad(char *path, char *pszFileName, int why)
 
 int SendMail(int argc, char *argv[])
 {
-	char szFileName[_MAX_PATH], mqueue[_MAX_PATH];
-	char ext[_MAX_EXT];
-	int failed, ok, result;
-	int jdater, jdatec, skipit, firstrun;
-	long total_bytes, current_bytes;
-	int total_files, current_files;
-	unsigned count;
-	FILE *fp;
-	struct _finddata_t ff;
-	SOCKET smtp_sock;
-
 	if (argc < 5) 
 	{
 		output("\n \xFE %s", version);
-		log_it(1, "\n \xFE Invalid arguments for %s\n", argv[0]);
+		log_it( true, "\n \xFE Invalid arguments for %s\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 	if (argc >= 6)
 	{
-		DEBUG = atoi(argv[5]);
+		DEBUG = atoi(argv[5]) ? true : false;
 	}
-	// %%HACK: by rob to keep debug mode enabled.
-	if (!DEBUG) DEBUG=1;
+	// %%HACK: Rushfan to keep debug mode enabled.
+	if (!DEBUG) DEBUG = true;
 	bool bSkip = ( argc == 7 && atoi(argv[6]) == 1 ) ? true : false;
 
-	strcpy(mqueue, argv[4]);
+	char szMessageQueueDirectory[_MAX_PATH];
+	strcpy(szMessageQueueDirectory, argv[4]);
 	strcpy(net_data, argv[4]);
 	LAST(net_data) = '\0';
 	while ( LAST(net_data) != '\\' )
@@ -1481,12 +1464,20 @@ int SendMail(int argc, char *argv[])
 	output("\n");
 	DEBUG_LOG_IT_1( "\n [DEBUG] net_data = [%s]", net_data );
 	DEBUG_LOG_IT_2( "\n [DEBUG] Before smtp_start [%s] [%s]", argv[2], argv[3] );
+	SOCKET smtp_sock;
 	if ((smtp_sock = smtp_start(argv[2], argv[3])) != NULL) 
 	{
-		total_bytes = total_files = current_bytes = current_files = failed = count = aborted = skipit = 0;
-		firstrun = 1;
-		sprintf(szFileName, "%s*.*", mqueue);
+		long total_bytes = 0, current_bytes = 0, total_files = 0, current_files = 0, nTimesFailed = 0;
+		unsigned int count = 0;
+		bool skipit = false, firstrun = true;
+		aborted = false;
+	
+		char szFileName[_MAX_PATH];
+		struct _finddata_t ff;
+
+		sprintf(szFileName, "%s*.*", szMessageQueueDirectory);
 		DEBUG_LOG_IT_1( "\n [DEBUG] Looking in [%s]", szFileName );
+
 		long hFind = _findfirst( szFileName, &ff ); //, FA_ARCH);
 		int nFindNext = ( hFind != -1 ) ? 0 : -1;
 		while (nFindNext == 0) 
@@ -1499,16 +1490,14 @@ int SendMail(int argc, char *argv[])
 			nFindNext = _findnext( hFind, &ff );
 		}
 		_findclose( hFind );
-		hFind = -1;
 		hFind = _findfirst(szFileName, &ff ); // , FA_ARCH);
 		nFindNext = ( hFind != -1 ) ? 0 : -1;
 		time_t ltime;
 		_tzset();
 		time( &ltime );
-		struct tm *today;
-		today = localtime( &ltime );
-		jdater = jdate(today->tm_year, today->tm_mday, today->tm_wday);
-		while ((count < 3) && (nFindNext == 0) && (failed < 5) && (!aborted)) 
+		struct tm *today = localtime( &ltime );
+		int jdater = jdate(today->tm_year, today->tm_mday, today->tm_wday);
+		while ( count < 3 && nFindNext == 0 && nTimesFailed < 5 && !aborted )
 		{
 			DEBUG_LOG_IT_1( "\n [DEBUG] Thinking about file [%s]", ff.name );
 			bool bDoThisFile = false;
@@ -1519,14 +1508,15 @@ int SendMail(int argc, char *argv[])
 				DEBUG_LOG_IT_1( "\n [DEBUG] Doing file [%s]", ff.name );
 				if (count > 1) 
 				{
-					DEBUG = 1;
+					DEBUG = true;
 					output("\n \xFE SMTP pass %d...\n", count);
 				}
-				sprintf(szFileName, "%s%s", mqueue, ff.name);
+				sprintf(szFileName, "%s%s", szMessageQueueDirectory, ff.name);
+				FILE *fp = NULL;
 				if ((fp = fsh_open(szFileName, "r")) != NULL) 
 				{
 					SMTP_Err_Cond = SMTP_OK;
-					ok = find_listname(fp);
+					bool ok = find_listname(fp);
 					if (DEBUG) 
 					{
 						output("\n");
@@ -1539,23 +1529,23 @@ int SendMail(int argc, char *argv[])
 							output("\r \xFE SND : %-12s : %-18.18s : [Space] aborts : ", LISTNAME, argv[2]);
 						}
 					}
-					ok = 1;
+					ok = true;
 					if (!smtp_send_MAIL_FROM_line(smtp_sock, fp))
 					{
 						DEBUG_LOG_IT( "\n [DEBUG] Bad smtp_send_MAIL_FROM_line");
-						ok = 0;
+						ok = false;
 					}
 					if (!smtp_send_RCPT_TO_line(smtp_sock, fp))
 					{
 						DEBUG_LOG_IT( "\n [DEBUG] Bad smtp_send_RCPT_TO_line");
-						ok = 0;
+						ok = false;
 					}
-					aborted = result = 0;
+					aborted = false;
 					if (ok) 
 					{
 						++current_files;
 						DEBUG_LOG_IT( "\n [DEBUG] About to call smtp_sendf");
-						result = smtp_sendf(smtp_sock, fp, current_bytes, total_bytes, current_files, total_files, bSkip);
+						int result = smtp_sendf(smtp_sock, fp, current_bytes, total_bytes, current_files, total_files, bSkip);
 						if ( !result || aborted )
 						{
 							if (fp != NULL)
@@ -1568,12 +1558,12 @@ int SendMail(int argc, char *argv[])
 								SMTP_Err_Cond == SMTP_BAD_NAM ||
 								SMTP_Err_Cond == SMTP_YOU_FWD )
 							{
-								if (move_bad(mqueue, ff.name, SMTP_Err_Cond))
+								if (move_bad(szMessageQueueDirectory, ff.name, SMTP_Err_Cond))
 								{
 									_unlink( szFileName );
 								}
 							}
-							++failed;
+							++nTimesFailed;
 						} 
 						else 
 						{
@@ -1595,13 +1585,13 @@ int SendMail(int argc, char *argv[])
 				} 
 				else
 				{
-					log_it( 1, "\n ! Unable to open %s.", szFileName );
+					log_it( true, "\n ! Unable to open %s.", szFileName );
 				}
 				nFindNext = _findnext( hFind, &ff );
 
-				if ((nFindNext != 0) && (firstrun)) 
+				if ( nFindNext != 0 && firstrun ) 
 				{
-					sprintf( szFileName, "%s*.*", mqueue );
+					sprintf( szFileName, "%s*.*", szMessageQueueDirectory );
 					_findclose( hFind );
 					hFind = -1;
 					hFind = _findfirst( szFileName, &ff ); // , FA_ARCH);
@@ -1615,28 +1605,29 @@ int SendMail(int argc, char *argv[])
 				{
 					if (firstrun) 
 					{
-						strcat(mqueue, "DIGEST\\");
-						firstrun = 0;
+						strcat(szMessageQueueDirectory, "DIGEST\\");
+						firstrun = false;
 					}
-					sprintf( szFileName, "%s*.*", mqueue );
+					sprintf( szFileName, "%s*.*", szMessageQueueDirectory );
 					hFind = _findfirst( szFileName, &ff );	// FA_ARCH);
 					nFindNext = ( hFind != -1 ) ? 0 : -1;
-					skipit = 1;
-					while ((nFindNext == 0) && (skipit)) 
+					skipit = true;
+					while ( nFindNext == 0 && skipit )
 					{
 						if ( ff.attrib & _A_ARCH )
 						{
-							_splitpath(ff.name, NULL, NULL, NULL, ext);
-							jdatec = atoi(&(ext[1]));
+							char szFileExtension[_MAX_EXT];
+							_splitpath(ff.name, NULL, NULL, NULL, szFileExtension);
+							int jdatec = atoi(&(szFileExtension[1]));
 							if (jdatec < jdater) 
 							{
-								skipit = 0;
+								skipit = false;
 								break;
 							} 
 							else 
 							{
-								skipit = 1;
-								log_it(0, "\n \xFE Digest %s not ready.", ff.name);
+								skipit = true;
+								log_it( false, "\n \xFE Digest %s not ready.", ff.name);
 							}
 						}
 						nFindNext = _findnext(hFind, &ff);
@@ -1652,15 +1643,15 @@ int SendMail(int argc, char *argv[])
 		{
 			_findclose( hFind );
 		}
-		if (failed >= 5)
+		if (nTimesFailed >= 5)
 		{
-			log_it(1, "\n \xFE Too many SMTP failures.  Try again later.");
+			log_it( true, "\n \xFE Too many SMTP failures.  Try again later.");
 		}
 		smtp_shutdown(smtp_sock);
 	} 
 	else
 	{
-		log_it(1, "\n \xFE SMTP connection failed.");
+		log_it( true, "\n \xFE SMTP connection failed.");
 	}
 	_fcloseall();
 	return EXIT_SUCCESS;
@@ -1668,23 +1659,21 @@ int SendMail(int argc, char *argv[])
 
 int ReceiveMail(int argc, char *argv[])
 {
-	char temp[181], s[21], s1[21];
+	char szFileName[181], s[21], s1[21];
 	char nodepass[40], nodename[20], host[60];
 	char pophost[60], poppass[20], popname[40];
-	int i, i1, okpkt, result, usernum, num_accts, accts;
-	int wingate, once, checknode;
-	unsigned long size;
-	unsigned count;
+	int i, usernum, num_accts, accts;
+	bool once, checknode;
 	SOCKET pop_sock;
 
-	strcpy(temp, argv[0]);
-	while (LAST(temp) != '\\')
+	strcpy(szFileName, argv[0]);
+	while (LAST(szFileName) != '\\')
 	{
-		LAST(temp) = '\0';
+		LAST(szFileName) = '\0';
 	}
-	strcpy(maindir, temp);
+	strcpy(maindir, szFileName);
 
-	wingate = 0;
+	bool wingate = false;
 	strcpy(pophost, POPHOST);
 	strcpy(popname, POPNAME);
 	strcpy(poppass, POPPASS);
@@ -1695,8 +1684,8 @@ int ReceiveMail(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 	sprintf(from_user, "%s@%s", popname, pophost);
-	DEBUG = atoi(argv[4]);
-	ALLMAIL = atoi(argv[3]);
+	DEBUG = atoi(argv[4]) ? true : false;
+	ALLMAIL = (atoi(argv[3]) > 0 );
 	strcpy(net_data, argv[2]);
 	LAST(net_data) = '\0';
 	while (LAST(net_data) != '\\')
@@ -1704,328 +1693,331 @@ int ReceiveMail(int argc, char *argv[])
 		LAST(net_data) = '\0';
 	}
 	POP_Err_Cond = POP_OK;
-	num_accts = accts = usernum = checknode = once = 0;
+	num_accts = accts = usernum = 0;
+	checknode = once = false;
 	*nodepass = *nodename = 0;
 	if (*NODEPASS) 
 	{
 		strcpy(nodepass, NODEPASS);
 		strcpy(nodename, argv[5]);
-		checknode = once = 1;
+		checknode = once = true;
 	}
 	while ( num_accts >= 0 || once ) 
 	{
 		if (*PROXY) 
 		{
-			wingate = 1;
+			wingate = true;
 			strcpy(host, PROXY);
 		} 
 		else
 		{
 			strcpy(host, pophost);
 		}
-		log_it(1, "\n \xFE Checking %s... ", pophost);
+		log_it( true, "\n \xFE Checking %s... ", pophost);
 		if ((pop_sock = pop_init(host)) != NULL) 
 		{
 			if (pop_login(pop_sock, popname, poppass, pophost, wingate)) 
 			{
+				unsigned long size;
+				unsigned int count;
 				if (pop_status(pop_sock, &count, &size)) 
 				{
-					okpkt = 0;
 					output("%s has %u message%s (%luK).", popname, count,
 						count == 1 ? "" : "s", ((size + 1023) / 1024));
-					i1 = 1;
+					int i1 = 1;
 					pktowner[0] = 0;
 					while ( i1 <= ( int ) count ) 
 					{
-						okpkt = 0;
-						okpkt = pop_top(pop_sock, i1, usernum);
-						if ( okpkt != 1 )
+						int nPacketState = pop_top(pop_sock, i1, usernum);
+						if ( nPacketState != STATE_UUENCODE )
 						{
-							log_it( 1, "** Pop top returned %d", okpkt );
+							log_it( true, "** Pop top returned %d", nPacketState );
 						}
-						switch (okpkt) 
+						switch (nPacketState) 
 						{
-						case -1:
-							if ((!ALLMAIL) && (!fdl))
+						case STATE_UNKNOWN:
+							if (!ALLMAIL && !fdl)
 							{
-								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+								log_it( true, "\n \xFE Non-network message %d left on server.", i1);
 							}
 							else 
 							{
 								i = 0;
-								sprintf(temp, "%sUNK-%03d.MSG", argv[2], i);
-								while (exist(temp))
+								sprintf(szFileName, "%sUNK-%03d.MSG", argv[2], i);
+								while (exist(szFileName))
 								{
-									sprintf(temp, "%sUNK-%03d.MSG", argv[2], ++i);
+									sprintf(szFileName, "%sUNK-%03d.MSG", argv[2], ++i);
 								}
-								_splitpath(temp, NULL, NULL, s, s1);
-								log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, pktowner[0] == 0 ?
+								_splitpath(szFileName, NULL, NULL, s, s1);
+								log_it( true, pktowner[0] == 0 ?
 									"non-network packet" : pktowner, s, s1);
-								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								int result = pop_get_nextf(pop_sock, szFileName, i1, usernum);
 								switch (result) 
 								{
-								case 0:
-									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+								case STATE_ERROR_RETREIVE:
+									log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
 									_fcloseall();
 									return EXIT_FAILURE;
-								case 1:
+								case STATE_SUCCESS:
 									if (usernum == 0)
 									{
-										check_messageid(1, id);
+										check_messageid(true, id);
 									}
 									break;
-								case 2:
-									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+								case STATE_ERROR_DELETE:
+									log_it( true, "\n \xFE Unable to delete message %d from host!", i1);
 									return EXIT_FAILURE;
 								}
 							}
 							break;
-						case 0:
-							log_it(1, "\n \xFE Error accessing message %d", i1);
+						case STATE_ERROR:
+							log_it( true, "\n \xFE Error accessing message %d", i1);
 							_fcloseall();
 							return EXIT_FAILURE;
-						case 1:
-							i = 0;
-							sprintf(temp, "%sPKT-%03d.UUE", argv[2], i);
-							while (exist(temp))
+						case STATE_UUENCODE:
 							{
-								sprintf(temp, "%sPKT-%03d.UUE", argv[2], ++i);
-							}
-							_splitpath(temp, NULL, NULL, s, s1);
-							log_it(1, "\n \xFE %s : %3.3d : %-20.20s : %s%s",
-								*net_pkt ? net_pkt : "Receive", i1, pktowner, s, s1);
-							result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-							switch (result) 
-							{
-							case 0:
-								log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-								_fcloseall();
-								return EXIT_FAILURE;
-							case 1:
-								if (usernum == 0)
+								i = 0;
+								sprintf(szFileName, "%sPKT-%03d.UUE", argv[2], i);
+								while (exist(szFileName))
 								{
-									check_messageid(1, id);
+									sprintf(szFileName, "%sPKT-%03d.UUE", argv[2], ++i);
 								}
-								break;
-							case 2:
-								log_it(1, "\n \xFE Unable to delete message %d on host!", i1);
-								return EXIT_FAILURE;
+								_splitpath(szFileName, NULL, NULL, s, s1);
+								log_it( true, "\n \xFE %s : %3.3d : %-20.20s : %s%s",
+									*net_pkt ? net_pkt : "Receive", i1, pktowner, s, s1);
+								int result = pop_get_nextf(pop_sock, szFileName, i1, usernum);
+								switch (result) 
+								{
+								case STATE_ERROR_RETREIVE:
+									log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
+									_fcloseall();
+									return EXIT_FAILURE;
+								case STATE_SUCCESS:
+									if (usernum == 0)
+									{
+										check_messageid(true, id);
+									}
+									break;
+								case STATE_ERROR_DELETE:
+									log_it( true, "\n \xFE Unable to delete message %d on host!", i1);
+									return EXIT_FAILURE;
+								}
 							}
 							break;
-						case 2:
+						case STATE_ARCHIVE:
 							if ( !ALLMAIL && !fdl )
 							{
-								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+								log_it( true, "\n \xFE Non-network message %d left on server.", i1);
 							}
 							else 
 							{
 								i = 0;
-								sprintf(temp, "%sARC-%03d.UUE", argv[2], i);
-								while (exist(temp))
+								sprintf(szFileName, "%sARC-%03d.UUE", argv[2], i);
+								while (exist(szFileName))
 								{
-									sprintf(temp, "%sARC-%03d.UUE", argv[2], ++i);
+									sprintf(szFileName, "%sARC-%03d.UUE", argv[2], ++i);
 								}
-								_splitpath(temp, NULL, NULL, s, s1);
+								_splitpath(szFileName, NULL, NULL, s, s1);
 								if (*fdlfn)
 								{
-									log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s", i1, "archived file", fdlfn);
+									log_it( true, "archived file", fdlfn);
 								}
 								else
 								{
-									log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "archived file", s, s1);
+									log_it( true, "archived file", s, s1);
 								}
-								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								int result = pop_get_nextf(pop_sock, szFileName, i1, usernum);
 								switch (result) 
 								{
-								case 0:
-									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+								case STATE_ERROR_RETREIVE:
+									log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
 									_fcloseall();
 									return EXIT_FAILURE;
-								case 1:
+								case STATE_SUCCESS:
 									if (usernum == 0)
 									{
-										check_messageid(1, id);
+										check_messageid(true, id);
 									}
 									break;
-								case 2:
-									log_it(1, "\n \xFE Unable to delete message %d on host!", i1);
+								case STATE_ERROR_DELETE:
+									log_it( true, "\n \xFE Unable to delete message %d on host!", i1);
 									return EXIT_FAILURE;
 								}
 							}
 							break;
-						case 3:
+						case STATE_IMAGE:
 							if ( !ALLMAIL && !fdl )
 							{
-								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+								log_it( true, "\n \xFE Non-network message %d left on server.", i1);
 							}
 							else 
 							{
 								i = 0;
-								sprintf(temp, "%sGIF-%03d.UUE", argv[2], i);
-								while ( exist( temp ) )
+								sprintf(szFileName, "%sGIF-%03d.UUE", argv[2], i);
+								while ( exist( szFileName ) )
 								{
-									sprintf(temp, "%sGIF-%03d.UUE", argv[2], ++i);
+									sprintf(szFileName, "%sGIF-%03d.UUE", argv[2], ++i);
 								}
-								_splitpath(temp, NULL, NULL, s, s1);
-								log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "graphic/image file", s, s1);
-								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								_splitpath(szFileName, NULL, NULL, s, s1);
+								log_it( true, "graphic/image file", s, s1);
+								int result = pop_get_nextf(pop_sock, szFileName, i1, usernum);
 								switch (result) 
 								{
-								case 0:
-									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+								case STATE_ERROR_RETREIVE:
+									log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
 									_fcloseall();
 									return EXIT_FAILURE;
-								case 1:
+								case STATE_SUCCESS:
 									if (usernum == 0)
 									{
-										check_messageid(1, id);
+										check_messageid(true, id);
 									}
 									break;
-								case 2:
-									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+								case STATE_ERROR_DELETE:
+									log_it( true, "\n \xFE Unable to delete message %d from host!", i1);
 									return EXIT_FAILURE;
 								}
 							}
 							break;
-						case 4:
-							i = 0;
-							sprintf(temp, "%sBAD-%03d.UUE", argv[2], i);
-							while (exist(temp))
+						case STATE_BAD:
 							{
-								sprintf(temp, "%sBAD-%03d.UUE", argv[2], ++i);
-							}
-							_splitpath(temp, NULL, NULL, s, s1);
-							log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "mailer-daemon/bounced", s, s1);
-							result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-							switch (result) 
-							{
-							case 0:
-								log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-								_fcloseall();
-								return EXIT_FAILURE;
-							case 1:
-								if (usernum == 0)
+								i = 0;
+								sprintf(szFileName, "%sBAD-%03d.UUE", argv[2], i);
+								while (exist(szFileName))
 								{
-									check_messageid(1, id);
+									sprintf(szFileName, "%sBAD-%03d.UUE", argv[2], ++i);
 								}
-								break;
-							case 2:
-								log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-								return EXIT_FAILURE;
+								_splitpath(szFileName, NULL, NULL, s, s1);
+								log_it( true, "mailer-daemon/bounced", s, s1);
+								int result = pop_get_nextf(pop_sock, szFileName, i1, usernum);
+								switch (result) 
+								{
+								case STATE_ERROR_RETREIVE:
+									log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
+									_fcloseall();
+									return EXIT_FAILURE;
+								case STATE_SUCCESS:
+									if (usernum == 0)
+									{
+										check_messageid(true, id);
+									}
+									break;
+								case STATE_ERROR_DELETE:
+									log_it( true, "\n \xFE Unable to delete message %d from host!", i1);
+									return EXIT_FAILURE;
+								}
 							}
 							break;
-						case 5:
+						case STATE_SPAM:
 							if ( !ALLMAIL && !fdl )
 							{
-								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+								log_it( true, "\n \xFE Non-network message %d left on server.", i1);
 							}
 							else 
 							{
 								i = 0;
-								sprintf(temp, "%sSPM-%03d.MSG", argv[2], i);
-								while (exist(temp))
+								sprintf(szFileName, "%sSPM-%03d.MSG", argv[2], i);
+								while (exist(szFileName))
 								{
-									sprintf(temp, "%sSPM-%03d.MSG", argv[2], ++i);
+									sprintf(szFileName, "%sSPM-%03d.MSG", argv[2], ++i);
 								}
-								_splitpath(temp, NULL, NULL, s, s1);
-								log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "matched NOSPAM.TXT", s, s1);
-								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								_splitpath(szFileName, NULL, NULL, s, s1);
+								log_it( true, "matched NOSPAM.TXT", s, s1);
+								int result = pop_get_nextf(pop_sock, szFileName, i1, usernum);
 								switch (result) 
 								{
-								case 0:
-									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+								case STATE_ERROR_RETREIVE:
+									log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
 									_fcloseall();
 									return EXIT_FAILURE;
-								case 1:
+								case STATE_SUCCESS:
 									if (usernum == 0)
 									{
-										check_messageid(1, id);
+										check_messageid(true, id);
 									}
 									break;
-								case 2:
-									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+								case STATE_ERROR_DELETE:
+									log_it( true, "\n \xFE Unable to delete message %d from host!", i1);
 									return EXIT_FAILURE;
 								}
 							}
 							break;
-						case 6:
-							if ( !ALLMAIL && !fdl )
+						case STATE_SUBSCRIBE:
 							{
-								log_it(1, "\n \xFE Non-network message %d left on server.", i1);
+								if ( !ALLMAIL && !fdl )
+								{
+									log_it( true, "\n \xFE Non-network message %d left on server.", i1);
+								}
+								else 
+								{
+									i = 0;
+									sprintf(szFileName, "%sSUB-%03d.MSG", argv[2], i);
+									while (exist(szFileName))
+									{
+										sprintf(szFileName, "%sSUB-%03d.MSG", argv[2], ++i);
+									}
+									_splitpath(szFileName, NULL, NULL, s, s1);
+									log_it( true, "subscribe request", s, s1);
+									int result = pop_get_nextf(pop_sock, szFileName, i1, usernum);
+									switch (result) 
+									{
+									case STATE_ERROR_RETREIVE:
+										log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
+										_fcloseall();
+										return EXIT_FAILURE;
+									case STATE_SUCCESS:
+										if (usernum == 0)
+										{
+											check_messageid(true, id);
+										}
+										break;
+									case STATE_ERROR_DELETE:
+										log_it( true, "\n \xFE Unable to delete message %d from host!", i1);
+										return EXIT_FAILURE;
+									}
+								}
 							}
-							else 
+							break;
+						case STATE_DUPLICATE:
+							{
+								if ( !ALLMAIL && !fdl )
+								{
+									log_it( true, "\n \xFE Duplicate message %d left on server.", i1);
+								}
+								else 
+								{
+									int result = pop_delete(pop_sock, i1);
+									if (result == STATE_ERROR_DELETE) {
+										log_it( true, "\n \xFE Unable to delete message %d from host!", i1);
+										return EXIT_FAILURE;
+									}
+								}
+							}
+							break;
+						case STATE_FIDONET:
 							{
 								i = 0;
-								sprintf(temp, "%sSUB-%03d.MSG", argv[2], i);
-								while (exist(temp))
+								sprintf(szFileName, "%sFIW-%03d.MSG", argv[2], i);
+								while (exist(szFileName))
 								{
-									sprintf(temp, "%sSUB-%03d.MSG", argv[2], ++i);
+									sprintf(szFileName, "%sFIW-%03d.MSG", argv[2], ++i);
 								}
-								_splitpath(temp, NULL, NULL, s, s1);
-								log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, "subscribe request", s, s1);
-								result = (pop_get_nextf(pop_sock, temp, i1, usernum));
+								_splitpath(szFileName, NULL, NULL, s, s1);
+								log_it( true, pktowner[0] == 0 ?
+									"non-network packet" : pktowner, s, s1);
+								int result = pop_get_nextf(pop_sock, szFileName, i1, usernum);
 								switch (result) 
 								{
-								case 0:
-									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
+								case STATE_ERROR_RETREIVE:
+									log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
 									_fcloseall();
 									return EXIT_FAILURE;
-								case 1:
-									if (usernum == 0)
-									{
-										check_messageid(1, id);
-									}
+								case STATE_SUCCESS:
 									break;
-								case 2:
-									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
+								case STATE_ERROR_DELETE:
+									log_it( true, "\n \xFE Unable to delete message %d from host!", i1);
 									return EXIT_FAILURE;
 								}
-							}
-							break;
-						case 7:
-							if ( !ALLMAIL && !fdl )
-							{
-								log_it(1, "\n \xFE Duplicate message %d left on server.", i1);
-							}
-							else 
-							{
-								result = (pop_delete(pop_sock, i1));
-								switch (result) 
-								{
-								case 0:
-									log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-									_fcloseall();
-									return EXIT_FAILURE;
-								case 1:
-									break;
-								case 2:
-									log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-									return EXIT_FAILURE;
-								}
-							}
-							break;
-						case 8:
-							i = 0;
-							sprintf(temp, "%sFIW-%03d.MSG", argv[2], i);
-							while (exist(temp))
-							{
-								sprintf(temp, "%sFIW-%03d.MSG", argv[2], ++i);
-							}
-							_splitpath(temp, NULL, NULL, s, s1);
-							log_it(1, "\n \xFE Receive : %3.3d : %-20.20s : %s%s", i1, pktowner[0] == 0 ?
-								"non-network packet" : pktowner, s, s1);
-							result = (pop_get_nextf(pop_sock, temp, i1, usernum));
-							switch (result) 
-							{
-							case 0:
-								log_it(1, "\n \xFE Unable to retrieve message %d.", i1);
-								_fcloseall();
-								return EXIT_FAILURE;
-							case 1:
-								break;
-							case 2:
-								log_it(1, "\n \xFE Unable to delete message %d from host!", i1);
-								return EXIT_FAILURE;
 							}
 							break;
 						}
@@ -2034,34 +2026,34 @@ int ReceiveMail(int argc, char *argv[])
 					}
 					if (compact_ids) 
 					{
-						log_it(1, "\n \xFE Compacting Message-ID database...");
+						log_it( true, "\n \xFE Compacting Message-ID database...");
 						compact_msgid();
-						compact_ids = 0;
+						compact_ids = false;
 					}
 				} 
 				else
 				{
-					log_it(1, "\n \xFE Unknown POP _access error - try again later.");
+					log_it( true, "\n \xFE Unknown POP _access error - try again later.");
 				}
 				pop_shutdown(pop_sock);
 			} 
 			else 
 			{
-				log_it(1, "\n \xFE Unable to log into POP server!");
+				log_it( true, "\n \xFE Unable to log into POP server!");
 				pop_shutdown(pop_sock);
 			}
 		} 
 		else
 		{
-			log_it(1, "\n \xFE POP socket connect failed.");
+			log_it( true, "\n \xFE POP socket connect failed.");
 		}
 		if ( checknode && once ) 
 		{
 			strcpy(pophost, "mail.filenet.wwiv.net");
 			strcpy(popname, nodename);
 			strcpy(poppass, nodepass);
-			ALLMAIL = 1;
-			once = 0;
+			ALLMAIL = true;
+			once = false;
 		} 
 		else 
 		{
@@ -2089,7 +2081,7 @@ int ReceiveMail(int argc, char *argv[])
 				strcpy(pophost, acct[num_accts - 1].pophost);
 				strcpy(popname, acct[num_accts - 1].popname);
 				strcpy(poppass, acct[num_accts - 1].poppass);
-				ALLMAIL = 1;
+				ALLMAIL = true;
 				usernum = find_acct(popname, pophost, poppass);
 				--num_accts;
 			} 
@@ -2101,7 +2093,7 @@ int ReceiveMail(int argc, char *argv[])
 	}
 	if (acct != NULL) 
 	{
-		free((void *) acct);
+		free(acct);
 		acct = NULL;
 	}
 	return EXIT_SUCCESS;
@@ -2120,7 +2112,7 @@ int main(int argc, char *argv[])
 
 	if ( !InitializeWinsock() )
     {
-        log_it( 1, "\n Unable to initialize WinSock, Exiting...\n" );
+        log_it( true, "\n Unable to initialize WinSock, Exiting...\n" );
         WSACleanup();
         return EXIT_FAILURE;
     }
