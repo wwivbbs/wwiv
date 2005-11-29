@@ -147,7 +147,7 @@ void multimail(int *pnUserNumber, int numu)
 	m.tosys = 0;
 	m.touser = 0;
 	m.status = status_multimail;
-	time((time_t *) &(m.daten));
+	m.daten = static_cast<unsigned long>(time(NULL));
 
 	WFile *pFileEmail = OpenEmailFile( true );
 	int len = pFileEmail->GetLength() / sizeof(mailrec);

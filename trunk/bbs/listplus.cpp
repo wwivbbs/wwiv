@@ -452,8 +452,8 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 		strcpy( szFileExt, "   " );
 	}
 
-	long lTimeNow = time(NULL);
-	long lDiffTime = static_cast<long>( difftime(lTimeNow, u->daten) );
+	time_t tTimeNow = time(NULL);
+	long lDiffTime = static_cast<long>( difftime(tTimeNow, u->daten) );
 	int nDaysOld = lDiffTime / SECONDS_PER_DAY;
 
 	sprintf(szFileInformation, "|%2d %c |%2d%3d ", lp_config.tagged_color, marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
@@ -2160,12 +2160,12 @@ int move_filename( const char *pszFileName, int dn )
                 GetSession()->bout << "|#5Reset upload time for file? ";
                 if (yesno())
                 {
-                    time((time_t *) &u.daten);
+                    u.daten = static_cast<unsigned long>(time(NULL));
                 }
             }
             else
             {
-                time((time_t *) &u.daten);
+                u.daten = static_cast<unsigned long>(time(NULL));
             }
             --cp;
 			if ( fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite ) )
