@@ -82,7 +82,7 @@ void *mallocx(unsigned long lNumberOfBytes)
 	void * x = malloc( ( lNumberOfBytes > 0 ) ? lNumberOfBytes : 1 );
 	if (!x) 
 	{
-		log_it(1, "\n ! Insufficient memory (%ld bytes) to read all directories.", lNumberOfBytes);
+		log_it( true, "\n ! Insufficient memory (%ld bytes) to read all directories.", lNumberOfBytes);
 		return NULL;
 	}
 	memset( ( void *)  x, 0, ( size_t ) lNumberOfBytes );
@@ -95,7 +95,7 @@ int scanfor(char *token, FILE * in)
 	char buf[MAX_BUF];
 
 	long pos = ftell(in);
-	while (fgets(buf, MAX_BUF, in) && _strnicmp(buf, token, strlen(token))) 
+	while (fgets(buf, sizeof(buf)-1, in) && _strnicmp(buf, token, strlen(token))) 
 	{
 		pos = ftell(in);
 	}
@@ -111,7 +111,7 @@ void scanfdl(FILE * in)
 	char *ss, buf[MAX_BUF];
 	int done = 0;
 
-	while ((fgets(buf, MAX_BUF, in)) && !done) 
+	while ((fgets(buf, sizeof(buf)-1, in)) && !done) 
 	{
 		ss = NULL;
 		if (_strnicmp(buf, "subject:", 8) == 0) 
@@ -662,7 +662,7 @@ void dliscan(int dn)
 	int i = (int)(_filelength(f) / sizeof(uploadsrec));
 	if (i == 0) 
 	{
-		log_it(1, "\n \xFE Creating new directory %s.", dlfn);
+		log_it( true, "\n \xFE Creating new directory %s.", dlfn);
 		memset(&u, 0, sizeof(uploadsrec));
 		strcpy(u.filename, "|MARKER|");
 		time(&tNow);
@@ -764,7 +764,7 @@ void upload_file(int dn, char *pszFileName, char *desc, char *upby)
 	f = sh_close(f);
 	sprintf(s1, "FDL : %s uploaded on %s", u.filename, d.name);
 	ssm(s1);
-	log_it(1, "\n \xFE %s", s1);
+	log_it( true, "\n \xFE %s", s1);
 }
 
 
@@ -837,10 +837,13 @@ int match_net(char *pszFileName)
 	int found = 0;
 	FILE *fp;
 
-	if ((fp = fsh_open(pszFileName, "rt")) != NULL) {
-		while (!feof(fp) && (!found)) {
-			fgets(line, 160, fp);
-			if (_strnicmp(line, "NET: ", 5) == 0) {
+	if ((fp = fsh_open(pszFileName, "rt")) != NULL) 
+	{
+		while ( !feof(fp) && !found) 
+		{
+			fgets(line, sizeof(line)-1, fp);
+			if (_strnicmp(line, "NET: ", 5) == 0) 
+			{
 				strcpy(net_pkt, &line[5]);
 				trimstr1(net_pkt);
 				found = 1;
@@ -920,7 +923,7 @@ int main(int argc, char *argv[])
 			while(LAST(maindir) != '\\')
 				LAST(maindir) = 0;
 			if (init()) {
-				log_it(1, "\n \xFE Failed to initialize UU variables.");
+				log_it( true, "\n \xFE Failed to initialize UU variables.");
 				ok1 = EXIT_FAILURE;
 			}
 			cd_to(temp_dir);
@@ -944,7 +947,7 @@ int main(int argc, char *argv[])
 					move_bad(s1);
 					cd_to(maindir);
 					sprintf(s1, "Error decoding %s.", argfile);
-					log_it(1, "\n \xFE %s", s1);
+					log_it( true, "\n \xFE %s", s1);
 					ssm(s1);
 					sprintf(s1, "%s%s", netdata, outname);
 					_unlink(s1);
@@ -963,7 +966,7 @@ int main(int argc, char *argv[])
 					ok1 = EXIT_FAILURE;
 					break;
 				case UU_CANT_OPEN:
-					log_it(1, "\n \xFE Cannot open %s%s", netdata, outname);
+					log_it( true, "\n \xFE Cannot open %s%s", netdata, outname);
 					cd_to(maindir);
 					ok1 = EXIT_FAILURE;
 					break;
@@ -972,7 +975,7 @@ int main(int argc, char *argv[])
 					move_bad(s1);
 					cd_to(maindir);
 					sprintf(s1, "Checksum error decoding %s - moved to CHECKNET!", argfile);
-					log_it(1, "\n \xFE %s", s1);
+					log_it( true, "\n \xFE %s", s1);
 					ssm(s1);
 					sprintf(s1, "%s%s", netdata, outname);
 					_unlink(s1);
@@ -983,7 +986,7 @@ int main(int argc, char *argv[])
 					move_bad(s1);
 					cd_to(maindir);
 					sprintf(s1, "No \'end\' found in %s - moved to CHECKNET!", argfile);
-					log_it(1, "\n \xFE %s", s1);
+					log_it( true, "\n \xFE %s", s1);
 					ssm(s1);
 					sprintf(s1, "%s%s", netdata, outname);
 					_unlink(s1);
@@ -1022,17 +1025,17 @@ int main(int argc, char *argv[])
 							}
 							if (!found) {
 								strcat(netdata, "CHECKNET\\");
-								log_it(1, "\n ! Unknown network %s in %s - moved to CHECKNET.", net_pkt, s5);
+								log_it( true, "\n ! Unknown network %s in %s - moved to CHECKNET.", net_pkt, s5);
 							}
 						} else
-							log_it(0, "\n \xFE No network specified in %s packet.", s5);
+							log_it( false, "\n \xFE No network specified in %s packet.", s5);
 						i = 0;
 						sprintf(s2, "%sP1-%03d.NET", netdata, i);
 						while (exist(s2))
 							sprintf(s2, "%sP1-%03d.NET", netdata, ++i);
 						sprintf(s1, "%s%s", temp_dir, stripfn(outname));
 						if (!copyfile(s1, s2)) {
-							log_it(1, "\n \xFE Error creating %s", s2);
+							log_it( true, "\n \xFE Error creating %s", s2);
 							cd_to(maindir);
 							ok1 = EXIT_FAILURE;
 							break;
@@ -1046,13 +1049,13 @@ int main(int argc, char *argv[])
 						else
 							sprintf(s1, "Received transferred file : %s.", s5);
 						ssm(s1);
-						log_it(1, "\n \xFE %s", s1);
+						log_it( true, "\n \xFE %s", s1);
 						num_dirs = 0;
 						dirs = (directoryrec *) mallocx(((long) syscfg.max_dirs) *
 							((long) sizeof(directoryrec)));
 						if (dirs == NULL)
 						{
-							log_it(0, "\n - Insufficient memory to read directories!");
+							log_it( false, "\n - Insufficient memory to read directories!");
 						}
 						else 
 						{
@@ -1060,13 +1063,13 @@ int main(int argc, char *argv[])
 							f = sh_open1(szFileName, O_RDONLY | O_BINARY);
 							if (f < 0)
 							{
-								log_it(1, "\n ! Unable to read %s", szFileName);
+								log_it( true, "\n ! Unable to read %s", szFileName);
 							}
 							else 
 							{
 								num_dirs = (int) huge_xfer(f, dirs, sizeof(directoryrec),
 									syscfg.max_dirs, 0) / sizeof(directoryrec);
-								log_it(0, "\n - Total dirs %d", num_dirs);
+								log_it( false, "\n - Total dirs %d", num_dirs);
 								if (num_dirs) 
 								{
 									lFileSize = _filelength(f) / num_dirs;
@@ -1092,11 +1095,11 @@ int main(int argc, char *argv[])
 									}
 								}
 								if (!dn) {
-									log_it(1, "\n \xFE FDL %hu not in DIREDIT... checking FDLFTS.CFG.",
+									log_it( true, "\n \xFE FDL %hu not in DIREDIT... checking FDLFTS.CFG.",
 										fdltype);
 									sprintf(szFileName, "%sFDLFTS.CFG", netdata);
 									if ((fp = fsh_open(szFileName, "rt")) == NULL) {
-										log_it(1, "\n \xFE FDLFTS.CFG does not exist... uploading to Sysop.");
+										log_it( true, "\n \xFE FDLFTS.CFG does not exist... uploading to Sysop.");
 									} else {
 										ok = 0;
 										while ((fgets(buf, 80, fp)) && !ok) {
@@ -1122,7 +1125,7 @@ int main(int argc, char *argv[])
 									}
 								}
 								if ((!ok) && (fdltype))
-									log_it(1, "\n \xFE FDL %hu not defined in FDLFTS.CFG... uploading to Sysop.",
+									log_it( true, "\n \xFE FDL %hu not defined in FDLFTS.CFG... uploading to Sysop.",
 									fdltype);
 							} else {
 								dn = 0;
@@ -1130,7 +1133,7 @@ int main(int argc, char *argv[])
 								strcpy(fdlupby, "FILEnet Transfer");
 								sprintf(szFileName, "%sFDLFTS.CFG", netdata);
 								if ((fp = fsh_open(szFileName, "rt")) == NULL) {
-									log_it(1, "\n \xFE %s does not exist... upload to Sysop.", szFileName);
+									log_it( true, "\n \xFE %s does not exist... upload to Sysop.", szFileName);
 								} else {
 									ok = 0;
 									while ((fgets(buf, 80, fp)) && !ok) {
@@ -1157,18 +1160,18 @@ int main(int argc, char *argv[])
 										fclose(fp);
 								}
 								if (!ok)
-									log_it(1, "\n \xFE NOREQUEST_DIR not defined in %s.", szFileName);
+									log_it( true, "\n \xFE NOREQUEST_DIR not defined in %s.", szFileName);
 							}
 							sprintf(s1, "%s%s", temp_dir, s5);
 							strcpy(buf, (char *)dirs[dn].path);
 							make_abs_path(buf, maindir);
 							sprintf(s2, "%s%s", buf, s5);
 							if (exist(s2)) {
-								log_it(1, "\n \xFE %s already exists", s2);
+								log_it( true, "\n \xFE %s already exists", s2);
 								move_bad(s1);
 							} else {
 								if (!copyfile(s1, s2)) {
-									log_it(1, "\n \xFE Error copying %s", s2);
+									log_it( true, "\n \xFE Error copying %s", s2);
 									move_bad(s1);
 								} else {
 									dliscan(dn);
@@ -1178,12 +1181,12 @@ int main(int argc, char *argv[])
 									if (ok == -1)
 										upload_file(dn, s5, fdldesc, fdlupby);
 									else
-										log_it(1, "\n \xFE %s already in %s.", szFileName, dirs[dn].name);
+										log_it( true, "\n \xFE %s already in %s.", szFileName, dirs[dn].name);
 								}
 							}
 							_unlink(s1);
 						} else {
-							log_it(1, "\n \xFE Moving %s to CHECKNET", s1);
+							log_it( true, "\n \xFE Moving %s to CHECKNET", s1);
 							move_bad(s1);
 						}
 						fdltype = 0;
@@ -1197,9 +1200,9 @@ int main(int argc, char *argv[])
 				default:
 					sprintf(s1, "%s%s", temp_dir, argfile);
 					name_file(1, s2);
-					log_it(1, "\n \xFE Unknown error %s...", s2);
+					log_it( true, "\n \xFE Unknown error %s...", s2);
 					if (!copyfile(s1, s2))
-						log_it(1, "\n \xFE Error during copy...");
+						log_it( true, "\n \xFE Error during copy...");
 					else
 						_unlink(s1);
 					cd_to(maindir);
@@ -1212,7 +1215,7 @@ int main(int argc, char *argv[])
 			else 
 			{
 				cd_to(maindir);
-				log_it(1, "\n \xFE Input file %s not found.", argfile);
+				log_it( true, "\n \xFE Input file %s not found.", argfile);
 				ok1 = EXIT_FAILURE;
 			}
 		}		

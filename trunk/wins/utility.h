@@ -34,7 +34,7 @@
 void giveup_timeslice(void);
 char *stripspace(char *str);
 void output(const char *fmt,...);
-int log_it(int display, char *fmt,...);
+void log_it(bool display, char *fmt,...);
 void backline(void);
 int do_spawn(const char *cl);
 void cd_to(const char *s);

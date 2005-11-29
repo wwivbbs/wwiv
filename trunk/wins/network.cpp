@@ -104,7 +104,7 @@ bool create_contact_ppp()
 		{
 			curfile = -1;
 		}
-		while ((curfile >= 0) && (fgets(s, 80, fp) != NULL)) 
+		while (curfile >= 0 && fgets(s, sizeof(s)-1, fp) != NULL)
 		{
 			if (s[0] != '@')
 			{
@@ -145,7 +145,7 @@ bool create_contact_ppp()
 		}
 		return true;
 	}
-	while (fgets(s, 80, fp) != NULL) 
+	while (fgets(s, sizeof(s)-1, fp) != NULL) 
 	{
 		if (s[0] != '@')
 		{
@@ -198,7 +198,7 @@ void good_addr(char *address, int nSystemNumber)
 	sprintf(szFileName, "%sCONTACT.PPP", net_data);
 	if ((fc = fsh_open(szFileName, "rb+")) == NULL) 
     {
-		log_it(1, "\n \xFE %s %s!\n", strings[1], szFileName);
+		log_it( true, "\n \xFE %s %s!\n", strings[1], szFileName);
 		return;
 	}
 	for ( int i = 0; ( i < g_nNumAddresses && !address[0] ); i++ )
@@ -225,7 +225,7 @@ int uu(char *pszFileName, char *pktname, char *dest)
 	sprintf(szFileName, "%sMQUEUE\\%s.UUE", net_data, pktname);
 	if ((fp = fsh_open(szFileName, "wt")) == NULL) 
 	{
-		log_it(1, "\n \xFE %s %s!", strings[0], szFileName);
+		log_it( true, "\n \xFE %s %s!", strings[0], szFileName);
 		do_exit(EXIT_FAILURE);
 	} 
 	else 
@@ -267,7 +267,7 @@ int uu(char *pszFileName, char *pktname, char *dest)
 }
 
 
-int update_contact(int sy, unsigned long sb, unsigned long rb, int set_time)
+int update_contact(int nSystemNumber, unsigned long sb, unsigned long rb, int set_time)
 {
 	char s[_MAX_PATH];
 	int i, i1 = 0;
@@ -290,7 +290,7 @@ int update_contact(int sy, unsigned long sb, unsigned long rb, int set_time)
 	}
 	for (i = 0; i < netcfg.num_ncn; i++)
 	{
-		if (netcfg.ncn[i].systemnumber == sy)
+		if (netcfg.ncn[i].systemnumber == nSystemNumber)
 		{
 			i1 = i;
 		}
@@ -303,10 +303,10 @@ int update_contact(int sy, unsigned long sb, unsigned long rb, int set_time)
 		++netcfg.ncn[i1].numcontacts;
 		if (!netcfg.ncn[i1].firstcontact)
 		{
-			netcfg.ncn[i1].firstcontact = cur_time;
+			netcfg.ncn[i1].firstcontact = static_cast<unsigned long>(cur_time);
 		}
-		netcfg.ncn[i1].lastcontact = cur_time;
-		netcfg.ncn[i1].lastcontactsent = cur_time;
+		netcfg.ncn[i1].lastcontact = static_cast<unsigned long>(cur_time);
+		netcfg.ncn[i1].lastcontactsent = static_cast<unsigned long>(cur_time);
 	}
 	netcfg.ncn[i1].bytes_sent += sb;
 	if (rb)
@@ -314,10 +314,10 @@ int update_contact(int sy, unsigned long sb, unsigned long rb, int set_time)
 		netcfg.ncn[i1].bytes_received += rb;
 	}
 	netcfg.ncn[i1].bytes_waiting = 0L;
-	sprintf(s, "%sS%hd.net", net_data, sy);
+	sprintf(s, "%sS%hd.net", net_data, nSystemNumber);
 	if (!exist(s))
 	{
-		sprintf(s, "%sZ%hd.net", net_data, sy);
+		sprintf(s, "%sZ%hd.net", net_data, nSystemNumber);
 	}
 	f = sh_open1(s, O_RDONLY | O_BINARY);
 	if (f > 0) 
@@ -342,7 +342,7 @@ int update_contact(int sy, unsigned long sb, unsigned long rb, int set_time)
 
 
 // Return code 1 is error, 0 is success.
-int update_contacts(int sy, unsigned long sb, unsigned long rb)
+int update_contacts(int nSystemNumber, unsigned long sb, unsigned long rb)
 {
 	FILE *fc = NULL;
 	
@@ -351,7 +351,7 @@ int update_contacts(int sy, unsigned long sb, unsigned long rb)
 	sprintf(szFileName, "%sCONTACT.PPP", net_data);
 	if ((fc = fsh_open(szFileName, "rb+")) == NULL) 
 	{
-		log_it(1, "\n \xFE %s %s!\n", strings[1], szFileName);
+		log_it( true, "\n \xFE %s %s!\n", strings[1], szFileName);
 		return 1;
 	}
 	for ( int i = 0; i < g_nNumAddresses; i++ ) 
@@ -362,7 +362,7 @@ int update_contacts(int sy, unsigned long sb, unsigned long rb)
 		if (curaddr.sysnum != 0) 
 		{
 			int i1;
-			if (curaddr.sysnum == sy)
+			if (curaddr.sysnum == nSystemNumber)
 			{
 				i1 = update_contact(curaddr.sysnum, sb, rb, 1);
 			}
@@ -401,7 +401,7 @@ int uu_packets(void)
 		num_sys_list = (int) (_filelength(f) / sizeof(net_system_list_rec));
 		if ((netsys = (net_system_list_rec *) malloc((num_sys_list + 2) * sizeof(net_system_list_rec))) == NULL) 
 		{
-			log_it(1, "\n \xFE Unable to allocate %d bytes of memory for BBSDATA.NET",
+			log_it( true, "\n \xFE Unable to allocate %d bytes of memory for BBSDATA.NET",
 				(int) (num_sys_list + 2) * sizeof(net_system_list_rec));
 			sh_close(f);
 			return false;
@@ -418,7 +418,7 @@ int uu_packets(void)
 	sprintf(s1, "%sCONTACT.PPP", net_data);
 	if ((fc = fsh_open(s1, "rb+")) == NULL) 
 	{
-		log_it(1, "\n \xFE %s %s!\n", strings[1], s1);
+		log_it( true, "\n \xFE %s %s!\n", strings[1], s1);
 		free(netsys);
 		return false;
 	}
@@ -510,7 +510,7 @@ int parse_net_ini( int &ini_section )
         output("\n ! Unable to read %s.", szFileName);
         return 0;
     }
-    while (fgets(line, 80, fp)) 
+    while (fgets(line, sizeof(line)-1, fp)) 
     {
         strcpy(vanline, line);
         stripspace(line);
@@ -658,7 +658,7 @@ int parse_net_ini( int &ini_section )
             {
                 if (toupper(ss[0]) == 'N')
                 {
-                    PURGE = 0;
+                    PURGE = false;
                 }
                 continue;
             }
@@ -666,7 +666,7 @@ int parse_net_ini( int &ini_section )
             {
                 if (toupper(ss[0]) == 'N')
                 {
-                    ALLMAIL = 0;
+                    ALLMAIL = false;
                 }
                 continue;
             }
@@ -674,7 +674,7 @@ int parse_net_ini( int &ini_section )
             {
                 if (toupper(ss[0]) == 'Y')
                 {
-                    ONECALL = 1;
+                    ONECALL = true;
                 }
                 continue;
             }
@@ -682,7 +682,7 @@ int parse_net_ini( int &ini_section )
             {
                 if (toupper(ss[0]) == 'Y')
                 {
-                    RASDIAL = 1;
+                    RASDIAL = true;
                 }
                 continue;
             }
@@ -690,7 +690,7 @@ int parse_net_ini( int &ini_section )
             {
                 if (toupper(ss[0]) == 'Y')
                 {
-                    MOREINFO = 1;
+                    MOREINFO = true;
                 }
                 continue;
             }
@@ -795,7 +795,7 @@ bool check_encode( char *pszFileName )
 	int lines = 0;
 	bool bEncoded = false;
 	
-	while ( fgets( s, 120, phFile ) &&  ++lines < 200 ) 
+	while ( fgets( s, sizeof(s)-1, phFile ) &&  ++lines < 200 ) 
 	{
 		if ( s &&  *s == '' )
 		{
@@ -901,7 +901,7 @@ void check_exp()
 	sprintf(s, "%s\\EXP.EXE", maindir);
 	if (!exist(s)) 
 	{
-		log_it(1, "\n ! EXPort/Import module not found!");
+		log_it( true, "\n ! EXPort/Import module not found!");
 		return;
 	}
 	bool ok = false;
@@ -938,7 +938,7 @@ void check_exp()
             g_nNetworkSystemNumber, FWDNAME, FWDDOM, net_name);
 		if (do_spawn(szCommand)) 
 		{
-			log_it(1, "\n ! %s during export!", strings[2]);
+			log_it( true, "\n ! %s during export!", strings[2]);
 			return;
 		}
 	} 
@@ -976,7 +976,7 @@ bool MakeNetDataPath( const char * pszPathName )
 	sprintf( s, "%s%s", net_data, pszPathName );
 	if (make_path(s) < 0) 
 	{
-		log_it( 1, "\n \xFE %s \"%s\"", strings[0], s );
+		log_it( true, "\n \xFE %s \"%s\"", strings[0], s );
 		return false;
 	}
 	return true;
@@ -1147,9 +1147,10 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	*SMTPHOST = *POPHOST = *NEWSHOST = *TIMEHOST = *QOTDHOST = *QOTDFILE = *POPNAME = *POPPASS = *PROXY = 0;
-	*DOMAIN = *FWDNAME = *FWDDOM = 0;
-	KEEPSENT = CLEANUP = MOREINFO = NOLISTNAMES = ONECALL = MULTINEWS = 0;
-	BBSNODE = ALLMAIL = PURGE = 1;
+	*DOMAIN = *FWDNAME = *FWDDOM = KEEPSENT = CLEANUP = NOLISTNAMES = MULTINEWS = 0;
+	BBSNODE = 1;
+	MOREINFO = ONECALL = RASDIAL = false;
+	PURGE = ALLMAIL = true;
 	POPPORT = DEFAULT_POP_PORT;
 	SMTPPORT = DEFAULT_SMTP_PORT;
 	int ini_section = 0;
@@ -1188,7 +1189,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	log_it( 1, "\n\n%s", version );
+	log_it( true, "\n\n%s", version );
     output( "\nLicensed under the Apache License." );
 	output( "\n%s\n", version_url );
 	time(&some);
@@ -1196,12 +1197,12 @@ int main(int argc, char *argv[])
 	sprintf(s1, "\n \xFE Running under %s on instance %d ", tasker, nInstanceNum );
 	strftime(s, 80, "at %I:%M%p, %d %b %Y", time_now);
 	strcat(s1, s);
-	log_it(1, s1);
+	log_it( true, s1);
 	int i = ( net_data[1] == ':' ) ? toupper( net_data[0] ) - 'A' + 1 : toupper( maindir[0] ) - 'A' + 1;
 	double dspace = WOSD_FreeSpaceForDriveLetter( i );
 	if (dspace < 1000.00) 
 	{
-		log_it(1, "\n \xFE Only %.1fK available on drive %c:... aborting!", dspace, i + '@');
+		log_it( true, "\n \xFE Only %.1fK available on drive %c:... aborting!", dspace, i + '@');
 		do_exit(EXIT_FAILURE);
 	} 
 	else
@@ -1209,32 +1210,32 @@ int main(int argc, char *argv[])
         double dMegsFree = (dspace / 1024L);
         if ( dMegsFree > 2048.0 )
         {
-		    log_it(1, "\n   Disk space : %c:\\ - %.1fGB", i + '@', ( dMegsFree / 1024L ) );
+		    log_it( true, "\n   Disk space : %c:\\ - %.1fGB", i + '@', ( dMegsFree / 1024L ) );
         }
         else
         {
-		    log_it(1, "\n   Disk space : %c:\\ - %.1fMB", i + '@', dMegsFree );
+		    log_it( true, "\n   Disk space : %c:\\ - %.1fMB", i + '@', dMegsFree );
         }
 	}
 	
 	set_net_num(nNetNumber);
 	ss = argv[1];
-	int sy = ( ss != NULL ) ? atoi(&ss[2]) : 0;
+	int nSystemNumber = ( ss != NULL ) ? atoi(&ss[2]) : 0;
 	destaddr[0] = 0;
-	if (sy != 32767)
+	if (nSystemNumber != 32767)
 	{
-		good_addr(destaddr, sy);
+		good_addr(destaddr, nSystemNumber);
 	}
 	
-	if ( destaddr[0] == 0 && sy != 32767 ) 
+	if ( destaddr[0] == 0 && nSystemNumber != 32767 ) 
 	{
-		output("\n \xFE Using direct dial for @%hd.%s\n\n", sy, net_name);
+		output("\n \xFE Using direct dial for @%hd.%s\n\n", nSystemNumber, net_name);
 		ok = false;
 	} 
 	else 
 	{
 		ok = true;
-		if (sy == 32767) 
+		if (nSystemNumber == 32767) 
 		{
 			if (ini_section & INI_NEWS)
 			{
@@ -1269,9 +1270,9 @@ int main(int argc, char *argv[])
 		do_exit( EXIT_FAILURE );
 	}
 
-	if ( PURGE && KEEPSENT && sy != 32767 ) 
+	if ( PURGE && KEEPSENT && nSystemNumber != 32767 ) 
 	{
-		log_it(1, "\n \xFE Purging sent packets older than %d day%s...", KEEPSENT, KEEPSENT == 1 ? "" : "s");
+		log_it( true, "\n \xFE Purging sent packets older than %d day%s...", KEEPSENT, KEEPSENT == 1 ? "" : "s");
 		sprintf(s, "%s\\PPPUTIL PURGE %s %d", maindir, net_data, KEEPSENT);
 		do_spawn(s);
 	}
@@ -1281,7 +1282,7 @@ int main(int argc, char *argv[])
 	check_exp();
 	
 	cd_to(maindir);
-	if (sy != 32767 || ONECALL ) 
+	if (nSystemNumber != 32767 || ONECALL ) 
 	{
 		output("\n \xFE Preparing outbound packets...");
 		if ( !uu_packets() ) 
@@ -1318,7 +1319,7 @@ int main(int argc, char *argv[])
 	{
 		if ( !InternetAutodial( INTERNET_AUTODIAL_FORCE_UNATTENDED, NULL ) )
 		{
-			log_it( 1, "\n \xFE Unable to connect using InternetAutodial" );
+			log_it( true, "\n \xFE Unable to connect using InternetAutodial" );
 			do_exit( EXIT_FAILURE );
 		}
 	}
@@ -1331,9 +1332,9 @@ int main(int argc, char *argv[])
 	time(&some);
 	time_now = localtime(&some);
 	strftime(s, 80, "\n - SMTP/POP on %A, %B %d, %Y at %H:%M %p", time_now);
-	log_it(0, s);
+	log_it( false, s);
 	sentbytes = recdbytes = 0L;
-	if ( bNeedToSend  && ( sy != 32767 || ONECALL ) ) 
+	if ( bNeedToSend  && ( nSystemNumber != 32767 || ONECALL ) ) 
 	{
 		int nNumMessagesSent = 0;
 		sprintf(temp, "%sMQUEUE\\*.*", net_data);
@@ -1354,7 +1355,7 @@ int main(int argc, char *argv[])
 		hFind = -1;
 		sprintf(s1, "%sMQUEUE\\", net_data);
 		sprintf(s, "%s\\POP.EXE -send %s %s %s %d %d", maindir, SMTPHOST, DOMAIN,
-			s1, MOREINFO, NOLISTNAMES);
+			s1, MOREINFO ? 1 : 0, NOLISTNAMES);
 		do_spawn(s);
 		
 		hFind = _findfirst( temp, &ff );
@@ -1375,12 +1376,12 @@ int main(int argc, char *argv[])
 		{
 			output(" ");
 			backline();
-			log_it(0, "\n");
-			log_it(1, " \xFE Outbound mail transfer completed : %d message%s (%ldK).",
+			log_it( false, "\n");
+			log_it( true, " \xFE Outbound mail transfer completed : %d message%s (%ldK).",
 				nNumMessagesSent, nNumMessagesSent == 1 ? "" : "s", ((sentbytes + 1023) / 1024));
 		}
 	}
-	if ( sy != 32767 || ONECALL ) 
+	if ( nSystemNumber != 32767 || ONECALL ) 
 	{
 		if ( *PRIMENET && _strnicmp(net_name, PRIMENET, strlen(net_name) != 0 ) ) 
 		{
@@ -1392,7 +1393,7 @@ int main(int argc, char *argv[])
 		} 
 		else 
 		{
-			sprintf(s, "%s\\POP.EXE -r %s %d %d n%hd", maindir, temp_dir, ALLMAIL, MOREINFO, g_nNetworkSystemNumber);
+			sprintf(s, "%s\\POP.EXE -r %s %d %d n%hd", maindir, temp_dir, ALLMAIL ? 1 : 0, MOREINFO ? 1 : 0, g_nNetworkSystemNumber);
 			sprintf(s1, "%s*.*", temp_dir);
 			if ( do_spawn( s ) == EXIT_SUCCESS || exists( s1 ) ) 
 			{
@@ -1430,12 +1431,12 @@ int main(int argc, char *argv[])
 	check_exp();
 	
 	mailtime = clock() - starttime + 1;
-	if ( sy == 32767 || ONECALL ) 
+	if ( nSystemNumber == 32767 || ONECALL ) 
 	{
 		time(&some);
 		time_now = localtime(&some);
 		strftime(s, 80, "\n - NEWS session beginning on %A, %B %d, %Y at %H:%M %p", time_now);
-		log_it(0, s);
+		log_it( false, s);
 		bHandleNews = true;
 		starttime = clock();
 		set_net_num(nNetNumber);
@@ -1511,7 +1512,7 @@ int main(int argc, char *argv[])
 	{
 		if ( !InternetAutodialHangup( static_cast<DWORD>( 0 ) ) )
 		{
-			log_it( 1, "\n \xFE ERROR disconnecting from the internet" );
+			log_it( true, "\n \xFE ERROR disconnecting from the internet" );
 		}
 	}
 // %%TODO: Disconnect from RAS
@@ -1519,11 +1520,11 @@ int main(int argc, char *argv[])
 
 	output("\n \xFE Updating network connection records...");
 
-	if ((sy != 32767) || ((sy == 32767) && (ONECALL))) 
+	if ( nSystemNumber != 32767 || ( nSystemNumber == 32767 && ONECALL ) ) 
 	{
-		if (update_contacts(sy, sentbytes, recdbytes))
+		if (update_contacts(nSystemNumber, sentbytes, recdbytes))
 		{
-			log_it(1, "\n \xFE %s", strings[3]);
+			log_it( true, "\n \xFE %s", strings[3]);
 		}
 		if (mailtime && ( mailtime > starttime ) )
 		{
@@ -1535,10 +1536,10 @@ int main(int argc, char *argv[])
 			strcpy(ttotal, "0.1");
 		}
 		sprintf(s, "%s\\PPPUTIL.EXE NETLOG %hd %lu %lu %s %s",
-		  maindir, sy, (recdbytes + 1023) / 1024, (sentbytes + 1023) / 1024, ttotal, net_name);
+		  maindir, nSystemNumber, (recdbytes + 1023) / 1024, (sentbytes + 1023) / 1024, ttotal, net_name);
 		if (do_spawn(s))
 		{
-			log_it(1, "\n ! %s", strings[4]);
+			log_it( true, "\n ! %s", strings[4]);
 		}
 	}
 
@@ -1546,13 +1547,13 @@ int main(int argc, char *argv[])
 	{
 		if ((newstime = clock()) == (clock_t) - 1)
 		{
-		  log_it(1, "\n \xFE NEWS time invalid.");
+		  log_it( true, "\n \xFE NEWS time invalid.");
 		}
 		else 
 		{
 			if (update_contact(32767, snewsbytes, rnewsbytes, 1))
 			{
-				log_it(1, "\n \xFE %s", strings[3]);
+				log_it( true, "\n \xFE %s", strings[3]);
 			}
 			newstime -= starttime;
 			if (newstime && ( newstime > starttime ) )
@@ -1573,7 +1574,7 @@ int main(int argc, char *argv[])
 			sprintf(s, "%s\\PPPUTIL.EXE NETLOG 32767 %lu %lu %s %s", maindir, snewsbytes, rnewsbytes, ttotal, net_name);
 			if (do_spawn(s))
 			{
-				log_it(1, "\n ! %s", strings[4]);
+				log_it( true, "\n ! %s", strings[4]);
 			}
 		}
 	}
@@ -1588,6 +1589,6 @@ int main(int argc, char *argv[])
 	do_spawn( s );
 
 	cd_to( maindir );
-	log_it( 1, "\n \xFE %s completed!\n\n", version );
+	log_it( true, "\n \xFE %s completed!\n\n", version );
 	return 0;
 }

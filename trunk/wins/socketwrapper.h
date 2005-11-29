@@ -34,13 +34,13 @@
         PROTOCOL##_Err_Cond = PROTOCOL##_OK;                                    \
         fprintf(stderr, "\n ! "#PROTOCOL"> Session error : sockerr");           \
         ACTION;                                                                 \
-        aborted = 1;                                                            \
+        aborted = true;                                                            \
         exit(EXIT_SUCCESS);                                                     \
       case -1:                                                                  \
         PROTOCOL##_Err_Cond = PROTOCOL##_OK;                                    \
         fprintf(stderr, "\n ! "#PROTOCOL"> Timeout : sockerr");                 \
         ACTION;                                                                 \
-        aborted = 1;                                                            \
+        aborted = true;                                                            \
         exit(EXIT_SUCCESS);                                                     \
     }
 
@@ -54,7 +54,7 @@
     if (DEBUG) fprintf(stderr, "\nSMTP Failure> '" #NUM "'\n");                   \
     sock_puts(sock, "QUIT");                                         \
     ACTION;                                                                     \
-    aborted = 1;                                                                \
+    aborted = true;                                                                \
     return 0;                                                                   \
   }
 
@@ -64,8 +64,8 @@
     sock_puts(sock, "RSET");                                         \
     sock_gets(sock, _temp_buffer, sizeof(_temp_buffer));             \
     ACTION;                                                                     \
-    aborted = 1;                                                                \
-    return(0);                                                                  \
+    aborted = true;                                                                \
+    return 0;                                                                  \
   }
 
 

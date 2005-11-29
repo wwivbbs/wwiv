@@ -61,7 +61,22 @@
 #define POPLIB_SMTP_PROB 410
 #define POPLIB_POP_PROB  411
 
+// States returned by pop_top
+#define STATE_UNKNOWN	-1
+#define STATE_ERROR		0
+#define STATE_UUENCODE	1
+#define STATE_ARCHIVE	2
+#define STATE_IMAGE		3	
+#define STATE_BAD		4
+#define STATE_SPAM		5
+#define STATE_SUBSCRIBE	6
+#define STATE_DUPLICATE	7
+#define STATE_FIDONET	8
 
+// States returned by pop_get_nextf, pop_getf, and pop_delete
+#define STATE_ERROR_RETREIVE 0
+#define STATE_SUCCESS 1
+#define STATE_ERROR_DELETE 2
 
 // Undefine the next line if you want to keep WINS from deleting 
 // messages from the POP server, usefull when debugging, just make sure to
@@ -70,17 +85,17 @@
 //#define __NO_POP_DELETE__
 
 
-typedef struct 
+struct Message_ID
 {
   char msgid[81];
-} Message_ID;
+};
 
-typedef struct 
+struct ACCT
 {
   char popname[40];
   char pophost[60];
   char poppass[40];
-} ACCT;
+};
 
 
 #define _TEMP_BUFFER_LEN 8192
@@ -93,10 +108,12 @@ char from_user[81], net_data[_MAX_PATH], net_pkt[21], maindir[160], fdlfn[21], i
 char LISTNAME[45], MAILFROM[60], PROXY[40], listaddr[25];
 char POPHOST[60], POPNAME[40], POPPASS[20], DOMAIN[60], NODEPASS[20];
 int POPPORT, SMTPPORT;
-int fdl;
+bool fdl;
 char _temp_buffer[_TEMP_BUFFER_LEN];
 static int POP_stat, SMTP_stat;
-int aborted, DEBUG = 1, ALLMAIL, compact_ids = 0;
+bool DEBUG = true;
+bool compact_ids = false;
+bool aborted, ALLMAIL;
 
 char *version = "WWIV Internet Network Support (WINS) POP3/SMTP Client " VERSION;
 
