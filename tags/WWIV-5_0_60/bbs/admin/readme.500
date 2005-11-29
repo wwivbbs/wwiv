@@ -1,0 +1,75 @@
+readme.500
+01/03/2004
+
+
+WWIV 5.0 (Beta-2) Getting Started
+=================================
+Copy all of these files into your existing WWIV 4.30/500 installation 
+(don't worry, it won't overwrite anything from 4.30)
+
+Run WWIVTelnetServer.exe and then select the menu Edit > Preferences and setup
+the information for your configuration (paths, and the starting and ending
+node numbers to use for inbound telnet).  Make sure those nodes are setup
+in INIT50.exe already.  Then choose File > Start Server.  Now the 
+WWIVTelnetServer (WTS) is listening on a socket and ready to spawn now 
+instances of WWIV.  You do not need to keep multiple copies of WWIV running
+at all times, as the WTS will spawn them as required.  Also, make sure that
+all of the nodes that are telnet are setup in INIT to use COM1.
+
+*** Be sure to read WHATSNEW.TXT for a list of all the new major features and
+other changes that have happened since 4.X. ***
+
+
+
+Known Issues
+============
+Serial I/O Support (aka using the modem) has not been tested.
+
+
+File List
+=========
+dosxtrn.exe             - FOSSIL support from Synchronet BBS
+file_id.diz             - Description
+init50.exe              - Win32 Console Mode INIT
+license.agr             - License Agreement
+sbbsexec.dll            - FOSSIL support from Synchronet BBS
+sbbsexec.vxd            - FOSSIL support from Synchronet BBS
+whatsnew.txt            - New Feature List in WWIV 5.0
+wwiv50.exe              - Win32 Replacement for bbs.exe
+WWIVTelnetServer.cnt    - Table of Contents for WTS Help file
+WWIVTelnetServer.exe    - WWIV Telnet Server main executable
+WWIVTelnetServer.hlp    - Help File used by WTS
+
+
+Registration Passcodes:
+=======================
+
+    All registered sysops now need a Registration Passcode for the BBS.
+In the past, address information was used to verify registrations.  We
+found it a tedious and repetitive task to verify this information.
+Since the passcode system is already required for instances beyond the
+standard installation, we are using that system to verify registrations
+now.  Registration numbers and passcode pairs will be used to verify
+your identity as a registered sysop for SDS systems and other activities
+that require registration verification.
+
+    If you have upgraded to 4 or more instances already, your current
+passcode will suffice.  If not, you will need to do one of two things:
+
+    a.  If your current address information is the same as when you
+    registered WWIV, go to http://wss.wwiv.com/passcode.htm to apply for
+    your passcode.
+
+    b.  If your registration record is not current, we will have to
+    verify you one last time under the old system.  Go to
+    http://wss.wwiv.com/regupdate.htm to update your information and
+    your passcode will be issued when the update is completed.  You can
+    also use this form to update your information at any time in the
+    future should you wish to keep our database current.
+
+    Be forewarned, WWIV v5.00 will stop operating in evaluation mode 60
+days after it is installed even if a registration number is entered in
+INIT.  Both registration number *and* passcode must be entered to
+operate in registered mode.  After the 60 day trial, the BBS name will
+be changed to "Unregistered WWIV BBS" and INIT will cease to function.
+
