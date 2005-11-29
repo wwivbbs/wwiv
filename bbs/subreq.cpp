@@ -53,7 +53,7 @@ void sub_req(int main_type, int minor_type, int tosys, char *extra)
     nh.main_type = static_cast<unsigned short>( main_type );
     nh.minor_type = static_cast<unsigned short>( minor_type) ;
     nh.list_len = 0;
-    time((time_t *) &nh.daten);
+    nh.daten = static_cast<unsigned long>(time(NULL));
     if ( !minor_type )
     {
         nh.length = strlen( extra ) + 1;

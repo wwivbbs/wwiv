@@ -21,7 +21,7 @@
 const char *wwiv_version = "v5.00";
 
 // Build Information 
-const char *beta_version = " (Build 59)";
+const char *beta_version = " (Build 60)";
 
 // this is used to set the status.wwiv_version
 // leaving at 431 until we break file compatability

@@ -912,7 +912,7 @@ void move_file_t()
                 GetSession()->bout << "|#5Reset upload time for file? ";
                 if (yesno())
                 {
-                    time((time_t *) &u.daten);
+                    u.daten = static_cast<unsigned long>(time(NULL));
                 }
                 --nCurPos;
 				fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
