@@ -60,8 +60,8 @@ int sock_read( SOCKET s, char *pszText, int nBufSize )
 	while ( sock_tbused( s ) > 0 && nCurSize < nBufSize )
 	{
 		char szTemp[8192];
-		ZeroMemory( szTemp, 8192 );
-		int nStrLen = recv( s, szTemp, 8192, 0 );
+		ZeroMemory( szTemp, sizeof(szTemp) );
+		int nStrLen = recv( s, szTemp, sizeof(szTemp), 0 );
 		if ( nStrLen < 0 || nStrLen == SOCKET_ERROR )
 		{
 			return nCurSize;
