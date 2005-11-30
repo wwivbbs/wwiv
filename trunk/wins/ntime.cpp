@@ -21,7 +21,7 @@
 #define TCP_TIME 1
 #define BASE_TIME 2208988800L
 
-unsigned long ntime(SOCKET socket)
+time_t ntime(SOCKET socket)
 {
     // Wait for buffer to fill up a bit.
 	printf( "Sending request, waiting for response from remote server\n");
@@ -38,7 +38,7 @@ unsigned long ntime(SOCKET socket)
                 printf( "lTime    = [%lu]\r\n", lTempTime );
                 unsigned long lTime = ntohl( lTempTime );
                 lTime -= BASE_TIME;
-                return lTime;
+                return static_cast<time_t>(lTime);
             }
             break;
         }
@@ -82,23 +82,20 @@ int ExecuteNTime( char* pszHostName )
 		return 1;
 	}
 
-    unsigned long lNewTime = (unsigned long) ntime( sock );\
+    time_t tNewTime = ntime( sock );
     time_t lMyTime;
     time( &lMyTime );
-    struct tm *newtime = localtime( ( time_t* ) &lNewTime );
+    struct tm *newtime = localtime( &tNewTime );
 
-    printf( "Date: [mm/dd/yyyy] = [%d/%d/%d]\r\n", newtime->tm_mon + 1, newtime->tm_mday, newtime->tm_year + 1900 );
-    printf( "Time: [hh:mi:ss] = [%d:%d:%d]\r\n", newtime->tm_hour, newtime->tm_min, newtime->tm_sec );
+    printf( "Date: [mm/dd/yyyy] = [%2.2d/%2.2d/%2.2d]\r\n", newtime->tm_mon + 1, newtime->tm_mday, newtime->tm_year + 1900 );
+    printf( "Time: [hh:mi:ss] = [%2.2d:%2.2d:%2.2d]\r\n", newtime->tm_hour, newtime->tm_min, newtime->tm_sec );
     closesocket( sock );
 
-    if ( lNewTime == 0L )
+    if ( tNewTime == 0 )
     {
         printf( "Unable to get time\r\n" );
         return 1;
     }
-
-//    printf( "lNewTime = [%lu]\r\n", lNewTime );
-//    printf( "MyTime   = [%lu]\r\n", lMyTime );
 
 /*
     newtime -= BASE_TIME;

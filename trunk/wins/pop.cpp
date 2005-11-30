@@ -743,11 +743,10 @@ long pop_length(SOCKET sock, unsigned int msg_num, unsigned long *size)
 bool checkspam(char *pszText)
 {
 	char szFileName[_MAX_PATH], buf[81], tmp[81];
-	FILE *fp;
-	
 	bool spam = false;
 	sprintf(szFileName, "%sNOSPAM.TXT", net_data);
-	if ((fp = fsh_open(szFileName, "r")) != NULL) 
+    FILE *fp = fsh_open(szFileName, "r");
+	if (fp != NULL) 
 	{
 		bool ok = false;
 		while (!feof(fp) && !spam) 
@@ -764,14 +763,7 @@ bool checkspam(char *pszText)
 				}
 				if (buf[0] == '[') 
 				{
-					if ((_strnicmp(buf, "[GLOBAL]", 8) == 0) || (_strnicmp(buf, "[MAIL]", 6) == 0))
-					{
-						ok = true;
-					}
-					else
-					{
-						ok = false;
-					}
+					ok = (_strnicmp(buf, "[GLOBAL]", 8) == 0 || _strnicmp(buf, "[MAIL]", 6) == 0);
 				}
 				if (ok && stristr(pszText, buf))
 				{
@@ -786,26 +778,28 @@ bool checkspam(char *pszText)
 
 bool checkfido(char *pszText)
 {
-    char szFileName[161], buf[81], tmp[81];
-    FILE *fp;
+    char szFileName[_MAX_PATH];
 
     bool spam = false;
     sprintf(szFileName, "%sFIWPKT.TXT", net_data);
-    if ((fp = fsh_open(szFileName, "r")) != NULL) 
+    FILE *fp = fsh_open(szFileName, "r");
+    if (fp != NULL)
     {
         while (!feof(fp) && !spam) 
         {
-            fgets(buf, sizeof(buf)-1, fp);
-            trimstr1(buf);
-            if (strlen(buf) > 2) 
+            char szCurrentLine[255];
+            fgets(szCurrentLine, sizeof(szCurrentLine)-1, fp);
+            trimstr1(szCurrentLine);
+            if (strlen(szCurrentLine) > 2) 
             {
-                if (buf[0] == '\"') 
+                if (szCurrentLine[0] == '\"') 
                 {
-                    strcpy(tmp, &(buf[1]));
-                    LAST(tmp) = '\0';
-                    strcpy(buf, tmp);
+                    char szTemp[255];
+                    strcpy(szTemp, &(szCurrentLine[1]));
+                    LAST(szTemp) = '\0';
+                    strcpy(szCurrentLine, szTemp);
                 }
-                if (stristr(pszText, buf))
+                if (stristr(pszText, szCurrentLine))
                 {
                     spam = true;
                 }
@@ -826,7 +820,6 @@ bool compact_msgid()
     char szNewFileName[_MAX_PATH], szOldFileName[_MAX_PATH];
     Message_ID messageid;
 
-    int num_ids = 0;
     sprintf(szOldFileName, "%sMSGID.OLD", net_data);
     _unlink(szOldFileName);
     sprintf(szNewFileName, "%sMSGID.DAT", net_data);
@@ -844,11 +837,12 @@ bool compact_msgid()
         log_it( true, "\n ! Unable to create %s.", szNewFileName);
         return false;
     }
-    for (int i = 50; i < MAX_IDS; i++) 
+    int nNewLocation = 0;
+    for (int nOldLocation = 50; nOldLocation < MAX_IDS; nOldLocation++) 
     {
-        sh_lseek(hOldFile, i * sizeof(Message_ID), SEEK_SET);
+        sh_lseek(hOldFile, nOldLocation * sizeof(Message_ID), SEEK_SET);
         sh_read(hOldFile, &messageid, sizeof(Message_ID));
-        sh_lseek(hNewFile, num_ids++ * sizeof(Message_ID), SEEK_SET);
+        sh_lseek(hNewFile, nNewLocation++ * sizeof(Message_ID), SEEK_SET);
         sh_write(hNewFile, &messageid, sizeof(Message_ID));
     }
     hOldFile = sh_close(hOldFile);
@@ -869,8 +863,8 @@ bool check_messageid(bool add, char *msgid)
         return true;	// -1
     }
 
-	int num_ids = static_cast<int>(_filelength(hMsgIdFile) / sizeof(Message_ID));
-    if (num_ids > MAX_IDS)
+	int nNumberOfMessageIDs = static_cast<int>(_filelength(hMsgIdFile) / sizeof(Message_ID));
+    if (nNumberOfMessageIDs > MAX_IDS)
     {
         compact_ids = true;
     }
@@ -879,11 +873,11 @@ bool check_messageid(bool add, char *msgid)
 	bool messageNotDupe = true;
     if (!add) 
     {
-        log_it(DEBUG, "\n - Scanning previous %d Message-IDs.", num_ids);
-        for (int i = 0; (i < num_ids && messageNotDupe ); i++) 
+        log_it(DEBUG, "\n - Scanning previous %d Message-IDs.", nNumberOfMessageIDs);
+        for (int i = 0; i < nNumberOfMessageIDs && messageNotDupe; i++) 
         {
-            sh_lseek(hMsgIdFile, ((long) (i)) * ((long) sizeof(Message_ID)), SEEK_SET);
-            sh_read(hMsgIdFile, (void *) &messageid, sizeof(Message_ID));
+            sh_lseek(hMsgIdFile, i * sizeof(Message_ID), SEEK_SET);
+            sh_read(hMsgIdFile, &messageid, sizeof(Message_ID));
             if (strcmp(messageid.msgid, msgid) == 0)
             {
                 messageNotDupe = false;
@@ -895,7 +889,7 @@ bool check_messageid(bool add, char *msgid)
         strncpy(messageid.msgid, msgid, 80);
         messageid.msgid[80] = '\0';
         log_it(DEBUG, "\n \xFE Adding new Message-ID:%s", messageid.msgid);
-        sh_lseek(hMsgIdFile, ((long) (num_ids)) * ((long) sizeof(Message_ID)), SEEK_SET);
+        sh_lseek(hMsgIdFile, nNumberOfMessageIDs * sizeof(Message_ID), SEEK_SET);
         sh_write(hMsgIdFile, &messageid, sizeof(Message_ID));
     }
     hMsgIdFile = sh_close(hMsgIdFile);
@@ -1079,11 +1073,9 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
 
 int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
 {
-	unsigned long size;
-	long nbytes, rbytes;
-	int pos, ctld, length;
-	FILE *fp;
+	int ctld, length;
 	
+	unsigned long size;
 	if (!pop_length(sock, msg_num, &size))
 	{
 		log_it( true, "\n \xFE Error : Unable to get size of message #%u", msg_num);
@@ -1098,12 +1090,11 @@ int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
 		log_it( true, "\n \xFE Error : No message #%u", msg_num);
 		return STATE_ERROR_RETREIVE;
 	}
-	nbytes = 0L;
-	
-	rbytes = 1024L;
+	long nbytes = 0L, rbytes = 1024L;
 	output(" : ");
-	pos = WhereX();
-	if ((fp = fsh_open(pszFileName, "w")) == NULL) 
+	int pos = WhereX();
+	FILE *fp = fsh_open(pszFileName, "w");
+	if ( fp == NULL )
 	{
 		log_it( true, "\n \xFE Unable to create %s... aborting!", pszFileName);
 		return STATE_ERROR_RETREIVE;
@@ -1119,17 +1110,17 @@ int pop_getf(SOCKET sock, char *pszFileName, unsigned int msg_num, int usernum)
 	ctld = 1;
 	for ( ;; ) 
 	{
-		length = (sock_gets(sock, _temp_buffer, sizeof(_temp_buffer)));
-		if ((ctld == 1) && (length == 0))
+		length = sock_gets(sock, _temp_buffer, sizeof(_temp_buffer));
+		if (ctld == 1 && length == 0)
 		{
 			ctld = 0;
 		}
-		if ((_strnicmp(_temp_buffer, "begin ", 6) == 0) &&
-			(stristr(_temp_buffer, "WINMAIL") != NULL))
+		if (_strnicmp(_temp_buffer, "begin ", 6) == 0 &&
+			stristr(_temp_buffer, "WINMAIL") != NULL)
 		{
 			ctld = 2;
 		}
-		if ((ctld == 2) && (_strnicmp(_temp_buffer, "end", 3) == 0))
+		if (ctld == 2 && _strnicmp(_temp_buffer, "end", 3) == 0)
 		{
 			ctld = 0;
 		}
@@ -1211,13 +1202,13 @@ int pop_get_nextf(SOCKET sock, char *pszFileName, int msgnum, int usernum)
         _unlink(pszFileName);
         return STATE_ERROR_RETREIVE;
     }
-    return (pop_delete(sock, msgnum));
+    return pop_delete(sock, msgnum);
 }
 
 
 int find_acct(char *username, char *hostname, char *password)
 {
-    char *ss, szFileName[_MAX_PATH], s[121];
+    char szFileName[_MAX_PATH], s[121];
     FILE *fp;
 
     int num = 0;
@@ -1235,7 +1226,7 @@ int find_acct(char *username, char *hostname, char *password)
                 strstr(s, hostname) != 0 &&
                 strstr(s, password) != 0 ) 
             {
-                ss = strtok(s, "=");
+                char *ss = strtok(s, "=");
                 if (ss)
                 {
                     trimstr1(s);
@@ -1267,7 +1258,7 @@ int find_acct(char *username, char *hostname, char *password)
 int count_accts(int build)
 {
     FILE *fp;
-    char *ss, s[101], szFileName[_MAX_PATH];
+    char s[101], szFileName[_MAX_PATH];
     int accts = 0;
 
     sprintf(szFileName, "%sACCT.INI", net_data);
@@ -1282,7 +1273,7 @@ int count_accts(int build)
         {
             if (build) 
             {
-                ss = strtok(s, "=");
+                char *ss = strtok(s, "=");
                 if (ss) 
                 {
                     ss = strtok(NULL, "@");
