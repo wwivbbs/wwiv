@@ -30,7 +30,6 @@
 #endif // NOT_BBS
 #include "vars.h"
 
-
 const int WUser::userDeleted                = 0x01;
 const int WUser::userInactive               = 0x02;
 
@@ -162,7 +161,12 @@ int  WUserManager::GetNumberOfUserRecords() const
     WFile userList( syscfg.datadir, USER_LST );
     if ( userList.Open( WFile::modeReadOnly | WFile::modeBinary ) )
     {
-        int nNumRecords = ( static_cast<int>( userList.GetLength() / syscfg.userreclen) - 1 );
+        if(syscfg.userreclen == 0)
+	{
+	    syscfg.userreclen = sizeof(userrec);
+	}
+        long nSize = userList.GetLength();
+        int nNumRecords = ( static_cast<int>( nSize / syscfg.userreclen) - 1 );
         return nNumRecords;
     }
     return 0;
