@@ -188,7 +188,7 @@ void modify_dir(int n)
 				if (chdir(s))
 				{
 					GetApplication()->CdHome();
-					if (mkdir(s))
+					if (WWIV_make_path(s))
 					{
 						GetSession()->bout << "|#6Unable to create or change to directory." << wwiv::endl;
 						pausescr();

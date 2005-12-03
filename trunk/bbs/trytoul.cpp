@@ -53,13 +53,8 @@ int try_to_ul(char *pszFileName)
 
     char dest[MAX_PATH];
 	sprintf(dest, "%sTRY2UL", syscfg.dloadsdir);
-    if (chdir(dest))
-	{
-        GetApplication()->CdHome();  // get back to our bbs dir
-		mkdir(dest);	// create the \DLOADS\TRY2UL dir
-    }
-
-	GetApplication()->CdHome();		// ensure we are in the correct directory
+    WWIV_make_path(dest);
+    GetApplication()->CdHome();		// ensure we are in the correct directory
 
     GetSession()->bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
