@@ -182,7 +182,12 @@ bool WUserManager::ReadUserNoCache( WUser *pUser, int nUserNumber )
         pUser->FixUp();
         return false;
     }
-    int nNumUserRecords = static_cast<int>( userList.GetLength() / syscfg.userreclen ) - 1;
+    if(syscfg.userreclen == 0)
+    {
+	syscfg.userreclen = sizeof(userrec);
+    }
+    long nSize = userList.GetLength();
+    int nNumUserRecords = ( static_cast<int>( nSize / syscfg.userreclen) - 1 );
 
     if ( nUserNumber > nNumUserRecords )
     {
@@ -224,6 +229,10 @@ bool WUserManager::WriteUserNoCache( WUser *pUser, int nUserNumber )
     if ( userList.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
                         WFile::shareUnknown, WFile::permReadWrite ) )
     {
+        if(syscfg.userreclen == 0)
+	{
+	    syscfg.userreclen = sizeof(userrec);
+	}
         long pos = static_cast<long>( syscfg.userreclen ) * static_cast<long>( nUserNumber );
         userList.Seek( pos, WFile::seekBegin );
         userList.Write( &pUser->data, syscfg.userreclen );
