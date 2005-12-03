@@ -59,25 +59,6 @@ void showsec()
 }
 
 
-bool exist_dir(const char *pszDirectoryName)
-{
-	WWIV_ASSERT( pszDirectoryName );
-	bool ok = false;
-
-	WWIV_ChangeDirTo(syscfg.gfilesdir);
-	if ( _chdir( pszDirectoryName ) )
-	{
-		ok = false;
-	}
-	else
-	{
-		ok = true;
-	}
-	GetApplication()->CdHome();
-	return ok;
-}
-
-
 char* GetArString( gfiledirrec r, char* pszBuffer )
 {
     char szBuffer[ 81 ];
@@ -153,8 +134,10 @@ void modify_sec(int n)
 			}
 			break;
 		case 'B':
+            {
 			nl();
-			if (exist_dir(r.filename))
+			WFile dir(syscfg.gfilesdir, r.filename);
+			if (dir.Exists())
 			{
 				GetSession()->bout << "\r\nThere is currently a directory for this g-file section.\r\n";
 				GetSession()->bout << "If you change the filename, the directory will still be there.\r\n\n";
@@ -165,15 +148,15 @@ void modify_sec(int n)
 			if ( ( s[0] != 0 ) && ( strchr(s, '.') == 0 ) )
 			{
 				strcpy(r.filename, s);
-				if (!exist_dir(r.filename))
+				WFile dir(syscfg.gfilesdir, r.filename);
+				if (!dir.Exists())
 				{
 					nl();
 					GetSession()->bout << "|#5Create directory for this section? ";
 					if (yesno())
 					{
-						WWIV_ChangeDirTo(syscfg.gfilesdir);
-						_mkdir(r.filename);
-						GetApplication()->CdHome();
+						WFile *dir = new WFile(syscfg.gfilesdir, r.filename);
+						WWIV_make_path(dir->GetFullPathName());
 					}
 					else
 					{
@@ -186,6 +169,7 @@ void modify_sec(int n)
 				}
 				pausescr();
 			}
+            }
 			break;
 		case 'C':
             {
