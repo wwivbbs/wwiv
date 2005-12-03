@@ -627,7 +627,7 @@ bool GetMenuDir( char *pszBuffer )
 				if (noyes())
 				{
 					GetApplication()->CdHome();	// go to the wwiv dir
-					mkdir(szPath);                    // Create the new path
+					WWIV_make_path(szPath);                    // Create the new path
 					if (chdir(szPath) != 0)
 					{
 						GetApplication()->CdHome();
