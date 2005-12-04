@@ -68,6 +68,8 @@ public:
 	 * @param bLockFile Aquires write lock
 	 */
 	void Get(bool bFailOnFailure, bool bLockFile);
+
+	const int GetUserCount();
 };
 
 
