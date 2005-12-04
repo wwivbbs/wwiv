@@ -733,7 +733,7 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 	if ( pszUserInput[0] == 'O' && ( so() || lcs() ) )
 	{
 		irt_sub[0] = 0;
-		show_files("*.FRM", syscfg.gfilesdir);
+		show_files("*.frm", syscfg.gfilesdir);
 		GetSession()->bout << "|#2Which form letter: ";
 		char szFileName[ MAX_PATH ];
 		input( szFileName, 8, true );

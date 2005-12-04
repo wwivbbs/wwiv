@@ -274,6 +274,8 @@ unsigned long int crc32buf(const char *buf, size_t len);
 
 // File: datetime.cpp
 
+char *dateFromTimeTForLog(time_t t);
+char *dateFromTimeT(time_t t);
 char *date();
 char *fulldate();
 char *times();
