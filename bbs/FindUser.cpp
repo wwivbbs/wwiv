@@ -84,11 +84,11 @@ int finduser( char *pszSearchString )
         return nUserNumber;
     }
     GetApplication()->GetStatusManager()->Read();
-    smalrec *sr = ( smalrec * ) bsearch( ( void * ) pszSearchString,
-                    ( void * ) smallist,
-                    ( size_t ) status.users,
+    smalrec *sr = ( smalrec * ) bsearch( ( const void * ) pszSearchString,
+                    ( const void * ) smallist,
+                    ( size_t ) GetApplication()->GetStatusManager()->GetUserCount(),
                     ( size_t ) sizeof( smalrec ),
-                    ( int (*) ( const void *, const void * ) ) strcmp );
+                    ( int (*) ( const void *, const void * ) ) wwiv::stringUtils::StringCompare );
 
     if ( sr == 0L )
     {
