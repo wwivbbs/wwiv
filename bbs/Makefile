@@ -42,6 +42,7 @@ BIN		= bin
 BIN_NAME        = $(BIN)/wwiv$(EXE_EXT)
 INITLITE	= $(BIN)/initlite$(EXE_EXT)
 NODEMGR 	= $(BIN)/nodemgr$(EXE_EXT)
+FIX             = $(BIN)/fix$(EXE_EXT)
 RM		= rm
 MKDIR		= mkdir
 CFLAGS		= -I$(CURDIR) -Wall -g $(PLATFORM_CFLAGS) -Iplatform -I$(PLATFORM_DIR)
@@ -153,6 +154,7 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/readmail.o      	\
 	$(OBJ)/reboot.o		\
 	$(OBJ)/shortmsg.o	\
+	$(OBJ)/showfiles.o	\
 	$(OBJ)/SmallRecord.o	\
 	$(OBJ)/sr.o            	\
 	$(OBJ)/srrcv.o         	\
@@ -231,6 +233,8 @@ initlite: $(INITLITE)
 
 nodemgr: $(NODEMGR)
 
+fix: $(FIX)
+
 $(OBJ):
 	-$(MKDIR) $(OBJ)
 
@@ -246,6 +250,10 @@ $(INITLITE):
 
 $(NODEMGR):
 	@$(MAKE) -C nodemgr  --no-print-directory
+
+$(FIX):
+	@$(MAKE) -C fix --no-print-directory
+
 
 clean:
 	@echo Cleaning...
@@ -277,4 +285,4 @@ cp:
 # Included for convension
 distclean: spotless
 
-.PHONY: clean clobberall 
+.PHONY: clean clobberall
