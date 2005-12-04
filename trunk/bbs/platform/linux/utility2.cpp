@@ -19,46 +19,6 @@
 
 #include "wwiv.h"
 
-
-void show_files( const char *pszFileName, const char *pszDirectoryName )
-// Displays list of files matching filespec pszFileName in directory pszDirectoryName.
-{
-	char s[ 255 ], s1[ 255 ];
-
-	char c = ( okansi() ) ? '\xCD' : '=';
-	nl();
-
-    snprintf( s, sizeof( s ), "|#7[|#4FileSpec: %s    Dir: %s  |#7]", stripfn( pszFileName ), pszFileName );
-
-	int i = ( GetSession()->thisuser.GetScreenChars() - 1 ) / 2 - strlen( stripcolors( s ) ) / 2;
-	GetSession()->bout << "|#7" << charstr( i, c ) << s;
-
-	i = GetSession()->thisuser.GetScreenChars() - 1 - i - strlen( stripcolors( s ) );
-	GetSession()->bout << "|#7%s" << charstr( i, c );
-
-	snprintf( s1, sizeof( s1 ), "%s%s", pszDirectoryName, stripfn( pszFileName ) );
-	WFindFile fnd;
-	bool bFound = fnd.open(s1, 0);
-	while (bFound)
-	{
-		strcpy( s, fnd.GetFileName() );
-		align( s );
-		snprintf( s1, sizeof( s1 ), "|#7[|#2%s|#7]|#1 ", s );
-		if ( GetApplication()->GetLocalIO()->WhereX()> ( GetSession()->thisuser.GetScreenChars() - 15 ) )
-		{
-			nl();
-		}
-		GetSession()->bout << s1;
-		bFound = fnd.next();
-	}
-
-	nl();
-	ansic( 7 );
-	GetSession()->bout << charstr( GetSession()->thisuser.GetScreenChars() - 1, c );
-	nl( 2 );
-}
-
-
 char *WWIV_make_abs_cmd( char *pszOutBuffer )
 {
   if ( strchr( pszOutBuffer, '/' ) )
