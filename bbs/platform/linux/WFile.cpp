@@ -93,6 +93,7 @@ WFile::WFile( std::string& strFileName )
     init();
     this->SetName( strFileName.c_str() );
 }
+
 void WFile::init()
 {
     m_bOpen                 = false;
@@ -130,7 +131,11 @@ bool WFile::SetName( const char* pszDirName, const char *pszFileName )
     WWIV_ASSERT( pszDirName );
     WWIV_ASSERT( pszFileName );
     std::string strFileName = pszDirName;
-    strFileName.append( WWIV_FILE_SEPERATOR_STRING ).append( pszFileName );
+    if(pszDirName[strlen(pszDirName)-1] != '/')
+    {
+        strFileName.append( WWIV_FILE_SEPERATOR_STRING );
+    }
+    strFileName.append( pszFileName );
     return this->SetName( strFileName.c_str() );
 }
 
@@ -172,10 +177,6 @@ bool WFile::Open( int nFileMode, int nShareMode, int nPermissions )
 			while ( ( m_hFile < 0 && errno == EACCES ) && count < TRIES )
 			{
 				WWIV_Delay( ( count % 2 ) ? WAIT_TIME : 0 );
-				if ( GetSession()->GetGlobalDebugLevel() > 0 )
-				{
-					std::cout << "\rWaiting to access " << m_szFileName << " " << TRIES - count << ".  \r";
-				}
 				count++;
 				m_hFile = open( m_szFileName, nFileMode, nShareMode );
 			}

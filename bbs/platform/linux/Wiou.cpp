@@ -27,7 +27,6 @@
 
 #define TTY "/dev/tty"
 
-
 void set_terminal( bool initMode )
 {
 	static struct termios foo;
@@ -181,7 +180,7 @@ bool WIOUnix::incoming()
 
 bool WIOUnix::startup()
 {
-	if ( tty_open )
+	if ( ttyf != NULL )
 	{
 		return true;
 	}
@@ -198,39 +197,33 @@ bool WIOUnix::startup()
 
 	int f = fileno( ttyf );
 
+	set_terminal( true );
+
+	struct termios ttyb;
+
 #ifdef linux
-	ioctl( f, TCGETS, &ttyb );
 	ioctl( f, TCGETS, &ttysav );
+	ioctl( f, TCGETS, &ttyb );
 	ttyb.c_lflag &= ~( ECHO | ISIG );
 	ioctl( f, TCSETS, &ttyb );
 #else
-	ioctl( f, TIOCGETA, &ttyb );
 	ioctl( f, TIOCGETA, &ttysav );
+	ioctl( f, TIOCGETA, &ttyb );
 	ttyb.c_lflag &= ~( ECHO | ISIG );
 	ioctl( f, TIOCSETA, &ttyb );
 #endif
-
-	set_terminal( true );
-
-	tty_open = f;
 	return true;
 }
 
 
 bool WIOUnix::shutdown()
 {
-	if ( !tty_open )
-	{
-		std::cout << "DBG: close_tty called when the tty is not open!\n";
-		return true;
-	}
-
-	set_terminal( false );
+	int f = fileno( ttyf );
 
 #ifdef linux
-	ioctl( tty_open, TCSETS, &ttysav );
+	ioctl( f, TCSETS, &ttysav );
 #else
-	ioctl( tty_open, TIOCSETA, &ttysav );
+	ioctl( f, TIOCSETA, &ttysav );
 #endif
 
 	if ( ttyf != stdin )
@@ -238,7 +231,8 @@ bool WIOUnix::shutdown()
 		fclose( ttyf );
 	}
 
-	tty_open = 0;
+	set_terminal( false );
+
 	return true;
 }
 

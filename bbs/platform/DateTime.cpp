@@ -19,7 +19,23 @@
 
 #include "wwiv.h"
 
+char *dateFromTimeTForLog(time_t t)
+{
+  static char szDateString[11];
+  struct tm * pTm = localtime( &t );
 
+  snprintf( szDateString, sizeof( szDateString ), "%02d%02d%02d", pTm->tm_year % 100, pTm->tm_mon+1, pTm->tm_mday );
+  return szDateString;
+}
+
+char *dateFromTimeT(time_t t)
+{
+  static char szDateString[11];
+  struct tm * pTm = localtime( &t );
+
+  snprintf( szDateString, sizeof( szDateString ), "%02d/%02d/%02d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year % 100 );
+  return szDateString;
+}
 
 char *date()
 {

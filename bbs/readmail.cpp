@@ -896,7 +896,7 @@ void readmail( int mode )
 			case 'O':
 				if ( cs() && okmail && m.fromuser != 65535 && nn != 255 )
 				{
-					show_files("*.FRM", syscfg.gfilesdir);
+					show_files("*.frm", syscfg.gfilesdir);
 					GetSession()->bout << "|#2Which form letter: ";
 					input( s, 8, true );
 					if (!s[0])
