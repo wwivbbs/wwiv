@@ -54,6 +54,7 @@ void StatusMgr::Get(bool bFailOnFailure, bool bLockFile)
 			fc[nFcIndex] = status.filechange[nFcIndex];
 		}
         m_statusFile.Read( &status, sizeof( statusrec ) );
+
 		if (!bLockFile)
 		{
             m_statusFile.Close();
@@ -165,4 +166,7 @@ void StatusMgr::Write()
 	}
 }
 
-
+const int StatusMgr::GetUserCount()
+{
+	return status.users;
+}
