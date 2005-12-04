@@ -174,6 +174,7 @@ enum COLORS
 #define MAX_EXT		256
 #define MAX_DIR		256
 #define MAX_FNAME	256
+#define MAX_DRIVE	256
 #define SOCKADDR_IN	struct sockaddr_in
 #define LPSOCKADDR	(struct sockaddr *)
 #define INVALID_SOCKET	-1

@@ -30,7 +30,6 @@ class WIOUnix : public WComm
 {
 private:
 	int tty_open;
-	struct termios ttyb;
 	struct termios ttysav;
 	FILE *ttyf;
 
