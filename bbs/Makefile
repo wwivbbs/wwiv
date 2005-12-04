@@ -227,7 +227,7 @@ BBS_SOURCE =	$(patsubst %.o, %.cpp, $(BBS_OBJS))
 #
 #
 
-all: $(BIN_NAME) $(INITLITE) $(PLATFORM_TARGETS)
+all: $(BIN_NAME) $(INITLITE) $(FIX) $(PLATFORM_TARGETS)
 
 initlite: $(INITLITE)
 
