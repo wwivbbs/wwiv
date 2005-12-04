@@ -40,4 +40,4 @@ const char *wwiv_date = __DATE__ ", " __TIME__;
 // Example: 5.01 build 20 = 500010020
 //
 //                              M11223333
-const long lWWIVVersionNumber = 500000059;
+const long lWWIVVersionNumber = 500000061;
