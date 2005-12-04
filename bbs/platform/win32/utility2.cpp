@@ -20,48 +20,6 @@
 #include "wwiv.h"
 #include "WStringUtils.h"
 
-
-void show_files( const char *pszFileName, const char *pszDirectoryName )
-// Displays list of files matching filespec pszFileName in directory pszDirectoryName.
-{
-    char s[MAX_PATH];
-    char drive[MAX_DRIVE], direc[MAX_DIR], file[MAX_FNAME], ext[MAX_EXT];
-
-    char c = ( okansi() ) ? '\xCD' : '=';
-    nl();
-
-    _splitpath(pszDirectoryName, drive, direc, file, ext);
-    _snprintf(s, sizeof( s ), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", WWIV_STRUPR(stripfn(pszFileName)), drive, direc);
-    int i = ( GetSession()->thisuser.GetScreenChars() - 1 ) / 2 - strlen(stripcolors(s)) / 2;
-    GetSession()->bout << "|#7" << charstr( i, c ) << s;
-    i = GetSession()->thisuser.GetScreenChars() - 1 - i - strlen(stripcolors(s));
-    GetSession()->bout << "|#7" << charstr( i, c );
-
-    char szFullPathName[ MAX_PATH ];
-    _snprintf( szFullPathName, sizeof( szFullPathName ), "%s%s", pszDirectoryName, WWIV_STRUPR( stripfn(pszFileName ) ) );
-    WFindFile fnd;
-    bool bFound = fnd.open( szFullPathName, 0 );
-    while (bFound)
-    {
-        strncpy(s, fnd.GetFileName(), MAX_PATH);
-        align(s);
-        _snprintf( szFullPathName, sizeof( szFullPathName ), "|#7[|#2%s|#7]|#1 ", s );
-        if ( GetApplication()->GetLocalIO()->WhereX() > ( GetSession()->thisuser.GetScreenChars() - 15 ) )
-        {
-            nl();
-        }
-        GetSession()->bout << szFullPathName;
-        bFound = fnd.next();
-    }
-
-    nl();
-    ansic( 7 );
-    GetSession()->bout << charstr( GetSession()->thisuser.GetScreenChars() - 1, c );
-    nl( 2 );
-}
-
-
-
 // Used only by WWIV_make_abs_cmd
 
 char *exts[] =
