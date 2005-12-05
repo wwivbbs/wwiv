@@ -299,8 +299,8 @@ int XmodemTInit( ZModem *info )
 /* called by user to begin transmission of a file */
 
 int ZmodemTFile(
-				char	*file,
-				char	*rfile,
+				const char	*pszFileName,
+				const char	*pszRemoteFileName,
 				u_int	f0,
 				u_int	f1,
 				u_int	f2,
@@ -309,14 +309,14 @@ int ZmodemTFile(
 				int	bytesRem,
 				ZModem	*info )
 {
-	if( file == NULL || (info->file = fopen(file, "rb")) == NULL )
+	if( pszFileName == NULL || (info->file = fopen(pszFileName, "rb")) == NULL )
 	{
 		return ZmErrCantOpen;
 	}
 
 	info->fileEof = 0;
-	info->filename = file;
-	info->rfilename = (rfile != NULL) ? rfile : const_cast<char *>("noname");
+	info->filename = _strdup(pszFileName);
+	info->rfilename = _strdup((pszRemoteFileName != NULL) ? pszRemoteFileName : "noname");
 	info->filesRem = filesRem;
 	info->bytesRem = bytesRem;
 	info->fileFlags[3] = f0;
@@ -397,9 +397,19 @@ int ZmodemTFinish( ZModem *info )
 	}
 
 	info->state = TFinish;
+    if ( info->filename != NULL )
+    {
+        free( info->filename );
+        info->filename = NULL;
+    }
+    if ( info->rfilename != NULL )
+    {
+        free( info->rfilename );
+        info->rfilename = NULL;
+    }
 	if( info->buffer != NULL )
 	{
-		free(info->buffer);
+		free( info->buffer );
 		info->buffer = NULL;
 	}
 #if defined(_DEBUG)
@@ -511,7 +521,7 @@ int GotRinit( ZModem *info )
 int SendZSInit( ZModem *info )
 {
 	int	err;
-	char	*at = (info->attn != NULL) ? info->attn : const_cast<char *>("");
+	char	*at = (info->attn != NULL) ? info->attn : "";
 	u_char	fbuf[4];
 
 	/* TODO: zmodem8.doc states: "If the ZSINIT header specifies

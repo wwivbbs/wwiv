@@ -683,7 +683,7 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type)
 	last_fn[0] = 0;
 	dliscan1(udir[nDirectoryNum].subnum);
 
-	FILE* f = fsh_open(const_cast<char*>(pszFileName), "r");
+	FILE* f = fsh_open(pszFileName, "r");
 	if (!f)
 	{
 		sprintf(s, "%s%s", directories[udir[nDirectoryNum].subnum].path, pszFileName);

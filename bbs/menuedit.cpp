@@ -620,7 +620,7 @@ bool GetMenuDir( char *pszBuffer )
 		else
 		{
 			sprintf(szPath, "%s%s", MenuDir(szMenuDir), pszBuffer);
-			if (chdir(szPath) != 0)
+			if (_chdir(szPath) != 0)
 			{
 				GetSession()->bout << "The path " << szPath << wwiv::endl <<
 					          "does not exist, create it? (Y) : ";
@@ -628,7 +628,7 @@ bool GetMenuDir( char *pszBuffer )
 				{
 					GetApplication()->CdHome();	// go to the wwiv dir
 					WWIV_make_path(szPath);                    // Create the new path
-					if (chdir(szPath) != 0)
+					if (_chdir(szPath) != 0)
 					{
 						GetApplication()->CdHome();
 						GetSession()->bout << "Created\r\n";

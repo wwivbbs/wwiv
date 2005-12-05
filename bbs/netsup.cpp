@@ -808,7 +808,7 @@ void print_pending_list()
         num_ncn = 0,
         num_call_sys = 0;
 	int adjust = 0, lines = 0;
-	char s[255], s1[81], s2[81], s3[81], s4[81], s5[81];
+	char s1[81], s2[81], s3[81], s4[81], s5[81];
 	time_t tCurrentTime;
 	net_call_out_rec *con;
 	net_contact_rec *ncn;
@@ -962,12 +962,11 @@ void print_pending_list()
 			continue;
 		}
 
-		sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), DEAD_NET);
-		int hFileDeadNet = open(s, O_RDONLY | O_BINARY);
-		if ( hFileDeadNet > 0 )
+        WFile deadNetFile( GetSession()->GetNetworkDataDirectory(), DEAD_NET );
+        if ( deadNetFile.Open(WFile::modeReadOnly|WFile::modeBinary) ) 
         {
-			long lFileSize = filelength( hFileDeadNet );
-			close( hFileDeadNet );
+            long lFileSize = deadNetFile.GetLength();
+			deadNetFile.Close();
             sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
 			bprintf( "|#7º |#3--- |#7³ |#2%-8s |#7³ |#6DEAD! |#7³ |#2------- |#7³ |#2------- |#7³|#2%5s |#7³|#2 --- |#7³ |#2--------- |#7³|#2 --- |#7º\r\n", GetSession()->GetNetworkName(), s3);
 		}
@@ -982,12 +981,11 @@ void print_pending_list()
 			continue;
         }
 
-		sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CHECK_NET);
-		int hFileCheckNet = open(s, O_RDONLY | O_BINARY);
-		if ( hFileCheckNet > 0 )
-		{
-			long lFileSize = filelength( hFileCheckNet );
-			close( hFileCheckNet );
+        WFile checkNetFile( GetSession()->GetNetworkDataDirectory(), CHECK_NET );
+        if ( checkNetFile.Open( WFile::modeReadOnly|WFile::modeBinary ) )
+        {
+            long lFileSize = checkNetFile.GetLength();
+            checkNetFile.Close();
             sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
 			strcat(s3, "k");
 			bprintf( "|#7º |#3--- |#7³ |#2%-8s |#7³ |#6CHECK |#7³ |#2------- |#7³ |#2------- |#7³|#2%5s |#7³|#2 --- |#7³ |#2--------- |#7³|#2 --- |#7º\r\n", GetSession()->GetNetworkName(), s3);
@@ -1158,7 +1156,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
                 }
 				if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post))
                 {
-                    packetFile.Write( const_cast<char*>( pszAuthorName ), strlen( pszAuthorName ) + 1);
+                    packetFile.Write( pszAuthorName, strlen( pszAuthorName ) + 1);
                 }
                 packetFile.Write( pszOriginalText, strlen( pszOriginalText ) + 1 );
                 packetFile.Write( newname, strlen( newname ) );

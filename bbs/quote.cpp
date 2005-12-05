@@ -352,7 +352,7 @@ void grab_quotes(messagerec * m, const char *aux)
 
 
 
-void auto_quote(char *org, long len, int type, long daten)
+void auto_quote(char *org, long len, int type, time_t tDateTime)
 {
 	char s1[81], s2[81], buf[255],
 		*p, *b,
@@ -383,7 +383,7 @@ void auto_quote(char *org, long len, int type, long daten)
 		p+=2;
 		len=len-(p-b);
 		b=p;
-		strcpy(s2, W_DateString(daten, "WDT", "at"));
+		strcpy( s2, W_DateString( tDateTime, "WDT", "at" ) );
 
 		//    s2[strlen(s2)-1]='\0';
 		strip_to_node(s1, tb);

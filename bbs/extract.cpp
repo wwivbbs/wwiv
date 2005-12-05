@@ -80,7 +80,7 @@ void compress_file( char *pszFileName, char *pszDirectoryName )
 // Allows extracting a message into a file area, directly.
 //
 
-void extract_mod(const char *b, long len, long daten)
+void extract_mod(const char *b, long len, time_t tDateTime)
 {
 	char s1[81], s2[81],                  // reusable strings
 		szFileName[MAX_PATH],                    // mod filename
@@ -192,7 +192,7 @@ void extract_mod(const char *b, long len, long daten)
 		WFile file( szFileName );
 		file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
 		file.Seek( 0L, WFile::seekEnd );
-		file.Write( const_cast<char*>( b ), len );
+		file.Write( b, len );
 		file.Write( &eof, 1 );
 		file.Close();
 		GetSession()->bout << "Message written toL " << szFileName << wwiv::endl;
@@ -293,7 +293,7 @@ void extract_mod(const char *b, long len, long daten)
 				sprintf( dir_path,"%s%s", directories[udir[mod_dir].subnum].path, StringRemoveChar( s2, '.' ) );
 				FILE *idz = fopen( idz_fn, "w" );
 				fprintf( idz, "%.58s\n", szDescription );
-				fprintf( idz, "Copyright (c) %s, %s\n", W_DateString(daten,"Y", ""), author );
+				fprintf( idz, "Copyright (c) %s, %s\n", W_DateString(tDateTime,"Y", ""), author );
 				fprintf( idz, "Distribution is LIMITED by the WWIV Source\n" );
 				fprintf( idz, "Code EULA.  Email WSS at 1@50 or wss@wwiv.com\n" );
 				fprintf( idz, "for a copy of the EULA or more information.\n" );
@@ -308,25 +308,25 @@ go_away:
 }
 
 
-bool upload_mod( int dn, const char *pszFileName, const char *pszDescription )
+bool upload_mod( int nDirectoryNumber, const char *pszFileName, const char *pszDescription )
 /* Passes a specific filename to the upload function */
 {
 	char s[81], s1[81];
 
 	WWIV_ASSERT( pszFileName );
 
-	dliscan1( udir[dn].subnum );
+	dliscan1( udir[nDirectoryNumber].subnum );
 	nl( 2 );
 	strcpy( s, pszFileName );
-	strcpy( s1, directories[udir[dn].subnum].path );
-	int maxf = directories[udir[dn].subnum].maxfiles;
+	strcpy( s1, directories[udir[nDirectoryNumber].subnum].path );
+	int maxf = directories[udir[nDirectoryNumber].subnum].maxfiles;
 	strcat( s1, s );
 	WFindFile fnd;
 	bool bDone = fnd.open( s1, 0 );
 	bool ok = false;
 	if ( !bDone )
 	{
-		ok = maybe_upload( fnd.GetFileName(), dn, pszDescription );
+		ok = maybe_upload( fnd.GetFileName(), nDirectoryNumber, pszDescription );
 	}
 	if ( ok )
 	{
@@ -344,7 +344,7 @@ bool upload_mod( int dn, const char *pszFileName, const char *pszDescription )
 }
 
 
-void extract_out (char *b, long len, const char *title, long daten )
+void extract_out (char *b, long len, const char *pszTitle, time_t tDateTime )
 {
 	// TODO Fix platform specific path issues...
 
@@ -368,7 +368,7 @@ void extract_out (char *b, long len, const char *title, long daten )
 			switch (ch1)
 			{
 			case '1':
-				extract_mod(b, len, daten);
+				extract_mod(b, len, tDateTime);
 				break;
 			case '2':
 				strcpy(s2, syscfg.gfilesdir);
@@ -474,8 +474,8 @@ void extract_out (char *b, long len, const char *title, long daten )
 								file.Seek( -1L, WFile::seekEnd );
 							}
 						}
-						file.Write( const_cast<char*>( title ), strlen( title ) );
-						file.Write( const_cast<char*>("\r\n"), 2 );
+						file.Write( pszTitle, strlen( pszTitle ) );
+						file.Write( "\r\n", 2 );
 						file.Write( b, len );
 						file.Write( &ch, 1 );
 						file.Close();
@@ -552,8 +552,8 @@ void extract_out (char *b, long len, const char *title, long daten )
 						file.Seek( -1L, WFile::seekEnd );
 					}
 				}
-				file.Write( const_cast<char*>( title ), strlen( title ) );
-				file.Write( const_cast<char*>("\r\n"), 2 );
+				file.Write( pszTitle, strlen( pszTitle ) );
+				file.Write( "\r\n", 2 );
 				file.Write( b, len );
 				file.Write( &ch, 1 );
 				file.Close();

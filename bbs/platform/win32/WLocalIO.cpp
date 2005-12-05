@@ -1529,7 +1529,7 @@ int WLocalIO::GetDefaultScreenBottom()
 
 bool HasKeyBeenPressed()
 {
-    return ( kbhit() ) ? true : false;
+    return ( _kbhit() ) ? true : false;
 
     // TODO - This code below doesn't work, hence we aren't using it.
     // Ideally, we should support mouse input, and try to not use the
@@ -1597,7 +1597,7 @@ bool HasKeyBeenPressed()
 
 unsigned char GetKeyboardChar()
 {
-    return static_cast< unsigned char >( getch() );
+    return static_cast< unsigned char >( _getch() );
 }
 
 

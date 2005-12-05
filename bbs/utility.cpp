@@ -370,11 +370,11 @@ void send_net( net_header_rec * nh, unsigned short int *list, const char *text, 
     }
     if ( byname && *byname )
     {
-        file.Write( reinterpret_cast<void*>( const_cast<char*>( byname ) ), strlen(byname) + 1);
+        file.Write( byname, strlen(byname) + 1);
     }
     if ( nh->length )
     {
-        file.Write( reinterpret_cast<void*>( const_cast<char*>( text ) ), lNetHeaderSize);
+        file.Write( text, lNetHeaderSize);
     }
     file.Close();
 }
@@ -800,7 +800,7 @@ bool okfsed()
 
 //************************************************
 // Purpose      : Properizes msg.daten to a date/time string
-// Parameters   : long daten    - daten attribute of a message
+// Parameters   : time_t daten    - daten attribute of a message
 //                char* mode    - mode string
 //                              - W = Day of the week
 //                              - D = Date
@@ -813,15 +813,14 @@ bool okfsed()
 // Returns      : Properized date/time string as requested
 // Author(s)    : WSS
 //************************************************
-char* W_DateString(long daten, char* mode , char* delim)
+char* W_DateString(time_t tDateTime, char* mode , char* delim)
 {
     int     i;                      // loop counter
     char    s[40];                  // formattable string
     static char str[50];            // the DateString
 
-	//time_t t;
-	time((time_t *) &(daten));
-	struct tm * pTm = localtime((time_t *)&daten);	// used to be 't', but that bombed
+	time(&tDateTime);
+	struct tm * pTm = localtime(&tDateTime);
 
 	WWIV_ASSERT(mode);
 	WWIV_ASSERT(delim);

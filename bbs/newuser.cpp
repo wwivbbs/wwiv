@@ -751,7 +751,7 @@ int find_new_usernum( const WUser* pUser, unsigned long *qsc )
             if ( tu.isUserDeleted() && tu.GetSl() != 255 )
             {
                 userFile.Seek( static_cast<long>( nUserNumber * syscfg.userreclen ), WFile::seekBegin );
-                userFile.Write( const_cast<userrec*>( &pUser->data ), syscfg.userreclen );
+                userFile.Write( &pUser->data, syscfg.userreclen );
                 userFile.Close();
                 write_qscn(nUserNumber, qsc, false);
                 InsertSmallRecord( nUserNumber, pUser->GetName() );
@@ -767,7 +767,7 @@ int find_new_usernum( const WUser* pUser, unsigned long *qsc )
     if (nUserNumber <= syscfg.maxusers)
     {
         userFile.Seek( static_cast<long>( nUserNumber * syscfg.userreclen ), WFile::seekBegin );
-        userFile.Write( const_cast<userrec*>( &pUser->data ), syscfg.userreclen );
+        userFile.Write( &pUser->data, syscfg.userreclen );
         userFile.Close();
         write_qscn(nUserNumber, qsc, false);
         InsertSmallRecord(nUserNumber, pUser->GetName() );

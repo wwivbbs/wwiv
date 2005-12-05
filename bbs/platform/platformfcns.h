@@ -26,7 +26,6 @@
 
 // $PLATFORM/filesupp.cpp
 
-bool WWIV_CopyFile(const char * szSourceFileName, const char * szDestFileName);
 double WWIV_GetFreeSpaceForPath(const char * szPath);
 void WWIV_ChangeDirTo(const char *s);
 void WWIV_GetDir(char *s, bool be);

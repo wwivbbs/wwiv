@@ -568,7 +568,7 @@ void secure_ch(int ch)
         file.Open( WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile|WFile::modeText,
 					WFile::shareUnknown,
 					WFile::permReadWrite );
-        file.Write( const_cast<char*>( GetSession()->thisuser.GetName() ), strlen( GetSession()->thisuser.GetName() ) );
+        file.Write( GetSession()->thisuser.GetName(), strlen( GetSession()->thisuser.GetName() ) );
         file.Close();
         GetSession()->bout << "|#1[|#9Channel Secured|#1]\r\n";
         sprintf( szFileName, "\r\n|#1[|#9%s has secured the channel|#1]", GetSession()->thisuser.GetName() );

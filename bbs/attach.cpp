@@ -318,7 +318,7 @@ void attach_file(int mode)
                                     if ( so() && !bRemoteUpload )
                                     {
                                         // Copy file s to szFullPathName.
-                                        if (!WWIV_CopyFile(szFileToAttach, szFullPathName))
+                                        if (!WFile::CopyFile(szFileToAttach, szFullPathName))
                                         {
                                             GetSession()->bout << "done.\r\n";
                                             ok = 1;

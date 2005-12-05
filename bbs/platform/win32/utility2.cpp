@@ -154,7 +154,7 @@ int WWIV_make_path(char *s)
 		drive = static_cast< char >( wwiv::UpperCase<char>(p[0]) - 'A' + 1 );
         if (_chdrive(drive))
         {
-            chdir(current_path);
+            _chdir(current_path);
             _chdrive(current_drive);
             return -2;
         }
@@ -162,23 +162,23 @@ int WWIV_make_path(char *s)
     }
     if (*p == WWIV_FILE_SEPERATOR_CHAR)
     {
-        chdir(WWIV_FILE_SEPERATOR_STRING);
+        _chdir(WWIV_FILE_SEPERATOR_STRING);
         p++;
     }
     for (; (p = strtok(p, WWIV_FILE_SEPERATOR_STRING)) != 0; p = 0)
     {
-        if (chdir(p))
+        if (_chdir(p))
         {
-            if (mkdir(p))
+            if (_mkdir(p))
             {
-                chdir(current_path);
+                _chdir(current_path);
                 _chdrive(current_drive);
                 return -1;
             }
-            chdir(p);
+            _chdir(p);
         }
     }
-    chdir(current_path);
+    _chdir(current_path);
     if (flp)
     {
         BbsFreeMemory(flp);

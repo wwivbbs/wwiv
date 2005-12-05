@@ -64,10 +64,10 @@ public:
 	/*!
 	 * @function Get Loads the contents of STATUS.DAT with
 	 *           control on failure and lock mode
-	 * @param bFailOnFailure Exit the BBS if reading the file fails
 	 * @param bLockFile Aquires write lock
+     * @return true on success
 	 */
-	void Get(bool bFailOnFailure, bool bLockFile);
+	bool Get(bool bLockFile);
 
 	const int GetUserCount();
 };

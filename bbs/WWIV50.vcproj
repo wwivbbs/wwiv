@@ -959,6 +959,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\showfiles.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\SmallRecord.cpp"
 					>
 				</File>

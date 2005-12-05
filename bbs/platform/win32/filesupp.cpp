@@ -27,13 +27,6 @@ typedef BOOL (WINAPI *P_GDFSE)(LPCTSTR, PULARGE_INTEGER,
                                   PULARGE_INTEGER, PULARGE_INTEGER);
 
 
-
-
-bool WWIV_CopyFile(const char * szSourceFileName, const char * szDestFileName)
-{
-    return CopyFile(szSourceFileName, szDestFileName, 0) ? true : false;
-}
-
 /**
  * Returns the free disk space for a drive letter, where nDrive is the drive number
  * 1 = 'A', 2 = 'B', etc.
@@ -120,13 +113,13 @@ void WWIV_ChangeDirTo(const char *s)
     {
         szBuffer[i] = '\0';
     }
-    chdir( szBuffer );
+    _chdir( szBuffer );
     if (s[1] == ':')
     {
         _chdrive(s[0] - 'A' + 1);	// FIX, On Win32, _chdrive is 'A' = 1, etc..
         if (s[2] == 0)
         {
-            chdir("\\");
+            _chdir("\\");
         }
     }
 }
