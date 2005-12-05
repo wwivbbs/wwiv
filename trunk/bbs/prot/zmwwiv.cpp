@@ -48,8 +48,7 @@ bool NewZModemSendFile( const char *pszFileName )
 	int f3			= 0;
 	int nFilesRem	= 0;
 	int nBytesRem	= 0;
-	done = ZmodemTFile( const_cast<char*>( pszFileName ), const_cast<char*>( pszFileName ),
-						f0, f1, f2, f3, nFilesRem, nBytesRem, &info );
+	done = ZmodemTFile( pszFileName, pszFileName, f0, f1, f2, f3, nFilesRem, nBytesRem, &info );
 	switch ( done )
 	{
 	case 0:

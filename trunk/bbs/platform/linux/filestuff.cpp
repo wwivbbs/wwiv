@@ -28,19 +28,6 @@
 #include <sys/vfs.h>
 #endif // __APPLE__
 
-// Returns the length of an open file handle in bytes
-
-long filelength(int f)
-{
-  size_t src, len;
-
-  src = lseek(f, 0L, SEEK_CUR);		/* No "ftell()" equiv */
-  len = lseek(f, 0L, SEEK_END);
-  lseek(f, src, SEEK_SET);
-
-  return len;
-}
-
 // Changes the size of the file hanle (Either by truncating or zero-padding).
 
 void chsize(int f, size_t size)
@@ -106,48 +93,3 @@ void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName)
 	BbsFreeMemory(pszTemp);
 }
 
-bool WWIV_CopyFile(const char * szSourceFileName, const char * szDestFileName)
-{
-  int f1, f2, i;
-  char *b;
-
-  if ( !wwiv::stringUtils::IsEquals(szSourceFileName, szDestFileName ) &&
-       WFile::Exists( szSourceFileName ) &&
-	   !WFile::Exists( szDestFileName ) )
-  {
-    if ( ( b = static_cast<char *>( BbsAllocA( 16400 ) ) ) == NULL )
-    {
-      return 0;
-    }
-    f1 = open( szSourceFileName, O_RDONLY | O_BINARY );
-    if(!f1)
-    {
-      BbsFreeMemory(b);
-      return 0;
-    }
-
-    f2 = open( szDestFileName,
-                 O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
-    if(!f2)
-    {
-      BbsFreeMemory(b);
-      close(f1);
-      return 0;
-    }
-
-    i = read(f1, (void *) b, 16384);
-
-    while (i > 0)
-    {
-      giveup_timeslice();
-      write(f2, (void *) b, i);
-      i = read(f1, (void *) b, 16384);
-    }
-
-    f1=close(f1);
-    f2=close(f2);
-    BbsFreeMemory(b);
-  }
-
-  return 1;
-}

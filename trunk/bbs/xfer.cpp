@@ -464,7 +464,7 @@ void add_extended_description(const char *pszFileName, const char *pszDescriptio
 				WFile::permReadWrite );
 	file.Seek( 0L, WFile::seekEnd );
 	file.Write( &ed, sizeof( ext_desc_type ) );
-	file.Write( const_cast<char *>( pszDescription ), ed.len );
+	file.Write( pszDescription, ed.len );
 	file.Close();
 
     zap_ed_info();

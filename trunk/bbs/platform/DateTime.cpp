@@ -106,25 +106,19 @@ time_t date_to_daten(const char *datet)
  */
 char *filedate( const char *pszFileName, char *pszReturnValue )
 {
-	if ( !WFile::Exists( pszFileName ) )
-	{
+	WFile file( pszFileName );
+    if ( !file.Exists() )
+
+    if ( !file.Open( WFile::modeReadOnly ) )    
+    {
 		return "";
 	}
 
-	int i = open( pszFileName, O_RDONLY );
-	if ( i == -1)
-	{
-		return "";
-	}
-
-	struct stat buf;
-	fstat( i, &buf );
-	close( i );
-
-	struct tm *ptm = localtime( &buf.st_mtime );
+    time_t tFileDate = file.GetFileTime();
+	struct tm *pTm = localtime( &tFileDate );
     
-    // We use 9 here since that is the size of the date format MM/DD/YY + NUL
-	snprintf( pszReturnValue, 9, "%02d/%02d/%02d", ptm->tm_mon, ptm->tm_mday, ( ptm->tm_year % 100 ) );
+    // We use 9 here since that is the size of the date format MM/DD/YY + NULL
+	snprintf( pszReturnValue, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, ( pTm->tm_year % 100 ) );
 
 	return pszReturnValue;
 }

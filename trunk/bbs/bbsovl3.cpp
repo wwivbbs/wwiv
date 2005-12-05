@@ -352,7 +352,7 @@ bool copyfile(const char *pszSourceFileName, const char *pszDestFileName, bool s
 		  WFile::Exists( pszSourceFileName ) &&
 		  !WFile::Exists( pszDestFileName ) )
 	{
-		if ( WWIV_CopyFile( pszSourceFileName, pszDestFileName ) )
+        if ( WFile::CopyFile( pszSourceFileName, pszDestFileName ) )
 		{
 			return true;
 		}

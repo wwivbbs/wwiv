@@ -824,9 +824,9 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 						char szBuffer[ 255 ];
 						sprintf( szBuffer, "ON: %s", subboards[GetSession()->GetCurrentReadMessageArea()].name );
 						fileExtract.Write( szBuffer, strlen( szBuffer ) );
-						fileExtract.Write( const_cast<char *>("\r\n\r\n"), 4 );
+						fileExtract.Write( "\r\n\r\n", 4 );
 						fileExtract.Write( get_post( nMessageNumber )->title, strlen(get_post( nMessageNumber )->title) );
-						fileExtract.Write( const_cast<char *>("\r\n"), 2 );
+						fileExtract.Write( "\r\n", 2 );
 						fileExtract.Write( b, lMessageLen );
 						fileExtract.Close();
 					}

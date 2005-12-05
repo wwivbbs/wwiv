@@ -362,9 +362,9 @@ int  ExecuteExternalProgram( const char *pszCommandLine, int nFlags );
 
 // File: extract.cpp
 
-void extract_mod(const char *b, long len, long daten);
-void extract_out(char *b, long len, const char *title, long daten);
-bool upload_mod(int dn, const char *pszFileName, const char *pszDescription);
+void extract_mod(const char *b, long len, time_t tDateTime);
+void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime);
+bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDescription);
 
 
 // File: finduser.cpp
@@ -425,8 +425,8 @@ void input_password( const char *pszPromptText, std::string &strOutPassword, int
 void get_user_ppp_addr();
 void send_inet_email();
 bool check_inet_addr(const char *inetaddr);
-char *read_inet_addr(char *addr, int nUserNumber);
-void write_inet_addr(const char *addr, int nUserNumber);
+char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber);
+void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber);
 
 
 // File: instmsg.cpp
@@ -846,7 +846,7 @@ bool printfile( const char *pszFileName, bool bAbortable = true, bool bForcePaus
 // File: quote.cpp
 
 void grab_quotes(messagerec * m, const char *aux);
-void auto_quote(char *org, long len, int type, long daten);
+void auto_quote(char *org, long len, int type, time_t tDateTime);
 void get_quote(int fsed);
 
 
@@ -1039,7 +1039,7 @@ slrec getslrec(int nSl);
 void shut_down( int nShutDownStatus );
 void WWIV_SetFileTime(const char* pszFileName, const time_t tTime);
 bool okfsed();
-char* W_DateString(long daten, char* mode , char* delim);
+char* W_DateString(time_t tDateTime, char* mode , char* delim);
 void WriteBuf( WFile &file, const char *pszText);
 
 

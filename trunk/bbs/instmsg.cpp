@@ -36,7 +36,7 @@ void send_inst_msg(inst_msg_header *ih, const char *msg)
         file.Write( ih, sizeof( inst_msg_header ) );
         if (ih->msg_size > 0)
         {
-            file.Write( const_cast<char*>( msg ), ih->msg_size );
+            file.Write( msg, ih->msg_size );
         }
         file.Close();
 

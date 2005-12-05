@@ -210,7 +210,7 @@ int WFile::Read( void * pBuffer, int nCount )
 }
 
 
-int WFile::Write( void * pBuffer, int nCount )
+int WFile::Write( const void * pBuffer, int nCount )
 {
     return write( m_hFile, pBuffer, nCount );
 }
@@ -224,7 +224,13 @@ long WFile::GetLength()
     {
         return -1;
     }
-    return filelength( m_hFile );
+
+    // Save Current position, then seek to the end of the file, then retore the original position
+    size_t nSavedPosition = lseek(m_hFile, 0L, SEEK_CUR);		/* No "ftell()" equiv */
+    size_t len = lseek(m_hFile, 0L, SEEK_END);
+    lseek(m_hFile, nSavedPosition, SEEK_SET);
+
+    return static_cast<long>( len );
 }
 
 
@@ -364,3 +370,55 @@ bool WFile::ExistsWildcard( const char *pszWildCard )
 }
 
 
+bool WFile::CopyFile( const char * pszSourceFileName, const char * pszDestFileName )
+{
+
+  if ( !wwiv::stringUtils::IsEquals(szSourceFileName, szDestFileName ) &&
+       WFile::Exists( szSourceFileName ) &&
+	   !WFile::Exists( szDestFileName ) )
+  {
+    char *b;
+    if ( ( b = static_cast<char *>( BbsAllocA( 16400 ) ) ) == NULL )
+    {
+      return false;
+    }
+    int f1 = open( szSourceFileName, O_RDONLY | O_BINARY );
+    if(!f1)
+    {
+      BbsFreeMemory(b);
+      return false;
+    }
+
+    int f2 = open( szDestFileName,
+                 O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
+    if(!f2)
+    {
+      BbsFreeMemory(b);
+      close(f1);
+      return false;
+    }
+
+    i = read(f1, (void *) b, 16384);
+
+    while (i > 0)
+    {
+      giveup_timeslice();
+      write(f2, (void *) b, i);
+      i = read(f1, (void *) b, 16384);
+    }
+
+    f1=close(f1);
+    f2=close(f2);
+    BbsFreeMemory(b);
+  }
+
+  // I'm not sure about the logic here since you would think we should return true
+  // in the last block, and false here.  This seems fishy
+  return true;
+}
+
+bool WFile::MoveFile( const char * pszSourceFileName, const char * pszDestFileName )
+{
+    //TODO: Atani needs to implement this before we start using it.
+    return false;
+}

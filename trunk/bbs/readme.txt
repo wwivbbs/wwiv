@@ -49,6 +49,19 @@ GENERAL INFORMATION:
 
 ==============================================================================
 
+LABEL: WWIV-5_0_61
+DATE:  ??/??/2005
+
+Rushfan - Fixed up more time_t != sizeof(int) issues in the code, mainly with localtime
+Rushfan - Some const correctness work, also using ISO C++ functionanmes in more places
+Rushfan - Changed WStatusMgr::Get to return a bool instead of calling AbortBBS directly
+Rushfan - Made WFile::Write take a const void * parameter to help fix const correctness
+Rushfan - Implemented windows trashcan support in WFile::Delete
+Rushfan - Changed ANSI file code over to WFile in several places througout the code.
+Rushfan - Got rid of filelength (use WFile::GetLength()) now.
+
+==============================================================================
+
 LABEL: WWIV-5_0_60
 DATE:  11/28/2005
 
@@ -71,6 +84,9 @@ Rushfan - Update size test code to handle Mac OS X as well as Linux/Win32 and
 Rushfan - Updated Copyright statement in header files to 2005
 Rushfan - removed unused files extrn.cpp and extrn1.cpp from CVS finally.
 Rushfan - Updated code to compile under VS.NET 2005 (using VC++ Express)
+Rushfan - Got rid of WWIV_Copy_File and moved it to WFile.  Also added WFile::MoveFile
+          which needs to be implemented on UNIX still.
+
 
 ==============================================================================
 

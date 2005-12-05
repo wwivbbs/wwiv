@@ -495,7 +495,7 @@ int WBbsApp::doWFCEvents()
                     write_inst( INST_LOC_TEDIT, 0, INST_FLAGS_NONE );
                     GetSession()->bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
                     char szFileName[ MAX_PATH ];
-                    getcwd(szFileName, MAX_PATH);
+                    _getcwd(szFileName, MAX_PATH);
                     snprintf( szFileName, sizeof( szFileName ), "%c", WWIV_FILE_SEPERATOR_CHAR );
                     std::string newFileName;
                     Input1( newFileName, szFileName, 50, true, UPPER );
@@ -1579,10 +1579,10 @@ WBbsApp::WBbsApp()
     WFile::SetLogger( this );
     WFile::SetDebugLevel( GetSession()->GetGlobalDebugLevel() );
 
-    tzset();
+    _tzset();
 
 	// Set the home directory
-	getcwd( m_szCurrentDirectory, MAX_PATH );
+	_getcwd( m_szCurrentDirectory, MAX_PATH );
 
 }
 

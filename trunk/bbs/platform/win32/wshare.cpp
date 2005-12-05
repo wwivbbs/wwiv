@@ -78,7 +78,7 @@ FILE *fsh_open(const char *path, char *mode)
 	if (fd < 0)
 	{
 		int count = 1;
-		if (access(path, 0) != -1)
+        if ( WFile::Exists( path ) )
 		{
 			WWIV_Delay(WAIT_TIME);
 			fd = _sopen(path, md, share, S_IREAD | S_IWRITE);
@@ -103,13 +103,13 @@ FILE *fsh_open(const char *path, char *mode)
 	{
 		if ( strchr( mode, 'a' ) )
 		{
-			lseek( fd, 0L, SEEK_END );
+			_lseek( fd, 0L, SEEK_END );
 		}
 
-		f = fdopen( fd, mode );
+		f = _fdopen( fd, mode );
 		if ( !f )
 		{
-			close( fd );
+			_close( fd );
 		}
 	}
 	else
