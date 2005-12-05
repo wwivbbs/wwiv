@@ -32,6 +32,10 @@
 #define MAX_PATH 256
 #endif
 
+#if defined (_WIN32) && defined(CopyFile)
+#undef CopyFile
+#endif // CopyFile
+
 class WLogger
 {
 public:
@@ -127,7 +131,7 @@ public:
     virtual bool IsOpen() const { return m_bOpen; }
 
     virtual int  Read( void * pBuffer, int nCount );
-    virtual int  Write( void * pBuffer, int nCount );
+    virtual int  Write( const void * pBuffer, int nCount );
 
     virtual long GetLength();
     virtual long Seek( long lOffset, int nFrom );
@@ -199,6 +203,8 @@ public:
 
     static void SetLogger( WLogger* pLogger ) { m_pLogger = pLogger; }
     static void SetDebugLevel( int nDebugLevel ) { m_nDebugLevel = nDebugLevel; }
+    static bool CopyFile( const char * pszSourceFileName, const char * pszDestFileName );
+    static bool MoveFile( const char * pszSourceFileName, const char * pszDestFileName );
 };
 
 

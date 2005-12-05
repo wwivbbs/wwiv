@@ -290,7 +290,7 @@ struct ZModem {
 
 
 extern	int	ZmodemTInit(ZModem *info) ;
-extern	int	ZmodemTFile(char *file, char *rmtname,
+extern	int	ZmodemTFile(const char *pszFileName, const char *pszRemoteFileName,
 		  u_int f0, u_int f1, u_int f2, u_int f3,
 		  int filesRem, int bytesRem, ZModem *info) ;
 extern	int	ZmodemTFinish(ZModem *info) ;

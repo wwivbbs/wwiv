@@ -193,7 +193,7 @@ bool check_inet_addr(const char *inetaddr)
 }
 
 
-char *read_inet_addr( char *addr, int nUserNumber )
+char *read_inet_addr( char *pszInternetEmailAddress, int nUserNumber )
 {
 	if (!nUserNumber)
 	{
@@ -202,12 +202,12 @@ char *read_inet_addr( char *addr, int nUserNumber )
 
 	if ( nUserNumber == GetSession()->usernum && check_inet_addr( GetSession()->thisuser.GetEmailAddress() ) )
 	{
-		strcpy( addr, GetSession()->thisuser.GetEmailAddress() );
+		strcpy( pszInternetEmailAddress, GetSession()->thisuser.GetEmailAddress() );
 	}
 	else
 	{
-		//addr = NULL;
-		*addr = 0;
+		//pszInternetEmailAddress = NULL;
+		*pszInternetEmailAddress = 0;
         WFile inetAddrFile( syscfg.datadir, INETADDR_DAT );
         if ( !inetAddrFile.Exists() )
 		{
@@ -216,7 +216,7 @@ char *read_inet_addr( char *addr, int nUserNumber )
 			{
 				long lCurPos = 80L * static_cast<long>( i );
                 inetAddrFile.Seek( lCurPos, WFile::seekBegin );
-                inetAddrFile.Write( addr, 80L );
+                inetAddrFile.Write( pszInternetEmailAddress, 80L );
 			}
 		}
 		else
@@ -228,11 +228,11 @@ char *read_inet_addr( char *addr, int nUserNumber )
             inetAddrFile.Read( szUserName, 80L );
 			if (check_inet_addr(szUserName))
 			{
-				strcpy(addr, szUserName);
+				strcpy(pszInternetEmailAddress, szUserName);
 			}
 			else
 			{
-				sprintf(addr, "User #%d", nUserNumber);
+				sprintf(pszInternetEmailAddress, "User #%d", nUserNumber);
                 WUser user;
                 GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
                 user.SetEmailAddress( "" );
@@ -241,11 +241,11 @@ char *read_inet_addr( char *addr, int nUserNumber )
 		}
         inetAddrFile.Close();
 	}
-	return addr;
+	return pszInternetEmailAddress;
 }
 
 
-void write_inet_addr( const char *addr, int nUserNumber )
+void write_inet_addr( const char *pszInternetEmailAddress, int nUserNumber )
 {
 	if (!nUserNumber)
 	{
@@ -256,7 +256,7 @@ void write_inet_addr( const char *addr, int nUserNumber )
     inetAddrFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
 	long lCurPos = 80L * static_cast<long>( nUserNumber );
     inetAddrFile.Seek( lCurPos, WFile::seekBegin );
-    inetAddrFile.Write( const_cast<char*>( addr ), 80L );
+    inetAddrFile.Write( pszInternetEmailAddress, 80L );
     inetAddrFile.Close();
     char szDefaultUserAddr[ 255 ];
 	sprintf(szDefaultUserAddr, "USER%d", nUserNumber);
@@ -292,7 +292,7 @@ void write_inet_addr( const char *addr, int nUserNumber )
 				}
 			}
             char szAddress[ 255 ];
-			sprintf(szAddress, "\nUSER%d = %s", nUserNumber, addr);
+			sprintf(szAddress, "\nUSER%d = %s", nUserNumber, pszInternetEmailAddress);
 			fprintf(out, szAddress);
 			fsh_close(in);
 			fsh_close(out);

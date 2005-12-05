@@ -1240,7 +1240,7 @@ void WBbsApp::InitializeBBS()
         {
             szFileName[ nFileNameLength - 1 ] = '\0';
         }
-        bDirectoryInvalid = chdir( szFileName ) ? true : false;
+        bDirectoryInvalid = _chdir( szFileName ) ? true : false;
     }
     if ( bDirectoryInvalid )
     {
@@ -1265,7 +1265,7 @@ void WBbsApp::InitializeBBS()
         {
             szFileName[ nFileNameLength - 1 ] = '\0';
         }
-        bDirectoryInvalid = chdir( szFileName ) ? true : false;
+        bDirectoryInvalid = _chdir( szFileName ) ? true : false;
     }
     if ( bDirectoryInvalid )
     {
@@ -1316,7 +1316,11 @@ void WBbsApp::InitializeBBS()
     set_net_num( 0 );
 
     XINIT_PRINTF( "* Reading status information.\r\n" );
-    statusMgr->Get( false, true );
+    if ( !statusMgr->Get( true ) ) 
+    {
+        std::cout << "Unable to return status.dat.\r\n";
+        AbortBBS();
+    }
 
     XINIT_PRINTF("* Reading color information.\r\n");
     snprintf( szFileName, sizeof( szFileName ), "%s%s", syscfg.datadir, COLOR_DAT );
@@ -1457,7 +1461,7 @@ void WBbsApp::InitializeBBS()
     }
     // put in our environment since passing the xenviron wasn't working
     // with sync emulated fossil
-    putenv( newprompt );
+    _putenv( newprompt );
     snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber() );
 
 #if !defined (_UNIX)
@@ -1467,17 +1471,17 @@ void WBbsApp::InitializeBBS()
 
     if ( !ss )
     {
-        putenv( szFileName );
+        _putenv( szFileName );
     }
     if (!pk)
     {
-        putenv( "PKNOFASTCHAR=Y" );
+        _putenv( "PKNOFASTCHAR=Y" );
     }
 
 #endif // defined (_UNIX)
 
-    putenv( m_szWWIVEnvironmentVariable );
-    putenv( m_szEnvironVarWwivNetworkNumber );
+    _putenv( m_szWWIVEnvironmentVariable );
+    _putenv( m_szEnvironVarWwivNetworkNumber );
 
     XINIT_PRINTF("* Reading Voting Booth Configuration.\r\n");
     read_voting();

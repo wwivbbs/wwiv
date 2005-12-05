@@ -185,7 +185,7 @@ void modify_dir(int n)
 			Input1(s, r.path, 79, true, MIXED);
 			if (s[0])
 			{
-				if (chdir(s))
+				if (_chdir(s))
 				{
 					GetApplication()->CdHome();
 					if (WWIV_make_path(s))

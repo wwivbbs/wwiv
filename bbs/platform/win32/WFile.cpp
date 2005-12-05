@@ -22,6 +22,7 @@
 #endif
 
 #include <fcntl.h>
+#include "shellapi.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -193,7 +194,7 @@ bool WFile::Open( int nFileMode, int nShareMode, int nPermissions )
 	if ( m_hFile < 0 )
 	{
 		int nCount = 1;
-		if (access(m_szFileName, 0) != -1)
+		if ( _access(m_szFileName, 0) != -1 )
 		{
 			WWIV_Delay(WAIT_TIME);
 			m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
@@ -239,7 +240,7 @@ void WFile::Close()
 {
     if ( WFile::IsFileHandleValid( m_hFile ) )
     {
-        close( m_hFile );
+        _close( m_hFile );
         m_hFile = WFile::invalid_handle;
         m_bOpen = false;
     }
@@ -248,7 +249,7 @@ void WFile::Close()
 
 int WFile::Read( void * pBuffer, int nCount )
 {
-    int nRet = read( m_hFile, pBuffer, nCount );
+    int nRet = _read( m_hFile, pBuffer, nCount );
 	if ( nRet == -1 )
 	{
         std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
@@ -258,9 +259,9 @@ int WFile::Read( void * pBuffer, int nCount )
 }
 
 
-int WFile::Write( void * pBuffer, int nCount )
+int WFile::Write( const void * pBuffer, int nCount )
 {
-    int nRet = write( m_hFile, pBuffer, nCount );
+    int nRet = _write( m_hFile, pBuffer, nCount );
 	if ( nRet == -1 )
 	{
         std::cout <<"[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
@@ -280,7 +281,7 @@ long WFile::GetLength()
     }
     WWIV_ASSERT( WFile::IsFileHandleValid( m_hFile ) );
 
-    long lFileSize = filelength( m_hFile );
+    long lFileSize = _filelength( m_hFile );
     if ( bOpenedHere )
     {
         Close();
@@ -294,7 +295,7 @@ long WFile::Seek( long lOffset, int nFrom )
     WWIV_ASSERT( nFrom == WFile::seekBegin || nFrom == WFile::seekCurrent || nFrom == WFile::seekEnd );
     WWIV_ASSERT( WFile::IsFileHandleValid( m_hFile ) );
 
-    return lseek( m_hFile, lOffset, nFrom );
+    return _lseek( m_hFile, lOffset, nFrom );
 }
 
 
@@ -318,8 +319,18 @@ bool WFile::Delete( bool bUseTrashCan )
     {
         this->Close();
     }
-
-    return DeleteFile( m_szFileName ) ? true : false;
+    if ( bUseTrashCan )
+    {
+        SHFILEOPSTRUCT sh={0};
+        sh.pFrom=m_szFileName;
+        sh.wFunc=FO_DELETE;
+        sh.fFlags=FOF_ALLOWUNDO;
+        return (SHFileOperation( &sh ) == 0 && sh.fAnyOperationsAborted == FALSE );
+    }
+    else
+    {
+        return DeleteFile( m_szFileName ) ? true : false;
+    }
 }
 
 
@@ -358,13 +369,13 @@ time_t WFile::GetFileTime()
     WWIV_ASSERT( WFile::IsFileHandleValid( m_hFile ) );
 
     struct _stat buf;
-    int nFileTime = ( _fstat( m_hFile, &buf ) == -1 ) ? 0 : buf.st_mtime;
+    time_t tFileTime = ( _fstat( m_hFile, &buf ) == -1 ) ? 0 : buf.st_mtime;
 
     if ( bOpenedHere )
     {
         Close();
     }
-    return nFileTime;
+    return tFileTime;
 }
 
 
@@ -408,7 +419,7 @@ bool WFile::Exists( const char *pszFileName )
     WWIV_ASSERT( strstr( pszFileName, "*" ) == NULL );
     WWIV_ASSERT( strstr( pszFileName, "?" ) == NULL );
 
-    return ( access( pszFileName, 0 ) != -1 ) ? true : false;
+    return ( _access( pszFileName, 0 ) != -1 ) ? true : false;
 }
 
 
@@ -431,6 +442,16 @@ bool WFile::SetFilePermissions( const char *pszFileName, int nPermissions )
 bool WFile::IsFileHandleValid( int hFile )
 {
     return ( hFile != WFile::invalid_handle ) ? true : false;
+}
+
+bool WFile::CopyFile( const char * pszSourceFileName, const char * pszDestFileName )
+{
+    return ::CopyFileA(pszSourceFileName, pszDestFileName, FALSE) ? true : false;
+}
+
+bool WFile::MoveFile( const char * pszSourceFileName, const char * pszDestFileName )
+{
+    return ::MoveFileA(pszSourceFileName, pszDestFileName) ? true : false;
 }
 
 

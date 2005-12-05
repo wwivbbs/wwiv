@@ -28,9 +28,7 @@ char *strlwr(char *s);
 
 // filestuff.cpp
 
-long filelength(int f);
 void chsize(int f, size_t size);
-bool WWIV_CopyFile(const char * szSourceFileName, const char * szDestFileName);
 
 // utility2.cpp
 

@@ -139,8 +139,7 @@ void AddBBSListLine( const char* pszBbsListLine )
             file.Seek( -1L, WFile::seekEnd );
         }
     }
-    // we cast away const'ness however WFile::Write doesn't modify the parameter
-    file.Write( const_cast<char*>( pszBbsListLine ), strlen( pszBbsListLine ) );
+    file.Write( pszBbsListLine, strlen( pszBbsListLine ) );
     file.Close();
 }
 

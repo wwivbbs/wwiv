@@ -14,51 +14,6 @@
 #include "../../wwiv.h"
 
 
-void show_files(char *fn, char *dir)
-/* Displays list of files matching filespec fn in directory dir. */
-{
-    int i;
-    char s[120], s1[120], c;
-    char drive[MAX_DRIVE], direc[MAX_DIR], file[MAX_FNAME], ext[MAX_EXT];
-    
-    c = (okansi()) ? '\xCD' : '=';
-    nl();
-    
-    _splitpath(dir, drive, direc, file, ext);
-    sprintf(s, "%s%s", "|09[|B1|15 FileSpec: ", strupr(stripfn(fn)));
-    strcat(s, "    Dir: ");
-    strcat(s, drive);
-    strcat(s, direc);
-    strcat(s, " |B0|09]");
-    i = (GetSession()->thisuser.screenchars - 1) / 2 - strlen(stripcolors(s)) / 2;
-    npr("|09%s", charstr(i, c));
-    npr(s);
-    i = GetSession()->thisuser.screenchars - 1 - i - strlen(stripcolors(s));
-    npr("|09%s", charstr(i, c));
-    
-    sprintf(s1, "%s%s", dir, strupr(stripfn(fn)));
-	WFindFile fnd;
-	bool bFound = fnd.open(s1, 0);
-    while (bFound) 
-    {
-        strcpy(s, fnd.GetFileName());
-        align(s);
-        sprintf(s1, "|09[|14%s|09]|11 ", s);
-        if (GetApplication()->GetLocalIO()->WhereX() > (GetSession()->thisuser.screenchars - 15))
-        {
-            nl();
-        }
-        npr(s1);
-        bFound = fnd.next();
-    }
-    
-    nl();
-    ansic(7);
-    pl(charstr(GetSession()->thisuser.screenchars - 1, c));
-    nl();
-}
-
-
 
 // Used only by WWIV_make_abs_cmd
 

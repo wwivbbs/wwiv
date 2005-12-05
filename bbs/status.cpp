@@ -20,7 +20,7 @@
 #include "wwiv.h"
 
 
-void StatusMgr::Get(bool bFailOnFailure, bool bLockFile)
+bool StatusMgr::Get(bool bLockFile)
 {
     if ( !m_statusFile.IsOpen() )
 	{
@@ -34,16 +34,8 @@ void StatusMgr::Get(bool bFailOnFailure, bool bLockFile)
 	}
     if ( !m_statusFile .IsOpen() )
 	{
-		if ( !bFailOnFailure )
-		{
-			sysoplog( "CANNOT READ STATUS" );
-            std::cout << m_statusFile.GetName() << " NOT FOUND" << std::endl;
-			GetApplication()->AbortBBS();
-		}
-		else
-		{
-			sysoplog( "CANNOT READ STATUS" );
-		}
+        sysoplog( "CANNOT READ STATUS" );
+        return false;
 	}
 	else
 	{
@@ -128,18 +120,19 @@ void StatusMgr::Get(bool bFailOnFailure, bool bLockFile)
 			}
 		}
 	}
+    return true;
 }
 
 
 void StatusMgr::Lock()
 {
-	this->Get(true, true);
+	this->Get(true);
 }
 
 
 void StatusMgr::Read()
 {
-	this->Get(true, false);
+	this->Get(false);
 }
 
 
