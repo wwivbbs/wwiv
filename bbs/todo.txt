@@ -16,5 +16,7 @@
 * Type-3 Message Base Support (JAM or SQUISH)
 * Cleanup /W4 warnings. (3?)
 * Fix blind uploads
-
-
+* Move isr1 to SmallRecord
+* Make SmallRecord class with following methods: insert, delete, rebuild.
+* Move rebuild_files names.lst rebuild code to SmallRecord.rebuild method.
+* Move remaining status.* usages to StatusMgr
