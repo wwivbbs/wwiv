@@ -460,9 +460,9 @@ int WBbsApp::doWFCEvents()
                 {
                     wfc_cls();
                     GetStatusManager()->Read();
-                    char szBuffer[ 255 ];
-                    slname( date(), szBuffer );
-                    print_local_file( szBuffer, status.log1 );
+                    char szSysopLogFileName[ _MAX_PATH ];
+                    GetSysopLogFileName( date(), szSysopLogFileName );
+                    print_local_file( szSysopLogFileName, status.log1 );
                 }
                 break;
                 // Read User Mail
@@ -599,9 +599,9 @@ int WBbsApp::doWFCEvents()
                 {
                     wfc_cls();
                     GetStatusManager()->Read();
-                    char szDate[ 255 ];
-                    slname( date(), szDate );
-                    print_local_file( status.log1, szDate );
+                    char szSysopLogFileName[ _MAX_PATH ];
+                    GetSysopLogFileName( date(), szSysopLogFileName );
+                    print_local_file( status.log1, szSysopLogFileName );
                 }
                 break;
                 // Print Activity (Z) Log

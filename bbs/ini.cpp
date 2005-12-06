@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
+#include "WTextFile.h"
 #include "ini.h"
 
 
@@ -67,15 +68,15 @@ static void find_subsection_area(const char *pszFileName, const char *ssn, long 
     *begin = *end = -1L;
     snprintf( szTempHeader, sizeof( szTempHeader ), "[%s]", ssn );
 
-    FILE *f = fsh_open( pszFileName, "rt");
-    if (!f)
+    WTextFile file(pszFileName, "rt");
+    if (!file.IsOpen())
     {
         return;
     }
 
     long pos = 0L;
 
-    while (fgets(s, sizeof(s) - 1, f) != NULL)
+    while (file.ReadLine(s, sizeof(s) - 1))
     {
         // Get rid of CR/LF at end
         ss = strchr(s, '\n');
@@ -98,7 +99,7 @@ static void find_subsection_area(const char *pszFileName, const char *ssn, long 
                 {
                     if (*begin == -1L)
                     {
-                        *begin = ftell(f);
+                        *begin = file.GetPosition();
                     }
                 }
                 else
@@ -115,16 +116,16 @@ static void find_subsection_area(const char *pszFileName, const char *ssn, long 
             }
         }
         // Update file position pointer
-        pos = ftell(f);
+        pos = file.GetPosition();
     }
 
     // Mark end as end of the file if not already found
     if ( *begin != -1L && *end == -1L )
     {
-        *end = ftell(f) - 1;
+        *end = file.GetPosition() - 1;
     }
 
-    fsh_close(f);
+    file.Close();
 }
 
 

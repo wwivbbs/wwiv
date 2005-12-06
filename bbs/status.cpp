@@ -136,7 +136,26 @@ void StatusMgr::Read()
 }
 
 
+statusrec* StatusMgr::BeginTransaction()
+{
+    this->Get(true);
+    return &status;
+}
+
+bool StatusMgr::CommitTransaction(statusrec* pStatus)
+{
+    this->Write( pStatus );
+    // TODO make Write(...) return a bool
+    return true;
+}
+
 void StatusMgr::Write()
+{
+    Write( &status );
+}
+
+
+void StatusMgr::Write(statusrec *pStatus)
 {
     if ( !m_statusFile.IsOpen() )
 	{
@@ -154,7 +173,7 @@ void StatusMgr::Write()
 	}
 	else
 	{
-        m_statusFile.Write( &status, sizeof( statusrec ) );
+        m_statusFile.Write( pStatus, sizeof( statusrec ) );
         m_statusFile.Close();
 	}
 }
