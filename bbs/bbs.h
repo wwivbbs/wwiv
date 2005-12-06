@@ -53,14 +53,29 @@ public:
 	 * @function Read Loads the contents of STATUS.DAT
 	 */
 	void Read();
-	/*!
+
+    /*!
 	 * @function Write Writes the contents of STATUS.DAT
+     * @deprecated - Use BeginTransaction and CommitTransaction 
 	 */
 	void Write();
+    void Write(statusrec *pStatus);
 	/*!
 	 * @function Lock Aquires write lock on STATUS.DAT
+     * @deprecated - Use BeginTransaction and CommitTransaction 
 	 */
 	void Lock();
+
+    /**
+     * Replacement for Lock
+     */
+    statusrec* BeginTransaction();
+
+    /**
+     * Replacement for Write
+     */
+    bool CommitTransaction( statusrec* pStatus );
+
 	/*!
 	 * @function Get Loads the contents of STATUS.DAT with
 	 *           control on failure and lock mode

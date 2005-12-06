@@ -28,6 +28,9 @@
 *	Copyright (c) 1995 by Edward A. Falk
 *	January, 1995
 */
+#if defined(_MSC_VER) && !defined( _CRT_SECURE_NO_DEPRECATE )
+#define _CRT_SECURE_NO_DEPRECATE
+#endif	// _CRT_SECURE_NO_DEPRECATE
 
 
 #include <cstdio>
@@ -41,9 +44,6 @@
 #pragma warning( push )
 #pragma warning( disable : 4706 4127 4244 4100 )
 
-#if !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _CRT_SECURE_NO_DEPRECATE
 #endif	// _MSC_VER
 
 int	SendMoreFileData( ZModem *info );
@@ -298,8 +298,7 @@ int XmodemTInit( ZModem *info )
 
 /* called by user to begin transmission of a file */
 
-int ZmodemTFile(
-				const char	*pszFileName,
+int ZmodemTFile(const char	*pszFileName,
 				const char	*pszRemoteFileName,
 				u_int	f0,
 				u_int	f1,

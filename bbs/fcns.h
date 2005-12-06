@@ -968,8 +968,8 @@ void chat1(char *pszChatLine, bool two_way);
 
 // File: sysoplog.cpp
 
-void slname(const char *d, char *pszLogFileName);
-void islname(char *pszInstanceLogFileName);
+void GetSysopLogFileName(const char *d, char *pszLogFileName);
+void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName);
 void catsl();
 void sysopchar(const char *pszLogText);
 void sysoplog(const char *pszLogText, bool bIndent = true);

@@ -1156,7 +1156,7 @@ void beginday( bool displayStatus )
 	strcpy( status.date2, status.date1 );
 	strcpy( status.date1, date() );
 	strcpy( status.log2, status.log1 );
-	slname( status.date2, status.log1 );
+	GetSysopLogFileName( status.date2, status.log1 );
 
 	if ( displayStatus )
     {

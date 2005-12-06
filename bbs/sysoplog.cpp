@@ -23,7 +23,7 @@
 //
 // Local function prototypes
 //
-void sl1(int cmd, const char *pszLogText);
+void AddLineToSysopLogImpl(int cmd, const char *pszLogText);
 
 #define LOG_STRING 0
 #define LOG_CHAR   4
@@ -32,7 +32,7 @@ void sl1(int cmd, const char *pszLogText);
 * Creates sysoplog filename in s, from datestring.
 */
 
-void slname(const char *d, char *pszLogFileName)
+void GetSysopLogFileName(const char *d, char *pszLogFileName)
 {
 	sprintf(pszLogFileName, "%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
@@ -41,7 +41,7 @@ void slname(const char *d, char *pszLogFileName)
 * Returns instance (temporary) sysoplog filename in s.
 */
 
-void islname(char *pszInstanceLogFileName)
+void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName)
 {
 	sprintf(pszInstanceLogFileName, "inst-%3.3u.log", GetApplication()->GetInstanceNumber());
 }
@@ -57,14 +57,14 @@ void catsl()
     char szInstanceBaseName[MAX_PATH];
     char szInstanceLogFileName[MAX_PATH];
 
-	islname(szInstanceBaseName);
+	GetTemporaryInstanceLogFileName(szInstanceBaseName);
 	sprintf(szInstanceLogFileName, "%s%s", syscfg.gfilesdir, szInstanceBaseName);
 
 	if (WFile::Exists(szInstanceLogFileName))
 	{
 	    char szLogFileBaseName[MAX_PATH];
 
-        slname(date(), szLogFileBaseName);
+        GetSysopLogFileName(date(), szLogFileBaseName);
         WFile wholeLogFile( syscfg.gfilesdir, szLogFileBaseName );
 
 		char* pLogBuffer = static_cast<char *>( BbsAllocA( CAT_BUFSIZE ) );
@@ -101,7 +101,7 @@ void catsl()
 /*
 * Writes a line to the sysoplog.
 */
-void sl1(int cmd, const char *pszLogText)
+void AddLineToSysopLogImpl(int cmd, const char *pszLogText)
 {
 	static int midline = 0;
 	static char s_szLogFileName[MAX_PATH];
@@ -124,7 +124,7 @@ void sl1(int cmd, const char *pszLogText)
 	if (!s_szLogFileName[0])
 	{
 		strcpy(s_szLogFileName, syscfg.gfilesdir);
-		islname(s_szLogFileName + strlen(s_szLogFileName));
+		GetTemporaryInstanceLogFileName(s_szLogFileName + strlen(s_szLogFileName));
 	}
 	switch (cmd)
 	{
@@ -200,8 +200,8 @@ void sl1(int cmd, const char *pszLogText)
 	default:
 		{
 			char szTempMsg[81];
-			sprintf( szTempMsg, "Invalid Command passed to sysoplog::sl1, Cmd = %d", cmd );
-			sl1( LOG_STRING, szTempMsg );
+			sprintf( szTempMsg, "Invalid Command passed to sysoplog::AddLineToSysopLogImpl, Cmd = %d", cmd );
+			AddLineToSysopLogImpl( LOG_STRING, szTempMsg );
 		} break;
 	}
 }
@@ -214,7 +214,7 @@ void sysopchar(const char *pszLogText)
 {
     if ( ( incom || GetSession()->GetEffectiveSl() != 255 ) && pszLogText[0] )
 	{
-		sl1( LOG_CHAR, pszLogText );
+		AddLineToSysopLogImpl( LOG_CHAR, pszLogText );
 	}
 }
 
@@ -231,11 +231,11 @@ void sysoplog( const char *pszLogText, bool bIndent )
 	{
     	char szBuffer[ 255 ];
 		sprintf( szBuffer, "   %s", pszLogText );
-		sl1( LOG_STRING, szBuffer );
+		AddLineToSysopLogImpl( LOG_STRING, szBuffer );
 	}
 	else
 	{
-		sl1( LOG_STRING, pszLogText );
+		AddLineToSysopLogImpl( LOG_STRING, pszLogText );
 	}
 }
 
