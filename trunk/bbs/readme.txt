@@ -59,6 +59,10 @@ Rushfan - Made WFile::Write take a const void * parameter to help fix const corr
 Rushfan - Implemented windows trashcan support in WFile::Delete
 Rushfan - Changed ANSI file code over to WFile in several places througout the code.
 Rushfan - Got rid of filelength (use WFile::GetLength()) now.
+Rushfan - renamed islname to GetTemporaryInstanceLogFileName
+Rushfan - renamed slname to GetSysopLogFileName
+Rushfan - Split up each of the different dropfile creation code into separate functions
+Rushfan - renamed sl1 to AddLineToSysopLogImpl
 
 ==============================================================================
 

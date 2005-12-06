@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
+#include "WTextFile.h"
 
 
 /**
@@ -433,27 +434,27 @@ bool play_sdf( const char *pszSoundFileName, bool abortable )
 	}
 
 	// must be able to open read-only
-	FILE* hSoundFile = fsh_open(szFileName, "rt");
-	if (!hSoundFile)
+    WTextFile soundFile(szFileName, "rt");
+    if (!soundFile.IsOpen())
 	{
 		return false;
 	}
 
 	// scan each line, ignore lines with words<2
-    char szSoundLine[ 255 ];
-	while (fgets(szSoundLine, sizeof(szSoundLine), hSoundFile) != NULL)
+    std::string soundLine;
+    while (soundFile.ReadLine(soundLine))
 	{
 		if ( abortable && bkbhit() )
 		{
 			break;
 		}
-		int nw = wordcount( szSoundLine, DELIMS_WHITE);
+        int nw = wordcount( soundLine.c_str(), DELIMS_WHITE);
 		if (nw >= 2)
 		{
             char szTemp[ 513 ];
-			strncpy(szTemp, extractword(1, szSoundLine, DELIMS_WHITE), sizeof(szTemp));
+			strncpy(szTemp, extractword(1, soundLine.c_str(), DELIMS_WHITE), sizeof(szTemp));
 			int freq = atoi(szTemp);
-			strncpy(szTemp, extractword(2, szSoundLine, DELIMS_WHITE), sizeof(szTemp));
+			strncpy(szTemp, extractword(2, soundLine.c_str(), DELIMS_WHITE), sizeof(szTemp));
 			int dur = atoi(szTemp);
 
 			// only play if freq and duration > 0
@@ -462,7 +463,7 @@ bool play_sdf( const char *pszSoundFileName, bool abortable )
                 int nPauseDelay = 0;
 				if (nw > 2)
 				{
-					strncpy( szTemp, extractword(3, szSoundLine, DELIMS_WHITE), sizeof( szTemp ) );
+					strncpy( szTemp, extractword(3, soundLine.c_str(), DELIMS_WHITE), sizeof( szTemp ) );
 					nPauseDelay = atoi( szTemp );
 				}
 				WWIV_Sound(freq, dur);
@@ -473,9 +474,8 @@ bool play_sdf( const char *pszSoundFileName, bool abortable )
 			}
 		}
 	}
-
-	// close and return success
-	fsh_close( hSoundFile );
+    
+    soundFile.Close();
 	return true;
 }
 

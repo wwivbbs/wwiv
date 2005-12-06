@@ -695,7 +695,7 @@ void ReadLog()
 {
     char szLogFileName[ 255 ];
 
-    slname( date(), szLogFileName );
+    GetSysopLogFileName( date(), szLogFileName );
     print_local_file( szLogFileName, "" );
 }
 

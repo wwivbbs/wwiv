@@ -308,6 +308,10 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
+			<File
+				RelativePath=".\WTextFile.cpp"
+				>
+			</File>
 			<Filter
 				Name="platform Source"
 				>
@@ -1256,6 +1260,10 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath=".\WTextFile.h"
+				>
+			</File>
 			<Filter
 				Name="Generic Headers"
 				>

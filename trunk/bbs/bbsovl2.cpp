@@ -63,7 +63,7 @@ void OnlineUserEditor()
     sprintf( logons, "%u", GetSession()->thisuser.GetNumLogons() );
     sprintf( ass, "%u", GetSession()->thisuser.GetAssPoints() );
 
-	gcvt( GetSession()->thisuser.GetGold(), 5, gold );
+	_gcvt( GetSession()->thisuser.GetGold(), 5, gold );
 	strcpy( rst, restrict_string );
 	for (i = 0; i <= 15; i++)
 	{
@@ -208,7 +208,7 @@ void OnlineUserEditor()
 			GetApplication()->GetLocalIO()->LocalGotoXY(wx + 50, wy + 6);
 			GetApplication()->GetLocalIO()->LocalEditLine( gold, 5, NUM_ONLY, &rc, "" );
 			GetSession()->thisuser.SetGold( static_cast<float>( atof( gold ) ) );
-			gcvt( GetSession()->thisuser.GetGold(), 5, gold );
+			_gcvt( GetSession()->thisuser.GetGold(), 5, gold );
 			GetApplication()->GetLocalIO()->LocalPrintf( "%-5s", gold );
 			break;
 		case 10:
