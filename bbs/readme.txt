@@ -63,6 +63,7 @@ Rushfan - renamed islname to GetTemporaryInstanceLogFileName
 Rushfan - renamed slname to GetSysopLogFileName
 Rushfan - Split up each of the different dropfile creation code into separate functions
 Rushfan - renamed sl1 to AddLineToSysopLogImpl
+Rushfan - Started making WStatusMgr support transactions so status can stop being global
 Atani   - various linux compilation issues fixed
 
 ==============================================================================
@@ -91,6 +92,7 @@ Rushfan - removed unused files extrn.cpp and extrn1.cpp from CVS finally.
 Rushfan - Updated code to compile under VS.NET 2005 (using VC++ Express)
 Rushfan - Got rid of WWIV_Copy_File and moved it to WFile.  Also added WFile::MoveFile
           which needs to be implemented on UNIX still.
+Rushfan - WFile no longer includes wwiv.h (and should now work outside of WWIV)
 
 
 ==============================================================================
