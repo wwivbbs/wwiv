@@ -39,6 +39,7 @@
 #include <sys/stat.h>
 #include "zmodem.h"
 #include "crctab.h"
+#include "WStringUtils.h"
 
 #if defined(_MSC_VER)
 #pragma warning( push )
@@ -314,8 +315,8 @@ int ZmodemTFile(const char	*pszFileName,
 	}
 
 	info->fileEof = 0;
-	info->filename = _strdup(pszFileName);
-	info->rfilename = _strdup((pszRemoteFileName != NULL) ? pszRemoteFileName : "noname");
+	info->filename = WWIV_STRDUP(pszFileName);
+	info->rfilename = WWIV_STRDUP((pszRemoteFileName != NULL) ? pszRemoteFileName : "noname");
 	info->filesRem = filesRem;
 	info->bytesRem = bytesRem;
 	info->fileFlags[3] = f0;
@@ -520,7 +521,7 @@ int GotRinit( ZModem *info )
 int SendZSInit( ZModem *info )
 {
 	int	err;
-	char	*at = (info->attn != NULL) ? info->attn : "";
+	const char	*at = (info->attn != NULL) ? info->attn : "";
 	u_char	fbuf[4];
 
 	/* TODO: zmodem8.doc states: "If the ZSINIT header specifies
