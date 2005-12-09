@@ -188,6 +188,7 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/wshare.o		\
 	$(OBJ)/WSession.o	\
 	$(OBJ)/WStringUtils.o	\
+	$(OBJ)/WTextFile.o	\
 	$(OBJ)/WUser.o		\
 	$(OBJ)/wutil.o         	\
 	$(OBJ)/xfer.o          	\
