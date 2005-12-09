@@ -82,7 +82,7 @@ FILE *fsh_open(const char *path, char *mode)
 		{
 			WWIV_Delay(WAIT_TIME);
 			fd = _sopen(path, md, share, S_IREAD | S_IWRITE);
-			while ( ( (fd < 0) && (errno == EACCES) ) && (count < TRIES) )
+			while ( ( fd < 0 && errno == EACCES ) && count < TRIES )
 			{
 				WWIV_Delay(WAIT_TIME);
 				if ( GetSession()->GetGlobalDebugLevel() > 0 )

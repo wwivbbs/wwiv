@@ -29,7 +29,7 @@
 #include "WStringUtils.h"
 
 #ifndef MAX_PATH
-#define MAX_PATH 256
+#define MAX_PATH 260
 #endif
 
 #if defined (_WIN32) && defined(CopyFile)

@@ -156,6 +156,15 @@ const char *WUser::GetUserNameNumberAndSystem( int nUserNumber, int nSystemNumbe
 //
 //
 
+WUserManager::WUserManager()
+{
+    cout << syscfg.datadir;
+}
+
+WUserManager::~WUserManager()
+{
+}
+
 int  WUserManager::GetNumberOfUserRecords() const
 {
     WFile userList( syscfg.datadir, USER_LST );
@@ -184,7 +193,7 @@ bool WUserManager::ReadUserNoCache( WUser *pUser, int nUserNumber )
     }
     if(syscfg.userreclen == 0)
     {
-	syscfg.userreclen = sizeof(userrec);
+	    syscfg.userreclen = sizeof(userrec);
     }
     long nSize = userList.GetLength();
     int nNumUserRecords = ( static_cast<int>( nSize / syscfg.userreclen) - 1 );
