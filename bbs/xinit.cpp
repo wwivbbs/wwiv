@@ -1240,7 +1240,8 @@ void WBbsApp::InitializeBBS()
         {
             szFileName[ nFileNameLength - 1 ] = '\0';
         }
-        bDirectoryInvalid = _chdir( szFileName ) ? true : false;
+	WFile dir(szFileName);
+        bDirectoryInvalid = dir.Exists();
     }
     if ( bDirectoryInvalid )
     {
@@ -1265,7 +1266,8 @@ void WBbsApp::InitializeBBS()
         {
             szFileName[ nFileNameLength - 1 ] = '\0';
         }
-        bDirectoryInvalid = _chdir( szFileName ) ? true : false;
+	WFile dir(szFileName);
+        bDirectoryInvalid = dir.Exists();
     }
     if ( bDirectoryInvalid )
     {

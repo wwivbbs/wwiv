@@ -185,7 +185,8 @@ void modify_dir(int n)
 			Input1(s, r.path, 79, true, MIXED);
 			if (s[0])
 			{
-				if (_chdir(s))
+				WFile dir(s);
+				if (!dir.Exists())
 				{
 					GetApplication()->CdHome();
 					if (WWIV_make_path(s))
@@ -194,10 +195,6 @@ void modify_dir(int n)
 						pausescr();
 						s[0] = 0;
 					}
-				}
-				else
-				{
-					GetApplication()->CdHome();
 				}
 				if (s[0])
                 {

@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "wwiv.h"
 #include "WTextFile.h"
 
 FILE *fsh_open(const char *path, char *mode);
