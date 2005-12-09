@@ -63,6 +63,7 @@ Rushfan - renamed islname to GetTemporaryInstanceLogFileName
 Rushfan - renamed slname to GetSysopLogFileName
 Rushfan - Split up each of the different dropfile creation code into separate functions
 Rushfan - renamed sl1 to AddLineToSysopLogImpl
+Atani   - various linux compilation issues fixed
 
 ==============================================================================
 
