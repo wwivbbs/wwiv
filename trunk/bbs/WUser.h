@@ -382,6 +382,8 @@ private:
 class WUserManager
 {
 public:
+    WUserManager();
+    ~WUserManager();
     int GetNumberOfUserRecords() const;
     bool ReadUserNoCache( WUser *pUser, int nUserNumber );
     bool ReadUser( WUser *pUser, int nUserNumber, bool bForceRead = false );
