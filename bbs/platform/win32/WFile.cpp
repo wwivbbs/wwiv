@@ -17,12 +17,23 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef NOT_BBS
-#include "wwiv.h"
-#endif
-
-#include <fcntl.h>
+#define _CRT_SECURE_NO_DEPRECATE
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include "shellapi.h"
+
+#include "WFile.h"
+#include "wfndfile.h"
+#include "wwivassert.h"
+#include <fcntl.h>
+#include <io.h>
+#include <cstring>
+#include <string>
+#include <iostream>
+#include <sys/stat.h>
+#include <cerrno>
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -145,7 +156,7 @@ bool WFile::SetName( const char* pszDirName, const char *pszFileName )
     }
     else
     {
-        strFileName.append( WWIV_FILE_SEPERATOR_STRING ).append( pszFileName );
+        strFileName.append( "\\" ).append( pszFileName );
     }
     return this->SetName( strFileName.c_str() );
 }
@@ -196,9 +207,9 @@ bool WFile::Open( int nFileMode, int nShareMode, int nPermissions )
 		int nCount = 1;
 		if ( _access(m_szFileName, 0) != -1 )
 		{
-			WWIV_Delay(WAIT_TIME);
+			Sleep(WAIT_TIME);
 			m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
-			while ( ( ( m_hFile < 0 ) && ( errno == EACCES ) ) &&  (nCount < TRIES ) )
+			while ( ( m_hFile < 0 && errno == EACCES ) && nCount < TRIES )
 			{
                 Sleep( (nCount % 2) ? WAIT_TIME : 0 );
 				if (m_nDebugLevel > 0)
