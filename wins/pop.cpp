@@ -1414,17 +1414,17 @@ bool parse_net_ini()
 }
 
 
-int move_bad(char *path, char *pszFileName, int why)
+int move_bad(char *pszFilePath, char *pszFileName, int why)
 {
-    char src[_MAX_PATH], dest[_MAX_PATH];
+    char szSourceFile[_MAX_PATH], szDestinationFile[_MAX_PATH];
 
     log_it( true, "\n \xFE %s failed - SMTP error condition %d", pszFileName, why);
-    sprintf(src, "%s%s", path, pszFileName);
-    sprintf(dest, "%sFAILED\\%s", path, pszFileName);
-    trimstr1(src);
-    trimstr1(dest);
-    fprintf(stderr, "\n! \"%s\" for src\n \"%s\" for dest\n", src, dest);
-    return ( copyfile( src, dest, true ) );
+    sprintf(szSourceFile, "%s%s", pszFilePath, pszFileName);
+    sprintf(szDestinationFile, "%sFAILED\\%s", pszFilePath, pszFileName);
+    trimstr1(szSourceFile);
+    trimstr1(szDestinationFile);
+    fprintf(stderr, "\n! \"%s\" for src\n \"%s\" for dest\n", szSourceFile, szDestinationFile);
+    return ( copyfile( szSourceFile, dest, true ) );
 }
 
 
