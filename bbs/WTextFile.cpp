@@ -26,7 +26,7 @@ WTextFile::WTextFile( const char* pszFileName, const char* pszFileMode )
 {
     m_hFile = NULL;
     strcpy( m_szFileName, pszFileName );
-    strcpy( m_szFileName, pszFileMode );
+    strcpy( m_szFileMode, pszFileMode );
     m_hFile = fsh_open( m_szFileName, m_szFileMode);
 }
 
