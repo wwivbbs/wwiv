@@ -426,7 +426,7 @@ bool WFile::Exists( const char *pszFileName )
     WWIV_ASSERT( pszFileName );
 
     // If one of these assertions are thrown, then replace this call with
-    // WFile::EcistsWildcard since we are obviously using the wrong call here.
+    // WFile::ExistsWildcard since we are obviously using the wrong call here.
     WWIV_ASSERT( strstr( pszFileName, "*" ) == NULL );
     WWIV_ASSERT( strstr( pszFileName, "?" ) == NULL );
 
