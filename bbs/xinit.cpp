@@ -1227,67 +1227,28 @@ void WBbsApp::InitializeBBS()
         AbortBBS( true );
     }
 
-    bool bDirectoryInvalid = false;
-    strcpy( szFileName, syscfgovr.tempdir );
-    int nFileNameLength = strlen( szFileName );
-    if ( szFileName[0] == '\0' )
-    {
-        bDirectoryInvalid = true;
-    }
-    else
-    {
-        if ( szFileName[ nFileNameLength - 1 ] == WWIV_FILE_SEPERATOR_CHAR )
-        {
-            szFileName[ nFileNameLength - 1 ] = '\0';
-        }
-	WFile dir(szFileName);
-        bDirectoryInvalid = dir.Exists();
-    }
-    if ( bDirectoryInvalid )
+    if ( syscfgovr.tempdir[0] == '\0' || !WFile::Exists( syscfgovr.tempdir ) )
     {
         std::cout << "\r\nYour temp dir isn't valid.\r\n";
         std::cout << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
         AbortBBS();
     }
-    else
-    {
-        CdHome();
-    }
 
-    strcpy( szFileName, syscfgovr.batchdir );
-    nFileNameLength = strlen( szFileName );
-    if ( szFileName[ 0 ] == '\0' )
-    {
-        bDirectoryInvalid = true;
-    }
-    else
-    {
-        if ( szFileName[ nFileNameLength - 1 ] == WWIV_FILE_SEPERATOR_CHAR )
-        {
-            szFileName[ nFileNameLength - 1 ] = '\0';
-        }
-	WFile dir(szFileName);
-        bDirectoryInvalid = dir.Exists();
-    }
-    if ( bDirectoryInvalid )
+    if ( syscfgovr.batchdir[0] == '\0' || !WFile::Exists( syscfgovr.batchdir ) )
     {
         std::cout << "\r\nYour batch dir isn't valid.\r\n";
-        std::cout << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
+        std::cout << "It is now set to: '" << syscfgovr.batchdir << "'\r\n\n";
         AbortBBS();
-    }
-    else
-    {
-        CdHome();
     }
 
     write_inst( INST_LOC_INIT, 0, INST_FLAGS_NONE );
 
     // make sure it is the new USERREC structure
     XINIT_PRINTF("* Reading user scan pointers.\r\n");
-    snprintf( szFileName, sizeof( szFileName ), "%s%s", syscfg.datadir, USER_QSC );
-    if (!WFile::Exists(szFileName))
+    WFile fileQScan( syscfg.datadir, USER_QSC );
+    if (!fileQScan.Exists())
     {
-     	std::cout << "Could not open file '" << szFileName << "'\r\n";
+        std::cout << "Could not open file '" << fileQScan.GetFullPathName() << "'\r\n";
         std::cout << "You must go into INIT and convert your userlist before running the BBS.\r\n";
         AbortBBS();
     }
@@ -1325,8 +1286,8 @@ void WBbsApp::InitializeBBS()
     }
 
     XINIT_PRINTF("* Reading color information.\r\n");
-    snprintf( szFileName, sizeof( szFileName ), "%s%s", syscfg.datadir, COLOR_DAT );
-    if ( !WFile::Exists( szFileName ) )
+    WFile fileColor( syscfg.datadir, COLOR_DAT );
+    if ( !fileColor.Exists() )
 	{
         buildcolorfile();
 	}
@@ -1467,13 +1428,14 @@ void WBbsApp::InitializeBBS()
     snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber() );
 
 #if !defined (_UNIX)
-    snprintf( szFileName, sizeof( szFileName ), "DSZLOG=%s", g_szDSZLogFileName );
+    std::string dszLogEnvironmentVariable("DSZLOG=");
+    dszLogEnvironmentVariable.append(g_szDSZLogFileName );
     int pk = 0;
     ss = getenv( "DSZLOG" );
 
     if ( !ss )
     {
-        _putenv( szFileName );
+        _putenv( dszLogEnvironmentVariable.c_str() );
     }
     if (!pk)
     {
