@@ -343,6 +343,8 @@ bool WFile::Rename( const char *pszOrigFileName, const char* pszNewFileName )
 
 bool WFile::Exists( const char *pszFileName )
 {
+    // Note, if a directory name is passed for pszFileName, it is expected that
+    // this will work with either a trailing slash or without it.
     WWIV_ASSERT( pszFileName );
     struct stat buf;
     return ( stat(pszFileName, &buf) ? false : true );
