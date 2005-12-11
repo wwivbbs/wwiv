@@ -32,8 +32,9 @@
 #define MAX_PATH 260
 #endif
 
-#if defined (_WIN32) && defined(CopyFile)
+#if defined (_WIN32)
 #undef CopyFile
+#undef GetFullPathName
 #endif // CopyFile
 
 class WLogger

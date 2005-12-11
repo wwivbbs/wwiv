@@ -27,8 +27,10 @@
 #ifndef NOT_BBS
 #include "wtypes.h"
 #include "bbs.h"
+#include "WSession.h"
 #endif // NOT_BBS
 #include "vars.h"
+#include <iostream>
 
 const int WUser::userDeleted                = 0x01;
 const int WUser::userInactive               = 0x02;
@@ -158,7 +160,6 @@ const char *WUser::GetUserNameNumberAndSystem( int nUserNumber, int nSystemNumbe
 
 WUserManager::WUserManager()
 {
-    cout << syscfg.datadir;
 }
 
 WUserManager::~WUserManager()

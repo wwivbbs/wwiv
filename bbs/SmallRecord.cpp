@@ -26,6 +26,7 @@
 #include "WStringUtils.h"
 #include "vars.h"
 #include "bbs.h"
+#include <iostream>
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"

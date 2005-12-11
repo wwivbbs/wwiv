@@ -23,6 +23,7 @@
 #include "filenames.h"
 #include "WFile.h"
 #include "WUser.h"
+#include "WSession.h"
 #include "WStringUtils.h"
 #include "vars.h"
 #include "bbs.h"
