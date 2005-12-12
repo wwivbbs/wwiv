@@ -3,24 +3,4 @@
                  Copyright 2002-2005 WWIV Software Services
 ==============================================================================
 
-* More C++ classes around C data structures
-* More STL string usages
-* Move bputch, makeansi, bputs, ansic, and etc to WOutStream 
-  (aka instead of bputs(x), sess->bout->puts(x)) [maybe]
-* Let WUser take string& parameters in addition to const char * parameters
-* move g_flags into WSession
-* More streams usages
-* Bug (crash) when adding an event when you have no events.dat (plus I'm sure plenty of other things, since I don't use the events)
-* NNTP Support in WWIVTelnetServer
-* Type-3 Message Base Support (JAM or SQUISH)
-* Cleanup /W4 warnings. (3?)
-* Fix blind uploads
-* Move isr1 to SmallRecord
-* Make SmallRecord class with following methods: insert, delete, rebuild.
-* Move rebuild_files names.lst rebuild code to SmallRecord.rebuild method.
-* Move remaining status.* usages to StatusMgr
-* Use WTextFile instead of fsh_XXX methods w/fXXX CRT calls
-* Make WStatusMgr return the WStatus instance (from get and lock?) and not keep it a global variable.
-* Use quicksort to sort names.lst
-* Use STL vector or map to hold names.lst
-
+TODO Items should be entered into the sourceforge tracker.
