@@ -83,7 +83,7 @@ void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber)
 }
 
 
-char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, char *pszFileName, int *terr, bool *abort)
+char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName, int *terr, bool *abort)
 {
     char b[1025], szTempBuffer[20];
 
@@ -197,7 +197,7 @@ int GetXYModemBlockSize( bool bBlockSize1K )
 }
 
 
-void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch )
+void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch )
 {
     char ch;
 
@@ -205,8 +205,8 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
     char byBlockNumber = 1;
     bool abort = false;
     int terr = 0;
-    StringRemoveWhitespace( pszFileName );
-	WFile file( pszFileName );
+    char *pszWorkingFileName = _strdup( pszFileName );
+	WFile file( pszWorkingFileName );
 	if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         if (!bUseYModemBatch)
@@ -237,7 +237,7 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
     GetApplication()->GetLocalIO()->LocalXYPuts( 52, 4, "³ Consec Errors: 0         ");
     GetApplication()->GetLocalIO()->LocalXYPuts( 52, 5, "³ Total Errors : 0         ");
     GetApplication()->GetLocalIO()->LocalXYPuts( 52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
-    GetApplication()->GetLocalIO()->LocalXYPuts( 65, 0, stripfn(pszFileName));
+    GetApplication()->GetLocalIO()->LocalXYPuts( 65, 0, stripfn(pszWorkingFileName));
     GetApplication()->GetLocalIO()->LocalXYPrintf(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k( lFileSize ) );
 
     if (!okstart(&bUseCRC, &abort))
@@ -246,27 +246,27 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
     }
     if ( ft && !abort && !hangup )
     {
-        ch = send_b(file, lFileSize, 4, ft, &bUseCRC, pszFileName, &terr, &abort);
+        ch = send_b(file, lFileSize, 4, ft, &bUseCRC, pszWorkingFileName, &terr, &abort);
         if (ch == CX)
         {
             abort = true;
         }
         if ( ch == CU )
         {
-            send_b( file, 0L, 3, 0, &bUseCRC, pszFileName, &terr, &abort);
+            send_b( file, 0L, 3, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
             abort = true;
         }
     }
     if ( bUseYModem && !abort && !hangup )
     {
-        ch = send_b(file, lFileSize, 5, 0, &bUseCRC, pszFileName, &terr, &abort);
+        ch = send_b(file, lFileSize, 5, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
         if (ch == CX)
         {
             abort = true;
         }
         if ( ch == CU )
         {
-            send_b(file, 0L, 3, 0, &bUseCRC, pszFileName, &terr, &abort);
+            send_b(file, 0L, 3, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
             abort = true;
         }
     }
@@ -282,7 +282,7 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
         GetApplication()->GetLocalIO()->LocalXYPuts( 65, 1, ctim(((double) (lFileSize - cp)) * tpb ) );
         GetApplication()->GetLocalIO()->LocalXYPuts( 69, 4, "0" );
 
-        ch = send_b(file, cp, ( bUse1kBlocks ) ? 1 : 0, byBlockNumber, &bUseCRC, pszFileName, &terr, &abort);
+        ch = send_b(file, cp, ( bUse1kBlocks ) ? 1 : 0, byBlockNumber, &bUseCRC, pszWorkingFileName, &terr, &abort);
         if (ch == CX)
         {
             abort = true;
@@ -291,7 +291,7 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
         {
             wait1(18);
             dump();
-            send_b(file, 0L, 3, 0, &bUseCRC, pszFileName, &terr, &abort);
+            send_b(file, 0L, 3, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
             abort = true;
         }
         else
@@ -302,7 +302,7 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
     }
     if ( !hangup && !abort )
     {
-        send_b(file, 0L, 2, 0, &bUseCRC, pszFileName, &terr, &abort);
+        send_b(file, 0L, 2, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
     }
     if (!abort)
     {
@@ -329,19 +329,21 @@ void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool 
     {
         GetSession()->bout << "-=> File transmission complete.\r\n\n";
     }
+    BbsFreeMemory( pszWorkingFileName );
 }
 
 
-void zmodem_send(char *pszFileName, bool *sent, double *percent, char ft  )
+void zmodem_send(const char *pszFileName, bool *sent, double *percent, char ft  )
 {
     *sent = false;
     *percent = 0.0;
 
-    StringRemoveWhitespace( pszFileName );
+    char *pszWorkingFileName = _strdup( pszFileName );
+    StringRemoveWhitespace( pszWorkingFileName );
 
     bool bOldBinaryMode = GetApplication()->GetComm()->GetBinaryMode();
 	GetApplication()->GetComm()->SetBinaryMode( true );
-	bool bResult = NewZModemSendFile( pszFileName );
+	bool bResult = NewZModemSendFile( pszWorkingFileName );
 	GetApplication()->GetComm()->SetBinaryMode( bOldBinaryMode );
 
 	if ( bResult )
@@ -349,5 +351,6 @@ void zmodem_send(char *pszFileName, bool *sent, double *percent, char ft  )
         *sent = true;
         *percent = 100.0;
 	}
+    BbsFreeMemory( pszWorkingFileName );
 }
 

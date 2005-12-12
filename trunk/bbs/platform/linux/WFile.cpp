@@ -351,6 +351,14 @@ bool WFile::Exists( const char *pszFileName )
 }
 
 
+bool WFile::Exists( const char *pszDirectoryName, const char *pszFileName )
+{
+    std::string fileName( pszDirectoryName );
+    fileName.append( pszFileName );
+    return Exists( fileName.c_str() );
+}
+
+
 bool WFile::SetFilePermissions( const char *pszFileName, int nPermissions )
 {
     WWIV_ASSERT( pszFileName );

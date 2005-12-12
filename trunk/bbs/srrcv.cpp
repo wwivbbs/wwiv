@@ -176,7 +176,7 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC )
 }
 
 
-void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC )
+void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUseCRC )
 {
     char b[1025], x[81], ch;
     unsigned char bln;
@@ -410,15 +410,17 @@ void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC )
 }
 
 
-void zmodem_receive(char *pszFileName, char *ft, bool *received )
+void zmodem_receive(const char *pszFileName, char *ft, bool *received )
 {
-	StringRemoveWhitespace( pszFileName );
+    char *pszWorkingFileName = _strdup( pszFileName );
+	StringRemoveWhitespace( pszWorkingFileName );
 
     bool bOldBinaryMode = GetApplication()->GetComm()->GetBinaryMode();
 	GetApplication()->GetComm()->SetBinaryMode( true );
-	bool bResult = NewZModemReceiveFile( pszFileName );
+	bool bResult = NewZModemReceiveFile( pszWorkingFileName );
 	GetApplication()->GetComm()->SetBinaryMode( bOldBinaryMode );
 
     *received = ( bResult ) ? true : false;
+    BbsFreeMemory( pszWorkingFileName );
 }
 

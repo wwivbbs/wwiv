@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
-
+#include "WTextFile.h"
 
 //
 // private functions
@@ -683,19 +683,20 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type)
 	last_fn[0] = 0;
 	dliscan1(udir[nDirectoryNum].subnum);
 
-	FILE* f = fsh_open(pszFileName, "r");
-	if (!f)
+    WTextFile file( pszFileName, "r" );
+    if ( !file.IsOpen() )
 	{
-		sprintf(s, "%s%s", directories[udir[nDirectoryNum].subnum].path, pszFileName);
-		f = fsh_open(s, "r");
+        char szDefaultFileName[ MAX_PATH ];
+		sprintf(szDefaultFileName, "%s%s", directories[udir[nDirectoryNum].subnum].path, pszFileName);
+		file.Open( szDefaultFileName, "r" );
 	}
-	if (!f)
+    if (!file.IsOpen())
 	{
 		GetSession()->bout << pszFileName << ": not found.\r\n";
 	}
 	else
 	{
-		while (ok && fgets(s, 250, f))
+        while (ok && file.ReadLine(s, 250))
 		{
 			if (s[0] < SPACE)
 			{
@@ -791,7 +792,7 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type)
 				}
 			}
 		}
-		fsh_close(f);
+		file.Close();
 		if (ok && last_fn[0] && ext && *ext)
 		{
 			WFile fileDownload( g_szDownloadFileName );

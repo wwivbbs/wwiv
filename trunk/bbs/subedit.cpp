@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
-
+#include "WTextFile.h"
 
 //
 // Local Function Prototypes
@@ -61,20 +61,19 @@ void save_subs()
         subsFile.Close();
 	}
 
-    char szSubsXtrFileName[ MAX_PATH ];
-	sprintf(szSubsXtrFileName, "%s%s", syscfg.datadir, SUBS_XTR);
-	WFile::Remove(szSubsXtrFileName);
-	FILE* fp = fsh_open(szSubsXtrFileName, "w");
-	if (fp)
+	WFile::Remove(syscfg.datadir, SUBS_XTR);
+
+    WTextFile fileSubsXtr(syscfg.datadir, SUBS_XTR, "w");
+    if (fileSubsXtr.IsOpen())
 	{
 		for (int i = 0; i < GetSession()->num_subs; i++)
 		{
 			if (xsubs[i].num_nets)
 			{
-				fprintf(fp, "!%u\n@%s\n#%lu\n", i, xsubs[i].desc, (xsubs[i].flags & XTRA_MASK));
+                fileSubsXtr.WriteFormatted( "!%u\n@%s\n#%lu\n", i, xsubs[i].desc, (xsubs[i].flags & XTRA_MASK));
 				for (int i1 = 0; i1 < xsubs[i].num_nets; i1++)
 				{
-					fprintf(fp, "$%s %s %lu %u %u\n",
+                    fileSubsXtr.WriteFormatted( "$%s %s %lu %u %u\n",
 						        net_networks[xsubs[i].nets[i1].net_num].name,
 						        xsubs[i].nets[i1].stype,
 						        xsubs[i].nets[i1].flags,
@@ -83,7 +82,7 @@ void save_subs()
 				}
 			}
 		}
-		fsh_close(fp);
+		fileSubsXtr.Close();
 	}
 	for ( int nDelNetNum = 0; nDelNetNum < GetSession()->GetMaxNetworkNumber(); nDelNetNum++ )
 	{

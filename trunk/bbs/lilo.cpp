@@ -21,6 +21,7 @@
 #include "WStringUtils.h"
 #include <iostream>
 #include <sstream>
+#include "WTextFile.h"
 
 #define SECS_PER_DAY 86400L
 
@@ -369,12 +370,12 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
 				networkCommand << szUserName << " /B" << modem_speed << " /F" << modem_flag;
 				std::stringstream remoteDatFileName;
 				remoteDatFileName << syscfg.datadir << REMOTES_DAT;
-				FILE* fp = fsh_open( remoteDatFileName.str().c_str(), "rt" );
-                if ( fp )
+                WTextFile file( remoteDatFileName.str(), "rt" );
+                if ( file.IsOpen() )
                 {
                     bool ok = false;
                     char szBuffer[ 255 ];
-                    while ( !ok && fgets( szBuffer, 80, fp ) )
+                    while ( !ok && file.ReadLine( szBuffer, 80 ) )
                     {
                         char* ss = strchr( szBuffer, '\n' );
                         if ( ss )
@@ -386,7 +387,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
                             ok = true;
                         }
                     }
-                    fsh_close( fp );
+                    file.Close();
                     if ( ok )
                     {
 						ExecuteExternalProgram( networkCommand.str().c_str(), EFLAG_NONE );

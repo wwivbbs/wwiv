@@ -433,6 +433,14 @@ bool WFile::Exists( const char *pszFileName )
     return ( _access( pszFileName, 0 ) != -1 ) ? true : false;
 }
 
+bool WFile::Exists( const char *pszDirectoryName, const char *pszFileName )
+{
+    std::string fileName( pszDirectoryName );
+    fileName.append( pszFileName );
+    return Exists( fileName.c_str() );
+}
+
+
 
 bool WFile::ExistsWildcard( const char *pszWildCard )
 {
