@@ -68,7 +68,7 @@ char gettimeout(double d, bool *abort)
 }
 
 
-int extern_prot( int nProtocolNum, char *pszFileNameToSend, bool bSending )
+int extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending )
 {
     char s[255], s1[81], s2[81], szFileName[81], sx1[21], sx2[21], sx3[21];
 
@@ -486,7 +486,7 @@ int get_protocol(xfertype xt)
 }
 
 
-void ascii_send(char *pszFileName, bool *sent, double *percent)
+void ascii_send(const char *pszFileName, bool *sent, double *percent)
 {
     char b[2048];
 
@@ -534,7 +534,7 @@ void ascii_send(char *pszFileName, bool *sent, double *percent)
 }
 
 
-void maybe_internal(char *pszFileName, bool *xferred, double *percent, char ft, char *ftp, bool bSend, int prot)
+void maybe_internal(const char *pszFileName, bool *xferred, double *percent, char ft, char *ftp, bool bSend, int prot)
 {
     if (over_intern && (over_intern[prot - 2].othr & othr_override_internal) &&
         ((bSend && over_intern[prot - 2].sendfn[0]) ||
@@ -592,7 +592,7 @@ void maybe_internal(char *pszFileName, bool *xferred, double *percent, char ft, 
 }
 
 
-void send_file(char *pszFileName, bool *sent, bool *abort, char ft, char *sfn, int dn, long fs)
+void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const char *sfn, int dn, long fs)
 {
     double percent, t;
 
@@ -723,7 +723,7 @@ void send_file(char *pszFileName, bool *sent, bool *abort, char ft, char *sfn, i
 }
 
 
-void receive_file(char *pszFileName, int *received, char *ft, char *sfn, int dn)
+void receive_file(const char *pszFileName, int *received, char *ft, const char *sfn, int dn)
 {
     bool bReceived;
     int nProtocol = (dn == -1) ? get_protocol(xf_up_temp) : get_protocol(xf_up);

@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
-
+#include "WTextFile.h"
 
 static user_config *pSecondUserRec;         // Userrec2 style setup
 static int nSecondUserRecLoaded;            // Whos config is loaded
@@ -138,8 +138,8 @@ void mainmenu()
 	if (pSecondUserRec)
     {
 		BbsFreeMemory(pSecondUserRec);
+	    pSecondUserRec = NULL;
     }
-	pSecondUserRec = NULL;
 	pSecondUserRec = static_cast<user_config *>( bbsmalloc( sizeof( user_config ) ) );
 	if (!pSecondUserRec)
     {
@@ -1134,11 +1134,9 @@ void SetMenuDescription(const char *pszName, const char *pszDesc)
 		bMenuOpen = true;
     }
 
-	char szTempFileName2[ MAX_PATH ];
-	sprintf(szTempFileName2, "%s%s", MenuDir(szMenuDir), TEMP_ION);
-	FILE* fp = fsh_open(szTempFileName2, "wt");
+    WTextFile tempDescriptionFile( MenuDir(szMenuDir), TEMP_ION, "wt" );
 
-	if (!fp)
+    if (!tempDescriptionFile.IsOpen())
     {
 		MenuSysopLog("Unable to write description");
 		return;
@@ -1158,29 +1156,27 @@ void SetMenuDescription(const char *pszName, const char *pszDesc)
 
 			if ( wwiv::stringUtils::IsEqualsIgnoreCase( pszName, szTok ) )
             {
-				fprintf(fp, "%s %s\n", pszName, pszDesc);
+                tempDescriptionFile.WriteFormatted( "%s %s\n", pszName, pszDesc );
 				bWritten = 1;
 			}
             else
             {
-				fprintf(fp, "%s", szLine);
+                tempDescriptionFile.WriteFormatted( "%s", szLine );
             }
 		}
 	}
 	if (!bWritten)
     {
-		fprintf(fp, "%s %s\n", pszName, pszDesc);
+        tempDescriptionFile.WriteFormatted( "%s %s\n", pszName, pszDesc );
     }
 
-	fclose(fp);
+    tempDescriptionFile.Close();
 
 	CloseMenuDescriptions();
 
-    char szTempFileName[ MAX_PATH ];
-	sprintf(szTempFileName, "%s%s", MenuDir(szMenuDir), DESCRIPT_ION);
-
-	WFile::Remove(szTempFileName);
-	WFile::Rename(szTempFileName2, szTempFileName);
+    WFile descriptionFile( MenuDir(szMenuDir), DESCRIPT_ION );
+    WFile::Remove( descriptionFile.GetFullPathName() );
+    WFile::Rename(tempDescriptionFile.GetFullPathName(), descriptionFile.GetFullPathName());
 
 	if (bMenuOpen)
     {

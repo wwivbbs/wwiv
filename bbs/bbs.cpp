@@ -1692,13 +1692,9 @@ void WBbsApp::QuitBBS()
 
 void WBbsApp::ExitBBSImpl( int nExitLevel )
 {
-    localIO->LocalCls();
-
-    char szBuffer[81];
-    snprintf( szBuffer, sizeof( szBuffer ), "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
-			  wwiv_version, GetInstanceNumber(), times(), fulldate(), nExitLevel );
     sysoplog( "", false );
-    sysoplog( szBuffer, false );
+    sysoplogfi( false, "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
+			  wwiv_version, GetInstanceNumber(), times(), fulldate(), nExitLevel );
     sysoplog( "", false );
     catsl();
     close_strfiles();
@@ -1706,15 +1702,13 @@ void WBbsApp::ExitBBSImpl( int nExitLevel )
     if ( ok_modem_stuff && comm != NULL )
     {
         comm->close();
-	if ( comm != NULL )
-	{
-	    delete comm;
-	    comm = NULL;
-	}
+	    if ( comm != NULL )
+	    {
+	        delete comm;
+	        comm = NULL;
+	    }
     }
-    char szMessage[ 255 ];
-    snprintf( szMessage, sizeof( szMessage ), "WWIV Bulletin Board System %s%s exiting at error level %d\r\n\n", wwiv_version, beta_version, nExitLevel );
-    localIO->LocalPuts( szMessage );
+    std::cout << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << nExitLevel << std::endl << std::endl;
     localIO->SetCursor( WLocalIO::cursorNormal );
     delete this;
     exit( nExitLevel );

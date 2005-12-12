@@ -872,14 +872,14 @@ void DeleteSmallRecord(const char *name);
 
 void calc_CRC(unsigned char b);
 char gettimeout(double d, bool *abort);
-int  extern_prot( int nProtocolNum, char *pszFileNameToSend, bool bSending );
+int  extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending );
 bool ok_prot(int nProtocolNum, xfertype xt);
 char *prot_name(int nProtocolNum);
 int  get_protocol(xfertype xt);
-void ascii_send(char *pszFileName, bool *sent, double *percent);
-void maybe_internal(char *pszFileName, bool *xferred, double *percent, char ft, char *ftp, bool bSend, int prot);
-void send_file(char *pszFileName, bool *sent, bool *abort, char ft, char *sfn, int dn, long fs);
-void receive_file(char *pszFileName, int *received, char *ft, char *sfn, int dn);
+void ascii_send(const char *pszFileName, bool *sent, double *percent);
+void maybe_internal(const char *pszFileName, bool *xferred, double *percent, char ft, char *ftp, bool bSend, int prot);
+void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const char *sfn, int dn, long fs);
+void receive_file(const char *pszFileName, int *received, char *ft, const char *sfn, int dn);
 char end_batch1();
 void endbatch();
 
@@ -888,17 +888,17 @@ void endbatch();
 
 char modemkey(int *tout);
 int  receive_block(char *b, unsigned char *bln, bool bUseCRC);
-void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC);
-void zmodem_receive(char *pszFileName, char *ft, bool *received );
+void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUseCRC);
+void zmodem_receive(const char *pszFileName, char *ft, bool *received );
 
 
 // File: srsend.cpp
 
 void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber);
-char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, char *pszFileName, int *terr, bool *abort);
+char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName, int *terr, bool *abort);
 bool okstart(bool *bUseCRC, bool *abort);
-void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch );
-void zmodem_send(char *pszFileName, bool *sent, double *percent, char ft  );
+void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch );
+void zmodem_send(const char *pszFileName, bool *sent, double *percent, char ft  );
 
 
 // File: strings.cpp

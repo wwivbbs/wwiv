@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
+#include "WTextFile.h"
 
 // Additional INI file function and structure
 #include "ini.h"
@@ -763,14 +764,14 @@ void WBbsApp::read_nextern()
     WFile externalFile( syscfg.datadir, NEXTERN_DAT );
     if ( externalFile.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        unsigned long l = externalFile.GetLength();
-        if ( l > 15 * sizeof( newexternalrec ) )
+        unsigned long lFileSize = externalFile.GetLength();
+        if ( lFileSize > 15 * sizeof( newexternalrec ) )
         {
-            l = 15 * sizeof( newexternalrec );
+            lFileSize = 15 * sizeof( newexternalrec );
         }
-        externs = static_cast<newexternalrec *>( BbsAllocWithComment(l + 10, "external protocols") );
+        externs = static_cast<newexternalrec *>( BbsAllocWithComment(lFileSize + 10, "external protocols") );
 		WWIV_ASSERT( externs != NULL );
-        GetSession()->SetNumberOfExternalProtocols( externalFile.Read( externs, l ) / sizeof( newexternalrec ) );
+        GetSession()->SetNumberOfExternalProtocols( externalFile.Read( externs, lFileSize ) / sizeof( newexternalrec ) );
     }
 }
 
@@ -786,12 +787,12 @@ void WBbsApp::read_arcs()
     WFile archiverFile( syscfg.datadir, ARCHIVER_DAT );
     if ( archiverFile.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        unsigned long l = archiverFile.GetLength();
-        if ( l > MAX_ARCS * sizeof( arcrec ) )
+        unsigned long lFileSize = archiverFile.GetLength();
+        if ( lFileSize > MAX_ARCS * sizeof( arcrec ) )
         {
-            l = MAX_ARCS * sizeof( arcrec );
+            lFileSize = MAX_ARCS * sizeof( arcrec );
         }
-        arcs = static_cast<arcrec *>( BbsAllocWithComment( l, "archivers" ) );
+        arcs = static_cast<arcrec *>( BbsAllocWithComment( lFileSize, "archivers" ) );
 		WWIV_ASSERT( arcs != NULL );
     }
 }
@@ -809,14 +810,14 @@ void WBbsApp::read_editors()
     WFile file( syscfg.datadir, EDITORS_DAT );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        unsigned long l = file.GetLength();
-        if ( l > 10 * sizeof( editorrec ) )
+        unsigned long lFileSize = file.GetLength();
+        if ( lFileSize > 10 * sizeof( editorrec ) )
         {
-            l = 10 * sizeof( editorrec );
+            lFileSize = 10 * sizeof( editorrec );
         }
-        editors = static_cast<editorrec *>( BbsAllocWithComment(l + 10, "external editors") );
+        editors = static_cast<editorrec *>( BbsAllocWithComment(lFileSize + 10, "external editors") );
 		WWIV_ASSERT( editors != NULL );
-        GetSession()->SetNumberOfEditors( file.Read( editors, l ) / sizeof( editorrec ) );
+        GetSession()->SetNumberOfEditors( file.Read( editors, lFileSize ) / sizeof( editorrec ) );
     }
 }
 
@@ -868,13 +869,13 @@ void WBbsApp::read_networks()
     GetSession()->internetPopDomain = "";
     GetSession()->SetInternetUseRealNames( false );
 
-    FILE *fp = fsh_open( "NET.INI", "rt" );
-    if ( fp )
+    WTextFile fileNetIni( "NET.INI", "rt" );
+    if ( fileNetIni.IsOpen() )
     {
-        while ( !feof( fp ) )
+        while ( !fileNetIni.IsEndOfFile() )
         {
             char szBuffer[ 255 ];
-            fgets(szBuffer, 80, fp);
+            fileNetIni.ReadLine(szBuffer, 80);
             szBuffer[strlen(szBuffer) - 1] = 0;
             StringRemoveWhitespace(szBuffer);
             if ( !WWIV_STRNICMP( szBuffer, "DOMAIN=", 7 ) && GetSession()->internetEmailDomain.empty() )
@@ -903,7 +904,7 @@ void WBbsApp::read_networks()
                 GetSession()->SetInternetUseRealNames( true );
             }
         }
-        fsh_close( fp );
+        fileNetIni.Close();
     }
     if ( net_networks )
     {
@@ -1106,8 +1107,6 @@ bool WBbsApp::read_language()
 
 bool WBbsApp::read_modem()
 {
-    unsigned long l;
-
     if (modem_i)
     {
         BbsFreeMemory(modem_i);
@@ -1129,10 +1128,10 @@ bool WBbsApp::read_modem()
     WFile file( szFileName );
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
-        l = file.GetLength();
-        modem_i = static_cast<modem_info *>( BbsAllocWithComment(l, "modem.dat") );
+        long lFileSize = file.GetLength();
+        modem_i = static_cast<modem_info *>( BbsAllocWithComment(lFileSize, "modem.dat") );
 		WWIV_ASSERT(modem_i != NULL);
-        file.Read( modem_i, l );
+        file.Read( modem_i, lFileSize );
         return true;
     }
     else
@@ -1560,9 +1559,9 @@ void WBbsApp::create_phone_file()
     {
         return;
     }
-    long l = file.GetLength();
+    long lFileSize = file.GetLength();
     file.Close();
-    int num = static_cast<int>( l / sizeof( userrec ) );
+    int num = static_cast<int>( lFileSize / sizeof( userrec ) );
 
     WFile phoneNumFile( syscfg.datadir, PHONENUM_DAT );
     if ( !phoneNumFile.Open( WFile::modeReadWrite | WFile::modeAppend | WFile::modeBinary | WFile::modeCreateFile,

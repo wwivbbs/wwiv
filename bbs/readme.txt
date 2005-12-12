@@ -65,6 +65,13 @@ Rushfan - Split up each of the different dropfile creation code into separate fu
 Rushfan - renamed sl1 to AddLineToSysopLogImpl
 Rushfan - Started making WStatusMgr support transactions so status can stop being global
 Atani   - various linux compilation issues fixed
+Rushfan - Added WFile::Exists(dir,filename), WFile::Remove(string)
+Rushfan - Fixed issue with startup (not starting) and cleaned up some xinit code
+Rushfan - Introduced WTextFile as a replacement for the CRT FILE* handle + our fsh_XXX code
+Rushfan - Started making utility objects not depend on so much of the BBS so that
+          WFile, WTextFile, WUser, WUserManager can be used outside of the BBS, eventually
+          we will have classes for messagebase manipulation available from outside of WWIV.
+Rushfan - Some more const-correctness in the transfer code to make life easier in other places
 
 ==============================================================================
 

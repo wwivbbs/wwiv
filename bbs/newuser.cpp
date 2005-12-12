@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
-
+#include "WTextFile.h"
 
 //
 // Local function prototypes
@@ -1369,7 +1369,6 @@ void newuser()
 bool check_zip( const char *pszZipCode, int mode )
 {
     char city[81], state[21];
-    FILE *zip_file;
 
     if ( pszZipCode[0] == '\0' )
     {
@@ -1381,7 +1380,9 @@ bool check_zip( const char *pszZipCode, int mode )
 
     char szFileName[ MAX_PATH ];
     sprintf( szFileName, "%s%s%czip%c.dat", syscfg.datadir, ZIPCITY_DIR, WWIV_FILE_SEPERATOR_CHAR, pszZipCode[0] );
-    if ( ( zip_file = fsh_open( szFileName, "r" ) ) == NULL )
+
+    WTextFile zip_file(szFileName, "r");
+    if ( !zip_file.IsOpen() )
     {
         ok = false;
         if ( mode != 2 )
@@ -1392,7 +1393,7 @@ bool check_zip( const char *pszZipCode, int mode )
     else
     {
         char zip_buf[81];
-        while ( ( fgets( zip_buf, 80, zip_file ) ) && !found && !hangup )
+        while ( ( zip_file.ReadLine(zip_buf, 80) ) && !found && !hangup )
         {
             single_space( zip_buf );
             if ( strncmp( zip_buf, pszZipCode, 5 ) == 0 )
@@ -1409,11 +1410,7 @@ bool check_zip( const char *pszZipCode, int mode )
                 properize( city );
             }
         }
-    }
-
-    if (zip_file != NULL)
-    {
-        fsh_close(zip_file);
+        zip_file.Close();
     }
 
     if ( mode != 2 && !found )

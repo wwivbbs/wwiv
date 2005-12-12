@@ -172,7 +172,7 @@ public:
 	    return(p);
     }
 
-    virtual char* GetFullPathName()
+    virtual const char* GetFullPathName()
     {
         return m_szFileName;
     }
@@ -196,8 +196,10 @@ public:
 
     static bool Remove( const char *pszFileName );
 	static bool Remove( const char *pszDirectoryName, const char *pszFileName );
+    static bool Remove( std::string strFileName ) { return Remove( strFileName.c_str() ); }
     static bool Rename( const char *pszOrigFileName, const char* pszNewFileName );
     static bool Exists( const char *pszFileName );
+    static bool Exists( const char *pszDirectoryName, const char *pszFileName );
     static bool ExistsWildcard( const char *pszWildCard );
     static bool SetFilePermissions( const char *pszFileName, int nPermissions );
     static bool IsFileHandleValid( int hFile );

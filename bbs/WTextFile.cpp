@@ -18,17 +18,41 @@
 /**************************************************************************/
 #include "wwiv.h"
 #include "WTextFile.h"
+#include <string>
+#include <cstring>
 
 FILE *fsh_open(const char *path, char *mode);
 
 
 WTextFile::WTextFile( const char* pszFileName, const char* pszFileMode )
 {
-    m_hFile = NULL;
+    Open( m_szFileName, m_szFileMode);
+}
+
+
+WTextFile::WTextFile( const char* pszDirectoryName, const char* pszFileName, const char* pszFileMode )
+{
+    std::string fileName(pszDirectoryName);
+    fileName.append(pszFileName);
+    Open( fileName.c_str(), pszFileMode );
+}
+
+
+WTextFile::WTextFile( std::string& strFileName, const char* pszFileMode )
+{
+    Open( strFileName.c_str(), pszFileMode );
+}
+
+
+bool WTextFile::Open( const char* pszFileName, const char* pszFileMode )
+{
     strcpy( m_szFileName, pszFileName );
     strcpy( m_szFileMode, pszFileMode );
     m_hFile = fsh_open( m_szFileName, m_szFileMode);
+    return IsOpen();
 }
+
+
 
 bool WTextFile::Close()
 {

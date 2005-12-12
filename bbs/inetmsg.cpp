@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
-
+#include "WTextFile.h"
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -73,13 +73,11 @@ void get_user_ppp_addr()
 		                             "%s@%s",
                                      GetSession()->internetEmailName.c_str(),
                                      GetSession()->internetEmailDomain.c_str() );
-    char szAcctFileName[ MAX_PATH ];
-	sprintf(szAcctFileName, "%s%s", GetSession()->GetNetworkDataDirectory(), ACCT_INI);
-    FILE* fp = fsh_open(szAcctFileName, "rt");
-    char szLine[ 255 ];
-	if ( fp != NULL )
+    WTextFile acctFile( GetSession()->GetNetworkDataDirectory(), ACCT_INI, "rt" );
+    char szLine[ 260 ];
+    if ( acctFile.IsOpen() )
 	{
-		while ( fgets(szLine, 100, fp) && !found )
+        while ( acctFile.ReadLine(szLine, 255) && !found )
 		{
 			if (WWIV_STRNICMP(szLine, "USER", 4) == 0)
 			{
@@ -104,7 +102,7 @@ void get_user_ppp_addr()
 				}
 			}
 		}
-		fclose(fp);
+        acctFile.Close();
 	}
     if ( !found && !GetSession()->internetPopDomain.empty() )
 	{
@@ -263,18 +261,15 @@ void write_inet_addr( const char *pszInternetEmailAddress, int nUserNumber )
     GetSession()->SetNetworkNumber( getnetnum( "FILEnet" ) );
 	if ( GetSession()->GetNetworkNumber() != -1 )
 	{
-        char szInputFileName[ MAX_PATH ], szOutputFileName[ MAX_PATH ];
 		set_net_num( GetSession()->GetNetworkNumber() );
-		sprintf(szInputFileName, "%s%s", GetSession()->GetNetworkDataDirectory(), ACCT_INI);
-		FILE* in = fsh_open(szInputFileName, "rt");
-		sprintf(szOutputFileName, "%s%s", syscfgovr.tempdir, ACCT_INI);
-		FILE* out = fsh_open(szOutputFileName, "wt+");
-		if ( in && out )
+        WTextFile in( GetSession()->GetNetworkDataDirectory(), ACCT_INI, "rt" );
+        WTextFile out( syscfgovr.tempdir, ACCT_INI, "wt+" );
+        if ( in.IsOpen() && out.IsOpen() )
 		{
-            char szLine[ 255 ];
-			while (fgets(szLine, 80, in))
+            char szLine[ 260 ];
+            while (in.ReadLine(szLine, 255))
 			{
-                char szSavedLine[ 255 ];
+                char szSavedLine[ 260 ];
 				bool match = false;
 				strcpy(szSavedLine, szLine);
 				char* ss = strtok(szLine, "=");
@@ -288,17 +283,15 @@ void write_inet_addr( const char *pszInternetEmailAddress, int nUserNumber )
 				}
 				if (!match)
 				{
-					fprintf(out, szSavedLine);
+                    out.WriteFormatted( szSavedLine );
 				}
 			}
-            char szAddress[ 255 ];
-			sprintf(szAddress, "\nUSER%d = %s", nUserNumber, pszInternetEmailAddress);
-			fprintf(out, szAddress);
-			fsh_close(in);
-			fsh_close(out);
+            out.WriteFormatted( "\nUSER%d = %s", nUserNumber, pszInternetEmailAddress);
+			in.Close();
+            out.Close();
 		}
-		WFile::Remove(szInputFileName);
-		copyfile(szOutputFileName, szInputFileName, false);
-		WFile::Remove(szOutputFileName);
+        WFile::Remove(in.GetFullPathName());
+		copyfile(out.GetFullPathName(), in.GetFullPathName(), false);
+		WFile::Remove(out.GetFullPathName());
 	}
 }
