@@ -28,6 +28,7 @@
 
 #define GLOBAL_SIZE 4096
 
+class WFile;
 
 class WLocalIO
 {

@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
-
+#include "WTextFile.h"
 
 
 static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd)
@@ -89,12 +89,8 @@ void sub_req(int main_type, int minor_type, int tosys, char *extra)
 
 int find_hostfor(char *type, short *ui, char *pszDescription, short *opt)
 {
-    int i, i1;
     char s[255], *ss;
-    FILE *f;
-    short o;
     int rc = 0;
-    short h;
 
     if (pszDescription)
     {
@@ -103,7 +99,7 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt)
     *opt = 0;
 
 	bool done = false;
-    for (i = 0; (i < 256) && (!done); i++)
+    for (int i = 0; i < 256 && !done; i++)
     {
         if (i)
         {
@@ -113,10 +109,10 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt)
         {
             sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), SUBS_LST);
         }
-        f = fsh_open(s, "r");
-        if (f)
+        WTextFile file(s, "r");
+        if (file.IsOpen())
         {
-            while ( !done && fgets(s, 160, f) )
+            while ( !done && file.ReadLine(s, 160) )
             {
                 if (s[0] > ' ')
                 {
@@ -128,12 +124,12 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt)
                             ss = strtok(NULL, " \r\n\t");
                             if (ss)
                             {
-                                h = (short) atol(ss);
-                                o = 0;
+                                short h = static_cast<short>(atol(ss));
+                                short o = 0;
                                 ss = strtok(NULL, "\r\n");
                                 if (ss)
                                 {
-                                    i1 = 0;
+                                    int i1 = 0;
                                     while (*ss && ((*ss == ' ') || (*ss == '\t')))
                                     {
                                         ++ss;
@@ -205,7 +201,7 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt)
                     }
                 }
             }
-            fsh_close(f);
+            file.Close();
         }
         else
         {

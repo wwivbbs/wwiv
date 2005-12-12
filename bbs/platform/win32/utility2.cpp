@@ -138,7 +138,7 @@ got_cmd:
 #define LAST(s)	s[strlen(s)-1]
 
 
-int WWIV_make_path(char *s)
+int WWIV_make_path(const char *s)
 {
     char drive, current_path[MAX_PATH], current_drive, *p, *flp;
 

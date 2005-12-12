@@ -45,7 +45,7 @@ void show_files( const char *pszFileName, const char *pszDirectoryName );
 
 // $PLATFORM/utility2.cpp
 char *WWIV_make_abs_cmd(char *out);
-int WWIV_make_path(char *s);
+int WWIV_make_path(const char *s);
 void WWIV_Delay(unsigned long usec);
 void WWIV_OutputDebugString( const char *pszString );
 

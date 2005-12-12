@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
-
+#include "WTextFile.h"
 
 
 void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber)
@@ -691,7 +691,6 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 {
 	char szCmdLine[ MAX_PATH ], szEditorCommand[ MAX_PATH ], szFileName[ MAX_PATH ], sx1[21], sx2[21], sx3[21], szCurrentDirectory[ MAX_PATH ];
 	time_t tFileTime = 0;
-	FILE *fpFile;
 
 	if ( nEditorNumber >= GetSession()->GetNumberOfEditors() || !okansi() )
 	{
@@ -747,8 +746,10 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 	}
 	sprintf( sx3, "%d", numlines );
 	stuff_in( szCmdLine, szEditorCommand, szFileName, sx1, sx2, sx3, "" );
+    
+    WTextFile fileEditorInf( EDITOR_INF, "wt" );
 
-	if ( ( fpFile = fsh_open( EDITOR_INF, "wt" ) ) != NULL )
+    if ( fileEditorInf.IsOpen() )
 	{
 		if (irt_name[0])
 		{
@@ -758,7 +759,7 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 		{
 			flags |= MSGED_FLAG_HAS_REPLY_TITLE;
 		}
-		fprintf(	fpFile,
+        fileEditorInf.WriteFormatted(
 					"%s\n%s\n%lu\n%s\n%s\n%u\n%u\n%lu\n%u\n",
 		            pszTitle,
 		            pszDestination,
@@ -769,16 +770,12 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 		            flags,
 		            GetSession()->topline,
 		            GetSession()->thisuser.GetLanguage() );
-		fsh_close(fpFile);
+        fileEditorInf.Close();
 	}
-	if ( flags & 1 )
+	if ( flags & MSGED_FLAG_NO_TAGLINE )
 	{
-		// disable tag lines
-		fpFile = fsh_open( DISABLE_TAG, "w" );
-		if ( fpFile > 0 )
-		{
-			fsh_close( fpFile );
-		}
+		// disable tag lines by creating a DISABLE.TAG file
+        WTextFile fileDisableTag( DISABLE_TAG, "w" );
 	}
 	else
 	{

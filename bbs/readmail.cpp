@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
+#include "WTextFile.h"
 #include <sstream>
 
 //
@@ -312,11 +313,11 @@ void add_netsubscriber( int nSystemNumber )
 		}
 	}
 	sprintf( s, "%u\n", nSystemNumber );
-	FILE* fpHost = fsh_open( szNetworkFileName, "a+t" );
-	if ( fpHost )
+	WTextFile hostFile( szNetworkFileName, "a+t" );
+	if ( hostFile.IsOpen() )
 	{
-		fprintf( fpHost, s );
-		fsh_close( fpHost );
+        hostFile.Write(s);
+        hostFile.Close();
 
 		if ( WFile::Exists( "autosend.exe" ) )
 		{
