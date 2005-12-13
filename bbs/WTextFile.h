@@ -66,3 +66,4 @@ private:
 
 
 #endif // __INCLUDED_WTEXTFILE_H__
+
