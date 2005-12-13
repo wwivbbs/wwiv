@@ -291,7 +291,7 @@ public:
 	bool        m_bInternetUseRealNames;
 
 
-	UINT32		*m_DirectoryDateCache,
+	unsigned int	*m_DirectoryDateCache,
 				*m_SubDateCache;
 
     char		*pszLanguageDir;
