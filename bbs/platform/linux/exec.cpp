@@ -79,8 +79,8 @@ int UnixSpawn (char *pszCommand, char* environ[])
 
 	for( ;; )
 	{
-		int status = 1;
-		if (waitpid(pid, &status, 0) == -1)
+		int nStatusCode = 1;
+		if (waitpid(pid, &nStatusCode, 0) == -1)
 		{
 			if (errno != EINTR)
 			{
@@ -89,7 +89,7 @@ int UnixSpawn (char *pszCommand, char* environ[])
 		}
 		else
 		{
-			return status;
+			return nStatusCode;
 		}
 	}
 }

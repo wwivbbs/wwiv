@@ -216,16 +216,17 @@ void feedback( bool bNewUserFeedback )
 
     if ( bNewUserFeedback )
     {
-        GetApplication()->GetStatusManager()->Read();
-        sprintf( irt, "|#1Validation Feedback (|12%d|#2 slots left|#1)", syscfg.maxusers - status.users );
+        WStatus* pStatus = GetApplication()->GetStatusManager()->GetStatus();
+        sprintf( irt, "|#1Validation Feedback (|12%d|#2 slots left|#1)", syscfg.maxusers - pStatus->GetNumUsers() );
         // We disable the fsed here since it was hanging on some systems.  Not sure why
         // but it's better to be safe -- Rushfan 2003-12-04
         email( 1, 0, true, 0, true, false );
+        delete pStatus;
         return;
     }
     if ( guest_user )
     {
-        GetApplication()->GetStatusManager()->Read();
+        GetApplication()->GetStatusManager()->Read();   //TODO - Why is this here?
         strcpy( irt, "Guest Account Feedback" );
         email( 1, 0, true, 0, true, true );
         return;
