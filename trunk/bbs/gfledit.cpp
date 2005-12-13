@@ -397,8 +397,8 @@ bool fill_sec(int sn)
         gflFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
         gflFile.Write( g, nf * sizeof( gfilerec ) );
         gflFile.Close();
-		WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTrans();
-        strcpy( pStatus->GetGFileDate(), date());
+		WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+        pStatus->SetGFileDate( date() );
 		GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 	}
 	BbsFreeMemory( g );

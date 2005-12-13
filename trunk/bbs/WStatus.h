@@ -56,6 +56,7 @@ public:
     const char* GetLastDate( int nDaysAgo = 0 ) const;
     const char* GetLogFileName( int nDaysAgo = 0 ) const;
     const char* GetGFileDate() const { return m_pStatusRecord->gfiledate; }
+    void SetGFileDate( const char *s ) { strcpy(  m_pStatusRecord->gfiledate, s ); }
     const char  GetFileChangedFlag( int nFlag ) const { return m_pStatusRecord->filechange[ nFlag ]; }
     void IncrementFileChangedFlag(int nFlag ) { m_pStatusRecord->filechange[nFlag]++; }
     
