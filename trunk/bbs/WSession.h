@@ -38,6 +38,7 @@
 
 #include "vardec.h"
 #include "WUser.h"
+#include "wtypes.h"
 #include "bbs.h"
 #include "net.h"
 #include "WOutStreamBuffer.h"
@@ -291,7 +292,7 @@ public:
 	bool        m_bInternetUseRealNames;
 
 
-	unsigned int	*m_DirectoryDateCache,
+	UINT32 *m_DirectoryDateCache,
 				*m_SubDateCache;
 
     char		*pszLanguageDir;
