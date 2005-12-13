@@ -1332,6 +1332,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\WStatus.h"
+					>
+				</File>
+				<File
 					RelativePath="WStringUtils.h"
 					>
 				</File>

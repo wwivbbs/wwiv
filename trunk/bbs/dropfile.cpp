@@ -216,7 +216,8 @@ void CreatePCBoardSysDropFile()
         pcb.packflag = 27;
         pcb.bpsflag = 32;
         // Added for PCB 14.5 Revision
-        strcpy(pcb.lastevent, status.date1);
+        std::auto_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
+        strcpy(pcb.lastevent, pStatus->GetLastDate());
         pcb.exittodos = '0';
         pcb.eventupcoming = '0';
         pcb.lastconfarea = static_cast<short>( GetSession()->GetCurrentConferenceMessageArea() );

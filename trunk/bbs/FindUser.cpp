@@ -27,6 +27,7 @@
 #include "WStringUtils.h"
 #include "vars.h"
 #include "bbs.h"
+#include <memory>
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"
@@ -134,8 +135,8 @@ int finduser1(const char *pszSearchString)
     {
         szUserNamePart[i] = upcase( szUserNamePart[i] );
     }
-    GetApplication()->GetStatusManager()->Read();
-    for ( int i1 = 0; i1 < status.users; i1++ )
+    std::auto_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
+    for ( int i1 = 0; i1 < pStatus->GetNumUsers(); i1++ )
     {
         if ( strstr( reinterpret_cast<char*>( smallist[i1].name ), szUserNamePart) != NULL )
         {

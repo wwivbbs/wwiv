@@ -21,6 +21,7 @@
 #define _DEFINE_GLOBALS_ 
 #include "wwiv.h"
 #include "WStringUtils.h"
+
 #include <sstream>
 #undef _DEFINE_GLOBALS_
 
@@ -158,13 +159,14 @@ int WBbsApp::doWFCEvents()
     int lokb;
     static int mult_time;
 
+    std::auto_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
     do
     {
         write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
         set_net_num( 0 );
         bool any = false;
         GetLocalIO()->SetWfcStatus( 1 );
-        if ( !wwiv::stringUtils::IsEquals( date(), status.date1 ) )
+        if ( !wwiv::stringUtils::IsEquals( date(), pStatus->GetLastDate() ) )
         {
             if ( ( GetSession()->GetBeginDayNodeNumber() == 0 ) || ( m_nInstance == GetSession()->GetBeginDayNodeNumber() ) )
             {
@@ -459,10 +461,11 @@ int WBbsApp::doWFCEvents()
                 if ( AllowLocalSysop() )
                 {
                     wfc_cls();
-                    GetStatusManager()->Read();
+                    WStatus *pStatus = GetStatusManager()->GetStatus();
                     char szSysopLogFileName[ _MAX_PATH ];
                     GetSysopLogFileName( date(), szSysopLogFileName );
-                    print_local_file( szSysopLogFileName, status.log1 );
+                    print_local_file( szSysopLogFileName, pStatus->GetLogFileName() );
+                    delete pStatus;
                 }
                 break;
                 // Read User Mail
@@ -598,10 +601,11 @@ int WBbsApp::doWFCEvents()
                 if ( AllowLocalSysop() )
                 {
                     wfc_cls();
-                    GetStatusManager()->Read();
+                    WStatus *pStatus = GetStatusManager()->GetStatus();
                     char szSysopLogFileName[ _MAX_PATH ];
                     GetSysopLogFileName( date(), szSysopLogFileName );
-                    print_local_file( status.log1, szSysopLogFileName );
+                    print_local_file( pStatus->GetLogFileName(), szSysopLogFileName );
+                    delete pStatus;
                 }
                 break;
                 // Print Activity (Z) Log
@@ -760,8 +764,8 @@ int WBbsApp::LocalLogon()
                     break;
                 }
             }
-            GetStatusManager()->Read();
-            if ( !fast || ( m_unx > status.users ) )
+            std::auto_ptr<WStatus> pStatus( GetStatusManager()->GetStatus() );
+            if ( !fast || ( m_unx > pStatus->GetNumUsers() ) )
             {
                 return lokb;
             }
@@ -1372,8 +1376,9 @@ int WBbsApp::BBSmain(int argc, char *argv[])
 
     if ( event_only )
     {
+        std::auto_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
         cleanup_events();
-        if ( !wwiv::stringUtils::IsEquals( date(), status.date1 ) )
+        if ( !wwiv::stringUtils::IsEquals( date(), pStatus->GetLastDate() ) )
         {
             // This may be another node, but the user explicitly wanted to run the beginday
             // event from the commandline, so we'll just check the date.
@@ -1426,7 +1431,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
 #ifndef _UNIX
             else
             {
-                this->GetCaller();
+                GetCaller();
             }
 #endif
         }
