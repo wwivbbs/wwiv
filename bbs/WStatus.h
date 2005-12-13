@@ -187,3 +187,4 @@ public:
 
 
 #endif // __INCLUDED_WSTATUS_H__
+
