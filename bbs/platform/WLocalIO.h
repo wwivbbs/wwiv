@@ -130,7 +130,7 @@ public:
 	 * (x,y), and the lower-right corner at (x+xlen,y+ylen).
 	 */
     void MakeLocalWindow(int x, int y, int xlen, int ylen);
-    void SetCursor(UINT cursorStyle);
+    void SetCursor(int cursorStyle);
 	void LocalWriteScreenBuffer(const char *pszBuffer);
 	int  GetDefaultScreenBottom();
 
