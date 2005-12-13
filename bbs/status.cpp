@@ -20,6 +20,64 @@
 #include "wwiv.h"
 
 
+//
+// WStatus
+//
+
+const int WStatus::fileChangeNames = 0;
+const int WStatus::fileChangeUpload = 1;
+const int WStatus::fileChangePosts = 2;
+const int WStatus::fileChangeEmail = 3;
+const int WStatus::fileChangeNet = 4;
+
+const char* WStatus::GetLastDate( int nDaysAgo ) const
+{ 
+    WWIV_ASSERT( nDaysAgo >= 0 );
+    WWIV_ASSERT( nDaysAgo <= 2 );
+    switch( nDaysAgo )
+    {
+    case 0:
+        return m_pStatusRecord->date1;
+    case 1:
+        return m_pStatusRecord->date2; 
+    case 2:
+        return m_pStatusRecord->date3; 
+    default:
+        return m_pStatusRecord->date1; 
+    }
+}
+
+
+const char* WStatus::GetLogFileName( int nDaysAgo ) const
+{
+    WWIV_ASSERT( nDaysAgo >= 0 );
+    WWIV_ASSERT( nDaysAgo <= 1 );
+    switch( nDaysAgo )
+    {
+        case 0:
+            return m_pStatusRecord->log1;
+        case 1:
+            return m_pStatusRecord->log2;
+        default:
+            return m_pStatusRecord->log1;
+    }
+}
+
+
+void WStatus::EnsureCallerNumberIsValid()
+{
+    if ( m_pStatusRecord->callernum != 65535 )
+    {
+        this->SetCallerNumber( m_pStatusRecord->callernum );
+        m_pStatusRecord->callernum = 65535;
+    }
+}
+
+
+//
+// StatusMgr
+//
+
 bool StatusMgr::Get(bool bLockFile)
 {
     if ( !m_statusFile.IsOpen() )
@@ -39,11 +97,11 @@ bool StatusMgr::Get(bool bLockFile)
 	}
 	else
 	{
-    	char fc[7];
+    	char oldFileChangeFlags[7];
 		unsigned long lQScanPtr = status.qscanptr;
 		for (int nFcIndex = 0; nFcIndex < 7; nFcIndex++)
 		{
-			fc[nFcIndex] = status.filechange[nFcIndex];
+			oldFileChangeFlags[nFcIndex] = status.filechange[nFcIndex];
 		}
         m_statusFile.Read( &status, sizeof( statusrec ) );
 
@@ -68,11 +126,11 @@ bool StatusMgr::Get(bool bLockFile)
 		}
 		for (int i = 0; i < 7; i++)
 		{
-			if (fc[i] != status.filechange[i])
+			if (oldFileChangeFlags[i] != status.filechange[i])
 			{
 				switch (i)
 				{
-				case filechange_names:            // re-read names.lst
+                case WStatus::fileChangeNames:            // re-read names.lst
 					if (smallist)
 					{
                         WFile namesFile( syscfg.datadir, NAMES_LST );
@@ -83,7 +141,7 @@ bool StatusMgr::Get(bool bLockFile)
 						}
 					}
 					break;
-				case filechange_upload:           // kill dirs cache
+                case WStatus::fileChangeUpload:           // kill dirs cache
                     {
 					    if (GetSession()->m_DirectoryDateCache)
 					    {
@@ -95,15 +153,15 @@ bool StatusMgr::Get(bool bLockFile)
 					    GetSession()->SetFileAreaCacheNumber( 0 );
                     }
 					break;
-				case filechange_posts:
+                case WStatus::fileChangePosts:
 					GetSession()->subchg = 1;
 					g_szMessageGatFileName[0] = 0;
 					break;
-				case filechange_email:
+                case WStatus::fileChangeEmail:
 					emchg = true;
 					mailcheck = false;
 					break;
-				case filechange_net:
+                case WStatus::fileChangeNet:
                     {
 					    int nOldNetNum = GetSession()->GetNetworkNumber();
 					    zap_bbs_list();
@@ -124,38 +182,54 @@ bool StatusMgr::Get(bool bLockFile)
 }
 
 
-void StatusMgr::Lock()
+bool StatusMgr::Lock()
 {
-	this->Get(true);
+	return this->Get(true);
 }
 
 
-void StatusMgr::Read()
+bool StatusMgr::Read()
 {
-	this->Get(false);
+	return this->Get(false);
 }
 
+WStatus* StatusMgr::GetStatus()
+{
+    this->Get(false);
+    return new WStatus(&status);
+}
 
-statusrec* StatusMgr::BeginTransaction()
+WStatus* StatusMgr::BeginTransaction()
 {
     this->Get(true);
-    return &status;
+    return new WStatus(&status);
 }
 
-bool StatusMgr::CommitTransaction(statusrec* pStatus)
+bool StatusMgr::CommitTransaction(WStatus* pStatus)
 {
-    this->Write( pStatus );
+    bool returnValue = this->Write( pStatus->m_pStatusRecord );
+
     // TODO make Write(...) return a bool
-    return true;
+    delete pStatus;
+    return returnValue;
 }
 
-void StatusMgr::Write()
+
+bool StatusMgr::AbortTransaction( WStatus* pStatus )
 {
-    Write( &status );
+    bool returnValue = this->Read();
+    delete pStatus;
+    return returnValue;
 }
 
 
-void StatusMgr::Write(statusrec *pStatus)
+bool StatusMgr::Write()
+{
+    return Write( &status );
+}
+
+
+bool StatusMgr::Write(statusrec *pStatus)
 {
     if ( !m_statusFile.IsOpen() )
 	{
@@ -170,12 +244,14 @@ void StatusMgr::Write(statusrec *pStatus)
     if ( !m_statusFile.IsOpen() )
 	{
 		sysoplog("CANNOT SAVE STATUS");
+        return false;
 	}
 	else
 	{
         m_statusFile.Write( pStatus, sizeof( statusrec ) );
         m_statusFile.Close();
 	}
+    return true;
 }
 
 const int StatusMgr::GetUserCount()
