@@ -946,11 +946,11 @@ void WBbsApp::read_networks()
 
 bool WBbsApp::read_names()
 {
+    WStatus *pStatus = statusMgr->BeginTransaction();
     if ( smallist )
     {
         BbsFreeMemory( smallist );
     }
-    smallist = NULL;
     smallist = static_cast<smalrec *>( BbsAllocWithComment( static_cast<long>( syscfg.maxusers ) * static_cast<long>( sizeof( smalrec ) ),
         "names.lst - try decreasing max users in INIT" ) );
 	WWIV_ASSERT( smallist != NULL );
@@ -961,9 +961,9 @@ bool WBbsApp::read_names()
         std::cout << file.GetName() << " NOT FOUND.\r\n";
         return false;
     }
-    file.Read( smallist, ( sizeof( smalrec ) * status.users ) );
+    file.Read( smallist, ( sizeof( smalrec ) * pStatus->GetNumUsers() ) );
     file.Close();
-    GetApplication()->GetStatusManager()->Read();
+    statusMgr->AbortTransaction( pStatus );
     return true;
 }
 
@@ -1278,7 +1278,8 @@ void WBbsApp::InitializeBBS()
     set_net_num( 0 );
 
     XINIT_PRINTF( "* Reading status information.\r\n" );
-    if ( !statusMgr->Get( true ) ) 
+    WStatus* pStatus = statusMgr->BeginTransaction();
+    if ( !pStatus ) 
     {
         std::cout << "Unable to return status.dat.\r\n";
         AbortBBS();
@@ -1292,13 +1293,9 @@ void WBbsApp::InitializeBBS()
 	}
     get_colordata();
 
-    status.wwiv_version = wwiv_num_version;
-    if ( status.callernum != 65535 )
-    {
-        status.callernum1 = static_cast<unsigned long>( status.callernum );
-        status.callernum = 65535;
-    }
-    statusMgr->Write();
+    pStatus->SetWWIVVersion( wwiv_num_version );
+    pStatus->EnsureCallerNumberIsValid();
+    statusMgr->CommitTransaction( pStatus );
 
     gat = static_cast<unsigned short *>( BbsAllocWithComment( 2048 * sizeof( short ), "gat" ) );
 	WWIV_ASSERT( gat != NULL );

@@ -292,10 +292,10 @@ void uploaded( char *pszFileName, long lCharsPerSecond )
                             modify_database(u.filename, true);
                             GetSession()->thisuser.SetUploadK( GetSession()->thisuser.GetUploadK() +
                                                        static_cast<int>( bytes_to_k( u.numbytes ) ) );
-                            GetApplication()->GetStatusManager()->Lock();
-                            ++status.uptoday;
-                            ++status.filechange[filechange_upload];
-                            GetApplication()->GetStatusManager()->Write();
+                            WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+                            pStatus->IncrementNumUploadsToday();
+                            pStatus->IncrementFileChangedFlag( WStatus::fileChangeUpload );
+                            GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 							WFile fileDn( g_szDownloadFileName );
 							fileDn.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
                             FileAreaSetRecord( fileDn, nRecNum );

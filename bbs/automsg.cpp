@@ -33,8 +33,9 @@ void read_automessage()
 
     WFile file( syscfg.gfilesdir, AUTO_MSG );
     nl();
-    GetApplication()->GetStatusManager()->Read();
-    char anon = status.amsganon;
+    WStatus* pStatus = GetApplication()->GetStatusManager()->GetStatus(); 
+    bool bAutoMessageAnonymous = pStatus->IsAutoMessageAnonymous();
+    delete pStatus;
 
     if ( !file.Open( WFile::modeReadOnly | WFile::modeBinary ) )
     {
@@ -84,7 +85,7 @@ void read_automessage()
             }
         }
         char szAuthorName[ 81 ];
-        if ( anon )
+        if ( bAutoMessageAnonymous )
         {
             if ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_read_post_anony )
             {
@@ -130,20 +131,20 @@ void write_automessage1()
         strcat( &(l[i][0]), "\r\n" );
     }
     nl();
-    int nAnonStatus = 0;
+    bool bAnonStatus = false;
     if ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_post_anony )
     {
         GetSession()->bout << "|#9Anonymous? ";
-        nAnonStatus = yesno() ? anony_sender : 0;
+        bAnonStatus = yesno();
     }
 
     GetSession()->bout << "|#9Is this OK? ";
     if ( yesno() )
     {
-        GetApplication()->GetStatusManager()->Lock();
-        status.amsganon = static_cast<char>( nAnonStatus );
-        status.amsguser = static_cast<unsigned short>( GetSession()->usernum );
-        GetApplication()->GetStatusManager()->Write();
+        WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+        pStatus->SetAutoMessageAnonymous( bAnonStatus );
+        pStatus->SetAutoMessageAuthorUserNumber( GetSession()->usernum );
+        GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
         WFile file( syscfg.gfilesdir, AUTO_MSG );
         file.Open( WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
         char szAuthorName[ 81 ];
@@ -224,12 +225,15 @@ void do_automessage()
             write_automessage1();
             break;
         case 'A':
-            grab_quotes(NULL, NULL);
-            GetApplication()->GetStatusManager()->Read();
-            if (status.amsguser)
             {
-                strcpy(irt, "Re: AutoMessage");
-                email( status.amsguser, 0, false, status.amsganon, true );
+                grab_quotes(NULL, NULL);
+                WStatus *pStatus = GetApplication()->GetStatusManager()->GetStatus();
+                if (pStatus->GetAutoMessageAuthorUserNumber() > 0)
+                {
+                    strcpy(irt, "Re: AutoMessage");
+                    email( pStatus->GetAutoMessageAuthorUserNumber(), 0, false, pStatus->IsAutoMessageAnonymous() ? anony_sender : 0 );
+                }
+                delete pStatus;
             }
             break;
         case 'D':

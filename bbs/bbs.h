@@ -28,7 +28,7 @@
 //#include "WSession.h"
 #include "WFile.h"
 #include "WLocalIO.h"
-
+#include "WStatus.h"
 
 
 class WComm;
@@ -37,58 +37,6 @@ class WComm;
  * @header WWIV 5.0 Main Application
  * Main Starting point of the WWIV 5.0 System.
  */
-
-
-/*!
- * @class StatusMgr Manages STATUS.DAT
- */
-class StatusMgr
-{
-private:
-    WFile m_statusFile;
-public:
-	/*!
-	 * @function StatusMgr Constructor
-	 */
-	StatusMgr() { }
-	~StatusMgr() {}
-	/*!
-	 * @function Read Loads the contents of STATUS.DAT
-	 */
-	void Read();
-
-    /*!
-	 * @function Write Writes the contents of STATUS.DAT
-     * @deprecated - Use BeginTransaction and CommitTransaction 
-	 */
-	void Write();
-    void Write(statusrec *pStatus);
-	/*!
-	 * @function Lock Aquires write lock on STATUS.DAT
-     * @deprecated - Use BeginTransaction and CommitTransaction 
-	 */
-	void Lock();
-
-    /**
-     * Replacement for Lock
-     */
-    statusrec* BeginTransaction();
-
-    /**
-     * Replacement for Write
-     */
-    bool CommitTransaction( statusrec* pStatus );
-
-	/*!
-	 * @function Get Loads the contents of STATUS.DAT with
-	 *           control on failure and lock mode
-	 * @param bLockFile Aquires write lock
-     * @return true on success
-	 */
-	bool Get(bool bLockFile);
-
-	const int GetUserCount();
-};
 
 
 

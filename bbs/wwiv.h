@@ -100,6 +100,7 @@
 #include "wfndfile.h"
 #include "WStringUtils.h"
 #include "WOutStreamBuffer.h"
+#include "WStatus.h"
 
 #include "incl3.h"
 

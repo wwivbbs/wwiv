@@ -65,6 +65,7 @@ public:
 
     const int GetNumUsers() const { return m_pStatusRecord->users; }
     const int IncrementNumUsers() { return m_pStatusRecord->users++; }
+    const int DecrementNumUsers() { return m_pStatusRecord->users--; }
     void SetNumUsers( int n ) { m_pStatusRecord->users = static_cast<unsigned short>(n); }
 
     const unsigned long GetCallerNumber() const { return m_pStatusRecord->callernum1; }
