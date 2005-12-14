@@ -239,9 +239,9 @@ void save_gat( WFile *pMessageFile )
 	long lSectionPos = static_cast<long>( gat_section ) * GATSECLEN;
 	pMessageFile->Seek( lSectionPos, WFile::seekBegin );
 	pMessageFile->Write( gat, GAT_SECTION_SIZE );
-	GetApplication()->GetStatusManager()->Lock();
-	status.filechange[ filechange_posts ]++;
-	GetApplication()->GetStatusManager()->Write();
+	WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    pStatus->IncrementFileChangedFlag( WStatus::fileChangePosts );
+	GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 }
 
 

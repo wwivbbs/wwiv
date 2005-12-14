@@ -94,7 +94,7 @@ public:
     void SetNumUploadsToday( int n ) { m_pStatusRecord->uptoday = static_cast<unsigned short>(n); }
 
     const int GetMinutesActiveToday() const { return m_pStatusRecord->activetoday; }
-    const int IncrementMinutesActiveToday(int nMinutes) { return m_pStatusRecord->uptoday += nMinutes; }
+    const int IncrementMinutesActiveToday(int nMinutes) { return m_pStatusRecord->uptoday += static_cast<unsigned short>(nMinutes); }
     void SetMinutesActiveToday( int n ) { m_pStatusRecord->activetoday = static_cast<unsigned short>(n); }
 
     const unsigned long GetQScanPointer() const { return m_pStatusRecord->qscanptr; }

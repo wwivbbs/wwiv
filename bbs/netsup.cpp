@@ -119,9 +119,9 @@ int check_bbsdata()
 		holdphone( true );
 
 		ExecuteExternalProgram(s, EFLAG_NETPROG);
-		GetApplication()->GetStatusManager()->Lock();
-		++status.filechange[filechange_net];
-		GetApplication()->GetStatusManager()->Write();
+		WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+        pStatus->IncrementFileChangedFlag( WStatus::fileChangeNet );
+        GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 
 		zap_call_out_list();
 		zap_contacts();
