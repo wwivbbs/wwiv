@@ -564,8 +564,7 @@ bool upload_file( const char *pszFileName, int nDirectoryNum, const char *pszDes
 			modify_database( u.filename, true );
 		}
 		GetSession()->thisuser.SetUploadK( GetSession()->thisuser.GetUploadK() + bytes_to_k( lFileSize ) );
-		time_t tCurrentTime;
-		time( &tCurrentTime );
+		time_t tCurrentTime = time( NULL );
 		u.daten = static_cast<unsigned long>( tCurrentTime );
 		WFile fileDownload( g_szDownloadFileName );
 		fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
@@ -587,10 +586,10 @@ bool upload_file( const char *pszFileName, int nDirectoryNum, const char *pszDes
 		FileAreaSetRecord( fileDownload, 0 );
 		fileDownload.Write( &u1, sizeof( uploadsrec ) );
 		fileDownload.Close();
-		GetApplication()->GetStatusManager()->Lock();
-		++status.uptoday;
-		++status.filechange[filechange_upload];
-		GetApplication()->GetStatusManager()->Write();
+        WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+        pStatus->IncrementNumUploadsToday();
+        pStatus->IncrementFileChangedFlag( WStatus::fileChangeUpload );
+        GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 		sysoplogf( "+ \"%s\" uploaded on %s", u.filename, d.name);
 		GetApplication()->GetLocalIO()->UpdateTopScreen();
 	}

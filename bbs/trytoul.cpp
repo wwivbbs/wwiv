@@ -493,10 +493,10 @@ int try_to_ul_wh(char *pszFileName)
 
     GetSession()->thisuser.SetUploadK( GetSession()->thisuser.GetUploadK() + bytes_to_k( u.numbytes ) );
 
-    GetApplication()->GetStatusManager()->Lock();
-    ++status.uptoday;
-    ++status.filechange[filechange_upload];
-    GetApplication()->GetStatusManager()->Write();
+    WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    pStatus->IncrementNumUploadsToday();
+    pStatus->IncrementFileChangedFlag( WStatus::fileChangeUpload );
+    GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
     sysoplogf( "+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
     return 0;                                 // This means success
 }
