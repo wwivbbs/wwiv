@@ -465,7 +465,7 @@ void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen)
 }
 
 
-void WLocalIO::SetCursor(UINT cursorStyle)
+void WLocalIO::SetCursor(int cursorStyle)
 {
 }
 
