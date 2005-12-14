@@ -1366,9 +1366,9 @@ void logoff()
                 }
             }
 			pFileEmail->SetLength( static_cast<long>( sizeof( mailrec ) ) * static_cast<long>( w ) );
-            GetApplication()->GetStatusManager()->Lock();
-            status.filechange[filechange_email]++;
-            GetApplication()->GetStatusManager()->Write();
+            WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+            pStatus->IncrementFileChangedFlag( WStatus::fileChangeEmail );
+            GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 			pFileEmail->Close();
 			delete pFileEmail;
         }
