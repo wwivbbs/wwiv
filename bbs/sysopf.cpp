@@ -86,7 +86,7 @@ void reset_files()
 	}
 	GetSession()->bout << "\r\n\r\n";
 
-	GetApplication()->GetStatusManager()->Lock();
+	WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
 
     WFile namesFile( syscfg.datadir, NAMES_LST );
     if ( !namesFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate ) )
@@ -94,10 +94,10 @@ void reset_files()
         std::cout << namesFile.GetFullPathName() << " NOT FOUND" << std::endl;
 		GetApplication()->AbortBBS( true );
 	}
-    namesFile.Write( smallist, sizeof(smalrec) * status.users );
+    namesFile.Write( smallist, sizeof(smalrec) * pStatus->GetNumUsers() );
     namesFile.Close();
-	status.users = users;
-	GetApplication()->GetStatusManager()->Write();
+	pStatus->SetNumUsers( users );
+	GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 }
 
 

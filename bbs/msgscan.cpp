@@ -439,7 +439,9 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 					GetSession()->bout << "|#9Mark messages in "<< subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name << " as read? ";
 					if (yesno())
 					{
-						qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = status.qscanptr - 1L;
+                        WStatus *pStatus = GetApplication()->GetStatusManager()->GetStatus();
+                        qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
+                        delete pStatus;
 					}
 				}
 
@@ -1199,9 +1201,9 @@ void HandleMessageMove( int &nMessageNumber )
 			open_sub( true );
 			p2.msg.storage_type = static_cast<unsigned char>( subboards[GetSession()->GetCurrentReadMessageArea()].storage_type );
 			savefile(b, lMessageLen, &(p2.msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename));
-			GetApplication()->GetStatusManager()->Lock();
-			p2.qscan = status.qscanptr++;
-			GetApplication()->GetStatusManager()->Write();
+			WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+            p2.qscan = pStatus->IncrementQScanPointer();
+			GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 			if (GetSession()->GetNumMessagesInCurrentMessageArea() >= subboards[GetSession()->GetCurrentReadMessageArea()].maxmsgs)
 			{
 				int nTempMsgNum = 1;

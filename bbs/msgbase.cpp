@@ -786,17 +786,17 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 		sysoplog( logMessage.c_str() );
 	}
 
-	GetApplication()->GetStatusManager()->Lock();
+	WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
 	if ( nUserNumber == 1 && nSystemNumber == 0 )
 	{
-		++status.fbacktoday;
+        pStatus->IncrementNumFeedbackSentToday();
         GetSession()->thisuser.SetNumFeedbackSent( GetSession()->thisuser.GetNumFeedbackSent() + 1 );
         GetSession()->thisuser.SetNumFeedbackSentToday( GetSession()->thisuser.GetNumFeedbackSentToday() + 1 );
 		++fsenttoday;
 	}
 	else
 	{
-		++status.emailtoday;
+        pStatus->IncrementNumEmailSentToday();
         GetSession()->thisuser.SetNumEmailSentToday( GetSession()->thisuser.GetNumEmailSentToday() + 1 );
 		if (nSystemNumber == 0)
 		{
@@ -807,7 +807,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
             GetSession()->thisuser.SetNumNetEmailSent( GetSession()->thisuser.GetNumNetEmailSent() + 1 );
 		}
 	}
-	GetApplication()->GetStatusManager()->Write();
+	GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 	if ( !GetSession()->IsNewMailWatiting() )
 	{
         ansic( 3 );
@@ -1656,14 +1656,19 @@ void read_message(int n, bool *next, int *val)
     {
 		qsc_p[GetSession()->GetCurrentReadMessageArea()] = p.qscan;
     }
-	if ( p.qscan >= status.qscanptr )
+    WStatus *pStatus = GetApplication()->GetStatusManager()->GetStatus();
+    // not sure why we check this twice...
+    // maybe we need a getCachedQScanPointer?
+    unsigned long lQScanPointer = pStatus->GetQScanPointer();
+    delete pStatus;
+    if ( p.qscan >= lQScanPointer )
     {
-		GetApplication()->GetStatusManager()->Lock();
-		if ( p.qscan >= status.qscanptr )
+		WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+        if ( p.qscan >= pStatus->GetQScanPointer() )
         {
-			status.qscanptr = p.qscan + 1;
+            pStatus->SetQScanPointer( p.qscan + 1 );
         }
-		GetApplication()->GetStatusManager()->Write();
+		GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 	}
 }
 

@@ -1065,9 +1065,9 @@ void readmail( int mode )
 						}
 						p.msg.storage_type = (BYTE) subboards[GetSession()->GetCurrentReadMessageArea()].storage_type;
 						savefile(b, len, &(p.msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename );
-						GetApplication()->GetStatusManager()->Lock();
-						p.qscan = status.qscanptr++;
-						GetApplication()->GetStatusManager()->Write();
+						WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+                        p.qscan = pStatus->IncrementQScanPointer();
+						GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 						if ( GetSession()->GetNumMessagesInCurrentMessageArea() >= subboards[GetSession()->GetCurrentReadMessageArea()].maxmsgs )
 						{
 							i1 = 1;
@@ -1087,8 +1087,10 @@ void readmail( int mode )
 							delete_message( i2 );
 						}
 						add_post( &p );
-						++status.msgposttoday;
-						++status.localposts;
+                        pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+                        pStatus->IncrementNumMessagesPostedToday();
+                        pStatus->IncrementNumLocalPosts();
+                        GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 						close_sub();
 						tmp_disable_conf( false );
 						iscan( GetSession()->GetCurrentMessageArea() );
