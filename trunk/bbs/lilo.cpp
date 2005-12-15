@@ -711,10 +711,10 @@ void UpdateUserStatsForLogin()
     GetSession()->SetMMKeyArea( WSession::mmkeyMessageAreas );
     if ( GetSession()->GetEffectiveSl() != 255 && !guest_user )
     {
-        GetApplication()->GetStatusManager()->Lock();
-        ++status.callernum1;
-        ++status.callstoday;
-        GetApplication()->GetStatusManager()->Write();
+        WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+        pStatus->IncrementCallerNumber();
+        pStatus->IncrementNumCallsToday();
+        GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
     }
 }
 
@@ -1313,9 +1313,10 @@ void logoff()
     double dTimeOnNow = timer() - timeon;
     GetSession()->thisuser.SetTimeOn( GetSession()->thisuser.GetTimeOn() + static_cast<float>( dTimeOnNow ) );
     GetSession()->thisuser.SetTimeOnToday( GetSession()->thisuser.GetTimeOnToday() + static_cast<float>( dTimeOnNow - extratimecall ) );
-    GetApplication()->GetStatusManager()->Lock();
-    status.activetoday = status.activetoday + static_cast<unsigned short>( dTimeOnNow / MINUTES_PER_HOUR_FLOAT );
-    GetApplication()->GetStatusManager()->Write();
+    WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    int nActiveToday = pStatus->GetMinutesActiveToday();
+    pStatus->SetMinutesActiveToday( nActiveToday + static_cast<unsigned short>( dTimeOnNow / MINUTES_PER_HOUR_FLOAT ) );
+    GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
     if (g_flags & g_flag_scanned_files)
     {
         GetSession()->thisuser.SetNewScanDateNumber( GetSession()->thisuser.GetLastOnDateNumber() );

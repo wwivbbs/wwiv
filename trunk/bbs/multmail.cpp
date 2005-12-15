@@ -99,21 +99,21 @@ void multimail(int *pnUserNumber, int numu)
 			++fwaiting;
 		}
         strcat(s, user.GetUserNameAndNumber( pnUserNumber[cv] ) );
-		GetApplication()->GetStatusManager()->Lock();
+		WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
 		if (pnUserNumber[cv] == 1)
 		{
-			++status.fbacktoday;
+            pStatus->IncrementNumFeedbackSentToday();
             GetSession()->thisuser.SetNumFeedbackSentToday( GetSession()->thisuser.GetNumFeedbackSentToday() + 1 );
             GetSession()->thisuser.SetNumFeedbackSent( GetSession()->thisuser.GetNumFeedbackSent() + 1 );
 			++fsenttoday;
 		}
 		else
 		{
-			++status.emailtoday;
+            pStatus->IncrementNumEmailSentToday();
             GetSession()->thisuser.SetNumEmailSent( GetSession()->thisuser.GetNumEmailSent() + 1 );
             GetSession()->thisuser.SetNumEmailSentToday( GetSession()->thisuser.GetNumEmailSentToday() + 1 );
 		}
-		GetApplication()->GetStatusManager()->Write();
+		GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 		sysoplog(s);
 		GetSession()->bout << s;
 		nl();
