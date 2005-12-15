@@ -257,9 +257,9 @@ void post()
 		p.msg		= m;
 		p.ownersys	= 0;
 		p.owneruser = static_cast<unsigned short>( GetSession()->usernum );
-		GetApplication()->GetStatusManager()->Lock();
-		p.qscan = status.qscanptr++;
-		GetApplication()->GetStatusManager()->Write();
+		WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+		p.qscan = pStatus->IncrementQScanPointer();
+		GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 		p.daten = static_cast<unsigned long>(time(NULL));
         if ( GetSession()->thisuser.isRestrictionValidate() )
 		{
@@ -319,9 +319,9 @@ void post()
 
         GetSession()->thisuser.SetNumMessagesPosted( GetSession()->thisuser.GetNumMessagesPosted() + 1 );
         GetSession()->thisuser.SetNumPostsToday( GetSession()->thisuser.GetNumPostsToday() + 1 );
-		GetApplication()->GetStatusManager()->Lock();
-		++status.msgposttoday;
-		++status.localposts;
+		pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+        pStatus->IncrementNumMessagesPostedToday();
+        pStatus->IncrementNumLocalPosts();
 
 		if ( GetApplication()->HasConfigFlag( OP_FLAGS_POSTTIME_COMPENSATE ) )
 		{
@@ -337,7 +337,7 @@ void post()
 			}
 			GetSession()->thisuser.SetExtraTime( GetSession()->thisuser.GetExtraTime() + static_cast<float>( lStartTime ) );
 		}
-		GetApplication()->GetStatusManager()->Write();
+		GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 		close_sub();
 
 		GetApplication()->GetLocalIO()->UpdateTopScreen();
@@ -441,8 +441,9 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber)
 		}
 		else
 		{
-			GetApplication()->GetStatusManager()->Read();
-			qsc_p[GetSession()->GetCurrentReadMessageArea()] = status.qscanptr - 1;
+			WStatus *pStatus = GetApplication()->GetStatusManager()->GetStatus();
+            qsc_p[GetSession()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
+            delete pStatus;
 		}
 
 		GetSession()->SetCurrentMessageArea( nOldSubNumber );
