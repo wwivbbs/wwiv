@@ -85,7 +85,6 @@ int finduser( char *pszSearchString )
         }
         return nUserNumber;
     }
-    GetApplication()->GetStatusManager()->Read();
     smalrec *sr = ( smalrec * ) bsearch( ( const void * ) pszSearchString,
                     ( const void * ) smallist,
                     ( size_t ) GetApplication()->GetStatusManager()->GetUserCount(),
@@ -135,8 +134,7 @@ int finduser1(const char *pszSearchString)
     {
         szUserNamePart[i] = upcase( szUserNamePart[i] );
     }
-    std::auto_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
-    for ( int i1 = 0; i1 < pStatus->GetNumUsers(); i1++ )
+    for ( int i1 = 0; i1 < GetApplication()->GetStatusManager()->GetUserCount(); i1++ )
     {
         if ( strstr( reinterpret_cast<char*>( smallist[i1].name ), szUserNamePart) != NULL )
         {

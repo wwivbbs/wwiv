@@ -1126,21 +1126,24 @@ void WLocalIO::UpdateTopScreenImpl()
         break;
     case WLocalIO::topdataSystem:
         {
-            GetApplication()->GetStatusManager()->Read();
-            LocalXYPrintf( 0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, status.date1 );
+            std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+
+            GetApplication()->GetStatusManager()->RefreshStatusCache();
+            LocalXYPrintf( 0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, pStatus->GetLastDate() );
 
             LocalXYPrintf( 0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
-                           status.users, status.callernum1, status.callstoday, status.localposts );
+                            pStatus->GetNumUsers(), pStatus->GetCallerNumber(), 
+                            pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts() );
 
             LocalXYPrintf( 0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
                            GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
-                           status.activetoday,
-                           static_cast<int>( 10 * status.activetoday / 144 ),
-                           status.emailtoday );
+                           pStatus->GetMinutesActiveToday(),
+                           static_cast<int>( 10 * pStatus->GetMinutesActiveToday() / 144 ),
+                           pStatus->GetNumEmailSentToday() );
 
             LocalXYPrintf( 0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
                            GetSession()->thisuser.GetSl(), GetSession()->thisuser.GetDsl(),
-                           fwaiting, status.uptoday, status.fbacktoday );
+                           fwaiting, pStatus->GetNumUploadsToday(), pStatus->GetNumFeedbackSentToday() );
         }
         break;
     case WLocalIO::topdataUser:

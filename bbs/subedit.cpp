@@ -926,7 +926,7 @@ void boardedit()
     }
 	showsubs();
 	bool done = false;
-	GetApplication()->GetStatusManager()->Read();
+	GetApplication()->GetStatusManager()->RefreshStatusCache();
 	do
     {
 		nl();

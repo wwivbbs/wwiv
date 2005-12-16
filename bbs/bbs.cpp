@@ -764,8 +764,7 @@ int WBbsApp::LocalLogon()
                     break;
                 }
             }
-            std::auto_ptr<WStatus> pStatus( GetStatusManager()->GetStatus() );
-            if ( !fast || ( m_unx > pStatus->GetNumUsers() ) )
+            if ( !fast || m_unx > GetApplication()->GetStatusManager()->GetUserCount() )
             {
                 return lokb;
             }

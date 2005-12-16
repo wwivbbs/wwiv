@@ -217,7 +217,7 @@ int ShowLoginAndGetUserNumber( int nNetworkOnly, char* pszUserName )
     {
         GetSession()->bout << "Searching...";
         bool abort = false, next = false;
-        for ( int i = 1; i < status.users && nUserNumber == 0 && !hangup && !abort; i++ )
+        for ( int i = 1; i < GetApplication()->GetStatusManager()->GetUserCount() && nUserNumber == 0 && !hangup && !abort; i++ )
         {
             if ( i % 25 == 0 )  // changed from 15 since computers are faster now-a-days
             {
@@ -336,7 +336,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
         return;
     }
 
-    GetApplication()->GetStatusManager()->Read();
+    GetApplication()->GetStatusManager()->RefreshStatusCache();
     long lTime = time( NULL );
     switch ( GetSession()->usernum )
     {
@@ -398,7 +398,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
         break;
 #endif // ENABLE_REMOTE_VIA_SPECIAL_LOGINS
     }
-    GetApplication()->GetStatusManager()->Read();
+    GetApplication()->GetStatusManager()->RefreshStatusCache();
     hangup = true;
     GetApplication()->GetComm()->dtr( false );
     global_xx = false;
@@ -737,8 +737,10 @@ void UpdateLastOnFileAndUserLog()
     char s1[181], szLastOnTxtFileName[ MAX_PATH ], szLogLine[ 255 ];
     long len;
 
+    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+
     sprintf( szLogLine, "%ld: %s %s %s   %s - %d (%u)",
-             status.callernum1,
+        pStatus->GetCallerNumber(),
              GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
              times(),
              fulldate(),
@@ -804,7 +806,7 @@ void UpdateLastOnFileAndUserLog()
 			 ( syscfg.sysconfig & sysconfig_extended_info ) )
 		{
             sprintf( szLogLine, "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
-                        status.callernum1,
+                        pStatus->GetCallerNumber(),
                         GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
                         times(),
                         fulldate(),
@@ -817,7 +819,7 @@ void UpdateLastOnFileAndUserLog()
         else
 		{
             sprintf( szLogLine, "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
-                        status.callernum1,
+                        pStatus->GetCallerNumber(),
                         GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
                         cur_lang_name,
                         times(),
@@ -1032,7 +1034,7 @@ void DisplayUserLoginInformation()
     GetSession()->bout << "|#9System is|#0......... |#2WWIV " << wwiv_version << beta_version << "  " << wwiv::endl;
 
     /////////////////////////////////////////////////////////////////////////
-    GetApplication()->GetStatusManager()->Read();
+    GetApplication()->GetStatusManager()->RefreshStatusCache();
     for ( int i = 0; i < GetSession()->GetMaxNetworkNumber(); i++ )
     {
         if ( net_networks[i].sysnum )
@@ -1051,13 +1053,14 @@ void DisplayUserLoginInformation()
                     s1[i1] = ' ';
                 }
                 s1[i1] = '\0';
-                GetSession()->bout << s1 << "(net" << status.net_version << ")\r\n";
+                std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+                GetSession()->bout << s1 << "(net" << pStatus->GetNetworkVersion() << ")\r\n";
             }
         }
     }
 
     char szOSVersion[100];
-    WWIV_GetOSVersion( szOSVersion, 100, true );
+    WWIV_GetOSVersion( szOSVersion, sizeof(szOSVersion), true );
     GetSession()->bout << "|#9OS|#0................ |#2" << szOSVersion << wwiv::endl;
 
     GetSession()->bout << "|#9Instance|#0.......... |#2" << GetApplication()->GetInstanceNumber() << "\r\n\n";

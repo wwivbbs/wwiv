@@ -222,7 +222,7 @@ int read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, un
 	if ( !same_email( mloc + rec, m ) )
 	{
 		pFileEmail->Close();
-		GetApplication()->GetStatusManager()->Read();
+		GetApplication()->GetStatusManager()->RefreshStatusCache();
 		if ( emchg )
 		{
 			resynch_email( mloc, mw, rec, m, del, stat );

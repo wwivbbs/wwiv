@@ -719,8 +719,7 @@ int find_new_usernum( const WUser* pUser, unsigned long *qsc )
     userFile.Seek( syscfg.userreclen, WFile::seekBegin );
     int nUserNumber = 1;
 
-    GetApplication()->GetStatusManager()->Read();
-    if (nNewUserNumber == status.users)
+    if (nNewUserNumber == GetApplication()->GetStatusManager()->GetUserCount() )
     {
         nUserNumber = nNewUserNumber + 1;
     }
@@ -846,7 +845,7 @@ void CreateNewUserRecord()
 // message has already been displayed to the user.
 bool CanCreateNewUserAccountHere()
 {
-    if (status.users >= syscfg.maxusers)
+    if ( GetApplication()->GetStatusManager()->GetUserCount() >= syscfg.maxusers )
     {
         nl( 2 );
         GetSession()->bout << "I'm sorry, but the system currently has the maximum number of users it can\r\nhandle.\r\n\n";
@@ -1272,7 +1271,6 @@ void newuser()
 
     sysoplog( "", false );
     sysoplogfi( false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), GetSession()->GetCurrentSpeed().c_str(), GetApplication()->GetInstanceNumber() );
-    GetApplication()->GetStatusManager()->Read();
 
     if ( !CanCreateNewUserAccountHere() || hangup )
     {
