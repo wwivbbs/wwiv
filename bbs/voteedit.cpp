@@ -178,7 +178,7 @@ void voteprint()
 
     WFile votingDat( syscfg.datadir, VOTING_DAT );
 
-    GetApplication()->GetStatusManager()->Read();
+    GetApplication()->GetStatusManager()->RefreshStatusCache();
 
     for (int i1 = 0; i1 < 20; i1++)
     {
@@ -196,7 +196,7 @@ void voteprint()
             {
                 sprintf(s, "     %s\r\n", v.responses[i2].response);
                 votingText.Write( s, strlen( s ) );
-                for (int i3 = 0; i3 < status.users; i3++)
+                for (int i3 = 0; i3 < GetApplication()->GetStatusManager()->GetUserCount(); i3++)
                 {
                     if (x[i1 + 20 * smallist[i3].number] == i2 + 1)
                     {

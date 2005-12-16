@@ -173,7 +173,7 @@ void remove_link( messagerec * pMessageRecord, const char *aux )
  */
 WFile * OpenMessageFile( const char *pszMessageAreaFileName )
 {
-	GetApplication()->GetStatusManager()->Read();
+	GetApplication()->GetStatusManager()->RefreshStatusCache();
 
 	std::string strFullPathName;
 	wwiv::stringUtils::FormatString( strFullPathName, "%s%s.dat", syscfg.msgsdir, pszMessageAreaFileName );

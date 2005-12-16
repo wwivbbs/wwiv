@@ -72,6 +72,7 @@ Rushfan - Started making utility objects not depend on so much of the BBS so tha
           WFile, WTextFile, WUser, WUserManager can be used outside of the BBS, eventually
           we will have classes for messagebase manipulation available from outside of WWIV.
 Rushfan - Some more const-correctness in the transfer code to make life easier in other places
+Rushfan - Removed almost all usages of status
 
 ==============================================================================
 

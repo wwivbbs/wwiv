@@ -26,7 +26,7 @@ FILE *fsh_open(const char *path, char *mode);
 
 WTextFile::WTextFile( const char* pszFileName, const char* pszFileMode )
 {
-    Open( m_szFileName, m_szFileMode);
+    Open( pszFileName, pszFileMode);
 }
 
 

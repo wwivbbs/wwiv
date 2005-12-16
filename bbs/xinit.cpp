@@ -946,7 +946,6 @@ void WBbsApp::read_networks()
 
 bool WBbsApp::read_names()
 {
-    WStatus *pStatus = statusMgr->BeginTransaction();
     if ( smallist )
     {
         BbsFreeMemory( smallist );
@@ -961,9 +960,8 @@ bool WBbsApp::read_names()
         std::cout << file.GetName() << " NOT FOUND.\r\n";
         return false;
     }
-    file.Read( smallist, ( sizeof( smalrec ) * pStatus->GetNumUsers() ) );
+    file.Read( smallist, sizeof( smalrec ) * statusMgr->GetUserCount() );
     file.Close();
-    statusMgr->AbortTransaction( pStatus );
     return true;
 }
 
@@ -1397,7 +1395,7 @@ void WBbsApp::InitializeBBS()
     GetSession()->ReadCurrentUser( 1, false );
     fwaiting = ( GetSession()->thisuser.isUserDeleted() ) ? 0 : GetSession()->thisuser.GetNumMailWaiting();
 
-    statusMgr->Read();
+    statusMgr->RefreshStatusCache();
 
     if (syscfg.sysconfig & sysconfig_no_local)
     {
