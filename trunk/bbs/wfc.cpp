@@ -141,7 +141,7 @@ void wfc_screen()
 	}
 
 	int nNumNewMessages = check_new_mail( GetSession()->usernum );
-
+    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
 	if ( GetSession()->wfc_status == 0 )
 	{
 		GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNone );
@@ -165,29 +165,29 @@ void wfc_screen()
 		WWIV_GetOSVersion( szOSVersion, 100, true );
 		GetApplication()->GetLocalIO()->LocalXYAPrintf( 40, 1, 3, "OS: " );
 		GetApplication()->GetLocalIO()->LocalXYAPrintf( 44, 1, 14, szOSVersion );
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 6, 14, "%d", status.callstoday );
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 6, 14, "%d", pStatus->GetNumCallsToday() );
 		GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 7, 14, "%d", fwaiting );
 		if ( nNumNewMessages )
 		{
 			GetApplication()->GetLocalIO()->LocalXYAPrintf( 29, 7 , 3, "New:" );
 			GetApplication()->GetLocalIO()->LocalXYAPrintf( 34, 7 , 12, "%d", nNumNewMessages );
 		}
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 8, 14, "%d", status.uptoday );
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 9, 14, "%d", status.msgposttoday );
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 10, 14, "%d", status.localposts );
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 11, 14, "%d", status.emailtoday );
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 12, 14, "%d", status.fbacktoday );
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 13, 14, "%d Mins (%.1f%%)", status.activetoday,
-			100.0 * static_cast<float>( status.activetoday ) / 1440.0 );
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 8, 14, "%d", pStatus->GetNumUploadsToday() );
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 9, 14, "%d", pStatus->GetNumMessagesPostedToday() );
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 10, 14, "%d", pStatus->GetNumLocalPosts() );
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 11, 14, "%d", pStatus->GetNumEmailSentToday() );
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 12, 14, "%d", pStatus->GetNumFeedbackSentToday() );
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 21, 13, 14, "%d Mins (%.1f%%)", pStatus->GetMinutesActiveToday(),
+			100.0 * static_cast<float>( pStatus->GetMinutesActiveToday() ) / 1440.0 );
 		GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 6, 14, "%s%s", wwiv_version, beta_version );
 
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 7, 14, "%d", status.net_version );
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 8, 14, "%d", status.users );
-		GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 9, 14, "%ld", status.callernum1 );
-		if ( status.days )
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 7, 14, "%d", pStatus->GetNetworkVersion() );
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 8, 14, "%d", pStatus->GetNumUsers() );
+        GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 9, 14, "%ld", pStatus->GetCallerNumber() );
+        if ( pStatus->GetDays() )
 		{
-			GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 10, 14, "%.2f", static_cast<float>( status.callernum1 ) /
-					static_cast<float>( status.days ) );
+			GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 10, 14, "%.2f", static_cast<float>( pStatus->GetCallerNumber() ) /
+					static_cast<float>( pStatus->GetDays() ) );
 		}
 		else
 		{

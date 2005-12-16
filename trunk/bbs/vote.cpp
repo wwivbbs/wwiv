@@ -94,9 +94,9 @@ bool print_question( int i, int ii )
         t += vr.numresponses;
     }
 
-    GetApplication()->GetStatusManager()->Read();
+    GetApplication()->GetStatusManager()->RefreshStatusCache();
     sprintf( szBuffer , "|#9Users voting: |#2%4.1f%%\r\n",
-             static_cast<double>( t ) / static_cast<double>( status.users ) * 100.0 );
+        static_cast<double>( t ) / static_cast<double>( GetApplication()->GetStatusManager()->GetUserCount() ) * 100.0 );
     pla( szBuffer, &abort );
     int t1 = ( t ) ? t : 1;
     pla( " |#20|#9) |#9No Comment", &abort );

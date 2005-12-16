@@ -979,7 +979,6 @@ void sysoplogfi( bool bIndent, const char *pszFormat, ... );
 
 // File: sysopf.cpp
 
-void isr1( int nUserNumber, const char *pszName );
 void reset_files();
 void prstatus(bool bIsWFC);
 void valuser(int nUserNumber);

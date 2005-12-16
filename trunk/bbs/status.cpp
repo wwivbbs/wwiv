@@ -74,6 +74,68 @@ void WStatus::EnsureCallerNumberIsValid()
 }
 
 
+void WStatus::ValidateAndFixDates()
+{
+	if ( m_pStatusRecord->date1[8] != '\0' )
+	{
+		m_pStatusRecord->date1[6] = '0';
+		m_pStatusRecord->date1[7] = '0';
+		m_pStatusRecord->date1[8] = '\0'; // forgot to add null termination
+	}
+
+    std::string currentDate = date();
+	if ( m_pStatusRecord->date3[8] != '\0' )
+	{
+		m_pStatusRecord->date3[6] = currentDate[6];
+		m_pStatusRecord->date3[7] = currentDate[7];
+		m_pStatusRecord->date3[8] = '\0';
+	}
+	if ( m_pStatusRecord->date2[8] != '\0' )
+	{
+		m_pStatusRecord->date2[6] = currentDate[6];
+		m_pStatusRecord->date2[7] = currentDate[7];
+		m_pStatusRecord->date2[8] = '\0';
+	}
+	if ( m_pStatusRecord->date1[8] != '\0' )
+	{
+		m_pStatusRecord->date1[6] = currentDate[6];
+		m_pStatusRecord->date1[7] = currentDate[7];
+		m_pStatusRecord->date1[8] = '\0';
+	}
+	if ( m_pStatusRecord->gfiledate[8] != '\0' )
+	{
+		m_pStatusRecord->gfiledate[6] = currentDate[6];
+		m_pStatusRecord->gfiledate[7] = currentDate[7];
+		m_pStatusRecord->gfiledate[8] = '\0';
+	}
+}
+
+
+bool WStatus::NewDay()
+{
+	m_pStatusRecord->callstoday   = 0;
+	m_pStatusRecord->msgposttoday = 0;
+	m_pStatusRecord->localposts   = 0;
+	m_pStatusRecord->emailtoday   = 0;
+	m_pStatusRecord->fbacktoday   = 0;
+	m_pStatusRecord->uptoday      = 0;
+	m_pStatusRecord->activetoday  = 0;
+	m_pStatusRecord->days++;
+
+	// Need to verify the dates aren't trashed otherwise we can crash here.
+    ValidateAndFixDates();
+
+	strcpy( m_pStatusRecord->date3, m_pStatusRecord->date2 );
+	strcpy( m_pStatusRecord->date2, m_pStatusRecord->date1 );
+	strcpy( m_pStatusRecord->date1, date() );
+	strcpy( m_pStatusRecord->log2, m_pStatusRecord->log1 );
+
+    GetSysopLogFileName( GetLastDate(1), m_pStatusRecord->log1 );
+    return true;
+}
+
+
+
 //
 // StatusMgr
 //
@@ -188,7 +250,7 @@ bool StatusMgr::Lock()
 }
 
 
-bool StatusMgr::Read()
+bool StatusMgr::RefreshStatusCache()
 {
 	return this->Get(false);
 }
@@ -209,15 +271,6 @@ bool StatusMgr::CommitTransaction(WStatus* pStatus)
 {
     bool returnValue = this->Write( pStatus->m_pStatusRecord );
 
-    // TODO make Write(...) return a bool
-    delete pStatus;
-    return returnValue;
-}
-
-
-bool StatusMgr::AbortTransaction( WStatus* pStatus )
-{
-    bool returnValue = this->Read();
     delete pStatus;
     return returnValue;
 }
@@ -256,5 +309,6 @@ bool StatusMgr::Write(statusrec *pStatus)
 
 const int StatusMgr::GetUserCount()
 {
-	return status.users;
+    std::auto_ptr<WStatus>pStatus(GetStatus());
+    return pStatus->GetNumUsers();
 }

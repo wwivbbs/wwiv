@@ -20,18 +20,15 @@
 #include "wwiv.h"
 #include "WStringUtils.h"
 
-bool VerifyStatusDates();
-
-
-void isr1( int nUserNumber, const char *pszName )
+bool isr1( int nUserNumber, int nNumUsers, const char *pszName )
 {
-	int cp = 0;
-	while ( cp < status.users &&
+    int cp = 0;
+    while ( cp < nNumUsers &&
             wwiv::stringUtils::StringCompare( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) > 0 )
 	{
 		++cp;
 	}
-	for ( int i = status.users; i > cp; i-- )
+    for ( int i = nNumUsers; i > cp; i-- )
 	{
 		smallist[i] = smallist[i - 1];
 	}
@@ -39,17 +36,16 @@ void isr1( int nUserNumber, const char *pszName )
 	strcpy( reinterpret_cast<char*>( sr.name ), pszName );
 	sr.number = static_cast<unsigned short>( nUserNumber );
     smallist[cp] = sr;
-	++status.users;
+    return true;
 }
 
 
 void reset_files()
 {
 	WUser user;
-	unsigned short users = 0;
 
-	GetApplication()->GetStatusManager()->Read();
-	status.users = 0;
+	WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    pStatus->SetNumUsers( 0 );
 	nl();
 	int nNumUsers = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
     WFile userFile( syscfg.datadir, USER_LST );
@@ -63,13 +59,14 @@ void reset_files()
             if ( !user.isUserDeleted() )
 			{
                 user.FixUp();
-				status.users = users;
-                isr1( i, user.GetName() );
-				users = status.users;
+                if ( isr1( i, nNumUsers, user.GetName() ) )
+                {
+                    pStatus->IncrementNumUsers();
+                }
 			}
 			else
 			{
-				memset(&user.data, 0, syscfg.userreclen);
+				memset( &user.data, 0, syscfg.userreclen );
                 user.SetInactFlag( 0 );
                 user.SetInactFlag( inact_deleted );
 			}
@@ -86,8 +83,6 @@ void reset_files()
 	}
 	GetSession()->bout << "\r\n\r\n";
 
-	WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
-
     WFile namesFile( syscfg.datadir, NAMES_LST );
     if ( !namesFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate ) )
 	{
@@ -96,7 +91,6 @@ void reset_files()
 	}
     namesFile.Write( smallist, sizeof(smalrec) * pStatus->GetNumUsers() );
     namesFile.Close();
-	pStatus->SetNumUsers( users );
 	GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 }
 
@@ -104,7 +98,7 @@ void reset_files()
 
 void prstatus( bool bIsWFC )
 {
-	GetApplication()->GetStatusManager()->Read();
+	GetApplication()->GetStatusManager()->RefreshStatusCache();
 	ClearScreen();
 	if ( syscfg.newuserpw[0] != '\0' )
 	{
@@ -112,24 +106,25 @@ void prstatus( bool bIsWFC )
 	}
 	GetSession()->bout << "|#9Board is        : " << ( syscfg.closedsystem ? "Closed" : "Open" ) << wwiv::endl;
 
+    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
 	if ( !bIsWFC )
 	{
 		// All of this information is on the WFC Screen
-        GetSession()->bout << "|#9Number Users    : |#2" << status.users << wwiv::endl;
-		GetSession()->bout << "|#9Number Calls    : |#2" << status.callernum1 << wwiv::endl;
-		GetSession()->bout << "|#9Last Date       : |#2" << status.date1 << wwiv::endl;
+        GetSession()->bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
+        GetSession()->bout << "|#9Number Calls    : |#2" << pStatus->GetCallerNumber() << wwiv::endl;
+        GetSession()->bout << "|#9Last Date       : |#2" << pStatus->GetLastDate() << wwiv::endl;
 		GetSession()->bout << "|#9Time            : |#2" << times() << wwiv::endl;
-		GetSession()->bout << "|#9Active Today    : |#2" << status.activetoday << wwiv::endl;
-		GetSession()->bout << "|#9Calls Today     : |#2" << status.callstoday << wwiv::endl;
-		GetSession()->bout << "|#9Net Posts Today : |#2" << ( status.msgposttoday - status.localposts ) << wwiv::endl;
-		GetSession()->bout << "|#9Local Post Today: |#2" << status.localposts << wwiv::endl;
-		GetSession()->bout << "|#9E Sent Today    : |#2" << status.emailtoday << wwiv::endl;
-		GetSession()->bout << "|#9F Sent Today    : |#2" << status.fbacktoday << wwiv::endl;
-		GetSession()->bout << "|#9Uploads Today   : |#2" << status.uptoday << wwiv::endl;
+        GetSession()->bout << "|#9Active Today    : |#2" << pStatus->GetMinutesActiveToday() << wwiv::endl;
+        GetSession()->bout << "|#9Calls Today     : |#2" << pStatus->GetNumCallsToday() << wwiv::endl;
+        GetSession()->bout << "|#9Net Posts Today : |#2" << ( pStatus->GetNumMessagesPostedToday() - pStatus->GetNumLocalPosts() ) << wwiv::endl;
+        GetSession()->bout << "|#9Local Post Today: |#2" << pStatus->GetNumLocalPosts() << wwiv::endl;
+		GetSession()->bout << "|#9E Sent Today    : |#2" << pStatus->GetNumEmailSentToday() << wwiv::endl;
+        GetSession()->bout << "|#9F Sent Today    : |#2" << pStatus->GetNumFeedbackSentToday() << wwiv::endl;
+        GetSession()->bout << "|#9Uploads Today   : |#2" << pStatus->GetNumUploadsToday() << wwiv::endl;
 		GetSession()->bout << "|#9Feedback Waiting: |#2" << fwaiting << wwiv::endl;
         GetSession()->bout << "|#9Sysop           : |#2" << ( ( sysop2() ) ? "Available" : "NOT Available" ) << wwiv::endl;
 	}
-	GetSession()->bout << "|#9Q-Scan Pointer  : |#2" << status.qscanptr << wwiv::endl;
+	GetSession()->bout << "|#9Q-Scan Pointer  : |#2" << pStatus->GetQScanPointer() << wwiv::endl;
 
     if ( num_instances() > 1 )
 	{
@@ -379,7 +374,7 @@ void print_net_listing( bool bForcePause )
 	char s[255], s1[101], s2[101], s3[101], s4[101], bbstype;
 	bool bHadPause = false;
 
-	GetApplication()->GetStatusManager()->Read();
+	GetApplication()->GetStatusManager()->RefreshStatusCache();
 
 	if (!GetSession()->GetMaxNetworkNumber())
 	{
@@ -1026,7 +1021,8 @@ void zlog()
 
 void set_user_age()
 {
-	unsigned int nUserNumber = 1;
+    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+    int nUserNumber = 1;
 	do
 	{
     	WUser user;
@@ -1038,7 +1034,7 @@ void set_user_age()
             GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
 		}
 		++nUserNumber;
-	} while ( nUserNumber <= status.users );
+    } while ( nUserNumber <= pStatus->GetNumUsers() );
 }
 
 
@@ -1076,10 +1072,11 @@ void auto_purge()
 	}
 
 	time_t tTime = time( NULL );
-	unsigned int nUserNumber = 1;
+	int nUserNumber = 1;
 	sysoplogfi( false, "Auto-Purged Inactive Users (over %d days, SL less than %d)", days, skipsl );
 
-	do
+    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+    do
 	{
         WUser user;
         GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
@@ -1096,7 +1093,7 @@ void auto_purge()
 			}
 		}
 		++nUserNumber;
-	} while ( nUserNumber <= status.users );
+	} while ( nUserNumber <= pStatus->GetNumUsers() );
 }
 
 
@@ -1105,23 +1102,16 @@ void beginday( bool displayStatus )
     if ( ( GetSession()->GetBeginDayNodeNumber() > 0 ) && ( GetApplication()->GetInstanceNumber() != GetSession()->GetBeginDayNodeNumber() ) )
 	{
         // If BEGINDAYNODENUMBER is > 0 or defined in WWIV.INI only handle beginday events on that node number
-		GetApplication()->GetStatusManager()->Read();
+		GetApplication()->GetStatusManager()->RefreshStatusCache();
 		return;
 	}
-	GetApplication()->GetStatusManager()->Lock();
+	WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
 
-	// TODO remove this hack once Dean fixes INIT
-	// If the date1 field is hosed, fix up the year to 00 (since it would be 10 as in part of 100).
-	if ( status.date1[8] != '\0' )
-	{
-		status.date1[6] = '0';
-		status.date1[7] = '0';
-		status.date1[8] = '\0'; // forgot to add null termination
-	}
+    pStatus->ValidateAndFixDates();
 
-    if ( wwiv::stringUtils::IsEquals( date(), status.date1 ) )
+    if ( wwiv::stringUtils::IsEquals( date(), pStatus->GetLastDate() ) )
 	{
-		GetApplication()->GetStatusManager()->Write();
+		GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 		return;
 	}
 	GetSession()->bout << "|#7* |#1Running Daily Maintenance...\r\n";
@@ -1131,38 +1121,21 @@ void beginday( bool displayStatus )
     }
 
 	zlogrec z;
-	strcpy( z.date, status.date1 );
-	z.active            = status.activetoday;
-	z.calls             = status.callstoday;
-	z.posts             = status.localposts;
-	z.email             = status.emailtoday;
-	z.fback             = status.fbacktoday;
-	z.up                = status.uptoday;
-	status.callstoday   = 0;
-	status.msgposttoday = 0;
-	status.localposts   = 0;
-	status.emailtoday   = 0;
-	status.fbacktoday   = 0;
-	status.uptoday      = 0;
-	status.activetoday  = 0;
-	status.days++;
-
-	//
-	// Need to verify the dates aren't trashed otherwise we can crash here.
-	//
-	VerifyStatusDates();
-
-	strcpy( status.date3, status.date2 );
-	strcpy( status.date2, status.date1 );
-	strcpy( status.date1, date() );
-	strcpy( status.log2, status.log1 );
-	GetSysopLogFileName( status.date2, status.log1 );
+    strcpy( z.date, pStatus->GetLastDate());
+    z.active            = pStatus->GetMinutesActiveToday();
+    z.calls             = pStatus->GetNumCallsToday();
+    z.posts             = pStatus->GetNumLocalPosts();
+    z.email             = pStatus->GetNumEmailSentToday();
+    z.fback             = pStatus->GetNumFeedbackSentToday();
+    z.up                = pStatus->GetNumUploadsToday();
+    pStatus->NewDay();
+    
 
 	if ( displayStatus )
     {
         GetSession()->bout << "  |#7* |#1Cleaning up log files...\r\n";
     }
-	WFile::Remove( syscfg.gfilesdir, status.log2 );
+    WFile::Remove( syscfg.gfilesdir, pStatus->GetLogFileName(1) );
 	WFile::Remove( syscfg.gfilesdir, USER_LOG );
 
 	if ( displayStatus )
@@ -1204,14 +1177,15 @@ void beginday( bool displayStatus )
     {
         GetSession()->bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
     }
-	GetApplication()->GetStatusManager()->Write();
+    int nus     = syscfg.maxusers - pStatus->GetNumUsers();
+
+    GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 	if ( displayStatus )
     {
         GetSession()->bout << "  |#7* |#1Checking system directories and user space...\r\n";
     }
 
 	double fk   = freek1(syscfg.datadir);
-	int nus     = syscfg.maxusers - status.users;
 
 	if ( fk < 512.0 )
 	{
@@ -1248,37 +1222,4 @@ void beginday( bool displayStatus )
 
 }
 
-
-bool VerifyStatusDates()
-{
-	bool bReturn = true;
-    std::string currentDate = date();
-
-	if ( status.date3[8] != '\0' )
-	{
-		status.date3[6] = currentDate[6];
-		status.date3[7] = currentDate[7];
-		status.date3[8] = '\0';
-	}
-	if ( status.date2[8] != '\0' )
-	{
-		status.date2[6] = currentDate[6];
-		status.date2[7] = currentDate[7];
-		status.date2[8] = '\0';
-	}
-	if ( status.date1[8] != '\0' )
-	{
-		status.date1[6] = currentDate[6];
-		status.date1[7] = currentDate[7];
-		status.date1[8] = '\0';
-	}
-	if ( status.gfiledate[8] != '\0' )
-	{
-		status.gfiledate[6] = currentDate[6];
-		status.gfiledate[7] = currentDate[7];
-		status.gfiledate[8] = '\0';
-	}
-
-	return bReturn;
-}
 

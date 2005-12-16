@@ -250,7 +250,8 @@ void KillEMail()
 
 void LastCallers()
 {
-    if (status.callstoday > 0)
+    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+    if ( pStatus->GetNumCallsToday()> 0 )
     {
 		if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
 			 ( syscfg.sysconfig & sysconfig_extended_info ) )
@@ -662,9 +663,9 @@ void ResetQscan()
 
 void MemoryStatus()
 {
-    GetApplication()->GetStatusManager()->Read();
+    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
     nl();
-    GetSession()->bout << "Qscanptr        : " << status.qscanptr << wwiv::endl;
+    GetSession()->bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
 }
 
 
@@ -743,8 +744,8 @@ void VotePrint()
 
 void YesturdaysLog()
 {
-    GetApplication()->GetStatusManager()->Read();
-    print_local_file( status.log1, "" );
+    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+    print_local_file( pStatus->GetLogFileName(), "" );
 }
 
 
@@ -919,19 +920,19 @@ void ClearQScan()
         break;
     case 'A':
     {
-        GetApplication()->GetStatusManager()->Read();
+        std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
         for ( int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++ )
         {
-            qsc_p[i] = status.qscanptr - 1L;
+            qsc_p[i] = pStatus->GetQScanPointer() - 1L;
         }
         nl();
         GetSession()->bout << "Q-Scan pointers cleared.\r\n";
     }
     break;
     case 'C':
-        GetApplication()->GetStatusManager()->Read();
+        std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
         nl();
-        qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = status.qscanptr - 1L;
+        qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
         GetSession()->bout << "Messages on " << subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name << " marked as read.\r\n";
         break;
     }

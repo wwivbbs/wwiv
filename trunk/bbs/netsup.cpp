@@ -77,7 +77,8 @@ int check_bbsdata()
 		sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), BBSLIST_UPD);
         ok = WFile::Exists(s) ? 1 : 0;
 	}
-	if (ok && status.net_edit_stuff)
+    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+    if (ok && pStatus->IsUsingNetEdit())
     {
 		holdphone( true );
 		sprintf( s, "NETEDIT .%ld /U", GetSession()->GetNetworkNumber() );
@@ -298,7 +299,7 @@ int cleanup_net1()
                             any = 1;
                         }
                         ok2 = 1;
-                        GetApplication()->GetStatusManager()->Read();
+                        GetApplication()->GetStatusManager()->RefreshStatusCache();
                         GetSession()->SetCurrentReadMessageArea( -1 );
                         GetSession()->ReadCurrentUser( 1 );
                         fwaiting = GetSession()->thisuser.GetNumMailWaiting();
@@ -416,7 +417,7 @@ void do_callout( int sn )
 #endif
 				ExecuteExternalProgram( s, EFLAG_NETPROG );
 				zap_contacts();
-				GetApplication()->GetStatusManager()->Read();
+				GetApplication()->GetStatusManager()->RefreshStatusCache();
 				last_time_c = static_cast<int>(tCurrentTime);
 				global_xx = false;
 				cleanup_net();
@@ -587,7 +588,7 @@ void attempt_callout()
     net_call_out_rec *con;
     net_contact_rec *ncn;
 
-    GetApplication()->GetStatusManager()->Read();
+    GetApplication()->GetStatusManager()->RefreshStatusCache();
 
     bool net_only = true;
 

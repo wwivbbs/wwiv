@@ -51,7 +51,13 @@ public:
     WStatus() { m_pStatusRecord = &status; }
     ~WStatus() {};
 
+    /** If the caller number variable is using the old (pre 4.2) location, move it to the new location */
     void EnsureCallerNumberIsValid();
+    /** Checks for corruption in the date strings, and try to fix if the date strings are corrupt */
+    void ValidateAndFixDates();
+    
+    /** Updates the status object for a new day.  This zeros out daily stats and updates the log file names */
+    bool NewDay();
 
     const char* GetLastDate( int nDaysAgo = 0 ) const;
     const char* GetLogFileName( int nDaysAgo = 0 ) const;
@@ -129,6 +135,13 @@ class StatusMgr
 private:
     WFile m_statusFile;
     bool Write(statusrec *pStatus);
+	/*!
+	 * @function Get Loads the contents of STATUS.DAT with
+	 *           control on failure and lock mode
+	 * @param bLockFile Aquires write lock
+     * @return true on success
+	 */
+	bool Get(bool bLockFile);
 
 public:
 	/*!
@@ -139,7 +152,7 @@ public:
 	/*!
 	 * @function Read Loads the contents of STATUS.DAT
 	 */
-	bool Read();
+    bool RefreshStatusCache();
 
     /*!
 	 * @function Write Writes the contents of STATUS.DAT
@@ -166,19 +179,6 @@ public:
      * Replacement for Write
      */
     bool CommitTransaction( WStatus* pStatus );
-
-    /**
-     * Re-reads the status and deletes the WStatus object
-     */
-    bool AbortTransaction( WStatus* pStatus );
-
-	/*!
-	 * @function Get Loads the contents of STATUS.DAT with
-	 *           control on failure and lock mode
-	 * @param bLockFile Aquires write lock
-     * @return true on success
-	 */
-	bool Get(bool bLockFile);
 
 	const int GetUserCount();
 };

@@ -287,7 +287,7 @@ void list_users( int mode )
     int color   = 3;
     GetSession()->WriteCurrentUser( GetSession()->usernum );
     write_qscn(GetSession()->usernum, qsc, false);
-    GetApplication()->GetStatusManager()->Read();
+    GetApplication()->GetStatusManager()->RefreshStatusCache();
 
 	WFile userList( syscfg.datadir, USER_LST );
 	int nNumUserRecords = ( static_cast<int>( userList.GetLength() / syscfg.userreclen ) - 1 );
@@ -445,7 +445,7 @@ void list_users( int mode )
 				{
                 case 'Q':
                     abort = true;
-                    i = status.users;
+                    i = GetApplication()->GetStatusManager()->GetUserCount();
                     break;
                 case SPACE:
                 case RETURN:
@@ -616,7 +616,7 @@ void Packers()
         {
         case '1':
             {
-                GetApplication()->GetStatusManager()->Write();
+                // We used to write STATUS_DAT here.  I don't think we need to anymore.
                 GetApplication()->GetLocalIO()->set_protect( 0 );
                 sysoplog("@ Ran WWIVMail/QWK");
                 char szCommandLine[ MAX_PATH ];
