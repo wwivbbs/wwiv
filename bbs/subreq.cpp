@@ -22,6 +22,10 @@
 #include "WTextFile.h"
 
 
+bool display_sub_categories();
+int find_hostfor(char *type, short *ui, char *pszDescription, short *opt);
+
+
 static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd)
 {
     GetSession()->bout << "|#5Send email request to the host now? ";
@@ -269,7 +273,6 @@ void sub_xtr_add(int n, int nn)
     char szDescription[100], s[100], onx[20], *mmk, ch;
     int onxi, odci, ii, gc;
     xtrasubsnetrec *xnp;
-    FILE *ff;
 
     if ( nn < 0 || nn >= xsubs[n].num_nets )
     {
@@ -382,8 +385,9 @@ void sub_xtr_add(int n, int nn)
     GetSession()->bout << "|#5Will you be hosting the sub? ";
     if (yesno())
     {
-        sprintf(s, "%sn%s.net", GetSession()->GetNetworkDataDirectory(), xnp->stype);
-		WFile file( s );
+        char szFileName[_MAX_PATH];
+        sprintf(szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory(), xnp->stype);
+		WFile file( szFileName );
 		if ( file.Open( WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite ) )
         {
 			file.Close();
@@ -410,20 +414,18 @@ void sub_xtr_add(int n, int nn)
                     i = wwiv::stringUtils::StringToUnsignedShort(s);
                     if ( i || wwiv::stringUtils::IsEquals( s, "0" ) )
                     {
-                        sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CATEG_NET);
-                        ff = fsh_open(s, "r");
-                        while (fgets(s, 100, ff))
+                        WTextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+                        while (ff.ReadLine(s, 100))
                         {
                             i1 = wwiv::stringUtils::StringToUnsignedShort(s);
                             if (i1 == i)
                             {
-                                fsh_close(ff);
                                 gc = 1;
                                 xnp->category = i;
                                 break;
                             }
                         }
-                        fsh_close(ff);
+                        file.Close();
                         if ( wwiv::stringUtils::IsEquals( s, "0" ) )
                         {
                             gc = 1;
@@ -435,7 +437,7 @@ void sub_xtr_add(int n, int nn)
                     }
                     else
                     {
-                        if ((strlen(s) == 1) && (s[0] == '?'))
+                        if ( strlen(s) == 1 && s[0] == '?' )
                         {
                             display_sub_categories();
                             continue;
@@ -521,23 +523,21 @@ void sub_xtr_add(int n, int nn)
 }
 
 
-int display_sub_categories()
+bool display_sub_categories()
 {
     if (!net_sysnum)
     {
-        return 0;
+        return false;
     }
 
-    char szFileName[ MAX_PATH ];
-    sprintf(szFileName, "%s%s", GetSession()->GetNetworkDataDirectory(), CATEG_NET);
-    FILE* ff = fsh_open(szFileName, "r");
-    if (ff)
+    WTextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
+    if (ff.IsOpen())
     {
         nl();
         GetSession()->bout << "Available sub categories are:\r\n";
         bool abort = false;
         char szLine[255];
-        while (!abort && fgets(szLine, 100, ff))
+        while ( !abort && ff.ReadLine( szLine, 100 ) )
         {
             char* ss = strchr(szLine, '\n');
             if (ss)
@@ -546,10 +546,10 @@ int display_sub_categories()
             }
             pla(szLine, &abort);
         }
-        fsh_close(ff);
-        return 1;
+        ff.Close();
+        return true;
     }
-    return 0;
+    return false;
 }
 
 int amount_of_subscribers( const char *pszNetworkFileName )
