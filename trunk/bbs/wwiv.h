@@ -87,6 +87,7 @@
 #include "bbs.h"
 #include "WComm.h"
 #include "WFile.h"
+#include "WTextFile.h"
 #include "wutil.h"
 #include "instmsg.h"
 #include "WConstants.h"

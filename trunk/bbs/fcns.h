@@ -238,7 +238,6 @@ void delete_conf(int conftype, int n);
 void conf_edit(int conftype);
 void list_confs(int conftype, int ssc);
 int  select_conf(const char *pszPromptText, int conftype, int listconfs);
-int  create_conf_file(int conftype);
 confrec *read_conferences(const char *pszFileName, int *nc, int max);
 void read_in_conferences(int conftype);
 void read_all_conferences();
@@ -946,10 +945,8 @@ void SubList();
 // File: subreq.cpp
 
 void sub_req(int main_type, int minor_type, int tosys, char *extra);
-int  find_hostfor(char *type, short *ui, char *pszDescription, short *opt);
 void sub_xtr_del(int n, int nn, int f);
 void sub_xtr_add(int n, int nn);
-int  display_sub_categories();
 int  amount_of_subscribers( const char *pszNetworkFileName );
 
 

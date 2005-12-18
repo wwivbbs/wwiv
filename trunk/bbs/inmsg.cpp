@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "WStringUtils.h"
+#include "WTextFile.h"
 
 //
 // Local function prototypes
@@ -648,61 +649,64 @@ void GetMessageTitle( char *pszTitle, bool force_title )
 
 bool ExternalMessageEditor( int maxli, int &setanon, char *pszTitle, const char *pszDestination, int flags )
 {
-    char fn1[MAX_PATH], fn2[MAX_PATH];
-    sprintf(fn1, "%s%s", syscfgovr.tempdir, FEDIT_INF );
-    sprintf(fn2, "%s%s", syscfgovr.tempdir, RESULT_ED );
-    WFile::SetFilePermissions( fn1, WFile::permReadWrite );
-    WFile::Remove(fn1);
-    WFile::SetFilePermissions( fn2, WFile::permReadWrite );
-    WFile::Remove(fn2);
+    char szFileNameFEditInf[MAX_PATH], szFileNameResultEd[MAX_PATH];
+    sprintf(szFileNameFEditInf, "%s%s", syscfgovr.tempdir, FEDIT_INF );
+    sprintf(szFileNameResultEd, "%s%s", syscfgovr.tempdir, RESULT_ED );
+    WFile::SetFilePermissions( szFileNameFEditInf, WFile::permReadWrite );
+    WFile::Remove(szFileNameFEditInf);
+    WFile::SetFilePermissions( szFileNameResultEd, WFile::permReadWrite );
+    WFile::Remove(szFileNameResultEd);
     fedit_data_rec fedit_data;
     fedit_data.tlen = 60;
     strcpy( fedit_data.ttl, pszTitle );
     fedit_data.anon = 0;
-    FILE *result = fsh_open(fn1, "wb");
-    if (result)
+    
+    WFile fileFEditInf( szFileNameFEditInf );
+    if ( fileFEditInf.Open( WFile::modeDefault|WFile::modeCreateFile|WFile::modeTruncate, WFile::shareDenyRead, WFile::permReadWrite ) )
     {
-        fsh_write(&fedit_data, sizeof(fedit_data), 1, result);
-        fsh_close(result);
+        fileFEditInf.Write( &fedit_data, sizeof( fedit_data ) );
+        fileFEditInf.Close();
     }
     bool bSaveMessage = external_edit( INPUT_MSG, syscfgovr.tempdir, GetSession()->thisuser.GetDefaultEditor() - 1,
                                        maxli, pszDestination, pszTitle, flags );
     if ( bSaveMessage )
     {
-        if ( ( result = fsh_open( fn2, "rt" ) ) != NULL )
+        if ( WFile::Exists(szFileNameResultEd ) )
         {
+            WTextFile file( szFileNameResultEd, "rt" );
             char szAnonString[ 81 ];
-            if ( fgets( szAnonString, 80, result ) )
+            if ( file.ReadLine( szAnonString, 80 ) )
             {
                 char *ss = strchr( szAnonString, '\n' );
                 if ( ss )
                 {
-                    *ss = 0;
+                    *ss = '\0';
                 }
                 setanon = atoi(szAnonString);
-                if (fgets(pszTitle, 80, result))
+                if (file.ReadLine(pszTitle, 80))
                 {
                     ss = strchr(pszTitle, '\n');
                     if (ss)
                     {
-                        *ss = 0;
+                        *ss = '\0';
                     }
                 }
             }
-            fsh_close( result );
+            file.Close();
         }
-        else if ( ( result = fsh_open( fn1, "rb" ) ) != NULL )
+        else if ( WFile::Exists( szFileNameFEditInf ) )
         {
-            if ( fsh_read( &fedit_data, sizeof( fedit_data ), 1, result ) == 1 )
+            WFile file( szFileNameFEditInf );
+            if ( file.Read( &fedit_data, sizeof( fedit_data ) ) )
             {
                 strcpy( pszTitle, fedit_data.ttl );
                 setanon = fedit_data.anon;
             }
-            fsh_close( result );
+            file.Close();
         }
     }
-    WFile::Remove( fn1 );
-    WFile::Remove( fn2 );
+    WFile::Remove( szFileNameFEditInf );
+    WFile::Remove( szFileNameResultEd );
     return bSaveMessage;
 }
 
@@ -822,17 +826,17 @@ void UpdateMessageBufferTagLine( char *pszMessageBuffer, long *plBufferLength, c
                 break;
             }
         }
-        FILE *result = fsh_open(szFileName, "rb");
-        if (result)
+        WTextFile file( szFileName, "rb" );
+        if ( file.IsOpen() )
         {
             int j = 0;
-            while (!feof(result))
+            while (!file.IsEndOfFile())
             {
                 char s[ 181 ];
                 s[0] = '\0';
                 char s1[ 181 ];
                 s1[0] = '\0';
-                fgets(s, 180, result);
+                file.ReadLine(s, 180);
                 if (strlen(s) > 1)
                 {
                     if (s[strlen(s) - 2] == RETURN)
@@ -858,7 +862,7 @@ void UpdateMessageBufferTagLine( char *pszMessageBuffer, long *plBufferLength, c
                     j++;
                 }
             }
-            fsh_close(result);
+            file.Close();
         }
     }
 }
@@ -868,26 +872,25 @@ void UpdateMessageBufferQuotesCtrlLines( char *pszMessageBuffer, long *plBufferL
 {
     char szQuotesFileName[ MAX_PATH ];
     sprintf( szQuotesFileName, "%s%s", syscfgovr.tempdir, QUOTES_TXT );
-    FILE *q_fp = fsh_open( szQuotesFileName, "rt" );
-    char q_txt[ 255 ];
-    if (q_fp)
+    WTextFile file( szQuotesFileName, "rt" );
+    if (file.IsOpen())
     {
-        while (fgets(q_txt, sizeof(q_txt) - 1, q_fp))
+        char szQuoteText[ 255 ];
+        while (file.ReadLine(szQuoteText, sizeof(szQuoteText) - 1))
         {
-            char *ss1 = strchr(q_txt, '\n');
+            char *ss1 = strchr(szQuoteText, '\n');
             if (ss1)
             {
                 *ss1 = '\0';
             }
-            if (strncmp(q_txt, "\004""0U", 3) == 0)
+            if (strncmp(szQuoteText, "\004""0U", 3) == 0)
             {
-                AddLineToMessageBuffer( pszMessageBuffer, q_txt, plBufferLength );
+                AddLineToMessageBuffer( pszMessageBuffer, szQuoteText, plBufferLength );
             }
         }
-        fsh_close(q_fp);
+        file.Close();
     }
 
-    // was q_txt but that could be bad, I think this was broken in 4.3x
     char szMsgInfFileName[ MAX_PATH ];
     sprintf( szMsgInfFileName, "%smsginf", syscfgovr.tempdir );
     copyfile( szQuotesFileName, szMsgInfFileName, false );

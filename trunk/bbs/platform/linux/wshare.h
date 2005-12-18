@@ -21,9 +21,6 @@
 #define __SHARE_H__
 
 FILE *fsh_open(const char *path, char *mode);
-void fsh_close(FILE *f);
-size_t fsh_read(void *ptr, size_t size, size_t n, FILE *stream);
-size_t fsh_write(const void *ptr, size_t size, size_t n, FILE *stream);
 
 
 #endif
