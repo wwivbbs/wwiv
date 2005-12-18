@@ -32,16 +32,16 @@ char *GetQuoteInitials();
 #define PFXCOL 2
 #define QUOTECOL 0
 
-#define WRTPFX {fprintf(fpFile,"\x3%c",PFXCOL+48);if (tf==1)\
-                cp=fsh_write(pfx,1,pfxlen-1,fpFile);\
-                else cp=fsh_write(pfx,1,pfxlen,fpFile);\
-                fprintf(fpFile,"\x3%c",cc);}
-#define NL {if (!cp) {fprintf(fpFile,"\x3%c",PFXCOL+48);\
-            fsh_write(pfx,1,pfxlen,fpFile);} if (ctlc) fsh_write("0",1,1,fpFile);\
-            fsh_write("\r\n",1,2,fpFile);cp=ns=ctlc=0;}
+#define WRTPFX {file.WriteFormatted("\x3%c",PFXCOL+48);if (tf==1)\
+                cp=file.WriteBinary(pfx,pfxlen-1);\
+                else cp=file.WriteBinary(pfx,pfxlen);\
+                file.WriteFormatted("\x3%c",cc);}
+#define NL {if (!cp) {file.WriteFormatted("\x3%c",PFXCOL+48);\
+            file.WriteBinary(pfx,pfxlen);} if (ctlc) file.WriteBinary("0",1);\
+            file.WriteBinary("\r\n",2);cp=ns=ctlc=0;}
 #define FLSH {if (ss1) {if (cp && (l3+cp>=linelen)) NL else if (ns)\
-              cp+=fsh_write(" ",1,1,fpFile);if (!cp) {if (ctld)\
-              fprintf(fpFile,"\x4%c",ctld); WRTPFX; } fsh_write(ss1,1,l2,fpFile);\
+              cp+=file.WriteBinary(" ",1);if (!cp) {if (ctld)\
+              file.WriteFormatted("\x4%c",ctld); WRTPFX; } file.WriteBinary(ss1,l2);\
               cp+=l3;ss1=NULL;l2=l3=0;ns=1;}}
 
 static int brtnm;
@@ -111,8 +111,7 @@ char *GetQuoteInitials()
 void grab_quotes(messagerec * m, const char *aux)
 {
     char *ss, *ss1, temp[255];
-    long l, l1, l2, l3;
-    FILE *fpFile;
+    long l1, l2, l3;
     char *pfx;
     int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
     int pfxlen;
@@ -145,21 +144,22 @@ void grab_quotes(messagerec * m, const char *aux)
         strcat(pfx, "> ");
         pfxlen = strlen(pfx);
 
-        ss = readfile(m, aux, &l);
+        long lMessageLength = 0;
+        ss = readfile(m, aux, &lMessageLength);
 
         if (ss)
         {
             quotes_nrm = ss;
-            quotes_nrm_l = l;
+            quotes_nrm_l = lMessageLength;
 
-            fpFile = fsh_open(szQuotesTextFileName, "wb");
-            if (fpFile)
+            WFile quotesTextFile( szQuotesTextFileName );
+            if ( quotesTextFile.Open( WFile::modeDefault|WFile::modeCreateFile|WFile::modeTruncate, WFile::shareDenyRead, WFile::permReadWrite ) )
             {
-                fsh_write(ss, 1, l, fpFile);
-                fsh_close(fpFile);
+                quotesTextFile.Write( ss, lMessageLength );
+                quotesTextFile.Close();
             }
-            fpFile = fsh_open(szQuotesIndexFileName, "wb");
-            if (fpFile)
+            WTextFile file( szQuotesIndexFileName, "wb" );
+            if ( file.IsOpen() )
             {
                 l3 = l2 = 0;
                 ss1 = NULL;
@@ -167,13 +167,13 @@ void grab_quotes(messagerec * m, const char *aux)
                 if ((WWIV_STRNICMP("internet", GetSession()->GetNetworkName(), 8) == 0) ||
                     (WWIV_STRNICMP("filenet", GetSession()->GetNetworkName(), 7) == 0))
                 {
-                        for (l1 = 0; l1 < l; l1++)
+                        for (l1 = 0; l1 < lMessageLength; l1++)
                         {
                             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
                                 (ss[l1 + 3] == 'M'))
                             {
                                     l1 += 3;
-                                    while ((ss[l1] != '\r') && (l1 < l))
+                                    while ((ss[l1] != '\r') && (l1 < lMessageLength))
                                     {
                                         temp[l3++] = ss[l1];
                                         l1++;
@@ -194,7 +194,7 @@ void grab_quotes(messagerec * m, const char *aux)
                                             }
                                         }
                                     }
-                                    l1 = l;
+                                    l1 = lMessageLength;
                                 }
                         }
                     }
@@ -202,23 +202,23 @@ void grab_quotes(messagerec * m, const char *aux)
                     ss1 = NULL;
                     if ( GetSession()->IsMessageThreadingEnabled() )
                     {
-                        for (l1 = 0; l1 < l; l1++)
+                        for (l1 = 0; l1 < lMessageLength; l1++)
                         {
                             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'P'))
                             {
                                 l1 += 4;
                                 GetSession()->threadID = "";
-                                while ((ss[l1] != '\r') && (l1 < l))
+                                while ((ss[l1] != '\r') && (l1 < lMessageLength))
                                 {
                                     sprintf(temp, "%c", ss[l1]);
                                     GetSession()->threadID += temp;
                                     l1++;
                                 }
-                                l1 = l;
+                                l1 = lMessageLength;
                             }
                         }
                     }
-                    for (l1 = 0; l1 < l; l1++)
+                    for (l1 = 0; l1 < lMessageLength; l1++)
                     {
                         if (ctld == -1)
                         {
@@ -274,12 +274,12 @@ void grab_quotes(messagerec * m, const char *aux)
 									{
 										if (ctld)
 										{
-											fprintf(fpFile, "\x04%c", ctld);
+                                            file.WriteFormatted( "\x04%c", ctld );
 										}
 										WRTPFX;
 									}
 									cp++;
-									fsh_write(" ", 1, 1, fpFile);
+                                    file.WriteBinary( " ", 1 );
 								}
 							}
 							break;
@@ -321,9 +321,9 @@ void grab_quotes(messagerec * m, const char *aux)
                     FLSH;
                     if (cp)
 					{
-                        fsh_write("\r\n", 1, 2, fpFile);
+                        file.WriteBinary( "\r\n", 2 );
 					}
-                    fsh_close(fpFile);
+                    file.Close();
 #ifdef SAVE_IN_MEM
 					WFile ff( szQuotesIndexFileName );
 					if ( ff.Open( WFile::modeBinary | WFile::modeReadOnly ) )
@@ -523,14 +523,14 @@ void get_quote(int fsed)
                     {
                         do {
                             l2++;
-                        } while ((quotes_ind[l2] != RETURN) && (l2 < quotes_ind_l));
+                        } while ( quotes_ind[l2] != RETURN && l2 < quotes_ind_l );
                     }
                     else
                     {
                         do
                         {
                             s[i3++] = quotes_ind[l2++];
-                        } while ((quotes_ind[l2] != RETURN) && (l2 < quotes_ind_l));
+                        } while ( quotes_ind[l2] != RETURN && l2 < quotes_ind_l );
                     }
                     if (quotes_ind[l2])
 					{
@@ -541,7 +541,7 @@ void get_quote(int fsed)
                     osan(s1, &abort, &next);
                     pla(s, &abort);
                 }
-            } while (l2 < quotes_ind_l);
+            } while ( l2 < quotes_ind_l );
             --i;
         }
         nl();
@@ -553,7 +553,7 @@ void get_quote(int fsed)
                 sprintf(s,"Quote from line 1-%d? (?=relist, Q=quit) ",i);
 				GetSession()->bout << "|#2" << s;
                 input(s, 3);
-            } while ((!s[0]) && (!hangup));
+            } while ( !s[0] && !hangup );
             if (s[0] == 'Q')
             {
                 rl = 0;

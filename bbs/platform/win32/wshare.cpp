@@ -17,11 +17,19 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "WTextFile.h"
+#include "WFile.h"
+#include <iostream>
+#include <fcntl.h>
+#include <cerrno>
+#include <sys/stat.h>
+#include <io.h>
+#include <cstdio>
+#include <stdlib.h>
 
-#define SHARE_LEVEL 10
-#define WAIT_TIME 10
-#define TRIES 100
+
+const int WTextFile::WAIT_TIME = 10;
+const int WTextFile::TRIES = 100;
 
 
 /**
@@ -33,26 +41,23 @@
  *	3 or greater shows file information BEFORE any attempt is made to open a file.
  */
 
-//
-// Local prototypes
-//
-FILE *fsh_open(const char *path, char *mode)
+bool WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 {
-	FILE *f;
+	FILE *hFile;
 
-	if ( GetSession()->GetGlobalDebugLevel() > 2 )
-	{
-		std::cout << "\rfsh_open " << path << ", access=" << mode << ".\r\n";
-	}
+	//if ( GetSession()->GetGlobalDebugLevel() > 2 )
+	//{
+	//	std::cout << "\rfsh_open " << pszFileName << ", access=" << pszFileMode << ".\r\n";
+	//}
 
 	int share = SH_DENYWR;
 	int md = 0;
-	if (strchr(mode, 'w') != NULL)
+	if (strchr(pszFileMode, 'w') != NULL)
 	{
 		share = SH_DENYRD;
 		md = O_RDWR | O_CREAT | O_TRUNC;
 	}
-	else if (strchr(mode, 'a') != NULL)
+	else if (strchr(pszFileMode, 'a') != NULL)
 	{
 		share = SH_DENYRD;
 		md = O_RDWR | O_CREAT;
@@ -62,95 +67,66 @@ FILE *fsh_open(const char *path, char *mode)
 		md = O_RDONLY;
 	}
 
-	if (strchr(mode, 'b') != NULL)
+	if (strchr(pszFileMode, 'b') != NULL)
 	{
 		md |= O_BINARY;
 	}
 
-	if (strchr(mode, '+') != NULL)
+	if (strchr(pszFileMode, '+') != NULL)
 	{
 		md &= ~O_RDONLY;
 		md |= O_RDWR;
 		share = SH_DENYRD;
 	}
 
-	int fd = _sopen(path, md, share, S_IREAD | S_IWRITE);
+	int fd = _sopen(pszFileName, md, share, S_IREAD | S_IWRITE);
 	if (fd < 0)
 	{
 		int count = 1;
-        if ( WFile::Exists( path ) )
+        if ( WFile::Exists( pszFileName ) )
 		{
-			WWIV_Delay(WAIT_TIME);
-			fd = _sopen(path, md, share, S_IREAD | S_IWRITE);
+            ::Sleep(WAIT_TIME);
+			fd = _sopen(pszFileName, md, share, S_IREAD | S_IWRITE);
 			while ( ( fd < 0 && errno == EACCES ) && count < TRIES )
 			{
-				WWIV_Delay(WAIT_TIME);
-				if ( GetSession()->GetGlobalDebugLevel() > 0 )
-				{
-					std::cout << "\rWaiting to access " << path << " " << TRIES - count << ".  \r";
-				}
+                ::Sleep(WAIT_TIME);
+				//if ( GetSession()->GetGlobalDebugLevel() > 0 )
+				//{
+				//	std::cout << "\rWaiting to access " << pszFileName << " " << TRIES - count << ".  \r";
+				//}
 				count++;
-				fd = _sopen( path, md, share, S_IREAD | S_IWRITE );
+				fd = _sopen( pszFileName, md, share, S_IREAD | S_IWRITE );
 			}
-			if ( fd < 0 && GetSession()->GetGlobalDebugLevel() > 0 )
-			{
-				std::cout << "\rThe file " << path << " is busy.  Try again later.\r\n";
-			}
+			//if ( fd < 0 && GetSession()->GetGlobalDebugLevel() > 0 )
+			//{
+			//	std::cout << "\rThe file " << pszFileName << " is busy.  Try again later.\r\n";
+			//}
 		}
 	}
 
 	if ( fd > 0 )
 	{
-		if ( strchr( mode, 'a' ) )
+		if ( strchr( pszFileMode, 'a' ) )
 		{
 			_lseek( fd, 0L, SEEK_END );
 		}
 
-		f = _fdopen( fd, mode );
-		if ( !f )
+		hFile = _fdopen( fd, pszFileMode );
+		if ( !hFile )
 		{
 			_close( fd );
 		}
 	}
 	else
 	{
-		f = 0;
+		hFile = NULL;
 	}
 
-	if ( GetSession()->GetGlobalDebugLevel() > 1 )
-	{
-		std::cout << "\rfsh_open " << path << ", access=" << mode << ".\r\n";
-	}
+	//if ( GetSession()->GetGlobalDebugLevel() > 1 )
+	//{
+	//	std::cout << "\rfsh_open " << pszFileName << ", access=" << pszFileMode << ".\r\n";
+	//}
 
-	return f;
+    m_hFile = hFile;
+    return ( m_hFile != NULL ) ? true : false;
 }
-
-
-void fsh_close(FILE * f)
-{
-	fclose( f );
-}
-
-
-size_t fsh_read(void *ptr, size_t size, size_t n, FILE * stream)
-{
-	if (stream == NULL)
-	{
-		sysoplog("\r\nAttempted to fread from closed file.\r\n");
-		return 0;
-	}
-	return fread(ptr, size, n, stream);
-}
-
-
-size_t fsh_write(const void *ptr, size_t size, size_t n, FILE * stream)
-{
-    if (stream == NULL)
-    {
-        sysoplog("\r\nAttempted to fwrite to closed file.\r\n");
-        return 0;
-    }
-    return fwrite(ptr, size, n, stream);
-}
-
-

@@ -46,6 +46,7 @@ public:
     bool IsEndOfFile() { return feof(m_hFile) ? true : false; }
     int Write( const char *pszText ) { return fputs( pszText, m_hFile ); }
     int WriteFormatted( const char *pszFormatText, ... );
+    int WriteBinary( const void *pBuffer, size_t nSize ) { return fwrite(pBuffer, nSize, 1, m_hFile ); }
     bool ReadLine( char *pszBuffer, int nBufferSize ) { return (fgets(pszBuffer, nBufferSize, m_hFile) != NULL) ? true : false; }
     bool ReadLine( std::string &buffer );
     long GetPosition() { return ftell(m_hFile); }
@@ -61,6 +62,10 @@ private:
     char    m_szFileName[ MAX_PATH + 1 ];
     char    m_szFileMode[ 10 ];
     FILE*   m_hFile;
+    bool OpenImpl( const char* pszFileName, const char* pszFileMode );
+    static const int TRIES;
+    static const int WAIT_TIME;
+
 };
 
 

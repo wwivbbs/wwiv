@@ -73,6 +73,8 @@ Rushfan - Started making utility objects not depend on so much of the BBS so tha
           we will have classes for messagebase manipulation available from outside of WWIV.
 Rushfan - Some more const-correctness in the transfer code to make life easier in other places
 Rushfan - Removed almost all usages of status
+Rushfan - fsh_open was moved into WTextFile (WTextFile::OpenImpl).
+Rushfan - last usages of fsh_XXXX is migrated to WTextFile
 
 ==============================================================================
 

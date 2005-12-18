@@ -16,16 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "WTextFile.h"
 
 
-#include "wwiv.h"
 #include <sys/file.h>
 
-
-#define SHARE_LEVEL 10
-#define WAIT_TIME 10
-#define TRIES 100
-
+const int WTextFile::WAIT_TIMEIT_TIME = 10;
+const int WTextFile::TRIES = 100;
 
 /*
  * Debug Levels:
@@ -38,7 +35,7 @@
  *
  */
 
-FILE *fsh_open(const char *path, char *mode)
+bool WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 {
   	FILE *f = fopen(path, mode);
 
@@ -47,37 +44,7 @@ FILE *fsh_open(const char *path, char *mode)
 		flock(fileno(f), (strpbrk(mode, "wa+")) ? LOCK_EX : LOCK_SH);
 	}
 
-	return f;
-}
-
-
-void fsh_close(FILE *f)
-{
-	if (f != NULL)
-	{
-		flock(fileno(f), LOCK_UN);
-		fclose(f);
-	}
-}
-
-size_t fsh_read(void *ptr, size_t size, size_t n, FILE *stream)
-{
-	if (stream == NULL)
-	{
-		sysoplog("\r\nAttempted to fread from closed file.\r\n");
-		return 0;
-	}
-	return(fread(ptr, size, n, stream));
-}
-
-
-size_t fsh_write(const void *ptr, size_t size, size_t n, FILE *stream)
-{
-	if (stream == NULL)
-	{
-		sysoplog("\r\nAttempted to fwrite to closed file.\r\n");
-		return 0;
-	}
-	return(fwrite(ptr, size, n, stream));
+    m_hFile = f;
+    return ( m_hFile != null ) ? true : false;
 }
 
