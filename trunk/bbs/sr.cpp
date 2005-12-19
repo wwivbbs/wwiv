@@ -74,7 +74,7 @@ int extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending 
 
     if (bSending)
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "-=> Beginning file transmission, Ctrl+X to abort.\r\n";
         if (nProtocolNum < 0)
         {
@@ -87,7 +87,7 @@ int extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending 
     }
     else
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "-=> Ready to receive, Ctrl+X to abort.\r\n";
         if (nProtocolNum < 0)
         {
@@ -119,7 +119,7 @@ int extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending 
     if (s[0])
     {
         GetApplication()->GetLocalIO()->set_protect( 0 );
-        sprintf( s2, "%s is currently online at %u bps", GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ), modem_speed );
+        sprintf( s2, "%s is currently online at %u bps", GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ), modem_speed );
         GetApplication()->GetLocalIO()->LocalPuts(s2);
         GetApplication()->GetLocalIO()->LocalPuts("\r\n\r\n");
         GetApplication()->GetLocalIO()->LocalPuts(s);
@@ -127,12 +127,12 @@ int extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending 
         if (incom)
         {
             int nRetCode = ExecuteExternalProgram(s, GetApplication()->GetSpawnOptions( SPWANOPT_PROT_SINGLE ) );
-            GetApplication()->GetLocalIO()->UpdateTopScreen();
+            GetApplication()->UpdateTopScreen();
             return nRetCode;
         }
         else
         {
-            GetApplication()->GetLocalIO()->UpdateTopScreen();
+            GetApplication()->UpdateTopScreen();
             return -5;
         }
     }
@@ -312,17 +312,17 @@ int get_protocol(xfertype xt)
     char s[81], s1[81], oks[81], ch, oks1[81], *ss, ch1, fl[80];
     int prot;
 
-    if ( ok_prot( GetSession()->thisuser.GetDefaultProtocol(), xt ) )
+    if ( ok_prot( GetSession()->GetCurrentUser()->GetDefaultProtocol(), xt ) )
     {
-        prot = GetSession()->thisuser.GetDefaultProtocol();
+        prot = GetSession()->GetCurrentUser()->GetDefaultProtocol();
     }
     else
     {
         prot = 0;
     }
 
-    unsigned char cyColorSave = GetSession()->thisuser.GetColor( 8 );
-    GetSession()->thisuser.SetColor( 8, 1 );
+    unsigned char cyColorSave = GetSession()->GetCurrentUser()->GetColor( 8 );
+    GetSession()->GetCurrentUser()->SetColor( 8, 1 );
     int oks1p = 0;
     oks1[0] = '\0';
     strcpy( oks, "Q?0" );
@@ -371,7 +371,7 @@ int get_protocol(xfertype xt)
 
     if ( only == 0 && xt != xf_none )
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "No protocols available for that.\r\n\n";
         return -1;
     }
@@ -389,7 +389,7 @@ int get_protocol(xfertype xt)
     }
     if (!prot)
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#3Available Protocols :|#1\r\n\n";
         GetSession()->bout << "|#8[|#7Q|#8] |#1Abort Transfer(s)\r\n";
         GetSession()->bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
@@ -400,26 +400,26 @@ int get_protocol(xfertype xt)
                 ch1 = upcase(*prot_name(j));
                 if (fl[j] == 0)
                 {
-                    bprintf("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
+                    GetSession()->bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
                         prot_name(j));
                 }
                 else
                 {
-                    bprintf("|#8[|#7%c|#8] |#1%s\r\n", *prot_name(j), prot_name(j));
+                    GetSession()->bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", *prot_name(j), prot_name(j));
                 }
             }
         }
-        nl();
+        GetSession()->bout.NewLine();
     }
     bool done = false;
     do
     {
-        nl();
+        GetSession()->bout.NewLine();
 		GetSession()->bout << "|#7" << s;
         ch = onek( s1 );
         if ( ch == '?' )
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#3Available Protocols :|#1\r\n\n";
             GetSession()->bout << "|#8[|#7Q|#8] |#1Abort Transfer(s)\r\n";
             GetSession()->bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
@@ -430,23 +430,23 @@ int get_protocol(xfertype xt)
                     ch1 = upcase( *prot_name( j ) );
                     if ( fl[ j ] == 0 )
                     {
-                        bprintf( "|#8[|#7%c|#8] |#1%s\r\n", ( j < 10 ) ? ( j + '0' ) : ( j + BASE_CHAR - 10 ),
+                        GetSession()->bout.WriteFormatted( "|#8[|#7%c|#8] |#1%s\r\n", ( j < 10 ) ? ( j + '0' ) : ( j + BASE_CHAR - 10 ),
                                  prot_name( j ) );
                     }
                     else
                     {
-                        bprintf( "|#8[|#7%c|#8] |#1%s\r\n", *prot_name( j ), prot_name( j ) );
+                        GetSession()->bout.WriteFormatted( "|#8[|#7%c|#8] |#1%s\r\n", *prot_name( j ), prot_name( j ) );
                     }
                 }
             }
-            nl();
+            GetSession()->bout.NewLine();
         }
         else
         {
             done = true;
         }
     } while ( !done && !hangup );
-    GetSession()->thisuser.SetColor( 8, cyColorSave );
+    GetSession()->GetCurrentUser()->SetColor( 8, cyColorSave );
     if ( ch == RETURN )
     {
         return prot;
@@ -455,7 +455,7 @@ int get_protocol(xfertype xt)
     {
         if ( ch != '0' )
         {
-            GetSession()->thisuser.SetDefaultProtocol( ch - '0' );
+            GetSession()->GetCurrentUser()->SetDefaultProtocol( ch - '0' );
         }
         return ch - '0';
     }
@@ -468,7 +468,7 @@ int get_protocol(xfertype xt)
         else
         {
             i1 = ch - BASE_CHAR + 10;
-            GetSession()->thisuser.SetDefaultProtocol( i1 );
+            GetSession()->GetCurrentUser()->SetDefaultProtocol( i1 );
             if ( i1 < GetSession()->GetNumberOfExternalProtocols() + WWIV_NUM_INTERNAL_PROTOCOLS )
             {
                 return ch - BASE_CHAR + 10;
@@ -520,13 +520,13 @@ void ascii_send(const char *pszFileName, bool *sent, double *percent)
         else
         {
             *sent = false;
-            GetSession()->thisuser.SetDownloadK( GetSession()->thisuser.GetDownloadK() + bytes_to_k( lTotalBytes ) );
+            GetSession()->GetCurrentUser()->SetDownloadK( GetSession()->GetCurrentUser()->GetDownloadK() + bytes_to_k( lTotalBytes ) );
         }
         *percent = static_cast<double>( lTotalBytes ) / static_cast<double>( lFileSize );
     }
     else
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "File not found.\r\n\n";
         *sent = false;
         *percent = 0.0;
@@ -614,7 +614,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const 
         *sent = false;
         if (nProtocol > 0)
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "That file is already in the batch queue.\r\n\n";
         }
         else if (nProtocol == -1)
@@ -646,7 +646,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const 
             ok = true;
             if (GetSession()->numbatch >= GetSession()->max_batch)
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "No room left in batch queue.\r\n\n";
                 *sent = false;
                 *abort = false;
@@ -663,7 +663,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const 
                 }
                 if (nsl() <= (batchtime + t))
                 {
-                    nl();
+                    GetSession()->bout.NewLine();
                     GetSession()->bout << "Not enough time left in queue.\r\n\n";
                     *sent = false;
                     *abort = false;
@@ -672,7 +672,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const 
                 {
                     if (dn == -1)
                     {
-                        nl();
+                        GetSession()->bout.NewLine();
                         GetSession()->bout << "Can't add temporary file to batch queue.\r\n\n";
                         *sent = false;
                         *abort = false;
@@ -688,7 +688,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const 
 
                         GetSession()->numbatch++;
                         ++GetSession()->numbatchdl;
-                        nl( 2 );
+                        GetSession()->bout.NewLine( 2 );
                         GetSession()->bout << "File added to batch queue.\r\n";
 						GetSession()->bout << "Batch: Files - " << GetSession()->numbatch <<
 							           "  Time - " << ctim( batchtime ) << "\r\n\n";
@@ -750,7 +750,7 @@ void receive_file(const char *pszFileName, int *received, char *ft, const char *
         {
             if (GetSession()->numbatch >= GetSession()->max_batch)
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "No room left in batch queue.\r\n\n";
                 *received = 0;
             }
@@ -764,14 +764,14 @@ void receive_file(const char *pszFileName, int *received, char *ft, const char *
                 batch[GetSession()->numbatch].len = 0;
 
                 GetSession()->numbatch++;
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "File added to batch queue.\r\n\n";
                 GetSession()->bout << "Batch upload: files - " << ( GetSession()->numbatch - GetSession()->numbatchdl ) << "\r\n\n";
             }
         }
         else
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "Can't batch upload that.\r\n\n";
         }
         break;

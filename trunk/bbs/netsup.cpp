@@ -302,7 +302,7 @@ int cleanup_net1()
                         GetApplication()->GetStatusManager()->RefreshStatusCache();
                         GetSession()->SetCurrentReadMessageArea( -1 );
                         GetSession()->ReadCurrentUser( 1 );
-                        fwaiting = GetSession()->thisuser.GetNumMailWaiting();
+                        fwaiting = GetSession()->GetCurrentUser()->GetNumMailWaiting();
                     }
                     if ( check_bbsdata() )
                     {
@@ -406,10 +406,10 @@ void do_callout( int sn )
 				}
 				else
 				{
-					nl();
+					GetSession()->bout.NewLine();
 				}
 				GetSession()->bout << "|#7Commandline is: |#2" << s << wwiv::endl;
-				ansic( 7 );
+				GetSession()->bout.Color( 7 );
 				GetSession()->bout << charstr( 80, 205 );
 #ifndef _UNIX
 				holdphone( true );
@@ -817,7 +817,7 @@ void print_pending_list()
 	time(&t);
 	struct tm * pTm = localtime(&t);
 
-	long ss = GetSession()->thisuser.GetStatus();
+	long ss = GetSession()->GetCurrentUser()->GetStatus();
 
 	int nDow = dow();
 
@@ -828,9 +828,9 @@ void print_pending_list()
 
 	time(&tCurrentTime);
 
-	nl( 2 );
+	GetSession()->bout.NewLine( 2 );
 	GetSession()->bout << "                           |#3ฤ> |#9Network Status |#3<ฤ\r\n";
-	nl();
+	GetSession()->bout.NewLine();
 
 	GetSession()->bout << "|#7ษอออออัออออออออออัอออออออัอออออออออัอออออออออัออออออัอออออัอออออออออออัอออออป\r\n";
 	GetSession()->bout << "|#7บ |#1Ok? |#7ณ |#1Network  |#7ณ |#1 Node |#7ณ  |#1 Sent  |#7ณ|#1Received |#7ณ|#1Ready |#7ณ|#1Fails|#7ณ  |#1Elapsed  |#7ณ|#1/HrWt|#7บ\r\n";
@@ -935,7 +935,7 @@ void print_pending_list()
 					i3 = 0;
                 }
 
-				bprintf( "|#7บ %-3s |#7ณ |#2%-8.8s |#7ณ |#2%5u |#7ณ|#2%8s |#7ณ|#2%8s |#7ณ|#2%5s |#7ณ|#2%4d |#7ณ|#2%13.13s |#7ณ|#2%4d |#7บ\r\n",
+				GetSession()->bout.WriteFormatted( "|#7บ %-3s |#7ณ |#2%-8.8s |#7ณ |#2%5u |#7ณ|#2%8s |#7ณ|#2%8s |#7ณ|#2%5s |#7ณ|#2%4d |#7ณ|#2%13.13s |#7ณ|#2%4d |#7บ\r\n",
 					     s2,
 					     GetSession()->GetNetworkName(),
 					     ncn[i2].systemnumber,
@@ -945,7 +945,7 @@ void print_pending_list()
 					     ncn[i2].numfails,
 					     s1,
 					     i3 );
-				if ( !GetSession()->thisuser.hasPause() && ( ( lines++ ) == 20 ) )
+				if ( !GetSession()->GetCurrentUser()->hasPause() && ( ( lines++ ) == 20 ) )
 				{
 					pausescr();
 					lines = 0;
@@ -969,7 +969,7 @@ void print_pending_list()
             long lFileSize = deadNetFile.GetLength();
 			deadNetFile.Close();
             sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
-			bprintf( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6DEAD! |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", GetSession()->GetNetworkName(), s3);
+			GetSession()->bout.WriteFormatted( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6DEAD! |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", GetSession()->GetNetworkName(), s3);
 		}
 	}
 
@@ -989,13 +989,13 @@ void print_pending_list()
             checkNetFile.Close();
             sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
 			strcat(s3, "k");
-			bprintf( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6CHECK |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", GetSession()->GetNetworkName(), s3);
+			GetSession()->bout.WriteFormatted( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6CHECK |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", GetSession()->GetNetworkName(), s3);
 		}
 	}
 
 	GetSession()->bout << "|#7ศอออออฯออออออออออฯอออออออฯอออออออออฯอออออออออฯออออออฯอออออฯอออออออออออฯอออออผ\r\n";
-	nl();
-	GetSession()->thisuser.SetStatus( ss );
+	GetSession()->bout.NewLine();
+	GetSession()->GetCurrentUser()->SetStatus( ss );
 	if ( !GetSession()->IsUserOnline() && lines_listed )
 	{
 		pausescr();
@@ -1596,7 +1596,7 @@ int ansicallout()
     }
     else
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#2Which system: ";
         char szSystemNumber[ 11 ];
         input( szSystemNumber, 5, true );
@@ -1697,7 +1697,7 @@ void force_callout(int dw)
         }
         else
         {
-            nl();
+            GetSession()->bout.NewLine();
             for ( i = 0; i < nv; i++ )
             {
                 set_net_num(ss[i]);
@@ -1730,7 +1730,7 @@ void force_callout(int dw)
 
         if ( !ok )
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout <<  "|#5Are you sure? ";
             if ( yesno() )
             {
@@ -1749,7 +1749,7 @@ void force_callout(int dw)
                 {
                     if ( dw )
                     {
-                        nl();
+                        GetSession()->bout.NewLine();
                         GetSession()->bout << "|#2Num Retries : ";
                         input( s, 5, true );
                         nr = atoi( s );

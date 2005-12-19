@@ -76,7 +76,7 @@ void kill_old_email()
 			bool done1 = false;
 			do
 			{
-				nl();
+				GetSession()->bout.NewLine();
                 GetSession()->bout << "|#1  To|#7: |#" << GetSession()->GetMessageColor();
 
 				if ( m.tosys == 0 )
@@ -88,13 +88,13 @@ void kill_old_email()
 						tempName = ">UNKNOWN<";
 					}
 					GetSession()->bout << tempName;
-					nl();
+					GetSession()->bout.NewLine();
 				}
 				else
 				{
 					GetSession()->bout << "#" << m.tosys << " @" << m.tosys << wwiv::endl;
 				}
-                bprintf( "|#1Subj|#7: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title );
+                GetSession()->bout.WriteFormatted( "|#1Subj|#7: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title );
 				time_t lCurrentTime;
 				time( &lCurrentTime );
 				int nDaysAgo = static_cast<int>( ( lCurrentTime - m.daten ) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT );
@@ -129,7 +129,7 @@ void kill_old_email()
 						GetSession()->bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
 					}
 				}
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#9(R)ead, (D)elete, (N)ext, (Q)uit : ";
 				char ch = onek("QRDN");
 				switch (ch)
@@ -187,7 +187,7 @@ void kill_old_email()
 									fileAttach.Close();
 								}
 							}
-							nl();
+							GetSession()->bout.NewLine();
 							if (found)
 							{
 								GetSession()->bout << "Mail and file deleted.\r\n\n";
@@ -208,8 +208,8 @@ void kill_old_email()
 					break;
 				case 'R':
 					{
-						nl( 2 );
-                        bprintf("|#1Subj|#7: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
+						GetSession()->bout.NewLine( 2 );
+                        GetSession()->bout.WriteFormatted("|#1Subj|#7: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
 						bool next;
 						read_message1(&m.msg, static_cast<char>( m.anony & 0x0f ), false, &next, "email", 0, 0);
 					}
@@ -251,14 +251,14 @@ void list_users( int mode )
 
     int snum = GetSession()->usernum;
 
-    nl();
+    GetSession()->bout.NewLine();
     GetSession()->bout << "|#5Sort by user number? ";
     bool bSortByUserNumber = yesno();
-    nl();
+    GetSession()->bout.NewLine();
     GetSession()->bout << "|#5Search for a name or city? ";
     if (yesno())
 	{
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#5Enter text to find: ";
         input( szFindText, 10, true );
     }
@@ -318,11 +318,11 @@ void list_users( int mode )
         if ( p == 0 && found )
 		{
             ClearScreen();
-            char szTitleLine[ 255 ];
+            char szTitleLine[255];
             sprintf( szTitleLine, "[ %s User Listing ]", syscfg.systemname );
             if ( okansi() )
 			{
-                DisplayLiteBar( szTitleLine );
+                GetSession()->bout.DisplayLiteBar( szTitleLine );
 			}
             else
 			{
@@ -331,16 +331,16 @@ void list_users( int mode )
 				{
                     bputch(45);
 				}
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#5" << szTitleLine;
-                nl();
+                GetSession()->bout.NewLine();
                 for (i1 = 0; i1 < 78; i1++)
 				{
                     bputch(45);
 				}
-                nl();
+                GetSession()->bout.NewLine();
             }
-            ansic( FRAME_COLOR );
+            GetSession()->bout.Color( FRAME_COLOR );
             pla("嬪様様用様様様様様様様様様様用様様様様様様様様様様様様用様様様様様用様様様様邑", &abort);
             found = false;
         }
@@ -399,7 +399,7 @@ void list_users( int mode )
         if ( ok )
 		{
             found = true;
-            BackLine();
+            GetSession()->bout.BackLine();
             ClearEOL();
             if ( user.GetLastBaudRate() > 32767 || user.GetLastBaudRate() < 300 )
 			{
@@ -433,11 +433,11 @@ void list_users( int mode )
                 numscn++;
 			}
             ++p;
-            if (p == (GetSession()->thisuser.GetScreenLines() - 6))
+            if (p == (GetSession()->GetCurrentUser()->GetScreenLines() - 6))
 			{
-                BackLine();
+                GetSession()->bout.BackLine();
                 ClearEOL();
-                ansic( FRAME_COLOR );
+                GetSession()->bout.Color( FRAME_COLOR );
                 pla("塒様様溶様様様様様様様様様様溶様様様様様様様様様様様様溶様様様様様溶様様様様余", &abort);
                 GetSession()->bout << "|#1[Enter] to continue or Q=Quit : ";
                 char ch = onek("Q\r ");
@@ -459,15 +459,15 @@ void list_users( int mode )
             ncnm++;
 		}
   }
-  BackLine();
+  GetSession()->bout.BackLine();
   ClearEOL();
-  ansic( FRAME_COLOR );
+  GetSession()->bout.Color( FRAME_COLOR );
   pla("塒様様溶様様様様様様様様様様溶様様様様様様様様様様様様溶様様様様様溶様様様様余", &abort);
   if (!abort)
   {
-      nl( 2 );
+      GetSession()->bout.NewLine( 2 );
       GetSession()->bout << "|#1" << num << " user(s) have access and " << numscn << " user(s) scan this subboard.";
-      nl();
+      GetSession()->bout.NewLine();
       pausescr();
   }
   GetSession()->ReadCurrentUser( snum );
@@ -483,15 +483,15 @@ void time_bank()
     int i;
     double nsln;
 
-    nl();
-    if ( GetSession()->thisuser.GetSl() <= syscfg.newusersl )
+    GetSession()->bout.NewLine();
+    if ( GetSession()->GetCurrentUser()->GetSl() <= syscfg.newusersl )
     {
         GetSession()->bout << "|#6You must be validated to access the timebank.\r\n";
         return;
     }
-    if ( GetSession()->thisuser.GetTimeBankMinutes() > getslrec( GetSession()->GetEffectiveSl() ).time_per_logon )
+    if ( GetSession()->GetCurrentUser()->GetTimeBankMinutes() > getslrec( GetSession()->GetEffectiveSl() ).time_per_logon )
 	{
-        GetSession()->thisuser.SetTimeBankMinutes( getslrec( GetSession()->GetEffectiveSl() ).time_per_logon );
+        GetSession()->GetCurrentUser()->SetTimeBankMinutes( getslrec( GetSession()->GetEffectiveSl() ).time_per_logon );
 	}
 
     if ( okansi() )
@@ -508,43 +508,43 @@ void time_bank()
     {
         ClearScreen();
         GetSession()->bout << "|#5WWIV TimeBank\r\n";
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#2D|#7)|#1eposit Time\r\n";
         GetSession()->bout << "|#2W|#7)|#1ithdraw Time\r\n";
         GetSession()->bout << "|#2Q|#7)|#1uit\r\n";
-        nl();
-		GetSession()->bout << "|#7Balance: |#1" << GetSession()->thisuser.GetTimeBankMinutes() << "|#7 minutes\r\n";
+        GetSession()->bout.NewLine();
+		GetSession()->bout << "|#7Balance: |#1" << GetSession()->GetCurrentUser()->GetTimeBankMinutes() << "|#7 minutes\r\n";
 		GetSession()->bout << "|#7Time Left: |#1" << static_cast<int>( nsl() / 60 ) << "|#7 minutes\r\n";
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) [|#2Time Bank|#7] Enter Command: |#2";
         mpl( 1 );
         char c = onek("QDW");
         switch (c)
 		{
         case 'D':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#1Deposit how many minutes: ";
             input( s, 3, true );
             i = atoi(s);
             if (i > 0)
 			{
                 nsln = nsl();
-                if ((i + GetSession()->thisuser.GetTimeBankMinutes() ) > getslrec( GetSession()->GetEffectiveSl() ).time_per_logon)
+                if ((i + GetSession()->GetCurrentUser()->GetTimeBankMinutes() ) > getslrec( GetSession()->GetEffectiveSl() ).time_per_logon)
 				{
-                    i = getslrec( GetSession()->GetEffectiveSl() ).time_per_logon - GetSession()->thisuser.GetTimeBankMinutes();
+                    i = getslrec( GetSession()->GetEffectiveSl() ).time_per_logon - GetSession()->GetCurrentUser()->GetTimeBankMinutes();
 				}
                 if (i > (nsln / SECONDS_PER_MINUTE_FLOAT))
 				{
                     i = static_cast<int>( nsln / SECONDS_PER_MINUTE_FLOAT );
 				}
-                GetSession()->thisuser.SetTimeBankMinutes( GetSession()->thisuser.GetTimeBankMinutes() + static_cast<unsigned short>( i ) );
-                GetSession()->thisuser.SetExtraTime( GetSession()->thisuser.GetExtraTime() - static_cast<float>( i * SECONDS_PER_MINUTE_FLOAT ) );
+                GetSession()->GetCurrentUser()->SetTimeBankMinutes( GetSession()->GetCurrentUser()->GetTimeBankMinutes() + static_cast<unsigned short>( i ) );
+                GetSession()->GetCurrentUser()->SetExtraTime( GetSession()->GetCurrentUser()->GetExtraTime() - static_cast<float>( i * SECONDS_PER_MINUTE_FLOAT ) );
                 GetApplication()->GetLocalIO()->tleft( false );
             }
             break;
         case 'W':
-            nl();
-            if ( GetSession()->thisuser.GetTimeBankMinutes() == 0 )
+            GetSession()->bout.NewLine();
+            if ( GetSession()->GetCurrentUser()->GetTimeBankMinutes() == 0 )
 			{
                 break;
 			}
@@ -554,12 +554,12 @@ void time_bank()
             if (i > 0)
 			{
                 nsln = nsl();
-                if ( i > GetSession()->thisuser.GetTimeBankMinutes() )
+                if ( i > GetSession()->GetCurrentUser()->GetTimeBankMinutes() )
 				{
-                    i = GetSession()->thisuser.GetTimeBankMinutes();
+                    i = GetSession()->GetCurrentUser()->GetTimeBankMinutes();
 				}
-                GetSession()->thisuser.SetTimeBankMinutes( GetSession()->thisuser.GetTimeBankMinutes() - static_cast<unsigned short>( i ) );
-                GetSession()->thisuser.SetExtraTime( GetSession()->thisuser.GetExtraTime() + static_cast<float>( i * SECONDS_PER_MINUTE_FLOAT ) );
+                GetSession()->GetCurrentUser()->SetTimeBankMinutes( GetSession()->GetCurrentUser()->GetTimeBankMinutes() - static_cast<unsigned short>( i ) );
+                GetSession()->GetCurrentUser()->SetExtraTime( GetSession()->GetCurrentUser()->GetExtraTime() + static_cast<float>( i * SECONDS_PER_MINUTE_FLOAT ) );
                 GetApplication()->GetLocalIO()->tleft( false );
             }
             break;
@@ -588,7 +588,7 @@ int getnetnum( const char *pszNetworkName )
 void uudecode( const char *pszInputFileName, const char *pszOutputFileName )
 {
     GetSession()->bout << "|#2Now UUDECODING " << pszInputFileName;
-    nl();
+    GetSession()->bout.NewLine();
 
     char szCmdLine[ MAX_PATH ];
     sprintf( szCmdLine, "UUDECODE %s %s", pszInputFileName, pszOutputFileName );
@@ -602,14 +602,14 @@ void Packers()
     bool done = false;
     do
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#1Message Packet Options:\r\n";
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#7[|#21|#7] |#1QWK Format Packet\r\n";
         GetSession()->bout << "|#7[|#22|#7] |#1Zipped ASCII Text\r\n";
         GetSession()->bout << "|#7[|#23|#7] |#1Configure Sub Scan\r\n";
         GetSession()->bout << "|#7[|#2Q|#7] |#1Quit back to BBS!\r\n";
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#5Choice : ";
         char ch = onek("1234Q\r ");
         switch (ch)

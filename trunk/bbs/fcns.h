@@ -141,6 +141,8 @@ char bgetch();
 // File: bputch.cpp
 
 int  bputch( char c, bool bUseInternalBuffer = false );
+void FlushOutComChBuffer();
+void rputch(char ch, bool bUseInternalBuffer = false);
 
 
 // File: callback.cpp
@@ -179,16 +181,13 @@ void buildcolorfile();
 
 // File: com.cpp
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc);
-void rputch(char ch, bool bUseInternalBuffer = false);
 char rpeek_wfconly();
 char bgetchraw();
 bool bkbhitraw();
 void dump();
 bool CheckForHangup();
 void makeansi( int attr, char *pszOutBuffer, bool forceit);
-void nl(int nNumLines = 1);
 void BackSpace();
-void setc( int nColor );
 void resetnsp();
 bool bkbhit();
 void mpl( int nNumberOfChars );
@@ -196,26 +195,9 @@ char getkey();
 bool yesno();
 bool noyes();
 char ynq();
-void ansic(int wwivColor);
 char onek( const char *pszAllowableChars, bool bAutoMpl = false );
-void reset_colors();
-void goxy(int x, int y);
 char onek1(const char *pszAllowableChars);
-void DisplayLiteBar(const char *fmt,...);
-void BackLine();
-void FlushOutComChBuffer();
-int  bputs(const char *pszText );
-int  bprintf(const char *fmt,...);
-namespace wwiv
-{
-    template<class charT, class traits>
-    std::basic_ostream<charT, traits>&
-    endl (std::basic_ostream<charT, traits>& strm )
-    {
-        strm.write( "\r\n", 2 );
-        return strm;
-    }
-}
+
 
 
 // File: conf.cpp
@@ -268,7 +250,7 @@ void set_net_num( int nNetworkNumber );
 
 // File: crc.cpp
 
-unsigned long int crc32buf(const char *buf, size_t len);
+unsigned long int crc32buf(const char *pBuffer, size_t nLength);
 
 
 // File: datetime.cpp
@@ -361,8 +343,8 @@ int  ExecuteExternalProgram( const char *pszCommandLine, int nFlags );
 
 // File: extract.cpp
 
-void extract_mod(const char *b, long len, time_t tDateTime);
-void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime);
+void extract_mod(const char *b, long nLength, time_t tDateTime);
+void extract_out(char *b, long nLength, const char *pszTitle, time_t tDateTime);
 bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDescription);
 
 
@@ -408,16 +390,16 @@ void inmsg( messagerec * pMessageRecord, char *pszTitle, int *anony, bool needti
 
 // File: input.cpp
 
-void input1( char *pszOutText, int maxlen, int lc, bool crend, bool bAutoMpl = false );
-void input1( std::string &strOutText, int maxlen, int lc, bool crend, bool bAutoMpl = false );
-void input( char *pszOutText, int len, bool bAutoMpl = false );
-void input( std::string &strOutText, int len, bool bAutoMpl = false );
-void inputl( char *pszOutText, int len, bool bAutoMpl = false);
-void inputl( std::string &strOutText, int len, bool bAutoMpl = false);
-int  Input1( char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, int mode );
-int  Input1( std::string &strOutText, const char *pszOrigText, int maxlen, bool bInsert, int mode );
-void input_password( const char *pszPromptText, char *pszOutPassword, int len );
-void input_password( const char *pszPromptText, std::string &strOutPassword, int len );
+void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false );
+void input1( std::string &strOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false );
+void input( char *pszOutText, int nMaxLength, bool bAutoMpl = false );
+void input( std::string &strOutText, int nMaxLength, bool bAutoMpl = false );
+void inputl( char *pszOutText, int nMaxLength, bool bAutoMpl = false);
+void inputl( std::string &strOutText, int nMaxLength, bool bAutoMpl = false);
+int  Input1( char *pszOutText, const char *pszOrigText, int nMaxLength, bool bInsert, int mode );
+int  Input1( std::string &strOutText, const char *pszOrigText, int nMaxLength, bool bInsert, int mode );
+void input_password( const char *pszPromptText, char *pszOutPassword, int nMaxLength );
+void input_password( const char *pszPromptText, std::string &strOutPassword, int nMaxLength );
 
 // File: inetmsg.cpp
 
@@ -861,6 +843,11 @@ void rsm( int nUserNum, WUser * pUser, bool bAskToSaveMsgs );
 void ssm( int nUserNum, int nSystemNum, const char *pszFormat, ... );
 
 
+// File: showfiles.cpp
+
+void show_files( const char *pszFileName, const char *pszDirectoryName );
+
+
 // File: SmallRecord.cpp
 
 void InsertSmallRecord(int nUserNumber, const char *name);
@@ -959,7 +946,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards);
 
 void RequestChat();
 void select_chat_name(char *pszSysopName);
-void two_way_chat(char *pszRollover, int maxlen, bool crend, char *pszSysopName);
+void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopName);
 void chat1(char *pszChatLine, bool two_way);
 
 
@@ -1032,7 +1019,6 @@ void preload_subs();
 char *get_wildlist(char *pszFileMask);
 int side_menu(int *menu_pos, bool redraw, char *menu_items[], int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);
-void shut_down( int nShutDownStatus );
 void WWIV_SetFileTime(const char* pszFileName, const time_t tTime);
 bool okfsed();
 char* W_DateString(time_t tDateTime, char* mode , char* delim);

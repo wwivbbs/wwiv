@@ -127,7 +127,7 @@ unsigned char WBbsApp::stryn2tf(const char *s)
 // end callback addition
 
 
-#define OFFOF(x) ( reinterpret_cast<long>( &GetSession()->thisuser.data.x ) - reinterpret_cast<long>( &GetSession()->thisuser.data ) )
+#define OFFOF(x) ( reinterpret_cast<long>( &GetSession()->GetCurrentUser()->data.x ) - reinterpret_cast<long>( &GetSession()->GetCurrentUser()->data ) )
 
 
 // Reads WWIV.INI info from [WWIV] subsection, overrides some config.dat
@@ -1208,10 +1208,7 @@ void WBbsApp::InitializeBBS()
     GetSession()->SetQuoting( false );
     GetSession()->tagptr = 0;
 
-    snprintf( m_szWWIVEnvironmentVariable, sizeof( m_szWWIVEnvironmentVariable ), "BBS=%s", wwiv_version );
-
-    time_t t;
-    time( &t );
+    time_t t = time( NULL );
     // Struct tm_year is -= 1900
     struct tm * pTm = localtime( &t );
     if ( pTm->tm_year < 88 )
@@ -1393,7 +1390,7 @@ void WBbsApp::InitializeBBS()
 
     XINIT_PRINTF("* Reading User Information.\r\n");
     GetSession()->ReadCurrentUser( 1, false );
-    fwaiting = ( GetSession()->thisuser.isUserDeleted() ) ? 0 : GetSession()->thisuser.GetNumMailWaiting();
+    fwaiting = ( GetSession()->GetCurrentUser()->isUserDeleted() ) ? 0 : GetSession()->GetCurrentUser()->GetNumMailWaiting();
 
     statusMgr->RefreshStatusCache();
 
@@ -1438,8 +1435,10 @@ void WBbsApp::InitializeBBS()
 
 #endif // defined (_UNIX)
 
-    _putenv( m_szWWIVEnvironmentVariable );
-    _putenv( m_szEnvironVarWwivNetworkNumber );
+    m_wwivVerEnvVar = "BBS=";
+    m_wwivVerEnvVar += wwiv_version;
+    _putenv( m_wwivVerEnvVar.c_str() );
+    _putenv( m_networkNumEnvVar.c_str() );
 
     XINIT_PRINTF("* Reading Voting Booth Configuration.\r\n");
     read_voting();

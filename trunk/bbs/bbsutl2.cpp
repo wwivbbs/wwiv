@@ -52,7 +52,7 @@ void ClearScreen()
     if ( okansi() )
     {
         GetSession()->bout << "\x1b[2J";
-        goxy( 1, 1 );
+        GetSession()->bout.GotoXY( 1, 1 );
     }
     else
     {
@@ -72,11 +72,11 @@ void ClearScreen()
  */
 void repeat_char( char x, int amount, int nColor, bool bAddNL )
 {
-    ansic( nColor );
+    GetSession()->bout.Color( nColor );
     GetSession()->bout << charstr( amount, x );
     if ( bAddNL )
     {
-        nl();
+        GetSession()->bout.NewLine();
     }
 }
 
@@ -154,11 +154,11 @@ void osan(const char *pszText, bool *abort, bool *next)
  */
 void plan(int nWWIVColor, const char *pszText, bool *abort, bool *next)
 {
-    ansic( nWWIVColor );
+    GetSession()->bout.Color( nWWIVColor );
     osan( pszText, abort, next );
 	if (!(*abort))
 	{
-		nl();
+		GetSession()->bout.NewLine();
 	}
 }
 

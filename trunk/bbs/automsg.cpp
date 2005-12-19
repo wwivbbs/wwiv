@@ -32,7 +32,7 @@ void read_automessage()
     char l[6][81];
 
     WFile file( syscfg.gfilesdir, AUTO_MSG );
-    nl();
+    GetSession()->bout.NewLine();
     WStatus* pStatus = GetApplication()->GetStatusManager()->GetStatus(); 
     bool bAutoMessageAnonymous = pStatus->IsAutoMessageAnonymous();
     delete pStatus;
@@ -104,13 +104,13 @@ void read_automessage()
         int nLineNum = 1;
         while ( ptrend[ nLineNum ] && nLineNum < 6 )
         {
-            ansic( 9 );
+            GetSession()->bout.Color( 9 );
             GetSession()->bout << &( l[ nLineNum ][ 0 ] );
-			nl();
+			GetSession()->bout.NewLine();
             ++nLineNum;
         }
     }
-    nl();
+    GetSession()->bout.NewLine();
 }
 
 
@@ -130,7 +130,7 @@ void write_automessage1()
         inli( &(l[i][0]), szRollOverLine, 70, true, false );
         strcat( &(l[i][0]), "\r\n" );
     }
-    nl();
+    GetSession()->bout.NewLine();
     bool bAnonStatus = false;
     if ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_post_anony )
     {
@@ -148,7 +148,7 @@ void write_automessage1()
         WFile file( syscfg.gfilesdir, AUTO_MSG );
         file.Open( WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
         char szAuthorName[ 81 ];
-		sprintf( szAuthorName, "%s\r\n", GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) );
+		sprintf( szAuthorName, "%s\r\n", GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) );
         file.Write( szAuthorName, strlen( szAuthorName ) );
         for (int j = 0; j < 5; j++)
         {
@@ -172,7 +172,7 @@ void write_automessage1()
 char ShowAMsgMenuAndGetInput( const char *pszAutoMessageLockFileName )
 {
     bool bCanWrite = false;
-    if ( !GetSession()->thisuser.isRestrictionAutomessage() && !WFile::Exists( pszAutoMessageLockFileName ) )
+    if ( !GetSession()->GetCurrentUser()->isRestrictionAutomessage() && !WFile::Exists( pszAutoMessageLockFileName ) )
     {
         bCanWrite = ( getslrec( GetSession()->GetEffectiveSl() ).posts ) ? true : false;
     }
@@ -211,7 +211,7 @@ void do_automessage()
     bool done = false;
     do
     {
-        nl();
+        GetSession()->bout.NewLine();
         char cmdKey = ShowAMsgMenuAndGetInput( aMsgLockFile );
         switch (cmdKey)
         {
@@ -242,7 +242,7 @@ void do_automessage()
             {
                 WFile::Remove(aMsgFile);
             }
-            nl( 2 );
+            GetSession()->bout.NewLine( 2 );
             break;
         case 'L':
             if (WFile::Exists(aMsgLockFile))

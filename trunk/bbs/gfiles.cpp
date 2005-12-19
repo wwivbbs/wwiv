@@ -123,7 +123,7 @@ void gfl_hdr( int which )
         }
     }
     pla( s, &abort );
-    ansic( 0 );
+    GetSession()->bout.Color( 0 );
     if ( okansi() )
     {
         if ( which )
@@ -148,7 +148,7 @@ void gfl_hdr( int which )
         }
     }
     pla( s, &abort );
-    ansic( 0 );
+    GetSession()->bout.Color( 0 );
     if ( okansi() )
     {
         if ( which )
@@ -172,7 +172,7 @@ void gfl_hdr( int which )
         }
     }
     pla( s, &abort );
-    ansic( 0 );
+    GetSession()->bout.Color( 0 );
 }
 
 
@@ -196,8 +196,7 @@ void list_sec( int *map, int nmap )
         strcpy(s7, charstr(12, '-'));
     }
 
-    sprintf(s, " [ %s G-Files Section ] ", syscfg.systemname);
-    DisplayLiteBar(s);
+    GetSession()->bout.DisplayLiteBar( " [ %s G-Files Section ] ", syscfg.systemname);
     gfl_hdr( 0 );
     for (int i = 0; i < nmap && !abort && !hangup; i++)
     {
@@ -232,7 +231,7 @@ void list_sec( int *map, int nmap )
             sprintf(s, "|%3s|%-34s|%3s|%-33s|", lnum, s4, rnum, s5);
         }
         pla(s, &abort);
-        ansic( 0 );
+        GetSession()->bout.Color( 0 );
         i++;
         if (i2 > 10)
         {
@@ -248,8 +247,8 @@ void list_sec( int *map, int nmap )
                     s2, s3, times());
             }
             pla(s1, &abort);
-            ansic( 0 );
-            nl();
+            GetSession()->bout.Color( 0 );
+            GetSession()->bout.NewLine();
             pausescr();
             gfl_hdr( 1 );
         }
@@ -267,7 +266,7 @@ void list_sec( int *map, int nmap )
                 sprintf(s1, "+---+%s-----+---+%s----+", s2, s2);
             }
             pla(s1, &abort);
-            ansic( 0 );
+            GetSession()->bout.Color( 0 );
 
             if ( okansi() )
             {
@@ -278,7 +277,7 @@ void list_sec( int *map, int nmap )
                 sprintf(s1, "|  G)G-File Edit%s|", charstr(61, ' '));
             }
             pla(s1, &abort);
-            ansic( 0 );
+            GetSession()->bout.Color( 0 );
             if ( okansi() )
             {
                 sprintf(s1, "|#7ÈÄÄÄÄ%sÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ%s|#1þ|#7Ä|#2%s|#7Ä|#1þ|#7ÄÄÄ¼", s2, s7, times());
@@ -288,7 +287,7 @@ void list_sec( int *map, int nmap )
                 sprintf(s1, "+----%s----------------%so-%s-o---+", s2, s7, times());
             }
             pla(s1, &abort);
-            ansic( 0 );
+            GetSession()->bout.Color( 0 );
         }
         else
         {
@@ -302,11 +301,11 @@ void list_sec( int *map, int nmap )
                 sprintf(s1, "+---+%s-----+---------------------+%so-%s-o---+", s2, s3, times());
             }
             pla(s1, &abort);
-            ansic( 0 );
+            GetSession()->bout.Color( 0 );
         }
     }
-    ansic( 0 );
-    nl();
+    GetSession()->bout.Color( 0 );
+    GetSession()->bout.NewLine();
 }
 
 
@@ -317,7 +316,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
     char lnum[5], rnum[5], lsize[5], rsize[5], path_name[255];
 
     bool abort = false;
-    DisplayLiteBar(" [ %s] ", gfilesec[sn].name);
+    GetSession()->bout.DisplayLiteBar(" [ %s] ", gfilesec[sn].name);
     i2 = 0;
     if ( okansi() )
     {
@@ -389,7 +388,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
             sprintf( s, "|%3s|%-29s|%4s|%3s|%-29s|%4s|", lnum, s4, lsize, rnum, s5, rsize );
         }
         pla( s, &abort );
-        ansic( 0 );
+        GetSession()->bout.Color( 0 );
         i++;
         if ( i2 > 10 )
         {
@@ -404,8 +403,8 @@ void list_gfiles(gfilerec * g, int nf, int sn)
                 sprintf(s1, "+---+%s+----+---+%s-o-%s-o-+----+", s2, s3, times());
             }
             pla( s1, &abort );
-            ansic( 0 );
-            nl();
+            GetSession()->bout.Color( 0 );
+            GetSession()->bout.NewLine();
             pausescr();
             gfl_hdr( 1 );
         }
@@ -421,7 +420,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
             sprintf( s, "+---+%s+----+---+%s+----+", s2, s2 );
         }
         pla( s, &abort );
-        ansic( 0 );
+        GetSession()->bout.Color( 0 );
         if ( so() )
         {
             if ( okansi() )
@@ -433,7 +432,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
                 sprintf( s1, "| A)Add a G-File  D)Download a G-file  E)Edit this section  R)Remove a G-File |" );
             }
             pla( s1, &abort );
-            ansic( 0 );
+            GetSession()->bout.Color( 0 );
         }
         else
         {
@@ -446,7 +445,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
                 sprintf( s1, "|  D  Download a G-file%s|", charstr( 55, ' ' ) );
             }
             pla( s1, &abort );
-            ansic( 0 );
+            GetSession()->bout.Color( 0 );
         }
     }
     if ( okansi() )
@@ -458,8 +457,8 @@ void list_gfiles(gfilerec * g, int nf, int sn)
         sprintf( s1, "+----%s----------------%so-%s-o----+", s2, s3, times() );
     }
     pla( s1, &abort );
-    ansic( 0 );
-    nl();
+    GetSession()->bout.Color( 0 );
+    GetSession()->bout.NewLine();
 }
 
 
@@ -521,7 +520,7 @@ void gfile_sec( int sn )
         }
         else if ( wwiv::stringUtils::IsEquals(ss, "R") && so() )
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2G-file number to delete? ";
             ss1 = mmkey( 2 );
             i = atoi( ss1 );
@@ -563,7 +562,7 @@ void gfile_sec( int sn )
         {
             sprintf( szFileName, "%s%c%s", gfilesec[sn].filename, WWIV_FILE_SEPERATOR_CHAR, g[i - 1].filename );
             i1 = printfile( szFileName );
-            GetSession()->thisuser.SetNumGFilesRead( GetSession()->thisuser.GetNumGFilesRead() + 1 );
+            GetSession()->GetCurrentUser()->SetNumGFilesRead( GetSession()->GetCurrentUser()->GetNumGFilesRead() + 1 );
             if ( i1 == 0 )
             {
                 sysoplogf( "Read G-file '%s'", g[i - 1].filename );
@@ -616,9 +615,9 @@ void gfile_sec( int sn )
                                 sprintf( s1, "|#6þ |#9Error transferring |#2%s|#1.|#0", g[i2 - 1].filename );
                                 done1 = true;
                             }
-							nl();
+							GetSession()->bout.NewLine();
                             GetSession()->bout << s1;
-							nl();
+							GetSession()->bout.NewLine();
                             sysoplog( s1 );
                         }
                     }
@@ -672,7 +671,7 @@ void gfiles()
     for ( i = 0; i < GetSession()->num_sec; i++ )
     {
         bool ok = true;
-        if ( GetSession()->thisuser.GetAge() < gfilesec[i].age )
+        if ( GetSession()->GetCurrentUser()->GetAge() < gfilesec[i].age )
         {
             ok = false;
         }
@@ -680,7 +679,7 @@ void gfiles()
         {
             ok = false;
         }
-        if ( !GetSession()->thisuser.hasArFlag( gfilesec[i].ar) && gfilesec[i].ar )
+        if ( !GetSession()->GetCurrentUser()->hasArFlag( gfilesec[i].ar) && gfilesec[i].ar )
         {
             ok = false;
         }
@@ -720,7 +719,7 @@ void gfiles()
             bool bIsSectionFull = false;
             for ( i = 0; i < nmap && !bIsSectionFull; i++ )
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "Now loading files for " << gfilesec[map[i]].name << "\r\n\n";
                 bIsSectionFull = fill_sec( map[i] );
             }

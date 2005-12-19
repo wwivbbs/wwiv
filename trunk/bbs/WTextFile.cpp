@@ -48,7 +48,8 @@ bool WTextFile::Open( const char* pszFileName, const char* pszFileMode )
 {
     strcpy( m_szFileName, pszFileName );
     strcpy( m_szFileMode, pszFileMode );
-    return OpenImpl( m_szFileName, m_szFileMode);
+    m_hFile = WTextFile::OpenImpl( m_szFileName, m_szFileMode);
+    return ( m_hFile != NULL ) ? true : false;
 }
 
 

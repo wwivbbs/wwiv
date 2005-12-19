@@ -75,6 +75,14 @@ Rushfan - Some more const-correctness in the transfer code to make life easier i
 Rushfan - Removed almost all usages of status
 Rushfan - fsh_open was moved into WTextFile (WTextFile::OpenImpl).
 Rushfan - last usages of fsh_XXXX is migrated to WTextFile
+Rushfan - Changed thisuser to GetCurrentUser
+Rushfan - Moved WLocalIO::pr_Wait to WSession::DisplaySysopWorkingIndicator
+Rushfan - nl => WOutStream::NewLine, ansic => WOutStream::Color, 
+          setc => WOutStream::SystemColor, BackSpace & BackLine &
+          DisplayLiteBar => WOutStream, reset_colors => WOutStream::ResetColors
+          goxy => WOutStream::GotoXY, bputs => WOutStream::Write
+          bprintf => WOutStream::WriteFormatted
+
 
 ==============================================================================
 

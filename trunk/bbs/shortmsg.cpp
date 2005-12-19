@@ -52,9 +52,9 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
             file.Read( &sm, sizeof( shortmsgrec ) );
             if ( sm.touser == nUserNum && sm.tosys == 0 )
             {
-                ansic( 9 );
+                GetSession()->bout.Color( 9 );
 				GetSession()->bout << sm.message;
-				nl();
+				GetSession()->bout.NewLine();
                 bool bHandledMessage = false;
                 bShownAnyMessage = true;
                 if ( !so() || !bAskToSaveMsgs )
@@ -96,7 +96,7 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
     }
     if ( bShownAnyMessage )
     {
-        nl();
+        GetSession()->bout.NewLine();
     }
     if ( bShownAllMessages )
     {

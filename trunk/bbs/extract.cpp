@@ -72,7 +72,7 @@ void compress_file( char *pszFileName, char *pszDirectoryName )
     stuff_in( szFullFileName, s5, s3, s4, "", "", "" );
     ExecuteExternalProgram( szFullFileName, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_A ) );
     WFile::Remove( s4 );
-    GetApplication()->GetLocalIO()->UpdateTopScreen();
+    GetApplication()->UpdateTopScreen();
 }
 
 
@@ -111,7 +111,7 @@ void extract_mod(const char *b, long len, time_t tDateTime)
 	// get directory number to extract to
 	do
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2Which dir? ";
 		ss1 = mmkey( 1 );
 		if ( ss1[0] == '?' )
@@ -166,9 +166,9 @@ void extract_mod(const char *b, long len, time_t tDateTime)
 		{
 			exists = true;
 			sprintf( szFileName, "%s already exists.", s2 );
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << szFileName;
-			nl( 2 );
+			GetSession()->bout.NewLine( 2 );
 		}
 		if ( exists )
 		{
@@ -183,7 +183,7 @@ void extract_mod(const char *b, long len, time_t tDateTime)
 				s2[0] = '\0';
 				break;
 			}
-			nl();
+			GetSession()->bout.NewLine();
 		}
 	} while ( !hangup && s2[0] == '\0' && !quit );
 
@@ -199,7 +199,7 @@ void extract_mod(const char *b, long len, time_t tDateTime)
 		sprintf( strip_cmd, "STRIPNET.EXE %s", szFileName );
 		ExecuteExternalProgram( strip_cmd, EFLAG_ABORT | EFLAG_TOPSCREEN );
 		compress_file( s2, s1 );
-		nl( 2 );
+		GetSession()->bout.NewLine( 2 );
 		GetSession()->bout << "|#2//UPLOAD the file? ";
 		if ( noyes() )
 		{
@@ -245,7 +245,7 @@ void extract_mod(const char *b, long len, time_t tDateTime)
 				}
 			}
 
-			nl();
+			GetSession()->bout.NewLine();
 			strcpy( desc2, temp_irt );
 			strcpy( desc1, author );
 			strcat( desc1, ": " );
@@ -256,13 +256,13 @@ void extract_mod(const char *b, long len, time_t tDateTime)
 			desc3[58] = '\0';
 			bputch( CL );
 			GetSession()->bout << "|#7Available Descriptions For |#1" << s2 << " |#7by |#1" << author << "|#7.";
-			nl( 2 );
+			GetSession()->bout.NewLine( 2 );
 			GetSession()->bout << "|#21) |#1" << desc1 << wwiv::endl;
 			GetSession()->bout << "|#22) |#1" <<  desc2 << wwiv::endl;
 			GetSession()->bout << "|#23) |#1" << desc3 << wwiv::endl;
 			GetSession()->bout << "|#2E) |#1Enter your own description\r\n";
 			GetSession()->bout << "|#7Q) |#1Quit\r\n";
-			nl( 2 );
+			GetSession()->bout.NewLine( 2 );
 			GetSession()->bout << "|#2Press [ENTER] for 1 or enter your selection:";
 			ch = onek( "QE123\r" );
 			switch( ch )
@@ -285,7 +285,7 @@ void extract_mod(const char *b, long len, time_t tDateTime)
 				break;
 			}
 			szDescription[58] = '\0';
-			nl( 2 );
+			GetSession()->bout.NewLine( 2 );
 			GetSession()->bout << "|#9Add a |#1FILE_ID.DIZ|#9 to archive? ";
 			if ( noyes() )
             {
@@ -316,7 +316,7 @@ bool upload_mod( int nDirectoryNumber, const char *pszFileName, const char *pszD
 	WWIV_ASSERT( pszFileName );
 
 	dliscan1( udir[nDirectoryNumber].subnum );
-	nl( 2 );
+	GetSession()->bout.NewLine( 2 );
 	strcpy( s, pszFileName );
 	strcpy( s1, directories[udir[nDirectoryNumber].subnum].path );
 	int maxf = directories[udir[nDirectoryNumber].subnum].maxfiles;
@@ -445,7 +445,7 @@ void extract_out (char *b, long len, const char *pszTitle, time_t tDateTime )
 							WFile::Remove(s3);
 							break;
 						}
-						nl();
+						GetSession()->bout.NewLine();
 					}
 				}
 				else
@@ -525,7 +525,7 @@ void extract_out (char *b, long len, const char *pszTitle, time_t tDateTime )
 						WFile::Remove( s2 );
 						break;
 					}
-					nl();
+					GetSession()->bout.NewLine();
 				}
 			}
 			else

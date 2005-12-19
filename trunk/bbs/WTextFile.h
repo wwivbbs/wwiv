@@ -62,7 +62,7 @@ private:
     char    m_szFileName[ MAX_PATH + 1 ];
     char    m_szFileMode[ 10 ];
     FILE*   m_hFile;
-    bool OpenImpl( const char* pszFileName, const char* pszFileMode );
+    static FILE* OpenImpl( const char* pszFileName, const char* pszFileMode );
     static const int TRIES;
     static const int WAIT_TIME;
 

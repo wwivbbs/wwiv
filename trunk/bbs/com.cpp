@@ -31,53 +31,16 @@ void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const c
 {
     if ( GetApplication()->GetLocalIO()->WhereX() )
 	{
-        nl();
+        GetSession()->bout.NewLine();
 	}
     for ( int i = 0; cl[i] != 0; i++ )
 	{
-        setc( atr[i] );
+        GetSession()->bout.SystemColor( atr[i] );
         bputch( cl[i], true );
     }
     FlushOutComChBuffer();
-    setc( *cc );
+    GetSession()->bout.SystemColor( *cc );
     strcpy( endofline, xl );
-}
-
-
-#define OUTCOMCH_BUFFER_SIZE 1024
-static char s_szOutComChBuffer[ OUTCOMCH_BUFFER_SIZE + 1 ];
-static int  s_nOutComChBufferPosition = 0;
-
-
-void FlushOutComChBuffer()
-{
-    if ( s_nOutComChBufferPosition > 0 )
-    {
-        GetApplication()->GetComm()->write( s_szOutComChBuffer, s_nOutComChBufferPosition );
-        s_nOutComChBufferPosition = 0;
-        memset( s_szOutComChBuffer, 0, OUTCOMCH_BUFFER_SIZE + 1 );
-    }
-}
-
-
-void rputch( char ch, bool bUseInternalBuffer )
-{
-
-    if ( ok_modem_stuff && NULL != GetApplication()->GetComm() )
-    {
-        if ( bUseInternalBuffer )
-        {
-            if ( s_nOutComChBufferPosition >= OUTCOMCH_BUFFER_SIZE )
-            {
-                FlushOutComChBuffer();
-            }
-            s_szOutComChBuffer[ s_nOutComChBufferPosition++ ] = ch;
-        }
-        else
-        {
-            GetApplication()->GetComm()->putW(ch);
-        }
-    }
 }
 
 
@@ -227,52 +190,18 @@ void makeansi( int attr, char *pszOutBuffer, bool forceit )
 
 
 
-// This function performs a CR/LF sequence to move the cursor to the next
-// line.  If any end-of-line ANSI codes are set (such as changing back to
-// the default color) are specified, those are executed first.
-void nl( int nNumLines )
-{
-    for (int i = 0; i < nNumLines; i++)
-    {
-        if (endofline[0])
-	    {
-            GetSession()->bout << endofline;
-            endofline[0] = 0;
-        }
-        bputs("\r\n");
-        if ( inst_msg_waiting() && !bChatLine )
-	    {
-            process_inst_msgs();
-	    }
-    }
-}
-
 void BackSpace()
 // This function executes a BACKSPACE, SPACE, BACKSPACE sequence.
 {
-    bool bSavedEcho = echo;
-    echo = true;
-    bputs("\b \b");
-    echo = bSavedEcho;
-}
-
-
-void setc( int nColor )
-/* This sets the current color (both locally and remotely) to that
-* specified (in IBM format).
-*/
-{
-    char szBuffer[30];
-    makeansi( nColor, szBuffer, false );
-    bputs( szBuffer );
+    GetSession()->bout.BackSpace();
 }
 
 
 void resetnsp()
 {
-    if ( nsp == 1 && !( GetSession()->thisuser.hasPause() ) )
+    if ( nsp == 1 && !( GetSession()->GetCurrentUser()->hasPause() ) )
     {
-        GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+        GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
     }
     nsp=0;
 }
@@ -304,7 +233,7 @@ void mpl( int nNumberOfChars )
 {
     if ( okansi() )
     {
-        ansic( 4 );
+        GetSession()->bout.Color( 4 );
         for ( int i = 0; i < nNumberOfChars; i++ )
         {
             bputch( ' ', true );
@@ -322,14 +251,14 @@ char getkey()
 */
 {
     resetnsp();
-    int beepyet = 0;
+    bool beepyet = false;
     timelastchar1 = timer1();
 
     using namespace wwiv::stringUtils;
     long tv = ( so() || IsEqualsIgnoreCase( GetSession()->GetCurrentSpeed().c_str(), "TELNET" ) ) ? 10920L : 3276L;
     long tv1 = tv - 1092L;     // change 4.31 Build3
 
-    if ( !GetSession()->tagging || GetSession()->thisuser.isUseNoTagging() )
+    if ( !GetSession()->tagging || GetSession()->GetCurrentUser()->isUseNoTagging() )
     {
         lines_listed = 0;
     }
@@ -347,39 +276,17 @@ char getkey()
             }
             if (labs(dd - timelastchar1) > 65536L)
             {
-                timelastchar1 -= 1572480L;	// # secs per day * 18.2
+                timelastchar1 -= ( SECONDS_PER_DAY * 18.2 );
             }
-            if (((dd - timelastchar1) > tv1) && (!beepyet))
+            if ( ( dd - timelastchar1 ) > tv1 && !beepyet )
             {
-                beepyet = 1;
+                beepyet = true;
                 bputch( CG );
             }
-            if ( GetApplication()->IsShutDownActive() )
-            {
-                if ((( GetApplication()->GetShutDownTime() - timer()) < 120) && ((GetApplication()->GetShutDownTime() - timer()) > 60))
-                {
-                    if ( GetApplication()->GetShutDownStatus() != WBbsApp::shutdownTwoMinutes )
-                    {
-                        shut_down( WBbsApp::shutdownTwoMinutes );
-                        GetApplication()->SetShutDownStatus( WBbsApp::shutdownTwoMinutes );
-                    }
-                }
-                if (((GetApplication()->GetShutDownTime() - timer()) < 60) && ((GetApplication()->GetShutDownTime() - timer()) > 0))
-                {
-                    if ( GetApplication()->GetShutDownStatus() != WBbsApp::shutdownOneMinute )
-                    {
-                        shut_down( WBbsApp::shutdownOneMinute );
-                        GetApplication()->SetShutDownStatus( WBbsApp::shutdownOneMinute );
-                    }
-                }
-                if ( ( GetApplication()->GetShutDownTime() - timer() ) <= 0 )
-                {
-                    shut_down( WBbsApp::shutdownImmediate );
-                }
-            }
+            GetApplication()->UpdateShutDownStatus();
             if (labs(dd - timelastchar1) > tv)
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "Call back later when you are there.\r\n";
                 hangup = true;
             }
@@ -391,7 +298,7 @@ char getkey()
 }
 
 
-static void print_yn(int i)
+static void print_yn(bool yes)
 {
 // TODO Add random Strings back in.
 /*
@@ -399,22 +306,13 @@ static void print_yn(int i)
     if (num_strings(i))
     {
         GetSession()->bout << getrandomstring(i);
-		nl();
     }
     else
     {
 */
-	switch (i)
-	{
-	case 2:
-		GetSession()->bout << YesNoString( true );
-		break;
-	case 3:
-		GetSession()->bout << YesNoString( false );
-		break;
-	}
-	nl();
+	GetSession()->bout << YesNoString( yes );
 //    }
+	GetSession()->bout.NewLine();
 }
 
 
@@ -426,17 +324,17 @@ bool yesno()
 {
     char ch = 0;
 
-    ansic( 1 );
+    GetSession()->bout.Color( 1 );
     while ((!hangup) && ((ch = wwiv::UpperCase<char>(getkey())) != *(YesNoString( true ))) && (ch != *(YesNoString( false ))) && (ch != RETURN))
         ;
 
     if (ch == *(YesNoString( true )))
     {
-        print_yn( 2 );
+        print_yn( true );
     }
     else
     {
-        print_yn( 3 );
+        print_yn( false );
     }
     return (ch == *(YesNoString( true ))) ? true : false;
 }
@@ -449,17 +347,17 @@ bool noyes()
 {
     char ch = 0;
 
-    ansic( 1 );
+    GetSession()->bout.Color( 1 );
     while ((!hangup) && ((ch = wwiv::UpperCase<char>(getkey())) != *(YesNoString( true ))) && (ch != *(YesNoString( false ))) && (ch != RETURN))
         ;
 
     if (ch == *(YesNoString( false )))
     {
-        print_yn( 3 );
+        print_yn( false );
     }
     else
     {
-        print_yn( 2 );
+        print_yn( true );
     }
     return ( ch == *(YesNoString( true )) || ch == RETURN ) ? true : false;
 }
@@ -469,7 +367,7 @@ char ynq()
 {
     char ch = 0;
 
-    ansic( 1 );
+    GetSession()->bout.Color( 1 );
     while ( !hangup &&
 		    ( ch = wwiv::UpperCase<char>( getkey() ) ) != *( YesNoString( true ) ) &&
 			ch != *(YesNoString( false )) &&
@@ -481,52 +379,22 @@ char ynq()
     if ( ch == *( YesNoString( true ) ) )
     {
         ch = 'Y';
-        print_yn( 2 );
+        print_yn( true );
     }
     else if ( ch == *str_quit )
     {
         ch = 'Q';
         GetSession()->bout << str_quit;
-		nl();
+		GetSession()->bout.NewLine();
     }
     else
     {
         ch = 'N';
-        print_yn( 3 );
+        print_yn( false );
     }
     return ch;
 }
 
-
-void ansic(int wwivColor)
-{
-    unsigned char c = '\0';
-
-    if ( wwivColor <= -1 && wwivColor >= -16 )
-    {
-        c = ( GetSession()->thisuser.hasColor() ?
-        rescolor.resx[207 + abs(wwivColor)] : GetSession()->thisuser.GetBWColor( 0 ) );
-    }
-    if ( wwivColor >= 0 && wwivColor <= 9 )
-    {
-        c = ( GetSession()->thisuser.hasColor() ?
-        GetSession()->thisuser.GetColor( wwivColor ) : GetSession()->thisuser.GetBWColor( wwivColor ) );
-    }
-    if ( wwivColor >= 10 && wwivColor <= 207 )
-    {
-        c = ( GetSession()->thisuser.hasColor() ?
-        rescolor.resx[wwivColor - 10] : GetSession()->thisuser.GetBWColor( 0 ) );
-    }
-    if ( c == curatr )
-    {
-        return;
-    }
-
-    setc( c );
-
-    makeansi( GetSession()->thisuser.hasColor() ?
-        GetSession()->thisuser.GetColor( 0 ) : GetSession()->thisuser.GetBWColor( 0 ), endofline, false );
-}
 
 char onek( const char *pszAllowableChars, bool bAutoMpl )
 {
@@ -536,25 +404,11 @@ char onek( const char *pszAllowableChars, bool bAutoMpl )
     }
 	char ch = onek1( pszAllowableChars );
     bputch(ch);
-    nl();
+    GetSession()->bout.NewLine();
     return ch;
 }
 
 
-void reset_colors()
-{
-    // ANSI Clear Attributes String
-    GetSession()->bout << "\x1b[0m";
-}
-
-void goxy(int x, int y)
-{
-    if ( okansi() )
-    {
-		y = std::min<int>( y, GetSession()->screenlinest );	// Don't get Y get too big or mTelnet will not be happy
-        GetSession()->bout << "\x1b[" << y << ";" << x << "H";
-    }
-}
 char onek1(const char *pszAllowableChars)
 {
 	WWIV_ASSERT( pszAllowableChars );
@@ -569,95 +423,3 @@ char onek1(const char *pszAllowableChars)
     }
     return ch;
 }
-
-
-
-/** Backspaces from the current cursor position to the beginning of a line */
-void BackLine()
-{
-    ansic( 0 );
-    bputch(SPACE);
-    for (int i = GetApplication()->GetLocalIO()->WhereX(); i > 0; i--)
-    {
-        BackSpace();
-    }
-}
-
-
-
-/**
- * This function outputs a string of characters to the screen (and remotely
- * if applicable).  The com port is also checked first to see if a remote
- * user has hung up
- */
-int bputs( const char *pszText )
-{
-    if ( !pszText || !( *pszText ) )
-    {
-        return 0;
-    }
-    int displayed = strlen( pszText );
-
-    CheckForHangup();
-    if ( !hangup )
-    {
-        int i = 0;
-
-        while ( pszText[i] )
-        {
-            bputch( pszText[i++], true );
-        }
-        FlushOutComChBuffer();
-    }
-
-    return displayed;
-}
-
-
-/**
- * printf sytle output function.  Most code should use this when writing
- * locally + remotely.
- */
-int bprintf( const char *pszFormatText,... )
-{
-    va_list ap;
-    char szBuffer[ 2048 ];
-
-    va_start( ap, pszFormatText );
-    vsnprintf( szBuffer, sizeof( szBuffer ), pszFormatText, ap );
-    va_end( ap );
-    return bputs( szBuffer );
-}
-
-
-/**
- * Outputs title bar containing variable argument text contained in 'pszFormatText' in
- * a 'steely-bar' fashion.  Non-ANSI outputs B&W, centered on screen.
- */
-void DisplayLiteBar( const char *pszFormatText,... )
-{
-    va_list ap;
-    char s[1024], s1[1024];
-
-    va_start( ap, pszFormatText );
-    vsnprintf( s, sizeof( s ), pszFormatText, ap );
-    va_end( ap );
-
-    if ( strlen( s ) % 2 != 0 )
-    {
-        strcat( s, " " );
-    }
-    int i = ( 74 - strlen( s ) ) / 2;
-    if ( okansi() )
-    {
-        snprintf( s1, sizeof( s1 ), "%s%s%s", charstr( i, ' ' ), stripcolors( s ), charstr( i, ' ' ) );
-		GetSession()->bout << "\x1B[0;1;37m" << charstr( strlen( s1 ) + 4, 'Ü' ) << wwiv::endl;
-        GetSession()->bout << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
-		GetSession()->bout << "\x1B[0;1;30m" << charstr( strlen( s1 ) + 4, 'ß' ) << wwiv::endl;
-    }
-    else
-    {
-		GetSession()->bout << charstr( i, ' ' ) << s << wwiv::endl;
-    }
-}
-

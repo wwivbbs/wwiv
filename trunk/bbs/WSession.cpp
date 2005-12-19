@@ -111,7 +111,7 @@ bool WSession::ReadCurrentUser( int nUserNumber, bool bForceRead )
 {
     WWIV_ASSERT( m_pApplication );
     WWIV_ASSERT( m_pApplication->GetUserManager() );
-    return m_pApplication->GetUserManager()->ReadUser( &thisuser, nUserNumber, bForceRead );
+    return m_pApplication->GetUserManager()->ReadUser( &m_thisuser, nUserNumber, bForceRead );
 }
 
 
@@ -119,6 +119,52 @@ bool WSession::WriteCurrentUser( int nUserNumber )
 {
     WWIV_ASSERT( m_pApplication );
     WWIV_ASSERT( m_pApplication->GetUserManager() );
-    return m_pApplication->GetUserManager()->WriteUser( &thisuser, nUserNumber );
+    return m_pApplication->GetUserManager()->WriteUser( &m_thisuser, nUserNumber );
 }
 
+
+void WSession::DisplaySysopWorkingIndicator( bool displayWait )
+{
+    const std::string waitString = "-=[WAIT]=-";
+    int nNumPrintableChars = waitString.length();
+    for (std::string::const_iterator iter = waitString.begin(); iter != waitString.end(); ++iter )
+    {
+        if ( *iter == 3 && nNumPrintableChars > 1 )
+        {
+            nNumPrintableChars -= 2;
+        }
+    }
+
+    if (displayWait)
+    {
+        if ( okansi() )
+        {
+            int nSavedAttribute = curatr;
+            GetSession()->bout.SystemColor( GetCurrentUser()->hasColor() ? GetCurrentUser()->GetColor( 3 ) : GetCurrentUser()->GetBWColor( 3 ) );
+            bout << waitString << "\x1b[" << nNumPrintableChars << "D";
+            GetSession()->bout.SystemColor( static_cast< unsigned char > ( nSavedAttribute ) );
+        }
+        else
+        {
+            bout << waitString;
+        }
+    }
+    else
+    {
+        if ( okansi() )
+        {
+            for (int j = 0; j < nNumPrintableChars; j++)
+            {
+                bputch(' ');
+            }
+            bout << "\x1b[" << nNumPrintableChars << "D";
+        }
+        else
+        {
+            for (int j = 0; j < nNumPrintableChars; j++)
+            {
+                BackSpace();
+            }
+        }
+    }
+}

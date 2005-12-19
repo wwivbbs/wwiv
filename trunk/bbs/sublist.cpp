@@ -39,14 +39,14 @@ void old_sublist()
     bool abort = false;
     int sn = 0;
     int en = subconfnum - 1;
-    if ( okconf( &GetSession()->thisuser ) )
+    if ( okconf( GetSession()->GetCurrentUser() ) )
     {
         if (uconfsub[1].confnum != -1)
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
             char ch = onek("Q A");
-            nl();
+            GetSession()->bout.NewLine();
             switch (ch)
             {
             case ' ':
@@ -63,13 +63,13 @@ void old_sublist()
         oc = -1;
     }
 
-    nl();
+    GetSession()->bout.NewLine();
     pla("|#9Sub-Conferences Available: ", &abort);
-    nl();
+    GetSession()->bout.NewLine();
     int i = sn;
     while ( i <= en && uconfsub[i].confnum != -1 && !abort )
     {
-        if ( uconfsub[1].confnum != -1 && okconf( &GetSession()->thisuser ) )
+        if ( uconfsub[1].confnum != -1 && okconf( GetSession()->GetCurrentUser() ) )
         {
             setuconf(CONF_SUBS, i, -1);
             sprintf( s, "|#1%s %c|#0:|#2 %s", "Conference",
@@ -125,8 +125,8 @@ void old_sublist()
             i1++;
         }
         i++;
-        nl();
-        if ( !okconf( &GetSession()->thisuser ) )
+        GetSession()->bout.NewLine();
+        if ( !okconf( GetSession()->GetCurrentUser() ) )
         {
             break;
         }
@@ -135,10 +135,10 @@ void old_sublist()
 	if (i == 0)
     {
         pla("|#6None.", &abort);
-        nl();
+        GetSession()->bout.NewLine();
     }
 
-	if ( okconf( &GetSession()->thisuser ) )
+	if ( okconf( GetSession()->GetCurrentUser() ) )
     {
         setuconf(CONF_SUBS, oc, os);
     }
@@ -169,14 +169,14 @@ void SubList()
     ns = GetSession()->GetCurrentConferenceMessageArea();
     en = subconfnum - 1;
 
-    if ( okconf( &GetSession()->thisuser ) )
+    if ( okconf( GetSession()->GetCurrentUser() ) )
     {
         if (uconfsub[1].confnum != -1)
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
             ch = onek("Q A");
-            nl();
+            GetSession()->bout.NewLine();
             switch (ch)
             {
             case ' ':
@@ -203,7 +203,7 @@ void SubList()
         ns = GetSession()->GetCurrentConferenceMessageArea();
         while ( i <= en && uconfsub[i].confnum != -1 && !abort )
         {
-            if ( uconfsub[1].confnum != -1 && okconf( &GetSession()->thisuser ) )
+            if ( uconfsub[1].confnum != -1 && okconf( GetSession()->GetCurrentUser() ) )
             {
                 setuconf(CONF_SUBS, i, -1);
                 i1 = 0;
@@ -215,7 +215,7 @@ void SubList()
                     p = 0;
                     firstp = i1;
                     ClearScreen();
-                    if ( uconfsub[1].confnum != -1 && okconf( &GetSession()->thisuser ) )
+                    if ( uconfsub[1].confnum != -1 && okconf( GetSession()->GetCurrentUser() ) )
                     {
                         sprintf( s, " [ %s %c ] [ %s ] ", "Conference",
                                  subconfs[uconfsub[i].confnum].designator,
@@ -225,7 +225,7 @@ void SubList()
                     {
                         sprintf(s, " [ %s Message Areas ] ", syscfg.systemname);
                     }
-                    DisplayLiteBar(s);
+                    GetSession()->bout.DisplayLiteBar(s);
                     DisplayHorizontalBar( 78, 7 );
                     GetSession()->bout << "|#2 Sub   Scan   Net/Local   Sub Name                                 Old   New\r\n";
                     DisplayHorizontalBar( 78, 7 );
@@ -299,13 +299,13 @@ void SubList()
                     osan(stripcolors(sdf), &abort, &next);
                 }
                 lastp = i1++;
-                nl();
+                GetSession()->bout.NewLine();
                 if (lines_listed >= GetSession()->screenlinest - 2)
                 {
                     p = 1;
                     lines_listed = 0;
                     DisplayHorizontalBar( 78, 7 );
-                    bprintf("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ", firstp + 1, lastp + 1);
+                    GetSession()->bout.WriteFormatted("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ", firstp + 1, lastp + 1);
                     ss = mmkey( 0, true );
                     if ( isdigit( ss[0] ) )
                     {
@@ -326,7 +326,7 @@ void SubList()
                         {
                         case 'Q':
 							{
-								if ( okconf( &GetSession()->thisuser ) )
+								if ( okconf( GetSession()->GetCurrentUser() ) )
                                 {
 									setuconf( CONF_SUBS, oldConf, oldSub );
                                 }
@@ -335,7 +335,7 @@ void SubList()
 							}
                             break;
                         default:
-                            BackLine();
+                            GetSession()->bout.BackLine();
                             break;
                         }
                     }
@@ -350,20 +350,20 @@ void SubList()
             {
                 p = 1;
                 DisplayHorizontalBar( 78, 7 );
-                if ( okconf( &GetSession()->thisuser ) )
+                if ( okconf( GetSession()->GetCurrentUser() ) )
                 {
                     if (uconfsub[1].confnum != -1)
                     {
-                        bprintf("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+                        GetSession()->bout.WriteFormatted("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
                     }
                     else
                     {
-                        bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+                        GetSession()->bout.WriteFormatted("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
                     }
                 }
                 else
                 {
-                    bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+                    GetSession()->bout.WriteFormatted("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
                 }
                 ss = mmkey( 0, true );
 
@@ -377,16 +377,16 @@ void SubList()
                      wwiv::stringUtils::IsEquals( ss, "Q" ) ||
                      wwiv::stringUtils::IsEquals( ss, "\r" ) )
                 {
-                    nl( 2 );
+                    GetSession()->bout.NewLine( 2 );
                     done = true;
-                    if ( !okconf( &GetSession()->thisuser ) )
+                    if ( !okconf( GetSession()->GetCurrentUser() ) )
                     {
                         abort = true;
                     }
                 }
                 if ( wwiv::stringUtils::IsEquals( ss, "J" ) )
                 {
-                    if ( okconf( &GetSession()->thisuser ) )
+                    if ( okconf( GetSession()->GetCurrentUser() ) )
                     {
                         jump_conf( CONF_SUBS );
                     }
@@ -409,7 +409,7 @@ void SubList()
             }
             else
             {
-                if ( okconf( &GetSession()->thisuser ) )
+                if ( okconf( GetSession()->GetCurrentUser() ) )
                 {
                     setuconf(CONF_SUBS, oldConf, oldSub);
                 }
@@ -419,11 +419,11 @@ void SubList()
         if (i == 0)
         {
             pla("None.", &abort);
-            nl();
+            GetSession()->bout.NewLine();
         }
     } while ( !hangup && !done );
 
-    if ( okconf( &GetSession()->thisuser ) )
+    if ( okconf( GetSession()->GetCurrentUser() ) )
     {
         setuconf(CONF_SUBS, oldConf, oldSub);
     }

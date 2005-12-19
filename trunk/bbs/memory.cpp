@@ -88,7 +88,7 @@ char **BbsAlloc2D(int nRow, int nCol, int nSize )
 		WWIV_OutputDebugString( szErrorMessage );
 		sysoplog( szErrorMessage );
         hangup = true;
-		nl();
+		GetSession()->bout.NewLine();
         return NULL;
     }
     char** prow = static_cast< char ** >( BbsAllocA( nRow * sizeof( char * ) ) );
@@ -99,7 +99,7 @@ char **BbsAlloc2D(int nRow, int nCol, int nSize )
 		sysoplog( szErrorMessage );
         hangup = true;
         BbsFreeMemory( pdata );
-		nl();
+		GetSession()->bout.NewLine();
         return NULL;
     }
     for ( int i = 0; i < nRow; i++ )

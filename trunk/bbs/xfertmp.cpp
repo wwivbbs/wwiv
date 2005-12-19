@@ -405,21 +405,21 @@ void download_temp_arc(const char *pszFileName, int xfer)
         {
             if (xfer)
             {
-                GetSession()->thisuser.SetFilesDownloaded( GetSession()->thisuser.GetFilesDownloaded() + 1 );
-                GetSession()->thisuser.SetDownloadK( GetSession()->thisuser.GetDownloadK() + bytes_to_k( lFileSize ) );
-                nl( 2 );
-                bprintf("Your ratio is now: %-6.3f\r\n", ratio());
+                GetSession()->GetCurrentUser()->SetFilesDownloaded( GetSession()->GetCurrentUser()->GetFilesDownloaded() + 1 );
+                GetSession()->GetCurrentUser()->SetDownloadK( GetSession()->GetCurrentUser()->GetDownloadK() + bytes_to_k( lFileSize ) );
+                GetSession()->bout.NewLine( 2 );
+                GetSession()->bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
             }
             sysoplogf( "Downloaded %ldk of \"%s\"", bytes_to_k( lFileSize ), szFileToSend );
             if ( GetSession()->IsUserOnline() )
             {
-                GetApplication()->GetLocalIO()->UpdateTopScreen();
+                GetApplication()->UpdateTopScreen();
             }
         }
     }
     else
     {
-        nl( 2 );
+        GetSession()->bout.NewLine( 2 );
         GetSession()->bout << "Not enough time left to D/L.\r\n\n";
     }
 }
@@ -452,7 +452,7 @@ void add_arc( const char *arc, const char *pszFileName, int dos )
         else
         {
             ExecuteExternalProgram( szAddArchiveCommand, EFLAG_NONE );
-            GetApplication()->GetLocalIO()->UpdateTopScreen();
+            GetApplication()->UpdateTopScreen();
         }
         GetApplication()->CdHome();
         sysoplogf( "Added \"%s\" to %s", pszFileName, szArchiveFileName );
@@ -469,7 +469,7 @@ void add_temp_arc()
 {
     char szInputFileMask[ MAX_PATH ], szFileMask[ MAX_PATH];
 
-    nl();
+    GetSession()->bout.NewLine();
     GetSession()->bout << "|#7Enter filename to add to temporary archive file.  May contain wildcards.\r\n|#7:";
     input( szInputFileMask, 12 );
     if ( !okfn( szInputFileMask ) )
@@ -503,7 +503,7 @@ void del_temp()
 {
     char szFileName[MAX_PATH];
 
-    nl();
+    GetSession()->bout.NewLine();
     GetSession()->bout << "|#9Enter file name to delete: ";
     input( szFileName, 12, true );
     if ( !okfn( szFileName ) )
@@ -528,7 +528,7 @@ void list_temp_dir()
 	sprintf( szFileMask, "%s*.*", syscfgovr.tempdir );
 	WFindFile fnd;
 	bool bFound = fnd.open( szFileMask, 0 );
-	nl();
+	GetSession()->bout.NewLine();
 	GetSession()->bout << "Files in temporary directory:\r\n\n";
 	int i1 = 0;
 	bool abort = false;
@@ -552,11 +552,11 @@ void list_temp_dir()
 	{
 		GetSession()->bout << "None.\r\n";
 	}
-	nl();
+	GetSession()->bout.NewLine();
 	if ( !abort && !hangup )
 	{
 		GetSession()->bout << "Free space: " << static_cast<long>( freek1( syscfgovr.tempdir ) ) << wwiv::endl;
-		nl();
+		GetSession()->bout.NewLine();
 	}
 }
 
@@ -568,7 +568,7 @@ void temp_extract()
     uploadsrec u;
 
     dliscan();
-    nl();
+    GetSession()->bout.NewLine();
     GetSession()->bout << "Extract to temporary directory:\r\n\n";
     GetSession()->bout << "|#2Filename: ";
     input(s, 12);
@@ -605,13 +605,13 @@ void temp_extract()
         get_arc_cmd(s1, s2, 1, "");
         if ( s1[0] && WFile::Exists( s2 ) )
         {
-            nl( 2 );
+            GetSession()->bout.NewLine( 2 );
             bool abort = false;
             ot = GetSession()->tagging;
             GetSession()->tagging = 2;
             printinfo(&u, &abort);
             GetSession()->tagging = ot;
-            nl();
+            GetSession()->bout.NewLine();
             if (directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask & mask_cdrom)
             {
                 WWIV_ChangeDirTo(syscfgovr.tempdir);
@@ -689,7 +689,7 @@ void temp_extract()
         }
         else if (s1[0])
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "That file currently isn't there.\r\n\n";
         }
         if (ok)
@@ -706,7 +706,7 @@ void list_temp_text()
 	double percent;
 	char szFileName[MAX_PATH];
 
-	nl();
+	GetSession()->bout.NewLine();
     GetSession()->bout << "|#2List what file(s) : ";
 	input( s, 12, true );
 	if (!okfn(s))
@@ -723,7 +723,7 @@ void list_temp_text()
 		WFindFile fnd;
 		bool bFound = fnd.open(s1, 0);
 		int ok = 1;
-		nl();
+		GetSession()->bout.NewLine();
 		while ( bFound && ok )
 		{
 			strcpy(szFileName, fnd.GetFileName());
@@ -731,9 +731,9 @@ void list_temp_text()
             if ( !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "chain.txt" ) &&
                  !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "door.sys" ) )
 			{
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "Listing " << szFileName << wwiv::endl;
-				nl();
+				GetSession()->bout.NewLine();
                 bool sent;
 				ascii_send(s, &sent, &percent);
 				if (sent)
@@ -758,7 +758,7 @@ void list_temp_arc()
 
     sprintf( szFileName, "temp.%s", arcs[ARC_NUMBER].extension );
     list_arc_out( szFileName, syscfgovr.tempdir );
-    nl();
+    GetSession()->bout.NewLine();
 }
 
 
@@ -767,7 +767,7 @@ void temporary_stuff()
     printfile(TARCHIVE_NOEXT);
     do
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#9Archive: Q,D,R,A,V,L,T: ";
         char ch = onek("Q?DRAVLT");
         switch ( ch )
@@ -810,10 +810,10 @@ void move_file_t()
 
     tmp_disable_conf( true );
 
-    nl();
+    GetSession()->bout.NewLine();
     if (GetSession()->numbatch == 0)
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|12No files have been tagged for movement.\r\n";
         pausescr();
     }
@@ -1017,7 +1017,7 @@ void removefile()
     WUser uu;
 
     dliscan();
-    nl();
+    GetSession()->bout.NewLine();
 	GetSession()->bout << "|#9Enter filename to remove.\r\n:";
     char szFileToRemove[ MAX_PATH ];
     input( szFileToRemove, 12, true );
@@ -1041,7 +1041,7 @@ void removefile()
 		fileDownload.Close();
         if ((dcs()) || ((u.ownersys == 0) && (u.ownerusr == GetSession()->usernum)))
         {
-            nl();
+            GetSession()->bout.NewLine();
             if (check_batch_queue(u.filename))
             {
                 GetSession()->bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
@@ -1070,7 +1070,7 @@ void removefile()
                         }
                         if ( GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
                         {
-                            nl();
+                            GetSession()->bout.NewLine();
                             GetSession()->bout << "|#5Remove from ALLOW.DAT? ";
                             if (yesno())
                             {

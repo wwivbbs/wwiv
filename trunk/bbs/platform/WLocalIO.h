@@ -29,6 +29,8 @@
 #define GLOBAL_SIZE 4096
 
 class WFile;
+class WStatus;
+class WSession;
 
 class WLocalIO
 {
@@ -43,8 +45,7 @@ public:
     static const int topdataUser;
 
 private:
-	int     m_nWfcStatus;
-    char    m_szChatReason[81];
+    std::string  m_chatReason;
     WFile   fileGlobalCap; // g_hGlobalCapHandle;
     bool    m_bSysopAlert;
 
@@ -83,11 +84,8 @@ public:
     WLocalIO( const WLocalIO& copy );
 	virtual ~WLocalIO();
 
-	void SetWfcStatus( int nStatus ) { m_nWfcStatus = nStatus; }
-	int  GetWfcStatus() { return m_nWfcStatus; }
-
-    void SetChatReason( char* pszChatReason ) { strcpy( m_szChatReason, pszChatReason ); }
-    void ClearChatReason() { m_szChatReason[0] = '\0'; }
+    void SetChatReason( char* pszChatReason ) { m_chatReason = pszChatReason; } 
+    void ClearChatReason() { CLEAR_STRING(m_chatReason); }
 
     void SetSysopAlert( bool b ) { m_bSysopAlert = b; }
     bool GetSysopAlert() { return m_bSysopAlert; }
@@ -112,14 +110,13 @@ public:
     int  LocalPrintf( const char *pszFormattedText, ... );
     int  LocalXYPrintf( int x, int y, const char *pszFormattedText, ... );
     int  LocalXYAPrintf( int x, int y, int nAttribute, const char *pszFormattedText, ... );
-    void pr_Wait(int i1);
+    void pr_Wait(bool displayWait);
     void set_protect(int l);
     void savescreen(screentype * s);
     void restorescreen(screentype * s);
     void skey(char ch);
     void tleft(bool bCheckForTimeOut);
-    void UpdateTopScreenImpl();
-	void UpdateTopScreen() { if (!m_nWfcStatus) UpdateTopScreenImpl(); }
+    void UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInstanceNumber );
     bool  LocalKeyPressed();
     unsigned char getchd();
     unsigned char getchd1();

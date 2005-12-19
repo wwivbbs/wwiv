@@ -397,7 +397,8 @@ void set_net_num( int nNetworkNumber )
 		//GetSession()->pszNetworkDataDir = net_networks[GetSession()->GetNetworkNumber()].dir;
 		net_sysnum = net_networks[GetSession()->GetNetworkNumber()].sysnum;
 		GetSession()->SetCurrentNetworkType( net_networks[ GetSession()->GetNetworkNumber() ].type );
-		snprintf( GetApplication()->m_szEnvironVarWwivNetworkNumber, sizeof( GetApplication()->m_szEnvironVarWwivNetworkNumber ), "WWIV_NET=%ld", GetSession()->GetNetworkNumber() );
+        GetApplication()->m_networkNumEnvVar = "WWIV_NET=";
+        GetApplication()->m_networkNumEnvVar += GetSession()->GetNetworkNumber();
 	}
 }
 

@@ -38,10 +38,6 @@ void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName);
 void WWIV_RebootComputer();
 
 
-// $PLATFORM/reboot.cpp
-
-void show_files( const char *pszFileName, const char *pszDirectoryName );
-
 
 // $PLATFORM/utility2.cpp
 char *WWIV_make_abs_cmd(char *out);

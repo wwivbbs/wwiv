@@ -90,7 +90,7 @@ void ShowChainCommandLineHelp()
     GetSession()->bout << "|#1   %R    |#9 DOOR.SYS Full Pathname\r\n";
     GetSession()->bout << "|#1   %S    |#9 Com Port Baud Rate\r\n";
     GetSession()->bout << "|#1   %T    |#9 Minutes Remaining\r\n";
-    nl();
+    GetSession()->bout.NewLine();
 }
 
 
@@ -112,9 +112,9 @@ void modify_chain( int nCurrentChainNumber )
     {
         ClearScreen();
         sprintf( szChainNum, "|B1|15Editing Chain # %d", nCurrentChainNumber );
-        bprintf( "%-85s", szChainNum );
-        nl( 2 );
-        ansic( 0 );
+        GetSession()->bout.WriteFormatted( "%-85s", szChainNum );
+        GetSession()->bout.NewLine( 2 );
+        GetSession()->bout.Color( 0 );
         GetSession()->bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
         GetSession()->bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
         GetSession()->bout << "|#9C) SL           : |#2" << static_cast<int>( c.sl ) << wwiv::endl;
@@ -159,13 +159,13 @@ void modify_chain( int nCurrentChainNumber )
                 r.maxage = 255;
             }
             GetSession()->bout << "|#9N) Age limit    : |#2" << static_cast<int>( r.minage ) << " - " << static_cast<int>( r.maxage ) << wwiv::endl;
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
             ch = onek( "QABCDEFGJKLMN[]", true );   // removed i
         }
         else
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#9Which (A-K,R,[,],Q) ? ";
             ch = onek( "QABCDEFGJK[]", true ); // removed i
         }
@@ -208,7 +208,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
         case 'A':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#7New Description? ";
             Input1( s, c.description, 40, true, MIXED );
             if (s[0])
@@ -227,7 +227,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
         case 'C':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#7New SL? ";
             input( s, 3, true );
             i = atoi(s);
@@ -237,7 +237,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
         case 'D':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#7New AR (<SPC>=None) ? ";
             ch2 = onek(" ABCDEFGHIJKLMNOP");
             if (ch2 == SPACE)
@@ -250,7 +250,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
         case 'E':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Require ANSI? ";
             if (yesno())
             {
@@ -262,7 +262,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
             case 'F':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Have BBS intercept DOS calls? ";
             if (noyes())
             {
@@ -274,7 +274,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
         case 'G':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Under Windows Use Emulated FOSSIL Support? ";
             if (noyes())
             {
@@ -287,7 +287,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
 /*
         case 'I':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Disable screen pause in program? ";
             if (yesno())
             {
@@ -300,7 +300,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
 */
         case 'J':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Allow program to be run locally only? ";
             if (yesno())
             {
@@ -312,7 +312,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
         case 'K':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Chain is multi-user? ";
             if (yesno())
             {
@@ -330,7 +330,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             for (i = 0; i < 5; i++)
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#9(Q=Quit, 0=None) User name/number: : ";
                 input( s1, 30, true );
                 if ( s1[0] != 'Q' && s1[0] != 'q' )
@@ -347,7 +347,7 @@ void modify_chain( int nCurrentChainNumber )
                             WUser regUser;
                             GetApplication()->GetUserManager()->ReadUser( &regUser, nUserNumber );
                             r.regby[i] = static_cast< short > ( nUserNumber );
-                            nl();
+                            GetSession()->bout.NewLine();
                             GetSession()->bout << "|#1Registered by       |#2" << nUserNumber << " " << ( ( r.regby[i] ) ? regUser.GetName() : "AVAILABLE" );
                         }
                     }
@@ -360,7 +360,7 @@ void modify_chain( int nCurrentChainNumber )
             break;
         case 'M':
             r.usage = 0;
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Times Run : ";
             input(s, 3);
             if (s[0] != 0)
@@ -369,7 +369,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
         case 'N':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5New minimum age? ";
             input(s, 3);
             if (s[0])
@@ -469,7 +469,7 @@ void chainedit()
     bool done = false;
     do
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#7Chains: (D)elete, (I)nsert, (M)odify, (Q)uit, ? : ";
         char ch = onek("QDIM?");
         switch (ch) {
@@ -480,7 +480,7 @@ void chainedit()
             done = true;
             break;
         case 'M':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Chain number? ";
             input(s, 2);
             i = atoi(s);
@@ -492,7 +492,7 @@ void chainedit()
         case 'I':
             if ( GetSession()->GetNumberOfChains() < GetSession()->max_chains )
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#2Insert before which chain? ";
                 input(s, 2);
                 i = atoi(s);
@@ -503,13 +503,13 @@ void chainedit()
             }
             break;
         case 'D':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Delete which chain? ";
             input(s, 2);
             i = atoi(s);
             if ( s[0] != '\0' && i >= 0 && i < GetSession()->GetNumberOfChains() )
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|10Delete " << chains[i].description << "? ";
                 if (yesno())
                 {

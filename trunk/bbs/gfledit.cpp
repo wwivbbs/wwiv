@@ -90,17 +90,16 @@ void modify_sec(int n)
 	{
 		ClearScreen();
 		sprintf( szSubNum, "|B1|15Editing G-File Area # %d", n );
-		bprintf( "%-85s", szSubNum );
-        ansic( 0 );
-		nl( 2 );
+		GetSession()->bout.WriteFormatted( "%-85s", szSubNum );
+        GetSession()->bout.Color( 0 );
+		GetSession()->bout.NewLine( 2 );
 		GetSession()->bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
 		GetSession()->bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
 		GetSession()->bout << "|#9C) SL         : |#2" << static_cast<int>( r.sl ) << wwiv::endl;
 		GetSession()->bout << "|#9D) Min. Age   : |#2" << static_cast<int>( r.age ) << wwiv::endl;
 		GetSession()->bout << "|#9E) Max Files  : |#2" << r.maxfiles << wwiv::endl;
 		GetSession()->bout << "|#9F) AR         : |#2" << GetArString( r, s ) << wwiv::endl;
-
-        nl();
+        GetSession()->bout.NewLine();
 		GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1F,|#1[|#7,|#1]|#7) : ";
 		char ch = onek( "QABCDEF[]", true );
 		switch (ch)
@@ -125,7 +124,7 @@ void modify_sec(int n)
 			r = gfilesec[n];
 			break;
 		case 'A':
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2New name? ";
 			inputl(s, 40);
 			if (s[0])
@@ -135,14 +134,14 @@ void modify_sec(int n)
 			break;
 		case 'B':
             {
-			nl();
+			GetSession()->bout.NewLine();
 			WFile dir(syscfg.gfilesdir, r.filename);
 			if (dir.Exists())
 			{
 				GetSession()->bout << "\r\nThere is currently a directory for this g-file section.\r\n";
 				GetSession()->bout << "If you change the filename, the directory will still be there.\r\n\n";
 			}
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2New filename? ";
 			input(s, 8);
 			if ( ( s[0] != 0 ) && ( strchr(s, '.') == 0 ) )
@@ -151,7 +150,7 @@ void modify_sec(int n)
 				WFile dir(syscfg.gfilesdir, r.filename);
 				if (!dir.Exists())
 				{
-					nl();
+					GetSession()->bout.NewLine();
 					GetSession()->bout << "|#5Create directory for this section? ";
 					if (yesno())
 					{
@@ -173,7 +172,7 @@ void modify_sec(int n)
 			break;
 		case 'C':
             {
-			    nl();
+			    GetSession()->bout.NewLine();
 			    GetSession()->bout << "|#2New SL? ";
 			    input(s, 3);
 			    int i = atoi(s);
@@ -185,7 +184,7 @@ void modify_sec(int n)
 			break;
 		case 'D':
             {
-			    nl();
+			    GetSession()->bout.NewLine();
 			    GetSession()->bout << "|#2New Min Age? ";
 			    input(s, 3);
 			    int i = atoi(s);
@@ -197,7 +196,7 @@ void modify_sec(int n)
 			break;
 		case 'E':
             {
-			    nl();
+			    GetSession()->bout.NewLine();
 				GetSession()->bout << "|#1Max 99 files/section.\r\n|#2New max files? ";
 			    input(s, 3);
 			    int i = atoi(s);
@@ -208,7 +207,7 @@ void modify_sec(int n)
             }
 			break;
 		case 'F':
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2New AR (<SPC>=None) ? ";
 			char ch2 = onek("ABCDEFGHIJKLMNOP ");
 			if (ch2 == SPACE)
@@ -269,7 +268,7 @@ void gfileedit()
 	bool done = false;
 	do
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2G-files: D:elete, I:nsert, M:odify, Q:uit, ? : ";
 		char ch = onek("QDIM?");
 		switch (ch)
@@ -281,7 +280,7 @@ void gfileedit()
 			done = true;
 			break;
 		case 'M':
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2Section number? ";
 			input(s, 2);
 			i = atoi(s);
@@ -293,7 +292,7 @@ void gfileedit()
 		case 'I':
 			if (GetSession()->num_sec < GetSession()->max_gfilesec)
 			{
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2Insert before which section? ";
 				input(s, 2);
 				i = atoi(s);
@@ -304,13 +303,13 @@ void gfileedit()
 			}
 			break;
 		case 'D':
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2Delete which section? ";
 			input(s, 2);
 			i = atoi(s);
 			if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_sec))
 			{
-				nl();
+				GetSession()->bout.NewLine();
                 GetSession()->bout << "|#5Delete " << gfilesec[i].name << "?";
 				if (yesno())
 				{

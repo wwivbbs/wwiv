@@ -39,10 +39,10 @@ void print_quests()
         sprintf( szBuffer, "|#2%2d|#7) |#1%s", i, v.numanswers ? v.question : ">>> NO QUESTION <<<" );
         pla( szBuffer, &abort );
     }
-    nl();
+    GetSession()->bout.NewLine();
     if ( abort )
     {
-        nl();
+        GetSession()->bout.NewLine();
     }
 }
 
@@ -66,7 +66,7 @@ void set_question( int ii )
     }
     if ( !s[0] )
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|12Delete Question #" << ii + 1 << ", Are you sure? ";
         if (!yesno())
         {
@@ -75,9 +75,9 @@ void set_question( int ii )
     }
     else
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|10Enter answer choices, Enter a blank line when finished.";
-        nl( 2 );
+        GetSession()->bout.NewLine( 2 );
         while ( v.numanswers < 19 && s[0] )
         {
             GetSession()->bout << "|#2" << v.numanswers + 1 << "#7: ";
@@ -133,7 +133,7 @@ void ivotes()
     do
     {
         print_quests();
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#2Which (Q=Quit) ? ";
         char szQuestionNum[81];
         input( szQuestionNum, 2 );
@@ -189,7 +189,7 @@ void voteprint()
         if (v.numanswers)
         {
             GetSession()->bout << v.question;
-			nl();
+			GetSession()->bout.NewLine();
             sprintf(s, "\r\n%s\r\n", v.question);
             votingText.Write( s, strlen( s ) );
             for (int i2 = 0; i2 < v.numanswers; i2++)

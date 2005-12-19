@@ -123,7 +123,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
     char * pszTitle = new char[ 255 ];
     _snprintf( pszTitle, sizeof( pszTitle), "%s in door on node %d",
-             GetSession()->thisuser.GetName(), GetApplication()->GetInstanceNumber() );
+             GetSession()->GetCurrentUser()->GetName(), GetApplication()->GetInstanceNumber() );
     si.lpTitle = pszTitle;
 
 	if ( ok_modem_stuff && !bUsingSync )
@@ -825,7 +825,7 @@ bool ExpandWWIVHeartCodes( char *pszBuffer )
             {
                 char szTempColor[ 81 ];
                 int nColor = *pIn - '0';
-                makeansi( GetSession()->thisuser.GetColor( nColor ), szTempColor, false );
+                makeansi( GetSession()->GetCurrentUser()->GetColor( nColor ), szTempColor, false );
                 char *pColor = szTempColor;
                 while ( *pColor )
                 {

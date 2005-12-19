@@ -53,21 +53,21 @@ void pausescr()
 
     if ( okansi() )
     {
-        reset_colors();
+        GetSession()->bout.ResetColors();
 
         i1 = strlen( reinterpret_cast<char*>( stripcolors( ss ) ) );
         i = curatr;
-        setc( GetSession()->thisuser.hasColor() ? GetSession()->thisuser.GetColor( 3 ) :
-              GetSession()->thisuser.GetBWColor( 3 ) );
+        GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->hasColor() ? GetSession()->GetCurrentUser()->GetColor( 3 ) :
+              GetSession()->GetCurrentUser()->GetBWColor( 3 ) );
         GetSession()->bout << ss << "\x1b[" << i1 << "D";
-        setc( i );
+        GetSession()->bout.SystemColor( i );
     }
     else
     {
         if ( okansi() )
         {
             i = curatr;
-            setc( GetSession()->thisuser.hasColor() ? GetSession()->thisuser.GetColor( 3 ) : GetSession()->thisuser.GetBWColor( 3 ) );
+            GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->hasColor() ? GetSession()->GetCurrentUser()->GetColor( 3 ) : GetSession()->GetCurrentUser()->GetBWColor( 3 ) );
         }
         for (i3 = 0; i3 < i2; i3++)
         {
@@ -82,7 +82,7 @@ void pausescr()
             }
             if ( okansi() )
             {
-                setc( i );
+                GetSession()->bout.SystemColor( i );
             }
         }
     }
@@ -105,8 +105,8 @@ void pausescr()
                     {
                         warned = 1;
                         bputch( CG );
-                        setc( GetSession()->thisuser.hasColor() ? GetSession()->thisuser.GetColor( 6 ) :
-                        GetSession()->thisuser.GetBWColor( 6 ) );
+                        GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->hasColor() ? GetSession()->GetCurrentUser()->GetColor( 6 ) :
+                        GetSession()->GetCurrentUser()->GetBWColor( 6 ) );
                         GetSession()->bout << ss;
                         for ( i3 = 0; i3 < i2; i3++ )
                         {
@@ -116,7 +116,7 @@ void pausescr()
                             }
                         }
                         GetSession()->bout << "\x1b[" << i1 << "D";
-                        setc( i );
+                        GetSession()->bout.SystemColor( i );
                     }
                 }
                 else
@@ -129,7 +129,7 @@ void pausescr()
                             bputch( ' ' );
                         }
                         GetSession()->bout << "\x1b[" << i1 << "D";
-                        setc( i );
+                        GetSession()->bout.SystemColor( i );
                         setiia( oiia );
                         return;
                     }
@@ -152,10 +152,10 @@ void pausescr()
                 break;
             case 'C':
             case '=':
-                if ( GetSession()->thisuser.hasPause() )
+                if ( GetSession()->GetCurrentUser()->hasPause() )
                 {
                     nsp = 1;
-                    GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+                    GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
                 }
                 break;
             default:
@@ -167,7 +167,7 @@ void pausescr()
             bputch(' ');
         }
         GetSession()->bout << "\x1b[" << i1 << "D";
-        setc( i );
+        GetSession()->bout.SystemColor( i );
         setiia( oiia );
     }
     if ( !com_freeze )
