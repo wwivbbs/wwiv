@@ -118,27 +118,27 @@ void CreateDoorInfoDropFile()
         if (syscfg.sysconfig & sysconfig_no_alias)
 		{
             char szTemp[81];
-            strcpy( szTemp, GetSession()->thisuser.GetRealName() );
+            strcpy( szTemp, GetSession()->GetCurrentUser()->GetRealName() );
             GetNamePartForDropFile( false, szTemp );
             fprintf( fileDorInfoSys, "%s\n", szTemp );
-            strcpy( szTemp, GetSession()->thisuser.GetRealName() );
+            strcpy( szTemp, GetSession()->GetCurrentUser()->GetRealName() );
             GetNamePartForDropFile( true, szTemp );
             fprintf( fileDorInfoSys, "%s\n", szTemp );
         }
 		else
 		{
-            fprintf( fileDorInfoSys, "%s\n\n", GetSession()->thisuser.GetName() );
+            fprintf( fileDorInfoSys, "%s\n\n", GetSession()->GetCurrentUser()->GetName() );
 		}
         if (syscfg.sysconfig & sysconfig_extended_info)
 		{
-            fprintf( fileDorInfoSys, "%s, %s\n", GetSession()->thisuser.GetCity(), GetSession()->thisuser.GetState() );
+            fprintf( fileDorInfoSys, "%s, %s\n", GetSession()->GetCurrentUser()->GetCity(), GetSession()->GetCurrentUser()->GetState() );
 		}
         else
 		{
             fprintf(fileDorInfoSys, "\n");
 		}
-        fprintf( fileDorInfoSys, "%c\n%d\n%ld\n", GetSession()->thisuser.hasAnsi() ? '1' : '0',
-                 GetSession()->thisuser.GetSl(), GetMinutesRemainingForDropFile() );
+        fprintf( fileDorInfoSys, "%c\n%d\n%ld\n", GetSession()->GetCurrentUser()->hasAnsi() ? '1' : '0',
+                 GetSession()->GetCurrentUser()->GetSl(), GetMinutesRemainingForDropFile() );
         fileDorInfoSys.Close();
     }
 }
@@ -184,14 +184,14 @@ void CreatePCBoardSysDropFile()
 		}
         pcb.usernum = static_cast<short>( GetSession()->usernum );
         char szName[ 255 ];
-        sprintf( szName, "%-25.25s", GetSession()->thisuser.GetName() );
+        sprintf( szName, "%-25.25s", GetSession()->GetCurrentUser()->GetName() );
         char *pszFirstName = strtok(szName, " \t");
         sprintf(pcb.firstname, "%-15.15s", pszFirstName);
 		// Don't write password  security
         strcpy(pcb.password, "XXX");
-        pcb.time_on = static_cast<short>( GetSession()->thisuser.GetTimeOn() / 60 );
+        pcb.time_on = static_cast<short>( GetSession()->GetCurrentUser()->GetTimeOn() / 60 );
         pcb.prev_used = 0;
-        double d = GetSession()->thisuser.GetTimeOn() / 60;
+        double d = GetSession()->GetCurrentUser()->GetTimeOn() / 60;
         int h1 = static_cast<int>(d / 60) / 10;
         int h2 = static_cast<int>(d / 60) - (h1 * 10);
         int m1 = static_cast<int>(d - ((h1 * 10 + h2) * 60)) / 10;
@@ -205,7 +205,7 @@ void CreatePCBoardSysDropFile()
         pcb.down_limit = 1024;
         pcb.curconf = static_cast<char>( GetSession()->GetCurrentConferenceMessageArea() );
         strcpy(pcb.slanguage, cur_lang_name);
-        strcpy( pcb.name, GetSession()->thisuser.GetName() );
+        strcpy( pcb.name, GetSession()->GetCurrentUser()->GetName() );
         pcb.sminsleft = pcb.time_limit;
 		pcb.snodenum = static_cast<char>( (num_instances() > 1) ? GetApplication()->GetInstanceNumber() : 0 );
         strcpy(pcb.seventtime, "01:00");
@@ -237,7 +237,7 @@ void CreateCallInfoBbsDropFile()
     WTextFile file( szFileName, "wt");
     if (file.IsOpen())
 	{
-        file.WriteFormatted( "%s\n", GetSession()->thisuser.GetRealName() );
+        file.WriteFormatted( "%s\n", GetSession()->GetCurrentUser()->GetRealName() );
         switch (modem_speed)
 		{
         case 300:
@@ -252,29 +252,29 @@ void CreateCallInfoBbsDropFile()
             file.WriteFormatted("3\n");
         }
         file.WriteFormatted(" \n%d\n%ld\n%s\n%s\n%ld\n%ld\n%.5s\n0\nABCD\n0\n0\n0\n0\n",
-            GetSession()->thisuser.GetSl(), GetMinutesRemainingForDropFile(),
-            GetSession()->thisuser.hasAnsi() ? "COLOR" : "MONO",
-            "X" /* GetSession()->thisuser.GetPassword() */ , GetSession()->usernum, static_cast<long>( timeon / 60 ), times());
+            GetSession()->GetCurrentUser()->GetSl(), GetMinutesRemainingForDropFile(),
+            GetSession()->GetCurrentUser()->hasAnsi() ? "COLOR" : "MONO",
+            "X" /* GetSession()->GetCurrentUser()->GetPassword() */ , GetSession()->usernum, static_cast<long>( timeon / 60 ), times());
         file.WriteFormatted("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
-                GetSession()->thisuser.GetVoicePhoneNumber(),
-                GetSession()->thisuser.GetLastOn(),
-                GetSession()->thisuser.GetLastOn(),
-                GetSession()->thisuser.GetNumLogons(),
-                GetSession()->thisuser.GetScreenLines(),
-                GetSession()->thisuser.GetFilesUploaded(),
-                GetSession()->thisuser.GetFilesDownloaded(),
+                GetSession()->GetCurrentUser()->GetVoicePhoneNumber(),
+                GetSession()->GetCurrentUser()->GetLastOn(),
+                GetSession()->GetCurrentUser()->GetLastOn(),
+                GetSession()->GetCurrentUser()->GetNumLogons(),
+                GetSession()->GetCurrentUser()->GetScreenLines(),
+                GetSession()->GetCurrentUser()->GetFilesUploaded(),
+                GetSession()->GetCurrentUser()->GetFilesDownloaded(),
                 "8N1",
                 (incom) ? "REMOTE" : "LOCAL",
                 (incom) ? 0 : syscfgovr.primaryport );
         char szDate[81], szTemp[81];
         strcpy(szDate, "00/00/00");
-        sprintf(szTemp, "%d", GetSession()->thisuser.GetBirthdayMonth() );
+        sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayMonth() );
         szTemp[2] = '\0';
         memmove(&(szDate[2 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-        sprintf(szTemp, "%d", GetSession()->thisuser.GetBirthdayDay() );
+        sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayDay() );
         szTemp[2] = '\0';
         memmove( &( szDate[ 5 - strlen( szTemp ) ] ), &( szTemp[0] ), strlen( szTemp ) );
-        sprintf( szTemp, "%d", GetSession()->thisuser.GetBirthdayYear() );
+        sprintf( szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayYear() );
         szTemp[2] = '\0';
         memmove( &( szDate[ 8 - strlen( szTemp ) ] ), &( szTemp[0] ), strlen( szTemp ) );
         file.WriteFormatted( "%s\n", szDate );
@@ -329,9 +329,9 @@ void CreateDoor32SysDropFile()
 		file.WriteFormatted( "%s\n",		    cspeed.c_str() );
 		file.WriteFormatted( "WWIV %s\n",    wwiv_version );
 		file.WriteFormatted( "999999\n");    // we don't want to share this
-		file.WriteFormatted( "%s\n",	        GetSession()->thisuser.GetRealName() );
-		file.WriteFormatted( "%s\n",		    GetSession()->thisuser.GetName() );
-		file.WriteFormatted( "%d\n",		    GetSession()->thisuser.GetSl() );
+		file.WriteFormatted( "%s\n",	        GetSession()->GetCurrentUser()->GetRealName() );
+		file.WriteFormatted( "%s\n",		    GetSession()->GetCurrentUser()->GetName() );
+		file.WriteFormatted( "%d\n",		    GetSession()->GetCurrentUser()->GetSl() );
 		file.WriteFormatted( "%d\n",		    GetDoor32TimeLeft( nsl() ) );
 		file.WriteFormatted( "%d\n",		    GetDoor32Emulation() );
 		file.WriteFormatted( "%u\n",		    GetApplication()->GetInstanceNumber() );
@@ -363,17 +363,17 @@ void CreateDoorSysDropFile()
             'N',							// log to printer
             'N',                            // page bell
             'N',                            // caller alarm
-            GetSession()->thisuser.GetRealName(),
-            GetSession()->thisuser.GetCity(),
-            GetSession()->thisuser.GetState() );
+            GetSession()->GetCurrentUser()->GetRealName(),
+            GetSession()->GetCurrentUser()->GetCity(),
+            GetSession()->GetCurrentUser()->GetState() );
         file.WriteFormatted( szLine );
         sprintf(szLine, "%s\n%s\n%s\n%d\n%u\n%s\n%ld\n%ld\n",
-            GetSession()->thisuser.GetVoicePhoneNumber(),
-            GetSession()->thisuser.GetDataPhoneNumber(),
-            "X",                            // GetSession()->thisuser.GetPassword()
-            GetSession()->thisuser.GetSl(),
-            GetSession()->thisuser.GetNumLogons(),
-            GetSession()->thisuser.GetLastOn(),
+            GetSession()->GetCurrentUser()->GetVoicePhoneNumber(),
+            GetSession()->GetCurrentUser()->GetDataPhoneNumber(),
+            "X",                            // GetSession()->GetCurrentUser()->GetPassword()
+            GetSession()->GetCurrentUser()->GetSl(),
+            GetSession()->GetCurrentUser()->GetNumLogons(),
+            GetSession()->GetCurrentUser()->GetLastOn(),
             static_cast<unsigned long>( 60L * GetMinutesRemainingForDropFile() ),
             GetMinutesRemainingForDropFile());
         file.WriteFormatted( szLine );
@@ -381,27 +381,27 @@ void CreateDoorSysDropFile()
         sprintf(szAnsiStatus, "%s", okansi() ? "GR" : "NG");
         sprintf(szLine, "%s\n%u\n%c\n%s\n%lu\n%s\n%lu\n%c\n%u\n%u\n%u\n%u\n",
                 szAnsiStatus,
-                GetSession()->thisuser.GetScreenLines(),
-                GetSession()->thisuser.isExpert() ? 'Y' : 'N',
+                GetSession()->GetCurrentUser()->GetScreenLines(),
+                GetSession()->GetCurrentUser()->isExpert() ? 'Y' : 'N',
                 "1,2,3",                        // conferences
                 GetSession()->GetCurrentMessageArea(),  // current 'conference'
                 "12/31/99",                     // expiration date
                 GetSession()->usernum,
                 'Y',                            // default protocol
-                GetSession()->thisuser.GetFilesUploaded(),
-                GetSession()->thisuser.GetFilesDownloaded(),
+                GetSession()->GetCurrentUser()->GetFilesUploaded(),
+                GetSession()->GetCurrentUser()->GetFilesDownloaded(),
                 0,                              // kb dl today
                 0 );                            // kb dl/day max
         file.WriteFormatted( szLine );
         char szDate[21], szTemp[81];
         strcpy(szDate, "00/00/00");
-        sprintf( szTemp, "%d", GetSession()->thisuser.GetBirthdayMonth() );
+        sprintf( szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayMonth() );
         szTemp[2] = '\0';
         memmove(&(szDate[2 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-        sprintf(szTemp, "%d", GetSession()->thisuser.GetBirthdayDay() );
+        sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayDay() );
         szTemp[2] = '\0';
         memmove(&(szDate[5 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-        sprintf(szTemp, "%d", GetSession()->thisuser.GetBirthdayYear() );
+        sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayYear() );
         szTemp[2] = '\0';
         memmove(&(szDate[8 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
         szDate[9] = '\0';
@@ -410,25 +410,25 @@ void CreateDoorSysDropFile()
             syscfg.datadir,
             syscfg.gfilesdir,
             syscfg.sysopname,
-            GetSession()->thisuser.GetName(),
+            GetSession()->GetCurrentUser()->GetName(),
             "00:01",                        // event time
             (modem_flag & flag_ec) ? 'Y' : 'N',
             ( okansi() ) ? 'N' : 'Y',         // ansi ok but graphics turned off
             'N',                            // record-locking
-            GetSession()->thisuser.GetColor( 0 ),
-            GetSession()->thisuser.GetTimeBankMinutes(),
-            GetSession()->thisuser.GetLastOn(),                // last n-scan date
+            GetSession()->GetCurrentUser()->GetColor( 0 ),
+            GetSession()->GetCurrentUser()->GetTimeBankMinutes(),
+            GetSession()->GetCurrentUser()->GetLastOn(),                // last n-scan date
             times(),
             "00:01");                       // time last call
         file.WriteFormatted( szLine );
         sprintf(szLine, "%u\n%u\n%ld\n%ld\n%s\n%u\n%d\n",
             99,                             // max files dl/day
             0,                              // files dl today so far
-            GetSession()->thisuser.GetUploadK(),
-            GetSession()->thisuser.GetDownloadK(),
-            GetSession()->thisuser.GetNote(),
-            GetSession()->thisuser.GetNumChainsRun(),
-            GetSession()->thisuser.GetNumMessagesPosted() );
+            GetSession()->GetCurrentUser()->GetUploadK(),
+            GetSession()->GetCurrentUser()->GetDownloadK(),
+            GetSession()->GetCurrentUser()->GetNote(),
+            GetSession()->GetCurrentUser()->GetNumChainsRun(),
+            GetSession()->GetCurrentUser()->GetNumMessagesPosted() );
         file.WriteFormatted( szLine );
         file.Close();
     }
@@ -489,16 +489,16 @@ char *create_chain_file()
 	{
         file.WriteFormatted("%ld\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%u\n",
 				GetSession()->usernum,
-                GetSession()->thisuser.GetName(),
-                GetSession()->thisuser.GetRealName(),
-                GetSession()->thisuser.GetCallsign(),
-				GetSession()->thisuser.GetAge(),
-                GetSession()->thisuser.GetGender(),
-                GetSession()->thisuser.GetGold(),
-                GetSession()->thisuser.GetLastOn(),
-				GetSession()->thisuser.GetScreenChars(),
-                GetSession()->thisuser.GetScreenLines(),
-                GetSession()->thisuser.GetSl() );
+                GetSession()->GetCurrentUser()->GetName(),
+                GetSession()->GetCurrentUser()->GetRealName(),
+                GetSession()->GetCurrentUser()->GetCallsign(),
+				GetSession()->GetCurrentUser()->GetAge(),
+                GetSession()->GetCurrentUser()->GetGender(),
+                GetSession()->GetCurrentUser()->GetGold(),
+                GetSession()->GetCurrentUser()->GetLastOn(),
+				GetSession()->GetCurrentUser()->GetScreenChars(),
+                GetSession()->GetCurrentUser()->GetScreenLines(),
+                GetSession()->GetCurrentUser()->GetSl() );
         char szTemporaryLogFileName[ _MAX_PATH ];
         GetTemporaryInstanceLogFileName( szTemporaryLogFileName );
         file.WriteFormatted( "%d\n%d\n%d\n%u\n%10.2f\n%s\n%s\n%s\n",
@@ -517,15 +517,15 @@ char *create_chain_file()
                 syscfg.sysopname,
                 l,
                 l1,
-				GetSession()->thisuser.GetUploadK(),
-                GetSession()->thisuser.GetFilesUploaded(),
-                GetSession()->thisuser.GetDownloadK(),
-                GetSession()->thisuser.GetFilesDownloaded(),
+				GetSession()->GetCurrentUser()->GetUploadK(),
+                GetSession()->GetCurrentUser()->GetFilesUploaded(),
+                GetSession()->GetCurrentUser()->GetDownloadK(),
+                GetSession()->GetCurrentUser()->GetFilesDownloaded(),
 				"8N1",
 				cspeed.c_str(),
                 net_sysnum );
         file.WriteFormatted("N\nN\nN\n");
-        file.WriteFormatted( "%u\n%u\n", GetSession()->thisuser.GetAr(), GetSession()->thisuser.GetDar() );
+        file.WriteFormatted( "%u\n%u\n", GetSession()->GetCurrentUser()->GetAr(), GetSession()->GetCurrentUser()->GetDar() );
         file.Close();
     }
     syscfgovr.primaryport = nSaveComPortNum;

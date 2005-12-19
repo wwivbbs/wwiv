@@ -67,7 +67,7 @@ int listfiles_plus_function( int type )
 
 	prep_menu_items(menu_items);
 
-	file_recs = (uploadsrec(*)[1]) ( BbsAllocA( ( GetSession()->thisuser.GetScreenLines() + 20 ) * sizeof( uploadsrec ) ) );
+	file_recs = (uploadsrec(*)[1]) ( BbsAllocA( ( GetSession()->GetCurrentUser()->GetScreenLines() + 20 ) * sizeof( uploadsrec ) ) );
 	WWIV_ASSERT(file_recs);
 	if (!file_recs)
 	{
@@ -158,7 +158,7 @@ int listfiles_plus_function( int type )
 #ifdef EXTRA_SPACE
 							if (lines_used > 1 && lines_used < lines_left)
 							{
-								nl();
+								GetSession()->bout.NewLine();
 								++lines_used;
 							}
 #endif
@@ -190,7 +190,7 @@ int listfiles_plus_function( int type )
 								int command = side_menu(&menu_pos, redraw, menu_items, 2, max_lines + first_file_pos() + 1, &smc);
 								redraw = true;
 								bulk_move = 0;
-								ansic( 0 );
+								GetSession()->bout.Color( 0 );
 								if (do_sysop_command(command))
 								{
 									menu_done = true;
@@ -299,8 +299,8 @@ ADD_OR_REMOVE_BATCH:
 										}
 #ifdef FILE_POINTS
 										else if ( ( ( !( file_recs[file_pos]->mask & mask_validated ) ) ||
-                                                    ( ( file_recs[file_pos]->filepoints > GetSession()->thisuser.GetFilePoints() ) ) &&
-												    !GetSession()->thisuser.isExemptRatio() ) &&
+                                                    ( ( file_recs[file_pos]->filepoints > GetSession()->GetCurrentUser()->GetFilePoints() ) ) &&
+												    !GetSession()->GetCurrentUser()->isExemptRatio() ) &&
                                                     !sysop_mode)
 										{
 											ClearScreen();
@@ -347,8 +347,8 @@ ADD_OR_REMOVE_BATCH:
 #ifdef KBPERDAY
 											kbbatch -= bytes_to_k(file_recs[file_pos]->numbytes);
 #endif
-											goxy(1, first_file_pos() + vert_pos[file_pos]);
-											bprintf("|%2d %c ", lp_config.tagged_color, check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
+											GetSession()->bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
+											GetSession()->bout.WriteFormatted("|%2d %c ", lp_config.tagged_color, check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
 											undrawfile(vert_pos[file_pos], file_handle[file_pos]);
 											++file_pos;
 											if (file_pos >= matches)
@@ -401,8 +401,8 @@ ADD_OR_REMOVE_BATCH:
 											save_file_pos = file_pos;
 											amount = lines = matches = 0;
 #ifdef FILE_POINTS
-                                            if (((!(file_recs[file_pos]->mask & mask_validated)) || ((file_recs[file_pos]->filepoints > GetSession()->thisuser.GetFilePoints() ) ) &&
-                                                !GetSession()->thisuser.isExemptRatio() ) && !sysop_mode)
+                                            if (((!(file_recs[file_pos]->mask & mask_validated)) || ((file_recs[file_pos]->filepoints > GetSession()->GetCurrentUser()->GetFilePoints() ) ) &&
+                                                !GetSession()->GetCurrentUser()->isExemptRatio() ) && !sysop_mode)
 											{
 												ClearScreen();
 												GetSession()->bout << "You don't have enough file points to download this file\r\n";
@@ -523,7 +523,7 @@ ADD_OR_REMOVE_BATCH:
 									case 8:
 TOGGLE_EXTENDED:
 									ext_is_on = !ext_is_on;
-									GetSession()->thisuser.SetFullFileDescriptions( !GetSession()->thisuser.GetFullFileDescriptions() );
+									GetSession()->GetCurrentUser()->SetFullFileDescriptions( !GetSession()->GetCurrentUser()->GetFullFileDescriptions() );
 									menu_done = true;
 									amount = lines = matches = 0;
 									file_pos = 0;
@@ -659,10 +659,10 @@ TOGGLE_EXTENDED:
 void drawfile( int filepos, int filenum )
 {
 	lines_listed = 0;
-	goxy( 4, filepos + first_file_pos() );
-	setc( lp_config.current_file_color);
-	bprintf( "%3d|#0", filenum );
-	goxy( 4, filepos + first_file_pos() );
+	GetSession()->bout.GotoXY( 4, filepos + first_file_pos() );
+	GetSession()->bout.SystemColor( lp_config.current_file_color);
+	GetSession()->bout.WriteFormatted( "%3d|#0", filenum );
+	GetSession()->bout.GotoXY( 4, filepos + first_file_pos() );
 }
 
 

@@ -108,7 +108,7 @@ void get_user_ppp_addr()
 	{
 		int j = 0;
         char szLocalUserName[ 255 ];
-        strcpy( szLocalUserName, GetSession()->thisuser.GetName() );
+        strcpy( szLocalUserName, GetSession()->GetCurrentUser()->GetName() );
 		for ( int i = 0; ( i < wwiv::stringUtils::GetStringLength( szLocalUserName ) ) && ( i < 61 ); i++ )
 		{
 			if ( szLocalUserName[ i ] != '.' )
@@ -124,9 +124,9 @@ void get_user_ppp_addr()
 
 void send_inet_email()
 {
-	if ( GetSession()->thisuser.GetNumEmailSentToday() > getslrec( GetSession()->GetEffectiveSl() ).emails )
+	if ( GetSession()->GetCurrentUser()->GetNumEmailSentToday() > getslrec( GetSession()->GetEffectiveSl() ).emails )
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#6Too much mail sent today.\r\n";
 		return;
 	}
@@ -138,11 +138,11 @@ void send_inet_email()
 		return;
 	}
 	set_net_num( GetSession()->GetNetworkNumber() );
-	nl();
+	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#9Your Internet Address:|#1 " <<
-	      ( GetSession()->IsInternetUseRealNames() ? GetSession()->thisuser.GetRealName() : GetSession()->thisuser.GetName() ) <<
+	      ( GetSession()->IsInternetUseRealNames() ? GetSession()->GetCurrentUser()->GetRealName() : GetSession()->GetCurrentUser()->GetName() ) <<
 		  " <" << GetSession()->internetFullEmailAddress << ">";
-    nl( 2 );
+    GetSession()->bout.NewLine( 2 );
 	GetSession()->bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
 	inputl( net_email_name, 75, true );
 	if (check_inet_addr(net_email_name))
@@ -159,7 +159,7 @@ void send_inet_email()
 	}
 	else
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		if (net_email_name[0])
 		{
             GetSession()->bout << "|#6Invalid address format!\r\n";
@@ -198,9 +198,9 @@ char *read_inet_addr( char *pszInternetEmailAddress, int nUserNumber )
 		return NULL;
 	}
 
-	if ( nUserNumber == GetSession()->usernum && check_inet_addr( GetSession()->thisuser.GetEmailAddress() ) )
+	if ( nUserNumber == GetSession()->usernum && check_inet_addr( GetSession()->GetCurrentUser()->GetEmailAddress() ) )
 	{
-		strcpy( pszInternetEmailAddress, GetSession()->thisuser.GetEmailAddress() );
+		strcpy( pszInternetEmailAddress, GetSession()->GetCurrentUser()->GetEmailAddress() );
 	}
 	else
 	{

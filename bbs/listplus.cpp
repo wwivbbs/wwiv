@@ -120,7 +120,7 @@ void printtitle_plus_old()
 	char szBuffer[255];
 	sprintf(szBuffer, "Area %d : %-30.30s (%ld files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
 			directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
-	bprintf( "|23|01 ù %-56s Space=Tag/?=Help ù \r\n", szBuffer );
+	GetSession()->bout.WriteFormatted( "|23|01 ù %-56s Space=Tag/?=Help ù \r\n", szBuffer );
 
 	if (config_listing.lp_options & cfl_header)
 	{
@@ -128,7 +128,7 @@ void printtitle_plus_old()
 	}
 
 	GetSession()->bout << "|16|08" << charstr(79, 'ß') << wwiv::endl;
-	ansic( 0 );
+	GetSession()->bout.Color( 0 );
 }
 
 
@@ -148,8 +148,8 @@ void printtitle_plus()
 		char szBuffer[255];
 		sprintf( szBuffer, "Area %d : %-30.30s (%ld files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
 				 directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf );
-		DisplayLiteBar( " %-54s Space=Tag/?=Help ", szBuffer );
-		ansic( 0 );
+		GetSession()->bout.DisplayLiteBar( " %-54s Space=Tag/?=Help ", szBuffer );
+		GetSession()->bout.Color( 0 );
 	}
 }
 
@@ -266,10 +266,10 @@ void print_searching(struct search_record * search_rec)
 	if (strlen(search_rec->search) > 3)
 	{
 		GetSession()->bout << "|#1Search keywords : |#2" << search_rec->search;
-		nl( 2 );
+		GetSession()->bout.NewLine( 2 );
 	}
 	GetSession()->bout << "|#1<Space> aborts  : ";
-	bprintf(" |B1|15%-40.40s|B0|#0", directories[udir[GetSession()->GetCurrentFileArea()].subnum].name);
+	GetSession()->bout.WriteFormatted(" |B1|15%-40.40s|B0|#0", directories[udir[GetSession()->GetCurrentFileArea()].subnum].name);
 }
 
 
@@ -287,15 +287,15 @@ int listfiles_plus(int type)
 {
 	int save_topdata = GetSession()->topdata;
 	int save_dir = GetSession()->GetCurrentFileArea();
-	long save_status = GetSession()->thisuser.GetStatus();
+	long save_status = GetSession()->GetCurrentUser()->GetStatus();
 
 	GetSession()->tagging = 0;
 
-	ext_is_on = GetSession()->thisuser.GetFullFileDescriptions();
+	ext_is_on = GetSession()->GetCurrentUser()->GetFullFileDescriptions();
 	signal(SIGFPE, catch_divide_by_zero);
 
 	GetSession()->topdata = WLocalIO::topdataNone;
-	GetApplication()->GetLocalIO()->UpdateTopScreen();
+	GetApplication()->UpdateTopScreen();
 	ClearScreen();
 
 	int nReturn = listfiles_plus_function(type);
@@ -304,9 +304,9 @@ int listfiles_plus(int type)
 	lp_zap_ed_info();
 #endif
 
-	ansic( 0 );
-	goxy( 1, GetSession()->thisuser.GetScreenLines() - 3 );
-	nl( 3 );
+	GetSession()->bout.Color( 0 );
+	GetSession()->bout.GotoXY( 1, GetSession()->GetCurrentUser()->GetScreenLines() - 3 );
+	GetSession()->bout.NewLine( 3 );
 
 	lines_listed = 0;
 
@@ -315,7 +315,7 @@ int listfiles_plus(int type)
 		tmp_disable_conf( false );
     }
 
-	GetSession()->thisuser.SetStatus( save_status );
+	GetSession()->GetCurrentUser()->SetStatus( save_status );
 
     if ( type == NSCAN_DIR || type == SEARCH_ALL )    // change Build3
     {
@@ -324,7 +324,7 @@ int listfiles_plus(int type)
 	dliscan();
 
 	GetSession()->topdata = save_topdata;
-	GetApplication()->GetLocalIO()->UpdateTopScreen();
+	GetApplication()->UpdateTopScreen();
 
 	return nReturn;
 }
@@ -333,8 +333,8 @@ int listfiles_plus(int type)
 void undrawfile(int filepos, int filenum)
 {
 	lines_listed = 0;
-	goxy(4, filepos + first_file_pos());
-	bprintf("|%2d%3d|#0", lp_config.file_num_color, filenum);
+	GetSession()->bout.GotoXY(4, filepos + first_file_pos());
+	GetSession()->bout.WriteFormatted("|%2d%3d|#0", lp_config.file_num_color, filenum);
 }
 
 
@@ -349,7 +349,7 @@ int lp_add_batch(const char *pszFileName, int dn, long fs)
 
 	if (GetSession()->numbatch >= GetSession()->max_batch)
 	{
-		goxy(1, GetSession()->thisuser.GetScreenLines() - 1);
+		GetSession()->bout.GotoXY(1, GetSession()->GetCurrentUser()->GetScreenLines() - 1);
 		GetSession()->bout << "No room left in batch queue.\r\n";
 		pausescr();
 	}
@@ -369,10 +369,10 @@ int lp_add_batch(const char *pszFileName, int dn, long fs)
 		}
 
 #ifdef FILE_POINTS
-        if ( ( GetSession()->thisuser.GetFilePoints() < ( batchfpts + fpts ) )
-			&& !GetSession()->thisuser.isExemptRatio() )
+        if ( ( GetSession()->GetCurrentUser()->GetFilePoints() < ( batchfpts + fpts ) )
+			&& !GetSession()->GetCurrentUser()->isExemptRatio() )
 		{
-			goxy(1, GetSession()->thisuser.GetScreenLines() - 1);
+			GetSession()->bout.GotoXY(1, GetSession()->GetCurrentUser()->GetScreenLines() - 1);
 			GetSession()->bout << "Not enough file points to download this file\r\n";
 			pausescr();
 		}
@@ -381,7 +381,7 @@ int lp_add_batch(const char *pszFileName, int dn, long fs)
 
 			if ((nsl() <= (batchtime + t)) && (!so()))
 			{
-				goxy(1, GetSession()->thisuser.GetScreenLines() - 1);
+				GetSession()->bout.GotoXY(1, GetSession()->GetCurrentUser()->GetScreenLines() - 1);
 				GetSession()->bout << "Not enough time left in queue.\r\n";
 				pausescr();
 			}
@@ -389,7 +389,7 @@ int lp_add_batch(const char *pszFileName, int dn, long fs)
 			{
 				if (dn == -1)
 				{
-					goxy(1, GetSession()->thisuser.GetScreenLines() - 1);
+					GetSession()->bout.GotoXY(1, GetSession()->GetCurrentUser()->GetScreenLines() - 1);
 					GetSession()->bout << "Can't add temporary file to batch queue.\r\n";
 					pausescr();
 				}
@@ -609,7 +609,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 
 		if ( ch == SOFTRETURN )
 		{
-			nl();
+			GetSession()->bout.NewLine();
 			chars_this_line = 0;
 			char_printed = 0;
 			++numl;
@@ -634,7 +634,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 		int lines_printed;
 
 		lines_left = LinesLeft - numl;
-		num_extended = GetSession()->thisuser.GetNumExtended();
+		num_extended = GetSession()->GetCurrentUser()->GetNumExtended();
 		if (num_extended < lp_config.show_at_least_extended)
 		{
 			num_extended = lp_config.show_at_least_extended;
@@ -663,7 +663,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 	{
 		if (char_printed)
 		{
-			nl();
+			GetSession()->bout.NewLine();
 			++numl;
 		}
 		else
@@ -696,7 +696,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 		{
 			StringJustify(szFileInformation, strlen(szFileInformation) + width, ' ', JUSTIFY_RIGHT);
 			GetSession()->bout << szFileInformation;
-			nl();
+			GetSession()->bout.NewLine();
 			++numl;
 		}
 		strcpy(szBuffer, u->upby);
@@ -710,7 +710,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 	{
 		StringJustify(szFileInformation, strlen(szFileInformation) + width, ' ', JUSTIFY_RIGHT);
 		GetSession()->bout << szFileInformation;
-		nl();
+		GetSession()->bout.NewLine();
 		++numl;
 	}
 	return numl;
@@ -869,7 +869,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 			{
 				if ( ch == SOFTRETURN && indent )
 				{
-					setc(color);
+					GetSession()->bout.SystemColor(color);
 					bputch('\r');
 					GetSession()->bout << "\x1b[" << abs( indent ) << "C";
 				}
@@ -880,7 +880,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 
 				if ( ch == SOFTRETURN )
 				{
-					nl();
+					GetSession()->bout.NewLine();
 					chars_this_line = 0;
 					++numl;
 				}
@@ -900,14 +900,14 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 
 			if ( GetApplication()->GetLocalIO()->WhereX() )
 			{
-				nl();
+				GetSession()->bout.NewLine();
 				++numl;
 			}
 			BbsFreeMemory( new_ss );
 			BbsFreeMemory( ss );	// frank's gpf is here.
 		}
 	}
-	ansic( 0 );
+	GetSession()->bout.Color( 0 );
 	return numl;
 }
 
@@ -938,7 +938,7 @@ int check_lines_needed(uploadsrec * u)
 
 	lc_lines_used = lp_configured_lines();
 	int max_lines = calc_max_lines();
-	int num_extended = GetSession()->thisuser.GetNumExtended();
+	int num_extended = GetSession()->GetCurrentUser()->GetNumExtended();
 
 	if (num_extended < lp_config.show_at_least_extended)
 	{
@@ -952,7 +952,7 @@ int check_lines_needed(uploadsrec * u)
 
 	if (extended_desc_used)
 	{
-		max_extended = GetSession()->thisuser.GetNumExtended();
+		max_extended = GetSession()->GetCurrentUser()->GetNumExtended();
 
 		if (max_extended < lp_config.show_at_least_extended)
 		{
@@ -1186,13 +1186,13 @@ int calc_max_lines()
 
 	if ( lp_config.max_screen_lines_to_show )
     {
-		max_lines = std::min<int>( GetSession()->thisuser.GetScreenLines(),
+		max_lines = std::min<int>( GetSession()->GetCurrentUser()->GetScreenLines(),
                                    lp_config.max_screen_lines_to_show ) -
                     ( first_file_pos() + 1 + STOP_LIST );
 	}
     else
     {
-		max_lines = GetSession()->thisuser.GetScreenLines() - ( first_file_pos() + 1 + STOP_LIST );
+		max_lines = GetSession()->GetCurrentUser()->GetScreenLines() - ( first_file_pos() + 1 + STOP_LIST );
     }
 
 	return max_lines;
@@ -1215,50 +1215,50 @@ void sysop_configure()
     {
 		ClearScreen();
 		printfile( LPSYSOP_NOEXT );
-		goxy( 38, 2 );
-		setc( lp_config.normal_highlight );
-		bprintf( "%3d", lp_config.normal_highlight );
-		goxy( 77, 2 );
-		setc( lp_config.normal_menu_item );
-		bprintf( "%3d", lp_config.normal_menu_item );
-		goxy( 38, 3 );
-		setc( lp_config.current_highlight );
-		bprintf( "%3d", lp_config.current_highlight );
-		goxy( 77, 3 );
-		setc( lp_config.current_menu_item );
-		bprintf( "%3d", lp_config.current_menu_item );
-		ansic( 0 );
-		goxy( 38, 6 );
-		bprintf( "|%2d%2d", lp_config.tagged_color, lp_config.tagged_color );
-		goxy(77, 6);
-		bprintf("|%2d%2d", lp_config.file_num_color, lp_config.file_num_color);
-		goxy(38, 7);
-		bprintf("|%2d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
-		goxy(77, 7);
-		bprintf("|%2d%2d", lp_config.found_back_color, lp_config.found_back_color);
-		goxy(38, 8);
-		setc( lp_config.current_file_color );
-		bprintf("%3d", lp_config.current_file_color);
-		goxy(38, 11);
-		bprintf("|#4%2d", lp_config.max_screen_lines_to_show);
-		goxy(77, 11);
-		bprintf("|#4%2d", lp_config.show_at_least_extended);
-		goxy(74, 14);
-		bprintf("|#4%s", lp_config.request_file ? _on_ : _off_);
-		goxy(74, 15);
-		bprintf("|#4%s", lp_config.search_extended_on ? _on_ : _off_);
-		goxy(74, 16);
-		bprintf("|#4%s", lp_config.edit_enable ? _on_ : _off_);
-		ansic( 0 );
-		goxy(29, 14);
-		bprintf("|#4%s", lp_config.no_configuration ? _on_ : _off_);
-		goxy(29, 15);
-		bprintf("|#4%s", lp_config.colorize_found_text ? _on_ : _off_);
-		goxy(29, 16);
-		bprintf("|#4%s", lp_config.simple_search ? _on_ : _off_);
-		goxy(29, 17);
-		bprintf("|#4%s", lp_config.check_exist ? _on_ : _off_);
-		goxy(1, 19);
+		GetSession()->bout.GotoXY( 38, 2 );
+		GetSession()->bout.SystemColor( lp_config.normal_highlight );
+		GetSession()->bout.WriteFormatted( "%3d", lp_config.normal_highlight );
+		GetSession()->bout.GotoXY( 77, 2 );
+		GetSession()->bout.SystemColor( lp_config.normal_menu_item );
+		GetSession()->bout.WriteFormatted( "%3d", lp_config.normal_menu_item );
+		GetSession()->bout.GotoXY( 38, 3 );
+		GetSession()->bout.SystemColor( lp_config.current_highlight );
+		GetSession()->bout.WriteFormatted( "%3d", lp_config.current_highlight );
+		GetSession()->bout.GotoXY( 77, 3 );
+		GetSession()->bout.SystemColor( lp_config.current_menu_item );
+		GetSession()->bout.WriteFormatted( "%3d", lp_config.current_menu_item );
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.GotoXY( 38, 6 );
+		GetSession()->bout.WriteFormatted( "|%2d%2d", lp_config.tagged_color, lp_config.tagged_color );
+		GetSession()->bout.GotoXY(77, 6);
+		GetSession()->bout.WriteFormatted("|%2d%2d", lp_config.file_num_color, lp_config.file_num_color);
+		GetSession()->bout.GotoXY(38, 7);
+		GetSession()->bout.WriteFormatted("|%2d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
+		GetSession()->bout.GotoXY(77, 7);
+		GetSession()->bout.WriteFormatted("|%2d%2d", lp_config.found_back_color, lp_config.found_back_color);
+		GetSession()->bout.GotoXY(38, 8);
+		GetSession()->bout.SystemColor( lp_config.current_file_color );
+		GetSession()->bout.WriteFormatted("%3d", lp_config.current_file_color);
+		GetSession()->bout.GotoXY(38, 11);
+		GetSession()->bout.WriteFormatted("|#4%2d", lp_config.max_screen_lines_to_show);
+		GetSession()->bout.GotoXY(77, 11);
+		GetSession()->bout.WriteFormatted("|#4%2d", lp_config.show_at_least_extended);
+		GetSession()->bout.GotoXY(74, 14);
+		GetSession()->bout.WriteFormatted("|#4%s", lp_config.request_file ? _on_ : _off_);
+		GetSession()->bout.GotoXY(74, 15);
+		GetSession()->bout.WriteFormatted("|#4%s", lp_config.search_extended_on ? _on_ : _off_);
+		GetSession()->bout.GotoXY(74, 16);
+		GetSession()->bout.WriteFormatted("|#4%s", lp_config.edit_enable ? _on_ : _off_);
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.GotoXY(29, 14);
+		GetSession()->bout.WriteFormatted("|#4%s", lp_config.no_configuration ? _on_ : _off_);
+		GetSession()->bout.GotoXY(29, 15);
+		GetSession()->bout.WriteFormatted("|#4%s", lp_config.colorize_found_text ? _on_ : _off_);
+		GetSession()->bout.GotoXY(29, 16);
+		GetSession()->bout.WriteFormatted("|#4%s", lp_config.simple_search ? _on_ : _off_);
+		GetSession()->bout.GotoXY(29, 17);
+		GetSession()->bout.WriteFormatted("|#4%s", lp_config.check_exist ? _on_ : _off_);
+		GetSession()->bout.GotoXY(1, 19);
 		GetSession()->bout << "|#1Q-Quit ";
 		char key = onek( "Q\rABCDEFGHIJKLMNOPRS", true );
 		switch (key)
@@ -1361,13 +1361,13 @@ short SelectColor(int which)
 {
 	char ch, nc;
 
-	nl();
+	GetSession()->bout.NewLine();
 
-	if ( GetSession()->thisuser.hasColor() )
+	if ( GetSession()->GetCurrentUser()->hasColor() )
 	{
 		color_list();
-		ansic( 0 );
-		nl();
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2Foreground? ";
 		ch = onek("01234567");
 		nc = ch - '0';
@@ -1381,28 +1381,28 @@ short SelectColor(int which)
 	}
 	else
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#5Inversed? ";
 		if (yesno())
 		{
-			if ((GetSession()->thisuser.GetBWColor( 1 ) & 0x70) == 0)
+			if ((GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70) == 0)
 			{
-				nc = 0 | ((GetSession()->thisuser.GetBWColor( 1 ) & 0x07) << 4);
+				nc = 0 | ((GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x07) << 4);
 			}
 			else
 			{
-				nc = (GetSession()->thisuser.GetBWColor( 1 ) & 0x70);
+				nc = (GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70);
 			}
 		}
 		else
 		{
-			if ((GetSession()->thisuser.GetBWColor( 1 ) & 0x70) == 0)
+			if ((GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70) == 0)
 			{
-				nc = 0 | (GetSession()->thisuser.GetBWColor( 1 ) & 0x07);
+				nc = 0 | (GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x07);
 			}
 			else
 			{
-				nc = ((GetSession()->thisuser.GetBWColor( 1 ) & 0x70) >> 4);
+				nc = ((GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70) >> 4);
 			}
 		}
 	}
@@ -1421,11 +1421,11 @@ short SelectColor(int which)
 			nc |= 0x80;
 		}
 	}
-	nl();
-	setc(nc);
+	GetSession()->bout.NewLine();
+	GetSession()->bout.SystemColor(nc);
 	GetSession()->bout << DescribeColorCode( nc );
-	ansic( 0 );
-	nl();
+	GetSession()->bout.Color( 0 );
+	GetSession()->bout.NewLine();
 
 	GetSession()->bout << "|#5Is this OK? ";
 	if (yesno())
@@ -1441,16 +1441,16 @@ void check_listplus()
 
 	if (noyes())
     {
-		if ( GetSession()->thisuser.isUseListPlus() )
+		if ( GetSession()->GetCurrentUser()->isUseListPlus() )
         {
-            GetSession()->thisuser.clearStatusFlag( WUser::listPlus );
+            GetSession()->GetCurrentUser()->clearStatusFlag( WUser::listPlus );
         }
 	}
     else
     {
-		if ( !GetSession()->thisuser.isUseListPlus() )
+		if ( !GetSession()->GetCurrentUser()->isUseListPlus() )
         {
-            GetSession()->thisuser.setStatusFlag( WUser::listPlus );
+            GetSession()->GetCurrentUser()->setStatusFlag( WUser::listPlus );
         }
 	}
 }
@@ -1465,7 +1465,7 @@ void config_file_list()
 	strcpy( u.filename, "WWIV430.ZIP" );
 	strcpy( u.description, "This is a sample description!" );
 	strcpy( u.date, date() );
-	strcpy( reinterpret_cast<char*>( u.upby ), GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) );
+	strcpy( reinterpret_cast<char*>( u.upby ), GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) );
 	u.numdloads = 50;
 	u.numbytes = 655535L;
 	u.daten = time( NULL ) - 10000;
@@ -1616,7 +1616,7 @@ void config_file_list()
 	}
 	list_loaded = GetSession()->usernum;
 	write_config_listing(GetSession()->usernum);
-	nl( 4 );
+	GetSession()->bout.NewLine( 4 );
 }
 
 
@@ -1628,92 +1628,92 @@ void update_user_config_screen( uploadsrec * u, int which )
 
 	if ( which < 1 || which == 1 )
 	{
-		goxy(37, 4);
-		setc( static_cast<BYTE>( config_listing.lp_options & cfl_fname ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.GotoXY(37, 4);
+		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_fname ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
-		setc( BLACK + ( BLUE << 4 ) );
+		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 0 ] ];
 	}
 	if ( which < 1 || which == 2 )
 	{
-		goxy( 37, 5 );
-		setc( static_cast<BYTE>( config_listing.lp_options & cfl_extension ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.GotoXY( 37, 5 );
+		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_extension ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
-		setc( BLACK + ( BLUE << 4 ) );
+		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 1 ] ];
 	}
 	if ( which < 1 || which == 3 )
 	{
-		goxy( 37, 6 );
-		setc( static_cast<BYTE>( config_listing.lp_options & cfl_dloads ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.GotoXY( 37, 6 );
+		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_dloads ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
-		setc( BLACK + ( BLUE << 4 ) );
+		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 2 ] ];
 	}
 	if ( which < 1 || which == 4 )
 	{
-		goxy( 37, 7 );
-		setc( static_cast<BYTE>( config_listing.lp_options & cfl_kbytes ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.GotoXY( 37, 7 );
+		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_kbytes ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
-		setc( BLACK + ( BLUE << 4 ) );
+		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 3 ] ];
 	}
 	if ( which < 1 || which == 5 )
 	{
-		goxy( 37, 8 );
-		setc( static_cast<BYTE>( config_listing.lp_options & cfl_description ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.GotoXY( 37, 8 );
+		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_description ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
-		setc( BLACK + ( BLUE << 4 ) );
+		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 10 ] ];
 	}
 	if ( which < 1 || which == 6 )
 	{
-		goxy( 37, 9 );
-		setc( static_cast<BYTE>( config_listing.lp_options & cfl_date_uploaded ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.GotoXY( 37, 9 );
+		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_date_uploaded ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
-		setc( BLACK + ( BLUE << 4 ) );
+		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 4 ] ];
 	}
 	if ( which < 1 || which == 7 )
 	{
-		goxy( 37, 10 );
-		setc( static_cast<BYTE>( config_listing.lp_options & cfl_file_points ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.GotoXY( 37, 10 );
+		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_file_points ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
-		setc( BLACK + ( BLUE << 4 ) );
+		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[config_listing.lp_colors[5]];
 	}
 	if ( which < 1 || which == 8 )
 	{
-		goxy(37, 11);
-		setc( (config_listing.lp_options & cfl_days_old ? RED + (BLUE << 4) : BLACK + (BLUE << 4)) );
+		GetSession()->bout.GotoXY(37, 11);
+		GetSession()->bout.SystemColor( (config_listing.lp_options & cfl_days_old ? RED + (BLUE << 4) : BLACK + (BLUE << 4)) );
 		GetSession()->bout << "\xFE ";
-		setc(BLACK + (BLUE << 4));
+		GetSession()->bout.SystemColor(BLACK + (BLUE << 4));
 		GetSession()->bout << lp_color_list[config_listing.lp_colors[6]];
 	}
 	if ( which < 1 || which == 9 )
 	{
-		goxy( 37, 12 );
-		setc( static_cast<BYTE>( config_listing.lp_options & cfl_upby ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.GotoXY( 37, 12 );
+		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_upby ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
-		setc( BLACK + ( BLUE << 4 ) );
+		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[config_listing.lp_colors[7]];
 	}
 	if ( which < 1 || which == 10 )
 	{
-		goxy( 37, 13 );
-		setc( static_cast<BYTE>( config_listing.lp_options & cfl_header ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4) ) );
+		GetSession()->bout.GotoXY( 37, 13 );
+		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_header ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4) ) );
 		GetSession()->bout << "\xFE ";
-		setc( BLACK + ( BLUE << 4 ) );
+		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 	}
-	setc( YELLOW );
-	goxy( 1, 21 );
+	GetSession()->bout.SystemColor( YELLOW );
+	GetSession()->bout.GotoXY( 1, 21 );
 	ClearEOL();
-	nl();
+	GetSession()->bout.NewLine();
 	ClearEOL();
-	goxy( 1, 21 );
+	GetSession()->bout.GotoXY( 1, 21 );
 	printinfo_plus( u, 1, 1, 30, &sr );
-	goxy( 30, 17 );
-	setc( YELLOW );
+	GetSession()->bout.GotoXY( 30, 17 );
+	GetSession()->bout.SystemColor( YELLOW );
 	BackSpace();
 }
 
@@ -1755,9 +1755,9 @@ int rename_filename( const char *pszFileName, int dn )
 		FileAreaSetRecord( fileDownload, i );
 		fileDownload.Read( &u, sizeof( uploadsrec ) );
 		fileDownload.Close();
-		nl();
+		GetSession()->bout.NewLine();
 		printfileinfo( &u, dn );
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#5Change info for this file (Y/N/Q)? ";
 		ch = ynq();
 		if ( ch == 'Q' )
@@ -1770,7 +1770,7 @@ int rename_filename( const char *pszFileName, int dn )
 			i = nrecno( s3, cp );
 			continue;
 		}
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2New filename? ";
 		input( s, 12 );
 		if ( !okfn( s ))
@@ -1811,7 +1811,7 @@ int rename_filename( const char *pszFileName, int dn )
 				}
 			}
 		}
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "New description:\r\n|#2: ";
 		Input1( s, u.description, 58, false, MIXED );
 		if ( s[0] )
@@ -1819,11 +1819,11 @@ int rename_filename( const char *pszFileName, int dn )
 			strcpy( u.description, s );
 		}
 		ss = read_extended_description(u.filename);
-		nl( 2 );
+		GetSession()->bout.NewLine( 2 );
 		GetSession()->bout << "|#5Modify extended description? ";
 		if ( yesno() )
 		{
-			nl();
+			GetSession()->bout.NewLine();
 			if ( ss )
 			{
 				GetSession()->bout << "|#5Delete it? ";
@@ -1918,7 +1918,7 @@ int remove_filename( const char *pszFileName, int dn )
 		}
 		if ( dcs() || ( u.ownersys == 0 && u.ownerusr == GetSession()->usernum ) )
 		{
-			nl();
+			GetSession()->bout.NewLine();
 			printfileinfo(&u, dn);
 			GetSession()->bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
 			char ch = ynq();
@@ -2053,17 +2053,17 @@ int move_filename( const char *pszFileName, int dn )
 			fileDownload.Read( &u, sizeof( uploadsrec ) );
 			fileDownload.Close();
         }
-        nl();
+        GetSession()->bout.NewLine();
         printfileinfo(&u, dn);
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#5Move this (Y/N/Q)? ";
         char ch = 0;
         if (bulk_move)
         {
             tmp_disable_pause( true );
-            ansic( 1 );
+            GetSession()->bout.Color( 1 );
             GetSession()->bout << YesNoString( true );
-			nl();
+			GetSession()->bout.NewLine();
             ch = 'Y';
         }
         else
@@ -2083,7 +2083,7 @@ int move_filename( const char *pszFileName, int dn )
             {
                 do
                 {
-                    nl( 2 );
+                    GetSession()->bout.NewLine( 2 );
                     GetSession()->bout << "|#2To which directory? ";
                     ss = mmkey( 1 );
                     if ( ss[0] == '?' )
@@ -2129,7 +2129,7 @@ int move_filename( const char *pszFileName, int dn )
                 if (recno(u.filename) > 0)
                 {
                     ok = false;
-                    nl();
+                    GetSession()->bout.NewLine();
                     GetSession()->bout << "Filename already in use in that directory.\r\n";
                 }
                 if (GetSession()->numf >= directories[nDestDirNum].maxfiles)
@@ -2414,7 +2414,7 @@ int search_criteria(struct search_record * sr)
 	int all_conf = 1, useconf;
 	char s1[81];
 
-	useconf = ( uconfdir[1].confnum != -1 && okconf( &GetSession()->thisuser ) );
+	useconf = ( uconfdir[1].confnum != -1 && okconf( GetSession()->GetCurrentUser() ) );
 
 
 LP_SEARCH_HELP:
@@ -2426,17 +2426,17 @@ LP_SEARCH_HELP:
 	bool done = false;
 	while (!done)
     {
-		goxy(1, 15);
+		GetSession()->bout.GotoXY(1, 15);
 		for (int i = 0; i < 9; i++)
         {
-			goxy(1, 15 + i);
+			GetSession()->bout.GotoXY(1, 15 + i);
 			ClearEOL();
 		}
-		goxy(1, 15);
+		GetSession()->bout.GotoXY(1, 15);
 
 		GetSession()->bout << "|#1A)|#2 Filename (wildcards) :|02 " << sr->filemask << wwiv::endl;
 		GetSession()->bout << "|#1B)|#2 Text (no wildcards)  :|02 " << sr->search << wwiv::endl;
-		if ( okconf( &GetSession()->thisuser ) )
+		if ( okconf( GetSession()->GetCurrentUser() ) )
 		{
 			sprintf(s1, "%s", stripcolors(directories[udir[GetSession()->GetCurrentFileArea()].subnum].name));
 		}
@@ -2448,7 +2448,7 @@ LP_SEARCH_HELP:
 		sprintf(s1, "%s", stripcolors( reinterpret_cast<char*>( dirconfs[uconfdir[GetSession()->GetCurrentConferenceFileArea()].confnum].name ) ) );
 		GetSession()->bout << "|#1D)|#2 Which Conferences    :|02 " << ( all_conf ? "All Conferences" : s1 ) << wwiv::endl;
 		GetSession()->bout << "|#1E)|#2 Extended Description :|02 " << ( sr->search_extended ? "Yes" : "No " ) << wwiv::endl;
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|15Select item to change |#2<CR>|15 to start search |#2Q=Quit|15:|#0 ";
 
 		x = onek("QABCDE\r?");
@@ -2581,13 +2581,13 @@ void view_file(const char *pszFileName)
         {
 			sprintf( szCommandLine, "AVIEWCOM.EXE %s%s -p%s -a1 -d",
 				     directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, szBuffer, syscfgovr.tempdir );
-			osysstatus = GetSession()->thisuser.GetStatus();
-			if ( GetSession()->thisuser.hasPause() )
+			osysstatus = GetSession()->GetCurrentUser()->GetStatus();
+			if ( GetSession()->GetCurrentUser()->hasPause() )
             {
-                GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+                GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
             }
 			ExecuteExternalProgram(szCommandLine, EFLAG_INTERNAL | EFLAG_TOPSCREEN | EFLAG_COMIO | EFLAG_NOPAUSE);
-			GetSession()->thisuser.SetStatus( osysstatus );
+			GetSession()->GetCurrentUser()->SetStatus( osysstatus );
 		}
         else
         {
@@ -2623,7 +2623,7 @@ void view_file(const char *pszFileName)
 				i = nrecno(pszFileName, i);
 			}
 		} while ( i > 0 && !hangup && !abort );
-		nl();
+		GetSession()->bout.NewLine();
 		pausescr();
 	}
 }
@@ -2709,7 +2709,7 @@ void download_plus(const char *pszFileName)
 
 	if (GetSession()->numbatchdl != 0)
     {
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
 		if (noyes())
         {
@@ -2780,7 +2780,7 @@ void download_plus(const char *pszFileName)
 void request_file(const char *pszFileName)
 {
 	ClearScreen();
-	nl();
+	GetSession()->bout.NewLine();
 
 	printfile(LPFREQ_NOEXT);
 
@@ -2788,7 +2788,7 @@ void request_file(const char *pszFileName)
 
 	if (noyes())
     {
-		ssm( 1, 0, "%s is requesting file %s", GetSession()->thisuser.GetName(), pszFileName );
+		ssm( 1, 0, "%s is requesting file %s", GetSession()->GetCurrentUser()->GetName(), pszFileName );
 		GetSession()->bout << "File request sent\r\n";
 	}
     else
@@ -2809,12 +2809,12 @@ bool ok_listplus()
     }
 
 #ifndef FORCE_LP
-	if ( GetSession()->thisuser.isUseNoTagging() )
+	if ( GetSession()->GetCurrentUser()->isUseNoTagging() )
     {
 		return false;
     }
 
-    if ( GetSession()->thisuser.isUseListPlus() )
+    if ( GetSession()->GetCurrentUser()->isUseListPlus() )
     {
 		return false;
     }

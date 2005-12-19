@@ -444,7 +444,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime)
         char ch = CZ;
 		fileInputMsg.Write( &ch, 1 );
 		fileInputMsg.Close();
-		if ( GetSession()->thisuser.GetNumMessagesPosted() < 10 )
+		if ( GetSession()->GetCurrentUser()->GetNumMessagesPosted() < 10 )
 		{
 			printfile(QUOTE_NOEXT);
 		}
@@ -469,7 +469,7 @@ void get_quote(int fsed)
         }
         else
         {
-            nl();
+            GetSession()->bout.NewLine();
         }
         GetSession()->bout << "Not replying to a message!  Nothing to quote!\r\n\n";
         if ( fsed )
@@ -544,7 +544,7 @@ void get_quote(int fsed)
             } while ( l2 < quotes_ind_l );
             --i;
         }
-        nl();
+        GetSession()->bout.NewLine();
 
         if ( !i1 && !hangup )
         {

@@ -51,7 +51,7 @@ bool CheckMenuPassword( char* pszCorrectPassword )
         password = pszCorrectPassword;
     }
 
-    nl();
+    GetSession()->bout.NewLine();
     std::string passwordFromUser;
     input_password( "|#2SY: ", passwordFromUser, 20 );
     return ( passwordFromUser == password ) ? true : false;
@@ -231,7 +231,7 @@ void Menus(MenuInstanceData * pMenuData, const char *pszDir, const char *pszMenu
             return;
         }
         // if flagged to display help on entrance, then do so
-        if ( GetSession()->thisuser.isExpert() && pMenuData->header.nForceHelp == MENU_HELP_ONENTRANCE )
+        if ( GetSession()->GetCurrentUser()->isExpert() && pMenuData->header.nForceHelp == MENU_HELP_ONENTRANCE )
         {
             AMDisplayHelp(pMenuData);
         }
@@ -385,7 +385,7 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
 {
     if ( ( pHeader->nFlags & MENU_FLAG_DELETED ) ||
         ( GetSession()->GetEffectiveSl() < pHeader->nMinSL ) ||
-        ( GetSession()->thisuser.GetDsl() < pHeader->nMinDSL ) )
+        ( GetSession()->GetCurrentUser()->GetDsl() < pHeader->nMinDSL ) )
     {
         return false;
     }
@@ -396,7 +396,7 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
     {
         if (pHeader->uAR & (1 << x))
         {
-            if ( !GetSession()->thisuser.hasArFlag( 1 << x ) )
+            if ( !GetSession()->GetCurrentUser()->hasArFlag( 1 << x ) )
             {
                 return false;
             }
@@ -408,9 +408,9 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
     {
         if (pHeader->uDAR & (1 << x))
         {
-            if ( !GetSession()->thisuser.hasDarFlag( 1 << x ) )
+            if ( !GetSession()->GetCurrentUser()->hasDarFlag( 1 << x ) )
             {
-                return ( GetSession()->thisuser.GetDsl() < pHeader->nMinDSL );
+                return ( GetSession()->GetCurrentUser()->GetDsl() < pHeader->nMinDSL );
             }
         }
     }
@@ -420,9 +420,9 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
     {
         if (pHeader->uRestrict & (1 << x))
         {
-            if ( GetSession()->thisuser.hasRestrictionFlag( 1 << x ) )
+            if ( GetSession()->GetCurrentUser()->hasRestrictionFlag( 1 << x ) )
             {
-                return ( GetSession()->thisuser.GetDsl() < pHeader->nMinDSL );
+                return ( GetSession()->GetCurrentUser()->GetDsl() < pHeader->nMinDSL );
             }
         }
     }
@@ -548,13 +548,13 @@ void MenuSysopLog(const char *pszMsg)
 	sysopchar(szLog);
 
 	GetSession()->bout << szLog;
-	nl();
+	GetSession()->bout.NewLine();
 }
 
 
 void PrintMenuPrompt( MenuInstanceData * pMenuData )
 {
-    if ( !GetSession()->thisuser.isExpert() || pMenuData->header.nForceHelp == MENU_HELP_FORCE )
+    if ( !GetSession()->GetCurrentUser()->isExpert() || pMenuData->header.nForceHelp == MENU_HELP_FORCE )
     {
 		AMDisplayHelp( pMenuData );
     }
@@ -580,9 +580,9 @@ void AMDisplayHelp( MenuInstanceData * pMenuData )
 
 	char * pszTemp = szFileName + strlen(szFileName);
 
-	if ( GetSession()->thisuser.hasAnsi() )
+	if ( GetSession()->GetCurrentUser()->hasAnsi() )
     {
-		if ( GetSession()->thisuser.hasColor() )
+		if ( GetSession()->GetCurrentUser()->hasColor() )
         {
 			strcpy(pszTemp, ".ans");
 			if (!WFile::Exists(szFileName))
@@ -676,7 +676,7 @@ void ConfigUserMenuSet()
         {
 			GetSession()->bout << "|#23|06) |#1Menu Type    |06: |15" << ( pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "Regular Menus" : "Pulldown Menus" ) << wwiv::endl;
         }
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#9[|0212? |08Q|02=Quit|#9] :|#0 ";
 
         char chKey = onek( ( bDisablePD ) ? "Q12?" : "Q123?" );
@@ -689,7 +689,7 @@ void ConfigUserMenuSet()
 
         case '1':
             ListMenuDirs();
-            nl( 2 );
+            GetSession()->bout.NewLine( 2 );
             GetSession()->bout << "|15Enter the menu set to use : |#0";
             input(pSecondUserRec->szMenuSet, 8);
             if ( !ValidateMenuSet(pSecondUserRec->szMenuSet, false ) )
@@ -709,7 +709,7 @@ void ConfigUserMenuSet()
                         strcpy(szFileName, fnd.GetFileName());
                         if ((strstr(szFileName, ".") == 0)  && (fnd.IsDirectory()))
                         {
-                            nl();
+                            GetSession()->bout.NewLine();
 							GetSession()->bout << "|#1Menu Set : |#2" << szFileName << "  -  |15" << GetMenuDescription( szFileName, szDesc ) << wwiv::endl;
                             GetSession()->bout << "|#5Use this menu set? ";
                             if (noyes())
@@ -747,9 +747,9 @@ void ConfigUserMenuSet()
     // If menu is invalid, it picks the first one it finds
     if ( !ValidateMenuSet( pSecondUserRec->szMenuSet, true ) )
     {
-        if ( GetSession()->num_languages > 1 && GetSession()->thisuser.GetLanguage() != 0 )
+        if ( GetSession()->num_languages > 1 && GetSession()->GetCurrentUser()->GetLanguage() != 0 )
         {
-            GetSession()->bout << "|#6No menus for " << languages[GetSession()->thisuser.GetLanguage()].name << " language.";
+            GetSession()->bout << "|#6No menus for " << languages[GetSession()->GetCurrentUser()->GetLanguage()].name << " language.";
             input_language();
         }
     }
@@ -758,7 +758,7 @@ void ConfigUserMenuSet()
 
     sprintf(szMsg, "Menu in use : %s - %s - %s", pSecondUserRec->szMenuSet, pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Hot" : "Off", pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "REG" : "PD");
     MenuSysopLog(szMsg);
-    nl( 2 );
+    GetSession()->bout.NewLine( 2 );
 }
 
 
@@ -786,7 +786,7 @@ void QueryMenuSet()
 
 	ValidateMenuSet( pSecondUserRec->szMenuSet, true );
 
-	nl( 2 );
+	GetSession()->bout.NewLine( 2 );
 	if (pSecondUserRec->szMenuSet[0] == 0)
     {
 		strcpy(pSecondUserRec->szMenuSet, "WWIV");
@@ -797,7 +797,7 @@ void QueryMenuSet()
 	GetSession()->bout << "|#8Menu Type    : |#9" <<
 		          ( bDisablePD == true ? "<Disabled>" : pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "Regular Menus" : "Pulldown Menus" ) <<
 				  wwiv::endl;
-	nl();
+	GetSession()->bout.NewLine();
 
     GetSession()->bout << "|#7Would you like to change these? (N) ";
 	if ( yesno() )
@@ -975,8 +975,8 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     if ( ( pMenu->nFlags & MENU_FLAG_DELETED ) ||
          ( GetSession()->GetEffectiveSl() < pMenu->nMinSL ) ||
          ( GetSession()->GetEffectiveSl() > pMenu->iMaxSL && pMenu->iMaxSL != 0 ) ||
-         ( GetSession()->thisuser.GetDsl() < pMenu->nMinDSL ) ||
-         ( GetSession()->thisuser.GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0 ) )
+         ( GetSession()->GetCurrentUser()->GetDsl() < pMenu->nMinDSL ) ||
+         ( GetSession()->GetCurrentUser()->GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0 ) )
     {
         return false;
     }
@@ -988,7 +988,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     {
         if (pMenu->uAR & (1 << x))
         {
-            if ( !GetSession()->thisuser.hasArFlag( 1 << x ) )
+            if ( !GetSession()->GetCurrentUser()->hasArFlag( 1 << x ) )
             {
                 return false;
             }
@@ -1000,7 +1000,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     {
         if (pMenu->uDAR & (1 << x))
         {
-            if ( !GetSession()->thisuser.hasDarFlag( 1 << x ) )
+            if ( !GetSession()->GetCurrentUser()->hasDarFlag( 1 << x ) )
             {
                 return false;
             }
@@ -1012,7 +1012,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     {
         if (pMenu->uRestrict & (1 << x))
         {
-            if ( GetSession()->thisuser.hasRestrictionFlag( 1 << x ) )
+            if ( GetSession()->GetCurrentUser()->hasRestrictionFlag( 1 << x ) )
             {
                 return false;
             }
@@ -1200,12 +1200,12 @@ void GenerateMenu(MenuInstanceData * pMenuData)
 
 	memset(&menu, 0, sizeof(MenuRec));
 
-	ansic( 0 );
-	nl();
+	GetSession()->bout.Color( 0 );
+	GetSession()->bout.NewLine();
 
 	if (pMenuData->header.nNumbers != MENU_NUMFLAG_NOTHING)
     {
-		bprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
+		GetSession()->bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
 		++iDisplayed;
 	}
 	for (x = 0; x < pMenuData->nAmountRecs - 1; x++)
@@ -1231,11 +1231,11 @@ void GenerateMenu(MenuInstanceData * pMenuData)
 						sprintf(szKey, "[%s]", menu.szKey);
                     }
 
-					bprintf("|#1%-8.8s  |#2%-25.25s  ", szKey, menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
+					GetSession()->bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ", szKey, menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
 
 					if (iDisplayed % 2)
                     {
-						nl();
+						GetSession()->bout.NewLine();
                     }
 
 					++iDisplayed;
@@ -1243,18 +1243,18 @@ void GenerateMenu(MenuInstanceData * pMenuData)
 			}
 		}
 	}
-	if ( wwiv::stringUtils::IsEquals( GetSession()->thisuser.GetName(), "GUEST" ) )
+	if ( wwiv::stringUtils::IsEquals( GetSession()->GetCurrentUser()->GetName(), "GUEST" ) )
     {
 		if ( iDisplayed % 2 )
         {
-			nl();
+			GetSession()->bout.NewLine();
         }
-		bprintf( "|#1%-8.8s  |#2%-25.25s  ",
+		GetSession()->bout.WriteFormatted( "|#1%-8.8s  |#2%-25.25s  ",
 			     pSecondUserRec->cHotKeys == HOTKEYS_ON ? "//APPLY" : "[APPLY]",
                  "Guest Account Application");
 		++iDisplayed;
 	}
-	nl( 2 );
+	GetSession()->bout.NewLine( 2 );
 	return;
 }
 
@@ -1554,7 +1554,7 @@ void InterpretCommand( MenuInstanceData * pMenuData, const char *pszScript )
             } break;
         case 19:
             {  // "DisplayHelp"
-                if ( GetSession()->thisuser.isExpert() )
+                if ( GetSession()->GetCurrentUser()->isExpert() )
                 {
                     AMDisplayHelp( pMenuData );
                 }

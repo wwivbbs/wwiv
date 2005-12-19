@@ -46,7 +46,7 @@ void reset_files()
 
 	WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
     pStatus->SetNumUsers( 0 );
-	nl();
+	GetSession()->bout.NewLine();
 	int nNumUsers = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
     WFile userFile( syscfg.datadir, USER_LST );
     if ( userFile.Open( WFile::modeBinary | WFile::modeReadWrite ) )
@@ -141,7 +141,7 @@ void valuser( int nUserNumber )
     GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
     if ( !user.isUserDeleted() )
 	{
-		nl();
+		GetSession()->bout.NewLine();
         GetSession()->bout << "|#9Name: |#2" << user.GetUserNameAndNumber( nUserNumber ) << wwiv::endl;
         GetSession()->bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
         GetSession()->bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
@@ -159,7 +159,7 @@ void valuser( int nUserNumber )
 			if (s[0])
 			{
 				int nSl = atoi( s );
-				if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nSl >= GetSession()->GetEffectiveSl() )
+				if ( !GetApplication()->GetWfcStatus() && nSl >= GetSession()->GetEffectiveSl() )
 				{
 					nSl = -2;
 				}
@@ -169,33 +169,33 @@ void valuser( int nUserNumber )
 				}
 				if ( nSl == -1 )
 				{
-					nl();
+					GetSession()->bout.NewLine();
 					GetSession()->bout << "|#9Delete? ";
 					if ( yesno() )
 					{
 						deluser( nUserNumber );
-						nl();
+						GetSession()->bout.NewLine();
 						GetSession()->bout << "|12Deleted.\r\n\n";
 					}
 					else
 					{
-						nl();
+						GetSession()->bout.NewLine();
 						GetSession()->bout << "|13NOT deleted.\r\n";
 					}
 					return;
 				}
 			}
 		}
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#9DSL : |#2" << user.GetDsl() << wwiv::endl;
-		if ( user.GetDsl() != 255 && user.GetDsl() < GetSession()->thisuser.GetDsl() )
+		if ( user.GetDsl() != 255 && user.GetDsl() < GetSession()->GetCurrentUser()->GetDsl() )
 		{
 			GetSession()->bout << "|#9New ? ";
 			input( s, 3, true );
 			if (s[0])
 			{
 				int nDsl = atoi(s);
-				if ( !GetApplication()->GetLocalIO()->GetWfcStatus() && nDsl >= GetSession()->thisuser.GetDsl() )
+				if ( !GetApplication()->GetWfcStatus() && nDsl >= GetSession()->GetCurrentUser()->GetDsl() )
 				{
 					nDsl = -1;
 				}
@@ -220,7 +220,7 @@ void valuser( int nUserNumber )
 			{
 				s[i] = SPACE;
 			}
-			if ( GetSession()->thisuser.hasArFlag( 1 << i ) )
+			if ( GetSession()->GetCurrentUser()->hasArFlag( 1 << i ) )
 			{
 				ar1[ar2++] = static_cast<char>( 'A' + i );
 			}
@@ -232,7 +232,7 @@ void valuser( int nUserNumber )
 			{
 				s1[i] = SPACE;
 			}
-			if ( GetSession()->thisuser.hasDarFlag( 1 << i ) )
+			if ( GetSession()->GetCurrentUser()->hasDarFlag( 1 << i ) )
 			{
 				dar1[dar2++] = static_cast<char>( 'A' + i );
 			}
@@ -250,7 +250,7 @@ void valuser( int nUserNumber )
 		s2[16]      = '\0';
 		ar1[ar2]    = '\0';
 		dar1[dar2]  = '\0';
-		nl();
+		GetSession()->bout.NewLine();
 		char ch1 = '\0';
 		if ( ar2 > 1 )
 		{
@@ -275,7 +275,7 @@ void valuser( int nUserNumber )
 				}
 			} while ( !hangup && ch1 != RETURN );
 		}
-		nl();
+		GetSession()->bout.NewLine();
 		ch1 = 0;
 		if (dar2 > 1)
 		{
@@ -300,7 +300,7 @@ void valuser( int nUserNumber )
 				}
 			} while ( !hangup && ch1 != RETURN );
 		}
-		nl();
+		GetSession()->bout.NewLine();
 		ch1     = 0;
 		s[0]    = RETURN;
 		s[1]    = '?';
@@ -342,7 +342,7 @@ void valuser( int nUserNumber )
 			}
 		} while ( !hangup && ch1 == 0 );
         GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
-		nl();
+		GetSession()->bout.NewLine();
   }
   else
   {
@@ -385,10 +385,10 @@ void print_net_listing( bool bForcePause )
 
 	if ( bForcePause )
 	{
-		bHadPause  = GetSession()->thisuser.hasPause();
+		bHadPause  = GetSession()->GetCurrentUser()->hasPause();
 		if ( bHadPause )
 		{
-            GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+            GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
 		}
 	}
 	bool done = false;
@@ -402,7 +402,7 @@ void print_net_listing( bool bForcePause )
 			onx[0] = 'Q';
 			onx[1] = 0;
 			int onxi = 1;
-			nl();
+			GetSession()->bout.NewLine();
 			for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++)
 			{
 				if (i < 9)
@@ -477,9 +477,9 @@ void print_net_listing( bool bForcePause )
 			phstr[0] = 0;
 
 			ClearScreen();
-			nl();
+			GetSession()->bout.NewLine();
             GetSession()->bout << "|#9Network|#2: |#1" << GetSession()->GetNetworkName() << wwiv::endl;
-			nl();
+			GetSession()->bout.NewLine();
 
 			GetSession()->bout << "|#21|#9) = |#1List All\r\n";
 			GetSession()->bout << "|#22|#9) = |#1Area Code\r\n";
@@ -492,7 +492,7 @@ void print_net_listing( bool bForcePause )
 			GetSession()->bout << "|#29|#9) = |#1Phone SubString\r\n";
 			GetSession()->bout << "|#20|#9) = |#1Unconnected Systems\r\n";
 			GetSession()->bout << "|#2Q|#9) = |#1Quit NetList\r\n";
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#9Select: |#2";
 			char cmd = onek("Q1234567890");
 
@@ -510,7 +510,7 @@ void print_net_listing( bool bForcePause )
 				break;
 			case '2':
 				cmdbit = NET_SEARCH_AREACODE;
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#1Enter Area Code|#2: |#0";
 				input(acstr, 3);
 				if (strlen(acstr) != 3)
@@ -536,7 +536,7 @@ void print_net_listing( bool bForcePause )
 				break;
 			case '3':
 				cmdbit = NET_SEARCH_GROUP;
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#1Enter group number|#2: |#0";
 				input(s, 2);
 				if ((s[0] == 0) || (atoi(s) < 1))
@@ -562,7 +562,7 @@ void print_net_listing( bool bForcePause )
 				break;
 			case '8':
 				cmdbit = NET_SEARCH_SUBSTR;
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#1Enter SubString|#2: |#0";
 				input(substr, 40);
 				if (substr[0] == 0)
@@ -574,7 +574,7 @@ void print_net_listing( bool bForcePause )
 				break;
 			case '9':
 				cmdbit = NET_SEARCH_PHSUBSTR;
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#1Enter phone substring|#2: |#0";
 				input(phstr, 12);
 				if (phstr[0] == 0)
@@ -599,7 +599,7 @@ void print_net_listing( bool bForcePause )
 				break;
 			}
 
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#1Print BBS region info? ";
 			bool useregion = yesno();
 
@@ -611,7 +611,7 @@ void print_net_listing( bool bForcePause )
 				continue;
 			}
 			strcpy(s, "000-000-0000");
-			nl( 2 );
+			GetSession()->bout.NewLine( 2 );
 
 			for (i = 0; (i < GetSession()->num_sys_list) && (!abort); i++)
 			{
@@ -765,16 +765,16 @@ void print_net_listing( bool bForcePause )
       bbsListFile.Close();
       if ( !abort && slist )
 	  {
-		  nl();
+		  GetSession()->bout.NewLine();
 		  GetSession()->bout << "|#1Systems Listed |#7: |#2" << slist;
       }
-      nl( 2 );
+      GetSession()->bout.NewLine( 2 );
       pausescr();
     }
   }
   if ( bForcePause && bHadPause)
   {
-      GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+      GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
   }
 }
 
@@ -921,10 +921,10 @@ void mailr()
 						pFileEmail->Close();
 						if ( !GetSession()->IsUserOnline() && m.touser == 1 && m.tosys == 0 )
 						{
-                            GetSession()->thisuser.SetNumMailWaiting( GetSession()->thisuser.GetNumMailWaiting() - 1 );
+                            GetSession()->GetCurrentUser()->SetNumMailWaiting( GetSession()->GetCurrentUser()->GetNumMailWaiting() - 1 );
 						}
 					}
-					nl( 2 );
+					GetSession()->bout.NewLine( 2 );
 				} while ((c == 'R') && (!hangup));
 
 				pFileEmail = OpenEmailFile( false );
@@ -961,9 +961,9 @@ void chuser()
 		read_qscn(nUserNumber, qsc, false);
 		GetSession()->usernum = static_cast<unsigned short>( nUserNumber );
 		GetSession()->SetEffectiveSl( 255 );
-		sysoplogf( "#*#*#* Changed to %s", GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) );
+		sysoplogf( "#*#*#* Changed to %s", GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) );
 		changedsl();
-		GetApplication()->GetLocalIO()->UpdateTopScreen();
+		GetApplication()->UpdateTopScreen();
 	}
 	else
 	{
@@ -982,9 +982,9 @@ void zlog()
 	bool abort = false;
 	zlogrec z;
     file.Read( &z, sizeof( zlogrec ) );
-	nl();
+	GetSession()->bout.NewLine();
 	ClearScreen();
-    nl( 2 );
+    GetSession()->bout.NewLine( 2 );
 	pla("|#2  Date     Calls  Active   Posts   Email   Fback    U/L    %Act   T/user", &abort);
 	pla("|#7--------   -----  ------   -----   -----   -----    ---    ----   ------", &abort);
 	while ((i < 97) && (!abort) && (!hangup) && (z.date[0] != 0))

@@ -41,13 +41,13 @@ void normalupload(int dn)
     directoryrec d = directories[dn];
     if (GetSession()->numf >= d.maxfiles)
     {
-        nl( 3 );
+        GetSession()->bout.NewLine( 3 );
         GetSession()->bout << "This directory is currently full.\r\n\n";
         return;
     }
     if ((d.mask & mask_no_uploads) && (!dcs()))
     {
-        nl( 2 );
+        GetSession()->bout.NewLine( 2 );
         GetSession()->bout << "Uploads are not allowed to this directory.\r\n\n";
         return;
     }
@@ -64,7 +64,7 @@ void normalupload(int dn)
         {
             if (so())
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#5In filename database - add anyway? ";
                 if (!yesno())
                 {
@@ -74,7 +74,7 @@ void normalupload(int dn)
             else
             {
                 szInputFileName[0] = '\0';
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|12File either already here or unwanted.\r\n";
             }
         }
@@ -105,7 +105,7 @@ void normalupload(int dn)
         }
         if ( !ok )
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "Sorry, all uploads to this dir must be archived.  Supported types are:\r\n" << supportedExtensions << "\r\n\n";
             return;
         }
@@ -116,15 +116,15 @@ void normalupload(int dn)
     u.numdloads = 0;
     u.filetype = 0;
     u.mask = 0;
-    strcpy( u.upby, GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) );
+    strcpy( u.upby, GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) );
     strcpy( u.date, date() );
-    nl();
+    GetSession()->bout.NewLine();
     ok = 1;
     bool xfer = true;
     if (check_batch_queue(u.filename))
     {
         ok = 0;
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "That file is already in the batch queue.\r\n\n";
     }
     else
@@ -146,7 +146,7 @@ void normalupload(int dn)
             if ( dcs() )
             {
                 xfer = false;
-                nl( 2 );
+                GetSession()->bout.NewLine( 2 );
                 GetSession()->bout << "File already exists.\r\n|#5Add to database anyway? ";
                 if ( !yesno() )
                 {
@@ -155,24 +155,24 @@ void normalupload(int dn)
             }
             else
             {
-                nl( 2 );
+                GetSession()->bout.NewLine( 2 );
                 GetSession()->bout << "That file is already here.\r\n\n";
                 ok = 0;
             }
         }
         else if (!incom)
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "File isn't already there.\r\nCan't upload locally.\r\n\n";
             ok = 0;
         }
         if ((d.mask & mask_PD) && ok )
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Is this program PD/Shareware? ";
             if (!yesno())
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n";
                 GetSession()->bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
                 GetSession()->bout << "the sysop.\r\n\n";
@@ -188,7 +188,7 @@ void normalupload(int dn)
         }
         if ( ok && !GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) )
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "Checking for same file in other directories...\r\n\n";
             int nLastLineLength = 0;
             for ( int i = 0; i < GetSession()->num_dirs && udir[i].subnum != -1; i++ )
@@ -206,18 +206,18 @@ void normalupload(int dn)
                 int i1 = recno( u.filename );
                 if ( i1 >= 0 )
                 {
-                    nl();
+                    GetSession()->bout.NewLine();
 					GetSession()->bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
                     if (dcs())
                     {
-                        nl();
+                        GetSession()->bout.NewLine();
                         GetSession()->bout << "|#5Upload anyway? ";
                         if (!yesno())
                         {
                             ok = 0;
                             break;
                         }
-                        nl();
+                        GetSession()->bout.NewLine();
                     }
                     else
                     {
@@ -232,14 +232,14 @@ void normalupload(int dn)
             {
                 dliscan1(dn);
             }
-            nl();
+            GetSession()->bout.NewLine();
         }
         if (ok)
         {
-            nl();
+            GetSession()->bout.NewLine();
 			GetSession()->bout << "Please enter a one line description.\r\n:";
             inputl(u.description, 58);
-            nl();
+            GetSession()->bout.NewLine();
             char *pszExtendedDescription = NULL;
             modify_extended_description( &pszExtendedDescription, directories[dn].name, u.filename );
             if ( pszExtendedDescription )
@@ -248,7 +248,7 @@ void normalupload(int dn)
                 u.mask |= mask_extended;
                 BbsFreeMemory( pszExtendedDescription );
             }
-            nl();
+            GetSession()->bout.NewLine();
             char szReceiveFileName[ MAX_PATH ];
             memset( szReceiveFileName, 0, sizeof( szReceiveFileName ) );
             if ( xfer )
@@ -261,7 +261,7 @@ void normalupload(int dn)
                 {
                     ti += SECONDS_PER_HOUR_FLOAT * HOURS_PER_DAY_FLOAT;
                 }
-                GetSession()->thisuser.SetExtraTime( GetSession()->thisuser.GetExtraTime() + static_cast<float>( ti ) );
+                GetSession()->GetCurrentUser()->SetExtraTime( GetSession()->GetCurrentUser()->GetExtraTime() + static_cast<float>( ti ) );
             }
             if (ok)
             {
@@ -271,7 +271,7 @@ void normalupload(int dn)
 					if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
                     {
                         ok = 0;
-                        nl( 2 );
+                        GetSession()->bout.NewLine( 2 );
                         GetSession()->bout << "OS error - File not found.\r\n\n";
                         if (u.mask & mask_extended)
                         {
@@ -303,9 +303,9 @@ void normalupload(int dn)
 						long lFileLength = file.GetLength();
                         u.numbytes = lFileLength;
 						file.Close();
-                        GetSession()->thisuser.SetFilesUploaded( GetSession()->thisuser.GetFilesUploaded() + 1 );
+                        GetSession()->GetCurrentUser()->SetFilesUploaded( GetSession()->GetCurrentUser()->GetFilesUploaded() + 1 );
                         modify_database( u.filename, true );
-                        GetSession()->thisuser.SetUploadK( GetSession()->thisuser.GetUploadK() + bytes_to_k( u.numbytes ) );
+                        GetSession()->GetCurrentUser()->SetUploadK( GetSession()->GetCurrentUser()->GetUploadK() + bytes_to_k( u.numbytes ) );
 
                         get_file_idz(&u, dn);
                     }
@@ -343,19 +343,19 @@ void normalupload(int dn)
                         pStatus->IncrementFileChangedFlag( WStatus::fileChangeUpload );
                         GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
                         sysoplogf( "+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
-                        nl( 2 );
-                        bprintf( "File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio() );
-                        nl( 2 );
+                        GetSession()->bout.NewLine( 2 );
+                        GetSession()->bout.WriteFormatted( "File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio() );
+                        GetSession()->bout.NewLine( 2 );
                         if ( GetSession()->IsUserOnline() )
                         {
-                            GetApplication()->GetLocalIO()->UpdateTopScreen();
+                            GetApplication()->UpdateTopScreen();
                         }
                     }
                 }
             }
             else
             {
-                nl( 2 );
+                GetSession()->bout.NewLine( 2 );
                 GetSession()->bout << "File transmission aborted.\r\n\n";
                 if (u.mask & mask_extended)
                 {

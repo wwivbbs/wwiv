@@ -37,7 +37,7 @@ int try_to_ul(char *pszFileName)
 {
     bool ac = false;
 
-    if ( uconfsub[1].confnum != -1 && okconf( &GetSession()->thisuser ) )
+    if ( uconfsub[1].confnum != -1 && okconf( GetSession()->GetCurrentUser() ) )
     {
         ac = true;
         tmp_disable_conf( true );
@@ -73,7 +73,7 @@ int try_to_ul(char *pszFileName)
 
     if ( GetSession()->IsUserOnline() )
     {
-        GetApplication()->GetLocalIO()->UpdateTopScreen();
+        GetApplication()->UpdateTopScreen();
     }
 
     if (ac)
@@ -102,10 +102,10 @@ int try_to_ul_wh(char *pszFileName)
         return 1;
     }
     ClearScreen();
-    nl( 3 );
+    GetSession()->bout.NewLine( 3 );
 
     bool done = false;
-    if ( GetSession()->thisuser.isRestrictionValidate() || GetSession()->thisuser.isRestrictionUpload() ||
+    if ( GetSession()->GetCurrentUser()->isRestrictionValidate() || GetSession()->GetCurrentUser()->isRestrictionUpload() ||
         ( syscfg.sysconfig & sysconfig_all_sysop ) )
     {
         dn = (syscfg.newuploads < GetSession()->num_dirs) ? syscfg.newuploads : 0;
@@ -185,7 +185,7 @@ int try_to_ul_wh(char *pszFileName)
     {
         if (so())
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5In filename database - add anyway? ";
             if (!yesno())
             {
@@ -226,10 +226,10 @@ int try_to_ul_wh(char *pszFileName)
         }
         if (!ok)
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "Sorry, all uploads to this directory must be archived.  Supported types are:\r\n";
             GetSession()->bout << s1;
-            nl( 2 );
+            GetSession()->bout.NewLine( 2 );
 
             t2u_error(pszFileName, "Unsupported archive");
             return 1;
@@ -241,7 +241,7 @@ int try_to_ul_wh(char *pszFileName)
     u.numdloads = 0;
     u.filetype  = 0;
     u.mask      = 0;
-    strncpy( u.upby, GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ), sizeof( u.upby ) );
+    strncpy( u.upby, GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ), sizeof( u.upby ) );
     u.upby[36]  = '\0';
     strcpy(u.date, date());
 
@@ -250,7 +250,7 @@ int try_to_ul_wh(char *pszFileName)
     {
         if (dcs())
         {
-            nl( 2 );
+            GetSession()->bout.NewLine( 2 );
             GetSession()->bout << "File already exists.\r\n|#5Add to database anyway? ";
             if (yesno() == 0)
             {
@@ -266,7 +266,7 @@ int try_to_ul_wh(char *pszFileName)
     }
     if ( ok && (!GetApplication()->HasConfigFlag( OP_FLAGS_FAST_SEARCH ) ) )
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "Checking for same file in other directories...\r\n\n";
         i2 = 0;
 
@@ -289,19 +289,19 @@ int try_to_ul_wh(char *pszFileName)
             i1 = recno(u.filename);
             if (i1 >= 0)
             {
-                nl();
+                GetSession()->bout.NewLine();
 				GetSession()->bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
 
                 if (dcs())
                 {
-                    nl();
+                    GetSession()->bout.NewLine();
                     GetSession()->bout << "|#5Upload anyway? ";
                     if (!yesno())
                     {
                         t2u_error(pszFileName, "That file is already here.");
                         return 1;
                     }
-                    nl();
+                    GetSession()->bout.NewLine();
                 }
                 else
                 {
@@ -320,7 +320,7 @@ int try_to_ul_wh(char *pszFileName)
         GetSession()->bout << s1 << "\r";
 
         dliscan1(dn);
-        nl();
+        GetSession()->bout.NewLine();
     }
     sprintf(s1, "%s%s", syscfgovr.batchdir, pszFileName);
     sprintf(s2, "%s%s", d.path, pszFileName);
@@ -341,7 +341,7 @@ int try_to_ul_wh(char *pszFileName)
         bool abort = false;
 
         ClearScreen();
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
 		GetSession()->bout << "   |#1Filename    |01: |#7" << pszFileName << wwiv::endl;
 		GetSession()->bout << "|#2A|#7] |#1Description |01: |#7" << u.description << wwiv::endl;
@@ -363,18 +363,18 @@ int try_to_ul_wh(char *pszFileName)
             break;
 
         case 'A':
-            nl();
+            GetSession()->bout.NewLine();
 			GetSession()->bout << "Please enter a one line description.\r\n:";
             inputl(u.description, 58);
             break;
 
         case 'B':
-            nl();
+            GetSession()->bout.NewLine();
             ss = read_extended_description(u.filename);
             GetSession()->bout << "|#5Modify extended description? ";
             if (yesno())
             {
-                nl();
+                GetSession()->bout.NewLine();
                 if (ss)
                 {
                     GetSession()->bout << "|#5Delete it? ";
@@ -423,12 +423,12 @@ int try_to_ul_wh(char *pszFileName)
             break;
 
         case '\r':
-            nl();
+            GetSession()->bout.NewLine();
             done = true;
         }
     }
 
-    nl( 3 );
+    GetSession()->bout.NewLine( 3 );
 
 	WFile file( d.path, s );
 	if ( !file.Open( WFile::modeBinary|WFile::modeReadOnly ) )
@@ -462,7 +462,7 @@ int try_to_ul_wh(char *pszFileName)
 	long lFileLength = file.GetLength();
     u.numbytes = lFileLength;
 	file.Close();
-    GetSession()->thisuser.SetFilesUploaded( GetSession()->thisuser.GetFilesUploaded() + 1 );
+    GetSession()->GetCurrentUser()->SetFilesUploaded( GetSession()->GetCurrentUser()->GetFilesUploaded() + 1 );
 
 	time_t tCurrentDate;
     time(&tCurrentDate);
@@ -491,7 +491,7 @@ int try_to_ul_wh(char *pszFileName)
 
     modify_database(u.filename, true);
 
-    GetSession()->thisuser.SetUploadK( GetSession()->thisuser.GetUploadK() + bytes_to_k( u.numbytes ) );
+    GetSession()->GetCurrentUser()->SetUploadK( GetSession()->GetCurrentUser()->GetUploadK() + bytes_to_k( u.numbytes ) );
 
     WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
     pStatus->IncrementNumUploadsToday();
@@ -506,15 +506,15 @@ void t2u_error(char *pszFileName, char *msg)
 {
     char szBuffer[ 255 ];
 
-    nl( 2 );
+    GetSession()->bout.NewLine( 2 );
     sprintf(szBuffer, "**  %s failed T2U qualifications", pszFileName);
     GetSession()->bout << szBuffer;
-	nl();
+	GetSession()->bout.NewLine();
     sysoplog(szBuffer);
 
     sprintf(szBuffer, "** Reason : %s", msg);
     GetSession()->bout << szBuffer;
-	nl();
+	GetSession()->bout.NewLine();
     sysoplog(szBuffer);
 }
 

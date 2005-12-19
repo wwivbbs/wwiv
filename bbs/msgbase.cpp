@@ -294,7 +294,7 @@ void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const 
         break;
     default:
         {
-            bprintf( "WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", pMessageRecord->storage_type );
+            GetSession()->bout.WriteFormatted( "WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", pMessageRecord->storage_type );
             WWIV_ASSERT( false );
         }
 		break;
@@ -684,7 +684,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 		nh.length = lEmailFileLen + i;
 		if (nh.length > 32760)
 		{
-			bprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
+			GetSession()->bout.WriteFormatted("Message truncated by %lu bytes for the network.", nh.length - 32760L);
 			nh.length = 32760;
 		}
 		if ( nFromNetworkNumber != GetSession()->GetNetworkNumber() )
@@ -790,29 +790,29 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 	if ( nUserNumber == 1 && nSystemNumber == 0 )
 	{
         pStatus->IncrementNumFeedbackSentToday();
-        GetSession()->thisuser.SetNumFeedbackSent( GetSession()->thisuser.GetNumFeedbackSent() + 1 );
-        GetSession()->thisuser.SetNumFeedbackSentToday( GetSession()->thisuser.GetNumFeedbackSentToday() + 1 );
+        GetSession()->GetCurrentUser()->SetNumFeedbackSent( GetSession()->GetCurrentUser()->GetNumFeedbackSent() + 1 );
+        GetSession()->GetCurrentUser()->SetNumFeedbackSentToday( GetSession()->GetCurrentUser()->GetNumFeedbackSentToday() + 1 );
 		++fsenttoday;
 	}
 	else
 	{
         pStatus->IncrementNumEmailSentToday();
-        GetSession()->thisuser.SetNumEmailSentToday( GetSession()->thisuser.GetNumEmailSentToday() + 1 );
+        GetSession()->GetCurrentUser()->SetNumEmailSentToday( GetSession()->GetCurrentUser()->GetNumEmailSentToday() + 1 );
 		if (nSystemNumber == 0)
 		{
-            GetSession()->thisuser.SetNumEmailSent( GetSession()->thisuser.GetNumEmailSent() + 1 );
+            GetSession()->GetCurrentUser()->SetNumEmailSent( GetSession()->GetCurrentUser()->GetNumEmailSent() + 1 );
 		}
 		else
 		{
-            GetSession()->thisuser.SetNumNetEmailSent( GetSession()->thisuser.GetNumNetEmailSent() + 1 );
+            GetSession()->GetCurrentUser()->SetNumNetEmailSent( GetSession()->GetCurrentUser()->GetNumNetEmailSent() + 1 );
 		}
 	}
 	GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 	if ( !GetSession()->IsNewMailWatiting() )
 	{
-        ansic( 3 );
+        GetSession()->bout.Color( 3 );
 		GetSession()->bout << logMessage;
-		nl();
+		GetSession()->bout.NewLine();
 	}
 }
 
@@ -855,7 +855,7 @@ bool ok_to_mail( int nUserNumber, int nSystemNumber, bool bForceit )
 			GetSession()->bout << "\r\nUnknown system number.\r\n\n";
 			return false;
 		}
-		if ( GetSession()->thisuser.isRestrictionNet() )
+		if ( GetSession()->GetCurrentUser()->isRestrictionNet() )
 		{
 			GetSession()->bout << "\r\nYou can't send mail off the system.\r\n";
 			return false;
@@ -864,14 +864,14 @@ bool ok_to_mail( int nUserNumber, int nSystemNumber, bool bForceit )
 	if ( !GetSession()->IsNewMailWatiting() && !bForceit )
 	{
 		if ( ( ( nUserNumber == 1 && nSystemNumber == 0 &&
-            ( fsenttoday >= 5 || GetSession()->thisuser.GetNumFeedbackSentToday() >= 10 ) ) ||
+            ( fsenttoday >= 5 || GetSession()->GetCurrentUser()->GetNumFeedbackSentToday() >= 10 ) ) ||
 			( ( nUserNumber != 1 || nSystemNumber != 0 ) &&
-            ( GetSession()->thisuser.GetNumEmailSentToday() >= getslrec( GetSession()->GetEffectiveSl() ).emails ) ) ) && !cs() )
+            ( GetSession()->GetCurrentUser()->GetNumEmailSentToday() >= getslrec( GetSession()->GetEffectiveSl() ).emails ) ) ) && !cs() )
 		{
 			GetSession()->bout << "\r\nToo much mail sent today.\r\n\n";
 			return false;
 		}
-        if ( GetSession()->thisuser.isRestrictionEmail() && nUserNumber != 1 )
+        if ( GetSession()->GetCurrentUser()->isRestrictionEmail() && nUserNumber != 1 )
 		{
 			GetSession()->bout << "\r\nYou can't send mail.\r\n\n";
 			return false;
@@ -902,7 +902,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 		GetSession()->bout << "\r\nSorry, not enough disk space left.\r\n\n";
 		return;
 	}
-	nl();
+	GetSession()->bout.NewLine();
 	if ( ForwardMessage( &nUserNumber, &nSystemNumber ) )
 	{
 		if ( nSystemNumber == 32767 )
@@ -992,7 +992,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 		GetSession()->bout << "|#9E-mailing |#2";
 	}
 	GetSession()->bout << szDestination;
-	nl();
+	GetSession()->bout.NewLine();
     int i = ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_email_anony ) ? anony_enable_anony : 0;
 
     if ( anony & ( anony_receiver_pp | anony_receiver_da ) )
@@ -1003,7 +1003,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 	{
 		i = anony_enable_anony;
 	}
-    if ( i == anony_enable_anony && GetSession()->thisuser.isRestrictionAnonymous() )
+    if ( i == anony_enable_anony && GetSession()->GetCurrentUser()->isRestrictionAnonymous() )
 	{
 		i = 0;
 	}
@@ -1013,11 +1013,11 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 		{
 			i = 0;
 			anony = 0;
-			nl();
+			GetSession()->bout.NewLine();
             WWIV_ASSERT( csne );
 			GetSession()->bout << "|#9Name of system: |#2" << csne->name << wwiv::endl;
 			GetSession()->bout << "|#9Number of hops: |#2" << csne->numhops << wwiv::endl;
-			nl();
+			GetSession()->bout.NewLine();
 		}
 	}
 	write_inst(INST_LOC_EMAIL, (nSystemNumber == 0) ? nUserNumber : 0, INST_FLAGS_NONE);
@@ -1046,7 +1046,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 	{
 		if ( !GetSession()->IsNewMailWatiting() )
 		{
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#9Copy this mail to others? ";
 			nNumUsers = 0;
 			if ( yesno() )
@@ -1285,7 +1285,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 			if (ss == NULL)
 			{
 				plan(6, "File not found.", &abort, next);
-				nl();
+				GetSession()->bout.NewLine();
 				return;
 			}
 			int nNamePtr = 0;
@@ -1314,7 +1314,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 		break;
     default:
 		// illegal storage type
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "->ILLEGAL STORAGE TYPE<-\r\n\n";
 		return;
 	}
@@ -1406,7 +1406,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 	bool ctrla			= false;
 	bool centre			= false;
 
-	nl();
+	GetSession()->bout.NewLine();
 	while ( !done && !abort && !hangup )
 	{
 		switch ( pMessageRecord->storage_type )
@@ -1449,7 +1449,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 				{
 					if ( ch >= '0' && ch <= '9' )
 					{
-						if ( GetSession()->thisuser.GetOptionalVal() < ( ch - '0'  ) )
+						if ( GetSession()->GetCurrentUser()->GetOptionalVal() < ( ch - '0'  ) )
 						{
 							ctrld = 0;
 						}
@@ -1493,28 +1493,28 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 				{
 					if ( centre && ( ctrld != -1 ) )
 					{
-						int nSpacesToCenter = ( GetSession()->thisuser.GetScreenChars() - GetApplication()->GetLocalIO()->WhereX() - nLineLenPtr ) / 2;
+						int nSpacesToCenter = ( GetSession()->GetCurrentUser()->GetScreenChars() - GetApplication()->GetLocalIO()->WhereX() - nLineLenPtr ) / 2;
                         osan( charstr( nSpacesToCenter, ' ' ), &abort, next);
 					}
 					if ( nNumCharsPtr )
 					{
 						if ( ctrld != -1 )
 						{
-							if ( ( GetApplication()->GetLocalIO()->WhereX() + nLineLenPtr >= GetSession()->thisuser.GetScreenChars() ) && !centre && !ansi )
+							if ( ( GetApplication()->GetLocalIO()->WhereX() + nLineLenPtr >= GetSession()->GetCurrentUser()->GetScreenChars() ) && !centre && !ansi )
 							{
-								nl();
+								GetSession()->bout.NewLine();
 							}
 							s[nNumCharsPtr] = '\0';
 							osan( s, &abort, next );
 							if ( ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi )
 							{
-								if ( GetApplication()->GetLocalIO()->WhereX() < GetSession()->thisuser.GetScreenChars() - 1 )
+								if ( GetApplication()->GetLocalIO()->WhereX() < GetSession()->GetCurrentUser()->GetScreenChars() - 1 )
 								{
 									bputch( SPACE );
 								}
 								else
 								{
-									nl();
+									GetSession()->bout.NewLine();
 								}
 								checka( &abort, next );
 							}
@@ -1530,7 +1530,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 					{
 						if ( ctrld != -1 )
 						{
-							nl();
+							GetSession()->bout.NewLine();
 							checka( &abort, next );
 						}
 					}
@@ -1556,10 +1556,10 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 	{
 		s[nNumCharsPtr] = '\0';
 		GetSession()->bout << s;
-		nl();
+		GetSession()->bout.NewLine();
 	}
-	ansic( 0 );
-	nl();
+	GetSession()->bout.Color( 0 );
+	GetSession()->bout.NewLine();
 	if ( express && abort && !*next )
 	{
 		expressabort = true;
@@ -1571,7 +1571,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 	tmp_disable_pause( false );
 	if ( ansi && GetSession()->topdata && GetSession()->IsUserOnline() )
 	{
-		GetApplication()->GetLocalIO()->UpdateTopScreen();
+		GetApplication()->UpdateTopScreen();
 	}
 	if ( syscfg.sysconfig & sysconfig_enable_mci )
 	{
@@ -1584,25 +1584,25 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 
 void read_message(int n, bool *next, int *val)
 {
-	nl();
+	GetSession()->bout.NewLine();
 	bool abort = false;
 	*next = false;
-	if ( GetSession()->thisuser.isUseClearScreen() )
+	if ( GetSession()->GetCurrentUser()->isUseClearScreen() )
     {
 		ClearScreen();
     }
 	if ( forcescansub )
     {
 		ClearScreen();
-		goxy( 1, 1 );
+		GetSession()->bout.GotoXY( 1, 1 );
 		GetSession()->bout << "|#4   FORCED SCAN OF SYSOP INFORMATION - YOU MAY NOT ABORT.  PLEASE READ THESE!  |#0\r\n";
 	}
 
 	std::string subjectLine;
-	bprintf( " |#1Msg|#7: [|#2%u|#7/|#2%lu|#7]|#%d %s\r\n", n, GetSession()->GetNumMessagesInCurrentMessageArea(), GetSession()->GetMessageColor(), subboards[GetSession()->GetCurrentReadMessageArea()].name );
+	GetSession()->bout.WriteFormatted( " |#1Msg|#7: [|#2%u|#7/|#2%lu|#7]|#%d %s\r\n", n, GetSession()->GetNumMessagesInCurrentMessageArea(), GetSession()->GetMessageColor(), subboards[GetSession()->GetCurrentReadMessageArea()].name );
 	subjectLine = "|#1Subj|#7: ";
 	osan( subjectLine.c_str(), &abort, next );
-	ansic( GetSession()->GetMessageColor() );
+	GetSession()->bout.Color( GetSession()->GetMessageColor() );
 	postrec p = *get_post( n );
 	if ( p.status & ( status_unvalidated | status_delete ) )
     {
@@ -1613,7 +1613,7 @@ void read_message(int n, bool *next, int *val)
         }
 		*val |= 1;
 		osan( subjectLine.c_str(), &abort, next );
-		ansic( GetSession()->GetMessageColor() );
+		GetSession()->bout.Color( GetSession()->GetMessageColor() );
 	}
 	strncpy( irt, p.title, 60 );
 	irt_name[0] = '\0';
@@ -1623,7 +1623,7 @@ void read_message(int n, bool *next, int *val)
 		osan( "|#1Info|#7: ", &abort, next );
 		plan( GetSession()->GetMessageColor(), "Permanent Message", &abort, next );
 	}
-	if ( ( p.status & status_pending_net ) && GetSession()->thisuser.GetSl() > syscfg.newusersl )
+	if ( ( p.status & status_pending_net ) && GetSession()->GetCurrentUser()->GetSl() > syscfg.newusersl )
     {
 		osan( "|#1Val|#7:  ", &abort, next );
 		plan( GetSession()->GetMessageColor(), "Not Network Validated", &abort, next);
@@ -1645,7 +1645,7 @@ void read_message(int n, bool *next, int *val)
 			set_net_num( nNetNumSaved );
         }
 
-        GetSession()->thisuser.SetNumMessagesRead( GetSession()->thisuser.GetNumMessagesRead() + 1 );
+        GetSession()->GetCurrentUser()->SetNumMessagesRead( GetSession()->GetCurrentUser()->GetNumMessagesRead() + 1 );
         GetSession()->SetNumMessagesReadThisLogon( GetSession()->GetNumMessagesReadThisLogon() + 1 );
 	}
     else if ( express && !*next )

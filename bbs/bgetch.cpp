@@ -170,7 +170,7 @@ void HandleControlKey( char *ch )
               if (okmacro && (!charbufferpointer))
               {
 				  int macroNum = MACRO_KEY_TABLE[(int)c];
-				  strncpy(charbuffer, &(GetSession()->thisuser.GetMacro(macroNum)[0]), sizeof(charbuffer)-1);
+				  strncpy(charbuffer, &(GetSession()->GetCurrentUser()->GetMacro(macroNum)[0]), sizeof(charbuffer)-1);
 				  c = charbuffer[0];
                   if (c)
 				  {
@@ -189,10 +189,10 @@ void HandleControlKey( char *ch )
 			  {
                   char xl[81], cl[81], atr[81], cc;
 				  GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
-				  ansic( 0 );
-				  nl( 2 );
+				  GetSession()->bout.Color( 0 );
+				  GetSession()->bout.NewLine( 2 );
 				  multi_instance();
-				  nl();
+				  GetSession()->bout.NewLine();
 			      RestoreCurrentLine(cl, atr, xl, &cc);
 			  }
 			  break;
@@ -212,7 +212,7 @@ void HandleControlKey( char *ch )
               toggle_avail();
               break;
           case CY:
-              GetSession()->thisuser.toggleStatusFlag( WUser::pauseOnPage );
+              GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
               break;
         }
     }
@@ -226,8 +226,8 @@ void PrintTime()
 
     GetApplication()->GetLocalIO()->SaveCurrentLine( cl, atr, xl, &cc );
 
-    ansic( 0 );
-    nl( 2 );
+    GetSession()->bout.Color( 0 );
+    GetSession()->bout.NewLine( 2 );
 	time_t l = time( NULL );
 	std::string currentTime = asctime( localtime( &l ) );
 
@@ -240,7 +240,7 @@ void PrintTime()
 		GetSession()->bout << "|#9Time on   = |#1" << ctim( timer() - timeon ) << wwiv::endl;
 		GetSession()->bout << "|#9Time left = |#1" << ctim( nsl() ) << wwiv::endl;
     }
-    nl();
+    GetSession()->bout.NewLine();
 
     RestoreCurrentLine( cl, atr, xl, &cc );
 }
@@ -256,7 +256,7 @@ void RedrawCurrentLine()
     strncpy(ansistr_1, ansistr, sizeof(ansistr_1)-1);
 
     GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
-    nl();
+    GetSession()->bout.NewLine();
     RestoreCurrentLine(cl, atr, xl, &cc);
 
     strcpy(ansistr, ansistr_1);

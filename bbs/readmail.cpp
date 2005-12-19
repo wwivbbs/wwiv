@@ -275,7 +275,7 @@ void add_netsubscriber( int nSystemNumber )
 		nSystemNumber = 0;
 	}
 
-	nl();
+	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#1Adding subscriber to subscriber list...\r\n\n";
 	GetSession()->bout << "|#2SubType: ";
 	input( s, 7, true );
@@ -288,11 +288,11 @@ void add_netsubscriber( int nSystemNumber )
 	sprintf( szNetworkFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory(), s );
 	if ( !WFile::Exists( szNetworkFileName ) )
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#6Subscriber file not found: " << szNetworkFileName << wwiv::endl;
 		return;
 	}
-	nl();
+	GetSession()->bout.NewLine();
 	if ( nSystemNumber )
 	{
         GetSession()->bout << "Add @" << nSystemNumber << "." << GetSession()->GetNetworkName() << " to subtype " << s << "? ";
@@ -436,7 +436,7 @@ void readmail( int mode )
 	}
 	pFileEmail->Close();
 	delete pFileEmail;
-	GetSession()->thisuser.SetNumMailWaiting( mw );
+	GetSession()->GetCurrentUser()->SetNumMailWaiting( mw );
 	if ( GetSession()->usernum == 1 )
 	{
 		fwaiting = mw;
@@ -455,7 +455,7 @@ void readmail( int mode )
 	{
 		GetSession()->bout << "\r\n\n|#7You have mail from:\r\n\n";
 
-		if ( ( GetSession()->thisuser.GetScreenChars() >= 80 ) && GetSession()->mail_who_field_len )
+		if ( ( GetSession()->GetCurrentUser()->GetScreenChars() >= 80 ) && GetSession()->mail_who_field_len )
 		{
 			if ( okansi() )
 			{
@@ -468,7 +468,7 @@ void readmail( int mode )
 			sprintf( s, "|#7%s%c", charstr(4, s1[2]), s1[1] );
 			strcat( s, charstr(GetSession()->mail_who_field_len - 4, s1[2]) );
 			strcat(	s, charstr( 1, s1[1]) );
-			strcat(	s, charstr( GetSession()->thisuser.GetScreenChars() - GetSession()->mail_who_field_len - 3, s1[2] ) );
+			strcat(	s, charstr( GetSession()->GetCurrentUser()->GetScreenChars() - GetSession()->mail_who_field_len - 3, s1[2] ) );
 			pla(s, &abort);
 		}
 		for ( i = 0; ( i < mw && !abort ); i++ )
@@ -586,7 +586,7 @@ void readmail( int mode )
 				}
 			}
 
-			if ( GetSession()->thisuser.GetScreenChars() >= 80 && GetSession()->mail_who_field_len )
+			if ( GetSession()->GetCurrentUser()->GetScreenChars() >= 80 && GetSession()->mail_who_field_len )
 			{
 				if ( strlen( stripcolors( s ) ) > GetSession()->mail_who_field_len )
 				{
@@ -606,23 +606,23 @@ void readmail( int mode )
 				}
 				strcat( s, " " );
 				strcat( s, stripcolors( m.title ) );
-				while ( wwiv::stringUtils::GetStringLength( stripcolors( s ) ) > GetSession()->thisuser.GetScreenChars() - 1 )
+				while ( wwiv::stringUtils::GetStringLength( stripcolors( s ) ) > GetSession()->GetCurrentUser()->GetScreenChars() - 1 )
 				{
 					s[strlen(s) - 1] = '\0';
 				}
 			}
 			pla( s, &abort );
-			if ((i == (mw - 1)) && (GetSession()->thisuser.GetScreenChars() >= 80) && (!abort) && (GetSession()->mail_who_field_len))
+			if ((i == (mw - 1)) && (GetSession()->GetCurrentUser()->GetScreenChars() >= 80) && (!abort) && (GetSession()->mail_who_field_len))
 			{
 				( okansi() ) ? strcpy(s1, "ÁÂÄ") : strcpy(s1, "++-");
 				sprintf(s, "|#7%s%c", charstr(4, s1[2]), s1[0]);
 				strcat(s, charstr(GetSession()->mail_who_field_len - 4, s1[2]));
 				strcat(s, charstr(1, s1[0]));
-				strcat(s, charstr(GetSession()->thisuser.GetScreenChars() - GetSession()->mail_who_field_len - 3, s1[2]));
+				strcat(s, charstr(GetSession()->GetCurrentUser()->GetScreenChars() - GetSession()->mail_who_field_len - 3, s1[2]));
 				pla(s, &abort);
 			}
 		}
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ";
 		input( s, 3, true );
 		if ( strchr( s, 'Q' ) != NULL )
@@ -651,13 +651,13 @@ void readmail( int mode )
 	do
 	{
 		abort = false;
-		nl( 2 );
+		GetSession()->bout.NewLine( 2 );
 		sprintf(s, "|#1Msg|#7:  [|#2%u|#7/|#2%lu|#7] |#%dE-Mail\r\n", curmail + 1, mw, GetSession()->GetMessageColor() );
 		osan( s, &abort, &next );
 		sprintf( s, "|#1Subj|#7: " );
 		osan( s, &abort, &next );
 		next = false;
-		ansic( GetSession()->GetMessageColor() );
+		GetSession()->bout.Color( GetSession()->GetMessageColor() );
 		s[0] = '\0';
 
 		if ( !read_same_email( mloc, mw, curmail, &m, 0, 0 ) )
@@ -665,7 +665,7 @@ void readmail( int mode )
 			strcat( s, ">>> MAIL DELETED <<<" );
 			okmail = false;
 			GetSession()->bout << s;
-			nl( 3 );
+			GetSession()->bout.NewLine( 3 );
 		}
 		else
 		{
@@ -710,7 +710,7 @@ void readmail( int mode )
 				}
 				if ( !abort )
 				{
-					ansic( 4 );
+					GetSession()->bout.Color( 4 );
 					pla( s, &abort );
 				}
 			}
@@ -852,7 +852,7 @@ void readmail( int mode )
 			switch (ch)
 			{
 			case 'T':
-				nl();
+				GetSession()->bout.NewLine();
 				sprintf( s1, "%s%s", g_szAttachmentDirectory, fsr.filename );
 				bool sentt;
 				bool abortt;
@@ -867,7 +867,7 @@ void readmail( int mode )
 					GetSession()->bout << "\r\nAttached file not completely sent.\r\n";
 					sysoplogf( "Tried to download attached file %s.", fsr.filename );
 				}
-				nl();
+				GetSession()->bout.NewLine();
 				break;
 			case 'N':
 				if (m.fromuser == 1)
@@ -912,26 +912,26 @@ void readmail( int mode )
 					if (WFile::Exists(s1))
 					{
 						LoadFileIntoWorkspace( s1, true );
-                        num_mail =  static_cast<long>( GetSession()->thisuser.GetNumFeedbackSent() ) +
-                                    static_cast<long>( GetSession()->thisuser.GetNumEmailSent() ) +
-									static_cast<long>( GetSession()->thisuser.GetNumNetEmailSent() );
+                        num_mail =  static_cast<long>( GetSession()->GetCurrentUser()->GetNumFeedbackSent() ) +
+                                    static_cast<long>( GetSession()->GetCurrentUser()->GetNumEmailSent() ) +
+									static_cast<long>( GetSession()->GetCurrentUser()->GetNumNetEmailSent() );
 						grab_quotes(NULL, NULL);
 						if (m.fromuser != 65535)
 						{
 							email(m.fromuser, m.fromsys, false, m.anony);
 						}
-						num_mail1 = static_cast<long>( GetSession()->thisuser.GetNumFeedbackSent() ) +
-									static_cast<long>( GetSession()->thisuser.GetNumEmailSent() ) +
-									static_cast<long>( GetSession()->thisuser.GetNumNetEmailSent() );
+						num_mail1 = static_cast<long>( GetSession()->GetCurrentUser()->GetNumFeedbackSent() ) +
+									static_cast<long>( GetSession()->GetCurrentUser()->GetNumEmailSent() ) +
+									static_cast<long>( GetSession()->GetCurrentUser()->GetNumNetEmailSent() );
 						if (num_mail != num_mail1)
 						{
 							if (m.fromsys != 0)
 							{
-                                sprintf(s, "%s: %s", GetSession()->GetNetworkName(), GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ) );
+                                sprintf(s, "%s: %s", GetSession()->GetNetworkName(), GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ) );
 							}
 							else
 							{
-								strcpy(s, GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ) );
+								strcpy(s, GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ) );
 							}
 							if (m.anony & anony_receiver)
 							{
@@ -1011,7 +1011,7 @@ void readmail( int mode )
                         GetSession()->SetCurrentConferenceMessageArea( 0 );
 					}
 					tmp_disable_conf( true );
-					nl();
+					GetSession()->bout.NewLine();
 					do
 					{
 						GetSession()->bout << "|#2Move to which sub? ";
@@ -1025,7 +1025,7 @@ void readmail( int mode )
 					if ( ( ss1[0] == 0 ) || hangup )
 					{
 						i1 = 0;
-						nl();
+						GetSession()->bout.NewLine();
 						tmp_disable_conf( false );
 						break;
 					}
@@ -1120,11 +1120,11 @@ void readmail( int mode )
 				    {
                         message = GetSession()->GetNetworkName();
                         message += ": ";
-                        message += GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum );
+                        message += GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum );
 				    }
 				    else
 				    {
-                        message = GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum );
+                        message = GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum );
 				    }
 
 				    if ( m.anony & anony_receiver )
@@ -1177,8 +1177,8 @@ void readmail( int mode )
 					GetSession()->bout << "\r\nCan't forward multimail.\r\n\n";
 					break;
 				}
-				nl( 2 );
-				if ( okfsed() && GetSession()->thisuser.isUseAutoQuote() )
+				GetSession()->bout.NewLine( 2 );
+				if ( okfsed() && GetSession()->GetCurrentUser()->isUseAutoQuote() )
 				{
 					b=readfile(&(m.msg), "email", &len);
 					auto_quote(b, len, 4, m.daten);
@@ -1292,11 +1292,11 @@ void readmail( int mode )
 								delete pFileEmail;
 
 								i = GetSession()->GetNetworkNumber();
-								sprintf(s, "\r\nForwarded to %s from %s.", s1, GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ) );
+								sprintf(s, "\r\nForwarded to %s from %s.", s1, GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ) );
 
 								set_net_num(nn);
 								lineadd(&m.msg, s, "email");
-								sprintf(s, "%s %s %s", GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ), "forwarded your mail to", s1 );
+								sprintf(s, "%s %s %s", GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ), "forwarded your mail to", s1 );
 								if (!(m.status & status_source_verified))
 								{
 									ssm(m.fromuser, m.fromsys, s);
@@ -1305,7 +1305,7 @@ void readmail( int mode )
 								sprintf(s, "Forwarded mail to %s", s1);
 								if (delme)
 								{
-                                    GetSession()->thisuser.SetNumMailWaiting( GetSession()->thisuser.GetNumMailWaiting() - 1 );
+                                    GetSession()->GetCurrentUser()->SetNumMailWaiting( GetSession()->GetCurrentUser()->GetNumMailWaiting() - 1 );
 									if (GetSession()->usernum == 1)
 									{
 										--fwaiting;
@@ -1344,9 +1344,9 @@ void readmail( int mode )
 				{
 					break;
 				}
-                num_mail = static_cast<long>( GetSession()->thisuser.GetNumFeedbackSent() ) +
-						   static_cast<long>( GetSession()->thisuser.GetNumEmailSent() ) +
-						   static_cast<long>( GetSession()->thisuser.GetNumNetEmailSent() );
+                num_mail = static_cast<long>( GetSession()->GetCurrentUser()->GetNumFeedbackSent() ) +
+						   static_cast<long>( GetSession()->GetCurrentUser()->GetNumEmailSent() ) +
+						   static_cast<long>( GetSession()->GetCurrentUser()->GetNumNetEmailSent() );
 				if (nn == 255)
 				{
 					GetSession()->bout << "|#6Deleted network.\r\n";
@@ -1355,7 +1355,7 @@ void readmail( int mode )
 				}
 				else if (m.fromuser != 65535)
 				{
-					if (okfsed() && GetSession()->thisuser.isUseAutoQuote() )
+					if (okfsed() && GetSession()->GetCurrentUser()->isUseAutoQuote() )
 					{
 						b=readfile(&(m.msg), "email", &len);
 						if (s[0] == '@')
@@ -1394,9 +1394,9 @@ void readmail( int mode )
 					}
 					grab_quotes(NULL, NULL);
 				}
-				num_mail1 = static_cast<long>( GetSession()->thisuser.GetNumFeedbackSent() ) +
-							static_cast<long>( GetSession()->thisuser.GetNumEmailSent() ) +
-							static_cast<long>( GetSession()->thisuser.GetNumNetEmailSent() );
+				num_mail1 = static_cast<long>( GetSession()->GetCurrentUser()->GetNumFeedbackSent() ) +
+							static_cast<long>( GetSession()->GetCurrentUser()->GetNumEmailSent() ) +
+							static_cast<long>( GetSession()->GetCurrentUser()->GetNumNetEmailSent() );
 				if ( ch == 'A' || ch == '@' )
 				{
 					if (num_mail != num_mail1)
@@ -1406,11 +1406,11 @@ void readmail( int mode )
 						{
                             message = GetSession()->GetNetworkName();
                             message += ": ";
-                            message += GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum );
+                            message += GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum );
 						}
 						else
 						{
-                            message = GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum );
+                            message = GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum );
 						}
 						if (m.anony & anony_receiver)
 						{
@@ -1495,16 +1495,16 @@ void readmail( int mode )
 				    input( fileName, 50 );
                     if ( !fileName.empty() )
 				    {
-					    nl();
+					    GetSession()->bout.NewLine();
 					    GetSession()->bout << "|#5Allow editing? ";
 					    if ( yesno() )
 					    {
-						    nl();
+						    GetSession()->bout.NewLine();
                             LoadFileIntoWorkspace( fileName.c_str(), false );
 					    }
 					    else
 					    {
-						    nl();
+						    GetSession()->bout.NewLine();
                             LoadFileIntoWorkspace( fileName.c_str(),  true );
 					    }
 				    }

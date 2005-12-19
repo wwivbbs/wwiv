@@ -29,40 +29,11 @@
 #include <streambuf>
 #include <ios>
 
-
-using std::ostream;
-
-
-int  bputs( const char *pszText );
-int  bputch( char c, bool bUseInternalBuffer );
-
-
 class WOutStreamBuffer : public std::streambuf
 {
 public:
-    //WOutStreamBuffer() {}
-    //virtual ~WOutStreamBuffer() {}
-    virtual int_type overflow( int_type c )
-    {
-        if ( c != EOF )
-        {
-            bputch( static_cast<char>( c ), false );
-        }
-        return c;
-    }
-
-
-    virtual std::streamsize xsputn( const char *pszText, std::streamsize numChars )
-    {
-		if ( numChars == 0 )
-		{
-			return 0;
-		}
-        char szBuffer[ 4096 ];
-        strncpy( szBuffer, pszText, 4096 );
-        szBuffer[ numChars ] = '\0';
-        return bputs( pszText );
-    }
+    virtual std::ostream::int_type overflow( std::ostream::int_type c );
+    virtual std::streamsize xsputn( const char *pszText, std::streamsize numChars );
 };
 
 
@@ -71,21 +42,65 @@ public:
 #pragma warning( disable: 4511 4512 )
 #endif
 
-class WOutStream : public ostream
+
+class WComm;
+class WLocalIO;
+
+class WOutStream : public std::ostream
 {
 protected:
     WOutStreamBuffer buf;
+    WLocalIO *m_pLocalIO;
+    WComm *m_pComm;
+
 public:
     WOutStream() :
 #if defined(_WIN32)
 		buf(),
 #endif
-		ostream( &buf )
+    std::ostream( &buf )
     {
         init( &buf );
     }
     virtual ~WOutStream() {}
+
+    void SetLocalIO( WLocalIO *pLocalIO ) { m_pLocalIO = pLocalIO; }
+    WLocalIO* localIO() { return m_pLocalIO; }
+
+    void SetComm( WComm *pComm ) { m_pComm = pComm; }
+    WComm* remoteIO() { return m_pComm; }
+
+    void Color(int wwivColor);
+    void ResetColors();
+    void GotoXY(int x, int y);
+    void NewLine(int nNumLines = 1);
+    void BackSpace();
+    /* This sets the current color (both locally and remotely) to that
+     * specified (in IBM format).
+     */
+    void SystemColor( int nColor );
+    void DisplayLiteBar(const char *fmt,...);
+    /** Backspaces from the current cursor position to the beginning of a line */
+    void BackLine();
+    /**
+     * This function outputs a string of characters to the screen (and remotely
+     * if applicable).  The com port is also checked first to see if a remote
+     * user has hung up
+     */
+    int  Write(const char *pszText );
+    int  WriteFormatted(const char *fmt,...);
 };
+
+namespace wwiv
+{
+    template<class charT, class traits>
+    std::basic_ostream<charT, traits>&
+    endl (std::basic_ostream<charT, traits>& strm )
+    {
+        strm.write( "\r\n", 2 );
+        return strm;
+    }
+}
 
 #if defined(_MSC_VER)
 #pragma warning( pop )

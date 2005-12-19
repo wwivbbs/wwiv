@@ -31,7 +31,7 @@ void attach_file(int mode)
     char szAttachFileName[ MAX_PATH ];
     sprintf(szAttachFileName, "%s%s", syscfg.datadir, ATTACH_DAT);
 
-    nl();
+    GetSession()->bout.NewLine();
     bool bDirectionForward = true;
 	WFile *pFileEmail = OpenEmailFile( true );
 	WWIV_ASSERT( pFileEmail );
@@ -79,7 +79,7 @@ void attach_file(int mode)
             do
             {
                 done1 = false;
-                nl();
+                GetSession()->bout.NewLine();
                 if ( m.tosys == 0 )
                 {
                     char szBuffer[ 255 ];
@@ -92,7 +92,7 @@ void attach_file(int mode)
                         strcpy(szBuffer, ">UNKNOWN<");
                     }
                     GetSession()->bout << szBuffer;
-					nl();
+					GetSession()->bout.NewLine();
                 }
                 else
                 {
@@ -132,7 +132,7 @@ void attach_file(int mode)
                         GetSession()->bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
                     }
                 }
-                nl();
+                GetSession()->bout.NewLine();
                 char ch = 0;
                 if (mode == 0)
                 {
@@ -209,7 +209,7 @@ void attach_file(int mode)
                             {
                                 bool bRemoteUpload = false;
                                 bFound = false;
-                                nl();
+                                GetSession()->bout.NewLine();
                                 if (so())
                                 {
                                     if (incom)
@@ -226,7 +226,7 @@ void attach_file(int mode)
                                         input( szFileToAttach, 35, true );
                                         if (szFileToAttach[0])
                                         {
-                                            nl();
+                                            GetSession()->bout.NewLine();
                                             if (strchr(szFileToAttach, '*') != NULL || strchr(szFileToAttach, '?') != NULL)
                                             {
                                                 strcpy(szFileToAttach, get_wildlist(szFileToAttach));
@@ -243,7 +243,7 @@ void attach_file(int mode)
                                         if ( !bFound && szFileToAttach[0] )
                                         {
                                             sprintf(szFullPathName, "%s%s", g_szAttachmentDirectory, stripfn(szFileToAttach));
-                                            nl();
+                                            GetSession()->bout.NewLine();
 											GetSession()->bout << "|#5" << szFileToAttach << "? ";
                                             if ( !yesno() )
                                             {
@@ -425,7 +425,7 @@ void attach_file(int mode)
                     break;
                 case 'R':
                     {
-                        nl( 2 );
+                        GetSession()->bout.NewLine( 2 );
                         GetSession()->bout << "Title: " << m.title;
                         bool next;
                         read_message1(&m.msg, static_cast< char >( m.anony & 0x0f ), false, &next, "email", 0, 0);
@@ -441,7 +441,7 @@ void attach_file(int mode)
                                     if ( m.daten == static_cast<unsigned long>( fsr.id ) )
                                     {
 										GetSession()->bout << "Attached file: " << fsr.filename << " (" << fsr.numbytes << " bytes).";
-                                        nl();
+                                        GetSession()->bout.NewLine();
                                         bFound = true;
                                     }
                                     if (!bFound)

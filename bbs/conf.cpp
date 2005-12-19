@@ -102,12 +102,11 @@ void jump_conf(int conftype)
 	userconfrec *uc;
 	int nc;
 
-	sprintf(s1, " [ %s Conference Selection ] ", syscfg.systemname);
-	DisplayLiteBar(s1);
+	GetSession()->bout.DisplayLiteBar(" [ %s Conference Selection ] ", syscfg.systemname);
 	get_conf_info(conftype, &nc, &cp, NULL, NULL, &uc);
 	bool abort = false;
 	strcpy(s, " ");
-	nl();
+	GetSession()->bout.NewLine();
 	for (i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++)
 	{
 		sprintf( s1, "|#2%c|#7)|#1 %s", cp[uc[i].confnum].designator,
@@ -117,7 +116,7 @@ void jump_conf(int conftype)
 		s[i + 2] = '\0';
 	}
 
-	nl();
+	GetSession()->bout.NewLine();
     GetSession()->bout << "|#2Select [" << &s[1] << ", <space> to quit]: ";
 	char ch = onek( s );
 	if ( ch != ' ' )
@@ -354,7 +353,7 @@ void save_confs(int conftype, int whichnum, confrec * c)
     WTextFile f( szFileName, "wt" );
     if (!f.IsOpen())
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#6Couldn't write to conference file: " << szFileName << wwiv::endl;
 		return;
 	}
@@ -608,7 +607,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which)
 	}
 	if (which == NULL)
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2Add: ";
 		input( s, 60, true );
 		if (!s[0])
@@ -697,7 +696,7 @@ void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which)
 
 	if (which == NULL)
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2Remove: ";
 		input( s, 60, true );
 		if (!s[0])
@@ -810,7 +809,7 @@ int modify_conf(int conftype,  int which )
         GetSession()->bout << "|#9O) Available            : |#2" << YesNoString( ( c.status & conf_status_offline ) ? true : false ) << wwiv::endl;
         GetSession()->bout << "|#9S) Edit SubConferences\r\n";
         GetSession()->bout << "|#9Q) Quit ConfEdit\r\n";
-        nl();
+        GetSession()->bout.NewLine();
 
         GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) ConfEdit [|#1A|#7-|#1O|#7,|#1S|#7,|#1[|#7,|#1]|#7] : ";
         ch = onek( "QSABCDEFGHIJKLMNO[]", true );
@@ -861,7 +860,7 @@ int modify_conf(int conftype,  int which )
             c = cp[n];
             continue;
         case 'A':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2New Designator: ";
             ch1 = onek("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
             ok = true;
@@ -878,7 +877,7 @@ int modify_conf(int conftype,  int which )
             }
             if (!ok)
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#6That designator already in use!\r\n";
                 pausescr();
                 break;
@@ -888,7 +887,7 @@ int modify_conf(int conftype,  int which )
             break;
         case 'B':
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#2Conference Name: ";
                 std::string conferenceName;
                 inputl( conferenceName, 60 );
@@ -901,7 +900,7 @@ int modify_conf(int conftype,  int which )
             break;
         case 'C':
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#2Min SL: ";
                 std::string minSl;
                 input( minSl, 3 );
@@ -916,7 +915,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'D':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Max SL: ";
             input(s, 3);
             if (s[0])
@@ -929,7 +928,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'E':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Min DSL: ";
             input(s, 3);
             if (s[0])
@@ -942,7 +941,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'F':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Max DSL";
             input(s, 3);
             if (s[0])
@@ -955,7 +954,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'G':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Min Age: ";
             input(s, 2);
             if (s[0])
@@ -965,7 +964,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'H':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Max Age: ";
             input(s, 3);
             if (s[0])
@@ -978,7 +977,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'I':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Toggle which AR requirement? ";
             ch1 = onek("\rABCDEFGHIJKLMNOP ");
             switch (ch1)
@@ -993,7 +992,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'J':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Toggle which DAR requirement? ";
             ch1 = onek("\rABCDEFGHIJKLMNOP ");
             switch (ch1)
@@ -1008,7 +1007,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'K':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Min BPS Rate: ";
             input(s, 5);
             if (s[0])
@@ -1018,7 +1017,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'L':
-            nl();
+            GetSession()->bout.NewLine();
             changed = 1;
             GetSession()->bout << "|#5(Q=Quit) Gender Allowed: (M)ale, (F)emale, (A)ll: ";
             ch1 = onek("MFAQ");
@@ -1038,7 +1037,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'M':
-            nl();
+            GetSession()->bout.NewLine();
             changed = 1;
             c.status &= ~conf_status_ansi;
             GetSession()->bout << "|#5Require ANSI for this conference? ";
@@ -1048,7 +1047,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'N':
-            nl();
+            GetSession()->bout.NewLine();
             changed = 1;
             c.status &= ~conf_status_wwivreg;
             GetSession()->bout << "|#5Require WWIV RegNum for this conference? ";
@@ -1058,7 +1057,7 @@ int modify_conf(int conftype,  int which )
             }
             break;
         case 'O':
-            nl();
+            GetSession()->bout.NewLine();
             changed = 1;
             c.status &= ~conf_status_offline;
             GetSession()->bout << "|#5Make this conference available to users? ";
@@ -1071,7 +1070,7 @@ int modify_conf(int conftype,  int which )
             ok = false;
             do
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#2A)dd, R)emove, C)lear, F)ill, Q)uit, S)tatus: ";
                 ch1 = onek("QARCFS");
                 switch (ch1)
@@ -1108,7 +1107,7 @@ int modify_conf(int conftype,  int which )
                     ok = true;
                     break;
                 case 'S':
-                    nl();
+                    GetSession()->bout.NewLine();
                     showsubconfs(conftype, &c);
                     break;
                 }
@@ -1216,7 +1215,7 @@ void conf_edit(int conftype)
 
     do
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2? |#7 : ";
         ch = onek( "QIDM?", true );
         get_conf_info(conftype, &num, &cp, NULL, NULL, NULL);
@@ -1275,7 +1274,7 @@ void conf_edit(int conftype)
             break;
         }
     } while ( !done && !hangup );
-    if ( !GetApplication()->GetLocalIO()->GetWfcStatus() )
+    if ( !GetApplication()->GetWfcStatus() )
     {
         changedsl();
     }
@@ -1313,7 +1312,7 @@ void list_confs(int conftype, int ssc)
             YesNoString( ( cp[i].status & conf_status_ansi ) ? true : false ),
             YesNoString( ( cp[i].status & conf_status_wwivreg )  ? true : false ) );
         strcat(s, s1);
-        ansic( 7 );
+        GetSession()->bout.Color( 7 );
         pla(s, &abort);
         if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_HIER ) )
         {
@@ -1323,7 +1322,7 @@ void list_confs(int conftype, int ssc)
                 {
                     if (cp[i].subs[i2] < num_s)
                     {
-                        ansic( 7 );
+                        GetSession()->bout.Color( 7 );
                         sprintf(s, "%c  %cÄÄÄ |#9",
                             (i != (num - 1)) ? 'º' : ' ',
                             (i2 == (cp[i].num - 1)) ? 'À' : 'Ã');
@@ -1345,7 +1344,7 @@ void list_confs(int conftype, int ssc)
             }
         }
     }
-    nl();
+    GetSession()->bout.NewLine();
 }
 
 
@@ -1364,13 +1363,13 @@ int select_conf(const char *pszPromptText, int conftype, int listconfs)
     {
         if ( listconfs || sl )
         {
-            nl();
+            GetSession()->bout.NewLine();
             list_confs(conftype, 0);
             sl = 0;
         }
         if (pszPromptText && pszPromptText[0])
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout <<  "|#1" << pszPromptText;
         }
         mmk = mmkey( 0 );

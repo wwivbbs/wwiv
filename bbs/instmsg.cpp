@@ -184,7 +184,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg)
         if ( ih->msg_size > 0 && GetSession()->IsUserOnline() && !hangup )
         {
             GetApplication()->GetLocalIO()->SaveCurrentLine( cl, atr, xl, &cc );
-            nl( 2 );
+            GetSession()->bout.NewLine( 2 );
             if ( in_chatroom )
             {
                 i = 0;
@@ -192,7 +192,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg)
                 {
                     bputch( msg[ i++ ] );
                 }
-                nl();
+                GetSession()->bout.NewLine();
                 RestoreCurrentLine( cl, atr, xl, &cc );
                 return( ih->main );
             }
@@ -200,7 +200,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg)
             {
                 WUser user;
                 GetApplication()->GetUserManager()->ReadUser( &user, ih->from_user );
-                bprintf( "|#1%.12s (%d)|#0> |#2", user.GetUserNameAndNumber( ih->from_user ), ih->from_inst );
+                GetSession()->bout.WriteFormatted( "|#1%.12s (%d)|#0> |#2", user.GetUserNameAndNumber( ih->from_user ), ih->from_inst );
             }
             else
             {
@@ -211,7 +211,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg)
             {
                 bputch(msg[i++]);
             }
-            nl( 2 );
+            GetSession()->bout.NewLine( 2 );
             RestoreCurrentLine(cl, atr, xl, &cc);
         }
         break;
@@ -279,13 +279,13 @@ void process_inst_msgs()
                 if ( GetSession()->IsUserOnline() )
                 {
                     tmp_disable_pause( true );
-                    nl( 2 );
+                    GetSession()->bout.NewLine( 2 );
                     printfile( OFFLINE_NOEXT );
                     if ( GetSession()->IsUserOnline() )
                     {
                         if (GetSession()->usernum == 1)
                         {
-                            fwaiting = GetSession()->thisuser.GetNumMailWaiting();
+                            fwaiting = GetSession()->GetCurrentUser()->GetNumMailWaiting();
                         }
                         GetSession()->WriteCurrentUser( GetSession()->usernum );
                         write_qscn(GetSession()->usernum, qsc, false);
@@ -436,24 +436,24 @@ void instance_edit()
     while ( !done && !hangup )
     {
         CheckForHangup();
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#21|#7)|#1 Multi-Instance Status\r\n";
         GetSession()->bout << "|#22|#7)|#1 Shut Down One Instance\r\n";
         GetSession()->bout << "|#23|#7)|#1 Shut Down ALL Instances\r\n";
         GetSession()->bout << "|#2Q|#7)|#1 Quit\r\n";
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#1Select: ";
         char ch = onek("Q123");
         switch (ch)
         {
         case '1':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#1Instance Status:\r\n";
             multi_instance();
             break;
         case '2':
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#2Which Instance: ";
                 char szInst[ 10 ];
                 input( szInst, 3, true );
@@ -464,7 +464,7 @@ void instance_edit()
                 int i = atoi(szInst);
                 if ( !i || i > ni )
                 {
-                    nl();
+                    GetSession()->bout.NewLine();
                     GetSession()->bout << "|#6Instance unavailable.\r\n";
                     break;
                 }
@@ -483,7 +483,7 @@ void instance_edit()
                 {
                     if (ir.loc != INST_LOC_DOWN)
                     {
-                        nl();
+                        GetSession()->bout.NewLine();
 						GetSession()->bout << "|#2Shutting down instance " << i << wwiv::endl;
                         send_inst_shutdown(i);
                     }
@@ -499,7 +499,7 @@ void instance_edit()
             }
             break;
         case '3':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Are you sure? ";
             if (yesno())
             {
@@ -565,7 +565,7 @@ void write_inst( int loc, int subloc, int flags )
         {
             cf |= INST_FLAGS_INVIS;
         }
-        if ( !GetSession()->thisuser.isIgnoreNodeMessages() )
+        if ( !GetSession()->GetCurrentUser()->isIgnoreNodeMessages() )
         {
             switch (loc)
             {
