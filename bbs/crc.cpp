@@ -79,7 +79,7 @@ typedef unsigned long int UNS_32_BITS;
 /*     hardware you could probably optimize the shift in assembler by  */
 /*     using byte-swap instructions.                                   */
 
-//unsigned long int crc32buf(char *buf, size_t len);
+//unsigned long int crc32buf(char *pBuffer, size_t nLength);
 
 static UNS_32_BITS crc_32_tab[] =
 {
@@ -122,13 +122,13 @@ static UNS_32_BITS crc_32_tab[] =
 #define UPDC32(octet, crc) (crc_32_tab[((crc) ^ (octet)) & 0xff] ^ ((crc) >> 8))
 
 
-unsigned long int crc32buf(const char *buf, size_t len)
+unsigned long int crc32buf(const char *pBuffer, size_t nLength)
 {
     register unsigned long int oldcrc32;
     oldcrc32 = 0xFFFFFFFF;
-    for (; len; --len, ++buf)
+    for (; nLength; --nLength, ++pBuffer)
     {
-        oldcrc32 = UPDC32(*buf, oldcrc32);
+        oldcrc32 = UPDC32(*pBuffer, oldcrc32);
     }
     return ~oldcrc32;
 }

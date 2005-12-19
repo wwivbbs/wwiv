@@ -172,9 +172,9 @@ int  WUserManager::GetNumberOfUserRecords() const
     if ( userList.Open( WFile::modeReadOnly | WFile::modeBinary ) )
     {
         if(syscfg.userreclen == 0)
-	{
-	    syscfg.userreclen = sizeof(userrec);
-	}
+	    {
+	        syscfg.userreclen = sizeof(userrec);
+	    }
         long nSize = userList.GetLength();
         int nNumRecords = ( static_cast<int>( nSize / syscfg.userreclen) - 1 );
         return nNumRecords;
@@ -219,11 +219,11 @@ bool WUserManager::ReadUser( WUser *pUser, int nUserNumber, bool bForceRead )
     if ( !bForceRead )
     {
         bool userOnAndCurrentUser = ( GetSession()->IsUserOnline() && ( nUserNumber == GetSession()->usernum ) );
-        int nWfcStatus = GetApplication()->GetLocalIO()->GetWfcStatus();
+        int nWfcStatus = GetApplication()->GetWfcStatus();
         bool wfcStatusAndUserOne = ( nWfcStatus && nUserNumber == 1 );
         if ( userOnAndCurrentUser || wfcStatusAndUserOne )
         {
-            *pUser = GetSession()->thisuser;
+            pUser = GetSession()->GetCurrentUser();
             pUser->FixUp();
             return true;
         }
@@ -261,11 +261,11 @@ bool WUserManager::WriteUser( WUser *pUser, int nUserNumber )
 
 #ifndef NOT_BBS
     if ( ( GetSession()->IsUserOnline() && nUserNumber == static_cast<int>( GetSession()->usernum ) ) ||
-        ( GetApplication()->GetLocalIO()->GetWfcStatus() && nUserNumber == 1 ) )
+        ( GetApplication()->GetWfcStatus() && nUserNumber == 1 ) )
     {
-        if ( &pUser->data != &GetSession()->thisuser.data )
+        if ( &pUser->data != &GetSession()->GetCurrentUser()->data )
         {
-            GetSession()->thisuser.data = pUser->data;
+            GetSession()->GetCurrentUser()->data = pUser->data;
         }
     }
 #endif // NOT_BBS

@@ -151,7 +151,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 				{
 					if (!valid_system(*pSystemNumber))
 					{
-						nl();
+						GetSession()->bout.NewLine();
 						GetSession()->bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
 						*pSystemNumber = *pUserNumber = 0;
 					}
@@ -176,7 +176,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 			}
 			if ( i >= GetSession()->GetMaxNetworkNumber() )
 			{
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "This system isn't connected to "<< ss1 << "\r\n";
 				*pSystemNumber = *pUserNumber = 0;
 			}
@@ -224,7 +224,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 				}
 				else
 				{
-					nl();
+					GetSession()->bout.NewLine();
 					GetSession()->bout << "Unknown system\r\n";
 					*pSystemNumber = *pUserNumber = 0;
 				}
@@ -235,7 +235,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 			}
 			else
 			{
-				nl();
+				GetSession()->bout.NewLine();
 				for (i = 0; i < nv; i++)
 				{
 					set_net_num(ss[i]);
@@ -324,7 +324,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
  */
 bool ValidateSysopPassword()
 {
-	nl();
+	GetSession()->bout.NewLine();
 	if ( so() )
 	{
 		if ( incom )

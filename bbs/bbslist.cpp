@@ -37,7 +37,7 @@ void DeleteBBSListEntry();
 
 char ShowBBSListMenuAndGetChoice()
 {
-    nl();
+    GetSession()->bout.NewLine();
     if ( so() )
     {
         GetSession()->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
@@ -166,16 +166,16 @@ void AddBBSListEntryImpl()
             char szBbsListLine[ 255 ];
             snprintf( szBbsListLine, sizeof( szBbsListLine ), "%12s  %-50s  [%4s] (%4s)\r\n",
                      bbsPhoneNumber.c_str(), bbsName.c_str(), bbsSpeed.c_str(), bbsType.c_str() );
-            nl( 2 );
+            GetSession()->bout.NewLine( 2 );
             GetSession()->bout << szBbsListLine;
-            nl( 2 );
+            GetSession()->bout.NewLine( 2 );
             GetSession()->bout << "|10Is this information correct? ";
             if ( yesno() )
             {
                 AddBBSListLine( szBbsListLine );
                 GetSession()->bout << "\r\n|13This entry was added to BBS list.\r\n";
             }
-			nl();
+			GetSession()->bout.NewLine();
         }
         else
         {
@@ -195,7 +195,7 @@ void AddBBSListEntry()
     {
         GetSession()->bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
     }
-    else if ( GetSession()->thisuser.isRestrictionAutomessage() )
+    else if ( GetSession()->GetCurrentUser()->isRestrictionAutomessage() )
     {
         GetSession()->bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
     }
@@ -246,7 +246,7 @@ void DeleteBBSListEntry()
             }
             fclose(fi);
         }
-        nl();
+        GetSession()->bout.NewLine();
         if (ok)
         {
             WFile::Remove(szFileName);

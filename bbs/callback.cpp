@@ -31,14 +31,14 @@ void wwivnode( WUser *pUser, int mode)
 
 	if (!mode)
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#7Are you an active WWIV SysOp (y/N): ";
 		if (!yesno())
 		{
 			return;
 		}
 	}
-	nl();
+	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#7Node:|#0 ";
 	input(sysnum, 5);
 	if ( sysnum[0] == 'L' && mode )
@@ -79,10 +79,10 @@ void wwivnode( WUser *pUser, int mode)
 	}
 	if ( ph != csne->phone )
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		if ( printfile( ASV0_NOEXT ) )
 		{               // failed
-			nl();
+			GetSession()->bout.NewLine();
 			pausescr();
 		}
 		sprintf( s, "Attempted WWIV SysOp autovalidation." );
@@ -105,10 +105,10 @@ void wwivnode( WUser *pUser, int mode)
 	pUser->SetDar( GetSession()->asv.dar );
 	if (!mode)
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		if (printfile(ASV1_NOEXT))
 		{               // passed
-			nl();
+			GetSession()->bout.NewLine();
 			pausescr();
 		}
 	}
@@ -128,11 +128,11 @@ void wwivnode( WUser *pUser, int mode)
 	{
 		if ( !mode )
 		{
-			nl();
+			GetSession()->bout.NewLine();
 			if ( printfile( ASV2_NOEXT ) )
 			{
                 // data phone not bbs
-				nl();
+				GetSession()->bout.NewLine();
 				pausescr();
 			}
 		}
@@ -149,11 +149,11 @@ void wwivnode( WUser *pUser, int mode)
     pUser->SetForwardSystemNumber( pUser->GetHomeSystemNumber() );
 	if ( !mode )
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		if ( printfile( ASV3_NOEXT ) )
 		{               \
             // mail forwarded
-			nl();
+			GetSession()->bout.NewLine();
 			pausescr();
 		}
 	}
@@ -177,7 +177,7 @@ int callback()
 	do
 	{
 		ok = 1;
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2MODEM PH:";
 		input( s1, 14, true );
 		if (!(syscfg.sysconfig & sysconfig_free_phone))
@@ -245,7 +245,7 @@ int callback()
 		}
 		if (!ok)
 		{
-			nl();
+			GetSession()->bout.NewLine();
 			printfile(CBV2_NOEXT);                   // badphone
 			pausescr();
 		}
@@ -254,9 +254,9 @@ int callback()
 	{
 		return ok;
 	}
-    sprintf(s, "    CBV ATTEMPT %s / %s / %s / %s", GetSession()->thisuser.GetName(), s1, fulldate(), GetSession()->GetCurrentSpeed().c_str() );
+    sprintf(s, "    CBV ATTEMPT %s / %s / %s / %s", GetSession()->GetCurrentUser()->GetName(), s1, fulldate(), GetSession()->GetCurrentSpeed().c_str() );
 	sysoplog(s, false);
-	nl();
+	GetSession()->bout.NewLine();
 	printfile(CBV3_NOEXT);                       // instructions
 	pausescr();
 	count = 1;
@@ -286,12 +286,12 @@ int callback()
 		dump();
 		do
 		{
-			nl();
+			GetSession()->bout.NewLine();
             std::string password;
             input_password( "|#7PW: ", password, 8 );
-			if ( password == GetSession()->thisuser.GetPassword() )
+			if ( password == GetSession()->GetCurrentUser()->GetPassword() )
 			{
-				sprintf( s, "    CBV SUCCESS %s / %s / %s / %s", GetSession()->thisuser.GetName(), s1, date(), GetSession()->GetCurrentSpeed().c_str() );
+				sprintf( s, "    CBV SUCCESS %s / %s / %s / %s", GetSession()->GetCurrentUser()->GetName(), s1, date(), GetSession()->GetCurrentSpeed().c_str() );
 				sysoplog( s, false );
 				ssm( 1, 0, s );
 				return ok;
@@ -299,7 +299,7 @@ int callback()
 			else
 			{
 				++count;
-				nl();
+				GetSession()->bout.NewLine();
 			}
 		} while ( count < 3 );
 	}

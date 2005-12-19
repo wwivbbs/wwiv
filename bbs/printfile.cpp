@@ -48,9 +48,9 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
 		if ( strchr( szFileName, '.' ) == NULL )
 		{
 			char* pszTempFileName = szFileName + strlen( szFileName );
-			if ( GetSession()->thisuser.hasAnsi() )
+			if ( GetSession()->GetCurrentUser()->hasAnsi() )
 			{
-				if ( GetSession()->thisuser.hasColor() )
+				if ( GetSession()->GetCurrentUser()->hasColor() )
 				{
 					strcpy( pszTempFileName, ".ans" );
 					if ( !WFile::Exists( szFileName ) )
@@ -79,9 +79,9 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
 		if ( strchr( szFileName, '.' ) == NULL )
 		{
 			char* pszTempFileName2 = szFileName + strlen( szFileName );
-			if ( GetSession()->thisuser.hasAnsi() )
+			if ( GetSession()->GetCurrentUser()->hasAnsi() )
 			{
-				if ( GetSession()->thisuser.hasColor() )
+				if ( GetSession()->GetCurrentUser()->hasColor() )
 				{
 					strcpy( pszTempFileName2, ".ans" );
 					if ( !WFile::Exists( szFileName ) )
@@ -212,13 +212,13 @@ void print_local_file( const char *ss, const char *ss1 )
 		if ( GetSession()->IsUserOnline() )
 		{
 			GetApplication()->GetLocalIO()->LocalCls();
-			GetApplication()->GetLocalIO()->UpdateTopScreen();
+			GetApplication()->UpdateTopScreen();
 		}
 	}
 	else
 	{
 		printfile( ss );
-		nl( 2 );
+		GetSession()->bout.NewLine( 2 );
 		pausescr();
 	}
     BbsFreeMemory( pszTempSS );

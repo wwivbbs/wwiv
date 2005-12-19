@@ -37,8 +37,8 @@ char *interpret( char chKey )
         strcpy( s, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name );
         break;
     case '~':                               // Total mails/feedbacks sent
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetNumEmailSent() +
-            GetSession()->thisuser.GetNumFeedbackSent() + GetSession()->thisuser.GetNumNetEmailSent() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetNumEmailSent() +
+            GetSession()->GetCurrentUser()->GetNumFeedbackSent() + GetSession()->GetCurrentUser()->GetNumNetEmailSent() );
         break;
     case '/':                               // Today's date
         strcpy( s, fulldate() );
@@ -50,13 +50,13 @@ char *interpret( char chKey )
         snprintf( s, sizeof( s ), "%lu", GetSession()->usernum );
         break;
     case '$':                               // File points
-        snprintf( s, sizeof( s ), "%lu", GetSession()->thisuser.GetFilePoints() );
+        snprintf( s, sizeof( s ), "%lu", GetSession()->GetCurrentUser()->GetFilePoints() );
         break;
     case '*':                               // User reg num
-        snprintf( s, sizeof( s ), "%lu", GetSession()->thisuser.GetWWIVRegNumber() );
+        snprintf( s, sizeof( s ), "%lu", GetSession()->GetCurrentUser()->GetWWIVRegNumber() );
         break;
     case '-':                               // Aggravation points
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetAssPoints() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetAssPoints() );
         break;
     case ':':                               // Sub number
         strcpy( s, usub[GetSession()->GetCurrentMessageArea()].keys );
@@ -69,57 +69,57 @@ char *interpret( char chKey )
         break;
     case '&':
         {
-            strcpy( s, GetSession()->thisuser.hasAnsi() ? "ANSI" : "ASCII" );
+            strcpy( s, GetSession()->GetCurrentUser()->hasAnsi() ? "ANSI" : "ASCII" );
         }
         break;
     case 'A':                               // User's age
-        snprintf( s, sizeof( s ), "%d", GetSession()->thisuser.GetAge() );
+        snprintf( s, sizeof( s ), "%d", GetSession()->GetCurrentUser()->GetAge() );
         break;
     case 'a':                               // User's language
         strcpy( s, cur_lang_name );
         break;
     case 'B':                               // User's birthday
-        snprintf( s, sizeof( s ), "%d/%d/%d", GetSession()->thisuser.GetBirthdayMonth(),
-                 GetSession()->thisuser.GetBirthdayDay(), GetSession()->thisuser.GetBirthdayYear() );
+        snprintf( s, sizeof( s ), "%d/%d/%d", GetSession()->GetCurrentUser()->GetBirthdayMonth(),
+                 GetSession()->GetCurrentUser()->GetBirthdayDay(), GetSession()->GetCurrentUser()->GetBirthdayYear() );
         break;
     case 'b':                               // Minutes in bank
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetTimeBankMinutes() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetTimeBankMinutes() );
         break;
     case 'C':                               // User's city
-        strcpy( s, GetSession()->thisuser.GetCity() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetCity() );
         break;
     case 'c':                               // User's country
-        strcpy( s, GetSession()->thisuser.GetCountry() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetCountry() );
         break;
     case 'D':                               // Files downloaded
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetFilesDownloaded() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetFilesDownloaded() );
         break;
     case 'd':                               // User's DSL
-        snprintf( s, sizeof( s ), "%d", GetSession()->thisuser.GetDsl() );
+        snprintf( s, sizeof( s ), "%d", GetSession()->GetCurrentUser()->GetDsl() );
         break;
     case 'E':                               // E-mails sent
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetNumEmailSent() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetNumEmailSent() );
         break;
     case 'e':                               // Net E-mails sent
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetNumNetEmailSent() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetNumNetEmailSent() );
         break;
     case 'F':
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetNumFeedbackSent() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetNumFeedbackSent() );
         break;
     case 'f':                               // First time user called
-        strcpy( s, GetSession()->thisuser.GetFirstOn() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetFirstOn() );
         break;
     case 'G':                               // MessaGes read
-        snprintf( s, sizeof( s ), "%lu", GetSession()->thisuser.GetNumMessagesRead() );
+        snprintf( s, sizeof( s ), "%lu", GetSession()->GetCurrentUser()->GetNumMessagesRead() );
         break;
     case 'g':                               // Gold
-        snprintf( s, sizeof( s ), "%f", GetSession()->thisuser.GetGold() );
+        snprintf( s, sizeof( s ), "%f", GetSession()->GetCurrentUser()->GetGold() );
         break;
     case 'I':                               // User's call sIgn
-        strcpy( s, GetSession()->thisuser.GetCallsign() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetCallsign() );
         break;
     case 'i':                               // Illegal log-ons
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetNumIllegalLogons() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetNumIllegalLogons() );
         break;
     case 'J':                               // Message conference
         strcpy( s, reinterpret_cast<char*>( subconfs[uconfsub[GetSession()->GetCurrentConferenceMessageArea()].confnum].name ) );
@@ -128,34 +128,34 @@ char *interpret( char chKey )
         strcpy( s, reinterpret_cast<char*>( dirconfs[uconfdir[GetSession()->GetCurrentConferenceFileArea()].confnum].name ) );
         break;
     case 'K':                               // Kb uploaded
-        snprintf( s, sizeof( s ), "%lu", GetSession()->thisuser.GetUploadK() );
+        snprintf( s, sizeof( s ), "%lu", GetSession()->GetCurrentUser()->GetUploadK() );
         break;
     case 'k':                               // Kb downloaded
-        snprintf( s, sizeof( s ), "%lu", GetSession()->thisuser.GetDownloadK() );
+        snprintf( s, sizeof( s ), "%lu", GetSession()->GetCurrentUser()->GetDownloadK() );
         break;
     case 'L':                               // Last call
-        strcpy( s, GetSession()->thisuser.GetLastOn() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetLastOn() );
         break;
     case 'l':                               // Number of logons
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetNumLogons() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetNumLogons() );
         break;
     case 'M':                               // Mail waiting
-        snprintf( s, sizeof( s ), "%d", GetSession()->thisuser.GetNumMailWaiting() );
+        snprintf( s, sizeof( s ), "%d", GetSession()->GetCurrentUser()->GetNumMailWaiting() );
         break;
     case 'm':                               // Messages posted
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetNumMessagesPosted() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetNumMessagesPosted() );
         break;
     case 'N':                               // User's name
-        strcpy( s, GetSession()->thisuser.GetName() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetName() );
         break;
     case 'n':                               // Sysop's note
-        strcpy( s, GetSession()->thisuser.GetNote() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetNote() );
         break;
     case 'O':                               // Times on today
-        snprintf( s, sizeof( s ), "%d", GetSession()->thisuser.GetTimesOnToday() );
+        snprintf( s, sizeof( s ), "%d", GetSession()->GetCurrentUser()->GetTimesOnToday() );
         break;
     case 'o':                               // Time on today
-        snprintf( s, sizeof( s ), "%ld", static_cast<long>( ( GetSession()->thisuser.GetTimeOn() +
+        snprintf( s, sizeof( s ), "%ld", static_cast<long>( ( GetSession()->GetCurrentUser()->GetTimeOn() +
             timer() - timeon ) /
             SECONDS_PER_MINUTE_FLOAT ) );
         break;
@@ -163,28 +163,28 @@ char *interpret( char chKey )
         strcpy( s, reinterpret_cast<char*>( syscfg.systemphone ) );
         break;
     case 'p':                               // User's phone
-        strcpy( s, GetSession()->thisuser.GetDataPhoneNumber() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetDataPhoneNumber() );
         break;
     case 'R':                               // User's real name
-        strcpy( s, GetSession()->thisuser.GetRealName() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetRealName() );
         break;
     case 'r':                               // Last baud rate
-        snprintf( s, sizeof( s ), "%d", GetSession()->thisuser.GetLastBaudRate() );
+        snprintf( s, sizeof( s ), "%d", GetSession()->GetCurrentUser()->GetLastBaudRate() );
         break;
     case 'S':                               // User's SL
-        snprintf( s, sizeof( s ), "%d", GetSession()->thisuser.GetSl() );
+        snprintf( s, sizeof( s ), "%d", GetSession()->GetCurrentUser()->GetSl() );
         break;
     case 's':                               // User's street address
-        strcpy( s, GetSession()->thisuser.GetStreet() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetStreet() );
         break;
     case 'T':                               // User's sTate
-        strcpy( s, GetSession()->thisuser.GetState() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetState() );
         break;
     case 't':                               // Current time
         strcpy( s, times() );
         break;
     case 'U':                               // Files uploaded
-        snprintf( s, sizeof( s ), "%u", GetSession()->thisuser.GetFilesUploaded() );
+        snprintf( s, sizeof( s ), "%u", GetSession()->GetCurrentUser()->GetFilesUploaded() );
         break;
     case 'u':                               // Current sub
         strcpy( s, subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name );
@@ -193,16 +193,16 @@ char *interpret( char chKey )
         snprintf( s, sizeof( s ), "%ld", GetSession()->GetNumMessagesInCurrentMessageArea() );
         break;
     case 'X':                               // User's sex
-        snprintf( s, sizeof( s ), "%c", GetSession()->thisuser.GetGender() );
+        snprintf( s, sizeof( s ), "%c", GetSession()->GetCurrentUser()->GetGender() );
         break;
     case 'Y':                               // Your BBS name
         strcpy( s, syscfg.systemname );
         break;
     case 'y':                               // Computer type
-        strcpy( s, ctypes( GetSession()->thisuser.GetComputerType() ) );
+        strcpy( s, ctypes( GetSession()->GetCurrentUser()->GetComputerType() ) );
         break;
     case 'Z':                               // User's zip code
-        strcpy( s, GetSession()->thisuser.GetZipcode() );
+        strcpy( s, GetSession()->GetCurrentUser()->GetZipcode() );
         break;
     default:
         return "";

@@ -1067,6 +1067,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\WOutStream.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\wqscn.cpp"
 					>
 				</File>
@@ -1441,10 +1445,6 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
-			<File
-				RelativePath="readme.txt"
-				>
-			</File>
 			<File
 				RelativePath=".\todo.txt"
 				>

@@ -35,7 +35,7 @@ const int WTextFile::TRIES = 100;
  *
  */
 
-bool WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
+FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 {
   	FILE *f = fopen(path, mode);
 
@@ -44,7 +44,6 @@ bool WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 		flock(fileno(f), (strpbrk(mode, "wa+")) ? LOCK_EX : LOCK_SH);
 	}
 
-    m_hFile = f;
-    return ( m_hFile != null ) ? true : false;
+    return f;
 }
 

@@ -414,16 +414,16 @@ bool movefile(const char *pszSourceFileName, const char *pszDestFileName, bool s
 
 void ListAllColors()
 {
-	nl();
+	GetSession()->bout.NewLine();
 	for ( int i = 0; i < 128; i++ )
 	{
 		if ( (i % 26 ) == 0 )
 		{
-			nl();
+			GetSession()->bout.NewLine();
 		}
-		setc( i );
-		bprintf( "%3d", i );
+		GetSession()->bout.SystemColor( i );
+		GetSession()->bout.WriteFormatted( "%3d", i );
 	}
-	ansic( 0 );
-	nl();
+	GetSession()->bout.Color( 0 );
+	GetSession()->bout.NewLine();
 }

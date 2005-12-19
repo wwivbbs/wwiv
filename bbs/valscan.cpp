@@ -31,7 +31,7 @@ void valscan()
     int ac = 0;
     int os = GetSession()->GetCurrentMessageArea();
 
-    if ( uconfsub[1].confnum != -1 && okconf( &GetSession()->thisuser ) )
+    if ( uconfsub[1].confnum != -1 && okconf( GetSession()->GetCurrentUser() ) )
     {
         ac = 1;
         tmp_disable_conf( true );
@@ -56,8 +56,8 @@ void valscan()
             continue;
         }
 
-        nl();
-        ansic( 2 );
+        GetSession()->bout.NewLine();
+        GetSession()->bout.Color( 2 );
         ClearEOL();
         GetSession()->bout << "{{ ValScanning " << subboards[GetSession()->GetCurrentReadMessageArea()].name << " }}\r\n";
         lines_listed = 0;
@@ -98,7 +98,7 @@ void valscan()
                             write_post( i, p1 );
                             close_sub();
                             send_net_post( p1, subboards[GetSession()->GetCurrentReadMessageArea()].filename, GetSession()->GetCurrentReadMessageArea() );
-                            nl();
+                            GetSession()->bout.NewLine();
                             GetSession()->bout << "|#7Message sent.\r\n\n";
                         }
                         break;
@@ -113,7 +113,7 @@ void valscan()
                             p1->status &= ~status_pending_net;
                             write_post( i, p1 );
                             close_sub();
-                            nl();
+                            GetSession()->bout.NewLine();
                             GetSession()->bout << "|#9Not set for net pending now.\r\n\n";
                         }
                         break;
@@ -135,7 +135,7 @@ void valscan()
                                     {
                                         if ( static_cast<unsigned long>( date_to_daten( tu.GetFirstOn() ) ) < p2.daten )
                                         {
-                                            nl();
+                                            GetSession()->bout.NewLine();
                                             GetSession()->bout << "|#2Remove how many posts credit? ";
                                             char szNumCredits[ 11 ];
                                             input( szNumCredits, 3, true );
@@ -149,11 +149,11 @@ void valscan()
                                             {
                                                 tu.SetNumMessagesPosted( tu.GetNumMessagesPosted() - static_cast<unsigned short>( nNumPostCredits ) );
                                             }
-                                            nl();
+                                            GetSession()->bout.NewLine();
 											GetSession()->bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
                                             tu.SetNumDeletedPosts( tu.GetNumDeletedPosts() + 1 );
                                             GetApplication()->GetUserManager()->WriteUser( &tu, p2.owneruser );
-                                            GetApplication()->GetLocalIO()->UpdateTopScreen();
+                                            GetApplication()->UpdateTopScreen();
                                         }
                                     }
                                 }
@@ -174,5 +174,5 @@ void valscan()
     }
 
     GetSession()->SetCurrentMessageArea( os );
-    nl( 2 );
+    GetSession()->bout.NewLine( 2 );
 }

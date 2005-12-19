@@ -71,7 +71,7 @@ void sub_req(int main_type, int minor_type, int tosys, char *extra)
 
     send_net( &nh, NULL, extra, NULL );
 
-    nl();
+    GetSession()->bout.NewLine();
     if ( main_type == main_type_sub_add_req )
     {
 		GetSession()->bout <<  "Automated add request sent to @" << tosys << wwiv::endl;
@@ -181,11 +181,11 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt)
                                     }
                                     else
                                     {
-                                        nl();
+                                        GetSession()->bout.NewLine();
 										GetSession()->bout << "Type: " << type << wwiv::endl;
 										GetSession()->bout << "Host: " << h << wwiv::endl;
 										GetSession()->bout << "Sub : " << ss << wwiv::endl;
-                                        nl();
+                                        GetSession()->bout.NewLine();
                                         GetSession()->bout << "|#5Is this the sub you want? ";
                                         if (yesno())
                                         {
@@ -314,7 +314,7 @@ void sub_xtr_add(int n, int nn)
         onx[0] = 'Q';
         onx[1] = 0;
         onxi = 1;
-        nl();
+        GetSession()->bout.NewLine();
         for (ii = 0; ii < GetSession()->GetMaxNetworkNumber(); ii++)
         {
             if (ii < 9)
@@ -367,7 +367,7 @@ void sub_xtr_add(int n, int nn)
     }
     xnp->net_num = static_cast<short>( GetSession()->GetNetworkNumber() );
 
-    nl();
+    GetSession()->bout.NewLine();
     GetSession()->bout << "|#2What sub type? ";
     input( xnp->stype, 7 );
     if ( xnp->stype[0] == 0 )
@@ -408,7 +408,7 @@ void sub_xtr_add(int n, int nn)
                 gc = 0;
                 while (!gc)
                 {
-                    nl();
+                    GetSession()->bout.NewLine();
                     GetSession()->bout << "|#2Which category is this sub in (0 for unknown/misc)? ";
                     input(s, 3);
                     i = wwiv::stringUtils::StringToUnsignedShort(s);
@@ -453,7 +453,7 @@ void sub_xtr_add(int n, int nn)
 
         if (!ok)
         {
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Which system (number) is the host? ";
             input(szDescription, 6);
             xnp->host = static_cast<unsigned short>( atol( szDescription ) );
@@ -479,7 +479,7 @@ void sub_xtr_add(int n, int nn)
                     {
                         subboards[n].anony |= anony_no_tag;
                     }
-                    nl();
+                    GetSession()->bout.NewLine();
                     if (opt & OPTION_AUTO)
                     {
                         GetSession()->bout << "|#5Attempt automated add request? ";
@@ -495,7 +495,7 @@ void sub_xtr_add(int n, int nn)
                 }
                 else
                 {
-                    nl();
+                    GetSession()->bout.NewLine();
                     GetSession()->bout << "|#5Attempt automated add request? ";
                     bool bTryAutoAddReq = yesno();
                     if ( bTryAutoAddReq )
@@ -510,7 +510,7 @@ void sub_xtr_add(int n, int nn)
             }
             else
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "The host is not listed in the network.\r\n";
                 pausescr();
             }
@@ -533,7 +533,7 @@ bool display_sub_categories()
     WTextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
     if (ff.IsOpen())
     {
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "Available sub categories are:\r\n";
         bool abort = false;
         char szLine[255];

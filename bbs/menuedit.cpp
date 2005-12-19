@@ -153,7 +153,7 @@ void EditMenus()
 				GetMenuDescription(szDirectoryName, szDesc);
 
 				GetSession()->bout << "|10New desc     : ";
-				ansic( 0 );
+				GetSession()->bout.Color( 0 );
 				inputl(szDesc, 60);
 				if (szDesc[0])
 				{
@@ -605,7 +605,7 @@ bool GetMenuDir( char *pszBuffer )
 
 	while (!hangup)
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#9Enter menuset to edit ?=List : |#0";
 		input(pszBuffer, 8);
 
@@ -667,7 +667,7 @@ bool GetMenuMenu( const char *pszDirectoryName, char *pszBuffer )
 
 	while (!hangup)
 	{
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#9Enter menu file to edit ?=List : |#0";
 		input(pszBuffer, 8);
 
@@ -739,11 +739,11 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount)
 		GetSession()->bout << "|#9T) Co-Sysop       : |#2" << ( Menu->nCoSysop ? "Yes" : "No" ) << wwiv::endl;
 		GetSession()->bout << "|#9U) Password       : |#2" << ( incom ? "<Remote>" : Menu->szPassWord ) << wwiv::endl;
 		GetSession()->bout << "|#9V) Hide text from : |#2" << ( Menu->nHide == MENU_HIDE_NONE ? "None" : Menu->nHide == MENU_HIDE_PULLDOWN ? "Pulldown Menus" : Menu->nHide == MENU_HIDE_REGULAR ? "Regular Menus" : Menu->nHide == MENU_HIDE_BOTH ? "Both Menus" : "Out of Range" ) << wwiv::endl;
-		bprintf( "|#9W) Pulldown flags : |10%-20.20s |#1%-18.18s |12%-20.20s", Menu->nPDFlags & PDFLAGS_NOCLEAR ? "No Clear before run" : "Clear before run", Menu->nPDFlags & PDFLAGS_NOPAUSEAFTER ? "No Pause after run" : "Pause after run", Menu->nPDFlags & PDFLAGS_NORESTORE ? "No Restore after run" : "Restore after run" );
+		GetSession()->bout.WriteFormatted( "|#9W) Pulldown flags : |10%-20.20s |#1%-18.18s |12%-20.20s", Menu->nPDFlags & PDFLAGS_NOCLEAR ? "No Clear before run" : "Clear before run", Menu->nPDFlags & PDFLAGS_NOPAUSEAFTER ? "No Pause after run" : "Pause after run", Menu->nPDFlags & PDFLAGS_NORESTORE ? "No Restore after run" : "Restore after run" );
 		GetSession()->bout << "|#9X) Extended Help  : |#2%s" << Menu->szExtendedHelp << wwiv::endl;
 
 	}
-	nl( 2 );
+	GetSession()->bout.NewLine( 2 );
 	GetSession()->bout << "|041|#0,|04A|#0-|04F|#0,|04K|#0-|04U|#0, |04Z|#0=Add new record, |04[|#0=Prev, |04]|#0=Next, |04Q|#0=Quit : ";
 }
 
@@ -783,7 +783,7 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
 		GetSession()->bout << "O) Password             : " << ( incom ? "<Remote>" : pHeader->szPassWord ) << wwiv::endl;
 		GetSession()->bout << "P) Change pulldown colors" << wwiv::endl;
 	}
-	nl( 2 );
+	GetSession()->bout.NewLine( 2 );
 	GetSession()->bout << "0-2, A-O, Z=Add new Record, [=Prev, ]=Next, Q=Quit : ";
 
 	CloseMenuDescriptions();
@@ -798,109 +798,109 @@ void EditPulldownColors(MenuHeader * pMenuHeader)
 	while (!done && !hangup)
 	{
 		ClearScreen();
-		ansic( 0 );
+		GetSession()->bout.Color( 0 );
 
-		bprintf("%-35.35s", "A) Title color");
+		GetSession()->bout.WriteFormatted("%-35.35s", "A) Title color");
 		if ( pMenuHeader->nTitleColor )
 		{
-			setc( pMenuHeader->nTitleColor );
+			GetSession()->bout.SystemColor( pMenuHeader->nTitleColor );
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nTitleColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "B) Main border color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "B) Main border color");
 		if (pMenuHeader->nMainBorderColor)
 		{
-			setc(pMenuHeader->nMainBorderColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nMainBorderColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainBorderColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "C) Main box color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "C) Main box color");
 		if (pMenuHeader->nMainBoxColor)
 		{
-			setc(pMenuHeader->nMainBoxColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nMainBoxColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainBoxColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "D) Main text color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "D) Main text color");
 		if (pMenuHeader->nMainTextColor)
 		{
-			setc(pMenuHeader->nMainTextColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nMainTextColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainTextColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "E) Main text highlight color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "E) Main text highlight color");
 		if (pMenuHeader->nMainTextHLColor)
 		{
-			setc(pMenuHeader->nMainTextHLColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nMainTextHLColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainTextHLColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "F) Main selected color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "F) Main selected color");
 		if (pMenuHeader->nMainSelectedColor)
 		{
-			setc(pMenuHeader->nMainSelectedColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nMainSelectedColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainSelectedColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "G) Main selected hightlight color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "G) Main selected hightlight color");
 		if (pMenuHeader->nMainSelectedHLColor)
 		{
-			setc(pMenuHeader->nMainSelectedHLColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nMainSelectedHLColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainSelectedHLColor ) << wwiv::endl;
-		ansic( 0 );
+		GetSession()->bout.Color( 0 );
 
-		bprintf("%-35.35s", "K) Item border color");
+		GetSession()->bout.WriteFormatted("%-35.35s", "K) Item border color");
 		if (pMenuHeader->nItemBorderColor)
 		{
-			setc(pMenuHeader->nItemBorderColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nItemBorderColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemBorderColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "L) Item box color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "L) Item box color");
 		if (pMenuHeader->nItemBoxColor)
 		{
-			setc(pMenuHeader->nItemBoxColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nItemBoxColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemBoxColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "M) Item text color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "M) Item text color");
 		if (pMenuHeader->nItemTextColor)
 		{
-			setc(pMenuHeader->nItemTextColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nItemTextColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemTextColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "N) Item text highlight color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "N) Item text highlight color");
 		if (pMenuHeader->nItemTextHLColor)
 		{
-			setc(pMenuHeader->nItemTextHLColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nItemTextHLColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemTextHLColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "O) Item selected color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "O) Item selected color");
 		if (pMenuHeader->nItemSelectedColor)
 		{
-			setc(pMenuHeader->nItemSelectedColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nItemSelectedColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemSelectedColor ) << wwiv::endl;
-		ansic( 0 );
-		bprintf("%-35.35s", "P) Item selected hightlight color");
+		GetSession()->bout.Color( 0 );
+		GetSession()->bout.WriteFormatted("%-35.35s", "P) Item selected hightlight color");
 		if (pMenuHeader->nItemSelectedHLColor)
 		{
-			setc(pMenuHeader->nItemSelectedHLColor);
+			GetSession()->bout.SystemColor(pMenuHeader->nItemSelectedHLColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemSelectedHLColor ) << wwiv::endl;
-		ansic( 0 );
+		GetSession()->bout.Color( 0 );
 
-		nl( 2 );
+		GetSession()->bout.NewLine( 2 );
 		GetSession()->bout << "A-G,K-P, Q=Quit : ";
 		char chKey = onek("QABCDEFGKLMNOP");
 
 		if (chKey != 'Q')
 		{
 			ListAllColors();
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "Select a color : ";
 		}
 		switch (chKey)
@@ -1017,7 +1017,7 @@ void ListMenuDirs()
 
 	OpenMenuDescriptions();
 
-	nl();
+	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#7Available Menus Sets\r\n";
 	GetSession()->bout << "|10============================\r\n";
 
@@ -1028,14 +1028,14 @@ void ListMenuDirs()
 		if ((szFileName[0] != '.') && (fnd.IsDirectory()))
 		{
 			WWIV_GetFileNameFromPath(szFileName, szName);
-			bprintf("|#2%-8.8s |15%-60.60s\r\n", szName, GetMenuDescription(szFileName, szDesc));
+			GetSession()->bout.WriteFormatted("|#2%-8.8s |15%-60.60s\r\n", szName, GetMenuDescription(szFileName, szDesc));
 		}
 		bFound = fnd.next();
 	}
-	nl();
+	GetSession()->bout.NewLine();
 
 	CloseMenuDescriptions();
-	ansic( 0 );
+	GetSession()->bout.Color( 0 );
 }
 
 
@@ -1051,7 +1051,7 @@ void ListMenuMenus( const char *pszDirectoryName )
 	sprintf(szPath, "%s%s%c*.MNU", MenuDir(szMenuDir), pszDirectoryName,
 		WWIV_FILE_SEPERATOR_CHAR);
 
-	nl();
+	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#7Available Menus\r\n";
 	GetSession()->bout << "|10===============|06\r\n";
 
@@ -1066,6 +1066,6 @@ void ListMenuMenus( const char *pszDirectoryName )
 		}
 		bFound = fnd.next();
 	}
-	nl();
-	ansic( 0 );
+	GetSession()->bout.NewLine();
+	GetSession()->bout.Color( 0 );
 }

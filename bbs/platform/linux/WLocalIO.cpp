@@ -319,11 +319,6 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
 }
 
 
-void WLocalIO::pr_Wait(int i1)
-{
-}
-
-
 
 /*
  * set_protect sets the number of lines protected at the top of the screen.
@@ -383,7 +378,7 @@ void WLocalIO::tleft(bool bCheckForTimeOut)
 }
 
 
-void WLocalIO::UpdateTopScreenImpl()
+void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, nInstanceNumber )
 {
 }
 

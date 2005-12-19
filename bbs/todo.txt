@@ -5,6 +5,4 @@
 
 TODO Items should be entered into the sourceforge tracker.
 
-Pass WStatus and WUser into LocalIO::UpdateTopScreen()
-Add WBbsApp::UpdateTopScreen which calls LocalIO::UpdateTopScreen passing the
-right parameters.
+Move bbs logic out of WLocalIO

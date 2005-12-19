@@ -33,7 +33,7 @@ void wfc_cls()
 {
 	if ( GetApplication()->HasConfigFlag( OP_FLAGS_WFC_SCREEN ) )
 	{
-		reset_colors();
+		GetSession()->bout.ResetColors();
 		GetApplication()->GetLocalIO()->LocalCls();
 		GetSession()->wfc_status = 0;
 		GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );

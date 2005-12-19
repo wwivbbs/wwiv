@@ -275,7 +275,7 @@ void select_event_days(int evnt)
     int i;
     char ch, daystr[8], days[8];
 
-    nl();
+    GetSession()->bout.NewLine();
     strcpy(days, "SMTWTFS");
     for (i = 0; i <= 6; i++)
 	{
@@ -349,7 +349,7 @@ void modify_event( int evnt )
         }
 		GetSession()->bout << "G) Days to Execute.: " << s1 << wwiv::endl;
 		GetSession()->bout << "H) Node (0=Any)....: " << events[i].instance << wwiv::endl;
-        nl();
+        GetSession()->bout.NewLine();
 		GetSession()->bout << "|#5Which? |#7[|#1A-H,[,],Q=Quit|#7] |#0: ";
         ch = onek( "QABCDEFGH[]" );
         switch ( ch )
@@ -372,7 +372,7 @@ void modify_event( int evnt )
             }
             break;
         case 'A':
-            nl();
+            GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2Enter event times in 24 hour format. i.e. 00:01 or 15:20\r\n";
 			GetSession()->bout << "|#2Event time? ";
             ok = true;
@@ -449,7 +449,7 @@ void modify_event( int evnt )
             }
             break;
         case 'B':
-            nl();
+            GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2Exit BBS for event? ";
             if ( yesno() )
             {
@@ -486,7 +486,7 @@ void modify_event( int evnt )
             events[i].status ^= EVENT_FORCED;
             break;
         case 'G':
-            nl();
+            GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2Run event every day? ";
             if ( noyes( ))
             {
@@ -498,7 +498,7 @@ void modify_event( int evnt )
             }
             break;
         case 'H':
-            nl();
+            GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Run event on which node (0=any)? ";
             input( s, 3 );
             j = atoi( s );
@@ -547,7 +547,7 @@ void eventedit()
 	{
 		char ch = 0;
         show_events();
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#9Events: |#1I|#9nsert, |#1D|#9elete, |#1M|#9odify, e|#1X|#9ecute, |#1S|#2ystem Events|#9, |#1Q|#9uit :";
         if ( so() )
 		{
@@ -567,7 +567,7 @@ void eventedit()
             break;
         case 'X':
 			{
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2Run which Event? ";
 				input( s, 2 );
 				int nEventNum = atoi( s );
@@ -579,7 +579,7 @@ void eventedit()
             break;
         case 'M':
 			{
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2Modify which Event? ";
 				input( s, 2 );
 				int nEventNum = atoi( s );
@@ -603,13 +603,13 @@ void eventedit()
         case 'D':
             if ( GetSession()->num_events )
             {
-                nl();
+                GetSession()->bout.NewLine();
                 GetSession()->bout << "|#2Delete which Event? ";
                 input( s, 2 );
                 int nEventNum = atoi( s );
                 if ( s[0] && nEventNum >= 0 && nEventNum < GetSession()->num_events )
                 {
-                    nl();
+                    GetSession()->bout.NewLine();
                     if ( events[nEventNum].status & EVENT_EXIT )
                     {
                         sprintf( s, "Exit Level = %d", events[nEventNum].cmd[0] );
@@ -639,9 +639,9 @@ void eventedit()
 				{
 					GetApplication()->GetLocalIO()->LocalCls();
                     std::string title = "|B1|15System Events Configuration";
-                    bprintf( "%-85s", title.c_str() );
-					ansic ( 0 );
-					nl( 2 );
+                    GetSession()->bout.WriteFormatted( "%-85s", title.c_str() );
+					GetSession()->bout.Color ( 0 );
+					GetSession()->bout.NewLine( 2 );
 					GetSession()->bout << "|#91) Terminal Program     : |#2" << syscfg.terminal     << wwiv::endl;
 					GetSession()->bout << "|#93) Begin Day Event      : |#2" << syscfg.beginday_c   << wwiv::endl;
 					GetSession()->bout << "|#94) Logon Event          : |#2" << syscfg.logon_c      << wwiv::endl;
@@ -650,7 +650,7 @@ void eventedit()
 					GetSession()->bout << "|#97) Upload  Event        : |#2" << syscfg.upload_c     << wwiv::endl;
 					GetSession()->bout << "|#98) Virus Scanner CmdLine: |#2" << syscfg.v_scan_c     << wwiv::endl;
 					GetSession()->bout << "|#9Q) Quit\r\n";
-					nl();
+					GetSession()->bout.NewLine();
 					GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7, |#2?|#7=|#1Help|#7) Which? (|#11|#7-|#18|#7) :";
 					ch = onek( "Q1345678?" );
 					GetApplication()->GetLocalIO()->LocalGotoXY( 26, ch - 47 );

@@ -49,9 +49,9 @@ void show_chains(int *mapp, int *map)
 {
     char szBuffer[ 255 ];
 
-    ansic( 0 );
+    GetSession()->bout.Color( 0 );
     ClearScreen();
-    nl();
+    GetSession()->bout.NewLine();
     bool abort = false;
     bool next = false;
     if ( GetApplication()->HasConfigFlag( OP_FLAGS_CHAIN_REG ) && chains_reg )
@@ -137,8 +137,7 @@ void show_chains(int *mapp, int *map)
     }
     else
     {
-        sprintf( szBuffer, " [ %s Online Programs ] ", syscfg.systemname );
-        DisplayLiteBar( szBuffer );
+        GetSession()->bout.DisplayLiteBar( " [ %s Online Programs ] ", syscfg.systemname );
         GetSession()->bout << "|#7ÉÄÄËÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄËÄÄËÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ»\r\n";
         for ( int i = 0; i < *mapp && !abort && !hangup; i++ )
         {
@@ -219,7 +218,7 @@ void run_chain( int nChainNumber )
     stuff_in( szChainCmdLine, chains[nChainNumber].filename, create_chain_file(), szComSpeed, szComPortNum, szModemSpeed, "" );
 
     sysoplogf( "!Ran \"%s\"", chains[nChainNumber].description );
-    GetSession()->thisuser.SetNumChainsRun( GetSession()->thisuser.GetNumChainsRun() + 1 );
+    GetSession()->GetCurrentUser()->SetNumChainsRun( GetSession()->GetCurrentUser()->GetNumChainsRun() + 1 );
 
     unsigned short flags = 0;
     if ( !( chains[nChainNumber].ansir & ansir_no_DOS ) )
@@ -237,7 +236,7 @@ void run_chain( int nChainNumber )
 
     ExecuteExternalProgram( szChainCmdLine, flags );
     write_inst( INST_LOC_CHAINS, 0, INST_FLAGS_NONE );
-    GetApplication()->GetLocalIO()->UpdateTopScreen();
+    GetApplication()->UpdateTopScreen();
 }
 
 
@@ -275,7 +274,7 @@ void do_chains()
 		{
             ok = false;
 		}
-        if ( c.ar && !GetSession()->thisuser.hasArFlag( c.ar ) )
+        if ( c.ar && !GetSession()->GetCurrentUser()->hasArFlag( c.ar ) )
 		{
             ok = false;
 		}
@@ -284,7 +283,7 @@ void do_chains()
 			chainregrec r = chains_reg[ i ];
             if ( r.maxage )
             {
-                if ( r.minage > GetSession()->thisuser.GetAge() || r.maxage < GetSession()->thisuser.GetAge() )
+                if ( r.minage > GetSession()->GetCurrentUser()->GetAge() || r.maxage < GetSession()->GetCurrentUser()->GetAge() )
 				{
                     ok = false;
 				}
@@ -320,7 +319,7 @@ void do_chains()
     {
         GetSession()->SetMMKeyArea( WSession::mmkeyChains );
         GetApplication()->GetLocalIO()->tleft( true );
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 
 		int nChainNumber = -1;

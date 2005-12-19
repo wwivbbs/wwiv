@@ -41,7 +41,7 @@ const int WTextFile::TRIES = 100;
  *	3 or greater shows file information BEFORE any attempt is made to open a file.
  */
 
-bool WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
+FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 {
 	FILE *hFile;
 
@@ -127,6 +127,5 @@ bool WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 	//	std::cout << "\rfsh_open " << pszFileName << ", access=" << pszFileMode << ".\r\n";
 	//}
 
-    m_hFile = hFile;
-    return ( m_hFile != NULL ) ? true : false;
+    return hFile;
 }

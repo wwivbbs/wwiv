@@ -71,9 +71,9 @@ int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
     // Reread the user record.
     if ( GetSession()->IsUserOnline() )
 	{
-        GetApplication()->GetUserManager()->ReadUser( &GetSession()->thisuser, GetSession()->usernum, true );
+        GetApplication()->GetUserManager()->ReadUser( GetSession()->GetCurrentUser(), GetSession()->usernum, true );
         read_qscn( GetSession()->usernum, qsc, false, true );
-        GetApplication()->GetLocalIO()->UpdateTopScreen();
+        GetApplication()->UpdateTopScreen();
     }
 
     // return to caller

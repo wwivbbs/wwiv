@@ -88,13 +88,13 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 			lin[i * LEN] = '\0';
 		}
 	}
-	nl();
+	GetSession()->bout.NewLine();
 
 	if ( irt_name[0] == '\0')
 	{
 		if ( GetMessageToName( aux ) )
 		{
-			nl();
+			GetSession()->bout.NewLine();
 		}
 	}
 
@@ -134,7 +134,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     	long lMaxMessageSize = 0;
     	bool real_name = false;
         GetMessageAnonStatus( real_name, anony, setanon );
-		BackLine();
+		GetSession()->bout.BackLine();
 		if ( !GetSession()->IsNewMailWatiting() )
 		{
 			SpinPuts( "Saving...", 2 );
@@ -171,7 +171,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
         // Add author name
 		if (real_name)
 		{
-			AddLineToMessageBuffer( b, GetSession()->thisuser.GetRealName(), &lCurrentMessageSize );
+			AddLineToMessageBuffer( b, GetSession()->GetCurrentUser()->GetRealName(), &lCurrentMessageSize );
 		}
 		else
 		{
@@ -183,7 +183,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 			}
 			else
 			{
-				AddLineToMessageBuffer( b, GetSession()->thisuser.GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ), &lCurrentMessageSize );
+				AddLineToMessageBuffer( b, GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem( GetSession()->usernum, net_sysnum ), &lCurrentMessageSize );
 			}
 		}
 
@@ -317,7 +317,7 @@ bool GetMessageToName( const char *aux )
 				{
 					strcpy(irt_name, "ALL");
                     GetSession()->bout << "|#4All\r\n";
-					ansic( 0 );
+					GetSession()->bout.Color( 0 );
 				}
 				else
 				{
@@ -337,20 +337,20 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
     char s[ 255 ];
     char s1[ 255 ];
 
-    nl( 2 );
+    GetSession()->bout.NewLine( 2 );
     GetSession()->bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
     GetSession()->bout << "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""AA\003""BB\003""CC\003""DD\003""EE\003""FF\003""GG\003""HH\003""II\003""JJ\003""KK\003""LL\003""MM\003""NN\003""OO\003""PP\003""QQ\003""RR\003""SS\003""""\003""0";
     GetSession()->bout << "\003""TT\003""UU\003""VV\003""WW\003""XX\003""YY\003""ZZ\003""aa\003""bb\003""cc\003""dd\003""ee\003""ff\003""gg\003""hh\003""ii\003""jj\003""kk\003""ll\003""mm\003""nn\003""oo\003""pp\003""qq\003""rr\003""ss\003""tt\003""uu\003""vv\003""ww\003""xx\003""yy\003""zz\r\n";
-    nl();
+    GetSession()->bout.NewLine();
     GetSession()->bout << "|#1Enter |#2/Q|#1 to quote previous message, |#2/HELP|#1 for other editor commands.\r\n";
     strcpy(s, "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]");
-    if ( GetSession()->thisuser.GetScreenChars() < 80 )
+    if ( GetSession()->GetCurrentUser()->GetScreenChars() < 80 )
     {
-        s[ GetSession()->thisuser.GetScreenChars() ] = '\0';
+        s[ GetSession()->GetCurrentUser()->GetScreenChars() ] = '\0';
     }
-    ansic( 7 );
+    GetSession()->bout.Color( 7 );
     GetSession()->bout << s;
-    nl();
+    GetSession()->bout.NewLine();
 
     bool bCheckMessageSize = true;
     bool bSaveMessage = false;
@@ -364,9 +364,9 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
         {
             --curli;
             strcpy(szRollOverLine, &(lin[(curli) * LEN]));
-            if (wwiv::stringUtils::GetStringLength(szRollOverLine) > GetSession()->thisuser.GetScreenChars() - 1)
+            if (wwiv::stringUtils::GetStringLength(szRollOverLine) > GetSession()->GetCurrentUser()->GetScreenChars() - 1)
             {
-                szRollOverLine[ GetSession()->thisuser.GetScreenChars() - 2 ] = '\0';
+                szRollOverLine[ GetSession()->GetCurrentUser()->GetScreenChars() - 2 ] = '\0';
             }
         }
         if (hangup)
@@ -433,7 +433,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
                                 ++i5;
                             }
                         }
-                        for (i4 = 0; (i4 < (GetSession()->thisuser.GetScreenChars() - i5) / 2) && (!abort); i4++)
+                        for (i4 = 0; (i4 < (GetSession()->GetCurrentUser()->GetScreenChars() - i5) / 2) && (!abort); i4++)
                         {
                             osan(" ", &abort, &next);
                         }
@@ -442,7 +442,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
                 }
                 if ( !okansi() || next )
                 {
-                    nl();
+                    GetSession()->bout.NewLine();
                     GetSession()->bout << "Continue...\r\n";
                 }
             }
@@ -622,7 +622,7 @@ void GetMessageTitle( char *pszTitle, bool force_title )
             }
             else
             {
-                nl();
+                GetSession()->bout.NewLine();
                 strcpy( pszTitle,s1 );
             }
         }
@@ -667,7 +667,7 @@ bool ExternalMessageEditor( int maxli, int &setanon, char *pszTitle, const char 
         fileFEditInf.Write( &fedit_data, sizeof( fedit_data ) );
         fileFEditInf.Close();
     }
-    bool bSaveMessage = external_edit( INPUT_MSG, syscfgovr.tempdir, GetSession()->thisuser.GetDefaultEditor() - 1,
+    bool bSaveMessage = external_edit( INPUT_MSG, syscfgovr.tempdir, GetSession()->GetCurrentUser()->GetDefaultEditor() - 1,
                                        maxli, pszDestination, pszTitle, flags );
     if ( bSaveMessage )
     {
@@ -932,8 +932,8 @@ void GetMessageAnonStatus( bool &real_name, int *anony, int setanon )
         break;
     case anony_enable_dear_abby:
         {
-            nl();
-			GetSession()->bout << "1. " << GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ) << wwiv::endl;
+            GetSession()->bout.NewLine();
+			GetSession()->bout << "1. " << GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) << wwiv::endl;
             GetSession()->bout << "2. Abby\r\n";
             GetSession()->bout << "3. Problemed Person\r\n\n";
             GetSession()->bout << "|#5Which? ";

@@ -236,7 +236,7 @@ void DisplayNetInfo( int nSubNum )
 {
 	if (xsubs[nSubNum].num_nets)
 	{
-		bprintf("\r\n      %-12.12s %-7.7s %-6.6s  Scrb  %s\r\n",
+		GetSession()->bout.WriteFormatted("\r\n      %-12.12s %-7.7s %-6.6s  Scrb  %s\r\n",
 			"Network", "Type", "Host", " Flags");
     	xtrasubsnetrec *xnp = xsubs[nSubNum].nets;
 		for (int i = 0; i < xsubs[nSubNum].num_nets; i++, xnp++)
@@ -263,7 +263,7 @@ void DisplayNetInfo( int nSubNum )
                 char szNetFileName[ MAX_PATH ];
 				sprintf( szNetFileName, "%sn%s.net", net_networks[xnp->net_num].dir, xnp->stype );
 				int num = amount_of_subscribers( szNetFileName );
-				bprintf("   %c) %-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
+				GetSession()->bout.WriteFormatted("   %c) %-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
 					i + 'a',
 					net_networks[xnp->net_num].name,
 					xnp->stype,
@@ -274,7 +274,7 @@ void DisplayNetInfo( int nSubNum )
 			}
 			else
 			{
-				bprintf("   %c) %-12.12s %-7.7s %-6.6s  %s%s\r\n",
+				GetSession()->bout.WriteFormatted("   %c) %-12.12s %-7.7s %-6.6s  %s%s\r\n",
 					i + 'a',
 					net_networks[xnp->net_num].name,
 					xnp->stype,
@@ -305,9 +305,9 @@ void modify_sub(int n)
         ClearScreen();
     	char szSubNum[81];
 		sprintf(szSubNum, "%s %d", "|B1|15Editing Message Area #", n);
-		bprintf("%-85s", szSubNum);
-        ansic ( 0 );
-		nl( 2 );
+		GetSession()->bout.WriteFormatted("%-85s", szSubNum);
+        GetSession()->bout.Color ( 0 );
+		GetSession()->bout.NewLine( 2 );
         GetSession()->bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
 		GetSession()->bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
 		GetSession()->bout << "|#9C) Key        : |#2" << GetKey( r, szKey ) << wwiv::endl;
@@ -325,7 +325,7 @@ void modify_sub(int n)
 		GetSession()->bout << "|#9M) Req ANSI   : |#2" << YesNoString( ( r.anony & anony_ansi_only ) ? true : false ) << wwiv::endl;
 		GetSession()->bout << "|#9N) Disable tag: |#2" << YesNoString( ( r.anony & anony_no_tag ) ? true : false ) << wwiv::endl;
 		GetSession()->bout << "|#9O) Description: |#2" << ( ( xsubs[n].desc[0] ) ? xsubs[n].desc : "None." ) << wwiv::endl;
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
 		char ch = onek( "QABCDEFGHIJKLMNO[]", true );
 		switch ( ch )
@@ -351,11 +351,11 @@ void modify_sub(int n)
 			break;
 		case 'A':
             {
-			    nl();
+			    GetSession()->bout.NewLine();
 			    GetSession()->bout << "|#2New name? ";
                 char szSubName[ 81 ];
 			    Input1(szSubName, r.name, 40, true, MIXED);
-			    ansic( 0 );
+			    GetSession()->bout.Color( 0 );
 			    if (szSubName[0])
 			    {
 				    strcpy(r.name, szSubName);
@@ -364,7 +364,7 @@ void modify_sub(int n)
 			break;
 		case 'B':
             {
-			    nl();
+			    GetSession()->bout.NewLine();
 			    GetSession()->bout << "|#2New filename? ";
                 char szSubBaseName[ MAX_PATH ];
 			    Input1(szSubBaseName, r.filename, 8, true, FILE_NAME);
@@ -382,9 +382,9 @@ void modify_sub(int n)
 							    break;
 						    }
 					    }
-					    nl();
+					    GetSession()->bout.NewLine();
                         GetSession()->bout << "|#6" << szSubBaseName << " already in use for \"" << szOldSubFileName << "\"" << wwiv::endl;
-					    nl();
+					    GetSession()->bout.NewLine();
 					    GetSession()->bout << "|#5Use anyway? ";
 					    if (!yesno())
 					    {
@@ -401,7 +401,7 @@ void modify_sub(int n)
                          !WFile::Exists( szFile2 ) &&
                          !wwiv::stringUtils::IsEquals( r.filename, "NONAME" ) )
 				    {
-					    nl();
+					    GetSession()->bout.NewLine();
 					    GetSession()->bout << "|#7Rename current data files (.SUB/.DAT)? ";
 					    if (yesno())
 					    {
@@ -418,7 +418,7 @@ void modify_sub(int n)
 			break;
 		case 'C':
             {
-			    nl();
+			    GetSession()->bout.NewLine();
 			    GetSession()->bout << "|#2New Key (space = none) ? ";
 			    char ch2 = onek("@%^&()_=\\|;:'\",` ");
                 r.key = (ch2 == SPACE) ? 0 : ch2;
@@ -428,7 +428,7 @@ void modify_sub(int n)
 			{
 				char szDef[5];
 				sprintf(szDef, "%d", r.readsl);
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2New Read SL? ";
                 char szNewSL[ 10 ];
 				Input1(szNewSL, szDef, 3, true, UPPER);
@@ -442,7 +442,7 @@ void modify_sub(int n)
 			{
 				char szDef[5];
 				sprintf(szDef, "%d", r.postsl);
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2New Post SL? ";
                 char szNewSL[ 10 ];
 				Input1(szNewSL, szDef, 3, true, UPPER);
@@ -455,7 +455,7 @@ void modify_sub(int n)
 		case 'F':
             {
                 char szCharString[ 21 ];
-			    nl();
+			    GetSession()->bout.NewLine();
 			    GetSession()->bout << "|#2New Anony (Y,N,D,F,R) ? ";
 			    strcpy(szCharString, "NYDFR");
 			    szCharString[0] = YesNoString( false )[0];
@@ -491,7 +491,7 @@ void modify_sub(int n)
 			break;
 			case 'G':
                 {
-				    nl();
+				    GetSession()->bout.NewLine();
 				    GetSession()->bout << "|#2New Min Age? ";
                     char szAge[ 10 ];
 				    input(szAge, 3);
@@ -506,7 +506,7 @@ void modify_sub(int n)
 				{
 					char szDef[5];
 					sprintf(szDef, "%d", r.maxmsgs);
-					nl();
+					GetSession()->bout.NewLine();
 					GetSession()->bout << "|#2New Max Msgs? ";
                     char szMaxMsgs[ 21 ];
 					Input1(szMaxMsgs, szDef, 5, true, UPPER);
@@ -518,7 +518,7 @@ void modify_sub(int n)
 				} break;
 			case 'I':
                 {
-				    nl();
+				    GetSession()->bout.NewLine();
                     GetSession()->bout << "|#2Enter New AR (<SPC>=None) : ";
 				    char ch2 = onek( "ABCDEFGHIJKLMNOP ", true );
 				    if ( ch2 == SPACE )
@@ -537,7 +537,7 @@ void modify_sub(int n)
                     char ch2 = 'A';
 				    if (xsubs[n].num_nets)
 				    {
-					    nl();
+					    GetSession()->bout.NewLine();
 					    GetSession()->bout << "|#2A)dd, D)elete, or M)odify net reference (Q=Quit)? ";
 					    ch2 = onek("QAMD");
 				    }
@@ -556,7 +556,7 @@ void modify_sub(int n)
 				    }
                     else if ( ch2 == 'D' || ch2 == 'M' )
 				    {
-					    nl();
+					    GetSession()->bout.NewLine();
 					    if (ch2 == 'D')
 					    {
                             GetSession()->bout << "|#2Delete which (a-";
@@ -565,7 +565,7 @@ void modify_sub(int n)
 					    {
                             GetSession()->bout << "|#2Modify which (a-";
 					    }
-					    bprintf("%c", 'a' + xsubs[n].num_nets - 1);
+					    GetSession()->bout.WriteFormatted("%c", 'a' + xsubs[n].num_nets - 1);
 					    GetSession()->bout << "), <space>=Quit? ";
                         char szCharString[ 81 ];
 					    szCharString[0] = ' ';
@@ -575,7 +575,7 @@ void modify_sub(int n)
 						    szCharString[i + 1] = static_cast<char>( 'A' + i );
 					    }
 					    szCharString[i + 1] = 0;
-					    ansic( 0 );
+					    GetSession()->bout.Color( 0 );
 					    char ch3 = onek( szCharString );
 					    if (ch3 != ' ')
 					    {
@@ -599,7 +599,7 @@ void modify_sub(int n)
 				break;
 			case 'K':
                 {
-				    nl();
+				    GetSession()->bout.NewLine();
 				    GetSession()->bout << "|#2New Storage Type ( 2 ) ? ";
                     char szStorageType[ 10 ];
 				    input(szStorageType, 4);
@@ -611,7 +611,7 @@ void modify_sub(int n)
                 }
 				break;
 			case 'L':
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#5Require sysop validation for network posts? ";
 				r.anony &= ~anony_val_net;
 				if (yesno())
@@ -620,7 +620,7 @@ void modify_sub(int n)
 				}
 				break;
 			case 'M':
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#5Require ANSI to read this sub? ";
 				r.anony &= ~anony_ansi_only;
 				if (yesno())
@@ -629,7 +629,7 @@ void modify_sub(int n)
                 }
 				break;
 			case 'N':
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#5Disable tag lines for this sub? ";
 				r.anony &= ~anony_no_tag;
 				if (yesno())
@@ -639,18 +639,18 @@ void modify_sub(int n)
 				break;
 			case 'O':
                 {
-				    nl();
+				    GetSession()->bout.NewLine();
                     GetSession()->bout << "|#2Enter new Description : ";
                     char szDescription[ 81 ];
 				    Input1(szDescription, xsubs[n].desc, 60, true, MIXED);
-				    ansic( 0 );
+				    GetSession()->bout.Color( 0 );
 				    if (szDescription[0])
                     {
 					    strcpy(xsubs[n].desc, szDescription);
                     }
 				    else
                     {
-					    nl();
+					    GetSession()->bout.NewLine();
 					    GetSession()->bout << "|#2Delete Description? ";
 					    if (yesno())
                         {
@@ -929,7 +929,7 @@ void boardedit()
 	GetApplication()->GetStatusManager()->RefreshStatusCache();
 	do
     {
-		nl();
+		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapSubs : ";
 		char ch = onek("QSDIM?");
 		switch ( ch )
@@ -941,7 +941,7 @@ void boardedit()
 			done = true;
 			break;
 		case 'M':
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2Sub number? ";
 			input(s, 4);
 			i = atoi(s);
@@ -953,7 +953,7 @@ void boardedit()
 		case 'S':
 			if ( GetSession()->num_subs < GetSession()->GetMaxNumberMessageAreas() )
             {
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2Take sub number? ";
 				input( s, 4 );
 				i1 = atoi( s );
@@ -961,7 +961,7 @@ void boardedit()
                 {
 					break;
                 }
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2And move before sub number? ";
 				input( s, 4 );
 				i2 = atoi( s );
@@ -969,7 +969,7 @@ void boardedit()
                 {
 					break;
                 }
-				nl();
+				GetSession()->bout.NewLine();
 				if ( i2 < i1 )
                 {
 					i1++;
@@ -990,7 +990,7 @@ void boardedit()
 		case 'I':
 			if ( GetSession()->num_subs < GetSession()->GetMaxNumberMessageAreas() )
             {
-				nl();
+				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2Insert before which sub ('$' for end) : ";
 				input(s, 4);
 				if (s[0] == '$')
@@ -1008,7 +1008,7 @@ void boardedit()
 					confchg = true;
 					if (subconfnum > 1)
                     {
-						nl();
+						GetSession()->bout.NewLine();
 						list_confs(CONF_SUBS, 0);
 						i2 = select_conf("Put in which conference? ", CONF_SUBS, 0);
 						if (i2 >= 0)
@@ -1034,20 +1034,20 @@ void boardedit()
 			}
 			break;
 		case 'D':
-			nl();
+			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2Delete which sub? ";
 			input(s, 4);
 			i = atoi(s);
 			if ( s[0] != 0 && i >= 0 && i < GetSession()->num_subs )
             {
-				nl();
+				GetSession()->bout.NewLine();
                 GetSession()->bout << "|#5Delete " << subboards[i].name << "? ";
 				if (yesno())
                 {
 					strcpy(s, subboards[i].filename);
 					delete_sub(i);
 					confchg = true;
-					nl();
+					GetSession()->bout.NewLine();
 					GetSession()->bout << "|#5Delete data files (including messages) for sub also? ";
 					if (yesno())
                     {
@@ -1063,7 +1063,7 @@ void boardedit()
     }
   } while ( !done && !hangup );
   save_subs();
-  if ( !GetApplication()->GetLocalIO()->GetWfcStatus() )
+  if ( !GetApplication()->GetWfcStatus() )
   {
 	  changedsl();
   }

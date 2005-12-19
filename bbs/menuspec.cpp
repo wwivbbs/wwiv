@@ -76,7 +76,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
         FileAreaSetRecord( fileDownload, nRecordNumber );
 		fileDownload.Read( &u, sizeof( uploadsrec ) );
 		fileDownload.Close();
-        nl();
+        GetSession()->bout.NewLine();
 
         if (bTitle)
         {
@@ -123,8 +123,8 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
             {
                 if (!bFreeDL)
                 {
-                    GetSession()->thisuser.SetFilesDownloaded( GetSession()->thisuser.GetFilesDownloaded() + 1 );
-                    GetSession()->thisuser.SetDownloadK( GetSession()->thisuser.GetDownloadK() + static_cast<int>( bytes_to_k( u.numbytes ) ) );
+                    GetSession()->GetCurrentUser()->SetFilesDownloaded( GetSession()->GetCurrentUser()->GetFilesDownloaded() + 1 );
+                    GetSession()->GetCurrentUser()->SetDownloadK( GetSession()->GetCurrentUser()->GetDownloadK() + static_cast<int>( bytes_to_k( u.numbytes ) ) );
                 }
                 ++u.numdloads;
 				fileDownload.Open( WFile::modeBinary|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
@@ -142,19 +142,19 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
                         if ( date_to_daten( ur.GetFirstOn() ) < static_cast<time_t>( u.daten ) )
                         {
                             ssm( u.ownerusr, 0, "%s downloaded '%s' on %s",
-                                 GetSession()->thisuser.GetUserNameAndNumber( GetSession()->usernum ),
+                                 GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ),
                                  u.filename, date() );
                         }
                     }
                 }
             }
 
-            nl( 2 );
-            bprintf("Your ratio is now: %-6.3f\r\n", ratio());
+            GetSession()->bout.NewLine( 2 );
+            GetSession()->bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
 
             if ( GetSession()->IsUserOnline() )
             {
-                GetApplication()->GetLocalIO()->UpdateTopScreen();
+                GetApplication()->UpdateTopScreen();
             }
         }
         else
@@ -265,7 +265,7 @@ bool ValidateDoorAccess( int nDoorNumber )
     {
         return false;
     }
-    if ( c.ar && !GetSession()->thisuser.hasArFlag( c.ar ) )
+    if ( c.ar && !GetSession()->GetCurrentUser()->hasArFlag( c.ar ) )
     {
         return false;
     }
@@ -274,7 +274,7 @@ bool ValidateDoorAccess( int nDoorNumber )
         chainregrec r = chains_reg[ nDoorNumber ];
         if ( r.maxage )
         {
-            if ( r.minage > GetSession()->thisuser.GetAge() || r.maxage < GetSession()->thisuser.GetAge() )
+            if ( r.minage > GetSession()->GetCurrentUser()->GetAge() || r.maxage < GetSession()->GetCurrentUser()->GetAge() )
             {
                 return false;
             }
@@ -315,7 +315,7 @@ void ChangeDirNumber()
         if (s[0] == '?')
         {
             DirList();
-            nl();
+            GetSession()->bout.NewLine();
             continue;
         }
         for (int i = 0; i < GetSession()->num_dirs; i++)
@@ -522,7 +522,7 @@ void ReadSelectedMessages(int iWhich, int iWhere)
             if (abort)
                 nextsub = 0;
         }
-        nl();
+        GetSession()->bout.NewLine();
         GetSession()->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
         break;
 

@@ -77,6 +77,8 @@ private:
 	bool            m_bNeedToCleanNetwork;
     int             m_nBbsShutdownStatus;
     double          m_fShutDownTime;
+	int     m_nWfcStatus;
+
 
 
     WComm* comm;
@@ -139,16 +141,16 @@ public:
     WUserManager* GetUserManager();
 
     /*!
-	 * @var m_szEnvironVarWwivNetworkNumber Environment variable style
+	 * @var m_networkNumEnvVar Environment variable style
      *      listing of WWIV net number, (only used for the xenviron)
 	 */
-	char m_szEnvironVarWwivNetworkNumber[20];
+    std::string m_networkNumEnvVar;
 
     /*!
-	 * @var m_szWWIVEnvironmentVariable Environment variable for the WWIV
+	 * @var m_wwivVerEnvVar Environment variable for the WWIV
      *      version (set as BBS env variable)
 	 */
-    char m_szWWIVEnvironmentVariable[ 255 ];
+    std::string m_wwivVerEnvVar;
 
 	/*!
 	 * @function GetHomeDir Returns the current home directory
@@ -167,15 +169,14 @@ public:
     /*! @function AbortBBS - Shuts down the bbs at the not-ok error level */
     void AbortBBS( bool bSkipShutdown = false );
 
-    /*! @function ShutdownBBS - Shuts down the bbs at the ok error level */
-    void ShutdownBBS();
-
-    /*! @function ShutdownBBS - Shuts down the bbs at the "QUIT" error level */
+    /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
     void QuitBBS();
 
     int  GetInstanceNumber() { return m_nInstance; }
 
     const char* GetNetworkExtension() { return m_szNetworkExtension; }
+
+    void UpdateTopScreen();
 
     // From WLogger
     virtual bool LogMessage( const char* pszFormat, ... );
@@ -195,15 +196,23 @@ public:
 	void SetCleanNetNeeded( bool b )		{ m_bNeedToCleanNetwork = b; }
 
     bool IsShutDownActive() const           { return m_nBbsShutdownStatus > 0; }
-    int  GetShutDownStatus() const          { return m_nBbsShutdownStatus; }
-    void SetShutDownStatus( int n )         { m_nBbsShutdownStatus = n; }
 
     double GetShutDownTime() const          { return m_fShutDownTime; }
     void   SetShutDownTime( double d )      { m_fShutDownTime = d; }
 
+	void SetWfcStatus( int nStatus )        { m_nWfcStatus = nStatus; }
+	int  GetWfcStatus()                     { return m_nWfcStatus; }
+
     bool read_subs();
+    void UpdateShutDownStatus();
+    void ToggleShutDown();
+
 
 private:
+    int  GetShutDownStatus() const          { return m_nBbsShutdownStatus; }
+    void SetShutDownStatus( int n )         { m_nBbsShutdownStatus = n; }
+    void ShutDownBBS( int nShutDownStatus );
+
     void ExitBBSImpl( int nExitLevel );
 
     void InitializeBBS(); // old init() method

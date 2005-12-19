@@ -57,7 +57,7 @@ class WSession
 {
 public:
     WSession( WBbsApp *pApplication );
-    ~WSession() {}
+    virtual ~WSession() {}
 
 public:
     WOutStream bout;
@@ -69,15 +69,16 @@ public:
 
 
 public:
-    WUser thisuser;
-	WUser* GetCurrentUser()							{ return &thisuser; }
+	WUser* GetCurrentUser()							{ return &m_thisuser; }
+    void DisplaySysopWorkingIndicator( bool displayWait );
+
     bool IsLastKeyLocal() const                     { return m_bLastKeyLocal; }
     void SetLastKeyLocal( bool b )                  { m_bLastKeyLocal = b; }
 
     bool ReadCurrentUser( int nUserNumber, bool bForceRead = false );
     bool WriteCurrentUser( int nUserNumber );
 
-    void ResetEffectiveSl()                         { m_nEffectiveSl = thisuser.GetSl(); }
+    void ResetEffectiveSl()                         { m_nEffectiveSl = GetCurrentUser()->GetSl(); }
     void SetEffectiveSl( int nSl )                  { m_nEffectiveSl = nSl; }
     int  GetEffectiveSl() const                     { return m_nEffectiveSl; }
 
@@ -99,7 +100,7 @@ public:
     int  GetForcedReadSubNumber() const             { return m_nForcedReadSubNumber; }
     void SetForcedReadSubNumber( int n )            { m_nForcedReadSubNumber = n; }
 
-    std::string GetCurrentSpeed() const             { return m_currentSpeed; }
+    const std::string& GetCurrentSpeed() const      { return m_currentSpeed; }
     void SetCurrentSpeed( std::string s )           { m_currentSpeed = s; }
     void SetCurrentSpeed( const char *s )           { m_currentSpeed = s; }
 
@@ -213,6 +214,7 @@ private:
     bool        m_bLastKeyLocal;
     int         m_nEffectiveSl;
     WBbsApp*    m_pApplication;
+    WUser       m_thisuser;
 
 
 public:

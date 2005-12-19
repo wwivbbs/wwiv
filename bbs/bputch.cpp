@@ -30,6 +30,11 @@ void execute_ansi();
 #define BPUTCH_CTRLO_CODE 4
 #define BPUTCH_MACRO_CHAR_CODE 5
 
+#define OUTCOMCH_BUFFER_SIZE 1024
+static char s_szOutComChBuffer[ OUTCOMCH_BUFFER_SIZE + 1 ];
+static int  s_nOutComChBufferPosition = 0;
+
+
 /**
  * This function outputs one character to the screen, and if output to the
  * com port is enabled, the character is output there too.  ANSI graphics
@@ -44,7 +49,7 @@ int bputch( char c, bool bUseInternalBuffer )
     if ( change_color == BPUTCH_MACRO_CHAR_CODE )
     {
         change_color = BPUTCH_NO_CODE;
-        return bputs( static_cast<char *>( interpret( c ) ) );
+        return GetSession()->bout.Write( static_cast<char *>( interpret( c ) ) );
     }
 	else if ( change_color == BPUTCH_CTRLO_CODE )
     {
@@ -85,7 +90,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		}
         else if ( pipe_color[0] == '#' || pipe_color[0] == '#' )
         {
-            ansic( atoi( pipe_color + 1 ) );
+            GetSession()->bout.Color( atoi( pipe_color + 1 ) );
             return 0;
         }
 		else
@@ -101,7 +106,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		if ( change_color == BPUTCH_LITERAL_PIPE_CODE )
 		{
 			bputch( '|' );
-			return bputs( pipe_color ) + 1;
+			return GetSession()->bout.Write( pipe_color ) + 1;
 		}
 		else
 		{
@@ -114,7 +119,7 @@ int bputch( char c, bool bUseInternalBuffer )
 			{
 				makeansi( ( curatr & 0x0f ) | ( nc << 4 ), szAnsiColorCode, false );
 			}
-			bputs( szAnsiColorCode );
+			GetSession()->bout.Write( szAnsiColorCode );
 		}
 		return 0; // color was printed, no chars displayed
     }
@@ -135,7 +140,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		change_color = BPUTCH_NO_CODE;
 		if ( ( c >= SPACE ) && ( static_cast<unsigned char>( c ) <= 126 ) )
 		{
-			ansic( static_cast<unsigned char>( c ) - 48 );
+			GetSession()->bout.Color( static_cast<unsigned char>( c ) - 48 );
 		}
 		return 0;
 	}
@@ -157,7 +162,7 @@ int bputch( char c, bool bUseInternalBuffer )
 	}
 	else if ( c == SOFTRETURN && endofline[0] )
 	{
-		displayed = bputs(endofline);
+		displayed = GetSession()->bout.Write(endofline);
 		endofline[0] = '\0';
 	}
 	else if ( change_color == BPUTCH_LITERAL_PIPE_CODE )
@@ -224,7 +229,7 @@ int bputch( char c, bool bUseInternalBuffer )
 				++lines_listed;
 				if ( lines_listed >= GetSession()->screenlinest - 3 )
 				{
-					if ( GetSession()->tagging && !GetSession()->thisuser.isUseNoTagging() && filelist && !chatting )
+					if ( GetSession()->tagging && !GetSession()->GetCurrentUser()->isUseNoTagging() && filelist && !chatting )
 					{
 						if ( g_num_listed != 0 )
 						{
@@ -235,7 +240,7 @@ int bputch( char c, bool bUseInternalBuffer )
 				}
 				if ( lines_listed >= ( GetSession()->screenlinest - 1 ) )       // change Build3 + 5.0 to fix message read
 				{
-                    if ( GetSession()->thisuser.hasPause() && !x_only )
+                    if ( GetSession()->GetCurrentUser()->hasPause() && !x_only )
 					{
 						pausescr();
 					}
@@ -402,3 +407,38 @@ void execute_ansi()
     	ansiptr = 0;
 	}
 }
+
+
+void rputch( char ch, bool bUseInternalBuffer )
+{
+
+    if ( ok_modem_stuff && NULL != GetApplication()->GetComm() )
+    {
+        if ( bUseInternalBuffer )
+        {
+            if ( s_nOutComChBufferPosition >= OUTCOMCH_BUFFER_SIZE )
+            {
+                FlushOutComChBuffer();
+            }
+            s_szOutComChBuffer[ s_nOutComChBufferPosition++ ] = ch;
+        }
+        else
+        {
+            GetApplication()->GetComm()->putW(ch);
+        }
+    }
+}
+
+
+
+void FlushOutComChBuffer()
+{
+    if ( s_nOutComChBufferPosition > 0 )
+    {
+        GetApplication()->GetComm()->write( s_szOutComChBuffer, s_nOutComChBufferPosition );
+        s_nOutComChBufferPosition = 0;
+        memset( s_szOutComChBuffer, 0, OUTCOMCH_BUFFER_SIZE + 1 );
+    }
+}
+
+
