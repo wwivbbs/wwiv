@@ -19,9 +19,9 @@ GENERAL INFORMATION:
             few missing functions into winsock2.h)
             MinGW is available at: http://www.mingw.org/
 
-    I recommend using MSVC .NET 2003 or MSVC 6.0 as these are the only ones 
-    used normally. (feel free to maintain the makefiles for another compiler)
-
+    I recommend using MSVC .NET 2005. (Since there is a the "express" edition
+    available for free.
+    
     The command line parameters have changed quite a bit, I suggest
     running "WWIV50 -? | MORE" to see the list of changes.  Currently
     WWIV50 is command line compatable with EleBBS (for all of the
