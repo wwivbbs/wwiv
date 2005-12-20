@@ -3,6 +3,16 @@
                  Copyright 2002-2005 WWIV Software Services
 ==============================================================================
 
-TODO Items should be entered into the sourceforge tracker.
+Move bbs logic out of WLocalIO and into WSession (probably)
 
-Move bbs logic out of WLocalIO
+Move WComm and WLocalIO references into WSession instead of WBbsApp
+
+Rename WBbsApp to WApplication
+
+Convert ini code into a WIniFile class:
+  ini_init => WIniFile::WIniFile 
+  ini_done => WIniFile::~WIniFile
+  ini_get => WIniFile::GetString(key), GetString(key, numberIndex), 
+             GetString(key, stringIndex)
+  ini_flags => WIniFile::GetFlags()
+

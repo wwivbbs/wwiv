@@ -71,7 +71,7 @@ void stripnl(char *instr)
 void ReadChainText()
 {
   FILE *fp;
-  char szTemp[_MAX_PATH];
+  char szTemp[MAX_PATH];
   int iX;
 
   sprintf(szTemp, "CHAIN.TXT");
@@ -92,7 +92,7 @@ void ReadMenuSetup()
 {
 
   if (Strs == NULL) {
-    char szTemp[_MAX_PATH];
+    char szTemp[MAX_PATH];
     FILE *fp;
     int iAmt, *index, iLen, iX;
 

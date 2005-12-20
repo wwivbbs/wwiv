@@ -29,10 +29,33 @@ struct ini_flags_rec
     unsigned long value;
 };
 
-unsigned long	ini_flags(	char yes_char, const char *(*func)(int),ini_flags_rec *fs,
+unsigned long ini_flags(	char yes_char, const char *(*func)(int),ini_flags_rec *fs,
 							int num, unsigned long flags);
+void ini_done();
+bool ini_init(const char *pszFileName, const char *prim, const char *sec);
+char *ini_get( const char *pszKey, int nNumericIndex, char *pszStringIndex );
 
 
+
+
+class WIniFile
+{
+public:
+    /////////////////////////////////////////////////////////////////////////
+    //
+    // Member functions
+    //
+
+    WIniFile(const char *pszFileName, const char *prim, const char *sec);
+    const char* GetValue( const char *pszKey );
+    const char* GetValue( const char *pszKey, int nNumericIndex );
+    const char* GetValue( const char *pszKey, char *pszStringIndex );
+    virtual ~WIniFile();
+
+private:
+    const char* GetValue( const char *pszKey, int nNumericIndex, char *pszStringIndex )
+
+};
 
 
 #endif	// __INCLUDED_INI_H__
