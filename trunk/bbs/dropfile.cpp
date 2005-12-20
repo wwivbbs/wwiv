@@ -105,7 +105,7 @@ long GetMinutesRemainingForDropFile()
 /** make DORINFO1.DEF (RBBS and many others) dropfile */
 void CreateDoorInfoDropFile()
 {
-    char szFileName[ _MAX_PATH ];
+    char szFileName[ MAX_PATH ];
     create_filename(CHAINFILE_DORINFO, szFileName);
     WFile::Remove(szFileName);
     WTextFile fileDorInfoSys( szFileName, "wt");
@@ -146,7 +146,7 @@ void CreateDoorInfoDropFile()
 /** make PCBOARD.SYS (PC Board) drop file */
 void CreatePCBoardSysDropFile()
 {
-    char szFileName[ _MAX_PATH ];
+    char szFileName[ MAX_PATH ];
     create_filename(CHAINFILE_PCBOARD, szFileName);
     WFile pcbFile( szFileName );
     pcbFile.Delete();
@@ -231,7 +231,7 @@ void CreatePCBoardSysDropFile()
 void CreateCallInfoBbsDropFile()
 {
 	// make CALLINFO.BBS (WildCat!)
-    char szFileName[ _MAX_PATH ];
+    char szFileName[ MAX_PATH ];
     create_filename(CHAINFILE_CALLINFO, szFileName);
     WFile::Remove(szFileName);
     WTextFile file( szFileName, "wt");
@@ -315,7 +315,7 @@ void CreateDoor32SysDropFile()
 		4 = Max Graphics
 
    ========================================================================= */
-    char szFileName[ _MAX_PATH ];
+    char szFileName[ MAX_PATH ];
     create_filename(CHAINFILE_DOOR32, szFileName);
     WFile::Remove(szFileName);
 
@@ -343,7 +343,7 @@ void CreateDoor32SysDropFile()
 /** Create generic DOOR.SYS dropfile */
 void CreateDoorSysDropFile()
 {
-    char szFileName[ _MAX_PATH ];
+    char szFileName[ MAX_PATH ];
     create_filename(CHAINFILE_DOOR, szFileName);
     WFile::Remove(szFileName);
 
@@ -499,7 +499,7 @@ char *create_chain_file()
 				GetSession()->GetCurrentUser()->GetScreenChars(),
                 GetSession()->GetCurrentUser()->GetScreenLines(),
                 GetSession()->GetCurrentUser()->GetSl() );
-        char szTemporaryLogFileName[ _MAX_PATH ];
+        char szTemporaryLogFileName[ MAX_PATH ];
         GetTemporaryInstanceLogFileName( szTemporaryLogFileName );
         file.WriteFormatted( "%d\n%d\n%d\n%u\n%10.2f\n%s\n%s\n%s\n",
 				cs(), so(), okansi(), incom, nsl(), syscfg.gfilesdir, syscfg.datadir, szTemporaryLogFileName );

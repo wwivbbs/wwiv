@@ -385,7 +385,7 @@ void sub_xtr_add(int n, int nn)
     GetSession()->bout << "|#5Will you be hosting the sub? ";
     if (yesno())
     {
-        char szFileName[_MAX_PATH];
+        char szFileName[MAX_PATH];
         sprintf(szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory(), xnp->stype);
 		WFile file( szFileName );
 		if ( file.Open( WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite ) )

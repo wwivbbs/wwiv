@@ -462,7 +462,7 @@ int WBbsApp::doWFCEvents()
                 {
                     wfc_cls();
                     WStatus *pStatus = GetStatusManager()->GetStatus();
-                    char szSysopLogFileName[ _MAX_PATH ];
+                    char szSysopLogFileName[ MAX_PATH ];
                     GetSysopLogFileName( date(), szSysopLogFileName );
                     print_local_file( szSysopLogFileName, pStatus->GetLogFileName() );
                     delete pStatus;
@@ -602,7 +602,7 @@ int WBbsApp::doWFCEvents()
                 {
                     wfc_cls();
                     WStatus *pStatus = GetStatusManager()->GetStatus();
-                    char szSysopLogFileName[ _MAX_PATH ];
+                    char szSysopLogFileName[ MAX_PATH ];
                     GetSysopLogFileName( date(), szSysopLogFileName );
                     print_local_file( pStatus->GetLogFileName(), szSysopLogFileName );
                     delete pStatus;
