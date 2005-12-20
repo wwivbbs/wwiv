@@ -58,10 +58,10 @@ void valscan()
 
         GetSession()->bout.NewLine();
         GetSession()->bout.Color( 2 );
-        ClearEOL();
+        GetSession()->bout.ClearEOL();
         GetSession()->bout << "{{ ValScanning " << subboards[GetSession()->GetCurrentReadMessageArea()].name << " }}\r\n";
         lines_listed = 0;
-        ClearEOL();
+        GetSession()->bout.ClearEOL();
         if ( okansi() && !newline )
         {
             GetSession()->bout << "\r\x1b[2A";

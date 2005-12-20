@@ -165,7 +165,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                 {
                     for (i = strlen( interpret(pszBuffer[cp - 1])); i > 0; i--)
                     {
-                        BackSpace();
+                        GetSession()->bout.BackSpace();
                     }
                     cp -= 2;
                     if (pszBuffer[cp - 1] == CO)
@@ -183,7 +183,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                     else
                     {
                         cp--;
-                        BackSpace();
+                        GetSession()->bout.BackSpace();
                     }
                 }
             }
@@ -207,7 +207,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
         case CX:                            // Ctrl-X
             while ( GetApplication()->GetLocalIO()->WhereX() > begx )
             {
-                BackSpace();
+                GetSession()->bout.BackSpace();
                 cp = 0;
             }
             GetSession()->bout.Color( 0 );
@@ -230,7 +230,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                     else
                     {
                         cp--;
-                        BackSpace();
+                        GetSession()->bout.BackSpace();
                     }
                 } while ( cp && pszBuffer[cp - 1] != SPACE && pszBuffer[cp - 1] != BACKSPACE );
             }
@@ -535,7 +535,7 @@ int check_ansi()
         if (ch == '\x1b')
 		{
             l = timer1() + 18;
-            while ((timer1() < l) && (!hangup))
+            while ( timer1() < l && !hangup )
 			{
                 if ((timer1() + 1820) < l)
 				{
@@ -719,7 +719,7 @@ char *mmkey( int dl, bool bListOption )
 				{
 					if ( ch == BACKSPACE )
 					{
-						BackSpace();
+						GetSession()->bout.BackSpace();
 						cmd1[ --cp ] = '\0';
 					}
 					else

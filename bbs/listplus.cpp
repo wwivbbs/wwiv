@@ -135,7 +135,7 @@ void printtitle_plus()
 {
 	if (GetApplication()->GetLocalIO()->WhereY() != 0 || GetApplication()->GetLocalIO()->WhereX() != 0)
 	{
-		ClearScreen();
+		GetSession()->bout.ClearScreen();
 	}
 
 	if (config_listing.lp_options & cfl_header)
@@ -259,7 +259,7 @@ void print_searching(struct search_record * search_rec)
 {
 	if (GetApplication()->GetLocalIO()->WhereY() != 0 || GetApplication()->GetLocalIO()->WhereX() != 0)
 	{
-		ClearScreen();
+		GetSession()->bout.ClearScreen();
 	}
 
 	if (strlen(search_rec->search) > 3)
@@ -295,7 +295,7 @@ int listfiles_plus(int type)
 
 	GetSession()->topdata = WLocalIO::topdataNone;
 	GetApplication()->UpdateTopScreen();
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 
 	int nReturn = listfiles_plus_function(type);
 
@@ -913,7 +913,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 
 void show_fileinfo(uploadsrec * u)
 {
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 	repeat_char( 'Í', 78, 7, true );
 	GetSession()->bout << "  |#1Filename    : |#2" << u->filename << wwiv::endl;
 	GetSession()->bout << "  |#1Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
@@ -1212,7 +1212,7 @@ void sysop_configure()
 
 	while ( !done && !hangup )
     {
-		ClearScreen();
+		GetSession()->bout.ClearScreen();
 		printfile( LPSYSOP_NOEXT );
 		GetSession()->bout.GotoXY( 38, 2 );
 		GetSession()->bout.SystemColor( lp_config.normal_highlight );
@@ -1479,7 +1479,7 @@ void config_file_list()
 		}
 	}
 
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 	printfile( LPCONFIG_NOEXT );
 	if ( !config_listing.lp_options & cfl_fname )
 	{
@@ -1706,14 +1706,14 @@ void update_user_config_screen( uploadsrec * u, int which )
 	}
 	GetSession()->bout.SystemColor( YELLOW );
 	GetSession()->bout.GotoXY( 1, 21 );
-	ClearEOL();
+	GetSession()->bout.ClearEOL();
 	GetSession()->bout.NewLine();
-	ClearEOL();
+	GetSession()->bout.ClearEOL();
 	GetSession()->bout.GotoXY( 1, 21 );
 	printinfo_plus( u, 1, 1, 30, &sr );
 	GetSession()->bout.GotoXY( 30, 17 );
 	GetSession()->bout.SystemColor( YELLOW );
-	BackSpace();
+	GetSession()->bout.BackSpace();
 }
 
 
@@ -2271,7 +2271,7 @@ void do_batch_sysop_command(int mode, const char *pszFileName)
 	int save_curdir = GetSession()->GetCurrentFileArea();
 	int pos = 0;
 
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 
 	if (GetSession()->numbatchdl)
 	{
@@ -2419,7 +2419,7 @@ int search_criteria(struct search_record * sr)
 LP_SEARCH_HELP:
 	sr->search_extended = lp_config.search_extended_on;
 
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 	printfile(LPSEARCH_NOEXT);
 
 	bool done = false;
@@ -2429,7 +2429,7 @@ LP_SEARCH_HELP:
 		for (int i = 0; i < 9; i++)
         {
 			GetSession()->bout.GotoXY(1, 15 + i);
-			ClearEOL();
+			GetSession()->bout.ClearEOL();
 		}
 		GetSession()->bout.GotoXY(1, 15);
 
@@ -2569,7 +2569,7 @@ void view_file(const char *pszFileName)
 	int i, i1;
 	uploadsrec u;
 
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 
 	strcpy(szBuffer, pszFileName);
 	unalign(szBuffer);
@@ -2778,7 +2778,7 @@ void download_plus(const char *pszFileName)
 
 void request_file(const char *pszFileName)
 {
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 	GetSession()->bout.NewLine();
 
 	printfile(LPFREQ_NOEXT);

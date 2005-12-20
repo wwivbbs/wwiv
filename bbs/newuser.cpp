@@ -1279,7 +1279,7 @@ void newuser()
     printfile( NEWUSER_NOEXT );
     GetSession()->bout.NewLine();
     pausescr();
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
 	GetSession()->bout << "|#5Create a new user account on " << syscfg.systemname << "? ";
     if (!noyes())
     {
@@ -1516,10 +1516,10 @@ void cln_nu()
     {
         for (int i = i1; i > 28; i--)
         {
-            BackSpace();
+            GetSession()->bout.BackSpace();
         }
     }
-    ClearEOL();
+    GetSession()->bout.ClearEOL();
 }
 
 
@@ -1551,7 +1551,7 @@ void DoMinimalNewUser()
     GetApplication()->UpdateTopScreen();
     do
     {
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
         GetSession()->bout.DisplayLiteBar( "%s New User Registration", syscfg.systemname );
         GetSession()->bout << "|#1[A] Name (real or alias)  : ";
         if ( GetSession()->GetCurrentUser()->GetName()[0] == '\0' )
@@ -1633,7 +1633,7 @@ void DoMinimalNewUser()
         GetSession()->bout << "|#1[C] Sex (Gender)          : ";
         if ( GetSession()->GetCurrentUser()->GetGender() != 'M' && GetSession()->GetCurrentUser()->GetGender()  != 'F' )
         {
-            mpl( 1 );
+            GetSession()->bout.ColorizedInputField( 1 );
             GetSession()->GetCurrentUser()->SetGender( onek_ncr( "MF" ) );
         }
         s1[0] = '\0';

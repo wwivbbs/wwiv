@@ -47,6 +47,26 @@ bool WIniFile::StringToBoolean( const char *p )
 }
 
 
+const long WIniFile::GetNumericValueWithDefault( const char *pszKey, int nDefaultValue ) const 
+{ 
+    const char *pszValue = GetValue( pszKey, -1, NULL );
+    return ( pszValue != NULL ) ? atoi( pszValue ) : nDefaultValue; 
+}
+
+
+const long WIniFile::GetNumericValueWithDefault( const char *pszKey, int nDefaultValue, int nNumericIndex ) const 
+{ 
+    const char *pszValue = GetValue( pszKey, nNumericIndex, NULL );
+    return ( pszValue != NULL ) ? atoi( pszValue ) : nDefaultValue; 
+}
+
+
+const long WIniFile::GetNumericValueWithDefault( const char *pszKey, int nDefaultValue, char *pszStringIndex ) const 
+{ 
+    const char *pszValue = GetValue( pszKey, -1, pszStringIndex );
+    return ( pszValue != NULL ) ? atoi( pszValue ) : nDefaultValue; 
+}
+
 
 struct ini_info_t
 {
@@ -414,43 +434,3 @@ char *ini_get( const char *pszKey, int nNumericIndex, char *pszStringIndex )
 }
 
 
-unsigned long ini_flags(char yes_char, const char *(*func) (int), ini_flags_rec * fs, int num, unsigned long flags)
-{
-    yes_char = wwiv::UpperCase<char>( yes_char );
-
-    for (int i = 0; i < num; i++)
-    {
-        const char* ss = func(fs[i].strnum);
-        if (ss)
-        {
-            const char* ss1 = ini_get(ss, -1, NULL);
-            if (ss1)
-            {
-                if (wwiv::UpperCase<char>(*ss1) == yes_char)
-                {
-                    if (fs[i].sense)
-                    {
-                        flags &= ~fs[i].value;
-                    }
-                    else
-                    {
-                        flags |= fs[i].value;
-                    }
-                }
-                else
-                {
-                    if (fs[i].sense)
-                    {
-                        flags |= fs[i].value;
-                    }
-                    else
-                    {
-                        flags &= ~fs[i].value;
-                    }
-                }
-            }
-        }
-    }
-
-    return flags;
-}

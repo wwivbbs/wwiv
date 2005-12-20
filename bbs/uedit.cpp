@@ -97,7 +97,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
 
     if ( bClearScreen )
     {
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
     }
     if ( pUser->isUserDeleted() )
     {
@@ -552,7 +552,7 @@ int matchuser( WUser *pUser )
 
 void changeopt()
 {
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     GetSession()->bout << "Current search string:\r\n";
     GetSession()->bout << ( (search_pattern[0]) ? search_pattern : "-NONE-" );
     GetSession()->bout.NewLine( 3 );
@@ -1120,7 +1120,7 @@ void uedit( int usern, int other )
                         }
                         if (ch1 == '?')
                         {
-                            ClearScreen();
+                            GetSession()->bout.ClearScreen();
                             printfile( SRESTRCT_NOEXT );
                         }
                         if ( ch1 != RETURN && ch1 != '?' )
@@ -1234,7 +1234,7 @@ void uedit( int usern, int other )
                 break;
             case '?':
                 {
-                    ClearScreen();
+                    GetSession()->bout.ClearScreen();
                     printfile( SUEDIT_NOEXT );
                     getkey();
                 }

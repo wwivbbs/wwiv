@@ -316,7 +316,7 @@ void list_users( int mode )
         }
         if ( p == 0 && found )
 		{
-            ClearScreen();
+            GetSession()->bout.ClearScreen();
             char szTitleLine[255];
             sprintf( szTitleLine, "[ %s User Listing ]", syscfg.systemname );
             if ( okansi() )
@@ -399,7 +399,7 @@ void list_users( int mode )
 		{
             found = true;
             GetSession()->bout.BackLine();
-            ClearEOL();
+            GetSession()->bout.ClearEOL();
             if ( user.GetLastBaudRate() > 32767 || user.GetLastBaudRate() < 300 )
 			{
                 user.SetLastBaudRate( 33600 );
@@ -435,7 +435,7 @@ void list_users( int mode )
             if (p == (GetSession()->GetCurrentUser()->GetScreenLines() - 6))
 			{
                 GetSession()->bout.BackLine();
-                ClearEOL();
+                GetSession()->bout.ClearEOL();
                 GetSession()->bout.Color( FRAME_COLOR );
                 pla("塒様様溶様様様様様様様様様様溶様様様様様様様様様様様様溶様様様様様溶様様様様余", &abort);
                 GetSession()->bout << "|#1[Enter] to continue or Q=Quit : ";
@@ -459,7 +459,7 @@ void list_users( int mode )
 		}
   }
   GetSession()->bout.BackLine();
-  ClearEOL();
+  GetSession()->bout.ClearEOL();
   GetSession()->bout.Color( FRAME_COLOR );
   pla("塒様様溶様様様様様様様様様様溶様様様様様様様様様様様様溶様様様様様溶様様様様余", &abort);
   if (!abort)
@@ -505,7 +505,7 @@ void time_bank()
 	bool done = false;
     do
     {
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
         GetSession()->bout << "|#5WWIV TimeBank\r\n";
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#2D|#7)|#1eposit Time\r\n";
@@ -516,7 +516,7 @@ void time_bank()
 		GetSession()->bout << "|#7Time Left: |#1" << static_cast<int>( nsl() / 60 ) << "|#7 minutes\r\n";
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) [|#2Time Bank|#7] Enter Command: |#2";
-        mpl( 1 );
+        GetSession()->bout.ColorizedInputField( 1 );
         char c = onek("QDW");
         switch (c)
 		{
@@ -650,9 +650,9 @@ void Packers()
             done = true;
             break;
         case '3':
-            ClearScreen();
+            GetSession()->bout.ClearScreen();
             config_qscan();
-            ClearScreen();
+            GetSession()->bout.ClearScreen();
             break;
         default:
             done = true;

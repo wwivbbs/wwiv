@@ -59,7 +59,7 @@ void showdirs()
 {
 	char s[180], s1[21];
 
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 	GetSession()->bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
 	input( s1, 20, true );
 	bool abort = false;
@@ -110,7 +110,7 @@ void modify_dir(int n)
 	bool done = false;
 	do
 	{
-		ClearScreen();
+		GetSession()->bout.ClearScreen();
 		sprintf(szSubNum, "%s %d", "|B1|15Editing File Area #", n);
 		GetSession()->bout.WriteFormatted("%-85s", szSubNum);
         GetSession()->bout.Color( 0 );

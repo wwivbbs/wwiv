@@ -311,14 +311,14 @@ bool do_sysop_command( int nCommandID )
 	{
 		if ( bNeedToRedraw )
 		{
-			ClearScreen();
+			GetSession()->bout.ClearScreen();
 		}
 
 		GetApplication()->GetLocalIO()->skey( static_cast<char>( nKeyStroke ) );
 
 		if ( bNeedToRedraw )
 		{
-			ClearScreen();
+			GetSession()->bout.ClearScreen();
 		}
 	}
 	return bNeedToRedraw;

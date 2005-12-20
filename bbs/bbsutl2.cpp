@@ -44,24 +44,6 @@ static const int MAX_DEFAULT_CTYPE_VALUE = 11;
 
 
 /**
- * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
- */
-void ClearScreen()
-{
-    if ( okansi() )
-    {
-        GetSession()->bout << "\x1b[2J";
-        GetSession()->bout.GotoXY( 1, 1 );
-    }
-    else
-    {
-		bputch( CL );
-    }
-}
-
-
-
-/**
  * Display character x repeated amount times in nColor, and if bAddNL is true
  * display a new line character.
  * @param x The Character to repeat

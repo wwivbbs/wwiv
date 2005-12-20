@@ -137,43 +137,29 @@ int check_bbsdata()
 
 void cleanup_net()
 {
-	char cl1[81], cl2[81];
-	int i1, i2;
-
 	if ( cleanup_net1() && GetApplication()->HasConfigFlag( OP_FLAGS_NET_CALLOUT ) )
     {
-		if ( GetSession()->wfc_status == 0 )                    // WFC addition
+		if ( GetSession()->wfc_status == 0 )                    
         {
 			GetApplication()->GetLocalIO()->LocalCls();
         }
 
-		i1 = i2 = 0;
         WIniFile iniFile( WWIV_INI );
         if ( iniFile.Initialize( INI_TAG ) )
         {
             const char *pszValue = iniFile.GetValue( "NET_CLEANUP_CMD1" );
 			if ( pszValue != NULL )
             {
-				strcpy( cl1, pszValue );
-				i1 = 1;
+			    ExecuteExternalProgram( pszValue, GetApplication()->GetSpawnOptions( SPWANOPT_NET_CMD1 ) );
+			    cleanup_net1();
 			}
             pszValue = iniFile.GetValue( "NET_CLEANUP_CMD2" );
 			if ( pszValue != NULL )
             {
-				strcpy( cl2, pszValue );
-				i2 = 1;
+			    ExecuteExternalProgram( pszValue, GetApplication()->GetSpawnOptions( SPWANOPT_NET_CMD2 ) );
+			    cleanup_net1();
 			}
 			iniFile.Close();
-		}
-		if ( i1 )
-        {
-			ExecuteExternalProgram( cl1, GetApplication()->GetSpawnOptions( SPWANOPT_NET_CMD1 ) );
-			cleanup_net1();
-		}
-		if ( i2 )
-        {
-			ExecuteExternalProgram( cl2, GetApplication()->GetSpawnOptions( SPWANOPT_NET_CMD2 ) );
-			cleanup_net1();
 		}
 	}
 
@@ -1333,15 +1319,10 @@ int ansicallout()
         color2 = 59;
         color3 = 7;
         color4 = 30;
-        if (ini_init(WWIV_INI, INI_TAG, NULL))
+        WIniFile iniFile( WWIV_INI );
+        if ( iniFile.Initialize( INI_TAG ) )
         {
-            if ((ss = ini_get("CALLOUT_ANSI", -1, NULL)) != NULL)
-            {
-				if ( wwiv::UpperCase<char>(ss[0]) == 'Y' )
-                {
-                    callout_ansi = 1;
-                }
-            }
+            callout_ansi = iniFile.GetBooleanValue( "CALLOUT_ANSI" ) ? 1 : 0;
             if ((ss = ini_get("CALLOUT_COLOR", -1, NULL)) != NULL)
             {
                 color1 = atoi(ss);

@@ -655,7 +655,7 @@ void ConfigUserMenuSet()
 
     nSecondUserRecLoaded = GetSession()->usernum;
 
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     printfile(MENUWEL_NOEXT);
     bool bDone = false;
     while (!bDone && !hangup)
@@ -733,7 +733,7 @@ void ConfigUserMenuSet()
             continue;                           // bypass the below cls()
         }
 
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
     }
 
     // If menu is invalid, it picks the first one it finds
@@ -1819,7 +1819,7 @@ void InterpretCommand( MenuInstanceData * pMenuData, const char *pszScript )
             } break;
         case 87:
             {  // "ClearScreen"
-                ClearScreen();
+                GetSession()->bout.ClearScreen();
             } break;
         case 88:
             {  // "NetListing"

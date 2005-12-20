@@ -32,13 +32,13 @@ static const unsigned char *valid_letters =
  * @param nMaxLength Maximum length to allow for the input text
  * @param lc The case to return, this can be UPPER, MIXED, PROPER, or FILE_NAME
  * @param crend Add a CR to the end of the input text
- * @param bAutoMpl Call mpl(nMaxLength) automatically.
+ * @param bAutoMpl Call GetSession()->bout.ColorizedInputField(nMaxLength) automatically.
  */
 void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl )
 {
     if ( bAutoMpl )
     {
-        mpl( nMaxLength );
+        GetSession()->bout.ColorizedInputField( nMaxLength );
     }
 
     int curpos = 0, in_ansi = 0;
@@ -161,10 +161,10 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
                         do
                         {
                             curpos--;
-                            BackSpace();
+                            GetSession()->bout.BackSpace();
                             if ( pszOutText[curpos] == CZ )
                             {
-                                BackSpace();
+                                GetSession()->bout.BackSpace();
                             }
                         } while ( curpos && pszOutText[curpos - 1] != SPACE );
                     }
@@ -175,10 +175,10 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
                     if ( curpos )
                     {
                         curpos--;
-                        BackSpace();
+                        GetSession()->bout.BackSpace();
                         if ( pszOutText[curpos] == CZ )
                         {
-                            BackSpace();
+                            GetSession()->bout.BackSpace();
                         }
                     }
                     break;
@@ -187,10 +187,10 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
                     while ( curpos )
                     {
                         curpos--;
-                        BackSpace();
+                        GetSession()->bout.BackSpace();
                         if ( pszOutText[curpos] == CZ )
                         {
-                            BackSpace();
+                            GetSession()->bout.BackSpace();
                         }
                     }
                     break;
@@ -258,7 +258,7 @@ void inputl( std::string &strOutText, int nMaxLength, bool bAutoMpl )
 void input_password( const char *pszPromptText, char *pszOutPassword, int nMaxLength )
 {
     GetSession()->bout << pszPromptText;
-    mpl( nMaxLength );
+    GetSession()->bout.ColorizedInputField( nMaxLength );
     echo = false;
     input1( pszOutPassword, nMaxLength, UPPER, true );
 }
@@ -267,7 +267,7 @@ void input_password( const char *pszPromptText, char *pszOutPassword, int nMaxLe
 void input_password( const char *pszPromptText, std::string &strOutPassword, int nMaxLength )
 {
     GetSession()->bout << pszPromptText;
-    mpl( nMaxLength );
+    GetSession()->bout.ColorizedInputField( nMaxLength );
     echo = false;
     input1( strOutPassword, nMaxLength, UPPER, true );
 }

@@ -329,7 +329,7 @@ void BackPrint( const char *pszText, int nColorCode, int nCharDelay, int nString
 	WWIV_Delay( nStringDelay );
 	for ( int i = 0; i < nLength && !hangup; i++ )
 	{
-		BackSpace();
+		GetSession()->bout.BackSpace();
 		WWIV_Delay( 5 );
 	}
 	echo = oecho;
@@ -347,19 +347,6 @@ void MoveLeft( int nNumberOfChars )
 	if ( okansi() )
 	{
 		GetSession()->bout << "\x1b[" << nNumberOfChars << "D";
-	}
-}
-
-
-/**
- * Moves the cursor to the end of the line using ANSI sequences.  If the user
- * does not have ansi, this this function does nothing.
- */
-void ClearEOL()
-{
-	if ( okansi() )
-	{
-		GetSession()->bout << "\x1b[K";
 	}
 }
 

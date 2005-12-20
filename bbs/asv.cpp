@@ -110,7 +110,7 @@ void asv()
                 {
                     GetSession()->bout << "|#5Enter your BBS phone number.\r\n";
                     GetSession()->bout << "|#3 ###-###-####\r\n|#1:";
-                    mpl(12);
+                    GetSession()->bout.ColorizedInputField(12);
                     for (i2 = 0; i2 < 12; i2++)
                     {
                         GetSession()->bout.Color( 4 );
@@ -127,12 +127,12 @@ void asv()
                                 if (!(i2 == 0))
                                 {
                                     bputch(' ');
-                                    BackSpace();
+                                    GetSession()->bout.BackSpace();
                                     i2--;
                                     if ((i2 == 3) || (i2 == 7))
                                     {
                                         i2--;
-                                        BackSpace();
+                                        GetSession()->bout.BackSpace();
                                     }
                                 }
                                 else
@@ -429,7 +429,7 @@ int printasv( char *pszFileName, int num, bool abort )
                         i1 = 2;
                         if ( okprint && okansi() )
                         {
-                            ClearScreen();
+                            GetSession()->bout.ClearScreen();
                         }
                         asvline = false;
                     }
