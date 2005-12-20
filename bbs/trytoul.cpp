@@ -100,7 +100,7 @@ int try_to_ul_wh(char *pszFileName)
         t2u_error(pszFileName, "Bad filename");          // bad filename
         return 1;
     }
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     GetSession()->bout.NewLine( 3 );
 
     bool done = false;
@@ -339,7 +339,7 @@ int try_to_ul_wh(char *pszFileName)
     {
         bool abort = false;
 
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
 		GetSession()->bout << "   |#1Filename    |01: |#7" << pszFileName << wwiv::endl;

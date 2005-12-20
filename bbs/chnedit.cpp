@@ -59,7 +59,7 @@ void showchains()
 {
     char szChainData[255];
 
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     bool abort = false;
     pla("|#2NN Description                   Path Name                      SL  ANSI AR", &abort);
     pla("|#7== ----------------------------  ============================== --- ==== --", &abort);
@@ -109,7 +109,7 @@ void modify_chain( int nCurrentChainNumber )
     bool done = false;
     do
     {
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
         sprintf( szChainNum, "|B1|15Editing Chain # %d", nCurrentChainNumber );
         GetSession()->bout.WriteFormatted( "%-85s", szChainNum );
         GetSession()->bout.NewLine( 2 );
@@ -216,7 +216,7 @@ void modify_chain( int nCurrentChainNumber )
             }
             break;
         case 'B':
-            ClearScreen();
+            GetSession()->bout.ClearScreen();
             ShowChainCommandLineHelp();
             GetSession()->bout << "\r\n|#9Enter Command Line.\r\n|#7:";
             Input1( s, c.filename, 79, true, MIXED );

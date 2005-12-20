@@ -49,7 +49,7 @@ void show_chains(int *mapp, int *map)
     char szBuffer[ 255 ];
 
     GetSession()->bout.Color( 0 );
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     GetSession()->bout.NewLine();
     bool abort = false;
     bool next = false;

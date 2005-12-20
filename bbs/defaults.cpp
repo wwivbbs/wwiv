@@ -135,7 +135,7 @@ const char* GetMailBoxStatus( char* pszStatusOut )
 void print_cur_stat()
 {
     char s1[255], s2[255];
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     GetSession()->bout << "|10Your Preferences\r\n\n";
     sprintf( s1, "|#11|#9) Screen size       : |#2%d X %d", GetSession()->GetCurrentUser()->GetScreenChars(), GetSession()->GetCurrentUser()->GetScreenLines() );
     sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->hasAnsi() ?
@@ -292,7 +292,7 @@ void change_colors()
     GetSession()->bout.NewLine();
     do
     {
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
         GetSession()->bout << "|10Customize Colors:";
         GetSession()->bout.NewLine( 2 );
         if ( !GetSession()->GetCurrentUser()->hasColor() )
@@ -714,7 +714,7 @@ char *macroedit( char *pszMacroText )
 			done = true;
 			break;
 		case BACKSPACE:
-			BackSpace();
+			GetSession()->bout.BackSpace();
 			i--;
 			if (i < 0)
 			{
@@ -1088,7 +1088,7 @@ void list_config_scan_plus(int first, int *amount, int type)
 
     bool bUseConf = ( subconfnum > 1 && okconf( GetSession()->GetCurrentUser() ) ) ? true : false;
 
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     lines_listed = 0;
 
     if ( bUseConf )
@@ -1246,7 +1246,7 @@ void config_scan_plus(int type)
             {
             case '?':
             case CO:
-                ClearScreen();
+                GetSession()->bout.ClearScreen();
                 printfile(SCONFIG_HLP);
                 pausescr();
                 menu_done = true;
@@ -1522,7 +1522,7 @@ void config_scan_plus(int type)
                     done = true;
                     break;
                 case 9:
-                    ClearScreen();
+                    GetSession()->bout.ClearScreen();
                     printfile(SCONFIG_HLP);
                     pausescr();
                     menu_done = true;

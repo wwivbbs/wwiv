@@ -163,7 +163,7 @@ void WSession::DisplaySysopWorkingIndicator( bool displayWait )
         {
             for (int j = 0; j < nNumPrintableChars; j++)
             {
-                BackSpace();
+                GetSession()->bout.BackSpace();
             }
         }
     }

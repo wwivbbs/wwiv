@@ -82,12 +82,32 @@ public:
     void DisplayLiteBar(const char *fmt,...);
     /** Backspaces from the current cursor position to the beginning of a line */
     void BackLine();
+
+    /**
+     * Moves the cursor to the end of the line using ANSI sequences.  If the user
+     * does not have ansi, this this function does nothing.
+     */
+    void ClearEOL();
+
+    /**
+     * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
+     */
+    void ClearScreen();
+
+    /**
+     * This will make a reverse-video prompt line i characters long, repositioning
+     * the cursor at the beginning of the input prompt area.  Of course, if the
+     * user does not want ansi, this routine does nothing.
+     */
+    void ColorizedInputField( int nNumberOfChars );
+
     /**
      * This function outputs a string of characters to the screen (and remotely
      * if applicable).  The com port is also checked first to see if a remote
      * user has hung up
      */
     int  Write(const char *pszText );
+
     int  WriteFormatted(const char *fmt,...);
 };
 

@@ -59,7 +59,7 @@ void dirlist( int mode )
                 {
                     p = 0;
                     firstp = i1;
-                    ClearScreen();
+                    GetSession()->bout.ClearScreen();
                     if ( uconfdir[1].confnum != -1 && okconf( GetSession()->GetCurrentUser() ) )
                     {
                         sprintf( s, " [ %s %c ] [ %s ] ", "Conference",

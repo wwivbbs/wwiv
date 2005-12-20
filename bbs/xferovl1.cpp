@@ -624,7 +624,7 @@ void tag_files()
 			lines_listed = 0;
 			GetSession()->tagptr = 0;
 			GetSession()->titled = 2;
-			ClearScreen();
+			GetSession()->bout.ClearScreen();
 			done = true;
 			break;
 		case 'D':
@@ -634,7 +634,7 @@ void tag_files()
 			{
 				GetSession()->bout.NewLine();
 				pausescr();
-				ClearScreen();
+				GetSession()->bout.ClearScreen();
 			}
 			done = true;
 			break;
@@ -773,7 +773,7 @@ void tag_files()
 					pausescr();
 					GetSession()->tagging = 1;
 					GetApplication()->UpdateTopScreen();
-					ClearScreen();
+					GetSession()->bout.ClearScreen();
 					relist();
 				}
 				else
@@ -785,7 +785,7 @@ void tag_files()
 			}
 			break;
 		default:
-			ClearScreen();
+			GetSession()->bout.ClearScreen();
 			done = true;
 			break;
     }
@@ -851,7 +851,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs)
 							getkey();
 						}
 						GetSession()->bout.BackLine();
-						ClearEOL();
+						GetSession()->bout.ClearEOL();
 					}
 				}
 				else
@@ -861,11 +861,11 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs)
 					if ((!WFile::Exists(s2)) && (!so()))
 					{
 						GetSession()->bout << "\r";
-						ClearEOL();
+						GetSession()->bout.ClearEOL();
 						GetSession()->bout << "|#6 file unavailable... press any key.";
 						getkey();
 						GetSession()->bout << "\r";
-						ClearEOL();
+						GetSession()->bout.ClearEOL();
 						return 0;
 					}
 				}
@@ -989,7 +989,7 @@ void download()
     returning = false;
     useconf = 0;
 
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     GetSession()->bout.DisplayLiteBar(" [ %s Batch Downloads ] ", syscfg.systemname);
     GetSession()->bout.NewLine();
     do
@@ -1201,7 +1201,7 @@ char fancy_prompt( const char *pszPrompt, const char *pszAcceptChars )
 		ch = onek1(s3);
 		for (int i = 0; i < i1; i++)
 		{
-			BackSpace();
+			GetSession()->bout.BackSpace();
 		}
 	}
 	return ch;
@@ -1269,7 +1269,7 @@ void SetNewFileScanDate()
 	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#9Enter new limiting date in the following format: \r\n";
 	GetSession()->bout << "|#1 MM/DD/YY\r\n|#7:";
-	mpl( 8 );
+	GetSession()->bout.ColorizedInputField( 8 );
 	int i = 0;
     char ch = 0;
 	do
@@ -1323,7 +1323,7 @@ void SetNewFileScanDate()
 					--i;
 					if ( i == 2 || i == 5 )
 					{
-						BackSpace();
+						GetSession()->bout.BackSpace();
 						--i;
 					}
 					break;

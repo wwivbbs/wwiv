@@ -77,7 +77,7 @@ void pausescr()
 			GetSession()->bout << ss;
             for ( i3 = 0; i3 < i1; i3++ )
             {
-                BackSpace();
+                GetSession()->bout.BackSpace();
             }
             if ( okansi() )
             {

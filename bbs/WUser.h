@@ -133,26 +133,26 @@ public:
     void setStatusFlag( int nFlag )         { data.sysstatus |= nFlag; }
     void toggleStatusFlag( int nFlag )      { data.sysstatus ^= nFlag; }
     void clearStatusFlag( int nFlag )       { data.sysstatus &= ~nFlag; }
-    bool hasStatusFlag( int nFlag ) const   { return ( data.sysstatus & nFlag ) != 0; }
+    bool HasStatusFlag( int nFlag ) const   { return ( data.sysstatus & nFlag ) != 0; }
     long GetStatus() const                  { return static_cast<long>( data.sysstatus ); }
     void SetStatus( long l )                { data.sysstatus = static_cast<unsigned long>( l ); }
-    bool hasAnsi() const                    { return hasStatusFlag( WUser::ansi ); }
-    bool hasColor() const                   { return hasStatusFlag( WUser::color ); }
-    bool hasMusic() const                   { return hasStatusFlag( WUser::music ); }
-    bool hasPause() const                   { return hasStatusFlag( WUser::pauseOnPage ); }
-    bool isExpert() const                   { return hasStatusFlag( WUser::expert ); }
-    bool hasShortMessage() const            { return hasStatusFlag( WUser::SMW ); }
-    bool isFullScreen() const               { return hasStatusFlag( WUser::fullScreen ); }
-    bool isNewScanFiles() const             { return hasStatusFlag( WUser::nscanFileSystem ); }
-    bool isUseExtraColor() const            { return hasStatusFlag( WUser::extraColor ); }
-    bool isUseClearScreen() const           { return hasStatusFlag( WUser::clearScreen ); }
-    bool isUseNoTagging() const             { return hasStatusFlag( WUser::noTag ); }
-    bool isUseConference() const            { return hasStatusFlag( WUser::conference ); }
-    bool isIgnoreChatRequests() const       { return hasStatusFlag( WUser::noChat ); }
-    bool isIgnoreNodeMessages() const       { return hasStatusFlag( WUser::noMsgs ); }
-    bool isUseListPlus() const              { return hasStatusFlag( WUser::listPlus ); }
-    bool isUseAutoQuote() const             { return hasStatusFlag( WUser::autoQuote ); }
-    bool isUse24HourClock() const           { return hasStatusFlag( WUser::twentyFourHourClock ); };
+    bool hasAnsi() const                    { return HasStatusFlag( WUser::ansi ); }
+    bool hasColor() const                   { return HasStatusFlag( WUser::color ); }
+    bool hasMusic() const                   { return HasStatusFlag( WUser::music ); }
+    bool hasPause() const                   { return HasStatusFlag( WUser::pauseOnPage ); }
+    bool isExpert() const                   { return HasStatusFlag( WUser::expert ); }
+    bool hasShortMessage() const            { return HasStatusFlag( WUser::SMW ); }
+    bool isFullScreen() const               { return HasStatusFlag( WUser::fullScreen ); }
+    bool isNewScanFiles() const             { return HasStatusFlag( WUser::nscanFileSystem ); }
+    bool isUseExtraColor() const            { return HasStatusFlag( WUser::extraColor ); }
+    bool isUseClearScreen() const           { return HasStatusFlag( WUser::clearScreen ); }
+    bool isUseNoTagging() const             { return HasStatusFlag( WUser::noTag ); }
+    bool isUseConference() const            { return HasStatusFlag( WUser::conference ); }
+    bool isIgnoreChatRequests() const       { return HasStatusFlag( WUser::noChat ); }
+    bool isIgnoreNodeMessages() const       { return HasStatusFlag( WUser::noMsgs ); }
+    bool isUseListPlus() const              { return HasStatusFlag( WUser::listPlus ); }
+    bool isUseAutoQuote() const             { return HasStatusFlag( WUser::autoQuote ); }
+    bool isUse24HourClock() const           { return HasStatusFlag( WUser::twentyFourHourClock ); };
 
     // USERREC.exempt
     void setExemptFlag( int nFlag )         { data.exempt |= nFlag; }

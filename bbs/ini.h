@@ -25,12 +25,10 @@
 struct ini_flags_rec
 {
     int			strnum;
-    int			sense;
+    bool		sense;
     unsigned long value;
 };
 
-unsigned long ini_flags(	char yes_char, const char *(*func)(int),ini_flags_rec *fs,
-							int num, unsigned long flags);
 void ini_done();
 bool ini_init(const char *pszFileName, const char *prim, const char *sec);
 char *ini_get( const char *pszKey, int nNumericIndex, char *pszStringIndex );
@@ -59,6 +57,10 @@ public:
     const long GetNumericValue( const char *pszKey ) const { return atoi( GetValue( pszKey, -1, NULL ) ); }
     const long GetNumericValue( const char *pszKey, int nNumericIndex ) const { return atoi( GetValue( pszKey, nNumericIndex, NULL ) ); }
     const long GetNumericValue( const char *pszKey, char *pszStringIndex ) const { return atoi( GetValue( pszKey, -1, pszStringIndex ) ); }
+
+    const long GetNumericValueWithDefault( const char *pszKey, int nDefaultValue ) const;
+    const long GetNumericValueWithDefault( const char *pszKey, int nDefaultValue, int nNumericIndex ) const;
+    const long GetNumericValueWithDefault( const char *pszKey, int nDefaultValue, char *pszStringIndex ) const;
 
     const bool GetBooleanValue( const char *pszKey ) const;
     const bool GetBooleanValue( const char *pszKey, int nNumericIndex ) const;

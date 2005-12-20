@@ -1587,11 +1587,11 @@ void read_message(int n, bool *next, int *val)
 	*next = false;
 	if ( GetSession()->GetCurrentUser()->isUseClearScreen() )
     {
-		ClearScreen();
+		GetSession()->bout.ClearScreen();
     }
 	if ( forcescansub )
     {
-		ClearScreen();
+		GetSession()->bout.ClearScreen();
 		GetSession()->bout.GotoXY( 1, 1 );
 		GetSession()->bout << "|#4   FORCED SCAN OF SYSOP INFORMATION - YOU MAY NOT ABORT.  PLEASE READ THESE!  |#0\r\n";
 	}

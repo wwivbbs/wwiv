@@ -1162,7 +1162,7 @@ void logon()
     get_next_forced_event();
     GetSession()->bout.ResetColors();
     GetSession()->bout.Color( 0 );
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
 
     FixUserLinesAndColors();
 

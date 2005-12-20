@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="WWIV50"
+	ProjectGUID="{46A1B8D0-212A-49B7-B5A9-6D05A9CC8974}"
 	RootNamespace="WWIV50"
 	SccProjectName=""
 	SccLocalPath="">

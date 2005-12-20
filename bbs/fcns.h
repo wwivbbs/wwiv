@@ -77,7 +77,6 @@ void text_edit();
 void OnlineUserEditor();
 void BackPrint(const char *pszText, int nColorCode, int nCharDelay, int nStringDelay );
 void MoveLeft( int nNumberOfChars );
-void ClearEOL();
 void SpinPuts( const char *pszText, int nColorCode );
 
 
@@ -189,7 +188,6 @@ void makeansi( int attr, char *pszOutBuffer, bool forceit);
 void BackSpace();
 void resetnsp();
 bool bkbhit();
-void mpl( int nNumberOfChars );
 char getkey();
 bool yesno();
 bool noyes();
