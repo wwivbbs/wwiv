@@ -27,7 +27,7 @@ struct ini_info_t
 {
     int num;
     char *buf;
-    char **key;
+    char **pszKey;
     char **value;
 };
 
@@ -164,7 +164,7 @@ static void parse_ini_file(char *pBuffer, ini_info_t * info)
     memset(info, 0, sizeof(ini_info_t));
     info->buf = pBuffer;
 
-    // first, count # key-value pairs
+    // first, count # pszKey-value pairs
     unsigned int i1 = strlen( pBuffer );
     char* tempb = static_cast<char *>( bbsmalloc( i1 + 20 ) );
     if (!tempb)
@@ -202,20 +202,20 @@ static void parse_ini_file(char *pBuffer, ini_info_t * info)
         return;
     }
 
-    // now, allocate space for key-value pairs
-    info->key = static_cast<char **>( bbsmalloc( count * sizeof( char * ) ) );
-    if (!info->key)
+    // now, allocate space for pszKey-value pairs
+    info->pszKey = static_cast<char **>( bbsmalloc( count * sizeof( char * ) ) );
+    if (!info->pszKey)
     {
         return;
     }
     info->value = static_cast<char **>( bbsmalloc( count * sizeof( char * ) ) );
     if (!info->value)
     {
-        BbsFreeMemory(info->key);
-        info->key = NULL;
+        BbsFreeMemory(info->pszKey);
+        info->pszKey = NULL;
         return;
     }
-    // go through and add in key-value pairs
+    // go through and add in pszKey-value pairs
     for (ss = strtok(pBuffer, "\r\n"); ss; ss = strtok(NULL, "\r\n"))
     {
         StringTrim(ss);
@@ -242,7 +242,7 @@ static void parse_ini_file(char *pBuffer, ini_info_t * info)
                     }
                 }
                 StringTrim(ss1);
-                info->key[info->num] = ss;
+                info->pszKey[info->num] = ss;
                 info->value[info->num] = ss1;
                 info->num++;
             }
@@ -257,9 +257,9 @@ void ini_done()
     if (ini_prim.buf)
     {
         BbsFreeMemory(ini_prim.buf);
-        if (ini_prim.key)
+        if (ini_prim.pszKey)
         {
-            BbsFreeMemory(ini_prim.key);
+            BbsFreeMemory(ini_prim.pszKey);
         }
         if (ini_prim.value)
         {
@@ -270,9 +270,9 @@ void ini_done()
     if (ini_sec.buf)
     {
         BbsFreeMemory(ini_sec.buf);
-        if (ini_sec.key)
+        if (ini_sec.pszKey)
         {
-            BbsFreeMemory(ini_sec.key);
+            BbsFreeMemory(ini_sec.pszKey);
         }
         if (ini_sec.value)
         {
@@ -284,7 +284,7 @@ void ini_done()
 
 
 // Reads in some ini files
-bool ini_init(const char *pszFileName, const char *prim, const char *sec)
+bool ini_init(const char *pszFileName, const char *pszPrimarySection, const char *pszSecondarySection)
 {
     char szIniFile[MAX_PATH+MAX_FNAME];
     snprintf( szIniFile, sizeof( szIniFile ), "%s%s", GetApplication()->GetHomeDir(), pszFileName );
@@ -293,7 +293,7 @@ bool ini_init(const char *pszFileName, const char *prim, const char *sec)
     ini_done();
 
     // read in primary info
-    char* pBuffer = read_ini_file(szIniFile, prim);
+    char* pBuffer = read_ini_file(szIniFile, pszPrimarySection);
 
     if ( pBuffer )
     {
@@ -301,7 +301,7 @@ bool ini_init(const char *pszFileName, const char *prim, const char *sec)
         parse_ini_file(pBuffer, &ini_prim);
 
         // read in secondary file
-        pBuffer = read_ini_file(szIniFile, sec);
+        pBuffer = read_ini_file(szIniFile, pszSecondarySection);
         if (pBuffer)
         {
             parse_ini_file(pBuffer, &ini_sec);
@@ -311,7 +311,7 @@ bool ini_init(const char *pszFileName, const char *prim, const char *sec)
     else
     {
         // read in the secondary info, as the primary one
-        pBuffer = read_ini_file( szIniFile, sec );
+        pBuffer = read_ini_file( szIniFile, pszSecondarySection );
         if ( pBuffer )
         {
             parse_ini_file( pBuffer, &ini_prim );
@@ -329,32 +329,32 @@ bool ini_init(const char *pszFileName, const char *prim, const char *sec)
 // doesn't exist in this INI file subsection, then *val is NULL, else *val
 // will be set to the string value of that value name. If *val has been set
 // to something, then this function returns 1, else it returns 0.
-char *ini_get( const char *key, int index, char *index1 )
+char *ini_get( const char *pszKey, int nNumericIndex, char *pszStringIndex )
 {
-    char key1[81], key2[81];
+    char pszKey1[81], pszKey2[81];
     ini_info_t *info;
 
-    if ( !ini_prim.buf || !key || !( *key ) )
+    if ( !ini_prim.buf || !pszKey || !( *pszKey ) )
     {
         return NULL;
     }
 
-    if ( index == -1 )
+    if ( nNumericIndex == -1 )
     {
-        strcpy( key1, key );
+        strcpy( pszKey1, pszKey );
     }
     else
     {
-        snprintf( key1, sizeof( key1 ), "%s[%d]", key, index );
+        snprintf( pszKey1, sizeof( pszKey1 ), "%s[%d]", pszKey, nNumericIndex );
     }
 
-    if ( index1 )
+    if ( pszStringIndex )
     {
-        snprintf( key2, sizeof( key2 ), "%s[%s]", key, index1 );
+        snprintf( pszKey2, sizeof( pszKey2 ), "%s[%s]", pszKey, pszStringIndex );
     }
     else
     {
-        key2[0] = '\0';
+        pszKey2[0] = '\0';
     }
 
     // loop through both sets of data and search them, in order
@@ -377,13 +377,12 @@ char *ini_get( const char *key, int index, char *index1 )
         // search for it
         for ( int i1 = 0; i1 < info->num; i1++ )
         {
-            if ( IsEqualsIgnoreCase( info->key[ i1 ], key1 ) || IsEqualsIgnoreCase( info->key[ i1 ], key2 ) )
+            if ( IsEqualsIgnoreCase( info->pszKey[ i1 ], pszKey1 ) || IsEqualsIgnoreCase( info->pszKey[ i1 ], pszKey2 ) )
             {
                 return info->value[ i1 ];
             }
         }
     }
-
 
     // nothing found
     return NULL;

@@ -380,7 +380,7 @@ void HopDir();
 
 void ini_done();
 bool ini_init(const char *pszFileName, const char *prim, const char *sec);
-char *ini_get(const char *key, int index = -1, char *index1 = NULL);
+char *ini_get( const char *pszKey, int nNumericIndex, char *pszStringIndex );
 
 
 // File: inmsg.cpp
