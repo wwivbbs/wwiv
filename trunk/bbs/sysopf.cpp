@@ -98,7 +98,7 @@ void reset_files()
 void prstatus( bool bIsWFC )
 {
 	GetApplication()->GetStatusManager()->RefreshStatusCache();
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 	if ( syscfg.newuserpw[0] != '\0' )
 	{
 		GetSession()->bout << "|#9New User Pass   : " << syscfg.newuserpw << wwiv::endl;
@@ -393,7 +393,7 @@ void print_net_listing( bool bForcePause )
 	bool done = false;
 	while (!done && !hangup)
 	{
-		ClearScreen();
+		GetSession()->bout.ClearScreen();
 		if (GetSession()->GetMaxNetworkNumber() > 1)
 		{
 			odc[0] = 0;
@@ -475,7 +475,7 @@ void print_net_listing( bool bForcePause )
 			acstr[0] = 0;
 			phstr[0] = 0;
 
-			ClearScreen();
+			GetSession()->bout.ClearScreen();
 			GetSession()->bout.NewLine();
             GetSession()->bout << "|#9Network|#2: |#1" << GetSession()->GetNetworkName() << wwiv::endl;
 			GetSession()->bout.NewLine();
@@ -982,11 +982,11 @@ void zlog()
 	zlogrec z;
     file.Read( &z, sizeof( zlogrec ) );
 	GetSession()->bout.NewLine();
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
     GetSession()->bout.NewLine( 2 );
 	pla("|#2  Date     Calls  Active   Posts   Email   Fback    U/L    %Act   T/user", &abort);
 	pla("|#7--------   -----  ------   -----   -----   -----    ---    ----   ------", &abort);
-	while ((i < 97) && (!abort) && (!hangup) && (z.date[0] != 0))
+	while ( i < 97 && !abort && !hangup && z.date[0] != 0 )
 	{
 		int nTimePerUser = 0;
 		if ( z.calls )
@@ -1000,12 +1000,12 @@ void zlog()
 		if (i % 2)
 		{
 			GetSession()->bout << "|#1";
-			pla(szBuffer, &abort);
+			pla( szBuffer, &abort );
 		}
 		else
 		{
 			GetSession()->bout << "|13";
-			pla(szBuffer, &abort);
+			pla( szBuffer, &abort );
 		}
 		++i;
 		if (i < 97)
@@ -1065,7 +1065,6 @@ void auto_purge()
 	int nUserNumber = 1;
 	sysoplogfi( false, "Auto-Purged Inactive Users (over %d days, SL less than %d)", days, skipsl );
 
-    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
     do
 	{
         WUser user;
@@ -1083,7 +1082,7 @@ void auto_purge()
 			}
 		}
 		++nUserNumber;
-	} while ( nUserNumber <= pStatus->GetNumUsers() );
+    } while ( nUserNumber <= GetApplication()->GetStatusManager()->GetUserCount() );
 }
 
 
@@ -1096,7 +1095,6 @@ void beginday( bool displayStatus )
 		return;
 	}
 	WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
-
     pStatus->ValidateAndFixDates();
 
     if ( wwiv::stringUtils::IsEquals( date(), pStatus->GetLastDate() ) )
@@ -1167,7 +1165,7 @@ void beginday( bool displayStatus )
     {
         GetSession()->bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
     }
-    int nus     = syscfg.maxusers - pStatus->GetNumUsers();
+    int nus = syscfg.maxusers - pStatus->GetNumUsers();
 
     GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 	if ( displayStatus )
@@ -1175,7 +1173,7 @@ void beginday( bool displayStatus )
         GetSession()->bout << "  |#7* |#1Checking system directories and user space...\r\n";
     }
 
-	double fk   = freek1(syscfg.datadir);
+	double fk = freek1(syscfg.datadir);
 
 	if ( fk < 512.0 )
 	{

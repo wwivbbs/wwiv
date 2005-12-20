@@ -47,7 +47,7 @@ void showsec()
 {
 	char szBuffer[255];
 
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 	bool abort = false;
 	pla("|#2NN AR Name                                      FN       SL  AGE MAX", &abort);
 	pla("|#7-- == ----------------------------------------  ======== --- === ---", &abort);
@@ -87,7 +87,7 @@ void modify_sec(int n)
 	bool done = false;
 	do
 	{
-		ClearScreen();
+		GetSession()->bout.ClearScreen();
 		sprintf( szSubNum, "|B1|15Editing G-File Area # %d", n );
 		GetSession()->bout.WriteFormatted( "%-85s", szSubNum );
         GetSession()->bout.Color( 0 );

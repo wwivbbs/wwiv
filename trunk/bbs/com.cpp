@@ -189,13 +189,6 @@ void makeansi( int attr, char *pszOutBuffer, bool forceit )
 
 
 
-void BackSpace()
-// This function executes a BACKSPACE, SPACE, BACKSPACE sequence.
-{
-    GetSession()->bout.BackSpace();
-}
-
-
 void resetnsp()
 {
     if ( nsp == 1 && !( GetSession()->GetCurrentUser()->hasPause() ) )
@@ -221,25 +214,6 @@ bool bkbhit()
         return true;
     }
     return false;
-}
-
-
-void mpl( int nNumberOfChars )
-/* This will make a reverse-video prompt line i characters long, repositioning
-* the cursor at the beginning of the input prompt area.  Of course, if the
-* user does not want ansi, this routine does nothing.
-*/
-{
-    if ( okansi() )
-    {
-        GetSession()->bout.Color( 4 );
-        for ( int i = 0; i < nNumberOfChars; i++ )
-        {
-            bputch( ' ', true );
-        }
-        FlushOutComChBuffer();
-        GetSession()->bout << "\x1b[" << nNumberOfChars << "D";
-    }
 }
 
 
@@ -399,7 +373,7 @@ char onek( const char *pszAllowableChars, bool bAutoMpl )
 {
     if ( bAutoMpl )
     {
-        mpl( 1 );
+        GetSession()->bout.ColorizedInputField( 1 );
     }
 	char ch = onek1( pszAllowableChars );
     bputch(ch);

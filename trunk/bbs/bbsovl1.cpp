@@ -44,7 +44,7 @@ void DisplayHorizontalBar( int nSize, int nColor )
  */
 void YourInfo()
 {
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     if ( okansi() )
     {
         GetSession()->bout.DisplayLiteBar( "[ Your User Information ]" );

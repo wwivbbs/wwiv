@@ -481,7 +481,7 @@ void ReadSelectedMessages(int iWhich, int iWhere)
     {
     case RM_ALL_SUBS:
     case RM_QSCAN_SUBS:
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
 
         nextsub = 1;
 

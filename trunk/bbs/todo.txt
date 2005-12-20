@@ -9,6 +9,8 @@ Move WComm and WLocalIO references into WSession instead of WBbsApp
 
 Rename WBbsApp to WApplication
 
+Make WUser function names start with upper case like rest of code.
+
 Convert ini code into a WIniFile class:
   ini_init => WIniFile::WIniFile 
   ini_done => WIniFile::~WIniFile

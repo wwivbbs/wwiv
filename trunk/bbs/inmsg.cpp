@@ -565,7 +565,7 @@ void GetMessageTitle( char *pszTitle, bool force_title )
         if ( !GetSession()->IsNewMailWatiting() )
         {
             GetSession()->bout << "|#2Title: ";
-            mpl( 60 );
+            GetSession()->bout.ColorizedInputField( 60 );
         }
         if ( irt[0] != '«' && irt[0] )
         {
@@ -612,7 +612,7 @@ void GetMessageTitle( char *pszTitle, bool force_title )
                     ch = '\0';
                 }
                 GetSession()->bout << "|#2Title: ";
-                mpl( 60 );
+                GetSession()->bout.ColorizedInputField( 60 );
                 char szRollOverLine[ 81 ];
                 sprintf( szRollOverLine, "%c", ch );
                 inli( s1, szRollOverLine, 60, true, false );

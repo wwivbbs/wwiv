@@ -41,7 +41,7 @@ bool okconf( WUser *pUser )
         return false;
     }
 
-    return pUser->hasStatusFlag( WUser::conference );
+    return pUser->HasStatusFlag( WUser::conference );
 }
 
 

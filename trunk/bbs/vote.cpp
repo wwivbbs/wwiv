@@ -24,7 +24,7 @@ void print_quest(int mapp, int map[21])
 {
     votingrec v;
 
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     if ( okansi() )
     {
         GetSession()->bout.DisplayLiteBar( "[ %s Voting Questions ]", syscfg.systemname );
@@ -78,7 +78,7 @@ bool print_question( int i, int ii )
         return false;
     }
 
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     char szBuffer[255];
     sprintf( szBuffer, "%s%d", "|10Voting question #", i );
     pla( szBuffer, &abort );
@@ -167,7 +167,7 @@ void vote_question(int i, int ii)
     }
 
 	GetSession()->bout << "|10Which (0-" << static_cast<int>( v.numanswers ) << ")? ";
-    mpl( 2 );
+    GetSession()->bout.ColorizedInputField( 2 );
     char* pszAnswer = mmkey( 2 );
     int i1 = atoi( pszAnswer );
     if (i1 > v.numanswers)
@@ -263,7 +263,7 @@ void vote()
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
         strcpy( odc, sodc );
-        mpl( 2 );
+        GetSession()->bout.ColorizedInputField( 2 );
         char* pszAnswer = mmkey( 2 );
         int nQuestionNum = atoi( pszAnswer );
         if ( nQuestionNum > 0 && nQuestionNum <= mapp )

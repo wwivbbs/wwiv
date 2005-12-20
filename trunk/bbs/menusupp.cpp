@@ -321,7 +321,7 @@ void GoodBye()
         cycle = 0;
         do
         {
-            ClearScreen();
+            GetSession()->bout.ClearScreen();
             printfile( szFileName );
             ch = onek( "QFTO", true );
             switch (ch)
@@ -341,7 +341,7 @@ void GoodBye()
             case 'O':
                 cycle = 1;
                 write_inst( INST_LOC_LOGOFF, 0, INST_FLAGS_NONE );
-                ClearScreen();
+                GetSession()->bout.ClearScreen();
 				GetSession()->bout <<  "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
                 tmp_disable_pause( true );
                 printfile( LOGOFF_NOEXT );
@@ -365,7 +365,7 @@ void GoodBye()
         if (yesno())
         {
             write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
-            ClearScreen();
+            GetSession()->bout.ClearScreen();
 			GetSession()->bout << "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
             printfile(LOGOFF_NOEXT);
             GetSession()->GetCurrentUser()->SetLastSubNum( GetSession()->GetCurrentMessageArea() );
@@ -467,7 +467,7 @@ void ExpressScan()
 void WWIVVersion()
 {
     GetSession()->bout.NewLine();
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
 	GetSession()->bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
     GetSession()->bout << "|#9Copyright (C) 1998-2005, WWIV Software Services.\r\n";
     GetSession()->bout << "|#9All Rights Reserved.\r\n\r\n";
@@ -1106,7 +1106,7 @@ void UploadFilesBBS()
     {
         int nType = 0;
         GetSession()->bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
-		mpl( 77 );
+		GetSession()->bout.ColorizedInputField( 77 );
         inputl( s2, 80 );
         switch ( ch )
         {

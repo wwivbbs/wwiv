@@ -204,7 +204,7 @@ void run_event( int evnt )
 #ifndef _UNIX
     GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );
 #endif
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     GetSession()->bout << "\r\nNow running external event.\r\n\n";
     if (events[evnt].status & EVENT_HOLD)
     {
@@ -233,7 +233,7 @@ void show_events()
 {
     char s[121], s1[81], daystr[8];
 
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     bool abort = false;
     char y = "Yes"[0];
     char n = "No"[0];
@@ -324,7 +324,7 @@ void modify_event( int evnt )
     int i       = evnt;
     do
     {
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
 		GetSession()->bout << "A) Event Time......: " << ttc(events[i].time) << wwiv::endl;
         if (events[i].status & EVENT_EXIT)
         {
@@ -433,7 +433,7 @@ void modify_event( int evnt )
                             --j;
                             if ( j == 2 )
                             {
-                                BackSpace();
+                                GetSession()->bout.BackSpace();
                                 --j;
                             }
                             break;

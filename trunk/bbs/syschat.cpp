@@ -432,7 +432,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
                         else
                         {
                             cp0--;
-                            BackSpace();
+                            GetSession()->bout.BackSpace();
                         }
                     }
                 }
@@ -451,14 +451,14 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
                     else
                     {
                         cp1--;
-                        BackSpace();
+                        GetSession()->bout.BackSpace();
                     }
                 }
             }
           break;
         case CX:                            /* Ctrl-X */
           while (GetApplication()->GetLocalIO()->WhereX() > begx) {
-            BackSpace();
+            GetSession()->bout.BackSpace();
             if (side == 0)
               cp0 = 0;
             else
@@ -486,7 +486,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
 				else
 				{
                   cp0--;
-                  BackSpace();
+                  GetSession()->bout.BackSpace();
                 }
               } while ((cp0) && (side0[GetApplication()->GetLocalIO()->WhereY()][cp0 - 1] != SPACE) &&
                        (side0[GetApplication()->GetLocalIO()->WhereY()][cp0 - 1] != BACKSPACE) &&
@@ -512,7 +512,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
 				else
 				{
                   cp1--;
-                  BackSpace();
+                  GetSession()->bout.BackSpace();
                 }
               } while ((cp1) && (side1[GetApplication()->GetLocalIO()->WhereY() - 13][cp1 - 1] != SPACE) &&
                        (side1[GetApplication()->GetLocalIO()->WhereY() - 13][cp1 - 1] != BACKSPACE) &&

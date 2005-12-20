@@ -174,7 +174,7 @@ int listfiles_plus_function( int type )
 						++amount;
 					}
 
-					if ((lines >= max_lines) || (GetSession()->numf < first_file + amount) || force_menu)
+					if ( lines >= max_lines || GetSession()->numf < first_file + amount || force_menu )
 					{
 						fileDownload.Close();
 						if (matches)
@@ -213,7 +213,7 @@ int listfiles_plus_function( int type )
 									goto TOGGLE_EXTENDED;
 								case '?':
 								case CO:
-									ClearScreen();
+									GetSession()->bout.ClearScreen();
 									printfile(LISTPLUS_HLP);
 									pausescr();
 									menu_done = true;
@@ -302,7 +302,7 @@ ADD_OR_REMOVE_BATCH:
 												    !GetSession()->GetCurrentUser()->isExemptRatio() ) &&
                                                     !sysop_mode)
 										{
-											ClearScreen();
+											GetSession()->bout.ClearScreen();
 											GetSession()->bout << "You don't have enough file points to download this file\r\n";
 											GetSession()->bout << "Or this file is not validated yet.\r\n";
 #else
@@ -395,7 +395,7 @@ ADD_OR_REMOVE_BATCH:
 									case 5:
 										if (!sysop_mode && GetSession()->using_modem)
 										{
-											ClearScreen();
+											GetSession()->bout.ClearScreen();
 											menu_done = true;
 											save_file_pos = file_pos;
 											amount = lines = matches = 0;
@@ -403,7 +403,7 @@ ADD_OR_REMOVE_BATCH:
                                             if (((!(file_recs[file_pos]->mask & mask_validated)) || ((file_recs[file_pos]->filepoints > GetSession()->GetCurrentUser()->GetFilePoints() ) ) &&
                                                 !GetSession()->GetCurrentUser()->isExemptRatio() ) && !sysop_mode)
 											{
-												ClearScreen();
+												GetSession()->bout.ClearScreen();
 												GetSession()->bout << "You don't have enough file points to download this file\r\n";
 												GetSession()->bout << "Or this file is not validated yet.\r\n";
 #else
@@ -537,7 +537,7 @@ TOGGLE_EXTENDED:
 										lines_listed = 0;
 										break;
 									case 10:
-										ClearScreen();
+										GetSession()->bout.ClearScreen();
 										printfile(LISTPLUS_HLP);
 										pausescr();
 										menu_done = true;
@@ -560,7 +560,7 @@ TOGGLE_EXTENDED:
 											prep_menu_items(menu_items);
 										}
 										bputch('\r');
-										ClearEOL();
+										GetSession()->bout.ClearEOL();
 										break;
                     }
                     break;

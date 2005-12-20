@@ -868,7 +868,7 @@ void relist()
 	{
 		return;
 	}
-	ClearScreen();
+	GetSession()->bout.ClearScreen();
 	lines_listed = 0;
 	otag = GetSession()->tagging;
 	GetSession()->tagging = 0;
@@ -1409,7 +1409,7 @@ void xfer_defaults()
 
 	do
 	{
-		ClearScreen();
+		GetSession()->bout.ClearScreen();
 		GetSession()->bout <<  "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
 		GetSession()->bout <<  "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
 		GetSession()->bout <<  "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base (" <<

@@ -334,7 +334,7 @@ bool ratio_ok()
         if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio))
         {
             bRetValue = false;
-            ClearScreen();
+            GetSession()->bout.ClearScreen();
             GetSession()->bout.NewLine();
             GetSession()->bout.WriteFormatted( "Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
                      ratio(), syscfg.req_ratio );
@@ -345,7 +345,7 @@ bool ratio_ok()
         if ((syscfg.post_call_ratio > 0.0001) && (post_ratio() < syscfg.post_call_ratio))
         {
             bRetValue = false;
-            ClearScreen();
+            GetSession()->bout.ClearScreen();
             GetSession()->bout.NewLine();
             GetSession()->bout.WriteFormatted( "%s %-5.3f.  %s %-5.3f %s.\r\n\n",
                  "Your post/call ratio is", post_ratio(),

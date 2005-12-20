@@ -789,7 +789,7 @@ int modify_conf(int conftype,  int which )
     do
     {
         char szGenderAllowed[ 21 ];
-        ClearScreen();
+        GetSession()->bout.ClearScreen();
 
 		GetSession()->bout << "|#9A) Designator           : |#2" << c.designator << wwiv::endl;
 		GetSession()->bout << "|#9B) Conf Name            : |#2" << c.name << wwiv::endl;
@@ -1209,7 +1209,7 @@ void conf_edit(int conftype)
         return;
     }
 
-    ClearScreen();
+    GetSession()->bout.ClearScreen();
     list_confs(conftype, 1);
 
     do
@@ -1268,7 +1268,7 @@ void conf_edit(int conftype)
             done = true;
             break;
         case '?':
-            ClearScreen();
+            GetSession()->bout.ClearScreen();
             list_confs(conftype, 1);
             break;
         }
