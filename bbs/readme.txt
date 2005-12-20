@@ -82,6 +82,14 @@ Rushfan - nl => WOutStream::NewLine, ansic => WOutStream::Color,
           DisplayLiteBar => WOutStream, reset_colors => WOutStream::ResetColors
           goxy => WOutStream::GotoXY, bputs => WOutStream::Write
           bprintf => WOutStream::WriteFormatted
+Rushfan - Started working on WIniFile Class
+Rushfan - ** IMPORTANT CHANGE ** In chat.ini, CH_PROMPT's allowable values
+          for true and false are now Y and N (like the rest of WWIV), and
+          not 1 and 0.  Please change this in CHAT.INI when you upgrade to
+          this version.  I am standardizing the INI files as much as possible
+          and making 1 set of INI code for WWIV and all utilities to share.
+Rushfan - Started replacing ini_init/ini_get with WIniFile
+
 
 
 ==============================================================================

@@ -18,10 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
-#include <iostream>
-#include <sstream>
-#include "WTextFile.h"
 
 #define SECS_PER_DAY 86400L
 
@@ -249,22 +245,16 @@ int ShowLoginAndGetUserNumber( int nNetworkOnly, char* pszUserName )
 
 bool IsPhoneRequired()
 {
-    if ( ini_init( WWIV_INI, INI_TAG, NULL ) )
+    WIniFile iniFile( WWIV_INI );
+    if ( iniFile.Initialize( INI_TAG ) )
     {
-        char *ss = NULL;
-        if ( ( ss = ini_get( "NEWUSER_MIN", -1, NULL ) ) != NULL )
+        if ( iniFile.GetBooleanValue( "NEWUSER_MIN" ) )
         {
-            if ( wwiv::UpperCase<char>(ss[0]) == 'Y' )
-            {
-                return false;
-            }
+            return false;
         }
-        if ( ( ss = ini_get( "LOGON_PHONE", -1, NULL ) ) != NULL )
+        if ( !iniFile.GetBooleanValue( "LOGON_PHONE" ) )
         {
-            if ( wwiv::UpperCase<char>(ss[0]) == 'N' )
-            {
-                return false;
-            }
+            return false;
         }
     }
     return true;

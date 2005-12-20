@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 // Local prototypes
 int  printasv(char *pszFileName, int num, bool abort);

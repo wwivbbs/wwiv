@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 static char *mallocin_file(const char *pszFileName, long *len)
 {

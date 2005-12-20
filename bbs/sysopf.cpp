@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 bool isr1( int nUserNumber, int nNumUsers, const char *pszName )
 {
@@ -1040,26 +1039,17 @@ void set_user_age()
 
 void auto_purge()
 {
-	char s[80], *ss;
+	char s[80];
 	unsigned int days = 0;
 	int skipsl = 0;
 
-	if (ini_init(WWIV_INI, INI_TAG, NULL))
+    WIniFile iniFile( WWIV_INI );
+    if ( iniFile.Initialize( INI_TAG ) )
 	{
-		if ((ss = ini_get("AUTO_USER_PURGE", -1, NULL)) != NULL)
-		{
-			days = atoi(ss);
-		}
-		ini_done();
+        days = iniFile.GetNumericValue( "AUTO_USER_PURGE" );
+        skipsl = iniFile.GetNumericValue( "NO_PURGE_SL" );
 	}
-	if (ini_init(WWIV_INI, INI_TAG, NULL))
-	{
-		if ((ss = ini_get("NO_PURGE_SL", -1, NULL)) != NULL)
-		{
-			skipsl = atoi(ss);
-		}
-		ini_done();
-	}
+    iniFile.Close();
 
 	if (days < 60)
 	{

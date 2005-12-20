@@ -19,7 +19,6 @@
 #ifndef NOT_BBS
 #include "wwiv.h"
 #endif
-#include "WStringUtils.h"
 
 extern int oldy = 0;
 

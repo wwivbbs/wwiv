@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 /**
  * The default list of computer types
@@ -92,29 +91,28 @@ void repeat_char( char x, int amount, int nColor, bool bAddNL )
 const char *ctypes(int num)
 {
     static char szCtype[81];
-
-    if (ini_init("WWIV.INI", "CTYPES", NULL))
+    
+    WIniFile iniFile( WWIV_INI );
+    if ( iniFile.Initialize( "CTYPES" ) )
     {
         char szCompType[ 100 ];
         sprintf(szCompType, "COMP_TYPE[%d]", num+1);
-        char* ss =ini_get(szCompType, -1, NULL);
+        const char *ss = iniFile.GetValue( szCompType );
         if (ss && *ss)
         {
             strcpy(szCtype, ss);
             if (ss)
             {
-                ini_done();
-                return(szCtype);
+                return szCtype;
             }
         }
-        ini_done();
         return NULL;
     }
     if ( ( num < 0 ) || ( num > MAX_DEFAULT_CTYPE_VALUE ) )
     {
         return NULL;
     }
-    return(default_ctypes[num]);
+    return default_ctypes[num];
 }
 
 

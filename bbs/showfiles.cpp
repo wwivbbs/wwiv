@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 #if defined (_WIN32)
 #define SNPRINTF _snprintf

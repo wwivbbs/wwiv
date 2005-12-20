@@ -18,11 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
-#include "WTextFile.h"
 
 // Additional INI file function and structure
-#include "ini.h"
 #include "xinitini.h"
 
 
@@ -178,9 +175,6 @@ static const char *get_key_str( int n )
 }
 
 
-#define INI_INIT_A(n,i,f,s) \
-{if (((ss=ini_get(get_key_str(n), i, s))!=NULL) && (atoi(ss)>0)) \
-{GetSession()->f[i] = atoi(ss);}}
 #define INI_INIT(n,f) \
 {if (((ss=ini_get(get_key_str(n), -1, NULL))!=NULL) && (atoi(ss)>0)) \
 GetSession()->f = atoi(ss);}
@@ -336,27 +330,25 @@ bool WBbsApp::ReadINIFile()
         // pull out event flags
         for ( size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL( GetApplication()->spawn_opts ); nTempSpawnOptNum++ )
         {
-            if ( nTempSpawnOptNum < NEL( eventinfo ) )
+            if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), -1, eventinfo[nTempSpawnOptNum].name ) ) != NULL )
             {
-                if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), nTempSpawnOptNum, eventinfo[nTempSpawnOptNum].name ) ) != NULL )
-                {
-                    GetApplication()->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
-                }
-            }
-            else
-            {
-                if ( ( ss = ini_get( get_key_str( INI_STR_SPAWNOPT ), nTempSpawnOptNum, eventinfo[nTempSpawnOptNum].name ) ) != NULL )
-                {
-                    GetApplication()->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
-                }
+                GetApplication()->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
             }
         }
 
         // pull out newuser colors
         for ( int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++ )
         {
-            INI_INIT_A( INI_STR_NUCOLOR, nTempColorNum, newuser_colors, NULL );
-            INI_INIT_A( INI_STR_NUCOLORBW, nTempColorNum, newuser_bwcolors, NULL );
+            char szTempColorNum[10];
+            sprintf( szTempColorNum, "%d", nTempColorNum );
+            if ( ( ss = ini_get( get_key_str( INI_STR_NUCOLOR ), -1, szTempColorNum ) ) != NULL && atoi( ss ) > 0 )
+            {
+                GetSession()->newuser_colors[nTempColorNum] = atoi( ss );
+            }
+            if ( ( ss = ini_get( get_key_str( INI_STR_NUCOLORBW ), -1, szTempColorNum ) ) != NULL && atoi( ss ) > 0 )
+            {
+                GetSession()->newuser_bwcolors[nTempColorNum] = atoi( ss );
+            }
         }
 
         // pull out sysop-side colors
