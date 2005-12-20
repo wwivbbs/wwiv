@@ -20,9 +20,8 @@
 
 #define _DEFINE_GLOBALS_ 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
-#include <sstream>
+
 #undef _DEFINE_GLOBALS_
 
 #include "bbs.h"

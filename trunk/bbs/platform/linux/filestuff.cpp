@@ -19,7 +19,6 @@
 
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 #ifdef __APPLE__
 #include <sys/param.h>

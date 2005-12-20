@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 void WWIV_Sound(int nFreq, int nDly)
 {

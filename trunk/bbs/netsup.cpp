@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 static int netw;
 time_t last_time_c;
@@ -138,7 +137,7 @@ int check_bbsdata()
 
 void cleanup_net()
 {
-	char cl1[81], cl2[81], *ss1;
+	char cl1[81], cl2[81];
 	int i1, i2;
 
 	if ( cleanup_net1() && GetApplication()->HasConfigFlag( OP_FLAGS_NET_CALLOUT ) )
@@ -149,25 +148,22 @@ void cleanup_net()
         }
 
 		i1 = i2 = 0;
-		if ( ini_init( WWIV_INI, INI_TAG, NULL ) )
+        WIniFile iniFile( WWIV_INI );
+        if ( iniFile.Initialize( INI_TAG ) )
         {
-			if ( ( ss1 = ini_get( "NET_CLEANUP_CMD1", -1, NULL ) ) != NULL )
+            const char *pszValue = iniFile.GetValue( "NET_CLEANUP_CMD1" );
+			if ( pszValue != NULL )
             {
-				if ( ss1 )
-                {
-					strcpy( cl1, ss1 );
-					i1 = 1;
-				}
+				strcpy( cl1, pszValue );
+				i1 = 1;
 			}
-			if ( ( ss1 = ini_get( "NET_CLEANUP_CMD2", -1, NULL ) ) != NULL )
+            pszValue = iniFile.GetValue( "NET_CLEANUP_CMD2" );
+			if ( pszValue != NULL )
             {
-				if ( ss1 )
-                {
-					strcpy( cl2, ss1 );
-					i2 = 1;
-				}
+				strcpy( cl2, pszValue );
+				i2 = 1;
 			}
-			ini_done();
+			iniFile.Close();
 		}
 		if ( i1 )
         {
@@ -1191,14 +1187,15 @@ void print_call(int sn, int nNetNumber, int i2)
 		got_color = 1;
 		color = 30;
 
-		if (ini_init(WWIV_INI, INI_TAG, NULL))
+        WIniFile iniFile( WWIV_INI );
+		if ( iniFile.Initialize( INI_TAG ) )
         {
-            char *ss = ini_get("CALLOUT_COLOR_TEXT", -1, NULL);
+            const char *ss = iniFile.GetValue( "CALLOUT_COLOR_TEXT" );
 			if ( ss != NULL )
             {
 				color = atoi( ss );
 			}
-			ini_done();
+            iniFile.Close();
 		}
 	}
 	curatr = color;

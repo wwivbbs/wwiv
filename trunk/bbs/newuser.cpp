@@ -18,8 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
-#include "WTextFile.h"
 
 //
 // Local function prototypes
@@ -889,21 +887,12 @@ bool CanCreateNewUserAccountHere()
 
 bool UseMinimalNewUserInfo()
 {
-    bool bMinimalNewUser = false;
-    if (ini_init(WWIV_INI, INI_TAG, NULL))
+    WIniFile iniFile( WWIV_INI );
+    if ( iniFile.Initialize( INI_TAG ) )
     {
-        char *ss;
-        if ((ss = ini_get("NEWUSER_MIN", -1, NULL)) != NULL)
-        {
-            if (wwiv::UpperCase<char>(ss[0] == 'Y'))
-            {
-                bMinimalNewUser = true;
-            }
-        }
+        return iniFile.GetBooleanValue( "NEWUSER_MIN" );
     }
-    ini_done();
-
-    return bMinimalNewUser;
+    return false;
 }
 
 

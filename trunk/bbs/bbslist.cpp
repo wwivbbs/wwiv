@@ -19,7 +19,6 @@
 // $Header$
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 //
 // Local function prototypes

@@ -18,9 +18,34 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
-#include "WTextFile.h"
-#include "ini.h"
+
+
+const bool WIniFile::GetBooleanValue( const char *pszKey ) const 
+{ 
+    const char *p = GetValue( pszKey, -1, NULL );
+    return WIniFile::StringToBoolean( p );
+}
+
+const bool WIniFile::GetBooleanValue( const char *pszKey, int nNumericIndex ) const 
+{ 
+    const char *p = GetValue( pszKey, nNumericIndex, NULL );
+    return WIniFile::StringToBoolean( p );
+}
+
+
+const bool WIniFile::GetBooleanValue( const char *pszKey, char *pszStringIndex ) const 
+{ 
+    const char *p = GetValue( pszKey, -1, pszStringIndex );
+    return WIniFile::StringToBoolean( p );
+}
+
+bool WIniFile::StringToBoolean( const char *p )
+{
+    if ( !p ) return false;
+    char ch = wwiv::UpperCase<char>(*p);
+    return ( ch == 'Y' || ch == 'T' || ch == '1' ) ? true : false;
+}
+
 
 
 struct ini_info_t

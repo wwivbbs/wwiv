@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 
 extern const unsigned char *translate_letters[];

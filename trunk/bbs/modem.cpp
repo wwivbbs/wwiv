@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 char cid_num[50];
 char cid_name[50];

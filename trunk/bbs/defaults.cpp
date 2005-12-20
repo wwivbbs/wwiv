@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 
 #define STOP_LIST 0

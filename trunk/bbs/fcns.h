@@ -14,7 +14,6 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
 
 #ifndef __INCLUDED_FCNS_H__
@@ -374,13 +373,6 @@ void pack_sub(int si);
 
 void HopSub();
 void HopDir();
-
-
-// File: ini.cpp
-
-void ini_done();
-bool ini_init(const char *pszFileName, const char *prim, const char *sec);
-char *ini_get( const char *pszKey, int nNumericIndex, char *pszStringIndex );
 
 
 // File: inmsg.cpp

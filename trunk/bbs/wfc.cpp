@@ -48,14 +48,15 @@ void wfc_init()
         GetSession()->wfcdrvs[ i ] = 0;
     }
 
-    if ( ini_init( WWIV_INI, INI_TAG, NULL ) )
+    WIniFile iniFile( WWIV_INI );
+    if ( iniFile.Initialize( INI_TAG ) )
     {
-        char *ss = NULL;
-        if ( ( ss = ini_get( "WFC_DRIVES", -1, NULL ) ) != NULL )
+        const char *pszDriveList = iniFile.GetValue( "WFC_DRIVES" );
+        if ( pszDriveList != NULL )
         {
-            for ( int j = 0; j < wwiv::stringUtils::GetStringLength( ss ); j++ )
+            for ( int j = 0; j < wwiv::stringUtils::GetStringLength( pszDriveList ); j++ )
             {
-                GetSession()->wfcdrvs[ j ] = ss[ j ] - '@';
+                GetSession()->wfcdrvs[ j ] = pszDriveList[ j ] - '@';
                 if ( GetSession()->wfcdrvs[ j ] < 2 )
                 {
                     GetSession()->wfcdrvs[ j ] = 2;

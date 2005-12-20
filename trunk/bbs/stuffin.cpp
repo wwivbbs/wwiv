@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 
 static void stuff_in_num( char *pszOutBuffer, char *pszFormatString,

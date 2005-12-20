@@ -18,10 +18,9 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 /* ---------------------------------------------------------------------- */
-/* MENUSPEC.C - Menu Specific support functions                           */
+/* menuspec.cpp - Menu Specific support functions                           */
 /*                                                                        */
 /* Functions that dont have any direct WWIV function go in here           */
 /* ie, functions to help emulate other BBS's.                             */

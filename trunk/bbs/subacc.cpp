@@ -19,7 +19,6 @@
 
 #ifndef NOT_BBS
 #include "wwiv.h"
-#include "WStringUtils.h"
 #endif
 
 

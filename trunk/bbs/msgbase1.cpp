@@ -18,8 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
-#include "WTextFile.h"
 
 
 void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber)
