@@ -65,6 +65,9 @@
 
 #include <algorithm>
 #include <locale>
+#include <sstream>
+#include <iostream>
+
 
 #if defined( _MSC_VER )
 #pragma warning( pop )
@@ -102,6 +105,8 @@
 #include "WStringUtils.h"
 #include "WOutStreamBuffer.h"
 #include "WStatus.h"
+#include "ini.h"
+
 
 #include "incl3.h"
 

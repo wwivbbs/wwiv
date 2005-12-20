@@ -19,7 +19,6 @@
 
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 static int g_nChatOpSecLvl;
 static int g_nNumActions;
@@ -69,14 +68,15 @@ void chat_room()
     char szMessageSent[80], szFromMessage[50];
     strcpy(szMessageSent, "|#1[|#9Message Sent|#1]\r\n");
     strcpy(szFromMessage, "|#9From %.12s|#1: %s%s");
-    if (ini_init(CHAT_INI, "CHAT", NULL))
+    WIniFile iniFile( CHAT_INI );
+    if ( iniFile.Initialize( "CHAT" ) )
     {
-        g_nChatOpSecLvl = atoi(ini_get("CHATOP_SL", -1, NULL));
-        bShowPrompt = ( atoi( ini_get( "CH_PROMPT", -1, NULL ) ) ) ? true : false;
+        g_nChatOpSecLvl = iniFile.GetNumericValue("CHATOP_SL");
+        bShowPrompt = iniFile.GetBooleanValue( "CH_PROMPT" );
         load_channels();
         load_actions();
         get_colors( szColorString );
-        ini_done();
+        iniFile.Close();
     }
     else
     {

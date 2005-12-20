@@ -27,7 +27,6 @@
 #else
 #include "wwiv.h"
 #endif
-#include "WStringUtils.h"
 
 
 void read_bbs_list();

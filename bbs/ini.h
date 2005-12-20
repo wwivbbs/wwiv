@@ -20,7 +20,7 @@
 #ifndef __INCLUDED_INI_H__
 #define __INCLUDED_INI_H__
 
-
+#include <string>
 
 struct ini_flags_rec
 {
@@ -38,22 +38,39 @@ char *ini_get( const char *pszKey, int nNumericIndex, char *pszStringIndex );
 
 
 
+
 class WIniFile
 {
 public:
-    /////////////////////////////////////////////////////////////////////////
+    // Constructor/Destructor
+    WIniFile(const char *pszFileName ) { m_strFileName = pszFileName; }
+    virtual ~WIniFile() { Close(); }
+
     //
     // Member functions
     //
+    bool Initialize( const char *prim, const char *sec = NULL ) { return ini_init( m_strFileName.c_str(), prim, sec ); }
+    bool Close() { ini_done(); return true; }
 
-    WIniFile(const char *pszFileName, const char *prim, const char *sec);
-    const char* GetValue( const char *pszKey );
-    const char* GetValue( const char *pszKey, int nNumericIndex );
-    const char* GetValue( const char *pszKey, char *pszStringIndex );
-    virtual ~WIniFile();
+    const char* GetValue( const char *pszKey ) const { return GetValue( pszKey, -1, NULL ); }
+    const char* GetValue( const char *pszKey, int nNumericIndex ) const { return GetValue( pszKey, nNumericIndex, NULL ); }
+    const char* GetValue( const char *pszKey, char *pszStringIndex ) const { return GetValue( pszKey, -1, pszStringIndex ); }
+
+    const long GetNumericValue( const char *pszKey ) const { return atoi( GetValue( pszKey, -1, NULL ) ); }
+    const long GetNumericValue( const char *pszKey, int nNumericIndex ) const { return atoi( GetValue( pszKey, nNumericIndex, NULL ) ); }
+    const long GetNumericValue( const char *pszKey, char *pszStringIndex ) const { return atoi( GetValue( pszKey, -1, pszStringIndex ) ); }
+
+    const bool GetBooleanValue( const char *pszKey ) const;
+    const bool GetBooleanValue( const char *pszKey, int nNumericIndex ) const;
+    const bool GetBooleanValue( const char *pszKey, char *pszStringIndex ) const;
+
+protected:
+    const char* GetValue( const char *pszKey, int nNumericIndex, char *pszStringIndex ) const { return ini_get( pszKey, nNumericIndex, pszStringIndex ); }
+    static bool StringToBoolean( const char *p );
 
 private:
-    const char* GetValue( const char *pszKey, int nNumericIndex, char *pszStringIndex )
+    // Data
+    std::string m_strFileName;
 
 };
 

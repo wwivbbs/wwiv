@@ -18,8 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
-#include "WTextFile.h"
 
 //
 // Local Function Prototypes

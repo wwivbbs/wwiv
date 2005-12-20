@@ -18,7 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
 
 
 double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);

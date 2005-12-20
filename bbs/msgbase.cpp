@@ -18,8 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
-#include <sstream>
 
 #define EMAIL_STORAGE 2
 

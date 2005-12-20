@@ -18,8 +18,6 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WStringUtils.h"
-#include "WTextFile.h"
 
 static user_config *pSecondUserRec;         // Userrec2 style setup
 static int nSecondUserRecLoaded;            // Whos config is loaded
@@ -116,20 +114,14 @@ void ReadMenuSetup()
 
 		BbsFreeMemory(index);
 	}
-	if (ini_init(WWIV_INI, INI_TAG, NULL))
+    WIniFile iniFile( WWIV_INI );
+    if ( iniFile.Initialize( INI_TAG ) )
     {
-		char* ss = ini_get("DISABLE_PD", -1, NULL);
-		if (ss)
+        if ( iniFile.GetBooleanValue( "DISABLE_PD" ) )
         {
-			if ( wwiv::UpperCase<char>( ss[0] == 'Y' ) ||
-                 wwiv::stringUtils::IsEqualsIgnoreCase( ss, "YES" ) ||
-                 wwiv::stringUtils::IsEqualsIgnoreCase( ss, "true" ) ||
-                 wwiv::stringUtils::IsEqualsIgnoreCase( ss, "1" ) )
-            {
-				bDisablePD = true;
-            }
+			bDisablePD = true;
 		}
-		ini_done();
+        iniFile.Close();
 	}
 }
 
