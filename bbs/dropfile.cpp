@@ -137,7 +137,7 @@ void CreateDoorInfoDropFile()
 		{
             fprintf(fileDorInfoSys, "\n");
 		}
-        fprintf( fileDorInfoSys, "%c\n%d\n%ld\n", GetSession()->GetCurrentUser()->hasAnsi() ? '1' : '0',
+        fprintf( fileDorInfoSys, "%c\n%d\n%ld\n", GetSession()->GetCurrentUser()->HasAnsi() ? '1' : '0',
                  GetSession()->GetCurrentUser()->GetSl(), GetMinutesRemainingForDropFile() );
         fileDorInfoSys.Close();
     }
@@ -158,7 +158,7 @@ void CreatePCBoardSysDropFile()
         strcpy(pcb.display, "-1");
         strcpy(pcb.printer, "0");	// -1 if logging is to the printer, 0 otherwise;
         strcpy(pcb.page_bell, " 0");
-        strcpy(pcb.alarm, ( GetApplication()->GetLocalIO()->GetSysopAlert() ) ? "-1" : " 0");
+        strcpy(pcb.alarm, ( GetSession()->localIO()->GetSysopAlert() ) ? "-1" : " 0");
         strcpy(pcb.errcheck, (modem_flag & flag_ec) ? "-1" : " 0");
         if ( okansi() )
 		{
@@ -253,7 +253,7 @@ void CreateCallInfoBbsDropFile()
         }
         file.WriteFormatted(" \n%d\n%ld\n%s\n%s\n%ld\n%ld\n%.5s\n0\nABCD\n0\n0\n0\n0\n",
             GetSession()->GetCurrentUser()->GetSl(), GetMinutesRemainingForDropFile(),
-            GetSession()->GetCurrentUser()->hasAnsi() ? "COLOR" : "MONO",
+            GetSession()->GetCurrentUser()->HasAnsi() ? "COLOR" : "MONO",
             "X" /* GetSession()->GetCurrentUser()->GetPassword() */ , GetSession()->usernum, static_cast<long>( timeon / 60 ), times());
         file.WriteFormatted("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
                 GetSession()->GetCurrentUser()->GetVoicePhoneNumber(),
@@ -382,7 +382,7 @@ void CreateDoorSysDropFile()
         sprintf(szLine, "%s\n%u\n%c\n%s\n%lu\n%s\n%lu\n%c\n%u\n%u\n%u\n%u\n",
                 szAnsiStatus,
                 GetSession()->GetCurrentUser()->GetScreenLines(),
-                GetSession()->GetCurrentUser()->isExpert() ? 'Y' : 'N',
+                GetSession()->GetCurrentUser()->IsExpert() ? 'Y' : 'N',
                 "1,2,3",                        // conferences
                 GetSession()->GetCurrentMessageArea(),  // current 'conference'
                 "12/31/99",                     // expiration date

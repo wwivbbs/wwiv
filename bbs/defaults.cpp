@@ -54,7 +54,7 @@ void select_editor()
         else
         {
             GetSession()->GetCurrentUser()->SetDefaultEditor( 0 );
-            GetSession()->GetCurrentUser()->clearStatusFlag( WUser::autoQuote );
+            GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::autoQuote );
         }
         return;
     }
@@ -82,7 +82,7 @@ void select_editor()
     else if ( wwiv::stringUtils::IsEquals( ss, "0") )
     {
         GetSession()->GetCurrentUser()->SetDefaultEditor( 0 );
-        GetSession()->GetCurrentUser()->clearStatusFlag( WUser::autoQuote );
+        GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::autoQuote );
     }
 }
 
@@ -121,7 +121,7 @@ const char* GetMailBoxStatus( char* pszStatusOut )
 
     WUser ur;
     GetApplication()->GetUserManager()->ReadUser( &ur, GetSession()->GetCurrentUser()->GetForwardUserNumber() );
-    if ( ur.isUserDeleted() )
+    if ( ur.IsUserDeleted() )
     {
         GetSession()->GetCurrentUser()->SetForwardUserNumber( 0 );
         strcpy( pszStatusOut, "Normal" );
@@ -138,11 +138,11 @@ void print_cur_stat()
     GetSession()->bout.ClearScreen();
     GetSession()->bout << "|10Your Preferences\r\n\n";
     sprintf( s1, "|#11|#9) Screen size       : |#2%d X %d", GetSession()->GetCurrentUser()->GetScreenChars(), GetSession()->GetCurrentUser()->GetScreenLines() );
-    sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->hasAnsi() ?
-        ( GetSession()->GetCurrentUser()->hasColor() ? "Color" : "Monochrome") : "No ANSI" );
+    sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->HasAnsi() ?
+        ( GetSession()->GetCurrentUser()->HasColor() ? "Color" : "Monochrome") : "No ANSI" );
     GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
 
-    sprintf(s1, "|#13|#9) Pause on screen   : |#2%s", GetSession()->GetCurrentUser()->hasPause() ? "On" : "Off");
+    sprintf(s1, "|#13|#9) Pause on screen   : |#2%s", GetSession()->GetCurrentUser()->HasPause() ? "On" : "Off");
     char szMailBoxStatus[81];
     sprintf(s2, "|#14|#9) Mailbox           : |#2%s", GetMailBoxStatus( szMailBoxStatus ) );
     GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
@@ -160,7 +160,7 @@ void print_cur_stat()
         sprintf( s1, "|#19|#9) Full screen editor: |#2%s",
                  ( ( nEditorNum > 0 ) && ( nEditorNum <= GetSession()->GetNumberOfEditors() ) ) ?
                  editors[ nEditorNum - 1 ].description : "None" );
-        sprintf( s2, "|#1A|#9) Extended colors   : |#2%s", YesNoString( GetSession()->GetCurrentUser()->isUseExtraColor() ) );
+        sprintf( s2, "|#1A|#9) Extended colors   : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsUseExtraColor() ) );
         GetSession()->bout.WriteFormatted( "%-48.48s %-45s\r\n", s1, s2 );
     }
     else
@@ -168,7 +168,7 @@ void print_cur_stat()
         GetSession()->bout << "|#17|#9) Update macros\r\n";
     }
     sprintf( s1, "|#1B|#9) Optional lines    : |#2%d", GetSession()->GetCurrentUser()->GetOptionalVal() );
-    sprintf( s2, "|#1C|#9) Conferencing      : |#2%s", YesNoString( GetSession()->GetCurrentUser()->isUseConference() ) );
+    sprintf( s2, "|#1C|#9) Conferencing      : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsUseConference() ) );
     GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
 	GetSession()->bout << "|#1I|#9) Internet Address  : |#2" << ( ( GetSession()->GetCurrentUser()->GetEmailAddress()[0] == '\0') ? "None." : GetSession()->GetCurrentUser()->GetEmailAddress() ) << wwiv::endl;
     GetSession()->bout << "|#1K|#9) Configure Menus\r\n";
@@ -179,14 +179,14 @@ void print_cur_stat()
     }
     if (num_instances() > 1)
     {
-        sprintf(s1, "|#1M|#9) Allow user msgs   : |#2%s", YesNoString( GetSession()->GetCurrentUser()->isIgnoreNodeMessages() ? false : true ) );
+        sprintf(s1, "|#1M|#9) Allow user msgs   : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsIgnoreNodeMessages() ? false : true ) );
         GetSession()->bout.WriteFormatted( "%-48s", s1 );
     }
     GetSession()->bout.NewLine();
-    sprintf( s1, "|#1S|#9) Cls Between Msgs? : |#2%s", YesNoString( GetSession()->GetCurrentUser()->isUseClearScreen() ) );
-    sprintf( s2, "|#1T|#9) 12hr or 24hr clock: |#2%s", GetSession()->GetCurrentUser()->isUse24HourClock() ? "24hr" : "12hr" );
+    sprintf( s1, "|#1S|#9) Cls Between Msgs? : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsUseClearScreen() ) );
+    sprintf( s2, "|#1T|#9) 12hr or 24hr clock: |#2%s", GetSession()->GetCurrentUser()->IsUse24HourClock() ? "24hr" : "12hr" );
     GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
-    sprintf( s1, "|#1U|#9) Use Msg AutoQuote : |#2%s", YesNoString( GetSession()->GetCurrentUser()->isUseAutoQuote() ) );
+    sprintf( s1, "|#1U|#9) Use Msg AutoQuote : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsUseAutoQuote() ) );
 
     char szWWIVRegNum[80];
     if ( GetSession()->GetCurrentUser()->GetWWIVRegNumber() )
@@ -242,7 +242,7 @@ const char *DescribeColorCode( int nColorCode )
 {
     static char szColorDesc[81];
 
-    if ( GetSession()->GetCurrentUser()->hasColor() )
+    if ( GetSession()->GetCurrentUser()->HasColor() )
     {
         sprintf( szColorDesc, "%s on %s", DisplayColorName( nColorCode & 0x07 ), DisplayColorName( ( nColorCode >> 4 ) & 0x07 ) );
     }
@@ -295,7 +295,7 @@ void change_colors()
         GetSession()->bout.ClearScreen();
         GetSession()->bout << "|10Customize Colors:";
         GetSession()->bout.NewLine( 2 );
-        if ( !GetSession()->GetCurrentUser()->hasColor() )
+        if ( !GetSession()->GetCurrentUser()->HasColor() )
         {
             strcpy( szColorDesc, "Monochrome base color : " );
             if ( ( GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70 ) == 0 )
@@ -346,7 +346,7 @@ void change_colors()
                 strcat(szColorDesc, "Extra color #2    ");
                 break;
             }
-            if ( GetSession()->GetCurrentUser()->hasColor() )
+            if ( GetSession()->GetCurrentUser()->HasColor() )
             {
                 strcat( szColorDesc, DescribeColorCode( GetSession()->GetCurrentUser()->GetColor( i ) ) );
             }
@@ -371,7 +371,7 @@ void change_colors()
         else
         {
             int nColorNum = ch - '0';
-            if ( GetSession()->GetCurrentUser()->hasColor() )
+            if ( GetSession()->GetCurrentUser()->HasColor() )
             {
                 color_list();
                 GetSession()->bout.Color( 0 );
@@ -458,7 +458,7 @@ void change_colors()
             if ( yesno() )
             {
                 GetSession()->bout << "\r\nColor saved.\r\n\n";
-                if ( GetSession()->GetCurrentUser()->hasColor() )
+                if ( GetSession()->GetCurrentUser()->HasColor() )
                 {
                     GetSession()->GetCurrentUser()->SetColor( nColorNum, nc );
                 }
@@ -935,7 +935,7 @@ void defaults( MenuInstanceData * MenuData )
     do
     {
         print_cur_stat();
-        GetApplication()->GetLocalIO()->tleft( true );
+        GetSession()->localIO()->tleft( true );
         if (hangup)
         {
             return;
@@ -967,7 +967,7 @@ void defaults( MenuInstanceData * MenuData )
             input_ansistat();
             break;
         case '3':
-            GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
+            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
             break;
         case '4':
             modify_mailbox();
@@ -988,13 +988,13 @@ void defaults( MenuInstanceData * MenuData )
             select_editor();
             break;
         case 'A':
-            GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::extraColor );
+            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::extraColor );
             break;
         case 'B':
             optional_lines();
             break;
         case 'C':
-            GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::conference );
+            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::conference );
             changedsl();
             break;
 
@@ -1041,23 +1041,23 @@ void defaults( MenuInstanceData * MenuData )
         case 'M':
             if ( num_instances() > 1 )
             {
-                GetSession()->GetCurrentUser()->clearStatusFlag( WUser::noMsgs );
+                GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::noMsgs );
                 GetSession()->bout.NewLine();
                 GetSession()->bout << "|#5Allow messages sent between instances? ";
                 if (!yesno())
                 {
-                    GetSession()->GetCurrentUser()->setStatusFlag( WUser::noMsgs );
+                    GetSession()->GetCurrentUser()->SetStatusFlag( WUser::noMsgs );
                 }
             }
             break;
         case 'S':
-            GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::clearScreen );
+            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::clearScreen );
             break;
         case 'T':
-            GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::twentyFourHourClock );
+            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::twentyFourHourClock );
             break;
         case 'U':
-            GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::autoQuote );
+            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::autoQuote );
             break;
         case 'W':
             enter_regnum();

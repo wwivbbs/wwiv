@@ -238,7 +238,7 @@ void feedback( bool bNewUserFeedback )
         WUser user;
         GetApplication()->GetUserManager()->ReadUser( &user, i );
         if ( ( user.GetSl() == 255 || ( getslrec( user.GetSl() ).ability & ability_cosysop ) ) &&
-            !user.isUserDeleted() )
+            !user.IsUserDeleted() )
         {
             i1++;
         }
@@ -258,7 +258,7 @@ void feedback( bool bNewUserFeedback )
             WUser user;
             GetApplication()->GetUserManager()->ReadUser( &user, i );
             if ( ( user.GetSl() == 255 || (getslrec( user.GetSl() ).ability & ability_cosysop ) ) &&
-                 !user.isUserDeleted() )
+                 !user.IsUserDeleted() )
             {
 				GetSession()->bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber( i ) << wwiv::endl;
                 onek_str[i1++] = static_cast< char >( '0' + i );

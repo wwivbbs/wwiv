@@ -198,7 +198,7 @@ void post()
 		GetSession()->bout << "\r\nSorry, not enough disk space left.\r\n\n";
 		return;
 	}
-    if ( GetSession()->GetCurrentUser()->isRestrictionPost() || GetSession()->GetCurrentUser()->GetNumPostsToday() >= getslrec( GetSession()->GetEffectiveSl() ).posts )
+    if ( GetSession()->GetCurrentUser()->IsRestrictionPost() || GetSession()->GetCurrentUser()->GetNumPostsToday() >= getslrec( GetSession()->GetEffectiveSl() ).posts )
 	{
 		GetSession()->bout << "\r\nToo many messages posted today.\r\n\n";
 		return;
@@ -216,14 +216,14 @@ void post()
 	{
 		a = anony_enable_anony;
 	}
-	if ( a == anony_enable_anony && GetSession()->GetCurrentUser()->isRestrictionAnonymous() )
+	if ( a == anony_enable_anony && GetSession()->GetCurrentUser()->IsRestrictionAnonymous() )
 	{
 		a = 0;
 	}
 	if ( xsubs[ GetSession()->GetCurrentReadMessageArea() ].num_nets )
 	{
 		a &= (anony_real_name);
-		if ( GetSession()->GetCurrentUser()->isRestrictionNet() )
+		if ( GetSession()->GetCurrentUser()->IsRestrictionNet() )
 		{
 			GetSession()->bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
 			return;
@@ -259,7 +259,7 @@ void post()
 		p.qscan = pStatus->IncrementQScanPointer();
 		GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 		p.daten = static_cast<unsigned long>(time(NULL));
-        if ( GetSession()->GetCurrentUser()->isRestrictionValidate() )
+        if ( GetSession()->GetCurrentUser()->IsRestrictionValidate() )
 		{
 			p.status = status_unvalidated;
 		}
@@ -493,7 +493,7 @@ void nscan( int nStartingSubNum )
 	GetSession()->bout.NewLine();
 	GetSession()->bout.ClearEOL();
 	GetSession()->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
-	if ( nNextSubNumber && GetSession()->GetCurrentUser()->isNewScanFiles() &&
+	if ( nNextSubNumber && GetSession()->GetCurrentUser()->IsNewScanFiles() &&
 		 ( syscfg.sysconfig & sysconfig_no_xfer ) == 0 &&
          ( !( g_flags & g_flag_scanned_files ) ) )
 	{
@@ -664,7 +664,7 @@ void remove_post()
 			{
                 WUser tu;
                 GetApplication()->GetUserManager()->ReadUser( &tu, get_post( nPostNumber )->owneruser  );
-                if ( !tu.isUserDeleted() )
+                if ( !tu.IsUserDeleted() )
 				{
                     if ( date_to_daten( tu.GetFirstOn() ) < ( signed ) get_post( nPostNumber )->daten )
 					{
@@ -733,7 +733,7 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 		tFileTime = fileTempForTime.GetFileTime();
 	}
     sprintf( sx1, "%d", GetSession()->GetCurrentUser()->GetScreenChars() );
-	int newtl = ( GetSession()->screenlinest > defscreenbottom - GetSession()->topline ) ? 0 : GetSession()->topline;
+	int newtl = ( GetSession()->screenlinest > defscreenbottom - GetSession()->localIO()->GetTopLine() ) ? 0 : GetSession()->localIO()->GetTopLine();
 
 	if ( GetSession()->using_modem )
 	{
@@ -767,7 +767,7 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 		            GetSession()->GetCurrentUser()->GetRealName(),
 		            GetSession()->GetCurrentUser()->GetSl(),
 		            flags,
-		            GetSession()->topline,
+		            GetSession()->localIO()->GetTopLine(),
 		            GetSession()->GetCurrentUser()->GetLanguage() );
         fileEditorInf.Close();
 	}

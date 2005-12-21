@@ -77,7 +77,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 				}
 			}
 		}
-		GetApplication()->GetLocalIO()->tleft( true );
+		GetSession()->localIO()->tleft( true );
 		CheckForHangup();
 		set_net_num( (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) ? xsubs[GetSession()->GetCurrentReadMessageArea()].nets[0].net_num : 0 );
 		if ( nScanOptionType != SCAN_OPTION_READ_PROMPT )
@@ -256,7 +256,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 	if ( !quit && !express )
 	{
 		GetSession()->bout.NewLine();
-		if ( !GetSession()->GetCurrentUser()->isRestrictionPost() &&
+		if ( !GetSession()->GetCurrentUser()->IsRestrictionPost() &&
 			 ( GetSession()->GetCurrentUser()->GetNumPostsToday() < getslrec( GetSession()->GetEffectiveSl() ).posts ) &&
 			 ( GetSession()->GetEffectiveSl() >= subboards[GetSession()->GetCurrentReadMessageArea()].postsl ) )
 		{
@@ -705,7 +705,7 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 	}
 	grab_quotes( &(get_post( nMessageNumber )->msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename );
 
-    if ( okfsed() && GetSession()->GetCurrentUser()->isUseAutoQuote() && nMessageNumber > 0 &&
+    if ( okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote() && nMessageNumber > 0 &&
          nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() && pszUserInput[0] != 'O' )
 	{
 		long lMessageLen;
@@ -965,7 +965,7 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 			}
 			if (!(nTempMsgNum % 100))
 			{
-				GetApplication()->GetLocalIO()->tleft( true );
+				GetSession()->localIO()->tleft( true );
 				CheckForHangup();
 			}
 		}
@@ -1286,7 +1286,7 @@ void HandleMessageReply( int &nMessageNumber )
 	postrec p2 = *get_post( nMessageNumber );
 	grab_quotes(&(p2.msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename);
 
-	if ( okfsed() && GetSession()->GetCurrentUser()->isUseAutoQuote() &&
+	if ( okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote() &&
 		 nMessageNumber > 0 && nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() )
 	{
 		long lMessageLen;
@@ -1319,7 +1319,7 @@ void HandleMessageDelete( int &nMessageNumber )
 			{
 				WUser tu;
                 GetApplication()->GetUserManager()->ReadUser( &tu, p2.owneruser );
-                if ( !tu.isUserDeleted() )
+                if ( !tu.IsUserDeleted() )
 				{
 					if (date_to_daten( tu.GetFirstOn() ) < static_cast<signed int>( p2.daten ) )
 					{

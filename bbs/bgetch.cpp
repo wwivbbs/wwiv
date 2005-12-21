@@ -121,16 +121,16 @@ char bgetch()
             return charbuffer[charbufferpointer++];
         }
     }
-    if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
+    if ( GetSession()->localIO()->LocalKeyPressed() )
     {
-        ch = GetApplication()->GetLocalIO()->getchd1();
+        ch = GetSession()->localIO()->getchd1();
         GetSession()->SetLastKeyLocal( true );
         if (!(g_flags & g_flag_allow_extended))
         {
             if (!ch)
             {
-                ch = GetApplication()->GetLocalIO()->getchd1();
-                GetApplication()->GetLocalIO()->skey(ch);
+                ch = GetSession()->localIO()->getchd1();
+                GetSession()->localIO()->skey(ch);
                 ch = static_cast< char >(((ch == F10) || (ch == CF10)) ? 2 : 0);
             }
         }
@@ -187,7 +187,7 @@ void HandleControlKey( char *ch )
 			  if ( echo )
 			  {
                   char xl[81], cl[81], atr[81], cc;
-				  GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
+				  GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
 				  GetSession()->bout.Color( 0 );
 				  GetSession()->bout.NewLine( 2 );
 				  multi_instance();
@@ -211,7 +211,7 @@ void HandleControlKey( char *ch )
               toggle_avail();
               break;
           case CY:
-              GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
+              GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
               break;
         }
     }
@@ -223,7 +223,7 @@ void PrintTime()
 {
     char xl[81], cl[81], atr[81], cc;
 
-    GetApplication()->GetLocalIO()->SaveCurrentLine( cl, atr, xl, &cc );
+    GetSession()->localIO()->SaveCurrentLine( cl, atr, xl, &cc );
 
     GetSession()->bout.Color( 0 );
     GetSession()->bout.NewLine( 2 );
@@ -254,7 +254,7 @@ void RedrawCurrentLine()
     ansistr[ansiptr_1] = 0;
     strncpy(ansistr_1, ansistr, sizeof(ansistr_1)-1);
 
-    GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
+    GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
     GetSession()->bout.NewLine();
     RestoreCurrentLine(cl, atr, xl, &cc);
 

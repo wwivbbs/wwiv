@@ -128,7 +128,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
 	if ( ok_modem_stuff && !bUsingSync )
     {
-		GetApplication()->GetComm()->close( true );
+		GetSession()->remoteIO()->close( true );
 	}
 
     HMODULE hKernel32 = NULL;
@@ -294,8 +294,8 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
     if ( bUsingSync )
     {
-        bool bSavedBinaryMode = GetApplication()->GetComm()->GetBinaryMode();
-        GetApplication()->GetComm()->SetBinaryMode( true );
+        bool bSavedBinaryMode = GetSession()->remoteIO()->GetBinaryMode();
+        GetSession()->remoteIO()->SetBinaryMode( true );
         bool bSyncLoopStatus = false;
         if ( IsWindowsNT() )
         {
@@ -324,7 +324,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
                 TerminateProcess( pi.hProcess, 0 );
             }
         }
-        GetApplication()->GetComm()->SetBinaryMode( bSavedBinaryMode );
+        GetSession()->remoteIO()->SetBinaryMode( bSavedBinaryMode );
     }
     else
     {
@@ -343,8 +343,8 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 	// reengage comm stuff
 	if ( ok_modem_stuff && !bUsingSync )
     {
-		GetApplication()->GetComm()->open();
-		GetApplication()->GetComm()->dtr( true );
+		GetSession()->remoteIO()->open();
+		GetSession()->remoteIO()->dtr( true );
     }
 
     return static_cast< int >( dwExitCode );
@@ -463,7 +463,7 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
     for( ;; )
     {
         nCounter++;
-        if ( GetSession()->using_modem && ( !GetApplication()->GetComm()->carrier() ) )
+        if ( GetSession()->using_modem && ( !GetSession()->remoteIO()->carrier() ) )
         {
             SetEvent( hSyncHangupEvent );
             fprintf( hLogFile, "Setting Hangup Event and Sleeping\r\n" );
@@ -486,11 +486,11 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
             }
         }
 
-		if ( GetApplication()->GetComm()->incoming() )
+		if ( GetSession()->remoteIO()->incoming() )
         {
             nCounter = 0;
             // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-            int nNumReadFromComm = GetApplication()->GetComm()->read( szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE );
+            int nNumReadFromComm = GetSession()->remoteIO()->read( szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE );
             fprintf( hLogFile, "Read [%d] from comm\r\n", nNumReadFromComm );
 #if 1
 			int nLp = 0;
@@ -594,12 +594,12 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
                     GetSession()->bout << szReadBuffer;
 
                     //ExpandWWIVHeartCodes( szReadBuffer );
-                    //int nNumWritten = GetApplication()->GetComm()->write( szReadBuffer, strlen( szReadBuffer )  );
+                    //int nNumWritten = GetSession()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
                     //fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
                 }
                 else
                 {
-                    int nNumWritten = GetApplication()->GetComm()->write( szReadBuffer, nBufferPtr );
+                    int nNumWritten = GetSession()->remoteIO()->write( szReadBuffer, nBufferPtr );
                     fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
                 }
 
@@ -693,7 +693,7 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
     {
         fprintf( hLogFile, " IN LOOP\r\n" );
         nCounter++;
-        if ( GetSession()->using_modem && ( !GetApplication()->GetComm()->carrier() ) )
+        if ( GetSession()->using_modem && ( !GetSession()->remoteIO()->carrier() ) )
         {
             SetEvent( hSyncHangupEvent );
             nCounter += CONST_WIN9X_NUM_LOOPS_BEFORE_EXIT_CHECK;
@@ -716,11 +716,11 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
             }
         }
 
-		if ( GetApplication()->GetComm()->incoming() )
+		if ( GetSession()->remoteIO()->incoming() )
         {
             nCounter = 0;
             // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-            int nNumReadFromComm = GetApplication()->GetComm()->read( ( szReadBuffer + sizeof( hVM ) ), CONST_SBBSFOS_BUFFER_SIZE - sizeof( hVM ) );
+            int nNumReadFromComm = GetSession()->remoteIO()->read( ( szReadBuffer + sizeof( hVM ) ), CONST_SBBSFOS_BUFFER_SIZE - sizeof( hVM ) );
             fprintf( hLogFile, "nNumReadFromComm = [%d]\r\n", nNumReadFromComm );
             for( int i = sizeof( hVM ); i < static_cast<int>( nNumReadFromComm + sizeof( hVM ) ); i++ )
             {
@@ -775,7 +775,7 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
             {
                 ExpandWWIVHeartCodes( szReadBuffer );
             }
-            GetApplication()->GetComm()->write( szReadBuffer, dwNumReadFromVXD );
+            GetSession()->remoteIO()->write( szReadBuffer, dwNumReadFromVXD );
         }
 
         if ( nCounter > 0 )

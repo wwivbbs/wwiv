@@ -48,6 +48,8 @@ private:
     std::string  m_chatReason;
     WFile   fileGlobalCap; // g_hGlobalCapHandle;
     bool    m_bSysopAlert;
+    int     m_nTopLine;
+    int     m_nScreenBottom;
 
 private:
     void ExecuteTemporaryCommand( const char *pszCommand );
@@ -87,8 +89,16 @@ public:
     void SetChatReason( char* pszChatReason ) { m_chatReason = pszChatReason; } 
     void ClearChatReason() { CLEAR_STRING(m_chatReason); }
 
+    const int GetTopLine() const { return m_nTopLine; }
+    void SetTopLine( int nTopLine ) { m_nTopLine = nTopLine; }
+
+    const int GetScreenBottom() const { return m_nScreenBottom; }
+    void SetScreenBottom( int nScreenBottom ) { m_nScreenBottom = nScreenBottom; }
+
+
+
     void SetSysopAlert( bool b ) { m_bSysopAlert = b; }
-    bool GetSysopAlert() { return m_bSysopAlert; }
+    const bool GetSysopAlert() const { return m_bSysopAlert; }
     void ToggleSysopAlert() { m_bSysopAlert = !m_bSysopAlert; }
 
     void set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable = false );

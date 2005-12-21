@@ -274,7 +274,7 @@ int callback()
 			count = GetSession()->cbv.repeat;
 		}
 	} while ((ok_modem_stuff) && (count++ < GetSession()->cbv.repeat));
-	if ( !GetApplication()->GetComm()->carrier() )
+	if ( !GetSession()->remoteIO()->carrier() )
 	{
 		hangup = true;
 	}

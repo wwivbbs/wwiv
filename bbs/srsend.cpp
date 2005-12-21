@@ -143,8 +143,8 @@ char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUs
             {
                 done = true;
             }
-            GetApplication()->GetLocalIO()->LocalXYPrintf( 69, 4, "%d", nNumErrors );
-            GetApplication()->GetLocalIO()->LocalXYPrintf( 69, 5, "%d", *terr );
+            GetSession()->localIO()->LocalXYPrintf( 69, 4, "%d", nNumErrors );
+            GetSession()->localIO()->LocalXYPrintf( 69, 5, "%d", *terr );
         }
     } while ( !done && !hangup && !*abort );
 
@@ -228,17 +228,17 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft,
     {
         GetSession()->bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
     }
-    int xx1 = GetApplication()->GetLocalIO()->WhereX();
-    int yy1 = GetApplication()->GetLocalIO()->WhereY();
-    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 0, "³ Filename :               ");
-    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 1, "³ Xfer Time:               ");
-    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 2, "³ File Size:               ");
-    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 3, "³ Cur Block: 1 - 1k        ");
-    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 4, "³ Consec Errors: 0         ");
-    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 5, "³ Total Errors : 0         ");
-    GetApplication()->GetLocalIO()->LocalXYPuts( 52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
-    GetApplication()->GetLocalIO()->LocalXYPuts( 65, 0, stripfn(pszWorkingFileName));
-    GetApplication()->GetLocalIO()->LocalXYPrintf(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k( lFileSize ) );
+    int xx1 = GetSession()->localIO()->WhereX();
+    int yy1 = GetSession()->localIO()->WhereY();
+    GetSession()->localIO()->LocalXYPuts( 52, 0, "³ Filename :               ");
+    GetSession()->localIO()->LocalXYPuts( 52, 1, "³ Xfer Time:               ");
+    GetSession()->localIO()->LocalXYPuts( 52, 2, "³ File Size:               ");
+    GetSession()->localIO()->LocalXYPuts( 52, 3, "³ Cur Block: 1 - 1k        ");
+    GetSession()->localIO()->LocalXYPuts( 52, 4, "³ Consec Errors: 0         ");
+    GetSession()->localIO()->LocalXYPuts( 52, 5, "³ Total Errors : 0         ");
+    GetSession()->localIO()->LocalXYPuts( 52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
+    GetSession()->localIO()->LocalXYPuts( 65, 0, stripfn(pszWorkingFileName));
+    GetSession()->localIO()->LocalXYPrintf(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k( lFileSize ) );
 
     if (!okstart(&bUseCRC, &abort))
     {
@@ -278,9 +278,9 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft,
         {
             bUse1kBlocks = false;
         }
-        GetApplication()->GetLocalIO()->LocalXYPrintf( 65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1 );
-        GetApplication()->GetLocalIO()->LocalXYPuts( 65, 1, ctim(((double) (lFileSize - cp)) * tpb ) );
-        GetApplication()->GetLocalIO()->LocalXYPuts( 69, 4, "0" );
+        GetSession()->localIO()->LocalXYPrintf( 65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1 );
+        GetSession()->localIO()->LocalXYPuts( 65, 1, ctim(((double) (lFileSize - cp)) * tpb ) );
+        GetSession()->localIO()->LocalXYPuts( 69, 4, "0" );
 
         ch = send_b(file, cp, ( bUse1kBlocks ) ? 1 : 0, byBlockNumber, &bUseCRC, pszWorkingFileName, &terr, &abort);
         if (ch == CX)
@@ -324,7 +324,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft,
         }
     }
 	file.Close();
-    GetApplication()->GetLocalIO()->LocalGotoXY(xx1, yy1);
+    GetSession()->localIO()->LocalGotoXY(xx1, yy1);
     if ( *sent && !bUseYModemBatch )
     {
         GetSession()->bout << "-=> File transmission complete.\r\n\n";
@@ -341,10 +341,10 @@ void zmodem_send(const char *pszFileName, bool *sent, double *percent, char ft  
     char *pszWorkingFileName = _strdup( pszFileName );
     StringRemoveWhitespace( pszWorkingFileName );
 
-    bool bOldBinaryMode = GetApplication()->GetComm()->GetBinaryMode();
-	GetApplication()->GetComm()->SetBinaryMode( true );
+    bool bOldBinaryMode = GetSession()->remoteIO()->GetBinaryMode();
+	GetSession()->remoteIO()->SetBinaryMode( true );
 	bool bResult = NewZModemSendFile( pszWorkingFileName );
-	GetApplication()->GetComm()->SetBinaryMode( bOldBinaryMode );
+	GetSession()->remoteIO()->SetBinaryMode( bOldBinaryMode );
 
 	if ( bResult )
 	{

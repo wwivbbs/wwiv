@@ -98,7 +98,7 @@ void chat_room()
     }
     else
     {
-        if ( GetSession()->GetCurrentUser()->isRestrictionMultiNodeChat() || !check_ch( 1 ) )
+        if ( GetSession()->GetCurrentUser()->IsRestrictionMultiNodeChat() || !check_ch( 1 ) )
         {
             GetSession()->bout << "\r\n|#6You may not access inter-instance chat facilities.\r\n";
             pausescr();
@@ -126,7 +126,7 @@ void chat_room()
             process_inst_msgs();
         }
         GetSession()->bout << "|#1: " << szColorString;
-        GetApplication()->GetLocalIO()->tleft( true );
+        GetSession()->localIO()->tleft( true );
         bChatLine = false;
         char szMessage[ 300 ];
         inputl(szMessage, 250);
@@ -905,7 +905,7 @@ void toggle_avail()
     instancerec ir;
     char xl[81], cl[81], atr[81], cc;
 
-    GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
+    GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
     get_inst_info(GetApplication()->GetInstanceNumber(), &ir);
     avail = !avail;
 
@@ -922,7 +922,7 @@ void toggle_invis()
     instancerec ir;
     char xl[81], cl[81], atr[81], cc;
 
-    GetApplication()->GetLocalIO()->SaveCurrentLine(cl, atr, xl, &cc);
+    GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
     get_inst_info(GetApplication()->GetInstanceNumber(), &ir);
     invis = !invis;
 
@@ -1076,7 +1076,7 @@ bool check_ch(int ch)
     {
         c_ar = 0;
     }
-    if ( c_ar && !GetSession()->GetCurrentUser()->hasArFlag( c_ar ) )
+    if ( c_ar && !GetSession()->GetCurrentUser()->HasArFlag( c_ar ) )
     {
         sprintf(szMessage, "\r\n|#9The \"|#1%c|#9\" AR is required to access this chat channel.\r\n", channels[ch].ar);
         GetSession()->bout << szMessage;

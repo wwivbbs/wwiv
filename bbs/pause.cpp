@@ -56,7 +56,7 @@ void pausescr()
 
         i1 = strlen( reinterpret_cast<char*>( stripcolors( ss ) ) );
         i = curatr;
-        GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->hasColor() ? GetSession()->GetCurrentUser()->GetColor( 3 ) :
+        GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor( 3 ) :
               GetSession()->GetCurrentUser()->GetBWColor( 3 ) );
         GetSession()->bout << ss << "\x1b[" << i1 << "D";
         GetSession()->bout.SystemColor( i );
@@ -66,7 +66,7 @@ void pausescr()
         if ( okansi() )
         {
             i = curatr;
-            GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->hasColor() ? GetSession()->GetCurrentUser()->GetColor( 3 ) : GetSession()->GetCurrentUser()->GetBWColor( 3 ) );
+            GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor( 3 ) : GetSession()->GetCurrentUser()->GetBWColor( 3 ) );
         }
         for (i3 = 0; i3 < i2; i3++)
         {
@@ -104,7 +104,7 @@ void pausescr()
                     {
                         warned = 1;
                         bputch( CG );
-                        GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->hasColor() ? GetSession()->GetCurrentUser()->GetColor( 6 ) :
+                        GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor( 6 ) :
                         GetSession()->GetCurrentUser()->GetBWColor( 6 ) );
                         GetSession()->bout << ss;
                         for ( i3 = 0; i3 < i2; i3++ )
@@ -151,10 +151,10 @@ void pausescr()
                 break;
             case 'C':
             case '=':
-                if ( GetSession()->GetCurrentUser()->hasPause() )
+                if ( GetSession()->GetCurrentUser()->HasPause() )
                 {
                     nsp = 1;
-                    GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
+                    GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
                 }
                 break;
             default:

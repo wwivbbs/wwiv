@@ -47,9 +47,9 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
 		if ( strchr( szFileName, '.' ) == NULL )
 		{
 			char* pszTempFileName = szFileName + strlen( szFileName );
-			if ( GetSession()->GetCurrentUser()->hasAnsi() )
+			if ( GetSession()->GetCurrentUser()->HasAnsi() )
 			{
-				if ( GetSession()->GetCurrentUser()->hasColor() )
+				if ( GetSession()->GetCurrentUser()->HasColor() )
 				{
 					strcpy( pszTempFileName, ".ans" );
 					if ( !WFile::Exists( szFileName ) )
@@ -78,9 +78,9 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause )
 		if ( strchr( szFileName, '.' ) == NULL )
 		{
 			char* pszTempFileName2 = szFileName + strlen( szFileName );
-			if ( GetSession()->GetCurrentUser()->hasAnsi() )
+			if ( GetSession()->GetCurrentUser()->HasAnsi() )
 			{
-				if ( GetSession()->GetCurrentUser()->hasColor() )
+				if ( GetSession()->GetCurrentUser()->HasColor() )
 				{
 					strcpy( pszTempFileName2, ".ans" );
 					if ( !WFile::Exists( szFileName ) )
@@ -210,7 +210,7 @@ void print_local_file( const char *ss, const char *ss1 )
 		ExecuteExternalProgram( szCmdLine, EFLAG_NONE );
 		if ( GetSession()->IsUserOnline() )
 		{
-			GetApplication()->GetLocalIO()->LocalCls();
+			GetSession()->localIO()->LocalCls();
 			GetApplication()->UpdateTopScreen();
 		}
 	}

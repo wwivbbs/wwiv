@@ -49,12 +49,12 @@ char gettimeout(double d, bool *abort)
     double d1 = timer();
     while ( fabs(timer() - d1) < d && !bkbhitraw()&& !hangup && !*abort )
     {
-        if (GetApplication()->GetLocalIO()->LocalKeyPressed())
+        if (GetSession()->localIO()->LocalKeyPressed())
         {
-            char ch = GetApplication()->GetLocalIO()->getchd();
+            char ch = GetSession()->localIO()->getchd();
             if (ch == 0)
             {
-                GetApplication()->GetLocalIO()->getchd();
+                GetSession()->localIO()->getchd();
             }
             else if (ch == ESC)
             {
@@ -117,12 +117,12 @@ int extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending 
     stuff_in(s, s1, sx1, sx2, szFileName, sx3, "");
     if (s[0])
     {
-        GetApplication()->GetLocalIO()->set_protect( 0 );
+        GetSession()->localIO()->set_protect( 0 );
         sprintf( s2, "%s is currently online at %u bps", GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ), modem_speed );
-        GetApplication()->GetLocalIO()->LocalPuts(s2);
-        GetApplication()->GetLocalIO()->LocalPuts("\r\n\r\n");
-        GetApplication()->GetLocalIO()->LocalPuts(s);
-        GetApplication()->GetLocalIO()->LocalPuts("\r\n");
+        GetSession()->localIO()->LocalPuts(s2);
+        GetSession()->localIO()->LocalPuts("\r\n\r\n");
+        GetSession()->localIO()->LocalPuts(s);
+        GetSession()->localIO()->LocalPuts("\r\n");
         if (incom)
         {
             int nRetCode = ExecuteExternalProgram(s, GetApplication()->GetSpawnOptions( SPWANOPT_PROT_SINGLE ) );
@@ -829,8 +829,8 @@ void endbatch()
 {
     bool abort = false;
     int terr = 0;
-    int oldx = GetApplication()->GetLocalIO()->WhereX();
-    int oldy = GetApplication()->GetLocalIO()->WhereY();
+    int oldx = GetSession()->localIO()->WhereX();
+    int oldy = GetSession()->localIO()->WhereY();
     bool ucrc = false;
     if ( !okstart( &ucrc, &abort ) )
     {
@@ -857,5 +857,5 @@ void endbatch()
 		}
         */
     }
-    GetApplication()->GetLocalIO()->LocalGotoXY( oldx, oldy );
+    GetSession()->localIO()->LocalGotoXY( oldx, oldy );
 }

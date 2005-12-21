@@ -68,7 +68,7 @@ char *interpret( char chKey )
         break;
     case '&':
         {
-            strcpy( s, GetSession()->GetCurrentUser()->hasAnsi() ? "ANSI" : "ASCII" );
+            strcpy( s, GetSession()->GetCurrentUser()->HasAnsi() ? "ANSI" : "ASCII" );
         }
         break;
     case 'A':                               // User's age
