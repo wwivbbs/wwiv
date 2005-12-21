@@ -22,57 +22,72 @@
 
 #include <string>
 
-struct ini_flags_rec
-{
-    int			strnum;
-    bool		sense;
-    unsigned long value;
-};
-
-void ini_done();
-bool ini_init(const char *pszFileName, const char *prim, const char *sec);
-char *ini_get( const char *pszKey, int nNumericIndex, char *pszStringIndex );
-
-
-
-
 
 class WIniFile
 {
+private:
+    struct ini_info_type
+    {
+        int nIndex;
+        char *pIniSectionBuffer;
+        char **pKeyArray;
+        char **pValueArray;
+    };
+
+    ini_info_type m_primarySection;
+    ini_info_type m_secondarySection;
+
 public:
     // Constructor/Destructor
-    WIniFile(const char *pszFileName ) { m_strFileName = pszFileName; }
-    virtual ~WIniFile() { Close(); }
+    WIniFile(const char *pszFileName );
+    virtual ~WIniFile();
 
     //
     // Member functions
     //
-    bool Initialize( const char *prim, const char *sec = NULL ) { return ini_init( m_strFileName.c_str(), prim, sec ); }
-    bool Close() { ini_done(); return true; }
+    bool Open( const char *prim, const char *sec = NULL );
+    bool Close();
+    bool IsOpen() const { return m_bOpen; }
 
-    const char* GetValue( const char *pszKey ) const { return GetValue( pszKey, -1, NULL ); }
-    const char* GetValue( const char *pszKey, int nNumericIndex ) const { return GetValue( pszKey, nNumericIndex, NULL ); }
-    const char* GetValue( const char *pszKey, char *pszStringIndex ) const { return GetValue( pszKey, -1, pszStringIndex ); }
-
-    const long GetNumericValue( const char *pszKey ) const { return atoi( GetValue( pszKey, -1, NULL ) ); }
-    const long GetNumericValue( const char *pszKey, int nNumericIndex ) const { return atoi( GetValue( pszKey, nNumericIndex, NULL ) ); }
-    const long GetNumericValue( const char *pszKey, char *pszStringIndex ) const { return atoi( GetValue( pszKey, -1, pszStringIndex ) ); }
-
-    const long GetNumericValueWithDefault( const char *pszKey, int nDefaultValue ) const;
-    const long GetNumericValueWithDefault( const char *pszKey, int nDefaultValue, int nNumericIndex ) const;
-    const long GetNumericValueWithDefault( const char *pszKey, int nDefaultValue, char *pszStringIndex ) const;
-
-    const bool GetBooleanValue( const char *pszKey ) const;
-    const bool GetBooleanValue( const char *pszKey, int nNumericIndex ) const;
-    const bool GetBooleanValue( const char *pszKey, char *pszStringIndex ) const;
+    const char* GetValue( const char *pszKey, const char *pszDefaultValue = NULL );
+    const long GetNumericValue( const char *pszKey, int nDefaultValue = 0 );
+    const bool GetBooleanValue( const char *pszKey, bool defaultValue = false );
 
 protected:
-    const char* GetValue( const char *pszKey, int nNumericIndex, char *pszStringIndex ) const { return ini_get( pszKey, nNumericIndex, pszStringIndex ); }
+    /**
+     * Reads a specified value from INI file data (contained in *inidata). The
+     * name of the value to read is contained in *value_name. If such a name
+     * doesn't exist in this INI file subsection, then *val is NULL, else *val
+     * will be set to the string value of that value name. If *val has been set
+     * to something, then this function returns 1, else it returns 0.
+     */
     static bool StringToBoolean( const char *p );
+
+    /**
+     * Allocates memory and returns pointer to location containing requested data within a file.
+     */
+    char *ReadSectionIntoMemory(const char *pszFileName, long begin, long end);
+
+    /** 
+     * Returns begin and end locations for specified subsection within an INI file.
+     * If subsection not found then *begin and *end are both set to -1L.
+     */
+    void FindSubsectionArea(const char *pszFileName, const char *ssn, long *begin, long *end);
+
+    /**
+     * Reads a subsection from specified .INI file, the subsection being specified
+     * by *pszHeader. Returns a ptr to the subsection data if found and memory is
+     * available, else returns NULL.
+     */
+    char *ReadFile(const char *pszFileName, const char *pszHeader);
+    
+    void Parse(char *pBuffer, ini_info_type * info);
+
 
 private:
     // Data
     std::string m_strFileName;
+    bool m_bOpen;
 
 };
 

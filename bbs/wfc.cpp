@@ -49,7 +49,7 @@ void wfc_init()
     }
 
     WIniFile iniFile( WWIV_INI );
-    if ( iniFile.Initialize( INI_TAG ) )
+    if ( iniFile.Open( INI_TAG ) )
     {
         const char *pszDriveList = iniFile.GetValue( "WFC_DRIVES" );
         if ( pszDriveList != NULL )

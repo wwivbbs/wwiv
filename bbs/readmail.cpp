@@ -359,11 +359,11 @@ void delete_attachment( unsigned long daten, int forceit )
 				}
 				if ( delfile )
 				{
-					WFile::Remove( g_szAttachmentDirectory, fsr.filename );
+					WFile::Remove( GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename );
 				}
 				else
 				{
-                    GetSession()->bout << "\r\nOrphaned attach " << fsr.filename << " remains in " << g_szAttachmentDirectory << wwiv::endl;
+                    GetSession()->bout << "\r\nOrphaned attach " << fsr.filename << " remains in " << GetApplication()->GetAttachmentDirectory() << wwiv::endl;
 					pausescr();
 				}
 			}
@@ -749,7 +749,7 @@ void readmail( int mode )
 						if ( m.daten == static_cast<unsigned long>( fsr.id ) )
 						{
 							found = true;
-							sprintf( s, "%s%s", g_szAttachmentDirectory, fsr.filename );
+							sprintf( s, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename );
 							if ( WFile::Exists( s ) )
 							{
                                 GetSession()->bout << "'T' to download attached file \"" << fsr.filename << "\" (" << fsr.numbytes << " bytes).\r\n";
@@ -850,7 +850,7 @@ void readmail( int mode )
 			{
 			case 'T':
 				GetSession()->bout.NewLine();
-				sprintf( s1, "%s%s", g_szAttachmentDirectory, fsr.filename );
+				sprintf( s1, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename );
 				bool sentt;
 				bool abortt;
 				send_file( s1, &sentt, &abortt, 0, fsr.filename, -1, fsr.numbytes );

@@ -176,7 +176,7 @@ void kill_old_email()
 											fsr.id = 0;
 											fileAttach.Seek( static_cast<long>( sizeof( filestatusrec ) ) * -1L, WFile::seekCurrent );
 											fileAttach.Write( &fsr, sizeof( filestatusrec ) );
-											WFile::Remove( g_szAttachmentDirectory, fsr.filename );
+											WFile::Remove( GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename );
 										}
 										else
 										{

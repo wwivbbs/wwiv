@@ -51,12 +51,12 @@
 
 extern net_networks_rec *net_networks;
 
-class WBbsApp;
+class WApplication;
 
 class WSession
 {
 public:
-    WSession( WBbsApp *pApplication );
+    WSession( WApplication *pApplication );
     virtual ~WSession() {}
 
 public:
@@ -138,7 +138,7 @@ public:
     void SetQuoting( bool b )                       { m_bQuoting = b; }
 
     bool IsNewScanAtLogin() const                   { return ( m_bNewScanAtLogin ) ? true : false; }
-    void SetNewScanAtLogin( bool b )                { m_bNewScanAtLogin = ( b ) ? 1 : 0; }
+    void SetNewScanAtLogin( bool b )                { m_bNewScanAtLogin =  b; }
 
     int  GetCurrentFileArea() const                 { return m_nCurrentFileArea; }
     void SetCurrentFileArea( int n )                { m_nCurrentFileArea = n; }
@@ -156,7 +156,7 @@ public:
     void SetCurrentConferenceFileArea( int n )      { m_nCurrentConferenceFileArea = n; }
 
     bool IsUseInternalZmodem() const                { return m_bInternalZmodem ? true : false; }
-    void SetUseInternalZmodem( bool b )             { m_bInternalZmodem = b ? 1 : 0; }
+    void SetUseInternalZmodem( bool b )             { m_bInternalZmodem = b; }
 
     int  GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
     void SetNumMessagesInCurrentMessageArea( int n ){ m_nNumMsgsInCurrentSub = n; }
@@ -167,8 +167,8 @@ public:
     int  GetGlobalDebugLevel() const                { return m_nGlobalDebugLevel; }
     void SetGlobalDebugLevel( int n )               { m_nGlobalDebugLevel = n; }
 
-    bool IsExecUseWaitForInputIdle() const          { return m_nExecUseWaitForInputIdle ? true : false; }
-    void SetExecUseWaitForInputIdle( bool b )       { m_nExecUseWaitForInputIdle = ( b ) ? 1 : 0; }
+    bool IsExecUseWaitForInputIdle() const          { return m_bExecUseWaitForInputIdle; }
+    void SetExecUseWaitForInputIdle( bool b )       { m_bExecUseWaitForInputIdle = b; }
 
     int  GetExecWaitForInputTimeout() const         { return m_nExecUseWaitForInputTimeout ? true : false; }
     void SetExecWaitForInputTimeout( int n )        { m_nExecUseWaitForInputTimeout = n; }
@@ -176,8 +176,8 @@ public:
     int  GetExecChildProcessWaitTime() const        { return m_nExecChildProcessWaitTime ? true : false; }
     void SetExecChildProcessWaitTime( int n )       { m_nExecChildProcessWaitTime = n; }
 
-    int  GetExecLogSyncFoss() const                 { return m_nExecLogSyncFoss; }
-    void SetExecLogSyncFoss( int n )                { m_nExecLogSyncFoss = n; }
+    bool IsExecLogSyncFoss() const                  { return m_bExecLogSyncFoss; }
+    void SetExecLogSyncFoss( bool b )               { m_bExecLogSyncFoss = b; }
 
     int  GetMaxNumberMessageAreas() const           { return m_nMaxNumberMessageAreas; }
     void SetMaxNumberMessageAreas( int n )          { m_nMaxNumberMessageAreas = n; }
@@ -213,7 +213,7 @@ public:
 private:
     bool        m_bLastKeyLocal;
     int         m_nEffectiveSl;
-    WBbsApp*    m_pApplication;
+    WApplication*    m_pApplication;
     WUser       m_thisuser;
 
 
@@ -239,6 +239,11 @@ public:
     bool        m_bNewMailWaiting;
     bool        m_bTimeOnlineLimited;
 
+    bool        m_bNewScanAtLogin,
+                m_bInternalZmodem,
+		        m_bExecUseWaitForInputIdle,
+		        m_bExecLogSyncFoss;
+
     int         m_nMMKeyArea,
                 m_nNumMessagesReadThisLogon,
                 m_nFileAreaCache,
@@ -249,15 +254,11 @@ public:
                 m_nCurrentReadMessageArea,
                 m_nCurrentConferenceMessageArea,
                 m_nCurrentConferenceFileArea,
-		        m_bNewScanAtLogin,
-                m_bInternalZmodem,
                 m_nNumMsgsInCurrentSub,
                 m_nBeginDayNodeNumber,
                 m_nGlobalDebugLevel,
-		        m_nExecUseWaitForInputIdle,
 		        m_nExecUseWaitForInputTimeout,
 		        m_nExecChildProcessWaitTime,
-		        m_nExecLogSyncFoss,
                 m_nMaxNumberMessageAreas,
                 m_nMaxNumberFileAreas,
                 m_nCurrentNetworkType,

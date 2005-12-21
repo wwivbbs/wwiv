@@ -25,7 +25,7 @@ const int WSession::mmkeyFileAreas      = 1;
 const int WSession::mmkeyChains         = 2;
 
 
-WSession::WSession( WBbsApp *pApplication )
+WSession::WSession( WApplication *pApplication )
 {
     m_bLastKeyLocal = true;
     m_pApplication  = pApplication;
@@ -98,11 +98,11 @@ WSession::WSession( WBbsApp *pApplication )
     topdata = 0;
     topline = 0;
     using_modem = 0;
-    m_bInternalZmodem = 0;
-    m_nExecLogSyncFoss = 0;
-    m_nExecUseWaitForInputIdle = 0;
+    m_bInternalZmodem = false;
+    m_bExecLogSyncFoss = false;
+    m_bExecUseWaitForInputIdle = false;
     m_nExecChildProcessWaitTime = 0;
-    m_bNewScanAtLogin = 0;
+    m_bNewScanAtLogin = false;
     usernum = 0;
 }
 

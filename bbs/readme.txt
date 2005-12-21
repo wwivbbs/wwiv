@@ -88,8 +88,9 @@ Rushfan - ** IMPORTANT CHANGE ** In chat.ini, CH_PROMPT's allowable values
           not 1 and 0.  Please change this in CHAT.INI when you upgrade to
           this version.  I am standardizing the INI files as much as possible
           and making 1 set of INI code for WWIV and all utilities to share.
-Rushfan - Started replacing ini_init/ini_get with WIniFile
-
+Rushfan - Renamed WBbsApp to WApplication
+Rushfan - moved attach dir into WApplication
+Rushfan - Finished WIniFile implementation
 
 
 ==============================================================================

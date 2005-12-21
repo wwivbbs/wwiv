@@ -75,7 +75,7 @@ const char *ctypes(int num)
     static char szCtype[81];
     
     WIniFile iniFile( WWIV_INI );
-    if ( iniFile.Initialize( "CTYPES" ) )
+    if ( iniFile.Open( "CTYPES" ) )
     {
         char szCompType[ 100 ];
         sprintf(szCompType, "COMP_TYPE[%d]", num+1);
