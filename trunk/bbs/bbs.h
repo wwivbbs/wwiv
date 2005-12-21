@@ -41,9 +41,9 @@ class WComm;
 
 
 /*!
- * @class WBbsApp  Main Application object for WWIV 5.0
+ * @class WApplication  Main Application object for WWIV 5.0
  */
-class WBbsApp : public WLogger
+class WApplication : public WLogger
 {
 public:
     // Constants
@@ -77,15 +77,13 @@ private:
 	bool            m_bNeedToCleanNetwork;
     int             m_nBbsShutdownStatus;
     double          m_fShutDownTime;
-	int     m_nWfcStatus;
+	int             m_nWfcStatus;
 
-
-
-    WComm* comm;
-    StatusMgr* statusMgr;
-    WLocalIO *localIO;
-    WUserManager* userManager;
-
+    WComm*          comm;
+    StatusMgr*      statusMgr;
+    WLocalIO        *localIO;
+    WUserManager*   userManager;
+    std::string     m_attachmentDirectory;
 
 protected:
 
@@ -123,9 +121,9 @@ protected:
     void ShowUsage();
 
 public:
-    WBbsApp();
-    WBbsApp( const WBbsApp& copy );
-    virtual ~WBbsApp();
+    WApplication();
+    WApplication( const WApplication& copy );
+    virtual ~WApplication();
 
     /*!
 	 * @function Run - Main BBS loop.. (old main functon)
@@ -136,9 +134,11 @@ public:
 
     StatusMgr* GetStatusManager();
 
-    WLocalIO* GetLocalIO(); 
+    WLocalIO* GetLocalIO();
 
     WUserManager* GetUserManager();
+
+    std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
 
     /*!
 	 * @var m_networkNumEnvVar Environment variable style
@@ -243,7 +243,7 @@ private:
 };
 
 // Function Prototypes
-WBbsApp* GetApplication();
+WApplication* GetApplication();
 
 
 class WSession;

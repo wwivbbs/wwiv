@@ -902,7 +902,7 @@ void mailr()
 											fsr.id = 0;
 											attachFile.Seek( static_cast<long>( sizeof( filestatusrec ) ) * -1L, WFile::seekCurrent );
 											attachFile.Write( &fsr, sizeof( filestatusrec ) );
-											WFile::Remove( g_szAttachmentDirectory, fsr.filename );
+											WFile::Remove( GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename );
 										}
 										else
 										{
@@ -1044,7 +1044,7 @@ void auto_purge()
 	int skipsl = 0;
 
     WIniFile iniFile( WWIV_INI );
-    if ( iniFile.Initialize( INI_TAG ) )
+    if ( iniFile.Open( INI_TAG ) )
 	{
         days = iniFile.GetNumericValue( "AUTO_USER_PURGE" );
         skipsl = iniFile.GetNumericValue( "NO_PURGE_SL" );

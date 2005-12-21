@@ -442,7 +442,7 @@ bool InitializeComPort( int nComPortNumber )
 	GetApplication()->GetComm()->close();
     if ( !GetApplication()->GetComm()->open() )
     {
-        std::cout << "\nUnable to Initialize Serial Port!" << std::endl <<
+        std::cout << "\nUnable to Open Serial Port!" << std::endl <<
             "Continuing in local-only mode..." << std::endl;
         return false;
     }

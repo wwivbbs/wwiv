@@ -37,12 +37,19 @@
 
 #define INI_STRFILE 7
 
-unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_rec * fs, int num, unsigned long flags);
+struct ini_flags_type
+{
+    int			strnum;
+    bool		sense;
+    unsigned long value;
+};
+
+unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_type * fs, int num, unsigned long flags);
 
 
 // Turns a string into a bitmapped unsigned short flag for use with
 // ExecuteExternalProgram calls.
-unsigned short WBbsApp::str2spawnopt( const char *s )
+unsigned short WApplication::str2spawnopt( const char *s )
 {
     char ts[ 255 ];
 
@@ -88,7 +95,7 @@ unsigned short WBbsApp::str2spawnopt( const char *s )
 
 
 // Takes string s and creates restrict val
-unsigned short WBbsApp::str2restrict( const char *s )
+unsigned short WApplication::str2restrict( const char *s )
 {
     char *rs = restrict_string;
     char s1[81];
@@ -110,7 +117,7 @@ unsigned short WBbsApp::str2restrict( const char *s )
 
 // begin callback addition
 
-unsigned char WBbsApp::stryn2tf(const char *s)
+unsigned char WApplication::stryn2tf(const char *s)
 {
 	char ch = wwiv::UpperCase<char>( *s );
 
@@ -171,39 +178,29 @@ static eventinfo_t eventinfo[] =
 };
 
 
-static const char *get_key_str( int n )
+static const char *get_key_str( int n, const char *index = NULL )
 {
-	return INI_OPTIONS_ARRAY[ n ];
+    static char str[255];
+    if ( !index )
+    {
+	    return INI_OPTIONS_ARRAY[ n ];
+    }
+    sprintf( str, "%s[%s]", INI_OPTIONS_ARRAY[ n ], index );
+    return str;
 }
 
 
-#define INI_INIT(n,f) \
-{if (((ss=iniFile.GetValue(get_key_str(n)))!=NULL) && (atoi(ss)>0)) \
-GetSession()->f = atoi(ss);}
-#define INI_INIT_N(n,f) \
-{if (((ss=iniFile.GetValue(get_key_str(n)))!=NULL)) \
-GetSession()->f = atoi(ss);}
 #define INI_GET_ASV(s, f, func, d) \
-{if ((ss=iniFile.GetValue(get_key_str(INI_STR_SIMPLE_ASV), s))!=NULL) \
-    GetSession()->asv.f = func (ss); \
-    else \
-GetSession()->asv.f = d;}
-#define INI_GET_ADVANCED_ASV(s, f, func, d) \
-{if ((ss=iniFile.GetValue(get_key_str(INI_STR_ADVANCED_ASV), s))!=NULL) \
-    GetSession()->advasv.f = func (ss); \
-    else \
-GetSession()->advasv.f = d;}
+{if ((ss=iniFile.GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=NULL) GetSession()->asv.f = func (ss); else GetSession()->asv.f = d;}
 #define INI_GET_CALLBACK(s, f, func, d) \
-{if ((ss=iniFile.GetValue(get_key_str(INI_STR_CALLBACK), s))!=NULL) \
+{if ((ss=iniFile.GetValue(get_key_str(INI_STR_CALLBACK,s)))!=NULL) \
     GetSession()->cbv.f = func (ss); \
-    else \
-GetSession()->cbv.f = d;}
-#define INI_INIT_TF(n,f) { if (((ss=iniFile.GetValue(get_key_str(n)))!=NULL)) GetSession()->f = stryn2tf(ss); }
+    else GetSession()->cbv.f = d;}
 
 #define NEL(s) (sizeof(s) / sizeof((s)[0]))
 
 
-static ini_flags_rec sysinfo_flags[] =
+static ini_flags_type sysinfo_flags[] =
 {
     {INI_STR_FORCE_FBACK, false, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
     {INI_STR_CHECK_DUP_PHONES, false, OP_FLAGS_CHECK_DUPE_PHONENUM},
@@ -239,7 +236,7 @@ static ini_flags_rec sysinfo_flags[] =
 
 };
 
-static ini_flags_rec sysconfig_flags[] =
+static ini_flags_type sysconfig_flags[] =
 {
     {INI_STR_LOCAL_SYSOP, true, sysconfig_no_local},
     {INI_STR_2WAY_CHAT, false, sysconfig_2_way},
@@ -259,10 +256,8 @@ static ini_flags_rec sysconfig_flags[] =
 };
 
 
-bool WBbsApp::ReadINIFile()
+bool WApplication::ReadINIFile()
 {
-    const char *ss;
-
     // can't allow user to change these on-the-fly
     unsigned short omb = GetSession()->max_batch;
     unsigned short omc = GetSession()->max_chains;
@@ -299,7 +294,7 @@ bool WBbsApp::ReadINIFile()
         GetApplication()->spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
     }
 
-    // put in default WBbsApp::flags
+    // put in default WApplication::flags
     GetApplication()->SetConfigFlags( OP_FLAGS_FIDO_PROCESS );
 
     if ( ok_modem_stuff )
@@ -315,7 +310,7 @@ bool WBbsApp::ReadINIFile()
     char szInstanceName[255];
     snprintf( szInstanceName, sizeof( szInstanceName ), "WWIV-%u", GetInstanceNumber() );
     WIniFile iniFile( WWIV_INI );
-    if ( iniFile.Initialize( szInstanceName, INI_TAG ) )
+    if ( iniFile.Open( szInstanceName, INI_TAG ) )
     {
         ///////////////////////////////////////////////////////////////////////////////
         // DO NOT DO ANYTHING HERE WHICH ALLOCATES MEMORY
@@ -331,9 +326,12 @@ bool WBbsApp::ReadINIFile()
         //
 
         // pull out event flags
+        const char *ss;
         for ( size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL( GetApplication()->spawn_opts ); nTempSpawnOptNum++ )
         {
-            if ( ( ss = iniFile.GetValue( get_key_str( INI_STR_SPAWNOPT ), eventinfo[nTempSpawnOptNum].name ) ) != NULL )
+            char szKeyName[255];
+            sprintf( szKeyName, "%s[%s]", get_key_str( INI_STR_SPAWNOPT ), eventinfo[nTempSpawnOptNum].name );
+            if ( ( ss = iniFile.GetValue( szKeyName ) ) != NULL )
             {
                 GetApplication()->spawn_opts[nTempSpawnOptNum] = str2spawnopt( ss );
             }
@@ -356,16 +354,16 @@ bool WBbsApp::ReadINIFile()
         }
 
         // pull out sysop-side colors
-        INI_INIT( INI_STR_TOPCOLOR, m_nTopScreenColor );
-        INI_INIT( INI_STR_F1COLOR, m_nUserEditorColor );
-        INI_INIT( INI_STR_EDITLINECOLOR, m_nEditLineColor );
-        INI_INIT( INI_STR_CHATSELCOLOR, m_nChatNameSelectionColor );
+        GetSession()->SetTopScreenColor( iniFile.GetNumericValue( get_key_str ( INI_STR_TOPCOLOR ), GetSession()->GetTopScreenColor() ) );
+        GetSession()->SetUserEditorColor( iniFile.GetNumericValue( get_key_str ( INI_STR_F1COLOR ), GetSession()->GetUserEditorColor() ) );
+        GetSession()->SetEditLineColor( iniFile.GetNumericValue( get_key_str ( INI_STR_EDITLINECOLOR ), GetSession()->GetEditLineColor() ) );
+        GetSession()->SetChatNameSelectionColor( iniFile.GetNumericValue( get_key_str ( INI_STR_CHATSELCOLOR ), GetSession()->GetChatNameSelectionColor() ) );
 
         // pull out sizing options
-        INI_INIT( INI_STR_MAX_BATCH, max_batch );
-        INI_INIT( INI_STR_MAX_EXTEND_LINES, max_extend_lines );
-        INI_INIT( INI_STR_MAX_CHAINS, max_chains );
-        INI_INIT( INI_STR_MAX_GFILESEC, max_gfilesec );
+        GetSession()->max_batch = iniFile.GetNumericValue( get_key_str ( INI_STR_MAX_BATCH ), GetSession()->max_batch );
+        GetSession()->max_extend_lines = iniFile.GetNumericValue( get_key_str ( INI_STR_MAX_EXTEND_LINES ), GetSession()->max_extend_lines );
+        GetSession()->max_gfilesec = iniFile.GetNumericValue( get_key_str ( INI_STR_MAX_CHAINS ), GetSession()->max_gfilesec );
+        GetSession()->max_gfilesec = iniFile.GetNumericValue( get_key_str ( INI_STR_MAX_GFILESEC ), GetSession()->max_gfilesec );
 
         // pull out strings
         //    INI_INIT_STR(INI_STR_TERMINAL_CMD, terminal);
@@ -376,24 +374,22 @@ bool WBbsApp::ReadINIFile()
         //    INI_INIT_STR(INI_STR_LOGON_CMD, logon_c);
         //    INI_INIT_STR(INI_STR_LOGOFF_CMD, logoff_c);
 
-        INI_INIT_N( INI_STR_FORCE_SCAN_SUBNUM, m_nForcedReadSubNumber );
-        INI_INIT_TF( INI_STR_INTERNALZMODEM, m_bInternalZmodem );
-		INI_INIT_TF( INI_STR_NEW_SCAN_AT_LOGIN, m_bNewScanAtLogin );
+        GetSession()->m_nForcedReadSubNumber = iniFile.GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),GetSession()->m_nForcedReadSubNumber);
+        GetSession()->m_bInternalZmodem = iniFile.GetBooleanValue( get_key_str(INI_STR_INTERNALZMODEM), GetSession()->m_bInternalZmodem );
+        GetSession()->m_bNewScanAtLogin = iniFile.GetBooleanValue( get_key_str(INI_STR_NEW_SCAN_AT_LOGIN), GetSession()->m_bNewScanAtLogin );
 
-		INI_INIT_TF( INI_STR_EXEC_LOG_SYNCFOSS, m_nExecLogSyncFoss );
-		INI_INIT_TF( INI_STR_EXEC_USE_WAIT_FOR_IDLE, m_nExecUseWaitForInputIdle );
-		INI_INIT_N( INI_STR_EXEC_CHILD_WAIT_TIME, m_nExecChildProcessWaitTime );
-		INI_INIT_N( INI_STR_EXEC_WAIT_FOR_IDLE_TIME, m_nExecUseWaitForInputTimeout );
+        GetSession()->m_bExecLogSyncFoss = iniFile.GetBooleanValue( get_key_str(INI_STR_EXEC_LOG_SYNCFOSS), GetSession()->m_bExecLogSyncFoss );
+        GetSession()->m_bExecUseWaitForInputIdle = iniFile.GetBooleanValue( get_key_str(INI_STR_EXEC_USE_WAIT_FOR_IDLE), GetSession()->m_bExecUseWaitForInputIdle );
+        GetSession()->m_nExecChildProcessWaitTime = iniFile.GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME),GetSession()->m_nExecChildProcessWaitTime);
+        GetSession()->m_nExecUseWaitForInputTimeout = iniFile.GetNumericValue(get_key_str(INI_STR_EXEC_WAIT_FOR_IDLE_TIME),GetSession()->m_nExecUseWaitForInputTimeout);
 
-
-        INI_INIT( INI_STR_BEGINDAYNODENUMBER, m_nBeginDayNodeNumber );
-
+        GetSession()->SetBeginDayNodeNumber( iniFile.GetNumericValue( get_key_str ( INI_STR_BEGINDAYNODENUMBER ), GetSession()->GetBeginDayNodeNumber() ) );
 
         // pull out sysinfo_flags
         GetApplication()->SetConfigFlags( GetFlagsFromIniFile( &iniFile, sysinfo_flags, NEL( sysinfo_flags ), GetApplication()->GetConfigFlags() ) );
 
         // allow override of WSession::m_nMessageColor
-        INI_INIT( INI_STR_MSG_COLOR, m_nMessageColor );
+        GetSession()->SetMessageColor( iniFile.GetNumericValue( get_key_str ( INI_STR_MSG_COLOR ), GetSession()->GetMessageColor() ) );
 
         // get asv values
         if ( GetApplication()->HasConfigFlag( OP_FLAGS_SIMPLE_ASV ) )
@@ -407,10 +403,10 @@ bool WBbsApp::ReadINIFile()
         }
         if ( GetApplication()->HasConfigFlag( OP_FLAGS_ADV_ASV ) )
         {
-            INI_GET_ADVANCED_ASV("REG_WWIV", reg_wwiv, atoi, 1);
-            INI_GET_ADVANCED_ASV("NONREG_WWIV", nonreg_wwiv, atoi, 1);
-            INI_GET_ADVANCED_ASV("NON_WWIV", non_wwiv, atoi, 1);
-            INI_GET_ADVANCED_ASV("COSYSOP", cosysop, atoi, 1);
+            GetSession()->advasv.reg_wwiv = iniFile.GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV,"REG_WWIV"), 1);
+            GetSession()->advasv.nonreg_wwiv = iniFile.GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV,"NONREG_WWIV"), 1);
+            GetSession()->advasv.non_wwiv = iniFile.GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV,"NON_WWIV"), 1);
+            GetSession()->advasv.cosysop = iniFile.GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV,"COSYSOP"), 1);
         }
 
 
@@ -446,18 +442,20 @@ bool WBbsApp::ReadINIFile()
 
         if ( ( ss = iniFile.GetValue( get_key_str( INI_STR_ATTACH_DIR ) ) ) != NULL )
         {
-            strcpy( g_szAttachmentDirectory, ss );
-            if ( g_szAttachmentDirectory[ strlen( g_szAttachmentDirectory ) - 1 ] != WWIV_FILE_SEPERATOR_CHAR )
+            m_attachmentDirectory = ss;
+            if ( m_attachmentDirectory.at( m_attachmentDirectory.length() - 1 ) != WWIV_FILE_SEPERATOR_CHAR )
             {
-                strcat( g_szAttachmentDirectory, WWIV_FILE_SEPERATOR_STRING );
+                m_attachmentDirectory += WWIV_FILE_SEPERATOR_STRING;
             }
         }
         else
         {
-            snprintf( g_szAttachmentDirectory, sizeof( g_szAttachmentDirectory ), "%s%s%c", GetHomeDir(), ATTACH_DIR, WWIV_FILE_SEPERATOR_CHAR );
+            m_attachmentDirectory = GetHomeDir();
+            m_attachmentDirectory += ATTACH_DIR;
+            m_attachmentDirectory += WWIV_FILE_SEPERATOR_STRING;
         }
 
-        INI_INIT_N( INI_STR_SCREEN_SAVER_TIME, screen_saver_time );
+        GetSession()->screen_saver_time = iniFile.GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),GetSession()->screen_saver_time);
 
         // now done
         iniFile.Close();
@@ -488,7 +486,7 @@ bool WBbsApp::ReadINIFile()
 }
 
 
-bool WBbsApp::ReadConfig()
+bool WApplication::ReadConfig()
 {
     configrec full_syscfg;
 
@@ -661,7 +659,7 @@ bool WBbsApp::ReadConfig()
 }
 
 
-bool WBbsApp::SaveConfig()
+bool WApplication::SaveConfig()
 {
     WFile configFile( CONFIG_DAT );
     if ( configFile.Open( WFile::modeBinary | WFile::modeReadWrite ) )
@@ -748,7 +746,7 @@ bool WBbsApp::SaveConfig()
 }
 
 
-void WBbsApp::read_nextern()
+void WApplication::read_nextern()
 {
     GetSession()->SetNumberOfExternalProtocols( 0 );
     if ( externs )
@@ -772,7 +770,7 @@ void WBbsApp::read_nextern()
 }
 
 
-void WBbsApp::read_arcs()
+void WApplication::read_arcs()
 {
     if ( arcs )
     {
@@ -794,7 +792,7 @@ void WBbsApp::read_arcs()
 }
 
 
-void WBbsApp::read_editors()
+void WApplication::read_editors()
 {
     if ( editors )
     {
@@ -818,7 +816,7 @@ void WBbsApp::read_editors()
 }
 
 
-void WBbsApp::read_nintern()
+void WApplication::read_nintern()
 {
     if ( over_intern )
     {
@@ -836,7 +834,7 @@ void WBbsApp::read_nintern()
 }
 
 
-bool WBbsApp::read_subs()
+bool WApplication::read_subs()
 {
     if ( subboards )
     {
@@ -858,7 +856,7 @@ bool WBbsApp::read_subs()
 }
 
 
-void WBbsApp::read_networks()
+void WApplication::read_networks()
 {
     GetSession()->internetEmailName = "";
     GetSession()->internetEmailDomain = "";
@@ -924,7 +922,7 @@ void WBbsApp::read_networks()
             char* ss = strchr( net_networks[nTempNetNumber].name, ' ' );
             if ( ss )
             {
-                *ss = 0;
+                *ss = '\0';
             }
         }
     }
@@ -940,7 +938,7 @@ void WBbsApp::read_networks()
 }
 
 
-bool WBbsApp::read_names()
+bool WApplication::read_names()
 {
     if ( smallist )
     {
@@ -962,7 +960,7 @@ bool WBbsApp::read_names()
 }
 
 
-void WBbsApp::read_voting()
+void WApplication::read_voting()
 {
     for ( int nTempQuestionNumber = 0; nTempQuestionNumber < 20; nTempQuestionNumber++ )
     {
@@ -987,7 +985,7 @@ void WBbsApp::read_voting()
 }
 
 
-bool WBbsApp::read_dirs()
+bool WApplication::read_dirs()
 {
     if ( directories )
     {
@@ -1009,7 +1007,7 @@ bool WBbsApp::read_dirs()
 }
 
 
-void WBbsApp::read_chains()
+void WApplication::read_chains()
 {
     if ( chains )
     {
@@ -1060,7 +1058,7 @@ void WBbsApp::read_chains()
 }
 
 
-bool WBbsApp::read_language()
+bool WApplication::read_language()
 {
     if ( languages )
     {
@@ -1099,7 +1097,7 @@ bool WBbsApp::read_language()
 }
 
 
-bool WBbsApp::read_modem()
+bool WApplication::read_modem()
 {
     if (modem_i)
     {
@@ -1136,7 +1134,7 @@ bool WBbsApp::read_modem()
 }
 
 
-void WBbsApp::read_gfile()
+void WApplication::read_gfile()
 {
     if (gfilesec != NULL)
     {
@@ -1161,7 +1159,7 @@ void WBbsApp::read_gfile()
  * Makes a path into an absolute path, returns true if original path altered,
  * else returns false
  */
-bool WBbsApp::make_abs_path( char *pszDirectory )
+bool WApplication::make_abs_path( char *pszDirectory )
 {
     char szOldDirectory[ MAX_PATH ];
 
@@ -1182,9 +1180,9 @@ bool WBbsApp::make_abs_path( char *pszDirectory )
 }
 
 
-void WBbsApp::InitializeBBS()
+void WApplication::InitializeBBS()
 {
-    char *ss, szFileName[MAX_PATH], newprompt[ 255 ];
+    std::string newprompt;
 
     GetSession()->screenbottom = defscreenbottom = GetLocalIO()->GetDefaultScreenBottom();
 
@@ -1346,17 +1344,16 @@ void WBbsApp::InitializeBBS()
 
     XINIT_PRINTF("* Parsing WWIV.INI.\r\n");
     WIniFile iniFile( WWIV_INI );
-    if ( iniFile.Initialize( INI_TAG ) )
+    if ( iniFile.Open( INI_TAG ) )
     {
         GetSession()->SetMessageThreadingEnabled( iniFile.GetBooleanValue( "THREAD_SUBS" ) );
         GetSession()->SetCarbonCopyEnabled( iniFile.GetBooleanValue( "ALLOW_CC_BCC" ) );
     }
     iniFile.Close();
-    strcpy(szFileName, g_szAttachmentDirectory);
-    if (WWIV_make_path(szFileName))
+    if (WWIV_make_path(m_attachmentDirectory.c_str()))
     {
         std::cout << "\r\nYour file attachment directory is invalid.\r\n";
-        std::cout << "It is now set to: " << g_szAttachmentDirectory << "'\r\n\n";
+        std::cout << "It is now set to: " << m_attachmentDirectory << "'\r\n\n";
         AbortBBS();
     }
     CdHome();
@@ -1383,20 +1380,20 @@ void WBbsApp::InitializeBBS()
     {
         GetSession()->topdata = WLocalIO::topdataUser;
     }
-    ss = getenv("PROMPT");
-    strcpy(newprompt, "PROMPT=WWIV: ");
+    char *ss = getenv("PROMPT");
+    newprompt = "PROMPT=WWIV: ";
 
     if (ss)
     {
-        strcat(newprompt, ss);
+        newprompt += ss;
     }
     else
     {
-        strcat(newprompt, "$P$G");
+        newprompt += "$P$G";
     }
     // put in our environment since passing the xenviron wasn't working
     // with sync emulated fossil
-    _putenv( newprompt );
+    _putenv( newprompt.c_str() );
     snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber() );
 
 #if !defined (_UNIX)
@@ -1495,16 +1492,16 @@ void WBbsApp::InitializeBBS()
     }
     if ( GetInstanceNumber() > 1 )
 	{
+        char szFileName[MAX_PATH];
         snprintf( szFileName, sizeof( szFileName ), "%s.%3.3u", WWIV_NET_NOEXT, GetInstanceNumber() );
+        WFile::Remove(szFileName);
 	}
 	else
 	{
-        strcpy( szFileName, WWIV_NET_DAT );
+        WFile::Remove( WWIV_NET_DAT );
 	}
-    WFile::Remove(szFileName);
 
     srand( time( NULL ) );
-
     catsl();
 
     XINIT_PRINTF( "* Saving Instance information.\r\n" );
@@ -1515,7 +1512,7 @@ void WBbsApp::InitializeBBS()
 
 // begin dupphone additions
 
-void WBbsApp::check_phonenum()
+void WApplication::check_phonenum()
 {
     WFile phoneFile( syscfg.datadir, PHONENUM_DAT );
     if ( !phoneFile.Exists() )
@@ -1525,7 +1522,7 @@ void WBbsApp::check_phonenum()
 }
 
 
-void WBbsApp::create_phone_file()
+void WApplication::create_phone_file()
 {
     phonerec p;
 
@@ -1573,7 +1570,7 @@ void WBbsApp::create_phone_file()
 }
 
 
-unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_rec * fs, int num, unsigned long flags)
+unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_type * fs, int num, unsigned long flags)
 {
     for (int i = 0; i < num; i++)
     {

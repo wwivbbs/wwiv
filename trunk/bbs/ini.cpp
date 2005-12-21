@@ -19,25 +19,148 @@
 
 #include "wwiv.h"
 
+using namespace wwiv::stringUtils;
 
-const bool WIniFile::GetBooleanValue( const char *pszKey ) const 
+
+WIniFile::WIniFile(const char *pszFileName )
 { 
-    const char *p = GetValue( pszKey, -1, NULL );
-    return WIniFile::StringToBoolean( p );
+    m_strFileName = pszFileName; 
+    m_bOpen = false;
+    memset(&m_primarySection, 0, sizeof(m_primarySection));
+    memset(&m_secondarySection, 0, sizeof(m_secondarySection));
 }
 
-const bool WIniFile::GetBooleanValue( const char *pszKey, int nNumericIndex ) const 
+WIniFile::~WIniFile() 
 { 
-    const char *p = GetValue( pszKey, nNumericIndex, NULL );
-    return WIniFile::StringToBoolean( p );
+    if ( m_bOpen ) 
+    {
+        Close(); 
+    }
 }
 
 
-const bool WIniFile::GetBooleanValue( const char *pszKey, char *pszStringIndex ) const 
+bool WIniFile::Open( const char *pszPrimarySection, const char *pszSecondarySection ) 
 { 
-    const char *p = GetValue( pszKey, -1, pszStringIndex );
-    return WIniFile::StringToBoolean( p );
+    char szIniFile[MAX_PATH+MAX_FNAME];
+    snprintf( szIniFile, sizeof( szIniFile ), "%s%s", GetApplication()->GetHomeDir(), m_strFileName.c_str() );
+
+    // first, zap anything there currently
+    if ( m_bOpen ) 
+    {
+        //TODO ASSERT here, this should not happen
+        Close();
+    }
+
+    // read in primary section
+    char* pBuffer = ReadFile(szIniFile, pszPrimarySection);
+
+    if ( pBuffer )
+    {
+        // parse the data
+        Parse(pBuffer, &m_primarySection);
+
+        // read in secondary file
+        pBuffer = ReadFile(szIniFile, pszSecondarySection);
+        if (pBuffer)
+        {
+            Parse(pBuffer, &m_secondarySection);
+        }
+
+    }
+    else
+    {
+        // read in the secondary section, as the primary one
+        pBuffer = ReadFile( szIniFile, pszSecondarySection );
+        if ( pBuffer )
+        {
+            Parse( pBuffer, &m_primarySection );
+        }
+    }
+
+    m_bOpen = ( m_primarySection.pIniSectionBuffer ) ? true : false;
+    return m_bOpen;
 }
+
+
+bool WIniFile::Close() 
+{ 
+    m_bOpen = false;
+    if (m_primarySection.pIniSectionBuffer)
+    {
+        BbsFreeMemory(m_primarySection.pIniSectionBuffer);
+        if (m_primarySection.pKeyArray)
+        {
+            BbsFreeMemory(m_primarySection.pKeyArray);
+        }
+        if (m_primarySection.pValueArray)
+        {
+            BbsFreeMemory(m_primarySection.pValueArray);
+        }
+    }
+    memset(&m_primarySection, 0, sizeof(m_primarySection));
+    if (m_secondarySection.pIniSectionBuffer)
+    {
+        BbsFreeMemory(m_secondarySection.pIniSectionBuffer);
+        if (m_secondarySection.pKeyArray)
+        {
+            BbsFreeMemory(m_secondarySection.pKeyArray);
+        }
+        if (m_secondarySection.pValueArray)
+        {
+            BbsFreeMemory(m_secondarySection.pValueArray);
+        }
+    }
+    memset(&m_secondarySection, 0, sizeof(m_secondarySection));
+    return true; 
+}
+
+
+const char* WIniFile::GetValue( const char *pszKey, const char *pszDefaultValue )
+{ 
+    if ( !m_primarySection.pIniSectionBuffer || !pszKey || !( *pszKey ) )
+    {
+        return pszDefaultValue;
+    }
+
+    // loop through both sets of data and search them, in order
+    for ( int i = 0; i <= 1; i++ )
+    {
+        ini_info_type *pIniSection;
+        // get pointer to data area to use
+        if ( i == 0 )
+        {
+            pIniSection = &m_primarySection;
+        }
+        else if ( m_secondarySection.pIniSectionBuffer )
+        {
+            pIniSection = &m_secondarySection;
+        }
+        else
+        {
+            break;
+        }
+
+        // search for it
+        for ( int i1 = 0; i1 < pIniSection->nIndex; i1++ )
+        {
+            if ( IsEqualsIgnoreCase( pIniSection->pKeyArray[ i1 ], pszKey ) )
+            {
+                return pIniSection->pValueArray[ i1 ];
+            }
+        }
+    }
+
+    // nothing found
+    return pszDefaultValue;
+}
+
+
+const bool WIniFile::GetBooleanValue( const char *pszKey, bool defaultValue )
+{ 
+    const char *pszValue = GetValue( pszKey );
+    return ( pszValue != NULL ) ? WIniFile::StringToBoolean( pszValue ) : defaultValue;
+}
+
 
 bool WIniFile::StringToBoolean( const char *p )
 {
@@ -47,68 +170,34 @@ bool WIniFile::StringToBoolean( const char *p )
 }
 
 
-const long WIniFile::GetNumericValueWithDefault( const char *pszKey, int nDefaultValue ) const 
+const long WIniFile::GetNumericValue( const char *pszKey, int defaultValue )
 { 
-    const char *pszValue = GetValue( pszKey, -1, NULL );
-    return ( pszValue != NULL ) ? atoi( pszValue ) : nDefaultValue; 
+    const char *pszValue = GetValue( pszKey );
+    return ( pszValue != NULL ) ? atoi( pszValue ) : defaultValue; 
 }
 
 
-const long WIniFile::GetNumericValueWithDefault( const char *pszKey, int nDefaultValue, int nNumericIndex ) const 
-{ 
-    const char *pszValue = GetValue( pszKey, nNumericIndex, NULL );
-    return ( pszValue != NULL ) ? atoi( pszValue ) : nDefaultValue; 
-}
-
-
-const long WIniFile::GetNumericValueWithDefault( const char *pszKey, int nDefaultValue, char *pszStringIndex ) const 
-{ 
-    const char *pszValue = GetValue( pszKey, -1, pszStringIndex );
-    return ( pszValue != NULL ) ? atoi( pszValue ) : nDefaultValue; 
-}
-
-
-struct ini_info_t
+char *WIniFile::ReadSectionIntoMemory(const char *pszFileName, long begin, long end)
 {
-    int num;
-    char *buf;
-    char **pszKey;
-    char **value;
-};
-
-
-static ini_info_t ini_prim, ini_sec;
-
-using namespace wwiv::stringUtils;
-
-
-// Allocates memory and returns pointer to location containing requested data
-// within a file.
-static char *mallocin_subsection(const char *pszFileName, long begin, long end)
-{
-    char* ss = NULL;
-
     WFile file( pszFileName );
     if ( file.Open( WFile::modeReadOnly | WFile::modeBinary ) )
     {
-        ss = static_cast<char *>( bbsmalloc( end - begin + 2 ) );
+        char *ss = static_cast<char *>( bbsmalloc( end - begin + 2 ) );
         if (ss)
         {
             file.Seek( begin, WFile::seekBegin );
             file.Read( ss, ( end - begin + 1 ) );
-            ss[(end - begin + 1)] = 0;
+            ss[(end - begin + 1)] = '\0';
+            return ss;
         }
-        file.Close();
     }
-    return ss;
+    return NULL;
 }
 
 
-// Returns begin and end locations for specified subsection within an INI file.
-// If subsection not found then *begin and *end are both set to -1L.
-static void find_subsection_area(const char *pszFileName, const char *ssn, long *begin, long *end)
+void WIniFile::FindSubsectionArea(const char *pszFileName, const char *ssn, long *begin, long *end)
 {
-    char s[255], szTempHeader[81], *ss;
+    char s[255], szTempHeader[81];
 
     *begin = *end = -1L;
     snprintf( szTempHeader, sizeof( szTempHeader ), "[%s]", ssn );
@@ -124,10 +213,10 @@ static void find_subsection_area(const char *pszFileName, const char *ssn, long 
     while (file.ReadLine(s, sizeof(s) - 1))
     {
         // Get rid of CR/LF at end
-        ss = strchr(s, '\n');
+        char *ss = strchr(s, '\n');
         if (ss)
         {
-            *ss = 0;
+            *ss = '\0';
         }
 
         // Get rid of trailing/leading spaces
@@ -174,20 +263,17 @@ static void find_subsection_area(const char *pszFileName, const char *ssn, long 
 }
 
 
-// Reads a subsection from specified .INI file, the subsection being specified
-// by *hdr. Returns a ptr to the subsection data if found and memory is
-// available, else returns NULL.
-static char *read_ini_file(const char *pszFileName, const char *hdr)
+char *WIniFile::ReadFile(const char *pszFileName, const char *pszHeader)
 {
     // Header must be "valid", and file must exist
-    if (!hdr || !(*hdr) || strlen(hdr) < 1 || !WFile::Exists( pszFileName ) )
+    if (!pszHeader || !(*pszHeader) || strlen(pszHeader) < 1 || !WFile::Exists( pszFileName ) )
     {
         return NULL;
     }
 
     // Get area to read in
     long beginloc = -1L, endloc = -1L;
-    find_subsection_area(pszFileName, hdr, &beginloc, &endloc);
+    FindSubsectionArea(pszFileName, pszHeader, &beginloc, &endloc);
 
     // Validate
     if (beginloc >= endloc)
@@ -196,20 +282,20 @@ static char *read_ini_file(const char *pszFileName, const char *hdr)
     }
 
     // Allocate pointer to hold data
-    char* ss = mallocin_subsection(pszFileName, beginloc, endloc);
+    char* ss = ReadSectionIntoMemory(pszFileName, beginloc, endloc);
     return ss;
 }
 
 
-static void parse_ini_file(char *pBuffer, ini_info_t * info)
+void WIniFile::Parse(char *pBuffer, ini_info_type * pIniSection)
 {
     char *ss1, *ss, *ss2;
     unsigned int count = 0;
 
-    memset(info, 0, sizeof(ini_info_t));
-    info->buf = pBuffer;
+    memset(pIniSection, 0, sizeof(ini_info_type));
+    pIniSection->pIniSectionBuffer = pBuffer;
 
-    // first, count # pszKey-value pairs
+    // first, count # pszKey-pValueArray pairs
     unsigned int i1 = strlen( pBuffer );
     char* tempb = static_cast<char *>( bbsmalloc( i1 + 20 ) );
     if (!tempb)
@@ -247,20 +333,20 @@ static void parse_ini_file(char *pBuffer, ini_info_t * info)
         return;
     }
 
-    // now, allocate space for pszKey-value pairs
-    info->pszKey = static_cast<char **>( bbsmalloc( count * sizeof( char * ) ) );
-    if (!info->pszKey)
+    // now, allocate space for pKeyArray-pValueArray pairs
+    pIniSection->pKeyArray = static_cast<char **>( bbsmalloc( count * sizeof( char * ) ) );
+    if (!pIniSection->pKeyArray)
     {
         return;
     }
-    info->value = static_cast<char **>( bbsmalloc( count * sizeof( char * ) ) );
-    if (!info->value)
+    pIniSection->pValueArray = static_cast<char **>( bbsmalloc( count * sizeof( char * ) ) );
+    if (!pIniSection->pValueArray)
     {
-        BbsFreeMemory(info->pszKey);
-        info->pszKey = NULL;
+        BbsFreeMemory(pIniSection->pKeyArray);
+        pIniSection->pKeyArray = NULL;
         return;
     }
-    // go through and add in pszKey-value pairs
+    // go through and add in pszKey-pValueArray pairs
     for (ss = strtok(pBuffer, "\r\n"); ss; ss = strtok(NULL, "\r\n"))
     {
         StringTrim(ss);
@@ -287,150 +373,12 @@ static void parse_ini_file(char *pBuffer, ini_info_t * info)
                     }
                 }
                 StringTrim(ss1);
-                info->pszKey[info->num] = ss;
-                info->value[info->num] = ss1;
-                info->num++;
+                pIniSection->pKeyArray[pIniSection->nIndex] = ss;
+                pIniSection->pValueArray[pIniSection->nIndex] = ss1;
+                pIniSection->nIndex++;
             }
         }
     }
-}
-
-
-// Frees up any allocated ini files
-void ini_done()
-{
-    if (ini_prim.buf)
-    {
-        BbsFreeMemory(ini_prim.buf);
-        if (ini_prim.pszKey)
-        {
-            BbsFreeMemory(ini_prim.pszKey);
-        }
-        if (ini_prim.value)
-        {
-            BbsFreeMemory(ini_prim.value);
-        }
-    }
-    memset(&ini_prim, 0, sizeof(ini_prim));
-    if (ini_sec.buf)
-    {
-        BbsFreeMemory(ini_sec.buf);
-        if (ini_sec.pszKey)
-        {
-            BbsFreeMemory(ini_sec.pszKey);
-        }
-        if (ini_sec.value)
-        {
-            BbsFreeMemory(ini_sec.value);
-        }
-    }
-    memset(&ini_sec, 0, sizeof(ini_sec));
-}
-
-
-// Reads in some ini files
-bool ini_init(const char *pszFileName, const char *pszPrimarySection, const char *pszSecondarySection)
-{
-    char szIniFile[MAX_PATH+MAX_FNAME];
-    snprintf( szIniFile, sizeof( szIniFile ), "%s%s", GetApplication()->GetHomeDir(), pszFileName );
-
-    // first, zap anything there currently
-    ini_done();
-
-    // read in primary info
-    char* pBuffer = read_ini_file(szIniFile, pszPrimarySection);
-
-    if ( pBuffer )
-    {
-        // parse the data
-        parse_ini_file(pBuffer, &ini_prim);
-
-        // read in secondary file
-        pBuffer = read_ini_file(szIniFile, pszSecondarySection);
-        if (pBuffer)
-        {
-            parse_ini_file(pBuffer, &ini_sec);
-        }
-
-    }
-    else
-    {
-        // read in the secondary info, as the primary one
-        pBuffer = read_ini_file( szIniFile, pszSecondarySection );
-        if ( pBuffer )
-        {
-            parse_ini_file( pBuffer, &ini_prim );
-        }
-    }
-
-    return ( ini_prim.buf ) ? true : false;
-}
-
-
-
-
-// Reads a specified value from INI file data (contained in *inidata). The
-// name of the value to read is contained in *value_name. If such a name
-// doesn't exist in this INI file subsection, then *val is NULL, else *val
-// will be set to the string value of that value name. If *val has been set
-// to something, then this function returns 1, else it returns 0.
-char *ini_get( const char *pszKey, int nNumericIndex, char *pszStringIndex )
-{
-    char pszKey1[81], pszKey2[81];
-    ini_info_t *info;
-
-    if ( !ini_prim.buf || !pszKey || !( *pszKey ) )
-    {
-        return NULL;
-    }
-
-    if ( nNumericIndex == -1 )
-    {
-        strcpy( pszKey1, pszKey );
-    }
-    else
-    {
-        snprintf( pszKey1, sizeof( pszKey1 ), "%s[%d]", pszKey, nNumericIndex );
-    }
-
-    if ( pszStringIndex )
-    {
-        snprintf( pszKey2, sizeof( pszKey2 ), "%s[%s]", pszKey, pszStringIndex );
-    }
-    else
-    {
-        pszKey2[0] = '\0';
-    }
-
-    // loop through both sets of data and search them, in order
-    for ( int i = 0; i <= 1; i++ )
-    {
-        // get pointer to data area to use
-        if ( i == 0 )
-        {
-            info = &ini_prim;
-        }
-        else if ( ini_sec.buf )
-        {
-            info = &ini_sec;
-        }
-        else
-        {
-            break;
-        }
-
-        // search for it
-        for ( int i1 = 0; i1 < info->num; i1++ )
-        {
-            if ( IsEqualsIgnoreCase( info->pszKey[ i1 ], pszKey1 ) || IsEqualsIgnoreCase( info->pszKey[ i1 ], pszKey2 ) )
-            {
-                return info->value[ i1 ];
-            }
-        }
-    }
-
-    // nothing found
-    return NULL;
 }
 
 

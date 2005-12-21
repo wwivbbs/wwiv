@@ -29,7 +29,7 @@
 extern char cid_num[], cid_name[];
 static bool bUsingPppProject = true;
 extern time_t last_time_c;
-static WBbsApp *app;
+static WApplication *app;
 static WSession* sess;
 
 
@@ -41,18 +41,18 @@ static WSession* sess;
 //
 
 
-const int WBbsApp::exitLevelOK          = 0;
-const int WBbsApp::exitLevelNotOK       = 1;
-const int WBbsApp::exitLevelQuit        = 2;
+const int WApplication::exitLevelOK          = 0;
+const int WApplication::exitLevelNotOK       = 1;
+const int WApplication::exitLevelQuit        = 2;
 
-const int WBbsApp::shutdownNone         = 0;
-const int WBbsApp::shutdownThreeMinutes = 1;
-const int WBbsApp::shutdownTwoMinutes   = 2;
-const int WBbsApp::shutdownOneMinute    = 3;
-const int WBbsApp::shutdownImmediate    = 4;
+const int WApplication::shutdownNone         = 0;
+const int WApplication::shutdownThreeMinutes = 1;
+const int WApplication::shutdownTwoMinutes   = 2;
+const int WApplication::shutdownOneMinute    = 3;
+const int WApplication::shutdownImmediate    = 4;
 
 
-WBbsApp* GetApplication() 
+WApplication* GetApplication() 
 {
     return app;
 }
@@ -64,36 +64,36 @@ WSession* GetSession()
 }
 
 
-WLocalIO* WBbsApp::GetLocalIO() 
+WLocalIO* WApplication::GetLocalIO() 
 { 
     return localIO; 
 }
 
 
-WComm* WBbsApp::GetComm()
+WComm* WApplication::GetComm()
 {
     return comm;
 }
 
 
-StatusMgr* WBbsApp::GetStatusManager()
+StatusMgr* WApplication::GetStatusManager()
 {
     return statusMgr;
 }
 
 
-WUserManager* WBbsApp::GetUserManager()
+WUserManager* WApplication::GetUserManager()
 {
     return userManager;
 }
 
 
 #ifndef _UNIX
-void WBbsApp::GetCaller()
+void WApplication::GetCaller()
 {
     GetSession()->SetMessageAreaCacheNumber( 0 );
     GetSession()->SetFileAreaCacheNumber( 0 );
-    SetShutDownStatus( WBbsApp::shutdownNone );
+    SetShutDownStatus( WApplication::shutdownNone );
     wfc_init();
     cid_num[0] = 0;
     cid_name[0] = 0;
@@ -152,7 +152,7 @@ void wfc_cls() {}
 #endif
 
 
-int WBbsApp::doWFCEvents()
+int WApplication::doWFCEvents()
 {
     char ch;
     int lokb;
@@ -705,7 +705,7 @@ int WBbsApp::doWFCEvents()
 }
 
 
-int WBbsApp::LocalLogon()
+int WApplication::LocalLogon()
 {
     GetLocalIO()->LocalGotoXY( 2, 23 );
     GetSession()->bout << "|#9Log on to the BBS?";
@@ -811,7 +811,7 @@ int WBbsApp::LocalLogon()
 }
 
 
-void WBbsApp::GotCaller( unsigned int ms, unsigned long cs )
+void WApplication::GotCaller( unsigned int ms, unsigned long cs )
 {
     frequent_init();
     if ( GetSession()->wfc_status == 0 )
@@ -944,7 +944,7 @@ void CreateListener()
 }
 
 
-void WBbsApp::TelnetMainLoop()
+void WApplication::TelnetMainLoop()
 {
     SOCKET hSock;
     SOCKADDR_IN lpstName;
@@ -982,7 +982,7 @@ void WBbsApp::TelnetMainLoop()
 #endif // _WIN32
 
 
-int WBbsApp::Run(int argc, char *argv[])
+int WApplication::Run(int argc, char *argv[])
 {
 //
 // Only do the telnet listener on WIN32 platforms
@@ -1040,7 +1040,7 @@ int WBbsApp::Run(int argc, char *argv[])
 }
 
 
-int WBbsApp::BBSmain(int argc, char *argv[])
+int WApplication::BBSmain(int argc, char *argv[])
 {
     int num_min                 = 0;
     unsigned int ui             = 0;
@@ -1530,7 +1530,7 @@ int WBbsApp::BBSmain(int argc, char *argv[])
 
 
 
-void WBbsApp::ShowUsage()
+void WApplication::ShowUsage()
 {
     std::cout << "WWIV Bulletin Board System [" << wwiv_version << " - " << beta_version << "]\r\n\n" <<
                 "Usage:\r\n\n" <<
@@ -1565,7 +1565,7 @@ void WBbsApp::ShowUsage()
 
 
 
-WBbsApp::WBbsApp()
+WApplication::WApplication()
 {
     comm			        = NULL;
     sess			        = new WSession( this );
@@ -1573,11 +1573,11 @@ WBbsApp::WBbsApp()
     sess->bout.SetLocalIO( localIO );
     statusMgr			    = new StatusMgr();
     userManager			    = new WUserManager();
-    m_nOkLevel			    = WBbsApp::exitLevelOK;
-    m_nErrorLevel		    = WBbsApp::exitLevelNotOK;
+    m_nOkLevel			    = WApplication::exitLevelOK;
+    m_nErrorLevel		    = WApplication::exitLevelNotOK;
     m_nInstance			    = 1;
 	m_bUserAlreadyOn	    = false;
-    m_nBbsShutdownStatus    = WBbsApp::shutdownNone;
+    m_nBbsShutdownStatus    = WApplication::shutdownNone;
     m_fShutDownTime         = 0.0;
     m_nWfcStatus = 0;
 
@@ -1592,7 +1592,7 @@ WBbsApp::WBbsApp()
 }
 
 
-WBbsApp::WBbsApp( const WBbsApp& copy )
+WApplication::WApplication( const WApplication& copy )
 {
     comm = copy.comm;
     localIO = copy.localIO;
@@ -1610,13 +1610,13 @@ WBbsApp::WBbsApp( const WBbsApp& copy )
 }
 
 
-void WBbsApp::CdHome()
+void WApplication::CdHome()
 {
 	WWIV_ChangeDirTo( m_szCurrentDirectory );
 }
 
 
-const char* WBbsApp::GetHomeDir()
+const char* WApplication::GetHomeDir()
 {
 	static char szDir[ MAX_PATH ];
 	snprintf( szDir, sizeof( szDir ), "%s%c", m_szCurrentDirectory, WWIV_FILE_SEPERATOR_CHAR );
@@ -1624,7 +1624,7 @@ const char* WBbsApp::GetHomeDir()
 }
 
 
-bool WBbsApp::StartupComm(bool bUseSockets)
+bool WApplication::StartupComm(bool bUseSockets)
 {
     if ( NULL != comm )
     {
@@ -1658,7 +1658,7 @@ bool WBbsApp::StartupComm(bool bUseSockets)
 }
 
 
-bool WBbsApp::ShutdownComm()
+bool WApplication::ShutdownComm()
 {
 	if ( NULL == comm )
 	{
@@ -1672,7 +1672,7 @@ bool WBbsApp::ShutdownComm()
 }
 
 
-void WBbsApp::AbortBBS( bool bSkipShutdown )
+void WApplication::AbortBBS( bool bSkipShutdown )
 {
     if ( bSkipShutdown )
     {
@@ -1685,13 +1685,13 @@ void WBbsApp::AbortBBS( bool bSkipShutdown )
 }
 
 
-void WBbsApp::QuitBBS()
+void WApplication::QuitBBS()
 {
-    ExitBBSImpl( WBbsApp::exitLevelQuit );
+    ExitBBSImpl( WApplication::exitLevelQuit );
 }
 
 
-void WBbsApp::ExitBBSImpl( int nExitLevel )
+void WApplication::ExitBBSImpl( int nExitLevel )
 {
     sysoplog( "", false );
     sysoplogfi( false, "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
@@ -1717,7 +1717,7 @@ void WBbsApp::ExitBBSImpl( int nExitLevel )
 }
 
 
-bool WBbsApp::LogMessage( const char* pszFormat, ... )
+bool WApplication::LogMessage( const char* pszFormat, ... )
 {
     va_list ap;
     char szBuffer[2048];
@@ -1730,7 +1730,7 @@ bool WBbsApp::LogMessage( const char* pszFormat, ... )
 }
 
 
-void WBbsApp::UpdateTopScreen()
+void WApplication::UpdateTopScreen()
 {
     if (!GetWfcStatus()) 
     {
@@ -1741,7 +1741,7 @@ void WBbsApp::UpdateTopScreen()
 }
 
 
-void WBbsApp::ShutDownBBS( int nShutDownStatus )
+void WApplication::ShutDownBBS( int nShutDownStatus )
 {
     char xl[81], cl[81], atr[81], cc;
     GetLocalIO()->SaveCurrentLine( cl, atr, xl, &cc );
@@ -1765,7 +1765,7 @@ void WBbsApp::ShutDownBBS( int nShutDownStatus )
 		GetSession()->bout << "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
         printfile( LOGOFF_NOEXT );
         hangup = true;
-        SetShutDownStatus( WBbsApp::shutdownNone );
+        SetShutDownStatus( WApplication::shutdownNone );
         break;
 	default:
         std::cout << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus << std::endl;
@@ -1775,47 +1775,47 @@ void WBbsApp::ShutDownBBS( int nShutDownStatus )
 }
 
 
-void WBbsApp::UpdateShutDownStatus()
+void WApplication::UpdateShutDownStatus()
 {
     if ( IsShutDownActive() )
     {
         if ((( GetShutDownTime() - timer()) < 120) && ((GetShutDownTime() - timer()) > 60))
         {
-            if ( GetShutDownStatus() != WBbsApp::shutdownTwoMinutes )
+            if ( GetShutDownStatus() != WApplication::shutdownTwoMinutes )
             {
-                ShutDownBBS( WBbsApp::shutdownTwoMinutes );
+                ShutDownBBS( WApplication::shutdownTwoMinutes );
             }
         }
         if (((GetShutDownTime() - timer()) < 60) && ((GetShutDownTime() - timer()) > 0))
         {
-            if ( GetShutDownStatus() != WBbsApp::shutdownOneMinute )
+            if ( GetShutDownStatus() != WApplication::shutdownOneMinute )
             {
-                ShutDownBBS( WBbsApp::shutdownOneMinute );
+                ShutDownBBS( WApplication::shutdownOneMinute );
             }
         }
         if ( ( GetShutDownTime() - timer() ) <= 0 )
         {
-            ShutDownBBS( WBbsApp::shutdownImmediate );
+            ShutDownBBS( WApplication::shutdownImmediate );
         }
     }
 }
 
 
-void WBbsApp::ToggleShutDown()
+void WApplication::ToggleShutDown()
 {
     if ( IsShutDownActive() )
     {
-        SetShutDownStatus( WBbsApp::shutdownNone );
+        SetShutDownStatus( WApplication::shutdownNone );
     }
     else
     {
-        ShutDownBBS( WBbsApp::shutdownThreeMinutes );
+        ShutDownBBS( WApplication::shutdownThreeMinutes );
     }
 
 }
 
 
-WBbsApp::~WBbsApp()
+WApplication::~WApplication()
 {
     if ( comm != NULL )
     {
@@ -1852,7 +1852,7 @@ WBbsApp::~WBbsApp()
 
 int main( int argc, char *argv[] )
 {
-    app = new WBbsApp();
+    app = new WApplication();
     int nRetCode = GetApplication()->Run( argc, argv );
     return nRetCode;
 }

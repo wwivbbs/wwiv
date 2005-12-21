@@ -888,7 +888,7 @@ bool CanCreateNewUserAccountHere()
 bool UseMinimalNewUserInfo()
 {
     WIniFile iniFile( WWIV_INI );
-    if ( iniFile.Initialize( INI_TAG ) )
+    if ( iniFile.Open( INI_TAG ) )
     {
         return iniFile.GetBooleanValue( "NEWUSER_MIN" );
     }
