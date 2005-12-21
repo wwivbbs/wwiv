@@ -78,7 +78,7 @@ int finduser( char *pszSearchString )
     if ( nUserNumber > 0 )
     {
         GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
-        if ( user.isUserDeleted() )
+        if ( user.IsUserDeleted() )
         {
 	    //printf( "DEBUG: User %s is deleted!\r\n", user.GetName() );
             return 0;
@@ -98,7 +98,7 @@ int finduser( char *pszSearchString )
     else
     {
         GetApplication()->GetUserManager()->ReadUser( &user, sr->number );
-        if ( user.isUserDeleted() )
+        if ( user.IsUserDeleted() )
         {
             return 0;
         }

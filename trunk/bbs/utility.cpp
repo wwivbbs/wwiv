@@ -81,7 +81,7 @@ void remove_from_temp( const char *pszFileName, const char *pszDirectoryName, bo
  */
 bool okansi()
 {
-    return ( ( GetSession()->GetCurrentUser()->hasAnsi() ) && ( !x_only ) ) ? true : false;
+    return ( ( GetSession()->GetCurrentUser()->HasAnsi() ) && ( !x_only ) ) ? true : false;
 }
 
 
@@ -126,10 +126,10 @@ void tmp_disable_pause( bool disable )
 {
     if ( disable )
     {
-        if ( GetSession()->GetCurrentUser()->hasPause() )
+        if ( GetSession()->GetCurrentUser()->HasPause() )
         {
             g_flags |= g_flag_disable_pause;
-            GetSession()->GetCurrentUser()->clearStatusFlag( WUser::pauseOnPage );
+            GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::pauseOnPage );
         }
     }
     else
@@ -137,7 +137,7 @@ void tmp_disable_pause( bool disable )
         if ( g_flags & g_flag_disable_pause )
         {
             g_flags &= ~g_flag_disable_pause;
-            GetSession()->GetCurrentUser()->setStatusFlag( WUser::pauseOnPage );
+            GetSession()->GetCurrentUser()->SetStatusFlag( WUser::pauseOnPage );
         }
     }
 }
@@ -161,13 +161,13 @@ void frequent_init()
     outcom = false;
     incom = false;
     charbufferpointer = 0;
-    GetSession()->topline = 0;
+    GetSession()->localIO()->SetTopLine( 0 );
     GetSession()->screenlinest = defscreenbottom + 1;
     endofline[0] = '\0';
     hangup = false;
     hungup = false;
     chatcall = false;
-    GetApplication()->GetLocalIO()->ClearChatReason();
+    GetSession()->localIO()->ClearChatReason();
 	GetSession()->SetUserOnline( false );
     change_color = 0;
     chatting = 0;
@@ -177,7 +177,7 @@ void frequent_init()
     lines_listed = 0;
     GetSession()->ReadCurrentUser( 1 );
     read_qscn( 1, qsc, false );
-    fwaiting = ( GetSession()->GetCurrentUser()->isUserDeleted() ) ? 0 : GetSession()->GetCurrentUser()->GetNumMailWaiting();
+    fwaiting = ( GetSession()->GetCurrentUser()->IsUserDeleted() ) ? 0 : GetSession()->GetCurrentUser()->GetNumMailWaiting();
     okmacro = true;
     okskey = true;
     mailcheck = false;
@@ -186,11 +186,11 @@ void frequent_init()
     use_workspace = false;
     extratimecall = 0.0;
     GetSession()->using_modem = 0;
-    GetApplication()->GetLocalIO()->set_global_handle( false );
+    GetSession()->localIO()->set_global_handle( false );
     WFile::SetFilePermissions( g_szDSZLogFileName, WFile::permReadWrite );
     WFile::Remove( g_szDSZLogFileName );
     GetSession()->SetTimeOnlineLimited( false );
-    GetApplication()->GetLocalIO()->set_x_only( 0, NULL, 0 );
+    GetSession()->localIO()->set_x_only( 0, NULL, 0 );
     set_net_num( 0 );
     set_language( GetSession()->GetCurrentUser()->GetLanguage() );
     reset_disable_conf();
@@ -582,7 +582,7 @@ int side_menu( int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, i
 	WWIV_ASSERT( menu_items );
 	WWIV_ASSERT( smc );
 
-    GetApplication()->GetLocalIO()->tleft( true );
+    GetSession()->localIO()->tleft( true );
 
     if ( bNeedsRedraw )
     {
@@ -815,7 +815,7 @@ char* W_DateString(time_t tDateTime, char* mode , char* delim)
 			}
 
 			// which form of the clock is in use?
-            if ( GetSession()->GetCurrentUser()->isUse24HourClock() )
+            if ( GetSession()->GetCurrentUser()->IsUse24HourClock() )
 			{
 				strftime(s, 40, "%H:%M", pTm);
 			}

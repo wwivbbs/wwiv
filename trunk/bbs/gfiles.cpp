@@ -485,7 +485,7 @@ void gfile_sec( int sn )
     bool done = false;
     while ( !done && !hangup )
     {
-        GetApplication()->GetLocalIO()->tleft( true );
+        GetSession()->localIO()->tleft( true );
         GetSession()->bout << "|#9Current G|#1-|#9File Section |#1: |#5" << gfilesec[sn].name << "|#0\r\n";
         GetSession()->bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf << "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
         ss = mmkey( 2 );
@@ -678,7 +678,7 @@ void gfiles()
         {
             ok = false;
         }
-        if ( !GetSession()->GetCurrentUser()->hasArFlag( gfilesec[i].ar) && gfilesec[i].ar )
+        if ( !GetSession()->GetCurrentUser()->HasArFlag( gfilesec[i].ar) && gfilesec[i].ar )
         {
             ok = false;
         }
@@ -700,7 +700,7 @@ void gfiles()
     list_sec( map, nmap );
     while ( !done && !hangup )
     {
-        GetApplication()->GetLocalIO()->tleft( true );
+        GetSession()->localIO()->tleft( true );
         GetSession()->bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
         GetSession()->bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap << "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
         char * ss = mmkey( 2 );

@@ -55,7 +55,7 @@ void reset_files()
 			long pos = static_cast<long>( syscfg.userreclen ) * static_cast<long>( i );
             userFile.Seek( pos, WFile::seekBegin );
             userFile.Read( &user.data, syscfg.userreclen );
-            if ( !user.isUserDeleted() )
+            if ( !user.IsUserDeleted() )
 			{
                 user.FixUp();
                 if ( isr1( i, nNumUsers, user.GetName() ) )
@@ -138,7 +138,7 @@ void valuser( int nUserNumber )
 
 	WUser user;
     GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
-    if ( !user.isUserDeleted() )
+    if ( !user.IsUserDeleted() )
 	{
 		GetSession()->bout.NewLine();
         GetSession()->bout << "|#9Name: |#2" << user.GetUserNameAndNumber( nUserNumber ) << wwiv::endl;
@@ -211,7 +211,7 @@ void valuser( int nUserNumber )
 		dar1[0]     = RETURN;
 		for ( int i = 0; i <= 15; i++ )
 		{
-			if ( user.hasArFlag( 1 << i  ))
+			if ( user.HasArFlag( 1 << i  ))
 			{
 				s[i] = static_cast<char>( 'A' + i );
 			}
@@ -219,11 +219,11 @@ void valuser( int nUserNumber )
 			{
 				s[i] = SPACE;
 			}
-			if ( GetSession()->GetCurrentUser()->hasArFlag( 1 << i ) )
+			if ( GetSession()->GetCurrentUser()->HasArFlag( 1 << i ) )
 			{
 				ar1[ar2++] = static_cast<char>( 'A' + i );
 			}
-			if (user.hasDarFlag(1 << i))
+			if (user.HasDarFlag(1 << i))
 			{
 				s1[i] = static_cast<char>( 'A' + i );
 			}
@@ -231,11 +231,11 @@ void valuser( int nUserNumber )
 			{
 				s1[i] = SPACE;
 			}
-			if ( GetSession()->GetCurrentUser()->hasDarFlag( 1 << i ) )
+			if ( GetSession()->GetCurrentUser()->HasDarFlag( 1 << i ) )
 			{
 				dar1[dar2++] = static_cast<char>( 'A' + i );
 			}
-			if ( user.hasRestrictionFlag( 1 << i ) )
+			if ( user.HasRestrictionFlag( 1 << i ) )
 			{
 				s2[i] = s3[i];
 			}
@@ -269,7 +269,7 @@ void valuser( int nUserNumber )
 					{
 						s[ch1] = SPACE;
 					}
-					user.toggleArFlag(1 << ch1);
+					user.ToggleArFlag(1 << ch1);
 					ch1 = 0;
 				}
 			} while ( !hangup && ch1 != RETURN );
@@ -294,7 +294,7 @@ void valuser( int nUserNumber )
 					{
 						s1[ch1] = SPACE;
 					}
-					user.toggleDarFlag(1 << ch1);
+					user.ToggleDarFlag(1 << ch1);
 					ch1 = 0;
 				}
 			} while ( !hangup && ch1 != RETURN );
@@ -322,7 +322,7 @@ void valuser( int nUserNumber )
 				}
 				if ( i > -1 )
 				{
-					user.toggleRestrictionFlag( 1 << i );
+					user.ToggleRestrictionFlag( 1 << i );
 					if ( s2[i] == SPACE )
 					{
 						s2[i] = s3[i];
@@ -384,10 +384,10 @@ void print_net_listing( bool bForcePause )
 
 	if ( bForcePause )
 	{
-		bHadPause  = GetSession()->GetCurrentUser()->hasPause();
+		bHadPause  = GetSession()->GetCurrentUser()->HasPause();
 		if ( bHadPause )
 		{
-            GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
+            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
 		}
 	}
 	bool done = false;
@@ -773,7 +773,7 @@ void print_net_listing( bool bForcePause )
   }
   if ( bForcePause && bHadPause)
   {
-      GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
+      GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
   }
 }
 
@@ -1069,12 +1069,12 @@ void auto_purge()
 	{
         WUser user;
         GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
-        if ( !user.isExemptAutoDelete() )
+        if ( !user.IsExemptAutoDelete() )
 		{
             unsigned int d = static_cast<unsigned int>( ( tTime - user.GetLastOnDateNumber() ) / SECONDS_PER_DAY_FLOAT );
 			// if user is not already deleted && SL<NO_PURGE_SL && last_logon
 			// greater than AUTO_USER_PURGE days ago
-            if ( !user.isUserDeleted() && user.GetSl() < skipsl && d > days )
+            if ( !user.IsUserDeleted() && user.GetSl() < skipsl && d > days )
 			{
                 sprintf( s, "*** AUTOPURGE: Deleted User: #%3.3d %s", nUserNumber, user.GetName() );
 				sysoplog( s, false );

@@ -194,7 +194,7 @@ void AddBBSListEntry()
     {
         GetSession()->bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
     }
-    else if ( GetSession()->GetCurrentUser()->isRestrictionAutomessage() )
+    else if ( GetSession()->GetCurrentUser()->IsRestrictionAutomessage() )
     {
         GetSession()->bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
     }

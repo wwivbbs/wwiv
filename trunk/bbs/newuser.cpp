@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include <algorithm>
 
 //
 // Local function prototypes
@@ -604,35 +605,33 @@ void input_screensize()
 
 void input_pw( WUser *pUser )
 {
-    bool ok;
-    char s[81],s1[81];
-
-    s1[0] = '\0';
-
+    std::string password;
+    bool ok = true;
     do
     {
         ok = true;
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#3Please enter a new password, 3-8 chars.\r\n";
-        Input1(s, s1, 8, false, UPPER);
+        CLEAR_STRING( password );
+        Input1(password, NULL, 8, false, UPPER);
 
-        strcpy( s1, GetSession()->GetCurrentUser()->GetRealName() );
-        if( strlen(s) < 3 ||
-            strstr( pUser->GetName(), s ) != NULL ||
-            strstr( WWIV_STRUPR( s1 ), s ) != NULL ||
-            strstr( pUser->GetVoicePhoneNumber(), s ) != NULL ||
-            strstr( pUser->GetDataPhoneNumber(), s ) != NULL )
+        std::string realName = GetSession()->GetCurrentUser()->GetRealName();
+        std::transform(realName.begin(), realName.end(), realName.begin(), (int(*)(int)) toupper);
+        if( password.length() < 3 ||
+            password.find( pUser->GetName() ) != std::string::npos ||
+            password.find( realName ) != std::string::npos ||
+            password.find( pUser->GetVoicePhoneNumber() ) != std::string::npos ||
+            password.find( pUser->GetDataPhoneNumber() ) != std::string::npos )
         {
-                ok = false;
-                GetSession()->bout.NewLine( 2 );
-                GetSession()->bout << "Invalid password.  Try again.\r\n\n";
-                s1[0] = '\0';
-            }
+            ok = false;
+            GetSession()->bout.NewLine( 2 );
+            GetSession()->bout << "Invalid password.  Try again.\r\n\n";
+        }
     } while ( !ok && !hangup );
 
     if ( ok )
     {
-        pUser->SetPassword( s );
+        pUser->SetPassword( password.c_str() );
     }
     else
     {
@@ -643,8 +642,8 @@ void input_pw( WUser *pUser )
 
 void input_ansistat()
 {
-    GetSession()->GetCurrentUser()->clearStatusFlag( WUser::ansi );
-    GetSession()->GetCurrentUser()->clearStatusFlag( WUser::color );
+    GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::ansi );
+    GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::color );
     GetSession()->bout.NewLine();
     if (check_ansi() == 1)
     {
@@ -662,13 +661,13 @@ void input_ansistat()
     }
     if (noyes())
     {
-        GetSession()->GetCurrentUser()->setStatusFlag( WUser::ansi );
+        GetSession()->GetCurrentUser()->SetStatusFlag( WUser::ansi );
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#5Do you want color? ";
         if (noyes())
         {
-            GetSession()->GetCurrentUser()->setStatusFlag( WUser::color );
-            GetSession()->GetCurrentUser()->setStatusFlag( WUser::extraColor );
+            GetSession()->GetCurrentUser()->SetStatusFlag( WUser::color );
+            GetSession()->GetCurrentUser()->SetStatusFlag( WUser::extraColor );
         }
         else
         {
@@ -745,7 +744,7 @@ int find_new_usernum( const WUser* pUser, unsigned long *qsc )
             WUser tu;
             userFile.Read( &tu.data, syscfg.userreclen );
 
-            if ( tu.isUserDeleted() && tu.GetSl() != 255 )
+            if ( tu.IsUserDeleted() && tu.GetSl() != 255 )
             {
                 userFile.Seek( static_cast<long>( nUserNumber * syscfg.userreclen ), WFile::seekBegin );
                 userFile.Write( &pUser->data, syscfg.userreclen );
@@ -806,9 +805,9 @@ void CreateNewUserRecord()
     memset( qsc_n, 0xff, ((GetSession()->GetMaxNumberFileAreas() + 31) / 32) * 4 );
     memset( qsc_q, 0xff, ((GetSession()->GetMaxNumberMessageAreas() + 31) / 32) * 4 );
 
-    GetSession()->GetCurrentUser()->setStatusFlag( WUser::pauseOnPage );
-    GetSession()->GetCurrentUser()->clearStatusFlag( WUser::conference );
-    GetSession()->GetCurrentUser()->clearStatusFlag( WUser::nscanFileSystem );
+    GetSession()->GetCurrentUser()->SetStatusFlag( WUser::pauseOnPage );
+    GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::conference );
+    GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::nscanFileSystem );
     GetSession()->GetCurrentUser()->SetGold( syscfg.newusergold );
 
     for( int nColorLoop = 0; nColorLoop <= 9; nColorLoop++ )
@@ -964,7 +963,7 @@ void DoFullNewUser()
     input_age( GetSession()->GetCurrentUser() );
     input_comptype();
 
-    if ( GetSession()->GetNumberOfEditors() && GetSession()->GetCurrentUser()->hasAnsi() )
+    if ( GetSession()->GetNumberOfEditors() && GetSession()->GetCurrentUser()->HasAnsi() )
     {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#5Select a fullscreen editor? ";
@@ -1269,9 +1268,9 @@ void newuser()
 
     if ( check_ansi() )
     {
-        GetSession()->GetCurrentUser()->setStatusFlag( WUser::ansi );
-        GetSession()->GetCurrentUser()->setStatusFlag( WUser::color );
-        GetSession()->GetCurrentUser()->setStatusFlag( WUser::extraColor );
+        GetSession()->GetCurrentUser()->SetStatusFlag( WUser::ansi );
+        GetSession()->GetCurrentUser()->SetStatusFlag( WUser::color );
+        GetSession()->GetCurrentUser()->SetStatusFlag( WUser::extraColor );
     }
     printfile( SYSTEM_NOEXT );
     GetSession()->bout.NewLine();
@@ -1511,7 +1510,7 @@ void noabort( const char *pszFileName )
 void cln_nu()
 {
     GetSession()->bout.Color( 0 );
-    int i1 = GetApplication()->GetLocalIO()->WhereX();
+    int i1 = GetSession()->localIO()->WhereX();
     if ( i1 > 28 )
     {
         for (int i = i1; i > 28; i--)
@@ -1763,7 +1762,7 @@ void DoMinimalNewUser()
     GetSession()->GetCurrentUser()->SetVoicePhoneNumber( "999-999-9999" );
     GetSession()->GetCurrentUser()->SetDataPhoneNumber( GetSession()->GetCurrentUser()->GetVoicePhoneNumber() );
     GetSession()->GetCurrentUser()->SetStreet( "None Requested" );
-    if ( GetSession()->GetNumberOfEditors() && GetSession()->GetCurrentUser()->hasAnsi() )
+    if ( GetSession()->GetNumberOfEditors() && GetSession()->GetCurrentUser()->HasAnsi() )
     {
         GetSession()->GetCurrentUser()->SetDefaultEditor( 1 );
     }

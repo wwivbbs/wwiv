@@ -37,7 +37,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
 	if (ok_modem_stuff)
     {
-		GetApplication()->GetComm()->close( true );
+		GetSession()->remoteIO()->close( true );
 	}
 
     char s[256];
@@ -47,8 +47,8 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 	// reengage comm stuff
 	if (ok_modem_stuff)
     {
-		GetApplication()->GetComm()->open();
-		GetApplication()->GetComm()->dtr( true );
+		GetSession()->remoteIO()->open();
+		GetSession()->remoteIO()->dtr( true );
     }
 
     return i;

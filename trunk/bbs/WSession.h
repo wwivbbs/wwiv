@@ -57,7 +57,7 @@ class WSession
 {
 public:
     WSession( WApplication *pApplication );
-    virtual ~WSession() {}
+    virtual ~WSession();
 
 public:
     WOutStream bout;
@@ -71,6 +71,15 @@ public:
 public:
 	WUser* GetCurrentUser()							{ return &m_thisuser; }
     void DisplaySysopWorkingIndicator( bool displayWait );
+    WComm* remoteIO();
+    WLocalIO* localIO();
+	/*! @function StartupComm Start up the communications subsystem */
+	bool StartupComm(bool bUseSockets);
+
+	/*! @function ShutdownComm Shutdown the communications subsystem */
+	bool ShutdownComm();
+
+
 
     bool IsLastKeyLocal() const                     { return m_bLastKeyLocal; }
     void SetLastKeyLocal( bool b )                  { m_bLastKeyLocal = b; }
@@ -211,10 +220,13 @@ public:
 
 
 private:
-    bool        m_bLastKeyLocal;
-    int         m_nEffectiveSl;
-    WApplication*    m_pApplication;
-    WUser       m_thisuser;
+    bool            m_bLastKeyLocal;
+    int             m_nEffectiveSl;
+    WApplication*   m_pApplication;
+    WUser           m_thisuser;
+    WComm*          m_pComm;
+    WLocalIO*       m_pLocalIO;
+
 
 
 public:
@@ -274,14 +286,12 @@ public:
                 num_subs,
                 num_events,
                 num_sys_list,
-                screenbottom,
                 screenlinest,
                 subchg,
                 tagging,
                 tagptr,
                 titled,
                 topdata,
-                topline,
                 using_modem,
                 numbatch,
                 numbatchdl;

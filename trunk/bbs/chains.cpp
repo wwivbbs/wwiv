@@ -254,7 +254,7 @@ void do_chains()
         return;
 	}
 
-    GetApplication()->GetLocalIO()->tleft( true );
+    GetSession()->localIO()->tleft( true );
     int mapp = 0;
     memset( odc, 0, sizeof( odc ) );
     for ( int i = 0; i < GetSession()->GetNumberOfChains(); i++ )
@@ -273,7 +273,7 @@ void do_chains()
 		{
             ok = false;
 		}
-        if ( c.ar && !GetSession()->GetCurrentUser()->hasArFlag( c.ar ) )
+        if ( c.ar && !GetSession()->GetCurrentUser()->HasArFlag( c.ar ) )
 		{
             ok = false;
 		}
@@ -317,7 +317,7 @@ void do_chains()
     do
     {
         GetSession()->SetMMKeyArea( WSession::mmkeyChains );
-        GetApplication()->GetLocalIO()->tleft( true );
+        GetSession()->localIO()->tleft( true );
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 

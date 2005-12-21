@@ -445,7 +445,7 @@ void Vote()
 
 void ToggleExpert()
 {
-    GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::expert );
+    GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::expert );
 }
 
 
@@ -878,10 +878,10 @@ void DownloadPosts()
         if ( yesno() )
         {
             GetSession()->bout << "Please wait...\r\n";
-            GetApplication()->GetLocalIO()->set_x_only(1, "posts.txt", 0);
+            GetSession()->localIO()->set_x_only(1, "posts.txt", 0);
             preload_subs();
             nscan();
-            GetApplication()->GetLocalIO()->set_x_only( 0, NULL, 0 );
+            GetSession()->localIO()->set_x_only( 0, NULL, 0 );
             add_arc( "offline", "posts.txt", 0 );
             download_temp_arc( "offline", 0 );
         }
@@ -897,9 +897,9 @@ void DownloadFileList()
         if ( yesno() )
         {
             GetSession()->bout << "Please wait...\r\n";
-            GetApplication()->GetLocalIO()->set_x_only( 1, "files.txt", 1 );
+            GetSession()->localIO()->set_x_only( 1, "files.txt", 1 );
             searchall();
-            GetApplication()->GetLocalIO()->set_x_only( 0, NULL, 0 );
+            GetSession()->localIO()->set_x_only( 0, NULL, 0 );
             add_arc( "temp", "files.txt", 0 );
             download_temp_arc( "temp", 0 );
         }
@@ -1342,7 +1342,7 @@ void Upload()
 {
     play_sdf( UPLOAD_NOEXT, false );
     printfile( UPLOAD_NOEXT );
-    if ( GetSession()->GetCurrentUser()->isRestrictionValidate() || GetSession()->GetCurrentUser()->isRestrictionUpload() ||
+    if ( GetSession()->GetCurrentUser()->IsRestrictionValidate() || GetSession()->GetCurrentUser()->IsRestrictionUpload() ||
          ( syscfg.sysconfig & sysconfig_all_sysop ) )
     {
         if ( syscfg.newuploads < GetSession()->num_dirs )

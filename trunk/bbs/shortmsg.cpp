@@ -36,7 +36,7 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
 {
     bool bShownAnyMessage = false;
     int bShownAllMessages = true;
-    if ( pUser->hasShortMessage() )
+    if ( pUser->HasShortMessage() )
     {
         WFile file( syscfg.datadir, SMW_DAT );
         if ( !file.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
@@ -100,7 +100,7 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
     }
     if ( bShownAllMessages )
     {
-        pUser->setStatusFlag( WUser::SMW );
+        pUser->SetStatusFlag( WUser::SMW );
     }
 }
 
@@ -109,7 +109,7 @@ void SendLocalShortMessage( unsigned int nUserNum, unsigned int nSystemNum, char
 {
     WUser user;
     GetApplication()->GetUserManager()->ReadUser( &user, nUserNum );
-    if ( !user.isUserDeleted() )
+    if ( !user.IsUserDeleted() )
     {
         WFile file( syscfg.datadir, SMW_DAT );
         if ( !file.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
@@ -146,7 +146,7 @@ void SendLocalShortMessage( unsigned int nUserNum, unsigned int nSystemNum, char
         file.Seek( nNewMsgPos * sizeof( shortmsgrec ), WFile::seekBegin );
         file.Write( &sm, sizeof( shortmsgrec ) );
         file.Close();
-        user.setStatusFlag( WUser::SMW );
+        user.SetStatusFlag( WUser::SMW );
         GetApplication()->GetUserManager()->WriteUser( &user, nUserNum );
     }
 }

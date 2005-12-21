@@ -5,7 +5,3 @@
 
 Move bbs logic out of WLocalIO and into WSession (probably)
 
-Move WComm and WLocalIO references into WSession instead of WApplication
-
-Make WUser function names start with upper case like rest of code.
-

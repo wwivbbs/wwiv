@@ -56,7 +56,7 @@ void show_files( const char *pszFileName, const char *pszDirectoryName )
         strncpy(s, fnd.GetFileName(), MAX_PATH);
         align(s);
         SNPRINTF( szFullPathName, sizeof( szFullPathName ), "|#7[|#2%s|#7]|#1 ", s );
-        if ( GetApplication()->GetLocalIO()->WhereX() > ( GetSession()->GetCurrentUser()->GetScreenChars() - 15 ) )
+        if ( GetSession()->localIO()->WhereX() > ( GetSession()->GetCurrentUser()->GetScreenChars() - 15 ) )
         {
             GetSession()->bout.NewLine();
         }

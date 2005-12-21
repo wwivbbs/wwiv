@@ -129,7 +129,7 @@ void vote_question(int i, int ii)
     votingrec v;
 
     bool pqo = print_question(i, ii);
-    if ( GetSession()->GetCurrentUser()->isRestrictionVote() || GetSession()->GetEffectiveSl() <= 10 ||!pqo )
+    if ( GetSession()->GetCurrentUser()->IsRestrictionVote() || GetSession()->GetEffectiveSl() <= 10 ||!pqo )
     {
         return;
     }

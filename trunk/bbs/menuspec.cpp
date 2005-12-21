@@ -69,7 +69,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
     bool ok = true;
     while ( ( nRecordNumber > 0 ) && ok && !hangup )
     {
-        GetApplication()->GetLocalIO()->tleft( true );
+        GetSession()->localIO()->tleft( true );
 		WFile fileDownload( g_szDownloadFileName );
 		fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
         FileAreaSetRecord( fileDownload, nRecordNumber );
@@ -136,7 +136,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
                 if (syscfg.sysconfig & sysconfig_log_dl)
                 {
                     GetApplication()->GetUserManager()->ReadUser( &ur, u.ownerusr );
-                    if ( !ur.isUserDeleted() )
+                    if ( !ur.IsUserDeleted() )
                     {
                         if ( date_to_daten( ur.GetFirstOn() ) < static_cast<time_t>( u.daten ) )
                         {
@@ -264,7 +264,7 @@ bool ValidateDoorAccess( int nDoorNumber )
     {
         return false;
     }
-    if ( c.ar && !GetSession()->GetCurrentUser()->hasArFlag( c.ar ) )
+    if ( c.ar && !GetSession()->GetCurrentUser()->HasArFlag( c.ar ) )
     {
         return false;
     }

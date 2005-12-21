@@ -219,7 +219,7 @@ void asv()
                 sprintf(s1, "* Validated as %s 1@%d", GetSession()->GetNetworkName(), inode);
                 sysoplog(s1);
                 sysoplog(s);
-                GetSession()->GetCurrentUser()->setStatusFlag( WUser::expert );
+                GetSession()->GetCurrentUser()->SetStatusFlag( WUser::expert );
                 GetSession()->GetCurrentUser()->SetExempt( 0 );
                 GetSession()->GetCurrentUser()->SetForwardSystemNumber( inode );
                 GetSession()->GetCurrentUser()->SetHomeSystemNumber( inode );
@@ -285,7 +285,7 @@ void asv()
             properize( s );
             ssm( 1, 0, "%s validated as a WWIV SysOp on %s.", s, fulldate() );
             sysoplog( "* Validated as a WWIV SysOp" );
-            GetSession()->GetCurrentUser()->setStatusFlag( WUser::expert );
+            GetSession()->GetCurrentUser()->SetStatusFlag( WUser::expert );
             set_autoval( GetSession()->advasv.nonreg_wwiv );
             GetSession()->bout.NewLine();
             valfile = 9;
@@ -352,9 +352,9 @@ int printasv( char *pszFileName, int num, bool abort )
 	sprintf( szFileName, "%s%s", syscfg.gfilesdir, pszFileName );
     if ( !strrchr( szFileName, '.' ) )
     {
-        if ( GetSession()->GetCurrentUser()->hasAnsi() )
+        if ( GetSession()->GetCurrentUser()->HasAnsi() )
         {
-            if ( GetSession()->GetCurrentUser()->hasColor() )
+            if ( GetSession()->GetCurrentUser()->HasColor() )
             {
 				sprintf( szFileName1, "%s%s", szFileName, ".ans");
                 if ( WFile::Exists( szFileName1 ) )
@@ -475,7 +475,7 @@ int printasv( char *pszFileName, int num, bool abort )
                     okprint = 0;
                 }
             }
-            if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
+            if ( GetSession()->localIO()->LocalKeyPressed() )
             {
                 switch ( wwiv::UpperCase<char>( getkey() ) )
                 {

@@ -299,7 +299,7 @@ ADD_OR_REMOVE_BATCH:
 #ifdef FILE_POINTS
 										else if ( ( ( !( file_recs[file_pos]->mask & mask_validated ) ) ||
                                                     ( ( file_recs[file_pos]->filepoints > GetSession()->GetCurrentUser()->GetFilePoints() ) ) &&
-												    !GetSession()->GetCurrentUser()->isExemptRatio() ) &&
+												    !GetSession()->GetCurrentUser()->IsExemptRatio() ) &&
                                                     !sysop_mode)
 										{
 											GetSession()->bout.ClearScreen();
@@ -401,7 +401,7 @@ ADD_OR_REMOVE_BATCH:
 											amount = lines = matches = 0;
 #ifdef FILE_POINTS
                                             if (((!(file_recs[file_pos]->mask & mask_validated)) || ((file_recs[file_pos]->filepoints > GetSession()->GetCurrentUser()->GetFilePoints() ) ) &&
-                                                !GetSession()->GetCurrentUser()->isExemptRatio() ) && !sysop_mode)
+                                                !GetSession()->GetCurrentUser()->IsExemptRatio() ) && !sysop_mode)
 											{
 												GetSession()->bout.ClearScreen();
 												GetSession()->bout << "You don't have enough file points to download this file\r\n";

@@ -104,7 +104,7 @@ int try_to_ul_wh(char *pszFileName)
     GetSession()->bout.NewLine( 3 );
 
     bool done = false;
-    if ( GetSession()->GetCurrentUser()->isRestrictionValidate() || GetSession()->GetCurrentUser()->isRestrictionUpload() ||
+    if ( GetSession()->GetCurrentUser()->IsRestrictionValidate() || GetSession()->GetCurrentUser()->IsRestrictionUpload() ||
         ( syscfg.sysconfig & sysconfig_all_sysop ) )
     {
         dn = (syscfg.newuploads < GetSession()->num_dirs) ? syscfg.newuploads : 0;

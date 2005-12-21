@@ -73,15 +73,15 @@ bool access_conf( WUser * u, int sl, confrec * c)
     {
         return false;
     }
-    if ( c->ar && !u->hasArFlag( c->ar ) )
+    if ( c->ar && !u->HasArFlag( c->ar ) )
     {
         return false;
     }
-    if ( c->dar && !u->hasDarFlag( c->dar ) )
+    if ( c->dar && !u->HasDarFlag( c->dar ) )
     {
         return false;
     }
-    if ( ( c->status & conf_status_ansi ) && ( !u->hasAnsi() ) )
+    if ( ( c->status & conf_status_ansi ) && ( !u->HasAnsi() ) )
     {
         return false;
     }
@@ -111,11 +111,11 @@ bool access_sub( WUser * u, int sl, subboardrec * s )
     {
         return false;
     }
-    if ( s->ar != 0 && !u->hasArFlag( s->ar ) )
+    if ( s->ar != 0 && !u->HasArFlag( s->ar ) )
     {
         return false;
     }
-    if ( ( s->anony & anony_ansi_only ) && !u->hasAnsi() )
+    if ( ( s->anony & anony_ansi_only ) && !u->HasAnsi() )
     {
         return false;
     }
@@ -137,7 +137,7 @@ bool access_dir( WUser * u, int sl, directoryrec * d )
     {
         return false;
     }
-    if ( d->dar && !u->hasDarFlag( d->dar ) )
+    if ( d->dar && !u->HasDarFlag( d->dar ) )
     {
         return false;
     }

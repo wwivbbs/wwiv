@@ -69,7 +69,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
 
     int cm = chatting;
 
-    int begx = GetApplication()->GetLocalIO()->WhereX();
+    int begx = GetSession()->localIO()->WhereX();
     if (pszRollover[0] != 0)
     {
         char* ss = szRollOver;
@@ -124,18 +124,18 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
         }
         if ( ch >= SPACE )
         {
-            if ( ( GetApplication()->GetLocalIO()->WhereX() < ( GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) ) && ( cp < nMaxLen ) )
+            if ( ( GetSession()->localIO()->WhereX() < ( GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) ) && ( cp < nMaxLen ) )
             {
                 pszBuffer[cp++] = ch;
                 bputch(ch);
-                if ( GetApplication()->GetLocalIO()->WhereX() == ( GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) )
+                if ( GetSession()->localIO()->WhereX() == ( GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) )
                 {
                     done = true;
                 }
             }
             else
             {
-                if ( GetApplication()->GetLocalIO()->WhereX() >= ( GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) )
+                if ( GetSession()->localIO()->WhereX() >= ( GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) )
                 {
                     done = true;
                 }
@@ -205,7 +205,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
             }
             break;
         case CX:                            // Ctrl-X
-            while ( GetApplication()->GetLocalIO()->WhereX() > begx )
+            while ( GetSession()->localIO()->WhereX() > begx )
             {
                 GetSession()->bout.BackSpace();
                 cp = 0;
@@ -236,7 +236,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
             }
             break;
         case CN:                            // Ctrl-N
-            if ( GetApplication()->GetLocalIO()->WhereX() && cp < nMaxLen )
+            if ( GetSession()->localIO()->WhereX() && cp < nMaxLen )
             {
                 bputch( BACKSPACE );
                 pszBuffer[cp++] = BACKSPACE;
@@ -269,9 +269,9 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
             break;
         case TAB:                             // Tab
             i = 5 - (cp % 5);
-            if ( (cp + i) < nMaxLen && (GetApplication()->GetLocalIO()->WhereX() + i) < GetSession()->GetCurrentUser()->GetScreenChars() )
+            if ( (cp + i) < nMaxLen && (GetSession()->localIO()->WhereX() + i) < GetSession()->GetCurrentUser()->GetScreenChars() )
             {
-                i = 5 - ((GetApplication()->GetLocalIO()->WhereX() + 1) % 5);
+                i = 5 - ((GetSession()->localIO()->WhereX() + 1) % 5);
                 for (i1 = 0; i1 < i; i1++)
                 {
                     pszBuffer[cp++] = SPACE;
@@ -289,7 +289,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
       {
           i--;
       }
-      if ( i > (GetApplication()->GetLocalIO()->WhereX() / 2) && i != (cp - 1) )
+      if ( i > (GetSession()->localIO()->WhereX() / 2) && i != (cp - 1) )
       {
           i1 = cp - i - 1;
           for (i = 0; i < i1; i++)
@@ -380,7 +380,7 @@ void checka(bool *abort, bool *next)
     {
         CheckForHangup();
         char ch = bgetch();
-        if ( !GetSession()->tagging || GetSession()->GetCurrentUser()->isUseNoTagging())
+        if ( !GetSession()->tagging || GetSession()->GetCurrentUser()->IsUseNoTagging())
         {
             lines_listed = 0;
         }
@@ -473,7 +473,7 @@ void plal(const char *pszText, int limit, bool *abort)
 bool sysop2()
 {
     bool ok = sysop1();
-    if ( GetSession()->GetCurrentUser()->isRestrictionChat() )
+    if ( GetSession()->GetCurrentUser()->IsRestrictionChat() )
 	{
         ok = false;
 	}
@@ -709,7 +709,7 @@ char *mmkey( int dl, bool bListOption )
 					{
 						GetSession()->bout.NewLine();
 					}
-					if ( !GetSession()->GetCurrentUser()->isExpert() && !okansi() )
+					if ( !GetSession()->GetCurrentUser()->IsExpert() && !okansi() )
 					{
 						newline = true;
 					}
@@ -781,7 +781,7 @@ char *mmkey( int dl, bool bListOption )
 									{
 										GetSession()->bout.NewLine();
 									}
-									if ( !GetSession()->GetCurrentUser()->isExpert() && !okansi() )
+									if ( !GetSession()->GetCurrentUser()->IsExpert() && !okansi() )
 									{
 										newline = true;
 									}
@@ -823,7 +823,7 @@ char *mmkey( int dl, bool bListOption )
 					{
 						GetSession()->bout.NewLine();
 					}
-					if ( !GetSession()->GetCurrentUser()->isExpert() && !okansi() )
+					if ( !GetSession()->GetCurrentUser()->IsExpert() && !okansi() )
 					{
 						newline = true;
 					}                    break;
@@ -834,7 +834,7 @@ char *mmkey( int dl, bool bListOption )
 						{
 							GetSession()->bout.NewLine();
 						}
-						if ( !GetSession()->GetCurrentUser()->isExpert() && !okansi() )
+						if ( !GetSession()->GetCurrentUser()->IsExpert() && !okansi() )
 						{
 							newline = true;
 						}

@@ -358,26 +358,26 @@ void hang_it_up()
 		return;
 	}
 
-	GetApplication()->GetComm()->dtr( false );
-	if (!GetApplication()->GetComm()->carrier())
+	GetSession()->remoteIO()->dtr( false );
+	if (!GetSession()->remoteIO()->carrier())
     {
         return;
     }
 
 	wait1( 9 );
-	if (!GetApplication()->GetComm()->carrier())
+	if (!GetSession()->remoteIO()->carrier())
     {
         return;
     }
 
 	wait1( 9 );
-	if (!GetApplication()->GetComm()->carrier())
+	if (!GetSession()->remoteIO()->carrier())
     {
         return;
     }
     int i = 0;
-	GetApplication()->GetComm()->dtr( true );
-	while ( i++ < 2 && GetApplication()->GetComm()->carrier() )
+	GetSession()->remoteIO()->dtr( true );
+	while ( i++ < 2 && GetSession()->remoteIO()->carrier() )
 	{
 		wait1( 27 );
 		rputs("\x1\x1\x1");
@@ -385,7 +385,7 @@ void hang_it_up()
         rputs( (modem_i->hang[0]) ? modem_i->hang : "ATH\r" );
 		wait1( 6 );
 	}
-	GetApplication()->GetComm()->dtr( true );
+	GetSession()->remoteIO()->dtr( true );
 #endif
 }
 

@@ -85,7 +85,7 @@ void multimail(int *pnUserNumber, int numu)
 			pnUserNumber[cv] = -1;
 			continue;
 		}
-        if ( user.isUserDeleted() )
+        if ( user.IsUserDeleted() )
 		{
 			GetSession()->bout << "User deleted, not sent.\r\n";
 			pnUserNumber[cv] = -1;
@@ -269,7 +269,7 @@ int oneuser()
 		GetSession()->bout << "Mailbox full.\r\n\n";
 		return 0;
 	}
-    if ( user.isUserDeleted() )
+    if ( user.IsUserDeleted() )
 	{
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "Deleted user.\r\n\n";
@@ -348,7 +348,7 @@ void slash_e()
 		GetSession()->bout << "Too much mail sent today.\r\n\n";
 		return;
 	}
-	if ( GetSession()->GetCurrentUser()->isRestrictionEmail() )
+	if ( GetSession()->GetCurrentUser()->IsRestrictionEmail() )
 	{
 		GetSession()->bout << "You can't send mail.\r\n";
 		return;

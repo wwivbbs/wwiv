@@ -320,7 +320,7 @@ void sort_all(int type)
 {
 	tmp_disable_conf( true );
 	for ( int i = 0; ( i < GetSession()->num_dirs ) && ( udir[i].subnum != -1 ) &&
-		( !GetApplication()->GetLocalIO()->LocalKeyPressed() ); i++ )
+		( !GetSession()->localIO()->LocalKeyPressed() ); i++ )
 	{
 		GetSession()->bout << "\r\n|#1Sorting " << directories[udir[i].subnum].name << wwiv::endl;
 		sortdir( i, type );
@@ -874,7 +874,7 @@ void relist()
 	GetSession()->tagging = 0;
 	if ( GetApplication()->HasConfigFlag( OP_FLAGS_FAST_TAG_RELIST ) )
 	{
-		GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+		GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 		if ( okansi() )
 		{
 			GetSession()->bout << "ออหออออออออออออหอออออหออออหอออออออออออออออออออออออออออออออออออออออออออออออออออ\r\n";
@@ -890,7 +890,7 @@ void relist()
 		{
 			if (tcd != filelist[i].directory)
 			{
-				GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+				GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 				if (tcd != -1)
 				{
 					if ( okansi() )
@@ -912,7 +912,7 @@ void relist()
 						break;
 					}
 				}
-				if ( GetSession()->GetCurrentUser()->isUseExtraColor() )
+				if ( GetSession()->GetCurrentUser()->IsUseExtraColor() )
 				{
 					GetSession()->bout.Color( 2 );
 				}
@@ -924,7 +924,7 @@ void relist()
 				{
 					GetSession()->bout << directories[tcd].name << " - #" << udir[tcdi].keys << ".\r\n";
 				}
-				GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+				GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 				if ( okansi() )
 				{
 					GetSession()->bout << "ออหออออออออออออหอออออหออออหอออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
@@ -940,10 +940,10 @@ void relist()
 			check_batch_queue(filelist[i].u.filename) ? 6 : 0,
 			i + 1,
 			0x03,
-			GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0,
+			GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0,
 			okansi() ? 'บ' : '|');
 		osan(s, &abort, &next);
-		if ( GetSession()->GetCurrentUser()->isUseExtraColor() )
+		if ( GetSession()->GetCurrentUser()->IsUseExtraColor() )
 		{
 			GetSession()->bout.Color( 1 );
 		}
@@ -952,12 +952,12 @@ void relist()
 		osan(s, &abort, &next);
 		strncpy(s, &((filelist[i].u.filename)[8]), 4);
 		s[4] = 0;
-		if ( GetSession()->GetCurrentUser()->isUseExtraColor() )
+		if ( GetSession()->GetCurrentUser()->IsUseExtraColor() )
 		{
 			GetSession()->bout.Color( 1 );
 		}
 		osan(s, &abort, &next);
-		GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+		GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 		osan((okansi() ? "บ" : ":"), &abort, &next);
 
         sprintf( s1, "%ld""k", bytes_to_k( filelist[i].u.numbytes ) );
@@ -979,13 +979,13 @@ void relist()
 		}
 		s[i1] = 0;
 		strcat(s, s1);
-		if ( GetSession()->GetCurrentUser()->isUseExtraColor() )
+		if ( GetSession()->GetCurrentUser()->IsUseExtraColor() )
 		{
 			GetSession()->bout.Color( 2 );
 		}
 		osan(s, &abort, &next);
 
-		GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+		GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 		osan((okansi() ? "บ" : "|"), &abort, &next);
 		sprintf(s1, "%d", filelist[i].u.numdloads);
 
@@ -995,13 +995,13 @@ void relist()
 		}
 		s[i1] = 0;
 		strcat(s, s1);
-		if ( GetSession()->GetCurrentUser()->isUseExtraColor() )
+		if ( GetSession()->GetCurrentUser()->IsUseExtraColor() )
 		{
 			GetSession()->bout.Color( 2 );
 		}
 		osan(s, &abort, &next);
 
-		GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+		GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 		osan((okansi() ? "บ" : "|"), &abort, &next);
 		sprintf(s, "%c%d%s",
 			    0x03,
@@ -1009,7 +1009,7 @@ void relist()
 			    filelist[i].u.description);
 		plal(s, GetSession()->GetCurrentUser()->GetScreenChars() - 28, &abort);
   }
-  GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+  GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
   if ( okansi() )
   {
 	  GetSession()->bout << "\r" << "ออสออออออออออออสอออออสออออสอออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
@@ -1413,10 +1413,10 @@ void xfer_defaults()
 		GetSession()->bout <<  "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
 		GetSession()->bout <<  "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
 		GetSession()->bout <<  "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base (" <<
-                 YesNoString( GetSession()->GetCurrentUser()->isNewScanFiles() ) << ").\r\n";
+                 YesNoString( GetSession()->GetCurrentUser()->IsNewScanFiles() ) << ").\r\n";
 		GetSession()->bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print [" << GetSession()->GetCurrentUser()->GetNumExtended() << " line(s)].\r\n";
 		GetSession()->bout << "|#7[|#25|#7]|#1 File GetSession()->tagging (";
-		if ( GetSession()->GetCurrentUser()->isUseNoTagging() )
+		if ( GetSession()->GetCurrentUser()->IsUseNoTagging() )
 		{
 			GetSession()->bout << "Disabled)\r\n";
 		}
@@ -1424,11 +1424,11 @@ void xfer_defaults()
 		{
 			GetSession()->bout << "Enabled";
 		}
-		if ( !GetSession()->GetCurrentUser()->isUseListPlus() && !GetSession()->GetCurrentUser()->isUseNoTagging() )
+		if ( !GetSession()->GetCurrentUser()->IsUseListPlus() && !GetSession()->GetCurrentUser()->IsUseNoTagging() )
 		{
 			GetSession()->bout << " - ListPlus!)\r\n";
 		}
-		else if ( !GetSession()->GetCurrentUser()->isUseNoTagging() )
+		else if ( !GetSession()->GetCurrentUser()->IsUseNoTagging() )
 		{
 			GetSession()->bout << " - Internal Tagging)\r\n";
 		}
@@ -1453,7 +1453,7 @@ void xfer_defaults()
 			}
 			break;
 		case '3':
-            GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::nscanFileSystem );
+            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::nscanFileSystem );
 			break;
 		case '4':
 			GetSession()->bout.NewLine( 2 );
@@ -1472,14 +1472,14 @@ void xfer_defaults()
 			}
 			break;
 		case '5':
-            if ( GetSession()->GetCurrentUser()->isUseNoTagging() )
+            if ( GetSession()->GetCurrentUser()->IsUseNoTagging() )
 			{
-                GetSession()->GetCurrentUser()->clearStatusFlag( WUser::noTag );
+                GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::noTag );
 				check_listplus();
 			}
 			else
 			{
-                GetSession()->GetCurrentUser()->setStatusFlag( WUser::noTag );
+                GetSession()->GetCurrentUser()->SetStatusFlag( WUser::noTag );
 			}
 			break;
 		}

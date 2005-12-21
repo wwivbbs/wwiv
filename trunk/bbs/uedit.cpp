@@ -33,7 +33,7 @@ void deluser( int nUserNumber )
     WUser user;
     GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
 
-    if ( !user.isUserDeleted() )
+    if ( !user.IsUserDeleted() )
     {
         rsm( nUserNumber, &user, false );
         DeleteSmallRecord( user.GetName() );
@@ -99,7 +99,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
     {
         GetSession()->bout.ClearScreen();
     }
-    if ( pUser->isUserDeleted() )
+    if ( pUser->IsUserDeleted() )
     {
         GetSession()->bout << "|#6>>> This User Is DELETED - Use 'R' to Restore <<<\r\n\n";
     }
@@ -169,7 +169,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
         GetSession()->bout << "|#2H|#9) Password     : |#1";
         if ( AllowLocalSysop() )
         {
-            GetApplication()->GetLocalIO()->LocalPuts( pUser->GetPassword() );
+            GetSession()->localIO()->LocalPuts( pUser->GetPassword() );
         }
 
         if ( incom && GetSession()->GetCurrentUser()->GetSl() == 255 )
@@ -216,17 +216,17 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
     if ( pUser->GetExempt() != 0 )
     {
         GetSession()->bout.WriteFormatted( "|#9   Exemptions   : |#1%s %s %s %s %s (%d)\r\n",
-                pUser->isExemptRatio() ? "XFER" : "    ",
-                pUser->isExemptTime() ? "TIME" : "    ",
-                pUser->isExemptPost() ? "POST" : "    ",
-                pUser->isExemptAll() ? "ALL " : "    ",
-                pUser->isExemptAutoDelete()? "ADEL" : "    ",
+                pUser->IsExemptRatio() ? "XFER" : "    ",
+                pUser->IsExemptTime() ? "TIME" : "    ",
+                pUser->IsExemptPost() ? "POST" : "    ",
+                pUser->IsExemptAll() ? "ALL " : "    ",
+                pUser->IsExemptAutoDelete()? "ADEL" : "    ",
                 pUser->GetExempt() );
     }
     strcpy(s3, restrict_string);
     for (int i = 0; i <= 15; i++)
     {
-        if (pUser->hasArFlag(1 << i))
+        if (pUser->HasArFlag(1 << i))
         {
             s[i] = static_cast<char>( 'A' + i );
         }
@@ -234,7 +234,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
         {
             s[i] = SPACE;
         }
-        if (pUser->hasDarFlag(1 << i))
+        if (pUser->HasDarFlag(1 << i))
         {
             s1[i] = static_cast<char>( 'A' + i );
         }
@@ -418,7 +418,7 @@ int matchuser( WUser *pUser )
                         if ( parm[0] >= 'A' && parm[0] <= 'P' )
                         {
                             tmp1 = 1 << (parm[0] - 'A');
-                            tmp = pUser->hasArFlag( tmp1 ) ? 1 : 0;
+                            tmp = pUser->HasArFlag( tmp1 ) ? 1 : 0;
                         }
                         else
                         {
@@ -430,7 +430,7 @@ int matchuser( WUser *pUser )
                         if ((parm[0] >= 'A') && (parm[0] <= 'P'))
                         {
                             tmp1 = 1 << (parm[0] - 'A');
-                            tmp = pUser->hasDarFlag( tmp1 ) ? 1 : 0;
+                            tmp = pUser->HasDarFlag( tmp1 ) ? 1 : 0;
                         }
                         else
                         {
@@ -636,9 +636,9 @@ void uedit( int usern, int other )
                     if (ch1 != RETURN)
                     {
                         ch1 -= 'A';
-                        if ( GetApplication()->GetWfcStatus() || (GetSession()->GetCurrentUser()->hasArFlag(1 << ch1)))
+                        if ( GetApplication()->GetWfcStatus() || (GetSession()->GetCurrentUser()->HasArFlag(1 << ch1)))
                         {
-                            user.toggleArFlag( 1 << ch1 );
+                            user.ToggleArFlag( 1 << ch1 );
                             GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                         }
                     }
@@ -666,7 +666,7 @@ void uedit( int usern, int other )
             case 'D':
                 if (nUserNumber != 1)
                 {
-                    if ( !user.isUserDeleted() && GetSession()->GetEffectiveSl() > user.GetSl() )
+                    if ( !user.IsUserDeleted() && GetSession()->GetEffectiveSl() > user.GetSl() )
                     {
                         GetSession()->bout << "|#5Delete? ";
                         if (yesno())
@@ -754,9 +754,9 @@ void uedit( int usern, int other )
                     if (ch1 != RETURN)
                     {
                         ch1 -= 'A';
-                        if ( GetApplication()->GetWfcStatus() || (GetSession()->GetCurrentUser()->hasDarFlag(1 << ch1)))
+                        if ( GetApplication()->GetWfcStatus() || (GetSession()->GetCurrentUser()->HasDarFlag(1 << ch1)))
 					    {
-                            user.toggleDarFlag( 1 << ch1 );
+                            user.ToggleDarFlag( 1 << ch1 );
                             GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                         }
                     }
@@ -926,7 +926,7 @@ void uedit( int usern, int other )
                 bDoneWithUser = true;
                 break;
             case 'R':
-                if ( user.isUserDeleted() )
+                if ( user.IsUserDeleted() )
                 {
                     user.ToggleInactFlag( WUser::userDeleted );
                     InsertSmallRecord( nUserNumber, user.GetName() );
@@ -1135,7 +1135,7 @@ void uedit( int usern, int other )
                             }
                             if (nRestriction > -1)
                             {
-                                user.toggleRestrictionFlag( 1 << nRestriction );
+                                user.ToggleRestrictionFlag( 1 << nRestriction );
                                 GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
                             }
                         }

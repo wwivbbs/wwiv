@@ -56,7 +56,7 @@ int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
         write_qscn(GetSession()->usernum, qsc, false);
     }
     close_strfiles();
-    GetApplication()->GetLocalIO()->set_global_handle( false );
+    GetSession()->localIO()->set_global_handle( false );
 
     // extra processing for net programs
     if (nFlags & EFLAG_NETPROG)

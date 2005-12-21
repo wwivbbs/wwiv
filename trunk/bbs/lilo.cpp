@@ -148,8 +148,8 @@ int GetAnsiStatusAndShowWelcomeScreen( int nNetworkOnly )
             GetSession()->bout.NewLine();
             if ( ans > 0 )
             {
-                GetSession()->GetCurrentUser()->setStatusFlag( WUser::ansi );
-                GetSession()->GetCurrentUser()->setStatusFlag( WUser::color );
+                GetSession()->GetCurrentUser()->SetStatusFlag( WUser::ansi );
+                GetSession()->GetCurrentUser()->SetStatusFlag( WUser::color );
                 if ( !random_screen( WELCOME_NOEXT ) )
                 {
                     printfile( WELCOME_ANS );
@@ -226,7 +226,7 @@ int ShowLoginAndGetUserNumber( int nNetworkOnly, char* pszUserName )
                 char szTempUserName[ 255 ];
                 strcpy( szTempUserName, GetSession()->GetCurrentUser()->GetRealName() );
                 if ( wwiv::stringUtils::IsEquals( szUserName, WWIV_STRUPR( szTempUserName ) ) &&
-                     !GetSession()->GetCurrentUser()->isUserDeleted() )
+                     !GetSession()->GetCurrentUser()->IsUserDeleted() )
                 {
                     GetSession()->bout << "|#5Do you mean " << GetSession()->GetCurrentUser()->GetUserNameAndNumber( i ) << "? ";
                     if ( yesno() )
@@ -390,10 +390,10 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
     }
     GetApplication()->GetStatusManager()->RefreshStatusCache();
     hangup = true;
-    GetApplication()->GetComm()->dtr( false );
+    GetSession()->remoteIO()->dtr( false );
     global_xx = false;
     Wait(1.0);
-    GetApplication()->GetComm()->dtr( true );
+    GetSession()->remoteIO()->dtr( true );
     Wait(0.1);
     cleanup_net();
     imodem( false );
@@ -405,11 +405,11 @@ void LeaveBadPasswordFeedback( int ans )
 {
     if ( ans > 0 )
     {
-        GetSession()->GetCurrentUser()->setStatusFlag( WUser::ansi );
+        GetSession()->GetCurrentUser()->SetStatusFlag( WUser::ansi );
     }
     else
     {
-        GetSession()->GetCurrentUser()->clearStatusFlag( WUser::ansi );
+        GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::ansi );
     }
     GetSession()->bout << "|12Too many logon attempts!!\r\n\n";
     GetSession()->bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
@@ -456,7 +456,7 @@ void LeaveBadPasswordFeedback( int ans )
 
 void CheckCallRestrictions()
 {
-    if ( !hangup && GetSession()->usernum > 0 && GetSession()->GetCurrentUser()->isRestrictionLogon() &&
+    if ( !hangup && GetSession()->usernum > 0 && GetSession()->GetCurrentUser()->IsRestrictionLogon() &&
         wwiv::stringUtils::IsEquals( date(), GetSession()->GetCurrentUser()->GetLastOn() ) &&
         GetSession()->GetCurrentUser()->GetTimesOnToday() > 0 )
     {
@@ -509,8 +509,8 @@ void DoCallBackVerification()
         }
         GetSession()->GetCurrentUser()->SetArFlag( GetSession()->cbv.ar );
         GetSession()->GetCurrentUser()->SetDarFlag( GetSession()->cbv.dar );
-        GetSession()->GetCurrentUser()->setExemptFlag( GetSession()->cbv.exempt );
-        GetSession()->GetCurrentUser()->setRestrictionFlag( GetSession()->cbv.restrict );
+        GetSession()->GetCurrentUser()->SetExemptFlag( GetSession()->cbv.exempt );
+        GetSession()->GetCurrentUser()->SetRestrictionFlag( GetSession()->cbv.restrict );
         GetSession()->WriteCurrentUser( GetSession()->usernum );
     }
     else
@@ -1135,7 +1135,7 @@ void LoginCheckForNewMail()
 
 void CheckUserForVotingBooth()
 {
-    if (!GetSession()->GetCurrentUser()->isRestrictionVote() && GetSession()->GetEffectiveSl() > syscfg.newusersl )
+    if (!GetSession()->GetCurrentUser()->IsRestrictionVote() && GetSession()->GetEffectiveSl() > syscfg.newusersl )
     {
         for (int i = 0; i < 20; i++)
         {
@@ -1279,7 +1279,7 @@ void logoff()
         }
     }
     setiia(90);
-    GetApplication()->GetComm()->dtr( false );
+    GetSession()->remoteIO()->dtr( false );
     hangup = true;
     if (GetSession()->usernum < 1)
     {
@@ -1408,7 +1408,7 @@ void logoff()
                 {
                     if ( sm.tosys == 0 && sm.touser == GetSession()->usernum )
                     {
-                        GetSession()->GetCurrentUser()->setStatusFlag( WUser::SMW );
+                        GetSession()->GetCurrentUser()->SetStatusFlag( WUser::SMW );
                     }
                     if ( r != w )
                     {

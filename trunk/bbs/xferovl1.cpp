@@ -348,9 +348,9 @@ int read_idz_all()
 
 	tmp_disable_conf( true );
 	tmp_disable_pause( true );
-	GetApplication()->GetLocalIO()->set_protect( 0 );
+	GetSession()->localIO()->set_protect( 0 );
 	for (int i = 0; (i < GetSession()->num_dirs) && (udir[i].subnum != -1) &&
-		(!GetApplication()->GetLocalIO()->LocalKeyPressed()); i++)
+		(!GetSession()->localIO()->LocalKeyPressed()); i++)
 	{
 		count += read_idz(0, i);
 	}
@@ -371,7 +371,7 @@ int read_idz(int mode, int tempdir)
 	if (mode)
 	{
 		tmp_disable_pause( true );
-		GetApplication()->GetLocalIO()->set_protect( 0 );
+		GetSession()->localIO()->set_protect( 0 );
 		dliscan();
 		file_mask(s);
 	}
@@ -489,7 +489,7 @@ void tag_it()
 				bad = true;
 			}
 			if ( ( syscfg.req_ratio > 0.0001 ) && ( ratio() < syscfg.req_ratio ) &&
-                 !GetSession()->GetCurrentUser()->isExemptRatio() && !bad )
+                 !GetSession()->GetCurrentUser()->IsExemptRatio() && !bad )
 			{
 				GetSession()->bout.WriteFormatted( "|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n", ratio(), syscfg.req_ratio );
 				bad = true;
@@ -568,18 +568,18 @@ void tag_files()
 		GetSession()->tagptr = 0;
 		return;
 	}
-	GetApplication()->GetLocalIO()->tleft( true );
+	GetSession()->localIO()->tleft( true );
 	if (hangup)
 	{
 		return;
 	}
-	if ( GetSession()->GetCurrentUser()->isUseNoTagging() )
+	if ( GetSession()->GetCurrentUser()->IsUseNoTagging() )
 	{
-		if ( GetSession()->GetCurrentUser()->hasPause() )
+		if ( GetSession()->GetCurrentUser()->HasPause() )
 		{
 			pausescr();
 		}
-        GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+        GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 		if ( okansi() )
 		{
 			GetSession()->bout << "\r" << "様様様様様様瞥様様瞥様様様様様様様様様様様様様様様様様様様様様様様様様様様様様" << wwiv::endl;
@@ -592,7 +592,7 @@ void tag_files()
 		return;
 	}
 	lines_listed = 0;
-	GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+	GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 	if ( okansi() )
 	{
 		GetSession()->bout << "\r様瞥様様様様様擁様様擁様様瞥様様様様様様様様様様様様様様様様様様様様様様様様様\r\n";
@@ -928,7 +928,7 @@ int try_to_download(const char *pszFileMask, int dn)
 	foundany = 1;
 	do
 	{
-		GetApplication()->GetLocalIO()->tleft( true );
+		GetSession()->localIO()->tleft( true );
 		WFile fileDownload( g_szDownloadFileName );
 		fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
 		FileAreaSetRecord( fileDownload, i );
@@ -1178,12 +1178,12 @@ char fancy_prompt( const char *pszPrompt, const char *pszAcceptChars )
 	char s1[81], s2[81], s3[81];
 	char ch = 0;
 
-	GetApplication()->GetLocalIO()->tleft( true );
+	GetSession()->localIO()->tleft( true );
 	sprintf(s1, "\r|#2%s (|#1%s|#2)? |#0", pszPrompt, pszAcceptChars );
 	sprintf(s2, "%s (%s)? ", pszPrompt, pszAcceptChars );
 	int i1 = strlen(s2);
 	sprintf(s3, "%s%s", pszAcceptChars, " \r");
-	GetApplication()->GetLocalIO()->tleft( true );
+	GetSession()->localIO()->tleft( true );
 	if ( okansi() )
 	{
 		GetSession()->bout << s1;
@@ -1216,15 +1216,15 @@ void endlist(int mode)
 	{
 		if (g_num_listed)
 		{
-			if ( GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->isUseNoTagging() && filelist )
+			if ( GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->IsUseNoTagging() && filelist )
 			{
 				tag_files();
 				return;
 			}
 			else
 			{
-				GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
-				if ( GetSession()->titled != 2 && GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->isUseNoTagging() )
+				GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
+				if ( GetSession()->titled != 2 && GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->IsUseNoTagging() )
 				{
 					if ( okansi() )
 					{
@@ -1481,7 +1481,7 @@ void removenotthere()
 	if (yesno())
 	{
 		for (int i = 0; ((i < GetSession()->num_dirs) && (udir[i].subnum != -1) &&
-			(!GetApplication()->GetLocalIO()->LocalKeyPressed())); i++)
+			(!GetSession()->localIO()->LocalKeyPressed())); i++)
 		{
 			GetSession()->bout.NewLine();
             GetSession()->bout << "|#1Removing N/A|#0 in " << directories[udir[i].subnum].name;

@@ -202,7 +202,7 @@ void run_event( int evnt )
 
     write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
 #ifndef _UNIX
-    GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );
+    GetSession()->localIO()->SetCursor( WLocalIO::cursorNormal );
 #endif
     GetSession()->bout.ClearScreen();
     GetSession()->bout << "\r\nNow running external event.\r\n\n";
@@ -214,9 +214,9 @@ void run_event( int evnt )
 	{
         exitlevel = static_cast<int>( events[evnt].cmd[0] );
         close_strfiles();
-        if ( ok_modem_stuff && GetApplication()->GetComm() != NULL )
+        if ( ok_modem_stuff && GetSession()->remoteIO() != NULL )
         {
-            GetApplication()->GetComm()->close();
+            GetSession()->remoteIO()->close();
         }
         exit( exitlevel );
     }
@@ -637,7 +637,7 @@ void eventedit()
 
 				do
 				{
-					GetApplication()->GetLocalIO()->LocalCls();
+					GetSession()->localIO()->LocalCls();
                     std::string title = "|B1|15System Events Configuration";
                     GetSession()->bout.WriteFormatted( "%-85s", title.c_str() );
 					GetSession()->bout.Color ( 0 );
@@ -653,7 +653,7 @@ void eventedit()
 					GetSession()->bout.NewLine();
 					GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7, |#2?|#7=|#1Help|#7) Which? (|#11|#7-|#18|#7) :";
 					ch = onek( "Q1345678?" );
-					GetApplication()->GetLocalIO()->LocalGotoXY( 26, ch - 47 );
+					GetSession()->localIO()->LocalGotoXY( 26, ch - 47 );
 					switch( ch )
 					{
 					case '1':
@@ -678,7 +678,7 @@ void eventedit()
 						Input1( syscfg.v_scan_c, syscfg.v_scan_c, 51, true, UPPER );
 						break;
 					case '?':
-						GetApplication()->GetLocalIO()->LocalCls();
+						GetSession()->localIO()->LocalCls();
 						printfile( CMDPARAM_NOEXT );
 						pausescr();
 						break;

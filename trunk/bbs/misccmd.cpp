@@ -350,7 +350,7 @@ void list_users( int mode )
         changedsl();
         bool in_qscan = (qsc_q[usub[GetSession()->GetCurrentMessageArea()].subnum / 32] & (1L << (usub[GetSession()->GetCurrentMessageArea()].subnum % 32))) ? true : false;
         bool ok = true;
-        if ( user.isUserDeleted() )
+        if ( user.IsUserDeleted() )
 		{
             ok = false;
 		}
@@ -364,7 +364,7 @@ void list_users( int mode )
 			{
                 ok = false;
 			}
-            if ( s.ar != 0 && !user.hasArFlag( s.ar ) )
+            if ( s.ar != 0 && !user.HasArFlag( s.ar ) )
 			{
                 ok = false;
 			}
@@ -379,7 +379,7 @@ void list_users( int mode )
 			{
                 ok = false;
 			}
-            if ( d.dar != 0 && !user.hasDarFlag( d.dar ) )
+            if ( d.dar != 0 && !user.HasDarFlag( d.dar ) )
 			{
                 ok = false;
 			}
@@ -538,7 +538,7 @@ void time_bank()
 				}
                 GetSession()->GetCurrentUser()->SetTimeBankMinutes( GetSession()->GetCurrentUser()->GetTimeBankMinutes() + static_cast<unsigned short>( i ) );
                 GetSession()->GetCurrentUser()->SetExtraTime( GetSession()->GetCurrentUser()->GetExtraTime() - static_cast<float>( i * SECONDS_PER_MINUTE_FLOAT ) );
-                GetApplication()->GetLocalIO()->tleft( false );
+                GetSession()->localIO()->tleft( false );
             }
             break;
         case 'W':
@@ -559,7 +559,7 @@ void time_bank()
 				}
                 GetSession()->GetCurrentUser()->SetTimeBankMinutes( GetSession()->GetCurrentUser()->GetTimeBankMinutes() - static_cast<unsigned short>( i ) );
                 GetSession()->GetCurrentUser()->SetExtraTime( GetSession()->GetCurrentUser()->GetExtraTime() + static_cast<float>( i * SECONDS_PER_MINUTE_FLOAT ) );
-                GetApplication()->GetLocalIO()->tleft( false );
+                GetSession()->localIO()->tleft( false );
             }
             break;
         case 'Q':
@@ -616,7 +616,7 @@ void Packers()
         case '1':
             {
                 // We used to write STATUS_DAT here.  I don't think we need to anymore.
-                GetApplication()->GetLocalIO()->set_protect( 0 );
+                GetSession()->localIO()->set_protect( 0 );
                 sysoplog("@ Ran WWIVMail/QWK");
                 char szCommandLine[ MAX_PATH ];
                 if (GetApplication()->GetInstanceNumber()==1)
@@ -637,9 +637,9 @@ void Packers()
             {
                 tmp_disable_pause( true );
                 GetSession()->bout << "\r\nPlease wait...\r\n";
-                GetApplication()->GetLocalIO()->set_x_only(1, "posts.txt", 0);
+                GetSession()->localIO()->set_x_only(1, "posts.txt", 0);
                 nscan();
-                GetApplication()->GetLocalIO()->set_x_only(0, NULL, 0);
+                GetSession()->localIO()->set_x_only(0, NULL, 0);
                 add_arc("offline", "posts.txt", 0);
                 download_temp_arc("offline", 0);
             }

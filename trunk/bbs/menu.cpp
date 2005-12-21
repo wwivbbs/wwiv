@@ -223,7 +223,7 @@ void Menus(MenuInstanceData * pMenuData, const char *pszDir, const char *pszMenu
             return;
         }
         // if flagged to display help on entrance, then do so
-        if ( GetSession()->GetCurrentUser()->isExpert() && pMenuData->header.nForceHelp == MENU_HELP_ONENTRANCE )
+        if ( GetSession()->GetCurrentUser()->IsExpert() && pMenuData->header.nForceHelp == MENU_HELP_ONENTRANCE )
         {
             AMDisplayHelp(pMenuData);
         }
@@ -388,7 +388,7 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
     {
         if (pHeader->uAR & (1 << x))
         {
-            if ( !GetSession()->GetCurrentUser()->hasArFlag( 1 << x ) )
+            if ( !GetSession()->GetCurrentUser()->HasArFlag( 1 << x ) )
             {
                 return false;
             }
@@ -400,7 +400,7 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
     {
         if (pHeader->uDAR & (1 << x))
         {
-            if ( !GetSession()->GetCurrentUser()->hasDarFlag( 1 << x ) )
+            if ( !GetSession()->GetCurrentUser()->HasDarFlag( 1 << x ) )
             {
                 return ( GetSession()->GetCurrentUser()->GetDsl() < pHeader->nMinDSL );
             }
@@ -412,7 +412,7 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
     {
         if (pHeader->uRestrict & (1 << x))
         {
-            if ( GetSession()->GetCurrentUser()->hasRestrictionFlag( 1 << x ) )
+            if ( GetSession()->GetCurrentUser()->HasRestrictionFlag( 1 << x ) )
             {
                 return ( GetSession()->GetCurrentUser()->GetDsl() < pHeader->nMinDSL );
             }
@@ -531,22 +531,18 @@ void LogUserFunction(MenuInstanceData * pMenuData, const char *pszCommand, MenuR
 
 void MenuSysopLog(const char *pszMsg)
 {
-    char szBuffer[ 255 ];
-    strncpy( szBuffer, pszMsg, 180 );
-	szBuffer[180] = 0;
+    std::stringstream logStream;
+    logStream << "*MENU* : " << pszMsg;
 
-	char szLog[255];
-	sprintf(szLog, "*MENU* : %s", szBuffer);
-	sysopchar(szLog);
-
-	GetSession()->bout << szLog;
+    sysopchar( logStream.str().c_str() );
+    GetSession()->bout << logStream.str();
 	GetSession()->bout.NewLine();
 }
 
 
 void PrintMenuPrompt( MenuInstanceData * pMenuData )
 {
-    if ( !GetSession()->GetCurrentUser()->isExpert() || pMenuData->header.nForceHelp == MENU_HELP_FORCE )
+    if ( !GetSession()->GetCurrentUser()->IsExpert() || pMenuData->header.nForceHelp == MENU_HELP_FORCE )
     {
 		AMDisplayHelp( pMenuData );
     }
@@ -572,14 +568,14 @@ void AMDisplayHelp( MenuInstanceData * pMenuData )
 
 	char * pszTemp = szFileName + strlen(szFileName);
 
-	if ( GetSession()->GetCurrentUser()->hasAnsi() )
+	if ( GetSession()->GetCurrentUser()->HasAnsi() )
     {
-		if ( GetSession()->GetCurrentUser()->hasColor() )
+		if ( GetSession()->GetCurrentUser()->HasColor() )
         {
 			strcpy(pszTemp, ".ans");
 			if (!WFile::Exists(szFileName))
             {
-				pszTemp[0] = 0;
+				pszTemp[0] = '\0';
             }
 		}
 		if ( !*pszTemp )
@@ -980,7 +976,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     {
         if (pMenu->uAR & (1 << x))
         {
-            if ( !GetSession()->GetCurrentUser()->hasArFlag( 1 << x ) )
+            if ( !GetSession()->GetCurrentUser()->HasArFlag( 1 << x ) )
             {
                 return false;
             }
@@ -992,7 +988,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     {
         if (pMenu->uDAR & (1 << x))
         {
-            if ( !GetSession()->GetCurrentUser()->hasDarFlag( 1 << x ) )
+            if ( !GetSession()->GetCurrentUser()->HasDarFlag( 1 << x ) )
             {
                 return false;
             }
@@ -1004,7 +1000,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     {
         if (pMenu->uRestrict & (1 << x))
         {
-            if ( GetSession()->GetCurrentUser()->hasRestrictionFlag( 1 << x ) )
+            if ( GetSession()->GetCurrentUser()->HasRestrictionFlag( 1 << x ) )
             {
                 return false;
             }
@@ -1546,7 +1542,7 @@ void InterpretCommand( MenuInstanceData * pMenuData, const char *pszScript )
             } break;
         case 19:
             {  // "DisplayHelp"
-                if ( GetSession()->GetCurrentUser()->isExpert() )
+                if ( GetSession()->GetCurrentUser()->IsExpert() )
                 {
                     AMDisplayHelp( pMenuData );
                 }

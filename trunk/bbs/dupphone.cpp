@@ -108,7 +108,7 @@ int find_phone_number(const char *phone)
 		{
         	WUser user;
             GetApplication()->GetUserManager()->ReadUser( &user, p[i].usernum );
-            if ( !user.isUserDeleted() )
+            if ( !user.IsUserDeleted() )
 			{
 				break;
 			}

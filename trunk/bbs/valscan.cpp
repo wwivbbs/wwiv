@@ -72,7 +72,7 @@ void valscan()
             if ( get_post( i )->status & status_pending_net )
             {
                 CheckForHangup();
-                GetApplication()->GetLocalIO()->tleft( true );
+                GetSession()->localIO()->tleft( true );
                 if ( i > 0 && i <= GetSession()->GetNumMessagesInCurrentMessageArea() )
                 {
                     bool next;
@@ -131,7 +131,7 @@ void valscan()
                                 {
                                     WUser tu;
                                     GetApplication()->GetUserManager()->ReadUser( &tu, p2.owneruser );
-                                    if ( !tu.isUserDeleted() )
+                                    if ( !tu.IsUserDeleted() )
                                     {
                                         if ( static_cast<unsigned long>( date_to_daten( tu.GetFirstOn() ) ) < p2.daten )
                                         {

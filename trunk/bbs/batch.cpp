@@ -142,7 +142,7 @@ void downloaded( char *pszFileName, long lCharsPerSecond )
                 {
                     WUser user;
                     GetApplication()->GetUserManager()->ReadUser( &user, u.ownerusr );
-                    if ( !user.isUserDeleted() )
+                    if ( !user.IsUserDeleted() )
                     {
                         if ( date_to_daten( user.GetFirstOn() ) < static_cast<signed int>( u.daten ) )
                         {
@@ -352,18 +352,18 @@ void zmbatchdl(bool bHangupAfterDl)
 
 //    char szTempTelnet[21];
 //    sprintf(szTempTelnet, "%c%c%c", 255, 253, 0); // DO BINARY
-//    GetApplication()->GetComm()->write(szTempTelnet, 3, true);
+//    GetSession()->remoteIO()->write(szTempTelnet, 3, true);
 
     bool bRatioBad = false;
     bool ok = true;
     do
     {
-        GetApplication()->GetLocalIO()->tleft( true );
+        GetSession()->localIO()->tleft( true );
         if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio))
         {
             bRatioBad = true;
         }
-        if ( GetSession()->GetCurrentUser()->isExemptRatio() )
+        if ( GetSession()->GetCurrentUser()->IsExemptRatio() )
         {
             bRatioBad = false;
         }
@@ -383,7 +383,7 @@ void zmbatchdl(bool bHangupAfterDl)
             else
             {
                 sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", GetSession()->numbatchdl, ctim( batchtime ) );
-                GetApplication()->GetLocalIO()->LocalPuts( szMessage );
+                GetSession()->localIO()->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
                 FileAreaSetRecord( file, i );
@@ -433,7 +433,7 @@ if ( ok && !hangup )
     }
 
 //    sprintf(szTempTelnet, "%c%c%c", 255, 254, 0); // DONT BINARY
-//    GetApplication()->GetComm()->write(szTempTelnet, 3, true);
+//    GetSession()->remoteIO()->write(szTempTelnet, 3, true);
 }
 
 
@@ -461,12 +461,12 @@ void ymbatchdl(bool bHangupAfterDl)
     bool ok = true;
     do
     {
-        GetApplication()->GetLocalIO()->tleft( true );
+        GetSession()->localIO()->tleft( true );
         if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio))
         {
             bRatioBad = true;
         }
-        if ( GetSession()->GetCurrentUser()->isExemptRatio() )
+        if ( GetSession()->GetCurrentUser()->IsExemptRatio() )
         {
             bRatioBad = false;
         }
@@ -486,7 +486,7 @@ void ymbatchdl(bool bHangupAfterDl)
             else
             {
                 sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", GetSession()->numbatchdl, ctim( batchtime ) );
-                GetApplication()->GetLocalIO()->LocalPuts( szMessage );
+                GetSession()->localIO()->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
                 FileAreaSetRecord( file, i );
@@ -685,7 +685,7 @@ void make_dl_batch_list(char *pszListFileName)
             long thisk = bytes_to_k(batch[i].len);
             if ( ( syscfg.req_ratio > 0.0001 ) &&
                  ( ratio1( addk + thisk ) < syscfg.req_ratio ) &&
-                 !GetSession()->GetCurrentUser()->isExemptRatio() )
+                 !GetSession()->GetCurrentUser()->IsExemptRatio() )
             {
                 ok = false;
 				GetSession()->bout << "Cannot download " << batch[i].filename << ": Ratio too low" << wwiv::endl;
@@ -732,13 +732,13 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
     if ( szCommandLine[0] )
     {
         WWIV_make_abs_cmd( szCommandLine );
-        GetApplication()->GetLocalIO()->LocalCls();
+        GetSession()->localIO()->LocalCls();
 		char szMessage[ 1024 ];
         sprintf( szMessage,
                  "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
                  GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ),
                  modem_speed, dl, szCommandLine );
-        GetApplication()->GetLocalIO()->LocalPuts( szMessage );
+        GetSession()->localIO()->LocalPuts( szMessage );
         if ( incom )
         {
             WFile::SetFilePermissions( g_szDSZLogFileName, WFile::permWrite );
@@ -748,9 +748,9 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
             if ( bHangupAfterDl )
             {
                 bihangup( 1 );
-                if (!GetApplication()->GetComm()->carrier())
+                if (!GetSession()->remoteIO()->carrier())
                 {
-                    GetApplication()->GetComm()->dtr( true );
+                    GetSession()->remoteIO()->dtr( true );
                     wait1( 5 );
                     holdphone( true );
                 }
@@ -1127,14 +1127,14 @@ void bihangup(int up)
                 GetSession()->bout.NewLine();
                 GetSession()->bout << "Thank you for calling.";
                 GetSession()->bout.NewLine();
-                GetApplication()->GetComm()->dtr( false );
+                GetSession()->remoteIO()->dtr( false );
                 hangup = true;
                 if (up)
                 {
                     wait1( 2 );
-                    if (!GetApplication()->GetComm()->carrier())
+                    if (!GetSession()->remoteIO()->carrier())
                     {
-                        GetApplication()->GetComm()->dtr( true );
+                        GetSession()->remoteIO()->dtr( true );
                         wait1( 2 );
                         holdphone( true );
                     }
