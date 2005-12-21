@@ -1175,7 +1175,7 @@ void readmail( int mode )
 					break;
 				}
 				GetSession()->bout.NewLine( 2 );
-				if ( okfsed() && GetSession()->GetCurrentUser()->isUseAutoQuote() )
+				if ( okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote() )
 				{
 					b=readfile(&(m.msg), "email", &len);
 					auto_quote(b, len, 4, m.daten);
@@ -1352,7 +1352,7 @@ void readmail( int mode )
 				}
 				else if (m.fromuser != 65535)
 				{
-					if (okfsed() && GetSession()->GetCurrentUser()->isUseAutoQuote() )
+					if (okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote() )
 					{
 						b=readfile(&(m.msg), "email", &len);
 						if (s[0] == '@')

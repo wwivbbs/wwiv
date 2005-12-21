@@ -172,7 +172,7 @@ void write_automessage1()
 char ShowAMsgMenuAndGetInput( const char *pszAutoMessageLockFileName )
 {
     bool bCanWrite = false;
-    if ( !GetSession()->GetCurrentUser()->isRestrictionAutomessage() && !WFile::Exists( pszAutoMessageLockFileName ) )
+    if ( !GetSession()->GetCurrentUser()->IsRestrictionAutomessage() && !WFile::Exists( pszAutoMessageLockFileName ) )
     {
         bCanWrite = ( getslrec( GetSession()->GetEffectiveSl() ).posts ) ? true : false;
     }

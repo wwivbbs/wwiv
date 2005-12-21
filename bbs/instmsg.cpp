@@ -183,7 +183,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg)
     case INST_MSG_SYSMSG:
         if ( ih->msg_size > 0 && GetSession()->IsUserOnline() && !hangup )
         {
-            GetApplication()->GetLocalIO()->SaveCurrentLine( cl, atr, xl, &cc );
+            GetSession()->localIO()->SaveCurrentLine( cl, atr, xl, &cc );
             GetSession()->bout.NewLine( 2 );
             if ( in_chatroom )
             {
@@ -294,8 +294,8 @@ void process_inst_msgs()
                 }
                 file.Close();
                 file.Delete();
-                GetSession()->topline = 0;
-                GetApplication()->GetLocalIO()->LocalCls();
+                GetSession()->localIO()->SetTopLine( 0 );
+                GetSession()->localIO()->LocalCls();
                 hangup = true;
                 hang_it_up();
                 holdphone( false );
@@ -470,8 +470,8 @@ void instance_edit()
                 }
                 if (i == GetApplication()->GetInstanceNumber())
                 {
-                    GetSession()->topline = 0;
-                    GetApplication()->GetLocalIO()->LocalCls();
+                    GetSession()->localIO()->SetTopLine( 0 );
+                    GetSession()->localIO()->LocalCls();
                     hangup = true;
                     hang_it_up();
                     holdphone( false );
@@ -514,8 +514,8 @@ void instance_edit()
                         }
                     }
                 }
-                GetSession()->topline = 0;
-                GetApplication()->GetLocalIO()->LocalCls();
+                GetSession()->localIO()->SetTopLine( 0 );
+                GetSession()->localIO()->LocalCls();
                 hangup = true;
                 hang_it_up();
                 holdphone( false );
@@ -565,7 +565,7 @@ void write_inst( int loc, int subloc, int flags )
         {
             cf |= INST_FLAGS_INVIS;
         }
-        if ( !GetSession()->GetCurrentUser()->isIgnoreNodeMessages() )
+        if ( !GetSession()->GetCurrentUser()->IsIgnoreNodeMessages() )
         {
             switch (loc)
             {

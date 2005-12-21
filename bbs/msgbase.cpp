@@ -415,7 +415,7 @@ bool ForwardMessage( int *pUserNumber, int *pSystemNumber )
 
 	WUser userRecord;
     GetApplication()->GetUserManager()->ReadUser( &userRecord, *pUserNumber );
-    if ( userRecord.isUserDeleted() )
+    if ( userRecord.IsUserDeleted() )
 	{
 		return false;
 	}
@@ -840,7 +840,7 @@ bool ok_to_mail( int nUserNumber, int nSystemNumber, bool bForceit )
 				return false;
 			}
 		}
-        if ( userRecord.isUserDeleted() )
+        if ( userRecord.IsUserDeleted() )
 		{
 			GetSession()->bout << "\r\nDeleted user.\r\n\n";
 			return false;
@@ -853,7 +853,7 @@ bool ok_to_mail( int nUserNumber, int nSystemNumber, bool bForceit )
 			GetSession()->bout << "\r\nUnknown system number.\r\n\n";
 			return false;
 		}
-		if ( GetSession()->GetCurrentUser()->isRestrictionNet() )
+		if ( GetSession()->GetCurrentUser()->IsRestrictionNet() )
 		{
 			GetSession()->bout << "\r\nYou can't send mail off the system.\r\n";
 			return false;
@@ -869,7 +869,7 @@ bool ok_to_mail( int nUserNumber, int nSystemNumber, bool bForceit )
 			GetSession()->bout << "\r\nToo much mail sent today.\r\n\n";
 			return false;
 		}
-        if ( GetSession()->GetCurrentUser()->isRestrictionEmail() && nUserNumber != 1 )
+        if ( GetSession()->GetCurrentUser()->IsRestrictionEmail() && nUserNumber != 1 )
 		{
 			GetSession()->bout << "\r\nYou can't send mail.\r\n\n";
 			return false;
@@ -1001,7 +1001,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 	{
 		i = anony_enable_anony;
 	}
-    if ( i == anony_enable_anony && GetSession()->GetCurrentUser()->isRestrictionAnonymous() )
+    if ( i == anony_enable_anony && GetSession()->GetCurrentUser()->IsRestrictionAnonymous() )
 	{
 		i = 0;
 	}
@@ -1219,7 +1219,7 @@ void imail( int nUserNumber, int nSystemNumber )
 	if ( nSystemNumber == 0 )
 	{
         GetApplication()->GetUserManager()->ReadUser( &userRecord, nUserNumber );
-        if ( !userRecord.isUserDeleted() )
+        if ( !userRecord.IsUserDeleted() )
 		{
             GetSession()->bout << "|#5E-mail " << userRecord.GetUserNameAndNumber( nUserNumber ) << "? ";
 			if ( !yesno() )
@@ -1471,9 +1471,9 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 					{
 						g_flags &= ~g_flag_ansi_movement;
 						lines_listed = 0;
-						if ( GetSession()->topline && GetSession()->screenbottom == 24 )
+						if ( GetSession()->localIO()->GetTopLine() && GetSession()->localIO()->GetScreenBottom() == 24 )
 						{
-							GetApplication()->GetLocalIO()->set_protect( 0 );
+							GetSession()->localIO()->set_protect( 0 );
 						}
 					}
 					s[nNumCharsPtr++] = ch;
@@ -1491,14 +1491,14 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 				{
 					if ( centre && ( ctrld != -1 ) )
 					{
-						int nSpacesToCenter = ( GetSession()->GetCurrentUser()->GetScreenChars() - GetApplication()->GetLocalIO()->WhereX() - nLineLenPtr ) / 2;
+						int nSpacesToCenter = ( GetSession()->GetCurrentUser()->GetScreenChars() - GetSession()->localIO()->WhereX() - nLineLenPtr ) / 2;
                         osan( charstr( nSpacesToCenter, ' ' ), &abort, next);
 					}
 					if ( nNumCharsPtr )
 					{
 						if ( ctrld != -1 )
 						{
-							if ( ( GetApplication()->GetLocalIO()->WhereX() + nLineLenPtr >= GetSession()->GetCurrentUser()->GetScreenChars() ) && !centre && !ansi )
+							if ( ( GetSession()->localIO()->WhereX() + nLineLenPtr >= GetSession()->GetCurrentUser()->GetScreenChars() ) && !centre && !ansi )
 							{
 								GetSession()->bout.NewLine();
 							}
@@ -1506,7 +1506,7 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 							osan( s, &abort, next );
 							if ( ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi )
 							{
-								if ( GetApplication()->GetLocalIO()->WhereX() < GetSession()->GetCurrentUser()->GetScreenChars() - 1 )
+								if ( GetSession()->localIO()->WhereX() < GetSession()->GetCurrentUser()->GetScreenChars() - 1 )
 								{
 									bputch( SPACE );
 								}
@@ -1585,7 +1585,7 @@ void read_message(int n, bool *next, int *val)
 	GetSession()->bout.NewLine();
 	bool abort = false;
 	*next = false;
-	if ( GetSession()->GetCurrentUser()->isUseClearScreen() )
+	if ( GetSession()->GetCurrentUser()->IsUseClearScreen() )
     {
 		GetSession()->bout.ClearScreen();
     }

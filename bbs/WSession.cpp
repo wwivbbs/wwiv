@@ -27,6 +27,9 @@ const int WSession::mmkeyChains         = 2;
 
 WSession::WSession( WApplication *pApplication )
 {
+    m_pLocalIO			                        = new WLocalIO();
+    bout.SetLocalIO( m_pLocalIO );
+
     m_bLastKeyLocal = true;
     m_pApplication  = pApplication;
     m_nEffectiveSl  = 0;
@@ -89,14 +92,11 @@ WSession::WSession( WApplication *pApplication )
     num_subs = 0;
     num_events = 0;
     num_sys_list = 0;
-    screenbottom = 0;
     screenlinest = 0;
     subchg = 0;
     tagging = 0;
     tagptr = 0;
     titled = 0;
-    topdata = 0;
-    topline = 0;
     using_modem = 0;
     m_bInternalZmodem = false;
     m_bExecLogSyncFoss = false;
@@ -104,6 +104,89 @@ WSession::WSession( WApplication *pApplication )
     m_nExecChildProcessWaitTime = 0;
     m_bNewScanAtLogin = false;
     usernum = 0;
+    m_pComm = NULL;
+}
+
+WSession::~WSession()
+{
+    if ( ok_modem_stuff && m_pComm != NULL )
+    {
+		m_pComm->shutdown();
+        m_pComm->close();
+	    if ( m_pComm != NULL )
+	    {
+	        delete m_pComm;
+	        m_pComm = NULL;
+	    }
+    }
+    if ( m_pLocalIO != NULL )
+    {
+        m_pLocalIO->SetCursor( WLocalIO::cursorNormal );
+        delete m_pLocalIO;
+        m_pLocalIO = NULL;
+    }
+}
+
+
+
+
+bool WSession::StartupComm(bool bUseSockets)
+{
+    if ( NULL != m_pComm )
+    {
+        std::cout << "Cannot startup comm support, it's already started!!\r\n";
+        return false;
+    }
+
+#if defined ( _WIN32 )
+
+    if ( bUseSockets )
+    {
+        m_pComm = new WIOTelnet();
+    }
+    else
+    {
+        m_pComm = new WIOSerial();
+    }
+
+#elif defined ( _UNIX )
+
+    m_pComm = new WIOUnix();
+
+#elif defined ( __OS2 )
+
+#error "You must implement the stuff to write with!!!"
+
+#endif // defined ($PLATFORM)
+
+    GetSession()->bout.SetComm( m_pComm );
+    return m_pComm->startup();
+}
+
+
+bool WSession::ShutdownComm()
+{
+	if ( NULL == m_pComm )
+	{
+        std::cout << "Cannot shutdown comm support, it's not started!!\r\n";
+		return false;
+	}
+
+	bool ret = m_pComm->shutdown();
+    delete m_pComm;
+    return ret;
+}
+
+
+WLocalIO* WSession::localIO() 
+{ 
+    return m_pLocalIO; 
+}
+
+
+WComm* WSession::remoteIO()
+{
+    return m_pComm;
 }
 
 
@@ -140,7 +223,7 @@ void WSession::DisplaySysopWorkingIndicator( bool displayWait )
         if ( okansi() )
         {
             int nSavedAttribute = curatr;
-            GetSession()->bout.SystemColor( GetCurrentUser()->hasColor() ? GetCurrentUser()->GetColor( 3 ) : GetCurrentUser()->GetBWColor( 3 ) );
+            GetSession()->bout.SystemColor( GetCurrentUser()->HasColor() ? GetCurrentUser()->GetColor( 3 ) : GetCurrentUser()->GetBWColor( 3 ) );
             bout << waitString << "\x1b[" << nNumPrintableChars << "D";
             GetSession()->bout.SystemColor( static_cast< unsigned char > ( nSavedAttribute ) );
         }

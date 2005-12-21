@@ -44,7 +44,7 @@ struct ini_flags_type
     unsigned long value;
 };
 
-unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_type * fs, int num, unsigned long flags);
+unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, unsigned long flags);
 
 
 // Turns a string into a bitmapped unsigned short flag for use with
@@ -1184,9 +1184,10 @@ void WApplication::InitializeBBS()
 {
     std::string newprompt;
 
-    GetSession()->screenbottom = defscreenbottom = GetLocalIO()->GetDefaultScreenBottom();
+    GetSession()->localIO()->SetScreenBottom( GetSession()->localIO()->GetDefaultScreenBottom() );
+    defscreenbottom = GetSession()->localIO()->GetDefaultScreenBottom();
 
-    GetLocalIO()->LocalCls();
+    GetSession()->localIO()->LocalCls();
 #if !defined( _UNIX )
     std::cout << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2005, WWIV Software Services.\r\n\n";
 	std::cout << "\r\nInitializing BBS...\r\n";
@@ -1194,9 +1195,9 @@ void WApplication::InitializeBBS()
     GetSession()->SetCurrentReadMessageArea( -1 );
     use_workspace = false;
     chat_file = false;
-    GetLocalIO()->SetSysopAlert( false );
+    GetSession()->localIO()->SetSysopAlert( false );
     nsp = 0;
-    GetLocalIO()->set_global_handle( false, true );
+    GetSession()->localIO()->set_global_handle( false, true );
     bquote = 0;
     equote = 0;
     GetSession()->SetQuoting( false );
@@ -1368,7 +1369,7 @@ void WApplication::InitializeBBS()
 
     XINIT_PRINTF("* Reading User Information.\r\n");
     GetSession()->ReadCurrentUser( 1, false );
-    fwaiting = ( GetSession()->GetCurrentUser()->isUserDeleted() ) ? 0 : GetSession()->GetCurrentUser()->GetNumMailWaiting();
+    fwaiting = ( GetSession()->GetCurrentUser()->IsUserDeleted() ) ? 0 : GetSession()->GetCurrentUser()->GetNumMailWaiting();
 
     statusMgr->RefreshStatusCache();
 
@@ -1533,7 +1534,7 @@ void WApplication::create_phone_file()
     }
     long lFileSize = file.GetLength();
     file.Close();
-    int num = static_cast<int>( lFileSize / sizeof( userrec ) );
+    int nNumberOfRecords = static_cast<int>( lFileSize / sizeof( userrec ) );
 
     WFile phoneNumFile( syscfg.datadir, PHONENUM_DAT );
     if ( !phoneNumFile.Open( WFile::modeReadWrite | WFile::modeAppend | WFile::modeBinary | WFile::modeCreateFile,
@@ -1542,11 +1543,11 @@ void WApplication::create_phone_file()
         return;
     }
 
-    for ( int nTempUserNumber = 1; nTempUserNumber <= num; nTempUserNumber++ )
+    for ( int nTempUserNumber = 1; nTempUserNumber <= nNumberOfRecords; nTempUserNumber++ )
     {
         WUser user;
         GetApplication()->GetUserManager()->ReadUser( &user, nTempUserNumber );
-        if ( !user.isUserDeleted() )
+        if ( !user.IsUserDeleted() )
         {
             p.usernum = nTempUserNumber;
             char szTempVoiceNumber[ 255 ], szTempDataNumber[ 255 ];
@@ -1570,9 +1571,9 @@ void WApplication::create_phone_file()
 }
 
 
-unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_type * fs, int num, unsigned long flags)
+unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, unsigned long flags)
 {
-    for (int i = 0; i < num; i++)
+    for (int i = 0; i < nFlagNumber; i++)
     {
         const char* ss = INI_OPTIONS_ARRAY[ fs[i].strnum ];
         if ( ss && pIniFile->GetValue( ss ) )

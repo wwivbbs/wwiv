@@ -318,15 +318,15 @@ int Input1(char *pszOutText, const char *pszOrigText, int nMaxLength, bool bInse
     {
         bInsert = 0;
     }
-    int nTopLineSaved = GetSession()->topline;
-    GetSession()->topline = 0;
+    int nTopLineSaved = GetSession()->localIO()->GetTopLine();
+    GetSession()->localIO()->SetTopLine( 0 );
     pos = nLength = 0;
     szTemp[0] = '\0';
 	
 	nMaxLength = std::max<int>(nMaxLength, 80);
     GetSession()->bout.Color( 4 );
-    int x = GetApplication()->GetLocalIO()->WhereX() + 1;
-    int y = GetApplication()->GetLocalIO()->WhereY() + 1;
+    int x = GetSession()->localIO()->WhereX() + 1;
+    int y = GetSession()->localIO()->WhereY() + 1;
 
     GetSession()->bout.GotoXY(x, y);
     for (i = 0; i < nMaxLength; i++)
@@ -334,14 +334,14 @@ int Input1(char *pszOutText, const char *pszOrigText, int nMaxLength, bool bInse
         GetSession()->bout << "±";
     }
     GetSession()->bout.GotoXY( x, y );
-    if ( pszOrigText[0] )
+    if ( pszOrigText && *pszOrigText )
     {
         strcpy( szTemp, pszOrigText );
         GetSession()->bout << szTemp;
         GetSession()->bout.GotoXY( x, y );
         pos = nLength = strlen(szTemp);
     }
-    x = GetApplication()->GetLocalIO()->WhereX() + 1;
+    x = GetSession()->localIO()->WhereX() + 1;
 
     bool done = false;
     do
@@ -539,7 +539,7 @@ int Input1(char *pszOutText, const char *pszOrigText, int nMaxLength, bool bInse
   }
 
   GetSession()->topdata = nTopDataSaved;
-  GetSession()->topline = nTopLineSaved;
+  GetSession()->localIO()->SetTopLine( nTopLineSaved );
 
   GetSession()->bout.Color( 0 );
   return nLength;

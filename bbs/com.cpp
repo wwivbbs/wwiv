@@ -28,7 +28,7 @@ void addto( char *pszAnsiString, int nNumber );
 
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc)
 {
-    if ( GetApplication()->GetLocalIO()->WhereX() )
+    if ( GetSession()->localIO()->WhereX() )
 	{
         GetSession()->bout.NewLine();
 	}
@@ -52,7 +52,7 @@ char rpeek_wfconly()
 {
     if ( ok_modem_stuff && !global_xx )
     {
-        return ( ( char ) GetApplication()->GetComm()->peek() );
+        return ( ( char ) GetSession()->remoteIO()->peek() );
     }
     return 0;
 }
@@ -60,15 +60,15 @@ char rpeek_wfconly()
 
 char bgetchraw()
 {
-    if ( ok_modem_stuff && !global_xx && NULL != GetApplication()->GetComm() )
+    if ( ok_modem_stuff && !global_xx && NULL != GetSession()->remoteIO() )
     {
-        if ( GetApplication()->GetComm()->incoming() )
+        if ( GetSession()->remoteIO()->incoming() )
         {
-            return ( GetApplication()->GetComm()->getW() );
+            return ( GetSession()->remoteIO()->getW() );
         }
-        if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
+        if ( GetSession()->localIO()->LocalKeyPressed() )
         {
-            return ( GetApplication()->GetLocalIO()->getchd1() );
+            return ( GetSession()->localIO()->getchd1() );
         }
     }
     return 0;
@@ -79,9 +79,9 @@ bool bkbhitraw()
 {
     if ( ok_modem_stuff && !global_xx )
     {
-        return ( GetApplication()->GetComm()->incoming() || GetApplication()->GetLocalIO()->LocalKeyPressed() );
+        return ( GetSession()->remoteIO()->incoming() || GetSession()->localIO()->LocalKeyPressed() );
     }
-    else if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
+    else if ( GetSession()->localIO()->LocalKeyPressed() )
     {
         return true;
     }
@@ -93,8 +93,8 @@ void dump()
 {
     if ( ok_modem_stuff )
     {
-		GetApplication()->GetComm()->purgeOut();
-		GetApplication()->GetComm()->purgeIn();
+		GetSession()->remoteIO()->purgeOut();
+		GetSession()->remoteIO()->purgeIn();
     }
 }
 
@@ -104,7 +104,7 @@ bool CheckForHangup()
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of hangup
 {
-    if ( !hangup && GetSession()->using_modem && !GetApplication()->GetComm()->carrier() )
+    if ( !hangup && GetSession()->using_modem && !GetSession()->remoteIO()->carrier() )
     {
         hangup = hungup = true;
         if ( GetSession()->IsUserOnline() )
@@ -191,9 +191,9 @@ void makeansi( int attr, char *pszOutBuffer, bool forceit )
 
 void resetnsp()
 {
-    if ( nsp == 1 && !( GetSession()->GetCurrentUser()->hasPause() ) )
+    if ( nsp == 1 && !( GetSession()->GetCurrentUser()->HasPause() ) )
     {
-        GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
+        GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
     }
     nsp=0;
 }
@@ -207,7 +207,7 @@ bool bkbhit()
         return false;
     }
 
-    if ( ( GetApplication()->GetLocalIO()->LocalKeyPressed() || ( incom && bkbhitraw() ) ||
+    if ( ( GetSession()->localIO()->LocalKeyPressed() || ( incom && bkbhitraw() ) ||
          ( charbufferpointer && charbuffer[charbufferpointer] ) ) ||
 		 bquote )
     {
@@ -231,7 +231,7 @@ char getkey()
     long tv = ( so() || IsEqualsIgnoreCase( GetSession()->GetCurrentSpeed().c_str(), "TELNET" ) ) ? 10920L : 3276L;
     long tv1 = tv - 1092L;     // change 4.31 Build3
 
-    if ( !GetSession()->tagging || GetSession()->GetCurrentUser()->isUseNoTagging() )
+    if ( !GetSession()->tagging || GetSession()->GetCurrentUser()->IsUseNoTagging() )
     {
         lines_listed = 0;
     }

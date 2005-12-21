@@ -133,7 +133,7 @@ void printtitle_plus_old()
 
 void printtitle_plus()
 {
-	if (GetApplication()->GetLocalIO()->WhereY() != 0 || GetApplication()->GetLocalIO()->WhereX() != 0)
+	if (GetSession()->localIO()->WhereY() != 0 || GetSession()->localIO()->WhereX() != 0)
 	{
 		GetSession()->bout.ClearScreen();
 	}
@@ -257,7 +257,7 @@ int lp_configured_lines()
 
 void print_searching(struct search_record * search_rec)
 {
-	if (GetApplication()->GetLocalIO()->WhereY() != 0 || GetApplication()->GetLocalIO()->WhereX() != 0)
+	if (GetSession()->localIO()->WhereY() != 0 || GetSession()->localIO()->WhereX() != 0)
 	{
 		GetSession()->bout.ClearScreen();
 	}
@@ -369,7 +369,7 @@ int lp_add_batch(const char *pszFileName, int dn, long fs)
 
 #ifdef FILE_POINTS
         if ( ( GetSession()->GetCurrentUser()->GetFilePoints() < ( batchfpts + fpts ) )
-			&& !GetSession()->GetCurrentUser()->isExemptRatio() )
+			&& !GetSession()->GetCurrentUser()->IsExemptRatio() )
 		{
 			GetSession()->bout.GotoXY(1, GetSession()->GetCurrentUser()->GetScreenLines() - 1);
 			GetSession()->bout << "Not enough file points to download this file\r\n";
@@ -658,7 +658,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 			char_printed = 0;
 		}
 	}
-	if (GetApplication()->GetLocalIO()->WhereX())
+	if (GetSession()->localIO()->WhereX())
 	{
 		if (char_printed)
 		{
@@ -897,7 +897,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 				}
 			}
 
-			if ( GetApplication()->GetLocalIO()->WhereX() )
+			if ( GetSession()->localIO()->WhereX() )
 			{
 				GetSession()->bout.NewLine();
 				++numl;
@@ -1362,7 +1362,7 @@ short SelectColor(int which)
 
 	GetSession()->bout.NewLine();
 
-	if ( GetSession()->GetCurrentUser()->hasColor() )
+	if ( GetSession()->GetCurrentUser()->HasColor() )
 	{
 		color_list();
 		GetSession()->bout.Color( 0 );
@@ -1440,16 +1440,16 @@ void check_listplus()
 
 	if (noyes())
     {
-		if ( GetSession()->GetCurrentUser()->isUseListPlus() )
+		if ( GetSession()->GetCurrentUser()->IsUseListPlus() )
         {
-            GetSession()->GetCurrentUser()->clearStatusFlag( WUser::listPlus );
+            GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::listPlus );
         }
 	}
     else
     {
-		if ( !GetSession()->GetCurrentUser()->isUseListPlus() )
+		if ( !GetSession()->GetCurrentUser()->IsUseListPlus() )
         {
-            GetSession()->GetCurrentUser()->setStatusFlag( WUser::listPlus );
+            GetSession()->GetCurrentUser()->SetStatusFlag( WUser::listPlus );
         }
 	}
 }
@@ -1960,7 +1960,7 @@ int remove_filename( const char *pszFileName, int dn )
 					{
                         WUser user;
                         GetApplication()->GetUserManager()->ReadUser( &user, u.ownerusr );
-                        if ( !user.isUserDeleted() )
+                        if ( !user.IsUserDeleted() )
 						{
                             if ( date_to_daten( user.GetFirstOn() ) < static_cast<signed int>( u.daten ) )
 							{
@@ -2581,9 +2581,9 @@ void view_file(const char *pszFileName)
 			sprintf( szCommandLine, "AVIEWCOM.EXE %s%s -p%s -a1 -d",
 				     directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, szBuffer, syscfgovr.tempdir );
 			osysstatus = GetSession()->GetCurrentUser()->GetStatus();
-			if ( GetSession()->GetCurrentUser()->hasPause() )
+			if ( GetSession()->GetCurrentUser()->HasPause() )
             {
-                GetSession()->GetCurrentUser()->toggleStatusFlag( WUser::pauseOnPage );
+                GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
             }
 			ExecuteExternalProgram(szCommandLine, EFLAG_INTERNAL | EFLAG_TOPSCREEN | EFLAG_COMIO | EFLAG_NOPAUSE);
 			GetSession()->GetCurrentUser()->SetStatus( osysstatus );
@@ -2648,7 +2648,7 @@ int lp_try_to_download( const char *pszFileMask, int dn )
 	foundany = 1;
 	do
     {
-		GetApplication()->GetLocalIO()->tleft( true );
+		GetSession()->localIO()->tleft( true );
 		WFile fileDownload( g_szDownloadFileName );
 		fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
 		FileAreaSetRecord( fileDownload, i );
@@ -2808,12 +2808,12 @@ bool ok_listplus()
     }
 
 #ifndef FORCE_LP
-	if ( GetSession()->GetCurrentUser()->isUseNoTagging() )
+	if ( GetSession()->GetCurrentUser()->IsUseNoTagging() )
     {
 		return false;
     }
 
-    if ( GetSession()->GetCurrentUser()->isUseListPlus() )
+    if ( GetSession()->GetCurrentUser()->IsUseListPlus() )
     {
 		return false;
     }

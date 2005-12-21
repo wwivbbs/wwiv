@@ -310,7 +310,7 @@ int list_arc_out(const char *pszFileName, const char *pszDirectory)
     else
     {
         GetSession()->bout.NewLine();
-        GetApplication()->GetLocalIO()->LocalPuts("Unknown archive: ");
+        GetSession()->localIO()->LocalPuts("Unknown archive: ");
         GetSession()->bout << pszFileName;
         GetSession()->bout.NewLine( 2 );
         nRetCode = 0;
@@ -329,7 +329,7 @@ bool ratio_ok()
 {
     bool bRetValue = true;
 
-    if ( !GetSession()->GetCurrentUser()->isExemptRatio() )
+    if ( !GetSession()->GetCurrentUser()->IsExemptRatio() )
     {
         if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio))
         {
@@ -340,7 +340,7 @@ bool ratio_ok()
                      ratio(), syscfg.req_ratio );
         }
     }
-    if ( !GetSession()->GetCurrentUser()->isExemptPost() )
+    if ( !GetSession()->GetCurrentUser()->IsExemptPost() )
     {
         if ((syscfg.post_call_ratio > 0.0001) && (post_ratio() < syscfg.post_call_ratio))
         {
@@ -616,9 +616,9 @@ void print_extended(const char *pszFileName, bool *abort, int numlist, int inden
                         }
                     }
                     s[INDENTION] = '\0';
-                    GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() && !( *abort ) ? FRAME_COLOR : 0 );
+                    GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() && !( *abort ) ? FRAME_COLOR : 0 );
                     osan( s, abort, &next );
-                    if ( GetSession()->GetCurrentUser()->isUseExtraColor() && !( *abort ) )
+                    if ( GetSession()->GetCurrentUser()->IsUseExtraColor() && !( *abort ) )
                     {
                         GetSession()->bout.Color( 1 );
                     }
@@ -633,7 +633,7 @@ void print_extended(const char *pszFileName, bool *abort, int numlist, int inden
                         }
                         s[13] = '\0';
                         osan( s, abort, &next );
-                        if ( GetSession()->GetCurrentUser()->isUseExtraColor() && !( *abort ) )
+                        if ( GetSession()->GetCurrentUser()->IsUseExtraColor() && !( *abort ) )
                         {
                             GetSession()->bout.Color( 2 );
                         }
@@ -646,19 +646,19 @@ void print_extended(const char *pszFileName, bool *abort, int numlist, int inden
             {
                 ++numl;
             }
-            else if ( ch != RETURN && GetApplication()->GetLocalIO()->WhereX() >= 78 )
+            else if ( ch != RETURN && GetSession()->localIO()->WhereX() >= 78 )
             {
                 osan( "\r\n", abort, &next );
                 ch = SOFTRETURN;
             }
         }
-        if ( GetApplication()->GetLocalIO()->WhereX() )
+        if ( GetSession()->localIO()->WhereX() )
         {
             GetSession()->bout.NewLine();
         }
         BbsFreeMemory( ss );
     }
-    else if ( GetApplication()->GetLocalIO()->WhereX() )
+    else if ( GetSession()->localIO()->WhereX() )
     {
         GetSession()->bout.NewLine();
     }
@@ -791,7 +791,7 @@ void printinfo(uploadsrec * u, bool *abort)
     {
         return;
     }
-    if ( GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->isUseNoTagging() && !x_only )
+    if ( GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->IsUseNoTagging() && !x_only )
     {
         if ( !filelist )
         {
@@ -806,7 +806,7 @@ void printinfo(uploadsrec * u, bool *abort)
             GetSession()->tagptr++;
             sprintf( s, "\r|#%d%2ld|#%d%c",
                     (check_batch_queue(filelist[GetSession()->tagptr - 1].u.filename)) ? 6 : 0,
-                    GetSession()->tagptr, GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0, okansi() ? 'บ' : '|' );
+                    GetSession()->tagptr, GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0, okansi() ? 'บ' : '|' );
             osan( s, abort, &next );
         }
     }
@@ -822,7 +822,7 @@ void printinfo(uploadsrec * u, bool *abort)
     s[4] = '\0';
     GetSession()->bout.Color( 1 );
     osan( s, abort, &next );
-    GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+    GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
     osan( ( okansi() ? "บ" : "|" ), abort, &next );
 
     sprintf( s1, "%ld""k", bytes_to_k( u->numbytes ) );
@@ -845,9 +845,9 @@ void printinfo(uploadsrec * u, bool *abort)
     GetSession()->bout.Color( 2 );
     osan( s, abort, &next );
 
-    if ( GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->isUseNoTagging() && !x_only )
+    if ( GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->IsUseNoTagging() && !x_only )
     {
-        GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+        GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
         osan( ( okansi() ? "บ" : "|" ), abort, &next );
         sprintf( s1, "%d", u->numdloads );
 
@@ -860,10 +860,10 @@ void printinfo(uploadsrec * u, bool *abort)
         GetSession()->bout.Color( 2 );
         osan( s, abort, &next );
     }
-    GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+    GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
     osan( ( okansi() ? "บ" : "|" ), abort, &next );
     sprintf( s, "|#%d%s", ( u->mask & mask_extended ) ? 1 : 2, u->description );
-    if ( GetSession()->tagging && !GetSession()->GetCurrentUser()->isUseNoTagging() && !x_only )
+    if ( GetSession()->tagging && !GetSession()->GetCurrentUser()->IsUseNoTagging() && !x_only )
     {
         plal( s, GetSession()->GetCurrentUser()->GetScreenChars() - 28, abort );
     }
@@ -901,7 +901,7 @@ void printtitle( bool *abort )
         ss = "\r";
     }
     if ( lines_listed >= GetSession()->screenlinest - 7 && !x_only &&
-         !GetSession()->GetCurrentUser()->isUseNoTagging() && filelist && g_num_listed )
+         !GetSession()->GetCurrentUser()->IsUseNoTagging() && filelist && g_num_listed )
     {
         tag_files();
         if (GetSession()->tagging == 0)
@@ -911,9 +911,9 @@ void printtitle( bool *abort )
     }
     sprintf( szBuffer, "%s%s - #%s, %ld %s.", ss, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name,
              udir[GetSession()->GetCurrentFileArea()].keys, GetSession()->numf, "files");
-    GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+    GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
     if ( ( g_num_listed == 0 && GetSession()->tagptr == 0 ) || GetSession()->tagging == 0 ||
-          ( GetSession()->GetCurrentUser()->isUseNoTagging() && g_num_listed == 0 ) )
+          ( GetSession()->GetCurrentUser()->IsUseNoTagging() && g_num_listed == 0 ) )
     {
         if ( okansi() )
         {
@@ -926,7 +926,7 @@ void printtitle( bool *abort )
     }
     else if ( lines_listed )
     {
-        if ( GetSession()->titled != 2 && GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->isUseNoTagging() )
+        if ( GetSession()->titled != 2 && GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->IsUseNoTagging() )
         {
             if ( okansi() )
             {
@@ -939,9 +939,9 @@ void printtitle( bool *abort )
         }
         else
         {
-            if ( ( GetSession()->GetCurrentUser()->isUseNoTagging() || GetSession()->tagging == 2 ) && g_num_listed != 0 )
+            if ( ( GetSession()->GetCurrentUser()->IsUseNoTagging() || GetSession()->tagging == 2 ) && g_num_listed != 0 )
             {
-                GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+                GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
                 if ( okansi() )
                 {
 					GetSession()->bout << ss << "ออออออออออออสอออออสอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
@@ -953,14 +953,14 @@ void printtitle( bool *abort )
             }
         }
     }
-    if ( GetSession()->GetCurrentUser()->isUseExtraColor() )
+    if ( GetSession()->GetCurrentUser()->IsUseExtraColor() )
     {
         GetSession()->bout.Color( 2 );
     }
     pla( szBuffer, abort );
-    if ( GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->isUseNoTagging() && !x_only )
+    if ( GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->IsUseNoTagging() && !x_only )
     {
-        GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+        GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
         if ( okansi() )
         {
 			GetSession()->bout << "\r" << "ออหออออออออออออหอออออหออออหอออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
@@ -972,7 +972,7 @@ void printtitle( bool *abort )
     }
     else
     {
-        GetSession()->bout.Color( GetSession()->GetCurrentUser()->isUseExtraColor() ? FRAME_COLOR : 0 );
+        GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
         if ( okansi() )
         {
 			GetSession()->bout << "\r" << "ออออออออออออหอออออหอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;

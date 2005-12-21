@@ -132,10 +132,10 @@ int ZModemWindowStatus(const char *fmt,...)
     va_start( ap, fmt );
     vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
     va_end( ap );
-    int oldX = GetApplication()->GetLocalIO()->WhereX();
-    int oldY = GetApplication()->GetLocalIO()->WhereY();
-    GetApplication()->GetLocalIO()->LocalXYPrintf( 1, 10, "%s                           ", szBuffer );
-	GetApplication()->GetLocalIO()->LocalGotoXY( oldX, oldY );
+    int oldX = GetSession()->localIO()->WhereX();
+    int oldY = GetSession()->localIO()->WhereY();
+    GetSession()->localIO()->LocalXYPrintf( 1, 10, "%s                           ", szBuffer );
+	GetSession()->localIO()->LocalGotoXY( oldX, oldY );
 	return 0;
 }
 
@@ -152,10 +152,10 @@ int ZModemWindowXferStatus(const char *fmt,...)
     va_start( ap, fmt );
     vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
     va_end( ap );
-    int oldX = GetApplication()->GetLocalIO()->WhereX();
-    int oldY = GetApplication()->GetLocalIO()->WhereY();
-	GetApplication()->GetLocalIO()->LocalXYPrintf( 1, 1, "%s                           ", szBuffer );
-	GetApplication()->GetLocalIO()->LocalGotoXY( oldX, oldY );
+    int oldX = GetSession()->localIO()->WhereX();
+    int oldY = GetSession()->localIO()->WhereY();
+	GetSession()->localIO()->LocalXYPrintf( 1, 1, "%s                           ", szBuffer );
+	GetSession()->localIO()->LocalGotoXY( oldX, oldY );
 	return 0;
 }
 
@@ -186,7 +186,7 @@ int doIO( ZModem *info )
 #endif
 		// Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
 		// performance < 1k/second vs. 8-9k/second locally
-		while ( ( info->timeout > 0 ) && !GetApplication()->GetComm()->incoming() && !hangup )
+		while ( ( info->timeout > 0 ) && !GetSession()->remoteIO()->incoming() && !hangup )
 		{
 			WWIV_Delay( 100 );
 			time_t tNow = time( NULL );
@@ -214,7 +214,7 @@ int doIO( ZModem *info )
 			//%%TODO: signal parent we aborted.
 			return 1;
 		}
-		bool bIncomming = GetApplication()->GetComm()->incoming();
+		bool bIncomming = GetSession()->remoteIO()->incoming();
 		if( !bIncomming )
 		{
 			done = ZmodemTimeout(info);
@@ -222,7 +222,7 @@ int doIO( ZModem *info )
 		}
 		else
 		{
-			int len = GetApplication()->GetComm()->read( reinterpret_cast<char*>( buffer ), ZMODEM_RECEIVE_BUFFER_SIZE );
+			int len = GetSession()->remoteIO()->read( reinterpret_cast<char*>( buffer ), ZMODEM_RECEIVE_BUFFER_SIZE );
 			done = ZmodemRcv( buffer, len, info );
 #if defined(_DEBUG)
 			zmodemlog( "ZmodemRcv [%d chars] [done:%d]\r\n", len, done );
@@ -239,7 +239,7 @@ int ZXmitStr(u_char *str, int len, ZModem *info)
 #if defined(_DEBUG)
 	zmodemlog( "ZXmitStr Size=[%d]\r\n", len );
 #endif
-	GetApplication()->GetComm()->write( reinterpret_cast<const char*>( str ),  len );
+	GetSession()->remoteIO()->write( reinterpret_cast<const char*>( str ),  len );
 	return 0;
 }
 
@@ -578,16 +578,16 @@ void ZIdleStr(unsigned char *buf, int len, ZModem *info)
 
 void ProcessLocalKeyDuringZmodem()
 {
-	if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
+	if ( GetSession()->localIO()->LocalKeyPressed() )
 	{
-		char localChar = GetApplication()->GetLocalIO()->getchd1();
+		char localChar = GetSession()->localIO()->getchd1();
 		GetSession()->SetLastKeyLocal( true );
 		if (!(g_flags & g_flag_allow_extended))
 		{
 			if (!localChar)
 			{
-				localChar = GetApplication()->GetLocalIO()->getchd1();
-				GetApplication()->GetLocalIO()->skey(localChar);
+				localChar = GetSession()->localIO()->getchd1();
+				GetSession()->localIO()->skey(localChar);
 			}
 		}
 	}

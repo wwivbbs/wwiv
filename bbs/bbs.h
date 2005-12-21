@@ -79,9 +79,7 @@ private:
     double          m_fShutDownTime;
 	int             m_nWfcStatus;
 
-    WComm*          comm;
     StatusMgr*      statusMgr;
-    WLocalIO        *localIO;
     WUserManager*   userManager;
     std::string     m_attachmentDirectory;
 
@@ -130,11 +128,7 @@ public:
 	 */
     int  Run(int argc, char *argv[]);
 
-    WComm* GetComm();
-
     StatusMgr* GetStatusManager();
-
-    WLocalIO* GetLocalIO();
 
     WUserManager* GetUserManager();
 
@@ -159,12 +153,6 @@ public:
 
 	/*! @function CdHome Changes directories back to the WWIV Home directory */
 	void CdHome();
-
-	/*! @function StartupComm Start up the communications subsystem */
-	bool StartupComm(bool bUseSockets);
-
-	/*! @function ShutdownComm Shutdown the communications subsystem */
-	bool ShutdownComm();
 
     /*! @function AbortBBS - Shuts down the bbs at the not-ok error level */
     void AbortBBS( bool bSkipShutdown = false );

@@ -170,7 +170,7 @@ int bputch( char c, bool bUseInternalBuffer )
 	}
 	if ( echo )
 	{
-		GetApplication()->GetLocalIO()->global_char( c );
+		GetSession()->localIO()->global_char( c );
 	}
 	if ( outcom && !x_only && c != TAB )
 	{
@@ -212,7 +212,7 @@ int bputch( char c, bool bUseInternalBuffer )
 	{
 		if ( c == TAB )
 		{
-			int nScreenPos = GetApplication()->GetLocalIO()->WhereX();
+			int nScreenPos = GetSession()->localIO()->WhereX();
 			for ( int i = nScreenPos; i < (((nScreenPos / 8) + 1) * 8); i++ )
 			{
 				displayed += bputch( SPACE );
@@ -221,14 +221,14 @@ int bputch( char c, bool bUseInternalBuffer )
 		else if ( echo || AllowLocalSysop() )
 		{
 			displayed = 1;
-			GetApplication()->GetLocalIO()->LocalPutch( echo ? c : '\xFE' );
+			GetSession()->localIO()->LocalPutch( echo ? c : '\xFE' );
 
 			if ( c == SOFTRETURN )
 			{
 				++lines_listed;
 				if ( lines_listed >= GetSession()->screenlinest - 3 )
 				{
-					if ( GetSession()->tagging && !GetSession()->GetCurrentUser()->isUseNoTagging() && filelist && !chatting )
+					if ( GetSession()->tagging && !GetSession()->GetCurrentUser()->IsUseNoTagging() && filelist && !chatting )
 					{
 						if ( g_num_listed != 0 )
 						{
@@ -239,7 +239,7 @@ int bputch( char c, bool bUseInternalBuffer )
 				}
 				if ( lines_listed >= ( GetSession()->screenlinest - 1 ) )       // change Build3 + 5.0 to fix message read
 				{
-                    if ( GetSession()->GetCurrentUser()->hasPause() && !x_only )
+                    if ( GetSession()->GetCurrentUser()->HasPause() && !x_only )
 					{
 						pausescr();
 					}
@@ -249,7 +249,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		}
 		else
 		{
-			GetApplication()->GetLocalIO()->LocalPutch( 'X' );
+			GetSession()->localIO()->LocalPutch( 'X' );
 			displayed = 1;
 		}
 	}
@@ -314,29 +314,29 @@ void execute_ansi()
 		{
         case 'f':
         case 'H':
-            GetApplication()->GetLocalIO()->LocalGotoXY(args[1] - 1, args[0] - 1);
+            GetSession()->localIO()->LocalGotoXY(args[1] - 1, args[0] - 1);
             g_flags |= g_flag_ansi_movement;
             break;
         case 'A':
-            GetApplication()->GetLocalIO()->LocalGotoXY(GetApplication()->GetLocalIO()->WhereX(), GetApplication()->GetLocalIO()->WhereY() - args[0]);
+            GetSession()->localIO()->LocalGotoXY(GetSession()->localIO()->WhereX(), GetSession()->localIO()->WhereY() - args[0]);
             g_flags |= g_flag_ansi_movement;
             break;
         case 'B':
-            GetApplication()->GetLocalIO()->LocalGotoXY(GetApplication()->GetLocalIO()->WhereX(), GetApplication()->GetLocalIO()->WhereY() + args[0]);
+            GetSession()->localIO()->LocalGotoXY(GetSession()->localIO()->WhereX(), GetSession()->localIO()->WhereY() + args[0]);
             g_flags |= g_flag_ansi_movement;
             break;
         case 'C':
-            GetApplication()->GetLocalIO()->LocalGotoXY(GetApplication()->GetLocalIO()->WhereX() + args[0], GetApplication()->GetLocalIO()->WhereY());
+            GetSession()->localIO()->LocalGotoXY(GetSession()->localIO()->WhereX() + args[0], GetSession()->localIO()->WhereY());
             break;
         case 'D':
-            GetApplication()->GetLocalIO()->LocalGotoXY(GetApplication()->GetLocalIO()->WhereX() - args[0], GetApplication()->GetLocalIO()->WhereY());
+            GetSession()->localIO()->LocalGotoXY(GetSession()->localIO()->WhereX() - args[0], GetSession()->localIO()->WhereY());
             break;
         case 's':
-            oldx = GetApplication()->GetLocalIO()->WhereX();
-            oldy = GetApplication()->GetLocalIO()->WhereY();
+            oldx = GetSession()->localIO()->WhereX();
+            oldy = GetSession()->localIO()->WhereY();
             break;
         case 'u':
-            GetApplication()->GetLocalIO()->LocalGotoXY(oldx, oldy);
+            GetSession()->localIO()->LocalGotoXY(oldx, oldy);
             oldx = oldy = 0;
             g_flags |= g_flag_ansi_movement;
             break;
@@ -347,11 +347,11 @@ void execute_ansi()
                 g_flags |= g_flag_ansi_movement;
                 if ( x_only )
 				{
-                    GetApplication()->GetLocalIO()->LocalGotoXY(0, 0);
+                    GetSession()->localIO()->LocalGotoXY(0, 0);
 				}
                 else
 				{
-                    GetApplication()->GetLocalIO()->LocalCls();
+                    GetSession()->localIO()->LocalCls();
 				}
             }
             break;
@@ -359,7 +359,7 @@ void execute_ansi()
         case 'K':
             if (!x_only)
 			{
-				GetApplication()->GetLocalIO()->LocalClrEol();
+				GetSession()->localIO()->LocalClrEol();
             }
             break;
         case 'm':
@@ -411,7 +411,7 @@ void execute_ansi()
 void rputch( char ch, bool bUseInternalBuffer )
 {
 
-    if ( ok_modem_stuff && NULL != GetApplication()->GetComm() )
+    if ( ok_modem_stuff && NULL != GetSession()->remoteIO() )
     {
         if ( bUseInternalBuffer )
         {
@@ -423,7 +423,7 @@ void rputch( char ch, bool bUseInternalBuffer )
         }
         else
         {
-            GetApplication()->GetComm()->putW(ch);
+            GetSession()->remoteIO()->putW(ch);
         }
     }
 }
@@ -434,7 +434,7 @@ void FlushOutComChBuffer()
 {
     if ( s_nOutComChBufferPosition > 0 )
     {
-        GetApplication()->GetComm()->write( s_szOutComChBuffer, s_nOutComChBufferPosition );
+        GetSession()->remoteIO()->write( s_szOutComChBuffer, s_nOutComChBufferPosition );
         s_nOutComChBufferPosition = 0;
         memset( s_szOutComChBuffer, 0, OUTCOMCH_BUFFER_SIZE + 1 );
     }

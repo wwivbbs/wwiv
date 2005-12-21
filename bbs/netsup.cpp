@@ -141,7 +141,7 @@ void cleanup_net()
     {
 		if ( GetSession()->wfc_status == 0 )                    
         {
-			GetApplication()->GetLocalIO()->LocalCls();
+			GetSession()->localIO()->LocalCls();
         }
 
         WIniFile iniFile( WWIV_INI );
@@ -195,7 +195,7 @@ int cleanup_net1()
                 continue;
             }
 
-            GetApplication()->GetLocalIO()->set_protect( 0 );
+            GetSession()->localIO()->set_protect( 0 );
 
             ok2 = 1;
             abort = false;
@@ -229,7 +229,7 @@ int cleanup_net1()
                         if ( GetSession()->wfc_status == 0 )
                         {
                             // WFC addition
-                            GetApplication()->GetLocalIO()->LocalCls();
+                            GetSession()->localIO()->LocalCls();
                         }
                         else
                         {
@@ -258,7 +258,7 @@ int cleanup_net1()
                         if ( GetSession()->wfc_status == 0 )
                         {
                             // WFC addition
-                            GetApplication()->GetLocalIO()->LocalCls();
+                            GetSession()->localIO()->LocalCls();
                         }
                         else
                         {
@@ -292,7 +292,7 @@ int cleanup_net1()
                     }
                     if ( ok2 )
                     {
-                        GetApplication()->GetLocalIO()->LocalCls();
+                        GetSession()->localIO()->LocalCls();
                         zap_contacts();
                         ++i;
                     }
@@ -927,7 +927,7 @@ void print_pending_list()
 					     ncn[i2].numfails,
 					     s1,
 					     i3 );
-				if ( !GetSession()->GetCurrentUser()->hasPause() && ( ( lines++ ) == 20 ) )
+				if ( !GetSession()->GetCurrentUser()->HasPause() && ( ( lines++ ) == 20 ) )
 				{
 					pausescr();
 					lines = 0;
@@ -1186,13 +1186,13 @@ void print_call(int sn, int nNetNumber, int i2)
 	}
 	curatr = color;
 	sprintf(s1, "%ldk", bytes_to_k(ncn[i2].bytes_waiting));
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 17, color, "%-10.16s", s1 );
+	GetSession()->localIO()->LocalXYAPrintf( 58, 17, color, "%-10.16s", s1 );
 
 	sprintf(s1, "%ldk", bytes_to_k(ncn[i2].bytes_received));
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 23, 17, color, "%-10.16s", s1 );
+	GetSession()->localIO()->LocalXYAPrintf( 23, 17, color, "%-10.16s", s1 );
 
     sprintf(s1, "%ldk", bytes_to_k(ncn[i2].bytes_sent));
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 23, 18, color, "%-10.16s", s1 );
+	GetSession()->localIO()->LocalXYAPrintf( 23, 18, color, "%-10.16s", s1 );
 
 	if (ncn[i2].firstcontact)
     {
@@ -1214,7 +1214,7 @@ void print_call(int sn, int nNetNumber, int i2)
     {
 		strcpy(s1, "NEVER");
     }
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 23, 16, color, "%-17.16s", s1 );
+	GetSession()->localIO()->LocalXYAPrintf( 23, 16, color, "%-17.16s", s1 );
 
 	if (ncn[i2].lastcontactsent)
     {
@@ -1236,7 +1236,7 @@ void print_call(int sn, int nNetNumber, int i2)
     {
 		strcpy(s1, "NEVER");
     }
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 16, color, "%-17.16s", s1 );
+	GetSession()->localIO()->LocalXYAPrintf( 58, 16, color, "%-17.16s", s1 );
 
 	if (ncn[i2].lasttry)
     {
@@ -1258,15 +1258,15 @@ void print_call(int sn, int nNetNumber, int i2)
     {
 		strcpy(s1, "NEVER");
     }
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 15, color, "%-17.16s", s1 );
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 23, 15, color, "%-16u", ncn[i2].numcontacts );
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 41, 3, color, "%-30.30s", csne->name );
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 23, 19, color, "%-17.17s", csne->phone );
+	GetSession()->localIO()->LocalXYAPrintf( 58, 15, color, "%-17.16s", s1 );
+	GetSession()->localIO()->LocalXYAPrintf( 23, 15, color, "%-16u", ncn[i2].numcontacts );
+	GetSession()->localIO()->LocalXYAPrintf( 41, 3, color, "%-30.30s", csne->name );
+	GetSession()->localIO()->LocalXYAPrintf( 23, 19, color, "%-17.17s", csne->phone );
 	sprintf( s1, "%u Bps", csne->speed );
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 18, color, "%-10.16s", s1 );
+	GetSession()->localIO()->LocalXYAPrintf( 58, 18, color, "%-10.16s", s1 );
 	describe_area_code(atoi(csne->phone), s1);
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 58, 19, color, "%-17.17s", stripcolors( s1 ) );
-	GetApplication()->GetLocalIO()->LocalXYAPrintf( 14, 3, color, "%-11.16s", GetSession()->GetNetworkName() );
+	GetSession()->localIO()->LocalXYAPrintf( 58, 19, color, "%-17.17s", stripcolors( s1 ) );
+	GetSession()->localIO()->LocalXYAPrintf( 14, 3, color, "%-11.16s", GetSession()->GetNetworkName() );
 }
 
 void fill_call(int color, int row, int netmax, int *nodenum)
@@ -1290,7 +1290,7 @@ void fill_call(int color, int row, int netmax, int *nodenum)
         {
 			strcpy(s1, "     ");
         }
-		GetApplication()->GetLocalIO()->LocalXYPuts( 6 + x, 5 + y, s1 );
+		GetSession()->localIO()->LocalXYPuts( 6 + x, 5 + y, s1 );
 		x += 7;
 	}
 }
@@ -1308,7 +1308,7 @@ int ansicallout()
     net_contact_rec *ncn;
     net_call_out_rec *con;
 #ifndef _UNIX
-    GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNone );
+    GetSession()->localIO()->SetCursor( WLocalIO::cursorNone );
     holdphone( true );
 #endif
     if (!got_info)
@@ -1368,35 +1368,35 @@ int ansicallout()
             }
         }
 
-        GetApplication()->GetLocalIO()->LocalCls();
+        GetSession()->localIO()->LocalCls();
         curatr = color1;
-        GetApplication()->GetLocalIO()->MakeLocalWindow( 3, 2, 73, 10 );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 3, 4, color1, "Ã%s´", charstr( 71, 'Ä' ) );
-        GetApplication()->GetLocalIO()->MakeLocalWindow( 3, 14, 73, 7 );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 5, 3,   color3, "NetWork:" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 31, 3,  color3, "BBS Name:" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 5, 15,  color3, "Contact Number  :" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 5, 16,  color3, "First Contact   :" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 5, 17,  color3, "Bytes Received  :" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 5, 18,  color3, "Bytes Sent      :" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 5, 19,  color3, "Phone Number    :" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 40, 15, color3, "Last Try Contact:" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 40, 16, color3, "Last Contact    :" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 40, 17, color3, "Bytes Waiting   :" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 40, 18, color3, "Max Speed       :" );
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 40, 19, color3, "System Location :" );
+        GetSession()->localIO()->MakeLocalWindow( 3, 2, 73, 10 );
+        GetSession()->localIO()->LocalXYAPrintf( 3, 4, color1, "Ã%s´", charstr( 71, 'Ä' ) );
+        GetSession()->localIO()->MakeLocalWindow( 3, 14, 73, 7 );
+        GetSession()->localIO()->LocalXYAPrintf( 5, 3,   color3, "NetWork:" );
+        GetSession()->localIO()->LocalXYAPrintf( 31, 3,  color3, "BBS Name:" );
+        GetSession()->localIO()->LocalXYAPrintf( 5, 15,  color3, "Contact Number  :" );
+        GetSession()->localIO()->LocalXYAPrintf( 5, 16,  color3, "First Contact   :" );
+        GetSession()->localIO()->LocalXYAPrintf( 5, 17,  color3, "Bytes Received  :" );
+        GetSession()->localIO()->LocalXYAPrintf( 5, 18,  color3, "Bytes Sent      :" );
+        GetSession()->localIO()->LocalXYAPrintf( 5, 19,  color3, "Phone Number    :" );
+        GetSession()->localIO()->LocalXYAPrintf( 40, 15, color3, "Last Try Contact:" );
+        GetSession()->localIO()->LocalXYAPrintf( 40, 16, color3, "Last Contact    :" );
+        GetSession()->localIO()->LocalXYAPrintf( 40, 17, color3, "Bytes Waiting   :" );
+        GetSession()->localIO()->LocalXYAPrintf( 40, 18, color3, "Max Speed       :" );
+        GetSession()->localIO()->LocalXYAPrintf( 40, 19, color3, "System Location :" );
 
         fill_call( color4, rownum, netnum, nodenum );
         curatr = color2;
         x = 0;
         y = 0;
-        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6, 5, color2, "%-5u", nodenum[pos]);
+        GetSession()->localIO()->LocalXYAPrintf( 6, 5, color2, "%-5u", nodenum[pos]);
         print_call( nodenum[pos], netpos[pos], ipos[pos] );
 
 		bool done = false;
         do
         {
-            ch = wwiv::UpperCase<char>( static_cast<char>( GetApplication()->GetLocalIO()->LocalGetChar() ) );
+            ch = wwiv::UpperCase<char>( static_cast<char>( GetSession()->localIO()->LocalGetChar() ) );
             switch (ch)
             {
             case ' ':
@@ -1411,16 +1411,16 @@ int ansicallout()
                 break;
             case -32: // (224) I don't know MS's CRT returns this on arrow keys....
             case 0:
-                ch = wwiv::UpperCase<char>( static_cast<char>( GetApplication()->GetLocalIO()->LocalGetChar() ) );
+                ch = wwiv::UpperCase<char>( static_cast<char>( GetSession()->localIO()->LocalGetChar() ) );
                 switch (ch)
                 {
                 case RARROW:                        // right arrow
                     if ((pos < netnum - 1) && (x < 63))
                     {
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos++;
                         x += 7;
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
+                        GetSession()->localIO()->LocalXYAPrintf(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     break;
@@ -1428,21 +1428,21 @@ int ansicallout()
                     if (x > 0)
                     {
                         curatr = color4;
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos--;
                         x -= 7;
                         curatr = color2;
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     break;
                 case UPARROW:                        // up arrow
                     if (y > 0)
                     {
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos -= 10;
                         y--;
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     else if (rownum > 0)
@@ -1450,14 +1450,14 @@ int ansicallout()
                         pos -= 10;
                         rownum--;
                         fill_call(color4, rownum, netnum, nodenum);
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     break;
                 case DNARROW:                        // down arrow
                     if ((y < 5) && (pos + 10 < netnum))
                     {
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos += 10;
                         y++;
                     }
@@ -1475,7 +1475,7 @@ int ansicallout()
 					    }
                     }
                     curatr = color2;
-                    GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                    GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                     print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     break;
                 case HOME:                        // home
@@ -1486,16 +1486,16 @@ int ansicallout()
                         pos = 0;
                         rownum = 0;
                         fill_call(color4, rownum, netnum, nodenum);
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6, 5, color2, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6, 5, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                 case PAGEUP:                        // page up
                     if (y > 0)
                     {
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos -= 10 * y;
                         y = 0;
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     else
@@ -1511,14 +1511,14 @@ int ansicallout()
                             rownum = 0;
                         }
                         fill_call(color4, rownum, netnum, nodenum);
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     break;
                 case PAGEDN:                        // page down
                     if (y < 5)
                     {
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos += 10 * (5 - y);
                         y = 5;
                         if (pos >= netnum)
@@ -1526,7 +1526,7 @@ int ansicallout()
                             pos -= 10;
                             --y;
                         }
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     else if ( ( rownum + 6 ) * 10 < netnum )
@@ -1545,16 +1545,16 @@ int ansicallout()
                             pos -= 10;
                             --y;
                         }
-                        GetApplication()->GetLocalIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call( nodenum[pos], netpos[pos], ipos[pos] );
                     }
                     break;
                 }
             }
         } while ( !done );
-        GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );
+        GetSession()->localIO()->SetCursor( WLocalIO::cursorNormal );
         curatr = color3;
-        GetApplication()->GetLocalIO()->LocalCls();
+        GetSession()->localIO()->LocalCls();
         netw = ( netpos[pos] );
         BbsFreeMemory( nodenum );
         BbsFreeMemory( netpos );
@@ -1570,7 +1570,7 @@ int ansicallout()
     }
 #ifndef _UNIX
     holdphone( false );
-    GetApplication()->GetLocalIO()->SetCursor( WLocalIO::cursorNormal );
+    GetSession()->localIO()->SetCursor( WLocalIO::cursorNormal );
 #endif
     std::cout << "System: " << sn << std::endl;
     return sn;
@@ -1740,11 +1740,11 @@ void force_callout(int dw)
                     lc = net_networks[GetSession()->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
                     while ((tc < nr) && (!abort))
                     {
-                        if ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
+                        if ( GetSession()->localIO()->LocalKeyPressed() )
                         {
-                            while ( GetApplication()->GetLocalIO()->LocalKeyPressed() )
+                            while ( GetSession()->localIO()->LocalKeyPressed() )
                             {
-                                ch = wwiv::UpperCase<char>(GetApplication()->GetLocalIO()->getchd1());
+                                ch = wwiv::UpperCase<char>(GetSession()->localIO()->getchd1());
                                 if ( !abort )
                                 {
                                     abort = ( ch == ESC ) ? true : false;
@@ -1761,7 +1761,7 @@ void force_callout(int dw)
                         }
                         else
                         {
-                            GetApplication()->GetLocalIO()->LocalCls();
+                            GetSession()->localIO()->LocalCls();
                             GetSession()->bout << "|#9Retries |#0= |#2" << nr << "|#9, Current |#0= |#2" << tc << "|#9, Remaining |#0= |#2" << nr - tc << "|#9. ESC to abort.\r\n";
                             if ( nr == tc )
                             {
@@ -1851,7 +1851,7 @@ void run_exp()
 	ExecuteExternalProgram( szExpCommand, EFLAG_NETPROG );
 
 	set_net_num( nOldNetworkNumber );
-	GetApplication()->GetLocalIO()->LocalCls();
+	GetSession()->localIO()->LocalCls();
 }
 #endif
 

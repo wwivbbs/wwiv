@@ -442,8 +442,8 @@ void add_arc( const char *arc, const char *pszFileName, int dos )
     if ( szAddArchiveCommand[0] )
     {
         WWIV_ChangeDirTo(syscfgovr.tempdir);
-        GetApplication()->GetLocalIO()->LocalPuts( szAddArchiveCommand );
-        GetApplication()->GetLocalIO()->LocalPuts( "\r\n" );
+        GetSession()->localIO()->LocalPuts( szAddArchiveCommand );
+        GetSession()->localIO()->LocalPuts( "\r\n" );
         if (dos)
         {
             ExecuteExternalProgram( szAddArchiveCommand, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_A ) );
@@ -1091,7 +1091,7 @@ void removefile()
                         if ( bRemoveDlPoints && u.ownersys == 0 )
                         {
                             GetApplication()->GetUserManager()->ReadUser( &uu, u.ownerusr );
-                            if ( !uu.isUserDeleted() )
+                            if ( !uu.IsUserDeleted() )
                             {
                                 if ( date_to_daten( uu.GetFirstOn() ) < static_cast<signed int>( u.daten ) )
                                 {
