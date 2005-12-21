@@ -115,7 +115,7 @@ void ReadMenuSetup()
 		BbsFreeMemory(index);
 	}
     WIniFile iniFile( WWIV_INI );
-    if ( iniFile.Initialize( INI_TAG ) )
+    if ( iniFile.Open( INI_TAG ) )
     {
         if ( iniFile.GetBooleanValue( "DISABLE_PD" ) )
         {

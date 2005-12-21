@@ -179,7 +179,7 @@ void attach_file(int mode)
                                             if ( m.daten == static_cast<unsigned long>( fsr.id ) )
                                             {
                                                 fsr.id = 0;
-                                                WFile::Remove( g_szAttachmentDirectory, fsr.filename );
+                                                WFile::Remove( GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename );
                                                 attachFile.Seek( static_cast<long>( sizeof( filestatusrec ) ) * -1L, WFile::seekCurrent );
                                                 attachFile.Write( &fsr, sizeof( fsr ) );
                                             }
@@ -199,7 +199,7 @@ void attach_file(int mode)
                                 }
                             }
                         }
-                        if (freek1(g_szAttachmentDirectory) < 500)
+                        if (freek1(GetApplication()->GetAttachmentDirectory().c_str()) < 500)
                         {
                             GetSession()->bout << "Not enough free space to attach a file.\r\n";
                         }
@@ -242,7 +242,7 @@ void attach_file(int mode)
                                         }
                                         if ( !bFound && szFileToAttach[0] )
                                         {
-                                            sprintf(szFullPathName, "%s%s", g_szAttachmentDirectory, stripfn(szFileToAttach));
+                                            sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), stripfn(szFileToAttach));
                                             GetSession()->bout.NewLine();
 											GetSession()->bout << "|#5" << szFileToAttach << "? ";
                                             if ( !yesno() )
@@ -256,7 +256,7 @@ void attach_file(int mode)
                                 {
                                     GetSession()->bout << "|#2Filename: ";
                                     input( szFileToAttach, 12, true );
-                                    sprintf(szFullPathName, "%s%s", g_szAttachmentDirectory, szFileToAttach);
+                                    sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), szFileToAttach);
                                     if ( !okfn(szFileToAttach) || strchr(szFileToAttach, '?') )
                                     {
                                         bFound = true;
@@ -274,7 +274,7 @@ void attach_file(int mode)
                                         {
                                             GetSession()->bout << "|#5Filename: ";
                                             input( szNewFileName, 12, true );
-                                            sprintf(szFullPathName, "%s%s", g_szAttachmentDirectory, szNewFileName);
+                                            sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), szNewFileName);
                                             if ( okfn(szNewFileName) && !strchr(szNewFileName, '?') && !WFile::Exists(szFullPathName) )
                                             {
                                                 bFound   = false;
@@ -331,7 +331,7 @@ void attach_file(int mode)
                                     }
                                     else
                                     {
-                                        sprintf(szFullPathName, "%s%s", g_szAttachmentDirectory, szFileToAttach);
+                                        sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), szFileToAttach);
                                         unsigned char u_filetype;
                                         receive_file( szFullPathName, &ok, reinterpret_cast<char*>( &u_filetype ), "", 0 );
                                     }
@@ -399,7 +399,7 @@ void attach_file(int mode)
                                             }
                                             else
                                             {
-                                                WFile::Remove( g_szAttachmentDirectory, fsr.filename );
+                                                WFile::Remove( GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename );
                                             }
                                         }
                                     }

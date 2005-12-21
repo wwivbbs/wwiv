@@ -38,8 +38,8 @@ void cleanup_chat();
 void page_user(int loc);
 void moving(bool bOnline, int loc);
 void out_msg(char *pszMessage, int loc);
-void get_colors(char *pszColorString);
-void load_actions();
+void get_colors(char *pszColorString, WIniFile *pIniFile);
+void load_actions( WIniFile *pIniFile );
 void add_action(ch_action act);
 void free_actions();
 bool check_action(char *pszMessage, char *pszColorString, int loc);
@@ -49,7 +49,7 @@ void ga(char *pszMessage, char *pszColorString, int loc, int type);
 void list_channels();
 int  change_channels(int loc);
 bool check_ch(int ch);
-void load_channels();
+void load_channels( WIniFile *pIniFile );
 int  userinst(char *user);
 int  grabname(char *pszMessage, int ch);
 bool usercomp( const char *st1, const char *st2);
@@ -69,13 +69,13 @@ void chat_room()
     strcpy(szMessageSent, "|#1[|#9Message Sent|#1]\r\n");
     strcpy(szFromMessage, "|#9From %.12s|#1: %s%s");
     WIniFile iniFile( CHAT_INI );
-    if ( iniFile.Initialize( "CHAT" ) )
+    if ( iniFile.Open( "CHAT" ) )
     {
         g_nChatOpSecLvl = iniFile.GetNumericValue("CHATOP_SL");
         bShowPrompt = iniFile.GetBooleanValue( "CH_PROMPT" );
-        load_channels();
-        load_actions();
-        get_colors( szColorString );
+        load_channels( &iniFile );
+        load_actions( &iniFile);
+        get_colors( szColorString, &iniFile );
         iniFile.Close();
     }
     else
@@ -675,19 +675,19 @@ void out_msg(char *pszMessage, int loc)
 
 // Sets pszColorString string for current node
 
-void get_colors(char *pszColorString)
+void get_colors(char *pszColorString, WIniFile *pIniFile)
 {
     char szKey[10];
 
     sprintf( szKey, "C%u", GetApplication()->GetInstanceNumber() );
-    strcpy( pszColorString, ini_get(szKey, -1, NULL) );
+    strcpy( pszColorString, pIniFile->GetValue(szKey) );
 }
 
 // Loads the actions into memory
 
-void load_actions()
+void load_actions( WIniFile *pIniFile )
 {
-    int to_read = atoi(ini_get("NUM_ACTIONS", -1, NULL));
+    int to_read = pIniFile->GetNumericValue("NUM_ACTIONS");
     if (!to_read)
     {
         return;
@@ -700,31 +700,25 @@ void load_actions()
         {
             char rstr[10];
             sprintf( rstr, "%d%c", cn, 65 + ca );
-            char* pszIniValue;
+            const char* pszIniValue = pIniFile->GetValue(rstr);
             switch ( ca )
             {
             case 0:
-                pszIniValue = ini_get(rstr, -1, NULL);
                 act.r = atoi( ( pszIniValue != NULL ) ? pszIniValue : "0" );
                 break;
             case 1:
-                pszIniValue = ini_get(rstr, -1, NULL);
                 strcpy( act.aword, ( pszIniValue != NULL ) ? pszIniValue : "" );
                 break;
             case 2:
-                pszIniValue = ini_get(rstr, -1, NULL);
                 strcpy( act.toprint, ( pszIniValue != NULL ) ? pszIniValue : "" );
                 break;
             case 3:
-                pszIniValue = ini_get(rstr, -1, NULL);
                 strcpy( act.toperson, ( pszIniValue != NULL ) ? pszIniValue : "" );
                 break;
             case 4:
-                pszIniValue = ini_get(rstr, -1, NULL);
                 strcpy( act.toall, ( pszIniValue != NULL ) ? pszIniValue : "" );
                 break;
             case 5:
-                pszIniValue = ini_get(rstr, -1, NULL);
                 strcpy( act.singular, ( pszIniValue != NULL ) ? pszIniValue : "" );
                 break;
             default:
@@ -1119,7 +1113,7 @@ bool check_ch(int ch)
 }
 
 // Loads channel information into memory
-void load_channels()
+void load_channels( WIniFile *pIniFile )
 {
     char szBuffer[6], szTemp[10];
 
@@ -1131,13 +1125,13 @@ void load_channels()
             switch (ca)
             {
             case 0:
-                strcpy(channels[cn].name, ini_get(szBuffer, -1, NULL));
+                strcpy(channels[cn].name, pIniFile->GetValue(szBuffer));
                 break;
             case 1:
-                channels[cn].sl = atoi(ini_get(szBuffer, -1, NULL));
+                channels[cn].sl = pIniFile->GetNumericValue(szBuffer);
                 break;
             case 2:
-                strcpy(szTemp, ini_get(szBuffer, -1, NULL));
+                strcpy(szTemp, pIniFile->GetValue(szBuffer));
                 if (szTemp[0] != '0')
                 {
                     channels[cn].ar = szTemp[0];
@@ -1148,14 +1142,14 @@ void load_channels()
                 }
                 break;
             case 3:
-                strcpy(szTemp, ini_get(szBuffer, -1, NULL));
+                strcpy(szTemp, pIniFile->GetValue(szBuffer));
                 channels[cn].sex = szTemp[0];
                 break;
             case 4:
-                channels[cn].min_age = static_cast< char >( atoi(ini_get(szBuffer, -1, NULL)) );
+                channels[cn].min_age = static_cast< char >( pIniFile->GetNumericValue(szBuffer) );
                 break;
             case 5:
-                channels[cn].max_age = wwiv::stringUtils::StringToChar(ini_get(szBuffer, -1, NULL));
+                channels[cn].max_age = wwiv::stringUtils::StringToChar(pIniFile->GetValue(szBuffer));
                 break;
             }
         }

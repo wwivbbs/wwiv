@@ -145,7 +145,7 @@ void cleanup_net()
         }
 
         WIniFile iniFile( WWIV_INI );
-        if ( iniFile.Initialize( INI_TAG ) )
+        if ( iniFile.Open( INI_TAG ) )
         {
             const char *pszValue = iniFile.GetValue( "NET_CLEANUP_CMD1" );
 			if ( pszValue != NULL )
@@ -1174,7 +1174,7 @@ void print_call(int sn, int nNetNumber, int i2)
 		color = 30;
 
         WIniFile iniFile( WWIV_INI );
-		if ( iniFile.Initialize( INI_TAG ) )
+		if ( iniFile.Open( INI_TAG ) )
         {
             const char *ss = iniFile.GetValue( "CALLOUT_COLOR_TEXT" );
 			if ( ss != NULL )
@@ -1302,7 +1302,7 @@ int ansicallout()
 {
     static int callout_ansi, color1, color2, color3, color4, got_info = 0;
 
-    char ch = 0, *ss;
+    char ch = 0;
     int i, i1, nNetNumber, netnum = 0, x = 0, y = 0, pos = 0, sn = 0;
     int num_ncn, num_call_sys, rownum = 0, *nodenum, *netpos, *ipos;
     net_contact_rec *ncn;
@@ -1320,26 +1320,14 @@ int ansicallout()
         color3 = 7;
         color4 = 30;
         WIniFile iniFile( WWIV_INI );
-        if ( iniFile.Initialize( INI_TAG ) )
+        if ( iniFile.Open( INI_TAG ) )
         {
             callout_ansi = iniFile.GetBooleanValue( "CALLOUT_ANSI" ) ? 1 : 0;
-            if ((ss = ini_get("CALLOUT_COLOR", -1, NULL)) != NULL)
-            {
-                color1 = atoi(ss);
-            }
-            if ((ss = ini_get("CALLOUT_HIGHLIGHT", -1, NULL)) != NULL)
-            {
-                color2 = atoi(ss);
-            }
-            if ((ss = ini_get("CALLOUT_NORMAL", -1, NULL)) != NULL)
-            {
-                color3 = atoi(ss);
-            }
-            if ((ss = ini_get("CALLOUT_COLOR_TEXT", -1, NULL)) != NULL)
-            {
-                color4 = atoi(ss);
-            }
-            ini_done();
+            color1 = iniFile.GetNumericValue( "CALLOUT_COLOR", color1 );
+            color2 = iniFile.GetNumericValue( "CALLOUT_HIGHLIGHT", color2 );
+            color3 = iniFile.GetNumericValue( "CALLOUT_NORMAL", color3 );
+            color4 = iniFile.GetNumericValue( "CALLOUT_COLOR_TEXT", color4 );
+            iniFile.Close();
         }
     }
 
