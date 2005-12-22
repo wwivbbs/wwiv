@@ -25,10 +25,10 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
 bool DoSyncFosLoop9X( HANDLE hProcess, HMODULE hKernel32, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd, HANDLE hSyncHangupEvent, int nSyncMode  );
 bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd, HANDLE hSyncHangupEvent, int nSyncMode  );
 
-const char* GetSyncFosTempFilePath( std::string &outFileName );
+void GetSyncFosTempFilePath( std::string &outFileName );
 bool VerifyDosXtrnExists();
-char* GetDosXtrnPath( char *pszDosXtrnPath );
-char* GetSyncFosOSMode( char * pszOSMode );
+const std::string GetDosXtrnPath();
+const std::string GetSyncFosOSMode();
 bool DeleteSyncTempFile();
 bool IsWindowsNT();
 bool ExpandWWIVHeartCodes( char *pszBuffer );
@@ -77,7 +77,6 @@ int ExecExternalProgram( const std::string commandLine, int flags )
     ZeroMemory( &pi, sizeof( pi ) );
     std::string workingCommandLine;
 
-
     bool bShouldUseSync = false;
     int nSyncMode = 0;
     if ( GetSession()->using_modem && ( flags & EFLAG_FOSSIL ) )
@@ -122,7 +121,7 @@ int ExecExternalProgram( const std::string commandLine, int flags )
     }
 
     char * pszTitle = new char[ 255 ];
-    _snprintf( pszTitle, sizeof( pszTitle), "%s in door on node %d",
+    _snprintf( pszTitle, sizeof( pszTitle ), "%s in door on node %d",
              GetSession()->GetCurrentUser()->GetName(), GetApplication()->GetInstanceNumber() );
     si.lpTitle = pszTitle;
 
@@ -377,52 +376,38 @@ bool CreateSyncTempFile( std::string &outFileName, const std::string commandLine
     return true;
 }
 
-const char* GetSyncFosTempFilePath( std::string &outFileName )
+void GetSyncFosTempFilePath( std::string &outFileName )
 {
     outFileName = syscfgovr.tempdir;
     outFileName += "WWIVSYNC.ENV";
-    return outFileName.c_str();
 }
 
 
 void CreateSyncFosCommandLine( std::string &outCommandLine, const std::string tempFilePath, int nSyncMode )
 {
-    char szBuffer[ MAX_PATH ];
-    char szDosXtrnPath[ MAX_PATH ];
-    char szOSMode[ 8 ];
-    GetDosXtrnPath( szDosXtrnPath );
-
-    _snprintf( szBuffer,
-            sizeof( szBuffer ),
-            "%s %s %s %d %d %d",
-            GetDosXtrnPath( szDosXtrnPath ),
-            tempFilePath.c_str(),
-            GetSyncFosOSMode( szOSMode ),
-            GetApplication()->GetInstanceNumber(),
-            nSyncMode, // CONST_SBBSFOS_FOSSIL_MODE,
-            CONST_SBBSFOS_LOOPS_BEFORE_YIELD );
-
-    outCommandLine = szBuffer;
+    std::stringstream sstream;
+    sstream << GetDosXtrnPath() << " " << tempFilePath << " " << GetSyncFosOSMode() << " ";
+    sstream << GetApplication()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
+    outCommandLine = sstream.str();
 }
 
 bool VerifyDosXtrnExists()
 {
-    char szDosXtrnPath[ MAX_PATH ];
-    return WFile::Exists( GetDosXtrnPath( szDosXtrnPath ) );
+    return WFile::Exists( GetDosXtrnPath() );
 }
 
 
-char* GetDosXtrnPath( char *pszDosXtrnPath )
+const std::string GetDosXtrnPath()
 {
-    _snprintf( pszDosXtrnPath, MAX_PATH, "%sDOSXTRN.EXE", GetApplication()->GetHomeDir() );
-    return pszDosXtrnPath;
+    std::stringstream sstream;
+    sstream << GetApplication()->GetHomeDir() << "DOSXTRN.EXE";
+    return std::string( sstream.str() );
 }
 
 
-char* GetSyncFosOSMode( char * pszOSMode )
+const std::string GetSyncFosOSMode()
 {
-    strcpy( pszOSMode, ( IsWindowsNT() )  ? "NT" : "95" );
-    return pszOSMode;
+    return IsWindowsNT() ? std::string("NT") : std::string("95");
 }
 
 

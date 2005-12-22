@@ -418,7 +418,7 @@ bool WFile::Exists( const std::string fileName )
 bool WFile::Exists( const std::string directoryName, const std::string fileName )
 {
     std::stringstream fullPathName;
-    fullPathName << directoryName << fileName << std::ends;
+    fullPathName << directoryName << fileName;
     return Exists( fullPathName.str() );
 }
 
