@@ -75,9 +75,9 @@ void text_edit();
 // File: bbsovl2.cpp
 
 void OnlineUserEditor();
-void BackPrint(const char *pszText, int nColorCode, int nCharDelay, int nStringDelay );
+void BackPrint( std::string text, int nColorCode, int nCharDelay, int nStringDelay );
 void MoveLeft( int nNumberOfChars );
-void SpinPuts( const char *pszText, int nColorCode );
+void SpinPuts( const std::string text, int nColorCode );
 
 
 // File: bbsovl3.cpp
@@ -85,8 +85,8 @@ void SpinPuts( const char *pszText, int nColorCode );
 int  get_kb_event( int nNumLockMode );
 char onek_ncr( const char *pszAllowableChars );
 bool do_sysop_command(int command);
-bool copyfile(const char *pszSourceFileName, const char *pszDestFileName, bool stats);
-bool movefile(const char *pszSourceFileName, const char *pszDestFileName, bool stats);
+bool copyfile(const std::string sourceFileName, const std::string destFileName, bool stats);
+bool movefile(const std::string sourceFileName, const std::string destFileName, bool stats);
 void ListAllColors();
 //int  get_kb_event1();
 
@@ -99,8 +99,8 @@ bool so();
 bool cs();
 bool lcs();
 void checka(bool *abort, bool *next);
-void pla(const char *pszText, bool *abort);
-void plal(const char *pszText, int limit, bool *abort);
+void pla(const std::string text, bool *abort);
+void plal(const std::string text, int limit, bool *abort);
 bool sysop2();
 bool checkcomp(const char *pszComputerType);
 int  check_ansi();
@@ -335,7 +335,7 @@ void eventedit();
 
 // File: execexternal.cpp
 
-int  ExecuteExternalProgram( const char *pszCommandLine, int nFlags );
+int  ExecuteExternalProgram( const std::string commandLine, int nFlags );
 
 
 // File: extract.cpp
@@ -347,8 +347,8 @@ bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDe
 
 // File: finduser.cpp
 
-int  finduser( char *pszSearchString );
-int  finduser1( const char *pszSearchString );
+int finduser( const std::string searchString );
+int  finduser1( const std::string searchString );
 
 
 // File: gfiles.cpp
@@ -386,10 +386,9 @@ void input( char *pszOutText, int nMaxLength, bool bAutoMpl = false );
 void input( std::string &strOutText, int nMaxLength, bool bAutoMpl = false );
 void inputl( char *pszOutText, int nMaxLength, bool bAutoMpl = false);
 void inputl( std::string &strOutText, int nMaxLength, bool bAutoMpl = false);
-int  Input1( char *pszOutText, const char *pszOrigText, int nMaxLength, bool bInsert, int mode );
-int  Input1( std::string &strOutText, const char *pszOrigText, int nMaxLength, bool bInsert, int mode );
-void input_password( const char *pszPromptText, char *pszOutPassword, int nMaxLength );
-void input_password( const char *pszPromptText, std::string &strOutPassword, int nMaxLength );
+int  Input1( char *pszOutText, std::string origText, int nMaxLength, bool bInsert, int mode );
+int  Input1( std::string &strOutText, std::string origText, int nMaxLength, bool bInsert, int mode );
+void input_password( std::string promptText, std::string &strOutPassword, int nMaxLength );
 
 // File: inetmsg.cpp
 
@@ -713,9 +712,9 @@ void answer_phone();
 
 // File: msgbase.cpp
 
-void remove_link(messagerec * pMessageRecord, const char *aux);
-void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const char *aux );
-char *readfile(messagerec * pMessageRecord, const char *aux, long *plMessageLength);
+void remove_link(messagerec * pMessageRecord, const std::string fileName);
+void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const std::string fileName );
+char *readfile(messagerec * pMessageRecord, const std::string fileName, long *plMessageLength);
 void LoadFileIntoWorkspace( const char *pszFileName, bool bNoEditAllowed );
 bool ForwardMessage( int *pUserNumber, int *pSystemNumber );
 WFile *OpenEmailFile( bool bAllowWrite );
@@ -725,7 +724,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 void imail( int nUserNumber, int nSystemNumber );
 void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *pszFileName, int nFromSystem, int nFromUser );
 void read_message(int n, bool *next, int *val);
-void lineadd(messagerec * pMessageRecord, const char *sx, const char *aux);
+void lineadd(messagerec * pMessageRecord, const char *sx, const std::string fileName);
 
 
 // File: msgbase1.cpp
@@ -781,11 +780,11 @@ void run_exp();
 void input_phone();
 void input_dataphone();
 void input_language();
-bool check_name(char *nn);
+bool check_name( const std::string userName );
 void input_name();
 void input_realname();
 void input_callsign();
-bool valid_phone( const char *phone );
+bool valid_phone( const std::string phoneNumber );
 void input_street();
 void input_city();
 void input_state();

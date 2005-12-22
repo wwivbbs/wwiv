@@ -792,8 +792,7 @@ void change_password()
         if ( password2.length() < 3 )
         {
             GetSession()->bout.NewLine();
-			GetSession()->bout << "|#6Password must be 3-8 characters long.\r\n";
-			GetSession()->bout << "|#6Password was not changed.\r\n\n";
+			GetSession()->bout << "|#6Password must be 3-8 characters long.\r\n|#6Password was not changed.\r\n\n";
         }
         else
         {
@@ -929,7 +928,7 @@ void enter_regnum()
 }
 
 
-void defaults( MenuInstanceData * MenuData )
+void defaults( MenuInstanceData * pMenuData )
 {
     bool done = false;
     do
@@ -1029,8 +1028,8 @@ void defaults( MenuInstanceData * MenuData )
             break;
         case 'K':
             ConfigUserMenuSet();
-            MenuData->nFinished = 1;
-            MenuData->nReload = 1;
+            pMenuData->nFinished = 1;
+            pMenuData->nReload = 1;
             break;
         case 'L':
             if ( GetSession()->num_languages > 1 )
@@ -1114,7 +1113,7 @@ void list_config_scan_plus(int first, int *amount, int type)
                 sprintf(s, "|#7[|#1%c|#7] |#9%s",
                     (qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
                     subboards[usub[this_sub].subnum].name);
-                s[44] = 0;
+                s[44] = '\0';
                 if (*amount >= max_lines)
                 {
                     GetSession()->bout.GotoXY(40, 3 + *amount - max_lines);

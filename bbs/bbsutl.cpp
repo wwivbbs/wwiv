@@ -406,32 +406,30 @@ void checka(bool *abort, bool *next)
 
 // Prints an abortable string (contained in *pszText). Returns 1 in *abort if the
 // string was aborted, else *abort should be zero.
-void pla(const char *pszText, bool *abort)
+void pla(const std::string text, bool *abort)
 {
-	WWIV_ASSERT( pszText );
+	WWIV_ASSERT( !text.empty() );
 
-    CheckForHangup();
-    if (hangup)
+    if (CheckForHangup())
     {
         *abort = true;
     }
 
 	bool next;
-    int i=0;
     checka(abort, &next);
-    while ( pszText[i] && !*abort )
+    for( std::string::const_iterator iter = text.begin(); iter != text.end() && !*abort; ++iter )
     {
-        bputch( pszText[i++], true );
-        checka(abort, &next);
+        bputch( *iter, true );
+        checka( abort, &next );
     }
     FlushOutComChBuffer();
-    if (!*abort)
+    if ( !*abort )
     {
         GetSession()->bout.NewLine();
     }
 }
 
-void plal(const char *pszText, int limit, bool *abort)
+void plal(const std::string text, int limit, bool *abort)
 {
     CheckForHangup();
     if (hangup)
@@ -439,29 +437,24 @@ void plal(const char *pszText, int limit, bool *abort)
         *abort = true;
     }
 
-    int i=0;
     bool next;
     checka(abort, &next);
 
-	char* temp = WWIV_STRDUP( pszText );
-    limit += strlen( pszText ) - strlen(stripcolors(temp));
-	BbsFreeMemory(temp);
-
-    while ( pszText[i] && !*abort && i < limit )
+    char* pszTempBuffer = WWIV_STRDUP( text.c_str() );
+    limit += text.length() - strlen(stripcolors(pszTempBuffer));
+	BbsFreeMemory(pszTempBuffer);
+    int nCharsDisplayed = 0;
+    for( std::string::const_iterator iter = text.begin(); iter != text.end() && nCharsDisplayed++ < limit && !*abort; ++iter )
     {
-        if ( pszText[i] != '\r' && pszText[i] != '\n' )
+        if ( *iter != '\r' && *iter != '\n' )
         {
-            bputch( pszText[i++], true );
+            bputch( *iter, true );
         }
-        else
-        {
-            i++;
-        }
-        checka(abort, &next);
+        checka( abort, &next );
     }
 
     FlushOutComChBuffer();
-    if (!*abort)
+    if ( !*abort )
 	{
         GetSession()->bout.NewLine();
 	}

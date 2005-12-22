@@ -304,25 +304,21 @@ void OnlineUserEditor()
  * <p>
  * BackPrint("This is an example.",3,20,500);
  *
- * @param pszText  The string to print
+ * @param strText  The string to print
  * @param nColorCode The color of the string
  * @param nCharDelay Delay between each character, in milliseconds
  * @param nStringDelay Delay between completion of string and backspacing
  */
-void BackPrint( const char *pszText, int nColorCode, int nCharDelay, int nStringDelay )
+void BackPrint( std::string strText, int nColorCode, int nCharDelay, int nStringDelay )
 {
-	WWIV_ASSERT( pszText );
-
 	bool oecho = echo;
 	echo = true;
-	int nLength = strlen( pszText );
+    int nLength = strText.length();
 	GetSession()->bout.Color( nColorCode );
 	WWIV_Delay( nCharDelay );
-	int nPos = 0;
-	while ( pszText[nPos]  && !hangup )
-	{
-		bputch( pszText[nPos] );
-		nPos++;
+    for( std::string::const_iterator iter = strText.begin(); iter != strText.end() && !hangup; ++iter ) 
+    {
+		bputch( *iter );
 		WWIV_Delay( nCharDelay );
 	}
 
@@ -358,20 +354,17 @@ void MoveLeft( int nNumberOfChars )
  * then the string is simply printed normally.
  * @param
  */
-void SpinPuts( const char *pszText, int nColorCode )
+void SpinPuts( const std::string strText, int nColorCode )
 {
 	bool oecho	= echo;
 	echo		= true;
-
-	WWIV_ASSERT( pszText );
 
 	if ( okansi() )
 	{
 		GetSession()->bout.Color( nColorCode );
 	    const int dly = 30;
-	    int nPos = 0;
-		while ( pszText[nPos] && !hangup )
-		{
+        for( std::string::const_iterator iter = strText.begin(); iter != strText.end() && !hangup; ++iter )
+        {
 			WWIV_Delay(dly);
 			GetSession()->bout << "/";
 			MoveLeft( 1 );
@@ -385,13 +378,12 @@ void SpinPuts( const char *pszText, int nColorCode )
 			GetSession()->bout << "|";
 			MoveLeft( 1 );
 			WWIV_Delay(dly);
-			bputch(pszText[nPos]);
-			nPos++;
+			bputch( *iter );
 		}
 	}
 	else
 	{
-		GetSession()->bout << pszText;
+		GetSession()->bout << strText;
 	}
 	echo = oecho;
 }

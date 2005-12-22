@@ -32,8 +32,7 @@
 //
 // Local function prototypes
 //
-void SetMessageOriginInfo(int nSystemNumber, int nUserNumber);
-WFile * OpenMessageFile( const char *pszMessageAreaFileName );
+WFile * OpenMessageFile( const std::string messageAreaFileName );
 void set_gat_section( WFile *pMessageFile, int section );
 void save_gat( WFile *pMessageFile );
 
@@ -44,7 +43,7 @@ static long gat_section;
  * Sets the global variables pszOutOriginStr and pszOutOriginStr2.
  * Note: This is a private function
  */
-void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, char *pszOutOriginStr, char *pszOutOriginStr2 )
+void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOutOriginStr, std::string& strOutOriginStr2 )
 {
 	char szNetName[81];
 
@@ -57,13 +56,13 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, char *pszOutOrigin
 		szNetName[0] = '\0';
 	}
 
-	*pszOutOriginStr    = '\0';
-	*pszOutOriginStr2   = '\0';
+    CLEAR_STRING( strOutOriginStr );
+    CLEAR_STRING( strOutOriginStr2 );
 
 	if ( wwiv::stringUtils::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ||
          nSystemNumber == 32767 )
 	{
-		strcpy(pszOutOriginStr, "Internet Mail and Newsgroups");
+        strOutOriginStr = "Internet Mail and Newsgroups";
 		return;
 	}
 
@@ -110,21 +109,17 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, char *pszOutOrigin
 				describe_area_code(atoi(csne->phone), szDescription);
 			}
 
-			if (szDescription[0])
-			{
-				sprintf(pszOutOriginStr, "%s%s [%s] %s", szNetName, csne->name, csne->phone, szNetStatus);
-				strcpy(pszOutOriginStr2, szDescription);
-			}
-			else
-			{
-				sprintf(pszOutOriginStr, "%s%s [%s] %s", szNetName, csne->name, csne->phone, szNetStatus);
-				strcpy(pszOutOriginStr2, "Unknown Area");
-			}
+            std::stringstream sstream;
+            sstream << szNetName << csne->name << " [" << csne->phone << "] " << szNetStatus;
+            strOutOriginStr = sstream.str();
+            strOutOriginStr2 = (szDescription[0]) ? szDescription : "Unknown Area";
 		}
 		else
 		{
-            sprintf( pszOutOriginStr, "%s%s", szNetName, "Unknown System" );
-			strcpy( pszOutOriginStr2, "Unknown Area" );
+            std::stringstream sstream;
+            sstream << szNetName << "Unknown System";
+            strOutOriginStr = sstream.str();
+			strOutOriginStr2 = "Unknown Area";
 		}
 	}
 }
@@ -133,7 +128,7 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, char *pszOutOrigin
  * Deletes a message
  * This is a public function.
  */
-void remove_link( messagerec * pMessageRecord, const char *aux )
+void remove_link( messagerec * pMessageRecord, std::string fileName )
 {
 	switch ( pMessageRecord->storage_type )
 	{
@@ -142,7 +137,7 @@ void remove_link( messagerec * pMessageRecord, const char *aux )
 		break;
     case 2:
         {
-		    WFile *pMessageFile = OpenMessageFile( aux );
+		    WFile *pMessageFile = OpenMessageFile( fileName );
 			if ( pMessageFile->IsOpen() )
 		    {
 			    set_gat_section( pMessageFile, static_cast<int> (pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS) );
@@ -169,13 +164,13 @@ void remove_link( messagerec * pMessageRecord, const char *aux )
  * Opens the message area file {pszMessageAreaFileName} and returns the file handle.
  * Note: This is a Private method to this module.
  */
-WFile * OpenMessageFile( const char *pszMessageAreaFileName )
+WFile * OpenMessageFile( const std::string messageAreaFileName )
 {
 	GetApplication()->GetStatusManager()->RefreshStatusCache();
 
-	std::string strFullPathName;
-	wwiv::stringUtils::FormatString( strFullPathName, "%s%s.dat", syscfg.msgsdir, pszMessageAreaFileName );
-	WFile *pFileMessage = new WFile( strFullPathName );
+	std::stringstream sstream;
+    sstream << syscfg.msgsdir << messageAreaFileName << ".dat" << std::ends;
+	WFile *pFileMessage = new WFile( sstream.str() );
 	if ( !pFileMessage->Open( WFile::modeReadWrite | WFile::modeBinary ) )
 	{
         // Create message area file if it doesn't exist.
@@ -243,7 +238,7 @@ void save_gat( WFile *pMessageFile )
 }
 
 
-void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const char *aux )
+void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const std::string fileName )
 {
     WWIV_ASSERT( pMessageRecord );
     switch ( pMessageRecord->storage_type )
@@ -254,7 +249,7 @@ void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const 
     case 2:
         {
             int gati[128];
-            WFile *pMessageFile = OpenMessageFile( aux );
+            WFile *pMessageFile = OpenMessageFile( fileName );
 			if ( pMessageFile->IsOpen() )
             {
                 for ( int section = 0; section < 1024; section++ )
@@ -301,7 +296,7 @@ void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const 
 }
 
 
-char *readfile( messagerec * pMessageRecord, const char *aux, long *plMessageLength )
+char *readfile( messagerec * pMessageRecord, std::string fileName, long *plMessageLength )
 {
     char *b =  NULL;
 
@@ -313,7 +308,7 @@ char *readfile( messagerec * pMessageRecord, const char *aux, long *plMessageLen
         break;
     case 2:
         {
-			WFile * pMessageFile = OpenMessageFile(aux);
+			WFile * pMessageFile = OpenMessageFile( fileName );
             set_gat_section( pMessageFile, static_cast< int >( pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS ) );
             int lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
             long lMessageLength = 0;
@@ -1257,11 +1252,12 @@ void imail( int nUserNumber, int nSystemNumber )
 
 void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *next, const char *pszFileName, int nFromSystem, int nFromUser )
 {
-	char szToName[205], szDate[81], s[205];
+    std::string strName, strDate;
+	char s[205];
 	long lMessageTextLength;
 
-    char origin_str[128];
-    char origin_str2[81];
+    std::string origin_str;
+    std::string origin_str2;
 
     // Moved internally from outside this method
     SetMessageOriginInfo( nFromSystem, nFromUser, origin_str, origin_str2 );
@@ -1291,9 +1287,8 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 				    ( static_cast<long>( nNamePtr ) < lMessageTextLength ) &&
 				    ( nNamePtr < 200 ) )
 			{
-				szToName[nNamePtr] = ss[nNamePtr++];
+                strName.push_back( ss[nNamePtr++] );
 			}
-			szToName[nNamePtr] = '\0';
 			++nNamePtr;
 			int nDatePtr = 0;
 			if (ss[nNamePtr] == SOFTRETURN )
@@ -1304,9 +1299,9 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 				    static_cast<long>( nNamePtr + nDatePtr < lMessageTextLength ) &&
 					( nDatePtr < 60 ) )
 			{
-				szDate[ nDatePtr ] = ss[ ( nDatePtr++ ) + nNamePtr ];
+                strDate.push_back( ss[ ( nDatePtr++ ) + nNamePtr ] );
 			}
-			szDate[nDatePtr] = '\0';
+			
 			lCurrentCharPointer = nNamePtr + nDatePtr + 1;
 		}
 		break;
@@ -1328,13 +1323,13 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 			g_flags &= ~g_flag_disable_mci;
 		}
         osan("|#1Name|#7: ", &abort, next);
-        plan(GetSession()->GetMessageColor(), szToName, &abort, next);
-        strcpy(irt_name, szToName);
+        plan(GetSession()->GetMessageColor(), strName.c_str(), &abort, next);
+        strcpy(irt_name, strName.c_str());
         osan("|#1Date|#7: ", &abort, next);
-        plan(GetSession()->GetMessageColor(), szDate, &abort, next);
-        if (origin_str[0])
+        plan(GetSession()->GetMessageColor(), strDate.c_str(), &abort, next);
+        if (!origin_str.empty())
 		{
-			if (szToName[1] == '`')
+			if (strName[1] == '`')
 			{
 				osan("|#1Gated From|#7: ", &abort, next);
 			}
@@ -1342,12 +1337,12 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 			{
 				osan("|#1From|#7: ", &abort, next);
 			}
-            plan(GetSession()->GetMessageColor(), origin_str, &abort, next);
+            plan(GetSession()->GetMessageColor(), origin_str.c_str(), &abort, next);
         }
-        if (origin_str2[0])
+        if (!origin_str2.empty())
 		{
 			osan("|#1Loc|#7:  ", &abort, next);
-            plan(GetSession()->GetMessageColor(), origin_str2, &abort, next);
+            plan(GetSession()->GetMessageColor(), origin_str2.c_str(), &abort, next);
         }
         break;
 	case anony_sender:
@@ -1355,10 +1350,10 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 		{
 			osan("|#1Name|#7: ", &abort, next);
 			std::stringstream toName;
-			toName << "<<< " << szToName << " >>>";
+			toName << "<<< " << strName << " >>>";
 			plan(GetSession()->GetMessageColor(), toName.str().c_str(), &abort, next);
 			osan("|#1Date|#7: ", &abort, next);
-			plan(GetSession()->GetMessageColor(), szDate, &abort, next);
+            plan(GetSession()->GetMessageColor(), strDate.c_str(), &abort, next);
         }
 		else
 		{
@@ -1383,9 +1378,9 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
         if ( readit )
 		{
 			osan("|#1Name|#7: ", &abort, next);
-			plan(GetSession()->GetMessageColor(), szToName, &abort, next);
+            plan(GetSession()->GetMessageColor(), strName.c_str(), &abort, next);
 			osan("|#1Date|#7: ", &abort, next);
-			plan(GetSession()->GetMessageColor(), szDate, &abort, next);
+            plan(GetSession()->GetMessageColor(), strDate.c_str(), &abort, next);
         }
 		else
 		{
@@ -1671,7 +1666,7 @@ void read_message(int n, bool *next, int *val)
 }
 
 
-void lineadd( messagerec * pMessageRecord, const char *sx, const char *aux )
+void lineadd( messagerec * pMessageRecord, const char *sx, std::string fileName )
 {
 	char szLine[ 255 ];
     sprintf( szLine, "%s\r\n\x1a", sx );
@@ -1683,7 +1678,7 @@ void lineadd( messagerec * pMessageRecord, const char *sx, const char *aux )
 		break;
     case 2:
         {
-            WFile * pMessageFile = OpenMessageFile( aux );
+            WFile * pMessageFile = OpenMessageFile( fileName );
             set_gat_section( pMessageFile, pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS );
             int new1 = 1;
             while ( new1 < GAT_NUMBER_ELEMENTS && gat[new1] != 0 )

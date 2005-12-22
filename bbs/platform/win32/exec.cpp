@@ -19,13 +19,13 @@
 
 #include "wwiv.h"
 
-bool CreateSyncTempFile( char *pszOutTempFileName, const char *pszCommandLine );
-void CreateSyncFosCommandLine( char* pszOutCommandLine, const char* pszOrigCommandLine, int nSyncMode );
+bool CreateSyncTempFile( std::string &outFileName, const std::string commandLine );
+void CreateSyncFosCommandLine( std::string &outCommandLine, const std::string tempFilePath, int nSyncMode );
 bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadSlot, int nSyncMode  );
 bool DoSyncFosLoop9X( HANDLE hProcess, HMODULE hKernel32, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd, HANDLE hSyncHangupEvent, int nSyncMode  );
 bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd, HANDLE hSyncHangupEvent, int nSyncMode  );
 
-char* GetSyncFosTempFilePath( char *pszOutTempFileName );
+const char* GetSyncFosTempFilePath( std::string &outFileName );
 bool VerifyDosXtrnExists();
 char* GetDosXtrnPath( char *pszDosXtrnPath );
 char* GetSyncFosOSMode( char * pszOSMode );
@@ -65,7 +65,7 @@ struct sbbsexecrec
 typedef HANDLE (WINAPI *OPENVXDHANDLEFUNC)(HANDLE);
 
 
-int ExecExternalProgram( const char *pszCommandLine, int flags )
+int ExecExternalProgram( const std::string commandLine, int flags )
 {
     bool bUsingSync = false;
 
@@ -75,7 +75,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
     ZeroMemory( &si, sizeof( si ) );
     si.cb = sizeof( si );
     ZeroMemory( &pi, sizeof( pi ) );
-    char szWorkingCmdLine[ MAX_PATH + 1 ];
+    std::string workingCommandLine;
 
 
     bool bShouldUseSync = false;
@@ -93,23 +93,23 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 
     if ( bShouldUseSync )
     {
-        char szSyncFosTempFile[ MAX_PATH ];
-        if ( !CreateSyncTempFile( szSyncFosTempFile, pszCommandLine ) )
+        std::string syncFosTempFile;
+        if ( !CreateSyncTempFile( syncFosTempFile, commandLine ) )
         {
             return -1;
         }
-        CreateSyncFosCommandLine( szWorkingCmdLine, szSyncFosTempFile, nSyncMode );
+        CreateSyncFosCommandLine( workingCommandLine, syncFosTempFile, nSyncMode );
         bUsingSync = true;
         char szTempLogFileName[ MAX_PATH ];
         _snprintf( szTempLogFileName, sizeof( szTempLogFileName ), "%swwivsync.log", GetApplication()->GetHomeDir() );
         hLogFile = fopen( szTempLogFileName, "at" );
         fprintf( hLogFile, charstr( 78, '=' ) );
         fprintf( hLogFile, "\r\n\r\n" );
-        fprintf( hLogFile, "Cmdline = [%s]\r\n\n", szWorkingCmdLine );
+        fprintf( hLogFile, "Cmdline = [%s]\r\n\n", workingCommandLine.c_str() );
     }
     else
     {
-        strncpy( szWorkingCmdLine, pszCommandLine, sizeof( szWorkingCmdLine ) );
+        workingCommandLine = commandLine;
     }
 
 
@@ -243,9 +243,12 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
     WWIV_GetDir( szCurDir, true );
 
     ::Sleep( 250 );
+    
+    char szTempWorkingCommandline[MAX_PATH + 1];
+    strncpy( szTempWorkingCommandline, workingCommandLine.c_str(), MAX_PATH );
     BOOL bRetCP = CreateProcess(
         NULL,
-        szWorkingCmdLine,
+        szTempWorkingCommandline,
         NULL,
         NULL,
         TRUE,
@@ -258,10 +261,10 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
     if ( !bRetCP )
     {
         delete[] pszTitle;
-        sysoplogf( "!!! CreateProcess failed for command: [%s] with Error Code %ld", szWorkingCmdLine, GetLastError() );
+        sysoplogf( "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(), GetLastError() );
         if ( bUsingSync )
         {
-            fprintf( hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", szWorkingCmdLine, GetLastError() );
+            fprintf( hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(), GetLastError() );
         }
         return -1;
     }
@@ -355,18 +358,18 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 // Helper functions
 //
 
-bool CreateSyncTempFile( char *pszOutTempFileName, const char *pszCommandLine )
+bool CreateSyncTempFile( std::string &outFileName, const std::string commandLine )
 {
-    GetSyncFosTempFilePath( pszOutTempFileName );
+    GetSyncFosTempFilePath( outFileName );
     DeleteSyncTempFile();
 
-    FILE* fp = fopen( pszOutTempFileName, "wt" );
-    if ( fp == NULL )
+    WTextFile file( outFileName, "wt" );
+    if ( !file.IsOpen() )
     {
         return false;
     }
-    fputs( pszCommandLine, fp );
-    if ( fclose( fp ) != 0 )
+    file.Write( commandLine.c_str() );
+    if ( !file.Close() )
     {
         return false;
     }
@@ -374,14 +377,15 @@ bool CreateSyncTempFile( char *pszOutTempFileName, const char *pszCommandLine )
     return true;
 }
 
-char* GetSyncFosTempFilePath( char *pszOutTempFileName )
+const char* GetSyncFosTempFilePath( std::string &outFileName )
 {
-    _snprintf( pszOutTempFileName, MAX_PATH, "%sWWIVSYNC.ENV", syscfgovr.tempdir );
-    return pszOutTempFileName;
+    outFileName = syscfgovr.tempdir;
+    outFileName += "WWIVSYNC.ENV";
+    return outFileName.c_str();
 }
 
 
-void CreateSyncFosCommandLine( char* pszOutCommandLine, const char* pszTempFilePath, int nSyncMode )
+void CreateSyncFosCommandLine( std::string &outCommandLine, const std::string tempFilePath, int nSyncMode )
 {
     char szBuffer[ MAX_PATH ];
     char szDosXtrnPath[ MAX_PATH ];
@@ -392,13 +396,13 @@ void CreateSyncFosCommandLine( char* pszOutCommandLine, const char* pszTempFileP
             sizeof( szBuffer ),
             "%s %s %s %d %d %d",
             GetDosXtrnPath( szDosXtrnPath ),
-            pszTempFilePath,
+            tempFilePath.c_str(),
             GetSyncFosOSMode( szOSMode ),
             GetApplication()->GetInstanceNumber(),
             nSyncMode, // CONST_SBBSFOS_FOSSIL_MODE,
             CONST_SBBSFOS_LOOPS_BEFORE_YIELD );
 
-    strncpy( pszOutCommandLine, szBuffer, MAX_PATH );
+    outCommandLine = szBuffer;
 }
 
 bool VerifyDosXtrnExists()
@@ -433,11 +437,11 @@ bool IsWindowsNT()
 // returns true if the file is deleted.
 bool DeleteSyncTempFile()
 {
-    char szTempFileName[ MAX_PATH ];
-    GetSyncFosTempFilePath( szTempFileName );
-    if ( WFile::Exists( szTempFileName ) )
+    std::string tempFileName;
+    GetSyncFosTempFilePath( tempFileName );
+    if ( WFile::Exists( tempFileName ) )
     {
-        WFile::Remove( szTempFileName );
+        WFile::Remove(tempFileName );
         return true;
     }
     return false;

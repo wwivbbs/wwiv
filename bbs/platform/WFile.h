@@ -114,9 +114,8 @@ public:
     //
 
     WFile();
-    WFile( const char* pszFileName );
-    WFile( const char* pszDirName, const char *pszFileName );
-	WFile( std::string& strFileName );
+    WFile( const std::string dirName, const std::string fileName );
+	WFile( const std::string strFileName );
 	virtual ~WFile();
 
     /////////////////////////////////////////////////////////////////////////
@@ -124,8 +123,8 @@ public:
     // Public Member functions
     //
 
-    virtual bool SetName( const char* pszFileName );
-    virtual bool SetName( const char* pszDirName, const char *pszFileName );
+    virtual bool SetName( const std::string fileName );
+    virtual bool SetName( const std::string dirName, const std::string fileName );
 
     virtual bool Open( int nFileMode = WFile::modeDefault, int nShareMode = WFile::shareUnknown, int nPermissions = WFile::permUnknown );
     virtual void Close();
@@ -194,20 +193,20 @@ public:
     // static functions
     //
 
-    static bool Remove( const char *pszFileName );
-	static bool Remove( const char *pszDirectoryName, const char *pszFileName );
-    static bool Remove( std::string strFileName ) { return Remove( strFileName.c_str() ); }
-    static bool Rename( const char *pszOrigFileName, const char* pszNewFileName );
-    static bool Exists( const char *pszFileName );
-    static bool Exists( const char *pszDirectoryName, const char *pszFileName );
-    static bool ExistsWildcard( const char *pszWildCard );
-    static bool SetFilePermissions( const char *pszFileName, int nPermissions );
+    static bool Remove( const std::string fileName );
+	static bool Remove( const std::string directoryName, const std::string fileName );
+    static bool Rename( const std::string origFileName, const std::string newFileName );
+    static bool Exists( const std::string fileName );
+    static bool Exists( const std::string directoryName, const std::string fileName );
+    static bool ExistsWildcard( const std::string wildCard );
+    static bool CopyFile( const std::string sourceFileName, const std::string destFileName );
+    static bool MoveFile( const std::string sourceFileName, const std::string destFileName );
+
+    static bool SetFilePermissions( const std::string fileName, int nPermissions );
     static bool IsFileHandleValid( int hFile );
 
     static void SetLogger( WLogger* pLogger ) { m_pLogger = pLogger; }
     static void SetDebugLevel( int nDebugLevel ) { m_nDebugLevel = nDebugLevel; }
-    static bool CopyFile( const char * pszSourceFileName, const char * pszDestFileName );
-    static bool MoveFile( const char * pszSourceFileName, const char * pszDestFileName );
 };
 
 
