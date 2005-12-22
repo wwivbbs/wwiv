@@ -337,21 +337,18 @@ bool do_sysop_command( int nCommandID )
  * @return - false on failure, true on success
  *
  */
-bool copyfile(const char *pszSourceFileName, const char *pszDestFileName, bool stats)
+bool copyfile(const std::string sourceFileName, const std::string destFileName, bool stats)
 {
 	if ( stats )
 	{
 		GetSession()->bout << "|#7File movement ";
 	}
 
-	WWIV_ASSERT(pszSourceFileName);
-	WWIV_ASSERT(pszDestFileName);
-
-	if ( ( !wwiv::stringUtils::IsEquals( pszSourceFileName, pszDestFileName ) ) &&
-		  WFile::Exists( pszSourceFileName ) &&
-		  !WFile::Exists( pszDestFileName ) )
+    if ( ( sourceFileName != destFileName ) &&
+		  WFile::Exists( sourceFileName ) &&
+		  !WFile::Exists( destFileName ) )
 	{
-        if ( WFile::CopyFile( pszSourceFileName, pszDestFileName ) )
+        if ( WFile::CopyFile( sourceFileName, destFileName ) )
 		{
 			return true;
 		}
@@ -370,42 +367,32 @@ bool copyfile(const char *pszSourceFileName, const char *pszDestFileName, bool s
  * @return - false on failure, true on success
  *
  */
-bool movefile(const char *pszSourceFileName, const char *pszDestFileName, bool stats)
+bool movefile(const std::string sourceFileName, const std::string destFileName, bool stats)
 {
-	char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
-
-	WWIV_ASSERT(pszSourceFileName);
-	WWIV_ASSERT(pszDestFileName);
-
-	strcpy( szSourceFileName, pszSourceFileName );
-	strcpy( szDestFileName, pszDestFileName );
-	WWIV_STRUPR( szSourceFileName );
-	WWIV_STRUPR( szDestFileName );
-	if ( !wwiv::stringUtils::IsEquals( szSourceFileName, szDestFileName ) &&
-        WFile::Exists( szSourceFileName ) )
+    if ( sourceFileName != destFileName && WFile::Exists( sourceFileName ) )
 	{
 		bool bCanUseRename = false;
 
-		if ( ( szSourceFileName[1] != ':' ) && ( szDestFileName[1] != ':' ) )
+		if ( sourceFileName[1] != ':' && destFileName[1] != ':' )
 		{
 			bCanUseRename = true;
 		}
-		if ( ( szSourceFileName[1] == ':' ) && ( szDestFileName[1] == ':' ) && ( szSourceFileName[0] == szDestFileName[0] ) )
+		if ( sourceFileName[1] == ':' && destFileName[1] == ':' && sourceFileName[0] == destFileName[0] )
 		{
 			bCanUseRename = true;
 		}
 
 		if ( bCanUseRename )
 		{
-			WFile::Rename( szSourceFileName, szDestFileName );
-			if ( WFile::Exists( szDestFileName ) )
+			WFile::Rename( sourceFileName, destFileName );
+			if ( WFile::Exists( destFileName ) )
 			{
 				return false;
 			}
 		}
 	}
-	bool bCopyFileResult = copyfile( pszSourceFileName, pszDestFileName, stats );
-	WFile::Remove( szSourceFileName );
+	bool bCopyFileResult = copyfile( sourceFileName, destFileName, stats );
+	WFile::Remove( sourceFileName );
 
 	return bCopyFileResult;
 }
@@ -416,7 +403,7 @@ void ListAllColors()
 	GetSession()->bout.NewLine();
 	for ( int i = 0; i < 128; i++ )
 	{
-		if ( (i % 26 ) == 0 )
+		if ( ( i % 26 ) == 0 )
 		{
 			GetSession()->bout.NewLine();
 		}
@@ -426,3 +413,4 @@ void ListAllColors()
 	GetSession()->bout.Color( 0 );
 	GetSession()->bout.NewLine();
 }
+

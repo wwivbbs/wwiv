@@ -47,7 +47,7 @@ void WWIV_OutputDebugString( const char *pszString );
 
 
 // $PLATFORM/exec.cpp
-int ExecExternalProgram( const char *pszCommandLine, int flags );
+int ExecExternalProgram( const std::string commandLine, int flags );
 
 
 #endif // __INCLUDED_PLATFORM_FCNS_H__

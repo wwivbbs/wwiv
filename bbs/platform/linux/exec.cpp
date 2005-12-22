@@ -31,7 +31,7 @@ int UnixSpawn (char *pszCommand, char* environ[]);
 // Implementation
 //
 
-int ExecExternalProgram( const char *pszCommandLine, int flags )
+int ExecExternalProgram( const std::string commandLine, int flags )
 {
     (void)flags;
 
@@ -41,7 +41,7 @@ int ExecExternalProgram( const char *pszCommandLine, int flags )
 	}
 
     char s[256];
-    strcpy(s, pszCommandLine);
+    strcpy(s, commandLine.c_str());
     int i = UnixSpawn(s, NULL);
 
 	// reengage comm stuff

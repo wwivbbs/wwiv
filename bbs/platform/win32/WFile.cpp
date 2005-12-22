@@ -30,6 +30,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <sys/stat.h>
 #include <cerrno>
 #include <share.h>
@@ -90,24 +91,17 @@ WFile::WFile()
 }
 
 
-WFile::WFile( const char* pszFileName )
+WFile::WFile( const std::string fileName )
 {
     init();
-    this->SetName( pszFileName );
+    SetName( fileName );
 }
 
 
-WFile::WFile( const char* pszDirName, const char *pszFileName )
+WFile::WFile( const std::string dirName, const std::string fileName )
 {
     init();
-    this->SetName( pszDirName, pszFileName );
-}
-
-
-WFile::WFile( std::string& strFileName )
-{
-	init();
-	this->SetName( strFileName.c_str() );
+    SetName( dirName, fileName );
 }
 
 
@@ -135,30 +129,26 @@ WFile::~WFile()
 //
 
 
-bool WFile::SetName( const char* pszFileName )
+bool WFile::SetName( const std::string fileName )
 {
-    WWIV_ASSERT( pszFileName );
-    strncpy( m_szFileName, pszFileName, MAX_PATH );
+    strncpy( m_szFileName, fileName.c_str(), MAX_PATH );
     return true;
 }
 
 
-bool WFile::SetName( const char* pszDirName, const char *pszFileName )
+bool WFile::SetName( const std::string dirName, const std::string fileName )
 {
-    WWIV_ASSERT( pszDirName );
-    WWIV_ASSERT( pszFileName );
-    std::string strFileName;
-	strFileName.append( pszDirName );
-    int nDirLen = strlen(pszDirName);
-    if ( ( nDirLen > 0 ) && ( pszDirName[ nDirLen - 1 ] == '\\' ) )
+    std::stringstream fullPathName;
+    fullPathName << dirName;
+    if ( !dirName.empty() && dirName[ dirName.length() ] == '\\' )
     {
-        strFileName.append( pszFileName );
+        fullPathName << fileName;
     }
     else
     {
-        strFileName.append( "\\" ).append( pszFileName );
+        fullPathName << "\\" << fileName;
     }
-    return this->SetName( strFileName.c_str() );
+    return SetName( fullPathName.str() );
 }
 
 
@@ -395,66 +385,55 @@ time_t WFile::GetFileTime()
 // Static functions
 //
 
-bool WFile::Remove( const char *pszFileName )
+bool WFile::Remove( const std::string fileName )
 {
-    WWIV_ASSERT( pszFileName );
-    return ( DeleteFile( pszFileName ) ) ? true : false;
+    return ( DeleteFile( fileName.c_str() ) ) ? true : false;
 }
 
 
-bool WFile::Remove( const char *pszDirectoryName, const char *pszFileName )
+bool WFile::Remove( const std::string directoryName, const std::string fileName )
 {
-	WWIV_ASSERT( pszDirectoryName );
-	WWIV_ASSERT( pszFileName );
-
-	std::string strFullFileName = pszDirectoryName;
-	strFullFileName += pszFileName;
-	return WFile::Remove( strFullFileName.c_str() );
+	std::string strFullFileName = directoryName;
+	strFullFileName += fileName;
+	return WFile::Remove( strFullFileName );
 }
 
 
-bool WFile::Rename( const char *pszOrigFileName, const char* pszNewFileName )
+bool WFile::Rename( const std::string origFileName, const std::string newFileName )
 {
-    WWIV_ASSERT( pszOrigFileName );
-    WWIV_ASSERT( pszNewFileName );
-    return MoveFile( pszOrigFileName, pszNewFileName ) ? true : false;
+    return MoveFile( origFileName.c_str(), newFileName.c_str() ) ? true : false;
 }
 
 
-bool WFile::Exists( const char *pszFileName )
+bool WFile::Exists( const std::string fileName )
 {
-    WWIV_ASSERT( pszFileName );
-
     // If one of these assertions are thrown, then replace this call with
     // WFile::ExistsWildcard since we are obviously using the wrong call here.
-    WWIV_ASSERT( strstr( pszFileName, "*" ) == NULL );
-    WWIV_ASSERT( strstr( pszFileName, "?" ) == NULL );
+    WWIV_ASSERT( fileName.find( "*" ) == std::string::npos );
+    WWIV_ASSERT( fileName.find ("?" ) == std::string::npos );
 
-    return ( _access( pszFileName, 0 ) != -1 ) ? true : false;
+    return ( _access( fileName.c_str(), 0 ) != -1 ) ? true : false;
 }
 
-bool WFile::Exists( const char *pszDirectoryName, const char *pszFileName )
+bool WFile::Exists( const std::string directoryName, const std::string fileName )
 {
-    std::string fileName( pszDirectoryName );
-    fileName.append( pszFileName );
-    return Exists( fileName.c_str() );
+    std::stringstream fullPathName;
+    fullPathName << directoryName << fileName << std::ends;
+    return Exists( fullPathName.str() );
 }
 
 
 
-bool WFile::ExistsWildcard( const char *pszWildCard )
+bool WFile::ExistsWildcard( const std::string wildCard )
 {
-	WWIV_ASSERT( pszWildCard );
-
 	WFindFile fnd;
-	return (fnd.open(pszWildCard, 0) == false) ? false : true;
+    return (fnd.open(wildCard.c_str(), 0) == false) ? false : true;
 }
 
 
-bool WFile::SetFilePermissions( const char *pszFileName, int nPermissions )
+bool WFile::SetFilePermissions( const std::string fileName, int nPermissions )
 {
-    WWIV_ASSERT( pszFileName );
-    return ( _chmod( pszFileName, nPermissions ) == 0 ) ? true : false;
+    return ( _chmod( fileName.c_str(), nPermissions ) == 0 ) ? true : false;
 }
 
 
@@ -463,14 +442,14 @@ bool WFile::IsFileHandleValid( int hFile )
     return ( hFile != WFile::invalid_handle ) ? true : false;
 }
 
-bool WFile::CopyFile( const char * pszSourceFileName, const char * pszDestFileName )
+bool WFile::CopyFile( const std::string sourceFileName, const std::string destFileName )
 {
-    return ::CopyFileA(pszSourceFileName, pszDestFileName, FALSE) ? true : false;
+    return ::CopyFileA(sourceFileName.c_str(), destFileName.c_str(), FALSE) ? true : false;
 }
 
-bool WFile::MoveFile( const char * pszSourceFileName, const char * pszDestFileName )
+bool WFile::MoveFile( const std::string sourceFileName, const std::string destFileName )
 {
-    return ::MoveFileA(pszSourceFileName, pszDestFileName) ? true : false;
+    return ::MoveFileA(sourceFileName.c_str(), destFileName.c_str()) ? true : false;
 }
 
 
