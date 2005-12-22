@@ -37,7 +37,7 @@
 //      or 0 if user not found
 //      or special value
 //
-// This function will remove the special characters from arround the pszSearchString that are
+// This function will remove the special characters from arround the searchString that are
 // used by the network and remote, etc.
 //
 // Special values:
@@ -47,45 +47,35 @@
 //  -3      = Remote Command
 //  -4      = Unknown Special Login
 //
-int finduser( char *pszSearchString )
+int finduser( const std::string searchString )
 {
     WUser user;
 
     guest_user = false;
-    if ( wwiv::stringUtils::IsEquals( pszSearchString, "NEW" ) )
+    if ( searchString == "NEW" )
     {
         return -1;
     }
-    if ( wwiv::stringUtils::IsEquals( pszSearchString, "!-@NETWORK@-!" ) )
+    if ( searchString == "!-@NETWORK@-!" )
     {
         return -2;
     }
-    if ( wwiv::stringUtils::IsEquals( pszSearchString, "!-@REMOTE@-!" ) )
+    if ( searchString == "!-@REMOTE@-!" )
     {
         return -3;
     }
-    if ( strncmp( pszSearchString, "!=@", 3 ) == 0 )
-    {
-        char* ss = pszSearchString + strlen( pszSearchString ) - 3;
-        if ( wwiv::stringUtils::IsEquals( ss, "@=!" ) )
-        {
-            strcpy( pszSearchString, pszSearchString + 3 );
-            pszSearchString[ strlen( pszSearchString ) - 3 ] = '\0';
-            return -4;
-        }
-    }
-    int nUserNumber = atoi( pszSearchString );
+    int nUserNumber = atoi( searchString.c_str() );
     if ( nUserNumber > 0 )
     {
         GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
         if ( user.IsUserDeleted() )
         {
-	    //printf( "DEBUG: User %s is deleted!\r\n", user.GetName() );
+	        //printf( "DEBUG: User %s is deleted!\r\n", user.GetName() );
             return 0;
         }
         return nUserNumber;
     }
-    smalrec *sr = ( smalrec * ) bsearch( ( const void * ) pszSearchString,
+    smalrec *sr = ( smalrec * ) bsearch( ( const void * ) searchString.c_str(),
                     ( const void * ) smallist,
                     ( size_t ) GetApplication()->GetStatusManager()->GetUserCount(),
                     ( size_t ) sizeof( smalrec ),
@@ -116,20 +106,20 @@ int finduser( char *pszSearchString )
 
 // Takes user name/handle as parameter, and returns user number, if found,
 // else returns 0.
-int finduser1(const char *pszSearchString)
+int finduser1( const std::string searchString )
 {
-    if ( pszSearchString[0] == '\0' )
+    if ( searchString.empty() )
     {
         return 0;
     }
-    int nFindUserNum = finduser( const_cast<char*>( pszSearchString ) );
+    int nFindUserNum = finduser( searchString );
     if ( nFindUserNum > 0 )
     {
         return nFindUserNum;
     }
 
     char szUserNamePart[ 255 ];
-    strcpy( szUserNamePart, pszSearchString );
+    strcpy( szUserNamePart, searchString.c_str() );
     for ( int i = 0; szUserNamePart[i] != 0; i++ )
     {
         szUserNamePart[i] = upcase( szUserNamePart[i] );

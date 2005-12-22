@@ -254,19 +254,9 @@ void inputl( std::string &strOutText, int nMaxLength, bool bAutoMpl )
     strOutText.assign( szTempBuffer );
 }
 
-
-void input_password( const char *pszPromptText, char *pszOutPassword, int nMaxLength )
+void input_password( std::string promptText, std::string &strOutPassword, int nMaxLength )
 {
-    GetSession()->bout << pszPromptText;
-    GetSession()->bout.ColorizedInputField( nMaxLength );
-    echo = false;
-    input1( pszOutPassword, nMaxLength, UPPER, true );
-}
-
-
-void input_password( const char *pszPromptText, std::string &strOutPassword, int nMaxLength )
-{
-    GetSession()->bout << pszPromptText;
+    GetSession()->bout << promptText;
     GetSession()->bout.ColorizedInputField( nMaxLength );
     echo = false;
     input1( strOutPassword, nMaxLength, UPPER, true );
@@ -280,7 +270,7 @@ void input_password( const char *pszPromptText, std::string &strOutPassword, int
 //           formatted input line
 //
 // Parameters:  *pszOutText		= variable to save the input to
-//              *pszOrigText	= line to edit.  appears in edit box
+//              *orgiText    	= line to edit.  appears in edit box
 //              nMaxLength			= max characters allowed
 //              bInsert			= insert mode false = off, true = on
 //              mode			= formatting mode.
@@ -289,7 +279,7 @@ void input_password( const char *pszPromptText, std::string &strOutPassword, int
 // Returns: length of string
 //==================================================================
 
-int Input1(char *pszOutText, const char *pszOrigText, int nMaxLength, bool bInsert, int mode)
+int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert, int mode)
 {
     char szTemp[ 255 ];
     int nLength, pos, i;
@@ -334,9 +324,9 @@ int Input1(char *pszOutText, const char *pszOrigText, int nMaxLength, bool bInse
         GetSession()->bout << "±";
     }
     GetSession()->bout.GotoXY( x, y );
-    if ( pszOrigText && *pszOrigText )
+    if ( !origText.empty() )
     {
-        strcpy( szTemp, pszOrigText );
+        strcpy( szTemp, origText.c_str() );
         GetSession()->bout << szTemp;
         GetSession()->bout.GotoXY( x, y );
         pos = nLength = strlen(szTemp);
@@ -546,12 +536,12 @@ int Input1(char *pszOutText, const char *pszOrigText, int nMaxLength, bool bInse
 }
 
 
-int Input1( std::string &strOutText, const char *pszOrigText, int nMaxLength, bool bInsert, int mode )
+int Input1( std::string &strOutText, std::string origText, int nMaxLength, bool bInsert, int mode )
 {
     char szTempBuffer[ 255 ];
     WWIV_ASSERT( nMaxLength < sizeof( szTempBuffer ) );
 
-    int nLength = Input1( szTempBuffer, pszOrigText, nMaxLength, bInsert, mode );
+    int nLength = Input1( szTempBuffer, origText, nMaxLength, bInsert, mode );
     strOutText.assign( szTempBuffer );
     return nLength;
 }

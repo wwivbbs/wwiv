@@ -140,17 +140,17 @@ void input_language()
 }
 
 
-bool check_name( char *pszUserName )
+bool check_name( const std::string userName )
 {
-    // Since finduser is called with pszUserName, it can not be const.  A better idea may be
+    // Since finduser is called with userName, it can not be const.  A better idea may be
     // to change this behaviour in the future.
     char s[255], s1[255], s2[MAX_PATH];
 
-    if ( pszUserName[ strlen( pszUserName ) - 1 ] == 32   ||
-         pszUserName[0] < 65                 ||
-         finduser( pszUserName ) != 0          ||
-         strchr( pszUserName, '@' ) != NULL    ||
-         strchr( pszUserName, '#' ) != NULL )
+    if ( userName[ userName.length() - 1 ] == 32   ||
+         userName.at(0) < 65                 ||
+         finduser( userName ) != 0          ||
+         userName.find("@") != std::string::npos ||
+         userName.find("#") != std::string::npos )
     {
         return false;
     }
@@ -164,7 +164,7 @@ bool check_name( char *pszUserName )
     trashFile.Seek( 0L, WFile::seekBegin );
     long lTrashFileLen = trashFile.GetLength();
     long lTrashFilePointer = 0;
-    sprintf( s2, " %s ", pszUserName );
+    sprintf( s2, " %s ", userName.c_str() );
     bool ok = true;
     while ( lTrashFilePointer < lTrashFileLen && ok && !hangup )
     {
@@ -287,7 +287,7 @@ void input_callsign()
 }
 
 
-bool valid_phone( const char *pszPhoneNumber )
+bool valid_phone( const std::string phoneNumber )
 {
     if (syscfg.sysconfig & sysconfig_free_phone)
     {
@@ -301,11 +301,11 @@ bool valid_phone( const char *pszPhoneNumber )
             return true;
         }
     }
-    if ( strlen( pszPhoneNumber ) != 12 )
+    if ( phoneNumber.length() != 12 )
     {
         return false;
     }
-    if ( pszPhoneNumber[3] != '-' || pszPhoneNumber[7] != '-' )
+    if ( phoneNumber[3] != '-' || phoneNumber[7] != '-' )
     {
         return false;
     }
@@ -313,7 +313,7 @@ bool valid_phone( const char *pszPhoneNumber )
     {
         if ( i != 3 && i != 7 )
         {
-            if ( pszPhoneNumber[i] < '0' || pszPhoneNumber[i] > '9' )
+            if ( phoneNumber[i] < '0' || phoneNumber[i] > '9' )
             {
                 return false;
             }

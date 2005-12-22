@@ -37,7 +37,7 @@ int UnixSpawn( char *pszCommand, char* environ[] );
 //
 
 
-int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
+int ExecuteExternalProgram( const std::string commandLine, int nFlags )
 {
     // forget it if the user has hung up
     if (!(nFlags & EFLAG_NOHUP))
@@ -65,7 +65,7 @@ int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
     }
 
     // Execute the program and make sure the workingdir is reset
-    int nExecRetCode = ExecExternalProgram( pszCommandLine, nFlags );
+    int nExecRetCode = ExecExternalProgram( commandLine, nFlags );
     GetApplication()->CdHome();
 
     // Reread the user record.
