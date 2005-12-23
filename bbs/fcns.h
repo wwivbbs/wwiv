@@ -116,9 +116,9 @@ bool AllowLocalSysop();
 void parse_email_info( const char *pszEmailAddress, int *pUserNumber, int *pSystemNumber );
 bool ValidateSysopPassword();
 void hang_it_up();
-bool play_sdf( const char *pszSoundFileName, bool abortable );
+bool play_sdf( const std::string soundFileName, bool abortable );
 void describe_area_code( int nAreaCode, char *pszDescription );
-void describe_town( int nAreaCode, int town, char *pszDescription );
+void describe_area_code_prefix( int nAreaCode, int town, char *pszDescription );
 
 
 // File: bbsutl2.cpp

@@ -20,7 +20,7 @@
 #include "wwiv.h"
 
 
-char ShowAMsgMenuAndGetInput( const char *pszAutoMessageLockFileName );
+char ShowAMsgMenuAndGetInput( std::string autoMessageLockFileName );
 void write_automessage1();
 
 
@@ -29,86 +29,41 @@ void write_automessage1();
  */
 void read_automessage()
 {
-    char l[6][81];
-
-    WFile file( syscfg.gfilesdir, AUTO_MSG );
     GetSession()->bout.NewLine();
     WStatus* pStatus = GetApplication()->GetStatusManager()->GetStatus(); 
     bool bAutoMessageAnonymous = pStatus->IsAutoMessageAnonymous();
     delete pStatus;
 
-    if ( !file.Open( WFile::modeReadOnly | WFile::modeBinary ) )
+    WTextFile autoMessageFile( syscfg.gfilesdir, AUTO_MSG, "rt" );
+    std::string line;
+    if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine( line ) )
     {
         GetSession()->bout << "|13No auto-message.\r\n";
+        GetSession()->bout.NewLine();
+        return;
     }
-    else
+
+    std::string authorName = line;
+    if ( bAutoMessageAnonymous )
     {
-        char szAutoMsgBuffer[512];
-        long lAutoMsgFileLen = file.Read( szAutoMsgBuffer, 512 );
-        file.Close();
-
-        int ptrbeg[10], ptrend[10];
-        for (int i = 0; i < 10; i++)
+        if ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_read_post_anony )
         {
-            ptrbeg[i] = '\0';
-            ptrend[i] = '\0';
-        }
-
-        bool bNeedLF = false;
-        int nCurrentLineNum = 0;
-        for ( int nFilePos = 0; nFilePos < lAutoMsgFileLen; nFilePos++ )
-        {
-            if ( bNeedLF )
-            {
-                if ( szAutoMsgBuffer[ nFilePos ] == SOFTRETURN )
-                {
-                    ptrbeg[ nCurrentLineNum ] = nFilePos + 1;
-                    bNeedLF = false;
-                }
-            }
-            else
-            {
-                if ( szAutoMsgBuffer[ nFilePos ] == RETURN )
-                {
-                    ptrend[nCurrentLineNum] = nFilePos - 1;
-                    if (nCurrentLineNum < 6)
-                    {
-                        for (int i3 = ptrbeg[nCurrentLineNum]; i3 <= ptrend[nCurrentLineNum]; i3++)
-                        {
-                            l[nCurrentLineNum][i3 - ptrbeg[nCurrentLineNum]] = szAutoMsgBuffer[i3];
-                        }
-                        l[nCurrentLineNum][ptrend[nCurrentLineNum] - ptrbeg[nCurrentLineNum] + 1] = 0;
-                    }
-                    ++nCurrentLineNum;
-                    bNeedLF = true;
-                }
-            }
-        }
-        char szAuthorName[ 81 ];
-        if ( bAutoMessageAnonymous )
-        {
-            if ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_read_post_anony )
-            {
-                sprintf(szAuthorName, "<<< %s >>>", &(l[0][0]));
-            }
-            else
-            {
-                strcpy( szAuthorName, ">UNKNOWN<" );
-            }
+            std::stringstream ss;
+            ss << "<<< " << line << " >>>";
+            authorName = ss.str();
         }
         else
         {
-            strcpy( szAuthorName, &(l[ 0 ][ 0 ]) );
+            authorName = ">UNKNOWN<";
         }
-        GetSession()->bout << "\r\n|#9Auto message by: |#2" << szAuthorName << "|#0\r\n\n";
-        int nLineNum = 1;
-        while ( ptrend[ nLineNum ] && nLineNum < 6 )
-        {
-            GetSession()->bout.Color( 9 );
-            GetSession()->bout << &( l[ nLineNum ][ 0 ] );
-			GetSession()->bout.NewLine();
-            ++nLineNum;
-        }
+    }
+    GetSession()->bout << "\r\n|#9Auto message by: |#2" << authorName << "|#0\r\n\n";
+
+    int nLineNumber = 0;
+    while ( autoMessageFile.ReadLine( line ) && nLineNumber++ < 10 )
+    {
+        GetSession()->bout.Color( 9 );
+        GetSession()->bout << "|#9" << line << wwiv::endl;
     }
     GetSession()->bout.NewLine();
 }
@@ -169,10 +124,10 @@ void write_automessage1()
 }
 
 
-char ShowAMsgMenuAndGetInput( const char *pszAutoMessageLockFileName )
+char ShowAMsgMenuAndGetInput( std::string autoMessageLockFileName )
 {
     bool bCanWrite = false;
-    if ( !GetSession()->GetCurrentUser()->IsRestrictionAutomessage() && !WFile::Exists( pszAutoMessageLockFileName ) )
+    if ( !GetSession()->GetCurrentUser()->IsRestrictionAutomessage() && !WFile::Exists( autoMessageLockFileName ) )
     {
         bCanWrite = ( getslrec( GetSession()->GetEffectiveSl() ).posts ) ? true : false;
     }
@@ -201,9 +156,13 @@ char ShowAMsgMenuAndGetInput( const char *pszAutoMessageLockFileName )
  */
 void do_automessage()
 {
-    char aMsgLockFile[ MAX_PATH ], aMsgFile[ MAX_PATH ];
-    sprintf(aMsgLockFile, "%s%s", syscfg.gfilesdir, LOCKAUTO_MSG);
-    sprintf(aMsgFile, "%s%s", syscfg.gfilesdir, AUTO_MSG);
+    std::stringstream lockFileStream;
+    lockFileStream << syscfg.gfilesdir << LOCKAUTO_MSG;
+    std::string automessageLockFile = lockFileStream.str();
+
+    std::stringstream autoMessageStream;
+    autoMessageStream << syscfg.gfilesdir << AUTO_MSG;
+    std::string autoMessageFile = autoMessageStream.str();
 
     // initally show the auto message
     read_automessage();
@@ -212,7 +171,7 @@ void do_automessage()
     do
     {
         GetSession()->bout.NewLine();
-        char cmdKey = ShowAMsgMenuAndGetInput( aMsgLockFile );
+        char cmdKey = ShowAMsgMenuAndGetInput( automessageLockFile );
         switch (cmdKey)
         {
         case 'Q':
@@ -240,12 +199,12 @@ void do_automessage()
             GetSession()->bout << "\r\n|13Delete Auto-message, Are you sure? ";
             if (yesno())
             {
-                WFile::Remove(aMsgFile);
+                WFile::Remove( autoMessageFile );
             }
             GetSession()->bout.NewLine( 2 );
             break;
         case 'L':
-            if (WFile::Exists(aMsgLockFile))
+            if ( WFile::Exists( automessageLockFile ) )
             {
                 GetSession()->bout << "\r\n|13Message is already locked.\r\n\n";
             }
@@ -259,14 +218,14 @@ void do_automessage()
                     // to tell the board if it is locked or not. It consists
                     // of a space.
                     //
-                    FILE* lock_auto = fopen(aMsgLockFile, "w+t");
-                    fputc(' ', lock_auto);
-                    fclose(lock_auto);
+                    WTextFile lockFile( automessageLockFile, "w+t" );
+                    lockFile.WriteChar( ' ' );
+                    lockFile.Close();
                 }
             }
             break;
         case 'U':
-            if (!WFile::Exists(aMsgLockFile))
+            if ( !WFile::Exists( automessageLockFile ) )
             {
                 GetSession()->bout << "Message not locked.\r\n";
             }
@@ -275,7 +234,7 @@ void do_automessage()
                 GetSession()->bout << "|#5Unlock message? ";
                 if (yesno())
                 {
-                    WFile::Remove(aMsgLockFile);
+                    WFile::Remove( automessageLockFile );
                 }
             }
             break;

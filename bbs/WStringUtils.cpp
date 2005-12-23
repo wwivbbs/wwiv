@@ -95,7 +95,7 @@ namespace wwiv
 			WWIV_ASSERT( pszString1 );
 			WWIV_ASSERT( pszString2 );
 
-			return ( WWIV_STRICMP( pszString1, pszString2 ) == 0 ) ? true : false;
+			return ( StringCompareIgnoreCase( pszString1, pszString2 ) == 0 ) ? true : false;
 		}
 
 
@@ -361,30 +361,6 @@ char *StringTrim( char *pszString )
 }
 
 
-std::string& StringTrimBegin( std::string& s )
-{
-    while( s[ 0 ] == ' ' )
-    {
-        s.erase( s.begin() );
-    }
-    return s;
-}
-
-
-std::string& StringTrimEnd( std::string& s )
-{
-    while( s[ s.size() - 1 ] == ' ' )
-    {
-#if defined ( _WIN32 ) && ( _MSC_VER < 1300 )
-        s.erase( s.end() - 1 );
-#else
-        s.erase( --s.end() );
-#endif
-    }
-    return s;
-}
-
-
 /**
  * Removes spaces from the beginning and the end of the string s.
  * @param s the string from which to remove spaces
@@ -392,7 +368,29 @@ std::string& StringTrimEnd( std::string& s )
  */
 std::string& StringTrim( std::string& s )
 {
-    return StringTrimEnd( StringTrimBegin( s ) );
+    std::string::size_type pos = s.find_first_not_of(" ");
+    s.erase( 0, pos );
+
+    pos = s.find_last_not_of(" "); 
+    s.erase( pos + 1 ); 
+
+    return s;
+}
+
+
+std::string& StringTrimBegin( std::string& s )
+{
+    std::string::size_type pos = s.find_first_not_of(" ");
+    s.erase( 0, pos );
+    return s;
+}
+
+
+std::string& StringTrimEnd( std::string& s )
+{
+    std::string::size_type pos = s.find_first_not_of(" ");
+    s.erase( pos + 1 );
+    return s;
 }
 
 

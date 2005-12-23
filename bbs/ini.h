@@ -39,13 +39,13 @@ private:
 
 public:
     // Constructor/Destructor
-    WIniFile(const char *pszFileName );
+    WIniFile(const std::string fileName );
     virtual ~WIniFile();
 
     //
     // Member functions
     //
-    bool Open( const char *prim, const char *sec = NULL );
+    bool Open( const std::string primarySection, const std::string secondarySection = "");
     bool Close();
     bool IsOpen() const { return m_bOpen; }
 
@@ -66,20 +66,20 @@ protected:
     /**
      * Allocates memory and returns pointer to location containing requested data within a file.
      */
-    char *ReadSectionIntoMemory(const char *pszFileName, long begin, long end);
+    char *ReadSectionIntoMemory(const std::string &fileName, long begin, long end);
 
     /** 
      * Returns begin and end locations for specified subsection within an INI file.
      * If subsection not found then *begin and *end are both set to -1L.
      */
-    void FindSubsectionArea(const char *pszFileName, const char *ssn, long *begin, long *end);
+    void FindSubsectionArea(const std::string& fileName, const std::string& section, long *begin, long *end);
 
     /**
      * Reads a subsection from specified .INI file, the subsection being specified
      * by *pszHeader. Returns a ptr to the subsection data if found and memory is
      * available, else returns NULL.
      */
-    char *ReadFile(const char *pszFileName, const char *pszHeader);
+    char *ReadFile(const std::string fileName, const std::string header);
     
     void Parse(char *pBuffer, ini_info_type * info);
 

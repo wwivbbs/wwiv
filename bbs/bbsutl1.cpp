@@ -402,37 +402,37 @@ void hang_it_up()
  * Returns 1 if sucessful, else returns 0. The pause_delay is optional and
  * is used to insert silences between tones.
  */
-bool play_sdf( const char *pszSoundFileName, bool abortable )
+bool play_sdf( const std::string soundFileName, bool abortable )
 {
-	WWIV_ASSERT(pszSoundFileName);
+    WWIV_ASSERT( !soundFileName.empty() );
 
-	char szFileName[ MAX_PATH ];
-
+    std::string fullPathName;
 	// append gfilesdir if no path specified
-	if (strchr(pszSoundFileName, WWIV_FILE_SEPERATOR_CHAR) == NULL)
+    if ( soundFileName.find( WWIV_FILE_SEPERATOR_CHAR ) == std::string::npos )
 	{
-		strncpy(szFileName, syscfg.gfilesdir, sizeof(szFileName));
-		strncat(szFileName, pszSoundFileName, sizeof(szFileName));
+        std::stringstream ss;
+        ss << syscfg.gfilesdir << soundFileName;
+        fullPathName = ss.str();
 	}
 	else
 	{
-		strncpy( szFileName, pszSoundFileName, sizeof(szFileName));
+        fullPathName = soundFileName;
 	}
 
 	// append .SDF if no extension specified
-	if (strchr( szFileName, '.') == NULL)
+    if ( fullPathName.find( '.' ) == std::string::npos )
 	{
-		strncat( szFileName, ".sdf", sizeof(szFileName));
+		fullPathName += ".sdf";
 	}
 
 	// Must Exist
-	if (!WFile::Exists(szFileName))
+	if (!WFile::Exists(fullPathName))
 	{
 		return false;
 	}
 
 	// must be able to open read-only
-    WTextFile soundFile(szFileName, "rt");
+    WTextFile soundFile(fullPathName, "rt");
     if (!soundFile.IsOpen())
 	{
 		return false;
@@ -500,10 +500,10 @@ void describe_area_code(int nAreaCode, char *pszDescription)
     file.Close();
 	char* ss1 = strtok(ss, "\r\n");
     bool done = false;
-	while (ss1 && (!done))
+	while ( ss1 && !done )
 	{
-		int i = atoi(ss1);
-		if ( i && i == nAreaCode )
+		int nCurrentAreaCode = atoi( ss1 );
+		if ( nCurrentAreaCode && nCurrentAreaCode == nAreaCode )
 		{
 			done = true;
 		}
@@ -519,13 +519,13 @@ void describe_area_code(int nAreaCode, char *pszDescription)
 
 
 /**
- * Describes the town (area code + prefix) as listed in the regions file.
+ * Describes the Town (area code + prefix) as listed in the regions file.
  * @param nAreaCode The area code to describe
- * @param town The phone number prefix to describe
+ * @param nTargetTown The phone number prefix to describe
  * @param pszDescription point to return the description for the specified
  *        area code.
  */
-void describe_town( int nAreaCode, int town, char *pszDescription )
+void describe_area_code_prefix( int nAreaCode, int nTargetTown, char *pszDescription )
 {
     char szFileName[ MAX_PATH ];
 	pszDescription[0] = '\0';
@@ -551,8 +551,8 @@ void describe_town( int nAreaCode, int town, char *pszDescription )
     bool done = false;
 	while ( ss1 && !done )
 	{
-		int i = atoi(ss1);
-		if ( i && i == town )
+		int nCurrentTown = atoi(ss1);
+		if ( nCurrentTown && nCurrentTown == nTargetTown )
 		{
 			done = true;
 		}

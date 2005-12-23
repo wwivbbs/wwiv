@@ -27,7 +27,7 @@
 char ShowBBSListMenuAndGetChoice();
 bool IsBBSPhoneNumberUnique( const char *pszPhoneNumber );
 bool IsBBSPhoneNumberValid( const char *pszPhoneNumber );
-void AddBBSListLine( const char *pszBbsListLine );
+void AddBBSListLine( const std::string bbsListLine );
 void AddBBSListEntryImpl();
 void AddBBSListEntry();
 void DeleteBBSListEntry();
@@ -123,7 +123,7 @@ bool IsBBSPhoneNumberValid( const char *pszPhoneNumber )
 }
 
 
-void AddBBSListLine( const char* pszBbsListLine )
+void AddBBSListLine( const std::string bbsListLine )
 {
     WFile file( syscfg.gfilesdir, BBSLIST_MSG );
     bool bOpen = file.Open( WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite );
@@ -138,7 +138,7 @@ void AddBBSListLine( const char* pszBbsListLine )
             file.Seek( -1L, WFile::seekEnd );
         }
     }
-    file.Write( pszBbsListLine, strlen( pszBbsListLine ) );
+    file.Write( bbsListLine.c_str(), bbsListLine.length() );
     file.Close();
 }
 
@@ -223,14 +223,14 @@ void DeleteBBSListEntry()
         char szFileName[ MAX_PATH ];
         sprintf(szFileName, "%s%s", syscfg.gfilesdir, BBSLIST_MSG);
         sprintf(szTempFileName, "%s%s", syscfg.gfilesdir, BBSLIST_TMP);
-        FILE* fi = fopen(szFileName, "r");
-        if (fi)
+        WTextFile fi( syscfg.gfilesdir, BBSLIST_MSG, "r" );
+        if (fi.IsOpen())
         {
-            FILE* fo = fopen(szTempFileName, "w");
-            if (fo)
+            WTextFile fo(syscfg.gfilesdir, BBSLIST_TMP, "w");
+            if (fo.IsOpen())
             {
                 char szLine[ 255 ];
-                while (fgets(szLine, sizeof(szLine), fi))
+                while (fi.ReadLine(szLine, sizeof(szLine)))
                 {
                     if ( strstr( szLine, bbsPhoneNumber.c_str() ) )
                     {
@@ -238,12 +238,12 @@ void DeleteBBSListEntry()
                     }
                     else
                     {
-                        fprintf(fo, "%s", szLine);
+                        fo.Write( szLine );
                     }
                 }
-                fclose(fo);
+                fo.Close();
             }
-            fclose(fi);
+            fi.Close();
         }
         GetSession()->bout.NewLine();
         if (ok)

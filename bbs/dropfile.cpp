@@ -111,33 +111,33 @@ void CreateDoorInfoDropFile()
     WTextFile fileDorInfoSys( szFileName, "wt");
     if (fileDorInfoSys.IsOpen())
 	{
-        fprintf(fileDorInfoSys, "%s\n%s\n\nCOM%d\n", syscfg.systemname, syscfg.sysopname,
+        fileDorInfoSys.WriteFormatted( "%s\n%s\n\nCOM%d\n", syscfg.systemname, syscfg.sysopname,
             incom ? syscfgovr.primaryport : 0);
-        fprintf(fileDorInfoSys, "%lu ", ((GetSession()->using_modem) ? com_speed : 0));
-        fprintf(fileDorInfoSys, "BAUD,N,8,1\n0\n");
+        fileDorInfoSys.WriteFormatted( "%lu ", ((GetSession()->using_modem) ? com_speed : 0));
+        fileDorInfoSys.WriteFormatted( "BAUD,N,8,1\n0\n");
         if (syscfg.sysconfig & sysconfig_no_alias)
 		{
             char szTemp[81];
             strcpy( szTemp, GetSession()->GetCurrentUser()->GetRealName() );
             GetNamePartForDropFile( false, szTemp );
-            fprintf( fileDorInfoSys, "%s\n", szTemp );
+            fileDorInfoSys.WriteFormatted( "%s\n", szTemp );
             strcpy( szTemp, GetSession()->GetCurrentUser()->GetRealName() );
             GetNamePartForDropFile( true, szTemp );
-            fprintf( fileDorInfoSys, "%s\n", szTemp );
+            fileDorInfoSys.WriteFormatted( "%s\n", szTemp );
         }
 		else
 		{
-            fprintf( fileDorInfoSys, "%s\n\n", GetSession()->GetCurrentUser()->GetName() );
+            fileDorInfoSys.WriteFormatted( "%s\n\n", GetSession()->GetCurrentUser()->GetName() );
 		}
         if (syscfg.sysconfig & sysconfig_extended_info)
 		{
-            fprintf( fileDorInfoSys, "%s, %s\n", GetSession()->GetCurrentUser()->GetCity(), GetSession()->GetCurrentUser()->GetState() );
+            fileDorInfoSys.WriteFormatted( "%s, %s\n", GetSession()->GetCurrentUser()->GetCity(), GetSession()->GetCurrentUser()->GetState() );
 		}
         else
 		{
-            fprintf(fileDorInfoSys, "\n");
+            fileDorInfoSys.WriteFormatted( "\n");
 		}
-        fprintf( fileDorInfoSys, "%c\n%d\n%ld\n", GetSession()->GetCurrentUser()->HasAnsi() ? '1' : '0',
+        fileDorInfoSys.WriteFormatted( "%c\n%d\n%ld\n", GetSession()->GetCurrentUser()->HasAnsi() ? '1' : '0',
                  GetSession()->GetCurrentUser()->GetSl(), GetMinutesRemainingForDropFile() );
         fileDorInfoSys.Close();
     }

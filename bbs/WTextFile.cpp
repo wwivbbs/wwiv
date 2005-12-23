@@ -24,31 +24,25 @@
 FILE *fsh_open(const char *path, char *mode);
 
 
-WTextFile::WTextFile( const char* pszFileName, const char* pszFileMode )
+WTextFile::WTextFile( const std::string fileName, const std::string fileMode )
 {
-    Open( pszFileName, pszFileMode);
+    Open( fileName, fileMode);
 }
 
 
-WTextFile::WTextFile( const char* pszDirectoryName, const char* pszFileName, const char* pszFileMode )
+WTextFile::WTextFile( const std::string directoryName, const std::string fileName, const std::string fileMode )
 {
-    std::string fileName(pszDirectoryName);
-    fileName.append(pszFileName);
-    Open( fileName.c_str(), pszFileMode );
+    std::string fullPathName(directoryName);
+    fullPathName.append(fileName);
+    Open( fullPathName, fileMode );
 }
 
 
-WTextFile::WTextFile( std::string& strFileName, const char* pszFileMode )
+bool WTextFile::Open( const std::string fileName, const std::string fileMode )
 {
-    Open( strFileName.c_str(), pszFileMode );
-}
-
-
-bool WTextFile::Open( const char* pszFileName, const char* pszFileMode )
-{
-    strcpy( m_szFileName, pszFileName );
-    strcpy( m_szFileMode, pszFileMode );
-    m_hFile = WTextFile::OpenImpl( m_szFileName, m_szFileMode);
+    m_fileName = fileName;
+    m_fileMode = fileMode;
+    m_hFile = WTextFile::OpenImpl( m_fileName.c_str(), m_fileMode.c_str() );
     return ( m_hFile != NULL ) ? true : false;
 }
 
