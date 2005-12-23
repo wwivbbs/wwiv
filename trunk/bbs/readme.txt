@@ -91,6 +91,16 @@ Rushfan - ** IMPORTANT CHANGE ** In chat.ini, CH_PROMPT's allowable values
 Rushfan - Renamed WBbsApp to WApplication
 Rushfan - moved attach dir into WApplication
 Rushfan - Finished WIniFile implementation
+Rushfan - Updates WIniFile and WFile to take string parameters instead of
+          char* parameters.
+Rushfan - Started converting functions over from char* parameters to string
+Rushfan - renamed describe_town to describe_area_code_prefix
+Rushfan - moved WLocalIO and WComm to WSession, now available as
+          WSession::localIO and WSession::remoteIO.
+Rushfan - Updated several of the StringUtils methods to use better STL code
+Rushfan - Rewrote read_automessage to use WTextFile and simplified logic
+
+
 
 
 ==============================================================================
