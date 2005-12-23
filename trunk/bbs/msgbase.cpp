@@ -102,7 +102,7 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOu
 			{
                 char szPhonePrefix[ 10 ];
 				sprintf( szPhonePrefix, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6] );
-				describe_town( atoi( csne->phone ), atoi( szPhonePrefix ), szDescription );
+				describe_area_code_prefix( atoi( csne->phone ), atoi( szPhonePrefix ), szDescription );
 			}
 			else
 			{

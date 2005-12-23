@@ -373,7 +373,7 @@ void do_callout( int sn )
 				if ( WFile::Exists( szRegionsFileName ) )
                 {
 					sprintf( town, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6] );
-					describe_town( atoi( csne->phone ), atoi( town ), s1 );
+					describe_area_code_prefix( atoi( csne->phone ), atoi( town ), s1 );
 				}
                 else
                 {

@@ -735,7 +735,7 @@ void print_net_listing( bool bForcePause )
 							if ( WFile::Exists( s2 ) )
 							{
 								sprintf( town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6] );
-								describe_town( atoi( csne.phone ), atoi( town ), s3 );
+								describe_area_code_prefix( atoi( csne.phone ), atoi( town ), s3 );
 							}
 							else
 							{

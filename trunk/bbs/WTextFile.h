@@ -36,15 +36,15 @@ class WTextFile
 {
 
 public:
-    WTextFile( const char* pszFileName, const char* pszFileMode );
-    WTextFile( const char* pszDirectoryName, const char* pszFileName, const char* pszFileMode );
-    WTextFile( std::string& strFileName, const char* pszFileMode );
+    WTextFile( const std::string fileName, const std::string fileMode );
+    WTextFile( const std::string directoryName, const std::string fileName, const std::string fileMode );
     operator FILE*() const { return m_hFile; }
-    bool Open( const char* pszFileName, const char* pszFileMode );
+    bool Open( const std::string fileName, const std::string fileMode );
     bool Close();
     bool IsOpen() { return m_hFile != NULL; }
     bool IsEndOfFile() { return feof(m_hFile) ? true : false; }
     int Write( const char *pszText ) { return fputs( pszText, m_hFile ); }
+    int WriteChar( char ch ) { return fputc( ch, m_hFile ); }
     int WriteFormatted( const char *pszFormatText, ... );
     int WriteBinary( const void *pBuffer, size_t nSize ) { return fwrite(pBuffer, nSize, 1, m_hFile ); }
     bool ReadLine( char *pszBuffer, int nBufferSize ) { return (fgets(pszBuffer, nBufferSize, m_hFile) != NULL) ? true : false; }
@@ -52,15 +52,15 @@ public:
     long GetPosition() { return ftell(m_hFile); }
     const char* GetFullPathName()
     {
-        return m_szFileName;
+        return m_fileName.c_str();
     }
 
 public:
     ~WTextFile();
 
 private:
-    char    m_szFileName[ MAX_PATH + 1 ];
-    char    m_szFileMode[ 10 ];
+    std::string m_fileName;
+    std::string m_fileMode;
     FILE*   m_hFile;
     static FILE* OpenImpl( const char* pszFileName, const char* pszFileMode );
     static const int TRIES;
