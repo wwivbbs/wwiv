@@ -28,9 +28,6 @@ void attach_file(int mode)
     WUser u;
     filestatusrec fsr;
 
-    char szAttachFileName[ MAX_PATH ];
-    sprintf(szAttachFileName, "%s%s", syscfg.datadir, ATTACH_DAT);
-
     GetSession()->bout.NewLine();
     bool bDirectionForward = true;
 	WFile *pFileEmail = OpenEmailFile( true );
@@ -104,7 +101,7 @@ void attach_file(int mode)
 				GetSession()->bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
                 if (m.status & status_file)
                 {
-					WFile fileAttach( szAttachFileName );
+					WFile fileAttach( syscfg.datadir, ATTACH_DAT );
 					if ( fileAttach.Open( WFile::modeBinary | WFile::modeReadOnly, WFile::shareUnknown, WFile::permReadWrite ) )
                     {
                         bFound = false;
@@ -169,7 +166,7 @@ void attach_file(int mode)
                                     m.status ^= status_file;
 									pFileEmail->Seek( static_cast<long>( sizeof( mailrec ) ) * -1L, WFile::seekCurrent );
 									pFileEmail->Write( &m, sizeof( mailrec ) );
-                                    WFile attachFile( szAttachFileName );
+                                    WFile attachFile( syscfg.datadir, ATTACH_DAT );
                                     if ( attachFile.Open( WFile::modeReadWrite | WFile::modeBinary ) )
                                     {
                                         bFound = false;
@@ -292,7 +289,7 @@ void attach_file(int mode)
                                         }
                                     } while ( !done3 && !hangup );
                                 }
-								WFile fileAttach( szAttachFileName );
+								WFile fileAttach( syscfg.datadir, ATTACH_DAT );
 								if ( fileAttach.Open( WFile::modeBinary|WFile::modeReadOnly, WFile::shareUnknown, WFile::permReadWrite ) )
                                 {
 									long lNumRead = fileAttach.Read( &fsr, sizeof( fsr ) );
@@ -362,7 +359,7 @@ void attach_file(int mode)
                                                 m.status ^= status_file;
 												pFileEmail->Seek( static_cast<long>( sizeof( mailrec ) ) * -1L, WFile::seekCurrent );
 												pFileEmail->Write( &m, sizeof( mailrec ) );
-                                                WFile attachFile( szAttachFileName );
+                                                WFile attachFile( syscfg.datadir, ATTACH_DAT );
                                                 if ( !attachFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) )
                                                 {
                                                     GetSession()->bout << "Could not write attachment data.\r\n";

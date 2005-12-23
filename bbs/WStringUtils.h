@@ -65,6 +65,7 @@ namespace wwiv
 // Funciton Prototypes
 const char *charstr( int nStringLength, int chRepeatChar );
 void StringTrimEnd( char *pszString );
+std::string& StringTrim( std::string& s );
 char *stripcolors( const char *pszOrig );
 unsigned char upcase( unsigned char ch );
 unsigned char locase( unsigned char ch );

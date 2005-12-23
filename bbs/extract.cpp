@@ -290,13 +290,13 @@ void extract_mod(const char *b, long len, time_t tDateTime)
             {
 				sprintf( idz_fn, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ );
 				sprintf( dir_path,"%s%s", directories[udir[mod_dir].subnum].path, StringRemoveChar( s2, '.' ) );
-				FILE *idz = fopen( idz_fn, "w" );
-				fprintf( idz, "%.58s\n", szDescription );
-				fprintf( idz, "Copyright (c) %s, %s\n", W_DateString(tDateTime,"Y", ""), author );
-				fprintf( idz, "Distribution is LIMITED by the WWIV Source\n" );
-				fprintf( idz, "Code EULA.  Email WSS at 1@50 or wss@wwiv.com\n" );
-				fprintf( idz, "for a copy of the EULA or more information.\n" );
-				fclose( idz );
+                WTextFile file( idz_fn, "w" );
+                file.WriteFormatted( "%.58s\n", szDescription );
+				file.WriteFormatted( "Copyright (c) %s, %s\n", W_DateString(tDateTime,"Y", ""), author );
+				file.WriteFormatted( "Distribution is LIMITED by the WWIV Source\n" );
+				file.WriteFormatted( "Code EULA.  Email WSS at 1@50 or wss@wwiv.com\n" );
+				file.WriteFormatted( "for a copy of the EULA or more information.\n" );
+                file.Close();
 				add_arc( dir_path, idz_fn, 0 );
 			}
 			quit = upload_mod( mod_dir, compressed_fn, szDescription );

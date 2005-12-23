@@ -22,9 +22,9 @@
 using namespace wwiv::stringUtils;
 
 
-WIniFile::WIniFile(const char *pszFileName )
+WIniFile::WIniFile(const std::string fileName )
 { 
-    m_strFileName = pszFileName; 
+    m_strFileName = fileName; 
     m_bOpen = false;
     memset(&m_primarySection, 0, sizeof(m_primarySection));
     memset(&m_secondarySection, 0, sizeof(m_secondarySection));
@@ -39,10 +39,10 @@ WIniFile::~WIniFile()
 }
 
 
-bool WIniFile::Open( const char *pszPrimarySection, const char *pszSecondarySection ) 
+bool WIniFile::Open( const std::string primarySection, const std::string secondarySection )
 { 
-    char szIniFile[MAX_PATH+MAX_FNAME];
-    snprintf( szIniFile, sizeof( szIniFile ), "%s%s", GetApplication()->GetHomeDir(), m_strFileName.c_str() );
+    std::stringstream iniFileStream;
+    iniFileStream << GetApplication()->GetHomeDir() << m_strFileName.c_str();
 
     // first, zap anything there currently
     if ( m_bOpen ) 
@@ -52,7 +52,7 @@ bool WIniFile::Open( const char *pszPrimarySection, const char *pszSecondarySect
     }
 
     // read in primary section
-    char* pBuffer = ReadFile(szIniFile, pszPrimarySection);
+    char* pBuffer = ReadFile(iniFileStream.str(), primarySection);
 
     if ( pBuffer )
     {
@@ -60,7 +60,7 @@ bool WIniFile::Open( const char *pszPrimarySection, const char *pszSecondarySect
         Parse(pBuffer, &m_primarySection);
 
         // read in secondary file
-        pBuffer = ReadFile(szIniFile, pszSecondarySection);
+        pBuffer = ReadFile(iniFileStream.str(), secondarySection);
         if (pBuffer)
         {
             Parse(pBuffer, &m_secondarySection);
@@ -70,7 +70,7 @@ bool WIniFile::Open( const char *pszPrimarySection, const char *pszSecondarySect
     else
     {
         // read in the secondary section, as the primary one
-        pBuffer = ReadFile( szIniFile, pszSecondarySection );
+        pBuffer = ReadFile( iniFileStream.str(), secondarySection );
         if ( pBuffer )
         {
             Parse( pBuffer, &m_primarySection );
@@ -177,9 +177,9 @@ const long WIniFile::GetNumericValue( const char *pszKey, int defaultValue )
 }
 
 
-char *WIniFile::ReadSectionIntoMemory(const char *pszFileName, long begin, long end)
+char *WIniFile::ReadSectionIntoMemory(const std::string &fileName, long begin, long end)
 {
-    WFile file( pszFileName );
+    WFile file( fileName );
     if ( file.Open( WFile::modeReadOnly | WFile::modeBinary ) )
     {
         char *ss = static_cast<char *>( bbsmalloc( end - begin + 2 ) );
@@ -195,14 +195,16 @@ char *WIniFile::ReadSectionIntoMemory(const char *pszFileName, long begin, long 
 }
 
 
-void WIniFile::FindSubsectionArea(const char *pszFileName, const char *ssn, long *begin, long *end)
+void WIniFile::FindSubsectionArea(const std::string& fileName, const std::string& section, long *begin, long *end)
 {
-    char s[255], szTempHeader[81];
+    char s[255];
 
     *begin = *end = -1L;
-    snprintf( szTempHeader, sizeof( szTempHeader ), "[%s]", ssn );
+    std::stringstream ss;
+    ss << "[" << section << "]";
+    std::string header = ss.str();
 
-    WTextFile file(pszFileName, "rt");
+    WTextFile file(fileName, "rt");
     if (!file.IsOpen())
     {
         return;
@@ -228,8 +230,8 @@ void WIniFile::FindSubsectionArea(const char *pszFileName, const char *ssn, long
             // Is it a subsection header?
             if ((strlen(s) > 2) && (s[0] == '[') && (s[strlen(s) - 1] == ']'))
             {
-                // Does it match requested subsection name (ssn)?
-                if ( WWIV_STRNICMP(&s[0], &szTempHeader[0], strlen( szTempHeader ) ) == 0 )
+                // Does it match requested subsection name (section)?
+                if ( header == s ) //if ( WWIV_STRNICMP(&s[0], &szTempHeader[0], strlen( szTempHeader ) ) == 0 )
                 {
                     if (*begin == -1L)
                     {
@@ -263,17 +265,17 @@ void WIniFile::FindSubsectionArea(const char *pszFileName, const char *ssn, long
 }
 
 
-char *WIniFile::ReadFile(const char *pszFileName, const char *pszHeader)
+char *WIniFile::ReadFile(const std::string fileName, const std::string header)
 {
     // Header must be "valid", and file must exist
-    if (!pszHeader || !(*pszHeader) || strlen(pszHeader) < 1 || !WFile::Exists( pszFileName ) )
+    if (header.empty() || !WFile::Exists( fileName ) )
     {
         return NULL;
     }
 
     // Get area to read in
     long beginloc = -1L, endloc = -1L;
-    FindSubsectionArea(pszFileName, pszHeader, &beginloc, &endloc);
+    FindSubsectionArea(fileName, header, &beginloc, &endloc);
 
     // Validate
     if (beginloc >= endloc)
@@ -282,7 +284,7 @@ char *WIniFile::ReadFile(const char *pszFileName, const char *pszHeader)
     }
 
     // Allocate pointer to hold data
-    char* ss = ReadSectionIntoMemory(pszFileName, beginloc, endloc);
+    char* ss = ReadSectionIntoMemory(fileName, beginloc, endloc);
     return ss;
 }
 
