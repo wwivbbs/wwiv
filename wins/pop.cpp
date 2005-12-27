@@ -363,10 +363,9 @@ int smtp_send_MAIL_FROM_line(SOCKET sock, FILE * fpMessageFile)
 
 int smtp_send_RCPT_TO_line(SOCKET sock, FILE * fpMessageFile)
 {
-    char **to_list;
     bool done = false;
 
-    to_list = smtp_parse_to_line(fpMessageFile);
+    char **to_list = smtp_parse_to_line(fpMessageFile);
     for (int i = 0; (to_list[i] != NULL && !done); i++) 
     {
         if ((strchr(to_list[i], '@') == NULL) || (strchr(to_list[i], '.') == NULL)) 
@@ -1424,7 +1423,7 @@ int move_bad(char *pszFilePath, char *pszFileName, int why)
     trimstr1(szSourceFile);
     trimstr1(szDestinationFile);
     fprintf(stderr, "\n! \"%s\" for src\n \"%s\" for dest\n", szSourceFile, szDestinationFile);
-    return ( copyfile( szSourceFile, dest, true ) );
+    return ( copyfile( szSourceFile, szDestinationFile, true ) );
 }
 
 
