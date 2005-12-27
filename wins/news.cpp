@@ -72,14 +72,12 @@ NEWSHOST *newshosts;
       fprintf(stderr, "\n ! Session error : sockerr");                    \
       if (grouprec != NULL) write_groups(1);                              \
       _fcloseall();                                                        \
-      cursor('R');                                                        \
       WSACleanup();                                                       \
       exit(EXIT_FAILURE);                                                 \
     case -1:                                                              \
       fprintf(stderr, "\n ! Timeout : sockerr");                          \
       if (grouprec != NULL) write_groups(1);                              \
       _fcloseall();                                                        \
-      cursor('R');                                                        \
       WSACleanup();                                                       \
       exit(EXIT_FAILURE);                                                 \
   }                                                                       \
@@ -96,22 +94,6 @@ char *ordinal_text(int number)
 }
 
 static unsigned cursize;
-
-void cursor(int tmp)
-{
-    switch (toupper(tmp)) 
-    {
-    case 'S':                               /* Save */
-        break;
-    case 'R':                               /* Restore */
-        break;
-    case 'H':                               /* Hide */
-        break;
-    case 'N':                               /* Normal */
-        break;
-    }
-}
-
 
 void rename_pend( char *pszFileName )
 {
@@ -2101,7 +2083,6 @@ bool ReadConfig()
     if (hFile < 0) 
     {
         output("\n \xFE %s NOT FOUND.", szFileName);
-        cursor('R');
         return false;
     }
     sh_read(hFile, (void *) (&syscfg), sizeof(configrec));
@@ -2302,14 +2283,11 @@ int main(int argc, char *argv[])
     POPDOMAIN[0] = 0;
     whichrc = '\0';
 
-    cursor('S');
-    cursor('H');
     output("\n \xFE %s", version);
 
     if (argc != 4) 
     {
         output("\n \xFE Invalid arguments for %s\n", argv[0]);
-        cursor('R');
         WSACleanup();
         return EXIT_FAILURE;
     }
@@ -2372,7 +2350,6 @@ int main(int argc, char *argv[])
         if (read_groups() == 0) 
         {
             output("\n \xFE Unable to _access newsgroup file NEWS%c.RC!", whichrc);
-            cursor('R');
             WSACleanup();
             return EXIT_FAILURE;
         } 
@@ -2424,6 +2401,5 @@ int main(int argc, char *argv[])
     }
     check_packets();
     _fcloseall();
-    cursor('R');
     return ( ok ) ? 0 : 1;
 }

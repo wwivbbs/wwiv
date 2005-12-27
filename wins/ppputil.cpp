@@ -162,19 +162,18 @@ void purge_sent(int days)
 
 #define MAX_LOG 1000
 
-void trim_log(char *ol)
+void trim_log()
 {
-	int num_lines, total_lines, kill_lines;
-	FILE *old_log, *new_log;
-	char nl[_MAX_PATH], s[160];
+	char s[160];
 	
-	sprintf(ol, "%sNEWS.LOG", net_data);
-	sprintf(nl, "%sNEWS.ZZZ", net_data);
+	std::string netData = net_data;
+	std::string oldLogFile = netData + "NEWS.LOG";
+	std::string newLogFile = netData + "NEWS.ZZZ";
 	
-	old_log = fopen(ol, "r");
-	new_log = fopen(nl, "a");
+	FILE* old_log = fopen(oldLogFile.c_str(), "r");
+	FILE* new_log = fopen(newLogFile.c_str(), "a");
 	
-	total_lines = 0;
+	int total_lines = 0;
 	if (old_log != NULL) 
 	{
 		while (!(fgets(s, sizeof(s)-1, old_log) == NULL))
@@ -189,11 +188,11 @@ void trim_log(char *ol)
 			{
 				fclose(new_log);
 			}
-			_unlink(nl);
+			_unlink(newLogFile.c_str());
 			return;
 		}
-		kill_lines = total_lines - MAX_LOG;
-		num_lines = 0;
+		int kill_lines = total_lines - MAX_LOG;
+		int num_lines = 0;
 		while ((fgets(s, sizeof(s)-1, old_log)) && (num_lines < kill_lines))
 		{
 			num_lines++;
@@ -207,7 +206,9 @@ void trim_log(char *ol)
 		}
 		fputs(s, new_log);
 		while ((!(fgets(s, sizeof(s)-1, old_log) == NULL)))
+		{
 			fputs(s, new_log);
+		}
 	}
 	if (old_log != NULL)
 	{
@@ -217,8 +218,8 @@ void trim_log(char *ol)
 	{
 		fclose(new_log);
 	}
-	_unlink(ol);
-	rename(nl, ol);
+	_unlink(oldLogFile.c_str());
+	rename(newLogFile.c_str(), oldLogFile.c_str());
 }
 
 
@@ -319,7 +320,9 @@ int main(int argc, char *argv[])
 	_read(hConfigFile, &syscfg, sizeof(configrec));
 	_close(hConfigFile);
 	
-	if (strncmp(argv[1], "NETLOG", 6) == 0) 
+	std::string arg = argv[1];
+	std::transform( arg.begin(), arg.end(), arg.begin(),  (int(*)(int)) toupper );
+	if ( arg == "NETLOG" )
 	{
 		strcpy(net_name, argv[6]);
 		unsigned int sy = atoi(argv[2]);
@@ -331,29 +334,29 @@ int main(int argc, char *argv[])
 		}
 	}
 	
-	if (strncmp(argv[1], "TRIM", 4) == 0) 
+	if ( arg == "TRIM" )
 	{
 		strcpy(net_data, argv[2]);
-        char szBuffer[ 255 ];
-		sprintf(szBuffer, "%s%s", net_data, argv[3]);
-		trim_log(szBuffer);
+		trim_log();
 	}
 	
-	if (strncmp(argv[1], "PURGE", 5) == 0) 
+	if ( arg == PURGE" ) 
 	{
 		strcpy(net_data, argv[2]);
 		int i = atoi(argv[3]);
 		purge_sent( i );
 	}
 	
-	if (strncmp(argv[1], "CHUNK", 5) == 0) 
+	if ( arg == "CHUNK" ) 
 	{
 		strcpy(net_data, argv[2]);
-        char szBuffer[ 255 ];
-		sprintf(szBuffer, "%sINBOUND\\%s", net_data, argv[3]);
-		if (!chunk(szBuffer))
+		std::string fileName = argv[3];
+		std::stringstream ss;
+		ss << net_data << "INBOUND\\" << fileName;
+		std::string fullPathName = ss.str();
+		if (!chunk(fullPathName.c_str()))
 		{
-			_unlink(szBuffer);
+			_unlink(fullPathName.c_str());
 		}
 	}
 	

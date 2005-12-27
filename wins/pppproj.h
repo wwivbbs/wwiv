@@ -21,7 +21,7 @@
 #include <cstdio>
 #include <stdlib.h>
 #include <cstring>
-#include <stdarg.h>
+#include <cstdarg>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <ctype.h>
@@ -34,6 +34,10 @@
 #include <process.h>
 #include <direct.h>
 #include <cassert>
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
