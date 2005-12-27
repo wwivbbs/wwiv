@@ -1585,7 +1585,7 @@ int main(int argc, char *argv[])
 		set_net_num(nNetNumber);
 	}
 
-	sprintf( s, "%s\\PPPUTIL.EXE TRIM %s NEWS.LOG", maindir, net_data );
+	sprintf( s, "%s\\PPPUTIL.EXE TRIM %s", maindir );
 	do_spawn( s );
 
 	cd_to( maindir );

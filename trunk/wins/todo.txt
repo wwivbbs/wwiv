@@ -1,6 +1,8 @@
 PPP Project version 5.0 TODO List
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Start using WFile for file IO
+
 * Make safe free call (i.e. check for NULL first)
 
 * make safe fclose call (i.e. check for NULL first)
@@ -12,7 +14,7 @@ PPP Project version 5.0 TODO List
   C++.
 
 * consolidate NET.INI parsing, and put data into 1 structure instead of
-  scattered global variables.
+  scattered global variables.  Use WIniFile for INI file parsing.
 
 * split main method of pop.cpp unto 3 methods (1 main, 1 send, 1 receive)
 
