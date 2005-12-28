@@ -99,7 +99,18 @@ Rushfan - moved WLocalIO and WComm to WSession, now available as
           WSession::localIO and WSession::remoteIO.
 Rushfan - Updated several of the StringUtils methods to use better STL code
 Rushfan - Rewrote read_automessage to use WTextFile and simplified logic
-
+Rushfan - Started trying to make WUser stand alone w/o pulling in the entire bbs
+Rushfan - Fixed logic error in read user where it wasn't returning a value WUser's data
+Rushfan - Added WUser::SetUserWritesAllowed to disable writing the user record (this
+          is used instead of the global guest_user)
+Rushfan - Added WSession::ReadCurrentUser() and WSession::WriteCurrentUser()
+Rushfan - Renamed Input1 case constantes to INPUT_MODE_XXXX so they don't clash with windows.h
+Rushfan - Moved the password validation logic into it's own function so it can
+          be fixed (the string conversion broke it) and also augmented
+Rushfan - Moved global structure screentype from vardec.h (shouldn't have been there)
+          into WLocalIO.h (now vardec.h doesn't need windows.h to compile on Win32)
+Rushfan - Changed WLocalIO save/restorescreen to not need a parameter and the screen 
+          buffer is now internal to WLocalIO
 
 
 

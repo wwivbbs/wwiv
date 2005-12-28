@@ -309,7 +309,7 @@ bool GetMessageToName( const char *aux )
 				GetSession()->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
 				newline = false;
                 std::string toName;
-				input1( toName, 40, MIXED, false, true );
+				input1( toName, 40, INPUT_MODE_FILE_MIXED, false, true );
 				newline = newlsave;
                 if ( toName.empty() )
 				{

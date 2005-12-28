@@ -488,7 +488,7 @@ int WApplication::doWFCEvents()
                     _getcwd(szFileName, MAX_PATH);
                     snprintf( szFileName, sizeof( szFileName ), "%c", WWIV_FILE_SEPERATOR_CHAR );
                     std::string newFileName;
-                    Input1( newFileName, szFileName, 50, true, UPPER );
+                    Input1( newFileName, szFileName, 50, true, INPUT_MODE_FILE_UPPER );
                     if ( !newFileName.empty() )
 					{
                         external_edit( newFileName.c_str(), "", GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, ".", szFileName, MSGED_FLAG_NO_TAGLINE );
@@ -766,7 +766,7 @@ int WApplication::LocalLogon()
             GetSession()->usernum = m_unx;
             int nSavedWFCStatus = GetWfcStatus();
             SetWfcStatus( 0 );
-            GetSession()->ReadCurrentUser( GetSession()->usernum );
+            GetSession()->ReadCurrentUser();
             read_qscn( GetSession()->usernum, qsc, false );
             SetWfcStatus( nSavedWFCStatus );
             bputch( ch );
@@ -1384,12 +1384,12 @@ int WApplication::BBSmain(int argc, char *argv[])
         if ( this_usernum )
         {
             GetSession()->usernum = this_usernum;
-            GetSession()->ReadCurrentUser( GetSession()->usernum );
+            GetSession()->ReadCurrentUser();
             if ( !GetSession()->GetCurrentUser()->IsUserDeleted() )
             {
                 GotCaller( ui, us );
                 GetSession()->usernum = this_usernum;
-                GetSession()->ReadCurrentUser( GetSession()->usernum );
+                GetSession()->ReadCurrentUser();
                 read_qscn( GetSession()->usernum, qsc, false );
                 GetSession()->ResetEffectiveSl();
                 changedsl();
@@ -1557,7 +1557,7 @@ WApplication::WApplication()
 {
     sess			        = new WSession( this );
     statusMgr			    = new StatusMgr();
-    userManager			    = new WUserManager();
+    userManager			    = new WUserManager( syscfg.datadir, syscfg.userreclen, syscfg.maxusers );
     m_nOkLevel			    = WApplication::exitLevelOK;
     m_nErrorLevel		    = WApplication::exitLevelNotOK;
     m_nInstance			    = 1;
@@ -1568,6 +1568,13 @@ WApplication::WApplication()
 
     WFile::SetLogger( this );
     WFile::SetDebugLevel( GetSession()->GetGlobalDebugLevel() );
+
+    // TODO this should move into the WSystemConfig object (syscfg wrapper) once it is established.
+    if(syscfg.userreclen == 0)
+    {
+        syscfg.userreclen = sizeof(userrec);
+    }
+
 
     _tzset();
 

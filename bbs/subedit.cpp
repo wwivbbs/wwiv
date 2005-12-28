@@ -352,7 +352,7 @@ void modify_sub(int n)
 			    GetSession()->bout.NewLine();
 			    GetSession()->bout << "|#2New name? ";
                 char szSubName[ 81 ];
-			    Input1(szSubName, r.name, 40, true, MIXED);
+			    Input1(szSubName, r.name, 40, true, INPUT_MODE_FILE_MIXED);
 			    GetSession()->bout.Color( 0 );
 			    if (szSubName[0])
 			    {
@@ -365,7 +365,7 @@ void modify_sub(int n)
 			    GetSession()->bout.NewLine();
 			    GetSession()->bout << "|#2New filename? ";
                 char szSubBaseName[ MAX_PATH ];
-			    Input1(szSubBaseName, r.filename, 8, true, FILE_NAME);
+			    Input1(szSubBaseName, r.filename, 8, true, INPUT_MODE_FILE_NAME);
 			    if ( szSubBaseName[0] != 0 && strchr(szSubBaseName, '.') == 0 )
 			    {
                     char szOldSubFileName[MAX_PATH];
@@ -429,7 +429,7 @@ void modify_sub(int n)
 				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2New Read SL? ";
                 char szNewSL[ 10 ];
-				Input1(szNewSL, szDef, 3, true, UPPER);
+				Input1(szNewSL, szDef, 3, true, INPUT_MODE_FILE_UPPER);
 				int nNewSL = atoi( szNewSL );
 				if ( nNewSL >= 0 && nNewSL < 256 && szNewSL[0] )
 				{
@@ -443,7 +443,7 @@ void modify_sub(int n)
 				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#2New Post SL? ";
                 char szNewSL[ 10 ];
-				Input1(szNewSL, szDef, 3, true, UPPER);
+				Input1(szNewSL, szDef, 3, true, INPUT_MODE_FILE_UPPER);
 				int nNewSL = atoi(szNewSL);
 				if ( nNewSL >= 0 && nNewSL < 256 && szNewSL[0] )
 				{
@@ -507,7 +507,7 @@ void modify_sub(int n)
 					GetSession()->bout.NewLine();
 					GetSession()->bout << "|#2New Max Msgs? ";
                     char szMaxMsgs[ 21 ];
-					Input1(szMaxMsgs, szDef, 5, true, UPPER);
+					Input1(szMaxMsgs, szDef, 5, true, INPUT_MODE_FILE_UPPER);
 					int nMaxMsgs = atoi( szMaxMsgs );
 					if ( nMaxMsgs > 0 && nMaxMsgs < 16384 && szMaxMsgs[0] )
 					{
@@ -640,7 +640,7 @@ void modify_sub(int n)
 				    GetSession()->bout.NewLine();
                     GetSession()->bout << "|#2Enter new Description : ";
                     char szDescription[ 81 ];
-				    Input1(szDescription, xsubs[n].desc, 60, true, MIXED);
+				    Input1(szDescription, xsubs[n].desc, 60, true, INPUT_MODE_FILE_MIXED);
 				    GetSession()->bout.Color( 0 );
 				    if (szDescription[0])
                     {

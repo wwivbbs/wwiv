@@ -18,19 +18,25 @@
 /**************************************************************************/
 
 
-#include "incl1.h"
-#include "WConstants.h"
-#include "filenames.h"
 #include "WFile.h"
 #include "WUser.h"
 #include "WStringUtils.h"
-#ifndef NOT_BBS
-#include "wtypes.h"
-#include "bbs.h"
-#include "WSession.h"
-#endif // NOT_BBS
-#include "vars.h"
 #include <iostream>
+
+#if defined( _WIN32 )
+#define vsnprintf _vsnprintf
+#define snprintf _snprintf
+#endif // _WIN32
+
+// from filenames.h
+#define USER_LST "user.lst"
+
+#ifndef NOT_BBS
+#include "WSession.h"
+#include "bbs.h"
+#endif // NOT_BBS
+
+
 
 const int WUser::userDeleted                = 0x01;
 const int WUser::userInactive               = 0x02;
@@ -158,7 +164,12 @@ const char *WUser::GetUserNameNumberAndSystem( int nUserNumber, int nSystemNumbe
 //
 //
 
-WUserManager::WUserManager()
+    std::string m_dataDirectory;
+    int m_nUserRecordLength;
+    int m_nMaxNumberOfUsers;
+
+WUserManager::WUserManager( std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers ) : 
+    m_dataDirectory(dataDirectory), m_nUserRecordLength(nUserRecordLength), m_nMaxNumberOfUsers( nMaxNumberOfUsers ), m_bUserWritesAllowed(true)
 {
 }
 
@@ -168,15 +179,11 @@ WUserManager::~WUserManager()
 
 int  WUserManager::GetNumberOfUserRecords() const
 {
-    WFile userList( syscfg.datadir, USER_LST );
+    WFile userList( m_dataDirectory, USER_LST );
     if ( userList.Open( WFile::modeReadOnly | WFile::modeBinary ) )
     {
-        if(syscfg.userreclen == 0)
-	    {
-	        syscfg.userreclen = sizeof(userrec);
-	    }
         long nSize = userList.GetLength();
-        int nNumRecords = ( static_cast<int>( nSize / syscfg.userreclen) - 1 );
+        int nNumRecords = ( static_cast<int>( nSize / m_nUserRecordLength ) - 1 );
         return nNumRecords;
     }
     return 0;
@@ -185,19 +192,15 @@ int  WUserManager::GetNumberOfUserRecords() const
 
 bool WUserManager::ReadUserNoCache( WUser *pUser, int nUserNumber )
 {
-    WFile userList( syscfg.datadir, USER_LST );
+    WFile userList( m_dataDirectory, USER_LST );
     if ( !userList.Open( WFile::modeReadOnly | WFile::modeBinary ) )
     {
         pUser->data.inact = inact_deleted;
         pUser->FixUp();
         return false;
     }
-    if(syscfg.userreclen == 0)
-    {
-	    syscfg.userreclen = sizeof(userrec);
-    }
     long nSize = userList.GetLength();
-    int nNumUserRecords = ( static_cast<int>( nSize / syscfg.userreclen) - 1 );
+    int nNumUserRecords = ( static_cast<int>( nSize / m_nUserRecordLength) - 1 );
 
     if ( nUserNumber > nNumUserRecords )
     {
@@ -205,9 +208,9 @@ bool WUserManager::ReadUserNoCache( WUser *pUser, int nUserNumber )
         pUser->FixUp();
         return false;
     }
-    long pos = static_cast<long>( syscfg.userreclen ) * static_cast<long>( nUserNumber );
+    long pos = static_cast<long>( m_nUserRecordLength ) * static_cast<long>( nUserNumber );
     userList.Seek( pos, WFile::seekBegin );
-    userList.Read( &pUser->data, syscfg.userreclen );
+    userList.Read( &pUser->data,  m_nUserRecordLength );
     pUser->FixUp();
     return true;
 }
@@ -223,7 +226,7 @@ bool WUserManager::ReadUser( WUser *pUser, int nUserNumber, bool bForceRead )
         bool wfcStatusAndUserOne = ( nWfcStatus && nUserNumber == 1 );
         if ( userOnAndCurrentUser || wfcStatusAndUserOne )
         {
-            pUser = GetSession()->GetCurrentUser();
+            pUser->data = GetSession()->GetCurrentUser()->data;
             pUser->FixUp();
             return true;
         }
@@ -235,17 +238,13 @@ bool WUserManager::ReadUser( WUser *pUser, int nUserNumber, bool bForceRead )
 
 bool WUserManager::WriteUserNoCache( WUser *pUser, int nUserNumber )
 {
-    WFile userList( syscfg.datadir, USER_LST );
+    WFile userList( m_dataDirectory, USER_LST );
     if ( userList.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
                         WFile::shareUnknown, WFile::permReadWrite ) )
     {
-        if(syscfg.userreclen == 0)
-	{
-	    syscfg.userreclen = sizeof(userrec);
-	}
-        long pos = static_cast<long>( syscfg.userreclen ) * static_cast<long>( nUserNumber );
+        long pos = static_cast<long>(  m_nUserRecordLength ) * static_cast<long>( nUserNumber );
         userList.Seek( pos, WFile::seekBegin );
-        userList.Write( &pUser->data, syscfg.userreclen );
+        userList.Write( &pUser->data,  m_nUserRecordLength );
         return true;
     }
     return false;
@@ -254,7 +253,7 @@ bool WUserManager::WriteUserNoCache( WUser *pUser, int nUserNumber )
 
 bool WUserManager::WriteUser( WUser *pUser, int nUserNumber )
 {
-    if ( nUserNumber < 1 || nUserNumber > syscfg.maxusers || guest_user )
+    if ( nUserNumber < 1 || nUserNumber > m_nMaxNumberOfUsers || !IsUserWritesAllowed() )
     {
         return true;
     }
@@ -305,7 +304,7 @@ char *WUser::nam( int nUserNumber ) const
             }
         }
     }
-    s_szNamBuffer[ p++ ] = SPACE;
+    s_szNamBuffer[ p++ ] = ' ';
     s_szNamBuffer[ p++ ] = '#';
     snprintf( &s_szNamBuffer[p], sizeof( s_szNamBuffer ) - p, "%d", nUserNumber );
     return s_szNamBuffer;

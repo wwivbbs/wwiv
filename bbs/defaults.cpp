@@ -843,7 +843,7 @@ void modify_mailbox()
             if ( yesno() )
             {
                 GetSession()->bout << "|13Enter the Internet E-Mail Address.\r\n|#9:";
-                Input1( s, GetSession()->GetCurrentUser()->GetEmailAddress(), 75, true, MIXED );
+                Input1( s, GetSession()->GetCurrentUser()->GetEmailAddress(), 75, true, INPUT_MODE_FILE_MIXED );
                 if ( check_inet_addr( s ) )
                 {
                     GetSession()->GetCurrentUser()->SetEmailAddress( s );

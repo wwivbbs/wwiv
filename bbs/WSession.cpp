@@ -19,6 +19,12 @@
 
 #include "wwiv.h"
 
+#include "WlocalIO.h"
+#include "net.h"
+
+//extern net_networks_rec *net_networks;
+
+
 
 const int WSession::mmkeyMessageAreas   = 0;
 const int WSession::mmkeyFileAreas      = 1;
@@ -190,11 +196,21 @@ WComm* WSession::remoteIO()
 }
 
 
+bool WSession::ReadCurrentUser()
+{
+    return ReadCurrentUser( usernum, false );
+}
+
 bool WSession::ReadCurrentUser( int nUserNumber, bool bForceRead )
 {
     WWIV_ASSERT( m_pApplication );
     WWIV_ASSERT( m_pApplication->GetUserManager() );
     return m_pApplication->GetUserManager()->ReadUser( &m_thisuser, nUserNumber, bForceRead );
+}
+
+bool WSession::WriteCurrentUser()
+{
+    return WriteCurrentUser( usernum );
 }
 
 
@@ -251,3 +267,15 @@ void WSession::DisplaySysopWorkingIndicator( bool displayWait )
         }
     }
 }
+
+const char* WSession::GetNetworkName() const		        
+{ 
+    return net_networks[m_nNetworkNumber].name; 
+}
+
+
+const char* WSession::GetNetworkDataDirectory() const	    
+{ 
+    return net_networks[m_nNetworkNumber].dir; 
+}
+

@@ -27,6 +27,7 @@
 #include "vars.h"
 #include "bbs.h"
 #include <iostream>
+#include "WStatus.h"
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"

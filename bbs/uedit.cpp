@@ -767,7 +767,7 @@ void uedit( int usern, int other )
                     GetSession()->bout.NewLine();
                     GetSession()->bout << "|#7New FULL real name? ";
                     std::string realName;
-                    Input1( realName, user.GetRealName(), 20, true, PROPER );
+                    Input1( realName, user.GetRealName(), 20, true, INPUT_MODE_FILE_PROPER );
                     if ( !realName.empty() )
                     {
                         user.SetRealName( realName.c_str() );
@@ -825,7 +825,7 @@ void uedit( int usern, int other )
                     GetSession()->bout.NewLine();
                     GetSession()->bout << "|#7New phone number? ";
                     std::string phoneNumber;
-                    Input1( phoneNumber, user.GetVoicePhoneNumber(), 12, true, PHONE );
+                    Input1( phoneNumber, user.GetVoicePhoneNumber(), 12, true, INPUT_MODE_PHONE );
                     if ( !phoneNumber.empty() )
                     {
                         if ( phoneNumber != user.GetVoicePhoneNumber() )
@@ -838,7 +838,7 @@ void uedit( int usern, int other )
                     }
                     GetSession()->bout.NewLine();
                     GetSession()->bout << "|#7New DataPhone (0=none)? ";
-                    Input1( phoneNumber, user.GetDataPhoneNumber(), 12, true, PHONE );
+                    Input1( phoneNumber, user.GetDataPhoneNumber(), 12, true, INPUT_MODE_PHONE );
                     if ( !phoneNumber.empty() )
                     {
                         if ( phoneNumber[0] == '0')

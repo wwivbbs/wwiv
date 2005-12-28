@@ -24,14 +24,11 @@
 #define __INCLUDED_BBS_H__
 
 
-//#include "WComm.h"
-//#include "WSession.h"
 #include "WFile.h"
-#include "WLocalIO.h"
-#include "WStatus.h"
 
 
 class WComm;
+class StatusMgr;
 
 /*!
  * @header WWIV 5.0 Main Application

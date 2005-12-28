@@ -20,6 +20,8 @@
 #ifndef __INCLUDED_PLATFORM_WLOCALIO_H__
 #define __INCLUDED_PLATFORM_WLOCALIO_H__
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 //
 // This C++ class should encompass all Local Input/Output from The BBS.
@@ -31,6 +33,20 @@
 class WFile;
 class WStatus;
 class WSession;
+
+struct screentype
+{
+    short x1, y1, topline1, curatr1;
+
+#ifdef _WIN32
+    CHAR_INFO* scrn1;
+#else
+    char *scrn1;
+#endif
+};
+
+
+
 
 class WLocalIO
 {
@@ -50,6 +66,8 @@ private:
     bool    m_bSysopAlert;
     int     m_nTopLine;
     int     m_nScreenBottom;
+    screentype m_ScreenSave;
+
 
 private:
     void ExecuteTemporaryCommand( const char *pszCommand );
@@ -122,8 +140,8 @@ public:
     int  LocalXYAPrintf( int x, int y, int nAttribute, const char *pszFormattedText, ... );
     void pr_Wait(bool displayWait);
     void set_protect(int l);
-    void savescreen(screentype * s);
-    void restorescreen(screentype * s);
+    void savescreen();
+    void restorescreen();
     void skey(char ch);
     void tleft(bool bCheckForTimeOut);
     void UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInstanceNumber );
