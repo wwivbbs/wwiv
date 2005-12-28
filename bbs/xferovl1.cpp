@@ -1020,7 +1020,7 @@ void download()
                 GetSession()->bout.Color( 1 );
                 bool onl = newline;
                 newline = 0;
-                input1(s, 12, UPPER, false);
+                input1(s, 12, INPUT_MODE_FILE_UPPER, false);
                 newline = onl;
                 if ((s[0]) && (s[0] != ' '))
                 {

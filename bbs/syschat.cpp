@@ -143,7 +143,7 @@ void RequestChat()
 void select_chat_name(char *pszSysopName)
 {
 	GetSession()->DisplaySysopWorkingIndicator( true );
-	GetSession()->localIO()->savescreen(&screensave);
+	GetSession()->localIO()->savescreen();
 	strcpy(pszSysopName, syscfg.sysopname);
 	curatr = GetSession()->GetChatNameSelectionColor();
 	GetSession()->localIO()->MakeLocalWindow(20, 5, 43, 3);
@@ -176,7 +176,7 @@ void select_chat_name(char *pszSysopName)
 	{
 		strcpy( pszSysopName, "" );
 	}
-	GetSession()->localIO()->restorescreen(&screensave);
+	GetSession()->localIO()->restorescreen();
 	GetSession()->DisplaySysopWorkingIndicator( false );
 }
 

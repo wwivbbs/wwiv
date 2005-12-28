@@ -106,6 +106,7 @@
 #include "WOutStreamBuffer.h"
 #include "WStatus.h"
 #include "ini.h"
+#include "WLocalIO.h"
 
 
 #include "incl3.h"

@@ -949,12 +949,12 @@ void chuser()
 	}
 
     GetSession()->bout << "|#9Enter user to change to: ";
-    char szUserName[81];
-	input( szUserName, 30, true );
-	int nUserNumber = finduser1( szUserName );
+    std::string userName;
+	input( userName, 30, true );
+	int nUserNumber = finduser1( userName );
 	if ( nUserNumber > 0 )
 	{
-		GetSession()->WriteCurrentUser( GetSession()->usernum );
+		GetSession()->WriteCurrentUser();
 		write_qscn(GetSession()->usernum, qsc, false);
         GetSession()->ReadCurrentUser( nUserNumber );
 		read_qscn(nUserNumber, qsc, false);

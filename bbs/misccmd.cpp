@@ -284,7 +284,7 @@ void list_users( int mode )
     int ncnm    = 0;
     int numscn  = 0;
     int color   = 3;
-    GetSession()->WriteCurrentUser( GetSession()->usernum );
+    GetSession()->WriteCurrentUser();
     write_qscn(GetSession()->usernum, qsc, false);
     GetApplication()->GetStatusManager()->RefreshStatusCache();
 

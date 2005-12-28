@@ -37,6 +37,7 @@ void VerifyNewUserPassword();
 void SendNewUserFeedbackIfRequired();
 void ExecNewUserCommand();
 void new_mail();
+bool CheckPasswordComplexity( WUser *pUser, std::string& password );
 
 
 void input_phone()
@@ -47,7 +48,7 @@ void input_phone()
     {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
-        Input1( phoneNumber,  GetSession()->GetCurrentUser()->GetVoicePhoneNumber(), 12, true, PHONE );
+        Input1( phoneNumber,  GetSession()->GetCurrentUser()->GetVoicePhoneNumber(), 12, true, INPUT_MODE_PHONE );
 
         ok = valid_phone( phoneNumber.c_str() );
         if (!ok)
@@ -72,7 +73,7 @@ void input_dataphone()
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#3Enter your DATA phone no. in the form. \r\n";
         GetSession()->bout << "|#3 ###-###-#### - Press Enter to use [" << GetSession()->GetCurrentUser()->GetVoicePhoneNumber() << "].\r\n";
-        Input1( szTempDataPhoneNum, GetSession()->GetCurrentUser()->GetDataPhoneNumber(), 12, true, PHONE );
+        Input1( szTempDataPhoneNum, GetSession()->GetCurrentUser()->GetDataPhoneNumber(), 12, true, INPUT_MODE_PHONE );
         if ( szTempDataPhoneNum[0] == '\0' )
         {
             GetSession()->GetCurrentUser()->SetDataPhoneNumber( GetSession()->GetCurrentUser()->GetVoicePhoneNumber() );
@@ -225,7 +226,7 @@ void input_name()
             GetSession()->bout << "|#3Enter your full name, or your alias.\r\n";
         }
         char szTempLocalName[ 255 ];
-        Input1( szTempLocalName, GetSession()->GetCurrentUser()->GetName(), 30, true, UPPER );
+        Input1( szTempLocalName, GetSession()->GetCurrentUser()->GetName(), 30, true, INPUT_MODE_FILE_UPPER );
         ok = check_name( szTempLocalName );
         if (ok)
         {
@@ -256,7 +257,7 @@ void input_realname()
             GetSession()->bout << "|#3Enter your FULL real name.\r\n";
             char szTempLocalName[ 255 ];
             Input1( szTempLocalName,
-                    GetSession()->GetCurrentUser()->GetRealName(), 30, true, PROPER);
+                    GetSession()->GetCurrentUser()->GetRealName(), 30, true, INPUT_MODE_FILE_PROPER);
 
             if ( szTempLocalName[0] == '\0')
             {
@@ -330,7 +331,7 @@ void input_street()
     {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#3Enter your street address.\r\n";
-        Input1( street, GetSession()->GetCurrentUser()->GetStreet(), 30, true, PROPER );
+        Input1( street, GetSession()->GetCurrentUser()->GetStreet(), 30, true, INPUT_MODE_FILE_PROPER );
 
         if ( street.empty() )
         {
@@ -352,7 +353,7 @@ void input_city()
     {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#3Enter your city (i.e San Francisco). \r\n";
-        Input1( szCity, GetSession()->GetCurrentUser()->GetCity(), 30, false, PROPER );
+        Input1( szCity, GetSession()->GetCurrentUser()->GetCity(), 30, false, INPUT_MODE_FILE_PROPER );
 
         if ( szCity[0] == '\0' )
         {
@@ -482,7 +483,7 @@ void input_age( WUser *pUser )
 			y = static_cast<int>( pTm->tm_year + 1900 - 10 ) / 100;
 			GetSession()->bout << "|#2Year you were born: ";
 			sprintf(s, "%2d", y);
-			Input1(ag, s, 4, true, MIXED);
+			Input1(ag, s, 4, true, INPUT_MODE_FILE_MIXED);
 			y = atoi(ag);
 			if (y == 1919)
             {
@@ -603,6 +604,38 @@ void input_screensize()
 }
 
 
+bool CheckPasswordComplexity( WUser *pUser, std::string& password )
+{
+    if( password.length() < 3 )
+    {
+        //TODO - the min length should be in wwiv.ini
+        return false;
+    }
+
+    //if ( password.find( pUser->GetName() ) != std::string::npos )
+    //{
+    //    return false;
+    //}
+
+    //if ( password.find( realName ) != std::string::npos )
+    //{
+    //    return false;
+    //}
+
+    //if( password.find( pUser->GetVoicePhoneNumber() ) != std::string::npos )
+    //{
+    //    return false;
+    //}
+
+    //if ( password.find( pUser->GetDataPhoneNumber() ) != std::string::npos )
+    //{
+    //    return false;
+    //}
+
+    return true;
+}
+
+
 void input_pw( WUser *pUser )
 {
     std::string password;
@@ -613,15 +646,11 @@ void input_pw( WUser *pUser )
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#3Please enter a new password, 3-8 chars.\r\n";
         CLEAR_STRING( password );
-        Input1(password, NULL, 8, false, UPPER);
+        Input1(password, "", 8, false, INPUT_MODE_FILE_UPPER);
 
         std::string realName = GetSession()->GetCurrentUser()->GetRealName();
         std::transform(realName.begin(), realName.end(), realName.begin(), (int(*)(int)) toupper);
-        if( password.length() < 3 ||
-            password.find( pUser->GetName() ) != std::string::npos ||
-            password.find( realName ) != std::string::npos ||
-            password.find( pUser->GetVoicePhoneNumber() ) != std::string::npos ||
-            password.find( pUser->GetDataPhoneNumber() ) != std::string::npos )
+        if ( !CheckPasswordComplexity( pUser, password ) )
         {
             ok = false;
             GetSession()->bout.NewLine( 2 );
@@ -1241,9 +1270,9 @@ void ExecNewUserCommand()
         sysoplog( "Executing New User Event: ", false );
         sysoplog( szCommandLine, true );
 
-        GetSession()->WriteCurrentUser( GetSession()->usernum );
+        GetSession()->WriteCurrentUser();
         ExecuteExternalProgram(szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_NEWUSER ) );
-        GetSession()->ReadCurrentUser( GetSession()->usernum );
+        GetSession()->ReadCurrentUser();
     }
 }
 
@@ -1559,7 +1588,7 @@ void DoMinimalNewUser()
             char szTempName[ 81 ];
             do
             {
-                Input1( szTempName, s1, 30, true, UPPER );
+                Input1( szTempName, s1, 30, true, INPUT_MODE_FILE_UPPER );
                 ok = check_name( szTempName );
                 if ( !ok )
                 {
@@ -1581,7 +1610,7 @@ void DoMinimalNewUser()
             {
                 ok = false;
                 cln_nu();
-                if ((Input1(s, s1, 8, false, DATE)) == 8)
+                if ((Input1(s, s1, 8, false, INPUT_MODE_DATE)) == 8)
                 {
                     sprintf(m1, "%c%c", s[0], s[1]);
                     sprintf(d1, "%c%c", s[3], s[4]);
@@ -1641,7 +1670,7 @@ void DoMinimalNewUser()
         GetSession()->bout <<  "|#1[D] Country               : " ;
         if ( GetSession()->GetCurrentUser()->GetCountry()[0] == '\0' )
         {
-            Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.country ), "", 3, false, UPPER);
+            Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.country ), "", 3, false, INPUT_MODE_FILE_UPPER);
             if ( GetSession()->GetCurrentUser()->GetCountry()[0] == '\0' )
             {
                 GetSession()->GetCurrentUser()->SetCountry( "USA" );
@@ -1658,12 +1687,12 @@ void DoMinimalNewUser()
             {
                 if ( wwiv::stringUtils::IsEquals( GetSession()->GetCurrentUser()->GetCountry(), "USA" ) )
                 {
-                    Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.zipcode ), s1, 5, true, UPPER );
+                    Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.zipcode ), s1, 5, true, INPUT_MODE_FILE_UPPER );
                     check_zip( GetSession()->GetCurrentUser()->GetZipcode(), 2 );
                 }
                 else
                 {
-                    Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.zipcode ), s1, 7, true, UPPER );
+                    Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.zipcode ), s1, 7, true, INPUT_MODE_FILE_UPPER );
                 }
                 if ( GetSession()->GetCurrentUser()->GetZipcode()[0])
                 {
@@ -1680,7 +1709,7 @@ void DoMinimalNewUser()
             bool ok = false;
             do
             {
-                Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.city ), s1, 30, true, PROPER );
+                Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.city ), s1, 30, true, INPUT_MODE_FILE_PROPER );
                 if (GetSession()->GetCurrentUser()->GetCity()[0])
                 {
                     ok = true;
@@ -1692,7 +1721,7 @@ void DoMinimalNewUser()
                 do
                 {
                     bool ok = false;
-                    Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.state ), s1, 2, true, UPPER );
+                    Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.state ), s1, 2, true, INPUT_MODE_FILE_UPPER );
                     if (GetSession()->GetCurrentUser()->GetState()[0])
                     {
                         ok = true;
@@ -1708,7 +1737,7 @@ void DoMinimalNewUser()
         if ( GetSession()->GetCurrentUser()->GetEmailAddress()[0] == 0 )
         {
             std::string emailAddress;
-            Input1( emailAddress, s1, 44, true, MIXED );
+            Input1( emailAddress, s1, 44, true, INPUT_MODE_FILE_MIXED );
             GetSession()->GetCurrentUser()->SetEmailAddress( emailAddress.c_str() );
             if ( !check_inet_addr( GetSession()->GetCurrentUser()->GetEmailAddress() ) )
             {

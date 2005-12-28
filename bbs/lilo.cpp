@@ -302,7 +302,7 @@ bool VerifySysopPassword()
 void DoFailedLoginAttempt()
 {
     GetSession()->GetCurrentUser()->SetNumIllegalLogons( GetSession()->GetCurrentUser()->GetNumIllegalLogons( ) + 1 );
-    GetSession()->WriteCurrentUser( GetSession()->usernum );
+    GetSession()->WriteCurrentUser();
     GetSession()->bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
 	std::stringstream logLine;
@@ -418,7 +418,7 @@ void LeaveBadPasswordFeedback( int ans )
         GetSession()->bout.NewLine();
         GetSession()->bout << "What is your NAME or HANDLE? ";
         std::string tempName;
-	    input1( tempName, 31, PROPER, true );
+	    input1( tempName, 31, INPUT_MODE_FILE_PROPER, true );
         if ( !tempName.empty() )
         {
             GetSession()->bout.NewLine();
@@ -511,12 +511,12 @@ void DoCallBackVerification()
         GetSession()->GetCurrentUser()->SetDarFlag( GetSession()->cbv.dar );
         GetSession()->GetCurrentUser()->SetExemptFlag( GetSession()->cbv.exempt );
         GetSession()->GetCurrentUser()->SetRestrictionFlag( GetSession()->cbv.restrict );
-        GetSession()->WriteCurrentUser( GetSession()->usernum );
+        GetSession()->WriteCurrentUser();
     }
     else
     {
         GetSession()->GetCurrentUser()->SetCbv( GetSession()->GetCurrentUser()->GetCbv() | 4 );
-        GetSession()->WriteCurrentUser( GetSession()->usernum );
+        GetSession()->WriteCurrentUser();
     }
     if ( cbv & 2 )
     {
@@ -570,7 +570,7 @@ void getuser()
         }
         if ( GetSession()->usernum > 0 )
         {
-            GetSession()->ReadCurrentUser( GetSession()->usernum );
+            GetSession()->ReadCurrentUser();
             read_qscn( GetSession()->usernum, qsc, false );
             if ( !set_language( GetSession()->GetCurrentUser()->GetLanguage() ) )
             {
@@ -963,7 +963,7 @@ void CheckAndUpdateUserInfo()
                 GetSession()->GetCurrentUser()->SetDsl( syscfg.newuserdsl );
                 GetSession()->GetCurrentUser()->SetExempt( 0 );
                 ssm( 1, 0, "%s%s", GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ), "'s registration has expired." );
-                GetSession()->WriteCurrentUser( GetSession()->usernum );
+                GetSession()->WriteCurrentUser();
                 GetSession()->ResetEffectiveSl();
                 changedsl();
             }
@@ -1427,7 +1427,7 @@ void logoff()
     {
         fwaiting = GetSession()->GetCurrentUser()->GetNumMailWaiting();
     }
-    GetSession()->WriteCurrentUser( GetSession()->usernum );
+    GetSession()->WriteCurrentUser();
     write_qscn( GetSession()->usernum, qsc, false );
     remove_from_temp( "*.*", syscfgovr.tempdir, false );
     remove_from_temp( "*.*", syscfgovr.batchdir, false );

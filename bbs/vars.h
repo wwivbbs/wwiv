@@ -175,7 +175,6 @@ __EXTRN__ subboardrec *subboards;
 __EXTRN__ directoryrec *directories;
 __EXTRN__ usersubrec *usub, *udir;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
-__EXTRN__ screentype screensave;
 __EXTRN__ batchrec *batch;
 __EXTRN__ tagrec *filelist;
 __EXTRN__ chainfilerec *chains;

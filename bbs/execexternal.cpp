@@ -52,7 +52,7 @@ int ExecuteExternalProgram( const std::string commandLine, int nFlags )
     // get ready to run it
     if ( GetSession()->IsUserOnline() )
 	{
-        GetSession()->WriteCurrentUser( GetSession()->usernum );
+        GetSession()->WriteCurrentUser();
         write_qscn(GetSession()->usernum, qsc, false);
     }
     close_strfiles();

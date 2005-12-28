@@ -33,7 +33,7 @@ void OnlineUserEditor()
 	int cp, i, rc = ABORTED;
 
 	GetSession()->DisplaySysopWorkingIndicator( true );
-	GetSession()->localIO()->savescreen(&screensave);
+	GetSession()->localIO()->savescreen();
 	curatr = GetSession()->GetUserEditorColor();
 	int wx = 5;
 	int wy = 3;
@@ -283,7 +283,7 @@ void OnlineUserEditor()
         break;
     }
   }
-  GetSession()->localIO()->restorescreen(&screensave);
+  GetSession()->localIO()->restorescreen();
   GetSession()->ResetEffectiveSl();
   changedsl();
   GetSession()->DisplaySysopWorkingIndicator( false );

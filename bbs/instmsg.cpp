@@ -287,7 +287,7 @@ void process_inst_msgs()
                         {
                             fwaiting = GetSession()->GetCurrentUser()->GetNumMailWaiting();
                         }
-                        GetSession()->WriteCurrentUser( GetSession()->usernum );
+                        GetSession()->WriteCurrentUser();
                         write_qscn(GetSession()->usernum, qsc, false);
                     }
                     tmp_disable_pause( false );

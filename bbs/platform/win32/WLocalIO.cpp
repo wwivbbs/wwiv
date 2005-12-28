@@ -593,7 +593,7 @@ void WLocalIO::set_protect(int l) //JZ Set_Protect Fix
 }
 
 
-void WLocalIO::savescreen(screentype * pScreenType)
+void WLocalIO::savescreen()
 {
     COORD topleft;
     CONSOLE_SCREEN_BUFFER_INFO bufinfo;
@@ -604,29 +604,29 @@ void WLocalIO::savescreen(screentype * pScreenType)
     region.Bottom = static_cast< short > ( bufinfo.dwSize.Y - 1 );
     region.Right  = static_cast< short > ( bufinfo.dwSize.X - 1 );
 
-    if (!pScreenType->scrn1)
+    if (!m_ScreenSave.scrn1)
     {
-        pScreenType->scrn1= static_cast< CHAR_INFO *> ( bbsmalloc((bufinfo.dwSize.X*bufinfo.dwSize.Y)*sizeof(CHAR_INFO)) );
+        m_ScreenSave.scrn1= static_cast< CHAR_INFO *> ( bbsmalloc((bufinfo.dwSize.X*bufinfo.dwSize.Y)*sizeof(CHAR_INFO)) );
     }
 
-    if (pScreenType->scrn1)
+    if (m_ScreenSave.scrn1)
     {
-        ReadConsoleOutput(m_hConOut,(CHAR_INFO *)pScreenType->scrn1,bufinfo.dwSize,topleft,&region);
+        ReadConsoleOutput(m_hConOut,(CHAR_INFO *)m_ScreenSave.scrn1,bufinfo.dwSize,topleft,&region);
     }
 
-    pScreenType->x1 = static_cast< short > ( WhereX() );
-    pScreenType->y1 = static_cast< short > ( WhereY() );
-    pScreenType->topline1 = static_cast< short > ( GetTopLine() );
-    pScreenType->curatr1 = static_cast< short > ( curatr );
+    m_ScreenSave.x1 = static_cast< short > ( WhereX() );
+    m_ScreenSave.y1 = static_cast< short > ( WhereY() );
+    m_ScreenSave.topline1 = static_cast< short > ( GetTopLine() );
+    m_ScreenSave.curatr1 = static_cast< short > ( curatr );
 }
 
 
 /*
  * restorescreen restores a screen previously saved with savescreen
  */
-void WLocalIO::restorescreen(screentype * pScreenType)
+void WLocalIO::restorescreen()
 {
-    if (pScreenType->scrn1)
+    if (m_ScreenSave.scrn1)
     {
         // COORD size;
         COORD topleft;
@@ -638,26 +638,26 @@ void WLocalIO::restorescreen(screentype * pScreenType)
         region.Bottom = static_cast< short > ( bufinfo.dwSize.Y - 1 );
         region.Right  = static_cast< short > ( bufinfo.dwSize.X - 1 );
 
-        WriteConsoleOutput(m_hConOut,pScreenType->scrn1,bufinfo.dwSize,topleft,&region);
-        BbsFreeMemory(pScreenType->scrn1);
-        pScreenType->scrn1 = NULL;
+        WriteConsoleOutput(m_hConOut,m_ScreenSave.scrn1,bufinfo.dwSize,topleft,&region);
+        BbsFreeMemory(m_ScreenSave.scrn1);
+        m_ScreenSave.scrn1 = NULL;
     }
-    SetTopLine( pScreenType->topline1 );
-    curatr = pScreenType->curatr1;
-    LocalGotoXY(pScreenType->x1, pScreenType->y1);
+    SetTopLine( m_ScreenSave.topline1 );
+    curatr = m_ScreenSave.curatr1;
+    LocalGotoXY(m_ScreenSave.x1, m_ScreenSave.y1);
 }
 
 
 void WLocalIO::ExecuteTemporaryCommand( const char *pszCommand )
 {
     GetSession()->DisplaySysopWorkingIndicator( true );
-    savescreen( &screensave );
+    savescreen();
     int i = GetTopLine();
     SetTopLine( 0 );
     curatr = 0x07;
     LocalCls();
     ExecuteExternalProgram( pszCommand, EFLAG_TOPSCREEN );
-    restorescreen( &screensave );
+    restorescreen();
     SetTopLine( i );
     GetSession()->DisplaySysopWorkingIndicator( false );
 }

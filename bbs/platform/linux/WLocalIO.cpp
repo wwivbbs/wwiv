@@ -328,7 +328,7 @@ void WLocalIO::set_protect(int l)
 }
 
 
-void WLocalIO::savescreen(screentype * s)
+void WLocalIO::savescreen()
 {
 }
 
@@ -336,7 +336,7 @@ void WLocalIO::savescreen(screentype * s)
 /*
  * restorescreen restores a screen previously saved with savescreen
  */
-void WLocalIO::restorescreen(screentype * s)
+void WLocalIO::restorescreen()
 {
 }
 

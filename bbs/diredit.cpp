@@ -160,7 +160,7 @@ void modify_dir(int n)
 		case 'A':
 			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2New name? ";
-			Input1(s, r.name, 40, true, MIXED);
+			Input1(s, r.name, 40, true, INPUT_MODE_FILE_MIXED);
 			if (s[0])
 			{
 				strcpy(r.name, s);
@@ -169,7 +169,7 @@ void modify_dir(int n)
 		case 'B':
 			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2New filename? ";
-			Input1(s, r.filename, 8, true, FILE_NAME);
+			Input1(s, r.filename, 8, true, INPUT_MODE_FILE_NAME);
 			if ((s[0] != 0) && (strchr(s, '.') == 0))
 			{
 				strcpy(r.filename, s);
@@ -182,7 +182,7 @@ void modify_dir(int n)
 						  "|#9The current path is:\r\n" <<
 						  "|#1" << r.path << wwiv::endl << wwiv::endl;
 			GetSession()->bout << " \b";
-			Input1(s, r.path, 79, true, MIXED);
+			Input1(s, r.path, 79, true, INPUT_MODE_FILE_MIXED);
 			if (s[0])
 			{
 				WFile dir(s);

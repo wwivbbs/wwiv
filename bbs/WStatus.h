@@ -19,18 +19,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
-#if defined( _WIN32 )
-#define _CRT_SECURE_NO_DEPRECATE
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#endif 
-
-#include <cstdio>
-#include <cstring>
-#include <string>
-
 extern statusrec status;
 
 class WStatus

@@ -30,7 +30,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif	// _MSC_VER 
 
-
+#include <string>
 #include "vardec.h"
 
 /**
@@ -304,6 +304,7 @@ public:
     void SetNumEmailSentToday( int n )      { data.etoday = static_cast<unsigned short>( n ); }
     const int GetAssPoints() const          { return data.ass_pts; }
     void SetAssPoints( int n )              { data.ass_pts = static_cast<unsigned short>( n ); }
+    void IncrementAssPoints( int n )        { data.ass_pts = data.ass_pts + static_cast<unsigned short>( n ); }
     const int GetFilesUploaded() const      { return data.uploaded; }
     void SetFilesUploaded( int n )          { data.uploaded = static_cast<unsigned short>( n ); }
     const int GetFilesDownloaded() const    { return data.downloaded; }
@@ -381,14 +382,25 @@ private:
  */
 class WUserManager
 {
+private:
+    std::string m_dataDirectory;
+    int m_nUserRecordLength;
+    int m_nMaxNumberOfUsers;
+    bool m_bUserWritesAllowed;
 public:
-    WUserManager();
+    WUserManager( std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers );
     ~WUserManager();
     int GetNumberOfUserRecords() const;
     bool ReadUserNoCache( WUser *pUser, int nUserNumber );
     bool ReadUser( WUser *pUser, int nUserNumber, bool bForceRead = false );
     bool WriteUserNoCache( WUser *pUser, int nUserNumber );
     bool WriteUser( WUser *pUser, int nUserNumber );
+    /** 
+     * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
+     * Global guest_user variable is true.
+     */
+    void SetUserWritesAllowed( bool bUserWritesAllowed ) { m_bUserWritesAllowed = bUserWritesAllowed; }
+    bool IsUserWritesAllowed() { return m_bUserWritesAllowed; }
 };
 
 
