@@ -50,7 +50,7 @@ void add_ass( int nNumPoints, const char *pszReason )
 {
     sysoplog(  "***" );
     sysoplogf( "*** ASS-PTS: %d, Reason: [%s]", nNumPoints, pszReason );
-    GetSession()->GetCurrentUser()->SetAssPoints( GetSession()->GetCurrentUser()->GetAssPoints() + static_cast<unsigned short>( nNumPoints ) );
+    GetSession()->GetCurrentUser()->IncrementAssPoints( nNumPoints );
 }
 
 

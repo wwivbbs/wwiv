@@ -20,12 +20,14 @@
 #ifndef __INCLUDED_VARDEC_H__
 #define __INCLUDED_VARDEC_H__
 
-
 #ifdef _WIN32
  #pragma pack(push, 1)
 #elif defined (_UNIX)
 #pragma pack( 1 )
 #endif
+
+#include "wtypes.h"
+
 
 
 // DATA FOR EVERY USER
@@ -914,18 +916,6 @@ struct line
 };
 
 
-struct screentype
-{
-    short x1, y1, topline1, curatr1;
-
-#ifdef _WIN32
-    CHAR_INFO* scrn1;
-#else
-    char *scrn1;
-#endif
-};
-
-
 struct ext_desc_type
 {
     char name[13];
@@ -1238,7 +1228,7 @@ struct cbv_rec
 ///////////////////////////////////////////////////////////////////////////////
 // end callback additions
 
-// QUICK REFERNCE TO FIND USER PHONE NUMBER
+// QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
 
 struct phonerec
 {
@@ -1297,12 +1287,12 @@ struct ext_desc_rec
 
 
 // Text editing modes for input routines
-#define UPPER     0
-#define MIXED     1
-#define PROPER    2
-#define FILE_NAME 3
-#define DATE      4
-#define PHONE     5
+#define INPUT_MODE_FILE_UPPER     0
+#define INPUT_MODE_FILE_MIXED     1
+#define INPUT_MODE_FILE_PROPER    2
+#define INPUT_MODE_FILE_NAME 3
+#define INPUT_MODE_DATE      4
+#define INPUT_MODE_PHONE     5
 
 // Used by scan(...)
 #define SCAN_OPTION_READ_PROMPT		0

@@ -4,4 +4,10 @@
 ==============================================================================
 
 Move bbs logic out of WLocalIO and into WSession (probably)
-
+remove extra include statements from user.cpp
+make GetUserNameAndNumber a static on WUser and also make a non-static one
+that doesn't require a usernumber.
+Finish wrappering WSession
+add IncrementXXXXX methods to WUser where it makes sense.
+move socket code out of bbs.cpp and into WIOTelnet
+move console title code into WLocalIO

@@ -657,25 +657,25 @@ void eventedit()
 					switch( ch )
 					{
 					case '1':
-						Input1( syscfg.terminal, syscfg.terminal, 21, true, UPPER );
+						Input1( syscfg.terminal, syscfg.terminal, 21, true, INPUT_MODE_FILE_UPPER );
 						break;
 					case '3':
-						Input1( syscfg.beginday_c, syscfg.beginday_c, 51, true, UPPER );
+						Input1( syscfg.beginday_c, syscfg.beginday_c, 51, true, INPUT_MODE_FILE_UPPER );
 						break;
 					case '4':
-						Input1( syscfg.logon_c, syscfg.logon_c, 51, true, UPPER );
+						Input1( syscfg.logon_c, syscfg.logon_c, 51, true, INPUT_MODE_FILE_UPPER );
 						break;
 					case '5':
-						Input1( syscfg.logoff_c, syscfg.logoff_c, 51, true, UPPER );
+						Input1( syscfg.logoff_c, syscfg.logoff_c, 51, true, INPUT_MODE_FILE_UPPER );
 						break;
 					case '6':
-						Input1( syscfg.newuser_c,syscfg.newuser_c, 51, true, UPPER );
+						Input1( syscfg.newuser_c,syscfg.newuser_c, 51, true, INPUT_MODE_FILE_UPPER );
 						break;
 					case '7':
-						Input1( syscfg.upload_c, syscfg.upload_c, 51, true, UPPER );
+						Input1( syscfg.upload_c, syscfg.upload_c, 51, true, INPUT_MODE_FILE_UPPER );
 						break;
 					case '8':
-						Input1( syscfg.v_scan_c, syscfg.v_scan_c, 51, true, UPPER );
+						Input1( syscfg.v_scan_c, syscfg.v_scan_c, 51, true, INPUT_MODE_FILE_UPPER );
 						break;
 					case '?':
 						GetSession()->localIO()->LocalCls();

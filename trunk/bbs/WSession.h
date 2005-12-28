@@ -20,6 +20,9 @@
 #pragma once
 #endif
 
+#if !defined ( __INCLUDED_WSESSION_H__ )
+#define __INCLUDED_WSESSION_H__
+
 
 //
 // WSession - Holds information and status data about the current user
@@ -30,28 +33,23 @@
 // associated with this instance of WWIV globally (not tied to a user)
 //
 
-
-#if !defined ( __INCLUDED_WSESSION_H__ )
-#define __INCLUDED_WSESSION_H__
-
-
-
-#include "vardec.h"
-#include "WUser.h"
-#include "wtypes.h"
-#include "bbs.h"
-#include "net.h"
 #include "WOutStreamBuffer.h"
 
-
+#if defined( _WIN32 )
+extern "C"
+{
+    #include <winsock2.h>
+}
+#endif // _WIN32
 #if defined(_MSC_VER)
 #pragma warning( push )
 #pragma warning( disable: 4511 4512 )
 #endif // _MSC_VER
 
-extern net_networks_rec *net_networks;
 
 class WApplication;
+class WLocalIO;
+class WComm;
 
 class WSession
 {
@@ -84,7 +82,9 @@ public:
     bool IsLastKeyLocal() const                     { return m_bLastKeyLocal; }
     void SetLastKeyLocal( bool b )                  { m_bLastKeyLocal = b; }
 
+    bool ReadCurrentUser();
     bool ReadCurrentUser( int nUserNumber, bool bForceRead = false );
+    bool WriteCurrentUser();
     bool WriteCurrentUser( int nUserNumber );
 
     void ResetEffectiveSl()                         { m_nEffectiveSl = GetCurrentUser()->GetSl(); }
@@ -113,8 +113,8 @@ public:
     void SetCurrentSpeed( std::string s )           { m_currentSpeed = s; }
     void SetCurrentSpeed( const char *s )           { m_currentSpeed = s; }
 
-	const char* GetNetworkName() const		        { return net_networks[m_nNetworkNumber].name; }
-	const char* GetNetworkDataDirectory() const	    { return net_networks[m_nNetworkNumber].dir; }
+	const char* GetNetworkName() const;
+	const char* GetNetworkDataDirectory() const;
 
 	bool IsMessageThreadingEnabled() const	        { return m_bThreadSubs; }
 	void SetMessageThreadingEnabled( bool b )       { m_bThreadSubs = b; }

@@ -28,6 +28,7 @@
 #include "vars.h"
 #include "bbs.h"
 #include <memory>
+#include "WStatus.h"
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"
@@ -52,6 +53,7 @@ int finduser( const std::string searchString )
     WUser user;
 
     guest_user = false;
+    GetApplication()->GetUserManager()->SetUserWritesAllowed( true );
     if ( searchString == "NEW" )
     {
         return -1;
@@ -97,6 +99,7 @@ int finduser( const std::string searchString )
             if ( wwiv::stringUtils::IsEqualsIgnoreCase( user.GetName(), "GUEST" ) )
             {
                 guest_user = true;
+                GetApplication()->GetUserManager()->SetUserWritesAllowed( false );
             }
             return sr->number;
         }

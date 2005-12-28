@@ -1724,7 +1724,7 @@ void force_callout(int dw)
                     {
                         if ( GetSession()->IsUserOnline() )
                         {
-                            GetSession()->WriteCurrentUser( GetSession()->usernum );
+                            GetSession()->WriteCurrentUser();
                             write_qscn(GetSession()->usernum, qsc, false);
                             GetSession()->SetUserOnline( false );
                         }
