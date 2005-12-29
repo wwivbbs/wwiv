@@ -27,14 +27,6 @@
 #include <sys/vfs.h>
 #endif // __APPLE__
 
-// Changes the size of the file hanle (Either by truncating or zero-padding).
-
-void chsize(int f, size_t size)
-{
-  ftruncate(f,size);
-}
-
-
 
 double WWIV_GetFreeSpaceForPath(const char * szPath)
 {

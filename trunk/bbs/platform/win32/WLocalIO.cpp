@@ -1776,5 +1776,12 @@ int WLocalIO::GetEditLineStringLength( const char *pszText )
 }
 
 
+void WLocalIO::UpdateNativeTitleBar()
+{
+    // Set console title
+    std::stringstream consoleTitleStream;
+    consoleTitleStream << "WWIV Node " << GetApplication()->GetInstanceNumber() << " (" << syscfg.systemname << ")";
+    SetConsoleTitle( consoleTitleStream.str().c_str() );
+}
 
 

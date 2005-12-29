@@ -26,9 +26,6 @@
 char *strupr(char *s);
 char *strlwr(char *s);
 
-// filestuff.cpp
-
-void chsize(int f, size_t size);
 
 // utility2.cpp
 

@@ -23,21 +23,20 @@
 //
 // Defined for all platforms
 //
-typedef unsigned char       UCHAR8;
-typedef signed char         INT8;
-typedef signed char         CHAR8;
-typedef short               INT16;
-typedef unsigned char       UINT8;
-typedef unsigned short      UINT16;
+
 // This should only be used in files, where size matters, not for
 // function return values, etc.
+
+typedef unsigned char       BYTE;
+typedef short               INT16;
+typedef unsigned short      UINT16;
 
 
 //
 // Defined on everything except for WIN32
 //
+
 #if !defined (_WIN32)
-typedef unsigned char       BYTE;
 typedef unsigned char       UCHAR;
 typedef unsigned short      WORD;
 typedef unsigned long       DWORD;
@@ -46,10 +45,7 @@ typedef unsigned long       DWORD32;
 typedef unsigned short      USHORT;
 typedef unsigned int        UINT;
 typedef int                 INT;
-typedef long                INT32;
-typedef unsigned long       UINT32;
 typedef long                LONG32;
-typedef unsigned long       ULONG32;
 
 #ifndef LOBYTE
 #define LOBYTE(w)           ((BYTE)(w))
@@ -73,12 +69,6 @@ typedef unsigned char bool;
 //
 // WIN32 Specific
 //
-
-#if defined (__GNUC__) && defined (_WIN32)
-typedef long                INT32;
-typedef unsigned long       UINT32;
-typedef unsigned long       ULONG32;
-#endif // __GNUC__ && _WIN32
 
 
 #if defined ( _WIN32 ) && ( _MSC_VER < 1300 )

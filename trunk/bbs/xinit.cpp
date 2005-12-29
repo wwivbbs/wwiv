@@ -500,6 +500,9 @@ bool WApplication::ReadConfig()
     configFile.Read( &full_syscfg, sizeof( configrec ) );
     configFile.Close();
 
+    // initialize the user manager
+    GetUserManager()->InitializeUserManager( full_syscfg.datadir, full_syscfg.userreclen, full_syscfg.maxusers );
+
     WFile configOvrFile( CONFIG_OVR );
     bool bIsConfigObvOpen = configOvrFile.Open( WFile::modeBinary | WFile::modeReadOnly );
     if (  bIsConfigObvOpen &&
@@ -1434,12 +1437,12 @@ void WApplication::InitializeBBS()
     do_event = 0;
     usub = static_cast<usersubrec *>( BbsAllocWithComment( GetSession()->GetMaxNumberMessageAreas() * sizeof( usersubrec ), "usub" ) );
 	WWIV_ASSERT(usub != NULL);
-    GetSession()->m_SubDateCache = static_cast<UINT32 *>( BbsAllocWithComment(GetSession()->GetMaxNumberMessageAreas() * sizeof(long), "GetSession()->m_SubDateCache") );
+    GetSession()->m_SubDateCache = static_cast<unsigned int*>( BbsAllocWithComment(GetSession()->GetMaxNumberMessageAreas() * sizeof(long), "GetSession()->m_SubDateCache") );
 	WWIV_ASSERT(GetSession()->m_SubDateCache != NULL);
 
     udir = static_cast<usersubrec *>( BbsAllocWithComment(GetSession()->GetMaxNumberFileAreas() * sizeof(usersubrec), "udir") );
 	WWIV_ASSERT(udir != NULL);
-    GetSession()->m_DirectoryDateCache = static_cast<UINT32 *>( BbsAllocWithComment(GetSession()->GetMaxNumberFileAreas() * sizeof(long), "GetSession()->m_DirectoryDateCache") );
+    GetSession()->m_DirectoryDateCache = static_cast<unsigned int*>( BbsAllocWithComment(GetSession()->GetMaxNumberFileAreas() * sizeof(long), "GetSession()->m_DirectoryDateCache") );
 	WWIV_ASSERT(GetSession()->m_DirectoryDateCache != NULL);
 
     uconfsub = static_cast<userconfrec *>( BbsAllocWithComment(MAX_CONFERENCES * sizeof(userconfrec), "uconfsub") );

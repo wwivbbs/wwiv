@@ -501,3 +501,7 @@ int WLocalIO::GetEditLineStringLength( const char *pszText )
 	return i;
 }
 
+
+void WLocalIO::UpdateNativeTitleBar()
+{
+}

@@ -368,10 +368,10 @@ char *StringTrim( char *pszString )
  */
 std::string& StringTrim( std::string& s )
 {
-    std::string::size_type pos = s.find_first_not_of(" ");
+    std::string::size_type pos = s.find_first_not_of(" \t\r\n");
     s.erase( 0, pos );
 
-    pos = s.find_last_not_of(" "); 
+    pos = s.find_last_not_of(" \t\r\n"); 
     s.erase( pos + 1 ); 
 
     return s;
@@ -380,7 +380,7 @@ std::string& StringTrim( std::string& s )
 
 std::string& StringTrimBegin( std::string& s )
 {
-    std::string::size_type pos = s.find_first_not_of(" ");
+    std::string::size_type pos = s.find_first_not_of(" \t\r\n");
     s.erase( 0, pos );
     return s;
 }
@@ -388,8 +388,22 @@ std::string& StringTrimBegin( std::string& s )
 
 std::string& StringTrimEnd( std::string& s )
 {
-    std::string::size_type pos = s.find_first_not_of(" ");
+    std::string::size_type pos = s.find_first_not_of(" \t\r\n");
     s.erase( pos + 1 );
+    return s;
+}
+
+
+std::string& StringUpperCase( std::string& s )
+{
+    std::transform( s.begin(), s.end(), s.begin(), (int(*)(int)) toupper);
+    return s;
+}
+
+
+std::string& StringLowerCase( std::string& s )
+{
+    std::transform( s.begin(), s.end(), s.begin(), (int(*)(int)) tolower);
     return s;
 }
 

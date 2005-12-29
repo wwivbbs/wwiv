@@ -21,15 +21,13 @@
 #include "WFile.h"
 #include "WUser.h"
 #include "WStringUtils.h"
+#include "filenames.h"
 #include <iostream>
 
 #if defined( _WIN32 )
 #define vsnprintf _vsnprintf
 #define snprintf _snprintf
 #endif // _WIN32
-
-// from filenames.h
-#define USER_LST "user.lst"
 
 #ifndef NOT_BBS
 #include "WSession.h"
@@ -163,18 +161,28 @@ const char *WUser::GetUserNameNumberAndSystem( int nUserNumber, int nSystemNumbe
 // class WUserManager
 //
 //
-
-    std::string m_dataDirectory;
-    int m_nUserRecordLength;
-    int m_nMaxNumberOfUsers;
-
-WUserManager::WUserManager( std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers ) : 
-    m_dataDirectory(dataDirectory), m_nUserRecordLength(nUserRecordLength), m_nMaxNumberOfUsers( nMaxNumberOfUsers ), m_bUserWritesAllowed(true)
+WUserManager::WUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers) : 
+    m_dataDirectory( dataDirectory ), m_nUserRecordLength( nUserRecordLength ), m_nMaxNumberOfUsers( nMaxNumberOfUsers ), 
+        m_bUserWritesAllowed( true ), m_bInitalized( true )
 {
 }
 
+WUserManager::WUserManager() : m_bUserWritesAllowed( true ), m_bInitalized( false )
+{
+}
+
+
 WUserManager::~WUserManager()
 {
+}
+
+
+void WUserManager::InitializeUserManager( std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers )
+{
+    m_bInitalized = true;
+    m_dataDirectory = dataDirectory;
+    m_nUserRecordLength = nUserRecordLength;
+    m_nMaxNumberOfUsers = nMaxNumberOfUsers;
 }
 
 int  WUserManager::GetNumberOfUserRecords() const

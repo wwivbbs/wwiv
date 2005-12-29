@@ -52,6 +52,8 @@ public:
     virtual bool incoming();
     virtual bool startup();
     virtual bool shutdown();
+    virtual void SetHandle( unsigned int nHandle );
+    virtual unsigned int GetHandle() const;
 
 protected:
     virtual bool SetBaudRate(unsigned long speed);
@@ -64,12 +66,12 @@ protected:
     DCB    dcb;
     COMMTIMEOUTS oldtimeouts;
 
-	HANDLE hReadThread;
+	HANDLE m_hReadThread;
 	HANDLE hWriteThread;
     HANDLE hComm;
-    HANDLE hReadStopEvent;
-    std::queue<char> inBuffer;
-    HANDLE hInBufferMutex;
+    HANDLE m_hReadStopEvent;
+    std::queue<char> m_inputQueue;
+    HANDLE m_hInBufferMutex;
 };
 
 

@@ -18,8 +18,46 @@
 /**************************************************************************/
 
 #define _CRT_SECURE_NO_DEPRECATE
+#define NOGDICAPMASKS
+#define NOSYSMETRICS
+#define NOMENUS
+#define NOICONS
+#define NOKEYSTATES
+#define NOSYSCOMMANDS
+#define NORASTEROPS
+#define NOATOM
+#define NOCLIPBOARD
+#define NODRAWTEXT
+#define NOKERNEL
+#define NONLS
+#define NOMEMMGR
+#define NOMETAFILE
+#define NOMINMAX
+#define NOOPENFILE
+#define NOSCROLL
+#define NOSERVICE
+#define NOSOUND
+#define NOTEXTMETRIC
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOHELP
+#define NOPROFILER
+#define NODEFERWINDOWPOS
+#define NOMCX
+#define NOCRYPT
+
+// Define these for MFC projects
+#define NOTAPE
+#define NOIMAGE
+#define NOPROXYSTUB
+#define NORPC
+#define NOIME
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef CopyFile
+#undef GetFullPathName
+
 #include "shellapi.h"
 
 #include "WFile.h"

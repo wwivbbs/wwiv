@@ -288,7 +288,7 @@ bool OpenMenu(MenuInstanceData * pMenuData)
 	if ( pMenuData->pMenuFile->IsOpen() )
     {
 		long lSize = pMenuData->pMenuFile->GetLength();
-		pMenuData->nAmountRecs = (INT16) (lSize / sizeof(MenuRec));
+		pMenuData->nAmountRecs = static_cast<INT16>(lSize / sizeof(MenuRec));
 	}
     else
     {                                  // Unable to open menu

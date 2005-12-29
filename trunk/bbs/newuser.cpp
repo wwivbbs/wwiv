@@ -649,7 +649,7 @@ void input_pw( WUser *pUser )
         Input1(password, "", 8, false, INPUT_MODE_FILE_UPPER);
 
         std::string realName = GetSession()->GetCurrentUser()->GetRealName();
-        std::transform(realName.begin(), realName.end(), realName.begin(), (int(*)(int)) toupper);
+	StringUpperCase( realName );        
         if ( !CheckPasswordComplexity( pUser, password ) )
         {
             ok = false;

@@ -22,8 +22,12 @@
 #include "WlocalIO.h"
 #include "net.h"
 
-//extern net_networks_rec *net_networks;
-
+#if defined (_WIN32)
+#include "Wiot.h"
+#include "Wios.h"
+#elif defined (_UNIX)
+#include "Wiou.h"
+#endif
 
 
 const int WSession::mmkeyMessageAreas   = 0;

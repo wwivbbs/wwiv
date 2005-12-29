@@ -108,9 +108,6 @@
 #include "ini.h"
 #include "WLocalIO.h"
 
-
-#include "incl3.h"
-
 #include "filenames.h"
 
 #endif	// __INCLUDED_WWIV_H__

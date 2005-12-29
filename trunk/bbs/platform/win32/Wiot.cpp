@@ -19,7 +19,7 @@
 
 
 #include "wwiv.h"
-
+#include "Wiot.h"
 
 //
 // Constants related to Telnet IAC options and such.
@@ -47,9 +47,9 @@ const int  WIOTelnet::TELNET_OPTION_TERMINAL_SPEED  = 32;
 const int  WIOTelnet::TELNET_OPTION_LINEMODE        = 34;
 
 
-WIOTelnet::WIOTelnet()
+WIOTelnet::WIOTelnet() : m_hSocket( 0 )
 {
-    bThreadsStarted = false;
+    m_bThreadsStarted = false;
 }
 
 
@@ -64,9 +64,51 @@ bool WIOTelnet::setup(char parity, int wordlen, int stopbits, unsigned long baud
 }
 
 
+void WIOTelnet::SetHandle( unsigned int nHandle )
+{
+    m_hSocket	= static_cast<SOCKET>( nHandle );
+	if ( !DuplicateHandle(  GetCurrentProcess(), reinterpret_cast<HANDLE>( m_hSocket ),
+		                    GetCurrentProcess(), reinterpret_cast<HANDLE*>( &m_hDuplicateSocket ),
+		                    0, TRUE, DUPLICATE_SAME_ACCESS ) )
+    {
+		std::cout << "Error creating duplicate socket: " << GetLastError() << "\r\n\n";
+	}
+
+}
+
+
+unsigned int WIOTelnet::GetHandle() const
+{
+    return static_cast<unsigned int>( m_hSocket );
+}
+
+unsigned int WIOTelnet::GetDoorHandle() const
+{
+    return static_cast<unsigned int>( m_hDuplicateSocket );
+}
+
+
 unsigned int WIOTelnet::open()
 {
     StartThreads();
+
+    SOCKADDR_IN addr;
+    int nAddrSize = sizeof( SOCKADDR);
+
+    getpeername( m_hSocket, reinterpret_cast<SOCKADDR *>( &addr ), &nAddrSize );
+
+    std::string address = inet_ntoa( addr.sin_addr );
+    std::string name = "Internet TELNET Session";
+    SetRemoteInformation( name, address );
+
+    char szTempTelnet[ 21 ];
+    snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_ECHO );
+    write( szTempTelnet, 3, true );
+    snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_WILL, WIOTelnet::TELNET_OPTION_ECHO );
+    write( szTempTelnet, 3, true );
+    snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_LINEMODE );
+    write( szTempTelnet, 3, true );
+
 	return 0;
 }
 
@@ -76,7 +118,7 @@ void WIOTelnet::close( bool bIsTemporary )
     if ( !bIsTemporary )
     {
         // this will stop the threads
-	    closesocket( GetSession()->hSocket );
+	    closesocket( m_hSocket );
     }
     else
     {
@@ -87,7 +129,7 @@ void WIOTelnet::close( bool bIsTemporary )
 
 unsigned int WIOTelnet::putW(unsigned char ch)
 {
-	if ( GetSession()->hSocket == INVALID_SOCKET )
+	if ( m_hSocket == INVALID_SOCKET )
 	{
 #ifdef _DEBUG
         std::cout << "pw(INVALID-SOCKET) ";
@@ -105,7 +147,7 @@ unsigned int WIOTelnet::putW(unsigned char ch)
 
 	for( ;; )
 	{
-		int nRet = send( GetSession()->hSocket, szBuffer, strlen( szBuffer ), 0 );
+		int nRet = send( m_hSocket, szBuffer, strlen( szBuffer ), 0 );
 		if( nRet == SOCKET_ERROR )
 		{
 			if( WSAGetLastError() != WSAEWOULDBLOCK )
@@ -129,13 +171,13 @@ unsigned int WIOTelnet::putW(unsigned char ch)
 unsigned char WIOTelnet::getW()
 {
 	char ch = 0;
-	WaitForSingleObject( hInBufferMutex, INFINITE );
-	if ( !inBuffer.empty() )
+	WaitForSingleObject( m_hInBufferMutex, INFINITE );
+	if ( !m_inputQueue.empty() )
 	{
-		ch = inBuffer.front();
-		inBuffer.pop();
+		ch = m_inputQueue.front();
+		m_inputQueue.pop();
 	}
-	ReleaseMutex( hInBufferMutex );
+	ReleaseMutex( m_hInBufferMutex );
 	return static_cast<unsigned char> ( ch );
 }
 
@@ -144,10 +186,10 @@ bool WIOTelnet::dtr(bool raise)
 {
 	if (!raise)
 	{
-		closesocket(GetSession()->hSocket);
-		closesocket(GetSession()->hDuplicateSocket);
-		GetSession()->hSocket = INVALID_SOCKET;
-		GetSession()->hDuplicateSocket = INVALID_SOCKET;
+		closesocket( m_hSocket );
+		closesocket( m_hDuplicateSocket );
+		m_hSocket = INVALID_SOCKET;
+		m_hDuplicateSocket = INVALID_SOCKET;
 	}
 	return true;
 }
@@ -169,12 +211,12 @@ void WIOTelnet::purgeIn()
 {
 	// Implementing this is new as of 2003-03-31, so if this causes problems,
 	// then we may need to remove it [Rushfan]
-	WaitForSingleObject( hInBufferMutex, INFINITE );
-	while( !inBuffer.empty() )
+	WaitForSingleObject( m_hInBufferMutex, INFINITE );
+	while( !m_inputQueue.empty() )
 	{
-		inBuffer.pop();
+		m_inputQueue.pop();
 	}
-	ReleaseMutex( hInBufferMutex );
+	ReleaseMutex( m_hInBufferMutex );
 }
 
 
@@ -188,12 +230,12 @@ char WIOTelnet::peek()
 {
 	char ch = 0;
 
-	WaitForSingleObject( hInBufferMutex, INFINITE );
-	if ( !inBuffer.empty() )
+	WaitForSingleObject( m_hInBufferMutex, INFINITE );
+	if ( !m_inputQueue.empty() )
 	{
-		ch = inBuffer.front();
+		ch = m_inputQueue.front();
 	}
-	ReleaseMutex( hInBufferMutex );
+	ReleaseMutex( m_hInBufferMutex );
 
 	return ch;
 }
@@ -204,17 +246,17 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count)
 	unsigned int nRet = 0;
 	char * pszTemp = buffer;
 
-	WaitForSingleObject( hInBufferMutex, INFINITE );
-	while ( ( !inBuffer.empty() ) && ( nRet <= count ) )
+	WaitForSingleObject( m_hInBufferMutex, INFINITE );
+	while ( ( !m_inputQueue.empty() ) && ( nRet <= count ) )
 	{
-		char ch = inBuffer.front();
-		inBuffer.pop();
+		char ch = m_inputQueue.front();
+		m_inputQueue.pop();
 		*pszTemp++ = ch;
 		nRet++;
 	}
 	*pszTemp++ = '\0';
 
-	ReleaseMutex( hInBufferMutex );
+	ReleaseMutex( m_hInBufferMutex );
 
 	return nRet;
 }
@@ -255,7 +297,7 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
 
 	for( ;; )
 	{
-		nRet = send( GetSession()->hSocket, pszBuffer, nCount, 0 );
+		nRet = send( m_hSocket, pszBuffer, nCount, 0 );
 		if( nRet == SOCKET_ERROR )
 		{
 			if( WSAGetLastError() != WSAEWOULDBLOCK )
@@ -280,25 +322,25 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
 
 bool WIOTelnet::carrier()
 {
-    return ( GetSession()->hSocket != INVALID_SOCKET ) ? true : false;
+    return ( m_hSocket != INVALID_SOCKET ) ? true : false;
 }
 
 
 bool WIOTelnet::incoming()
 {
-	WaitForSingleObject( hInBufferMutex, INFINITE );
-	bool bRet = ( inBuffer.size() > 0 ) ? true : false;
-	ReleaseMutex( hInBufferMutex );
+	WaitForSingleObject( m_hInBufferMutex, INFINITE );
+	bool bRet = ( m_inputQueue.size() > 0 ) ? true : false;
+	ReleaseMutex( m_hInBufferMutex );
     return bRet;
 }
 
 
 bool WIOTelnet::startup()
 {
-    if ( GetSession()->hSocket != 0 && GetSession()->hSocket != INVALID_SOCKET )
+    if ( m_hSocket != 0 && m_hSocket != INVALID_SOCKET )
     {
         // Make sure our signal event is not set to the "signaled" state
-        hReadStopEvent = CreateEvent( NULL, true, false, NULL );
+        m_hReadStopEvent = CreateEvent( NULL, true, false, NULL );
     }
 	return true;
 }
@@ -309,18 +351,18 @@ bool WIOTelnet::shutdown()
 	// Stop the send/receive threads
 	StopThreads();
 
-    CloseHandle( hReadStopEvent );
+    CloseHandle( m_hReadStopEvent );
 	return true;
 }
 
 
 void WIOTelnet::StopThreads()
 {
-    if ( !bThreadsStarted )
+    if ( !m_bThreadsStarted )
     {
         return;
     }
-    if ( !SetEvent( hReadStopEvent ) )
+    if ( !SetEvent( m_hReadStopEvent ) )
     {
         const char *pText = GetLastErrorText();
         std::cout << "Error with PulseEvent " << GetLastError() << " - '" << pText << "'" << std::endl;
@@ -328,45 +370,45 @@ void WIOTelnet::StopThreads()
     WWIV_Delay( 0 );
 
 	// Stop read thread
-    DWORD dwRes = WaitForSingleObject( hReadThread, 5000 );
+    DWORD dwRes = WaitForSingleObject( m_hReadThread, 5000 );
     switch ( dwRes )
     {
     case WAIT_OBJECT_0:
-        CloseHandle( hReadThread );
-        hReadThread = NULL;
+        CloseHandle( m_hReadThread );
+        m_hReadThread = NULL;
         // Thread Ended
         break;
     case WAIT_TIMEOUT:
         // The exit code of 123 doesn't mean anything, and isn't used anywhere.
-        ::TerminateThread( hReadThread, 123 );
+        ::TerminateThread( m_hReadThread, 123 );
         break;
     }
-    bThreadsStarted = false;
+    m_bThreadsStarted = false;
 }
 
 
 void WIOTelnet::StartThreads()
 {
-    if ( bThreadsStarted )
+    if ( m_bThreadsStarted )
     {
         return;
     }
 
-    if ( !ResetEvent( hReadStopEvent ) )
+    if ( !ResetEvent( m_hReadStopEvent ) )
     {
         const char *pText = GetLastErrorText();
         std::cout << "Error with PulseEvent " << GetLastError() << " - '" << pText << "'" << std::endl;
     }
 
-    hInBufferMutex = ::CreateMutex(NULL, false, "WWIV Input Buffer");
-    hReadThread = (HANDLE) _beginthread(WIOTelnet::InboundTelnetProc, 0, static_cast< void * >( this ) );
-    bThreadsStarted = true;
+    m_hInBufferMutex = ::CreateMutex(NULL, false, "WWIV Input Buffer");
+    m_hReadThread = reinterpret_cast<HANDLE>( _beginthread(WIOTelnet::InboundTelnetProc, 0, static_cast< void * >( this ) ) );
+    m_bThreadsStarted = true;
 }
 
 
 WIOTelnet::~WIOTelnet()
 {
-	inBuffer.empty();
+	m_inputQueue.empty();
 	WSACleanup();
 }
 
@@ -383,11 +425,11 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)
 	WSANETWORKEVENTS events;
 	char szBuffer[4096];
 	bool bDone = false;
-	SOCKET hSocket = static_cast<SOCKET>( GetSession()->hSocket );
-	int nRet = WSAEventSelect(hSocket, hEvent, FD_READ | FD_CLOSE);
+    SOCKET m_hSocket = static_cast<SOCKET>( pTelnet->m_hSocket );
+	int nRet = WSAEventSelect(m_hSocket, hEvent, FD_READ | FD_CLOSE);
     HANDLE hArray[2];
     hArray[0] = hEvent;
-	hArray[1] = pTelnet->hReadStopEvent;
+	hArray[1] = pTelnet->m_hReadStopEvent;
 
 	if (nRet == SOCKET_ERROR)
 	{
@@ -398,7 +440,7 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)
         DWORD dwWaitRet = WSAWaitForMultipleEvents( 2, hArray, false, 10000, false );    
         if ( dwWaitRet == ( WSA_WAIT_EVENT_0 + 1 ) )
         {
-            if ( !ResetEvent( pTelnet->hReadStopEvent ) )
+            if ( !ResetEvent( pTelnet->m_hReadStopEvent ) )
             {
                 const char *pText = GetLastErrorText();
                 std::cout << "Error with PulseEvent " << GetLastError() << " - '" << pText << "'" << std::endl;
@@ -407,7 +449,7 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)
             bDone = true;
             break;
         }
-		int nRet = WSAEnumNetworkEvents( hSocket, hEvent, &events );
+		int nRet = WSAEnumNetworkEvents( m_hSocket, hEvent, &events );
 		if ( nRet == SOCKET_ERROR )
 		{
 			bDone = true;
@@ -416,20 +458,20 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)
 		if (events.lNetworkEvents & FD_READ)
 		{
             memset( szBuffer, 0, 4096 );
-			nRet = recv( hSocket, szBuffer, sizeof(szBuffer), 0);
+			nRet = recv( m_hSocket, szBuffer, sizeof(szBuffer), 0);
 			if ( nRet == SOCKET_ERROR )
 			{
 				if( WSAGetLastError() != WSAEWOULDBLOCK )
 				{
 					// Error or the socket was closed.
-					hSocket = INVALID_SOCKET;
+					m_hSocket = INVALID_SOCKET;
 					bDone = true;
 					break;
 				}
 			}
 			else if ( nRet == 0 )
 			{
-				hSocket = INVALID_SOCKET;
+				m_hSocket = INVALID_SOCKET;
 				bDone = true;
 				break;
 			}
@@ -437,7 +479,7 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)
 
 			// Add the data to the input buffer
 			int nNumSleeps = 0;
-			while ( ( pTelnet->inBuffer.size() > 32678 ) && ( nNumSleeps++ <= 10 ) && !bDone )
+			while ( ( pTelnet->m_inputQueue.size() > 32678 ) && ( nNumSleeps++ <= 10 ) && !bDone )
 			{
 				::Sleep( 100 );
 			}
@@ -448,17 +490,18 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)
 		else if ( events.lNetworkEvents & FD_CLOSE )
 		{
 			bDone = true;
-			hSocket = INVALID_SOCKET;
+			m_hSocket = INVALID_SOCKET;
 			break;
 		}
 	}
 
-	if ( hSocket == INVALID_SOCKET )
+	if ( m_hSocket == INVALID_SOCKET )
 	{
-		closesocket( GetSession()->hSocket );
-		closesocket( GetSession()->hDuplicateSocket );
-		GetSession()->hSocket = INVALID_SOCKET;
-		GetSession()->hDuplicateSocket = INVALID_SOCKET;
+		closesocket( m_hSocket );
+		closesocket( pTelnet->m_hDuplicateSocket );
+		m_hSocket = INVALID_SOCKET;
+        pTelnet->m_hSocket = INVALID_SOCKET;
+		pTelnet->m_hDuplicateSocket = INVALID_SOCKET;
 	}
 
 	WSACloseEvent( hEvent );
@@ -530,7 +573,7 @@ void WIOTelnet::HandleTelnetIAC( unsigned char nCmd, unsigned char nParam )
 void WIOTelnet::AddStringToInputBuffer( int nStart, int nEnd, char *pszBuffer )
 {
     WWIV_ASSERT( pszBuffer );
-    WaitForSingleObject( hInBufferMutex, INFINITE );
+    WaitForSingleObject( m_hInBufferMutex, INFINITE );
 
     char szBuffer[4096];
     strncpy( szBuffer, pszBuffer, sizeof(szBuffer) );
@@ -568,13 +611,13 @@ void WIOTelnet::AddStringToInputBuffer( int nStart, int nEnd, char *pszBuffer )
             ::OutputDebugString( "szBuffer had a null\r\n" );
         }
     }
-    ReleaseMutex( hInBufferMutex );
+    ReleaseMutex( m_hInBufferMutex );
 }
 
 
 void WIOTelnet::AddCharToInputBuffer( char ch )
 {
-    inBuffer.push( ch );
+    m_inputQueue.push( ch );
 }
 
 

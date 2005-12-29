@@ -23,7 +23,7 @@
 //
 // Local functions
 //
-unsigned long GetSockOrCommHandle();
+unsigned int GetSockOrCommHandle();
 int GetDoor32Emulation();
 int GetDoor32CommType();
 int GetDoor32TimeLeft(double seconds);
@@ -325,10 +325,10 @@ void CreateDoor32SysDropFile()
     if (file.IsOpen())
     {
 		file.WriteFormatted( "%d\n",		    GetDoor32CommType() );
-		file.WriteFormatted( "%lu\n",        GetSockOrCommHandle() );
+		file.WriteFormatted( "%u\n",            GetSockOrCommHandle() );
 		file.WriteFormatted( "%s\n",		    cspeed.c_str() );
-		file.WriteFormatted( "WWIV %s\n",    wwiv_version );
-		file.WriteFormatted( "999999\n");    // we don't want to share this
+		file.WriteFormatted( "WWIV %s\n",       wwiv_version );
+		file.WriteFormatted( "999999\n");       // we don't want to share this
 		file.WriteFormatted( "%s\n",	        GetSession()->GetCurrentUser()->GetRealName() );
 		file.WriteFormatted( "%s\n",		    GetSession()->GetCurrentUser()->GetName() );
 		file.WriteFormatted( "%d\n",		    GetSession()->GetCurrentUser()->GetSl() );
@@ -534,14 +534,14 @@ char *create_chain_file()
 }
 
 
-unsigned long GetSockOrCommHandle()
+unsigned int GetSockOrCommHandle()
 {
 #ifdef _WIN32
-	if (GetSession()->hSocket == NULL)
+    if (GetSession()->remoteIO()->GetHandle() == NULL)
 	{
-		return reinterpret_cast<unsigned long>( GetSession()->hCommHandle );
+		return GetSession()->remoteIO()->GetHandle();
 	}
-	return static_cast<unsigned long>( GetSession()->hDuplicateSocket );
+	return GetSession()->remoteIO()->GetDoorHandle();
 #else
 	return 0L;
 #endif
@@ -555,7 +555,7 @@ int GetDoor32CommType()
 		return 0;
 	}
 #ifdef _WIN32
-	return (GetSession()->hSocket == NULL) ? 1 : 2;
+	return (GetSession()->remoteIO()->GetHandle() == NULL) ? 1 : 2;
 #else
 	return 0;
 #endif

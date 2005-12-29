@@ -98,18 +98,18 @@ struct MenuHeader
 
   INT16  nVersion;
   INT16  nEmpty;
-  INT8   nFlags;
+  BYTE   nFlags;
 
-  INT8   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
-  INT8   nLogging;     /* Types of logging, Key, None, command, desc       */
+  BYTE   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
+  BYTE   nLogging;     /* Types of logging, Key, None, command, desc       */
 
-  INT8   nForceHelp;   /* force, dont force, on entrance only              */
-  INT8   nAllowedMenu; /* Can pulldown, regular or both menus be used?     */
+  BYTE   nForceHelp;   /* force, dont force, on entrance only              */
+  BYTE   nAllowedMenu; /* Can pulldown, regular or both menus be used?     */
 
-  UINT8  nTitleColor, nMainBorderColor, nMainBoxColor, nMainTextColor,
+  BYTE  nTitleColor, nMainBorderColor, nMainBoxColor, nMainTextColor,
          nMainTextHLColor, nMainSelectedColor, nMainSelectedHLColor;
 
-  UINT8  nItemBorderColor, nItemBoxColor, nItemTextColor, nItemTextHLColor,
+  BYTE  nItemBorderColor, nItemBoxColor, nItemTextColor, nItemTextHLColor,
          nItemSelectedColor, nItemSelectedHLColor;
 
   char   szMenuTitle[21];
@@ -118,7 +118,7 @@ struct MenuHeader
   INT16  nMinSL, nMinDSL;    /* required for entry of menu */
   UINT16 uAR, uDAR;          /* required for entry of menu */
   UINT16 uRestrict;          /* not allowed restrictions   */
-  INT8   nSysop, nCoSysop;   /* Must be either sysop or co */
+  BYTE   nSysop, nCoSysop;   /* Must be either sysop or co */
   char   MISC3[30];
   char   szScript[101];      /* Gets executed on entry     */
   char   szExitScript[101];  /* Executed on rtn from menu  */
@@ -128,7 +128,7 @@ struct MenuHeader
 
 struct MenuRec
 {
-  INT8 nFlags;   /* AFLAG_????? */
+  BYTE nFlags;   /* AFLAG_????? */
 
   char szKey[MENU_MAX_KEYS+1];  /* Keystrock to execute menu item   */
   char szExecute[101];          /* Command to execute               */
@@ -145,7 +145,7 @@ struct MenuRec
   INT16 nMinDSL, iMaxDSL;
   UINT16 uAR, uDAR;        /* Must match all specified to be able to run     */
   UINT16 uRestrict;        /* If any of these restrictions, you cant execute */
-  INT8 nSysop, nCoSysop;   /* true and false, does it take a co/sysop to run */
+  BYTE nSysop, nCoSysop;   /* true and false, does it take a co/sysop to run */
   char szPassWord[21];
 
   INT16 nHide;             /* Hide text from PD/Regular/both or no menus */
@@ -162,7 +162,7 @@ struct MenuRecIndex
 {
   char szKey[MENU_MAX_KEYS+1];
   INT16 nRec;				/* allows alot of records    */
-  INT8	nFlags;             /* Quick access to the flags */
+  BYTE	nFlags;             /* Quick access to the flags */
 };
 
 

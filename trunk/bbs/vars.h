@@ -118,7 +118,7 @@ __EXTRN__ bool  in_chatroom,
 				invis,
 				avail;
 
-__EXTRN__ UINT16
+__EXTRN__ unsigned short
 #if !defined ( NETWORK )
 				*csn_index,
 				net_sysnum,
@@ -139,7 +139,7 @@ __EXTRN__ int	g_num_listed,
 __EXTRN__ time_t nscandate;
 
 
-__EXTRN__ ULONG32
+__EXTRN__ int
 				g_flags,
 				com_speed;
 
