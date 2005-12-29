@@ -10,4 +10,7 @@ that doesn't require a usernumber.
 Finish wrappering WSession
 add IncrementXXXXX methods to WUser where it makes sense.
 move socket code out of bbs.cpp and into WIOTelnet
-move console title code into WLocalIO
+Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
+make write_automessage use WTextFile instead of WFile
+investigage makeing WTextFile always trim whitespace
+Improve StringTrim(string)'s whitespace code and just have 1 copy of the whitespace string.

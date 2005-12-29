@@ -25,6 +25,7 @@ char cid_name[50];
 #define modem_time 3.5
 
 bool InitializeComPort( int nComPortNumber );
+void get_modem_line(std::string& line, double d, bool allowa);
 
 
 void rputs(const char *pszText )
@@ -43,14 +44,13 @@ void rputs(const char *pszText )
 
 /**
  * Reads a string from the modem
- * @param pszLine String that was read from the modem
+ * @param line String that was read from the modem
  * @param d How long to wait for the string
  * @param allowa allow aborting from the keyboard
  */
-void get_modem_line(char *pszLine, double d, bool allowa)
+void get_modem_line( std::string& line, double d, bool allowa )
 {
 #ifndef _UNIX
-	int i = 0;
 	char ch = 0, ch1;
 	double t;
 
@@ -71,7 +71,8 @@ void get_modem_line(char *pszLine, double d, bool allowa)
 			if (wwiv::UpperCase<char>(ch1) == 'H')
 			{
 				ch = RETURN;
-				i = pszLine[0] = 1;
+                CLEAR_STRING( line );
+                line.push_back( static_cast<char>( 1 ) );
 
 			}
 		}
@@ -81,12 +82,11 @@ void get_modem_line(char *pszLine, double d, bool allowa)
 		}
 		if ( ch >= SPACE )
 		{
-			pszLine[i++] = wwiv::UpperCase<char>(ch);
+            line.push_back( wwiv::UpperCase<char>(ch) );
 		}
-	} while ( ( ch != RETURN ) && (fabs(timer() - t) < d) && (i <= 40));
-	pszLine[i] = '\0';
+	} while ( ( ch != RETURN ) && (fabs(timer() - t) < d) && (line.length() <= 40));
 #else
-	strcpy( pszLine, "OK" );
+	line = "OK";
 #endif
 }
 
@@ -140,27 +140,29 @@ void do_result(result_info * ri)
 /**
  * Processes a result string from the model, and sets the result
  */
-void process_full_result(char *pszResultCode)
+void process_full_result( const std::string& resultCode )
 {
 	// first, check for caller-id info
 	for (int i = 0; i < modem_i->num_resl; i++)
 	{
 		int i1 = strlen(modem_i->resl[i].result);
-		if (strncmp(modem_i->resl[i].result, pszResultCode, i1) == 0)
+        if (strncmp(modem_i->resl[i].result, resultCode.c_str(), i1) == 0)
 		{
 			switch (modem_i->resl[i].main_mode)
 			{
 			case mode_cid_num:
-				strcpy(cid_num, pszResultCode + i1);
+                strcpy(cid_num, resultCode.substr( i1 ).c_str() );
 				return;
 			case mode_cid_name:
-				strcpy(cid_name, pszResultCode + i1);
+                strcpy(cid_name, resultCode.substr( i1 ).c_str() );
 				return;
 			}
 		}
 	}
 
-	char* ss = strtok(pszResultCode, modem_i->sepr);
+    char szResultCode[ 255 ];
+    strcpy( szResultCode, resultCode.c_str() );
+	char* ss = strtok(szResultCode, modem_i->sepr);
 
 	while (ss)
 	{
@@ -184,7 +186,7 @@ void process_full_result(char *pszResultCode)
  */
 int mode_switch(double d, bool allowa)
 {
-	char s[81];
+    std::string line;
 	bool abort = false;
 
 	double t = timer();
@@ -195,15 +197,15 @@ int mode_switch(double d, bool allowa)
 
 	while ( modem_mode == 0 && fabs( timer() - t ) < d && !abort )
 	{
-		get_modem_line( s, d + t - timer(), allowa );
-        std::cout << "DEBUG: get_modem_line(" << s << ")" << std::endl;
-		if ( s[0] == '\x01' )
+		get_modem_line( line, d + t - timer(), allowa );
+        std::cout << "DEBUG: get_modem_line(" << line << ")" << std::endl;
+		if ( line.at(0) == '\x01' )
 		{
 			abort = true;
 		}
-		else if ( s[0] )
+        else if ( line.length() > 0 )
 		{
-			process_full_result( s );
+			process_full_result( line );
 		}
 #ifdef _UNIX
 		modem_mode = mode_dis;

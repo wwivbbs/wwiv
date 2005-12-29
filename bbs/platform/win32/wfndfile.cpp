@@ -20,7 +20,7 @@
 #include "wwiv.h"
 
 
-bool WFindFile::open(const char * pszFileSpec, UINT32 nTypeMask)
+bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 {
 	__open(pszFileSpec, nTypeMask);
 

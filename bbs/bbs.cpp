@@ -20,7 +20,7 @@
 
 #define _DEFINE_GLOBALS_ 
 #include "wwiv.h"
-
+#include "InternalTelnetServer.h"
 
 #undef _DEFINE_GLOBALS_
 
@@ -628,7 +628,7 @@ int WApplication::doWFCEvents()
             }
             else
             {
-                if ( mode_switch( 1.0, 0 ) == mode_ring )
+                if ( mode_switch( 1.0, false ) == mode_ring )
                 {
                     if ( GetSession()->wfc_status == 1 )
                     {
@@ -839,141 +839,10 @@ void WApplication::GotCaller( unsigned int ms, unsigned long cs )
 }
 
 
-#if defined (_WIN32)
-
-SOCKET hSocketHandle;
-
-
-void CreateListener()
-{
-    int nRet = SOCKET_ERROR;
-    SOCKET hSock;
-    SOCKADDR_IN pstSockName;
-
-    if ( GetSession()->hSocket != INVALID_SOCKET )
-    {
-        // close all allocated resources
-        shutdown( GetSession()->hSocket, 2 );
-        closesocket( GetSession()->hSocket );
-        GetSession()->hSocket = INVALID_SOCKET;
-    }
-    // Start Listening Thread Socket
-    hSock = socket( AF_INET, SOCK_STREAM, 0 );
-    if ( hSock == INVALID_SOCKET )
-    {
-        std::cout << "Error Creating Listener socket..\r\n";
-    }
-    else
-    {
-        pstSockName.sin_addr.s_addr = ADDR_ANY;
-        pstSockName.sin_family = PF_INET;
-        pstSockName.sin_port = htons( 23 );
-        nRet = bind( hSock, reinterpret_cast<LPSOCKADDR>( &pstSockName ), sizeof( SOCKADDR_IN ) );
-        if ( nRet == SOCKET_ERROR )
-        {
-			int nBindErrCode = WSAGetLastError();
-            std::cout << "error " << nBindErrCode << " binding socket\r\n";
-			switch ( nBindErrCode )
-			{
-			case WSANOTINITIALISED:
-                std::cout << "WSANOTINITIALISED";
-				break;
-			case WSAENETDOWN:
-				std::cout << "WSAENETDOWN";
-				break;
-			case WSAEACCES:
-				std::cout << "WSAEACCES";
-				break;
-			case WSAEADDRINUSE:
-				std::cout << "WSAEADDRINUSE";
-				break;
-			case WSAEADDRNOTAVAIL:
-				std::cout << "WSAEADDRNOTAVAIL";
-				break;
-			case WSAEFAULT:
-				std::cout << "WSAEFAULT";
-				break;
-			case WSAEINPROGRESS:
-				std::cout << "WSAEINPROGRESS";
-				break;
-			case WSAEINVAL:
-				std::cout << "WSAEINVAL";
-				break;
-			case WSAENOBUFS:
-				std::cout << "WSAENOBUFS";
-				break;
-			case WSAENOTSOCK:
-				std::cout << "WSAENOTSOCK";
-				break;
-			default:
-				std::cout << "*unknown error*";
-				break;
-			}
-        }
-        else
-        {
-            nRet = listen( hSock, 5 );
-            if ( nRet == SOCKET_ERROR )
-            {
-                std::cout << "Error listening on socket\r\n";
-            }
-        }
-    }
-
-    if ( nRet == SOCKET_ERROR )
-    {
-        closesocket( hSock );
-        hSock = INVALID_SOCKET;
-        std::cout << "Unable to initilize Listening Socket!\r\n";
-        WSACleanup();
-        exit( 1 );
-    }
-    hSocketHandle = hSock;
-}
-
-
-void WApplication::TelnetMainLoop()
-{
-    SOCKET hSock;
-    SOCKADDR_IN lpstName;
-    int AddrLen = sizeof( SOCKADDR_IN );
-
-    if( hSocketHandle != INVALID_SOCKET )
-    {
-        std::cout << "Press control-c to exit\r\n\n";
-        std::cout << "Waiting for socket connection...\r\n\n";
-        hSock = accept( hSocketHandle, reinterpret_cast<LPSOCKADDR>( &lpstName ), &AddrLen );
-        if( hSock != INVALID_SOCKET )
-        {
-            char buffer[20];
-            snprintf( buffer, sizeof( buffer ), "-H%u", hSock );
-            char **szParameters;
-            szParameters = new char *[3];
-            szParameters[0] = new char [1];
-            szParameters[1] = new char [20];
-            szParameters[2] = new char [20];
-
-            strcpy( szParameters[0], "" );
-            strcpy( szParameters[1], buffer );
-            strcpy( szParameters[2], "-XT" );
-
-            BBSmain( 3, szParameters );
-            delete [] szParameters[0];
-            delete [] szParameters[1];
-            delete [] szParameters[2];
-            delete [] szParameters;
-        }
-    }
-}
-
-
-#endif // _WIN32
-
-
-int WApplication::Run(int argc, char *argv[])
+int WApplication::BBSMainLoop(int argc, char *argv[])
 {
 //
-// Only do the telnet listener on WIN32 platforms
+// TODO - move this to WIOTelnet
 //
 #if defined ( _WIN32 )
 
@@ -1013,8 +882,8 @@ int WApplication::Run(int argc, char *argv[])
         if ( wwiv::stringUtils::IsEqualsIgnoreCase( argv[1], "-TELSRV" ) ||
              wwiv::stringUtils::IsEqualsIgnoreCase( argv[1], "/TELSRV" ) )
         {
-            CreateListener();
-            TelnetMainLoop();
+            WInternalTelnetServer server( this );
+            server.RunTelnetServer();
             ExitBBSImpl( 0 );
             return 0;
         }
@@ -1022,13 +891,13 @@ int WApplication::Run(int argc, char *argv[])
 #endif // _WIN32
 
     // We are not running in the telnet server, so proceed as planned.
-    int nReturnCode = BBSmain(argc, argv);
+    int nReturnCode = Run(argc, argv);
     ExitBBSImpl( nReturnCode );
     return nReturnCode;
 }
 
 
-int WApplication::BBSmain(int argc, char *argv[])
+int WApplication::Run(int argc, char *argv[])
 {
     int num_min                 = 0;
     unsigned int ui             = 0;
@@ -1068,24 +937,23 @@ int WApplication::BBSmain(int argc, char *argv[])
     ooneuser = true;
 #endif
 
-    char szFullResultCode[ 81 ];
-    szFullResultCode[0] = '\0';
-
-    char szSystemPassword[ 81 ];
-    szSystemPassword[0] = '\0';
+    std::string fullResultCode;
+    std::string systemPassword;
 
     for ( int i = 1; i < argc; i++ )
     {
         char s[ 256 ];
         strcpy( s, argv[i] );
-        if ( s[0] == '-' || s[0] == '/' )
+        std::string argumentRaw = argv[i];
+        if ( argumentRaw.length() > 1 && ( argumentRaw[0] == '-' || argumentRaw[0] == '/' ) )
         {
+            std::string argument = argumentRaw.substr( 2 );
 			char ch = wwiv::UpperCase<char>( s[1] );
             switch ( ch )
             {
             case 'B':
                 {
-                    ui = static_cast<unsigned int>( atol(&(s[2]) ));
+                    ui = static_cast<unsigned int>( atol( argument.c_str() ) );
                     char szCurrentSpeed[ 21 ];
                     snprintf( szCurrentSpeed, sizeof( szCurrentSpeed ), "%u",  ui );
                     GetSession()->SetCurrentSpeed( szCurrentSpeed );
@@ -1099,46 +967,48 @@ int WApplication::BBSmain(int argc, char *argv[])
             case 'C':
                 break;
             case 'D':
-                GetSession()->SetGlobalDebugLevel( atoi( &( s[2] ) ) );
+                GetSession()->SetGlobalDebugLevel( atoi( argument.c_str() ) );
                 break;
             case 'E':
                 event_only = true;
                 break;
             case 'F':
-                strcpy( szFullResultCode, s + 2 );
-                WWIV_STRUPR( szFullResultCode );
+                fullResultCode = argument;
+                StringUpperCase( fullResultCode );
                 m_bUserAlreadyOn = true;
                 break;
             case 'S':
-                us = static_cast<unsigned int>( atol( &( s[2] ) ) );
+                us = static_cast<unsigned int>( atol( argument.c_str() ) );
                 if ( ( us % 300 ) && us != 115200 )
                 {
                     us = ui;
                 }
                 break;
             case 'Q':
-                m_nOkLevel = atoi(&(s[2]));
+                m_nOkLevel = atoi( argument.c_str() );
                 break;
             case 'A':
-                m_nErrorLevel = atoi(&(s[2]));
+                m_nErrorLevel = atoi( argument.c_str() );
                 break;
             case 'O':
                 ooneuser = true;
                 break;
             case 'H':
-                hSockOrComm = atoi( &s[2] );
+                hSockOrComm = atoi( argument.c_str() );
                 break;
             case 'P':
-                strcpy( szSystemPassword, s + 2 );
-                WWIV_STRUPR( szSystemPassword );
+                systemPassword = argument;
+                StringUpperCase( systemPassword );
                 break;
             case 'I':
             case 'N':
-                m_nInstance = atoi( &( s[2] ) );
-                if ( m_nInstance <= 0 || m_nInstance > 999 )
                 {
-                    std::cout << "Your Instance can only be 1..999, you tried instance #" << m_nInstance << std::endl;
-                    exit( m_nErrorLevel );
+                    m_nInstance = atoi( argument.c_str() );
+                    if ( m_nInstance <= 0 || m_nInstance > 999 )
+                    {
+                        std::cout << "Your Instance can only be 1..999, you tried instance #" << m_nInstance << std::endl;
+                        exit( m_nErrorLevel );
+                    }
                 }
                 break;
             case 'M':
@@ -1147,10 +1017,10 @@ int WApplication::BBSmain(int argc, char *argv[])
 #endif
                 break;
             case 'R':
-                num_min = atoi(&(s[2]));
+                num_min = atoi( argument.c_str() );
                 break;
             case 'U':
-                this_usernum = wwiv::stringUtils::StringToUnsignedShort(&(s[2]));
+                this_usernum = wwiv::stringUtils::StringToUnsignedShort( argument.c_str() );
                 if ( !m_bUserAlreadyOn )
                 {
                     GetSession()->SetCurrentSpeed( "KB" );
@@ -1164,35 +1034,30 @@ int WApplication::BBSmain(int argc, char *argv[])
 				exit( m_nOkLevel );
 */
             case 'X':
-                if ( wwiv::UpperCase<char>( s[2] ) == 'T' || wwiv::UpperCase<char>( s[2] ) == 'C' )
                 {
-                    // This more of a hack to make sure the Telnet
-                    // Server's -Bxxx parameter doesn't hose us.
-                    GetSession()->SetCurrentSpeed( "115200" );
-                    GetSession()->SetUserOnline( false );
-                    us                  = 115200U;
-                    ui                  = us;
-                    m_bUserAlreadyOn    = true;
-                    ooneuser            = true;
-                    GetSession()->using_modem   = 0;
-                    hangup              = false;
-                    incom               = true;
-                    outcom              = false;
-                    global_xx           = false;
-                }
-                if ( wwiv::UpperCase<char>( s[2] ) == 'C' )
-                {
-                    bTelnetInstance = false;
-                }
-                else if ( wwiv::UpperCase<char>(s[2] ) == 'T' )
-                {
-                    bTelnetInstance = true;
-                }
-                else
-                {
-                    strcpy( s, argv[i] );
-                    std::cout << "Invalid Command line argument given '" << s << "'\r\n\n";
-                    exit( m_nErrorLevel );
+                    char argument2Char = wwiv::UpperCase<char>( argument.at(0) );
+                    if ( argument2Char == 'T' || argument2Char == 'C' )
+                    {
+                        // This more of a hack to make sure the Telnet
+                        // Server's -Bxxx parameter doesn't hose us.
+                        GetSession()->SetCurrentSpeed( "115200" );
+                        GetSession()->SetUserOnline( false );
+                        us                  = 115200U;
+                        ui                  = us;
+                        m_bUserAlreadyOn    = true;
+                        ooneuser            = true;
+                        GetSession()->using_modem   = 0;
+                        hangup              = false;
+                        incom               = true;
+                        outcom              = false;
+                        global_xx           = false;
+                        bTelnetInstance = ( argument2Char == 'T' ) ? true : false;
+                    }
+                    else
+                    {
+                        std::cout << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
+                        exit( m_nErrorLevel );
+                    }
                 }
                 break;
             case 'Z':
@@ -1233,27 +1098,24 @@ int WApplication::BBSmain(int argc, char *argv[])
                 break;
 			case '-':
 				{
-					if ( s[0] == '-' )
+                    if ( argumentRaw == "--help" )
 					{
-                        if ( wwiv::stringUtils::IsEqualsIgnoreCase( &s[2], "help" ) )
-						{
-							ShowUsage();
-							exit( 0 );
-							break;
-						}
+						ShowUsage();
+						exit( 0 );
 					}
-				}
+				} break;
             default:
-                strcpy( s, argv[i] );
-                std::cout << "Invalid Command line argument given '" << s << "'\r\n\n";
-                exit( m_nErrorLevel );
+                {
+                    std::cout << "Invalid Command line argument given '" << argument << "'\r\n\n";
+                    exit( m_nErrorLevel );
+                }
                 break;
             }
         }
         else
         {
             // Command line argument did not start with a '-' or a '/'
-            std::cout << "Invalid Command line argument given '" << argv[ i ] << "'\r\n\n";
+            std::cout << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
             exit( m_nErrorLevel );
         }
     }
@@ -1270,33 +1132,13 @@ int WApplication::BBSmain(int argc, char *argv[])
     m_bUserAlreadyOn = true;
 #endif
 
-#if defined ( _WIN32 )
-
-    if ( bTelnetInstance )
-    {
-        // If this is a telnet Node...
-		GetSession()->hCommHandle   = static_cast<HANDLE>( NULL );
-        GetSession()->hSocket		= static_cast<SOCKET>( hSockOrComm );
-		if ( !DuplicateHandle(  GetCurrentProcess(), reinterpret_cast<HANDLE>( GetSession()->hSocket ),
-			                    GetCurrentProcess(), reinterpret_cast<HANDLE*>( &GetSession()->hDuplicateSocket ),
-			                    0, TRUE, DUPLICATE_SAME_ACCESS ) )
-        {
-			std::cout << "Error creating duplicate socket: " << GetLastError() << "\r\n\n";
-		}
-    }
-    else
-    {
-		GetSession()->hSocket		= (SOCKET)( NULL );
-        GetSession()->hCommHandle   = (HANDLE)( hSockOrComm );
-    }
-
-#endif
     GetSession()->StartupComm( bTelnetInstance );
+    GetSession()->remoteIO()->SetHandle( hSockOrComm );
     this->InitializeBBS();
 
-    if ( szSystemPassword[0] )
+    if ( systemPassword.length() > 0 )
     {
-        strcpy( syscfg.systempw, szSystemPassword );
+        strcpy( syscfg.systempw, systemPassword.c_str() );
     }
 
     if ( syscfg.sysconfig & sysconfig_no_local )
@@ -1304,19 +1146,15 @@ int WApplication::BBSmain(int argc, char *argv[])
         this_usernum = 0;
         m_bUserAlreadyOn = false;
     }
-    if ( szFullResultCode[0] )
+    if ( fullResultCode.length() > 0  )
     {
-        process_full_result( szFullResultCode );
+        process_full_result( fullResultCode );
     }
 
-#if defined (_WIN32)
-    // Set console title
-    std::stringstream consoleTitleStream;
-    consoleTitleStream << "WWIV Node " << GetInstanceNumber() << " (" << syscfg.systemname << ")";
-    SetConsoleTitle( consoleTitleStream.str().c_str() );
+    GetSession()->localIO()->UpdateNativeTitleBar();
 
     // If we are telnet...
-    if ( GetSession()->hSocket )
+    if ( bTelnetInstance )
     {
 	    // If the com port is set to 0 here, then ok_modem_stuff is cleared
 	    // in the call to init.  Well.. If we are running native sockets, we
@@ -1324,25 +1162,7 @@ int WApplication::BBSmain(int argc, char *argv[])
 	    // ... the better solution would just be to tell init to "get bent"
 	    ok_modem_stuff = true;
         sess->remoteIO()->open();
-
-        SOCKADDR_IN addr;
-        int nAddrSize = sizeof( SOCKADDR);
-
-        getpeername( GetSession()->hSocket, reinterpret_cast<SOCKADDR *>( &addr ), &nAddrSize );
-
-        char * pszIPAddress = inet_ntoa( addr.sin_addr );
-        strcpy( cid_num, pszIPAddress );
-        strcpy( cid_name, "Internet TELNET Session" );
-
-        char szTempTelnet[ 21 ];
-        snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_ECHO );
-        sess->remoteIO()->write( szTempTelnet, 3, true );
-        snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_WILL, WIOTelnet::TELNET_OPTION_ECHO );
-        sess->remoteIO()->write( szTempTelnet, 3, true );
-        snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_LINEMODE );
-        sess->remoteIO()->write( szTempTelnet, 3, true );
     }
-#endif
 
     if ( num_min > 0 )
     {
@@ -1557,7 +1377,7 @@ WApplication::WApplication()
 {
     sess			        = new WSession( this );
     statusMgr			    = new StatusMgr();
-    userManager			    = new WUserManager( syscfg.datadir, syscfg.userreclen, syscfg.maxusers );
+    userManager			    = new WUserManager();
     m_nOkLevel			    = WApplication::exitLevelOK;
     m_nErrorLevel		    = WApplication::exitLevelNotOK;
     m_nInstance			    = 1;
@@ -1700,7 +1520,7 @@ void WApplication::ShutDownBBS( int nShutDownStatus )
         break;
 	default:
         std::cout << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus << std::endl;
-		WWIV_ASSERT( true );
+		WWIV_ASSERT( false );
     }
     RestoreCurrentLine( cl, atr, xl, &cc );
 }
@@ -1771,7 +1591,7 @@ WApplication::~WApplication()
 int main( int argc, char *argv[] )
 {
     app = new WApplication();
-    int nRetCode = GetApplication()->Run( argc, argv );
+    int nRetCode = GetApplication()->BBSMainLoop( argc, argv );
     return nRetCode;
 }
 

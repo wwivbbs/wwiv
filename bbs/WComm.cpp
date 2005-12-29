@@ -20,8 +20,6 @@
 #include "wwiv.h"
 #include "WComm.h"
 
-
-
 char WComm::m_szErrorText[8192];
 
 bool WComm::startup()
@@ -36,7 +34,7 @@ bool WComm::shutdown()
 }
 
 
-int WComm::GetComPort()
+int WComm::GetComPort() const
 {
     return m_ComPort;
 }

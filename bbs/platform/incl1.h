@@ -40,15 +40,6 @@
 
 #endif // defined (_MSC_VER)
 
-#define	 WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-
-extern "C"
-{
-    #include <winsock2.h>
-}
-
 #include <direct.h>
 
 #ifndef __BORLANDC__

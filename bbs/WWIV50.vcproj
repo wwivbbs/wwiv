@@ -308,10 +308,6 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
-			<File
-				RelativePath=".\WTextFile.cpp"
-				>
-			</File>
 			<Filter
 				Name="platform Source"
 				>
@@ -348,6 +344,10 @@
 					</File>
 					<File
 						RelativePath=".\platform\WIN32\filesupp.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\platform\win32\InternalTelnetServer.cpp"
 						>
 					</File>
 					<File
@@ -1083,6 +1083,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\WTextFile.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\WUser.cpp"
 					>
 				</File>
@@ -1308,6 +1312,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Runnable.h"
+					>
+				</File>
+				<File
 					RelativePath=".\subxtr.h"
 					>
 				</File>
@@ -1371,15 +1379,15 @@
 					Name="Win32 platform Headers"
 					>
 					<File
+						RelativePath=".\platform\win32\InternalTelnetServer.h"
+						>
+					</File>
+					<File
 						RelativePath=".\platform\WIN32\Wios.h"
 						>
 					</File>
 					<File
 						RelativePath=".\platform\WIN32\Wiot.h"
-						>
-					</File>
-					<File
-						RelativePath=".\platform\WIN32\wshare.h"
 						>
 					</File>
 				</Filter>
@@ -1392,10 +1400,6 @@
 					</File>
 					<File
 						RelativePath=".\platform\incl2.h"
-						>
-					</File>
-					<File
-						RelativePath=".\platform\incl3.h"
 						>
 					</File>
 					<File
@@ -1432,10 +1436,6 @@
 					</File>
 					<File
 						RelativePath=".\platform\linux\Wiou.h"
-						>
-					</File>
-					<File
-						RelativePath=".\platform\linux\wshare.h"
 						>
 					</File>
 				</Filter>

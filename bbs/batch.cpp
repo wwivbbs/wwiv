@@ -706,7 +706,7 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
 {
     char sx1[21], sx2[21], sx3[21];
 
-	int nSpeed = std::min<ULONG32>( com_speed, 57600 );
+	int nSpeed = std::min<int>( com_speed, 57600 );
 
     if ( com_speed == 1 )
     {
@@ -717,7 +717,7 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
 		sprintf( sx1, "%d", nSpeed );
 	}
 
-	nSpeed = std::min< UINT16 >( modem_speed, 57600 );
+	nSpeed = std::min< int >( modem_speed, 57600 );
 	sprintf( sx3, "%d", nSpeed );
 	sprintf( sx2, "%d", syscfgovr.primaryport );
 

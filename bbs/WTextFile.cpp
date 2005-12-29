@@ -21,8 +21,6 @@
 #include <string>
 #include <cstring>
 
-FILE *fsh_open(const char *path, char *mode);
-
 
 WTextFile::WTextFile( const std::string fileName, const std::string fileMode )
 {
