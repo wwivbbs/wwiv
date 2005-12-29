@@ -20,9 +20,48 @@
 #ifndef __INCLUDED_PLATFORM_WLOCALIO_H__
 #define __INCLUDED_PLATFORM_WLOCALIO_H__
 
+#ifdef _WIN32
+#define NOGDICAPMASKS
+#define NOSYSMETRICS
+#define NOMENUS
+#define NOICONS
+#define NOKEYSTATES
+#define NOSYSCOMMANDS
+#define NORASTEROPS
+#define NOATOM
+#define NOCLIPBOARD
+#define NODRAWTEXT
+#define NOKERNEL
+#define NONLS
+#define NOMEMMGR
+#define NOMETAFILE
+#define NOMINMAX
+#define NOOPENFILE
+#define NOSCROLL
+#define NOSERVICE
+#define NOSOUND
+#define NOTEXTMETRIC
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOHELP
+#define NOPROFILER
+#define NODEFERWINDOWPOS
+#define NOMCX
+#define NOCRYPT
+
+// Define these for MFC projects
+#define NOTAPE
+#define NOIMAGE
+#define NOPROXYSTUB
+#define NORPC
+#define NOIME
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef CopyFile
+#undef GetFullPathName
 
+#endif _WIN32
 //
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
@@ -113,8 +152,6 @@ public:
     const int GetScreenBottom() const { return m_nScreenBottom; }
     void SetScreenBottom( int nScreenBottom ) { m_nScreenBottom = nScreenBottom; }
 
-
-
     void SetSysopAlert( bool b ) { m_bSysopAlert = b; }
     const bool GetSysopAlert() const { return m_bSysopAlert; }
     void ToggleSysopAlert() { m_bSysopAlert = !m_bSysopAlert; }
@@ -160,6 +197,7 @@ public:
 	int  GetDefaultScreenBottom();
 
     void LocalEditLine(char *s, int len, int status, int *returncode, char *ss);
+    void UpdateNativeTitleBar();
 
 };
 

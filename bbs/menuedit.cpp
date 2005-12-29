@@ -84,7 +84,7 @@ void EditMenus()
 			MenuSysopLog(szFile);
 			return;
 		}
-		nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec));
+		nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec));
 		--nAmount;
 		if (nAmount < 0)
 		{
@@ -114,7 +114,7 @@ void EditMenus()
 				break;
 			case '[':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				--nCur;
 				if (nCur < 0)
 				{
@@ -124,7 +124,7 @@ void EditMenus()
 				break;
 			case ']':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				++nCur;
 				if (nCur > nAmount)
 				{
@@ -136,7 +136,7 @@ void EditMenus()
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				memset(&Menu, 0, sizeof(MenuRec));
 
-				nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 
 				nCur = nAmount + 1;
 				memset(&Menu, 0, sizeof(MenuRec));
@@ -144,7 +144,7 @@ void EditMenus()
 				Menu.iMaxDSL = 255;
 
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				ReadMenuRec(fileEditMenu, &Menu, nCur);
 				break;
 			case '0':
@@ -301,7 +301,7 @@ void EditMenus()
 
 			case '[':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				--nCur;
 				if (nCur < 0)
 				{
@@ -311,7 +311,7 @@ void EditMenus()
 				break;
 			case ']':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				++nCur;
 				if (nCur > nAmount)
 				{
@@ -322,13 +322,13 @@ void EditMenus()
 			case 'Z':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				memset(&Menu, 0, sizeof(MenuRec));
-				nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				nCur = nAmount + 1;
 				memset(&Menu, 0, sizeof(MenuRec));
 				Menu.iMaxSL = 255;
 				Menu.iMaxDSL = 255;
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				ReadMenuRec(fileEditMenu, &Menu, nCur);
 				break;
 			case '1':
@@ -534,7 +534,7 @@ void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *
 		pausescr();
 		return;
 	}
-	int nAmount = (INT16) (fileEditMenu.GetLength() / sizeof(MenuRec));
+	int nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec));
 
 	for (nRec = 1; nRec < nAmount; nRec++)
 	{

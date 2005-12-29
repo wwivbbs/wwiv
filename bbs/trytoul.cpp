@@ -483,7 +483,7 @@ int try_to_ul_wh(char *pszFileName)
 	fileDownload.Read( &u1, sizeof( uploadsrec ) );
     u1.numbytes = GetSession()->numf;
     u1.daten = static_cast<unsigned long>(tCurrentDate);
-    GetSession()->m_DirectoryDateCache[dn] = static_cast<UINT32>(tCurrentDate);
+    GetSession()->m_DirectoryDateCache[dn] = static_cast<unsigned int>(tCurrentDate);
     FileAreaSetRecord( fileDownload, 0 );
 	fileDownload.Write( &u1, sizeof( uploadsrec ) );
 	fileDownload.Close();

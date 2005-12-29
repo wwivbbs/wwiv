@@ -62,6 +62,7 @@ void read_automessage()
     int nLineNumber = 0;
     while ( autoMessageFile.ReadLine( line ) && nLineNumber++ < 10 )
     {
+        StringTrim( line );
         GetSession()->bout.Color( 9 );
         GetSession()->bout << "|#9" << line << wwiv::endl;
     }

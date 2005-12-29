@@ -111,8 +111,16 @@ Rushfan - Moved global structure screentype from vardec.h (shouldn't have been t
           into WLocalIO.h (now vardec.h doesn't need windows.h to compile on Win32)
 Rushfan - Changed WLocalIO save/restorescreen to not need a parameter and the screen 
           buffer is now internal to WLocalIO
-
-
+Rushfan - Moved SOCKET and COMM Handles into WIOTelnet and WIOSerial
+Rushfan - Moved Internal Telnet Listener to it's own class
+Rushfan - Removed incl3.h and wshare.h (both not used)
+Rushfan - added InternalTelnetServer.cpp/.h
+Rushfan - removed unused linux function chsize
+Rushfan - Removed some unused data types from wtypes.h, also made sure we are
+          consistent with what type we declare a variable as and use it as.
+Rushfan - moved windows.h out of incl1.h and trying to get rid of it except for
+          in the platform/win32 subdirectory (if possible)
+Rushfan - Added filenames.h into the incldue list for WUser
 
 ==============================================================================
 

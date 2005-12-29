@@ -24,8 +24,13 @@
 #include "WComm.h"
 #include <queue>
 
+#if defined( _WIN32 )
+extern "C"
+{
+    #include <winsock2.h>
+}
+#endif // _WIN32
 
-const int MAX_WWIV_INPUT_BUFFER_SIZE = 4096;
 
 class WIOTelnet : public WComm
 {
@@ -74,6 +79,9 @@ public:
     virtual void StopThreads();
     virtual void StartThreads();
     virtual ~WIOTelnet();
+    virtual void SetHandle( unsigned int nHandle );
+    virtual unsigned int GetHandle() const;
+    virtual unsigned int GetDoorHandle() const;
 
 private:
     void HandleTelnetIAC( unsigned char nCmd, unsigned char nParam );
@@ -84,12 +92,13 @@ private:
     static void InboundTelnetProc(void *pTelnet);
 
 protected:
-	std::queue<char> inBuffer;
-    HANDLE hInBufferMutex;
-    SOCKET hSock;
-	HANDLE hReadThread;
-    HANDLE hReadStopEvent;
-    bool bThreadsStarted;
+	std::queue<char> m_inputQueue;
+    HANDLE m_hInBufferMutex;
+    SOCKET m_hSocket;
+    SOCKET m_hDuplicateSocket;
+	HANDLE m_hReadThread;
+    HANDLE m_hReadStopEvent;
+    bool   m_bThreadsStarted;
 
 };
 

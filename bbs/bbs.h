@@ -25,7 +25,7 @@
 
 
 #include "WFile.h"
-
+#include "Runnable.h"
 
 class WComm;
 class StatusMgr;
@@ -40,7 +40,7 @@ class StatusMgr;
 /*!
  * @class WApplication  Main Application object for WWIV 5.0
  */
-class WApplication : public WLogger
+class WApplication : public WLogger, Runnable
 {
 public:
     // Constants
@@ -97,18 +97,13 @@ protected:
 	void GotCaller(unsigned int ms, unsigned long cs);
 
     /*!
-	 * @function BBSmain main bbs loop - Invoked from the application
+	 * @function Run main bbs loop - Invoked from the application
 	 *           main method.
      * @param argc The number of arguments
 	 * @param argv arguments
 	 */
-	int BBSmain(int argc, char *argv[]);
+	int Run(int argc, char *argv[]);
 
-    /*!
-	 * @function TelnetMainLoop - waits for telnet connection,
-	 *           then calls BBSmain on connection
-	 */
-	void TelnetMainLoop();
 	/*!
 	 * @function ShowUsage - Shows the help screen to the user listing
 	 *           all of the command line arguments for WWIV
@@ -121,9 +116,9 @@ public:
     virtual ~WApplication();
 
     /*!
-	 * @function Run - Main BBS loop.. (old main functon)
+	 * @function BBSMainLoop - Main BBS loop.. (old main functon)
 	 */
-    int  Run(int argc, char *argv[]);
+    int  BBSMainLoop(int argc, char *argv[]);
 
     StatusMgr* GetStatusManager();
 

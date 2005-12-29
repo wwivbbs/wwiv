@@ -701,9 +701,8 @@ void Packers();
 // File: modem.cpp
 
 void rputs(const char *pszText);
-void get_modem_line(char *pszLine, double d, bool allowa);
 void do_result(result_info * ri);
-void process_full_result( char *pszResultCode );
+void process_full_result( const std::string& resultCode );
 int  mode_switch(double d, bool allowa);
 void holdphone(bool bPickUpPhone);
 void imodem(bool bSetup);

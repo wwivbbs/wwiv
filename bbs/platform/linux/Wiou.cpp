@@ -247,4 +247,18 @@ void WIOUnix::StartThreads()
 }
 
 
+void WIOUnix::SetHandle( unsigned int nHandle )
+{
+    // Rushfan: I think we should ignore this call.  
+    // TODO - Atani: you may want to add something like 
+    // UNREFERENCED_PARAMETER( nHandle ) here to remove any warnings.
+}
+
+
+unsigned int WIOUnix::GetHandle() const
+{
+    // Is this needed or should we just return 0?
+    return fileno( stdout );
+}
+
 

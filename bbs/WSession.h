@@ -35,12 +35,6 @@
 
 #include "WOutStreamBuffer.h"
 
-#if defined( _WIN32 )
-extern "C"
-{
-    #include <winsock2.h>
-}
-#endif // _WIN32
 #if defined(_MSC_VER)
 #pragma warning( push )
 #pragma warning( disable: 4511 4512 )
@@ -305,7 +299,7 @@ public:
 	bool        m_bInternetUseRealNames;
 
 
-	UINT32 *m_DirectoryDateCache,
+	unsigned int *m_DirectoryDateCache,
 				*m_SubDateCache;
 
     char		*pszLanguageDir;
@@ -331,14 +325,6 @@ public:
     unsigned char
                 newuser_colors[10],         // skip for now
                 newuser_bwcolors[10];       // skip for now
-
-// TCP/IP Handle
-#if defined ( _WIN32 )
-    SOCKET		hSocket;
-    SOCKET		hDuplicateSocket;
-    HANDLE		hCommHandle;
-#endif // _WIN32
-
 
 };
 
