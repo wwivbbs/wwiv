@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -1100,7 +1100,7 @@ void list_config_scan_plus(int first, int *amount, int type)
     {
         GetSession()->bout.WriteFormatted("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n", type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
     }
-    repeat_char( 'Ä', 79, 7, true );
+    repeat_char( 'Ä', 79 );
 
     int max_lines = GetMaxLinesToShowForScanPlus();
 

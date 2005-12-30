@@ -1,7 +1,7 @@
 ##############################################################################
 #
 # WWIV 5.0 MAKEFILE for Borland C++ 5.5 and Borland C++ Builder 5.0
-# Copyright (c) 2000-2005 WWIV Software Services
+# Copyright (c) 2000-2006 WWIV Software Services
 # All Rights Reserved.
 #
 # Written by Rushfan

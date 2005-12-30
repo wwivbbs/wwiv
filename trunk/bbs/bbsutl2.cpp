@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -51,14 +51,11 @@ static const int MAX_DEFAULT_CTYPE_VALUE = 11;
  * @param nColor the color in which to display the string
  * @param bAddNL if true, add a new line character at the end.
  */
-void repeat_char( char x, int amount, int nColor, bool bAddNL )
+void repeat_char( char x, int amount, int nColor )
 {
     GetSession()->bout.Color( nColor );
     GetSession()->bout << charstr( amount, x );
-    if ( bAddNL )
-    {
-        GetSession()->bout.NewLine();
-    }
+    GetSession()->bout.NewLine();
 }
 
 

@@ -1,15 +1,13 @@
 ==============================================================================
                              WWIV 5.0 TODO List
-                 Copyright 2002-2005 WWIV Software Services
+                 Copyright 2002-2006 WWIV Software Services
 ==============================================================================
 
 Move bbs logic out of WLocalIO and into WSession (probably)
 remove extra include statements from user.cpp
-make GetUserNameAndNumber a static on WUser and also make a non-static one
-that doesn't require a usernumber.
+make GetUserNameAndNumber a static on WUser and also make a non-static one that doesn't require a usernumber.
 Finish wrappering WSession
 add IncrementXXXXX methods to WUser where it makes sense.
-move socket code out of bbs.cpp and into WIOTelnet
 Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
 make write_automessage use WTextFile instead of WFile
 investigage makeing WTextFile always trim whitespace
