@@ -93,7 +93,7 @@ char *stripfn(const char *pszFileName)
 
 #define LAST(s) s[strlen(s)-1]
 
-bool mkdirs(char *s)
+bool mkdirs(const char *s)
 {
   char current_path[MAX_PATH], *p, *flp;
 

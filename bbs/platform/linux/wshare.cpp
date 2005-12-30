@@ -1,3 +1,4 @@
+
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
@@ -21,9 +22,8 @@
 
 #include <sys/file.h>
 
-const int WTextFile::WAIT_TIMEIT_TIME = 10;
 const int WTextFile::TRIES = 100;
-
+const int WTextFile::WAIT_TIME = 10;
 /*
  * Debug Levels:
  * ==========================================================================
@@ -37,11 +37,11 @@ const int WTextFile::TRIES = 100;
 
 FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 {
-  	FILE *f = fopen(path, mode);
+  	FILE *f = fopen(pszFileName, pszFileMode);
 
 	if (f != NULL)
   	{
-		flock(fileno(f), (strpbrk(mode, "wa+")) ? LOCK_EX : LOCK_SH);
+		flock(fileno(f), (strpbrk(pszFileMode, "wa+")) ? LOCK_EX : LOCK_SH);
 	}
 
     return f;

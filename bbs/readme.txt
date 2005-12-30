@@ -124,7 +124,8 @@ Rushfan - renamed write_automessage1 to write_automessage
 Rushfan - changed repeat_char to always add a NL (since all callers did), added
           inli variant that works with strings.
 Rushfan - Update Copyright statements to 2006
-
+Atani   - Linux compilation fixes
+Atani   - Fixed typo in chains.cpp for format specifier (line 97, arg 3)
 
 
 ==============================================================================

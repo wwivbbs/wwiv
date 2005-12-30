@@ -184,6 +184,8 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/WFile.o		\
 	$(OBJ)/wfndfile.o	\
 	$(OBJ)/WLocalIO.o	\
+	$(OBJ)/WOutStream.o	\
+	$(OBJ)/WOutStreamBuffer.o	\
 	$(OBJ)/wqscn.o		\
 	$(OBJ)/wshare.o		\
 	$(OBJ)/WSession.o	\

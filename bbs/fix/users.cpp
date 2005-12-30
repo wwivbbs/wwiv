@@ -50,7 +50,7 @@ void checkUserList()
     {
         WUser user;
 	userMgr.ReadUser(&user, i);
-	printf("User: '%s' '%s' %s\n", user.GetName(), user.GetPassword(), user.isUserDeleted() ? "true" : "false");
+	printf("User: '%s' '%s' %s\n", user.GetName(), user.GetPassword(), user.IsUserDeleted() ? "true" : "false");
 	user.FixUp();
 	userMgr.WriteUser(&user, i);
     }

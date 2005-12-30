@@ -34,7 +34,7 @@ WLocalIO::WLocalIO()
 	// These 2 lines must remain in here.
 	ExtendedKeyWaiting = 0;
 	wx = 0;
-	m_nWfcStatus = 0;
+	//m_nWfcStatus = 0;
 
 	// TODO (for kwalker) Add Linux platform specific console maniuplation stuff
 }
@@ -378,11 +378,6 @@ void WLocalIO::tleft(bool bCheckForTimeOut)
 }
 
 
-void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, nInstanceNumber )
-{
-}
-
-
 /****************************************************************************/
 
 
@@ -503,5 +498,9 @@ int WLocalIO::GetEditLineStringLength( const char *pszText )
 
 
 void WLocalIO::UpdateNativeTitleBar()
+{
+}
+
+void WLocalIO::UpdateTopScreen(WStatus* status, WSession* session, int foo)
 {
 }

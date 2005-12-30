@@ -61,7 +61,7 @@
 #undef CopyFile
 #undef GetFullPathName
 
-#endif _WIN32
+#endif // _WIN32
 //
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
