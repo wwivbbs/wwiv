@@ -261,6 +261,14 @@ WStatus* StatusMgr::GetStatus()
     return new WStatus(&status);
 }
 
+void StatusMgr::AbortTransaction()
+{
+    if ( m_statusFile.IsOpen() )
+    {
+        m_statusFile.Close();
+    }    
+}
+
 WStatus* StatusMgr::BeginTransaction()
 {
     this->Get(true);
