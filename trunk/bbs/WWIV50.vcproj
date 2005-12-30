@@ -1071,6 +1071,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\WOutStreamBuffer.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\wqscn.cpp"
 					>
 				</File>

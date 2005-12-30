@@ -82,7 +82,7 @@ void DeleteSmallRecord( const char *pszName )
     }
     if ( !wwiv::stringUtils::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) )
     {
-        GetApplication()->GetStatusManager()->AbortTransaction();
+        GetApplication()->GetStatusManager()->AbortTransaction( pStatus );
         sysoplogfi( false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", pszName );
         sysoplog( "#*#*#*# Run //resetf to fix it", false );
         return;

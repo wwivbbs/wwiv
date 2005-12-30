@@ -20,10 +20,10 @@
 
 #include "WOutStreamBuffer.h"
 
-WOutStreamBuffer::WOutStreamBuffer(void)
+WOutStreamBuffer::WOutStreamBuffer()
 {
 }
 
-WOutStreamBuffer::~WOutStreamBuffer(void)
+WOutStreamBuffer::~WOutStreamBuffer()
 {
 }
