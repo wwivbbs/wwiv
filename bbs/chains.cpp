@@ -93,7 +93,7 @@ void show_chains(int *mapp, int *map)
                         if ( chains_reg[map[i]].regby[i1] != 0 )
                         {
                             GetApplication()->GetUserManager()->ReadUser( &user, chains_reg[map[i]].regby[i1] );
-                            sprintf( szBuffer, " |#%dº   º%-41sº|#2%-21s|#%º%5.5sº",
+                            sprintf( szBuffer, " |#%dº   º%-41sº|#2%-21s|#%dº%5.5sº",
                                      FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " " );
                             pla( szBuffer, &abort );
                         }
