@@ -244,12 +244,6 @@ bool StatusMgr::Get(bool bLockFile)
 }
 
 
-bool StatusMgr::Lock()
-{
-	return this->Get(true);
-}
-
-
 bool StatusMgr::RefreshStatusCache()
 {
 	return this->Get(false);
@@ -261,12 +255,13 @@ WStatus* StatusMgr::GetStatus()
     return new WStatus(&status);
 }
 
-void StatusMgr::AbortTransaction()
+void StatusMgr::AbortTransaction( WStatus* pStatus )
 {
     if ( m_statusFile.IsOpen() )
     {
         m_statusFile.Close();
-    }    
+    }
+    delete pStatus;
 }
 
 WStatus* StatusMgr::BeginTransaction()
@@ -281,12 +276,6 @@ bool StatusMgr::CommitTransaction(WStatus* pStatus)
 
     delete pStatus;
     return returnValue;
-}
-
-
-bool StatusMgr::Write()
-{
-    return Write( &status );
 }
 
 
@@ -307,11 +296,9 @@ bool StatusMgr::Write(statusrec *pStatus)
 		sysoplog("CANNOT SAVE STATUS");
         return false;
 	}
-	else
-	{
-        m_statusFile.Write( pStatus, sizeof( statusrec ) );
-        m_statusFile.Close();
-	}
+    ////////
+    m_statusFile.Write( pStatus, sizeof( statusrec ) );
+    m_statusFile.Close();
     return true;
 }
 

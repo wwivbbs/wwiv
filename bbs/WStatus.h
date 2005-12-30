@@ -142,23 +142,12 @@ public:
 	 */
     bool RefreshStatusCache();
 
-    /*!
-	 * @function Write Writes the contents of STATUS.DAT
-     * @deprecated - Use BeginTransaction and CommitTransaction 
-	 */
-	bool Write();
-	/*!
-	 * @function Lock Aquires write lock on STATUS.DAT
-     * @deprecated - Use BeginTransaction and CommitTransaction 
-	 */
-	bool Lock();
-
     /**
      * Gets the status object with no locks.  Just delete it when finished
      */
     WStatus* GetStatus();
 
-    void AbortTransaction();
+    void AbortTransaction( WStatus* pStatus );
 
     /**
      * Replacement for Lock
