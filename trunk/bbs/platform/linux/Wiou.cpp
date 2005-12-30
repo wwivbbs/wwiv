@@ -20,6 +20,7 @@
 
 #include "wwiv.h"
 #include "WComm.h"
+#include "Wiou.h"
 #include <termios.h>
 #include <sys/poll.h>
 #include <sys/ioctl.h>
@@ -51,7 +52,7 @@ WIOUnix::WIOUnix()
     tty_open = 0;
     if ( ttyf != NULL )
 	{
-		return true;
+		return;
 	}
 
 	if ( ( ttyf = fdopen( ::open( TTY, O_RDWR ), "r" ) ) == NULL )
@@ -251,4 +252,7 @@ unsigned int WIOUnix::GetHandle() const
     return fileno( stdout );
 }
 
-
+unsigned int WIOUnix::GetDoorHandle() const
+{
+    return GetHandle();
+}

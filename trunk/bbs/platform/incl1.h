@@ -175,7 +175,9 @@ enum COLORS
 #define WWIV_FILE_SEPERATOR_CHAR	'/'
 #define WWIV_FILE_SEPERATOR_STRING	"/"
 
+#define _tzset(s)	tzset(s)
 #define _putenv(s)	putenv(s)
+#define _getcwd(a,b)	getcwd(a,b)
 #define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
 
 #ifndef UNREFERENCED_PARAMETER
