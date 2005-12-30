@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -94,7 +94,8 @@ void ListAllColors();
 // File: bbsutl.cpp
 
 void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long lBufferLength);
-bool inli( char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool bAllowPrevious, bool bTwoColorChatMode = false );
+bool inli( std::string &outBuffer, std::string rollOver, int nMaxLen, bool bAddCRLF = true, bool bAllowPrevious = false, bool bTwoColorChatMode = false);
+bool inli( char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF = true, bool bAllowPrevious = false, bool bTwoColorChatMode = false );
 bool so();
 bool cs();
 bool lcs();
@@ -123,8 +124,7 @@ void describe_area_code_prefix( int nAreaCode, int town, char *pszDescription );
 
 // File: bbsutl2.cpp
 
-void ClearScreen();
-void repeat_char( char x, int amount, int nColor, bool bAddNL );
+void repeat_char( char x, int amount, int nColor = 7 );
 const char *ctypes(int num);
 void osan( const char *pszText, bool *abort, bool *next );
 void plan( int nWWIVColor, const char *pszText, bool *abort, bool *next );
@@ -222,7 +222,7 @@ void read_in_conferences(int conftype);
 void read_all_conferences();
 int get_num_conferences(const char *pszFileName);
 int wordcount(const char *instr, const char *delimstr);
-char *extractword(int ww,  const char *instr, char *delimstr);
+char *extractword(int ww,  const char *instr, const char *delimstr);
 void sort_conf_str( char *pszConferenceStr );
 
 

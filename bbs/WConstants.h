@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -365,8 +365,13 @@
 #define MAX_ARCS 15
 #define MAXMAIL 255
 
-#define DELIMS_NORMAL " ;.!:-?,\t\r\n"
-#define DELIMS_WHITE  " \t\r\n"
+#ifdef _DEFINE_GLOBALS_
+const char *DELIMS_NORMAL = " ;.!:-?,\t\r\n";
+const char *DELIMS_WHITE  = " \t\r\n";
+#else 
+extern const char *DELIMS_NORMAL;
+extern const char *DELIMS_WHITE;
+#endif 
 
 #define LIST_USERS_MESSAGE_AREA     0
 #define LIST_USERS_FILE_AREA        1

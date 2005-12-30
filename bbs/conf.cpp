@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -1771,7 +1771,7 @@ int wordcount(const char *instr, const char *delimstr)
  * Returns pointer to string representing the nth "word" of a string, using
  * a specified set of characters as delimiters.
  */
-char *extractword( int ww, const char *instr, char *delimstr )
+char *extractword( int ww, const char *instr, const char *delimstr )
 {
     char *s;
     char szTempBuffer[MAX_CONF_LINE];

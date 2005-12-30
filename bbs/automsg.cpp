@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,10 +18,10 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-
+#include <vector>
 
 char ShowAMsgMenuAndGetInput( std::string autoMessageLockFileName );
-void write_automessage1();
+void write_automessage();
 
 
 /**
@@ -73,18 +73,19 @@ void read_automessage()
 /**
  * Writes the auto message
  */
-void write_automessage1()
+void write_automessage()
 {
-    char l[ 6 ][ 81 ], szRollOverLine[ 81 ];
-
-    szRollOverLine[ 0 ] = '\0';
+    std::vector<std::string> lines;
+    std::string rollOver = "";
 
     GetSession()->bout << "\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n";
     for (int i = 0; i < 5; i++)
     {
         GetSession()->bout << "|#7" << i + 1 << ":|#0";
-        inli( &(l[i][0]), szRollOverLine, 70, true, false );
-        strcat( &(l[i][0]), "\r\n" );
+        std::string line;
+        inli( line, rollOver, 70 );
+        line += "\r\n";
+        lines.push_back( line );
     }
     GetSession()->bout.NewLine();
     bool bAnonStatus = false;
@@ -101,23 +102,17 @@ void write_automessage1()
         pStatus->SetAutoMessageAnonymous( bAnonStatus );
         pStatus->SetAutoMessageAuthorUserNumber( GetSession()->usernum );
         GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
-        WFile file( syscfg.gfilesdir, AUTO_MSG );
-        file.Open( WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
-        char szAuthorName[ 81 ];
-		sprintf( szAuthorName, "%s\r\n", GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) );
-        file.Write( szAuthorName, strlen( szAuthorName ) );
-        for (int j = 0; j < 5; j++)
-        {
-            file.Write( &(l[j][0]), strlen(&(l[j][0])));
-        }
+
+        WTextFile file( syscfg.gfilesdir, AUTO_MSG, "wt" );
+        std::string authorName = GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum );
+        file.WriteFormatted( "%s\r\n", authorName.c_str() );
         sysoplog("Changed Auto-message");
-        for (int k = 0; k < 5; k++)
+        for( std::vector<std::string>::const_iterator iter = lines.begin(); iter != lines.end(); ++iter )
         {
-            char szLogLine[ 255 ];
-            strcpy(szLogLine, "  ");
-            l[k][strlen(&(l[k][0])) - 2] = 0;
-            strcat(szLogLine, &(l[k][0]));
-            sysoplog(szLogLine);
+            std::string line = (*iter);
+            StringTrimEnd( line );
+            file.Write( line.c_str() );
+            sysoplogf( "  %s", line.c_str() );
         }
         GetSession()->bout << "\r\n|10Auto-message saved.\r\n\n";
         file.Close();
@@ -182,7 +177,7 @@ void do_automessage()
             read_automessage();
             break;
         case 'W':
-            write_automessage1();
+            write_automessage();
             break;
         case 'A':
             {
