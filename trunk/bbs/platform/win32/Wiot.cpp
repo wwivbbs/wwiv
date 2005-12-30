@@ -47,9 +47,27 @@ const int  WIOTelnet::TELNET_OPTION_TERMINAL_SPEED  = 32;
 const int  WIOTelnet::TELNET_OPTION_LINEMODE        = 34;
 
 
-WIOTelnet::WIOTelnet() : m_hSocket( 0 )
+WIOTelnet::WIOTelnet( unsigned int nHandle ) : m_hSocket( static_cast<SOCKET>( nHandle ) ), m_bThreadsStarted( false )
 {
-    m_bThreadsStarted = false;
+    WIOTelnet::InitializeWinsock();
+	if ( !DuplicateHandle(  GetCurrentProcess(), reinterpret_cast<HANDLE>( m_hSocket ),
+		                    GetCurrentProcess(), reinterpret_cast<HANDLE*>( &m_hDuplicateSocket ),
+		                    0, TRUE, DUPLICATE_SAME_ACCESS ) )
+    {
+		std::cout << "Error creating duplicate socket: " << GetLastError() << "\r\n\n";
+	}
+    if ( m_hSocket != 0 && m_hSocket != INVALID_SOCKET )
+    {
+        // Make sure our signal event is not set to the "signaled" state
+        m_hReadStopEvent = CreateEvent( NULL, true, false, NULL );
+        std::cout << "Created Stop Event: " << GetLastErrorText() << std::endl;
+    }
+    else
+    {
+        const char *message = "**ERROR: UNABLE to create STOP EVENT FOR WIOTelnet";
+        sysoplog( message );
+        std::cout << message << std::endl;
+    }
 }
 
 
@@ -61,19 +79,6 @@ bool WIOTelnet::setup(char parity, int wordlen, int stopbits, unsigned long baud
 	UNREFERENCED_PARAMETER( baud );
 
     return true;
-}
-
-
-void WIOTelnet::SetHandle( unsigned int nHandle )
-{
-    m_hSocket	= static_cast<SOCKET>( nHandle );
-	if ( !DuplicateHandle(  GetCurrentProcess(), reinterpret_cast<HANDLE>( m_hSocket ),
-		                    GetCurrentProcess(), reinterpret_cast<HANDLE*>( &m_hDuplicateSocket ),
-		                    0, TRUE, DUPLICATE_SAME_ACCESS ) )
-    {
-		std::cout << "Error creating duplicate socket: " << GetLastError() << "\r\n\n";
-	}
-
 }
 
 
@@ -97,9 +102,9 @@ unsigned int WIOTelnet::open()
 
     getpeername( m_hSocket, reinterpret_cast<SOCKADDR *>( &addr ), &nAddrSize );
 
-    std::string address = inet_ntoa( addr.sin_addr );
-    std::string name = "Internet TELNET Session";
-    SetRemoteInformation( name, address );
+    const std::string address = inet_ntoa( addr.sin_addr );
+    SetRemoteName( "Internet TELNET Session" );
+    SetRemoteAddress( address );
 
     char szTempTelnet[ 21 ];
     snprintf( szTempTelnet, sizeof( szTempTelnet ), "%c%c%c", WIOTelnet::TELNET_OPTION_IAC, WIOTelnet::TELNET_OPTION_DONT, WIOTelnet::TELNET_OPTION_ECHO );
@@ -335,26 +340,6 @@ bool WIOTelnet::incoming()
 }
 
 
-bool WIOTelnet::startup()
-{
-    if ( m_hSocket != 0 && m_hSocket != INVALID_SOCKET )
-    {
-        // Make sure our signal event is not set to the "signaled" state
-        m_hReadStopEvent = CreateEvent( NULL, true, false, NULL );
-    }
-	return true;
-}
-
-
-bool WIOTelnet::shutdown()
-{
-	// Stop the send/receive threads
-	StopThreads();
-
-    CloseHandle( m_hReadStopEvent );
-	return true;
-}
-
 
 void WIOTelnet::StopThreads()
 {
@@ -408,7 +393,8 @@ void WIOTelnet::StartThreads()
 
 WIOTelnet::~WIOTelnet()
 {
-	m_inputQueue.empty();
+	StopThreads();
+    CloseHandle( m_hReadStopEvent );
 	WSACleanup();
 }
 
@@ -416,6 +402,40 @@ WIOTelnet::~WIOTelnet()
 //
 // Static Class Members.
 //
+
+
+void WIOTelnet::InitializeWinsock()
+{
+    WSADATA wsaData;
+    int err = WSAStartup( 0x0101, &wsaData );
+
+    if ( err != 0 )
+    {
+        switch ( err )
+        {
+        case WSASYSNOTREADY:
+            std::cout << "Error from WSAStartup: WSASYSNOTREADY";
+            break;
+        case WSAVERNOTSUPPORTED:
+            std::cout << "Error from WSAStartup: WSAVERNOTSUPPORTED";
+            break;
+        case WSAEINPROGRESS:
+            std::cout << "Error from WSAStartup: WSAEINPROGRESS";
+            break;
+        case WSAEPROCLIM:
+            std::cout << "Error from WSAStartup: WSAEPROCLIM";
+            break;
+        case WSAEFAULT:
+            std::cout << "Error from WSAStartup: WSAEFAULT";
+            break;
+        default:
+            std::cout << "Error from WSAStartup: ** unknown error code **";
+            break;
+        }
+    }
+
+}
+
 
 
 void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid)

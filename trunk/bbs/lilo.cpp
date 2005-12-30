@@ -21,8 +21,6 @@
 
 #define SECS_PER_DAY 86400L
 
-extern char cid_num[], cid_name[];
-
 static char g_szLastLoginDate[9];
 
 /* 
@@ -784,13 +782,15 @@ void UpdateLastOnFileAndUserLog()
 		sysoplog( "", false );
         sysoplog( stripcolors( szLogLine ), false );
 		sysoplog( "", false );
-        if ( cid_num[0] )
+        std::string remoteAddress = GetSession()->remoteIO()->GetRemoteAddress();
+        std::string remoteName = GetSession()->remoteIO()->GetRemoteName();
+        if ( remoteAddress.length() > 0 )
         {
-            sysoplogf( "CID NUM : %s", cid_num );
+            sysoplogf( "CID NUM : %s", remoteAddress.c_str() );
         }
-        if ( cid_name[0] )
+        if ( remoteName.length() > 0 )
         {
-            sysoplogf( "CID NAME: %s", cid_name );
+            sysoplogf( "CID NAME: %s", remoteName.c_str() );
         }
         if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
 			 ( syscfg.sysconfig & sysconfig_extended_info ) )

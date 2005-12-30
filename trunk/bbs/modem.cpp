@@ -19,9 +19,6 @@
 
 #include "wwiv.h"
 
-char cid_num[50];
-char cid_name[50];
-
 #define modem_time 3.5
 
 bool InitializeComPort( int nComPortNumber );
@@ -151,11 +148,15 @@ void process_full_result( const std::string& resultCode )
 			switch (modem_i->resl[i].main_mode)
 			{
 			case mode_cid_num:
-                strcpy(cid_num, resultCode.substr( i1 ).c_str() );
-				return;
+                {
+                    GetSession()->remoteIO()->SetRemoteAddress( resultCode.substr( i1 ) );
+    			    return;
+                }
 			case mode_cid_name:
-                strcpy(cid_name, resultCode.substr( i1 ).c_str() );
-				return;
+                {
+                    GetSession()->remoteIO()->SetRemoteName( resultCode.substr( i1 ) );
+				    return;
+                }
 			}
 		}
 	}
@@ -379,8 +380,7 @@ void answer_phone()
 	{
 		return;
 	}
-	cid_num[0]  = '\0';
-	cid_name[0] = '\0';
+    GetSession()->remoteIO()->ClearRemoteInformation();
 
 	GetSession()->localIO()->SetCursor( WLocalIO::cursorNormal );
 	GetSession()->localIO()->LocalXYPuts( 3, 24, "Answering phone, 'H' to abort." );

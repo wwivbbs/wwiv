@@ -43,7 +43,7 @@ protected:
 
 public:
     WComm() : m_ComPort( 0 ), m_bBinaryMode( false ) {}
-    virtual ~WComm() { shutdown(); }
+    virtual ~WComm() {}
 
     virtual unsigned int open() = 0;
     virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud) = 0;
@@ -60,12 +60,9 @@ public:
     virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) = 0;
     virtual bool carrier() = 0;
     virtual bool incoming() = 0;
-    virtual bool startup();
-    virtual bool shutdown();
 	virtual void StopThreads() = 0;
 	virtual void StartThreads() = 0;
 
-    virtual void SetHandle( unsigned int nHandle ) = 0;
     virtual unsigned int GetHandle() const = 0;
     virtual unsigned int GetDoorHandle() const { return GetHandle(); }
 
@@ -76,10 +73,15 @@ public:
     void SetBinaryMode( bool b ) { m_bBinaryMode = b; }
     bool GetBinaryMode() const { return m_bBinaryMode; }
 
-    void SetRemoteInformation( std::string& name, std::string& address ) { m_remoteName = name; m_remoteAddress = address; }
+    void ClearRemoteInformation() { m_remoteName = ""; m_remoteAddress = ""; }
+    void SetRemoteName( std::string name ) { m_remoteName = name; }
+    void SetRemoteAddress( std::string address ) { m_remoteAddress = address; }
     const std::string& GetRemoteName() const { return m_remoteName; }
     const std::string& GetRemoteAddress() const { return m_remoteAddress; }
 
+public:
+    // static factory methods
+    static WComm* CreateComm( bool bUseSockets, unsigned int nHandle );
 };
 
 

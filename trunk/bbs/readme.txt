@@ -121,6 +121,11 @@ Rushfan - Removed some unused data types from wtypes.h, also made sure we are
 Rushfan - moved windows.h out of incl1.h and trying to get rid of it except for
           in the platform/win32 subdirectory (if possible)
 Rushfan - Added filenames.h into the incldue list for WUser
+Rushfan - moved cid_name and cid_number into WComm
+Rushfan - moved WComm::SetHandle and WComm::startup into the constructor and shutdown 
+          into the destructor.  Also removed WSession::ShutdownComm (never used)
+Rushfan - Added factory method to WComm to create the WComm instance, and renamed
+          WSession::StartupComm to CreateComm.
 
 ==============================================================================
 
