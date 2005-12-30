@@ -41,13 +41,13 @@ void InsertSmallRecord(int nUserNumber, const char *pszName)
 {
     smalrec sr;
     int cp = 0;
-    GetApplication()->GetStatusManager()->Lock();
-    while ( cp < status.users &&
+    WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    while ( cp < pStatus->GetNumUsers() &&
             wwiv::stringUtils::StringCompare( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) > 0 )
     {
         ++cp;
     }
-    for ( int i = status.users; i > cp; i-- )
+    for ( int i = pStatus->GetNumUsers(); i > cp; i-- )
     {
         smallist[i] = smallist[i - 1];
     }
@@ -60,11 +60,11 @@ void InsertSmallRecord(int nUserNumber, const char *pszName)
         std::cout << namesList.GetFullPathName() << " NOT FOUND" << std::endl;
         GetApplication()->AbortBBS();
     }
-    ++status.users;
-    ++status.filechange[filechange_names];
+    pStatus->IncrementNumUsers();
+    pStatus->IncrementFileChangedFlag( WStatus::fileChangeNames );
     namesList.Write( smallist, ( sizeof( smalrec ) * status.users ) );
     namesList.Close();
-    GetApplication()->GetStatusManager()->Write();
+    GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 }
 
 
@@ -75,19 +75,19 @@ void InsertSmallRecord(int nUserNumber, const char *pszName)
 void DeleteSmallRecord( const char *pszName )
 {
     int cp = 0;
-    GetApplication()->GetStatusManager()->Lock();
-    while ( cp < status.users && !wwiv::stringUtils::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) )
+    WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
+    while ( cp < pStatus->GetNumUsers() && !wwiv::stringUtils::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) )
     {
         ++cp;
     }
     if ( !wwiv::stringUtils::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) )
     {
-        GetApplication()->GetStatusManager()->Write();
+        GetApplication()->GetStatusManager()->AbortTransaction();
         sysoplogfi( false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", pszName );
         sysoplog( "#*#*#*# Run //resetf to fix it", false );
         return;
     }
-    for ( int i = cp; i < status.users - 1; i++ )
+    for ( int i = cp; i < pStatus->GetNumUsers() - 1; i++ )
     {
         smallist[i] = smallist[i + 1];
     }
@@ -98,8 +98,8 @@ void DeleteSmallRecord( const char *pszName )
         GetApplication()->AbortBBS();
     }
     --status.users;
-    ++status.filechange[filechange_names];
+    pStatus->IncrementFileChangedFlag( WStatus::fileChangeNames );
     namesList.Write( smallist, ( sizeof( smalrec ) * status.users ) );
     namesList.Close();
-    GetApplication()->GetStatusManager()->Write();
+    GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 }

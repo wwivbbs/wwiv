@@ -158,6 +158,8 @@ public:
      */
     WStatus* GetStatus();
 
+    void AbortTransaction();
+
     /**
      * Replacement for Lock
      */
