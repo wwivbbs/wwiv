@@ -19,11 +19,13 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #include "InternalTelnetServer.h"
 #include "Runnable.h"
+#include "Wiot.h"
 #include <iostream>
 #include <cstring>
 
 WInternalTelnetServer::WInternalTelnetServer( Runnable* pRunnable ) : m_pRunnable( pRunnable ), hSocketHandle( INVALID_SOCKET )
 {
+    WIOTelnet::InitializeWinsock();
 }
 
 

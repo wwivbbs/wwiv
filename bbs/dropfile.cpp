@@ -23,7 +23,6 @@
 //
 // Local functions
 //
-unsigned int GetSockOrCommHandle();
 int GetDoor32Emulation();
 int GetDoor32CommType();
 int GetDoor32TimeLeft(double seconds);
@@ -31,31 +30,32 @@ void GetNamePartForDropFile(bool lastName, char *pszName);
 void create_drop_files();
 
 
-void create_filename( int nDropFileType, char *pszOutputFileName )
+void create_filename( int nDropFileType, std::string& fileName )
 {
+    fileName = syscfgovr.tempdir;
     switch ( nDropFileType )
 	{
     case CHAINFILE_CHAIN:
-        sprintf( pszOutputFileName, "%schain.txt", syscfgovr.tempdir );
+        fileName += "chain.txt";
         break;
     case CHAINFILE_DORINFO:
-        sprintf( pszOutputFileName, "%sdorinfo1.def", syscfgovr.tempdir );
+        fileName += "dorinfo1.def";
         break;
     case CHAINFILE_PCBOARD:
-        sprintf( pszOutputFileName, "%spcboard.sys", syscfgovr.tempdir );
+        fileName += "pcboard.sys";
         break;
     case CHAINFILE_CALLINFO:
-        sprintf( pszOutputFileName, "%scallinfo.bbs", syscfgovr.tempdir );
+        fileName += "callinfo.bbs";
         break;
     case CHAINFILE_DOOR:
-        sprintf( pszOutputFileName, "%sdoor.sys", syscfgovr.tempdir );
+        fileName += "door.sys";
         break;
     case CHAINFILE_DOOR32:
-		sprintf( pszOutputFileName, "%sdoor32.sys", syscfgovr.tempdir );
+		fileName += "door32.sys";
 		break;
     default:
 		// Default to CHAIN.TXT since this is the native WWIV dormat
-        sprintf( pszOutputFileName, "%schain.txt", syscfgovr.tempdir );
+        fileName += "chain.txt";
         break;
     }
 }
@@ -105,10 +105,10 @@ long GetMinutesRemainingForDropFile()
 /** make DORINFO1.DEF (RBBS and many others) dropfile */
 void CreateDoorInfoDropFile()
 {
-    char szFileName[ MAX_PATH ];
-    create_filename(CHAINFILE_DORINFO, szFileName);
-    WFile::Remove(szFileName);
-    WTextFile fileDorInfoSys( szFileName, "wt");
+    std::string fileName;
+    create_filename(CHAINFILE_DORINFO, fileName);
+    WFile::Remove(fileName);
+    WTextFile fileDorInfoSys( fileName, "wt");
     if (fileDorInfoSys.IsOpen())
 	{
         fileDorInfoSys.WriteFormatted( "%s\n%s\n\nCOM%d\n", syscfg.systemname, syscfg.sysopname,
@@ -146,9 +146,9 @@ void CreateDoorInfoDropFile()
 /** make PCBOARD.SYS (PC Board) drop file */
 void CreatePCBoardSysDropFile()
 {
-    char szFileName[ MAX_PATH ];
-    create_filename(CHAINFILE_PCBOARD, szFileName);
-    WFile pcbFile( szFileName );
+    std::string fileName;
+    create_filename(CHAINFILE_PCBOARD, fileName);
+    WFile pcbFile( fileName );
     pcbFile.Delete();
     if ( pcbFile.Open(  WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
                         WFile::shareUnknown, WFile::permReadWrite ) )
@@ -231,10 +231,10 @@ void CreatePCBoardSysDropFile()
 void CreateCallInfoBbsDropFile()
 {
 	// make CALLINFO.BBS (WildCat!)
-    char szFileName[ MAX_PATH ];
-    create_filename(CHAINFILE_CALLINFO, szFileName);
-    WFile::Remove(szFileName);
-    WTextFile file( szFileName, "wt");
+    std::string fileName;
+    create_filename( CHAINFILE_CALLINFO, fileName );
+    WFile::Remove( fileName );
+    WTextFile file( fileName, "wt");
     if (file.IsOpen())
 	{
         file.WriteFormatted( "%s\n", GetSession()->GetCurrentUser()->GetRealName() );
@@ -315,17 +315,17 @@ void CreateDoor32SysDropFile()
 		4 = Max Graphics
 
    ========================================================================= */
-    char szFileName[ MAX_PATH ];
-    create_filename(CHAINFILE_DOOR32, szFileName);
-    WFile::Remove(szFileName);
+    std::string fileName;
+    create_filename( CHAINFILE_DOOR32, fileName );
+    WFile::Remove( fileName );
 
     std::string cspeed;
-    GetComSpeedInDropfileFormat(cspeed, com_speed);
-    WTextFile file(szFileName, "wt");
+    GetComSpeedInDropfileFormat( cspeed, com_speed );
+    WTextFile file( fileName, "wt" );
     if (file.IsOpen())
     {
 		file.WriteFormatted( "%d\n",		    GetDoor32CommType() );
-		file.WriteFormatted( "%u\n",            GetSockOrCommHandle() );
+		file.WriteFormatted( "%u\n",            GetSession()->remoteIO()->GetDoorHandle() );
 		file.WriteFormatted( "%s\n",		    cspeed.c_str() );
 		file.WriteFormatted( "WWIV %s\n",       wwiv_version );
 		file.WriteFormatted( "999999\n");       // we don't want to share this
@@ -343,11 +343,11 @@ void CreateDoor32SysDropFile()
 /** Create generic DOOR.SYS dropfile */
 void CreateDoorSysDropFile()
 {
-    char szFileName[ MAX_PATH ];
-    create_filename(CHAINFILE_DOOR, szFileName);
-    WFile::Remove(szFileName);
+    std::string fileName;
+    create_filename( CHAINFILE_DOOR, fileName );
+    WFile::Remove( fileName );
 
-    WTextFile file(szFileName, "wt");
+    WTextFile file( fileName, "wt" );
     if (file.IsOpen())
 	{
         std::string cspeed;
@@ -377,10 +377,9 @@ void CreateDoorSysDropFile()
             static_cast<unsigned long>( 60L * GetMinutesRemainingForDropFile() ),
             GetMinutesRemainingForDropFile());
         file.WriteFormatted( szLine );
-        char szAnsiStatus[21];
-        sprintf(szAnsiStatus, "%s", okansi() ? "GR" : "NG");
+        std::string ansiStatus = ( okansi() ) ? "GR" : "NG";
         sprintf(szLine, "%s\n%u\n%c\n%s\n%lu\n%s\n%lu\n%c\n%u\n%u\n%u\n%u\n",
-                szAnsiStatus,
+                ansiStatus.c_str(),
                 GetSession()->GetCurrentUser()->GetScreenLines(),
                 GetSession()->GetCurrentUser()->IsExpert() ? 'Y' : 'N',
                 "1,2,3",                        // conferences
@@ -449,6 +448,7 @@ char *create_chain_file()
 {
 	std::string cspeed;
     static char szFileName[MAX_PATH];
+    std::string fileName;
 
     unsigned char nSaveComPortNum = syscfgovr.primaryport;
     if ( syscfgovr.primaryport == 0 && ok_modem_stuff )
@@ -481,10 +481,10 @@ char *create_chain_file()
         l1 += SECONDS_PER_HOUR * HOURS_PER_DAY;
 	}
 
-    create_filename( CHAINFILE_CHAIN, szFileName );
+    create_filename( CHAINFILE_CHAIN, fileName );
 
-    WFile::Remove( szFileName );
-    WTextFile file(szFileName, "wt");
+    WFile::Remove( fileName );
+    WTextFile file( fileName, "wt" );
     if (file.IsOpen())
 	{
         file.WriteFormatted("%ld\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%u\n",
@@ -530,21 +530,8 @@ char *create_chain_file()
     }
     syscfgovr.primaryport = nSaveComPortNum;
 
+    strcpy( szFileName, fileName.c_str() );
     return szFileName;
-}
-
-
-unsigned int GetSockOrCommHandle()
-{
-#ifdef _WIN32
-    if (GetSession()->remoteIO()->GetHandle() == NULL)
-	{
-		return GetSession()->remoteIO()->GetHandle();
-	}
-	return GetSession()->remoteIO()->GetDoorHandle();
-#else
-	return 0L;
-#endif
 }
 
 

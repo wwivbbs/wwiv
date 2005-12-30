@@ -20,13 +20,15 @@
 
 #define _DEFINE_GLOBALS_ 
 #include "wwiv.h"
-#include "InternalTelnetServer.h"
-
 #undef _DEFINE_GLOBALS_
 
+#include "InternalTelnetServer.h"
 #include "bbs.h"
 
-extern char cid_num[], cid_name[];
+#if defined( _WIN32 )
+#include "Wiot.h"
+#endif // _WIN32
+
 static bool bUsingPppProject = true;
 extern time_t last_time_c;
 static WApplication *app;
@@ -83,8 +85,7 @@ void WApplication::GetCaller()
     GetSession()->SetFileAreaCacheNumber( 0 );
     SetShutDownStatus( WApplication::shutdownNone );
     wfc_init();
-    cid_num[0] = 0;
-    cid_name[0] = 0;
+    GetSession()->remoteIO()->ClearRemoteInformation();
     frequent_init();
     if (GetSession()->wfc_status == 0)
     {
@@ -110,14 +111,7 @@ void WApplication::GetCaller()
 
     if ( lokb )
     {
-        if ( ok_modem_stuff )
-        {
-            modem_speed = modem_i->defl.modem_speed;
-        }
-        else
-        {
-            modem_speed = 14400;
-        }
+        modem_speed = ( ok_modem_stuff ) ? modem_i->defl.modem_speed : 14400;
     }
 
     GetSession()->using_modem = incom;
@@ -134,7 +128,6 @@ void WApplication::GetCaller()
     SetWfcStatus( 0 );
 }
 #else
-
 void wfc_screen() {}
 void wfc_cls() {}
 #endif
@@ -845,34 +838,7 @@ int WApplication::BBSMainLoop(int argc, char *argv[])
 // TODO - move this to WIOTelnet
 //
 #if defined ( _WIN32 )
-
-    WSADATA wsaData;
-    int err = WSAStartup( 0x0101, &wsaData );
-
-	if ( err != 0 )
-	{
-		switch ( err )
-		{
-		case WSASYSNOTREADY:
-			std::cout << "Error from WSAStartup: WSASYSNOTREADY";
-			break;
-		case WSAVERNOTSUPPORTED:
-			std::cout << "Error from WSAStartup: WSAVERNOTSUPPORTED";
-			break;
-		case WSAEINPROGRESS:
-			std::cout << "Error from WSAStartup: WSAEINPROGRESS";
-			break;
-		case WSAEPROCLIM:
-			std::cout << "Error from WSAStartup: WSAEPROCLIM";
-			break;
-		case WSAEFAULT:
-			std::cout << "Error from WSAStartup: WSAEFAULT";
-			break;
-		default:
-			std::cout << "Error from WSAStartup: ** unknown error code **";
-			break;
-		}
-	}
+    WIOTelnet::InitializeWinsock();
 
     //
     // If there is only 1 argument "-TELSRV" then use internal telnet daemon
@@ -1132,8 +1098,7 @@ int WApplication::Run(int argc, char *argv[])
     m_bUserAlreadyOn = true;
 #endif
 
-    GetSession()->StartupComm( bTelnetInstance );
-    GetSession()->remoteIO()->SetHandle( hSockOrComm );
+    GetSession()->CreateComm( bTelnetInstance, hSockOrComm );
     this->InitializeBBS();
 
     if ( systemPassword.length() > 0 )

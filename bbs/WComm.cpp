@@ -17,22 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#define WIN32_LEAN_AND_MEAN
+#define _CRT_SECURE_NO_DEPRECATE
+#include <windows.h>
 #include "WComm.h"
+#include "Wios.h"
+#include "Wiot.h"
 
 char WComm::m_szErrorText[8192];
-
-bool WComm::startup()
-{
-    return true;
-}
-
-
-bool WComm::shutdown()
-{
-    return true;
-}
-
 
 int WComm::GetComPort() const
 {
@@ -66,5 +58,23 @@ const char* WComm::GetLastErrorText()
 #else
     return NULL;
 #endif
+}
 
+
+WComm* WComm::CreateComm( bool bUseSockets, unsigned int nHandle )
+{
+#if defined ( _WIN32 )
+    if ( bUseSockets )
+    {
+        return new WIOTelnet( nHandle );
+    }
+    else
+    {
+        return new WIOSerial( nHandle );
+    }
+#elif defined ( _UNIX )
+    return new WIOUnix();
+#elif defined ( __OS2 )
+#error "You must implement the stuff to write with!!!"
+#endif
 }

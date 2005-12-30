@@ -58,7 +58,7 @@ public:
     static const int TELNET_OPTION_LINEMODE;
 
 public:
-    WIOTelnet();
+    WIOTelnet( unsigned int nHandle );
     virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
     virtual unsigned int open();
     virtual void close( bool bIsTemporary );
@@ -74,14 +74,15 @@ public:
     virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false);
     virtual bool carrier();
     virtual bool incoming();
-    virtual bool startup();
-    virtual bool shutdown();
     virtual void StopThreads();
     virtual void StartThreads();
     virtual ~WIOTelnet();
-    virtual void SetHandle( unsigned int nHandle );
     virtual unsigned int GetHandle() const;
     virtual unsigned int GetDoorHandle() const;
+
+
+public:
+    static void InitializeWinsock();
 
 private:
     void HandleTelnetIAC( unsigned char nCmd, unsigned char nParam );

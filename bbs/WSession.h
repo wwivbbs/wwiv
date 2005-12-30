@@ -65,13 +65,8 @@ public:
     void DisplaySysopWorkingIndicator( bool displayWait );
     WComm* remoteIO();
     WLocalIO* localIO();
-	/*! @function StartupComm Start up the communications subsystem */
-	bool StartupComm(bool bUseSockets);
-
-	/*! @function ShutdownComm Shutdown the communications subsystem */
-	bool ShutdownComm();
-
-
+	/*! @function CreateComm Creates up the communications subsystem */
+	void CreateComm( bool bUseSockets, unsigned int nHandle );
 
     bool IsLastKeyLocal() const                     { return m_bLastKeyLocal; }
     void SetLastKeyLocal( bool b )                  { m_bLastKeyLocal = b; }
