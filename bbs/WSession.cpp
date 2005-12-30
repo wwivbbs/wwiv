@@ -121,7 +121,6 @@ WSession::~WSession()
 {
     if ( ok_modem_stuff && m_pComm != NULL )
     {
-		m_pComm->shutdown();
         m_pComm->close();
 	    if ( m_pComm != NULL )
 	    {
@@ -140,51 +139,10 @@ WSession::~WSession()
 
 
 
-bool WSession::StartupComm(bool bUseSockets)
+void WSession::CreateComm(bool bUseSockets, unsigned int nHandle )
 {
-    if ( NULL != m_pComm )
-    {
-        std::cout << "Cannot startup comm support, it's already started!!\r\n";
-        return false;
-    }
-
-#if defined ( _WIN32 )
-
-    if ( bUseSockets )
-    {
-        m_pComm = new WIOTelnet();
-    }
-    else
-    {
-        m_pComm = new WIOSerial();
-    }
-
-#elif defined ( _UNIX )
-
-    m_pComm = new WIOUnix();
-
-#elif defined ( __OS2 )
-
-#error "You must implement the stuff to write with!!!"
-
-#endif // defined ($PLATFORM)
-
+    m_pComm = WComm::CreateComm( bUseSockets, nHandle );
     GetSession()->bout.SetComm( m_pComm );
-    return m_pComm->startup();
-}
-
-
-bool WSession::ShutdownComm()
-{
-	if ( NULL == m_pComm )
-	{
-        std::cout << "Cannot shutdown comm support, it's not started!!\r\n";
-		return false;
-	}
-
-	bool ret = m_pComm->shutdown();
-    delete m_pComm;
-    return ret;
 }
 
 

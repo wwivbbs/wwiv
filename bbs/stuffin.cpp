@@ -156,32 +156,44 @@ void stuff_in( char *pszOutCommandLine, const char *pszInCommandLine,
                 // chain.txt type filenames
             case 'C':
                 {
-                    create_filename(CHAINFILE_CHAIN, pszOutCommandLine + nOutPtr);
+                    std::string fileName;
+                    create_filename( CHAINFILE_CHAIN, fileName );
+                    strcat( pszOutCommandLine, fileName.c_str() );
                 }
                 break;
             case 'D':
                 {
-                    create_filename(CHAINFILE_DORINFO, pszOutCommandLine + nOutPtr);
+                    std::string fileName;
+                    create_filename(CHAINFILE_DORINFO, fileName);
+                    strcat( pszOutCommandLine, fileName.c_str() );
                 }
                 break;
             case 'O':
                 {
-                    create_filename(CHAINFILE_PCBOARD, pszOutCommandLine + nOutPtr);
+                    std::string fileName;
+                    create_filename(CHAINFILE_PCBOARD, fileName);
+                    strcat( pszOutCommandLine, fileName.c_str() );
                 }
                 break;
             case 'A':
                 {
-                    create_filename(CHAINFILE_CALLINFO, pszOutCommandLine + nOutPtr);
+                    std::string fileName;
+                    create_filename(CHAINFILE_CALLINFO, fileName);
+                    strcat( pszOutCommandLine, fileName.c_str() );
                 }
                 break;
             case 'R':
                 {
-                    create_filename(CHAINFILE_DOOR, pszOutCommandLine + nOutPtr);
+                    std::string fileName;
+                    create_filename(CHAINFILE_DOOR, fileName );
+                    strcat( pszOutCommandLine, fileName.c_str() );
                 }
                 break;
             case 'E':
                 {
-                    create_filename( CHAINFILE_DOOR32, pszOutCommandLine + nOutPtr );
+                    std::string fileName;
+                    create_filename( CHAINFILE_DOOR32, fileName );
+                    strcat( pszOutCommandLine, fileName.c_str() );
                 }
                 break;
             }

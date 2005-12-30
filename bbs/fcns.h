@@ -304,7 +304,7 @@ void dirlist(int mode);
 
 // File: dropfile.cpp
 
-void create_filename( int nDropFileType, char *pszOutputFileName );
+void create_filename( int nDropFileType, std::string& fileName );
 char *create_chain_file();
 
 

@@ -375,8 +375,8 @@ void zmbatchdl(bool bHangupAfterDl)
         if ( ( nsl() >= batch[cur].time ) && !bRatioBad )
         {
             dliscan1(batch[cur].dir);
-            int i = recno(batch[cur].filename);
-            if ( i <= 0 )
+            int nRecordNumber = recno(batch[cur].filename);
+            if ( nRecordNumber <= 0 )
             {
                 delbatch( cur );
             }
@@ -386,7 +386,7 @@ void zmbatchdl(bool bHangupAfterDl)
                 GetSession()->localIO()->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
-                FileAreaSetRecord( file, i );
+                FileAreaSetRecord( file, nRecordNumber );
 				file.Read( &u, sizeof( uploadsrec ) );
 				file.Close();
 				char szSendFileName[ MAX_PATH ];
@@ -439,7 +439,7 @@ if ( ok && !hangup )
 
 void ymbatchdl(bool bHangupAfterDl)
 {
-    int i, cur = 0;
+    int cur = 0;
     uploadsrec u;
 
     if ( !incom )
@@ -478,8 +478,8 @@ void ymbatchdl(bool bHangupAfterDl)
         if ( ( nsl() >= batch[cur].time ) && !bRatioBad )
         {
             dliscan1(batch[cur].dir);
-            i = recno(batch[cur].filename);
-            if (i <= 0)
+            int nRecordNumber = recno(batch[cur].filename);
+            if (nRecordNumber <= 0)
             {
                 delbatch(cur);
             }
@@ -489,7 +489,7 @@ void ymbatchdl(bool bHangupAfterDl)
                 GetSession()->localIO()->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
-                FileAreaSetRecord( file, i );
+                FileAreaSetRecord( file, nRecordNumber );
 				file.Read( &u, sizeof( uploadsrec ) );
 				file.Close();
 				char szSendFileName[ MAX_PATH ];
@@ -540,7 +540,7 @@ void handle_dszline(char *l)
 
     // find the filename
     char* ss = strtok(l, " \t");
-    for ( int i = 0; (i < 10) && (ss); i++ )
+    for ( int i = 0; i < 10 && ss; i++ )
     {
         switch ( i )
         {

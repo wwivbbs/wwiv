@@ -134,12 +134,6 @@ bool WIOSerial::setup(char parity, int wordlen, int stopbits, unsigned long baud
 }
 
 
-void WIOSerial::SetHandle( unsigned int nHandle )
-{
-    hComm = reinterpret_cast<HANDLE>( nHandle );
-}
-
-
 unsigned int WIOSerial::GetHandle() const
 {
     return reinterpret_cast<unsigned int>( hComm );
@@ -599,30 +593,6 @@ bool WIOSerial::incoming()
 }
 
 
-bool WIOSerial::startup()
-{
-    WIOS_TRACE( "WIOSerial::startup()\n" );
-    m_hInBufferMutex = ::CreateMutex( NULL, false, "WWIV Input Buffer" );
-
-	return true;
-}
-
-bool WIOSerial::shutdown()
-{
-    WIOS_TRACE( "WIOSerial::shutdown()\n" );
-    if ( NULL != m_hInBufferMutex )
-    {
-        CloseHandle( m_hInBufferMutex );
-        m_hInBufferMutex = NULL;
-    }
-    return true;
-}
-
-
-
-#define READ_TIMEOUT      500      // milliseconds
-
-
 bool WIOSerial::HandleASuccessfulRead( LPCTSTR pszBuffer, DWORD dwNumRead, WIOSerial* pSerial )
 {
     char * p = const_cast<char *>( pszBuffer );
@@ -760,10 +730,11 @@ unsigned int __stdcall WIOSerial::InboundSerialProc(LPVOID pSerialVoid)
 }
 
 
-WIOSerial::WIOSerial() : WComm()
+WIOSerial::WIOSerial( unsigned int nHandle ) : WComm()
 {
     WIOS_TRACE("WIOSerial::WIOSerial()\n");
     bOpen = false;
+    hComm = reinterpret_cast<HANDLE>( nHandle );
 
     FillMemory(&dcb, sizeof(dcb), 0);
     if (!GetCommState(hComm, &dcb))
@@ -771,11 +742,20 @@ WIOSerial::WIOSerial() : WComm()
         // get current DCB
         WIOS_TRACE("DEBUG: WIOSerial::WIOSerial() - Unable to create DCB\n");
     }
+    WIOS_TRACE( "WIOSerial::startup()\n" );
+    m_hInBufferMutex = ::CreateMutex( NULL, false, "WWIV Input Buffer" );
+
 }
 
 
 WIOSerial::~WIOSerial()
 {
+    WIOS_TRACE( "WIOSerial::~WIOSerial()()\n" );
+    if ( NULL != m_hInBufferMutex )
+    {
+        CloseHandle( m_hInBufferMutex );
+        m_hInBufferMutex = NULL;
+    }
     // Let our parent take care if itself 1st.
     WIOS_TRACE("WIOSerial::~WIOSerial()\n");
 

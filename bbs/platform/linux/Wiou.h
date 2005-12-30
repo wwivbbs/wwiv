@@ -32,9 +32,11 @@ private:
 	int tty_open;
 	struct termios ttysav;
 	FILE *ttyf;
+    void set_terminal( bool initMode );
 
 public:
-    WIOUnix() { tty_open = 0; }
+    WIOUnix();
+    virtual ~WIOUnix();
     virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
     virtual unsigned int open();
     virtual void close( bool bIsTemporary );
@@ -50,8 +52,6 @@ public:
     virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation);
     virtual bool carrier();
     virtual bool incoming();
-    virtual bool startup();
-    virtual bool shutdown();
     virtual void StopThreads();
     virtual void StartThreads();
 };

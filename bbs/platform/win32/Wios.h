@@ -29,7 +29,7 @@ class WIOSerial : public WComm
 {
 
 public:
-    WIOSerial();
+    WIOSerial( unsigned int nHandle );
     virtual ~WIOSerial();
 
     virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
@@ -50,9 +50,6 @@ public:
     unsigned int writeImpl(const char *buffer, unsigned int count);
     virtual bool carrier();
     virtual bool incoming();
-    virtual bool startup();
-    virtual bool shutdown();
-    virtual void SetHandle( unsigned int nHandle );
     virtual unsigned int GetHandle() const;
 
 protected:
