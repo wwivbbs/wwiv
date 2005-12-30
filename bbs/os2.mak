@@ -1,7 +1,7 @@
 ##############################################################################
 #
 # WWIV 5.0 MAKEFILE for OS/2
-# Copyright (c) 2000-2005 WWIV Software Services
+# Copyright (c) 2000-2006 WWIV Software Services
 # All Rights Reserved.
 ##
 

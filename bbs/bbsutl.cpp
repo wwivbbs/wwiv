@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -55,6 +55,18 @@ void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long l
         ++lCurrentPtr;
     }
     *plBufferPtr = lCurrentPtr;
+}
+
+
+bool inli( std::string &outBuffer, std::string rollOver, int nMaxLen, bool bAddCRLF, bool bAllowPrevious, bool bTwoColorChatMode)
+{
+    char szBuffer[ 4096 ] = {0}, szRollover[ 4096 ] = {0};
+    strcpy( szBuffer, outBuffer.c_str() );
+    strcpy( szRollover, rollOver.c_str() );
+    bool ret = inli( szBuffer, szRollover, nMaxLen, bAddCRLF, bAllowPrevious, bTwoColorChatMode );
+    outBuffer = szBuffer;
+    rollOver = szRollover;
+    return ret;
 }
 
 

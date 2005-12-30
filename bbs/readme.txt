@@ -1,20 +1,21 @@
 ==============================================================================
                              WWIV 5.0 Source Code
-              Copyright 2002-2005 WWIV Software Services
+              Copyright 2002-2006 WWIV Software Services
 ==============================================================================
 
 
 GENERAL INFORMATION:
 
-    WWIV 5.0 is can be built with the following compilers:
-        MS Visual C++ .NET 2003 (Standard/Professional/Enterprise/Architect)
-        MS Visual C++ .NET (Standard/Professional/Enterprise/Architect)
-        MS Visual C++ .NET (Standard/Professional/Enterprise/Architect)
-        MS Visual C++ 6.0 (Standard/Professional/Enterprise) [Not tested lately]
-        Borland C++ Builder 5.0 (Standard/Professional/Enterprise) [Not tested lately]
-        Borland C++ 5.5 (Free Command Line Tools Edition from [Not tested lately]
+    WWIV 5.0 is built with the following compilers:
+        MS Visual C++ .NET/2003/2005
+
+   Not Testing but Should work are:
+MS Visual C++ 6.0 (Standard/Professional/Enterprise) [Not tested lately]
+
+        Borland C++ Builder 5.0
+        Borland C++ 5.5 (Free Command Line Tools Edition from:
             http://community.borland.com)
-        GCC 2.95.2-Mingw32 (You need to patch the libraries with the  [Not tested lately]
+        GCC 2.95.2-Mingw32 (You need to patch the libraries with the
             binary release from 020300 or later, as well as add a
             few missing functions into winsock2.h)
             MinGW is available at: http://www.mingw.org/
@@ -26,13 +27,6 @@ GENERAL INFORMATION:
     running "WWIV50 -? | MORE" to see the list of changes.  Currently
     WWIV50 is command line compatable with EleBBS (for all of the
     major command line arguments)
-
-    To run with the integrated Telnet Server, run "WWIV50 -TELSRV",
-    this is mainly inlcuded so that you can debug a test telnet session,
-    the recommend way of running WWIV Telnet only is from a Front End
-    Program (such as Argus, or the internal wwiv telnet server included
-    under the telsrv directory).  The command line for the DOOR in Argus
-    is "X:\WWIV\WWIV50 -H%h -XT -N%n")
 
     So far, WWIV 5.0 is still fully compatable with your existing WWIV 4.30
     installation (Just drop it in and go).
@@ -50,7 +44,7 @@ GENERAL INFORMATION:
 ==============================================================================
 
 LABEL: WWIV-5_0_61
-DATE:  ??/??/2005
+DATE:  ??/??/2006
 
 Rushfan - Fixed up more time_t != sizeof(int) issues in the code, mainly with localtime
 Rushfan - Some const correctness work, also using ISO C++ functionanmes in more places
@@ -126,6 +120,12 @@ Rushfan - moved WComm::SetHandle and WComm::startup into the constructor and shu
           into the destructor.  Also removed WSession::ShutdownComm (never used)
 Rushfan - Added factory method to WComm to create the WComm instance, and renamed
           WSession::StartupComm to CreateComm.
+Rushfan - renamed write_automessage1 to write_automessage
+Rushfan - changed repeat_char to always add a NL (since all callers did), added
+          inli variant that works with strings.
+Rushfan - Update Copyright statements to 2006
+
+
 
 ==============================================================================
 

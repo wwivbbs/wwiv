@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -135,7 +135,7 @@ int GetAnsiStatusAndShowWelcomeScreen( int nNetworkOnly )
 	    char szOSVersion[ 255 ];
         WWIV_GetOSVersion( szOSVersion, 250, true );
         GetSession()->bout << "\r\nWWIV " << wwiv_version << "/" << szOSVersion << " " << beta_version << wwiv::endl;
-        GetSession()->bout << "Copyright (c) 1998-2005 WWIV Software Services." << wwiv::endl;
+        GetSession()->bout << "Copyright (c) 1998-2006 WWIV Software Services." << wwiv::endl;
         GetSession()->bout << "All Rights Reserved." << wwiv::endl;
 
         ans = check_ansi();

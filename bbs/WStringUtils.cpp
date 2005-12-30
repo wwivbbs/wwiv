@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -368,10 +368,10 @@ char *StringTrim( char *pszString )
  */
 std::string& StringTrim( std::string& s )
 {
-    std::string::size_type pos = s.find_first_not_of(" \t\r\n");
+    std::string::size_type pos = s.find_first_not_of( DELIMS_WHITE );
     s.erase( 0, pos );
 
-    pos = s.find_last_not_of(" \t\r\n"); 
+    pos = s.find_last_not_of( DELIMS_WHITE ); 
     s.erase( pos + 1 ); 
 
     return s;
@@ -380,7 +380,7 @@ std::string& StringTrim( std::string& s )
 
 std::string& StringTrimBegin( std::string& s )
 {
-    std::string::size_type pos = s.find_first_not_of(" \t\r\n");
+    std::string::size_type pos = s.find_first_not_of( DELIMS_WHITE );
     s.erase( 0, pos );
     return s;
 }
@@ -388,7 +388,7 @@ std::string& StringTrimBegin( std::string& s )
 
 std::string& StringTrimEnd( std::string& s )
 {
-    std::string::size_type pos = s.find_first_not_of(" \t\r\n");
+    std::string::size_type pos = s.find_first_not_of( DELIMS_WHITE );
     s.erase( pos + 1 );
     return s;
 }

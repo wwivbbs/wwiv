@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2005, WWIV Software Services             */
+/*             Copyright (C)1998-2006, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -914,7 +914,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 void show_fileinfo(uploadsrec * u)
 {
 	GetSession()->bout.ClearScreen();
-	repeat_char( 'Í', 78, 7, true );
+	repeat_char( 'Í', 78 );
 	GetSession()->bout << "  |#1Filename    : |#2" << u->filename << wwiv::endl;
 	GetSession()->bout << "  |#1Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
 	if ( u->actualdate[2] == '/' && u->actualdate[5] == '/' )
@@ -925,7 +925,7 @@ void show_fileinfo(uploadsrec * u)
 	GetSession()->bout << "  |#1Downloads   : |#2" << u->numdloads << "|#1" << wwiv::endl;
 	GetSession()->bout << "  |#1Description : |#2" << u->description << wwiv::endl;
 	print_extended_plus(u->filename, 255, 16, YELLOW, NULL);
-	repeat_char( 'Í', 78, 7, true );
+	repeat_char( 'Í', 78 );
 	pausescr();
 }
 
