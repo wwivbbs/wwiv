@@ -1,3 +1,4 @@
+
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
@@ -1384,7 +1385,9 @@ void WApplication::InitializeBBS()
     {
         GetSession()->topdata = WLocalIO::topdataUser;
     }
+    snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber() );
     char *ss = getenv("PROMPT");
+#if !defined (_UNIX)
     newprompt = "PROMPT=WWIV: ";
 
     if (ss)
@@ -1398,9 +1401,7 @@ void WApplication::InitializeBBS()
     // put in our environment since passing the xenviron wasn't working
     // with sync emulated fossil
     _putenv( newprompt.c_str() );
-    snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber() );
 
-#if !defined (_UNIX)
     std::string dszLogEnvironmentVariable("DSZLOG=");
     dszLogEnvironmentVariable.append(g_szDSZLogFileName );
     int pk = 0;
@@ -1415,12 +1416,12 @@ void WApplication::InitializeBBS()
         _putenv( "PKNOFASTCHAR=Y" );
     }
 
-#endif // defined (_UNIX)
 
     m_wwivVerEnvVar = "BBS=";
     m_wwivVerEnvVar += wwiv_version;
     _putenv( m_wwivVerEnvVar.c_str() );
     _putenv( m_networkNumEnvVar.c_str() );
+#endif // defined (_UNIX)
 
     XINIT_PRINTF("* Reading Voting Booth Configuration.\r\n");
     read_voting();

@@ -83,7 +83,7 @@ WFile::WFile()
 WFile::WFile( const std::string fileName )
 {
     init();
-    this->SetName( pszFileName );
+    this->SetName( fileName );
 }
 
 
@@ -93,12 +93,6 @@ WFile::WFile( const std::string dirName, const std::string fileName )
     this->SetName( dirName, fileName );
 }
 
-
-WFile::WFile( std::string& strFileName )
-{
-    init();
-    SetName( strFileName.c_str() );
-}
 
 void WFile::init()
 {
@@ -378,11 +372,10 @@ bool WFile::IsFileHandleValid( int hFile )
 }
 
 
-bool WFile::ExistsWildcard( const char *pszWildCard )
+bool WFile::ExistsWildcard( const std::string pszWildCard )
 {
-    WWIV_ASSERT( pszWildCard );
     WFindFile fnd;
-    return(fnd.open(pszWildCard, 0));
+    return(fnd.open(pszWildCard.c_str(), 0));
 }
 
 
@@ -402,7 +395,7 @@ bool WFile::CopyFile( const std::string sourceFileName, const std::string destFi
       return false;
     }
 
-    int hDestFile = open( destFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
+    int hDestFile = open( destFileName.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
     if(!hDestFile)
     {
       BbsFreeMemory(pBuffer);

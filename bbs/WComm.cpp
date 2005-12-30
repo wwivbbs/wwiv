@@ -17,12 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 
+#if defined ( _WIN32 )
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_DEPRECATE
 #include <windows.h>
-#include "WComm.h"
 #include "Wios.h"
 #include "Wiot.h"
+#elif defined ( _UNIX )
+#include "Wiou.h"
+#endif
+#include "WComm.h"
 
 char WComm::m_szErrorText[8192];
 
@@ -39,7 +43,7 @@ void WComm::SetComPort(int nNewPort)
 
 const char* WComm::GetLastErrorText()
 {
-#ifndef _UNIX
+#if defined ( _WIN32 )
     LPVOID lpMsgBuf;
     FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER |

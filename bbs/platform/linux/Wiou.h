@@ -54,6 +54,10 @@ public:
     virtual bool incoming();
     virtual void StopThreads();
     virtual void StartThreads();
+    virtual unsigned int GetHandle() const;
+    virtual unsigned int GetDoorHandle() const;
+
+
 };
 
 

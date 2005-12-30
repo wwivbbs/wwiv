@@ -52,7 +52,7 @@ char *strrev( char *pszBufer )
 
 #define LAST(s) s[strlen(s)-1]
 
-int WWIV_make_path(char *s)
+int WWIV_make_path(const char *s)
 {
   char current_path[MAX_PATH], *p, *flp;
 

@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 
-#include "WlocalIO.h"
+#include "WLocalIO.h"
 #include "net.h"
 
 #if defined (_WIN32)

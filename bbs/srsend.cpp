@@ -1,3 +1,5 @@
+
+
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
@@ -205,7 +207,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft,
     char byBlockNumber = 1;
     bool abort = false;
     int terr = 0;
-    char *pszWorkingFileName = _strdup( pszFileName );
+    char *pszWorkingFileName = WWIV_STRDUP( pszFileName );
 	WFile file( pszWorkingFileName );
 	if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
@@ -338,7 +340,7 @@ void zmodem_send(const char *pszFileName, bool *sent, double *percent, char ft  
     *sent = false;
     *percent = 0.0;
 
-    char *pszWorkingFileName = _strdup( pszFileName );
+    char *pszWorkingFileName = WWIV_STRDUP( pszFileName );
     StringRemoveWhitespace( pszWorkingFileName );
 
     bool bOldBinaryMode = GetSession()->remoteIO()->GetBinaryMode();

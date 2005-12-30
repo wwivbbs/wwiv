@@ -159,7 +159,7 @@ int fname_ok( const struct dirent *ent )
 //
 //
 
-bool WFindFile::open(const char * pszFileSpec, UINunsigned intT32 nTypeMask)
+bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 {
 	char szFileName[MAX_PATH];
 	char szDirectoryName[MAX_PATH];

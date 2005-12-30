@@ -22,10 +22,10 @@
 #include "wwiv.h"
 #undef _DEFINE_GLOBALS_
 
-#include "InternalTelnetServer.h"
 #include "bbs.h"
 
 #if defined( _WIN32 )
+#include "InternalTelnetServer.h"
 #include "Wiot.h"
 #endif // _WIN32
 

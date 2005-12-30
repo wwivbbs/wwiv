@@ -1,3 +1,6 @@
+
+
+
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
@@ -32,6 +35,8 @@
 class WOutStreamBuffer : public std::streambuf
 {
 public:
+    WOutStreamBuffer();
+    ~WOutStreamBuffer();
     virtual std::ostream::int_type overflow( std::ostream::int_type c );
     virtual std::streamsize xsputn( const char *pszText, std::streamsize numChars );
 };
