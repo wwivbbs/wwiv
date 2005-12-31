@@ -266,12 +266,14 @@ clean:
 	-$(RM) -f *~
 	@$(MAKE) -C initlite clean --no-print-directory
 	@$(MAKE) -C nodemgr clean --no-print-directory
+	@$(MAKE) -C fix clean --no-print-directory
 
 spotless:
 	-$(RM) -rf $(BIN)/
 	-$(RM) -rf $(OBJ)/
 	@$(MAKE) -C initlite spotless --no-print-directory
 	@$(MAKE) -C nodemgr spotless --no-print-directory
+	@$(MAKE) -C fix spotless --no-print-directory
 
 dist: tarball all
 ifeq "$(OS)" "UNIX"
