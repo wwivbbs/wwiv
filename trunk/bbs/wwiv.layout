@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE CodeBlocks_layout_file>
+<CodeBlocks_layout_file>
+	<File name="FindUser.cpp" open="0" top="0">
+		<Cursor position="184" topLine="0"/>
+	</File>
+	<File name="com.cpp" open="0" top="0">
+		<Cursor position="10217" topLine="358"/>
+	</File>
+	<File name="vardec.h" open="0" top="0">
+		<Cursor position="49958" topLine="1387"/>
+	</File>
+	<File name="vars.h" open="0" top="0">
+		<Cursor position="1325" topLine="0"/>
+	</File>
+	<File name="wtypes.h" open="0" top="0">
+		<Cursor position="2511" topLine="60"/>
+	</File>
+	<File name="wwiv.h" open="0" top="0">
+		<Cursor position="2614" topLine="73"/>
+	</File>
+</CodeBlocks_layout_file>
