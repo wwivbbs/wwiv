@@ -1,16 +1,9 @@
-##############################################################################
-#
-# WWIV 5.0 MAKEFILE for OS/2
-# Copyright (c) 2000-2006 WWIV Software Services
-# All Rights Reserved.
-##
-
 OBJFILES = bbs.o batch.o bbsovl1.o bbsovl2.o \
 	 bbsovl3.o \
     bbsutl.o bbsutl1.o bbsutl2.o callback.o \
     chat.o chnedit.o circbuf.o com.o \
     conf.o connect1.o crc.o defaults.o \
-    diredit.o dosemu.o events.o \
+    diredit.o dosemu.o events.o extrn.o extrn1.o \
     gfiles.o gfledit.o ini.o instmsg.o lilo.o \
     listplus.o menu.o menu_pd.o menuedit.o \
     menuspec.o menusupp.o misccmd.o modem.o \

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -159,7 +160,7 @@ int fname_ok( const struct dirent *ent )
 //
 //
 
-bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
+bool WFindFile::open(const char * pszFileSpec, UINT32 nTypeMask)
 {
 	char szFileName[MAX_PATH];
 	char szDirectoryName[MAX_PATH];

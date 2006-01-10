@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -28,6 +28,14 @@
 #include "WConstants.h"
 #include "incl1.h"
 
+#ifdef _WIN32
+#define WWIV_STRICMP( a, b ) stricmp( a, b )
+#define WWIV_STRNICMP( a, b, c) strnicmp( a, b, c )
+#else
+#define WWIV_STRICMP( a, b ) strcasecmp( a, b )
+#define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
+#endif
+
 extern unsigned char *translate_letters[];
 
 
@@ -50,7 +58,7 @@ namespace wwiv
 			char szBuffer[ 1024 ];
 
 			va_start( ap, pszFormattedText );
-			vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
+			vsnprintf( szBuffer, 1024, pszFormattedText, ap );
 			va_end( ap );
 			str = szBuffer;
 			return str.length();
@@ -95,7 +103,7 @@ namespace wwiv
 			WWIV_ASSERT( pszString1 );
 			WWIV_ASSERT( pszString2 );
 
-			return ( StringCompareIgnoreCase( pszString1, pszString2 ) == 0 ) ? true : false;
+			return ( WWIV_STRICMP( pszString1, pszString2 ) == 0 ) ? true : false;
 		}
 
 
@@ -207,6 +215,8 @@ bool IsColorCode( char c )
 
 
 
+// %%TODO: Can pszOrig be const char*?
+
 /**
  * Removes the WWIV color codes and pipe codes from the string
  *
@@ -214,6 +224,7 @@ bool IsColorCode( char c )
  * @return A new string without the color codes
  */
 char *stripcolors( const char *pszOrig )
+// Takes input string and returns same string stripped of color codes.
 {
 	WWIV_ASSERT( pszOrig );
     static char szNewString[ 255 ];
@@ -361,6 +372,30 @@ char *StringTrim( char *pszString )
 }
 
 
+std::string& StringTrimBegin( std::string& s )
+{
+    while( s[ 0 ] == ' ' )
+    {
+        s.erase( s.begin() );
+    }
+    return s;
+}
+
+
+std::string& StringTrimEnd( std::string& s )
+{
+    while( s[ s.size() - 1 ] == ' ' )
+    {
+#if defined ( _WIN32 ) && ( _MSC_VER < 1300 )
+        s.erase( s.end() - 1 );
+#else
+        s.erase( --s.end() );
+#endif
+    }
+    return s;
+}
+
+
 /**
  * Removes spaces from the beginning and the end of the string s.
  * @param s the string from which to remove spaces
@@ -368,43 +403,7 @@ char *StringTrim( char *pszString )
  */
 std::string& StringTrim( std::string& s )
 {
-    std::string::size_type pos = s.find_first_not_of( DELIMS_WHITE );
-    s.erase( 0, pos );
-
-    pos = s.find_last_not_of( DELIMS_WHITE ); 
-    s.erase( pos + 1 ); 
-
-    return s;
-}
-
-
-std::string& StringTrimBegin( std::string& s )
-{
-    std::string::size_type pos = s.find_first_not_of( DELIMS_WHITE );
-    s.erase( 0, pos );
-    return s;
-}
-
-
-std::string& StringTrimEnd( std::string& s )
-{
-    std::string::size_type pos = s.find_first_not_of( DELIMS_WHITE );
-    s.erase( pos + 1 );
-    return s;
-}
-
-
-std::string& StringUpperCase( std::string& s )
-{
-    std::transform( s.begin(), s.end(), s.begin(), (int(*)(int)) toupper);
-    return s;
-}
-
-
-std::string& StringLowerCase( std::string& s )
-{
-    std::transform( s.begin(), s.end(), s.begin(), (int(*)(int)) tolower);
-    return s;
+    return StringTrimEnd( StringTrimBegin( s ) );
 }
 
 

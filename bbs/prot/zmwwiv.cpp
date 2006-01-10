@@ -1,9 +1,9 @@
 #include "wwiv.h"
 
 #include "zmodem.h"
-#include <cstdarg>
-#include <cstdlib>
-#include <cstring>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifndef ATANIS_UNIX_NETWORK_STUFF
 //void rputch(char ch, bool bUseInternalBuffer = false);
@@ -48,7 +48,8 @@ bool NewZModemSendFile( const char *pszFileName )
 	int f3			= 0;
 	int nFilesRem	= 0;
 	int nBytesRem	= 0;
-	done = ZmodemTFile( pszFileName, pszFileName, f0, f1, f2, f3, nFilesRem, nBytesRem, &info );
+	done = ZmodemTFile( const_cast<char*>( pszFileName ), const_cast<char*>( pszFileName ),
+						f0, f1, f2, f3, nFilesRem, nBytesRem, &info );
 	switch ( done )
 	{
 	case 0:
@@ -130,12 +131,12 @@ int ZModemWindowStatus(const char *fmt,...)
     char szBuffer[2048];
 
     va_start( ap, fmt );
-    vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
+    vsnprintf( szBuffer, 255, fmt, ap );
     va_end( ap );
-    int oldX = GetSession()->localIO()->WhereX();
-    int oldY = GetSession()->localIO()->WhereY();
-    GetSession()->localIO()->LocalXYPrintf( 1, 10, "%s                           ", szBuffer );
-	GetSession()->localIO()->LocalGotoXY( oldX, oldY );
+    int oldX = app->localIO->WhereX();
+    int oldY = app->localIO->WhereY();
+    app->localIO->LocalXYPrintf( 1, 10, "%s                           ", szBuffer );
+	app->localIO->LocalGotoXY( oldX, oldY );
 	return 0;
 }
 
@@ -149,13 +150,13 @@ int ZModemWindowXferStatus(const char *fmt,...)
     va_list ap;
     char szBuffer[2048];
 
-    va_start( ap, fmt );
-    vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
-    va_end( ap );
-    int oldX = GetSession()->localIO()->WhereX();
-    int oldY = GetSession()->localIO()->WhereY();
-	GetSession()->localIO()->LocalXYPrintf( 1, 1, "%s                           ", szBuffer );
-	GetSession()->localIO()->LocalGotoXY( oldX, oldY );
+    va_start(ap, fmt);
+    vsnprintf(szBuffer, 255, fmt, ap);
+    va_end(ap);
+    int oldX = app->localIO->WhereX();
+    int oldY = app->localIO->WhereY();
+	app->localIO->LocalXYPrintf( 1, 1, "%s                           ", szBuffer );
+	app->localIO->LocalGotoXY( oldX, oldY );
 	return 0;
 }
 
@@ -186,7 +187,7 @@ int doIO( ZModem *info )
 #endif
 		// Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
 		// performance < 1k/second vs. 8-9k/second locally
-		while ( ( info->timeout > 0 ) && !GetSession()->remoteIO()->incoming() && !hangup )
+		while ( ( info->timeout > 0 ) && !app->comm->incoming() && !hangup )
 		{
 			WWIV_Delay( 100 );
 			time_t tNow = time( NULL );
@@ -214,7 +215,7 @@ int doIO( ZModem *info )
 			//%%TODO: signal parent we aborted.
 			return 1;
 		}
-		bool bIncomming = GetSession()->remoteIO()->incoming();
+		bool bIncomming = app->comm->incoming();
 		if( !bIncomming )
 		{
 			done = ZmodemTimeout(info);
@@ -222,7 +223,7 @@ int doIO( ZModem *info )
 		}
 		else
 		{
-			int len = GetSession()->remoteIO()->read( reinterpret_cast<char*>( buffer ), ZMODEM_RECEIVE_BUFFER_SIZE );
+			int len = app->comm->read( reinterpret_cast<char*>( buffer ), ZMODEM_RECEIVE_BUFFER_SIZE );
 			done = ZmodemRcv( buffer, len, info );
 #if defined(_DEBUG)
 			zmodemlog( "ZmodemRcv [%d chars] [done:%d]\r\n", len, done );
@@ -239,7 +240,7 @@ int ZXmitStr(u_char *str, int len, ZModem *info)
 #if defined(_DEBUG)
 	zmodemlog( "ZXmitStr Size=[%d]\r\n", len );
 #endif
-	GetSession()->remoteIO()->write( reinterpret_cast<const char*>( str ),  len );
+	app->comm->write( reinterpret_cast<const char*>( str ),  len );
 	return 0;
 }
 
@@ -578,16 +579,16 @@ void ZIdleStr(unsigned char *buf, int len, ZModem *info)
 
 void ProcessLocalKeyDuringZmodem()
 {
-	if ( GetSession()->localIO()->LocalKeyPressed() )
+	if ( app->localIO->LocalKeyPressed() )
 	{
-		char localChar = GetSession()->localIO()->getchd1();
-		GetSession()->SetLastKeyLocal( true );
+		char localChar = app->localIO->getchd1();
+		sess->SetLastKeyLocal( true );
 		if (!(g_flags & g_flag_allow_extended))
 		{
 			if (!localChar)
 			{
-				localChar = GetSession()->localIO()->getchd1();
-				GetSession()->localIO()->skey(localChar);
+				localChar = app->localIO->getchd1();
+				app->localIO->skey(localChar);
 			}
 		}
 	}

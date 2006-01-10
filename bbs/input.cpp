@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 static const unsigned char *valid_letters =
@@ -25,20 +26,20 @@ static const unsigned char *valid_letters =
 
 
 /**
- * This will input a line of data, maximum nMaxLength characters long, terminated
+ * This will input a line of data, maximum maxlen characters long, terminated
  * by a C/R.  if (lc) is non-zero, lowercase is allowed, otherwise all
  * characters are converted to uppercase.
  * @param pszOutText the text entered by the user (output value)
- * @param nMaxLength Maximum length to allow for the input text
- * @param lc The case to return, this can be INPUT_MODE_FILE_UPPER, INPUT_MODE_FILE_MIXED, INPUT_MODE_FILE_PROPER, or INPUT_MODE_FILE_NAME
+ * @param maxlen Maximum length to allow for the input text
+ * @param lc The case to return, this can be UPPER, MIXED, PROPER, or FILE_NAME
  * @param crend Add a CR to the end of the input text
- * @param bAutoMpl Call GetSession()->bout.ColorizedInputField(nMaxLength) automatically.
+ * @param bAutoMpl Call mpl(maxlen) automatically.
  */
-void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl )
+void input1( char *pszOutText, int maxlen, int lc, bool crend, bool bAutoMpl )
 {
     if ( bAutoMpl )
     {
-        GetSession()->bout.ColorizedInputField( nMaxLength );
+        mpl( maxlen );
     }
 
     int curpos = 0, in_ansi = 0;
@@ -89,26 +90,26 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
             {
                 switch ( lc )
                 {
-                case INPUT_MODE_FILE_UPPER:
+                case UPPER:
                     chCurrent = upcase( chCurrent );
                     break;
-                case INPUT_MODE_FILE_MIXED:
+                case MIXED:
                     break;
-                case INPUT_MODE_FILE_PROPER:
+                case PROPER:
                     chCurrent = upcase( chCurrent );
-                    if ( curpos )
+                    if (curpos)
                     {
-                        const char *ss = strchr( reinterpret_cast<const char*>( valid_letters ), pszOutText[curpos - 1] );
-                        if ( ss != NULL || pszOutText[curpos - 1] == 39 )
+                        unsigned char *ss = reinterpret_cast<unsigned char*>( strchr( reinterpret_cast<const char*>( valid_letters ), pszOutText[curpos - 1] ) );
+                        if ((ss != NULL) || (pszOutText[curpos - 1] == 39))
                         {
-                            if ( curpos < 2 || pszOutText[curpos - 2] != 77 || pszOutText[curpos - 1] != 99 )
+                            if ( ( curpos < 2 ) || ( pszOutText[curpos - 2] != 77 ) || ( pszOutText[curpos - 1] != 99 ) )
                             {
                                 chCurrent = locase( chCurrent );
                             }
                         }
                     }
                     break;
-                case INPUT_MODE_FILE_NAME:
+                case FILE_NAME:
                     if ( strchr( "/\\+ <>|*?.,=\";:[]", chCurrent ) )
 					{
                         chCurrent = 0;
@@ -119,7 +120,7 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
 					}
                     break;
                 }
-                if ( curpos < nMaxLength && chCurrent )
+                if ( curpos < maxlen && chCurrent )
                 {
                     pszOutText[curpos++] = chCurrent;
                     bputch( chCurrent );
@@ -141,7 +142,7 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
                         echo = true;
 						if ( newline || crend )
 						{
-							GetSession()->bout.NewLine();
+							nl();
 						}
 					}
 					break;
@@ -152,7 +153,7 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
                     echo = true;
                     if ( newline || crend )
                     {
-                        GetSession()->bout.NewLine();
+                        nl();
                     }
                     break;
                 case CW:                          // Ctrl-W
@@ -161,10 +162,10 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
                         do
                         {
                             curpos--;
-                            GetSession()->bout.BackSpace();
+                            BackSpace();
                             if ( pszOutText[curpos] == CZ )
                             {
-                                GetSession()->bout.BackSpace();
+                                BackSpace();
                             }
                         } while ( curpos && pszOutText[curpos - 1] != SPACE );
                     }
@@ -175,10 +176,10 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
                     if ( curpos )
                     {
                         curpos--;
-                        GetSession()->bout.BackSpace();
+                        BackSpace();
                         if ( pszOutText[curpos] == CZ )
                         {
-                            GetSession()->bout.BackSpace();
+                            BackSpace();
                         }
                     }
                     break;
@@ -187,10 +188,10 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
                     while ( curpos )
                     {
                         curpos--;
-                        GetSession()->bout.BackSpace();
+                        BackSpace();
                         if ( pszOutText[curpos] == CZ )
                         {
-                            GetSession()->bout.BackSpace();
+                            BackSpace();
                         }
                     }
                     break;
@@ -213,53 +214,61 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
 }
 
 
-void input1( std::string &strOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl )
+void input1( std::string &strOutText, int maxlen, int lc, bool crend, bool bAutoMpl )
 {
     char szTempBuffer[ 255 ];
-    WWIV_ASSERT( nMaxLength < sizeof( szTempBuffer ) );
-    input1( szTempBuffer, nMaxLength, lc, crend, bAutoMpl );
+    input1( szTempBuffer, maxlen, lc, crend, bAutoMpl );
     strOutText.assign( szTempBuffer );
 }
 
 
-void input( char *pszOutText, int nMaxLength, bool bAutoMpl )
+void input( char *pszOutText, int len, bool bAutoMpl )
 // This will input an upper-case string
 {
-    input1( pszOutText, nMaxLength, INPUT_MODE_FILE_UPPER, true, bAutoMpl );
+    input1( pszOutText, len, UPPER, true, bAutoMpl );
 }
 
 
-void input( std::string &strOutText, int nMaxLength, bool bAutoMpl )
+void input( std::string &strOutText, int len, bool bAutoMpl )
 // This will input an upper-case string
 {
     char szTempBuffer[ 255 ];
-    input( szTempBuffer, nMaxLength, bAutoMpl );
+    input( szTempBuffer, len, bAutoMpl );
     strOutText.assign( szTempBuffer );
 }
 
 
-void inputl( char *pszOutText, int nMaxLength, bool bAutoMpl )
+void inputl( char *pszOutText, int len, bool bAutoMpl )
 // This will input an upper or lowercase string of characters
 {
-    input1( pszOutText, nMaxLength, INPUT_MODE_FILE_MIXED, true, bAutoMpl );
+    input1( pszOutText, len, MIXED, true, bAutoMpl );
 }
 
 
-void inputl( std::string &strOutText, int nMaxLength, bool bAutoMpl )
+void inputl( std::string &strOutText, int len, bool bAutoMpl )
 // This will input an upper or lowercase string of characters
 {
     char szTempBuffer[ 255 ];
-    WWIV_ASSERT( nMaxLength < sizeof( szTempBuffer ) );
-    inputl( szTempBuffer, nMaxLength, bAutoMpl );
+    inputl( szTempBuffer, len, bAutoMpl );
     strOutText.assign( szTempBuffer );
 }
 
-void input_password( std::string promptText, std::string &strOutPassword, int nMaxLength )
+
+void input_password( const char *pszPromptText, char *pszOutPassword, int len )
 {
-    GetSession()->bout << promptText;
-    GetSession()->bout.ColorizedInputField( nMaxLength );
+    sess->bout << pszPromptText;
+    mpl( len );
     echo = false;
-    input1( strOutPassword, nMaxLength, INPUT_MODE_FILE_UPPER, true );
+    input1( pszOutPassword, len, UPPER, true );
+}
+
+
+void input_password( const char *pszPromptText, std::string &strOutPassword, int len )
+{
+    sess->bout << pszPromptText;
+    mpl( len );
+    echo = false;
+    input1( strOutPassword, len, UPPER, true );
 }
 
 
@@ -270,73 +279,75 @@ void input_password( std::string promptText, std::string &strOutPassword, int nM
 //           formatted input line
 //
 // Parameters:  *pszOutText		= variable to save the input to
-//              *orgiText    	= line to edit.  appears in edit box
-//              nMaxLength			= max characters allowed
+//              *pszOrigText	= line to edit.  appears in edit box
+//              maxlen			= max characters allowed
 //              bInsert			= insert mode false = off, true = on
 //              mode			= formatting mode.
-//								  INPUT_MODE_FILE_UPPER  INPUT_MODE_FILE_MIXED  INPUT_MODE_FILE_PROPER  INPUT_MODE_FILE_NAME  INPUT_MODE_DATE  INPUT_MODE_PHONE
+//								  UPPER  MIXED  PROPER  FILE_NAME  DATE  PHONE
 //
 // Returns: length of string
 //==================================================================
 
-int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert, int mode)
+int Input1(char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, int mode)
 {
     char szTemp[ 255 ];
-    int nLength, pos, i;
-    const char dash = '-';
-    const char slash = '/';
+    int len, pos, i;
+    const unsigned char dash = '-';
+    const unsigned char slash = '/';
 
 #if defined( _UNIX )
-	input1(szTemp, nMaxLength, mode, true);
+	input1(szTemp, maxlen, mode, true);
     strcpy(pszOutText, szTemp);
     return strlen(szTemp);
 #endif // _UNIX
 
     if ( !okansi() )
     {
-		input1(szTemp, nMaxLength, mode, true);
+		input1(szTemp, maxlen, mode, true);
         strcpy(pszOutText, szTemp);
         return static_cast<unsigned char>( strlen( szTemp ) );
     }
-	int nTopDataSaved = GetSession()->topdata;
-	if ( GetSession()->topdata != WLocalIO::topdataNone )
+	int nTopDataSaved = sess->topdata;
+	if ( sess->topdata != WLocalIO::topdataNone )
     {
-        GetSession()->topdata = WLocalIO::topdataNone;
-		GetApplication()->UpdateTopScreen();
+        sess->topdata = WLocalIO::topdataNone;
+		app->localIO->UpdateTopScreen();
     }
-    if ( mode == INPUT_MODE_DATE || mode == INPUT_MODE_PHONE )
+    if ( mode == DATE || mode == PHONE )
     {
-        bInsert = false;
+        bInsert = 0;
     }
-    int nTopLineSaved = GetSession()->localIO()->GetTopLine();
-    GetSession()->localIO()->SetTopLine( 0 );
-    pos = nLength = 0;
+    int nTopLineSaved = sess->topline;
+    sess->topline = 0;
+    pos = len = 0;
     szTemp[0] = '\0';
-	
-	nMaxLength = std::max<int>(nMaxLength, 80);
-    GetSession()->bout.Color( 4 );
-    int x = GetSession()->localIO()->WhereX() + 1;
-    int y = GetSession()->localIO()->WhereY() + 1;
+    if (maxlen > 80)
+    {
+        maxlen = 80;
+    }
+    ansic( 4 );
+    int x = app->localIO->WhereX() + 1;
+    int y = app->localIO->WhereY() + 1;
 
-    GetSession()->bout.GotoXY(x, y);
-    for (i = 0; i < nMaxLength; i++)
+    goxy(x, y);
+    for (i = 0; i < maxlen; i++)
     {
-        GetSession()->bout << "±";
+        sess->bout << "±";
     }
-    GetSession()->bout.GotoXY( x, y );
-    if ( !origText.empty() )
+    goxy( x, y );
+    if ( pszOrigText[0] )
     {
-        strcpy( szTemp, origText.c_str() );
-        GetSession()->bout << szTemp;
-        GetSession()->bout.GotoXY( x, y );
-        pos = nLength = strlen(szTemp);
+        strcpy( szTemp, pszOrigText );
+        sess->bout << szTemp;
+        goxy( x, y );
+        pos = len = strlen(szTemp);
     }
-    x = GetSession()->localIO()->WhereX() + 1;
+    x = app->localIO->WhereX() + 1;
 
     bool done = false;
     do
     {
-        GetSession()->bout.GotoXY(pos + x, y);
+        goxy(pos + x, y);
 
         int c = get_kb_event( NUMBERS );
 
@@ -344,20 +355,20 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
         {
 		case CX:								// Control-X
         case ESC:								// ESC
-            if (nLength)
+            if (len)
             {
-                GetSession()->bout.GotoXY(nLength + x, y);
-                while (nLength--)
+                goxy(len + x, y);
+                while (len--)
                 {
-                    GetSession()->bout.GotoXY(nLength + x, y);
+                    goxy(len + x, y);
                     bputch('±');
                 }
-                nLength = pos = szTemp[0] = 0;
+                len = pos = szTemp[0] = 0;
             }
             break;
         case COMMAND_LEFT:                    // Left Arrow
         case CS:
-            if ((mode != INPUT_MODE_DATE) && (mode != INPUT_MODE_PHONE))
+            if ((mode != DATE) && (mode != PHONE))
             {
                 if (pos)
                     pos--;
@@ -365,9 +376,9 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
             break;
         case COMMAND_RIGHT:                   // Right Arrow
         case CD:
-            if ((mode != INPUT_MODE_DATE) && (mode != INPUT_MODE_PHONE))
+            if ((mode != DATE) && (mode != PHONE))
             {
-                if ((pos != nLength) && (pos != nMaxLength))
+                if ((pos != len) && (pos != maxlen))
                     pos++;
             }
             break;
@@ -379,26 +390,26 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
         case CE:
         case COMMAND_END:                     // End
         case CP:
-            pos = nLength;
+            pos = len;
             break;
         case COMMAND_INSERT:                  // Insert
-            if (mode == INPUT_MODE_FILE_UPPER)
+            if (mode == UPPER)
 			{
-                bInsert = !bInsert;
+                bInsert ^= 1;
 			}
             break;
         case COMMAND_DELETE:                  // Delete
         case CG:
-            if ((pos == nLength) || (mode == INPUT_MODE_DATE) || (mode == INPUT_MODE_PHONE))
+            if ((pos == len) || (mode == DATE) || (mode == PHONE))
 			{
                 break;
 			}
-            for (i = pos; i < nLength; i++)
+            for (i = pos; i < len; i++)
 			{
                 szTemp[i] = szTemp[i + 1];
 			}
-            nLength--;
-            for (i = pos; i < nLength; i++)
+            len--;
+            for (i = pos; i < len; i++)
 			{
                 bputch( szTemp[i] );
 			}
@@ -407,35 +418,35 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
         case BACKSPACE:                               // Backspace
             if (pos)
             {
-                if (pos != nLength)
+                if (pos != len)
                 {
-                    if ((mode != INPUT_MODE_DATE) && (mode != INPUT_MODE_PHONE))
+                    if ((mode != DATE) && (mode != PHONE))
                     {
-                        for (i = pos - 1; i < nLength; i++)
+                        for (i = pos - 1; i < len; i++)
 						{
                             szTemp[i] = szTemp[i + 1];
 						}
                         pos--;
-                        nLength--;
-                        GetSession()->bout.GotoXY(pos + x, y);
-                        for (i = pos; i < nLength; i++)
+                        len--;
+                        goxy(pos + x, y);
+                        for (i = pos; i < len; i++)
 						{
                             bputch( szTemp[i] );
 						}
-                        GetSession()->bout << "±";
+                        sess->bout << "±";
                     }
                 }
                 else
                 {
-                    GetSession()->bout.GotoXY(pos - 1 + x, y);
-                    GetSession()->bout << "±";
-                    pos = --nLength;
-                    if (((mode == INPUT_MODE_DATE) && ((pos == 2) || (pos == 5))) ||
-                        ((mode == INPUT_MODE_PHONE) && ((pos == 3) || (pos == 7))))
+                    goxy(pos - 1 + x, y);
+                    sess->bout << "±";
+                    pos = --len;
+                    if (((mode == DATE) && ((pos == 2) || (pos == 5))) ||
+                        ((mode == PHONE) && ((pos == 3) || (pos == 7))))
                     {
-                        GetSession()->bout.GotoXY(pos - 1 + x, y);
-                        GetSession()->bout << "±";
-                        pos = --nLength;
+                        goxy(pos - 1 + x, y);
+                        sess->bout << "±";
+                        pos = --len;
                     }
                 }
             }
@@ -444,82 +455,82 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
             done = true;
             break;
         default:                              // All others < 256
-            if ( c < 255 && c > 31 && ( ( bInsert && nLength < nMaxLength ) || ( !bInsert && pos < nMaxLength) ) )
+            if ( c < 255 && c > 31 && ( ( bInsert && len < maxlen ) || ( !bInsert && pos < maxlen) ) )
             {
-                if (mode != INPUT_MODE_FILE_MIXED)
+                if (mode != MIXED)
                 {
 					c = wwiv::UpperCase<unsigned char> ( static_cast< unsigned char >( c ) );
                 }
-                if (mode == INPUT_MODE_FILE_NAME)
+                if (mode == FILE_NAME)
 				{
                     if (strchr("/\\+ <>|*?.,=\";:[]", c))
 					{
                         c = 0;
 					}
                 }
-                if ( mode == INPUT_MODE_FILE_PROPER && pos )
+                if ( mode == PROPER && pos )
                 {
-                    const char *ss = strchr( reinterpret_cast<char*>( const_cast<unsigned char*>( valid_letters ) ), c );
+                    char *ss = strchr( reinterpret_cast<char*>( const_cast<unsigned char*>( valid_letters ) ), c );
                     // if it's a valid char and the previous char was a space
                     if ( ss != NULL && szTemp[pos - 1] != 32 )
                     {
                         c = locase( static_cast< unsigned char >( c ) );
                     }
                 }
-                if ( mode == INPUT_MODE_DATE && ( pos == 2 || pos == 5 ) )
+                if ( mode == DATE && ( pos == 2 || pos == 5 ) )
                 {
                     bputch(slash);
-                    for (i = nLength++; i >= pos; i--)
+                    for (i = len++; i >= pos; i--)
 					{
                         szTemp[i + 1] = szTemp[i];
 					}
                     szTemp[pos++] = slash;
-                    GetSession()->bout.GotoXY( pos + x, y );
-                    GetSession()->bout << &szTemp[pos];
+                    goxy( pos + x, y );
+                    sess->bout << &szTemp[pos];
                 }
-                if ( mode == INPUT_MODE_PHONE && ( pos == 3 || pos == 7 ) )
+                if ( mode == PHONE && ( pos == 3 || pos == 7 ) )
                 {
                     bputch(dash);
-                    for (i = nLength++; i >= pos; i--)
+                    for (i = len++; i >= pos; i--)
 					{
                         szTemp[i + 1] = szTemp[i];
 					}
                     szTemp[pos++] = dash;
-                    GetSession()->bout.GotoXY(pos + x, y);
-                    GetSession()->bout << &szTemp[pos];
+                    goxy(pos + x, y);
+                    sess->bout << &szTemp[pos];
                 }
-                if ( ( mode == INPUT_MODE_DATE  && c != slash ||
-					   mode == INPUT_MODE_PHONE && c != dash ) ||
-                    ( mode != INPUT_MODE_DATE && mode != INPUT_MODE_PHONE && c != 0 ) )
+                if ( ( mode == DATE  && c != slash ||
+					   mode == PHONE && c != dash ) ||
+                    ( mode != DATE && mode != PHONE && c != 0 ) )
                 {
-                    if ( !bInsert || pos == nLength )
+                    if ( !bInsert || pos == len )
                     {
                         bputch( static_cast< unsigned char >( c ) );
                         szTemp[pos++] = static_cast< char > ( c );
-                        if (pos > nLength)
+                        if (pos > len)
                         {
-                            nLength++;
+                            len++;
                         }
                     }
 					else
                     {
                         bputch( ( unsigned char ) c );
-                        for (i = nLength++; i >= pos; i--)
+                        for (i = len++; i >= pos; i--)
 						{
                             szTemp[i + 1] = szTemp[i];
 						}
                         szTemp[pos++] = ( char ) c;
-                        GetSession()->bout.GotoXY(pos + x, y);
-                        GetSession()->bout << &szTemp[pos];
+                        goxy(pos + x, y);
+                        sess->bout << &szTemp[pos];
                     }
                 }
             }
             break;
     }
-    szTemp[nLength] = '\0';
+    szTemp[len] = '\0';
     CheckForHangup();
   } while ( !done && !hangup );
-  if (nLength)
+  if (len)
   {
       strcpy( pszOutText, szTemp );
   }
@@ -528,20 +539,18 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
       pszOutText[0] = '\0';
   }
 
-  GetSession()->topdata = nTopDataSaved;
-  GetSession()->localIO()->SetTopLine( nTopLineSaved );
+  sess->topdata = nTopDataSaved;
+  sess->topline = nTopLineSaved;
 
-  GetSession()->bout.Color( 0 );
-  return nLength;
+  ansic( 0 );
+  return len;
 }
 
 
-int Input1( std::string &strOutText, std::string origText, int nMaxLength, bool bInsert, int mode )
+int Input1( std::string &strOutText, const char *pszOrigText, int maxlen, bool bInsert, int mode )
 {
     char szTempBuffer[ 255 ];
-    WWIV_ASSERT( nMaxLength < sizeof( szTempBuffer ) );
-
-    int nLength = Input1( szTempBuffer, origText, nMaxLength, bInsert, mode );
+    int nLength = Input1( szTempBuffer, pszOrigText, maxlen, bInsert, mode );
     strOutText.assign( szTempBuffer );
     return nLength;
 }

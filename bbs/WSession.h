@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,12 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifdef _MSC_VER
-#pragma once
-#endif
-
-#if !defined ( __INCLUDED_WSESSION_H__ )
-#define __INCLUDED_WSESSION_H__
 
 
 //
@@ -33,23 +27,31 @@
 // associated with this instance of WWIV globally (not tied to a user)
 //
 
+
+#if !defined ( __INCLUDED_WSESSION_H__ )
+#define __INCLUDED_WSESSION_H__
+
+
+#include "vardec.h"
+#include "WUser.h"
+#include "bbs.h"
+#include "net.h"
 #include "WOutStreamBuffer.h"
+
 
 #if defined(_MSC_VER)
 #pragma warning( push )
 #pragma warning( disable: 4511 4512 )
 #endif // _MSC_VER
 
+extern net_networks_rec *net_networks;
 
-class WApplication;
-class WLocalIO;
-class WComm;
 
 class WSession
 {
 public:
-    WSession( WApplication *pApplication );
-    virtual ~WSession();
+    WSession( WBbsApp *pApplication );
+    ~WSession() {}
 
 public:
     WOutStream bout;
@@ -61,22 +63,14 @@ public:
 
 
 public:
-	WUser* GetCurrentUser()							{ return &m_thisuser; }
-    void DisplaySysopWorkingIndicator( bool displayWait );
-    WComm* remoteIO();
-    WLocalIO* localIO();
-	/*! @function CreateComm Creates up the communications subsystem */
-	void CreateComm( bool bUseSockets, unsigned int nHandle );
-
+	WUser thisuser;
     bool IsLastKeyLocal() const                     { return m_bLastKeyLocal; }
     void SetLastKeyLocal( bool b )                  { m_bLastKeyLocal = b; }
 
-    bool ReadCurrentUser();
     bool ReadCurrentUser( int nUserNumber, bool bForceRead = false );
-    bool WriteCurrentUser();
     bool WriteCurrentUser( int nUserNumber );
 
-    void ResetEffectiveSl()                         { m_nEffectiveSl = GetCurrentUser()->GetSl(); }
+    void ResetEffectiveSl()                         { m_nEffectiveSl = thisuser.GetSl(); }
     void SetEffectiveSl( int nSl )                  { m_nEffectiveSl = nSl; }
     int  GetEffectiveSl() const                     { return m_nEffectiveSl; }
 
@@ -98,12 +92,12 @@ public:
     int  GetForcedReadSubNumber() const             { return m_nForcedReadSubNumber; }
     void SetForcedReadSubNumber( int n )            { m_nForcedReadSubNumber = n; }
 
-    const std::string& GetCurrentSpeed() const      { return m_currentSpeed; }
+    std::string GetCurrentSpeed() const             { return m_currentSpeed; }
     void SetCurrentSpeed( std::string s )           { m_currentSpeed = s; }
     void SetCurrentSpeed( const char *s )           { m_currentSpeed = s; }
 
-	const char* GetNetworkName() const;
-	const char* GetNetworkDataDirectory() const;
+	const char* GetNetworkName() const		        { return net_networks[m_nNetworkNumber].name; }
+	const char* GetNetworkDataDirectory() const	    { return net_networks[m_nNetworkNumber].dir; }
 
 	bool IsMessageThreadingEnabled() const	        { return m_bThreadSubs; }
 	void SetMessageThreadingEnabled( bool b )       { m_bThreadSubs = b; }
@@ -136,7 +130,7 @@ public:
     void SetQuoting( bool b )                       { m_bQuoting = b; }
 
     bool IsNewScanAtLogin() const                   { return ( m_bNewScanAtLogin ) ? true : false; }
-    void SetNewScanAtLogin( bool b )                { m_bNewScanAtLogin =  b; }
+    void SetNewScanAtLogin( bool b )                { m_bNewScanAtLogin = ( b ) ? 1 : 0; }
 
     int  GetCurrentFileArea() const                 { return m_nCurrentFileArea; }
     void SetCurrentFileArea( int n )                { m_nCurrentFileArea = n; }
@@ -154,7 +148,7 @@ public:
     void SetCurrentConferenceFileArea( int n )      { m_nCurrentConferenceFileArea = n; }
 
     bool IsUseInternalZmodem() const                { return m_bInternalZmodem ? true : false; }
-    void SetUseInternalZmodem( bool b )             { m_bInternalZmodem = b; }
+    void SetUseInternalZmodem( bool b )             { m_bInternalZmodem = b ? 1 : 0; }
 
     int  GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
     void SetNumMessagesInCurrentMessageArea( int n ){ m_nNumMsgsInCurrentSub = n; }
@@ -165,8 +159,8 @@ public:
     int  GetGlobalDebugLevel() const                { return m_nGlobalDebugLevel; }
     void SetGlobalDebugLevel( int n )               { m_nGlobalDebugLevel = n; }
 
-    bool IsExecUseWaitForInputIdle() const          { return m_bExecUseWaitForInputIdle; }
-    void SetExecUseWaitForInputIdle( bool b )       { m_bExecUseWaitForInputIdle = b; }
+    bool IsExecUseWaitForInputIdle() const          { return m_nExecUseWaitForInputIdle ? true : false; }
+    void SetExecUseWaitForInputIdle( bool b )       { m_nExecUseWaitForInputIdle = ( b ) ? 1 : 0; }
 
     int  GetExecWaitForInputTimeout() const         { return m_nExecUseWaitForInputTimeout ? true : false; }
     void SetExecWaitForInputTimeout( int n )        { m_nExecUseWaitForInputTimeout = n; }
@@ -174,8 +168,8 @@ public:
     int  GetExecChildProcessWaitTime() const        { return m_nExecChildProcessWaitTime ? true : false; }
     void SetExecChildProcessWaitTime( int n )       { m_nExecChildProcessWaitTime = n; }
 
-    bool IsExecLogSyncFoss() const                  { return m_bExecLogSyncFoss; }
-    void SetExecLogSyncFoss( bool b )               { m_bExecLogSyncFoss = b; }
+    int  GetExecLogSyncFoss() const                 { return m_nExecLogSyncFoss; }
+    void SetExecLogSyncFoss( int n )                { m_nExecLogSyncFoss = n; }
 
     int  GetMaxNumberMessageAreas() const           { return m_nMaxNumberMessageAreas; }
     void SetMaxNumberMessageAreas( int n )          { m_nMaxNumberMessageAreas = n; }
@@ -185,9 +179,6 @@ public:
 
     bool IsNewMailWatiting() const                  { return m_bNewMailWaiting; }
     void SetNewMailWaiting( bool b )                { m_bNewMailWaiting = b; }
-
-    bool IsTimeOnlineLimited() const                { return m_bTimeOnlineLimited; }
-    void SetTimeOnlineLimited( bool b )             { m_bTimeOnlineLimited = b; }
 
     int  GetCurrentNetworkType() const              { return m_nCurrentNetworkType; }
     void SetCurrentNetworkType( int n )             { m_nCurrentNetworkType = n; }
@@ -209,13 +200,9 @@ public:
 
 
 private:
-    bool            m_bLastKeyLocal;
-    int             m_nEffectiveSl;
-    WApplication*   m_pApplication;
-    WUser           m_thisuser;
-    WComm*          m_pComm;
-    WLocalIO*       m_pLocalIO;
-
+    bool        m_bLastKeyLocal;
+    int         m_nEffectiveSl;
+    WBbsApp*    m_pApplication;
 
 
 public:
@@ -238,12 +225,6 @@ public:
     bool        m_bUserOnline;
     bool        m_bQuoting;
     bool        m_bNewMailWaiting;
-    bool        m_bTimeOnlineLimited;
-
-    bool        m_bNewScanAtLogin,
-                m_bInternalZmodem,
-		        m_bExecUseWaitForInputIdle,
-		        m_bExecLogSyncFoss;
 
     int         m_nMMKeyArea,
                 m_nNumMessagesReadThisLogon,
@@ -255,11 +236,15 @@ public:
                 m_nCurrentReadMessageArea,
                 m_nCurrentConferenceMessageArea,
                 m_nCurrentConferenceFileArea,
+		        m_bNewScanAtLogin,
+                m_bInternalZmodem,
                 m_nNumMsgsInCurrentSub,
                 m_nBeginDayNodeNumber,
                 m_nGlobalDebugLevel,
+		        m_nExecUseWaitForInputIdle,
 		        m_nExecUseWaitForInputTimeout,
 		        m_nExecChildProcessWaitTime,
+		        m_nExecLogSyncFoss,
                 m_nMaxNumberMessageAreas,
                 m_nMaxNumberFileAreas,
                 m_nCurrentNetworkType,
@@ -275,12 +260,15 @@ public:
                 num_subs,
                 num_events,
                 num_sys_list,
+                screenbottom,
                 screenlinest,
+                bbsshutdown,
                 subchg,
                 tagging,
                 tagptr,
                 titled,
                 topdata,
+                topline,
                 using_modem,
                 numbatch,
                 numbatchdl;
@@ -294,7 +282,7 @@ public:
 	bool        m_bInternetUseRealNames;
 
 
-	unsigned int *m_DirectoryDateCache,
+	UINT32		*m_DirectoryDateCache,
 				*m_SubDateCache;
 
     char		*pszLanguageDir;
@@ -304,6 +292,7 @@ public:
 				wfc_status;
 
 	int         usernum;
+	double		shutdowntime;
 
     asv_rec		asv;
     adv_asv_rec	advasv;
@@ -320,6 +309,14 @@ public:
     unsigned char
                 newuser_colors[10],         // skip for now
                 newuser_bwcolors[10];       // skip for now
+
+// TCP/IP Handle
+#if defined ( _WIN32 )
+    SOCKET		hSocket;
+    SOCKET		hDuplicateSocket;
+    HANDLE		hCommHandle;
+#endif // _WIN32
+
 
 };
 

@@ -348,7 +348,6 @@ int EditStatus()
 		clear();
 		mvprintw(0, 0, "Init Lite version 5.0");
 		mvprintw(2, 0, "1) Num Calls:  %d", status.callernum1);
-		mvprintw(3, 0, "2) Num Users:  %d", status.users);
 		mvprintw(8, 0, "(Q=Quit) Enter Command : ");
 		int key = getch();
 		key = toupper(key);
@@ -362,16 +361,6 @@ int EditStatus()
 			if (strlen(szLine)>0)
 			{
 				status.callernum1 = atoi(szLine);
-			}
-			break;
-		case '2':
-			mvprintw(10, 0, "Enter new number of users:");
-			move(11, 0); 
-			getnstr(szLine, 81);
-			mvprintw(15, 0, "Line entered = '%s'", szLine);
-			if (strlen(szLine)>0)
-			{
-				status.users = atoi(szLine);
 			}
 			break;
 		case 'Q': 

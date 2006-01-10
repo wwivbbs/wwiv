@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,11 +18,10 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 static int netw;
-time_t last_time_c;
-
-void fixup_long( unsigned long *f, time_t l );
+int last_time_c;
 
 
 void rename_pend( const char *pszDirectory, const char *pszFileName )
@@ -53,7 +52,7 @@ void rename_pend( const char *pszDirectory, const char *pszFileName )
 
 int checkup2( const time_t tFileTime, const char *pszFileName )
 {
-    WFile file( GetSession()->GetNetworkDataDirectory(), pszFileName );
+    WFile file( sess->GetNetworkDataDirectory(), pszFileName );
 
 	if ( file.Open( WFile::modeReadOnly ) )
 	{
@@ -70,22 +69,21 @@ int check_bbsdata()
 	char s[MAX_PATH];
 	int ok = 0, ok2 = 0;
 
-	sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CONNECT_UPD);
+	sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), CONNECT_UPD);
 	if ((ok = WFile::Exists(s)) == 0)
     {
-		sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), BBSLIST_UPD);
+		sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), BBSLIST_UPD);
         ok = WFile::Exists(s) ? 1 : 0;
 	}
-    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
-    if (ok && pStatus->IsUsingNetEdit())
+	if (ok && status.net_edit_stuff)
     {
 		holdphone( true );
-		sprintf( s, "NETEDIT .%ld /U", GetSession()->GetNetworkNumber() );
+		sprintf( s, "NETEDIT .%ld /U", sess->GetNetworkNumber() );
 		ExecuteExternalProgram(s, EFLAG_NETPROG);
 	}
     else
     {
-        WFile bbsdataNet( GetSession()->GetNetworkDataDirectory(), BBSDATA_NET );
+        WFile bbsdataNet( sess->GetNetworkDataDirectory(), BBSDATA_NET );
 		if ( bbsdataNet.Open( WFile::modeReadOnly ) )
 		{
             time_t tFileTime = bbsdataNet.GetFileTime();
@@ -98,30 +96,30 @@ int check_bbsdata()
 			ok = ok2 = 1;
         }
 	}
-	sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
+	sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), BBSDATA_NET);
 	if (!WFile::Exists(s))
     {
 		ok = ok2 = 0;
     }
-	sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CONNECT_NET);
+	sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), CONNECT_NET);
 	if (!WFile::Exists(s))
     {
 		ok = ok2 = 0;
     }
-	sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CALLOUT_NET);
+	sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), CALLOUT_NET);
 	if (!WFile::Exists(s))
     {
 		ok = ok2 = 0;
     }
 	if (ok || ok2)
     {
-		sprintf( s, "network3 %s .%ld", (ok ? " Y" : ""), GetSession()->GetNetworkNumber() );
+		sprintf( s, "network3 %s .%ld", (ok ? " Y" : ""), sess->GetNetworkNumber() );
 		holdphone( true );
 
 		ExecuteExternalProgram(s, EFLAG_NETPROG);
-		WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
-        pStatus->IncrementFileChangedFlag( WStatus::fileChangeNet );
-        GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
+		app->statusMgr->Lock();
+		++status.filechange[filechange_net];
+		app->statusMgr->Write();
 
 		zap_call_out_list();
 		zap_contacts();
@@ -137,29 +135,46 @@ int check_bbsdata()
 
 void cleanup_net()
 {
-	if ( cleanup_net1() && GetApplication()->HasConfigFlag( OP_FLAGS_NET_CALLOUT ) )
+	char cl1[81], cl2[81], *ss1;
+	int i1, i2;
+
+	if ( cleanup_net1() && app->HasConfigFlag( OP_FLAGS_NET_CALLOUT ) )
     {
-		if ( GetSession()->wfc_status == 0 )                    
+		if ( sess->wfc_status == 0 )                    // WFC addition
         {
-			GetSession()->localIO()->LocalCls();
+			app->localIO->LocalCls();
         }
 
-        WIniFile iniFile( WWIV_INI );
-        if ( iniFile.Open( INI_TAG ) )
+		i1 = i2 = 0;
+		if ( ini_init( WWIV_INI, INI_TAG, NULL ) )
         {
-            const char *pszValue = iniFile.GetValue( "NET_CLEANUP_CMD1" );
-			if ( pszValue != NULL )
+			if ( ( ss1 = ini_get( "NET_CLEANUP_CMD1", -1, NULL ) ) != NULL )
             {
-			    ExecuteExternalProgram( pszValue, GetApplication()->GetSpawnOptions( SPWANOPT_NET_CMD1 ) );
-			    cleanup_net1();
+				if ( ss1 )
+                {
+					strcpy( cl1, ss1 );
+					i1 = 1;
+				}
 			}
-            pszValue = iniFile.GetValue( "NET_CLEANUP_CMD2" );
-			if ( pszValue != NULL )
+			if ( ( ss1 = ini_get( "NET_CLEANUP_CMD2", -1, NULL ) ) != NULL )
             {
-			    ExecuteExternalProgram( pszValue, GetApplication()->GetSpawnOptions( SPWANOPT_NET_CMD2 ) );
-			    cleanup_net1();
+				if ( ss1 )
+                {
+					strcpy( cl2, ss1 );
+					i2 = 1;
+				}
 			}
-			iniFile.Close();
+			ini_done();
+		}
+		if ( i1 )
+        {
+			ExecuteExternalProgram( cl1, app->GetSpawnOptions( SPWANOPT_NET_CMD1 ) );
+			cleanup_net1();
+		}
+		if ( i2 )
+        {
+			ExecuteExternalProgram( cl2, app->GetSpawnOptions( SPWANOPT_NET_CMD2 ) );
+			cleanup_net1();
 		}
 	}
 
@@ -173,9 +188,9 @@ int cleanup_net1()
     int ok, ok2, nl = 0, anynew = 0, i = 0;
     bool abort;
 
-	GetApplication()->SetCleanNetNeeded( false );
+	app->SetCleanNetNeeded( false );
 
-    if ( net_networks[0].sysnum == 0 && GetSession()->GetMaxNetworkNumber() == 1 )
+    if ( net_networks[0].sysnum == 0 && sess->GetMaxNetworkNumber() == 1 )
     {
         return 0;
     }
@@ -186,7 +201,7 @@ int cleanup_net1()
     {
         any = 0;
 
-        for ( int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++ )
+        for ( int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++ )
         {
             set_net_num( nNetNumber );
 
@@ -195,7 +210,7 @@ int cleanup_net1()
                 continue;
             }
 
-            GetSession()->localIO()->set_protect( 0 );
+            app->localIO->set_protect( 0 );
 
             ok2 = 1;
             abort = false;
@@ -204,32 +219,32 @@ int cleanup_net1()
                 ok2 = 0;
                 ok = 0;
                 WFindFile fnd;
-                sprintf( s, "%s""p*.%3.3d", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetInstanceNumber() );
+                sprintf( s, "%s""p*.%3.3d", sess->GetNetworkDataDirectory(), app->GetInstanceNumber() );
                 bool bFound = fnd.open( s, 0 );
                 while ( bFound )
                 {
                     ok = 1;
                     ++i;
-                    rename_pend( GetSession()->GetNetworkDataDirectory(), fnd.GetFileName() );
+                    rename_pend( sess->GetNetworkDataDirectory(), fnd.GetFileName() );
                     anynew = 1;
                     bFound = fnd.next();
                 }
 
-                if ( GetApplication()->GetInstanceNumber() == 1 )
+                if ( app->GetInstanceNumber() == 1 )
                 {
                     if ( !ok )
                     {
-                        sprintf( s, "%s""p*.net", GetSession()->GetNetworkDataDirectory() );
+                        sprintf( s, "%s""p*.net", sess->GetNetworkDataDirectory() );
                         WFindFile fnd;
                         ok = fnd.open( s, 0 );
                     }
                     if ( ok )
                     {
 #ifndef _UNIX
-                        if ( GetSession()->wfc_status == 0 )
+                        if ( sess->wfc_status == 0 )
                         {
                             // WFC addition
-                            GetSession()->localIO()->LocalCls();
+                            app->localIO->LocalCls();
                         }
                         else
                         {
@@ -239,8 +254,8 @@ int cleanup_net1()
                         holdphone( true );
                         ++i;
                         hangup = false;
-                        GetSession()->using_modem = 0;
-                        sprintf( cl, "network1 .%ld", GetSession()->GetNetworkNumber() );
+                        sess->using_modem = 0;
+                        sprintf( cl, "network1 .%ld", sess->GetNetworkNumber() );
                         if ( ExecuteExternalProgram( cl, EFLAG_NETPROG ) < 0 )
                         {
                             abort = true;
@@ -251,14 +266,14 @@ int cleanup_net1()
                         }
                         ok2 = 1;
                     }
-                    sprintf( s, "%s%s", GetSession()->GetNetworkDataDirectory(), LOCAL_NET );
+                    sprintf( s, "%s%s", sess->GetNetworkDataDirectory(), LOCAL_NET );
                     if ( WFile::Exists( s ) )
                     {
 #ifndef _UNIX
-                        if ( GetSession()->wfc_status == 0 )
+                        if ( sess->wfc_status == 0 )
                         {
                             // WFC addition
-                            GetSession()->localIO()->LocalCls();
+                            app->localIO->LocalCls();
                         }
                         else
                         {
@@ -270,8 +285,8 @@ int cleanup_net1()
                         any = 1;
                         ok = 1;
                         hangup = false;
-                        GetSession()->using_modem = 0;
-                        sprintf( cl, "network2 .%ld", GetSession()->GetNetworkNumber() );
+                        sess->using_modem = 0;
+                        sprintf( cl, "network2 .%ld", sess->GetNetworkNumber() );
                         if ( ExecuteExternalProgram( cl, EFLAG_NETPROG ) < 0 )
                         {
                             abort = true;
@@ -281,10 +296,10 @@ int cleanup_net1()
                             any = 1;
                         }
                         ok2 = 1;
-                        GetApplication()->GetStatusManager()->RefreshStatusCache();
-                        GetSession()->SetCurrentReadMessageArea( -1 );
-                        GetSession()->ReadCurrentUser( 1 );
-                        fwaiting = GetSession()->GetCurrentUser()->GetNumMailWaiting();
+                        app->statusMgr->Read();
+                        sess->SetCurrentReadMessageArea( -1 );
+                        sess->ReadCurrentUser( 1 );
+                        fwaiting = sess->thisuser.GetNumMailWaiting();
                     }
                     if ( check_bbsdata() )
                     {
@@ -292,7 +307,7 @@ int cleanup_net1()
                     }
                     if ( ok2 )
                     {
-                        GetSession()->localIO()->LocalCls();
+                        app->localIO->LocalCls();
                         zap_contacts();
                         ++i;
                     }
@@ -300,7 +315,7 @@ int cleanup_net1()
             }
         }
     }
-    if ( anynew && ( GetApplication()->GetInstanceNumber() != 1 ) )
+    if ( anynew && ( app->GetInstanceNumber() != 1 ) )
     {
         send_inst_cleannet();
     }
@@ -312,29 +327,29 @@ void do_callout( int sn )
 {
 	char s[81], s1[81], town[5];
 
-	time_t tCurrentTime;
-	time( &tCurrentTime );
+	long l;
+	time( &l );
 	int i = -1;
 	int i2 = -1;
-	if ( !net_networks[GetSession()->GetNetworkNumber()].con )
+	if ( !net_networks[sess->GetNetworkNumber()].con )
     {
 		read_call_out_list();
     }
     int i1;
-	for ( i1 = 0; i1 < net_networks[GetSession()->GetNetworkNumber()].num_con; i1++ )
+	for ( i1 = 0; i1 < net_networks[sess->GetNetworkNumber()].num_con; i1++ )
     {
-		if ( net_networks[GetSession()->GetNetworkNumber()].con[i1].sysnum == sn )
+		if ( net_networks[sess->GetNetworkNumber()].con[i1].sysnum == sn )
         {
 			i = i1;
         }
     }
-	if ( !net_networks[GetSession()->GetNetworkNumber()].ncn )
+	if ( !net_networks[sess->GetNetworkNumber()].ncn )
     {
 		read_contacts();
     }
-	for ( i1 = 0; i1 < net_networks[GetSession()->GetNetworkNumber()].num_ncn; i1++ )
+	for ( i1 = 0; i1 < net_networks[sess->GetNetworkNumber()].num_ncn; i1++ )
     {
-		if ( net_networks[GetSession()->GetNetworkNumber()].ncn[i1].systemnumber == sn )
+		if ( net_networks[sess->GetNetworkNumber()].ncn[i1].systemnumber == sn )
         {
 			i2 = i1;
         }
@@ -342,65 +357,65 @@ void do_callout( int sn )
 
 	if ( i != -1 )
     {
-	    net_system_list_rec *csne = next_system( net_networks[GetSession()->GetNetworkNumber()].con[i].sysnum );
+	    net_system_list_rec *csne = next_system( net_networks[sess->GetNetworkNumber()].con[i].sysnum );
 		if ( csne )
         {
 			sprintf( s, "network /N%u /A%s /P%s /S%u /T%ld",
-				     sn, ( net_networks[GetSession()->GetNetworkNumber()].con[i].options & options_sendback ) ? "1" : "0",
-				     csne->phone, ( NULL != modem_i ) ? modem_i->defl.com_speed : 0, tCurrentTime );
+				     sn, ( net_networks[sess->GetNetworkNumber()].con[i].options & options_sendback ) ? "1" : "0",
+				     csne->phone, ( NULL != modem_i ) ? modem_i->defl.com_speed : 0, l );
             // if modem_i is null, we are on a telnet node, and PPP project, so we don't care...
-			if ( net_networks[GetSession()->GetNetworkNumber()].con[i].macnum )
+			if ( net_networks[sess->GetNetworkNumber()].con[i].macnum )
             {
-				sprintf( s1, " /M%d", static_cast<int>( net_networks[GetSession()->GetNetworkNumber()].con[i].macnum ) );
+				sprintf( s1, " /M%d", static_cast<int>( net_networks[sess->GetNetworkNumber()].con[i].macnum ) );
 				strcat( s, s1 );
 			}
-			sprintf( s1, " .%ld", GetSession()->GetNetworkNumber() );
+			sprintf( s1, " .%ld", sess->GetNetworkNumber() );
 			strcat( s, s1 );
 			if ( strncmp( csne->phone, "000", 3 ) )
             {
 #ifndef _UNUX
 				run_exp();
 #endif
-				GetSession()->bout << "|#7Calling out to: |#2" << csne->name << " - ";
-				if ( GetSession()->GetMaxNetworkNumber() > 1 )
+				sess->bout << "|#7Calling out to: |#2" << csne->name << " - ";
+				if ( sess->GetMaxNetworkNumber() > 1 )
                 {
-					GetSession()->bout << GetSession()->GetNetworkName() << " ";
+					sess->bout << sess->GetNetworkName() << " ";
                 }
-				GetSession()->bout << "@" << sn << wwiv::endl;
+				sess->bout << "@" << sn << wwiv::endl;
                 char szRegionsFileName[ MAX_PATH ];
 				sprintf( szRegionsFileName, "%s%s%c%s.%-3u", syscfg.datadir,
 						 REGIONS_DAT, WWIV_FILE_SEPERATOR_CHAR, REGIONS_DAT, atoi( csne->phone ) );
 				if ( WFile::Exists( szRegionsFileName ) )
                 {
 					sprintf( town, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6] );
-					describe_area_code_prefix( atoi( csne->phone ), atoi( town ), s1 );
+					describe_town( atoi( csne->phone ), atoi( town ), s1 );
 				}
                 else
                 {
 					describe_area_code( atoi( csne->phone ), s1 );
                 }
-				GetSession()->bout << "|#7Sys located in: |#2" << s1 << wwiv::endl;
-				if ( i2 != -1 && net_networks[GetSession()->GetNetworkNumber()].ncn[i2].bytes_waiting )
+				sess->bout << "|#7Sys located in: |#2" << s1 << wwiv::endl;
+				if ( i2 != -1 && net_networks[sess->GetNetworkNumber()].ncn[i2].bytes_waiting )
                 {
-					GetSession()->bout << "|#7Amount pending: |#2" <<
-						bytes_to_k( net_networks[GetSession()->GetNetworkNumber()].ncn[i2].bytes_waiting ) <<
+					sess->bout << "|#7Amount pending: |#2" <<
+						bytes_to_k( net_networks[sess->GetNetworkNumber()].ncn[i2].bytes_waiting ) <<
 						"k" << wwiv::endl;
 				}
 				else
 				{
-					GetSession()->bout.NewLine();
+					nl();
 				}
-				GetSession()->bout << "|#7Commandline is: |#2" << s << wwiv::endl;
-				GetSession()->bout.Color( 7 );
-				GetSession()->bout << charstr( 80, 205 );
+				sess->bout << "|#7Commandline is: |#2" << s << wwiv::endl;
+				ansic( 7 );
+				sess->bout << charstr( 80, 205 );
 #ifndef _UNIX
 				holdphone( true );
 				Wait( 2.5 );
 #endif
 				ExecuteExternalProgram( s, EFLAG_NETPROG );
 				zap_contacts();
-				GetApplication()->GetStatusManager()->RefreshStatusCache();
-				last_time_c = static_cast<int>(tCurrentTime);
+				app->statusMgr->Read();
+				last_time_c = l;
 				global_xx = false;
 				cleanup_net();
 #ifndef _UNUX
@@ -419,7 +434,7 @@ void do_callout( int sn )
 
 bool ok_to_call(int i)
 {
-	net_call_out_rec *con = &( net_networks[GetSession()->GetNetworkNumber()].con[i] );
+	net_call_out_rec *con = &( net_networks[sess->GetNetworkNumber()].con[i] );
 
     bool ok = ( ( con->options & options_no_call ) == 0 ) ? true : false;
 	if ( con->options & options_receive_only )
@@ -521,7 +536,7 @@ bool ok_to_call(int i)
 
 #define WEIGHT 30.0
 
-void fixup_long( unsigned long *f, time_t l )
+void fixup_long( long *f, long l )
 {
 	if ( *f > l )
     {
@@ -539,7 +554,7 @@ void free_vars( float **weight, int **try1 )
 {
 	if ( weight || try1 )
 	{
-		for ( int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++ )
+		for ( int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++ )
 		{
 			if ( try1 && try1[nNetNumber] )
 			{
@@ -565,12 +580,11 @@ void attempt_callout()
 {
     int **try1, i, i1, i2, num_call_sys, num_ncn;
     float **weight, fl, fl1;
-    time_t tLastContactTime;
-	time_t tCurrentTime;
+    long l, l1;
     net_call_out_rec *con;
     net_contact_rec *ncn;
 
-    GetApplication()->GetStatusManager()->RefreshStatusCache();
+    app->statusMgr->Read();
 
     bool net_only = true;
 
@@ -595,36 +609,36 @@ void attempt_callout()
     {
         net_only = false;
     }
-    time( &tCurrentTime );
-    if ( last_time_c > tCurrentTime )
+    time( &l );
+    if ( last_time_c > l )
     {
         last_time_c = 0L;
     }
-    if ( labs(last_time_c - tCurrentTime ) < 120 )
+    if ( labs(last_time_c - l ) < 120 )
     {
         return;
     }
     if ( last_time_c == 0L )
     {
-        last_time_c = tCurrentTime;
+        last_time_c = l;
         return;
     }
-    if ( ( try1 = static_cast<int **>( BbsAllocA( sizeof(int *) * GetSession()->GetMaxNetworkNumber() ) ) ) == NULL )
+    if ( ( try1 = static_cast<int **>( BbsAllocA( sizeof(int *) * sess->GetMaxNetworkNumber() ) ) ) == NULL )
     {
         return;
     }
-    if ( ( weight = static_cast<float **>( BbsAllocA( sizeof( float * ) * GetSession()->GetMaxNetworkNumber() ) ) ) == NULL )
+    if ( ( weight = static_cast<float **>( BbsAllocA( sizeof( float * ) * sess->GetMaxNetworkNumber() ) ) ) == NULL )
     {
         BbsFreeMemory(try1);
         return;
     }
-    memset( try1, 0, sizeof(int *) * GetSession()->GetMaxNetworkNumber() );
-    memset( weight, 0, sizeof(float *) * GetSession()->GetMaxNetworkNumber() );
+    memset( try1, 0, sizeof(int *) * sess->GetMaxNetworkNumber() );
+    memset( weight, 0, sizeof(float *) * sess->GetMaxNetworkNumber() );
 
     float fl2 = 0.0;
     int any = 0;
 
-    for ( int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++ )
+    for ( int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++ )
     {
         set_net_num( nNetNumber );
         if ( !net_sysnum )
@@ -632,15 +646,15 @@ void attempt_callout()
             continue;
         }
 
-        // if (!net_networks[GetSession()->GetNetworkNumber()].con)
+        // if (!net_networks[sess->GetNetworkNumber()].con)
         read_call_out_list();
-        // if (!net_networks[GetSession()->GetNetworkNumber()].ncn)
+        // if (!net_networks[sess->GetNetworkNumber()].ncn)
         read_contacts();
 
-        con = net_networks[GetSession()->GetNetworkNumber()].con;
-        ncn = net_networks[GetSession()->GetNetworkNumber()].ncn;
-        num_call_sys = net_networks[GetSession()->GetNetworkNumber()].num_con;
-        num_ncn = net_networks[GetSession()->GetNetworkNumber()].num_ncn;
+        con = net_networks[sess->GetNetworkNumber()].con;
+        ncn = net_networks[sess->GetNetworkNumber()].ncn;
+        num_call_sys = net_networks[sess->GetNetworkNumber()].num_con;
+        num_ncn = net_networks[sess->GetNetworkNumber()].num_ncn;
 
         try1[nNetNumber] = static_cast<int *>( BbsAllocA( sizeof( int ) * num_call_sys ) );
         if ( !try1[nNetNumber] )
@@ -673,13 +687,13 @@ void attempt_callout()
                     {
                         if ( con[i].call_anyway > 0 )
                         {
-                            tLastContactTime = ncn[i2].lastcontact + SECONDS_PER_HOUR * con[i].call_anyway;
+                            l1 = ncn[i2].lastcontact + SECONDS_PER_HOUR * con[i].call_anyway;
                         }
                         else
                         {
-                            tLastContactTime = ncn[i2].lastcontact + SECONDS_PER_HOUR / (-con[i].call_anyway);
+                            l1 = ncn[i2].lastcontact + SECONDS_PER_HOUR / (-con[i].call_anyway);
                         }
-                        if ( tCurrentTime < tLastContactTime )
+                        if ( l < l1 )
                         {
                             ok = false;
                         }
@@ -691,7 +705,7 @@ void attempt_callout()
                 }
                 if ( con[i].options & options_once_per_day )
                 {
-                    if ( labs( tCurrentTime - ncn[i2].lastcontactsent ) <
+                    if ( labs( l - ncn[i2].lastcontactsent ) <
                         ( 20L * SECONDS_PER_HOUR / con[i].times_per_day ) )
                     {
                         ok = false;
@@ -700,13 +714,13 @@ void attempt_callout()
                 if ( ok )
                 {
                     if ( ( bytes_to_k(ncn[i2].bytes_waiting ) < con[i].min_k )
-                        && ( labs( tCurrentTime - ncn[i2].lastcontact ) < SECONDS_PER_DAY ) )
+                        && ( labs( l - ncn[i2].lastcontact ) < SECONDS_PER_DAY ) )
                     {
                         ok = false;
                     }
                 }
-                fixup_long( &( ncn[i2].lastcontactsent ), tCurrentTime );
-                fixup_long( &( ncn[i2].lasttry ), tCurrentTime );
+                fixup_long( ( long * ) &( ncn[i2].lastcontactsent ), l );
+                fixup_long( ( long * ) &( ncn[i2].lasttry ), l );
                 if ( ok )
                 {
                     if ( ncn[i2].bytes_waiting == 0L )
@@ -717,7 +731,7 @@ void attempt_callout()
                     {
                         fl = (float) 1024.0 / ((float) ncn[i2].bytes_waiting) * (float) WEIGHT * (float) 60.0;
                     }
-                    fl1 = (float) (tCurrentTime - ncn[i2].lasttry);
+                    fl1 = (float) (l - ncn[i2].lasttry);
                     if ( ( fl < fl1 ) || net_only )
                     {
                         try1[nNetNumber][i] = 1;
@@ -743,7 +757,7 @@ void attempt_callout()
     {
         fl = static_cast<float>( fl2 ) * static_cast<float>( rand() ) / static_cast<float>( 32767.0 );
         fl1 = 0.0;
-        for (int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
+        for (int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
         {
             set_net_num(nNetNumber);
             if (!net_sysnum)
@@ -752,7 +766,7 @@ void attempt_callout()
             }
 
             i1 = -1;
-            for (i = 0; (i < net_networks[GetSession()->GetNetworkNumber()].num_con); i++)
+            for (i = 0; (i < net_networks[sess->GetNetworkNumber()].num_con); i++)
             {
                 if (try1[nNetNumber][i])
                 {
@@ -769,9 +783,9 @@ void attempt_callout()
                 free_vars(weight, try1);
                 weight = NULL;
                 try1 = NULL;
-                do_callout(net_networks[GetSession()->GetNetworkNumber()].con[i1].sysnum);
-                time(&tCurrentTime);
-                last_time_c = tCurrentTime;
+                do_callout(net_networks[sess->GetNetworkNumber()].con[i1].sysnum);
+                time(&l);
+                last_time_c = l;
                 break;
             }
         }
@@ -789,37 +803,40 @@ void print_pending_list()
         i2 = 0,
         i3 = 0,
         num_ncn = 0,
-        num_call_sys = 0;
+        num_call_sys = 0,
+        h = 0,
+        m = 0,
+        se = 0;
 	int adjust = 0, lines = 0;
-	char s1[81], s2[81], s3[81], s4[81], s5[81];
-	time_t tCurrentTime;
+	char s[255], s1[81], s2[81], s3[81], s4[81], s5[81];
+	long l, l1;
 	net_call_out_rec *con;
 	net_contact_rec *ncn;
 	time_t t;
 	time(&t);
 	struct tm * pTm = localtime(&t);
 
-	long ss = GetSession()->GetCurrentUser()->GetStatus();
+	long ss = sess->thisuser.GetStatus();
 
 	int nDow = dow();
 
-	if ( net_networks[0].sysnum == 0 && GetSession()->GetMaxNetworkNumber() == 1 )
+	if ( net_networks[0].sysnum == 0 && sess->GetMaxNetworkNumber() == 1 )
     {
 		return;
     }
 
-	time(&tCurrentTime);
+	time(&l);
 
-	GetSession()->bout.NewLine( 2 );
-	GetSession()->bout << "                           |#3ฤ> |#9Network Status |#3<ฤ\r\n";
-	GetSession()->bout.NewLine();
+	nl( 2 );
+	sess->bout << "                           |#3ฤ> |#9Network Status |#3<ฤ\r\n";
+	nl();
 
-	GetSession()->bout << "|#7ษอออออัออออออออออัอออออออัอออออออออัอออออออออัออออออัอออออัอออออออออออัอออออป\r\n";
-	GetSession()->bout << "|#7บ |#1Ok? |#7ณ |#1Network  |#7ณ |#1 Node |#7ณ  |#1 Sent  |#7ณ|#1Received |#7ณ|#1Ready |#7ณ|#1Fails|#7ณ  |#1Elapsed  |#7ณ|#1/HrWt|#7บ\r\n";
-	GetSession()->bout << "|#7ฬอออออุออออออออออุอออออออุอออออออออุอออออออออุออออออุอออออุอออออออออออุอออออน\r\n";
+	sess->bout << "|#7ษอออออัออออออออออัอออออออัอออออออออัอออออออออัออออออัอออออัอออออออออออัอออออป\r\n";
+	sess->bout << "|#7บ |#1Ok? |#7ณ |#1Network  |#7ณ |#1 Node |#7ณ  |#1 Sent  |#7ณ|#1Received |#7ณ|#1Ready |#7ณ|#1Fails|#7ณ  |#1Elapsed  |#7ณ|#1/HrWt|#7บ\r\n";
+	sess->bout << "|#7ฬอออออุออออออออออุอออออออุอออออออออุอออออออออุออออออุอออออุอออออออออออุอออออน\r\n";
 
 	int nNetNumber;
-	for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
+	for (nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
     {
 		set_net_num(nNetNumber);
 
@@ -828,20 +845,20 @@ void print_pending_list()
 			continue;
         }
 
-		if (!net_networks[GetSession()->GetNetworkNumber()].con)
+		if (!net_networks[sess->GetNetworkNumber()].con)
         {
 			read_call_out_list();
         }
 
-		if (!net_networks[GetSession()->GetNetworkNumber()].ncn)
+		if (!net_networks[sess->GetNetworkNumber()].ncn)
         {
 			read_contacts();
         }
 
-		con = net_networks[GetSession()->GetNetworkNumber()].con;
-		ncn = net_networks[GetSession()->GetNetworkNumber()].ncn;
-		num_call_sys = net_networks[GetSession()->GetNetworkNumber()].num_con;
-		num_ncn = net_networks[GetSession()->GetNetworkNumber()].num_ncn;
+		con = net_networks[sess->GetNetworkNumber()].con;
+		ncn = net_networks[sess->GetNetworkNumber()].ncn;
+		num_call_sys = net_networks[sess->GetNetworkNumber()].num_con;
+		num_ncn = net_networks[sess->GetNetworkNumber()].num_ncn;
 
 		for (i1 = 0; i1 < num_call_sys; i1++)
         {
@@ -869,15 +886,14 @@ void print_pending_list()
                 {
 					strcpy(s2, "|#3---");
                 }
-				
-				int h=0,m=0;
+
 				if (ncn[i2].lastcontactsent)
 				{
-					time_t tLastContactTime = tCurrentTime - ncn[i2].lastcontactsent;
-					int se = tLastContactTime % 60;
-					tLastContactTime = (tLastContactTime - se) / 60;
-					m = tLastContactTime % 60;
-					h = tLastContactTime / 60;
+					l1 = l - ncn[i2].lastcontactsent;
+					se = l1 % 60;
+					l1 = (l1 - se) / 60;
+					m = l1 % 60;
+					h = l1 / 60;
 					sprintf(s1, "|#2%02d:%02d:%02d", h, m, se);
 				}
 				else
@@ -917,9 +933,9 @@ void print_pending_list()
 					i3 = 0;
                 }
 
-				GetSession()->bout.WriteFormatted( "|#7บ %-3s |#7ณ |#2%-8.8s |#7ณ |#2%5u |#7ณ|#2%8s |#7ณ|#2%8s |#7ณ|#2%5s |#7ณ|#2%4d |#7ณ|#2%13.13s |#7ณ|#2%4d |#7บ\r\n",
+				bprintf( "|#7บ %-3s |#7ณ |#2%-8.8s |#7ณ |#2%5u |#7ณ|#2%8s |#7ณ|#2%8s |#7ณ|#2%5s |#7ณ|#2%4d |#7ณ|#2%13.13s |#7ณ|#2%4d |#7บ\r\n",
 					     s2,
-					     GetSession()->GetNetworkName(),
+					     sess->GetNetworkName(),
 					     ncn[i2].systemnumber,
 					     s3,
 					     s4,
@@ -927,7 +943,7 @@ void print_pending_list()
 					     ncn[i2].numfails,
 					     s1,
 					     i3 );
-				if ( !GetSession()->GetCurrentUser()->HasPause() && ( ( lines++ ) == 20 ) )
+				if ( !sess->thisuser.hasPause() && ( ( lines++ ) == 20 ) )
 				{
 					pausescr();
 					lines = 0;
@@ -936,7 +952,7 @@ void print_pending_list()
 		}
 	}
 
-	for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
+	for (nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
 	{
 		set_net_num(nNetNumber);
 
@@ -945,17 +961,18 @@ void print_pending_list()
 			continue;
 		}
 
-        WFile deadNetFile( GetSession()->GetNetworkDataDirectory(), DEAD_NET );
-        if ( deadNetFile.Open(WFile::modeReadOnly|WFile::modeBinary) ) 
+		sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), DEAD_NET);
+		int hFileDeadNet = open(s, O_RDONLY | O_BINARY);
+		if ( hFileDeadNet > 0 )
         {
-            long lFileSize = deadNetFile.GetLength();
-			deadNetFile.Close();
-            sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
-			GetSession()->bout.WriteFormatted( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6DEAD! |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", GetSession()->GetNetworkName(), s3);
+			l = filelength( hFileDeadNet );
+			close( hFileDeadNet );
+            sprintf( s3, "%ld""k", ( l + 1023 ) / 1024 );
+			bprintf( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6DEAD! |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", sess->GetNetworkName(), s3);
 		}
 	}
 
-	for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
+	for (nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
 	{
 		set_net_num(nNetNumber);
 
@@ -964,21 +981,22 @@ void print_pending_list()
 			continue;
         }
 
-        WFile checkNetFile( GetSession()->GetNetworkDataDirectory(), CHECK_NET );
-        if ( checkNetFile.Open( WFile::modeReadOnly|WFile::modeBinary ) )
-        {
-            long lFileSize = checkNetFile.GetLength();
-            checkNetFile.Close();
-            sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
+		sprintf(s, "%s%s", sess->GetNetworkDataDirectory(), CHECK_NET);
+		int hFileCheckNet = open(s, O_RDONLY | O_BINARY);
+		if ( hFileCheckNet > 0 )
+		{
+			l = filelength( hFileCheckNet );
+			close( hFileCheckNet );
+            sprintf( s3, "%ld""k", ( l + 1023 ) / 1024 );
 			strcat(s3, "k");
-			GetSession()->bout.WriteFormatted( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6CHECK |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", GetSession()->GetNetworkName(), s3);
+			bprintf( "|#7บ |#3--- |#7ณ |#2%-8s |#7ณ |#6CHECK |#7ณ |#2------- |#7ณ |#2------- |#7ณ|#2%5s |#7ณ|#2 --- |#7ณ |#2--------- |#7ณ|#2 --- |#7บ\r\n", sess->GetNetworkName(), s3);
 		}
 	}
 
-	GetSession()->bout << "|#7ศอออออฯออออออออออฯอออออออฯอออออออออฯอออออออออฯออออออฯอออออฯอออออออออออฯอออออผ\r\n";
-	GetSession()->bout.NewLine();
-	GetSession()->GetCurrentUser()->SetStatus( ss );
-	if ( !GetSession()->IsUserOnline() && lines_listed )
+	sess->bout << "|#7ศอออออฯออออออออออฯอออออออฯอออออออออฯอออออออออฯออออออฯอออออฯอออออออออออฯอออออผ\r\n";
+	nl();
+	sess->thisuser.SetStatus( ss );
+	if ( !sess->IsUserOnline() && lines_listed )
 	{
 		pausescr();
 	}
@@ -1119,7 +1137,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
 				nh->length += strlen( pszAuthorName ) + 1;
             }
             char szPacketFileName[ MAX_PATH ];
-			sprintf( szPacketFileName, "%sP1%s", net_networks[nNetNumber].dir, GetApplication()->GetNetworkExtension() );
+			sprintf( szPacketFileName, "%sP1%s", net_networks[nNetNumber].dir, app->GetNetworkExtension() );
             WFile packetFile( szPacketFileName );
             if ( packetFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) )
             {
@@ -1139,7 +1157,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
                 }
 				if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post))
                 {
-                    packetFile.Write( pszAuthorName, strlen( pszAuthorName ) + 1);
+                    packetFile.Write( const_cast<char*>( pszAuthorName ), strlen( pszAuthorName ) + 1);
                 }
                 packetFile.Write( pszOriginalText, strlen( pszOriginalText ) + 1 );
                 packetFile.Write( newname, strlen( newname ) );
@@ -1157,15 +1175,15 @@ void print_call(int sn, int nNetNumber, int i2)
 	static int color, got_color = 0;
 
 	char s[100], s1[100];
-	time_t tCurrentTime;
+	long l, l2;
 
-	time(&tCurrentTime);
+	time(&l);
 
 	set_net_num(nNetNumber);
 	read_call_out_list();
 	read_contacts();
 
-    net_contact_rec *ncn = net_networks[GetSession()->GetNetworkNumber()].ncn;
+    net_contact_rec *ncn = net_networks[sess->GetNetworkNumber()].ncn;
 	net_system_list_rec *csne = next_system(sn);
 
 	if (!got_color)
@@ -1173,33 +1191,32 @@ void print_call(int sn, int nNetNumber, int i2)
 		got_color = 1;
 		color = 30;
 
-        WIniFile iniFile( WWIV_INI );
-		if ( iniFile.Open( INI_TAG ) )
+		if (ini_init(WWIV_INI, INI_TAG, NULL))
         {
-            const char *ss = iniFile.GetValue( "CALLOUT_COLOR_TEXT" );
+            char *ss = ini_get("CALLOUT_COLOR_TEXT", -1, NULL);
 			if ( ss != NULL )
             {
 				color = atoi( ss );
 			}
-            iniFile.Close();
+			ini_done();
 		}
 	}
 	curatr = color;
 	sprintf(s1, "%ldk", bytes_to_k(ncn[i2].bytes_waiting));
-	GetSession()->localIO()->LocalXYAPrintf( 58, 17, color, "%-10.16s", s1 );
+	app->localIO->LocalXYAPrintf( 58, 17, color, "%-10.16s", s1 );
 
 	sprintf(s1, "%ldk", bytes_to_k(ncn[i2].bytes_received));
-	GetSession()->localIO()->LocalXYAPrintf( 23, 17, color, "%-10.16s", s1 );
+	app->localIO->LocalXYAPrintf( 23, 17, color, "%-10.16s", s1 );
 
     sprintf(s1, "%ldk", bytes_to_k(ncn[i2].bytes_sent));
-	GetSession()->localIO()->LocalXYAPrintf( 23, 18, color, "%-10.16s", s1 );
+	app->localIO->LocalXYAPrintf( 23, 18, color, "%-10.16s", s1 );
 
 	if (ncn[i2].firstcontact)
     {
-		sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].firstcontact) / SECONDS_PER_HOUR);
-		time_t tTime = (((tCurrentTime - ncn[i2].firstcontact) % SECONDS_PER_HOUR) / 60);
-        sprintf( s, "%ld", tTime );
-		if ( tTime < 10 )
+		sprintf(s1, "%ld:", (l - ncn[i2].firstcontact) / SECONDS_PER_HOUR);
+		l2 = (((l - ncn[i2].firstcontact) % SECONDS_PER_HOUR) / 60);
+        sprintf( s, "%d", l2 );
+		if ( l2 < 10 )
         {
 			strcat(s1, "0");
 			strcat(s1, s);
@@ -1214,14 +1231,14 @@ void print_call(int sn, int nNetNumber, int i2)
     {
 		strcpy(s1, "NEVER");
     }
-	GetSession()->localIO()->LocalXYAPrintf( 23, 16, color, "%-17.16s", s1 );
+	app->localIO->LocalXYAPrintf( 23, 16, color, "%-17.16s", s1 );
 
 	if (ncn[i2].lastcontactsent)
     {
-		sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR);
-		time_t tTime = (((tCurrentTime - ncn[i2].lastcontactsent) % SECONDS_PER_HOUR) / 60);
-		sprintf( s, "%ld", tTime );
-		if (tTime < 10)
+		sprintf(s1, "%ld:", (l - ncn[i2].lastcontactsent) / SECONDS_PER_HOUR);
+		l2 = (((l - ncn[i2].lastcontactsent) % SECONDS_PER_HOUR) / 60);
+		sprintf( s, "%d", l2 );
+		if (l2 < 10)
         {
 			strcat(s1, "0");
 			strcat(s1, s);
@@ -1236,14 +1253,14 @@ void print_call(int sn, int nNetNumber, int i2)
     {
 		strcpy(s1, "NEVER");
     }
-	GetSession()->localIO()->LocalXYAPrintf( 58, 16, color, "%-17.16s", s1 );
+	app->localIO->LocalXYAPrintf( 58, 16, color, "%-17.16s", s1 );
 
 	if (ncn[i2].lasttry)
     {
-		sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].lasttry) / SECONDS_PER_HOUR);
-		time_t tTime = (((tCurrentTime - ncn[i2].lasttry) % SECONDS_PER_HOUR) / 60);
-		sprintf( s, "%d", tTime );
-		if (tTime < 10)
+		sprintf(s1, "%ld:", (l - ncn[i2].lasttry) / SECONDS_PER_HOUR);
+		l2 = (((l - ncn[i2].lasttry) % SECONDS_PER_HOUR) / 60);
+		sprintf( s, "%d", l2 );
+		if (l2 < 10)
         {
 			strcat(s1, "0");
 			strcat(s1, s);
@@ -1258,15 +1275,15 @@ void print_call(int sn, int nNetNumber, int i2)
     {
 		strcpy(s1, "NEVER");
     }
-	GetSession()->localIO()->LocalXYAPrintf( 58, 15, color, "%-17.16s", s1 );
-	GetSession()->localIO()->LocalXYAPrintf( 23, 15, color, "%-16u", ncn[i2].numcontacts );
-	GetSession()->localIO()->LocalXYAPrintf( 41, 3, color, "%-30.30s", csne->name );
-	GetSession()->localIO()->LocalXYAPrintf( 23, 19, color, "%-17.17s", csne->phone );
+	app->localIO->LocalXYAPrintf( 58, 15, color, "%-17.16s", s1 );
+	app->localIO->LocalXYAPrintf( 23, 15, color, "%-16u", ncn[i2].numcontacts );
+	app->localIO->LocalXYAPrintf( 41, 3, color, "%-30.30s", csne->name );
+	app->localIO->LocalXYAPrintf( 23, 19, color, "%-17.17s", csne->phone );
 	sprintf( s1, "%u Bps", csne->speed );
-	GetSession()->localIO()->LocalXYAPrintf( 58, 18, color, "%-10.16s", s1 );
+	app->localIO->LocalXYAPrintf( 58, 18, color, "%-10.16s", s1 );
 	describe_area_code(atoi(csne->phone), s1);
-	GetSession()->localIO()->LocalXYAPrintf( 58, 19, color, "%-17.17s", stripcolors( s1 ) );
-	GetSession()->localIO()->LocalXYAPrintf( 14, 3, color, "%-11.16s", GetSession()->GetNetworkName() );
+	app->localIO->LocalXYAPrintf( 58, 19, color, "%-17.17s", stripcolors( s1 ) );
+	app->localIO->LocalXYAPrintf( 14, 3, color, "%-11.16s", sess->GetNetworkName() );
 }
 
 void fill_call(int color, int row, int netmax, int *nodenum)
@@ -1290,7 +1307,7 @@ void fill_call(int color, int row, int netmax, int *nodenum)
         {
 			strcpy(s1, "     ");
         }
-		GetSession()->localIO()->LocalXYPuts( 6 + x, 5 + y, s1 );
+		app->localIO->LocalXYPuts( 6 + x, 5 + y, s1 );
 		x += 7;
 	}
 }
@@ -1302,13 +1319,13 @@ int ansicallout()
 {
     static int callout_ansi, color1, color2, color3, color4, got_info = 0;
 
-    char ch = 0;
+    char ch = 0, *ss;
     int i, i1, nNetNumber, netnum = 0, x = 0, y = 0, pos = 0, sn = 0;
     int num_ncn, num_call_sys, rownum = 0, *nodenum, *netpos, *ipos;
     net_contact_rec *ncn;
     net_call_out_rec *con;
 #ifndef _UNIX
-    GetSession()->localIO()->SetCursor( WLocalIO::cursorNone );
+    app->localIO->SetCursor( WLocalIO::cursorNone );
     holdphone( true );
 #endif
     if (!got_info)
@@ -1319,15 +1336,32 @@ int ansicallout()
         color2 = 59;
         color3 = 7;
         color4 = 30;
-        WIniFile iniFile( WWIV_INI );
-        if ( iniFile.Open( INI_TAG ) )
+        if (ini_init(WWIV_INI, INI_TAG, NULL))
         {
-            callout_ansi = iniFile.GetBooleanValue( "CALLOUT_ANSI" ) ? 1 : 0;
-            color1 = iniFile.GetNumericValue( "CALLOUT_COLOR", color1 );
-            color2 = iniFile.GetNumericValue( "CALLOUT_HIGHLIGHT", color2 );
-            color3 = iniFile.GetNumericValue( "CALLOUT_NORMAL", color3 );
-            color4 = iniFile.GetNumericValue( "CALLOUT_COLOR_TEXT", color4 );
-            iniFile.Close();
+            if ((ss = ini_get("CALLOUT_ANSI", -1, NULL)) != NULL)
+            {
+				if ( wwiv::UpperCase<char>(ss[0]) == 'Y' )
+                {
+                    callout_ansi = 1;
+                }
+            }
+            if ((ss = ini_get("CALLOUT_COLOR", -1, NULL)) != NULL)
+            {
+                color1 = atoi(ss);
+            }
+            if ((ss = ini_get("CALLOUT_HIGHLIGHT", -1, NULL)) != NULL)
+            {
+                color2 = atoi(ss);
+            }
+            if ((ss = ini_get("CALLOUT_NORMAL", -1, NULL)) != NULL)
+            {
+                color3 = atoi(ss);
+            }
+            if ((ss = ini_get("CALLOUT_COLOR_TEXT", -1, NULL)) != NULL)
+            {
+                color4 = atoi(ss);
+            }
+            ini_done();
         }
     }
 
@@ -1336,16 +1370,16 @@ int ansicallout()
         nodenum = static_cast<int *>( BbsAllocA(MAX_CONNECTS * 2 ) );
         netpos = static_cast<int *>( BbsAllocA(MAX_CONNECTS * 2 ) );
         ipos = static_cast<int *>( BbsAllocA(MAX_CONNECTS * 2 ) );
-        for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
+        for (nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++)
         {
             set_net_num(nNetNumber);
             read_call_out_list();
             read_contacts();
 
-            con = net_networks[GetSession()->GetNetworkNumber()].con;
-            ncn = net_networks[GetSession()->GetNetworkNumber()].ncn;
-            num_call_sys = net_networks[GetSession()->GetNetworkNumber()].num_con;
-            num_ncn = net_networks[GetSession()->GetNetworkNumber()].num_ncn;
+            con = net_networks[sess->GetNetworkNumber()].con;
+            ncn = net_networks[sess->GetNetworkNumber()].ncn;
+            num_call_sys = net_networks[sess->GetNetworkNumber()].num_con;
+            num_ncn = net_networks[sess->GetNetworkNumber()].num_ncn;
 
             for (i1 = 0; i1 < num_call_sys; i1++)
             {
@@ -1368,35 +1402,35 @@ int ansicallout()
             }
         }
 
-        GetSession()->localIO()->LocalCls();
+        app->localIO->LocalCls();
         curatr = color1;
-        GetSession()->localIO()->MakeLocalWindow( 3, 2, 73, 10 );
-        GetSession()->localIO()->LocalXYAPrintf( 3, 4, color1, "ร%sด", charstr( 71, 'ฤ' ) );
-        GetSession()->localIO()->MakeLocalWindow( 3, 14, 73, 7 );
-        GetSession()->localIO()->LocalXYAPrintf( 5, 3,   color3, "NetWork:" );
-        GetSession()->localIO()->LocalXYAPrintf( 31, 3,  color3, "BBS Name:" );
-        GetSession()->localIO()->LocalXYAPrintf( 5, 15,  color3, "Contact Number  :" );
-        GetSession()->localIO()->LocalXYAPrintf( 5, 16,  color3, "First Contact   :" );
-        GetSession()->localIO()->LocalXYAPrintf( 5, 17,  color3, "Bytes Received  :" );
-        GetSession()->localIO()->LocalXYAPrintf( 5, 18,  color3, "Bytes Sent      :" );
-        GetSession()->localIO()->LocalXYAPrintf( 5, 19,  color3, "Phone Number    :" );
-        GetSession()->localIO()->LocalXYAPrintf( 40, 15, color3, "Last Try Contact:" );
-        GetSession()->localIO()->LocalXYAPrintf( 40, 16, color3, "Last Contact    :" );
-        GetSession()->localIO()->LocalXYAPrintf( 40, 17, color3, "Bytes Waiting   :" );
-        GetSession()->localIO()->LocalXYAPrintf( 40, 18, color3, "Max Speed       :" );
-        GetSession()->localIO()->LocalXYAPrintf( 40, 19, color3, "System Location :" );
+        app->localIO->MakeLocalWindow( 3, 2, 73, 10 );
+        app->localIO->LocalXYAPrintf( 3, 4, color1, "ร%sด", charstr( 71, 'ฤ' ) );
+        app->localIO->MakeLocalWindow( 3, 14, 73, 7 );
+        app->localIO->LocalXYAPrintf( 5, 3,   color3, "NetWork:" );
+        app->localIO->LocalXYAPrintf( 31, 3,  color3, "BBS Name:" );
+        app->localIO->LocalXYAPrintf( 5, 15,  color3, "Contact Number  :" );
+        app->localIO->LocalXYAPrintf( 5, 16,  color3, "First Contact   :" );
+        app->localIO->LocalXYAPrintf( 5, 17,  color3, "Bytes Received  :" );
+        app->localIO->LocalXYAPrintf( 5, 18,  color3, "Bytes Sent      :" );
+        app->localIO->LocalXYAPrintf( 5, 19,  color3, "Phone Number    :" );
+        app->localIO->LocalXYAPrintf( 40, 15, color3, "Last Try Contact:" );
+        app->localIO->LocalXYAPrintf( 40, 16, color3, "Last Contact    :" );
+        app->localIO->LocalXYAPrintf( 40, 17, color3, "Bytes Waiting   :" );
+        app->localIO->LocalXYAPrintf( 40, 18, color3, "Max Speed       :" );
+        app->localIO->LocalXYAPrintf( 40, 19, color3, "System Location :" );
 
         fill_call( color4, rownum, netnum, nodenum );
         curatr = color2;
         x = 0;
         y = 0;
-        GetSession()->localIO()->LocalXYAPrintf( 6, 5, color2, "%-5u", nodenum[pos]);
+        app->localIO->LocalXYAPrintf( 6, 5, color2, "%-5u", nodenum[pos]);
         print_call( nodenum[pos], netpos[pos], ipos[pos] );
 
 		bool done = false;
         do
         {
-            ch = wwiv::UpperCase<char>( static_cast<char>( GetSession()->localIO()->LocalGetChar() ) );
+            ch = wwiv::UpperCase<char>( static_cast<char>( app->localIO->LocalGetChar() ) );
             switch (ch)
             {
             case ' ':
@@ -1411,16 +1445,16 @@ int ansicallout()
                 break;
             case -32: // (224) I don't know MS's CRT returns this on arrow keys....
             case 0:
-                ch = wwiv::UpperCase<char>( static_cast<char>( GetSession()->localIO()->LocalGetChar() ) );
+                ch = wwiv::UpperCase<char>( static_cast<char>( app->localIO->LocalGetChar() ) );
                 switch (ch)
                 {
                 case RARROW:                        // right arrow
                     if ((pos < netnum - 1) && (x < 63))
                     {
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos++;
                         x += 7;
-                        GetSession()->localIO()->LocalXYAPrintf(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
+                        app->localIO->LocalXYAPrintf(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     break;
@@ -1428,21 +1462,21 @@ int ansicallout()
                     if (x > 0)
                     {
                         curatr = color4;
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos--;
                         x -= 7;
                         curatr = color2;
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     break;
                 case UPARROW:                        // up arrow
                     if (y > 0)
                     {
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos -= 10;
                         y--;
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     else if (rownum > 0)
@@ -1450,14 +1484,14 @@ int ansicallout()
                         pos -= 10;
                         rownum--;
                         fill_call(color4, rownum, netnum, nodenum);
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     break;
                 case DNARROW:                        // down arrow
                     if ((y < 5) && (pos + 10 < netnum))
                     {
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos += 10;
                         y++;
                     }
@@ -1475,7 +1509,7 @@ int ansicallout()
 					    }
                     }
                     curatr = color2;
-                    GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                    app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                     print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     break;
                 case HOME:                        // home
@@ -1486,16 +1520,16 @@ int ansicallout()
                         pos = 0;
                         rownum = 0;
                         fill_call(color4, rownum, netnum, nodenum);
-                        GetSession()->localIO()->LocalXYAPrintf( 6, 5, color2, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6, 5, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                 case PAGEUP:                        // page up
                     if (y > 0)
                     {
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos -= 10 * y;
                         y = 0;
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     else
@@ -1511,14 +1545,14 @@ int ansicallout()
                             rownum = 0;
                         }
                         fill_call(color4, rownum, netnum, nodenum);
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     break;
                 case PAGEDN:                        // page down
                     if (y < 5)
                     {
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color4, "%-5u", nodenum[pos] );
                         pos += 10 * (5 - y);
                         y = 5;
                         if (pos >= netnum)
@@ -1526,7 +1560,7 @@ int ansicallout()
                             pos -= 10;
                             --y;
                         }
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call(nodenum[pos], netpos[pos], ipos[pos]);
                     }
                     else if ( ( rownum + 6 ) * 10 < netnum )
@@ -1545,16 +1579,16 @@ int ansicallout()
                             pos -= 10;
                             --y;
                         }
-                        GetSession()->localIO()->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
+                        app->localIO->LocalXYAPrintf( 6 + x, 5 + y, color2, "%-5u", nodenum[pos] );
                         print_call( nodenum[pos], netpos[pos], ipos[pos] );
                     }
                     break;
                 }
             }
         } while ( !done );
-        GetSession()->localIO()->SetCursor( WLocalIO::cursorNormal );
+        app->localIO->SetCursor( WLocalIO::cursorNormal );
         curatr = color3;
-        GetSession()->localIO()->LocalCls();
+        app->localIO->LocalCls();
         netw = ( netpos[pos] );
         BbsFreeMemory( nodenum );
         BbsFreeMemory( netpos );
@@ -1562,15 +1596,15 @@ int ansicallout()
     }
     else
     {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#2Which system: ";
+        nl();
+        sess->bout << "|#2Which system: ";
         char szSystemNumber[ 11 ];
         input( szSystemNumber, 5, true );
         sn = atoi( szSystemNumber );
     }
 #ifndef _UNIX
     holdphone( false );
-    GetSession()->localIO()->SetCursor( WLocalIO::cursorNormal );
+    app->localIO->SetCursor( WLocalIO::cursorNormal );
 #endif
     std::cout << "System: " << sn << std::endl;
     return sn;
@@ -1583,12 +1617,12 @@ void force_callout(int dw)
     bool  abort = false;
     bool ok;
     unsigned int nr = 1, tc = 0;
-    time_t tCurrentTime;
+    long l;
     char ch, s[101], onx[20];
     net_system_list_rec *csne;
     unsigned long lc, cc;
 
-    time(&tCurrentTime);
+    time(&l);
     int sn = ansicallout();
     if (!sn)
     {
@@ -1601,11 +1635,11 @@ void force_callout(int dw)
     onx[1]  = '\0';
     int onxi = 1;
     int nv = 0;
-    char *ss = static_cast<char *>( BbsAllocA( GetSession()->GetMaxNetworkNumber() * 3 ) );
-    char *ss1 = ss + GetSession()->GetMaxNetworkNumber();
-    char *ss2 = ss1 + GetSession()->GetMaxNetworkNumber();
+    char *ss = static_cast<char *>( BbsAllocA( sess->GetMaxNetworkNumber() * 3 ) );
+    char *ss1 = ss + sess->GetMaxNetworkNumber();
+    char *ss2 = ss1 + sess->GetMaxNetworkNumber();
 
-    for ( int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++ )
+    for ( int nNetNumber = 0; nNetNumber < sess->GetMaxNetworkNumber(); nNetNumber++ )
     {
         set_net_num( nNetNumber );
         if ( !net_sysnum || net_sysnum == sn )
@@ -1613,15 +1647,15 @@ void force_callout(int dw)
             continue;
         }
 
-        if ( !net_networks[GetSession()->GetNetworkNumber()].con )
+        if ( !net_networks[sess->GetNetworkNumber()].con )
         {
             read_call_out_list();
         }
 
         i = -1;
-        for ( i1 = 0; i1 < net_networks[GetSession()->GetNetworkNumber()].num_con; i1++ )
+        for ( i1 = 0; i1 < net_networks[sess->GetNetworkNumber()].num_con; i1++ )
         {
-            if ( net_networks[GetSession()->GetNetworkNumber()].con[i1].sysnum == sn )
+            if ( net_networks[sess->GetNetworkNumber()].con[i1].sysnum == sn )
             {
                 i = i1;
                 break;
@@ -1630,15 +1664,15 @@ void force_callout(int dw)
 
         if ( i != -1 )
         {
-            if ( !net_networks[GetSession()->GetNetworkNumber()].ncn )
+            if ( !net_networks[sess->GetNetworkNumber()].ncn )
             {
                 read_contacts();
             }
 
             i2 = -1;
-            for ( i1 = 0; i1 < net_networks[GetSession()->GetNetworkNumber()].num_ncn; i1++ )
+            for ( i1 = 0; i1 < net_networks[sess->GetNetworkNumber()].num_ncn; i1++ )
             {
-                if ( net_networks[GetSession()->GetNetworkNumber()].ncn[i1].systemnumber == sn )
+                if ( net_networks[sess->GetNetworkNumber()].ncn[i1].systemnumber == sn )
                 {
                     i2 = i1;
                     break;
@@ -1663,7 +1697,7 @@ void force_callout(int dw)
         }
         else
         {
-            GetSession()->bout.NewLine();
+            nl();
             for ( i = 0; i < nv; i++ )
             {
                 set_net_num(ss[i]);
@@ -1681,7 +1715,7 @@ void force_callout(int dw)
                         odc[odci - 1] = static_cast< char >( odci + '0' );
                         odc[odci] = 0;
                     }
-                    if ( wwiv::stringUtils::IsEqualsIgnoreCase( net_networks[netw].name, GetSession()->GetNetworkName() ) )
+                    if ( wwiv::stringUtils::IsEqualsIgnoreCase( net_networks[netw].name, sess->GetNetworkName() ) )
                     {
                         nitu = i;
                     }
@@ -1696,8 +1730,8 @@ void force_callout(int dw)
 
         if ( !ok )
         {
-            GetSession()->bout.NewLine();
-            GetSession()->bout <<  "|#5Are you sure? ";
+            nl();
+            sess->bout <<  "|#5Are you sure? ";
             if ( yesno() )
             {
                 ok = true;
@@ -1705,9 +1739,9 @@ void force_callout(int dw)
         }
         if ( ok )
         {
-            if ( net_networks[GetSession()->GetNetworkNumber()].ncn[ss2[nitu]].bytes_waiting == 0L )
+            if ( net_networks[sess->GetNetworkNumber()].ncn[ss2[nitu]].bytes_waiting == 0L )
             {
-                if ( !( net_networks[GetSession()->GetNetworkNumber()].con[ss1[nitu]].options & options_sendback ) )
+                if ( !( net_networks[sess->GetNetworkNumber()].con[ss1[nitu]].options & options_sendback ) )
                 {
                     ok = false;
                 }
@@ -1715,18 +1749,18 @@ void force_callout(int dw)
                 {
                     if ( dw )
                     {
-                        GetSession()->bout.NewLine();
-                        GetSession()->bout << "|#2Num Retries : ";
+                        nl();
+                        sess->bout << "|#2Num Retries : ";
                         input( s, 5, true );
                         nr = atoi( s );
                     }
                     if ( dw == 2 )
                     {
-                        if ( GetSession()->IsUserOnline() )
+                        if ( sess->IsUserOnline() )
                         {
-                            GetSession()->WriteCurrentUser();
-                            write_qscn(GetSession()->usernum, qsc, false);
-                            GetSession()->SetUserOnline( false );
+                            sess->WriteCurrentUser( sess->usernum );
+                            write_qscn(sess->usernum, qsc, false);
+                            sess->SetUserOnline( false );
                         }
                         hang_it_up();
                         wait1( 90 );
@@ -1737,14 +1771,14 @@ void force_callout(int dw)
                     }
 
                     read_contacts();
-                    lc = net_networks[GetSession()->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
+                    lc = net_networks[sess->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
                     while ((tc < nr) && (!abort))
                     {
-                        if ( GetSession()->localIO()->LocalKeyPressed() )
+                        if ( app->localIO->LocalKeyPressed() )
                         {
-                            while ( GetSession()->localIO()->LocalKeyPressed() )
+                            while ( app->localIO->LocalKeyPressed() )
                             {
-                                ch = wwiv::UpperCase<char>(GetSession()->localIO()->getchd1());
+                                ch = wwiv::UpperCase<char>(app->localIO->getchd1());
                                 if ( !abort )
                                 {
                                     abort = ( ch == ESC ) ? true : false;
@@ -1754,15 +1788,15 @@ void force_callout(int dw)
                         tc++;
                         set_net_num( ss[nitu] );
                         read_contacts();
-                        cc = net_networks[GetSession()->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
+                        cc = net_networks[sess->GetNetworkNumber()].ncn[ss2[nitu]].lastcontact;
                         if ( abort || cc != lc )
                         {
                             break;
                         }
                         else
                         {
-                            GetSession()->localIO()->LocalCls();
-                            GetSession()->bout << "|#9Retries |#0= |#2" << nr << "|#9, Current |#0= |#2" << tc << "|#9, Remaining |#0= |#2" << nr - tc << "|#9. ESC to abort.\r\n";
+                            app->localIO->LocalCls();
+                            sess->bout << "|#9Retries |#0= |#2" << nr << "|#9, Current |#0= |#2" << tc << "|#9, Remaining |#0= |#2" << nr - tc << "|#9. ESC to abort.\r\n";
                             if ( nr == tc )
                             {
                                 BbsFreeMemory( ss );
@@ -1787,18 +1821,18 @@ long *next_system_reg( int ts )
 {
 	static long reg_num;
 
-	if ( GetSession()->GetNetworkNumber() != -1 )
+	if ( sess->GetNetworkNumber() != -1 )
     {
 		read_bbs_list_index();
     }
 
 	if ( csn )
     {
-		for ( int i = 0; i < GetSession()->num_sys_list; i++ )
+		for ( int i = 0; i < sess->num_sys_list; i++ )
         {
 			if ( i == ts )
             {
-				if ( i == ( GetSession()->num_sys_list - 1 ) )
+				if ( i == ( sess->num_sys_list - 1 ) )
                 {
 					return NULL;
                 }
@@ -1811,16 +1845,16 @@ long *next_system_reg( int ts )
 	}
     else
     {
-		for ( int i = 0; i < GetSession()->num_sys_list; i++ )
+		for ( int i = 0; i < sess->num_sys_list; i++ )
         {
 			if ( csn_index[i] == ts )
             {
-                WFile bbsdataReg( GetSession()->GetNetworkDataDirectory(), BBSDATA_REG );
+                WFile bbsdataReg( sess->GetNetworkDataDirectory(), BBSDATA_REG );
                 bbsdataReg.Open( WFile::modeBinary | WFile::modeReadOnly );
                 bbsdataReg.Seek( i * sizeof( long ), WFile::seekBegin );
                 bbsdataReg.Read( &reg_num, sizeof( long ) );
                 bbsdataReg.Close();
-				if ( i == GetSession()->num_sys_list - 1 )
+				if ( i == sess->num_sys_list - 1 )
                 {
 					return NULL;
                 }
@@ -1838,7 +1872,7 @@ long *next_system_reg( int ts )
 #ifndef _UNUX
 void run_exp()
 {
-	int nOldNetworkNumber = GetSession()->GetNetworkNumber();
+	int nOldNetworkNumber = sess->GetNetworkNumber();
 	int nFileNetNetworkNumber = getnetnum("FILEnet");
 	if ( nFileNetNetworkNumber == -1 )
     {
@@ -1847,11 +1881,11 @@ void run_exp()
 	set_net_num( nFileNetNetworkNumber );
 
 	char szExpCommand[MAX_PATH];
-    sprintf( szExpCommand, "EXP S32767.NET %s %d %s %s %s", GetSession()->GetNetworkDataDirectory(), net_sysnum, GetSession()->internetEmailName.c_str(), GetSession()->internetEmailDomain.c_str(), GetSession()->GetNetworkName() );
+    sprintf( szExpCommand, "EXP S32767.NET %s %d %s %s %s", sess->GetNetworkDataDirectory(), net_sysnum, sess->internetEmailName.c_str(), sess->internetEmailDomain.c_str(), sess->GetNetworkName() );
 	ExecuteExternalProgram( szExpCommand, EFLAG_NETPROG );
 
 	set_net_num( nOldNetworkNumber );
-	GetSession()->localIO()->LocalCls();
+	app->localIO->LocalCls();
 }
 #endif
 

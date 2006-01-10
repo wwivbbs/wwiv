@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -19,44 +19,84 @@
 
 #include "wwiv.h"
 
-char *WWIV_make_abs_cmd( char *pszOutBuffer )
+
+void show_files( const char *pszFileName, const char *pszDirectoryName )
+// Displays list of files matching filespec pszFileName in directory pszDirectoryName.
 {
-  if ( strchr( pszOutBuffer, '/' ) )
+	char s[ 255 ], s1[ 255 ];
+
+	char c = ( okansi() ) ? '\xCD' : '=';
+	nl();
+
+    sprintf( s, "|#7[|#4FileSpec: %s    Dir: %s  |#7]", stripfn( pszFileName ), pszFileName );
+
+	int i = ( sess->thisuser.GetScreenChars() - 1 ) / 2 - strlen( stripcolors( s ) ) / 2;
+	sess->bout << "|#7" << charstr( i, c ) << s;
+
+	i = sess->thisuser.GetScreenChars() - 1 - i - strlen( stripcolors( s ) );
+	sess->bout << "|#7%s" << charstr( i, c );
+
+	sprintf(s1,"%s%s",pszDirectoryName,stripfn(pszFileName));
+	WFindFile fnd;
+	bool bFound = fnd.open(s1, 0);
+	while (bFound)
+	{
+		strcpy(s,fnd.GetFileName());
+		align(s);
+		sprintf(s1,"|#7[|#2%s|#7]|#1 ",s);
+		if ( app->localIO->WhereX()> ( sess->thisuser.GetScreenChars() - 15 ) )
+		{
+			nl();
+		}
+		sess->bout << s1;
+		bFound = fnd.next();
+	}
+
+	nl();
+	ansic( 7 );
+	sess->bout << charstr( sess->thisuser.GetScreenChars() - 1, c );
+	nl( 2 );
+}
+
+
+char *WWIV_make_abs_cmd(char *out)
+{
+  if (strchr(out, '/'))
   {
-    return pszOutBuffer;
+    return out;
   }
 
-  char s[ MAX_PATH ];
-  strcpy( s, pszOutBuffer );
-  snprintf( pszOutBuffer, MAX_PATH, "%s%s", GetApplication()->GetHomeDir(), s );
+  char s[MAX_PATH];
+  strcpy(s, out);
+  sprintf(out, "%s%s", app->GetHomeDir(), s);
 
-  return pszOutBuffer;
+  return(out);
 }
 
 
 // Reverses a string
-char *strrev( char *pszBufer )
+char *strrev(char *s)
 {
-	WWIV_ASSERT( pszBufer );
-	char szTempBuffer[255];
-	int str = strlen( pszBufer );
+	WWIV_ASSERT( s );
+	char s1[255];
+	int str = strlen( s );
 	WWIV_ASSERT( str <= 255 );
 
 	for ( int i = str; i >- 1; i-- )
 	{
-		pszBufer[i] = szTempBuffer[str-i];
+		s[i] = s1[str-i];
 	}
-	strcpy( pszBufer, szTempBuffer );
-	return pszBufer;
+	strcpy( s,s1 );
+	return s;
 }
 
 #define LAST(s) s[strlen(s)-1]
 
-int WWIV_make_path(const char *s)
+int WWIV_make_path(char *s)
 {
   char current_path[MAX_PATH], *p, *flp;
 
-  p = flp = WWIV_STRDUP(s);
+  p = flp = strdup(s);
   getcwd(current_path, MAX_PATH);
   if(LAST(p) == WWIV_FILE_SEPERATOR_CHAR)
     LAST(p) = 0;

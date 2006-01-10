@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,21 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "WTextFile.h"
-#include "WFile.h"
-#include <iostream>
-#include <fcntl.h>
-#include <cerrno>
-#include <sys/stat.h>
-#include <io.h>
-#include <cstdio>
-#include <stdlib.h>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "wwiv.h"
 
-
-const int WTextFile::WAIT_TIME = 10;
-const int WTextFile::TRIES = 100;
+#define SHARE_LEVEL 10
+#define WAIT_TIME 10
+#define TRIES 100
 
 
 /**
@@ -43,23 +33,26 @@ const int WTextFile::TRIES = 100;
  *	3 or greater shows file information BEFORE any attempt is made to open a file.
  */
 
-FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
+//
+// Local prototypes
+//
+FILE *fsh_open(const char *path, char *mode)
 {
-	FILE *hFile;
+	FILE *f;
 
-	//if ( GetSession()->GetGlobalDebugLevel() > 2 )
-	//{
-	//	std::cout << "\rfsh_open " << pszFileName << ", access=" << pszFileMode << ".\r\n";
-	//}
+	if ( sess->GetGlobalDebugLevel() > 2 )
+	{
+		std::cout << "\rfsh_open " << path << ", access=" << mode << ".\r\n";
+	}
 
 	int share = SH_DENYWR;
 	int md = 0;
-	if (strchr(pszFileMode, 'w') != NULL)
+	if (strchr(mode, 'w') != NULL)
 	{
 		share = SH_DENYRD;
 		md = O_RDWR | O_CREAT | O_TRUNC;
 	}
-	else if (strchr(pszFileMode, 'a') != NULL)
+	else if (strchr(mode, 'a') != NULL)
 	{
 		share = SH_DENYRD;
 		md = O_RDWR | O_CREAT;
@@ -69,65 +62,95 @@ FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 		md = O_RDONLY;
 	}
 
-	if (strchr(pszFileMode, 'b') != NULL)
+	if (strchr(mode, 'b') != NULL)
 	{
 		md |= O_BINARY;
 	}
 
-	if (strchr(pszFileMode, '+') != NULL)
+	if (strchr(mode, '+') != NULL)
 	{
 		md &= ~O_RDONLY;
 		md |= O_RDWR;
 		share = SH_DENYRD;
 	}
 
-	int fd = _sopen(pszFileName, md, share, S_IREAD | S_IWRITE);
+	int fd = _sopen(path, md, share, S_IREAD | S_IWRITE);
 	if (fd < 0)
 	{
 		int count = 1;
-        if ( WFile::Exists( pszFileName ) )
+		if (access(path, 0) != -1)
 		{
-            ::Sleep(WAIT_TIME);
-			fd = _sopen(pszFileName, md, share, S_IREAD | S_IWRITE);
-			while ( ( fd < 0 && errno == EACCES ) && count < TRIES )
+			WWIV_Delay(WAIT_TIME);
+			fd = _sopen(path, md, share, S_IREAD | S_IWRITE);
+			while ( ( (fd < 0) && (errno == EACCES) ) && (count < TRIES) )
 			{
-                ::Sleep(WAIT_TIME);
-				//if ( GetSession()->GetGlobalDebugLevel() > 0 )
-				//{
-				//	std::cout << "\rWaiting to access " << pszFileName << " " << TRIES - count << ".  \r";
-				//}
+				WWIV_Delay(WAIT_TIME);
+				if ( sess->GetGlobalDebugLevel() > 0 )
+				{
+					std::cout << "\rWaiting to access " << path << " " << TRIES - count << ".  \r";
+				}
 				count++;
-				fd = _sopen( pszFileName, md, share, S_IREAD | S_IWRITE );
+				fd = _sopen( path, md, share, S_IREAD | S_IWRITE );
 			}
-			//if ( fd < 0 && GetSession()->GetGlobalDebugLevel() > 0 )
-			//{
-			//	std::cout << "\rThe file " << pszFileName << " is busy.  Try again later.\r\n";
-			//}
+			if ( fd < 0 && sess->GetGlobalDebugLevel() > 0 )
+			{
+				std::cout << "\rThe file " << path << " is busy.  Try again later.\r\n";
+			}
 		}
 	}
 
 	if ( fd > 0 )
 	{
-		if ( strchr( pszFileMode, 'a' ) )
+		if ( strchr( mode, 'a' ) )
 		{
-			_lseek( fd, 0L, SEEK_END );
+			lseek( fd, 0L, SEEK_END );
 		}
 
-		hFile = _fdopen( fd, pszFileMode );
-		if ( !hFile )
+		f = fdopen( fd, mode );
+		if ( !f )
 		{
-			_close( fd );
+			close( fd );
 		}
 	}
 	else
 	{
-		hFile = NULL;
+		f = 0;
 	}
 
-	//if ( GetSession()->GetGlobalDebugLevel() > 1 )
-	//{
-	//	std::cout << "\rfsh_open " << pszFileName << ", access=" << pszFileMode << ".\r\n";
-	//}
+	if ( sess->GetGlobalDebugLevel() > 1 )
+	{
+		std::cout << "\rfsh_open " << path << ", access=" << mode << ".\r\n";
+	}
 
-    return hFile;
+	return f;
 }
+
+
+void fsh_close(FILE * f)
+{
+	fclose( f );
+}
+
+
+size_t fsh_read(void *ptr, size_t size, size_t n, FILE * stream)
+{
+	if (stream == NULL)
+	{
+		sysoplog("\r\nAttempted to fread from closed file.\r\n");
+		return 0;
+	}
+	return fread(ptr, size, n, stream);
+}
+
+
+size_t fsh_write(const void *ptr, size_t size, size_t n, FILE * stream)
+{
+    if (stream == NULL)
+    {
+        sysoplog("\r\nAttempted to fwrite to closed file.\r\n");
+        return 0;
+    }
+    return fwrite(ptr, size, n, stream);
+}
+
+

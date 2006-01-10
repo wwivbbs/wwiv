@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -26,6 +26,7 @@
 
 // $PLATFORM/filesupp.cpp
 
+bool WWIV_CopyFile(const char * szSourceFileName, const char * szDestFileName);
 double WWIV_GetFreeSpaceForPath(const char * szPath);
 void WWIV_ChangeDirTo(const char *s);
 void WWIV_GetDir(char *s, bool be);
@@ -38,16 +39,20 @@ void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName);
 void WWIV_RebootComputer();
 
 
+// $PLATFORM/reboot.cpp
+
+void show_files( const char *pszFileName, const char *pszDirectoryName );
+
 
 // $PLATFORM/utility2.cpp
 char *WWIV_make_abs_cmd(char *out);
-int WWIV_make_path(const char *s);
+int WWIV_make_path(char *s);
 void WWIV_Delay(unsigned long usec);
 void WWIV_OutputDebugString( const char *pszString );
 
 
 // $PLATFORM/exec.cpp
-int ExecExternalProgram( const std::string commandLine, int flags );
+int ExecExternalProgram( const char *pszCommandLine, int flags );
 
 
 #endif // __INCLUDED_PLATFORM_FCNS_H__

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -30,13 +30,12 @@ class WIOUnix : public WComm
 {
 private:
 	int tty_open;
+	struct termios ttyb;
 	struct termios ttysav;
 	FILE *ttyf;
-    void set_terminal( bool initMode );
 
 public:
-    WIOUnix();
-    virtual ~WIOUnix();
+    WIOUnix() { tty_open = 0; }
     virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
     virtual unsigned int open();
     virtual void close( bool bIsTemporary );
@@ -52,12 +51,10 @@ public:
     virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation);
     virtual bool carrier();
     virtual bool incoming();
+    virtual bool startup();
+    virtual bool shutdown();
     virtual void StopThreads();
     virtual void StartThreads();
-    virtual unsigned int GetHandle() const;
-    virtual unsigned int GetDoorHandle() const;
-
-
 };
 
 

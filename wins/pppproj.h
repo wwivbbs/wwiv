@@ -16,12 +16,11 @@
 #if !defined( __PPPPROJ_H_INCLUDED__ )
 #define __PPPPROJ_H_INCLUDED__ 
 
-#define _CRT_SECURE_NO_DEPRECATE
 
 #include <cstdio>
 #include <stdlib.h>
 #include <cstring>
-#include <cstdarg>
+#include <stdarg.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <ctype.h>
@@ -34,10 +33,6 @@
 #include <process.h>
 #include <direct.h>
 #include <cassert>
-#include <iostream>
-#include <sstream>
-#include <algorithm>
-
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -62,8 +57,8 @@ extern "C"
 #define QOTD_PORT 17
 #define TIME_PORT 37
 #define NNTP_PORT 119
-#define DEFAULT_POP_PORT 110
-#define DEFAULT_SMTP_PORT 25
+#define POP_PORT 110
+#define SMTP_PORT 25
 
 
 //

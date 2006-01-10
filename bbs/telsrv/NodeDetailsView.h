@@ -63,10 +63,13 @@ protected:
 		// NOTE - the ClassWizard will add and remove member functions here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_MSG
+	afx_msg void OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct);
 	DECLARE_MESSAGE_MAP()
 private:
 	CImageList m_imageList;
 	CImageList m_imageListBig;
+public:
+    virtual BOOL DestroyWindow();
 };
 
 #ifndef _DEBUG  // debug version in NodeDetailsView.cpp

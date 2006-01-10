@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -25,9 +25,6 @@
 #elif defined (_UNIX)
 #pragma pack( 1 )
 #endif
-
-#include "wtypes.h"
-
 
 
 // DATA FOR EVERY USER
@@ -916,6 +913,18 @@ struct line
 };
 
 
+struct screentype
+{
+    short x1, y1, topline1, curatr1;
+
+#ifdef _WIN32
+    CHAR_INFO* scrn1;
+#else
+    char *scrn1;
+#endif
+};
+
+
 struct ext_desc_type
 {
     char name[13];
@@ -1228,7 +1237,7 @@ struct cbv_rec
 ///////////////////////////////////////////////////////////////////////////////
 // end callback additions
 
-// QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
+// QUICK REFERNCE TO FIND USER PHONE NUMBER
 
 struct phonerec
 {
@@ -1287,12 +1296,12 @@ struct ext_desc_rec
 
 
 // Text editing modes for input routines
-#define INPUT_MODE_FILE_UPPER     0
-#define INPUT_MODE_FILE_MIXED     1
-#define INPUT_MODE_FILE_PROPER    2
-#define INPUT_MODE_FILE_NAME 3
-#define INPUT_MODE_DATE      4
-#define INPUT_MODE_PHONE     5
+#define UPPER     0
+#define MIXED     1
+#define PROPER    2
+#define FILE_NAME 3
+#define DATE      4
+#define PHONE     5
 
 // Used by scan(...)
 #define SCAN_OPTION_READ_PROMPT		0
@@ -1416,6 +1425,7 @@ struct arch
 
 #ifndef bbsmalloc
 #define bbsmalloc(x) malloc(x)
+//#define BbsAllocA(x) malloc(x)
 #define BbsFreeMemory(x) free(x)
 #endif // bbsmaloc
 

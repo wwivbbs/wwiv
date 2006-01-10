@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,15 +20,11 @@
 #ifndef __INCLUDED_INSTMSG_H__
 #define __INCLUDED_INSTMSG_H__
 
-#ifdef _MSC_VER
-#pragma once
-#endif
-
-#define INST_MSG_STRING      1  // A string to print out to the user
-#define INST_MSG_SHUTDOWN    2  // Hangs up, ends BBS execution
-#define INST_MSG_SYSMSG      3  // Message from the system, not a user
-#define INST_MSG_CLEANNET    4  // should call cleanup_net
-#define INST_MSG_CHAT        6  // External chat request
+#define INST_MSG_STRING      1  /* A string to print out to the user */
+#define INST_MSG_SHUTDOWN    2  /* Hangs up, ends BBS execution */
+#define INST_MSG_SYSMSG      3  /* Message from the system, not a user */
+#define INST_MSG_CLEANNET    4  /* should call cleanup_net */
+#define INST_MSG_CHAT        6  /* External chat request */
 
 /****************************************************************************/
 
@@ -36,10 +32,10 @@
 // (moved from vardec.h)
 
 /* Instance status flags */
-#define INST_FLAGS_NONE      0x0000         // No flags at all
-#define INST_FLAGS_ONLINE    0x0001         // User online
-#define INST_FLAGS_MSG_AVAIL 0x0002         // Available for inst msgs
-#define INST_FLAGS_INVIS     0x0004         // For invisibility
+#define INST_FLAGS_NONE      0x0000         /* No flags at all */
+#define INST_FLAGS_ONLINE    0x0001         /* User online */
+#define INST_FLAGS_MSG_AVAIL 0x0002         /* Available for inst msgs */
+#define INST_FLAGS_INVIS      0x0004  /* For invisibility */
 
 /* Instance primary location points */
 #define INST_LOC_DOWN          0
@@ -111,6 +107,7 @@
  * Structure for inter-instance messages. File would be comprised of headers
  * using the following structure, followed by the "message" (if any).
  */
+
 struct inst_msg_header
 {
     unsigned short

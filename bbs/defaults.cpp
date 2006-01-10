@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 #define STOP_LIST 0
@@ -40,21 +41,21 @@ char *DisplayColorName( int c );
 
 void select_editor()
 {
-    if ( GetSession()->GetNumberOfEditors() == 0 )
+    if ( sess->GetNumberOfEditors() == 0 )
     {
-        GetSession()->bout << "\r\nNo full screen editors available.\r\n\n";
+        sess->bout << "\r\nNo full screen editors available.\r\n\n";
         return;
     }
-    else if ( GetSession()->GetNumberOfEditors() == 1 )
+    else if ( sess->GetNumberOfEditors() == 1 )
     {
-        if ( GetSession()->GetCurrentUser()->GetDefaultEditor() == 0 )
+        if ( sess->thisuser.GetDefaultEditor() == 0 )
         {
-            GetSession()->GetCurrentUser()->SetDefaultEditor( 1 );
+            sess->thisuser.SetDefaultEditor( 1 );
         }
         else
         {
-            GetSession()->GetCurrentUser()->SetDefaultEditor( 0 );
-            GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::autoQuote );
+            sess->thisuser.SetDefaultEditor( 0 );
+            sess->thisuser.clearStatusFlag( WUser::autoQuote );
         }
         return;
     }
@@ -62,72 +63,72 @@ void select_editor()
     {
         odc[ i1 ] = '\0';
     }
-    GetSession()->bout << "0. Normal non-full screen editor\r\n";
-    for ( int i = 0; i < GetSession()->GetNumberOfEditors(); i++ )
+    sess->bout << "0. Normal non-full screen editor\r\n";
+    for ( int i = 0; i < sess->GetNumberOfEditors(); i++ )
     {
-		GetSession()->bout << i + 1 << ". " << editors[i].description  << wwiv::endl;
+		sess->bout << i + 1 << ". " << editors[i].description  << wwiv::endl;
         if ( ( ( i + 1 ) % 10 ) == 0 )
         {
             odc[ ( i + 1 ) / 10 - 1 ] = static_cast<char>( ( i + 1 ) / 10 );
         }
     }
-    GetSession()->bout.NewLine();
-	GetSession()->bout << "|#9Which editor (|131-" << GetSession()->GetNumberOfEditors() << ", <C/R>=leave as is|#9) ? ";
+    nl();
+	sess->bout << "|#9Which editor (|131-" << sess->GetNumberOfEditors() << ", <C/R>=leave as is|#9) ? ";
     char *ss = mmkey( 2 );
     int nEditor = atoi( ss );
-    if ( nEditor >= 1 && nEditor <= GetSession()->GetNumberOfEditors() )
+    if ( nEditor >= 1 && nEditor <= sess->GetNumberOfEditors() )
     {
-        GetSession()->GetCurrentUser()->SetDefaultEditor( nEditor );
+        sess->thisuser.SetDefaultEditor( nEditor );
     }
     else if ( wwiv::stringUtils::IsEquals( ss, "0") )
     {
-        GetSession()->GetCurrentUser()->SetDefaultEditor( 0 );
-        GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::autoQuote );
+        sess->thisuser.SetDefaultEditor( 0 );
+        sess->thisuser.clearStatusFlag( WUser::autoQuote );
     }
 }
 
 
 const char* GetMailBoxStatus( char* pszStatusOut )
 {
-    if ( GetSession()->GetCurrentUser()->GetForwardSystemNumber() == 0 &&
-         GetSession()->GetCurrentUser()->GetForwardUserNumber() == 0 )
+    if ( sess->thisuser.GetForwardSystemNumber() == 0 &&
+         sess->thisuser.GetForwardUserNumber() == 0 )
     {
         strcpy( pszStatusOut, "Normal" );
         return pszStatusOut;
     }
-    if ( GetSession()->GetCurrentUser()->GetForwardSystemNumber() != 0 )
+    if ( sess->thisuser.GetForwardSystemNumber() != 0 )
     {
-        if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() != 0 )
+        if ( sess->thisuser.GetForwardUserNumber() != 0 )
         {
             sprintf( pszStatusOut, "Forward to #%u @%u.%s.",
-                        GetSession()->GetCurrentUser()->GetForwardUserNumber(),
-                        GetSession()->GetCurrentUser()->GetForwardSystemNumber(),
-                        net_networks[ GetSession()->GetCurrentUser()->GetForwardNetNumber() ].name );
+                        sess->thisuser.GetForwardUserNumber(),
+                        sess->thisuser.GetForwardSystemNumber(),
+                        net_networks[ sess->thisuser.GetForwardNetNumber() ].name );
         }
         else
         {
             char szForwardUserName[80];
-            read_inet_addr( szForwardUserName, GetSession()->usernum );
+            read_inet_addr( szForwardUserName, sess->usernum );
             sprintf( pszStatusOut, "Forwarded to Internet %s", szForwardUserName );
         }
         return pszStatusOut;
     }
 
-    if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() == 65535 )
+    if ( sess->thisuser.GetForwardUserNumber() == 65535 )
     {
         strcpy( pszStatusOut, "Closed" );
         return pszStatusOut;
     }
 
     WUser ur;
-    GetApplication()->GetUserManager()->ReadUser( &ur, GetSession()->GetCurrentUser()->GetForwardUserNumber() );
-    if ( ur.IsUserDeleted() )
+    app->userManager->ReadUser( &ur, sess->thisuser.GetForwardUserNumber() );
+    if ( ur.isUserDeleted() )
     {
-        GetSession()->GetCurrentUser()->SetForwardUserNumber( 0 );
+        sess->thisuser.SetForwardUserNumber( 0 );
         strcpy( pszStatusOut, "Normal" );
         return pszStatusOut;
     }
-    sprintf( pszStatusOut, "Forward to %s", ur.GetUserNameAndNumber( GetSession()->GetCurrentUser()->GetForwardUserNumber() ) );
+    sprintf( pszStatusOut, "Forward to %s", ur.GetUserNameAndNumber( sess->thisuser.GetForwardUserNumber() ) );
     return pszStatusOut;
 }
 
@@ -135,72 +136,72 @@ const char* GetMailBoxStatus( char* pszStatusOut )
 void print_cur_stat()
 {
     char s1[255], s2[255];
-    GetSession()->bout.ClearScreen();
-    GetSession()->bout << "|10Your Preferences\r\n\n";
-    sprintf( s1, "|#11|#9) Screen size       : |#2%d X %d", GetSession()->GetCurrentUser()->GetScreenChars(), GetSession()->GetCurrentUser()->GetScreenLines() );
-    sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->HasAnsi() ?
-        ( GetSession()->GetCurrentUser()->HasColor() ? "Color" : "Monochrome") : "No ANSI" );
-    GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
+    ClearScreen();
+    sess->bout << "|10Your Preferences\r\n\n";
+    sprintf( s1, "|#11|#9) Screen size       : |#2%d X %d", sess->thisuser.GetScreenChars(), sess->thisuser.GetScreenLines() );
+    sprintf(s2, "|#12|#9) ANSI              : |#2%s", sess->thisuser.hasAnsi() ?
+        ( sess->thisuser.hasColor() ? "Color" : "Monochrome") : "No ANSI" );
+    bprintf( "%-48s %-45s\r\n", s1, s2 );
 
-    sprintf(s1, "|#13|#9) Pause on screen   : |#2%s", GetSession()->GetCurrentUser()->HasPause() ? "On" : "Off");
+    sprintf(s1, "|#13|#9) Pause on screen   : |#2%s", sess->thisuser.hasPause() ? "On" : "Off");
     char szMailBoxStatus[81];
     sprintf(s2, "|#14|#9) Mailbox           : |#2%s", GetMailBoxStatus( szMailBoxStatus ) );
-    GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
+    bprintf( "%-48s %-45s\r\n", s1, s2 );
 
     sprintf( s1, "|#15|#9) Configured Q-scan");
     sprintf( s2, "|#16|#9) Change password");
-    GetSession()->bout.WriteFormatted( "%-45s %-45s\r\n", s1, s2 );
+    bprintf( "%-45s %-45s\r\n", s1, s2 );
 
     if ( okansi() )
     {
         sprintf( s1, "|#17|#9) Update macros");
         sprintf( s2, "|#18|#9) Change colors");
-        GetSession()->bout.WriteFormatted( "%-45s %-45s\r\n", s1, s2 );
-        int nEditorNum = GetSession()->GetCurrentUser()->GetDefaultEditor();
+        bprintf( "%-45s %-45s\r\n", s1, s2 );
+        int nEditorNum = sess->thisuser.GetDefaultEditor();
         sprintf( s1, "|#19|#9) Full screen editor: |#2%s",
-                 ( ( nEditorNum > 0 ) && ( nEditorNum <= GetSession()->GetNumberOfEditors() ) ) ?
+                 ( ( nEditorNum > 0 ) && ( nEditorNum <= sess->GetNumberOfEditors() ) ) ?
                  editors[ nEditorNum - 1 ].description : "None" );
-        sprintf( s2, "|#1A|#9) Extended colors   : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsUseExtraColor() ) );
-        GetSession()->bout.WriteFormatted( "%-48.48s %-45s\r\n", s1, s2 );
+        sprintf( s2, "|#1A|#9) Extended colors   : |#2%s", YesNoString( sess->thisuser.isUseExtraColor() ) );
+        bprintf( "%-48.48s %-45s\r\n", s1, s2 );
     }
     else
     {
-        GetSession()->bout << "|#17|#9) Update macros\r\n";
+        sess->bout << "|#17|#9) Update macros\r\n";
     }
-    sprintf( s1, "|#1B|#9) Optional lines    : |#2%d", GetSession()->GetCurrentUser()->GetOptionalVal() );
-    sprintf( s2, "|#1C|#9) Conferencing      : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsUseConference() ) );
-    GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
-	GetSession()->bout << "|#1I|#9) Internet Address  : |#2" << ( ( GetSession()->GetCurrentUser()->GetEmailAddress()[0] == '\0') ? "None." : GetSession()->GetCurrentUser()->GetEmailAddress() ) << wwiv::endl;
-    GetSession()->bout << "|#1K|#9) Configure Menus\r\n";
-    if (GetSession()->num_languages > 1)
+    sprintf( s1, "|#1B|#9) Optional lines    : |#2%d", sess->thisuser.GetOptionalVal() );
+    sprintf( s2, "|#1C|#9) Conferencing      : |#2%s", YesNoString( sess->thisuser.isUseConference() ) );
+    bprintf( "%-48s %-45s\r\n", s1, s2 );
+	sess->bout << "|#1I|#9) Internet Address  : |#2" << ( ( sess->thisuser.GetEmailAddress()[0] == '\0') ? "None." : sess->thisuser.GetEmailAddress() ) << wwiv::endl;
+    sess->bout << "|#1K|#9) Configure Menus\r\n";
+    if (sess->num_languages > 1)
     {
         sprintf( s1, "|#1L|#9) Language          : |#2%s", cur_lang_name );
-        GetSession()->bout.WriteFormatted( "%-48s ", s1 );
+        bprintf( "%-48s ", s1 );
     }
     if (num_instances() > 1)
     {
-        sprintf(s1, "|#1M|#9) Allow user msgs   : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsIgnoreNodeMessages() ? false : true ) );
-        GetSession()->bout.WriteFormatted( "%-48s", s1 );
+        sprintf(s1, "|#1M|#9) Allow user msgs   : |#2%s", YesNoString( sess->thisuser.isIgnoreNodeMessages() ? false : true ) );
+        bprintf( "%-48s", s1 );
     }
-    GetSession()->bout.NewLine();
-    sprintf( s1, "|#1S|#9) Cls Between Msgs? : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsUseClearScreen() ) );
-    sprintf( s2, "|#1T|#9) 12hr or 24hr clock: |#2%s", GetSession()->GetCurrentUser()->IsUse24HourClock() ? "24hr" : "12hr" );
-    GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
-    sprintf( s1, "|#1U|#9) Use Msg AutoQuote : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsUseAutoQuote() ) );
+    nl();
+    sprintf( s1, "|#1S|#9) Cls Between Msgs? : |#2%s", YesNoString( sess->thisuser.isUseClearScreen() ) );
+    sprintf( s2, "|#1T|#9) 12hr or 24hr clock: |#2%s", sess->thisuser.isUse24HourClock() ? "24hr" : "12hr" );
+    bprintf( "%-48s %-45s\r\n", s1, s2 );
+    sprintf( s1, "|#1U|#9) Use Msg AutoQuote : |#2%s", YesNoString( sess->thisuser.isUseAutoQuote() ) );
 
     char szWWIVRegNum[80];
-    if ( GetSession()->GetCurrentUser()->GetWWIVRegNumber() )
+    if ( sess->thisuser.GetWWIVRegNumber() )
     {
-        sprintf( szWWIVRegNum, "%ld", GetSession()->GetCurrentUser()->GetWWIVRegNumber() );
+        sprintf( szWWIVRegNum, "%ld", sess->thisuser.GetWWIVRegNumber() );
     }
     else
     {
         strcpy( szWWIVRegNum, "(None)" );
     }
     sprintf( s2, "|#1W|#9) WWIV reg num      : |#2%s", szWWIVRegNum );
-    GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
+    bprintf( "%-48s %-45s\r\n", s1, s2 );
 
-    GetSession()->bout << "|#1Q|#9) Quit to main menu\r\n";
+    sess->bout << "|#1Q|#9) Quit to main menu\r\n";
 }
 
 
@@ -242,7 +243,7 @@ const char *DescribeColorCode( int nColorCode )
 {
     static char szColorDesc[81];
 
-    if ( GetSession()->GetCurrentUser()->HasColor() )
+    if ( sess->thisuser.hasColor() )
     {
         sprintf( szColorDesc, "%s on %s", DisplayColorName( nColorCode & 0x07 ), DisplayColorName( ( nColorCode >> 4 ) & 0x07 ) );
     }
@@ -275,11 +276,11 @@ const char *DescribeColorCode( int nColorCode )
 
 void color_list()
 {
-    GetSession()->bout.NewLine( 2 );
+    nl( 2 );
     for ( int i = 0; i < 8; i++ )
     {
-        GetSession()->bout.SystemColor( static_cast< unsigned char >( (i == 0) ? 0x70 : i ) );
-		GetSession()->bout << i << ". " << DisplayColorName( static_cast< char >( i ) ) << "|#0" << wwiv::endl;
+        setc( static_cast< unsigned char >( (i == 0) ? 0x70 : i ) );
+		sess->bout << i << ". " << DisplayColorName( static_cast< char >( i ) ) << "|#0" << wwiv::endl;
     }
 }
 
@@ -289,29 +290,29 @@ void change_colors()
     char szColorDesc[81], nc;
 
     bool done = false;
-    GetSession()->bout.NewLine();
+    nl();
     do
     {
-        GetSession()->bout.ClearScreen();
-        GetSession()->bout << "|10Customize Colors:";
-        GetSession()->bout.NewLine( 2 );
-        if ( !GetSession()->GetCurrentUser()->HasColor() )
+        ClearScreen();
+        sess->bout << "|10Customize Colors:";
+        nl( 2 );
+        if ( !sess->thisuser.hasColor() )
         {
             strcpy( szColorDesc, "Monochrome base color : " );
-            if ( ( GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70 ) == 0 )
+            if ( ( sess->thisuser.GetBWColor( 1 ) & 0x70 ) == 0 )
             {
-                strcat(szColorDesc, DisplayColorName(GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x07));
+                strcat(szColorDesc, DisplayColorName(sess->thisuser.GetBWColor( 1 ) & 0x07));
             }
             else
             {
-                strcat(szColorDesc, DisplayColorName((GetSession()->GetCurrentUser()->GetBWColor( 1 ) >> 4) & 0x07));
+                strcat(szColorDesc, DisplayColorName((sess->thisuser.GetBWColor( 1 ) >> 4) & 0x07));
             }
-            GetSession()->bout << szColorDesc;
-            GetSession()->bout.NewLine( 2 );
+            sess->bout << szColorDesc;
+            nl( 2 );
         }
         for (int i = 0; i < 10; i++)
         {
-            GetSession()->bout.Color(i);
+            ansic(i);
             sprintf( szColorDesc, "%d"".", i );
             switch (i)
             {
@@ -346,19 +347,19 @@ void change_colors()
                 strcat(szColorDesc, "Extra color #2    ");
                 break;
             }
-            if ( GetSession()->GetCurrentUser()->HasColor() )
+            if ( sess->thisuser.hasColor() )
             {
-                strcat( szColorDesc, DescribeColorCode( GetSession()->GetCurrentUser()->GetColor( i ) ) );
+                strcat( szColorDesc, DescribeColorCode( sess->thisuser.GetColor( i ) ) );
             }
             else
             {
-                strcat( szColorDesc, DescribeColorCode( GetSession()->GetCurrentUser()->GetBWColor( i ) ) );
+                strcat( szColorDesc, DescribeColorCode( sess->thisuser.GetBWColor( i ) ) );
             }
-            GetSession()->bout << szColorDesc;
-			GetSession()->bout.NewLine();
+            sess->bout << szColorDesc;
+			nl();
         }
-        GetSession()->bout << "\r\n|#9[|#2R|#9]eset Colors to Default Values, [|#2Q|#9]uit\r\n";
-        GetSession()->bout << "|#9Enter Color Number to Modify (|#20|#9-|#29|#9,|#2R|#9,|#2Q|#9): ";
+        sess->bout << "\r\n|#9[|#2R|#9]eset Colors to Default Values, [|#2Q|#9]uit\r\n";
+        sess->bout << "|#9Enter Color Number to Modify (|#20|#9-|#29|#9,|#2R|#9,|#2Q|#9): ";
         char ch = onek( "RQ0123456789", true );
         if (ch == 'Q')
         {
@@ -371,19 +372,19 @@ void change_colors()
         else
         {
             int nColorNum = ch - '0';
-            if ( GetSession()->GetCurrentUser()->HasColor() )
+            if ( sess->thisuser.hasColor() )
             {
                 color_list();
-                GetSession()->bout.Color( 0 );
-                GetSession()->bout.NewLine();
-                GetSession()->bout << "|#9(Q=Quit) Foreground? ";
+                ansic( 0 );
+                nl();
+                sess->bout << "|#9(Q=Quit) Foreground? ";
                 ch = onek("Q01234567");
                 if ( ch == 'Q' )
                 {
                     continue;
                 }
                 nc = static_cast< char >( ch - '0' );
-                GetSession()->bout << "|#9(Q=Quit) Background? ";
+                sess->bout << "|#9(Q=Quit) Background? ";
                 ch = onek("Q01234567");
                 if ( ch == 'Q' )
                 {
@@ -393,38 +394,38 @@ void change_colors()
             }
             else
             {
-                GetSession()->bout.NewLine();
-                GetSession()->bout << "|#9Inversed? ";
+                nl();
+                sess->bout << "|#9Inversed? ";
                 if (yesno())
                 {
-                    if ((GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70) == 0)
+                    if ((sess->thisuser.GetBWColor( 1 ) & 0x70) == 0)
                     {
-                        nc = static_cast< char >( 0 | ((GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x07) << 4) );
+                        nc = static_cast< char >( 0 | ((sess->thisuser.GetBWColor( 1 ) & 0x07) << 4) );
                     }
                     else
                     {
-                        nc = static_cast< char >(GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70);
+                        nc = static_cast< char >(sess->thisuser.GetBWColor( 1 ) & 0x70);
                     }
                 }
                 else
                 {
-                    if ((GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70) == 0)
+                    if ((sess->thisuser.GetBWColor( 1 ) & 0x70) == 0)
                     {
-                        nc = static_cast< char >( 0 | (GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x07) );
+                        nc = static_cast< char >( 0 | (sess->thisuser.GetBWColor( 1 ) & 0x07) );
                     }
                     else
                     {
-                        nc = static_cast< char >( (GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70) >> 4 );
+                        nc = static_cast< char >( (sess->thisuser.GetBWColor( 1 ) & 0x70) >> 4 );
                     }
                 }
             }
             if ( checkcomp( "Ami" ) || checkcomp( "Mac" ) )
             {
-                GetSession()->bout << "|#9Bold? ";
+                sess->bout << "|#9Bold? ";
             }
             else
             {
-                GetSession()->bout << "|#9Intensified? ";
+                sess->bout << "|#9Intensified? ";
             }
             if (yesno())
             {
@@ -433,15 +434,15 @@ void change_colors()
 
             if (checkcomp("Ami"))
             {
-                GetSession()->bout << "|#9Italicized? ";
+                sess->bout << "|#9Italicized? ";
             }
             else if (checkcomp("Mac"))
             {
-				GetSession()->bout << "|#9Underlined? ";
+				sess->bout << "|#9Underlined? ";
             }
             else
             {
-                GetSession()->bout << "|#9Blinking? ";
+                sess->bout << "|#9Blinking? ";
             }
 
             if (yesno())
@@ -449,27 +450,27 @@ void change_colors()
                 nc |= 0x80;
             }
 
-            GetSession()->bout.NewLine( 2 );
-            GetSession()->bout.SystemColor( nc );
-            GetSession()->bout << DescribeColorCode( nc );
-            GetSession()->bout.Color( 0 );
-            GetSession()->bout.NewLine( 2 );
-            GetSession()->bout << "|#8Is this OK? ";
+            nl( 2 );
+            setc( nc );
+            sess->bout << DescribeColorCode( nc );
+            ansic( 0 );
+            nl( 2 );
+            sess->bout << "|#8Is this OK? ";
             if ( yesno() )
             {
-                GetSession()->bout << "\r\nColor saved.\r\n\n";
-                if ( GetSession()->GetCurrentUser()->HasColor() )
+                sess->bout << "\r\nColor saved.\r\n\n";
+                if ( sess->thisuser.hasColor() )
                 {
-                    GetSession()->GetCurrentUser()->SetColor( nColorNum, nc );
+                    sess->thisuser.SetColor( nColorNum, nc );
                 }
                 else
                 {
-                    GetSession()->GetCurrentUser()->SetBWColor( nColorNum, nc );
+                    sess->thisuser.SetBWColor( nColorNum, nc );
                 }
             }
             else
             {
-                GetSession()->bout << "\r\nNot saved, then.\r\n\n";
+                sess->bout << "\r\nNot saved, then.\r\n\n";
             }
         }
     } while ( !done && !hangup );
@@ -480,8 +481,8 @@ void change_colors()
 void l_config_qscan()
 {
     bool abort = false;
-	GetSession()->bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
-    for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1) && !abort; i++)
+	sess->bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
+    for (int i = 0; (i < sess->num_subs) && (usub[i].subnum != -1) && !abort; i++)
     {
         char szBuffer[81];
         sprintf(szBuffer, "%c %s. %s",
@@ -490,7 +491,7 @@ void l_config_qscan()
             subboards[usub[i].subnum].name);
         pla(szBuffer, &abort);
     }
-    GetSession()->bout.NewLine( 2 );
+    nl( 2 );
 }
 
 
@@ -502,20 +503,20 @@ void config_qscan()
         return;
     }
 
-    int oc = GetSession()->GetCurrentConferenceMessageArea();
-    int os = usub[GetSession()->GetCurrentMessageArea()].subnum;
+    int oc = sess->GetCurrentConferenceMessageArea();
+    int os = usub[sess->GetCurrentMessageArea()].subnum;
 
     bool done = false;
     bool done1 = false;
     do
     {
         char ch;
-        if ( okconf( GetSession()->GetCurrentUser() ) && uconfsub[1].confnum != -1 )
+        if ( okconf( &sess->thisuser ) && uconfsub[1].confnum != -1 )
         {
             char szConfList[MAX_CONFERENCES + 2];
             bool abort = false;
             strcpy(szConfList, " ");
-            GetSession()->bout << "\r\nSelect Conference: \r\n\n";
+            sess->bout << "\r\nSelect Conference: \r\n\n";
             int i = 0;
             while ( i < subconfnum && uconfsub[i].confnum != -1 && !abort )
             {
@@ -527,8 +528,8 @@ void config_qscan()
                 szConfList[i + 2] = 0;
                 i++;
             }
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "Select [" << &szConfList[1] << ", <space> to quit]: ";
+            nl();
+            sess->bout << "Select [" << &szConfList[1] << ", <space> to quit]: ";
             ch = onek(szConfList);
         }
         else
@@ -541,7 +542,7 @@ void config_qscan()
           done1 = true;
           break;
       default:
-          if ( okconf( GetSession()->GetCurrentUser() )  && uconfsub[1].confnum != -1 )
+          if ( okconf( &sess->thisuser )  && uconfsub[1].confnum != -1 )
           {
               int i = 0;
               while ((ch != subconfs[uconfsub[i].confnum].designator) && (i < subconfnum))
@@ -560,12 +561,12 @@ void config_qscan()
           done = false;
           do
           {
-              GetSession()->bout.NewLine();
-              GetSession()->bout << "|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ";
+              nl();
+              sess->bout << "|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ";
               char* s = mmkey( 0 );
               if (s[0])
               {
-                  for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1); i++)
+                  for (int i = 0; (i < sess->num_subs) && (usub[i].subnum != -1); i++)
                   {
                       if ( wwiv::stringUtils::IsEquals( usub[i].keys, s ) )
                       {
@@ -592,14 +593,14 @@ void config_qscan()
           } while ( !done && !hangup );
           break;
         }
-        if ( !okconf( GetSession()->GetCurrentUser() ) || uconfsub[1].confnum == -1 )
+        if ( !okconf( &sess->thisuser ) || uconfsub[1].confnum == -1 )
         {
             done1 = true;
         }
 
     } while ( !done1 && !hangup );
 
-    if ( okconf(GetSession()->GetCurrentUser() ) )
+    if ( okconf(&sess->thisuser ) )
     {
         setuconf( CONF_SUBS, oc, os );
     }
@@ -613,16 +614,16 @@ void make_macros()
     do
     {
         bputch( CL );
-        GetSession()->bout << "|#4Macro A: \r\n";
-        list_macro( GetSession()->GetCurrentUser()->GetMacro( 2 ) );
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#4Macro D: \r\n";
-        list_macro( GetSession()->GetCurrentUser()->GetMacro( 0 ) );
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#4Macro F: \r\n";
-        list_macro( GetSession()->GetCurrentUser()->GetMacro( 1 ) );
-        GetSession()->bout.NewLine( 2 );
-		GetSession()->bout << "|#9Macro to edit or Q:uit (A,D,F,Q) : |#0";
+        sess->bout << "|#4Macro A: \r\n";
+        list_macro( sess->thisuser.GetMacro( 2 ) );
+        nl();
+        sess->bout << "|#4Macro D: \r\n";
+        list_macro( sess->thisuser.GetMacro( 0 ) );
+        nl();
+        sess->bout << "|#4Macro F: \r\n";
+        list_macro( sess->thisuser.GetMacro( 1 ) );
+        nl( 2 );
+		sess->bout << "|#9Macro to edit or Q:uit (A,D,F,Q) : |#0";
         ch = onek("QADF");
         szMacro[0] = 0;
         switch (ch)
@@ -631,21 +632,21 @@ void make_macros()
             macroedit( szMacro );
             if (szMacro[0])
             {
-                GetSession()->GetCurrentUser()->SetMacro( 2, szMacro );
+                sess->thisuser.SetMacro( 2, szMacro );
             }
             break;
         case 'D':
             macroedit(szMacro);
             if (szMacro[0])
             {
-                GetSession()->GetCurrentUser()->SetMacro( 0, szMacro );
+                sess->thisuser.SetMacro( 0, szMacro );
             }
             break;
         case 'F':
             macroedit(szMacro);
             if (szMacro[0])
             {
-                GetSession()->GetCurrentUser()->SetMacro( 1, szMacro );
+                sess->thisuser.SetMacro( 1, szMacro );
             }
             break;
         case 'Q':
@@ -670,7 +671,7 @@ void list_macro(const char *pszMacroText)
         {
             if (pszMacroText[i] == 16)
             {
-                GetSession()->bout.Color(pszMacroText[++i] - 48);
+                ansic(pszMacroText[++i] - 48);
             }
             else
             {
@@ -680,7 +681,7 @@ void list_macro(const char *pszMacroText)
                     bputch('|');
                     break;
                 case TAB:
-                    bputch( 'ù' );
+                    bputch( static_cast< unsigned char >( 'ù' ) );
                     break;
                 default:
                     bputch('^');
@@ -691,16 +692,16 @@ void list_macro(const char *pszMacroText)
         }
         ++i;
     }
-    GetSession()->bout.NewLine();
+    nl();
 }
 
 char *macroedit( char *pszMacroText )
 {
 	*pszMacroText = '\0';
-	GetSession()->bout.NewLine();
-	GetSession()->bout << "|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n";
+	nl();
+	sess->bout << "|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n";
 	okskey = false;
-	GetSession()->bout.Color( 0 );
+	ansic( 0 );
 	bool done = false;
 	int i = 0;
 	bool toggle = false;
@@ -708,13 +709,13 @@ char *macroedit( char *pszMacroText )
 	do
 	{
 		char ch = getkey();
-		switch ( ch )
+		switch (ch)
 		{
 		case CZ:
 			done = true;
 			break;
 		case BACKSPACE:
-			GetSession()->bout.BackSpace();
+			BackSpace();
 			i--;
 			if (i < 0)
 			{
@@ -728,23 +729,23 @@ char *macroedit( char *pszMacroText )
 			break;
 		case RETURN:
 			pszMacroText[i++] = ch;
-			GetSession()->bout.Color( 0 );
-			bputch( '|' );
-			GetSession()->bout.Color( textclr );
+			ansic( 0 );
+			bputch('|');
+			ansic(textclr);
 			break;
 		case TAB:
 			pszMacroText[i++] = ch;
-			GetSession()->bout.Color( 0 );
-			bputch( 'ù' ) ;
-			GetSession()->bout.Color( textclr );
+			ansic( 0 );
+			bputch( static_cast< unsigned char >( 'ù' ) ) ;
+			ansic(textclr);
 			break;
 		default:
 			pszMacroText[i++] = ch;
-			if ( toggle )
+			if (toggle)
 			{
 				toggle = false;
 				textclr = ch - 48;
-				GetSession()->bout.Color( textclr );
+				ansic(textclr);
 			}
 			else
 			{
@@ -755,9 +756,9 @@ char *macroedit( char *pszMacroText )
 		pszMacroText[i + 1] = 0;
 	} while ( !done && i < 80 && !hangup );
 	okskey = true;
-	GetSession()->bout.Color( 0 );
-	GetSession()->bout.NewLine();
-	GetSession()->bout << "|#9Is this okay? ";
+	ansic( 0 );
+	nl();
+	sess->bout << "|#9Is this okay? ";
 	if (!yesno())
 	{
 		*pszMacroText = '\0';
@@ -768,42 +769,43 @@ char *macroedit( char *pszMacroText )
 
 void change_password()
 {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Change password? ";
+    nl();
+    sess->bout << "|#9Change password? ";
     if ( !yesno() )
     {
         return;
     }
 
     std::string password, password2;
-    GetSession()->bout.NewLine();
+    nl();
     input_password( "|#9You must now enter your current password.\r\n|#7: ", password, 8 );
-    if ( password != GetSession()->GetCurrentUser()->GetPassword() )
+    if ( password != sess->thisuser.GetPassword() )
     {
-        GetSession()->bout << "\r\nIncorrect.\r\n\n";
+        sess->bout << "\r\nIncorrect.\r\n\n";
         return;
     }
-    GetSession()->bout.NewLine( 2 );
+    nl( 2 );
     input_password( "|#9Enter your new password, 3 to 8 characters long.\r\n|#7: ", password, 8 );
-    GetSession()->bout.NewLine( 2 );
+    nl( 2 );
     input_password( "|#9Repeat password for verification.\r\n|#7: ", password2, 8 );
     if ( password == password2 )
     {
         if ( password2.length() < 3 )
         {
-            GetSession()->bout.NewLine();
-			GetSession()->bout << "|#6Password must be 3-8 characters long.\r\n|#6Password was not changed.\r\n\n";
+            nl();
+			sess->bout << "|#6Password must be 3-8 characters long.\r\n";
+			sess->bout << "|#6Password was not changed.\r\n\n";
         }
         else
         {
-            GetSession()->GetCurrentUser()->SetPassword( password.c_str() );
-			GetSession()->bout << "\r\n|#1Password changed.\r\n\n";
+            sess->thisuser.SetPassword( password.c_str() );
+			sess->bout << "\r\n|#1Password changed.\r\n\n";
             sysoplog("Changed Password.");
         }
     }
     else
     {
-		GetSession()->bout << "\r\n|#6VERIFY FAILED.\r\n|#6Password not changed.\r\n\n";
+		sess->bout << "\r\n|#6VERIFY FAILED.\r\n|#6Password not changed.\r\n\n";
     }
 }
 
@@ -812,85 +814,85 @@ void modify_mailbox()
 {
     char s[81];
 
-    GetSession()->bout.NewLine();
+    nl();
 
-    GetSession()->bout << "|#9Do you want to close your mailbox? ";
+    sess->bout << "|#9Do you want to close your mailbox? ";
     if (yesno())
     {
-        GetSession()->bout << "|#5Are you sure? ";
+        sess->bout << "|#5Are you sure? ";
         if (yesno())
         {
-            GetSession()->GetCurrentUser()->SetForwardSystemNumber( 0 );
-            GetSession()->GetCurrentUser()->SetForwardUserNumber( 65535 );  // (-1)
+            sess->thisuser.SetForwardSystemNumber( 0 );
+            sess->thisuser.SetForwardUserNumber( 65535 );  // (-1)
             return;
         }
     }
-    GetSession()->bout << "|#5Do you want to forward your mail? ";
+    sess->bout << "|#5Do you want to forward your mail? ";
     if (!yesno())
     {
-        GetSession()->GetCurrentUser()->SetForwardSystemNumber( 0 );
-        GetSession()->GetCurrentUser()->SetForwardUserNumber( 0 );
+        sess->thisuser.SetForwardSystemNumber( 0 );
+        sess->thisuser.SetForwardUserNumber( 0 );
         return;
     }
-    if (GetSession()->GetCurrentUser()->GetSl() >= syscfg.newusersl)
+    if (sess->thisuser.GetSl() >= syscfg.newusersl)
     {
         int nNetworkNumber = getnetnum( "FILEnet" );
-        GetSession()->SetNetworkNumber( nNetworkNumber );
+        sess->SetNetworkNumber( nNetworkNumber );
         if ( nNetworkNumber != -1)
         {
-            set_net_num( GetSession()->GetNetworkNumber() );
-            GetSession()->bout << "|#5Do you want to forward to your Internet address? ";
+            set_net_num( sess->GetNetworkNumber() );
+            sess->bout << "|#5Do you want to forward to your Internet address? ";
             if ( yesno() )
             {
-                GetSession()->bout << "|13Enter the Internet E-Mail Address.\r\n|#9:";
-                Input1( s, GetSession()->GetCurrentUser()->GetEmailAddress(), 75, true, INPUT_MODE_FILE_MIXED );
+                sess->bout << "|13Enter the Internet E-Mail Address.\r\n|#9:";
+                Input1( s, sess->thisuser.GetEmailAddress(), 75, true, MIXED );
                 if ( check_inet_addr( s ) )
                 {
-                    GetSession()->GetCurrentUser()->SetEmailAddress( s );
-                    write_inet_addr( s, GetSession()->usernum );
-                    GetSession()->GetCurrentUser()->SetForwardNetNumber( GetSession()->GetNetworkNumber() );
-                    GetSession()->GetCurrentUser()->SetForwardSystemNumber( 32767 );
-                    GetSession()->bout << "\r\nSaved.\r\n\n";
+                    sess->thisuser.SetEmailAddress( s );
+                    write_inet_addr( s, sess->usernum );
+                    sess->thisuser.SetForwardNetNumber( sess->GetNetworkNumber() );
+                    sess->thisuser.SetForwardSystemNumber( 32767 );
+                    sess->bout << "\r\nSaved.\r\n\n";
                 }
                 return;
             }
         }
     }
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2Forward to? ";
+    nl();
+    sess->bout << "|#2Forward to? ";
     input(s, 40);
 
     int nTempForwardUser, nTempForwardSystem;
     parse_email_info( s, &nTempForwardUser, &nTempForwardSystem );
-    GetSession()->GetCurrentUser()->SetForwardUserNumber( nTempForwardUser );
-    GetSession()->GetCurrentUser()->SetForwardSystemNumber( nTempForwardSystem );
-    if ( GetSession()->GetCurrentUser()->GetForwardSystemNumber() != 0 )
+    sess->thisuser.SetForwardUserNumber( nTempForwardUser );
+    sess->thisuser.SetForwardSystemNumber( nTempForwardSystem );
+    if ( sess->thisuser.GetForwardSystemNumber() != 0 )
     {
-        GetSession()->GetCurrentUser()->SetForwardNetNumber( GetSession()->GetNetworkNumber() );
-        if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() == 0 )
+        sess->thisuser.SetForwardNetNumber( sess->GetNetworkNumber() );
+        if ( sess->thisuser.GetForwardUserNumber() == 0 )
         {
-            GetSession()->GetCurrentUser()->SetForwardSystemNumber( 0 );
-            GetSession()->GetCurrentUser()->SetForwardNetNumber( 0 );
-            GetSession()->bout << "\r\nCan't forward to a user name, must use user number.\r\n\n";
+            sess->thisuser.SetForwardSystemNumber( 0 );
+            sess->thisuser.SetForwardNetNumber( 0 );
+            sess->bout << "\r\nCan't forward to a user name, must use user number.\r\n\n";
         }
     }
-    else if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() == GetSession()->usernum )
+    else if ( sess->thisuser.GetForwardUserNumber() == sess->usernum )
     {
-        GetSession()->bout << "\r\nCan't forward to yourself.\r\n\n";
-        GetSession()->GetCurrentUser()->SetForwardUserNumber( 0 );
+        sess->bout << "\r\nCan't forward to yourself.\r\n\n";
+        sess->thisuser.SetForwardUserNumber( 0 );
     }
 
-    GetSession()->bout.NewLine();
-    if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() == 0 && GetSession()->GetCurrentUser()->GetForwardSystemNumber() == 0 )
+    nl();
+    if ( sess->thisuser.GetForwardUserNumber() == 0 && sess->thisuser.GetForwardSystemNumber() == 0 )
     {
-        GetSession()->GetCurrentUser()->SetForwardNetNumber( 0 );
-        GetSession()->bout << "Forwarding reset.\r\n";
+        sess->thisuser.SetForwardNetNumber( 0 );
+        sess->bout << "Forwarding reset.\r\n";
     }
     else
     {
-        GetSession()->bout << "Saved.\r\n";
+        sess->bout << "Saved.\r\n";
     }
-    GetSession()->bout.NewLine();
+    nl();
 }
 
 
@@ -898,15 +900,15 @@ void optional_lines()
 {
     char szNumLines[81];
 
-    GetSession()->bout << "|#9You may specify your optional lines value from 0-10,\r\n" ;
-    GetSession()->bout << "|#20 |#9being all, |#210 |#9being none.\r\n";
-    GetSession()->bout << "|#2What value? ";
+    sess->bout << "|#9You may specify your optional lines value from 0-10,\r\n" ;
+    sess->bout << "|#20 |#9being all, |#210 |#9being none.\r\n";
+    sess->bout << "|#2What value? ";
     input( szNumLines, 2 );
 
     int nNumLines = atoi( szNumLines );
     if ( szNumLines[0] && nNumLines >= 0 && nNumLines < 11 )
     {
-        GetSession()->GetCurrentUser()->SetOptionalVal( nNumLines );
+        sess->thisuser.SetOptionalVal( nNumLines );
     }
 
 }
@@ -916,39 +918,39 @@ void enter_regnum()
 {
     char szRegNum[81];
 
-    GetSession()->bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
+    sess->bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
     input( szRegNum, 5, true );
 
     long lRegNum = atol( szRegNum );
     if ( szRegNum[0] && lRegNum >= 0 )
     {
-        GetSession()->GetCurrentUser()->SetWWIVRegNumber( lRegNum );
+        sess->thisuser.SetWWIVRegNumber( lRegNum );
         changedsl();
     }
 }
 
 
-void defaults( MenuInstanceData * pMenuData )
+void defaults( MenuInstanceData * MenuData )
 {
     bool done = false;
     do
     {
         print_cur_stat();
-        GetSession()->localIO()->tleft( true );
+        app->localIO->tleft( true );
         if (hangup)
         {
             return;
         }
-        GetSession()->bout.NewLine();
+        nl();
         char ch;
         if ( okansi() )
         {
-            GetSession()->bout << "|#9Defaults: (1-9,A-C,I,K,L,M,S,T,U,W,?,Q) : ";
+            sess->bout << "|#9Defaults: (1-9,A-C,I,K,L,M,S,T,U,W,?,Q) : ";
             ch = onek( "Q?123456789ABCIKLMSTUW", true );
         }
         else
         {
-            GetSession()->bout << "|#9Defaults: (1-7,B,C,I,K,L,M,S,T,U,W,?,Q) : ";
+            sess->bout << "|#9Defaults: (1-7,B,C,I,K,L,M,S,T,U,W,?,Q) : ";
             ch = onek( "Q?1234567BCIKLMTUW", true );
         }
         switch (ch)
@@ -966,7 +968,7 @@ void defaults( MenuInstanceData * pMenuData )
             input_ansistat();
             break;
         case '3':
-            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
+            sess->thisuser.toggleStatusFlag( WUser::pauseOnPage );
             break;
         case '4':
             modify_mailbox();
@@ -987,52 +989,52 @@ void defaults( MenuInstanceData * pMenuData )
             select_editor();
             break;
         case 'A':
-            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::extraColor );
+            sess->thisuser.toggleStatusFlag( WUser::extraColor );
             break;
         case 'B':
             optional_lines();
             break;
         case 'C':
-            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::conference );
+            sess->thisuser.toggleStatusFlag( WUser::conference );
             changedsl();
             break;
 
         case 'I':
             {
                 std::string internetAddress;
-                GetSession()->bout.NewLine();
-                GetSession()->bout << "|#9Enter your Internet mailing address.\r\n|#7:";
+                nl();
+                sess->bout << "|#9Enter your Internet mailing address.\r\n|#7:";
                 inputl( internetAddress, 65, true );
                 if ( !internetAddress.empty() )
                 {
                     if ( check_inet_addr( internetAddress.c_str() ) )
                     {
-                        GetSession()->GetCurrentUser()->SetEmailAddress( internetAddress.c_str() );
-                        write_inet_addr( internetAddress.c_str(), GetSession()->usernum );
+                        sess->thisuser.SetEmailAddress( internetAddress.c_str() );
+                        write_inet_addr( internetAddress.c_str(), sess->usernum );
                     }
                     else
                     {
-						GetSession()->bout << "\r\n|#6Invalid address format.\r\n\n";
+						sess->bout << "\r\n|#6Invalid address format.\r\n\n";
                         pausescr();
                     }
                 }
                 else
                 {
-                    GetSession()->bout << "|#5Delete Internet address? ";
+                    sess->bout << "|#5Delete Internet address? ";
                     if (yesno())
                     {
-                        GetSession()->GetCurrentUser()->SetEmailAddress( "" );
+                        sess->thisuser.SetEmailAddress( "" );
                     }
                 }
             }
             break;
         case 'K':
             ConfigUserMenuSet();
-            pMenuData->nFinished = 1;
-            pMenuData->nReload = 1;
+            MenuData->nFinished = 1;
+            MenuData->nReload = 1;
             break;
         case 'L':
-            if ( GetSession()->num_languages > 1 )
+            if ( sess->num_languages > 1 )
             {
                 input_language();
             }
@@ -1040,23 +1042,23 @@ void defaults( MenuInstanceData * pMenuData )
         case 'M':
             if ( num_instances() > 1 )
             {
-                GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::noMsgs );
-                GetSession()->bout.NewLine();
-                GetSession()->bout << "|#5Allow messages sent between instances? ";
+                sess->thisuser.clearStatusFlag( WUser::noMsgs );
+                nl();
+                sess->bout << "|#5Allow messages sent between instances? ";
                 if (!yesno())
                 {
-                    GetSession()->GetCurrentUser()->SetStatusFlag( WUser::noMsgs );
+                    sess->thisuser.setStatusFlag( WUser::noMsgs );
                 }
             }
             break;
         case 'S':
-            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::clearScreen );
+            sess->thisuser.toggleStatusFlag( WUser::clearScreen );
             break;
         case 'T':
-            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::twentyFourHourClock );
+            sess->thisuser.toggleStatusFlag( WUser::twentyFourHourClock );
             break;
         case 'U':
-            GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::autoQuote );
+            sess->thisuser.toggleStatusFlag( WUser::autoQuote );
             break;
         case 'W':
             enter_regnum();
@@ -1071,12 +1073,12 @@ void defaults( MenuInstanceData * pMenuData )
 int GetMaxLinesToShowForScanPlus()
 {
 #ifdef MAX_SCREEN_LINES_TO_SHOW
-    return ( GetSession()->GetCurrentUser()->GetScreenLines() - (4 + STOP_LIST) >
+    return ( sess->thisuser.GetScreenLines() - (4 + STOP_LIST) >
         MAX_SCREEN_LINES_TO_SHOW - (4 + STOP_LIST) ?
         MAX_SCREEN_LINES_TO_SHOW - (4 + STOP_LIST) :
-    GetSession()->GetCurrentUser()->GetScreenLines() - (4 + STOP_LIST));
+    sess->thisuser.GetScreenLines() - (4 + STOP_LIST));
 #else
-    return GetSession()->GetCurrentUser()->GetScreenLines() - (4 + STOP_LIST);
+    return sess->thisuser.GetScreenLines() - (4 + STOP_LIST);
 #endif
 }
 
@@ -1085,51 +1087,51 @@ void list_config_scan_plus(int first, int *amount, int type)
 {
     char s[101];
 
-    bool bUseConf = ( subconfnum > 1 && okconf( GetSession()->GetCurrentUser() ) ) ? true : false;
+    bool bUseConf = ( subconfnum > 1 && okconf( &sess->thisuser ) ) ? true : false;
 
-    GetSession()->bout.ClearScreen();
+    ClearScreen();
     lines_listed = 0;
 
     if ( bUseConf )
     {
-        strncpy( s, type == 0 ? stripcolors( reinterpret_cast<char*>( subconfs[uconfsub[GetSession()->GetCurrentConferenceMessageArea()].confnum].name ) ) : stripcolors( reinterpret_cast<char*>( dirconfs[uconfdir[GetSession()->GetCurrentConferenceFileArea()].confnum].name ) ), 26 );
+        strncpy( s, type == 0 ? stripcolors( reinterpret_cast<char*>( subconfs[uconfsub[sess->GetCurrentConferenceMessageArea()].confnum].name ) ) : stripcolors( reinterpret_cast<char*>( dirconfs[uconfdir[sess->GetCurrentConferenceFileArea()].confnum].name ) ), 26 );
         s[26] = '\0';
-        GetSession()->bout.WriteFormatted( "|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n", type == 0 ? 'Q' : 'N', s, type == 0 ? "sub" : "dir" );
+        bprintf( "|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n", type == 0 ? 'Q' : 'N', s, type == 0 ? "sub" : "dir" );
     }
     else
     {
-        GetSession()->bout.WriteFormatted("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n", type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
+        bprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n", type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
     }
-    repeat_char( 'Ä', 79 );
+    repeat_char( 'Ä', 79, 7, true );
 
     int max_lines = GetMaxLinesToShowForScanPlus();
 
     if ( type == 0 )
     {
-        for ( int this_sub = first; (this_sub < GetSession()->num_subs) && (usub[this_sub].subnum != -1) &&
+        for ( int this_sub = first; (this_sub < sess->num_subs) && (usub[this_sub].subnum != -1) &&
               *amount < max_lines * 2; this_sub++ )
         {
                 lines_listed = 0;
                 sprintf(s, "|#7[|#1%c|#7] |#9%s",
                     (qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
                     subboards[usub[this_sub].subnum].name);
-                s[44] = '\0';
+                s[44] = 0;
                 if (*amount >= max_lines)
                 {
-                    GetSession()->bout.GotoXY(40, 3 + *amount - max_lines);
-					GetSession()->bout << s;
+                    goxy(40, 3 + *amount - max_lines);
+					sess->bout << s;
                 }
                 else
                 {
-                    GetSession()->bout << s;
-					GetSession()->bout.NewLine();
+                    sess->bout << s;
+					nl();
                 }
                 ++*amount;
             }
     }
     else
     {
-        for ( int this_dir = first; (this_dir < GetSession()->num_dirs) && (udir[this_dir].subnum != -1) &&
+        for ( int this_dir = first; (this_dir < sess->num_dirs) && (udir[this_dir].subnum != -1) &&
               *amount < max_lines * 2; this_dir++ )
         {
                 lines_listed = 0;
@@ -1139,18 +1141,18 @@ void list_config_scan_plus(int first, int *amount, int type)
                 s[44] = 0;
                 if ( *amount >= max_lines )
                 {
-                    GetSession()->bout.GotoXY( 40, 3 + *amount - max_lines );
-                    GetSession()->bout << s;
+                    goxy( 40, 3 + *amount - max_lines );
+                    sess->bout << s;
                 }
                 else
                 {
-                    GetSession()->bout << s;
-					GetSession()->bout.NewLine();
+                    sess->bout << s;
+					nl();
                 }
                 ++*amount;
             }
     }
-    GetSession()->bout.NewLine();
+    nl();
     lines_listed = 0;
 }
 
@@ -1168,9 +1170,9 @@ void config_scan_plus(int type)
         CURRENT_MENU_ITEM
     };
 
-    int useconf = ( subconfnum > 1 && okconf( GetSession()->GetCurrentUser() ) );
-    GetSession()->topdata = WLocalIO::topdataNone;
-    GetApplication()->UpdateTopScreen();
+    int useconf = ( subconfnum > 1 && okconf( &sess->thisuser ) );
+    sess->topdata = WLocalIO::topdataNone;
+    app->localIO->UpdateTopScreen();
 
     menu_items = static_cast<char **>( BbsAlloc2D( 10, 10, sizeof( char ) ) );
     strcpy(menu_items[0], "Next");
@@ -1227,15 +1229,15 @@ void config_scan_plus(int type)
         {
             command = side_menu( &side_pos, redraw, menu_items, 1,
 #ifdef MAX_SCREEN_LINES_TO_SHOW
-                GetSession()->GetCurrentUser()->GetScreenLines() - STOP_LIST > MAX_SCREEN_LINES_TO_SHOW - STOP_LIST ?
+                sess->thisuser.GetScreenLines() - STOP_LIST > MAX_SCREEN_LINES_TO_SHOW - STOP_LIST ?
                 MAX_SCREEN_LINES_TO_SHOW - STOP_LIST :
-                GetSession()->GetCurrentUser()->GetScreenLines() - STOP_LIST, &smc);
+                sess->thisuser.GetScreenLines() - STOP_LIST, &smc);
 #else
-                GetSession()->GetCurrentUser()->GetScreenLines() - STOP_LIST, &smc);
+                sess->thisuser.GetScreenLines() - STOP_LIST, &smc);
 #endif
             lines_listed = 0;
             redraw = true;
-            GetSession()->bout.Color( 0 );
+            ansic( 0 );
             if ( do_sysop_command( command ) )
             {
                 menu_done = true;
@@ -1245,7 +1247,7 @@ void config_scan_plus(int type)
             {
             case '?':
             case CO:
-                GetSession()->bout.ClearScreen();
+                ClearScreen();
                 printfile(SCONFIG_HLP);
                 pausescr();
                 menu_done = true;
@@ -1296,7 +1298,7 @@ void config_scan_plus(int type)
                     {
                         sysdir = 1;
                     }
-                    for (this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++)
+                    for (this_dir = 0; (this_dir < sess->num_dirs); this_dir++)
                     {
                         sprintf(s, "%d", sysdir ? top + pos : top + pos + 1);
                         if ( wwiv::stringUtils::IsEquals( s, udir[this_dir].keys ) )
@@ -1321,14 +1323,14 @@ void config_scan_plus(int type)
                     top += amount;
                     if (type == 0)
                     {
-                        if (top >= GetSession()->num_subs)
+                        if (top >= sess->num_subs)
                         {
                             top = 0;
                         }
                     }
                     else
                     {
-                        if (top >= GetSession()->num_dirs)
+                        if (top >= sess->num_dirs)
                         {
                             top = 0;
                         }
@@ -1338,9 +1340,9 @@ void config_scan_plus(int type)
                     amount = 0;
                     break;
                 case 1:
-                    if (top > GetSession()->GetCurrentUser()->GetScreenLines() - 4)
+                    if (top > sess->thisuser.GetScreenLines() - 4)
                     {
-                        top -= GetSession()->GetCurrentUser()->GetScreenLines() - 4;
+                        top -= sess->thisuser.GetScreenLines() - 4;
                     }
                     else
                     {
@@ -1363,7 +1365,7 @@ void config_scan_plus(int type)
                         {
                             sysdir = 1;
                         }
-                        for (this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++)
+                        for (this_dir = 0; (this_dir < sess->num_dirs); this_dir++)
                         {
                             sprintf(s, "%d", sysdir ? top + pos : top + pos + 1);
                             if ( wwiv::stringUtils::IsEquals( s, udir[this_dir].keys ) )
@@ -1380,7 +1382,7 @@ void config_scan_plus(int type)
                 case 3:
                     if (type == 0)
                     {
-                        for (this_sub = 0; this_sub < GetSession()->num_subs; this_sub++)
+                        for (this_sub = 0; this_sub < sess->num_subs; this_sub++)
                         {
                             if (qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32)))
                             {
@@ -1390,7 +1392,7 @@ void config_scan_plus(int type)
                     }
                     else
                     {
-                        for (this_dir = 0; this_dir < GetSession()->num_dirs; this_dir++)
+                        for (this_dir = 0; this_dir < sess->num_dirs; this_dir++)
                         {
                             if (qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32)))
                             {
@@ -1405,7 +1407,7 @@ void config_scan_plus(int type)
                 case 4:
                     if (type == 0)
                     {
-                        for (this_sub = 0; this_sub < GetSession()->num_subs; this_sub++)
+                        for (this_sub = 0; this_sub < sess->num_subs; this_sub++)
                         {
                             if (!(qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32))))
                             {
@@ -1415,7 +1417,7 @@ void config_scan_plus(int type)
                     }
                     else
                     {
-                        for (this_dir = 0; this_dir < GetSession()->num_dirs; this_dir++)
+                        for (this_dir = 0; this_dir < sess->num_dirs; this_dir++)
                         {
                             if (!(qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32))))
                             {
@@ -1436,48 +1438,48 @@ void config_scan_plus(int type)
                     }
                     else
                     {
-                        i = GetSession()->GetCurrentFileArea();
-                        GetSession()->SetCurrentFileArea( top + pos );
-                        GetSession()->tagging = 1;
+                        i = sess->GetCurrentFileArea();
+                        sess->SetCurrentFileArea( top + pos );
+                        sess->tagging = 1;
                         listfiles();
-                        GetSession()->tagging = 0;
-                        GetSession()->SetCurrentFileArea( i );
+                        sess->tagging = 0;
+                        sess->SetCurrentFileArea( i );
                     }
                     menu_done = true;
                     amount = 0;
                     break;
                 case 6:
-                    if ( okconf( GetSession()->GetCurrentUser() ) )
+                    if ( okconf( &sess->thisuser ) )
                     {
                         if ( type == 0 )
                         {
-                            if ( GetSession()->GetCurrentConferenceMessageArea() > 0 )
+                            if ( sess->GetCurrentConferenceMessageArea() > 0 )
                             {
-                                GetSession()->SetCurrentConferenceMessageArea( GetSession()->GetCurrentConferenceMessageArea() - 1);
+                                sess->SetCurrentConferenceMessageArea( sess->GetCurrentConferenceMessageArea() - 1);
                             }
                             else
                             {
-                                while ((uconfsub[GetSession()->GetCurrentConferenceMessageArea() + 1].confnum >= 0) && (GetSession()->GetCurrentConferenceMessageArea() < subconfnum - 1))
+                                while ((uconfsub[sess->GetCurrentConferenceMessageArea() + 1].confnum >= 0) && (sess->GetCurrentConferenceMessageArea() < subconfnum - 1))
                                 {
-                                    GetSession()->SetCurrentConferenceMessageArea( GetSession()->GetCurrentConferenceMessageArea() + 1 );
+                                    sess->SetCurrentConferenceMessageArea( sess->GetCurrentConferenceMessageArea() + 1 );
                                 }
                             }
-                            setuconf( CONF_SUBS, GetSession()->GetCurrentConferenceMessageArea(), -1 );
+                            setuconf( CONF_SUBS, sess->GetCurrentConferenceMessageArea(), -1 );
                         }
                         else
                         {
-                            if ( GetSession()->GetCurrentConferenceFileArea() > 0 )
+                            if ( sess->GetCurrentConferenceFileArea() > 0 )
                             {
-                                GetSession()->SetCurrentConferenceFileArea( GetSession()->GetCurrentConferenceFileArea() - 1 );
+                                sess->SetCurrentConferenceFileArea( sess->GetCurrentConferenceFileArea() - 1 );
                             }
                             else
                             {
-                                while ((uconfdir[GetSession()->GetCurrentConferenceFileArea() + 1].confnum >= 0) && (GetSession()->GetCurrentConferenceFileArea() < dirconfnum - 1))
+                                while ((uconfdir[sess->GetCurrentConferenceFileArea() + 1].confnum >= 0) && (sess->GetCurrentConferenceFileArea() < dirconfnum - 1))
                                 {
-                                    GetSession()->SetCurrentConferenceFileArea( GetSession()->GetCurrentConferenceFileArea() + 1 );
+                                    sess->SetCurrentConferenceFileArea( sess->GetCurrentConferenceFileArea() + 1 );
                                 }
                             }
-                            setuconf( CONF_DIRS, GetSession()->GetCurrentConferenceFileArea(), -1 );
+                            setuconf( CONF_DIRS, sess->GetCurrentConferenceFileArea(), -1 );
                         }
                         pos = 0;
                         menu_done = true;
@@ -1485,31 +1487,31 @@ void config_scan_plus(int type)
                     }
                     break;
                 case 7:
-                    if ( okconf( GetSession()->GetCurrentUser() ) )
+                    if ( okconf( &sess->thisuser ) )
                     {
                         if (type == 0)
                         {
-                            if ((GetSession()->GetCurrentConferenceMessageArea() < subconfnum - 1) && (uconfsub[GetSession()->GetCurrentConferenceMessageArea() + 1].confnum >= 0))
+                            if ((sess->GetCurrentConferenceMessageArea() < subconfnum - 1) && (uconfsub[sess->GetCurrentConferenceMessageArea() + 1].confnum >= 0))
                             {
-                                GetSession()->SetCurrentConferenceMessageArea( GetSession()->GetCurrentConferenceMessageArea() + 1 );
+                                sess->SetCurrentConferenceMessageArea( sess->GetCurrentConferenceMessageArea() + 1 );
                             }
                             else
                             {
-                                GetSession()->SetCurrentConferenceMessageArea( 0 );
+                                sess->SetCurrentConferenceMessageArea( 0 );
                             }
-                            setuconf( CONF_SUBS, GetSession()->GetCurrentConferenceMessageArea(), -1 );
+                            setuconf( CONF_SUBS, sess->GetCurrentConferenceMessageArea(), -1 );
                         }
 
                         else {
-                            if ((GetSession()->GetCurrentConferenceFileArea() < dirconfnum - 1) && (uconfdir[GetSession()->GetCurrentConferenceFileArea() + 1].confnum >= 0))
+                            if ((sess->GetCurrentConferenceFileArea() < dirconfnum - 1) && (uconfdir[sess->GetCurrentConferenceFileArea() + 1].confnum >= 0))
                             {
-                                GetSession()->SetCurrentConferenceFileArea( GetSession()->GetCurrentConferenceFileArea() + 1 );
+                                sess->SetCurrentConferenceFileArea( sess->GetCurrentConferenceFileArea() + 1 );
                             }
                             else
                             {
-                                GetSession()->SetCurrentConferenceFileArea( 0 );
+                                sess->SetCurrentConferenceFileArea( 0 );
                             }
-                            setuconf( CONF_DIRS, GetSession()->GetCurrentConferenceFileArea(), -1 );
+                            setuconf( CONF_DIRS, sess->GetCurrentConferenceFileArea(), -1 );
                         }
                         pos = 0;
                         menu_done = true;
@@ -1521,7 +1523,7 @@ void config_scan_plus(int type)
                     done = true;
                     break;
                 case 9:
-                    GetSession()->bout.ClearScreen();
+                    ClearScreen();
                     printfile(SCONFIG_HLP);
                     pausescr();
                     menu_done = true;
@@ -1541,7 +1543,7 @@ void config_scan_plus(int type)
         }
     }
     lines_listed = 0;
-    GetSession()->bout.NewLine();
+    nl();
     BbsFree2D(menu_items);
 }
 
@@ -1551,24 +1553,24 @@ void drawscan(int filepos, long tagged)
     int max_lines = GetMaxLinesToShowForScanPlus();
     if (filepos >= max_lines)
     {
-        GetSession()->bout.GotoXY(40, 3 + filepos - max_lines);
+        goxy(40, 3 + filepos - max_lines);
     }
     else
     {
-        GetSession()->bout.GotoXY(1, filepos + 3);
+        goxy(1, filepos + 3);
     }
 
-    GetSession()->bout.SystemColor( BLACK + ( CYAN << 4 ) );
-    GetSession()->bout.WriteFormatted("[%c]", tagged ? '\xFE' : ' ');
-    GetSession()->bout.SystemColor( YELLOW + ( BLACK << 4 ) );
+    setc( BLACK + ( CYAN << 4 ) );
+    bprintf("[%c]", tagged ? '\xFE' : ' ');
+    setc( YELLOW + ( BLACK << 4 ) );
 
     if ( filepos >= max_lines )
     {
-        GetSession()->bout.GotoXY( 41, 3 + filepos - max_lines );
+        goxy( 41, 3 + filepos - max_lines );
     }
     else
     {
-        GetSession()->bout.GotoXY( 2, filepos + 3 );
+        goxy( 2, filepos + 3 );
     }
 }
 
@@ -1579,13 +1581,13 @@ void undrawscan(int filepos, long tagged)
 
     if ( filepos >= max_lines )
     {
-        GetSession()->bout.GotoXY( 40, 3 + filepos - max_lines );
+        goxy( 40, 3 + filepos - max_lines );
     }
     else
     {
-        GetSession()->bout.GotoXY( 1, filepos + 3 );
+        goxy( 1, filepos + 3 );
     }
-    GetSession()->bout.WriteFormatted( "|#7[|#1%c|#7]", tagged ? '\xFE' : ' ' );
+    bprintf( "|#7[|#1%c|#7]", tagged ? '\xFE' : ' ' );
 }
 
 
@@ -1597,7 +1599,7 @@ long is_inscan( int dir )
         sysdir = true;
     }
 
-    for ( int this_dir = 0; ( this_dir < GetSession()->num_dirs ); this_dir++ )
+    for ( int this_dir = 0; ( this_dir < sess->num_dirs ); this_dir++ )
     {
         char szDir[50];
         sprintf( szDir, "%d", sysdir ? dir : dir + 1 );
@@ -1616,8 +1618,8 @@ void reset_user_colors_to_defaults()
 {
     for( int i = 0; i <= 9; i++ )
     {
-        GetSession()->GetCurrentUser()->SetColor( i, GetSession()->newuser_colors[ i ] );
-        GetSession()->GetCurrentUser()->SetBWColor( i, GetSession()->newuser_bwcolors[ i ] );
+        sess->thisuser.SetColor( i, sess->newuser_colors[ i ] );
+        sess->thisuser.SetBWColor( i, sess->newuser_bwcolors[ i ] );
     }
 }
 

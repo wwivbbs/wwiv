@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -28,16 +28,6 @@
 #define _UNIX
 #endif // defined (linux)
 
-#if defined ( __APPLE__ )
-#define _UNIX
-#if !defined( __BIG_ENDIAN__ )
-#define __BIG_ENDIAN__
-#endif // __BIG_ENDIAN__
-#endif // defined ( __APPLE__ )
-
-#if defined( WORDS_BIGENDIAN )
-#define __BIG_ENDIAN__
-#endif // WORDS_BIGENDIAN
 
 //
 // Sanity check the #defines

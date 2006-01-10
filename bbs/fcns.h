@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,17 +14,15 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
+/*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_FCNS_H__
-#define __INCLUDED_FCNS_H__
+//#ifndef __INCLUDED_FCNS_H__
+//#define __INCLUDED_FCNS_H__
 
 #ifdef _MSC_VER
 #pragma once
 #endif
-
-#include "menu.h"
-#include "instmsg.h"
 
 // File: asv.cpp
 
@@ -75,9 +73,10 @@ void text_edit();
 // File: bbsovl2.cpp
 
 void OnlineUserEditor();
-void BackPrint( std::string text, int nColorCode, int nCharDelay, int nStringDelay );
+void BackPrint(const char *pszText, int nColorCode, int nCharDelay, int nStringDelay );
 void MoveLeft( int nNumberOfChars );
-void SpinPuts( const std::string text, int nColorCode );
+void ClearEOL();
+void SpinPuts( const char *pszText, int nColorCode );
 
 
 // File: bbsovl3.cpp
@@ -85,8 +84,8 @@ void SpinPuts( const std::string text, int nColorCode );
 int  get_kb_event( int nNumLockMode );
 char onek_ncr( const char *pszAllowableChars );
 bool do_sysop_command(int command);
-bool copyfile(const std::string sourceFileName, const std::string destFileName, bool stats);
-bool movefile(const std::string sourceFileName, const std::string destFileName, bool stats);
+bool copyfile(const char *pszSourceFileName, const char *pszDestFileName, bool stats);
+bool movefile(const char *pszSourceFileName, const char *pszDestFileName, bool stats);
 void ListAllColors();
 //int  get_kb_event1();
 
@@ -94,14 +93,13 @@ void ListAllColors();
 // File: bbsutl.cpp
 
 void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long lBufferLength);
-bool inli( std::string &outBuffer, std::string rollOver, int nMaxLen, bool bAddCRLF = true, bool bAllowPrevious = false, bool bTwoColorChatMode = false);
-bool inli( char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF = true, bool bAllowPrevious = false, bool bTwoColorChatMode = false );
+bool inli( char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool bAllowPrevious, bool bTwoColorChatMode = false );
 bool so();
 bool cs();
 bool lcs();
 void checka(bool *abort, bool *next);
-void pla(const std::string text, bool *abort);
-void plal(const std::string text, int limit, bool *abort);
+void pla(const char *pszText, bool *abort);
+void plal(const char *pszText, int limit, bool *abort);
 bool sysop2();
 bool checkcomp(const char *pszComputerType);
 int  check_ansi();
@@ -117,14 +115,15 @@ bool AllowLocalSysop();
 void parse_email_info( const char *pszEmailAddress, int *pUserNumber, int *pSystemNumber );
 bool ValidateSysopPassword();
 void hang_it_up();
-bool play_sdf( const std::string soundFileName, bool abortable );
+bool play_sdf( const char *pszSoundFileName, bool abortable );
 void describe_area_code( int nAreaCode, char *pszDescription );
-void describe_area_code_prefix( int nAreaCode, int town, char *pszDescription );
+void describe_town( int nAreaCode, int town, char *pszDescription );
 
 
 // File: bbsutl2.cpp
 
-void repeat_char( char x, int amount, int nColor = 7 );
+void ClearScreen();
+void repeat_char( char x, int amount, int nColor, bool bAddNL );
 const char *ctypes(int num);
 void osan( const char *pszText, bool *abort, bool *next );
 void plan( int nWWIVColor, const char *pszText, bool *abort, bool *next );
@@ -139,8 +138,6 @@ char bgetch();
 // File: bputch.cpp
 
 int  bputch( char c, bool bUseInternalBuffer = false );
-void FlushOutComChBuffer();
-void rputch(char ch, bool bUseInternalBuffer = false);
 
 
 // File: callback.cpp
@@ -179,22 +176,43 @@ void buildcolorfile();
 
 // File: com.cpp
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc);
+void rputch(char ch, bool bUseInternalBuffer = false);
 char rpeek_wfconly();
 char bgetchraw();
 bool bkbhitraw();
 void dump();
 bool CheckForHangup();
 void makeansi( int attr, char *pszOutBuffer, bool forceit);
+void nl(int nNumLines = 1);
 void BackSpace();
+void setc( int nColor );
 void resetnsp();
 bool bkbhit();
+void mpl( int nNumberOfChars );
 char getkey();
 bool yesno();
 bool noyes();
 char ynq();
+void ansic(int wwivColor);
 char onek( const char *pszAllowableChars, bool bAutoMpl = false );
+void reset_colors();
+void goxy(int x, int y);
 char onek1(const char *pszAllowableChars);
-
+void DisplayLiteBar(const char *fmt,...);
+void BackLine();
+void FlushOutComChBuffer();
+int  bputs(const char *pszText );
+int  bprintf(const char *fmt,...);
+namespace wwiv
+{
+    template<class charT, class traits>
+    std::basic_ostream<charT, traits>&
+    endl (std::basic_ostream<charT, traits>& strm )
+    {
+        strm.write( "\r\n", 2 );
+        return strm;
+    }
+}
 
 
 // File: conf.cpp
@@ -217,12 +235,13 @@ void delete_conf(int conftype, int n);
 void conf_edit(int conftype);
 void list_confs(int conftype, int ssc);
 int  select_conf(const char *pszPromptText, int conftype, int listconfs);
+int  create_conf_file(int conftype);
 confrec *read_conferences(const char *pszFileName, int *nc, int max);
 void read_in_conferences(int conftype);
 void read_all_conferences();
 int get_num_conferences(const char *pszFileName);
 int wordcount(const char *instr, const char *delimstr);
-char *extractword(int ww,  const char *instr, const char *delimstr);
+char *extractword(int ww,  const char *instr, char *delimstr);
 void sort_conf_str( char *pszConferenceStr );
 
 
@@ -247,13 +266,11 @@ void set_net_num( int nNetworkNumber );
 
 // File: crc.cpp
 
-unsigned long int crc32buf(const char *pBuffer, size_t nLength);
+unsigned long int crc32buf(const char *buf, size_t len);
 
 
 // File: datetime.cpp
 
-char *dateFromTimeTForLog(time_t t);
-char *dateFromTimeT(time_t t);
 char *date();
 char *fulldate();
 char *times();
@@ -304,7 +321,7 @@ void dirlist(int mode);
 
 // File: dropfile.cpp
 
-void create_filename( int nDropFileType, std::string& fileName );
+void create_filename( int nDropFileType, char *pszOutputFileName );
 char *create_chain_file();
 
 
@@ -335,20 +352,24 @@ void eventedit();
 
 // File: execexternal.cpp
 
-int  ExecuteExternalProgram( const std::string commandLine, int nFlags );
+int  ExecuteExternalProgram( const char *pszCommandLine, int nFlags );
 
 
 // File: extract.cpp
 
-void extract_mod(const char *b, long nLength, time_t tDateTime);
-void extract_out(char *b, long nLength, const char *pszTitle, time_t tDateTime);
-bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDescription);
+void extract_mod(const char *b, long len, long daten);
+void extract_out(char *b, long len, const char *title, long daten);
+bool upload_mod(int dn, const char *pszFileName, const char *pszDescription);
 
 
-// File: finduser.cpp
+// File: extrn.cpp
 
-int finduser( const std::string searchString );
-int  finduser1( const std::string searchString );
+// ** NOTHING HERE **
+
+
+// File: extrn1.cpp
+
+// ** NOTHING HERE **
 
 
 // File: gfiles.cpp
@@ -373,6 +394,13 @@ void HopSub();
 void HopDir();
 
 
+// File: ini.cpp
+
+void ini_done();
+bool ini_init(const char *pszFileName, const char *prim, const char *sec);
+char *ini_get(const char *key, int index = -1, char *index1 = NULL);
+
+
 // File: inmsg.cpp
 
 void inmsg( messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtitle, const char *aux, int fsed, const char *pszDestination, int flags, bool force_title = false );
@@ -380,23 +408,24 @@ void inmsg( messagerec * pMessageRecord, char *pszTitle, int *anony, bool needti
 
 // File: input.cpp
 
-void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false );
-void input1( std::string &strOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false );
-void input( char *pszOutText, int nMaxLength, bool bAutoMpl = false );
-void input( std::string &strOutText, int nMaxLength, bool bAutoMpl = false );
-void inputl( char *pszOutText, int nMaxLength, bool bAutoMpl = false);
-void inputl( std::string &strOutText, int nMaxLength, bool bAutoMpl = false);
-int  Input1( char *pszOutText, std::string origText, int nMaxLength, bool bInsert, int mode );
-int  Input1( std::string &strOutText, std::string origText, int nMaxLength, bool bInsert, int mode );
-void input_password( std::string promptText, std::string &strOutPassword, int nMaxLength );
+void input1( char *pszOutText, int maxlen, int lc, bool crend, bool bAutoMpl = false );
+void input1( std::string &strOutText, int maxlen, int lc, bool crend, bool bAutoMpl = false );
+void input( char *pszOutText, int len, bool bAutoMpl = false );
+void input( std::string &strOutText, int len, bool bAutoMpl = false );
+void inputl( char *pszOutText, int len, bool bAutoMpl = false);
+void inputl( std::string &strOutText, int len, bool bAutoMpl = false);
+int  Input1( char *pszOutText, const char *pszOrigText, int maxlen, bool bInsert, int mode );
+int  Input1( std::string &strOutText, const char *pszOrigText, int maxlen, bool bInsert, int mode );
+void input_password( const char *pszPromptText, char *pszOutPassword, int len );
+void input_password( const char *pszPromptText, std::string &strOutPassword, int len );
 
 // File: inetmsg.cpp
 
 void get_user_ppp_addr();
 void send_inet_email();
 bool check_inet_addr(const char *inetaddr);
-char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber);
-void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber);
+char *read_inet_addr(char *addr, int nUserNumber);
+void write_inet_addr(const char *addr, int nUserNumber);
 
 
 // File: instmsg.cpp
@@ -701,8 +730,9 @@ void Packers();
 // File: modem.cpp
 
 void rputs(const char *pszText);
+void get_modem_line(char *pszLine, double d, bool allowa);
 void do_result(result_info * ri);
-void process_full_result( const std::string& resultCode );
+void process_full_result( char *pszResultCode );
 int  mode_switch(double d, bool allowa);
 void holdphone(bool bPickUpPhone);
 void imodem(bool bSetup);
@@ -711,19 +741,19 @@ void answer_phone();
 
 // File: msgbase.cpp
 
-void remove_link(messagerec * pMessageRecord, const std::string fileName);
-void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const std::string fileName );
-char *readfile(messagerec * pMessageRecord, const std::string fileName, long *plMessageLength);
+void remove_link(messagerec * pMessageRecord, const char *aux);
+void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const char *aux );
+char *readfile(messagerec * pMessageRecord, const char *aux, long *plMessageLength);
 void LoadFileIntoWorkspace( const char *pszFileName, bool bNoEditAllowed );
 bool ForwardMessage( int *pUserNumber, int *pSystemNumber );
 WFile *OpenEmailFile( bool bAllowWrite );
-void sendout_email(const char *title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber );
+void sendout_email(char *title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber );
 bool ok_to_mail( int nUserNumber, int nSystemNumber, bool bForceit );
 void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool force_title = false, bool bAllowFSED = true );
 void imail( int nUserNumber, int nSystemNumber );
 void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *pszFileName, int nFromSystem, int nFromUser );
 void read_message(int n, bool *next, int *val);
-void lineadd(messagerec * pMessageRecord, const char *sx, const std::string fileName);
+void lineadd(messagerec * pMessageRecord, const char *sx, const char *aux);
 
 
 // File: msgbase1.cpp
@@ -762,6 +792,7 @@ void cleanup_net();
 int  cleanup_net1();
 void do_callout(int sn);
 bool ok_to_call(int i);
+void fixup_long(long *f, long l);
 void free_vars(float **weight, int **try1);
 void attempt_callout();
 void print_pending_list();
@@ -779,11 +810,11 @@ void run_exp();
 void input_phone();
 void input_dataphone();
 void input_language();
-bool check_name( const std::string userName );
+bool check_name(char *nn);
 void input_name();
 void input_realname();
 void input_callsign();
-bool valid_phone( const std::string phoneNumber );
+bool valid_phone( const char *phone );
 void input_street();
 void input_city();
 void input_state();
@@ -815,7 +846,7 @@ bool printfile( const char *pszFileName, bool bAbortable = true, bool bForcePaus
 // File: quote.cpp
 
 void grab_quotes(messagerec * m, const char *aux);
-void auto_quote(char *org, long len, int type, time_t tDateTime);
+void auto_quote(char *org, long len, int type, long daten);
 void get_quote(int fsed);
 
 
@@ -831,29 +862,18 @@ void rsm( int nUserNum, WUser * pUser, bool bAskToSaveMsgs );
 void ssm( int nUserNum, int nSystemNum, const char *pszFormat, ... );
 
 
-// File: showfiles.cpp
-
-void show_files( const char *pszFileName, const char *pszDirectoryName );
-
-
-// File: SmallRecord.cpp
-
-void InsertSmallRecord(int nUserNumber, const char *name);
-void DeleteSmallRecord(const char *name);
-
-
 // File: sr.cpp
 
 void calc_CRC(unsigned char b);
 char gettimeout(double d, bool *abort);
-int  extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending );
+int  extern_prot( int nProtocolNum, char *pszFileNameToSend, bool bSending );
 bool ok_prot(int nProtocolNum, xfertype xt);
 char *prot_name(int nProtocolNum);
 int  get_protocol(xfertype xt);
-void ascii_send(const char *pszFileName, bool *sent, double *percent);
-void maybe_internal(const char *pszFileName, bool *xferred, double *percent, char ft, char *ftp, bool bSend, int prot);
-void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const char *sfn, int dn, long fs);
-void receive_file(const char *pszFileName, int *received, char *ft, const char *sfn, int dn);
+void ascii_send(char *pszFileName, bool *sent, double *percent);
+void maybe_internal(char *pszFileName, bool *xferred, double *percent, char ft, char *ftp, bool bSend, int prot);
+void send_file(char *pszFileName, bool *sent, bool *abort, char ft, char *sfn, int dn, long fs);
+void receive_file(char *pszFileName, int *received, char *ft, char *sfn, int dn);
 char end_batch1();
 void endbatch();
 
@@ -862,17 +882,17 @@ void endbatch();
 
 char modemkey(int *tout);
 int  receive_block(char *b, unsigned char *bln, bool bUseCRC);
-void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUseCRC);
-void zmodem_receive(const char *pszFileName, char *ft, bool *received );
+void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC);
+void zmodem_receive(char *pszFileName, char *ft, bool *received );
 
 
 // File: srsend.cpp
 
 void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber);
-char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName, int *terr, bool *abort);
+char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, char *pszFileName, int *terr, bool *abort);
 bool okstart(bool *bUseCRC, bool *abort);
-void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch );
-void zmodem_send(const char *pszFileName, bool *sent, double *percent, char ft  );
+void xymodem_send(char *pszFileName, bool *sent, double *percent, char ft, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch );
+void zmodem_send(char *pszFileName, bool *sent, double *percent, char ft  );
 
 
 // File: strings.cpp
@@ -920,8 +940,10 @@ void SubList();
 // File: subreq.cpp
 
 void sub_req(int main_type, int minor_type, int tosys, char *extra);
+int  find_hostfor(char *type, short *ui, char *pszDescription, short *opt);
 void sub_xtr_del(int n, int nn, int f);
 void sub_xtr_add(int n, int nn);
+int  display_sub_categories();
 int  amount_of_subscribers( const char *pszNetworkFileName );
 
 
@@ -934,14 +956,14 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards);
 
 void RequestChat();
 void select_chat_name(char *pszSysopName);
-void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopName);
+void two_way_chat(char *pszRollover, int maxlen, bool crend, char *pszSysopName);
 void chat1(char *pszChatLine, bool two_way);
 
 
 // File: sysoplog.cpp
 
-void GetSysopLogFileName(const char *d, char *pszLogFileName);
-void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName);
+void slname(const char *d, char *pszLogFileName);
+void islname(char *pszInstanceLogFileName);
 void catsl();
 void sysopchar(const char *pszLogText);
 void sysoplog(const char *pszLogText, bool bIndent = true);
@@ -951,6 +973,7 @@ void sysoplogfi( bool bIndent, const char *pszFormat, ... );
 
 // File: sysopf.cpp
 
+void isr1( int nUserNumber, const char *pszName );
 void reset_files();
 void prstatus(bool bIsWFC);
 void valuser(int nUserNumber);
@@ -978,7 +1001,12 @@ void print_affil( WUser *pUser );
 
 // File: user.cpp
 
+int  number_userrecs();
 bool okconf( WUser *pUser );
+void InsertSmallRecord(int nUserNumber, const char *name);
+void DeleteSmallRecord(const char *name);
+int  finduser( char *pszSearchString );
+int  finduser1( const char *pszSearchString );
 void add_ass(int nNumPoints, const char *pszReason);
 
 
@@ -1007,9 +1035,10 @@ void preload_subs();
 char *get_wildlist(char *pszFileMask);
 int side_menu(int *menu_pos, bool redraw, char *menu_items[], int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);
+void shut_down(int type);
 void WWIV_SetFileTime(const char* pszFileName, const time_t tTime);
 bool okfsed();
-char* W_DateString(time_t tDateTime, char* mode , char* delim);
+char* W_DateString(long daten, char* mode , char* delim);
 void WriteBuf( WFile &file, const char *pszText);
 
 
@@ -1050,7 +1079,23 @@ void wfc_screen();
 
 // File: WStringUtils.cpp
 
-// Moved to WStringUtils.h
+const char *charstr( int nStringLength, int chRepeatChar );
+void StringTrimEnd( char *pszString );
+char *stripcolors( const char *pszOrig );
+unsigned char upcase( unsigned char ch );
+unsigned char locase( unsigned char ch );
+char *StringJustify(char *pszString, int nLength, int bg, int nJustificationType);
+char *StringTrim(char *pszString);
+std::string& StringTrim( std::string& s );
+std::string& StringTrimEnd( std::string& s );
+std::string& StringTrimBegin( std::string& s );
+char *stristr(char *pszString, char *pszPattern);
+void single_space(char *pszText);
+char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, char *brk);
+char *StringRemoveWhitespace(char *str);
+char *StringRemoveChar( const char *pszString, char chCharacterToRemove );
+char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, char *pszNewString);
+
 
 // File: xfer.cpp
 
@@ -1111,7 +1156,7 @@ void arc_l();
 // File: xferovl1.cpp
 
 void modify_extended_description(char **sss, const char *dest, const char *title);
-bool valid_desc( const char *pszDescription );
+bool valid_desc( const unsigned char *pszDescription );
 bool get_file_idz(uploadsrec * pUploadRecord, int dn);
 int  read_idz_all();
 int  read_idz(int mode, int tempdir);
@@ -1162,4 +1207,4 @@ void removefile();
 
 
 
-#endif // __INCLUDED_FCNS_H__
+//#endif // __INCLUDED_FCNS_H__

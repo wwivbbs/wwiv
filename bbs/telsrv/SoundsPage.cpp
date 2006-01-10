@@ -81,7 +81,7 @@ void SoundsPage::DoBrowseDialog(CEdit& control)
 
     // Create an Open dialog; the default file name extension is ".my".
     DWORD dwFlags = OFN_HIDEREADONLY;
-    CFileDialog fileDlg (TRUE, _T( "wav" ), oldFileName, dwFlags, szFilters, this);
+    CFileDialog fileDlg (TRUE, "wav", oldFileName, dwFlags, szFilters, this);
 
     // Display the file dialog. When user clicks OK, fileDlg.DoModal() 
     // returns IDOK.

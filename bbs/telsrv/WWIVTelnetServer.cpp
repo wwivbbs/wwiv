@@ -124,7 +124,7 @@ BOOL CWWIVTelnetServerApp::InitInstance()
 	ParseCommandLine(cmdInfo);
 
 	// Check to see if launched as OLE server
-	if ( cmdInfo.m_bRunEmbedded || cmdInfo.m_bRunAutomated)
+	if (cmdInfo.m_bRunEmbedded || cmdInfo.m_bRunAutomated)
 	{
 		// Register all OLE server (factories) as running.  This enables the
 		//  OLE libraries to create objects from other applications.
@@ -240,8 +240,8 @@ END_MESSAGE_MAP()
 void CWWIVTelnetServerApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
-    aboutDlg.m_version.Format( _T( "%s%s" ), wwiv_version, beta_version );
-	aboutDlg.m_copyright.Format( _T( "Copyright (c) 2001-2004 Rushfan" ) );
+    aboutDlg.m_version.Format( "%s%s", wwiv_version, beta_version );
+	aboutDlg.m_copyright.Format( "Copyright (c) 2001-2004 Rushfan" );
 
     aboutDlg.DoModal();
 }

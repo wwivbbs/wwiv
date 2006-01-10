@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,71 +20,13 @@
 #ifndef __INCLUDED_PLATFORM_WLOCALIO_H__
 #define __INCLUDED_PLATFORM_WLOCALIO_H__
 
-#ifdef _WIN32
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOKEYSTATES
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define NOATOM
-#define NOCLIPBOARD
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOMINMAX
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NOCRYPT
 
-// Define these for MFC projects
-#define NOTAPE
-#define NOIMAGE
-#define NOPROXYSTUB
-#define NORPC
-#define NOIME
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef CopyFile
-#undef GetFullPathName
-
-#endif // _WIN32
 //
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
 //
 
 #define GLOBAL_SIZE 4096
-
-class WFile;
-class WStatus;
-class WSession;
-
-struct screentype
-{
-    short x1, y1, topline1, curatr1;
-
-#ifdef _WIN32
-    CHAR_INFO* scrn1;
-#else
-    char *scrn1;
-#endif
-};
-
-
 
 
 class WLocalIO
@@ -100,18 +42,15 @@ public:
     static const int topdataUser;
 
 private:
-    std::string  m_chatReason;
+	int     m_nWfcStatus;
+    char    m_szChatReason[81];
     WFile   fileGlobalCap; // g_hGlobalCapHandle;
     bool    m_bSysopAlert;
-    int     m_nTopLine;
-    int     m_nScreenBottom;
-    screentype m_ScreenSave;
-
 
 private:
     void ExecuteTemporaryCommand( const char *pszCommand );
-    char scan_to_char( int nKeyCode );
-    void alt_key( int nKeyCode );
+    char scan_to_char(unsigned char ch);
+    void alt_key(unsigned char ch);
     int  GetEditLineStringLength( const char *pszText );
 
 protected:
@@ -140,20 +79,16 @@ public:
 
 	// Constructor/Destructor
     WLocalIO();
-    WLocalIO( const WLocalIO& copy );
 	virtual ~WLocalIO();
 
-    void SetChatReason( char* pszChatReason ) { m_chatReason = pszChatReason; } 
-    void ClearChatReason() { CLEAR_STRING(m_chatReason); }
+	void SetWfcStatus( int nStatus ) { m_nWfcStatus = nStatus; }
+	int  GetWfcStatus() { return m_nWfcStatus; }
 
-    const int GetTopLine() const { return m_nTopLine; }
-    void SetTopLine( int nTopLine ) { m_nTopLine = nTopLine; }
-
-    const int GetScreenBottom() const { return m_nScreenBottom; }
-    void SetScreenBottom( int nScreenBottom ) { m_nScreenBottom = nScreenBottom; }
+    void SetChatReason( char* pszChatReason ) { strcpy( m_szChatReason, pszChatReason ); }
+    void ClearChatReason() { m_szChatReason[0] = '\0'; }
 
     void SetSysopAlert( bool b ) { m_bSysopAlert = b; }
-    const bool GetSysopAlert() const { return m_bSysopAlert; }
+    bool GetSysopAlert() { return m_bSysopAlert; }
     void ToggleSysopAlert() { m_bSysopAlert = !m_bSysopAlert; }
 
     void set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable = false );
@@ -175,13 +110,14 @@ public:
     int  LocalPrintf( const char *pszFormattedText, ... );
     int  LocalXYPrintf( int x, int y, const char *pszFormattedText, ... );
     int  LocalXYAPrintf( int x, int y, int nAttribute, const char *pszFormattedText, ... );
-    void pr_Wait(bool displayWait);
+    void pr_Wait(int i1);
     void set_protect(int l);
-    void savescreen();
-    void restorescreen();
+    void savescreen(screentype * s);
+    void restorescreen(screentype * s);
     void skey(char ch);
     void tleft(bool bCheckForTimeOut);
-    void UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInstanceNumber );
+    void UpdateTopScreenImpl();
+	void UpdateTopScreen() { if (!m_nWfcStatus) UpdateTopScreenImpl(); }
     bool  LocalKeyPressed();
     unsigned char getchd();
     unsigned char getchd1();
@@ -192,12 +128,11 @@ public:
 	 * (x,y), and the lower-right corner at (x+xlen,y+ylen).
 	 */
     void MakeLocalWindow(int x, int y, int xlen, int ylen);
-    void SetCursor(int cursorStyle);
+    void SetCursor(UINT cursorStyle);
 	void LocalWriteScreenBuffer(const char *pszBuffer);
 	int  GetDefaultScreenBottom();
 
     void LocalEditLine(char *s, int len, int status, int *returncode, char *ss);
-    void UpdateNativeTitleBar();
 
 };
 

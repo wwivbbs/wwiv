@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -176,7 +176,7 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC )
 }
 
 
-void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUseCRC )
+void xymodem_receive(char *pszFileName, char *ft, bool *received, bool bUseCRC )
 {
     char b[1025], x[81], ch;
     unsigned char bln;
@@ -192,7 +192,7 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
 	WFile file( pszFileName );
 	if ( !file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite ) )
     {
-        GetSession()->bout << "\r\n\nDOS error - Can't create file.\r\n\n";
+        sess->bout << "\r\n\nDOS error - Can't create file.\r\n\n";
         *received = false;
         return;
     }
@@ -202,17 +202,17 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
     unsigned int bn = 1;
     bool done = false;
     double tpb = (12.656) / ((double) (modem_speed));
-    GetSession()->bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
-    int nOldXPos = GetSession()->localIO()->WhereX();
-    int nOldYPos = GetSession()->localIO()->WhereY();
-    GetSession()->localIO()->LocalXYPuts(52, 0, "³ Filename :               ");
-    GetSession()->localIO()->LocalXYPuts(52, 1, "³ Xfer Time:               ");
-    GetSession()->localIO()->LocalXYPuts(52, 2, "³ File Size:               ");
-    GetSession()->localIO()->LocalXYPuts(52, 3, "³ Cur Block: 1 - 1k        ");
-    GetSession()->localIO()->LocalXYPuts(52, 4, "³ Consec Errors: 0         ");
-    GetSession()->localIO()->LocalXYPuts(52, 5, "³ Total Errors : 0         ");
-    GetSession()->localIO()->LocalXYPuts(52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
-    GetSession()->localIO()->LocalXYPuts(65, 0, stripfn( pszFileName ) );
+    sess->bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
+    int nOldXPos = app->localIO->WhereX();
+    int nOldYPos = app->localIO->WhereY();
+    app->localIO->LocalXYPuts(52, 0, "³ Filename :               ");
+    app->localIO->LocalXYPuts(52, 1, "³ Xfer Time:               ");
+    app->localIO->LocalXYPuts(52, 2, "³ File Size:               ");
+    app->localIO->LocalXYPuts(52, 3, "³ Cur Block: 1 - 1k        ");
+    app->localIO->LocalXYPuts(52, 4, "³ Consec Errors: 0         ");
+    app->localIO->LocalXYPuts(52, 5, "³ Total Errors : 0         ");
+    app->localIO->LocalXYPuts(52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
+    app->localIO->LocalXYPuts(65, 0, stripfn( pszFileName ) );
     int nNumStartTries = 0;
     do
     {
@@ -236,12 +236,12 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
         while ( fabs(timer() - d1) < 10.0 && !bkbhitraw() && !hangup )
         {
             CheckForHangup();
-            if (GetSession()->localIO()->LocalKeyPressed())
+            if (app->localIO->LocalKeyPressed())
             {
-                ch = GetSession()->localIO()->getchd();
+                ch = app->localIO->getchd();
                 if (ch == 0)
                 {
-                    GetSession()->localIO()->getchd();
+                    app->localIO->getchd();
                 }
                 else if (ch == ESC)
                 {
@@ -256,12 +256,12 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
     do
     {
         bln = 255;
-        GetSession()->localIO()->LocalXYPrintf( 69, 4, "%d  ", nConsecErrors );
-        GetSession()->localIO()->LocalXYPrintf( 69, 5, "%d", nTotalErrors );
-        GetSession()->localIO()->LocalXYPrintf( 65, 3, "%ld - %ldk", pos / 128 + 1, pos / 1024 + 1);
+        app->localIO->LocalXYPrintf( 69, 4, "%d  ", nConsecErrors );
+        app->localIO->LocalXYPrintf( 69, 5, "%d", nTotalErrors );
+        app->localIO->LocalXYPrintf( 65, 3, "%ld - %ldk", pos / 128 + 1, pos / 1024 + 1);
         if (reallen)
         {
-            GetSession()->localIO()->LocalXYPuts( 65, 1, ctim( ( static_cast<double>( reallen - pos ) ) * tpb ) );
+            app->localIO->LocalXYPuts( 65, 1, ctim( ( static_cast<double>( reallen - pos ) ) * tpb ) );
         }
         i = receive_block(b, &bln, bUseCRC);
         if ( i == 0 || i == 1 )
@@ -276,7 +276,7 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
                 }
                 x[i3 - i1] = '\0';
                 reallen = atol(x);
-                GetSession()->localIO()->LocalXYPrintf( 65, 2, "%ld - %ldk", ( reallen + 127 ) / 128, bytes_to_k( reallen ) );
+                app->localIO->LocalXYPrintf( 65, 2, "%ld - %ldk", ( reallen + 127 ) / 128, bytes_to_k( reallen ) );
                 while ((b[i1] != SPACE) && (i1 < 64))
                 {
                     ++i1;
@@ -391,7 +391,7 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
             lasteot = false;
         }
     } while ( !hangup && !done );
-    GetSession()->localIO()->LocalGotoXY(nOldXPos, nOldYPos);
+    app->localIO->LocalGotoXY(nOldXPos, nOldYPos);
     if (ok)
     {
         if (filedatetime)
@@ -410,17 +410,15 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
 }
 
 
-void zmodem_receive(const char *pszFileName, char *ft, bool *received )
+void zmodem_receive(char *pszFileName, char *ft, bool *received )
 {
-    char *pszWorkingFileName = WWIV_STRDUP( pszFileName );
-	StringRemoveWhitespace( pszWorkingFileName );
+	StringRemoveWhitespace( pszFileName );
 
-    bool bOldBinaryMode = GetSession()->remoteIO()->GetBinaryMode();
-	GetSession()->remoteIO()->SetBinaryMode( true );
-	bool bResult = NewZModemReceiveFile( pszWorkingFileName );
-	GetSession()->remoteIO()->SetBinaryMode( bOldBinaryMode );
+    bool bOldBinaryMode = app->comm->GetBinaryMode();
+	app->comm->SetBinaryMode( true );
+	bool bResult = NewZModemReceiveFile( pszFileName );
+	app->comm->SetBinaryMode( bOldBinaryMode );
 
     *received = ( bResult ) ? true : false;
-    BbsFreeMemory( pszWorkingFileName );
 }
 

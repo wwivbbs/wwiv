@@ -28,24 +28,19 @@
 *	Copyright (c) 1995 by Edward A. Falk
 *	January, 1995
 */
-#if defined(_MSC_VER) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _CRT_SECURE_NO_DEPRECATE
 
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include "zmodem.h"
 #include "crctab.h"
-#include "WStringUtils.h"
 
 #if defined(_MSC_VER)
 #pragma warning( push )
 #pragma warning( disable : 4706 4127 4244 4100 )
-
-#endif	// _MSC_VER
+#endif
 
 int	SendMoreFileData( ZModem *info );
 extern	int	ZXmitData(int, int, u_char, u_char *data, ZModem *);
@@ -299,8 +294,9 @@ int XmodemTInit( ZModem *info )
 
 /* called by user to begin transmission of a file */
 
-int ZmodemTFile(const char	*pszFileName,
-				const char	*pszRemoteFileName,
+int ZmodemTFile(
+				char	*file,
+				char	*rfile,
 				u_int	f0,
 				u_int	f1,
 				u_int	f2,
@@ -309,14 +305,14 @@ int ZmodemTFile(const char	*pszFileName,
 				int	bytesRem,
 				ZModem	*info )
 {
-	if( pszFileName == NULL || (info->file = fopen(pszFileName, "rb")) == NULL )
+	if( file == NULL || (info->file = fopen(file, "rb")) == NULL )
 	{
 		return ZmErrCantOpen;
 	}
 
 	info->fileEof = 0;
-	info->filename = WWIV_STRDUP(pszFileName);
-	info->rfilename = WWIV_STRDUP((pszRemoteFileName != NULL) ? pszRemoteFileName : "noname");
+	info->filename = file;
+	info->rfilename = (rfile != NULL) ? rfile : const_cast<char *>("noname");
 	info->filesRem = filesRem;
 	info->bytesRem = bytesRem;
 	info->fileFlags[3] = f0;
@@ -397,19 +393,9 @@ int ZmodemTFinish( ZModem *info )
 	}
 
 	info->state = TFinish;
-    if ( info->filename != NULL )
-    {
-        free( info->filename );
-        info->filename = NULL;
-    }
-    if ( info->rfilename != NULL )
-    {
-        free( info->rfilename );
-        info->rfilename = NULL;
-    }
 	if( info->buffer != NULL )
 	{
-		free( info->buffer );
+		free(info->buffer);
 		info->buffer = NULL;
 	}
 #if defined(_DEBUG)
@@ -521,7 +507,7 @@ int GotRinit( ZModem *info )
 int SendZSInit( ZModem *info )
 {
 	int	err;
-	const char	*at = (info->attn != NULL) ? info->attn : "";
+	char	*at = (info->attn != NULL) ? info->attn : const_cast<char *>("");
 	u_char	fbuf[4];
 
 	/* TODO: zmodem8.doc states: "If the ZSINIT header specifies

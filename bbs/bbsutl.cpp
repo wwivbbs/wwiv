@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 /**
@@ -58,18 +59,6 @@ void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long l
 }
 
 
-bool inli( std::string &outBuffer, std::string rollOver, int nMaxLen, bool bAddCRLF, bool bAllowPrevious, bool bTwoColorChatMode)
-{
-    char szBuffer[ 4096 ] = {0}, szRollover[ 4096 ] = {0};
-    strcpy( szBuffer, outBuffer.c_str() );
-    strcpy( szRollover, rollOver.c_str() );
-    bool ret = inli( szBuffer, szRollover, nMaxLen, bAddCRLF, bAllowPrevious, bTwoColorChatMode );
-    outBuffer = szBuffer;
-    rollOver = szRollover;
-    return ret;
-}
-
-
 // returns true if needs to keep inputting this line
 bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool bAllowPrevious, bool bTwoColorChatMode)
 {
@@ -81,7 +70,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
 
     int cm = chatting;
 
-    int begx = GetSession()->localIO()->WhereX();
+    int begx = app->localIO->WhereX();
     if (pszRollover[0] != 0)
     {
         char* ss = szRollOver;
@@ -125,7 +114,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
         ch = getkey();
         if ( bTwoColorChatMode )
         {
-            GetSession()->bout.Color( GetSession()->IsLastKeyLocal() ? 1 : 0 );
+            ansic( sess->IsLastKeyLocal() ? 1 : 0 );
         }
         if (cm)
         {
@@ -136,18 +125,18 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
         }
         if ( ch >= SPACE )
         {
-            if ( ( GetSession()->localIO()->WhereX() < ( GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) ) && ( cp < nMaxLen ) )
+            if ( ( app->localIO->WhereX() < ( sess->thisuser.GetScreenChars() - 1 ) ) && ( cp < nMaxLen ) )
             {
                 pszBuffer[cp++] = ch;
                 bputch(ch);
-                if ( GetSession()->localIO()->WhereX() == ( GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) )
+                if ( app->localIO->WhereX() == ( sess->thisuser.GetScreenChars() - 1 ) )
                 {
                     done = true;
                 }
             }
             else
             {
-                if ( GetSession()->localIO()->WhereX() >= ( GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) )
+                if ( app->localIO->WhereX() >= ( sess->thisuser.GetScreenChars() - 1 ) )
                 {
                     done = true;
                 }
@@ -171,13 +160,13 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                 if (pszBuffer[cp - 2] == CC)
                 {
                     cp -= 2;
-                    GetSession()->bout.Color( 0 );
+                    ansic( 0 );
                 }
                 else if (pszBuffer[cp - 2] == CO)
                 {
                     for (i = strlen( interpret(pszBuffer[cp - 1])); i > 0; i--)
                     {
-                        GetSession()->bout.BackSpace();
+                        BackSpace();
                     }
                     cp -= 2;
                     if (pszBuffer[cp - 1] == CO)
@@ -195,7 +184,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                     else
                     {
                         cp--;
-                        GetSession()->bout.BackSpace();
+                        BackSpace();
                     }
                 }
             }
@@ -203,26 +192,26 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
             {
                 if ( okansi() )
                 {
-                    if ( GetSession()->GetMMKeyArea() == WSession::mmkeyFileAreas )
+                    if ( sess->GetMMKeyArea() == WSession::mmkeyFileAreas )
                     {
-                        GetSession()->bout << "\r\x1b[K";
+                        sess->bout << "\r\x1b[K";
                     }
-                    GetSession()->bout << "\x1b[1A";
+                    sess->bout << "\x1b[1A";
                 }
                 else
                 {
-                    GetSession()->bout << "[*> Previous Line <*]\r\n";
+                    sess->bout << "[*> Previous Line <*]\r\n";
                 }
                 return true;
             }
             break;
         case CX:                            // Ctrl-X
-            while ( GetSession()->localIO()->WhereX() > begx )
+            while ( app->localIO->WhereX() > begx )
             {
-                GetSession()->bout.BackSpace();
+                BackSpace();
                 cp = 0;
             }
-            GetSession()->bout.Color( 0 );
+            ansic( 0 );
             break;
         case CW:                            // Ctrl-W
             if (cp)
@@ -232,7 +221,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                     if (pszBuffer[cp - 2] == CC)
                     {
                         cp -= 2;
-                        GetSession()->bout.Color( 0 );
+                        ansic( 0 );
                     }
                     else if (pszBuffer[cp - 1] == BACKSPACE)
                     {
@@ -242,13 +231,13 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                     else
                     {
                         cp--;
-                        GetSession()->bout.BackSpace();
+                        BackSpace();
                     }
                 } while ( cp && pszBuffer[cp - 1] != SPACE && pszBuffer[cp - 1] != BACKSPACE );
             }
             break;
         case CN:                            // Ctrl-N
-            if ( GetSession()->localIO()->WhereX() && cp < nMaxLen )
+            if ( app->localIO->WhereX() && cp < nMaxLen )
             {
                 bputch( BACKSPACE );
                 pszBuffer[cp++] = BACKSPACE;
@@ -262,7 +251,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                 {
                     pszBuffer[cp++] = CC;
                     pszBuffer[cp++] = ch;
-                    GetSession()->bout.Color( ch - '0' );
+                    ansic( ch - '0' );
                 }
                 else if ((ch == CP) && (cp < nMaxLen - 2))
                 {
@@ -281,9 +270,9 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
             break;
         case TAB:                             // Tab
             i = 5 - (cp % 5);
-            if ( (cp + i) < nMaxLen && (GetSession()->localIO()->WhereX() + i) < GetSession()->GetCurrentUser()->GetScreenChars() )
+            if ( (cp + i) < nMaxLen && (app->localIO->WhereX() + i) < sess->thisuser.GetScreenChars() )
             {
-                i = 5 - ((GetSession()->localIO()->WhereX() + 1) % 5);
+                i = 5 - ((app->localIO->WhereX() + 1) % 5);
                 for (i1 = 0; i1 < i; i1++)
                 {
                     pszBuffer[cp++] = SPACE;
@@ -301,7 +290,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
       {
           i--;
       }
-      if ( i > (GetSession()->localIO()->WhereX() / 2) && i != (cp - 1) )
+      if ( i > (app->localIO->WhereX() / 2) && i != (cp - 1) )
       {
           i1 = cp - i - 1;
           for (i = 0; i < i1; i++)
@@ -324,7 +313,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
   }
   if (bAddCRLF)
   {
-      GetSession()->bout.NewLine();
+      nl();
   }
   return false;
 }
@@ -334,7 +323,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
 // returns 0.
 bool so()
 {
-    return ( GetSession()->GetEffectiveSl() == 255 );
+    return ( sess->GetEffectiveSl() == 255 );
 }
 
 /**
@@ -348,7 +337,7 @@ bool cs()
         return true;
     }
 
-    return ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_cosysop ) ? true : false;
+    return ( getslrec( sess->GetEffectiveSl() ).ability & ability_cosysop ) ? true : false;
 }
 
 
@@ -365,13 +354,13 @@ bool lcs()
         return true;
     }
 
-    if ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_limited_cosysop )
+    if ( getslrec( sess->GetEffectiveSl() ).ability & ability_limited_cosysop )
     {
         if (*qsc == 999)
         {
             return true;
         }
-		return ( *qsc == static_cast<unsigned long>( usub[GetSession()->GetCurrentMessageArea()].subnum ) ) ? true : false;
+		return ( *qsc == static_cast<unsigned long>( usub[sess->GetCurrentMessageArea()].subnum ) ) ? true : false;
     }
     return false;
 }
@@ -392,7 +381,7 @@ void checka(bool *abort, bool *next)
     {
         CheckForHangup();
         char ch = bgetch();
-        if ( !GetSession()->tagging || GetSession()->GetCurrentUser()->IsUseNoTagging())
+        if ( !sess->tagging || sess->thisuser.isUseNoTagging())
         {
             lines_listed = 0;
         }
@@ -418,30 +407,32 @@ void checka(bool *abort, bool *next)
 
 // Prints an abortable string (contained in *pszText). Returns 1 in *abort if the
 // string was aborted, else *abort should be zero.
-void pla(const std::string text, bool *abort)
+void pla(const char *pszText, bool *abort)
 {
-	WWIV_ASSERT( !text.empty() );
+	WWIV_ASSERT( pszText );
 
-    if (CheckForHangup())
+    CheckForHangup();
+    if (hangup)
     {
         *abort = true;
     }
 
 	bool next;
+    int i=0;
     checka(abort, &next);
-    for( std::string::const_iterator iter = text.begin(); iter != text.end() && !*abort; ++iter )
+    while ( pszText[i] && !*abort )
     {
-        bputch( *iter, true );
-        checka( abort, &next );
+        bputch( pszText[i++], true );
+        checka(abort, &next);
     }
     FlushOutComChBuffer();
-    if ( !*abort )
+    if (!*abort)
     {
-        GetSession()->bout.NewLine();
+        nl();
     }
 }
 
-void plal(const std::string text, int limit, bool *abort)
+void plal(const char *pszText, int limit, bool *abort)
 {
     CheckForHangup();
     if (hangup)
@@ -449,26 +440,31 @@ void plal(const std::string text, int limit, bool *abort)
         *abort = true;
     }
 
+    int i=0;
     bool next;
     checka(abort, &next);
 
-    char* pszTempBuffer = WWIV_STRDUP( text.c_str() );
-    limit += text.length() - strlen(stripcolors(pszTempBuffer));
-	BbsFreeMemory(pszTempBuffer);
-    int nCharsDisplayed = 0;
-    for( std::string::const_iterator iter = text.begin(); iter != text.end() && nCharsDisplayed++ < limit && !*abort; ++iter )
+	char* temp = strdup( pszText );
+    limit += strlen( pszText ) - strlen(stripcolors(temp));
+	BbsFreeMemory(temp);
+
+    while ( pszText[i] && !*abort && i < limit )
     {
-        if ( *iter != '\r' && *iter != '\n' )
+        if ( pszText[i] != '\r' && pszText[i] != '\n' )
         {
-            bputch( *iter, true );
+            bputch( pszText[i++], true );
         }
-        checka( abort, &next );
+        else
+        {
+            i++;
+        }
+        checka(abort, &next);
     }
 
     FlushOutComChBuffer();
-    if ( !*abort )
+    if (!*abort)
 	{
-        GetSession()->bout.NewLine();
+        nl();
 	}
 }
 
@@ -478,7 +474,7 @@ void plal(const std::string text, int limit, bool *abort)
 bool sysop2()
 {
     bool ok = sysop1();
-    if ( GetSession()->GetCurrentUser()->IsRestrictionChat() )
+    if ( sess->thisuser.isRestrictionChat() )
 	{
         ok = false;
 	}
@@ -506,7 +502,7 @@ bool sysop2()
 bool checkcomp( const char *pszComputerType )
 {
 	WWIV_ASSERT( pszComputerType );
-    return strstr( ctypes( GetSession()->GetCurrentUser()->GetComputerType() ), pszComputerType ) ? true : false;
+    return strstr( ctypes( sess->thisuser.GetComputerType() ), pszComputerType ) ? true : false;
 }
 
 
@@ -540,7 +536,7 @@ int check_ansi()
         if (ch == '\x1b')
 		{
             l = timer1() + 18;
-            while ( timer1() < l && !hangup )
+            while ((timer1() < l) && (!hangup))
 			{
                 if ((timer1() + 1820) < l)
 				{
@@ -577,7 +573,7 @@ int check_ansi()
 bool set_language_1(int n)
 {
     int idx = 0;
-    for (idx = 0; idx < GetSession()->num_languages; idx++)
+    for (idx = 0; idx < sess->num_languages; idx++)
 	{
         if (languages[idx].num == n)
 		{
@@ -585,19 +581,19 @@ bool set_language_1(int n)
 		}
 	}
 
-    if ( idx >= GetSession()->num_languages && n == 0 )
+    if ( idx >= sess->num_languages && n == 0 )
 	{
         idx = 0;
 	}
 
-    if ( idx >= GetSession()->num_languages )
+    if ( idx >= sess->num_languages )
 	{
         return false;
 	}
 
-    GetSession()->SetCurrentLanguageNumber( n );
+    sess->SetCurrentLanguageNumber( n );
     cur_lang_name = languages[idx].name;
-    GetSession()->pszLanguageDir = languages[idx].dir;
+    sess->pszLanguageDir = languages[idx].dir;
 
     strncpy(str_yes, "Yes", sizeof(str_yes) - 1);
     strncpy(str_no, "No", sizeof(str_no) - 1);
@@ -616,12 +612,12 @@ bool set_language_1(int n)
 //
 bool set_language(int n)
 {
-    if ( GetSession()->GetCurrentLanguageNumber() == n )
+    if ( sess->GetCurrentLanguageNumber() == n )
 	{
         return true;
 	}
 
-    int nOldCurLang = GetSession()->GetCurrentLanguageNumber();
+    int nOldCurLang = sess->GetCurrentLanguageNumber();
 
     if (!set_language_1(n))
 	{
@@ -709,12 +705,12 @@ char *mmkey( int dl, bool bListOption )
 				ch = upcase(ch);
 				if (ch == RETURN)
 				{
-					GetSession()->bout.NewLine();
+					nl();
 					if ( dl == 2 )
 					{
-						GetSession()->bout.NewLine();
+						nl();
 					}
-					if ( !GetSession()->GetCurrentUser()->IsExpert() && !okansi() )
+					if ( !sess->thisuser.isExpert() && !okansi() )
 					{
 						newline = true;
 					}
@@ -724,7 +720,7 @@ char *mmkey( int dl, bool bListOption )
 				{
 					if ( ch == BACKSPACE )
 					{
-						GetSession()->bout.BackSpace();
+						BackSpace();
 						cmd1[ --cp ] = '\0';
 					}
 					else
@@ -735,41 +731,41 @@ char *mmkey( int dl, bool bListOption )
 						if ( ch == '/' && cmd1[0] == '/' )
 						{
 							input( cmd2, 50 );
-							if ( ( GetSession()->GetMMKeyArea() != WSession::mmkeyMessageAreas && 
-                                   GetSession()->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2 ) || !newline )
+							if ( ( sess->GetMMKeyArea() != WSession::mmkeyMessageAreas && 
+                                   sess->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2 ) || !newline )
 							{
 								if ( isdigit( cmd2[0] ) )
 								{
-									if ( GetSession()->GetMMKeyArea() == WSession::mmkeyMessageAreas && dl == 0 )
+									if ( sess->GetMMKeyArea() == WSession::mmkeyMessageAreas && dl == 0 )
 									{
-										for (i = 0; i < GetSession()->num_subs && usub[i].subnum != -1; i++ )
+										for (i = 0; i < sess->num_subs && usub[i].subnum != -1; i++ )
 										{
 											if ( wwiv::stringUtils::IsEquals( usub[i].keys, cmd2 ) )
 											{
-												GetSession()->bout.NewLine();
+												nl();
 												break;
 											}
 										}
 									}
-									if ( GetSession()->GetMMKeyArea() == WSession::mmkeyFileAreas && dl == 1 )
+									if ( sess->GetMMKeyArea() == WSession::mmkeyFileAreas && dl == 1 )
 									{
-										for ( i = 0; i < GetSession()->num_dirs; i++ )
+										for ( i = 0; i < sess->num_dirs; i++ )
 										{
 											if ( wwiv::stringUtils::IsEquals( udir[i].keys, cmd2 ) )
 											{
-												GetSession()->bout.NewLine();
+												nl();
 												break;
 											}
 										}
 									}
 									if (dl == 2)
 									{
-										GetSession()->bout.NewLine();
+										nl();
 									}
 								}
 								else
 								{
-									GetSession()->bout.NewLine();
+									nl();
 								}
 								newline = true;
 							}
@@ -777,29 +773,29 @@ char *mmkey( int dl, bool bListOption )
 						}
 						else if ( cp == p + 1 )
 						{
-							if ( ( GetSession()->GetMMKeyArea() != WSession::mmkeyMessageAreas && 
-                                   GetSession()->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2 ) || !newline )
+							if ( ( sess->GetMMKeyArea() != WSession::mmkeyMessageAreas && 
+                                   sess->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2 ) || !newline )
 							{
 								if ( isdigit( cmd1[ 0 ] ) )
 								{
 									if ( dl == 2 || !okansi() )
 									{
-										GetSession()->bout.NewLine();
+										nl();
 									}
-									if ( !GetSession()->GetCurrentUser()->IsExpert() && !okansi() )
+									if ( !sess->thisuser.isExpert() && !okansi() )
 									{
 										newline = true;
 									}
 								}
 								else
 								{
-									GetSession()->bout.NewLine();
+									nl();
 									newline = true;
 								}
 							}
 							else
 							{
-								GetSession()->bout.NewLine();
+								nl();
 								newline = true;
 							}
 							return cmd1;
@@ -810,8 +806,8 @@ char *mmkey( int dl, bool bListOption )
 		}
 		else
 		{
-			if ( ( GetSession()->GetMMKeyArea() != WSession::mmkeyMessageAreas && 
-                   GetSession()->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2 ) || !newline )
+			if ( ( sess->GetMMKeyArea() != WSession::mmkeyMessageAreas && 
+                   sess->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2 ) || !newline )
 			{
 				switch (cmd1[0])
 				{
@@ -826,9 +822,9 @@ char *mmkey( int dl, bool bListOption )
 				case 'H':
 					if ( dl == 2 || !okansi())
 					{
-						GetSession()->bout.NewLine();
+						nl();
 					}
-					if ( !GetSession()->GetCurrentUser()->IsExpert() && !okansi() )
+					if ( !sess->thisuser.isExpert() && !okansi() )
 					{
 						newline = true;
 					}                    break;
@@ -837,16 +833,16 @@ char *mmkey( int dl, bool bListOption )
 					{
 						if ( dl == 2 || !okansi() )
 						{
-							GetSession()->bout.NewLine();
+							nl();
 						}
-						if ( !GetSession()->GetCurrentUser()->IsExpert() && !okansi() )
+						if ( !sess->thisuser.isExpert() && !okansi() )
 						{
 							newline = true;
 						}
 					}
 					else
 					{
-						GetSession()->bout.NewLine();
+						nl();
 						newline = true;
 					}
 					break;
@@ -854,7 +850,7 @@ char *mmkey( int dl, bool bListOption )
 			}
 			else
 			{
-				GetSession()->bout.NewLine();
+				nl();
 				newline = true;
 			}
 			return cmd1;

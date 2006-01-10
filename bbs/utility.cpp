@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 extern const unsigned char *translate_letters[];
@@ -42,7 +43,7 @@ void remove_from_temp( const char *pszFileName, const char *pszDirectoryName, bo
     sprintf( szFileSpecification, "%s%s", pszDirectoryName, stripfn( pszFileName ) );
     WFindFile fnd;
     bool bFound = fnd.open( szFileSpecification, 0 );
-    GetSession()->bout.NewLine();
+    nl();
     while ( bFound )
     {
 		char szFileName[MAX_PATH];
@@ -81,7 +82,7 @@ void remove_from_temp( const char *pszFileName, const char *pszDirectoryName, bo
  */
 bool okansi()
 {
-    return ( ( GetSession()->GetCurrentUser()->HasAnsi() ) && ( !x_only ) ) ? true : false;
+    return ( ( sess->thisuser.hasAnsi() ) && ( !x_only ) ) ? true : false;
 }
 
 
@@ -98,13 +99,13 @@ void tmp_disable_conf(bool disable)
     if ( disable )
     {
         disable_conf_cnt++;
-        if ( okconf( GetSession()->GetCurrentUser() ) )
+        if ( okconf( &sess->thisuser ) )
         {
             g_flags |= g_flag_disable_conf;
-            ocs = GetSession()->GetCurrentConferenceMessageArea();
-            oss = usub[GetSession()->GetCurrentMessageArea()].subnum;
-            ocd = GetSession()->GetCurrentConferenceFileArea();
-            osd = udir[GetSession()->GetCurrentFileArea()].subnum;
+            ocs = sess->GetCurrentConferenceMessageArea();
+            oss = usub[sess->GetCurrentMessageArea()].subnum;
+            ocd = sess->GetCurrentConferenceFileArea();
+            osd = udir[sess->GetCurrentFileArea()].subnum;
             setuconf( CONF_SUBS, -1, oss );
             setuconf( CONF_DIRS, -1, osd );
         }
@@ -126,10 +127,10 @@ void tmp_disable_pause( bool disable )
 {
     if ( disable )
     {
-        if ( GetSession()->GetCurrentUser()->HasPause() )
+        if ( sess->thisuser.hasPause() )
         {
             g_flags |= g_flag_disable_pause;
-            GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::pauseOnPage );
+            sess->thisuser.clearStatusFlag( WUser::pauseOnPage );
         }
     }
     else
@@ -137,7 +138,7 @@ void tmp_disable_pause( bool disable )
         if ( g_flags & g_flag_disable_pause )
         {
             g_flags &= ~g_flag_disable_pause;
-            GetSession()->GetCurrentUser()->SetStatusFlag( WUser::pauseOnPage );
+            sess->thisuser.setStatusFlag( WUser::pauseOnPage );
         }
     }
 }
@@ -151,33 +152,33 @@ void frequent_init()
 {
     setiia( 90 );
     g_flags = 0;
-    GetSession()->tagging = 0;
+    sess->tagging = 0;
     newline = true;
-    GetSession()->SetCurrentReadMessageArea( -1 );
-    GetSession()->SetCurrentConferenceMessageArea( 0 );
-    GetSession()->SetCurrentConferenceFileArea( 0 );
+    sess->SetCurrentReadMessageArea( -1 );
+    sess->SetCurrentConferenceMessageArea( 0 );
+    sess->SetCurrentConferenceFileArea( 0 );
     ansiptr = 0;
     curatr = 0x07;
     outcom = false;
     incom = false;
     charbufferpointer = 0;
-    GetSession()->localIO()->SetTopLine( 0 );
-    GetSession()->screenlinest = defscreenbottom + 1;
+    sess->topline = 0;
+    sess->screenlinest = defscreenbottom + 1;
     endofline[0] = '\0';
     hangup = false;
     hungup = false;
     chatcall = false;
-    GetSession()->localIO()->ClearChatReason();
-	GetSession()->SetUserOnline( false );
+    app->localIO->ClearChatReason();
+	sess->SetUserOnline( false );
     change_color = 0;
     chatting = 0;
     echo = true;
     irt[0] = '\0';
     irt_name[0] = '\0';
     lines_listed = 0;
-    GetSession()->ReadCurrentUser( 1 );
+    sess->ReadCurrentUser( 1 );
     read_qscn( 1, qsc, false );
-    fwaiting = ( GetSession()->GetCurrentUser()->IsUserDeleted() ) ? 0 : GetSession()->GetCurrentUser()->GetNumMailWaiting();
+    fwaiting = ( sess->thisuser.isUserDeleted() ) ? 0 : sess->thisuser.GetNumMailWaiting();
     okmacro = true;
     okskey = true;
     mailcheck = false;
@@ -185,14 +186,14 @@ void frequent_init()
     g_szMessageGatFileName[0] = '\0';
     use_workspace = false;
     extratimecall = 0.0;
-    GetSession()->using_modem = 0;
-    GetSession()->localIO()->set_global_handle( false );
+    sess->using_modem = 0;
+    app->localIO->set_global_handle( false );
     WFile::SetFilePermissions( g_szDSZLogFileName, WFile::permReadWrite );
     WFile::Remove( g_szDSZLogFileName );
-    GetSession()->SetTimeOnlineLimited( false );
-    GetSession()->localIO()->set_x_only( 0, NULL, 0 );
+    ltime = 0;
+    app->localIO->set_x_only( 0, NULL, 0 );
     set_net_num( 0 );
-    set_language( GetSession()->GetCurrentUser()->GetLanguage() );
+    set_language( sess->thisuser.GetLanguage() );
     reset_disable_conf();
 }
 
@@ -202,12 +203,12 @@ void frequent_init()
  */
 double ratio()
 {
-    if ( GetSession()->GetCurrentUser()->GetDownloadK() == 0 )
+    if ( sess->thisuser.GetDownloadK() == 0 )
     {
         return 99.999;
     }
-    double r = static_cast<float>( GetSession()->GetCurrentUser()->GetUploadK() ) /
-               static_cast<float>( GetSession()->GetCurrentUser()->GetDownloadK() );
+    double r = static_cast<float>( sess->thisuser.GetUploadK() ) /
+               static_cast<float>( sess->thisuser.GetDownloadK() );
 
     return ( r > 99.998 ) ? 99.998 : r;
 }
@@ -218,12 +219,12 @@ double ratio()
  */
 double post_ratio()
 {
-    if ( GetSession()->GetCurrentUser()->GetNumLogons() == 0 )
+    if ( sess->thisuser.GetNumLogons() == 0 )
     {
         return 99.999;
     }
-    double r = static_cast<float>( GetSession()->GetCurrentUser()->GetNumMessagesPosted() ) /
-               static_cast<float>( GetSession()->GetCurrentUser()->GetNumLogons() );
+    double r = static_cast<float>( sess->thisuser.GetNumMessagesPosted() ) /
+               static_cast<float>( sess->thisuser.GetNumLogons() );
     return ( r > 99.998 ) ? 99.998 : r;
 }
 
@@ -234,18 +235,18 @@ double nsl()
     double rtn = 0.0;
 
     double dd = timer();
-    if ( GetSession()->IsUserOnline() )
+    if ( sess->IsUserOnline() )
     {
         if ( timeon > ( dd + SECONDS_PER_MINUTE_FLOAT ) )
         {
             timeon -= SECONDS_PER_HOUR_FLOAT * HOURS_PER_DAY_FLOAT;
         }
         double tot = ( dd - timeon );
-		double tpl = static_cast<double>( getslrec( GetSession()->GetEffectiveSl() ).time_per_logon ) * MINUTES_PER_HOUR_FLOAT;
-        double tpd = static_cast<double>( getslrec( GetSession()->GetEffectiveSl() ).time_per_day ) * MINUTES_PER_HOUR_FLOAT;
-        double tlc = tpl - tot + GetSession()->GetCurrentUser()->GetExtraTime() + extratimecall;
-        double tlt = tpd - tot - static_cast<double>( GetSession()->GetCurrentUser()->GetTimeOnToday() ) +
-                     GetSession()->GetCurrentUser()->GetExtraTime();
+		double tpl = static_cast<double>( getslrec( sess->GetEffectiveSl() ).time_per_logon ) * MINUTES_PER_HOUR_FLOAT;
+        double tpd = static_cast<double>( getslrec( sess->GetEffectiveSl() ).time_per_day ) * MINUTES_PER_HOUR_FLOAT;
+        double tlc = tpl - tot + sess->thisuser.GetExtraTime() + extratimecall;
+        double tlt = tpd - tot - static_cast<double>( sess->thisuser.GetTimeOnToday() ) +
+                     sess->thisuser.GetExtraTime();
 
         tlt = ( tlc < tlt ) ? tlc : tlt;
 
@@ -263,7 +264,7 @@ double nsl()
     {
         rtn = 1.00;
     }
-    GetSession()->SetTimeOnlineLimited( false );
+    ltime = 0;
     if ( syscfg.executetime )
     {
         double tlt = time_event - dd;
@@ -274,7 +275,7 @@ double nsl()
         if ( rtn > tlt )
         {
             rtn = tlt;
-            GetSession()->SetTimeOnlineLimited( true );
+            ltime = 1;
         }
         check_event();
         if ( do_event )
@@ -338,7 +339,7 @@ void send_net( net_header_rec * nh, unsigned short int *list, const char *text, 
 	WWIV_ASSERT( nh );
 
     char szFileName[MAX_PATH];
-    sprintf( szFileName, "%sP1%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
+    sprintf( szFileName, "%sP1%s", sess->GetNetworkDataDirectory(), app->GetNetworkExtension() );
     WFile file( szFileName );
     if ( !file.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) )
     {
@@ -369,11 +370,11 @@ void send_net( net_header_rec * nh, unsigned short int *list, const char *text, 
     }
     if ( byname && *byname )
     {
-        file.Write( byname, strlen(byname) + 1);
+        file.Write( reinterpret_cast<void*>( const_cast<char*>( byname ) ), strlen(byname) + 1);
     }
     if ( nh->length )
     {
-        file.Write( text, lNetHeaderSize);
+        file.Write( reinterpret_cast<void*>( const_cast<char*>( text ) ), lNetHeaderSize);
     }
     file.Close();
 }
@@ -460,17 +461,17 @@ void preload_subs()
         return;
 	}
 
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#1Caching message areas";
+    nl();
+    sess->bout << "|#1Caching message areas";
     int i1 = 3;
-    for ( GetSession()->SetMessageAreaCacheNumber( 0 ); GetSession()->GetMessageAreaCacheNumber() < GetSession()->num_subs && !abort; GetSession()->SetMessageAreaCacheNumber( GetSession()->GetMessageAreaCacheNumber() + 1 ) )
+    for ( sess->SetMessageAreaCacheNumber( 0 ); sess->GetMessageAreaCacheNumber() < sess->num_subs && !abort; sess->SetMessageAreaCacheNumber( sess->GetMessageAreaCacheNumber() + 1 ) )
     {
-        if ( !GetSession()->m_SubDateCache[GetSession()->GetMessageAreaCacheNumber()] )
+        if ( !sess->m_SubDateCache[sess->GetMessageAreaCacheNumber()] )
         {
-            iscan1( GetSession()->GetMessageAreaCacheNumber(), true );
+            iscan1( sess->GetMessageAreaCacheNumber(), true );
         }
-        GetSession()->bout << "\x03" << i1 << ".";
-        if ( ( GetSession()->GetMessageAreaCacheNumber() % 5 ) == 4 )
+        sess->bout << "\x03" << i1 << ".";
+        if ( ( sess->GetMessageAreaCacheNumber() % 5 ) == 4 )
         {
             i1++;
             if ( i1 == 4 )
@@ -481,15 +482,15 @@ void preload_subs()
             {
                 i1 = 3;
             }
-            GetSession()->bout << "\b\b\b\b\b";
+            sess->bout << "\b\b\b\b\b";
         }
         checka(&abort, &next);
     }
     if ( !abort )
     {
-        GetSession()->bout << "|#1...done!\r\n";
+        sess->bout << "|#1...done!\r\n";
     }
-    GetSession()->bout.NewLine();
+    nl();
     g_preloaded = true;
 }
 
@@ -504,13 +505,13 @@ char *get_wildlist( char *pszFileMask )
 
     if ( !fnd.open( pszFileMask, 0 ) )
 	{
-        GetSession()->bout << "No files found\r\n";
+        sess->bout << "No files found\r\n";
         pszFileMask[0] = '\0';
         return pszFileMask;
     }
 	else
 	{
-        GetSession()->bout.WriteFormatted( "%12.12s ", fnd.GetFileName() );
+        bprintf( "%12.12s ", fnd.GetFileName() );
 	}
 
 	if ( strchr( pszFileMask, WWIV_FILE_SEPERATOR_CHAR ) == NULL)
@@ -538,24 +539,24 @@ char *get_wildlist( char *pszFileMask )
     {
         if ( i % 5 == 0 )
         {
-            GetSession()->bout.NewLine();
+            nl();
         }
         if ( !fnd.next() )
         {
             break;
         }
-        GetSession()->bout.WriteFormatted( "%12.12s ", fnd.GetFileName( ));
+        bprintf( "%12.12s ", fnd.GetFileName( ));
         if ( bgetch() == SPACE )
         {
-            GetSession()->bout.NewLine();
+            nl();
             break;
         }
     }
-    GetSession()->bout.NewLine();
+    nl();
     if ( i == 1 )
     {
-		GetSession()->bout << "One file found: " << fnd.GetFileName() << wwiv::endl;
-        GetSession()->bout << "Use this file? ";
+		sess->bout << "One file found: " << fnd.GetFileName() << wwiv::endl;
+        sess->bout << "Use this file? ";
         if ( yesno() )
         {
             return pszPath;
@@ -567,7 +568,7 @@ char *get_wildlist( char *pszFileMask )
         }
     }
     pszPath[t] = '\0';
-    GetSession()->bout << "Filename: ";
+    sess->bout << "Filename: ";
     input( pszFileMask, 12, true );
     strcat( pszPath, pszFileMask );
     return pszPath;
@@ -582,7 +583,7 @@ int side_menu( int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, i
 	WWIV_ASSERT( menu_items );
 	WWIV_ASSERT( smc );
 
-    GetSession()->localIO()->tleft( true );
+    app->localIO->tleft( true );
 
     if ( bNeedsRedraw )
     {
@@ -595,30 +596,30 @@ int side_menu( int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, i
         }
 
         int x = 0;
-        GetSession()->bout.SystemColor( smc->normal_menu_item );
+        setc( smc->normal_menu_item );
 
         while ( menu_items[x] && menu_items[x][0] && !hangup )
         {
-            GetSession()->bout.GotoXY( positions[x], ypos );
+            goxy( positions[x], ypos );
 
             if ( *menu_pos == x )
             {
-                GetSession()->bout.SystemColor( smc->current_highlight );
+                setc( smc->current_highlight );
                 bputch( menu_items[x][0] );
-                GetSession()->bout.SystemColor( smc->current_menu_item );
-                GetSession()->bout.WriteFormatted( menu_items[x] + 1 );
+                setc( smc->current_menu_item );
+                bprintf( menu_items[x] + 1 );
             }
             else
             {
-                GetSession()->bout.SystemColor( smc->normal_highlight );
+                setc( smc->normal_highlight );
                 bputch( menu_items[x][0] );
-                GetSession()->bout.SystemColor( smc->normal_menu_item );
-                GetSession()->bout.WriteFormatted( menu_items[x] + 1 );
+                setc( smc->normal_menu_item );
+                bprintf( menu_items[x] + 1 );
             }
             ++x;
         }
     }
-    GetSession()->bout.SystemColor( smc->normal_menu_item );
+    setc( smc->normal_menu_item );
 
     while ( !hangup )
     {
@@ -630,20 +631,20 @@ int side_menu( int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, i
             {
 				if ( event == wwiv::UpperCase<int>( menu_items[x][0] ) || event == wwiv::LowerCase<int>( menu_items[x][0] ) )
                 {
-                    GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
-                    GetSession()->bout.SystemColor(smc->normal_highlight);
+                    goxy(positions[*menu_pos], ypos);
+                    setc(smc->normal_highlight);
                     bputch(menu_items[*menu_pos][0]);
-                    GetSession()->bout.SystemColor(smc->normal_menu_item);
-                    GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
+                    setc(smc->normal_menu_item);
+                    bprintf(menu_items[*menu_pos] + 1);
                     *menu_pos = x;
-                    GetSession()->bout.SystemColor(smc->current_highlight);
-                    GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+                    setc(smc->current_highlight);
+                    goxy(positions[*menu_pos], ypos);
                     bputch(menu_items[*menu_pos][0]);
-                    GetSession()->bout.SystemColor(smc->current_menu_item);
-                    GetSession()->bout.WriteFormatted( menu_items[*menu_pos] + 1 );
-                    if ( modem_speed > 2400 || !GetSession()->using_modem )
+                    setc(smc->current_menu_item);
+                    bprintf( menu_items[*menu_pos] + 1 );
+                    if ( modem_speed > 2400 || !sess->using_modem )
                     {
-                        GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+                        goxy(positions[*menu_pos], ypos);
                     }
                     return EXECUTE;
                 }
@@ -656,11 +657,11 @@ int side_menu( int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, i
             switch ( event )
             {
             case COMMAND_LEFT:
-                GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
-                GetSession()->bout.SystemColor(smc->normal_highlight);
+                goxy(positions[*menu_pos], ypos);
+                setc(smc->normal_highlight);
                 bputch(menu_items[*menu_pos][0]);
-                GetSession()->bout.SystemColor(smc->normal_menu_item);
-                GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
+                setc(smc->normal_menu_item);
+                bprintf(menu_items[*menu_pos] + 1);
                 if (!*menu_pos)
                 {
                     *menu_pos = amount - 1;
@@ -669,23 +670,23 @@ int side_menu( int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, i
                 {
                     --* menu_pos;
                 }
-                GetSession()->bout.SystemColor(smc->current_highlight);
-                GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+                setc(smc->current_highlight);
+                goxy(positions[*menu_pos], ypos);
                 bputch(menu_items[*menu_pos][0]);
-                GetSession()->bout.SystemColor(smc->current_menu_item);
-                GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
-                if (modem_speed > 2400 || !GetSession()->using_modem)
+                setc(smc->current_menu_item);
+                bprintf(menu_items[*menu_pos] + 1);
+                if (modem_speed > 2400 || !sess->using_modem)
                 {
-                    GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+                    goxy(positions[*menu_pos], ypos);
                 }
                 break;
 
             case COMMAND_RIGHT:
-                GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
-                GetSession()->bout.SystemColor(smc->normal_highlight);
+                goxy(positions[*menu_pos], ypos);
+                setc(smc->normal_highlight);
                 bputch(menu_items[*menu_pos][0]);
-                GetSession()->bout.SystemColor(smc->normal_menu_item);
-                GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
+                setc(smc->normal_menu_item);
+                bprintf(menu_items[*menu_pos] + 1);
                 if (*menu_pos == amount - 1)
                 {
                     *menu_pos = 0;
@@ -694,14 +695,14 @@ int side_menu( int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, i
                 {
                     ++* menu_pos;
                 }
-                GetSession()->bout.SystemColor(smc->current_highlight);
-                GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+                setc(smc->current_highlight);
+                goxy(positions[*menu_pos], ypos);
                 bputch(menu_items[*menu_pos][0]);
-                GetSession()->bout.SystemColor(smc->current_menu_item);
-                GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
-                if (modem_speed > 2400 || !GetSession()->using_modem)
+                setc(smc->current_menu_item);
+                bprintf(menu_items[*menu_pos] + 1);
+                if (modem_speed > 2400 || !sess->using_modem)
                 {
-                    GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+                    goxy(positions[*menu_pos], ypos);
                 }
                 break;
 
@@ -725,11 +726,11 @@ slrec getslrec(int nSl)
 	}
 
     configrec c;
-    WFile file( GetApplication()->GetHomeDir(), CONFIG_DAT );
+    WFile file( app->GetHomeDir(), CONFIG_DAT );
     if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         // Bad ju ju here.
-        GetApplication()->AbortBBS();
+        app->AbortBBS();
     }
     file.Read( &c, sizeof( configrec ) );
 
@@ -738,6 +739,41 @@ slrec getslrec(int nSl)
 
     return CurSlRec;
 }
+
+
+void shut_down(int type)
+{
+    char xl[81], cl[81], atr[81], cc;
+
+    app->localIO->SaveCurrentLine(cl, atr, xl, &cc);
+    switch (type)
+	{
+    case 1:
+        sess->bbsshutdown = 1;
+        sess->shutdowntime = timer() + 180.0;
+    case 2:
+    case 3:
+        nl( 2 );
+        bprintf("|#7***\r\n|#7To All Users, System will shut down in %d min%s for maintenance.\r \n",
+            4 - type, (type == 3) ? "," : "s,");
+        sess->bout << "|#7Please finish your session and log off. Thank you\r\n|#7***\r\n";
+        break;
+    case 4:
+        nl( 2 );
+        sess->bout << "|#7***\r\n|#7Please call back later.\r\n|#7***\r\n\n";
+        sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() + static_cast<float>( nsl() ) );
+		sess->bout << "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
+        printfile(LOGOFF_NOEXT);
+        hangup = true;
+        sess->bbsshutdown = 0;
+        break;
+	default:
+        std::cout << "[utility.cpp] shutdown called with illegal type: " << type << std::endl;
+		WWIV_ASSERT( true );
+    }
+    RestoreCurrentLine(cl, atr, xl, &cc);
+}
+
 
 
 void WWIV_SetFileTime(const char* pszFileName, const time_t tTime)
@@ -756,15 +792,15 @@ void WWIV_SetFileTime(const char* pszFileName, const time_t tTime)
 bool okfsed()
 {
     return ( !okansi() ||
-             !GetSession()->GetCurrentUser()->GetDefaultEditor() ||
-             ( GetSession()->GetCurrentUser()->GetDefaultEditor() > GetSession()->GetNumberOfEditors() ) )
+             !sess->thisuser.GetDefaultEditor() ||
+             ( sess->thisuser.GetDefaultEditor() > sess->GetNumberOfEditors() ) )
         ? false : true;
 }
 
 
 //************************************************
 // Purpose      : Properizes msg.daten to a date/time string
-// Parameters   : time_t daten    - daten attribute of a message
+// Parameters   : long daten    - daten attribute of a message
 //                char* mode    - mode string
 //                              - W = Day of the week
 //                              - D = Date
@@ -777,20 +813,21 @@ bool okfsed()
 // Returns      : Properized date/time string as requested
 // Author(s)    : WSS
 //************************************************
-char* W_DateString(time_t tDateTime, char* mode , char* delim)
+char* W_DateString(long daten, char* mode , char* delim)
 {
     int     i;                      // loop counter
     char    s[40];                  // formattable string
     static char str[50];            // the DateString
 
-	time(&tDateTime);
-	struct tm * pTm = localtime(&tDateTime);
+	//time_t t;
+	time((long *) &(daten));
+	struct tm * pTm = localtime(&daten);	// used to be 't', but that bombed
 
 	WWIV_ASSERT(mode);
 	WWIV_ASSERT(delim);
 
     // convert mode string to uppercase
-    WWIV_STRUPR(mode);
+    strupr(mode);
 
     // initialize return string
     strcpy(str, "");
@@ -815,7 +852,7 @@ char* W_DateString(time_t tDateTime, char* mode , char* delim)
 			}
 
 			// which form of the clock is in use?
-            if ( GetSession()->GetCurrentUser()->IsUse24HourClock() )
+            if ( sess->thisuser.isUse24HourClock() )
 			{
 				strftime(s, 40, "%H:%M", pTm);
 			}

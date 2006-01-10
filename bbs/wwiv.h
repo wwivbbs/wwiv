@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -25,10 +25,6 @@
 // defined in this file, so anything that relies on thse values MUST
 // be included after testos.h has been included.
 //
-
-#if defined( _MSC_VER )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
 
 #include "testos.h"
 
@@ -65,9 +61,6 @@
 
 #include <algorithm>
 #include <locale>
-#include <sstream>
-#include <iostream>
-
 
 #if defined( _MSC_VER )
 #pragma warning( pop )
@@ -90,7 +83,6 @@
 #include "bbs.h"
 #include "WComm.h"
 #include "WFile.h"
-#include "WTextFile.h"
 #include "wutil.h"
 #include "instmsg.h"
 #include "WConstants.h"
@@ -104,9 +96,8 @@
 #include "wfndfile.h"
 #include "WStringUtils.h"
 #include "WOutStreamBuffer.h"
-#include "WStatus.h"
-#include "ini.h"
-#include "WLocalIO.h"
+
+#include "incl3.h"
 
 #include "filenames.h"
 

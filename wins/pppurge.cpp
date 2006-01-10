@@ -16,6 +16,7 @@
 
 #include "pppproj.h"
 
+
 int main(int argc, char *argv[])
 {
 	fprintf(stderr, "\n\nPPP Sent Packet Purger %s", VERSION);
@@ -30,26 +31,26 @@ int main(int argc, char *argv[])
 	int nNumDaysToKeep = ( argc > 1 ) ? atoi(argv[1]) : 99;
 	printf("\n \xFE Purging sent packets older than %d days.", nNumDaysToKeep);
 	
-	char szFileName[_MAX_PATH], szCurrentDirectory[_MAX_PATH];
-	_getcwd( szCurrentDirectory, _MAX_PATH );
-	_snprintf(szFileName, _MAX_PATH, "%s\\SENT\\*.*", szCurrentDirectory);
+	char s[121], buf[_MAX_PATH];
+	getcwd( buf, _MAX_PATH );
+	sprintf(s, "%s\\SENT\\*.*",buf);
 
 	struct _finddata_t ff;
-	long hFind = _findfirst( szFileName, &ff );
+	long hFind = _findfirst( s, &ff );
 	int nFindNext = ( hFind != -1 ) ? 0 : -1;
 	int howmany = 0, kbytes = 0;
 	while ( nFindNext == 0 ) 
 	{
-		sprintf(szFileName, "%s\\SENT\\%s", szCurrentDirectory, ff.name);
+		sprintf(s, "%s\\SENT\\%s",buf, ff.name);
 		struct _stat fileinfo;
-		if ( _stat( szFileName, &fileinfo ) == 0 ) 
+		if ( _stat( s, &fileinfo ) == 0 ) 
 		{
-			time_t tAge = (time(NULL) - fileinfo.st_atime);
-			if (tAge > (SECONDS_PER_DAY * (nNumDaysToKeep+1))) 
+			long age = (time(NULL) - fileinfo.st_atime);
+			if (age > (86400L * (nNumDaysToKeep+1))) 
 			{
-				kbytes += static_cast<int>(fileinfo.st_size/1024);
+				kbytes += (int)fileinfo.st_size/1024;
 				++howmany;
-				_unlink(szFileName);
+				unlink(s);
 			}
 		}
 		nFindNext = _findnext( hFind, &ff );

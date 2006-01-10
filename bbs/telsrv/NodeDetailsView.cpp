@@ -82,7 +82,7 @@ void CNodeDetailsView::OnInitialUpdate()
 
 	RECT rect;
 	nodeList.GetWindowRect(&rect);
-	nodeList.InsertColumn(0, _T( "Node Status" ), LVCFMT_LEFT, rect.right - rect.left - 5 );
+	nodeList.InsertColumn(0, "Node Status", LVCFMT_LEFT, rect.right - rect.left - 5 );
 
 	ModifyStyle( LVS_TYPEMASK, LVS_REPORT );
     
@@ -111,7 +111,10 @@ CWWIVTelnetServerDoc* CNodeDetailsView::GetDocument() // non-debug version is in
 
 /////////////////////////////////////////////////////////////////////////////
 // CNodeDetailsView message handlers
-
+void CNodeDetailsView::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
+{
+	//TODO: add code to react to the user changing the view style of your window
+}
 
 void CNodeDetailsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
@@ -119,7 +122,7 @@ void CNodeDetailsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	NodeStatus* nodeStatus = GetDocument()->GetNodeStatus();
     nodeStatus->UpdateActivityList();
 	
-	CString text = _T( "" );
+	CString text = "";
 
 	POSITION pos = nodeList.GetFirstSelectedItemPosition();
 	if ( pos )
@@ -134,7 +137,7 @@ void CNodeDetailsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	BOOL bRet = nodeList.DeleteAllItems();
 	if ( !bRet )
 	{
-		::AfxMessageBox( _T( "[CNodeDetailsView::OnUpdate] DeleteAllItems failed" ) );
+		::AfxMessageBox( "[CNodeDetailsView::OnUpdate] DeleteAllItems failed" );
 	}
 	ASSERT(nodeList.GetItemCount() == 0);
 
@@ -150,11 +153,11 @@ void CNodeDetailsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			{
                 CString act = nodeStatus->GetNodeActivity( i );
     			CString ip  = nodeStatus->GetNodeIP( i );
-                s.Format( _T( "Node #%d - %s %s" ), i, ip, act );
+                s.Format("Node #%d - %s %s", i, ip, act );
 			}
 			else
 			{
-				s.Format( _T( "Node #%d - Inactive" ), i );
+				s.Format("Node #%d - Inactive", i );
 			}
 			int ret = nodeList.InsertItem(i-low, s, ( isActive ) ? 3 : 2 );
 			if ( s == text )
@@ -165,3 +168,8 @@ void CNodeDetailsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	}	
 }
 
+BOOL CNodeDetailsView::DestroyWindow()
+{
+    // TODO: Add your specialized code here and/or call the base class
+    return CListView::DestroyWindow();
+}

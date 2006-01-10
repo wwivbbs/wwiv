@@ -54,7 +54,7 @@ net_system_list_rec *netsys;
 //
 int g_nNumAddresses;
 char maindir[MAX_PATH];
-char net_name[16], net_data[_MAX_PATH];
+char net_name[16], net_data[MAX_PATH];
 unsigned short g_nNetworkSystemNumber;
 
 
@@ -64,10 +64,8 @@ unsigned short g_nNetworkSystemNumber;
 char SMTPHOST[40], POPHOST[40], NEWSHOST[40], POPNAME[40], POPPASS[40], PROXY[40], QOTDFILE[121];
 char FWDNAME[20], FWDDOM[40], TIMEHOST[40], QOTDHOST[40];
 char PRIMENET[25], NODEPASS[20], DOMAIN[40], temp_dir[MAX_PATH];
-unsigned int KEEPSENT, CLEANUP, NOLISTNAMES, MULTINEWS;
-unsigned int BBSNODE;
-unsigned int POPPORT, SMTPPORT;
-bool ALLMAIL, PURGE, ONECALL, RASDIAL, MOREINFO;
+unsigned int KEEPSENT, ALLMAIL, CLEANUP, MOREINFO, NOLISTNAMES, MULTINEWS;
+unsigned int ONECALL, PURGE, BBSNODE, RASDIAL;
 
 
 #endif	// __NETWORK_H_INCLUDED__ 

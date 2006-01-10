@@ -33,12 +33,9 @@
 #include "NodeDetailsView.h"
 #include "LogView.h"
 #include "resource.h"
-#include ".\mainframe.h"
 
 
-const UINT CMainFrame::m_nTaskbarCreatedMsg = ::RegisterWindowMessage(_T("TaskbarCreated"));
-const int CMainFrame::m_nTimerID            = 68;
-const int CMainFrame::m_nLogMessageID       = 1;
+CRITICAL_SECTION g_criticalSectionNodeUpdated;
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -70,7 +67,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
     ON_COMMAND(ID_FILE_RUNLOCALNODE, OnLocalNode)
     ON_UPDATE_COMMAND_UI(ID_FILE_RUNLOCALNODE, OnUpdateLocalNode)
     ON_COMMAND(ID_APP_UPDATES, OnAppUpdates)
-    ON_REGISTERED_MESSAGE(CMainFrame::m_nTaskbarCreatedMsg, OnTaskbarCreated)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -87,26 +83,24 @@ static UINT indicators[] =
 CMainFrame::CMainFrame() : m_trayIcon( IDR_TRAY )
 , m_nTimer(0)
 {
-	InitializeCriticalSection( &m_criticalSectionNodeUpdated );
+	InitializeCriticalSection( &g_criticalSectionNodeUpdated );
 	
 }
 
 CMainFrame::~CMainFrame()
 {
-	DeleteCriticalSection( &m_criticalSectionNodeUpdated );
+	DeleteCriticalSection( &g_criticalSectionNodeUpdated );
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	InitCommonControls();
 
-	if ( CFrameWnd::OnCreate( lpCreateStruct ) == -1 )
-    {
+	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
-    }
 	
-	if ( !m_wndToolBar.CreateEx( this ) ||
-		 !m_wndToolBar.LoadToolBar( IDR_MAINFRAME ) )
+	if (!m_wndToolBar.CreateEx(this) ||
+		!m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
 	{
 		TRACE0("Failed to create toolbar\n");
 		return -1;      // fail to create
@@ -138,6 +132,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		CBRS_TOOLTIPS | CBRS_FLYBY);
 
 	m_trayIcon.SetNotificationWnd(this, WM_MY_TRAY_NOTIFICATION);
+	//m_trayIcon.SetIcon( IDI_ICON1 );
 
 	return 0;
 }
@@ -250,7 +245,7 @@ void CMainFrame::OnUpdateViewStyles(CCmdUI* pCmdUI)
 				break;
 			}
 
-			pCmdUI->SetRadio( bChecked ? 1 : 0 );
+			pCmdUI->SetRadio(bChecked ? 1 : 0);
 		}
 	}
 }
@@ -299,9 +294,7 @@ void CMainFrame::OnViewStyle(UINT nCommandID)
 
 		// change the style; window will repaint automatically
 		if (dwStyle != -1)
-        {
 			pView->ModifyStyle(LVS_TYPEMASK, dwStyle);
-        }
 	}
 }
 
@@ -323,7 +316,7 @@ void CMainFrame::OnWtPrefs()
     generalPage.m_nLocalNode        = prefsData.m_nLocalNode;
     generalPage.m_bLaunchMinimized  = ( prefsData.m_bLaunchMinimized ) ? TRUE : FALSE;
     generalPage.m_BeginDayEvent     = ( prefsData.m_bRunBeginDayEvent ) ? TRUE : FALSE;
-    generalPage.m_bUseBalloons      = ( prefsData.m_bUseBalloons ) ? TRUE : FALSE;
+
 
 	dlgPreferences.AddPage( &generalPage );
 
@@ -358,7 +351,6 @@ void CMainFrame::OnWtPrefs()
         prefsData.m_nLocalNode          = generalPage.m_nLocalNode;
         prefsData.m_bLaunchMinimized    = ( generalPage.m_bLaunchMinimized ) ? true : false;
         prefsData.m_bRunBeginDayEvent   = ( generalPage.m_BeginDayEvent ) ? true : false;
-        prefsData.m_bUseBalloons        = ( generalPage.m_bUseBalloons ) ? true : false;
 
 		prefsData.m_strLogFileName	    = loggingPage.m_strFileName;
 		prefsData.m_nLogStyle		    = loggingPage.m_radioButtons;
@@ -425,19 +417,12 @@ void CMainFrame::OnSysCommand(UINT nID, LPARAM lParam)
 	if ( nID == SC_MINIMIZE )
 	{
 		ShowWindow( SW_HIDE );
-		m_trayIcon.SetIcon( IDI_ICON1,  _T( "WWIV Telnet Server Active" ) );
+		m_trayIcon.SetIcon( IDI_ICON1 );
 	}
 	else
 	{
 		CFrameWnd::OnSysCommand(nID, lParam);
 	}
-}
-
-LRESULT CMainFrame::OnTaskbarCreated( WPARAM uID, LPARAM lEvent ) 
-{
-    m_trayIcon.SetIcon( 0 );
-    m_trayIcon.SetIcon( IDI_ICON1, _T( "WWIV Telnet Server Active" ) );
-	return 0;
 }
 
 
@@ -450,7 +435,7 @@ void CMainFrame::OnShowMainwindow()
 
 LRESULT CMainFrame::OnLogMessage(WPARAM w, LPARAM l)
 {
-    if ( w == CMainFrame::m_nLogMessageID )
+    if ( w == 1 )
     {
         CString* pCString = ( CString* ) l;
         ASSERT( pCString );
@@ -475,12 +460,12 @@ void CMainFrame::OnTimer(UINT nIDEvent)
     {
         CTime t = CTime::GetCurrentTime();
         CString strDebug;
-        strDebug.Format( _T( "Timer ID = [%ld] at [%2.2d:%2.2d:%2.2d]\r\n" ), nIDEvent, t.GetHour(), t.GetMinute(), t.GetSecond() );
+        strDebug.Format( "Timer ID = [%ld] at [%2.2d:%2.2d:%2.2d]\r\n", nIDEvent, t.GetHour(), t.GetMinute(), t.GetSecond() );
         
         OutputDebugString( strDebug );
     }
 #endif // NDEBUG
-    if ( nIDEvent == CMainFrame::m_nTimerID )
+    if ( nIDEvent == 68 )
     {
         // Handle our stuff here.
         GetActiveDocument()->UpdateAllViews( NULL );
@@ -489,7 +474,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
         {
             CString strNow;
             CTime t = CTime::GetCurrentTime();
-            strNow.Format( _T( "%4.4d%2.2d%2.2d" ), t.GetYear(), t.GetMonth(), t.GetDay() );
+            strNow.Format( "%4.4d%2.2d%2.2d", t.GetYear(), t.GetMonth(), t.GetDay() );
             if ( prefs.m_strLastBeginEventDate.Compare( strNow ) != 0 )
             {
                 RunBeginDayEvent();
@@ -507,7 +492,7 @@ bool CMainFrame::StartAppTimer()
         return true;
     }
 
-    m_nTimer = SetTimer( CMainFrame::m_nTimerID, 5000, 0 ); // 5 seconds
+    m_nTimer = SetTimer( 68, 5000, 0 ); // 5 seconds
     return ( m_nTimer != 0 ) ? true : false;
 }
 
@@ -546,9 +531,9 @@ void CMainFrame::OnLocalNode()
     prefs.Load();
 
     CString cmdLine;
-    cmdLine.Format( _T( "%s -n%d -m" ), prefs.m_cmdLine, prefs.m_nLocalNode );
+    cmdLine.Format( "%s -n%d -m", prefs.m_cmdLine, prefs.m_nLocalNode );
     TCHAR szCmdLine[ MAX_PATH ];
-    _stprintf( szCmdLine, cmdLine );
+    wsprintf( szCmdLine, cmdLine );
 
     if ( !CreateProcess( NULL,
         szCmdLine,
@@ -602,13 +587,13 @@ bool CMainFrame::RunBeginDayEvent(void)
     prefs.Load();
 
     CTime t = CTime::GetCurrentTime();
-    prefs.m_strLastBeginEventDate.Format( _T( "%4.4d%2.2d%2.2d" ), t.GetYear(), t.GetMonth(), t.GetDay() );
+    prefs.m_strLastBeginEventDate.Format("%4.4d%2.2d%2.2d", t.GetYear(), t.GetMonth(), t.GetDay() );
     prefs.Commit();
 
     CString cmdLine;
-    cmdLine.Format( _T( "%s -n%d -e" ), prefs.m_cmdLine, prefs.m_nLocalNode );
+    cmdLine.Format( "%s -n%d -e", prefs.m_cmdLine, prefs.m_nLocalNode );
     TCHAR szCmdLine[ MAX_PATH ];
-    _stprintf( szCmdLine, cmdLine );
+    wsprintf( szCmdLine, cmdLine );
 
     CDocument* pDoc = GetActiveDocument();
     ASSERT( pDoc );
@@ -634,9 +619,4 @@ bool CMainFrame::RunBeginDayEvent(void)
     }
     pTSDoc->AppendLogText( _T( "Invoked WWIV For BeginDay Event" ) );
     return true;
-}
-
-BOOL CMainFrame::ShowBalloon( LPCTSTR pszTitle, LPCTSTR pszText )
-{
-    return m_trayIcon.ShowBalloon( pszTitle, pszText );
 }

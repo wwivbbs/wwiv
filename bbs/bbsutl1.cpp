@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 /**
@@ -30,7 +31,7 @@ bool AllowLocalSysop()
 
 
 /**
- * Finds GetSession()->usernum and system number from pszEmailAddress, sets network number as
+ * Finds sess->usernum and system number from pszEmailAddress, sets network number as
  * appropriate.
  * @param pszEmailAddress The text of the email address.
  * @param pUserNumber OUT The User Number
@@ -64,16 +65,16 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
         }
 		else
 		{
-			GetSession()->bout << "Unknown user.\r\n";
+			sess->bout << "Unknown user.\r\n";
 		}
 	}
     else if (atoi(ss + 1) == 0)
 	{
-		for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++)
+		for (i = 0; i < sess->GetMaxNetworkNumber(); i++)
 		{
 			set_net_num(i);
-			if ((WWIV_STRNICMP("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-				((WWIV_STRNICMP("filenet", GetSession()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767)))
+			if ((strnicmp("internet", sess->GetNetworkName(), 8) == 0) ||
+				((strnicmp("filenet", sess->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767)))
 			{
 				strcpy(net_email_name, szEmailAddress);
 				for (ss1 = net_email_name; *ss1; ss1++)
@@ -87,9 +88,9 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 				break;
 			}
 		}
-		if ( i >= GetSession()->GetMaxNetworkNumber() )
+		if ( i >= sess->GetMaxNetworkNumber() )
 		{
-			GetSession()->bout << "Unknown user.\r\n";
+			sess->bout << "Unknown user.\r\n";
 		}
 	}
 	else
@@ -132,7 +133,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 			}
 			else
 			{
-				GetSession()->bout << "Unknown user.\r\n";
+				sess->bout << "Unknown user.\r\n";
 			}
 		}
 		else
@@ -142,15 +143,15 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 		}
 		if (*pSystemNumber && ss1)
 		{
-			for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++)
+			for (i = 0; i < sess->GetMaxNetworkNumber(); i++)
 			{
 				set_net_num(i);
-				if ( wwiv::stringUtils::IsEqualsIgnoreCase( ss1, GetSession()->GetNetworkName() ) )
+				if ( wwiv::stringUtils::IsEqualsIgnoreCase( ss1, sess->GetNetworkName() ) )
 				{
 					if (!valid_system(*pSystemNumber))
 					{
-						GetSession()->bout.NewLine();
-						GetSession()->bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
+						nl();
+						sess->bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
 						*pSystemNumber = *pUserNumber = 0;
 					}
 					else
@@ -165,21 +166,21 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 							if ( *pUserNumber == 0 || *pUserNumber > 32767 )
 							{
 								*pUserNumber = 0;
-								GetSession()->bout << "Unknown user.\r\n";
+								sess->bout << "Unknown user.\r\n";
 							}
 						}
 					}
 					break;
 				}
 			}
-			if ( i >= GetSession()->GetMaxNetworkNumber() )
+			if ( i >= sess->GetMaxNetworkNumber() )
 			{
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "This system isn't connected to "<< ss1 << "\r\n";
+				nl();
+				sess->bout << "This system isn't connected to "<< ss1 << "\r\n";
 				*pSystemNumber = *pUserNumber = 0;
 			}
 		}
-		else if ( *pSystemNumber && GetSession()->GetMaxNetworkNumber() > 1 )
+		else if ( *pSystemNumber && sess->GetMaxNetworkNumber() > 1 )
 		{
 			odc[0] = 0;
 			odci = 0;
@@ -187,11 +188,11 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 			onx[1] = 0;
 			onxi = 1;
 			nv = 0;
-			on = GetSession()->GetNetworkNumber();
-			ss = static_cast<char *>( BbsAllocA( GetSession()->GetMaxNetworkNumber() ) );
+			on = sess->GetNetworkNumber();
+			ss = static_cast<char *>( BbsAllocA( sess->GetMaxNetworkNumber() ) );
 			WWIV_ASSERT(ss != NULL);
 			xx = -1;
-			for ( i = 0; i < GetSession()->GetMaxNetworkNumber(); i++ )
+			for ( i = 0; i < sess->GetMaxNetworkNumber(); i++ )
 			{
 				set_net_num( i );
 				if ( net_sysnum == *pSystemNumber )
@@ -216,14 +217,14 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 						if ( *pUserNumber == 0 || *pUserNumber > 32767 )
 						{
 							*pUserNumber = 0;
-							GetSession()->bout << "Unknown user.\r\n";
+							sess->bout << "Unknown user.\r\n";
 						}
 					}
 				}
 				else
 				{
-					GetSession()->bout.NewLine();
-					GetSession()->bout << "Unknown system\r\n";
+					nl();
+					sess->bout << "Unknown system\r\n";
 					*pSystemNumber = *pUserNumber = 0;
 				}
 			}
@@ -233,7 +234,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 			}
 			else
 			{
-				GetSession()->bout.NewLine();
+				nl();
 				for (i = 0; i < nv; i++)
 				{
 					set_net_num(ss[i]);
@@ -251,11 +252,11 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 							odc[odci - 1] = static_cast< char >( odci + '0' );
 							odc[odci] = 0;
 						}
-						GetSession()->bout << i + 1 << ". " << GetSession()->GetNetworkName() << " (" << csne->name << ")\r\n";
+						sess->bout << i + 1 << ". " << sess->GetNetworkName() << " (" << csne->name << ")\r\n";
 					}
 				}
-				GetSession()->bout << "Q. Quit\r\n\n";
-				GetSession()->bout << "|#2Which network (number): ";
+				sess->bout << "Q. Quit\r\n\n";
+				sess->bout << "|#2Which network (number): ";
 				if (nv < 9) {
 					ch = onek(onx);
 					if (ch == 'Q')
@@ -285,7 +286,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 				}
 				else
 				{
-					GetSession()->bout << "\r\n|12Aborted.\r\n\n";
+					sess->bout << "\r\n|12Aborted.\r\n\n";
 					*pUserNumber = *pSystemNumber = 0;
 				}
 			}
@@ -303,12 +304,12 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 			if ( *pUserNumber == 0 || *pUserNumber > 32767 )
 			{
 				*pUserNumber = 0;
-				GetSession()->bout << "Unknown user.\r\n";
+				sess->bout << "Unknown user.\r\n";
 			}
 		}
 		else if (!valid_system(*pSystemNumber))
 		{
-			GetSession()->bout << "\r\nUnknown user.\r\n";
+			sess->bout << "\r\nUnknown user.\r\n";
 			*pSystemNumber = *pUserNumber = 0;
         }
     }
@@ -322,7 +323,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
  */
 bool ValidateSysopPassword()
 {
-	GetSession()->bout.NewLine();
+	nl();
 	if ( so() )
 	{
 		if ( incom )
@@ -358,26 +359,26 @@ void hang_it_up()
 		return;
 	}
 
-	GetSession()->remoteIO()->dtr( false );
-	if (!GetSession()->remoteIO()->carrier())
+	app->comm->dtr( false );
+	if (!app->comm->carrier())
     {
         return;
     }
 
 	wait1( 9 );
-	if (!GetSession()->remoteIO()->carrier())
+	if (!app->comm->carrier())
     {
         return;
     }
 
 	wait1( 9 );
-	if (!GetSession()->remoteIO()->carrier())
+	if (!app->comm->carrier())
     {
         return;
     }
     int i = 0;
-	GetSession()->remoteIO()->dtr( true );
-	while ( i++ < 2 && GetSession()->remoteIO()->carrier() )
+	app->comm->dtr( true );
+	while ( i++ < 2 && app->comm->carrier() )
 	{
 		wait1( 27 );
 		rputs("\x1\x1\x1");
@@ -385,7 +386,7 @@ void hang_it_up()
         rputs( (modem_i->hang[0]) ? modem_i->hang : "ATH\r" );
 		wait1( 6 );
 	}
-	GetSession()->remoteIO()->dtr( true );
+	app->comm->dtr( true );
 #endif
 }
 
@@ -402,57 +403,57 @@ void hang_it_up()
  * Returns 1 if sucessful, else returns 0. The pause_delay is optional and
  * is used to insert silences between tones.
  */
-bool play_sdf( const std::string soundFileName, bool abortable )
+bool play_sdf( const char *pszSoundFileName, bool abortable )
 {
-    WWIV_ASSERT( !soundFileName.empty() );
+	WWIV_ASSERT(pszSoundFileName);
 
-    std::string fullPathName;
+	char szFileName[ MAX_PATH ];
+
 	// append gfilesdir if no path specified
-    if ( soundFileName.find( WWIV_FILE_SEPERATOR_CHAR ) == std::string::npos )
+	if (strchr(pszSoundFileName, WWIV_FILE_SEPERATOR_CHAR) == NULL)
 	{
-        std::stringstream ss;
-        ss << syscfg.gfilesdir << soundFileName;
-        fullPathName = ss.str();
+		strncpy(szFileName, syscfg.gfilesdir, sizeof(szFileName));
+		strncat(szFileName, pszSoundFileName, sizeof(szFileName));
 	}
 	else
 	{
-        fullPathName = soundFileName;
+		strncpy( szFileName, pszSoundFileName, sizeof(szFileName));
 	}
 
 	// append .SDF if no extension specified
-    if ( fullPathName.find( '.' ) == std::string::npos )
+	if (strchr( szFileName, '.') == NULL)
 	{
-		fullPathName += ".sdf";
+		strncat( szFileName, ".sdf", sizeof(szFileName));
 	}
 
 	// Must Exist
-	if (!WFile::Exists(fullPathName))
+	if (!WFile::Exists(szFileName))
 	{
 		return false;
 	}
 
 	// must be able to open read-only
-    WTextFile soundFile(fullPathName, "rt");
-    if (!soundFile.IsOpen())
+	FILE* hSoundFile = fsh_open(szFileName, "rt");
+	if (!hSoundFile)
 	{
 		return false;
 	}
 
 	// scan each line, ignore lines with words<2
-    std::string soundLine;
-    while (soundFile.ReadLine(soundLine))
+    char szSoundLine[ 255 ];
+	while (fgets(szSoundLine, sizeof(szSoundLine), hSoundFile) != NULL)
 	{
 		if ( abortable && bkbhit() )
 		{
 			break;
 		}
-        int nw = wordcount( soundLine.c_str(), DELIMS_WHITE);
+		int nw = wordcount( szSoundLine, DELIMS_WHITE);
 		if (nw >= 2)
 		{
             char szTemp[ 513 ];
-			strncpy(szTemp, extractword(1, soundLine.c_str(), DELIMS_WHITE), sizeof(szTemp));
+			strncpy(szTemp, extractword(1, szSoundLine, DELIMS_WHITE), sizeof(szTemp));
 			int freq = atoi(szTemp);
-			strncpy(szTemp, extractword(2, soundLine.c_str(), DELIMS_WHITE), sizeof(szTemp));
+			strncpy(szTemp, extractword(2, szSoundLine, DELIMS_WHITE), sizeof(szTemp));
 			int dur = atoi(szTemp);
 
 			// only play if freq and duration > 0
@@ -461,7 +462,7 @@ bool play_sdf( const std::string soundFileName, bool abortable )
                 int nPauseDelay = 0;
 				if (nw > 2)
 				{
-					strncpy( szTemp, extractword(3, soundLine.c_str(), DELIMS_WHITE), sizeof( szTemp ) );
+					strncpy( szTemp, extractword(3, szSoundLine, DELIMS_WHITE), sizeof( szTemp ) );
 					nPauseDelay = atoi( szTemp );
 				}
 				WWIV_Sound(freq, dur);
@@ -472,8 +473,9 @@ bool play_sdf( const std::string soundFileName, bool abortable )
 			}
 		}
 	}
-    
-    soundFile.Close();
+
+	// close and return success
+	fsh_close( hSoundFile );
 	return true;
 }
 
@@ -500,10 +502,10 @@ void describe_area_code(int nAreaCode, char *pszDescription)
     file.Close();
 	char* ss1 = strtok(ss, "\r\n");
     bool done = false;
-	while ( ss1 && !done )
+	while (ss1 && (!done))
 	{
-		int nCurrentAreaCode = atoi( ss1 );
-		if ( nCurrentAreaCode && nCurrentAreaCode == nAreaCode )
+		int i = atoi(ss1);
+		if ( i && i == nAreaCode )
 		{
 			done = true;
 		}
@@ -519,13 +521,13 @@ void describe_area_code(int nAreaCode, char *pszDescription)
 
 
 /**
- * Describes the Town (area code + prefix) as listed in the regions file.
+ * Describes the town (area code + prefix) as listed in the regions file.
  * @param nAreaCode The area code to describe
- * @param nTargetTown The phone number prefix to describe
+ * @param town The phone number prefix to describe
  * @param pszDescription point to return the description for the specified
  *        area code.
  */
-void describe_area_code_prefix( int nAreaCode, int nTargetTown, char *pszDescription )
+void describe_town( int nAreaCode, int town, char *pszDescription )
 {
     char szFileName[ MAX_PATH ];
 	pszDescription[0] = '\0';
@@ -551,8 +553,8 @@ void describe_area_code_prefix( int nAreaCode, int nTargetTown, char *pszDescrip
     bool done = false;
 	while ( ss1 && !done )
 	{
-		int nCurrentTown = atoi(ss1);
-		if ( nCurrentTown && nCurrentTown == nTargetTown )
+		int i = atoi(ss1);
+		if ( i && i == town )
 		{
 			done = true;
 		}

@@ -46,8 +46,6 @@ protected:
 	bool			m_bIsHidden;	// display info in main window
 
 public:
-    static const int m_nTimerID;
-    static const int m_nLogMessageID;
 
 // Operations
 public:
@@ -69,15 +67,11 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-// control bar embedded members
-protected:  
-	CStatusBar          m_wndStatusBar;
-	CToolBar            m_wndToolBar;
-	CReBar              m_wndReBar;
-	CDialogBar          m_wndDlgBar;
-    static const UINT   m_nTaskbarCreatedMsg;
-    CRITICAL_SECTION    m_criticalSectionNodeUpdated;
-
+protected:  // control bar embedded members
+	CStatusBar  m_wndStatusBar;
+	CToolBar    m_wndToolBar;
+	CReBar      m_wndReBar;
+	CDialogBar      m_wndDlgBar;
 
 // Generated message map functions
 protected:
@@ -93,7 +87,6 @@ protected:
 	afx_msg void OnViewStyle(UINT nCommandID);
 	afx_msg LRESULT OnNodeStatusChanged(WPARAM w, LPARAM l);
     afx_msg LRESULT OnLogMessage(WPARAM w, LPARAM l);
-    afx_msg LRESULT OnTaskbarCreated(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
 protected:
@@ -116,7 +109,6 @@ public:
     afx_msg void OnAppUpdates();
     // Executes the beginday event for WWIV
     bool RunBeginDayEvent(void);
-    BOOL ShowBalloon(LPCTSTR pszTitle, LPCTSTR pszText);
 };
 
 /////////////////////////////////////////////////////////////////////////////

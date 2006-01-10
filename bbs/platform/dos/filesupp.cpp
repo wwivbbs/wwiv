@@ -1,7 +1,7 @@
 /****************************************************************************/
 /*                                                                          */
 /*                             WWIV Version 5.0x                            */
-/*            Copyright (C) 1998-2005 by WWIV Software Services             */
+/*            Copyright (C) 1998-2003 by WWIV Software Services             */
 /*                                                                          */
 /*      Distribution or publication of this source code, it's individual    */
 /*       components, or a compiled version thereof, whether modified or     */
@@ -57,7 +57,7 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive)
 double WWIV_GetFreeSpaceForPath(const char * szPath)
 {
 	char szWWIVHome[MAX_PATH];
-	strcpy(szWWIVHome, GetApplication()->GetHomeDir());
+	strcpy(szWWIVHome, app->GetHomeDir());
     int nDrive = szWWIVHome[0];;
     
 	if (szPath[1] == ':')

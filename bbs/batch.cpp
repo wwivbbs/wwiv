@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -57,19 +58,19 @@ using namespace wwiv::stringUtils;
 // download. Shows estimated time, by item, for files in the d/l queue.
 void listbatch()
 {
-    GetSession()->bout.NewLine();
-    if ( GetSession()->numbatch == 0 )
+    nl();
+    if ( sess->numbatch == 0 )
     {
         return;
     }
     bool abort = false;
-	GetSession()->bout << "|#9Files - |#2" << GetSession()->numbatch << "  ";
-    if ( GetSession()->numbatchdl )
+	sess->bout << "|#9Files - |#2" << sess->numbatch << "  ";
+    if ( sess->numbatchdl )
     {
-		GetSession()->bout << "|#9Time - |#2" << ctim( batchtime );
+		sess->bout << "|#9Time - |#2" << ctim( batchtime );
     }
-    GetSession()->bout.NewLine( 2 );
-    for ( int i = 0; i < GetSession()->numbatch && !abort && !hangup; i++ )
+    nl( 2 );
+    for ( int i = 0; i < sess->numbatch && !abort && !hangup; i++ )
     {
 	    char szBuffer[255];
         if ( batch[i].sending )
@@ -82,22 +83,22 @@ void listbatch()
         }
         pla( szBuffer, &abort );
     }
-    GetSession()->bout.NewLine();
+    nl();
 }
 
 
 // Deletes one item (index i) from the d/l batch queue.
 void delbatch(int nBatchEntryNum)
 {
-    if (nBatchEntryNum < GetSession()->numbatch)
+    if (nBatchEntryNum < sess->numbatch)
     {
         if (batch[nBatchEntryNum].sending)
         {
             batchtime -= batch[nBatchEntryNum].time;
-            --GetSession()->numbatchdl;
+            --sess->numbatchdl;
         }
-        --GetSession()->numbatch;
-        for (int i1 = nBatchEntryNum; i1 <= GetSession()->numbatch; i1++)
+        --sess->numbatch;
+        for (int i1 = nBatchEntryNum; i1 <= sess->numbatch; i1++)
         {
             batch[i1] = batch[i1 + 1];
         }
@@ -109,7 +110,7 @@ void downloaded( char *pszFileName, long lCharsPerSecond )
 {
     uploadsrec u;
 
-    for (int i1 = 0; i1 < GetSession()->numbatch; i1++)
+    for (int i1 = 0; i1 < sess->numbatch; i1++)
     {
         if ( wwiv::stringUtils::IsEquals(pszFileName, batch[i1].filename) &&
              batch[i1].sending )
@@ -123,8 +124,8 @@ void downloaded( char *pszFileName, long lCharsPerSecond )
 							WFile::shareUnknown, WFile::permReadWrite );
                 FileAreaSetRecord( file, nRecNum );
 				file.Read( &u, sizeof( uploadsrec ) );
-                GetSession()->GetCurrentUser()->SetFilesDownloaded( GetSession()->GetCurrentUser()->GetFilesDownloaded() + 1 );
-                GetSession()->GetCurrentUser()->SetDownloadK( GetSession()->GetCurrentUser()->GetDownloadK() +
+                sess->thisuser.SetFilesDownloaded( sess->thisuser.GetFilesDownloaded() + 1 );
+                sess->thisuser.SetDownloadK( sess->thisuser.GetDownloadK() +
                                              static_cast<int>( bytes_to_k( u.numbytes ) ) );
                 ++u.numdloads;
                 FileAreaSetRecord( file, nRecNum );
@@ -141,13 +142,13 @@ void downloaded( char *pszFileName, long lCharsPerSecond )
                 if (syscfg.sysconfig & sysconfig_log_dl)
                 {
                     WUser user;
-                    GetApplication()->GetUserManager()->ReadUser( &user, u.ownerusr );
-                    if ( !user.IsUserDeleted() )
+                    app->userManager->ReadUser( &user, u.ownerusr );
+                    if ( !user.isUserDeleted() )
                     {
                         if ( date_to_daten( user.GetFirstOn() ) < static_cast<signed int>( u.daten ) )
                         {
                             ssm( u.ownerusr, 0, "%s downloaded|#1 \"%s\" |#7on %s",
-                                 GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ), u.filename, fulldate() );
+                                 sess->thisuser.GetUserNameAndNumber( sess->usernum ), u.filename, fulldate() );
                         }
                     }
                 }
@@ -193,7 +194,7 @@ void didnt_upload(int nBatchIndex)
             {
                 delete_extended_description( u.filename );
             }
-            for (int i1 = nRecNum; i1 < GetSession()->numf; i1++)
+            for (int i1 = nRecNum; i1 < sess->numf; i1++)
             {
                 FileAreaSetRecord( file, i1 + 1 );
 				file.Read( &u, sizeof( uploadsrec ) );
@@ -201,10 +202,10 @@ void didnt_upload(int nBatchIndex)
 				file.Write( &u, sizeof( uploadsrec ) );
             }
             --nRecNum;
-            --GetSession()->numf;
+            --sess->numf;
             FileAreaSetRecord( file, 0 );
 			file.Read( &u, sizeof( uploadsrec ) );
-            u.numbytes = GetSession()->numf;
+            u.numbytes = sess->numf;
             FileAreaSetRecord( file, 0 );
 			file.Write( &u, sizeof( uploadsrec ) );
             return;
@@ -218,7 +219,7 @@ void uploaded( char *pszFileName, long lCharsPerSecond )
 {
     uploadsrec u;
 
-    for ( int i1 = 0; i1 < GetSession()->numbatch; i1++ )
+    for ( int i1 = 0; i1 < sess->numbatch; i1++ )
     {
         if ( wwiv::stringUtils::IsEquals( pszFileName, batch[i1].filename ) &&
              !batch[i1].sending )
@@ -287,21 +288,21 @@ void uploaded( char *pszFileName, long lCharsPerSecond )
 							u.numbytes = file.GetLength();
 							file.Close();
                             get_file_idz(&u, batch[i1].dir);
-                            GetSession()->GetCurrentUser()->SetFilesUploaded( GetSession()->GetCurrentUser()->GetFilesUploaded() + 1 );
+                            sess->thisuser.SetFilesUploaded( sess->thisuser.GetFilesUploaded() + 1 );
                             modify_database(u.filename, true);
-                            GetSession()->GetCurrentUser()->SetUploadK( GetSession()->GetCurrentUser()->GetUploadK() +
+                            sess->thisuser.SetUploadK( sess->thisuser.GetUploadK() +
                                                        static_cast<int>( bytes_to_k( u.numbytes ) ) );
-                            WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
-                            pStatus->IncrementNumUploadsToday();
-                            pStatus->IncrementFileChangedFlag( WStatus::fileChangeUpload );
-                            GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
+                            app->statusMgr->Lock();
+                            ++status.uptoday;
+                            ++status.filechange[filechange_upload];
+                            app->statusMgr->Write();
 							WFile fileDn( g_szDownloadFileName );
 							fileDn.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
                             FileAreaSetRecord( fileDn, nRecNum );
 							fileDn.Write( &u, sizeof( uploadsrec ) );
 							fileDn.Close();
                             sysoplogf( "+ \"%s\" uploaded on %s (%ld cps)", u.filename, directories[batch[i1].dir].name, lCharsPerSecond );
-                            GetSession()->bout << "Uploaded '" << u.filename <<
+                            sess->bout << "Uploaded '" << u.filename <<
 								          "' to " << directories[batch[i1].dir].name << " (" <<
 										  lCharsPerSecond << " cps)" << wwiv::endl;
                         }
@@ -314,7 +315,7 @@ void uploaded( char *pszFileName, long lCharsPerSecond )
             if (try_to_ul(pszFileName))
             {
                 sysoplogf( "!!! Couldn't find file \"%s\" in directory.", pszFileName );
-				GetSession()->bout << "Deleting - couldn't find data for file " << pszFileName << wwiv::endl;
+				sess->bout << "Deleting - couldn't find data for file " << pszFileName << wwiv::endl;
             }
             return;
         }
@@ -322,7 +323,7 @@ void uploaded( char *pszFileName, long lCharsPerSecond )
     if ( try_to_ul( pszFileName ) )
     {
         sysoplogf( "!!! Couldn't find \"%s\" in UL batch queue.", pszFileName );
-		GetSession()->bout << "Deleting - don't know what to do with file " << pszFileName << wwiv::endl;
+		sess->bout << "Deleting - don't know what to do with file " << pszFileName << wwiv::endl;
 
         WFile::Remove( syscfgovr.batchdir, pszFileName );
     }
@@ -340,30 +341,30 @@ void zmbatchdl(bool bHangupAfterDl)
     }
 
 	char szMessage[ 255 ];
-    sprintf( szMessage, "ZModem Download: Files - %ld, Time - %s", GetSession()->numbatchdl, ctim( batchtime ) );
+    sprintf( szMessage, "ZModem Download: Files - %ld, Time - %s", sess->numbatchdl, ctim( batchtime ) );
     if ( bHangupAfterDl )
     {
         strcat( szMessage, ", HAD" );
     }
     sysoplog( szMessage );
-    GetSession()->bout.NewLine();
-    GetSession()->bout << szMessage;
-    GetSession()->bout.NewLine( 2 );
+    nl();
+    sess->bout << szMessage;
+    nl( 2 );
 
 //    char szTempTelnet[21];
 //    sprintf(szTempTelnet, "%c%c%c", 255, 253, 0); // DO BINARY
-//    GetSession()->remoteIO()->write(szTempTelnet, 3, true);
+//    app->comm->write(szTempTelnet, 3, true);
 
     bool bRatioBad = false;
     bool ok = true;
     do
     {
-        GetSession()->localIO()->tleft( true );
+        app->localIO->tleft( true );
         if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio))
         {
             bRatioBad = true;
         }
-        if ( GetSession()->GetCurrentUser()->IsExemptRatio() )
+        if ( sess->thisuser.isExemptRatio() )
         {
             bRatioBad = false;
         }
@@ -375,18 +376,18 @@ void zmbatchdl(bool bHangupAfterDl)
         if ( ( nsl() >= batch[cur].time ) && !bRatioBad )
         {
             dliscan1(batch[cur].dir);
-            int nRecordNumber = recno(batch[cur].filename);
-            if ( nRecordNumber <= 0 )
+            int i = recno(batch[cur].filename);
+            if ( i <= 0 )
             {
                 delbatch( cur );
             }
             else
             {
-                sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", GetSession()->numbatchdl, ctim( batchtime ) );
-                GetSession()->localIO()->LocalPuts( szMessage );
+                sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", sess->numbatchdl, ctim( batchtime ) );
+                app->localIO->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
-                FileAreaSetRecord( file, nRecordNumber );
+                FileAreaSetRecord( file, i );
 				file.Read( &u, sizeof( uploadsrec ) );
 				file.Close();
 				char szSendFileName[ MAX_PATH ];
@@ -401,7 +402,7 @@ void zmbatchdl(bool bHangupAfterDl)
                         copyfile( szOrigFileName, szSendFileName, true );
 		            }
                 }
-                write_inst(INST_LOC_DOWNLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+                write_inst(INST_LOC_DOWNLOAD, udir[sess->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
                 StringRemoveWhitespace( szSendFileName );
 				double percent;
                 zmodem_send( szSendFileName, &ok, &percent, u.filetype );
@@ -415,7 +416,7 @@ void zmbatchdl(bool bHangupAfterDl)
         {
             delbatch( cur );
         }
-    } while ( ok && !hangup && GetSession()->numbatch > cur && !bRatioBad );
+    } while ( ok && !hangup && sess->numbatch > cur && !bRatioBad );
 
 /*
 if ( ok && !hangup )
@@ -425,7 +426,7 @@ if ( ok && !hangup )
 */
     if ( bRatioBad )
     {
-        GetSession()->bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n\n";
+        sess->bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n\n";
     }
     if (bHangupAfterDl)
     {
@@ -433,13 +434,13 @@ if ( ok && !hangup )
     }
 
 //    sprintf(szTempTelnet, "%c%c%c", 255, 254, 0); // DONT BINARY
-//    GetSession()->remoteIO()->write(szTempTelnet, 3, true);
+//    app->comm->write(szTempTelnet, 3, true);
 }
 
 
 void ymbatchdl(bool bHangupAfterDl)
 {
-    int cur = 0;
+    int i, cur = 0;
     uploadsrec u;
 
     if ( !incom )
@@ -447,26 +448,26 @@ void ymbatchdl(bool bHangupAfterDl)
         return;
     }
 	char szMessage[ 255 ];
-    sprintf( szMessage, "Ymodem Download: Files - %ld, Time - %s", GetSession()->numbatchdl, ctim( batchtime ) );
+    sprintf( szMessage, "Ymodem Download: Files - %ld, Time - %s", sess->numbatchdl, ctim( batchtime ) );
     if ( bHangupAfterDl )
     {
         strcat( szMessage, ", HAD" );
     }
     sysoplog( szMessage );
-    GetSession()->bout.NewLine();
-    GetSession()->bout << szMessage;
-    GetSession()->bout.NewLine( 2 );
+    nl();
+    sess->bout << szMessage;
+    nl( 2 );
 
     bool bRatioBad = false;
     bool ok = true;
     do
     {
-        GetSession()->localIO()->tleft( true );
+        app->localIO->tleft( true );
         if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio))
         {
             bRatioBad = true;
         }
-        if ( GetSession()->GetCurrentUser()->IsExemptRatio() )
+        if ( sess->thisuser.isExemptRatio() )
         {
             bRatioBad = false;
         }
@@ -478,18 +479,18 @@ void ymbatchdl(bool bHangupAfterDl)
         if ( ( nsl() >= batch[cur].time ) && !bRatioBad )
         {
             dliscan1(batch[cur].dir);
-            int nRecordNumber = recno(batch[cur].filename);
-            if (nRecordNumber <= 0)
+            i = recno(batch[cur].filename);
+            if (i <= 0)
             {
                 delbatch(cur);
             }
             else
             {
-                sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", GetSession()->numbatchdl, ctim( batchtime ) );
-                GetSession()->localIO()->LocalPuts( szMessage );
+                sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", sess->numbatchdl, ctim( batchtime ) );
+                app->localIO->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
-                FileAreaSetRecord( file, nRecordNumber );
+                FileAreaSetRecord( file, i );
 				file.Read( &u, sizeof( uploadsrec ) );
 				file.Close();
 				char szSendFileName[ MAX_PATH ];
@@ -504,7 +505,7 @@ void ymbatchdl(bool bHangupAfterDl)
                         copyfile( szOrigFileName, szSendFileName, true );
 		            }
                 }
-                write_inst(INST_LOC_DOWNLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+                write_inst(INST_LOC_DOWNLOAD, udir[sess->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
 				double percent;
                 xymodem_send( szSendFileName, &ok, &percent, u.filetype, true, true, true );
                 if ( ok )
@@ -517,7 +518,7 @@ void ymbatchdl(bool bHangupAfterDl)
         {
             delbatch( cur );
         }
-    } while ( ok && !hangup && GetSession()->numbatch > cur && !bRatioBad );
+    } while ( ok && !hangup && sess->numbatch > cur && !bRatioBad );
 
     if ( ok && !hangup )
     {
@@ -525,7 +526,7 @@ void ymbatchdl(bool bHangupAfterDl)
     }
     if (bRatioBad)
     {
-        GetSession()->bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n";
+        sess->bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n";
     }
     if (bHangupAfterDl)
     {
@@ -540,7 +541,7 @@ void handle_dszline(char *l)
 
     // find the filename
     char* ss = strtok(l, " \t");
-    for ( int i = 0; i < 10 && ss; i++ )
+    for ( int i = 0; (i < 10) && (ss); i++ )
     {
         switch ( i )
         {
@@ -591,12 +592,12 @@ void handle_dszline(char *l)
 
 double ratio1( long a )
 {
-    if ( GetSession()->GetCurrentUser()->GetDownloadK() == 0 && a == 0 )
+    if ( sess->thisuser.GetDownloadK() == 0 && a == 0 )
     {
         return 99.999;
     }
-    double r = static_cast<float>( GetSession()->GetCurrentUser()->GetUploadK() ) /
-               static_cast<float>( GetSession()->GetCurrentUser()->GetDownloadK() + a );
+    double r = static_cast<float>( sess->thisuser.GetUploadK() ) /
+               static_cast<float>( sess->thisuser.GetDownloadK() + a );
 	r  = std::min< double >( r, 99.998 );
     return r;
 }
@@ -604,7 +605,7 @@ double ratio1( long a )
 
 void make_ul_batch_list(char *pszListFileName)
 {
-    sprintf( pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir(), FILESUL_NOEXT, GetApplication()->GetInstanceNumber() );
+    sprintf( pszListFileName, "%s%s.%3.3u", app->GetHomeDir(), FILESUL_NOEXT, app->GetInstanceNumber() );
 
     WFile::SetFilePermissions(pszListFileName, WFile::permWrite );
     WFile::Remove(pszListFileName);
@@ -615,14 +616,14 @@ void make_ul_batch_list(char *pszListFileName)
         pszListFileName[0] = '\0';
         return;
     }
-    for (int i = 0; i < GetSession()->numbatch; i++)
+    for (int i = 0; i < sess->numbatch; i++)
     {
         if (!batch[i].sending)
         {
             char szBatchFileName[MAX_PATH], szCurrentDirectory[MAX_PATH];
             WWIV_ChangeDirTo(directories[batch[i].dir].path);
             WWIV_GetDir( szCurrentDirectory, true );
-            GetApplication()->CdHome();
+            app->CdHome();
             sprintf( szBatchFileName, "%s%s\r\n", szCurrentDirectory, stripfn( batch[i].filename ) );
 			fileList.Write( szBatchFileName, strlen( szBatchFileName ) );
         }
@@ -633,7 +634,7 @@ void make_ul_batch_list(char *pszListFileName)
 
 void make_dl_batch_list(char *pszListFileName)
 {
-    sprintf( pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir(), FILESDL_NOEXT, GetApplication()->GetInstanceNumber() );
+    sprintf( pszListFileName, "%s%s.%3.3u", app->GetHomeDir(), FILESDL_NOEXT, app->GetInstanceNumber() );
 
     WFile::SetFilePermissions(pszListFileName, WFile::permWrite );
     WFile::Remove( pszListFileName );
@@ -647,7 +648,7 @@ void make_dl_batch_list(char *pszListFileName)
 
     double at = 0.0;
     long addk = 0;
-    for (int i = 0; i < GetSession()->numbatch; i++)
+    for (int i = 0; i < sess->numbatch; i++)
     {
         if (batch[i].sending)
         {
@@ -676,19 +677,19 @@ void make_dl_batch_list(char *pszListFileName)
                 sprintf( szFileNameToSend, "%s%s\r\n", szCurrentDirectory, stripfn( batch[i].filename ) );
             }
             bool ok = true;
-			GetApplication()->CdHome();
+			app->CdHome();
             if (nsl() < (batch[i].time + at))
             {
                 ok = false;
-				GetSession()->bout << "Cannot download " << batch[i].filename << ": Not enough time" << wwiv::endl;
+				sess->bout << "Cannot download " << batch[i].filename << ": Not enough time" << wwiv::endl;
             }
             long thisk = bytes_to_k(batch[i].len);
             if ( ( syscfg.req_ratio > 0.0001 ) &&
                  ( ratio1( addk + thisk ) < syscfg.req_ratio ) &&
-                 !GetSession()->GetCurrentUser()->IsExemptRatio() )
+                 !sess->thisuser.isExemptRatio() )
             {
                 ok = false;
-				GetSession()->bout << "Cannot download " << batch[i].filename << ": Ratio too low" << wwiv::endl;
+				sess->bout << "Cannot download " << batch[i].filename << ": Ratio too low" << wwiv::endl;
             }
             if ( ok )
             {
@@ -706,7 +707,7 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
 {
     char sx1[21], sx2[21], sx3[21];
 
-	int nSpeed = std::min<int>( com_speed, 57600 );
+	int nSpeed = std::min<ULONG32>( com_speed, 57600 );
 
     if ( com_speed == 1 )
     {
@@ -717,12 +718,12 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
 		sprintf( sx1, "%d", nSpeed );
 	}
 
-	nSpeed = std::min< int >( modem_speed, 57600 );
+	nSpeed = std::min< UINT16 >( modem_speed, 57600 );
 	sprintf( sx3, "%d", nSpeed );
 	sprintf( sx2, "%d", syscfgovr.primaryport );
 
     // Frank's hack for FDSZ on TELNET nodes
-	if ( IsEqualsIgnoreCase( GetSession()->GetCurrentSpeed().c_str() , "TELNET" ) )
+	if ( IsEqualsIgnoreCase( sess->GetCurrentSpeed().c_str() , "TELNET" ) )
     {
         StringReplace(pszCommandLine, strlen( pszCommandLine  ), "MDMDSZ", "FDSZ");
     }
@@ -732,35 +733,35 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
     if ( szCommandLine[0] )
     {
         WWIV_make_abs_cmd( szCommandLine );
-        GetSession()->localIO()->LocalCls();
+        app->localIO->LocalCls();
 		char szMessage[ 1024 ];
         sprintf( szMessage,
                  "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
-                 GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ),
+                 sess->thisuser.GetUserNameAndNumber( sess->usernum ),
                  modem_speed, dl, szCommandLine );
-        GetSession()->localIO()->LocalPuts( szMessage );
+        app->localIO->LocalPuts( szMessage );
         if ( incom )
         {
             WFile::SetFilePermissions( g_szDSZLogFileName, WFile::permWrite );
             WFile::Remove( g_szDSZLogFileName );
             WWIV_ChangeDirTo( syscfgovr.batchdir );
-            ExecuteExternalProgram( szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_PROT_BATCH ) );
+            ExecuteExternalProgram( szCommandLine, app->GetSpawnOptions( SPWANOPT_PROT_BATCH ) );
             if ( bHangupAfterDl )
             {
                 bihangup( 1 );
-                if (!GetSession()->remoteIO()->carrier())
+                if (!app->comm->carrier())
                 {
-                    GetSession()->remoteIO()->dtr( true );
+                    app->comm->dtr( true );
                     wait1( 5 );
                     holdphone( true );
                 }
             }
             else
             {
-				GetSession()->bout << "\r\n|#9Please wait...\r\n\n";
+				sess->bout << "\r\n|#9Please wait...\r\n\n";
             }
             ProcessDSZLogFile();
-            GetApplication()->UpdateTopScreen();
+            app->localIO->UpdateTopScreen();
         }
     }
     if ( downlist[0] )
@@ -778,7 +779,7 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
 
 void ProcessDSZLogFile()
 {
-    char **lines = static_cast<char **>( BbsAllocA( GetSession()->max_batch * sizeof( char * ) * 2 ) );
+    char **lines = static_cast<char **>( BbsAllocA( sess->max_batch * sizeof( char * ) * 2 ) );
 	WWIV_ASSERT( lines != NULL );
 
     if ( !lines )
@@ -799,11 +800,11 @@ void ProcessDSZLogFile()
             {
                 ss[ nBytesRead ] = 0;
                 lines[0] = strtok(ss, "\r\n");
-                for ( int i = 1; (i < GetSession()->max_batch * 2 - 2) && (lines[i - 1]); i++ )
+                for ( int i = 1; (i < sess->max_batch * 2 - 2) && (lines[i - 1]); i++ )
                 {
                     lines[i] = strtok( NULL, "\n" );
                 }
-                lines[GetSession()->max_batch * 2 - 2] = NULL;
+                lines[sess->max_batch * 2 - 2] = NULL;
                 for ( int i1 = 0; lines[i1]; i1++ )
                 {
                     handle_dszline( lines[i1] );
@@ -821,17 +822,17 @@ void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
 {
     char szListFileName[MAX_PATH], szDownloadLogEntry[255];
 
-    sprintf(szDownloadLogEntry, "%s BATCH Download: Files - %ld, Time - %s", pszDescription, GetSession()->numbatchdl, ctim(batchtime));
+    sprintf(szDownloadLogEntry, "%s BATCH Download: Files - %ld, Time - %s", pszDescription, sess->numbatchdl, ctim(batchtime));
     if (bHangupAfterDl)
     {
         strcat(szDownloadLogEntry, ", HAD");
     }
     sysoplog( szDownloadLogEntry );
-    GetSession()->bout.NewLine();
-    GetSession()->bout << szDownloadLogEntry;
-    GetSession()->bout.NewLine( 2 );
+    nl();
+    sess->bout << szDownloadLogEntry;
+    nl( 2 );
 
-    write_inst(INST_LOC_DOWNLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+    write_inst(INST_LOC_DOWNLOAD, udir[sess->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
     make_dl_batch_list( szListFileName );
     run_cmd( pszCommandLine, szListFileName, "", szDownloadLogEntry, bHangupAfterDl );
 }
@@ -841,17 +842,17 @@ void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
 {
     char szListFileName[MAX_PATH], szDownloadLogEntry[255];
 
-    sprintf(szDownloadLogEntry, "%s BATCH Upload: Files - %ld", pszDescription, GetSession()->numbatch - GetSession()->numbatchdl);
+    sprintf(szDownloadLogEntry, "%s BATCH Upload: Files - %ld", pszDescription, sess->numbatch - sess->numbatchdl);
     if (bHangupAfterDl)
     {
         strcat(szDownloadLogEntry, ", HAD");
     }
     sysoplog(szDownloadLogEntry);
-    GetSession()->bout.NewLine();
-    GetSession()->bout << szDownloadLogEntry;
-    GetSession()->bout.NewLine( 2 );
+    nl();
+    sess->bout << szDownloadLogEntry;
+    nl( 2 );
 
-    write_inst( INST_LOC_UPLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE );
+    write_inst( INST_LOC_UPLOAD, udir[sess->GetCurrentFileArea()].subnum, INST_FLAGS_NONE );
     make_ul_batch_list(szListFileName);
 
     double ti = timer();
@@ -861,7 +862,7 @@ void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
     {
         ti += static_cast< double >( SECONDS_PER_DAY );
     }
-    GetSession()->GetCurrentUser()->SetExtraTime( GetSession()->GetCurrentUser()->GetExtraTime() + static_cast< float >( ti ) );
+    sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() + static_cast< float >( ti ) );
 }
 
 
@@ -870,17 +871,17 @@ void bibatch(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
     char szDownloadLogEntry[ 255 ];
 
     sprintf(szDownloadLogEntry, "%s BATCH Transfer: Send - %ld, Rec'd - %ld",
-    	    pszDescription, GetSession()->numbatchdl, GetSession()->numbatch - GetSession()->numbatchdl);
+    	    pszDescription, sess->numbatchdl, sess->numbatch - sess->numbatchdl);
     if (bHangupAfterDl)
     {
         strcat(szDownloadLogEntry, ", HAD");
     }
     sysoplog(szDownloadLogEntry);
-    GetSession()->bout.NewLine();
-    GetSession()->bout << szDownloadLogEntry;
-    GetSession()->bout.NewLine( 2 );
+    nl();
+    sess->bout << szDownloadLogEntry;
+    nl( 2 );
 
-    write_inst(INST_LOC_BIXFER, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+    write_inst(INST_LOC_BIXFER, udir[sess->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
     char szListFileName[MAX_PATH], szListFileName2[MAX_PATH];
     make_ul_batch_list(szListFileName);
     make_dl_batch_list(szListFileName2);
@@ -896,8 +897,8 @@ int batchdl(int mode)
 
     bool bHangupAfterDl = false;
     bool done = false;
-    int	 otag = GetSession()->tagging;
-    GetSession()->tagging = 0;
+    int	 otag = sess->tagging;
+    sess->tagging = 0;
     do
     {
         char ch = 0;
@@ -905,15 +906,15 @@ int batchdl(int mode)
         {
         case 0:
         case 3:
-            GetSession()->bout.NewLine();
+            nl();
             if ( mode == 3 )
             {
-                GetSession()->bout << "|#7[|#2L|#7]|#1ist Files, |#7[|#2C|#7]|#1lear Queue, |#7[|#2R|#7]|#1emove File, |#7[|#2Q|#7]|#1uit or |#7[|#2D|#7]|#1ownload : |#0";
+                sess->bout << "|#7[|#2L|#7]|#1ist Files, |#7[|#2C|#7]|#1lear Queue, |#7[|#2R|#7]|#1emove File, |#7[|#2Q|#7]|#1uit or |#7[|#2D|#7]|#1ownload : |#0";
                 ch = onek("QLRDC\r");
             }
             else
             {
-                GetSession()->bout << "|#9Batch: L,R,Q,C,D,U,B,? : ";
+                sess->bout << "|#9Batch: L,R,Q,C,D,U,B,? : ";
                 ch = onek("Q?CLRDUB");
             }
             break;
@@ -942,34 +943,34 @@ int batchdl(int mode)
             listbatch();
             break;
         case 'R':
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#9Remove which? ";
+            nl();
+            sess->bout << "|#9Remove which? ";
             input(s, 4);
             i = atoi(s);
-            if ((i > 0) && (i <= GetSession()->numbatch))
+            if ((i > 0) && (i <= sess->numbatch))
             {
                 didnt_upload(i - 1);
                 delbatch(i - 1);
             }
-            if (GetSession()->numbatch == 0)
+            if (sess->numbatch == 0)
             {
-                GetSession()->bout << "\r\nBatch queue empty.\r\n\n";
+                sess->bout << "\r\nBatch queue empty.\r\n\n";
                 done = true;
             }
             break;
         case 'C':
-            GetSession()->bout << "|#5Clear queue? ";
+            sess->bout << "|#5Clear queue? ";
             if (yesno())
             {
-                for (i = 0; i < GetSession()->numbatch; i++)
+                for (i = 0; i < sess->numbatch; i++)
                 {
                     didnt_upload(i);
                 }
-                GetSession()->numbatch = 0;
-                GetSession()->numbatchdl = 0;
+                sess->numbatch = 0;
+                sess->numbatchdl = 0;
                 batchtime = 0.0;
                 done = true;
-                GetSession()->bout << "Queue cleared.\r\n";
+                sess->bout << "Queue cleared.\r\n";
                 if (mode == 3)
                 {
                     return 1;
@@ -980,17 +981,17 @@ int batchdl(int mode)
         case 'U':
             if (mode != 3)
             {
-                GetSession()->bout.NewLine();
-                GetSession()->bout << "|#5Hang up after transfer? ";
+                nl();
+                sess->bout << "|#5Hang up after transfer? ";
                 bHangupAfterDl = yesno();
-                GetSession()->bout.NewLine( 2 );
+                nl( 2 );
                 i = get_protocol(xf_up_batch);
                 if (i > 0)
                 {
                     dszbatchul(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
                     if (!bHangupAfterDl)
                     {
-                        GetSession()->bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
+                        bprintf("Your ratio is now: %-6.3f\r\n", ratio());
                     }
                 }
                 done = true;
@@ -1001,7 +1002,7 @@ int batchdl(int mode)
             {
                 if ( modem_flag & flag_as )
                 {
-                    GetSession()->bout << "\r\n|#6WARNING: You have an asymmetrical modem speed connection.\r\n" <<
+                    sess->bout << "\r\n|#6WARNING: You have an asymmetrical modem speed connection.\r\n" <<
                          "|#6         This means bi-directional transfers may have significantly\r\n" <<
                          "|#6         lower throughput than you would expect.\r\n\n" <<
                          "|#5Are you sure you want to continue? ";
@@ -1011,16 +1012,16 @@ int batchdl(int mode)
                         break;
                     }
                 }
-                GetSession()->bout << "\r\n|#5Hang up after transfer? ";
+                sess->bout << "\r\n|#5Hang up after transfer? ";
                 bHangupAfterDl = yesno();
-                GetSession()->bout.NewLine( 2 );
+                nl( 2 );
                 i = get_protocol( xf_bi );
                 if ( i > 0 )
                 {
                     bibatch( bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].bibatchfn, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description );
                     if ( !bHangupAfterDl )
                     {
-                        GetSession()->bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
+                        bprintf("Your ratio is now: %-6.3f\r\n", ratio());
                     }
                 }
                 done = true;
@@ -1030,22 +1031,22 @@ int batchdl(int mode)
         case 13:
             if (mode != 3)
             {
-                if (GetSession()->numbatchdl == 0)
+                if (sess->numbatchdl == 0)
                 {
-                    GetSession()->bout << "\r\nNothing in batch download queue.\r\n\n";
+                    sess->bout << "\r\nNothing in batch download queue.\r\n\n";
                     done = true;
                     break;
                 }
-                GetSession()->bout.NewLine();
+                nl();
                 if (!ratio_ok())
                 {
-                    GetSession()->bout << "\r\nSorry, your ratio is too low.\r\n\n";
+                    sess->bout << "\r\nSorry, your ratio is too low.\r\n\n";
                     done = true;
                     break;
                 }
-                GetSession()->bout << "|#5Hang up after transfer? ";
+                sess->bout << "|#5Hang up after transfer? ";
                 bHangupAfterDl = yesno();
-                GetSession()->bout.NewLine();
+                nl();
                 i = get_protocol(xf_down_batch);
                 if (i > 0)
                 {
@@ -1067,8 +1068,8 @@ int batchdl(int mode)
                     }
                     if (!bHangupAfterDl)
                     {
-                        GetSession()->bout.NewLine();
-                        GetSession()->bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
+                        nl();
+                        bprintf("Your ratio is now: %-6.3f\r\n", ratio());
                     }
                 }
             }
@@ -1076,7 +1077,7 @@ int batchdl(int mode)
             break;
 		}
     } while ( !done && !hangup );
-    GetSession()->tagging = otag;
+    sess->tagging = otag;
     return 0;
 }
 
@@ -1093,9 +1094,9 @@ void bihangup(int up)
 	// Maybe we could use a local instead of timelastchar1
     timelastchar1 = timer1();
     long nextbeep = 18L;
-    GetSession()->bout << "\r\n|#2Automatic disconnect in progress.\r\n";
-    GetSession()->bout << "|#2Press 'H' to hangup, or any other key to return to system.\r\n";
-	GetSession()->bout << "|#" << color << static_cast<int>( 182L / nextbeep ) << "  " << static_cast<char>( 7 );
+    sess->bout << "\r\n|#2Automatic disconnect in progress.\r\n";
+    sess->bout << "|#2Press 'H' to hangup, or any other key to return to system.\r\n";
+	sess->bout << "|#" << color << static_cast<int>( 182L / nextbeep ) << "  " << static_cast<char>( 7 );
 
     unsigned char ch = 0;
     do
@@ -1110,7 +1111,7 @@ void bihangup(int up)
             }
             if ( ( dd - timelastchar1 ) > nextbeep )
             {
-                GetSession()->bout << "\r|#" << color << ( static_cast<int>(182L - nextbeep) / 18L ) <<
+                sess->bout << "\r|#" << color << ( static_cast<int>(182L - nextbeep) / 18L ) <<
 							  "  " << static_cast<char>( 7 );
                 nextbeep += 18L;
                 if ((182L - nextbeep) / 18L <= 6)
@@ -1124,17 +1125,17 @@ void bihangup(int up)
             }
             if (labs(dd - timelastchar1) > 182L)
             {
-                GetSession()->bout.NewLine();
-                GetSession()->bout << "Thank you for calling.";
-                GetSession()->bout.NewLine();
-                GetSession()->remoteIO()->dtr( false );
+                nl();
+                sess->bout << "Thank you for calling.";
+                nl();
+                app->comm->dtr( false );
                 hangup = true;
                 if (up)
                 {
                     wait1( 2 );
-                    if (!GetSession()->remoteIO()->carrier())
+                    if (!app->comm->carrier())
                     {
-                        GetSession()->remoteIO()->dtr( true );
+                        app->comm->dtr( true );
                         wait1( 2 );
                         holdphone( true );
                     }
@@ -1159,21 +1160,21 @@ void upload( int dn )
     long lFreeSpace = static_cast<long>( freek1( d.path ) );
     if ( lFreeSpace < 100 )
     {
-        GetSession()->bout << "\r\nNot enough disk space to upload here.\r\n\n";
+        sess->bout << "\r\nNot enough disk space to upload here.\r\n\n";
         return;
     }
     listbatch();
-    GetSession()->bout << "Upload - " << lFreeSpace << "k free.";
-    GetSession()->bout.NewLine();
+    sess->bout << "Upload - " << lFreeSpace << "k free.";
+    nl();
     printfile( TRY2UL_NOEXT );
 
     bool done = false;
     do
     {
-        GetSession()->bout << "|#2B|#7) |#1Blind batch upload\r\n";
-        GetSession()->bout << "|#2N|#7) |#1Normal upload\r\n";
-        GetSession()->bout << "|#2Q|#7) |#1Quit\r\n\n";
-        GetSession()->bout << "|#2Which |#7(|#2B,n,q,?|#7)|#1: ";
+        sess->bout << "|#2B|#7) |#1Blind batch upload\r\n";
+        sess->bout << "|#2N|#7) |#1Normal upload\r\n";
+        sess->bout << "|#2Q|#7) |#1Quit\r\n\n";
+        sess->bout << "|#2Which |#7(|#2B,n,q,?|#7)|#1: ";
 
         char key = onek( "QB\rN?" );
         switch (key)
@@ -1191,8 +1192,8 @@ void upload( int dn )
             done = true;
             break;
         case '?':
-            GetSession()->bout << "This is help?";
-            GetSession()->bout.NewLine();
+            sess->bout << "This is help?";
+            nl();
             pausescr();
             done = false;
             break;

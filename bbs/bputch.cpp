@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 void execute_ansi();
 
@@ -28,11 +29,6 @@ void execute_ansi();
 #define BPUTCH_PIPE_CODE 3
 #define BPUTCH_CTRLO_CODE 4
 #define BPUTCH_MACRO_CHAR_CODE 5
-
-#define OUTCOMCH_BUFFER_SIZE 1024
-static char s_szOutComChBuffer[ OUTCOMCH_BUFFER_SIZE + 1 ];
-static int  s_nOutComChBufferPosition = 0;
-
 
 /**
  * This function outputs one character to the screen, and if output to the
@@ -48,7 +44,7 @@ int bputch( char c, bool bUseInternalBuffer )
     if ( change_color == BPUTCH_MACRO_CHAR_CODE )
     {
         change_color = BPUTCH_NO_CODE;
-        return GetSession()->bout.Write( static_cast<char *>( interpret( c ) ) );
+        return bputs( static_cast<char *>( interpret( c ) ) );
     }
 	else if ( change_color == BPUTCH_CTRLO_CODE )
     {
@@ -89,7 +85,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		}
         else if ( pipe_color[0] == '#' || pipe_color[0] == '#' )
         {
-            GetSession()->bout.Color( atoi( pipe_color + 1 ) );
+            ansic( atoi( pipe_color + 1 ) );
             return 0;
         }
 		else
@@ -105,7 +101,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		if ( change_color == BPUTCH_LITERAL_PIPE_CODE )
 		{
 			bputch( '|' );
-			return GetSession()->bout.Write( pipe_color ) + 1;
+			return bputs( pipe_color ) + 1;
 		}
 		else
 		{
@@ -118,7 +114,7 @@ int bputch( char c, bool bUseInternalBuffer )
 			{
 				makeansi( ( curatr & 0x0f ) | ( nc << 4 ), szAnsiColorCode, false );
 			}
-			GetSession()->bout.Write( szAnsiColorCode );
+			bputs( szAnsiColorCode );
 		}
 		return 0; // color was printed, no chars displayed
     }
@@ -139,7 +135,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		change_color = BPUTCH_NO_CODE;
 		if ( ( c >= SPACE ) && ( static_cast<unsigned char>( c ) <= 126 ) )
 		{
-			GetSession()->bout.Color( static_cast<unsigned char>( c ) - 48 );
+			ansic( static_cast<unsigned char>( c ) - 48 );
 		}
 		return 0;
 	}
@@ -161,7 +157,7 @@ int bputch( char c, bool bUseInternalBuffer )
 	}
 	else if ( c == SOFTRETURN && endofline[0] )
 	{
-		displayed = GetSession()->bout.Write(endofline);
+		displayed = bputs(endofline);
 		endofline[0] = '\0';
 	}
 	else if ( change_color == BPUTCH_LITERAL_PIPE_CODE )
@@ -170,7 +166,7 @@ int bputch( char c, bool bUseInternalBuffer )
 	}
 	if ( echo )
 	{
-		GetSession()->localIO()->global_char( c );
+		app->localIO->global_char( c );
 	}
 	if ( outcom && !x_only && c != TAB )
 	{
@@ -212,7 +208,7 @@ int bputch( char c, bool bUseInternalBuffer )
 	{
 		if ( c == TAB )
 		{
-			int nScreenPos = GetSession()->localIO()->WhereX();
+			int nScreenPos = app->localIO->WhereX();
 			for ( int i = nScreenPos; i < (((nScreenPos / 8) + 1) * 8); i++ )
 			{
 				displayed += bputch( SPACE );
@@ -221,14 +217,14 @@ int bputch( char c, bool bUseInternalBuffer )
 		else if ( echo || AllowLocalSysop() )
 		{
 			displayed = 1;
-			GetSession()->localIO()->LocalPutch( echo ? c : '\xFE' );
+			app->localIO->LocalPutch( echo ? c : '\xFE' );
 
 			if ( c == SOFTRETURN )
 			{
 				++lines_listed;
-				if ( lines_listed >= GetSession()->screenlinest - 3 )
+				if ( lines_listed >= sess->screenlinest - 3 )
 				{
-					if ( GetSession()->tagging && !GetSession()->GetCurrentUser()->IsUseNoTagging() && filelist && !chatting )
+					if ( sess->tagging && !sess->thisuser.isUseNoTagging() && filelist && !chatting )
 					{
 						if ( g_num_listed != 0 )
 						{
@@ -237,9 +233,9 @@ int bputch( char c, bool bUseInternalBuffer )
 						lines_listed = 0;
 					}
 				}
-				if ( lines_listed >= ( GetSession()->screenlinest - 1 ) )       // change Build3 + 5.0 to fix message read
+				if ( lines_listed >= ( sess->screenlinest - 1 ) )       // change Build3 + 5.0 to fix message read
 				{
-                    if ( GetSession()->GetCurrentUser()->HasPause() && !x_only )
+                    if ( sess->thisuser.hasPause() && !x_only )
 					{
 						pausescr();
 					}
@@ -249,7 +245,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		}
 		else
 		{
-			GetSession()->localIO()->LocalPutch( 'X' );
+			app->localIO->LocalPutch( 'X' );
 			displayed = 1;
 		}
 	}
@@ -314,29 +310,29 @@ void execute_ansi()
 		{
         case 'f':
         case 'H':
-            GetSession()->localIO()->LocalGotoXY(args[1] - 1, args[0] - 1);
+            app->localIO->LocalGotoXY(args[1] - 1, args[0] - 1);
             g_flags |= g_flag_ansi_movement;
             break;
         case 'A':
-            GetSession()->localIO()->LocalGotoXY(GetSession()->localIO()->WhereX(), GetSession()->localIO()->WhereY() - args[0]);
+            app->localIO->LocalGotoXY(app->localIO->WhereX(), app->localIO->WhereY() - args[0]);
             g_flags |= g_flag_ansi_movement;
             break;
         case 'B':
-            GetSession()->localIO()->LocalGotoXY(GetSession()->localIO()->WhereX(), GetSession()->localIO()->WhereY() + args[0]);
+            app->localIO->LocalGotoXY(app->localIO->WhereX(), app->localIO->WhereY() + args[0]);
             g_flags |= g_flag_ansi_movement;
             break;
         case 'C':
-            GetSession()->localIO()->LocalGotoXY(GetSession()->localIO()->WhereX() + args[0], GetSession()->localIO()->WhereY());
+            app->localIO->LocalGotoXY(app->localIO->WhereX() + args[0], app->localIO->WhereY());
             break;
         case 'D':
-            GetSession()->localIO()->LocalGotoXY(GetSession()->localIO()->WhereX() - args[0], GetSession()->localIO()->WhereY());
+            app->localIO->LocalGotoXY(app->localIO->WhereX() - args[0], app->localIO->WhereY());
             break;
         case 's':
-            oldx = GetSession()->localIO()->WhereX();
-            oldy = GetSession()->localIO()->WhereY();
+            oldx = app->localIO->WhereX();
+            oldy = app->localIO->WhereY();
             break;
         case 'u':
-            GetSession()->localIO()->LocalGotoXY(oldx, oldy);
+            app->localIO->LocalGotoXY(oldx, oldy);
             oldx = oldy = 0;
             g_flags |= g_flag_ansi_movement;
             break;
@@ -347,11 +343,11 @@ void execute_ansi()
                 g_flags |= g_flag_ansi_movement;
                 if ( x_only )
 				{
-                    GetSession()->localIO()->LocalGotoXY(0, 0);
+                    app->localIO->LocalGotoXY(0, 0);
 				}
                 else
 				{
-                    GetSession()->localIO()->LocalCls();
+                    app->localIO->LocalCls();
 				}
             }
             break;
@@ -359,7 +355,7 @@ void execute_ansi()
         case 'K':
             if (!x_only)
 			{
-				GetSession()->localIO()->LocalClrEol();
+				app->localIO->LocalClrEol();
             }
             break;
         case 'm':
@@ -406,38 +402,3 @@ void execute_ansi()
     	ansiptr = 0;
 	}
 }
-
-
-void rputch( char ch, bool bUseInternalBuffer )
-{
-
-    if ( ok_modem_stuff && NULL != GetSession()->remoteIO() )
-    {
-        if ( bUseInternalBuffer )
-        {
-            if ( s_nOutComChBufferPosition >= OUTCOMCH_BUFFER_SIZE )
-            {
-                FlushOutComChBuffer();
-            }
-            s_szOutComChBuffer[ s_nOutComChBufferPosition++ ] = ch;
-        }
-        else
-        {
-            GetSession()->remoteIO()->putW(ch);
-        }
-    }
-}
-
-
-
-void FlushOutComChBuffer()
-{
-    if ( s_nOutComChBufferPosition > 0 )
-    {
-        GetSession()->remoteIO()->write( s_szOutComChBuffer, s_nOutComChBufferPosition );
-        s_nOutComChBufferPosition = 0;
-        memset( s_szOutComChBuffer, 0, OUTCOMCH_BUFFER_SIZE + 1 );
-    }
-}
-
-

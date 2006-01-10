@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -33,12 +33,16 @@
 
 #if defined (_MSC_VER)
 #pragma component(browser, off)
-
-#if !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
-
 #endif // defined (_MSC_VER)
+
+#define	 WIN32_LEAN_AND_MEAN
+
+#include <windows.h>
+
+extern "C"
+{
+    #include <winsock2.h>
+}
 
 #include <direct.h>
 
@@ -97,7 +101,6 @@ enum COLORS
 #endif // __GNUC__
 
 #define vsnprintf _vsnprintf
-#define snprintf _snprintf
 
 #endif	 // _WIN32
 
@@ -165,7 +168,6 @@ enum COLORS
 #define MAX_EXT		256
 #define MAX_DIR		256
 #define MAX_FNAME	256
-#define MAX_DRIVE	256
 #define SOCKADDR_IN	struct sockaddr_in
 #define LPSOCKADDR	(struct sockaddr *)
 #define INVALID_SOCKET	-1
@@ -175,21 +177,14 @@ enum COLORS
 #define WWIV_FILE_SEPERATOR_CHAR	'/'
 #define WWIV_FILE_SEPERATOR_STRING	"/"
 
-#define _tzset(s)	tzset(s)
 #define _putenv(s)	putenv(s)
-#define _getcwd(a,b)	getcwd(a,b)
+#define strnicmp(x,y,z)	strncasecmp(x, y, z)
 #define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
 
 #ifndef UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER( X )   ( X )
 #endif // UNREFERENCED_PARAMETER
 
-#if defined( __APPLE__ )
-#define SWAP16( X ) OSSwapInt16( X )
-#define SWAP32( X ) OSSwapInt32( X )
-#define SWAP64( X ) OSSwapInt64( X )
-
-#endif // __APPLE__
 
 enum COLORS
 {

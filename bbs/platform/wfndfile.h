@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,48 +20,6 @@
 #ifndef __INCLUDED_WFNDFILE_H__
 #define __INCLUDED_WFNDFILE_H__
 
-#if defined( _WIN32 )
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOKEYSTATES
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define NOATOM
-#define NOCLIPBOARD
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOMINMAX
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NOCRYPT
-
-// Define these for MFC projects
-#define NOTAPE
-#define NOIMAGE
-#define NOPROXYSTUB
-#define NORPC
-#define NOIME
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef CopyFile
-#undef GetFullPathName
-#endif // _WIN32
-
 class WFindFile
 {
 protected:
@@ -71,7 +29,7 @@ protected:
 	long lTypeMask;
 	bool bIsOpen;
 
-	void __open(const char * pszFileSpec, unsigned int nTypeMask)
+	void __open(const char * pszFileSpec, UINT32 nTypeMask)
 	{
 		strcpy(szFileSpec, pszFileSpec);
 		lTypeMask = nTypeMask;
@@ -97,7 +55,7 @@ protected:
 
 public:
 	WFindFile() { this->__close(); }
-	bool open(const char * pszFileSpec, unsigned int nTypeMask);
+	bool open(const char * pszFileSpec, UINT32 nTypeMask);
 	bool next();
 	bool close();
 	virtual ~WFindFile() { close(); }

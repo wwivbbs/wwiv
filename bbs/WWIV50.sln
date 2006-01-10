@@ -1,22 +1,24 @@
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C++ Express 2005
+Microsoft Visual Studio Solution File, Format Version 8.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WWIV50", "WWIV50.vcproj", "{5C49251E-D238-474E-A469-41E63BA86283}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
-		Debug-Warn4|Win32 = Debug-Warn4|Win32
-		Release|Win32 = Release|Win32
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Debug-Warn4 = Debug-Warn4
+		Release = Release
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5C49251E-D238-474E-A469-41E63BA86283}.Debug|Win32.ActiveCfg = Debug|Win32
-		{5C49251E-D238-474E-A469-41E63BA86283}.Debug|Win32.Build.0 = Debug|Win32
-		{5C49251E-D238-474E-A469-41E63BA86283}.Debug-Warn4|Win32.ActiveCfg = Debug-Warn4|Win32
-		{5C49251E-D238-474E-A469-41E63BA86283}.Debug-Warn4|Win32.Build.0 = Debug-Warn4|Win32
-		{5C49251E-D238-474E-A469-41E63BA86283}.Release|Win32.ActiveCfg = Release|Win32
-		{5C49251E-D238-474E-A469-41E63BA86283}.Release|Win32.Build.0 = Release|Win32
+	GlobalSection(ProjectConfiguration) = postSolution
+		{5C49251E-D238-474E-A469-41E63BA86283}.Debug.ActiveCfg = Debug|Win32
+		{5C49251E-D238-474E-A469-41E63BA86283}.Debug.Build.0 = Debug|Win32
+		{5C49251E-D238-474E-A469-41E63BA86283}.Debug-Warn4.ActiveCfg = Debug-Warn4|Win32
+		{5C49251E-D238-474E-A469-41E63BA86283}.Debug-Warn4.Build.0 = Debug-Warn4|Win32
+		{5C49251E-D238-474E-A469-41E63BA86283}.Release.ActiveCfg = Release|Win32
+		{5C49251E-D238-474E-A469-41E63BA86283}.Release.Build.0 = Release|Win32
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
 	EndGlobalSection
 EndGlobal

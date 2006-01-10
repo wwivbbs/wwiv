@@ -1,32 +1,38 @@
 ==============================================================================
                              WWIV 5.0 Source Code
-              Copyright 2002-2006 WWIV Software Services
+              Copyright 2002-2004 WWIV Software Services
 ==============================================================================
 
 
 GENERAL INFORMATION:
 
-    WWIV 5.0 is built with the following compilers:
-        MS Visual C++ .NET/2003/2005
-
-   Not Testing but Should work are:
-MS Visual C++ 6.0 (Standard/Professional/Enterprise) [Not tested lately]
-
-        Borland C++ Builder 5.0
-        Borland C++ 5.5 (Free Command Line Tools Edition from:
+    WWIV 5.0 is can be built with the following compilers:
+        MS Visual C++ .NET 2003 (Standard/Professional/Enterprise/Architect)
+        MS Visual C++ .NET (Standard/Professional/Enterprise/Architect)
+        MS Visual C++ .NET (Standard/Professional/Enterprise/Architect)
+        MS Visual C++ 6.0 (Standard/Professional/Enterprise)
+        Borland C++ Builder 5.0 (Standard/Professional/Enterprise)
+        Borland C++ 5.5 (Free Command Line Tools Edition from
             http://community.borland.com)
         GCC 2.95.2-Mingw32 (You need to patch the libraries with the
             binary release from 020300 or later, as well as add a
             few missing functions into winsock2.h)
             MinGW is available at: http://www.mingw.org/
 
-    I recommend using MSVC .NET 2005. (Since there is a the "express" edition
-    available for free.
-    
+    I recommend using MSVC .NET, MSVC 6.0 or Borland C++ Builder so 
+    that you can debug into it.
+
     The command line parameters have changed quite a bit, I suggest
     running "WWIV50 -? | MORE" to see the list of changes.  Currently
     WWIV50 is command line compatable with EleBBS (for all of the
     major command line arguments)
+
+    To run with the integrated Telnet Server, run "WWIV50 -TELSRV",
+    this is mainly inlcuded so that you can debug a test telnet session,
+    the recommend way of running WWIV Telnet only is from a Front End
+    Program (such as Argus, or the internal wwiv telnet server included
+    under the telsrv directory).  The command line for the DOOR in Argus
+    is "X:\WWIV\WWIV50 -H%h -XT -N%n")
 
     So far, WWIV 5.0 is still fully compatable with your existing WWIV 4.30
     installation (Just drop it in and go).
@@ -40,153 +46,6 @@ MS Visual C++ 6.0 (Standard/Professional/Enterprise) [Not tested lately]
     Synchronet for the VXD/VDD and also tons of help using it), you MUST
     get the WWIVSYNC.ZIP and unzip it into your WWIV50 directory.
 
-
-==============================================================================
-
-LABEL: WWIV-5_0_61
-DATE:  ??/??/2006
-
-Rushfan - Fixed up more time_t != sizeof(int) issues in the code, mainly with localtime
-Rushfan - Some const correctness work, also using ISO C++ functionanmes in more places
-Rushfan - Changed WStatusMgr::Get to return a bool instead of calling AbortBBS directly
-Rushfan - Made WFile::Write take a const void * parameter to help fix const correctness
-Rushfan - Implemented windows trashcan support in WFile::Delete
-Rushfan - Changed ANSI file code over to WFile in several places througout the code.
-Rushfan - Got rid of filelength (use WFile::GetLength()) now.
-Rushfan - renamed islname to GetTemporaryInstanceLogFileName
-Rushfan - renamed slname to GetSysopLogFileName
-Rushfan - Split up each of the different dropfile creation code into separate functions
-Rushfan - renamed sl1 to AddLineToSysopLogImpl
-Rushfan - Started making WStatusMgr support transactions so status can stop being global
-Atani   - various linux compilation issues fixed
-Rushfan - Added WFile::Exists(dir,filename), WFile::Remove(string)
-Rushfan - Fixed issue with startup (not starting) and cleaned up some xinit code
-Rushfan - Introduced WTextFile as a replacement for the CRT FILE* handle + our fsh_XXX code
-Rushfan - Started making utility objects not depend on so much of the BBS so that
-          WFile, WTextFile, WUser, WUserManager can be used outside of the BBS, eventually
-          we will have classes for messagebase manipulation available from outside of WWIV.
-Rushfan - Some more const-correctness in the transfer code to make life easier in other places
-Rushfan - Removed almost all usages of status
-Rushfan - fsh_open was moved into WTextFile (WTextFile::OpenImpl).
-Rushfan - last usages of fsh_XXXX is migrated to WTextFile
-Rushfan - Changed thisuser to GetCurrentUser
-Rushfan - Moved WLocalIO::pr_Wait to WSession::DisplaySysopWorkingIndicator
-Rushfan - nl => WOutStream::NewLine, ansic => WOutStream::Color, 
-          setc => WOutStream::SystemColor, BackSpace & BackLine &
-          DisplayLiteBar => WOutStream, reset_colors => WOutStream::ResetColors
-          goxy => WOutStream::GotoXY, bputs => WOutStream::Write
-          bprintf => WOutStream::WriteFormatted
-Rushfan - Started working on WIniFile Class
-Rushfan - ** IMPORTANT CHANGE ** In chat.ini, CH_PROMPT's allowable values
-          for true and false are now Y and N (like the rest of WWIV), and
-          not 1 and 0.  Please change this in CHAT.INI when you upgrade to
-          this version.  I am standardizing the INI files as much as possible
-          and making 1 set of INI code for WWIV and all utilities to share.
-Rushfan - Renamed WBbsApp to WApplication
-Rushfan - moved attach dir into WApplication
-Rushfan - Finished WIniFile implementation
-Rushfan - Updates WIniFile and WFile to take string parameters instead of
-          char* parameters.
-Rushfan - Started converting functions over from char* parameters to string
-Rushfan - renamed describe_town to describe_area_code_prefix
-Rushfan - moved WLocalIO and WComm to WSession, now available as
-          WSession::localIO and WSession::remoteIO.
-Rushfan - Updated several of the StringUtils methods to use better STL code
-Rushfan - Rewrote read_automessage to use WTextFile and simplified logic
-Rushfan - Started trying to make WUser stand alone w/o pulling in the entire bbs
-Rushfan - Fixed logic error in read user where it wasn't returning a value WUser's data
-Rushfan - Added WUser::SetUserWritesAllowed to disable writing the user record (this
-          is used instead of the global guest_user)
-Rushfan - Added WSession::ReadCurrentUser() and WSession::WriteCurrentUser()
-Rushfan - Renamed Input1 case constantes to INPUT_MODE_XXXX so they don't clash with windows.h
-Rushfan - Moved the password validation logic into it's own function so it can
-          be fixed (the string conversion broke it) and also augmented
-Rushfan - Moved global structure screentype from vardec.h (shouldn't have been there)
-          into WLocalIO.h (now vardec.h doesn't need windows.h to compile on Win32)
-Rushfan - Changed WLocalIO save/restorescreen to not need a parameter and the screen 
-          buffer is now internal to WLocalIO
-Rushfan - Moved SOCKET and COMM Handles into WIOTelnet and WIOSerial
-Rushfan - Moved Internal Telnet Listener to it's own class
-Rushfan - Removed incl3.h and wshare.h (both not used)
-Rushfan - added InternalTelnetServer.cpp/.h
-Rushfan - removed unused linux function chsize
-Rushfan - Removed some unused data types from wtypes.h, also made sure we are
-          consistent with what type we declare a variable as and use it as.
-Rushfan - moved windows.h out of incl1.h and trying to get rid of it except for
-          in the platform/win32 subdirectory (if possible)
-Rushfan - Added filenames.h into the incldue list for WUser
-Rushfan - moved cid_name and cid_number into WComm
-Rushfan - moved WComm::SetHandle and WComm::startup into the constructor and shutdown 
-          into the destructor.  Also removed WSession::ShutdownComm (never used)
-Rushfan - Added factory method to WComm to create the WComm instance, and renamed
-          WSession::StartupComm to CreateComm.
-Rushfan - renamed write_automessage1 to write_automessage
-Rushfan - changed repeat_char to always add a NL (since all callers did), added
-          inli variant that works with strings.
-Rushfan - Update Copyright statements to 2006
-Atani   - Linux compilation fixes
-Atani   - Fixed typo in chains.cpp for format specifier (line 97, arg 3)
-
-
-==============================================================================
-
-LABEL: WWIV-5_0_60
-DATE:  11/28/2005
-
-Rushfan - Fixed issue with message base corruption
-
-
-==============================================================================
-
-LABEL: WWIV-5_0_59
-DATE:  11/20/2005
-
-Atani   - sf-bug 1215436 - door32.sys contained extra "l" after baud rate
-Rushfan - Started working on Mac OS X Support
-Rushfan - Changed global app to GetApplication(), sess to GetSession().  Added
-          GetComm(), GetUserManager(), GetLocalIO(), and GetStatusManager() 
-          to WBbsApp and made the previously public member variables private 
-          and updated all access through the accessors
-Rushfan - Update size test code to handle Mac OS X as well as Linux/Win32 and
-          MSDOS.
-Rushfan - Updated Copyright statement in header files to 2005
-Rushfan - removed unused files extrn.cpp and extrn1.cpp from CVS finally.
-Rushfan - Updated code to compile under VS.NET 2005 (using VC++ Express)
-Rushfan - Got rid of WWIV_Copy_File and moved it to WFile.  Also added WFile::MoveFile
-          which needs to be implemented on UNIX still.
-Rushfan - WFile no longer includes wwiv.h (and should now work outside of WWIV)
-
-
-==============================================================================
-
-LABEL: WWIV-5_0_58
-DATE:  11/30/2004
-
-Rushfan - Fixed a typo/bug in the sending the initial telnet sequences, look
-          for echo being broken or linemode being enabled on some lesser
-          telnet clients
-Rushfan - More conversion of sprintf to snprintf and replacing hard coded sizes
-          with sizeof for non-pointer strings.
-Atani   - Fixed linux build, added MAX_PATH to WFile.h (if not defined)
-Rushfan - Fixed bug [ 1059251 ] user can't login -- Issue with the phone number
-          verification support.  This should be fixed now.
-
-==============================================================================
-
-LABEL: WWIV-5_0_57
-DATE:  10/22/2004
-
-Rushfan - Moved shutdown information and variables from WSession to WBbsApp.
-Rushfan - Changed skey to take an int vs. unsigned char.
-Rushfan - More ongoing work on removing unneeded unsigned data type usages.
-Rushfan - Disabled remote.exe and remotes.dat support by default.
-Rushfan - Fixed display bug in voting booth.
-Rushfan - got rid of number_userrecs for WUserManager::GetNumberOfUserRecords
-Rushfan - split out code from user.cpp to SmallRecord.cpp and FindUser.cpp
-Rushfan - Moved function prototypes from fcns.h to WStringUtils.h for the
-          string functions contained in that file.
-Rushfan - Started making WUser and WUserManager self-contained so it can be
-          used outside of the main bbs code more easily.
 
 ==============================================================================
 

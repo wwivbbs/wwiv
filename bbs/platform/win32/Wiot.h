@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -24,13 +24,8 @@
 #include "WComm.h"
 #include <queue>
 
-#if defined( _WIN32 )
-extern "C"
-{
-    #include <winsock2.h>
-}
-#endif // _WIN32
 
+const int MAX_WWIV_INPUT_BUFFER_SIZE = 4096;
 
 class WIOTelnet : public WComm
 {
@@ -58,7 +53,7 @@ public:
     static const int TELNET_OPTION_LINEMODE;
 
 public:
-    WIOTelnet( unsigned int nHandle );
+    WIOTelnet();
     virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
     virtual unsigned int open();
     virtual void close( bool bIsTemporary );
@@ -74,15 +69,11 @@ public:
     virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false);
     virtual bool carrier();
     virtual bool incoming();
+    virtual bool startup();
+    virtual bool shutdown();
     virtual void StopThreads();
     virtual void StartThreads();
     virtual ~WIOTelnet();
-    virtual unsigned int GetHandle() const;
-    virtual unsigned int GetDoorHandle() const;
-
-
-public:
-    static void InitializeWinsock();
 
 private:
     void HandleTelnetIAC( unsigned char nCmd, unsigned char nParam );
@@ -93,13 +84,12 @@ private:
     static void InboundTelnetProc(void *pTelnet);
 
 protected:
-	std::queue<char> m_inputQueue;
-    HANDLE m_hInBufferMutex;
-    SOCKET m_hSocket;
-    SOCKET m_hDuplicateSocket;
-	HANDLE m_hReadThread;
-    HANDLE m_hReadStopEvent;
-    bool   m_bThreadsStarted;
+	std::queue<char> inBuffer;
+    HANDLE hInBufferMutex;
+    SOCKET hSock;
+	HANDLE hReadThread;
+    HANDLE hReadStopEvent;
+    bool bThreadsStarted;
 
 };
 

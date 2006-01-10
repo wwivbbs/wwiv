@@ -1,8 +1,7 @@
-
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,13 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "WTextFile.h"
 
 
+#include "wwiv.h"
 #include <sys/file.h>
 
-const int WTextFile::TRIES = 100;
-const int WTextFile::WAIT_TIME = 10;
+
+#define SHARE_LEVEL 10
+#define WAIT_TIME 10
+#define TRIES 100
+
+
 /*
  * Debug Levels:
  * ==========================================================================
@@ -35,15 +38,46 @@ const int WTextFile::WAIT_TIME = 10;
  *
  */
 
-FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
+FILE *fsh_open(const char *path, char *mode)
 {
-  	FILE *f = fopen(pszFileName, pszFileMode);
+  	FILE *f = fopen(path, mode);
 
 	if (f != NULL)
   	{
-		flock(fileno(f), (strpbrk(pszFileMode, "wa+")) ? LOCK_EX : LOCK_SH);
+		flock(fileno(f), (strpbrk(mode, "wa+")) ? LOCK_EX : LOCK_SH);
 	}
 
-    return f;
+	return f;
+}
+
+
+void fsh_close(FILE *f)
+{
+	if (f != NULL)
+	{
+		flock(fileno(f), LOCK_UN);
+		fclose(f);
+	}
+}
+
+size_t fsh_read(void *ptr, size_t size, size_t n, FILE *stream)
+{
+	if (stream == NULL)
+	{
+		sysoplog("\r\nAttempted to fread from closed file.\r\n");
+		return 0;
+	}
+	return(fread(ptr, size, n, stream));
+}
+
+
+size_t fsh_write(const void *ptr, size_t size, size_t n, FILE *stream)
+{
+	if (stream == NULL)
+	{
+		sysoplog("\r\nAttempted to fwrite to closed file.\r\n");
+		return 0;
+	}
+	return(fwrite(ptr, size, n, stream));
 }
 

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
+
 
 //
 // Local Function Prototypes
@@ -33,9 +35,9 @@ void delete_sub(int n);
 
 void save_subs()
 {
-	int nSavedNetNum = GetSession()->GetNetworkNumber();
+	int nSavedNetNum = sess->GetNetworkNumber();
 
-	for (int nTempNetNum = 0; nTempNetNum < GetSession()->num_subs; nTempNetNum++)
+	for (int nTempNetNum = 0; nTempNetNum < sess->num_subs; nTempNetNum++)
 	{
 		subboards[nTempNetNum].type = 0;
 		subboards[nTempNetNum].age &= 0x7f;
@@ -45,33 +47,34 @@ void save_subs()
     if ( !subsFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate,
         WFile::shareUnknown, WFile::permReadWrite ) )
 	{
-        GetSession()->bout << "Error writing subs.dat file." << wwiv::endl;
+        sess->bout << "Error writing subs.dat file." << wwiv::endl;
 		pausescr();
 	}
 	else
 	{
-		int nNumBytesWritten = subsFile.Write( &subboards[0], GetSession()->num_subs * sizeof( subboardrec ) );
-		if ( nNumBytesWritten != ( GetSession()->num_subs * static_cast<int>( sizeof( subboardrec ) ) ) )
+		int nNumBytesWritten = subsFile.Write( &subboards[0], sess->num_subs * sizeof( subboardrec ) );
+		if ( nNumBytesWritten != ( sess->num_subs * static_cast<int>( sizeof( subboardrec ) ) ) )
 		{
-            GetSession()->bout << "Error writing subs.dat file ( 2 )." << wwiv::endl;
+            sess->bout << "Error writing subs.dat file ( 2 )." << wwiv::endl;
 			pausescr();
 		}
         subsFile.Close();
 	}
 
-	WFile::Remove(syscfg.datadir, SUBS_XTR);
-
-    WTextFile fileSubsXtr(syscfg.datadir, SUBS_XTR, "w");
-    if (fileSubsXtr.IsOpen())
+    char szSubsXtrFileName[ MAX_PATH ];
+	sprintf(szSubsXtrFileName, "%s%s", syscfg.datadir, SUBS_XTR);
+	WFile::Remove(szSubsXtrFileName);
+	FILE* fp = fsh_open(szSubsXtrFileName, "w");
+	if (fp)
 	{
-		for (int i = 0; i < GetSession()->num_subs; i++)
+		for (int i = 0; i < sess->num_subs; i++)
 		{
 			if (xsubs[i].num_nets)
 			{
-                fileSubsXtr.WriteFormatted( "!%u\n@%s\n#%lu\n", i, xsubs[i].desc, (xsubs[i].flags & XTRA_MASK));
+				fprintf(fp, "!%u\n@%s\n#%lu\n", i, xsubs[i].desc, (xsubs[i].flags & XTRA_MASK));
 				for (int i1 = 0; i1 < xsubs[i].num_nets; i1++)
 				{
-                    fileSubsXtr.WriteFormatted( "$%s %s %lu %u %u\n",
+					fprintf(fp, "$%s %s %lu %u %u\n",
 						        net_networks[xsubs[i].nets[i1].net_num].name,
 						        xsubs[i].nets[i1].stype,
 						        xsubs[i].nets[i1].flags,
@@ -80,15 +83,15 @@ void save_subs()
 				}
 			}
 		}
-		fileSubsXtr.Close();
+		fsh_close(fp);
 	}
-	for ( int nDelNetNum = 0; nDelNetNum < GetSession()->GetMaxNetworkNumber(); nDelNetNum++ )
+	for ( int nDelNetNum = 0; nDelNetNum < sess->GetMaxNetworkNumber(); nDelNetNum++ )
 	{
 		set_net_num( nDelNetNum );
 
-		WFile::Remove( GetSession()->GetNetworkDataDirectory(), ALLOW_NET );
-		WFile::Remove( GetSession()->GetNetworkDataDirectory(), SUBS_PUB );
-		WFile::Remove( GetSession()->GetNetworkDataDirectory(), NNALL_NET );
+		WFile::Remove( sess->GetNetworkDataDirectory(), ALLOW_NET );
+		WFile::Remove( sess->GetNetworkDataDirectory(), SUBS_PUB );
+		WFile::Remove( sess->GetNetworkDataDirectory(), NNALL_NET );
 	}
 
 	set_net_num( nSavedNetNum );
@@ -144,13 +147,13 @@ void boarddata(int n, char *s)
 void showsubs()
 {
     char szSubString[ 41 ];
-	GetSession()->bout.ClearScreen();
+	ClearScreen();
 	bool abort = false;
-	GetSession()->bout << "|#7(|#1Message Areas Editor|#7) Enter Substring: ";
+	sess->bout << "|#7(|#1Message Areas Editor|#7) Enter Substring: ";
 	input( szSubString, 20, true );
 	pla("|#2NN   AR Name                                  FN       RSL PSL AG MSGS  SUBTYPE", &abort);
 	pla("|#7==== == ------------------------------------- ======== --- === -- ===== -------", &abort);
-	for (int i = 0; i < GetSession()->num_subs && !abort; i++)
+	for (int i = 0; i < sess->num_subs && !abort; i++)
     {
         char szSubData[ 255 ];
 		sprintf(szSubData, "%s %s", subboards[i].name, subboards[i].filename);
@@ -234,7 +237,7 @@ void DisplayNetInfo( int nSubNum )
 {
 	if (xsubs[nSubNum].num_nets)
 	{
-		GetSession()->bout.WriteFormatted("\r\n      %-12.12s %-7.7s %-6.6s  Scrb  %s\r\n",
+		bprintf("\r\n      %-12.12s %-7.7s %-6.6s  Scrb  %s\r\n",
 			"Network", "Type", "Host", " Flags");
     	xtrasubsnetrec *xnp = xsubs[nSubNum].nets;
 		for (int i = 0; i < xsubs[nSubNum].num_nets; i++, xnp++)
@@ -261,7 +264,7 @@ void DisplayNetInfo( int nSubNum )
                 char szNetFileName[ MAX_PATH ];
 				sprintf( szNetFileName, "%sn%s.net", net_networks[xnp->net_num].dir, xnp->stype );
 				int num = amount_of_subscribers( szNetFileName );
-				GetSession()->bout.WriteFormatted("   %c) %-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
+				bprintf("   %c) %-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
 					i + 'a',
 					net_networks[xnp->net_num].name,
 					xnp->stype,
@@ -272,7 +275,7 @@ void DisplayNetInfo( int nSubNum )
 			}
 			else
 			{
-				GetSession()->bout.WriteFormatted("   %c) %-12.12s %-7.7s %-6.6s  %s%s\r\n",
+				bprintf("   %c) %-12.12s %-7.7s %-6.6s  %s%s\r\n",
 					i + 'a',
 					net_networks[xnp->net_num].name,
 					xnp->stype,
@@ -284,7 +287,7 @@ void DisplayNetInfo( int nSubNum )
 	}
 	else
 	{
-        GetSession()->bout << "Not networked.\r\n";
+        sess->bout << "Not networked.\r\n";
 	}
 
 }
@@ -300,31 +303,31 @@ void modify_sub(int n)
         char szAnon[81];
         char szAr[81];
 
-        GetSession()->bout.ClearScreen();
+        ClearScreen();
     	char szSubNum[81];
 		sprintf(szSubNum, "%s %d", "|B1|15Editing Message Area #", n);
-		GetSession()->bout.WriteFormatted("%-85s", szSubNum);
-        GetSession()->bout.Color ( 0 );
-		GetSession()->bout.NewLine( 2 );
-        GetSession()->bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
-		GetSession()->bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
-		GetSession()->bout << "|#9C) Key        : |#2" << GetKey( r, szKey ) << wwiv::endl;
-		GetSession()->bout << "|#9D) Read SL    : |#2" << static_cast<int>( r.readsl ) << wwiv::endl;
-		GetSession()->bout << "|#9E) Post SL    : |#2" << static_cast<int>( r.postsl ) << wwiv::endl;
-		GetSession()->bout << "|#9F) Anony      : |#2" << GetAnon( r, szAnon ) << wwiv::endl;
-		GetSession()->bout << "|#9G) Min. Age   : |#2" << static_cast<int>( r.age & 0x7f ) << wwiv::endl;
-		GetSession()->bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
-		GetSession()->bout << "|#9I) AR         : |#2" << GetAr( r,  szAr ) << wwiv::endl;
-		GetSession()->bout << "|#9J) Net info   : |#2";
+		bprintf("%-85s", szSubNum);
+        ansic ( 0 );
+		nl( 2 );
+        sess->bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
+		sess->bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
+		sess->bout << "|#9C) Key        : |#2" << GetKey( r, szKey ) << wwiv::endl;
+		sess->bout << "|#9D) Read SL    : |#2" << static_cast<int>( r.readsl ) << wwiv::endl;
+		sess->bout << "|#9E) Post SL    : |#2" << static_cast<int>( r.postsl ) << wwiv::endl;
+		sess->bout << "|#9F) Anony      : |#2" << GetAnon( r, szAnon ) << wwiv::endl;
+		sess->bout << "|#9G) Min. Age   : |#2" << static_cast<int>( r.age & 0x7f ) << wwiv::endl;
+		sess->bout << "|#9H) Max Msgs   : |#2" << r.maxmsgs << wwiv::endl;
+		sess->bout << "|#9I) AR         : |#2" << GetAr( r,  szAr ) << wwiv::endl;
+		sess->bout << "|#9J) Net info   : |#2";
         DisplayNetInfo( n );
 
-		GetSession()->bout << "|#9K) Storage typ: |#2" << r.storage_type << wwiv::endl;
-        GetSession()->bout << "|#9L) Val network: |#2" << YesNoString( ( r.anony & anony_val_net ) ? true : false ) << wwiv::endl;
-		GetSession()->bout << "|#9M) Req ANSI   : |#2" << YesNoString( ( r.anony & anony_ansi_only ) ? true : false ) << wwiv::endl;
-		GetSession()->bout << "|#9N) Disable tag: |#2" << YesNoString( ( r.anony & anony_no_tag ) ? true : false ) << wwiv::endl;
-		GetSession()->bout << "|#9O) Description: |#2" << ( ( xsubs[n].desc[0] ) ? xsubs[n].desc : "None." ) << wwiv::endl;
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
+		sess->bout << "|#9K) Storage typ: |#2" << r.storage_type << wwiv::endl;
+        sess->bout << "|#9L) Val network: |#2" << YesNoString( ( r.anony & anony_val_net ) ? true : false ) << wwiv::endl;
+		sess->bout << "|#9M) Req ANSI   : |#2" << YesNoString( ( r.anony & anony_ansi_only ) ? true : false ) << wwiv::endl;
+		sess->bout << "|#9N) Disable tag: |#2" << YesNoString( ( r.anony & anony_no_tag ) ? true : false ) << wwiv::endl;
+		sess->bout << "|#9O) Description: |#2" << ( ( xsubs[n].desc[0] ) ? xsubs[n].desc : "None." ) << wwiv::endl;
+		nl();
+		sess->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
 		char ch = onek( "QABCDEFGHIJKLMNO[]", true );
 		switch ( ch )
 		{
@@ -335,13 +338,13 @@ void modify_sub(int n)
 			subboards[n] = r;
 			if ( --n < 0 )
 			{
-				n = GetSession()->num_subs - 1;
+				n = sess->num_subs - 1;
 			}
 			r = subboards[n];
 			break;
 		case ']':
 			subboards[n] = r;
-			if (++n >= GetSession()->num_subs)
+			if (++n >= sess->num_subs)
 			{
 				n = 0;
 			}
@@ -349,11 +352,11 @@ void modify_sub(int n)
 			break;
 		case 'A':
             {
-			    GetSession()->bout.NewLine();
-			    GetSession()->bout << "|#2New name? ";
+			    nl();
+			    sess->bout << "|#2New name? ";
                 char szSubName[ 81 ];
-			    Input1(szSubName, r.name, 40, true, INPUT_MODE_FILE_MIXED);
-			    GetSession()->bout.Color( 0 );
+			    Input1(szSubName, r.name, 40, true, MIXED);
+			    ansic( 0 );
 			    if (szSubName[0])
 			    {
 				    strcpy(r.name, szSubName);
@@ -362,28 +365,28 @@ void modify_sub(int n)
 			break;
 		case 'B':
             {
-			    GetSession()->bout.NewLine();
-			    GetSession()->bout << "|#2New filename? ";
+			    nl();
+			    sess->bout << "|#2New filename? ";
                 char szSubBaseName[ MAX_PATH ];
-			    Input1(szSubBaseName, r.filename, 8, true, INPUT_MODE_FILE_NAME);
+			    Input1(szSubBaseName, r.filename, 8, true, FILE_NAME);
 			    if ( szSubBaseName[0] != 0 && strchr(szSubBaseName, '.') == 0 )
 			    {
                     char szOldSubFileName[MAX_PATH];
 				    sprintf( szOldSubFileName, "%s%s.sub", syscfg.datadir, szSubBaseName );
 				    if (WFile::Exists(szOldSubFileName))
 				    {
-					    for (int i = 0; i < GetSession()->num_subs; i++)
+					    for (int i = 0; i < sess->num_subs; i++)
 					    {
-						    if (WWIV_STRNICMP(subboards[i].filename, szSubBaseName, strlen(szSubBaseName)) == 0)
+						    if (strnicmp(subboards[i].filename, szSubBaseName, strlen(szSubBaseName)) == 0)
 						    {
 							    strcpy(szOldSubFileName, subboards[i].name);
 							    break;
 						    }
 					    }
-					    GetSession()->bout.NewLine();
-                        GetSession()->bout << "|#6" << szSubBaseName << " already in use for \"" << szOldSubFileName << "\"" << wwiv::endl;
-					    GetSession()->bout.NewLine();
-					    GetSession()->bout << "|#5Use anyway? ";
+					    nl();
+                        sess->bout << "|#6" << szSubBaseName << " already in use for \"" << szOldSubFileName << "\"" << wwiv::endl;
+					    nl();
+					    sess->bout << "|#5Use anyway? ";
 					    if (!yesno())
 					    {
 						    break;
@@ -399,8 +402,8 @@ void modify_sub(int n)
                          !WFile::Exists( szFile2 ) &&
                          !wwiv::stringUtils::IsEquals( r.filename, "NONAME" ) )
 				    {
-					    GetSession()->bout.NewLine();
-					    GetSession()->bout << "|#7Rename current data files (.SUB/.DAT)? ";
+					    nl();
+					    sess->bout << "|#7Rename current data files (.SUB/.DAT)? ";
 					    if (yesno())
 					    {
 						    sprintf( szFile1, "%s%s.sub", syscfg.datadir, szOldSubFileName );
@@ -416,8 +419,8 @@ void modify_sub(int n)
 			break;
 		case 'C':
             {
-			    GetSession()->bout.NewLine();
-			    GetSession()->bout << "|#2New Key (space = none) ? ";
+			    nl();
+			    sess->bout << "|#2New Key (space = none) ? ";
 			    char ch2 = onek("@%^&()_=\\|;:'\",` ");
                 r.key = (ch2 == SPACE) ? 0 : ch2;
             }
@@ -426,10 +429,10 @@ void modify_sub(int n)
 			{
 				char szDef[5];
 				sprintf(szDef, "%d", r.readsl);
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#2New Read SL? ";
+				nl();
+				sess->bout << "|#2New Read SL? ";
                 char szNewSL[ 10 ];
-				Input1(szNewSL, szDef, 3, true, INPUT_MODE_FILE_UPPER);
+				Input1(szNewSL, szDef, 3, true, UPPER);
 				int nNewSL = atoi( szNewSL );
 				if ( nNewSL >= 0 && nNewSL < 256 && szNewSL[0] )
 				{
@@ -440,10 +443,10 @@ void modify_sub(int n)
 			{
 				char szDef[5];
 				sprintf(szDef, "%d", r.postsl);
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#2New Post SL? ";
+				nl();
+				sess->bout << "|#2New Post SL? ";
                 char szNewSL[ 10 ];
-				Input1(szNewSL, szDef, 3, true, INPUT_MODE_FILE_UPPER);
+				Input1(szNewSL, szDef, 3, true, UPPER);
 				int nNewSL = atoi(szNewSL);
 				if ( nNewSL >= 0 && nNewSL < 256 && szNewSL[0] )
 				{
@@ -453,8 +456,8 @@ void modify_sub(int n)
 		case 'F':
             {
                 char szCharString[ 21 ];
-			    GetSession()->bout.NewLine();
-			    GetSession()->bout << "|#2New Anony (Y,N,D,F,R) ? ";
+			    nl();
+			    sess->bout << "|#2New Anony (Y,N,D,F,R) ? ";
 			    strcpy(szCharString, "NYDFR");
 			    szCharString[0] = YesNoString( false )[0];
 			    szCharString[1] = YesNoString( true )[0];
@@ -489,8 +492,8 @@ void modify_sub(int n)
 			break;
 			case 'G':
                 {
-				    GetSession()->bout.NewLine();
-				    GetSession()->bout << "|#2New Min Age? ";
+				    nl();
+				    sess->bout << "|#2New Min Age? ";
                     char szAge[ 10 ];
 				    input(szAge, 3);
 				    int nAge = atoi( szAge );
@@ -504,10 +507,10 @@ void modify_sub(int n)
 				{
 					char szDef[5];
 					sprintf(szDef, "%d", r.maxmsgs);
-					GetSession()->bout.NewLine();
-					GetSession()->bout << "|#2New Max Msgs? ";
+					nl();
+					sess->bout << "|#2New Max Msgs? ";
                     char szMaxMsgs[ 21 ];
-					Input1(szMaxMsgs, szDef, 5, true, INPUT_MODE_FILE_UPPER);
+					Input1(szMaxMsgs, szDef, 5, true, UPPER);
 					int nMaxMsgs = atoi( szMaxMsgs );
 					if ( nMaxMsgs > 0 && nMaxMsgs < 16384 && szMaxMsgs[0] )
 					{
@@ -516,8 +519,8 @@ void modify_sub(int n)
 				} break;
 			case 'I':
                 {
-				    GetSession()->bout.NewLine();
-                    GetSession()->bout << "|#2Enter New AR (<SPC>=None) : ";
+				    nl();
+                    sess->bout << "|#2Enter New AR (<SPC>=None) : ";
 				    char ch2 = onek( "ABCDEFGHIJKLMNOP ", true );
 				    if ( ch2 == SPACE )
 				    {
@@ -535,8 +538,8 @@ void modify_sub(int n)
                     char ch2 = 'A';
 				    if (xsubs[n].num_nets)
 				    {
-					    GetSession()->bout.NewLine();
-					    GetSession()->bout << "|#2A)dd, D)elete, or M)odify net reference (Q=Quit)? ";
+					    nl();
+					    sess->bout << "|#2A)dd, D)elete, or M)odify net reference (Q=Quit)? ";
 					    ch2 = onek("QAMD");
 				    }
 
@@ -554,17 +557,17 @@ void modify_sub(int n)
 				    }
                     else if ( ch2 == 'D' || ch2 == 'M' )
 				    {
-					    GetSession()->bout.NewLine();
+					    nl();
 					    if (ch2 == 'D')
 					    {
-                            GetSession()->bout << "|#2Delete which (a-";
+                            sess->bout << "|#2Delete which (a-";
 					    }
 					    else
 					    {
-                            GetSession()->bout << "|#2Modify which (a-";
+                            sess->bout << "|#2Modify which (a-";
 					    }
-					    GetSession()->bout.WriteFormatted("%c", 'a' + xsubs[n].num_nets - 1);
-					    GetSession()->bout << "), <space>=Quit? ";
+					    bprintf("%c", 'a' + xsubs[n].num_nets - 1);
+					    sess->bout << "), <space>=Quit? ";
                         char szCharString[ 81 ];
 					    szCharString[0] = ' ';
                         int i;
@@ -573,7 +576,7 @@ void modify_sub(int n)
 						    szCharString[i + 1] = static_cast<char>( 'A' + i );
 					    }
 					    szCharString[i + 1] = 0;
-					    GetSession()->bout.Color( 0 );
+					    ansic( 0 );
 					    char ch3 = onek( szCharString );
 					    if (ch3 != ' ')
 					    {
@@ -597,8 +600,8 @@ void modify_sub(int n)
 				break;
 			case 'K':
                 {
-				    GetSession()->bout.NewLine();
-				    GetSession()->bout << "|#2New Storage Type ( 2 ) ? ";
+				    nl();
+				    sess->bout << "|#2New Storage Type ( 2 ) ? ";
                     char szStorageType[ 10 ];
 				    input(szStorageType, 4);
 				    int nStorageType = atoi( szStorageType );
@@ -609,8 +612,8 @@ void modify_sub(int n)
                 }
 				break;
 			case 'L':
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#5Require sysop validation for network posts? ";
+				nl();
+				sess->bout << "|#5Require sysop validation for network posts? ";
 				r.anony &= ~anony_val_net;
 				if (yesno())
 				{
@@ -618,8 +621,8 @@ void modify_sub(int n)
 				}
 				break;
 			case 'M':
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#5Require ANSI to read this sub? ";
+				nl();
+				sess->bout << "|#5Require ANSI to read this sub? ";
 				r.anony &= ~anony_ansi_only;
 				if (yesno())
                 {
@@ -627,8 +630,8 @@ void modify_sub(int n)
                 }
 				break;
 			case 'N':
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#5Disable tag lines for this sub? ";
+				nl();
+				sess->bout << "|#5Disable tag lines for this sub? ";
 				r.anony &= ~anony_no_tag;
 				if (yesno())
                 {
@@ -637,19 +640,19 @@ void modify_sub(int n)
 				break;
 			case 'O':
                 {
-				    GetSession()->bout.NewLine();
-                    GetSession()->bout << "|#2Enter new Description : ";
+				    nl();
+                    sess->bout << "|#2Enter new Description : ";
                     char szDescription[ 81 ];
-				    Input1(szDescription, xsubs[n].desc, 60, true, INPUT_MODE_FILE_MIXED);
-				    GetSession()->bout.Color( 0 );
+				    Input1(szDescription, xsubs[n].desc, 60, true, MIXED);
+				    ansic( 0 );
 				    if (szDescription[0])
                     {
 					    strcpy(xsubs[n].desc, szDescription);
                     }
 				    else
                     {
-					    GetSession()->bout.NewLine();
-					    GetSession()->bout << "|#2Delete Description? ";
+					    nl();
+					    sess->bout << "|#2Delete Description? ";
 					    if (yesno())
                         {
 						    xsubs[n].desc[0] = 0;
@@ -668,7 +671,7 @@ void swap_subs(int sub1, int sub2)
 	SUBCONF_TYPE sub1conv = (SUBCONF_TYPE) sub1;
 	SUBCONF_TYPE sub2conv = (SUBCONF_TYPE) sub2;
 
-	if ( sub1 < 0 || sub1 >= GetSession()->num_subs || sub2 < 0 || sub2 >= GetSession()->num_subs )
+	if ( sub1 < 0 || sub1 >= sess->num_subs || sub2 < 0 || sub2 >= sess->num_subs )
     {
 		return;
     }
@@ -678,7 +681,7 @@ void swap_subs(int sub1, int sub2)
 	sub1 = static_cast<int>( sub1conv );
 	sub2 = static_cast<int>( sub2conv );
 
-	int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+	int nNumUserRecords = number_userrecs();
 
 	unsigned long *pTempQScan = static_cast< unsigned long *>(  BbsAllocA( syscfg.qscn_len ) );
 	if (pTempQScan)
@@ -688,8 +691,8 @@ void swap_subs(int sub1, int sub2)
         	int i1, i2;
 			read_qscn(i, pTempQScan, true);
 			unsigned long *pTempQScan_n = pTempQScan + 1;
-			unsigned long *pTempQScan_q = pTempQScan_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
-			unsigned long *pTempQScan_p = pTempQScan_q + (GetSession()->GetMaxNumberMessageAreas() + 31) / 32;
+			unsigned long *pTempQScan_q = pTempQScan_n + (sess->GetMaxNumberFileAreas() + 31) / 32;
+			unsigned long *pTempQScan_p = pTempQScan_q + (sess->GetMaxNumberMessageAreas() + 31) / 32;
 
 			if (pTempQScan_q[sub1 / 32] & (1L << (sub1 % 32)))
             {
@@ -727,9 +730,9 @@ void swap_subs(int sub1, int sub2)
 	subboards[sub1]     = subboards[sub2];
 	subboards[sub2]     = sbt;
 
-	unsigned long sdt   = GetSession()->m_SubDateCache[sub1];
-	GetSession()->m_SubDateCache[sub1]     = GetSession()->m_SubDateCache[sub2];
-	GetSession()->m_SubDateCache[sub2]     = sdt;
+	unsigned long sdt   = sess->m_SubDateCache[sub1];
+	sess->m_SubDateCache[sub1]     = sess->m_SubDateCache[sub2];
+	sess->m_SubDateCache[sub2]     = sdt;
 
 	xtrasubsrec xst     = xsubs[sub1];
 	xsubs[sub1]         = xsubs[sub2];
@@ -746,7 +749,7 @@ void insert_sub(int n)
 	unsigned long *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m1, m2, m3;
 	SUBCONF_TYPE nconv = (SUBCONF_TYPE) n;
 
-	if ( n < 0 || n > GetSession()->num_subs )
+	if ( n < 0 || n > sess->num_subs )
     {
 		return;
     }
@@ -755,10 +758,10 @@ void insert_sub(int n)
 
 	n = static_cast<int>( nconv );
 
-	for (i = GetSession()->num_subs - 1; i >= n; i--)
+	for (i = sess->num_subs - 1; i >= n; i--)
     {
 		subboards[i + 1] = subboards[i];
-		GetSession()->m_SubDateCache[i + 1] = GetSession()->m_SubDateCache[i];
+		sess->m_SubDateCache[i + 1] = sess->m_SubDateCache[i];
 		xsubs[i + 1] = xsubs[i];
 	}
 	strcpy(r.name, "** New WWIV Message Area **");
@@ -773,16 +776,16 @@ void insert_sub(int n)
 	r.type = 0;
 	r.storage_type = 2;
 	subboards[n] = r;
-	memset( &(xsubs[n]), 0, sizeof( xtrasubsrec ) );
-	++GetSession()->num_subs;
-	int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+	memset((void *) &(xsubs[n]), 0, sizeof(xtrasubsrec));
+	++sess->num_subs;
+	int nNumUserRecords = number_userrecs();
 
 	unsigned long* pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len ) );
-	if ( pTempQScan )
+	if (pTempQScan)
     {
 		pTempQScan_n = pTempQScan + 1;
-		pTempQScan_q = pTempQScan_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
-		pTempQScan_p = pTempQScan_q + (GetSession()->GetMaxNumberMessageAreas() + 31) / 32;
+		pTempQScan_q = pTempQScan_n + (sess->GetMaxNumberFileAreas() + 31) / 32;
+		pTempQScan_p = pTempQScan_q + (sess->GetMaxNumberMessageAreas() + 31) / 32;
 
 		m1 = 1L << (n % 32);
 		m2 = 0xffffffff << ((n % 32) + 1);
@@ -797,13 +800,13 @@ void insert_sub(int n)
 				(*pTempQScan)++;
             }
 
-			for (i1 = GetSession()->num_subs - 1; i1 > n; i1--)
+			for (i1 = sess->num_subs - 1; i1 > n; i1--)
             {
 				pTempQScan_p[i1] = pTempQScan_p[i1 - 1];
             }
 			pTempQScan_p[n] = 0;
 
-			for ( i2 = GetSession()->num_subs / 32; i2 > n / 32; i2-- )
+			for ( i2 = sess->num_subs / 32; i2 > n / 32; i2-- )
             {
 				pTempQScan_q[i2] = ( pTempQScan_q[i2] << 1 ) | ( pTempQScan_q[i2 - 1] >> 31 );
 			}
@@ -816,9 +819,9 @@ void insert_sub(int n)
 	}
 	save_subs();
 
-	if ( GetSession()->GetCurrentReadMessageArea() >= n )
+	if ( sess->GetCurrentReadMessageArea() >= n )
     {
-		GetSession()->SetCurrentReadMessageArea( GetSession()->GetCurrentReadMessageArea() + 1 );
+		sess->SetCurrentReadMessageArea( sess->GetCurrentReadMessageArea() + 1 );
     }
 }
 
@@ -829,7 +832,7 @@ void delete_sub(int n)
 	unsigned long *pTempQScan, *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
 	SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>( n );
 
-	if ( n < 0 || n >= GetSession()->num_subs )
+	if ( n < 0 || n >= sess->num_subs )
     {
 		return;
     }
@@ -847,21 +850,21 @@ void delete_sub(int n)
 		BbsFreeMemory(xsubs[n].nets);
     }
 
-	for (i = n; i < GetSession()->num_subs; i++)
+	for (i = n; i < sess->num_subs; i++)
     {
 		subboards[i] = subboards[i + 1];
-		GetSession()->m_SubDateCache[i] = GetSession()->m_SubDateCache[i + 1];
+		sess->m_SubDateCache[i] = sess->m_SubDateCache[i + 1];
 		xsubs[i] = xsubs[i + 1];
 	}
-	--GetSession()->num_subs;
-	nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+	--sess->num_subs;
+	nNumUserRecords = number_userrecs();
 
 	pTempQScan = static_cast<unsigned long *>( BbsAllocA( syscfg.qscn_len + 4 ) );
 	if (pTempQScan)
     {
 		pTempQScan_n = pTempQScan + 1;
-		pTempQScan_q = pTempQScan_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
-		pTempQScan_p = pTempQScan_q + (GetSession()->GetMaxNumberMessageAreas() + 31) / 32;
+		pTempQScan_q = pTempQScan_n + (sess->GetMaxNumberFileAreas() + 31) / 32;
+		pTempQScan_p = pTempQScan_q + (sess->GetMaxNumberMessageAreas() + 31) / 32;
 
 		m2 = 0xffffffff << (n % 32);
 		m3 = 0xffffffff >> (32 - (n % 32));
@@ -881,14 +884,14 @@ void delete_sub(int n)
 					(*pTempQScan)--;
                 }
 			}
-			for (i1 = n; i1 < GetSession()->num_subs; i1++)
+			for (i1 = n; i1 < sess->num_subs; i1++)
             {
 				pTempQScan_p[i1] = pTempQScan_p[i1 + 1];
             }
 
 			pTempQScan_q[n / 32] = (pTempQScan_q[n / 32] & m3) | ((pTempQScan_q[n / 32] >> 1) & m2) | (pTempQScan_q[(n / 32) + 1] << 31);
 
-			for (i2 = (n / 32) + 1; i2 <= (GetSession()->num_subs / 32); i2++)
+			for (i2 = (n / 32) + 1; i2 <= (sess->num_subs / 32); i2++)
             {
 				pTempQScan_q[i2] = (pTempQScan_q[i2] >> 1) | (pTempQScan_q[i2 + 1] << 31);
 			}
@@ -900,13 +903,13 @@ void delete_sub(int n)
 	}
 	save_subs();
 
-	if ( GetSession()->GetCurrentReadMessageArea() == n )
+	if ( sess->GetCurrentReadMessageArea() == n )
     {
-		GetSession()->SetCurrentReadMessageArea( -1 );
+		sess->SetCurrentReadMessageArea( -1 );
     }
-	else if ( GetSession()->GetCurrentReadMessageArea() > n )
+	else if ( sess->GetCurrentReadMessageArea() > n )
     {
-		GetSession()->SetCurrentReadMessageArea( GetSession()->GetCurrentReadMessageArea() - 1 );
+		sess->SetCurrentReadMessageArea( sess->GetCurrentReadMessageArea() - 1 );
     }
 }
 
@@ -924,11 +927,11 @@ void boardedit()
     }
 	showsubs();
 	bool done = false;
-	GetApplication()->GetStatusManager()->RefreshStatusCache();
+	app->statusMgr->Read();
 	do
     {
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapSubs : ";
+		nl();
+		sess->bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapSubs : ";
 		char ch = onek("QSDIM?");
 		switch ( ch )
         {
@@ -939,41 +942,41 @@ void boardedit()
 			done = true;
 			break;
 		case 'M':
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2Sub number? ";
+			nl();
+			sess->bout << "|#2Sub number? ";
 			input(s, 4);
 			i = atoi(s);
-			if ( s[0] != 0 && i >= 0 && i < GetSession()->num_subs )
+			if ( s[0] != 0 && i >= 0 && i < sess->num_subs )
             {
 				modify_sub(i);
             }
 			break;
 		case 'S':
-			if ( GetSession()->num_subs < GetSession()->GetMaxNumberMessageAreas() )
+			if ( sess->num_subs < sess->GetMaxNumberMessageAreas() )
             {
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#2Take sub number? ";
+				nl();
+				sess->bout << "|#2Take sub number? ";
 				input( s, 4 );
 				i1 = atoi( s );
-				if ( !s[0] || i1 < 0 || i1 >= GetSession()->num_subs )
+				if ( !s[0] || i1 < 0 || i1 >= sess->num_subs )
                 {
 					break;
                 }
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#2And move before sub number? ";
+				nl();
+				sess->bout << "|#2And move before sub number? ";
 				input( s, 4 );
 				i2 = atoi( s );
-				if ( !s[0] || i2 < 0 || i2 % 32 == 0 || i2 > GetSession()->num_subs || i1 == i2 || i1 + 1 == i2 )
+				if ( !s[0] || i2 < 0 || i2 % 32 == 0 || i2 > sess->num_subs || i1 == i2 || i1 + 1 == i2 )
                 {
 					break;
                 }
-				GetSession()->bout.NewLine();
+				nl();
 				if ( i2 < i1 )
                 {
 					i1++;
                 }
-				write_qscn( GetSession()->usernum, qsc, true );
-				GetSession()->bout << "|#1Moving sub now...Please wait...";
+				write_qscn( sess->usernum, qsc, true );
+				sess->bout << "|#1Moving sub now...Please wait...";
 				insert_sub( i2 );
 				swap_subs( i1, i2 );
 				delete_sub( i1 );
@@ -982,31 +985,31 @@ void boardedit()
 			}
             else
             {
-				GetSession()->bout << "\r\nYou must increase the number of subs in INIT.EXE first.\r\n";
+				sess->bout << "\r\nYou must increase the number of subs in INIT.EXE first.\r\n";
 			}
 			break;
 		case 'I':
-			if ( GetSession()->num_subs < GetSession()->GetMaxNumberMessageAreas() )
+			if ( sess->num_subs < sess->GetMaxNumberMessageAreas() )
             {
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#2Insert before which sub ('$' for end) : ";
+				nl();
+				sess->bout << "|#2Insert before which sub ('$' for end) : ";
 				input(s, 4);
 				if (s[0] == '$')
                 {
-					i = GetSession()->num_subs;
+					i = sess->num_subs;
                 }
 				else
                 {
 					i = atoi(s);
                 }
-				if ( s[0] != 0 && i >= 0 && i <= GetSession()->num_subs )
+				if ( s[0] != 0 && i >= 0 && i <= sess->num_subs )
                 {
 					insert_sub(i);
 					modify_sub(i);
 					confchg = true;
 					if (subconfnum > 1)
                     {
-						GetSession()->bout.NewLine();
+						nl();
 						list_confs(CONF_SUBS, 0);
 						i2 = select_conf("Put in which conference? ", CONF_SUBS, 0);
 						if (i2 >= 0)
@@ -1032,21 +1035,21 @@ void boardedit()
 			}
 			break;
 		case 'D':
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2Delete which sub? ";
+			nl();
+			sess->bout << "|#2Delete which sub? ";
 			input(s, 4);
 			i = atoi(s);
-			if ( s[0] != 0 && i >= 0 && i < GetSession()->num_subs )
+			if ( s[0] != 0 && i >= 0 && i < sess->num_subs )
             {
-				GetSession()->bout.NewLine();
-                GetSession()->bout << "|#5Delete " << subboards[i].name << "? ";
+				nl();
+                sess->bout << "|#5Delete " << subboards[i].name << "? ";
 				if (yesno())
                 {
 					strcpy(s, subboards[i].filename);
 					delete_sub(i);
 					confchg = true;
-					GetSession()->bout.NewLine();
-					GetSession()->bout << "|#5Delete data files (including messages) for sub also? ";
+					nl();
+					sess->bout << "|#5Delete data files (including messages) for sub also? ";
 					if (yesno())
                     {
                         char szTempFileName[ MAX_PATH ];
@@ -1061,11 +1064,11 @@ void boardedit()
     }
   } while ( !done && !hangup );
   save_subs();
-  if ( !GetApplication()->GetWfcStatus() )
+  if ( !app->localIO->GetWfcStatus() )
   {
 	  changedsl();
   }
-  GetSession()->subchg = 1;
+  sess->subchg = 1;
   g_szMessageGatFileName[0] = '\0';
   if (confchg)
   {

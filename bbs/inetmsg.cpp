@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -58,29 +60,31 @@ unsigned char *valid_name(unsigned char *s)
 
 void get_user_ppp_addr()
 {
-	GetSession()->internetFullEmailAddress = "";
+	sess->internetFullEmailAddress = "";
 	bool found = false;
     int nNetworkNumber = getnetnum( "FILEnet" );
-    GetSession()->SetNetworkNumber( nNetworkNumber );
+    sess->SetNetworkNumber( nNetworkNumber );
 	if ( nNetworkNumber == -1 )
 	{
 		return;
 	}
-	set_net_num( GetSession()->GetNetworkNumber() );
-	wwiv::stringUtils::FormatString( GetSession()->internetFullEmailAddress,
+	set_net_num( sess->GetNetworkNumber() );
+	wwiv::stringUtils::FormatString( sess->internetFullEmailAddress,
 		                             "%s@%s",
-                                     GetSession()->internetEmailName.c_str(),
-                                     GetSession()->internetEmailDomain.c_str() );
-    WTextFile acctFile( GetSession()->GetNetworkDataDirectory(), ACCT_INI, "rt" );
-    char szLine[ 260 ];
-    if ( acctFile.IsOpen() )
+                                     sess->internetEmailName.c_str(),
+                                     sess->internetEmailDomain.c_str() );
+    char szAcctFileName[ MAX_PATH ];
+	sprintf(szAcctFileName, "%s%s", sess->GetNetworkDataDirectory(), ACCT_INI);
+    FILE* fp = fsh_open(szAcctFileName, "rt");
+    char szLine[ 255 ];
+	if ( fp != NULL )
 	{
-        while ( acctFile.ReadLine(szLine, 255) && !found )
+		while ( fgets(szLine, 100, fp) && !found )
 		{
-			if (WWIV_STRNICMP(szLine, "USER", 4) == 0)
+			if (strnicmp(szLine, "USER", 4) == 0)
 			{
 				int nUserNum = atoi(&szLine[4]);
-				if (nUserNum == GetSession()->usernum)
+				if (nUserNum == sess->usernum)
 				{
 					char* ss = strtok(szLine, "=");
 					ss = strtok(NULL, "\r\n");
@@ -93,20 +97,20 @@ void get_user_ppp_addr()
 						StringTrimEnd(ss);
 						if (ss)
 						{
-							GetSession()->internetFullEmailAddress = ss;
+							sess->internetFullEmailAddress = ss;
 							found = true;
 						}
 					}
 				}
 			}
 		}
-        acctFile.Close();
+		fclose(fp);
 	}
-    if ( !found && !GetSession()->internetPopDomain.empty() )
+    if ( !found && !sess->internetPopDomain.empty() )
 	{
 		int j = 0;
         char szLocalUserName[ 255 ];
-        strcpy( szLocalUserName, GetSession()->GetCurrentUser()->GetName() );
+        strcpy( szLocalUserName, sess->thisuser.GetName() );
 		for ( int i = 0; ( i < wwiv::stringUtils::GetStringLength( szLocalUserName ) ) && ( i < 61 ); i++ )
 		{
 			if ( szLocalUserName[ i ] != '.' )
@@ -115,33 +119,33 @@ void get_user_ppp_addr()
 			}
 		}
 		szLine[ j ] = '\0';
-        wwiv::stringUtils::FormatString( GetSession()->internetFullEmailAddress, "%s@%s", szLine, GetSession()->internetPopDomain.c_str() );
+        wwiv::stringUtils::FormatString( sess->internetFullEmailAddress, "%s@%s", szLine, sess->internetPopDomain.c_str() );
 	}
 }
 
 
 void send_inet_email()
 {
-	if ( GetSession()->GetCurrentUser()->GetNumEmailSentToday() > getslrec( GetSession()->GetEffectiveSl() ).emails )
+	if ( sess->thisuser.GetNumEmailSentToday() > getslrec( sess->GetEffectiveSl() ).emails )
 	{
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#6Too much mail sent today.\r\n";
+		nl();
+		sess->bout << "|#6Too much mail sent today.\r\n";
 		return;
 	}
 	write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
     int nNetworkNumber = getnetnum( "FILEnet" );
-    GetSession()->SetNetworkNumber( nNetworkNumber );
+    sess->SetNetworkNumber( nNetworkNumber );
 	if ( nNetworkNumber == -1 )
 	{
 		return;
 	}
-	set_net_num( GetSession()->GetNetworkNumber() );
-	GetSession()->bout.NewLine();
-	GetSession()->bout << "|#9Your Internet Address:|#1 " <<
-	      ( GetSession()->IsInternetUseRealNames() ? GetSession()->GetCurrentUser()->GetRealName() : GetSession()->GetCurrentUser()->GetName() ) <<
-		  " <" << GetSession()->internetFullEmailAddress << ">";
-    GetSession()->bout.NewLine( 2 );
-	GetSession()->bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
+	set_net_num( sess->GetNetworkNumber() );
+	nl();
+	sess->bout << "|#9Your Internet Address:|#1 " <<
+	      ( sess->IsInternetUseRealNames() ? sess->thisuser.GetRealName() : sess->thisuser.GetName() ) <<
+		  " <" << sess->internetFullEmailAddress << ">";
+    nl( 2 );
+	sess->bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
 	inputl( net_email_name, 75, true );
 	if (check_inet_addr(net_email_name))
 	{
@@ -157,14 +161,14 @@ void send_inet_email()
 	}
 	else
 	{
-		GetSession()->bout.NewLine();
+		nl();
 		if (net_email_name[0])
 		{
-            GetSession()->bout << "|#6Invalid address format!\r\n";
+            sess->bout << "|#6Invalid address format!\r\n";
 		}
 		else
 		{
-			GetSession()->bout << "|12Aborted.\r\n";
+			sess->bout << "|12Aborted.\r\n";
 		}
 	}
 }
@@ -189,21 +193,21 @@ bool check_inet_addr(const char *inetaddr)
 }
 
 
-char *read_inet_addr( char *pszInternetEmailAddress, int nUserNumber )
+char *read_inet_addr( char *addr, int nUserNumber )
 {
 	if (!nUserNumber)
 	{
 		return NULL;
 	}
 
-	if ( nUserNumber == GetSession()->usernum && check_inet_addr( GetSession()->GetCurrentUser()->GetEmailAddress() ) )
+	if ( nUserNumber == sess->usernum && check_inet_addr( sess->thisuser.GetEmailAddress() ) )
 	{
-		strcpy( pszInternetEmailAddress, GetSession()->GetCurrentUser()->GetEmailAddress() );
+		strcpy( addr, sess->thisuser.GetEmailAddress() );
 	}
 	else
 	{
-		//pszInternetEmailAddress = NULL;
-		*pszInternetEmailAddress = 0;
+		//addr = NULL;
+		*addr = 0;
         WFile inetAddrFile( syscfg.datadir, INETADDR_DAT );
         if ( !inetAddrFile.Exists() )
 		{
@@ -212,7 +216,7 @@ char *read_inet_addr( char *pszInternetEmailAddress, int nUserNumber )
 			{
 				long lCurPos = 80L * static_cast<long>( i );
                 inetAddrFile.Seek( lCurPos, WFile::seekBegin );
-                inetAddrFile.Write( pszInternetEmailAddress, 80L );
+                inetAddrFile.Write( addr, 80L );
 			}
 		}
 		else
@@ -224,24 +228,24 @@ char *read_inet_addr( char *pszInternetEmailAddress, int nUserNumber )
             inetAddrFile.Read( szUserName, 80L );
 			if (check_inet_addr(szUserName))
 			{
-				strcpy(pszInternetEmailAddress, szUserName);
+				strcpy(addr, szUserName);
 			}
 			else
 			{
-				sprintf(pszInternetEmailAddress, "User #%d", nUserNumber);
+				sprintf(addr, "User #%d", nUserNumber);
                 WUser user;
-                GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
+                app->userManager->ReadUser( &user, nUserNumber );
                 user.SetEmailAddress( "" );
-                GetApplication()->GetUserManager()->WriteUser( &user, nUserNumber );
+                app->userManager->WriteUser( &user, nUserNumber );
 			}
 		}
         inetAddrFile.Close();
 	}
-	return pszInternetEmailAddress;
+	return addr;
 }
 
 
-void write_inet_addr( const char *pszInternetEmailAddress, int nUserNumber )
+void write_inet_addr( const char *addr, int nUserNumber )
 {
 	if (!nUserNumber)
 	{
@@ -252,22 +256,25 @@ void write_inet_addr( const char *pszInternetEmailAddress, int nUserNumber )
     inetAddrFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
 	long lCurPos = 80L * static_cast<long>( nUserNumber );
     inetAddrFile.Seek( lCurPos, WFile::seekBegin );
-    inetAddrFile.Write( pszInternetEmailAddress, 80L );
+    inetAddrFile.Write( const_cast<char*>( addr ), 80L );
     inetAddrFile.Close();
     char szDefaultUserAddr[ 255 ];
 	sprintf(szDefaultUserAddr, "USER%d", nUserNumber);
-    GetSession()->SetNetworkNumber( getnetnum( "FILEnet" ) );
-	if ( GetSession()->GetNetworkNumber() != -1 )
+    sess->SetNetworkNumber( getnetnum( "FILEnet" ) );
+	if ( sess->GetNetworkNumber() != -1 )
 	{
-		set_net_num( GetSession()->GetNetworkNumber() );
-        WTextFile in( GetSession()->GetNetworkDataDirectory(), ACCT_INI, "rt" );
-        WTextFile out( syscfgovr.tempdir, ACCT_INI, "wt+" );
-        if ( in.IsOpen() && out.IsOpen() )
+        char szInputFileName[ MAX_PATH ], szOutputFileName[ MAX_PATH ];
+		set_net_num( sess->GetNetworkNumber() );
+		sprintf(szInputFileName, "%s%s", sess->GetNetworkDataDirectory(), ACCT_INI);
+		FILE* in = fsh_open(szInputFileName, "rt");
+		sprintf(szOutputFileName, "%s%s", syscfgovr.tempdir, ACCT_INI);
+		FILE* out = fsh_open(szOutputFileName, "wt+");
+		if ( in && out )
 		{
-            char szLine[ 260 ];
-            while (in.ReadLine(szLine, 255))
+            char szLine[ 255 ];
+			while (fgets(szLine, 80, in))
 			{
-                char szSavedLine[ 260 ];
+                char szSavedLine[ 255 ];
 				bool match = false;
 				strcpy(szSavedLine, szLine);
 				char* ss = strtok(szLine, "=");
@@ -281,15 +288,17 @@ void write_inet_addr( const char *pszInternetEmailAddress, int nUserNumber )
 				}
 				if (!match)
 				{
-                    out.WriteFormatted( szSavedLine );
+					fprintf(out, szSavedLine);
 				}
 			}
-            out.WriteFormatted( "\nUSER%d = %s", nUserNumber, pszInternetEmailAddress);
-			in.Close();
-            out.Close();
+            char szAddress[ 255 ];
+			sprintf(szAddress, "\nUSER%d = %s", nUserNumber, addr);
+			fprintf(out, szAddress);
+			fsh_close(in);
+			fsh_close(out);
 		}
-        WFile::Remove(in.GetFullPathName());
-		copyfile(out.GetFullPathName(), in.GetFullPathName(), false);
-		WFile::Remove(out.GetFullPathName());
+		WFile::Remove(szInputFileName);
+		copyfile(szOutputFileName, szInputFileName, false);
+		WFile::Remove(szOutputFileName);
 	}
 }

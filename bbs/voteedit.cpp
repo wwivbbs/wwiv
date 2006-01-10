@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 void print_quests()
@@ -38,10 +39,10 @@ void print_quests()
         sprintf( szBuffer, "|#2%2d|#7) |#1%s", i, v.numanswers ? v.question : ">>> NO QUESTION <<<" );
         pla( szBuffer, &abort );
     }
-    GetSession()->bout.NewLine();
+    nl();
     if ( abort )
     {
-        GetSession()->bout.NewLine();
+        nl();
     }
 }
 
@@ -52,7 +53,7 @@ void set_question( int ii )
     char s[81];
     voting_response vr;
 
-    GetSession()->bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
+    sess->bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
     inputl( s, 75, true );
     strcpy(v.question, s);
     v.numanswers = 0;
@@ -65,8 +66,8 @@ void set_question( int ii )
     }
     if ( !s[0] )
     {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|12Delete Question #" << ii + 1 << ", Are you sure? ";
+        nl();
+        sess->bout << "|12Delete Question #" << ii + 1 << ", Are you sure? ";
         if (!yesno())
         {
             return;
@@ -74,12 +75,12 @@ void set_question( int ii )
     }
     else
     {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|10Enter answer choices, Enter a blank line when finished.";
-        GetSession()->bout.NewLine( 2 );
+        nl();
+        sess->bout << "|10Enter answer choices, Enter a blank line when finished.";
+        nl( 2 );
         while ( v.numanswers < 19 && s[0] )
         {
-            GetSession()->bout << "|#2" << v.numanswers + 1 << "#7: ";
+            sess->bout << "|#2" << v.numanswers + 1 << "#7: ";
             inputl( s, 63, true );
             strcpy(vr.response, s);
             vr.numresponses = 0;
@@ -100,13 +101,13 @@ void set_question( int ii )
     questused[ii] = (v.numanswers) ? 1 : 0;
 
     WUser u;
-    GetApplication()->GetUserManager()->ReadUser( &u, 1 );
-    int nNumUsers = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+    app->userManager->ReadUser( &u, 1 );
+    int nNumUsers = number_userrecs();
     for ( int i1 = 1; i1 <= nNumUsers; i1++ )
     {
-        GetApplication()->GetUserManager()->ReadUser( &u, i1 );
+        app->userManager->ReadUser( &u, i1 );
         u.SetVote( nNumUsers, 0 );
-        GetApplication()->GetUserManager()->WriteUser( &u, i1 );
+        app->userManager->WriteUser( &u, i1 );
     }
 }
 
@@ -132,8 +133,8 @@ void ivotes()
     do
     {
         print_quests();
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#2Which (Q=Quit) ? ";
+        nl();
+        sess->bout << "|#2Which (Q=Quit) ? ";
         char szQuestionNum[81];
         input( szQuestionNum, 2 );
         if ( wwiv::stringUtils::IsEquals( szQuestionNum, "Q" ) )
@@ -154,7 +155,7 @@ void voteprint()
     char s[MAX_PATH];
     votingrec v;
 
-    int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+    int nNumUserRecords = number_userrecs();
 	char *x = static_cast<char *>( BbsAllocA( 20 * ( 2 + nNumUserRecords ) ) );
     if ( x == NULL )
     {
@@ -163,7 +164,7 @@ void voteprint()
     for ( int i = 0; i <= nNumUserRecords; i++ )
     {
         WUser u;
-        GetApplication()->GetUserManager()->ReadUser( &u, i );
+        app->userManager->ReadUser( &u, i );
         for ( int i1 = 0; i1 < 20; i1++ )
         {
             x[ i1 + i * 20 ] = static_cast<char>( u.GetVote( i1 ) );
@@ -177,7 +178,7 @@ void voteprint()
 
     WFile votingDat( syscfg.datadir, VOTING_DAT );
 
-    GetApplication()->GetStatusManager()->RefreshStatusCache();
+    app->statusMgr->Read();
 
     for (int i1 = 0; i1 < 20; i1++)
     {
@@ -187,15 +188,15 @@ void voteprint()
         votingDat.Close();
         if (v.numanswers)
         {
-            GetSession()->bout << v.question;
-			GetSession()->bout.NewLine();
+            sess->bout << v.question;
+			nl();
             sprintf(s, "\r\n%s\r\n", v.question);
             votingText.Write( s, strlen( s ) );
             for (int i2 = 0; i2 < v.numanswers; i2++)
             {
                 sprintf(s, "     %s\r\n", v.responses[i2].response);
                 votingText.Write( s, strlen( s ) );
-                for (int i3 = 0; i3 < GetApplication()->GetStatusManager()->GetUserCount(); i3++)
+                for (int i3 = 0; i3 < status.users; i3++)
                 {
                     if (x[i1 + 20 * smallist[i3].number] == i2 + 1)
                     {

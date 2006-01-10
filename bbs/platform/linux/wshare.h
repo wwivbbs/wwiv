@@ -17,11 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 
+#ifndef __SHARE_H__
+#define __SHARE_H__
 
-#define OK  0       // "+ "
-#define NOK 1       // "! "
-#define QOK 2       // "? "
+FILE *fsh_open(const char *path, char *mode);
+void fsh_close(FILE *f);
+size_t fsh_read(void *ptr, size_t size, size_t n, FILE *stream);
+size_t fsh_write(const void *ptr, size_t size, size_t n, FILE *stream);
 
-void Print(int nType, bool bLogIt, char* szText, ...);
-bool OpenLogFile(char* szFileName);
-void CloseLogFile();
+
+#endif

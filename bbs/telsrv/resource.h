@@ -1,3 +1,21 @@
+/**************************************************************************/
+/*                                                                        */
+/*                              WWIV Version 5.0x                         */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/*                                                                        */
+/**************************************************************************/
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by WWIVTelnetServer.rc
@@ -47,8 +65,6 @@
 #define IDC_PREF_MINIMIZE2              1025
 #define IDC_PREF_BEGINDAYEVENT          1025
 #define IDC_PREF_NNTP_ENABLENNTP        1025
-#define IDC_PREF_BEGINDAYEVENT2         1026
-#define IDC_PREF_USEBALLOONS            1026
 #define ID_WT_PREFS                     32771
 #define ID_TELSRV_START                 32772
 #define ID_TELSRV_STOP                  32773

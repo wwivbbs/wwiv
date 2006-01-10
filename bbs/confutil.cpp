@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -73,15 +73,15 @@ bool access_conf( WUser * u, int sl, confrec * c)
     {
         return false;
     }
-    if ( c->ar && !u->HasArFlag( c->ar ) )
+    if ( c->ar && !u->hasArFlag( c->ar ) )
     {
         return false;
     }
-    if ( c->dar && !u->HasDarFlag( c->dar ) )
+    if ( c->dar && !u->hasDarFlag( c->dar ) )
     {
         return false;
     }
-    if ( ( c->status & conf_status_ansi ) && ( !u->HasAnsi() ) )
+    if ( ( c->status & conf_status_ansi ) && ( !u->hasAnsi() ) )
     {
         return false;
     }
@@ -111,11 +111,11 @@ bool access_sub( WUser * u, int sl, subboardrec * s )
     {
         return false;
     }
-    if ( s->ar != 0 && !u->HasArFlag( s->ar ) )
+    if ( s->ar != 0 && !u->hasArFlag( s->ar ) )
     {
         return false;
     }
-    if ( ( s->anony & anony_ansi_only ) && !u->HasAnsi() )
+    if ( ( s->anony & anony_ansi_only ) && !u->hasAnsi() )
     {
         return false;
     }
@@ -137,7 +137,7 @@ bool access_dir( WUser * u, int sl, directoryrec * d )
     {
         return false;
     }
-    if ( d->dar && !u->HasDarFlag( d->dar ) )
+    if ( d->dar && !u->hasDarFlag( d->dar ) )
     {
         return false;
     }
@@ -217,10 +217,10 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
     case CONF_SUBS:
 
         ss1 = usub;
-        ns = GetSession()->num_subs;
+        ns = sess->num_subs;
         if (nOldSubNumber == -1)
         {
-            osub = usub[GetSession()->GetCurrentMessageArea()].subnum;
+            osub = usub[sess->GetCurrentMessageArea()].subnum;
         }
         else
         {
@@ -240,7 +240,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
                return false;
             }
             c = &(subconfs[which]);
-            if (!access_conf(GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(), c))
+            if (!access_conf(&sess->thisuser, sess->GetEffectiveSl(), c))
             {
                 return false;
             }
@@ -248,10 +248,10 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
         break;
     case CONF_DIRS:
         ss1 = udir;
-        ns = GetSession()->num_dirs;
+        ns = sess->num_dirs;
         if (nOldSubNumber == -1)
         {
-            osub = udir[GetSession()->GetCurrentFileArea()].subnum;
+            osub = udir[sess->GetCurrentFileArea()].subnum;
         }
         else
         {
@@ -271,7 +271,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
                 return false;
             }
             c = &(dirconfs[which]);
-            if ( !access_conf( GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(), c ) )
+            if ( !access_conf( &sess->thisuser, sess->GetEffectiveSl(), c ) )
             {
                 return false;
             }
@@ -296,13 +296,13 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
             switch (nConferenceType)
             {
             case CONF_SUBS:
-                if (access_sub(GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(), (subboardrec *) & subboards[c->subs[i]]))
+                if (access_sub(&sess->thisuser, sess->GetEffectiveSl(), (subboardrec *) & subboards[c->subs[i]]))
                 {
                     addusub(ss1, ns, c->subs[i], subboards[c->subs[i]].key);
                 }
                 break;
             case CONF_DIRS:
-                if (access_dir(GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(), (directoryrec *) & directories[c->subs[i]]))
+                if (access_dir(&sess->thisuser, sess->GetEffectiveSl(), (directoryrec *) & directories[c->subs[i]]))
                 {
                     addusub(ss1, ns, c->subs[i], 0);
                 }
@@ -321,11 +321,11 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
         case CONF_SUBS:
             for (i = 0; i < subconfnum; i++)
             {
-                if (access_conf(GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(), &(subconfs[i])))
+                if (access_conf(&sess->thisuser, sess->GetEffectiveSl(), &(subconfs[i])))
                 {
                     for (i1 = 0; i1 < subconfs[i].num; i1++)
                     {
-                        if (access_sub(GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(),
+                        if (access_sub(&sess->thisuser, sess->GetEffectiveSl(),
                             (subboardrec *) & subboards[subconfs[i].subs[i1]]))
                         {
                             addusub(ss1, ns, subconfs[i].subs[i1], subboards[subconfs[i].subs[i1]].key);
@@ -337,11 +337,11 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
         case CONF_DIRS:
             for (i = 0; i < dirconfnum; i++)
             {
-                if (access_conf(GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(), &(dirconfs[i])))
+                if (access_conf(&sess->thisuser, sess->GetEffectiveSl(), &(dirconfs[i])))
                 {
                     for (i1 = 0; i1 < static_cast<int>( dirconfs[i].num ); i1++)
                     {
-                        if (access_dir(GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(), (directoryrec *) & directories[dirconfs[i].subs[i1]]))
+                        if (access_dir(&sess->thisuser, sess->GetEffectiveSl(), (directoryrec *) & directories[dirconfs[i].subs[i1]]))
                         {
                             addusub(ss1, ns, dirconfs[i].subs[i1], 0);
                         }
@@ -375,16 +375,16 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
                 xtc[tp++] = static_cast< char >( '0' + ( i1 / 100 ) );
             }
         }
-        snprintf( ss1[i].keys, sizeof( ss1[i].keys ), "%d", i1++ );
+        sprintf( ss1[i].keys, "%d", i1++ );
     }
 
 
-    xdc[dp] = '\0';
-    xtc[tp] = '\0';
+    xdc[dp] = 0;
+    xtc[tp] = 0;
 
-    for ( i1 = 0; ( i1 < ns ) && ( ss1[i1].subnum != -1 ); i1++ )
+    for (i1 = 0; (i1 < ns) && (ss1[i1].subnum != -1); i1++)
     {
-        if ( ss1[i1].subnum == osub )
+        if (ss1[i1].subnum == osub)
         {
             break;
         }
@@ -397,10 +397,10 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber)
     switch ( nConferenceType )
     {
     case CONF_SUBS:
-        GetSession()->SetCurrentMessageArea( i1 );
+        sess->SetCurrentMessageArea( i1 );
         break;
     case CONF_DIRS:
-        GetSession()->SetCurrentFileArea( i1 );
+        sess->SetCurrentFileArea( i1 );
         break;
     }
 
@@ -413,18 +413,18 @@ void setuconf(int nConferenceType, int num, int nOldSubNumber)
     switch (nConferenceType)
     {
     case CONF_SUBS:
-        if ( num >= 0 && num < MAX_CONFERENCES && uconfsub[num].confnum != -1 )
+        if ((num >= 0) && (num < MAX_CONFERENCES) && (uconfsub[num].confnum != -1))
         {
-            GetSession()->SetCurrentConferenceMessageArea( num );
-            setconf( nConferenceType, uconfsub[GetSession()->GetCurrentConferenceMessageArea()].confnum, nOldSubNumber );
+            sess->SetCurrentConferenceMessageArea( num );
+            setconf(nConferenceType, uconfsub[sess->GetCurrentConferenceMessageArea()].confnum, nOldSubNumber);
             return;
         }
         break;
     case CONF_DIRS:
         if ( num >= 0 && num < MAX_CONFERENCES && uconfdir[num].confnum != -1 )
         {
-            GetSession()->SetCurrentConferenceFileArea( num );
-            setconf( nConferenceType, uconfdir[GetSession()->GetCurrentConferenceFileArea()].confnum, nOldSubNumber );
+            sess->SetCurrentConferenceFileArea( num );
+            setconf( nConferenceType, uconfdir[sess->GetCurrentConferenceFileArea()].confnum, nOldSubNumber );
             return;
         }
         break;
@@ -433,78 +433,79 @@ void setuconf(int nConferenceType, int num, int nOldSubNumber)
 		WWIV_ASSERT( true );
 		break;
     }
-    setconf( nConferenceType, -1, nOldSubNumber );
+    setconf(nConferenceType, -1, nOldSubNumber);
 }
 
 
 void changedsl()
 {
-    int ocurconfsub = uconfsub[GetSession()->GetCurrentConferenceMessageArea()].confnum;
-    int ocurconfdir = uconfdir[GetSession()->GetCurrentConferenceFileArea()].confnum;
-    GetApplication()->UpdateTopScreen();
-
+    int i, i2;
     userconfrec c1;
+
+    int ocurconfsub = uconfsub[sess->GetCurrentConferenceMessageArea()].confnum;
+    int ocurconfdir = uconfdir[sess->GetCurrentConferenceFileArea()].confnum;
+    app->localIO->UpdateTopScreen();
+
     c1.confnum = -1;
 
-    int i;
-    for ( i = 0; i < MAX_CONFERENCES; i++ )
+    for (i = 0; i < MAX_CONFERENCES; i++)
     {
         uconfsub[i] = c1;
         uconfdir[i] = c1;
     }
 
-    int nTempSubConferenceNumber = 0;
-    for ( i = 0; i < subconfnum; i++ )
+    i2 = 0;
+    for (i = 0; i < subconfnum; i++)
     {
-        if ( access_conf( GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(), &(subconfs[i] ) ) )
+        if (access_conf(&sess->thisuser, sess->GetEffectiveSl(), &(subconfs[i])))
         {
             c1.confnum = static_cast< short >( i );
-            uconfsub[ nTempSubConferenceNumber++ ] = c1;
+            uconfsub[i2++] = c1;
         }
     }
 
-    int nTempDirConferenceNumber = 0;
-    for ( i = 0; i < dirconfnum; i++ )
+    i2 = 0;
+    for (i = 0; i < dirconfnum; i++)
     {
-        if ( access_conf( GetSession()->GetCurrentUser(), GetSession()->GetEffectiveSl(), &( dirconfs[i ]) ) )
+        if (access_conf(&sess->thisuser, sess->GetEffectiveSl(), &(dirconfs[i])))
         {
             c1.confnum = static_cast< short >( i );
-            uconfdir[ nTempDirConferenceNumber++ ] = c1;
+            uconfdir[i2++] = c1;
         }
     }
 
-    for ( GetSession()->SetCurrentConferenceMessageArea( 0 ); (GetSession()->GetCurrentConferenceMessageArea() < MAX_CONFERENCES) && (uconfsub[GetSession()->GetCurrentConferenceMessageArea()].confnum != -1); GetSession()->SetCurrentConferenceMessageArea( GetSession()->GetCurrentConferenceMessageArea() + 1 ) )
+    for ( sess->SetCurrentConferenceMessageArea( 0 ); (sess->GetCurrentConferenceMessageArea() < MAX_CONFERENCES) && (uconfsub[sess->GetCurrentConferenceMessageArea()].confnum != -1); sess->SetCurrentConferenceMessageArea( sess->GetCurrentConferenceMessageArea() + 1 ) )
     {
-        if ( uconfsub[GetSession()->GetCurrentConferenceMessageArea()].confnum == ocurconfsub )
+        if ( uconfsub[sess->GetCurrentConferenceMessageArea()].confnum == ocurconfsub )
         {
             break;
         }
     }
 
-    if ( GetSession()->GetCurrentConferenceMessageArea() >= MAX_CONFERENCES || 
-         uconfsub[GetSession()->GetCurrentConferenceMessageArea()].confnum == -1 )
+    if ( sess->GetCurrentConferenceMessageArea() >= MAX_CONFERENCES || 
+         uconfsub[sess->GetCurrentConferenceMessageArea()].confnum == -1 )
     {
-        GetSession()->SetCurrentConferenceMessageArea( 0 );
+        sess->SetCurrentConferenceMessageArea( 0 );
     }
 
-    for ( GetSession()->SetCurrentConferenceFileArea( 0 ); (GetSession()->GetCurrentConferenceFileArea() < MAX_CONFERENCES) && (uconfdir[GetSession()->GetCurrentConferenceFileArea()].confnum != -1); GetSession()->SetCurrentConferenceMessageArea( GetSession()->GetCurrentConferenceFileArea() + 1 ) )
+    for ( sess->SetCurrentConferenceFileArea( 0 ); (sess->GetCurrentConferenceFileArea() < MAX_CONFERENCES) && (uconfdir[sess->GetCurrentConferenceFileArea()].confnum != -1); sess->SetCurrentConferenceMessageArea( sess->GetCurrentConferenceFileArea() + 1 ) )
     {
-        if ( uconfdir[GetSession()->GetCurrentConferenceFileArea()].confnum == ocurconfdir )
+        if ( uconfdir[sess->GetCurrentConferenceFileArea()].confnum == ocurconfdir )
         {
             break;
         }
     }
 
-    if ( GetSession()->GetCurrentConferenceFileArea() >= MAX_CONFERENCES || 
-         uconfdir[GetSession()->GetCurrentConferenceFileArea()].confnum == -1 )
+    if ( sess->GetCurrentConferenceFileArea() >= MAX_CONFERENCES || 
+         uconfdir[sess->GetCurrentConferenceFileArea()].confnum == -1 )
     {
-        GetSession()->SetCurrentConferenceFileArea( 0 );
+        sess->SetCurrentConferenceFileArea( 0 );
     }
 
-    if ( okconf( GetSession()->GetCurrentUser() ) )
+    if ( okconf( &sess->thisuser ) )
     {
-        setuconf( CONF_SUBS, GetSession()->GetCurrentConferenceMessageArea(), -1 );
-        setuconf( CONF_DIRS, GetSession()->GetCurrentConferenceFileArea(), -1 );
+        setuconf( CONF_SUBS, sess->GetCurrentConferenceMessageArea(), -1 );
+        setuconf( CONF_DIRS, sess->GetCurrentConferenceFileArea(), -1 );
     }
     else
     {

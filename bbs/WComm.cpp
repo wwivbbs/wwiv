@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,20 +17,26 @@
 /*                                                                        */
 /**************************************************************************/
 
-#if defined ( _WIN32 )
-#define WIN32_LEAN_AND_MEAN
-#define _CRT_SECURE_NO_DEPRECATE
-#include <windows.h>
-#include "Wios.h"
-#include "Wiot.h"
-#elif defined ( _UNIX )
-#include "Wiou.h"
-#endif
+#include "wwiv.h"
 #include "WComm.h"
+
+
 
 char WComm::m_szErrorText[8192];
 
-int WComm::GetComPort() const
+bool WComm::startup()
+{
+    return true;
+}
+
+
+bool WComm::shutdown()
+{
+    return true;
+}
+
+
+int WComm::GetComPort()
 {
     return m_ComPort;
 }
@@ -43,7 +49,7 @@ void WComm::SetComPort(int nNewPort)
 
 const char* WComm::GetLastErrorText()
 {
-#if defined ( _WIN32 )
+#ifndef _UNIX
     LPVOID lpMsgBuf;
     FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -62,23 +68,5 @@ const char* WComm::GetLastErrorText()
 #else
     return NULL;
 #endif
-}
 
-
-WComm* WComm::CreateComm( bool bUseSockets, unsigned int nHandle )
-{
-#if defined ( _WIN32 )
-    if ( bUseSockets )
-    {
-        return new WIOTelnet( nHandle );
-    }
-    else
-    {
-        return new WIOSerial( nHandle );
-    }
-#elif defined ( _UNIX )
-    return new WIOUnix();
-#elif defined ( __OS2 )
-#error "You must implement the stuff to write with!!!"
-#endif
 }

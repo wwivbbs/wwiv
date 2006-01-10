@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 static char *mallocin_file(const char *pszFileName, long *len)
 {
@@ -96,7 +97,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards)
                 BbsFreeMemory(xsubs[i].nets);
             }
         }
-        BbsFreeMemory( xsubs );
+        BbsFreeMemory((void *) xsubs);
         if (xsubsn)
         {
             BbsFreeMemory(xsubsn);
@@ -116,13 +117,13 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards)
     {
         if (l > 32768)
         {
-            memset( xx, 0, 32768 );
+            memset((void *) xx, 0, 32768);
             l -= 32768;
             xx += 32768;
         }
         else
         {
-            memset( xx, 0, l );
+            memset((void *) xx, 0, l);
             break;
         }
     }
@@ -193,14 +194,14 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards)
                       xsubs[curn].nets = &(xsubsn[nn]);
                   }
                   ss2 = skipspace(++ss1);
-                  for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++)
+                  for (i = 0; i < sess->GetMaxNetworkNumber(); i++)
                   {
                       if ( wwiv::stringUtils::IsEqualsIgnoreCase( net_networks[i].name, ss1 ) )
                       {
                           break;
                       }
                   }
-                  if ((i < GetSession()->GetMaxNetworkNumber()) && (*ss2))
+                  if ((i < sess->GetMaxNetworkNumber()) && (*ss2))
                   {
                       xsubsn[nn].net_num = i;
                       ss1 = ss2;
@@ -250,7 +251,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards)
                     {
                         xsubsn[nn].net_num = 0;
                     }
-                    if ((xsubsn[nn].net_num >= 0) && (xsubsn[nn].net_num < GetSession()->GetMaxNetworkNumber()))
+                    if ((xsubsn[nn].net_num >= 0) && (xsubsn[nn].net_num < sess->GetMaxNetworkNumber()))
                     {
                         xsubs[curn].nets = &(xsubsn[nn]);
                         xsubsn[nn].type = subboards[curn].type;
@@ -261,7 +262,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards)
                     }
                 }
             }
-            for (n = 0; n < GetSession()->GetMaxNetworkNumber(); n++)
+            for (n = 0; n < sess->GetMaxNetworkNumber(); n++)
             {
                 sprintf(s, "%s%s", net_networks[n].dir, ALLOW_NET);
                 ss = mallocin_file(s, &l);

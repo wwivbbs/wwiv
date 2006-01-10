@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -19,11 +19,6 @@
 
 #if !defined ( __INCLUDED_WStringUtils_H__ )
 #define __INCLUDED_WStringUtils_H__
-
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
-
 
 #include <string>
 
@@ -62,56 +57,12 @@ namespace wwiv
 }
 
 
-// Funciton Prototypes
-const char *charstr( int nStringLength, int chRepeatChar );
-void StringTrimEnd( char *pszString );
-std::string& StringTrim( std::string& s );
-char *stripcolors( const char *pszOrig );
-unsigned char upcase( unsigned char ch );
-unsigned char locase( unsigned char ch );
-char *StringJustify(char *pszString, int nLength, int bg, int nJustificationType);
-char *StringTrim(char *pszString);
-std::string& StringTrim( std::string& s );
-std::string& StringTrimEnd( std::string& s );
-std::string& StringTrimBegin( std::string& s );
-char *stristr(char *pszString, char *pszPattern);
-void single_space(char *pszText);
-char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, char *brk);
-char *StringRemoveWhitespace(char *str);
-char *StringRemoveChar( const char *pszString, char chCharacterToRemove );
-char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, char *pszNewString);
-std::string& StringUpperCase( std::string& s );
-std::string& StringLowerCase( std::string& s );
 
-
-#if defined ( _WIN32 ) && ( _MSC_VER > 1310 )
-#define WWIV_STRDUP( s ) _strdup( s )
-#define WWIV_STRUPR( s ) _strupr( s )
-#define WWIV_STRREV( s ) _strrev( s )
-#define WWIV_STRLWR( s ) _strlwr( s )
-#define WWIV_STRICMP( a, b ) _stricmp( a, b )
-#define WWIV_STRNICMP( a, b, c) _strnicmp( a, b, c )
-#define CLEAR_STRING( s ) (s).clear()
-
-#elif defined( _WIN32 ) && ( _MSC_VER <= 1310 )
-#define WWIV_STRDUP( s ) strdup( s )
-#define WWIV_STRUPR( s ) strupr( s )
-#define WWIV_STRREV( s ) strrev( s )
-#define WWIV_STRLWR( s ) strlwr( s )
-#define WWIV_STRICMP( a, b ) stricmp( a, b )
-#define WWIV_STRNICMP( a, b, c) strnicmp( a, b, c )
+#if defined ( _WIN32 ) && ( _MSC_VER < 1300 )
 #define CLEAR_STRING( s ) (s).erase( (s).begin(), (s).end() )
-
 #else
-#define WWIV_STRDUP( s ) strdup( s )
-#define WWIV_STRUPR( s ) strupr( s )
-#define WWIV_STRREV( s ) strrev( s )
-#define WWIV_STRLWR( s ) strlwr( s )
-#define WWIV_STRICMP( a, b ) strcasecmp( a, b )
-#define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
 #define CLEAR_STRING( s ) (s).clear()
-#endif 
-
+#endif // MSVC6
 
 #endif // __INCLUDED_WStringUtils_H__
 

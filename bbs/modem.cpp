@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,11 +18,14 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
+
+char cid_num[50];
+char cid_name[50];
 
 #define modem_time 3.5
 
 bool InitializeComPort( int nComPortNumber );
-void get_modem_line(std::string& line, double d, bool allowa);
 
 
 void rputs(const char *pszText )
@@ -33,7 +36,7 @@ void rputs(const char *pszText )
 	// Rob fix for COM/IP weirdness
 	if ( ok_modem_stuff )
     {
-        GetSession()->remoteIO()->write( pszText, strlen( pszText ) );
+        app->comm->write( pszText, strlen( pszText ) );
     }
 
 }
@@ -41,20 +44,21 @@ void rputs(const char *pszText )
 
 /**
  * Reads a string from the modem
- * @param line String that was read from the modem
+ * @param pszLine String that was read from the modem
  * @param d How long to wait for the string
  * @param allowa allow aborting from the keyboard
  */
-void get_modem_line( std::string& line, double d, bool allowa )
+void get_modem_line(char *pszLine, double d, bool allowa)
 {
 #ifndef _UNIX
+	int i = 0;
 	char ch = 0, ch1;
 	double t;
 
 	t = timer();
 	do
 	{
-		if (GetSession()->remoteIO()->incoming())
+		if (app->comm->incoming())
 		{
 			ch = bgetchraw();
 		}
@@ -62,14 +66,13 @@ void get_modem_line( std::string& line, double d, bool allowa )
 		{
 			ch = 0;
 		}
-		if (GetSession()->localIO()->LocalKeyPressed() && allowa)
+		if (app->localIO->LocalKeyPressed() && allowa)
 		{
-			ch1 = GetSession()->localIO()->getchd1();
+			ch1 = app->localIO->getchd1();
 			if (wwiv::UpperCase<char>(ch1) == 'H')
 			{
 				ch = RETURN;
-                CLEAR_STRING( line );
-                line.push_back( static_cast<char>( 1 ) );
+				i = pszLine[0] = 1;
 
 			}
 		}
@@ -79,11 +82,12 @@ void get_modem_line( std::string& line, double d, bool allowa )
 		}
 		if ( ch >= SPACE )
 		{
-            line.push_back( wwiv::UpperCase<char>(ch) );
+			pszLine[i++] = wwiv::UpperCase<char>(ch);
 		}
-	} while ( ( ch != RETURN ) && (fabs(timer() - t) < d) && (line.length() <= 40));
+	} while ( ( ch != RETURN ) && (fabs(timer() - t) < d) && (i <= 40));
+	pszLine[i] = '\0';
 #else
-	line = "OK";
+	strcpy( pszLine, "OK" );
 #endif
 }
 
@@ -94,11 +98,11 @@ void do_result(result_info * ri)
     {
 		if (ri->flag_value & flag_append)
         {
-            GetSession()->SetCurrentSpeed( ri->description );
+            sess->SetCurrentSpeed( ri->description );
         }
 		else
         {
-            GetSession()->SetCurrentSpeed( ri->description );
+            sess->SetCurrentSpeed( ri->description );
         }
     }
 
@@ -122,9 +126,9 @@ void do_result(result_info * ri)
 	if (ri->com_speed)
     {
 		com_speed = ri->com_speed;
-        if ( ok_modem_stuff && NULL != GetSession()->remoteIO() )
+        if ( ok_modem_stuff && NULL != app->comm )
         {
-            GetSession()->remoteIO()->setup( 'N', 8, 1, com_speed );
+            app->comm->setup( 'N', 8, 1, com_speed );
         }
 	}
 	if (ri->modem_speed)
@@ -137,33 +141,27 @@ void do_result(result_info * ri)
 /**
  * Processes a result string from the model, and sets the result
  */
-void process_full_result( const std::string& resultCode )
+void process_full_result(char *pszResultCode)
 {
 	// first, check for caller-id info
 	for (int i = 0; i < modem_i->num_resl; i++)
 	{
 		int i1 = strlen(modem_i->resl[i].result);
-        if (strncmp(modem_i->resl[i].result, resultCode.c_str(), i1) == 0)
+		if (strncmp(modem_i->resl[i].result, pszResultCode, i1) == 0)
 		{
 			switch (modem_i->resl[i].main_mode)
 			{
 			case mode_cid_num:
-                {
-                    GetSession()->remoteIO()->SetRemoteAddress( resultCode.substr( i1 ) );
-    			    return;
-                }
+				strcpy(cid_num, pszResultCode + i1);
+				return;
 			case mode_cid_name:
-                {
-                    GetSession()->remoteIO()->SetRemoteName( resultCode.substr( i1 ) );
-				    return;
-                }
+				strcpy(cid_name, pszResultCode + i1);
+				return;
 			}
 		}
 	}
 
-    char szResultCode[ 255 ];
-    strcpy( szResultCode, resultCode.c_str() );
-	char* ss = strtok(szResultCode, modem_i->sepr);
+	char* ss = strtok(pszResultCode, modem_i->sepr);
 
 	while (ss)
 	{
@@ -187,26 +185,26 @@ void process_full_result( const std::string& resultCode )
  */
 int mode_switch(double d, bool allowa)
 {
-    std::string line;
+	char s[81];
 	bool abort = false;
 
 	double t = timer();
 	modem_mode = 0;
 
-	if ( GetSession()->remoteIO() != NULL )
+	if ( app->comm != NULL )
 	{
 
 	while ( modem_mode == 0 && fabs( timer() - t ) < d && !abort )
 	{
-		get_modem_line( line, d + t - timer(), allowa );
-        std::cout << "DEBUG: get_modem_line(" << line << ")" << std::endl;
-		if ( line.at(0) == '\x01' )
+		get_modem_line( s, d + t - timer(), allowa );
+        std::cout << "DEBUG: get_modem_line(" << s << ")" << std::endl;
+		if ( s[0] == '\x01' )
 		{
 			abort = true;
 		}
-        else if ( line.length() > 0 )
+		else if ( s[0] )
 		{
-			process_full_result( line );
+			process_full_result( s );
 		}
 #ifdef _UNIX
 		modem_mode = mode_dis;
@@ -214,8 +212,8 @@ int mode_switch(double d, bool allowa)
 	}
 	if ( abort )
 	{                   /* make sure modem hangs up */
-		GetSession()->remoteIO()->dtr( false );
-		while ((fabs(timer() - t) < d) && (!GetSession()->remoteIO()->incoming()))
+		app->comm->dtr( false );
+		while ((fabs(timer() - t) < d) && (!app->comm->incoming()))
 		{
 			wait1(18);
 			rputch('\r');
@@ -246,12 +244,12 @@ void holdphone(bool bPickUpPhone)
         return;
     }
 
-    if (GetSession()->remoteIO() == NULL)
+    if (app->comm == NULL)
     {
 	    return ;
     }
 
-    GetSession()->remoteIO()->dtr( true );
+    app->comm->dtr( true );
 
     if (bPickUpPhone)
     {
@@ -273,10 +271,10 @@ void holdphone(bool bPickUpPhone)
             if (global_xx)
             {
                 global_xx = false;
-                GetSession()->remoteIO()->dtr( true );
+                app->comm->dtr( true );
                 if (fabs(xtime - timer()) < modem_time)
                 {
-                    GetSession()->localIO()->LocalPuts("\r\n\r\nWaiting for modem...");
+                    app->localIO->LocalPuts("\r\n\r\nWaiting for modem...");
                 }
                 while (fabs(xtime - timer()) < modem_time)
                     ;
@@ -301,7 +299,7 @@ void imodem(bool bSetup)
 
 	if (!ok_modem_stuff)
 	{
-		//GetSession()->localIO()->LocalPuts("\x0c");
+		//app->localIO->LocalPuts("\x0c");
 		return;
 	}
 
@@ -320,8 +318,8 @@ void imodem(bool bSetup)
 		return;
 	}
 
-	GetSession()->localIO()->LocalPuts( "Waiting..." );
-	GetSession()->remoteIO()->dtr( true );
+	app->localIO->LocalPuts( "Waiting..." );
+	app->comm->dtr( true );
 	do_result( &modem_i->defl );
 	int i = 0;
 	bool done = false;
@@ -361,14 +359,14 @@ void imodem(bool bSetup)
 				s = "(%d)...", modem_mode;
 				break;
 			}
-			GetSession()->localIO()->LocalPuts( s.c_str() );
+			app->localIO->LocalPuts( s.c_str() );
 		}
 		if ( i > 5 )
         {
 			done = true;
         }
 	}
-	GetSession()->localIO()->LocalCls();
+	app->localIO->LocalCls();
 #endif
 }
 
@@ -380,11 +378,12 @@ void answer_phone()
 	{
 		return;
 	}
-    GetSession()->remoteIO()->ClearRemoteInformation();
+	cid_num[0]  = '\0';
+	cid_name[0] = '\0';
 
-	GetSession()->localIO()->SetCursor( WLocalIO::cursorNormal );
-	GetSession()->localIO()->LocalXYPuts( 3, 24, "Answering phone, 'H' to abort." );
-	GetSession()->wfc_status = 0;
+	app->localIO->SetCursor( WLocalIO::cursorNormal );
+	app->localIO->LocalXYPuts( 3, 24, "Answering phone, 'H' to abort." );
+	sess->wfc_status = 0;
 	do_result( &modem_i->defl );
 #ifdef _DEBUG
     std::cout << "DEBUG: " << modem_i->ansr << std::endl;
@@ -408,7 +407,7 @@ void answer_phone()
 		}
 		else
 		{
-            GetSession()->localIO()->LocalFastPuts( GetSession()->GetCurrentSpeed().c_str() );
+            app->localIO->LocalFastPuts( sess->GetCurrentSpeed().c_str() );
 			imodem( false );
 			imodem( false );
 		}
@@ -438,20 +437,20 @@ bool InitializeComPort( int nComPortNumber )
     }
 
     std::cout << "\nChecking status of COM Port 'COM" << nComPortNumber << "'... ";
-    GetSession()->remoteIO()->SetComPort(nComPortNumber);
+    app->comm->SetComPort(nComPortNumber);
 
 	// TODO check to see if it's opened 1st.
-	GetSession()->remoteIO()->close();
-    if ( !GetSession()->remoteIO()->open() )
+	app->comm->close();
+    if ( !app->comm->open() )
     {
-        std::cout << "\nUnable to Open Serial Port!" << std::endl <<
+        std::cout << "\nUnable to Initialize Serial Port!" << std::endl <<
             "Continuing in local-only mode..." << std::endl;
         return false;
     }
     std::cout << "Port available!" << std::endl;
 
-    GetSession()->remoteIO()->setup( 'N', 8, 1, com_speed );
-    GetSession()->remoteIO()->dtr( true );
+    app->comm->setup( 'N', 8, 1, com_speed );
+    app->comm->dtr( true );
 #endif
     return true;
 }

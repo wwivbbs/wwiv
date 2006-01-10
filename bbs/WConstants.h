@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,9 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_WCONSTANTS_H__
-#define __INCLUDED_WCONSTANTS_H__
-
+#ifndef __INCLUDED_VARDEC1_H__
+#define __INCLUDED_VARDEC1_H__
 
 
 #define COMMAND_F1        (F1+256)
@@ -365,13 +364,8 @@
 #define MAX_ARCS 15
 #define MAXMAIL 255
 
-#ifdef _DEFINE_GLOBALS_
-const char *DELIMS_NORMAL = " ;.!:-?,\t\r\n";
-const char *DELIMS_WHITE  = " \t\r\n";
-#else 
-extern const char *DELIMS_NORMAL;
-extern const char *DELIMS_WHITE;
-#endif 
+#define DELIMS_NORMAL " ;.!:-?,\t\r\n"
+#define DELIMS_WHITE  " \t\r\n"
 
 #define LIST_USERS_MESSAGE_AREA     0
 #define LIST_USERS_FILE_AREA        1
@@ -387,4 +381,4 @@ enum COMPRESSIONS
     COMPRESSION_RAR,
 };
 
-#endif // __INCLUDED_WCONSTANTS_H__
+#endif // __INCLUDED_VARDEC1_H__

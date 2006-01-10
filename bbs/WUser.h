@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -26,11 +26,6 @@
 #pragma pack( 1 )
 #endif
 
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
-
-#include <string>
 #include "vardec.h"
 
 /**
@@ -122,81 +117,77 @@ public:
     void SetInactFlag( int nFlag )          { data.inact |= nFlag; }
     void ToggleInactFlag( int nFlag )       { data.inact ^= nFlag; }
     void ClearInactFlag( int nFlag )        { data.inact &= ~nFlag; }
-    bool IsUserDeleted() const              
-    { 
-        /* printf( "DEBUG: User %s is deleted!\r\n", data.name );  */
-        return ( data.inact & WUser::userDeleted ) != 0; 
-    }
-    bool IsUserInactive() const             { return ( data.inact & WUser::userInactive ) != 0; }
+    bool isUserDeleted() const              { return ( data.inact & WUser::userDeleted ) != 0; }
+    bool isUserInactive() const             { return ( data.inact & WUser::userInactive ) != 0; }
 
     // USERREC.sysstatus
-    void SetStatusFlag( int nFlag )         { data.sysstatus |= nFlag; }
-    void ToggleStatusFlag( int nFlag )      { data.sysstatus ^= nFlag; }
-    void ClearStatusFlag( int nFlag )       { data.sysstatus &= ~nFlag; }
-    bool HasStatusFlag( int nFlag ) const   { return ( data.sysstatus & nFlag ) != 0; }
+    void setStatusFlag( int nFlag )         { data.sysstatus |= nFlag; }
+    void toggleStatusFlag( int nFlag )      { data.sysstatus ^= nFlag; }
+    void clearStatusFlag( int nFlag )       { data.sysstatus &= ~nFlag; }
+    bool hasStatusFlag( int nFlag ) const   { return ( data.sysstatus & nFlag ) != 0; }
     long GetStatus() const                  { return static_cast<long>( data.sysstatus ); }
     void SetStatus( long l )                { data.sysstatus = static_cast<unsigned long>( l ); }
-    bool HasAnsi() const                    { return HasStatusFlag( WUser::ansi ); }
-    bool HasColor() const                   { return HasStatusFlag( WUser::color ); }
-    bool HasMusic() const                   { return HasStatusFlag( WUser::music ); }
-    bool HasPause() const                   { return HasStatusFlag( WUser::pauseOnPage ); }
-    bool IsExpert() const                   { return HasStatusFlag( WUser::expert ); }
-    bool HasShortMessage() const            { return HasStatusFlag( WUser::SMW ); }
-    bool IsFullScreen() const               { return HasStatusFlag( WUser::fullScreen ); }
-    bool IsNewScanFiles() const             { return HasStatusFlag( WUser::nscanFileSystem ); }
-    bool IsUseExtraColor() const            { return HasStatusFlag( WUser::extraColor ); }
-    bool IsUseClearScreen() const           { return HasStatusFlag( WUser::clearScreen ); }
-    bool IsUseNoTagging() const             { return HasStatusFlag( WUser::noTag ); }
-    bool IsUseConference() const            { return HasStatusFlag( WUser::conference ); }
-    bool IsIgnoreChatRequests() const       { return HasStatusFlag( WUser::noChat ); }
-    bool IsIgnoreNodeMessages() const       { return HasStatusFlag( WUser::noMsgs ); }
-    bool IsUseListPlus() const              { return HasStatusFlag( WUser::listPlus ); }
-    bool IsUseAutoQuote() const             { return HasStatusFlag( WUser::autoQuote ); }
-    bool IsUse24HourClock() const           { return HasStatusFlag( WUser::twentyFourHourClock ); };
+    bool hasAnsi() const                    { return hasStatusFlag( WUser::ansi ); }
+    bool hasColor() const                   { return hasStatusFlag( WUser::color ); }
+    bool hasMusic() const                   { return hasStatusFlag( WUser::music ); }
+    bool hasPause() const                   { return hasStatusFlag( WUser::pauseOnPage ); }
+    bool isExpert() const                   { return hasStatusFlag( WUser::expert ); }
+    bool hasShortMessage() const            { return hasStatusFlag( WUser::SMW ); }
+    bool isFullScreen() const               { return hasStatusFlag( WUser::fullScreen ); }
+    bool isNewScanFiles() const             { return hasStatusFlag( WUser::nscanFileSystem ); }
+    bool isUseExtraColor() const            { return hasStatusFlag( WUser::extraColor ); }
+    bool isUseClearScreen() const           { return hasStatusFlag( WUser::clearScreen ); }
+    bool isUseNoTagging() const             { return hasStatusFlag( WUser::noTag ); }
+    bool isUseConference() const            { return hasStatusFlag( WUser::conference ); }
+    bool isIgnoreChatRequests() const       { return hasStatusFlag( WUser::noChat ); }
+    bool isIgnoreNodeMessages() const       { return hasStatusFlag( WUser::noMsgs ); }
+    bool isUseListPlus() const              { return hasStatusFlag( WUser::listPlus ); }
+    bool isUseAutoQuote() const             { return hasStatusFlag( WUser::autoQuote ); }
+    bool isUse24HourClock() const           { return hasStatusFlag( WUser::twentyFourHourClock ); };
 
     // USERREC.exempt
-    void SetExemptFlag( int nFlag )         { data.exempt |= nFlag; }
-    void ToggleExemptFlag( int nFlag )      { data.exempt ^= nFlag; }
-    void ClearExemptFlag( int nFlag )       { data.exempt &= ~nFlag; }
-    bool HasExemptFlag( int nFlag ) const   { return ( data.exempt & nFlag ) != 0; }
+    void setExemptFlag( int nFlag )         { data.exempt |= nFlag; }
+    void toggleExemptFlag( int nFlag )      { data.exempt ^= nFlag; }
+    void clearExemptFlag( int nFlag )       { data.exempt &= ~nFlag; }
+    bool hasExemptFlag( int nFlag ) const   { return ( data.exempt & nFlag ) != 0; }
 
-    bool IsExemptRatio()                    { return HasExemptFlag( WUser::exemptRatio ); }
-    bool IsExemptTime()                     { return HasExemptFlag( WUser::exemptTime ); }
-    bool IsExemptPost()                     { return HasExemptFlag( WUser::exemptPost ); }
-    bool IsExemptAll()                      { return HasExemptFlag( WUser::exemptAll ); }
-    bool IsExemptAutoDelete()               { return HasExemptFlag( WUser::exemptAutoDelete ); }
+    bool isExemptRatio()                    { return hasExemptFlag( WUser::exemptRatio ); }
+    bool isExemptTime()                     { return hasExemptFlag( WUser::exemptTime ); }
+    bool isExemptPost()                     { return hasExemptFlag( WUser::exemptPost ); }
+    bool isExemptAll()                      { return hasExemptFlag( WUser::exemptAll ); }
+    bool isExemptAutoDelete()               { return hasExemptFlag( WUser::exemptAutoDelete ); }
 
     // USERREC.restrict
-    void SetRestrictionFlag( int nFlag )        { data.restrict |= nFlag; }
-    void ToggleRestrictionFlag( int nFlag )     { data.restrict ^= nFlag; }
-    void ClearRestrictionFlag( int nFlag )      { data.restrict &= ~nFlag; }
-    bool HasRestrictionFlag( int nFlag ) const  { return ( data.restrict & nFlag ) != 0; }
+    void setRestrictionFlag( int nFlag )        { data.restrict |= nFlag; }
+    void toggleRestrictionFlag( int nFlag )     { data.restrict ^= nFlag; }
+    void clearRestrictionFlag( int nFlag )      { data.restrict &= ~nFlag; }
+    bool hasRestrictionFlag( int nFlag ) const  { return ( data.restrict & nFlag ) != 0; }
     unsigned short GetRestriction() const       { return data.restrict; }
     void SetRestriction( int n )                { data.restrict = static_cast<unsigned short>( n ); }
 
-    bool IsRestrictionLogon()                   { return HasRestrictionFlag( WUser::restrictLogon ); }
-    bool IsRestrictionChat()                    { return HasRestrictionFlag( WUser::restrictChat ); }
-    bool IsRestrictionValidate()                { return HasRestrictionFlag( WUser::restrictValidate ); }
-    bool IsRestrictionAutomessage()             { return HasRestrictionFlag( WUser::restrictAutomessage ); }
-    bool IsRestrictionAnonymous()               { return HasRestrictionFlag( WUser::restrictAnony ); }
-    bool IsRestrictionPost()                    { return HasRestrictionFlag( WUser::restrictPost ); }
-    bool IsRestrictionEmail()                   { return HasRestrictionFlag( WUser::restrictEmail ); }
-    bool IsRestrictionVote()                    { return HasRestrictionFlag( WUser::restrictVote ); }
-    bool IsRestrictionMultiNodeChat()           { return HasRestrictionFlag( WUser::restrictMultiNodeChat ); }
-    bool IsRestrictionNet()                     { return HasRestrictionFlag( WUser::restrictNet ); }
-    bool IsRestrictionUpload()                  { return HasRestrictionFlag( WUser::restrictUpload ); }
+    bool isRestrictionLogon()                   { return hasRestrictionFlag( WUser::restrictLogon ); }
+    bool isRestrictionChat()                    { return hasRestrictionFlag( WUser::restrictChat ); }
+    bool isRestrictionValidate()                { return hasRestrictionFlag( WUser::restrictValidate ); }
+    bool isRestrictionAutomessage()             { return hasRestrictionFlag( WUser::restrictAutomessage ); }
+    bool isRestrictionAnonymous()               { return hasRestrictionFlag( WUser::restrictAnony ); }
+    bool isRestrictionPost()                    { return hasRestrictionFlag( WUser::restrictPost ); }
+    bool isRestrictionEmail()                   { return hasRestrictionFlag( WUser::restrictEmail ); }
+    bool isRestrictionVote()                    { return hasRestrictionFlag( WUser::restrictVote ); }
+    bool isRestrictionMultiNodeChat()           { return hasRestrictionFlag( WUser::restrictMultiNodeChat ); }
+    bool isRestrictionNet()                     { return hasRestrictionFlag( WUser::restrictNet ); }
+    bool isRestrictionUpload()                  { return hasRestrictionFlag( WUser::restrictUpload ); }
 
     void SetArFlag( int nFlag )                 { data.ar |= nFlag; }
-    void ToggleArFlag( int nFlag )              { data.ar ^= nFlag; }
-    void ClearArFlag( int nFlag )               { data.ar &= ~nFlag; }
-    bool HasArFlag( int nFlag ) const           { return ( data.ar & nFlag ) != 0; }
+    void toggleArFlag( int nFlag )              { data.ar ^= nFlag; }
+    void clearArFlag( int nFlag )               { data.ar &= ~nFlag; }
+    bool hasArFlag( int nFlag ) const           { return ( data.ar & nFlag ) != 0; }
     unsigned short GetAr() const                { return data.ar; }
     void SetAr( int n )                         { data.ar = static_cast<unsigned short>( n ); }
 
     void SetDarFlag( int nFlag )                 { data.dar |= nFlag; }
-    void ToggleDarFlag( int nFlag )              { data.dar ^= nFlag; }
-    void ClearDarFlag( int nFlag )               { data.dar &= ~nFlag; }
-    bool HasDarFlag( int nFlag ) const           { return ( data.dar & nFlag ) != 0; }
+    void toggleDarFlag( int nFlag )              { data.dar ^= nFlag; }
+    void clearDarFlag( int nFlag )               { data.dar &= ~nFlag; }
+    bool hasDarFlag( int nFlag ) const           { return ( data.dar & nFlag ) != 0; }
     unsigned short GetDar() const                { return data.dar; }
     void SetDar( int n )                         { data.dar = static_cast<unsigned short>( n ); }
 
@@ -277,8 +268,8 @@ public:
     void SetBirthdayYear( int n )           { data.year = static_cast<unsigned char>( n ); }
     const int GetLanguage() const           { return data.language; }
     void SetLanguage( int n )               { data.language = static_cast<unsigned char>( n ); }
-    const int GetCbv() const                { return data.cbv; }
-    void SetCbv( int n )                    { data.cbv = static_cast<unsigned char>( n ); }
+    const int GetCbv() const            { return data.cbv; }
+    void SetCbv( int n )                { data.cbv = static_cast<unsigned char>( n ); }
 
     const int GetHomeUserNumber() const     { return data.homeuser; }
     void SetHomeUserNumber( int n )         { data.homeuser = static_cast<unsigned short>( n ); }
@@ -304,7 +295,6 @@ public:
     void SetNumEmailSentToday( int n )      { data.etoday = static_cast<unsigned short>( n ); }
     const int GetAssPoints() const          { return data.ass_pts; }
     void SetAssPoints( int n )              { data.ass_pts = static_cast<unsigned short>( n ); }
-    void IncrementAssPoints( int n )        { data.ass_pts = data.ass_pts + static_cast<unsigned short>( n ); }
     const int GetFilesUploaded() const      { return data.uploaded; }
     void SetFilesUploaded( int n )          { data.uploaded = static_cast<unsigned short>( n ); }
     const int GetFilesDownloaded() const    { return data.downloaded; }
@@ -382,29 +372,12 @@ private:
  */
 class WUserManager
 {
-private:
-    std::string m_dataDirectory;
-    int m_nUserRecordLength;
-    int m_nMaxNumberOfUsers;
-    bool m_bUserWritesAllowed;
-    bool m_bInitalized;
 public:
-    WUserManager();
-    WUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers);
-    ~WUserManager();
-    int GetNumberOfUserRecords() const;
+    int GetNumberOfUsers() const;
     bool ReadUserNoCache( WUser *pUser, int nUserNumber );
     bool ReadUser( WUser *pUser, int nUserNumber, bool bForceRead = false );
     bool WriteUserNoCache( WUser *pUser, int nUserNumber );
     bool WriteUser( WUser *pUser, int nUserNumber );
-
-    void InitializeUserManager( std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers );
-    /** 
-     * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
-     * Global guest_user variable is true.
-     */
-    void SetUserWritesAllowed( bool bUserWritesAllowed ) { m_bUserWritesAllowed = bUserWritesAllowed; }
-    bool IsUserWritesAllowed() { return m_bUserWritesAllowed; }
 };
 
 

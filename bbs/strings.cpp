@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -134,7 +134,6 @@ static int open_strfile(strfile_t * sfi)
     if (sfi->str_l == 0) {
 
 #ifdef WRITE_SUPPORT
-        // This will need to use WFile
       if ((filelength(sfi->str_f) == 0) && (sfi->allowwrite)) {
         i = 0xffff;
         XXsh_write(sfi->str_f, &i, 2);
@@ -156,10 +155,7 @@ static int open_strfile(strfile_t * sfi)
       }
     }
     if (sfi->str_l)
-    {
-        // This will need to use WFile
       sfi->str_num = (filelength(sfi->str_f) - sfi->str_o) / sfi->str_l;
-    }
   }
 
   return (sfi->str_f);
@@ -399,10 +395,7 @@ char *getrandomstring(int filen)
     if (!open_strfile(sfi))
        return ("");
     else
-    {
-        // This will need to use WFile
        return (get_stringx(filen, 1 + WWIV_GetRandomNumber(static_cast<int>((filelength(sfi->str_f) - sfi->str_o) / sfi->str_l))));
-     }
 }
 
 

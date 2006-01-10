@@ -17,4 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 
-void checkAllDirs();
+#ifndef __INCLUDED_PLATFORM_INCL3_H__
+#define __INCLUDED_PLATFORM_INCL3_H__
+
+
+#include "wshare.h"
+#if defined (_WIN32)
+#include "Wiot.h"
+#include "Wios.h"
+#elif defined (_UNIX)
+#include "Wiou.h"
+#endif
+
+
+#endif // __INCLUDED_PLATFORM_INCL2_H__

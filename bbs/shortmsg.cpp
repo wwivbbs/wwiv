@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -36,7 +36,7 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
 {
     bool bShownAnyMessage = false;
     int bShownAllMessages = true;
-    if ( pUser->HasShortMessage() )
+    if ( pUser->hasShortMessage() )
     {
         WFile file( syscfg.datadir, SMW_DAT );
         if ( !file.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
@@ -52,9 +52,9 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
             file.Read( &sm, sizeof( shortmsgrec ) );
             if ( sm.touser == nUserNum && sm.tosys == 0 )
             {
-                GetSession()->bout.Color( 9 );
-				GetSession()->bout << sm.message;
-				GetSession()->bout.NewLine();
+                ansic( 9 );
+				sess->bout << sm.message;
+				nl();
                 bool bHandledMessage = false;
                 bShownAnyMessage = true;
                 if ( !so() || !bAskToSaveMsgs )
@@ -63,11 +63,11 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
                 }
                 else
                 {
-                    if ( GetApplication()->HasConfigFlag( OP_FLAGS_CAN_SAVE_SSM ) )
+                    if ( app->HasConfigFlag( OP_FLAGS_CAN_SAVE_SSM ) )
                     {
                         if ( !bHandledMessage && bAskToSaveMsgs )
                         {
-                            GetSession()->bout << "|10Would you like to save this notification? ";
+                            sess->bout << "|10Would you like to save this notification? ";
                             bHandledMessage = !yesno();
                         }
                     }
@@ -96,11 +96,11 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
     }
     if ( bShownAnyMessage )
     {
-        GetSession()->bout.NewLine();
+        nl();
     }
     if ( bShownAllMessages )
     {
-        pUser->SetStatusFlag( WUser::SMW );
+        pUser->setStatusFlag( WUser::SMW );
     }
 }
 
@@ -108,8 +108,8 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
 void SendLocalShortMessage( unsigned int nUserNum, unsigned int nSystemNum, char *pszMessageText )
 {
     WUser user;
-    GetApplication()->GetUserManager()->ReadUser( &user, nUserNum );
-    if ( !user.IsUserDeleted() )
+    app->userManager->ReadUser( &user, nUserNum );
+    if ( !user.isUserDeleted() )
     {
         WFile file( syscfg.datadir, SMW_DAT );
         if ( !file.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
@@ -146,8 +146,8 @@ void SendLocalShortMessage( unsigned int nUserNum, unsigned int nSystemNum, char
         file.Seek( nNewMsgPos * sizeof( shortmsgrec ), WFile::seekBegin );
         file.Write( &sm, sizeof( shortmsgrec ) );
         file.Close();
-        user.SetStatusFlag( WUser::SMW );
-        GetApplication()->GetUserManager()->WriteUser( &user, nUserNum );
+        user.setStatusFlag( WUser::SMW );
+        app->userManager->WriteUser( &user, nUserNum );
     }
 }
 
@@ -157,11 +157,11 @@ void SendRemoteShortMessage( int nUserNum, int nSystemNum, char *pszMessageText 
     nh.tosys = static_cast<unsigned short>( nSystemNum );
     nh.touser = static_cast<unsigned short>( nUserNum );
     nh.fromsys = net_sysnum;
-    nh.fromuser = static_cast<unsigned short>( GetSession()->usernum );
+    nh.fromuser = static_cast<unsigned short>( sess->usernum );
     nh.main_type = main_type_ssm;
     nh.minor_type = 0;
     nh.list_len = 0;
-    nh.daten = static_cast<unsigned long>(time(NULL));
+    time( ( long * ) &nh.daten );
     if (strlen(pszMessageText) > 80)
     {
         pszMessageText[80] = '\0';
@@ -169,7 +169,7 @@ void SendRemoteShortMessage( int nUserNum, int nSystemNum, char *pszMessageText 
     nh.length = strlen(pszMessageText);
     nh.method = 0;
     char szPacketName[MAX_PATH];
-    sprintf( szPacketName, "%sP0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
+    sprintf( szPacketName, "%sP0%s", sess->GetNetworkDataDirectory(), app->GetNetworkExtension() );
     WFile file( szPacketName );
     file.Open( WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
     file.Seek( 0L, WFile::seekBegin );
@@ -196,7 +196,7 @@ void ssm( int nUserNum, int nSystemNum, const char *pszFormat, ... )
     char szMessageText[2048];
 
     va_start(ap, pszFormat);
-    vsnprintf(szMessageText, sizeof( szMessageText ), pszFormat, ap);
+    vsnprintf(szMessageText, 2048, pszFormat, ap);
     va_end(ap);
 
     if ( nSystemNum == 0 )

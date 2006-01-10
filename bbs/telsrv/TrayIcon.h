@@ -24,17 +24,15 @@ public:
 
 	// SetIcon functions. To remove icon, call SetIcon(0)
 	//
-    BOOL SetIcon(UINT uID, LPCTSTR lpTip = NULL ); // main variant you want to use
-	BOOL SetIcon(HICON hicon, LPCSTR lpszToolTip, LPCTSTR lpszBalloonTitle = NULL, LPCTSTR lpszBalloonText = NULL );
-	BOOL SetIcon(LPCTSTR lpszResName, LPCSTR lpszTip)
-		{ return SetIcon(lpszResName ? 
-			AfxGetApp()->LoadIcon(lpszResName) : NULL, lpszTip); }
+	BOOL SetIcon(UINT uID); // main variant you want to use
+	BOOL SetIcon(HICON hicon, LPCSTR lpTip);
+	BOOL SetIcon(LPCTSTR lpResName, LPCSTR lpTip)
+		{ return SetIcon(lpResName ? 
+			AfxGetApp()->LoadIcon(lpResName) : NULL, lpTip); }
 	BOOL SetStandardIcon(LPCTSTR lpszIconName, LPCSTR lpTip)
 		{ return SetIcon(::LoadIcon(NULL, lpszIconName), lpTip); }
 
 	virtual LRESULT OnTrayNotification(WPARAM uID, LPARAM lEvent);
-    BOOL RefreshIcon(void);
-    BOOL ShowBalloon(LPCTSTR pszTitle, LPCTSTR pszText);
 };
 
 #endif

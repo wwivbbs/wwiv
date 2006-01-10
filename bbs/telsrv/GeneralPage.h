@@ -73,8 +73,6 @@ public:
     BOOL m_bLaunchMinimized;
     BOOL m_BeginDayEvent;
 	afx_msg void OnBnClickedPrefAutostart();
-    afx_msg void OnBnClickedPrefUseballoons();
-    BOOL m_bUseBalloons;
 };
 
 //{{AFX_INSERT_LOCATION}}

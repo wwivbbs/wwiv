@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 void add_phone_number( int usernum, const char *phone )
@@ -107,8 +108,8 @@ int find_phone_number(const char *phone)
 		if ( wwiv::stringUtils::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) )
 		{
         	WUser user;
-            GetApplication()->GetUserManager()->ReadUser( &user, p[i].usernum );
-            if ( !user.IsUserDeleted() )
+            app->userManager->ReadUser( &user, p[i].usernum );
+            if ( !user.isUserDeleted() )
 			{
 				break;
 			}

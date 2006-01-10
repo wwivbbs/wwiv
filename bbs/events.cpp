@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -41,10 +41,10 @@ char *ttc(int d)
 void sort_events()
 {
     // keeping events sorted in time order makes things easier.
-    for ( int i = 0; i < (GetSession()->num_events - 1); i++ )
+    for ( int i = 0; i < (sess->num_events - 1); i++ )
     {
         int z = i;
-        for ( int j = ( i + 1 ); j < GetSession()->num_events; j++ )
+        for ( int j = ( i + 1 ); j < sess->num_events; j++ )
         {
             if ( events[j].time < events[z].time )
             {
@@ -71,16 +71,16 @@ void init_events()
     events = static_cast<eventsrec *>( BbsAllocWithComment(MAX_EVENT * sizeof(eventsrec), "external events") );
     WWIV_ASSERT( events != NULL );
 
-    WFile eventsFile( syscfg.datadir, EVENTS_DAT );
-    if ( eventsFile.Open( WFile::modeBinary | WFile::modeReadOnly ) )
+    WFile file( syscfg.datadir, EVENTS_DAT );
+    if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
 	{
-        GetSession()->num_events = eventsFile.GetLength() / sizeof( eventsrec );
-        eventsFile.Read( events, GetSession()->num_events * sizeof( eventsrec ) );
+        sess->num_events = file.GetLength() / sizeof( eventsrec );
+        file.Read( events, sess->num_events * sizeof( eventsrec ) );
         get_next_forced_event();
     }
 	else
 	{
-        GetSession()->num_events = 0;
+        sess->num_events = 0;
 	}
 }
 
@@ -96,9 +96,9 @@ void get_next_forced_event()
     {
         day = 0;
     }
-    for ( int i = 0; i < GetSession()->num_events; i++ ) 
+    for ( int i = 0; i < sess->num_events; i++ ) 
     {
-        if ( ( events[i].instance == GetApplication()->GetInstanceNumber() || events[i].instance == 0 ) &&
+        if ( ( events[i].instance == app->GetInstanceNumber() || events[i].instance == 0 ) &&
              events[i].status & EVENT_FORCED )
         {
             if ( first < 0 && events[i].time < tl && ( ( events[i].days & ( 1 << day ) ) > 0 ) )
@@ -131,7 +131,7 @@ void get_next_forced_event()
 
 void cleanup_events()
 {
-    if ( !GetSession()->num_events )
+    if ( !sess->num_events )
     {
         return;
     }
@@ -146,7 +146,7 @@ void cleanup_events()
     }
 
     int i;
-    for ( i = 0; i < GetSession()->num_events; i++ )
+    for ( i = 0; i < sess->num_events; i++ )
     {
         if (((events[i].status & EVENT_RUNTODAY) == 0) &&
             ((events[i].days & (1 << day)) > 0))
@@ -154,14 +154,14 @@ void cleanup_events()
             run_event( i );
         }
     }
-    for ( i = 0; i < GetSession()->num_events; i++ )
+    for ( i = 0; i < sess->num_events; i++ )
     {
         events[i].status &= ~EVENT_RUNTODAY;
     }
 
     WFile eventsFile( syscfg.datadir, EVENTS_DAT );
     eventsFile.Open( WFile::modeReadWrite|WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite );
-    eventsFile.Write( events, GetSession()->num_events * sizeof( eventsrec ) );
+    eventsFile.Write( events, sess->num_events * sizeof( eventsrec ) );
     eventsFile.Close();
 }
 
@@ -171,11 +171,11 @@ void check_event()
     int i;
 
     int tl = t_now();
-    for ( i = 0; i < GetSession()->num_events && !do_event; i++ )
+    for ( i = 0; i < sess->num_events && !do_event; i++ )
     {
         if (((events[i].status & EVENT_RUNTODAY) == 0) && (events[i].time <= tl) &&
             ((events[i].days & (1 << dow())) > 0) &&
-            ((events[i].instance == GetApplication()->GetInstanceNumber()) ||
+            ((events[i].instance == app->GetInstanceNumber()) ||
             (events[i].instance == 0)))
         {
             // make sure the event hasn't already been executed on another node,then mark it as run
@@ -202,10 +202,10 @@ void run_event( int evnt )
 
     write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
 #ifndef _UNIX
-    GetSession()->localIO()->SetCursor( WLocalIO::cursorNormal );
+    app->localIO->SetCursor( WLocalIO::cursorNormal );
 #endif
-    GetSession()->bout.ClearScreen();
-    GetSession()->bout << "\r\nNow running external event.\r\n\n";
+    ClearScreen();
+    sess->bout << "\r\nNow running external event.\r\n\n";
     if (events[evnt].status & EVENT_HOLD)
     {
         holdphone( true );
@@ -214,9 +214,9 @@ void run_event( int evnt )
 	{
         exitlevel = static_cast<int>( events[evnt].cmd[0] );
         close_strfiles();
-        if ( ok_modem_stuff && GetSession()->remoteIO() != NULL )
+        if ( ok_modem_stuff && app->comm != NULL )
         {
-            GetSession()->remoteIO()->close();
+            app->comm->close();
         }
         exit( exitlevel );
     }
@@ -233,14 +233,14 @@ void show_events()
 {
     char s[121], s1[81], daystr[8];
 
-    GetSession()->bout.ClearScreen();
+    ClearScreen();
     bool abort = false;
     char y = "Yes"[0];
     char n = "No"[0];
     pla("|#1                                         Hold   Force   Run", &abort);
     pla("|#1Evnt Time  Command                 Node  Phone  Event  Today  Shrink", &abort);
     pla("|#7=============================================================================", &abort);
-    for (int i = 0; (i < GetSession()->num_events) && !abort; i++)
+    for (int i = 0; (i < sess->num_events) && (!abort); i++)
     {
         if (events[i].status & EVENT_EXIT)
         {
@@ -248,7 +248,7 @@ void show_events()
         }
         else
         {
-            strncpy(s1, events[i].cmd, sizeof(s1));
+            strcpy(s1, events[i].cmd);
         }
         strcpy(daystr, "SMTWTFS");
         for (int j = 0; j <= 6; j++)
@@ -275,7 +275,7 @@ void select_event_days(int evnt)
     int i;
     char ch, daystr[8], days[8];
 
-    GetSession()->bout.NewLine();
+    nl();
     strcpy(days, "SMTWTFS");
     for (i = 0; i <= 6; i++)
 	{
@@ -289,12 +289,12 @@ void select_event_days(int evnt)
 		}
 	}
     daystr[8] = '\0';
-    GetSession()->bout << "Enter number to toggle day of the week, 'Q' to quit.\r\n\n";
-    GetSession()->bout << "                   1234567\r\n";
-    GetSession()->bout << "Days to run event: ";
+    sess->bout << "Enter number to toggle day of the week, 'Q' to quit.\r\n\n";
+    sess->bout << "                   1234567\r\n";
+    sess->bout << "Days to run event: ";
     do
 	{
-        GetSession()->bout << daystr;
+        sess->bout << daystr;
         ch = onek_ncr("1234567Q");
         if ((ch >= '1') && (ch <= '7'))
 		{
@@ -308,7 +308,7 @@ void select_event_days(int evnt)
 			{
                 daystr[i] = ' ';
 			}
-            GetSession()->bout << "\b\b\b\b\b\b\b";
+            sess->bout << "\b\b\b\b\b\b\b";
         }
     } while ( ch != 'Q' && !hangup );
 }
@@ -324,8 +324,8 @@ void modify_event( int evnt )
     int i       = evnt;
     do
     {
-        GetSession()->bout.ClearScreen();
-		GetSession()->bout << "A) Event Time......: " << ttc(events[i].time) << wwiv::endl;
+        ClearScreen();
+		sess->bout << "A) Event Time......: " << ttc(events[i].time) << wwiv::endl;
         if (events[i].status & EVENT_EXIT)
         {
             sprintf(s1, "Exit BBS with DOS Errorlevel %d", events[i].cmd[0]);
@@ -334,11 +334,11 @@ void modify_event( int evnt )
         {
             sprintf(s1, events[i].cmd );
         }
-		GetSession()->bout << "B) Event Command...: " << s1 << wwiv::endl;
-		GetSession()->bout << "C) Phone Off Hook?.: " << ( ( events[i].status & EVENT_HOLD ) ? "Yes" : "No" ) << wwiv::endl;
-		GetSession()->bout << "D) Already Run?....: " << ( ( events[i].status & EVENT_RUNTODAY ) ? "Yes" : "No" ) << wwiv::endl;
-		GetSession()->bout << "E) Shrink?.........: " << ( ( events[i].status & EVENT_SHRINK ) ? "Yes" : "No" ) << wwiv::endl;
-		GetSession()->bout << "F) Force User Off?.: " << ( ( events[i].status & EVENT_FORCED ) ? "Yes" : "No" ) << wwiv::endl;
+		sess->bout << "B) Event Command...: " << s1 << wwiv::endl;
+		sess->bout << "C) Phone Off Hook?.: " << ( ( events[i].status & EVENT_HOLD ) ? "Yes" : "No" ) << wwiv::endl;
+		sess->bout << "D) Already Run?....: " << ( ( events[i].status & EVENT_RUNTODAY ) ? "Yes" : "No" ) << wwiv::endl;
+		sess->bout << "E) Shrink?.........: " << ( ( events[i].status & EVENT_SHRINK ) ? "Yes" : "No" ) << wwiv::endl;
+		sess->bout << "F) Force User Off?.: " << ( ( events[i].status & EVENT_FORCED ) ? "Yes" : "No" ) << wwiv::endl;
         strcpy( s1, "SMTWTFS" );
         for ( j = 0; j <= 6; j++ )
         {
@@ -347,10 +347,10 @@ void modify_event( int evnt )
                 s1[j] = ' ';
             }
         }
-		GetSession()->bout << "G) Days to Execute.: " << s1 << wwiv::endl;
-		GetSession()->bout << "H) Node (0=Any)....: " << events[i].instance << wwiv::endl;
-        GetSession()->bout.NewLine();
-		GetSession()->bout << "|#5Which? |#7[|#1A-H,[,],Q=Quit|#7] |#0: ";
+		sess->bout << "G) Days to Execute.: " << s1 << wwiv::endl;
+		sess->bout << "H) Node (0=Any)....: " << events[i].instance << wwiv::endl;
+        nl();
+		sess->bout << "|#5Which? |#7[|#1A-H,[,],Q=Quit|#7] |#0: ";
         ch = onek( "QABCDEFGH[]" );
         switch ( ch )
         {
@@ -359,7 +359,7 @@ void modify_event( int evnt )
             break;
         case ']':
             i++;
-            if ( i >= GetSession()->num_events )
+            if ( i >= sess->num_events )
             {
                 i = 0;
             }
@@ -368,13 +368,13 @@ void modify_event( int evnt )
             i--;
             if ( i < 0 )
             {
-                i = GetSession()->num_events - 1;
+                i = sess->num_events - 1;
             }
             break;
         case 'A':
-            GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2Enter event times in 24 hour format. i.e. 00:01 or 15:20\r\n";
-			GetSession()->bout << "|#2Event time? ";
+            nl();
+			sess->bout << "|#2Enter event times in 24 hour format. i.e. 00:01 or 15:20\r\n";
+			sess->bout << "|#2Event time? ";
             ok = true;
             j = 0;
             do
@@ -429,11 +429,11 @@ void modify_event( int evnt )
                         }
                         break;
                         case '\b':
-                            GetSession()->bout << " \b";
+                            sess->bout << " \b";
                             --j;
                             if ( j == 2 )
                             {
-                                GetSession()->bout.BackSpace();
+                                BackSpace();
                                 --j;
                             }
                             break;
@@ -449,12 +449,12 @@ void modify_event( int evnt )
             }
             break;
         case 'B':
-            GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2Exit BBS for event? ";
+            nl();
+			sess->bout << "|#2Exit BBS for event? ";
             if ( yesno() )
             {
                 events[i].status |= EVENT_EXIT;
-				GetSession()->bout << "|#2DOS ERRORLEVEL on exit? ";
+				sess->bout << "|#2DOS ERRORLEVEL on exit? ";
                 input( s, 3 );
                 j = atoi( s );
                 if ( s[0] != 0 && j >= 0 && j < 256 )
@@ -465,7 +465,7 @@ void modify_event( int evnt )
             else
             {
                 events[i].status &= ~EVENT_EXIT;
-                GetSession()->bout << "|#2Commandline to run? ";
+                sess->bout << "|#2Commandline to run? ";
                 input( s, 80 );
                 if ( s[0] != '\0' )
                 {
@@ -486,8 +486,8 @@ void modify_event( int evnt )
             events[i].status ^= EVENT_FORCED;
             break;
         case 'G':
-            GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2Run event every day? ";
+            nl();
+			sess->bout << "|#2Run event every day? ";
             if ( noyes( ))
             {
                 events[i].days = 127;
@@ -498,8 +498,8 @@ void modify_event( int evnt )
             }
             break;
         case 'H':
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#2Run event on which node (0=any)? ";
+            nl();
+            sess->bout << "|#2Run event on which node (0=any)? ";
             input( s, 3 );
             j = atoi( s );
             if ( s[0] != '\0' && j >= 0 && j < 1000 )
@@ -514,23 +514,23 @@ void modify_event( int evnt )
 
 void insert_event()
 {
-    strcpy(events[GetSession()->num_events].cmd, "**New Event**");
-    events[GetSession()->num_events].time = 0;
-    events[GetSession()->num_events].status = 0;
-    events[GetSession()->num_events].instance = 0;
-    events[GetSession()->num_events].days = 127;                // Default to all 7 days
-    modify_event(GetSession()->num_events);
-	GetSession()->num_events = GetSession()->num_events + 1;
+    strcpy(events[sess->num_events].cmd, "**New Event**");
+    events[sess->num_events].time = 0;
+    events[sess->num_events].status = 0;
+    events[sess->num_events].instance = 0;
+    events[sess->num_events].days = 127;                // Default to all 7 days
+    modify_event(sess->num_events);
+    ++sess->num_events;
 }
 
 
 void delete_event(int n)
 {
-    for ( int i = n; i < GetSession()->num_events; i++ )
+    for ( int i = n; i < sess->num_events; i++ )
 	{
         events[i] = events[i + 1];
 	}
-    GetSession()->num_events = GetSession()->num_events - 1;
+    --sess->num_events;
 }
 
 
@@ -547,8 +547,8 @@ void eventedit()
 	{
 		char ch = 0;
         show_events();
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#9Events: |#1I|#9nsert, |#1D|#9elete, |#1M|#9odify, e|#1X|#9ecute, |#1S|#2ystem Events|#9, |#1Q|#9uit :";
+        nl();
+        sess->bout << "|#9Events: |#1I|#9nsert, |#1D|#9elete, |#1M|#9odify, e|#1X|#9ecute, |#1S|#2ystem Events|#9, |#1Q|#9uit :";
         if ( so() )
 		{
             ch = onek( "QDIMS?X" );
@@ -567,11 +567,11 @@ void eventedit()
             break;
         case 'X':
 			{
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#2Run which Event? ";
+				nl();
+				sess->bout << "|#2Run which Event? ";
 				input( s, 2 );
 				int nEventNum = atoi( s );
-				if ( s[0] != '\0' && nEventNum >= 0 && nEventNum < GetSession()->num_events )
+				if ( s[0] != '\0' && nEventNum >= 0 && nEventNum < sess->num_events )
 				{
 					run_event( nEventNum );
 				}
@@ -579,37 +579,37 @@ void eventedit()
             break;
         case 'M':
 			{
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#2Modify which Event? ";
+				nl();
+				sess->bout << "|#2Modify which Event? ";
 				input( s, 2 );
 				int nEventNum = atoi( s );
-				if ( s[0] != '\0' && nEventNum >= 0 && nEventNum < GetSession()->num_events )
+				if ( s[0] != '\0' && nEventNum >= 0 && nEventNum < sess->num_events )
 				{
 					modify_event( nEventNum );
 				}
 			}
             break;
         case 'I':
-            if ( GetSession()->num_events < MAX_EVENT )
+            if ( sess->num_events < MAX_EVENT )
 			{
                 insert_event();
 			}
             else
 			{
-                GetSession()->bout << "\r\n|#6Can't add any more events!\r\n\n";
+                sess->bout << "\r\n|#6Can't add any more events!\r\n\n";
                 pausescr();
             }
             break;
         case 'D':
-            if ( GetSession()->num_events )
+            if ( sess->num_events )
             {
-                GetSession()->bout.NewLine();
-                GetSession()->bout << "|#2Delete which Event? ";
+                nl();
+                sess->bout << "|#2Delete which Event? ";
                 input( s, 2 );
                 int nEventNum = atoi( s );
-                if ( s[0] && nEventNum >= 0 && nEventNum < GetSession()->num_events )
+                if ( s[0] && nEventNum >= 0 && nEventNum < sess->num_events )
                 {
-                    GetSession()->bout.NewLine();
+                    nl();
                     if ( events[nEventNum].status & EVENT_EXIT )
                     {
                         sprintf( s, "Exit Level = %d", events[nEventNum].cmd[0] );
@@ -618,7 +618,7 @@ void eventedit()
                     {
                         strcpy( s, events[nEventNum].cmd );
                     }
-                    GetSession()->bout << "|#5Delete " << s << "?";
+                    sess->bout << "|#5Delete " << s << "?";
                     if ( yesno() )
                     {
                         delete_event( nEventNum );
@@ -627,7 +627,7 @@ void eventedit()
             }
             else
             {
-                GetSession()->bout << "\r\n|#6No events to delete!\r\n\n";
+                sess->bout << "\r\n|#6No events to delete!\r\n\n";
                 pausescr();
             }
             break;
@@ -637,54 +637,54 @@ void eventedit()
 
 				do
 				{
-					GetSession()->localIO()->LocalCls();
+					app->localIO->LocalCls();
                     std::string title = "|B1|15System Events Configuration";
-                    GetSession()->bout.WriteFormatted( "%-85s", title.c_str() );
-					GetSession()->bout.Color ( 0 );
-					GetSession()->bout.NewLine( 2 );
-					GetSession()->bout << "|#91) Terminal Program     : |#2" << syscfg.terminal     << wwiv::endl;
-					GetSession()->bout << "|#93) Begin Day Event      : |#2" << syscfg.beginday_c   << wwiv::endl;
-					GetSession()->bout << "|#94) Logon Event          : |#2" << syscfg.logon_c      << wwiv::endl;
-					GetSession()->bout << "|#95) Logoff Event         : |#2" << syscfg.logoff_c     << wwiv::endl;
-					GetSession()->bout << "|#96) Newuser Event        : |#2" << syscfg.newuser_c    << wwiv::endl;
-					GetSession()->bout << "|#97) Upload  Event        : |#2" << syscfg.upload_c     << wwiv::endl;
-					GetSession()->bout << "|#98) Virus Scanner CmdLine: |#2" << syscfg.v_scan_c     << wwiv::endl;
-					GetSession()->bout << "|#9Q) Quit\r\n";
-					GetSession()->bout.NewLine();
-					GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7, |#2?|#7=|#1Help|#7) Which? (|#11|#7-|#18|#7) :";
+                    bprintf( "%-85s", title.c_str() );
+					ansic ( 0 );
+					nl( 2 );
+					sess->bout << "|#91) Terminal Program     : |#2" << syscfg.terminal     << wwiv::endl;
+					sess->bout << "|#93) Begin Day Event      : |#2" << syscfg.beginday_c   << wwiv::endl;
+					sess->bout << "|#94) Logon Event          : |#2" << syscfg.logon_c      << wwiv::endl;
+					sess->bout << "|#95) Logoff Event         : |#2" << syscfg.logoff_c     << wwiv::endl;
+					sess->bout << "|#96) Newuser Event        : |#2" << syscfg.newuser_c    << wwiv::endl;
+					sess->bout << "|#97) Upload  Event        : |#2" << syscfg.upload_c     << wwiv::endl;
+					sess->bout << "|#98) Virus Scanner CmdLine: |#2" << syscfg.v_scan_c     << wwiv::endl;
+					sess->bout << "|#9Q) Quit\r\n";
+					nl();
+					sess->bout << "|#7(|#2Q|#7=|#1Quit|#7, |#2?|#7=|#1Help|#7) Which? (|#11|#7-|#18|#7) :";
 					ch = onek( "Q1345678?" );
-					GetSession()->localIO()->LocalGotoXY( 26, ch - 47 );
+					app->localIO->LocalGotoXY( 26, ch - 47 );
 					switch( ch )
 					{
 					case '1':
-						Input1( syscfg.terminal, syscfg.terminal, 21, true, INPUT_MODE_FILE_UPPER );
+						Input1( syscfg.terminal, syscfg.terminal, 21, true, UPPER );
 						break;
 					case '3':
-						Input1( syscfg.beginday_c, syscfg.beginday_c, 51, true, INPUT_MODE_FILE_UPPER );
+						Input1( syscfg.beginday_c, syscfg.beginday_c, 51, true, UPPER );
 						break;
 					case '4':
-						Input1( syscfg.logon_c, syscfg.logon_c, 51, true, INPUT_MODE_FILE_UPPER );
+						Input1( syscfg.logon_c, syscfg.logon_c, 51, true, UPPER );
 						break;
 					case '5':
-						Input1( syscfg.logoff_c, syscfg.logoff_c, 51, true, INPUT_MODE_FILE_UPPER );
+						Input1( syscfg.logoff_c, syscfg.logoff_c, 51, true, UPPER );
 						break;
 					case '6':
-						Input1( syscfg.newuser_c,syscfg.newuser_c, 51, true, INPUT_MODE_FILE_UPPER );
+						Input1( syscfg.newuser_c,syscfg.newuser_c, 51, true, UPPER );
 						break;
 					case '7':
-						Input1( syscfg.upload_c, syscfg.upload_c, 51, true, INPUT_MODE_FILE_UPPER );
+						Input1( syscfg.upload_c, syscfg.upload_c, 51, true, UPPER );
 						break;
 					case '8':
-						Input1( syscfg.v_scan_c, syscfg.v_scan_c, 51, true, INPUT_MODE_FILE_UPPER );
+						Input1( syscfg.v_scan_c, syscfg.v_scan_c, 51, true, UPPER );
 						break;
 					case '?':
-						GetSession()->localIO()->LocalCls();
+						app->localIO->LocalCls();
 						printfile( CMDPARAM_NOEXT );
 						pausescr();
 						break;
 					case 'Q':
 						bSysEventsDone = true;
-						GetApplication()->SaveConfig();
+						app->SaveConfig();
 						break;
 					}
 				} while( !bSysEventsDone );
@@ -695,14 +695,16 @@ void eventedit()
 	sort_events();
 
 	WFile eventsFile( syscfg.datadir, EVENTS_DAT );
-	if ( GetSession()->num_events )
+	if ( sess->num_events )
 	{
-		eventsFile.Open( WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
-		eventsFile.Write( events, GetSession()->num_events * sizeof( eventsrec ) );
+		// %%TODO: Shouldn't a mode create be in here somewhere too?
+		eventsFile.Open( WFile::modeReadWrite | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite );
+		eventsFile.Write( events, sess->num_events * sizeof( eventsrec ) );
 		eventsFile.Close();
 	}
 	else
 	{
-		eventsFile.Delete();
+		// %%TODO: Fix this, it looks like this is a bug...
+		WFile::Remove( s );
 	}
 }

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 /**
  * The default list of computer types
@@ -44,6 +45,24 @@ static const int MAX_DEFAULT_CTYPE_VALUE = 11;
 
 
 /**
+ * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
+ */
+void ClearScreen()
+{
+    if ( okansi() )
+    {
+        sess->bout << "\x1b[2J";
+        goxy( 1, 1 );
+    }
+    else
+    {
+		bputch( CL );
+    }
+}
+
+
+
+/**
  * Display character x repeated amount times in nColor, and if bAddNL is true
  * display a new line character.
  * @param x The Character to repeat
@@ -51,11 +70,14 @@ static const int MAX_DEFAULT_CTYPE_VALUE = 11;
  * @param nColor the color in which to display the string
  * @param bAddNL if true, add a new line character at the end.
  */
-void repeat_char( char x, int amount, int nColor )
+void repeat_char( char x, int amount, int nColor, bool bAddNL )
 {
-    GetSession()->bout.Color( nColor );
-    GetSession()->bout << charstr( amount, x );
-    GetSession()->bout.NewLine();
+    ansic( nColor );
+    sess->bout << charstr( amount, x );
+    if ( bAddNL )
+    {
+        nl();
+    }
 }
 
 
@@ -70,28 +92,29 @@ void repeat_char( char x, int amount, int nColor )
 const char *ctypes(int num)
 {
     static char szCtype[81];
-    
-    WIniFile iniFile( WWIV_INI );
-    if ( iniFile.Open( "CTYPES" ) )
+
+    if (ini_init("WWIV.INI", "CTYPES", NULL))
     {
         char szCompType[ 100 ];
         sprintf(szCompType, "COMP_TYPE[%d]", num+1);
-        const char *ss = iniFile.GetValue( szCompType );
+        char* ss =ini_get(szCompType, -1, NULL);
         if (ss && *ss)
         {
             strcpy(szCtype, ss);
             if (ss)
             {
-                return szCtype;
+                ini_done();
+                return(szCtype);
             }
         }
+        ini_done();
         return NULL;
     }
     if ( ( num < 0 ) || ( num > MAX_DEFAULT_CTYPE_VALUE ) )
     {
         return NULL;
     }
-    return default_ctypes[num];
+    return(default_ctypes[num]);
 }
 
 
@@ -131,11 +154,11 @@ void osan(const char *pszText, bool *abort, bool *next)
  */
 void plan(int nWWIVColor, const char *pszText, bool *abort, bool *next)
 {
-    GetSession()->bout.Color( nWWIVColor );
+    ansic( nWWIVColor );
     osan( pszText, abort, next );
 	if (!(*abort))
 	{
-		GetSession()->bout.NewLine();
+		nl();
 	}
 }
 

@@ -1,7 +1,7 @@
 /****************************************************************************/
 /*                                                                          */
 /*                             WWIV Version 5.0x                            */
-/*            Copyright (C) 1998-2004 by WWIV Software Services             */
+/*            Copyright (C) 1998-2003 by WWIV Software Services             */
 /*                       Copyright (c) ????, ????????????                   */
 /*                           Used with permission                           */
 /*                                                                          */
@@ -71,7 +71,7 @@ void stripnl(char *instr)
 void ReadChainText()
 {
   FILE *fp;
-  char szTemp[MAX_PATH];
+  char szTemp[_MAX_PATH];
   int iX;
 
   sprintf(szTemp, "CHAIN.TXT");
@@ -92,7 +92,7 @@ void ReadMenuSetup()
 {
 
   if (Strs == NULL) {
-    char szTemp[MAX_PATH];
+    char szTemp[_MAX_PATH];
     FILE *fp;
     int iAmt, *index, iLen, iX;
 

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -19,23 +19,7 @@
 
 #include "wwiv.h"
 
-char *dateFromTimeTForLog(time_t t)
-{
-  static char szDateString[11];
-  struct tm * pTm = localtime( &t );
 
-  snprintf( szDateString, sizeof( szDateString ), "%02d%02d%02d", pTm->tm_year % 100, pTm->tm_mon+1, pTm->tm_mday );
-  return szDateString;
-}
-
-char *dateFromTimeT(time_t t)
-{
-  static char szDateString[11];
-  struct tm * pTm = localtime( &t );
-
-  snprintf( szDateString, sizeof( szDateString ), "%02d/%02d/%02d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year % 100 );
-  return szDateString;
-}
 
 char *date()
 {
@@ -43,7 +27,7 @@ char *date()
   time_t t = time( NULL );
   struct tm * pTm = localtime( &t );
 
-  snprintf( szDateString, sizeof( szDateString ), "%02d/%02d/%02d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year % 100 );
+  sprintf( szDateString, "%02d/%02d/%02d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year % 100 );
   return szDateString;
 }
 
@@ -54,7 +38,7 @@ char *fulldate()
   time_t t = time( NULL );
   struct tm * pTm = localtime( &t );
 
-  snprintf( szDateString, sizeof( szDateString ), "%02d/%02d/%4d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year + 1900 );
+  sprintf( szDateString, "%02d/%02d/%4d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year + 1900 );
   return szDateString;
 }
 
@@ -65,7 +49,7 @@ char *times()
 
 	time_t tim = time( NULL );
 	struct tm *t = localtime( &tim );
-	snprintf( szTimeString, sizeof( szTimeString ), "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec );
+	sprintf( szTimeString, "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec );
 	return szTimeString;
 }
 
@@ -100,25 +84,29 @@ time_t date_to_daten(const char *datet)
  *
  * The following line would show the date that your BBS.EXE was last changed:
  * char szBuffer[ 81 ];
- * GetSession()->bout.Write("BBS was last modified on %s at %s\r\n",filedate( "BBS.EXE", szBuffer ),
+ * bputs("BBS was last modified on %s at %s\r\n",filedate( "BBS.EXE", szBuffer ),
  *     filetime("BBS.EXE"));
  *
  */
 char *filedate( const char *pszFileName, char *pszReturnValue )
 {
-	WFile file( pszFileName );
-    if ( !file.Exists() )
-
-    if ( !file.Open( WFile::modeReadOnly ) )    
-    {
+	if (!WFile::Exists(pszFileName))
+	{
 		return "";
 	}
 
-    time_t tFileDate = file.GetFileTime();
-	struct tm *pTm = localtime( &tFileDate );
-    
-    // We use 9 here since that is the size of the date format MM/DD/YY + NULL
-	snprintf( pszReturnValue, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, ( pTm->tm_year % 100 ) );
+	int i = open( pszFileName, O_RDONLY );
+	if ( i == -1)
+	{
+		return "";
+	}
+
+	struct stat buf;
+	fstat( i, &buf );
+	close( i );
+
+	struct tm *ptm = localtime( &buf.st_mtime );
+	sprintf( pszReturnValue, "%02d/%02d/%02d", ptm->tm_mon, ptm->tm_mday, ( ptm->tm_year % 100 ) );
 
 	return pszReturnValue;
 }
@@ -134,7 +122,7 @@ double timer()
 #define SECSINMINUTE 60
 #define SECSINHOUR (60 * SECSINMINUTE)
   SYSTEMTIME st;
-  GetLocalTime( &st );
+  GetLocalTime(&st);
 
   long l = ( st.wHour * SECSINHOUR ) + ( st.wMinute * SECSINMINUTE ) + st.wSecond;
   double cputim = static_cast<double>( l ) +
@@ -175,11 +163,11 @@ void ToggleScrollLockKey()
 }
 
 
+bool sysop1()
 /* This function returns the status of scoll lock.  If scroll lock is active
  * (ie, the user has hit scroll lock + the light is lit if there is a
  * scoll lock LED), the sysop is assumed to be available.
  */
-bool sysop1()
 {
 #if defined (__OS2__)
 #if !defined(KBDSTF_SCROLLLOCK_ON)
@@ -238,7 +226,7 @@ char *ctim( double d )
     long lMinute = static_cast<long>( d / MINUTES_PER_HOUR_FLOAT );
 	d -= static_cast<double>( lMinute * MINUTES_PER_HOUR );
     long lSecond = static_cast<long>( d );
-    snprintf( szCurrentTime, sizeof( szCurrentTime ), "%2.2ld:%2.2ld:%2.2ld", lHour, lMinute, lSecond );
+    sprintf( szCurrentTime, "%2.2ld:%2.2ld:%2.2ld", lHour, lMinute, lSecond );
 
     return szCurrentTime;
 }
@@ -264,7 +252,7 @@ char *ctim2( double d, char *ch2 )
     }
     else
     {
-        snprintf( szHours, sizeof( szHours ), "|#1%ld |#9%s", h, (h > 1) ? "hours" : "hour" );
+        sprintf(szHours, "|#1%ld |#9%s", h, (h > 1) ? "hours" : "hour");
     }
     if (m == 0)
     {
@@ -272,7 +260,7 @@ char *ctim2( double d, char *ch2 )
     }
     else
     {
-        snprintf( szMinutes, sizeof( szMinutes ), "|#1%ld |#9%s", m, (m > 1) ? "minutes" : "minute" );
+        sprintf(szMinutes, "|#1%ld |#9%s", m, (m > 1) ? "minutes" : "minute");
     }
     if (s == 0)
     {
@@ -280,7 +268,7 @@ char *ctim2( double d, char *ch2 )
     }
     else
     {
-        snprintf( szSeconds, sizeof( szSeconds ), "|#1%ld |#9%s", s, (s > 1) ? "seconds" : "second" );
+        sprintf(szSeconds, "|#1%ld |#9%s", s, (s > 1) ? "seconds" : "second");
     }
 
     if (h == 0)

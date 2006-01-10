@@ -1,6 +1,6 @@
 ==============================================================================
                            WWIV 5.0 What's New List
-                 Copyright 1999-2006 WWIV Software Services
+                 Copyright 1999-2003 WWIV Software Services
 ==============================================================================
 
 * File compatable with 4.30/4.31
@@ -51,10 +51,3 @@
   EXEC_WAITFORIDLETIME = (time to wait in milliseconds, only used on 
                          Windows NT/2K/XP unless EXEC_USEWAITFORIDLE=0).  The
                          default value for this is 2000 (2 seconds)
-
-* Changes to CHAT.INI
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  CH_PROMPT's allowable values for true and false are now Y and N 
-  (like the rest of WWIV), and not 1 and 0.  Please change this in CHAT.INI 
-  when you upgrade to this version.  
-

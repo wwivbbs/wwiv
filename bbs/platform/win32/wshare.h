@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)2005-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -17,21 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_RUNNABLE_H__
-#define __INCLUDED_RUNNABLE_H__
+FILE *fsh_open(const char *path, char *mode);
+void fsh_close(FILE *f);
+
+size_t fsh_read(void *ptr, size_t size, size_t n, FILE * stream);
+size_t fsh_write(const void *ptr, size_t size, size_t n, FILE * stream);
+
+//#endif // __INCLUDED_WSHARE_H__
 
 
-class Runnable
-{
-public:
-    /////////////////////////////////////////////////////////////////////////
-    //
-    // Member functions
-    //
 
-    Runnable() {}
-    virtual ~Runnable() {}
-    virtual int Run( int argc, char *argv[] ) = 0;
-};
-
-#endif // __INCLUDED_RUNNABLE_H__

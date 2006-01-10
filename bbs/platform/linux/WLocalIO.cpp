@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -34,15 +34,9 @@ WLocalIO::WLocalIO()
 	// These 2 lines must remain in here.
 	ExtendedKeyWaiting = 0;
 	wx = 0;
-	//m_nWfcStatus = 0;
+	m_nWfcStatus = 0;
 
 	// TODO (for kwalker) Add Linux platform specific console maniuplation stuff
-}
-
-
-WLocalIO::WLocalIO( const WLocalIO& copy )
-{
-    printf("OOPS! - WLocalIO Copy Constructor called!\r\n" );
 }
 
 
@@ -64,9 +58,9 @@ void WLocalIO::set_global_handle( bool bOpenFile, bool bOnlyUpdateVariable )
     {
         if (!fileGlobalCap.IsOpen())
         {
-            snprintf( szFileName, sizeof( szFileName ), "%sglobal-%d.txt", syscfg.gfilesdir, GetApplication()->GetInstanceNumber() );
-            fileGlobalCap.SetName( szFileName );
-            bool bOpen = fileGlobalCap.Open( WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
+            sprintf(szFileName, "%sglobal-%d.txt", syscfg.gfilesdir, app->GetInstanceNumber());
+            fileGlobalCap.SetName(szFileName);
+            bool bOpen = fileGlobalCap.Open(WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
             global_ptr = 0;
             global_buf = static_cast<char *>( BbsAllocA(GLOBAL_SIZE) );
             if (!bOpen || (!global_buf))
@@ -142,8 +136,8 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr)
             set_global_handle( false );
             x_only = true;
             wx = 0;
-            snprintf( szTempFileName, sizeof( szTempFileName ), "%s%s", syscfgovr.tempdir, pszFileName );
-            fileGlobalCap.SetName( szTempFileName );
+            sprintf(szTempFileName, "%s%s", syscfgovr.tempdir, pszFileName);
+            fileGlobalCap.SetName(szTempFileName);
             if (ovwr)
             {
                 fileGlobalCap.Open(WFile::modeBinary | WFile::modeText | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
@@ -319,6 +313,11 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
 }
 
 
+void WLocalIO::pr_Wait(int i1)
+{
+}
+
+
 
 /*
  * set_protect sets the number of lines protected at the top of the screen.
@@ -328,7 +327,7 @@ void WLocalIO::set_protect(int l)
 }
 
 
-void WLocalIO::savescreen()
+void WLocalIO::savescreen(screentype * s)
 {
 }
 
@@ -336,7 +335,7 @@ void WLocalIO::savescreen()
 /*
  * restorescreen restores a screen previously saved with savescreen
  */
-void WLocalIO::restorescreen()
+void WLocalIO::restorescreen(screentype * s)
 {
 }
 
@@ -354,13 +353,20 @@ char xlate[] =
 };
 
 
-char WLocalIO::scan_to_char( int nKeyCode )
+char WLocalIO::scan_to_char(unsigned char ch)
 {
-    return ( nKeyCode >= 16 && nKeyCode <= 50 ) ? xlate[ nKeyCode - 16 ] : '\x00';
+    if ((ch >= 16) && (ch <= 50))
+    {
+        return xlate[ch - 16];
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 
-void WLocalIO::alt_key( int nKeyCode )
+void WLocalIO::alt_key(unsigned char ch)
 {
 }
 
@@ -374,6 +380,11 @@ void WLocalIO::skey(char ch)
 
 
 void WLocalIO::tleft(bool bCheckForTimeOut)
+{
+}
+
+
+void WLocalIO::UpdateTopScreenImpl()
 {
 }
 
@@ -428,8 +439,8 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc)
 {
 	*cl = 0;
 	*atr= 0;
-	*cc = static_cast<char>( curatr );
-	strcpy( xl, endofline );
+	*cc = (char) curatr;
+	strcpy(xl, endofline);
 }
 
 
@@ -455,7 +466,7 @@ void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen)
 }
 
 
-void WLocalIO::SetCursor(int cursorStyle)
+void WLocalIO::SetCursor(UINT cursorStyle)
 {
 }
 
@@ -496,11 +507,3 @@ int WLocalIO::GetEditLineStringLength( const char *pszText )
 	return i;
 }
 
-
-void WLocalIO::UpdateNativeTitleBar()
-{
-}
-
-void WLocalIO::UpdateTopScreen(WStatus* status, WSession* session, int foo)
-{
-}

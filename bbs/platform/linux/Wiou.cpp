@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,7 +20,6 @@
 
 #include "wwiv.h"
 #include "WComm.h"
-#include "Wiou.h"
 #include <termios.h>
 #include <sys/poll.h>
 #include <sys/ioctl.h>
@@ -28,7 +27,8 @@
 
 #define TTY "/dev/tty"
 
-void WIOUnix::set_terminal( bool initMode )
+
+void set_terminal( bool initMode )
 {
 	static struct termios foo;
 	static struct termios boo;
@@ -44,63 +44,6 @@ void WIOUnix::set_terminal( bool initMode )
 	{
 		tcsetattr( fileno( stdin ), TCSANOW, &boo );
 	}
-}
-
-
-WIOUnix::WIOUnix()
-{
-    tty_open = 0;
-    if ( ttyf != NULL )
-	{
-		return;
-	}
-
-	if ( ( ttyf = fdopen( ::open( TTY, O_RDWR ), "r" ) ) == NULL )
-	{
-		ttyf = stdin;
-	}
-	else
-	{
-		setbuf( ttyf, NULL );
-	}
-
-
-	int f = fileno( ttyf );
-
-	set_terminal( true );
-
-	struct termios ttyb;
-
-#ifdef linux
-	ioctl( f, TCGETS, &ttysav );
-	ioctl( f, TCGETS, &ttyb );
-	ttyb.c_lflag &= ~( ECHO | ISIG );
-	ioctl( f, TCSETS, &ttyb );
-#else
-	ioctl( f, TIOCGETA, &ttysav );
-	ioctl( f, TIOCGETA, &ttyb );
-	ttyb.c_lflag &= ~( ECHO | ISIG );
-	ioctl( f, TIOCSETA, &ttyb );
-#endif
-}
-
-
-WIOUnix::~WIOUnix()
-{
-	int f = fileno( ttyf );
-
-#ifdef linux
-	ioctl( f, TCSETS, &ttysav );
-#else
-	ioctl( f, TIOCSETA, &ttysav );
-#endif
-
-	if ( ttyf != stdin )
-	{
-		fclose( ttyf );
-	}
-
-	set_terminal( false );
 }
 
 
@@ -236,6 +179,70 @@ bool WIOUnix::incoming()
 }
 
 
+bool WIOUnix::startup()
+{
+	if ( tty_open )
+	{
+		return true;
+	}
+
+	if ( ( ttyf = fdopen( ::open( TTY, O_RDWR ), "r" ) ) == NULL )
+	{
+		ttyf = stdin;
+	}
+	else
+	{
+		setbuf( ttyf, NULL );
+	}
+
+
+	int f = fileno( ttyf );
+
+#ifdef linux
+	ioctl( f, TCGETS, &ttyb );
+	ioctl( f, TCGETS, &ttysav );
+	ttyb.c_lflag &= ~( ECHO | ISIG );
+	ioctl( f, TCSETS, &ttyb );
+#else
+	ioctl( f, TIOCGETA, &ttyb );
+	ioctl( f, TIOCGETA, &ttysav );
+	ttyb.c_lflag &= ~( ECHO | ISIG );
+	ioctl( f, TIOCSETA, &ttyb );
+#endif
+
+	set_terminal( true );
+
+	tty_open = f;
+	return true;
+}
+
+
+bool WIOUnix::shutdown()
+{
+	if ( !tty_open )
+	{
+		std::cout << "DBG: close_tty called when the tty is not open!\n";
+		return true;
+	}
+
+	set_terminal( false );
+
+#ifdef linux
+	ioctl( tty_open, TCSETS, &ttysav );
+#else
+	ioctl( tty_open, TIOCSETA, &ttysav );
+#endif
+
+	if ( ttyf != stdin )
+	{
+		fclose( ttyf );
+	}
+
+	tty_open = 0;
+	return true;
+}
+
+
 void WIOUnix::StopThreads()
 {
 }
@@ -246,13 +253,4 @@ void WIOUnix::StartThreads()
 }
 
 
-unsigned int WIOUnix::GetHandle() const
-{
-    // Is this needed or should we just return 0?
-    return fileno( stdout );
-}
 
-unsigned int WIOUnix::GetDoorHandle() const
-{
-    return GetHandle();
-}

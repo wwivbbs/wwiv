@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 void SetupThreadRecordsBeforeScan();
@@ -38,6 +39,7 @@ void HandleListReplies( int nMessageNumber );
 
 static char s_szFindString[21];
 
+
 void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan )
 {
 	int j, k;
@@ -47,14 +49,14 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 
 	int val = 0;
 	bool realexpress = express;
-	iscan( GetSession()->GetCurrentMessageArea() );
-	if ( GetSession()->GetCurrentReadMessageArea() < 0 )
+	iscan( sess->GetCurrentMessageArea() );
+	if ( sess->GetCurrentReadMessageArea() < 0 )
 	{
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "No subs available.\r\n\n";
+		nl();
+		sess->bout << "No subs available.\r\n\n";
 		return;
 	}
-	if ( GetSession()->IsMessageThreadingEnabled() )
+	if ( sess->IsMessageThreadingEnabled() )
 	{
 		SetupThreadRecordsBeforeScan();
 	}
@@ -63,28 +65,28 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 	bool quit = false;
 	do
 	{
-		if ( GetSession()->IsMessageThreadingEnabled() )
+		if ( sess->IsMessageThreadingEnabled() )
 		{
-			for ( j = 0; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++ )
+			for ( j = 0; j <= sess->GetNumMessagesInCurrentMessageArea(); j++ )
 			{
-				for ( k = 0; k <= GetSession()->GetNumMessagesInCurrentMessageArea(); k++ )
+				for ( k = 0; k <= sess->GetNumMessagesInCurrentMessageArea(); k++ )
 				{
 					if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[k].message_code ) )
 					{
 						thread[j].parent_num = thread[k].msg_num;
-						k = GetSession()->GetNumMessagesInCurrentMessageArea() + 1;
+						k = sess->GetNumMessagesInCurrentMessageArea() + 1;
 					}
 				}
 			}
 		}
-		GetSession()->localIO()->tleft( true );
+		app->localIO->tleft( true );
 		CheckForHangup();
-		set_net_num( (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) ? xsubs[GetSession()->GetCurrentReadMessageArea()].nets[0].net_num : 0 );
+		set_net_num( (xsubs[sess->GetCurrentReadMessageArea()].num_nets) ? xsubs[sess->GetCurrentReadMessageArea()].nets[0].net_num : 0 );
 		if ( nScanOptionType != SCAN_OPTION_READ_PROMPT )
 		{
-			resynch( GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL );
+			resynch( sess->GetCurrentMessageArea(), &nMessageNumber, NULL );
 		}
-		write_inst( INST_LOC_SUBS, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE );
+		write_inst( INST_LOC_SUBS, usub[sess->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE );
 
 		switch ( nScanOptionType )
 		{
@@ -101,7 +103,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 		case SCAN_OPTION_READ_MESSAGE: // Read Message
 			{
 				bool next = false;
-				if ( nMessageNumber > 0 && nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() )
+				if ( nMessageNumber > 0 && nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea() )
 				{
 					if ( forcescansub )
 					{
@@ -113,18 +115,18 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 						incom = true;
 					}
 				}
-				GetSession()->bout.Color( 0 );
-				GetSession()->bout.NewLine();
-				if ( GetSession()->IsMessageThreadingEnabled() )
+				ansic( 0 );
+				nl();
+				if ( sess->IsMessageThreadingEnabled() )
 				{
 					if (thread[nMessageNumber].used)
 					{
-						GetSession()->bout << "|#9Current Message is a reply to Msg #|#2" << thread[nMessageNumber].parent_num << wwiv::endl;
+						sess->bout << "|#9Current Message is a reply to Msg #|#2" << thread[nMessageNumber].parent_num << wwiv::endl;
 						//temp isn't used anywhere else here, not sure why this code is here.
 						//strcpy(temp, thread[nMessageNumber].message_code);
 					}
 					k = 0;
-					for ( j = 0; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++ )
+					for ( j = 0; j <= sess->GetNumMessagesInCurrentMessageArea(); j++ )
 					{
 						if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) &&
                              j != nMessageNumber )
@@ -134,22 +136,22 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 					}
 					if (k)
 					{
-						GetSession()->bout << "|#9Current Message has |12" << k << "|#9";
+						sess->bout << "|#9Current Message has |12" << k << "|#9";
 						if (k == 1)
 						{
-							GetSession()->bout << "reply.";
+							sess->bout << "reply.";
 						}
 						else
 						{
-							GetSession()->bout << "replies.";
+							sess->bout << "replies.";
 						}
 					}
-					GetSession()->bout << wwiv::endl;;
+					sess->bout << wwiv::endl;;
 				}
 				if ( next )
 				{
 					++nMessageNumber;
-					if ( nMessageNumber > GetSession()->GetNumMessagesInCurrentMessageArea() )
+					if ( nMessageNumber > sess->GetNumMessagesInCurrentMessageArea() )
 					{
 						done = true;
 					}
@@ -185,12 +187,12 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 	}
 	if ( ( val & 1 ) && lcs() && !express )
 	{
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#5Validate messages here? ";
+		nl();
+		sess->bout << "|#5Validate messages here? ";
 		if (noyes())
 		{
 			open_sub( true );
-			for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++)
+			for (int i = 1; i <= sess->GetNumMessagesInCurrentMessageArea(); i++)
 			{
 				postrec* p3 = get_post(i);
 				if (p3->status & (status_unvalidated | status_delete))
@@ -204,14 +206,14 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 	}
 	if (  (val & 2 ) && lcs() && !express )
 	{
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#5Network validate here? ";
+		nl();
+		sess->bout << "|#5Network validate here? ";
 		if (yesno())
 		{
 			int nNumMsgsSent = 0;
 			open_sub( true );
 			int nMsgToValidate = 0;
-			for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++)
+			for (int i = 1; i <= sess->GetNumMessagesInCurrentMessageArea(); i++)
 			{
 				if (get_post(i)->status & status_pending_net)
 				{
@@ -222,7 +224,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 			if (p3)
 			{
 				nMsgToValidate = 0;
-				for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++)
+				for (int i = 1; i <= sess->GetNumMessagesInCurrentMessageArea(); i++)
 				{
 					postrec *p4 = get_post(i);
 					if (p4->status & status_pending_net)
@@ -237,7 +239,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 
 				for (int j = 0; j < nMsgToValidate; j++)
 				{
-					send_net_post(p3 + j, subboards[GetSession()->GetCurrentReadMessageArea()].filename, GetSession()->GetCurrentReadMessageArea());
+					send_net_post(p3 + j, subboards[sess->GetCurrentReadMessageArea()].filename, sess->GetCurrentReadMessageArea());
 					nNumMsgsSent++;
 				}
 
@@ -248,19 +250,19 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 				close_sub();
 			}
 
-			GetSession()->bout.NewLine();
-			GetSession()->bout << nNumMsgsSent << " messages sent.";
-			GetSession()->bout.NewLine( 2 );
+			nl();
+			sess->bout << nNumMsgsSent << " messages sent.";
+			nl( 2 );
 		}
 	}
 	if ( !quit && !express )
 	{
-		GetSession()->bout.NewLine();
-		if ( !GetSession()->GetCurrentUser()->IsRestrictionPost() &&
-			 ( GetSession()->GetCurrentUser()->GetNumPostsToday() < getslrec( GetSession()->GetEffectiveSl() ).posts ) &&
-			 ( GetSession()->GetEffectiveSl() >= subboards[GetSession()->GetCurrentReadMessageArea()].postsl ) )
+		nl();
+		if ( !sess->thisuser.isRestrictionPost() &&
+			 ( sess->thisuser.GetNumPostsToday() < getslrec( sess->GetEffectiveSl() ).posts ) &&
+			 ( sess->GetEffectiveSl() >= subboards[sess->GetCurrentReadMessageArea()].postsl ) )
 		{
-			GetSession()->bout << "|#5Post on " << subboards[GetSession()->GetCurrentReadMessageArea()].name << "? ";
+			sess->bout << "|#5Post on " << subboards[sess->GetCurrentReadMessageArea()].name << "? ";
 			irt[0] = '\0';
 			irt_name[0] = '\0';
 			grab_quotes(NULL, NULL);
@@ -270,7 +272,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 			}
 		}
 	}
-	GetSession()->bout.NewLine();
+	nl();
 	if ( thread )
 	{
 		BbsFreeMemory( thread );
@@ -286,10 +288,10 @@ void SetupThreadRecordsBeforeScan()
 		BbsFreeMemory(thread);
 	}
 	thread = NULL;
-	thread = static_cast<threadrec *>( BbsAllocWithComment( ( GetSession()->GetNumMessagesInCurrentMessageArea() + 1 ) * sizeof( threadrec ), "Thread Record" ) );
+	thread = static_cast<threadrec *>( BbsAllocWithComment( ( sess->GetNumMessagesInCurrentMessageArea() + 1 ) * sizeof( threadrec ), "Thread Record" ) );
 	WWIV_ASSERT(thread != NULL);
 
-	for (unsigned short tempnum = 1; tempnum <= GetSession()->GetNumMessagesInCurrentMessageArea(); tempnum++) // was 0.
+	for (unsigned short tempnum = 1; tempnum <= sess->GetNumMessagesInCurrentMessageArea(); tempnum++) // was 0.
 	{
 		strcpy(thread[tempnum].parent_code, "");
 		strcpy(thread[tempnum].message_code, "");
@@ -299,7 +301,7 @@ void SetupThreadRecordsBeforeScan()
 
 		postrec *pPostRec1 = get_post(tempnum);
 		long lFileLen;
-		char *b = readfile(&(pPostRec1->msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename), &lFileLen);
+		char *b = readfile(&(pPostRec1->msg), (subboards[sess->GetCurrentReadMessageArea()].filename), &lFileLen);
 		for (long l1 = 0; l1 < lFileLen; l1++)
 		{
 			if ( b[l1] == 4 && b[l1 + 1] == '0' && b[l1 + 2] == 'P' )
@@ -347,22 +349,22 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 	bool bFollowThread = false;
 	char szReadPrompt[ 255 ];
 	char szSubNamePrompt[81];
-	GetSession()->threadID = "";
+	sess->threadID = "";
 	resetnsp();
 	GetScanReadPrompts( nMessageNumber, szReadPrompt, szSubNamePrompt );
-	GetSession()->bout.NewLine();
+	nl();
 	char szUserInput[ 81 ];
 	if (express)
 	{
 		szReadPrompt[0]		= '\0';
 		szSubNamePrompt[0]	= '\0';
-		GetSession()->bout.NewLine( 2 );
+		nl( 2 );
 	}
 	else
 	{
-		GetSession()->bout << szReadPrompt;
+		sess->bout << szReadPrompt;
 		input( szUserInput, 5, true );
-		resynch( GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL );
+		resynch( sess->GetCurrentMessageArea(), &nMessageNumber, NULL );
 		while (szUserInput[0] == 32)
 		{
 			char szTempBuffer[ 255 ];
@@ -370,7 +372,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			strcpy(szUserInput, szTempBuffer);
 		}
 	}
-	if ( bTitleScan && szUserInput[0] == 0 && nMessageNumber < GetSession()->GetNumMessagesInCurrentMessageArea() )
+	if ( bTitleScan && szUserInput[0] == 0 && nMessageNumber < sess->GetNumMessagesInCurrentMessageArea() )
 	{
 		nScanOptionType = SCAN_OPTION_LIST_TITLES;
 		szUserInput[0] = 'T';
@@ -386,13 +388,13 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 	{
 		bFollowThread = false;
 		nUserInput = nMessageNumber + 1;
-		if (nUserInput >= GetSession()->GetNumMessagesInCurrentMessageArea() + 1)
+		if (nUserInput >= sess->GetNumMessagesInCurrentMessageArea() + 1)
 		{
 			done = true;
 		}
 	}
 
-	if ( nUserInput != 0 && nUserInput <= GetSession()->GetNumMessagesInCurrentMessageArea() && nUserInput >= 1 )
+	if ( nUserInput != 0 && nUserInput <= sess->GetNumMessagesInCurrentMessageArea() && nUserInput >= 1 )
 	{
 		nScanOptionType = SCAN_OPTION_READ_MESSAGE;
 		nMessageNumber = nUserInput;
@@ -408,7 +410,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
         case '$':   // Last message in area.
             {
                 nScanOptionType = SCAN_OPTION_READ_MESSAGE;
-                nMessageNumber = GetSession()->GetNumMessagesInCurrentMessageArea();
+                nMessageNumber = sess->GetNumMessagesInCurrentMessageArea();
             }
             break;
 		case 'F':   // Find addition
@@ -426,21 +428,19 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 		case 'B':
 			if (*nextsub != 0)
 			{
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#5Remove this sub from your Q-Scan? ";
+				nl();
+				sess->bout << "|#5Remove this sub from your Q-Scan? ";
 				if (yesno())
 				{
-					qsc_q[usub[GetSession()->GetCurrentMessageArea()].subnum / 32] ^= (1L << (usub[GetSession()->GetCurrentMessageArea()].subnum % 32));
+					qsc_q[usub[sess->GetCurrentMessageArea()].subnum / 32] ^= (1L << (usub[sess->GetCurrentMessageArea()].subnum % 32));
 				}
 				else
 				{
-					GetSession()->bout.NewLine();
-					GetSession()->bout << "|#9Mark messages in "<< subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name << " as read? ";
+					nl();
+					sess->bout << "|#9Mark messages in "<< subboards[usub[sess->GetCurrentMessageArea()].subnum].name << " as read? ";
 					if (yesno())
 					{
-                        WStatus *pStatus = GetApplication()->GetStatusManager()->GetStatus();
-                        qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
-                        delete pStatus;
+						qsc_p[usub[sess->GetCurrentMessageArea()].subnum] = status.qscanptr - 1L;
 					}
 				}
 
@@ -457,7 +457,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			nScanOptionType = SCAN_OPTION_READ_MESSAGE;
 			break;
 		case '@':
-			strcpy(irt_sub, subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name);
+			strcpy(irt_sub, subboards[usub[sess->GetCurrentMessageArea()].subnum].name);
 		case 'O':
 		case 'A':
 			{
@@ -467,7 +467,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 		case 'P':
 			irt[0]          = '\0';
 			irt_name[0]     = '\0';
-			GetSession()->threadID = "";
+			sess->threadID = "";
 		case 'W':
 			HandleMessageReply( nMessageNumber );
 			break;
@@ -478,7 +478,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			HandleMessageHelp();
 			break;
 		case '-':
-			if ( nMessageNumber > 1 && ( nMessageNumber - 1 < GetSession()->GetNumMessagesInCurrentMessageArea() ) )
+			if ( nMessageNumber > 1 && ( nMessageNumber - 1 < sess->GetNumMessagesInCurrentMessageArea() ) )
 			{
 				--nMessageNumber;
 				nScanOptionType = SCAN_OPTION_READ_MESSAGE;
@@ -491,7 +491,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			HandleListReplies( nMessageNumber );
 			break;
 		case '[':
-			if ( GetSession()->IsMessageThreadingEnabled() )
+			if ( sess->IsMessageThreadingEnabled() )
 			{
 				if (forcescansub)
 				{
@@ -505,7 +505,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			}
 			break;
 		case ']':
-			if ( GetSession()->IsMessageThreadingEnabled() )
+			if ( sess->IsMessageThreadingEnabled() )
 			{
 				if (forcescansub)
 				{
@@ -513,13 +513,13 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 				}
 				else
 				{
-					for ( int j = nMessageNumber; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++ )
+					for ( int j = nMessageNumber; j <= sess->GetNumMessagesInCurrentMessageArea(); j++ )
 					{
 						if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) &&
                              j != nMessageNumber )
 						{
 							nMessageNumber = j;
-							j = GetSession()->GetNumMessagesInCurrentMessageArea();
+							j = sess->GetNumMessagesInCurrentMessageArea();
 							nScanOptionType = SCAN_OPTION_READ_MESSAGE;
 						}
 					}
@@ -527,7 +527,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			}
 			break;
 		case '>':
-			if ( GetSession()->IsMessageThreadingEnabled() )
+			if ( sess->IsMessageThreadingEnabled() )
 			{
 				if (forcescansub)
 				{
@@ -542,7 +542,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 						original = nMessageNumber;
 					}
 					int j = 0;
-					for (j = nMessageNumber; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++)
+					for (j = nMessageNumber; j <= sess->GetNumMessagesInCurrentMessageArea(); j++)
 					{
 						if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[original].message_code ) &&
                              j != nMessageNumber )
@@ -551,7 +551,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 							break;
 						}
 					}
-					if (j >= GetSession()->GetNumMessagesInCurrentMessageArea())
+					if (j >= sess->GetNumMessagesInCurrentMessageArea())
 					{
 						nMessageNumber = original;
 						bFollowThread = false;
@@ -562,72 +562,72 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			break;
 
 		case 'V':
-			if ( cs() && ( get_post( nMessageNumber )->ownersys == 0 ) && ( nMessageNumber > 0 ) && ( nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() ) )
+			if ( cs() && ( get_post( nMessageNumber )->ownersys == 0 ) && ( nMessageNumber > 0 ) && ( nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea() ) )
 			{
 				valuser( get_post( nMessageNumber )->owneruser );
 			}
-			else if ( cs() && ( nMessageNumber > 0 ) && ( nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() ) )
+			else if ( cs() && ( nMessageNumber > 0 ) && ( nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea() ) )
 			{
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|12Post from another system.\r\n\n";
+				nl();
+				sess->bout << "|12Post from another system.\r\n\n";
 			}
 			break;
 		case 'N':
-			if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea()))
+			if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea()))
 			{
 				open_sub( true );
-				resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+				resynch(sess->GetCurrentMessageArea(), &nMessageNumber, NULL);
 				postrec *p3 = get_post(nMessageNumber);
 				p3->status ^= status_no_delete;
 				write_post(nMessageNumber, p3);
 				close_sub();
-				GetSession()->bout.NewLine();
+				nl();
 				if (p3->status & status_no_delete)
 				{
-					GetSession()->bout << "|#9Message will |12NOT|#9 be auto-purged.\r\n";
+					sess->bout << "|#9Message will |12NOT|#9 be auto-purged.\r\n";
 				}
 				else
 				{
-					GetSession()->bout << "|#9Message |#2CAN|#9 now be auto-purged.\r\n";
+					sess->bout << "|#9Message |#2CAN|#9 now be auto-purged.\r\n";
 				}
-				GetSession()->bout.NewLine();
+				nl();
 			}
 			break;
 		case 'X':
-			if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea()) &&
-				(subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net) &&
-				(xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets))
+			if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea()) &&
+				(subboards[sess->GetCurrentReadMessageArea()].anony & anony_val_net) &&
+				(xsubs[sess->GetCurrentReadMessageArea()].num_nets))
 			{
 				open_sub( true );
-				resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+				resynch(sess->GetCurrentMessageArea(), &nMessageNumber, NULL);
 				postrec *p3 = get_post(nMessageNumber);
 				p3->status ^= status_pending_net;
 				write_post(nMessageNumber, p3);
 				close_sub();
-				GetSession()->bout.NewLine();
+				nl();
 				if (p3->status & status_pending_net)
 				{
 					val |= 2;
-					GetSession()->bout << "|#9Will be sent out on net now.\r\n";
+					sess->bout << "|#9Will be sent out on net now.\r\n";
 				}
 				else
 				{
-					GetSession()->bout << "|#9Not set for net pending now.\r\n";
+					sess->bout << "|#9Not set for net pending now.\r\n";
 				}
-				GetSession()->bout.NewLine();
+				nl();
 			}
 			break;
 		case 'U':
-			if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea()))
+			if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea()))
 			{
 				open_sub( true );
-				resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+				resynch(sess->GetCurrentMessageArea(), &nMessageNumber, NULL);
 				postrec *p3 = get_post(nMessageNumber);
 				p3->anony = 0;
 				write_post(nMessageNumber, p3);
 				close_sub();
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#9Message is not anonymous now.\r\n";
+				nl();
+				sess->bout << "|#9Message is not anonymous now.\r\n";
 			}
 			break;
 		case 'D':
@@ -657,7 +657,7 @@ void GetScanReadPrompts( int nMessageNumber, char *pszReadPrompt, char *pszSubNa
 	char szLocalNetworkName[81];
 	if (forcescansub)
 	{
-		if ( nMessageNumber < GetSession()->GetNumMessagesInCurrentMessageArea() )
+		if ( nMessageNumber < sess->GetNumMessagesInCurrentMessageArea() )
 		{
 			strcpy(pszReadPrompt, "|#1Press |#7[|#2ENTER|#7]|#1 to go to the next message...");
 		}
@@ -668,18 +668,18 @@ void GetScanReadPrompts( int nMessageNumber, char *pszReadPrompt, char *pszSubNa
 	}
 	else
 	{
-		if ( xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets )
+		if ( xsubs[sess->GetCurrentReadMessageArea()].num_nets )
 		{
-			sprintf( szLocalNetworkName, "%s", GetSession()->GetNetworkName() );
+			sprintf( szLocalNetworkName, "%s", sess->GetNetworkName() );
 		}
 		else
 		{
 			set_net_num( 0 );
 			sprintf(szLocalNetworkName, "%s", "Local");
 		}
-		sprintf(pszSubNamePrompt, "|#7[|#1%s|#7] [|#2%s|#7]", szLocalNetworkName, subboards[GetSession()->GetCurrentReadMessageArea()].name);
+		sprintf(pszSubNamePrompt, "|#7[|#1%s|#7] [|#2%s|#7]", szLocalNetworkName, subboards[sess->GetCurrentReadMessageArea()].name);
 		char szTemp[81];
-		if ( GetSession()->GetNumMessagesInCurrentMessageArea()> nMessageNumber )
+		if ( sess->GetNumMessagesInCurrentMessageArea()> nMessageNumber )
 		{
 			sprintf( szTemp, "%d", nMessageNumber + 1 );
 		}
@@ -687,8 +687,8 @@ void GetScanReadPrompts( int nMessageNumber, char *pszReadPrompt, char *pszSubNa
 		{
 			sprintf(szTemp, "\bExit Sub");
 		}
-        //sprintf(pszReadPrompt, "|#7(|#1Read |#21-%lu|#1, |#7[|#2ENTER|#7]|#1 = #|#2%s|#7) :|#0 ", GetSession()->GetNumMessagesInCurrentMessageArea(), szTemp);
-        sprintf(pszReadPrompt, "%s |#7(|#1Read |#2%lu |#1of |#2%lu|#1|#7) : ", pszSubNamePrompt, nMessageNumber, GetSession()->GetNumMessagesInCurrentMessageArea() );
+        //sprintf(pszReadPrompt, "|#7(|#1Read |#21-%lu|#1, |#7[|#2ENTER|#7]|#1 = #|#2%s|#7) :|#0 ", sess->GetNumMessagesInCurrentMessageArea(), szTemp);
+        sprintf(pszReadPrompt, "%s |#7(|#1Read |#2%lu |#1of |#2%lu|#1|#7) : ", pszSubNamePrompt, nMessageNumber, sess->GetNumMessagesInCurrentMessageArea() );
 	}
 }
 
@@ -701,16 +701,16 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 	}
 	if ( get_post( nMessageNumber )->ownersys && !get_post( nMessageNumber )->owneruser )
 	{
-		grab_user_name(&(get_post( nMessageNumber )->msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename);
+		grab_user_name(&(get_post( nMessageNumber )->msg), subboards[sess->GetCurrentReadMessageArea()].filename);
 	}
-	grab_quotes( &(get_post( nMessageNumber )->msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename );
+	grab_quotes( &(get_post( nMessageNumber )->msg), subboards[sess->GetCurrentReadMessageArea()].filename );
 
-    if ( okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote() && nMessageNumber > 0 &&
-         nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() && pszUserInput[0] != 'O' )
+    if ( okfsed() && sess->thisuser.isUseAutoQuote() && nMessageNumber > 0 &&
+         nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea() && pszUserInput[0] != 'O' )
 	{
 		long lMessageLen;
 		char *b=readfile(&( get_post( nMessageNumber )->msg ),
-			(subboards[GetSession()->GetCurrentReadMessageArea()].filename),&lMessageLen);
+			(subboards[sess->GetCurrentReadMessageArea()].filename),&lMessageLen);
 		if (pszUserInput[0] == '@')
 		{
 			auto_quote(b, lMessageLen, 1, get_post( nMessageNumber )->daten);
@@ -726,7 +726,7 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 		set_net_num( get_post( nMessageNumber )->title[80] );
 		if (get_post( nMessageNumber )->title[80] == -1)
 		{
-			GetSession()->bout << "|12Deleted network.\r\n";
+			sess->bout << "|12Deleted network.\r\n";
 			return;
 		}
 	}
@@ -734,8 +734,8 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 	if ( pszUserInput[0] == 'O' && ( so() || lcs() ) )
 	{
 		irt_sub[0] = 0;
-		show_files("*.frm", syscfg.gfilesdir);
-		GetSession()->bout << "|#2Which form letter: ";
+		show_files("*.FRM", syscfg.gfilesdir);
+		sess->bout << "|#2Which form letter: ";
 		char szFileName[ MAX_PATH ];
 		input( szFileName, 8, true );
 		if (!szFileName[0])
@@ -757,11 +757,11 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 	}
 	else if ( pszUserInput[0] == '@' )
 	{
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#21|#7]|#9 Reply to Different Address\r\n";
-		GetSession()->bout << "|#22|#7]|#9 Forward Message\r\n";
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#7(Q=Quit) Select [1,2] : ";
+		nl();
+		sess->bout << "|#21|#7]|#9 Reply to Different Address\r\n";
+		sess->bout << "|#22|#7]|#9 Forward Message\r\n";
+		nl();
+		sess->bout << "|#7(Q=Quit) Select [1,2] : ";
 		char chReply = onek( "Q12\r", true );
 		switch ( chReply )
 		{
@@ -771,8 +771,8 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 			break;
 		case '1':
 			{
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#9Enter user name or number:\r\n:";
+				nl();
+				sess->bout << "|#9Enter user name or number:\r\n:";
 				char szUserNameOrNumber[ 81 ];
 				input( szUserNameOrNumber, 75, true );
 				size_t nAtPos = strcspn(szUserNameOrNumber, "@");
@@ -780,7 +780,7 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 				{
 					if (strstr(szUserNameOrNumber, "@32767") == NULL)
 					{
-						WWIV_STRLWR(szUserNameOrNumber);
+						strlwr(szUserNameOrNumber);
 						strcat(szUserNameOrNumber, " @32767");
 					}
 				}
@@ -795,10 +795,10 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 			break;
 		case '2':
 			{
-				if ( nMessageNumber > 0 && nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() )
+				if ( nMessageNumber > 0 && nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea() )
 				{
 					long lMessageLen;
-					char *b = readfile(&(get_post( nMessageNumber )->msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename), &lMessageLen);
+					char *b = readfile(&(get_post( nMessageNumber )->msg), (subboards[sess->GetCurrentReadMessageArea()].filename), &lMessageLen);
 					char szFileName[ MAX_PATH ];
 					strcpy(szFileName, "EXTRACT.TMP");
 					if (WFile::Exists(szFileName))
@@ -808,7 +808,7 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 					WFile fileExtract( szFileName );
 					if ( !fileExtract.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite ) )
 					{
-						GetSession()->bout << "|12Could not open file for writing.\r\n";
+						sess->bout << "|12Could not open file for writing.\r\n";
 					}
 					else
 					{
@@ -823,24 +823,24 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 							}
 						}
 						char szBuffer[ 255 ];
-						sprintf( szBuffer, "ON: %s", subboards[GetSession()->GetCurrentReadMessageArea()].name );
+						sprintf( szBuffer, "ON: %s", subboards[sess->GetCurrentReadMessageArea()].name );
 						fileExtract.Write( szBuffer, strlen( szBuffer ) );
-						fileExtract.Write( "\r\n\r\n", 4 );
+						fileExtract.Write( const_cast<char *>("\r\n\r\n"), 4 );
 						fileExtract.Write( get_post( nMessageNumber )->title, strlen(get_post( nMessageNumber )->title) );
-						fileExtract.Write( "\r\n", 2 );
+						fileExtract.Write( const_cast<char *>("\r\n"), 2 );
 						fileExtract.Write( b, lMessageLen );
 						fileExtract.Close();
 					}
-					GetSession()->bout.NewLine();
-					GetSession()->bout << "|#5Allow editing? ";
+					nl();
+					sess->bout << "|#5Allow editing? ";
 					if (yesno())
 					{
-						GetSession()->bout.NewLine();
+						nl();
 						LoadFileIntoWorkspace( szFileName, false );
 					}
 					else
 					{
-						GetSession()->bout.NewLine();
+						nl();
 						LoadFileIntoWorkspace( szFileName, true );
 					}
 					send_email();
@@ -857,7 +857,7 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 	}
 	else
 	{
-		if ( lcs() || ( getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_post_anony ) || get_post( nMessageNumber )->anony == 0 )
+		if ( lcs() || ( getslrec(sess->GetEffectiveSl()).ability & ability_read_post_anony ) || get_post( nMessageNumber )->anony == 0 )
 		{
 			email( get_post( nMessageNumber )->owneruser, get_post( nMessageNumber )->ownersys, false, 0 );
 		}
@@ -877,7 +877,7 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 	char *pszTempFindString = NULL;
 	if (!(g_flags & g_flag_made_find_str))
 	{
-		pszTempFindString = WWIV_STRUPR( stripcolors( get_post( nMessageNumber )->title ) );
+		pszTempFindString = strupr( stripcolors( get_post( nMessageNumber )->title ) );
 		strncpy(s_szFindString, pszTempFindString, sizeof(s_szFindString) - 1);
 		g_flags |= g_flag_made_find_str;
 	}
@@ -901,8 +901,8 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 		pszTempFindString[20] = 0;
 	}
 	strncpy(s_szFindString, pszTempFindString, sizeof(s_szFindString) - 1);
-	GetSession()->bout.NewLine();
-	GetSession()->bout << "|#7Find what? (CR=\"" << pszTempFindString << "\")|#1";
+	nl();
+	sess->bout << "|#7Find what? (CR=\"" << pszTempFindString << "\")|#1";
 	char szFindString[ 81 ];
 	input(szFindString, 20);
 	if (!*szFindString)
@@ -913,8 +913,8 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 	{
 		strncpy(s_szFindString, szFindString, sizeof(s_szFindString) - 1);
 	}
-	GetSession()->bout.NewLine();
-	GetSession()->bout << "|#1Backwards or Forwards? ";
+	nl();
+	sess->bout << "|#1Backwards or Forwards? ";
 	char szBuffer[ 10 ];
 	szBuffer[0] = 'Q';
 	szBuffer[1] = upcase(*"Backwards");
@@ -927,8 +927,8 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 	}
 	bool fnd = false;
 	int nTempMsgNum = nMessageNumber;
-	GetSession()->bout.NewLine();
-	GetSession()->bout << "|#1Searching -> |#2";
+	nl();
+	sess->bout << "|#1Searching -> |#2";
 
 	// Store search direction and limit
 	bool bSearchForwards = true;
@@ -941,7 +941,7 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 	else
 	{
 		bSearchForwards = true;
-		nMsgNumLimit = GetSession()->GetNumMessagesInCurrentMessageArea();
+		nMsgNumLimit = sess->GetNumMessagesInCurrentMessageArea();
 	}
 
 	while ( nTempMsgNum != nMsgNumLimit && !abort && !hangup && !fnd )
@@ -958,35 +958,35 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType )
 		checka(&abort, &next);
 		if (!(nTempMsgNum % 5))
 		{
-			GetSession()->bout.WriteFormatted("%5.5d", nTempMsgNum);
+			bprintf("%5.5d", nTempMsgNum);
 			for (int i1 = 0; i1 < 5; i1++)
 			{
-				GetSession()->bout << "\b";
+				sess->bout << "\b";
 			}
 			if (!(nTempMsgNum % 100))
 			{
-				GetSession()->localIO()->tleft( true );
+				app->localIO->tleft( true );
 				CheckForHangup();
 			}
 		}
 		long lMessageLen;
-		char *b = readfile(&(get_post(nTempMsgNum)->msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename, &lMessageLen);
+		char *b = readfile(&(get_post(nTempMsgNum)->msg), subboards[sess->GetCurrentReadMessageArea()].filename, &lMessageLen);
 		if (b)
 		{
-			b = WWIV_STRUPR(b);
-			fnd = (strstr(WWIV_STRUPR(stripcolors(get_post(nTempMsgNum)->title)), szFindString) || strstr(b, szFindString)) ? true : false;
+			b = strupr(b);
+			fnd = (strstr(strupr(stripcolors(get_post(nTempMsgNum)->title)), szFindString) || strstr(b, szFindString)) ? true : false;
 			BbsFreeMemory(b);
 		}
 	}
 	if (fnd)
 	{
-		GetSession()->bout << "Found!\r\n";
+		sess->bout << "Found!\r\n";
 		nMessageNumber = nTempMsgNum;
 		nScanOptionType = SCAN_OPTION_READ_MESSAGE;
 	}
 	else
 	{
-		GetSession()->bout << "|#6Not found!\r\n";
+		sess->bout << "|#6Not found!\r\n";
 		nScanOptionType = SCAN_OPTION_READ_PROMPT;
 	}
 }
@@ -996,15 +996,15 @@ void HandleListTitles( int &nMessageNumber, int &nScanOptionType )
 {
 	int i = 0;
 	bool abort = false;
-	if (nMessageNumber >= GetSession()->GetNumMessagesInCurrentMessageArea())
+	if (nMessageNumber >= sess->GetNumMessagesInCurrentMessageArea())
 	{
 		abort = true;
 	}
 	else
 	{
-		GetSession()->bout.NewLine();
+		nl();
 	}
-	int nNumTitleLines = std::max<int>( GetSession()->screenlinest - 6, 1 );
+	int nNumTitleLines = std::max<int>( sess->screenlinest - 6, 1 );
 	while ( !abort && !hangup && ++i <= nNumTitleLines )
 	{
 		++nMessageNumber;
@@ -1012,7 +1012,7 @@ void HandleListTitles( int &nMessageNumber, int &nScanOptionType )
 
 		char szPrompt[ 255 ];
 		char szTempBuffer[ 255 ];
-		if ( p3->ownersys == 0 && p3->owneruser == GetSession()->usernum )
+		if ( p3->ownersys == 0 && p3->owneruser == sess->usernum )
 		{
 			sprintf(szTempBuffer, "|#7[|#1%d|#7]", nMessageNumber);
 		}
@@ -1028,7 +1028,7 @@ void HandleListTitles( int &nMessageNumber, int &nScanOptionType )
 		{
 			szPrompt[i1] = SPACE;
 		}
-		if (p3->qscan > qsc_p[GetSession()->GetCurrentReadMessageArea()])
+		if (p3->qscan > qsc_p[sess->GetCurrentReadMessageArea()])
 		{
 			szPrompt[0] = '*';
 		}
@@ -1047,7 +1047,7 @@ void HandleListTitles( int &nMessageNumber, int &nScanOptionType )
 			strncat(szPrompt, stripcolors(get_post(nMessageNumber)->title), 60);
 		}
 
-		if ( GetSession()->GetCurrentUser()->GetScreenChars() >= 80 )
+		if ( sess->thisuser.GetScreenChars() >= 80 )
 		{
 			if (strlen(stripcolors(szPrompt)) > 50)
 			{
@@ -1067,14 +1067,14 @@ void HandleListTitles( int &nMessageNumber, int &nScanOptionType )
 			}
 			strcat(szPrompt, " ");
 			if ((p3->anony & 0x0f) &&
-				((getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_post_anony) == 0))
+				((getslrec(sess->GetEffectiveSl()).ability & ability_read_post_anony) == 0))
 			{
 				strcat(szPrompt, ">UNKNOWN<");
 			}
 			else
 			{
 				long lMessageLen;
-				char *b = readfile(&(p3->msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename), &lMessageLen);
+				char *b = readfile(&(p3->msg), (subboards[sess->GetCurrentReadMessageArea()].filename), &lMessageLen);
 				if (b)
 				{
 					strncpy(szTempBuffer, b, sizeof(szTempBuffer) - 1);
@@ -1082,7 +1082,7 @@ void HandleListTitles( int &nMessageNumber, int &nScanOptionType )
 					strcpy(b, stripcolors(szTempBuffer));
 					long lTempBufferPos = 0;
 					strcpy(szTempBuffer, "");
-					while ( b[lTempBufferPos] != RETURN && b[lTempBufferPos] && lTempBufferPos < lMessageLen && lTempBufferPos < ( GetSession()->GetCurrentUser()->GetScreenChars() - 54 ) )
+					while ( b[lTempBufferPos] != RETURN && b[lTempBufferPos] && lTempBufferPos < lMessageLen && lTempBufferPos < ( sess->thisuser.GetScreenChars() - 54 ) )
 					{
 						szTempBuffer[lTempBufferPos] = b[lTempBufferPos];
 						lTempBufferPos++;
@@ -1093,9 +1093,9 @@ void HandleListTitles( int &nMessageNumber, int &nScanOptionType )
 				}
 			}
 		}
-		GetSession()->bout.Color( 2 );
+		ansic( 2 );
 		pla(szPrompt, &abort);
-		if (nMessageNumber >= GetSession()->GetNumMessagesInCurrentMessageArea())
+		if (nMessageNumber >= sess->GetNumMessagesInCurrentMessageArea())
 		{
 			abort = true;
 		}
@@ -1106,12 +1106,12 @@ void HandleListTitles( int &nMessageNumber, int &nScanOptionType )
 
 void HandleMessageDownload( int nMessageNumber )
 {
-	if ( nMessageNumber > 0 && nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() )
+	if ( nMessageNumber > 0 && nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea() )
 	{
 		long lMessageLen;
-		char *b = readfile(&(get_post( nMessageNumber )->msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename), &lMessageLen);
-		GetSession()->bout << "|#1Message Download -\r\n\n";
-		GetSession()->bout << "|#2Filename to use? ";
+		char *b = readfile(&(get_post( nMessageNumber )->msg), (subboards[sess->GetCurrentReadMessageArea()].filename), &lMessageLen);
+		sess->bout << "|#1Message Download -\r\n\n";
+		sess->bout << "|#2Filename to use? ";
 		char szFileName[ MAX_PATH ];
 		input(szFileName, 12);
 		if (!okfn(szFileName))
@@ -1127,7 +1127,7 @@ void HandleMessageDownload( int nMessageNumber )
 		bool bFileAbortStatus;
 		bool bStatus;
 		send_file(fileTemp.GetFullPathName(), &bStatus, &bFileAbortStatus, 0, fileTemp.GetFullPathName(), -1, lMessageLen);
-		GetSession()->bout << "|#1Message download... |#2" << ( bStatus ? "successful" : "unsuccessful" );
+		sess->bout << "|#1Message download... |#2" << ( bStatus ? "successful" : "unsuccessful" );
 		if (bStatus)
 		{
 			sysoplog("Downloaded message");
@@ -1137,14 +1137,14 @@ void HandleMessageDownload( int nMessageNumber )
 
 void HandleMessageMove( int &nMessageNumber )
 {
-	if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea()))
+	if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea()))
 	{
 		char *ss1 = NULL;
 		tmp_disable_conf( true );
-		GetSession()->bout.NewLine();
+		nl();
 		do
 		{
-			GetSession()->bout << "|#5Move to which sub? ";
+			sess->bout << "|#5Move to which sub? ";
 			ss1 = mmkey( 0 );
 			if (ss1[0] == '?')
 			{
@@ -1158,35 +1158,35 @@ void HandleMessageMove( int &nMessageNumber )
 			return;
 		}
 		bool ok = false;
-		for ( int i1 = 0; ( i1 < GetSession()->num_subs && usub[i1].subnum != -1 && !ok ); i1++ )
+		for ( int i1 = 0; ( i1 < sess->num_subs && usub[i1].subnum != -1 && !ok ); i1++ )
 		{
 			if ( wwiv::stringUtils::IsEquals( usub[i1].keys, ss1 ) )
 			{
 				nTempSubNum = i1;
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#9Copying to " << subboards[usub[nTempSubNum].subnum].name << wwiv::endl;
+				nl();
+				sess->bout << "|#9Copying to " << subboards[usub[nTempSubNum].subnum].name << wwiv::endl;
 				ok = true;
 			}
 		}
 		if (nTempSubNum != -1)
 		{
-			if (GetSession()->GetEffectiveSl() < subboards[usub[nTempSubNum].subnum].postsl)
+			if (sess->GetEffectiveSl() < subboards[usub[nTempSubNum].subnum].postsl)
 			{
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "Sorry, you don't have post access on that sub.\r\n\n";
+				nl();
+				sess->bout << "Sorry, you don't have post access on that sub.\r\n\n";
 				nTempSubNum = -1;
 			}
 		}
 		if (nTempSubNum != -1)
 		{
 			open_sub( true );
-			resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+			resynch(sess->GetCurrentMessageArea(), &nMessageNumber, NULL);
 			postrec p2 = *get_post(nMessageNumber);
 			postrec p1 = p2;
 			long lMessageLen;
-			char *b = readfile(&(p2.msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename), &lMessageLen);
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|10Delete original post? ";
+			char *b = readfile(&(p2.msg), (subboards[sess->GetCurrentReadMessageArea()].filename), &lMessageLen);
+			nl();
+			sess->bout << "|10Delete original post? ";
 			if (yesno())
 			{
 				delete_message(nMessageNumber);
@@ -1198,16 +1198,16 @@ void HandleMessageMove( int &nMessageNumber )
 			close_sub();
 			iscan(nTempSubNum);
 			open_sub( true );
-			p2.msg.storage_type = static_cast<unsigned char>( subboards[GetSession()->GetCurrentReadMessageArea()].storage_type );
-			savefile(b, lMessageLen, &(p2.msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename));
-			WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
-            p2.qscan = pStatus->IncrementQScanPointer();
-			GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
-			if (GetSession()->GetNumMessagesInCurrentMessageArea() >= subboards[GetSession()->GetCurrentReadMessageArea()].maxmsgs)
+			p2.msg.storage_type = (unsigned char) subboards[sess->GetCurrentReadMessageArea()].storage_type;
+			savefile(b, lMessageLen, &(p2.msg), (subboards[sess->GetCurrentReadMessageArea()].filename));
+			app->statusMgr->Lock();
+			p2.qscan = status.qscanptr++;
+			app->statusMgr->Write();
+			if (sess->GetNumMessagesInCurrentMessageArea() >= subboards[sess->GetCurrentReadMessageArea()].maxmsgs)
 			{
 				int nTempMsgNum = 1;
 				int nMsgToDelete = 0;
-				while ( nMsgToDelete == 0 && nTempMsgNum <= GetSession()->GetNumMessagesInCurrentMessageArea() )
+				while ( nMsgToDelete == 0 && nTempMsgNum <= sess->GetNumMessagesInCurrentMessageArea() )
 				{
 					if ((get_post(nTempMsgNum)->status & status_no_delete) == 0)
 					{
@@ -1221,24 +1221,24 @@ void HandleMessageMove( int &nMessageNumber )
 				}
 				delete_message( nMsgToDelete );
 			}
-			if ((!(subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net)) ||
-				(!xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets))
+			if ((!(subboards[sess->GetCurrentReadMessageArea()].anony & anony_val_net)) ||
+				(!xsubs[sess->GetCurrentReadMessageArea()].num_nets))
 			{
 				p2.status &= ~status_pending_net;
 			}
-			if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets)
+			if (xsubs[sess->GetCurrentReadMessageArea()].num_nets)
 			{
 				p2.status |= status_pending_net;
-                GetSession()->GetCurrentUser()->SetNumNetPosts( GetSession()->GetCurrentUser()->GetNumNetPosts() + 1 );
-				send_net_post(&p2, subboards[GetSession()->GetCurrentReadMessageArea()].filename, GetSession()->GetCurrentReadMessageArea());
+                sess->thisuser.SetNumNetPosts( sess->thisuser.GetNumNetPosts() + 1 );
+				send_net_post(&p2, subboards[sess->GetCurrentReadMessageArea()].filename, sess->GetCurrentReadMessageArea());
 			}
 			add_post(&p2);
 			close_sub();
 			tmp_disable_conf( false );
-			iscan(GetSession()->GetCurrentMessageArea());
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|#9Message moved.\r\n\n";
-			resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, &p1);
+			iscan(sess->GetCurrentMessageArea());
+			nl();
+			sess->bout << "|#9Message moved.\r\n\n";
+			resynch(sess->GetCurrentMessageArea(), &nMessageNumber, &p1);
 		}
 		else
 		{
@@ -1254,22 +1254,22 @@ void HandleMessageLoad()
 	{
 		return;
 	}
-	GetSession()->bout.NewLine();
-	GetSession()->bout << "|#2Filename: ";
+	nl();
+	sess->bout << "|#2Filename: ";
 	char szFileName[ MAX_PATH ];
 	input(szFileName, 50);
 	if (szFileName[0])
 	{
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#5Allow editing? ";
+		nl();
+		sess->bout << "|#5Allow editing? ";
 		if (yesno())
 		{
-			GetSession()->bout.NewLine();
+			nl();
 			LoadFileIntoWorkspace( szFileName, false );
 		}
 		else
 		{
-			GetSession()->bout.NewLine();
+			nl();
 			LoadFileIntoWorkspace( szFileName, true );
 		}
 	}
@@ -1284,23 +1284,23 @@ void HandleMessageReply( int &nMessageNumber )
 		return;
 	}
 	postrec p2 = *get_post( nMessageNumber );
-	grab_quotes(&(p2.msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename);
+	grab_quotes(&(p2.msg), subboards[sess->GetCurrentReadMessageArea()].filename);
 
-	if ( okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote() &&
-		 nMessageNumber > 0 && nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() )
+	if ( okfsed() && sess->thisuser.isUseAutoQuote() &&
+		 nMessageNumber > 0 && nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea() )
 	{
 		long lMessageLen;
 		char *b = readfile( &( get_post( nMessageNumber )->msg),
-			               subboards[GetSession()->GetCurrentReadMessageArea()].filename, &lMessageLen );
+			               subboards[sess->GetCurrentReadMessageArea()].filename, &lMessageLen );
 		auto_quote(b, lMessageLen, 1, get_post( nMessageNumber )->daten);
 	}
 
 	if ( irt[0] == '\0' )
 	{
-		GetSession()->threadID = "";
+		sess->threadID = "";
 	}
 	post();
-	resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, &p2);
+	resynch(sess->GetCurrentMessageArea(), &nMessageNumber, &p2);
 	grab_quotes(NULL, NULL);
 }
 
@@ -1311,20 +1311,20 @@ void HandleMessageDelete( int &nMessageNumber )
 		if (nMessageNumber)
 		{
 			open_sub( true );
-			resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+			resynch(sess->GetCurrentMessageArea(), &nMessageNumber, NULL);
 			postrec p2 = *get_post(nMessageNumber);
 			delete_message(nMessageNumber);
 			close_sub();
 			if (p2.ownersys == 0)
 			{
 				WUser tu;
-                GetApplication()->GetUserManager()->ReadUser( &tu, p2.owneruser );
-                if ( !tu.IsUserDeleted() )
+                app->userManager->ReadUser( &tu, p2.owneruser );
+                if ( !tu.isUserDeleted() )
 				{
 					if (date_to_daten( tu.GetFirstOn() ) < static_cast<signed int>( p2.daten ) )
 					{
-						GetSession()->bout.NewLine();
-						GetSession()->bout << "|#2Remove how many posts credit? ";
+						nl();
+						sess->bout << "|#2Remove how many posts credit? ";
 						char szNumCredits[ 10 ];
 						input( szNumCredits, 3, true );
 						int nNumCredits = 1;
@@ -1337,15 +1337,15 @@ void HandleMessageDelete( int &nMessageNumber )
 						{
 							tu.SetNumMessagesPosted( tu.GetNumMessagesPosted() - static_cast<unsigned short>( nNumCredits ) );
 						}
-						GetSession()->bout.NewLine();
-						GetSession()->bout << "|#7Post credit removed = " << nNumCredits << wwiv::endl;
+						nl();
+						sess->bout << "|#7Post credit removed = " << nNumCredits << wwiv::endl;
 						tu.SetNumDeletedPosts( tu.GetNumDeletedPosts() - 1 );
-                        GetApplication()->GetUserManager()->WriteUser( &tu, p2.owneruser );
-						GetApplication()->UpdateTopScreen();
+                        app->userManager->WriteUser( &tu, p2.owneruser );
+						app->localIO->UpdateTopScreen();
 					}
 				}
 			}
-			resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, &p2);
+			resynch(sess->GetCurrentMessageArea(), &nMessageNumber, &p2);
 		}
 	}
 }
@@ -1355,10 +1355,10 @@ void HandleMessageExtract( int &nMessageNumber )
 {
 	if (so())
 	{
-		if ((nMessageNumber > 0) && (nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea()))
+		if ((nMessageNumber > 0) && (nMessageNumber <= sess->GetNumMessagesInCurrentMessageArea()))
 		{
 			long lMessageLen;
-			char *b = readfile(&(get_post(nMessageNumber)->msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename), &lMessageLen);
+			char *b = readfile(&(get_post(nMessageNumber)->msg), (subboards[sess->GetCurrentReadMessageArea()].filename), &lMessageLen);
 			if (b)
 			{
 				extract_out( b, lMessageLen, get_post(nMessageNumber)->title, get_post(nMessageNumber)->daten );
@@ -1389,7 +1389,7 @@ void HandleMessageHelp()
 
 void HandleListReplies( int nMessageNumber )
 {
-	if ( GetSession()->IsMessageThreadingEnabled() )
+	if ( sess->IsMessageThreadingEnabled() )
 	{
 		if (forcescansub)
 		{
@@ -1397,19 +1397,19 @@ void HandleListReplies( int nMessageNumber )
 		}
 		else
 		{
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2Current Message has the following replies:\r\n";
+			nl();
+			sess->bout << "|#2Current Message has the following replies:\r\n";
 			int k = 0;
-			for (int j = 0; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++)
+			for (int j = 0; j <= sess->GetNumMessagesInCurrentMessageArea(); j++)
 			{
 				if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) )
 				{
-					GetSession()->bout << "    |#9Message #|12" << j << ".\r\n";
+					sess->bout << "    |#9Message #|12" << j << ".\r\n";
 					k++;
 				}
 			}
-			GetSession()->bout << "|#1 " << k << " total replies.\r\n";
-			GetSession()->bout.NewLine();
+			sess->bout << "|#1 " << k << " total replies.\r\n";
+			nl();
 			pausescr();
 		}
 	}

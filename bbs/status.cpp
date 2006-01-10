@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,127 +20,7 @@
 #include "wwiv.h"
 
 
-//
-// WStatus
-//
-
-const int WStatus::fileChangeNames = 0;
-const int WStatus::fileChangeUpload = 1;
-const int WStatus::fileChangePosts = 2;
-const int WStatus::fileChangeEmail = 3;
-const int WStatus::fileChangeNet = 4;
-
-const char* WStatus::GetLastDate( int nDaysAgo ) const
-{ 
-    WWIV_ASSERT( nDaysAgo >= 0 );
-    WWIV_ASSERT( nDaysAgo <= 2 );
-    switch( nDaysAgo )
-    {
-    case 0:
-        return m_pStatusRecord->date1;
-    case 1:
-        return m_pStatusRecord->date2; 
-    case 2:
-        return m_pStatusRecord->date3; 
-    default:
-        return m_pStatusRecord->date1; 
-    }
-}
-
-
-const char* WStatus::GetLogFileName( int nDaysAgo ) const
-{
-    WWIV_ASSERT( nDaysAgo >= 0 );
-    WWIV_ASSERT( nDaysAgo <= 1 );
-    switch( nDaysAgo )
-    {
-        case 0:
-            return m_pStatusRecord->log1;
-        case 1:
-            return m_pStatusRecord->log2;
-        default:
-            return m_pStatusRecord->log1;
-    }
-}
-
-
-void WStatus::EnsureCallerNumberIsValid()
-{
-    if ( m_pStatusRecord->callernum != 65535 )
-    {
-        this->SetCallerNumber( m_pStatusRecord->callernum );
-        m_pStatusRecord->callernum = 65535;
-    }
-}
-
-
-void WStatus::ValidateAndFixDates()
-{
-	if ( m_pStatusRecord->date1[8] != '\0' )
-	{
-		m_pStatusRecord->date1[6] = '0';
-		m_pStatusRecord->date1[7] = '0';
-		m_pStatusRecord->date1[8] = '\0'; // forgot to add null termination
-	}
-
-    std::string currentDate = date();
-	if ( m_pStatusRecord->date3[8] != '\0' )
-	{
-		m_pStatusRecord->date3[6] = currentDate[6];
-		m_pStatusRecord->date3[7] = currentDate[7];
-		m_pStatusRecord->date3[8] = '\0';
-	}
-	if ( m_pStatusRecord->date2[8] != '\0' )
-	{
-		m_pStatusRecord->date2[6] = currentDate[6];
-		m_pStatusRecord->date2[7] = currentDate[7];
-		m_pStatusRecord->date2[8] = '\0';
-	}
-	if ( m_pStatusRecord->date1[8] != '\0' )
-	{
-		m_pStatusRecord->date1[6] = currentDate[6];
-		m_pStatusRecord->date1[7] = currentDate[7];
-		m_pStatusRecord->date1[8] = '\0';
-	}
-	if ( m_pStatusRecord->gfiledate[8] != '\0' )
-	{
-		m_pStatusRecord->gfiledate[6] = currentDate[6];
-		m_pStatusRecord->gfiledate[7] = currentDate[7];
-		m_pStatusRecord->gfiledate[8] = '\0';
-	}
-}
-
-
-bool WStatus::NewDay()
-{
-	m_pStatusRecord->callstoday   = 0;
-	m_pStatusRecord->msgposttoday = 0;
-	m_pStatusRecord->localposts   = 0;
-	m_pStatusRecord->emailtoday   = 0;
-	m_pStatusRecord->fbacktoday   = 0;
-	m_pStatusRecord->uptoday      = 0;
-	m_pStatusRecord->activetoday  = 0;
-	m_pStatusRecord->days++;
-
-	// Need to verify the dates aren't trashed otherwise we can crash here.
-    ValidateAndFixDates();
-
-	strcpy( m_pStatusRecord->date3, m_pStatusRecord->date2 );
-	strcpy( m_pStatusRecord->date2, m_pStatusRecord->date1 );
-	strcpy( m_pStatusRecord->date1, date() );
-	strcpy( m_pStatusRecord->log2, m_pStatusRecord->log1 );
-
-    GetSysopLogFileName( GetLastDate(1), m_pStatusRecord->log1 );
-    return true;
-}
-
-
-
-//
-// StatusMgr
-//
-
-bool StatusMgr::Get(bool bLockFile)
+void StatusMgr::Get(bool bFailOnFailure, bool bLockFile)
 {
     if ( !m_statusFile.IsOpen() )
 	{
@@ -154,19 +34,26 @@ bool StatusMgr::Get(bool bLockFile)
 	}
     if ( !m_statusFile .IsOpen() )
 	{
-        sysoplog( "CANNOT READ STATUS" );
-        return false;
+		if ( !bFailOnFailure )
+		{
+			sysoplog( "CANNOT READ STATUS" );
+            std::cout << m_statusFile.GetName() << " NOT FOUND" << std::endl;
+			app->AbortBBS();
+		}
+		else
+		{
+			sysoplog( "CANNOT READ STATUS" );
+		}
 	}
 	else
 	{
-    	char oldFileChangeFlags[7];
+    	char fc[7];
 		unsigned long lQScanPtr = status.qscanptr;
 		for (int nFcIndex = 0; nFcIndex < 7; nFcIndex++)
 		{
-			oldFileChangeFlags[nFcIndex] = status.filechange[nFcIndex];
+			fc[nFcIndex] = status.filechange[nFcIndex];
 		}
         m_statusFile.Read( &status, sizeof( statusrec ) );
-
 		if (!bLockFile)
 		{
             m_statusFile.Close();
@@ -174,25 +61,25 @@ bool StatusMgr::Get(bool bLockFile)
 
 		if ( lQScanPtr != status.qscanptr )
 		{
-			if (GetSession()->m_SubDateCache)
+			if (sess->m_SubDateCache)
 			{
 				// kill subs cache
-				for (int i1 = 0; i1 < GetSession()->num_subs; i1++)
+				for (int i1 = 0; i1 < sess->num_subs; i1++)
 				{
-					GetSession()->m_SubDateCache[i1] = 0L;
+					sess->m_SubDateCache[i1] = 0L;
 				}
 			}
-            GetSession()->SetMessageAreaCacheNumber( 0 );
-			GetSession()->subchg = 1;
+            sess->SetMessageAreaCacheNumber( 0 );
+			sess->subchg = 1;
 			g_szMessageGatFileName[0] = 0;
 		}
 		for (int i = 0; i < 7; i++)
 		{
-			if (oldFileChangeFlags[i] != status.filechange[i])
+			if (fc[i] != status.filechange[i])
 			{
 				switch (i)
 				{
-                case WStatus::fileChangeNames:            // re-read names.lst
+				case filechange_names:            // re-read names.lst
 					if (smallist)
 					{
                         WFile namesFile( syscfg.datadir, NAMES_LST );
@@ -203,31 +90,31 @@ bool StatusMgr::Get(bool bLockFile)
 						}
 					}
 					break;
-                case WStatus::fileChangeUpload:           // kill dirs cache
+				case filechange_upload:           // kill dirs cache
                     {
-					    if (GetSession()->m_DirectoryDateCache)
+					    if (sess->m_DirectoryDateCache)
 					    {
-						    for (int i1 = 0; i1 < GetSession()->num_dirs; i1++)
+						    for (int i1 = 0; i1 < sess->num_dirs; i1++)
 						    {
-							    GetSession()->m_DirectoryDateCache[i1] = 0L;
+							    sess->m_DirectoryDateCache[i1] = 0L;
 						    }
 					    }
-					    GetSession()->SetFileAreaCacheNumber( 0 );
+					    sess->SetFileAreaCacheNumber( 0 );
                     }
 					break;
-                case WStatus::fileChangePosts:
-					GetSession()->subchg = 1;
+				case filechange_posts:
+					sess->subchg = 1;
 					g_szMessageGatFileName[0] = 0;
 					break;
-                case WStatus::fileChangeEmail:
+				case filechange_email:
 					emchg = true;
 					mailcheck = false;
 					break;
-                case WStatus::fileChangeNet:
+				case filechange_net:
                     {
-					    int nOldNetNum = GetSession()->GetNetworkNumber();
+					    int nOldNetNum = sess->GetNetworkNumber();
 					    zap_bbs_list();
-					    for ( int i1 = 0; i1 < GetSession()->GetMaxNetworkNumber(); i1++ )
+					    for ( int i1 = 0; i1 < sess->GetMaxNetworkNumber(); i1++ )
 					    {
 						    set_net_num( i1 );
 						    zap_call_out_list();
@@ -240,46 +127,22 @@ bool StatusMgr::Get(bool bLockFile)
 			}
 		}
 	}
-    return true;
 }
 
 
-bool StatusMgr::RefreshStatusCache()
+void StatusMgr::Lock()
 {
-	return this->Get(false);
+	this->Get(true, true);
 }
 
-WStatus* StatusMgr::GetStatus()
+
+void StatusMgr::Read()
 {
-    this->Get(false);
-    return new WStatus(&status);
-}
-
-void StatusMgr::AbortTransaction( WStatus* pStatus )
-{
-    if ( m_statusFile.IsOpen() )
-    {
-        m_statusFile.Close();
-    }
-    delete pStatus;
-}
-
-WStatus* StatusMgr::BeginTransaction()
-{
-    this->Get(true);
-    return new WStatus(&status);
-}
-
-bool StatusMgr::CommitTransaction(WStatus* pStatus)
-{
-    bool returnValue = this->Write( pStatus->m_pStatusRecord );
-
-    delete pStatus;
-    return returnValue;
+	this->Get(true, false);
 }
 
 
-bool StatusMgr::Write(statusrec *pStatus)
+void StatusMgr::Write()
 {
     if ( !m_statusFile.IsOpen() )
 	{
@@ -294,16 +157,12 @@ bool StatusMgr::Write(statusrec *pStatus)
     if ( !m_statusFile.IsOpen() )
 	{
 		sysoplog("CANNOT SAVE STATUS");
-        return false;
 	}
-    ////////
-    m_statusFile.Write( pStatus, sizeof( statusrec ) );
-    m_statusFile.Close();
-    return true;
+	else
+	{
+        m_statusFile.Write( &status, sizeof( statusrec ) );
+        m_statusFile.Close();
+	}
 }
 
-const int StatusMgr::GetUserCount()
-{
-    std::auto_ptr<WStatus>pStatus(GetStatus());
-    return pStatus->GetNumUsers();
-}
+

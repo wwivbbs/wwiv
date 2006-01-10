@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -26,6 +26,11 @@
 char *strupr(char *s);
 char *strlwr(char *s);
 
+// filestuff.cpp
+
+long filelength(int f);
+void chsize(int f, size_t size);
+bool WWIV_CopyFile(const char * szSourceFileName, const char * szDestFileName);
 
 // utility2.cpp
 

@@ -3,7 +3,7 @@
 //#include <sys/param.h>
 
 
-//#define MAXPATHLEN 260
+#define MAXPATHLEN 260
 
 typedef	int	bool ;
 

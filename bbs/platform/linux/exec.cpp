@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -31,24 +31,24 @@ int UnixSpawn (char *pszCommand, char* environ[]);
 // Implementation
 //
 
-int ExecExternalProgram( const std::string commandLine, int flags )
+int ExecExternalProgram( const char *pszCommandLine, int flags )
 {
     (void)flags;
 
 	if (ok_modem_stuff)
     {
-		GetSession()->remoteIO()->close( true );
+		app->comm->close( true );
 	}
 
     char s[256];
-    strcpy(s, commandLine.c_str());
+    strcpy(s, pszCommandLine);
     int i = UnixSpawn(s, NULL);
 
 	// reengage comm stuff
 	if (ok_modem_stuff)
     {
-		GetSession()->remoteIO()->open();
-		GetSession()->remoteIO()->dtr( true );
+		app->comm->open();
+		app->comm->dtr( true );
     }
 
     return i;
@@ -79,8 +79,8 @@ int UnixSpawn (char *pszCommand, char* environ[])
 
 	for( ;; )
 	{
-		int nStatusCode = 1;
-		if (waitpid(pid, &nStatusCode, 0) == -1)
+		int status = 1;
+		if (waitpid(pid, &status, 0) == -1)
 		{
 			if (errno != EINTR)
 			{
@@ -89,7 +89,7 @@ int UnixSpawn (char *pszCommand, char* environ[])
 		}
 		else
 		{
-			return nStatusCode;
+			return status;
 		}
 	}
 }

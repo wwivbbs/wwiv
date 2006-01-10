@@ -49,7 +49,7 @@ int sh_open(const char *path, int file_access, unsigned mode)
 	
 	if (debuglevel > 2)
 	{
-		printf("\rsh_open %s, _access=%u.\r\n", path, file_access);
+		printf("\rsh_open %s, access=%u.\r\n", path, file_access);
 	}
 	if ((file_access & O_RDWR) || (file_access & O_WRONLY) || (mode & S_IWRITE)) 
 	{
@@ -64,7 +64,7 @@ int sh_open(const char *path, int file_access, unsigned mode)
 	{
 		count = 1;
 		_splitpath(path, drive, dir, file, ext);
-		if (_access(path, 0) != -1) 
+		if (access(path, 0) != -1) 
 		{
 			Sleep(WAIT_TIME);
 			handle = _sopen(path, file_access, share, mode);
@@ -75,7 +75,7 @@ int sh_open(const char *path, int file_access, unsigned mode)
 				else
 					Sleep(0);
 				if (debuglevel)
-					printf("\rWaiting to _access %s%s %d.  \r",
+					printf("\rWaiting to access %s%s %d.  \r",
 					file, ext, TRIES - count);
 				count++;
 				handle = _sopen(path, file_access, share, mode);
@@ -85,26 +85,26 @@ int sh_open(const char *path, int file_access, unsigned mode)
 		}
 	}
 	if (debuglevel > 1)
-		printf("\rsh_open %s, _access=%u, handle=%d.\r\n",
+		printf("\rsh_open %s, access=%u, handle=%d.\r\n",
 		path, file_access, handle);
 	return (handle);
 }
 
 
-int sh_open1(const char *path, int _access)
+int sh_open1(const char *path, int access)
 {
 	SEH_PUSH("sh_open1()");
 	unsigned mode = 0;
-	if ((_access & O_RDWR) || (_access & O_WRONLY))
+	if ((access & O_RDWR) || (access & O_WRONLY))
 	{
 		mode |= S_IWRITE;
 	}
-	if ((_access & O_RDWR) || (_access & O_RDONLY))
+	if ((access & O_RDWR) || (access & O_RDONLY))
 	{
 		mode |= S_IREAD;
 	}
 
-	return (sh_open(path, _access, mode));
+	return (sh_open(path, access, mode));
 }
 
 
@@ -117,7 +117,7 @@ FILE *fsh_open(const char *path, char *mode)
 	
 	if (debuglevel > 2)
 	{
-		printf("\rfsh_open %s, _access=%s.\r\n", path, mode);
+		printf("\rfsh_open %s, access=%s.\r\n", path, mode);
 	}
 
 	int share = SH_DENYWR;
@@ -154,7 +154,7 @@ FILE *fsh_open(const char *path, char *mode)
 	{
 		count = 1;
 		_splitpath(path, drive, dir, file, ext);
-		if (_access(path, 0) != -1) 
+		if (access(path, 0) != -1) 
 		{
 			Sleep(WAIT_TIME);
 			fd = _sopen(path, md, share, S_IREAD | S_IWRITE);
@@ -163,7 +163,7 @@ FILE *fsh_open(const char *path, char *mode)
 				Sleep(WAIT_TIME);
 				if (debuglevel)
 				{
-					printf("\rWaiting to _access %s%s %d.  \r", file, ext, TRIES - count);
+					printf("\rWaiting to access %s%s %d.  \r", file, ext, TRIES - count);
 				}
 				count++;
 				fd = _sopen(path, md, share, S_IREAD | S_IWRITE);
@@ -179,13 +179,13 @@ FILE *fsh_open(const char *path, char *mode)
 	{
 		if (strchr(mode, 'a'))
 		{
-			_lseek(fd, 0L, SEEK_END);
+			lseek(fd, 0L, SEEK_END);
 		}			
 		
-		f = _fdopen(fd, mode);
+		f = fdopen(fd, mode);
 		if (!f) 
 		{
-			_close(fd);
+			close(fd);
 		}
 	} 
 	else
@@ -195,7 +195,7 @@ FILE *fsh_open(const char *path, char *mode)
 	
 	if (debuglevel > 1)
 	{
-		printf("\rfsh_open %s, _access=%s.\r\n",	path, mode);
+		printf("\rfsh_open %s, access=%s.\r\n",	path, mode);
 	}
 	
 	return (f);
@@ -207,7 +207,7 @@ int sh_close(int f)
 	SEH_PUSH("sh_close()");
 	if (f != -1)
 	{
-		_close(f);
+		close(f);
 	}
 	return (-1);
 }
@@ -240,7 +240,7 @@ int sh_read(int handle, void *buf, unsigned len)
 		sysoplog("\r\nAttempted to read from closed file.\r\n");
 		return (-1);
 	}
-	return (_read(handle, buf, len));
+	return (read(handle, buf, len));
 }
 
 
@@ -252,7 +252,7 @@ int sh_write(int handle, const void *buf, unsigned len)
 		sysoplog("\r\nAttempted to write to closed file.\r\n");
 		return (-1);
 	}
-	return (_write(handle, buf, len));
+	return (write(handle, buf, len));
 }
 
 
@@ -288,7 +288,7 @@ int sh_open25(const char *path, int file_access, int share, unsigned mode)
 	
 	if (debuglevel > 2)
 	{
-		printf("\rsh_open %s, _access=%u.\r\n", path, file_access);
+		printf("\rsh_open %s, access=%u.\r\n", path, file_access);
 	}
 	
 	handle = _sopen(path, file_access, share, mode);
@@ -296,7 +296,7 @@ int sh_open25(const char *path, int file_access, int share, unsigned mode)
 	{
 		count = 1;
 		_splitpath(path, drive, dir, file, ext);
-		if (_access(path, 0) != -1) 
+		if (access(path, 0) != -1) 
 		{
 			Sleep(WAIT_TIME);
 			handle = _sopen(path, file_access, share, mode);
@@ -312,7 +312,7 @@ int sh_open25(const char *path, int file_access, int share, unsigned mode)
 				}
 				if (debuglevel)
 				{
-					printf("\rWaiting to _access %s%s %d.  \r", file, ext, TRIES - count);
+					printf("\rWaiting to access %s%s %d.  \r", file, ext, TRIES - count);
 				}
 				count++;
 				handle = _sopen(path, file_access, share, mode);
@@ -326,7 +326,7 @@ int sh_open25(const char *path, int file_access, int share, unsigned mode)
 
 	if (debuglevel > 1)
 	{
-		printf("\rsh_open %s, _access=%u, handle=%d.\r\n", path, file_access, handle);
+		printf("\rsh_open %s, access=%u, handle=%d.\r\n", path, file_access, handle);
 	}
 	return (handle);
 }

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,7 +20,6 @@
 #if !defined (__INCLUDED_WCOMM_H__)
 #define __INCLUDED_WCOMM_H__
 
-#include <string>
 
 /**
  * Base Communication Class.
@@ -30,8 +29,6 @@ class WComm
 private:
     // used by the GetLastErrorText() method
     static char m_szErrorText[8192];
-    std::string m_remoteName;
-    std::string m_remoteAddress;
 
 protected:
     // Com Port Number.  Only used by Serial IO derivatives
@@ -42,8 +39,8 @@ protected:
     static const char* GetLastErrorText();
 
 public:
-    WComm() : m_ComPort( 0 ), m_bBinaryMode( false ) {}
-    virtual ~WComm() {}
+    WComm() { m_ComPort = 0; m_bBinaryMode = false; }
+    virtual ~WComm() { shutdown(); }
 
     virtual unsigned int open() = 0;
     virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud) = 0;
@@ -60,28 +57,19 @@ public:
     virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) = 0;
     virtual bool carrier() = 0;
     virtual bool incoming() = 0;
+    virtual bool startup();
+    virtual bool shutdown();
 	virtual void StopThreads() = 0;
 	virtual void StartThreads() = 0;
 
-    virtual unsigned int GetHandle() const = 0;
-    virtual unsigned int GetDoorHandle() const { return GetHandle(); }
 
     // Get/Set Com Port Number
-    virtual int  GetComPort() const;
-    virtual void SetComPort(int nNewPort);
+    int  GetComPort();
+    void SetComPort(int nNewPort);
 
     void SetBinaryMode( bool b ) { m_bBinaryMode = b; }
-    bool GetBinaryMode() const { return m_bBinaryMode; }
+    bool GetBinaryMode() { return m_bBinaryMode; }
 
-    void ClearRemoteInformation() { m_remoteName = ""; m_remoteAddress = ""; }
-    void SetRemoteName( std::string name ) { m_remoteName = name; }
-    void SetRemoteAddress( std::string address ) { m_remoteAddress = address; }
-    const std::string& GetRemoteName() const { return m_remoteName; }
-    const std::string& GetRemoteAddress() const { return m_remoteAddress; }
-
-public:
-    // static factory methods
-    static WComm* CreateComm( bool bUseSockets, unsigned int nHandle );
 };
 
 

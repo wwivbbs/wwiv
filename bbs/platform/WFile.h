@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,22 +20,7 @@
 #ifndef __INCLUDED_PLATFORM_WFILLE_H__
 #define __INCLUDED_PLATFORM_WFILLE_H__
 
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
-
-
 #include <string>
-#include "WStringUtils.h"
-
-#ifndef MAX_PATH
-#define MAX_PATH 260
-#endif
-
-#if defined (_WIN32)
-#undef CopyFile
-#undef GetFullPathName
-#endif // CopyFile
 
 class WLogger
 {
@@ -114,8 +99,9 @@ public:
     //
 
     WFile();
-    WFile( const std::string dirName, const std::string fileName );
-	WFile( const std::string strFileName );
+    WFile( const char* pszFileName );
+    WFile( const char* pszDirName, const char *pszFileName );
+	WFile( std::string& strFileName );
 	virtual ~WFile();
 
     /////////////////////////////////////////////////////////////////////////
@@ -123,15 +109,15 @@ public:
     // Public Member functions
     //
 
-    virtual bool SetName( const std::string fileName );
-    virtual bool SetName( const std::string dirName, const std::string fileName );
+    virtual bool SetName( const char* pszFileName );
+    virtual bool SetName( const char* pszDirName, const char *pszFileName );
 
     virtual bool Open( int nFileMode = WFile::modeDefault, int nShareMode = WFile::shareUnknown, int nPermissions = WFile::permUnknown );
     virtual void Close();
     virtual bool IsOpen() const { return m_bOpen; }
 
     virtual int  Read( void * pBuffer, int nCount );
-    virtual int  Write( const void * pBuffer, int nCount );
+    virtual int  Write( void * pBuffer, int nCount );
 
     virtual long GetLength();
     virtual long Seek( long lOffset, int nFrom );
@@ -150,7 +136,7 @@ public:
 
     virtual char *GetParent()
     {
-		char *tmpCopy = WWIV_STRDUP(m_szFileName);
+        char *tmpCopy = strdup(m_szFileName);
         char *p = &tmpCopy[strlen(tmpCopy)-1];
 	    while(*p != WFile::pathSeparatorChar)
         {
@@ -171,7 +157,7 @@ public:
 	    return(p);
     }
 
-    virtual const char* GetFullPathName()
+    virtual char* GetFullPathName()
     {
         return m_szFileName;
     }
@@ -193,16 +179,12 @@ public:
     // static functions
     //
 
-    static bool Remove( const std::string fileName );
-	static bool Remove( const std::string directoryName, const std::string fileName );
-    static bool Rename( const std::string origFileName, const std::string newFileName );
-    static bool Exists( const std::string fileName );
-    static bool Exists( const std::string directoryName, const std::string fileName );
-    static bool ExistsWildcard( const std::string wildCard );
-    static bool CopyFile( const std::string sourceFileName, const std::string destFileName );
-    static bool MoveFile( const std::string sourceFileName, const std::string destFileName );
-
-    static bool SetFilePermissions( const std::string fileName, int nPermissions );
+    static bool Remove( const char *pszFileName );
+	static bool Remove( const char *pszDirectoryName, const char *pszFileName );
+    static bool Rename( const char *pszOrigFileName, const char* pszNewFileName );
+    static bool Exists( const char *pszFileName );
+    static bool ExistsWildcard( const char *pszWildCard );
+    static bool SetFilePermissions( const char *pszFileName, int nPermissions );
     static bool IsFileHandleValid( int hFile );
 
     static void SetLogger( WLogger* pLogger ) { m_pLogger = pLogger; }

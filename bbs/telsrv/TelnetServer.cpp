@@ -26,7 +26,6 @@
 #include "Preferences.h"
 #include "MainFrame.h"
 #include "mmsystem.h"			
-#include ".\telnetserver.h"
 
 
 //
@@ -39,10 +38,12 @@ DWORD gdwClientCount;
 //
 // Prototypes for local functions ( non-class level )
 //
+//unsigned __stdcall ListenThread( void *pVoid );
 HANDLE InitClientCount();
 void DeleteClientCount();
 void IncrementClientCount();
 void DecrementClientCount();
+//unsigned __stdcall ClientThread( void *pVoid );
 
 
 struct DATAPACKET
@@ -64,16 +65,16 @@ typedef DATAPACKET* LPDATAPACKET;
 TelnetServer::TelnetServer()
 {
     m_pDoc = NULL;
-	m_pNodeStatus = new NodeStatus();
+	m_nodeStatus = new NodeStatus();
 }
 
 TelnetServer::~TelnetServer()
 {
-	if ( m_pNodeStatus != NULL )
+	if ( m_nodeStatus != NULL )
 	{
-		delete m_pNodeStatus;
+		delete m_nodeStatus;
 	}
-	m_pNodeStatus = NULL;
+	m_nodeStatus = NULL;
 }
 
 BOOL TelnetServer::StartServer( CWWIVTelnetServerDoc* pDoc )
@@ -85,8 +86,8 @@ BOOL TelnetServer::StartServer( CWWIVTelnetServerDoc* pDoc )
     m_pDoc = pDoc;
 
 	Preferences prefs;
-	m_pNodeStatus->SetLowNode( prefs.m_nStartNode );
-	m_pNodeStatus->SetHighNode( prefs.m_nEndNode );
+	m_nodeStatus->SetLowNode( prefs.m_nStartNode );
+	m_nodeStatus->SetHighNode( prefs.m_nEndNode );
 
 	// Create exit event object
 	m_hExit = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -100,7 +101,7 @@ BOOL TelnetServer::StartServer( CWWIVTelnetServerDoc* pDoc )
 
 	if ( m_Socket == INVALID_SOCKET )
 	{
-        pDoc->AppendLogText( _T( "Error Creating Socket" ) );
+        pDoc->AppendLogText( "Error Creating Socket" );
 		return FALSE;
 	}
 
@@ -116,7 +117,7 @@ BOOL TelnetServer::StartServer( CWWIVTelnetServerDoc* pDoc )
 	if ( nRet == SOCKET_ERROR )
 	{
         CString strError;
-        strError.Format( _T( "Error [%d] Binding to Socket on port [%d]" ) , WSAGetLastError(), nLocalPort );
+        strError.Format( "Error [%d] Binding to Socket on port [%d]", WSAGetLastError(), nLocalPort );
         pDoc->AppendLogText( strError );
 		closesocket( m_Socket );
 		return FALSE;
@@ -127,7 +128,7 @@ BOOL TelnetServer::StartServer( CWWIVTelnetServerDoc* pDoc )
 	if ( nRet == SOCKET_ERROR )
 	{
         CString strError;
-        strError.Format( _T( "Error [%d] Binding to Socket on port [%d]" ), WSAGetLastError(), nLocalPort );
+        strError.Format( "Error [%d] Binding to Socket on port [%d]", WSAGetLastError(), nLocalPort );
         pDoc->AppendLogText( strError );
 		closesocket( m_Socket );
 		return FALSE;
@@ -136,7 +137,7 @@ BOOL TelnetServer::StartServer( CWWIVTelnetServerDoc* pDoc )
 	DATAPACKET* packet = static_cast<DATAPACKET *>( malloc( sizeof( DATAPACKET ) ) );
 	packet->event = m_hExit;
 	packet->socket = m_Socket;
-	packet->nodeStatus = m_pNodeStatus;
+	packet->nodeStatus = m_nodeStatus;
     packet->telnetServer = this;
 	
 	// Create the listening thread
@@ -150,7 +151,7 @@ BOOL TelnetServer::StartServer( CWWIVTelnetServerDoc* pDoc )
 
 	if ( !m_dwListeningThread )
 	{
-		pDoc->AppendLogText( _T( "Error Creating Thread to Listen to Socket" ) );
+		pDoc->AppendLogText( "Error Creating Thread to Listen to Socket" );
 		closesocket( m_Socket );
         free( packet );
 		return FALSE;
@@ -181,7 +182,7 @@ BOOL TelnetServer::StopServer()
 
 NodeStatus* TelnetServer::GetNodeStatus()
 {
-	return m_pNodeStatus;
+	return m_nodeStatus;
 }
 
 
@@ -196,11 +197,12 @@ unsigned __stdcall TelnetServer::ListenThread( void *pVoid )
 	SOCKADDR_IN SockAddr;
 	int nLen;
 	DWORD dwRet;
+	HANDLE hNoClients;
 	LPDATAPACKET pPacket = static_cast<LPDATAPACKET>( pVoid );
 	SOCKET listenSocket = pPacket->socket;
 	LPHANDLE	pHandle = static_cast<LPHANDLE>( pPacket->event );
 
-	HANDLE hNoClients = InitClientCount();
+	hNoClients = InitClientCount();
 
 	while ( TRUE )
 	{
@@ -243,7 +245,7 @@ unsigned __stdcall TelnetServer::ListenThread( void *pVoid )
 	dwRet = WaitForSingleObject( hNoClients, 5000 );
 	if ( dwRet == WAIT_TIMEOUT )
 	{
-        pPacket->telnetServer->m_pDoc->AppendLogText( _T( "WARNING: Could not terminate Client" ) );
+        pPacket->telnetServer->m_pDoc->AppendLogText( "WARNING: Could not terminate Client" );
 	}
 
 	DeleteClientCount();
@@ -300,6 +302,7 @@ void DecrementClientCount()
 
 unsigned __stdcall TelnetServer::ClientThread( void *pVoid )
 {
+	
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 	LPDATAPACKET pPacket = static_cast<LPDATAPACKET>( pVoid );
@@ -321,9 +324,9 @@ unsigned __stdcall TelnetServer::ClientThread( void *pVoid )
 			TRUE, // Inheritable
 			DUPLICATE_SAME_ACCESS ) ) 
     {
-        CString errorMessage;
-        errorMessage.Format( _T( "ERROR: Unable to duplicate socket handle.  Error code [%ld]" ), GetLastError() );
-        telnetServer->LogMessage( errorMessage );
+        TCHAR szTmpErrorMessage[ 255 ];
+        wsprintf( szTmpErrorMessage, "ERROR: Unable to duplicate socket handle.  Error code [%ld]", GetLastError() );
+        telnetServer->LogMessage( szTmpErrorMessage );
 		return -1;
 	}
 	// 
@@ -336,7 +339,7 @@ unsigned __stdcall TelnetServer::ClientThread( void *pVoid )
 		// Tell the user we are busy
 		send( DuplicateSock, "BUSY\r\n", 6, 0 );
         TCHAR szBuffer[ 255 ];
-        _stprintf( szBuffer, _T( "INFO: Sent BUSY signal to: [%s]" ), pPacket->szAddr );
+        wsprintf( szBuffer, "INFO: Sent BUSY signal to: [%s]", pPacket->szAddr );
         telnetServer->LogMessage( szBuffer );
 
 		// Close sockets.
@@ -346,21 +349,21 @@ unsigned __stdcall TelnetServer::ClientThread( void *pVoid )
 	}
 
 	TCHAR szNodeNumber[21];
-	_stprintf( szNodeNumber, _T( "%d" ), nNodeNumber );
+	wsprintf( szNodeNumber, "%d", nNodeNumber );
 
 	TCHAR szSocketHandle[41];
-	_stprintf( szSocketHandle, _T( "%d" ), DuplicateSock );
+	wsprintf( szSocketHandle, "%d", DuplicateSock );
 
 	CString args = prefs.m_parameters;
-	args.Replace( _T( "@N" ), szNodeNumber );
-	args.Replace( _T( "@H" ), szSocketHandle );
+	args.Replace( "@N", szNodeNumber );
+	args.Replace( "@H", szSocketHandle );
 
 	// Make room for a 1024, we do this because the UNICODE version of CreateProcess
 	// will fail if the commandline is a const char array.
 	TCHAR szCmdLine[1024];
-    _tcscpy( szCmdLine, prefs.m_cmdLine );
-    _tcscat( szCmdLine, _T( " " ) );
-	_tcscat( szCmdLine, args );
+	lstrcpy( szCmdLine, prefs.m_cmdLine );
+	lstrcat( szCmdLine, " " );
+	lstrcat( szCmdLine, args );
 
 	ZeroMemory( &si, sizeof( si ) );
     si.cb = sizeof( si );
@@ -373,7 +376,7 @@ unsigned __stdcall TelnetServer::ClientThread( void *pVoid )
     }
     
     TCHAR szLogMsgCmdLine[ 1152 ];
-    _stprintf( szLogMsgCmdLine, _T( "INFO: Executing commandline: %s" ), szCmdLine );
+    wsprintf( szLogMsgCmdLine, "INFO: Executing commandline: %s", szCmdLine );
     telnetServer->LogMessage( szLogMsgCmdLine ); 
     DWORD dwCreationFlags = 0;
 	if ( !CreateProcess( NULL,
@@ -390,7 +393,7 @@ unsigned __stdcall TelnetServer::ClientThread( void *pVoid )
 		closesocket(OrigSock);
 		closesocket(DuplicateSock); 
 		TCHAR szError[255];
-        _stprintf( szError, _T( "ERROR: CreateProcess failed with error code [%d]" ), GetLastError() );
+        wsprintf( szError, "ERROR: CreateProcess failed with error code [%d]", GetLastError() );
         telnetServer->LogMessage( szError );
 		return -1;
 	}
@@ -425,8 +428,8 @@ unsigned __stdcall TelnetServer::ClientThread( void *pVoid )
 	// sample, we use WaitForSingleObject(pi.hProcess, INFINITE) to
 	// wait for the child.
 
-	closesocket( OrigSock );
-	closesocket( DuplicateSock ); 
+	closesocket(OrigSock);
+	closesocket(DuplicateSock); 
 
     //
     // Get the exit code
@@ -440,10 +443,10 @@ unsigned __stdcall TelnetServer::ClientThread( void *pVoid )
 		
 	DecrementClientCount();
 	TCHAR szAddress[81];
-	_tcscpy( szAddress, _T( "0.0.0.0" ) );
+	_tcscpy( szAddress, "0.0.0.0" );
 	nodeStatus->SetNodeInfo( nNodeNumber, FALSE, szAddress );
 
-	free( pPacket );
+	free( pVoid );
 
     ASSERT( pMainWindow );
 	pMainWindow->PostMessage( WM_NODESTATUSCHANGED, nNodeNumber, dwProcessExitCode );
@@ -462,7 +465,8 @@ BOOL TelnetServer::LogMessage( LPCTSTR pszMessage )
     CWinApp* pWinApp = AfxGetApp();
     CWnd *pMainWindow = pWinApp->GetMainWnd();
     CString* pMessage = new CString( pszMessage );
-    pMainWindow->PostMessage( WM_LOG_MESSAGE, CMainFrame::m_nLogMessageID, reinterpret_cast<LPARAM>( pMessage ) );
+    pMainWindow->PostMessage( WM_LOG_MESSAGE, 1, (LPARAM) pMessage );
     return TRUE;
 }
+
 

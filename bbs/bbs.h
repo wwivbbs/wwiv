@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,19 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifdef _MSC_VER
-#pragma once
-#endif
 
 #ifndef __INCLUDED_BBS_H__
 #define __INCLUDED_BBS_H__
 
 
+#include "WComm.h"
+#include "WSession.h"
 #include "WFile.h"
-#include "Runnable.h"
+#include "WLocalIO.h"
 
-class WComm;
-class StatusMgr;
 
 /*!
  * @header WWIV 5.0 Main Application
@@ -36,23 +33,52 @@ class StatusMgr;
  */
 
 
+/*!
+ * @class StatusMgr Manages STATUS.DAT
+ */
+class StatusMgr
+{
+private:
+    WFile m_statusFile;
+public:
+	/*!
+	 * @function StatusMgr Constructor
+	 */
+	StatusMgr() { }
+	~StatusMgr() {}
+	/*!
+	 * @function Read Loads the contents of STATUS.DAT
+	 */
+	void Read();
+	/*!
+	 * @function Write Writes the contents of STATUS.DAT
+	 */
+	void Write();
+	/*!
+	 * @function Lock Aquires write lock on STATUS.DAT
+	 */
+	void Lock();
+	/*!
+	 * @function Get Loads the contents of STATUS.DAT with
+	 *           control on failure and lock mode
+	 * @param bFailOnFailure Exit the BBS if reading the file fails
+	 * @param bLockFile Aquires write lock
+	 */
+	void Get(bool bFailOnFailure, bool bLockFile);
+};
+
+
 
 /*!
- * @class WApplication  Main Application object for WWIV 5.0
+ * @class WBbsApp  Main Application object for WWIV 5.0
  */
-class WApplication : public WLogger, Runnable
+class WBbsApp : public WLogger
 {
 public:
     // Constants
     static const int exitLevelOK;
     static const int exitLevelNotOK;
     static const int exitLevelQuit;
-
-    static const int shutdownNone;
-    static const int shutdownThreeMinutes;
-    static const int shutdownTwoMinutes;
-    static const int shutdownOneMinute;
-    static const int shutdownImmediate;
 
 public:
     // former global variables and system_operation_rec members
@@ -62,23 +88,17 @@ public:
 
 
 private:
-	unsigned short  m_unx;
+	unsigned short m_unx;
 	/*! @var m_szCurrentDirectory The current directory where WWIV lives */
-	char            m_szCurrentDirectory[ MAX_PATH ];
-    int             m_nOkLevel;
-    int             m_nErrorLevel;
-    int             m_nInstance;
-    char            m_szNetworkExtension[ 5 ];
-    double          last_time;
-	bool            m_bUserAlreadyOn;
-	bool            m_bNeedToCleanNetwork;
-    int             m_nBbsShutdownStatus;
-    double          m_fShutDownTime;
-	int             m_nWfcStatus;
+	char m_szCurrentDirectory[ MAX_PATH ];
+    int  m_nOkLevel;
+    int  m_nErrorLevel;
+    int  m_nInstance;
+    char m_szNetworkExtension[ 5 ];
+    double last_time;
+	bool m_bUserAlreadyOn;
+	bool m_bNeedToCleanNetwork;
 
-    StatusMgr*      statusMgr;
-    WUserManager*   userManager;
-    std::string     m_attachmentDirectory;
 
 protected:
 
@@ -97,13 +117,18 @@ protected:
 	void GotCaller(unsigned int ms, unsigned long cs);
 
     /*!
-	 * @function Run main bbs loop - Invoked from the application
+	 * @function BBSmain main bbs loop - Invoked from the application
 	 *           main method.
      * @param argc The number of arguments
 	 * @param argv arguments
 	 */
-	int Run(int argc, char *argv[]);
+	int BBSmain(int argc, char *argv[]);
 
+    /*!
+	 * @function TelnetMainLoop - waits for telnet connection,
+	 *           then calls BBSmain on connection
+	 */
+	void TelnetMainLoop();
 	/*!
 	 * @function ShowUsage - Shows the help screen to the user listing
 	 *           all of the command line arguments for WWIV
@@ -111,32 +136,46 @@ protected:
     void ShowUsage();
 
 public:
-    WApplication();
-    WApplication( const WApplication& copy );
-    virtual ~WApplication();
+    WBbsApp();
+    virtual ~WBbsApp();
 
     /*!
-	 * @function BBSMainLoop - Main BBS loop.. (old main functon)
+	 * @function Run - Main BBS loop.. (old main functon)
 	 */
-    int  BBSMainLoop(int argc, char *argv[]);
-
-    StatusMgr* GetStatusManager();
-
-    WUserManager* GetUserManager();
-
-    std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
+    int  Run(int argc, char *argv[]);
 
     /*!
-	 * @var m_networkNumEnvVar Environment variable style
+	 * @var comm pointer to Communications class (either serial or telnet)
+	 * See class <code>WComm</code>
+	 */
+    WComm* comm;
+
+	/*!
+	 * @var statusMgr pointer to the StatusMgr class.
+	 */
+	StatusMgr* statusMgr;
+
+    /*!
+	 * @var localIO pointer to Local IO class
+	 */
+    WLocalIO *localIO;
+
+    /*!
+     * @var userManager pointer to the User Manager class
+     */
+    WUserManager* userManager;
+
+    /*!
+	 * @var m_szEnvironVarWwivNetworkNumber Environment variable style
      *      listing of WWIV net number, (only used for the xenviron)
 	 */
-    std::string m_networkNumEnvVar;
+	char m_szEnvironVarWwivNetworkNumber[20];
 
     /*!
-	 * @var m_wwivVerEnvVar Environment variable for the WWIV
+	 * @var m_szWWIVEnvironmentVariable Environment variable for the WWIV
      *      version (set as BBS env variable)
 	 */
-    std::string m_wwivVerEnvVar;
+    char m_szWWIVEnvironmentVariable[51];
 
 	/*!
 	 * @function GetHomeDir Returns the current home directory
@@ -146,17 +185,24 @@ public:
 	/*! @function CdHome Changes directories back to the WWIV Home directory */
 	void CdHome();
 
+	/*! @function StartupComm Start up the communications subsystem */
+	bool StartupComm(bool bUseSockets);
+
+	/*! @function ShutdownComm Shutdown the communications subsystem */
+	bool ShutdownComm();
+
     /*! @function AbortBBS - Shuts down the bbs at the not-ok error level */
     void AbortBBS( bool bSkipShutdown = false );
 
-    /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
+    /*! @function ShutdownBBS - Shuts down the bbs at the ok error level */
+    void ShutdownBBS();
+
+    /*! @function ShutdownBBS - Shuts down the bbs at the "QUIT" error level */
     void QuitBBS();
 
     int  GetInstanceNumber() { return m_nInstance; }
 
-    const char* GetNetworkExtension() { return m_szNetworkExtension; }
-
-    void UpdateTopScreen();
+    char* GetNetworkExtension() { return m_szNetworkExtension; }
 
     // From WLogger
     virtual bool LogMessage( const char* pszFormat, ... );
@@ -175,24 +221,9 @@ public:
 	bool IsCleanNetNeeded() const			{ return m_bNeedToCleanNetwork; }
 	void SetCleanNetNeeded( bool b )		{ m_bNeedToCleanNetwork = b; }
 
-    bool IsShutDownActive() const           { return m_nBbsShutdownStatus > 0; }
-
-    double GetShutDownTime() const          { return m_fShutDownTime; }
-    void   SetShutDownTime( double d )      { m_fShutDownTime = d; }
-
-	void SetWfcStatus( int nStatus )        { m_nWfcStatus = nStatus; }
-	int  GetWfcStatus()                     { return m_nWfcStatus; }
-
     bool read_subs();
-    void UpdateShutDownStatus();
-    void ToggleShutDown();
-
 
 private:
-    int  GetShutDownStatus() const          { return m_nBbsShutdownStatus; }
-    void SetShutDownStatus( int n )         { m_nBbsShutdownStatus = n; }
-    void ShutDownBBS( int nShutDownStatus );
-
     void ExitBBSImpl( int nExitLevel );
 
     void InitializeBBS(); // old init() method
@@ -201,9 +232,9 @@ private:
 
     int LocalLogon();
 
-    unsigned short str2spawnopt( const char *s );
-    unsigned short str2restrict( const char *s );
-    unsigned char stryn2tf( const char *s );
+    unsigned short str2spawnopt(char *s);
+    unsigned short str2restrict(char *s);
+    unsigned char stryn2tf(char *s);
     void read_nextern();
     void read_arcs();
     void read_editors();
@@ -221,15 +252,6 @@ private:
     void create_phone_file();
 
 };
-
-// Function Prototypes
-WApplication* GetApplication();
-
-
-class WSession;
-
-WSession* GetSession();
-
 
 
 #endif // __INCLUDED_BBS_H__

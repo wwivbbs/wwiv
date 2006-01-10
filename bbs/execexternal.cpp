@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -37,7 +37,7 @@ int UnixSpawn( char *pszCommand, char* environ[] );
 //
 
 
-int ExecuteExternalProgram( const std::string commandLine, int nFlags )
+int ExecuteExternalProgram( const char *pszCommandLine, int nFlags )
 {
     // forget it if the user has hung up
     if (!(nFlags & EFLAG_NOHUP))
@@ -50,30 +50,30 @@ int ExecuteExternalProgram( const std::string commandLine, int nFlags )
     create_chain_file();
 
     // get ready to run it
-    if ( GetSession()->IsUserOnline() )
+    if ( sess->IsUserOnline() )
 	{
-        GetSession()->WriteCurrentUser();
-        write_qscn(GetSession()->usernum, qsc, false);
+        sess->WriteCurrentUser( sess->usernum );
+        write_qscn(sess->usernum, qsc, false);
     }
     close_strfiles();
-    GetSession()->localIO()->set_global_handle( false );
+    app->localIO->set_global_handle( false );
 
     // extra processing for net programs
     if (nFlags & EFLAG_NETPROG)
     {
-        write_inst(INST_LOC_NET, GetSession()->GetNetworkNumber() + 1, INST_FLAGS_NONE);
+        write_inst(INST_LOC_NET, sess->GetNetworkNumber() + 1, INST_FLAGS_NONE);
     }
 
     // Execute the program and make sure the workingdir is reset
-    int nExecRetCode = ExecExternalProgram( commandLine, nFlags );
-    GetApplication()->CdHome();
+    int nExecRetCode = ExecExternalProgram( pszCommandLine, nFlags );
+    app->CdHome();
 
     // Reread the user record.
-    if ( GetSession()->IsUserOnline() )
+    if ( sess->IsUserOnline() )
 	{
-        GetApplication()->GetUserManager()->ReadUser( GetSession()->GetCurrentUser(), GetSession()->usernum, true );
-        read_qscn( GetSession()->usernum, qsc, false, true );
-        GetApplication()->UpdateTopScreen();
+        app->userManager->ReadUser( &sess->thisuser, sess->usernum, true );
+        read_qscn( sess->usernum, qsc, false, true );
+        app->localIO->UpdateTopScreen();
     }
 
     // return to caller

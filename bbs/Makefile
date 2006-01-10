@@ -42,7 +42,6 @@ BIN		= bin
 BIN_NAME        = $(BIN)/wwiv$(EXE_EXT)
 INITLITE	= $(BIN)/initlite$(EXE_EXT)
 NODEMGR 	= $(BIN)/nodemgr$(EXE_EXT)
-FIX             = $(BIN)/fix$(EXE_EXT)
 RM		= rm
 MKDIR		= mkdir
 CFLAGS		= -I$(CURDIR) -Wall -g $(PLATFORM_CFLAGS) -Iplatform -I$(PLATFORM_DIR)
@@ -87,7 +86,7 @@ $(OBJ)/%.o : %.cpp
 
 COMMON_BBS_OBJS =	       	\
 	$(OBJ)/asv.o		\
-	$(OBJ)/attach.o		\
+	$(OBJ)/attach.o	\
 	$(OBJ)/automsg.o	\
 	$(OBJ)/batch.o         	\
 	$(OBJ)/bbs.o           	\
@@ -101,10 +100,10 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/bgetch.o       	\
 	$(OBJ)/bputch.o       	\
 	$(OBJ)/callback.o      	\
-	$(OBJ)/chains.o		\
+	$(OBJ)/chains.o	\
 	$(OBJ)/chat.o          	\
 	$(OBJ)/chnedit.o       	\
-	$(OBJ)/colors.o		\
+	$(OBJ)/colors.o	\
 	$(OBJ)/com.o           	\
 	$(OBJ)/conf.o          	\
 	$(OBJ)/confutil.o	\
@@ -113,14 +112,15 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/DateTime.o	\
 	$(OBJ)/defaults.o      	\
 	$(OBJ)/diredit.o       	\
-	$(OBJ)/dirlist.o	\
+	$(OBJ)/dirlist.o		\
 	$(OBJ)/dropfile.o	\
 	$(OBJ)/dupphone.o	\
 	$(OBJ)/events.o        	\
 	$(OBJ)/exec.o        	\
-	$(OBJ)/execexternal.o   \
+	$(OBJ)/execexternal.o        	\
 	$(OBJ)/extract.o	\
-	$(OBJ)/FindUser.o       \
+	$(OBJ)/extrn.o         	\
+	$(OBJ)/extrn1.o        	\
 	$(OBJ)/gfiles.o        	\
 	$(OBJ)/gfledit.o       	\
 	$(OBJ)/hop.o      	\
@@ -129,11 +129,11 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/inmsg.o       	\
 	$(OBJ)/input.o       	\
 	$(OBJ)/instmsg.o       	\
-	$(OBJ)/interpret.o      \
+	$(OBJ)/interpret.o       	\
 	$(OBJ)/lilo.o          	\
 	$(OBJ)/listplus.o      	\
 	$(OBJ)/lpfunc.o      	\
-	$(OBJ)/memory.o		\
+	$(OBJ)/memory.o	\
 	$(OBJ)/menu.o      	\
 	$(OBJ)/menuedit.o      	\
 	$(OBJ)/menuspec.o      	\
@@ -147,15 +147,13 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/multmail.o      	\
 	$(OBJ)/netsup.o        	\
 	$(OBJ)/newuser.o       	\
-	$(OBJ)/normupld.o       \
+	$(OBJ)/normupld.o       	\
 	$(OBJ)/pause.o       	\
-	$(OBJ)/printfile.o      \
+	$(OBJ)/printfile.o       	\
 	$(OBJ)/quote.o      	\
 	$(OBJ)/readmail.o      	\
-	$(OBJ)/reboot.o		\
+	$(OBJ)/reboot.o	\
 	$(OBJ)/shortmsg.o	\
-	$(OBJ)/showfiles.o	\
-	$(OBJ)/SmallRecord.o	\
 	$(OBJ)/sr.o            	\
 	$(OBJ)/srrcv.o         	\
 	$(OBJ)/srsend.o        	\
@@ -184,13 +182,10 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/WFile.o		\
 	$(OBJ)/wfndfile.o	\
 	$(OBJ)/WLocalIO.o	\
-	$(OBJ)/WOutStream.o	\
-	$(OBJ)/WOutStreamBuffer.o	\
 	$(OBJ)/wqscn.o		\
 	$(OBJ)/wshare.o		\
 	$(OBJ)/WSession.o	\
 	$(OBJ)/WStringUtils.o	\
-	$(OBJ)/WTextFile.o	\
 	$(OBJ)/WUser.o		\
 	$(OBJ)/wutil.o         	\
 	$(OBJ)/xfer.o          	\
@@ -230,13 +225,11 @@ BBS_SOURCE =	$(patsubst %.o, %.cpp, $(BBS_OBJS))
 #
 #
 
-all: $(BIN_NAME) $(INITLITE) $(FIX) $(PLATFORM_TARGETS)
+all: $(BIN_NAME) $(INITLITE) $(PLATFORM_TARGETS)
 
 initlite: $(INITLITE)
 
 nodemgr: $(NODEMGR)
-
-fix: $(FIX)
 
 $(OBJ):
 	-$(MKDIR) $(OBJ)
@@ -254,10 +247,6 @@ $(INITLITE):
 $(NODEMGR):
 	@$(MAKE) -C nodemgr  --no-print-directory
 
-$(FIX):
-	@$(MAKE) -C fix --no-print-directory
-
-
 clean:
 	@echo Cleaning...
 	-$(RM) -f $(BIN_NAME)
@@ -266,14 +255,12 @@ clean:
 	-$(RM) -f *~
 	@$(MAKE) -C initlite clean --no-print-directory
 	@$(MAKE) -C nodemgr clean --no-print-directory
-	@$(MAKE) -C fix clean --no-print-directory
 
 spotless:
 	-$(RM) -rf $(BIN)/
 	-$(RM) -rf $(OBJ)/
 	@$(MAKE) -C initlite spotless --no-print-directory
 	@$(MAKE) -C nodemgr spotless --no-print-directory
-	@$(MAKE) -C fix spotless --no-print-directory
 
 dist: tarball all
 ifeq "$(OS)" "UNIX"
@@ -290,4 +277,4 @@ cp:
 # Included for convension
 distclean: spotless
 
-.PHONY: clean clobberall
+.PHONY: clean clobberall 

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -29,7 +29,7 @@ class WIOSerial : public WComm
 {
 
 public:
-    WIOSerial( unsigned int nHandle );
+    WIOSerial();
     virtual ~WIOSerial();
 
     virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
@@ -50,7 +50,8 @@ public:
     unsigned int writeImpl(const char *buffer, unsigned int count);
     virtual bool carrier();
     virtual bool incoming();
-    virtual unsigned int GetHandle() const;
+    virtual bool startup();
+    virtual bool shutdown();
 
 protected:
     virtual bool SetBaudRate(unsigned long speed);
@@ -63,12 +64,12 @@ protected:
     DCB    dcb;
     COMMTIMEOUTS oldtimeouts;
 
-	HANDLE m_hReadThread;
+	HANDLE hReadThread;
 	HANDLE hWriteThread;
     HANDLE hComm;
-    HANDLE m_hReadStopEvent;
-    std::queue<char> m_inputQueue;
-    HANDLE m_hInBufferMutex;
+    HANDLE hReadStopEvent;
+    std::queue<char> inBuffer;
+    HANDLE hInBufferMutex;
 };
 
 

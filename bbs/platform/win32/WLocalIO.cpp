@@ -1,6 +1,7 @@
+/**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -19,6 +20,7 @@
 #ifndef NOT_BBS
 #include "wwiv.h"
 #endif
+#include "WStringUtils.h"
 
 extern int oldy = 0;
 
@@ -58,8 +60,7 @@ void WLocalIO::set_attr_xy(int x, int y, int a)
 
 WLocalIO::WLocalIO()
 {
-    SetTopLine( 0 );
-    SetScreenBottom( 0 );
+    m_nWfcStatus = 0;
 	ExtendedKeyWaiting = 0;
 	wx = 0;
 
@@ -107,7 +108,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable )
 		if ( !fileGlobalCap.IsOpen() )
         {
 			char szFileName[MAX_PATH];
-			_snprintf(szFileName, sizeof( szFileName ), "%sglobal-%d.txt", syscfg.gfilesdir, GetApplication()->GetInstanceNumber() );
+			sprintf(szFileName, "%sglobal-%d.txt", syscfg.gfilesdir, app->GetInstanceNumber() );
 			fileGlobalCap.SetName( szFileName );
 
 			bool bOpen = fileGlobalCap.Open( WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
@@ -141,6 +142,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable )
 
 void WLocalIO::global_char(char ch)
 {
+
 	if ( global_buf && fileGlobalCap.IsOpen() )
     {
         global_buf[global_ptr++] = ch;
@@ -184,7 +186,9 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr)
             set_global_handle( false );
             x_only = true;
             wx = 0;
-			fileGlobalCap.SetName( syscfgovr.tempdir, pszFileName );
+    		char szTempFileName[MAX_PATH];
+            sprintf(szTempFileName, "%s%s", syscfgovr.tempdir, pszFileName);
+			fileGlobalCap.SetName( szTempFileName );
 
             if (ovwr)
             {
@@ -221,8 +225,8 @@ void WLocalIO::LocalGotoXY(int x, int y)
 	x = std::max<int>( x, 0 );
     x = std::min<int>( x, 79 );
     y = std::max<int>( y, 0 );
-    y += GetTopLine();
-    y = std::min<int>( y, GetScreenBottom() );
+    y += sess->topline;
+	y = std::min<int>( y, sess->screenbottom );
 
     if (x_only)
     {
@@ -273,7 +277,7 @@ int WLocalIO::WhereY()
     m_cursorPosition.X = m_consoleBufferInfo.dwCursorPosition.X;
     m_cursorPosition.Y = m_consoleBufferInfo.dwCursorPosition.Y;
 
-    return m_cursorPosition.Y - GetTopLine();
+    return m_cursorPosition.Y - sess->topline;
 }
 
 
@@ -288,12 +292,12 @@ void WLocalIO::LocalLf()
     COORD dest;
     CHAR_INFO fill;
 
-    if ( m_cursorPosition.Y >= GetScreenBottom() )
+    if (m_cursorPosition.Y >= sess->screenbottom)
     {
         dest.X = 0;
-        dest.Y = static_cast< short > ( GetTopLine() );
-        scrollRect.Top = static_cast< short > ( GetTopLine() + 1 );
-        scrollRect.Bottom = static_cast< short > ( GetScreenBottom() );
+        dest.Y = static_cast< short > ( sess->topline );
+        scrollRect.Top = static_cast< short > ( sess->topline + 1 );
+        scrollRect.Bottom = static_cast< short > ( sess->screenbottom );
         scrollRect.Left = 0;
         scrollRect.Right = 79;
         fill.Attributes = static_cast< short > ( curatr );
@@ -310,31 +314,29 @@ void WLocalIO::LocalLf()
 
 
 
-/**
- * Returns the local cursor to the left-most position on the screen.
- */
 void WLocalIO::LocalCr()
+/* This short function returns the local cursor to the left-most position
+* on the screen.
+*/
 {
     m_cursorPosition.X = 0;
     SetConsoleCursorPosition(m_hConOut,m_cursorPosition);
 }
 
-
-/**
- * Clears the local logical screen 
- */
 void WLocalIO::LocalCls()
+/* This clears the local logical screen */
 {
     int nOldCurrentAttribute = curatr;
     curatr = 0x07;
+    // TODO Debugging hack - REMOVE THIS!!
     SMALL_RECT scrollRect;
     COORD dest;
     CHAR_INFO fill;
 
     dest.X = 32767;
     dest.Y = 0;
-    scrollRect.Top = static_cast< short > ( GetTopLine() );
-    scrollRect.Bottom = static_cast< short > ( GetScreenBottom() );
+    scrollRect.Top = static_cast< short > ( sess->topline );
+    scrollRect.Bottom = static_cast< short > ( sess->screenbottom );
     scrollRect.Left = 0;
     scrollRect.Right = 79;
     fill.Attributes = static_cast< short > ( curatr );
@@ -360,7 +362,7 @@ void WLocalIO::LocalBackspace()
     {
         m_cursorPosition.X--;
     }
-    else if ( m_cursorPosition.Y != GetTopLine() )
+    else if ( m_cursorPosition.Y != sess->topline )
     {
         m_cursorPosition.Y--;
         m_cursorPosition.X = 79;
@@ -392,15 +394,15 @@ void WLocalIO::LocalPutchRaw(unsigned char ch)
 
     // Need to scroll the screen up one.
     m_cursorPosition.X = 0;
-    if ( m_cursorPosition.Y == GetScreenBottom() )
+    if ( m_cursorPosition.Y == sess->screenbottom )
     {
         COORD dest;
         SMALL_RECT MoveRect;
         CHAR_INFO fill;
 
         // rushfan scrolling fix (was no +1)
-        MoveRect.Top    = static_cast< short > ( GetTopLine() + 1 );
-        MoveRect.Bottom = static_cast< short > ( GetScreenBottom() );
+        MoveRect.Top    = static_cast< short > ( sess->topline + 1 );
+        MoveRect.Bottom = static_cast< short > ( sess->screenbottom );
         MoveRect.Left   = 0;
         MoveRect.Right  = 79;
 
@@ -409,7 +411,7 @@ void WLocalIO::LocalPutchRaw(unsigned char ch)
 
         dest.X = 0;
 		// rushfan scrolling fix (was -1)
-        dest.Y = static_cast< short > ( GetTopLine() );
+        dest.Y = static_cast< short > ( sess->topline );
 
         ScrollConsoleScreenBuffer(m_hConOut,&MoveRect,&MoveRect,dest,&fill);
     }
@@ -420,25 +422,26 @@ void WLocalIO::LocalPutchRaw(unsigned char ch)
 }
 
 
-/**
- * This function outputs one character to the local screen.  C/R, L/F, TOF,
- * BS, and BELL are interpreted as commands instead of characters.
- */
-void WLocalIO::LocalPutch( unsigned char ch )
+
+
+void WLocalIO::LocalPutch(unsigned char ch)
+/* This function outputs one character to the local screen.  C/R, L/F, TOF,
+* BS, and BELL are interpreted as commands instead of characters.
+*/
 {
-    if ( x_only )
+    if (x_only)
     {
-        if ( ch > 31 )
+        if (ch > 31)
         {
-            wx = ( wx + 1 ) % 80;
+            wx = (wx + 1) % 80;
         }
         else if ( ch == RETURN || ch == CL )
         {
             wx = 0;
         }
-        else if ( ch == BACKSPACE )
+        else if (ch == BACKSPACE)
         {
-            if ( wx )
+            if (wx)
             {
                 wx--;
             }
@@ -446,23 +449,23 @@ void WLocalIO::LocalPutch( unsigned char ch )
         return;
     }
 
-    if ( ch > 31 )
+    if (ch > 31)
     {
         LocalPutchRaw(ch);
     }
-    else if ( ch == CM )
+    else if (ch == CM)
     {
         LocalCr();
     }
-    else if ( ch == CJ )
+    else if (ch == CJ)
     {
         LocalLf();
     }
-    else if ( ch == CL )
+    else if (ch == CL)
     {
         LocalCls();
     }
-    else if ( ch == BACKSPACE )
+    else if (ch == BACKSPACE)
     {
         LocalBackspace();
     }
@@ -471,26 +474,26 @@ void WLocalIO::LocalPutch( unsigned char ch )
         if ( !outcom )
         {
             // TODO Make the bell sound configurable.
-			WWIV_Sound( 500, 4 );
+			WWIV_Sound(500, 4);
         }
     }
 }
 
 
-void WLocalIO::LocalPuts( const char *pszText )
+void WLocalIO::LocalPuts(const char *s)
 // This (obviously) outputs a string TO THE SCREEN ONLY
 {
-    while ( *pszText )
+    while ( *s )
     {
-        LocalPutch( *pszText++ );
+        LocalPutch( *s++ );
     }
 }
 
 
 void WLocalIO::LocalXYPuts( int x, int y, const char *pszText )
 {
-    LocalGotoXY( x, y );
-    LocalFastPuts( pszText );
+    app->localIO->LocalGotoXY( x, y );
+    app->localIO->LocalFastPuts( pszText );
 }
 
 
@@ -512,9 +515,9 @@ int  WLocalIO::LocalPrintf( const char *pszFormattedText, ... )
     char szBuffer[ 1024 ];
 
     va_start( ap, pszFormattedText );
-    int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
+    int nNumWritten = vsnprintf( szBuffer, 1024, pszFormattedText, ap );
     va_end( ap );
-    LocalFastPuts( szBuffer );
+    app->localIO->LocalFastPuts( szBuffer );
     return nNumWritten;
 }
 
@@ -525,9 +528,9 @@ int  WLocalIO::LocalXYPrintf( int x, int y, const char *pszFormattedText, ... )
     char szBuffer[ 1024 ];
 
     va_start( ap, pszFormattedText );
-    int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
+    int nNumWritten = vsnprintf( szBuffer, 1024, pszFormattedText, ap );
     va_end( ap );
-    LocalXYPuts( x, y, szBuffer );
+    app->localIO->LocalXYPuts( x, y, szBuffer );
     return nNumWritten;
 }
 
@@ -538,37 +541,83 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
     char szBuffer[ 1024 ];
 
     va_start( ap, pszFormattedText );
-    int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
+    int nNumWritten = vsnprintf( szBuffer, 1024, pszFormattedText, ap );
     va_end( ap );
-
-    // GetSession()->bout.SystemColor( nAttribute );
-    int nOldColor = curatr;
-    curatr = nAttribute;
-    LocalXYPuts( x, y, szBuffer );
-    curatr = nOldColor;
+    setc( nAttribute );
+    app->localIO->LocalXYPuts( x, y, szBuffer );
     return nNumWritten;
 }
+
+
+void WLocalIO::pr_Wait(int i1)
+{
+    int i, i2, i3;
+    char *ss = "-=[WAIT]=-";
+    i2 = i3 = strlen(ss);
+    for (i = 0; i < i3; i++)
+    {
+        if ((ss[i] == 3) && (i2 > 1))
+        {
+            i2 -= 2;
+        }
+    }
+
+    if (i1)
+    {
+        if ( okansi() )
+        {
+            i = curatr;
+            setc( sess->thisuser.hasColor() ? sess->thisuser.GetColor( 3 ) : sess->thisuser.GetBWColor( 3 ) );
+            sess->bout << ss;
+            sess->bout << "\x1b[" << i2 << "D";
+            setc( static_cast< unsigned char > ( i ) );
+        }
+        else
+        {
+            sess->bout << ss;
+        }
+    }
+    else
+    {
+        if ( okansi() )
+        {
+            for (i = 0; i < i2; i++)
+            {
+                bputch(' ');
+            }
+            sess->bout << "\x1b[" << i2 << "D";
+        }
+        else
+        {
+            for (i = 0; i < i2; i++)
+            {
+                BackSpace();
+            }
+        }
+    }
+}
+
 
 
 void WLocalIO::set_protect(int l) //JZ Set_Protect Fix
 // set_protect sets the number of lines protected at the top of the screen.
 {
-	if ( l != GetTopLine() )
+	if ( l != sess->topline )
 	{
         COORD coord;
 		coord.X = 0;
 		coord.Y = static_cast< short > ( l );
 
-        if (l > GetTopLine())
+        if (l > sess->topline)
         {
-            if ( ( WhereY() + GetTopLine() - l ) < 0 )
+            if ( ( WhereY() + sess->topline - l ) < 0 )
             {
 	            CHAR_INFO lpFill;
 	            SMALL_RECT scrnl;
 
-				scrnl.Top = static_cast< short > ( GetTopLine() );
+				scrnl.Top = static_cast< short > ( sess->topline );
 				scrnl.Left = 0;
-				scrnl.Bottom = static_cast< short > ( GetScreenBottom() );
+				scrnl.Bottom = static_cast< short > ( sess->screenbottom );
 				scrnl.Right = 79; //%%TODO - JZ Make the console size user defined
 
 				lpFill.Char.AsciiChar = ' ';
@@ -577,23 +626,23 @@ void WLocalIO::set_protect(int l) //JZ Set_Protect Fix
 				coord.X = 0;
 				coord.Y = static_cast< short > ( l );
 				ScrollConsoleScreenBuffer(m_hConOut, &scrnl, NULL, coord, &lpFill);
-                LocalGotoXY( WhereX(), WhereY() + l - GetTopLine() );
+                LocalGotoXY( WhereX(), WhereY() + l - sess->topline );
             }
-            oldy += (GetTopLine() - l);
+            oldy += (sess->topline - l);
         }
         else
         {
         	DWORD written;
-			FillConsoleOutputAttribute(m_hConOut,0,(GetTopLine() - l) * 80,coord,&written);
-            oldy += (GetTopLine() - l);
+			FillConsoleOutputAttribute(m_hConOut,0,(sess->topline - l) * 80,coord,&written);
+            oldy += (sess->topline - l);
         }
     }
-    SetTopLine( l );
-	GetSession()->screenlinest = ( GetSession()->using_modem ) ? GetSession()->GetCurrentUser()->GetScreenLines() : defscreenbottom + 1 - GetTopLine();
+    sess->topline = l;
+	sess->screenlinest = ( sess->using_modem ) ? sess->thisuser.GetScreenLines() : defscreenbottom + 1 - sess->topline;
 }
 
 
-void WLocalIO::savescreen()
+void WLocalIO::savescreen(screentype * pScreenType)
 {
     COORD topleft;
     CONSOLE_SCREEN_BUFFER_INFO bufinfo;
@@ -604,29 +653,29 @@ void WLocalIO::savescreen()
     region.Bottom = static_cast< short > ( bufinfo.dwSize.Y - 1 );
     region.Right  = static_cast< short > ( bufinfo.dwSize.X - 1 );
 
-    if (!m_ScreenSave.scrn1)
+    if (!pScreenType->scrn1)
     {
-        m_ScreenSave.scrn1= static_cast< CHAR_INFO *> ( bbsmalloc((bufinfo.dwSize.X*bufinfo.dwSize.Y)*sizeof(CHAR_INFO)) );
+        pScreenType->scrn1= static_cast< CHAR_INFO *> ( bbsmalloc((bufinfo.dwSize.X*bufinfo.dwSize.Y)*sizeof(CHAR_INFO)) );
     }
 
-    if (m_ScreenSave.scrn1)
+    if (pScreenType->scrn1)
     {
-        ReadConsoleOutput(m_hConOut,(CHAR_INFO *)m_ScreenSave.scrn1,bufinfo.dwSize,topleft,&region);
+        ReadConsoleOutput(m_hConOut,(CHAR_INFO *)pScreenType->scrn1,bufinfo.dwSize,topleft,&region);
     }
 
-    m_ScreenSave.x1 = static_cast< short > ( WhereX() );
-    m_ScreenSave.y1 = static_cast< short > ( WhereY() );
-    m_ScreenSave.topline1 = static_cast< short > ( GetTopLine() );
-    m_ScreenSave.curatr1 = static_cast< short > ( curatr );
+    pScreenType->x1 = static_cast< short > ( WhereX() );
+    pScreenType->y1 = static_cast< short > ( WhereY() );
+    pScreenType->topline1 = static_cast< short > ( sess->topline );
+    pScreenType->curatr1 = static_cast< short > ( curatr );
 }
 
 
 /*
  * restorescreen restores a screen previously saved with savescreen
  */
-void WLocalIO::restorescreen()
+void WLocalIO::restorescreen(screentype * pScreenType)
 {
-    if (m_ScreenSave.scrn1)
+    if (pScreenType->scrn1)
     {
         // COORD size;
         COORD topleft;
@@ -638,28 +687,28 @@ void WLocalIO::restorescreen()
         region.Bottom = static_cast< short > ( bufinfo.dwSize.Y - 1 );
         region.Right  = static_cast< short > ( bufinfo.dwSize.X - 1 );
 
-        WriteConsoleOutput(m_hConOut,m_ScreenSave.scrn1,bufinfo.dwSize,topleft,&region);
-        BbsFreeMemory(m_ScreenSave.scrn1);
-        m_ScreenSave.scrn1 = NULL;
+        WriteConsoleOutput(m_hConOut,pScreenType->scrn1,bufinfo.dwSize,topleft,&region);
+        BbsFreeMemory(pScreenType->scrn1);
+        pScreenType->scrn1 = NULL;
     }
-    SetTopLine( m_ScreenSave.topline1 );
-    curatr = m_ScreenSave.curatr1;
-    LocalGotoXY(m_ScreenSave.x1, m_ScreenSave.y1);
+    sess->topline = pScreenType->topline1;
+    curatr = pScreenType->curatr1;
+    LocalGotoXY(pScreenType->x1, pScreenType->y1);
 }
 
 
 void WLocalIO::ExecuteTemporaryCommand( const char *pszCommand )
 {
-    GetSession()->DisplaySysopWorkingIndicator( true );
-    savescreen();
-    int i = GetTopLine();
-    SetTopLine( 0 );
+    pr_Wait( 1 );
+    savescreen( &screensave );
+    int i = sess->topline;
+    sess->topline = 0;
     curatr = 0x07;
     LocalCls();
     ExecuteExternalProgram( pszCommand, EFLAG_TOPSCREEN );
-    restorescreen();
-    SetTopLine( i );
-    GetSession()->DisplaySysopWorkingIndicator( false );
+    restorescreen( &screensave );
+    sess->topline = i;
+    pr_Wait( 0 );
 }
 
 
@@ -671,15 +720,15 @@ char xlate[] =
 };
 
 
-char WLocalIO::scan_to_char( int nKeyCode )
+char WLocalIO::scan_to_char(unsigned char ch)
 {
-    return ( nKeyCode >= 16 && nKeyCode <= 50 ) ? xlate[ nKeyCode - 16 ] : '\x00';
+    return ( ch >= 16 && ch <= 50 ) ? xlate[ch - 16] : '\x00';
 }
 
 
-void WLocalIO::alt_key( int nKeyCode )
+void WLocalIO::alt_key(unsigned char ch)
 {
-    char ch1 = scan_to_char( nKeyCode );
+    char ch1 = scan_to_char(ch);
     if (ch1)
     {
         char szCommand[ MAX_PATH ];
@@ -704,7 +753,7 @@ void WLocalIO::alt_key( int nKeyCode )
                         ss1 = strtok(NULL, "\r\n");
                         if (ss1 && (strlen(ss1) < 128))
                         {
-                            strncpy(szCommand, ss1, sizeof(szCommand));
+                            strcpy(szCommand, ss1);
                         }
                         ss1 = NULL;
                     }
@@ -733,9 +782,6 @@ void WLocalIO::alt_key( int nKeyCode )
                         }
                     }
                 }
-                // TODO - Re-enable this at some point, but since we don't answer calls
-                // too well, it's not too important right now.
-                /*
                 else if (m_nWfcStatus == 1)
                 {
                     holdphone( true );
@@ -743,7 +789,6 @@ void WLocalIO::alt_key( int nKeyCode )
                     cleanup_net();
                     holdphone( false );
                 }
-                */
 
             }
         }
@@ -754,101 +799,107 @@ void WLocalIO::alt_key( int nKeyCode )
 /*
  * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
  */
-void WLocalIO::skey( char ch )
+void WLocalIO::skey(char ch)
 {
-    int nKeyCode = static_cast<unsigned char>( ch );
     int i, i1;
 
     if ( (syscfg.sysconfig & sysconfig_no_local) == 0 )
     {
         if (okskey)
         {
-            if ( nKeyCode >= AF1 && nKeyCode <= AF10 )
+            if ((ch >= 104) && (ch <= 113))
             {
-                set_autoval( nKeyCode - 104 );
+                set_autoval(ch - 104);
             }
             else
             {
-                switch ( nKeyCode )
+                switch ((unsigned char) ch)
                 {
-                case F1:                          /* F1 */
+                case 59:                          /* F1 */
                     OnlineUserEditor();
                     break;
-                case SF1:                          /* Shift-F1 */
+                case 84:                          /* Shift-F1 */
 					set_global_handle( ( fileGlobalCap.IsOpen() ) ? false : true );
-                    GetApplication()->UpdateTopScreen();
+                    UpdateTopScreen();
                     break;
-                case CF1:                          /* Ctrl-F1 */
-                    GetApplication()->ToggleShutDown();
-                    break;
-                case F2:                          /* F2 */
-                    GetSession()->topdata++;
-                    if ( GetSession()->topdata > WLocalIO::topdataUser )
+                case 94:                          /* Ctrl-F1 */
+                    if ( sess->bbsshutdown )
                     {
-                        GetSession()->topdata = WLocalIO::topdataNone;
+                        sess->bbsshutdown = 0;
                     }
-                    GetApplication()->UpdateTopScreen();
+                    else
+                    {
+                        shut_down( 1 );
+                    }
                     break;
-                case F3:                          /* F3 */
-                    if ( GetSession()->using_modem )
+                case 60:                          /* F2 */
+                    sess->topdata++;
+                    if ( sess->topdata > WLocalIO::topdataUser )
+                    {
+                        sess->topdata = WLocalIO::topdataNone;
+                    }
+                    UpdateTopScreen();
+                    break;
+                case 61:                          /* F3 */
+                    if ( sess->using_modem )
                     {
                         incom = !incom;
                         dump();
                         tleft( false );
                     }
                     break;
-                case F4:                          /* F4 */
+                case 62:                          /* F4 */
                     chatcall = false;
-                    GetApplication()->UpdateTopScreen();
+                    UpdateTopScreen();
                     break;
-                case F5:                          /* F5 */
+                case 63:                          /* F5 */
                     hangup = true;
-                    GetSession()->remoteIO()->dtr( false );
+                    app->comm->dtr( false );
                     break;
-                case SF5:                          /* Shift-F5 */
+                case 88:                          /* Shift-F5 */
                     i1 = (rand() % 20) + 10;
                     for (i = 0; i < i1; i++)
                     {
                         bputch( static_cast< unsigned char > ( rand() % 256 ) );
                     }
                     hangup = true;
-                    GetSession()->remoteIO()->dtr( false );
+                    app->comm->dtr( false );
                     break;
-                case CF5:                          /* Ctrl-F5 */
-                    GetSession()->bout << "\r\nCall back later when you are there.\r\n\n";
+                case 98:                          /* Ctrl-F5 */
+                    sess->bout << "\r\nCall back later when you are there.\r\n\n";
                     hangup = true;
-                    GetSession()->remoteIO()->dtr( false );
+                    app->comm->dtr( false );
                     break;
-                case F6:                          /* F6 */
+                case 64:                          /* F6 */
                     ToggleSysopAlert();
                     tleft( false );
                     break;
-                case F7:                          /* F7 */
-                    GetSession()->GetCurrentUser()->SetExtraTime( GetSession()->GetCurrentUser()->GetExtraTime() -
+                case 65:                          /* F7 */
+                    sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() -
                                                  static_cast<float>( 5.0 * SECONDS_PER_MINUTE_FLOAT ) );
                     tleft( false );
                     break;
-                case F8:                          /* F8 */
-                    GetSession()->GetCurrentUser()->SetExtraTime( GetSession()->GetCurrentUser()->GetExtraTime() +
+                case 66:                          /* F8 */
+                    sess->thisuser.SetExtraTime( sess->thisuser.GetExtraTime() +
                                                  static_cast<float>( 5.0 * SECONDS_PER_MINUTE_FLOAT ) );
                     tleft( false );
                     break;
-                case F9:                          /* F9 */
-                    if ( GetSession()->GetCurrentUser()->GetSl() != 255 )
+                case 67:                          /* F9 */
+                    if ( sess->thisuser.GetSl() != 255 )
                     {
-                        if ( GetSession()->GetEffectiveSl() != 255)
+                        if ( sess->GetEffectiveSl() != 255)
                         {
-                            GetSession()->SetEffectiveSl( 255 );
+                            sess->SetEffectiveSl( 255 );
                         }
                         else
                         {
-                            GetSession()->ResetEffectiveSl();
+                            sess->ResetEffectiveSl();
                         }
                         changedsl();
                         tleft( false );
                     }
                     break;
-                case F10:                          /* F10 */
+                case 68:                          /* F10 */
                     if (chatting == 0)
                     {
                         if (syscfg.sysconfig & sysconfig_2_way)
@@ -865,7 +916,12 @@ void WLocalIO::skey( char ch )
                         chatting = 0;
                     }
                     break;
-                case CF10:                         /* Ctrl-F10 */
+/* No need on a multi-tasking OS
+                case 93:                          // Shift-F10
+                    ExecuteTemporaryCommand(getenv("COMSPEC"));
+                    break;
+*/
+                case 103:                         /* Ctrl-F10 */
                     if (chatting == 0)
                     {
                         chat1("", false);
@@ -875,21 +931,21 @@ void WLocalIO::skey( char ch )
                         chatting = 0;
                     }
                     break;
-                case HOME:                          /* HOME */
+                case 71:                          /* HOME */
                     if (chatting == 1)
                     {
                         chat_file = !chat_file;
                     }
                     break;
                 default:
-                    alt_key( nKeyCode );
+                    alt_key( static_cast<unsigned char>( ch ) );
                     break;
                 }
             }
         }
         else
         {
-            alt_key( nKeyCode );
+            alt_key((unsigned char) ch);
         }
     }
 }
@@ -924,34 +980,34 @@ void WLocalIO::tleft(bool bCheckForTimeOut)
     }
     int cx = WhereX();
     int cy = WhereY();
-    int ctl = GetTopLine();
+    int ctl = sess->topline;
     int cc = curatr;
-    curatr = GetSession()->GetTopScreenColor();
-    SetTopLine( 0 );
+    curatr = sess->GetTopScreenColor();
+    sess->topline = 0;
     double nsln = nsl();
-    int nLineNumber = (chatcall && (GetSession()->topdata == WLocalIO::topdataUser)) ? 5 : 4;
+    int nLineNumber = (chatcall && (sess->topdata == WLocalIO::topdataUser)) ? 5 : 4;
 
 
-    if (GetSession()->topdata)
+    if (sess->topdata)
     {
-        if (GetSession()->using_modem && !incom)
+        if ((sess->using_modem) && (!incom))
         {
             LocalXYPuts( 1, nLineNumber, ss[0] );
-			for ( std::string::size_type i = 19; i < GetSession()->GetCurrentSpeed().length(); i++ )
+			for ( std::string::size_type i = 19; i < sess->GetCurrentSpeed().length(); i++ )
             {
                 LocalPutch( static_cast< unsigned char > ( 'Í' ) );
             }
         }
         else
         {
-            LocalXYPuts( 1, nLineNumber, GetSession()->GetCurrentSpeed().c_str() );
+            LocalXYPuts( 1, nLineNumber, sess->GetCurrentSpeed().c_str() );
             for (int i = WhereX(); i < 23; i++)
             {
                 LocalPutch( static_cast< unsigned char > ( 'Í' ) );
             }
         }
 
-        if (GetSession()->GetCurrentUser()->GetSl() != 255 && GetSession()->GetEffectiveSl() == 255)
+        if ((sess->thisuser.GetSl() != 255) && ( sess->GetEffectiveSl() == 255))
         {
             LocalXYPuts( 23, nLineNumber, ss[1] );
         }
@@ -977,42 +1033,42 @@ void WLocalIO::tleft(bool bCheckForTimeOut)
             LocalXYPuts( 64, nLineNumber, ss[6] );
         }
     }
-    switch (GetSession()->topdata)
+    switch (sess->topdata)
     {
     case WLocalIO::topdataSystem:
-        if ( GetSession()->IsUserOnline() )
+        if ( sess->IsUserOnline() )
         {
             LocalXYPrintf( 18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT );
         }
         break;
     case WLocalIO::topdataUser:
         {
-			if ( GetSession()->IsUserOnline() )
+			if ( sess->IsUserOnline() )
             {
                 LocalXYPrintf( 18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT );
             }
             else
             {
-                LocalXYPrintf( 18, 3, GetSession()->GetCurrentUser()->GetPassword() );
+                LocalXYPrintf( 18, 3, sess->thisuser.GetPassword() );
             }
         }
         break;
     }
-    SetTopLine( ctl );
+    sess->topline = ctl;
     curatr = cc;
     LocalGotoXY( cx, cy );
-    if ( bCheckForTimeOut && GetSession()->IsUserOnline() )
+    if ( bCheckForTimeOut && sess->IsUserOnline() )
     {
         if ( nsln == 0.0 )
         {
-            GetSession()->bout << "\r\nTime expired.\r\n\n";
+            sess->bout << "\r\nTime expired.\r\n\n";
             hangup = true;
         }
     }
 }
 
 
-void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInstanceNumber )
+void WLocalIO::UpdateTopScreenImpl()
 {
     char i;
     char sl[82], ar[17], dar[17], restrict[17], rst[17], lo[90];
@@ -1021,18 +1077,18 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
 
     if ( so() && !incom )
     {
-        pSession->topdata = WLocalIO::topdataNone;
+        sess->topdata = WLocalIO::topdataNone;
     }
 
     if ( syscfg.sysconfig & sysconfig_titlebar )
     {
         // Only set the titlebar if the user wanted it that way.
         char szConsoleTitle[ 255 ];
-        _snprintf( szConsoleTitle, sizeof( szConsoleTitle ), "WWIV Node %d (User: %s)", nInstanceNumber, pSession->GetCurrentUser()->GetUserNameAndNumber( pSession->usernum ) );
+        sprintf( szConsoleTitle, "WWIV Node %d (User: %s)", app->GetInstanceNumber(), sess->thisuser.GetUserNameAndNumber( sess->usernum ) );
         ::SetConsoleTitle( szConsoleTitle );
     }
 
-    switch ( pSession->topdata )
+    switch ( sess->topdata )
     {
     case WLocalIO::topdataNone:
         set_protect( 0 );
@@ -1047,7 +1103,7 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
         }
         else
         {
-            if ( GetTopLine() == 6 )
+            if ( sess->topline == 6 )
             {
                 set_protect( 0 );
             }
@@ -1057,40 +1113,37 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
     }
     int cx = WhereX();
     int cy = WhereY();
-    int nOldTopLine = GetTopLine();
+    int nOldTopLine = sess->topline;
     int cc = curatr;
-    curatr = pSession->GetTopScreenColor();
-    SetTopLine( 0 );
+    curatr = sess->GetTopScreenColor();
+    sess->topline = 0;
     for ( i = 0; i < 80; i++ )
     {
         sl[i] = '\xCD';
     }
     sl[80] = '\0';
 
-    switch (pSession->topdata)
+    switch (sess->topdata)
     {
     case WLocalIO::topdataNone:
         break;
     case WLocalIO::topdataSystem:
         {
-            LocalXYPrintf( 0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, pStatus->GetLastDate() );
+            app->statusMgr->Read();
+            LocalXYPrintf( 0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, status.date1 );
 
             LocalXYPrintf( 0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
-                            pStatus->GetNumUsers(), pStatus->GetCallerNumber(), 
-                            pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts() );
+                           status.users, status.callernum1, status.callstoday, status.localposts );
 
             LocalXYPrintf( 0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-                           pSession->GetCurrentUser()->GetUserNameAndNumber( pSession->usernum ),
-                           pStatus->GetMinutesActiveToday(),
-                           static_cast<int>( 10 * pStatus->GetMinutesActiveToday() / 144 ),
-                           pStatus->GetNumEmailSentToday() );
+                           sess->thisuser.GetUserNameAndNumber( sess->usernum ),
+                           status.activetoday,
+                           static_cast<int>( 10 * status.activetoday / 144 ),
+                           status.emailtoday );
 
             LocalXYPrintf( 0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
-                           pSession->GetCurrentUser()->GetSl(), 
-                           pSession->GetCurrentUser()->GetDsl(),
-                           fwaiting, 
-                           pStatus->GetNumUploadsToday(), 
-                           pStatus->GetNumFeedbackSentToday() );
+                           sess->thisuser.GetSl(), sess->thisuser.GetDsl(),
+                           fwaiting, status.uptoday, status.fbacktoday );
         }
         break;
     case WLocalIO::topdataUser:
@@ -1098,7 +1151,7 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
             strcpy(rst, restrict_string);
             for (i = 0; i <= 15; i++)
             {
-                if ( pSession->GetCurrentUser()->HasArFlag( 1 << i ) )
+                if ( sess->thisuser.hasArFlag( 1 << i ) )
                 {
                     ar[i] = static_cast< char > ('A' + i );
                 }
@@ -1106,7 +1159,7 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
                 {
                     ar[i] = SPACE;
                 }
-                if ( pSession->GetCurrentUser()->HasDarFlag( 1 << i ) )
+                if ( sess->thisuser.hasDarFlag( 1 << i ) )
                 {
                     dar[i] = static_cast< char > ( 'A' + i );
                 }
@@ -1114,7 +1167,7 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
                 {
                     dar[i] = SPACE;
                 }
-                if ( pSession->GetCurrentUser()->HasRestrictionFlag( 1 << i ) )
+                if ( sess->thisuser.hasRestrictionFlag( 1 << i ) )
                 {
                     restrict[i] = rst[i];
                 }
@@ -1126,56 +1179,56 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
             dar[16] = '\0';
             ar[16] = '\0';
             restrict[16] = '\0';
-            if ( !wwiv::stringUtils::IsEquals( pSession->GetCurrentUser()->GetLastOn(), date() ) )
+            if ( !wwiv::stringUtils::IsEquals( sess->thisuser.GetLastOn(), date() ) )
             {
-                strcpy( lo, pSession->GetCurrentUser()->GetLastOn() );
+                strcpy( lo, sess->thisuser.GetLastOn() );
             }
             else
             {
-                _snprintf( lo, sizeof( lo ), "Today:%2d", pSession->GetCurrentUser()->GetTimesOnToday() );
+                sprintf( lo, "Today:%2d", sess->thisuser.GetTimesOnToday() );
             }
 
             LocalXYAPrintf( 0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
-                            pSession->GetCurrentUser()->GetUserNameAndNumber( pSession->usernum ),
-                            pSession->GetCurrentUser()->GetNumMailWaiting(),
-                            pSession->GetCurrentUser()->GetFilesUploaded(),
-                            pSession->GetCurrentUser()->GetUploadK(),
-                            pSession->GetCurrentUser()->GetSl(),
-                            pSession->GetCurrentUser()->GetNumLogons(),
-                            pSession->GetCurrentUser()->GetNumMessagesPosted() );
+                            sess->thisuser.GetUserNameAndNumber( sess->usernum ),
+                            sess->thisuser.GetNumMailWaiting(),
+                            sess->thisuser.GetFilesUploaded(),
+                            sess->thisuser.GetUploadK(),
+                            sess->thisuser.GetSl(),
+                            sess->thisuser.GetNumLogons(),
+                            sess->thisuser.GetNumMessagesPosted() );
 
             char szCallSignOrRegNum[ 41 ];
-            if ( pSession->GetCurrentUser()->GetWWIVRegNumber() )
+            if ( sess->thisuser.GetWWIVRegNumber() )
             {
-                _snprintf( szCallSignOrRegNum, sizeof( szCallSignOrRegNum ), "%lu", pSession->GetCurrentUser()->GetWWIVRegNumber() );
+                sprintf( szCallSignOrRegNum, "%lu", sess->thisuser.GetWWIVRegNumber() );
             }
             else
             {
-                strcpy( szCallSignOrRegNum, pSession->GetCurrentUser()->GetCallsign() );
+                strcpy( szCallSignOrRegNum, sess->thisuser.GetCallsign() );
             }
             LocalXYPrintf(  0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u",
-                            pSession->GetCurrentUser()->GetRealName(),
-                            pSession->GetCurrentUser()->GetVoicePhoneNumber(),
+                            sess->thisuser.GetRealName(),
+                            sess->thisuser.GetVoicePhoneNumber(),
                             szCallSignOrRegNum,
-                            pSession->GetCurrentUser()->GetFilesDownloaded(),
-                            pSession->GetCurrentUser()->GetDownloadK(),
-                            pSession->GetCurrentUser()->GetDsl(),
-                            static_cast<long>( ( pSession->GetCurrentUser()->GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ),
-                            pSession->GetCurrentUser()->GetNumEmailSent() + pSession->GetCurrentUser()->GetNumNetEmailSent() );
+                            sess->thisuser.GetFilesDownloaded(),
+                            sess->thisuser.GetDownloadK(),
+                            sess->thisuser.GetDsl(),
+                            static_cast<long>( ( sess->thisuser.GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ),
+                            sess->thisuser.GetNumEmailSent() + sess->thisuser.GetNumNetEmailSent() );
 
             LocalXYPrintf( 0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u",
-                ar, dar, restrict, pSession->GetCurrentUser()->GetExempt(),
-                lo, pSession->GetCurrentUser()->GetNumFeedbackSent() );
+                ar, dar, restrict, sess->thisuser.GetExempt(),
+                lo, sess->thisuser.GetNumFeedbackSent() );
 
             LocalXYPrintf( 0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
-                            pSession->GetCurrentUser()->GetNote(),
-                            pSession->GetCurrentUser()->GetGender(),
-                            pSession->GetCurrentUser()->GetAge(),
-                            ctypes( pSession->GetCurrentUser()->GetComputerType() ), fwaiting );
+                            sess->thisuser.GetNote(),
+                            sess->thisuser.GetGender(),
+                            sess->thisuser.GetAge(),
+                            ctypes( sess->thisuser.GetComputerType() ), fwaiting );
 
             if (chatcall)
             {
-                LocalXYPuts( 0, 4, m_chatReason.c_str() );
+                LocalXYPuts( 0, 4, m_szChatReason );
             }
         }
         break;
@@ -1186,7 +1239,7 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
     {
         LocalXYPuts( 0, nOldTopLine - 1, sl );
     }
-    SetTopLine( nOldTopLine );
+    sess->topline = nOldTopLine;
     LocalGotoXY( cx, cy );
     curatr = cc;
     tleft( false );
@@ -1267,7 +1320,7 @@ unsigned char WLocalIO::getchd1()
 
 void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc)
 {
-    *cc = static_cast<char>( curatr );
+    *cc = (char) curatr;
     strcpy(xl, endofline);
     {
         WORD Attr[80];
@@ -1282,11 +1335,11 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc)
 
         for (int i = 0; i < len; i++)
         {
-            atr[i] = static_cast<char>( Attr[i] ); // atr is 8bit char, Attr is 16bit
+            atr[i] = (char) Attr[i]; // atr is 8bit char, Attr is 16bit
         }
     }
-    cl[ WhereX() ]	= 0;
-    atr[ WhereX() ] = 0;
+    cl[app->localIO->WhereX()]	= 0;
+    atr[app->localIO->WhereX()] = 0;
 }
 
 
@@ -1304,26 +1357,26 @@ int  WLocalIO::LocalGetChar()
 
 void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen)
 {
-    // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
+    // Make sure that we are within the range of {(0,0), (80,sess->screenbottom)}
 	xlen = std::min<int>( xlen, 80 );
-    if ( ylen > ( GetScreenBottom() + 1 - GetTopLine() ) )
+    if (ylen > (sess->screenbottom + 1 - sess->topline))
     {
-        ylen = ( GetScreenBottom() + 1 - GetTopLine() );
+        ylen = (sess->screenbottom + 1 - sess->topline);
     }
     if ((x + xlen) > 80)
     {
         x = 80 - xlen;
     }
-    if ((y + ylen) > GetScreenBottom() + 1)
+    if ((y + ylen) > sess->screenbottom + 1)
     {
-        y = GetScreenBottom() + 1 - ylen;
+        y = sess->screenbottom + 1 - ylen;
     }
 
     int xx = WhereX();
     int yy = WhereY();
 
-    // we expect to be offset by GetTopLine()
-    y += GetTopLine();
+    // we expect to be offset by sess->topline
+    y += sess->topline;
 
     // large enough to hold 80x50
     CHAR_INFO ci[4000];
@@ -1410,7 +1463,7 @@ void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen)
 }
 
 
-void WLocalIO::SetCursor(int cursorStyle)
+void WLocalIO::SetCursor(UINT cursorStyle)
 {
 	CONSOLE_CURSOR_INFO cursInfo;
 
@@ -1445,16 +1498,16 @@ void WLocalIO::LocalClrEol()
 {
 	CONSOLE_SCREEN_BUFFER_INFO ConInfo;
 	DWORD cb;
-	int len = 80 - WhereX();
+	int len = 80 - app->localIO->WhereX();
 
-	GetConsoleScreenBufferInfo( m_hConOut,&ConInfo );
-	FillConsoleOutputCharacter( m_hConOut, ' ', len, ConInfo.dwCursorPosition, &cb );
-	FillConsoleOutputAttribute( m_hConOut, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb );
+	GetConsoleScreenBufferInfo(m_hConOut,&ConInfo);
+	FillConsoleOutputCharacter(m_hConOut, ' ', len, ConInfo.dwCursorPosition, &cb);
+	FillConsoleOutputAttribute(m_hConOut, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb);
 }
 
 
 
-void WLocalIO::LocalWriteScreenBuffer( const char *pszBuffer )
+void WLocalIO::LocalWriteScreenBuffer(const char *pszBuffer)
 {
     CHAR_INFO ci[2000];
 
@@ -1467,24 +1520,20 @@ void WLocalIO::LocalWriteScreenBuffer( const char *pszBuffer )
         ci[i].Char.AsciiChar = (char) *(pszBuffer + ((i*2)+0));
         ci[i].Attributes     = (unsigned char) *(pszBuffer + ((i*2)+1));
 	}
-    WriteConsoleOutput( m_hConOut, ci, size, pos, &rect );
+    WriteConsoleOutput(m_hConOut, ci, size, pos, &rect);
 }
 
 
 int WLocalIO::GetDefaultScreenBottom()
 {
-	return ( m_consoleBufferInfo.dwSize.Y - 1 );
+	return (m_consoleBufferInfo.dwSize.Y - 1);
 }
 
 
 bool HasKeyBeenPressed()
 {
-    return ( _kbhit() ) ? true : false;
+    return ( kbhit() ) ? true : false;
 
-    // TODO - This code below doesn't work, hence we aren't using it.
-    // Ideally, we should support mouse input, and try to not use the
-    // generic CRT functions whenever possible to get a better Win32 
-    // feel to everything, but until the code works, it's disabled.
 #if 0
 
     PINPUT_RECORD pIRBuf;
@@ -1547,25 +1596,24 @@ bool HasKeyBeenPressed()
 
 unsigned char GetKeyboardChar()
 {
-    return static_cast< unsigned char >( _getch() );
+    return static_cast< unsigned char >( getch() );
 }
 
-
-void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *returncode, char *pszAllowedSet )
+void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, char *ss )
 {
-    WWIV_ASSERT( pszInOutText );
-    WWIV_ASSERT( pszAllowedSet );
+    WWIV_ASSERT(s);
+    WWIV_ASSERT(ss);
 
     int oldatr = curatr;
     int cx = WhereX();
     int cy = WhereY();
-    for ( int i = strlen( pszInOutText ); i < len; i++ )
+    for (int i = strlen(s); i < len; i++)
     {
-        pszInOutText[i] = static_cast<unsigned char>( 176 );
+        s[i] = static_cast<unsigned char>( 176 );
     }
-    pszInOutText[len] = '\0';
-    curatr = GetSession()->GetEditLineColor();
-    LocalFastPuts( pszInOutText );
+    s[len] = '\0';
+    curatr = sess->GetEditLineColor();
+    LocalFastPuts( s );
     LocalGotoXY( cx, cy );
     bool done = false;
     int pos = 0;
@@ -1576,7 +1624,7 @@ void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *retu
         if ( ch == 0 || ch == 224 )
         {
             ch = getchd();
-            switch ( ch )
+            switch (ch)
             {
             case F1:
                 done = true;
@@ -1587,11 +1635,11 @@ void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *retu
                 LocalGotoXY( cx, cy );
                 break;
             case END:
-                pos = GetEditLineStringLength( pszInOutText );
+                pos = GetEditLineStringLength( s ); // len;
                 LocalGotoXY( cx + pos, cy );
                 break;
             case RARROW:
-                if ( pos < GetEditLineStringLength( pszInOutText ) )
+                if ( pos < GetEditLineStringLength( s ) )
                 {
                     pos++;
                     LocalGotoXY( cx + pos, cy );
@@ -1620,15 +1668,15 @@ void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *retu
                 }
                 break;
             case KEY_DELETE:
-                if ( status != SET )
+                if (status != SET)
                 {
-                    for ( int i = pos; i < len; i++ )
+                    for (int i = pos; i < len; i++)
                     {
-                        pszInOutText[ i ] = pszInOutText[ i + 1 ];
+                        s[i] = s[i + 1];
                     }
-                    pszInOutText[ len - 1 ] = static_cast<unsigned char>( 176 );
-                    LocalXYPuts( cx, cy, pszInOutText );
-                    LocalGotoXY( cx + pos, cy );
+                    s[len - 1] = static_cast<unsigned char>( 176 );
+                    LocalXYPuts( cx, cy, s );
+                    LocalGotoXY(cx + pos, cy);
                 }
                 break;
             }
@@ -1644,19 +1692,19 @@ void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *retu
                 if (status == SET)
                 {
                     ch = wwiv::UpperCase<unsigned char>(ch);
-                    if ( ch != SPACE )
+                    if (ch != SPACE)
                     {
                         bool bLookingForSpace = true;
-                        for ( int i = 0; i < len; i++ )
+                        for (int i = 0; i < len; i++)
                         {
-                            if ( ch == pszAllowedSet[i] && bLookingForSpace )
+                            if ( ch == ss[i] && bLookingForSpace )
                             {
                                 bLookingForSpace = false;
                                 pos = i;
-                                LocalGotoXY( cx + pos, cy );
-                                if ( pszInOutText[pos] == SPACE )
+                                LocalGotoXY(cx + pos, cy);
+                                if (s[pos] == SPACE)
                                 {
-                                    ch = pszAllowedSet[pos];
+                                    ch = ss[pos];
                                 }
                                 else
                                 {
@@ -1666,27 +1714,27 @@ void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *retu
                         }
                         if ( bLookingForSpace )
                         {
-                            ch = pszAllowedSet[pos];
+                            ch = ss[pos];
                         }
                     }
                 }
                 if ((pos < len) && ((status == ALL) || (status == UPPER_ONLY) || (status == SET) ||
                     ((status == NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == SPACE)))))
                 {
-                    if ( insert )
+                    if (insert)
                     {
-                        for ( int i = len - 1; i > pos; i-- )
+                        for (int i = len - 1; i > pos; i--)
                         {
-                            pszInOutText[i] = pszInOutText[i - 1];
+                            s[i] = s[i - 1];
                         }
-                        pszInOutText[ pos++ ] = ch;
-                        LocalXYPuts( cx, cy, pszInOutText );
+                        s[pos++] = ch;
+                        LocalXYPuts( cx, cy, s );
                         LocalGotoXY( cx + pos, cy );
                     }
                     else
                     {
-                        pszInOutText[pos++] = ch;
-                        LocalPutch( ch );
+                        s[pos++] = ch;
+                        LocalPutch(ch);
                     }
                 }
             }
@@ -1709,37 +1757,37 @@ void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *retu
                     LocalGotoXY( cx, cy );
                     break;
                 case CE:
-                    pos = GetEditLineStringLength( pszInOutText ); // len;
+                    pos = GetEditLineStringLength( s ); // len;
                     LocalGotoXY( cx + pos, cy );
                     break;
                 case BACKSPACE:
-                    if ( pos > 0 )
+                    if (pos > 0)
                     {
-                        if ( insert )
+                        if (insert)
                         {
                             for ( int i = pos - 1; i < len; i++ )
                             {
-                                pszInOutText[i] = pszInOutText[i + 1];
+                                s[i] = s[i + 1];
                             }
-                            pszInOutText[len - 1] = static_cast<unsigned char>( 176 );
+                            s[len - 1] = static_cast<unsigned char>( 176 );
                             pos--;
-                            LocalXYPuts( cx, cy, pszInOutText );
+                            LocalXYPuts( cx, cy, s );
                             LocalGotoXY(cx + pos, cy);
                         }
                         else
                         {
-                            int nStringLen = GetEditLineStringLength( pszInOutText );
+                            int nStringLen = GetEditLineStringLength( s );
                             pos--;
                             if ( pos == ( nStringLen - 1 ) )
                             {
-                                pszInOutText[ pos ] = static_cast<unsigned char>( 176 );
+                                s[pos] = static_cast<unsigned char>( 176 );
                             }
                             else
                             {
-                                pszInOutText[ pos ] = SPACE;
+                                s[pos] = SPACE;
                             }
-                            LocalXYPuts( cx, cy, pszInOutText );
-                            LocalGotoXY( cx + pos, cy );
+                            LocalXYPuts( cx, cy, s );
+                            LocalGotoXY(cx + pos, cy);
                         }
                     }
                     break;
@@ -1748,15 +1796,15 @@ void WLocalIO::LocalEditLine( char *pszInOutText, int len, int status, int *retu
         }
     } while ( !done );
 
-    int z = strlen( pszInOutText );
-    while ( z >= 0 && static_cast<unsigned char>( pszInOutText[z-1] ) == 176 )
+    int z = strlen( s );
+    while ( z >= 0 && static_cast<unsigned char>( s[z-1] ) == 176 )
     {
         --z;
     }
-    pszInOutText[z] = '\0';
+    s[z] = '\0';
 
     char szFinishedString[ 260 ];
-    _snprintf( szFinishedString, sizeof( szFinishedString ), "%-255s", pszInOutText );
+    sprintf( szFinishedString, "%-255s", s );
     szFinishedString[ len ] = '\0';
     LocalGotoXY( cx, cy );
     curatr=oldatr;
@@ -1776,12 +1824,5 @@ int WLocalIO::GetEditLineStringLength( const char *pszText )
 }
 
 
-void WLocalIO::UpdateNativeTitleBar()
-{
-    // Set console title
-    std::stringstream consoleTitleStream;
-    consoleTitleStream << "WWIV Node " << GetApplication()->GetInstanceNumber() << " (" << syscfg.systemname << ")";
-    SetConsoleTitle( consoleTitleStream.str().c_str() );
-}
 
 

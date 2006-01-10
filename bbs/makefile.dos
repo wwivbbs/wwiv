@@ -90,6 +90,8 @@ COMMON_BBS_OBJS = 		       	\
         $(OBJ)\defaults.obj      	\
         $(OBJ)\diredit.obj       	\
         $(OBJ)\events.obj        	\
+        $(OBJ)\extrn.obj         	\
+        $(OBJ)\extrn1.obj        	\
         $(OBJ)\tcpip.obj         	\
         $(OBJ)\gfiles.obj        	\
         $(OBJ)\gfledit.obj       	\

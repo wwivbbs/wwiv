@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);
@@ -25,6 +26,13 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);
 typedef BOOL (WINAPI *P_GDFSE)(LPCTSTR, PULARGE_INTEGER,
                                   PULARGE_INTEGER, PULARGE_INTEGER);
 
+
+
+
+bool WWIV_CopyFile(const char * szSourceFileName, const char * szDestFileName)
+{
+    return CopyFile(szSourceFileName, szDestFileName, 0) ? true : false;
+}
 
 /**
  * Returns the free disk space for a drive letter, where nDrive is the drive number
@@ -78,7 +86,7 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive)
 double WWIV_GetFreeSpaceForPath(const char * szPath)
 {
 	char szWWIVHome[MAX_PATH];
-	strcpy(szWWIVHome, GetApplication()->GetHomeDir());
+	strcpy(szWWIVHome, app->GetHomeDir());
     int nDrive = szWWIVHome[0];
 
 	if (szPath[1] == ':')
@@ -112,13 +120,13 @@ void WWIV_ChangeDirTo(const char *s)
     {
         szBuffer[i] = '\0';
     }
-    _chdir( szBuffer );
+    chdir( szBuffer );
     if (s[1] == ':')
     {
         _chdrive(s[0] - 'A' + 1);	// FIX, On Win32, _chdrive is 'A' = 1, etc..
         if (s[2] == 0)
         {
-            _chdir("\\");
+            chdir("\\");
         }
     }
 }

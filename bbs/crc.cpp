@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -79,7 +79,7 @@ typedef unsigned long int UNS_32_BITS;
 /*     hardware you could probably optimize the shift in assembler by  */
 /*     using byte-swap instructions.                                   */
 
-//unsigned long int crc32buf(char *pBuffer, size_t nLength);
+//unsigned long int crc32buf(char *buf, size_t len);
 
 static UNS_32_BITS crc_32_tab[] =
 {
@@ -122,13 +122,13 @@ static UNS_32_BITS crc_32_tab[] =
 #define UPDC32(octet, crc) (crc_32_tab[((crc) ^ (octet)) & 0xff] ^ ((crc) >> 8))
 
 
-unsigned long int crc32buf(const char *pBuffer, size_t nLength)
+unsigned long int crc32buf(const char *buf, size_t len)
 {
     register unsigned long int oldcrc32;
     oldcrc32 = 0xFFFFFFFF;
-    for (; nLength; --nLength, ++pBuffer)
+    for (; len; --len, ++buf)
     {
-        oldcrc32 = UPDC32(*pBuffer, oldcrc32);
+        oldcrc32 = UPDC32(*buf, oldcrc32);
     }
     return ~oldcrc32;
 }

@@ -72,7 +72,7 @@ CWWIVTelnetServerDoc::CWWIVTelnetServerDoc()
 	int nRet = WSAStartup( wVersionRequested, &wsaData );
 	if ( nRet != 0 )
 	{
-		MessageBox(NULL, _T( "Error Initializing WinSock" ) , _T( "Oops" ), MB_OK );
+		MessageBox(NULL, "Error Initializing WinSock", "Oops", MB_OK );
 	}
 
 	if ( AfxIsValidString( wsaData.szDescription ) )
@@ -97,7 +97,7 @@ CWWIVTelnetServerDoc::~CWWIVTelnetServerDoc()
     if ( nRet != 0 )
     {
         CString strError;
-        strError.Format( _T( "Error [%d] Shutting Down WinSock" ), WSAGetLastError() );
+        strError.Format( "Error [%d] Shutting Down WinSock", WSAGetLastError() );
         AfxMessageBox( strError, MB_ICONERROR );
     }
 }
@@ -177,11 +177,11 @@ BOOL CWWIVTelnetServerDoc::StartListener()
 	if (!bRet)
 	{
 		m_bListenerStarted = FALSE;
-		this->AppendLogText( _T( "ERROR: Telnet Listener Failed to Start" ) );
+		this->AppendLogText( "ERROR: Telnet Listener Failed to Start" );
 	}
 	else
 	{
-		this->AppendLogText( _T( "INFO:  Started Telnet Listener" ) );
+		this->AppendLogText( "INFO:  Started Telnet Listener" );
 	}
 	UpdateNodeStatus( 0 );
 	return bRet;
@@ -192,7 +192,7 @@ BOOL CWWIVTelnetServerDoc::StopListener()
 	ASSERT( m_bListenerStarted == TRUE );
 	m_bListenerStarted = FALSE;
 	BOOL bRet = m_telnetserver.StopServer();
-	this->AppendLogText( _T( "INFO:  Stopped Telnet Listener" ) );
+	this->AppendLogText( "INFO:  Stopped Telnet Listener" );
 	UpdateNodeStatus( 0 );
 	return bRet;
 }
@@ -222,32 +222,17 @@ BOOL CWWIVTelnetServerDoc::UpdateNodeStatus( int nNodeNumber, int nExitCode )
 		{
             if ( nExitCode != STILL_ACTIVE )
             {
-			    msg.Format( _T( "INFO:  Node #%d disconnected with exit code [%d]" ), nNodeNumber, nExitCode );
+			    msg.Format( "INFO:  Node #%d disconnected with exit code [%d]", nNodeNumber, nExitCode );
             }
             else
             {
-			    msg.Format( _T( "INFO:  Node #%d disconnected" ), nNodeNumber );
-            }
-            Preferences prefs;
-            if ( prefs.m_bUseBalloons )
-            {
-                CString balloonMessage;
-                balloonMessage.Format( _T( "Node #%d Disconnected" ), nNodeNumber );
-                GetMainFrame()->ShowBalloon( _T( "WWIV Telnet Server" ), balloonMessage );
+			    msg.Format( "INFO:  Node #%d disconnected", nNodeNumber );
             }
 		}
 		else
 		{
 			CString strIPAddress = nodeStatus->GetNodeIP( nNodeNumber );
-			msg.Format( _T( "INFO:  Node #%d connected with remote IP Address [%s]" ), nNodeNumber, strIPAddress );
-
-            Preferences prefs;
-            if ( prefs.m_bUseBalloons )
-            {
-                CString balloonMessage;
-                balloonMessage.Format( _T( "Node #%d connected from [%s]" ), nNodeNumber, strIPAddress );
-                GetMainFrame()->ShowBalloon( _T( "WWIV Telnet Server" ), balloonMessage );
-            }
+			msg.Format( "INFO:  Node #%d connected with remote IP Address [%s]", nNodeNumber, strIPAddress );
 		}
 		AppendLogText( msg );
 	}
@@ -367,10 +352,10 @@ void CWWIVTelnetServerDoc::ClearLogText()
 void CWWIVTelnetServerDoc::AppendLogText( LPCTSTR pszNewText )
 {
 	CTime timeNow = CTime::GetCurrentTime();
-	CString strTimeNow = timeNow.Format( _T( "[%Y-%m-%d %H:%M:%S]" ) );
+	CString strTimeNow = timeNow.Format( "[%Y-%m-%d %H:%M:%S]" );
 	
 	CString strLogLine;
-	strLogLine.Format( _T( "%s %s\r\n" ), strTimeNow, pszNewText );
+	strLogLine.Format( "%s %s\r\n", strTimeNow, pszNewText );
 	
 	m_strLogText += strLogLine;
 	
@@ -391,7 +376,7 @@ void CWWIVTelnetServerDoc::AppendLogText( LPCTSTR pszNewText )
 		if ( hFile == INVALID_HANDLE_VALUE )
 		{
 			CString strError;
-			strError.Format( _T( "%s Error [%ld] while attempting to open to File [%s]\r\n" ), 
+			strError.Format( "%s Error [%ld] while attempting to open to File [%s]\r\n", 
 								strTimeNow, GetLastError(), prefs.m_strLogFileName );
 			m_strLogText += strError;
 			return;
@@ -404,7 +389,7 @@ void CWWIVTelnetServerDoc::AppendLogText( LPCTSTR pszNewText )
 		if ( !bOk )
 		{
 			CString strError;
-			strError.Format( _T( "Error [%ld] while attempting to write to File [%s]\r\n" ), GetLastError(), prefs.m_strLogFileName );
+			strError.Format( "Error [%ld] while attempting to write to File [%s]\r\n", GetLastError(), prefs.m_strLogFileName );
 			m_strLogText += strError;
 		}
 		CloseHandle( hFile );

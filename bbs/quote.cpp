@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 //
 // Local function prototypes
@@ -31,16 +32,16 @@ char *GetQuoteInitials();
 #define PFXCOL 2
 #define QUOTECOL 0
 
-#define WRTPFX {file.WriteFormatted("\x3%c",PFXCOL+48);if (tf==1)\
-                cp=file.WriteBinary(pfx,pfxlen-1);\
-                else cp=file.WriteBinary(pfx,pfxlen);\
-                file.WriteFormatted("\x3%c",cc);}
-#define NL {if (!cp) {file.WriteFormatted("\x3%c",PFXCOL+48);\
-            file.WriteBinary(pfx,pfxlen);} if (ctlc) file.WriteBinary("0",1);\
-            file.WriteBinary("\r\n",2);cp=ns=ctlc=0;}
+#define WRTPFX {fprintf(fpFile,"\x3%c",PFXCOL+48);if (tf==1)\
+                cp=fsh_write(pfx,1,pfxlen-1,fpFile);\
+                else cp=fsh_write(pfx,1,pfxlen,fpFile);\
+                fprintf(fpFile,"\x3%c",cc);}
+#define NL {if (!cp) {fprintf(fpFile,"\x3%c",PFXCOL+48);\
+            fsh_write(pfx,1,pfxlen,fpFile);} if (ctlc) fsh_write("0",1,1,fpFile);\
+            fsh_write("\r\n",1,2,fpFile);cp=ns=ctlc=0;}
 #define FLSH {if (ss1) {if (cp && (l3+cp>=linelen)) NL else if (ns)\
-              cp+=file.WriteBinary(" ",1);if (!cp) {if (ctld)\
-              file.WriteFormatted("\x4%c",ctld); WRTPFX; } file.WriteBinary(ss1,l2);\
+              cp+=fsh_write(" ",1,1,fpFile);if (!cp) {if (ctld)\
+              fprintf(fpFile,"\x4%c",ctld); WRTPFX; } fsh_write(ss1,1,l2,fpFile);\
               cp+=l3;ss1=NULL;l2=l3=0;ns=1;}}
 
 static int brtnm;
@@ -110,7 +111,8 @@ char *GetQuoteInitials()
 void grab_quotes(messagerec * m, const char *aux)
 {
     char *ss, *ss1, temp[255];
-    long l1, l2, l3;
+    long l, l1, l2, l3;
+    FILE *fpFile;
     char *pfx;
     int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
     int pfxlen;
@@ -143,42 +145,41 @@ void grab_quotes(messagerec * m, const char *aux)
         strcat(pfx, "> ");
         pfxlen = strlen(pfx);
 
-        long lMessageLength = 0;
-        ss = readfile(m, aux, &lMessageLength);
+        ss = readfile(m, aux, &l);
 
         if (ss)
         {
             quotes_nrm = ss;
-            quotes_nrm_l = lMessageLength;
+            quotes_nrm_l = l;
 
-            WFile quotesTextFile( szQuotesTextFileName );
-            if ( quotesTextFile.Open( WFile::modeDefault|WFile::modeCreateFile|WFile::modeTruncate, WFile::shareDenyRead, WFile::permReadWrite ) )
+            fpFile = fsh_open(szQuotesTextFileName, "wb");
+            if (fpFile)
             {
-                quotesTextFile.Write( ss, lMessageLength );
-                quotesTextFile.Close();
+                fsh_write(ss, 1, l, fpFile);
+                fsh_close(fpFile);
             }
-            WTextFile file( szQuotesIndexFileName, "wb" );
-            if ( file.IsOpen() )
+            fpFile = fsh_open(szQuotesIndexFileName, "wb");
+            if (fpFile)
             {
                 l3 = l2 = 0;
                 ss1 = NULL;
-                GetSession()->internetFullEmailAddress = "";
-                if ((WWIV_STRNICMP("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-                    (WWIV_STRNICMP("filenet", GetSession()->GetNetworkName(), 7) == 0))
+                sess->internetFullEmailAddress = "";
+                if ((strnicmp("internet", sess->GetNetworkName(), 8) == 0) ||
+                    (strnicmp("filenet", sess->GetNetworkName(), 7) == 0))
                 {
-                        for (l1 = 0; l1 < lMessageLength; l1++)
+                        for (l1 = 0; l1 < l; l1++)
                         {
                             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
                                 (ss[l1 + 3] == 'M'))
                             {
                                     l1 += 3;
-                                    while ((ss[l1] != '\r') && (l1 < lMessageLength))
+                                    while ((ss[l1] != '\r') && (l1 < l))
                                     {
                                         temp[l3++] = ss[l1];
                                         l1++;
                                     }
                                     temp[l3] = 0;
-                                    if (WWIV_STRNICMP(temp, "Message-ID", 10) == 0)
+                                    if (strnicmp(temp, "Message-ID", 10) == 0)
                                     {
                                         if (temp[0] != 0)
                                         {
@@ -189,35 +190,35 @@ void grab_quotes(messagerec * m, const char *aux)
                                             }
                                             if (ss1)
                                             {
-                                                GetSession()->usenetReferencesLine = ss1;
+                                                sess->usenetReferencesLine = ss1;
                                             }
                                         }
                                     }
-                                    l1 = lMessageLength;
+                                    l1 = l;
                                 }
                         }
                     }
                     l3 = l2 = 0;
                     ss1 = NULL;
-                    if ( GetSession()->IsMessageThreadingEnabled() )
+                    if ( sess->IsMessageThreadingEnabled() )
                     {
-                        for (l1 = 0; l1 < lMessageLength; l1++)
+                        for (l1 = 0; l1 < l; l1++)
                         {
                             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'P'))
                             {
                                 l1 += 4;
-                                GetSession()->threadID = "";
-                                while ((ss[l1] != '\r') && (l1 < lMessageLength))
+                                sess->threadID = "";
+                                while ((ss[l1] != '\r') && (l1 < l))
                                 {
                                     sprintf(temp, "%c", ss[l1]);
-                                    GetSession()->threadID += temp;
+                                    sess->threadID += temp;
                                     l1++;
                                 }
-                                l1 = lMessageLength;
+                                l1 = l;
                             }
                         }
                     }
-                    for (l1 = 0; l1 < lMessageLength; l1++)
+                    for (l1 = 0; l1 < l; l1++)
                     {
                         if (ctld == -1)
                         {
@@ -273,12 +274,12 @@ void grab_quotes(messagerec * m, const char *aux)
 									{
 										if (ctld)
 										{
-                                            file.WriteFormatted( "\x04%c", ctld );
+											fprintf(fpFile, "\x04%c", ctld);
 										}
 										WRTPFX;
 									}
 									cp++;
-                                    file.WriteBinary( " ", 1 );
+									fsh_write(" ", 1, 1, fpFile);
 								}
 							}
 							break;
@@ -320,9 +321,9 @@ void grab_quotes(messagerec * m, const char *aux)
                     FLSH;
                     if (cp)
 					{
-                        file.WriteBinary( "\r\n", 2 );
+                        fsh_write("\r\n", 1, 2, fpFile);
 					}
-                    file.Close();
+                    fsh_close(fpFile);
 #ifdef SAVE_IN_MEM
 					WFile ff( szQuotesIndexFileName );
 					if ( ff.Open( WFile::modeBinary | WFile::modeReadOnly ) )
@@ -351,7 +352,7 @@ void grab_quotes(messagerec * m, const char *aux)
 
 
 
-void auto_quote(char *org, long len, int type, time_t tDateTime)
+void auto_quote(char *org, long len, int type, long daten)
 {
 	char s1[81], s2[81], buf[255],
 		*p, *b,
@@ -382,7 +383,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime)
 		p+=2;
 		len=len-(p-b);
 		b=p;
-		strcpy( s2, W_DateString( tDateTime, "WDT", "at" ) );
+		strcpy(s2, W_DateString(daten, "WDT", "at"));
 
 		//    s2[strlen(s2)-1]='\0';
 		strip_to_node(s1, tb);
@@ -443,7 +444,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime)
         char ch = CZ;
 		fileInputMsg.Write( &ch, 1 );
 		fileInputMsg.Close();
-		if ( GetSession()->GetCurrentUser()->GetNumMessagesPosted() < 10 )
+		if ( sess->thisuser.GetNumMessagesPosted() < 10 )
 		{
 			printfile(QUOTE_NOEXT);
 		}
@@ -459,23 +460,23 @@ void get_quote(int fsed)
     static int i, i1, i2, i3, rl;
     static int l1, l2;
 
-    GetSession()->SetQuoting( ( fsed ) ? true : false );
+    sess->SetQuoting( ( fsed ) ? true : false );
     if ( quotes_ind == NULL )
     {
         if ( fsed )
         {
-            GetSession()->bout << "\x0c";
+            sess->bout << "\x0c";
         }
         else
         {
-            GetSession()->bout.NewLine();
+            nl();
         }
-        GetSession()->bout << "Not replying to a message!  Nothing to quote!\r\n\n";
+        sess->bout << "Not replying to a message!  Nothing to quote!\r\n\n";
         if ( fsed )
         {
             pausescr();
         }
-        GetSession()->SetQuoting( false );
+        sess->SetQuoting( false );
         return;
     }
     rl = 1;
@@ -483,7 +484,7 @@ void get_quote(int fsed)
     {
         if (fsed)
         {
-            GetSession()->bout << "\x0c";
+            sess->bout << "\x0c";
         }
         if (rl)
         {
@@ -522,14 +523,14 @@ void get_quote(int fsed)
                     {
                         do {
                             l2++;
-                        } while ( quotes_ind[l2] != RETURN && l2 < quotes_ind_l );
+                        } while ((quotes_ind[l2] != RETURN) && (l2 < quotes_ind_l));
                     }
                     else
                     {
                         do
                         {
                             s[i3++] = quotes_ind[l2++];
-                        } while ( quotes_ind[l2] != RETURN && l2 < quotes_ind_l );
+                        } while ((quotes_ind[l2] != RETURN) && (l2 < quotes_ind_l));
                     }
                     if (quotes_ind[l2])
 					{
@@ -540,19 +541,19 @@ void get_quote(int fsed)
                     osan(s1, &abort, &next);
                     pla(s, &abort);
                 }
-            } while ( l2 < quotes_ind_l );
+            } while (l2 < quotes_ind_l);
             --i;
         }
-        GetSession()->bout.NewLine();
+        nl();
 
         if ( !i1 && !hangup )
         {
             do
             {
                 sprintf(s,"Quote from line 1-%d? (?=relist, Q=quit) ",i);
-				GetSession()->bout << "|#2" << s;
+				sess->bout << "|#2" << s;
                 input(s, 3);
-            } while ( !s[0] && !hangup );
+            } while ((!s[0]) && (!hangup));
             if (s[0] == 'Q')
             {
                 rl = 0;
@@ -575,7 +576,7 @@ void get_quote(int fsed)
         {
             do
             {
-				GetSession()->bout << "|#2through line " << i1 << "-" << i << "? (Q=quit) ";
+				sess->bout << "|#2through line " << i1 << "-" << i << "? (Q=quit) ";
                 input(s, 3);
             } while ( !s[0] && !hangup );
             if (s[0] == 'Q')
@@ -599,11 +600,11 @@ void get_quote(int fsed)
         {
             if (i1 == i2)
             {
-                GetSession()->bout << "|#5Quote line " << i1 << "? ";
+                sess->bout << "|#5Quote line " << i1 << "? ";
             }
             else
             {
-                GetSession()->bout << "|#5Quote lines " << i1 << "-" << i2 << "? ";
+                sess->bout << "|#5Quote lines " << i1 << "-" << i2 << "? ";
             }
             if (!noyes())
             {
@@ -612,7 +613,7 @@ void get_quote(int fsed)
             }
         }
     } while ( !hangup && rl && !i2 );
-    GetSession()->SetQuoting( false );
+    sess->SetQuoting( false );
     charbufferpointer = 0;
     if ( i1 > 0 && i2 >= i1 && i2 <= i && rl && !hangup )
     {

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,16 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifdef _MSC_VER
-#pragma once
-#endif
 
 #ifndef __INCLUDED_LISTPLUS_H__
 #define __INCLUDED_LISTPLUS_H__
 
 #ifdef _WIN32
- #pragma pack( push,  1)
-#elif defined ( _UNIX )
+ #pragma pack(push, 1)
+#elif defined (_UNIX)
 #pragma pack( 1 )
 #endif
 

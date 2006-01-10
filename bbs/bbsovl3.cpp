@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,24 +18,25 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
-int pd_getkey();
+unsigned char pd_getkey();
 
 
-int pd_getkey()
+unsigned char pd_getkey()
 {
     g_flags |= g_flag_allow_extended;
-    int x = getkey();
+    unsigned short x = getkey();
     g_flags &= ~g_flag_allow_extended;
 
-    return x;
+    return static_cast< unsigned char >( x );
 }
 
 
 int get_kb_event( int nNumLockMode )
 {
-    int key = 0;
-    GetSession()->localIO()->tleft( true );
+    unsigned key = 0;
+    app->localIO->tleft( true );
     time_t time1 = time( NULL );
 
     do
@@ -52,12 +53,12 @@ int get_kb_event( int nNumLockMode )
             return 0;
         }
 
-        if ( bkbhitraw() || GetSession()->localIO()->LocalKeyPressed() )
+        if ( bkbhitraw() || app->localIO->LocalKeyPressed() )
         {
-            if ( !incom || GetSession()->localIO()->LocalKeyPressed() )
+            if ( !incom || app->localIO->LocalKeyPressed() )
             {
                 // Check for local keys
-                key = GetSession()->localIO()->LocalGetChar();
+                key = app->localIO->LocalGetChar();
                 if ( key == CBACKSPACE )
                 {
                     return COMMAND_DELETE;
@@ -70,10 +71,10 @@ int get_kb_event( int nNumLockMode )
                 {
                     return EXECUTE;
                 }
-                if ( ( key == 0 || key == 224 ) && GetSession()->localIO()->LocalKeyPressed() )
+                if ( ( key == 0 || key == 224 ) && app->localIO->LocalKeyPressed() )
                 {
                     // again, the 224 is an artifact of Win32, I dunno why.
-                    key = GetSession()->localIO()->LocalGetChar();
+                    key = app->localIO->LocalGetChar();
                     return key + 256;
                 }
                 else
@@ -189,9 +190,9 @@ int get_kb_event( int nNumLockMode )
                 {
                     if ( !key )
                     {
-                        if ( GetSession()->localIO()->LocalKeyPressed() )
+                        if ( app->localIO->LocalKeyPressed() )
                         {
-                            key = GetSession()->localIO()->LocalGetChar();
+                            key = app->localIO->LocalGetChar();
                             return ( key + 256 );
                         }
                     }
@@ -311,14 +312,14 @@ bool do_sysop_command( int nCommandID )
 	{
 		if ( bNeedToRedraw )
 		{
-			GetSession()->bout.ClearScreen();
+			ClearScreen();
 		}
 
-		GetSession()->localIO()->skey( static_cast<char>( nKeyStroke ) );
+		app->localIO->skey( static_cast<char>( nKeyStroke ) );
 
 		if ( bNeedToRedraw )
 		{
-			GetSession()->bout.ClearScreen();
+			ClearScreen();
 		}
 	}
 	return bNeedToRedraw;
@@ -337,18 +338,21 @@ bool do_sysop_command( int nCommandID )
  * @return - false on failure, true on success
  *
  */
-bool copyfile(const std::string sourceFileName, const std::string destFileName, bool stats)
+bool copyfile(const char *pszSourceFileName, const char *pszDestFileName, bool stats)
 {
 	if ( stats )
 	{
-		GetSession()->bout << "|#7File movement ";
+		sess->bout << "|#7File movement ";
 	}
 
-    if ( ( sourceFileName != destFileName ) &&
-		  WFile::Exists( sourceFileName ) &&
-		  !WFile::Exists( destFileName ) )
+	WWIV_ASSERT(pszSourceFileName);
+	WWIV_ASSERT(pszDestFileName);
+
+	if ( ( !wwiv::stringUtils::IsEquals( pszSourceFileName, pszDestFileName ) ) &&
+		  WFile::Exists( pszSourceFileName ) &&
+		  !WFile::Exists( pszDestFileName ) )
 	{
-        if ( WFile::CopyFile( sourceFileName, destFileName ) )
+		if ( WWIV_CopyFile( pszSourceFileName, pszDestFileName ) )
 		{
 			return true;
 		}
@@ -367,32 +371,42 @@ bool copyfile(const std::string sourceFileName, const std::string destFileName, 
  * @return - false on failure, true on success
  *
  */
-bool movefile(const std::string sourceFileName, const std::string destFileName, bool stats)
+bool movefile(const char *pszSourceFileName, const char *pszDestFileName, bool stats)
 {
-    if ( sourceFileName != destFileName && WFile::Exists( sourceFileName ) )
+	char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
+
+	WWIV_ASSERT(pszSourceFileName);
+	WWIV_ASSERT(pszDestFileName);
+
+	strcpy( szSourceFileName, pszSourceFileName );
+	strcpy( szDestFileName, pszDestFileName );
+	strupr( szSourceFileName );
+	strupr( szDestFileName );
+	if ( !wwiv::stringUtils::IsEquals( szSourceFileName, szDestFileName ) &&
+        WFile::Exists( szSourceFileName ) )
 	{
 		bool bCanUseRename = false;
 
-		if ( sourceFileName[1] != ':' && destFileName[1] != ':' )
+		if ( ( szSourceFileName[1] != ':' ) && ( szDestFileName[1] != ':' ) )
 		{
 			bCanUseRename = true;
 		}
-		if ( sourceFileName[1] == ':' && destFileName[1] == ':' && sourceFileName[0] == destFileName[0] )
+		if ( ( szSourceFileName[1] == ':' ) && ( szDestFileName[1] == ':' ) && ( szSourceFileName[0] == szDestFileName[0] ) )
 		{
 			bCanUseRename = true;
 		}
 
 		if ( bCanUseRename )
 		{
-			WFile::Rename( sourceFileName, destFileName );
-			if ( WFile::Exists( destFileName ) )
+			WFile::Rename( szSourceFileName, szDestFileName );
+			if ( WFile::Exists( szDestFileName ) )
 			{
 				return false;
 			}
 		}
 	}
-	bool bCopyFileResult = copyfile( sourceFileName, destFileName, stats );
-	WFile::Remove( sourceFileName );
+	bool bCopyFileResult = copyfile( pszSourceFileName, pszDestFileName, stats );
+	WFile::Remove( szSourceFileName );
 
 	return bCopyFileResult;
 }
@@ -400,17 +414,16 @@ bool movefile(const std::string sourceFileName, const std::string destFileName, 
 
 void ListAllColors()
 {
-	GetSession()->bout.NewLine();
+	nl();
 	for ( int i = 0; i < 128; i++ )
 	{
-		if ( ( i % 26 ) == 0 )
+		if ( (i % 26 ) == 0 )
 		{
-			GetSession()->bout.NewLine();
+			nl();
 		}
-		GetSession()->bout.SystemColor( i );
-		GetSession()->bout.WriteFormatted( "%3d", i );
+		setc( i );
+		bprintf( "%3d", i );
 	}
-	GetSession()->bout.Color( 0 );
-	GetSession()->bout.NewLine();
+	ansic( 0 );
+	nl();
 }
-

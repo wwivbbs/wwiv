@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 //
@@ -121,16 +122,16 @@ char bgetch()
             return charbuffer[charbufferpointer++];
         }
     }
-    if ( GetSession()->localIO()->LocalKeyPressed() )
+    if ( app->localIO->LocalKeyPressed() )
     {
-        ch = GetSession()->localIO()->getchd1();
-        GetSession()->SetLastKeyLocal( true );
+        ch = app->localIO->getchd1();
+        sess->SetLastKeyLocal( true );
         if (!(g_flags & g_flag_allow_extended))
         {
             if (!ch)
             {
-                ch = GetSession()->localIO()->getchd1();
-                GetSession()->localIO()->skey(ch);
+                ch = app->localIO->getchd1();
+                app->localIO->skey(ch);
                 ch = static_cast< char >(((ch == F10) || (ch == CF10)) ? 2 : 0);
             }
         }
@@ -139,7 +140,7 @@ char bgetch()
     else if (incom && bkbhitraw())
     {
         ch = bgetchraw();
-        GetSession()->SetLastKeyLocal( false );
+        sess->SetLastKeyLocal( false );
     }
 
     if (!(g_flags & g_flag_allow_extended))
@@ -169,7 +170,7 @@ void HandleControlKey( char *ch )
               if (okmacro && (!charbufferpointer))
               {
 				  int macroNum = MACRO_KEY_TABLE[(int)c];
-				  strncpy(charbuffer, &(GetSession()->GetCurrentUser()->GetMacro(macroNum)[0]), sizeof(charbuffer)-1);
+				  strcpy(charbuffer, &(sess->thisuser.GetMacro(macroNum)[0]));
 				  c = charbuffer[0];
                   if (c)
 				  {
@@ -187,11 +188,11 @@ void HandleControlKey( char *ch )
 			  if ( echo )
 			  {
                   char xl[81], cl[81], atr[81], cc;
-				  GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-				  GetSession()->bout.Color( 0 );
-				  GetSession()->bout.NewLine( 2 );
+				  app->localIO->SaveCurrentLine(cl, atr, xl, &cc);
+				  ansic( 0 );
+				  nl( 2 );
 				  multi_instance();
-				  GetSession()->bout.NewLine();
+				  nl();
 			      RestoreCurrentLine(cl, atr, xl, &cc);
 			  }
 			  break;
@@ -211,7 +212,7 @@ void HandleControlKey( char *ch )
               toggle_avail();
               break;
           case CY:
-              GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
+              sess->thisuser.toggleStatusFlag( WUser::pauseOnPage );
               break;
         }
     }
@@ -223,23 +224,23 @@ void PrintTime()
 {
     char xl[81], cl[81], atr[81], cc;
 
-    GetSession()->localIO()->SaveCurrentLine( cl, atr, xl, &cc );
+    app->localIO->SaveCurrentLine( cl, atr, xl, &cc );
 
-    GetSession()->bout.Color( 0 );
-    GetSession()->bout.NewLine( 2 );
+    ansic( 0 );
+    nl( 2 );
 	time_t l = time( NULL );
 	std::string currentTime = asctime( localtime( &l ) );
 
 	//Remove the ending \n character.
 	currentTime.erase( currentTime.find_last_of( "\r\n" ) );
 
-	GetSession()->bout << "|#2" << currentTime << wwiv::endl;
-    if ( GetSession()->IsUserOnline() )
+	sess->bout << "|#2" << currentTime << wwiv::endl;
+    if ( sess->IsUserOnline() )
     {
-		GetSession()->bout << "|#9Time on   = |#1" << ctim( timer() - timeon ) << wwiv::endl;
-		GetSession()->bout << "|#9Time left = |#1" << ctim( nsl() ) << wwiv::endl;
+		sess->bout << "|#9Time on   = |#1" << ctim( timer() - timeon ) << wwiv::endl;
+		sess->bout << "|#9Time left = |#1" << ctim( nsl() ) << wwiv::endl;
     }
-    GetSession()->bout.NewLine();
+    nl();
 
     RestoreCurrentLine( cl, atr, xl, &cc );
 }
@@ -252,10 +253,10 @@ void RedrawCurrentLine()
     int ansiptr_1 = ansiptr;
     ansiptr = 0;
     ansistr[ansiptr_1] = 0;
-    strncpy(ansistr_1, ansistr, sizeof(ansistr_1)-1);
+    strcpy(ansistr_1, ansistr);
 
-    GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-    GetSession()->bout.NewLine();
+    app->localIO->SaveCurrentLine(cl, atr, xl, &cc);
+    nl();
     RestoreCurrentLine(cl, atr, xl, &cc);
 
     strcpy(ansistr, ansistr_1);

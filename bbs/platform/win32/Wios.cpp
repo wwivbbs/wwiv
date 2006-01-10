@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -39,19 +39,19 @@
 
 static char szLogStr[255];
 
-#define WIOS_TRACE(x)			{ sysoplog( ( x ) ); }
-#define WIOS_TRACE1(x,y)		{ _snprintf( szLogStr, sizeof( szLogStr ), (x),(y)); sysoplog( szLogStr ); }
-#define WIOS_TRACE2(x,y,z)		{ _snprintf( szLogStr, sizeof(szLogStr), (x),(y),(z)); sysoplog(szLogStr); }
-#define WIOS_TRACE3(x,y,z, z2)	{ _snprintf( szLogStr, sizeof( szLogStr ), (x),(y),(z), (z2)); sysoplog( szLogStr ); }
+#define WIOS_TRACE(x)			{ sysoplog((x)); }
+#define WIOS_TRACE1(x,y)		{ sprintf(szLogStr, (x),(y)); sysoplog(szLogStr); }
+#define WIOS_TRACE2(x,y,z)		{ sprintf(szLogStr, (x),(y),(z)); sysoplog(szLogStr); }
+#define WIOS_TRACE3(x,y,z, z2)	{ sprintf(szLogStr, (x),(y),(z), (z2)); sysoplog(szLogStr); }
 
 #elif defined TRACE_DEBUGSTRING
 
 static char szLogStr[255];
 
-#define WIOS_TRACE(x)			{ OutputDebugString( ( x ) ); }
-#define WIOS_TRACE1(x,y)		{ _snprintf(szLogStr, sizeof( szLogStr ), (x),(y)); OutputDebugString(szLogStr); }
-#define WIOS_TRACE2(x,y,z)		{ _snprintf(szLogStr, sizeof( szLogStr ), (x),(y),(z)); OutputDebugString(szLogStr); }
-#define WIOS_TRACE3(x,y,z, z2)	{ _snprintf(szLogStr, sizeof( szLogStr ), (x),(y),(z), (z2)); OutputDebugString(szLogStr); }
+#define WIOS_TRACE(x)			{ OutputDebugString((x)); }
+#define WIOS_TRACE1(x,y)		{ sprintf(szLogStr, (x),(y)); OutputDebugString(szLogStr); }
+#define WIOS_TRACE2(x,y,z)		{ sprintf(szLogStr, (x),(y),(z)); OutputDebugString(szLogStr); }
+#define WIOS_TRACE3(x,y,z, z2)	{ sprintf(szLogStr, (x),(y),(z), (z2)); OutputDebugString(szLogStr); }
 
 #else
 
@@ -67,9 +67,9 @@ static char szLogStr[255];
 // Static variables
 //
 
-//std::queue<char> WIOSerial::m_inputQueue;
-//HANDLE WIOSerial::m_hInBufferMutex;
-//HANDLE WIOSerial::m_hReadStopEvent;
+//std::queue<char> WIOSerial::inBuffer;
+//HANDLE WIOSerial::hInBufferMutex;
+//HANDLE WIOSerial::hReadStopEvent;
 
 
 
@@ -90,7 +90,7 @@ bool WIOSerial::setup(char parity, int wordlen, int stopbits, unsigned long baud
 	// Get the current parameters
     if ( !GetCommState( hComm, &dcb ) )
     {
-        WIOS_TRACE2( "rc from GetCommState is %lu - '%s' \n", GetLastError(), GetLastErrorText() );
+        WIOS_TRACE2("rc from GetCommState is %lu - '%s' \n", GetLastError(), GetLastErrorText());
 		return false;
     }
 
@@ -133,13 +133,6 @@ bool WIOSerial::setup(char parity, int wordlen, int stopbits, unsigned long baud
 
 }
 
-
-unsigned int WIOSerial::GetHandle() const
-{
-    return reinterpret_cast<unsigned int>( hComm );
-}
-
-
 unsigned int WIOSerial::open()
 {
     WIOS_TRACE("WIOSerial::open()\n");
@@ -148,17 +141,16 @@ unsigned int WIOSerial::open()
 		WIOS_TRACE("Port already open");
         return true;
     }
-    
-    
-    char szComPortFileName[FILENAME_MAX];
 
-    _snprintf( szComPortFileName, sizeof( szComPortFileName ), "\\\\.\\COM%d", m_ComPort );
+    char    fileName[FILENAME_MAX];
+
+    sprintf(fileName, "\\\\.\\COM%d", m_ComPort);
 
 	int nOpenTries	= 0;
 	bool bOpened	= false;
 	while ( !bOpened && ( nOpenTries < 6 ) )
 	{
-		WIOS_TRACE1( "Attempt to open comport %s", szComPortFileName );
+		WIOS_TRACE1( "Attempt to open comport %s", fileName );
 		// Try up to 6 times to open the com port if it failed
 		// with ERROR_ACCESS_DENIED
 		//
@@ -170,7 +162,7 @@ unsigned int WIOSerial::open()
 		// %%JZ Added = NULL to report if port isn't available.
 		hComm = NULL;
 		hComm = CreateFile(
-					szComPortFileName,
+					fileName,
 					GENERIC_READ | GENERIC_WRITE,
 					0,
 					NULL,
@@ -222,9 +214,10 @@ unsigned int WIOSerial::open()
 
 
     this->dtr( true );
+    sess->hCommHandle = hComm;
 
     // Make sure our signal event is not set to the "signaled" state
-    m_hReadStopEvent = CreateEvent(NULL, true, false, NULL);
+    hReadStopEvent = CreateEvent(NULL, true, false, NULL);
 
 	StartThreads();
     bOpen = true;
@@ -306,10 +299,10 @@ void WIOSerial::StopThreads()
     // Try moving it before the wait...
 	FlushFileBuffers(hComm);
 
-    WIOS_TRACE1("Attempting to end thread ID (%ld)          \n", m_hReadThread);
+    WIOS_TRACE1("Attempting to end thread ID (%ld)          \n", hReadThread);
 
     WWIV_Delay( 0 );
-    if ( !PulseEvent( m_hReadStopEvent ) )
+    if ( !PulseEvent( hReadStopEvent ) )
     {
         WIOS_TRACE2("Error with PulseEvent %d - '%s'", GetLastError(), GetLastErrorText());
     }
@@ -317,18 +310,18 @@ void WIOSerial::StopThreads()
     WWIV_Delay( 0 );
 
 	// Stop read thread
-    DWORD dwRes = WaitForSingleObject(m_hReadThread, 5000);
+    DWORD dwRes = WaitForSingleObject(hReadThread, 5000);
     switch ( dwRes )
     {
     case WAIT_OBJECT_0:
         WIOS_TRACE("Reader Thread Ended\n");
-        CloseHandle( m_hReadThread );
-        m_hReadThread = NULL;
+        CloseHandle( hReadThread );
+        hReadThread = NULL;
         // Thread Ended
         break;
     case WAIT_TIMEOUT:
         WIOS_TRACE("Unable to end thread - WAIT_TIMEOUT\n");
-        ::TerminateThread( m_hReadThread, 123 );
+        ::TerminateThread( hReadThread, 123 );
         break;
     }
 }
@@ -339,8 +332,8 @@ void WIOSerial::StartThreads()
     DWORD dwThreadID;
 
     // WIOS_TRACE("Creating Listener thread\n");
-    m_hReadThread = (HANDLE) _beginthreadex(NULL, 0, &WIOSerial::InboundSerialProc, static_cast< void * >( this ), 0 , (unsigned int *)&dwThreadID);
-    WIOS_TRACE2("Created Listener thread.  Handle = %d, ID = %d\n", m_hReadThread, dwThreadID);
+    hReadThread = (HANDLE) _beginthreadex(NULL, 0, &WIOSerial::InboundSerialProc, static_cast< void * >( this ), 0 , (unsigned int *)&dwThreadID);
+    WIOS_TRACE2("Created Listener thread.  Handle = %d, ID = %d\n", hReadThread, dwThreadID);
 	WWIV_Delay( 100 );
 	WWIV_Delay( 0 );
 	WWIV_Delay( 0 );
@@ -360,7 +353,7 @@ void WIOSerial::close( bool bIsTemporary )
 	// Stop the send/receive threads
 	StopThreads();
 
-    CloseHandle( m_hReadStopEvent );
+    CloseHandle( hReadStopEvent );
     bOpen = false;
 
     SetCommTimeouts(hComm, &oldtimeouts);
@@ -394,13 +387,13 @@ unsigned char WIOSerial::getW()
         return 0;
     }
 	char ch = 0;
-	WaitForSingleObject( m_hInBufferMutex, INFINITE );
-	if ( !m_inputQueue.empty() )
+	WaitForSingleObject( hInBufferMutex, INFINITE );
+	if ( !inBuffer.empty() )
 	{
-		ch = m_inputQueue.front();
-		m_inputQueue.pop();
+		ch = inBuffer.front();
+		inBuffer.pop();
 	}
-	ReleaseMutex( m_hInBufferMutex );
+	ReleaseMutex( hInBufferMutex );
 	return static_cast<unsigned char>( ch );
 }
 
@@ -453,9 +446,9 @@ char WIOSerial::peek()
 {
     if (bOpen)
     {
-		if ( !m_inputQueue.empty() )
+		if ( !inBuffer.empty() )
 		{
-			return m_inputQueue.front();
+			return inBuffer.front();
 		}
 	}
 	return 0;
@@ -468,10 +461,10 @@ unsigned int WIOSerial::read( char *buffer, unsigned int count )
 	int nRet = 0;
 	char * pszTemp = buffer;
 
-	while ( !m_inputQueue.empty() )
+	while ( !inBuffer.empty() )
 	{
-		char ch = m_inputQueue.front();
-		m_inputQueue.pop();
+		char ch = inBuffer.front();
+		inBuffer.pop();
 		*pszTemp++ = ch;
 		nRet++;
 	}
@@ -589,18 +582,42 @@ bool WIOSerial::carrier()
 
 bool WIOSerial::incoming()
 {
-	return ( m_inputQueue.size() > 0 ) ? true : false;
+	return ( inBuffer.size() > 0 ) ? true : false;
 }
+
+
+bool WIOSerial::startup()
+{
+    WIOS_TRACE( "WIOSerial::startup()\n" );
+    hInBufferMutex = ::CreateMutex( NULL, false, "WWIV Input Buffer" );
+
+	return true;
+}
+
+bool WIOSerial::shutdown()
+{
+    WIOS_TRACE( "WIOSerial::shutdown()\n" );
+    if ( NULL != hInBufferMutex )
+    {
+        CloseHandle( hInBufferMutex );
+        hInBufferMutex = NULL;
+    }
+    return true;
+}
+
+
+
+#define READ_TIMEOUT      500      // milliseconds
 
 
 bool WIOSerial::HandleASuccessfulRead( LPCTSTR pszBuffer, DWORD dwNumRead, WIOSerial* pSerial )
 {
     char * p = const_cast<char *>( pszBuffer );
 
-    WaitForSingleObject( pSerial->m_hInBufferMutex, INFINITE );
+    WaitForSingleObject( pSerial->hInBufferMutex, INFINITE );
     for ( DWORD i=0; i<dwNumRead; i++ )
     {
-		pSerial->m_inputQueue.push( *p++ );
+		pSerial->inBuffer.push( *p++ );
 #if defined( _DEBUG )
 		if ( dwNumRead && p && *p)
 		{
@@ -612,7 +629,7 @@ bool WIOSerial::HandleASuccessfulRead( LPCTSTR pszBuffer, DWORD dwNumRead, WIOSe
 		}
 #endif // _DEBUG
     }
-    ReleaseMutex( pSerial->m_hInBufferMutex );
+    ReleaseMutex( pSerial->hInBufferMutex );
     return true;
 }
 
@@ -624,7 +641,7 @@ unsigned int __stdcall WIOSerial::InboundSerialProc(LPVOID pSerialVoid)
     bool        fWaitingOnRead  = false;
     bool        bDone           = false;
     OVERLAPPED  osReader        = {0};
-    HANDLE      hComm			= static_cast<HANDLE>( pSerial->hComm );
+	HANDLE      hComm			= static_cast<HANDLE>( sess->hCommHandle );
 	int			loopNum			= 0;
     HANDLE      hArray[2];
     char        szBuf[READ_BUF_SIZE+1];
@@ -641,7 +658,7 @@ unsigned int __stdcall WIOSerial::InboundSerialProc(LPVOID pSerialVoid)
         return false;
     }
     hArray[0] = osReader.hEvent;
-	hArray[1] = pSerial->m_hReadStopEvent;
+	hArray[1] = pSerial->hReadStopEvent;
 
     while (!bDone)
     {
@@ -730,11 +747,10 @@ unsigned int __stdcall WIOSerial::InboundSerialProc(LPVOID pSerialVoid)
 }
 
 
-WIOSerial::WIOSerial( unsigned int nHandle ) : WComm()
+WIOSerial::WIOSerial() : WComm()
 {
     WIOS_TRACE("WIOSerial::WIOSerial()\n");
     bOpen = false;
-    hComm = reinterpret_cast<HANDLE>( nHandle );
 
     FillMemory(&dcb, sizeof(dcb), 0);
     if (!GetCommState(hComm, &dcb))
@@ -742,26 +758,17 @@ WIOSerial::WIOSerial( unsigned int nHandle ) : WComm()
         // get current DCB
         WIOS_TRACE("DEBUG: WIOSerial::WIOSerial() - Unable to create DCB\n");
     }
-    WIOS_TRACE( "WIOSerial::startup()\n" );
-    m_hInBufferMutex = ::CreateMutex( NULL, false, "WWIV Input Buffer" );
-
 }
 
 
 WIOSerial::~WIOSerial()
 {
-    WIOS_TRACE( "WIOSerial::~WIOSerial()()\n" );
-    if ( NULL != m_hInBufferMutex )
-    {
-        CloseHandle( m_hInBufferMutex );
-        m_hInBufferMutex = NULL;
-    }
     // Let our parent take care if itself 1st.
     WIOS_TRACE("WIOSerial::~WIOSerial()\n");
 
-    if ( NULL != m_hInBufferMutex )
+    if ( NULL != hInBufferMutex )
     {
-        CloseHandle( m_hInBufferMutex );
-        m_hInBufferMutex = NULL;
+        CloseHandle( hInBufferMutex );
+        hInBufferMutex = NULL;
     }
 }

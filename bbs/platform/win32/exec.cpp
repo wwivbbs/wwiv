@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -19,16 +19,16 @@
 
 #include "wwiv.h"
 
-bool CreateSyncTempFile( std::string &outFileName, const std::string commandLine );
-void CreateSyncFosCommandLine( std::string &outCommandLine, const std::string tempFilePath, int nSyncMode );
+bool CreateSyncTempFile( char *pszOutTempFileName, const char *pszCommandLine );
+void CreateSyncFosCommandLine( char* pszOutCommandLine, const char* pszOrigCommandLine, int nSyncMode );
 bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadSlot, int nSyncMode  );
 bool DoSyncFosLoop9X( HANDLE hProcess, HMODULE hKernel32, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd, HANDLE hSyncHangupEvent, int nSyncMode  );
 bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd, HANDLE hSyncHangupEvent, int nSyncMode  );
 
-void GetSyncFosTempFilePath( std::string &outFileName );
+char* GetSyncFosTempFilePath( char *pszOutTempFileName );
 bool VerifyDosXtrnExists();
-const std::string GetDosXtrnPath();
-const std::string GetSyncFosOSMode();
+char* GetDosXtrnPath( char *pszDosXtrnPath );
+char* GetSyncFosOSMode( char * pszOSMode );
 bool DeleteSyncTempFile();
 bool IsWindowsNT();
 bool ExpandWWIVHeartCodes( char *pszBuffer );
@@ -51,8 +51,8 @@ const DWORD SBBSEXEC_IOCTL_WRITE		        = 0x8004;
 const DWORD SBBSEXEC_IOCTL_DISCONNECT	        = 0x8005;
 const DWORD SBBSEXEC_IOCTL_STOP			        = 0x8006;
 
-const int CONST_NUM_LOOPS_BEFORE_EXIT_CHECK         = 500;
-const int CONST_WIN9X_NUM_LOOPS_BEFORE_EXIT_CHECK   = 10;
+const CONST_NUM_LOOPS_BEFORE_EXIT_CHECK         = 500;
+const CONST_WIN9X_NUM_LOOPS_BEFORE_EXIT_CHECK   = 10;
 
 struct sbbsexecrec
 {
@@ -65,7 +65,7 @@ struct sbbsexecrec
 typedef HANDLE (WINAPI *OPENVXDHANDLEFUNC)(HANDLE);
 
 
-int ExecExternalProgram( const std::string commandLine, int flags )
+int ExecExternalProgram( const char *pszCommandLine, int flags )
 {
     bool bUsingSync = false;
 
@@ -75,11 +75,12 @@ int ExecExternalProgram( const std::string commandLine, int flags )
     ZeroMemory( &si, sizeof( si ) );
     si.cb = sizeof( si );
     ZeroMemory( &pi, sizeof( pi ) );
-    std::string workingCommandLine;
+    char szWorkingCmdLine[ MAX_PATH + 1 ];
+
 
     bool bShouldUseSync = false;
     int nSyncMode = 0;
-    if ( GetSession()->using_modem && ( flags & EFLAG_FOSSIL ) )
+    if ( sess->using_modem && ( flags & EFLAG_FOSSIL ) )
     {
         bShouldUseSync = true;
     }
@@ -92,23 +93,23 @@ int ExecExternalProgram( const std::string commandLine, int flags )
 
     if ( bShouldUseSync )
     {
-        std::string syncFosTempFile;
-        if ( !CreateSyncTempFile( syncFosTempFile, commandLine ) )
+        char szSyncFosTempFile[ MAX_PATH ];
+        if ( !CreateSyncTempFile( szSyncFosTempFile, pszCommandLine ) )
         {
             return -1;
         }
-        CreateSyncFosCommandLine( workingCommandLine, syncFosTempFile, nSyncMode );
+        CreateSyncFosCommandLine( szWorkingCmdLine, szSyncFosTempFile, nSyncMode );
         bUsingSync = true;
         char szTempLogFileName[ MAX_PATH ];
-        _snprintf( szTempLogFileName, sizeof( szTempLogFileName ), "%swwivsync.log", GetApplication()->GetHomeDir() );
+        sprintf( szTempLogFileName, "%swwivsync.log", app->GetHomeDir() );
         hLogFile = fopen( szTempLogFileName, "at" );
         fprintf( hLogFile, charstr( 78, '=' ) );
         fprintf( hLogFile, "\r\n\r\n" );
-        fprintf( hLogFile, "Cmdline = [%s]\r\n\n", workingCommandLine.c_str() );
+        fprintf( hLogFile, "Cmdline = [%s]\r\n\n", szWorkingCmdLine );
     }
     else
     {
-        workingCommandLine = commandLine;
+        strncpy( szWorkingCmdLine, pszCommandLine, sizeof( szWorkingCmdLine ) );
     }
 
 
@@ -121,13 +122,13 @@ int ExecExternalProgram( const std::string commandLine, int flags )
     }
 
     char * pszTitle = new char[ 255 ];
-    _snprintf( pszTitle, sizeof( pszTitle ), "%s in door on node %d",
-             GetSession()->GetCurrentUser()->GetName(), GetApplication()->GetInstanceNumber() );
+    sprintf( pszTitle, "%s in door on node %d",
+             sess->thisuser.GetName(), app->GetInstanceNumber() );
     si.lpTitle = pszTitle;
 
 	if ( ok_modem_stuff && !bUsingSync )
     {
-		GetSession()->remoteIO()->close( true );
+		app->comm->close( true );
 	}
 
     HMODULE hKernel32 = NULL;
@@ -160,7 +161,7 @@ int ExecExternalProgram( const std::string commandLine, int flags )
         hSyncHangupEvent = INVALID_HANDLE_VALUE;     // Event to hangup program
 
         char szSbbsExecVxdName[ MAX_PATH ];
-        _snprintf( szSbbsExecVxdName, sizeof( szSbbsExecVxdName ), "\\\\.\\%ssbbsexec.vxd", GetApplication()->GetHomeDir() );
+        sprintf( szSbbsExecVxdName, "\\\\.\\%ssbbsexec.vxd", app->GetHomeDir() );
         fprintf( hLogFile, "Opening VXD: [%s]\r\n", szSbbsExecVxdName );
         hSbbsExecVxd = CreateFile( szSbbsExecVxdName, 0, 0, 0, CREATE_NEW, FILE_FLAG_DELETE_ON_CLOSE, 0 );
         if ( hSbbsExecVxd == INVALID_HANDLE_VALUE )
@@ -214,7 +215,7 @@ int ExecExternalProgram( const std::string commandLine, int flags )
     {
         // Create Hangup Event.
         char szHangupEventName[ MAX_PATH + 1 ];
-        _snprintf( szHangupEventName, sizeof( szHangupEventName ), "sbbsexec_hungup%d", GetApplication()->GetInstanceNumber() );
+        sprintf( szHangupEventName, "sbbsexec_hungup%d", app->GetInstanceNumber() );
         hSyncHangupEvent = CreateEvent( NULL, TRUE, FALSE, szHangupEventName );
         if ( hSyncHangupEvent == INVALID_HANDLE_VALUE )
         {
@@ -225,7 +226,7 @@ int ExecExternalProgram( const std::string commandLine, int flags )
 
         // Create Read Mail Slot
         char szReadSlotName[ MAX_PATH + 1];
-        _snprintf( szReadSlotName, sizeof( szReadSlotName ), "\\\\.\\mailslot\\sbbsexec\\rd%d", GetApplication()->GetInstanceNumber() );
+        sprintf( szReadSlotName, "\\\\.\\mailslot\\sbbsexec\\rd%d", app->GetInstanceNumber() );
         hSyncReadSlot = CreateMailslot( szReadSlotName, CONST_SBBSFOS_BUFFER_SIZE, 0, NULL );
         if ( hSyncReadSlot == INVALID_HANDLE_VALUE )
         {
@@ -242,17 +243,14 @@ int ExecExternalProgram( const std::string commandLine, int flags )
     WWIV_GetDir( szCurDir, true );
 
     ::Sleep( 250 );
-    
-    char szTempWorkingCommandline[MAX_PATH + 1];
-    strncpy( szTempWorkingCommandline, workingCommandLine.c_str(), MAX_PATH );
     BOOL bRetCP = CreateProcess(
         NULL,
-        szTempWorkingCommandline,
+        szWorkingCmdLine,
         NULL,
         NULL,
         TRUE,
         dwCreationFlags,
-        NULL, // GetApplication()->xenviron not using NULL causes things to not work.
+        NULL, // app->xenviron not using NULL causes things to not work.
         szCurDir,
         &si,
         &pi );
@@ -260,18 +258,18 @@ int ExecExternalProgram( const std::string commandLine, int flags )
     if ( !bRetCP )
     {
         delete[] pszTitle;
-        sysoplogf( "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(), GetLastError() );
+        sysoplogf( "!!! CreateProcess failed for command: [%s] with Error Code %ld", szWorkingCmdLine, GetLastError() );
         if ( bUsingSync )
         {
-            fprintf( hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(), GetLastError() );
+            fprintf( hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", szWorkingCmdLine, GetLastError() );
         }
         return -1;
     }
 
-	// If we are on Windows NT and GetSession()->IsExecUseWaitForInputIdle() is true use this.
-    if ( IsWindowsNT() && GetSession()->IsExecUseWaitForInputIdle() )
+	// If we are on Windows NT and sess->IsExecUseWaitForInputIdle() is true use this.
+    if ( IsWindowsNT() && sess->IsExecUseWaitForInputIdle() )
     {
-		int dwWaitRet = ::WaitForInputIdle( pi.hProcess, GetSession()->GetExecWaitForInputTimeout() );
+		int dwWaitRet = ::WaitForInputIdle( pi.hProcess, sess->GetExecWaitForInputTimeout() );
         if ( dwWaitRet != 0 )
         {
             if ( bUsingSync )
@@ -283,7 +281,7 @@ int ExecExternalProgram( const std::string commandLine, int flags )
     }
     else
     {
-		::Sleep( GetSession()->GetExecWaitForInputTimeout() );
+		::Sleep( sess->GetExecWaitForInputTimeout() );
         ::Sleep( 0 );
         ::Sleep( 0 );
         ::Sleep( 0 );
@@ -296,8 +294,8 @@ int ExecExternalProgram( const std::string commandLine, int flags )
 
     if ( bUsingSync )
     {
-        bool bSavedBinaryMode = GetSession()->remoteIO()->GetBinaryMode();
-        GetSession()->remoteIO()->SetBinaryMode( true );
+        bool bSavedBinaryMode = app->comm->GetBinaryMode();
+        app->comm->SetBinaryMode( true );
         bool bSyncLoopStatus = false;
         if ( IsWindowsNT() )
         {
@@ -326,7 +324,7 @@ int ExecExternalProgram( const std::string commandLine, int flags )
                 TerminateProcess( pi.hProcess, 0 );
             }
         }
-        GetSession()->remoteIO()->SetBinaryMode( bSavedBinaryMode );
+        app->comm->SetBinaryMode( bSavedBinaryMode );
     }
     else
     {
@@ -345,8 +343,8 @@ int ExecExternalProgram( const std::string commandLine, int flags )
 	// reengage comm stuff
 	if ( ok_modem_stuff && !bUsingSync )
     {
-		GetSession()->remoteIO()->open();
-		GetSession()->remoteIO()->dtr( true );
+		app->comm->open();
+		app->comm->dtr( true );
     }
 
     return static_cast< int >( dwExitCode );
@@ -357,18 +355,18 @@ int ExecExternalProgram( const std::string commandLine, int flags )
 // Helper functions
 //
 
-bool CreateSyncTempFile( std::string &outFileName, const std::string commandLine )
+bool CreateSyncTempFile( char *pszOutTempFileName, const char *pszCommandLine )
 {
-    GetSyncFosTempFilePath( outFileName );
+    GetSyncFosTempFilePath( pszOutTempFileName );
     DeleteSyncTempFile();
 
-    WTextFile file( outFileName, "wt" );
-    if ( !file.IsOpen() )
+    FILE* fp = fopen( pszOutTempFileName, "wt" );
+    if ( fp == NULL )
     {
         return false;
     }
-    file.Write( commandLine.c_str() );
-    if ( !file.Close() )
+    fputs( pszCommandLine, fp );
+    if ( fclose( fp ) != 0 )
     {
         return false;
     }
@@ -376,38 +374,50 @@ bool CreateSyncTempFile( std::string &outFileName, const std::string commandLine
     return true;
 }
 
-void GetSyncFosTempFilePath( std::string &outFileName )
+char* GetSyncFosTempFilePath( char *pszOutTempFileName )
 {
-    outFileName = syscfgovr.tempdir;
-    outFileName += "WWIVSYNC.ENV";
+    sprintf( pszOutTempFileName, "%sWWIVSYNC.ENV", syscfgovr.tempdir );
+    return pszOutTempFileName;
 }
 
 
-void CreateSyncFosCommandLine( std::string &outCommandLine, const std::string tempFilePath, int nSyncMode )
+void CreateSyncFosCommandLine( char* pszOutCommandLine, const char* pszTempFilePath, int nSyncMode )
 {
-    std::stringstream sstream;
-    sstream << GetDosXtrnPath() << " " << tempFilePath << " " << GetSyncFosOSMode() << " ";
-    sstream << GetApplication()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
-    outCommandLine = sstream.str();
+    char szBuffer[ MAX_PATH ];
+    char szDosXtrnPath[ MAX_PATH ];
+    char szOSMode[ 8 ];
+    GetDosXtrnPath( szDosXtrnPath );
+
+    sprintf( szBuffer,
+            "%s %s %s %d %d %d",
+            GetDosXtrnPath( szDosXtrnPath ),
+            pszTempFilePath,
+            GetSyncFosOSMode( szOSMode ),
+            app->GetInstanceNumber(),
+            nSyncMode, // CONST_SBBSFOS_FOSSIL_MODE,
+            CONST_SBBSFOS_LOOPS_BEFORE_YIELD );
+
+    strcpy( pszOutCommandLine, szBuffer );
 }
 
 bool VerifyDosXtrnExists()
 {
-    return WFile::Exists( GetDosXtrnPath() );
+    char szDosXtrnPath[ MAX_PATH ];
+    return WFile::Exists( GetDosXtrnPath( szDosXtrnPath ) );
 }
 
 
-const std::string GetDosXtrnPath()
+char* GetDosXtrnPath( char *pszDosXtrnPath )
 {
-    std::stringstream sstream;
-    sstream << GetApplication()->GetHomeDir() << "DOSXTRN.EXE";
-    return std::string( sstream.str() );
+    sprintf( pszDosXtrnPath, "%sDOSXTRN.EXE", app->GetHomeDir() );
+    return pszDosXtrnPath;
 }
 
 
-const std::string GetSyncFosOSMode()
+char* GetSyncFosOSMode( char * pszOSMode )
 {
-    return IsWindowsNT() ? std::string("NT") : std::string("95");
+    strcpy( pszOSMode, ( IsWindowsNT() )  ? "NT" : "95" );
+    return pszOSMode;
 }
 
 
@@ -422,11 +432,11 @@ bool IsWindowsNT()
 // returns true if the file is deleted.
 bool DeleteSyncTempFile()
 {
-    std::string tempFileName;
-    GetSyncFosTempFilePath( tempFileName );
-    if ( WFile::Exists( tempFileName ) )
+    char szTempFileName[ MAX_PATH ];
+    GetSyncFosTempFilePath( szTempFileName );
+    if ( WFile::Exists( szTempFileName ) )
     {
-        WFile::Remove(tempFileName );
+        WFile::Remove( szTempFileName );
         return true;
     }
     return false;
@@ -452,7 +462,7 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
     for( ;; )
     {
         nCounter++;
-        if ( GetSession()->using_modem && ( !GetSession()->remoteIO()->carrier() ) )
+        if ( sess->using_modem && ( !app->comm->carrier() ) )
         {
             SetEvent( hSyncHangupEvent );
             fprintf( hLogFile, "Setting Hangup Event and Sleeping\r\n" );
@@ -475,22 +485,22 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
             }
         }
 
-		if ( GetSession()->remoteIO()->incoming() )
+		if ( app->comm->incoming() )
         {
             nCounter = 0;
             // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-            int nNumReadFromComm = GetSession()->remoteIO()->read( szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE );
+            int nNumReadFromComm = app->comm->read( szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE );
             fprintf( hLogFile, "Read [%d] from comm\r\n", nNumReadFromComm );
 #if 1
 			int nLp = 0;
             for( nLp = 0; nLp < nNumReadFromComm; nLp++ )
             {
-                fprintf( hLogFile, "[%u]", static_cast<unsigned char>( szReadBuffer[ nLp ] ), ( unsigned char ) szReadBuffer[ nLp ] );
+                fprintf( hLogFile, "[%u]", ( unsigned char ) szReadBuffer[ nLp ], ( unsigned char ) szReadBuffer[ nLp ] );
             }
             fprintf( hLogFile, "   " );
             for( nLp = 0; nLp < nNumReadFromComm; nLp++ )
             {
-                fprintf( hLogFile, "[%c]", static_cast<unsigned char>( szReadBuffer[ nLp ] ) );
+                fprintf( hLogFile, "[%c]", ( unsigned char ) szReadBuffer[ nLp ] );
             }
             fprintf( hLogFile, "\r\n" );
 #endif // 0
@@ -500,7 +510,7 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
                 // Create Write handle.
                 char szWriteSlotName[ MAX_PATH ];
                 ::Sleep(500);
-                _snprintf( szWriteSlotName, sizeof( szWriteSlotName ), "\\\\.\\mailslot\\sbbsexec\\wr%d", GetApplication()->GetInstanceNumber() );
+                sprintf( szWriteSlotName, "\\\\.\\mailslot\\sbbsexec\\wr%d", app->GetInstanceNumber() );
                 fprintf( hLogFile, "Creating Mail Slot [%s]\r\n", szWriteSlotName );
 
                 hSyncWriteSlot = CreateFile( szWriteSlotName,
@@ -580,15 +590,15 @@ bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncRead
                     // For some reason this doesn't write twice locally, so it works pretty well.
                     szReadBuffer[ nBufferPtr ] = '\0';
                     fprintf( hLogFile, "{%s}\r\n", szReadBuffer );
-                    GetSession()->bout << szReadBuffer;
+                    sess->bout << szReadBuffer;
 
                     //ExpandWWIVHeartCodes( szReadBuffer );
-                    //int nNumWritten = GetSession()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
+                    //int nNumWritten = app->comm->write( szReadBuffer, strlen( szReadBuffer )  );
                     //fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
                 }
                 else
                 {
-                    int nNumWritten = GetSession()->remoteIO()->write( szReadBuffer, nBufferPtr );
+                    int nNumWritten = app->comm->write( szReadBuffer, nBufferPtr );
                     fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
                 }
 
@@ -682,7 +692,7 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
     {
         fprintf( hLogFile, " IN LOOP\r\n" );
         nCounter++;
-        if ( GetSession()->using_modem && ( !GetSession()->remoteIO()->carrier() ) )
+        if ( sess->using_modem && ( !app->comm->carrier() ) )
         {
             SetEvent( hSyncHangupEvent );
             nCounter += CONST_WIN9X_NUM_LOOPS_BEFORE_EXIT_CHECK;
@@ -705,11 +715,11 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
             }
         }
 
-		if ( GetSession()->remoteIO()->incoming() )
+		if ( app->comm->incoming() )
         {
             nCounter = 0;
             // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-            int nNumReadFromComm = GetSession()->remoteIO()->read( ( szReadBuffer + sizeof( hVM ) ), CONST_SBBSFOS_BUFFER_SIZE - sizeof( hVM ) );
+            int nNumReadFromComm = app->comm->read( ( szReadBuffer + sizeof( hVM ) ), CONST_SBBSFOS_BUFFER_SIZE - sizeof( hVM ) );
             fprintf( hLogFile, "nNumReadFromComm = [%d]\r\n", nNumReadFromComm );
             for( int i = sizeof( hVM ); i < static_cast<int>( nNumReadFromComm + sizeof( hVM ) ); i++ )
             {
@@ -764,7 +774,7 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
             {
                 ExpandWWIVHeartCodes( szReadBuffer );
             }
-            GetSession()->remoteIO()->write( szReadBuffer, dwNumReadFromVXD );
+            app->comm->write( szReadBuffer, dwNumReadFromVXD );
         }
 
         if ( nCounter > 0 )
@@ -814,7 +824,7 @@ bool ExpandWWIVHeartCodes( char *pszBuffer )
             {
                 char szTempColor[ 81 ];
                 int nColor = *pIn - '0';
-                makeansi( GetSession()->GetCurrentUser()->GetColor( nColor ), szTempColor, false );
+                makeansi( sess->thisuser.GetColor( nColor ), szTempColor, false );
                 char *pColor = szTempColor;
                 while ( *pColor )
                 {

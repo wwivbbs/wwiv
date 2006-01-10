@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 char *gfiledata( int nSectionNum, char *pBuffer );
@@ -47,14 +48,33 @@ void showsec()
 {
 	char szBuffer[255];
 
-	GetSession()->bout.ClearScreen();
+	ClearScreen();
 	bool abort = false;
 	pla("|#2NN AR Name                                      FN       SL  AGE MAX", &abort);
 	pla("|#7-- == ----------------------------------------  ======== --- === ---", &abort);
-	for (int i = 0; (i < GetSession()->num_sec) && (!abort); i++)
+	for (int i = 0; (i < sess->num_sec) && (!abort); i++)
 	{
 		pla( gfiledata( i, szBuffer ), &abort );
 	}
+}
+
+
+bool exist_dir(const char *pszDirectoryName)
+{
+	WWIV_ASSERT( pszDirectoryName );
+	bool ok = false;
+
+	WWIV_ChangeDirTo(syscfg.gfilesdir);
+	if ( chdir( pszDirectoryName ) )
+	{
+		ok = false;
+	}
+	else
+	{
+		ok = true;
+	}
+	app->CdHome();
+	return ok;
 }
 
 
@@ -87,19 +107,20 @@ void modify_sec(int n)
 	bool done = false;
 	do
 	{
-		GetSession()->bout.ClearScreen();
+		ClearScreen();
 		sprintf( szSubNum, "|B1|15Editing G-File Area # %d", n );
-		GetSession()->bout.WriteFormatted( "%-85s", szSubNum );
-        GetSession()->bout.Color( 0 );
-		GetSession()->bout.NewLine( 2 );
-		GetSession()->bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
-		GetSession()->bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
-		GetSession()->bout << "|#9C) SL         : |#2" << static_cast<int>( r.sl ) << wwiv::endl;
-		GetSession()->bout << "|#9D) Min. Age   : |#2" << static_cast<int>( r.age ) << wwiv::endl;
-		GetSession()->bout << "|#9E) Max Files  : |#2" << r.maxfiles << wwiv::endl;
-		GetSession()->bout << "|#9F) AR         : |#2" << GetArString( r, s ) << wwiv::endl;
-        GetSession()->bout.NewLine();
-		GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1F,|#1[|#7,|#1]|#7) : ";
+		bprintf( "%-85s", szSubNum );
+        ansic( 0 );
+		nl( 2 );
+		sess->bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
+		sess->bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
+		sess->bout << "|#9C) SL         : |#2" << static_cast<int>( r.sl ) << wwiv::endl;
+		sess->bout << "|#9D) Min. Age   : |#2" << static_cast<int>( r.age ) << wwiv::endl;
+		sess->bout << "|#9E) Max Files  : |#2" << r.maxfiles << wwiv::endl;
+		sess->bout << "|#9F) AR         : |#2" << GetArString( r, s ) << wwiv::endl;
+
+        nl();
+		sess->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1F,|#1[|#7,|#1]|#7) : ";
 		char ch = onek( "QABCDEF[]", true );
 		switch (ch)
 		{
@@ -110,21 +131,21 @@ void modify_sec(int n)
 			gfilesec[n] = r;
 			if (--n < 0)
 			{
-				n = GetSession()->num_sec - 1;
+				n = sess->num_sec - 1;
 			}
 			r = gfilesec[n];
 			break;
 		case ']':
 			gfilesec[n] = r;
-			if (++n >= GetSession()->num_sec)
+			if (++n >= sess->num_sec)
 			{
 				n = 0;
 			}
 			r = gfilesec[n];
 			break;
 		case 'A':
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2New name? ";
+			nl();
+			sess->bout << "|#2New name? ";
 			inputl(s, 40);
 			if (s[0])
 			{
@@ -132,47 +153,44 @@ void modify_sec(int n)
 			}
 			break;
 		case 'B':
-            {
-			GetSession()->bout.NewLine();
-			WFile dir(syscfg.gfilesdir, r.filename);
-			if (dir.Exists())
+			nl();
+			if (exist_dir(r.filename))
 			{
-				GetSession()->bout << "\r\nThere is currently a directory for this g-file section.\r\n";
-				GetSession()->bout << "If you change the filename, the directory will still be there.\r\n\n";
+				sess->bout << "\r\nThere is currently a directory for this g-file section.\r\n";
+				sess->bout << "If you change the filename, the directory will still be there.\r\n\n";
 			}
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2New filename? ";
+			nl();
+			sess->bout << "|#2New filename? ";
 			input(s, 8);
 			if ( ( s[0] != 0 ) && ( strchr(s, '.') == 0 ) )
 			{
 				strcpy(r.filename, s);
-				WFile dir(syscfg.gfilesdir, r.filename);
-				if (!dir.Exists())
+				if (!exist_dir(r.filename))
 				{
-					GetSession()->bout.NewLine();
-					GetSession()->bout << "|#5Create directory for this section? ";
+					nl();
+					sess->bout << "|#5Create directory for this section? ";
 					if (yesno())
 					{
-						WFile *dir = new WFile(syscfg.gfilesdir, r.filename);
-						WWIV_make_path(dir->GetFullPathName());
+						WWIV_ChangeDirTo(syscfg.gfilesdir);
+						mkdir(r.filename);
+						app->CdHome();
 					}
 					else
 					{
-						GetSession()->bout << "\r\nYou will have to create the directory manually, then.\r\n\n";
+						sess->bout << "\r\nYou will have to create the directory manually, then.\r\n\n";
 					}
 				}
 				else
 				{
-					GetSession()->bout << "\r\nA directory already exists under this filename.\r\n\n";
+					sess->bout << "\r\nA directory already exists under this filename.\r\n\n";
 				}
 				pausescr();
 			}
-            }
 			break;
 		case 'C':
             {
-			    GetSession()->bout.NewLine();
-			    GetSession()->bout << "|#2New SL? ";
+			    nl();
+			    sess->bout << "|#2New SL? ";
 			    input(s, 3);
 			    int i = atoi(s);
 			    if ( i >= 0 && i < 256 && s[0] )
@@ -183,8 +201,8 @@ void modify_sec(int n)
 			break;
 		case 'D':
             {
-			    GetSession()->bout.NewLine();
-			    GetSession()->bout << "|#2New Min Age? ";
+			    nl();
+			    sess->bout << "|#2New Min Age? ";
 			    input(s, 3);
 			    int i = atoi(s);
 			    if ((i >= 0) && (i < 128) && (s[0]))
@@ -195,8 +213,8 @@ void modify_sec(int n)
 			break;
 		case 'E':
             {
-			    GetSession()->bout.NewLine();
-				GetSession()->bout << "|#1Max 99 files/section.\r\n|#2New max files? ";
+			    nl();
+				sess->bout << "|#1Max 99 files/section.\r\n|#2New max files? ";
 			    input(s, 3);
 			    int i = atoi(s);
 			    if ((i >= 0) && (i < 99) && (s[0]))
@@ -206,8 +224,8 @@ void modify_sec(int n)
             }
 			break;
 		case 'F':
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2New AR (<SPC>=None) ? ";
+			nl();
+			sess->bout << "|#2New AR (<SPC>=None) ? ";
 			char ch2 = onek("ABCDEFGHIJKLMNOP ");
 			if (ch2 == SPACE)
 			{
@@ -228,7 +246,7 @@ void insert_sec(int n)
 {
 	gfiledirrec r;
 
-	for (int i = GetSession()->num_sec - 1; i >= n; i--)
+	for (int i = sess->num_sec - 1; i >= n; i--)
 	{
 		gfilesec[i + 1] = gfilesec[i];
 	}
@@ -239,18 +257,18 @@ void insert_sec(int n)
 	r.maxfiles	= 99;
 	r.ar		= 0;
 	gfilesec[n] = r;
-	++GetSession()->num_sec;
+	++sess->num_sec;
 	modify_sec( n );
 }
 
 
 void delete_sec(int n)
 {
-	for (int i = n; i < GetSession()->num_sec; i++)
+	for (int i = n; i < sess->num_sec; i++)
 	{
 		gfilesec[i] = gfilesec[i + 1];
 	}
-	--GetSession()->num_sec;
+	--sess->num_sec;
 }
 
 
@@ -267,8 +285,8 @@ void gfileedit()
 	bool done = false;
 	do
 	{
-		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#2G-files: D:elete, I:nsert, M:odify, Q:uit, ? : ";
+		nl();
+		sess->bout << "|#2G-files: D:elete, I:nsert, M:odify, Q:uit, ? : ";
 		char ch = onek("QDIM?");
 		switch (ch)
 		{
@@ -279,37 +297,37 @@ void gfileedit()
 			done = true;
 			break;
 		case 'M':
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2Section number? ";
+			nl();
+			sess->bout << "|#2Section number? ";
 			input(s, 2);
 			i = atoi(s);
-			if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_sec))
+			if ((s[0] != 0) && (i >= 0) && (i < sess->num_sec))
 			{
 				modify_sec(i);
 			}
 			break;
 		case 'I':
-			if (GetSession()->num_sec < GetSession()->max_gfilesec)
+			if (sess->num_sec < sess->max_gfilesec)
 			{
-				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#2Insert before which section? ";
+				nl();
+				sess->bout << "|#2Insert before which section? ";
 				input(s, 2);
 				i = atoi(s);
-				if ((s[0] != 0) && (i >= 0) && (i <= GetSession()->num_sec))
+				if ((s[0] != 0) && (i >= 0) && (i <= sess->num_sec))
 				{
 					insert_sec(i);
 				}
 			}
 			break;
 		case 'D':
-			GetSession()->bout.NewLine();
-			GetSession()->bout << "|#2Delete which section? ";
+			nl();
+			sess->bout << "|#2Delete which section? ";
 			input(s, 2);
 			i = atoi(s);
-			if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_sec))
+			if ((s[0] != 0) && (i >= 0) && (i < sess->num_sec))
 			{
-				GetSession()->bout.NewLine();
-                GetSession()->bout << "|#5Delete " << gfilesec[i].name << "?";
+				nl();
+                sess->bout << "|#5Delete " << gfilesec[i].name << "?";
 				if (yesno())
 				{
 					delete_sec(i);
@@ -320,7 +338,7 @@ void gfileedit()
 	} while ( !done && !hangup );
     WFile gfileDat( syscfg.datadir, GFILE_DAT );
     gfileDat.Open( WFile::modeReadWrite |WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
-    gfileDat.Write( &gfilesec[0], GetSession()->num_sec * sizeof( gfiledirrec ) );
+    gfileDat.Write( &gfilesec[0], sess->num_sec * sizeof( gfiledirrec ) );
     gfileDat.Close();
 }
 
@@ -351,7 +369,7 @@ bool fill_sec(int sn)
 		}
 		if (i)
 		{
-            GetSession()->bout << "|#2" << s << " : ";
+            sess->bout << "|#2" << s << " : ";
 			inputl(s1, 60);
 			if (s1[0])
 			{
@@ -369,7 +387,7 @@ bool fill_sec(int sn)
 				gfilerec g1;
 				strcpy(g1.filename, s);
 				strcpy(g1.description, s1);
-				g1.daten = static_cast<long>(time(NULL));
+				time(&(g1.daten));
 				g[i] = g1;
 			}
 			else
@@ -381,11 +399,11 @@ bool fill_sec(int sn)
 	}
 	if (!ok)
 	{
-		GetSession()->bout << "|12Aborted.\r\n";
+		sess->bout << "|12Aborted.\r\n";
 	}
 	if (nf >= gfilesec[sn].maxfiles)
 	{
-		GetSession()->bout << "Section full.\r\n";
+		sess->bout << "Section full.\r\n";
 	}
 	if (chd)
 	{
@@ -395,9 +413,9 @@ bool fill_sec(int sn)
         gflFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareUnknown, WFile::permReadWrite );
         gflFile.Write( g, nf * sizeof( gfilerec ) );
         gflFile.Close();
-		WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
-        pStatus->SetGFileDate( date() );
-		GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
+		app->statusMgr->Lock();
+		strcpy(status.gfiledate, date());
+		app->statusMgr->Write();
 	}
 	BbsFreeMemory( g );
 	return !ok;
@@ -409,7 +427,7 @@ void pack_all_subs( bool bFromCommandline )
 
     bool abort = false, next = false;
 	int i = 0;
-	while ( !hangup && !abort && i < GetSession()->num_subs )
+	while ( !hangup && !abort && i < sess->num_subs )
 	{
 		pack_sub(i);
 		checka(&abort, &next);
@@ -417,7 +435,7 @@ void pack_all_subs( bool bFromCommandline )
 	}
 	if (abort)
 	{
-		GetSession()->bout << "|12Aborted.\r\n";
+		sess->bout << "|12Aborted.\r\n";
 	}
 	tmp_disable_pause( false );
 }
@@ -437,13 +455,13 @@ void pack_sub(int si)
 			sprintf(fn1, "%s%s.dat", syscfg.msgsdir, sfn);
 			sprintf(fn2, "%s%s.dat", syscfg.msgsdir, nfn);
 
-			GetSession()->bout << "\r\n|#7\xFE |#1Packing Message Area: |10" << subboards[si].name << wwiv::endl;
+			sess->bout << "\r\n|#7\xFE |#1Packing Message Area: |10" << subboards[si].name << wwiv::endl;
 
-			for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++)
+			for (int i = 1; i <= sess->GetNumMessagesInCurrentMessageArea(); i++)
 			{
 				if (i % 10 == 0)
 				{
-					GetSession()->bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
+					sess->bout << i << "/" << sess->GetNumMessagesInCurrentMessageArea() << "\r";
 				}
 				postrec *p = get_post( i );
 				if (p)
@@ -466,14 +484,14 @@ void pack_sub(int si)
 						write_post(i, p);
 					}
 				}
-				GetSession()->bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
+				sess->bout << i << "/" << sess->GetNumMessagesInCurrentMessageArea() << "\r";
 			}
 
 			WFile::Remove(fn1);
 			WFile::Rename(fn2, fn1);
 
 			close_sub();
-			GetSession()->bout << "|#7\xFE |#1Done Packing " << GetSession()->GetNumMessagesInCurrentMessageArea() << " messages.                              \r\n";
+			sess->bout << "|#7\xFE |#1Done Packing " << sess->GetNumMessagesInCurrentMessageArea() << " messages.                              \r\n";
 		}
 	}
 }

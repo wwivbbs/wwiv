@@ -142,24 +142,24 @@ LPCTSTR NodeStatus::GetNodeActivity( int nNodeNumber )
         bool bUpdateRet = UpdateActivityList();
         if ( !bUpdateRet )
         {
-            return _T( "" );
+            return "";
         }
     }
 
     CString strTemp;
     if (m_pInstanceRecord[nNodeNumber].loc == INST_LOC_WFC)		
     {			
-        strTemp.Format( _T( "Instance #%3.3d: Waiting For Caller" ), nNodeNumber );
+        strTemp.Format("Instance #%3.3d: Waiting For Caller", nNodeNumber);			
         lstrcpy( m_szActivity, strTemp );
     }		
-    else if ( m_pInstanceRecord[nNodeNumber].loc == INST_LOC_DOWN )
+    else if (m_pInstanceRecord[nNodeNumber].loc == INST_LOC_DOWN)		
     {
-        strTemp.Format( _T( "Instance #%3.3d: Off-Line" ) , nNodeNumber );
+        strTemp.Format("Instance #%3.3d: Off-Line", nNodeNumber);			
         lstrcpy( m_szActivity, strTemp );
     }		
     else		
     {			
-        strTemp.Format( _T( "[User #%d is %s]" ),
+        strTemp.Format( "[User #%d is %s]", 
                         m_pInstanceRecord[nNodeNumber].user, 
                         g_szNodeActivityText[m_pInstanceRecord[nNodeNumber].loc]);			
         lstrcpy( m_szActivity, strTemp );
@@ -321,7 +321,7 @@ void NodeStatus::Dump( CDumpContext& dc ) const
    CObject::Dump( dc );
 
    // now do the stuff for our specific class
-   dc << _T( "No Information Available.\n" );
+   dc << "No Information Available. " << "\n";
 }
 
 void NodeStatus::AssertValid() const

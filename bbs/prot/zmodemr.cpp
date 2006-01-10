@@ -23,20 +23,14 @@
 *	January, 1995
 */
 
-
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
-
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 #include <errno.h>
 
 #include "zmodem.h"
 #include "crctab.h"
-#include "WStringUtils.h"
 
 #if defined(_MSC_VER)
 #pragma warning( push )
@@ -269,7 +263,7 @@ int GotSinitData( ZModem *info, int crcGood )
 	info->attn = NULL;
 	if( info->buffer[0] != '\0' )
 	{
-		info->attn = WWIV_STRDUP(reinterpret_cast<char*>( info->buffer ) );
+		info->attn = strdup(reinterpret_cast<char*>( info->buffer ) );
 	}
 	return ZXmitHdrHex(ZACK, ZEnc4(SerialNo), info);
 }
@@ -336,7 +330,7 @@ void parseFileName( ZModem *info, char *fileinfo )
 	{
 		free(info->filename);
 	}
-	info->filename = WWIV_STRDUP(fileinfo);
+	info->filename = strdup(fileinfo);
 	sscanf(ptr, "%d %lo %o %o %d %d %d", &info->len, &info->date,
 			&info->mode, &serial, &info->filesRem, &info->bytesRem,
 			&info->fileType);

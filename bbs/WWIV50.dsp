@@ -343,10 +343,6 @@ SOURCE=.\EXTRN1.CPP
 # End Source File
 # Begin Source File
 
-SOURCE=.\FindUser.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\GFILES.CPP
 # End Source File
 # Begin Source File
@@ -472,10 +468,6 @@ SOURCE=.\READMAIL.CPP
 # Begin Source File
 
 SOURCE=.\shortmsg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SmallRecord.cpp
 # End Source File
 # Begin Source File
 
@@ -695,6 +687,10 @@ SOURCE=.\VARS.H
 # End Source File
 # Begin Source File
 
+SOURCE=.\wwivassert.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\WSession.h
 # End Source File
 # Begin Source File
@@ -712,10 +708,6 @@ SOURCE=.\platform\wutil.h
 # Begin Source File
 
 SOURCE=.\wwiv.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\wwivassert.h
 # End Source File
 # End Group
 # Begin Group "platform Headers"

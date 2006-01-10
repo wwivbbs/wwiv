@@ -1,7 +1,7 @@
 /****************************************************************************/
 /*                                                                          */
 /*                             WWIV Version 5.0x                            */
-/*            Copyright (C) 1998-2005 by WWIV Software Services             */
+/*            Copyright (C) 1998-2003 by WWIV Software Services             */
 /*                                                                          */
 /*      Distribution or publication of this source code, it's individual    */
 /*       components, or a compiled version thereof, whether modified or     */
@@ -442,8 +442,8 @@ void WLocalIO::pr_Wait(int i1)
         if (okansi()) 
         {
             i = curatr;
-            setc((GetSession()->thisuser.sysstatus & sysstatus_color) ? GetSession()->thisuser.colors[3] :
-            GetSession()->thisuser.bwcolors[3]);
+            setc((sess->thisuser.sysstatus & sysstatus_color) ? sess->thisuser.colors[3] :
+            sess->thisuser.bwcolors[3]);
             npr(ss);
             npr("\x1b[%dD", i2);
             setc(i);
@@ -498,8 +498,8 @@ void WLocalIO::set_protect(int l)
         else 
         {
             sa = curatr;
-            curatr = ((GetSession()->thisuser.sysstatus & sysstatus_color) ? GetSession()->thisuser.colors[0] :
-            GetSession()->thisuser.bwcolors[0]);
+            curatr = ((sess->thisuser.sysstatus & sysstatus_color) ? sess->thisuser.colors[0] :
+            sess->thisuser.bwcolors[0]);
             CellStr[1] = (unsigned char) curatr;
             VioScrollUp(l, 0, topline - 1, 79, 65535, CellStr, 0);
             {
@@ -530,7 +530,7 @@ void WLocalIO::set_protect(int l)
     }
     topline = l;
     if (using_modem)
-        screenlinest = GetSession()->thisuser.screenlines;
+        screenlinest = sess->thisuser.screenlines;
     else
         screenlinest = defscreenbottom + 1 - topline;
 }
@@ -734,7 +734,7 @@ void WLocalIO::skey(char ch)
                     break;
                 case 63:                          /* F5 */
                     hangup = 1;
-                    GetApplication()->GetComm()->dtr(false);
+                    app->comm->dtr(false);
                     break;
                 case 88:                          /* Shift-F5 */
                     i1 = (rand() % 20) + 10;
@@ -743,29 +743,29 @@ void WLocalIO::skey(char ch)
                         outchr(rand() % 256);
                     }
                     hangup = 1;
-                    GetApplication()->GetComm()->dtr(false);
+                    app->comm->dtr(false);
                     break;
                 case 98:                          /* Ctrl-F5 */
                     nl();
                     pl("Call back later when you are there.");
                     nl();
                     hangup = 1;
-                    GetApplication()->GetComm()->dtr(false);
+                    app->comm->dtr(false);
                     break;
                 case 64:                          /* F6 */
                     ToggleSysopAlert();
                     tleft(false);
                     break;
                 case 65:                          /* F7 */
-                    GetSession()->thisuser.extratime -= 5.0 * 60.0;
+                    sess->thisuser.extratime -= 5.0 * 60.0;
                     tleft(false);
                     break;
                 case 66:                          /* F8 */
-                    GetSession()->thisuser.extratime += 5.0 * 60.0;
+                    sess->thisuser.extratime += 5.0 * 60.0;
                     tleft(false);
                     break;
                 case 67:                          /* F9 */
-                    if (GetSession()->thisuser.sl != 255) 
+                    if (sess->thisuser.sl != 255) 
                     {
                         if (actsl != 255)
                         {
@@ -903,7 +903,7 @@ void WLocalIO::tleft(bool bCheckForTimeOut)
             }
         }
         
-        if ((GetSession()->thisuser.sl != 255) && (actsl == 255)) 
+        if ((sess->thisuser.sl != 255) && (actsl == 255)) 
         {
             LocalGotoXY(23, ln);
             LocalFastPuts(ss[1]);
@@ -951,7 +951,7 @@ void WLocalIO::tleft(bool bCheckForTimeOut)
         }
         else
         {
-            strcpy(tl, (char *) GetSession()->thisuser.pw);
+            strcpy(tl, (char *) sess->thisuser.pw);
         }
         LocalFastPuts(tl);
         break;
@@ -1024,7 +1024,7 @@ void WLocalIO::UpdateTopScreenImpl()
     case 0:
         break;
     case 1:
-        GetApplication()->statusMgr->Read();
+        app->statusMgr->Read();
         LocalGotoXY(0, 0);
         sprintf(ol, "%-50s  Activity for %8s:      ", syscfg.systemname, status.date1);
         LocalFastPuts(ol);
@@ -1036,13 +1036,13 @@ void WLocalIO::UpdateTopScreenImpl()
         
         LocalGotoXY(0, 2);
         sprintf(ol, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-            nam(&GetSession()->thisuser, usernum), status.activetoday,
+            nam(&sess->thisuser, usernum), status.activetoday,
             (int) (10 * status.activetoday / 144), status.emailtoday);
         LocalFastPuts(ol);
         
         LocalGotoXY(0, 3);
         sprintf(ol, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
-            GetSession()->thisuser.sl, GetSession()->thisuser.dsl, fwaiting, status.uptoday, status.fbacktoday);
+            sess->thisuser.sl, sess->thisuser.dsl, fwaiting, status.uptoday, status.fbacktoday);
         LocalFastPuts(ol);
         break;
         
@@ -1051,7 +1051,7 @@ void WLocalIO::UpdateTopScreenImpl()
         strcpy(rst, restrict_string);
         for (i = 0; i <= 15; i++) 
         {
-            if (GetSession()->thisuser.ar & (1 << i))
+            if (sess->thisuser.ar & (1 << i))
             {
                 ar[i] = 'A' + i;
             }
@@ -1059,7 +1059,7 @@ void WLocalIO::UpdateTopScreenImpl()
             {
                 ar[i] = 32;
             }
-            if (GetSession()->thisuser.dar & (1 << i))
+            if (sess->thisuser.dar & (1 << i))
             {
                 dar[i] = 'A' + i;
             }
@@ -1067,7 +1067,7 @@ void WLocalIO::UpdateTopScreenImpl()
             {
                 dar[i] = 32;
             }
-            if (GetSession()->thisuser.restrict & (1 << i))
+            if (sess->thisuser.restrict & (1 << i))
             {
                 restrict[i] = rst[i];
             }
@@ -1079,46 +1079,46 @@ void WLocalIO::UpdateTopScreenImpl()
         dar[16] = 0;
         ar[16] = 0;
         restrict[16] = 0;
-        if (strcmp((char *) GetSession()->thisuser.laston, date()))
+        if (strcmp((char *) sess->thisuser.laston, date()))
         {
-            strcpy(lo, (char *) GetSession()->thisuser.laston);
+            strcpy(lo, (char *) sess->thisuser.laston);
         }
         else
         {
-            sprintf(lo, "Today:%2d", GetSession()->thisuser.ontoday);
+            sprintf(lo, "Today:%2d", sess->thisuser.ontoday);
         }
         
         LocalGotoXY(0, 0);
         sprintf(ol, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
-            nam(&GetSession()->thisuser, usernum), GetSession()->thisuser.waiting, GetSession()->thisuser.uploaded,
-            GetSession()->thisuser.uk, GetSession()->thisuser.sl, GetSession()->thisuser.logons, GetSession()->thisuser.msgpost);
+            nam(&sess->thisuser, usernum), sess->thisuser.waiting, sess->thisuser.uploaded,
+            sess->thisuser.uk, sess->thisuser.sl, sess->thisuser.logons, sess->thisuser.msgpost);
         LocalFastPuts(ol);
         
         LocalGotoXY(0, 1);
-        if (GetSession()->thisuser.wwiv_regnum)
+        if (sess->thisuser.wwiv_regnum)
         {
-            sprintf(calls, "%lu", GetSession()->thisuser.wwiv_regnum);
+            sprintf(calls, "%lu", sess->thisuser.wwiv_regnum);
         }
         else
         {
-            strcpy(calls, (char *) GetSession()->thisuser.callsign);
+            strcpy(calls, (char *) sess->thisuser.callsign);
         }
         sprintf(ol, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u",
-            GetSession()->thisuser.realname, GetSession()->thisuser.phone, calls,
-            GetSession()->thisuser.downloaded, GetSession()->thisuser.dk, GetSession()->thisuser.dsl,
-            ((long) ((GetSession()->thisuser.timeon + timer() - timeon) / 60.0)),
-            GetSession()->thisuser.emailsent + GetSession()->thisuser.emailnet);
+            sess->thisuser.realname, sess->thisuser.phone, calls,
+            sess->thisuser.downloaded, sess->thisuser.dk, sess->thisuser.dsl,
+            ((long) ((sess->thisuser.timeon + timer() - timeon) / 60.0)),
+            sess->thisuser.emailsent + sess->thisuser.emailnet);
         LocalFastPuts(ol);
         
         LocalGotoXY(0, 2);
         sprintf(ol, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u",
-            ar, dar, restrict, GetSession()->thisuser.exempt, lo, GetSession()->thisuser.feedbacksent);
+            ar, dar, restrict, sess->thisuser.exempt, lo, sess->thisuser.feedbacksent);
         LocalFastPuts(ol);
         
         LocalGotoXY(0, 3);
         sprintf(ol, "%-40.40s %c %2u %-17s          FW= %3u",
-            GetSession()->thisuser.note, GetSession()->thisuser.sex, GetSession()->thisuser.age,
-            ctypes(GetSession()->thisuser.comp_type), fwaiting);
+            sess->thisuser.note, sess->thisuser.sex, sess->thisuser.age,
+            ctypes(sess->thisuser.comp_type), fwaiting);
         LocalFastPuts(ol);
         
         if (chatcall) 
@@ -1230,13 +1230,13 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc)
         VioGetCurPos(&CurY, &CurX, 0);
         VioReadCellStr(buf, &BufLen, CurY, 0, 0);
         i = 0;
-        for (i1 = 0; i1 < GetApplication()->GetLocalIO()->WhereX(); i1++) {
+        for (i1 = 0; i1 < app->localIO->WhereX(); i1++) {
             cl[i1] = buf[i1 * 2];
             atr[i1] = buf[(i1 * 2) + 1];
         }
     }
-    cl[GetApplication()->GetLocalIO()->WhereX()] = 0;
-    atr[GetApplication()->GetLocalIO()->WhereX()] = 0;
+    cl[app->localIO->WhereX()] = 0;
+    atr[app->localIO->WhereX()] = 0;
 }
 
 
@@ -1416,7 +1416,7 @@ void WLocalIO::LocalClrEol()
 			EOLBuffer[Temp] = ' ';
 		}
 	}
-	puttext(GetApplication()->GetLocalIO()->WhereX(), GetApplication()->GetLocalIO()->WhereY(), 80, GetApplication()->GetLocalIO()->WhereY(), (void *) &EOLBuffer);
+	puttext(app->localIO->WhereX(), app->localIO->WhereY(), 80, app->localIO->WhereY(), (void *) &EOLBuffer);
 }
 
 

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,13 +20,6 @@
 #ifndef __INCLUDED_VARS_H__
 #define __INCLUDED_VARS_H__
 
-#ifdef _MSC_VER
-#pragma once
-#endif
-
-#include "wtypes.h"
-#include "vardec.h"
-#include "net.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -84,6 +77,7 @@ __EXTRN__ int	ansiptr,
 				fsenttoday,
 				fwaiting,
 				lines_listed,
+				ltime,
 				questused[20],
 				nsp;
 
@@ -118,7 +112,7 @@ __EXTRN__ bool  in_chatroom,
 				invis,
 				avail;
 
-__EXTRN__ unsigned short
+__EXTRN__ UINT16
 #if !defined ( NETWORK )
 				*csn_index,
 				net_sysnum,
@@ -139,7 +133,7 @@ __EXTRN__ int	g_num_listed,
 __EXTRN__ time_t nscandate;
 
 
-__EXTRN__ int
+__EXTRN__ ULONG32
 				g_flags,
 				com_speed;
 
@@ -175,6 +169,7 @@ __EXTRN__ subboardrec *subboards;
 __EXTRN__ directoryrec *directories;
 __EXTRN__ usersubrec *usub, *udir;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
+__EXTRN__ screentype screensave;
 __EXTRN__ batchrec *batch;
 __EXTRN__ tagrec *filelist;
 __EXTRN__ chainfilerec *chains;
@@ -198,10 +193,13 @@ __EXTRN__ int iia;
 
 __EXTRN__ long last_iia;
 
-//#ifndef NOT_BBS
-//#include "bbs.h"
-//#include "WSession.h"
-//#endif // NOT_BBS
+#ifndef NOT_BBS
+#include "bbs.h"
+#include "WSession.h"
+
+__EXTRN__ WBbsApp *app;
+__EXTRN__ WSession *sess;
+#endif // NOT_BBS
 
 // from version.cpp
 extern const char *wwiv_version;

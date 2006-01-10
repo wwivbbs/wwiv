@@ -49,7 +49,7 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <cstring>
+#include <string.h>
 
 #include "zmodem.h"
 #include "crctab.h"
@@ -686,7 +686,7 @@ int ZProtocol(  ZModem *info )
 	info->timeoutCount = 0;
 	info->noiseCount = 0;
 
-	table = tables[info->state];
+	table = tables[(int)info->state];
 	while( table->type != 99  &&  table->type != info->hdrData[0] )
 	{
 		++table;

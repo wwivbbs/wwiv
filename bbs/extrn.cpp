@@ -11,60 +11,6 @@
 /*           WWIV Software Services.  Violators will be procecuted!         */
 /*                                                                          */
 /****************************************************************************/
-#include "../../wwiv.h"
+#include "wwiv.h"
 
-
-bool WFindFile::open(const char * pszFileSpec, UINT32 nTypeMask)
-{
-	__open(pszFileSpec, nTypeMask);
-
-	if (findfirst(pszFileSpec, &hFind, 0) == -1)
-	{
-		return false;
-	}
-	strcpy(szFileName,hFind.ff_name); 
-	lFileSize = hFind.ff_fsize;
-
-	return true;
-}
-
-
-
-bool WFindFile::next()
-{
-	if (findnext(&hFind) == -1)
-	{
-		return false;
-	}
-	strcpy(szFileName,hFind.ff_name); 
-	lFileSize = hFind.ff_fsize;
-
-	return true;
-}
-
-
-bool WFindFile::close()
-{
-	__close();
-	return true;
-}
-
-
-bool WFindFile::IsDirectory()
-{
-	if (IsFile())
-	{
-		return false;
-	}
-	return true;
-}
-
-bool WFindFile::IsFile()
-{
-	if (hFind.ff_attrib & FA_DIREC)
-	{
-		return false;
-	}
-	return true;
-}
 

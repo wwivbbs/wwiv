@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,7 +20,7 @@
 #include "wwiv.h"
 
 
-bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
+bool WFindFile::open(const char * pszFileSpec, UINT32 nTypeMask)
 {
 	__open(pszFileSpec, nTypeMask);
 
@@ -35,11 +35,11 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 
 	if (ffdata.cAlternateFileName[0] == '\0')
 	{
-		strncpy(szFileName,ffdata.cFileName, sizeof(szFileName));
+		strcpy(szFileName,ffdata.cFileName);
 	}
 	else
 	{
-		strncpy(szFileName,ffdata.cAlternateFileName, sizeof(szFileName));
+		strcpy(szFileName,ffdata.cAlternateFileName);
 	}
 
 	lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
@@ -64,11 +64,11 @@ bool WFindFile::next()
 
 	if (ffdata.cAlternateFileName[0] == '\0')
 	{
-		strncpy(szFileName,ffdata.cFileName, sizeof(szFileName));
+		strcpy(szFileName,ffdata.cFileName);
 	}
 	else
 	{
-		strncpy(szFileName,ffdata.cAlternateFileName, sizeof(szFileName));
+		strcpy(szFileName,ffdata.cAlternateFileName);
 	}
 
 	lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;

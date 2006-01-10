@@ -67,16 +67,11 @@
 *	January, 1995
 **********/
 
-
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
-
-#include <cstdio>
-#include <cstdarg>
-#include <cstring>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 #include <ctype.h>
-#include <ctime>
+#include <time.h>
 
 #include "zmodem.h"
 #include "crctab.h"
@@ -389,7 +384,7 @@ char * sname2(ZMState state)
 		"YTFile", "YTDataWait", "YTData", "YTEOF", "YTFin", "YRStart",
 		"YRDataWait", "YRData", "YREOF"
 	};
-	return names[state];
+	return names[(int)state];
 }
 
 

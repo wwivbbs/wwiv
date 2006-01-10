@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,12 +18,13 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 void UnQScan()
 {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Mark messages as unread on [C]urrent sub or [A]ll subs (A/C/Q)? ";
+    nl();
+    sess->bout << "|#9Mark messages as unread on [C]urrent sub or [A]ll subs (A/C/Q)? ";
     char ch = onek( "QAC\r" );
     switch ( ch )
     {
@@ -32,18 +33,18 @@ void UnQScan()
         break;
     case 'A':
         {
-            for ( int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++ )
+            for ( int i = 0; i < sess->GetMaxNumberMessageAreas(); i++ )
             {
                 qsc_p[i] = 0;
             }
-			GetSession()->bout << "\r\nQ-Scan pointers reset.\r\n\n";
+			sess->bout << "\r\nQ-Scan pointers reset.\r\n\n";
         }
         break;
     case 'C':
         {
-            GetSession()->bout.NewLine();
-            qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = 0;
-            GetSession()->bout << "Messages on " << subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name << " marked as unread.\r\n";
+            nl();
+            qsc_p[usub[sess->GetCurrentMessageArea()].subnum] = 0;
+            sess->bout << "Messages on " << subboards[usub[sess->GetCurrentMessageArea()].subnum].name << " marked as unread.\r\n";
         }
         break;
     }
@@ -58,53 +59,53 @@ void DirList()
 
 void UpSubConf()
 {
-    if ( okconf( GetSession()->GetCurrentUser() ) )
+    if ( okconf( &sess->thisuser ) )
     {
-        if ((GetSession()->GetCurrentConferenceMessageArea() < subconfnum - 1) && (uconfsub[GetSession()->GetCurrentConferenceMessageArea() + 1].confnum >= 0))
+        if ((sess->GetCurrentConferenceMessageArea() < subconfnum - 1) && (uconfsub[sess->GetCurrentConferenceMessageArea() + 1].confnum >= 0))
         {
-            GetSession()->SetCurrentConferenceMessageArea( GetSession()->GetCurrentConferenceMessageArea() + 1 );
+            sess->SetCurrentConferenceMessageArea( sess->GetCurrentConferenceMessageArea() + 1 );
         }
         else
         {
-            GetSession()->SetCurrentConferenceMessageArea( 0 );
+            sess->SetCurrentConferenceMessageArea( 0 );
         }
-        setuconf( CONF_SUBS, GetSession()->GetCurrentConferenceMessageArea(), -1 );
+        setuconf( CONF_SUBS, sess->GetCurrentConferenceMessageArea(), -1 );
     }
 }
 
 
 void DownSubConf()
 {
-    if ( okconf( GetSession()->GetCurrentUser() ) )
+    if ( okconf( &sess->thisuser ) )
     {
-        if ( GetSession()->GetCurrentConferenceMessageArea() > 0 )
+        if ( sess->GetCurrentConferenceMessageArea() > 0 )
         {
-            GetSession()->SetCurrentConferenceMessageArea( GetSession()->GetCurrentConferenceMessageArea() - 1 );
+            sess->SetCurrentConferenceMessageArea( sess->GetCurrentConferenceMessageArea() - 1 );
         }
         else
         {
-            while ( uconfsub[GetSession()->GetCurrentConferenceMessageArea() + 1].confnum >= 0 && GetSession()->GetCurrentConferenceMessageArea() < subconfnum - 1 )
+            while ( uconfsub[sess->GetCurrentConferenceMessageArea() + 1].confnum >= 0 && sess->GetCurrentConferenceMessageArea() < subconfnum - 1 )
             {
-                GetSession()->SetCurrentConferenceMessageArea( GetSession()->GetCurrentConferenceMessageArea() + 1 );
+                sess->SetCurrentConferenceMessageArea( sess->GetCurrentConferenceMessageArea() + 1 );
             }
         }
-        setuconf( CONF_SUBS, GetSession()->GetCurrentConferenceMessageArea(), -1 );
+        setuconf( CONF_SUBS, sess->GetCurrentConferenceMessageArea(), -1 );
     }
 }
 
 
 void DownSub()
 {
-    if ( GetSession()->GetCurrentMessageArea() > 0 )
+    if ( sess->GetCurrentMessageArea() > 0 )
     {
-        GetSession()->SetCurrentMessageArea( GetSession()->GetCurrentMessageArea() - 1 );
+        sess->SetCurrentMessageArea( sess->GetCurrentMessageArea() - 1 );
     }
     else
     {
-        while ( usub[GetSession()->GetCurrentMessageArea() + 1].subnum >= 0 && 
-                GetSession()->GetCurrentMessageArea() < GetSession()->num_subs - 1 )
+        while ( usub[sess->GetCurrentMessageArea() + 1].subnum >= 0 && 
+                sess->GetCurrentMessageArea() < sess->num_subs - 1 )
         {
-            GetSession()->SetCurrentMessageArea( GetSession()->GetCurrentMessageArea() + 1 );
+            sess->SetCurrentMessageArea( sess->GetCurrentMessageArea() + 1 );
         }
     }
 }
@@ -112,22 +113,22 @@ void DownSub()
 
 void UpSub()
 {
-    if ( GetSession()->GetCurrentMessageArea() < GetSession()->num_subs - 1 && 
-         usub[GetSession()->GetCurrentMessageArea() + 1].subnum >= 0 )
+    if ( sess->GetCurrentMessageArea() < sess->num_subs - 1 && 
+         usub[sess->GetCurrentMessageArea() + 1].subnum >= 0 )
     {
-        GetSession()->SetCurrentMessageArea( GetSession()->GetCurrentMessageArea() + 1 );
+        sess->SetCurrentMessageArea( sess->GetCurrentMessageArea() + 1 );
     }
     else
     {
-        GetSession()->SetCurrentMessageArea( 0 );
+        sess->SetCurrentMessageArea( 0 );
     }
 }
 
 
 void ValidateUser()
 {
-    GetSession()->bout.NewLine( 2 );
-	GetSession()->bout << "|#9Enter user name or number:\r\n:";
+    nl( 2 );
+	sess->bout << "|#9Enter user name or number:\r\n:";
     std::string userName;
     input( userName, 30, true );
     int nUserNum = finduser1( userName.c_str() );
@@ -138,7 +139,7 @@ void ValidateUser()
     }
     else
     {
-        GetSession()->bout << "Unknown user.\r\n";
+        sess->bout << "Unknown user.\r\n";
     }
 }
 
@@ -150,8 +151,8 @@ void Chains()
         write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
         play_sdf( CHAINS_NOEXT, false );
         printfile( CHAINS_NOEXT );
-        GetSession()->SetMMKeyArea( WSession::mmkeyChains );
-        while ( GetSession()->GetMMKeyArea() == WSession::mmkeyChains && !hangup )
+        sess->SetMMKeyArea( WSession::mmkeyChains );
+        while ( sess->GetMMKeyArea() == WSession::mmkeyChains && !hangup )
         {
             do_chains();
         }
@@ -231,7 +232,7 @@ void SystemInfo()
 
 void JumpSubConf()
 {
-    if ( okconf( GetSession()->GetCurrentUser() ) )
+    if ( okconf( &sess->thisuser ) )
     {
         jump_conf(CONF_SUBS);
     }
@@ -249,20 +250,19 @@ void KillEMail()
 
 void LastCallers()
 {
-    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
-    if ( pStatus->GetNumCallsToday()> 0 )
+    if (status.callstoday > 0)
     {
-		if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
+		if ( app->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
 			 ( syscfg.sysconfig & sysconfig_extended_info ) )
         {
-            GetSession()->bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
+            sess->bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
         }
         else
         {
-            GetSession()->bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
+            sess->bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
         }
         int i = okansi() ? 205 : '=';
-		GetSession()->bout << "|#7" << charstr( 79, i ) << wwiv::endl;
+		sess->bout << "|#7" << charstr( 79, i ) << wwiv::endl;
     }
     printfile( USER_LOG );
 }
@@ -276,10 +276,10 @@ void ReadEMail()
 
 void NewMessageScan()
 {
-    if ( okconf( GetSession()->GetCurrentUser() ) )
+    if ( okconf( &sess->thisuser ) )
     {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#5New message scan in all conferences? ";
+        nl();
+        sess->bout << "|#5New message scan in all conferences? ";
         if (noyes())
         {
             NewMsgsAllConfs();
@@ -302,16 +302,16 @@ void GoodBye()
     int cycle;
     int ch;
 
-    if (GetSession()->numbatchdl != 0)
+    if (sess->numbatchdl != 0)
     {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
+        nl();
+        sess->bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
         if (noyes())
 		{
             batchdl( 1 );
 		}
     }
-    sprintf(szFileName, "%s%s", GetSession()->pszLanguageDir, LOGOFF_MAT);
+    sprintf(szFileName, "%s%s", sess->pszLanguageDir, LOGOFF_MAT);
     if (!WFile::Exists(szFileName))
     {
         sprintf(szFileName, "%s%s", syscfg.gfilesdir, LOGOFF_MAT);
@@ -321,7 +321,7 @@ void GoodBye()
         cycle = 0;
         do
         {
-            GetSession()->bout.ClearScreen();
+            ClearScreen();
             printfile( szFileName );
             ch = onek( "QFTO", true );
             switch (ch)
@@ -332,7 +332,7 @@ void GoodBye()
             case 'F':
                 write_inst(INST_LOC_FEEDBACK, 0, INST_FLAGS_ONLINE);
                 feedback( false );
-                GetApplication()->UpdateTopScreen();
+                app->localIO->UpdateTopScreen();
                 break;
             case 'T':
                 write_inst(INST_LOC_BANK, 0, INST_FLAGS_ONLINE);
@@ -341,17 +341,17 @@ void GoodBye()
             case 'O':
                 cycle = 1;
                 write_inst( INST_LOC_LOGOFF, 0, INST_FLAGS_NONE );
-                GetSession()->bout.ClearScreen();
-				GetSession()->bout <<  "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
+                ClearScreen();
+				sess->bout <<  "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
                 tmp_disable_pause( true );
                 printfile( LOGOFF_NOEXT );
                 tmp_disable_pause( false );
-                GetSession()->GetCurrentUser()->SetLastSubNum( GetSession()->GetCurrentMessageArea() );
-                GetSession()->GetCurrentUser()->SetLastDirNum( GetSession()->GetCurrentFileArea() );
-                if ( okconf( GetSession()->GetCurrentUser() ) )
+                sess->thisuser.SetLastSubNum( sess->GetCurrentMessageArea() );
+                sess->thisuser.SetLastDirNum( sess->GetCurrentFileArea() );
+                if ( okconf( &sess->thisuser ) )
                 {
-                    GetSession()->GetCurrentUser()->SetLastSubConf( GetSession()->GetCurrentConferenceMessageArea() );
-                    GetSession()->GetCurrentUser()->SetLastDirConf( GetSession()->GetCurrentConferenceFileArea() );
+                    sess->thisuser.SetLastSubConf( sess->GetCurrentConferenceMessageArea() );
+                    sess->thisuser.SetLastDirConf( sess->GetCurrentConferenceFileArea() );
                 }
                 hangup = true;
                 break;
@@ -360,20 +360,20 @@ void GoodBye()
     }
     else
     {
-        GetSession()->bout.NewLine( 2 );
-        GetSession()->bout << "|#5Log Off? ";
+        nl( 2 );
+        sess->bout << "|#5Log Off? ";
         if (yesno())
         {
             write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
-            GetSession()->bout.ClearScreen();
-			GetSession()->bout << "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
+            ClearScreen();
+			sess->bout << "Time on   = " << ctim( timer() - timeon ) << wwiv::endl;
             printfile(LOGOFF_NOEXT);
-            GetSession()->GetCurrentUser()->SetLastSubNum( GetSession()->GetCurrentMessageArea() );
-            GetSession()->GetCurrentUser()->SetLastDirNum( GetSession()->GetCurrentFileArea() );
-            if ( okconf( GetSession()->GetCurrentUser() ) )
+            sess->thisuser.SetLastSubNum( sess->GetCurrentMessageArea() );
+            sess->thisuser.SetLastDirNum( sess->GetCurrentFileArea() );
+            if ( okconf( &sess->thisuser ) )
             {
-                GetSession()->GetCurrentUser()->SetLastSubConf( GetSession()->GetCurrentConferenceMessageArea() );
-                GetSession()->GetCurrentUser()->SetLastDirConf( GetSession()->GetCurrentConferenceFileArea() );
+                sess->thisuser.SetLastSubConf( sess->GetCurrentConferenceMessageArea() );
+                sess->thisuser.SetLastDirConf( sess->GetCurrentConferenceFileArea() );
             }
             hangup = true;
         }
@@ -397,10 +397,10 @@ void ScanSub()
 {
     if (usub[0].subnum != -1)
     {
-        write_inst(INST_LOC_SUBS, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+        write_inst(INST_LOC_SUBS, usub[sess->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
         int i = 0;
         express = expressabort = false;
-        qscan( GetSession()->GetCurrentMessageArea(), &i );
+        qscan( sess->GetCurrentMessageArea(), &i );
     }
 }
 
@@ -409,7 +409,7 @@ void RemovePost()
 {
     if (usub[0].subnum != -1)
     {
-        write_inst(INST_LOC_SUBS, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+        write_inst(INST_LOC_SUBS, usub[sess->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
         remove_post();
     }
 }
@@ -419,7 +419,7 @@ void TitleScan()
 {
     if (usub[0].subnum != -1)
     {
-        write_inst(INST_LOC_SUBS, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+        write_inst(INST_LOC_SUBS, usub[sess->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
         express = false;
         expressabort = false;
         ScanMessageTitles();
@@ -445,7 +445,7 @@ void Vote()
 
 void ToggleExpert()
 {
-    GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::expert );
+    sess->thisuser.toggleStatusFlag( WUser::expert );
 }
 
 
@@ -466,16 +466,14 @@ void ExpressScan()
 
 void WWIVVersion()
 {
-    GetSession()->bout.NewLine();
-    GetSession()->bout.ClearScreen();
-	GetSession()->bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
-    GetSession()->bout << "|#9Copyright (C) 1998-2006, WWIV Software Services.\r\n";
-    GetSession()->bout << "|#9All Rights Reserved.\r\n\r\n";
-    GetSession()->bout << "|#9Licensed under the Apache License.  " << wwiv::endl;
-    GetSession()->bout << "|#9Please see |#1http://wwiv.sourceforge.net |#9for more information" << wwiv::endl << wwiv::endl;
-	GetSession()->bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
-    GetSession()->bout << "|#9SysOp Name:   : |#2" << syscfg.sysopname << wwiv::endl;
-    GetSession()->bout.NewLine( 3 );
+    nl();
+    ClearScreen();
+	sess->bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
+    sess->bout << "|#9Copyright (C) 1998-2004, WWIV Software Services.\r\n";
+    sess->bout << "|#9All Rights Reserved.\r\n\r\n";
+	sess->bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
+    sess->bout << "|#9SysOp Name:    |#2%s" << syscfg.sysopname << wwiv::endl;
+    nl( 3 );
     pausescr();
 }
 
@@ -511,20 +509,20 @@ void ChainEdit()
 
 void ToggleChat()
 {
-    GetSession()->bout.NewLine( 2 );
+    nl( 2 );
     bool bOldAvail = sysop2();
     ToggleScrollLockKey();
     bool bNewAvail = sysop2();
     if ( bOldAvail != bNewAvail )
     {
-        GetSession()->bout << ( ( bNewAvail ) ? "|10Sysop now available\r\n" : "|13Sysop now unavailable\r\n" );
+        sess->bout << ( ( bNewAvail ) ? "|10Sysop now available\r\n" : "|13Sysop now unavailable\r\n" );
         sysoplog("@ Changed sysop available status");
     }
     else
     {
-        GetSession()->bout << "|12Unable to toggle Sysop availability (hours restriction)\r\n";
+        sess->bout << "|12Unable to toggle Sysop availability (hours restriction)\r\n";
     }
-    GetApplication()->UpdateTopScreen();
+    app->localIO->UpdateTopScreen();
 }
 
 
@@ -543,12 +541,12 @@ void CallOut()
 
 void Debug()
 {
-    GetSession()->SetGlobalDebugLevel( GetSession()->GetGlobalDebugLevel() + 1 );
-    if ( GetSession()->GetGlobalDebugLevel() > 4 )
+    sess->SetGlobalDebugLevel( sess->GetGlobalDebugLevel() + 1 );
+    if ( sess->GetGlobalDebugLevel() > 4 )
     {
-        GetSession()->SetGlobalDebugLevel( 0 );
+        sess->SetGlobalDebugLevel( 0 );
     }
-	GetSession()->bout << "|10New Debug Level: " << GetSession()->GetGlobalDebugLevel() << wwiv::endl;
+	sess->bout << "|10New Debug Level: " << sess->GetGlobalDebugLevel() << wwiv::endl;
 }
 
 
@@ -570,22 +568,22 @@ void EventEdit()
 
 void LoadTextFile()
 {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Enter Filename: ";
+    nl();
+    sess->bout << "|#9Enter Filename: ";
     std::string fileName;
     input( fileName, 50, true );
     if ( !fileName.empty() )
     {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#5Allow editing? ";
+        nl();
+        sess->bout << "|#5Allow editing? ";
         if ( yesno() )
         {
-            GetSession()->bout.NewLine();
+            nl();
             LoadFileIntoWorkspace( fileName.c_str(), false );
         }
         else
         {
-            GetSession()->bout.NewLine();
+            nl();
             LoadFileIntoWorkspace( fileName.c_str(), true );
         }
     }
@@ -595,13 +593,13 @@ void LoadTextFile()
 void EditText()
 {
     write_inst( INST_LOC_TEDIT, 0, INST_FLAGS_NONE );
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7Enter Filespec: ";
+    nl();
+    sess->bout << "|#7Enter Filespec: ";
     std::string fileName;
     input( fileName, 50 );
     if ( !fileName.empty() )
     {
-        external_edit( fileName.c_str(), "", GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, ".", fileName.c_str(), MSGED_FLAG_NO_TAGLINE );
+        external_edit( fileName.c_str(), "", sess->thisuser.GetDefaultEditor() - 1, 500, ".", fileName.c_str(), MSGED_FLAG_NO_TAGLINE );
     }
 }
 
@@ -644,14 +642,14 @@ void ResetFiles()
 
 void ResetQscan()
 {
-    GetSession()->bout << "|#5Reset all QScan/NScan pointers? ";
+    sess->bout << "|#5Reset all QScan/NScan pointers? ";
     if ( yesno() )
     {
         write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
-        for ( int i = 0; i <= GetApplication()->GetUserManager()->GetNumberOfUserRecords(); i++ )
+        for ( int i = 0; i <= number_userrecs(); i++ )
         {
             read_qscn( i, qsc, true );
-            memset( qsc_p, 0, syscfg.qscn_len - 4 * ( 1 + ( ( GetSession()->GetMaxNumberFileAreas() + 31 ) / 32 ) + ( ( GetSession()->GetMaxNumberMessageAreas() + 31 ) / 32 ) ) );
+            memset( qsc_p, 0, syscfg.qscn_len - 4 * ( 1 + ( ( sess->GetMaxNumberFileAreas() + 31 ) / 32 ) + ( ( sess->GetMaxNumberMessageAreas() + 31 ) / 32 ) ) );
             write_qscn( i, qsc, true );
         }
         read_qscn( 1, qsc, false );
@@ -662,23 +660,23 @@ void ResetQscan()
 
 void MemoryStatus()
 {
-    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
+    app->statusMgr->Read();
+    nl();
+    sess->bout << "Qscanptr        : " << status.qscanptr << wwiv::endl;
 }
 
 
 void PackMessages()
 {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Pack all subs? ";
+    nl();
+    sess->bout << "|#5Pack all subs? ";
     if ( yesno() )
     {
         pack_all_subs( false );
     }
     else
     {
-        pack_sub( usub[GetSession()->GetCurrentMessageArea()].subnum );
+        pack_sub( usub[sess->GetCurrentMessageArea()].subnum );
     }
 }
 
@@ -695,7 +693,7 @@ void ReadLog()
 {
     char szLogFileName[ 255 ];
 
-    GetSysopLogFileName( date(), szLogFileName );
+    slname( date(), szLogFileName );
     print_local_file( szLogFileName, "" );
 }
 
@@ -730,7 +728,7 @@ void UserEdit()
 {
     write_inst( INST_LOC_UEDIT, 0, INST_FLAGS_NONE );
     sysoplog( "@ Ran User Edit" );
-    uedit( GetSession()->usernum, UEDIT_NONE );
+    uedit( sess->usernum, UEDIT_NONE );
 }
 
 
@@ -743,8 +741,8 @@ void VotePrint()
 
 void YesturdaysLog()
 {
-    std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
-    print_local_file( pStatus->GetLogFileName(), "" );
+    app->statusMgr->Read();
+    print_local_file( status.log1, "" );
 }
 
 
@@ -760,8 +758,8 @@ void ViewNetDataLog()
 
     while ( !done && !hangup )
     {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#9Which NETDAT log (0-2,Q)? ";
+        nl();
+        sess->bout << "|#9Which NETDAT log (0-2,Q)? ";
         char ch = onek( "Q012" );
         switch ( ch )
         {
@@ -797,7 +795,7 @@ void NetListing()
 void WhoIsOnline()
 {
     multi_instance();
-	GetSession()->bout.NewLine();
+	nl();
 	pausescr();
 }
 
@@ -806,11 +804,11 @@ void NewMsgsAllConfs()
 {
     bool ac = false;
 
-    write_inst(INST_LOC_SUBS, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+    write_inst(INST_LOC_SUBS, usub[sess->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
     express = false;
     expressabort = false;
     newline = false;
-    if ( uconfsub[1].confnum != -1 && okconf( GetSession()->GetCurrentUser() ) )
+    if ( uconfsub[1].confnum != -1 && okconf( &sess->thisuser ) )
     {
         ac = true;
         tmp_disable_conf( true );
@@ -840,7 +838,7 @@ void NewMsgScanFromHere()
 {
     newline = false;
     preload_subs();
-    nscan( GetSession()->GetCurrentMessageArea() );
+    nscan( sess->GetCurrentMessageArea() );
     newline = true;
 }
 
@@ -861,7 +859,7 @@ void ChatRoom()
     if ( WFile::Exists( "WWIVCHAT.EXE" ) )
     {
         sprintf( szCommandLine, "WWIVCHAT.EXE %s", create_chain_file() );
-        ExecuteExternalProgram( szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_CHAT ) );
+        ExecuteExternalProgram( szCommandLine, app->GetSpawnOptions( SPWANOPT_CHAT ) );
     }
     else
     {
@@ -872,16 +870,16 @@ void ChatRoom()
 
 void DownloadPosts()
 {
-    if ( GetApplication()->HasConfigFlag( OP_FLAGS_SLASH_SZ ) )
+    if ( app->HasConfigFlag( OP_FLAGS_SLASH_SZ ) )
     {
-        GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
+        sess->bout << "|#5This could take quite a while.  Are you sure? ";
         if ( yesno() )
         {
-            GetSession()->bout << "Please wait...\r\n";
-            GetSession()->localIO()->set_x_only(1, "posts.txt", 0);
+            sess->bout << "Please wait...\r\n";
+            app->localIO->set_x_only(1, "posts.txt", 0);
             preload_subs();
             nscan();
-            GetSession()->localIO()->set_x_only( 0, NULL, 0 );
+            app->localIO->set_x_only( 0, NULL, 0 );
             add_arc( "offline", "posts.txt", 0 );
             download_temp_arc( "offline", 0 );
         }
@@ -891,15 +889,15 @@ void DownloadPosts()
 
 void DownloadFileList()
 {
-    if ( GetApplication()->HasConfigFlag( OP_FLAGS_SLASH_SZ ) )
+    if ( app->HasConfigFlag( OP_FLAGS_SLASH_SZ ) )
     {
-        GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
+        sess->bout << "|#5This could take quite a while.  Are you sure? ";
         if ( yesno() )
         {
-            GetSession()->bout << "Please wait...\r\n";
-            GetSession()->localIO()->set_x_only( 1, "files.txt", 1 );
+            sess->bout << "Please wait...\r\n";
+            app->localIO->set_x_only( 1, "files.txt", 1 );
             searchall();
-            GetSession()->localIO()->set_x_only( 0, NULL, 0 );
+            app->localIO->set_x_only( 0, NULL, 0 );
             add_arc( "temp", "files.txt", 0 );
             download_temp_arc( "temp", 0 );
         }
@@ -909,8 +907,8 @@ void DownloadFileList()
 
 void ClearQScan()
 {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ";
+    nl();
+    sess->bout << "|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ";
     char ch = onek( "QAC\r" );
     switch ( ch )
     {
@@ -919,20 +917,20 @@ void ClearQScan()
         break;
     case 'A':
     {
-        std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
-        for ( int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++ )
+        app->statusMgr->Read();
+        for ( int i = 0; i < sess->GetMaxNumberMessageAreas(); i++ )
         {
-            qsc_p[i] = pStatus->GetQScanPointer() - 1L;
+            qsc_p[i] = status.qscanptr - 1L;
         }
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "Q-Scan pointers cleared.\r\n";
+        nl();
+        sess->bout << "Q-Scan pointers cleared.\r\n";
     }
     break;
     case 'C':
-        std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
-        GetSession()->bout.NewLine();
-        qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
-        GetSession()->bout << "Messages on " << subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name << " marked as read.\r\n";
+        app->statusMgr->Read();
+        nl();
+        qsc_p[usub[sess->GetCurrentMessageArea()].subnum] = status.qscanptr - 1L;
+        sess->bout << "Messages on " << subboards[usub[sess->GetCurrentMessageArea()].subnum].name << " marked as read.\r\n";
         break;
     }
 }
@@ -940,10 +938,10 @@ void ClearQScan()
 
 void FastGoodBye()
 {
-    if ( GetSession()->numbatchdl != 0 )
+    if ( sess->numbatchdl != 0 )
     {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
+        nl();
+        sess->bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
         if ( noyes() )
         {
             batchdl( 1 );
@@ -957,30 +955,30 @@ void FastGoodBye()
     {
         hangup = true;
     }
-    GetSession()->GetCurrentUser()->SetLastSubNum( GetSession()->GetCurrentMessageArea() );
-    GetSession()->GetCurrentUser()->SetLastDirNum( GetSession()->GetCurrentFileArea() );
-    if ( okconf( GetSession()->GetCurrentUser() ) )
+    sess->thisuser.SetLastSubNum( sess->GetCurrentMessageArea() );
+    sess->thisuser.SetLastDirNum( sess->GetCurrentFileArea() );
+    if ( okconf( &sess->thisuser ) )
     {
-        GetSession()->GetCurrentUser()->SetLastSubConf( GetSession()->GetCurrentConferenceMessageArea() );
-        GetSession()->GetCurrentUser()->SetLastDirConf( GetSession()->GetCurrentConferenceFileArea() );
+        sess->thisuser.SetLastSubConf( sess->GetCurrentConferenceMessageArea() );
+        sess->thisuser.SetLastDirConf( sess->GetCurrentConferenceFileArea() );
     }
 }
 
 
 void NewFilesAllConfs()
 {
-    GetSession()->bout.NewLine();
+    nl();
     int ac = 0;
-    if ( uconfsub[1].confnum != -1 && okconf( GetSession()->GetCurrentUser() ) )
+    if ( uconfsub[1].confnum != -1 && okconf( &sess->thisuser ) )
     {
         ac = 1;
         tmp_disable_conf( true );
     }
     g_num_listed = 0;
-    GetSession()->tagging = 1;
-    GetSession()->titled = 1;
+    sess->tagging = 1;
+    sess->titled = 1;
     nscanall();
-    GetSession()->tagging = 0;
+    sess->tagging = 0;
     if ( ac )
     {
        tmp_disable_conf( false );
@@ -990,15 +988,15 @@ void NewFilesAllConfs()
 
 void ReadIDZ()
 {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Read FILE_ID.DIZ for all directories? ";
+    nl();
+    sess->bout << "|#5Read FILE_ID.DIZ for all directories? ";
     if (yesno())
     {
         read_idz_all();
     }
     else
     {
-        read_idz( 1, GetSession()->GetCurrentFileArea() );
+        read_idz( 1, sess->GetCurrentFileArea() );
     }
 }
 
@@ -1011,11 +1009,11 @@ void RemoveNotThere()
 
 void UploadAllDirs()
 {
-    GetSession()->bout.NewLine( 2 );
+    nl( 2 );
     bool ok = true;
-    for ( int nDirNum = 0; nDirNum < GetSession()->num_dirs && udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++ )
+    for ( int nDirNum = 0; nDirNum < sess->num_dirs && udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++ )
     {
-        GetSession()->bout << "|#9Now uploading files for: |#2" << directories[udir[nDirNum].subnum].name << wwiv::endl;
+        sess->bout << "|#9Now uploading files for: |#2" << directories[udir[nDirNum].subnum].name << wwiv::endl;
         ok = uploadall( nDirNum );
     }
 }
@@ -1023,7 +1021,7 @@ void UploadAllDirs()
 
 void UploadCurDir()
 {
-    uploadall(GetSession()->GetCurrentFileArea());
+    uploadall(sess->GetCurrentFileArea());
 }
 
 
@@ -1041,11 +1039,11 @@ void MoveFiles()
 
 void SortDirs()
 {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Sort all dirs? ";
+    nl();
+    sess->bout << "|#5Sort all dirs? ";
     bool bSortAll = yesno();
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Sort by date? ";
+    nl();
+    sess->bout << "|#5Sort by date? ";
 
     int nType = 0;
     if ( yesno() )
@@ -1060,7 +1058,7 @@ void SortDirs()
     }
     else
     {
-        sortdir( udir[GetSession()->GetCurrentFileArea()].subnum, nType );
+        sortdir( udir[sess->GetCurrentFileArea()].subnum, nType );
     }
     tmp_disable_pause( false );
 }
@@ -1068,10 +1066,10 @@ void SortDirs()
 
 void ReverseSort()
 {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Sort all dirs? ";
+    nl();
+    sess->bout << "|#5Sort all dirs? ";
     bool bSortAll = yesno();
-    GetSession()->bout.NewLine();
+    nl();
     tmp_disable_pause( true );
     if ( bSortAll )
     {
@@ -1079,7 +1077,7 @@ void ReverseSort()
     }
     else
     {
-        sortdir( udir[GetSession()->GetCurrentFileArea()].subnum, 1 );
+        sortdir( udir[sess->GetCurrentFileArea()].subnum, 1 );
     }
     tmp_disable_pause( false );
 }
@@ -1095,18 +1093,18 @@ void UploadFilesBBS()
 {
     char s2[81];
 
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#21|#9) PCB, RBBS   - <filename> <size> <date> <description>\r\n";
-    GetSession()->bout << "|#22|#9) QBBS format - <filename> <description>\r\n";
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#Select Format (1,2,Q) : ";
+    nl();
+    sess->bout << "|#21|#9) PCB, RBBS   - <filename> <size> <date> <description>\r\n";
+    sess->bout << "|#22|#9) QBBS format - <filename> <description>\r\n";
+    nl();
+    sess->bout << "|#Select Format (1,2,Q) : ";
     char ch = onek( "Q12" );
-    GetSession()->bout.NewLine();
+    nl();
     if ( ch != 'Q' )
     {
         int nType = 0;
-        GetSession()->bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
-		GetSession()->bout.ColorizedInputField( 77 );
+        sess->bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
+		mpl( 77 );
         inputl( s2, 80 );
         switch ( ch )
         {
@@ -1120,73 +1118,73 @@ void UploadFilesBBS()
             nType = 0;
             break;
         }
-        upload_files( s2, GetSession()->GetCurrentFileArea(), nType );
+        upload_files( s2, sess->GetCurrentFileArea(), nType );
     }
 }
 
 
 void UpDirConf()
 {
-    if ( okconf( GetSession()->GetCurrentUser() ) )
+    if ( okconf( &sess->thisuser ) )
     {
-        if ( GetSession()->GetCurrentConferenceFileArea() < dirconfnum - 1 && uconfdir[GetSession()->GetCurrentConferenceFileArea() + 1].confnum >= 0 )
+        if ( sess->GetCurrentConferenceFileArea() < dirconfnum - 1 && uconfdir[sess->GetCurrentConferenceFileArea() + 1].confnum >= 0 )
         {
-            GetSession()->SetCurrentConferenceFileArea( GetSession()->GetCurrentConferenceFileArea() + 1 );
+            sess->SetCurrentConferenceFileArea( sess->GetCurrentConferenceFileArea() + 1 );
         }
         else
         {
-            GetSession()->SetCurrentConferenceFileArea( 0 );
+            sess->SetCurrentConferenceFileArea( 0 );
         }
-        setuconf( CONF_DIRS, GetSession()->GetCurrentConferenceFileArea(), -1 );
+        setuconf( CONF_DIRS, sess->GetCurrentConferenceFileArea(), -1 );
     }
 }
 
 
 void UpDir()
 {
-    if ( GetSession()->GetCurrentFileArea() < GetSession()->num_dirs - 1 && udir[GetSession()->GetCurrentFileArea() + 1].subnum >= 0 )
+    if ( sess->GetCurrentFileArea() < sess->num_dirs - 1 && udir[sess->GetCurrentFileArea() + 1].subnum >= 0 )
     {
-        GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() + 1 );
+        sess->SetCurrentFileArea( sess->GetCurrentFileArea() + 1 );
     }
     else
     {
-        GetSession()->SetCurrentFileArea( 0 );
+        sess->SetCurrentFileArea( 0 );
     }
 }
 
 
 void DownDirConf()
 {
-    if ( okconf( GetSession()->GetCurrentUser() ) )
+    if ( okconf( &sess->thisuser ) )
     {
-        if ( GetSession()->GetCurrentConferenceFileArea() > 0 )
+        if ( sess->GetCurrentConferenceFileArea() > 0 )
         {
-            GetSession()->SetCurrentConferenceFileArea( GetSession()->GetCurrentConferenceFileArea() );
+            sess->SetCurrentConferenceFileArea( sess->GetCurrentConferenceFileArea() );
         }
         else
         {
-            while ( uconfdir[GetSession()->GetCurrentConferenceFileArea() + 1].confnum >= 0 && GetSession()->GetCurrentConferenceFileArea() < dirconfnum - 1 )
+            while ( uconfdir[sess->GetCurrentConferenceFileArea() + 1].confnum >= 0 && sess->GetCurrentConferenceFileArea() < dirconfnum - 1 )
             {
-                GetSession()->SetCurrentConferenceFileArea( GetSession()->GetCurrentConferenceFileArea() + 1 );
+                sess->SetCurrentConferenceFileArea( sess->GetCurrentConferenceFileArea() + 1 );
             }
         }
-        setuconf( CONF_DIRS, GetSession()->GetCurrentConferenceFileArea(), -1 );
+        setuconf( CONF_DIRS, sess->GetCurrentConferenceFileArea(), -1 );
     }
 }
 
 
 void DownDir()
 {
-    if ( GetSession()->GetCurrentFileArea() > 0 )
+    if ( sess->GetCurrentFileArea() > 0 )
     {
-        GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() - 1 );
+        sess->SetCurrentFileArea( sess->GetCurrentFileArea() - 1 );
     }
     else
     {
-        while ( udir[GetSession()->GetCurrentFileArea() + 1].subnum >= 0 && 
-                GetSession()->GetCurrentFileArea() < GetSession()->num_dirs - 1 )
+        while ( udir[sess->GetCurrentFileArea() + 1].subnum >= 0 && 
+                sess->GetCurrentFileArea() < sess->num_dirs - 1 )
         {
-            GetSession()->SetCurrentFileArea( GetSession()->GetCurrentFileArea() + 1 );
+            sess->SetCurrentFileArea( sess->GetCurrentFileArea() + 1 );
         }
     }
 }
@@ -1241,9 +1239,9 @@ void TempExtract()
 
 void FindDescription()
 {
-    GetSession()->tagging = 1;
+    sess->tagging = 1;
     finddescription();
-    GetSession()->tagging = 0;
+    sess->tagging = 0;
 }
 
 
@@ -1255,7 +1253,7 @@ void TemporaryStuff()
 
 void JumpDirConf()
 {
-    if ( okconf( GetSession()->GetCurrentUser() ) )
+    if ( okconf( &sess->thisuser ) )
     {
         jump_conf(CONF_DIRS);
     }
@@ -1272,43 +1270,43 @@ void ConfigFileList()
 
 void ListFiles()
 {
-    GetSession()->tagging = 1;
+    sess->tagging = 1;
     listfiles();
-    GetSession()->tagging = 0;
+    sess->tagging = 0;
 }
 
 
 void NewFileScan()
 {
-    if ( GetApplication()->HasConfigFlag( OP_FLAGS_SETLDATE ) )
+    if ( app->HasConfigFlag( OP_FLAGS_SETLDATE ) )
     {
         SetNewFileScanDate();
     }
     bool abort = false;
     g_num_listed = 0;
-    GetSession()->tagging = 1;
-    GetSession()->titled = 1;
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Search all directories? ";
+    sess->tagging = 1;
+    sess->titled = 1;
+    nl();
+    sess->bout << "|#5Search all directories? ";
     if ( yesno() )
     {
         nscanall();
     }
     else
     {
-        GetSession()->bout.NewLine();
-        nscandir( GetSession()->GetCurrentFileArea(), &abort );
+        nl();
+        nscandir( sess->GetCurrentFileArea(), &abort );
         if ( g_num_listed )
         {
             endlist( 2 );
         }
         else
         {
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#2No new files found.\r\n";
+            nl();
+            sess->bout << "|#2No new files found.\r\n";
         }
     }
-    GetSession()->tagging = 0;
+    sess->tagging = 0;
 }
 
 
@@ -1323,9 +1321,9 @@ void RemoveFiles()
 
 void SearchAllFiles()
 {
-    GetSession()->tagging = 1;
+    sess->tagging = 1;
     searchall();
-    GetSession()->tagging = 0;
+    sess->tagging = 0;
 }
 
 
@@ -1342,10 +1340,10 @@ void Upload()
 {
     play_sdf( UPLOAD_NOEXT, false );
     printfile( UPLOAD_NOEXT );
-    if ( GetSession()->GetCurrentUser()->IsRestrictionValidate() || GetSession()->GetCurrentUser()->IsRestrictionUpload() ||
+    if ( sess->thisuser.isRestrictionValidate() || sess->thisuser.isRestrictionUpload() ||
          ( syscfg.sysconfig & sysconfig_all_sysop ) )
     {
-        if ( syscfg.newuploads < GetSession()->num_dirs )
+        if ( syscfg.newuploads < sess->num_dirs )
         {
             upload( static_cast<int>( syscfg.newuploads ) );
         }
@@ -1356,7 +1354,7 @@ void Upload()
     }
     else
     {
-        upload( udir[GetSession()->GetCurrentFileArea()].subnum );
+        upload( udir[sess->GetCurrentFileArea()].subnum );
     }
 }
 
@@ -1370,8 +1368,8 @@ void YourInfoDL()
 void UploadToSysop()
 {
     printfile( ZUPLOAD_NOEXT );
-    GetSession()->bout.NewLine( 2 );
-    GetSession()->bout << "Sending file to sysop :-\r\n\n";
+    nl( 2 );
+    sess->bout << "Sending file to sysop :-\r\n\n";
     upload( 0 );
 }
 
@@ -1390,7 +1388,7 @@ void GuestApply()
     }
     else
     {
-        GetSession()->bout << "You already have an account on here!\r\n\r\n";
+        sess->bout << "You already have an account on here!\r\n\r\n";
     }
 }
 
@@ -1405,7 +1403,7 @@ bool GuestCheck()
 {
     if ( guest_user )
     {
-        GetSession()->bout << "|#6This command is only for registered users.\r\n";
+        sess->bout << "|#6This command is only for registered users.\r\n";
         return false;
     }
     return true;
@@ -1414,11 +1412,11 @@ bool GuestCheck()
 
 void SetSubNumber( char *pszSubKeys )
 {
-    for ( int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1); i++ )
+    for ( int i = 0; (i < sess->num_subs) && (usub[i].subnum != -1); i++ )
     {
         if ( wwiv::stringUtils::IsEquals( usub[i].keys, pszSubKeys ) )
         {
-            GetSession()->SetCurrentMessageArea( i );
+            sess->SetCurrentMessageArea( i );
         }
     }
 }
@@ -1426,11 +1424,11 @@ void SetSubNumber( char *pszSubKeys )
 
 void SetDirNumber(char *pszDirectoryKeys)
 {
-    for ( int i = 0; i < GetSession()->num_dirs; i++ )
+    for ( int i = 0; i < sess->num_dirs; i++ )
     {
         if ( wwiv::stringUtils::IsEquals( udir[i].keys, pszDirectoryKeys ) )
         {
-            GetSession()->SetCurrentFileArea( i );
+            sess->SetCurrentFileArea( i );
         }
     }
 }

@@ -33,14 +33,13 @@ char cur_path[STRING], cur_from[STR], cur_subject[STR], cur_replyto[STR];
 char cur_newsgroups[BIGSTR], cur_message_ID[STR], cur_organization[STR];
 char cur_articleid[STR], cur_references[STRING], cur_lines[STR], cur_date[STR];
 static char whichrc, g_szMainDirectory[_MAX_PATH];
-int instance, crossposts, newsrc_upd, binxpost;
-bool MOREINFO,  QUIET;
+int instance, crossposts, newsrc_upd, binxpost, MOREINFO, QUIET;
 static int spooltodisk, NNTP_stat;
 unsigned long reparticle, cur_numa, cur_first, cur_last;
 time_t cur_daten;
 unsigned short reply, sy;
 static char NEWSNAME[60], NEWSPASS[60];
-static bool DEBUG = true;
+static int DEBUG = 1;
 char net_data[MAX_PATH];
 
 
@@ -71,13 +70,15 @@ NEWSHOST *newshosts;
     case 1 :                                                              \
       fprintf(stderr, "\n ! Session error : sockerr");                    \
       if (grouprec != NULL) write_groups(1);                              \
-      _fcloseall();                                                        \
+      fcloseall();                                                        \
+      cursor('R');                                                        \
       WSACleanup();                                                       \
       exit(EXIT_FAILURE);                                                 \
     case -1:                                                              \
       fprintf(stderr, "\n ! Timeout : sockerr");                          \
       if (grouprec != NULL) write_groups(1);                              \
-      _fcloseall();                                                        \
+      fcloseall();                                                        \
+      cursor('R');                                                        \
       WSACleanup();                                                       \
       exit(EXIT_FAILURE);                                                 \
   }                                                                       \
@@ -94,6 +95,22 @@ char *ordinal_text(int number)
 }
 
 static unsigned cursize;
+
+void cursor(int tmp)
+{
+    switch (toupper(tmp)) 
+    {
+    case 'S':                               /* Save */
+        break;
+    case 'R':                               /* Restore */
+        break;
+    case 'H':                               /* Hide */
+        break;
+    case 'N':                               /* Normal */
+        break;
+    }
+}
+
 
 void rename_pend( char *pszFileName )
 {
@@ -161,7 +178,7 @@ void write_groups( int display )
 	}
 	for ( int i = 0; i < ngroups; i++ )
 	{
-		if ( *grouprec[i].groupname && _stricmp(grouprec[i].groupname, "newsrc") != 0 )
+		if ( *grouprec[i].groupname && stricmp(grouprec[i].groupname, "newsrc") != 0 )
 		{
 			fprintf(hGroup, "%s %lu %s\n", grouprec[i].groupname, grouprec[i].lastread, grouprec[i].subtype);
 		}
@@ -224,7 +241,7 @@ int read_groups()
 		if (*tmp) 
 		{
             trimstr1( tmp );
-			if (_strnicmp(tmp, "newsrc", 6) == 0) 
+			if (strnicmp(tmp, "newsrc", 6) == 0) 
 			{
 				strcpy(grouprec[i].groupname, "newsrc");
 				++i;
@@ -240,7 +257,7 @@ int read_groups()
 					ss = strtok(NULL, " \n");
 					if (ss) 
 					{
-						strcpy(grouprec[i].subtype, _strupr(ss));
+						strcpy(grouprec[i].subtype, strupr(ss));
 						++i;
 					}
 				}
@@ -275,7 +292,7 @@ int read_groups()
 				}
 				if (!ok)
 				{
-					log_it( true, "\n \xFE @32767 not listed as a subscriber in N%s.NET!",
+					log_it(1, "\n \xFE @32767 not listed as a subscriber in N%s.NET!",
 					grouprec[i].subtype);
 				}
 			}
@@ -312,13 +329,13 @@ bool sendauthinfo(SOCKET sock)
 			} 
 			else 
 			{
-				log_it( true, "\n \xFE Authentication failed.  Aborting news session.");
+				log_it(1, "\n \xFE Authentication failed.  Aborting news session.");
 				return false;
 			}
 		} 
 		else 
 		{
-			log_it( true, "\n \xFE Unknown AUTHINFO response %s.", g_szTempBuffer);
+			log_it(1, "\n \xFE Unknown AUTHINFO response %s.", g_szTempBuffer);
 			return false;
 		}
 	}
@@ -400,10 +417,10 @@ int jgets(char *buf, int maxlen)
 	while (!done) 
 	{
 		zeroflag = 0;
-		if ((c = _getch()) == 0) 
+		if ((c = getch()) == 0) 
 		{
 			zeroflag = 1;
-			c = _getch();
+			c = getch();
 		}
 		switch (c) 
 		{
@@ -424,19 +441,19 @@ int jgets(char *buf, int maxlen)
 					}
 					pos--;
 					length--;
-					_putch(8);
+					putch(8);
 					for (i = pos; i < length; i++)
 					{
-						_putch(temp[i]);
+						putch(temp[i]);
 					}
 					for (i = length; i >= pos; i--)
 					{
-						_putch(8);
+						putch(8);
 					}
 				} 
 				else 
 				{
-					_putch(8);
+					putch(8);
 					pos = --length;
 				}
 				break;
@@ -463,7 +480,7 @@ int jgets(char *buf, int maxlen)
 				{
 					length++;
 				}
-				_putch(c);
+				putch(c);
 			} 
 			else 
 			{
@@ -472,14 +489,14 @@ int jgets(char *buf, int maxlen)
 					temp[i + 1] = temp[i];
 				}
 				temp[pos++] = ( char ) c;
-				_putch(c);
+				putch(c);
 				for (i = pos; i < length; i++)
 				{
-					_putch(temp[i]);
+					putch(temp[i]);
 				}
 				for (i = length; i > pos; i--)
 				{
-					_putch(8);
+					putch(8);
 				}
 			}
 		}
@@ -543,7 +560,7 @@ int savebody(SOCKET sock, char *pszFileName, int cug, unsigned long cur_article,
 		sh_write(hFile, "\n", sizeof(char));
 		if (spooltodisk) 
 		{
-			if ( MOREINFO && !QUIET )
+			if ((MOREINFO) && (!QUIET))
 			{
 				output("\n \xFE NEWS%d.UUE - [Esc], [Space], [Tab], ] = +10, } = +100, + = User Input [-]", cug);
 			}
@@ -622,9 +639,9 @@ int savebody(SOCKET sock, char *pszFileName, int cug, unsigned long cur_article,
 		curpos = 0L;
 		for( ;; ) 
 		{
-			while (_kbhit()) 
+			while (kbhit()) 
 			{
-				ch = ( char ) (_getch());
+				ch = ( char ) (getch());
 				spin = "..oOOOo.";
 				length = strlen(spin);
 				switch (ch) 
@@ -722,13 +739,13 @@ int savebody(SOCKET sock, char *pszFileName, int cug, unsigned long cur_article,
 				sh_write(hFile, buf, strlen(buf));
 				sh_close(hFile);
 				sprintf(pszFileName, "%sSPOOL\\INPUT%d.MSG", net_data, ++part);
-				_unlink(pszFileName);
+				unlink(pszFileName);
 				if ((hFile = sh_open(pszFileName, O_WRONLY | O_TEXT | O_CREAT | O_TRUNC, S_IWRITE)) < 0) 
 				{
 					log_it(MOREINFO, "\n \xFE Unable to create %s", pszFileName);
 					return 0;
 				}
-				if (MOREINFO && !QUIET) 
+				if ((MOREINFO) && (!QUIET)) 
 				{
 					backline();
 					output("\r \xFE Breaking into %d%s part [ ]", (part), ordinal_text(part));
@@ -761,7 +778,7 @@ bool extract( char *to, char *key, char *from )
 {
     int nKeyLen = strlen( key );
     //printf( "[Extract: keylen=%d]", nKeyLen );
-	if ( !_strnicmp( from, key, strlen( key ) ) ) 
+	if ( !strnicmp( from, key, strlen( key ) ) ) 
 	{
 		from += strlen( key );
 		while ( *from == ' ' )
@@ -870,13 +887,13 @@ SOCKET netsocket(char *host)
 		}
 		else
 		{
-			log_it( true, "\n \xFE Error : Cannot resolve host %s", host);
+			log_it(1, "\n \xFE Error : Cannot resolve host %s", host);
 			return INVALID_SOCKET;
 		}
 	}
 	if ( connect( sock, ( SOCKADDR *) &sockAddr, sizeof ( sockAddr ) ) == SOCKET_ERROR )
 	{
-		log_it( true, "\n \xFE Error : Unable to connect to %s", host);
+		log_it(1, "\n \xFE Error : Unable to connect to %s", host);
 		return INVALID_SOCKET;
 	}
 
@@ -889,13 +906,13 @@ SOCKET netsocket(char *host)
 		log_it(MOREINFO, "\n \xFE Connection to %s accepted...", host);
 		return sock;
     case 502:
-		log_it( true, "\n \xFE Connection to %s refused... try again later.", host);
+		log_it(1, "\n \xFE Connection to %s refused... try again later.", host);
 		break;
     case 503:
-		log_it( true, "\n \xFE NNTP service unavailable. Connection to %s refused.", host);
+		log_it(1, "\n \xFE NNTP service unavailable. Connection to %s refused.", host);
 		break;
     default:
-		log_it( true, "\n \xFE Unknown NNTP error. Connection to %s failed.", host);
+		log_it(1, "\n \xFE Unknown NNTP error. Connection to %s failed.", host);
 		break;
 	}
 	NEWS_SOCK_READ_ERR(NNTP);
@@ -999,15 +1016,15 @@ int saveactive(SOCKET sock, int forced)
 		fnday = ft->tm_mday+1;
 		fnmonth = ft->tm_mon+1;
 		fnyear = ft->tm_year + 1900;
-		log_it( true, "\n \xFE NEWSRC last updated %02u/%02u/%04u %.2u:%.2u:%.2u... ", fnmonth, fnday, fnyear, fnhour, fnminute, fnsecond );
+		log_it( 1, "\n \xFE NEWSRC last updated %02u/%02u/%04u %.2u:%.2u:%.2u... ", fnmonth, fnday, fnyear, fnhour, fnminute, fnsecond );
 		if ( d->tm_mday == ft->tm_mday && d->tm_mon == ft->tm_mon && d->tm_year == ft->tm_year ) 
 		{
-			log_it( true, "no update required.");
+			log_it(1, "no update required.");
 			return 0;
 		} 
 		else
 		{
-			log_it( true, "updating.");
+			log_it(1, "updating.");
 		}
 		if ( d->tm_mon == ft->tm_mon && d->tm_mday != ft->tm_mday )
 		{
@@ -1069,7 +1086,7 @@ int saveactive(SOCKET sock, int forced)
                 }
 				if (inloop > 10) 
                 {
-					log_it( true, "Looping problem at %s", g_szTempBuffer);
+					log_it(1, "Looping problem at %s", g_szTempBuffer);
 					if (fp != NULL)
                     {
 						fclose(fp);
@@ -1091,11 +1108,11 @@ int saveactive(SOCKET sock, int forced)
             {
 				if (count == 0)
                 {
-					log_it( true, "\b\b\b\b\b\b\bNo new groups.");
+					log_it(1, "\b\b\b\b\b\b\bNo new groups.");
                 }
 				else
                 {
-					log_it( true, "\b\b\b\b\b\b\b%lu group%s added to NEWSRC.", count,
+					log_it(1, "\b\b\b\b\b\b\b%lu group%s added to NEWSRC.", count,
 					count == 1 ? "" : "s");
                 }
 			} 
@@ -1144,15 +1161,15 @@ int saveactive(SOCKET sock, int forced)
 	return 0;
 }
 
-bool checkx(int cug)
+int checkx(int cug)
 {
 	char *ptr, *ptr2, *ptr3, szFileName[_MAX_PATH], buf[256], tmp[STR];
-	int i, max;
+	int i, spam, max;
 	FILE *fp;
 	
 	if ((stristr(grouprec[cug].groupname, "binaries")) && (binxpost))
 	{
-		return true;
+		return 1;
 	}
 	
 	sprintf(buf, "%s!%s", POPNAME, POPDOMAIN);
@@ -1163,7 +1180,7 @@ bool checkx(int cug)
 		{
 			output("%-53.53s", buf);
 		}
-		return true;
+		return 0;
 	}
 	if (stristr(cur_organization, syscfg.systemname) != 0) 
 	{
@@ -1172,14 +1189,14 @@ bool checkx(int cug)
 		{
 			output("%-53.53s", buf);
 		}
-		return true;
+		return 0;
 	}
 	bool ok = true;
-	bool spam = false;
+	spam = 0;
 	sprintf(szFileName, "%sNOSPAM.TXT", net_data);
 	if ((fp = fsh_open(szFileName, "r")) != NULL) 
 	{
-		while (!feof(fp) && !spam) 
+		while ((!feof(fp)) && (!spam)) 
 		{
 			fgets(buf, 80, fp);
 			trimstr1(buf);
@@ -1193,7 +1210,7 @@ bool checkx(int cug)
 				}
 				if (buf[0] == '[') 
 				{
-					if ((_strnicmp(buf, "[GLOBAL]", 8) == 0) || (_strnicmp(buf, "[NEWS]", 6) == 0))
+					if ((strnicmp(buf, "[GLOBAL]", 8) == 0) || (strnicmp(buf, "[NEWS]", 6) == 0))
 					{
 						ok = true;
 					}
@@ -1202,21 +1219,21 @@ bool checkx(int cug)
 						ok = false;
 					}
 				}
-				if (ok && ((stristr(cur_subject, buf)) || (stristr(cur_from, buf)))) 
+				if ((ok) && ((stristr(cur_subject, buf)) || (stristr(cur_from, buf)))) 
 				{
 					sprintf(tmp, "SPAM - %s - skipped.", buf);
 					if (!QUIET)
 					{
 						output("%-53.53s", tmp);
 					}
-					spam = true;
+					spam = 1;
 				}
 			}
 		}
 		fclose(fp);
 		if (spam)
 		{
-			return false;
+			return 0;
 		}
 	}
 	ptr = cur_newsgroups;
@@ -1255,14 +1272,14 @@ bool checkx(int cug)
 		ptr = ptr2;
 		for (i = 0; i < cug; i++) 
 		{
-			if (_strcmpi(buf, grouprec[i].groupname) == 0) 
+			if (strcmpi(buf, grouprec[i].groupname) == 0) 
 			{
 				sprintf(buf, "Already posted in %s.", grouprec[i].groupname);
 				if (!QUIET)
 				{
 					output("%-53.53s", buf);
 				}
-				return false;
+				return 0;
 			}
 		}
 		if ((crossposts > 0) && (max > crossposts)) 
@@ -1272,10 +1289,10 @@ bool checkx(int cug)
 			{
 				output("%-53.53s", buf);
 			}
-			return false;
+			return 0;
 		}
 	}
-	return true;
+	return 1;
 }
 
 
@@ -1284,7 +1301,7 @@ bool verify_server(char *stype)
 	for (int i = 0; i < ngroups; i++) 
 	{
 		long l = strlen(grouprec[i].subtype);
-		if (_strnicmp(grouprec[i].subtype, stype, l) == 0)
+		if (strnicmp(grouprec[i].subtype, stype, l) == 0)
 		{
 			return true;
 		}
@@ -1328,7 +1345,7 @@ int postnews( SOCKET sock, int cug )
 			}
 			else
 			{
-				log_it( true, "\n \xFE Remote error: %s", g_szTempBuffer);
+				log_it(1, "\n \xFE Remote error: %s", g_szTempBuffer);
 			}
 			return 0;
 		}
@@ -1367,7 +1384,7 @@ int postnews( SOCKET sock, int cug )
 		}
 		fclose(fp);
 		sock_puts(sock, ".");
-		if (MOREINFO && !QUIET)
+		if ((MOREINFO) && (!QUIET))
 		{
 			output("\n \xFE Awaiting acknowledgement - may take several minutes...");
 		}
@@ -1383,11 +1400,11 @@ int postnews( SOCKET sock, int cug )
 				ss = strtok(NULL, " ");
 				if (atoi(ss) == 435)
 				{
-					_unlink(s);
+					unlink(s);
 				}
 				_splitpath(s, NULL, NULL, s1, s2);
-				log_it( true, s2);
-				if (_unlink(s) == 0)
+				log_it(MOREINFO, "\n \xFE %s%s not accepted by server - nothing posted", s1, s2);
+				if (unlink(s) == 0)
 				{
 					log_it(MOREINFO, "\n \xFE Deleted message - %s", s);
 				}
@@ -1399,7 +1416,7 @@ int postnews( SOCKET sock, int cug )
 		} 
 		else 
 		{
-			if (_unlink(s) == 0)
+			if (unlink(s) == 0)
 			{
 				log_it(MOREINFO, "\n \xFE Deleted sent message - %s", s);
 			}
@@ -1424,7 +1441,7 @@ void get_subtype(int sub, char *where)
 		return;
     }
 	bool ok = false;
-	while (fgets(s, sizeof(s)-1, fp)) 
+	while (fgets(s, 80, fp)) 
     {
 		if (*s == '!') 
         {
@@ -1442,7 +1459,7 @@ void get_subtype(int sub, char *where)
             {
 				fclose(fp);
             }
-			if ((_stricmp(net_name, "FILENET") == 0)) 
+			if ((stricmp(net_name, "FILENET") == 0)) 
             {
 				trimstr1(ss);
 				strcpy(where, ss);
@@ -1502,7 +1519,7 @@ unsigned long max_on_sub(int cug)
 			fseek(fp, (long) i * sizeof(subboardrec), SEEK_SET);
 			fread(&sub, sizeof(subboardrec), 1, fp);
 			get_subtype(i, subtype);
-			if (_stricmp(subtype, grouprec[cug].subtype) == 0) 
+			if (stricmp(subtype, grouprec[cug].subtype) == 0) 
 			{
 				max = (unsigned long) sub.maxmsgs;
 				if (!QUIET) 
@@ -1527,8 +1544,7 @@ unsigned long max_on_sub(int cug)
 
 int getnews(SOCKET sock)
 {
-    int nup, nug, cug, abort, ok, done, parts, skipped, bogus;
-	bool firstrun;
+    int nup, nug, cug, abort, ok, done, firstrun, parts, skipped, bogus;
     char *p, szFileName[_MAX_PATH], mailname[121], reline[121], pktname[_MAX_PATH];
     char ch, orig_subj[STRING], buf[STR];
     unsigned int text_len;
@@ -1540,7 +1556,7 @@ int getnews(SOCKET sock)
 
     abort = cug = bogus = 0;
 
-    if (_stricmp(grouprec[0].groupname, "newsrc") == 0) 
+    if (stricmp(grouprec[0].groupname, "newsrc") == 0) 
     {
         if (!saveactive(sock, 1)) 
         {
@@ -1560,7 +1576,7 @@ int getnews(SOCKET sock)
     skipped = 0;
     cslave(sock);
     name_packet(pktname);
-    if (!MOREINFO && !QUIET)
+    if ((!MOREINFO) && (!QUIET))
     {
         output("\n \xFE [Esc] aborts session - [Space] skips group - [Tab] catches up group");
     }
@@ -1600,7 +1616,7 @@ int getnews(SOCKET sock)
                     }
                     if (++bogus > 10) 
                     {
-                        log_it( true, "\n \xFE Too many invalid newsgroups... NEWS.RC error?");
+                        log_it(1, "\n \xFE Too many invalid newsgroups... NEWS.RC error?");
                         return false;
                     }
                     log_it(!QUIET, "\n \xFE Error accessing - %s", grouprec[cug].groupname);
@@ -1743,7 +1759,7 @@ int getnews(SOCKET sock)
                     sprintf(szFileName, "%sSPOOL\\INPUT1.MSG", net_data);
                 }
                 abort = 0;
-                _fcloseall();
+                fcloseall();
                 ok = savebody(sock, szFileName, cug, grouprec[cug].lastread, &abort);
                 if (QUIET)
                 {
@@ -1766,12 +1782,12 @@ int getnews(SOCKET sock)
                         parts = 1;
                         done = 0;
                     }
-                    firstrun = true;
+                    firstrun = 1;
                     while (!done) 
                     {
                         sprintf(szFileName, "%sSPOOL\\%s", net_data, ff.name);
                         int hInputFile = sh_open1(szFileName, O_RDONLY | O_BINARY);
-                        text_len = (unsigned int) _filelength( hInputFile );
+                        text_len = (unsigned int) filelength( hInputFile );
                         if (text_len > 32000L) 
                         {
                             log_it(MOREINFO, "\n \xFE Truncating %lu bytes from input file",
@@ -1802,7 +1818,7 @@ int getnews(SOCKET sock)
                         }
                         nh.list_len = 0;
                         ++cur_daten;
-                        nh.daten = static_cast<unsigned long>(cur_daten);
+                        nh.daten = cur_daten;
                         nh.method = 0;
                         if (parts > 1) 
                         {
@@ -1821,8 +1837,8 @@ int getnews(SOCKET sock)
 						}
                         if (firstrun) 
                         {
-                            firstrun = false;
-                            if (_strnicmp(cur_articleid, "re: ", 4) == 0) 
+                            firstrun = 0;
+                            if (strnicmp(cur_articleid, "re: ", 4) == 0) 
                             {
                                 strncpy(reline, cur_articleid, 60);
                                 sprintf(cur_articleid, "Re: %s\r\n\r\n", reline);
@@ -1851,7 +1867,7 @@ int getnews(SOCKET sock)
                         {
                             free(p);
                         }
-                        _unlink(szFileName);
+                        unlink(szFileName);
                         nFindNext = _findnext( hFind, &ff );
                         if ( nFindNext == 0 ) 
                         {
@@ -1863,7 +1879,7 @@ int getnews(SOCKET sock)
                             done = 1;
                         }
                     }
-                    if (_filelength(_fileno(fp)) > 250000L)
+                    if (filelength(fileno(fp)) > 250000L)
                     {
                         nup = 1;
                     }
@@ -1878,9 +1894,9 @@ int getnews(SOCKET sock)
                 skipped = 1;
             }
             ++grouprec[cug].lastread;
-            while (_kbhit()) 
+            while (kbhit()) 
             {
-                ch = ( char ) (_getch());
+                ch = ( char ) (getch());
                 switch (ch) 
                 {
                 case '+':
@@ -1976,7 +1992,7 @@ int getnews(SOCKET sock)
     nntp_shutdown(sock);
     if (abort)
     {
-        log_it( true, "\n \xFE Session aborted from keyboard");
+        log_it(1, "\n \xFE Session aborted from keyboard");
     }
     return true;
 }
@@ -2008,7 +2024,7 @@ int read_newshosts()
         {
             continue;
         }
-        if (_strnicmp(line, "NEWSHOST", 8) == 0) 
+        if (strnicmp(line, "NEWSHOST", 8) == 0) 
         {
             if (isdigit(line[8])) 
             {
@@ -2023,7 +2039,7 @@ int read_newshosts()
                     rewind(fp);
                     while (fgets(line, 80, fp)) 
                     {
-                        if ((_strnicmp(line, "NEWSNAME", 8) == 0) && (line[8] == chk)) 
+                        if ((strnicmp(line, "NEWSNAME", 8) == 0) && (line[8] == chk)) 
                         {
                             ss = strtok(line, "=");
                             if (ss) 
@@ -2033,7 +2049,7 @@ int read_newshosts()
                                 strcpy(newshosts[num].newsname, ss);
                             }
                         }
-                        if ((_strnicmp(line, "NEWSPASS", 8) == 0) && (line[8] == chk)) 
+                        if ((strnicmp(line, "NEWSPASS", 8) == 0) && (line[8] == chk)) 
                         {
                             ss = strtok(line, "=");
                             if (ss) 
@@ -2068,7 +2084,7 @@ int GetInstanceNumber()
         nInstanceNumber = atoi(ss);
         if ( nInstanceNumber <= 0 || nInstanceNumber >= 1000 )
         {
-            log_it( true, "\n \xFE WWIV_INSTANCE set to %d.  Can only be 1..999!", nInstanceNumber);
+            log_it(1, "\n \xFE WWIV_INSTANCE set to %d.  Can only be 1..999!", nInstanceNumber);
             nInstanceNumber = 1;
         }
     } 
@@ -2083,6 +2099,7 @@ bool ReadConfig()
     if (hFile < 0) 
     {
         output("\n \xFE %s NOT FOUND.", szFileName);
+        cursor('R');
         return false;
     }
     sh_read(hFile, (void *) (&syscfg), sizeof(configrec));
@@ -2100,7 +2117,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
     if ((fp = fsh_open(szFileName, "rt")) == NULL)
     {
         output("\n \xFE Unable to read %s", szFileName);
-        log_it( true, "\n \xFE Unable to read %s", szFileName);
+        log_it( 1, "\n \xFE Unable to read %s", szFileName);
         return false;
     }
 
@@ -2116,7 +2133,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
         {
             continue;
         }
-        if ((_strnicmp(s, "POPNAME", 7) == 0) && (POPNAME[0] == 0)) 
+        if ((strnicmp(s, "POPNAME", 7) == 0) && (POPNAME[0] == 0)) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2126,7 +2143,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 strcpy(POPNAME, ss);
             }
         }
-        if (_strnicmp(s, "FWDNAME", 7) == 0) 
+        if (strnicmp(s, "FWDNAME", 7) == 0) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2136,7 +2153,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 strcpy(POPNAME, ss);
             }
         }
-        if ((_strnicmp(s, "DOMAIN", 6) == 0) && (POPDOMAIN[0] == 0)) 
+        if ((strnicmp(s, "DOMAIN", 6) == 0) && (POPDOMAIN[0] == 0)) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2146,7 +2163,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 strcpy(POPDOMAIN, ss);
             }
         }
-        if (_strnicmp(s, "FWDDOM", 6) == 0) 
+        if (strnicmp(s, "FWDDOM", 6) == 0) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2156,7 +2173,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 strcpy(POPDOMAIN, ss);
             }
         }
-        if (_strnicmp(s, "XPOSTS", 6) == 0) 
+        if (strnicmp(s, "XPOSTS", 6) == 0) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2170,7 +2187,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 }
             }
         }
-        if (_strnicmp(s, "MOREINFO", 8) == 0) 
+        if (strnicmp(s, "MOREINFO", 8) == 0) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2179,11 +2196,11 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 trimstr1(ss);
                 if ((ss[0] == 'n') || (ss[0] == 'N'))
                 {
-                    MOREINFO = false;
+                    MOREINFO = 0;
                 }
             }
         }
-        if (_strnicmp(s, "QUIET", 5) == 0) 
+        if (strnicmp(s, "QUIET", 5) == 0) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2192,11 +2209,11 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 trimstr1(ss);
                 if ((ss[0] == 'y') || (ss[0] == 'Y'))
                 {
-                    QUIET = true;
+                    QUIET = 1;
                 }
             }
         }
-        if (_strnicmp(s, "BINXPOST", 8) == 0) 
+        if (strnicmp(s, "BINXPOST", 8) == 0) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2209,7 +2226,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 }
             }
         }
-        if (_strnicmp(s, "NEWSRC_UPD", 9) == 0) 
+        if (strnicmp(s, "NEWSRC_UPD", 9) == 0) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2222,7 +2239,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 }
             }
         }
-        if ((_strnicmp(s, "NEWSNAME", 8) == 0) && (!bUseMultiNewsHosts)) 
+        if ((strnicmp(s, "NEWSNAME", 8) == 0) && (!bUseMultiNewsHosts)) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2232,7 +2249,7 @@ bool ReadNetIniFile( bool bUseMultiNewsHosts )
                 strcpy(NEWSNAME, ss);
             }
         }
-        if ((_strnicmp(s, "NEWSPASS", 8) == 0) && (!bUseMultiNewsHosts)) 
+        if ((strnicmp(s, "NEWSPASS", 8) == 0) && (!bUseMultiNewsHosts)) 
         {
             ss = strtok(s, "=");
             if (ss) 
@@ -2263,7 +2280,7 @@ void BackupNewsFile()
     strcat( szTempFileName, ".BAK" );
     if (exist(szTempFileName))
     {
-        _unlink(szTempFileName);
+        unlink(szTempFileName);
     }
     copyfile(szFileName, szTempFileName);
 }
@@ -2277,17 +2294,20 @@ int main(int argc, char *argv[])
     crossposts = 10;
     binxpost = 0;
     newsrc_upd = 0;
-    MOREINFO = true;
-    QUIET = false;
+    MOREINFO = 1;
+    QUIET = 0;
     POPNAME[0] = 0;
     POPDOMAIN[0] = 0;
     whichrc = '\0';
 
+    cursor('S');
+    cursor('H');
     output("\n \xFE %s", version);
 
     if (argc != 4) 
     {
         output("\n \xFE Invalid arguments for %s\n", argv[0]);
+        cursor('R');
         WSACleanup();
         return EXIT_FAILURE;
     }
@@ -2331,7 +2351,7 @@ int main(int argc, char *argv[])
 
     if ( !InitializeWinsock() )
     {
-        log_it( true, "\n Unable to initialize WinSock, Exiting...\n" );
+        log_it( 1, "\n Unable to initialize WinSock, Exiting...\n" );
         WSACleanup();
         return EXIT_FAILURE;
     }
@@ -2349,21 +2369,22 @@ int main(int argc, char *argv[])
 
         if (read_groups() == 0) 
         {
-            output("\n \xFE Unable to _access newsgroup file NEWS%c.RC!", whichrc);
+            output("\n \xFE Unable to access newsgroup file NEWS%c.RC!", whichrc);
+            cursor('R');
             WSACleanup();
             return EXIT_FAILURE;
         } 
 
         BackupNewsFile();
 
-        if (_stricmp(grouprec[0].groupname, "newsrc") == 0)
+        if (stricmp(grouprec[0].groupname, "newsrc") == 0)
         {
-            log_it( true, "\n \xFE Forced retrieval of newsgroup listing from %s.",
+            log_it(1, "\n \xFE Forced retrieval of newsgroup listing from %s.",
                 serverhost);
         }
         else
         {
-            log_it( false, "\n \xFE %u newsgroup%s defined in NEWS.RC.", ngroups,
+            log_it(0, "\n \xFE %u newsgroup%s defined in NEWS.RC.", ngroups,
                 ngroups == 1 ? "" : "s");
         }
 
@@ -2385,12 +2406,12 @@ int main(int argc, char *argv[])
             }
             if (!ok)
             {
-                log_it( true, "\n \xFE NEWS exited with an error.");
+                log_it(1, "\n \xFE NEWS exited with an error.");
             }
             sock = INVALID_SOCKET;
         }
         cd_to(g_szMainDirectory);
-        log_it( true, "\n \xFE NEWS completed processing %d newsgroups", ngroups);
+        log_it(1, "\n \xFE NEWS completed processing %d newsgroups", ngroups);
         if (grouprec)
         {
             free(grouprec);
@@ -2400,6 +2421,7 @@ int main(int argc, char *argv[])
         NEWSPASS[0] = '\0';
     }
     check_packets();
-    _fcloseall();
+    fcloseall();
+    cursor('R');
     return ( ok ) ? 0 : 1;
 }

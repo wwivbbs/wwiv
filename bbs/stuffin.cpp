@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2004, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "WStringUtils.h"
 
 
 static void stuff_in_num( char *pszOutBuffer, char *pszFormatString,
@@ -116,9 +117,9 @@ void stuff_in( char *pszOutCommandLine, const char *pszInCommandLine,
                 break;
             case 'K':
                 {
-                    char szFileName[ MAX_PATH ];
-                    snprintf( szFileName, sizeof( szFileName ), "%s%s", syscfg.gfilesdir, COMMENT_TXT );
-                    strcat( pszOutCommandLine, szFileName );
+                    char szFileName[MAX_PATH];
+                    sprintf(szFileName,"%s%s", syscfg.gfilesdir, COMMENT_TXT);
+                    strcat(pszOutCommandLine, szFileName);
                 }
                 break;
             case 'P':
@@ -128,7 +129,7 @@ void stuff_in( char *pszOutCommandLine, const char *pszInCommandLine,
                 break;
             case 'N':
                 {
-                    stuff_in_num( pszOutCommandLine, "%u", GetApplication()->GetInstanceNumber() );
+                    stuff_in_num( pszOutCommandLine, "%u", app->GetInstanceNumber() );
                 }
                 break;
             case 'S':
@@ -156,44 +157,32 @@ void stuff_in( char *pszOutCommandLine, const char *pszInCommandLine,
                 // chain.txt type filenames
             case 'C':
                 {
-                    std::string fileName;
-                    create_filename( CHAINFILE_CHAIN, fileName );
-                    strcat( pszOutCommandLine, fileName.c_str() );
+                    create_filename(CHAINFILE_CHAIN, pszOutCommandLine + nOutPtr);
                 }
                 break;
             case 'D':
                 {
-                    std::string fileName;
-                    create_filename(CHAINFILE_DORINFO, fileName);
-                    strcat( pszOutCommandLine, fileName.c_str() );
+                    create_filename(CHAINFILE_DORINFO, pszOutCommandLine + nOutPtr);
                 }
                 break;
             case 'O':
                 {
-                    std::string fileName;
-                    create_filename(CHAINFILE_PCBOARD, fileName);
-                    strcat( pszOutCommandLine, fileName.c_str() );
+                    create_filename(CHAINFILE_PCBOARD, pszOutCommandLine + nOutPtr);
                 }
                 break;
             case 'A':
                 {
-                    std::string fileName;
-                    create_filename(CHAINFILE_CALLINFO, fileName);
-                    strcat( pszOutCommandLine, fileName.c_str() );
+                    create_filename(CHAINFILE_CALLINFO, pszOutCommandLine + nOutPtr);
                 }
                 break;
             case 'R':
                 {
-                    std::string fileName;
-                    create_filename(CHAINFILE_DOOR, fileName );
-                    strcat( pszOutCommandLine, fileName.c_str() );
+                    create_filename(CHAINFILE_DOOR, pszOutCommandLine + nOutPtr);
                 }
                 break;
             case 'E':
                 {
-                    std::string fileName;
-                    create_filename( CHAINFILE_DOOR32, fileName );
-                    strcat( pszOutCommandLine, fileName.c_str() );
+                    create_filename( CHAINFILE_DOOR32, pszOutCommandLine + nOutPtr );
                 }
                 break;
             }
@@ -220,7 +209,7 @@ static void stuff_in_num( char *pszOutBuffer, char *pszFormatString,
 	WWIV_ASSERT( pszOutBuffer );
 	WWIV_ASSERT( pszFormatString );
 
-    snprintf( szTemp, sizeof( szTemp ), pszFormatString, nNumber );
+    sprintf( szTemp, pszFormatString, nNumber );
     strcat( pszOutBuffer, szTemp );
 }
 
