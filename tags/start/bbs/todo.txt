@@ -1,0 +1,26 @@
+==============================================================================
+                             WWIV 5.0 TODO List
+                 Copyright 2002-2004 WWIV Software Services
+==============================================================================
+
+* Bug (crash) when adding an event when you have no events.dat 
+  (plus I'm sure plenty of other things, since I don't use the events)
+
+* NNTP Support in WWIVTelnetServer
+
+* Type-3 Message Base Support (JAM or SQUISH)
+
+* Cleanup /W4 warnings. (3?)
+
+* Fix blind uploads
+
+* More STL string usages
+
+* More C++ classes around C data structures
+
+* Let WUser take string& parameters in addition to const char * parameters
+
+* move g_flags into WSession
+
+* More streams usages
+
