@@ -234,12 +234,11 @@ int UIView::GetKey()
 /** main even loop */
 bool UIView::RunLoop()
 {
-    // maybe this should move back to desktop
-    UIView* view = UIView::GetActiveView();
     while ( true )
     {
         int key = GetKey();
         // bubble from active view to root view looking for someone to process this.
+        UIView* view = UIView::GetActiveView();
         while ( view != NULL && !view->ProcessKeyEvent( key ) )
         {
             view = view->GetParent();
