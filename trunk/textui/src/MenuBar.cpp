@@ -105,7 +105,7 @@ void UIMenuBar::ClearAllSelected()
 
 bool UIMenuBar::ProcessKeyEvent( int key )
 {
-    UIMenu* lastMenu = m_menus.at( m_currentMenu );
+    UIMenu* previousMenu = m_menus.at( m_currentMenu );
     switch ( key )
     {
     case KEY_LEFT:
@@ -117,12 +117,16 @@ bool UIMenuBar::ProcessKeyEvent( int key )
     default:
         return false;
     }
-    // Since we handled the key, we should make ourselves the active view.
-    if ( lastMenu != NULL )
-    {
-        lastMenu->HidePopupMenu();
-    }
+
+    // Since we handled the key, we should make ourselves or the 
+    // current menu the active view.
+    UIMenu* currentMenu = m_menus.at( m_currentMenu );
     UIView::SetActiveView( this );
-    //Paint();
+
+    if ( previousMenu != NULL )
+    {
+        previousMenu->HidePopupMenu();
+    }
+
     return true;
 }
