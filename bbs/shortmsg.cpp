@@ -67,7 +67,7 @@ void rsm( int nUserNum, WUser *pUser, bool bAskToSaveMsgs )
                     {
                         if ( !bHandledMessage && bAskToSaveMsgs )
                         {
-                            GetSession()->bout << "|10Would you like to save this notification? ";
+                            GetSession()->bout << "|#5Would you like to save this notification? ";
                             bHandledMessage = !yesno();
                         }
                     }

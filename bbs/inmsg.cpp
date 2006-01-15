@@ -99,7 +99,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     GetMessageTitle( pszTitle, force_title );
 	if ( pszTitle[0] == '\0' && needtitle )
 	{
-		GetSession()->bout << "|12Aborted.\r\n";
+		GetSession()->bout << "|#6Aborted.\r\n";
 		pMessageRecord->stored_as = 0xffffffff;
 		if (!fsed)
 		{
@@ -240,7 +240,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 		{
 			WFile::Remove(szExtEdFileName);
 		}
-		GetSession()->bout << "|12Aborted.\r\n";
+		GetSession()->bout << "|#6Aborted.\r\n";
 		pMessageRecord->stored_as = 0xffffffff;
 	}
 	if (!fsed)

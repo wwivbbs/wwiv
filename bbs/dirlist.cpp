@@ -81,20 +81,20 @@ void dirlist( int mode )
                 {
                     is = true;
                 }
-                std::string scanme = "|12No ";
+                std::string scanme = "|#6No ";
                 if ( qsc_n[ nDirectoryNumber / 32 ] & ( 1L << ( nDirectoryNumber % 32 ) ) )
                 {
-                    scanme = "|10Yes";
+                    scanme = "|#5Yes";
                 }
                 dliscan1( nDirectoryNumber );
                 if ( udir[GetSession()->GetCurrentFileArea()].subnum == udir[i1].subnum )
                 {
-                    sprintf( s, " |#9%3s |#9³ |12%3s |#9³|B1|15 %-40.40s |#9³ |#9%4ld|B0",
+                    sprintf( s, " |#9%3s |#9³ |#6%3s |#9³|B1|15 %-40.40s |#9³ |#9%4ld|B0",
                         udir[i1].keys, scanme.c_str(), directories[ nDirectoryNumber ].name, GetSession()->numf );
                 }
                 else
                 {
-                    sprintf( s, " |#9%3s |#9³ |12%3s |#9³ %s%-40.40s |#9³ |#9%4ld",
+                    sprintf( s, " |#9%3s |#9³ |#6%3s |#9³ %s%-40.40s |#9³ |#9%4ld",
                             udir[i1].keys, scanme.c_str(),
                             (((mode == 1) && (directories[udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
                             directories[ nDirectoryNumber ].name, GetSession()->numf );

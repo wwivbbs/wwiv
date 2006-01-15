@@ -31,7 +31,7 @@ void print_quest(int mapp, int map[21])
     }
     else
     {
-        GetSession()->bout << "|10Voting Questions:\r\n\n";
+        GetSession()->bout << "|#5Voting Questions:\r\n\n";
     }
     bool abort = false;
     WFile voteFile( syscfg.datadir, VOTING_DAT );
@@ -46,7 +46,7 @@ void print_quest(int mapp, int map[21])
         voteFile.Read( &v, sizeof( votingrec ) );
 
         char szBuffer[255];
-        snprintf( szBuffer, sizeof( szBuffer ), "|12%c |#2%2d|#7) |#1%s",
+        snprintf( szBuffer, sizeof( szBuffer ), "|#6%c |#2%2d|#7) |#1%s",
                  GetSession()->GetCurrentUser()->GetVote( map[ i ] ) ? ' ' : '*', i, v.question );
         pla( szBuffer, &abort );
     }
@@ -80,7 +80,7 @@ bool print_question( int i, int ii )
 
     GetSession()->bout.ClearScreen();
     char szBuffer[255];
-    sprintf( szBuffer, "%s%d", "|10Voting question #", i );
+    sprintf( szBuffer, "%s%d", "|#5Voting question #", i );
     pla( szBuffer, &abort );
     GetSession()->bout.Color( 1 );
     pla( v.question, &abort );
@@ -110,7 +110,7 @@ bool print_question( int i, int ii )
         {
             odc[ ( ( i3 + 1 ) / 10 ) - 1 ] = '0' + static_cast<char>( ( i3 + 1 ) / 10 );
         }
-        sprintf( szBuffer, "|#2%2d|#9) |#9%-60s   |13%4d  |#1%5.1f%%",
+        sprintf( szBuffer, "|#2%2d|#9) |#9%-60s   |#3%4d  |#1%5.1f%%",
                  i3 + 1, vr.response, vr.numresponses,
                  static_cast<float>( vr.numresponses ) / static_cast<float>( t1 ) * 100.0 );
         pla( szBuffer , &abort );
@@ -166,7 +166,7 @@ void vote_question(int i, int ii)
         return;
     }
 
-	GetSession()->bout << "|10Which (0-" << static_cast<int>( v.numanswers ) << ")? ";
+	GetSession()->bout << "|#5Which (0-" << static_cast<int>( v.numanswers ) << ")? ";
     GetSession()->bout.ColorizedInputField( 2 );
     char* pszAnswer = mmkey( 2 );
     int i1 = atoi( pszAnswer );
@@ -253,7 +253,7 @@ void vote()
     strcpy( sodc, odc );
     if ( mapp == 0 )
     {
-        GetSession()->bout << "\r\n\n|12No voting questions currently.\r\n\n";
+        GetSession()->bout << "\r\n\n|#6No voting questions currently.\r\n\n";
         return;
     }
     bool done = false;

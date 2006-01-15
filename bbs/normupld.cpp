@@ -74,7 +74,7 @@ void normalupload(int dn)
             {
                 szInputFileName[0] = '\0';
                 GetSession()->bout.NewLine();
-                GetSession()->bout << "|12File either already here or unwanted.\r\n";
+                GetSession()->bout << "|#6File either already here or unwanted.\r\n";
             }
         }
     }

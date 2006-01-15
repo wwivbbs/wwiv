@@ -333,7 +333,7 @@ bool upload_mod( int nDirectoryNumber, const char *pszFileName, const char *pszD
 	}
 	if ( !ok )
 	{
-		GetSession()->bout << "|12Aborted.\r\n";
+		GetSession()->bout << "|#6Aborted.\r\n";
 	}
 	if ( GetSession()->numf >= maxf )
 	{
@@ -460,7 +460,7 @@ void extract_out (char *b, long len, const char *pszTitle, time_t tDateTime )
 					WFile file( s3 );
 					if ( !file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite ) )
 					{
-						GetSession()->bout << "|12Could not open file for writing.\r\n";
+						GetSession()->bout << "|#6Could not open file for writing.\r\n";
 					}
 					else
 					{
@@ -538,7 +538,7 @@ void extract_out (char *b, long len, const char *pszTitle, time_t tDateTime )
 			WFile file( s2 );
 			if ( !file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite ) )
 			{
-				GetSession()->bout << "|12Could not open file for writing.\r\n";
+				GetSession()->bout << "|#6Could not open file for writing.\r\n";
 			}
 			else
 			{

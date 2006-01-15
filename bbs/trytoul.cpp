@@ -188,13 +188,13 @@ int try_to_ul_wh(char *pszFileName)
             GetSession()->bout << "|#5In filename database - add anyway? ";
             if (!yesno())
             {
-                t2u_error(pszFileName, "|12File either already here or unwanted.");
+                t2u_error(pszFileName, "|#6File either already here or unwanted.");
                 return 1;
             }
         }
         else
         {
-            t2u_error(pszFileName, "|12File either already here or unwanted.");
+            t2u_error(pszFileName, "|#6File either already here or unwanted.");
             return 1;
         }
     }

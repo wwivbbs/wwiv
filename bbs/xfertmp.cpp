@@ -813,7 +813,7 @@ void move_file_t()
     if (GetSession()->numbatch == 0)
     {
         GetSession()->bout.NewLine();
-        GetSession()->bout << "|12No files have been tagged for movement.\r\n";
+        GetSession()->bout << "|#6No files have been tagged for movement.\r\n";
         pausescr();
     }
     for ( int nCurBatchPos = GetSession()->numbatch - 1; nCurBatchPos >= 0; nCurBatchPos-- )

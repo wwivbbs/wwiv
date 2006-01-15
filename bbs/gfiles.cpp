@@ -594,7 +594,7 @@ void gfile_sec( int sn )
                         WFile file( szFileName );
                         if ( !file.Open( WFile::modeReadOnly | WFile::modeBinary ) )
                         {
-                            GetSession()->bout << "|12File not found : [" << file.GetFullPathName() << "]";
+                            GetSession()->bout << "|#6File not found : [" << file.GetFullPathName() << "]";
                         }
                         else
                         {

@@ -134,7 +134,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 					}
 					if (k)
 					{
-						GetSession()->bout << "|#9Current Message has |12" << k << "|#9";
+						GetSession()->bout << "|#9Current Message has |#6" << k << "|#9";
 						if (k == 1)
 						{
 							GetSession()->bout << "reply.";
@@ -569,7 +569,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			else if ( cs() && ( nMessageNumber > 0 ) && ( nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() ) )
 			{
 				GetSession()->bout.NewLine();
-				GetSession()->bout << "|12Post from another system.\r\n\n";
+				GetSession()->bout << "|#6Post from another system.\r\n\n";
 			}
 			break;
 		case 'N':
@@ -584,7 +584,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 				GetSession()->bout.NewLine();
 				if (p3->status & status_no_delete)
 				{
-					GetSession()->bout << "|#9Message will |12NOT|#9 be auto-purged.\r\n";
+					GetSession()->bout << "|#9Message will |#6NOT|#9 be auto-purged.\r\n";
 				}
 				else
 				{
@@ -726,7 +726,7 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 		set_net_num( get_post( nMessageNumber )->title[80] );
 		if (get_post( nMessageNumber )->title[80] == -1)
 		{
-			GetSession()->bout << "|12Deleted network.\r\n";
+			GetSession()->bout << "|#6Deleted network.\r\n";
 			return;
 		}
 	}
@@ -808,7 +808,7 @@ void HandleScanReadAutoReply( int &nMessageNumber, const char *pszUserInput, int
 					WFile fileExtract( szFileName );
 					if ( !fileExtract.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite ) )
 					{
-						GetSession()->bout << "|12Could not open file for writing.\r\n";
+						GetSession()->bout << "|#6Could not open file for writing.\r\n";
 					}
 					else
 					{
@@ -1186,7 +1186,7 @@ void HandleMessageMove( int &nMessageNumber )
 			long lMessageLen;
 			char *b = readfile(&(p2.msg), (subboards[GetSession()->GetCurrentReadMessageArea()].filename), &lMessageLen);
 			GetSession()->bout.NewLine();
-			GetSession()->bout << "|10Delete original post? ";
+			GetSession()->bout << "|#5Delete original post? ";
 			if (yesno())
 			{
 				delete_message(nMessageNumber);
@@ -1404,7 +1404,7 @@ void HandleListReplies( int nMessageNumber )
 			{
 				if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) )
 				{
-					GetSession()->bout << "    |#9Message #|12" << j << ".\r\n";
+					GetSession()->bout << "    |#9Message #|#6" << j << ".\r\n";
 					k++;
 				}
 			}

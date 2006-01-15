@@ -130,7 +130,7 @@ void modify_chain( int nCurrentChainNumber )
             s[1] = 0;
         }
         GetSession()->bout << "|#9D) AR           : |#2" << s << wwiv::endl;
-        GetSession()->bout << "|#9E) ANSI         : |#2" << ( ( c.ansir & ansir_ansi ) ? "|12Required" : "|#1Optional" ) << wwiv::endl;
+        GetSession()->bout << "|#9E) ANSI         : |#2" << ( ( c.ansir & ansir_ansi ) ? "|#6Required" : "|#1Optional" ) << wwiv::endl;
         GetSession()->bout << "|#9F) DOS Interrupt: |#2" << ( ( c.ansir & ansir_no_DOS ) ? "NOT Used" : "Used" ) << wwiv::endl;
         GetSession()->bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString( ( c.ansir & ansir_emulate_fossil ) ? true : false ) << wwiv::endl;
         //GetSession()->bout << "|#9I) Disable pause: |#2%s\r\n", YesNoString( ( c.ansir & ansir_no_pause ) ) << wwiv::endl;
@@ -509,7 +509,7 @@ void chainedit()
             if ( s[0] != '\0' && i >= 0 && i < GetSession()->GetNumberOfChains() )
             {
                 GetSession()->bout.NewLine();
-                GetSession()->bout << "|10Delete " << chains[i].description << "? ";
+                GetSession()->bout << "|#5Delete " << chains[i].description << "? ";
                 if (yesno())
                 {
                     delete_chain(i);

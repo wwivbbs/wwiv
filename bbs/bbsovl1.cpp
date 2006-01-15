@@ -51,7 +51,7 @@ void YourInfo()
     }
     else
     {
-        GetSession()->bout << "|10Your User Information:\r\n";
+        GetSession()->bout << "|#5Your User Information:\r\n";
     }
     GetSession()->bout.NewLine();
 	GetSession()->bout << "|#9Your name      : |#2" << GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) << wwiv::endl;
@@ -118,7 +118,7 @@ void upload_post()
         long lFileSize = file.GetLength();
         if ( lFileSize > lMaxBytes )
         {
-			GetSession()->bout << "\r\n|12Sorry, your message is too long.  Not saved.\r\n\n";
+			GetSession()->bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
             file.Close();
             file.Delete();
         }
@@ -131,7 +131,7 @@ void upload_post()
     }
     else
     {
-        GetSession()->bout << "\r\n|13Nothing saved.\r\n\n";
+        GetSession()->bout << "\r\n|#3Nothing saved.\r\n\n";
     }
 }
 
@@ -179,7 +179,7 @@ void edit_confs()
 
     while ( !hangup )
     {
-        GetSession()->bout << "\r\n\n|10Edit Which Conferences:\r\n\n";
+        GetSession()->bout << "\r\n\n|#5Edit Which Conferences:\r\n\n";
         GetSession()->bout << "|#21|#9)|#1 Subs\r\n";
         GetSession()->bout << "|#22|#9)|#1 Dirs\r\n";
         GetSession()->bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";
@@ -216,7 +216,7 @@ void feedback( bool bNewUserFeedback )
 
     if ( bNewUserFeedback )
     {
-        sprintf( irt, "|#1Validation Feedback (|12%d|#2 slots left|#1)", syscfg.maxusers - GetApplication()->GetStatusManager()->GetUserCount() );
+        sprintf( irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)", syscfg.maxusers - GetApplication()->GetStatusManager()->GetUserCount() );
         // We disable the fsed here since it was hanging on some systems.  Not sure why
         // but it's better to be safe -- Rushfan 2003-12-04
         email( 1, 0, true, 0, true, false );

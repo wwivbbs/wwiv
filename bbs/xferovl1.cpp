@@ -684,7 +684,7 @@ void tag_files()
 				if (directories[filelist[i].directory].mask & mask_cdrom)
 				{
 					GetSession()->bout.NewLine();
-					GetSession()->bout << "|13CD ROM DRIVE\r\n";
+					GetSession()->bout << "|#3CD ROM DRIVE\r\n";
 				}
 				else
 				{
@@ -692,7 +692,7 @@ void tag_files()
 					if ( !WFile::Exists( s ) )
 					{
 						GetSession()->bout.NewLine();
-						GetSession()->bout << "|12-=>FILE NOT THERE<=-\r\n";
+						GetSession()->bout << "|#6-=>FILE NOT THERE<=-\r\n";
 					}
 				}
 				GetSession()->bout.NewLine();
@@ -1251,7 +1251,7 @@ void endlist(int mode)
 		}
 		else
 		{
-            GetSession()->bout << ( mode == 1 ) ? "\r|13No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n";
+            GetSession()->bout << ( mode == 1 ) ? "\r|#3No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n";
 		}
 	}
 }

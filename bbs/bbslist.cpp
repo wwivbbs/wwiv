@@ -153,7 +153,7 @@ void AddBBSListEntryImpl()
         if ( IsBBSPhoneNumberUnique( bbsPhoneNumber.c_str() ) )
         {
             std::string bbsName, bbsSpeed, bbsType;
-            GetSession()->bout << "|13This number can be added! It is not yet in BBS list.\r\n\n\n"
+            GetSession()->bout << "|#3This number can be added! It is not yet in BBS list.\r\n\n\n"
                        << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
             inputl( bbsName, 50, true );
             GetSession()->bout << "\r\n|#7Enter maximum speed of the BBS:\r\n"
@@ -168,22 +168,22 @@ void AddBBSListEntryImpl()
             GetSession()->bout.NewLine( 2 );
             GetSession()->bout << szBbsListLine;
             GetSession()->bout.NewLine( 2 );
-            GetSession()->bout << "|10Is this information correct? ";
+            GetSession()->bout << "|#5Is this information correct? ";
             if ( yesno() )
             {
                 AddBBSListLine( szBbsListLine );
-                GetSession()->bout << "\r\n|13This entry was added to BBS list.\r\n";
+                GetSession()->bout << "\r\n|#3This entry was added to BBS list.\r\n";
             }
 			GetSession()->bout.NewLine();
         }
         else
         {
-            GetSession()->bout << "|12Sorry, It's already in the BBS list.\r\n\n\n";
+            GetSession()->bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
         }
     }
     else
     {
-        GetSession()->bout << "\r\n|12 Error: Please enter number in correct format.\r\n\n";
+        GetSession()->bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
     }
 }
 
@@ -255,12 +255,12 @@ void DeleteBBSListEntry()
         else
         {
             WFile::Remove(szTempFileName);
-            GetSession()->bout << "|12Error: Couldn't find that in the bbslist file.\r\n";
+            GetSession()->bout << "|#6Error: Couldn't find that in the bbslist file.\r\n";
 		}
     }
     else
     {
-        GetSession()->bout << "\r\n|12Error: Please enter number in correct format.\r\n\n";
+        GetSession()->bout << "\r\n|#6Error: Please enter number in correct format.\r\n\n";
     }
 }
 

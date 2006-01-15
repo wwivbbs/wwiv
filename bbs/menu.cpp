@@ -656,7 +656,7 @@ void ConfigUserMenuSet()
     bool bDone = false;
     while (!bDone && !hangup)
     {
-        GetSession()->bout << "   |#1WWIV |12Menu |#1Editor|#0\r\n\r\n";
+        GetSession()->bout << "   |#1WWIV |#6Menu |#1Editor|#0\r\n\r\n";
 		GetSession()->bout << "|#21|06) |#1Menuset      |06: |15%" << pSecondUserRec->szMenuSet << wwiv::endl;
 		GetSession()->bout << "|#22|06) |#1Use hot keys |06: |15" << ( pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ") << wwiv::endl;
 

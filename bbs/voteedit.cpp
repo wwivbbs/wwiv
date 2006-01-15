@@ -66,7 +66,7 @@ void set_question( int ii )
     if ( !s[0] )
     {
         GetSession()->bout.NewLine();
-        GetSession()->bout << "|12Delete Question #" << ii + 1 << ", Are you sure? ";
+        GetSession()->bout << "|#6Delete Question #" << ii + 1 << ", Are you sure? ";
         if (!yesno())
         {
             return;
@@ -75,7 +75,7 @@ void set_question( int ii )
     else
     {
         GetSession()->bout.NewLine();
-        GetSession()->bout << "|10Enter answer choices, Enter a blank line when finished.";
+        GetSession()->bout << "|#5Enter answer choices, Enter a blank line when finished.";
         GetSession()->bout.NewLine( 2 );
         while ( v.numanswers < 19 && s[0] )
         {

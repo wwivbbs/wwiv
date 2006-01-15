@@ -440,7 +440,7 @@ void readmail( int mode )
 	}
 	if ( mw == 0 )
 	{
-		GetSession()->bout << "\r\n\n|13You have no mail.\r\n\n";
+		GetSession()->bout << "\r\n\n|#3You have no mail.\r\n\n";
 		BbsFreeMemory( mloc );
 		return;
 	}
