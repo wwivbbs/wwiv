@@ -44,7 +44,7 @@ MS Visual C++ 6.0 (Standard/Professional/Enterprise) [Not tested lately]
 ==============================================================================
 
 LABEL: WWIV-5_0_61
-DATE:  ??/??/2006
+DATE:  01/15/2006
 
 Rushfan - Fixed up more time_t != sizeof(int) issues in the code, mainly with localtime
 Rushfan - Some const correctness work, also using ISO C++ functionanmes in more places
