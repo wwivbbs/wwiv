@@ -126,7 +126,7 @@ void modify_dir(int n)
 		GetSession()->bout << "|#9I) Dir Type   : |#2" <<  r.type << wwiv::endl;
 		GetSession()->bout << "|#9J) Uploads    : |#2" << ( ( r.mask & mask_no_uploads ) ? "Disallowed" : "Allowed" ) << wwiv::endl;
 		GetSession()->bout << "|#9K) Arch. only : |#2" << YesNoString( ( r.mask & mask_archive ) ? true : false ) << wwiv::endl;
-        GetSession()->bout << "|#9L) Drive Type : |#2" << ( ( r.mask & mask_cdrom ) ? "|13CD ROM" : "HARD DRIVE" ) << wwiv::endl;
+        GetSession()->bout << "|#9L) Drive Type : |#2" << ( ( r.mask & mask_cdrom ) ? "|#3CD ROM" : "HARD DRIVE" ) << wwiv::endl;
 		if ( r.mask & mask_cdrom )
 		{
 			GetSession()->bout << "|#9M) Available  : |#2" << YesNoString( ( r.mask & mask_offline ) ? true : false ) << wwiv::endl;
@@ -204,7 +204,7 @@ void modify_dir(int n)
 					}
 					strcpy(r.path, s);
                     GetSession()->bout.NewLine( 2 );
-					GetSession()->bout << "|13The path for this directory is changed.\r\n";
+					GetSession()->bout << "|#3The path for this directory is changed.\r\n";
                     GetSession()->bout << "|#9If there are any files in it, you must manually move them to the new directory.\r\n";
                     pausescr();
 				}
@@ -556,7 +556,7 @@ void dlboardedit()
 			}
 			else
 			{
-				GetSession()->bout << "\r\n|12You must increase the number of dirs in INIT.EXE first.\r\n";
+				GetSession()->bout << "\r\n|#6You must increase the number of dirs in INIT.EXE first.\r\n";
 			}
 			break;
 		case 'I':
@@ -606,7 +606,7 @@ void dlboardedit()
 			if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_dirs))
 			{
 				GetSession()->bout.NewLine();
-				GetSession()->bout << "|10Delete " << directories[i].name << "? ";
+				GetSession()->bout << "|#5Delete " << directories[i].name << "? ";
 				if ( yesno() )
 				{
 					strcpy(s, directories[i].filename);

@@ -645,7 +645,7 @@ void Packers()
             }
             else
             {
-                GetSession()->bout << "|12Aborted.\r\n";
+                GetSession()->bout << "|#6Aborted.\r\n";
             }
             done = true;
             break;

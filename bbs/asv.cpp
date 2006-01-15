@@ -63,7 +63,7 @@ void asv()
             if ( i < 1 || i > GetSession()->GetMaxNetworkNumber() )
             {
                 GetSession()->bout.NewLine();
-                GetSession()->bout << "|12Aborted!";
+                GetSession()->bout << "|#6Aborted!";
                 break;
             }
             set_net_num(i - 1);
@@ -84,7 +84,7 @@ void asv()
             if (wwiv::UpperCase<char>(snode[0] == 'Q'))
             {
                 GetSession()->bout.NewLine();
-                GetSession()->bout << "|12Aborted!";
+                GetSession()->bout << "|#6Aborted!";
                 break;
             }
             strcpy(ph, csne->phone);

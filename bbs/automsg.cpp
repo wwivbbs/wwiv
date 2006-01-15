@@ -38,7 +38,7 @@ void read_automessage()
     std::string line;
     if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine( line ) )
     {
-        GetSession()->bout << "|13No auto-message.\r\n";
+        GetSession()->bout << "|#3No auto-message.\r\n";
         GetSession()->bout.NewLine();
         return;
     }
@@ -114,7 +114,7 @@ void write_automessage()
             file.Write( line.c_str() );
             sysoplogf( "  %s", line.c_str() );
         }
-        GetSession()->bout << "\r\n|10Auto-message saved.\r\n\n";
+        GetSession()->bout << "\r\n|#5Auto-message saved.\r\n\n";
         file.Close();
     }
 }
@@ -192,7 +192,7 @@ void do_automessage()
             }
             break;
         case 'D':
-            GetSession()->bout << "\r\n|13Delete Auto-message, Are you sure? ";
+            GetSession()->bout << "\r\n|#3Delete Auto-message, Are you sure? ";
             if (yesno())
             {
                 WFile::Remove( autoMessageFile );
@@ -202,7 +202,7 @@ void do_automessage()
         case 'L':
             if ( WFile::Exists( automessageLockFile ) )
             {
-                GetSession()->bout << "\r\n|13Message is already locked.\r\n\n";
+                GetSession()->bout << "\r\n|#3Message is already locked.\r\n\n";
             }
             else
             {

@@ -79,7 +79,7 @@ void old_sublist()
         int i1 = 0;
         while ((i1 < GetSession()->num_subs) && (usub[i1].subnum != -1) && (!abort))
         {
-            sprintf(s, "  |10%4.4s|#2", usub[i1].keys);
+            sprintf(s, "  |#5%4.4s|#2", usub[i1].keys);
             if (qsc_q[usub[i1].subnum / 32] & (1L << (usub[i1].subnum % 32)))
             {
                 strcat(s, " - ");
@@ -233,11 +233,11 @@ void SubList()
                 sprintf(s, "    %-3.3s", usub[i1].keys);
                 if (qsc_q[usub[i1].subnum / 32] & (1L << (usub[i1].subnum % 32)))
                 {
-                    strcpy(s2, "|10Yes");
+                    strcpy(s2, "|#5Yes");
                 }
                 else
                 {
-                    strcpy(s2, "|12No ");
+                    strcpy(s2, "|#6No ");
                 }
                 iscan(i1);
                 if ( net_sysnum || GetSession()->GetMaxNetworkNumber() > 1 )

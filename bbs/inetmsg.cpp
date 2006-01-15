@@ -164,7 +164,7 @@ void send_inet_email()
 		}
 		else
 		{
-			GetSession()->bout << "|12Aborted.\r\n";
+			GetSession()->bout << "|#6Aborted.\r\n";
 		}
 	}
 }

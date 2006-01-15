@@ -159,7 +159,7 @@ public:
     void UpdateTopScreen();
 
     // From WLogger
-    virtual bool LogMessage( const char* pszFormat, ... );
+    virtual bool LogMessage( const char* pszFormat, ... );note
 
 	bool SaveConfig();
 

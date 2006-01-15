@@ -74,7 +74,7 @@ void show_chains(int *mapp, int *map)
             if ( okansi() )
             {
                 GetApplication()->GetUserManager()->ReadUser( &user, chains_reg[map[i]].regby[0] );
-                sprintf( szBuffer, " |#%dº|10%3d|#%dº|#1%-41s|#%dº|%2.2d%-21s|#%dº|#1%5d|#%dº",
+                sprintf( szBuffer, " |#%dº|#5%3d|#%dº|#1%-41s|#%dº|%2.2d%-21s|#%dº|#1%5d|#%dº",
 						 FRAME_COLOR,
 						 i + 1,
 						 FRAME_COLOR,

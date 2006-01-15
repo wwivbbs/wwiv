@@ -72,7 +72,7 @@ void select_editor()
         }
     }
     GetSession()->bout.NewLine();
-	GetSession()->bout << "|#9Which editor (|131-" << GetSession()->GetNumberOfEditors() << ", <C/R>=leave as is|#9) ? ";
+	GetSession()->bout << "|#9Which editor (|#31-" << GetSession()->GetNumberOfEditors() << ", <C/R>=leave as is|#9) ? ";
     char *ss = mmkey( 2 );
     int nEditor = atoi( ss );
     if ( nEditor >= 1 && nEditor <= GetSession()->GetNumberOfEditors() )
@@ -136,7 +136,7 @@ void print_cur_stat()
 {
     char s1[255], s2[255];
     GetSession()->bout.ClearScreen();
-    GetSession()->bout << "|10Your Preferences\r\n\n";
+    GetSession()->bout << "|#5Your Preferences\r\n\n";
     sprintf( s1, "|#11|#9) Screen size       : |#2%d X %d", GetSession()->GetCurrentUser()->GetScreenChars(), GetSession()->GetCurrentUser()->GetScreenLines() );
     sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->HasAnsi() ?
         ( GetSession()->GetCurrentUser()->HasColor() ? "Color" : "Monochrome") : "No ANSI" );
@@ -293,7 +293,7 @@ void change_colors()
     do
     {
         GetSession()->bout.ClearScreen();
-        GetSession()->bout << "|10Customize Colors:";
+        GetSession()->bout << "|#5Customize Colors:";
         GetSession()->bout.NewLine( 2 );
         if ( !GetSession()->GetCurrentUser()->HasColor() )
         {
@@ -842,7 +842,7 @@ void modify_mailbox()
             GetSession()->bout << "|#5Do you want to forward to your Internet address? ";
             if ( yesno() )
             {
-                GetSession()->bout << "|13Enter the Internet E-Mail Address.\r\n|#9:";
+                GetSession()->bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
                 Input1( s, GetSession()->GetCurrentUser()->GetEmailAddress(), 75, true, INPUT_MODE_FILE_MIXED );
                 if ( check_inet_addr( s ) )
                 {

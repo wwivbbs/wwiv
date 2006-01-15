@@ -532,7 +532,7 @@ int WApplication::doWFCEvents()
 				else
 				{
 					GetSession()->localIO()->LocalGotoXY( 2, 23 );
-					GetSession()->bout << "|12No terminal program defined.";
+					GetSession()->bout << "|#6No terminal program defined.";
 				}
                 break;
                 // UserEdit
@@ -1040,7 +1040,7 @@ int WApplication::Run(int argc, char *argv[])
 					if ( ( i + 1 ) < argc )
 					{
 						i++;
-						GetSession()->bout << "\r\n|#7\xFE |10Packing specified subs: \r\n";
+						GetSession()->bout << "\r\n|#7\xFE |#5Packing specified subs: \r\n";
 						while ( i < argc )
 						{
 							int nSubNumToPack = atoi( argv[ i ] );
@@ -1051,7 +1051,7 @@ int WApplication::Run(int argc, char *argv[])
 					}
 					else
 					{
-						GetSession()->bout << "\r\n|#7\xFE |10Packing all subs: \r\n";
+						GetSession()->bout << "\r\n|#7\xFE |#5Packing all subs: \r\n";
 						sysoplogf( "* Packing All Message Areas" );
 						pack_all_subs( true );
 					}
@@ -1184,7 +1184,7 @@ int WApplication::Run(int argc, char *argv[])
                      wwiv::stringUtils::IsEquals( date(), GetSession()->GetCurrentUser()->GetLastOn() ) &&
                      GetSession()->GetCurrentUser()->GetTimesOnToday() > 0 )
                 {
-                    GetSession()->bout << "\r\n|12Sorry, you can only logon once per day.\r\n\n";
+                    GetSession()->bout << "\r\n|#6Sorry, you can only logon once per day.\r\n\n";
                     hangup = true;
                 }
             }
