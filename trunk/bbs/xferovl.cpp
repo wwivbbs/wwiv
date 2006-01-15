@@ -846,7 +846,7 @@ bool uploadall(int nDirectoryNum)
 	}
 	if ( !ok || abort )
 	{
-		GetSession()->bout << "|12Aborted.\r\n";
+		GetSession()->bout << "|#6Aborted.\r\n";
         ok = false;
 	}
 	if (GetSession()->numf >= maxf)

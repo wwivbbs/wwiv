@@ -638,13 +638,13 @@ void modify_sub(int n)
 			case 'O':
                 {
 				    GetSession()->bout.NewLine();
-                    GetSession()->bout << "|#2Enter new Description : ";
-                    char szDescription[ 81 ];
-				    Input1(szDescription, xsubs[n].desc, 60, true, INPUT_MODE_FILE_MIXED);
+                    GetSession()->bout << "|#2Enter new Description : \r\n|#7:";
+                    std::string description;
+				    Input1( description, xsubs[n].desc, 60, true, INPUT_MODE_FILE_MIXED );
 				    GetSession()->bout.Color( 0 );
-				    if (szDescription[0])
+                    if ( description.length() > 0 )
                     {
-					    strcpy(xsubs[n].desc, szDescription);
+                        strcpy(xsubs[n].desc, description.c_str());
                     }
 				    else
                     {

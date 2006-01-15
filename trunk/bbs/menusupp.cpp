@@ -517,12 +517,12 @@ void ToggleChat()
     bool bNewAvail = sysop2();
     if ( bOldAvail != bNewAvail )
     {
-        GetSession()->bout << ( ( bNewAvail ) ? "|10Sysop now available\r\n" : "|13Sysop now unavailable\r\n" );
+        GetSession()->bout << ( ( bNewAvail ) ? "|#5Sysop now available\r\n" : "|#3Sysop now unavailable\r\n" );
         sysoplog("@ Changed sysop available status");
     }
     else
     {
-        GetSession()->bout << "|12Unable to toggle Sysop availability (hours restriction)\r\n";
+        GetSession()->bout << "|#6Unable to toggle Sysop availability (hours restriction)\r\n";
     }
     GetApplication()->UpdateTopScreen();
 }
@@ -548,7 +548,7 @@ void Debug()
     {
         GetSession()->SetGlobalDebugLevel( 0 );
     }
-	GetSession()->bout << "|10New Debug Level: " << GetSession()->GetGlobalDebugLevel() << wwiv::endl;
+	GetSession()->bout << "|#5New Debug Level: " << GetSession()->GetGlobalDebugLevel() << wwiv::endl;
 }
 
 

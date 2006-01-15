@@ -313,7 +313,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
     pos = nLength = 0;
     szTemp[0] = '\0';
 	
-	nMaxLength = std::max<int>(nMaxLength, 80);
+	nMaxLength = std::min<int>(nMaxLength, 80);
     GetSession()->bout.Color( 4 );
     int x = GetSession()->localIO()->WhereX() + 1;
     int y = GetSession()->localIO()->WhereY() + 1;

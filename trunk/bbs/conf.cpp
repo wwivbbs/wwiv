@@ -1223,7 +1223,7 @@ void conf_edit(int conftype)
         case 'D':
             if (num == 1)
             {
-                GetSession()->bout << "\r\n|12Cannot delete all conferences!\r\n";
+                GetSession()->bout << "\r\n|#6Cannot delete all conferences!\r\n";
             }
             else
             {
@@ -1237,7 +1237,7 @@ void conf_edit(int conftype)
         case 'I':
             if (num == MAX_CONFERENCES)
             {
-                GetSession()->bout << "\r\n|12Cannot insert any more conferences!\r\n";
+                GetSession()->bout << "\r\n|#6Cannot insert any more conferences!\r\n";
             }
             else
             {
@@ -1419,7 +1419,7 @@ int select_conf(const char *pszPromptText, int conftype, int listconfs)
             }
             if ( !ok && !sl )
             {
-                GetSession()->bout << "\r\n|12Invalid conference designator!\r\n";
+                GetSession()->bout << "\r\n|#6Invalid conference designator!\r\n";
             }
         }
     } while (!ok && !hangup);

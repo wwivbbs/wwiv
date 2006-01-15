@@ -151,7 +151,7 @@ void EditMenus()
 				OpenMenuDescriptions();
 				GetMenuDescription(szDirectoryName, szDesc);
 
-				GetSession()->bout << "|10New desc     : ";
+				GetSession()->bout << "|#5New desc     : ";
 				GetSession()->bout.Color( 0 );
 				inputl(szDesc, 60);
 				if (szDesc[0])
@@ -738,7 +738,7 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount)
 		GetSession()->bout << "|#9T) Co-Sysop       : |#2" << ( Menu->nCoSysop ? "Yes" : "No" ) << wwiv::endl;
 		GetSession()->bout << "|#9U) Password       : |#2" << ( incom ? "<Remote>" : Menu->szPassWord ) << wwiv::endl;
 		GetSession()->bout << "|#9V) Hide text from : |#2" << ( Menu->nHide == MENU_HIDE_NONE ? "None" : Menu->nHide == MENU_HIDE_PULLDOWN ? "Pulldown Menus" : Menu->nHide == MENU_HIDE_REGULAR ? "Regular Menus" : Menu->nHide == MENU_HIDE_BOTH ? "Both Menus" : "Out of Range" ) << wwiv::endl;
-		GetSession()->bout.WriteFormatted( "|#9W) Pulldown flags : |10%-20.20s |#1%-18.18s |12%-20.20s", Menu->nPDFlags & PDFLAGS_NOCLEAR ? "No Clear before run" : "Clear before run", Menu->nPDFlags & PDFLAGS_NOPAUSEAFTER ? "No Pause after run" : "Pause after run", Menu->nPDFlags & PDFLAGS_NORESTORE ? "No Restore after run" : "Restore after run" );
+		GetSession()->bout.WriteFormatted( "|#9W) Pulldown flags : |#5%-20.20s |#1%-18.18s |#6%-20.20s", Menu->nPDFlags & PDFLAGS_NOCLEAR ? "No Clear before run" : "Clear before run", Menu->nPDFlags & PDFLAGS_NOPAUSEAFTER ? "No Pause after run" : "Pause after run", Menu->nPDFlags & PDFLAGS_NORESTORE ? "No Restore after run" : "Restore after run" );
 		GetSession()->bout << "|#9X) Extended Help  : |#2%s" << Menu->szExtendedHelp << wwiv::endl;
 
 	}
@@ -1018,7 +1018,7 @@ void ListMenuDirs()
 
 	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#7Available Menus Sets\r\n";
-	GetSession()->bout << "|10============================\r\n";
+	GetSession()->bout << "|#5============================\r\n";
 
 	bFound = fnd.open(szPath, 0);
 	while (bFound && !hangup)
@@ -1052,7 +1052,7 @@ void ListMenuMenus( const char *pszDirectoryName )
 
 	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#7Available Menus\r\n";
-	GetSession()->bout << "|10===============|06\r\n";
+	GetSession()->bout << "|#5===============|06\r\n";
 
 	bFound = fnd.open(szPath, 0);
 	while (bFound && !hangup)

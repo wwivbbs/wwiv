@@ -285,7 +285,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 				}
 				else
 				{
-					GetSession()->bout << "\r\n|12Aborted.\r\n\n";
+					GetSession()->bout << "\r\n|#6Aborted.\r\n\n";
 					*pUserNumber = *pSystemNumber = 0;
 				}
 			}

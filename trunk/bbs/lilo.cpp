@@ -409,7 +409,7 @@ void LeaveBadPasswordFeedback( int ans )
     {
         GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::ansi );
     }
-    GetSession()->bout << "|12Too many logon attempts!!\r\n\n";
+    GetSession()->bout << "|#6Too many logon attempts!!\r\n\n";
     GetSession()->bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
     if ( yesno() )
     {
@@ -459,7 +459,7 @@ void CheckCallRestrictions()
         GetSession()->GetCurrentUser()->GetTimesOnToday() > 0 )
     {
         GetSession()->bout.NewLine();
-        GetSession()->bout << "|12Sorry, you can only logon once per day.\r\n";
+        GetSession()->bout << "|#6Sorry, you can only logon once per day.\r\n";
         hangup = true;
     }
 }
@@ -578,7 +578,7 @@ void getuser()
             int nInstanceNumber;
             if ( GetSession()->GetCurrentUser()->GetSl() < 255 && user_online( GetSession()->usernum, &nInstanceNumber ) )
             {
-                GetSession()->bout << "\r\n|12You are already online on instance " << nInstanceNumber << "!\r\n\n";
+                GetSession()->bout << "\r\n|#6You are already online on instance " << nInstanceNumber << "!\r\n\n";
                 continue;
             }
             ok = true;
@@ -624,7 +624,7 @@ void getuser()
             GetSession()->bout.NewLine();
             if ( !nNetworkOnly )
             {
-                GetSession()->bout << "|12Unknown user.\r\n";
+                GetSession()->bout << "|#6Unknown user.\r\n";
             }
         }
         else if ( GetSession()->usernum == -1 )
@@ -1103,7 +1103,7 @@ void DisplayUserLoginInformation()
     }
     if ( GetSession()->IsTimeOnlineLimited() )
     {
-        GetSession()->bout << "\r\n|13Your on-line time is limited by an external event.\r\n\n";
+        GetSession()->bout << "\r\n|#3Your on-line time is limited by an external event.\r\n\n";
     }
 }
 
@@ -1218,7 +1218,7 @@ void logon()
 	// New Message Scan
 	if ( GetSession()->IsNewScanAtLogin() )
 	{
-		GetSession()->bout << "\r\n|10Scan All Message Areas For New Messages? ";
+		GetSession()->bout << "\r\n|#5Scan All Message Areas For New Messages? ";
 		if ( yesno() )
 		{
 			NewMsgsAllConfs();

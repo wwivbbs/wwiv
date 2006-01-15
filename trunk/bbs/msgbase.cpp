@@ -614,7 +614,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 				int i1 = pFileEmail->Read( &messageRecord, sizeof( mailrec ) );
 				if (i1 == -1)
 				{
-					GetSession()->bout << "|12DIDN'T READ WRITE!\r\n";
+					GetSession()->bout << "|#6DIDN'T READ WRITE!\r\n";
 				}
 			}
 			if ( messageRecord.tosys || messageRecord.touser )
@@ -629,7 +629,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 		delete pFileEmail;
 		if (nBytesWritten == -1)
 		{
-			GetSession()->bout << "|12DIDN'T SAVE RIGHT!\r\n";
+			GetSession()->bout << "|#6DIDN'T SAVE RIGHT!\r\n";
 		}
 	}
 	else

@@ -174,12 +174,12 @@ void valuser( int nUserNumber )
 					{
 						deluser( nUserNumber );
 						GetSession()->bout.NewLine();
-						GetSession()->bout << "|12Deleted.\r\n\n";
+						GetSession()->bout << "|#6Deleted.\r\n\n";
 					}
 					else
 					{
 						GetSession()->bout.NewLine();
-						GetSession()->bout << "|13NOT deleted.\r\n";
+						GetSession()->bout << "|#3NOT deleted.\r\n";
 					}
 					return;
 				}
@@ -345,7 +345,7 @@ void valuser( int nUserNumber )
   }
   else
   {
-	  GetSession()->bout << "\r\n|12No Such User.\r\n\n";
+	  GetSession()->bout << "\r\n|#6No Such User.\r\n\n";
   }
 }
 
@@ -528,7 +528,7 @@ void print_net_listing( bool bForcePause )
 				}
 				if (abort)
 				{
-					GetSession()->bout << "|12Area code must be a 3-digit number!\r\n";
+					GetSession()->bout << "|#6Area code must be a 3-digit number!\r\n";
 					pausescr();
 					cmdbit = 0;
 				}
@@ -540,7 +540,7 @@ void print_net_listing( bool bForcePause )
 				input(s, 2);
 				if ((s[0] == 0) || (atoi(s) < 1))
 				{
-					GetSession()->bout << "|12Invalid group number!\r\n";
+					GetSession()->bout << "|#6Invalid group number!\r\n";
 					pausescr();
 					cmdbit = 0;
 					break;
@@ -566,7 +566,7 @@ void print_net_listing( bool bForcePause )
 				input(substr, 40);
 				if (substr[0] == 0)
 				{
-					GetSession()->bout << "|12Enter a substring!\r\n";
+					GetSession()->bout << "|#6Enter a substring!\r\n";
 					pausescr();
 					cmdbit = 0;
 				}
@@ -578,7 +578,7 @@ void print_net_listing( bool bForcePause )
 				input(phstr, 12);
 				if (phstr[0] == 0)
 				{
-					GetSession()->bout << "|12Enter a phone substring!\r\n";
+					GetSession()->bout << "|#6Enter a phone substring!\r\n";
 					pausescr();
 					cmdbit = 0;
 				}
@@ -605,7 +605,7 @@ void print_net_listing( bool bForcePause )
             WFile bbsListFile( GetSession()->GetNetworkDataDirectory(), BBSDATA_NET );
             if ( !bbsListFile.Open( WFile::modeReadOnly | WFile::modeBinary ) )
 			{
-                GetSession()->bout << "|12Error opening " << bbsListFile.GetFullPathName() << "!\r\n";
+                GetSession()->bout << "|#6Error opening " << bbsListFile.GetFullPathName() << "!\r\n";
 				pausescr();
 				continue;
 			}
@@ -966,7 +966,7 @@ void chuser()
 	}
 	else
 	{
-		GetSession()->bout << "|12Unknown user.\r\n";
+		GetSession()->bout << "|#6Unknown user.\r\n";
 	}
 }
 
@@ -1004,7 +1004,7 @@ void zlog()
 		}
 		else
 		{
-			GetSession()->bout << "|13";
+			GetSession()->bout << "|#3";
 			pla( szBuffer, &abort );
 		}
 		++i;

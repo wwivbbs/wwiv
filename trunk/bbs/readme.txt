@@ -126,7 +126,8 @@ Rushfan - changed repeat_char to always add a NL (since all callers did), added
 Rushfan - Update Copyright statements to 2006
 Atani   - Linux compilation fixes
 Atani   - Fixed typo in chains.cpp for format specifier (line 97, arg 3)
-
+Rushfan - Fixed error in Input1 where the input field would be at least 80 chars
+Rushfan - Fixed up couple of hard coded colors that should be using wwiv colors
 
 ==============================================================================
 

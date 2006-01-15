@@ -37,7 +37,7 @@ char *gfiledata( int nSectionNum, char *pBuffer )
 			}
 		}
 	}
-	sprintf( pBuffer, "|#2%2d |13%1c  |#1%-40s  |#2%-8s |#9%-3d %-3d %-3d",
+	sprintf( pBuffer, "|#2%2d |#3%1c  |#1%-40s  |#2%-8s |#9%-3d %-3d %-3d",
 			 nSectionNum, x, stripcolors(r.name), r.filename, r.sl, r.age, r.maxfiles );
 	return pBuffer;
 }
@@ -381,7 +381,7 @@ bool fill_sec(int sn)
 	}
 	if (!ok)
 	{
-		GetSession()->bout << "|12Aborted.\r\n";
+		GetSession()->bout << "|#6Aborted.\r\n";
 	}
 	if (nf >= gfilesec[sn].maxfiles)
 	{
@@ -417,7 +417,7 @@ void pack_all_subs( bool bFromCommandline )
 	}
 	if (abort)
 	{
-		GetSession()->bout << "|12Aborted.\r\n";
+		GetSession()->bout << "|#6Aborted.\r\n";
 	}
 	tmp_disable_pause( false );
 }
@@ -437,7 +437,7 @@ void pack_sub(int si)
 			sprintf(fn1, "%s%s.dat", syscfg.msgsdir, sfn);
 			sprintf(fn2, "%s%s.dat", syscfg.msgsdir, nfn);
 
-			GetSession()->bout << "\r\n|#7\xFE |#1Packing Message Area: |10" << subboards[si].name << wwiv::endl;
+			GetSession()->bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" << subboards[si].name << wwiv::endl;
 
 			for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++)
 			{
