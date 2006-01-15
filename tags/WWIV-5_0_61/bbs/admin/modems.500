@@ -1,0 +1,127 @@
+##############################################################################
+#
+#                       WWIV v5.00 Modem Configuration File
+#                Copyright (C) 1999-2004 by WWIV Software Services
+#
+# This modem definition file may not be distributed except as a part of
+# the complete WWIV v4 system.  This file may not be distributed in modified
+# form at all.  If you wish, you may distribute a separate, modified modem
+# configuration files, with the configuration information for a single modem.
+#
+##############################################################################
+#
+# Line types:
+#
+# FILE:         Name of file for modem info to follow
+# NAME:         Name/description of modem
+# NOTE:         Notes on modem configuration
+# CONF:         String to configure modem (sent from INIT, not BBS)
+# SETU:         Setup string sent once to the modem
+# INIT:         Initialization string sent often to the modem
+# ANSR:         String sent to the modem to answer phone
+# PICK:         String sent to the modem to pick up the phone
+# HANG:         String sent to the modem to hang up the phone
+# DIAL:         Dialing prefix
+# SEPR:         Separator characters for result codes (passed to strtok)
+# DEFL:         Default modem switches
+# RESL:         Result code info.
+#                       First, result code (full or partial) from modem
+#                       Optional description - single quotes means append
+#                       Lastly, switch settings
+# AUTO:         Information for modem auto-selection
+#
+# Switches:
+#
+# NORM          normal state of modem
+# RING          phone is ringing
+# RINGING       remote phone is ringing
+# ERR           error encountered
+# DIS           disconnected (No connection)
+# NDT           no dial tone (same as DIS)
+# CON           connection established
+# MS=           modem speed
+# CS=           com port speed
+# AS=           asymmetrical baud rates (Y/N)
+# EC=           error correcting (Y/N)
+# DC=           data compression (Y/N)
+# FC=           flow control (Y/N)
+#
+##############################################################################
+#
+# Information for modem auto-selection
+#
+# 0 - modem type found
+# 1 - initial state
+# 2 - a USR Courier
+# 3 - a USR Courier that responds to AT&A3
+#
+AUTO:   1       0       "USRCV42"  "ATI4{"      "USROBOTICS COURIER 2400"
+AUTO:   1       2       "USRC1"    "ATI4{"      "USROBOTICS COURIER"
+AUTO:   2       3       "USR-X2"   "ATI3{"      "5706"
+AUTO:   3       0       "USRC3"    "ATI{"       "1442"
+AUTO:   2       3       "USRC31"   "AT&A3{"     "0"
+AUTO:   3       0       "USRDSV34" "ATI{"       "2886"
+AUTO:   2       0       "USRC2"    "AT&A2{"     "0"
+AUTO:   1       0       "USRS9600" "ATI4{"      "USROBOTICS SPORTSTER 9600"
+AUTO:   1       0       "COMPUCOM" "ATI3{"      "(C) COPYRIGHT COMPUCOM"
+AUTO:   1       0       "PP9600SA" "ATI3{"      "PM9600SA"
+AUTO:   1       0       "PP2400V4" "ATI3{"      "PM2400SA"
+AUTO:   1       0       "TB3000"   "ATI3{"      "T3000"
+AUTO:   1       0       "USRSMNP"  "ATU{"       "USROBOTICS SPORTSTER"
+AUTO:   1       0       "C964I"    "ATI{"       "964I"
+AUTO:   1       0       "DIGISCT"  "AT*O{"      "MODEL:SCOUT PC PLUS"
+##############################################################################
+
+##############################################################################
+#
+# "Generic" V.32 modem
+#
+
+FILE: "GEN-V32"
+NAME: "Generic V.32"
+SETU: "ATE0H0M0Q0V1X4\\N3%C1\\A3S0=0S2=1S95=44W1{"
+INIT: "AT&C1&D2Q0V1{"
+ANSR: "~ATA{"
+PICK: "ATH1{"
+HANG: "ATH0{"
+DIAL: "ATDT"
+SEPR: ""
+DEFL: MS=9600 CS=38400 EC=N DC=N AS=N FC=Y
+RESL: "OK"                     "Normal"               NORM
+RESL: "RING"                   "Ring"                 RING
+RESL: "NO CARRIER"             "No Carrier"           DIS
+RESL: "ERROR"                  "ERROR"                ERR
+RESL: "NO DIALTONE"            "No Dial Tone"         NDT
+RESL: "NO DIAL TONE"           "No Dial Tone"         NDT
+RESL: "BUSY"                   "Busy"                 DIS
+RESL: "NO ANSWER"              "No Answer"            DIS
+RESL: "RINGING"                "Ringing"              RINGING
+RESL: "VOICE"                  "Voice"                DIS
+RESL: "CARRIER 300"            "300"                  MS=300
+RESL: "CARRIER 600"            "600"                  MS=600
+RESL: "CARRIER 1200"           "1200"                 MS=1200
+RESL: "CARRIER 2400"           "2400"                 MS=2400
+RESL: "CARRIER 4800"           "4800"                 MS=4800
+RESL: "CARRIER 7200"           "7200"                 MS=7200
+RESL: "CARRIER 9600"           "9600"                 MS=9600
+RESL: "CARRIER 12000"          "12000"                MS=12000
+RESL: "CARRIER 14400"          "14400"                MS=14400
+RESL: "PROTOCOL: V.42/LAPM"    '/LAPM'                EC=Y
+RESL: "PROTOCOL: LAPM"         '/LAPM'                EC=Y
+RESL: "PROTOCOL: LAP-M"        '/LAPM'                EC=Y
+RESL: "PROTOCOL: ALT"          '/MNP'                 EC=Y
+RESL: "PROTOCOL: MNP"          '/MNP'                 EC=Y
+RESL: "COMPRESSION: CLASS 5"   '/MNP5'                DC=Y
+RESL: "COMPRESSION: V.42BIS"   '/V.42bis'             DC=Y
+RESL: "COMPRESSION: V.42 BIS"  '/V.42bis'             DC=Y
+RESL: "CONNECT"                ''                     CS=300    CON
+RESL: "CONNECT  600"           ''                     CS=600    CON
+RESL: "CONNECT 0600"           ''                     CS=600    CON
+RESL: "CONNECT 1200"           ''                     CS=1200   CON
+RESL: "CONNECT 2400"           ''                     CS=2400   CON
+RESL: "CONNECT 4800"           ''                     CS=4800   CON
+RESL: "CONNECT 7200"           ''                     CS=7200   CON
+RESL: "CONNECT 9600"           ''                     CS=9600   CON
+RESL: "CONNECT 19200"          ''                     CS=19200  CON
+RESL: "CONNECT 38400"          ''                     CS=38400  CON
+RESL: "CONNECT 57600"          ''                     CS=57600  CON

@@ -1,0 +1,4 @@
+                              REVISION.TXT
+                               ??/??/????
+
+%%TODO: Copy this info from README.TXT in the main bbs dir

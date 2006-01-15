@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WWIV50", "wwiv50-vs2003.vcproj", "{46A1B8D0-212A-49B7-B5A9-6D05A9CC8974}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Debug-Warn4 = Debug-Warn4
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{46A1B8D0-212A-49B7-B5A9-6D05A9CC8974}.Debug.ActiveCfg = Debug|Win32
+		{46A1B8D0-212A-49B7-B5A9-6D05A9CC8974}.Debug.Build.0 = Debug|Win32
+		{46A1B8D0-212A-49B7-B5A9-6D05A9CC8974}.Debug-Warn4.ActiveCfg = Debug-Warn4|Win32
+		{46A1B8D0-212A-49B7-B5A9-6D05A9CC8974}.Debug-Warn4.Build.0 = Debug-Warn4|Win32
+		{46A1B8D0-212A-49B7-B5A9-6D05A9CC8974}.Release.ActiveCfg = Release|Win32
+		{46A1B8D0-212A-49B7-B5A9-6D05A9CC8974}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
