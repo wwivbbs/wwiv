@@ -207,13 +207,16 @@ void WOutStream::ColorizedInputField( int nNumberOfChars )
         {
             bputch( ' ', true );
         }
-        FlushOutComChBuffer();
-        *this << "\x1b[" << nNumberOfChars << "D";
+        
+		//FlushOutComChBuffer();
+		char szLine[255];
+		sprintf( szLine, "\x1b[%dD", nNumberOfChars );
+		Write(szLine);
     }
 }
 
 
-int WOutStream::Write(const char *pszText )
+int WOutStream::Write( const char *pszText )
 {
     if ( !pszText || !( *pszText ) )
     {
