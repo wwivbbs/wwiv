@@ -48,7 +48,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ws2_32.lib odbc32.lib odbccp32.lib"
-				OutputFile="C:\bbs\wwiv50.exe"
+				OutputFile="Z:\bbs\wwiv50.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -114,7 +114,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib"
-				OutputFile="C:\bbs\wwiv50nd.exe"
+				OutputFile="Z:\bbs\wwiv50nd.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ProgramDatabaseFile=".\Release/wwiv50nd.pdb"
@@ -245,6 +245,9 @@
 					</File>
 					<File
 						RelativePath=".\platform\WIN32\filesupp.cpp">
+					</File>
+					<File
+						RelativePath=".\platform\win32\InternalTelnetServer.cpp">
 					</File>
 					<File
 						RelativePath=".\platform\WIN32\reboot.cpp">
@@ -710,6 +713,9 @@
 					RelativePath=".\shortmsg.cpp">
 				</File>
 				<File
+					RelativePath=".\showfiles.cpp">
+				</File>
+				<File
 					RelativePath=".\SmallRecord.cpp">
 				</File>
 				<File
@@ -785,6 +791,12 @@
 					RelativePath=".\wfc.cpp">
 				</File>
 				<File
+					RelativePath=".\WOutStream.cpp">
+				</File>
+				<File
+					RelativePath=".\WOutStreamBuffer.cpp">
+				</File>
+				<File
 					RelativePath=".\wqscn.cpp">
 				</File>
 				<File
@@ -792,6 +804,9 @@
 				</File>
 				<File
 					RelativePath="WStringUtils.cpp">
+				</File>
+				<File
+					RelativePath=".\WTextFile.cpp">
 				</File>
 				<File
 					RelativePath=".\WUser.cpp">
