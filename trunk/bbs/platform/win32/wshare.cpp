@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <share.h>
 
 
 const int WTextFile::WAIT_TIME = 10;
