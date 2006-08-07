@@ -184,7 +184,7 @@ bool StatusMgr::Get(bool bLockFile)
 			}
             GetSession()->SetMessageAreaCacheNumber( 0 );
 			GetSession()->subchg = 1;
-			g_szMessageGatFileName[0] = 0;
+			//g_szMessageGatFileName[0] = 0;
 		}
 		for (int i = 0; i < 7; i++)
 		{
@@ -217,7 +217,7 @@ bool StatusMgr::Get(bool bLockFile)
 					break;
                 case WStatus::fileChangePosts:
 					GetSession()->subchg = 1;
-					g_szMessageGatFileName[0] = 0;
+					//g_szMessageGatFileName[0] = 0;
 					break;
                 case WStatus::fileChangeEmail:
 					emchg = true;

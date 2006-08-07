@@ -169,7 +169,7 @@ WFile * OpenMessageFile( const std::string messageAreaFileName )
 	GetApplication()->GetStatusManager()->RefreshStatusCache();
 
 	std::stringstream sstream;
-    sstream << syscfg.msgsdir << messageAreaFileName << ".dat" << std::ends;
+	sstream << syscfg.msgsdir << messageAreaFileName << FILENAME_DAT_EXTENSION << std::ends;
 	WFile *pFileMessage = new WFile( sstream.str() );
 	if ( !pFileMessage->Open( WFile::modeReadWrite | WFile::modeBinary ) )
 	{
@@ -180,13 +180,13 @@ WFile * OpenMessageFile( const std::string messageAreaFileName )
 			gat[i] = 0;
 		}
 		pFileMessage->Write( gat, GAT_SECTION_SIZE );
-		strcpy( g_szMessageGatFileName, pFileMessage->GetFullPathName() );
+		//strcpy( g_szMessageGatFileName, pFileMessage->GetFullPathName() );
 		pFileMessage->SetLength( GAT_SECTION_SIZE + ( 75L * 1024L ) );
 		gat_section = 0;
 	}
 	pFileMessage->Seek( 0L, WFile::seekBegin );
 	pFileMessage->Read( gat, GAT_SECTION_SIZE );
-	strcpy( g_szMessageGatFileName, pFileMessage->GetFullPathName() );
+	//strcpy( g_szMessageGatFileName, pFileMessage->GetFullPathName() );
 	gat_section = 0;
 	return pFileMessage;
 }
@@ -256,9 +256,9 @@ void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const 
                 {
                     set_gat_section( pMessageFile, section );
                     int gatp = 0;
-                    int i5 = static_cast<int>( ( lMessageLength + 511L ) / MSG_BLOCK_SIZE );
+                    int nNumBlocksRequired = static_cast<int>( ( lMessageLength + 511L ) / MSG_BLOCK_SIZE );
                     int i4 = 1;
-                    while ( ( gatp < i5 ) && ( i4 < GAT_NUMBER_ELEMENTS ) )
+                    while ( gatp < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS )
                     {
                         if ( gat[ i4 ] == 0 )
                         {
@@ -266,14 +266,14 @@ void savefile( char *b, long lMessageLength, messagerec * pMessageRecord, const 
                         }
                         ++i4;
                     }
-                    if ( gatp >= i5 )
+                    if ( gatp >= nNumBlocksRequired )
                     {
                         gati[ gatp ] = -1;
-                        for ( i4 = 0; i4 < i5; i4++ )
+                        for ( int i = 0; i < nNumBlocksRequired; i++ )
                         {
-							pMessageFile->Seek( MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>( gati[i4] ), WFile::seekBegin );
-							pMessageFile->Write( (&b[i4 * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE );
-                            gat[gati[i4]] = static_cast< unsigned short >( gati[i4 + 1] );
+							pMessageFile->Seek( MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>( gati[i] ), WFile::seekBegin );
+							pMessageFile->Write( (&b[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE );
+                            gat[gati[i]] = static_cast< unsigned short >( gati[i + 1] );
                         }
                         save_gat( pMessageFile );
                         break;
@@ -421,7 +421,7 @@ bool ForwardMessage( int *pUserNumber, int *pSystemNumber )
 	}
     if ( userRecord.GetForwardSystemNumber() != 0 )
 	{
-		if ( userRecord.GetForwardUserNumber() < 32767 )
+		if ( !userRecord.IsMailForwardedToInternet() )
 		{
 			int nNetworkNumber = GetSession()->GetNetworkNumber();
 			set_net_num( userRecord.GetForwardNetNumber() );
@@ -496,7 +496,7 @@ bool ForwardMessage( int *pUserNumber, int *pSystemNumber )
 			return false;
 		}
 		ss[ nCurrentUser ] = 1;
-		if ( userRecord.GetForwardUserNumber() == 65535 )
+		if ( userRecord.IsMailboxClosed() )
 		{
 			GetSession()->bout << "Mailbox Closed.\r\n";
 			if (so())

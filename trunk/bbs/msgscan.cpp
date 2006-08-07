@@ -40,8 +40,6 @@ static char s_szFindString[21];
 
 void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan )
 {
-	int j, k;
-
 	irt[0] = '\0';
 	irt_name[0] = '\0';
 
@@ -65,14 +63,14 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 	{
 		if ( GetSession()->IsMessageThreadingEnabled() )
 		{
-			for ( j = 0; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++ )
+			for ( int nTempOuterMessageIterator = 0; nTempOuterMessageIterator <= GetSession()->GetNumMessagesInCurrentMessageArea(); nTempOuterMessageIterator++ )
 			{
-				for ( k = 0; k <= GetSession()->GetNumMessagesInCurrentMessageArea(); k++ )
+				for ( int nTempMessageIterator = 0; nTempMessageIterator <= GetSession()->GetNumMessagesInCurrentMessageArea(); nTempMessageIterator++ )
 				{
-					if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[k].message_code ) )
+					if ( wwiv::stringUtils::IsEquals( thread[nTempOuterMessageIterator].parent_code, thread[nTempMessageIterator].message_code ) )
 					{
-						thread[j].parent_num = thread[k].msg_num;
-						k = GetSession()->GetNumMessagesInCurrentMessageArea() + 1;
+						thread[nTempOuterMessageIterator].parent_num = thread[nTempMessageIterator].msg_num;
+						nTempMessageIterator = GetSession()->GetNumMessagesInCurrentMessageArea() + 1;
 					}
 				}
 			}
@@ -123,26 +121,18 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 						//temp isn't used anywhere else here, not sure why this code is here.
 						//strcpy(temp, thread[nMessageNumber].message_code);
 					}
-					k = 0;
-					for ( j = 0; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++ )
+					int nNumRepliesForThisThread = 0;
+					for ( int nTempMessageIterator = 0; nTempMessageIterator <= GetSession()->GetNumMessagesInCurrentMessageArea(); nTempMessageIterator++ )
 					{
-						if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) &&
-                             j != nMessageNumber )
+						if ( wwiv::stringUtils::IsEquals( thread[nTempMessageIterator].parent_code, thread[nMessageNumber].message_code ) &&
+                             nTempMessageIterator != nMessageNumber )
 						{
-							k++;
+							nNumRepliesForThisThread++;
 						}
 					}
-					if (k)
+					if (nNumRepliesForThisThread)
 					{
-						GetSession()->bout << "|#9Current Message has |#6" << k << "|#9";
-						if (k == 1)
-						{
-							GetSession()->bout << "reply.";
-						}
-						else
-						{
-							GetSession()->bout << "replies.";
-						}
+						GetSession()->bout << "|#9Current Message has |#6" << nNumRepliesForThisThread << "|#9" << (nNumRepliesForThisThread == 1) ? "reply." : "replies.";
 					}
 					GetSession()->bout << wwiv::endl;;
 				}
@@ -342,7 +332,7 @@ void SetupThreadRecordsBeforeScan()
 }
 
 
-void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done, bool &quit, int &val  )
+void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done, bool &quit, int &val )
 {
 	bool bFollowThread = false;
 	char szReadPrompt[ 255 ];
@@ -382,7 +372,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 		nScanOptionType = SCAN_OPTION_READ_PROMPT;
 	}
 	int nUserInput = atoi(szUserInput);
-	if (szUserInput[0] == 0)
+	if (szUserInput[0] == '\0')
 	{
 		bFollowThread = false;
 		nUserInput = nMessageNumber + 1;
@@ -397,7 +387,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 		nScanOptionType = SCAN_OPTION_READ_MESSAGE;
 		nMessageNumber = nUserInput;
 	}
-	else if (szUserInput[1] == 0)
+	else if (szUserInput[1] == '\0')
 	{
 		if (forcescansub)
 		{
@@ -594,13 +584,13 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			}
 			break;
 		case 'X':
-			if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea()) &&
-				(subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net) &&
-				(xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets))
+			if ( lcs() && nMessageNumber > 0 && nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() &&
+				subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net &&
+				xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets)
 			{
 				open_sub( true );
 				resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
-				postrec *p3 = get_post(nMessageNumber);
+				postrec *p3 = get_post(nMessageNumber); 
 				p3->status ^= status_pending_net;
 				write_post(nMessageNumber, p3);
 				close_sub();
@@ -608,7 +598,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 				if (p3->status & status_pending_net)
 				{
 					val |= 2;
-					GetSession()->bout << "|#9Will be sent out on net now.\r\n";
+					GetSession()->bout << "|#9Will be sent out on net now.\r\n"; 
 				}
 				else
 				{
@@ -618,7 +608,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			}
 			break;
 		case 'U':
-			if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea()))
+			if ( lcs() && nMessageNumber > 0 && nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() )
 			{
 				open_sub( true );
 				resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
@@ -1399,16 +1389,16 @@ void HandleListReplies( int nMessageNumber )
 		{
 			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2Current Message has the following replies:\r\n";
-			int k = 0;
+			int nNumRepliesForThisThread = 0;
 			for (int j = 0; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++)
 			{
 				if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) )
 				{
 					GetSession()->bout << "    |#9Message #|#6" << j << ".\r\n";
-					k++;
+					nNumRepliesForThisThread++;
 				}
 			}
-			GetSession()->bout << "|#1 " << k << " total replies.\r\n";
+			GetSession()->bout << "|#1 " << nNumRepliesForThisThread << " total replies.\r\n";
 			GetSession()->bout.NewLine();
 			pausescr();
 		}
