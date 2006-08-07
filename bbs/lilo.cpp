@@ -1061,8 +1061,7 @@ void DisplayUserLoginInformation()
             set_net_num( GetSession()->GetCurrentUser()->GetForwardNetNumber() );
             if ( !valid_system( GetSession()->GetCurrentUser()->GetForwardSystemNumber() ) )
             {
-                GetSession()->GetCurrentUser()->SetForwardUserNumber( 0 );
-                GetSession()->GetCurrentUser()->SetForwardSystemNumber( 0 );
+				GetSession()->GetCurrentUser()->ClearMailboxForward();
                 GetSession()->bout << "Forwarded to unknown system; forwarding reset.\r\n";
             }
             else
@@ -1085,7 +1084,7 @@ void DisplayUserLoginInformation()
         }
         else
         {
-            if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() == 65535 )
+			if ( GetSession()->GetCurrentUser()->IsMailboxClosed() )
             {
                 GetSession()->bout << "Your mailbox is closed.\r\n\n";
             }

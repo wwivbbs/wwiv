@@ -182,7 +182,7 @@ void frequent_init()
     okskey = true;
     mailcheck = false;
     smwcheck = false;
-    g_szMessageGatFileName[0] = '\0';
+    //g_szMessageGatFileName[0] = '\0';
     use_workspace = false;
     extratimecall = 0.0;
     GetSession()->using_modem = 0;

@@ -97,7 +97,7 @@ const char* GetMailBoxStatus( char* pszStatusOut )
     }
     if ( GetSession()->GetCurrentUser()->GetForwardSystemNumber() != 0 )
     {
-        if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() != 0 )
+		if ( GetSession()->GetCurrentUser()->IsMailboxForwarded() )
         {
             sprintf( pszStatusOut, "Forward to #%u @%u.%s.",
                         GetSession()->GetCurrentUser()->GetForwardUserNumber(),
@@ -113,7 +113,7 @@ const char* GetMailBoxStatus( char* pszStatusOut )
         return pszStatusOut;
     }
 
-    if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() == 65535 )
+	if ( GetSession()->GetCurrentUser()->IsMailboxClosed() )
     {
         strcpy( pszStatusOut, "Closed" );
         return pszStatusOut;
@@ -820,16 +820,14 @@ void modify_mailbox()
         GetSession()->bout << "|#5Are you sure? ";
         if (yesno())
         {
-            GetSession()->GetCurrentUser()->SetForwardSystemNumber( 0 );
-            GetSession()->GetCurrentUser()->SetForwardUserNumber( 65535 );  // (-1)
+            GetSession()->GetCurrentUser()->CloseMailbox();
             return;
         }
     }
     GetSession()->bout << "|#5Do you want to forward your mail? ";
     if (!yesno())
     {
-        GetSession()->GetCurrentUser()->SetForwardSystemNumber( 0 );
-        GetSession()->GetCurrentUser()->SetForwardUserNumber( 0 );
+		GetSession()->GetCurrentUser()->ClearMailboxForward();
         return;
     }
     if (GetSession()->GetCurrentUser()->GetSl() >= syscfg.newusersl)
@@ -849,7 +847,7 @@ void modify_mailbox()
                     GetSession()->GetCurrentUser()->SetEmailAddress( s );
                     write_inet_addr( s, GetSession()->usernum );
                     GetSession()->GetCurrentUser()->SetForwardNetNumber( GetSession()->GetNetworkNumber() );
-                    GetSession()->GetCurrentUser()->SetForwardSystemNumber( 32767 );
+					GetSession()->GetCurrentUser()->SetForwardToInternet();
                     GetSession()->bout << "\r\nSaved.\r\n\n";
                 }
                 return;
@@ -869,8 +867,7 @@ void modify_mailbox()
         GetSession()->GetCurrentUser()->SetForwardNetNumber( GetSession()->GetNetworkNumber() );
         if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() == 0 )
         {
-            GetSession()->GetCurrentUser()->SetForwardSystemNumber( 0 );
-            GetSession()->GetCurrentUser()->SetForwardNetNumber( 0 );
+			GetSession()->GetCurrentUser()->ClearMailboxForward();
             GetSession()->bout << "\r\nCan't forward to a user name, must use user number.\r\n\n";
         }
     }

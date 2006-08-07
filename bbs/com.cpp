@@ -249,7 +249,7 @@ char getkey()
             }
             if (labs(dd - timelastchar1) > 65536L)
             {
-                timelastchar1 -= ( SECONDS_PER_DAY * 18.2 );
+				timelastchar1 -= static_cast<int>( floor(SECONDS_PER_DAY * 18.2) );
             }
             if ( ( dd - timelastchar1 ) > tv1 && !beepyet )
             {

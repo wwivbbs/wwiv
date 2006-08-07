@@ -203,4 +203,7 @@
 #define ZIPCITY_DIR "zip-city"
 #define ZLOG_DAT "zlog.dat"
 #define ZUPLOAD_NOEXT "zupload"
+
+#define FILENAME_DAT_EXTENSION ".dat"
+
 #endif	// __INCLUDED_FILENAMES_H__
