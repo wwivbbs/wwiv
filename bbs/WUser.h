@@ -367,6 +367,13 @@ public:
     bool GetFullFileDescriptions() const    { return data.full_desc ? true : false; }
     void SetFullFileDescriptions( bool b )  { data.full_desc = b ? 1 : 0; }
 
+	bool IsMailboxClosed() const			{ return ( GetForwardUserNumber() == 65535 ) ? true : false; }
+	void CloseMailbox()						{ SetForwardSystemNumber( 0 ); SetForwardUserNumber( 65535 ); }
+	bool IsMailForwardedToInternet() const	{ return ( GetForwardUserNumber() == 32767 ) ? true : false; }
+	bool IsMailboxForwarded() const			{ return ( GetForwardUserNumber() > 0 && GetForwardUserNumber() < 32767 ); }
+	void SetForwardToInternet() 			{ SetForwardSystemNumber( 32767 ); }
+	void ClearMailboxForward()				{ SetForwardSystemNumber( 0 ); SetForwardUserNumber( 0 ); }
+
 //
 // Private Methods
 //

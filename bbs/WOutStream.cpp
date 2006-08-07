@@ -208,7 +208,6 @@ void WOutStream::ColorizedInputField( int nNumberOfChars )
             bputch( ' ', true );
         }
         
-		//FlushOutComChBuffer();
 		char szLine[255];
 		sprintf( szLine, "\x1b[%dD", nNumberOfChars );
 		Write(szLine);

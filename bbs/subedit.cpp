@@ -1066,7 +1066,7 @@ void boardedit()
 	  changedsl();
   }
   GetSession()->subchg = 1;
-  g_szMessageGatFileName[0] = '\0';
+  //g_szMessageGatFileName[0] = '\0';
   if (confchg)
   {
 	  save_confs( CONF_SUBS, -1, NULL );
