@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(TUI_MENU_H)
+#define TUI_MENU_H
+
 #include "Component.h"
 #include "MenuItem.h"
 #include "PopupMenu.h"
@@ -29,3 +31,5 @@ public:
     void HidePopupMenu() { delete m_popupMenu; m_popupMenu = NULL; }
 
 };
+
+#endif //#if !defined(TUI_MENU_H)

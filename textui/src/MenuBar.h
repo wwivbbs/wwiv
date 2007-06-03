@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(TUI_MENUBAR_H)
+#define TUI_MENUBAR_H
+
 #include "view.h"
 #include "SubWindow.h"
 #include "Menu.h"
@@ -27,3 +29,5 @@ public:
     void ClearAllSelected();
     virtual bool ProcessKeyEvent( int key );
 };
+
+#endif //#if !defined(TUI_MENUBAR_H)

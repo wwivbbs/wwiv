@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(TUI_MESSAGEBOX_H)
+#define TUI_MESSAGEBOX_H
+
 #include "window.h"
 #include "Colors.h"
 
@@ -19,3 +21,5 @@ public:
     bool Run();
 
 };
+
+#endif //#if !defined(TUI_MESSAGEBOX_H)

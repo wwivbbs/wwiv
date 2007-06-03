@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(TUI_DESKTOP_H)
+#define TUI_DESKTOP_H
+
 #include "View.h"
 #include "Window.h"
 #include "Colors.h"
@@ -37,3 +39,5 @@ public:
 
 
 };
+
+#endif //#if !defined(TUI_DESKTOP_H)

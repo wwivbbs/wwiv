@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(TUI_MENUITEM_H)
+#define TUI_MENUITEM_H
+
 #include "Component.h"
 #include "Command.h"
 
@@ -21,3 +23,5 @@ public:
     UICommand* GetCommand() const { return m_command; }
 
 };
+
+#endif //#if !defined(TUI_MENUITEM_H)
