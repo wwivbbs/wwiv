@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(TUI_VIEW_H)
+#define TUI_VIEW_H
 
 class UIView
 {
@@ -59,3 +60,5 @@ public:
 
 
 };
+
+#endif //#if !defined(TUI_VIEW_H)

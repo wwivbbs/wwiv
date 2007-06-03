@@ -4,8 +4,6 @@
 #include "SubWindow.h"
 #include "Colors.h"
 
-#pragma comment( lib, "C:\\wwiv\\pdcurs27\\win32\\pdcurses.lib" )
-
 #if defined( _WIN32 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -158,7 +156,9 @@ bool UIDesktop::ProcessKeyEvent( int key )
     switch ( key )
     {
     case '\n':
+#if defined(_WIN32)
         Beep( 500, 250 );
+#endif
         break;
     case 0x1b:
         TerminateApplication( 0 );

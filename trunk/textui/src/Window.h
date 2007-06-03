@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(TUI_UIWINDOW_H)
+#define TUI_UIWINDOW_H
+
 #include "view.h"
 #include "SubWindow.h"
 
@@ -13,3 +15,5 @@ public:
     void SetTitle( std::string title );
     virtual ~UIWindow();
 };
+
+#endif //#if !defined(TUI_UIWINDOW_H)

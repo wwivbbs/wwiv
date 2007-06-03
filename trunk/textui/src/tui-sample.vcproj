@@ -2,10 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="TUI"
-	ProjectGUID="{23A3CDA5-3028-4CB0-B698-EB9D09DB4A90}"
-	RootNamespace="TUI"
-	Keyword="Win32Proj"
+	Name="TUI-Sample"
+	ProjectGUID="{83275EB0-CCD4-4108-8930-E3784D1F9E9E}"
+	RootNamespace="TUISample"
 	>
 	<Platforms>
 		<Platform
@@ -19,7 +18,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="0"
 			>
 			<Tool
@@ -40,13 +39,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\src&quot;;&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;"
+				PreprocessorDefinitions="_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
+				RuntimeLibrary="3"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
@@ -61,12 +58,19 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalDependencies="pdcurses.lib"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\lib&quot;"
+				Name="VCLinkerTool"
+				AdditionalOptions="/NODEFAULTLIB:msvcrtd /NODEFAULTLIB:msvcprtd"
+				AdditionalDependencies="TUI.lib pdcurses.lib"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\lib&quot;;&quot;$(SolutionDir)\Debug&quot;"
+				GenerateDebugInformation="true"
+				SubSystem="1"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -78,6 +82,12 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -85,8 +95,8 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
-			CharacterSet="1"
+			ConfigurationType="1"
+			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -106,10 +116,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\src&quot;;&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
@@ -124,12 +132,19 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalDependencies="pdcurses.lib"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\lib&quot;"
+				Name="VCLinkerTool"
+				AdditionalDependencies="TUI.lib pdcurses.lib"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\lib&quot;;&quot;$(SolutionDir)\Release&quot;"
+				GenerateDebugInformation="true"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -139,6 +154,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -154,51 +175,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Colors.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Command.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Component.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Desktop.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Menu.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MenuBar.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MenuItem.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MessageBox.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PopupMenu.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SubWindow.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\View.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Window.cpp"
+				RelativePath=".\TUI.cpp"
 				>
 			</File>
 		</Filter>
@@ -207,58 +184,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\Colors.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Command.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Component.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Desktop.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Menu.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MenuBar.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MenuItem.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MessageBox.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PopupMenu.h"
-				>
-			</File>
-			<File
-				RelativePath=".\StdAfx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SubWindow.h"
-				>
-			</File>
-			<File
-				RelativePath=".\View.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Window.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -266,10 +191,6 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

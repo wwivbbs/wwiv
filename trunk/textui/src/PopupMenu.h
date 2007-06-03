@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(TUI_POPUPMENU_H)
+#define TUI_POPUPMENU_H
+
 #include "window.h"
 #include "MenuItem.h"
 
@@ -24,3 +26,5 @@ private: // static utility functions
 
 
 };
+
+#endif //#if !defined(TUI_POPUPMENU_H)
