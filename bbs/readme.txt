@@ -44,9 +44,9 @@ MS Visual C++ 6.0 (Standard/Professional/Enterprise) [Not tested lately]
 ==============================================================================
 
 LABEL: WWIV-5_0_62
-DATE:  ??/??/2006
+DATE:  ??/??/2007
 
-Rushfan - 
+Atani - Added VS 2005 project files
 
 
 ==============================================================================
