@@ -7,8 +7,8 @@
 #include "SubWindow.h"
 #include "Command.h"
 #include "MessageBox.h"
-
-#pragma comment( lib, "C:\\wwiv\\pdcurs27\\win32\\pdcurses.lib" )
+#include "Menu.h"
+#include "MenuBar.h"
 
 class ExitCommand : public UICommand
 {

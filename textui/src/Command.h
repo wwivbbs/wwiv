@@ -1,4 +1,5 @@
-#pragma once
+#if !defined(TUI_COMMAND_H)
+#define TUI_COMMAND_H
 
 class UICommand
 {
@@ -8,3 +9,5 @@ public:
 
     virtual bool Execute() = 0;
 };
+
+#endif //#if !defined(TUI_COMMAND_H)

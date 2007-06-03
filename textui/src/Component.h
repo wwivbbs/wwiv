@@ -1,4 +1,6 @@
-#pragma once
+#if !defined(TUI_COMPONENT_H)
+#define TUI_COMPONENT_H
+
 #include "view.h"
 
 class UIComponent
@@ -19,3 +21,6 @@ public:
     virtual const std::string& GetDescription() const;
 
 };
+
+#endif //#if !defined(TUI_COMPONENT_H)
+

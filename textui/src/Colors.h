@@ -1,5 +1,5 @@
-#pragma once
-
+#if !defined(TUI_COLORS_H)
+#define TUI_COLORS_H
 
 class UIColors
 {
@@ -20,3 +20,5 @@ public:
 public:
     virtual ~UIColors();
 };
+
+#endif //#if !defined(TUI_COLORS_H)
