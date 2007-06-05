@@ -170,6 +170,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InputBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Menu.cpp"
 				>
 			</File>
@@ -221,6 +225,10 @@
 			</File>
 			<File
 				RelativePath=".\Desktop.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InputBox.h"
 				>
 			</File>
 			<File
