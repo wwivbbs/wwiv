@@ -4,14 +4,14 @@
 class UIColors
 {
 public:
-    static const long TEXT_COLOR;
-    static const long WINDOW_COLOR;
-    static const long TITLEANDSTATUS_COLOR;
-    static const long MENU_COLOR;
-    static const long MENU_SELECTED_COLOR;
-    static const long LINE_COLOR;
-    static const long LINE_SELECTED_COLOR;
-    static const long BACKGROUND_TEXT_COLOR;
+    static const int TEXT_COLOR;
+    static const int WINDOW_COLOR;
+    static const int TITLEANDSTATUS_COLOR;
+    static const int MENU_COLOR;
+    static const int MENU_SELECTED_COLOR;
+    static const int LINE_COLOR;
+    static const int LINE_SELECTED_COLOR;
+    static const int BACKGROUND_TEXT_COLOR;
 
 public:
     UIColors();

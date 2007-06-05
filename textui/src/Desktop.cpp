@@ -4,12 +4,6 @@
 #include "SubWindow.h"
 #include "Colors.h"
 
-#if defined( _WIN32 )
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif // _WIN32
-
-
 UIDesktop* UIDesktop::m_desktop;
 
 
@@ -156,9 +150,7 @@ bool UIDesktop::ProcessKeyEvent( int key )
     switch ( key )
     {
     case '\n':
-#if defined(_WIN32)
-        Beep( 500, 250 );
-#endif
+        beep();
         break;
     case 0x1b:
         TerminateApplication( 0 );
