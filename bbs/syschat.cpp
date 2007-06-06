@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -704,8 +704,8 @@ void chat1(char *pszChatLine, bool two_way)
 	GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
 	s1[0] = '\0';
 
-	bool oe = echo;
-	echo = true;
+	bool oe = local_echo;
+	local_echo = true;
 	GetSession()->bout.NewLine( 2 );
 	int nSaveTopData = GetSession()->topdata;
 	if ( !okansi() )
@@ -834,7 +834,7 @@ void chat1(char *pszChatLine, bool two_way)
 	{
 		GetApplication()->UpdateTopScreen();
 	}
-	echo = oe;
+	local_echo = oe;
 	RestoreCurrentLine(cl, atr, xl, &cc);
 
 	GetSession()->tagging = otag;

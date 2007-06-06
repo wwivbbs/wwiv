@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -114,10 +114,10 @@ void WOutStream::NewLine(int nNumLines)
 
 void WOutStream::BackSpace()
 {
-    bool bSavedEcho = echo;
-    echo = true;
+    bool bSavedEcho = local_echo;
+    local_echo = true;
     Write("\b \b");
-    echo = bSavedEcho;
+    local_echo = bSavedEcho;
 }
 
 
