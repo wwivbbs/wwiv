@@ -2,7 +2,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -1193,7 +1193,7 @@ void WApplication::InitializeBBS()
 
     GetSession()->localIO()->LocalCls();
 #if !defined( _UNIX )
-    std::cout << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2006, WWIV Software Services.\r\n\n";
+    std::cout << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2007, WWIV Software Services.\r\n\n";
 	std::cout << "\r\nInitializing BBS...\r\n";
 #endif // _UNIX
     GetSession()->SetCurrentReadMessageArea( -1 );

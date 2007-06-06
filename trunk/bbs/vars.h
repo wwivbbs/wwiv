@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -92,7 +92,7 @@ __EXTRN__ bool  bChatLine,
                 newline,
 				global_xx,
                 forcescansub,
-				echo,
+				local_echo,
 				mailcheck,
 				guest_user,
 				no_hangup,

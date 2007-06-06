@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -469,7 +469,7 @@ void WWIVVersion()
     GetSession()->bout.NewLine();
     GetSession()->bout.ClearScreen();
 	GetSession()->bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
-    GetSession()->bout << "|#9Copyright (C) 1998-2006, WWIV Software Services.\r\n";
+    GetSession()->bout << "|#9Copyright (C) 1998-2007, WWIV Software Services.\r\n";
     GetSession()->bout << "|#9All Rights Reserved.\r\n\r\n";
     GetSession()->bout << "|#9Licensed under the Apache License.  " << wwiv::endl;
     GetSession()->bout << "|#9Please see |#1http://wwiv.sourceforge.net |#9for more information" << wwiv::endl << wwiv::endl;

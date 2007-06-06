@@ -1,6 +1,6 @@
 ==============================================================================
                              WWIV 5.0 Source Code
-              Copyright 2002-2006 WWIV Software Services
+              Copyright 2002-2007 WWIV Software Services
 ==============================================================================
 
 
@@ -47,6 +47,7 @@ LABEL: WWIV-5_0_62
 DATE:  ??/??/2007
 
 Atani - Added VS 2005 project files
+Atani - Copyright update to 2007
 
 
 ==============================================================================
@@ -131,7 +132,7 @@ Rushfan - Added factory method to WComm to create the WComm instance, and rename
 Rushfan - renamed write_automessage1 to write_automessage
 Rushfan - changed repeat_char to always add a NL (since all callers did), added
           inli variant that works with strings.
-Rushfan - Update Copyright statements to 2006
+Rushfan - Update Copyright statements to 2007
 Atani   - Linux compilation fixes
 Atani   - Fixed typo in chains.cpp for format specifier (line 97, arg 3)
 Rushfan - Fixed error in Input1 where the input field would be at least 80 chars

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -138,7 +138,7 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
 						//
 						pszOutText[curpos] = '\0';
 						done = true;
-                        echo = true;
+                        local_echo = true;
 						if ( newline || crend )
 						{
 							GetSession()->bout.NewLine();
@@ -149,7 +149,7 @@ void input1( char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl
                 case RETURN:
                     pszOutText[curpos] = '\0';
 					done = true;
-                    echo = true;
+                    local_echo = true;
                     if ( newline || crend )
                     {
                         GetSession()->bout.NewLine();
@@ -258,7 +258,7 @@ void input_password( std::string promptText, std::string &strOutPassword, int nM
 {
     GetSession()->bout << promptText;
     GetSession()->bout.ColorizedInputField( nMaxLength );
-    echo = false;
+    local_echo = false;
     input1( strOutPassword, nMaxLength, INPUT_MODE_FILE_UPPER, true );
 }
 

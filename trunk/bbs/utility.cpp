@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -171,7 +171,7 @@ void frequent_init()
 	GetSession()->SetUserOnline( false );
     change_color = 0;
     chatting = 0;
-    echo = true;
+    local_echo = true;
     irt[0] = '\0';
     irt_name[0] = '\0';
     lines_listed = 0;
