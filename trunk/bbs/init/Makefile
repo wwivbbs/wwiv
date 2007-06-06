@@ -10,7 +10,7 @@ PLATFORM_CFLAGS=
 PLATFORM_DIR=../platform/WIN32
 PATH_SEPERATOR=;
 EXE_EXT         = .exe
-OBJ_EXT         = .o
+OBJ_EXT         = obj
 PLATFORM_TARGETS= 
 TEXTUI_LIBRARY  = $(CURDIR)/../../textui/bin/textui.lib
 else
@@ -20,7 +20,7 @@ PLATFORM_CFLAGS=-Wall
 PLATFORM_DIR=../platform/linux
 PATH_SEPERATOR=:
 EXE_EXT         = 
-OBJ_EXT         = .o
+OBJ_EXT         = o
 PLATFORM_TARGETS=$(NODEMGR)
 TEXTUI_LIBRARY  = $(CURDIR)/../../textui/bin/libtextui.a
 endif
@@ -62,16 +62,20 @@ $(OBJ)/%.$(OBJ_EXT) : $(PLATFORM_DIR)/%.cpp
 
 INIT_OBJS =	       				\
 	$(OBJ)/main.$(OBJ_EXT)			\
+	$(OBJ)/sys_paths.$(OBJ_EXT)		\
 	$(OBJ)/bbsfuncs.$(OBJ_EXT)		\
 	$(OBJ)/WFile.$(OBJ_EXT)			\
 	$(OBJ)/WStringUtils.$(OBJ_EXT)		\
 	$(OBJ)/wfndfile.$(OBJ_EXT)		\
 	$(OBJ)/wshare.$(OBJ_EXT)		\
+	$(OBJ)/version.$(OBJ_EXT)		\
 
 all: $(OBJ) $(BIN) $(INIT_APP)
 
 clean:
-	-rm -fr $(OBJ) $(BIN)
+	@echo Cleaning...
+	-rm -f $(INIT_APP)
+	-rm -f $(INIT_OBJS)
 
 $(OBJ) $(BIN):
 	-mkdir $@

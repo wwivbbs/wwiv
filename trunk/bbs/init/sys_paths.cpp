@@ -17,69 +17,42 @@
 /*                                                                        */
 /**************************************************************************/
 
-#if defined ( _WIN32 )
-#define WIN32_LEAN_AND_MEAN
-#define _CRT_SECURE_NO_DEPRECATE
-#include <windows.h>
-#include "Wios.h"
-#include "Wiot.h"
-#elif defined ( _UNIX )
-#include "Wiou.h"
-#endif
-#include "WComm.h"
+#include "wwiv.h"
+#include "TextUI.h"
+#include "sys_paths.h"
 
-char WComm::m_szErrorText[8192];
-
-int WComm::GetComPort() const
+bool SystemPaths::Execute()
 {
-    return m_ComPort;
-}
+    UIDesktop *desktop = UIDesktop::GetDesktop();
+    UIMenu *menu = new UIMenu( "System Paths" );
+    UIPopupMenu *popup = menu->ShowPopupMenu( desktop, 0, 0 );
 
-
-void WComm::SetComPort(int nNewPort)
-{
-    m_ComPort = nNewPort;
-}
-
-const char* WComm::GetLastErrorText()
-{
-#if defined ( _WIN32 )
-    LPVOID lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER |
-        FORMAT_MESSAGE_FROM_SYSTEM |
-        FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL,
-        GetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-        (LPTSTR) &lpMsgBuf,
-        0,
-        NULL
-        );
-    strcpy(m_szErrorText, (LPCTSTR)lpMsgBuf);
-    LocalFree( lpMsgBuf );
-    return static_cast<const char *>( m_szErrorText );
-#else
-    return NULL;
-#endif
-}
-
-
-WComm* WComm::CreateComm( bool bUseSockets, unsigned int nHandle )
-{
-#if defined ( _WIN32 )
-    if ( bUseSockets )
+    while( true )
     {
-        return new WIOTelnet( nHandle );
+        int key = GetKey();
+	if(key == 0x1b) break;
+	popup->ProcessKeyEvent(key);
     }
-    else
+
+    menu->HidePopupMenu();
+
+    delete menu;
+    return false;
+}
+
+int SystemPaths::GetKey()
+{
+    while ( true )
     {
-        return new WIOSerial( nHandle );
+        int key = getch();
+        if ( key != ERR )
+        {
+            return key;
+        }
     }
-#elif defined ( _UNIX )
-    return new WIOUnix();
-#elif defined ( __OS2 )
-#error "You must implement the stuff to write with!!!"
-#endif
-    return NULL;
+    return ERR;
+}
+
+void SystemPaths::ValidatePaths()
+{
 }
