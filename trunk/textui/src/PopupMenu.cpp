@@ -1,12 +1,8 @@
-#include "StdAfx.h"
-#include "PopupMenu.h"
-#include "Desktop.h"
-#include "Command.h"
+#include "TextUI.h"
 
 using std::string;
 using std::max;
 using std::setw;
-
 
 const int PADDING_X = 2;
 const int PADDING_Y = 4;
@@ -23,12 +19,10 @@ UIPopupMenu::UIPopupMenu( UIView* parent, MenuItems items, int startx, int start
     Paint();
 }
 
-
 UIPopupMenu::~UIPopupMenu()
 {
     UIView::SetActiveView( GetParent() );
 }
-
 
 void UIPopupMenu::Paint()
 {
@@ -81,7 +75,6 @@ bool UIPopupMenu::ProcessKeyEvent( int key )
     return true;
 }
 
-
 int UIPopupMenu::GetLongestMenuItemLength( MenuItems& items )
 {
     string::size_type longestLength = 0;
@@ -93,4 +86,3 @@ int UIPopupMenu::GetLongestMenuItemLength( MenuItems& items )
     }
     return static_cast<int>( longestLength );
 }
-

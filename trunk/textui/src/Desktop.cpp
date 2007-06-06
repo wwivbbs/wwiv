@@ -1,11 +1,6 @@
-#include "StdAfx.h"
-#include "Desktop.h"
-#include "View.h"
-#include "SubWindow.h"
-#include "Colors.h"
+#include "TextUI.h"
 
 UIDesktop* UIDesktop::m_desktop;
-
 
 class StatusBar : public UISubWindow
 {

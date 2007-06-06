@@ -1,7 +1,4 @@
-#include "StdAfx.h"
-#include "MenuBar.h"
-#include "Colors.h"
-#include "Desktop.h"
+#include "TextUI.h"
 
 UIMenuBar::UIMenuBar( UIView* parent, int height, int width, int y, int x ) : 
 UISubWindow( parent, height, width, y, x, UIColors::MENU_COLOR, true ), m_alwaysVisible( true ), m_currentMenu( 0 )

@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;;$(SolutionDir)\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -212,59 +212,59 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Colors.h"
+				RelativePath="..\include\textui\Colors.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Command.h"
+				RelativePath="..\include\textui\Command.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Component.h"
+				RelativePath="..\include\textui\Component.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Desktop.h"
+				RelativePath="..\include\textui\Desktop.h"
 				>
 			</File>
 			<File
-				RelativePath=".\InputBox.h"
+				RelativePath="..\include\textui\InputBox.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Menu.h"
+				RelativePath="..\include\textui\Menu.h"
 				>
 			</File>
 			<File
-				RelativePath=".\MenuBar.h"
+				RelativePath="..\include\textui\MenuBar.h"
 				>
 			</File>
 			<File
-				RelativePath=".\MenuItem.h"
+				RelativePath="..\include\textui\MenuItem.h"
 				>
 			</File>
 			<File
-				RelativePath=".\MessageBox.h"
+				RelativePath="..\include\textui\MessageBox.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PopupMenu.h"
+				RelativePath="..\include\textui\PopupMenu.h"
 				>
 			</File>
 			<File
-				RelativePath=".\StdAfx.h"
+				RelativePath="..\include\textui\SubWindow.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SubWindow.h"
+				RelativePath="..\include\TextUI.h"
 				>
 			</File>
 			<File
-				RelativePath=".\View.h"
+				RelativePath="..\include\textui\View.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Window.h"
+				RelativePath="..\include\textui\Window.h"
 				>
 			</File>
 		</Filter>

@@ -1,7 +1,4 @@
-#include "StdAfx.h"
-#include "MessageBox.h"
-#include "Colors.h"
-#include "Desktop.h"
+#include "TextUI.h"
 
 UIMessageBox::UIMessageBox( UIView* parent, int height, int width, int starty, int startx, bool okButton  ) :
     UIWindow( parent, height, width, starty, startx, UIColors::WINDOW_COLOR, true, true ), 
@@ -17,7 +14,6 @@ UIMessageBox::UIMessageBox( UIView* parent, int height, int width, int starty, i
 UIMessageBox::~UIMessageBox()
 {
 }
-
 
 bool UIMessageBox::AddText( std::string text, bool centered, int colorPair )
 {
@@ -37,7 +33,6 @@ bool UIMessageBox::AddText( std::string text, bool centered, int colorPair )
     }
     return true;
 }
-
 
 bool UIMessageBox::Run()
 {
@@ -60,4 +55,3 @@ bool UIMessageBox::Run()
     }
     return true;
 }
-
