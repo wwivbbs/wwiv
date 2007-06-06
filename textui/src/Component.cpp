@@ -1,5 +1,4 @@
-#include "StdAfx.h"
-#include "Component.h"
+#include "TextUI.h"
 
 UIComponent::UIComponent( const UIComponent& m )
 {

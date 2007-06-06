@@ -1,7 +1,4 @@
-#include "StdAfx.h"
-#include "View.h"
-#include "Desktop.h"
-
+#include "TextUI.h"
 
 UIView* UIView::m_activeView;
 
@@ -9,11 +6,9 @@ UIView::UIView(UIView* view, WINDOW *peer) : m_parent( view ), m_peer( peer )
 {
 }
 
-
 UIView::UIView() : m_peer( NULL ), m_parent( NULL )
 {
 }
-
 
 UIView::~UIView()
 {
@@ -24,30 +19,25 @@ UIView::~UIView()
     }
 }
 
-
 void UIView::SetPeer( WINDOW *peer )
 {
     m_peer = peer;
 }
-
 
 WINDOW* UIView::GetPeer() const
 {
     return m_peer;
 }
 
-
 UIView* UIView::GetParent() const
 {
     return m_parent;
 }
 
-
 void UIView::SetParent( UIView* view )
 {
     m_parent = view;
 }
-
 
 void UIView::Paint()
 {
@@ -60,24 +50,20 @@ void UIView::Paint()
     }
 }
 
-
 int UIView::GetWidth() const
 {
     return getmaxx( m_peer );
 }
-
 
 int UIView::GetHeight() const
 {
     return getmaxy( m_peer );
 }
 
-
 int UIView::GetWindowX() const
 { 
     return getbegx( m_peer );
 }
-
 
 int UIView::GetWindowY() const
 { 
@@ -90,14 +76,12 @@ void UIView::SetXY( int x, int y )
     wmove( m_peer, y, x );
 }
 
-
 int UIView::GetX() const
 {
     int x = -1, y = -1;
     getyx( m_peer, y, x );
     return x;
 }
-
 
 int UIView::GetY() const
 {
@@ -106,13 +90,11 @@ int UIView::GetY() const
     return y;
 }
 
-
 void UIView::Write( const std::string text )
 {
     waddstr( m_peer, text.c_str() );
     touchwin( m_peer );
 }
-
 
 void UIView::WriteCentered( int y, const std::string text )
 {
@@ -122,18 +104,15 @@ void UIView::WriteCentered( int y, const std::string text )
     WriteAt( startx, y, text );
 }
 
-
 void UIView::WriteAt( int x, int y, const std::string text )
 {
     mvwaddstr( m_peer, y, x, text.c_str() );
 }
 
-
 void UIView::Erase()
 {
     werase( m_peer );
 }
-
 
 void UIView::Box( int nColorPair )
 {
@@ -141,48 +120,40 @@ void UIView::Box( int nColorPair )
     wborder( m_peer, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, 0, 0, 0, 0 );
 }
 
-
 void UIView::SetAttribute( int nPair )
 {
     wattrset( m_peer, COLOR_PAIR( nPair ) );
 }
-
 
 void UIView::SetBackground( int nPair, chtype ch  )
 {
     wbkgdset( m_peer, COLOR_PAIR( nPair ) | ch );
 }
 
-
 void UIView::DrawHorizontalLine( int y )
 {
     DrawHorizontalLine( 0, y, GetWidth() );
 }
-
 
 void UIView::DrawHorizontalLine( int startx, int starty, int count )
 {
     mvwhline( m_peer, starty, startx, ACS_HLINE, count );
 }
 
-
 void UIView::DrawVerticalLine( int startx, int starty, int count )
 {
     mvwvline( m_peer, starty, startx, ACS_VLINE, count );
 }
-
 
 void UIView::DrawVerticalLine( int x )
 {
     DrawVerticalLine( x, 0, GetHeight() );
 }
 
-
 void UIView::AddChild( UIView* child )
 {
     m_children.push_back( child );
 }
-
 
 void UIView::RemoveChild( UIView* child )
 {
@@ -193,27 +164,20 @@ void UIView::RemoveChild( UIView* child )
     }
 }
 
-
 UIView::Children::const_iterator UIView::GetChildrenIterator()
 {
     return m_children.begin();
 }
-
 
 bool UIView::ProcessKeyEvent( int key )
 {
     return false;
 }
 
-
 void UIView::Idle()
 {
     // TODO allow clients to register idle event handlers.
-#if defined( _WIN32 )
-//    Sleep( 0 );
-#endif // _WIn32
 }
-
 
 int UIView::GetKey()
 {
@@ -245,5 +209,4 @@ bool UIView::RunLoop()
         }
     }
 }
-
 

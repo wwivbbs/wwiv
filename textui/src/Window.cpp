@@ -1,7 +1,4 @@
-#include "StdAfx.h"
-#include "Window.h"
-#include "SubWindow.h"
-#include "Colors.h"
+#include "TextUI.h"
 
 using std::max;
 
@@ -25,12 +22,10 @@ UIWindow::UIWindow( UIView* parent, int height, int width, int starty, int start
     parent->AddChild( this );
 }
 
-
 UIView* UIWindow::GetContentPanel()
 {
     return m_panel;
 }
-
 
 void UIWindow::SetTitle( std::string title )
 {
@@ -50,7 +45,6 @@ void UIWindow::SetTitle( std::string title )
     SetAttribute( UIColors::MENU_SELECTED_COLOR );
     WriteAt( x, 0, s.str() );
 }
-
 
 UIWindow::~UIWindow()
 {

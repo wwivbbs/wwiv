@@ -1,17 +1,13 @@
-#include "StdAfx.h"
-#include "MenuItem.h"
-
+#include "TextUI.h"
 
 UIMenuItem::UIMenuItem( std::string text, UICommand *command  ) : UIComponent( text ), m_selected( false ), m_command( command )
 {
 }
 
-
 UIMenuItem::UIMenuItem( const UIMenuItem& m )
 {
     *this = m;
 }
-
 
 const UIMenuItem& UIMenuItem::operator= (const UIMenuItem& right )
 {
@@ -21,8 +17,6 @@ const UIMenuItem& UIMenuItem::operator= (const UIMenuItem& right )
     return *this;
 }
 
-
 UIMenuItem::~UIMenuItem()
 {
 }
-

@@ -1,5 +1,4 @@
-#include "StdAfx.h"
-#include "Command.h"
+#include "TextUI.h"
 
 UICommand::UICommand()
 {

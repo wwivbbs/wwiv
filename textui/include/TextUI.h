@@ -1,9 +1,7 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
-
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+#endif
+
 #include <stdio.h>
 #include <vector>
 #include <string>
@@ -20,6 +18,16 @@
 #undef move
 #undef refresh
 
-
-
-// TODO: reference additional headers your program requires here
+#include "textui/Colors.h"
+#include "textui/Component.h"
+#include "textui/Command.h"
+#include "textui/View.h"
+#include "textui/Desktop.h"
+#include "textui/Menu.h"
+#include "textui/MenuBar.h"
+#include "textui/MenuItem.h"
+#include "textui/MessageBox.h"
+#include "textui/PopupMenu.h"
+#include "textui/Window.h"
+#include "textui/SubWindow.h"
+#include "textui/InputBox.h"
