@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -178,13 +178,13 @@ void HandleControlKey( char *ch )
               }
               break;
           case CT:  // CTRL - T
-              if ( echo )
+              if ( local_echo )
               {
                   PrintTime();
               }
               break;
 		  case CU:	// CTRL-U
-			  if ( echo )
+			  if ( local_echo )
 			  {
                   char xl[81], cl[81], atr[81], cc;
 				  GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
@@ -196,7 +196,7 @@ void HandleControlKey( char *ch )
 			  }
 			  break;
           case CR:
-              if ( echo )
+              if ( local_echo )
               {
                   RedrawCurrentLine();
               }

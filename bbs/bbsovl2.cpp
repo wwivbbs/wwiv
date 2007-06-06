@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -311,8 +311,8 @@ void OnlineUserEditor()
  */
 void BackPrint( std::string strText, int nColorCode, int nCharDelay, int nStringDelay )
 {
-	bool oecho = echo;
-	echo = true;
+	bool oecho = local_echo;
+	local_echo = true;
     int nLength = strText.length();
 	GetSession()->bout.Color( nColorCode );
 	WWIV_Delay( nCharDelay );
@@ -328,7 +328,7 @@ void BackPrint( std::string strText, int nColorCode, int nCharDelay, int nString
 		GetSession()->bout.BackSpace();
 		WWIV_Delay( 5 );
 	}
-	echo = oecho;
+	local_echo = oecho;
 }
 
 
@@ -356,8 +356,8 @@ void MoveLeft( int nNumberOfChars )
  */
 void SpinPuts( const std::string strText, int nColorCode )
 {
-	bool oecho	= echo;
-	echo		= true;
+	bool oecho	= local_echo;
+	local_echo		= true;
 
 	if ( okansi() )
 	{
@@ -385,5 +385,5 @@ void SpinPuts( const std::string strText, int nColorCode )
 	{
 		GetSession()->bout << strText;
 	}
-	echo = oecho;
+	local_echo = oecho;
 }

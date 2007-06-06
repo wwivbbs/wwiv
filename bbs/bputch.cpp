@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2006, WWIV Software Services             */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -168,7 +168,7 @@ int bputch( char c, bool bUseInternalBuffer )
 	{
 		change_color = BPUTCH_NO_CODE;
 	}
-	if ( echo )
+	if ( local_echo )
 	{
 		GetSession()->localIO()->global_char( c );
 	}
@@ -177,7 +177,7 @@ int bputch( char c, bool bUseInternalBuffer )
 		if (! ( !okansi() && ( ansiptr || c == ESC ) ) )
 		{
             char x = okansi() ? '\xFE' : 'X';
-			rputch( echo ? c : x, bUseInternalBuffer );
+			rputch( local_echo ? c : x, bUseInternalBuffer );
 			displayed = 1;
 		}
 	}
@@ -218,10 +218,10 @@ int bputch( char c, bool bUseInternalBuffer )
 				displayed += bputch( SPACE );
 			}
 		}
-		else if ( echo || AllowLocalSysop() )
+		else if ( local_echo || AllowLocalSysop() )
 		{
 			displayed = 1;
-			GetSession()->localIO()->LocalPutch( echo ? c : '\xFE' );
+			GetSession()->localIO()->LocalPutch( local_echo ? c : '\xFE' );
 
 			if ( c == SOFTRETURN )
 			{
