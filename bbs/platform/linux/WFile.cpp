@@ -172,11 +172,15 @@ bool WFile::Open( int nFileMode, int nShareMode, int nPermissions )
 		int count = 1;
 		if ( access( m_szFileName, 0 ) != -1 )
 		{
+#if !defined(INIT)
 			WWIV_Delay( WAIT_TIME );
+#endif // #if !defined(INIT)
 			m_hFile = open( m_szFileName, nFileMode, nShareMode );
 			while ( ( m_hFile < 0 && errno == EACCES ) && count < TRIES )
 			{
+#if !defined(INIT)
 				WWIV_Delay( ( count % 2 ) ? WAIT_TIME : 0 );
+#endif // #if !defined(INIT)
 				count++;
 				m_hFile = open( m_szFileName, nFileMode, nShareMode );
 			}
@@ -407,7 +411,9 @@ bool WFile::CopyFile( const std::string sourceFileName, const std::string destFi
 
     while (i > 0)
     {
+#if !defined(INIT)
       giveup_timeslice();
+#endif // #if !defined(INIT)
       write(hDestFile, (void *) pBuffer, i);
       i = read(hSourceFile, (void *) pBuffer, 16384);
     }
