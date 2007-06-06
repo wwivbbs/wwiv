@@ -23,6 +23,8 @@
 
 #include "TextUI.h"
 
+#include "sys_paths.h"
+
 class ExitCommand : public UICommand
 {
     virtual bool Execute()
@@ -77,24 +79,33 @@ int main( int argc, char* argv[] )
     UIDesktop* desktop = UIDesktop::InitializeDesktop( true, true );
     UISubWindow *window = new UISubWindow( desktop, 6, 50, 10, 15, UIColors::BACKGROUND_TEXT_COLOR, false );
 
-    window->WriteCentered( 1, " WWIV Init " );
+    std::string name(" WWIV Init ");
+    name += wwiv_version;
+    name += " ";
+    name += beta_version;
+    name += " ";
+    window->WriteCentered( 1, name );
     window->WriteCentered( 3, " Copyright (c) 2007 WWIV Software Services. " );
     window->WriteCentered( 5, " All Rights Reserved. " );
 
     WFile configFile( CONFIG_DAT );
-	int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
+    int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
     if ( configFile.Open( nFileMode ) )
     {
         configFile.Read( &syscfg, sizeof( configrec ) );
         configFile.Close();
         UIInputBox *pwInput = new UIInputBox(desktop, 5, 40, 0, 0, "Enter system password:", "Authentication", "*");
         pwInput->Run();
-        if(!wwiv::stringUtils::IsEquals(syscfg.systempw, pwInput->GetText().c_str()))
+	const char * entered = pwInput->GetText().c_str();
+        if(!wwiv::stringUtils::IsEqualsIgnoreCase(syscfg.systempw, entered))
         {
-            UIMessageBox msgBox(desktop, 5, 40, 0, 0);
-            msgBox.AddText("System password does not match");
+            UIMessageBox msgBox(desktop, 8, 40, 5, 20, true);
+            msgBox.AddText("System password does not match", true);
             msgBox.Run();
-            exit(-1);
+            delete pwInput;
+            delete window;
+            delete desktop;
+	    exit(-1);
         }
         delete pwInput;
     }
@@ -122,5 +133,10 @@ int main( int argc, char* argv[] )
     desktop->RunLoop();
     delete window;
     delete desktop;
-	return 0;
+
+    nFileMode = WFile::modeReadWrite | WFile::modeBinary;
+    configFile.Open( nFileMode );
+    configFile.Write( &syscfg, sizeof( configrec ) );
+    configFile.Close();
+    return 0;
 }
