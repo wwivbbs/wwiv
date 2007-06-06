@@ -67,7 +67,9 @@ void UIWindow::SetTitle( std::string title )
 
 UIWindow::~UIWindow()
 {
+#if defined(_WIN32)
     UIView::~UIView();
+#endif // #if defined(_WIN32)
     GetParent()->RemoveChild( this );
     delete m_panel;
     GetParent()->Paint();

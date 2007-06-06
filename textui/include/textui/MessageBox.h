@@ -20,7 +20,7 @@
 #if !defined(TUI_MESSAGEBOX_H)
 #define TUI_MESSAGEBOX_H
 
-#include "window.h"
+#include "Window.h"
 #include "Colors.h"
 
 

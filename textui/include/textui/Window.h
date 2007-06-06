@@ -20,7 +20,7 @@
 #if !defined(TUI_UIWINDOW_H)
 #define TUI_UIWINDOW_H
 
-#include "view.h"
+#include "View.h"
 #include "SubWindow.h"
 
 class UIWindow :

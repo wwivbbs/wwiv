@@ -146,3 +146,4 @@ bool UIMenuBar::ProcessKeyEvent( int key )
 
     return true;
 }
+

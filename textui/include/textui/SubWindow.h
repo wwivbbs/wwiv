@@ -20,7 +20,7 @@
 #if !defined(TUI_UISUBWINDOW_H)
 #define TUI_UISUBWINDOW_H
 
-#include "view.h"
+#include "View.h"
 
 class UISubWindow :
     public UIView
