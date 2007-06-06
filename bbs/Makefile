@@ -41,6 +41,7 @@ BIN		= bin
 
 BIN_NAME        = $(BIN)/wwiv$(EXE_EXT)
 INITLITE	= $(BIN)/initlite$(EXE_EXT)
+INIT    	= $(BIN)/init$(EXE_EXT)
 NODEMGR 	= $(BIN)/nodemgr$(EXE_EXT)
 FIX             = $(BIN)/fix$(EXE_EXT)
 RM		= rm
@@ -230,9 +231,11 @@ BBS_SOURCE =	$(patsubst %.o, %.cpp, $(BBS_OBJS))
 #
 #
 
-all: $(BIN_NAME) $(INITLITE) $(FIX) $(PLATFORM_TARGETS)
+all: $(BIN_NAME) $(INITLITE) $(INIT) $(FIX) $(PLATFORM_TARGETS)
 
 initlite: $(INITLITE)
+
+init: $(INIT)
 
 nodemgr: $(NODEMGR)
 
@@ -247,6 +250,9 @@ $(BIN):
 $(BIN_NAME): $(BIN) $(OBJ) $(BBS_OBJS)
 	@echo Linking $@
 	@$(CC) -o $(BIN_NAME) $(LINKFLAGS) $(BBS_OBJS)
+
+$(INIT):
+	@$(MAKE) -C init  --no-print-directory
 
 $(INITLITE):
 	@$(MAKE) -C initlite  --no-print-directory
@@ -265,6 +271,7 @@ clean:
 	-$(RM) -f make.log
 	-$(RM) -f *~
 	@$(MAKE) -C initlite clean --no-print-directory
+	@$(MAKE) -C init clean --no-print-directory
 	@$(MAKE) -C nodemgr clean --no-print-directory
 	@$(MAKE) -C fix clean --no-print-directory
 
