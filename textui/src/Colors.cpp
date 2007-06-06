@@ -1,6 +1,4 @@
-#include "StdAfx.h"
-#include "Colors.h"
-
+#include "TextUI.h"
 
 const int UIColors::TEXT_COLOR  = 0;
 const int UIColors::WINDOW_COLOR = 1;
@@ -11,7 +9,6 @@ const int UIColors::LINE_COLOR = ( 5 | A_BOLD );
 const int UIColors::LINE_SELECTED_COLOR = ( 6 | A_BOLD );
 const int UIColors::BACKGROUND_TEXT_COLOR = 7;
 
-
 UIColors::UIColors()
 {
 }
@@ -19,7 +16,6 @@ UIColors::UIColors()
 UIColors::~UIColors()
 {
 }
-
 
 void UIColors::LoadScheme( std::string colorSchemeName )
 {

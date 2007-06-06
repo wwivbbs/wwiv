@@ -1,6 +1,4 @@
-#include "StdAfx.h"
-#include "SubWindow.h"
-
+#include "TextUI.h"
 
 UISubWindow::UISubWindow( UIView *parent, int height, int width, int starty, int startx, int colorPair, bool erase ) : UIView()
 {
@@ -16,7 +14,6 @@ UISubWindow::UISubWindow( UIView *parent, int height, int width, int starty, int
     SetParent( parent );
     parent->AddChild( this );
 }
-
 
 UISubWindow::~UISubWindow(void)
 {

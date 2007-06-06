@@ -1,15 +1,7 @@
 // TUI.cpp : Defines the entry point for the console application.
 //
 #include <iostream>
-#include "StdAfx.h"
-#include "Desktop.h"
-#include "Colors.h"
-#include "SubWindow.h"
-#include "Command.h"
-#include "MessageBox.h"
-#include "Menu.h"
-#include "MenuBar.h"
-#include "InputBox.h"
+#include "TextUI.h"
 
 class ExitCommand : public UICommand
 {

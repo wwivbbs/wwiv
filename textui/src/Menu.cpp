@@ -1,6 +1,4 @@
-#include "StdAfx.h"
-#include "Menu.h"
-#include "Colors.h"
+#include "TextUI.h"
 
 using std::max;
 using std::string;

@@ -1,5 +1,4 @@
-#include "StdAfx.h"
-#include "InputBox.h"
+#include "TextUI.h"
 
 UIInputBox::UIInputBox( UIView* parent, int height, int width, int starty, int startx,
 	std::string prompt, std::string title, std::string maskCharacter,
@@ -34,7 +33,7 @@ bool UIInputBox::Run()
 		default:
 			if(isalpha(key) || isdigit(key))
 			{
-				if(m_maskCharacter.begin() != m_maskCharacter.end())
+				if(m_maskCharacter.length() > 0)
 				{
 					m_text += m_maskCharacter;
 				}
