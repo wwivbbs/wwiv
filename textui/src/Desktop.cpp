@@ -174,3 +174,4 @@ bool UIDesktop::ProcessKeyEvent( int key )
     }
     return true;
 }
+

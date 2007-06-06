@@ -20,7 +20,7 @@
 #if !defined(TUI_COMPONENT_H)
 #define TUI_COMPONENT_H
 
-#include "view.h"
+#include "View.h"
 
 class UIComponent
 {

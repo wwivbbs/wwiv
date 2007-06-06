@@ -20,7 +20,7 @@
 #if !defined(TUI_MENUBAR_H)
 #define TUI_MENUBAR_H
 
-#include "view.h"
+#include "View.h"
 #include "SubWindow.h"
 #include "Menu.h"
 

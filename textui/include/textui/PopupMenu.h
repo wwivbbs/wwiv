@@ -20,7 +20,7 @@
 #if !defined(TUI_POPUPMENU_H)
 #define TUI_POPUPMENU_H
 
-#include "window.h"
+#include "Window.h"
 #include "MenuItem.h"
 
 typedef std::vector<UIMenuItem*> MenuItems;
