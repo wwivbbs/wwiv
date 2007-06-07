@@ -17,55 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
 #include "TextUI.h"
-#include "sys_paths.h"
 
-bool SystemPaths::Execute()
+class SystemGeneral : public UICommand
 {
-    UIDesktop *desktop = UIDesktop::GetDesktop();
-    UIMenu *menu = new UIMenu( "System Paths" );
-	menu->Add(new UIMenuItem( "Messages Directory", NULL ) );
-	menu->Add(new UIMenuItem( "GFiles Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Menu Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Data Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Downloads Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Temporary Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Batch Directory", NULL ) );
-	UIView *currentActiveView = desktop->GetActiveView();
-    UIPopupMenu *popup = menu->ShowPopupMenu( desktop, 20, 5 );
+    virtual bool Execute();
 
-    while( true )
-    {
-        int key = GetKey();
-		if(key == 0x1b) break;
-		popup->ProcessKeyEvent(key);
-    }
-
-    menu->HidePopupMenu();
-
-    delete menu;
-
-	ValidatePaths();
-
-	desktop->SetActiveView(currentActiveView);
-
-    return false;
-}
-
-int SystemPaths::GetKey()
-{
-    while ( true )
-    {
-        int key = getch();
-        if ( key != ERR )
-        {
-            return key;
-        }
-    }
-    return ERR;
-}
-
-void SystemPaths::ValidatePaths()
-{
-}
+    int GetKey();
+};

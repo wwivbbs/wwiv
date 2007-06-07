@@ -37,7 +37,18 @@ bool UIInputBox::Run()
 	GetContentPanel()->WriteAt( 1, 0, m_prompt );
     while ( true )
     {
-		GetContentPanel()->WriteAt( 1, 1, GetText() );
+		if(m_maskCharacter.length() > 0 && GetText().length() > 0)
+		{
+			GetContentPanel()->WriteAt( 1, 1, m_maskCharacter );
+			for(int i = 1; i < GetText().length(); i++)
+			{
+				GetContentPanel()->Write( m_maskCharacter );
+			}
+		}
+		else
+		{
+			GetContentPanel()->WriteAt( 1, 1, GetText() );
+		}
 	    Paint();
         int key = GetKey();
         switch ( key )
@@ -52,14 +63,7 @@ bool UIInputBox::Run()
 		default:
 			if(isalpha(key) || isdigit(key))
 			{
-				if(m_maskCharacter.length() > 0)
-				{
-					m_text += m_maskCharacter;
-				}
-				else
-				{
-					m_text += toupper((char)key);
-				}
+				m_text += toupper((char)key);
 			}
         }
     }

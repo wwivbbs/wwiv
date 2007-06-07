@@ -23,6 +23,7 @@
 
 #include "TextUI.h"
 
+#include "sys_general.h"
 #include "sys_paths.h"
 
 class ExitCommand : public UICommand
@@ -57,8 +58,8 @@ void CreateMenus( UIMenuBar* menuBar )
     fileMenu->Add( new UIMenuItem ( "Exit", new ExitCommand ) );
     menuBar->AddMenu( fileMenu );
     UIMenu *systemMenu = new UIMenu( "System" );
-	systemMenu->Add(new UIMenuItem( "General", NULL ) );
-	systemMenu->Add(new UIMenuItem( "Paths", NULL ) );
+	systemMenu->Add(new UIMenuItem( "General", new SystemGeneral ) );
+	systemMenu->Add(new UIMenuItem( "Paths", new SystemPaths ) );
 	systemMenu->Add(new UIMenuItem( "Networks", NULL ) );
     menuBar->AddMenu( systemMenu );
     UIMenu *optionsMenu = new UIMenu( "Options" );
@@ -96,8 +97,8 @@ int main( int argc, char* argv[] )
         configFile.Close();
         UIInputBox *pwInput = new UIInputBox(desktop, 5, 40, 0, 0, "Enter system password:", "Authentication", "*");
         pwInput->Run();
-	const char * entered = pwInput->GetText().c_str();
-        if(!wwiv::stringUtils::IsEqualsIgnoreCase(syscfg.systempw, entered))
+		std::string entered = pwInput->GetText();
+		if(!wwiv::stringUtils::IsEqualsIgnoreCase(syscfg.systempw, entered.c_str()))
         {
             UIMessageBox msgBox(desktop, 8, 40, 5, 20, true);
             msgBox.AddText("System password does not match", true);
@@ -105,7 +106,7 @@ int main( int argc, char* argv[] )
             delete pwInput;
             delete window;
             delete desktop;
-	    exit(-1);
+	        exit(-1);
         }
         delete pwInput;
     }

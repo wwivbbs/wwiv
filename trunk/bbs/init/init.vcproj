@@ -60,10 +60,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="user32.lib advapi32.lib TUI.lib pdcurses.lib shell32.lib"
-				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)\..\textui\Debug&quot;;&quot;$(SolutionDir)\..\textui\deps\pdcurses\3.1\lib&quot;"
-				IgnoreDefaultLibraryNames="msvcprtd;libcmtd"
+				AdditionalDependencies="TUI.lib shell32.lib user32.lib advapi32.lib"
+				LinkIncremental="0"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\..\textui\Debug&quot;"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\textui\src&quot;;&quot;$(SolutionDir)\..\textui\deps\pdcurses\3.1\include&quot;;&quot;$(SolutionDir)&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\textui\include&quot;;&quot;$(SolutionDir)\..\textui\deps\pdcurses\3.1\include&quot;;&quot;$(SolutionDir)&quot;;&quot;$(SolutionDir)\platform&quot;;&quot;$(SolutionDir)\platform\WIN32&quot;"
 				PreprocessorDefinitions="INIT"
 				RuntimeLibrary="2"
 				WarningLevel="3"
@@ -183,6 +183,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sys_general.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\sys_paths.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\version.cpp"
 				>
 			</File>
@@ -212,6 +220,14 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\sys_general.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sys_paths.h"
+				>
+			</File>
 			<File
 				RelativePath="..\platform\WFile.h"
 				>
