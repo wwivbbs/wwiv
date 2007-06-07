@@ -19,66 +19,21 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="0"
 			CharacterSet="0"
 			>
 			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;;$(SolutionDir)\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="4"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-				AdditionalDependencies="pdcurses.lib"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\lib&quot;"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
+				Name="VCNMakeTool"
+				BuildCommandLine=""
+				ReBuildCommandLine=""
+				CleanCommandLine=""
+				Output=""
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
 			/>
 		</Configuration>
 		<Configuration
@@ -106,10 +61,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;;$(SolutionDir)\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="TextUI.h"
+				PrecompiledHeaderFile="$(TargetName).pch"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
@@ -156,55 +113,528 @@
 			<File
 				RelativePath=".\Colors.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Command.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Component.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Desktop.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\InputBox.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Menu.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\MenuBar.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\MenuItem.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\MessageBox.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\PopupMenu.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\SubWindow.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\View.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Window.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
+			<Filter
+				Name="pdcurses"
+				>
+				<Filter
+					Name="common"
+					>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\addch.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\addchstr.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\addstr.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\attr.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\beep.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\bkgd.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\border.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\clear.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\color.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\debug.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\delch.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\deleteln.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\deprec.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\getch.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\getstr.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\getyx.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\inch.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\inchstr.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\initscr.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\inopts.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\insch.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\insstr.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\instr.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\kernel.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\keyname.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\mouse.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\move.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\outopts.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\overlay.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\pad.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\printw.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\refresh.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\scanw.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\scr_dump.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\scroll.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\slk.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\termattr.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\terminfo.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\touch.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\util.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\pdcurses\window.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)1.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+							/>
+						</FileConfiguration>
+					</File>
+				</Filter>
+				<Filter
+					Name="win32"
+					>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\win32\pdcclip.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\win32\pdcdisp.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\win32\pdcgetsc.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\win32\pdckbd.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\win32\pdcscrn.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\win32\pdcsetsc.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\win32\pdcurses.rc"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\win32\pdcutil.c"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\deps\pdcurses\3.1\src\win32\pdcwin.h"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+						</FileConfiguration>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -214,58 +644,114 @@
 			<File
 				RelativePath="..\include\textui\Colors.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\Command.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\Component.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\Desktop.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\InputBox.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\Menu.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\MenuBar.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\MenuItem.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\MessageBox.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\PopupMenu.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\SubWindow.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\TextUI.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\View.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\include\textui\Window.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -273,10 +759,18 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath="..\Makefile.nmake"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+			</FileConfiguration>
 		</File>
 	</Files>
 	<Globals>
