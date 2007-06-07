@@ -40,7 +40,7 @@ bool UIInputBox::Run()
 		if(m_maskCharacter.length() > 0 && GetText().length() > 0)
 		{
 			GetContentPanel()->WriteAt( 1, 1, m_maskCharacter );
-			for(int i = 1; i < GetText().length(); i++)
+			for(size_t i = 1; i < GetText().length(); i++)
 			{
 				GetContentPanel()->Write( m_maskCharacter );
 			}
