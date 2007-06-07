@@ -43,7 +43,7 @@ public:
     int Write( const char *pszText ) { return fputs( pszText, m_hFile ); }
     int WriteChar( char ch ) { return fputc( ch, m_hFile ); }
     int WriteFormatted( const char *pszFormatText, ... );
-    int WriteBinary( const void *pBuffer, size_t nSize ) { return fwrite(pBuffer, nSize, 1, m_hFile ); }
+    int WriteBinary( const void *pBuffer, size_t nSize ) { return (int)fwrite(pBuffer, nSize, 1, m_hFile ); }
     bool ReadLine( char *pszBuffer, int nBufferSize ) { return (fgets(pszBuffer, nBufferSize, m_hFile) != NULL) ? true : false; }
     bool ReadLine( std::string &buffer );
     long GetPosition() { return ftell(m_hFile); }
