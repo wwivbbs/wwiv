@@ -19,19 +19,31 @@
 
 #include "wwiv.h"
 #include "TextUI.h"
-#include "sys_paths.h"
+#include "sys_general.h"
 
-bool SystemPaths::Execute()
+bool SystemGeneral::Execute()
 {
     UIDesktop *desktop = UIDesktop::GetDesktop();
-    UIMenu *menu = new UIMenu( "System Paths" );
-	menu->Add(new UIMenuItem( "Messages Directory", NULL ) );
-	menu->Add(new UIMenuItem( "GFiles Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Menu Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Data Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Downloads Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Temporary Directory", NULL ) );
-	menu->Add(new UIMenuItem( "Batch Directory", NULL ) );
+    UIMenu *menu = new UIMenu( "General Information" );
+	menu->Add(new UIMenuItem( "System Password", NULL ) );
+	menu->Add(new UIMenuItem( "Sysop Name", NULL ) );
+	menu->Add(new UIMenuItem( "Sysop high time", NULL ) );
+	menu->Add(new UIMenuItem( "Sysop low time", NULL ) );
+	menu->Add(new UIMenuItem( "System Name", NULL ) );
+	menu->Add(new UIMenuItem( "System Phone", NULL ) );
+	menu->Add(new UIMenuItem( "Closed System", NULL ) );
+	menu->Add(new UIMenuItem( "Newuser PW", NULL ) );
+	menu->Add(new UIMenuItem( "Newuser restrict", NULL ) );
+	menu->Add(new UIMenuItem( "Newuser SL", NULL ) );
+	menu->Add(new UIMenuItem( "Newuser SSL", NULL ) );
+	menu->Add(new UIMenuItem( "Network high time", NULL ) );
+	menu->Add(new UIMenuItem( "Network low time", NULL ) );
+	menu->Add(new UIMenuItem( "Up/Download ratio", NULL ) );
+	menu->Add(new UIMenuItem( "Post/Call ratio", NULL ) );
+	menu->Add(new UIMenuItem( "Max waiting", NULL ) );
+	menu->Add(new UIMenuItem( "Max users", NULL ) );
+	menu->Add(new UIMenuItem( "Caller number", NULL ) );
+	menu->Add(new UIMenuItem( "Days active", NULL ) );
 	UIView *currentActiveView = desktop->GetActiveView();
     UIPopupMenu *popup = menu->ShowPopupMenu( desktop, 20, 5 );
 
@@ -46,14 +58,12 @@ bool SystemPaths::Execute()
 
     delete menu;
 
-	ValidatePaths();
-
 	desktop->SetActiveView(currentActiveView);
 
     return false;
 }
 
-int SystemPaths::GetKey()
+int SystemGeneral::GetKey()
 {
     while ( true )
     {
@@ -64,8 +74,4 @@ int SystemPaths::GetKey()
         }
     }
     return ERR;
-}
-
-void SystemPaths::ValidatePaths()
-{
 }
