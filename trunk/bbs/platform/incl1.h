@@ -96,7 +96,7 @@ enum COLORS
 #define timezone _timezone
 #endif // __GNUC__
 
-#define vsnprintf _vsnprintf
+#define WWIV_VSNPRINTF _vsnprintf
 #define snprintf _snprintf
 
 #endif	 // _WIN32
@@ -130,6 +130,7 @@ enum COLORS
 #define WWIV_FILE_SEPERATOR_CHAR	'\\'
 #define WWIV_FILE_SEPERATOR_STRING	"\\"
 
+#define WWIV_VSNPRINTF vsnprintf
 
 #endif	 // __OS2__
 
@@ -211,6 +212,8 @@ enum COLORS
     WHITE
 };
 
+#define WWIV_VSNPRINTF vsnprintf
+
 #endif // defined (_UNIX)
 
 
@@ -249,6 +252,8 @@ enum COLORS
 #ifndef UNREFERENCED_PARAMETER( X )
 #define UNREFERENCED_PARAMETER( X )   ( X )
 #endif // UNREFERENCED_PARAMETER
+
+#define WWIV_VSNPRINTF vsnprintf
 
 #endif	 // __MSDOS__
 

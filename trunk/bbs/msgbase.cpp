@@ -45,15 +45,12 @@ static long gat_section;
  */
 void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOutOriginStr, std::string& strOutOriginStr2 )
 {
-	char szNetName[81];
+	std::string netName;
 
 	if ( GetSession()->GetMaxNetworkNumber() > 1 )
 	{
-		sprintf( szNetName, "%s - ", net_networks[GetSession()->GetNetworkNumber()].name );
-	}
-	else
-	{
-		szNetName[0] = '\0';
+		netName = net_networks[GetSession()->GetNetworkNumber()].name;
+		netName += "- "; 
 	}
 
     CLEAR_STRING( strOutOriginStr );
@@ -110,14 +107,14 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOu
 			}
 
             std::stringstream sstream;
-            sstream << szNetName << csne->name << " [" << csne->phone << "] " << szNetStatus;
+            sstream << netName << csne->name << " [" << csne->phone << "] " << szNetStatus;
             strOutOriginStr = sstream.str();
             strOutOriginStr2 = (szDescription[0]) ? szDescription : "Unknown Area";
 		}
 		else
 		{
             std::stringstream sstream;
-            sstream << szNetName << "Unknown System";
+            sstream << netName << "Unknown System";
             strOutOriginStr = sstream.str();
 			strOutOriginStr2 = "Unknown Area";
 		}

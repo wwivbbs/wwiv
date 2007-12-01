@@ -25,7 +25,6 @@
 #include <iostream>
 
 #if defined( _WIN32 )
-#define vsnprintf _vsnprintf
 #define snprintf _snprintf
 #endif // _WIN32
 

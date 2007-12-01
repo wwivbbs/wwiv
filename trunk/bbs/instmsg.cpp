@@ -157,7 +157,7 @@ void broadcast( const char *fmt, ... )
     char szBuffer[2048];
 
     va_start( ap, fmt );
-    vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
+    WWIV_VSNPRINTF( szBuffer, sizeof( szBuffer ), fmt, ap );
     va_end( ap );
     _broadcast( szBuffer );
 }

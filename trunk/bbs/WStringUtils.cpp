@@ -50,7 +50,7 @@ namespace wwiv
 			char szBuffer[ 1024 ];
 
 			va_start( ap, pszFormattedText );
-			vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
+			WWIV_VSNPRINTF( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
 			va_end( ap );
 			str = szBuffer;
 			return str.length();
