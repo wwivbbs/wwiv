@@ -49,7 +49,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 
 	*pUserNumber = 0;
 	*pSystemNumber = 0;
-	net_email_name[0] = 0;
+	net_email_name[0] = '\0';
 	char *ss = strrchr(szEmailAddress, '@');
 	if (ss == NULL)
 	{
@@ -94,16 +94,16 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 	}
 	else
 	{
-		ss[0] = 0;
+		ss[0] = '\0';
 		ss = &(ss[1]);
 		i = strlen(szEmailAddress);
-		while ((i > 0) && (szEmailAddress[i - 1] == ' '))
+		while ( i > 0 && szEmailAddress[i - 1] == ' ' )
 		{
 			--i;
 		}
 		szEmailAddress[i] = 0;
 		nUserNumber = atoi(szEmailAddress);
-		if ((nUserNumber == 0) && (szEmailAddress[0] == '#'))
+		if ( nUserNumber == 0 && szEmailAddress[0] == '#' )
 		{
 			nUserNumber = atoi(szEmailAddress + 1);
 		}
@@ -121,11 +121,11 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 		{
 			strcpy(net_email_name, szEmailAddress);
 			i = strlen(net_email_name);
-			while ((i > 0) && (net_email_name[i - 1] == ' '))
+			while ( i > 0 && net_email_name[i - 1] == ' ' )
 			{
 				--i;
 			}
-			net_email_name[i] = 0;
+			net_email_name[i] = '\0';
 			if (net_email_name[0])
 			{
 				*pSystemNumber = static_cast< unsigned short >( nSystemNumber );
@@ -181,10 +181,10 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 		}
 		else if ( *pSystemNumber && GetSession()->GetMaxNetworkNumber() > 1 )
 		{
-			odc[0] = 0;
+			odc[0] = '\0';
 			odci = 0;
 			onx[0] = 'Q';
-			onx[1] = 0;
+			onx[1] = '\0';
 			onxi = 1;
 			nv = 0;
 			on = GetSession()->GetNetworkNumber();
@@ -279,9 +279,9 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 						i = atoi(mmk) - 1;
 					}
 				}
-				if ((i >= 0) && (i < nv))
+				if ( i >= 0 && i < nv )
 				{
-					set_net_num(ss[i]);
+					set_net_num( ss[i] );
 				}
 				else
 				{
@@ -289,7 +289,7 @@ void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSyste
 					*pUserNumber = *pSystemNumber = 0;
 				}
 			}
-			BbsFreeMemory(ss);
+			BbsFreeMemory( ss );
     }
 	else
 	{
@@ -449,11 +449,8 @@ bool play_sdf( const std::string soundFileName, bool abortable )
         int nw = wordcount( soundLine.c_str(), DELIMS_WHITE);
 		if (nw >= 2)
 		{
-            char szTemp[ 513 ];
-			strncpy(szTemp, extractword(1, soundLine.c_str(), DELIMS_WHITE), sizeof(szTemp));
-			int freq = atoi(szTemp);
-			strncpy(szTemp, extractword(2, soundLine.c_str(), DELIMS_WHITE), sizeof(szTemp));
-			int dur = atoi(szTemp);
+            int freq = atoi( extractword(1, soundLine, DELIMS_WHITE) );
+			int dur = atoi( extractword(2, soundLine, DELIMS_WHITE) );
 
 			// only play if freq and duration > 0
 			if ( freq > 0 && dur > 0 )
@@ -461,10 +458,9 @@ bool play_sdf( const std::string soundFileName, bool abortable )
                 int nPauseDelay = 0;
 				if (nw > 2)
 				{
-					strncpy( szTemp, extractword(3, soundLine.c_str(), DELIMS_WHITE), sizeof( szTemp ) );
-					nPauseDelay = atoi( szTemp );
+					nPauseDelay = atoi( extractword(3, soundLine, DELIMS_WHITE) );
 				}
-				WWIV_Sound(freq, dur);
+				WWIV_Sound( freq, dur );
 				if ( nPauseDelay > 0 )
 				{
 					WWIV_Delay( nPauseDelay );

@@ -114,7 +114,7 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 		}
         else if (os.dwMajorVersion == 6)
         {
-			snprintf( szBuffer, sizeof( szBuffer ), "**UNKNOWN** %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, ( bFullVersion ? os.szCSDVersion : "" ) );
+			snprintf( szBuffer, sizeof( szBuffer ), "Windows Vista %s", ( bFullVersion ? os.szCSDVersion : "" ) );
         }
 		else
 		{

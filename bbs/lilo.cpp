@@ -1456,11 +1456,9 @@ void logon_guest()
     int count = 0;
     do
     {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#5Enter your real name : ";
+        GetSession()->bout << "\r\n|#5Enter your real name : ";
         input( userName, 25, true );
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#5Purpose of your call?\r\n";
+        GetSession()->bout << "\r\n|#5Purpose of your call?\r\n";
         input( reason, 79, true );
         if ( !userName.empty() && !reason.empty() )
         {

@@ -132,6 +132,18 @@ public:
 
     virtual int  Read( void * pBuffer, int nCount );
     virtual int  Write( const void * pBuffer, int nCount );
+	virtual int Write( const std::string& s ) {
+		return this->Write( s.c_str(), s.length() );
+	}
+	virtual int Writeln( const void *pBuffer, int nCount ) {
+		int ret = this->Write( pBuffer, nCount );
+		ret += this->Write( "\r\n", 2 );
+		return ret;
+	}
+
+	virtual int Writeln( const std::string& s ) {
+		return  this->Writeln( s.c_str(), s.length() );
+	}
 
     virtual long GetLength();
     virtual long Seek( long lOffset, int nFrom );

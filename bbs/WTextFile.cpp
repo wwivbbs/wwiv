@@ -64,7 +64,7 @@ int WTextFile::WriteFormatted( const char *pszFormatText,... )
     char szBuffer[ 4096 ];
 
     va_start( ap, pszFormatText );
-    vsnprintf( szBuffer, sizeof( szBuffer ), pszFormatText, ap );
+    WWIV_VSNPRINTF( szBuffer, sizeof( szBuffer ), pszFormatText, ap );
     va_end( ap );
     return Write( szBuffer );
 }

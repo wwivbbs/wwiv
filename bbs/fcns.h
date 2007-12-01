@@ -208,7 +208,6 @@ char first_available_designator(int conftype);
 int  in_conference(int subnum, confrec * c);
 void save_confs(int conftype, int whichnum, confrec * c);
 void showsubconfs(int conftype, confrec * c);
-SUBCONF_TYPE *str_to_numrange(const char *pszNumbersText, int *numinlist);
 void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
 void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
 int  modify_conf(int conftype, int which);
@@ -221,8 +220,8 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max);
 void read_in_conferences(int conftype);
 void read_all_conferences();
 int get_num_conferences(const char *pszFileName);
-int wordcount(const char *instr, const char *delimstr);
-char *extractword(int ww,  const char *instr, const char *delimstr);
+int wordcount(const std::string& instr, const char *delimstr);
+char *extractword(int ww,  const std::string& instr, const char *delimstr);
 void sort_conf_str( char *pszConferenceStr );
 
 
@@ -1010,7 +1009,6 @@ slrec getslrec(int nSl);
 void WWIV_SetFileTime(const char* pszFileName, const time_t tTime);
 bool okfsed();
 char* W_DateString(time_t tDateTime, char* mode , char* delim);
-void WriteBuf( WFile &file, const char *pszText);
 
 
 // File: wqscn.cpp
