@@ -23,6 +23,8 @@
 extern const unsigned char *translate_letters[];
 static int disable_conf_cnt = 0;
 
+template<class _Ty> inline const _Ty& in_range( const _Ty& minValue, const _Ty& maxValue, const _Ty& value );
+
 
 /**
  * Deletes files from a directory.  This is meant to be used only in the temp
@@ -81,7 +83,7 @@ void remove_from_temp( const char *pszFileName, const char *pszDirectoryName, bo
  */
 bool okansi()
 {
-    return ( ( GetSession()->GetCurrentUser()->HasAnsi() ) && ( !x_only ) ) ? true : false;
+    return GetSession()->GetCurrentUser()->HasAnsi() && !x_only;
 }
 
 
@@ -182,7 +184,6 @@ void frequent_init()
     okskey = true;
     mailcheck = false;
     smwcheck = false;
-    //g_szMessageGatFileName[0] = '\0';
     use_workspace = false;
     extratimecall = 0.0;
     GetSession()->using_modem = 0;
@@ -248,7 +249,8 @@ double nsl()
                      GetSession()->GetCurrentUser()->GetExtraTime();
 
         tlt = ( tlc < tlt ) ? tlc : tlt;
-
+		rtn = in_range( 0.0, 32767.0, tlt );
+		/*
         if ( tlt < 0.0 )
         {
             tlt = 0.0;
@@ -257,7 +259,7 @@ double nsl()
         {
             tlt = 32767.0;
         }
-        rtn = tlt;
+        rtn = tlt;*/
     }
     else
     {
@@ -848,21 +850,7 @@ char* W_DateString(time_t tDateTime, char* mode , char* delim)
 } //end W_DateString
 
 
-
-/**
- * Appends CR/LF to buffer and writes it to an open file handle
- * <P>
- * @param f File Handle
- * @param s Buffer to write
- * @author WSS, MOR
- */
-void WriteBuf( WFile &file, const char *pszText )
+template<class _Ty> inline const _Ty& in_range( const _Ty& minValue, const _Ty& maxValue, const _Ty& value ) 
 {
-	char szBuffer[255];     // formatable string
-
-	WWIV_ASSERT( pszText );
-
-	sprintf( szBuffer, "%s\r\n", pszText );
-	file.Write( szBuffer, strlen( szBuffer ) );
+	return std::max( std::min( maxValue, value ), minValue );
 }
-

@@ -18,8 +18,10 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include <vector>
 
 bool create_conf_file(int conftype);
+bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list);
 
 
 /* Max line length in conference files */
@@ -470,106 +472,76 @@ void showsubconfs(int conftype, confrec * c)
  * Takes a string like "100-150,201,333" and returns pointer to list of
  * numbers. Number of numbers in the list is returned in numinlist.
  */
-SUBCONF_TYPE *str_to_numrange(const char *pszNumbersText, int *numinlist)
+bool str_to_numrange( const char *pszNumbersText, std::vector<int>& list )
 {
-	char ls[81], rs[81], workstr[81];
-	int i, i1, cnt = 0, lonum, hinum;
-	SUBCONF_TYPE intarray[1024], *intlist;
-	int wc2;
+	SUBCONF_TYPE intarray[1024];
 
 	// init vars
-	memset(intarray, 0, sizeof(intarray));
-	*numinlist = 0;
+	memset( intarray, 0, sizeof( intarray ) );
+	list.clear();
 
 	// check for input string
-	if (!pszNumbersText)
+	if ( !pszNumbersText )
 	{
-		return NULL;
+		return false;
 	}
 
 	// get num "words" in input string
-	int wc1 = wordcount(pszNumbersText, ",");
+	int nNumWords = wordcount( pszNumbersText, "," );
 
-	for (i1 = 1; (i1 <= wc1); i1++)
+	for ( int word = 1; word <= nNumWords; word++ )
 	{
 		CheckForHangup();
 		if (hangup)
 		{
-			*numinlist = 0;
-			return NULL;
+			return false;
 		}
-		strncpy(workstr, extractword(i1, pszNumbersText, ","), sizeof(workstr));
-		wc2 = wordcount(workstr, " -\t\r\n");
-		switch (wc2)
+
+		std::string temp = extractword(word, pszNumbersText, ",");
+		int nRangeCount = wordcount( temp, " -\t\r\n" );
+		switch ( nRangeCount )
 		{
 		case 0:
 			break;
 		case 1:
-			i = atoi(extractword(1, workstr, " -\t\r\n"));
-			if ((i < 1024) && (i >= 0))
 			{
-				if (intarray[i] == 0)
+				//This means there is no number in the range, it's just ,###,###
+				int nNumber = atoi( extractword( 1, temp, " -\t\r\n" ) );
+				if ( nNumber < 1024 && nNumber >= 0 )
 				{
-					intarray[i] = 1;
-					cnt++;
+					intarray[ nNumber ] = 1;
 				}
 			}
 			break;
 		default:
-			// get left/right string
-			strncpy(ls, extractword(1, workstr, " -\t\r\n,"), sizeof(ls));
-			strncpy(rs, extractword(2, workstr, " -\t\r\n,"), sizeof(rs));
-			// convert to numbers
-			lonum = atoi(ls);
-			hinum = atoi(rs);
-			// Switch them around if they were reversed
-			if (lonum > hinum)
 			{
-				i = lonum;
-				lonum = hinum;
-				hinum = i;
-			}
-			if (lonum < 0)
-			{
-				lonum = 0;
-			}
-			if (hinum > 1023)
-				hinum = 1023;
-			for (i = lonum; i <= hinum; i++) {
-				if (intarray[i] == 0) {
+				// We're dealing with a range here, so it should be "XXX-YYY"
+				// convert the left and right strings to numbers
+				int nLowNumber = atoi( extractword( 1, temp, " -\t\r\n," ) );
+				int nHighNumber = atoi( extractword( 2, temp, " -\t\r\n," ) );
+				// Switch them around if they were reversed
+				if ( nLowNumber > nHighNumber )
+				{
+					std::swap( nLowNumber, nHighNumber );
+				}
+				for (int i = std::max<int>( nLowNumber, 0 ); i <= std::min<int>( nHighNumber, 1023 ); i++) {
 					intarray[i] = 1;
-					cnt++;
 				}
 			}
 			break;
 		}
 	}
 
-	if (!cnt)
-    {
-		return NULL;
-    }
-
 	// allocate memory for list
-	intlist = static_cast<SUBCONF_TYPE *>( BbsAllocA( cnt * sizeof( SUBCONF_TYPE ) ) );
-	WWIV_ASSERT(intlist != NULL);
-	if (intlist)
+	list.clear();
+	for ( int loop = 0; loop < 1024; loop++ )
 	{
-		for (i = i1 = 0; i < 1024; i++)
+		if ( intarray[loop] )
 		{
-			if (intarray[i] == 1)
-			{
-				intlist[i1++] = static_cast< SUBCONF_TYPE > ( i );
-			}
+			list.push_back( loop );
 		}
-		*numinlist = cnt;
-		return intlist;
 	}
-	else
-	{
-		*numinlist = 0;
-		return NULL;
-	}
+	return true;
 }
 
 
@@ -578,17 +550,14 @@ SUBCONF_TYPE *str_to_numrange(const char *pszNumbersText, int *numinlist)
  */
 void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which)
 {
-	SUBCONF_TYPE *intlist;
-	int i1, lnum, hnum, numinlist;
-	int i, num;
-	SUBCONF_TYPE *tptr;
-	char s[81];
+	std::vector<int> intlist;
 
-	if ((!c) || (!c->subs))
+	if ( !c || !c->subs )
 	{
 		return;
 	}
 
+	int num;
 	if (get_conf_info(conftype, NULL, NULL, NULL, &num, NULL))
 	{
 		return;
@@ -608,44 +577,36 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which)
 	{
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2Add: ";
-		input( s, 60, true );
-		if (!s[0])
+		std::string text;
+		input( text, 60, true );
+		if ( text.empty() )
 		{
 			return;
 		}
-		intlist = str_to_numrange(s, &numinlist);
-		lnum = 0;
-		hnum = numinlist - 1;
+		str_to_numrange( text.c_str(), intlist );
 	}
 	else
 	{
-		intlist = NULL;
-		lnum = hnum = *which;
+		intlist.clear();
+		intlist.push_back( *which );
 	}
 
 	// add the subconfs now
-	for (i = lnum; i <=  hnum; i++)
+	for (std::vector<int>::iterator iter = intlist.begin(); iter != intlist.end(); ++iter ) 
 	{
-		if (which == NULL)
-		{
-			i1 = intlist[i];
-		}
-		else
-		{
-			i1 = i;
-		}
-		if (i1 >= num)
+		int nConference = *iter;
+		if ( nConference >= num )
 		{
 			break;
 		}
-		if (in_conference(i1, c) > -1)
+		if ( in_conference( nConference, c ) > -1 )
 		{
 			continue;
 		}
 		if (c->num >= c->maxnum)
 		{
 			c->maxnum = c->maxnum + static_cast< unsigned short >( CONF_MULTIPLE );
-			tptr = static_cast<SUBCONF_TYPE *>( BbsAllocA( c->maxnum * sizeof( SUBCONF_TYPE ) ) );
+			SUBCONF_TYPE *tptr = static_cast<SUBCONF_TYPE *>( BbsAllocA( c->maxnum * sizeof( SUBCONF_TYPE ) ) );
 			WWIV_ASSERT(tptr != NULL);
 			if (tptr)
 			{
@@ -656,19 +617,11 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which)
 			else
 			{
                 GetSession()->bout << "|#6Not enough memory left to insert anything.\r\n";
-				if (intlist)
-				{
-					BbsFreeMemory(intlist);
-				}
 				return;
 			}
 		}
-		c->subs[c->num] = static_cast< unsigned short >( i1 );
+		c->subs[c->num] = static_cast< unsigned short >( nConference );
 		c->num++;
-	}
-	if (intlist)
-	{
-		BbsFreeMemory(intlist);
 	}
 }
 
@@ -678,56 +631,43 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which)
  */
 void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which)
 {
-	int pos, lnum, hnum, numinlist;
-	int num;
-	SUBCONF_TYPE *intlist;
-	char s[81];
-
-	if ((!c) || (!c->subs) || (c->num < 1))
+	if ( !c || !c->subs || c->num < 1 )
 	{
 		return;
 	}
 
+	int num;
 	if (get_conf_info(conftype, NULL, NULL, NULL, &num, NULL))
 	{
 		return;
 	}
 
+	std::vector<int> intlist;
 	if (which == NULL)
 	{
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#2Remove: ";
-		input( s, 60, true );
-		if (!s[0])
+		std::string text;
+		input( text, 60, true );
+		if ( text.empty() )
 		{
 			return;
 		}
-		intlist = str_to_numrange(s, &numinlist);
-		lnum = 0;
-		hnum = numinlist - 1;
+		str_to_numrange( text.c_str(), intlist );
 	}
 	else
 	{
-		intlist = NULL;
-		lnum = hnum = *which;
+		intlist.push_back( *which );
 	}
 
-    int i1 = 0;
-	for ( int i = lnum; i <= hnum; i++ )
+	for (std::vector<int>::iterator iter = intlist.begin(); iter != intlist.end(); ++iter ) 
 	{
-		if (which == NULL)
-		{
-			i1 = intlist[i];
-		}
-		else
-		{
-			i1 = i;
-		}
-		if ( i1 >= num )
+		int nConference = *iter;
+		if ( nConference >= num )
 		{
 			break;
 		}
-		pos = in_conference( i1, c );
+		int pos = in_conference( nConference, c );
 		if (pos < 0)
 		{
 			continue;
@@ -737,10 +677,6 @@ void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which)
 			c->subs[i2] = c->subs[i2 + 1];
 		}
 		c->num--;
-	}
-	if (intlist)
-	{
-		BbsFreeMemory(intlist);
 	}
 }
 
@@ -1752,14 +1688,13 @@ int get_num_conferences(const char *pszFileName)
  * Returns number of "words" in a specified string, using a specified set
  * of characters as delimiters.
  */
-int wordcount(const char *instr, const char *delimstr)
+int wordcount(const std::string& instr, const char *delimstr)
 {
-    char *s;
     char szTempBuffer[MAX_CONF_LINE];
     int i = 0;
 
-    strcpy( szTempBuffer, instr );
-    for ( s = strtok( szTempBuffer, delimstr ); s; s = strtok( NULL, delimstr ) )
+    strcpy( szTempBuffer, instr.c_str() );
+    for ( char *s = strtok( szTempBuffer, delimstr ); s; s = strtok( NULL, delimstr ) )
     {
         i++;
     }
@@ -1771,9 +1706,8 @@ int wordcount(const char *instr, const char *delimstr)
  * Returns pointer to string representing the nth "word" of a string, using
  * a specified set of characters as delimiters.
  */
-char *extractword( int ww, const char *instr, const char *delimstr )
+char *extractword( int ww, const std::string& instr, const char *delimstr )
 {
-    char *s;
     char szTempBuffer[MAX_CONF_LINE];
     static char rs[41];
     int i = 0;
@@ -1783,8 +1717,8 @@ char *extractword( int ww, const char *instr, const char *delimstr )
         return "";
     }
 
-    strcpy(szTempBuffer, instr);
-    for (s = strtok(szTempBuffer, delimstr); ((s) && (i++ < ww)); s = strtok(NULL, delimstr))
+	strcpy( szTempBuffer, instr.c_str() );
+    for ( char *s = strtok( szTempBuffer, delimstr ); s && ( i++ < ww ); s = strtok( NULL, delimstr ) )
     {
         if ( i == ww )
         {

@@ -405,7 +405,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime)
 			break;
 		}
 		strcat(buf,"\r\n");
-		WriteBuf( fileInputMsg, buf );
+		fileInputMsg.Writeln( buf, strlen( buf ) );
 		while (len>0)
         {
 			while ((strchr("\r\001",*p)==NULL) && ((p-b)<(len<253 ? len : 253)))
@@ -434,7 +434,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime)
 					jj++;
 				}
 				sprintf( buf, "\003""1%s\003""7>\003""5%s\003""0", tb1, b1 );
-				WriteBuf( fileInputMsg, buf );
+				fileInputMsg.Writeln( buf, strlen( buf ) );
 			}
 			p += 2;
 			len = len - ( p - b );
