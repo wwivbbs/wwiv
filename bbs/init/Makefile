@@ -63,6 +63,7 @@ $(OBJ)/%.$(OBJ_EXT) : $(PLATFORM_DIR)/%.cpp
 INIT_OBJS =	       				\
 	$(OBJ)/main.$(OBJ_EXT)			\
 	$(OBJ)/sys_paths.$(OBJ_EXT)		\
+	$(OBJ)/sys_general.$(OBJ_EXT)		\
 	$(OBJ)/bbsfuncs.$(OBJ_EXT)		\
 	$(OBJ)/WFile.$(OBJ_EXT)			\
 	$(OBJ)/WStringUtils.$(OBJ_EXT)		\

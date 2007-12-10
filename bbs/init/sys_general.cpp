@@ -75,3 +75,4 @@ int SystemGeneral::GetKey()
     }
     return ERR;
 }
+
