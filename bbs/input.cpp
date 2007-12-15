@@ -21,7 +21,7 @@
 
 
 static const unsigned char *valid_letters =
-( unsigned char * ) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ€‚ƒ„…†‡ˆ‰Š‹ŒŽ’“”•–—˜™š¡¢£¤¥";
+( unsigned char * ) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
 
 
 /**
@@ -286,11 +286,11 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
     const char dash = '-';
     const char slash = '/';
 
-#if defined( _UNIX )
+#if defined( __unix__ )
 	input1(szTemp, nMaxLength, mode, true);
     strcpy(pszOutText, szTemp);
     return strlen(szTemp);
-#endif // _UNIX
+#endif // __unix__
 
     if ( !okansi() )
     {
@@ -321,7 +321,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
     GetSession()->bout.GotoXY(x, y);
     for (i = 0; i < nMaxLength; i++)
     {
-        GetSession()->bout << "±";
+        GetSession()->bout << "ï¿½";
     }
     GetSession()->bout.GotoXY( x, y );
     if ( !origText.empty() )
@@ -350,7 +350,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
                 while (nLength--)
                 {
                     GetSession()->bout.GotoXY(nLength + x, y);
-                    bputch('±');
+                    bputch('ï¿½');
                 }
                 nLength = pos = szTemp[0] = 0;
             }
@@ -402,7 +402,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
 			{
                 bputch( szTemp[i] );
 			}
-            bputch('±');
+            bputch('ï¿½');
             break;
         case BACKSPACE:                               // Backspace
             if (pos)
@@ -422,19 +422,19 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
 						{
                             bputch( szTemp[i] );
 						}
-                        GetSession()->bout << "±";
+                        GetSession()->bout << "ï¿½";
                     }
                 }
                 else
                 {
                     GetSession()->bout.GotoXY(pos - 1 + x, y);
-                    GetSession()->bout << "±";
+                    GetSession()->bout << "ï¿½";
                     pos = --nLength;
                     if (((mode == INPUT_MODE_DATE) && ((pos == 2) || (pos == 5))) ||
                         ((mode == INPUT_MODE_PHONE) && ((pos == 3) || (pos == 7))))
                     {
                         GetSession()->bout.GotoXY(pos - 1 + x, y);
-                        GetSession()->bout << "±";
+                        GetSession()->bout << "ï¿½";
                         pos = --nLength;
                     }
                 }

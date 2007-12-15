@@ -201,7 +201,7 @@ void run_event( int evnt )
     int exitlevel;
 
     write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
-#ifndef _UNIX
+#ifndef __unix__
     GetSession()->localIO()->SetCursor( WLocalIO::cursorNormal );
 #endif
     GetSession()->bout.ClearScreen();
@@ -224,7 +224,7 @@ void run_event( int evnt )
     do_event = 0;
     get_next_forced_event();
     holdphone( false );
-#ifndef _UNIX
+#ifndef __unix__
     wfc_cls();
 #endif
 }

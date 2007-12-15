@@ -25,7 +25,7 @@
 #if defined (_WIN32)
 #include "Wiot.h"
 #include "Wios.h"
-#elif defined (_UNIX)
+#elif defined ( __unix__ )
 #include "Wiou.h"
 #endif
 

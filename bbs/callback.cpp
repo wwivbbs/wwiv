@@ -166,7 +166,7 @@ void wwivnode( WUser *pUser, int mode)
 
 int callback()
 {
-#ifndef _UNIX
+#ifndef __unix__
 	int i1, ok, count = 1;
 	bool res;
 	char s[255], s1[81];
@@ -309,7 +309,7 @@ int callback()
 
 void dial(char *phone, int xlate)
 {
-#ifndef _UNIX
+#ifndef __unix__
 	char s[255];
 
 	strcpy(s, "ATDT");
@@ -353,7 +353,7 @@ void dial(char *phone, int xlate)
  */
 bool connect_to1(char *phone, int dy)
 {
-#ifndef _UNIX
+#ifndef __unix__
 
 	GetSession()->SetCurrentSpeed( "" );
 	int spd = 0;

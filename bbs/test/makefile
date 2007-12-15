@@ -25,7 +25,6 @@ OBJ_EXT         = .o
 PLATFORM_TARGETS= 
 else
 OS=UNIX
-# no need to define _UNIX since platform/testos.h does it now if "linux" is defined
 PLATFORM_CFLAGS=-Wall
 PLATFORM_DIR=platform/linux
 PATH_SEPERATOR=:

@@ -20,7 +20,6 @@
 #ifndef __INCLUDED_PLATFORM_INCL1_H__
 #define __INCLUDED_PLATFORM_INCL1_H__
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // WIN32 Specific section
@@ -48,7 +47,7 @@
 #ifndef __MFC_COMPAT__
 #define __MFC_COMPAT__
 #endif // __MFC_COMPAT__
-#include <sys/stat.h>
+#include <sys/stat.h>WWIV_VSNPRINTF
 #include <utime.h>
 #endif  // __BORLANDC__
 
@@ -146,7 +145,7 @@ enum COLORS
 //
 //
 
-#if defined (_UNIX)
+#if defined ( __unix__ )
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -214,7 +213,7 @@ enum COLORS
 
 #define WWIV_VSNPRINTF vsnprintf
 
-#endif // defined (_UNIX)
+#endif // defined ( __unix__ )
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +245,7 @@ enum COLORS
 #define MAX_EXT		MAXEXT
 #define MAX_PATH	MAXPATH
 
-#define timezone _timezone
+#define timezWWIV_VSNPRINTFone _timezone
 #define _putenv(s)	putenv(s)
 
 #ifndef UNREFERENCED_PARAMETER( X )
