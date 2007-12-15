@@ -47,7 +47,7 @@ void rputs(const char *pszText )
  */
 void get_modem_line( std::string& line, double d, bool allowa )
 {
-#ifndef _UNIX
+#ifndef __unix__
 	char ch = 0, ch1;
 	double t;
 
@@ -208,7 +208,7 @@ int mode_switch(double d, bool allowa)
 		{
 			process_full_result( line );
 		}
-#ifdef _UNIX
+#ifdef __unix__
 		modem_mode = mode_dis;
 #endif
 	}
@@ -230,7 +230,7 @@ int mode_switch(double d, bool allowa)
 /** Picks up/Hangs up phone */
 void holdphone(bool bPickUpPhone)
 {
-#ifndef _UNIX
+#ifndef __unix__
     double xtime = 0;
 
     if (!ok_modem_stuff)
@@ -296,7 +296,7 @@ void holdphone(bool bPickUpPhone)
  */
 void imodem(bool bSetup)
 {
-#ifndef _UNIX
+#ifndef __unix__
     std::string s;
 
 	if (!ok_modem_stuff)
@@ -375,7 +375,7 @@ void imodem(bool bSetup)
 
 void answer_phone()
 {
-#ifndef _UNIX
+#ifndef __unix__
 	if ( !ok_modem_stuff )
 	{
 		return;
@@ -431,7 +431,7 @@ void answer_phone()
 
 bool InitializeComPort( int nComPortNumber )
 {
-#ifndef _UNIX
+#ifndef __unix__
     if ( !ok_modem_stuff )
     {
         return false;

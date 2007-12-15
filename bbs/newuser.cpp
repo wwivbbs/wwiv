@@ -147,8 +147,9 @@ bool check_name( const std::string userName )
     // to change this behaviour in the future.
     char s[255], s1[255], s2[MAX_PATH];
 
-    if ( userName[ userName.length() - 1 ] == 32   ||
-         userName.at(0) < 65                 ||
+    if ( userName.length() == 0 ||
+    	 userName[ userName.length() - 1 ] == 32   ||
+         userName[0] < 65                 ||
          finduser( userName ) != 0          ||
          userName.find("@") != std::string::npos ||
          userName.find("#") != std::string::npos )

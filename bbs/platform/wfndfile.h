@@ -82,7 +82,7 @@ protected:
 #if defined (_WIN32)
 	WIN32_FIND_DATA ffdata;
 	HANDLE	hFind;
-#elif defined (_UNIX)
+#elif defined ( __unix__ )
 	struct dirent **entries;
 	int nMatches;
 	int nCurrentEntry;

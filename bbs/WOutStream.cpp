@@ -40,7 +40,7 @@ std::streamsize WOutStreamBuffer::xsputn( const char *pszText, std::streamsize n
     char szBuffer[ 4096 ];
     strncpy( szBuffer, pszText, 4096 );
     szBuffer[ numChars ] = '\0';
-    return GetSession()->bout.Write( pszText );
+    return GetSession()->bout.Write( szBuffer );
 }
 
 
@@ -146,9 +146,9 @@ void WOutStream::DisplayLiteBar(const char *pszFormatText,...)
     if ( okansi() )
     {
         snprintf( s1, sizeof( s1 ), "%s%s%s", charstr( i, ' ' ), stripcolors( s ), charstr( i, ' ' ) );
-		*this << "\x1B[0;1;37m" << charstr( strlen( s1 ) + 4, 'Ü' ) << wwiv::endl;
+		*this << "\x1B[0;1;37m" << charstr( strlen( s1 ) + 4, 'ï¿½' ) << wwiv::endl;
         *this << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
-		*this << "\x1B[0;1;30m" << charstr( strlen( s1 ) + 4, 'ß' ) << wwiv::endl;
+		*this << "\x1B[0;1;30m" << charstr( strlen( s1 ) + 4, 'ï¿½' ) << wwiv::endl;
     }
     else
     {

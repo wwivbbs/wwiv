@@ -25,7 +25,7 @@
 
 #ifdef _WIN32
  #pragma pack( push,  1)
-#elif defined ( _UNIX )
+#elif defined ( __unix__ )
 #pragma pack( 1 )
 #endif
 
