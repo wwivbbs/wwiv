@@ -35,7 +35,7 @@ int WWIV_GetRandomNumber(int nMaxValue)
 	float rn = static_cast<float>( num/RAND_MAX );
 	return static_cast<int>((nMaxValue-1) * rn);
 
-#elif defined (_UNIX)
+#elif defined ( __unix__ )
 
 	int num = random();
 	float rn = static_cast<float>( num/RAND_MAX );
@@ -143,12 +143,19 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 	strcpy(pszOSVersionString, "OS/2");
 
 
-#elif defined (_UNIX)
+#elif defined ( __linux__ )
 
 	//
 	// TODO Add Linux version information code here..
 	//
-	strcpy(pszOSVersionString, "Linux/UNIX");
+	strcpy(pszOSVersionString, "Linux");
+
+#elif defined ( __unix__ )
+
+	//
+	// TODO Add Linux version information code here..
+	//
+	strcpy(pszOSVersionString, "UNIX");
 
 #else
 #error "What's the platform here???"

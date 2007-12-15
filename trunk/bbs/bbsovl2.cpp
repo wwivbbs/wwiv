@@ -28,7 +28,7 @@
 
 void OnlineUserEditor()
 {
-#if !defined (_UNIX)
+#if !defined ( __unix__ )
 	char sl[4], dsl[4], exempt[4], sysopsub[4], ar[17], dar[17], restrict[17], rst[17], uk[8], dk[8], up[6], down[6], posts[6], banktime[6], gold[10], ass[6], logons[6];
 	int cp, i, rc = ABORTED;
 
@@ -39,7 +39,7 @@ void OnlineUserEditor()
 	int wy = 3;
 	GetSession()->localIO()->MakeLocalWindow(wx, wy-2, 70, 16 + 2);
     char szBar[ 255 ];
-	sprintf( szBar, "Ã%s´", charstr( 70 - wx + 3, 'Ä' ) );
+	sprintf( szBar, "ï¿½%sï¿½", charstr( 70 - wx + 3, 'ï¿½' ) );
 	GetSession()->localIO()->LocalXYPrintf( wx, wy, szBar );
 	GetSession()->localIO()->LocalXYPrintf( wx, wy + 4, szBar );
 	GetSession()->localIO()->LocalXYPrintf( wx, wy + 7, szBar );
@@ -287,7 +287,7 @@ void OnlineUserEditor()
   GetSession()->ResetEffectiveSl();
   changedsl();
   GetSession()->DisplaySysopWorkingIndicator( false );
-#endif // !defined (_UNIX)
+#endif // !defined ( __unix__ )
 }
 
 

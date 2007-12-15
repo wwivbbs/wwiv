@@ -30,11 +30,11 @@
 #pragma warning( disable : 4244 )
 #endif
 
-#ifdef _UNIX
+#ifdef __unix__
 #define XINIT_PRINTF( x )
 #else
 #define XINIT_PRINTF( x ) std::cout << ( x )
-#endif // _UNIX
+#endif // __unix__
 
 #define INI_STRFILE 7
 
@@ -1167,7 +1167,7 @@ bool WApplication::make_abs_path( char *pszDirectory )
 {
     char szOldDirectory[ MAX_PATH ];
 
-#ifdef _UNIX
+#ifdef __unix__
     if ( strlen( pszDirectory ) < 1 )
 #else
     if ( strlen( pszDirectory ) < 3 || pszDirectory[1] != ':' || pszDirectory[2] != WWIV_FILE_SEPERATOR_CHAR )
@@ -1192,10 +1192,10 @@ void WApplication::InitializeBBS()
     defscreenbottom = GetSession()->localIO()->GetDefaultScreenBottom();
 
     GetSession()->localIO()->LocalCls();
-#if !defined( _UNIX )
+#if !defined( __unix__ )
     std::cout << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2007, WWIV Software Services.\r\n\n";
 	std::cout << "\r\nInitializing BBS...\r\n";
-#endif // _UNIX
+#endif // __unix__
     GetSession()->SetCurrentReadMessageArea( -1 );
     use_workspace = false;
     chat_file = false;
@@ -1246,12 +1246,12 @@ void WApplication::InitializeBBS()
         AbortBBS();
     }
 
-#if !defined( _UNIX )
+#if !defined( __unix__ )
     if ( !syscfgovr.primaryport )
     {
         ok_modem_stuff = false;
     }
-#endif // _UNIX
+#endif // __unix__
 
     languages = NULL;
     if (!read_language())
@@ -1325,7 +1325,7 @@ void WApplication::InitializeBBS()
     chains = NULL;
     read_chains();
 
-#ifndef _UNIX
+#ifndef __unix__
     XINIT_PRINTF( "* Reading Modem Configuration.\r\n" );
     modem_i = NULL;
     if ( !read_modem() )
@@ -1387,7 +1387,7 @@ void WApplication::InitializeBBS()
     }
     snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber() );
     char *ss = getenv("PROMPT");
-#if !defined (_UNIX)
+#if !defined ( __unix__ )
     newprompt = "PROMPT=WWIV: ";
 
     if (ss)
@@ -1421,7 +1421,7 @@ void WApplication::InitializeBBS()
     m_wwivVerEnvVar += wwiv_version;
     _putenv( m_wwivVerEnvVar.c_str() );
     _putenv( m_networkNumEnvVar.c_str() );
-#endif // defined (_UNIX)
+#endif // defined ( __unix__ )
 
     XINIT_PRINTF("* Reading Voting Booth Configuration.\r\n");
     read_voting();

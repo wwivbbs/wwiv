@@ -23,7 +23,7 @@
 #include <windows.h>
 #include "Wios.h"
 #include "Wiot.h"
-#elif defined ( _UNIX )
+#elif defined ( __unix__ )
 #include "Wiou.h"
 #endif
 #include "WComm.h"
@@ -76,7 +76,7 @@ WComm* WComm::CreateComm( bool bUseSockets, unsigned int nHandle )
     {
         return new WIOSerial( nHandle );
     }
-#elif defined ( _UNIX )
+#elif defined ( __unix__ )
     return new WIOUnix();
 #elif defined ( __OS2 )
 #error "You must implement the stuff to write with!!!"

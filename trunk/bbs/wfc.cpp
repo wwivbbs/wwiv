@@ -20,7 +20,7 @@
 #include "wwiv.h"
 
 
-#if !defined ( _UNIX )
+#if !defined ( __unix__ )
 
 // Local Functions
 void DisplayWFCScreen( const char *pszBuffer );
@@ -293,4 +293,4 @@ void DisplayWFCScreen( const char *pszScreenBuffer )
 }
 
 
-#endif // _UNIX
+#endif // __unix__

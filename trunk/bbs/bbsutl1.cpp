@@ -351,7 +351,7 @@ bool ValidateSysopPassword()
 void hang_it_up()
 {
 	hangup = true;
-#ifndef _UNIX
+#ifndef __unix__
 
 	if (!ok_modem_stuff)
 	{

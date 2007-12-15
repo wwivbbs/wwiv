@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 
-#if defined (_UNIX)
+#if defined ( __unix__ )
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -28,7 +28,7 @@
 //
 int UnixSpawn( char *pszCommand, char* environ[] );
 
-#endif // _UNIX
+#endif // __unix__
 
 
 
