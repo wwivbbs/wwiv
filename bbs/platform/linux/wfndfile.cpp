@@ -31,8 +31,8 @@ int dos_flag = false;
 char fileSpec[256];
 long lTypeMask;
 
-#define TYPE_DIRECTORY	4
-#define TYPE_FILE	8
+#define TYPE_DIRECTORY	DT_DIR
+#define TYPE_FILE	DT_BLK
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -43,21 +43,21 @@ char *getdir_from_file(const char *pszFileName)
    static char s[256];
    int i;
 
-   s[0] = 0;
+   s[0] = '\0';
    for (i=strlen(pszFileName); i>-1; i--)
    {
       if (pszFileName[i] == '/')
       {
         strcpy(s, pszFileName);
-        s[i] = 0;
+        s[i] = '\0';
         break;
       }
    }
 
-   if (s[0])
-     return(s);
-
-   return("./");
+   if (!s[0]) {
+	   strcpy(s, "./");
+   }
+   return(s);
 }
 
 int fname_ok( const struct dirent *ent )
@@ -229,6 +229,7 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 		{
 			memset(&szFileSpec[f], 32, 255-f);
 		}
+		
 	}
 	szFileSpec[255] = 0;
 
@@ -250,6 +251,7 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 
 	next();
 	nCurrentEntry = 0;
+	//std::cout << "wfndfile matches = " << nMatches << std::endl;
 	return ( nMatches > 0 );
 }
 
@@ -257,13 +259,16 @@ bool WFindFile::next()
 {
     if(nCurrentEntry >= nMatches)
     {
-        return( false );
+        return false;
     }
     struct dirent *entry = entries[nCurrentEntry++];
 
     strcpy(szFileName, entry->d_name);
     lFileSize = entry->d_reclen;
-    return( true );
+    nFileType = entry->d_type;
+    
+    //std::cout << "wfndfile::next() type=" << (int) entry->d_type  << " name = " << entry->d_name << std::endl;
+    return true;
 }
 
 bool WFindFile::close()
@@ -274,23 +279,22 @@ bool WFindFile::close()
 
 bool WFindFile::IsDirectory()
 {
-    if(nCurrentEntry >= nMatches)
+    //std::cout << (int)nFileType << std::endl;
+    if(nCurrentEntry > nMatches)
     {
         return( false );
     }
 
-    struct dirent *entry = entries[nCurrentEntry];
-    return (entry->d_type & TYPE_DIRECTORY);
+    return (nFileType & DT_DIR);
 }
 
 bool WFindFile::IsFile()
 {
-    if(nCurrentEntry >= nMatches)
+    if(nCurrentEntry > nMatches)
     {
         return( false );
     }
 
-    struct dirent *entry = entries[nCurrentEntry];
-    return (entry->d_type & TYPE_FILE);
+    return (nFileType & DT_BLK);
 }
 

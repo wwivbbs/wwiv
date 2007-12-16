@@ -63,7 +63,7 @@ int GetMenuIndex( const char* pszCommand )
     for( int i=0; i < nNumMenuCmds; i++ )
     {
         char* p = ppMenuStringsIndex[i];
-        if ( ( p ) && ( *p ) && ( wwiv::stringUtils::IsEqualsIgnoreCase( pszCommand, p ) ) )
+        if ( p && *p && wwiv::stringUtils::IsEqualsIgnoreCase( pszCommand, p ) )
         {
             return i;
         }
@@ -170,7 +170,7 @@ void StartMenus()
 
 	if (!LoadMenuSetup(GetSession()->usernum))
 	{
-		strcpy(pSecondUserRec->szMenuSet, "WWIV");
+		strcpy(pSecondUserRec->szMenuSet, "wwiv"); // default menu set name
 		pSecondUserRec->cHotKeys = HOTKEYS_ON;
 		pSecondUserRec->cMenuType = MENUTYPE_REGULAR;
 		WriteMenuSetup(GetSession()->usernum);
@@ -200,7 +200,7 @@ void StartMenus()
 			ConfigUserMenuSet();
 		}
 
-		Menus(pMenuData, pSecondUserRec->szMenuSet, "MAIN");
+		Menus(pMenuData, pSecondUserRec->szMenuSet, "main"); // default starting menu
 	}
 	if (pMenuData)
 	{
@@ -236,7 +236,7 @@ void Menus(MenuInstanceData * pMenuData, const char *pszDir, const char *pszMenu
             MenuExecuteCommand( pMenuData, szCommand );
         }
     }
-    else if ( wwiv::stringUtils::IsEqualsIgnoreCase( pszMenu, "MAIN" ) )
+    else if ( wwiv::stringUtils::IsEqualsIgnoreCase( pszMenu, "main" ) ) // default menu name
     {
         hangup = true;
     }
@@ -637,7 +637,7 @@ bool AMIsNumber(const char *pszBuf)
 
 void ConfigUserMenuSet()
 {
-    char szMsg[101], szDesc[101], szPath[MAX_PATH], szMenuDir[MAX_PATH];
+    char szMsg[101], szDesc[101];
 
     ReadMenuSetup();
 
@@ -657,7 +657,7 @@ void ConfigUserMenuSet()
     while (!bDone && !hangup)
     {
         GetSession()->bout << "   |#1WWIV |#6Menu |#1Editor|#0\r\n\r\n";
-		GetSession()->bout << "|#21|06) |#1Menuset      |06: |15%" << pSecondUserRec->szMenuSet << wwiv::endl;
+		GetSession()->bout << "|#21|06) |#1Menuset      |06: |15" << pSecondUserRec->szMenuSet << wwiv::endl;
 		GetSession()->bout << "|#22|06) |#1Use hot keys |06: |15" << ( pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ") << wwiv::endl;
 
         if ( !bDisablePD )
@@ -675,46 +675,35 @@ void ConfigUserMenuSet()
             bDone = 1;
             break;
 
-        case '1':
+        case '1': 
+        {
             ListMenuDirs();
             GetSession()->bout.NewLine( 2 );
             GetSession()->bout << "|15Enter the menu set to use : |#0";
-            input(pSecondUserRec->szMenuSet, 8);
-            if ( !ValidateMenuSet(pSecondUserRec->szMenuSet, false ) )
+            std::string menuSetName;
+            inputl( menuSetName, 8 );
+            if ( ValidateMenuSet( menuSetName.c_str(), false ) )
             {
-                char szMenuSetName[ 255 ];
-                strcpy(szMenuSetName, pSecondUserRec->szMenuSet);
-                pSecondUserRec->szMenuSet[0] = 0;
-                sprintf(szPath, "%s%s*.*", MenuDir(szMenuDir), szMenuSetName);
                 OpenMenuDescriptions();
-                WFindFile fnd;
-                bool bRes = fnd.open(szPath, WFINDFILE_DIRS);
-                if (bRes)
+                GetSession()->bout.NewLine();
+				GetSession()->bout << "|#1Menu Set : |#2" <<  menuSetName.c_str() << "  -  |15" << GetMenuDescription(  menuSetName, szDesc ) << wwiv::endl;
+                GetSession()->bout << "|#5Use this menu set? ";
+                if (noyes())
                 {
-                    do
-                    {
-                        char szFileName[MAX_PATH];
-                        strcpy(szFileName, fnd.GetFileName());
-                        if ((strstr(szFileName, ".") == 0)  && (fnd.IsDirectory()))
-                        {
-                            GetSession()->bout.NewLine();
-							GetSession()->bout << "|#1Menu Set : |#2" << szFileName << "  -  |15" << GetMenuDescription( szFileName, szDesc ) << wwiv::endl;
-                            GetSession()->bout << "|#5Use this menu set? ";
-                            if (noyes())
-                            {
-                                strcpy(pSecondUserRec->szMenuSet, szFileName);
-                                break;
-                            }
-                        }
-                    } while (fnd.next() && (!hangup));
+                    strcpy(pSecondUserRec->szMenuSet, menuSetName.c_str());
+                    break;
                 }
                 CloseMenuDescriptions();
             }
-            if (pSecondUserRec->szMenuSet[0] == 0)
+            GetSession()->bout.NewLine();
+            GetSession()->bout << "|#8That menu set does not exists, resetting to the default menu set" << wwiv::endl;
+            pausescr();
+            if (pSecondUserRec->szMenuSet[0] == '\0')
             {
-                strcpy(pSecondUserRec->szMenuSet, "WWIV");
+                strcpy(pSecondUserRec->szMenuSet, "wwiv");
             }
-            break;
+        }
+        break;
 
         case '2':
             pSecondUserRec->cHotKeys = !pSecondUserRec->cHotKeys;
@@ -802,11 +791,10 @@ void QueryMenuSet()
 
 
 
-bool ValidateMenuSet( char *pszMenuDir, bool bSetIt )
+bool ValidateMenuSet( const char *pszMenuDir, bool bSetIt )
 {
 	char szPath[MAX_PATH];
 	char szTemp[MAX_PATH];
-	char szFileName[MAX_PATH];
 
 	if (GetSession()->usernum != nSecondUserRecLoaded)
     {
@@ -819,31 +807,8 @@ bool ValidateMenuSet( char *pszMenuDir, bool bSetIt )
 	nSecondUserRecLoaded = GetSession()->usernum;
 
 	// ensure the entry point exists
-	sprintf(szPath, "%s%s%cMAIN.MNU", MenuDir(szTemp), pszMenuDir, WWIV_FILE_SEPERATOR_CHAR);
-	if (!WFile::Exists(szPath))
-	{
-		if ( bSetIt )
-		{
-			sprintf(szPath, "%s*.*", MenuDir(szTemp));
-			WFindFile fnd;
-			bool bDone = fnd.open(szPath, 0);
-			while (!bDone && !hangup)
-			{
-				strcpy(szFileName, fnd.GetFileName());
-				if ( ( szFileName[0] != '.' ) && fnd.IsDirectory() )
-				{
-					strcpy(pszMenuDir, szFileName);    // force use of this menu set is now ok
-					return true;
-				}
-				bDone = fnd.next();
-			}
-		}
-		MenuSysopLog("Menuset not valid");
-		MenuSysopLog(pszMenuDir);
-
-		return false;
-	}
-	return true;
+	sprintf(szPath, "%s%s", MenuDir(szTemp), pszMenuDir );
+	return WFile::Exists(szPath, "main.mnu");
 }
 
 
@@ -1048,7 +1013,7 @@ void CloseMenuDescriptions()
 }
 
 
-char *GetMenuDescription( const char *pszName, char *pszDesc )
+char *GetMenuDescription(const std::string& name, char *pszDesc )
 {
 	if (!hMenuDesc)
     {
@@ -1074,7 +1039,7 @@ char *GetMenuDescription( const char *pszName, char *pszDesc )
 		pszTemp[0] = 0;
 		++pszTemp;
 
-		if ( wwiv::stringUtils::IsEqualsIgnoreCase( pszName, szLine ) )
+		if ( wwiv::stringUtils::IsEqualsIgnoreCase( name.c_str(), szLine ) )
         {
 			strcpy(pszDesc, pszTemp);
 			int x = strlen(pszDesc);

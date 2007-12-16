@@ -76,7 +76,7 @@ std::string& StringTrimEnd( std::string& s );
 std::string& StringTrimBegin( std::string& s );
 char *stristr(char *pszString, char *pszPattern);
 void single_space(char *pszText);
-char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, char *brk);
+char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const char *brk);
 char *StringRemoveWhitespace(char *str);
 char *StringRemoveChar( const char *pszString, char chCharacterToRemove );
 char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, char *pszNewString);
