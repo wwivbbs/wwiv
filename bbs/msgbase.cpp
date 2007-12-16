@@ -529,7 +529,7 @@ WFile *OpenEmailFile( bool bAllowWrite )
     if ( !file->Exists() )
     {
         // if it does not exist, try to create it via the open call
-	// sf bug 1215434
+		// sf bug 1215434
         file->Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
         return file;
     }

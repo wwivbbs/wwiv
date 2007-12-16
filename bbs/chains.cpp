@@ -202,19 +202,16 @@ void run_chain( int nChainNumber )
         }
     }
     char szComSpeed[ 11 ];
-    sprintf( szComSpeed, "%d", com_speed );
-    if ( com_speed == 1 )
-    {
-        strcpy( szComSpeed, "115200" );
-    }
-    char szComPortNum[ 11 ];
+	sprintf( szComSpeed, "%d", ( com_speed == 1 ) ? 115200 : com_speed );
+
+	char szComPortNum[ 11 ];
     sprintf( szComPortNum, "%d", syscfgovr.primaryport );
 
     char szModemSpeed[ 11 ];
     sprintf( szModemSpeed, "%d", modem_speed );
 
-    char szChainCmdLine[ MAX_PATH ];
-    stuff_in( szChainCmdLine, chains[nChainNumber].filename, create_chain_file(), szComSpeed, szComPortNum, szModemSpeed, "" );
+	std::string chainCmdLine;
+    stuff_in( chainCmdLine, chains[nChainNumber].filename, create_chain_file(), szComSpeed, szComPortNum, szModemSpeed, "" );
 
     sysoplogf( "!Ran \"%s\"", chains[nChainNumber].description );
     GetSession()->GetCurrentUser()->SetNumChainsRun( GetSession()->GetCurrentUser()->GetNumChainsRun() + 1 );
@@ -233,7 +230,7 @@ void run_chain( int nChainNumber )
         flags |= EFLAG_FOSSIL;
     }
 
-    ExecuteExternalProgram( szChainCmdLine, flags );
+    ExecuteExternalProgram( chainCmdLine, flags );
     write_inst( INST_LOC_CHAINS, 0, INST_FLAGS_NONE );
     GetApplication()->UpdateTopScreen();
 }

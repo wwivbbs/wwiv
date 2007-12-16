@@ -1264,15 +1264,15 @@ void ExecNewUserCommand()
 {
     if ( !hangup && syscfg.newuser_c[0] )
     {
-        char szCommandLine[ MAX_PATH ];
-        stuff_in(szCommandLine, syscfg.newuser_c, create_chain_file(), "", "", "", "");
+		std::string commandLine;
+        stuff_in( commandLine, syscfg.newuser_c, create_chain_file(), "", "", "", "" );
         
         // Log what is happening here.
         sysoplog( "Executing New User Event: ", false );
-        sysoplog( szCommandLine, true );
+        sysoplog( commandLine.c_str(), true );
 
         GetSession()->WriteCurrentUser();
-        ExecuteExternalProgram(szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_NEWUSER ) );
+        ExecuteExternalProgram( commandLine, GetApplication()->GetSpawnOptions( SPWANOPT_NEWUSER ) );
         GetSession()->ReadCurrentUser();
     }
 }

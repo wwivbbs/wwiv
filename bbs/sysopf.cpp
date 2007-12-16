@@ -1185,9 +1185,9 @@ void beginday( bool displayStatus )
 	}
 	if ( syscfg.beginday_c && *syscfg.beginday_c )
 	{
-        char szCommandLine[ MAX_PATH ];
-		stuff_in(szCommandLine, syscfg.beginday_c, create_chain_file(), "", "", "", "");
-		ExecuteExternalProgram(szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_BEGINDAY ) );
+		std::string commandLine;
+		stuff_in( commandLine, syscfg.beginday_c, create_chain_file(), "", "", "", "" );
+		ExecuteExternalProgram( commandLine, GetApplication()->GetSpawnOptions( SPWANOPT_BEGINDAY ) );
 	}
 	if ( displayStatus )
     {

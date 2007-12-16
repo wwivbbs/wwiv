@@ -69,7 +69,7 @@ char gettimeout(double d, bool *abort)
 
 int extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending )
 {
-    char s[255], s1[81], s2[81], szFileName[81], sx1[21], sx2[21], sx3[21];
+    char s1[81], s2[81], szFileName[81], sx1[21], sx2[21], sx3[21];
 
     if (bSending)
     {
@@ -114,18 +114,19 @@ int extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending 
     {
         StringReplace( s1, strlen(s1), "MDMDSZ", "FDSZ" );
     }
-    stuff_in(s, s1, sx1, sx2, szFileName, sx3, "");
-    if (s[0])
+	std::string command;
+    stuff_in( command, s1, sx1, sx2, szFileName, sx3, "" );
+	if ( !command.empty() )
     {
         GetSession()->localIO()->set_protect( 0 );
         sprintf( s2, "%s is currently online at %u bps", GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ), modem_speed );
         GetSession()->localIO()->LocalPuts(s2);
         GetSession()->localIO()->LocalPuts("\r\n\r\n");
-        GetSession()->localIO()->LocalPuts(s);
+		GetSession()->localIO()->LocalPuts( command.c_str() );
         GetSession()->localIO()->LocalPuts("\r\n");
         if (incom)
         {
-            int nRetCode = ExecuteExternalProgram(s, GetApplication()->GetSpawnOptions( SPWANOPT_PROT_SINGLE ) );
+            int nRetCode = ExecuteExternalProgram( command, GetApplication()->GetSpawnOptions( SPWANOPT_PROT_SINGLE ) );
             GetApplication()->UpdateTopScreen();
             return nRetCode;
         }

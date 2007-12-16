@@ -18,10 +18,11 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include <vector>
 
+static void stuff_in_num( std::string& outBuffer, char *pszFormatString, int nNumber );
+static void append_filename( int filenameType, std::string& out);
 
-static void stuff_in_num( char *pszOutBuffer, char *pszFormatString,
-                          int nNumber );
 // Replacable parameters:
 // ~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -46,102 +47,55 @@ static void stuff_in_num( char *pszOutBuffer, char *pszFormatString,
 /**
  * @todo Document this
  */
-void stuff_in( char *pszOutCommandLine, const char *pszInCommandLine,
-               const char *pszFlag1, const char *pszFlag2,
-               const char *pszFlag3, const char *pszFlag4,
-               const char *pszFlag5 )
+void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, const char *pszArg1, 
+			   const char *pszArg2, const char *pszArg3, const char *pszArg4, const char *pszArg5 )
 {
-    int nInPtr = 0, nOutPtr = 0;
+	std::vector<std::string> flags;
+	flags.push_back( pszArg1 );
+	flags.push_back( pszArg2 );
+	flags.push_back( pszArg3 );
+	flags.push_back( pszArg4 );
+	flags.push_back( pszArg5 );
 
-	WWIV_ASSERT(pszOutCommandLine);
-	WWIV_ASSERT(pszInCommandLine);
-
-    while (pszInCommandLine[nInPtr] != '\0')
+	std::string::const_iterator iter = inCommandLine.begin();
+	while ( iter != inCommandLine.end() )
     {
-        if (pszInCommandLine[nInPtr] == '%')
+        if ( *iter == '%')
         {
-            ++nInPtr;
-            pszOutCommandLine[nOutPtr] = '\0';
-            switch (wwiv::UpperCase<char>(pszInCommandLine[nInPtr]))
+            ++iter;
+			char ch = wwiv::UpperCase<char>(*iter);
+            switch (ch)
             {
                 // used: %12345ABCDIMNOPRST
 
                 // fixed strings
             case '%':
-                {
-                    strcat(pszOutCommandLine, "%");
-                }
+				outCommandLine += '%';
                 break;
                 // replacable parameters
             case '1':
-				WWIV_ASSERT(pszFlag1);
-				if (pszFlag1)
-				{
-					strcat(pszOutCommandLine, pszFlag1);
-				}
-                break;
             case '2':
-				WWIV_ASSERT(pszFlag2);
-				if (pszFlag2)
-				{
-					strcat(pszOutCommandLine, pszFlag2);
-				}
-                break;
             case '3':
-				WWIV_ASSERT(pszFlag3);
-				if (pszFlag3)
-				{
-					strcat(pszOutCommandLine, pszFlag3);
-				}
-                break;
             case '4':
-				WWIV_ASSERT(pszFlag4);
-				if (pszFlag4)
-				{
-					strcat(pszOutCommandLine, pszFlag4);
-				}
-                break;
             case '5':
-				WWIV_ASSERT(pszFlag5);
-				if (pszFlag5)
-				{
-					strcat(pszOutCommandLine, pszFlag5);
-				}
+				outCommandLine += flags.at(ch - '1');
                 break;
                 // call-specific numbers
             case 'M':
-                {
-                    stuff_in_num(pszOutCommandLine, "%u", modem_speed);
-                }
+                stuff_in_num(outCommandLine, "%u", modem_speed);
                 break;
             case 'K':
-                {
-                    char szFileName[ MAX_PATH ];
-                    snprintf( szFileName, sizeof( szFileName ), "%s%s", syscfg.gfilesdir, COMMENT_TXT );
-                    strcat( pszOutCommandLine, szFileName );
-                }
+                outCommandLine += syscfg.gfilesdir;
+				outCommandLine += COMMENT_TXT;
                 break;
             case 'P':
-                {
-                    stuff_in_num(pszOutCommandLine, "%u", incom ? syscfgovr.primaryport : 0);
-                }
+                stuff_in_num( outCommandLine, "%u", incom ? syscfgovr.primaryport : 0 );
                 break;
             case 'N':
-                {
-                    stuff_in_num( pszOutCommandLine, "%u", GetApplication()->GetInstanceNumber() );
-                }
+                stuff_in_num( outCommandLine, "%u", GetApplication()->GetInstanceNumber() );
                 break;
             case 'S':
-                {
-                    if (com_speed == 1)
-                    {
-                        strcat(pszOutCommandLine, "115200");
-                    }
-                    else
-                    {
-                        stuff_in_num(pszOutCommandLine, "%lu", com_speed);
-                    }
-                }
+				stuff_in_num( outCommandLine, "%lu", ( com_speed == 1 ) ? 115200 : com_speed );
                 break;
             case 'T':
                 {
@@ -150,78 +104,55 @@ void stuff_in( char *pszOutCommandLine, const char *pszInCommandLine,
 				    {
                         d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
 				    }
-                    stuff_in_num(pszOutCommandLine, "%u", static_cast<int>( d ) / MINUTES_PER_HOUR );
+                    stuff_in_num( outCommandLine, "%u", static_cast<int>( d ) / MINUTES_PER_HOUR );
                 }
                 break;
                 // chain.txt type filenames
             case 'C':
-                {
-                    std::string fileName;
-                    create_filename( CHAINFILE_CHAIN, fileName );
-                    strcat( pszOutCommandLine, fileName.c_str() );
-                }
+				append_filename( CHAINFILE_CHAIN, outCommandLine );
                 break;
             case 'D':
-                {
-                    std::string fileName;
-                    create_filename(CHAINFILE_DORINFO, fileName);
-                    strcat( pszOutCommandLine, fileName.c_str() );
-                }
+				append_filename( CHAINFILE_DORINFO, outCommandLine );
                 break;
             case 'O':
-                {
-                    std::string fileName;
-                    create_filename(CHAINFILE_PCBOARD, fileName);
-                    strcat( pszOutCommandLine, fileName.c_str() );
-                }
+				append_filename( CHAINFILE_PCBOARD, outCommandLine );
                 break;
             case 'A':
-                {
-                    std::string fileName;
-                    create_filename(CHAINFILE_CALLINFO, fileName);
-                    strcat( pszOutCommandLine, fileName.c_str() );
-                }
+				append_filename( CHAINFILE_CALLINFO, outCommandLine );
                 break;
             case 'R':
-                {
-                    std::string fileName;
-                    create_filename(CHAINFILE_DOOR, fileName );
-                    strcat( pszOutCommandLine, fileName.c_str() );
-                }
+				append_filename( CHAINFILE_DOOR, outCommandLine );
                 break;
             case 'E':
-                {
-                    std::string fileName;
-                    create_filename( CHAINFILE_DOOR32, fileName );
-                    strcat( pszOutCommandLine, fileName.c_str() );
-                }
+				append_filename( CHAINFILE_DOOR32, outCommandLine );
                 break;
             }
-            nOutPtr = strlen( pszOutCommandLine );
-            nInPtr++;
+            ++iter;
         }
         else
         {
-            pszOutCommandLine[nOutPtr++] = pszInCommandLine[nInPtr++];
+			outCommandLine += *iter++;
         }
     }
-    pszOutCommandLine[nOutPtr] = '\0';
 }
-
 
 /**
  * @todo Document this
  */
-static void stuff_in_num( char *pszOutBuffer, char *pszFormatString,
-                          int nNumber )
+static void stuff_in_num( std::string& outBuffer, char *pszFormatString, int nNumber )
 {
-    char szTemp[ 255 ];
+    char szTemp[ MAX_PATH ];
 
-	WWIV_ASSERT( pszOutBuffer );
 	WWIV_ASSERT( pszFormatString );
 
     snprintf( szTemp, sizeof( szTemp ), pszFormatString, nNumber );
-    strcat( pszOutBuffer, szTemp );
+	outBuffer += szTemp;
 }
 
 
+static void append_filename( int filenameType, std::string& out )
+{
+	std::string fileName;
+	create_filename( filenameType, fileName );
+	out += fileName;
+}
