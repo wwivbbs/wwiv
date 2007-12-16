@@ -69,6 +69,7 @@ protected:
 	char szFileSpec[MAX_PATH];
 	long lFileSize;
 	long lTypeMask;
+	unsigned char nFileType;
 	bool bIsOpen;
 
 	void __open(const char * pszFileSpec, unsigned int nTypeMask)

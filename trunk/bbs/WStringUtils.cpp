@@ -477,7 +477,7 @@ void single_space(char *pszText)
 }
 
 
-char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, char *brk)
+char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const char *brk)
 {
 	bool bCountThis, bFoundFirst = false;
 
@@ -496,7 +496,7 @@ char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, char *brk
 	while (*pszText && pszToken < lim)
 	{
 		bCountThis = true;
-		for (char* b = brk; *b; b++)
+		for (const char* b = brk; *b; b++)
 		{
 			if (*pszText == *b)
 			{

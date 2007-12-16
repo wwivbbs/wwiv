@@ -149,7 +149,7 @@ void EditMenus()
 				break;
 			case '0':
 				OpenMenuDescriptions();
-				GetMenuDescription(szDirectoryName, szDesc);
+				GetMenuDescription( std::string(szDirectoryName), szDesc);
 
 				GetSession()->bout << "|#5New desc     : ";
 				GetSession()->bout.Color( 0 );
@@ -762,7 +762,7 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
 		GetSession()->bout << "   Menu Version         : " <<
 			          static_cast<int>( HIBYTE(pHeader->nVersion ) ) <<
 					  static_cast<int>( LOBYTE( pHeader->nVersion ) ) << wwiv::endl;
-		GetSession()->bout << "0) Menu Description     : " << GetMenuDescription( pszDirectoryName, szDesc ) << wwiv::endl;
+		GetSession()->bout << "0) Menu Description     : " << GetMenuDescription( std::string(pszDirectoryName), szDesc ) << wwiv::endl;
 		GetSession()->bout << "1) Deleted              : " << ( ( pHeader->nFlags & MENU_FLAG_DELETED ) ? "Yes" : "No" ) << wwiv::endl;
 		GetSession()->bout << "2) Main Menu            : " << ( ( pHeader->nFlags & MENU_FLAG_MAINMENU ) ? "Yes" : "No" ) << wwiv::endl;;
 		GetSession()->bout << "A) What do Numbers do   : " << ( pHeader->nNumbers == MENU_NUMFLAG_NOTHING ? "Nothing" : pHeader->nNumbers == MENU_NUMFLAG_SUBNUMBER ? "Set sub number" : pHeader->nNumbers == MENU_NUMFLAG_DIRNUMBER ? "Set dir number" : "Out of range" ) << wwiv::endl;
@@ -1008,11 +1008,10 @@ void ListMenuDirs()
 	char szPath[MAX_PATH], szName[20];
 	char szMenuDir[MAX_PATH];
 	char szDesc[101];
-	char szFileName[MAX_PATH];
 	WFindFile fnd;
 	bool bFound;
 
-	sprintf(szPath, "%s*.*", MenuDir(szMenuDir));
+	sprintf(szPath, "%s*", MenuDir(szMenuDir));
 
 	OpenMenuDescriptions();
 
@@ -1023,11 +1022,11 @@ void ListMenuDirs()
 	bFound = fnd.open(szPath, 0);
 	while (bFound && !hangup)
 	{
-		strcpy(szFileName, fnd.GetFileName());
-		if ((szFileName[0] != '.') && (fnd.IsDirectory()))
+		std::string fileName = fnd.GetFileName();
+		if (fnd.IsDirectory())
 		{
-			WWIV_GetFileNameFromPath(szFileName, szName);
-			GetSession()->bout.WriteFormatted("|#2%-8.8s |15%-60.60s\r\n", szName, GetMenuDescription(szFileName, szDesc));
+			WWIV_GetFileNameFromPath( fileName.c_str(), szName );
+			GetSession()->bout.WriteFormatted("|#2%-8.8s |15%-60.60s\r\n", szName, GetMenuDescription( fileName, szDesc ) );
 		}
 		bFound = fnd.next();
 	}

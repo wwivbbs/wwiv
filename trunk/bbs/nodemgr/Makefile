@@ -24,7 +24,6 @@ EXE_EXT         = .exe
 OBJ_EXT         = .o
 else
 OS=UNIX
-# no need to define _UNIX since platform/testos.h does it now if "linux" is defined
 PLATFORM_CFLAGS=
 PLATFORM_DIR=platform/linux
 PATH_SEPERATOR=:
