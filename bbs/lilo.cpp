@@ -1179,9 +1179,9 @@ void logon()
     if ( syscfg.logon_c[0] )
 	{
         GetSession()->bout.NewLine();
-        char szCommand[ MAX_PATH ];
-        stuff_in( szCommand, syscfg.logon_c, create_chain_file(), "", "", "", "" );
-        ExecuteExternalProgram( szCommand, GetApplication()->GetSpawnOptions( SPWANOPT_LOGON ) );
+		std::string command;
+        stuff_in( command, syscfg.logon_c, create_chain_file(), "", "", "", "" );
+        ExecuteExternalProgram( command, GetApplication()->GetSpawnOptions( SPWANOPT_LOGON ) );
         GetSession()->bout.NewLine( 2 );
     }
 

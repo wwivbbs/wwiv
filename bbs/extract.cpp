@@ -45,32 +45,25 @@ void compress_file(char *pszFileName, char *pszDirectoryName);
 
 void compress_file( char *pszFileName, char *pszDirectoryName )
 {
-    char szFullFileName[255], szBaseFileName[81], s3[81], s4[81], s5[81];
-
 	WWIV_ASSERT( pszFileName );
 	WWIV_ASSERT( pszDirectoryName );
 
 	GetSession()->bout << "|#2Now compressing " << pszFileName << wwiv::endl;
-    if ( strchr( pszFileName, '.' ) == NULL )
+	std::string fileName = pszFileName;
+	if ( fileName.find_first_of( "." ) == std::string::npos )
     {
-        strcat( pszFileName, ".msg" );
+        fileName += ".msg";
     }
-    strcpy( szFullFileName, pszFileName );
-    strcpy( szBaseFileName, pszFileName );
-    char *ss = strchr( szBaseFileName, '.' );
-    if ( ss )
-    {
-        ss[1] = '\0';
-    }
-    strcat( szBaseFileName, arcs[0].extension );
-    strcpy( s5, arcs[0].arca );
-    strcpy( s3, pszDirectoryName );
-    strcat( s3, szBaseFileName );
-    strcpy( s4, pszDirectoryName );
-    strcat( s4, szFullFileName );
-    stuff_in( szFullFileName, s5, s3, s4, "", "", "" );
-    ExecuteExternalProgram( szFullFileName, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_A ) );
-    WFile::Remove( s4 );
+	
+	std::string baseFileName = fileName.substr( 0, fileName.find_last_of( "." )) + arcs[0].extension;
+	std::string directory = pszDirectoryName;
+	std::string arcName = directory + baseFileName;
+	std::string origName = fileName;
+
+	std::string command;
+	stuff_in( command, arcs[0].arca, arcName.c_str(), origName.c_str(), "", "", "" );
+    ExecuteExternalProgram( command, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_A ) );
+    WFile::Remove( origName );
     GetApplication()->UpdateTopScreen();
 }
 

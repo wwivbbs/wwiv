@@ -79,7 +79,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ws2_32.lib odbc32.lib odbccp32.lib"
-				OutputFile="C:\bbs\wwiv50.exe"
+				OutputFile="D:\bbs\wwiv50.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -306,6 +306,10 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
+			<File
+				RelativePath=".\unittests.cpp"
+				>
+			</File>
 			<Filter
 				Name="platform Source"
 				>
@@ -1323,6 +1327,10 @@
 				</File>
 				<File
 					RelativePath=".\platform\testos.h"
+					>
+				</File>
+				<File
+					RelativePath=".\unittests.h"
 					>
 				</File>
 				<File
