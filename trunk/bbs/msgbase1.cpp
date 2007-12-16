@@ -688,7 +688,7 @@ void remove_post()
 
 bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, int nEditorNumber, int numlines, const char *pszDestination, const char *pszTitle, int flags )
 {
-	char szCmdLine[ MAX_PATH ], szEditorCommand[ MAX_PATH ], szFileName[ MAX_PATH ], sx1[21], sx2[21], sx3[21], szCurrentDirectory[ MAX_PATH ];
+	char szFileName[ MAX_PATH ], sx1[21], sx2[21], sx3[21], szCurrentDirectory[ MAX_PATH ];
 	time_t tFileTime = 0;
 
 	if ( nEditorNumber >= GetSession()->GetNumberOfEditors() || !okansi() )
@@ -696,14 +696,14 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 		GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
 		return false;
 	}
-	strcpy( szEditorCommand, ( incom ) ? editors[ nEditorNumber ].filename : editors[ nEditorNumber ].filenamecon );
+	std::string editorCommand = ( incom ) ? editors[ nEditorNumber ].filename : editors[ nEditorNumber ].filenamecon;
 
-	if ( szEditorCommand[0] == '\0' )
+	if ( editorCommand.empty() )
 	{
 		GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
 		return false;
 	}
-	WWIV_make_abs_cmd( szEditorCommand );
+	WWIV_make_abs_cmd( editorCommand );
 
 	WWIV_GetDir( szCurrentDirectory, false );
 	WWIV_ChangeDirTo( pszNewDirectory );
@@ -744,7 +744,8 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
         sprintf( sx2, "%ld", defscreenbottom + 1 - newtl );
 	}
 	sprintf( sx3, "%d", numlines );
-	stuff_in( szCmdLine, szEditorCommand, szFileName, sx1, sx2, sx3, "" );
+	std::string cmdLine;
+	stuff_in( cmdLine, editorCommand, szFileName, sx1, sx2, sx3, "" );
     
     WTextFile fileEditorInf( EDITOR_INF, "wt" );
 
@@ -785,7 +786,7 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 		WFile::Remove( QUOTES_TXT );
 		WFile::Remove( QUOTES_IND );
 	}
-	ExecuteExternalProgram(szCmdLine, GetApplication()->GetSpawnOptions( SPWANOPT_FSED ) );
+	ExecuteExternalProgram( cmdLine, GetApplication()->GetSpawnOptions( SPWANOPT_FSED ) );
 	lines_listed = 0;
 	WWIV_ChangeDirTo( pszNewDirectory );
 	WFile::Remove( EDITOR_INF );

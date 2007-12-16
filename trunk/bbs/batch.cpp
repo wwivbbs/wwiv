@@ -727,24 +727,24 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
         StringReplace(pszCommandLine, strlen( pszCommandLine  ), "MDMDSZ", "FDSZ");
     }
 
-	char szCommandLine[ MAX_PATH ];
-    stuff_in( szCommandLine, pszCommandLine, sx1, sx2, downlist, sx3, uplist );
-    if ( szCommandLine[0] )
+	std::string commandLine;
+    stuff_in( commandLine, pszCommandLine, sx1, sx2, downlist, sx3, uplist );
+    if ( !commandLine.empty() )
     {
-        WWIV_make_abs_cmd( szCommandLine );
+        WWIV_make_abs_cmd( commandLine );
         GetSession()->localIO()->LocalCls();
 		char szMessage[ 1024 ];
         sprintf( szMessage,
                  "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
                  GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ),
-                 modem_speed, dl, szCommandLine );
+				 modem_speed, dl, commandLine.c_str() );
         GetSession()->localIO()->LocalPuts( szMessage );
         if ( incom )
         {
             WFile::SetFilePermissions( g_szDSZLogFileName, WFile::permWrite );
             WFile::Remove( g_szDSZLogFileName );
             WWIV_ChangeDirTo( syscfgovr.batchdir );
-            ExecuteExternalProgram( szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_PROT_BATCH ) );
+			ExecuteExternalProgram( commandLine, GetApplication()->GetSpawnOptions( SPWANOPT_PROT_BATCH ) );
             if ( bHangupAfterDl )
             {
                 bihangup( 1 );

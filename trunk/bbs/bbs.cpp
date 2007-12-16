@@ -23,6 +23,7 @@
 #undef _DEFINE_GLOBALS_
 
 #include "bbs.h"
+#include "unittests.h"
 
 #if defined( _WIN32 )
 #include "InternalTelnetServer.h"
@@ -891,9 +892,9 @@ int WApplication::Run(int argc, char *argv[])
     }
 
     // Set the instance, this may be changed by a command line argument
-    m_nInstance                 = 1;
-    no_hangup                   = false;
-    ok_modem_stuff              = true;
+    m_nInstance = 1;
+    no_hangup = false;
+    ok_modem_stuff = true;
     GetSession()->SetGlobalDebugLevel( 0 );
 
 #ifdef __unix__
@@ -908,13 +909,11 @@ int WApplication::Run(int argc, char *argv[])
 
     for ( int i = 1; i < argc; i++ )
     {
-        char s[ 256 ];
-        strcpy( s, argv[i] );
         std::string argumentRaw = argv[i];
         if ( argumentRaw.length() > 1 && ( argumentRaw[0] == '-' || argumentRaw[0] == '/' ) )
         {
             std::string argument = argumentRaw.substr( 2 );
-			char ch = wwiv::UpperCase<char>( s[1] );
+			char ch = wwiv::UpperCase<char>( argumentRaw[1] );
             switch ( ch )
             {
             case 'B':
@@ -1068,6 +1067,10 @@ int WApplication::Run(int argc, char *argv[])
 					{
 						ShowUsage();
 						exit( 0 );
+					} else if ( argumentRaw.substr(0, 7) == "--test=" ) {
+						this->InitializeBBS();
+						bool ok = RunUnitTests( argumentRaw.substr( 7 ) );
+						ExitBBSImpl( ok ? m_nOkLevel : m_nErrorLevel );
 					}
 				} break;
             default:
@@ -1211,9 +1214,9 @@ int WApplication::Run(int argc, char *argv[])
         {
             if ( WFile::ExistsWildcard( "WWIVFAX.*" ) )
             {
-                char szCommand[ MAX_PATH ];
-                stuff_in( szCommand, "WWIVFAX %S %P", "", "", "", "", "" );
-                ExecuteExternalProgram( szCommand, EFLAG_NONE );
+				std::string command;
+                stuff_in( command, "WWIVFAX %S %P", "", "", "", "", "" );
+                ExecuteExternalProgram( command, EFLAG_NONE );
             }
             goto hanging_up;
         }

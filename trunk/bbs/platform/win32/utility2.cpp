@@ -34,7 +34,7 @@ char *exts[] =
 
 
 
-char *WWIV_make_abs_cmd( char *pszOutBuffer )
+void WWIV_make_abs_cmd( std::string& out )
 {
     // pszOutBuffer must be at least MAX_PATH in size.
     char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH], *ss1;
@@ -43,8 +43,8 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
     char szWWIVHome[MAX_PATH];
     strncpy( szWWIVHome, GetApplication()->GetHomeDir(), MAX_PATH );
 
-    strncpy( s1, pszOutBuffer, MAX_PATH );
-
+	strncpy( s1, out.c_str(), MAX_PATH );
+	
     if ( s1[1] == ':' )
     {
         if ( s1[2] != '\\' )
@@ -52,17 +52,17 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
             _getdcwd( wwiv::UpperCase<char>(s1[0]) - 'A' + 1, s, MAX_PATH );
             if (s[0])
             {
-                _snprintf( s1, sizeof( s1 ), "%c:\\%s\\%s", s1[0], s, pszOutBuffer + 2 );
+				_snprintf( s1, sizeof( s1 ), "%c:\\%s\\%s", s1[0], s, out.substr(2).c_str() );
             }
             else
             {
-                _snprintf( s1, sizeof( s1 ), "%c:\\%s", s1[0], pszOutBuffer + 2 );
+                _snprintf( s1, sizeof( s1 ), "%c:\\%s", s1[0], out.substr(2).c_str() );
             }
         }
     }
     else if ( s1[0] == '\\' )
     {
-        _snprintf( s1, sizeof( s1 ), "%c:%s", szWWIVHome[0], pszOutBuffer );
+		_snprintf( s1, sizeof( s1 ), "%c:%s", szWWIVHome[0], out.c_str() );
     }
     else
     {
@@ -70,7 +70,7 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
         strtok(s2, " \t");
         if (strchr(s2, '\\'))
         {
-            _snprintf( s1, sizeof( s1 ), "%s%s", GetApplication()->GetHomeDir(), pszOutBuffer );
+            _snprintf( s1, sizeof( s1 ), "%s%s", GetApplication()->GetHomeDir(), out.c_str() );
         }
     }
 
@@ -103,16 +103,15 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
         {
             if ( WFile::Exists( s ) )
             {
-                _snprintf( pszOutBuffer, MAX_PATH, "%s%s", s, s2 );
-                goto got_cmd;
+				wwiv::stringUtils::FormatString( out, "%s%s", s, s2 );
+                return;
             }
         }
         else
         {
             if (WFile::Exists(s))
             {
-                _snprintf( pszOutBuffer, MAX_PATH, "%s%s%s", GetApplication()->GetHomeDir(), s, s2 );
-                goto got_cmd;
+				wwiv::stringUtils::FormatString( out, "%s%s%s", GetApplication()->GetHomeDir(), s, s2 );
             }
             else
             {
@@ -120,17 +119,14 @@ char *WWIV_make_abs_cmd( char *pszOutBuffer )
                 ss1 = szTempBuf;
                 if ( ss1 && strlen( ss1 ) > 0 )
                 {
-                    _snprintf( pszOutBuffer, MAX_PATH, "%s%s", ss1, s2 );
-                    goto got_cmd;
+					wwiv::stringUtils::FormatString( out,"%s%s", ss1, s2 );
+                    return;
                 }
             }
         }
     }
 
-    _snprintf( pszOutBuffer, MAX_PATH, "%s%s%s", GetApplication()->GetHomeDir(), s1, s2 );
-
-got_cmd:
-    return pszOutBuffer;
+    wwiv::stringUtils::FormatString( out, "%s%s%s", GetApplication()->GetHomeDir(), s1, s2 );
 }
 
 

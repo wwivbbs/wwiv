@@ -886,10 +886,8 @@ void close_strfiles();
 
 // File: stuffin.cpp
 
-void stuff_in( char *pszOutCommandLine, const char *pszInCommandLine,
-               const char *pszFlag1, const char *pszFlag2,
-               const char *pszFlag3, const char *pszFlag4,
-               const char *pszFlag5 );
+void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, const char *pszArg1, 
+			   const char *pszArg2, const char *pszArg3, const char *pszArg4, const char *pszArg5 );
 
 
 // File: subacc.cpp

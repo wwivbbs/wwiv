@@ -19,18 +19,12 @@
 
 #include "wwiv.h"
 
-char *WWIV_make_abs_cmd( char *pszOutBuffer )
+void WWIV_make_abs_cmd( std::string& out )
 {
-  if ( strchr( pszOutBuffer, '/' ) )
-  {
-    return pszOutBuffer;
-  }
-
-  char s[ MAX_PATH ];
-  strcpy( s, pszOutBuffer );
-  snprintf( pszOutBuffer, MAX_PATH, "%s%s", GetApplication()->GetHomeDir(), s );
-
-  return pszOutBuffer;
+	if ( out.find("/" != std::string::npos )
+	{
+		out = std::string( GetApplication()->GetHomeDir() ) + out;
+	}
 }
 
 
