@@ -16,7 +16,7 @@ TEXTUI_LIBRARY  = $(CURDIR)/../../textui/bin/textui.lib
 else
 OS=UNIX
 PLATFORM_CFLAGS=-Wall
-PLATFORM_DIR=../platform/linux
+PLATFORM_DIR=../platform/unix
 PATH_SEPERATOR=:
 EXE_EXT         = 
 OBJ_EXT         = o
