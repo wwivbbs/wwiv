@@ -25,6 +25,12 @@
 #include <iostream>
 #include <algorithm>
 
+#if defined( __APPLE__ )
+#if !defined( O_BINARY )
+#define O_BINARY 0
+#endif
+#endif
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

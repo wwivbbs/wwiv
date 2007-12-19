@@ -13,7 +13,7 @@
 /****************************************************************************/
 #include "../../wwiv.h"
 
-
+/*
 bool WWIV_CopyFile(const char *szSourceFileName, const char *szDestFileName)
 {
   int f1, f2, i;    
@@ -42,6 +42,7 @@ bool WWIV_CopyFile(const char *szSourceFileName, const char *szDestFileName)
 #endif
   return true;
 }
+*/
 
 bool iscdrom(char ch)
 {

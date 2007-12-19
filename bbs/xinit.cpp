@@ -1387,7 +1387,7 @@ void WApplication::InitializeBBS()
     }
     snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber() );
     char *ss = getenv("PROMPT");
-#if !defined ( __unix__ )
+#if !defined ( __unix__ ) && !defined ( __APPLE__ )
     newprompt = "PROMPT=WWIV: ";
 
     if (ss)

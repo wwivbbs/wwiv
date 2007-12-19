@@ -435,7 +435,6 @@ char *stristr(char *pszString, char *pszPattern)
     return NULL;
 }
 
-
 /**
  * single_space() takes an input string and reduces repeated spaces in the
  * string to one space, e.g. "The    brown  fox" becomes "The brown fox", to

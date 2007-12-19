@@ -83,7 +83,7 @@ protected:
 #if defined (_WIN32)
 	WIN32_FIND_DATA ffdata;
 	HANDLE	hFind;
-#elif defined ( __unix__ )
+#elif defined ( __unix__ ) || defined( __APPLE__ )
 	struct dirent **entries;
 	int nMatches;
 	int nCurrentEntry;
