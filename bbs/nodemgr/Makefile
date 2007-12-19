@@ -25,7 +25,7 @@ OBJ_EXT         = .o
 else
 OS=UNIX
 PLATFORM_CFLAGS=
-PLATFORM_DIR=platform/linux
+PLATFORM_DIR=platform/unix
 PATH_SEPERATOR=:
 EXE_EXT         = 
 OBJ_EXT         = .o
