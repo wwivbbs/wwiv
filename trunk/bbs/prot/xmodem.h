@@ -2,10 +2,9 @@
 
 //#include <sys/param.h>
 
-
-//#define MAXPATHLEN 260
-
-typedef	int	bool ;
+#if !defined( MAXPATHLEN )
+#define MAXPATHLEN 260
+#endif
 
 typedef	enum	{
 		  Xmodem=0,

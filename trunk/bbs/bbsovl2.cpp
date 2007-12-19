@@ -28,7 +28,7 @@
 
 void OnlineUserEditor()
 {
-#if !defined ( __unix__ )
+#if !defined ( __unix__ ) && !defined( __APPLE__ )
 	char sl[4], dsl[4], exempt[4], sysopsub[4], ar[17], dar[17], restrict[17], rst[17], uk[8], dk[8], up[6], down[6], posts[6], banktime[6], gold[10], ass[6], logons[6];
 	int cp, i, rc = ABORTED;
 

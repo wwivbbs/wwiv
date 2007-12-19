@@ -21,7 +21,7 @@
 
 void WWIV_make_abs_cmd( std::string& out )
 {
-	if ( out.find("/" != std::string::npos )
+	if ( out.find("/") != std::string::npos )
 	{
 		out = std::string( GetApplication()->GetHomeDir() ) + out;
 	}

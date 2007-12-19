@@ -83,6 +83,12 @@ char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, 
 std::string& StringUpperCase( std::string& s );
 std::string& StringLowerCase( std::string& s );
 
+#if defined( __APPLE__ )
+char *strupr (char *a);
+char *strlwr (char *a);
+char *strrev(char *str);
+#endif
+
 
 #if defined ( _WIN32 ) && ( _MSC_VER > 1310 )
 #define WWIV_STRDUP( s ) _strdup( s )

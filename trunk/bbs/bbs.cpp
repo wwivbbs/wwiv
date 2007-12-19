@@ -79,7 +79,7 @@ WUserManager* WApplication::GetUserManager()
 }
 
 
-#ifndef __unix__
+#if !defined ( __unix__ ) && !defined ( __APPLE__ )
 void WApplication::GetCaller()
 {
     GetSession()->SetMessageAreaCacheNumber( 0 );
@@ -612,7 +612,7 @@ int WApplication::doWFCEvents()
             catsl();
             write_inst( INST_LOC_WFC, 0, INST_FLAGS_NONE );
         }
-#ifndef __unix__
+#if !defined ( __unix__ ) && !defined ( __APPLE__ )
         if ( ok_modem_stuff && sess->remoteIO()->incoming() && !lokb )
         {
             any = true;
@@ -897,7 +897,7 @@ int WApplication::Run(int argc, char *argv[])
     ok_modem_stuff = true;
     GetSession()->SetGlobalDebugLevel( 0 );
 
-#ifdef __unix__
+#if defined( __unix__ ) || defined( __APPLE__ )
     // HACK to make WWIV5/X just work w/o any command line
     m_bUserAlreadyOn = true;
     ui = us = 9600;
@@ -977,7 +977,7 @@ int WApplication::Run(int argc, char *argv[])
                 }
                 break;
             case 'M':
-#ifndef __unix__
+#if !defined ( __unix__ ) && !defined ( __APPLE__ )
                 ok_modem_stuff = false;
 #endif
                 break;
@@ -1091,7 +1091,7 @@ int WApplication::Run(int argc, char *argv[])
 
     // Add the environment variable or overwrite the existing one
     char szInstanceEnvVar[81];
-#ifndef __unix__
+#if !defined ( __unix__ ) && !defined ( __APPLE__ )
     snprintf( szInstanceEnvVar, sizeof( szInstanceEnvVar ), "WWIV_INSTANCE=%ld", GetInstanceNumber() );
     _putenv( szInstanceEnvVar );
 #else
@@ -1202,7 +1202,7 @@ int WApplication::Run(int argc, char *argv[])
             {
                 GotCaller( ui, us );
             }
-#ifndef __unix__
+#if !defined ( __unix__ ) && !defined ( __APPLE__ )
             else
             {
                 GetCaller();
