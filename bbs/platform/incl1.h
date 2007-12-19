@@ -145,7 +145,7 @@ enum COLORS
 //
 //
 
-#if defined ( __unix__ )
+#if defined ( __unix__ ) || defined ( __APPLE__ )
 
 #include <unistd.h>
 #include <fcntl.h>

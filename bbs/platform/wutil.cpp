@@ -35,7 +35,7 @@ int WWIV_GetRandomNumber(int nMaxValue)
 	float rn = static_cast<float>( num/RAND_MAX );
 	return static_cast<int>((nMaxValue-1) * rn);
 
-#elif defined ( __unix__ )
+#elif defined ( __unix__ ) || defined ( __APPLE__ )
 
 	int num = random();
 	float rn = static_cast<float>( num/RAND_MAX );
@@ -150,6 +150,13 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 	//
 	strcpy(pszOSVersionString, "Linux");
 
+#elif defined ( __APPLE__ )
+
+	//
+	// TODO Add Linux version information code here..
+	//
+	strcpy(pszOSVersionString, "Apple OS-X");
+	
 #elif defined ( __unix__ )
 
 	//

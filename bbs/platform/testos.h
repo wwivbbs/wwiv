@@ -29,7 +29,7 @@
 // Sanity check the #defines
 //
 
-#if !defined( _WIN32 ) && !defined( __OS2__ ) && !defined( __unix__ ) && !defined( __MSDOS__ )
+#if !defined( _WIN32 ) && !defined( __OS2__ ) && !defined( __unix__ ) && !defined( __MSDOS__ ) && !defined( __APPLE__ )
 #error "Either _WIN32, __OS2__, or __unix__ must be defined"
 #endif
 
