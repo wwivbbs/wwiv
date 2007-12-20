@@ -172,6 +172,7 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/syschat.o	\
 	$(OBJ)/trytoul.o	\
 	$(OBJ)/uedit.o         	\
+	$(OBJ)/unittests.o	\
 	$(OBJ)/user.o		\
 	$(OBJ)/utility.o       	\
 	$(OBJ)/utility2.o	\
