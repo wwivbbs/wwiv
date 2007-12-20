@@ -21,7 +21,7 @@
 #define __INCLUDED_PLATFORM_FCNS_H__
 
 #if defined ( __linux__ )
-#include "linux/linuxplatform.h"
+#include "unix/linuxplatform.h"
 #endif // __linux__
 
 // $PLATFORM/filesupp.cpp
