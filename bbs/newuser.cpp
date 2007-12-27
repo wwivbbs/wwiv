@@ -24,6 +24,12 @@
 // Local function prototypes
 //
 
+void input_phone();
+bool check_name( const std::string userName );
+void input_callsign();
+int  find_new_usernum( const WUser *pUser, unsigned long *qsc );
+void cln_nu();
+
 void CreateNewUserRecord();
 bool CanCreateNewUserAccountHere();
 bool UseMinimalNewUserInfo();

@@ -130,12 +130,12 @@ public:
     virtual void Close();
     virtual bool IsOpen() const { return m_bOpen; }
 
-    virtual int  Read( void * pBuffer, int nCount );
-    virtual int  Write( const void * pBuffer, int nCount );
+    virtual int  Read( void * pBuffer, size_t nCount );
+    virtual int  Write( const void * pBuffer, size_t nCount );
 	virtual int Write( const std::string& s ) {
 		return this->Write( s.c_str(), s.length() );
 	}
-	virtual int Writeln( const void *pBuffer, int nCount ) {
+	virtual int Writeln( const void *pBuffer, size_t nCount ) {
 		int ret = this->Write( pBuffer, nCount );
 		ret += this->Write( "\r\n", 2 );
 		return ret;

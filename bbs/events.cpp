@@ -19,6 +19,17 @@
 
 #include "wwiv.h"
 
+// Local Functions
+
+int  t_now();
+char *ttc(int d);
+void sort_events();
+void show_events();
+void select_event_days(int evnt);
+void modify_event(int evnt);
+void insert_event();
+void delete_event(int n);
+
 
 int t_now()
 {

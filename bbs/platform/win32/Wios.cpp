@@ -194,7 +194,7 @@ unsigned int WIOSerial::open()
 		WIOS_TRACE2("rc from CreateFile() is %lu - '%s'\n", GetLastError(), GetLastErrorText());
 		return false;
 	}
-    WIOS_TRACE1("Opened Comm Handle %d\n", hComm);
+    WIOS_TRACE1("Opened Comm Handle %d\n", reinterpret_cast<unsigned int>(hComm));
 
 
 	// Set comm timeouts
@@ -306,7 +306,7 @@ void WIOSerial::StopThreads()
     // Try moving it before the wait...
 	FlushFileBuffers(hComm);
 
-    WIOS_TRACE1("Attempting to end thread ID (%ld)          \n", m_hReadThread);
+    WIOS_TRACE1("Attempting to end thread ID (%ld)          \n", reinterpret_cast<unsigned int>(m_hReadThread));
 
     WWIV_Delay( 0 );
     if ( !PulseEvent( m_hReadStopEvent ) )
@@ -340,7 +340,7 @@ void WIOSerial::StartThreads()
 
     // WIOS_TRACE("Creating Listener thread\n");
     m_hReadThread = (HANDLE) _beginthreadex(NULL, 0, &WIOSerial::InboundSerialProc, static_cast< void * >( this ), 0 , (unsigned int *)&dwThreadID);
-    WIOS_TRACE2("Created Listener thread.  Handle = %d, ID = %d\n", m_hReadThread, dwThreadID);
+    WIOS_TRACE2("Created Listener thread.  Handle = %d, ID = %d\n", reinterpret_cast<unsigned int>(m_hReadThread), dwThreadID);
 	WWIV_Delay( 100 );
 	WWIV_Delay( 0 );
 	WWIV_Delay( 0 );
