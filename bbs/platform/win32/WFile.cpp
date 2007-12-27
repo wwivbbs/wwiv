@@ -286,7 +286,7 @@ void WFile::Close()
 }
 
 
-int WFile::Read( void * pBuffer, int nCount )
+int WFile::Read( void * pBuffer, size_t nCount )
 {
     int nRet = _read( m_hFile, pBuffer, nCount );
 	if ( nRet == -1 )
@@ -298,7 +298,7 @@ int WFile::Read( void * pBuffer, int nCount )
 }
 
 
-int WFile::Write( const void * pBuffer, int nCount )
+int WFile::Write( const void * pBuffer, size_t nCount )
 {
     int nRet = _write( m_hFile, pBuffer, nCount );
 	if ( nRet == -1 )

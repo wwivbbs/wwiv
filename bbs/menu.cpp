@@ -24,8 +24,6 @@ static int nSecondUserRecLoaded;            // Whos config is loaded
 
 static FILE *hMenuDesc;
 
-static bool bDisablePD;
-
 static char *pMenuStrings;
 static char **ppMenuStringsIndex;
 static int nNumMenuCmds;
@@ -36,6 +34,33 @@ static int nNumMenuCmds;
 bool CheckMenuPassword( char* pszCorrectPassword );
 int  GetMenuIndex( const char* pszCommand );
 bool LoadMenuSetup( int nUserNum );
+bool ValidateMenuSet( const char *pszMenuDir);
+void ReadMenuSetup();
+void StartMenus();
+void Menus(MenuInstanceData * pMenuData, const char *pszDir, const char *pszMenu);
+void CloseMenu(MenuInstanceData * pMenuData);
+bool OpenMenu(MenuInstanceData * pMenuData);
+bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword );
+bool LoadMenuRecord(MenuInstanceData * pMenuData, const char *pszCommand, MenuRec * pMenu);
+void MenuExecuteCommand(MenuInstanceData * pMenuData, const char *pszCommand);
+void LogUserFunction(MenuInstanceData * pMenuData, const char *pszCommand, MenuRec * pMenu);
+void PrintMenuPrompt(MenuInstanceData * pMenuData);
+void AMDisplayHelp(MenuInstanceData * pMenuData);
+void TurnMCIOff();
+void TurnMCIOn();
+bool AMIsNumber(const char *pszBuf);
+void QueryMenuSet();
+void WriteMenuSetup(int nUserNum);
+void UnloadMenuSetup();
+void GetCommand(MenuInstanceData * pMenuData, char *pszBuf);
+bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool bCheckPassword );
+void GenerateMenu(MenuInstanceData * pMenuData);
+char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
+char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig);
+char *MenuGetParam(char *pszSrc, char *pszParam);
+char *MenuSkipSpaces(char *pszSrc);
+void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript);
+
 
 bool CheckMenuPassword( char* pszCorrectPassword )
 {
@@ -74,8 +99,6 @@ int GetMenuIndex( const char* pszCommand )
 
 void ReadMenuSetup()
 {
-	bDisablePD = false;
-
 	if (pMenuStrings == NULL)
     {
 		char szMenuCmdsFileName[MAX_PATH];
@@ -113,15 +136,6 @@ void ReadMenuSetup()
         nNumMenuCmds = nAmt;
 
 		BbsFreeMemory(index);
-	}
-    WIniFile iniFile( WWIV_INI );
-    if ( iniFile.Open( INI_TAG ) )
-    {
-        if ( iniFile.GetBooleanValue( "DISABLE_PD" ) )
-        {
-			bDisablePD = true;
-		}
-        iniFile.Close();
 	}
 }
 
@@ -194,7 +208,7 @@ void StartMenus()
 			LoadMenuSetup( 1 );
 			ConfigUserMenuSet();
 		}
-		if ( !ValidateMenuSet( pSecondUserRec->szMenuSet, false ) )
+		if ( !ValidateMenuSet( pSecondUserRec->szMenuSet ) )
 		{
 			ConfigUserMenuSet();
 		}
@@ -653,15 +667,10 @@ void ConfigUserMenuSet()
         GetSession()->bout << "   |#1WWIV |#6Menu |#1Editor|#0\r\n\r\n";
 		GetSession()->bout << "|#21|06) |#1Menuset      |06: |15" << pSecondUserRec->szMenuSet << wwiv::endl;
 		GetSession()->bout << "|#22|06) |#1Use hot keys |06: |15" << ( pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ") << wwiv::endl;
-
-        if ( !bDisablePD )
-        {
-			GetSession()->bout << "|#23|06) |#1Menu Type    |06: |15" << ( pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "Regular Menus" : "Pulldown Menus" ) << wwiv::endl;
-        }
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#9[|0212? |08Q|02=Quit|#9] :|#0 ";
 
-        char chKey = onek( ( bDisablePD ) ? "Q12?" : "Q123?" );
+        char chKey = onek( "Q12?" );
 
         switch (chKey)
         {
@@ -676,7 +685,7 @@ void ConfigUserMenuSet()
             GetSession()->bout << "|15Enter the menu set to use : |#0";
             std::string menuSetName;
             inputl( menuSetName, 8 );
-            if ( ValidateMenuSet( menuSetName.c_str(), false ) )
+            if ( ValidateMenuSet( menuSetName.c_str() ) )
             {
                 OpenMenuDescriptions();
                 GetSession()->bout.NewLine();
@@ -716,7 +725,7 @@ void ConfigUserMenuSet()
     }
 
     // If menu is invalid, it picks the first one it finds
-    if ( !ValidateMenuSet( pSecondUserRec->szMenuSet, true ) )
+    if ( !ValidateMenuSet( pSecondUserRec->szMenuSet ) )
     {
         if ( GetSession()->num_languages > 1 && GetSession()->GetCurrentUser()->GetLanguage() != 0 )
         {
@@ -755,7 +764,7 @@ void QueryMenuSet()
 
 	nSecondUserRecLoaded = GetSession()->usernum;
 
-	ValidateMenuSet( pSecondUserRec->szMenuSet, true );
+	ValidateMenuSet( pSecondUserRec->szMenuSet );
 
 	GetSession()->bout.NewLine( 2 );
 	if (pSecondUserRec->szMenuSet[0] == 0)
@@ -765,9 +774,6 @@ void QueryMenuSet()
     GetSession()->bout << "|#7Configurable menu set status:\r\n\r\n";
 	GetSession()->bout << "|#8Menu in use  : |#9" << pSecondUserRec->szMenuSet << wwiv::endl;
 	GetSession()->bout << "|#8Hot keys are : |#9" << ( pSecondUserRec->cHotKeys == HOTKEYS_ON ? "On" : "Off" ) << wwiv::endl;
-	GetSession()->bout << "|#8Menu Type    : |#9" <<
-		          ( bDisablePD == true ? "<Disabled>" : pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "Regular Menus" : "Pulldown Menus" ) <<
-				  wwiv::endl;
 	GetSession()->bout.NewLine();
 
     GetSession()->bout << "|#7Would you like to change these? (N) ";
@@ -785,7 +791,7 @@ void QueryMenuSet()
 
 
 
-bool ValidateMenuSet( const char *pszMenuDir, bool bSetIt )
+bool ValidateMenuSet( const char *pszMenuDir )
 {
 	if (GetSession()->usernum != nSecondUserRecLoaded)
     {

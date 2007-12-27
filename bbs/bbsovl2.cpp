@@ -313,7 +313,6 @@ void BackPrint( std::string strText, int nColorCode, int nCharDelay, int nString
 {
 	bool oecho = local_echo;
 	local_echo = true;
-    int nLength = strText.length();
 	GetSession()->bout.Color( nColorCode );
 	WWIV_Delay( nCharDelay );
     for( std::string::const_iterator iter = strText.begin(); iter != strText.end() && !hangup; ++iter ) 
@@ -323,7 +322,7 @@ void BackPrint( std::string strText, int nColorCode, int nCharDelay, int nString
 	}
 
 	WWIV_Delay( nStringDelay );
-	for ( int i = 0; i < nLength && !hangup; i++ )
+    for( std::string::const_iterator iter = strText.begin(); iter != strText.end() && !hangup; ++iter ) 
 	{
 		GetSession()->bout.BackSpace();
 		WWIV_Delay( 5 );

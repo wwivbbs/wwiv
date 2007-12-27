@@ -1,2 +1,2 @@
-Linux OS-dependent code
+UNIX OS specific code
 
