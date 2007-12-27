@@ -21,6 +21,15 @@
 
 bool GetMenuDir( std::string& menuDir );
 bool GetMenuMenu( const std::string& pszDirectoryName, std::string& menuName );
+void ReIndexMenu( WFile &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName );
+void ReadMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur);
+void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur);
+void DisplayItem(MenuRec * Menu, int nCur, int nAmount);
+void DisplayHeader(MenuHeader * Header, int nCur, int nAmount, const char *pszDirectoryName );
+void EditPulldownColors(MenuHeader * H);
+void ListMenuMenus(const char *pszDirectoryName );
+
+
 
 void EditMenus()
 {

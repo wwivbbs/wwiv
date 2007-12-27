@@ -88,7 +88,6 @@ bool do_sysop_command(int command);
 bool copyfile(const std::string sourceFileName, const std::string destFileName, bool stats);
 bool movefile(const std::string sourceFileName, const std::string destFileName, bool stats);
 void ListAllColors();
-//int  get_kb_event1();
 
 
 // File: bbsutl.cpp
@@ -148,7 +147,6 @@ void rputch(char ch, bool bUseInternalBuffer = false);
 void wwivnode( WUser *pUser, int mode );
 int  callback();
 void dial(char *phone, int xlate);
-//bool connect_to1(char *phone, int dy);
 
 
 // File: chains.cpp
@@ -316,19 +314,11 @@ int  find_phone_number(const char *phone);
 
 // File: events.cpp
 
-int  t_now();
-char *ttc(int d);
-void sort_events();
 void init_events();
 void get_next_forced_event();
 void cleanup_events();
 void check_event();
 void run_event(int evnt);
-void show_events();
-void select_event_days(int evnt);
-void modify_event(int evnt);
-void insert_event();
-void delete_event(int n);
 void eventedit();
 
 
@@ -499,53 +489,20 @@ void BbsFree2D( char **pa );
 
 // File: menu.cpp
 
-void ReadMenuSetup();
 void mainmenu();
-void StartMenus();
-void Menus(MenuInstanceData * pMenuData, const char *pszDir, const char *pszMenu);
-void CloseMenu(MenuInstanceData * pMenuData);
-bool OpenMenu(MenuInstanceData * pMenuData);
-bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword );
-bool LoadMenuRecord(MenuInstanceData * pMenuData, const char *pszCommand, MenuRec * pMenu);
-void MenuExecuteCommand(MenuInstanceData * pMenuData, const char *pszCommand);
-void LogUserFunction(MenuInstanceData * pMenuData, const char *pszCommand, MenuRec * pMenu);
 void MenuSysopLog(const char *pszMsg);
-void PrintMenuPrompt(MenuInstanceData * pMenuData);
-void AMDisplayHelp(MenuInstanceData * pMenuData);
-void TurnMCIOff();
-void TurnMCIOn();
-bool AMIsNumber(const char *pszBuf);
 void ConfigUserMenuSet();
-void QueryMenuSet();
-bool ValidateMenuSet( const char *pszMenuDir, bool bSetIt );
-void WriteMenuSetup(int nUserNum);
-void UnloadMenuSetup();
-void GetCommand(MenuInstanceData * pMenuData, char *pszBuf);
-bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool bCheckPassword );
 void OpenMenuDescriptions();
 void CloseMenuDescriptions();
 char *GetMenuDescription( const std::string& name, char *pszDesc );
 void SetMenuDescription(const char *pszName, const char *pszDesc);
 const char *GetMenuDirectory();
-void GenerateMenu(MenuInstanceData * pMenuData);
-char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
-char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig);
-char *MenuGetParam(char *pszSrc, char *pszParam);
-char *MenuSkipSpaces(char *pszSrc);
-void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript);
 
 
 // File: menuedit.cpp
 
 void EditMenus();
-void ReIndexMenu( WFile &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName );
-void ReadMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur);
-void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur);
-void DisplayItem(MenuRec * Menu, int nCur, int nAmount);
-void DisplayHeader(MenuHeader * Header, int nCur, int nAmount, const char *pszDirectoryName );
-void EditPulldownColors(MenuHeader * H);
 void ListMenuDirs();
-void ListMenuMenus(const char *pszDirectoryName );
 
 
 // File: menuspec.cpp
@@ -773,13 +730,10 @@ void run_exp();
 
 // File: newuser.cpp
 
-void input_phone();
 void input_dataphone();
 void input_language();
-bool check_name( const std::string userName );
 void input_name();
 void input_realname();
-void input_callsign();
 bool valid_phone( const std::string phoneNumber );
 void input_street();
 void input_city();
@@ -792,10 +746,8 @@ void input_comptype();
 void input_screensize();
 void input_pw( WUser *pUser );
 void input_ansistat();
-int  find_new_usernum( const WUser *pUser, unsigned long *qsc );
 void newuser();
 void properize( char *pszText );
-void cln_nu();
 
 
 // File: pause.cpp
