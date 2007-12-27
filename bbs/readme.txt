@@ -7,18 +7,10 @@
 GENERAL INFORMATION:
 
     WWIV 5.0 is built with the following compilers:
-        MS Visual C++ .NET/2003/2005
+        MS Visual C++ .NET/2008
 
    Not Testing but Should work are:
 MS Visual C++ 6.0 (Standard/Professional/Enterprise) [Not tested lately]
-
-        Borland C++ Builder 5.0
-        Borland C++ 5.5 (Free Command Line Tools Edition from:
-            http://community.borland.com)
-        GCC 2.95.2-Mingw32 (You need to patch the libraries with the
-            binary release from 020300 or later, as well as add a
-            few missing functions into winsock2.h)
-            MinGW is available at: http://www.mingw.org/
 
     I recommend using MSVC .NET 2005. (Since there is a the "express" edition
     available for free.
@@ -48,6 +40,8 @@ DATE:  ??/??/2007
 
 Atani - Added VS 2005 project files
 Atani - Copyright update to 2007
+Atani - Started in earnest on an OS X port.
+Rushfan - More STL'ification
 
 
 ==============================================================================
