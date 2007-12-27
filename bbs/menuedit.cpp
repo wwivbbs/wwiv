@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "menu.h"
 
 bool GetMenuDir( std::string& menuDir );
 bool GetMenuMenu( const std::string& pszDirectoryName, std::string& menuName );
