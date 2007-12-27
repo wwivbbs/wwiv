@@ -96,7 +96,6 @@
 #include "WConstants.h"
 #include "net.h"
 #include "common.h"
-#include "menu.h"
 #include "fcns.h"
 #include "platformfcns.h"
 #include "vars.h"

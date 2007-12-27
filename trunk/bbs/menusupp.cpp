@@ -18,7 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-
+#include "menu.h"
+#include "menusupp.h"
 
 void UnQScan()
 {
@@ -177,7 +178,7 @@ void AutoMessage()
 
 
 
-void Defaults(MenuInstanceData * MenuData)
+void Defaults(MenuInstanceData * pMenuData)
 {
     if (GuestCheck())
     {
@@ -186,7 +187,7 @@ void Defaults(MenuInstanceData * MenuData)
         {
             pausescr();
         }
-        defaults(MenuData);
+        defaults( pMenuData );
     }
 }
 
