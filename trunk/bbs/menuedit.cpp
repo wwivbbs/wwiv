@@ -19,12 +19,13 @@
 
 #include "wwiv.h"
 
+bool GetMenuDir( std::string& menuDir );
+bool GetMenuMenu( const std::string& pszDirectoryName, std::string& menuName );
 
 void EditMenus()
 {
 	char szFile[MAX_PATH];
-	char szDirectoryName[15], szMenu[15];
-	char szMenuDir[MAX_PATH];
+	char szMenu[15];
 	char szTemp1[21];
 	char szPW[21];
 	char szDesc[81];
@@ -36,18 +37,19 @@ void EditMenus()
 	GetSession()->bout.ClearScreen();
 	GetSession()->bout << "|#2WWIV Menu Editor|#0\r\n";
 
-	if (!GetMenuDir(szDirectoryName))
+	std::string menuDir;
+	if (!GetMenuDir(menuDir))
 	{
 		return;
 	}
 
-	if (!GetMenuMenu(szDirectoryName, szMenu))
+	std::string menuName;
+	if (!GetMenuMenu( menuDir, menuName ))
 	{
 		return;
 	}
 
-	sprintf(szFile, "%s%s%c%s.mnu", MenuDir(szMenuDir), szDirectoryName,
-		WWIV_FILE_SEPERATOR_CHAR, szMenu);
+	sprintf(szFile, "%s%s%c%s.mnu", GetMenuDirectory(), menuDir.c_str(), WWIV_FILE_SEPERATOR_CHAR, menuName.c_str() );
 
 	WFile fileEditMenu( szFile );
 	if (!WFile::Exists(szFile))
@@ -104,7 +106,7 @@ void EditMenus()
 	{
 		if (nCur == 0)
 		{
-			DisplayHeader((MenuHeader *) (&Menu), nCur, nAmount, szDirectoryName);
+			DisplayHeader((MenuHeader *) (&Menu), nCur, nAmount, menuDir.c_str());
 			char chKey = onek("Q[]Z012ABCDEFGHIJKLMNOP");
 			switch (chKey)
 			{
@@ -149,14 +151,14 @@ void EditMenus()
 				break;
 			case '0':
 				OpenMenuDescriptions();
-				GetMenuDescription( std::string(szDirectoryName), szDesc);
+				GetMenuDescription( menuDir.c_str(), szDesc);
 
 				GetSession()->bout << "|#5New desc     : ";
 				GetSession()->bout.Color( 0 );
 				inputl(szDesc, 60);
 				if (szDesc[0])
 				{
-					SetMenuDescription(szDirectoryName, szDesc);
+					SetMenuDescription( menuDir.c_str(), szDesc);
 				}
 				CloseMenuDescriptions();
 				break;
@@ -510,7 +512,7 @@ void EditMenus()
 	}
 	GetApplication()->CdHome(); // make sure we are in the wwiv dir
 
-	ReIndexMenu(fileEditMenu, szDirectoryName, szMenu);
+	ReIndexMenu(fileEditMenu, menuDir.c_str(), szMenu);
 	fileEditMenu.Close();
 }
 
@@ -518,12 +520,7 @@ void EditMenus()
 void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName)
 {
 	char szFile[MAX_PATH];
-	char szMenuDir[MAX_PATH];
-	int nRec;
-	MenuRecIndex MenuIndex;
-	MenuRec Menu;
-
-	sprintf( szFile, "%s%s%c%s.idx", MenuDir(szMenuDir), pszDirectoryName, WWIV_FILE_SEPERATOR_CHAR, pszMenuName );
+	sprintf( szFile, "%s%s%c%s.idx", GetMenuDirectory(), pszDirectoryName, WWIV_FILE_SEPERATOR_CHAR, pszMenuName );
 
 	GetSession()->bout << "Indexing Menu...\r\n";
 
@@ -536,18 +533,20 @@ void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *
 	}
 	int nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec));
 
-	for (nRec = 1; nRec < nAmount; nRec++)
+	for (int nRec = 1; nRec < nAmount; nRec++)
 	{
+		MenuRec menu;
 		fileEditMenu.Seek( nRec * sizeof( MenuRec ), WFile::seekBegin );
-		fileEditMenu.Read( &Menu, sizeof( MenuRec ) );
+		fileEditMenu.Read( &menu, sizeof( MenuRec ) );
 
-		memset(&MenuIndex, 0, sizeof(MenuRecIndex));
-		MenuIndex.nRec = static_cast<short>( nRec );
-		MenuIndex.nFlags = Menu.nFlags;
-		strcpy(MenuIndex.szKey, Menu.szKey);
+		MenuRecIndex menuIndex;
+		memset(&menuIndex, 0, sizeof(MenuRecIndex));
+		menuIndex.nRec = static_cast<short>( nRec );
+		menuIndex.nFlags = menu.nFlags;
+		strcpy(menuIndex.szKey, menu.szKey);
 
 		fileIdx.Seek( (nRec - 1) * sizeof( MenuRecIndex ), WFile::seekBegin );
-		fileIdx.Write( &MenuIndex, sizeof( MenuRecIndex ) );
+		fileIdx.Write( &menuIndex, sizeof( MenuRecIndex ) );
 	}
 
 	fileIdx.Close();
@@ -595,39 +594,35 @@ void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur)
 }
 
 
-bool GetMenuDir( char *pszBuffer )
+bool GetMenuDir(std::string& menuName)
 {
-	char szPath[MAX_PATH];
-	char szMenuDir[MAX_PATH];
-
 	ListMenuDirs();
 
 	while (!hangup)
 	{
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#9Enter menuset to edit ?=List : |#0";
-		input(pszBuffer, 8);
+		input(menuName, 8);
 
-		if (pszBuffer[0] == '?')
-		{
-			ListMenuDirs();
-		}
-		else if (pszBuffer[0] == 0)
+		if (menuName.empty()) 
 		{
 			return false;
 		}
+		else if (menuName[0] == '?')
+		{
+			ListMenuDirs();
+		}
 		else
 		{
-			sprintf(szPath, "%s%s", MenuDir(szMenuDir), pszBuffer);
-			WFile dir(szPath);
+			WFile dir(GetMenuDirectory(), menuName);
 			if (!dir.Exists())
 			{
-				GetSession()->bout << "The path " << szPath << wwiv::endl <<
+				GetSession()->bout << "The path " << dir.GetFullPathName() << wwiv::endl <<
 					          "does not exist, create it? (Y) : ";
 				if (noyes())
 				{
 					GetApplication()->CdHome();	// go to the wwiv dir
-					WWIV_make_path(szPath);                    // Create the new path
+					WWIV_make_path(dir.GetFullPathName());  // Create the new path
 					if (dir.Exists())
 					{
 						GetApplication()->CdHome();
@@ -656,36 +651,32 @@ bool GetMenuDir( char *pszBuffer )
 }
 
 
-bool GetMenuMenu( const char *pszDirectoryName, char *pszBuffer )
+bool GetMenuMenu( const std::string& directoryName, std::string& menuName )
 {
-	char szPath[MAX_PATH];
-	char szMenuDir[MAX_PATH];
-	int x;
-
-	ListMenuMenus(pszDirectoryName);
+	ListMenuMenus( directoryName.c_str() );
 
 	while (!hangup)
 	{
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#9Enter menu file to edit ?=List : |#0";
-		input(pszBuffer, 8);
+		input(menuName, 8);
 
-		if (pszBuffer[0] == '?')
-		{
-			ListMenuMenus(pszDirectoryName);
-		}
-		else if (pszBuffer[0] == 0)
+		if (menuName.empty())
 		{
 			return false;
 		}
+		else if (menuName[0] == '?')
+		{
+			ListMenuMenus( directoryName.c_str() );
+		}
 		else
 		{
-			sprintf(  szPath, "%s%s%c%s.mnu", MenuDir(szMenuDir), pszDirectoryName,
-				WWIV_FILE_SEPERATOR_CHAR, pszBuffer);
-			if (!WFile::Exists(szPath))
+			std::ostringstream path;
+			path << GetMenuDirectory() << directoryName << WWIV_FILE_SEPERATOR_CHAR << menuName;
+			if ( !WFile::Exists( path.str().c_str() ) )
 			{
 				GetSession()->bout << "File does not exist, create it? (yNq) : ";
-				x = ynq();
+				char x = ynq();
 
 				if (x == 'Q')
 				{
@@ -701,8 +692,11 @@ bool GetMenuMenu( const char *pszDirectoryName, char *pszBuffer )
 				{
 					continue;
 				}
-			} else
+			} 
+			else 
+			{
 				return true;
+			}
 		}
 	}
     // The only way to get here is to hangup
@@ -749,8 +743,6 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount)
 
 void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszDirectoryName)
 {
-	char szDesc[101];
-
 	GetSession()->bout.ClearScreen();
 
 	OpenMenuDescriptions();
@@ -762,6 +754,7 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
 		GetSession()->bout << "   Menu Version         : " <<
 			          static_cast<int>( HIBYTE(pHeader->nVersion ) ) <<
 					  static_cast<int>( LOBYTE( pHeader->nVersion ) ) << wwiv::endl;
+		char szDesc[101];
 		GetSession()->bout << "0) Menu Description     : " << GetMenuDescription( std::string(pszDirectoryName), szDesc ) << wwiv::endl;
 		GetSession()->bout << "1) Deleted              : " << ( ( pHeader->nFlags & MENU_FLAG_DELETED ) ? "Yes" : "No" ) << wwiv::endl;
 		GetSession()->bout << "2) Main Menu            : " << ( ( pHeader->nFlags & MENU_FLAG_MAINMENU ) ? "Yes" : "No" ) << wwiv::endl;;
@@ -1006,12 +999,11 @@ void EditPulldownColors(MenuHeader * pMenuHeader)
 void ListMenuDirs()
 {
 	char szPath[MAX_PATH], szName[20];
-	char szMenuDir[MAX_PATH];
 	char szDesc[101];
 	WFindFile fnd;
 	bool bFound;
 
-	sprintf(szPath, "%s*", MenuDir(szMenuDir));
+	sprintf(szPath, "%s*", GetMenuDirectory());
 
 	OpenMenuDescriptions();
 
@@ -1040,13 +1032,12 @@ void ListMenuDirs()
 void ListMenuMenus( const char *pszDirectoryName )
 {
 	char szPath[MAX_PATH];
-	char szMenuDir[MAX_PATH];
 	char *ss;
 	char szFileName[MAX_PATH];
 	WFindFile fnd;
 	bool bFound;
 
-	sprintf(szPath, "%s%s%c*.MNU", MenuDir(szMenuDir), pszDirectoryName,
+	sprintf(szPath, "%s%s%c*.mnu", GetMenuDirectory(), pszDirectoryName,
 		WWIV_FILE_SEPERATOR_CHAR);
 
 	GetSession()->bout.NewLine();
