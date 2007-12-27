@@ -19,6 +19,13 @@
 
 #include "wwiv.h"
 
+// Local functions
+void send_inst_msg( inst_msg_header * ih, const char *msg );
+int  handle_inst_msg( inst_msg_header * ih, const char *msg );
+void send_inst_str1( int m, int whichinst, const char *pszSendString );
+bool inst_available(instancerec * ir);
+bool inst_available_chat(instancerec * ir);
+
 
 void send_inst_msg(inst_msg_header *ih, const char *msg)
 {

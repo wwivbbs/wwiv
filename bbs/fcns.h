@@ -16,15 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 
-#ifndef __INCLUDED_FCNS_H__
+#ifndef __INCLUDED_FCnNS_H__
 #define __INCLUDED_FCNS_H__
 
 #ifdef _MSC_VER
 #pragma once
 #endif
 
-#include "menu.h"
-#include "instmsg.h"
+#include "menu.h" // Only needed by defaults
 
 // File: asv.cpp
 
@@ -386,22 +385,17 @@ void send_inet_email();
 bool check_inet_addr(const char *inetaddr);
 char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber);
 void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber);
+void send_inst_sysstr( int whichinst, const char *pszSendString );
 
 
 // File: instmsg.cpp
 
-void send_inst_msg( inst_msg_header * ih, const char *msg );
-void send_inst_str1( int m, int whichinst, const char *pszSendString );
 void send_inst_str( int whichinst, const char *pszSendString );
-void send_inst_sysstr( int whichinst, const char *pszSendString );
 void send_inst_shutdown( int whichinst );
 void send_inst_cleannet();
 void broadcast( const char *fmt, ... );
-int  handle_inst_msg( inst_msg_header * ih, const char *msg );
 void process_inst_msgs();
 bool get_inst_info(int nInstanceNum, instancerec * ir);
-bool inst_available(instancerec * ir);
-bool inst_available_chat(instancerec * ir);
 int  num_instances();
 bool  user_online(int nUserNumber, int *wi);
 void instance_edit();
@@ -526,120 +520,6 @@ void ReadSelectedMessages(int iWhich, int iWhere);
 
 // File: menusupp.cpp
 
-void UnQScan();
-void DirList();
-void UpSubConf();
-void DownSubConf();
-void DownSub();
-void UpSub();
-void ValidateUser();
-void Chains();
-void TimeBank();
-void AutoMessage();
-void Defaults(MenuInstanceData * MenuData);
-void SendEMail();
-void FeedBack();
-void Bulletins();
-void SystemInfo();
-void JumpSubConf();
-void KillEMail();
-void LastCallers();
-void ReadEMail();
-void NewMessageScan();
-void GoodBye();
-void WWIV_PostMessage();
-void ScanSub();
-void RemovePost();
-void TitleScan();
-void ListUsers();
-void Vote();
-void ToggleExpert();
-void ExpressScan();
-void WWIVVersion();
-void InstanceEdit();
-void JumpEdit();
-void BoardEdit();
-void ChainEdit();
-void ToggleChat();
-void ChangeUser();
-void CallOut();
-void Debug();
-void DirEdit();
-void EventEdit();
-void LoadTextFile();
-void EditText();
-void EditBulletins();
-void ReadAllMail();
-void RebootComputer();
-void ReloadMenus();
-void ResetFiles();
-void ResetQscan();
-void MemoryStatus();
-void PackMessages();
-void InitVotes();
-void ReadLog();
-void ReadNetLog();
-void PrintPending();
-void PrintStatus();
-void TextEdit();
-void UserEdit();
-void VotePrint();
-void YesturdaysLog();
-void ZLog();
-void ViewNetDataLog();
-void UploadPost();
-void NetListing();
-void WhoIsOnline();
-void NewMsgsAllConfs();
-void MultiEmail();
-void InternetEmail();
-void NewMsgScanFromHere();
-void ValidateScan();
-void ChatRoom();
-void DownloadPosts();
-void DownloadFileList();
-void ClearQScan();
-void FastGoodBye();
-void NewFilesAllConfs();
-void ReadIDZ();
-void RemoveNotThere();
-void UploadAllDirs();
-void UploadCurDir();
-void RenameFiles();
-void MoveFiles();
-void SortDirs();
-void ReverseSort();
-void AllowEdit();
-void UploadFilesBBS();
-void UpDirConf();
-void UpDir();
-void DownDirConf();
-void DownDir();
-void ListUsersDL();
-void PrintDSZLog();
-void PrintDevices();
-void ViewArchive();
-void BatchMenu();
-void Download();
-void TempExtract();
-void FindDescription();
-void TemporaryStuff();
-void JumpDirConf();
-void ConfigFileList();
-void ListFiles();
-void NewFileScan();
-void RemoveFiles();
-void SearchAllFiles();
-void XferDefaults();
-void Upload();
-void YourInfoDL();
-void UploadToSysop();
-void ReadAutoMessage();
-void GuestApply();
-void AttachFile();
-bool GuestCheck();
-void SetSubNumber(char *pszSubKeys);
-void SetDirNumber(char *pszDirectoryKeys);
 
 
 // File: misccmd.cpp

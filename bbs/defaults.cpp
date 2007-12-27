@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-
+#include "menu.h"
 
 #define STOP_LIST 0
 #define MAX_SCREEN_LINES_TO_SHOW 24

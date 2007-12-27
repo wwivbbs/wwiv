@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "menu.h"
+#include "menusupp.h"
 
 static user_config *pSecondUserRec;         // Userrec2 style setup
 static int nSecondUserRecLoaded;            // Whos config is loaded
