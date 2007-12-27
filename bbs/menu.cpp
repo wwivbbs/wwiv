@@ -185,7 +185,6 @@ void StartMenus()
 		}
 		memset(pMenuData, 0, sizeof(MenuInstanceData));
 
-		//pMenuData->hMenuFile = -1;
 		pMenuData->nFinished = 0;
 		pMenuData->nReload = 0;
 
@@ -270,14 +269,13 @@ void CloseMenu(MenuInstanceData * pMenuData)
 bool OpenMenu(MenuInstanceData * pMenuData)
 {
 	char szMenuFileName[MAX_PATH + 1];
-	char szMenuDir[MAX_PATH + 1];
 
 	CloseMenu(pMenuData);
 
 	// --------------------------
 	// Open up the main data file
 	// --------------------------
-	sprintf(szMenuFileName, "%s%s%c%s.mnu", MenuDir(szMenuDir), pMenuData->szPath,
+	sprintf(szMenuFileName, "%s%s%c%s.mnu", GetMenuDirectory(), pMenuData->szPath,
 			WWIV_FILE_SEPERATOR_CHAR, pMenuData->szMenu);
 	pMenuData->pMenuFile = new WFile( szMenuFileName );
 	pMenuData->pMenuFile->Open( WFile::modeBinary|WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite );
@@ -310,7 +308,7 @@ bool OpenMenu(MenuInstanceData * pMenuData)
 	// Open/Read/Close the index file
 	// ------------------------------
     char szIndexFileName[ MAX_PATH ];
-	sprintf( szIndexFileName, "%s%s%c%s.idx", MenuDir(szMenuDir), pMenuData->szPath,
+	sprintf( szIndexFileName, "%s%s%c%s.idx", GetMenuDirectory(), pMenuData->szPath,
 			 WWIV_FILE_SEPERATOR_CHAR, pMenuData->szMenu );
 	WFile fileIndex( szIndexFileName );
 	if ( fileIndex.Open( WFile::modeBinary|WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite ) )
@@ -339,7 +337,7 @@ bool OpenMenu(MenuInstanceData * pMenuData)
 	// Open/Rease/Close Prompt file
 	// ----------------------------
     char szPromptFileName[ MAX_PATH ];
-	sprintf( szPromptFileName, "%s%s%c%s.pro", MenuDir(szMenuDir), pMenuData->szPath,
+	sprintf( szPromptFileName, "%s%s%c%s.pro", GetMenuDirectory(), pMenuData->szPath,
 			 WWIV_FILE_SEPERATOR_CHAR, pMenuData->szMenu );
 	WFile filePrompt( szPromptFileName );
 	if ( filePrompt.Open( WFile::modeBinary|WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite ) )
@@ -382,9 +380,8 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
         return false;
     }
 
-    short int x;
     // All AR bits specified must match
-    for (x = 0; x < 16; x++)
+    for (short int x = 0; x < 16; x++)
     {
         if (pHeader->uAR & (1 << x))
         {
@@ -396,7 +393,7 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
     }
 
     // All DAR bits specified must match
-    for (x = 0; x < 16; x++)
+    for (short int x = 0; x < 16; x++)
     {
         if (pHeader->uDAR & (1 << x))
         {
@@ -408,7 +405,7 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
     }
 
     // If any restrictions match, then they arn't allowed
-    for (x = 0; x < 16; x++)
+    for (short int x = 0; x < 16; x++)
     {
         if (pHeader->uRestrict & (1 << x))
         {
@@ -477,10 +474,9 @@ bool LoadMenuRecord( MenuInstanceData * pMenuData, const char *pszCommand, MenuR
                     }
 					else
                     {
-						char szMsg[255];
-
-						sprintf(szMsg, "< item security : %s", pszCommand);
-						MenuSysopLog(szMsg);
+						std::ostringstream msg;
+						msg << "< item security : %s" << pszCommand;
+						MenuSysopLog(msg.str().c_str());
 						return false;
 					}
 				}
@@ -498,7 +494,6 @@ void MenuExecuteCommand(MenuInstanceData * pMenuData, const char *pszCommand)
 	if (LoadMenuRecord(pMenuData, pszCommand, &menu))
     {
 		LogUserFunction(pMenuData, pszCommand, &menu);
-
 		InterpretCommand(pMenuData, menu.szExecute);
 	}
     else
@@ -531,7 +526,7 @@ void LogUserFunction(MenuInstanceData * pMenuData, const char *pszCommand, MenuR
 
 void MenuSysopLog(const char *pszMsg)
 {
-    std::stringstream logStream;
+    std::ostringstream logStream;
     logStream << "*MENU* : " << pszMsg;
 
     sysopchar( logStream.str().c_str() );
@@ -561,9 +556,8 @@ void PrintMenuPrompt( MenuInstanceData * pMenuData )
 void AMDisplayHelp( MenuInstanceData * pMenuData )
 {
 	char szFileName[MAX_PATH];
-	char szMenuDir[MAX_PATH];
 
-	sprintf( szFileName, "%s%s%c%s", MenuDir( szMenuDir ), pMenuData->szPath,
+	sprintf( szFileName, "%s%s%c%s", GetMenuDirectory(), pMenuData->szPath,
 			 WWIV_FILE_SEPERATOR_CHAR, pMenuData->szMenu );
 
 	char * pszTemp = szFileName + strlen(szFileName);
@@ -793,9 +787,6 @@ void QueryMenuSet()
 
 bool ValidateMenuSet( const char *pszMenuDir, bool bSetIt )
 {
-	char szPath[MAX_PATH];
-	char szTemp[MAX_PATH];
-
 	if (GetSession()->usernum != nSecondUserRecLoaded)
     {
 		if ( !LoadMenuSetup( GetSession()->usernum ) )
@@ -807,8 +798,9 @@ bool ValidateMenuSet( const char *pszMenuDir, bool bSetIt )
 	nSecondUserRecLoaded = GetSession()->usernum;
 
 	// ensure the entry point exists
-	sprintf(szPath, "%s%s", MenuDir(szTemp), pszMenuDir );
-	return WFile::Exists(szPath, "main.mnu");
+	std::ostringstream path;
+	path << GetMenuDirectory() << pszMenuDir << "main.mnu";
+	return WFile::Exists(path.str());
 }
 
 
@@ -995,11 +987,9 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
 
 void OpenMenuDescriptions()
 {
-	char szFileName[MAX_PATH];
-	char szMenuDir[MAX_PATH];
-
-	sprintf(szFileName, "%s%s", MenuDir(szMenuDir), DESCRIPT_ION);
-	hMenuDesc = fopen(szFileName, "r");
+	std::ostringstream name;
+	name << GetMenuDirectory() << DESCRIPT_ION;
+	hMenuDesc = fopen(name.str().c_str(), "r");
 }
 
 void CloseMenuDescriptions()
@@ -1071,8 +1061,6 @@ char *GetMenuDescription(const std::string& name, char *pszDesc )
 
 void SetMenuDescription(const char *pszName, const char *pszDesc)
 {
-	char szMenuDir[MAX_PATH];
-
 	char szLine[MAX_PATH], szTok[26];
 	int bWritten = 0;
 	bool bMenuOpen = false;
@@ -1087,7 +1075,7 @@ void SetMenuDescription(const char *pszName, const char *pszDesc)
 		bMenuOpen = true;
     }
 
-    WTextFile tempDescriptionFile( MenuDir(szMenuDir), TEMP_ION, "wt" );
+    WTextFile tempDescriptionFile( GetMenuDirectory(), TEMP_ION, "wt" );
 
     if (!tempDescriptionFile.IsOpen())
     {
@@ -1127,9 +1115,9 @@ void SetMenuDescription(const char *pszName, const char *pszDesc)
 
 	CloseMenuDescriptions();
 
-    WFile descriptionFile( MenuDir(szMenuDir), DESCRIPT_ION );
+    WFile descriptionFile( GetMenuDirectory(), DESCRIPT_ION );
     WFile::Remove( descriptionFile.GetFullPathName() );
-    WFile::Rename(tempDescriptionFile.GetFullPathName(), descriptionFile.GetFullPathName());
+    WFile::Rename( tempDescriptionFile.GetFullPathName(), descriptionFile.GetFullPathName() );
 
 	if (bMenuOpen)
     {
@@ -1138,10 +1126,11 @@ void SetMenuDescription(const char *pszName, const char *pszDesc)
 }
 
 
-char *MenuDir( char *pszDir )
+const char *GetMenuDirectory()
 {
-	sprintf(pszDir, "%smenus%c", GetSession()->pszLanguageDir, WWIV_FILE_SEPERATOR_CHAR);
-	return pszDir;
+	static char szMenuDir[MAX_PATH];
+	sprintf(szMenuDir, "%smenus%c", GetSession()->pszLanguageDir, WWIV_FILE_SEPERATOR_CHAR);
+	return szMenuDir;
 }
 
 
