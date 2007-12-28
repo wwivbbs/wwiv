@@ -18,20 +18,29 @@
 ifneq (,$(findstring win32,$(MAKEFLAGS)))
 OS=WIN32
 PLATFORM_CFLAGS=
-PLATFORM_DIR=platform/WIN32
+PLATFORM_DIR=../platform/win32
+PLATFORM_ALT_DIR=../platform/win32
 PATH_SEPERATOR=;
 EXE_EXT         = .exe
 OBJ_EXT         = .o
 else
 OS=UNIX
 PLATFORM_CFLAGS=
-PLATFORM_DIR=platform/unix
+PLATFORM_DIR=../platform/unix
+ifeq (Darwin,$(shell uname))
+PLATFORM_ALT_DIR=../platform/osx
+PLATFORM_CFLAGS+=-I$(PLATFORM_ALT_DIR)
+PLATFORM_LINKFLAGS+=-lobjc -framework CoreFoundation -framework Foundation
+else
+PLATFORM_ALT_DIR=../platform/unix
+endif
 PATH_SEPERATOR=:
 EXE_EXT         = 
 OBJ_EXT         = .o
 endif
 
-CC              = g++
+CC              = gcc
+CXX             = g++
 
 OBJ		= ../obj
 BIN		= ../bin
@@ -40,7 +49,7 @@ BIN_NAME        = $(BIN)/nodemgr$(EXE_EXT)
 RM		= rm
 MKDIR		= mkdir
 CFLAGS		= -I../ -I../platform -I../$(PLATFORM_DIR) -Wall -g $(PLATFORM_CFLAGS)
-LINKFLAGS	= -lm
+LINKFLAGS	= -lm $(PLATFORM_LINKFLAGS)
 PROJECT_DIR	= wwiv50
 TAR		= tar czvf 
 
@@ -60,15 +69,27 @@ TAR		= tar czvf
 
 $(OBJ)/%.o : ${PLATFORM_DIR}/%.cpp
 	@echo Compiling $<
+	@$(CXX) -c $< $(CFLAGS) -o $@
+
+$(OBJ)/%.o : ${PLATFORM_DIR}/%.m
+	@echo Compiling $<
+	@$(CC) -c $< $(CFLAGS) -o $@
+
+$(OBJ)/%.o : ${PLATFORM_ALT_DIR}/%.cpp
+	@echo Compiling $<
+	@$(CXX) -c $< $(CFLAGS) -o $@
+
+$(OBJ)/%.o : ${PLATFORM_ALT_DIR}/%.m
+	@echo Compiling $<
 	@$(CC) -c $< $(CFLAGS) -o $@
 
 $(OBJ)/%.o : platform/%.cpp
 	@echo Compiling $<
-	@$(CC) -c $< $(CFLAGS) -o $@
+	@$(CXX) -c $< $(CFLAGS) -o $@
 
 $(OBJ)/%.o : %.cpp
 	@echo Compiling $<
-	@$(CC) -c $< $(CFLAGS) -o $@
+	@$(CXX) -c $< $(CFLAGS) -o $@
 
 #############################################################################
 #
@@ -102,7 +123,7 @@ $(BIN):
 
 $(BIN_NAME): $(BIN) $(OBJ) $(BBS_OBJS)
 	@echo Linking $@
-	@$(CC) -o $(BIN_NAME) $(LINKFLAGS) $(BBS_OBJS)
+	@$(CXX) -o $(BIN_NAME) $(LINKFLAGS) $(BBS_OBJS)
 
 clean:
 	@echo Cleaning...
