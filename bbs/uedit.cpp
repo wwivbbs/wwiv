@@ -23,9 +23,11 @@
 static unsigned long *u_qsc = 0;
 static char *sp = NULL;
 static char	search_pattern[81];
-
-
 char *daten_to_date(time_t dt);
+
+int  matchuser( int nUserNumber );
+int  matchuser( WUser * pUser );
+void changeopt();
 
 
 void deluser( int nUserNumber )

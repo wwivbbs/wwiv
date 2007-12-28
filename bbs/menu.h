@@ -183,18 +183,25 @@ struct MenuInstanceData
 
 };
 
+// Functions used b bbs.cpp and defaults.cpp
+void mainmenu();
+void ConfigUserMenuSet();
 
 // Functions used by menuedit and menu
-std::string GetMenuDirectory(std::string menuPath);
-std::string GetMenuDirectory(std::string menuPath, std::string menuName, std::string extension);
-std::string GetMenuDirectory();
+const std::string GetMenuDirectory(const std::string menuPath);
+const std::string GetMenuDirectory(const std::string menuPath, const std::string menuName, const std::string extension);
+const std::string GetMenuDirectory();
+void MenuSysopLog(const char *pszMsg);
+void OpenMenuDescriptions();
+void CloseMenuDescriptions();
+char *GetMenuDescription( const std::string& name, char *pszDesc );
+void SetMenuDescription(const char *pszName, const char *pszDesc);
 
 // Used by menuinterpretcommand.cpp
-
 void TurnMCIOff();
 void TurnMCIOn();
 int  GetMenuIndex( const char* pszCommand );
-void Menus(MenuInstanceData * pMenuData, std::string menuDirectory, std::string menuName);
+void Menus(MenuInstanceData * pMenuData, const std::string menuDirectory, const std::string menuName);
 char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
 void AMDisplayHelp(MenuInstanceData * pMenuData);
 
