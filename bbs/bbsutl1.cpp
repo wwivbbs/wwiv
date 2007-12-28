@@ -351,7 +351,7 @@ bool ValidateSysopPassword()
 void hang_it_up()
 {
 	hangup = true;
-#ifndef __unix__
+#if !defined( __unix__ ) && !defined( __APPLE__ )
 
 	if (!ok_modem_stuff)
 	{

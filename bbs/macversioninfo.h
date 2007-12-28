@@ -17,22 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_PLATFORM_LINUX_LINUXPLATFORM_H__
-#define __INCLUDED_PLATFORM_LINUX_LINUXPLATFORM_H__
-
-
-// stringstuff.cpp
-
-char *strupr(char *s);
-char *strlwr(char *s);
-
-
-// utility2.cpp
-
-char * strrev(char *s);
-void WWIV_RebootComputer();
-
-
-#endif	// __INCLUDED_PLATFORM_LINUX_LINUXPLATFORM_H__
-
-
+extern "C"
+{
+	const char *GetMacVersionString();
+	const char *GetOSNameString();
+}

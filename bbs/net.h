@@ -22,7 +22,7 @@
 
 #ifdef _WIN32
  #pragma pack(push, 1)
-#elif defined ( __unix__ )
+#elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
 

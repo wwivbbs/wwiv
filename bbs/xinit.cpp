@@ -20,6 +20,10 @@
 
 #include "wwiv.h"
 
+#if defined( __APPLE__ ) && !defined( __unix__ )
+#define __unix__ 1
+#endif
+
 // Additional INI file function and structure
 #include "xinitini.h"
 

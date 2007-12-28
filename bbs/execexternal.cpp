@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 
-#if defined ( __unix__ )
+#if defined ( __unix__ ) || defined ( __APPLE__ )
 #include <sys/types.h>
 #include <sys/wait.h>
 

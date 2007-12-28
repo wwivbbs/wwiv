@@ -214,13 +214,13 @@ void WFile::Close()
 }
 
 
-int WFile::Read( void * pBuffer, int nCount )
+int WFile::Read( void * pBuffer, size_t nCount )
 {
     return read( m_hFile, pBuffer, nCount );
 }
 
 
-int WFile::Write( const void * pBuffer, int nCount )
+int WFile::Write( const void * pBuffer, size_t nCount )
 {
     return write( m_hFile, pBuffer, nCount );
 }

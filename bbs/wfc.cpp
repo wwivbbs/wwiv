@@ -20,7 +20,7 @@
 #include "wwiv.h"
 
 
-#if !defined ( __unix__ ) && !defined ( __APPLE__ )
+#if !defined ( __unix__ )
 
 // Local Functions
 void DisplayWFCScreen( const char *pszBuffer );
@@ -120,13 +120,16 @@ void wfc_update()
 
 bool iscdrom( char drive )
 {
+#if !defined ( __unix__ ) && !defined ( __APPLE__ )
 	// TODO Make this function platform specific
 	char szDrivePath[10];
 	sprintf( szDrivePath, "%c:\\", drive + '@' );
 
     return ( ( GetDriveType( szDrivePath ) == DRIVE_CDROM ) ? true : false );
+#else
+	return false;
+#endif
 }
-
 
 void wfc_screen()
 {

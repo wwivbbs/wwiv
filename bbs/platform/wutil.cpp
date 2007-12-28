@@ -146,28 +146,27 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 #elif defined ( __linux__ )
 
 	char szBuffer[200];
-        strcpy(szBuffer, "Linux");
-        WFile info("/proc/sys/kernel", "osrelease");
-
-        if(info.Exists())
-        {
-            info.Open();
-            if(info.IsOpen())
-            {
-               char szBuffer2[100];
-               info.Read(&szBuffer2, 100);
-               info.Close();
-               snprintf( szBuffer, sizeof( szBuffer ), "Linux %s", szBuffer2 );
-            }
-        }
-        strcpy(pszOSVersionString, szBuffer);
+	strcpy(szBuffer, "Linux");
+	WFile info("/proc/sys/kernel", "osrelease");
+	
+	if(info.Exists())
+	{
+		info.Open();
+		if(info.IsOpen())
+		{
+			char szBuffer2[100];
+			info.Read(&szBuffer2, 100);
+			info.Close();
+			snprintf( szBuffer, sizeof( szBuffer ), "Linux %s", szBuffer2 );
+		}
+	}
+	strcpy(pszOSVersionString, szBuffer);
 
 #elif defined ( __APPLE__ )
-
-	//
-	// TODO Add Linux version information code here..
-	//
-	strcpy(pszOSVersionString, "Apple OS-X");
+   
+	strcpy( pszOSVersionString, GetOSNameString() );
+	strcat( pszOSVersionString, " " );
+	strcat( pszOSVersionString, GetMacVersionString() );
 	
 #elif defined ( __unix__ )
 
