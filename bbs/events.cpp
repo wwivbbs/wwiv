@@ -19,6 +19,10 @@
 
 #include "wwiv.h"
 
+#if defined( __APPLE__ ) && !defined( __unix__ )
+#define __unix__ 1
+#endif
+
 // Local Functions
 
 int  t_now();

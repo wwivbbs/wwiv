@@ -43,6 +43,7 @@
 		64121E540D18B19C00A657D3 /* version.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689AF20D18A05F00A7A3C2 /* version.cpp */; };
 		64121E570D18B1B600A657D3 /* wfndfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689B6C0D18A10600A7A3C2 /* wfndfile.cpp */; };
 		64121E580D18B1C500A657D3 /* WStringUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689B000D18A05F00A7A3C2 /* WStringUtils.cpp */; };
+		6434A8100D257A9A009F421C /* menuinterpretcommand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6434A80F0D257A9A009F421C /* menuinterpretcommand.cpp */; };
 		64689A790D189FA800A7A3C2 /* asv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689A6A0D189FA800A7A3C2 /* asv.cpp */; };
 		64689A7A0D189FA800A7A3C2 /* attach.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689A6B0D189FA800A7A3C2 /* attach.cpp */; };
 		64689A7B0D189FA800A7A3C2 /* automsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689A6C0D189FA800A7A3C2 /* automsg.cpp */; };
@@ -150,7 +151,6 @@
 		64689B630D18A0F000A7A3C2 /* wutil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689B610D18A0F000A7A3C2 /* wutil.cpp */; };
 		64689B710D18A10600A7A3C2 /* exec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689B640D18A10600A7A3C2 /* exec.cpp */; };
 		64689B720D18A10600A7A3C2 /* filestuff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689B650D18A10600A7A3C2 /* filestuff.cpp */; };
-		64689B730D18A10600A7A3C2 /* filesupp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689B660D18A10600A7A3C2 /* filesupp.cpp */; };
 		64689B740D18A10600A7A3C2 /* reboot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689B680D18A10600A7A3C2 /* reboot.cpp */; };
 		64689B750D18A10600A7A3C2 /* stringstuff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689B690D18A10600A7A3C2 /* stringstuff.cpp */; };
 		64689B760D18A10600A7A3C2 /* utility2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689B6A0D18A10600A7A3C2 /* utility2.cpp */; };
@@ -167,6 +167,9 @@
 		64689BEA0D18A97D00A7A3C2 /* zmodemt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689BE10D18A97D00A7A3C2 /* zmodemt.cpp */; };
 		64689BEB0D18A97D00A7A3C2 /* zmutil.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689BE20D18A97D00A7A3C2 /* zmutil.cpp */; };
 		64689BEC0D18A97D00A7A3C2 /* zmwwiv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64689BE30D18A97D00A7A3C2 /* zmwwiv.cpp */; };
+		64E663E90D1A01F1003978F9 /* macversioninfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 64E663E80D1A01F1003978F9 /* macversioninfo.m */; };
+		64E664010D1A03B8003978F9 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64E664000D1A03B8003978F9 /* CoreFoundation.framework */; };
+		64E664050D1A03C4003978F9 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64E664040D1A03C4003978F9 /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -216,6 +219,8 @@
 		64121DD80D18AEB500A657D3 /* View.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = View.h; sourceTree = "<group>"; };
 		64121DD90D18AEB500A657D3 /* Window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Window.h; sourceTree = "<group>"; };
 		64121DDA0D18AEB500A657D3 /* TextUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextUI.h; path = ../textui/include/TextUI.h; sourceTree = SOURCE_ROOT; };
+		6434A8040D25769E009F421C /* menusupp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = menusupp.h; sourceTree = "<group>"; };
+		6434A80F0D257A9A009F421C /* menuinterpretcommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = menuinterpretcommand.cpp; sourceTree = "<group>"; };
 		64689A6A0D189FA800A7A3C2 /* asv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = asv.cpp; sourceTree = "<group>"; };
 		64689A6B0D189FA800A7A3C2 /* attach.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attach.cpp; sourceTree = "<group>"; };
 		64689A6C0D189FA800A7A3C2 /* automsg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = automsg.cpp; sourceTree = "<group>"; };
@@ -356,8 +361,6 @@
 		64689B610D18A0F000A7A3C2 /* wutil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = wutil.cpp; path = platform/wutil.cpp; sourceTree = "<group>"; };
 		64689B640D18A10600A7A3C2 /* exec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = exec.cpp; path = platform/unix/exec.cpp; sourceTree = "<group>"; };
 		64689B650D18A10600A7A3C2 /* filestuff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = filestuff.cpp; path = platform/unix/filestuff.cpp; sourceTree = "<group>"; };
-		64689B660D18A10600A7A3C2 /* filesupp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = filesupp.cpp; path = platform/unix/filesupp.cpp; sourceTree = "<group>"; };
-		64689B670D18A10600A7A3C2 /* linuxplatform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = linuxplatform.h; path = platform/unix/linuxplatform.h; sourceTree = "<group>"; };
 		64689B680D18A10600A7A3C2 /* reboot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = reboot.cpp; path = platform/unix/reboot.cpp; sourceTree = "<group>"; };
 		64689B690D18A10600A7A3C2 /* stringstuff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = stringstuff.cpp; path = platform/unix/stringstuff.cpp; sourceTree = "<group>"; };
 		64689B6A0D18A10600A7A3C2 /* utility2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = utility2.cpp; path = platform/unix/utility2.cpp; sourceTree = "<group>"; };
@@ -379,6 +382,10 @@
 		64689BE10D18A97D00A7A3C2 /* zmodemt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = zmodemt.cpp; path = prot/zmodemt.cpp; sourceTree = "<group>"; };
 		64689BE20D18A97D00A7A3C2 /* zmutil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = zmutil.cpp; path = prot/zmutil.cpp; sourceTree = "<group>"; };
 		64689BE30D18A97D00A7A3C2 /* zmwwiv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = zmwwiv.cpp; path = prot/zmwwiv.cpp; sourceTree = "<group>"; };
+		64E663E70D1A01F1003978F9 /* macversioninfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = macversioninfo.h; sourceTree = "<group>"; };
+		64E663E80D1A01F1003978F9 /* macversioninfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = macversioninfo.m; sourceTree = "<group>"; };
+		64E664000D1A03B8003978F9 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		64E664040D1A03C4003978F9 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DD76F6C0486A84900D96B5E /* wwiv50 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = wwiv50; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -401,6 +408,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64E664010D1A03B8003978F9 /* CoreFoundation.framework in Frameworks */,
+				64E664050D1A03C4003978F9 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,6 +535,20 @@
 		64689AB00D189FBD00A7A3C2 /* Generic Sources */ = {
 			isa = PBXGroup;
 			children = (
+				64689A6A0D189FA800A7A3C2 /* asv.cpp */,
+				64689A6B0D189FA800A7A3C2 /* attach.cpp */,
+				64689A6C0D189FA800A7A3C2 /* automsg.cpp */,
+				64689A6D0D189FA800A7A3C2 /* batch.cpp */,
+				64689A6E0D189FA800A7A3C2 /* bbs.cpp */,
+				64689A700D189FA800A7A3C2 /* bbslist.cpp */,
+				64689A710D189FA800A7A3C2 /* bbsovl1.cpp */,
+				64689A720D189FA800A7A3C2 /* bbsovl2.cpp */,
+				64689A730D189FA800A7A3C2 /* bbsovl3.cpp */,
+				64689A740D189FA800A7A3C2 /* bbsutl.cpp */,
+				64689A750D189FA800A7A3C2 /* bbsutl1.cpp */,
+				64689A760D189FA800A7A3C2 /* bbsutl2.cpp */,
+				64689A770D189FA800A7A3C2 /* bgetch.cpp */,
+				64689A780D189FA800A7A3C2 /* bputch.cpp */,
 				64689A870D189FB500A7A3C2 /* callback.cpp */,
 				64689A880D189FB500A7A3C2 /* chains.cpp */,
 				64689A890D189FB500A7A3C2 /* chat.cpp */,
@@ -545,20 +568,6 @@
 				64689A980D189FB500A7A3C2 /* execexternal.cpp */,
 				64689A990D189FB500A7A3C2 /* extract.cpp */,
 				64689A9C0D189FB500A7A3C2 /* FindUser.cpp */,
-				64689A6A0D189FA800A7A3C2 /* asv.cpp */,
-				64689A6B0D189FA800A7A3C2 /* attach.cpp */,
-				64689A6C0D189FA800A7A3C2 /* automsg.cpp */,
-				64689A6D0D189FA800A7A3C2 /* batch.cpp */,
-				64689A6E0D189FA800A7A3C2 /* bbs.cpp */,
-				64689A700D189FA800A7A3C2 /* bbslist.cpp */,
-				64689A710D189FA800A7A3C2 /* bbsovl1.cpp */,
-				64689A720D189FA800A7A3C2 /* bbsovl2.cpp */,
-				64689A730D189FA800A7A3C2 /* bbsovl3.cpp */,
-				64689A740D189FA800A7A3C2 /* bbsutl.cpp */,
-				64689A750D189FA800A7A3C2 /* bbsutl1.cpp */,
-				64689A760D189FA800A7A3C2 /* bbsutl2.cpp */,
-				64689A770D189FA800A7A3C2 /* bgetch.cpp */,
-				64689A780D189FA800A7A3C2 /* bputch.cpp */,
 				64689AB30D18A05F00A7A3C2 /* gfiles.cpp */,
 				64689AB40D18A05F00A7A3C2 /* gfledit.cpp */,
 				64689AB50D18A05F00A7A3C2 /* hop.cpp */,
@@ -574,6 +583,7 @@
 				64689AC20D18A05F00A7A3C2 /* memory.cpp */,
 				64689AC30D18A05F00A7A3C2 /* menu.cpp */,
 				64689AC50D18A05F00A7A3C2 /* menuedit.cpp */,
+				6434A80F0D257A9A009F421C /* menuinterpretcommand.cpp */,
 				64689AC60D18A05F00A7A3C2 /* menuspec.cpp */,
 				64689AC70D18A05F00A7A3C2 /* menusupp.cpp */,
 				64689AC90D18A05F00A7A3C2 /* misccmd.cpp */,
@@ -645,6 +655,7 @@
 				64689ABC0D18A05F00A7A3C2 /* instmsg.h */,
 				64689AC00D18A05F00A7A3C2 /* listplus.h */,
 				64689AC40D18A05F00A7A3C2 /* menu.h */,
+				6434A8040D25769E009F421C /* menusupp.h */,
 				64689AD00D18A05F00A7A3C2 /* net.h */,
 				64689AD80D18A05F00A7A3C2 /* Runnable.h */,
 				64689AE70D18A05F00A7A3C2 /* subxtr.h */,
@@ -672,7 +683,7 @@
 			children = (
 				64689B580D18A0C200A7A3C2 /* incl1.h */,
 				64689B590D18A0C200A7A3C2 /* incl2.h */,
-				64689B670D18A10600A7A3C2 /* linuxplatform.h */,
+				64E663E70D1A01F1003978F9 /* macversioninfo.h */,
 				64689B5A0D18A0C200A7A3C2 /* platformfcns.h */,
 				64689B5B0D18A0C200A7A3C2 /* testos.h */,
 				64689B5C0D18A0C200A7A3C2 /* WFile.h */,
@@ -687,9 +698,12 @@
 		64689B570D18A0AA00A7A3C2 /* Platform Sources */ = {
 			isa = PBXGroup;
 			children = (
+				64E664040D1A03C4003978F9 /* Foundation.framework */,
+				64E664000D1A03B8003978F9 /* CoreFoundation.framework */,
+				64689B600D18A0F000A7A3C2 /* DateTime.cpp */,
 				64689B640D18A10600A7A3C2 /* exec.cpp */,
 				64689B650D18A10600A7A3C2 /* filestuff.cpp */,
-				64689B660D18A10600A7A3C2 /* filesupp.cpp */,
+				64E663E80D1A01F1003978F9 /* macversioninfo.m */,
 				64689B680D18A10600A7A3C2 /* reboot.cpp */,
 				64689B690D18A10600A7A3C2 /* stringstuff.cpp */,
 				64689B6A0D18A10600A7A3C2 /* utility2.cpp */,
@@ -698,7 +712,6 @@
 				64689B6D0D18A10600A7A3C2 /* Wiou.cpp */,
 				64689B6F0D18A10600A7A3C2 /* WLocalIO.cpp */,
 				64689B700D18A10600A7A3C2 /* wshare.cpp */,
-				64689B600D18A0F000A7A3C2 /* DateTime.cpp */,
 				64689B610D18A0F000A7A3C2 /* wutil.cpp */,
 			);
 			name = "Platform Sources";
@@ -980,7 +993,6 @@
 				64689B630D18A0F000A7A3C2 /* wutil.cpp in Sources */,
 				64689B710D18A10600A7A3C2 /* exec.cpp in Sources */,
 				64689B720D18A10600A7A3C2 /* filestuff.cpp in Sources */,
-				64689B730D18A10600A7A3C2 /* filesupp.cpp in Sources */,
 				64689B740D18A10600A7A3C2 /* reboot.cpp in Sources */,
 				64689B750D18A10600A7A3C2 /* stringstuff.cpp in Sources */,
 				64689B760D18A10600A7A3C2 /* utility2.cpp in Sources */,
@@ -997,6 +1009,8 @@
 				64689BEA0D18A97D00A7A3C2 /* zmodemt.cpp in Sources */,
 				64689BEB0D18A97D00A7A3C2 /* zmutil.cpp in Sources */,
 				64689BEC0D18A97D00A7A3C2 /* zmwwiv.cpp in Sources */,
+				64E663E90D1A01F1003978F9 /* macversioninfo.m in Sources */,
+				6434A8100D257A9A009F421C /* menuinterpretcommand.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

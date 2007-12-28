@@ -286,7 +286,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
     const char dash = '-';
     const char slash = '/';
 
-#if defined( __unix__ )
+#if defined( __unix__ ) || defined( __APPLE__ )
 	input1(szTemp, nMaxLength, mode, true);
     strcpy(pszOutText, szTemp);
     return strlen(szTemp);

@@ -22,6 +22,10 @@
 #include "wwiv.h"
 #undef _DEFINE_GLOBALS_
 
+#if defined ( __APPLE__ ) && !defined ( __unix__ )
+#define __unix__ 1
+#endif
+
 #include "bbs.h"
 #include "unittests.h"
 
@@ -81,7 +85,7 @@ WUserManager* WApplication::GetUserManager()
 }
 
 
-#if !defined ( __unix__ ) && !defined ( __APPLE__ )
+#if !defined ( __unix__ )
 void WApplication::GetCaller()
 {
     GetSession()->SetMessageAreaCacheNumber( 0 );
@@ -130,7 +134,7 @@ void WApplication::GetCaller()
                                 GetSession()->GetCurrentSpeed().c_str() );
     SetWfcStatus( 0 );
 }
-#else
+#elif !defined( __APPLE__ )
 void wfc_screen() {}
 void wfc_cls() {}
 #endif
@@ -614,7 +618,7 @@ int WApplication::doWFCEvents()
             catsl();
             write_inst( INST_LOC_WFC, 0, INST_FLAGS_NONE );
         }
-#if !defined ( __unix__ ) && !defined ( __APPLE__ )
+#if !defined ( __unix__ )
         if ( ok_modem_stuff && sess->remoteIO()->incoming() && !lokb )
         {
             any = true;
@@ -899,7 +903,7 @@ int WApplication::Run(int argc, char *argv[])
     ok_modem_stuff = true;
     GetSession()->SetGlobalDebugLevel( 0 );
 
-#if defined( __unix__ ) || defined( __APPLE__ )
+#if defined( __unix__ )
     // HACK to make WWIV5/X just work w/o any command line
     m_bUserAlreadyOn = true;
     ui = us = 9600;
@@ -979,7 +983,7 @@ int WApplication::Run(int argc, char *argv[])
                 }
                 break;
             case 'M':
-#if !defined ( __unix__ ) && !defined ( __APPLE__ )
+#if !defined ( __unix__ )
                 ok_modem_stuff = false;
 #endif
                 break;
@@ -1093,7 +1097,7 @@ int WApplication::Run(int argc, char *argv[])
 
     // Add the environment variable or overwrite the existing one
     char szInstanceEnvVar[81];
-#if !defined ( __unix__ ) && !defined ( __APPLE__ )
+#if !defined ( __unix__ )
     snprintf( szInstanceEnvVar, sizeof( szInstanceEnvVar ), "WWIV_INSTANCE=%ld", GetInstanceNumber() );
     _putenv( szInstanceEnvVar );
 #else
@@ -1204,7 +1208,7 @@ int WApplication::Run(int argc, char *argv[])
             {
                 GotCaller( ui, us );
             }
-#if !defined ( __unix__ ) && !defined ( __APPLE__ )
+#if !defined ( __unix__ )
             else
             {
                 GetCaller();

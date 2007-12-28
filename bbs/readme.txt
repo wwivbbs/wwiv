@@ -39,6 +39,7 @@ Atani - Added VS 2005 project files
 Atani - Copyright update to 2007
 Atani - Started in earnest on an OS X port.
 Rushfan - More STL'ification
+Atani - more OS X tweaks
 
 
 ==============================================================================
