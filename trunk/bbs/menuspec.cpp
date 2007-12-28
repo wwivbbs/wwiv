@@ -193,18 +193,14 @@ int FindDN( char *pszDownloadFileName )
  * pszDoor = Door description to run
  * bFree  = If true, security on door will not back checked
  */
-bool MenuRunDoorName(char *pszDoor, int bFree)
+bool MenuRunDoorName(char *pszDoor, bool bFree)
 {
     int nDoorNumber = FindDoorNo( pszDoor );
-    if (nDoorNumber < 0)
-    {
-        return false;
-    }
-    return MenuRunDoorNumber( nDoorNumber, bFree );
+	return (nDoorNumber >= 0) ? MenuRunDoorNumber( nDoorNumber, bFree ) : false;
 }
 
 
-bool MenuRunDoorNumber(int nDoorNumber, int bFree)
+bool MenuRunDoorNumber(int nDoorNumber, bool bFree )
 {
     if ( !bFree && !ValidateDoorAccess( nDoorNumber ) )
     {
@@ -233,7 +229,7 @@ int FindDoorNo( char *pszDoor )
 
 bool ValidateDoorAccess( int nDoorNumber )
 {
-    int inst = (inst_ok(INST_LOC_CHAINS, nDoorNumber + 1));
+    int inst = inst_ok(INST_LOC_CHAINS, nDoorNumber + 1);
     if (inst != 0)
     {
         char szChainInUse[255];
@@ -253,11 +249,11 @@ bool ValidateDoorAccess( int nDoorNumber )
         }
     }
     chainfilerec c = chains[nDoorNumber];
-    if ((c.ansir & ansir_ansi) && ( !okansi() ))
+    if ((c.ansir & ansir_ansi) && !okansi() )
     {
         return false;
     }
-    if ((c.ansir & ansir_local_only) && (GetSession()->using_modem))
+    if ((c.ansir & ansir_local_only) && GetSession()->using_modem)
     {
         return false;
     }
@@ -390,11 +386,9 @@ void SetNewScanMsg()
 
 void ReadMessages()
 {
-    char szWhere[15];
-
     GetSession()->bout << "\r\n|#8Which messages?\r\n|#7(N)ew (A)ll (Q)uit : ";
-    int iWhich = onek("QNA");
-    if (iWhich == 'Q')
+    char chWhichMessages = onek("QNA");
+    if (chWhichMessages == 'Q')
     {
         return;
     }
@@ -404,62 +398,63 @@ void ReadMessages()
         GetSession()->bout << "|#8Which Subs?\r\n";
         GetSession()->bout << "|#7(S)elected  (A)ll Subs  (L)ist  (Q)uit or Sub# : |#0";
 
-        input(szWhere, 3);
+		std::string subsText;
+        input(subsText, 3);
 
-        if (szWhere[0] == 'Q')
+        if (subsText[0] == 'Q')
         {
             return;
         }
 
 
-        if (szWhere[0] == '?' || szWhere[0] == 'L')
+        if (subsText[0] == '?' || subsText[0] == 'L')
         {
             SubList();
         }
 
-        if (szWhere[0] == 'S')
+        if (subsText[0] == 'S')
         {
-            if (iWhich == 'N')
+            if (chWhichMessages == 'N')
             {
                 // Read new messages in the qscan subs
                 ReadSelectedMessages(RM_QSCAN_MSGS, RM_QSCAN_SUBS);
                 return;
             }
-            if (iWhich == 'A')
+            if (chWhichMessages == 'A')
             {
                 // Read all messages in the qscan subs
                 ReadSelectedMessages(RM_ALL_MSGS, RM_QSCAN_SUBS);
             }
             break;
         }
-        if (szWhere[0] == 'A')
+        if (subsText[0] == 'A')
         {
-            if (iWhich == 'N')
+            if (chWhichMessages == 'N')
             {
                 // Read new messages in all of the subs
                 ReadSelectedMessages(RM_QSCAN_MSGS, RM_ALL_SUBS);
             }
-            if (iWhich == 'A')
+            if (chWhichMessages == 'A')
             {
                 // Read new messages in all of the subs
                 ReadSelectedMessages(RM_ALL_MSGS, RM_ALL_SUBS);
             }
             break;
         }
-        if (isdigit(szWhere[0]))
+        if (isdigit(subsText[0]))
         {
             for (int iTemp = 0; (iTemp < GetSession()->num_subs) && (usub[iTemp].subnum != -1); iTemp++)
             {
-                if ( wwiv::stringUtils::IsEquals( usub[iTemp].keys, szWhere ) )
+                if ( subsText == usub[iTemp].keys )
                 {
                     GetSession()->SetCurrentMessageArea( iTemp );
 
-                    if ( iWhich == 'N' )
+                    if ( chWhichMessages == 'N' )
                     {
                         // read new messages in the current sub
                         ReadSelectedMessages( RM_QSCAN_MSGS, GetSession()->GetCurrentMessageArea() );
                     }
-                    if ( iWhich == 'A' )
+                    if ( chWhichMessages == 'A' )
                     {
                         // Read all messages in the current sub
                         ReadSelectedMessages( RM_ALL_MSGS, GetSession()->GetCurrentMessageArea() );
@@ -472,68 +467,68 @@ void ReadMessages()
 }
 
 
-void ReadSelectedMessages(int iWhich, int iWhere)
+void ReadSelectedMessages(int chWhichMessages, int iWhere)
 {
     int iSaveSub = GetSession()->GetCurrentMessageArea();
-    int i, nextsub;
-    bool abort, next;
 
+		int nextsub = 1;
     switch (iWhere)
     {
     case RM_ALL_SUBS:
     case RM_QSCAN_SUBS:
-        GetSession()->bout.ClearScreen();
+		{
+			GetSession()->bout.ClearScreen();
 
-        nextsub = 1;
-
-		GetSession()->bout << "|#3-=< Q-Scan All >=-\r\n";
-        for (i = 0; (usub[i].subnum != -1) && (i < GetSession()->num_subs) && (nextsub) && (!hangup); i++)
-        {
-            GetSession()->SetCurrentMessageArea( i );
-            iscan( GetSession()->GetCurrentMessageArea() );
-            if (iWhere == RM_QSCAN_SUBS)
-            {
-                if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32)))
-                {
-                    if (iWhich == RM_QSCAN_MSGS)
-                    {
-                        qscan(i, &nextsub);
-                    }
-                    else if (iWhich == RM_ALL_MSGS)
-                    {
+			GetSession()->bout << "|#3-=< Q-Scan All >=-\r\n";
+			for (int i = 0; (usub[i].subnum != -1) && (i < GetSession()->num_subs) && nextsub && !hangup; i++)
+			{
+				GetSession()->SetCurrentMessageArea( i );
+				iscan( GetSession()->GetCurrentMessageArea() );
+				if (iWhere == RM_QSCAN_SUBS)
+				{
+					if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32)))
+					{
+						if (chWhichMessages == RM_QSCAN_MSGS)
+						{
+							qscan(i, &nextsub);
+						}
+						else if (chWhichMessages == RM_ALL_MSGS)
+						{
+							scan(1, SCAN_OPTION_READ_MESSAGE, &nextsub, false );
+						}
+					}
+				}
+				else
+				{
+					if (chWhichMessages == RM_QSCAN_MSGS)
+					{
+						qscan(i, &nextsub);
+					}
+					else if (chWhichMessages == RM_ALL_MSGS)
+					{
 						scan(1, SCAN_OPTION_READ_MESSAGE, &nextsub, false );
-                    }
-                }
-            }
-            else
-            {
-                if (iWhich == RM_QSCAN_MSGS)
-                {
-                    qscan(i, &nextsub);
-                }
-                else if (iWhich == RM_ALL_MSGS)
-                {
-                    scan(1, SCAN_OPTION_READ_MESSAGE, &nextsub, false );
-                }
-            }
+					}
+				}
 
-            abort = next = false;
-            checka(&abort, &next);
-            if (abort)
-                nextsub = 0;
-        }
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
+			    bool abort = false, next = false;
+				checka(&abort, &next);
+				if (abort) {
+					nextsub = 0;
+				}
+			}
+			GetSession()->bout.NewLine();
+			GetSession()->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
+		}
         break;
 
     default:                                /* sub # */
         GetSession()->SetCurrentMessageArea( iWhere );
 
-        if ( iWhich == RM_QSCAN_MSGS )
+        if ( chWhichMessages == RM_QSCAN_MSGS )
         {
             qscan( iWhere, &nextsub );
         }
-        else if ( iWhich == RM_ALL_MSGS )
+        else if ( chWhichMessages == RM_ALL_MSGS )
         {
             scan( 1, SCAN_OPTION_READ_MESSAGE, &nextsub, false );
         }

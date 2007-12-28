@@ -187,7 +187,7 @@ bool WSession::WriteCurrentUser( int nUserNumber )
 void WSession::DisplaySysopWorkingIndicator( bool displayWait )
 {
     const std::string waitString = "-=[WAIT]=-";
-    int nNumPrintableChars = waitString.length();
+	std::string::size_type nNumPrintableChars = waitString.length();
     for (std::string::const_iterator iter = waitString.begin(); iter != waitString.end(); ++iter )
     {
         if ( *iter == 3 && nNumPrintableChars > 1 )
@@ -201,9 +201,9 @@ void WSession::DisplaySysopWorkingIndicator( bool displayWait )
         if ( okansi() )
         {
             int nSavedAttribute = curatr;
-            GetSession()->bout.SystemColor( GetCurrentUser()->HasColor() ? GetCurrentUser()->GetColor( 3 ) : GetCurrentUser()->GetBWColor( 3 ) );
+            bout.SystemColor( GetCurrentUser()->HasColor() ? GetCurrentUser()->GetColor( 3 ) : GetCurrentUser()->GetBWColor( 3 ) );
             bout << waitString << "\x1b[" << nNumPrintableChars << "D";
-            GetSession()->bout.SystemColor( static_cast< unsigned char > ( nSavedAttribute ) );
+            bout.SystemColor( static_cast< unsigned char > ( nSavedAttribute ) );
         }
         else
         {
@@ -214,7 +214,7 @@ void WSession::DisplaySysopWorkingIndicator( bool displayWait )
     {
         if ( okansi() )
         {
-            for (int j = 0; j < nNumPrintableChars; j++)
+            for (unsigned int j = 0; j < nNumPrintableChars; j++)
             {
                 bputch(' ');
             }
@@ -222,7 +222,7 @@ void WSession::DisplaySysopWorkingIndicator( bool displayWait )
         }
         else
         {
-            for (int j = 0; j < nNumPrintableChars; j++)
+            for (unsigned int j = 0; j < nNumPrintableChars; j++)
             {
                 GetSession()->bout.BackSpace();
             }

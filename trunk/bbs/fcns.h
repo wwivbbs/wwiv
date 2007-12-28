@@ -490,7 +490,6 @@ void OpenMenuDescriptions();
 void CloseMenuDescriptions();
 char *GetMenuDescription( const std::string& name, char *pszDesc );
 void SetMenuDescription(const char *pszName, const char *pszDesc);
-const char *GetMenuDirectory();
 
 
 // File: menuedit.cpp
@@ -503,8 +502,8 @@ void ListMenuDirs();
 
 int  MenuDownload( char *pszDirFName, char *pszFName, bool bFreeDL, bool bTitle );
 int  FindDN(char *pszFName);
-bool MenuRunDoorName(char *pszDoor, int bFree);
-bool MenuRunDoorNumber(int nDoorNumber, int bFree);
+bool MenuRunDoorName(char *pszDoor, bool bFree);
+bool MenuRunDoorNumber(int nDoorNumber, bool bFree);
 int  FindDoorNo(char *pszDoor);
 bool ValidateDoorAccess(int nDoorNumber);
 void ChangeSubNumber();

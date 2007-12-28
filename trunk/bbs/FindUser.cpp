@@ -17,8 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-
-//#include "incl1.h"
 #include "WConstants.h"
 #include "filenames.h"
 #include "WFile.h"
@@ -32,6 +30,9 @@
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"
+
+using wwiv::stringUtils::IsEqualsIgnoreCase;
+using std::string;
 
 //
 // Returns user number
@@ -96,7 +97,7 @@ int finduser( const std::string searchString )
         }
         else
         {
-            if ( wwiv::stringUtils::IsEqualsIgnoreCase( user.GetName(), "GUEST" ) )
+            if ( IsEqualsIgnoreCase( user.GetName(), "GUEST" ) )
             {
                 guest_user = true;
                 GetApplication()->GetUserManager()->SetUserWritesAllowed( false );
@@ -109,7 +110,7 @@ int finduser( const std::string searchString )
 
 // Takes user name/handle as parameter, and returns user number, if found,
 // else returns 0.
-int finduser1( const std::string searchString )
+int finduser1( const string searchString )
 {
     if ( searchString.empty() )
     {
@@ -121,15 +122,11 @@ int finduser1( const std::string searchString )
         return nFindUserNum;
     }
 
-    char szUserNamePart[ 255 ];
-    strcpy( szUserNamePart, searchString.c_str() );
-    for ( int i = 0; szUserNamePart[i] != 0; i++ )
-    {
-        szUserNamePart[i] = upcase( szUserNamePart[i] );
-    }
+	string userNamePart = searchString;
+	StringUpperCase(userNamePart);
     for ( int i1 = 0; i1 < GetApplication()->GetStatusManager()->GetUserCount(); i1++ )
     {
-        if ( strstr( reinterpret_cast<char*>( smallist[i1].name ), szUserNamePart) != NULL )
+		if ( strstr( reinterpret_cast<char*>( smallist[i1].name ), userNamePart.c_str()) != NULL )
         {
             int nCurrentUserNum = smallist[i1].number;
             WUser user;
