@@ -44,7 +44,7 @@ LIB_OBJS =	       		\
 	$(OBJ)/PopupMenu.o	\
 	$(OBJ)/SubWindow.o	\
 	$(OBJ)/View.o		\
-	$(OBJ)/Window.o		\
+	$(OBJ)/UIWindow.o		\
 
 DEMO_OBJS =	       		\
 	$(OBJ)/TUI.o		\
