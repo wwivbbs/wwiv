@@ -37,7 +37,7 @@ public:
 	virtual ~UIInputBox() {};
 
 	void SetText( const std::string text ) { m_text = text; };
-	const std::string GetText() const { return m_text; };
+	const std::string& GetText() const { return m_text; };
 
 	bool Run();
 };
