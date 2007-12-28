@@ -20,9 +20,14 @@
 #ifndef __INCLUDED_PLATFORM_FCNS_H__
 #define __INCLUDED_PLATFORM_FCNS_H__
 
-#if defined ( __linux__ )
-#include "unix/linuxplatform.h"
-#endif // __linux__
+#if defined ( __linux__ ) || defined ( __APPLE__ )
+
+// $PLATFORM/stringstuff.cpp
+char *strupr(char *s);
+char *strlwr(char *s);
+char * strrev(char *s);
+
+#endif // __linux__ || __APPLE__
 
 // $PLATFORM/filesupp.cpp
 
@@ -31,13 +36,9 @@ void WWIV_ChangeDirTo(const char *s);
 void WWIV_GetDir(char *s, bool be);
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName);
 
-
-
 // $PLATFORM/reboot.cpp
 
 void WWIV_RebootComputer();
-
-
 
 // $PLATFORM/utility2.cpp
 void WWIV_make_abs_cmd( std::string& out );
@@ -45,9 +46,7 @@ int WWIV_make_path(const char *s);
 void WWIV_Delay(unsigned long usec);
 void WWIV_OutputDebugString( const char *pszString );
 
-
 // $PLATFORM/exec.cpp
 int ExecExternalProgram( const std::string commandLine, int flags );
-
 
 #endif // __INCLUDED_PLATFORM_FCNS_H__

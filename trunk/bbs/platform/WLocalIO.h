@@ -132,6 +132,11 @@ HANDLE m_hConIn;
 CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
 #endif
 
+#if defined ( __APPLE__ )
+short m_cursorPositionX;
+short m_cursorPositionY;
+#endif
+
 public:
 #if defined ( _WIN32 )
     void set_attr_xy(int x, int y, int a);

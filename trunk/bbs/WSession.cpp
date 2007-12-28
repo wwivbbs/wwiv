@@ -22,14 +22,6 @@
 #include "WLocalIO.h"
 #include "net.h"
 
-#if defined (_WIN32)
-#include "Wiot.h"
-#include "Wios.h"
-#elif defined ( __unix__ )
-#include "Wiou.h"
-#endif
-
-
 const int WSession::mmkeyMessageAreas   = 0;
 const int WSession::mmkeyFileAreas      = 1;
 const int WSession::mmkeyChains         = 2;
