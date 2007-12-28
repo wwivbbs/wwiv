@@ -382,8 +382,8 @@
 		64689BE10D18A97D00A7A3C2 /* zmodemt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = zmodemt.cpp; path = prot/zmodemt.cpp; sourceTree = "<group>"; };
 		64689BE20D18A97D00A7A3C2 /* zmutil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = zmutil.cpp; path = prot/zmutil.cpp; sourceTree = "<group>"; };
 		64689BE30D18A97D00A7A3C2 /* zmwwiv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = zmwwiv.cpp; path = prot/zmwwiv.cpp; sourceTree = "<group>"; };
-		64E663E70D1A01F1003978F9 /* macversioninfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = macversioninfo.h; sourceTree = "<group>"; };
-		64E663E80D1A01F1003978F9 /* macversioninfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = macversioninfo.m; sourceTree = "<group>"; };
+		64E663E70D1A01F1003978F9 /* macversioninfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = macversioninfo.h; path = platform/osx/macversioninfo.h; sourceTree = "<group>"; };
+		64E663E80D1A01F1003978F9 /* macversioninfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = macversioninfo.m; path = platform/osx/macversioninfo.m; sourceTree = "<group>"; };
 		64E664000D1A03B8003978F9 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		64E664040D1A03C4003978F9 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		8DD76F6C0486A84900D96B5E /* wwiv50 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = wwiv50; sourceTree = BUILT_PRODUCTS_DIR; };
