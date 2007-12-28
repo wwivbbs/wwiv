@@ -899,6 +899,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\menuinterpretcommand.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\menuspec.cpp"
 					>
 				</File>
