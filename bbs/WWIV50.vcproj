@@ -1280,10 +1280,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
-			<File
-				RelativePath=".\WTextFile.h"
-				>
-			</File>
 			<Filter
 				Name="Generic Headers"
 				>
@@ -1365,6 +1361,10 @@
 				</File>
 				<File
 					RelativePath="WStringUtils.h"
+					>
+				</File>
+				<File
+					RelativePath=".\WTextFile.h"
 					>
 				</File>
 				<File

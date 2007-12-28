@@ -211,7 +211,7 @@ void StartMenus()
 }
 
 
-void Menus(MenuInstanceData * pMenuData, std::string menuDirectory, std::string menuName)
+void Menus(MenuInstanceData * pMenuData, const std::string menuDirectory, const std::string menuName)
 {
 	strcpy(pMenuData->szPath, menuDirectory.c_str());
 	strcpy(pMenuData->szMenu, menuName.c_str());
@@ -1087,21 +1087,21 @@ void SetMenuDescription(const char *pszName, const char *pszDesc)
 }
 
 
-std::string GetMenuDirectory(std::string menuPath)
+const std::string GetMenuDirectory(const std::string menuPath)
 {
 	std::ostringstream os;
 	os << GetMenuDirectory() << menuPath << WWIV_FILE_SEPERATOR_STRING;
 	return std::string(os.str());
 }
 
-std::string GetMenuDirectory(std::string menuPath, std::string menuName, std::string extension)
+const std::string GetMenuDirectory(const std::string menuPath, const std::string menuName, const std::string extension)
 {
 	std::ostringstream os;
 	os << GetMenuDirectory() << menuPath << WWIV_FILE_SEPERATOR_STRING << menuName << "." << extension;
 	return std::string(os.str());
 }
 
-std::string GetMenuDirectory()
+const std::string GetMenuDirectory()
 {
 	std::ostringstream os;
 	os << GetSession()->pszLanguageDir << "menus" << WWIV_FILE_SEPERATOR_CHAR;

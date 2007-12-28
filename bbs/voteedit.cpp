@@ -19,6 +19,8 @@
 
 #include "wwiv.h"
 
+void print_quests();
+void set_question(int ii);
 
 void print_quests()
 {
@@ -120,7 +122,7 @@ void ivotes()
     int n = static_cast<int>( ( votingDat.GetLength() / sizeof( votingrec ) ) - 1 );
     if (n < 20)
     {
-        v.question[0] = 0;
+        v.question[0] = '\0';
         v.numanswers = 0;
         for (int i = n; i < 20; i++)
         {
@@ -134,13 +136,13 @@ void ivotes()
         print_quests();
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#2Which (Q=Quit) ? ";
-        char szQuestionNum[81];
-        input( szQuestionNum, 2 );
-        if ( wwiv::stringUtils::IsEquals( szQuestionNum, "Q" ) )
+		std::string questionNumber;
+        input( questionNumber, 2 );
+        if ( questionNumber == "Q" )
         {
             done = true;
         }
-        int i = atoi( szQuestionNum );
+        int i = atoi( questionNumber.c_str() );
         if ( i > 0 && i < 21 )
         {
             set_question( i - 1 );

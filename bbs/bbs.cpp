@@ -30,6 +30,8 @@
 #include "Wiot.h"
 #endif // _WIN32
 
+#include "menu.h" // for mainmenu
+
 static bool bUsingPppProject = true;
 extern time_t last_time_c;
 static WApplication *app;

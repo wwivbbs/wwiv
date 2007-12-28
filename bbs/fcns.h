@@ -480,18 +480,6 @@ void *BbsAllocWithComment( size_t lNumBytes, char *pszComment);
 char **BbsAlloc2D( int nRow, int nCol, int nSize );
 void BbsFree2D( char **pa );
 
-
-// File: menu.cpp
-
-void mainmenu();
-void MenuSysopLog(const char *pszMsg);
-void ConfigUserMenuSet();
-void OpenMenuDescriptions();
-void CloseMenuDescriptions();
-char *GetMenuDescription( const std::string& name, char *pszDesc );
-void SetMenuDescription(const char *pszName, const char *pszDesc);
-
-
 // File: menuedit.cpp
 
 void EditMenus();
@@ -794,9 +782,6 @@ void set_user_age();
 
 void deluser( int nUserNumber );
 void print_data( int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScreen );
-int  matchuser( int nUserNumber );
-int  matchuser( WUser * pUser );
-void changeopt();
 void auto_val( int n, WUser *pUser );
 void uedit(int usern, int other);
 void print_affil( WUser *pUser );
@@ -860,8 +845,6 @@ void vote();
 
 // File: voteedit.cpp
 
-void print_quests();
-void set_question(int ii);
 void ivotes();
 void voteprint();
 
