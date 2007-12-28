@@ -9,10 +9,7 @@ GENERAL INFORMATION:
     WWIV 5.0 is built with the following compilers:
         MS Visual C++ .NET/2008
 
-   Not Testing but Should work are:
-MS Visual C++ 6.0 (Standard/Professional/Enterprise) [Not tested lately]
-
-    I recommend using MSVC .NET 2005. (Since there is a the "express" edition
+    I recommend using MSVC .NET 2008. (Since there is a the "express" edition
     available for free.
     
     The command line parameters have changed quite a bit, I suggest
