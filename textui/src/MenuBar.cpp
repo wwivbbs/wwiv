@@ -137,12 +137,17 @@ bool UIMenuBar::ProcessKeyEvent( int key )
     // Since we handled the key, we should make ourselves or the 
     // current menu the active view.
     UIMenu* currentMenu = m_menus.at( m_currentMenu );
-    UIView::SetActiveView( this );
 
-    if ( previousMenu != NULL )
+	// If we are still on the same menu, don't do anything.
+	if (currentMenu == previousMenu) {
+		//return false;
+	}
+
+    if ( previousMenu != NULL && previousMenu != currentMenu )
     {
         previousMenu->HidePopupMenu();
     }
+	UIView::SetActiveView( currentMenu->GetPopupMenu() );
 
     return true;
 }
