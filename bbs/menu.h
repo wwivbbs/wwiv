@@ -25,6 +25,7 @@
 #endif
 
 #include "wtypes.h"
+#include <string>
 
 #ifdef _WIN32
   #pragma pack(push, 1)
@@ -182,6 +183,20 @@ struct MenuInstanceData
 
 };
 
+
+// Functions used by menuedit and menu
+std::string GetMenuDirectory(std::string menuPath);
+std::string GetMenuDirectory(std::string menuPath, std::string menuName, std::string extension);
+std::string GetMenuDirectory();
+
+// Used by menuinterpretcommand.cpp
+
+void TurnMCIOff();
+void TurnMCIOn();
+int  GetMenuIndex( const char* pszCommand );
+void Menus(MenuInstanceData * pMenuData, std::string menuDirectory, std::string menuName);
+char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
+void AMDisplayHelp(MenuInstanceData * pMenuData);
 
 #ifdef _WIN32
   #pragma pack(pop)

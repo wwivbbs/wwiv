@@ -34,8 +34,6 @@ void ListMenuMenus(const char *pszDirectoryName );
 
 void EditMenus()
 {
-	char szFile[MAX_PATH];
-	char szMenu[15];
 	char szTemp1[21];
 	char szPW[21];
 	char szDesc[81];
@@ -59,10 +57,8 @@ void EditMenus()
 		return;
 	}
 
-	sprintf(szFile, "%s%s%c%s.mnu", GetMenuDirectory(), menuDir.c_str(), WWIV_FILE_SEPERATOR_CHAR, menuName.c_str() );
-
-	WFile fileEditMenu( szFile );
-	if (!WFile::Exists(szFile))
+	WFile fileEditMenu( GetMenuDirectory(menuDir, menuName, "mnu") );
+	if (!fileEditMenu.Exists())
 	{
 		GetSession()->bout << "Creating menu...\r\n";
 		if ( !fileEditMenu.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite ) )
@@ -93,7 +89,7 @@ void EditMenus()
 		if ( !fileEditMenu.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite ) )
 		{
 			MenuSysopLog("Unable to open menu.");
-			MenuSysopLog(szFile);
+			MenuSysopLog(fileEditMenu.GetFullPathName());
 			return;
 		}
 		nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec));
@@ -101,7 +97,7 @@ void EditMenus()
 		if (nAmount < 0)
 		{
 			MenuSysopLog("Menu is corrupt.");
-			MenuSysopLog(szFile);
+			MenuSysopLog(fileEditMenu.GetFullPathName());
 			return;
 		}
 	}
@@ -522,19 +518,16 @@ void EditMenus()
 	}
 	GetApplication()->CdHome(); // make sure we are in the wwiv dir
 
-	ReIndexMenu(fileEditMenu, menuDir.c_str(), szMenu);
+	ReIndexMenu(fileEditMenu, menuDir.c_str(), menuName.c_str());
 	fileEditMenu.Close();
 }
 
 
 void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName)
 {
-	char szFile[MAX_PATH];
-	sprintf( szFile, "%s%s%c%s.idx", GetMenuDirectory(), pszDirectoryName, WWIV_FILE_SEPERATOR_CHAR, pszMenuName );
-
 	GetSession()->bout << "Indexing Menu...\r\n";
 
-	WFile fileIdx( szFile );
+	WFile fileIdx( GetMenuDirectory( pszDirectoryName, pszMenuName, "idx" ) );
 	if ( !fileIdx.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate|WFile::modeReadWrite, WFile::shareDenyWrite, WFile::permReadWrite ) )
 	{
 		GetSession()->bout << "Unable to reindex\r\n";
@@ -681,9 +674,7 @@ bool GetMenuMenu( const std::string& directoryName, std::string& menuName )
 		}
 		else
 		{
-			std::ostringstream path;
-			path << GetMenuDirectory() << directoryName << WWIV_FILE_SEPERATOR_CHAR << menuName;
-			if ( !WFile::Exists( path.str().c_str() ) )
+			if ( !WFile::Exists( GetMenuDirectory(directoryName) ) )
 			{
 				GetSession()->bout << "File does not exist, create it? (yNq) : ";
 				char x = ynq();
@@ -1008,12 +999,12 @@ void EditPulldownColors(MenuHeader * pMenuHeader)
 
 void ListMenuDirs()
 {
-	char szPath[MAX_PATH], szName[20];
+	char szName[20];
 	char szDesc[101];
 	WFindFile fnd;
 	bool bFound;
 
-	sprintf(szPath, "%s*", GetMenuDirectory());
+	std::string path = GetMenuDirectory() + "*";
 
 	OpenMenuDescriptions();
 
@@ -1021,7 +1012,7 @@ void ListMenuDirs()
 	GetSession()->bout << "|#7Available Menus Sets\r\n";
 	GetSession()->bout << "|#5============================\r\n";
 
-	bFound = fnd.open(szPath, 0);
+	bFound = fnd.open( path.c_str(), 0 );
 	while (bFound && !hangup)
 	{
 		std::string fileName = fnd.GetFileName();
@@ -1041,27 +1032,20 @@ void ListMenuDirs()
 
 void ListMenuMenus( const char *pszDirectoryName )
 {
-	char szPath[MAX_PATH];
-	char *ss;
-	char szFileName[MAX_PATH];
-	WFindFile fnd;
-	bool bFound;
-
-	sprintf(szPath, "%s%s%c*.mnu", GetMenuDirectory(), pszDirectoryName,
-		WWIV_FILE_SEPERATOR_CHAR);
+	std::string path = GetMenuDirectory( pszDirectoryName ) + "*.mnu";
 
 	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#7Available Menus\r\n";
 	GetSession()->bout << "|#5===============|06\r\n";
 
-	bFound = fnd.open(szPath, 0);
+	WFindFile fnd;
+	bool bFound = fnd.open( path.c_str(), 0 );
 	while (bFound && !hangup)
 	{
-		strcpy(szFileName, fnd.GetFileName());
 		if (fnd.IsFile())
 		{
-			ss = strtok(szFileName, ".");
-			GetSession()->bout << ss << wwiv::endl;
+			std::string s = fnd.GetFileName();
+			GetSession()->bout << s.substr(0, s.find_last_of('.')) << wwiv::endl;
 		}
 		bFound = fnd.next();
 	}

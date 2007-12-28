@@ -34,52 +34,40 @@ static int nNumMenuCmds;
 // Local function prototypes
 //
 bool CheckMenuPassword( char* pszCorrectPassword );
-int  GetMenuIndex( const char* pszCommand );
 bool LoadMenuSetup( int nUserNum );
 bool ValidateMenuSet( const char *pszMenuDir);
 void ReadMenuSetup();
 void StartMenus();
-void Menus(MenuInstanceData * pMenuData, const char *pszDir, const char *pszMenu);
 void CloseMenu(MenuInstanceData * pMenuData);
 bool OpenMenu(MenuInstanceData * pMenuData);
 bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword );
-bool LoadMenuRecord(MenuInstanceData * pMenuData, const char *pszCommand, MenuRec * pMenu);
-void MenuExecuteCommand(MenuInstanceData * pMenuData, const char *pszCommand);
-void LogUserFunction(MenuInstanceData * pMenuData, const char *pszCommand, MenuRec * pMenu);
+bool LoadMenuRecord(MenuInstanceData * pMenuData, std::string& command, MenuRec * pMenu);
+void MenuExecuteCommand(MenuInstanceData * pMenuData, std::string& command );
+void LogUserFunction(MenuInstanceData * pMenuData, std::string& command, MenuRec * pMenu);
 void PrintMenuPrompt(MenuInstanceData * pMenuData);
-void AMDisplayHelp(MenuInstanceData * pMenuData);
-void TurnMCIOff();
-void TurnMCIOn();
-bool AMIsNumber(const char *pszBuf);
+bool AMIsNumber(std::string& command);
 void QueryMenuSet();
 void WriteMenuSetup(int nUserNum);
 void UnloadMenuSetup();
-void GetCommand(MenuInstanceData * pMenuData, char *pszBuf);
+std::string GetCommand( MenuInstanceData * pMenuData );
 bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool bCheckPassword );
 void GenerateMenu(MenuInstanceData * pMenuData);
-char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
 char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig);
 char *MenuGetParam(char *pszSrc, char *pszParam);
 char *MenuSkipSpaces(char *pszSrc);
 void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript);
 
+using wwiv::stringUtils::IsEqualsIgnoreCase;
+using wwiv::stringUtils::IsEquals;
 
 bool CheckMenuPassword( char* pszCorrectPassword )
 {
-    std::string password;
-    if ( wwiv::stringUtils::IsEqualsIgnoreCase( pszCorrectPassword, "*SYSTEM" ) )
-    {
-        password = syscfg.systempw;
-    }
-    else
-    {
-        password = pszCorrectPassword;
-    }
+	std::string password = IsEqualsIgnoreCase( pszCorrectPassword, "*SYSTEM" ) ? syscfg.systempw : pszCorrectPassword;
 
     GetSession()->bout.NewLine();
     std::string passwordFromUser;
     input_password( "|#2SY: ", passwordFromUser, 20 );
-    return ( passwordFromUser == password ) ? true : false;
+    return passwordFromUser == password;
 }
 
 
@@ -87,10 +75,10 @@ bool CheckMenuPassword( char* pszCorrectPassword )
 // default case in InterpretCommand
 int GetMenuIndex( const char* pszCommand )
 {
-    for( int i=0; i < nNumMenuCmds; i++ )
+    for( int i = 0; i < nNumMenuCmds; i++ )
     {
         char* p = ppMenuStringsIndex[i];
-        if ( p && *p && wwiv::stringUtils::IsEqualsIgnoreCase( pszCommand, p ) )
+        if ( p && *p && IsEqualsIgnoreCase( pszCommand, p ) )
         {
             return i;
         }
@@ -204,7 +192,6 @@ void StartMenus()
 		pMenuData->nFinished = 0;
 		pMenuData->nReload = 0;
 
-
 		if (!LoadMenuSetup(GetSession()->usernum))
 		{
 			LoadMenuSetup( 1 );
@@ -224,15 +211,14 @@ void StartMenus()
 }
 
 
-void Menus(MenuInstanceData * pMenuData, const char *pszDir, const char *pszMenu)
+void Menus(MenuInstanceData * pMenuData, std::string menuDirectory, std::string menuName)
 {
-    strcpy(pMenuData->szPath, pszDir);
-    strcpy(pMenuData->szMenu, pszMenu);
+	strcpy(pMenuData->szPath, menuDirectory.c_str());
+	strcpy(pMenuData->szMenu, menuName.c_str());
 
     if (OpenMenu(pMenuData))
     {
-        if ((pMenuData->header.nNumbers == MENU_NUMFLAG_DIRNUMBER) &&
-            (udir[0].subnum==-1)) {
+        if ( pMenuData->header.nNumbers == MENU_NUMFLAG_DIRNUMBER && udir[0].subnum == -1 ) {
             GetSession()->bout << "\r\nYou cannot currently access the file section.\r\n\n";
             CloseMenu(pMenuData);
             return;
@@ -243,15 +229,14 @@ void Menus(MenuInstanceData * pMenuData, const char *pszDir, const char *pszMenu
             AMDisplayHelp(pMenuData);
         }
 
-        char szCommand[51];
         while ( !hangup && pMenuData->nFinished == 0 )
         {
             PrintMenuPrompt( pMenuData );
-            GetCommand( pMenuData, szCommand );
-            MenuExecuteCommand( pMenuData, szCommand );
+			std::string command = GetCommand( pMenuData );
+			MenuExecuteCommand( pMenuData, command );
         }
     }
-    else if ( wwiv::stringUtils::IsEqualsIgnoreCase( pszMenu, "main" ) ) // default menu name
+	else if ( IsEqualsIgnoreCase( menuName.c_str(), "main" ) ) // default menu name
     {
         hangup = true;
     }
@@ -284,16 +269,12 @@ void CloseMenu(MenuInstanceData * pMenuData)
 
 bool OpenMenu(MenuInstanceData * pMenuData)
 {
-	char szMenuFileName[MAX_PATH + 1];
-
 	CloseMenu(pMenuData);
 
 	// --------------------------
 	// Open up the main data file
 	// --------------------------
-	sprintf(szMenuFileName, "%s%s%c%s.mnu", GetMenuDirectory(), pMenuData->szPath,
-			WWIV_FILE_SEPERATOR_CHAR, pMenuData->szMenu);
-	pMenuData->pMenuFile = new WFile( szMenuFileName );
+	pMenuData->pMenuFile = new WFile( GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "mnu") );
 	pMenuData->pMenuFile->Open( WFile::modeBinary|WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite );
 
 	// -----------------------------------
@@ -323,16 +304,13 @@ bool OpenMenu(MenuInstanceData * pMenuData)
 	// ------------------------------
 	// Open/Read/Close the index file
 	// ------------------------------
-    char szIndexFileName[ MAX_PATH ];
-	sprintf( szIndexFileName, "%s%s%c%s.idx", GetMenuDirectory(), pMenuData->szPath,
-			 WWIV_FILE_SEPERATOR_CHAR, pMenuData->szMenu );
-	WFile fileIndex( szIndexFileName );
+	WFile fileIndex( GetMenuDirectory( pMenuData->szPath, pMenuData->szMenu, "idx" ) );
 	if ( fileIndex.Open( WFile::modeBinary|WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite ) )
 	{
 		if ( fileIndex.GetLength() > static_cast<long>( pMenuData->nAmountRecs * sizeof( MenuRecIndex ) ) )
 		{
 			MenuSysopLog("Index is corrupt");
-			MenuSysopLog(szIndexFileName);
+			MenuSysopLog(fileIndex.GetFullPathName());
 			return false;
 		}
 		pMenuData->index = static_cast<MenuRecIndex *>( bbsmalloc( pMenuData->nAmountRecs * sizeof( MenuRecIndex ) + TEST_PADDING ) );
@@ -352,10 +330,7 @@ bool OpenMenu(MenuInstanceData * pMenuData)
 	// ----------------------------
 	// Open/Rease/Close Prompt file
 	// ----------------------------
-    char szPromptFileName[ MAX_PATH ];
-	sprintf( szPromptFileName, "%s%s%c%s.pro", GetMenuDirectory(), pMenuData->szPath,
-			 WWIV_FILE_SEPERATOR_CHAR, pMenuData->szMenu );
-	WFile filePrompt( szPromptFileName );
+	WFile filePrompt( GetMenuDirectory( pMenuData->szPath, pMenuData->szMenu, "pro" ) );
 	if ( filePrompt.Open( WFile::modeBinary|WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite ) )
     {
 		long lSize = filePrompt.GetLength();
@@ -449,7 +424,7 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword )
 }
 
 
-bool LoadMenuRecord( MenuInstanceData * pMenuData, const char *pszCommand, MenuRec * pMenu )
+bool LoadMenuRecord( MenuInstanceData * pMenuData, std::string& command, MenuRec * pMenu )
 {
 	memset(pMenu, 0, sizeof(MenuRec));
 
@@ -457,24 +432,24 @@ bool LoadMenuRecord( MenuInstanceData * pMenuData, const char *pszCommand, MenuR
 	// If we have 'numbers set the sub #' turned on
 	// then create a command to do so if a # is entered
 	// ------------------------------------------------
-	if (AMIsNumber(pszCommand))
+	if (AMIsNumber(command))
     {
 		if (pMenuData->header.nNumbers == MENU_NUMFLAG_SUBNUMBER)
         {
 			memset(pMenu, 0, sizeof(MenuRec));
-			sprintf(pMenu->szExecute, "SetSubNumber %d", atoi(pszCommand));
+			sprintf(pMenu->szExecute, "SetSubNumber %d", atoi(command.c_str()));
 			return true;
 		}
 		if (pMenuData->header.nNumbers == MENU_NUMFLAG_DIRNUMBER)
         {
 			memset(pMenu, 0, sizeof(MenuRec));
-			sprintf(pMenu->szExecute, "SetDirNumber %d", atoi(pszCommand));
+			sprintf(pMenu->szExecute, "SetDirNumber %d", atoi(command.c_str()));
 			return true;
 		}
 	}
 	for (int x = 0; x < pMenuData->nAmountRecs; x++)
     {
-		if ( wwiv::stringUtils::IsEqualsIgnoreCase( pMenuData->index[x].szKey, pszCommand ) )
+		if ( IsEqualsIgnoreCase( pMenuData->index[x].szKey, command.c_str() ) )
         {
 			if ((pMenuData->index[x].nFlags & MENU_FLAG_DELETED) == 0)
             {
@@ -491,7 +466,7 @@ bool LoadMenuRecord( MenuInstanceData * pMenuData, const char *pszCommand, MenuR
 					else
                     {
 						std::ostringstream msg;
-						msg << "< item security : %s" << pszCommand;
+						msg << "< item security : " << command;
 						MenuSysopLog(msg.str().c_str());
 						return false;
 					}
@@ -503,28 +478,28 @@ bool LoadMenuRecord( MenuInstanceData * pMenuData, const char *pszCommand, MenuR
 }
 
 
-void MenuExecuteCommand(MenuInstanceData * pMenuData, const char *pszCommand)
+void MenuExecuteCommand(MenuInstanceData * pMenuData, std::string& command )
 {
 	MenuRec menu;
 
-	if (LoadMenuRecord(pMenuData, pszCommand, &menu))
+	if (LoadMenuRecord(pMenuData, command, &menu))
     {
-		LogUserFunction(pMenuData, pszCommand, &menu);
+		LogUserFunction(pMenuData, command, &menu);
 		InterpretCommand(pMenuData, menu.szExecute);
 	}
     else
     {
-		LogUserFunction(pMenuData, pszCommand, &menu);
+		LogUserFunction(pMenuData, command, &menu);
     }
 }
 
 
-void LogUserFunction(MenuInstanceData * pMenuData, const char *pszCommand, MenuRec * pMenu)
+void LogUserFunction(MenuInstanceData * pMenuData, std::string& command, MenuRec * pMenu)
 {
     switch ( pMenuData->header.nLogging )
     {
     case MENU_LOGTYPE_KEY:
-        sysopchar( pszCommand );
+		sysopchar( command.c_str() );
         break;
     case MENU_LOGTYPE_COMMAND:
         sysoplog( pMenu->szExecute );
@@ -568,41 +543,27 @@ void PrintMenuPrompt( MenuInstanceData * pMenuData )
 	TurnMCIOff();
 }
 
+std::string GetHelpFileName( MenuInstanceData * pMenuData ) 
+{
+	if ( GetSession()->GetCurrentUser()->HasAnsi() )
+    {
+		if ( GetSession()->GetCurrentUser()->HasColor() ) {
+			std::string filename = GetMenuDirectory( pMenuData->szPath, pMenuData->szMenu, "ans" );
+			if ( WFile::Exists( filename ) ) {
+				return filename;
+			} 
+		}
+		std::string filename = GetMenuDirectory( pMenuData->szPath, pMenuData->szMenu, "b&w" );
+		if ( WFile::Exists( filename ) ) {
+			return filename;
+		} 
+	}
+	return GetMenuDirectory( pMenuData->szPath, pMenuData->szMenu, "msg" );
+}
 
 void AMDisplayHelp( MenuInstanceData * pMenuData )
 {
-	char szFileName[MAX_PATH];
-
-	sprintf( szFileName, "%s%s%c%s", GetMenuDirectory(), pMenuData->szPath,
-			 WWIV_FILE_SEPERATOR_CHAR, pMenuData->szMenu );
-
-	char * pszTemp = szFileName + strlen(szFileName);
-
-	if ( GetSession()->GetCurrentUser()->HasAnsi() )
-    {
-		if ( GetSession()->GetCurrentUser()->HasColor() )
-        {
-			strcpy(pszTemp, ".ans");
-			if (!WFile::Exists(szFileName))
-            {
-				pszTemp[0] = '\0';
-            }
-		}
-		if ( !*pszTemp )
-        {
-			strcpy(pszTemp, ".b&w");
-			if (!WFile::Exists(szFileName))
-            {
-				strcpy(pszTemp, ".msg");
-            }
-		}
-	}
-    else
-    {
-		strcpy(pszTemp, ".msg");
-    }
-
-	if ( printfile(szFileName, 1) == false )
+	if ( !printfile(GetHelpFileName(pMenuData).c_str(), true ) )
     {
 		GenerateMenu(pMenuData);
     }
@@ -625,18 +586,16 @@ void TurnMCIOn()
 
 
 
-bool AMIsNumber(const char *pszBuf)
+bool AMIsNumber(std::string& command)
 {
-	int nSize = strlen(pszBuf);
-
-	if (!nSize)
+	if (!command.length())
     {
 		return false;
     }
 
-	for (int nPos = 0; nPos < nSize; ++nPos)
+	for (std::string::iterator iter = command.begin(); iter != command.end(); ++iter)
     {
-		if (isdigit(pszBuf[nPos]) == 0)
+		if (isdigit(*iter) == 0)
         {
 			return false;
         }
@@ -806,9 +765,7 @@ bool ValidateMenuSet( const char *pszMenuDir )
 	nSecondUserRecLoaded = GetSession()->usernum;
 
 	// ensure the entry point exists
-	std::ostringstream path;
-	path << GetMenuDirectory() << pszMenuDir << "main.mnu";
-	return WFile::Exists(path.str());
+	return WFile::Exists( GetMenuDirectory(pszMenuDir), "main.mnu" );
 }
 
 
@@ -840,9 +797,7 @@ bool LoadMenuSetup( int nUserNum )
             int len = userConfig.Read( pSecondUserRec, sizeof( user_config ) );
             userConfig.Close();
 
-			if ( len != sizeof( user_config ) ||
-                 !wwiv::stringUtils::IsEqualsIgnoreCase( reinterpret_cast<char*>( pSecondUserRec->name ),
-                                                         user.GetName() ) )
+			if ( len != sizeof( user_config ) || !IsEqualsIgnoreCase( reinterpret_cast<char*>( pSecondUserRec->name ), user.GetName() ) )
             {
 				memset(pSecondUserRec, 0, sizeof(user_config));
 				strcpy( reinterpret_cast<char*>( pSecondUserRec->name ), user.GetName() );
@@ -886,7 +841,7 @@ void UnloadMenuSetup()
 	memset(pSecondUserRec, 0, sizeof(user_config));
 }
 
-void GetCommand(MenuInstanceData * pMenuData, char *pszBuf)
+std::string GetCommand( MenuInstanceData * pMenuData )
 {
 	if (pSecondUserRec->cHotKeys == HOTKEYS_ON)
     {
@@ -894,24 +849,26 @@ void GetCommand(MenuInstanceData * pMenuData, char *pszBuf)
         {
 			GetSession()->SetMMKeyArea( WSession::mmkeyFileAreas );
 			write_inst(INST_LOC_XFER,udir[GetSession()->GetCurrentFileArea()].subnum,INST_FLAGS_NONE);
-			strcpy(pszBuf, mmkey( 1 ));
+			return std::string(mmkey(1));
 		}
         else if (pMenuData->header.nNumbers == MENU_NUMFLAG_SUBNUMBER)
         {
 			GetSession()->SetMMKeyArea( WSession::mmkeyMessageAreas );
 			write_inst(INST_LOC_MAIN,usub[GetSession()->GetCurrentMessageArea()].subnum,INST_FLAGS_NONE);
-			strcpy(pszBuf, mmkey( 0 ));
+			return std::string(mmkey(0));
 		}
         else
         {
 			odc[0] = '/';
-			odc[1] = 0;
-			strcpy(pszBuf, mmkey( 2 ));
+			odc[1] = '\0';
+			return std::string(mmkey(2));
 		}
 	}
     else
     {
-		input( pszBuf, 50 );
+		std::string text;
+		input( text, 50 );
+		return std::string(text);
     }
 }
 
@@ -934,10 +891,8 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
         return false;
     }
 
-    int x;
-
     // All AR bits specified must match
-    for (x = 0; x < 16; x++)
+    for (int x = 0; x < 16; x++)
     {
         if (pMenu->uAR & (1 << x))
         {
@@ -949,7 +904,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     }
 
     // All DAR bits specified must match
-    for (x = 0; x < 16; x++)
+    for (int x = 0; x < 16; x++)
     {
         if (pMenu->uDAR & (1 << x))
         {
@@ -961,7 +916,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     }
 
     // If any restrictions match, then they arn't allowed
-    for (x = 0; x < 16; x++)
+    for (int x = 0; x < 16; x++)
     {
         if (pMenu->uRestrict & (1 << x))
         {
@@ -995,9 +950,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
 
 void OpenMenuDescriptions()
 {
-	std::ostringstream name;
-	name << GetMenuDirectory() << DESCRIPT_ION;
-	hMenuDesc = fopen(name.str().c_str(), "r");
+	hMenuDesc = fopen( GetMenuDirectory( DESCRIPT_ION ).c_str(), "r" );
 }
 
 void CloseMenuDescriptions()
@@ -1037,7 +990,7 @@ char *GetMenuDescription(const std::string& name, char *pszDesc )
 		pszTemp[0] = 0;
 		++pszTemp;
 
-		if ( wwiv::stringUtils::IsEqualsIgnoreCase( name.c_str(), szLine ) )
+		if ( IsEqualsIgnoreCase( name.c_str(), szLine ) )
         {
 			strcpy(pszDesc, pszTemp);
 			int x = strlen(pszDesc);
@@ -1103,7 +1056,7 @@ void SetMenuDescription(const char *pszName, const char *pszDesc)
 
 			stptok(szLine, szTok, 25, " ");
 
-			if ( wwiv::stringUtils::IsEqualsIgnoreCase( pszName, szTok ) )
+			if ( IsEqualsIgnoreCase( pszName, szTok ) )
             {
                 tempDescriptionFile.WriteFormatted( "%s %s\n", pszName, pszDesc );
 				bWritten = 1;
@@ -1134,31 +1087,44 @@ void SetMenuDescription(const char *pszName, const char *pszDesc)
 }
 
 
-const char *GetMenuDirectory()
+std::string GetMenuDirectory(std::string menuPath)
 {
-	static char szMenuDir[MAX_PATH];
-	sprintf(szMenuDir, "%smenus%c", GetSession()->pszLanguageDir, WWIV_FILE_SEPERATOR_CHAR);
-	return szMenuDir;
+	std::ostringstream os;
+	os << GetMenuDirectory() << menuPath << WWIV_FILE_SEPERATOR_STRING;
+	return std::string(os.str());
+}
+
+std::string GetMenuDirectory(std::string menuPath, std::string menuName, std::string extension)
+{
+	std::ostringstream os;
+	os << GetMenuDirectory() << menuPath << WWIV_FILE_SEPERATOR_STRING << menuName << "." << extension;
+	return std::string(os.str());
+}
+
+std::string GetMenuDirectory()
+{
+	std::ostringstream os;
+	os << GetSession()->pszLanguageDir << "menus" << WWIV_FILE_SEPERATOR_CHAR;
+	return std::string(os.str());
 }
 
 
 void GenerateMenu(MenuInstanceData * pMenuData)
 {
 	MenuRec menu;
-	int x, iDisplayed = 0;
-	char szKey[30];
 
 	memset(&menu, 0, sizeof(MenuRec));
 
 	GetSession()->bout.Color( 0 );
 	GetSession()->bout.NewLine();
 
+	int iDisplayed = 0;
 	if (pMenuData->header.nNumbers != MENU_NUMFLAG_NOTHING)
     {
 		GetSession()->bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
 		++iDisplayed;
 	}
-	for (x = 0; x < pMenuData->nAmountRecs - 1; x++)
+	for (int x = 0; x < pMenuData->nAmountRecs - 1; x++)
     {
 		if ((pMenuData->index[x].nFlags & MENU_FLAG_DELETED) == 0)
         {
@@ -1172,6 +1138,7 @@ void GenerateMenu(MenuInstanceData * pMenuData)
                      menu.nHide != MENU_HIDE_REGULAR &&
                      menu.nHide != MENU_HIDE_BOTH )
                 {
+					char szKey[30];
 					if (strlen(menu.szKey) > 1 && menu.szKey[0] != '/' && pSecondUserRec->cHotKeys == HOTKEYS_ON)
                     {
 						sprintf(szKey, "//%s", menu.szKey);
@@ -1193,7 +1160,7 @@ void GenerateMenu(MenuInstanceData * pMenuData)
 			}
 		}
 	}
-	if ( wwiv::stringUtils::IsEquals( GetSession()->GetCurrentUser()->GetName(), "GUEST" ) )
+	if ( IsEquals( GetSession()->GetCurrentUser()->GetName(), "GUEST" ) )
     {
 		if ( iDisplayed % 2 )
         {
@@ -1371,704 +1338,6 @@ char *MenuSkipSpaces(char *pszSrc)
         ++pszSrc;
     }
     return pszSrc;
-}
-
-
-void InterpretCommand( MenuInstanceData * pMenuData, const char *pszScript )
-{
-    char szCmd[31], szParam1[51], szParam2[51];
-    char szTempScript[ 255 ];
-    memset( szTempScript, 0, sizeof( szTempScript ) );
-    strncpy( szTempScript, pszScript, 250 );
-
-    if (pszScript[0] == 0)
-    {
-        return;
-    }
-
-    char* pszScriptPointer = szTempScript;
-    while (pszScriptPointer && !hangup)
-    {
-        pszScriptPointer = MenuParseLine(pszScriptPointer, szCmd, szParam1, szParam2);
-
-        if ( szCmd[0] == 0 )    // || !pszScriptPointer || !*pszScriptPointer
-        {
-            break;
-        }
-
-        // -------------------------
-        // Run a new menu instance
-
-        int nCmdID = GetMenuIndex( szCmd );
-        switch ( nCmdID )
-        {
-        case 0:
-            {   // "MENU"
-                // Spawn a new menu
-                MenuInstanceData *pNewMenuData = static_cast<MenuInstanceData *>( bbsmalloc( sizeof( MenuInstanceData ) ) );
-
-                memset(pNewMenuData, 0, sizeof(MenuInstanceData));
-                //pNewMenuData->hMenuFile = -1;
-                pNewMenuData->nFinished = 0;
-                pNewMenuData->nReload = 0;
-
-                Menus(pNewMenuData, pMenuData->szPath, szParam1);
-                BbsFreeMemory(pNewMenuData);
-            } break;
-        case 1:
-            {
-                // -------------------------
-                // Exit out of this instance
-                // of the menu
-                // -------------------------
-                // "ReturnFromMenu"
-                InterpretCommand(pMenuData, pMenuData->header.szExitScript);
-                pMenuData->nFinished = 1;
-            } break;
-        case 2:
-            { // "EditMenuSet"
-                EditMenus();           // flag if we are editing this menu
-                pMenuData->nFinished = 1;
-                pMenuData->nReload = 1;
-            }
-            break;
-        case 3:
-            {   // "DLFreeFile"
-                align(szParam2);
-                MenuDownload(szParam1, szParam2, 1, 1);
-            } break;
-        case 4:
-            {   // "DLFile"
-                align(szParam2);
-                MenuDownload(szParam1, szParam2, 0, 1);
-            } break;
-        case 5:
-            {   // "RunDoor"
-                MenuRunDoorName(szParam1, 0);
-            } break;
-        case 6:
-            {   // "RunDoorFree"
-                MenuRunDoorName(szParam1, 0);
-            } break;
-        case 7:
-            {   // "RunDoorNumber"
-                int nTemp = atoi(szParam1);
-                MenuRunDoorNumber(nTemp, 0);
-            } break;
-        case 8:
-            {   // "RunDoorNumberFree"
-                int nTemp = atoi(szParam1);
-                MenuRunDoorNumber(nTemp, 1);
-            } break;
-        case 9:
-            {   // "PrintFile"
-                printfile(szParam1, 1);
-            } break;
-        case 10:
-            {  // "PrintFileNA"
-                printfile(szParam1, 0);
-            } break;
-        case 11:
-            {  // "SetSubNumber"
-                SetSubNumber(szParam1);
-            } break;
-        case 12:
-            {  // "SetDirNumber"
-                SetDirNumber(szParam1);
-            } break;
-        case 13:
-            {  // "SetMsgConf"
-                SetMsgConf(szParam1[0]);
-            } break;
-        case 14:
-            {  // "SetDirConf"
-                SetDirConf(szParam1[0]);
-            } break;
-        case 15:
-            {  // "EnableConf"
-                EnableConf();
-            } break;
-        case 16:
-            {  // "DisableConf"
-                DisableConf();
-            } break;
-        case 17:
-            {  // "Pause"
-                pausescr();
-            } break;
-        case 18:
-            {  // "ConfigUserMenuSet"
-                ConfigUserMenuSet();
-                pMenuData->nFinished = 1;
-                pMenuData->nReload = 1;
-            } break;
-        case 19:
-            {  // "DisplayHelp"
-                if ( GetSession()->GetCurrentUser()->IsExpert() )
-                {
-                    AMDisplayHelp( pMenuData );
-                }
-            } break;
-        case 20:
-            {  // "SelectSub"
-                ChangeSubNumber();
-            } break;
-        case 21:
-            {  // "SelectDir"
-                ChangeDirNumber();
-            } break;
-        case 22:
-            {  // "SubList"
-                SubList();
-            } break;
-        case 23:
-            {  // "UpSubConf"
-                UpSubConf();
-            } break;
-        case 24:
-            {  // "DownSubConf"
-                DownSubConf();
-            } break;
-        case 25:
-            {  // "UpSub"
-                UpSub();
-            } break;
-        case 26:
-            {  // "DownSub"
-                DownSub();
-            } break;
-        case 27:
-            {  // "ValidateUser"
-                ValidateUser();
-            } break;
-        case 28:
-            {  // "Doors"
-                Chains();
-            } break;
-        case 29:
-            {  // "TimeBank"
-                TimeBank();
-            } break;
-        case 30:
-            {  // "AutoMessage"
-                AutoMessage();
-            } break;
-        case 31:
-            {  // "BBSList"
-                BBSList();
-            } break;
-        case 32:
-            {  // "RequestChat"
-                RequestChat();
-            } break;
-        case 33:
-            {  // "Defaults"
-                Defaults(pMenuData);
-            } break;
-        case 34:
-            {  // "SendEMail"
-                SendEMail();
-            } break;
-        case 35:
-            {  // "Feedback"
-                FeedBack();
-            } break;
-        case 36:
-            {  // "Bulletins"
-                Bulletins();
-            } break;
-        case 37:
-            {  // "HopSub"
-                HopSub();
-            } break;
-        case 38:
-            {  // "SystemInfo"
-                SystemInfo();
-            } break;
-        case 39:
-            {  // "JumpSubConf"
-                JumpSubConf();
-            } break;
-        case 40:
-            {  // "KillEMail"
-                KillEMail();
-            } break;
-        case 41:
-            {  // "LastCallers"
-                LastCallers();
-            } break;
-        case 42:
-            {  // "ReadEMail"
-                ReadEMail();
-            } break;
-        case 43:
-            {  // "NewMessageScan"
-                NewMessageScan();
-            } break;
-        case 44:
-            {  // "Goodbye"
-                GoodBye();
-            } break;
-        case 45:
-            {  // "PostMessage"
-                WWIV_PostMessage();
-            } break;
-        case 46:
-            {  // "NewMsgScanCurSub"
-                ScanSub();
-            } break;
-        case 47:
-            {  // "RemovePost"
-                RemovePost();
-            } break;
-        case 48:
-            {  // "TitleScan"
-                TitleScan();
-            } break;
-        case 49:
-            {  // "ListUsers"
-                ListUsers();
-            } break;
-        case 50:
-            {  // "Vote"
-                Vote();
-            } break;
-        case 51:
-            {  // "ToggleExpert"
-                ToggleExpert();
-            } break;
-        case 52:
-            {  // "YourInfo"
-                YourInfo();
-            } break;
-        case 53:
-            {  // "ExpressScan"
-                ExpressScan();
-            } break;
-        case 54:
-            {  // "WWIVVer"
-                WWIVVersion();
-            } break;
-        case 55:
-            {  // "InstanceEdit"
-                InstanceEdit();
-            } break;
-        case 56:
-            {  // "ConferenceEdit"
-                JumpEdit();
-            } break;
-        case 57:
-            {  // "SubEdit"
-                BoardEdit();
-            } break;
-        case 58:
-            {  // "ChainEdit"
-                ChainEdit();
-            } break;
-        case 59:
-            {  // "ToggleAvailable"
-                ToggleChat();
-            } break;
-        case 60:
-            {  // "ChangeUser"
-                ChangeUser();
-            } break;
-        case 61:
-            {  // "CLOUT"
-                CallOut();
-            } break;
-        case 62:
-            {  // "Debug"
-                Debug();
-            } break;
-        case 63:
-            {  // "DirEdit"
-                DirEdit();
-            } break;
-        case 65:
-            {  // "Edit"
-                EditText();
-            } break;
-        case 66:
-            {  // "BulletinEdit"
-                EditBulletins();
-            } break;
-        case 67:
-            {
-				// "LoadText"
-				// LoadText and LoadTextFile are the same, so they are now merged.
-                LoadTextFile();
-            } break;
-        case 68:
-            {  // "ReadAllMail"
-                ReadAllMail();
-            } break;
-        case 69:
-            {  // "Reboot"
-                RebootComputer();
-            } break;
-        case 70:
-            {  // "ReloadMenus"
-                ReloadMenus();
-            } break;
-        case 71:
-            {  // "ResetUserIndex"
-                ResetFiles();
-            } break;
-        case 72:
-            {  // "ResetQScan"
-                ResetQscan();
-            } break;
-        case 73:
-            {  // "MemStat"
-                MemoryStatus();
-            } break;
-        case 74:
-            {  // "PackMsgs"
-                PackMessages();
-            } break;
-        case 75:
-            {  // "VoteEdit"
-                InitVotes();
-            } break;
-        case 76:
-            {  // "Log"
-                ReadLog();
-            } break;
-        case 77:
-            {  // "NetLog"
-                ReadNetLog();
-            } break;
-        case 78:
-            {  // "Pending"
-                PrintPending();
-            } break;
-        case 79:
-            {  // "Status"
-                PrintStatus();
-            } break;
-        case 80:
-            {  // "TextEdit"
-                TextEdit();
-            } break;
-        case 81:
-            {  // "UserEdit"
-                UserEdit();
-            } break;
-        case 82:
-            {  // "VotePrint"
-                VotePrint();
-            } break;
-        case 83:
-            {  // "YLog"
-                YesturdaysLog();
-            } break;
-        case 84:
-            {  // "ZLog"
-                ZLog();
-            } break;
-        case 85:
-            {  // "ViewNetDataLog"
-                ViewNetDataLog();
-            } break;
-        case 86:
-            {  // "UploadPost"
-                UploadPost();
-            } break;
-        case 87:
-            {  // "ClearScreen"
-                GetSession()->bout.ClearScreen();
-            } break;
-        case 88:
-            {  // "NetListing"
-                NetListing();
-            } break;
-        case 89:
-            {  // "WHO"
-                WhoIsOnline();
-            } break;
-        case 90:
-            {  // /A "NewMsgsAllConfs"
-                NewMsgsAllConfs();
-            } break;
-        case 91:
-            {  // /E "MultiEMail"
-                MultiEmail();
-            } break;
-        case 92:
-            {  // "NewMsgScanFromHere"
-                NewMsgScanFromHere();
-            } break;
-        case 93:
-            {  // "ValidatePosts"
-                ValidateScan();
-            } break;
-        case 94:
-            {  // "ChatRoom"
-                ChatRoom();
-            } break;
-        case 95:
-            {  // "DownloadPosts"
-                DownloadPosts();
-            } break;
-        case 96:
-            {  // "DownloadFileList"
-                DownloadFileList();
-            } break;
-        case 97:
-            {  // "ClearQScan"
-                ClearQScan();
-            } break;
-        case 98:
-            {  // "FastGoodBye"
-                FastGoodBye();
-            } break;
-        case 99:
-            {  // "NewFilesAllConfs"
-                NewFilesAllConfs();
-            } break;
-        case 100:
-            { // "ReadIDZ"
-                ReadIDZ();
-            } break;
-        case 101:
-            { // "UploadAllDirs"
-                UploadAllDirs();
-            } break;
-        case 102:
-            { // "UploadCurDir"
-                UploadCurDir();
-            } break;
-        case 103:
-            { // "RenameFiles"
-                RenameFiles();
-            } break;
-        case 104:
-            { // "MoveFiles"
-                MoveFiles();
-            } break;
-        case 105:
-            { // "SortDirs"
-                SortDirs();
-            } break;
-        case 106:
-            { // "ReverseSortDirs"
-                ReverseSort();
-            } break;
-        case 107:
-            { // "AllowEdit"
-                AllowEdit();
-            } break;
-        case 109:
-            { // "UploadFilesBBS"
-                UploadFilesBBS();
-            } break;
-        case 110:
-            { // "DirList"
-                DirList();
-            } break;
-        case 111:
-            { // "UpDirConf"
-                UpDirConf();
-            } break;
-        case 112:
-            { // "UpDir"
-                UpDir();
-            } break;
-        case 113:
-            { // "DownDirConf"
-                DownDirConf();
-            } break;
-        case 114:
-            { // "DownDir"
-                DownDir();
-            } break;
-        case 115:
-            { // "ListUsersDL"
-                ListUsersDL();
-            } break;
-        case 116:
-            { // "PrintDSZLog"
-                PrintDSZLog();
-            } break;
-        case 117:
-            { // "PrintDevices"
-                PrintDevices();
-            } break;
-        case 118:
-            { // "ViewArchive"
-                ViewArchive();
-            } break;
-        case 119:
-            { // "BatchMenu"
-                BatchMenu();
-            } break;
-        case 120:
-            { // "Download"
-                Download();
-            } break;
-        case 121:
-            { // "TempExtract"
-                TempExtract();
-            } break;
-        case 122:
-            { // "FindDescription"
-                FindDescription();
-            } break;
-        case 123:
-            { // "ArchiveMenu"
-                TemporaryStuff();
-            } break;
-        case 124:
-            { // "HopDir"
-                HopDir();
-            } break;
-        case 125:
-            { // "JumpDirConf"
-                JumpDirConf();
-            } break;
-        case 126:
-            { // "ListFiles"
-                ListFiles();
-            } break;
-        case 127:
-            { // "NewFileScan"
-                NewFileScan();
-            } break;
-        case 128:
-            { // "SetNewFileScanDate"
-                SetNewFileScanDate();
-            } break;
-        case 129:
-            { // "RemoveFiles"
-                RemoveFiles();
-            } break;
-        case 130:
-            { // "SearchAllFiles"
-                SearchAllFiles();
-            } break;
-        case 131:
-            { // "XferDefaults"
-                XferDefaults();
-            } break;
-        case 132:
-            { // "Upload"
-                Upload();
-            } break;
-        case 133:
-            { // "YourInfoDL"
-                YourInfoDL();
-            } break;
-        case 134:
-            { // "UploadToSysop"
-                UploadToSysop();
-            } break;
-        case 135:
-            { // "ReadAutoMessage"
-                ReadAutoMessage();
-            } break;
-        case 136:
-            { // "SetNewScanMsg"
-                SetNewScanMsg();
-            } break;
-        case 137:
-            { // "ReadMessages"
-                ReadMessages();
-            } break;
-            /*
-            case 138:
-            { // "RUN"
-            ExecuteBasic(szParam1);
-            } break;
-            */
-        case 139:
-            { // "EventEdit"
-                EventEdit();
-            } break;
-        case 140:
-            { // "LoadTextFile"
-                LoadTextFile();
-            } break;
-        case 141:
-            { // "GuestApply"
-                GuestApply();
-            } break;
-        case 142:
-            { // "ConfigFileList"
-                ConfigFileList();
-            } break;
-        case 143:
-            { // "ListAllColors"
-                ListAllColors();
-            } break;
-#ifdef QUESTIONS
-        case 144:
-            { // "EditQuestions"
-                EditQuestions();
-            } break;
-        case 145:
-            { // "Questions"
-                Questions();
-            } break;
-#endif
-        case 146:
-            { // "RemoveNotThere"
-                RemoveNotThere();
-            } break;
-        case 147:
-            { // "AttachFile"
-                AttachFile();
-            } break;
-        case 148:
-            { // "InternetEmail"
-                InternetEmail();
-            } break;
-        case 149:
-            { // "UnQScan"
-                UnQScan();
-            } break;
-            // ppMenuStringsIndex[150] thru ppMenuStringsIndex[153] not used.....
-        case 154:
-            { // "Packers"
-                Packers();
-            } break;
-        case 155:
-            { // Color_Config
-                color_config();
-            } break;
-            //------------------------------------------------------------------
-            //  ppMenuStringsIndex[156] and [157] are reserved for SDS Systems and systems
-            //  that distribute modifications.  DO NOT reuse these strings for
-            //  other menu options.
-            //------------------------------------------------------------------
-            //    case 156:
-            //    { // ModAccess
-            //        ModsAccess();
-            //    } break;
-            //    case 157:
-            //    { // SDSAccess
-            //        SDSAccess();
-            //      } break;
-            //------------------------------------------------------------------
-        case 158:
-            { // InitVotes
-                InitVotes();
-            } break;
-        case 161:
-            { // TurnMCIOn
-                TurnMCIOn();
-            } break;
-        case 162:
-            { // TurnMCIOff
-                TurnMCIOff();
-            } break;
-        default:
-            {
-                MenuSysopLog("The following command was not recognized");
-                MenuSysopLog(szCmd);
-            } break;
-        }
-    }
 }
 
 
