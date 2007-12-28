@@ -1,8 +1,3 @@
-OBJ		= obj
-BIN		= ../bin
-INIT_APP        = $(BIN)/init
-CC              = g++
-CFLAGS          = -I$(CURDIR)/../../textui/include -I$(CURDIR)/../ -I$(CURDIR)/../platform -DINIT
 
 ifneq (,$(findstring win32,$(MAKEFLAGS)))
 OS=WIN32
@@ -11,18 +6,32 @@ PLATFORM_DIR=../platform/WIN32
 PATH_SEPERATOR=;
 EXE_EXT         = .exe
 OBJ_EXT         = obj
-PLATFORM_TARGETS= 
 TEXTUI_LIBRARY  = $(CURDIR)/../../textui/bin/textui.lib
 else
 OS=UNIX
 PLATFORM_CFLAGS=-Wall
 PLATFORM_DIR=../platform/unix
+PLATFORM_ALT_DIR=../platform/unix
+ifeq (Darwin,$(shell uname))
+PLATFORM_ALT_DIR=../platform/osx
+PLATFORM_CFLAGS+=-I$(PLATFORM_ALT_DIR)
+PLATFORM_LINKFLAGS+=-lobjc -framework CoreFoundation -framework Foundation
+else
+PLATFORM_ALT_DIR=platform/unix
+endif
 PATH_SEPERATOR=:
 EXE_EXT         = 
 OBJ_EXT         = o
-PLATFORM_TARGETS=$(NODEMGR)
 TEXTUI_LIBRARY  = $(CURDIR)/../../textui/bin/libtextui.a
 endif
+
+OBJ		= obj
+BIN		= ../bin
+INIT_APP        = $(BIN)/init
+CC              = gcc
+CXX             = g++
+CFLAGS          = -I$(CURDIR)/../../textui/include -I$(CURDIR)/../ -I$(CURDIR)/../platform -DINIT $(PLATFORM_CFLAGS)
+LINKFLAGS       = $(PLATFORM_LINKFLAGS) -lcurses
 
 ##############################################################################
 #
@@ -40,17 +49,29 @@ endif
 
 $(OBJ)/%.$(OBJ_EXT) : %.cpp
 	@echo Compiling $<
-	@$(CC) -c $< $(CFLAGS) -o $@
+	@$(CXX) -c $< $(CFLAGS) -o $@
 
 $(OBJ)/%.$(OBJ_EXT) : ../%.cpp
 	@echo Compiling $<
-	@$(CC) -c $< $(CFLAGS) -o $@
+	@$(CXX) -c $< $(CFLAGS) -o $@
 
 $(OBJ)/%.$(OBJ_EXT) : ../platform/%.cpp
 	@echo Compiling $<
-	@$(CC) -c $< $(CFLAGS) -o $@
+	@$(CXX) -c $< $(CFLAGS) -o $@
 
 $(OBJ)/%.$(OBJ_EXT) : $(PLATFORM_DIR)/%.cpp
+	@echo Compiling $<
+	@$(CXX) -c $< $(CFLAGS) -o $@
+
+$(OBJ)/%.$(OBJ_EXT) : $(PLATFORM_DIR)/%.m
+	@echo Compiling $<
+	@$(CC) -c $< $(CFLAGS) -o $@
+
+$(OBJ)/%.$(OBJ_EXT) : $(PLATFORM_ALT_DIR)/%.cpp
+	@echo Compiling $<
+	@$(CXX) -c $< $(CFLAGS) -o $@
+
+$(OBJ)/%.$(OBJ_EXT) : $(PLATFORM_ALT_DIR)/%.m
 	@echo Compiling $<
 	@$(CC) -c $< $(CFLAGS) -o $@
 
@@ -85,4 +106,4 @@ $(TEXTUI_LIBRARY):
 
 $(INIT_APP): $(INIT_OBJS) $(TEXTUI_LIBRARY)
 	@echo Linking $(INIT_APP)
-	$(CC) -o $(INIT_APP) $(INIT_OBJS) $(TEXTUI_LIBRARY) -lcurses
+	@$(CXX) $(LINKFLAGS)  -o $(INIT_APP) $(INIT_OBJS) $(TEXTUI_LIBRARY)

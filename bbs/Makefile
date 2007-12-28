@@ -18,7 +18,9 @@
 ifneq (,$(findstring win32,$(MAKEFLAGS)))
 OS=WIN32
 PLATFORM_CFLAGS=
-PLATFORM_DIR=platform/WIN32
+PLATFORM_LINKFLAGS=
+PLATFORM_DIR=platform/win32
+PLATFORM_ALT_DIR=platform/win32
 PATH_SEPERATOR=;
 EXE_EXT         = .exe
 OBJ_EXT         = .o
@@ -26,27 +28,35 @@ PLATFORM_TARGETS=
 else
 OS=UNIX
 PLATFORM_CFLAGS=-Wall
+PLATFORM_LINKFLAGS=
 PLATFORM_DIR=platform/unix
+ifeq (Darwin,$(shell uname))
+PLATFORM_ALT_DIR=platform/osx
+PLATFORM_CFLAGS+=-I$(PLATFORM_ALT_DIR)
+PLATFORM_LINKFLAGS+=-lobjc -framework CoreFoundation -framework Foundation
+else
+PLATFORM_ALT_DIR=platform/unix
+endif
 PATH_SEPERATOR=:
 EXE_EXT         = 
 OBJ_EXT         = .o
 PLATFORM_TARGETS=$(NODEMGR)
 endif
 
-CC              = g++
+CXX             = g++
+CC              = gcc
 
 OBJ		= obj
 BIN		= bin
 
 BIN_NAME        = $(BIN)/wwiv$(EXE_EXT)
-INITLITE	= $(BIN)/initlite$(EXE_EXT)
 INIT    	= $(BIN)/init$(EXE_EXT)
 NODEMGR 	= $(BIN)/nodemgr$(EXE_EXT)
 FIX             = $(BIN)/fix$(EXE_EXT)
 RM		= rm
 MKDIR		= mkdir
 CFLAGS		= -I$(CURDIR) -Wall -g $(PLATFORM_CFLAGS) -Iplatform -I$(PLATFORM_DIR)
-LINKFLAGS	= -lm
+LINKFLAGS	= -lm $(PLATFORM_LINKFLAGS)
 PROJECT_DIR	= wwiv50
 TAR		= tar czvf 
 
@@ -66,19 +76,31 @@ TAR		= tar czvf
 
 $(OBJ)/%.o : ${PLATFORM_DIR}/%.cpp
 	@echo Compiling $<
+	@$(CXX) -c $< $(CFLAGS) -o $@
+
+$(OBJ)/%.o : ${PLATFORM_DIR}/%.m
+	@echo Compiling $<
+	@$(CC) -c $< $(CFLAGS) -o $@
+
+$(OBJ)/%.o : ${PLATFORM_ALT_DIR}/%.cpp
+	@echo Compiling $<
+	@$(CXX) -c $< $(CFLAGS) -o $@
+
+$(OBJ)/%.o : ${PLATFORM_ALT_DIR}/%.m
+	@echo Compiling $<
 	@$(CC) -c $< $(CFLAGS) -o $@
 
 $(OBJ)/%.o : platform/%.cpp
 	@echo Compiling $<
-	@$(CC) -c $< $(CFLAGS) -o $@
+	@$(CXX) -c $< $(CFLAGS) -o $@
 
 $(OBJ)/%.o : prot/%.cpp
 	@echo Compiling $<
-	@$(CC) -c $< $(CFLAGS) -o $@
+	@$(CXX) -c $< $(CFLAGS) -o $@
 
 $(OBJ)/%.o : %.cpp
 	@echo Compiling $<
-	@$(CC) -c $< $(CFLAGS) -o $@
+	@$(CXX) -c $< $(CFLAGS) -o $@
 
 #############################################################################
 #
@@ -135,6 +157,7 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/lpfunc.o      	\
 	$(OBJ)/memory.o		\
 	$(OBJ)/menu.o      	\
+	$(OBJ)/menuinterpretcommand.o \
 	$(OBJ)/menuedit.o      	\
 	$(OBJ)/menuspec.o      	\
 	$(OBJ)/menusupp.o      	\
@@ -186,7 +209,7 @@ COMMON_BBS_OBJS =	       	\
 	$(OBJ)/wfndfile.o	\
 	$(OBJ)/WLocalIO.o	\
 	$(OBJ)/WOutStream.o	\
-	$(OBJ)/WOutStreamBuffer.o	\
+	$(OBJ)/WOutStreamBuffer.o \
 	$(OBJ)/wqscn.o		\
 	$(OBJ)/wshare.o		\
 	$(OBJ)/WSession.o	\
@@ -211,10 +234,13 @@ COMMON_BBS_OBJS +=	       	\
 	$(OBJ)/zmutil.o       	\
 	$(OBJ)/zmwwiv.o       	\
 
-PLATFORM_UNIX_OBJS =			\
+PLATFORM_UNIX_OBJS =		\
 	$(OBJ)/stringstuff.o	\
 	$(OBJ)/filestuff.o	\
 	$(OBJ)/Wiou.o		\
+
+PLATFORM_OSX_OBJS =		\
+	$(OBJ)/macversioninfo.o	\
 
 PLATFORM_WIN32_OBJS =		\
 	$(OBJ)/Wios.o		\
@@ -222,7 +248,10 @@ PLATFORM_WIN32_OBJS =		\
 	$(OBJ)/filesupp.o
 
 BBS_OBJS = $(COMMON_BBS_OBJS) $(PLATFORM_$(OS)_OBJS)
-BBS_SOURCE =	$(patsubst %.o, %.cpp, $(BBS_OBJS))
+
+ifeq (Darwin,$(shell uname))
+BBS_OBJS += $(PLATFORM_OSX_OBJS)
+endif
 
 ###############################################################################
 #
@@ -231,9 +260,7 @@ BBS_SOURCE =	$(patsubst %.o, %.cpp, $(BBS_OBJS))
 #
 #
 
-all: $(BIN_NAME) $(INITLITE) $(INIT) $(FIX) $(PLATFORM_TARGETS)
-
-initlite: $(INITLITE)
+all: $(BIN_NAME) $(INIT) $(FIX) $(PLATFORM_TARGETS)
 
 init: $(INIT)
 
@@ -249,20 +276,19 @@ $(BIN):
 
 $(BIN_NAME): $(BIN) $(OBJ) $(BBS_OBJS)
 	@echo Linking $@
-	@$(CC) -o $(BIN_NAME) $(LINKFLAGS) $(BBS_OBJS)
+	@$(CXX) -o $(BIN_NAME) $(LINKFLAGS) $(BBS_OBJS)
 
 $(INIT):
+	@echo Building $@
 	@$(MAKE) -C init  --no-print-directory
 
-$(INITLITE):
-	@$(MAKE) -C initlite  --no-print-directory
-
 $(NODEMGR):
+	@echo Building $@
 	@$(MAKE) -C nodemgr  --no-print-directory
 
 $(FIX):
+	@echo Building $@
 	@$(MAKE) -C fix --no-print-directory
-
 
 clean:
 	@echo Cleaning...
@@ -270,7 +296,6 @@ clean:
 	-$(RM) -f $(BBS_OBJS)
 	-$(RM) -f make.log
 	-$(RM) -f *~
-	@$(MAKE) -C initlite clean --no-print-directory
 	@$(MAKE) -C init clean --no-print-directory
 	@$(MAKE) -C nodemgr clean --no-print-directory
 	@$(MAKE) -C fix clean --no-print-directory
@@ -278,7 +303,6 @@ clean:
 spotless:
 	-$(RM) -rf $(BIN)/
 	-$(RM) -rf $(OBJ)/
-	@$(MAKE) -C initlite spotless --no-print-directory
 	@$(MAKE) -C nodemgr spotless --no-print-directory
 	@$(MAKE) -C fix spotless --no-print-directory
 
