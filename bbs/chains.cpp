@@ -210,8 +210,7 @@ void run_chain( int nChainNumber )
     char szModemSpeed[ 11 ];
     sprintf( szModemSpeed, "%d", modem_speed );
 
-	std::string chainCmdLine;
-    stuff_in( chainCmdLine, chains[nChainNumber].filename, create_chain_file(), szComSpeed, szComPortNum, szModemSpeed, "" );
+	const std::string chainCmdLine = stuff_in( chains[nChainNumber].filename, create_chain_file(), szComSpeed, szComPortNum, szModemSpeed, "" );
 
     sysoplogf( "!Ran \"%s\"", chains[nChainNumber].description );
     GetSession()->GetCurrentUser()->SetNumChainsRun( GetSession()->GetCurrentUser()->GetNumChainsRun() + 1 );

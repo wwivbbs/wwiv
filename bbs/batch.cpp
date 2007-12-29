@@ -727,8 +727,7 @@ void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool 
         StringReplace(pszCommandLine, strlen( pszCommandLine  ), "MDMDSZ", "FDSZ");
     }
 
-	std::string commandLine;
-    stuff_in( commandLine, pszCommandLine, sx1, sx2, downlist, sx3, uplist );
+    std::string commandLine = stuff_in( pszCommandLine, sx1, sx2, downlist, sx3, uplist );
     if ( !commandLine.empty() )
     {
         WWIV_make_abs_cmd( commandLine );

@@ -1270,8 +1270,7 @@ void ExecNewUserCommand()
 {
     if ( !hangup && syscfg.newuser_c[0] )
     {
-		std::string commandLine;
-        stuff_in( commandLine, syscfg.newuser_c, create_chain_file(), "", "", "", "" );
+		const std::string commandLine = stuff_in( syscfg.newuser_c, create_chain_file(), "", "", "", "" );
         
         // Log what is happening here.
         sysoplog( "Executing New User Event: ", false );

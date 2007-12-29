@@ -744,8 +744,7 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
         sprintf( sx2, "%ld", defscreenbottom + 1 - newtl );
 	}
 	sprintf( sx3, "%d", numlines );
-	std::string cmdLine;
-	stuff_in( cmdLine, editorCommand, szFileName, sx1, sx2, sx3, "" );
+	const std::string cmdLine = stuff_in( editorCommand, szFileName, sx1, sx2, sx3, "" );
     
     WTextFile fileEditorInf( EDITOR_INF, "wt" );
 

@@ -60,8 +60,7 @@ void compress_file( char *pszFileName, char *pszDirectoryName )
 	std::string arcName = directory + baseFileName;
 	std::string origName = fileName;
 
-	std::string command;
-	stuff_in( command, arcs[0].arca, arcName.c_str(), origName.c_str(), "", "", "" );
+	const std::string command = stuff_in( arcs[0].arca, arcName.c_str(), origName.c_str(), "", "", "" );
     ExecuteExternalProgram( command, GetApplication()->GetSpawnOptions( SPWANOPT_ARCH_A ) );
     WFile::Remove( origName );
     GetApplication()->UpdateTopScreen();

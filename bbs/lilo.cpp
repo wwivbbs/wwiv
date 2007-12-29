@@ -1180,8 +1180,7 @@ void logon()
     if ( syscfg.logon_c[0] )
 	{
         GetSession()->bout.NewLine();
-		std::string command;
-        stuff_in( command, syscfg.logon_c, create_chain_file(), "", "", "", "" );
+		const std::string command = stuff_in( syscfg.logon_c, create_chain_file(), "", "", "", "" );
         ExecuteExternalProgram( command, GetApplication()->GetSpawnOptions( SPWANOPT_LOGON ) );
         GetSession()->bout.NewLine( 2 );
     }

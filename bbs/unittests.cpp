@@ -34,12 +34,16 @@ using std::endl;
 bool RunUnitTests( const string& suiteName ) 
 {
     GetSession()->localIO()->LocalCls();
-	cout << "Running Unit Test Suite: " << suiteName << endl;
+    if (!suiteName.empty()) 
+    {
+	    cout << "Running Unit Test Suite: " << suiteName << endl;
+    }
     
     CppUnit::TextUi::TestRunner runner;
     runner.addTest( StuffInTest::suite() );
     runner.run();
-	return true;
+	
+    return true;
 }
 
 
