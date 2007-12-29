@@ -62,7 +62,7 @@ namespace wwiv
 }
 
 
-// Funciton Prototypes
+// Function Prototypes
 const char *charstr( int nStringLength, int chRepeatChar );
 void StringTrimEnd( char *pszString );
 std::string& StringTrim( std::string& s );
@@ -90,7 +90,6 @@ std::string& StringLowerCase( std::string& s );
 #define WWIV_STRLWR( s ) _strlwr( s )
 #define WWIV_STRICMP( a, b ) _stricmp( a, b )
 #define WWIV_STRNICMP( a, b, c) _strnicmp( a, b, c )
-#define CLEAR_STRING( s ) (s).clear()
 
 #elif defined( _WIN32 ) && ( _MSC_VER <= 1310 )
 #define WWIV_STRDUP( s ) strdup( s )
@@ -99,7 +98,6 @@ std::string& StringLowerCase( std::string& s );
 #define WWIV_STRLWR( s ) strlwr( s )
 #define WWIV_STRICMP( a, b ) stricmp( a, b )
 #define WWIV_STRNICMP( a, b, c) strnicmp( a, b, c )
-#define CLEAR_STRING( s ) (s).erase( (s).begin(), (s).end() )
 
 #else
 #define WWIV_STRDUP( s ) strdup( s )
@@ -108,7 +106,6 @@ std::string& StringLowerCase( std::string& s );
 #define WWIV_STRLWR( s ) strlwr( s )
 #define WWIV_STRICMP( a, b ) strcasecmp( a, b )
 #define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
-#define CLEAR_STRING( s ) (s).clear()
 #endif 
 
 

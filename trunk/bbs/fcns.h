@@ -268,7 +268,7 @@ int years_old( int nMonth, int nDay, int nYear );
 
 void select_editor();
 void print_cur_stat();
-const char *DescribeColorCode( int nColorCode );
+const std::string DescribeColorCode( int nColorCode );
 void color_list();
 void change_colors();
 void l_config_qscan();
@@ -757,8 +757,8 @@ void chat1(char *pszChatLine, bool two_way);
 void GetSysopLogFileName(const char *d, char *pszLogFileName);
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName);
 void catsl();
-void sysopchar(const char *pszLogText);
-void sysoplog(const char *pszLogText, bool bIndent = true);
+void sysopchar(const std::string text);
+void sysoplog(const std::string text, bool bIndent = true);
 void sysoplogf( const char *pszFormat, ... );
 void sysoplogfi( bool bIndent, const char *pszFormat, ... );
 

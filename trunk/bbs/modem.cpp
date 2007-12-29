@@ -72,7 +72,7 @@ void get_modem_line( std::string& line, double d, bool allowa )
 			if (wwiv::UpperCase<char>(ch1) == 'H')
 			{
 				ch = RETURN;
-                CLEAR_STRING( line );
+                line.clear();
                 line.push_back( static_cast<char>( 1 ) );
 
 			}

@@ -112,7 +112,7 @@ void write_automessage()
             std::string line = (*iter);
             StringTrimEnd( line );
             file.Write( line.c_str() );
-            sysoplogf( "  %s", line.c_str() );
+            sysoplog( line, true );
         }
         GetSession()->bout << "\r\n|#5Auto-message saved.\r\n\n";
         file.Close();

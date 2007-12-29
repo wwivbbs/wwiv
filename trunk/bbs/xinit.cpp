@@ -455,9 +455,9 @@ bool WApplication::ReadINIFile()
         }
         else
         {
-            m_attachmentDirectory = GetHomeDir();
-            m_attachmentDirectory += ATTACH_DIR;
-            m_attachmentDirectory += WWIV_FILE_SEPERATOR_STRING;
+			std::ostringstream os;
+			os << GetHomeDir() << ATTACH_DIR << WWIV_FILE_SEPERATOR_STRING;
+            m_attachmentDirectory = os.str();
         }
 
         GetSession()->screen_saver_time = iniFile.GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),GetSession()->screen_saver_time);
@@ -1389,7 +1389,7 @@ void WApplication::InitializeBBS()
     {
         GetSession()->topdata = WLocalIO::topdataUser;
     }
-    snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir(), GetInstanceNumber() );
+    snprintf( g_szDSZLogFileName, sizeof( g_szDSZLogFileName ), "%sWWIVDSZ.%3.3u", GetHomeDir().c_str(), GetInstanceNumber() );
     char *ss = getenv("PROMPT");
 #if !defined ( __unix__ ) && !defined ( __APPLE__ )
     newprompt = "PROMPT=WWIV: ";

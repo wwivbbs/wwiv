@@ -23,7 +23,7 @@
 //
 // Local function prototypes
 //
-void AddLineToSysopLogImpl(int cmd, const char *pszLogText);
+void AddLineToSysopLogImpl(int cmd, const std::string& text);
 
 #define LOG_STRING 0
 #define LOG_CHAR   4
@@ -101,19 +101,16 @@ void catsl()
 /*
 * Writes a line to the sysoplog.
 */
-void AddLineToSysopLogImpl(int cmd, const char *pszLogText)
+void AddLineToSysopLogImpl(int cmd, const std::string& text)
 {
-	static int midline = 0;
+	static std::string::size_type midline = 0;
 	static char s_szLogFileName[MAX_PATH];
-	char szLogLine[ 255 ];
 
     if ( !(syscfg.gfilesdir ) )
     {
         // TODO Use error log.
         return;
     }
-
-	WWIV_ASSERT(pszLogText);
 
 	if (&syscfg.gfilesdir[0] == NULL)
 	{
@@ -145,20 +142,19 @@ void AddLineToSysopLogImpl(int cmd, const char *pszLogText)
                     logFile.Seek( -1L, WFile::seekEnd );
                 }
 		    }
+			std::string logLine;
 		    if ( midline > 0 )
 		    {
-			    sprintf( szLogLine, "\r\n%s", pszLogText );
+				logLine = "\r\n";
+				logLine += text;
 			    midline = 0;
 		    }
 		    else
 		    {
-			    sprintf(szLogLine, "%s", pszLogText);
+				logLine = text;
 		    }
-		    int nLineLen = strlen(szLogLine);
-		    szLogLine[nLineLen++] = '\r';
-		    szLogLine[nLineLen++] = '\n';
-		    szLogLine[nLineLen] = 0;
-            logFile.Write( szLogLine, nLineLen );
+			logLine += "\r\n";
+			logFile.Write( logLine );
             logFile.Close();
         }
 		break;
@@ -180,28 +176,27 @@ void AddLineToSysopLogImpl(int cmd, const char *pszLogText)
                     logFile.Seek( -1L, WFile::seekEnd );
                 }
 		    }
-		    if ( midline == 0 || ( midline + 2 + strlen( pszLogText ) ) > 78 )
+			std::string logLine;
+		    if ( midline == 0 || ( midline + 2 + text.length() ) > 78 )
 		    {
-			    strcpy( szLogLine, midline ? "\r\n   " : "  " );
-			    strcat( szLogLine, pszLogText );
-			    midline = 3 + strlen( pszLogText );
+				logLine = (midline) ? "\r\n   " : "  ";
+				midline = 3 + text.length();
 		    }
 		    else
 		    {
-			    strcpy( szLogLine, ", " );
-			    strcat( szLogLine, pszLogText );
-			    midline += ( 2 + strlen( pszLogText ) );
+				logLine = ", ";
+				midline += 2 + text.length();
 		    }
-		    int nLineLen = strlen( szLogLine );
-            logFile.Write( szLogLine, nLineLen );
+			logLine += text;
+            logFile.Write( logLine );
 		    logFile.Close();
         }
 		break;
 	default:
 		{
-			char szTempMsg[81];
-			sprintf( szTempMsg, "Invalid Command passed to sysoplog::AddLineToSysopLogImpl, Cmd = %d", cmd );
-			AddLineToSysopLogImpl( LOG_STRING, szTempMsg );
+			std::ostringstream os;
+			os << "Invalid Command passed to sysoplog::AddLineToSysopLogImpl, Cmd = " << cmd;
+			AddLineToSysopLogImpl( LOG_STRING, os.str() );
 		} break;
 	}
 }
@@ -210,11 +205,11 @@ void AddLineToSysopLogImpl(int cmd, const char *pszLogText)
 * Writes a string to the sysoplog, if user online and EffectiveSl < 255.
 */
 
-void sysopchar(const char *pszLogText)
+void sysopchar(const std::string text)
 {
-    if ( ( incom || GetSession()->GetEffectiveSl() != 255 ) && pszLogText[0] )
+	if ( ( incom || GetSession()->GetEffectiveSl() != 255 ) && !text.empty() )
 	{
-		AddLineToSysopLogImpl( LOG_CHAR, pszLogText );
+		AddLineToSysopLogImpl( LOG_CHAR, text );
 	}
 }
 
@@ -223,19 +218,17 @@ void sysopchar(const char *pszLogText)
 * indented a few spaces.
 */
 
-void sysoplog( const char *pszLogText, bool bIndent )
+void sysoplog( const std::string text, bool bIndent )
 {
-	WWIV_ASSERT( pszLogText );
-
 	if ( bIndent )
 	{
-    	char szBuffer[ 255 ];
-		sprintf( szBuffer, "   %s", pszLogText );
-		AddLineToSysopLogImpl( LOG_STRING, szBuffer );
+		std::ostringstream os;
+		os << "   " << text;
+		AddLineToSysopLogImpl( LOG_STRING, os.str() );
 	}
 	else
 	{
-		AddLineToSysopLogImpl( LOG_STRING, pszLogText );
+		AddLineToSysopLogImpl( LOG_STRING, text );
 	}
 }
 

@@ -604,7 +604,7 @@ double ratio1( long a )
 
 void make_ul_batch_list(char *pszListFileName)
 {
-    sprintf( pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir(), FILESUL_NOEXT, GetApplication()->GetInstanceNumber() );
+	sprintf( pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir().c_str(), FILESUL_NOEXT, GetApplication()->GetInstanceNumber() );
 
     WFile::SetFilePermissions(pszListFileName, WFile::permWrite );
     WFile::Remove(pszListFileName);
@@ -633,7 +633,7 @@ void make_ul_batch_list(char *pszListFileName)
 
 void make_dl_batch_list(char *pszListFileName)
 {
-    sprintf( pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir(), FILESDL_NOEXT, GetApplication()->GetInstanceNumber() );
+    sprintf( pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir().c_str(), FILESDL_NOEXT, GetApplication()->GetInstanceNumber() );
 
     WFile::SetFilePermissions(pszListFileName, WFile::permWrite );
     WFile::Remove( pszListFileName );

@@ -40,7 +40,7 @@ public:
     bool Close();
     bool IsOpen() { return m_hFile != NULL; }
     bool IsEndOfFile() { return feof(m_hFile) ? true : false; }
-    int Write( const char *pszText ) { return fputs( pszText, m_hFile ); }
+	int Write( const std::string text ) { return fputs( text.c_str(), m_hFile ); }
     int WriteChar( char ch ) { return fputc( ch, m_hFile ); }
     int WriteFormatted( const char *pszFormatText, ... );
     int WriteBinary( const void *pBuffer, size_t nSize ) { return (int)fwrite(pBuffer, nSize, 1, m_hFile ); }
