@@ -652,7 +652,7 @@ void input_pw( WUser *pUser )
         ok = true;
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#3Please enter a new password, 3-8 chars.\r\n";
-        CLEAR_STRING( password );
+        password.clear();
         Input1(password, "", 8, false, INPUT_MODE_FILE_UPPER);
 
         std::string realName = GetSession()->GetCurrentUser()->GetRealName();

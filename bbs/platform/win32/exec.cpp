@@ -100,7 +100,7 @@ int ExecExternalProgram( const std::string commandLine, int flags )
         CreateSyncFosCommandLine( workingCommandLine, syncFosTempFile, nSyncMode );
         bUsingSync = true;
         char szTempLogFileName[ MAX_PATH ];
-        _snprintf( szTempLogFileName, sizeof( szTempLogFileName ), "%swwivsync.log", GetApplication()->GetHomeDir() );
+        _snprintf( szTempLogFileName, sizeof( szTempLogFileName ), "%swwivsync.log", GetApplication()->GetHomeDir().c_str() );
         hLogFile = fopen( szTempLogFileName, "at" );
         fprintf( hLogFile, charstr( 78, '=' ) );
         fprintf( hLogFile, "\r\n\r\n" );
@@ -160,7 +160,7 @@ int ExecExternalProgram( const std::string commandLine, int flags )
         hSyncHangupEvent = INVALID_HANDLE_VALUE;     // Event to hangup program
 
         char szSbbsExecVxdName[ MAX_PATH ];
-        _snprintf( szSbbsExecVxdName, sizeof( szSbbsExecVxdName ), "\\\\.\\%ssbbsexec.vxd", GetApplication()->GetHomeDir() );
+        _snprintf( szSbbsExecVxdName, sizeof( szSbbsExecVxdName ), "\\\\.\\%ssbbsexec.vxd", GetApplication()->GetHomeDir().c_str() );
         fprintf( hLogFile, "Opening VXD: [%s]\r\n", szSbbsExecVxdName );
         hSbbsExecVxd = CreateFile( szSbbsExecVxdName, 0, 0, 0, CREATE_NEW, FILE_FLAG_DELETE_ON_CLOSE, 0 );
         if ( hSbbsExecVxd == INVALID_HANDLE_VALUE )

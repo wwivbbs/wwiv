@@ -35,7 +35,7 @@
 // Local functions
 //
 void reset_user_colors_to_defaults();
-char *DisplayColorName( int c );
+const std::string DisplayColorName( int c );
 
 
 void select_editor()
@@ -188,7 +188,7 @@ void print_cur_stat()
     GetSession()->bout.WriteFormatted( "%-48s %-45s\r\n", s1, s2 );
     sprintf( s1, "|#1U|#9) Use Msg AutoQuote : |#2%s", YesNoString( GetSession()->GetCurrentUser()->IsUseAutoQuote() ) );
 
-    char szWWIVRegNum[80];
+	char szWWIVRegNum[80];
     if ( GetSession()->GetCurrentUser()->GetWWIVRegNumber() )
     {
         sprintf( szWWIVRegNum, "%ld", GetSession()->GetCurrentUser()->GetWWIVRegNumber() );
@@ -204,72 +204,72 @@ void print_cur_stat()
 }
 
 
-char *DisplayColorName( int c )
+const std::string DisplayColorName( int c )
 {
-    static char szColorName[20];
-
     if ( checkcomp( "Ami" ) || checkcomp( "Mac" ) )
     {
-        sprintf( szColorName, "Color #%d", c );
-        return szColorName;
+		std::ostringstream os;
+		os << "Color #" << c;
+		return std::string(os.str());
     }
 
     switch ( c )
     {
     case 0:
-        return( "Black" );
+		return std::string( "Black" );
     case 1:
-        return( "Blue" );
+        return std::string( "Blue" );
     case 2:
-        return( "Green" );
+        return std::string( "Green" );
     case 3:
-        return( "Cyan" );
+        return std::string( "Cyan" );
     case 4:
-        return( "Red" );
+        return std::string( "Red" );
     case 5:
-        return( "Magenta" );
+        return std::string( "Magenta" );
     case 6:
-        return( "Yellow" );
+        return std::string( "Yellow" );
     case 7:
-        return( "White" );
+        return std::string( "White" );
     default:
-        return( "" );
+        return std::string( "" );
     }
 }
 
 
-const char *DescribeColorCode( int nColorCode )
+const std::string DescribeColorCode( int nColorCode )
 {
-    static char szColorDesc[81];
+	std::ostringstream os;
 
     if ( GetSession()->GetCurrentUser()->HasColor() )
     {
-        sprintf( szColorDesc, "%s on %s", DisplayColorName( nColorCode & 0x07 ), DisplayColorName( ( nColorCode >> 4 ) & 0x07 ) );
+		os << DisplayColorName( nColorCode & 0x07 ) << " on " << DisplayColorName( ( nColorCode >> 4 ) & 0x07 );
     }
     else
     {
-        strcpy( szColorDesc, ( ( nColorCode & 0x07 ) == 0 ) ? "Inversed" : "Normal" );
+		os << ( nColorCode & 0x07 ) == 0 ? "Inversed" : "Normal";
     }
+
     if (nColorCode & 0x08)
     {
-        strcat( szColorDesc, ( checkcomp( "Ami" ) || checkcomp( "Mac" ) ) ? ", Bold" : ", Intense" );
+		os << checkcomp( "Ami" ) || checkcomp( "Mac" ) ? ", Bold" : ", Intense";
     }
     if (nColorCode & 0x80)
     {
         if (checkcomp("Ami"))
         {
-            strcat(szColorDesc, ", Italicized");
+			os << ", Italicized";
         }
         else if (checkcomp("Mac"))
         {
-            strcat(szColorDesc, ", Underlined");
+			os << ", Underlined";
         }
         else
         {
-            strcat(szColorDesc, ", Blinking");
+			os << ", Blinking";
         }
     }
-    return szColorDesc;
+	return std::string(os.str());
 }
 
 
@@ -279,15 +279,13 @@ void color_list()
     for ( int i = 0; i < 8; i++ )
     {
         GetSession()->bout.SystemColor( static_cast< unsigned char >( (i == 0) ? 0x70 : i ) );
-		GetSession()->bout << i << ". " << DisplayColorName( static_cast< char >( i ) ) << "|#0" << wwiv::endl;
+		GetSession()->bout << i << ". " << DisplayColorName( static_cast< char >( i ) ).c_str() << "|#0" << wwiv::endl;
     }
 }
 
 
 void change_colors()
 {
-    char szColorDesc[81], nc;
-
     bool done = false;
     GetSession()->bout.NewLine();
     do
@@ -297,64 +295,66 @@ void change_colors()
         GetSession()->bout.NewLine( 2 );
         if ( !GetSession()->GetCurrentUser()->HasColor() )
         {
-            strcpy( szColorDesc, "Monochrome base color : " );
+			std::ostringstream os;
+			os << "Monochrome base color : ";
             if ( ( GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x70 ) == 0 )
             {
-                strcat(szColorDesc, DisplayColorName(GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x07));
+				os << DisplayColorName(GetSession()->GetCurrentUser()->GetBWColor( 1 ) & 0x07);
             }
             else
             {
-                strcat(szColorDesc, DisplayColorName((GetSession()->GetCurrentUser()->GetBWColor( 1 ) >> 4) & 0x07));
+                os << DisplayColorName((GetSession()->GetCurrentUser()->GetBWColor( 1 ) >> 4) & 0x07);
             }
-            GetSession()->bout << szColorDesc;
+            GetSession()->bout << os.str();
             GetSession()->bout.NewLine( 2 );
         }
         for (int i = 0; i < 10; i++)
         {
+			std::ostringstream os;
             GetSession()->bout.Color(i);
-            sprintf( szColorDesc, "%d"".", i );
+			os << i << ".";
             switch (i)
             {
             case 0:
-                strcat(szColorDesc, "Default           ");
+                os << "Default           ";
                 break;
             case 1:
-                strcat(szColorDesc, "Yes/No            ");
+                os << "Yes/No            ";
                 break;
             case 2:
-                strcat(szColorDesc, "Prompt            ");
+                os << "Prompt            ";
                 break;
             case 3:
-                strcat(szColorDesc, "Note              ");
+                os << "Note              ";
                 break;
             case 4:
-                strcat(szColorDesc, "Input line        ");
+                os << "Input line        ";
                 break;
             case 5:
-                strcat(szColorDesc, "Yes/No Question   ");
+                os << "Yes/No Question   ";
                 break;
             case 6:
-                strcat(szColorDesc, "Notice!           ");
+                os << "Notice!           ";
                 break;
             case 7:
-                strcat(szColorDesc, "Border            ");
+                os << "Border            ";
                 break;
             case 8:
-                strcat(szColorDesc, "Extra color #1    ");
+                os << "Extra color #1    ";
                 break;
             case 9:
-                strcat(szColorDesc, "Extra color #2    ");
+                os << "Extra color #2    ";
                 break;
             }
             if ( GetSession()->GetCurrentUser()->HasColor() )
             {
-                strcat( szColorDesc, DescribeColorCode( GetSession()->GetCurrentUser()->GetColor( i ) ) );
+                os << DescribeColorCode( GetSession()->GetCurrentUser()->GetColor( i ) );
             }
             else
             {
-                strcat( szColorDesc, DescribeColorCode( GetSession()->GetCurrentUser()->GetBWColor( i ) ) );
+                os << DescribeColorCode( GetSession()->GetCurrentUser()->GetBWColor( i ) );
             }
-            GetSession()->bout << szColorDesc;
+            GetSession()->bout << os.str();
 			GetSession()->bout.NewLine();
         }
         GetSession()->bout << "\r\n|#9[|#2R|#9]eset Colors to Default Values, [|#2Q|#9]uit\r\n";
@@ -370,6 +370,7 @@ void change_colors()
         }
         else
         {
+			char nc = 0;
             int nColorNum = ch - '0';
             if ( GetSession()->GetCurrentUser()->HasColor() )
             {
@@ -893,15 +894,14 @@ void modify_mailbox()
 
 void optional_lines()
 {
-    char szNumLines[81];
-
     GetSession()->bout << "|#9You may specify your optional lines value from 0-10,\r\n" ;
     GetSession()->bout << "|#20 |#9being all, |#210 |#9being none.\r\n";
     GetSession()->bout << "|#2What value? ";
-    input( szNumLines, 2 );
+	std::string lines;
+    input( lines, 2 );
 
-    int nNumLines = atoi( szNumLines );
-    if ( szNumLines[0] && nNumLines >= 0 && nNumLines < 11 )
+    int nNumLines = atoi( lines.c_str() );
+    if ( !lines.empty() && nNumLines >= 0 && nNumLines < 11 )
     {
         GetSession()->GetCurrentUser()->SetOptionalVal( nNumLines );
     }
@@ -911,13 +911,12 @@ void optional_lines()
 
 void enter_regnum()
 {
-    char szRegNum[81];
-
     GetSession()->bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
-    input( szRegNum, 5, true );
+	std::string regnum;
+    input( regnum, 5, true );
 
-    long lRegNum = atol( szRegNum );
-    if ( szRegNum[0] && lRegNum >= 0 )
+    long lRegNum = atol( regnum.c_str() );
+	if ( !regnum.empty() && lRegNum >= 0 )
     {
         GetSession()->GetCurrentUser()->SetWWIVRegNumber( lRegNum );
         changedsl();

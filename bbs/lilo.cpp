@@ -309,7 +309,7 @@ void DoFailedLoginAttempt()
              GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) << " (" <<
              ctim( timer() ) << ")";
     sysoplog( "", false );
-    sysoplog( logLine.str().c_str(), false );
+    sysoplog( logLine.str(), false );
     sysoplog( "", false );
     GetSession()->usernum = 0;
 }
