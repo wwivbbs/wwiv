@@ -21,10 +21,7 @@
 #include "wwiv.h"
 #include "WOutStreamBuffer.h"
 #include "WStringUtils.h"
-#include "cppunit/TestCase.h"
-#include "cppunit/ui/text/TestRunner.h"
-#include "cppunit/TestCaller.h"
-#include "cppunit/extensions/HelperMacros.h"
+#include "unittests/XferTest.h"
 #include "unittests/StuffInTest.h"
 
 using std::string;
@@ -40,6 +37,7 @@ bool RunUnitTests( const string& suiteName )
     }
     
     CppUnit::TextUi::TestRunner runner;
+    runner.addTest( XferTest::suite() );
     runner.addTest( StuffInTest::suite() );
     runner.run();
 	

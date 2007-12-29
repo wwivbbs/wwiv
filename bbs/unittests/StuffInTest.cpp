@@ -92,6 +92,7 @@ void StuffInTest::testPortAndNode()
 //  %N       Instance number                   "1"
 //  %P       Com port number                   "1"
     CPPUNIT_ASSERT_EQUAL(string("0"), stuff_in("%P", "", "", "", "", ""));
+    
     incom = true;
     syscfgovr.primaryport = 1;
     CPPUNIT_ASSERT_EQUAL(string("1"), stuff_in("%P", "", "", "", "", ""));
