@@ -31,10 +31,27 @@
 class StuffInTest : public CppUnit::TestCase {
    CPPUNIT_TEST_SUITE( StuffInTest );
    CPPUNIT_TEST( testSimpleCase );
+   CPPUNIT_TEST( testEmpty );
+   CPPUNIT_TEST( testAllNumbers );
+   CPPUNIT_TEST( testAllDropFiles );
+   CPPUNIT_TEST( testPortAndNode );
+   CPPUNIT_TEST( testSpeeds );
    CPPUNIT_TEST_SUITE_END( );
+public:
+   virtual void tearDown();
 
 protected:
     void testSimpleCase();
+    void testEmpty();
+    void testAllNumbers();
+    void testAllDropFiles();
+    void testPortAndNode();
+    void testSpeeds();
+
+
+
+private:
+    const std::string t(const std::string name);
 };
 
 #endif

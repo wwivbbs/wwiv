@@ -47,7 +47,8 @@ const unsigned int GetTimeLeft();
 /**
  * @todo Document this
  */
-void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, const std::string arg1, 
+
+const std::string stuff_in( const std::string commandline, const std::string arg1, 
 			   const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5 )
 {
 	std::vector<std::string> flags;
@@ -57,9 +58,9 @@ void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, co
 	flags.push_back( arg4 );
 	flags.push_back( arg5 );
 
-	std::string::const_iterator iter = inCommandLine.begin();
+	std::string::const_iterator iter = commandline.begin();
     std::ostringstream os;
-	while ( iter != inCommandLine.end() )
+	while ( iter != commandline.end() )
     {
         if ( *iter == '%')
         {
@@ -87,13 +88,13 @@ void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, co
                 os << syscfg.gfilesdir << COMMENT_TXT;
                 break;
             case 'P':
-                os << (incom)? syscfgovr.primaryport : 0;
+                os << ((incom)? syscfgovr.primaryport : 0);
                 break;
             case 'N':
                 os << GetApplication()->GetInstanceNumber();
                 break;
             case 'S':
-                os << ( com_speed == 1 ) ? 115200 : com_speed;
+                os << ((com_speed == 1) ? 115200 : com_speed);
                 break;
             case 'T':
                 os << GetTimeLeft();
@@ -125,7 +126,7 @@ void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, co
             os << *iter++;
         }
     }
-    outCommandLine = os.str();
+    return std::string( os.str() );
 }
 
 const unsigned int GetTimeLeft() 

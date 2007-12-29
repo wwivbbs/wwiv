@@ -114,8 +114,7 @@ int extern_prot( int nProtocolNum, const char *pszFileNameToSend, bool bSending 
     {
         StringReplace( s1, strlen(s1), "MDMDSZ", "FDSZ" );
     }
-	std::string command;
-    stuff_in( command, s1, sx1, sx2, szFileName, sx3, "" );
+	const std::string command = stuff_in( s1, sx1, sx2, szFileName, sx3, "" );
 	if ( !command.empty() )
     {
         GetSession()->localIO()->set_protect( 0 );
