@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2007, WWIV Software Services             */
+/*             Copyright (C)2007, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -19,15 +19,14 @@
 #ifndef __INCLUDED_STUFF_IN_TEST_H__
 #define __INCLUDED_STUFF_IN_TEST_H__
 
-#include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/TestCase.h"
-#include "cppunit/ui/text/TestRunner.h"
-#include "cppunit/TestCaller.h"
-
 #ifdef _MSC_VER
 #pragma once
 #endif
 
+#include "cppunit/extensions/HelperMacros.h"
+#include "cppunit/TestCase.h"
+#include "cppunit/ui/text/TestRunner.h"
+#include "cppunit/TestCaller.h"
 
 class StuffInTest : public CppUnit::TestCase {
    CPPUNIT_TEST_SUITE( StuffInTest );

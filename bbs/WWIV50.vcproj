@@ -178,7 +178,7 @@
 				LinkLibraryDependencies="false"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib"
-				OutputFile="C:\bbs\wwiv50nd.exe"
+				OutputFile="D:\bbs\wwiv50nd.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ProgramDatabaseFile=".\Release/wwiv50nd.pdb"
