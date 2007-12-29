@@ -1289,6 +1289,14 @@
 					RelativePath=".\unittests\StuffInTest.h"
 					>
 				</File>
+				<File
+					RelativePath=".\unittests\XferTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\unittests\XferTest.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter

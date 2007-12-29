@@ -1059,7 +1059,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 						break;
 					}
                 	int tu, ts;
-                    parse_email_info( emailAddress.c_str(), &tu, &ts );
+                    parse_email_info( emailAddress, &tu, &ts );
 					if ( tu || ts )
 					{
 						carbon_copy[nNumUsers].nUserNumber = tu;

@@ -171,22 +171,22 @@ void find_devices()
 }
 
 
-bool okfn(const char *pszFileName)
+bool okfn(const std::string filename)
 {
-	if ( !pszFileName || !*pszFileName )
+	if ( filename.empty() )
 	{
 		return false;
 	}
 
-    int nStringLen = strlen( pszFileName );
-    if ( pszFileName[0] == '-' || pszFileName[0] == ' ' || pszFileName[0] == '.' || pszFileName[0] == '@' )
+    std::string::size_type len = filename.length();
+    if ( filename[0] == '-' || filename[0] == ' ' || filename[0] == '.' || filename[0] == '@' )
     {
         return false;
     }
 
-    for ( int i = 0; i < nStringLen; i++ )
+    for ( std::string::const_iterator iter = filename.begin(); iter != filename.end(); iter++ )
     {
-        unsigned char ch = pszFileName[i];
+        unsigned char ch = (*iter);
         if ( ch == ' '  || ch == '/' || ch == '\\' || ch == ':'  ||
              ch == '>'  || ch == '<' || ch == '|'  || ch == '+'  ||
              ch == ','  || ch == ';' || ch == '^'  || ch == '\"' ||
@@ -199,9 +199,9 @@ bool okfn(const char *pszFileName)
     for (int i1 = 0; i1 < num_devices; i1++)
     {
         int nDeviceLen = strlen(devices[i1]);
-        if (strncmp(devices[i1], pszFileName, nDeviceLen) == 0)
+        if (filename.substr(0, nDeviceLen) == devices[i1])
         {
-            if ( pszFileName[nDeviceLen] == 0 || pszFileName[nDeviceLen] == '.' || nDeviceLen == 8 )
+            if ( filename[nDeviceLen] == '\0' || filename[nDeviceLen] == '.' || nDeviceLen == 8 )
             {
                 return false;
             }

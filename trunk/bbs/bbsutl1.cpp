@@ -30,22 +30,21 @@ bool AllowLocalSysop()
 
 
 /**
- * Finds GetSession()->usernum and system number from pszEmailAddress, sets network number as
+ * Finds GetSession()->usernum and system number from emailAddress, sets network number as
  * appropriate.
- * @param pszEmailAddress The text of the email address.
+ * @param emailAddress The text of the email address.
  * @param pUserNumber OUT The User Number
  * @param pSystemmNumber OUT The System Number
  */
-void parse_email_info(const char *pszEmailAddress, int *pUserNumber, int *pSystemNumber )
+void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSystemNumber )
 {
 	char *ss1, onx[20], ch, *mmk;
 	unsigned nUserNumber, nSystemNumber;
 	int i, nv, on, xx, onxi, odci;
 	net_system_list_rec *csne;
-	WWIV_ASSERT( pszEmailAddress );
 
 	char szEmailAddress[ 255 ];
-	strcpy( szEmailAddress, pszEmailAddress );
+	strcpy( szEmailAddress, emailAddress.c_str() );
 
 	*pUserNumber = 0;
 	*pSystemNumber = 0;
