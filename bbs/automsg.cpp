@@ -111,7 +111,7 @@ void write_automessage()
         {
             std::string line = (*iter);
             StringTrimEnd( line );
-            file.Write( line.c_str() );
+            file.Write( line );
             sysoplog( line, true );
         }
         GetSession()->bout << "\r\n|#5Auto-message saved.\r\n\n";

@@ -367,7 +367,7 @@ bool CreateSyncTempFile( std::string &outFileName, const std::string commandLine
     {
         return false;
     }
-    file.Write( commandLine.c_str() );
+    file.Write( commandLine );
     if ( !file.Close() )
     {
         return false;

@@ -300,8 +300,8 @@ void dirlist(int mode);
 
 // File: dropfile.cpp
 
-void create_filename( int nDropFileType, std::string& fileName );
-char *create_chain_file();
+const std::string create_filename( int nDropFileType );
+const std::string create_chain_file();
 
 
 // File: dupphone.cpp
@@ -703,8 +703,8 @@ void close_strfiles();
 
 // File: stuffin.cpp
 
-void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, const char *pszArg1, 
-			   const char *pszArg2, const char *pszArg3, const char *pszArg4, const char *pszArg5 );
+void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, const std::string arg1, 
+			   const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5 );
 
 
 // File: subacc.cpp

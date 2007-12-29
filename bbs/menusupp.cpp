@@ -856,13 +856,12 @@ void ValidateScan()
 
 void ChatRoom()
 {
-    char szCommandLine[ MAX_PATH ];
-
     write_inst( INST_LOC_CHATROOM, 0, INST_FLAGS_NONE );
     if ( WFile::Exists( "WWIVCHAT.EXE" ) )
     {
-        sprintf( szCommandLine, "WWIVCHAT.EXE %s", create_chain_file() );
-        ExecuteExternalProgram( szCommandLine, GetApplication()->GetSpawnOptions( SPWANOPT_CHAT ) );
+        std::ostringstream cmdline;
+        cmdline << "WWIVCHAT.EXE " << create_chain_file();
+        ExecuteExternalProgram( cmdline.str(), GetApplication()->GetSpawnOptions( SPWANOPT_CHAT ) );
     }
     else
     {

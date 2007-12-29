@@ -30,9 +30,9 @@ void GetNamePartForDropFile(bool lastName, char *pszName);
 void create_drop_files();
 
 
-void create_filename( int nDropFileType, std::string& fileName )
+const std::string create_filename( int nDropFileType )
 {
-    fileName = syscfgovr.tempdir;
+    std::string fileName = syscfgovr.tempdir;
     switch ( nDropFileType )
 	{
     case CHAINFILE_CHAIN:
@@ -58,6 +58,7 @@ void create_filename( int nDropFileType, std::string& fileName )
         fileName += "chain.txt";
         break;
     }
+    return std::string( fileName );
 }
 
 
@@ -105,8 +106,7 @@ long GetMinutesRemainingForDropFile()
 /** make DORINFO1.DEF (RBBS and many others) dropfile */
 void CreateDoorInfoDropFile()
 {
-    std::string fileName;
-    create_filename(CHAINFILE_DORINFO, fileName);
+    std::string fileName = create_filename( CHAINFILE_DORINFO );
     WFile::Remove(fileName);
     WTextFile fileDorInfoSys( fileName, "wt");
     if (fileDorInfoSys.IsOpen())
@@ -146,8 +146,7 @@ void CreateDoorInfoDropFile()
 /** make PCBOARD.SYS (PC Board) drop file */
 void CreatePCBoardSysDropFile()
 {
-    std::string fileName;
-    create_filename(CHAINFILE_PCBOARD, fileName);
+    std::string fileName = create_filename( CHAINFILE_PCBOARD );
     WFile pcbFile( fileName );
     pcbFile.Delete();
     if ( pcbFile.Open(  WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
@@ -231,8 +230,7 @@ void CreatePCBoardSysDropFile()
 void CreateCallInfoBbsDropFile()
 {
 	// make CALLINFO.BBS (WildCat!)
-    std::string fileName;
-    create_filename( CHAINFILE_CALLINFO, fileName );
+    std::string fileName = create_filename( CHAINFILE_CALLINFO );
     WFile::Remove( fileName );
     WTextFile file( fileName, "wt");
     if (file.IsOpen())
@@ -315,8 +313,7 @@ void CreateDoor32SysDropFile()
 		4 = Max Graphics
 
    ========================================================================= */
-    std::string fileName;
-    create_filename( CHAINFILE_DOOR32, fileName );
+    std::string fileName = create_filename( CHAINFILE_DOOR32 );
     WFile::Remove( fileName );
 
     std::string cspeed;
@@ -343,8 +340,7 @@ void CreateDoor32SysDropFile()
 /** Create generic DOOR.SYS dropfile */
 void CreateDoorSysDropFile()
 {
-    std::string fileName;
-    create_filename( CHAINFILE_DOOR, fileName );
+    std::string fileName = create_filename( CHAINFILE_DOOR );
     WFile::Remove( fileName );
 
     WTextFile file( fileName, "wt" );
@@ -444,11 +440,9 @@ void create_drop_files()
 }
 
 
-char *create_chain_file()
+const std::string create_chain_file()
 {
 	std::string cspeed;
-    static char szFileName[MAX_PATH];
-    std::string fileName;
 
     unsigned char nSaveComPortNum = syscfgovr.primaryport;
     if ( syscfgovr.primaryport == 0 && ok_modem_stuff )
@@ -481,7 +475,7 @@ char *create_chain_file()
         l1 += SECONDS_PER_HOUR * HOURS_PER_DAY;
 	}
 
-    create_filename( CHAINFILE_CHAIN, fileName );
+    std::string fileName = create_filename( CHAINFILE_CHAIN );
 
     WFile::Remove( fileName );
     WTextFile file( fileName, "wt" );
@@ -530,8 +524,7 @@ char *create_chain_file()
     }
     syscfgovr.primaryport = nSaveComPortNum;
 
-    strcpy( szFileName, fileName.c_str() );
-    return szFileName;
+    return std::string( fileName );
 }
 
 

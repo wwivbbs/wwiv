@@ -20,8 +20,8 @@
 #include "wwiv.h"
 #include <vector>
 
-static void stuff_in_num( std::string& outBuffer, char *pszFormatString, int nNumber );
-static void append_filename( int filenameType, std::string& out);
+const unsigned int GetTimeLeft();
+
 
 // Replacable parameters:
 // ~~~~~~~~~~~~~~~~~~~~~~
@@ -47,17 +47,18 @@ static void append_filename( int filenameType, std::string& out);
 /**
  * @todo Document this
  */
-void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, const char *pszArg1, 
-			   const char *pszArg2, const char *pszArg3, const char *pszArg4, const char *pszArg5 )
+void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, const std::string arg1, 
+			   const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5 )
 {
 	std::vector<std::string> flags;
-	flags.push_back( pszArg1 );
-	flags.push_back( pszArg2 );
-	flags.push_back( pszArg3 );
-	flags.push_back( pszArg4 );
-	flags.push_back( pszArg5 );
+	flags.push_back( arg1 );
+	flags.push_back( arg2 );
+	flags.push_back( arg3 );
+	flags.push_back( arg4 );
+	flags.push_back( arg5 );
 
 	std::string::const_iterator iter = inCommandLine.begin();
+    std::ostringstream os;
 	while ( iter != inCommandLine.end() )
     {
         if ( *iter == '%')
@@ -66,11 +67,9 @@ void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, co
 			char ch = wwiv::UpperCase<char>(*iter);
             switch (ch)
             {
-                // used: %12345ABCDIMNOPRST
-
                 // fixed strings
             case '%':
-				outCommandLine += '%';
+                os << "%";
                 break;
                 // replacable parameters
             case '1':
@@ -78,81 +77,63 @@ void stuff_in( std::string& outCommandLine, const std::string& inCommandLine, co
             case '3':
             case '4':
             case '5':
-				outCommandLine += flags.at(ch - '1');
+                os << flags.at(ch - '1');
                 break;
                 // call-specific numbers
             case 'M':
-                stuff_in_num(outCommandLine, "%u", modem_speed);
+                os << modem_speed;
                 break;
             case 'K':
-                outCommandLine += syscfg.gfilesdir;
-				outCommandLine += COMMENT_TXT;
+                os << syscfg.gfilesdir << COMMENT_TXT;
                 break;
             case 'P':
-                stuff_in_num( outCommandLine, "%u", incom ? syscfgovr.primaryport : 0 );
+                os << (incom)? syscfgovr.primaryport : 0;
                 break;
             case 'N':
-                stuff_in_num( outCommandLine, "%u", GetApplication()->GetInstanceNumber() );
+                os << GetApplication()->GetInstanceNumber();
                 break;
             case 'S':
-				stuff_in_num( outCommandLine, "%lu", ( com_speed == 1 ) ? 115200 : com_speed );
+                os << ( com_speed == 1 ) ? 115200 : com_speed;
                 break;
             case 'T':
-                {
-                    double d = nsl();
-                    if (d < 0)
-				    {
-                        d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
-				    }
-                    stuff_in_num( outCommandLine, "%u", static_cast<int>( d ) / MINUTES_PER_HOUR );
-                }
+                os << GetTimeLeft();
                 break;
                 // chain.txt type filenames
             case 'C':
-				append_filename( CHAINFILE_CHAIN, outCommandLine );
+				os << create_filename( CHAINFILE_CHAIN );
                 break;
             case 'D':
-				append_filename( CHAINFILE_DORINFO, outCommandLine );
+				os << create_filename( CHAINFILE_DORINFO );
                 break;
             case 'O':
-				append_filename( CHAINFILE_PCBOARD, outCommandLine );
+				os << create_filename( CHAINFILE_PCBOARD );
                 break;
             case 'A':
-				append_filename( CHAINFILE_CALLINFO, outCommandLine );
+				os << create_filename( CHAINFILE_CALLINFO );
                 break;
             case 'R':
-				append_filename( CHAINFILE_DOOR, outCommandLine );
+				os << create_filename( CHAINFILE_DOOR );
                 break;
             case 'E':
-				append_filename( CHAINFILE_DOOR32, outCommandLine );
+				os << create_filename( CHAINFILE_DOOR32 );
                 break;
             }
             ++iter;
         }
         else
         {
-			outCommandLine += *iter++;
+            os << *iter++;
         }
     }
+    outCommandLine = os.str();
 }
 
-/**
- * @todo Document this
- */
-static void stuff_in_num( std::string& outBuffer, char *pszFormatString, int nNumber )
+const unsigned int GetTimeLeft() 
 {
-    char szTemp[ MAX_PATH ];
-
-	WWIV_ASSERT( pszFormatString );
-
-    snprintf( szTemp, sizeof( szTemp ), pszFormatString, nNumber );
-	outBuffer += szTemp;
-}
-
-
-static void append_filename( int filenameType, std::string& out )
-{
-	std::string fileName;
-	create_filename( filenameType, fileName );
-	out += fileName;
+    double d = nsl();
+    if (d < 0)
+    {
+        d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
+    }
+    return static_cast<int>( d ) / MINUTES_PER_HOUR;
 }

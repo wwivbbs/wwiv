@@ -625,7 +625,7 @@ bool GetMenuDir(std::string& menuName)
 				if (noyes())
 				{
 					GetApplication()->CdHome();	// go to the wwiv dir
-					WWIV_make_path(dir.GetFullPathName());  // Create the new path
+					WWIV_make_path(dir.GetFullPathName().c_str());  // Create the new path
 					if (dir.Exists())
 					{
 						GetApplication()->CdHome();
