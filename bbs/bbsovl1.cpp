@@ -93,11 +93,7 @@ int GetMaxMessageLinesAllowed()
 	{
 		return 120;
 	}
-	else if ( cs() )
-	{
-		return 100;
-	}
-    return 80;
+    return (cs()) ? 100 : 80;
 }
 
 
@@ -141,25 +137,24 @@ void upload_post()
  */
 void send_email()
 {
-    char szUserName[81];
-
     write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
 	GetSession()->bout << "\r\n\n|#9Enter user name or number:\r\n:";
-    input( szUserName, 75, true );
+    std::string username;
+    input( username, 75, true );
     irt[0] = '\0';
     irt_name[0] = '\0';
-    unsigned int i;
-    if (((i = strcspn(szUserName, "@")) != (strlen(szUserName))) && (isalpha(szUserName[i + 1])))
+    std::string::size_type atpos = username.find_first_of("@");
+    if ( atpos != std::string::npos && atpos != username.length() && isalpha(username[atpos + 1]) )
     {
-        if (strstr(szUserName, "@32767") == NULL)
+        if ( username.find("@32767") == std::string::npos )
         {
-            WWIV_STRLWR(szUserName);
-            strcat(szUserName, " @32767");
+            StringLowerCase(username);
+            username += " @32767";
         }
     }
 
     int nSystemNumber, nUserNumber;
-    parse_email_info(szUserName, &nUserNumber, &nSystemNumber);
+    parse_email_info(username, &nUserNumber, &nSystemNumber);
     grab_quotes( NULL, NULL );
     if ( nUserNumber || nSystemNumber )
     {
@@ -288,18 +283,18 @@ void text_edit()
 {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#9Enter Filename: ";
-    char szFileName[ MAX_PATH ];
-    input( szFileName, 12, true );
-    if ( strstr( szFileName, ".log" ) != NULL || !okfn( szFileName ) )
+    std::string filename;
+    input( filename, 12, true );
+    if ( filename.find(".log") != std::string::npos || !okfn( filename ) )
 	{
         return;
 	}
 	std::stringstream logText;
-    logText << "@ Edited: " << szFileName;
+    logText << "@ Edited: " << filename;
     sysoplog( logText.str() );
     if ( okfsed() )
 	{
-		external_edit( szFileName, syscfg.gfilesdir, GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, syscfg.gfilesdir, logText.str().c_str(), MSGED_FLAG_NO_TAGLINE );
+		external_edit( filename.c_str(), syscfg.gfilesdir, GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, syscfg.gfilesdir, logText.str().c_str(), MSGED_FLAG_NO_TAGLINE );
 	}
 }
 

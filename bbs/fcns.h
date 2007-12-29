@@ -112,7 +112,7 @@ const char *YesNoString( bool bYesNo );
 // File: bbsutl1.cpp
 
 bool AllowLocalSysop();
-void parse_email_info( const char *pszEmailAddress, int *pUserNumber, int *pSystemNumber );
+void parse_email_info( const std::string emailAddress, int *pUserNumber, int *pSystemNumber );
 bool ValidateSysopPassword();
 void hang_it_up();
 bool play_sdf( const std::string soundFileName, bool abortable );
@@ -869,7 +869,7 @@ int  check_batch_queue( const char *pszFileName );
 bool check_ul_event( int nDirectoryNum, uploadsrec * pUploadRecord );
 void finddevs(char (*devs)[9], int *count);
 void find_devices();
-bool okfn( const char *pszFileName );
+bool okfn( const std::string fileName );
 void print_devices();
 void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const char *ofn);
 int  list_arc_out(const char *pszFileName, const char *pszDirectory);

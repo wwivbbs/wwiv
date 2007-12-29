@@ -16,42 +16,26 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_STUFF_IN_TEST_H__
-#define __INCLUDED_STUFF_IN_TEST_H__
+#if defined ( _DEBUG )
 
-#ifdef _MSC_VER
-#pragma once
-#endif
+#include "wwiv.h"
+#include "WOutStreamBuffer.h"
+#include "WStringUtils.h"
+#include "XferTest.h"
 
-#include "cppunit/extensions/HelperMacros.h"
-#include "cppunit/TestCase.h"
-#include "cppunit/ui/text/TestRunner.h"
-#include "cppunit/TestCaller.h"
+using std::cout;
+using std::endl;
+using std::ostringstream;
+using std::string;
 
-class StuffInTest : public CppUnit::TestCase {
-   CPPUNIT_TEST_SUITE( StuffInTest );
-   CPPUNIT_TEST( testSimpleCase );
-   CPPUNIT_TEST( testEmpty );
-   CPPUNIT_TEST( testAllNumbers );
-   CPPUNIT_TEST( testAllDropFiles );
-   CPPUNIT_TEST( testPortAndNode );
-   CPPUNIT_TEST( testSpeeds );
-   CPPUNIT_TEST_SUITE_END( );
-public:
-   virtual void tearDown();
-
-protected:
-    void testSimpleCase();
-    void testEmpty();
-    void testAllNumbers();
-    void testAllDropFiles();
-    void testPortAndNode();
-    void testSpeeds();
+CPPUNIT_TEST_SUITE_REGISTRATION( XferTest );
 
 
+void XferTest::testOkfn()
+{
+    CPPUNIT_ASSERT( !okfn("") );
+    CPPUNIT_ASSERT( okfn("foo") );
+}
 
-private:
-    const std::string t(const std::string name);
-};
 
 #endif

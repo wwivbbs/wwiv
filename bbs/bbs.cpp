@@ -529,6 +529,10 @@ int WApplication::doWFCEvents()
                 break;
                 // Run Terminal Program
             case 'T':
+#ifdef _DEBUG
+                RunUnitTests("");
+                getkey();
+#else
                 if ( AllowLocalSysop() && syscfg.terminal[0] )
                 {
                     write_inst( INST_LOC_TERM, 0, INST_FLAGS_NONE );
@@ -541,6 +545,7 @@ int WApplication::doWFCEvents()
 					GetSession()->localIO()->LocalGotoXY( 2, 23 );
 					GetSession()->bout << "|#6No terminal program defined.";
 				}
+#endif // _DEBUG
                 break;
                 // UserEdit
             case 'U':
