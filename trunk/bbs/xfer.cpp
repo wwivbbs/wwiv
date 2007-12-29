@@ -125,8 +125,7 @@ bool check_ul_event( int nDirectoryNum, uploadsrec * u )
         char szComPort[ 10 ];
         sprintf( szComPort, "%d", incom ? syscfgovr.primaryport : 0 );
 
-		std::string cmdLine;
-        stuff_in( cmdLine, syscfg.upload_c, create_chain_file(), directories[nDirectoryNum].path, stripfn(u->filename), szComPort, "" );
+		const std::string cmdLine = stuff_in( syscfg.upload_c, create_chain_file(), directories[nDirectoryNum].path, stripfn(u->filename), szComPort, "" );
         ExecuteExternalProgram( cmdLine, GetApplication()->GetSpawnOptions( SPWANOPT_ULCHK ) );
 
 		WFile file( directories[nDirectoryNum].path, stripfn( u->filename ) );
@@ -263,8 +262,7 @@ void get_arc_cmd( char *pszOutBuffer, const char *pszArcFileName, int cmd, const
             {
                 return;
             }
-			std::string command;
-            stuff_in( command, szArcCmd, pszArcFileName, ofn, "", "", "" );
+            std::string command = stuff_in( szArcCmd, pszArcFileName, ofn, "", "", "" );
             WWIV_make_abs_cmd( command );
 			strcpy( pszOutBuffer, command.c_str() );
             return;

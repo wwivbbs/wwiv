@@ -1223,8 +1223,7 @@ int WApplication::Run(int argc, char *argv[])
         {
             if ( WFile::ExistsWildcard( "WWIVFAX.*" ) )
             {
-				std::string command;
-                stuff_in( command, "WWIVFAX %S %P", "", "", "", "", "" );
+				const std::string command = stuff_in( "WWIVFAX %S %P", "", "", "", "", "" );
                 ExecuteExternalProgram( command, EFLAG_NONE );
             }
             goto hanging_up;
