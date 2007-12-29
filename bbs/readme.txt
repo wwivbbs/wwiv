@@ -7,7 +7,7 @@
 GENERAL INFORMATION:
 
     WWIV 5.0 is built with the following compilers:
-        MS Visual C++ .NET/2008
+        MS Visual C++ 2008 (9.0)
 
     I recommend using MSVC .NET 2008. (Since there is a the "express" edition
     available for free.
