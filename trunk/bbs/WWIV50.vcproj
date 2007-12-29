@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="D:\wwiv\wwiv50\src\deps\boost;&quot;$(ProjectDir)..\deps\boost\&quot;;&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)\platform&quot;;&quot;$(ProjectDir)\platform\WIN32&quot;"
+				AdditionalIncludeDirectories="&quot;D:\wwiv\wwiv50\src\deps\cppunit-1.12.0\include&quot;;D:\wwiv\wwiv50\src\deps\boost;&quot;$(ProjectDir)..\deps\boost\&quot;;&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)\platform&quot;;&quot;$(ProjectDir)\platform\WIN32&quot;"
 				PreprocessorDefinitions="WIN32,_DEBUG,_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -79,11 +79,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				LinkLibraryDependencies="true"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ws2_32.lib odbc32.lib odbccp32.lib"
 				OutputFile="D:\bbs\wwiv50.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="&quot;D:\wwiv\wwiv50\src\deps\cppunit-1.12.0\lib&quot;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/wwiv50.pdb"
 				SubSystem="1"
@@ -173,6 +175,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				LinkLibraryDependencies="false"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="odbc32.lib odbccp32.lib ws2_32.lib"
 				OutputFile="C:\bbs\wwiv50nd.exe"
@@ -1273,6 +1276,18 @@
 							ObjectFile="$(IntDir)/$(InputName)1.obj"
 						/>
 					</FileConfiguration>
+				</File>
+			</Filter>
+			<Filter
+				Name="unittests"
+				>
+				<File
+					RelativePath=".\unittests\StuffInTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\unittests\StuffInTest.h"
+					>
 				</File>
 			</Filter>
 		</Filter>

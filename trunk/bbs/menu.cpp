@@ -467,7 +467,7 @@ bool LoadMenuRecord( MenuInstanceData * pMenuData, std::string& command, MenuRec
                     {
 						std::ostringstream msg;
 						msg << "< item security : " << command;
-						MenuSysopLog(msg.str().c_str());
+						MenuSysopLog(msg.str());
 						return false;
 					}
 				}
@@ -515,10 +515,10 @@ void LogUserFunction(MenuInstanceData * pMenuData, std::string& command, MenuRec
 
 
 
-void MenuSysopLog(const char *pszMsg)
+void MenuSysopLog(const std::string msg)
 {
     std::ostringstream logStream;
-    logStream << "*MENU* : " << pszMsg;
+    logStream << "*MENU* : " << msg;
 
     sysopchar( logStream.str().c_str() );
     GetSession()->bout << logStream.str();

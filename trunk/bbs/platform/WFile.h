@@ -183,9 +183,9 @@ public:
 	    return(p);
     }
 
-    virtual const char* GetFullPathName()
+	virtual const std::string GetFullPathName()
     {
-        return m_szFileName;
+		return std::string(m_szFileName);
     }
 
 private:
