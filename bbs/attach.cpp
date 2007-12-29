@@ -176,7 +176,7 @@ void attach_file(int mode)
                                             if ( m.daten == static_cast<unsigned long>( fsr.id ) )
                                             {
                                                 fsr.id = 0;
-                                                WFile::Remove( GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename );
+                                                WFile::Remove( GetApplication()->GetAttachmentDirectory(), fsr.filename );
                                                 attachFile.Seek( static_cast<long>( sizeof( filestatusrec ) ) * -1L, WFile::seekCurrent );
                                                 attachFile.Write( &fsr, sizeof( fsr ) );
                                             }

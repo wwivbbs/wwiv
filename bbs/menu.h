@@ -191,7 +191,7 @@ void ConfigUserMenuSet();
 const std::string GetMenuDirectory(const std::string menuPath);
 const std::string GetMenuDirectory(const std::string menuPath, const std::string menuName, const std::string extension);
 const std::string GetMenuDirectory();
-void MenuSysopLog(const char *pszMsg);
+void MenuSysopLog(const std::string pszMsg);
 void OpenMenuDescriptions();
 void CloseMenuDescriptions();
 char *GetMenuDescription( const std::string& name, char *pszDesc );

@@ -1525,7 +1525,7 @@ void readmail( int mode )
 					fileTemp.Close();
 					BbsFreeMemory(b);
 					bool bSent;
-					send_file( fileTemp.GetFullPathName(), &bSent, 0, 0, fileTemp.GetFullPathName(), -1, len );
+					send_file( fileTemp.GetFullPathName().c_str(), &bSent, 0, 0, fileTemp.GetFullPathName().c_str(), -1, len );
 					if ( i )
 					{
 						GetSession()->bout << "E-mail download successful.\r\n";

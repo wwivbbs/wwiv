@@ -1073,10 +1073,13 @@ int WApplication::Run(int argc, char *argv[])
 					{
 						ShowUsage();
 						exit( 0 );
-					} else if ( argumentRaw.substr(0, 7) == "--test=" ) {
+#ifdef _DEBUG
+					} else if ( argumentRaw.substr(0, 6) == "--test" ) {
 						this->InitializeBBS();
-						bool ok = RunUnitTests( argumentRaw.substr( 7 ) );
+                        std::string suite = argumentRaw.length() > 7 ? argumentRaw.substr( 7 ) : "";
+						bool ok = RunUnitTests( suite );
 						ExitBBSImpl( ok ? m_nOkLevel : m_nErrorLevel );
+#endif // _DEBUG
 					}
 				} break;
             default:
@@ -1389,7 +1392,6 @@ WApplication::WApplication( const WApplication& copy )
     m_nWfcStatus = copy.m_nWfcStatus;
     
     strcpy( m_szCurrentDirectory, copy.m_szCurrentDirectory );
-    
 }
 
 
@@ -1535,7 +1537,6 @@ void WApplication::ToggleShutDown()
     {
         ShutDownBBS( WApplication::shutdownThreeMinutes );
     }
-
 }
 
 
@@ -1564,6 +1565,5 @@ WApplication::~WApplication()
 int main( int argc, char *argv[] )
 {
     app = new WApplication();
-    int nRetCode = GetApplication()->BBSMainLoop( argc, argv );
-    return nRetCode;
+    return GetApplication()->BBSMainLoop( argc, argv );
 }

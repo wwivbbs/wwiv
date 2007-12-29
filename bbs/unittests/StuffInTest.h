@@ -16,31 +16,26 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if defined ( _DEBUG )
+#ifndef __INCLUDED_STUFF_IN_TEST_H__
+#define __INCLUDED_STUFF_IN_TEST_H__
 
-#include "wwiv.h"
-#include "WOutStreamBuffer.h"
-#include "WStringUtils.h"
+#include "cppunit/extensions/HelperMacros.h"
 #include "cppunit/TestCase.h"
 #include "cppunit/ui/text/TestRunner.h"
 #include "cppunit/TestCaller.h"
-#include "cppunit/extensions/HelperMacros.h"
-#include "unittests/StuffInTest.h"
 
-using std::string;
-using std::cout;
-using std::endl;
-
-bool RunUnitTests( const string& suiteName ) 
-{
-    GetSession()->localIO()->LocalCls();
-	cout << "Running Unit Test Suite: " << suiteName << endl;
-    
-    CppUnit::TextUi::TestRunner runner;
-    runner.addTest( StuffInTest::suite() );
-    runner.run();
-	return true;
-}
+#ifdef _MSC_VER
+#pragma once
+#endif
 
 
-#endif // _DEBUG
+class StuffInTest : public CppUnit::TestCase {
+   CPPUNIT_TEST_SUITE( StuffInTest );
+   CPPUNIT_TEST( testSimpleCase );
+   CPPUNIT_TEST_SUITE_END( );
+
+protected:
+    void testSimpleCase();
+};
+
+#endif

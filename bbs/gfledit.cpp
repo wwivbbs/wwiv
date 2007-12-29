@@ -154,7 +154,7 @@ void modify_sec(int n)
 					if (yesno())
 					{
 						WFile *dir = new WFile(syscfg.gfilesdir, r.filename);
-						WWIV_make_path(dir->GetFullPathName());
+						WWIV_make_path(dir->GetFullPathName().c_str());
 					}
 					else
 					{

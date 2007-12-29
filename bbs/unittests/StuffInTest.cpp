@@ -21,26 +21,22 @@
 #include "wwiv.h"
 #include "WOutStreamBuffer.h"
 #include "WStringUtils.h"
-#include "cppunit/TestCase.h"
-#include "cppunit/ui/text/TestRunner.h"
-#include "cppunit/TestCaller.h"
-#include "cppunit/extensions/HelperMacros.h"
-#include "unittests/StuffInTest.h"
+#include "StuffInTest.h"
+
 
 using std::string;
 using std::cout;
 using std::endl;
 
-bool RunUnitTests( const string& suiteName ) 
+CPPUNIT_TEST_SUITE_REGISTRATION( StuffInTest );
+
+void StuffInTest::testSimpleCase() 
 {
-    GetSession()->localIO()->LocalCls();
-	cout << "Running Unit Test Suite: " << suiteName << endl;
-    
-    CppUnit::TextUi::TestRunner runner;
-    runner.addTest( StuffInTest::suite() );
-    runner.run();
-	return true;
+    string in = "foo %1 %c %2 %k";
+    string out;
+    stuff_in(out, in, "one", "two", "", "", "");
+    cout << out;
+    CPPUNIT_ASSERT(out.substr(0, 3) == "foo");
 }
 
-
-#endif // _DEBUG
+#endif

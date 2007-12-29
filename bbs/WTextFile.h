@@ -47,9 +47,9 @@ public:
     bool ReadLine( char *pszBuffer, int nBufferSize ) { return (fgets(pszBuffer, nBufferSize, m_hFile) != NULL) ? true : false; }
     bool ReadLine( std::string &buffer );
     long GetPosition() { return ftell(m_hFile); }
-    const char* GetFullPathName()
+	const std::string& GetFullPathName()
     {
-        return m_fileName.c_str();
+        return m_fileName;
     }
 
 public:

@@ -24,8 +24,6 @@ void set_question(int ii);
 
 void print_quests()
 {
-    votingrec v;
-
     WFile file( syscfg.datadir, VOTING_DAT );
     if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
@@ -35,6 +33,8 @@ void print_quests()
     for ( int i = 1; ( i <= 20 ) && !abort; i++ )
     {
         file.Seek( static_cast<long>( i - 1 ) * sizeof( votingrec ), WFile::seekBegin );
+
+        votingrec v;
         file.Read( &v, sizeof( votingrec ) );
 		char szBuffer[ 255 ];
         sprintf( szBuffer, "|#2%2d|#7) |#1%s", i, v.numanswers ? v.question : ">>> NO QUESTION <<<" );
@@ -51,12 +51,12 @@ void print_quests()
 void set_question( int ii )
 {
     votingrec v;
-    char s[81];
     voting_response vr;
 
     GetSession()->bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
-    inputl( s, 75, true );
-    strcpy(v.question, s);
+    std::string question;
+    inputl( question, 75, true );
+    strcpy(v.question, question.c_str());
     v.numanswers = 0;
     vr.numresponses = 0;
     vr.response[0] = 'X';
@@ -65,7 +65,7 @@ void set_question( int ii )
     {
         v.responses[i] = vr;
     }
-    if ( !s[0] )
+    if ( question.empty() )
     {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#6Delete Question #" << ii + 1 << ", Are you sure? ";
@@ -79,14 +79,15 @@ void set_question( int ii )
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#5Enter answer choices, Enter a blank line when finished.";
         GetSession()->bout.NewLine( 2 );
-        while ( v.numanswers < 19 && s[0] )
+        while ( v.numanswers < 19 && !question.empty() )
         {
             GetSession()->bout << "|#2" << v.numanswers + 1 << "#7: ";
-            inputl( s, 63, true );
-            strcpy(vr.response, s);
+            std::string response;
+            inputl( response, 63, true );
+            strcpy(vr.response, response.c_str());
             vr.numresponses = 0;
             v.responses[v.numanswers] = vr;
-            if (s[0])
+            if (!response.empty())
             {
                 ++v.numanswers;
             }
@@ -153,7 +154,6 @@ void ivotes()
 
 void voteprint()
 {
-    char s[MAX_PATH];
     votingrec v;
 
     int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
@@ -174,8 +174,7 @@ void voteprint()
     WFile votingText( syscfg.gfilesdir, VOTING_TXT );
     votingText.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeText,
 					 WFile::shareUnknown, WFile::permReadWrite );
-    strcpy( s, votingText.GetFullPathName() );
-    votingText.Write( s, strlen( s ) );
+    votingText.Write( votingText.GetFullPathName() );
 
     WFile votingDat( syscfg.datadir, VOTING_DAT );
 
@@ -191,18 +190,23 @@ void voteprint()
         {
             GetSession()->bout << v.question;
 			GetSession()->bout.NewLine();
-            sprintf(s, "\r\n%s\r\n", v.question);
-            votingText.Write( s, strlen( s ) );
+			std::ostringstream text;
+			text << "\r\n" << v.question << "\r\n";
+            votingText.Write( text.str() );
             for (int i2 = 0; i2 < v.numanswers; i2++)
             {
-                sprintf(s, "     %s\r\n", v.responses[i2].response);
-                votingText.Write( s, strlen( s ) );
+				text.clear();
+				text.str("     ");
+				text << v.responses[i2].response << "\r\n";
+                votingText.Write( text.str() );
                 for (int i3 = 0; i3 < GetApplication()->GetStatusManager()->GetUserCount(); i3++)
                 {
                     if (x[i1 + 20 * smallist[i3].number] == i2 + 1)
                     {
-                        sprintf(s, "          %s #%d\r\n", smallist[i3].name, smallist[i3].number);
-                        votingText.Write( s, strlen( s ) );
+						text.clear();
+						text.str("          ");
+                        text << smallist[i3].name << " #" << smallist[i3].number << "\r\n";
+                        votingText.Write( text.str() );
                     }
                 }
             }

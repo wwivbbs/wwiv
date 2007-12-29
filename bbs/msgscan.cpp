@@ -1116,7 +1116,7 @@ void HandleMessageDownload( int nMessageNumber )
 		BbsFreeMemory(b);
 		bool bFileAbortStatus;
 		bool bStatus;
-		send_file(fileTemp.GetFullPathName(), &bStatus, &bFileAbortStatus, 0, fileTemp.GetFullPathName(), -1, lMessageLen);
+		send_file(fileTemp.GetFullPathName().c_str(), &bStatus, &bFileAbortStatus, 0, fileTemp.GetFullPathName().c_str(), -1, lMessageLen);
 		GetSession()->bout << "|#1Message download... |#2" << ( bStatus ? "successful" : "unsuccessful" );
 		if (bStatus)
 		{
