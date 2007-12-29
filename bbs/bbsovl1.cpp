@@ -296,7 +296,7 @@ void text_edit()
 	}
 	std::stringstream logText;
     logText << "@ Edited: " << szFileName;
-    sysoplog( logText.str().c_str() );
+    sysoplog( logText.str() );
     if ( okfsed() )
 	{
 		external_edit( szFileName, syscfg.gfilesdir, GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, syscfg.gfilesdir, logText.str().c_str(), MSGED_FLAG_NO_TAGLINE );

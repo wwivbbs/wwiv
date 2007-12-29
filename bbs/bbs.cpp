@@ -1057,7 +1057,7 @@ int WApplication::Run(int argc, char *argv[])
 					else
 					{
 						GetSession()->bout << "\r\n|#7\xFE |#5Packing all subs: \r\n";
-						sysoplogf( "* Packing All Message Areas" );
+						sysoplog( "* Packing All Message Areas" );
 						pack_all_subs( true );
 					}
 					ExitBBSImpl( m_nOkLevel );
@@ -1399,11 +1399,11 @@ void WApplication::CdHome()
 }
 
 
-const char* WApplication::GetHomeDir()
+const std::string WApplication::GetHomeDir()
 {
-	static char szDir[ MAX_PATH ];
-	snprintf( szDir, sizeof( szDir ), "%s%c", m_szCurrentDirectory, WWIV_FILE_SEPERATOR_CHAR );
-	return szDir;
+	std::string dir = m_szCurrentDirectory;
+	dir += WWIV_FILE_SEPERATOR_CHAR;
+	return std::string( dir );
 }
 
 void WApplication::AbortBBS( bool bSkipShutdown )

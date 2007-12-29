@@ -77,9 +77,7 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive)
 
 double WWIV_GetFreeSpaceForPath(const char * szPath)
 {
-	char szWWIVHome[MAX_PATH];
-	strcpy(szWWIVHome, GetApplication()->GetHomeDir());
-    int nDrive = szWWIVHome[0];
+	int nDrive = GetApplication()->GetHomeDir()[0];
 
 	if (szPath[1] == ':')
 	{

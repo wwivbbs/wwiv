@@ -232,7 +232,7 @@ double post_ratio()
 
 double nsl()
 {
-    double rtn = 0.0;
+    double rtn = 1.00;
 
     double dd = timer();
     if ( GetSession()->IsUserOnline() )
@@ -241,31 +241,18 @@ double nsl()
         {
             timeon -= SECONDS_PER_HOUR_FLOAT * HOURS_PER_DAY_FLOAT;
         }
-        double tot = ( dd - timeon );
+        double tot = dd - timeon;
 		double tpl = static_cast<double>( getslrec( GetSession()->GetEffectiveSl() ).time_per_logon ) * MINUTES_PER_HOUR_FLOAT;
         double tpd = static_cast<double>( getslrec( GetSession()->GetEffectiveSl() ).time_per_day ) * MINUTES_PER_HOUR_FLOAT;
         double tlc = tpl - tot + GetSession()->GetCurrentUser()->GetExtraTime() + extratimecall;
         double tlt = tpd - tot - static_cast<double>( GetSession()->GetCurrentUser()->GetTimeOnToday() ) +
                      GetSession()->GetCurrentUser()->GetExtraTime();
 
-        tlt = ( tlc < tlt ) ? tlc : tlt;
-		rtn = in_range( 0.0, 32767.0, tlt );
-		/*
-        if ( tlt < 0.0 )
-        {
-            tlt = 0.0;
-        }
-        else if ( tlt > 32767.0 )
-        {
-            tlt = 32767.0;
-        }
-        rtn = tlt;*/
+		tlt = std::min<double>( tlc, tlt );
+		rtn = in_range<double>( 0.0, 32767.0, tlt );
     }
-    else
-    {
-        rtn = 1.00;
-    }
-    GetSession()->SetTimeOnlineLimited( false );
+
+	GetSession()->SetTimeOnlineLimited( false );
     if ( syscfg.executetime )
     {
         double tlt = time_event - dd;
@@ -284,18 +271,8 @@ double nsl()
             rtn = 0.0;
         }
     }
-    if ( rtn < 0.0 )
-    {
-        rtn = 0.0;
-    }
-    else if ( rtn > 32767.0 )
-    {
-        rtn = 32767.0;
-    }
-    return rtn;
+	return in_range<double>( 0.0, 32767.0, rtn );
 }
-
-
 
 
 void wait1( long l )
@@ -336,7 +313,6 @@ double freek1( const char *pszPathName )
 
 void send_net( net_header_rec * nh, unsigned short int *list, const char *text, const char *byname )
 {
-
 	WWIV_ASSERT( nh );
 
     char szFileName[MAX_PATH];
@@ -726,13 +702,13 @@ slrec getslrec(int nSl)
         return CurSlRec;
 	}
 
-    configrec c;
     WFile file( GetApplication()->GetHomeDir(), CONFIG_DAT );
     if ( !file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         // Bad ju ju here.
         GetApplication()->AbortBBS();
     }
+    configrec c;
     file.Read( &c, sizeof( configrec ) );
 
     nCurSl = nSl;

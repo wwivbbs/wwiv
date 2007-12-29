@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C++ Express 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TUI", "src\tui.vcproj", "{23A3CDA5-3028-4CB0-B698-EB9D09DB4A90}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TUI-Sample", "src\tui-sample.vcproj", "{83275EB0-CCD4-4108-8930-E3784D1F9E9E}"

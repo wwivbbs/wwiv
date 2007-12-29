@@ -25,8 +25,8 @@
 //
 
 char ShowBBSListMenuAndGetChoice();
-bool IsBBSPhoneNumberUnique( const char *pszPhoneNumber );
-bool IsBBSPhoneNumberValid( const char *pszPhoneNumber );
+bool IsBBSPhoneNumberUnique( const std::string& phoneNumber );
+bool IsBBSPhoneNumberValid( const std::string& phoneNumber );
 void AddBBSListLine( const std::string bbsListLine );
 void AddBBSListEntryImpl();
 void AddBBSListEntry();
@@ -50,7 +50,7 @@ char ShowBBSListMenuAndGetChoice()
 }
 
 
-bool IsBBSPhoneNumberUnique( const char *pszPhoneNumber )
+bool IsBBSPhoneNumberUnique( const std::string& phoneNumber )
 {
     bool ok = true;
     WFile file( syscfg.gfilesdir, BBSLIST_MSG );
@@ -81,11 +81,11 @@ bool IsBBSPhoneNumberUnique( const char *pszPhoneNumber )
                 }
                 ++i;
             } while ( ch != '\n' && i < 120 && lBbsListPos < lBbsListLength );
-            if ( strstr( szBbsListLine, pszPhoneNumber ) != NULL )
+			if ( strstr( szBbsListLine, phoneNumber.c_str() ) != NULL )
             {
                 ok = false;
             }
-            if ( strncmp( szBbsListLine, pszPhoneNumber, 12 ) == 0 )
+			if ( strncmp( szBbsListLine, phoneNumber.c_str(), 12 ) == 0 )
             {
                 ok = false;
             }
@@ -98,26 +98,26 @@ bool IsBBSPhoneNumberUnique( const char *pszPhoneNumber )
 }
 
 
-bool IsBBSPhoneNumberValid( const char *pszPhoneNumber )
+bool IsBBSPhoneNumberValid( const std::string& phoneNumber )
 {
-    if ( !pszPhoneNumber || !*pszPhoneNumber )
+	if ( phoneNumber.empty() )
     {
         return false;
     }
-    if ( pszPhoneNumber[3] != '-' || pszPhoneNumber[7] != '-' )
+    if ( phoneNumber[3] != '-' || phoneNumber[7] != '-' )
     {
         return false;
     }
-    for ( int nPhoneNumIter = 0; nPhoneNumIter < 12; nPhoneNumIter++ )
+	if ( phoneNumber.length() != 12 )
     {
-        if ( strchr("0123456789-", pszPhoneNumber[nPhoneNumIter]) == 0 )
+        return false;
+    }
+	for ( std::string::const_iterator iter = phoneNumber.begin(); iter != phoneNumber.end(); iter++ )
+    {
+        if ( strchr("0123456789-", (*iter)) == 0 )
         {
             return false;
         }
-    }
-    if ( strlen( pszPhoneNumber ) != 12 )
-    {
-        return false;
     }
     return true;
 }
@@ -214,31 +214,27 @@ void DeleteBBSListEntry()
     input( bbsPhoneNumber, 12, true );
     if ( bbsPhoneNumber[3] != '-' || bbsPhoneNumber[7] != '-' )
     {
-        CLEAR_STRING( bbsPhoneNumber );
+        bbsPhoneNumber.clear();
     }
     if ( bbsPhoneNumber.length() == 12 )
     {
         bool ok = false;
-        char szTempFileName[ MAX_PATH ];
-        char szFileName[ MAX_PATH ];
-        sprintf(szFileName, "%s%s", syscfg.gfilesdir, BBSLIST_MSG);
-        sprintf(szTempFileName, "%s%s", syscfg.gfilesdir, BBSLIST_TMP);
         WTextFile fi( syscfg.gfilesdir, BBSLIST_MSG, "r" );
+        WTextFile fo(syscfg.gfilesdir, BBSLIST_TMP, "w");
         if (fi.IsOpen())
         {
-            WTextFile fo(syscfg.gfilesdir, BBSLIST_TMP, "w");
             if (fo.IsOpen())
             {
-                char szLine[ 255 ];
-                while (fi.ReadLine(szLine, sizeof(szLine)))
+				std::string line;
+                while (fi.ReadLine(line))
                 {
-                    if ( strstr( szLine, bbsPhoneNumber.c_str() ) )
+					if ( strstr( line.c_str(), bbsPhoneNumber.c_str() ) )
                     {
                         ok = true;
                     }
                     else
                     {
-                        fo.Write( szLine );
+                        fo.Write( line );
                     }
                 }
                 fo.Close();
@@ -248,13 +244,13 @@ void DeleteBBSListEntry()
         GetSession()->bout.NewLine();
         if (ok)
         {
-            WFile::Remove(szFileName);
-            WFile::Rename(szTempFileName, szFileName);
+			WFile::Remove(fi.GetFullPathName());
+			WFile::Rename(fo.GetFullPathName(), fi.GetFullPathName());
             GetSession()->bout << "|#7* |#1Number removed.\r\n";
         }
         else
         {
-            WFile::Remove(szTempFileName);
+            WFile::Remove(fo.GetFullPathName());
             GetSession()->bout << "|#6Error: Couldn't find that in the bbslist file.\r\n";
 		}
     }

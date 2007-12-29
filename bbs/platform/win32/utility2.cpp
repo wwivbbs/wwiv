@@ -40,9 +40,6 @@ void WWIV_make_abs_cmd( std::string& out )
     char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH], *ss1;
     char szTempBuf[MAX_PATH];
 
-    char szWWIVHome[MAX_PATH];
-    strncpy( szWWIVHome, GetApplication()->GetHomeDir(), MAX_PATH );
-
 	strncpy( s1, out.c_str(), MAX_PATH );
 	
     if ( s1[1] == ':' )
@@ -62,7 +59,7 @@ void WWIV_make_abs_cmd( std::string& out )
     }
     else if ( s1[0] == '\\' )
     {
-		_snprintf( s1, sizeof( s1 ), "%c:%s", szWWIVHome[0], out.c_str() );
+		_snprintf( s1, sizeof( s1 ), "%c:%s", GetApplication()->GetHomeDir()[0], out.c_str() );
     }
     else
     {
@@ -70,7 +67,7 @@ void WWIV_make_abs_cmd( std::string& out )
         strtok(s2, " \t");
         if (strchr(s2, '\\'))
         {
-            _snprintf( s1, sizeof( s1 ), "%s%s", GetApplication()->GetHomeDir(), out.c_str() );
+			_snprintf( s1, sizeof( s1 ), "%s%s", GetApplication()->GetHomeDir().c_str(), out.c_str() );
         }
     }
 
@@ -103,7 +100,9 @@ void WWIV_make_abs_cmd( std::string& out )
         {
             if ( WFile::Exists( s ) )
             {
-				wwiv::stringUtils::FormatString( out, "%s%s", s, s2 );
+				std::ostringstream os;
+				os << s << s2;
+				out = os.str();
                 return;
             }
         }
@@ -111,7 +110,9 @@ void WWIV_make_abs_cmd( std::string& out )
         {
             if (WFile::Exists(s))
             {
-				wwiv::stringUtils::FormatString( out, "%s%s%s", GetApplication()->GetHomeDir(), s, s2 );
+				std::ostringstream os;
+				os << GetApplication()->GetHomeDir() << s << s2;
+				out = os.str();
             }
             else
             {
@@ -119,14 +120,18 @@ void WWIV_make_abs_cmd( std::string& out )
                 ss1 = szTempBuf;
                 if ( ss1 && strlen( ss1 ) > 0 )
                 {
-					wwiv::stringUtils::FormatString( out,"%s%s", ss1, s2 );
+					std::ostringstream os;
+					os << ss1 << s2;
+					out = os.str();
                     return;
                 }
             }
         }
     }
 
-    wwiv::stringUtils::FormatString( out, "%s%s%s", GetApplication()->GetHomeDir(), s1, s2 );
+	std::ostringstream os;
+	os << GetApplication()->GetHomeDir() << s1 << s2;
+	out = os.str();
 }
 
 

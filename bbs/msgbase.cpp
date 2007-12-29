@@ -53,8 +53,8 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOu
 		netName += "- "; 
 	}
 
-    CLEAR_STRING( strOutOriginStr );
-    CLEAR_STRING( strOutOriginStr2 );
+    strOutOriginStr.clear();
+    strOutOriginStr2.clear();
 
 	if ( wwiv::stringUtils::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ||
          nSystemNumber == 32767 )
@@ -726,7 +726,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 		{
 			std::string tempLogMessage = logMessage;
             tempLogMessage += userRecord.GetUserNameAndNumber( nUserNumber );
-			sysoplog( tempLogMessage.c_str() );
+			sysoplog( tempLogMessage );
 			logMessage += ">UNKNOWN<";
 		}
 		if ( nSystemNumber == 0 && GetSession()->GetEffectiveSl() > syscfg.newusersl && userRecord.GetForwardSystemNumber() == 0 && !GetSession()->IsNewMailWatiting() )
@@ -773,7 +773,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 			}
 		}
 		logMessage += logMessagePart;
-		sysoplog( logMessage.c_str() );
+		sysoplog( logMessage );
 	}
 
 	WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();

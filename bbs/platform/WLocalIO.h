@@ -149,7 +149,7 @@ public:
 	virtual ~WLocalIO();
 
     void SetChatReason( char* pszChatReason ) { m_chatReason = pszChatReason; } 
-    void ClearChatReason() { CLEAR_STRING(m_chatReason); }
+    void ClearChatReason() { m_chatReason.clear(); }
 
     const int GetTopLine() const { return m_nTopLine; }
     void SetTopLine( int nTopLine ) { m_nTopLine = nTopLine; }

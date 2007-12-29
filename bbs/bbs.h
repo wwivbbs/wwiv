@@ -124,7 +124,7 @@ public:
 
     WUserManager* GetUserManager();
 
-    std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
+    const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
 
     /*!
 	 * @var m_networkNumEnvVar Environment variable style
@@ -141,7 +141,7 @@ public:
 	/*!
 	 * @function GetHomeDir Returns the current home directory
 	 */
-	const char* GetHomeDir();
+	const std::string GetHomeDir();
 
 	/*! @function CdHome Changes directories back to the WWIV Home directory */
 	void CdHome();

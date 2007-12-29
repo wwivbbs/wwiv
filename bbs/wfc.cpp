@@ -210,9 +210,7 @@ void wfc_screen()
 		}
 
 		int i = 0, i1 = 0;
-		char szCurDir[MAX_PATH];
-		strcpy( szCurDir, GetApplication()->GetHomeDir() );
-		while ( GetSession()->wfcdrvs[i] > 0 && GetSession()->wfcdrvs[i] < szCurDir[0] && i1 < 5 )
+		while ( GetSession()->wfcdrvs[i] > 0 && GetSession()->wfcdrvs[i] < GetApplication()->GetHomeDir()[0] && i1 < 5 )
 		{
 			if ( iscdrom( static_cast<char>( GetSession()->wfcdrvs[i] ) ) )
 			{
