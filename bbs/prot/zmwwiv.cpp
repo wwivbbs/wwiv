@@ -5,11 +5,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#ifndef ATANIS_UNIX_NETWORK_STUFF
-//void rputch(char ch, bool bUseInternalBuffer = false);
-#endif // ATANIS_UNIX_NETWORK_STUFF
-
-
 // Local Functions
 int ZModemWindowStatus( const char *fmt, ... );
 int ZModemWindowXferStatus( const char *fmt, ... );
