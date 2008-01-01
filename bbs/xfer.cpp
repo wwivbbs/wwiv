@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include <vector>
 
 // How far to indent extended descriptions
 #define INDENTION 24
@@ -32,6 +33,9 @@ int this_date;
 static int ed_num, ed_got;
 static ext_desc_rec *ed_info;
 
+using std::string;
+
+void finddevs(std::vector<string>& devices);
 
 void zap_ed_info()
 {
@@ -125,7 +129,7 @@ bool check_ul_event( int nDirectoryNum, uploadsrec * u )
         char szComPort[ 10 ];
         sprintf( szComPort, "%d", incom ? syscfgovr.primaryport : 0 );
 
-		const std::string cmdLine = stuff_in( syscfg.upload_c, create_chain_file(), directories[nDirectoryNum].path, stripfn(u->filename), szComPort, "" );
+		const string cmdLine = stuff_in( syscfg.upload_c, create_chain_file(), directories[nDirectoryNum].path, stripfn(u->filename), szComPort, "" );
         ExecuteExternalProgram( cmdLine, GetApplication()->GetSpawnOptions( SPWANOPT_ULCHK ) );
 
 		WFile file( directories[nDirectoryNum].path, stripfn( u->filename ) );
@@ -139,69 +143,60 @@ bool check_ul_event( int nDirectoryNum, uploadsrec * u )
     return true;
 }
 
-char (*devices)[9];
-int num_devices;
 
-#define NUM_OS2_DEVICES 17
-static char *OS2DeviceNames[] =
+static char *DeviceNames[] =
 {
     "KBD$", "PRN", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
     "COM8", "LPT1", "LPT2", "LPT3", "CLOCK$", "SCREEN$", "POINTER$", "MOUSE$"
 };
+const int NUM_DEVICES = 17; // length of DeviceNames
 
 
-void finddevs(char (*devs)[9], int *count)
+void finddevs(std::vector<string>& devices)
 {
-    *count = NUM_OS2_DEVICES;
-    if (devs)
+    devices.clear();
+    for (int i = 0; i < NUM_DEVICES; i++)
     {
-        for (int i = 0; i < NUM_OS2_DEVICES; i++)
-        {
-            strcpy(devs[i], OS2DeviceNames[i]);
-        }
+        devices.push_back(DeviceNames[i]);
     }
 }
 
 
-void find_devices()
-{
-    finddevs(NULL, &num_devices);
-    devices = (char (*)[9]) (BbsAllocA((num_devices + 2) * 9));
-    finddevs(devices, &num_devices);
-}
-
-
-bool okfn(const std::string filename)
+bool okfn(const string filename)
 {
 	if ( filename.empty() )
 	{
 		return false;
 	}
 
-    std::string::size_type len = filename.length();
+    string::size_type len = filename.length();
     if ( filename[0] == '-' || filename[0] == ' ' || filename[0] == '.' || filename[0] == '@' )
     {
         return false;
     }
 
-    for ( std::string::const_iterator iter = filename.begin(); iter != filename.end(); iter++ )
+    for ( string::const_iterator iter = filename.begin(); iter != filename.end(); iter++ )
     {
         unsigned char ch = (*iter);
         if ( ch == ' '  || ch == '/' || ch == '\\' || ch == ':'  ||
              ch == '>'  || ch == '<' || ch == '|'  || ch == '+'  ||
              ch == ','  || ch == ';' || ch == '^'  || ch == '\"' ||
-             ch == '\'' || ch > 126 )
+             ch == '\'' || ch == '`' || ch > 126 )
         {
             return false;
         }
     }
 
-    for (int i1 = 0; i1 < num_devices; i1++)
+    std::vector<string> devices;
+    finddevs(devices);
+
+    for( std::vector<string>::iterator iter = devices.begin(); iter != devices.end(); iter++ )
     {
-        int nDeviceLen = strlen(devices[i1]);
-        if (filename.substr(0, nDeviceLen) == devices[i1])
+        string device = (*iter);
+        string::size_type deviceLen = device.length();
+        if (filename.length() >= deviceLen && filename.substr(0, deviceLen) == device)
         {
-            if ( filename[nDeviceLen] == '\0' || filename[nDeviceLen] == '.' || nDeviceLen == 8 )
+            if ( filename[deviceLen] == '\0' || filename[deviceLen] == '.' || deviceLen == 8 )
             {
                 return false;
             }
@@ -213,9 +208,12 @@ bool okfn(const std::string filename)
 
 void print_devices()
 {
-    for ( int i = 0; i < num_devices; i++ )
+    std::vector<string> devices;
+    finddevs(devices);
+
+    for( std::vector<string>::iterator iter = devices.begin(); iter != devices.end(); iter++ )
     {
-        GetSession()->bout << devices[ i ];
+        GetSession()->bout << (*iter);
 		GetSession()->bout.NewLine();
     }
 }
@@ -262,13 +260,12 @@ void get_arc_cmd( char *pszOutBuffer, const char *pszArcFileName, int cmd, const
             {
                 return;
             }
-            std::string command = stuff_in( szArcCmd, pszArcFileName, ofn, "", "", "" );
+            string command = stuff_in( szArcCmd, pszArcFileName, ofn, "", "", "" );
             WWIV_make_abs_cmd( command );
 			strcpy( pszOutBuffer, command.c_str() );
             return;
         }
     }
-    BbsFreeMemory( arcs );
 }
 
 

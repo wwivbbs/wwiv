@@ -23,6 +23,7 @@
 #include "WStringUtils.h"
 #include "unittests/XferTest.h"
 #include "unittests/StuffInTest.h"
+#include "unittests/StringsTest.h"
 
 using std::string;
 using std::cout;
@@ -39,6 +40,7 @@ bool RunUnitTests( const string& suiteName )
     CppUnit::TextUi::TestRunner runner;
     runner.addTest( XferTest::suite() );
     runner.addTest( StuffInTest::suite() );
+    runner.addTest( StringsTest::suite() );
     runner.run();
 	
     return true;

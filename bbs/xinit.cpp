@@ -1486,8 +1486,6 @@ void WApplication::InitializeBBS()
         imodem( true );
         cleanup_net();
     }
-    find_devices();
-
     subconfnum = dirconfnum = 0;
 
 	XINIT_PRINTF( "* Reading Conferences.\r\n" );

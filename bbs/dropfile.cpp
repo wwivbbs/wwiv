@@ -28,37 +28,38 @@ int GetDoor32CommType();
 int GetDoor32TimeLeft(double seconds);
 void GetNamePartForDropFile(bool lastName, char *pszName);
 void create_drop_files();
-
+std::string GetComSpeedInDropfileFormat( unsigned long lComSpeed  );
 
 const std::string create_filename( int nDropFileType )
 {
-    std::string fileName = syscfgovr.tempdir;
+    std::ostringstream os;
+    os << syscfgovr.tempdir;
     switch ( nDropFileType )
 	{
     case CHAINFILE_CHAIN:
-        fileName += "chain.txt";
+        os << "chain.txt";
         break;
     case CHAINFILE_DORINFO:
-        fileName += "dorinfo1.def";
+        os << "dorinfo1.def";
         break;
     case CHAINFILE_PCBOARD:
-        fileName += "pcboard.sys";
+        os << "pcboard.sys";
         break;
     case CHAINFILE_CALLINFO:
-        fileName += "callinfo.bbs";
+        os << "callinfo.bbs";
         break;
     case CHAINFILE_DOOR:
-        fileName += "door.sys";
+        os << "door.sys";
         break;
     case CHAINFILE_DOOR32:
-		fileName += "door32.sys";
+		os << "door32.sys";
 		break;
     default:
 		// Default to CHAIN.TXT since this is the native WWIV dormat
-        fileName += "chain.txt";
+        os << "chain.txt";
         break;
     }
-    return std::string( fileName );
+    return std::string( os.str() );
 }
 
 
@@ -82,24 +83,21 @@ void GetNamePartForDropFile( bool lastName, char *pszName )
     }
 }
 
-bool GetComSpeedInDropfileFormat( std::string& cspeed, unsigned long lComSpeed  )
+std::string GetComSpeedInDropfileFormat( unsigned long lComSpeed  )
 {
     if ( lComSpeed == 1 || lComSpeed == 49664 )
 	{
-        cspeed = "115200";
+        lComSpeed = 115200;
 	}
-    else
-    {
-    	wwiv::stringUtils::FormatString( cspeed, "%u", lComSpeed );
-    }
-    return true;
+    std::ostringstream os;
+    os << lComSpeed;
+    return std::string( os.str()  );
 }
+
 
 long GetMinutesRemainingForDropFile()
 {
-    long lMinutesLeft = (static_cast<long>( nsl() / 60 )) - 1L;
-    lMinutesLeft = std::max<long>( lMinutesLeft, 0 );
-    return lMinutesLeft;
+    return std::max<long>( (static_cast<long>( nsl() / 60 )) - 1L, 0 );
 }
 
 
@@ -170,9 +168,7 @@ void CreatePCBoardSysDropFile()
             pcb.ansi = '0';
         }
         pcb.nodechat = 32;
-        std::string cspeed;
-        GetComSpeedInDropfileFormat(cspeed, com_speed);
-        sprintf( pcb.openbps, "%-5.5s", cspeed.c_str() );
+        sprintf( pcb.openbps, "%-5.5s", GetComSpeedInDropfileFormat( com_speed ).c_str() );
         if ( !incom )
 		{
             strcpy( pcb.connectbps, "Local" );
@@ -276,8 +272,7 @@ void CreateCallInfoBbsDropFile()
         szTemp[2] = '\0';
         memmove( &( szDate[ 8 - strlen( szTemp ) ] ), &( szTemp[0] ), strlen( szTemp ) );
         file.WriteFormatted( "%s\n", szDate );
-        std::string cspeed;
-        GetComSpeedInDropfileFormat(cspeed, com_speed);
+        std::string cspeed = GetComSpeedInDropfileFormat( com_speed );
         file.WriteFormatted( "%s\n", ( incom ) ? cspeed.c_str() : "14400" );
         file.Close();
     }
@@ -316,14 +311,12 @@ void CreateDoor32SysDropFile()
     std::string fileName = create_filename( CHAINFILE_DOOR32 );
     WFile::Remove( fileName );
 
-    std::string cspeed;
-    GetComSpeedInDropfileFormat( cspeed, com_speed );
     WTextFile file( fileName, "wt" );
     if (file.IsOpen())
     {
 		file.WriteFormatted( "%d\n",		    GetDoor32CommType() );
 		file.WriteFormatted( "%u\n",            GetSession()->remoteIO()->GetDoorHandle() );
-		file.WriteFormatted( "%s\n",		    cspeed.c_str() );
+		file.WriteFormatted( "%s\n",		    GetComSpeedInDropfileFormat( com_speed ).c_str() );
 		file.WriteFormatted( "WWIV %s\n",       wwiv_version );
 		file.WriteFormatted( "999999\n");       // we don't want to share this
 		file.WriteFormatted( "%s\n",	        GetSession()->GetCurrentUser()->GetRealName() );
@@ -346,12 +339,10 @@ void CreateDoorSysDropFile()
     WTextFile file( fileName, "wt" );
     if (file.IsOpen())
 	{
-        std::string cspeed;
-        GetComSpeedInDropfileFormat(cspeed, com_speed);
         char szLine[255];
         sprintf(szLine, "COM%d\n%s\n%c\n%u\n%u\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
             (GetSession()->using_modem) ? syscfgovr.primaryport : 0,
-			cspeed.c_str(),
+			GetComSpeedInDropfileFormat( com_speed ).c_str(),
             '8',
             GetApplication()->GetInstanceNumber(),                       // node
             (GetSession()->using_modem) ? modem_speed : 14400,
@@ -550,15 +541,7 @@ int GetDoor32Emulation()
 
 int GetDoor32TimeLeft(double seconds)
 {
-	if ( seconds <= 0 )
-	{
-		return 0;
-	}
-
-	int minLeft = static_cast<int>( seconds / 60 );
-
-	return minLeft;
-
+    return ( seconds <= 0 ) ? 0 : static_cast<int>( seconds / 60 );
 }
 
 
