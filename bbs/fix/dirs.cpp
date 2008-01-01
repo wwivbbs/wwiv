@@ -32,9 +32,9 @@ void checkAllDirsExist()
     while(dirs[i] != NULL)
     {
         WFile dir(dirs[i]);
-        if(!checkDirExists(dir, dir.GetFullPathName()))
+        if(!checkDirExists(dir, dir.GetFullPathName().c_str()))
         {
-            Print(NOK, true, "%s directory is missing", dir.GetFullPathName());
+            Print(NOK, true, "%s directory is missing", dir.GetFullPathName().c_str());
             giveUp();
         }
 	i++;
@@ -60,7 +60,7 @@ void checkFileAreas()
 		{
 		    if(!recordFile.Open(WFile::modeReadWrite | WFile::modeBinary))
 		    {
-	                Print(NOK, true, "Unable to open '%s'", recordFile.GetFullPathName());
+	                Print(NOK, true, "Unable to open '%s'", recordFile.GetFullPathName().c_str());
 		    }
 		    else
 		    {
@@ -152,7 +152,7 @@ void checkFileAreas()
 		}
 		else
 		{
-	            Print(NOK, true, "Directory '%s' missing file '%s'", directories[i].name, recordFile.GetFullPathName());
+	            Print(NOK, true, "Directory '%s' missing file '%s'", directories[i].name, recordFile.GetFullPathName().c_str());
 		}
 	    }
 	}
