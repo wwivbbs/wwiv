@@ -92,14 +92,14 @@ void ListAllColors();
 // File: bbsutl.cpp
 
 void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long lBufferLength);
-bool inli( std::string &outBuffer, std::string rollOver, int nMaxLen, bool bAddCRLF = true, bool bAllowPrevious = false, bool bTwoColorChatMode = false);
-bool inli( char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF = true, bool bAllowPrevious = false, bool bTwoColorChatMode = false );
+bool inli( std::string &outBuffer, std::string rollOver, std::string::size_type nMaxLen, bool bAddCRLF = true, bool bAllowPrevious = false, bool bTwoColorChatMode = false);
+bool inli( char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bool bAddCRLF = true, bool bAllowPrevious = false, bool bTwoColorChatMode = false );
 bool so();
 bool cs();
 bool lcs();
 void checka(bool *abort, bool *next);
 void pla(const std::string text, bool *abort);
-void plal(const std::string text, int limit, bool *abort);
+void plal(const std::string text, std::string::size_type limit, bool *abort);
 bool sysop2();
 bool checkcomp(const char *pszComputerType);
 int  check_ansi();
@@ -867,8 +867,6 @@ void get_ed_info();
 unsigned long bytes_to_k(unsigned long lBytes);
 int  check_batch_queue( const char *pszFileName );
 bool check_ul_event( int nDirectoryNum, uploadsrec * pUploadRecord );
-void finddevs(char (*devs)[9], int *count);
-void find_devices();
 bool okfn( const std::string fileName );
 void print_devices();
 void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const char *ofn);

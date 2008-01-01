@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)2007, WWIV Software Services                  */
+/*             Copyright (C)2008, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -21,33 +21,26 @@
 #include "wwiv.h"
 #include "WOutStreamBuffer.h"
 #include "WStringUtils.h"
-#include "XferTest.h"
+#include "StringsTest.h"
 
 using std::cout;
 using std::endl;
 using std::ostringstream;
 using std::string;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( XferTest );
+CPPUNIT_TEST_SUITE_REGISTRATION( StringsTest );
 
 
-void XferTest::testOkfn()
+void StringsTest::testStripColors()
 {
-    CPPUNIT_ASSERT( !okfn("") );
-    CPPUNIT_ASSERT( okfn("foo") );
-    CPPUNIT_ASSERT( okfn("foo.bar") );
-    CPPUNIT_ASSERT( !okfn("/foo") );
-    CPPUNIT_ASSERT( !okfn("<foo") );
-    CPPUNIT_ASSERT( !okfn(">foo") );
-    CPPUNIT_ASSERT( !okfn("`foo") );
-    CPPUNIT_ASSERT( !okfn("-foo") );
-    CPPUNIT_ASSERT( !okfn(" foo") );
-    CPPUNIT_ASSERT( !okfn("@foo") );
-    CPPUNIT_ASSERT( !okfn(".foo") );
-    CPPUNIT_ASSERT( !okfn("COM1") );
-    CPPUNIT_ASSERT( !okfn("PRN") );
-    CPPUNIT_ASSERT( !okfn("KBD$") );
-    CPPUNIT_ASSERT( okfn("COM1A") );
+    CPPUNIT_ASSERT_EQUAL( string(""), stripcolors(string("")) );
+    CPPUNIT_ASSERT_EQUAL( string("|"), stripcolors(string("|")) );
+    CPPUNIT_ASSERT_EQUAL( string("|0"), stripcolors(string("|0")) );
+    CPPUNIT_ASSERT_EQUAL( string("12345"), stripcolors(string("12345")) );
+    CPPUNIT_ASSERT_EQUAL( string("abc"), stripcolors(string("abc")) );
+    CPPUNIT_ASSERT_EQUAL( string("1 abc"), stripcolors(string("\x031 abc")) );
+    CPPUNIT_ASSERT_EQUAL( string("\x03 abc"), stripcolors(string("\x03 abc")) );
+    CPPUNIT_ASSERT_EQUAL( string("abc"), stripcolors(string("|15abc")) );
 }
 
 
