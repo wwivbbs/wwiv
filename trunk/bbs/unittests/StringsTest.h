@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)2007, WWIV Software Services                  */
+/*             Copyright (C)2008, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,39 +16,25 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if defined ( _DEBUG )
+#ifndef __INCLUDED_STRINGS_TEST_H__
+#define __INCLUDED_STRINGS_TEST_H__
 
-#include "wwiv.h"
-#include "WOutStreamBuffer.h"
-#include "WStringUtils.h"
-#include "XferTest.h"
+#ifdef _MSC_VER
+#pragma once
+#endif
 
-using std::cout;
-using std::endl;
-using std::ostringstream;
-using std::string;
+#include "cppunit/extensions/HelperMacros.h"
+#include "cppunit/TestCase.h"
+#include "cppunit/ui/text/TestRunner.h"
+#include "cppunit/TestCaller.h"
 
-CPPUNIT_TEST_SUITE_REGISTRATION( XferTest );
+class StringsTest : public CppUnit::TestCase {
+   CPPUNIT_TEST_SUITE( StringsTest );
+   CPPUNIT_TEST( testStripColors );
+   CPPUNIT_TEST_SUITE_END( );
 
-
-void XferTest::testOkfn()
-{
-    CPPUNIT_ASSERT( !okfn("") );
-    CPPUNIT_ASSERT( okfn("foo") );
-    CPPUNIT_ASSERT( okfn("foo.bar") );
-    CPPUNIT_ASSERT( !okfn("/foo") );
-    CPPUNIT_ASSERT( !okfn("<foo") );
-    CPPUNIT_ASSERT( !okfn(">foo") );
-    CPPUNIT_ASSERT( !okfn("`foo") );
-    CPPUNIT_ASSERT( !okfn("-foo") );
-    CPPUNIT_ASSERT( !okfn(" foo") );
-    CPPUNIT_ASSERT( !okfn("@foo") );
-    CPPUNIT_ASSERT( !okfn(".foo") );
-    CPPUNIT_ASSERT( !okfn("COM1") );
-    CPPUNIT_ASSERT( !okfn("PRN") );
-    CPPUNIT_ASSERT( !okfn("KBD$") );
-    CPPUNIT_ASSERT( okfn("COM1A") );
-}
-
+protected:
+    void testStripColors();
+};
 
 #endif

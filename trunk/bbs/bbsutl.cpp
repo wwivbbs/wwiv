@@ -58,7 +58,7 @@ void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long l
 }
 
 
-bool inli( std::string &outBuffer, std::string rollOver, int nMaxLen, bool bAddCRLF, bool bAllowPrevious, bool bTwoColorChatMode)
+bool inli( std::string &outBuffer, std::string rollOver, std::string::size_type nMaxLen, bool bAddCRLF, bool bAllowPrevious, bool bTwoColorChatMode)
 {
     char szBuffer[ 4096 ] = {0}, szRollover[ 4096 ] = {0};
     strcpy( szBuffer, outBuffer.c_str() );
@@ -71,9 +71,8 @@ bool inli( std::string &outBuffer, std::string rollOver, int nMaxLen, bool bAddC
 
 
 // returns true if needs to keep inputting this line
-bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool bAllowPrevious, bool bTwoColorChatMode)
+bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bool bAddCRLF, bool bAllowPrevious, bool bTwoColorChatMode)
 {
-    int i, i1;
     char szRollOver[255];
 
 	WWIV_ASSERT(pszBuffer);
@@ -85,7 +84,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
     if (pszRollover[0] != 0)
     {
         char* ss = szRollOver;
-        for (i = 0; pszRollover[i]; i++)
+        for (int i = 0; pszRollover[i]; i++)
         {
             if ( pszRollover[i] == CC || pszRollover[i] == CO )
             {
@@ -117,7 +116,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
         }
         pszRollover[0] = '\0';
     }
-    int cp = 0;
+    std::string::size_type cp = 0;
     bool done = false;
     unsigned char ch = '\0';
     do
@@ -175,7 +174,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                 }
                 else if (pszBuffer[cp - 2] == CO)
                 {
-                    for (i = strlen( interpret(pszBuffer[cp - 1])); i > 0; i--)
+                    for (std::string::size_type i = strlen( interpret(pszBuffer[cp - 1])); i > 0; i--)
                     {
                         GetSession()->bout.BackSpace();
                     }
@@ -264,7 +263,7 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
                     pszBuffer[cp++] = ch;
                     GetSession()->bout.Color( ch - '0' );
                 }
-                else if ((ch == CP) && (cp < nMaxLen - 2))
+                else if ( ch == CP && cp < nMaxLen - 2 )
                 {
                     ch = getkey();
                     if (ch != CP)
@@ -280,14 +279,16 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
             }
             break;
         case TAB:                             // Tab
-            i = 5 - (cp % 5);
-            if ( (cp + i) < nMaxLen && (GetSession()->localIO()->WhereX() + i) < GetSession()->GetCurrentUser()->GetScreenChars() )
             {
-                i = 5 - ((GetSession()->localIO()->WhereX() + 1) % 5);
-                for (i1 = 0; i1 < i; i1++)
+                int charsNeeded = 5 - (cp % 5);
+                if ( (cp + charsNeeded) < nMaxLen && (GetSession()->localIO()->WhereX() + charsNeeded) < GetSession()->GetCurrentUser()->GetScreenChars() )
                 {
-                    pszBuffer[cp++] = SPACE;
-                    bputch( SPACE );
+                    charsNeeded = 5 - ((GetSession()->localIO()->WhereX() + 1) % 5);
+                    for (int j = 0; j < charsNeeded; j++)
+                    {
+                        pszBuffer[cp++] = SPACE;
+                        bputch( SPACE );
+                    }
                 }
             }
             break;
@@ -296,28 +297,28 @@ bool inli(char *pszBuffer, char *pszRollover, int nMaxLen, bool bAddCRLF, bool b
 
   if ( ch != RETURN )
   {
-      i = cp - 1;
-      while ( i > 0 && pszBuffer[i] != SPACE && pszBuffer[i] != BACKSPACE )
+      std::string::size_type lastwordstart = cp - 1;
+      while ( lastwordstart > 0 && pszBuffer[lastwordstart] != SPACE && pszBuffer[lastwordstart] != BACKSPACE )
       {
-          i--;
+          lastwordstart--;
       }
-      if ( i > (GetSession()->localIO()->WhereX() / 2) && i != (cp - 1) )
+      if ( lastwordstart > (GetSession()->localIO()->WhereX() / 2) && lastwordstart != (cp - 1) )
       {
-          i1 = cp - i - 1;
-          for (i = 0; i < i1; i++)
+          std::string::size_type lastwordlen = cp - lastwordstart - 1;
+          for (std::string::size_type j = 0; j < lastwordlen; j++)
           {
               bputch( BACKSPACE );
           }
-          for (i = 0; i < i1; i++)
+          for (std::string::size_type j = 0; j < lastwordlen; j++)
           {
               bputch(SPACE);
           }
-          for (i = 0; i < i1; i++)
+          for (std::string::size_type j = 0; j < lastwordlen; j++)
           {
-              pszRollover[i] = pszBuffer[cp - i1 + i];
+              pszRollover[j] = pszBuffer[cp - lastwordlen + j];
           }
-          pszRollover[i1] = '\0';
-          cp -= i1;
+          pszRollover[lastwordlen] = '\0';
+          cp -= lastwordlen;
       }
       pszBuffer[cp++] = CA;
       pszBuffer[cp] = '\0';
@@ -441,7 +442,7 @@ void pla(const std::string text, bool *abort)
     }
 }
 
-void plal(const std::string text, int limit, bool *abort)
+void plal(const std::string text, std::string::size_type limit, bool *abort)
 {
     CheckForHangup();
     if (hangup)
@@ -452,10 +453,8 @@ void plal(const std::string text, int limit, bool *abort)
     bool next;
     checka(abort, &next);
 
-    char* pszTempBuffer = WWIV_STRDUP( text.c_str() );
-    limit += text.length() - strlen(stripcolors(pszTempBuffer));
-	BbsFreeMemory(pszTempBuffer);
-    int nCharsDisplayed = 0;
+    limit += text.length() - stripcolors(text).length();
+    std::string::size_type nCharsDisplayed = 0;
     for( std::string::const_iterator iter = text.begin(); iter != text.end() && nCharsDisplayed++ < limit && !*abort; ++iter )
     {
         if ( *iter != '\r' && *iter != '\n' )

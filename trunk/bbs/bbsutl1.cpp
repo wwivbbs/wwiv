@@ -409,7 +409,7 @@ bool play_sdf( const std::string soundFileName, bool abortable )
 	// append gfilesdir if no path specified
     if ( soundFileName.find( WWIV_FILE_SEPERATOR_CHAR ) == std::string::npos )
 	{
-        std::stringstream ss;
+        std::ostringstream ss;
         ss << syscfg.gfilesdir << soundFileName;
         fullPathName = ss.str();
 	}

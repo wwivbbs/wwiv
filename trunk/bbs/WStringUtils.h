@@ -67,6 +67,7 @@ const char *charstr( int nStringLength, int chRepeatChar );
 void StringTrimEnd( char *pszString );
 std::string& StringTrim( std::string& s );
 char *stripcolors( const char *pszOrig );
+std::string stripcolors( const std::string& orig);
 unsigned char upcase( unsigned char ch );
 unsigned char locase( unsigned char ch );
 char *StringJustify(char *pszString, int nLength, int bg, int nJustificationType);

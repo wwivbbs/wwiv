@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <cstdarg>
 #include "wwivassert.h"
@@ -177,7 +178,7 @@ const char *charstr( int nStringLength, int chRepeatChar )
 void StringTrimEnd( char *pszString )
 {
 	WWIV_ASSERT( pszString );
-    int i = strlen( pszString );
+    std::string::size_type i = strlen( pszString );
     while ( ( i > 0 ) && ( pszString[i - 1] == SPACE ) )
     {
         WWIV_ASSERT( i > 0 );
@@ -221,7 +222,7 @@ char *stripcolors( const char *pszOrig )
     char * pn = szNewString;
     while( *po )
     {
-        if ( ( *po == '|' ) &&
+        if ( ( *po == '|' ) && *(po+1) && *(po+2) && 
              IsColorCode( *( po + 1 ) ) &&
              IsColorCode( *( po + 2 ) ) )
         {
@@ -239,6 +240,27 @@ char *stripcolors( const char *pszOrig )
     }
     *pn++ = '\0';
     return szNewString;
+}
+//TODO(rushfan): Write unit tests for this
+std::string stripcolors( const std::string& orig )
+{
+    std::ostringstream os;
+    for( std::string::const_iterator i = orig.begin(); i != orig.end(); i++ )
+    {
+        if (*i == '|' && (i+1) != orig.end() && (i+2) != orig.end() && IsColorCode(*(i+1)) && IsColorCode(*(i+2)) )
+        {
+            ++i; ++i;
+        }
+        else if (*i == 3 && i+1 < orig.end() && isdigit(*(i+1)) ) 
+        {
+            ++i;
+        }
+        else
+        {
+            os << *i;
+        }
+    }
+    return std::string( os.str() );
 }
 
 

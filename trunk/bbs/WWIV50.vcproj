@@ -311,10 +311,6 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
-			<File
-				RelativePath=".\unittests.cpp"
-				>
-			</File>
 			<Filter
 				Name="platform Source"
 				>
@@ -1046,6 +1042,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\unittests.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\user.cpp"
 					>
 				</File>
@@ -1281,6 +1281,14 @@
 			<Filter
 				Name="unittests"
 				>
+				<File
+					RelativePath=".\unittests\StringsTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\unittests\StringsTest.h"
+					>
+				</File>
 				<File
 					RelativePath=".\unittests\StuffInTest.cpp"
 					>

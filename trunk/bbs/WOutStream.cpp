@@ -161,7 +161,7 @@ void WOutStream::BackLine()
 {
     Color( 0 );
     bputch(SPACE);
-    for (int i = localIO()->WhereX(); i > 0; i--)
+    for (int i = localIO()->WhereX()+1; i >= 0; i--)
     {
         this->BackSpace();
     }
