@@ -31,21 +31,23 @@
  */
 void* BbsAllocWithComment( size_t lNumBytes, char *pszComment )
 {
-	WWIV_ASSERT( lNumBytes >= 0 );
+    WWIV_ASSERT( lNumBytes >= 0 );
     if ( lNumBytes <= 0 )
     {
         lNumBytes = 1;
     }
     void* pBuffer = bbsmalloc( lNumBytes );
+#ifndef NOT_BBS
     if ( !pBuffer )
     {
-		char szBuffer[ 255 ];
+	char szBuffer[ 255 ];
         snprintf( szBuffer, sizeof( szBuffer ), "Insufficient memory (%ld bytes) for %s.\n", lNumBytes, pszComment );
-		std::cout << szBuffer;
-		WWIV_OutputDebugString( szBuffer );
+	std::cout << szBuffer;
+	WWIV_OutputDebugString( szBuffer );
         GetApplication()->AbortBBS();
     }
     memset( ( void * ) pBuffer, 0, lNumBytes );
+#endif
     return pBuffer;
 }
 
@@ -62,16 +64,18 @@ void *BbsAllocA( size_t lNumBytes )
     WWIV_ASSERT( lNumBytes > 0 );
 
     void* pBuffer = bbsmalloc( lNumBytes + 1 );
-	memset( pBuffer, 0, lNumBytes );
+    memset( pBuffer, 0, lNumBytes );
     WWIV_ASSERT( pBuffer );
+#ifndef NOT_BBS 
     if ( pBuffer == NULL )
     {
         GetSession()->bout << "\r\nNot enough memory, needed " << lNumBytes << " bytes.\r\n\n";
         char szLogLine[ 255 ];
         snprintf( szLogLine, sizeof( szLogLine ), "!!! Ran out of memory, needed %ld bytes !!!", lNumBytes );
         sysoplog( szLogLine );
-		WWIV_OutputDebugString( szLogLine );
+	WWIV_OutputDebugString( szLogLine );
     }
+#endif
     return pBuffer;
 }
 
@@ -79,27 +83,33 @@ void *BbsAllocA( size_t lNumBytes )
 char **BbsAlloc2D(int nRow, int nCol, int nSize )
 {
     WWIV_ASSERT( nSize > 0 );
-	const char szErrorMessage[] = "WWIV: BbsAlloc2D: Memory Allocation Error -- Please inform the SysOp!";
+#ifndef NOT_BBS 
+    const char szErrorMessage[] = "WWIV: BbsAlloc2D: Memory Allocation Error -- Please inform the SysOp!";
+#endif
 
     char* pdata = reinterpret_cast<char*>( calloc( nRow * nCol, nSize ) );
     if ( pdata == NULL )
     {
+#ifndef NOT_BBS 
         GetSession()->bout << szErrorMessage;
-		WWIV_OutputDebugString( szErrorMessage );
-		sysoplog( szErrorMessage );
+	WWIV_OutputDebugString( szErrorMessage );
+	sysoplog( szErrorMessage );
         hangup = true;
-		GetSession()->bout.NewLine();
+	GetSession()->bout.NewLine();
+#endif
         return NULL;
     }
     char** prow = static_cast< char ** >( BbsAllocA( nRow * sizeof( char * ) ) );
     if ( prow == ( char ** ) NULL )
     {
+#ifndef NOT_BBS 
         GetSession()->bout << szErrorMessage;
-		WWIV_OutputDebugString( szErrorMessage );
-		sysoplog( szErrorMessage );
+	WWIV_OutputDebugString( szErrorMessage );
+	sysoplog( szErrorMessage );
         hangup = true;
+	GetSession()->bout.NewLine();
+#endif
         BbsFreeMemory( pdata );
-		GetSession()->bout.NewLine();
         return NULL;
     }
     for ( int i = 0; i < nRow; i++ )

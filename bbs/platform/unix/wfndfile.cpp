@@ -254,8 +254,6 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 	nCurrentEntry = 0;
 
 	next();
-	nCurrentEntry = 0;
-	//std::cout << "wfndfile matches = " << nMatches << std::endl;
 	return ( nMatches > 0 );
 }
 
