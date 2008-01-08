@@ -40,7 +40,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)..\include&quot;;&quot;$(ProjectDir)..\deps\pdcurses\3.2\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\include&quot;;&quot;$(SolutionDir)\..\deps\pdcurses-3.2\include&quot;"
 				RuntimeLibrary="1"
 				DebugInformationFormat="3"
 			/>
@@ -97,7 +97,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.2\include&quot;;$(SolutionDir)\include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\deps\pdcurses-3.2\include&quot;;$(SolutionDir)\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -204,171 +204,171 @@
 					Name="common"
 					>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\addch.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\addch.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\addchstr.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\addchstr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\addstr.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\addstr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\attr.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\attr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\beep.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\beep.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\bkgd.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\bkgd.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\border.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\border.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\clear.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\clear.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\color.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\color.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\include\curspriv.h"
+						RelativePath="..\..\deps\pdcurses-3.2\include\curspriv.h"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\debug.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\debug.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\delch.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\delch.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\deleteln.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\deleteln.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\deprec.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\deprec.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\getch.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\getch.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\getstr.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\getstr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\getyx.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\getyx.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\inch.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\inch.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\inchstr.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\inchstr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\initscr.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\initscr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\inopts.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\inopts.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\insch.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\insch.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\insstr.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\insstr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\instr.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\instr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\kernel.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\kernel.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\keyname.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\keyname.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\mouse.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\mouse.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\move.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\move.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\outopts.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\outopts.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\overlay.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\overlay.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\pad.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\pad.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\printw.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\printw.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\refresh.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\refresh.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\scanw.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\scanw.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\scr_dump.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\scr_dump.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\scroll.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\scroll.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\slk.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\slk.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\termattr.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\termattr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\terminfo.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\terminfo.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\touch.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\touch.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\util.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\util.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\pdcurses\window.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\pdcurses\window.c"
 						>
 					</File>
 				</Filter>
@@ -376,39 +376,39 @@
 					Name="win32"
 					>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\win32\pdcclip.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\win32\pdcclip.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\win32\pdcdisp.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\win32\pdcdisp.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\win32\pdcgetsc.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\win32\pdcgetsc.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\win32\pdckbd.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\win32\pdckbd.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\win32\pdcscrn.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\win32\pdcscrn.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\win32\pdcsetsc.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\win32\pdcsetsc.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\win32\pdcurses.rc"
+						RelativePath="..\..\deps\pdcurses-3.2\src\win32\pdcurses.rc"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\win32\pdcutil.c"
+						RelativePath="..\..\deps\pdcurses-3.2\src\win32\pdcutil.c"
 						>
 					</File>
 					<File
-						RelativePath="..\deps\pdcurses\3.2\src\win32\pdcwin.h"
+						RelativePath="..\..\deps\pdcurses-3.2\src\win32\pdcwin.h"
 						>
 					</File>
 				</Filter>

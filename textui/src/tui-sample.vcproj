@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\include&quot;;&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\include&quot;;&quot;$(SolutionDir)\..\deps\pdcurses-3.2\include&quot;"
 				PreprocessorDefinitions="_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -116,7 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\include&quot;;&quot;$(SolutionDir)\deps\pdcurses\3.1\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\include&quot;;&quot;$(SolutionDir)\..\deps\pdcurses-3.2\include&quot;"
 				RuntimeLibrary="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -134,7 +134,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="TUI.lib  user32.lib advapi32.lib"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)\deps\pdcurses\3.1\lib&quot;;&quot;$(SolutionDir)\Release&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\Release&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
