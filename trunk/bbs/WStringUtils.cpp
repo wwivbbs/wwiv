@@ -624,6 +624,51 @@ char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, 
     return q;
 }
 
+void properize( char *pszText )
+{
+    if ( pszText == NULL )
+    {
+        return;
+    }
+
+    for (int i = 0; i < wwiv::stringUtils::GetStringLength(pszText); i++)
+    {
+        if ((i == 0) || ((i > 0) && ((pszText[i - 1] == ' ') || (pszText[i - 1] == '-') ||
+            (pszText[i - 1] == '.'))))
+        {
+            pszText[i] = wwiv::UpperCase<char>(pszText[i]);
+        }
+        else
+        {
+			pszText[i] = wwiv::LowerCase(pszText[i]);
+        }
+    }
+}
+
+
+std::string properize( const std::string text )
+{
+    if ( text.empty() )
+    {
+        return std::string("");
+    }
+
+    char last = ' ';
+    std::ostringstream os;
+    for (std::string::const_iterator i = text.begin(); i != text.end(); i++)
+    {
+        if ( last == ' ' || last == '-' || last == '.' ) {
+            os << wwiv::UpperCase<char>(*i);
+        } else {
+            os << wwiv::LowerCase<char>(*i);
+        }
+        last = *i;
+    }
+    return std::string( os.str() );
+}
+
+
+
 
 #if defined( WWIV_STRICMP )
 #undef WWIV_STRICMP

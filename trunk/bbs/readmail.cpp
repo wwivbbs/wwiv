@@ -382,8 +382,7 @@ void readmail( int mode )
 	int i, i1, i2, i3, curmail = 0, tp, nn = 0, delme;
 	bool done, okmail;
 	unsigned short xx;
-	char s[201], s1[205], s2[81], *b, *ss1, *ss2, mnu[81];
-	char buf[255];
+	char s[201], s1[205], s2[81], *ss1, *ss2, mnu[81];
 	mailrec m, m1;
 	postrec p;
 	char ch;
@@ -543,7 +542,7 @@ void readmail( int mode )
 					}
 					else
 					{
-						b = readfile( &( m.msg ), "email", &len );
+						char *b = readfile( &( m.msg ), "email", &len );
 						if ( b )
 						{
 							strncpy( s2, b, sizeof( s2 ) - 1 );
@@ -555,7 +554,7 @@ void readmail( int mode )
 							else
 							{
 								sprintf(s1, "%s %u@%u.%s (%s)",
-									stripcolors( strip_to_node( ss2, buf ) ),
+									stripcolors( strip_to_node( ss2 ).c_str() ),
 									m.fromuser,
 									m.fromsys,
 									net_networks[nn].name,
@@ -879,7 +878,7 @@ void readmail( int mode )
 			case 'E':
 				if ( so() && okmail )
 				{
-					b = readfile(&(m.msg), "email", &len);
+					char *b = readfile(&(m.msg), "email", &len);
 					extract_out( b, len, m.title, m.daten );
 				}
 				i1 = 0;
@@ -1043,7 +1042,7 @@ void readmail( int mode )
 					}
 					if (i != -1)
 					{
-						b = readfile(&(m.msg), "email", &len);
+						char *b = readfile(&(m.msg), "email", &len);
 
 						strcpy(p.title, m.title);
 						p.anony = m.anony;
@@ -1177,7 +1176,7 @@ void readmail( int mode )
 				GetSession()->bout.NewLine( 2 );
 				if ( okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote() )
 				{
-					b=readfile(&(m.msg), "email", &len);
+					char *b = readfile(&(m.msg), "email", &len);
 					auto_quote(b, len, 4, m.daten);
 					send_email();
 					break;
@@ -1280,7 +1279,7 @@ void readmail( int mode )
 								}
 								else
 								{
-									b = readfile(&(m.msg), "email", &len);
+									char *b = readfile(&(m.msg), "email", &len);
 									savefile(b, len, &(m.msg), "email");
 								}
 								m.status |= status_forwarded;
@@ -1354,7 +1353,7 @@ void readmail( int mode )
 				{
 					if (okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote() )
 					{
-						b=readfile(&(m.msg), "email", &len);
+						char *b=readfile(&(m.msg), "email", &len);
 						if (s[0] == '@')
 						{
 							auto_quote(b, len, 1, m.daten);
@@ -1511,7 +1510,7 @@ void readmail( int mode )
 				if ( curmail >= 0 )
 				{
                     std::string downloadFileName;
-					b = readfile(&(m.msg), "email", &len);
+					char *b = readfile(&(m.msg), "email", &len);
 					GetSession()->bout << "E-mail download -\r\n\n|#2Filename: ";
 					input( downloadFileName, 12 );
                     if ( !okfn( downloadFileName.c_str() ) )

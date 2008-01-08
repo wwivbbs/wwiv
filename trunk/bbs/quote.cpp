@@ -355,7 +355,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime)
 {
 	char s1[81], s2[81], buf[255],
 		*p, *b,
-		tb[81], b1[81],
+		b1[81],
 		*tb1;
 
 
@@ -385,13 +385,12 @@ void auto_quote(char *org, long len, int type, time_t tDateTime)
 		strcpy( s2, W_DateString( tDateTime, "WDT", "at" ) );
 
 		//    s2[strlen(s2)-1]='\0';
-		strip_to_node(s1, tb);
-		properize(tb);
+        std::string tb = properize(strip_to_node(s1));
 		tb1 = GetQuoteInitials();
 		switch (type)
         {
 		case 1:
-			sprintf(buf,"\003""3On \003""1%s, \003""2%s\003""3 wrote:\003""0",s2,tb);
+			sprintf(buf,"\003""3On \003""1%s, \003""2%s\003""3 wrote:\003""0",s2,tb.c_str());
 			break;
 		case 2:
 			sprintf(buf,"\003""3In your e-mail of \003""2%s\003""3, you wrote:\003""0",s2);
@@ -401,7 +400,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime)
 			break;
 		case 4:
 			sprintf(buf,"\003""3Message forwarded from \003""2%s\003""3, sent on %s.\003""0",
-				tb,s2);
+				tb.c_str(),s2);
 			break;
 		}
 		strcat(buf,"\r\n");

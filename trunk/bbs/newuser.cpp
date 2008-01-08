@@ -1477,28 +1477,6 @@ bool check_zip( const char *pszZipCode, int mode )
 }
 
 
-void properize( char *pszText )
-{
-    if ( pszText == NULL )
-    {
-        return;
-    }
-
-    for (int i = 0; i < wwiv::stringUtils::GetStringLength(pszText); i++)
-    {
-        if ((i == 0) || ((i > 0) && ((pszText[i - 1] == ' ') || (pszText[i - 1] == '-') ||
-            (pszText[i - 1] == '.'))))
-        {
-            pszText[i] = wwiv::UpperCase<char>(pszText[i]);
-        }
-        else
-        {
-			pszText[i] = wwiv::LowerCase(pszText[i]);
-        }
-    }
-}
-
-
 bool check_dupes( const char *pszPhoneNumber )
 {
     int nUserNumber = find_phone_number( pszPhoneNumber );
@@ -1809,30 +1787,22 @@ void DoMinimalNewUser()
 
 void new_mail()
 {
-    int save_ed, nAllowAnon = 0;
-    messagerec msg;
-
-    char szMailFileName[MAX_PATH];
-    if ( GetSession()->GetCurrentUser()->GetSl() > syscfg.newusersl )
-    {
-        sprintf( szMailFileName, "%s%s", syscfg.gfilesdir, NEWSYSOP_MSG );
-    }
-    else
-    {
-        sprintf( szMailFileName, "%s%s", syscfg.gfilesdir, NEWMAIL_MSG );
-    }
-    if ( !WFile::Exists( szMailFileName ) )
+    WFile file(syscfg.gfilesdir, ( GetSession()->GetCurrentUser()->GetSl() > syscfg.newusersl ) ? NEWSYSOP_MSG : NEWMAIL_MSG );
+    if ( !file.Exists() )
     {
         return;
     }
     GetSession()->SetNewMailWaiting( true );
-    save_ed = GetSession()->GetCurrentUser()->GetDefaultEditor();
+    int save_ed = GetSession()->GetCurrentUser()->GetDefaultEditor();
     GetSession()->GetCurrentUser()->SetDefaultEditor( 0 );
-    LoadFileIntoWorkspace( szMailFileName, true );
+    LoadFileIntoWorkspace( file.GetFullPathName().c_str(), true );
     use_workspace = true;
-    msg.storage_type = 2;
     std::string userName = GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum );
     sprintf( irt, "Welcome to %s!", syscfg.systemname );
+
+    int nAllowAnon = 0;
+    messagerec msg;
+    msg.storage_type = 2;
     inmsg( &msg, irt, &nAllowAnon, false, "email", INMSG_NOFSED, userName.c_str(), MSGED_FLAG_NONE, true );
     sendout_email( irt, &msg, 0, GetSession()->usernum, 0, 1, 1, 0, 1, 0 );
     GetSession()->GetCurrentUser()->SetNumMailWaiting( GetSession()->GetCurrentUser()->GetNumMailWaiting() + 1 );

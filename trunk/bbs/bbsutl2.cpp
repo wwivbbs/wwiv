@@ -104,15 +104,14 @@ const char *ctypes(int num)
  * @param abort The abort flag (Output Parameter)
  * @param next The next flag (Output Parameter)
  */
-void osan(const char *pszText, bool *abort, bool *next)
+void osan(const std::string text, bool *abort, bool *next)
 {
 	CheckForHangup();
 	checka(abort, next);
 
-    int nCurPos = 0;
-	while ( pszText[nCurPos] && !(*abort) && !hangup )
+    for( std::string::const_iterator iter = text.begin(); iter != text.end() && !(*abort) && !hangup; iter++ )
 	{
-		bputch( pszText[nCurPos++], true );   // RF20020927 use buffered bputch
+		bputch( *iter, true );   // RF20020927 use buffered bputch
 		checka( abort, next );
 	}
     FlushOutComChBuffer();
@@ -129,10 +128,10 @@ void osan(const char *pszText, bool *abort, bool *next)
  * @param abort The abort flag (Output Parameter)
  * @param next The next flag (Output Parameter)
  */
-void plan(int nWWIVColor, const char *pszText, bool *abort, bool *next)
+void plan(int nWWIVColor, const std::string text, bool *abort, bool *next)
 {
     GetSession()->bout.Color( nWWIVColor );
-    osan( pszText, abort, next );
+    osan( text, abort, next );
 	if (!(*abort))
 	{
 		GetSession()->bout.NewLine();
@@ -142,42 +141,40 @@ void plan(int nWWIVColor, const char *pszText, bool *abort, bool *next)
 /**
  * @todo Document this
  */
-char *strip_to_node( const char *txt, char *pszOutBuffer )
+std::string strip_to_node( const std::string txt )
 {
-	if (strstr(txt, "@") != NULL)
+    std::ostringstream os;
+    if (txt.find("@") != std::string::npos)
     {
 		bool ok = true;
-		for (int i = 0; i < wwiv::stringUtils::GetStringLength(txt); i++)
+        for (std::string::const_iterator i = txt.begin(); i != txt.end(); i++)
         {
 			if (ok)
             {
-				pszOutBuffer[i] = txt[i];
-				pszOutBuffer[i + 1] = 0;
+                os << *i;
 			}
-			if (txt[i + 2] == '#')
+			if (*(i + 2) == '#')
             {
 				ok = false;
             }
 		}
-		return pszOutBuffer;
+        return std::string( os.str() );
 	}
-	else if (strstr(txt, "AT") != NULL)
+    else if (txt.find("AT") != std::string::npos)
     {
 		bool ok = true;
-		for (int i = 2; i < wwiv::stringUtils::GetStringLength(txt); i++)
+        for (std::string::const_iterator i = txt.begin() + 2; i != txt.end(); i++)
         {
 			if (ok)
             {
-				pszOutBuffer[i - 2] = txt[i];
-				pszOutBuffer[i - 1] = 0;
+                os << *i;
 			}
-			if (txt[i + 1] == '`')
+			if (*(i + 1) == '`')
             {
 				ok = false;
             }
 		}
-		return pszOutBuffer;
+        return std::string( os.str() );
 	}
-    strcpy( pszOutBuffer, txt );
-	return pszOutBuffer;
+    return std::string( txt );
 }
