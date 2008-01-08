@@ -1320,10 +1320,10 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 			g_flags &= ~g_flag_disable_mci;
 		}
         osan("|#1Name|#7: ", &abort, next);
-        plan(GetSession()->GetMessageColor(), strName.c_str(), &abort, next);
+        plan(GetSession()->GetMessageColor(), strName, &abort, next);
         strcpy(irt_name, strName.c_str());
         osan("|#1Date|#7: ", &abort, next);
-        plan(GetSession()->GetMessageColor(), strDate.c_str(), &abort, next);
+        plan(GetSession()->GetMessageColor(), strDate, &abort, next);
         if (!origin_str.empty())
 		{
 			if (strName[1] == '`')
@@ -1334,12 +1334,12 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 			{
 				osan("|#1From|#7: ", &abort, next);
 			}
-            plan(GetSession()->GetMessageColor(), origin_str.c_str(), &abort, next);
+            plan(GetSession()->GetMessageColor(), origin_str, &abort, next);
         }
         if (!origin_str2.empty())
 		{
 			osan("|#1Loc|#7:  ", &abort, next);
-            plan(GetSession()->GetMessageColor(), origin_str2.c_str(), &abort, next);
+            plan(GetSession()->GetMessageColor(), origin_str2, &abort, next);
         }
         break;
 	case anony_sender:
@@ -1348,9 +1348,9 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
 			osan("|#1Name|#7: ", &abort, next);
 			std::stringstream toName;
 			toName << "<<< " << strName << " >>>";
-			plan(GetSession()->GetMessageColor(), toName.str().c_str(), &abort, next);
+			plan(GetSession()->GetMessageColor(), toName.str(), &abort, next);
 			osan("|#1Date|#7: ", &abort, next);
-            plan(GetSession()->GetMessageColor(), strDate.c_str(), &abort, next);
+            plan(GetSession()->GetMessageColor(), strDate, &abort, next);
         }
 		else
 		{
@@ -1375,9 +1375,9 @@ void read_message1( messagerec * pMessageRecord, char an, bool readit, bool *nex
         if ( readit )
 		{
 			osan("|#1Name|#7: ", &abort, next);
-            plan(GetSession()->GetMessageColor(), strName.c_str(), &abort, next);
+            plan(GetSession()->GetMessageColor(), strName, &abort, next);
 			osan("|#1Date|#7: ", &abort, next);
-            plan(GetSession()->GetMessageColor(), strDate.c_str(), &abort, next);
+            plan(GetSession()->GetMessageColor(), strDate, &abort, next);
         }
 		else
 		{
@@ -1591,7 +1591,7 @@ void read_message(int n, bool *next, int *val)
 	std::string subjectLine;
 	GetSession()->bout.WriteFormatted( " |#1Msg|#7: [|#2%u|#7/|#2%lu|#7]|#%d %s\r\n", n, GetSession()->GetNumMessagesInCurrentMessageArea(), GetSession()->GetMessageColor(), subboards[GetSession()->GetCurrentReadMessageArea()].name );
 	subjectLine = "|#1Subj|#7: ";
-	osan( subjectLine.c_str(), &abort, next );
+	osan( subjectLine, &abort, next );
 	GetSession()->bout.Color( GetSession()->GetMessageColor() );
 	postrec p = *get_post( n );
 	if ( p.status & ( status_unvalidated | status_delete ) )
@@ -1602,7 +1602,7 @@ void read_message(int n, bool *next, int *val)
 			return;
         }
 		*val |= 1;
-		osan( subjectLine.c_str(), &abort, next );
+		osan( subjectLine, &abort, next );
 		GetSession()->bout.Color( GetSession()->GetMessageColor() );
 	}
 	strncpy( irt, p.title, 60 );

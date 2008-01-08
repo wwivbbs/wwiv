@@ -43,5 +43,21 @@ void StringsTest::testStripColors()
     CPPUNIT_ASSERT_EQUAL( string("abc"), stripcolors(string("|15abc")) );
 }
 
+void StringsTest::testProperize() 
+{
+    CPPUNIT_ASSERT_EQUAL( string("Rushfan"), properize( string("rushfan") ) );
+    CPPUNIT_ASSERT_EQUAL( string("Rushfan"), properize( string("rUSHFAN") ) );
+    CPPUNIT_ASSERT_EQUAL( string(""), properize( string("") ) );
+    CPPUNIT_ASSERT_EQUAL( string(" "), properize( string(" ") ) );
+    CPPUNIT_ASSERT_EQUAL( string("-"), properize( string("-") ) );
+    CPPUNIT_ASSERT_EQUAL( string("."), properize( string(".") ) );
+    CPPUNIT_ASSERT_EQUAL( string("R"), properize( string("R") ) );
+    CPPUNIT_ASSERT_EQUAL( string("R"), properize( string("r") ) );
+    CPPUNIT_ASSERT_EQUAL( string("Ru"), properize( string("RU") ) );
+    CPPUNIT_ASSERT_EQUAL( string("R.U"), properize( string("r.u") ) );
+    CPPUNIT_ASSERT_EQUAL( string("R U"), properize( string("r u") ) );
+    CPPUNIT_ASSERT_EQUAL( string("Rushfan"), properize( string("Rushfan") ) );
+}
+
 
 #endif

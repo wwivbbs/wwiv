@@ -417,12 +417,10 @@ void list_users( int mode )
                 s5[19] = '\0';
                 sprintf( szCity, "%s, %s", s5, user.GetState() );
             }
-            char szProperName[ 81 ];
-            strcpy( szProperName, user.GetName() );
-            properize( szProperName );
+            std::string properName = properize( user.GetName() );
             char szUserListLine[ 255 ];
             sprintf( szUserListLine, "|#%d³|#9%5d |#%d³|#6%c|#1%-20.20s|#%d³|#2 %-24.24s|#%d³ |#1%-9s |#%d³  |#3%-5hu  |#%d³",
-                FRAME_COLOR, nUserNumber, FRAME_COLOR, in_qscan ? '*' : ' ', szProperName,
+                FRAME_COLOR, nUserNumber, FRAME_COLOR, in_qscan ? '*' : ' ', properName.c_str(),
                 FRAME_COLOR, szCity, FRAME_COLOR, user.GetLastOn(), FRAME_COLOR,
                 user.GetLastBaudRate(), FRAME_COLOR );
             pla( szUserListLine, &abort );

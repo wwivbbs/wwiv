@@ -31,10 +31,12 @@
 class StringsTest : public CppUnit::TestCase {
    CPPUNIT_TEST_SUITE( StringsTest );
    CPPUNIT_TEST( testStripColors );
+   CPPUNIT_TEST( testProperize );
    CPPUNIT_TEST_SUITE_END( );
 
 protected:
     void testStripColors();
+    void testProperize();
 };
 
 #endif

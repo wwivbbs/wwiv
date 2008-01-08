@@ -698,10 +698,9 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
 			GetSession()->bout.NewLine();
 			++numl;
 		}
-		strcpy(szBuffer, u->upby);
-		properize(szBuffer);
-		szBuffer[15] = 0;
-		sprintf(element, "|%02dUpby: %s", config_listing.lp_colors[7], szBuffer);
+        std::string tmp = u->upby;
+        tmp = properize( tmp ).substr(0, 15);
+		sprintf(element, "|%02dUpby: %s", config_listing.lp_colors[7], tmp);
 		strcpy(szFileInformation, element);
 	}
 
