@@ -84,6 +84,10 @@ char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, 
 std::string& StringUpperCase( std::string& s );
 std::string& StringLowerCase( std::string& s );
 
+void properize( char *pszText );
+std::string properize( const std::string text );
+
+
 #if defined ( _WIN32 ) && ( _MSC_VER > 1310 )
 #define WWIV_STRDUP( s ) _strdup( s )
 #define WWIV_STRUPR( s ) _strupr( s )
