@@ -1,11 +1,8 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WWIV50", "WWIV50.vcproj", "{5C49251E-D238-474E-A469-41E63BA86283}"
-	ProjectSection(ProjectDependencies) = postProject
-		{026BE2AF-00A2-4D08-97CE-05CBCA35D9FF} = {026BE2AF-00A2-4D08-97CE-05CBCA35D9FF}
-	EndProjectSection
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WWIV50", "WWIV50.vcxproj", "{5C49251E-D238-474E-A469-41E63BA86283}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppunit", "..\deps\cppunit-1.12.0\src\cppunit\cppunit.vcproj", "{026BE2AF-00A2-4D08-97CE-05CBCA35D9FF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppunit", "..\deps\cppunit-1.12.0\src\cppunit\cppunit.vcxproj", "{026BE2AF-00A2-4D08-97CE-05CBCA35D9FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
