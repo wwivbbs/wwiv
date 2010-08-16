@@ -141,36 +141,26 @@ void plan(int nWWIVColor, const std::string text, bool *abort, bool *next)
 /**
  * @todo Document this
  */
-std::string strip_to_node( const std::string txt )
-{
+std::string strip_to_node( const std::string txt ) {
     std::ostringstream os;
-    if (txt.find("@") != std::string::npos)
-    {
+    if (txt.find("@") != std::string::npos) {
 		bool ok = true;
-        for (std::string::const_iterator i = txt.begin(); i != txt.end(); i++)
-        {
-			if (ok)
-            {
+        for (std::string::const_iterator i = txt.begin(); i != txt.end(); i++) {
+			if (ok) {
                 os << *i;
 			}
-			if (*(i + 2) == '#')
-            {
+			if ((i+1) != txt.end() && (i+2) != txt.end() && *(i + 2) == '#') {
 				ok = false;
             }
 		}
         return std::string( os.str() );
-	}
-    else if (txt.find("AT") != std::string::npos)
-    {
+	} else if (txt.find("AT") != std::string::npos) {
 		bool ok = true;
-        for (std::string::const_iterator i = txt.begin() + 2; i != txt.end(); i++)
-        {
-			if (ok)
-            {
+        for (std::string::const_iterator i = txt.begin() + 2; i != txt.end(); i++) {
+			if (ok) {
                 os << *i;
 			}
-			if (*(i + 1) == '`')
-            {
+			if (*(i + 1) == '`') {
 				ok = false;
             }
 		}
