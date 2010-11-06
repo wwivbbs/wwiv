@@ -25,7 +25,7 @@
 #endif	// _MSC_VER 
 
 
-#include <string>
+#include <cstring>
 #include "WStringUtils.h"
 
 #ifndef MAX_PATH
