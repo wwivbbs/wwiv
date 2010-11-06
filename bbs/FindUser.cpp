@@ -25,6 +25,7 @@
 #include "WStringUtils.h"
 #include "vars.h"
 #include "bbs.h"
+#include <cstdlib>
 #include <memory>
 #include "WStatus.h"
 

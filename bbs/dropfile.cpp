@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "WTextFile.h"
+#include <memory>
 
 //
 // Local functions

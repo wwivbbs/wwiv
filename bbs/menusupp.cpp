@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <memory>
 #include "wwiv.h"
 #include "menu.h"
 #include "menusupp.h"

@@ -17,7 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-
+#include <cstdio>
+#include <cstring>
 #include "WFile.h"
 #include "WUser.h"
 #include "WStringUtils.h"
