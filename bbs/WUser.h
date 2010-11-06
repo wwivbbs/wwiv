@@ -30,7 +30,7 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif	// _MSC_VER 
 
-#include <string>
+#include <cstring>
 #include "vardec.h"
 
 /**

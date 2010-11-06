@@ -26,6 +26,7 @@
 #define __unix__ 1
 #endif
 
+#include <memory>
 #include "bbs.h"
 #include "unittests.h"
 

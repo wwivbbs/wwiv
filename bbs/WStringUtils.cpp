@@ -19,6 +19,7 @@
 
 #include "WStringUtils.h"
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <iostream>
 #include <sstream>
