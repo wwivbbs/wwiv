@@ -17,9 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif  // _CRT_SECURE_NO_WARNINGS
+#ifndef _CRT_SECURE_NO_DEPRECATE
+#define _CRT_SECURE_NO_DEPRECATE
+#endif  // _CRT_SECURE_NO_DEPRECATE
+
 #include <cstdio>
 #include <cstring>
-#include "WFile.h"
+#include "platform/WFile.h"
 #include "WUser.h"
 #include "WStringUtils.h"
 #include "filenames.h"

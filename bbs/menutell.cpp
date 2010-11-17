@@ -13,7 +13,7 @@
 /*           WWIV Software Services.  Violators will be procecuted!         */
 /*                                                                          */
 /****************************************************************************/
-#include "port.h"
+//#include "port.h"
 
 #include <conio.h>
 #include <stdarg.h>
@@ -21,6 +21,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "filenames.h"
+#include "platform/incl1.h"
+#include "platform/WFile.h"
+#include "vardec.h"
 #include "version.cpp"
 
 #define VER 0x0101

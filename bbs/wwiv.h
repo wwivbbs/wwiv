@@ -26,11 +26,14 @@
 // be included after testos.h has been included.
 //
 
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif  // _CRT_SECURE_NO_WARNINGS
+#ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
+#endif  // _CRT_SECURE_NO_DEPRECATE
 
-#include "testos.h"
+#include "platform/testos.h"
 
 #include "wwivassert.h"
 
@@ -39,7 +42,7 @@
 // Include platform set of standard header files
 //
 
-#include "incl1.h"
+#include "platform/incl1.h"
 
 
 //
@@ -77,7 +80,7 @@
 // Include platform set after standard header files
 //
 
-#include "incl2.h"
+#include "platform/incl2.h"
 
 
 //
@@ -89,23 +92,23 @@
 #include "WSession.h"
 #include "bbs.h"
 #include "WComm.h"
-#include "WFile.h"
+#include "platform/WFile.h"
 #include "WTextFile.h"
-#include "wutil.h"
+#include "platform/wutil.h"
 #include "instmsg.h"
 #include "WConstants.h"
 #include "net.h"
 #include "common.h"
 #include "fcns.h"
-#include "platformfcns.h"
+#include "platform/platformfcns.h"
 #include "vars.h"
 #include "subxtr.h"
-#include "wfndfile.h"
+#include "platform/wfndfile.h"
 #include "WStringUtils.h"
 #include "WOutStreamBuffer.h"
 #include "WStatus.h"
 #include "ini.h"
-#include "WLocalIO.h"
+#include "platform/WLocalIO.h"
 
 #include "filenames.h"
 

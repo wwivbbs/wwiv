@@ -1,0 +1,251 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CD2F6267-D940-49DD-A35D-262E251AE30F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>bbs</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(IncludePath);$(ProjectDir)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ShowProgress>LinkVerbose</ShowProgress>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="asv.cpp" />
+    <ClCompile Include="attach.cpp" />
+    <ClCompile Include="automsg.cpp" />
+    <ClCompile Include="batch.cpp" />
+    <ClCompile Include="bbs.cpp" />
+    <ClCompile Include="bbslist.cpp" />
+    <ClCompile Include="bbsovl1.cpp" />
+    <ClCompile Include="bbsovl2.cpp" />
+    <ClCompile Include="bbsovl3.cpp" />
+    <ClCompile Include="bbsutl.cpp" />
+    <ClCompile Include="bbsutl1.cpp" />
+    <ClCompile Include="bbsutl2.cpp" />
+    <ClCompile Include="bgetch.cpp" />
+    <ClCompile Include="bputch.cpp" />
+    <ClCompile Include="callback.cpp" />
+    <ClCompile Include="chains.cpp" />
+    <ClCompile Include="chat.cpp" />
+    <ClCompile Include="chnedit.cpp" />
+    <ClCompile Include="colors.cpp" />
+    <ClCompile Include="com.cpp" />
+    <ClCompile Include="conf.cpp" />
+    <ClCompile Include="confutil.cpp" />
+    <ClCompile Include="connect1.cpp" />
+    <ClCompile Include="crc.cpp" />
+    <ClCompile Include="defaults.cpp" />
+    <ClCompile Include="diredit.cpp" />
+    <ClCompile Include="dirlist.cpp" />
+    <ClCompile Include="dropfile.cpp" />
+    <ClCompile Include="dupphone.cpp" />
+    <ClCompile Include="events.cpp" />
+    <ClCompile Include="execexternal.cpp" />
+    <ClCompile Include="extract.cpp" />
+    <ClCompile Include="FindUser.cpp" />
+    <ClCompile Include="gfiles.cpp" />
+    <ClCompile Include="gfledit.cpp" />
+    <ClCompile Include="hop.cpp" />
+    <ClCompile Include="inetmsg.cpp" />
+    <ClCompile Include="ini.cpp" />
+    <ClCompile Include="inmsg.cpp" />
+    <ClCompile Include="input.cpp" />
+    <ClCompile Include="instmsg.cpp" />
+    <ClCompile Include="interpret.cpp" />
+    <ClCompile Include="lilo.cpp" />
+    <ClCompile Include="listplus.cpp" />
+    <ClCompile Include="lpfunc.cpp" />
+    <ClCompile Include="memory.cpp" />
+    <ClCompile Include="menu.cpp" />
+    <ClCompile Include="menuedit.cpp" />
+    <ClCompile Include="menuinterpretcommand.cpp" />
+    <ClCompile Include="menuspec.cpp" />
+    <ClCompile Include="menusupp.cpp" />
+    <ClCompile Include="misccmd.cpp" />
+    <ClCompile Include="modem.cpp" />
+    <ClCompile Include="msgbase.cpp" />
+    <ClCompile Include="msgbase1.cpp" />
+    <ClCompile Include="msgscan.cpp" />
+    <ClCompile Include="multinst.cpp" />
+    <ClCompile Include="multmail.cpp" />
+    <ClCompile Include="netsup.cpp" />
+    <ClCompile Include="newuser.cpp" />
+    <ClCompile Include="normupld.cpp" />
+    <ClCompile Include="pause.cpp" />
+    <ClCompile Include="platform\DateTime.cpp" />
+    <ClCompile Include="platform\win32\exec.cpp" />
+    <ClCompile Include="platform\win32\filesupp.cpp" />
+    <ClCompile Include="platform\win32\InternalTelnetServer.cpp" />
+    <ClCompile Include="platform\win32\reboot.cpp" />
+    <ClCompile Include="platform\win32\utility2.cpp" />
+    <ClCompile Include="platform\win32\WFile.cpp" />
+    <ClCompile Include="platform\win32\wfndfile.cpp" />
+    <ClCompile Include="platform\win32\Wios.cpp" />
+    <ClCompile Include="platform\win32\Wiot.cpp" />
+    <ClCompile Include="platform\win32\WLocalIO.cpp" />
+    <ClCompile Include="platform\win32\wshare.cpp" />
+    <ClCompile Include="platform\wutil.cpp" />
+    <ClCompile Include="printfile.cpp" />
+    <ClCompile Include="prot\crctab.cpp" />
+    <ClCompile Include="prot\zmodem.cpp" />
+    <ClCompile Include="prot\zmodemcrc.cpp" />
+    <ClCompile Include="prot\zmodemr.cpp" />
+    <ClCompile Include="prot\zmodemt.cpp" />
+    <ClCompile Include="prot\zmutil.cpp" />
+    <ClCompile Include="prot\zmwwiv.cpp" />
+    <ClCompile Include="quote.cpp" />
+    <ClCompile Include="readmail.cpp" />
+    <ClCompile Include="shortmsg.cpp" />
+    <ClCompile Include="showfiles.cpp" />
+    <ClCompile Include="SmallRecord.cpp" />
+    <ClCompile Include="sr.cpp" />
+    <ClCompile Include="srrcv.cpp" />
+    <ClCompile Include="srsend.cpp" />
+    <ClCompile Include="status.cpp" />
+    <ClCompile Include="strings.cpp" />
+    <ClCompile Include="stuffin.cpp" />
+    <ClCompile Include="subacc.cpp" />
+    <ClCompile Include="subedit.cpp" />
+    <ClCompile Include="sublist.cpp" />
+    <ClCompile Include="subreq.cpp" />
+    <ClCompile Include="subxtr.cpp" />
+    <ClCompile Include="syschat.cpp" />
+    <ClCompile Include="sysopf.cpp" />
+    <ClCompile Include="sysoplog.cpp" />
+    <ClCompile Include="trytoul.cpp" />
+    <ClCompile Include="uedit.cpp" />
+    <ClCompile Include="unittests.cpp" />
+    <ClCompile Include="user.cpp" />
+    <ClCompile Include="utility.cpp" />
+    <ClCompile Include="valscan.cpp" />
+    <ClCompile Include="version.cpp" />
+    <ClCompile Include="vote.cpp" />
+    <ClCompile Include="voteedit.cpp" />
+    <ClCompile Include="WComm.cpp" />
+    <ClCompile Include="wfc.cpp" />
+    <ClCompile Include="WOutStream.cpp" />
+    <ClCompile Include="WOutStreamBuffer.cpp" />
+    <ClCompile Include="wqscn.cpp" />
+    <ClCompile Include="WSession.cpp" />
+    <ClCompile Include="WStringUtils.cpp" />
+    <ClCompile Include="WTextFile.cpp" />
+    <ClCompile Include="WUser.cpp" />
+    <ClCompile Include="xfer.cpp" />
+    <ClCompile Include="xferovl.cpp" />
+    <ClCompile Include="xferovl1.cpp" />
+    <ClCompile Include="xfertmp.cpp" />
+    <ClCompile Include="xinit.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bbs.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="fcns.h" />
+    <ClInclude Include="filenames.h" />
+    <ClInclude Include="ini.h" />
+    <ClInclude Include="instmsg.h" />
+    <ClInclude Include="listplus.h" />
+    <ClInclude Include="menu.h" />
+    <ClInclude Include="menusupp.h" />
+    <ClInclude Include="net.h" />
+    <ClInclude Include="platform\incl1.h" />
+    <ClInclude Include="platform\incl2.h" />
+    <ClInclude Include="platform\platformfcns.h" />
+    <ClInclude Include="platform\testos.h" />
+    <ClInclude Include="platform\WFile.h" />
+    <ClInclude Include="platform\wfndfile.h" />
+    <ClInclude Include="platform\win32\InternalTelnetServer.h" />
+    <ClInclude Include="platform\win32\Wios.h" />
+    <ClInclude Include="platform\win32\Wiot.h" />
+    <ClInclude Include="platform\WLocalIO.h" />
+    <ClInclude Include="platform\wutil.h" />
+    <ClInclude Include="prot\crctab.h" />
+    <ClInclude Include="prot\zmodem.h" />
+    <ClInclude Include="Runnable.h" />
+    <ClInclude Include="subxtr.h" />
+    <ClInclude Include="unittests.h" />
+    <ClInclude Include="vardec.h" />
+    <ClInclude Include="vars.h" />
+    <ClInclude Include="WComm.h" />
+    <ClInclude Include="WConstants.h" />
+    <ClInclude Include="WOutStreamBuffer.h" />
+    <ClInclude Include="WSession.h" />
+    <ClInclude Include="WStatus.h" />
+    <ClInclude Include="WStringUtils.h" />
+    <ClInclude Include="WTextFile.h" />
+    <ClInclude Include="wtypes.h" />
+    <ClInclude Include="WUser.h" />
+    <ClInclude Include="wwiv.h" />
+    <ClInclude Include="wwivassert.h" />
+    <ClInclude Include="xinitini.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

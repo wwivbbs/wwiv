@@ -60,8 +60,8 @@
 
 #include "shellapi.h"
 
-#include "WFile.h"
-#include "wfndfile.h"
+#include "platform/WFile.h"
+#include "platform/wfndfile.h"
 #include "wwivassert.h"
 #include <fcntl.h>
 #include <io.h>
