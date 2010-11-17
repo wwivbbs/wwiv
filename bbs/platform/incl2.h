@@ -25,9 +25,10 @@
 // WIN32 section
 //
 
-#if defined (_WIN32) && defined (_MSC_VER) && defined (_DEBUG) && !defined (NETWORK)
-#pragma component(browser, on)
-#endif // _WIN32 && _MSC_VER
+// TODO(rushfan): figure out how to get rid of warning C4175 on this
+//#if defined (_WIN32) && defined (_MSC_VER) && defined (_DEBUG) && !defined (NETWORK)
+//#pragma component(browser, on)
+//#endif // _WIN32 && _MSC_VER
 
 
 

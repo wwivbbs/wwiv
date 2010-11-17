@@ -20,15 +20,18 @@
 #ifndef __INCLUDED_WUSER_H__
 #define __INCLUDED_WUSER_H__
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif  // _CRT_SECURE_NO_WARNINGS
+#ifndef _CRT_SECURE_NO_DEPRECATE
+#define _CRT_SECURE_NO_DEPRECATE
+#endif  // _CRT_SECURE_NO_DEPRECATE
+
 #ifdef _WIN32
 #pragma pack( push, 1 )
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
-
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
 
 #include <cstring>
 #include "vardec.h"

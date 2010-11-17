@@ -24,7 +24,7 @@
 #define __INCLUDED_BBS_H__
 
 
-#include "WFile.h"
+#include "platform/WFile.h"
 #include "Runnable.h"
 
 class WComm;

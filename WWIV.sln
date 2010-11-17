@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "deps\gtest-1.5.0\gtest.vcxproj", "{790CABB2-7224-41BB-9D20-1947EE81C9EB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbs", "bbs\bbs.vcxproj", "{CD2F6267-D940-49DD-A35D-262E251AE30F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug-Warn4|Win32 = Debug-Warn4|Win32
+		MinSizeRel|Win32 = MinSizeRel|Win32
+		Release|Win32 = Release|Win32
+		RelWithDebInfo|Win32 = RelWithDebInfo|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.Debug|Win32.Build.0 = Debug|Win32
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.Debug-Warn4|Win32.ActiveCfg = Debug|Win32
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.Debug-Warn4|Win32.Build.0 = Debug|Win32
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.MinSizeRel|Win32.ActiveCfg = MinSizeRel|Win32
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.MinSizeRel|Win32.Build.0 = MinSizeRel|Win32
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.Release|Win32.ActiveCfg = Release|Win32
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.Release|Win32.Build.0 = Release|Win32
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.RelWithDebInfo|Win32.ActiveCfg = RelWithDebInfo|Win32
+		{790CABB2-7224-41BB-9D20-1947EE81C9EB}.RelWithDebInfo|Win32.Build.0 = RelWithDebInfo|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.Debug|Win32.Build.0 = Debug|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.Debug-Warn4|Win32.ActiveCfg = Debug|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.Debug-Warn4|Win32.Build.0 = Debug|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.MinSizeRel|Win32.ActiveCfg = Release|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.MinSizeRel|Win32.Build.0 = Release|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.Release|Win32.ActiveCfg = Release|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.Release|Win32.Build.0 = Release|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.RelWithDebInfo|Win32.ActiveCfg = Release|Win32
+		{CD2F6267-D940-49DD-A35D-262E251AE30F}.RelWithDebInfo|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

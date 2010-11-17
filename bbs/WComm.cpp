@@ -19,10 +19,15 @@
 
 #if defined ( _WIN32 )
 #define WIN32_LEAN_AND_MEAN
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif  // _CRT_SECURE_NO_WARNINGS
+#ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
+#endif  // _CRT_SECURE_NO_DEPRECATE
 #include <windows.h>
-#include "Wios.h"
-#include "Wiot.h"
+#include "platform/win32/Wios.h"
+#include "platform/win32/Wiot.h"
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #include "Wiou.h"
 #endif

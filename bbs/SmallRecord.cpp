@@ -18,10 +18,10 @@
 /**************************************************************************/
 
 
-#include "incl1.h"
+#include "platform/incl1.h"
 #include "WConstants.h"
 #include "filenames.h"
-#include "WFile.h"
+#include "platform/WFile.h"
 #include "WUser.h"
 #include "WStringUtils.h"
 #include "vars.h"
