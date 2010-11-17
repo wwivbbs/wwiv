@@ -19,7 +19,7 @@
 
 #include "WConstants.h"
 #include "filenames.h"
-#include "WFile.h"
+#include "platform/WFile.h"
 #include "WUser.h"
 #include "WSession.h"
 #include "WStringUtils.h"

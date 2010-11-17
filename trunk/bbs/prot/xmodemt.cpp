@@ -53,7 +53,7 @@ static const char rcsid[] = "$Id$" ;
  **********/
 
 
-
+#include <cstring>
 #include <stdio.h>
 #include <sys/types.h>
 #include "xmodem.h"

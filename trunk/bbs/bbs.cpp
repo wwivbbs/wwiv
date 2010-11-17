@@ -31,8 +31,8 @@
 #include "unittests.h"
 
 #if defined( _WIN32 )
-#include "InternalTelnetServer.h"
-#include "Wiot.h"
+#include "platform/win32/InternalTelnetServer.h"
+#include "platform/win32/Wiot.h"
 #endif // _WIN32
 
 #include "menu.h" // for mainmenu

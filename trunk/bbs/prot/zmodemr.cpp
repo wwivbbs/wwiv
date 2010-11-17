@@ -43,7 +43,7 @@
 #pragma warning( disable : 4706 4127 4244 4100 )
 #endif
 
-extern	int	errno;
+//extern	int	errno;
 
 int	ZWriteFile(u_char *buffer, int len, FILE *, ZModem *);
 int	ZCloseFile(ZModem *info);

@@ -28,7 +28,7 @@
 #include "wwivassert.h"
 #include "wtypes.h"
 #include "WConstants.h"
-#include "incl1.h"
+#include "platform/incl1.h"
 
 extern unsigned char *translate_letters[];
 

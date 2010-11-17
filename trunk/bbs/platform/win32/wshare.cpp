@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #include "WTextFile.h"
-#include "WFile.h"
+#include "platform/WFile.h"
 #include <iostream>
 #include <fcntl.h>
 #include <cerrno>

@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
+#pragma comment(lib, "Ws2_32.lib")
 
 #include "wwiv.h"
 #include "Wiot.h"
