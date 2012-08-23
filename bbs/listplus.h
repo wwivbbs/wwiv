@@ -23,12 +23,13 @@
 #ifndef __INCLUDED_LISTPLUS_H__
 #define __INCLUDED_LISTPLUS_H__
 
-#ifdef _WIN32
+/*#ifdef _WIN32
  #pragma pack( push,  1)
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
-
+*/
+#pragma pack(push, 1)
 
 // #define FORCE_LP
 // If the person has ansi, then they are foced to use listplus
@@ -176,9 +177,9 @@ extern int						lp_config_loaded;
 #define STR_CLOSE_PAREN ')'
 
 
-#ifdef _WIN32
+//#ifdef _WIN32
 #pragma pack(pop)
-#endif // _WIN32
+//#endif // _WIN32
 
 
 

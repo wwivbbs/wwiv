@@ -27,11 +27,13 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif  // _CRT_SECURE_NO_DEPRECATE
 
-#ifdef _WIN32
+/*#ifdef _WIN32
 #pragma pack( push, 1 )
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
-#endif
+#endif*/
+#pragma pack(push, 1)
+
 
 #include <cstring>
 #include "vardec.h"
@@ -418,8 +420,8 @@ public:
 };
 
 
-#ifdef _WIN32
+//#ifdef _WIN32
 #pragma pack( pop )
-#endif // _WIN32
+//#endif // _WIN32
 
 #endif // __INCLUDED_PLATFORM_WUSER_H__

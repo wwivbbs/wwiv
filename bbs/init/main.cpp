@@ -31,7 +31,11 @@ class ExitCommand : public UICommand
     virtual bool Execute()
     {
         UIDesktop::GetDesktop()->TerminateApplication( 0 );
-        return true;
+
+#if defined ( __unix__ ) || defined ( __APPLE__ )       
+        system("reset");
+#endif
+	  return true;
     }
 };
 
@@ -106,6 +110,10 @@ int main( int argc, char* argv[] )
             delete pwInput;
             delete window;
             delete desktop;
+
+#if defined ( __unix__ ) || defined ( __APPLE__ )	
+	system("reset");
+#endif	
 	        exit(-1);
         }
         delete pwInput;

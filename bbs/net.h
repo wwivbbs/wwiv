@@ -20,11 +20,13 @@
 #ifndef __INCLUDED_NET_H__
 #define __INCLUDED_NET_H__
 
-#ifdef _WIN32
+/*#ifdef _WIN32
  #pragma pack(push, 1)
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
+*/
+#pragma pack(push, 1)
 
 /* Defining USE_FTS activates The File Transfer System */
 #define USE_FTS
@@ -316,9 +318,9 @@ struct bltrec_rec
 #endif
 
 
-#ifdef _WIN32
+//#ifdef _WIN32
 #pragma pack(pop)
-#endif // _WIN32
+//#endif // _WIN32
 
 
 #endif // __INCLUDED_NET_H__
