@@ -31,10 +31,13 @@ UIInputBox::UIInputBox( UIView* parent, int height, int width, int starty, int s
 
 bool UIInputBox::Run()
 {
+
     GetContentPanel()->SetAttribute( UIColors::MENU_SELECTED_COLOR );
     GetContentPanel()->WriteCentered( GetHeight() - 3, " [ OK ] " );
 	GetContentPanel()->SetAttribute( UIColors::TEXT_COLOR );
 	GetContentPanel()->WriteAt( 1, 0, m_prompt );
+
+
     while ( true )
     {
 		if(m_maskCharacter.length() > 0 && GetText().length() > 0)

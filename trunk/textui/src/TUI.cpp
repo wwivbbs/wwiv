@@ -64,8 +64,9 @@ int main( int argc, char* argv[] )
     window->WriteCentered( 3, " Copyright (c) 2007 WWIV Software Services. " );
     window->WriteCentered( 5, " All Rights Reserved. " );
 
-    CreateMenus( desktop->GetMenuBar() );
 
+    CreateMenus( desktop->GetMenuBar() );
+    
     desktop->Paint();
     desktop->RunLoop();
     delete window;

@@ -20,12 +20,13 @@
 #ifndef __INCLUDED_COMMON_H__
 #define __INCLUDED_COMMON_H__
 
-#ifdef _WIN32
+/*#ifdef _WIN32
 #pragma pack(push, 1)
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
-
+*/
+#pragma pack(push, 1)
 
 
 struct side_menu_colors
@@ -75,9 +76,10 @@ struct user_config
 };
 
 
-#ifdef _WIN32
+//#ifdef _WIN32
 #pragma pack(pop)
-#endif // _WIN32
+//#endif // _WIN32
+
 
 
 #endif // __INCLUDED_COMMON_H__

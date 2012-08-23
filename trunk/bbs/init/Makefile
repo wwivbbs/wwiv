@@ -1,36 +1,36 @@
 
-ifneq (,$(findstring win32,$(MAKEFLAGS)))
-OS=WIN32
-PLATFORM_CFLAGS=
-PLATFORM_DIR=../platform/WIN32
-PATH_SEPERATOR=;
-EXE_EXT         = .exe
-OBJ_EXT         = obj
-TEXTUI_LIBRARY  = $(CURDIR)/../../textui/bin/textui.lib
-else
+###ifneq (,$(findstring win32,$(MAKEFLAGS)))
+###OS=WIN32
+###PLATFORM_CFLAGS=
+###PLATFORM_DIR=../platform/WIN32
+###PATH_SEPERATOR=;
+###EXE_EXT         = .exe
+###OBJ_EXT         = obj
+###TEXTUI_LIBRARY  = $(CURDIR)/../../textui/bin/textui.lib
+###else
 OS=UNIX
 PLATFORM_CFLAGS=-Wall
 PLATFORM_DIR=../platform/unix
 PLATFORM_ALT_DIR=../platform/unix
-ifeq (Darwin,$(shell uname))
-PLATFORM_ALT_DIR=../platform/osx
-PLATFORM_CFLAGS+=-I$(PLATFORM_ALT_DIR)
-PLATFORM_LINKFLAGS+=-lobjc -framework CoreFoundation -framework Foundation
-else
-PLATFORM_ALT_DIR=platform/unix
-endif
+###ifeq (Darwin,$(shell uname))
+###PLATFORM_ALT_DIR=../platform/osx
+###PLATFORM_CFLAGS+=-I$(PLATFORM_ALT_DIR)
+###PLATFORM_LINKFLAGS+=-lobjc -framework CoreFoundation -framework Foundation
+###else
+###PLATFORM_ALT_DIR=platform/unix
+###endif
 PATH_SEPERATOR=:
 EXE_EXT         = 
 OBJ_EXT         = o
 TEXTUI_LIBRARY  = $(CURDIR)/../../textui/bin/libtextui.a
-endif
+###endif
 
 OBJ		= obj
 BIN		= ../bin
 INIT_APP        = $(BIN)/init
 CC              = gcc
 CXX             = g++
-CFLAGS          = -I$(CURDIR)/../../textui/include -I$(CURDIR)/../ -I$(CURDIR)/../platform -DINIT $(PLATFORM_CFLAGS)
+CFLAGS          = -gdwarf-2 -g3 -I$(CURDIR)/../../textui/include -I$(CURDIR)/../ -I$(CURDIR)/../platform -DINIT $(PLATFORM_CFLAGS)
 LINKFLAGS       = $(PLATFORM_LINKFLAGS) -lcurses
 
 ##############################################################################
@@ -104,6 +104,6 @@ $(OBJ) $(BIN):
 $(TEXTUI_LIBRARY):
 	$(MAKE) -C $(CURDIR)/../../textui all
 
-$(INIT_APP): $(INIT_OBJS) $(TEXTUI_LIBRARY)
+$(INIT_APP): $(INIT_OBJS) $(TEXTUI_LIBRARY) 
 	@echo Linking $(INIT_APP)
-	@$(CXX) $(LINKFLAGS)  -o $(INIT_APP) $(INIT_OBJS) $(TEXTUI_LIBRARY)
+		@$(CXX) $(LINKFLAGS)  -o $(INIT_APP) $(INIT_OBJS) $(TEXTUI_LIBRARY) -lcurses
