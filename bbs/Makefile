@@ -15,33 +15,33 @@
 # are added or removed.  All the customization settings are above.
 #
 
-ifneq (,$(findstring win32,$(MAKEFLAGS)))
-OS=WIN32
-PLATFORM_CFLAGS=
-PLATFORM_LINKFLAGS=
-PLATFORM_DIR=platform/win32
-PLATFORM_ALT_DIR=platform/win32
-PATH_SEPERATOR=;
-EXE_EXT         = .exe
-OBJ_EXT         = .o
-PLATFORM_TARGETS= 
-else
+###ifneq (,$(findstring win32,$(MAKEFLAGS)))
+###OS=WIN32
+###PLATFORM_CFLAGS=
+###PLATFORM_LINKFLAGS=
+###PLATFORM_DIR=platform/win32
+###PLATFORM_ALT_DIR=platform/win32
+###PATH_SEPERATOR=;
+###EXE_EXT         = .exe
+###OBJ_EXT         = .o
+###PLATFORM_TARGETS= 
+###else
 OS=UNIX
 PLATFORM_CFLAGS=-Wall
 PLATFORM_LINKFLAGS=
 PLATFORM_DIR=platform/unix
-ifeq (Darwin,$(shell uname))
-PLATFORM_ALT_DIR=platform/osx
-PLATFORM_CFLAGS+=-I$(PLATFORM_ALT_DIR)
-PLATFORM_LINKFLAGS+=-lobjc -framework CoreFoundation -framework Foundation
-else
+###ifeq (Darwin,$(shell uname))
+###PLATFORM_ALT_DIR=platform/osx
+###PLATFORM_CFLAGS+=-I$(PLATFORM_ALT_DIR)
+###PLATFORM_LINKFLAGS+=-lobjc -framework CoreFoundation -framework Foundation
+###else
 PLATFORM_ALT_DIR=platform/unix
-endif
+###endif
 PATH_SEPERATOR=:
 EXE_EXT         = 
 OBJ_EXT         = .o
 PLATFORM_TARGETS=$(NODEMGR)
-endif
+###endif
 
 CXX             = g++
 CC              = gcc
@@ -55,7 +55,7 @@ NODEMGR 	= $(BIN)/nodemgr$(EXE_EXT)
 FIX             = $(BIN)/fix$(EXE_EXT)
 RM		= rm
 MKDIR		= mkdir
-CFLAGS		= -I$(CURDIR) -Wall -g $(PLATFORM_CFLAGS) -Iplatform -I$(PLATFORM_DIR)
+CFLAGS		= -I$(CURDIR) -Wall -g3 -O $(PLATFORM_CFLAGS) -Iplatform -I$(PLATFORM_DIR)
 LINKFLAGS	= -lm $(PLATFORM_LINKFLAGS)
 PROJECT_DIR	= wwiv50
 TAR		= tar czvf 
@@ -249,9 +249,9 @@ PLATFORM_WIN32_OBJS =		\
 
 BBS_OBJS = $(COMMON_BBS_OBJS) $(PLATFORM_$(OS)_OBJS)
 
-ifeq (Darwin,$(shell uname))
-BBS_OBJS += $(PLATFORM_OSX_OBJS)
-endif
+###ifeq (Darwin,$(shell uname))
+###BBS_OBJS += $(PLATFORM_OSX_OBJS)
+###endif
 
 ###############################################################################
 #
