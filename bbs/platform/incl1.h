@@ -47,7 +47,7 @@
 #ifndef __MFC_COMPAT__
 #define __MFC_COMPAT__
 #endif // __MFC_COMPAT__
-#include <sys/stat.h>WWIV_VSNPRINTF
+#include <sys/stat.h>
 #include <utime.h>
 #endif  // __BORLANDC__
 
@@ -247,7 +247,7 @@ enum COLORS
 #define MAX_EXT		MAXEXT
 #define MAX_PATH	MAXPATH
 
-#define timezWWIV_VSNPRINTFone _timezone
+#define timezone _timezone
 #define _putenv(s)	putenv(s)
 
 #ifndef UNREFERENCED_PARAMETER( X )

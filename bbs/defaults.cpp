@@ -247,7 +247,7 @@ const std::string DescribeColorCode( int nColorCode )
     }
     else
     {
-		os << ( nColorCode & 0x07 ) == 0 ? "Inversed" : "Normal";
+		os << ( nColorCode & 0x07 ) ? "Normal" : "Inversed";
     }
 
     if (nColorCode & 0x08)

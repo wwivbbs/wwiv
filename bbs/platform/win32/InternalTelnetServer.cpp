@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#define _CRT_SECURE_NO_DEPRECATE
+#include "wwiv.h"
 #include "InternalTelnetServer.h"
 #include "Runnable.h"
 #include "Wiot.h"
