@@ -20,13 +20,7 @@
 #if !defined (__INCLUDED_INTERNALTELNETSERVER_H__)
 #define __INCLUDED_INTERNALTELNETSERVER_H__
 
-
-#if defined( _WIN32 )
-extern "C"
-{
-    #include <winsock2.h>
-}
-#endif // _WIN32
+#include <winsock2.h>
 
 class Runnable;
 
