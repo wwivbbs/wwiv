@@ -33,8 +33,6 @@
 #pragma pack( 1 )
 #endif
 
-#pragma pack(push, 1)
-
 #define MENU
 #define MENU_VERSION 0x0100
 
