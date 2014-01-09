@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "wwiv.h"
 
-#define _CRT_SECURE_NO_DEPRECATE
 #define NOGDICAPMASKS
 #define NOSYSMETRICS
 #define NOMENUS
@@ -57,6 +57,7 @@
 #include <windows.h>
 #undef CopyFile
 #undef GetFullPathName
+#undef MoveFile
 
 #include "shellapi.h"
 

@@ -19,6 +19,10 @@
 
 #include "wwiv.h"
 
+#ifdef _WIN32
+#include <VersionHelpers.h>
+#endif
+
 bool CreateSyncTempFile( std::string &outFileName, const std::string commandLine );
 void CreateSyncFosCommandLine( std::string &outCommandLine, const std::string tempFilePath, int nSyncMode );
 bool DoSyncFosLoopNT( HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadSlot, int nSyncMode  );
@@ -413,9 +417,7 @@ const std::string GetSyncFosOSMode()
 
 bool IsWindowsNT()
 {
-    DWORD dwVersion = GetVersion();
-    // Windows NT/2000/XP is < 0x80000000
-    return ( dwVersion < 0x80000000 ) ? true : false;
+	return !IsWindowsXPOrGreater();
 }
 
 

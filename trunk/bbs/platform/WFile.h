@@ -20,11 +20,6 @@
 #ifndef __INCLUDED_PLATFORM_WFILLE_H__
 #define __INCLUDED_PLATFORM_WFILLE_H__
 
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
-
-
 #include <cstring>
 #include "WStringUtils.h"
 
@@ -35,7 +30,8 @@
 #if defined (_WIN32)
 #undef CopyFile
 #undef GetFullPathName
-#endif // CopyFile
+#undef MoveFile
+#endif
 
 class WLogger
 {
@@ -49,8 +45,6 @@ public:
     virtual ~WLogger() {}
     virtual bool LogMessage( const char* pszFormat, ... ) = 0;
 };
-
-
 
 /**
  * WFile - File I/O Class.
@@ -197,7 +191,6 @@ private:
 
     virtual bool IsCloseOnExit() { return m_bCloseOnExit; }
 
-
 public:
 
     /////////////////////////////////////////////////////////////////////////
@@ -220,7 +213,5 @@ public:
     static void SetLogger( WLogger* pLogger ) { m_pLogger = pLogger; }
     static void SetDebugLevel( int nDebugLevel ) { m_nDebugLevel = nDebugLevel; }
 };
-
-
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__

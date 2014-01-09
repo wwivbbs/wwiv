@@ -17,7 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <memory>
 #include "wwiv.h"
 
 bool isr1( int nUserNumber, int nNumUsers, const char *pszName )
