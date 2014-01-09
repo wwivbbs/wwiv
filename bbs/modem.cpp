@@ -204,7 +204,7 @@ int mode_switch(double d, bool allowa)
 	{
 		get_modem_line( line, d + t - timer(), allowa );
         std::cout << "DEBUG: get_modem_line(" << line << ")" << std::endl;
-		if ( line.at(0) == '\x01' )
+		if ( line.length() == 0 || line.at(0) == '\x01' )
 		{
 			abort = true;
 		}
