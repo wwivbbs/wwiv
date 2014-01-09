@@ -137,7 +137,7 @@ int GetAnsiStatusAndShowWelcomeScreen( int nNetworkOnly )
 	    char szOSVersion[ 255 ];
         WWIV_GetOSVersion( szOSVersion, 250, true );
         GetSession()->bout << "\r\nWWIV " << wwiv_version << "/" << szOSVersion << " " << beta_version << wwiv::endl;
-        GetSession()->bout << "Copyright (c) 1998-2007 WWIV Software Services." << wwiv::endl;
+        GetSession()->bout << "Copyright (c) 1998-2014 WWIV Software Services." << wwiv::endl;
         GetSession()->bout << "All Rights Reserved." << wwiv::endl;
 
         ans = check_ansi();
