@@ -112,10 +112,22 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 				break;
 			}
 		}
-        else if (os.dwMajorVersion == 6)
+        else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 0)
         {
 			snprintf( szBuffer, sizeof( szBuffer ), "Windows Vista %s", ( bFullVersion ? os.szCSDVersion : "" ) );
         }
+		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 1)
+		{
+			snprintf(szBuffer, sizeof(szBuffer), "Windows 7 %s", (bFullVersion ? os.szCSDVersion : ""));
+		}
+		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 2)
+		{
+			snprintf(szBuffer, sizeof(szBuffer), "Windows 8 %s", (bFullVersion ? os.szCSDVersion : ""));
+		}
+		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 3)
+		{
+			snprintf(szBuffer, sizeof(szBuffer), "Windows 8.1 %s", (bFullVersion ? os.szCSDVersion : ""));
+		}
 		else
 		{
 			snprintf( szBuffer, sizeof( szBuffer ), "Windows NT %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, ( bFullVersion ? os.szCSDVersion : "" ) );
