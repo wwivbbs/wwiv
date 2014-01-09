@@ -187,6 +187,7 @@ void mainmenu();
 void ConfigUserMenuSet();
 
 // Functions used by menuedit and menu
+const std::string GetMenuDescriptionFile();
 const std::string GetMenuDirectory(const std::string menuPath);
 const std::string GetMenuDirectory(const std::string menuPath, const std::string menuName, const std::string extension);
 const std::string GetMenuDirectory();
