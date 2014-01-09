@@ -125,8 +125,14 @@ int ExecExternalProgram( const std::string commandLine, int flags )
     }
 
     char * pszTitle = new char[ 255 ];
-    _snprintf( pszTitle, sizeof( pszTitle ), "%s in door on node %d",
-             GetSession()->GetCurrentUser()->GetName(), GetApplication()->GetInstanceNumber() );
+	memset(pszTitle, 0, sizeof(pszTitle));
+	if (flags & EFLAG_NETPROG) {
+		strcpy(pszTitle, "NETWORK");
+	}
+	else {
+		_snprintf(pszTitle, sizeof(pszTitle), "%s in door on node %d",
+			GetSession()->GetCurrentUser()->GetName(), GetApplication()->GetInstanceNumber());
+	}
     si.lpTitle = pszTitle;
 
 	if ( ok_modem_stuff && !bUsingSync )
