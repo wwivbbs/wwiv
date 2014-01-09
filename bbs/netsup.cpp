@@ -815,12 +815,12 @@ void print_pending_list()
 	time(&tCurrentTime);
 
 	GetSession()->bout.NewLine( 2 );
-	GetSession()->bout << "                           |#3�> |#9Network Status |#3<�\r\n";
+	GetSession()->bout << "                           |#3-> |#9Network Status |#3<-\r\n";
 	GetSession()->bout.NewLine();
 
-	GetSession()->bout << "|#7���������������������������������������������������������������������������ͻ\r\n";
-	GetSession()->bout << "|#7� |#1Ok? |#7� |#1Network  |#7� |#1 Node |#7�  |#1 Sent  |#7�|#1Received |#7�|#1Ready |#7�|#1Fails|#7�  |#1Elapsed  |#7�|#1/HrWt|#7�\r\n";
-	GetSession()->bout << "|#7���������������������������������������������������������������������������͹\r\n";
+	GetSession()->bout << "|#7\xDA\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
+	GetSession()->bout << "|#7\xB3 |#1Ok? |#7\xB3 |#1Network  |#7\xB3 |#1 Node |#7\xB3  |#1 Sent  |#7\xB3|#1Received |#7\xB3|#1Ready |#7\xB3|#1Fails|#7\xB3  |#1Elapsed  |#7\xB3|#1/HrWt|#7\xB3\r\n";
+	GetSession()->bout << "|#7\xC3\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xB4\r\n";
 
 	int nNetNumber;
 	for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++)
@@ -921,7 +921,7 @@ void print_pending_list()
 					i3 = 0;
                 }
 
-				GetSession()->bout.WriteFormatted( "|#7� %-3s |#7� |#2%-8.8s |#7� |#2%5u |#7�|#2%8s |#7�|#2%8s |#7�|#2%5s |#7�|#2%4d |#7�|#2%13.13s |#7�|#2%4d |#7�\r\n",
+				GetSession()->bout.WriteFormatted( "|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s |#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#2%4d |#7\xB3\r\n",
 					     s2,
 					     GetSession()->GetNetworkName(),
 					     ncn[i2].systemnumber,
@@ -955,7 +955,7 @@ void print_pending_list()
             long lFileSize = deadNetFile.GetLength();
 			deadNetFile.Close();
             sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
-			GetSession()->bout.WriteFormatted( "|#7� |#3--- |#7� |#2%-8s |#7� |#6DEAD! |#7� |#2------- |#7� |#2------- |#7�|#2%5s |#7�|#2 --- |#7� |#2--------- |#7�|#2 --- |#7�\r\n", GetSession()->GetNetworkName(), s3);
+			GetSession()->bout.WriteFormatted( "|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n", GetSession()->GetNetworkName(), s3);
 		}
 	}
 
@@ -975,11 +975,11 @@ void print_pending_list()
             checkNetFile.Close();
             sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
 			strcat(s3, "k");
-			GetSession()->bout.WriteFormatted( "|#7� |#3--- |#7� |#2%-8s |#7� |#6CHECK |#7� |#2------- |#7� |#2------- |#7�|#2%5s |#7�|#2 --- |#7� |#2--------- |#7�|#2 --- |#7�\r\n", GetSession()->GetNetworkName(), s3);
+			GetSession()->bout.WriteFormatted( "|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n", GetSession()->GetNetworkName(), s3);
 		}
 	}
 
-	GetSession()->bout << "|#7���������������������������������������������������������������������������ͼ\r\n";
+	GetSession()->bout << "|#7\xc0\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
 	GetSession()->bout.NewLine();
 	GetSession()->GetCurrentUser()->SetStatus( ss );
 	if ( !GetSession()->IsUserOnline() && lines_listed )
@@ -1375,7 +1375,7 @@ int ansicallout()
         GetSession()->localIO()->LocalCls();
         curatr = color1;
         GetSession()->localIO()->MakeLocalWindow( 3, 2, 73, 10 );
-        GetSession()->localIO()->LocalXYAPrintf( 3, 4, color1, "�%s�", charstr( 71, '�' ) );
+        GetSession()->localIO()->LocalXYAPrintf( 3, 4, color1, "\xC3%s\xB4", charstr( 71, '\xC4' ) );
         GetSession()->localIO()->MakeLocalWindow( 3, 14, 73, 7 );
         GetSession()->localIO()->LocalXYAPrintf( 5, 3,   color3, "NetWork:" );
         GetSession()->localIO()->LocalXYAPrintf( 31, 3,  color3, "BBS Name:" );
