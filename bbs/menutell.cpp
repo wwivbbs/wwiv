@@ -167,9 +167,9 @@ int main(int argc, char *argv[])
     Usage();
   }
   for (iX = 0; iX <= iNumStrs; iX++) {
-    if (!strcmpi(StrIdx[iX], argv[1])) {
-      strnum = iX;
-    }
+	  if (!WWIV_STRICMP(StrIdx[iX], argv[1])) {
+		  strnum = iX;
+	  }
   }
 
   if (strnum < 0) {

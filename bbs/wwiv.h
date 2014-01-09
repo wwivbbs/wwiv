@@ -26,6 +26,11 @@
 // be included after testos.h has been included.
 //
 
+// make sure we use 32bit time_t even on x64 platforms.
+// this can't be in platform/incl1.h due to other includes of
+// windows headers so putting it here.
+#define _USE_32BIT_TIME_T
+
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif  // _CRT_SECURE_NO_WARNINGS
@@ -48,7 +53,7 @@
 //
 // Normal ANSI C type includes
 //
-
+#include <memory>
 #include <cstdlib>
 #include <cstdio>
 #include <cerrno>
@@ -71,7 +76,6 @@
 #include <locale>
 #include <sstream>
 #include <iostream>
-
 
 #if defined( _MSC_VER )
 #pragma warning( pop )
