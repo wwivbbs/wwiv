@@ -1197,7 +1197,7 @@ void WApplication::InitializeBBS()
 
     GetSession()->localIO()->LocalCls();
 #if !defined( __unix__ )
-    std::cout << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2007, WWIV Software Services.\r\n\n";
+    std::cout << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2014, WWIV Software Services.\r\n\n";
 	std::cout << "\r\nInitializing BBS...\r\n";
 #endif // __unix__
     GetSession()->SetCurrentReadMessageArea( -1 );
