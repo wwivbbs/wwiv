@@ -27,12 +27,12 @@
 #include "wtypes.h"
 #include <string>
 
-/*#ifdef _WIN32
-  #pragma pack(push, 1)
+#ifdef _WIN32
+#pragma pack(push, 1)
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
-*/
+
 #pragma pack(push, 1)
 
 #define MENU
@@ -206,9 +206,9 @@ void Menus(MenuInstanceData * pMenuData, const std::string menuDirectory, const 
 char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
 void AMDisplayHelp(MenuInstanceData * pMenuData);
 
-//#ifdef _WIN32
-  #pragma pack(pop)
-//#endif
+#ifdef _WIN32
+#pragma pack(pop)
+#endif
 
 
 #endif  // __INCLUDED_MENU_H__
