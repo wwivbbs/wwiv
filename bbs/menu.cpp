@@ -24,6 +24,7 @@
 static user_config *pSecondUserRec;         // Userrec2 style setup
 static int nSecondUserRecLoaded;            // Whos config is loaded
 
+// TODO: move this to WTextFile or WFile
 static FILE *hMenuDesc;
 
 static char *pMenuStrings;
@@ -946,11 +947,9 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
     return true;
 }
 
-
-
 void OpenMenuDescriptions()
 {
-	hMenuDesc = fopen( GetMenuDirectory( DESCRIPT_ION ).c_str(), "r" );
+	hMenuDesc = fopen(GetMenuDescriptionFile().c_str(), "r");
 }
 
 void CloseMenuDescriptions()
@@ -1086,6 +1085,12 @@ void SetMenuDescription(const char *pszName, const char *pszDesc)
     }
 }
 
+const std::string GetMenuDescriptionFile()
+{
+	std::ostringstream os;
+	os << GetMenuDirectory() << DESCRIPT_ION;
+	return std::string(os.str());
+}
 
 const std::string GetMenuDirectory(const std::string menuPath)
 {
