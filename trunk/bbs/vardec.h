@@ -20,13 +20,11 @@
 #ifndef __INCLUDED_VARDEC_H__
 #define __INCLUDED_VARDEC_H__
 
-/*#ifdef _WIN32
+#ifdef _WIN32
  #pragma pack(push, 1)
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
-*/
-#pragma pack(push, 1)
 
 
 #include "wtypes.h"
@@ -1423,8 +1421,8 @@ struct arch
 #endif // bbsmaloc
 
 
-//#ifdef _WIN32
+#ifdef _WIN32
 #pragma pack(pop)
-//#endif // _WIN32
+#endif // _WIN32
 
 #endif // __INCLUDED_VARDEC_H__
