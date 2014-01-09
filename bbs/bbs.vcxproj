@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{CD2F6267-D940-49DD-A35D-262E251AE30F}</ProjectGuid>
+    <ProjectGuid>{DE1021F3-98A3-4468-A6D9-57B4D83D0165}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>bbs</RootNamespace>
   </PropertyGroup>
@@ -19,15 +19,15 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -41,11 +41,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(IncludePath);$(ProjectDir)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -53,12 +51,13 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ShowProgress>LinkVerbose</ShowProgress>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -69,15 +68,59 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="bbs.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="fcns.h" />
+    <ClInclude Include="filenames.h" />
+    <ClInclude Include="ini.h" />
+    <ClInclude Include="instmsg.h" />
+    <ClInclude Include="listplus.h" />
+    <ClInclude Include="menu.h" />
+    <ClInclude Include="menusupp.h" />
+    <ClInclude Include="net.h" />
+    <ClInclude Include="platform\incl1.h" />
+    <ClInclude Include="platform\incl2.h" />
+    <ClInclude Include="platform\platformfcns.h" />
+    <ClInclude Include="platform\testos.h" />
+    <ClInclude Include="platform\WFile.h" />
+    <ClInclude Include="platform\wfndfile.h" />
+    <ClInclude Include="platform\win32\InternalTelnetServer.h" />
+    <ClInclude Include="platform\win32\Wios.h" />
+    <ClInclude Include="platform\win32\Wiot.h" />
+    <ClInclude Include="platform\WLocalIO.h" />
+    <ClInclude Include="platform\wutil.h" />
+    <ClInclude Include="prot\crctab.h" />
+    <ClInclude Include="prot\xmodem.h" />
+    <ClInclude Include="prot\zmodem.h" />
+    <ClInclude Include="Runnable.h" />
+    <ClInclude Include="subxtr.h" />
+    <ClInclude Include="unittests.h" />
+    <ClInclude Include="vardec.h" />
+    <ClInclude Include="vars.h" />
+    <ClInclude Include="WComm.h" />
+    <ClInclude Include="WConstants.h" />
+    <ClInclude Include="WOutStreamBuffer.h" />
+    <ClInclude Include="WSession.h" />
+    <ClInclude Include="WStringUtils.h" />
+    <ClInclude Include="WTextFile.h" />
+    <ClInclude Include="wtypes.h" />
+    <ClInclude Include="WUser.h" />
+    <ClInclude Include="wwiv.h" />
+    <ClInclude Include="wwivassert.h" />
+    <ClInclude Include="xinitini.h" />
+  </ItemGroup>
   <ItemGroup>
     <ClCompile Include="asv.cpp" />
     <ClCompile Include="attach.cpp" />
@@ -204,48 +247,6 @@
     <ClCompile Include="xferovl1.cpp" />
     <ClCompile Include="xfertmp.cpp" />
     <ClCompile Include="xinit.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="bbs.h" />
-    <ClInclude Include="common.h" />
-    <ClInclude Include="fcns.h" />
-    <ClInclude Include="filenames.h" />
-    <ClInclude Include="ini.h" />
-    <ClInclude Include="instmsg.h" />
-    <ClInclude Include="listplus.h" />
-    <ClInclude Include="menu.h" />
-    <ClInclude Include="menusupp.h" />
-    <ClInclude Include="net.h" />
-    <ClInclude Include="platform\incl1.h" />
-    <ClInclude Include="platform\incl2.h" />
-    <ClInclude Include="platform\platformfcns.h" />
-    <ClInclude Include="platform\testos.h" />
-    <ClInclude Include="platform\WFile.h" />
-    <ClInclude Include="platform\wfndfile.h" />
-    <ClInclude Include="platform\win32\InternalTelnetServer.h" />
-    <ClInclude Include="platform\win32\Wios.h" />
-    <ClInclude Include="platform\win32\Wiot.h" />
-    <ClInclude Include="platform\WLocalIO.h" />
-    <ClInclude Include="platform\wutil.h" />
-    <ClInclude Include="prot\crctab.h" />
-    <ClInclude Include="prot\zmodem.h" />
-    <ClInclude Include="Runnable.h" />
-    <ClInclude Include="subxtr.h" />
-    <ClInclude Include="unittests.h" />
-    <ClInclude Include="vardec.h" />
-    <ClInclude Include="vars.h" />
-    <ClInclude Include="WComm.h" />
-    <ClInclude Include="WConstants.h" />
-    <ClInclude Include="WOutStreamBuffer.h" />
-    <ClInclude Include="WSession.h" />
-    <ClInclude Include="WStatus.h" />
-    <ClInclude Include="WStringUtils.h" />
-    <ClInclude Include="WTextFile.h" />
-    <ClInclude Include="wtypes.h" />
-    <ClInclude Include="WUser.h" />
-    <ClInclude Include="wwiv.h" />
-    <ClInclude Include="wwivassert.h" />
-    <ClInclude Include="xinitini.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
