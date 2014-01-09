@@ -54,99 +54,48 @@ int WWIV_GetRandomNumber(int nMaxValue)
 }
 
 
+#ifdef _WIN32
+#include <VersionHelpers.h>
+#endif
+
 bool WWIV_GetOSVersion(	char * pszOSVersionString,
 				int nBufferSize,
 				bool bFullVersion)
 {
-
 #if defined (_WIN32)
-
-	OSVERSIONINFO os;
-	char szBuffer[200];
-
-	os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-	if (!GetVersionEx(&os))
-	{
+	if (IsWindows8Point1OrGreater()) {
+		strcpy(pszOSVersionString, "Windows 8.1+");
+		return false;
+	}
+	else if (IsWindows8OrGreater()) {
+		strcpy(pszOSVersionString, "Windows 8");
+		return false;
+	}
+	else if (IsWindows7OrGreater()) {
+		strcpy(pszOSVersionString, "Windows 7");
+		return false;
+	}
+	else if (IsWindowsVistaOrGreater()) {
+		strcpy(pszOSVersionString, "Windows Vista");
+		return false;
+	}
+	else if (IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WS03), LOBYTE(_WIN32_WINNT_WS03), 0)) {
+		strcpy(pszOSVersionString, "Windows Server 2003");
+		return false;
+	}
+	else if (IsWindowsXPOrGreater()) {
+		strcpy(pszOSVersionString, "Windows XP");
+		return false;
+	}
+	else if (IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_NT4), LOBYTE(_WIN32_WINNT_NT4), 0)) {
+		strcpy(pszOSVersionString, "Windows NT");
+		return false;
+	}
+	else {
+		// couldn't figure it out, give up
 		strcpy(pszOSVersionString, "WIN32");
 		return false;
 	}
-
-	switch (os.dwPlatformId)
-	{
-	case VER_PLATFORM_WIN32_WINDOWS:
-		if ((os.dwMajorVersion == 4) && (os.dwMinorVersion == 0))
-		{
-			snprintf( szBuffer, sizeof( szBuffer ), "Windows 95" );
-		}
-		else if ( os.dwMajorVersion == 4 && os.dwMinorVersion == 10 )
-		{
-			snprintf( szBuffer, sizeof( szBuffer ), "Windows 98" );
-			if ( os.szCSDVersion[1] == 'A' )
-			{
-                strcat( szBuffer, "SE " );
-			}
-		}
-		else if ( os.dwMajorVersion == 4 && os.dwMinorVersion == 90 )
-		{
-			snprintf( szBuffer, sizeof( szBuffer ), "Windows ME" );
-		}
-		else
-		{
-			snprintf( szBuffer, sizeof( szBuffer ), "Windows %ld%c%ld", os.dwMajorVersion, '.', os.dwMinorVersion );
-		}
-		break;
-	case VER_PLATFORM_WIN32_NT:
-		if (os.dwMajorVersion == 5)
-		{
-			switch ( os.dwMinorVersion )
-			{
-			case 0:
-				snprintf( szBuffer, sizeof( szBuffer ), "Windows 2000 %s", ( bFullVersion ? os.szCSDVersion : "" ) );
-				break;
-			case 1:
-				snprintf( szBuffer, sizeof( szBuffer ), "Windows XP %s", ( bFullVersion ? os.szCSDVersion : "" ) );
-				break;
-			case 2:
-				snprintf( szBuffer, sizeof( szBuffer ), "Windows Server Family %s", ( bFullVersion ? os.szCSDVersion : "" ) );
-				break;
-			}
-		}
-        else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 0)
-        {
-			snprintf( szBuffer, sizeof( szBuffer ), "Windows Vista %s", ( bFullVersion ? os.szCSDVersion : "" ) );
-        }
-		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 1)
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows 7 %s", (bFullVersion ? os.szCSDVersion : ""));
-		}
-		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 2)
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows 8 %s", (bFullVersion ? os.szCSDVersion : ""));
-		}
-		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 3)
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows 8.1 %s", (bFullVersion ? os.szCSDVersion : ""));
-		}
-		else
-		{
-			snprintf( szBuffer, sizeof( szBuffer ), "Windows NT %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, ( bFullVersion ? os.szCSDVersion : "" ) );
-		}
-		break;
-	case VER_PLATFORM_WIN32s:
-        // Don't know why we need this, we won't run here.
-		snprintf( szBuffer, sizeof( szBuffer ), "WIN32s on Windows 3.1" );
-		break;
-	default:
-		snprintf( szBuffer, sizeof( szBuffer ), "WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion );
-	}
-
-	if ( nBufferSize < wwiv::stringUtils::GetStringLength( szBuffer ) )
-	{
-		szBuffer[nBufferSize-1] = '\0';
-	}
-	strcpy( pszOSVersionString, szBuffer );
-
 #elif defined (__OS2__)
 
 	//
