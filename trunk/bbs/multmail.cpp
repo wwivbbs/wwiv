@@ -52,7 +52,7 @@ void multimail(int *pnUserNumber, int numu)
 	GetSession()->bout << "|#5Show all recipients in mail? ";
 	bool show_all = yesno();
 	int j = 0;
-	strcpy(s1, "\003""6CC: \003""1");
+	strcpy(s1, "\003""6CC: \0031");
 
 	m.msg.storage_type = EMAIL_STORAGE;
 	strcpy(irt, "Multi-Mail");

@@ -1460,7 +1460,7 @@ void config_file_list()
 	char action[51];
 	uploadsrec u;
 
-	strcpy( u.filename, "WWIV430.ZIP" );
+	strcpy( u.filename, "WWIV50.ZIP" );
 	strcpy( u.description, "This is a sample description!" );
 	strcpy( u.date, date() );
 	strcpy( reinterpret_cast<char*>( u.upby ), GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) );
@@ -2573,6 +2573,7 @@ void view_file(const char *pszFileName)
 	strcpy(szBuffer, pszFileName);
 	unalign(szBuffer);
 
+	// TODO: AVIEWCOM.EXE will not work on x64 platforms, find replacement
 	if (WFile::Exists("AVIEWCOM.EXE"))
     {
 		if (incom)

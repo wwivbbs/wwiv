@@ -820,7 +820,7 @@ void printinfo(uploadsrec * u, bool *abort)
     GetSession()->bout.Color( 1 );
     osan( s, abort, &next );
     GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
-    osan( ( okansi() ? "บ" : "|" ), abort, &next );
+    osan( ( okansi() ? "\xBA" : "|" ), abort, &next );
 
     sprintf( s1, "%ld""k", bytes_to_k( u->numbytes ) );
 
@@ -845,7 +845,7 @@ void printinfo(uploadsrec * u, bool *abort)
     if ( GetSession()->tagging == 1 && !GetSession()->GetCurrentUser()->IsUseNoTagging() && !x_only )
     {
         GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
-        osan( ( okansi() ? "บ" : "|" ), abort, &next );
+        osan( ( okansi() ? "\xBA" : "|" ), abort, &next );
         sprintf( s1, "%d", u->numdloads );
 
         for ( i = 0; i < 4 - wwiv::stringUtils::GetStringLength( s1 ); i++ )
@@ -858,7 +858,7 @@ void printinfo(uploadsrec * u, bool *abort)
         osan( s, abort, &next );
     }
     GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
-    osan( ( okansi() ? "บ" : "|" ), abort, &next );
+    osan( ( okansi() ? "\xBA" : "|" ), abort, &next );
     sprintf( s, "|#%d%s", ( u->mask & mask_extended ) ? 1 : 2, u->description );
     if ( GetSession()->tagging && !GetSession()->GetCurrentUser()->IsUseNoTagging() && !x_only )
     {
@@ -914,11 +914,11 @@ void printtitle( bool *abort )
     {
         if ( okansi() )
         {
-			GetSession()->bout << ss << "ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
+			GetSession()->bout << ss << charstr(78, '\xCD')  << wwiv::endl;
         }
         else
         {
-			GetSession()->bout << ss << "------------------------------------------------------------------------------" << wwiv::endl;
+			GetSession()->bout << ss << charstr(78, '-') << wwiv::endl;
         }
     }
     else if ( lines_listed )
@@ -927,7 +927,7 @@ void printtitle( bool *abort )
         {
             if ( okansi() )
             {
-				GetSession()->bout << ss << "ออสออออออออออออสอออออสออออสอออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
+				GetSession()->bout << ss << "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD" << wwiv::endl;
             }
             else
             {
@@ -941,7 +941,7 @@ void printtitle( bool *abort )
                 GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
                 if ( okansi() )
                 {
-					GetSession()->bout << ss << "ออออออออออออสอออออสอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
+					GetSession()->bout << ss << "\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD" << wwiv::endl;
                 }
                 else
                 {
@@ -960,7 +960,7 @@ void printtitle( bool *abort )
         GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
         if ( okansi() )
         {
-			GetSession()->bout << "\r" << "ออหออออออออออออหอออออหออออหอออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
+			GetSession()->bout << "\r" << "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xcA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD" << wwiv::endl;
         }
         else
         {
@@ -972,7 +972,7 @@ void printtitle( bool *abort )
         GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
         if ( okansi() )
         {
-			GetSession()->bout << "\r" << "ออออออออออออหอออออหอออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
+			GetSession()->bout << "\r" << "\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD" << wwiv::endl;
         }
         else if ( x_only )
         {

@@ -340,7 +340,7 @@ void list_users( int mode )
                 GetSession()->bout.NewLine();
             }
             GetSession()->bout.Color( FRAME_COLOR );
-            pla("ีออออออัอออออออออออออออออออออัอออออออออออออออออออออออออัอออออออออออัอออออออออธ", &abort);
+            pla("\xD5\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xB8", &abort);
             found = false;
         }
 
@@ -419,7 +419,7 @@ void list_users( int mode )
             }
             std::string properName = properize( user.GetName() );
             char szUserListLine[ 255 ];
-            sprintf( szUserListLine, "|#%dณ|#9%5d |#%dณ|#6%c|#1%-20.20s|#%dณ|#2 %-24.24s|#%dณ |#1%-9s |#%dณ  |#3%-5hu  |#%dณ",
+            sprintf( szUserListLine, "|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 %-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5hu  |#%d\xB3",
                 FRAME_COLOR, nUserNumber, FRAME_COLOR, in_qscan ? '*' : ' ', properName.c_str(),
                 FRAME_COLOR, szCity, FRAME_COLOR, user.GetLastOn(), FRAME_COLOR,
                 user.GetLastBaudRate(), FRAME_COLOR );
@@ -435,7 +435,7 @@ void list_users( int mode )
                 GetSession()->bout.BackLine();
                 GetSession()->bout.ClearEOL();
                 GetSession()->bout.Color( FRAME_COLOR );
-                pla("ิออออออฯอออออออออออออออออออออฯอออออออออออออออออออออออออฯอออออออออออฯอออออออออพ", &abort);
+                pla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCDฯ\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE", &abort);
                 GetSession()->bout << "|#1[Enter] to continue or Q=Quit : ";
                 char ch = onek("Q\r ");
                 switch (ch)
@@ -459,7 +459,7 @@ void list_users( int mode )
   GetSession()->bout.BackLine();
   GetSession()->bout.ClearEOL();
   GetSession()->bout.Color( FRAME_COLOR );
-  pla("ิออออออฯอออออออออออออออออออออฯอออออออออออออออออออออออออฯอออออออออออฯอออออออออพ", &abort);
+  pla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCDฯ\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE", &abort);
   if (!abort)
   {
       GetSession()->bout.NewLine( 2 );

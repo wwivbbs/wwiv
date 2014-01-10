@@ -333,7 +333,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName )
     case -2:
         {
 			std::stringstream networkCommand;
-			networkCommand << "NETWORK /B" << modem_speed << " /T" << lTime << " /F" << modem_flag;
+			networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F" << modem_flag;
             write_inst( INST_LOC_NET, 0, INST_FLAGS_NONE );
             ExecuteExternalProgram( networkCommand.str().c_str(), EFLAG_NONE );
             if ( GetApplication()->GetInstanceNumber() != 1 )

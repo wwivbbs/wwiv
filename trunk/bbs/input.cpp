@@ -20,8 +20,9 @@
 #include "wwiv.h"
 
 
+// TODO: put back in high ascii characters after finding proper hex codes
 static const unsigned char *valid_letters =
-( unsigned char * ) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ�������������������������������";
+( unsigned char * ) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 
 /**
@@ -321,7 +322,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
     GetSession()->bout.GotoXY(x, y);
     for (i = 0; i < nMaxLength; i++)
     {
-        GetSession()->bout << "�";
+        GetSession()->bout << "\xB1";
     }
     GetSession()->bout.GotoXY( x, y );
     if ( !origText.empty() )
@@ -350,7 +351,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
                 while (nLength--)
                 {
                     GetSession()->bout.GotoXY(nLength + x, y);
-                    bputch('�');
+					bputch('\xB1');
                 }
                 nLength = pos = szTemp[0] = 0;
             }
@@ -402,7 +403,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
 			{
                 bputch( szTemp[i] );
 			}
-            bputch('�');
+			bputch('\xB1');
             break;
         case BACKSPACE:                               // Backspace
             if (pos)
@@ -422,19 +423,19 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
 						{
                             bputch( szTemp[i] );
 						}
-                        GetSession()->bout << "�";
+                        GetSession()->bout << "\xB1";
                     }
                 }
                 else
                 {
                     GetSession()->bout.GotoXY(pos - 1 + x, y);
-                    GetSession()->bout << "�";
+                    GetSession()->bout << "\xB1";
                     pos = --nLength;
                     if (((mode == INPUT_MODE_DATE) && ((pos == 2) || (pos == 5))) ||
                         ((mode == INPUT_MODE_PHONE) && ((pos == 3) || (pos == 7))))
                     {
                         GetSession()->bout.GotoXY(pos - 1 + x, y);
-                        GetSession()->bout << "�";
+                        GetSession()->bout << "\xB1";
                         pos = --nLength;
                     }
                 }
