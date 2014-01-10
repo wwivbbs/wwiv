@@ -527,14 +527,14 @@ bool ok_to_call(int i)
 
 void fixup_long( unsigned long *f, time_t l )
 {
-	if ( *f > l )
+	if ( *f > static_cast<unsigned long>(l) )
     {
-		*f = l;
+		*f = static_cast<unsigned long>(l);
     }
 
-	if ( *f + ( SECONDS_PER_DAY * 30L ) < l )
+	if (*f + (SECONDS_PER_DAY * 30L) < static_cast<unsigned long>(l))
     {
-		*f = l - SECONDS_PER_DAY * 30L;
+		*f = static_cast<unsigned long>(l) - (SECONDS_PER_DAY * 30L);
     }
 }
 
