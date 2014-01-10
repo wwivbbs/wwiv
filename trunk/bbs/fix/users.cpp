@@ -59,7 +59,7 @@ void checkUserList()
     WFile nameFile(syscfg.datadir, NAMES_LST);
     if(!nameFile.Exists())
     {
-        Print(NOK, true, "%s does not exist, regenerating", nameFile.GetFullPathName());
+        Print(NOK, true, "%s does not exist, regenerating", nameFile.GetFullPathName().c_str());
     }
     else
     {
