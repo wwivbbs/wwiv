@@ -1116,10 +1116,18 @@ bool WApplication::read_modem()
     {
         return true;
     }
-    char szFileName[ MAX_PATH ];
+	char szFileName[MAX_PATH];
     if (GetApplication()->GetInstanceNumber() > 1)
     {
         snprintf( szFileName, sizeof( szFileName ), "%s%s.%3.3d", syscfg.datadir, MODEM_XXX, GetApplication()->GetInstanceNumber() );
+		if (!WFile::Exists(szFileName)) {
+			char modemMDMFile[MAX_PATH];
+			snprintf(modemMDMFile, sizeof(modemMDMFile), "%s%s", syscfg.datadir, MODEM_DAT);
+			if (WFile::Exists(modemMDMFile)) {
+				std::cout << "\r\nRun Cloning modem data from " << modemMDMFile << " to " << szFileName << "\r\n\n";
+				WFile::CopyFile(modemMDMFile, szFileName);
+			}
+		}
     }
     else
     {
