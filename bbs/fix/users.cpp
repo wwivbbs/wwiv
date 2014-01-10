@@ -28,7 +28,7 @@ void checkUserList()
     WFile userFile(syscfg.datadir, USER_LST);
     if(!userFile.Exists())
     {
-        Print(NOK, true, "%s does not exist.", userFile.GetFullPathName());
+        Print(NOK, true, "%s does not exist.", userFile.GetFullPathName().c_str());
         giveUp();
     }
 
