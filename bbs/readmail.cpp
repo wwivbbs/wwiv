@@ -315,7 +315,7 @@ void add_netsubscriber( int nSystemNumber )
 	{
         hostFile.Write(s);
         hostFile.Close();
-
+		// TODO find replacement for autosend.exe
 		if ( WFile::Exists( "autosend.exe" ) )
 		{
 			GetSession()->bout << "AutoSend starter messages? ";

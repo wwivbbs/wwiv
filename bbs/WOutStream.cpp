@@ -146,9 +146,9 @@ void WOutStream::DisplayLiteBar(const char *pszFormatText,...)
     if ( okansi() )
     {
         snprintf( s1, sizeof( s1 ), "%s%s%s", charstr( i, ' ' ), stripcolors( s ), charstr( i, ' ' ) );
-		*this << "\x1B[0;1;37m" << charstr( strlen( s1 ) + 4, '�' ) << wwiv::endl;
+		*this << "\x1B[0;1;37m" << charstr( strlen( s1 ) + 4, '\xDC' ) << wwiv::endl;
         *this << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
-		*this << "\x1B[0;1;30m" << charstr( strlen( s1 ) + 4, '�' ) << wwiv::endl;
+		*this << "\x1B[0;1;30m" << charstr( strlen( s1 ) + 4, '\xDF' ) << wwiv::endl;
     }
     else
     {

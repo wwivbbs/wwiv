@@ -60,7 +60,7 @@ void show_chains(int *mapp, int *map)
 
         if ( okansi() )
         {
-            sprintf( szBuffer, "|#%d %s", FRAME_COLOR, "ÉÍÍÍËÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍ»" );
+            sprintf( szBuffer, "|#%d %s", FRAME_COLOR, "\xDA\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF" );
         }
         else
         {
@@ -74,7 +74,7 @@ void show_chains(int *mapp, int *map)
             if ( okansi() )
             {
                 GetApplication()->GetUserManager()->ReadUser( &user, chains_reg[map[i]].regby[0] );
-                sprintf( szBuffer, " |#%dº|#5%3d|#%dº|#1%-41s|#%dº|%2.2d%-21s|#%dº|#1%5d|#%dº",
+                sprintf( szBuffer, " |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
 						 FRAME_COLOR,
 						 i + 1,
 						 FRAME_COLOR,
@@ -93,7 +93,7 @@ void show_chains(int *mapp, int *map)
                         if ( chains_reg[map[i]].regby[i1] != 0 )
                         {
                             GetApplication()->GetUserManager()->ReadUser( &user, chains_reg[map[i]].regby[i1] );
-                            sprintf( szBuffer, " |#%dº   º%-41sº|#2%-21s|#%dº%5.5sº",
+                            sprintf( szBuffer, " |#%d\xB3   º%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
                                      FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " " );
                             pla( szBuffer, &abort );
                         }
@@ -125,7 +125,7 @@ void show_chains(int *mapp, int *map)
         }
         if ( okansi() )
         {
-            sprintf( szBuffer, "|#%d %s", FRAME_COLOR, "ÈÍÍÍÊÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍ¼" );
+			sprintf(szBuffer, "|#%d %s", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9");
         }
         else
         {
@@ -137,10 +137,10 @@ void show_chains(int *mapp, int *map)
     else
     {
         GetSession()->bout.DisplayLiteBar( " [ %s Online Programs ] ", syscfg.systemname );
-        GetSession()->bout << "|#7ÉÄÄËÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄËÄÄËÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ»\r\n";
+		GetSession()->bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
         for ( int i = 0; i < *mapp && !abort && !hangup; i++ )
         {
-            sprintf( szBuffer, "|#7³|#2%2d|#7³ |#1%-33.33s|#7³", i + 1, chains[map[i]].description );
+            sprintf( szBuffer, "|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, chains[map[i]].description );
             osan( szBuffer, &abort, &next );
             i++;
 			if ( !abort && !hangup )
@@ -148,16 +148,16 @@ void show_chains(int *mapp, int *map)
 				char szBuffer[ 255 ];
 				if ( i >= *mapp )
 				{
-					sprintf( szBuffer, "  |#7³                                  |#7³" );
+					sprintf( szBuffer, "  |#7\xB3                                  |#7\xB3" );
 				}
 				else
 				{
-					sprintf( szBuffer, "|#2%2d|#7³ |#1%-33.33s|#7³", i + 1,chains[map[i]].description );
+					sprintf( szBuffer, "|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1,chains[map[i]].description );
 				}
 				pla( szBuffer, &abort );
 			}
         }
-        GetSession()->bout << "|#7ÈÄÄÊÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÊÄÄÊÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¼\r\n\n";
+		GetSession()->bout << "|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
     }
 }
 

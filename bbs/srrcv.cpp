@@ -205,13 +205,13 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
     GetSession()->bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
     int nOldXPos = GetSession()->localIO()->WhereX();
     int nOldYPos = GetSession()->localIO()->WhereY();
-    GetSession()->localIO()->LocalXYPuts(52, 0, "³ Filename :               ");
-    GetSession()->localIO()->LocalXYPuts(52, 1, "³ Xfer Time:               ");
-    GetSession()->localIO()->LocalXYPuts(52, 2, "³ File Size:               ");
-    GetSession()->localIO()->LocalXYPuts(52, 3, "³ Cur Block: 1 - 1k        ");
-    GetSession()->localIO()->LocalXYPuts(52, 4, "³ Consec Errors: 0         ");
-    GetSession()->localIO()->LocalXYPuts(52, 5, "³ Total Errors : 0         ");
-    GetSession()->localIO()->LocalXYPuts(52, 6, "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ");
+    GetSession()->localIO()->LocalXYPuts(52, 0, "\xB3 Filename :               ");
+    GetSession()->localIO()->LocalXYPuts(52, 1, "\xB3 Xfer Time:               ");
+    GetSession()->localIO()->LocalXYPuts(52, 2, "\xB3 File Size:               ");
+    GetSession()->localIO()->LocalXYPuts(52, 3, "\xB3 Cur Block: 1 - 1k        ");
+    GetSession()->localIO()->LocalXYPuts(52, 4, "\xB3 Consec Errors: 0         ");
+    GetSession()->localIO()->LocalXYPuts(52, 5, "\xB3 Total Errors : 0         ");
+    GetSession()->localIO()->LocalXYPuts(52, 6, "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
     GetSession()->localIO()->LocalXYPuts(65, 0, stripfn( pszFileName ) );
     int nNumStartTries = 0;
     do

@@ -39,7 +39,7 @@ void OnlineUserEditor()
 	int wy = 3;
 	GetSession()->localIO()->MakeLocalWindow(wx, wy-2, 70, 16 + 2);
     char szBar[ 255 ];
-	sprintf( szBar, "�%s�", charstr( 70 - wx + 3, '�' ) );
+	sprintf(szBar, "\xC3%s\xB4", charstr(70 - wx + 3, '\xC4'));
 	GetSession()->localIO()->LocalXYPrintf( wx, wy, szBar );
 	GetSession()->localIO()->LocalXYPrintf( wx, wy + 4, szBar );
 	GetSession()->localIO()->LocalXYPrintf( wx, wy + 7, szBar );

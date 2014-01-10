@@ -877,7 +877,7 @@ void relist()
 		GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 		if ( okansi() )
 		{
-			GetSession()->bout << "ออหออออออออออออหอออออหออออหอออออออออออออออออออออออออออออออออออออออออออออออออออ\r\n";
+			GetSession()->bout << "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\r\n";
 		}
 		else
 		{
@@ -895,7 +895,7 @@ void relist()
 				{
 					if ( okansi() )
 					{
-						GetSession()->bout << "\r" << "ออสออออออออออออสอออออสออออสอออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
+						GetSession()->bout << "\r" << "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD" << wwiv::endl;
 					}
 					else
 					{
@@ -927,7 +927,7 @@ void relist()
 				GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
 				if ( okansi() )
 				{
-					GetSession()->bout << "ออหออออออออออออหอออออหออออหอออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
+					GetSession()->bout << "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD" << wwiv::endl;
 				}
 				else
 				{
@@ -958,7 +958,7 @@ void relist()
 		}
 		osan(s, &abort, &next);
 		GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
-		osan((okansi() ? "บ" : ":"), &abort, &next);
+		osan((okansi() ? "\xBA" : ":"), &abort, &next);
 
         sprintf( s1, "%ld""k", bytes_to_k( filelist[i].u.numbytes ) );
 		if ( !GetApplication()->HasConfigFlag( OP_FLAGS_FAST_TAG_RELIST ) )
@@ -986,7 +986,7 @@ void relist()
 		osan(s, &abort, &next);
 
 		GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
-		osan((okansi() ? "บ" : "|"), &abort, &next);
+		osan((okansi() ? "\xBA" : "|"), &abort, &next);
 		sprintf(s1, "%d", filelist[i].u.numdloads);
 
 		for (i1 = 0; i1 < 4 - wwiv::stringUtils::GetStringLength(s1); i1++)
@@ -1002,7 +1002,7 @@ void relist()
 		osan(s, &abort, &next);
 
 		GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
-		osan((okansi() ? "บ" : "|"), &abort, &next);
+		osan((okansi() ? "\xBA" : "|"), &abort, &next);
 		sprintf(s, "%c%d%s",
 			    0x03,
 			    (filelist[i].u.mask & mask_extended) ? 1 : 2,
@@ -1012,7 +1012,7 @@ void relist()
   GetSession()->bout.Color( GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0 );
   if ( okansi() )
   {
-	  GetSession()->bout << "\r" << "ออสออออออออออออสอออออสออออสอออออออออออออออออออออออออออออออออออออออออออออออออออ" << wwiv::endl;
+	  GetSession()->bout << "\r" << "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD" << wwiv::endl;
   }
   else
   {
@@ -1410,9 +1410,9 @@ void xfer_defaults()
 	do
 	{
 		GetSession()->bout.ClearScreen();
-		GetSession()->bout <<  "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
-		GetSession()->bout <<  "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
-		GetSession()->bout <<  "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base (" <<
+		GetSession()->bout << "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
+		GetSession()->bout << "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
+		GetSession()->bout << "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base (" <<
                  YesNoString( GetSession()->GetCurrentUser()->IsNewScanFiles() ) << ").\r\n";
 		GetSession()->bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print [" << GetSession()->GetCurrentUser()->GetNumExtended() << " line(s)].\r\n";
 		GetSession()->bout << "|#7[|#25|#7]|#1 File GetSession()->tagging (";
