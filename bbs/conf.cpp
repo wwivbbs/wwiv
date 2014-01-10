@@ -99,8 +99,8 @@ void jump_conf(int conftype)
 {
 	int i;
 	char s[81], s1[101];
-	confrec *cp;
-	userconfrec *uc;
+	confrec *cp = NULL;
+	userconfrec *uc = NULL;
 	int nc;
 
 	GetSession()->bout.DisplayLiteBar(" [ %s Conference Selection ] ", syscfg.systemname);
@@ -140,7 +140,7 @@ void jump_conf(int conftype)
  */
 void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int action )
 {
-	confrec *cp;
+	confrec *cp = NULL;
 	int nc, num_s;
 	int pos1, pos2;
 	int i, i1;
@@ -286,7 +286,7 @@ char *word_to_arstr( int ar )
  */
 char first_available_designator(int conftype)
 {
-	confrec *cp;
+	confrec *cp = NULL;
 	int nc;
 
     if ( get_conf_info(conftype, &nc, &cp, NULL, NULL, NULL)  || nc == MAX_CONFERENCES )
@@ -344,7 +344,7 @@ void save_confs(int conftype, int whichnum, confrec * c)
 {
 	char szFileName[MAX_PATH];
 	int num, num1;
-	confrec *cp;
+	confrec *cp = NULL;
 
 	if (get_conf_info(conftype, &num, &cp, szFileName, NULL, NULL))
 	{
