@@ -82,7 +82,7 @@ void gfl_hdr( int which )
 
     if ( okansi() )
     {
-        strcpy( s2, charstr( 29, 'Ä' ) );
+		strcpy(s2, charstr(29, '\xC4'));
     }
     else
     {
@@ -103,11 +103,11 @@ void gfl_hdr( int which )
     {
         if ( which )
         {
-            sprintf( s, "|#7ÉÄÄÄË%sËÄÄÄÄËÄÄÄË%sËÄÄÄÄ»", s2, s2 );
+            sprintf( s, "|#7\xDA\xC4\xC4\xC4\xC2%s\xC2\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC2%s\xC2\xC4\xC4\xC4\xC4\xBF", s2, s2 );
         }
         else
         {
-            sprintf( s, "|#7ÉÄÄÄË%sÄÄÄÄÄËÄÄÄË%sÄÄÄÄ»", s2, s2 );
+            sprintf( s, "|#7\xDA\xC4\xC4\xC4\xC2%s\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC2%s\xC4\xC4\xC4\xC4\xBF", s2, s2 );
         }
     }
     else
@@ -127,12 +127,12 @@ void gfl_hdr( int which )
     {
         if ( which )
         {
-            sprintf( s, "|#7³|#2 # |#7³%s|#1 Name %s|#7³|#9Size|#7³|#2 # |#7³%s|#1 Name %s|#7³|#9Size|#7³",
+            sprintf( s, "|#7\xB3|#2 # |#7\xB3%s|#1 Name %s|#7\xB3|#9Size|#7\xB3|#2 # |#7\xB3%s|#1 Name %s|#7\xB3|#9Size|#7\xB3",
                      s1, s3, s1, s3 );
         }
         else
         {
-            sprintf( s, "|#7³|#2 # |#7³%s|#1 Name%s|#7³|#2 # |#7³%s|#1Name%s|#7³", s1, s3, s1, s3 );
+            sprintf( s, "|#7\xB3|#2 # |#7\xB3%s|#1 Name%s|#7\xB3|#2 # |#7\xB3%s|#1Name%s|#7\xB3", s1, s3, s1, s3 );
         }
     }
     else
@@ -152,11 +152,11 @@ void gfl_hdr( int which )
     {
         if ( which )
         {
-            sprintf( s, "|#7ÌÄÄÄÎ%sÎÄÄÄÄÎÄÄÄÎ%sÎÄÄÄÄ¹", s2, s2 );
+            sprintf( s, "|#7\xC3\xC4\xC4\xC4\xC5%s\xC5\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC5%s\xC5\xC4\xC4\xC4\xC4\xB4", s2, s2 );
         }
         else
         {
-            sprintf( s, "|#7ÌÄÄÄÎ%sÄÄÄÄÄÎÄÄÄÎ%sÄÄÄÄ¹", s2, s2 );
+            sprintf( s, "|#7\xC3\xC4\xC4\xC4\xC5%s\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC5%s\xC4\xC4\xC4\xC4\xB4", s2, s2 );
         }
     }
     else
@@ -184,9 +184,9 @@ void list_sec( int *map, int nmap )
     bool abort = false;
     if ( okansi() )
     {
-        strcpy(s2, charstr(29, 'Ä'));
-        strcpy(s3, charstr(12, 'Ä'));
-        strcpy(s7, charstr(12, 'Ä'));
+		strcpy(s2, charstr(29, '\xC4'));
+		strcpy(s3, charstr(12, '\xC4'));
+		strcpy(s7, charstr(12, '\xC4'));
     }
     else
     {
@@ -223,7 +223,7 @@ void list_sec( int *map, int nmap )
         }
         if ( okansi() )
         {
-            sprintf(s, "|#7³|#2%3s|#7³|#1%-34s|#7³|#2%3s|#7³|#1%-33s|#7³", lnum, s4, rnum, s5);
+            sprintf(s, "|#7\xB3|#2%3s|#7\xB3|#1%-34s|#7\xB3|#2%3s|#7\xB3|#1%-33s|#7\xB3", lnum, s4, rnum, s5);
         }
         else
         {
@@ -237,7 +237,7 @@ void list_sec( int *map, int nmap )
             i2 = 0;
             if ( okansi() )
             {
-                sprintf(s1, "|#7ÈÄÄÄÊ%sÄÄÄÄÄÊÄÄÄÊÄÄÄÄÄÄ%s|#1ş|#7Ä|#2%s|#7Ä|#2ş|#7ÄÄÄ¼",
+                sprintf(s1, "|#7\xC3\xC4\xC4\xC4X%s\xC4\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#2\xFE|#7\xC4\xC4\xC4X",
                     s2, s3, times());
             }
             else
@@ -258,7 +258,7 @@ void list_sec( int *map, int nmap )
         {
             if ( okansi() )
             {
-                sprintf(s1, "|#7ÌÄÄÄÊ%sÄÄÄÄÄÊÄÄÄÊ%sÄÄÄÄ¹", s2, s2);
+                sprintf(s1, "|#7\xC3\xC4\xC4\xC4\xC1%s\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1%s\xC4\xC4\xC4\xC4\xB4", s2, s2);
             }
             else
             {
@@ -269,7 +269,7 @@ void list_sec( int *map, int nmap )
 
             if ( okansi() )
             {
-                sprintf(s1, "|#7³  |#2G|#7)|#1G-File Edit%s|#7³", charstr(61, ' '));
+                sprintf(s1, "|#7\xB3  |#2G|#7)|#1G-File Edit%s|#7\xB3", charstr(61, ' '));
             }
             else
             {
@@ -279,7 +279,7 @@ void list_sec( int *map, int nmap )
             GetSession()->bout.Color( 0 );
             if ( okansi() )
             {
-                sprintf(s1, "|#7ÈÄÄÄÄ%sÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ%s|#1ş|#7Ä|#2%s|#7Ä|#1ş|#7ÄÄÄ¼", s2, s7, times());
+                sprintf(s1, "|#7\xC0\xC4\xC4\xC4\xC4%s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xD9", s2, s7, times());
             }
             else
             {
@@ -292,7 +292,7 @@ void list_sec( int *map, int nmap )
         {
             if ( okansi() )
             {
-                sprintf(s1, "|#7ÈÄÄÄÊ%sÄÄÄÄÄÊÄÄÄÊÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ%s|#1ş|#7Ä|#2%s|#7Ä|#1ş|#7ÄÄÄ¼",
+                sprintf(s1, "|#7\xC0\xC4\xC4\xC4\xC1%s\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xD9",
                     s2, s3, times());
             }
             else
@@ -319,8 +319,8 @@ void list_gfiles(gfilerec * g, int nf, int sn)
     i2 = 0;
     if ( okansi() )
     {
-        strcpy(s2, charstr(29, 'Ä'));
-        strcpy(s3, charstr(12, 'Ä'));
+		strcpy(s2, charstr(29, '\xC4'));
+		strcpy(s3, charstr(12, '\xC4'));
     }
     else
     {
@@ -379,7 +379,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
         }
         if ( okansi() )
         {
-            sprintf( s, "|#7³|#2%3s|#7³|#1%-29s|#7³|#2%4s|#7³|#2%3s|#7³|#1%-29s|#7³|#2%4s|#7³",
+            sprintf( s, "|#7\xB3|#2%3s|#7\xB3|#1%-29s|#7\xB3|#2%4s|#7\xB3|#2%3s|#7\xB3|#1%-29s|#7\xB3|#2%4s|#7\xB3",
                      lnum, s4, lsize, rnum, s5, rsize);
         }
         else
@@ -394,7 +394,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
             i2 = 0;
             if ( okansi() )
             {
-                sprintf(s1, "|#7ÈÄÄÄÊ%sÊÄÄÄÄÊÄÄÄÊÄ%s|#1ş|#7Ä|#2%s|#7Ä|#1ş|#7ÄÊÄÄÄÄ¼",
+                sprintf(s1, "|#7\xC3\xC4\xC4\xC4X%sX\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xFE\xC4\xC4\xC4\xC4\xD9",
                     s2, s3, times());
             }
             else
@@ -412,7 +412,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
     {
         if ( okansi() )
         {
-            sprintf( s, "|#7ÌÄÄÄÊ%sÊÄÄÄÄÊÄÄÄÊ%sÊÄÄÄÄ¹", s2, s2 );
+            sprintf( s, "|#7\xC3\xC4\xC4\xC4\xC1%s\xC1\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1%s\xC1\xC4\xC4\xC4\xC4\xB4", s2, s2 );
         }
         else
         {
@@ -424,7 +424,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
         {
             if ( okansi() )
             {
-                sprintf( s1, "|#7³ |#1A|#7)|#2Add a G-File  |#1D|#7)|#2Download a G-file  |#1E|#7)|#2Edit this section  |#1R|#7)|#2Remove a G-" );
+                sprintf( s1, "|#7\xB3 |#1A|#7)|#2Add a G-File  |#1D|#7)|#2Download a G-file  |#1E|#7)|#2Edit this section  |#1R|#7)|#2Remove a G-File |#7\xB3" );
             }
             else
             {
@@ -437,7 +437,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
         {
             if ( okansi() )
             {
-                sprintf( s1, "|#7³  |#2D  |#1Download a G-file%s|#7³", charstr( 55, ' ' ) );
+                sprintf( s1, "|#7\xB3  |#2D  |#1Download a G-file%s|#7\xB3", charstr( 55, ' ' ) );
             }
             else
             {
@@ -449,7 +449,7 @@ void list_gfiles(gfilerec * g, int nf, int sn)
     }
     if ( okansi() )
     {
-        sprintf( s1, "|#7ÈÄÄÄÄ%sÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ%s|#1ş|#7Ä|#2%s|#7Ä|#1ş|#7ÄÄÄÄ¼", s2, s3, times() );
+        sprintf( s1, "|#7\xC0\xC4\xC4\xC4\xC4%s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xC4\xD9", s2, s3, times() );
     }
     else
     {

@@ -208,7 +208,7 @@ int cleanup_net1()
                 ok2 = 0;
                 ok = 0;
                 WFindFile fnd;
-                sprintf( s, "%s""p*.%3.3d", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetInstanceNumber() );
+                sprintf( s, "%sp*.%3.3d", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetInstanceNumber() );
                 bool bFound = fnd.open( s, 0 );
                 while ( bFound )
                 {
@@ -223,7 +223,7 @@ int cleanup_net1()
                 {
                     if ( !ok )
                     {
-                        sprintf( s, "%s""p*.net", GetSession()->GetNetworkDataDirectory() );
+                        sprintf( s, "%sp*.net", GetSession()->GetNetworkDataDirectory() );
                         WFindFile fnd;
                         ok = fnd.open( s, 0 );
                     }
@@ -954,7 +954,7 @@ void print_pending_list()
         {
             long lFileSize = deadNetFile.GetLength();
 			deadNetFile.Close();
-            sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
+            sprintf( s3, "%ldk", ( lFileSize + 1023 ) / 1024 );
 			GetSession()->bout.WriteFormatted( "|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n", GetSession()->GetNetworkName(), s3);
 		}
 	}
@@ -973,7 +973,7 @@ void print_pending_list()
         {
             long lFileSize = checkNetFile.GetLength();
             checkNetFile.Close();
-            sprintf( s3, "%ld""k", ( lFileSize + 1023 ) / 1024 );
+            sprintf( s3, "%ldk", ( lFileSize + 1023 ) / 1024 );
 			strcat(s3, "k");
 			GetSession()->bout.WriteFormatted( "|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n", GetSession()->GetNetworkName(), s3);
 		}
@@ -1123,7 +1123,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
 				nh->length += strlen( pszAuthorName ) + 1;
             }
             char szPacketFileName[ MAX_PATH ];
-			sprintf( szPacketFileName, "%sP1%s", net_networks[nNetNumber].dir, GetApplication()->GetNetworkExtension() );
+			sprintf( szPacketFileName, "%sp1%s", net_networks[nNetNumber].dir, GetApplication()->GetNetworkExtension() );
             WFile packetFile( szPacketFileName );
             if ( packetFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) )
             {

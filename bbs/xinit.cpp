@@ -871,6 +871,7 @@ void WApplication::read_networks()
     GetSession()->internetPopDomain = "";
     GetSession()->SetInternetUseRealNames( false );
 
+	// TODO: wire up for NetX
     WTextFile fileNetIni( "NET.INI", "rt" );
     if ( fileNetIni.IsOpen() )
     {
@@ -1088,7 +1089,7 @@ bool WApplication::read_language()
     }
     if ( !GetSession()->num_languages )
     {
-        languages = static_cast<languagerec *>( BbsAllocWithComment( sizeof( languagerec ), "language.dat" ) );
+		languages = static_cast<languagerec *>(BbsAllocWithComment(sizeof(languagerec), LANGUAGE_DAT));
 		WWIV_ASSERT( languages != NULL );
         GetSession()->num_languages = 1;
         strcpy( languages->name, "English" );
@@ -1137,7 +1138,7 @@ bool WApplication::read_modem()
     if ( file.Open( WFile::modeBinary | WFile::modeReadOnly ) )
     {
         long lFileSize = file.GetLength();
-        modem_i = static_cast<modem_info *>( BbsAllocWithComment(lFileSize, "modem.dat") );
+		modem_i = static_cast<modem_info *>(BbsAllocWithComment(lFileSize, MODEM_DAT));
 		WWIV_ASSERT(modem_i != NULL);
         file.Read( modem_i, lFileSize );
         return true;

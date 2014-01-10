@@ -741,7 +741,7 @@ void swap_subs(int sub1, int sub2)
 
 void insert_sub(int n)
 {
-	subboardrec r;
+	subboardrec r = { 0 };
 	int i, i1, i2;
 	unsigned long *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m1, m2, m3;
 	SUBCONF_TYPE nconv = (SUBCONF_TYPE) n;

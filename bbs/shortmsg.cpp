@@ -169,7 +169,7 @@ void SendRemoteShortMessage( int nUserNum, int nSystemNum, char *pszMessageText 
     nh.length = strlen(pszMessageText);
     nh.method = 0;
     char szPacketName[MAX_PATH];
-    sprintf( szPacketName, "%sP0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
+    sprintf( szPacketName, "%sp0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
     WFile file( szPacketName );
     file.Open( WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
     file.Seek( 0L, WFile::seekBegin );

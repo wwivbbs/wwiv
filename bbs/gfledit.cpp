@@ -339,6 +339,10 @@ bool fill_sec(int sn)
 	int chd = 0;
 	while ((bFound) && (!hangup) && (nf < gfilesec[sn].maxfiles) && (ok))
 	{
+		if (fnd.GetFileName()[0] == '.') {
+			bFound = fnd.next();
+			continue;
+		}
 		strcpy(s, fnd.GetFileName());
 		align(s);
 		i = 1;

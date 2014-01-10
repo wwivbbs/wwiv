@@ -316,7 +316,7 @@ void send_net( net_header_rec * nh, unsigned short int *list, const char *text, 
 	WWIV_ASSERT( nh );
 
     char szFileName[MAX_PATH];
-    sprintf( szFileName, "%sP1%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
+    sprintf( szFileName, "%sp1%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension() );
     WFile file( szFileName );
     if ( !file.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) )
     {

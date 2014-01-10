@@ -281,12 +281,12 @@ void SubList()
                 newTally = GetSession()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
                 if (usub[GetSession()->GetCurrentMessageArea()].subnum == usub[i1].subnum)
                 {
-                    sprintf(sdf, " |#9%-3.3d |#9³ %3s |#9³ %6s |#9³ |B1|15%-36.36s |#9³ |#9%5ld |#9³ |#%c%5d |#9",
+                    sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |B1|15%-36.36s |#9\xB3 |#9%5ld |#9\xB3 |#%c%5d |#9",
                     i1 + 1, s2, s3, subboards[usub[i1].subnum].name, GetSession()->GetNumMessagesInCurrentMessageArea(), newTally ? '6' : '3', newTally);
                 }
                 else
                 {
-                    sprintf(sdf, " |#9%-3.3d |#9³ %3s |#9³ %6s |#9³ |#1%-36.36s |#9³ |#9%5ld |#9³ |#%c%5d |#9",
+                    sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 |#9%5ld |#9\xB3 |#%c%5d |#9",
                     i1 + 1, s2, s3, subboards[usub[i1].subnum].name, GetSession()->GetNumMessagesInCurrentMessageArea(), newTally ? '6' : '3', newTally);
                 }
                 if ( okansi() )
