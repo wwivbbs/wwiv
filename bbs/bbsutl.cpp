@@ -302,7 +302,7 @@ bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bo
       {
           lastwordstart--;
       }
-      if ( lastwordstart > (GetSession()->localIO()->WhereX() / 2) && lastwordstart != (cp - 1) )
+	  if (lastwordstart > static_cast<std::string::size_type>(GetSession()->localIO()->WhereX() / 2) && lastwordstart != (cp - 1))
       {
           std::string::size_type lastwordlen = cp - lastwordstart - 1;
           for (std::string::size_type j = 0; j < lastwordlen; j++)
