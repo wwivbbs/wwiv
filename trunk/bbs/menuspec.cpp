@@ -330,8 +330,8 @@ void ChangeDirNumber()
 void SetMsgConf(int iConf)
 {
     int nc;
-    confrec *cp;
-    userconfrec *uc;
+	confrec *cp = NULL;
+	userconfrec *uc = NULL;
 
     get_conf_info(CONF_SUBS, &nc, &cp, NULL, NULL, &uc);
 
@@ -349,8 +349,8 @@ void SetMsgConf(int iConf)
 void SetDirConf(int iConf)
 {
     int nc;
-    confrec *cp;
-    userconfrec *uc;
+	confrec *cp = NULL;
+    userconfrec *uc = NULL;
 
     get_conf_info(CONF_DIRS, &nc, &cp, NULL, NULL, &uc);
 
