@@ -142,6 +142,4 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 #else
 #error "What's the platform here???"
 #endif
-
-	return true;
 }
