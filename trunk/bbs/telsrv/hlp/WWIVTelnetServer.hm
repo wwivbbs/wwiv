@@ -1,0 +1,30 @@
+ 
+// Commands (ID_* and IDM_*) 
+HID__EXIT                               0x1008C
+HID_Menu                                0x1008D
+HID_Menu142                             0x1008E
+HID_FILE_RUNLOCALNODE                   0x1008F
+HID_FILE_RUNLOCALNODE144                0x10090
+HID_APP_UPDATES                         0x10091
+HID_WT_PREFS                            0x18003
+HID_TELSRV_START                        0x18004
+HID_TELSRV_STOP                         0x18005
+HID_SHOW_MAINWINDOW                     0x18008
+ 
+// Prompts (IDP_*) 
+HIDP_OLE_INIT_FAILED                    0x30064
+HIDP_SOCKETS_INIT_FAILED                0x30068
+ 
+// Resources (IDR_*) 
+HIDR_MAINFRAME                          0x20080
+HIDR_WWIVTETYPE                         0x20081
+HIDR_TRAY                               0x20088
+ 
+// Dialogs (IDD_*) 
+HIDD_ABOUTBOX                           0x20064
+HIDD_DIALOG_PREFERENCES                 0x20082
+HIDD_DIALOG_LOGGING                     0x2008A
+HIDD_DIALOG_SOUNDS                      0x2008B
+HIDD_DIALOG_NNTP                        0x2008C
+ 
+// Frame Controls (IDW_*) 
