@@ -666,8 +666,8 @@ int parse_net_ini( int &ini_section )
             {
                 if (toupper(ss[0]) == 'N')
                 {
-                    ALLMAIL = false;
-                }
+                    ALLMAIL = false;  
+                }  
                 continue;
             }
             if (_strnicmp(line, "ONECALL", 7) == 0) 
@@ -1520,7 +1520,7 @@ int main(int argc, char *argv[])
 
 	output("\n \xFE Updating network connection records...");
 
-	if ( nSystemNumber != 32767 || ( nSystemNumber == 32767 && ONECALL ) ) 
+	 if ( nSystemNumber != 32767 || ( nSystemNumber == 32767 && ONECALL ) ) 
 	{
 		if (update_contacts(nSystemNumber, sentbytes, recdbytes))
 		{
@@ -1541,7 +1541,7 @@ int main(int argc, char *argv[])
 		{
 			log_it( true, "\n ! %s", strings[4]);
 		}
-	}
+	}  
 
 	if ( bHandleNews ) 
 	{
@@ -1577,18 +1577,18 @@ int main(int argc, char *argv[])
 				log_it( true, "\n ! %s", strings[4]);
 			}
 		}
-	}
+	}  
 
 	if (CLEANUP) 
 	{
 		process_mail();
 		set_net_num(nNetNumber);
-	}
+	}  
 
-	sprintf( s, "%s\\PPPUTIL.EXE TRIM %s", maindir );
-	do_spawn( s );
+       sprintf(s, "%s\\PPPUTIL.EXE TRIM %lu", maindir);
+	do_spawn(s);  
 
-	cd_to( maindir );
-	log_it( true, "\n \xFE %s completed!\n\n", version );
-	return 0;
+	cd_to(maindir);
+	log_it(true, "\n \xFE %s completed!\n\n", version);
+	return 0;  
 }

@@ -1163,7 +1163,7 @@ bool checkx(int cug)
 		{
 			output("%-53.53s", buf);
 		}
-		return true;
+		return false;
 	}
 	if (stristr(cur_organization, syscfg.systemname) != 0) 
 	{
@@ -1172,7 +1172,7 @@ bool checkx(int cug)
 		{
 			output("%-53.53s", buf);
 		}
-		return true;
+		return false;
 	}
 	bool ok = true;
 	bool spam = false;
@@ -1691,7 +1691,7 @@ int getnews(SOCKET sock)
                 backline();
                 output(" \xFE [%lu/%lu] : ", grouprec[cug].lastread, cur_last);
             }
-            if ( chead(sock, grouprec[cug].lastread ) && checkx( cug ) ) 
+            if (( chead(sock, grouprec[cug].lastread )) && (checkx( cug ))) 
             {
                 skipped = 0;
                 if (*cur_subject) 
