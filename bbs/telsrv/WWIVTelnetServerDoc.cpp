@@ -83,10 +83,6 @@ CWWIVTelnetServerDoc::CWWIVTelnetServerDoc()
 	{
 		m_wsaSystemStatus	= wsaData.szSystemStatus;
 	}
-	if ( AfxIsValidString( wsaData.lpVendorInfo ) )
-	{
-		m_wsaVendorInfo		= wsaData.lpVendorInfo;
-	}
 
 }
 

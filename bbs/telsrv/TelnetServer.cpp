@@ -219,7 +219,7 @@ unsigned __stdcall TelnetServer::ListenThread( void *pVoid )
 		packet->socket = socketClient;
 		packet->nodeStatus = pPacket->nodeStatus;
         packet->telnetServer = pPacket->telnetServer;
-		_tcsncpy( packet->szAddr, inet_ntoa( SockAddr.sin_addr ), 80 );
+		_tcsncpy( packet->szAddr, CA2T(inet_ntoa( SockAddr.sin_addr )), 80 );
 
 		dwClientThread = _beginthreadex(
 							NULL,

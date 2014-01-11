@@ -128,7 +128,7 @@ LPCTSTR NodeStatus::GetNodeIP( int nNodeNumber )
 	EnterCriticalSection( &m_CriticalSection );
 	in_addr a;
 	a.S_un.S_addr = m_lAddrArr[ nNodeNumber ];
-	lstrcpy( m_szIpAddress, inet_ntoa( a ) );
+	lstrcpy( m_szIpAddress, CA2T(inet_ntoa( a )));
 	LeaveCriticalSection( &m_CriticalSection );
 
 	return m_szIpAddress;
@@ -242,7 +242,7 @@ BOOL NodeStatus::SetNodeInfo( int nNodeNum, BOOL bBusy, LPCTSTR szIpAddress )
 {
 	EnterCriticalSection( &m_CriticalSection );
 	m_bBusyArr[ nNodeNum ] = bBusy;
-	m_lAddrArr[ nNodeNum ] = inet_addr( szIpAddress );
+	m_lAddrArr[ nNodeNum ] = inet_addr(CT2A(szIpAddress));
 	LeaveCriticalSection( &m_CriticalSection );
 	m_lastUpdateTime = CTime::GetCurrentTime();
 

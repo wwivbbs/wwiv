@@ -85,7 +85,7 @@ void CLogView::OnInitialUpdate()
 	ctrl.SetReadOnly( TRUE );
 	CDocument* doc = this->GetDocument();
 	CRuntimeClass *clazz = doc->GetRuntimeClass();
-	OutputDebugString( clazz->m_lpszClassName );
+	OutputDebugString( CA2T(clazz->m_lpszClassName) );
 	
 }
 

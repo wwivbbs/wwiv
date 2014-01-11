@@ -135,16 +135,16 @@ void GeneralPage::OnButtonBrowse2()
 
 void GeneralPage::GetDirFromPath(LPCTSTR szPath, CString &dir)
 {
-	char path_buffer[_MAX_PATH];
-	char drive[_MAX_DRIVE];
-	char dirPart[_MAX_DIR];
-	char fname[_MAX_FNAME];
-	char ext[_MAX_EXT];
+	wchar_t path_buffer[_MAX_PATH];
+	wchar_t drive[_MAX_DRIVE];
+	wchar_t dirPart[_MAX_DIR];
+	wchar_t fname[_MAX_FNAME];
+	wchar_t ext[_MAX_EXT];
 
 	lstrcpy( path_buffer, szPath );
 
-	_splitpath( path_buffer, drive, dirPart, fname, ext );
-	_makepath( path_buffer, drive, dirPart, NULL, NULL );
+	_wsplitpath( path_buffer, drive, dirPart, fname, ext );
+	_wmakepath( path_buffer, drive, dirPart, NULL, NULL );
 
 	dir = path_buffer;
 }
