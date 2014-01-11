@@ -20,7 +20,7 @@
 #include "wwiv.h"
 #include <vector>
 
-char ShowAMsgMenuAndGetInput( std::string autoMessageLockFileName );
+char ShowAMsgMenuAndGetInput( const std::string& autoMessageLockFileName );
 void write_automessage();
 
 
@@ -30,9 +30,8 @@ void write_automessage();
 void read_automessage()
 {
     GetSession()->bout.NewLine();
-    WStatus* pStatus = GetApplication()->GetStatusManager()->GetStatus(); 
-    bool bAutoMessageAnonymous = pStatus->IsAutoMessageAnonymous();
-    delete pStatus;
+	std::unique_ptr<WStatus> status(GetApplication()->GetStatusManager()->GetStatus()); 
+    bool bAutoMessageAnonymous = status->IsAutoMessageAnonymous();
 
     WTextFile autoMessageFile( syscfg.gfilesdir, AUTO_MSG, "rt" );
     std::string line;
@@ -43,7 +42,7 @@ void read_automessage()
         return;
     }
 
-    std::string authorName = line;
+    std::string authorName = StringTrimEnd(line);
     if ( bAutoMessageAnonymous )
     {
         if ( getslrec( GetSession()->GetEffectiveSl() ).ability & ability_read_post_anony )
@@ -76,7 +75,7 @@ void read_automessage()
 void write_automessage()
 {
     std::vector<std::string> lines;
-    std::string rollOver = "";
+    std::string rollOver;
 
     GetSession()->bout << "\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n";
     for (int i = 0; i < 5; i++)
@@ -84,7 +83,8 @@ void write_automessage()
         GetSession()->bout << "|#7" << i + 1 << ":|#0";
         std::string line;
         inli( line, rollOver, 70 );
-        lines.push_back( line );
+		StringTrimEnd(line);
+		lines.push_back(line);
     }
     GetSession()->bout.NewLine();
     bool bAnonStatus = false;
@@ -106,10 +106,8 @@ void write_automessage()
         std::string authorName = GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum );
         file.WriteFormatted( "%s\r\n", authorName.c_str() );
         sysoplog("Changed Auto-message");
-        for( std::vector<std::string>::const_iterator iter = lines.begin(); iter != lines.end(); ++iter )
-        {
-            std::string line = (*iter);
-            StringTrimEnd( line );
+		for (const auto& line : lines)
+		{
             file.Write( line );
 			file.Write("\r\n");
             sysoplog( line, true );
@@ -120,7 +118,7 @@ void write_automessage()
 }
 
 
-char ShowAMsgMenuAndGetInput( std::string autoMessageLockFileName )
+char ShowAMsgMenuAndGetInput( const std::string& autoMessageLockFileName )
 {
     bool bCanWrite = false;
     if ( !GetSession()->GetCurrentUser()->IsRestrictionAutomessage() && !WFile::Exists( autoMessageLockFileName ) )
