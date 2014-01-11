@@ -348,7 +348,7 @@ bool fill_sec(int sn)
 		i = 1;
 		for (i1 = 0; i1 < nf; i1++)
 		{
-			if (compare(s, g[i1].filename))
+			if (compare(fnd.GetFileName(), g[i1].filename))
 			{
 				i = 0;
 			}
@@ -371,7 +371,7 @@ bool fill_sec(int sn)
 				}
 				++nf;
 				gfilerec g1;
-				strcpy(g1.filename, s);
+				strcpy(g1.filename, fnd.GetFileName());
 				strcpy(g1.description, s1);
 				g1.daten = static_cast<long>(time(NULL));
 				g[i] = g1;
