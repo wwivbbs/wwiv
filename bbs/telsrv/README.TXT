@@ -7,11 +7,17 @@
 GENERAL INFORMATION:
 
     WWIV 5.0 Telnet Server is can be built with the following compilers:
-        MS Visual C++ .NET 2003 (Standard/Pro/Enterprise/Architect)
-        MS Visual C++ .NET (Standard/Pro/Enterprise/Architect)
-        MS Visual C++ 6.0 (Standard/Pro/Enterprise)
+        MS Visual C++ .NET 2013 (Standard/Pro/Enterprise/Architect)
 
     The arguments for WWIV in the telnet server are "-XT -H@H -N@N" 
+
+
+==============================================================================
+
+LABEL: WWIV-5_0_??
+DATE:  
+
+Upgrade compiler to VC2013
 
 
 ==============================================================================
