@@ -750,13 +750,6 @@ WIOSerial::WIOSerial( unsigned int nHandle ) : WComm()
 
 WIOSerial::~WIOSerial()
 {
-    WIOS_TRACE( "WIOSerial::~WIOSerial()()\n" );
-    if ( NULL != m_hInBufferMutex )
-    {
-        CloseHandle( m_hInBufferMutex );
-        m_hInBufferMutex = NULL;
-    }
-    // Let our parent take care if itself 1st.
     WIOS_TRACE("WIOSerial::~WIOSerial()\n");
 
     if ( NULL != m_hInBufferMutex )
