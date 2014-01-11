@@ -98,7 +98,7 @@ void LoggingPage::OnButtonBrowseLogfilename()
 {
 	// szFilters is a text string that includes two file name filters:
 	// "*.my" for "MyType Files" and "*.*' for "All Files."
-	char szFilters[] = _T( "Log Files (*.log)|*.log|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||" );
+	wchar_t szFilters[] = _T( "Log Files (*.log)|*.log|Text Files (*.txt)|*.txt|All Files (*.*)|*.*||" );
 	
 	// Create an Open dialog; the default file name extension is ".my".
 	DWORD dwFlags = OFN_HIDEREADONLY;

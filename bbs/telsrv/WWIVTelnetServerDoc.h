@@ -101,7 +101,6 @@ private:
 
 	CString m_wsaSystemStatus;
 	CString m_wsaDescription;
-	CString m_wsaVendorInfo;
 
 
     CMainFrame* GetMainFrame();
