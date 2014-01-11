@@ -340,7 +340,7 @@ int main(int argc, char *argv[])
 		trim_log();
 	}
 	
-	if ( arg == PURGE" ) 
+	if ( arg == "PURGE" ) 
 	{
 		strcpy(net_data, argv[2]);
 		int i = atoi(argv[3]);
@@ -352,12 +352,18 @@ int main(int argc, char *argv[])
 		strcpy(net_data, argv[2]);
 		std::string fileName = argv[3];
 		std::stringstream ss;
-		ss << net_data << "INBOUND\\" << fileName;
-		std::string fullPathName = ss.str();
-		if (!chunk(fullPathName.c_str()))
+		 ss << net_data << "INBOUND\\" << fileName; 
+		 std::string fullPathName = ss.str();
+		/* if (!chunk(fullPathName.c_str()))
 		{
 			_unlink(fullPathName.c_str());
-		}
+		}  */
+
+		 if (!chunk((char*)fullPathName.c_str()))
+		 {
+			 _unlink((char*)fullPathName.c_str());
+		 }
+
 	}
 	
 	return 0;

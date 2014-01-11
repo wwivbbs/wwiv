@@ -17,7 +17,7 @@
 #include "pop.h"
 #include "socketwrapper.h"
 
-#define MEGA_DEBUG_LOG_INFO
+#define MEGA_DEBUG_LOG_INFO  
 
 #if defined ( MEGA_DEBUG_LOG_INFO )
 #define DEBUG_LOG_IT(s) log_it( true, s )
@@ -33,7 +33,7 @@
 #define DEBUG_LOG_IT_3(s, a, b, c)
 #define DEBUG_LOG_IT_4(s, a, b, c, d)
 #define DEBUG_LOG_IT_5(s, a, b, d, e)
-#endif	// MEGA_DEBUG_LOG_INFO
+#endif	// MEGA_DEBUG_LOG_INFO   
 
 
 char *fix_quoted_commas(char *string)
@@ -1728,7 +1728,7 @@ int ReceiveMail(int argc, char *argv[])
 						case STATE_UNKNOWN:
 							if (!ALLMAIL && !fdl)
 							{
-								log_it( true, "\n \xFE Non-network message %d left on server.", i1);
+								log_it( true, "\n \xFE Non-network message %d left on server.", i1); 
 							}
 							else 
 							{
@@ -1747,7 +1747,7 @@ int ReceiveMail(int argc, char *argv[])
 								case STATE_ERROR_RETREIVE:
 									log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
 									_fcloseall();
-									return EXIT_FAILURE;
+									break;
 								case STATE_SUCCESS:
 									if (usernum == 0)
 									{
@@ -1760,10 +1760,60 @@ int ReceiveMail(int argc, char *argv[])
 								}
 							}
 							break;
+						
+						
+						
+						
 						case STATE_ERROR:
-							log_it( true, "\n \xFE Error accessing message %d", i1);
-							_fcloseall();
-							return EXIT_FAILURE;
+
+							if (!ALLMAIL && !fdl)
+							{
+								log_it( true, "\n \xFE Non-network message %d left on server.", i1); 
+							}
+							else 
+							{
+								i = 0;
+								sprintf(szFileName, "%sUNK-%03d.MSG", argv[2], i);
+								while (exist(szFileName))
+								{
+									sprintf(szFileName, "%sUNK-%03d.MSG", argv[2], ++i);
+								}
+								_splitpath(szFileName, NULL, NULL, s, s1);
+								log_it( true, pktowner[0] == 0 ?
+									"non-network packet" : pktowner, s, s1);
+								int result = pop_get_nextf(pop_sock, szFileName, i1, usernum);
+								switch (result) 
+								{
+								case STATE_ERROR_RETREIVE:
+									log_it( true, "\n \xFE Unable to retrieve message %d.", i1);
+									_fcloseall();
+									break;
+								case STATE_SUCCESS:
+									if (usernum == 0)
+									{
+										check_messageid(true, id);
+									}
+									break;
+								case STATE_ERROR_DELETE:
+									log_it( true, "\n \xFE Unable to delete message %d from host!", i1);
+									return EXIT_FAILURE;
+								}
+							}
+							break;
+
+
+
+
+
+
+						/*	log_it( true, "\n \xFE Error accessing message %d", i1);
+							log_it( true, "\n \xFE Non-Network Packet Message:  Deleting message %d", i1);   */
+							/* _fcloseall();
+							return EXIT_FAILURE;  */
+						/*	pop_delete(sock, msgnum);
+							break;   */
+
+
 						case STATE_UUENCODE:
 							{
 								i = 0;
