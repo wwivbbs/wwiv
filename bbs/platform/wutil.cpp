@@ -54,7 +54,7 @@ int WWIV_GetRandomNumber(int nMaxValue)
 }
 
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_USING_V110_SDK71_)
 #include <VersionHelpers.h>
 #endif
 
@@ -62,7 +62,7 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 				int nBufferSize,
 				bool bFullVersion)
 {
-#if defined (_WIN32)
+#if defined (_WIN32) && !defined(_USING_V110_SDK71_)
 	if (IsWindows8Point1OrGreater()) {
 		strcpy(pszOSVersionString, "Windows 8.1+");
 		return false;
@@ -96,6 +96,9 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 		strcpy(pszOSVersionString, "WIN32");
 		return false;
 	}
+#elif defined (_WIN32)
+	strcpy(pszOSVersionString, "Windows");
+	return false;
 #elif defined (__OS2__)
 
 	//

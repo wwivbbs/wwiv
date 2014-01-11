@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_USING_V110_SDK71_)
 #include <VersionHelpers.h>
 #endif
 
@@ -423,7 +423,11 @@ const std::string GetSyncFosOSMode()
 
 bool IsWindowsNT()
 {
-	return !IsWindowsXPOrGreater();
+#if !defined(_USING_V110_SDK71_)
+	return IsWindowsXPOrGreater();
+#else
+	return false;
+#endif
 }
 
 
