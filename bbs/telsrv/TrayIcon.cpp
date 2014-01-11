@@ -26,7 +26,7 @@ DWORD GetDllVersion(LPCTSTR lpszDllName)
     if( hinstDll )
     {
         DLLGETVERSIONPROC pDllGetVersion;
-        pDllGetVersion = reinterpret_cast<DLLGETVERSIONPROC>( GetProcAddress( hinstDll, _T( "DllGetVersion" ) ) );
+        pDllGetVersion = reinterpret_cast<DLLGETVERSIONPROC>( GetProcAddress( hinstDll, "DllGetVersion"));
 
         /* Because some DLLs might not implement this function, you
         must test for it explicitly. Depending on the particular 
@@ -112,13 +112,13 @@ BOOL CTrayIcon::SetIcon( UINT uID, LPCTSTR lpszToolTip )
 		AfxLoadString( uID, m_nid.szTip, sizeof( m_nid.szTip ) );
 		hicon = AfxGetApp()->LoadIcon( uID );
 	}
-	return SetIcon( hicon, lpszToolTip );
+	return SetIcon( hicon, lpszToolTip, NULL, NULL );
 }
 
 //////////////////
 // Common SetIcon for all overloads. 
 //
-BOOL CTrayIcon::SetIcon( HICON hIcon, LPCSTR lpszToolTip, LPCTSTR lpszBalloonTitle, LPCTSTR lpszBalloonText )
+BOOL CTrayIcon::SetIcon( HICON hIcon, LPCTSTR lpszToolTip, LPCTSTR lpszBalloonTitle, LPCTSTR lpszBalloonText )
 {
 	UINT msg;
 	m_nid.uFlags = 0;
@@ -145,7 +145,7 @@ BOOL CTrayIcon::SetIcon( HICON hIcon, LPCSTR lpszToolTip, LPCTSTR lpszBalloonTit
 	// Tooltip Support
 	if ( lpszToolTip )
 	{
-		strncpy( m_nid.szTip, lpszToolTip, sizeof( m_nid.szTip ) );
+		_tcscpy(m_nid.szTip, lpszToolTip);
 		m_nid.uFlags |= NIF_TIP;
 	}
 
@@ -153,8 +153,8 @@ BOOL CTrayIcon::SetIcon( HICON hIcon, LPCSTR lpszToolTip, LPCTSTR lpszBalloonTit
     // Balloon Support
     if ( lpszBalloonText && lpszBalloonTitle )
     {
-        strncpy( m_nid.szInfoTitle, lpszBalloonTitle, sizeof( m_nid.szInfoTitle ) );
-        strncpy( m_nid.szInfo, lpszBalloonText, sizeof( m_nid.szInfo ) );
+        _tcscpy_s( m_nid.szInfoTitle, lpszBalloonTitle);
+		_tcscpy_s(m_nid.szInfo, lpszBalloonText);
         m_nid.uFlags |= NIF_INFO;
         m_nid.uTimeout = 2000; // 2 seconds.
     }
