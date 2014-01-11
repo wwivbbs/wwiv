@@ -411,7 +411,7 @@ std::string& StringTrimBegin( std::string& s )
 
 std::string& StringTrimEnd( std::string& s )
 {
-    std::string::size_type pos = s.find_first_not_of( DELIMS_WHITE );
+    std::string::size_type pos = s.find_last_not_of( DELIMS_WHITE );
     s.erase( pos + 1 );
     return s;
 }

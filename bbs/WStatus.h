@@ -54,7 +54,7 @@ public:
     const char  GetFileChangedFlag( int nFlag ) const { return m_pStatusRecord->filechange[ nFlag ]; }
     void IncrementFileChangedFlag(int nFlag ) { m_pStatusRecord->filechange[nFlag]++; }
     
-    const int GetNumLocalPosts() const { return m_pStatusRecord->localposts; }
+    const unsigned short GetNumLocalPosts() const { return m_pStatusRecord->localposts; }
     const int  IncrementNumLocalPosts() { return m_pStatusRecord->localposts++; }
     void SetNumLocalPosts( int n ) { m_pStatusRecord->localposts = static_cast<unsigned short>(n); }
 
@@ -67,7 +67,7 @@ public:
     const unsigned long  IncrementCallerNumber() { return m_pStatusRecord->callernum1++; }
     void SetCallerNumber( unsigned long l ) { m_pStatusRecord->callernum1 = l; }
 
-    const int GetNumCallsToday() const { return m_pStatusRecord->callstoday; }
+    const unsigned short GetNumCallsToday() const { return m_pStatusRecord->callstoday; }
     const int IncrementNumCallsToday() { return m_pStatusRecord->callstoday++; }
     void SetNumCallsToday( int n ) { m_pStatusRecord->callstoday = static_cast<unsigned short>(n); }
 
@@ -75,19 +75,19 @@ public:
     const int IncrementNumMessagesPostedToday() { return m_pStatusRecord->msgposttoday++; }
     void SetNumMessagesPostedToday( int n ) { m_pStatusRecord->msgposttoday = static_cast<unsigned short>(n); }
 
-    const int GetNumEmailSentToday() const { return m_pStatusRecord->emailtoday; }
+    const unsigned short GetNumEmailSentToday() const { return m_pStatusRecord->emailtoday; }
     const int IncrementNumEmailSentToday() { return m_pStatusRecord->emailtoday++; }
     void SetNumEmailSentToday( int n ) { m_pStatusRecord->emailtoday = static_cast<unsigned short>(n); }
 
-    const int GetNumFeedbackSentToday() const { return m_pStatusRecord->fbacktoday; }
+    const unsigned short GetNumFeedbackSentToday() const { return m_pStatusRecord->fbacktoday; }
     const int IncrementNumFeedbackSentToday() { return m_pStatusRecord->fbacktoday++; }
     void SetNumFeedbackSentToday( int n ) { m_pStatusRecord->fbacktoday = static_cast<unsigned short>(n); }
 
-    const int GetNumUploadsToday() const { return m_pStatusRecord->uptoday; }
+    const unsigned short GetNumUploadsToday() const { return m_pStatusRecord->uptoday; }
     const int IncrementNumUploadsToday() { return m_pStatusRecord->uptoday++; }
     void SetNumUploadsToday( int n ) { m_pStatusRecord->uptoday = static_cast<unsigned short>(n); }
 
-    const int GetMinutesActiveToday() const { return m_pStatusRecord->activetoday; }
+    const unsigned short GetMinutesActiveToday() const { return m_pStatusRecord->activetoday; }
     const int IncrementMinutesActiveToday(int nMinutes) { return m_pStatusRecord->uptoday += static_cast<unsigned short>(nMinutes); }
     void SetMinutesActiveToday( int n ) { m_pStatusRecord->activetoday = static_cast<unsigned short>(n); }
 
