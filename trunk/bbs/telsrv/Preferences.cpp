@@ -96,18 +96,18 @@ BOOL Preferences::Load()
 	m_nEndNode = app->GetProfileInt( pszSectionName, _T( "EndNode" ), 4 );
 	m_cmdLine = app->GetProfileString( pszSectionName, _T( "CommandLine" ), _T( "C:\\wwiv\\wwiv50.exe" ) );
 	m_workDir = app->GetProfileString( pszSectionName, _T( "WorkingDir" ), _T( "C:\\wwiv" ) );
-	m_parameters = app->GetProfileString( pszSectionName, _T( "Parameters" ), "-XT -H@H -N@N" );
+	m_parameters = app->GetProfileString( pszSectionName, _T( "Parameters" ), _T("-XT -H@H -N@N"));
     m_nLocalNode = app->GetProfileInt( pszSectionName, _T( "LocalNodeNum" ), 1 );
 	int nLaunchMinimized = app->GetProfileInt( pszSectionName, _T( "LaunchMinimized" ), 0 );
 	m_bLaunchMinimized = ( nLaunchMinimized ) ? 1 : 0;
 	
 	m_nLogStyle = app->GetProfileInt( pszSectionName, _T( "LogStyle" ), Preferences::LOG_NONE );
-	m_strLogFileName = app->GetProfileString( pszSectionName, _T( "LogFileName" ), "" );
+	m_strLogFileName = app->GetProfileString( pszSectionName, _T( "LogFileName" ), _T("") );
 
 	int nUseSounds = app->GetProfileInt( pszSectionName, _T( "EnableSounds" ), 0 );
     m_bUseSounds = ( nUseSounds ) ? true : false;
-    m_strLogonSound = app->GetProfileString( pszSectionName, _T( "LogonSound" ), "" );
-    m_strLogoffSound = app->GetProfileString( pszSectionName, _T( "LogoffSound" ), "" );
+	m_strLogonSound = app->GetProfileString(pszSectionName, _T("LogonSound"), _T(""));
+	m_strLogoffSound = app->GetProfileString(pszSectionName, _T("LogoffSound"), _T(""));
 
     int nRunBeginDayEvent = app->GetProfileInt( pszSectionName, _T( "RunBeginDayEvent" ), 0 );
     m_bRunBeginDayEvent = ( nRunBeginDayEvent ) ? true : false;
@@ -115,7 +115,7 @@ BOOL Preferences::Load()
     int nUseBalloons = app->GetProfileInt( pszSectionName, _T( "UseBalloons" ), 1 );
     m_bUseBalloons = ( nUseBalloons ) ? true : false;
 
-    m_strLastBeginEventDate = app->GetProfileString( pszSectionName, _T( "LastBeginEventDate" ), "20020101" );
+    m_strLastBeginEventDate = app->GetProfileString( pszSectionName, _T( "LastBeginEventDate" ), _T("20020101"));
 
 	return TRUE;
 }

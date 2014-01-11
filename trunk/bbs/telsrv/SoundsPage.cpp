@@ -77,7 +77,7 @@ void SoundsPage::DoBrowseDialog(CEdit& control)
     control.GetWindowText( oldFileName );
 
     // "*.my" for "MyType Files" and "*.*' for "All Files."
-    char szFilters[] = _T( "WAV Files (*.wav)|*.wav|MIDI Files (*.mid)|*.mid|All Files (*.*)|*.*||" );
+    wchar_t szFilters[] = _T( "WAV Files (*.wav)|*.wav|MIDI Files (*.mid)|*.mid|All Files (*.*)|*.*||" );
 
     // Create an Open dialog; the default file name extension is ".my".
     DWORD dwFlags = OFN_HIDEREADONLY;
