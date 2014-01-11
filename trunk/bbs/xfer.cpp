@@ -170,6 +170,10 @@ bool okfn(const string filename)
 	}
 
     string::size_type len = filename.length();
+	if (len == 0) {
+		return false;
+	}
+
     if ( filename[0] == '-' || filename[0] == ' ' || filename[0] == '.' || filename[0] == '@' )
     {
         return false;

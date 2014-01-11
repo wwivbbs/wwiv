@@ -97,5 +97,4 @@ WComm* WComm::CreateComm( bool bUseSockets, unsigned int nHandle )
 #elif defined ( __OS2 )
 #error "You must implement the stuff to write with!!!"
 #endif
-    return NULL;
 }
