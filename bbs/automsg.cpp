@@ -84,7 +84,6 @@ void write_automessage()
         GetSession()->bout << "|#7" << i + 1 << ":|#0";
         std::string line;
         inli( line, rollOver, 70 );
-        line += "\r\n";
         lines.push_back( line );
     }
     GetSession()->bout.NewLine();
@@ -112,6 +111,7 @@ void write_automessage()
             std::string line = (*iter);
             StringTrimEnd( line );
             file.Write( line );
+			file.Write("\r\n");
             sysoplog( line, true );
         }
         GetSession()->bout << "\r\n|#5Auto-message saved.\r\n\n";
