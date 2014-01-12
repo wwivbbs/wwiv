@@ -27,7 +27,7 @@
 ###PLATFORM_TARGETS= 
 ###else
 OS=UNIX
-PLATFORM_CFLAGS=-Wall
+PLATFORM_CFLAGS=-Wall -std=c++11
 PLATFORM_LINKFLAGS=
 PLATFORM_DIR=platform/unix
 ###ifeq (Darwin,$(shell uname))
