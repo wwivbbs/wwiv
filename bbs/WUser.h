@@ -408,6 +408,7 @@ public:
     bool ReadUser( WUser *pUser, int nUserNumber, bool bForceRead = false );
     bool WriteUserNoCache( WUser *pUser, int nUserNumber );
     bool WriteUser( WUser *pUser, int nUserNumber );
+	int FindUser(std::string searchString);
 
     void InitializeUserManager( std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers );
     /** 
