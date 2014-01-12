@@ -31,6 +31,7 @@
 #include "WStringUtils.h"
 #include "filenames.h"
 #include <iostream>
+#include <memory>
 
 #if defined( _WIN32 )
 #define snprintf _snprintf
@@ -39,6 +40,9 @@
 #ifndef NOT_BBS
 #include "WSession.h"
 #include "bbs.h"
+#include "WConstants.h"
+#include "vars.h"
+#include "WStatus.h"
 #endif // NOT_BBS
 
 
@@ -286,6 +290,38 @@ bool WUserManager::WriteUser( WUser *pUser, int nUserNumber )
     return this->WriteUserNoCache( pUser, nUserNumber );
 }
 
+int WUserManager::FindUser(std::string searchString) {
+#ifndef NOT_BBS
+	smalrec *sr = (smalrec *)bsearch((const void *)searchString.c_str(),
+		static_cast<const void *>(smallist),
+		static_cast<size_t>(GetApplication()->GetStatusManager()->GetUserCount()),
+		sizeof(smalrec),
+		(int(*) (const void *, const void *)) wwiv::stringUtils::StringCompareIgnoreCase);
+	if(sr != NULL) {
+		return sr->number;
+	}
+#else
+	std::unique_ptr<WFile> usersFile(new WFile(m_dataDirectory, USER_LST));
+	usersFile->Open(WFile::modeBinary | WFile::modeReadOnly);
+	smalrec userRec;
+	if (usersFile->IsOpen()) {
+		bool done = false;
+		while (!done)
+		{
+			int bytesRead = usersFile->Read(&userRec, sizeof(smalrec));
+			if (bytesRead != sizeof(smalrec)) {
+				done = true;
+			}
+			else if (!wwiv::stringUtils::StringCompareIgnoreCase(searchString.c_str(), (const char *)userRec.name))
+			{
+				return(userRec.number);
+			}
+		}
+	}
+#endif // NOT_BBS
+	return 0;
+}
+
 char *WUser::nam( int nUserNumber ) const
 {
     static char s_szNamBuffer[ 255 ];
@@ -339,4 +375,3 @@ char *WUser::nam1( int nUserNumber, int nSystemNumber ) const
     }
     return s_szNamBuffer;
 }
-

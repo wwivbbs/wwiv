@@ -79,19 +79,14 @@ int finduser( const std::string searchString )
         }
         return nUserNumber;
     }
-    smalrec *sr = ( smalrec * ) bsearch( ( const void * ) searchString.c_str(),
-                    ( const void * ) smallist,
-                    ( size_t ) GetApplication()->GetStatusManager()->GetUserCount(),
-                    ( size_t ) sizeof( smalrec ),
-                    ( int (*) ( const void *, const void * ) ) wwiv::stringUtils::StringCompare );
-
-    if ( sr == 0L )
+	nUserNumber = GetApplication()->GetUserManager()->FindUser(searchString);
+	if (nUserNumber == 0L)
     {
         return 0;
     }
     else
     {
-        GetApplication()->GetUserManager()->ReadUser( &user, sr->number );
+		GetApplication()->GetUserManager()->ReadUser(&user, nUserNumber);
         if ( user.IsUserDeleted() )
         {
             return 0;
@@ -103,7 +98,7 @@ int finduser( const std::string searchString )
                 guest_user = true;
                 GetApplication()->GetUserManager()->SetUserWritesAllowed( false );
             }
-            return sr->number;
+			return nUserNumber;
         }
     }
 }
