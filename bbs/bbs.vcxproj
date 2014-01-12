@@ -113,6 +113,7 @@
     <ClInclude Include="WConstants.h" />
     <ClInclude Include="WOutStreamBuffer.h" />
     <ClInclude Include="WSession.h" />
+    <ClInclude Include="WStatus.h" />
     <ClInclude Include="WStringUtils.h" />
     <ClInclude Include="WTextFile.h" />
     <ClInclude Include="wtypes.h" />
