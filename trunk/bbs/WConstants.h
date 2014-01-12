@@ -365,13 +365,8 @@
 #define MAX_ARCS 15
 #define MAXMAIL 255
 
-#ifdef _DEFINE_GLOBALS_
-const char *DELIMS_NORMAL = " ;.!:-?,\t\r\n";
-const char *DELIMS_WHITE  = " \t\r\n";
-#else 
 extern const char *DELIMS_NORMAL;
 extern const char *DELIMS_WHITE;
-#endif 
 
 #define LIST_USERS_MESSAGE_AREA     0
 #define LIST_USERS_FILE_AREA        1

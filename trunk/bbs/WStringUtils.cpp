@@ -30,8 +30,14 @@
 #include "WConstants.h"
 #include "platform/incl1.h"
 
-extern unsigned char *translate_letters[];
-
+unsigned char *translate_letters[] =
+{
+	(unsigned char *)"abcdefghijklmnopqrstuvwxyz‡„†‚”¤",
+	(unsigned char *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ€š™¥",
+	0L,
+};
+const char *DELIMS_NORMAL = " ;.!:-?,\t\r\n";
+const char *DELIMS_WHITE = " \t\r\n";
 
 bool IsColorCode( char c );
 
