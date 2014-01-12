@@ -153,6 +153,9 @@
     <ClInclude Include="prot\zmodem.h">
       <Filter>Header Files\protocols</Filter>
     </ClInclude>
+    <ClInclude Include="WStatus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="platform\DateTime.cpp">
