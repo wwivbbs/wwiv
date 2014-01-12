@@ -31,14 +31,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef _DEFINE_GLOBALS_
-
-unsigned char *translate_letters[] =
-{
-  (unsigned char *)"abcdefghijklmnopqrstuvwxyz‡„†‚”¤",
-  (unsigned char *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ€š™¥",
-  0L,
-};
-
 #define __EXTRN__
 #else
 #define __EXTRN__ extern
