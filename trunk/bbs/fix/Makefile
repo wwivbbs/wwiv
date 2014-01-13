@@ -26,7 +26,7 @@ EXE_EXT         = .exe
 OBJ_EXT         = .o
 else
 OS=UNIX
-PLATFORM_CFLAGS=
+PLATFORM_CFLAGS=-std=c++11
 PLATFORM_DIR=../platform/unix
 PLATFORM_LINKFLAGS=
 ifeq (Darwin,$(shell uname))
