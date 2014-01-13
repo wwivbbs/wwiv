@@ -28,6 +28,14 @@
 
 #define TTY "/dev/tty"
 
+#ifndef TIOCGETA
+#define TIOCGETA TCGETS
+#endif  // TIOCGETA
+
+#ifndef TIOCSETA
+#define TIOCSETA TCSETS
+#endif  // TIOCSETA
+
 void WIOUnix::set_terminal( bool initMode )
 {
 	static struct termios foo;
