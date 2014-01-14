@@ -77,6 +77,7 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive)
 
 double WWIV_GetFreeSpaceForPath(const char * szPath)
 {
+#ifndef NOT_BBS
 	int nDrive = GetApplication()->GetHomeDir()[0];
 
 	if (szPath[1] == ':')
@@ -87,7 +88,9 @@ double WWIV_GetFreeSpaceForPath(const char * szPath)
 	nDrive = wwiv::UpperCase<int> (nDrive - 'A' + 1 );
 
     return WWIV_WIN32_FreeSpaceForDriveLetter( nDrive );
-
+#else
+	return 0;
+#endif
 }
 
 
