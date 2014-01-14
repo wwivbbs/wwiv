@@ -98,23 +98,27 @@ bool mkdirs(const char *s)
   char current_path[MAX_PATH], *p, *flp;
 
   p = flp = WWIV_STRDUP(s);
-  getcwd(current_path, MAX_PATH);
+  WWIV_GetDir(current_path, false);
   if(LAST(p) == WWIV_FILE_SEPERATOR_CHAR)
     LAST(p) = 0;
   if(*p == WWIV_FILE_SEPERATOR_CHAR) {
-    chdir(WWIV_FILE_SEPERATOR_STRING);
+	  WWIV_ChangeDirTo(WWIV_FILE_SEPERATOR_STRING);
     p++;
   }
   for(; (p = strtok(p, WWIV_FILE_SEPERATOR_STRING)) != 0; p = 0) {
-    if(chdir(p)) {
-      if(mkdir(p)) {
-        chdir(current_path);
+	  WWIV_ChangeDirTo(p);
+#ifdef _WIN32
+      if(_mkdir(p)) {
+#else
+	  if (mkdir(p)) {
+#endif
+		  WWIV_ChangeDirTo(current_path);
         return false;
       }
-      chdir(p);
-    }
+	  WWIV_ChangeDirTo(p);
+    
   }
-  chdir(current_path);
+  WWIV_ChangeDirTo(current_path);
   if(flp)
   {
     BbsFreeMemory(flp);
@@ -224,7 +228,6 @@ void initStatusDat()
     {
         checkFileSize(statusDat, sizeof(statusrec));
         Print(OK, true, "Reading %s...", statusDat.GetFullPathName().c_str());
-        statusDat.Open(nFileMode);
         if (!statusDat.Open(nFileMode))
         {
             Print(NOK, true, "%s NOT FOUND.", statusDat.GetFullPathName().c_str());

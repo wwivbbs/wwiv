@@ -153,7 +153,7 @@ __EXTRN__ ch_type channels[11];
 
 
 
-#if defined (INIT) || defined (NETWORK)
+#if defined (INIT) || defined (NETWORK) || defined (FIX)
 __EXTRN__ configrec syscfg;
 #else
 __EXTRN__ small_configrec syscfg;
