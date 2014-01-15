@@ -23,99 +23,78 @@
 static WFile qscanFile;
 
 
-bool open_qscn()
-{
-    if ( !qscanFile.IsOpen() )
-	{
-        qscanFile.SetName( syscfg.datadir, USER_QSC );
-        if ( !qscanFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) )
-		{
-            return false;
-        }
-    }
-    return true;
-}
-
-
-void close_qscn()
-{
-    if ( qscanFile.IsOpen() )
-    {
-        qscanFile.Close();
-    }
-}
-
-
-void read_qscn( int nUserNumber, unsigned long *qscn, bool bStayOpen, bool bForceRead )
-{
-    if ( !bForceRead )
-    {
-        if ( ( GetSession()->IsUserOnline() && nUserNumber == GetSession()->usernum ) ||
-			 ( GetApplication()->GetWfcStatus() && nUserNumber == 1 ) )
-	    {
-            if ( qscn != qsc )
-		    {
-                for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--)
-			    {
-                    qscn[i] = qsc[i];
-			    }
-            }
-            return;
-        }
-    }
-    if ( open_qscn() )
-	{
-        long lPos = static_cast<long>( syscfg.qscn_len ) * static_cast<long>( nUserNumber );
-        if ( lPos + static_cast<long>( syscfg.qscn_len ) <= qscanFile.GetLength() )
-		{
-            qscanFile.Seek( lPos, WFile::seekBegin );
-            qscanFile.Read( qscn, syscfg.qscn_len );
-            if (!bStayOpen)
-			{
-                close_qscn();
-			}
-            return;
-        }
-    }
-    if ( !bStayOpen )
-	{
-        close_qscn();
-	}
-
-    memset( qsc, 0, syscfg.qscn_len );
-    *qsc = 999;
-    memset( qsc + 1, 0xff, ( ( syscfg.max_dirs + 31 ) / 32 ) * 4 );
-    memset( qsc + 1 + ( syscfg.max_subs + 31 ) / 32, 0xff, ( ( syscfg.max_subs + 31 ) / 32 ) * 4 );
-}
-
-
-void write_qscn( int nUserNumber, unsigned long *qscn, bool bStayOpen )
-{
-    if ( ( nUserNumber < 1 ) || ( nUserNumber > syscfg.maxusers ) || guest_user )
-	{
-        return;
-	}
-
-    if ( ( GetSession()->IsUserOnline() && (nUserNumber == GetSession()->usernum) ) ||
-         ( GetApplication()->GetWfcStatus() && nUserNumber == 1 ) )
-	{
-        if ( qsc != qscn )
-		{
-            for ( int i = ( syscfg.qscn_len / 4 ) - 1; i >= 0; i-- )
-			{
-                qsc[ i ] = qscn[ i ];
-			}
-        }
-    }
-    if ( open_qscn() )
-	{
-        long lPos = static_cast<long>( syscfg.qscn_len ) * static_cast<long>( nUserNumber );
-        qscanFile.Seek( lPos, WFile::seekBegin );
-        qscanFile.Write( qscn, syscfg.qscn_len );
-        if ( !bStayOpen )
-		{
-            close_qscn();
+bool open_qscn() {
+	if ( !qscanFile.IsOpen() ) {
+		qscanFile.SetName( syscfg.datadir, USER_QSC );
+		if ( !qscanFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) ) {
+			return false;
 		}
-    }
+	}
+	return true;
+}
+
+
+void close_qscn() {
+	if ( qscanFile.IsOpen() ) {
+		qscanFile.Close();
+	}
+}
+
+
+void read_qscn( int nUserNumber, unsigned long *qscn, bool bStayOpen, bool bForceRead ) {
+	if ( !bForceRead ) {
+		if ( ( GetSession()->IsUserOnline() && nUserNumber == GetSession()->usernum ) ||
+		        ( GetApplication()->GetWfcStatus() && nUserNumber == 1 ) ) {
+			if ( qscn != qsc ) {
+				for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
+					qscn[i] = qsc[i];
+				}
+			}
+			return;
+		}
+	}
+	if ( open_qscn() ) {
+		long lPos = static_cast<long>( syscfg.qscn_len ) * static_cast<long>( nUserNumber );
+		if ( lPos + static_cast<long>( syscfg.qscn_len ) <= qscanFile.GetLength() ) {
+			qscanFile.Seek( lPos, WFile::seekBegin );
+			qscanFile.Read( qscn, syscfg.qscn_len );
+			if (!bStayOpen) {
+				close_qscn();
+			}
+			return;
+		}
+	}
+	if ( !bStayOpen ) {
+		close_qscn();
+	}
+
+	memset( qsc, 0, syscfg.qscn_len );
+	*qsc = 999;
+	memset( qsc + 1, 0xff, ( ( syscfg.max_dirs + 31 ) / 32 ) * 4 );
+	memset( qsc + 1 + ( syscfg.max_subs + 31 ) / 32, 0xff, ( ( syscfg.max_subs + 31 ) / 32 ) * 4 );
+}
+
+
+void write_qscn( int nUserNumber, unsigned long *qscn, bool bStayOpen ) {
+	if ( ( nUserNumber < 1 ) || ( nUserNumber > syscfg.maxusers ) || guest_user ) {
+		return;
+	}
+
+	if ( ( GetSession()->IsUserOnline() && (nUserNumber == GetSession()->usernum) ) ||
+	        ( GetApplication()->GetWfcStatus() && nUserNumber == 1 ) ) {
+		if ( qsc != qscn ) {
+			for ( int i = ( syscfg.qscn_len / 4 ) - 1; i >= 0; i-- ) {
+				qsc[ i ] = qscn[ i ];
+			}
+		}
+	}
+	if ( open_qscn() ) {
+		long lPos = static_cast<long>( syscfg.qscn_len ) * static_cast<long>( nUserNumber );
+		qscanFile.Seek( lPos, WFile::seekBegin );
+		qscanFile.Write( qscn, syscfg.qscn_len );
+		if ( !bStayOpen ) {
+			close_qscn();
+		}
+	}
 }
 

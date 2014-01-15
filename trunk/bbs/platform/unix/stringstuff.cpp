@@ -21,10 +21,8 @@
 
 
 /** Converts string to uppercase */
-char *strupr(char *s)
-{
-	for(int i = 0; s[i] != 0; i++)
-	{
+char *strupr(char *s) {
+	for(int i = 0; s[i] != 0; i++) {
 		s[i] = wwiv::UpperCase<char>(s[i]);
 	}
 
@@ -32,10 +30,8 @@ char *strupr(char *s)
 }
 
 /** Converts string to lowercase */
-char *strlwr(char *s)
-{
-	for(int i = 0; s[i] != 0; i++)
-	{
+char *strlwr(char *s) {
+	for(int i = 0; s[i] != 0; i++) {
 		s[i] = wwiv::LowerCase(s[i]);
 	}
 
@@ -45,15 +41,13 @@ char *strlwr(char *s)
 
 
 // Reverses a string
-char *strrev( char *pszBufer )
-{
+char *strrev( char *pszBufer ) {
 	WWIV_ASSERT( pszBufer );
 	char szTempBuffer[255];
 	int str = strlen( pszBufer );
 	WWIV_ASSERT( str <= 255 );
 
-	for ( int i = str; i >- 1; i-- )
-	{
+	for ( int i = str; i >- 1; i-- ) {
 		pszBufer[i] = szTempBuffer[str-i];
 	}
 	strcpy( pszBufer, szTempBuffer );

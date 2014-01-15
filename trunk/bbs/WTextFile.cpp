@@ -22,64 +22,56 @@
 #include <cstring>
 
 
-WTextFile::WTextFile( const std::string fileName, const std::string fileMode )
-{
-    Open( fileName, fileMode);
+WTextFile::WTextFile( const std::string fileName, const std::string fileMode ) {
+	Open( fileName, fileMode);
 }
 
 
-WTextFile::WTextFile( const std::string directoryName, const std::string fileName, const std::string fileMode )
-{
-    std::string fullPathName(directoryName);
-    fullPathName.append(fileName);
-    Open( fullPathName, fileMode );
+WTextFile::WTextFile( const std::string directoryName, const std::string fileName, const std::string fileMode ) {
+	std::string fullPathName(directoryName);
+	fullPathName.append(fileName);
+	Open( fullPathName, fileMode );
 }
 
 
-bool WTextFile::Open( const std::string fileName, const std::string fileMode )
-{
-    m_fileName = fileName;
-    m_fileMode = fileMode;
-    m_hFile = WTextFile::OpenImpl( m_fileName.c_str(), m_fileMode.c_str() );
-    return ( m_hFile != NULL ) ? true : false;
+bool WTextFile::Open( const std::string fileName, const std::string fileMode ) {
+	m_fileName = fileName;
+	m_fileMode = fileMode;
+	m_hFile = WTextFile::OpenImpl( m_fileName.c_str(), m_fileMode.c_str() );
+	return ( m_hFile != NULL ) ? true : false;
 }
 
 
 
-bool WTextFile::Close()
-{
-    if ( m_hFile != NULL )
-    {
-        fclose(m_hFile);
-        m_hFile = NULL;
-        return true;
-    }
-    return false;
+bool WTextFile::Close() {
+	if ( m_hFile != NULL ) {
+		fclose(m_hFile);
+		m_hFile = NULL;
+		return true;
+	}
+	return false;
 }
 
 
-int WTextFile::WriteFormatted( const char *pszFormatText,... )
-{
-    va_list ap;
-    char szBuffer[ 4096 ];
+int WTextFile::WriteFormatted( const char *pszFormatText,... ) {
+	va_list ap;
+	char szBuffer[ 4096 ];
 
-    va_start( ap, pszFormatText );
-    WWIV_VSNPRINTF( szBuffer, sizeof( szBuffer ), pszFormatText, ap );
-    va_end( ap );
-    return Write( szBuffer );
+	va_start( ap, pszFormatText );
+	WWIV_VSNPRINTF( szBuffer, sizeof( szBuffer ), pszFormatText, ap );
+	va_end( ap );
+	return Write( szBuffer );
 }
 
 
-bool WTextFile::ReadLine( std::string &buffer )
-{
-    char szBuffer[4096];
-    char *pszBuffer = fgets(szBuffer, sizeof(szBuffer), m_hFile);
-    buffer = szBuffer;
-    return ( pszBuffer != NULL );
+bool WTextFile::ReadLine( std::string &buffer ) {
+	char szBuffer[4096];
+	char *pszBuffer = fgets(szBuffer, sizeof(szBuffer), m_hFile);
+	buffer = szBuffer;
+	return ( pszBuffer != NULL );
 }
 
 
-WTextFile::~WTextFile()
-{
-    Close();
+WTextFile::~WTextFile() {
+	Close();
 }

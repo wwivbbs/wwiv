@@ -32,8 +32,7 @@ void ListMenuMenus(const char *pszDirectoryName );
 
 
 
-void EditMenus()
-{
+void EditMenus() {
 	char szTemp1[21];
 	char szPW[21];
 	char szDesc[81];
@@ -46,23 +45,19 @@ void EditMenus()
 	GetSession()->bout << "|#2WWIV Menu Editor|#0\r\n";
 
 	std::string menuDir;
-	if (!GetMenuDir(menuDir))
-	{
+	if (!GetMenuDir(menuDir)) {
 		return;
 	}
 
 	std::string menuName;
-	if (!GetMenuMenu( menuDir, menuName ))
-	{
+	if (!GetMenuMenu( menuDir, menuName )) {
 		return;
 	}
 
 	WFile fileEditMenu( GetMenuDirectory(menuDir, menuName, "mnu") );
-	if (!fileEditMenu.Exists())
-	{
+	if (!fileEditMenu.Exists()) {
 		GetSession()->bout << "Creating menu...\r\n";
-		if ( !fileEditMenu.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite ) )
-		{
+		if ( !fileEditMenu.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite ) ) {
 			GetSession()->bout << "Unable to create menu.\r\n";
 			return;
 		}
@@ -83,19 +78,15 @@ void EditMenus()
 		memmove(&Menu, &header, sizeof(MenuHeader));
 		fileEditMenu.Write( &Menu, sizeof( MenuRec ) );
 		nAmount = 0;
-	}
-	else
-	{
-		if ( !fileEditMenu.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite ) )
-		{
+	} else {
+		if ( !fileEditMenu.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite ) ) {
 			MenuSysopLog("Unable to open menu.");
 			MenuSysopLog(fileEditMenu.GetFullPathName());
 			return;
 		}
 		nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec));
 		--nAmount;
-		if (nAmount < 0)
-		{
+		if (nAmount < 0) {
 			MenuSysopLog("Menu is corrupt.");
 			MenuSysopLog(fileEditMenu.GetFullPathName());
 			return;
@@ -108,14 +99,11 @@ void EditMenus()
 	fileEditMenu.Read( &Menu, sizeof( MenuRec ) );
 
 	bool done = false;
-	while (!hangup && !done)
-	{
-		if (nCur == 0)
-		{
+	while (!hangup && !done) {
+		if (nCur == 0) {
 			DisplayHeader((MenuHeader *) (&Menu), nCur, nAmount, menuDir.c_str());
 			char chKey = onek("Q[]Z012ABCDEFGHIJKLMNOP");
-			switch (chKey)
-			{
+			switch (chKey) {
 			case 'Q':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				done = true;
@@ -124,8 +112,7 @@ void EditMenus()
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				--nCur;
-				if (nCur < 0)
-				{
+				if (nCur < 0) {
 					nCur = nAmount;
 				}
 				ReadMenuRec(fileEditMenu, &Menu, nCur);
@@ -134,8 +121,7 @@ void EditMenus()
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				++nCur;
-				if (nCur > nAmount)
-				{
+				if (nCur > nAmount) {
 					nCur = 0;
 				}
 				ReadMenuRec(fileEditMenu, &Menu, nCur);
@@ -162,59 +148,48 @@ void EditMenus()
 				GetSession()->bout << "|#5New desc     : ";
 				GetSession()->bout.Color( 0 );
 				inputl(szDesc, 60);
-				if (szDesc[0])
-				{
+				if (szDesc[0]) {
 					SetMenuDescription( menuDir.c_str(), szDesc);
 				}
 				CloseMenuDescriptions();
 				break;
 			case '1':
 				GetSession()->bout << "Is menu deleted? (N) ";
-				if (yesno())
-				{
+				if (yesno()) {
 					((MenuHeader *) (&Menu))->nFlags |= MENU_FLAG_DELETED;
-				}
-				else
-				{
+				} else {
 					((MenuHeader *) (&Menu))->nFlags &= ~MENU_FLAG_DELETED;
 				}
 				break;
 			case '2':
 				GetSession()->bout << "Is menu a main menu? (Y) ";
-				if (noyes())
-				{
+				if (noyes()) {
 					((MenuHeader *) (&Menu))->nFlags |= MENU_FLAG_MAINMENU;
-				}
-				else
-				{
+				} else {
 					((MenuHeader *) (&Menu))->nFlags &= ~MENU_FLAG_MAINMENU;
 				}
 				break;
 			case 'A':
 				((MenuHeader *) (&Menu))->nNumbers++;
-				if (((MenuHeader *) (&Menu))->nNumbers == MENU_NUMFLAG_LAST)
-				{
+				if (((MenuHeader *) (&Menu))->nNumbers == MENU_NUMFLAG_LAST) {
 					((MenuHeader *) (&Menu))->nNumbers = 0;
 				}
 				break;
 			case 'B':
 				((MenuHeader *) (&Menu))->nLogging++;
-				if (((MenuHeader *) (&Menu))->nLogging == MENU_LOGTYPE_LAST)
-				{
+				if (((MenuHeader *) (&Menu))->nLogging == MENU_LOGTYPE_LAST) {
 					((MenuHeader *) (&Menu))->nLogging = 0;
 				}
 				break;
 			case 'C':
 				((MenuHeader *) (&Menu))->nForceHelp++;
-				if (((MenuHeader *) (&Menu))->nForceHelp == MENU_HELP_LAST)
-				{
+				if (((MenuHeader *) (&Menu))->nForceHelp == MENU_HELP_LAST) {
 					((MenuHeader *) (&Menu))->nForceHelp = 0;
 				}
 				break;
 			case 'D':
 				((MenuHeader *) (&Menu))->nAllowedMenu++;
-				if (((MenuHeader *) (&Menu))->nAllowedMenu == MENU_ALLOWED_LAST)
-				{
+				if (((MenuHeader *) (&Menu))->nAllowedMenu == MENU_ALLOWED_LAST) {
 					((MenuHeader *) (&Menu))->nAllowedMenu = 0;
 				}
 				break;
@@ -233,40 +208,35 @@ void EditMenus()
 			case 'H':
 				GetSession()->bout << "Min SL : ";
 				input(szTemp1, 3);
-				if (szTemp1[0])
-				{
-                    ((MenuHeader *) (&Menu))->nMinSL = wwiv::stringUtils::StringToShort(szTemp1);
+				if (szTemp1[0]) {
+					((MenuHeader *) (&Menu))->nMinSL = wwiv::stringUtils::StringToShort(szTemp1);
 				}
 				break;
 			case 'I':
 				GetSession()->bout << "Min DSL : ";
 				input(szTemp1, 3);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					((MenuHeader *) (&Menu))->nMinDSL = wwiv::stringUtils::StringToShort(szTemp1);
 				}
 				break;
 			case 'J':
 				GetSession()->bout << "AR : ";
 				input(szTemp1, 5);
-				if (szTemp1[0])
-				{
-                    ((MenuHeader *) (&Menu))->uAR = wwiv::stringUtils::StringToUnsignedShort(szTemp1);
+				if (szTemp1[0]) {
+					((MenuHeader *) (&Menu))->uAR = wwiv::stringUtils::StringToUnsignedShort(szTemp1);
 				}
 				break;
 			case 'K':
 				GetSession()->bout << "DAR : ";
 				input(szTemp1, 5);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					((MenuHeader *) (&Menu))->uDAR = wwiv::stringUtils::StringToUnsignedShort(szTemp1);
 				}
 				break;
 			case 'L':
 				GetSession()->bout << "Restrictions : ";
 				input(szTemp1, 5);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					((MenuHeader *) (&Menu))->uRestrict = wwiv::stringUtils::StringToUnsignedShort(szTemp1);
 				}
 				break;
@@ -277,12 +247,10 @@ void EditMenus()
 				((MenuHeader *) (&Menu))->nCoSysop = !((MenuHeader *) (&Menu))->nCoSysop;
 				break;
 			case 'O':
-				if (incom && ((MenuHeader *) (&Menu))->szPassWord[0])
-				{
+				if (incom && ((MenuHeader *) (&Menu))->szPassWord[0]) {
 					GetSession()->bout << "Current PW: ";
 					input(szPW, 20);
-					if ( !wwiv::stringUtils::IsEqualsIgnoreCase(szPW, ((MenuHeader *) (&Menu))->szPassWord ) )
-					{
+					if ( !wwiv::stringUtils::IsEqualsIgnoreCase(szPW, ((MenuHeader *) (&Menu))->szPassWord ) ) {
 						MenuSysopLog("Unable to change PW");
 						break;
 					}
@@ -294,14 +262,11 @@ void EditMenus()
 				EditPulldownColors(((MenuHeader *) (&Menu)));
 				break;
 			}
-		}
-		else
-		{
+		} else {
 			DisplayItem(&Menu, nCur, nAmount);
 			char chKey = onek("Q[]Z1ABCDEFGKLMNOPRSTUVWX");
 
-			switch ( chKey )
-			{
+			switch ( chKey ) {
 			case 'Q':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				done = true;
@@ -311,8 +276,7 @@ void EditMenus()
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				--nCur;
-				if (nCur < 0)
-				{
+				if (nCur < 0) {
 					nCur = nAmount;
 				}
 				ReadMenuRec(fileEditMenu, &Menu, nCur);
@@ -321,8 +285,7 @@ void EditMenus()
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				++nCur;
-				if (nCur > nAmount)
-				{
+				if (nCur > nAmount) {
 					nCur = 0;
 				}
 				ReadMenuRec(fileEditMenu, &Menu, nCur);
@@ -341,40 +304,33 @@ void EditMenus()
 				break;
 			case '1':
 				GetSession()->bout << "Is record deleted? (N) ";
-				if (yesno())
-				{
+				if (yesno()) {
 					Menu.nFlags |= MENU_FLAG_DELETED;
-				}
-				else
-				{
+				} else {
 					Menu.nFlags &= ~MENU_FLAG_DELETED;
 				}
 				break;
 			case 'A':
 				GetSession()->bout << "Key to cause execution : ";
 				input(Menu.szKey, MENU_MAX_KEYS);
-				if (!(Menu.szSysopLog[0]))
-				{
+				if (!(Menu.szSysopLog[0])) {
 					strcpy(Menu.szSysopLog,Menu.szKey);
 				}
 				break;
 			case 'B':
 				GetSession()->bout << "Command to execute : ";
 				inputl(Menu.szExecute, 100);
-				if (!(Menu.szMenuText[0]))
-				{
+				if (!(Menu.szMenuText[0])) {
 					strcpy(Menu.szMenuText, Menu.szExecute);
 				}
-				if (!(Menu.szPDText[0]))
-				{
+				if (!(Menu.szPDText[0])) {
 					strcpy(Menu.szPDText, Menu.szExecute);
 				}
 				break;
 			case 'C':
 				GetSession()->bout << "Menu Text : ";
 				inputl(Menu.szMenuText, 40);
-				if (!(Menu.szPDText[0]))
-				{
+				if (!(Menu.szPDText[0])) {
 					strcpy(Menu.szPDText, Menu.szMenuText);
 				}
 				break;
@@ -397,56 +353,49 @@ void EditMenus()
 			case 'K':
 				GetSession()->bout << "Min SL : ";
 				input(szTemp1, 3);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					Menu.nMinSL = wwiv::stringUtils::StringToShort(szTemp1);
 				}
 				break;
 			case 'L':
 				GetSession()->bout << "Max SL : ";
 				input(szTemp1, 3);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					Menu.iMaxSL = wwiv::stringUtils::StringToShort(szTemp1);
 				}
 				break;
 			case 'M':
 				GetSession()->bout << "Min DSL : ";
 				input(szTemp1, 3);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					Menu.nMinDSL = wwiv::stringUtils::StringToShort(szTemp1);
 				}
 				break;
 			case 'N':
 				GetSession()->bout << "Max DSL : ";
 				input(szTemp1, 3);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					Menu.iMaxDSL = wwiv::stringUtils::StringToShort(szTemp1);
 				}
 				break;
 			case 'O':
 				GetSession()->bout << "AR : ";
 				input(szTemp1, 5);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					Menu.uAR = wwiv::stringUtils::StringToUnsignedShort(szTemp1);
 				}
 				break;
 			case 'P':
 				GetSession()->bout << "DAR : ";
 				input(szTemp1, 5);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					Menu.uDAR = wwiv::stringUtils::StringToUnsignedShort(szTemp1);
 				}
 				break;
 			case 'R':
 				GetSession()->bout << "Restrictions : ";
 				input(szTemp1, 5);
-				if (szTemp1[0])
-				{
+				if (szTemp1[0]) {
 					Menu.uRestrict = wwiv::stringUtils::StringToUnsignedShort(szTemp1);
 				}
 				break;
@@ -457,12 +406,10 @@ void EditMenus()
 				Menu.nCoSysop = !Menu.nCoSysop;
 				break;
 			case 'U':
-				if (incom && Menu.szPassWord[0])
-				{
+				if (incom && Menu.szPassWord[0]) {
 					GetSession()->bout << "Current PW: ";
 					input(szPW, 20);
-					if ( !wwiv::stringUtils::IsEqualsIgnoreCase( szPW, Menu.szPassWord ) )
-					{
+					if ( !wwiv::stringUtils::IsEqualsIgnoreCase( szPW, Menu.szPassWord ) ) {
 						MenuSysopLog("Unable to change PW");
 						break;
 					}
@@ -473,39 +420,29 @@ void EditMenus()
 
 			case 'V':
 				++Menu.nHide;
-				if (Menu.nHide >= MENU_HIDE_LAST)
-				{
+				if (Menu.nHide >= MENU_HIDE_LAST) {
 					Menu.nHide = MENU_HIDE_NONE;
 				}
 				break;
 			case 'W':
 				GetSession()->bout << "Clear screen before command is run? (Y) ";
-				if (noyes())
-				{
+				if (noyes()) {
 					Menu.nPDFlags &= ~PDFLAGS_NOCLEAR;
-				}
-				else
-				{
+				} else {
 					Menu.nPDFlags |= PDFLAGS_NOCLEAR;
 				}
 
 				GetSession()->bout << "Pause screen after command is run? (Y) ";
-				if (noyes())
-				{
+				if (noyes()) {
 					Menu.nPDFlags &= ~PDFLAGS_NOPAUSEAFTER;
-				}
-				else
-				{
+				} else {
 					Menu.nPDFlags |= PDFLAGS_NOPAUSEAFTER;
 				}
 
 				GetSession()->bout << "Restore screen after command is run? (Y) ";
-				if (noyes())
-				{
+				if (noyes()) {
 					Menu.nPDFlags &= ~PDFLAGS_NORESTORE;
-				}
-				else
-				{
+				} else {
 					Menu.nPDFlags |= PDFLAGS_NORESTORE;
 				}
 				break;
@@ -523,21 +460,18 @@ void EditMenus()
 }
 
 
-void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName)
-{
+void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName) {
 	GetSession()->bout << "Indexing Menu...\r\n";
 
 	WFile fileIdx( GetMenuDirectory( pszDirectoryName, pszMenuName, "idx" ) );
-	if ( !fileIdx.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate|WFile::modeReadWrite, WFile::shareDenyWrite, WFile::permReadWrite ) )
-	{
+	if ( !fileIdx.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate|WFile::modeReadWrite, WFile::shareDenyWrite, WFile::permReadWrite ) ) {
 		GetSession()->bout << "Unable to reindex\r\n";
 		pausescr();
 		return;
 	}
 	int nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec));
 
-	for (int nRec = 1; nRec < nAmount; nRec++)
-	{
+	for (int nRec = 1; nRec < nAmount; nRec++) {
 		MenuRec menu;
 		fileEditMenu.Seek( nRec * sizeof( MenuRec ), WFile::seekBegin );
 		fileEditMenu.Read( &menu, sizeof( MenuRec ) );
@@ -556,22 +490,18 @@ void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *
 }
 
 
-void ReadMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur)
-{
-	if ( fileEditMenu.Seek( nCur * sizeof(MenuRec), WFile::seekBegin ) != -1 )
-	{
+void ReadMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur) {
+	if ( fileEditMenu.Seek( nCur * sizeof(MenuRec), WFile::seekBegin ) != -1 ) {
 		fileEditMenu.Read( Menu, sizeof( MenuRec ) );
 	}
 }
 
 
-void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur)
-{
+void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur) {
 	// %%TODO Add in locking (_locking) support via WIN32 file api's
 
 	long lRet = fileEditMenu.Seek( nCur * sizeof( MenuRec ), WFile::seekBegin );
-	if ( lRet == -1 )
-	{
+	if ( lRet == -1 ) {
 		return;
 	}
 
@@ -584,8 +514,7 @@ void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur)
 	*/
 
 	lRet = fileEditMenu.Write( Menu, sizeof( MenuRec ) );
-	if ( lRet != sizeof( MenuRec ) )
-	{
+	if ( lRet != sizeof( MenuRec ) ) {
 		return;
 	}
 
@@ -597,50 +526,36 @@ void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur)
 }
 
 
-bool GetMenuDir(std::string& menuName)
-{
+bool GetMenuDir(std::string& menuName) {
 	ListMenuDirs();
 
-	while (!hangup)
-	{
+	while (!hangup) {
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#9Enter menuset to edit ?=List : |#0";
 		input(menuName, 8);
 
-		if (menuName.empty()) 
-		{
+		if (menuName.empty()) {
 			return false;
-		}
-		else if (menuName[0] == '?')
-		{
+		} else if (menuName[0] == '?') {
 			ListMenuDirs();
-		}
-		else
-		{
+		} else {
 			WFile dir(GetMenuDirectory(), menuName);
-			if (!dir.Exists())
-			{
+			if (!dir.Exists()) {
 				GetSession()->bout << "The path " << dir.GetFullPathName() << wwiv::endl <<
-					          "does not exist, create it? (Y) : ";
-				if (noyes())
-				{
+				                   "does not exist, create it? (Y) : ";
+				if (noyes()) {
 					GetApplication()->CdHome();	// go to the wwiv dir
 					WWIV_make_path(dir.GetFullPathName().c_str());  // Create the new path
-					if (dir.Exists())
-					{
+					if (dir.Exists()) {
 						GetApplication()->CdHome();
 						GetSession()->bout << "Created\r\n";
 						return true;
-					}
-					else
-					{
+					} else {
 						GetApplication()->CdHome();
 						GetSession()->bout << "Unable to create\r\n";
 						return true;
 					}
-				}
-				else
-				{
+				} else {
 					GetSession()->bout << "Not created\r\n";
 					return true;
 				}
@@ -649,71 +564,56 @@ bool GetMenuDir(std::string& menuName)
 			return true;
 		}
 	}
-    // The only way to get here is to hangup
+	// The only way to get here is to hangup
 	return false;
 }
 
 
-bool GetMenuMenu( const std::string& directoryName, std::string& menuName )
-{
+bool GetMenuMenu( const std::string& directoryName, std::string& menuName ) {
 	ListMenuMenus( directoryName.c_str() );
 
-	while (!hangup)
-	{
+	while (!hangup) {
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#9Enter menu file to edit ?=List : |#0";
 		input(menuName, 8);
 
-		if (menuName.empty())
-		{
+		if (menuName.empty()) {
 			return false;
-		}
-		else if (menuName[0] == '?')
-		{
+		} else if (menuName[0] == '?') {
 			ListMenuMenus( directoryName.c_str() );
-		}
-		else
-		{
-			if ( !WFile::Exists( GetMenuDirectory(directoryName) ) )
-			{
+		} else {
+			if ( !WFile::Exists( GetMenuDirectory(directoryName) ) ) {
 				GetSession()->bout << "File does not exist, create it? (yNq) : ";
 				char x = ynq();
 
-				if (x == 'Q')
-				{
+				if (x == 'Q') {
 					return false;
 				}
 
-				if (x == 'Y')
-				{
+				if (x == 'Y') {
 					return true;
 				}
 
-				if (x == 'N')
-				{
+				if (x == 'N') {
 					continue;
 				}
-			} 
-			else 
-			{
+			} else {
 				return true;
 			}
 		}
 	}
-    // The only way to get here is to hangup
-    return false;
+	// The only way to get here is to hangup
+	return false;
 }
 
 
 
-void DisplayItem(MenuRec * Menu, int nCur, int nAmount)
-{
+void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
 	GetSession()->bout.ClearScreen();
 
 	GetSession()->bout << "|02(|#9" << nCur << "|02/|#9" << nAmount << "|02)" << wwiv::endl;
 
-	if (nCur > 0 && nCur <= nAmount)
-    {
+	if (nCur > 0 && nCur <= nAmount) {
 		GetSession()->bout << "|#91) Deleted        : |#2" << ( Menu->nFlags & MENU_FLAG_DELETED ? "Yes" : "No " ) << wwiv::endl;
 		GetSession()->bout << "|#9A) Key            : |#2" << Menu->szKey << wwiv::endl;
 		GetSession()->bout << "|#9B) Command        : |#2" << Menu->szExecute << wwiv::endl;
@@ -742,19 +642,17 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount)
 }
 
 
-void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszDirectoryName)
-{
+void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszDirectoryName) {
 	GetSession()->bout.ClearScreen();
 
 	OpenMenuDescriptions();
 
 	GetSession()->bout << "(" << nCur << "/" << nAmount << ")" << wwiv::endl;
 
-	if ( nCur == 0 )
-    {
+	if ( nCur == 0 ) {
 		GetSession()->bout << "   Menu Version         : " <<
-			          static_cast<int>( HIBYTE(pHeader->nVersion ) ) <<
-					  static_cast<int>( LOBYTE( pHeader->nVersion ) ) << wwiv::endl;
+		                   static_cast<int>( HIBYTE(pHeader->nVersion ) ) <<
+		                   static_cast<int>( LOBYTE( pHeader->nVersion ) ) << wwiv::endl;
 		char szDesc[101];
 		GetSession()->bout << "0) Menu Description     : " << GetMenuDescription( std::string(pszDirectoryName), szDesc ) << wwiv::endl;
 		GetSession()->bout << "1) Deleted              : " << ( ( pHeader->nFlags & MENU_FLAG_DELETED ) ? "Yes" : "No" ) << wwiv::endl;
@@ -783,104 +681,89 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
 }
 
 
-void EditPulldownColors(MenuHeader * pMenuHeader)
-{
+void EditPulldownColors(MenuHeader * pMenuHeader) {
 	char szTemp[15];
 
 	bool done = false;
-	while (!done && !hangup)
-	{
+	while (!done && !hangup) {
 		GetSession()->bout.ClearScreen();
 		GetSession()->bout.Color( 0 );
 
 		GetSession()->bout.WriteFormatted("%-35.35s", "A) Title color");
-		if ( pMenuHeader->nTitleColor )
-		{
+		if ( pMenuHeader->nTitleColor ) {
 			GetSession()->bout.SystemColor( pMenuHeader->nTitleColor );
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nTitleColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "B) Main border color");
-		if (pMenuHeader->nMainBorderColor)
-		{
+		if (pMenuHeader->nMainBorderColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nMainBorderColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainBorderColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "C) Main box color");
-		if (pMenuHeader->nMainBoxColor)
-		{
+		if (pMenuHeader->nMainBoxColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nMainBoxColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainBoxColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "D) Main text color");
-		if (pMenuHeader->nMainTextColor)
-		{
+		if (pMenuHeader->nMainTextColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nMainTextColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainTextColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "E) Main text highlight color");
-		if (pMenuHeader->nMainTextHLColor)
-		{
+		if (pMenuHeader->nMainTextHLColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nMainTextHLColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainTextHLColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "F) Main selected color");
-		if (pMenuHeader->nMainSelectedColor)
-		{
+		if (pMenuHeader->nMainSelectedColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nMainSelectedColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainSelectedColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "G) Main selected hightlight color");
-		if (pMenuHeader->nMainSelectedHLColor)
-		{
+		if (pMenuHeader->nMainSelectedHLColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nMainSelectedHLColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nMainSelectedHLColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 
 		GetSession()->bout.WriteFormatted("%-35.35s", "K) Item border color");
-		if (pMenuHeader->nItemBorderColor)
-		{
+		if (pMenuHeader->nItemBorderColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nItemBorderColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemBorderColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "L) Item box color");
-		if (pMenuHeader->nItemBoxColor)
-		{
+		if (pMenuHeader->nItemBoxColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nItemBoxColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemBoxColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "M) Item text color");
-		if (pMenuHeader->nItemTextColor)
-		{
+		if (pMenuHeader->nItemTextColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nItemTextColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemTextColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "N) Item text highlight color");
-		if (pMenuHeader->nItemTextHLColor)
-		{
+		if (pMenuHeader->nItemTextHLColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nItemTextHLColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemTextHLColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "O) Item selected color");
-		if (pMenuHeader->nItemSelectedColor)
-		{
+		if (pMenuHeader->nItemSelectedColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nItemSelectedColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemSelectedColor ) << wwiv::endl;
 		GetSession()->bout.Color( 0 );
 		GetSession()->bout.WriteFormatted("%-35.35s", "P) Item selected hightlight color");
-		if (pMenuHeader->nItemSelectedHLColor)
-		{
+		if (pMenuHeader->nItemSelectedHLColor) {
 			GetSession()->bout.SystemColor(pMenuHeader->nItemSelectedHLColor);
 		}
 		GetSession()->bout << static_cast<int>( pMenuHeader->nItemSelectedHLColor ) << wwiv::endl;
@@ -890,115 +773,99 @@ void EditPulldownColors(MenuHeader * pMenuHeader)
 		GetSession()->bout << "A-G,K-P, Q=Quit : ";
 		char chKey = onek("QABCDEFGKLMNOP");
 
-		if (chKey != 'Q')
-		{
+		if (chKey != 'Q') {
 			ListAllColors();
 			GetSession()->bout.NewLine();
 			GetSession()->bout << "Select a color : ";
 		}
-		switch (chKey)
-		{
-	  case 'A':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nTitleColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'B':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nMainBorderColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'C':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nMainBoxColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'D':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nMainTextColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'E':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nMainTextHLColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'F':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nMainSelectedColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'G':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nMainSelectedHLColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'K':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nItemBorderColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'L':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nItemBoxColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'M':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nItemTextColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'N':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nItemTextHLColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'O':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nItemSelectedColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'P':
-		  input(szTemp, 3);
-		  if (szTemp[0])
-		  {
-			  pMenuHeader->nItemSelectedHLColor = wwiv::stringUtils::StringToChar(szTemp);
-		  }
-		  break;
-	  case 'Q':
-		  done = true;
-		  break;
+		switch (chKey) {
+		case 'A':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nTitleColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'B':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nMainBorderColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'C':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nMainBoxColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'D':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nMainTextColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'E':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nMainTextHLColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'F':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nMainSelectedColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'G':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nMainSelectedHLColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'K':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nItemBorderColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'L':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nItemBoxColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'M':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nItemTextColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'N':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nItemTextHLColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'O':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nItemSelectedColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'P':
+			input(szTemp, 3);
+			if (szTemp[0]) {
+				pMenuHeader->nItemSelectedHLColor = wwiv::stringUtils::StringToChar(szTemp);
+			}
+			break;
+		case 'Q':
+			done = true;
+			break;
 		}
 	}
 }
 
 
-void ListMenuDirs()
-{
+void ListMenuDirs() {
 	char szName[20];
 	char szDesc[101];
 	WFindFile fnd;
@@ -1013,11 +880,9 @@ void ListMenuDirs()
 	GetSession()->bout << "|#5============================\r\n";
 
 	bFound = fnd.open( path.c_str(), 0 );
-	while (bFound && !hangup)
-	{
+	while (bFound && !hangup) {
 		std::string fileName = fnd.GetFileName();
-		if (fnd.IsDirectory())
-		{
+		if (fnd.IsDirectory()) {
 			WWIV_GetFileNameFromPath( fileName.c_str(), szName );
 			GetSession()->bout.WriteFormatted("|#2%-8.8s |15%-60.60s\r\n", szName, GetMenuDescription( fileName, szDesc ) );
 		}
@@ -1030,8 +895,7 @@ void ListMenuDirs()
 }
 
 
-void ListMenuMenus( const char *pszDirectoryName )
-{
+void ListMenuMenus( const char *pszDirectoryName ) {
 	std::string path = GetMenuDirectory( pszDirectoryName ) + "*.mnu";
 
 	GetSession()->bout.NewLine();
@@ -1040,10 +904,8 @@ void ListMenuMenus( const char *pszDirectoryName )
 
 	WFindFile fnd;
 	bool bFound = fnd.open( path.c_str(), 0 );
-	while (bFound && !hangup)
-	{
-		if (fnd.IsFile())
-		{
+	while (bFound && !hangup) {
+		if (fnd.IsFile()) {
 			std::string s = fnd.GetFileName();
 			GetSession()->bout << s.substr(0, s.find_last_of('.')) << wwiv::endl;
 		}

@@ -48,9 +48,8 @@ const unsigned int GetTimeLeft();
  * @todo Document this
  */
 
-const std::string stuff_in( const std::string commandline, const std::string arg1, 
-			   const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5 )
-{
+const std::string stuff_in( const std::string commandline, const std::string arg1,
+                            const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5 ) {
 	std::vector<std::string> flags;
 	flags.push_back( arg1 );
 	flags.push_back( arg2 );
@@ -59,82 +58,75 @@ const std::string stuff_in( const std::string commandline, const std::string arg
 	flags.push_back( arg5 );
 
 	std::string::const_iterator iter = commandline.begin();
-    std::ostringstream os;
-	while ( iter != commandline.end() )
-    {
-        if ( *iter == '%')
-        {
-            ++iter;
+	std::ostringstream os;
+	while ( iter != commandline.end() ) {
+		if ( *iter == '%') {
+			++iter;
 			char ch = wwiv::UpperCase<char>(*iter);
-            switch (ch)
-            {
-                // fixed strings
-            case '%':
-                os << "%";
-                break;
-                // replacable parameters
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-                os << flags.at(ch - '1');
-                break;
-                // call-specific numbers
-            case 'M':
-                os << modem_speed;
-                break;
-            case 'K':
-                os << syscfg.gfilesdir << COMMENT_TXT;
-                break;
-            case 'P':
-                os << ((incom)? syscfgovr.primaryport : 0);
-                break;
-            case 'N':
-                os << GetApplication()->GetInstanceNumber();
-                break;
-            case 'S':
-                os << ((com_speed == 1) ? 115200 : com_speed);
-                break;
-            case 'T':
-                os << GetTimeLeft();
-                break;
-                // chain.txt type filenames
-            case 'C':
+			switch (ch) {
+			// fixed strings
+			case '%':
+				os << "%";
+				break;
+			// replacable parameters
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+				os << flags.at(ch - '1');
+				break;
+			// call-specific numbers
+			case 'M':
+				os << modem_speed;
+				break;
+			case 'K':
+				os << syscfg.gfilesdir << COMMENT_TXT;
+				break;
+			case 'P':
+				os << ((incom)? syscfgovr.primaryport : 0);
+				break;
+			case 'N':
+				os << GetApplication()->GetInstanceNumber();
+				break;
+			case 'S':
+				os << ((com_speed == 1) ? 115200 : com_speed);
+				break;
+			case 'T':
+				os << GetTimeLeft();
+				break;
+			// chain.txt type filenames
+			case 'C':
 				os << create_filename( CHAINFILE_CHAIN );
-                break;
-            case 'D':
+				break;
+			case 'D':
 				os << create_filename( CHAINFILE_DORINFO );
-                break;
-            case 'O':
+				break;
+			case 'O':
 				os << create_filename( CHAINFILE_PCBOARD );
-                break;
-            case 'A':
+				break;
+			case 'A':
 				os << create_filename( CHAINFILE_CALLINFO );
-                break;
-            case 'R':
+				break;
+			case 'R':
 				os << create_filename( CHAINFILE_DOOR );
-                break;
-            case 'E':
+				break;
+			case 'E':
 				os << create_filename( CHAINFILE_DOOR32 );
-                break;
-            }
-            ++iter;
-        }
-        else
-        {
-            os << *iter++;
-        }
-    }
-    return std::string( os.str() );
+				break;
+			}
+			++iter;
+		} else {
+			os << *iter++;
+		}
+	}
+	return std::string( os.str() );
 }
 
-const unsigned int GetTimeLeft() 
-{
-    double d = nsl();
-    if (d < 0)
-    {
-        d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
-    }
-    return static_cast<int>( d ) / MINUTES_PER_HOUR;
+const unsigned int GetTimeLeft() {
+	double d = nsl();
+	if (d < 0) {
+		d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
+	}
+	return static_cast<int>( d ) / MINUTES_PER_HOUR;
 }

@@ -20,7 +20,7 @@
 // Version String
 const char *wwiv_version = "v5.00";
 
-// Build Information 
+// Build Information
 const char *beta_version = " (Build 62)";
 
 // this is used to set the status.wwiv_version

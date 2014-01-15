@@ -19,16 +19,14 @@
 
 #include "wwiv.h"
 
-void WWIV_Sound(int nFreq, int nDly)
-{
+void WWIV_Sound(int nFreq, int nDly) {
 #ifdef _WIN32
 	::Beep(nFreq, nDly);
 #endif
 }
 
 
-int WWIV_GetRandomNumber(int nMaxValue)
-{
+int WWIV_GetRandomNumber(int nMaxValue) {
 #if defined (_WIN32)
 
 	int num = rand();
@@ -59,39 +57,31 @@ int WWIV_GetRandomNumber(int nMaxValue)
 #endif
 
 bool WWIV_GetOSVersion(	char * pszOSVersionString,
-				int nBufferSize,
-				bool bFullVersion)
-{
+                        int nBufferSize,
+                        bool bFullVersion) {
 #if defined (_WIN32) && !defined(_USING_V110_SDK71_)
 	if (IsWindows8Point1OrGreater()) {
 		strcpy(pszOSVersionString, "Windows 8.1+");
 		return false;
-	}
-	else if (IsWindows8OrGreater()) {
+	} else if (IsWindows8OrGreater()) {
 		strcpy(pszOSVersionString, "Windows 8");
 		return false;
-	}
-	else if (IsWindows7OrGreater()) {
+	} else if (IsWindows7OrGreater()) {
 		strcpy(pszOSVersionString, "Windows 7");
 		return false;
-	}
-	else if (IsWindowsVistaOrGreater()) {
+	} else if (IsWindowsVistaOrGreater()) {
 		strcpy(pszOSVersionString, "Windows Vista");
 		return false;
-	}
-	else if (IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WS03), LOBYTE(_WIN32_WINNT_WS03), 0)) {
+	} else if (IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WS03), LOBYTE(_WIN32_WINNT_WS03), 0)) {
 		strcpy(pszOSVersionString, "Windows Server 2003");
 		return false;
-	}
-	else if (IsWindowsXPOrGreater()) {
+	} else if (IsWindowsXPOrGreater()) {
 		strcpy(pszOSVersionString, "Windows XP");
 		return false;
-	}
-	else if (IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_NT4), LOBYTE(_WIN32_WINNT_NT4), 0)) {
+	} else if (IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_NT4), LOBYTE(_WIN32_WINNT_NT4), 0)) {
 		strcpy(pszOSVersionString, "Windows NT");
 		return false;
-	}
-	else {
+	} else {
 		// couldn't figure it out, give up
 		strcpy(pszOSVersionString, "WIN32");
 		return false;
@@ -112,12 +102,10 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 	char szBuffer[200];
 	strcpy(szBuffer, "Linux");
 	WFile info("/proc/sys/kernel", "osrelease");
-	
-	if(info.Exists())
-	{
+
+	if(info.Exists()) {
 		info.Open();
-		if(info.IsOpen())
-		{
+		if(info.IsOpen()) {
 			char szBuffer2[100];
 			info.Read(&szBuffer2, 100);
 			info.Close();
@@ -127,11 +115,11 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 	strcpy(pszOSVersionString, szBuffer);
 
 #elif defined ( __APPLE__ )
-   
+
 	strcpy( pszOSVersionString, GetOSNameString() );
 	strcat( pszOSVersionString, " " );
 	strcat( pszOSVersionString, GetMacVersionString() );
-	
+
 #elif defined ( __unix__ )
 
 	//

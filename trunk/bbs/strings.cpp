@@ -24,33 +24,27 @@
 #pragma warning( disable : 4100 )
 #endif
 
-int  set_strings_fn(int filen, char *pszDirectoryName, char *pszFileName, int allowwrite)
-{
+int  set_strings_fn(int filen, char *pszDirectoryName, char *pszFileName, int allowwrite) {
 	return false;
 }
 
-void put_string(int filen, int n, char *pszText)
-{
+void put_string(int filen, int n, char *pszText) {
 	return;
 }
 
-int  cachestat()
-{
+int  cachestat() {
 	return 0;
 }
 
-int  num_strings(int filen)
-{
+int  num_strings(int filen) {
 	return 0;
 }
 
-char *getrandomstring(int filen)
-{
+char *getrandomstring(int filen) {
 	return "";
 }
 
-void close_strfiles()
-{
+void close_strfiles() {
 	return;
 }
 

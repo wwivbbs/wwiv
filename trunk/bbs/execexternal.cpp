@@ -37,46 +37,40 @@ int UnixSpawn( char *pszCommand, char* environ[] );
 //
 
 
-int ExecuteExternalProgram( const std::string commandLine, int nFlags )
-{
-    // forget it if the user has hung up
-    if (!(nFlags & EFLAG_NOHUP))
-	{
-        if ( CheckForHangup() )
-		{
-            return -1;
+int ExecuteExternalProgram( const std::string commandLine, int nFlags ) {
+	// forget it if the user has hung up
+	if (!(nFlags & EFLAG_NOHUP)) {
+		if ( CheckForHangup() ) {
+			return -1;
 		}
-    }
-    create_chain_file();
+	}
+	create_chain_file();
 
-    // get ready to run it
-    if ( GetSession()->IsUserOnline() )
-	{
-        GetSession()->WriteCurrentUser();
-        write_qscn(GetSession()->usernum, qsc, false);
-    }
-    close_strfiles();
-    GetSession()->localIO()->set_global_handle( false );
+	// get ready to run it
+	if ( GetSession()->IsUserOnline() ) {
+		GetSession()->WriteCurrentUser();
+		write_qscn(GetSession()->usernum, qsc, false);
+	}
+	close_strfiles();
+	GetSession()->localIO()->set_global_handle( false );
 
-    // extra processing for net programs
-    if (nFlags & EFLAG_NETPROG)
-    {
-        write_inst(INST_LOC_NET, GetSession()->GetNetworkNumber() + 1, INST_FLAGS_NONE);
-    }
+	// extra processing for net programs
+	if (nFlags & EFLAG_NETPROG) {
+		write_inst(INST_LOC_NET, GetSession()->GetNetworkNumber() + 1, INST_FLAGS_NONE);
+	}
 
-    // Execute the program and make sure the workingdir is reset
-    int nExecRetCode = ExecExternalProgram( commandLine, nFlags );
-    GetApplication()->CdHome();
+	// Execute the program and make sure the workingdir is reset
+	int nExecRetCode = ExecExternalProgram( commandLine, nFlags );
+	GetApplication()->CdHome();
 
-    // Reread the user record.
-    if ( GetSession()->IsUserOnline() )
-	{
-        GetApplication()->GetUserManager()->ReadUser( GetSession()->GetCurrentUser(), GetSession()->usernum, true );
-        read_qscn( GetSession()->usernum, qsc, false, true );
-        GetApplication()->UpdateTopScreen();
-    }
+	// Reread the user record.
+	if ( GetSession()->IsUserOnline() ) {
+		GetApplication()->GetUserManager()->ReadUser( GetSession()->GetCurrentUser(), GetSession()->usernum, true );
+		read_qscn( GetSession()->usernum, qsc, false, true );
+		GetApplication()->UpdateTopScreen();
+	}
 
-    // return to caller
-    return nExecRetCode;
+	// return to caller
+	return nExecRetCode;
 }
 

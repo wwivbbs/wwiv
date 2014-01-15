@@ -77,20 +77,17 @@ typedef unsigned char bool;
 #undef max
 
 // Add std::min and std::max because of MSVC 6.0 lameness.
-namespace std
-{
+namespace std {
 
-	template<class _Ty> inline
-		const _Ty& max(const _Ty& a, const _Ty& b)
-	{
-		return a < b ? b : a;
-	}
+template<class _Ty> inline
+const _Ty& max(const _Ty& a, const _Ty& b) {
+	return a < b ? b : a;
+}
 
-	template<class _Ty> inline
-		const _Ty& min(const _Ty& a, const _Ty& b)
-	{
-		return b < a ? b : a;
-	}
+template<class _Ty> inline
+const _Ty& min(const _Ty& a, const _Ty& b) {
+	return b < a ? b : a;
+}
 
 }
 

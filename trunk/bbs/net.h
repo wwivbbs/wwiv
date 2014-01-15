@@ -21,7 +21,7 @@
 #define __INCLUDED_NET_H__
 
 #ifdef _WIN32
- #pragma pack(push, 1)
+#pragma pack(push, 1)
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
@@ -40,17 +40,16 @@
  */
 
 
-struct net_header_rec
-{
+struct net_header_rec {
 	unsigned short	tosys,		/* destination system */
-                    touser,     /* destination user */
-                    fromsys,    /* originating system */
-                    fromuser,   /* originating user */
-                    main_type,  /* main message type */
-                    minor_type, /* minor message type */
-                    list_len;   /* # of entries in system list */
-    unsigned long   daten,      /* date/time sent */
-                    length;     /* # of bytes of msg after header */
+	          touser,     /* destination user */
+	          fromsys,    /* originating system */
+	          fromuser,   /* originating user */
+	          main_type,  /* main message type */
+	          minor_type, /* minor message type */
+	          list_len;   /* # of entries in system list */
+	unsigned long   daten,      /* date/time sent */
+	         length;     /* # of bytes of msg after header */
 	unsigned short	method;		/* method of compression */
 };
 
@@ -94,18 +93,17 @@ struct net_header_rec
 #define sub_adddrop_already_there 0x04  /* already in sub */
 #define sub_adddrop_error         0xff  /* internal error */
 
-struct net_contact_rec
-{
-    unsigned short  systemnumber,       /* System number of the contact */
-                    numcontacts,        /* # of contacts with system */
-                    numfails;           /* # of consec failed calls out */
-    unsigned long   firstcontact,       /* time of first contact w/ system */
-                    lastcontact,        /* time of most recent contact */
-                    lastcontactsent,    /* time of last contact w/data sent */
-                    lasttry,            /* time of last try to connect */
-                    bytes_received,     /* bytes received from system */
-                    bytes_sent,         /* bytes sent to system */
-                    bytes_waiting;      /* bytes waiting to be sent */
+struct net_contact_rec {
+	unsigned short  systemnumber,       /* System number of the contact */
+	         numcontacts,        /* # of contacts with system */
+	         numfails;           /* # of consec failed calls out */
+	unsigned long   firstcontact,       /* time of first contact w/ system */
+	         lastcontact,        /* time of most recent contact */
+	         lastcontactsent,    /* time of last contact w/data sent */
+	         lasttry,            /* time of last try to connect */
+	         bytes_received,     /* bytes received from system */
+	         bytes_sent,         /* bytes sent to system */
+	         bytes_waiting;      /* bytes waiting to be sent */
 };
 
 /* Each system will hold a file of these records.  Each record will hold the
@@ -131,22 +129,20 @@ struct net_contact_rec
  */
 
 
-struct net_system_list_rec
-{
-    unsigned short  sysnum;         /* system number of the system */
-    char            phone[13],      /* phone number of system */
-                    name[40];       /* name of system */
-    unsigned char   group;          /* group of the system */
-    unsigned short  speed,          /* max baud rate of system */
-                    other,          /* other info about sys (bit-mapped)*/
-                    forsys;         /* how to get there */
-    short           numhops;        /* how long to get there */
-    union
-    {
-        unsigned short  rout_fact;  /* routing factor */
-        float           cost;       /* cost factor */
-        long            temp;       /* temporary variable */
-    } xx;
+struct net_system_list_rec {
+	unsigned short  sysnum;         /* system number of the system */
+	char            phone[13],      /* phone number of system */
+	                name[40];       /* name of system */
+	unsigned char   group;          /* group of the system */
+	unsigned short  speed,          /* max baud rate of system */
+	         other,          /* other info about sys (bit-mapped)*/
+	         forsys;         /* how to get there */
+	short           numhops;        /* how long to get there */
+	union {
+		unsigned short  rout_fact;  /* routing factor */
+		float           cost;       /* cost factor */
+		long            temp;       /* temporary variable */
+	} xx;
 };
 
 // This data is all read in from a text file which holds info about all of
@@ -179,12 +175,11 @@ struct net_system_list_rec
 
 
 
-struct net_interconnect_rec
-{
-    unsigned short  sysnum,     /* outward calling system */
-                    numsys;     /* num systems it can call */
-    unsigned short  *connect;   /* list of numsys systems */
-    float           *cost;      /* list of numsys costs */
+struct net_interconnect_rec {
+	unsigned short  sysnum,     /* outward calling system */
+	         numsys;     /* num systems it can call */
+	unsigned short  *connect;   /* list of numsys systems */
+	float           *cost;      /* list of numsys costs */
 };
 
 /* This data is also read in from a text file.  It tells how much it costs for
@@ -200,19 +195,18 @@ struct net_interconnect_rec
  */
 
 
-struct net_call_out_rec
-{
-    unsigned short  sysnum;         /* system number */
-    unsigned char   macnum;         /* macro/script to use */
-    unsigned short  options;        /* bit mapped */
-    unsigned char   call_anyway;    /* days between callouts */
-    char            min_hr,         /* callout min hour */
-                    max_hr;         /* callout max hour */
-    char            password[20];   /* password for system */
-    unsigned char   times_per_day;  /* number of calls per day */
-    unsigned char   call_x_days;    /* call only every x days */
-    unsigned short  min_k;          /* minimum # k before callout */
-    char *          opts;           /* options or NULL */
+struct net_call_out_rec {
+	unsigned short  sysnum;         /* system number */
+	unsigned char   macnum;         /* macro/script to use */
+	unsigned short  options;        /* bit mapped */
+	unsigned char   call_anyway;    /* days between callouts */
+	char            min_hr,         /* callout min hour */
+	                max_hr;         /* callout max hour */
+	char            password[20];   /* password for system */
+	unsigned char   times_per_day;  /* number of calls per day */
+	unsigned char   call_x_days;    /* call only every x days */
+	unsigned short  min_k;          /* minimum # k before callout */
+	char *          opts;           /* options or NULL */
 };
 
 /* This record holds info about other systems that the sysop has determined
@@ -241,24 +235,22 @@ struct net_call_out_rec
 #define options_dial_ten      0x0200   /* * use ten digit dialing format */
 #define options_hide_pend     0x0400   /* = hide in pending display */
 
-struct sys_for_rec
-{
-        unsigned short  sysnum;         /* system number we can call */
-        short           nument;         /* number of entries in list */
-        unsigned short  *list;          /* list of systems */
+struct sys_for_rec {
+	unsigned short  sysnum;         /* system number we can call */
+	short           nument;         /* number of entries in list */
+	unsigned short  *list;          /* list of systems */
 };
 
 
-struct net_networks_rec
-{
-        unsigned char   type;           /* type of network */
-        char            name[16];       /* network name */
-        char            dir[69];        /* directory for net data */
-        unsigned short  sysnum;         /* system number */
-        net_call_out_rec  *con;         /* ptr to callout data */
-        net_contact_rec  *ncn;          /* ptr to contact info */
-        short           num_con;        /* number in array */
-        short           num_ncn;        /* number in array */
+struct net_networks_rec {
+	unsigned char   type;           /* type of network */
+	char            name[16];       /* network name */
+	char            dir[69];        /* directory for net data */
+	unsigned short  sysnum;         /* system number */
+	net_call_out_rec  *con;         /* ptr to callout data */
+	net_contact_rec  *ncn;          /* ptr to contact info */
+	short           num_con;        /* number in array */
+	short           num_ncn;        /* number in array */
 };
 
 #define net_type_wwivnet  0
@@ -269,48 +261,45 @@ struct net_networks_rec
 /* FTS System Structures */
 /*************************/
 #ifdef USE_FTS
-struct fts_header
-{
-    char            filename[13];       /* name of file */
-    long            filesize;           /* size of file */
-    char            description[59];    /* description  */
-    unsigned long   crc32value;         /* crc value of file */
-    short           maintype,           /* fts maintype */
-                    fdltype,            /* fdl type */
-                    chunkcount,         /* number of this chunk */
-                    totalchunks;        /* total number of chunks */
-    char            sysname[60],        /* name of originating system */
-                    tonet[16];          /* destination network name */
-    short           tosys,              /* destination system */
-                    touser;             /* destination user */
-    char            fromnet[16];        /* originating network name */
-    short           fromsys,            /* originating system */
-                    fromuser,           /* originating user */
-                    ver,                /* version of fts system */
-                    info;               /* 1=key 2=sec'd file req  */
-    char            xtrastuff[16];      /*                                */
+struct fts_header {
+	char            filename[13];       /* name of file */
+	long            filesize;           /* size of file */
+	char            description[59];    /* description  */
+	unsigned long   crc32value;         /* crc value of file */
+	short           maintype,           /* fts maintype */
+	                fdltype,            /* fdl type */
+	                chunkcount,         /* number of this chunk */
+	                totalchunks;        /* total number of chunks */
+	char            sysname[60],        /* name of originating system */
+	                tonet[16];          /* destination network name */
+	short           tosys,              /* destination system */
+	                touser;             /* destination user */
+	char            fromnet[16];        /* originating network name */
+	short           fromsys,            /* originating system */
+	                fromuser,           /* originating user */
+	                ver,                /* version of fts system */
+	                info;               /* 1=key 2=sec'd file req  */
+	char            xtrastuff[16];      /*                                */
 };
 
 #define fdl_requestable 0x0001
 #define fdl_postable    0x0004
 #define fdl_wwivreg     0x0008
 
-struct fdlrec_rec
-{
-    char  name[61];
-    short fdl,
-          host;
-    long  status;
-    char  res[41];
+struct fdlrec_rec {
+	char  name[61];
+	short fdl,
+	      host;
+	long  status;
+	char  res[41];
 };
 
-struct bltrec_rec
-{
-    char  name[61];
-    short blt,
-          host;
-    long  status;
-    char  res[41];
+struct bltrec_rec {
+	char  name[61];
+	short blt,
+	      host;
+	long  status;
+	char  res[41];
 };
 
 #endif

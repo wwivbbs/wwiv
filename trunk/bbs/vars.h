@@ -40,113 +40,113 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 __EXTRN__ char	ansistr[81],
-				g_szAttachmentDirectory[81],
-				charbuffer[ 255 ],
-				dc[81],
-				dcd[81],
-				g_szDownloadFileName[MAX_PATH],
-				g_szDSZLogFileName[MAX_PATH],
-				dtc[81],
-				g_szExtDescrFileName[MAX_PATH],
-				endofline[81],
-				//g_szMessageGatFileName[MAX_PATH],
-				irt[81],
-				irt_name[205],
-				irt_sub[81],
-				net_email_name[205],
-				odc[81],
-				*quotes_nrm,
-				*quotes_ind,
-				str_no[81],
-				str_pause[81],
-				str_quit[81],
-				str_yes[81],
-				tc[81];
+           g_szAttachmentDirectory[81],
+           charbuffer[ 255 ],
+           dc[81],
+           dcd[81],
+           g_szDownloadFileName[MAX_PATH],
+           g_szDSZLogFileName[MAX_PATH],
+           dtc[81],
+           g_szExtDescrFileName[MAX_PATH],
+           endofline[81],
+           //g_szMessageGatFileName[MAX_PATH],
+           irt[81],
+           irt_name[205],
+           irt_sub[81],
+           net_email_name[205],
+           odc[81],
+           *quotes_nrm,
+           *quotes_ind,
+           str_no[81],
+           str_pause[81],
+           str_quit[81],
+           str_yes[81],
+           tc[81];
 
 __EXTRN__ BYTE  checksum;
 
 __EXTRN__ int	ansiptr,
-				bquote,
-				change_color,
-				charbufferpointer,
-				chatting,
-				defscreenbottom,
-				do_event,
-				equote,
-				fsenttoday,
-				fwaiting,
-				lines_listed,
-				questused[20],
-				nsp;
+            bquote,
+            change_color,
+            charbufferpointer,
+            chatting,
+            defscreenbottom,
+            do_event,
+            equote,
+            fsenttoday,
+            fwaiting,
+            lines_listed,
+            questused[20],
+            nsp;
 
 __EXTRN__ bool  bChatLine,
-				g_preloaded,
-                newline,
-				global_xx,
-                forcescansub,
-				local_echo,
-				mailcheck,
-				guest_user,
-				no_hangup,
-				smwcheck,
-				chatcall,
-				chat_file,
-				express,
-				emchg,
-				expressabort,
-				hangup,
-				hungup,
-				incom,
-				outcom,
-				okskey,
-				okmacro,
-				use_workspace,
-				ok_modem_stuff,
-                x_only,
-				returning;
+          g_preloaded,
+          newline,
+          global_xx,
+          forcescansub,
+          local_echo,
+          mailcheck,
+          guest_user,
+          no_hangup,
+          smwcheck,
+          chatcall,
+          chat_file,
+          express,
+          emchg,
+          expressabort,
+          hangup,
+          hungup,
+          incom,
+          outcom,
+          okskey,
+          okmacro,
+          use_workspace,
+          ok_modem_stuff,
+          x_only,
+          returning;
 
 // Chatroom additions
 __EXTRN__ bool  in_chatroom,
-				invis,
-				avail;
+          invis,
+          avail;
 
 __EXTRN__ unsigned short
 #if !defined ( NETWORK )
-				*csn_index,
-				net_sysnum,
+*csn_index,
+net_sysnum,
 #endif // NETWORK
-				crc,
-				*gat,
-				modem_flag,
-                modem_mode,
-				modem_speed;
+crc,
+*gat,
+modem_flag,
+modem_mode,
+modem_speed;
 
 __EXTRN__ int	curatr,
-				dirconfnum,
-				subconfnum;
+            dirconfnum,
+            subconfnum;
 
 __EXTRN__ int	g_num_listed,
-				timelastchar1;
+            timelastchar1;
 
 __EXTRN__ time_t nscandate;
 
 
 __EXTRN__ int
-				g_flags,
-				com_speed;
+g_flags,
+com_speed;
 
 __EXTRN__ unsigned long
-				*qsc,
-				*qsc_n,
-				*qsc_q,
-				*qsc_p;
+*qsc,
+*qsc_n,
+*qsc_q,
+*qsc_p;
 
 __EXTRN__ float batchtime;
 
 __EXTRN__ double
-				extratimecall,
-				timeon,
-                time_event;
+extratimecall,
+timeon,
+time_event;
 
 __EXTRN__ ch_action *actions[MAX_NUM_ACT];
 __EXTRN__ ch_type channels[11];

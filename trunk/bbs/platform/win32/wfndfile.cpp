@@ -20,25 +20,20 @@
 #include "wwiv.h"
 
 
-bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
-{
+bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
 	__open(pszFileSpec, nTypeMask);
 
-    // Set this with the initial value
+	// Set this with the initial value
 	hFind = INVALID_HANDLE_VALUE;
 
 	hFind = FindFirstFile(pszFileSpec, &ffdata);
-	if (hFind == INVALID_HANDLE_VALUE)
-	{
+	if (hFind == INVALID_HANDLE_VALUE) {
 		return false;
 	}
 
-	if (ffdata.cAlternateFileName[0] == '\0')
-	{
+	if (ffdata.cAlternateFileName[0] == '\0') {
 		strncpy(szFileName,ffdata.cFileName, sizeof(szFileName));
-	}
-	else
-	{
+	} else {
 		strncpy(szFileName,ffdata.cAlternateFileName, sizeof(szFileName));
 	}
 
@@ -50,24 +45,18 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 
 
 
-bool WFindFile::next()
-{
-	if (!FindNextFile(hFind, &ffdata))
-	{
+bool WFindFile::next() {
+	if (!FindNextFile(hFind, &ffdata)) {
 		return false;
 	}
 
-	if (hFind == INVALID_HANDLE_VALUE)
-	{
+	if (hFind == INVALID_HANDLE_VALUE) {
 		return false;
 	}
 
-	if (ffdata.cAlternateFileName[0] == '\0')
-	{
+	if (ffdata.cAlternateFileName[0] == '\0') {
 		strncpy(szFileName,ffdata.cFileName, sizeof(szFileName));
-	}
-	else
-	{
+	} else {
 		strncpy(szFileName,ffdata.cAlternateFileName, sizeof(szFileName));
 	}
 
@@ -77,22 +66,19 @@ bool WFindFile::next()
 }
 
 
-bool WFindFile::close()
-{
+bool WFindFile::close() {
 	__close();
 	FindClose(hFind);
 	return true;
 }
 
 
-bool WFindFile::IsDirectory()
-{
-    return ( IsFile() ) ? false : true;
+bool WFindFile::IsDirectory() {
+	return ( IsFile() ) ? false : true;
 }
 
 
-bool WFindFile::IsFile()
-{
-    return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
+bool WFindFile::IsFile() {
+	return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
 }
 

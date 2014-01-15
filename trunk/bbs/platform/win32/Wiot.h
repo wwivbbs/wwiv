@@ -27,79 +27,78 @@
 #if defined( _WIN32 )
 extern "C"
 {
-    #include <winsock2.h>
+#include <winsock2.h>
 }
 #endif // _WIN32
 
 
-class WIOTelnet : public WComm
-{
-public:
-    static const char CHAR_TELNET_OPTION_IAC;
-    static const int  TELNET_OPTION_IAC;
-    static const int  TELNET_OPTION_NOP;
-    static const int  TELNET_OPTION_BRK;
+class WIOTelnet : public WComm {
+  public:
+	static const char CHAR_TELNET_OPTION_IAC;
+	static const int  TELNET_OPTION_IAC;
+	static const int  TELNET_OPTION_NOP;
+	static const int  TELNET_OPTION_BRK;
 
-    static const int  TELNET_OPTION_WILL;
-    static const int  TELNET_OPTION_WONT;
-    static const int  TELNET_OPTION_DO;
-    static const int  TELNET_OPTION_DONT;
+	static const int  TELNET_OPTION_WILL;
+	static const int  TELNET_OPTION_WONT;
+	static const int  TELNET_OPTION_DO;
+	static const int  TELNET_OPTION_DONT;
 
-    static const int TELNET_SB;
-    static const int TELNET_SE;
+	static const int TELNET_SB;
+	static const int TELNET_SE;
 
-    static const int TELNET_OPTION_BINARY;
-    static const int TELNET_OPTION_ECHO;
-    static const int TELNET_OPTION_RECONNECTION;
-    static const int TELNET_OPTION_SUPPRESSS_GA;
-    static const int TELNET_OPTION_TERMINAL_TYPE;
-    static const int TELNET_OPTION_WINDOW_SIZE;
-    static const int TELNET_OPTION_TERMINAL_SPEED;
-    static const int TELNET_OPTION_LINEMODE;
+	static const int TELNET_OPTION_BINARY;
+	static const int TELNET_OPTION_ECHO;
+	static const int TELNET_OPTION_RECONNECTION;
+	static const int TELNET_OPTION_SUPPRESSS_GA;
+	static const int TELNET_OPTION_TERMINAL_TYPE;
+	static const int TELNET_OPTION_WINDOW_SIZE;
+	static const int TELNET_OPTION_TERMINAL_SPEED;
+	static const int TELNET_OPTION_LINEMODE;
 
-public:
-    WIOTelnet( unsigned int nHandle );
-    virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
-    virtual unsigned int open();
-    virtual void close( bool bIsTemporary );
-    virtual unsigned int putW(unsigned char ch);
-    virtual unsigned char getW();
-    virtual bool dtr(bool raise);
-    virtual void flushOut();
-    virtual void purgeOut();
-    virtual void purgeIn();
-    virtual unsigned int put(unsigned char ch);
-    virtual char peek();
-    virtual unsigned int read(char *buffer, unsigned int count);
-    virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false);
-    virtual bool carrier();
-    virtual bool incoming();
-    virtual void StopThreads();
-    virtual void StartThreads();
-    virtual ~WIOTelnet();
-    virtual unsigned int GetHandle() const;
-    virtual unsigned int GetDoorHandle() const;
+  public:
+	WIOTelnet( unsigned int nHandle );
+	virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
+	virtual unsigned int open();
+	virtual void close( bool bIsTemporary );
+	virtual unsigned int putW(unsigned char ch);
+	virtual unsigned char getW();
+	virtual bool dtr(bool raise);
+	virtual void flushOut();
+	virtual void purgeOut();
+	virtual void purgeIn();
+	virtual unsigned int put(unsigned char ch);
+	virtual char peek();
+	virtual unsigned int read(char *buffer, unsigned int count);
+	virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false);
+	virtual bool carrier();
+	virtual bool incoming();
+	virtual void StopThreads();
+	virtual void StartThreads();
+	virtual ~WIOTelnet();
+	virtual unsigned int GetHandle() const;
+	virtual unsigned int GetDoorHandle() const;
 
 
-public:
-    static void InitializeWinsock();
+  public:
+	static void InitializeWinsock();
 
-private:
-    void HandleTelnetIAC( unsigned char nCmd, unsigned char nParam );
-    void AddStringToInputBuffer( int nStart, int nEnd, char *pszBuffer );
-    void AddCharToInputBuffer( char ch );
+  private:
+	void HandleTelnetIAC( unsigned char nCmd, unsigned char nParam );
+	void AddStringToInputBuffer( int nStart, int nEnd, char *pszBuffer );
+	void AddCharToInputBuffer( char ch );
 
-private:
-    static void InboundTelnetProc(void *pTelnet);
+  private:
+	static void InboundTelnetProc(void *pTelnet);
 
-protected:
+  protected:
 	std::queue<char> m_inputQueue;
-    HANDLE m_hInBufferMutex;
-    SOCKET m_hSocket;
-    SOCKET m_hDuplicateSocket;
+	HANDLE m_hInBufferMutex;
+	SOCKET m_hSocket;
+	SOCKET m_hDuplicateSocket;
 	HANDLE m_hReadThread;
-    HANDLE m_hReadStopEvent;
-    bool   m_bThreadsStarted;
+	HANDLE m_hReadStopEvent;
+	bool   m_bThreadsStarted;
 
 };
 

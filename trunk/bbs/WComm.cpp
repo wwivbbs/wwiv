@@ -35,65 +35,58 @@
 
 char WComm::m_szErrorText[8192];
 
-int WComm::GetComPort() const
-{
-    return m_ComPort;
+int WComm::GetComPort() const {
+	return m_ComPort;
 }
 
 
-void WComm::SetComPort(int nNewPort)
-{
-    m_ComPort = nNewPort;
+void WComm::SetComPort(int nNewPort) {
+	m_ComPort = nNewPort;
 }
 
-const char* WComm::GetLastErrorText()
-{
+const char* WComm::GetLastErrorText() {
 #if defined ( _WIN32 )
-    LPVOID lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER |
-        FORMAT_MESSAGE_FROM_SYSTEM |
-        FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL,
-        GetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-        (LPTSTR) &lpMsgBuf,
-        0,
-        NULL
-        );
-    strcpy(m_szErrorText, (LPCTSTR)lpMsgBuf);
-    LocalFree( lpMsgBuf );
-    return static_cast<const char *>( m_szErrorText );
+	LPVOID lpMsgBuf;
+	FormatMessage(
+	    FORMAT_MESSAGE_ALLOCATE_BUFFER |
+	    FORMAT_MESSAGE_FROM_SYSTEM |
+	    FORMAT_MESSAGE_IGNORE_INSERTS,
+	    NULL,
+	    GetLastError(),
+	    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+	    (LPTSTR) &lpMsgBuf,
+	    0,
+	    NULL
+	);
+	strcpy(m_szErrorText, (LPCTSTR)lpMsgBuf);
+	LocalFree( lpMsgBuf );
+	return static_cast<const char *>( m_szErrorText );
 #else
-    return NULL;
+	return NULL;
 #endif
 }
 
 
-WComm* WComm::CreateComm( bool bUseSockets, unsigned int nHandle )
-{
+WComm* WComm::CreateComm( bool bUseSockets, unsigned int nHandle ) {
 #if defined ( _WIN32 )
-    if ( bUseSockets )
-    {
-        return new WIOTelnet( nHandle );
-    }
-    else
-    {
-        return new WIOSerial( nHandle );
-    }
+	if ( bUseSockets ) {
+		return new WIOTelnet( nHandle );
+	} else {
+		return new WIOSerial( nHandle );
+	}
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
-    return new WIOUnix();
-/*
+	return new WIOUnix();
+	/*
 #elif defined ( __APPLE__ )
-    if ( bUseSockets )
-    {
-        //return new WIOTelnet( nHandle );
-    }
-    else
-    {
-        //return new WIOSerial( nHandle );
-    }
-*/
+	if ( bUseSockets )
+	{
+		//return new WIOTelnet( nHandle );
+	}
+	else
+	{
+		//return new WIOSerial( nHandle );
+	}
+	*/
 #elif defined ( __OS2 )
 #error "You must implement the stuff to write with!!!"
 #endif

@@ -23,42 +23,34 @@
 #include <iostream>
 #include <cstring>
 
-WInternalTelnetServer::WInternalTelnetServer( Runnable* pRunnable ) : m_pRunnable( pRunnable ), hSocketHandle( INVALID_SOCKET )
-{
-    WIOTelnet::InitializeWinsock();
+WInternalTelnetServer::WInternalTelnetServer( Runnable* pRunnable ) : m_pRunnable( pRunnable ), hSocketHandle( INVALID_SOCKET ) {
+	WIOTelnet::InitializeWinsock();
 }
 
 
-WInternalTelnetServer::~WInternalTelnetServer()
-{
+WInternalTelnetServer::~WInternalTelnetServer() {
 }
 
 
-void WInternalTelnetServer::CreateListener()
-{
-    int nRet = SOCKET_ERROR;
+void WInternalTelnetServer::CreateListener() {
+	int nRet = SOCKET_ERROR;
 
-    // Start Listening Thread Socket
-    SOCKET hSock = socket( AF_INET, SOCK_STREAM, 0 );
-    if ( hSock == INVALID_SOCKET )
-    {
-        std::cout << "Error Creating Listener socket..\r\n";
-    }
-    else
-    {
-        SOCKADDR_IN pstSockName;
-        pstSockName.sin_addr.s_addr = ADDR_ANY;
-        pstSockName.sin_family = PF_INET;
-        pstSockName.sin_port = htons( 23 );
-        nRet = bind( hSock, reinterpret_cast<LPSOCKADDR>( &pstSockName ), sizeof( SOCKADDR_IN ) );
-        if ( nRet == SOCKET_ERROR )
-        {
+	// Start Listening Thread Socket
+	SOCKET hSock = socket( AF_INET, SOCK_STREAM, 0 );
+	if ( hSock == INVALID_SOCKET ) {
+		std::cout << "Error Creating Listener socket..\r\n";
+	} else {
+		SOCKADDR_IN pstSockName;
+		pstSockName.sin_addr.s_addr = ADDR_ANY;
+		pstSockName.sin_family = PF_INET;
+		pstSockName.sin_port = htons( 23 );
+		nRet = bind( hSock, reinterpret_cast<LPSOCKADDR>( &pstSockName ), sizeof( SOCKADDR_IN ) );
+		if ( nRet == SOCKET_ERROR ) {
 			int nBindErrCode = WSAGetLastError();
-            std::cout << "error " << nBindErrCode << " binding socket\r\n";
-			switch ( nBindErrCode )
-			{
+			std::cout << "error " << nBindErrCode << " binding socket\r\n";
+			switch ( nBindErrCode ) {
 			case WSANOTINITIALISED:
-                std::cout << "WSANOTINITIALISED";
+				std::cout << "WSANOTINITIALISED";
 				break;
 			case WSAENETDOWN:
 				std::cout << "WSAENETDOWN";
@@ -91,63 +83,56 @@ void WInternalTelnetServer::CreateListener()
 				std::cout << "*unknown error*";
 				break;
 			}
-        }
-        else
-        {
-            nRet = listen( hSock, 5 );
-            if ( nRet == SOCKET_ERROR )
-            {
-                std::cout << "Error listening on socket\r\n";
-            }
-        }
-    }
+		} else {
+			nRet = listen( hSock, 5 );
+			if ( nRet == SOCKET_ERROR ) {
+				std::cout << "Error listening on socket\r\n";
+			}
+		}
+	}
 
-    if ( nRet == SOCKET_ERROR )
-    {
-        closesocket( hSock );
-        hSock = INVALID_SOCKET;
-        std::cout << "Unable to initilize Listening Socket!\r\n";
-        WSACleanup();
-        exit( 1 );
-    }
-    hSocketHandle = hSock;
+	if ( nRet == SOCKET_ERROR ) {
+		closesocket( hSock );
+		hSock = INVALID_SOCKET;
+		std::cout << "Unable to initilize Listening Socket!\r\n";
+		WSACleanup();
+		exit( 1 );
+	}
+	hSocketHandle = hSock;
 }
 
 
-void WInternalTelnetServer::RunTelnetServer()
-{
-    SOCKET hSock;
-    SOCKADDR_IN lpstName;
-    int AddrLen = sizeof( SOCKADDR_IN );
+void WInternalTelnetServer::RunTelnetServer() {
+	SOCKET hSock;
+	SOCKADDR_IN lpstName;
+	int AddrLen = sizeof( SOCKADDR_IN );
 
-    CreateListener();
+	CreateListener();
 
-    if( hSocketHandle != INVALID_SOCKET )
-    {
-        std::cout << "Press control-c to exit\r\n\n";
-        std::cout << "Waiting for socket connection...\r\n\n";
-        hSock = accept( hSocketHandle, reinterpret_cast<LPSOCKADDR>( &lpstName ), &AddrLen );
-        if( hSock != INVALID_SOCKET )
-        {
-            char buffer[20];
-            _snprintf( buffer, sizeof( buffer ), "-H%u", hSock );
-            char **szParameters;
-            szParameters = new char *[3];
-            szParameters[0] = new char [1];
-            szParameters[1] = new char [20];
-            szParameters[2] = new char [20];
+	if( hSocketHandle != INVALID_SOCKET ) {
+		std::cout << "Press control-c to exit\r\n\n";
+		std::cout << "Waiting for socket connection...\r\n\n";
+		hSock = accept( hSocketHandle, reinterpret_cast<LPSOCKADDR>( &lpstName ), &AddrLen );
+		if( hSock != INVALID_SOCKET ) {
+			char buffer[20];
+			_snprintf( buffer, sizeof( buffer ), "-H%u", hSock );
+			char **szParameters;
+			szParameters = new char *[3];
+			szParameters[0] = new char [1];
+			szParameters[1] = new char [20];
+			szParameters[2] = new char [20];
 
-            strcpy( szParameters[0], "" );
-            strcpy( szParameters[1], buffer );
-            strcpy( szParameters[2], "-XT" );
+			strcpy( szParameters[0], "" );
+			strcpy( szParameters[1], buffer );
+			strcpy( szParameters[2], "-XT" );
 
-            m_pRunnable->Run( 3, szParameters );
-            delete [] szParameters[0];
-            delete [] szParameters[1];
-            delete [] szParameters[2];
-            delete [] szParameters;
-        }
-    }
+			m_pRunnable->Run( 3, szParameters );
+			delete [] szParameters[0];
+			delete [] szParameters[1];
+			delete [] szParameters[2];
+			delete [] szParameters;
+		}
+	}
 }
 
 

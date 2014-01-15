@@ -23,61 +23,48 @@
 #include "users.h"
 
 
-void checkUserList()
-{
-    WFile userFile(syscfg.datadir, USER_LST);
-    if(!userFile.Exists())
-    {
-        Print(NOK, true, "%s does not exist.", userFile.GetFullPathName().c_str());
-        giveUp();
-    }
-
-    WUserManager userMgr;
-    Print(OK, true, "Checking USER.LST... found %d user records.", userMgr.GetNumberOfUserRecords());
-
-    Print(OK, true, "TBD: Check for trashed user recs.");
-    if(userMgr.GetNumberOfUserRecords() > syscfg.maxusers)
-    {
-        Print(OK, true, "Might be too many.");
-	maybeGiveUp();
-    }
-    else
-    {
-        Print(OK, true, "Reasonable number.");
-    }
-
-    for(int i = 0; i < userMgr.GetNumberOfUserRecords(); i++)
-    {
-        WUser user;
-	userMgr.ReadUser(&user, i);
-	printf("User: '%s' '%s' %s\n", user.GetName(), user.GetPassword(), user.IsUserDeleted() ? "true" : "false");
-	user.FixUp();
-	userMgr.WriteUser(&user, i);
-    }
-
-    Print(OK, true, "Checking NAMES.LST");
-    WFile nameFile(syscfg.datadir, NAMES_LST);
-    if(!nameFile.Exists())
-    {
-        Print(NOK, true, "%s does not exist, regenerating", nameFile.GetFullPathName().c_str());
-    }
-    else
-    {
-        if(nameFile.Open(WFile::modeReadOnly | WFile::modeBinary))
-	{
-	    unsigned long size = nameFile.GetLength();
-	    unsigned int recs = size / sizeof(smalrec);
-	    if(recs != status.users)
-	    {
-	        status.users = recs;
-		Print(NOK, true, "STATUS.DAT contained an incorrect user count.");
-	    }
-	    else
-	    {
-		Print(OK, true, "status.users = %d", status.users);
-	    }
+void checkUserList() {
+	WFile userFile(syscfg.datadir, USER_LST);
+	if(!userFile.Exists()) {
+		Print(NOK, true, "%s does not exist.", userFile.GetFullPathName().c_str());
+		giveUp();
 	}
-	nameFile.Close();
-    }
-    
+
+	WUserManager userMgr;
+	Print(OK, true, "Checking USER.LST... found %d user records.", userMgr.GetNumberOfUserRecords());
+
+	Print(OK, true, "TBD: Check for trashed user recs.");
+	if(userMgr.GetNumberOfUserRecords() > syscfg.maxusers) {
+		Print(OK, true, "Might be too many.");
+		maybeGiveUp();
+	} else {
+		Print(OK, true, "Reasonable number.");
+	}
+
+	for(int i = 0; i < userMgr.GetNumberOfUserRecords(); i++) {
+		WUser user;
+		userMgr.ReadUser(&user, i);
+		printf("User: '%s' '%s' %s\n", user.GetName(), user.GetPassword(), user.IsUserDeleted() ? "true" : "false");
+		user.FixUp();
+		userMgr.WriteUser(&user, i);
+	}
+
+	Print(OK, true, "Checking NAMES.LST");
+	WFile nameFile(syscfg.datadir, NAMES_LST);
+	if(!nameFile.Exists()) {
+		Print(NOK, true, "%s does not exist, regenerating", nameFile.GetFullPathName().c_str());
+	} else {
+		if(nameFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+			unsigned long size = nameFile.GetLength();
+			unsigned int recs = size / sizeof(smalrec);
+			if(recs != status.users) {
+				status.users = recs;
+				Print(NOK, true, "STATUS.DAT contained an incorrect user count.");
+			} else {
+				Print(OK, true, "status.users = %d", status.users);
+			}
+		}
+		nameFile.Close();
+	}
+
 }

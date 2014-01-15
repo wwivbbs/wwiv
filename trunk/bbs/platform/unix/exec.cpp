@@ -31,43 +31,36 @@ int UnixSpawn (char *pszCommand, char* environ[]);
 // Implementation
 //
 
-int ExecExternalProgram( const std::string commandLine, int flags )
-{
-    (void)flags;
+int ExecExternalProgram( const std::string commandLine, int flags ) {
+	(void)flags;
 
-	if (ok_modem_stuff)
-    {
+	if (ok_modem_stuff) {
 		GetSession()->remoteIO()->close( true );
 	}
 
-    char s[256];
-    strcpy(s, commandLine.c_str());
-    int i = UnixSpawn(s, NULL);
+	char s[256];
+	strcpy(s, commandLine.c_str());
+	int i = UnixSpawn(s, NULL);
 
 	// reengage comm stuff
-	if (ok_modem_stuff)
-    {
+	if (ok_modem_stuff) {
 		GetSession()->remoteIO()->open();
 		GetSession()->remoteIO()->dtr( true );
-    }
+	}
 
-    return i;
+	return i;
 }
 
 
-int UnixSpawn (char *pszCommand, char* environ[])
-{
-	if (pszCommand == 0)
-	{
+int UnixSpawn (char *pszCommand, char* environ[]) {
+	if (pszCommand == 0) {
 		return 1;
 	}
 	int pid = fork();
-	if (pid == -1)
-	{
+	if (pid == -1) {
 		return -1;
 	}
-	if (pid == 0)
-	{
+	if (pid == 0) {
 		char *argv[4];
 		argv[0] = "/bin/sh";
 		argv[1] = "-c";
@@ -77,18 +70,13 @@ int UnixSpawn (char *pszCommand, char* environ[])
 		exit(127);
 	}
 
-	for( ;; )
-	{
+	for( ;; ) {
 		int nStatusCode = 1;
-		if (waitpid(pid, &nStatusCode, 0) == -1)
-		{
-			if (errno != EINTR)
-			{
+		if (waitpid(pid, &nStatusCode, 0) == -1) {
+			if (errno != EINTR) {
 				return -1;
 			}
-		}
-		else
-		{
+		} else {
 			return nStatusCode;
 		}
 	}
