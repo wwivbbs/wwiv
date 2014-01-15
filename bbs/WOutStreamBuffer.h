@@ -32,13 +32,12 @@
 #include <streambuf>
 #include <ios>
 
-class WOutStreamBuffer : public std::streambuf
-{
-public:
-    WOutStreamBuffer();
-    ~WOutStreamBuffer();
-    virtual std::ostream::int_type overflow( std::ostream::int_type c );
-    virtual std::streamsize xsputn( const char *pszText, std::streamsize numChars );
+class WOutStreamBuffer : public std::streambuf {
+  public:
+	WOutStreamBuffer();
+	~WOutStreamBuffer();
+	virtual std::ostream::int_type overflow( std::ostream::int_type c );
+	virtual std::streamsize xsputn( const char *pszText, std::streamsize numChars );
 };
 
 
@@ -51,80 +50,84 @@ public:
 class WComm;
 class WLocalIO;
 
-class WOutStream : public std::ostream
-{
-protected:
-    WOutStreamBuffer buf;
-    WLocalIO *m_pLocalIO;
-    WComm *m_pComm;
+class WOutStream : public std::ostream {
+  protected:
+	WOutStreamBuffer buf;
+	WLocalIO *m_pLocalIO;
+	WComm *m_pComm;
 
-public:
-    WOutStream() :
+  public:
+	WOutStream() :
 #if defined(_WIN32)
 		buf(),
 #endif
-    std::ostream( &buf )
-    {
-        init( &buf );
-    }
-    virtual ~WOutStream() {}
+		std::ostream( &buf ) {
+		init( &buf );
+	}
+	virtual ~WOutStream() {}
 
-    void SetLocalIO( WLocalIO *pLocalIO ) { m_pLocalIO = pLocalIO; }
-    WLocalIO* localIO() { return m_pLocalIO; }
+	void SetLocalIO( WLocalIO *pLocalIO ) {
+		m_pLocalIO = pLocalIO;
+	}
+	WLocalIO* localIO() {
+		return m_pLocalIO;
+	}
 
-    void SetComm( WComm *pComm ) { m_pComm = pComm; }
-    WComm* remoteIO() { return m_pComm; }
+	void SetComm( WComm *pComm ) {
+		m_pComm = pComm;
+	}
+	WComm* remoteIO() {
+		return m_pComm;
+	}
 
-    void Color(int wwivColor);
-    void ResetColors();
-    void GotoXY(int x, int y);
-    void NewLine(int nNumLines = 1);
-    void BackSpace();
-    /* This sets the current color (both locally and remotely) to that
-     * specified (in IBM format).
-     */
-    void SystemColor( int nColor );
-    void DisplayLiteBar(const char *fmt,...);
-    /** Backspaces from the current cursor position to the beginning of a line */
-    void BackLine();
+	void Color(int wwivColor);
+	void ResetColors();
+	void GotoXY(int x, int y);
+	void NewLine(int nNumLines = 1);
+	void BackSpace();
+	/* This sets the current color (both locally and remotely) to that
+	 * specified (in IBM format).
+	 */
+	void SystemColor( int nColor );
+	void DisplayLiteBar(const char *fmt,...);
+	/** Backspaces from the current cursor position to the beginning of a line */
+	void BackLine();
 
-    /**
-     * Moves the cursor to the end of the line using ANSI sequences.  If the user
-     * does not have ansi, this this function does nothing.
-     */
-    void ClearEOL();
+	/**
+	 * Moves the cursor to the end of the line using ANSI sequences.  If the user
+	 * does not have ansi, this this function does nothing.
+	 */
+	void ClearEOL();
 
-    /**
-     * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
-     */
-    void ClearScreen();
+	/**
+	 * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
+	 */
+	void ClearScreen();
 
-    /**
-     * This will make a reverse-video prompt line i characters long, repositioning
-     * the cursor at the beginning of the input prompt area.  Of course, if the
-     * user does not want ansi, this routine does nothing.
-     */
-    void ColorizedInputField( int nNumberOfChars );
+	/**
+	 * This will make a reverse-video prompt line i characters long, repositioning
+	 * the cursor at the beginning of the input prompt area.  Of course, if the
+	 * user does not want ansi, this routine does nothing.
+	 */
+	void ColorizedInputField( int nNumberOfChars );
 
-    /**
-     * This function outputs a string of characters to the screen (and remotely
-     * if applicable).  The com port is also checked first to see if a remote
-     * user has hung up
-     */
-    int  Write(const char *pszText );
+	/**
+	 * This function outputs a string of characters to the screen (and remotely
+	 * if applicable).  The com port is also checked first to see if a remote
+	 * user has hung up
+	 */
+	int  Write(const char *pszText );
 
-    int  WriteFormatted(const char *fmt,...);
+	int  WriteFormatted(const char *fmt,...);
 };
 
-namespace wwiv
-{
-    template<class charT, class traits>
-    std::basic_ostream<charT, traits>&
-    endl (std::basic_ostream<charT, traits>& strm )
-    {
-        strm.write( "\r\n", 2 );
-        return strm;
-    }
+namespace wwiv {
+template<class charT, class traits>
+std::basic_ostream<charT, traits>&
+endl (std::basic_ostream<charT, traits>& strm ) {
+	strm.write( "\r\n", 2 );
+	return strm;
+}
 }
 
 #if defined(_MSC_VER)

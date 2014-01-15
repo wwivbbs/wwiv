@@ -22,10 +22,9 @@
 #include "wwiv.h"
 
 
-void WWIV_RebootComputer()
-{
-    // Note: We don't allow this on WIN32, so this method
-    // does not do anything.
+void WWIV_RebootComputer() {
+	// Note: We don't allow this on WIN32, so this method
+	// does not do anything.
 }
 
 

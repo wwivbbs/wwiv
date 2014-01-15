@@ -27,36 +27,32 @@
 
 #include <string>
 
-namespace wwiv
-{
-	namespace stringUtils
-	{
-		std::string::size_type FormatString( std::string& str, const char *pszFormattedText, ... );
-        int GetStringLength( const char * pszString );
-		bool IsEquals( const char *pszString1, const char *pszString2 );
-		bool IsEqualsIgnoreCase( const char *pszString1, const char *pszString2 );
-        int  StringCompareIgnoreCase( const char *pszString1, const char *pszString2 );
-        int  StringCompare( const char *pszString1, const char *pszString2 );
-        short StringToShort( const char *pszString );
-        unsigned short StringToUnsignedShort( const char *pszString );
-        char StringToChar( const char *pszString );
-        unsigned char StringToUnsignedChar( const char *pszString );
-	}
+namespace wwiv {
+namespace stringUtils {
+std::string::size_type FormatString( std::string& str, const char *pszFormattedText, ... );
+int GetStringLength( const char * pszString );
+bool IsEquals( const char *pszString1, const char *pszString2 );
+bool IsEqualsIgnoreCase( const char *pszString1, const char *pszString2 );
+int  StringCompareIgnoreCase( const char *pszString1, const char *pszString2 );
+int  StringCompare( const char *pszString1, const char *pszString2 );
+short StringToShort( const char *pszString );
+unsigned short StringToUnsignedShort( const char *pszString );
+char StringToChar( const char *pszString );
+unsigned char StringToUnsignedChar( const char *pszString );
+}
 
-	template<class _Ty>
-		const _Ty UpperCase(const _Ty a)
-	{
-		int nRet = ::toupper( a );
-		return static_cast< _Ty >( nRet );
-	}
+template<class _Ty>
+const _Ty UpperCase(const _Ty a) {
+	int nRet = ::toupper( a );
+	return static_cast< _Ty >( nRet );
+}
 
 
-	template<class _Ty>
-		const _Ty LowerCase(const _Ty a)
-	{
-		int nRet = ::tolower( a );
-		return static_cast< _Ty >( nRet );
-	}
+template<class _Ty>
+const _Ty LowerCase(const _Ty a) {
+	int nRet = ::tolower( a );
+	return static_cast< _Ty >( nRet );
+}
 
 
 }
@@ -111,7 +107,7 @@ std::string properize( const std::string text );
 #define WWIV_STRLWR( s ) strlwr( s )
 #define WWIV_STRICMP( a, b ) strcasecmp( a, b )
 #define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
-#endif 
+#endif
 
 
 #endif // __INCLUDED_WStringUtils_H__

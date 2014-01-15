@@ -22,67 +22,60 @@
 
 WFile hLogFile;
 
-char* szLogTypeArray[] =
-{
-   "+ ",
-   "! ",
-   "? ",
-   0
+char* szLogTypeArray[] = {
+	"+ ",
+	"! ",
+	"? ",
+	0
 };
 
-void Print(int nType, bool bLogIt, char* szText, ...)
-{
-   char szBuffer[256];
-   va_list ap;
+void Print(int nType, bool bLogIt, char* szText, ...) {
+	char szBuffer[256];
+	va_list ap;
 
-   va_start(ap, szText);
-   vsprintf(szBuffer, szText, ap);
-   va_end(ap);
-   printf("%s%s\n", szLogTypeArray[nType], szBuffer);
+	va_start(ap, szText);
+	vsprintf(szBuffer, szText, ap);
+	va_end(ap);
+	printf("%s%s\n", szLogTypeArray[nType], szBuffer);
 
-   if (bLogIt && hLogFile.IsOpen())
-   {
-      struct tm *time_now;
-      time_t secs_now;
-      char str[81];
-      char szBuf[512];
-      time(&secs_now);
-      time_now = localtime(&secs_now);
-      strftime(str, 80, "%H:%M:%S", time_now);
-      sprintf(szBuf, "%s%s  %s\n", szLogTypeArray[nType], str, szBuffer);
-      hLogFile.Write(szBuf, strlen(szBuf));
-   }
+	if (bLogIt && hLogFile.IsOpen()) {
+		struct tm *time_now;
+		time_t secs_now;
+		char str[81];
+		char szBuf[512];
+		time(&secs_now);
+		time_now = localtime(&secs_now);
+		strftime(str, 80, "%H:%M:%S", time_now);
+		sprintf(szBuf, "%s%s  %s\n", szLogTypeArray[nType], str, szBuffer);
+		hLogFile.Write(szBuf, strlen(szBuf));
+	}
 }
 
-bool OpenLogFile(char* szFileName)
-{
-   struct tm *time_now;
-   time_t secs_now;
-   char str[81];
-   char szBuf[512];
+bool OpenLogFile(char* szFileName) {
+	struct tm *time_now;
+	time_t secs_now;
+	char str[81];
+	char szBuf[512];
 
-   hLogFile.SetName(szFileName);
-   if(!hLogFile.Open(WFile::modeReadWrite | WFile::modeCreateFile))
-   {
-      Print(NOK, false, "Cannot open Log File %s", szFileName);
-      return false;
-   }
+	hLogFile.SetName(szFileName);
+	if(!hLogFile.Open(WFile::modeReadWrite | WFile::modeCreateFile)) {
+		Print(NOK, false, "Cannot open Log File %s", szFileName);
+		return false;
+	}
 
-   _tzset();
-   time(&secs_now);
-   time_now = localtime(&secs_now);
-   strftime(str, 80, "%a %d %b %Y", time_now);
-   sprintf(szBuf, "\n----------  %s, fix %s\n", str, wwiv_version);
-   hLogFile.Write(szBuf, strlen(szBuf));
+	_tzset();
+	time(&secs_now);
+	time_now = localtime(&secs_now);
+	strftime(str, 80, "%a %d %b %Y", time_now);
+	sprintf(szBuf, "\n----------  %s, fix %s\n", str, wwiv_version);
+	hLogFile.Write(szBuf, strlen(szBuf));
 
-   return true;
+	return true;
 }
 
 
-void CloseLogFile()
-{
-   if (hLogFile.IsOpen())
-   {
-      hLogFile.Close();
-   }
+void CloseLogFile() {
+	if (hLogFile.IsOpen()) {
+		hLogFile.Close();
+	}
 }

@@ -29,14 +29,13 @@
  *  host - host system of sub, or 0 if locally hosted
  *  stype - string sub type (up to 7 chars)
  */
-struct xtrasubsnetrec
-{
-    long flags;
-    short net_num;
-    unsigned short type;
-    short host;
-    short category;
-    char stype[8];
+struct xtrasubsnetrec {
+	long flags;
+	short net_num;
+	unsigned short type;
+	short host;
+	short category;
+	char stype[8];
 };
 
 
@@ -51,13 +50,12 @@ struct xtrasubsnetrec
  *  num_nets - # records in "nets" field
  *  nets - pointer to network info for sub
  */
-struct xtrasubsrec
-{
-    long flags;
-    char desc[61];
-    short num_nets;
-    short num_nets_max;
-    xtrasubsnetrec *nets;
+struct xtrasubsrec {
+	long flags;
+	char desc[61];
+	short num_nets;
+	short num_nets_max;
+	xtrasubsnetrec *nets;
 };
 
 #define XTRA_MALLOCED         0x80000000    /* "nets" is malloced */

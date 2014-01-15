@@ -24,18 +24,17 @@
 
 class Runnable;
 
-class WInternalTelnetServer
-{
-private:
-    Runnable* m_pRunnable;
-    SOCKET hSocketHandle;
+class WInternalTelnetServer {
+  private:
+	Runnable* m_pRunnable;
+	SOCKET hSocketHandle;
 
-    void CreateListener();
-public:
-    WInternalTelnetServer( Runnable* pRunnable );
-    virtual ~WInternalTelnetServer();
+	void CreateListener();
+  public:
+	WInternalTelnetServer( Runnable* pRunnable );
+	virtual ~WInternalTelnetServer();
 
-    void RunTelnetServer();
+	void RunTelnetServer();
 };
 
 

@@ -20,103 +20,86 @@
 #include "wwiv.h"
 
 
-void add_phone_number( int usernum, const char *phone )
-{
-	if (strstr(phone, "000-"))
-	{
+void add_phone_number( int usernum, const char *phone ) {
+	if (strstr(phone, "000-")) {
 		return;
 	}
 
-    WFile phoneFile( syscfg.datadir, PHONENUM_DAT );
-    if ( !phoneFile.Open( WFile::modeReadWrite | WFile::modeAppend | WFile::modeBinary | WFile::modeCreateFile,
-                          WFile::shareUnknown, WFile::permReadWrite ) )
-	{
+	WFile phoneFile( syscfg.datadir, PHONENUM_DAT );
+	if ( !phoneFile.Open( WFile::modeReadWrite | WFile::modeAppend | WFile::modeBinary | WFile::modeCreateFile,
+	                      WFile::shareUnknown, WFile::permReadWrite ) ) {
 		return;
 	}
 
 	phonerec p;
-    p.usernum = static_cast<short>( usernum );
+	p.usernum = static_cast<short>( usernum );
 	strcpy( reinterpret_cast<char*>( p.phone ), phone );
-    phoneFile.Write( &p, sizeof( phonerec ) );
-    phoneFile.Close();
+	phoneFile.Write( &p, sizeof( phonerec ) );
+	phoneFile.Close();
 }
 
 
-void delete_phone_number( int usernum, const char *phone )
-{
-    WFile phoneFile( syscfg.datadir, PHONENUM_DAT );
-    if ( !phoneFile.Open( WFile::modeReadWrite | WFile::modeBinary ) )
-	{
+void delete_phone_number( int usernum, const char *phone ) {
+	WFile phoneFile( syscfg.datadir, PHONENUM_DAT );
+	if ( !phoneFile.Open( WFile::modeReadWrite | WFile::modeBinary ) ) {
 		return;
 	}
-    long lFileSize = phoneFile.GetLength();
+	long lFileSize = phoneFile.GetLength();
 	int nNumRecords = static_cast<int>( lFileSize / sizeof( phonerec ) );
 	phonerec *p = static_cast<phonerec *>( BbsAllocA( lFileSize ) );
 	WWIV_ASSERT(p);
-	if (p == NULL)
-	{
+	if (p == NULL) {
 		return;
 	}
-    phoneFile.Read( p, lFileSize );
-    phoneFile.Close();
-    int i;
-	for (i = 0; i < nNumRecords; i++)
-	{
+	phoneFile.Read( p, lFileSize );
+	phoneFile.Close();
+	int i;
+	for (i = 0; i < nNumRecords; i++) {
 		if ( p[i].usernum == usernum &&
-             wwiv::stringUtils::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) )
-		{
+		        wwiv::stringUtils::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) ) {
 			break;
 		}
 	}
-	if (i < nNumRecords)
-	{
-		for (int i1 = i; i1 < nNumRecords; i1++)
-		{
+	if (i < nNumRecords) {
+		for (int i1 = i; i1 < nNumRecords; i1++) {
 			p[i1] = p[i1 + 1];
 		}
 		--nNumRecords;
-        phoneFile.Delete();
-        phoneFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
-        phoneFile.Write( p, static_cast<long>( nNumRecords * sizeof( phonerec ) ) );
-        phoneFile.Close();
+		phoneFile.Delete();
+		phoneFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite );
+		phoneFile.Write( p, static_cast<long>( nNumRecords * sizeof( phonerec ) ) );
+		phoneFile.Close();
 	}
 	BbsFreeMemory( p );
 }
 
 
-int find_phone_number(const char *phone)
-{
-    WFile phoneFile( syscfg.datadir, PHONENUM_DAT );
-    if ( !phoneFile.Open( WFile::modeReadWrite | WFile::modeBinary ) )
-	{
+int find_phone_number(const char *phone) {
+	WFile phoneFile( syscfg.datadir, PHONENUM_DAT );
+	if ( !phoneFile.Open( WFile::modeReadWrite | WFile::modeBinary ) ) {
 		return 0;
 	}
-    long lFileSize = phoneFile.GetLength();
+	long lFileSize = phoneFile.GetLength();
 	int nNumRecords = static_cast<int>( lFileSize / sizeof( phonerec ) );
 	phonerec *p = static_cast<phonerec *>( BbsAllocA( lFileSize ) );
 	WWIV_ASSERT(p);
-	if (p == NULL)
-	{
+	if (p == NULL) {
 		return 0;
 	}
-    phoneFile.Read( p, lFileSize );
-    phoneFile.Close();
-    int i = 0;
-	for (i = 0; i < nNumRecords; i++)
-	{
-		if ( wwiv::stringUtils::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) )
-		{
-        	WUser user;
-            GetApplication()->GetUserManager()->ReadUser( &user, p[i].usernum );
-            if ( !user.IsUserDeleted() )
-			{
+	phoneFile.Read( p, lFileSize );
+	phoneFile.Close();
+	int i = 0;
+	for (i = 0; i < nNumRecords; i++) {
+		if ( wwiv::stringUtils::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) ) {
+			WUser user;
+			GetApplication()->GetUserManager()->ReadUser( &user, p[i].usernum );
+			if ( !user.IsUserDeleted() ) {
 				break;
 			}
 		}
 	}
 	BbsFreeMemory(p);
-	if (i < nNumRecords)
-	{
+	if (i < nNumRecords) {
 		return p[i].usernum;
 	}
 	return 0;

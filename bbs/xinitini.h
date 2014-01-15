@@ -135,8 +135,7 @@
 #define INI_STR_NEW_SCAN_AT_LOGIN		132
 
 
-static const char* INI_OPTIONS_ARRAY[] =
-{
+static const char* INI_OPTIONS_ARRAY[] = {
 	"// entry #0.. ignore *",   // 0
 	"//---SYSTEM OPTIONS---*",
 	"SPAWNOPT",
@@ -250,21 +249,21 @@ static const char* INI_OPTIONS_ARRAY[] =
 	"AUTO_USER_PURGE",          // 110
 	"NO_PURGE_SL",
 	"NO_PURGE_SL",
-    "",
-    "",
-    "",							// 115
-    "",
-    "",
-    "",
-    "",
-    "",							// 120
-    "",
-    "",
-    "",
-    "",
-    "//--- New WWIV 5.0 Settings ---", // 125
-    "BEGINDAYNODENUMBER",       // 126
-    "INTERNALZMODEM",			// 127
+	"",
+	"",
+	"",							// 115
+	"",
+	"",
+	"",
+	"",
+	"",							// 120
+	"",
+	"",
+	"",
+	"",
+	"//--- New WWIV 5.0 Settings ---", // 125
+	"BEGINDAYNODENUMBER",       // 126
+	"INTERNALZMODEM",			// 127
 	"EXEC_LOGSYNCFOSS",			// 128
 	"EXEC_USECWAITFORIDLE",		// 129
 	"EXEC_CHILDWAITTIME",		// 130

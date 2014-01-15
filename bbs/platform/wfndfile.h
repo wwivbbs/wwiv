@@ -62,9 +62,8 @@
 #undef GetFullPathName
 #endif // _WIN32
 
-class WFindFile
-{
-protected:
+class WFindFile {
+  protected:
 	char szFileName[MAX_PATH];
 	char szFileSpec[MAX_PATH];
 	long lFileSize;
@@ -72,13 +71,18 @@ protected:
 	unsigned char nFileType;
 	bool bIsOpen;
 
-	void __open(const char * pszFileSpec, unsigned int nTypeMask)
-	{
+	void __open(const char * pszFileSpec, unsigned int nTypeMask) {
 		strcpy(szFileSpec, pszFileSpec);
 		lTypeMask = nTypeMask;
 	}
 
-	void __close() { szFileName[0] = '\0'; szFileSpec[0] = '\0'; lFileSize=0; lTypeMask = 0; bIsOpen=false;}
+	void __close() {
+		szFileName[0] = '\0';
+		szFileSpec[0] = '\0';
+		lFileSize=0;
+		lTypeMask = 0;
+		bIsOpen=false;
+	}
 
 #if defined (_WIN32)
 	WIN32_FIND_DATA ffdata;
@@ -96,15 +100,23 @@ protected:
 #endif
 
 
-public:
-	WFindFile() { this->__close(); }
+  public:
+	WFindFile() {
+		this->__close();
+	}
 	bool open(const char * pszFileSpec, unsigned int nTypeMask);
 	bool next();
 	bool close();
-	virtual ~WFindFile() { close(); }
+	virtual ~WFindFile() {
+		close();
+	}
 
-	const char * GetFileName() { return (const char*) &szFileName; }
-	long GetFileSize() { return lFileSize; }
+	const char * GetFileName() {
+		return (const char*) &szFileName;
+	}
+	long GetFileSize() {
+		return lFileSize;
+	}
 	bool IsDirectory();
 	bool IsFile();
 };
@@ -113,8 +125,7 @@ public:
 /**
  * Bit-mapped values for what WFindFile is searching
  */
-enum WFindFileTypeMask
-{
+enum WFindFileTypeMask {
 	WFINDFILE_FILES = 0x01,
 	WFINDFILE_DIRS	= 0x02
 };

@@ -36,39 +36,30 @@
 #define TIOCSETA TCSETS
 #endif  // TIOCSETA
 
-void WIOUnix::set_terminal( bool initMode )
-{
+void WIOUnix::set_terminal( bool initMode ) {
 	static struct termios foo;
 	static struct termios boo;
 
-	if ( initMode )
-	{
+	if ( initMode ) {
 		tcgetattr( fileno( stdin ), &foo );
 		memcpy( &boo, &foo, sizeof( struct termios ) );
 		foo.c_lflag &= ~ICANON;
 		tcsetattr( fileno( stdin ), TCSANOW, &foo );
-	}
-	else
-	{
+	} else {
 		tcsetattr( fileno( stdin ), TCSANOW, &boo );
 	}
 }
 
 
-WIOUnix::WIOUnix()
-{
-    tty_open = 0;
-    if ( ttyf != NULL )
-	{
+WIOUnix::WIOUnix() {
+	tty_open = 0;
+	if ( ttyf != NULL ) {
 		return;
 	}
 
-	if ( ( ttyf = fdopen( ::open( TTY, O_RDWR ), "r" ) ) == NULL )
-	{
+	if ( ( ttyf = fdopen( ::open( TTY, O_RDWR ), "r" ) ) == NULL ) {
 		ttyf = stdin;
-	}
-	else
-	{
+	} else {
 		setbuf( ttyf, NULL );
 	}
 
@@ -93,8 +84,7 @@ WIOUnix::WIOUnix()
 }
 
 
-WIOUnix::~WIOUnix()
-{
+WIOUnix::~WIOUnix() {
 	int f = fileno( ttyf );
 
 #ifdef linux
@@ -103,8 +93,7 @@ WIOUnix::~WIOUnix()
 	ioctl( f, TIOCSETA, &ttysav );
 #endif
 
-	if ( ttyf != stdin )
-	{
+	if ( ttyf != stdin ) {
 		fclose( ttyf );
 	}
 
@@ -112,29 +101,24 @@ WIOUnix::~WIOUnix()
 }
 
 
-bool WIOUnix::setup( char parity, int wordlen, int stopbits, unsigned long baud )
-{
-    return true;
+bool WIOUnix::setup( char parity, int wordlen, int stopbits, unsigned long baud ) {
+	return true;
 }
 
-unsigned int WIOUnix::open()
-{
+unsigned int WIOUnix::open() {
 	return 0;
 }
 
-void WIOUnix::close( bool bIsTemporary = false )
-{
-    bIsTemporary = bIsTemporary;
+void WIOUnix::close( bool bIsTemporary = false ) {
+	bIsTemporary = bIsTemporary;
 }
 
-unsigned int WIOUnix::putW( unsigned char ch )
-{
+unsigned int WIOUnix::putW( unsigned char ch ) {
 	::write( fileno( stdout ), &ch, 1 );
 	return 0;
 }
 
-unsigned char WIOUnix::getW()
-{
+unsigned char WIOUnix::getW() {
 	unsigned char ch = 0;
 	int dlay = 0;
 	struct pollfd p;
@@ -142,14 +126,11 @@ unsigned char WIOUnix::getW()
 	p.fd = fileno( stdin );
 	p.events = POLLIN;
 
-	if ( poll( &p, 1, dlay ) )
-	{
-		if ( p.revents & POLLIN )
-		{
+	if ( poll( &p, 1, dlay ) ) {
+		if ( p.revents & POLLIN ) {
 			::read( fileno( stdin ), &ch, 1 );
 			// Don't ask why this needs to be here...but it does
-			if ( ch == SOFTRETURN )
-			{
+			if ( ch == SOFTRETURN ) {
 				ch = RETURN;
 			}
 		}
@@ -158,42 +139,35 @@ unsigned char WIOUnix::getW()
 }
 
 
-bool WIOUnix::dtr( bool raise )
-{
+bool WIOUnix::dtr( bool raise ) {
 	return true;
 }
 
 
-void WIOUnix::flushOut()
-{
+void WIOUnix::flushOut() {
 }
 
 
-void WIOUnix::purgeOut()
-{
+void WIOUnix::purgeOut() {
 }
 
 
-void WIOUnix::purgeIn()
-{
+void WIOUnix::purgeIn() {
 }
 
 
-unsigned int WIOUnix::put(unsigned char ch)
-{
+unsigned int WIOUnix::put(unsigned char ch) {
 	return putW( ch );
 }
 
 
-char WIOUnix::peek()
-{
+char WIOUnix::peek() {
 	// This is only called by function rpeek_wfconly which is only
 	// ever invoked from the WFC
 	return 0;
 }
 
-unsigned int WIOUnix::read( char *buffer, unsigned int count )
-{
+unsigned int WIOUnix::read( char *buffer, unsigned int count ) {
 	unsigned char ch = 0;
 	int dlay = 0;
 	struct pollfd p;
@@ -201,14 +175,11 @@ unsigned int WIOUnix::read( char *buffer, unsigned int count )
 	p.fd = fileno( stdin );
 	p.events = POLLIN;
 
-	if ( poll( &p, 1, dlay ) )
-	{
-		if ( p.revents & POLLIN )
-		{
+	if ( poll( &p, 1, dlay ) ) {
+		if ( p.revents & POLLIN ) {
 			::read( fileno( stdin ), &ch, 1 );
 			// Don't ask why this needs to be here...but it does
-			if ( ch == SOFTRETURN )
-			{
+			if ( ch == SOFTRETURN ) {
 				ch = RETURN;
 			}
 		}
@@ -217,50 +188,42 @@ unsigned int WIOUnix::read( char *buffer, unsigned int count )
 }
 
 
-unsigned int WIOUnix::write( const char *buffer, unsigned int count, bool bNoTransation )
-{
+unsigned int WIOUnix::write( const char *buffer, unsigned int count, bool bNoTransation ) {
 	::write( fileno( stdout ), buffer, count );
 	return 0;
 }
 
-bool WIOUnix::carrier()
-{
-    return ( !hangup && !hungup ) ? true : false;
+bool WIOUnix::carrier() {
+	return ( !hangup && !hungup ) ? true : false;
 }
 
 
-bool WIOUnix::incoming()
-{
-  	struct pollfd p;
+bool WIOUnix::incoming() {
+	struct pollfd p;
 
 	p.fd = fileno( stdin );
-  	p.events = POLLIN;
-  	poll( &p, 1, 0 );
-  	if ( p.revents & POLLIN )
-    {
+	p.events = POLLIN;
+	poll( &p, 1, 0 );
+	if ( p.revents & POLLIN ) {
 		return true;
 	}
 	return false;
 }
 
 
-void WIOUnix::StopThreads()
-{
+void WIOUnix::StopThreads() {
 }
 
 
-void WIOUnix::StartThreads()
-{
+void WIOUnix::StartThreads() {
 }
 
 
-unsigned int WIOUnix::GetHandle() const
-{
-    // Is this needed or should we just return 0?
-    return fileno( stdout );
+unsigned int WIOUnix::GetHandle() const {
+	// Is this needed or should we just return 0?
+	return fileno( stdout );
 }
 
-unsigned int WIOUnix::GetDoorHandle() const
-{
-    return GetHandle();
+unsigned int WIOUnix::GetDoorHandle() const {
+	return GetHandle();
 }
