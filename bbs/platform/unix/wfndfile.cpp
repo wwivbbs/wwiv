@@ -38,26 +38,23 @@ long lTypeMask;
 //
 // Local functions
 //
-char *getdir_from_file(const char *pszFileName)
-{
-   static char s[256];
-   int i;
+char *getdir_from_file(const char *pszFileName) {
+	static char s[256];
+	int i;
 
-   s[0] = '\0';
-   for (i=strlen(pszFileName); i>-1; i--)
-   {
-      if (pszFileName[i] == '/')
-      {
-        strcpy(s, pszFileName);
-        s[i] = '\0';
-        break;
-      }
-   }
+	s[0] = '\0';
+	for (i=strlen(pszFileName); i>-1; i--) {
+		if (pszFileName[i] == '/') {
+			strcpy(s, pszFileName);
+			s[i] = '\0';
+			break;
+		}
+	}
 
-   if (!s[0]) {
-	   strcpy(s, "./");
-   }
-   return(s);
+	if (!s[0]) {
+		strcpy(s, "./");
+	}
+	return(s);
 }
 
 #if defined ( __APPLE__ )
@@ -66,94 +63,73 @@ int fname_ok( struct dirent *ent )
 int fname_ok( const struct dirent *ent )
 #endif
 {
-    int ok, i;
-    char f[13], *ptr=NULL, s3[13];
-    const char *s1 = fileSpec;
-    const char *s2 = ent->d_name;
+	int ok, i;
+	char f[13], *ptr=NULL, s3[13];
+	const char *s1 = fileSpec;
+	const char *s2 = ent->d_name;
 
-    if( wwiv::stringUtils::IsEquals( s2, "." ) ||
-        wwiv::stringUtils::IsEquals( s2, ".." ) )
-    {
-        return 0;
-    }
+	if( wwiv::stringUtils::IsEquals( s2, "." ) ||
+	        wwiv::stringUtils::IsEquals( s2, ".." ) ) {
+		return 0;
+	}
 
-    if( lTypeMask )
-    {
-        if( ent->d_type & TYPE_DIRECTORY && !( lTypeMask & WFINDFILE_DIRS ) )
-        {
-            return 0;
-        }
-        else if( ent->d_type & TYPE_FILE && !( lTypeMask & WFINDFILE_FILES ) )
-        {
-            return 0;
-        }
-    }
+	if( lTypeMask ) {
+		if( ent->d_type & TYPE_DIRECTORY && !( lTypeMask & WFINDFILE_DIRS ) ) {
+			return 0;
+		} else if( ent->d_type & TYPE_FILE && !( lTypeMask & WFINDFILE_FILES ) ) {
+			return 0;
+		}
+	}
 
-    ok=1;
+	ok=1;
 
-    f[0] = '\0';
-    if (dos_flag)
-    {
-        if (strlen(s2) > 12 || s2[0] == '.')
-        {
-            return 0;
-        }
+	f[0] = '\0';
+	if (dos_flag) {
+		if (strlen(s2) > 12 || s2[0] == '.') {
+			return 0;
+		}
 
-        strcpy(s3, s2);
-        if (strlen(s3) < 12 && (ptr=strchr(s3, '.')) != NULL)
-        {
-            *ptr = '\0';
-            strcpy(f, s3);
-            for (i=strlen(f); i<8; i++)
-            {
-                f[i] = '?';
-            }
+		strcpy(s3, s2);
+		if (strlen(s3) < 12 && (ptr=strchr(s3, '.')) != NULL) {
+			*ptr = '\0';
+			strcpy(f, s3);
+			for (i=strlen(f); i<8; i++) {
+				f[i] = '?';
+			}
 
-            f[i] = '.';
-            f[++i] = '\0';
-            strcat(f, ptr+1 );
+			f[i] = '.';
+			f[++i] = '\0';
+			strcat(f, ptr+1 );
 
-            if ( strlen(f) < 12 )
-            {
-                memset( &f[strlen(f)], 32, 12-strlen( f ) );
-            }
+			if ( strlen(f) < 12 ) {
+				memset( &f[strlen(f)], 32, 12-strlen( f ) );
+			}
 
-            f[12] = '\0';
-        }
-        else
-        {
-            if ( ptr == NULL )
-            {
-                return 0;
-            }
-        }
-    }
+			f[12] = '\0';
+		} else {
+			if ( ptr == NULL ) {
+				return 0;
+			}
+		}
+	}
 
-    if (!dos_flag)
-    {
-        for (i=0; i<255 && ok; i++)
-        {
-            if ((s1[i]!=s2[i]) && (s1[i]!='?') && (s2[i]!='?'))
-            {
-                ok=0;
-            }
-        }
-    }
-    else
-    {
-        for (i=0; i<12 && ok; i++)
-        {
-            if (s1[i]!=f[i])
-            {
-                if (s1[i] != '?')
-                {
-                    ok=0;
-                }
-            }
-        }
-    }
+	if (!dos_flag) {
+		for (i=0; i<255 && ok; i++) {
+			if ((s1[i]!=s2[i]) && (s1[i]!='?') && (s2[i]!='?')) {
+				ok=0;
+			}
+		}
+	} else {
+		for (i=0; i<12 && ok; i++) {
+			if (s1[i]!=f[i]) {
+				if (s1[i] != '?') {
+					ok=0;
+				}
+			}
+		}
+	}
 
-    return ok;
+	return ok;
 }
 
 
@@ -163,8 +139,7 @@ int fname_ok( const struct dirent *ent )
 //
 //
 
-bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
-{
+bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
 	char szFileName[MAX_PATH];
 	char szDirectoryName[MAX_PATH];
 	unsigned int i, f, laststar;
@@ -175,22 +150,15 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 	strcpy(szDirectoryName, getdir_from_file(pszFileSpec));
 	strcpy(szFileName, stripfn(pszFileSpec));
 
-    if ( wwiv::stringUtils::IsEquals( szFileName, "*.*" )  ||
-         wwiv::stringUtils::IsEquals( szFileName, "*" ) )
-	{
+	if ( wwiv::stringUtils::IsEquals( szFileName, "*.*" )  ||
+	        wwiv::stringUtils::IsEquals( szFileName, "*" ) ) {
 		memset( szFileSpec, '?', 255 );
-	}
-	else
-	{
+	} else {
 		f = laststar = szFileSpec[0] = 0;
-		for (i=0; i<strlen(szFileName); i++)
-		{
-			if (szFileName[i] == '*')
-			{
-				if (i < 8)
-				{
-					if (strchr(szFileName, '.') != NULL)
-					{
+		for (i=0; i<strlen(szFileName); i++) {
+			if (szFileName[i] == '*') {
+				if (i < 8) {
+					if (strchr(szFileName, '.') != NULL) {
 						dos_flag = 1;
 						memset(&szFileSpec[f], '?', 8-i);
 						f += 8-i;
@@ -202,51 +170,42 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 					}
 				}
 
-				do
-				{
-					if (szFileName[i] == '.' && i < strlen(szFileName))
-					{
+				do {
+					if (szFileName[i] == '.' && i < strlen(szFileName)) {
 						szFileSpec[f++] = '.';
 						break;
 					}
 					szFileSpec[f++] = '?';
 				} while (++i < 255);
 
-			}
-			else
-			{
+			} else {
 				szFileSpec[f++] = szFileName[i];
 			}
 		}
 
-		if (strchr(szFileSpec, '.') == NULL && f < 255)
-		{
+		if (strchr(szFileSpec, '.') == NULL && f < 255) {
 			memset(&szFileSpec[f], '?', 255-f);
 		}
 
-		if (strstr(szFileName, ".*") != NULL && dos_flag)
-		{
+		if (strstr(szFileName, ".*") != NULL && dos_flag) {
 			memset(&szFileSpec[9], '?', 3);
 		}
 
-		if (strlen(szFileSpec) < 255 && !dos_flag)
-		{
+		if (strlen(szFileSpec) < 255 && !dos_flag) {
 			memset(&szFileSpec[f], 32, 255-f);
 		}
-		
+
 	}
 	szFileSpec[255] = 0;
 
-	if (dos_flag)
-	{
+	if (dos_flag) {
 		szFileSpec[12] = 0;
 	}
 
 	strcpy(fileSpec, szFileSpec);
 
 	nMatches = scandir(szDirectoryName, &entries, fname_ok, alphasort);
-	if (nMatches < 0)
-	{
+	if (nMatches < 0) {
 		std::cout << "could not open dir '" << szDirectoryName << "'\r\n";
 		perror("scandir");
 		return false;
@@ -257,46 +216,39 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask)
 	return ( nMatches > 0 );
 }
 
-bool WFindFile::next()
-{
-    if(nCurrentEntry >= nMatches)
-    {
-        return false;
-    }
-    struct dirent *entry = entries[nCurrentEntry++];
+bool WFindFile::next() {
+	if(nCurrentEntry >= nMatches) {
+		return false;
+	}
+	struct dirent *entry = entries[nCurrentEntry++];
 
-    strcpy(szFileName, entry->d_name);
-    lFileSize = entry->d_reclen;
-    nFileType = entry->d_type;
-    
-    //std::cout << "wfndfile::next() type=" << (int) entry->d_type  << " name = " << entry->d_name << std::endl;
-    return true;
+	strcpy(szFileName, entry->d_name);
+	lFileSize = entry->d_reclen;
+	nFileType = entry->d_type;
+
+	//std::cout << "wfndfile::next() type=" << (int) entry->d_type  << " name = " << entry->d_name << std::endl;
+	return true;
 }
 
-bool WFindFile::close()
-{
+bool WFindFile::close() {
 	__close();
 	return true;
 }
 
-bool WFindFile::IsDirectory()
-{
-    //std::cout << (int)nFileType << std::endl;
-    if(nCurrentEntry > nMatches)
-    {
-        return( false );
-    }
+bool WFindFile::IsDirectory() {
+	//std::cout << (int)nFileType << std::endl;
+	if(nCurrentEntry > nMatches) {
+		return( false );
+	}
 
-    return (nFileType & DT_DIR);
+	return (nFileType & DT_DIR);
 }
 
-bool WFindFile::IsFile()
-{
-    if(nCurrentEntry > nMatches)
-    {
-        return( false );
-    }
+bool WFindFile::IsFile() {
+	if(nCurrentEntry > nMatches) {
+		return( false );
+	}
 
-    return (nFileType & DT_BLK);
+	return (nFileType & DT_BLK);
 }
 

@@ -24,7 +24,7 @@
 #define __INCLUDED_LISTPLUS_H__
 
 #ifdef _WIN32
- #pragma pack( push,  1)
+#pragma pack( push,  1)
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
@@ -121,42 +121,41 @@ extern int foundany;
 
 
 
-struct listplus_config
-{
-    long fi, lssm, sent;
+struct listplus_config {
+	long fi, lssm, sent;
 
-    // Side menu colors  (fore+(back<<4))
-    short int normal_highlight, normal_menu_item, current_highlight, current_menu_item;
+	// Side menu colors  (fore+(back<<4))
+	short int normal_highlight, normal_menu_item, current_highlight, current_menu_item;
 
-    // Foreground only
-    short int tagged_color, file_num_color;
+	// Foreground only
+	short int tagged_color, file_num_color;
 
-    // Color for 'found' text when searching
-    short int found_fore_color, found_back_color;
+	// Color for 'found' text when searching
+	short int found_fore_color, found_back_color;
 
-    // What file you are on, its color (fore+(back<<4))
-    short int current_file_color;
+	// What file you are on, its color (fore+(back<<4))
+	short int current_file_color;
 
-    // if set to 0, will use the users info, otherwise it will show up to
-    // this variable, no more
-    short int max_screen_lines_to_show;
+	// if set to 0, will use the users info, otherwise it will show up to
+	// this variable, no more
+	short int max_screen_lines_to_show;
 
-    // If users extended description setting is lower than this, it will force
-    // this amount to show (good for people who leave it at 0)
-    short int show_at_least_extended;
+	// If users extended description setting is lower than this, it will force
+	// this amount to show (good for people who leave it at 0)
+	short int show_at_least_extended;
 
-    // Toggles
-    unsigned int edit_enable         : 1;
-    unsigned int request_file        : 1;
-    unsigned int colorize_found_text : 1;
-    unsigned int search_extended_on  : 1;
+	// Toggles
+	unsigned int edit_enable         : 1;
+	unsigned int request_file        : 1;
+	unsigned int colorize_found_text : 1;
+	unsigned int search_extended_on  : 1;
 
-    unsigned int simple_search       : 1;
-    unsigned int no_configuration    : 1;
-    unsigned int check_exist         : 1;
-    unsigned int xxxxxxxxxxxxxxxxx   : 9;
+	unsigned int simple_search       : 1;
+	unsigned int no_configuration    : 1;
+	unsigned int check_exist         : 1;
+	unsigned int xxxxxxxxxxxxxxxxx   : 9;
 
-    short int forced_config;
+	short int forced_config;
 };
 
 

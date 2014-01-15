@@ -35,15 +35,13 @@ const int WTextFile::WAIT_TIME = 10;
  *
  */
 
-FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
-{
-  	FILE *f = fopen(pszFileName, pszFileMode);
+FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode ) {
+	FILE *f = fopen(pszFileName, pszFileMode);
 
-	if (f != NULL)
-  	{
+	if (f != NULL) {
 		flock(fileno(f), (strpbrk(pszFileMode, "wa+")) ? LOCK_EX : LOCK_SH);
 	}
 
-    return f;
+	return f;
 }
 

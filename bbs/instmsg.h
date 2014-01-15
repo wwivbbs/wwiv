@@ -111,18 +111,17 @@
  * Structure for inter-instance messages. File would be comprised of headers
  * using the following structure, followed by the "message" (if any).
  */
-struct inst_msg_header
-{
-    unsigned short
-        main,                    // Message main type
-        minor,                   // Message minor type
-        from_inst,               // Originating instance
-        from_user,               // Originating sess->usernum
-        dest_inst;               // Destination instance
-    unsigned long
-        daten,                   // Secs-since-1970 Unix datetime
-        msg_size,                // Length of the "message"
-        flags;                   // Bit-mapped flags
+struct inst_msg_header {
+	unsigned short
+	main,                    // Message main type
+	minor,                   // Message minor type
+	from_inst,               // Originating instance
+	from_user,               // Originating sess->usernum
+	dest_inst;               // Destination instance
+	unsigned long
+	daten,                   // Secs-since-1970 Unix datetime
+	msg_size,                // Length of the "message"
+	flags;                   // Bit-mapped flags
 };
 
 

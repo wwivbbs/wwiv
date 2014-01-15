@@ -16,8 +16,7 @@ void ProcessLocalKeyDuringZmodem();
 #pragma warning( disable : 4706 4127 4244 4100 )
 #endif
 
-bool NewZModemSendFile( const char *pszFileName )
-{
+bool NewZModemSendFile( const char *pszFileName ) {
 	ZModem info;
 	info.ifd = info.ofd = -1;
 	info.zrinitflags = 0;
@@ -27,12 +26,11 @@ bool NewZModemSendFile( const char *pszFileName )
 	info.windowsize = 0;
 	info.bufsize = 0;
 
-    WWIV_Delay( 500 );	// Kludge -- Byte thinks this may help on his system
+	WWIV_Delay( 500 );	// Kludge -- Byte thinks this may help on his system
 
 	ZmodemTInit( &info );
 	int done = doIO( &info );
-	if ( done != ZmDone )
-	{
+	if ( done != ZmDone ) {
 		//puts( "Returning False from doIO After ZModemTInit\r\n" );
 		return false;
 	}
@@ -44,8 +42,7 @@ bool NewZModemSendFile( const char *pszFileName )
 	int nFilesRem	= 0;
 	int nBytesRem	= 0;
 	done = ZmodemTFile( pszFileName, pszFileName, f0, f1, f2, f3, nFilesRem, nBytesRem, &info );
-	switch ( done )
-	{
+	switch ( done ) {
 	case 0:
 		ZModemWindowXferStatus( "Sending File: %s", pszFileName );
 		break;
@@ -61,32 +58,28 @@ bool NewZModemSendFile( const char *pszFileName )
 		return false;
 	}
 
-	if ( !done )
-	{
+	if ( !done ) {
 		done = doIO( &info );
 #if defined(_DEBUG)
 		zmodemlog( "Returning %d from doIO After ZmodemTFile\r\n", done );
 #endif
 	}
-	if ( done != ZmDone )
-	{
+	if ( done != ZmDone ) {
 		return false;
 	}
 
-    WWIV_Delay( 500 );	// Kludge -- Byte thinks this may help on his system
+	WWIV_Delay( 500 );	// Kludge -- Byte thinks this may help on his system
 
 	done = ZmodemTFinish( &info );
-	if( !done )
-	{
-	  done = doIO( &info ) ;
+	if( !done ) {
+		done = doIO( &info ) ;
 	}
 
 	return ( done == ZmDone ) ? true : false;
 }
 
 
-bool NewZModemReceiveFile( const char *pszFileName )
-{
+bool NewZModemReceiveFile( const char *pszFileName ) {
 	ZModem info;
 	info.ifd = info.ofd = -1;
 	info.zrinitflags = 0;
@@ -99,8 +92,7 @@ bool NewZModemReceiveFile( const char *pszFileName )
 	int nDone = ZmodemRInit( &info );
 	nDone = doIO( &info );
 	bool ret = ( nDone == ZmDone ) ? true : false;
-	if ( ret )
-	{
+	if ( ret ) {
 		char szNewFileName[ MAX_PATH ];
 		char szOldFileName[ MAX_PATH ];
 		strcpy( szNewFileName, pszFileName );
@@ -119,17 +111,16 @@ bool NewZModemReceiveFile( const char *pszFileName )
  * printf sytle output function.  Most code should use this when writing
  * locally + remotely.
  */
-int ZModemWindowStatus(const char *fmt,...)
-{
-    va_list ap;
-    char szBuffer[2048];
+int ZModemWindowStatus(const char *fmt,...) {
+	va_list ap;
+	char szBuffer[2048];
 
-    va_start( ap, fmt );
-    vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
-    va_end( ap );
-    int oldX = GetSession()->localIO()->WhereX();
-    int oldY = GetSession()->localIO()->WhereY();
-    GetSession()->localIO()->LocalXYPrintf( 1, 10, "%s                           ", szBuffer );
+	va_start( ap, fmt );
+	vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
+	va_end( ap );
+	int oldX = GetSession()->localIO()->WhereX();
+	int oldY = GetSession()->localIO()->WhereY();
+	GetSession()->localIO()->LocalXYPrintf( 1, 10, "%s                           ", szBuffer );
 	GetSession()->localIO()->LocalGotoXY( oldX, oldY );
 	return 0;
 }
@@ -139,16 +130,15 @@ int ZModemWindowStatus(const char *fmt,...)
  * printf sytle output function.  Most code should use this when writing
  * locally + remotely.
  */
-int ZModemWindowXferStatus(const char *fmt,...)
-{
-    va_list ap;
-    char szBuffer[2048];
+int ZModemWindowXferStatus(const char *fmt,...) {
+	va_list ap;
+	char szBuffer[2048];
 
-    va_start( ap, fmt );
-    vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
-    va_end( ap );
-    int oldX = GetSession()->localIO()->WhereX();
-    int oldY = GetSession()->localIO()->WhereY();
+	va_start( ap, fmt );
+	vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
+	va_end( ap );
+	int oldX = GetSession()->localIO()->WhereX();
+	int oldY = GetSession()->localIO()->WhereY();
 	GetSession()->localIO()->LocalXYPrintf( 1, 1, "%s                           ", szBuffer );
 	GetSession()->localIO()->LocalGotoXY( oldX, oldY );
 	return 0;
@@ -159,34 +149,28 @@ int ZModemWindowXferStatus(const char *fmt,...)
 // 21 here is just an arbitrary number
 #define ZMODEM_RECEIVE_BUFFER_PADDING 21
 
-int doIO( ZModem *info )
-{
+int doIO( ZModem *info ) {
 	u_char	buffer[ ZMODEM_RECEIVE_BUFFER_SIZE + ZMODEM_RECEIVE_BUFFER_PADDING ];
 	int	done = 0;
 	bool doCancel = false;	// %%TODO: make this true if the user aborts.
 
-	while(!done)
-	{
+	while(!done) {
 		WWIV_Delay( 0 );
-		if ( info->timeout > 0 )
-		{
+		if ( info->timeout > 0 ) {
 			WWIV_Delay( 0 );
 		}
 		time_t tThen = time( NULL );
 #if defined(_DEBUG)
-		if ( info->timeout > 0 )
-		{
+		if ( info->timeout > 0 ) {
 			zmodemlog( "[%ld] Then.  Timeout = %ld\r\n", tThen, info->timeout );
 		}
 #endif
 		// Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
 		// performance < 1k/second vs. 8-9k/second locally
-		while ( ( info->timeout > 0 ) && !GetSession()->remoteIO()->incoming() && !hangup )
-		{
+		while ( ( info->timeout > 0 ) && !GetSession()->remoteIO()->incoming() && !hangup ) {
 			WWIV_Delay( 100 );
 			time_t tNow = time( NULL );
-			if ( ( tNow - tThen ) > info->timeout )
-			{
+			if ( ( tNow - tThen ) > info->timeout ) {
 #if defined(_DEBUG)
 				zmodemlog( "Break: [%ld] Now.  Timedout = %ld.  Time = %d\r\n", tNow, info->timeout, ( tNow - tThen ) );
 #endif
@@ -196,13 +180,11 @@ int doIO( ZModem *info )
 		}
 
 		ProcessLocalKeyDuringZmodem();
-		if ( hangup || hungup )
-		{
+		if ( hangup || hungup ) {
 			return ZmErrCancel;
 		}
 
-		if( doCancel )
-		{
+		if( doCancel ) {
 			ZmodemAbort(info);
 			fprintf(stderr, "cancelled by user\n");
 			//resetCom();
@@ -210,13 +192,10 @@ int doIO( ZModem *info )
 			return 1;
 		}
 		bool bIncomming = GetSession()->remoteIO()->incoming();
-		if( !bIncomming )
-		{
+		if( !bIncomming ) {
 			done = ZmodemTimeout(info);
 			//puts( "ZmodemTimeout\r\n" );
-		}
-		else
-		{
+		} else {
 			int len = GetSession()->remoteIO()->read( reinterpret_cast<char*>( buffer ), ZMODEM_RECEIVE_BUFFER_SIZE );
 			done = ZmodemRcv( buffer, len, info );
 #if defined(_DEBUG)
@@ -229,8 +208,7 @@ int doIO( ZModem *info )
 
 
 
-int ZXmitStr(u_char *str, int len, ZModem *info)
-{
+int ZXmitStr(u_char *str, int len, ZModem *info) {
 #if defined(_DEBUG)
 	zmodemlog( "ZXmitStr Size=[%d]\r\n", len );
 #endif
@@ -239,47 +217,36 @@ int ZXmitStr(u_char *str, int len, ZModem *info)
 }
 
 
-void ZIFlush(ZModem *info)
-{
+void ZIFlush(ZModem *info) {
 	WWIV_Delay( 100 );
 	//puts( "ZIFlush" );
 	//if( connectionType == ConnectionSerial )
 	//  SerialFlush( 0 );
 }
 
-void ZOFlush(ZModem *info)
-{
+void ZOFlush(ZModem *info) {
 	//if( connectionType == ConnectionSerial )
 	//	SerialFlush( 1 );
 }
 
-int ZAttn(ZModem *info)
-{
-	if ( info->attn == NULL )
-	{
+int ZAttn(ZModem *info) {
+	if ( info->attn == NULL ) {
 		return 0;
 	}
 
 	int cnt = 0;
-	for( char *ptr = info->attn; *ptr != '\0'; ++ptr )
-	{
-		if ( ( ( cnt++ ) % 10 ) == 0 )
-		{
+	for( char *ptr = info->attn; *ptr != '\0'; ++ptr ) {
+		if ( ( ( cnt++ ) % 10 ) == 0 ) {
 			WWIV_Delay( 100 );
 		}
-		if ( *ptr == ATTNBRK )
-		{
+		if ( *ptr == ATTNBRK ) {
 			//SerialBreak();
-		}
-		else if ( *ptr == ATTNPSE )
-		{
+		} else if ( *ptr == ATTNPSE ) {
 #if defined(_DEBUG)
 			zmodemlog( "ATTNPSE\r\n" );
 #endif
 			WWIV_Delay( 100 );
-		}
-		else
-		{
+		} else {
 			rputch( *ptr, true );
 			//append_buffer(&outputBuf, ptr, 1, ofd);
 		}
@@ -293,71 +260,67 @@ int ZAttn(ZModem *info)
 * control was hardware, do not change it.  Otherwise, toggle
 * software flow control
 */
-void ZFlowControl(int onoff, ZModem *info)
-{
+void ZFlowControl(int onoff, ZModem *info) {
 	// I don't think there is anything to do here.
 }
 
 
-void ZStatus(int type, int value, char *msg)
-{
-	switch( type )
-	{
-	  case RcvByteCount:
-		  ZModemWindowXferStatus("ZModemWindowXferStatus: %d bytes received", value);
-	    // WindowXferGauge(value);
-	    break;
+void ZStatus(int type, int value, char *msg) {
+	switch( type ) {
+	case RcvByteCount:
+		ZModemWindowXferStatus("ZModemWindowXferStatus: %d bytes received", value);
+		// WindowXferGauge(value);
+		break;
 
-	  case SndByteCount:
-	    ZModemWindowXferStatus("ZModemWindowXferStatus: %d bytes sent", value);
-	    // WindowXferGauge(value);
-	    break;
+	case SndByteCount:
+		ZModemWindowXferStatus("ZModemWindowXferStatus: %d bytes sent", value);
+		// WindowXferGauge(value);
+		break;
 
-	  case RcvTimeout:
-		  ZModemWindowStatus("ZModemWindowStatus: Receiver did not respond, aborting");
-	    break;
+	case RcvTimeout:
+		ZModemWindowStatus("ZModemWindowStatus: Receiver did not respond, aborting");
+		break;
 
-	  case SndTimeout:
-	    ZModemWindowStatus("ZModemWindowStatus: %d send timeouts", value);
-	    break;
+	case SndTimeout:
+		ZModemWindowStatus("ZModemWindowStatus: %d send timeouts", value);
+		break;
 
-	  case RmtCancel:
-	    ZModemWindowStatus("ZModemWindowStatus: Remote end has cancelled");
-	    break;
+	case RmtCancel:
+		ZModemWindowStatus("ZModemWindowStatus: Remote end has cancelled");
+		break;
 
-	  case ProtocolErr:
-	    ZModemWindowStatus("ZModemWindowStatus: Protocol error, header=%d", value);
-	    break;
+	case ProtocolErr:
+		ZModemWindowStatus("ZModemWindowStatus: Protocol error, header=%d", value);
+		break;
 
-	  case RemoteMessage:	/* message from remote end */
-	    ZModemWindowStatus("ZModemWindowStatus: MESSAGE: %s", msg);
-	    break;
+	case RemoteMessage:	/* message from remote end */
+		ZModemWindowStatus("ZModemWindowStatus: MESSAGE: %s", msg);
+		break;
 
-	  case DataErr:		/* data error, val=error count */
-	    ZModemWindowStatus("ZModemWindowStatus: %d data errors", value);
-	    break;
+	case DataErr:		/* data error, val=error count */
+		ZModemWindowStatus("ZModemWindowStatus: %d data errors", value);
+		break;
 
-	  case FileErr:		/* error writing file, val=errno */
-	    ZModemWindowStatus("ZModemWindowStatus: Cannot write file: %s", strerror(errno));
-	    break;
+	case FileErr:		/* error writing file, val=errno */
+		ZModemWindowStatus("ZModemWindowStatus: Cannot write file: %s", strerror(errno));
+		break;
 
-	  case FileBegin:	/* file transfer begins, str=name */
-	    ZModemWindowStatus("ZModemWindowStatus: Transfering %s", msg);
-	    break;
+	case FileBegin:	/* file transfer begins, str=name */
+		ZModemWindowStatus("ZModemWindowStatus: Transfering %s", msg);
+		break;
 
-	  case FileEnd:		/* file transfer ends, str=name */
-	    ZModemWindowStatus("ZModemWindowStatus: %s finished", msg);
-	    break;
+	case FileEnd:		/* file transfer ends, str=name */
+		ZModemWindowStatus("ZModemWindowStatus: %s finished", msg);
+		break;
 
-	  case FileSkip:	/* file transfer ends, str=name */
-	    ZModemWindowStatus("ZModemWindowStatus: Skipping %s", msg);
-	    break;
+	case FileSkip:	/* file transfer ends, str=name */
+		ZModemWindowStatus("ZModemWindowStatus: Skipping %s", msg);
+		break;
 	}
 }
 
 
-FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info)
-{
+FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	char szTempFileName[ MAX_PATH ];
 	sprintf( szTempFileName, "%s%s", syscfgovr.tempdir, pszFileName );
 #if defined(_DEBUG)
@@ -497,8 +460,7 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info)
 }
 
 
-int ZWriteFile( u_char *buffer, int len, FILE *file, ZModem *info )
-{
+int ZWriteFile( u_char *buffer, int len, FILE *file, ZModem *info ) {
 	/* If ZCNL set in info->f0, convert
 	* newlines to unix convention
 	*/
@@ -520,8 +482,7 @@ int ZWriteFile( u_char *buffer, int len, FILE *file, ZModem *info )
 	//  return 0;
 	//}
 	//else
-	if( info->f0 == ZCNL )
-	{
+	if( info->f0 == ZCNL ) {
 #ifdef _WIN32
 		OutputDebugString( "ZCNL\r\n" );
 #endif // _WIN32
@@ -530,8 +491,7 @@ int ZWriteFile( u_char *buffer, int len, FILE *file, ZModem *info )
 }
 
 
-int ZCloseFile(ZModem *info)
-{
+int ZCloseFile(ZModem *info) {
 	fclose( info->file );
 	//	struct timeval tvp[2];
 	//	fclose(info->file);
@@ -551,36 +511,28 @@ int ZCloseFile(ZModem *info)
 }
 
 
-void ZIdleStr(unsigned char *buf, int len, ZModem *info)
-{
+void ZIdleStr(unsigned char *buf, int len, ZModem *info) {
 	//PutTerm(buf, len);
 	return;
 #if 0
 	char szBuffer[ 1024 ];
 	strcpy( szBuffer, reinterpret_cast<const char *>( buf  ) );
 	szBuffer[len] = '\0';
-	if ( strlen( szBuffer ) == 1 )
-	{
+	if ( strlen( szBuffer ) == 1 ) {
 		zmodemlog( "ZIdleStr: #[%d]\r\n", static_cast<unsigned int>( (unsigned char ) szBuffer[0] ) );
-	}
-	else
-	{
+	} else {
 		zmodemlog( "ZIdleStr: [%s]\r\n", szBuffer );
 	}
 #endif
 }
 
 
-void ProcessLocalKeyDuringZmodem()
-{
-	if ( GetSession()->localIO()->LocalKeyPressed() )
-	{
+void ProcessLocalKeyDuringZmodem() {
+	if ( GetSession()->localIO()->LocalKeyPressed() ) {
 		char localChar = GetSession()->localIO()->getchd1();
 		GetSession()->SetLastKeyLocal( true );
-		if (!(g_flags & g_flag_allow_extended))
-		{
-			if (!localChar)
-			{
+		if (!(g_flags & g_flag_allow_extended)) {
+			if (!localChar) {
 				localChar = GetSession()->localIO()->getchd1();
 				GetSession()->localIO()->skey(localChar);
 			}

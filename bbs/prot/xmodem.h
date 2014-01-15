@@ -7,12 +7,12 @@
 #endif
 
 typedef	enum	{
-		  Xmodem=0,
-		  XmodemCrc=1,
-		  WXmodem=2,
-		  Ymodem=3,
-		  YmodemG=4,
-		} Protocol ;
+	Xmodem=0,
+	XmodemCrc=1,
+	WXmodem=2,
+	Ymodem=3,
+	YmodemG=4,
+} Protocol ;
 
 
 extern	bool	xmodem1k ;	/* 1k blocks supported */
@@ -26,7 +26,7 @@ extern	int	xmTimeout ;	/* timeout, seconds */
 extern	char	xmDefPath[MAXPATHLEN] ;		/* default location (ymodem) */
 extern	char	xmFilename[MAXPATHLEN] ;	/* current filename */
 
-	/* error code definitions */
+/* error code definitions */
 
 #define	XmDone		-1	/* done */
 #define	XmErrInt	-2	/* internal error */
@@ -42,13 +42,13 @@ extern	char	xmFilename[MAXPATHLEN] ;	/* current filename */
 #ifdef	__STDC__
 
 extern	int	XmodemRInit(char *path, Protocol p) ;
-					/* start receive protocol */
+/* start receive protocol */
 extern	int	XmodemRRcv(char c) ;	/* call for each received char. */
 extern	int	XmodemRTimeout() ;	/* call if xmTimeout expires */
 extern	int	XmodemRAbort() ;	/* call to abort protocol */
 
 extern	int	XmodemTInit(char *path, Protocol p) ;
-					/* start transmit protocol */
+/* start transmit protocol */
 extern	int	XmodemTRcv(char c) ;	/* call for each received char. */
 extern	int	XmodemTTimeout() ;	/* call if xmTimeout expires */
 extern	int	XmodemTAbort() ;	/* call to abort protocol */
@@ -70,7 +70,7 @@ extern	int	XmodemTAbort() ;	/* call to abort protocol */
 
 
 
-	/* INTERNAL */
+/* INTERNAL */
 
 #define	SOH	1	/* ^A */
 #define	STX	2	/* ^B */
@@ -99,7 +99,7 @@ extern	int	XmodemTAbort() ;	/* call to abort protocol */
 #ifdef	__STDC__
 
 extern	int	sendCancel(), sendFlush(char),
-		sendChr(char), sendStr(char *,int) ;
+        sendChr(char), sendStr(char *,int) ;
 extern	int	calcrc(char *ptr, int count) ;
 extern	int	calcChecksum(char *ptr, int count) ;
 

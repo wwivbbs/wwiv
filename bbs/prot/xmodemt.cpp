@@ -10,11 +10,11 @@ static const char rcsid[] = "$Id$" ;
 /**********
  *
  *
- *	@   @  @   @   @@@   @@@@   @@@@@  @   @  @@@@@  
- *	 @ @   @@ @@  @   @  @   @  @      @@ @@    @    
- *	  @    @ @ @  @   @  @   @  @@@    @ @ @    @    
- *	 @ @   @ @ @  @   @  @   @  @      @ @ @    @    
- *	@   @  @ @ @   @@@   @@@@   @@@@@  @ @ @    @    
+ *	@   @  @   @   @@@   @@@@   @@@@@  @   @  @@@@@
+ *	 @ @   @@ @@  @   @  @   @  @      @@ @@    @
+ *	  @    @ @ @  @   @  @   @  @@@    @ @ @    @
+ *	 @ @   @ @ @  @   @  @   @  @      @ @ @    @
+ *	@   @  @ @ @   @@@   @@@@   @@@@@  @ @ @    @
  *
  *	XMODEMT - transmit side of xmodem protocol
  *
@@ -59,18 +59,18 @@ static const char rcsid[] = "$Id$" ;
 #include "xmodem.h"
 
 
-	bool	fileInfo = False ;
+bool	fileInfo = False ;
 
-	/* TODO: WXmodem, YmodemG */
+/* TODO: WXmodem, YmodemG */
 
 typedef	enum {
-	  File,		/* waiting for initial protocol character */
-	  FileWait,	/* sent file header, waiting for ACK */
-	  Start,	/* waiting to begin */
-	  Wait,		/* sent a packet, waiting for ACK */
-	  Eot,		/* sent an EOT, waiting for ACK */
-	  EndWait,	/* sent null filename, waiting for ACK */
-	} XmodemState ;
+	File,		/* waiting for initial protocol character */
+	FileWait,	/* sent file header, waiting for ACK */
+	Start,	/* waiting to begin */
+	Wait,		/* sent a packet, waiting for ACK */
+	Eot,		/* sent an EOT, waiting for ACK */
+	EndWait,	/* sent null filename, waiting for ACK */
+} XmodemState ;
 
 static	XmodemState	state = Start ;
 static	bool		ymodem ;
@@ -92,8 +92,7 @@ static	int	resendPacket() ;
 
 
 int
-XmodemTInit( char *file, Protocol prot )
-{
+XmodemTInit( char *file, Protocol prot ) {
 	int	err ;
 
 	protocol = prot ;
@@ -103,8 +102,8 @@ XmodemTInit( char *file, Protocol prot )
 	strcpy(xmFilename, file) ;
 
 	if( (ifile = fopen(xmFilename, "r")) == NULL ) {
-	  sendCancel() ;
-	  return XmErrCantOpen ;
+		sendCancel() ;
+		return XmErrCantOpen ;
 	}
 
 	packetId = 1 ;
@@ -118,74 +117,87 @@ XmodemTInit( char *file, Protocol prot )
 
 
 int
-XmodemTRcv(char c)
-{
+XmodemTRcv(char c) {
 	if( c == CAN ) {
-	  if( ifile != NULL )
-	    fclose(ifile) ;
-	  return XmErrCancel ;
+		if( ifile != NULL )
+			fclose(ifile) ;
+		return XmErrCancel ;
 	}
 
 	switch( state ) {
-	  case File:		/* waiting for command, ymodem */
-	    switch( c ) {
-	      case NAK: useCrc = False ; return sendFilename() ;
-	      case 'C': useCrc = True ; return sendFilename() ;
-	    }
-	    break ;
-
-	  case FileWait:	/* waiting for filename ACK */
-	    switch( c ) {
-	      case NAK: return resendPacket() ;
-	      case ACK: state = Start ; return 0 ;
-	    }
-
-	  case Start:		/* waiting for command, data */
-	    switch( c ) {
-	      case NAK:		/* wants checksums */
-		if( !ymodem )
-		  protocol = Xmodem ;
-		useCrc = False ;
-		return sendPacket() ;
-
-	      case 'C': useCrc = True ; return sendPacket() ;
-
-	      case 'W':
-		if( !ymodem ) {
-		  protocol = WXmodem ;
-		  useCrc = True ;
-		  /* TODO: WXmodem */
+	case File:		/* waiting for command, ymodem */
+		switch( c ) {
+		case NAK:
+			useCrc = False ;
+			return sendFilename() ;
+		case 'C':
+			useCrc = True ;
+			return sendFilename() ;
 		}
-	    }
-	    break ;
+		break ;
+
+	case FileWait:	/* waiting for filename ACK */
+		switch( c ) {
+		case NAK:
+			return resendPacket() ;
+		case ACK:
+			state = Start ;
+			return 0 ;
+		}
+
+	case Start:		/* waiting for command, data */
+		switch( c ) {
+		case NAK:		/* wants checksums */
+			if( !ymodem )
+				protocol = Xmodem ;
+			useCrc = False ;
+			return sendPacket() ;
+
+		case 'C':
+			useCrc = True ;
+			return sendPacket() ;
+
+		case 'W':
+			if( !ymodem ) {
+				protocol = WXmodem ;
+				useCrc = True ;
+				/* TODO: WXmodem */
+			}
+		}
+		break ;
 
 
-	  case Wait:		/* waiting for ACK */
-	    switch( c ) {
-	      case ACK: return sendPacket() ;
-	      case NAK: return resendPacket() ;
-	    }
-	    break ;		/* ignore all other characters */
+	case Wait:		/* waiting for ACK */
+		switch( c ) {
+		case ACK:
+			return sendPacket() ;
+		case NAK:
+			return resendPacket() ;
+		}
+		break ;		/* ignore all other characters */
 
-	  case Eot:		/* waiting for ACK after EOT */
-	    switch( c ) {
-	      case ACK: return XmDone ;
-	      case NAK: return sendChr(EOT) ;
-	    }
-	    break ;
+	case Eot:		/* waiting for ACK after EOT */
+		switch( c ) {
+		case ACK:
+			return XmDone ;
+		case NAK:
+			return sendChr(EOT) ;
+		}
+		break ;
 
-	  case EndWait:		/* waiting for filename ACK */
-	    switch( c ) {
-	      case NAK: return resendPacket() ;
-	      case ACK: return XmDone ;
-	    }
+	case EndWait:		/* waiting for filename ACK */
+		switch( c ) {
+		case NAK:
+			return resendPacket() ;
+		case ACK:
+			return XmDone ;
+		}
 	}
 	return 0 ;
 }
 
 static	int
-sendFilename()
-{
+sendFilename() {
 	int	i ;
 	char	*ptr ;
 
@@ -196,14 +208,14 @@ sendFilename()
 	ptr = packet + strlen(packet) + 1 ;
 	/* TODO: get file info */
 	if( fileInfo ) {
-	  sprintf(ptr, "%d %o %o %o", 0,0,0100644) ;
-	  ptr += strlen(ptr) + 1 ;
+		sprintf(ptr, "%d %o %o %o", 0,0,0100644) ;
+		ptr += strlen(ptr) + 1 ;
 	}
 
 	/* TODO: what if file desc buffer too big? */
 
 	if( ptr > packet+128 )
-	  pktLen = 1024 ;
+		pktLen = 1024 ;
 
 	i = pktLen - (ptr-packet) ;
 	bzero(ptr, i) ;
@@ -215,8 +227,7 @@ sendFilename()
 
 
 int
-XmodemTFinish()
-{
+XmodemTFinish() {
 	int	i ;
 	char	*ptr ;
 
@@ -233,8 +244,7 @@ static	char	*bufptr ;
 static	int	buflen = 0 ;
 
 static	int
-sendPacket()
-{
+sendPacket() {
 	int	i ;
 
 	/* This code assumes that a incomplete reads can only happen
@@ -244,28 +254,25 @@ sendPacket()
 
 	state = Wait ;
 
-	if( buflen > 0 )		/* previous incomplete packet */
-	{
-	  memcpy(packet, bufptr, 128) ;
-	  bufptr += 128 ;
-	  if( buflen < 128 )
-	    for(i=buflen; i<128; ++i)
-	      packet[i] = 0x1a ;
-	  buflen -= 128 ;
-	  pktLen = 128 ;
-	  return buildPacket() ;
+	if( buflen > 0 ) {	/* previous incomplete packet */
+		memcpy(packet, bufptr, 128) ;
+		bufptr += 128 ;
+		if( buflen < 128 )
+			for(i=buflen; i<128; ++i)
+				packet[i] = 0x1a ;
+		buflen -= 128 ;
+		pktLen = 128 ;
+		return buildPacket() ;
 	}
 
-	if( (i=fread(packet, 1,pktMaxLen, ifile)) <= 0 )	/* EOF */
-	{
-	  state = Eot ;
-	  return sendChr(EOT) ;
+	if( (i=fread(packet, 1,pktMaxLen, ifile)) <= 0 ) {	/* EOF */
+		state = Eot ;
+		return sendChr(EOT) ;
 	}
 
-	else if( i == pktMaxLen )		/* full buffer */
-	{
-	  pktLen = i ;
-	  return buildPacket() ;
+	else if( i == pktMaxLen ) {	/* full buffer */
+		pktLen = i ;
+		return buildPacket() ;
 	}
 
 	buflen = i ;
@@ -275,8 +282,7 @@ sendPacket()
 }
 
 static	int
-buildPacket()
-{
+buildPacket() {
 	int	i ;
 
 	pktHdr[0] = pktLen == 128 ? SOH : STX ;
@@ -285,46 +291,42 @@ buildPacket()
 	++packetId ;
 
 	if( useCrc ) {
-	  i = calcrc(packet, pktLen) ;
-	  pktCrc[0] = (char) (i>>8) ;
-	  pktCrc[1] = (char) (i & 0xff) ;
-	}
-	else
-	  pktCrc[0] = (char) calcChecksum(packet, pktLen) ;
+		i = calcrc(packet, pktLen) ;
+		pktCrc[0] = (char) (i>>8) ;
+		pktCrc[1] = (char) (i & 0xff) ;
+	} else
+		pktCrc[0] = (char) calcChecksum(packet, pktLen) ;
 
 	return resendPacket() ;
 }
 
 
 static	int
-resendPacket()
-{
+resendPacket() {
 	int	i ;
 
 	(i=sendStr(pktHdr, 3)) || (i=sendStr(packet, pktLen)) ||
-		(i=sendStr(pktCrc, useCrc?2:1)) ;
+	(i=sendStr(pktCrc, useCrc?2:1)) ;
 	return i ;
 }
 
 
 int
-XmodemTTimeout()
-{
+XmodemTTimeout() {
 	switch( state ) {
-	  case File:
-	  case Start:
-	    return XmErrInitTo ;
-	  case FileWait:
-	  case Wait:
-	  case Eot:
-	    return XmErrRcvTo ;
+	case File:
+	case Start:
+		return XmErrInitTo ;
+	case FileWait:
+	case Wait:
+	case Eot:
+		return XmErrRcvTo ;
 	}
 }
 
 int
-XmodemTAbort()
-{
-	  return sendCancel() ;
+XmodemTAbort() {
+	return sendCancel() ;
 }
 
 
@@ -337,8 +339,8 @@ XmodemTAbort()
 
 
 main(argc,argv)
-	int	argc ;
-	char	**argv ;
+int	argc ;
+char	**argv ;
 {
 	struct	termios	old_settings, new_settings ;
 	fd_set	readfds ;
@@ -350,18 +352,18 @@ main(argc,argv)
 	int	filecount = 0 ;
 
 	if( argc < 2 )
-	  exit(2) ;
+		exit(2) ;
 
 	xmTfd = xmRfd = open(argv[1], O_RDWR) ;
 
 	if( xmTfd == -1 )
-	  exit(1) ;
+		exit(1) ;
 
 	tcgetattr(xmTfd,&old_settings) ;
 	new_settings = old_settings ;
 
 	new_settings.c_iflag &=
-	  ~(ISTRIP|INLCR|IGNCR|ICRNL|IUCLC|IXON|IXOFF|IMAXBEL) ;
+	    ~(ISTRIP|INLCR|IGNCR|ICRNL|IUCLC|IXON|IXOFF|IMAXBEL) ;
 	new_settings.c_oflag = 0 ;
 	new_settings.c_cflag = B300|CS8|CREAD|CLOCAL ;
 	new_settings.c_lflag = 0 ;
@@ -373,33 +375,33 @@ main(argc,argv)
 	xmodem1k = 1 ;
 	done = XmodemTInit("xmodem.h", Ymodem) != 0 ;
 
-	while(!done)
-	{
-	  FD_ZERO(&readfds) ;
-	  FD_SET(xmTfd, &readfds) ;
-	  timeout.tv_sec = xmTimeout ;
-	  timeout.tv_usec = 0 ;
-	  i = select(xmTfd+1, &readfds,NULL,NULL, &timeout) ;
-	  if( i<0 )
-	    perror("select") ;
-	  else if( i==0 )
-	    done = XmodemTTimeout() != 0 ;
-	  else {
-	    len = read(xmTfd, buffer, sizeof(buffer)) ;
-	    for(i=0; !done && i<len; ++i)
-	      done = XmodemTRcv(buffer[i]) != 0 ;
-	  }
-	  if( done ) {
-	    switch( ++filecount ) {
-	      case 1:
-		done = XmodemTInit("crc.c", Ymodem) != 0 ;
-		break ;
-	      case 2:
-		done = XmodemTFinish() ;
-		break ;
-	      case 3: break ;
-	    }
-	  }
+	while(!done) {
+		FD_ZERO(&readfds) ;
+		FD_SET(xmTfd, &readfds) ;
+		timeout.tv_sec = xmTimeout ;
+		timeout.tv_usec = 0 ;
+		i = select(xmTfd+1, &readfds,NULL,NULL, &timeout) ;
+		if( i<0 )
+			perror("select") ;
+		else if( i==0 )
+			done = XmodemTTimeout() != 0 ;
+		else {
+			len = read(xmTfd, buffer, sizeof(buffer)) ;
+			for(i=0; !done && i<len; ++i)
+				done = XmodemTRcv(buffer[i]) != 0 ;
+		}
+		if( done ) {
+			switch( ++filecount ) {
+			case 1:
+				done = XmodemTInit("crc.c", Ymodem) != 0 ;
+				break ;
+			case 2:
+				done = XmodemTFinish() ;
+				break ;
+			case 3:
+				break ;
+			}
+		}
 	}
 
 

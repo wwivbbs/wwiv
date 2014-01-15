@@ -32,54 +32,47 @@
  * @param nSize Length of the horizontal bar to display
  * @param nColor Color of the horizontal bar to display
  */
-void DisplayHorizontalBar( int nSize, int nColor )
-{
-    unsigned char ch = ( okansi() ) ? '\xC4' : '-';
-    repeat_char( ch, nSize, nColor );
+void DisplayHorizontalBar( int nSize, int nColor ) {
+	unsigned char ch = ( okansi() ) ? '\xC4' : '-';
+	repeat_char( ch, nSize, nColor );
 }
 
 
 /**
  * Displays some basic user statistics for the current user.
  */
-void YourInfo()
-{
-    GetSession()->bout.ClearScreen();
-    if ( okansi() )
-    {
-        GetSession()->bout.DisplayLiteBar( "[ Your User Information ]" );
-    }
-    else
-    {
-        GetSession()->bout << "|#5Your User Information:\r\n";
-    }
-    GetSession()->bout.NewLine();
+void YourInfo() {
+	GetSession()->bout.ClearScreen();
+	if ( okansi() ) {
+		GetSession()->bout.DisplayLiteBar( "[ Your User Information ]" );
+	} else {
+		GetSession()->bout << "|#5Your User Information:\r\n";
+	}
+	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#9Your name      : |#2" << GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) << wwiv::endl;
 	GetSession()->bout << "|#9Phone number   : |#2" << GetSession()->GetCurrentUser()->GetVoicePhoneNumber() << wwiv::endl;
-    if ( GetSession()->GetCurrentUser()->GetNumMailWaiting() > 0 )
-    {
+	if ( GetSession()->GetCurrentUser()->GetNumMailWaiting() > 0 ) {
 		GetSession()->bout << "|#9Mail Waiting   : |#2" << GetSession()->GetCurrentUser()->GetNumMailWaiting() << wwiv::endl;
-    }
+	}
 	GetSession()->bout << "|#9Security Level : |#2" << GetSession()->GetCurrentUser()->GetSl() << wwiv::endl;
-    if ( GetSession()->GetEffectiveSl() != GetSession()->GetCurrentUser()->GetSl() )
-    {
+	if ( GetSession()->GetEffectiveSl() != GetSession()->GetCurrentUser()->GetSl() ) {
 		GetSession()->bout << "|#1 (temporarily |#2" << GetSession()->GetEffectiveSl() << "|#1)";
-    }
-    GetSession()->bout.NewLine();
+	}
+	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#9Transfer SL    : |#2" << GetSession()->GetCurrentUser()->GetDsl() << wwiv::endl;
-    GetSession()->bout << "|#9Date Last On   : |#2" << GetSession()->GetCurrentUser()->GetLastOn() << wwiv::endl;
-    GetSession()->bout << "|#9Times on       : |#2" << GetSession()->GetCurrentUser()->GetNumLogons() << wwiv::endl;
-    GetSession()->bout << "|#9On today       : |#2" << GetSession()->GetCurrentUser()->GetTimesOnToday() << wwiv::endl;
-    GetSession()->bout << "|#9Messages posted: |#2" << GetSession()->GetCurrentUser()->GetNumMessagesPosted() << wwiv::endl;
-    GetSession()->bout << "|#9E-mail sent    : |#2" << ( GetSession()->GetCurrentUser()->GetNumEmailSent() + GetSession()->GetCurrentUser()->GetNumFeedbackSent() + GetSession()->GetCurrentUser()->GetNumNetEmailSent() );
-    GetSession()->bout << "|#9Time spent on  : |#2" << static_cast<long>( ( GetSession()->GetCurrentUser()->GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ) << " |#9Minutes" << wwiv::endl;
+	GetSession()->bout << "|#9Date Last On   : |#2" << GetSession()->GetCurrentUser()->GetLastOn() << wwiv::endl;
+	GetSession()->bout << "|#9Times on       : |#2" << GetSession()->GetCurrentUser()->GetNumLogons() << wwiv::endl;
+	GetSession()->bout << "|#9On today       : |#2" << GetSession()->GetCurrentUser()->GetTimesOnToday() << wwiv::endl;
+	GetSession()->bout << "|#9Messages posted: |#2" << GetSession()->GetCurrentUser()->GetNumMessagesPosted() << wwiv::endl;
+	GetSession()->bout << "|#9E-mail sent    : |#2" << ( GetSession()->GetCurrentUser()->GetNumEmailSent() + GetSession()->GetCurrentUser()->GetNumFeedbackSent() + GetSession()->GetCurrentUser()->GetNumNetEmailSent() );
+	GetSession()->bout << "|#9Time spent on  : |#2" << static_cast<long>( ( GetSession()->GetCurrentUser()->GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ) << " |#9Minutes" << wwiv::endl;
 
-    // Transfer Area Statistics
-    GetSession()->bout << "|#9Uploads        : |#2" << GetSession()->GetCurrentUser()->GetUploadK() << "|#9k in|#2 " << GetSession()->GetCurrentUser()->GetFilesUploaded() << " |#9files\r\n";
-    GetSession()->bout << "|#9Downloads      : |#2" << GetSession()->GetCurrentUser()->GetDownloadK()<< "|#9k in|#2 " << GetSession()->GetCurrentUser()->GetFilesDownloaded() << " |#9files\r\n";
+	// Transfer Area Statistics
+	GetSession()->bout << "|#9Uploads        : |#2" << GetSession()->GetCurrentUser()->GetUploadK() << "|#9k in|#2 " << GetSession()->GetCurrentUser()->GetFilesUploaded() << " |#9files\r\n";
+	GetSession()->bout << "|#9Downloads      : |#2" << GetSession()->GetCurrentUser()->GetDownloadK()<< "|#9k in|#2 " << GetSession()->GetCurrentUser()->GetFilesDownloaded() << " |#9files\r\n";
 	GetSession()->bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
-    GetSession()->bout.NewLine();
-    pausescr();
+	GetSession()->bout.NewLine();
+	pausescr();
 }
 
 
@@ -87,111 +80,94 @@ void YourInfo()
  * Gets the maximum number of lines allowed for a post by the current user.
  * @return The maximum message length in lines
  */
-int GetMaxMessageLinesAllowed()
-{
-	if ( so() )
-	{
+int GetMaxMessageLinesAllowed() {
+	if ( so() ) {
 		return 120;
 	}
-    return (cs()) ? 100 : 80;
+	return (cs()) ? 100 : 80;
 }
 
 
 /**
  * Allows user to upload a post.
  */
-void upload_post()
-{
-    WFile file( syscfgovr.tempdir, INPUT_MSG );
-    long lMaxBytes = 250 * static_cast<long>( GetMaxMessageLinesAllowed() );
+void upload_post() {
+	WFile file( syscfgovr.tempdir, INPUT_MSG );
+	long lMaxBytes = 250 * static_cast<long>( GetMaxMessageLinesAllowed() );
 
 	GetSession()->bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
-    char ch = '\0';
-    int i = 0;
-    receive_file( file.GetFullPathName().c_str(), &i, &ch, INPUT_MSG, -1 );
-    if ( file.Open( WFile::modeReadOnly | WFile::modeBinary ) )
-    {
-        long lFileSize = file.GetLength();
-        if ( lFileSize > lMaxBytes )
-        {
+	char ch = '\0';
+	int i = 0;
+	receive_file( file.GetFullPathName().c_str(), &i, &ch, INPUT_MSG, -1 );
+	if ( file.Open( WFile::modeReadOnly | WFile::modeBinary ) ) {
+		long lFileSize = file.GetLength();
+		if ( lFileSize > lMaxBytes ) {
 			GetSession()->bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
-            file.Close();
-            file.Delete();
-        }
-        else
-        {
-            file.Close();
-            use_workspace = true;
-            GetSession()->bout << "\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n";
-        }
-    }
-    else
-    {
-        GetSession()->bout << "\r\n|#3Nothing saved.\r\n\n";
-    }
+			file.Close();
+			file.Delete();
+		} else {
+			file.Close();
+			use_workspace = true;
+			GetSession()->bout << "\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n";
+		}
+	} else {
+		GetSession()->bout << "\r\n|#3Nothing saved.\r\n\n";
+	}
 }
 
 
 /**
  * High-level function for sending email.
  */
-void send_email()
-{
-    write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
+void send_email() {
+	write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
 	GetSession()->bout << "\r\n\n|#9Enter user name or number:\r\n:";
-    std::string username;
-    input( username, 75, true );
-    irt[0] = '\0';
-    irt_name[0] = '\0';
-    std::string::size_type atpos = username.find_first_of("@");
-    if ( atpos != std::string::npos && atpos != username.length() && isalpha(username[atpos + 1]) )
-    {
-        if ( username.find("@32767") == std::string::npos )
-        {
-            StringLowerCase(username);
-            username += " @32767";
-        }
-    }
+	std::string username;
+	input( username, 75, true );
+	irt[0] = '\0';
+	irt_name[0] = '\0';
+	std::string::size_type atpos = username.find_first_of("@");
+	if ( atpos != std::string::npos && atpos != username.length() && isalpha(username[atpos + 1]) ) {
+		if ( username.find("@32767") == std::string::npos ) {
+			StringLowerCase(username);
+			username += " @32767";
+		}
+	}
 
-    int nSystemNumber, nUserNumber;
-    parse_email_info(username, &nUserNumber, &nSystemNumber);
-    grab_quotes( NULL, NULL );
-    if ( nUserNumber || nSystemNumber )
-    {
-        email( nUserNumber, nSystemNumber, false, 0 );
-    }
+	int nSystemNumber, nUserNumber;
+	parse_email_info(username, &nUserNumber, &nSystemNumber);
+	grab_quotes( NULL, NULL );
+	if ( nUserNumber || nSystemNumber ) {
+		email( nUserNumber, nSystemNumber, false, 0 );
+	}
 }
 
 /**
  * High-level function for selecting conference type to edit.
  */
-void edit_confs()
-{
-    if (!ValidateSysopPassword())
-    {
-        return;
-    }
+void edit_confs() {
+	if (!ValidateSysopPassword()) {
+		return;
+	}
 
-    while ( !hangup )
-    {
-        GetSession()->bout << "\r\n\n|#5Edit Which Conferences:\r\n\n";
-        GetSession()->bout << "|#21|#9)|#1 Subs\r\n";
-        GetSession()->bout << "|#22|#9)|#1 Dirs\r\n";
-        GetSession()->bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";
-        char ch = onek( "Q12", true );
-        switch (ch)
-        {
-        case '1':
-            conf_edit( CONF_SUBS );
-            break;
-        case '2':
-            conf_edit( CONF_DIRS );
-            break;
-        case 'Q':
-            return;
-        }
-        CheckForHangup();
-    }
+	while ( !hangup ) {
+		GetSession()->bout << "\r\n\n|#5Edit Which Conferences:\r\n\n";
+		GetSession()->bout << "|#21|#9)|#1 Subs\r\n";
+		GetSession()->bout << "|#22|#9)|#1 Dirs\r\n";
+		GetSession()->bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";
+		char ch = onek( "Q12", true );
+		switch (ch) {
+		case '1':
+			conf_edit( CONF_SUBS );
+			break;
+		case '2':
+			conf_edit( CONF_DIRS );
+			break;
+		case 'Q':
+			return;
+		}
+		CheckForHangup();
+	}
 }
 
 /**
@@ -201,77 +177,66 @@ void edit_confs()
  * Users with GetSession()->usernum < 10 who have sysop privs will be listed, so
  * this user can select which sysop to leave feedback to.
  */
-void feedback( bool bNewUserFeedback )
-{
-    int i;
-    char onek_str[20], ch;
+void feedback( bool bNewUserFeedback ) {
+	int i;
+	char onek_str[20], ch;
 
-    irt_name[0] = '\0';
-    grab_quotes( NULL, NULL );
+	irt_name[0] = '\0';
+	grab_quotes( NULL, NULL );
 
-    if ( bNewUserFeedback )
-    {
-        sprintf( irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)", syscfg.maxusers - GetApplication()->GetStatusManager()->GetUserCount() );
-        // We disable the fsed here since it was hanging on some systems.  Not sure why
-        // but it's better to be safe -- Rushfan 2003-12-04
-        email( 1, 0, true, 0, true, false );
-        return;
-    }
-    if ( guest_user )
-    {
-        GetApplication()->GetStatusManager()->RefreshStatusCache();
-        strcpy( irt, "Guest Account Feedback" );
-        email( 1, 0, true, 0, true, true );
-        return;
-    }
-    strcpy( irt, "|#1Feedback" );
-    int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
-    int i1 = 0;
+	if ( bNewUserFeedback ) {
+		sprintf( irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)", syscfg.maxusers - GetApplication()->GetStatusManager()->GetUserCount() );
+		// We disable the fsed here since it was hanging on some systems.  Not sure why
+		// but it's better to be safe -- Rushfan 2003-12-04
+		email( 1, 0, true, 0, true, false );
+		return;
+	}
+	if ( guest_user ) {
+		GetApplication()->GetStatusManager()->RefreshStatusCache();
+		strcpy( irt, "Guest Account Feedback" );
+		email( 1, 0, true, 0, true, true );
+		return;
+	}
+	strcpy( irt, "|#1Feedback" );
+	int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
+	int i1 = 0;
 
-    for ( i = 2; i < 10 && i < nNumUserRecords; i++ )
-    {
-        WUser user;
-        GetApplication()->GetUserManager()->ReadUser( &user, i );
-        if ( ( user.GetSl() == 255 || ( getslrec( user.GetSl() ).ability & ability_cosysop ) ) &&
-            !user.IsUserDeleted() )
-        {
-            i1++;
-        }
-    }
+	for ( i = 2; i < 10 && i < nNumUserRecords; i++ ) {
+		WUser user;
+		GetApplication()->GetUserManager()->ReadUser( &user, i );
+		if ( ( user.GetSl() == 255 || ( getslrec( user.GetSl() ).ability & ability_cosysop ) ) &&
+		        !user.IsUserDeleted() ) {
+			i1++;
+		}
+	}
 
-    if ( !i1 )
-    {
-        i = 1;
-    }
-    else
-    {
-        onek_str[0] = '\0';
-        i1 = 0;
-        GetSession()->bout.NewLine();
-        for ( i = 1; ( i < 10 && i < nNumUserRecords ); i++ )
-        {
-            WUser user;
-            GetApplication()->GetUserManager()->ReadUser( &user, i );
-            if ( ( user.GetSl() == 255 || (getslrec( user.GetSl() ).ability & ability_cosysop ) ) &&
-                 !user.IsUserDeleted() )
-            {
+	if ( !i1 ) {
+		i = 1;
+	} else {
+		onek_str[0] = '\0';
+		i1 = 0;
+		GetSession()->bout.NewLine();
+		for ( i = 1; ( i < 10 && i < nNumUserRecords ); i++ ) {
+			WUser user;
+			GetApplication()->GetUserManager()->ReadUser( &user, i );
+			if ( ( user.GetSl() == 255 || (getslrec( user.GetSl() ).ability & ability_cosysop ) ) &&
+			        !user.IsUserDeleted() ) {
 				GetSession()->bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber( i ) << wwiv::endl;
-                onek_str[i1++] = static_cast< char >( '0' + i );
-            }
-        }
-        onek_str[i1++] = *str_quit;
-        onek_str[i1] = '\0';
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#1Feedback to (" << onek_str << "): ";
-        ch = onek( onek_str, true );
-        if ( ch == *str_quit )
-        {
-            return;
-        }
-        GetSession()->bout.NewLine();
-        i = ch - '0';
-    }
-    email( static_cast< unsigned short >( i ), 0, false, 0, true );
+				onek_str[i1++] = static_cast< char >( '0' + i );
+			}
+		}
+		onek_str[i1++] = *str_quit;
+		onek_str[i1] = '\0';
+		GetSession()->bout.NewLine();
+		GetSession()->bout << "|#1Feedback to (" << onek_str << "): ";
+		ch = onek( onek_str, true );
+		if ( ch == *str_quit ) {
+			return;
+		}
+		GetSession()->bout.NewLine();
+		i = ch - '0';
+	}
+	email( static_cast< unsigned short >( i ), 0, false, 0, true );
 }
 
 
@@ -279,21 +244,18 @@ void feedback( bool bNewUserFeedback )
  * Allows editing of ASCII textfiles. Must have an external editor defined,
  * and toggled for use in defaults.
  */
-void text_edit()
-{
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Enter Filename: ";
-    std::string filename;
-    input( filename, 12, true );
-    if ( filename.find(".log") != std::string::npos || !okfn( filename ) )
-	{
-        return;
+void text_edit() {
+	GetSession()->bout.NewLine();
+	GetSession()->bout << "|#9Enter Filename: ";
+	std::string filename;
+	input( filename, 12, true );
+	if ( filename.find(".log") != std::string::npos || !okfn( filename ) ) {
+		return;
 	}
 	std::stringstream logText;
-    logText << "@ Edited: " << filename;
-    sysoplog( logText.str() );
-    if ( okfsed() )
-	{
+	logText << "@ Edited: " << filename;
+	sysoplog( logText.str() );
+	if ( okfsed() ) {
 		external_edit( filename.c_str(), syscfg.gfilesdir, GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, syscfg.gfilesdir, logText.str().c_str(), MSGED_FLAG_NO_TAGLINE );
 	}
 }

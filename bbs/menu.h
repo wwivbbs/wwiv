@@ -89,96 +89,92 @@
 
 
 
-struct MenuHeader
-{
-  char   szSig[10];      /* Menu Signature */
-  INT16  nHeadBytes;     /* Size of Menu header */
-  INT16  nBodyBytes;     /* Size of Menu Record */
-  char   MISC[50];
+struct MenuHeader {
+	char   szSig[10];      /* Menu Signature */
+	INT16  nHeadBytes;     /* Size of Menu header */
+	INT16  nBodyBytes;     /* Size of Menu Record */
+	char   MISC[50];
 
-  INT16  nVersion;
-  INT16  nEmpty;
-  BYTE   nFlags;
+	INT16  nVersion;
+	INT16  nEmpty;
+	BYTE   nFlags;
 
-  BYTE   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
-  BYTE   nLogging;     /* Types of logging, Key, None, command, desc       */
+	BYTE   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
+	BYTE   nLogging;     /* Types of logging, Key, None, command, desc       */
 
-  BYTE   nForceHelp;   /* force, dont force, on entrance only              */
-  BYTE   nAllowedMenu; /* Can pulldown, regular or both menus be used?     */
+	BYTE   nForceHelp;   /* force, dont force, on entrance only              */
+	BYTE   nAllowedMenu; /* Can pulldown, regular or both menus be used?     */
 
-  BYTE  nTitleColor, nMainBorderColor, nMainBoxColor, nMainTextColor,
-         nMainTextHLColor, nMainSelectedColor, nMainSelectedHLColor;
+	BYTE  nTitleColor, nMainBorderColor, nMainBoxColor, nMainTextColor,
+	      nMainTextHLColor, nMainSelectedColor, nMainSelectedHLColor;
 
-  BYTE  nItemBorderColor, nItemBoxColor, nItemTextColor, nItemTextHLColor,
-         nItemSelectedColor, nItemSelectedHLColor;
+	BYTE  nItemBorderColor, nItemBoxColor, nItemTextColor, nItemTextHLColor,
+	      nItemSelectedColor, nItemSelectedHLColor;
 
-  char   szMenuTitle[21];
-  char   MISC2[60];
-  char   szPassWord[21];     /* required for entry of menu */
-  INT16  nMinSL, nMinDSL;    /* required for entry of menu */
-  UINT16 uAR, uDAR;          /* required for entry of menu */
-  UINT16 uRestrict;          /* not allowed restrictions   */
-  BYTE   nSysop, nCoSysop;   /* Must be either sysop or co */
-  char   MISC3[30];
-  char   szScript[101];      /* Gets executed on entry     */
-  char   szExitScript[101];  /* Executed on rtn from menu  */
+	char   szMenuTitle[21];
+	char   MISC2[60];
+	char   szPassWord[21];     /* required for entry of menu */
+	INT16  nMinSL, nMinDSL;    /* required for entry of menu */
+	UINT16 uAR, uDAR;          /* required for entry of menu */
+	UINT16 uRestrict;          /* not allowed restrictions   */
+	BYTE   nSysop, nCoSysop;   /* Must be either sysop or co */
+	char   MISC3[30];
+	char   szScript[101];      /* Gets executed on entry     */
+	char   szExitScript[101];  /* Executed on rtn from menu  */
 };
 
 
 
-struct MenuRec
-{
-  BYTE nFlags;   /* AFLAG_????? */
+struct MenuRec {
+	BYTE nFlags;   /* AFLAG_????? */
 
-  char szKey[MENU_MAX_KEYS+1];  /* Keystrock to execute menu item   */
-  char szExecute[101];          /* Command to execute               */
-  char szMenuText[41];          /* Menu description                 */
-  char szPDText[41];            /* Pulldown menu text               */
+	char szKey[MENU_MAX_KEYS+1];  /* Keystrock to execute menu item   */
+	char szExecute[101];          /* Command to execute               */
+	char szMenuText[41];          /* Menu description                 */
+	char szPDText[41];            /* Pulldown menu text               */
 
-  char szHelp[81];              /* Help for this item               */
-  char szSysopLog[51];          /* Msg to put in the log            */
+	char szHelp[81];              /* Help for this item               */
+	char szSysopLog[51];          /* Msg to put in the log            */
 
-  char szInstanceMessage[81];
+	char szInstanceMessage[81];
 
-  /* Security */
-  INT16 nMinSL,  iMaxSL;
-  INT16 nMinDSL, iMaxDSL;
-  UINT16 uAR, uDAR;        /* Must match all specified to be able to run     */
-  UINT16 uRestrict;        /* If any of these restrictions, you cant execute */
-  BYTE nSysop, nCoSysop;   /* true and false, does it take a co/sysop to run */
-  char szPassWord[21];
+	/* Security */
+	INT16 nMinSL,  iMaxSL;
+	INT16 nMinDSL, iMaxDSL;
+	UINT16 uAR, uDAR;        /* Must match all specified to be able to run     */
+	UINT16 uRestrict;        /* If any of these restrictions, you cant execute */
+	BYTE nSysop, nCoSysop;   /* true and false, does it take a co/sysop to run */
+	char szPassWord[21];
 
-  INT16 nHide;             /* Hide text from PD/Regular/both or no menus */
-  INT16 nPDFlags;          /* special characteristis for pulldowns       */
+	INT16 nHide;             /* Hide text from PD/Regular/both or no menus */
+	INT16 nPDFlags;          /* special characteristis for pulldowns       */
 
-  char szExtendedHelp[13]; /* filename to detailed help on this item */
+	char szExtendedHelp[13]; /* filename to detailed help on this item */
 
-  char unused_data[79];
+	char unused_data[79];
 
 };
 
 
-struct MenuRecIndex
-{
-  char szKey[MENU_MAX_KEYS+1];
-  INT16 nRec;				/* allows alot of records    */
-  BYTE	nFlags;             /* Quick access to the flags */
+struct MenuRecIndex {
+	char szKey[MENU_MAX_KEYS+1];
+	INT16 nRec;				/* allows alot of records    */
+	BYTE	nFlags;             /* Quick access to the flags */
 };
 
 
-struct MenuInstanceData
-{
-  char szMenu[MAX_PATH];
-  char szPath[MAX_PATH];
-  WFile *pMenuFile;
-  INT16 nAmountRecs;
-  INT16 nFinished;
+struct MenuInstanceData {
+	char szMenu[MAX_PATH];
+	char szPath[MAX_PATH];
+	WFile *pMenuFile;
+	INT16 nAmountRecs;
+	INT16 nFinished;
 
-  INT16 nReload;  /* true if we are going to reload the menus */
+	INT16 nReload;  /* true if we are going to reload the menus */
 
-  char *szPrompt;
-  MenuRecIndex *index;
-  MenuHeader header;   /* Hold header info for current menu set in memory */
+	char *szPrompt;
+	MenuRecIndex *index;
+	MenuHeader header;   /* Hold header info for current menu set in memory */
 
 };
 

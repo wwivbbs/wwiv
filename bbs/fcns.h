@@ -702,8 +702,8 @@ void close_strfiles();
 
 // File: stuffin.cpp
 
-const std::string stuff_in( const std::string commandline, const std::string arg1, 
-			   const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5 );
+const std::string stuff_in( const std::string commandline, const std::string arg1,
+                            const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5 );
 
 
 // File: subacc.cpp

@@ -21,10 +21,9 @@
 #include "wwiv.h"
 
 
-void WWIV_RebootComputer()
-{
-    // Note: We don't allow this on Linux, so this method
-    // does not do anything.
+void WWIV_RebootComputer() {
+	// Note: We don't allow this on Linux, so this method
+	// does not do anything.
 }
 
 

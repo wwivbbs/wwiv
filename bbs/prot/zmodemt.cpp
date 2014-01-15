@@ -202,8 +202,7 @@ extern	char	*hdrnames[];
 
 /* called by user to establish protocol */
 
-int ZmodemTInit( ZModem *info )
-{
+int ZmodemTInit( ZModem *info ) {
 	info->state = TStart;
 	info->Protocol = ZModem::ZMODEM;
 	info->crc32 = 0;
@@ -218,8 +217,7 @@ int ZmodemTInit( ZModem *info )
 	info->interrupt = 0;
 	info->waitflag = 0;
 
-	if( info->packetsize == 0 )
-	{
+	if( info->packetsize == 0 ) {
 		info->packetsize = 1024;
 	}
 
@@ -235,16 +233,13 @@ int ZmodemTInit( ZModem *info )
 
 	/* optional: send "rz\r" to remote end */
 	int err = 0;
-	if( DoInitRZ )
-	{
-		if( (err = ZXmitStr((u_char *)"rz\r", 3, info)) )
-		{
+	if( DoInitRZ ) {
+		if( (err = ZXmitStr((u_char *)"rz\r", 3, info)) ) {
 			return err;
 		}
 	}
 
-	if( (err = ZXmitHdr(ZRQINIT, ZHEX, zeros, info)) ) /* nudge receiver */
-	{
+	if( (err = ZXmitHdr(ZRQINIT, ZHEX, zeros, info)) ) { /* nudge receiver */
 		return err;
 	}
 
@@ -260,8 +255,7 @@ int ZmodemTInit( ZModem *info )
 
 /* called by user to establish Ymodem protocol */
 
-int YmodemTInit( ZModem *info )
-{
+int YmodemTInit( ZModem *info ) {
 	info->state = YTStart;
 	info->Protocol = ZModem::YMODEM;
 	info->errCount = 0;
@@ -270,8 +264,7 @@ int YmodemTInit( ZModem *info )
 	info->windowCount = 0;
 	info->filename = NULL;
 
-	if( info->packetsize != 1024 )
-	{
+	if( info->packetsize != 1024 ) {
 		info->packetsize = 128;
 	}
 
@@ -288,8 +281,7 @@ int YmodemTInit( ZModem *info )
 
 
 /* called by user to establish Xmodem protocol */
-int XmodemTInit( ZModem *info )
-{
+int XmodemTInit( ZModem *info ) {
 	YmodemTInit( info );
 	info->Protocol = ZModem::XMODEM;
 	return 0;
@@ -300,17 +292,15 @@ int XmodemTInit( ZModem *info )
 /* called by user to begin transmission of a file */
 
 int ZmodemTFile(const char	*pszFileName,
-				const char	*pszRemoteFileName,
-				u_int	f0,
-				u_int	f1,
-				u_int	f2,
-				u_int	f3,
-				int	filesRem,
-				int	bytesRem,
-				ZModem	*info )
-{
-	if( pszFileName == NULL || (info->file = fopen(pszFileName, "rb")) == NULL )
-	{
+                const char	*pszRemoteFileName,
+                u_int	f0,
+                u_int	f1,
+                u_int	f2,
+                u_int	f3,
+                int	filesRem,
+                int	bytesRem,
+                ZModem	*info ) {
+	if( pszFileName == NULL || (info->file = fopen(pszFileName, "rb")) == NULL ) {
 		return ZmErrCantOpen;
 	}
 
@@ -325,8 +315,7 @@ int ZmodemTFile(const char	*pszFileName,
 	info->fileFlags[0] = f3;
 	info->offset = info->lastOffset = 0;
 	info->len = info->date = info->fileType = info->mode = 0;
-	if( info->filename != NULL )
-	{
+	if( info->filename != NULL ) {
 		struct stat buf;
 		if( stat(info->filename, &buf) == 0 ) {
 			info->len = buf.st_size;
@@ -339,15 +328,14 @@ int ZmodemTFile(const char	*pszFileName,
 	if( info->Protocol == ZModem::XMODEM )
 		return YSendData(info);
 
-	if( info->Protocol == ZModem::YMODEM )
-	{
+	if( info->Protocol == ZModem::YMODEM ) {
 		return YSendFilename(info);
 	}
 
 	info->state = FileWait;
 #if defined(_DEBUG)
 	zmodemlog("ZmodemTFile[%s]: send ZFILE(%s)\n",
-		sname(info), info->rfilename);
+	          sname(info), info->rfilename);
 #endif
 	return sendFilename(info);
 }
@@ -357,23 +345,22 @@ int ZmodemTFile(const char	*pszFileName,
 /* send ZFILE header and filename & info.  Wait for response
 * from receiver.
 */
-int sendFilename( ZModem *info )
-{
+int sendFilename( ZModem *info ) {
 	u_char	obuf[2048];
 	u_char	*ptr = obuf;
 
 	info->state = FileWait;
 
 	int	err = ZXmitHdr(ZFILE, ZBIN, info->fileFlags, info);
-	if( err )
-	{
+	if( err ) {
 		return err;
 	}
 
 	int i = strlen(info->rfilename);
-	memcpy(ptr, info->rfilename, i+1);  ptr += i+1;
+	memcpy(ptr, info->rfilename, i+1);
+	ptr += i+1;
 	sprintf( reinterpret_cast<char*>( ptr ) , "%d %lo %o 0 %d %d 0", info->len, info->date,
-		info->mode, info->filesRem, info->bytesRem);
+	         info->mode, info->filesRem, info->bytesRem);
 	ptr += strlen( reinterpret_cast<char*>( ptr ) );
 	*ptr++ = '\0';
 
@@ -384,31 +371,25 @@ int sendFilename( ZModem *info )
 
 /* called by user when there are no more files to send */
 
-int ZmodemTFinish( ZModem *info )
-{
-	if( info->Protocol == ZModem::XMODEM )
-	{
+int ZmodemTFinish( ZModem *info ) {
+	if( info->Protocol == ZModem::XMODEM ) {
 		return ZmDone;
 	}
 
-	if( info->Protocol == ZModem::YMODEM )
-	{
+	if( info->Protocol == ZModem::YMODEM ) {
 		return YSendFin(info);
 	}
 
 	info->state = TFinish;
-    if ( info->filename != NULL )
-    {
-        free( info->filename );
-        info->filename = NULL;
-    }
-    if ( info->rfilename != NULL )
-    {
-        free( info->rfilename );
-        info->rfilename = NULL;
-    }
-	if( info->buffer != NULL )
-	{
+	if ( info->filename != NULL ) {
+		free( info->filename );
+		info->filename = NULL;
+	}
+	if ( info->rfilename != NULL ) {
+		free( info->rfilename );
+		info->rfilename = NULL;
+	}
+	if( info->buffer != NULL ) {
 		free( info->buffer );
 		info->buffer = NULL;
 	}
@@ -426,8 +407,7 @@ int ZmodemTFinish( ZModem *info )
 * this can also be an attempt to resync after a protocol
 * failure
 */
-int GotRinit( ZModem *info )
-{
+int GotRinit( ZModem *info ) {
 	info->bufsize = info->hdrData[1] + info->hdrData[2]*256;
 	info->zrinitflags = info->hdrData[4] + info->hdrData[3]*256;
 	info->crc32 = info->zrinitflags & CANFC32;
@@ -479,27 +459,21 @@ int GotRinit( ZModem *info )
 	ZFlowControl(1,info);
 
 	if( (info->zrinitflags & (CANFDX|CANOVIO)) == (CANFDX|CANOVIO) &&
-		(SendSample||SendAttn)  &&
-		info->bufsize == 0 )
-	{
-		if( info->windowsize == 0 )
-		{
+	        (SendSample||SendAttn)  &&
+	        info->bufsize == 0 ) {
+		if( info->windowsize == 0 ) {
 			info->Streaming = ZModem::Full;
-		}
-		else
-		{
+		} else {
 			info->Streaming = ZModem::StrWindow;
 		}
 	}
 
 	else if( (info->zrinitflags & (CANFDX|CANOVIO)) == (CANFDX|CANOVIO) &&
-		info->bufsize == 0 )
-	{
+	         info->bufsize == 0 ) {
 		info->Streaming = ZModem::SlidingWindow;
 	}
 
-	else
-	{
+	else {
 		info->Streaming = ZModem::Segmented;
 	}
 
@@ -507,19 +481,15 @@ int GotRinit( ZModem *info )
 	zmodemlog("GotRinit[%s]\n", sname(info));
 #endif
 
-	if( AlwaysSinit || info->zsinitflags != 0  ||  info->attn != NULL )
-	{
+	if( AlwaysSinit || info->zsinitflags != 0  ||  info->attn != NULL ) {
 		return SendZSInit(info);
-	}
-	else
-	{
+	} else {
 		return ZmDone;	/* caller now calls ZmodemTFile() */
 	}
 }
 
 
-int SendZSInit( ZModem *info )
-{
+int SendZSInit( ZModem *info ) {
 	int	err;
 	const char	*at = (info->attn != NULL) ? info->attn : "";
 	u_char	fbuf[4];
@@ -538,16 +508,14 @@ int SendZSInit( ZModem *info )
 	fbuf[0] = fbuf[1] = fbuf[2] = 0;
 	fbuf[3] = info->zsinitflags;
 	if( (err = ZXmitHdr(ZSINIT, ZBIN, fbuf, info))  ||
-		(err = ZXmitData(ZBIN, strlen(at)+1, ZCRCW, (u_char *)at, info)) )
-	{
+	        (err = ZXmitData(ZBIN, strlen(at)+1, ZCRCW, (u_char *)at, info)) ) {
 		return err;
 	}
 	return 0;
 }
 
 
-int SendFileCrc( ZModem *info )
-{
+int SendFileCrc( ZModem *info ) {
 	u_long	crc = FileCrc(info->filename);
 #if defined(_DEBUG)
 	zmodemlog("SendFileCrc[%s]: %lx\n", sname(info), crc);
@@ -559,13 +527,12 @@ int SendFileCrc( ZModem *info )
 
 /* Utility: start sending data. */
 
-int startFileData( ZModem *info )
-{
+int startFileData( ZModem *info ) {
 	int	err;
 
 	info->offset =
-		info->lastOffset =
-		info->zrposOffset = ZDec4(info->hdrData+1);
+	    info->lastOffset =
+	        info->zrposOffset = ZDec4(info->hdrData+1);
 
 	fseek(info->file, info->offset, 0);
 
@@ -575,8 +542,7 @@ int startFileData( ZModem *info )
 	zmodemlog("startFileData[%s]: %ld\n", sname(info), info->offset);
 #endif
 
-	if( (err = ZXmitHdr(ZDATA, ZBIN, info->hdrData+1, info)) )
-	{
+	if( (err = ZXmitHdr(ZDATA, ZBIN, info->hdrData+1, info)) ) {
 #if defined(_DEBUG)
 		zmodemlog( "startFileData[%s]: return err", sname( info ) );
 #endif
@@ -592,8 +558,7 @@ int startFileData( ZModem *info )
 * sorts of protocol flags
 */
 
-int SendFileData( ZModem *info )
-{
+int SendFileData( ZModem *info ) {
 	info->waitflag = 0;
 	return startFileData(info);
 }
@@ -602,12 +567,10 @@ int SendFileData( ZModem *info )
 * last known receiver offset, and try to send some more
 * data.
 */
-int GotSendAck( ZModem *info )
-{
+int GotSendAck( ZModem *info ) {
 	u_long offset = ZDec4(info->hdrData+1);
 
-	if( offset > info->lastOffset )
-	{
+	if( offset > info->lastOffset ) {
 		info->lastOffset = offset;
 	}
 
@@ -624,12 +587,10 @@ int GotSendAck( ZModem *info )
 * the EOF.
 */
 
-int GotSendDoneAck( ZModem *info )
-{
+int GotSendDoneAck( ZModem *info ) {
 	u_long offset = ZDec4(info->hdrData+1);
 
-	if( offset > info->lastOffset )
-	{
+	if( offset > info->lastOffset ) {
 		info->lastOffset = offset;
 	}
 
@@ -647,8 +608,7 @@ int GotSendDoneAck( ZModem *info )
 * from beginning
 */
 
-int GotSendNak( ZModem *info )
-{
+int GotSendNak( ZModem *info ) {
 	info->offset = info->zrposOffset;
 
 	fseek(info->file, info->offset, 0);
@@ -665,8 +625,7 @@ int GotSendNak( ZModem *info )
 
 /* got a ZSKIP, receiver doesn't want this file.  */
 
-int SkipFile( ZModem *info )
-{
+int SkipFile( ZModem *info ) {
 #if defined(_DEBUG)
 	zmodemlog("SkipFile[%s]\n", sname(info));
 #endif
@@ -679,8 +638,7 @@ int SkipFile( ZModem *info )
 * set new offset and try again
 */
 
-int GotSendPos( ZModem *info )
-{
+int GotSendPos( ZModem *info ) {
 	ZStatus(DataErr, ++info->errCount, NULL);
 	info->waitflag = 1;		/* next pkt should wait, to resync */
 #if defined(_DEBUG)
@@ -696,14 +654,12 @@ int GotSendPos( ZModem *info )
 * data.
 */
 
-int GotSendWaitAck( ZModem *info )
-{
+int GotSendWaitAck( ZModem *info ) {
 	int	err;
 
 	u_long	offset = ZDec4(info->hdrData+1);
 
-	if( offset > info->lastOffset )
-	{
+	if( offset > info->lastOffset ) {
 		info->lastOffset = offset;
 	}
 
@@ -711,8 +667,7 @@ int GotSendWaitAck( ZModem *info )
 	zmodemlog("GotSendWaitAck[%s]\n", sname(info), offset);
 #endif
 
-	if( (err = ZXmitHdr(ZDATA, ZBIN, ZEnc4(info->offset), info)) )
-	{
+	if( (err = ZXmitHdr(ZDATA, ZBIN, ZEnc4(info->offset), info)) ) {
 		return err;
 	}
 
@@ -729,8 +684,7 @@ int GotSendWaitAck( ZModem *info )
 * the buffer.
 */
 
-int SendMoreFileData( ZModem *info )
-{
+int SendMoreFileData( ZModem *info ) {
 	int	type;
 	int	qfull = 0;
 	int	err;
@@ -743,8 +697,7 @@ int SendMoreFileData( ZModem *info )
 	* ZCRCW: CRC next, send ZACK, frame ends, header follows
 	*/
 
-	if( info->interrupt )
-	{
+	if( info->interrupt ) {
 		/* Bugger, receiver sent an interrupt.  Enter a wait state
 		* and see what they want.  Next header *should* be ZRPOS.
 		*/
@@ -759,19 +712,16 @@ int SendMoreFileData( ZModem *info )
 
 	pending = info->offset - info->lastOffset;
 
-	if( info->windowsize != 0 && info->windowsize - pending <= len )
-	{
+	if( info->windowsize != 0 && info->windowsize - pending <= len ) {
 		len = info->windowsize - pending;
 		qfull = 1;
 	}
-	if( info->bufsize != 0  &&  info->bufsize - pending <= len )
-	{
+	if( info->bufsize != 0  &&  info->bufsize - pending <= len ) {
 		len = info->bufsize - pending;
 		qfull = 1;
 	}
 
-	if( len == 0 )
-	{
+	if( len == 0 ) {
 		/* window still full, keep waiting */
 		info->state = SendWait;
 		info->timeout = 60;
@@ -787,35 +737,28 @@ int SendMoreFileData( ZModem *info )
 
 
 	/* find out what kind of packet to send */
-	if( info->waitflag )
-	{
+	if( info->waitflag ) {
 		type = ZCRCW;
 		info->waitflag = 0;
 	}
 #ifdef	COMMENT
-	else if( info->fileEof )
-	{
+	else if( info->fileEof ) {
 		type = ZCRCE;
 	}
 #endif	/* COMMENT */
-	else if( qfull )
-	{
+	else if( qfull ) {
 		type = ZCRCW;
-	}
-	else
-	{
-		switch( info->Streaming )
-		{
+	} else {
+		switch( info->Streaming ) {
 		case ZModem::Full:
-		case ZModem::Segmented: type = ZCRCG; break;
+		case ZModem::Segmented:
+			type = ZCRCG;
+			break;
 
 		case ZModem::StrWindow:
-			if( (info->windowCount += len) < info->windowsize/4 )
-			{
+			if( (info->windowCount += len) < info->windowsize/4 ) {
 				type = ZCRCG;
-			}
-			else
-			{
+			} else {
 				type = ZCRCQ;
 				info->windowCount = 0;
 			}
@@ -840,14 +783,10 @@ int SendMoreFileData( ZModem *info )
 	* full or file is exhausted
 	*/
 
-	while( len > 0  && (c = getc(info->file)) != EOF )
-	{
-		if( !crc32 )
-		{
+	while( len > 0  && (c = getc(info->file)) != EOF ) {
+		if( !crc32 ) {
 			crc = updcrc(c, crc);
-		}
-		else
-		{
+		} else {
 			crc = UPDC32(c, crc);
 		}
 
@@ -858,26 +797,18 @@ int SendMoreFileData( ZModem *info )
 		*/
 		c2 = c & 0177;
 		if( c == ZDLE || c2 == 020 || c2 == 021 || c2 == 023 ||
-			c2 == 0177  ||  c2 == '\r'  ||  c2 == '\n'  ||  c2 == 033  ||
-			c2 == 035  || (c2 < 040 && info->escCtrl) )
-		{
+		        c2 == 0177  ||  c2 == '\r'  ||  c2 == '\n'  ||  c2 == 033  ||
+		        c2 == 035  || (c2 < 040 && info->escCtrl) ) {
 			*ptr++ = ZDLE;
-			if( c == 0177 )
-			{
+			if( c == 0177 ) {
 				*ptr = ZRUB0;
-			}
-			else if( c == 0377 )
-			{
+			} else if( c == 0377 ) {
 				*ptr = ZRUB1;
-			}
-			else
-			{
+			} else {
 				*ptr = c^0100;
 			}
 			len -= 2;
-		}
-		else
-		{
+		} else {
 			*ptr = c;
 			--len;
 		}
@@ -892,40 +823,30 @@ int SendMoreFileData( ZModem *info )
 	* with ZCRCE and append the ZEOF header.  If there isn't room,
 	* we'll have to do a ZCRCW
 	*/
-	if( (info->fileEof = (c == EOF)) )
-	{
-		if( qfull  ||  (info->bufsize != 0 && len < 24) )
-		{
+	if( (info->fileEof = (c == EOF)) ) {
+		if( qfull  ||  (info->bufsize != 0 && len < 24) ) {
 			type = ZCRCW;
-		}
-		else
-		{
+		} else {
 			type = ZCRCE;
 		}
 	}
 
 	*ptr++ = ZDLE;
-	if( !crc32 )
-	{
+	if( !crc32 ) {
 		crc = updcrc(type, crc);
-	}
-	else
-	{
+	} else {
 		crc = UPDC32(type, crc);
 	}
 	*ptr++ = type;
 
-	if( !crc32 )
-	{
-		crc = updcrc(0,crc); crc = updcrc(0,crc);
+	if( !crc32 ) {
+		crc = updcrc(0,crc);
+		crc = updcrc(0,crc);
 		ptr = putZdle( ptr, static_cast<u_char>( ( crc >> 8 ) & 0xff ), info );
 		ptr = putZdle( ptr, static_cast<u_char>( crc & 0xff ), info);
-	}
-	else
-	{
+	} else {
 		crc = ~crc;
-		for(len=4; --len >= 0; crc >>= 8)
-		{
+		for(len=4; --len >= 0; crc >>= 8) {
 			ptr = putZdle( ptr, static_cast<u_char>( crc & 0xff ), info );
 		}
 	}
@@ -935,22 +856,19 @@ int SendMoreFileData( ZModem *info )
 
 	ZStatus(SndByteCount, info->offset, NULL);
 
-	if( (err = ZXmitStr(info->buffer, len, info)) )
-	{
+	if( (err = ZXmitStr(info->buffer, len, info)) ) {
 		return err;
 	}
 
 #ifdef	COMMENT
-	if( (err = ZXmitData(ZBIN, info->buffer, len, type, info)) )
-	{
+	if( (err = ZXmitData(ZBIN, info->buffer, len, type, info)) ) {
 		return err;
 	}
 #endif	/* COMMENT */
 
 	/* finally, do we want to wait after this packet? */
 
-	switch( type )
-	{
+	switch( type ) {
 	case ZCRCE:
 		info->state = SendEof;
 		info->timeout = 60;
@@ -967,20 +885,15 @@ int SendMoreFileData( ZModem *info )
 
 
 #ifdef	COMMENT
-	if( info->fileEof )
-	{
+	if( info->fileEof ) {
 		/* Yes, file is done, send EOF and wait */
 		info->state = SendEof;
 		info->timeout = 60;
 		return ZXmitHdrHex(ZEOF, ZEnc4(info->offset), info);
-	}
-	else if( type == ZCRCW )
-	{
+	} else if( type == ZCRCW ) {
 		info->state = SendWait;
 		info->timeout = 60;
-	}
-	else
-	{
+	} else {
 		info->state = Sending;
 		info->timeout = 0;
 	}
@@ -989,14 +902,12 @@ int SendMoreFileData( ZModem *info )
 }
 
 
-int ResendEof( ZModem *info )
-{
+int ResendEof( ZModem *info ) {
 	return ZXmitHdrHex(ZEOF, ZEnc4(info->offset), info);
 }
 
 
-int OverAndOut( ZModem *info )
-{
+int OverAndOut( ZModem *info ) {
 	ZXmitStr((u_char *)"OO", 2, info);
 	return ZmDone;
 }
@@ -1010,21 +921,17 @@ static	u_char	eotstr[1] = {EOT};
 
 /* ymodem parser */
 
-int YsendChar( char c, ZModem *info )
-{
+int YsendChar( char c, ZModem *info ) {
 	int	err;
 
-	if( info->canCount >= 2 )
-	{
+	if( info->canCount >= 2 ) {
 		ZStatus(RmtCancel, 0, NULL);
 		return ZmErrCancel;
 	}
 
-	switch( info->state )
-	{
+	switch( info->state ) {
 	case YTStart:		/* wait for 'G', 'C' or NAK */
-		switch( c )
-		{
+		switch( c ) {
 		case 'G':		/* streaming YModem */
 		case 'C':		/* CRC YModem */
 		case NAK:		/* checksum YModem */
@@ -1035,8 +942,7 @@ int YsendChar( char c, ZModem *info )
 		}
 
 	case YTFile:		/* sent filename, waiting for ACK or NAK */
-		switch( c )
-		{
+		switch( c ) {
 		case NAK:		/* resend */
 		case 'C':
 		case 'G':
@@ -1049,38 +955,33 @@ int YsendChar( char c, ZModem *info )
 		}
 
 	case YTDataWait:	/* sent filename, waiting for G,C or NAK */
-		switch( c )
-		{
+		switch( c ) {
 		case NAK:
 		case 'C':
 		case 'G':
 			info->chrCount = 0;
-			if( info->PacketType == 'G' )	/* send it all at once */
-			{
+			if( info->PacketType == 'G' ) {	/* send it all at once */
 				while( info->state == YTData )
 					if( (err = YSendData(info)) )
 						return err;
 				return 0;
-			}
-			else
+			} else
 				return YSendData(info);
 		default:
 			return 0;
 		}
 
 	case YTData:		/* sent data, waiting for ACK or NAK */
-		switch( c )
-		{
+		switch( c ) {
 		case 'C':
 		case 'G':		/* protocol failure, resend filename */
-			if( info->Protocol == ZModem::YMODEM )
-			{
+			if( info->Protocol == ZModem::YMODEM ) {
 				ZStatus(DataErr, ++info->errCount, NULL);
 				info->state = YTFile;
 				rewind(info->file);
 				return YSendFilename(info);
 			}
-			/* else XModem, treat it like a NAK */
+		/* else XModem, treat it like a NAK */
 		case NAK:
 			ZStatus(DataErr, ++info->errCount, NULL);
 			return YXmitData(info->buffer + info->bufp, info->ylen, info);
@@ -1095,8 +996,7 @@ int YsendChar( char c, ZModem *info )
 		}
 
 	case YTEOF:		/* sent EOF, waiting for ACK or NAK */
-		switch( c )
-		{
+		switch( c ) {
 		case NAK:
 			return ZXmitStr(eotstr, 1, info);
 		case ACK:
@@ -1107,8 +1007,7 @@ int YsendChar( char c, ZModem *info )
 		}
 
 	case YTFin:		/* sent Fin, waiting for ACK or NAK */
-		switch( c )
-		{
+		switch( c ) {
 		case NAK:
 			return YSendFin(info);
 		case ACK:
@@ -1121,8 +1020,7 @@ int YsendChar( char c, ZModem *info )
 	}
 }
 
-int YXmitData( u_char *buffer, int len, ZModem *info )
-{
+int YXmitData( u_char *buffer, int len, ZModem *info ) {
 	u_char	hdr[3];
 	u_char	trail[2];
 	u_long	crc = 0;
@@ -1132,27 +1030,23 @@ int YXmitData( u_char *buffer, int len, ZModem *info )
 	hdr[1] = info->packetCount;
 	hdr[2] = ~hdr[1];
 	if( (err = ZXmitStr(hdr, 3, info)) ||
-		(err = ZXmitStr(buffer, len, info)) )
-	{
+	        (err = ZXmitStr(buffer, len, info)) ) {
 		return err;
 	}
 
-	if( info->PacketType == NAK )
-	{	/* checksum */
-		for(i=0; i<len; ++i)
-		{
+	if( info->PacketType == NAK ) {
+		/* checksum */
+		for(i=0; i<len; ++i) {
 			crc += buffer[i];
 		}
 		trail[0] = static_cast<u_char>( crc % 256 );
 		return ZXmitStr(trail,1, info);
-	}
-	else
-	{
-		for(i=0; i<len; ++i)
-		{
+	} else {
+		for(i=0; i<len; ++i) {
 			crc = updcrc(buffer[i], crc);
 		}
-		crc = updcrc(0,crc); crc = updcrc(0,crc);
+		crc = updcrc(0,crc);
+		crc = updcrc(0,crc);
 		trail[0] = static_cast<u_char>( crc / 256 );
 		trail[1] = static_cast<u_char>( crc % 256 );
 		return ZXmitStr(trail,2, info);
@@ -1161,8 +1055,7 @@ int YXmitData( u_char *buffer, int len, ZModem *info )
 
 
 
-int YSendFilename( ZModem *info )
-{
+int YSendFilename( ZModem *info ) {
 	u_char	obuf[1024];
 	u_char	*ptr = obuf;
 
@@ -1171,15 +1064,15 @@ int YSendFilename( ZModem *info )
 	info->offset = 0;
 
 	int i = strlen(info->rfilename);
-	memcpy(ptr, info->rfilename, i+1);  ptr += i+1;
+	memcpy(ptr, info->rfilename, i+1);
+	ptr += i+1;
 	sprintf( reinterpret_cast<char*>( ptr ), "%d %lo %o 0", info->len, info->date, info->mode);
 	ptr += strlen( reinterpret_cast<char*>( ptr ) );
 	*ptr++ = '\0';
 	/* pad out to 128 bytes or 1024 bytes */
 	i = ptr-obuf;
 	int len = i>128 ? 1024 : 128;
-	for(; i<len; ++i)
-	{
+	for(; i<len; ++i) {
 		*ptr++ = '\0';
 	}
 
@@ -1189,27 +1082,23 @@ int YSendFilename( ZModem *info )
 
 /* send next buffer of data */
 
-int YSendData( ZModem *info )
-{
+int YSendData( ZModem *info ) {
 	/* are there characters still in the read buffer? */
 
-	if( info->chrCount <= 0 )
-	{
+	if( info->chrCount <= 0 ) {
 		info->bufp = 0;
 		info->chrCount = fread(info->buffer, 1, info->packetsize, info->file);
 		info->fileEof = feof(info->file);
 	}
 
-	if( info->chrCount <= 0 )
-	{
+	if( info->chrCount <= 0 ) {
 		fclose(info->file);
 		info->state = YTEOF;
 		return ZXmitStr(eotstr, 1, info);
 	}
 
 	/* pad out to 128 bytes if needed */
-	if( info->chrCount < 128 )
-	{
+	if( info->chrCount < 128 ) {
 		int i = 128 - info->chrCount;
 		memset(info->buffer + info->bufp + info->chrCount, 0x1a, i);
 		info->chrCount = 128;
@@ -1225,8 +1114,7 @@ int YSendData( ZModem *info )
 
 
 
-int YSendFin( ZModem *info )
-{
+int YSendFin( ZModem *info ) {
 	u_char	obuf[128];
 
 	info->state = YTFin;

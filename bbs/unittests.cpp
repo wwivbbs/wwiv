@@ -29,23 +29,21 @@ using std::string;
 using std::cout;
 using std::endl;
 
-bool RunUnitTests( const string& suiteName ) 
-{
-    GetSession()->localIO()->LocalCls();
-    if (!suiteName.empty()) 
-    {
-	    cout << "Running Unit Test Suite: " << suiteName << endl;
-    }
-    
-/*
-    CppUnit::TextUi::TestRunner runner;
-    runner.addTest( XferTest::suite() );
-    runner.addTest( StuffInTest::suite() );
-    runner.addTest( StringsTest::suite() );
-    runner.run();
-*/
-	
-    return true;
+bool RunUnitTests( const string& suiteName ) {
+	GetSession()->localIO()->LocalCls();
+	if (!suiteName.empty()) {
+		cout << "Running Unit Test Suite: " << suiteName << endl;
+	}
+
+	/*
+	    CppUnit::TextUi::TestRunner runner;
+	    runner.addTest( XferTest::suite() );
+	    runner.addTest( StuffInTest::suite() );
+	    runner.addTest( StringsTest::suite() );
+	    runner.run();
+	*/
+
+	return true;
 }
 
 

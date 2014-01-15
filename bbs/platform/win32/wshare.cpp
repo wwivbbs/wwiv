@@ -44,8 +44,7 @@ const int WTextFile::TRIES = 100;
  *	3 or greater shows file information BEFORE any attempt is made to open a file.
  */
 
-FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
-{
+FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode ) {
 	FILE *hFile;
 
 	//if ( GetSession()->GetGlobalDebugLevel() > 2 )
@@ -55,44 +54,34 @@ FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 
 	int share = SH_DENYWR;
 	int md = 0;
-	if (strchr(pszFileMode, 'w') != NULL)
-	{
+	if (strchr(pszFileMode, 'w') != NULL) {
 		share = SH_DENYRD;
 		md = O_RDWR | O_CREAT | O_TRUNC;
-	}
-	else if (strchr(pszFileMode, 'a') != NULL)
-	{
+	} else if (strchr(pszFileMode, 'a') != NULL) {
 		share = SH_DENYRD;
 		md = O_RDWR | O_CREAT;
-	}
-	else
-	{
+	} else {
 		md = O_RDONLY;
 	}
 
-	if (strchr(pszFileMode, 'b') != NULL)
-	{
+	if (strchr(pszFileMode, 'b') != NULL) {
 		md |= O_BINARY;
 	}
 
-	if (strchr(pszFileMode, '+') != NULL)
-	{
+	if (strchr(pszFileMode, '+') != NULL) {
 		md &= ~O_RDONLY;
 		md |= O_RDWR;
 		share = SH_DENYRD;
 	}
 
 	int fd = _sopen(pszFileName, md, share, S_IREAD | S_IWRITE);
-	if (fd < 0)
-	{
+	if (fd < 0) {
 		int count = 1;
-        if ( WFile::Exists( pszFileName ) )
-		{
-            ::Sleep(WAIT_TIME);
+		if ( WFile::Exists( pszFileName ) ) {
+			::Sleep(WAIT_TIME);
 			fd = _sopen(pszFileName, md, share, S_IREAD | S_IWRITE);
-			while ( ( fd < 0 && errno == EACCES ) && count < TRIES )
-			{
-                ::Sleep(WAIT_TIME);
+			while ( ( fd < 0 && errno == EACCES ) && count < TRIES ) {
+				::Sleep(WAIT_TIME);
 				//if ( GetSession()->GetGlobalDebugLevel() > 0 )
 				//{
 				//	std::cout << "\rWaiting to access " << pszFileName << " " << TRIES - count << ".  \r";
@@ -107,21 +96,16 @@ FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 		}
 	}
 
-	if ( fd > 0 )
-	{
-		if ( strchr( pszFileMode, 'a' ) )
-		{
+	if ( fd > 0 ) {
+		if ( strchr( pszFileMode, 'a' ) ) {
 			_lseek( fd, 0L, SEEK_END );
 		}
 
 		hFile = _fdopen( fd, pszFileMode );
-		if ( !hFile )
-		{
+		if ( !hFile ) {
 			_close( fd );
 		}
-	}
-	else
-	{
+	} else {
 		hFile = NULL;
 	}
 
@@ -130,5 +114,5 @@ FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode )
 	//	std::cout << "\rfsh_open " << pszFileName << ", access=" << pszFileMode << ".\r\n";
 	//}
 
-    return hFile;
+	return hFile;
 }
