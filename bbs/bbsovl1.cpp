@@ -68,8 +68,8 @@ void YourInfo() {
 	GetSession()->bout << "|#9Time spent on  : |#2" << static_cast<long>( ( GetSession()->GetCurrentUser()->GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ) << " |#9Minutes" << wwiv::endl;
 
 	// Transfer Area Statistics
-	GetSession()->bout << "|#9Uploads        : |#2" << GetSession()->GetCurrentUser()->GetUploadK() << "|#9k in|#2 " << GetSession()->GetCurrentUser()->GetFilesUploaded() << " |#9files\r\n";
-	GetSession()->bout << "|#9Downloads      : |#2" << GetSession()->GetCurrentUser()->GetDownloadK()<< "|#9k in|#2 " << GetSession()->GetCurrentUser()->GetFilesDownloaded() << " |#9files\r\n";
+	GetSession()->bout << "|#9Uploads        : |#2" << GetSession()->GetCurrentUser()->GetUploadK() << "|#9k in|#2 " << GetSession()->GetCurrentUser()->GetFilesUploaded() << " |#9files" << wwiv::endl;
+	GetSession()->bout << "|#9Downloads      : |#2" << GetSession()->GetCurrentUser()->GetDownloadK() << "|#9k in|#2 " << GetSession()->GetCurrentUser()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
 	GetSession()->bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
 	GetSession()->bout.NewLine();
 	pausescr();
