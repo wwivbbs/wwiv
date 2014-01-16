@@ -64,7 +64,7 @@ void YourInfo() {
 	GetSession()->bout << "|#9Times on       : |#2" << GetSession()->GetCurrentUser()->GetNumLogons() << wwiv::endl;
 	GetSession()->bout << "|#9On today       : |#2" << GetSession()->GetCurrentUser()->GetTimesOnToday() << wwiv::endl;
 	GetSession()->bout << "|#9Messages posted: |#2" << GetSession()->GetCurrentUser()->GetNumMessagesPosted() << wwiv::endl;
-	GetSession()->bout << "|#9E-mail sent    : |#2" << ( GetSession()->GetCurrentUser()->GetNumEmailSent() + GetSession()->GetCurrentUser()->GetNumFeedbackSent() + GetSession()->GetCurrentUser()->GetNumNetEmailSent() );
+	GetSession()->bout << "|#9E-mail sent    : |#2" << (GetSession()->GetCurrentUser()->GetNumEmailSent() + GetSession()->GetCurrentUser()->GetNumFeedbackSent() + GetSession()->GetCurrentUser()->GetNumNetEmailSent()) << wwiv::endl;
 	GetSession()->bout << "|#9Time spent on  : |#2" << static_cast<long>( ( GetSession()->GetCurrentUser()->GetTimeOn() + timer() - timeon ) / SECONDS_PER_MINUTE_FLOAT ) << " |#9Minutes" << wwiv::endl;
 
 	// Transfer Area Statistics
