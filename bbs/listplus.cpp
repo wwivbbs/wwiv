@@ -694,19 +694,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 	if (!ss) {
 		return 0;
 	}
-
-	int strip_pos = strlen( ss ) - 1;
-
-	while ( ss[strip_pos] && strip_pos > 0 ) {
-		int temp_char = ss[strip_pos];
-		if (isspace(temp_char)) {
-			ss[strip_pos] = '\0';
-		} else {
-			break;
-		}
-		--strip_pos;
-	}
-
+	StringTrimEnd(ss);
 	if ( ss ) {
 		int nBufferSize = strlen( ss );
 		if ( nBufferSize > MAX_EXTENDED_SIZE ) {
