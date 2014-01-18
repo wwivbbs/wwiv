@@ -121,6 +121,9 @@ void UIMenuBar::ClearAllSelected()
 
 bool UIMenuBar::ProcessKeyEvent( int key )
 {
+	if (m_menus.empty()) {
+		return false;
+	}
     UIMenu* previousMenu = m_menus.at( m_currentMenu );
     switch ( key )
     {
