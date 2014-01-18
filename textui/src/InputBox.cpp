@@ -37,7 +37,6 @@ bool UIInputBox::Run()
 	GetContentPanel()->SetAttribute( UIColors::TEXT_COLOR );
 	GetContentPanel()->WriteAt( 1, 0, m_prompt );
 
-
     while ( true )
     {
 		if(m_maskCharacter.length() > 0 && GetText().length() > 0)
@@ -51,6 +50,7 @@ bool UIInputBox::Run()
 		else
 		{
 			GetContentPanel()->WriteAt( 1, 1, GetText() );
+			GetContentPanel()->WriteAt(1 + GetText().length(), 1, "_ ");
 		}
 	    Paint();
         int key = GetKey();
@@ -61,10 +61,13 @@ bool UIInputBox::Run()
         case 0x1b:
             return false;
 		case KEY_BACKSPACE:
-			m_text.erase(m_text.end(), m_text.end());
+		case '\b':
+			if (m_text.length() > 0) {
+				m_text.erase(m_text.length() - 1);
+			}
 			break;
 		default:
-			if(isalpha(key) || isdigit(key))
+			if(isalpha(key) || isdigit(key) || key == ' ')
 			{
 				m_text += toupper((char)key);
 			}

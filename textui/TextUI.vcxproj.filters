@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\textui">
+      <UniqueIdentifier>{834d995f-9496-4236-997c-7c1dbe6ea805}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MenuBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MenuItem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MessageBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PopupMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SubWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UIWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\View.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Colors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Command.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Component.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Desktop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\InputBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\wwiv\textui\include\TextUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\MenuItem.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\MessageBox.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\PopupMenu.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\SubWindow.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\View.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\Window.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\Colors.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\Command.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\Component.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\Desktop.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\InputBox.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\Menu.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\wwiv\textui\include\textui\MenuBar.h">
+      <Filter>Header Files\textui</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
