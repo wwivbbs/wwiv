@@ -32,7 +32,7 @@ char *exts[] = {
 };
 
 
-
+#ifndef NOT_BBS
 void WWIV_make_abs_cmd( std::string& out ) {
 	// pszOutBuffer must be at least MAX_PATH in size.
 	char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH], *ss1;
@@ -106,7 +106,7 @@ void WWIV_make_abs_cmd( std::string& out ) {
 	os << GetApplication()->GetHomeDir() << s1 << s2;
 	out = os.str();
 }
-
+#endif
 
 #define LAST(s)	s[strlen(s)-1]
 
