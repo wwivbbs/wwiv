@@ -33,15 +33,7 @@ int num_subs = 0;
 /****************************************************************************/
 /*                      STUBS                                               */
 /****************************************************************************/
-void *BbsAllocA( size_t lNumBytes ) {
-	return malloc(lNumBytes);
-}
 
-void giveup_timeslice() {
-}
-
-void WWIV_Delay(unsigned long delay) {
-}
 char *stripfn(const char *pszFileName) {
 	static char szStaticFileName[15];
 	char szTempFileName[ MAX_PATH ];
@@ -74,39 +66,6 @@ char *stripfn(const char *pszFileName) {
 	}
 	strcpy( szStaticFileName, szTempFileName );
 	return szStaticFileName;
-}
-
-#define LAST(s) s[strlen(s)-1]
-
-bool mkdirs(const char *s) {
-	char current_path[MAX_PATH], *p, *flp;
-
-	p = flp = WWIV_STRDUP(s);
-	WWIV_GetDir(current_path, false);
-	if(LAST(p) == WWIV_FILE_SEPERATOR_CHAR)
-		LAST(p) = 0;
-	if(*p == WWIV_FILE_SEPERATOR_CHAR) {
-		WWIV_ChangeDirTo(WWIV_FILE_SEPERATOR_STRING);
-		p++;
-	}
-	for(; (p = strtok(p, WWIV_FILE_SEPERATOR_STRING)) != 0; p = 0) {
-		WWIV_ChangeDirTo(p);
-#ifdef _WIN32
-		if(_mkdir(p)) {
-#else
-		if (mkdir(p)) {
-#endif
-			WWIV_ChangeDirTo(current_path);
-			return false;
-		}
-		WWIV_ChangeDirTo(p);
-
-	}
-	WWIV_ChangeDirTo(current_path);
-	if(flp) {
-		BbsFreeMemory(flp);
-	}
-	return true;
 }
 
 /****************************************************************************/
@@ -163,7 +122,7 @@ bool checkDirExists(WFile &dir, const char *desc) {
 		char ch[128];
 		std::cin >> ch;
 		if(ch[0] == 'Y' || ch[0] == 'y') {
-			exist = mkdirs(dir.GetFullPathName().c_str());
+			exist = WWIV_make_path(dir.GetFullPathName().c_str());
 			if(!exist) {
 				Print(NOK, true, "Unable to create dir '%s' for %s dir.", dir.GetFullPathName().c_str(), desc);
 			}
@@ -175,6 +134,14 @@ bool checkDirExists(WFile &dir, const char *desc) {
 /****************************************************************************/
 /*                      CHECK METHODS                                       */
 /****************************************************************************/
+
+void saveStatus() {
+	WFile statusDat(syscfg.datadir, STATUS_DAT);
+
+	statusDat.Open(WFile::modeReadWrite | WFile::modeBinary);
+	statusDat.Write(&status, sizeof(statusrec));
+	statusDat.Close();
+}
 
 void initStatusDat() {
 	int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
@@ -191,6 +158,7 @@ void initStatusDat() {
 		strcpy(status.log2, "000000.log");
 		strcpy(status.gfiledate, "00/00/00");
 		status.callernum = 65535;
+		status.wwiv_version = wwiv_num_version;
 		update = true;
 	} else {
 		checkFileSize(statusDat, sizeof(statusrec));
@@ -246,9 +214,7 @@ void initStatusDat() {
 		}
 	}
 	if(update) {
-		statusDat.Open( WFile::modeReadWrite | WFile::modeBinary );
-		statusDat.Write( &status, sizeof( statusrec ) );
-		statusDat.Close();
+		saveStatus();
 	}
 }
 
@@ -339,14 +305,7 @@ void checkCriticalFiles() {
 		}
 		fileNo++;
 	}
-}
-
-void saveStatus() {
-	WFile statusDat(syscfg.datadir, STATUS_DAT);
-
-	statusDat.Open( WFile::modeReadWrite | WFile::modeBinary );
-	statusDat.Write( &status, sizeof( statusrec ) );
-	statusDat.Close();
+	Print(OK, true, "All critical DATA files found");
 }
 
 /****************************************************************************/
@@ -387,7 +346,9 @@ int main(int argc, char *argv[]) {
 
 	checkAllDirs();
 	checkCriticalFiles();
-	checkUserList();
+	if (usercheck) {
+		checkUserList();
+	}
 
 	saveStatus();
 

@@ -31,6 +31,7 @@ void checkUserList() {
 	}
 
 	WUserManager userMgr;
+	userMgr.InitializeUserManager(syscfg.datadir, sizeof(userrec), syscfg.maxusers);
 	Print(OK, true, "Checking USER.LST... found %d user records.", userMgr.GetNumberOfUserRecords());
 
 	Print(OK, true, "TBD: Check for trashed user recs.");
@@ -41,10 +42,9 @@ void checkUserList() {
 		Print(OK, true, "Reasonable number.");
 	}
 
-	for(int i = 0; i < userMgr.GetNumberOfUserRecords(); i++) {
+	for(int i = 1; i <= userMgr.GetNumberOfUserRecords(); i++) {
 		WUser user;
 		userMgr.ReadUser(&user, i);
-		printf("User: '%s' '%s' %s\n", user.GetName(), user.GetPassword(), user.IsUserDeleted() ? "true" : "false");
 		user.FixUp();
 		userMgr.WriteUser(&user, i);
 	}
@@ -61,7 +61,7 @@ void checkUserList() {
 				status.users = recs;
 				Print(NOK, true, "STATUS.DAT contained an incorrect user count.");
 			} else {
-				Print(OK, true, "status.users = %d", status.users);
+				Print(OK, true, "STATUS.DAT matches expected user count.");
 			}
 		}
 		nameFile.Close();
