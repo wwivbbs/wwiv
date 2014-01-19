@@ -70,8 +70,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\memory.cpp" />
     <ClCompile Include="..\platform\DateTime.cpp" />
     <ClCompile Include="..\platform\win32\filesupp.cpp" />
+    <ClCompile Include="..\platform\win32\utility2.cpp" />
     <ClCompile Include="..\platform\win32\WFile.cpp" />
     <ClCompile Include="..\platform\win32\wfndfile.cpp" />
     <ClCompile Include="..\version.cpp" />
