@@ -279,7 +279,7 @@ void process_inst_msgs() {
 
 // Gets instancerec for specified instance, returns in ir.
 bool get_inst_info(int nInstanceNum, instancerec * ir) {
-	if (!ir) {
+	if (!ir || syscfg.datadir == NULL) {
 		return false;
 	}
 
@@ -570,7 +570,7 @@ void write_inst( int loc, int subloc, int flags ) {
 	        (ti.loc!=INST_LOC_WFC)) {
 		re_write=1;
 	}
-	if (re_write) {
+	if (re_write && syscfg.datadir != NULL) {
 		ti.last_update = static_cast<unsigned long>(time(NULL));
 		WFile instFile( syscfg.datadir, INSTANCE_DAT );
 		if ( instFile.Open( WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite ) ) {
