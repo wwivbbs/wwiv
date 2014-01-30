@@ -19,7 +19,8 @@
 
 #include "wwiv.h"
 
-#if defined(_WIN32) && !defined(_USING_V110_SDK71_)
+#if defined(_WIN32) && !defined(_USING_V110_SDK71_) && ( _MSC_VER >= 1800 )
+// this header is available from vs2013 or later
 #include <VersionHelpers.h>
 #endif
 
@@ -371,10 +372,12 @@ const std::string GetSyncFosOSMode() {
 
 
 bool IsWindowsNT() {
-#if !defined(_USING_V110_SDK71_)
+#if !defined(_USING_V110_SDK71_) && ( _MSC_VER >= 1800 )
 	return IsWindowsXPOrGreater();
 #else
-	return false;
+	DWORD dwVersion = GetVersion();
+	// Windows NT/2000/XP is < 0x80000000
+	return ( dwVersion < 0x80000000 ) ? true : false; 
 #endif
 }
 
@@ -684,8 +687,6 @@ bool DoSyncFosLoop9XImpl( HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsE
 		}
 	}
 
-
-
 // END LOOP
 	fprintf( hLogFile, " END LOOP \r\n" );
 
@@ -736,5 +737,3 @@ bool ExpandWWIVHeartCodes( char *pszBuffer ) {
 	strcpy( pszBuffer, szTempBuffer );
 	return true;
 }
-
-
