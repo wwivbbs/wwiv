@@ -95,7 +95,14 @@ void write_automessage() {
 		std::string authorName = GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum );
 		file.WriteFormatted( "%s\r\n", authorName.c_str() );
 		sysoplog("Changed Auto-message");
+#if defined(_MSC_VER) && (_MSC_VER < 1800)
+		for( std::vector<std::string>::const_iterator iter = lines.begin(); iter != lines.end(); ++iter )
+		{
+			std::string line = (*iter);
+			StringTrimEnd( line ); 
+#else
 		for (const auto& line : lines) {
+#endif
 			file.Write( line );
 			file.Write("\r\n");
 			sysoplog( line, true );
@@ -201,5 +208,4 @@ void do_automessage() {
 			break;
 		}
 	} while ( !done && !hangup );
-
 }
