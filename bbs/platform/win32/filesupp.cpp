@@ -24,7 +24,7 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);
 
 typedef BOOL (WINAPI *P_GDFSE)(LPCTSTR, PULARGE_INTEGER,
                                PULARGE_INTEGER, PULARGE_INTEGER);
-
+typedef UINT (WINAPI *P_GDT)(LPCTSTR);
 
 /**
  * Returns the free disk space for a drive letter, where nDrive is the drive number
@@ -37,30 +37,43 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive) {
 	DWORD dwSectPerClust, dwBytesPerSect, dwFreeClusters, dwTotalClusters;
 	P_GDFSE pGetDiskFreeSpaceEx = NULL;
 	BOOL fResult = FALSE;
+	P_GDT pGetDriveType = NULL;
+	UINT driveType = DRIVE_FIXED;
 
 	pGetDiskFreeSpaceEx = ( P_GDFSE ) GetProcAddress ( GetModuleHandle ( "kernel32.dll" ),	"GetDiskFreeSpaceExA" );
 	char s[] = "X:\\";
 	s[0] = static_cast< char >( 'A' + static_cast< char >( nDrive - 1 ) );
 	char *pszDrive = ( nDrive ) ? s : NULL;
 
-	if ( pGetDiskFreeSpaceEx ) {
-		// win95 osr2+ allows the GetDiskFreeSpaceEx call
-		fResult = pGetDiskFreeSpaceEx (  pszDrive,
-		                                 reinterpret_cast<PULARGE_INTEGER>( &i64FreeBytesToCaller ),
-		                                 reinterpret_cast<PULARGE_INTEGER>( &i64TotalBytes ),
-		                                 reinterpret_cast<PULARGE_INTEGER>( &i64FreeBytes ) );
-		if ( fResult ) {
-			return static_cast<double>( (signed _int64) i64FreeBytesToCaller / 1024 );
-		}
 
-	} else {
-		// this one will artificially cap free space at 2 gigs
-		fResult = GetDiskFreeSpace( pszDrive, &dwSectPerClust,
-		                            &dwBytesPerSect,
-		                            &dwFreeClusters,
-		                            &dwTotalClusters);
-		if ( fResult ) {
-			return ( static_cast<double>( dwTotalClusters * dwSectPerClust * dwBytesPerSect ) )/ 1024.0;
+	// if we can get the process handle try and determine if it is a valid drive
+	pGetDriveType = (P_GDT)GetProcAddress ( GetModuleHandle ( "kernel32.dll" ), "GetDriveTypeA" );
+	if (pGetDriveType != NULL) {
+		driveType = pGetDriveType(pszDrive);
+	}
+
+	// check if the drive exists 
+	if (driveType != DRIVE_UNKNOWN && driveType != DRIVE_NO_ROOT_DIR) {
+		if (pGetDiskFreeSpaceEx) {
+			// win95 osr2+ allows the GetDiskFreeSpaceEx call
+			fResult = pGetDiskFreeSpaceEx(pszDrive,
+				reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytesToCaller),
+				reinterpret_cast<PULARGE_INTEGER>(&i64TotalBytes),
+				reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytes));
+			if (fResult) {
+				return static_cast<double>((signed _int64) i64FreeBytesToCaller / 1024);
+			}
+
+		}
+		else {
+			// this one will artificially cap free space at 2 gigs
+			fResult = GetDiskFreeSpace(pszDrive, &dwSectPerClust,
+				&dwBytesPerSect,
+				&dwFreeClusters,
+				&dwTotalClusters);
+			if (fResult) {
+				return (static_cast<double>(dwTotalClusters * dwSectPerClust * dwBytesPerSect)) / 1024.0;
+			}
 		}
 	}
 
