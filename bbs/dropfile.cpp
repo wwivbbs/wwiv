@@ -394,6 +394,7 @@ void create_drop_files() {
 	CreateDoorInfoDropFile();
 	CreatePCBoardSysDropFile();
 	CreateCallInfoBbsDropFile();
+	CreateDoorSysDropFile();
 	CreateDoor32SysDropFile();
 }
 
