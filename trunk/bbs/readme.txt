@@ -33,13 +33,37 @@ GENERAL INFORMATION:
 ==============================================================================
 
 LABEL: WWIV-5_0_62
-DATE:  ??/??/2007
+DATE:  02/??/2007
 
-Atani - Added VS 2005 project files
-Atani - Copyright update to 2007
-Atani - Started in earnest on an OS X port.
+Atani   - Upgraded projects to VS2013.
+Atani   - Fixed door.sys generation.
+Atani   - Fix for invalid drive probing for free space.
+Atani   - Misc fixes for fix to compile/work again.
+Atani   - Fixed crash WRT invalid instance data on startup.
+Atani   - Upgraded PDCurses to 3.4.
+Atani   - Fix issue identified in large filebases
+Atani   - Added flags for C++11 compiling on Linux
+Atani   - Added WUserManager::FindUser(string) to reduce duplicated code in networking
+          stack and bbs
+Rushfan - Upgrade to vs2013 for telnet server.
+Atani   - Removed duplicated code in ~WIOSerial.
+Rushfan - Fixes to automessage.
+Atani   - Fixes for GFiles.
+Atani   - Converted most high ascii instances to \xXX (hex) in the source code.
+Atani   - Updated displayed copyrights to 2014.
+Atani   - Fixed case where no modem is configured startup would crash due to
+          null/empty modem response string.
+Atani   - Fixes for //EM crash on loading menu descriptions file.
+Atani   - moved memory.h include into wwiv.h and define _USE_32BIT_TIME_T.
+Atani   - Updated platform detection when on Win7 and compiling with Win7+ SDKs.
+Atani   - Revert of r210 updates that were incorrect.
+
+-- Older updated pre-2014:
+Atani   - Added VS 2005 project files
+Atani   - Copyright update to 2007
+Atani   - Started in earnest on an OS X port.
 Rushfan - More STL'ification
-Atani - more OS X tweaks
+Atani   - more OS X tweaks
 
 
 ==============================================================================
