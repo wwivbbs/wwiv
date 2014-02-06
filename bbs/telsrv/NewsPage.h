@@ -38,4 +38,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	BOOL m_bEnableNNTPServer;
+	afx_msg void OnBnClickedPrefNntpEnablenntp();
 };
