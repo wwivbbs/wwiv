@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Fri Jan 10 21:53:39 2014
+/* at Fri Jan 10 23:03:29 2014
  */
 /* Compiler settings for WWIVTelnetServer.odl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
