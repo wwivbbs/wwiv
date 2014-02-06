@@ -45,7 +45,14 @@ void NewsPage::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(NewsPage, CPropertyPage)
+	ON_BN_CLICKED(IDC_PREF_NNTP_ENABLENNTP, &NewsPage::OnBnClickedPrefNntpEnablenntp)
 END_MESSAGE_MAP()
 
 
 // NewsPage message handlers
+
+
+void NewsPage::OnBnClickedPrefNntpEnablenntp()
+{
+	// TODO: Add your control notification handler code here
+}
