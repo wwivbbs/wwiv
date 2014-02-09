@@ -19,6 +19,11 @@ DATE:
 
 Upgrade compiler to VC2013
 
+Fixed numerous MBCS issues since VC2013 MFC doesn't use single-byte characters anymore.
+
+Set the platform toolset to v120_xp so the build will work on Windows XP SP3 and later
+instead of the default platform of "Windows 7 or later.s"
+
 
 ==============================================================================
 
