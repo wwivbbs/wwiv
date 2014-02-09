@@ -1201,17 +1201,20 @@ struct phonerec {
 #define EVENT_SHRINK       0x0002           // shrink for event?
 #define EVENT_HOLD         0x0004           // holdphone for event?
 #define EVENT_EXIT         0x0008           // exit bbs completely to run?
+#define EVENT_PERIODIC     0x0010           // event runs periodically
 #define EVENT_RUNTODAY     0x8000           // has it run today?
 
 struct eventsrec {
 	char cmd[81];                             // commandline to execute
 
 	short int days,                           // days to run this event
-	      time,                                   // time to run event in minutes
-	      instance,                               // instance to run event on
-	      status;                                 // bit mapped event status
+		time,                                 // time to run event in minutes
+		instance,                             // instance to run event on
+		status,                               // bit mapped event status
+		period,                               // execution period
+	    lastrun;                              // timestamp of last execution
 
-	char resv[29];                            // reserved
+	char resv[25];                            // reserved
 };
 
 // end events additions

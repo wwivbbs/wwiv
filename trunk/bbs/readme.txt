@@ -35,6 +35,10 @@ GENERAL INFORMATION:
 LABEL: WWIV-5_0_62
 DATE:  02/??/2007
 
+Atani   - Added periodic event support (recurring event every 1-240mins)
+Atani   - Fixed odd formatting in user list
+Atani   - Fixed failure due to lowercase drive letter
+Atani   - Added periodic event execution, freq range of 1-60min currently.
 Atani   - Upgraded projects to VS2013.
 Atani   - Fixed door.sys generation.
 Atani   - Fix for invalid drive probing for free space.
