@@ -116,7 +116,11 @@ void WWIV_ChangeDirTo(const char *s) {
 	}
 	_chdir( szBuffer );
 	if (s[1] == ':') {
-		_chdrive(s[0] - 'A' + 1);	// FIX, On Win32, _chdrive is 'A' = 1, etc..
+		int driveNum = s[0];
+		// handle both upper and lower case in a single line here.  If the drive letter is over 'Z' then it is lower case.
+		driveNum -= driveNum > 'Z' ? 'a' : 'A';
+		driveNum++; // FIX, On Win32, _chdrive is 'A' = 1, etc..
+		_chdrive(driveNum);	
 		if (s[2] == 0) {
 			_chdir("\\");
 		}
