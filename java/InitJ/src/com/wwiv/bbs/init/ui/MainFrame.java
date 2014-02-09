@@ -32,12 +32,12 @@ import org.jdesktop.swingx.border.DropShadowBorder;
 import org.jdesktop.swingx.painter.gradient.BasicGradientPainter;
 
 
-public class MainFrame extends JXFrame implements ListSelectionListener {
+public class MainFrame extends JFrame implements ListSelectionListener {
     private BorderLayout layoutMain = new BorderLayout();
     private JSplitPane panelCenter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false);
     private JLabel statusBar = new JLabel();
     private JList navigation = new JList();
-    private JXPanel contentPanel = new JXPanel();
+    private JPanel contentPanel = new JXPanel();
     private CardLayout contentLayout = new CardLayout();
     private DefaultListModel model = new DefaultListModel();
     public JProgressBar pbar = new JProgressBar();
