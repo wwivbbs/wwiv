@@ -27,6 +27,7 @@
 
 int  t_now();
 char *ttc(int d);
+char *ttclastrun(int d);
 void sort_events();
 void show_events();
 void select_event_days(int evnt);
@@ -48,6 +49,16 @@ char *ttc(int d) {
 	int h = d / 60;
 	int m = d - (h * 60);
 	sprintf( ch, "%02d:%02d", h, m );
+	return ch;
+}
+
+// TODO: remove this and ttc in favor of building in place.
+char *ttclastrun(int d) {
+	static char ch[7];
+
+	int h = d / 60;
+	int m = d - (h * 60);
+	sprintf(ch, "%02d:%02d", h, m);
 	return ch;
 }
 
@@ -145,6 +156,8 @@ void cleanup_events() {
 	}
 	for ( i = 0; i < GetSession()->num_events; i++ ) {
 		events[i].status &= ~EVENT_RUNTODAY;
+		// zero out last run in case this is a periodic event
+		events[i].lastrun = 0;
 	}
 
 	WFile eventsFile( syscfg.datadir, EVENTS_DAT );
@@ -177,6 +190,33 @@ void check_event() {
 			}
 			eventsFile.Close();
 		}
+		else if ((events[i].status & EVENT_PERIODIC) &&
+			((events[i].days & (1 << dow())) > 0) &&
+			((events[i].instance == GetApplication()->GetInstanceNumber()) ||
+			 (events[i].instance == 0))) {
+			// periodic events run after N minutes from last execution.
+			short int nextrun = ((events[i].lastrun == 0) ? events[i].time : events[i].lastrun) + events[i].period;
+			// if the next runtime is before now trigger it to run
+			if (nextrun <= tl) {
+				// flag the event to run
+				WFile eventsFile(syscfg.datadir, EVENTS_DAT);
+				eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite);
+				eventsFile.Seek(i * sizeof(eventsrec), WFile::seekBegin);
+				eventsFile.Read(&events[i], sizeof(eventsrec));
+
+				// make sure other nodes didn't run it already
+				if ((((events[i].lastrun == 0) ? events[i].time : events[i].lastrun) + events[i].period) <= tl) {
+					events[i].status |= EVENT_RUNTODAY;
+					// record that we ran it now.
+					events[i].lastrun = nextrun;
+					eventsFile.Seek(i * sizeof(eventsrec), WFile::seekBegin);
+					eventsFile.Write(&events[i], sizeof(eventsrec));
+					do_event = i + 1;
+				}
+				eventsFile.Close();
+			}
+		}
+		
 	}
 }
 
@@ -203,6 +243,7 @@ void run_event( int evnt ) {
 	ExecuteExternalProgram( events[evnt].cmd, EFLAG_NONE );
 	do_event = 0;
 	get_next_forced_event();
+	cleanup_net();
 	holdphone( false );
 #ifndef __unix__
 	wfc_cls();
@@ -210,14 +251,14 @@ void run_event( int evnt ) {
 }
 
 void show_events() {
-	char s[121], s1[81], daystr[8];
+	char s[121] = { 0 }, s1[81] = { 0 }, daystr[8] = { 0 };
 
 	GetSession()->bout.ClearScreen();
 	bool abort = false;
 	char y = "Yes"[0];
 	char n = "No"[0];
-	pla("|#1                                         Hold   Force   Run", &abort);
-	pla("|#1Evnt Time  Command                 Node  Phone  Event  Today  Shrink", &abort);
+	pla("|#1                                         Hold   Force   Run            Run", &abort);
+	pla("|#1Evnt Time  Command                 Node  Phone  Event  Today   Freq    Days", &abort);
 	pla("|#7=============================================================================", &abort);
 	for (int i = 0; (i < GetSession()->num_events) && !abort; i++) {
 		if (events[i].status & EVENT_EXIT) {
@@ -231,13 +272,34 @@ void show_events() {
 				daystr[j] = ' ';
 			}
 		}
-		sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c      %1c      %1c     %s",
-		        i, ttc(events[i].time), s1, events[i].instance,
-		        events[i].status & EVENT_HOLD ? y : n,
-		        events[i].status & EVENT_FORCED ? y : n,
-		        events[i].status & EVENT_RUNTODAY ? y : n,
-		        events[i].status & EVENT_SHRINK ? y : n,
-		        daystr);
+		if (events[i].status & EVENT_PERIODIC) {
+			if (events[i].status & EVENT_RUNTODAY) {
+				sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c    %-5.5s    %2dm   %s",
+					i, ttc(events[i].time), s1, events[i].instance,
+					events[i].status & EVENT_HOLD ? y : n,
+					events[i].status & EVENT_FORCED ? y : n,
+					ttclastrun(events[i].lastrun),
+					events[i].period,
+					daystr);
+			}
+			else {
+				sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c      %1c      %2dm   %s",
+					i, ttc(events[i].time), s1, events[i].instance,
+					events[i].status & EVENT_HOLD ? y : n,
+					events[i].status & EVENT_FORCED ? y : n,
+					n,
+					events[i].period,
+					daystr);
+			}
+		}
+		else {
+			sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c      %1c            %s",
+				i, ttc(events[i].time), s1, events[i].instance,
+				events[i].status & EVENT_HOLD ? y : n,
+				events[i].status & EVENT_FORCED ? y : n,
+				events[i].status & EVENT_RUNTODAY ? y : n,
+				daystr);
+		}
 		pla(s, &abort);
 	}
 }
@@ -305,9 +367,14 @@ void modify_event( int evnt ) {
 		}
 		GetSession()->bout << "G) Days to Execute.: " << s1 << wwiv::endl;
 		GetSession()->bout << "H) Node (0=Any)....: " << events[i].instance << wwiv::endl;
+		GetSession()->bout << "I) Periodic........: " << ((events[i].status & EVENT_PERIODIC) ? "Yes" : "No");
+		if (events[i].status & EVENT_PERIODIC) {
+			GetSession()->bout << " (every " << std::to_string(events[i].period) << " minutes)";
+		}
+		GetSession()->bout << wwiv::endl;
 		GetSession()->bout.NewLine();
-		GetSession()->bout << "|#5Which? |#7[|#1A-H,[,],Q=Quit|#7] |#0: ";
-		ch = onek( "QABCDEFGH[]" );
+		GetSession()->bout << "|#5Which? |#7[|#1A-I,[,],Q=Quit|#7] |#0: ";
+		ch = onek( "QABCDEFGHI[]" );
 		switch ( ch ) {
 		case 'Q':
 			done = true;
@@ -416,6 +483,8 @@ void modify_event( int evnt ) {
 			break;
 		case 'D':
 			events[i].status ^= EVENT_RUNTODAY;
+			// reset it in case it is periodic
+			events[i].lastrun = 0;
 			break;
 		case 'E':
 			events[i].status ^= EVENT_SHRINK;
@@ -439,6 +508,23 @@ void modify_event( int evnt ) {
 			j = atoi( s );
 			if ( s[0] != '\0' && j >= 0 && j < 1000 ) {
 				events[i].instance = static_cast<short>( j );
+			}
+			break;
+		case 'I':
+			events[i].status ^= EVENT_PERIODIC;
+			if (events[i].status & EVENT_PERIODIC) {
+				GetSession()->bout.NewLine();
+				GetSession()->bout << "|#2Run again after how many minutes (0=never, max=240)? ";
+				input(s, 4);
+				j = atoi(s);
+				if (s[0] != '\0' && j >= 1 && j <= 240) {
+					events[i].period = static_cast<short>(j);
+				}
+				else {
+					// user entered invalid time period, disable periodic
+					events[i].status &= ~EVENT_PERIODIC;
+					events[i].period = 0;
+				}
 			}
 			break;
 		}
