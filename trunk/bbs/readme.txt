@@ -1,6 +1,6 @@
 ==============================================================================
                              WWIV 5.0 Source Code
-              Copyright 2002-2007 WWIV Software Services
+              Copyright 2002-2014 WWIV Software Services
 ==============================================================================
 
 
@@ -33,8 +33,9 @@ GENERAL INFORMATION:
 ==============================================================================
 
 LABEL: WWIV-5_0_62
-DATE:  02/??/2007
+DATE:  02/??/2014
 
+WSS     - Fixed XY locations of line when editing system event in Event Editor.
 Atani   - Added periodic event support (recurring event every 1-240mins)
 Atani   - Fixed odd formatting in user list
 Atani   - Fixed failure due to lowercase drive letter
