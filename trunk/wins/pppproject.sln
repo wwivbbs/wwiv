@@ -1,21 +1,23 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exp", "exp.vcproj", "{3792024F-1205-4E71-BA21-3E75191C0B1C}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exp", "exp.vcxproj", "{3792024F-1205-4E71-BA21-3E75191C0B1C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "network", "network.vcproj", "{8F959635-87F9-4AFA-A297-5FCBF5025792}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "network", "network.vcxproj", "{8F959635-87F9-4AFA-A297-5FCBF5025792}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "news", "news.vcproj", "{A06A68D6-64CD-4DD2-9B5E-33C17ABF1EB7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "news", "news.vcxproj", "{A06A68D6-64CD-4DD2-9B5E-33C17ABF1EB7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pop", "pop.vcproj", "{350C05F2-7ABA-4AC6-8AB3-56D3F2062C20}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pop", "pop.vcxproj", "{350C05F2-7ABA-4AC6-8AB3-56D3F2062C20}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pppurge", "pppurge.vcproj", "{8CABFA72-9FB1-4F7F-A5C5-4D44848633FE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pppurge", "pppurge.vcxproj", "{8CABFA72-9FB1-4F7F-A5C5-4D44848633FE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ppputil", "ppputil.vcproj", "{7E57409E-EB11-4EB1-851E-B876065CB8DB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ppputil", "ppputil.vcxproj", "{7E57409E-EB11-4EB1-851E-B876065CB8DB}"
 EndProject
 Project("{059D6162-CD51-11D0-AE1F-00A0C90FFFC3}") = "qotd", "qotd\qotd.dsp", "{D19AE389-C57B-406C-B3CF-4598477D7C6C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uu", "uu.vcproj", "{5239E1EE-D9AF-43E4-9678-54BA32B9E48A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uu", "uu.vcxproj", "{5239E1EE-D9AF-43E4-9678-54BA32B9E48A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
