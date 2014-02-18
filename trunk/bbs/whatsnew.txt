@@ -1,6 +1,6 @@
 ==============================================================================
                            WWIV 5.0 What's New List
-                 Copyright 1999-2007 WWIV Software Services
+                 Copyright 1999-2014 WWIV Software Services
 ==============================================================================
 
 * File compatable with 4.30/4.31
