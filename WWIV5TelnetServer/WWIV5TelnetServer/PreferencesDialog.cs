@@ -1,4 +1,22 @@
-﻿using System;
+﻿/**************************************************************************/
+/*                                                                        */
+/*                              WWIV Version 5.0x                         */
+/*                 Copyright (C) 2014, WWIV Software Services             */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/*                                                                        */
+/**************************************************************************/
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -18,26 +36,18 @@ namespace WWIV5TelnetServer
             CancelButton = this.cancelButton;
         }
 
-        private void PreferencesDialog_FormClosing(object sender, FormClosingEventArgs e)
-        {
-        }
-
         private void PreferencesDialog_Load(object sender, EventArgs e)
         {
-            Console.WriteLine("PreferencesDialog.Load");
             Properties.Settings.Default.Reload();
         }
 
         private void ok_Clicked(object sender, EventArgs e)
         {
-            Console.WriteLine("PreferencesDialog.ok_Clicked");
             Close();
-            Console.WriteLine("PreferencesDialog.ok_Clicked (After Close)");
         }
 
         private void cancel_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("PreferencesDialog.cancel_Click");
             Close();
             this.DialogResult = DialogResult.Cancel;
         }
@@ -62,8 +72,6 @@ namespace WWIV5TelnetServer
                 Properties.Settings.Default.useEvents = runEventsCheckbox.Checked;
                 Properties.Settings.Default.launchMinimized = launchMinimizedCheckBox.Checked;
                 Properties.Settings.Default.Save();
-                Console.WriteLine("endNode=" + Properties.Settings.Default.endNode);
-                Console.WriteLine("tf=" + highNodeSpinner.Value);
             }
         }
     }
