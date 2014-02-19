@@ -347,7 +347,6 @@
             this.Controls.Add(this.okButton);
             this.Name = "PreferencesDialog";
             this.Text = "Preferences";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PreferencesDialog_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.PreferencesDialog_FormClosed);
             this.Load += new System.EventHandler(this.PreferencesDialog_Load);
             this.tabControlPreferences.ResumeLayout(false);

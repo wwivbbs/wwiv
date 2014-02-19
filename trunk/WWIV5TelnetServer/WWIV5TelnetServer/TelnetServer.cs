@@ -1,4 +1,22 @@
-﻿using System;
+﻿/**************************************************************************/
+/*                                                                        */
+/*                              WWIV Version 5.0x                         */
+/*                 Copyright (C) 2014, WWIV Software Services             */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/*                                                                        */
+/**************************************************************************/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -8,6 +26,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace WWIV5TelnetServer
 {
@@ -100,6 +119,10 @@ namespace WWIV5TelnetServer
             }
         }
 
+        private const int SW_MINIMIZED = 2;
+        [DllImport("user32.dll")]
+        private static extern int ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
         private void LaunchInstance(NodeStatus node, Socket socketParam)
         {
             using (Socket socket = socketParam)
@@ -107,7 +130,6 @@ namespace WWIV5TelnetServer
                 var executable = Properties.Settings.Default.executable;
                 var arguments = Properties.Settings.Default.parameters;
                 var homeDirectory = Properties.Settings.Default.homeDirectory;
-                var windowStyle = (Properties.Settings.Default.launchMinimized ? ProcessWindowStyle.Minimized : ProcessWindowStyle.Maximized);
 
                 CommandLineBuilder cmdlineBuilder = new CommandLineBuilder(arguments, executable);
 
@@ -118,10 +140,26 @@ namespace WWIV5TelnetServer
                 p.StartInfo.Arguments = cmdlineBuilder.CreateArguments(node.Node, socketHandle);
                 p.StartInfo.WorkingDirectory = homeDirectory;
                 p.StartInfo.UseShellExecute = false;
-                p.StartInfo.WindowStyle = windowStyle;
                 OnStatusMessageUpdated("Launching binary: " + cmdlineBuilder.CreateFullCommandLine(node.Node, socketHandle));
                 p.Start();
                 Console.WriteLine("binary launched.");
+
+                if (Properties.Settings.Default.launchMinimized)
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        // The process is launched asynchronously, so wait for up to a second
+                        // for the main window handle to be created and set on the process class.
+                        if (p.MainWindowHandle.ToInt32() != 0)
+                        {
+                            break;
+                        }
+                        Thread.Sleep(100);
+                    }
+                    OnStatusMessageUpdated("Trying to minimize process on handle:" + p.MainWindowHandle);
+                    ShowWindowAsync(p.MainWindowHandle, SW_MINIMIZED);
+                }
+
                 p.WaitForExit();
                 lock (nodeLock)
                 {
