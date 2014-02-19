@@ -60,6 +60,7 @@ namespace WWIV5TelnetServer
                 Properties.Settings.Default.useBalloons = balloonsCheckBox.Checked;
                 Properties.Settings.Default.useBegindayEvent = beginDayCheckBox.Checked;
                 Properties.Settings.Default.useEvents = runEventsCheckbox.Checked;
+                Properties.Settings.Default.launchMinimized = launchMinimizedCheckBox.Checked;
                 Properties.Settings.Default.Save();
                 Console.WriteLine("endNode=" + Properties.Settings.Default.endNode);
                 Console.WriteLine("tf=" + highNodeSpinner.Value);
