@@ -23,9 +23,9 @@ Limitations
 
 Questions/Feedback
 ~~~~~~~~~~~~~~~~~~
-rushfan@users.sourceforge.net
-1@561.FILENET
-http://wwiv.sourceforge.net
+rushfan@wwiv.us
+1@514
+http://wwiv.sf.net
 
 
 Important Announcements

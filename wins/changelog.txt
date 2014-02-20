@@ -1,9 +1,13 @@
 WWIV Internet Network Support version 5.0 Change Log
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-5.0.12 (Alpha) 2014-??-??
+5.0.12 (Alpha) 2014-02-19
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-Merged in fixed from Mark
+* Merged in fixed from Mark
+* Upgraded the code to run with Visual Studio 2013
+* Reorganized the code into a shared library plus smaller projects
+  for each binary tool. This makes vc2013 happy.
+
 
 
 5.0.11 (Alpha) 2005-??-??
