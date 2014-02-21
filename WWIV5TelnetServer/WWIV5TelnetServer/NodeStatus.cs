@@ -100,7 +100,7 @@ namespace WWIV5TelnetServer
                 s.Append(" ");
                 if (inUse)
                 {
-                    s.AppendFormat("Connected fom {0}", remoteAddress);
+                    s.AppendFormat("Connected from {0}", remoteAddress);
                 }
                 else
                 {
