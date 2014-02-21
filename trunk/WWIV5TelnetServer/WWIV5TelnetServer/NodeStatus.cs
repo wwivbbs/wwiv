@@ -18,12 +18,13 @@
 /**************************************************************************/
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
 namespace WWIV5TelnetServer
 {
-    public class NodeStatus
+    public class NodeStatus : INotifyPropertyChanged
     {
         public static string WFC = "Waiting for Call";
         public static string CONNECTED = "Connected";
@@ -31,6 +32,8 @@ namespace WWIV5TelnetServer
         private string status;
         private string remoteAddress;
         private bool inUse;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public int Node
         {
@@ -48,7 +51,11 @@ namespace WWIV5TelnetServer
             }
             set
             {
-                status = value;
+                if (status != value)
+                {
+                    status = value;
+                    NotifyPropertyChanged("Status");
+                }
             }
         }
 
@@ -60,7 +67,11 @@ namespace WWIV5TelnetServer
             }
             set
             {
-                remoteAddress = value;
+                if (value != remoteAddress)
+                {
+                    remoteAddress = value;
+                    NotifyPropertyChanged("RemoteAddress");
+                }
             }
         }
 
@@ -72,7 +83,30 @@ namespace WWIV5TelnetServer
             }
             set
             {
-                inUse = value;
+                if (inUse != value)
+                {
+                    inUse = value;
+                    NotifyPropertyChanged("IsUse");
+                }
+                Console.WriteLine("InUse: " + inUse + " for node: " + node);
+            }
+        }
+
+        public string FullStatus
+        {
+            get
+            {
+                StringBuilder s = new StringBuilder("Node#" + node);
+                s.Append(" ");
+                if (inUse)
+                {
+                    s.AppendFormat("Connected fom {0}", remoteAddress);
+                }
+                else
+                {
+                    s.Append(WFC);
+                }
+                return s.ToString();
             }
         }
 
@@ -83,5 +117,20 @@ namespace WWIV5TelnetServer
             remoteAddress = "";
             inUse = false;
         }
+
+        public override string ToString() {
+            return FullStatus;
+        }
+
+        private void NotifyPropertyChanged(String info)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(info));
+                PropertyChanged(this, new PropertyChangedEventArgs("FullStatus"));
+                Console.WriteLine("Firing property changed event for nodestatus: " + FullStatus);
+            }
+        }
+
     }
 }
