@@ -53,7 +53,7 @@ namespace WWIV5TelnetServer
         {
             launcherThread = new Thread(Run);
             launcherThread.Start();
-            OnStatusMessageUpdated("Telnet Sever Started");
+            OnStatusMessageUpdated("Telnet Server Started");
             lowNode = Convert.ToInt32(Properties.Settings.Default.startNode);
             highNode = Convert.ToInt32(Properties.Settings.Default.endNode);
             var size = highNode - lowNode + 1;
@@ -81,7 +81,7 @@ namespace WWIV5TelnetServer
             launcherThread.Join();
             launcherThread = null;
             nodes = null;
-            OnStatusMessageUpdated("Telnet Sever Stopped");
+            OnStatusMessageUpdated("Telnet Server Stopped");
         }
 
         private void Run()
@@ -103,7 +103,7 @@ namespace WWIV5TelnetServer
                     if (node != null)
                     {
                         node.RemoteAddress = ip;
-                        OnStatusMessageUpdated("Launching Node #" +node.Node);
+                        OnStatusMessageUpdated("Launching Node #" + node.Node);
                         Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
                         instanceThread.Start();
                         OnNodeUpdated(node);
