@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Threading;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace WWIV5TelnetServer
 {
@@ -37,7 +38,10 @@ namespace WWIV5TelnetServer
         private Object nodeLock = new Object();
         private int lowNode;
         private int highNode;
-        private NodeStatus[] nodes;
+        private List<NodeStatus> nodes;
+
+        // Property for Nodes
+        public List<NodeStatus> Nodes { get { return nodes; } }
 
         public delegate void StatusMessageEventHandler(object sender, StatusMessageEventArgs e);
         public event StatusMessageEventHandler StatusMessageChanged;
@@ -52,21 +56,22 @@ namespace WWIV5TelnetServer
             OnStatusMessageUpdated("Telnet Sever Started");
             lowNode = Convert.ToInt32(Properties.Settings.Default.startNode);
             highNode = Convert.ToInt32(Properties.Settings.Default.endNode);
-            nodes = new NodeStatus[highNode - lowNode + 1];
-            for (int i = 0; i < nodes.Length; i++)
+            var size = highNode - lowNode + 1;
+            nodes = new List<NodeStatus>(size);
+            for (int i = 0; i < size; i++)
             {
-                nodes[i] = new NodeStatus(i + lowNode);
+                nodes.Add(new NodeStatus(i + lowNode));
             }
         }
 
         public void Stop()
         {
-            OnStatusMessageUpdated("Stopping Telnet Server.");
             if (launcherThread == null)
             {
                 OnStatusMessageUpdated("ERROR: LauncherThread was never set.");
                 return;
             }
+            OnStatusMessageUpdated("Stopping Telnet Server.");
             if (server != null)
             {
                 server.Close();
@@ -101,6 +106,7 @@ namespace WWIV5TelnetServer
                         OnStatusMessageUpdated("Launching Node #" +node.Node);
                         Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
                         instanceThread.Start();
+                        OnNodeUpdated(node);
                     }
                     else
                     {
@@ -146,7 +152,7 @@ namespace WWIV5TelnetServer
 
                 if (Properties.Settings.Default.launchMinimized)
                 {
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < 25; i++)
                     {
                         // The process is launched asynchronously, so wait for up to a second
                         // for the main window handle to be created and set on the process class.
@@ -165,6 +171,7 @@ namespace WWIV5TelnetServer
                 {
                     node.InUse = false;
                 }
+                OnNodeUpdated(node);
             }
         }
 
@@ -198,14 +205,22 @@ namespace WWIV5TelnetServer
         protected virtual void OnStatusMessageUpdated(string message)
         {
             StatusMessageEventArgs e = new StatusMessageEventArgs(message);
-            StatusMessageChanged(this, e);
+            var handler = StatusMessageChanged;
+            if (handler != null)
+            {
+                StatusMessageChanged(this, e);
+            }
         }
 
 
         protected virtual void OnNodeUpdated(NodeStatus nodeStatus)
         {
             NodeStatusEventArgs e = new NodeStatusEventArgs(nodeStatus);
-            NodeStatusChanged(this, e);
+            var handler = NodeStatusChanged;
+            if (handler != null)
+            {
+                NodeStatusChanged(this, e);
+            }
         }
     }
 

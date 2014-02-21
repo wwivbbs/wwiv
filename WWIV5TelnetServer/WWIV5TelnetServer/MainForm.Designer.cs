@@ -73,33 +73,33 @@
             // startToolStripMenuItem
             // 
             this.startToolStripMenuItem.Name = "startToolStripMenuItem";
-            this.startToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.startToolStripMenuItem.Text = "Start";
             this.startToolStripMenuItem.Click += new System.EventHandler(this.startToolStripMenuItem_Click);
             // 
             // stopToolStripMenuItem
             // 
             this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
-            this.stopToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.stopToolStripMenuItem.Text = "Stop";
             this.stopToolStripMenuItem.Click += new System.EventHandler(this.stopToolStripMenuItem_Click);
             // 
             // preferencesToolStripMenuItem
             // 
             this.preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
-            this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.preferencesToolStripMenuItem.Text = "Preferences";
             this.preferencesToolStripMenuItem.Click += new System.EventHandler(this.preferencesToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(132, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -121,6 +121,7 @@
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
             this.splitContainer1.Location = new System.Drawing.Point(0, 24);
             this.splitContainer1.Name = "splitContainer1";
             // 
@@ -132,7 +133,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.messages);
             this.splitContainer1.Size = new System.Drawing.Size(481, 238);
-            this.splitContainer1.SplitterDistance = 160;
+            this.splitContainer1.SplitterDistance = 240;
             this.splitContainer1.TabIndex = 1;
             // 
             // listBoxNodes
@@ -143,7 +144,7 @@
             this.listBoxNodes.FormattingEnabled = true;
             this.listBoxNodes.Location = new System.Drawing.Point(3, 0);
             this.listBoxNodes.Name = "listBoxNodes";
-            this.listBoxNodes.Size = new System.Drawing.Size(154, 238);
+            this.listBoxNodes.Size = new System.Drawing.Size(234, 238);
             this.listBoxNodes.TabIndex = 0;
             // 
             // messages
@@ -158,7 +159,7 @@
             this.messages.Name = "messages";
             this.messages.ReadOnly = true;
             this.messages.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.messages.Size = new System.Drawing.Size(318, 232);
+            this.messages.Size = new System.Drawing.Size(238, 232);
             this.messages.TabIndex = 0;
             // 
             // MainForm
@@ -171,6 +172,8 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "WWIV5TelnetServer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.splitContainer1.Panel1.ResumeLayout(false);
