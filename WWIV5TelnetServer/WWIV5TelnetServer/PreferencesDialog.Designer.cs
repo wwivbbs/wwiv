@@ -317,7 +317,6 @@
             // 
             this.autostartCheckBox.AutoSize = true;
             this.autostartCheckBox.Checked = global::WWIV5TelnetServer.Properties.Settings.Default.autostart;
-            this.autostartCheckBox.Enabled = false;
             this.autostartCheckBox.Location = new System.Drawing.Point(7, 7);
             this.autostartCheckBox.Name = "autostartCheckBox";
             this.autostartCheckBox.Size = new System.Drawing.Size(184, 17);
