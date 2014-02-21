@@ -850,7 +850,7 @@ void download() {
 					if (rtn == 0) {
 						if ( uconfdir[1].confnum != -10 && okconf( GetSession()->GetCurrentUser() ) ) {
 							GetSession()->bout.BackLine();
-							GetSession()->bout << "|#5Search all conferences? ";
+							GetSession()->bout << " |#5Search all conferences? ";
 							ch = onek_ncr("YN\r");
 							if ( ch == '\r' || wwiv::UpperCase<char>( ch ) == 'Y' ) {
 								tmp_disable_conf( true );
