@@ -238,11 +238,11 @@ int WApplication::doWFCEvents() {
 				break;
 
 			// Fast Net Callout from WFC
-			// replace '50' with your node number on your primary network (net[0])
-			// replace '1160' with your primary connection on the primary network
+			// replace '32767' with your primary connection on the primary network
 			case '*':
-				if ( ok_modem_stuff && net_sysnum == 50 &&  GetInstanceNumber() == 1) {
-					do_callout(1);  //changed from 1160 to 1 - 02/23/14 - dsn
+				if ( (ok_modem_stuff || bUsingPppProject ) && GetInstanceNumber() == 1) {		//changed - 02/23/14 - dsn - removed node number check, added || bUsingPppProject )
+					GetSession()->localIO()->LocalCls();										//added   - 02/23/14 - dsn
+					do_callout( 32767 );														//changed - 02/23/14 - dsn - changed 1160 to 32767
 				}
 				break;
 			// Run MenuEditor
