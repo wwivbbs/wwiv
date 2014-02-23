@@ -326,7 +326,8 @@ void do_callout( int sn ) {
 				GetSession()->bout << "|#7Commandline is: |#2" << s << wwiv::endl;
 				GetSession()->bout.Color( 7 );
 				GetSession()->bout << charstr( 80, 205 );
-                GetSession()->bout.Color( 1 );    //added - 02/23/14 - dsn
+				GetSession()->bout << "|#0..." << wwiv::endl;
+                //GetSession()->bout.Color( 0 );    //added - 02/23/14 - dsn
 #ifndef __unix__
 				holdphone( true );
 				Wait( 2.5 );
