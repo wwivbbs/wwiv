@@ -83,11 +83,11 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 		return false;
 	} else {
 		// couldn't figure it out, give up
-		strcpy(pszOSVersionString, "Windows");
+		strcpy(pszOSVersionString, "Windows");    
 		return false;
 	}
 #elif defined (_WIN32)
-	strcpy(pszOSVersionString, "Windows");
+	strcpy(pszOSVersionString, "Windows  ");
 	return false;
 #elif defined (__OS2__)
 
