@@ -242,7 +242,7 @@ int WApplication::doWFCEvents() {
 			// replace '1160' with your primary connection on the primary network
 			case '*':
 				if ( ok_modem_stuff && net_sysnum == 50 &&  GetInstanceNumber() == 1) {
-					do_callout(1160);
+					do_callout(1);  //changed from 1160 to 1 - 02/23/14 - dsn
 				}
 				break;
 			// Run MenuEditor
