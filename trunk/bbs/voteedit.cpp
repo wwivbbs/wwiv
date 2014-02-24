@@ -69,16 +69,18 @@ void set_question( int ii ) {
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#5Enter answer choices, Enter a blank line when finished.";
 		GetSession()->bout.NewLine( 2 );
-		while ( v.numanswers < 19 && !question.empty() ) {
-			GetSession()->bout << "|#2" << v.numanswers + 1 << "#7: ";
+		while (v.numanswers < 19) {
+			GetSession()->bout << "|#2" << v.numanswers + 1 << "|#7: ";
 			std::string response;
 			inputl( response, 63, true );
 			strcpy(vr.response, response.c_str());
 			vr.numresponses = 0;
 			v.responses[v.numanswers] = vr;
-			if (!response.empty()) {
-				++v.numanswers;
+			if (response.empty()) {
+				// empty reponse means break.
+				break;
 			}
+			++v.numanswers;
 		}
 	}
 
