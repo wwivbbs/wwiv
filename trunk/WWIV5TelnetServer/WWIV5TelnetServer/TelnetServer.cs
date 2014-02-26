@@ -125,47 +125,17 @@ namespace WWIV5TelnetServer
             }
         }
 
-        private const int SW_MINIMIZED = 2;
-        [DllImport("user32.dll")]
-        private static extern int ShowWindowAsync(IntPtr hWnd, int nCmdShow);
-
         private void LaunchInstance(NodeStatus node, Socket socketParam)
         {
             using (Socket socket = socketParam)
             {
                 var executable = Properties.Settings.Default.executable;
-                var arguments = Properties.Settings.Default.parameters;
+                var argumentsTemplate = Properties.Settings.Default.parameters;
                 var homeDirectory = Properties.Settings.Default.homeDirectory;
 
-                CommandLineBuilder cmdlineBuilder = new CommandLineBuilder(arguments, executable);
-
-                Process p = new Process();
+                Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, OnStatusMessageUpdated);
                 var socketHandle = socket.Handle.ToInt32();
-                p.EnableRaisingEvents = false;
-                p.StartInfo.FileName = executable;
-                p.StartInfo.Arguments = cmdlineBuilder.CreateArguments(node.Node, socketHandle);
-                p.StartInfo.WorkingDirectory = homeDirectory;
-                p.StartInfo.UseShellExecute = false;
-                OnStatusMessageUpdated("Launching binary: " + cmdlineBuilder.CreateFullCommandLine(node.Node, socketHandle));
-                p.Start();
-                Console.WriteLine("binary launched.");
-
-                if (Properties.Settings.Default.launchMinimized)
-                {
-                    for (int i = 0; i < 25; i++)
-                    {
-                        // The process is launched asynchronously, so wait for up to a second
-                        // for the main window handle to be created and set on the process class.
-                        if (p.MainWindowHandle.ToInt32() != 0)
-                        {
-                            break;
-                        }
-                        Thread.Sleep(100);
-                    }
-                    OnStatusMessageUpdated("Trying to minimize process on handle:" + p.MainWindowHandle);
-                    ShowWindowAsync(p.MainWindowHandle, SW_MINIMIZED);
-                }
-
+                Process p = launcher.launchTelnetNode(node.Node, socketHandle);
                 p.WaitForExit();
                 lock (nodeLock)
                 {

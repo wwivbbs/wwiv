@@ -133,5 +133,10 @@ namespace WWIV5TelnetServer
             }
         }
 
+        private void runLocalNodeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
     }
 }
