@@ -41,7 +41,7 @@ namespace WWIV5TelnetServer
 
         public string CreateFullCommandLine(int node, int handle)
         {
-            return executable + " " + CreateArguments(node, handle);
+            return executable + " " + CreateTelnetArguments(node, handle);
         }
 
         public string CreateArguments(IDictionary<string, string> values)
@@ -51,7 +51,7 @@ namespace WWIV5TelnetServer
             return arguments;
         }
 
-        public string CreateArguments(int node, int handle)
+        public string CreateTelnetArguments(int node, int handle)
         {
             IDictionary<string, string> values = new Dictionary<string, string>();
             values.Add("N", Convert.ToString(node));
