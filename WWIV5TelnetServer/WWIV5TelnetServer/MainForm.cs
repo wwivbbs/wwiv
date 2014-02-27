@@ -26,6 +26,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
+using System.Diagnostics;
 
 namespace WWIV5TelnetServer
 {
@@ -135,7 +136,21 @@ namespace WWIV5TelnetServer
 
         private void runLocalNodeToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            this.runLocalNodeToolStripMenuItem.Enabled = false;
 
+            var executable = Properties.Settings.Default.executable;
+            var argumentsTemplate = Properties.Settings.Default.parameters;
+            var homeDirectory = Properties.Settings.Default.homeDirectory;
+
+            Action<string> logger = delegate(string s) { server_StatusMessage(this, new StatusMessageEventArgs(s)); };
+            Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, logger);
+            Process p = launcher.launchLocalNode(Convert.ToInt32(Properties.Settings.Default.localNode));
+            new Thread(delegate()
+            {
+                p.WaitForExit();
+                MethodInvoker d = delegate() { this.runLocalNodeToolStripMenuItem.Enabled = true; };
+                this.Invoke(d);                
+            }).Start();
         }
 
     }
