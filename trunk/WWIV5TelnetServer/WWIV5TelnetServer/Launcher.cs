@@ -27,10 +27,18 @@ namespace WWIV5TelnetServer
         [DllImport("user32.dll")]
         private static extern int ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
-
+        public Process launchLocalNode(int node) {
+            return launchNode("-N@N -M", node, -1, false);
+        }
+        
         public Process launchTelnetNode(int node, Int32 socketHandle)
         {
-            CommandLineBuilder cmdlineBuilder = new CommandLineBuilder(argumentsTemplate, executable);
+            return launchNode(argumentsTemplate, node, socketHandle, Properties.Settings.Default.launchMinimized);
+        }
+
+        Process launchNode(String template, int node, Int32 socketHandle, bool minimize)
+        {
+            CommandLineBuilder cmdlineBuilder = new CommandLineBuilder(template, executable);
 
             Process p = new Process();
             p.EnableRaisingEvents = false;
@@ -42,7 +50,7 @@ namespace WWIV5TelnetServer
             p.Start();
             Console.WriteLine("binary launched.");
 
-            if (Properties.Settings.Default.launchMinimized)
+            if (minimize)
             {
                 for (int i = 0; i < 25; i++)
                 {
