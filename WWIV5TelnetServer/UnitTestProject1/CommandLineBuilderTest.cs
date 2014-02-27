@@ -24,7 +24,7 @@ namespace UnitTestProject1
         public void TestSunnyCase_Arguments()
         {
             Assert.AreEqual(@"-XT -N1 -H1234", builder.CreateArguments(dict));
-            Assert.AreEqual(@"-XT -N2 -H2345", builder.CreateArguments(2, 2345));
+            Assert.AreEqual(@"-XT -N2 -H2345", builder.CreateTelnetArguments(2, 2345));
         }
 
         [TestMethod]
