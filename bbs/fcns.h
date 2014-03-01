@@ -476,7 +476,7 @@ int  listfiles_plus_function( int type );
 // File: memory.cpp
 
 void *BbsAllocA( size_t lNumBytes);
-void *BbsAllocWithComment( size_t lNumBytes, char *pszComment);
+void *BbsAllocWithComment( size_t lNumBytes, const char *pszComment);
 char **BbsAlloc2D( int nRow, int nCol, int nSize );
 void BbsFree2D( char **pa );
 

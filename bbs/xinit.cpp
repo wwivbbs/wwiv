@@ -91,7 +91,7 @@ unsigned short WApplication::str2spawnopt( const char *s ) {
 
 // Takes string s and creates restrict val
 unsigned short WApplication::str2restrict( const char *s ) {
-	char *rs = restrict_string;
+	const char *rs = restrict_string;
 	char s1[81];
 
 	strcpy(s1, s);
@@ -137,7 +137,7 @@ static unsigned char nucolbw[] = {7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
 
 
 struct eventinfo_t {
-	char *name;
+	const char *name;
 	unsigned short eflags;
 };
 

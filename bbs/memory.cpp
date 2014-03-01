@@ -29,7 +29,7 @@
  * @param pszComment Friendly name of the memory region to be allocated
  * @return (void *) The memory that is allocated
  */
-void* BbsAllocWithComment( size_t lNumBytes, char *pszComment ) {
+void* BbsAllocWithComment( size_t lNumBytes, const char *pszComment ) {
 	WWIV_ASSERT( lNumBytes >= 0 );
 	if ( lNumBytes <= 0 ) {
 		lNumBytes = 1;

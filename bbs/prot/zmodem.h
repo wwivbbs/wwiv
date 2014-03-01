@@ -306,8 +306,8 @@ extern	int	YmodemRInit(ZModem *info) ;
 extern	int	XmodemRInit(ZModem *info) ;
 
 extern	u_long	FileCrc(char *name) ;
-extern	char	*sname(ZModem *) ;
-extern	char	*sname2(ZMState) ;
+extern	const char	*sname(ZModem *) ;
+extern	const char	*sname2(ZMState) ;
 
 #ifdef	_DEBUG
 extern	FILE	*zmodemlogfile ;
