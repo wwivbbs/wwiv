@@ -30,14 +30,3 @@ unsigned int wwiv_num_version = 431;
 // Data/time of this build
 const char *wwiv_date = __DATE__ ", " __TIME__;
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version number used by the auto-update support
-// M  = major version number
-// 11 = 1st position
-// 22 = 2nd position
-// 33 = build number
-// Example: 5.01 build 20 = 500010020
-//
-//                              M11223333
-const long lWWIVVersionNumber = 500000062;
