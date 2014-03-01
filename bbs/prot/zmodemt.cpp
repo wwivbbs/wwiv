@@ -196,7 +196,7 @@ StateTable	TFinishOps[] = {
 };
 
 
-extern	char	*hdrnames[];
+extern	const char	*hdrnames[];
 
 
 

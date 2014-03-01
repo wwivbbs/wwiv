@@ -47,19 +47,19 @@ namespace WWIV5TelnetServer
         {
             Console.WriteLine("server_NodeStatusChanged");
             // TODO(rushfan): Build list of strings for model on this side.
-            Action<List<NodeStatus>> update = delegate(List<NodeStatus> nodes)
+            Action update = delegate()
             {
                 // Hack. can't figure out C# databinding. According to stackoverflow, many others can't either.
                 listBoxNodes.Items.Clear();
-                listBoxNodes.Items.AddRange(nodes.ToArray());
+                listBoxNodes.Items.AddRange(server.Nodes.ToArray());
             };
             if (InvokeRequired)
             {
-                this.Invoke(update, new object[] { server.Nodes });
+                this.Invoke(update);
             }
             else
             {
-                update(server.Nodes);
+                update();
             }
         }
 
@@ -67,7 +67,7 @@ namespace WWIV5TelnetServer
         {
             var message = String.Format("{0}: {1}", DateTime.Now.ToString(), e.Message);
             Console.WriteLine(message);
-            Action a = delegate() { AppendMessage(message); };
+            Action a = delegate() { messages.AppendText(message + "\r\n"); };
             if (this.messages.InvokeRequired)
             {
                 this.Invoke(a);
@@ -76,11 +76,6 @@ namespace WWIV5TelnetServer
             {
                 a();
             }
-        }
-
-        void AppendMessage(string message)
-        {
-            messages.AppendText(message + "\r\n");
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
