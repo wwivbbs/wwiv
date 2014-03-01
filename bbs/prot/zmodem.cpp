@@ -576,7 +576,7 @@ static	StateTable	*tables[] = {
 };
 
 
-char	*hdrnames[] = {
+const char *hdrnames[] = {
 	"ZRQINIT",
 	"ZRINIT",
 	"ZSINIT",
@@ -624,7 +624,7 @@ int ZProtocol(  ZModem *info ) {
 	}
 #if defined(_DEBUG)
 	zmodemlog(	"  state %s => %s, iflush=%d, oflush=%d, call %x\n",
-	            sname(info), sname2(table->newstate), table->IFlush,
+	            tname(info), sname2(table->newstate), table->IFlush,
 	            table->OFlush, table->func);
 #endif
 	info->state = table->newstate;

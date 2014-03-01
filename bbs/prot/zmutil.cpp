@@ -342,8 +342,8 @@ u_long ZDec4( u_char buf[4] ) {
 }
 
 
-char * sname2(ZMState state) {
-	static char *names[] = {
+const char * sname2(ZMState state) {
+	static const char *names[] = {
 		"RStart", "RSinitWait", "RFileName", "RCrc", "RFile", "RData",
 		"RDataErr", "RFinish", "TStart", "TInit", "FileWait", "CrcWait",
 		"Sending", "SendWait", "SendDone", "SendEof", "TFinish",
@@ -355,7 +355,7 @@ char * sname2(ZMState state) {
 }
 
 
-char * sname(ZModem *info) {
+const char * sname(ZModem *info) {
 	return sname2(info->state);
 }
 
