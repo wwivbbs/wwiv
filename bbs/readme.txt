@@ -35,6 +35,7 @@ GENERAL INFORMATION:
 LABEL: WWIV-5_0_62
 DATE:  02/??/2014
 
+Rushfan - Created start of a cmake makefile. It build bbs on mac and linux so far.
 WSS     - Fixed XY locations of line when editing system event in Event Editor.
 Atani   - Added periodic event support (recurring event every 1-240mins)
 Atani   - Fixed odd formatting in user list
