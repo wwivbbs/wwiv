@@ -57,11 +57,7 @@ char *getdir_from_file(const char *pszFileName) {
 	return(s);
 }
 
-#if defined ( __APPLE__ )
-int fname_ok( struct dirent *ent )
-#else
 int fname_ok( const struct dirent *ent )
-#endif
 {
 	int ok, i;
 	char f[13], *ptr=NULL, s3[13];
