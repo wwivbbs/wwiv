@@ -89,9 +89,9 @@
 u_long ZDec4( u_char buf[4] );
 
 
-static	char	hexChars[] = "0123456789abcdef";
+static	const char	hexChars[] = "0123456789abcdef";
 
-extern	char	*hdrnames[];
+extern	const char	*hdrnames[];
 
 FILE	*zmodemlogfile = NULL;
 

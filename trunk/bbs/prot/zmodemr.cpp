@@ -196,7 +196,7 @@ StateTable	RFinishOps[] = {
 
 
 
-extern	char	*hdrnames[];
+extern	const char	*hdrnames[];
 
 extern	int	dataSetup( ZModem *info );
 
