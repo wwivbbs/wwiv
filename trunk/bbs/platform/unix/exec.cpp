@@ -61,12 +61,8 @@ int UnixSpawn (char *pszCommand, char* environ[]) {
 		return -1;
 	}
 	if (pid == 0) {
-		char *argv[4];
-		argv[0] = "/bin/sh";
-		argv[1] = "-c";
-		argv[2] = pszCommand;
-		argv[3] = 0;
-		execv( "/bin/sh", argv );
+		const char* argv[4] = { "/bin/sh", "-c", pszCommand, 0 };
+		execv("/bin/sh", const_cast<char ** const>(argv));
 		exit(127);
 	}
 

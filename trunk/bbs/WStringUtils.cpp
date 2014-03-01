@@ -524,7 +524,7 @@ char *StringRemoveChar( const char *pszString, char chCharacterToRemove ) {
 }
 
 
-char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, char *pszNewString) {
+char *StringReplace(char *pszString, size_t nMaxBufferSize, const char *pszOldString, const char *pszNewString) {
 	char *p, *q;
 
 	WWIV_ASSERT(pszString);

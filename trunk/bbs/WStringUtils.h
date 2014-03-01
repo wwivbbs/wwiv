@@ -76,7 +76,7 @@ void single_space(char *pszText);
 char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const char *brk);
 char *StringRemoveWhitespace(char *str);
 char *StringRemoveChar( const char *pszString, char chCharacterToRemove );
-char *StringReplace(char *pszString, size_t nMaxBufferSize, char *pszOldString, char *pszNewString);
+char *StringReplace(char *pszString, size_t nMaxBufferSize, const char *pszOldString, const char *pszNewString);
 std::string& StringUpperCase( std::string& s );
 std::string& StringLowerCase( std::string& s );
 

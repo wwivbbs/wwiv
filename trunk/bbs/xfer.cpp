@@ -126,7 +126,7 @@ bool check_ul_event( int nDirectoryNum, uploadsrec * u ) {
 }
 
 
-static char *DeviceNames[] = {
+static const char *DeviceNames[] = {
 	"KBD$", "PRN", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
 	"COM8", "LPT1", "LPT2", "LPT3", "CLOCK$", "SCREEN$", "POINTER$", "MOUSE$"
 };

@@ -25,7 +25,7 @@
 
 
 // strings not to allow in a .zip file to extract from
-char *bad_words[] = {
+const char *bad_words[] = {
 	"COMMAND",
 	"..",
 	"CMD"
@@ -286,7 +286,7 @@ int check_for_files_arj( const char *pszFileName ) {
 
 
 struct arc_testers {
-	char *  arc_name;
+	const char *  arc_name;
 	int     ( *func ) ( const char * );
 };
 

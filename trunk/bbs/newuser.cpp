@@ -1289,7 +1289,7 @@ void cln_nu() {
 void DoMinimalNewUser() {
 	int m =  1, d =  1, y = 2000, ch =  0;
 	char s[101], s1[81], m1[3], d1[3], y1[4];
-	static char *mon[12] = {
+	static const char *mon[12] = {
 		"January",
 		"February",
 		"March",

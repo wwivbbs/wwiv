@@ -41,7 +41,7 @@ int lp_config_loaded;
 long fpts;
 #endif	// FILE_POINTS
 
-char *lp_color_list[] = {
+const char *lp_color_list[] = {
 	"Black   ",
 	"Blue    ",
 	"Green   ",
