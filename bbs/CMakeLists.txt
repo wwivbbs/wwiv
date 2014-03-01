@@ -138,15 +138,16 @@ if(UNIX)
 	platform/unix/stringstuff.cpp 
 	platform/unix/filestuff.cpp 
 	platform/unix/Wiou.cpp)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  if(APPLE)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.m)
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
+    include_directories(platform/osx)
+    message("On Apple: ${PLATFORM_SOURCES}")
+  else()
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  endif()
 endif()
 
-if(APPLE)
-  set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.m)
-  SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
-  include_directories(platform/osx)
-  message("On Apple: ${PLATFORM_SOURCES}")
-endif()
 
 message("ZMODEM_SOURCES: ${ZMODEM_SOURCES}")
 
