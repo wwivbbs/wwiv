@@ -412,9 +412,9 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
 					GetSession()->bout.GotoXY(pos + x, y);
 					GetSession()->bout << &szTemp[pos];
 				}
-				if ( ( mode == INPUT_MODE_DATE  && c != slash ||
-				        mode == INPUT_MODE_PHONE && c != dash ) ||
-				        ( mode != INPUT_MODE_DATE && mode != INPUT_MODE_PHONE && c != 0 ) ) {
+				if (((mode == INPUT_MODE_DATE && c != slash) ||
+				        (mode == INPUT_MODE_PHONE && c != dash)) ||
+				        (mode != INPUT_MODE_DATE && mode != INPUT_MODE_PHONE && c != 0)) {
 					if ( !bInsert || pos == nLength ) {
 						bputch( static_cast< unsigned char >( c ) );
 						szTemp[pos++] = static_cast< char > ( c );

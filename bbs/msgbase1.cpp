@@ -603,7 +603,7 @@ bool external_edit( const char *pszEditFileName, const char *pszNewDirectory, in
 	if ( GetSession()->using_modem ) {
 		sprintf( sx2, "%d", GetSession()->GetCurrentUser()->GetScreenLines() );
 	} else {
-		sprintf( sx2, "%ld", defscreenbottom + 1 - newtl );
+		sprintf( sx2, "%d", defscreenbottom + 1 - newtl );
 	}
 	sprintf( sx3, "%d", numlines );
 	const std::string cmdLine = stuff_in( editorCommand, szFileName, sx1, sx2, sx3, "" );

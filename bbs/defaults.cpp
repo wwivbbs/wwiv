@@ -210,7 +210,7 @@ const std::string DescribeColorCode( int nColorCode ) {
 	if ( GetSession()->GetCurrentUser()->HasColor() ) {
 		os << DisplayColorName( nColorCode & 0x07 ) << " on " << DisplayColorName( ( nColorCode >> 4 ) & 0x07 );
 	} else {
-		os << ( nColorCode & 0x07 ) ? "Normal" : "Inversed";
+		os << ((nColorCode & 0x07) ? "Normal" : "Inversed");
 	}
 
 	if (nColorCode & 0x08) {

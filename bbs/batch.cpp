@@ -33,7 +33,7 @@ void    handle_dszline(char *l);
 double  ratio1(long a);
 void	make_ul_batch_list(char *pszListFileName);
 void	make_dl_batch_list(char *pszListFileName);
-void	run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool bHangupAfterDl);
+void	run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, const char *dl, bool bHangupAfterDl);
 void	ProcessDSZLogFile();
 void	dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
 void	bibatch(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
@@ -288,7 +288,7 @@ void zmbatchdl(bool bHangupAfterDl) {
 	}
 
 	char szMessage[ 255 ];
-	sprintf( szMessage, "ZModem Download: Files - %ld, Time - %s", GetSession()->numbatchdl, ctim( batchtime ) );
+	sprintf( szMessage, "ZModem Download: Files - %d Time - %s", GetSession()->numbatchdl, ctim( batchtime ) );
 	if ( bHangupAfterDl ) {
 		strcat( szMessage, ", HAD" );
 	}
@@ -321,7 +321,7 @@ void zmbatchdl(bool bHangupAfterDl) {
 			if ( nRecordNumber <= 0 ) {
 				delbatch( cur );
 			} else {
-				sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", GetSession()->numbatchdl, ctim( batchtime ) );
+				sprintf( szMessage, "Files left - %d, Time left - %s\r\n", GetSession()->numbatchdl, ctim( batchtime ) );
 				GetSession()->localIO()->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
@@ -377,7 +377,7 @@ void ymbatchdl(bool bHangupAfterDl) {
 		return;
 	}
 	char szMessage[ 255 ];
-	sprintf( szMessage, "Ymodem Download: Files - %ld, Time - %s", GetSession()->numbatchdl, ctim( batchtime ) );
+	sprintf( szMessage, "Ymodem Download: Files - %d, Time - %s", GetSession()->numbatchdl, ctim( batchtime ) );
 	if ( bHangupAfterDl ) {
 		strcat( szMessage, ", HAD" );
 	}
@@ -406,7 +406,7 @@ void ymbatchdl(bool bHangupAfterDl) {
 			if (nRecordNumber <= 0) {
 				delbatch(cur);
 			} else {
-				sprintf( szMessage, "Files left - %ld, Time left - %s\r\n", GetSession()->numbatchdl, ctim( batchtime ) );
+				sprintf( szMessage, "Files left - %d, Time left - %s\r\n", GetSession()->numbatchdl, ctim( batchtime ) );
 				GetSession()->localIO()->LocalPuts( szMessage );
 				WFile file( g_szDownloadFileName );
 				file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
@@ -593,7 +593,7 @@ void make_dl_batch_list(char *pszListFileName) {
 }
 
 
-void run_cmd(char *pszCommandLine, char *downlist, char *uplist, char *dl, bool bHangupAfterDl) {
+void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, const char *dl, bool bHangupAfterDl) {
 	char sx1[21], sx2[21], sx3[21];
 
 	int nSpeed = std::min<int>( com_speed, 57600 );
@@ -690,7 +690,7 @@ void ProcessDSZLogFile() {
 void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
 	char szListFileName[MAX_PATH], szDownloadLogEntry[255];
 
-	sprintf(szDownloadLogEntry, "%s BATCH Download: Files - %ld, Time - %s", pszDescription, GetSession()->numbatchdl, ctim(batchtime));
+	sprintf(szDownloadLogEntry, "%s BATCH Download: Files - %d, Time - %s", pszDescription, GetSession()->numbatchdl, ctim(batchtime));
 	if (bHangupAfterDl) {
 		strcat(szDownloadLogEntry, ", HAD");
 	}
