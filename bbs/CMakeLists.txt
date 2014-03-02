@@ -142,14 +142,13 @@ if(UNIX)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.m)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
     include_directories(platform/osx)
-    message("On Apple: ${PLATFORM_SOURCES}")
+    message("Detected OS as APPLE.")
   else()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
   endif()
 endif()
 
 
-message("ZMODEM_SOURCES: ${ZMODEM_SOURCES}")
 
 add_executable(bbs ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES})
 

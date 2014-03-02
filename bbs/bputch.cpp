@@ -205,7 +205,8 @@ void execute_ansi() {
 		// do nothing if invalid ANSI string.
 	} else {
 		int args[11];
-		char temp[11], *clrlst = "04261537";
+		char temp[11];
+        static const char clrlst[] = "04261537";
 
 		int argptr = 0;
 		int tempptr = 0;
