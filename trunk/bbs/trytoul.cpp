@@ -21,7 +21,7 @@
 
 
 int try_to_ul_wh(char *pszFileName);
-void t2u_error(char *pszFileName, char *msg);
+void t2u_error(const char *pszFileName, const char *msg);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -418,7 +418,7 @@ int try_to_ul_wh(char *pszFileName) {
 }
 
 
-void t2u_error(char *pszFileName, char *msg) {
+void t2u_error(const char *pszFileName, const char *msg) {
 	char szBuffer[ 255 ];
 
 	GetSession()->bout.NewLine( 2 );

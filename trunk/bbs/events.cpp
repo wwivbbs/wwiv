@@ -307,7 +307,7 @@ void show_events() {
 
 void select_event_days(int evnt) {
 	int i;
-	char ch, daystr[8], days[8];
+	char ch, daystr[9], days[8];
 
 	GetSession()->bout.NewLine();
 	strcpy(days, "SMTWTFS");

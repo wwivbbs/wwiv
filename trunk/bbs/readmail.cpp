@@ -258,7 +258,7 @@ void add_netsubscriber( int nSystemNumber ) {
 			GetSession()->bout << "AutoSend starter messages? ";
 			if ( yesno() ) {
 				char szAutoSendCommand[ MAX_PATH ];
-				sprintf( szAutoSendCommand, "AUTOSEND.EXE %s %u .%ld", s1, nSystemNumber, GetSession()->GetNetworkNumber() );
+				sprintf( szAutoSendCommand, "AUTOSEND.EXE %s %u .%d", s1, nSystemNumber, GetSession()->GetNetworkNumber() );
 				ExecuteExternalProgram( szAutoSendCommand, EFLAG_NONE );
 			}
 		}

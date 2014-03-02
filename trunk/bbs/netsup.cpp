@@ -73,7 +73,7 @@ int check_bbsdata() {
 	std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
 	if (ok && pStatus->IsUsingNetEdit()) {
 		holdphone( true );
-		sprintf( s, "NETEDIT .%ld /U", GetSession()->GetNetworkNumber() );
+		sprintf( s, "NETEDIT .%d /U", GetSession()->GetNetworkNumber() );
 		ExecuteExternalProgram(s, EFLAG_NETPROG);
 	} else {
 		WFile bbsdataNet( GetSession()->GetNetworkDataDirectory(), BBSDATA_NET );
@@ -99,7 +99,7 @@ int check_bbsdata() {
 		ok = ok2 = 0;
 	}
 	if (ok || ok2) {
-		sprintf( s, "network3 %s .%ld", (ok ? " Y" : ""), GetSession()->GetNetworkNumber() );
+		sprintf( s, "network3 %s .%d", (ok ? " Y" : ""), GetSession()->GetNetworkNumber() );
 		holdphone( true );
 
 		ExecuteExternalProgram(s, EFLAG_NETPROG);
@@ -204,7 +204,7 @@ int cleanup_net1() {
 						++i;
 						hangup = false;
 						GetSession()->using_modem = 0;
-						sprintf( cl, "network1 .%ld", GetSession()->GetNetworkNumber() );
+						sprintf( cl, "network1 .%d", GetSession()->GetNetworkNumber() );
 						if ( ExecuteExternalProgram( cl, EFLAG_NETPROG ) < 0 ) {
 							abort = true;
 						} else {
@@ -228,7 +228,7 @@ int cleanup_net1() {
 						ok = 1;
 						hangup = false;
 						GetSession()->using_modem = 0;
-						sprintf( cl, "network2 .%ld", GetSession()->GetNetworkNumber() );
+						sprintf( cl, "network2 .%d", GetSession()->GetNetworkNumber() );
 						if ( ExecuteExternalProgram( cl, EFLAG_NETPROG ) < 0 ) {
 							abort = true;
 						} else {
@@ -295,7 +295,7 @@ void do_callout( int sn ) {
 				sprintf( s1, " /M%d", static_cast<int>( net_networks[GetSession()->GetNetworkNumber()].con[i].macnum ) );
 				strcat( s, s1 );
 			}
-			sprintf( s1, " .%ld", GetSession()->GetNetworkNumber() );
+			sprintf( s1, " .%d", GetSession()->GetNetworkNumber() );
 			strcat( s, s1 );
 			if ( strncmp( csne->phone, "000", 3 ) ) {
 #ifndef _UNUX
@@ -998,7 +998,7 @@ void print_call(int sn, int nNetNumber, int i2) {
 	if (ncn[i2].lasttry) {
 		sprintf(s1, "%ld:", (tCurrentTime - ncn[i2].lasttry) / SECONDS_PER_HOUR);
 		time_t tTime = (((tCurrentTime - ncn[i2].lasttry) % SECONDS_PER_HOUR) / 60);
-		sprintf( s, "%d", tTime );
+		sprintf( s, "%ld", tTime );
 		if (tTime < 10) {
 			strcat(s1, "0");
 			strcat(s1, s);

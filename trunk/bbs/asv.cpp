@@ -20,13 +20,13 @@
 #include "wwiv.h"
 
 // Local prototypes
-int  printasv(char *pszFileName, int num, bool abort);
+int  printasv(const char *pszFileName, int num, bool abort);
 
 
 void asv() {
 	int i = 0;
 	int inode = 0;
-	char ch, s[41], s1[81], ph1[12], ph[12], sysname[35], snode[6];
+	char ch, s[41], s1[81], ph1[13], ph[13], sysname[35], snode[6];
 	net_system_list_rec *csne;
 	long *reg_num, reg_num1;
 	int i2 = 0, reg = 0, valfile = 0;
@@ -285,7 +285,7 @@ void asv() {
 }
 
 
-int printasv( char *pszFileName, int num, bool abort ) {
+int printasv(const char *pszFileName, int num, bool abort) {
 	char buff[1024], nums[9];
 	register unsigned int j;
 	int bytes_read;
