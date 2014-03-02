@@ -56,8 +56,8 @@ void checkUserList() {
 	} else {
 		if(nameFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
 			unsigned long size = nameFile.GetLength();
-			unsigned int recs = size / sizeof(smalrec);
-			if(recs != status.users) {
+			unsigned short recs = static_cast<unsigned short>(size / sizeof(smalrec));
+			if (recs != status.users) {
 				status.users = recs;
 				Print(NOK, true, "STATUS.DAT contained an incorrect user count.");
 			} else {
