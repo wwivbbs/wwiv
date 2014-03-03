@@ -104,7 +104,7 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 				snprintf(szBuffer, sizeof(szBuffer), "Windows XP %s", (bFullVersion ? os.szCSDVersion : ""));
 				break;
 			case 2:
-				snprintf(szBuffer, sizeof(szBuffer), "Windows Server Family %s", (bFullVersion ? os.szCSDVersion : ""));
+				snprintf(szBuffer, sizeof(szBuffer), "Windows Server 2003 %s", (bFullVersion ? os.szCSDVersion : ""));
 				break;
 			}
 		}
