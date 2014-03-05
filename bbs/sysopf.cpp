@@ -91,7 +91,7 @@ void prstatus( bool bIsWFC ) {
 	}
 	GetSession()->bout << "|#9Board is        : " << ( syscfg.closedsystem ? "Closed" : "Open" ) << wwiv::endl;
 
-	std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+	std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 	if ( !bIsWFC ) {
 		// All of this information is on the WFC Screen
 		GetSession()->bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
@@ -828,7 +828,7 @@ void zlog() {
 
 
 void set_user_age() {
-	std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+	std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 	int nUserNumber = 1;
 	do {
 		WUser user;

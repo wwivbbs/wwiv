@@ -70,7 +70,7 @@ int check_bbsdata() {
 		sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), BBSLIST_UPD);
 		ok = WFile::Exists(s) ? 1 : 0;
 	}
-	std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+	std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 	if (ok && pStatus->IsUsingNetEdit()) {
 		holdphone( true );
 		sprintf( s, "NETEDIT .%d /U", GetSession()->GetNetworkNumber() );

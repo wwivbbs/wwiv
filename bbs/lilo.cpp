@@ -582,7 +582,7 @@ void UpdateLastOnFileAndUserLog() {
 	char s1[181], szLastOnTxtFileName[ MAX_PATH ], szLogLine[ 255 ];
 	long len;
 
-	std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+	std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 
 	sprintf( szLogLine, "%ld: %s %s %s   %s - %d (%u)",
 	         pStatus->GetCallerNumber(),
@@ -835,7 +835,7 @@ void DisplayUserLoginInformation() {
 					s1[i1] = ' ';
 				}
 				s1[i1] = '\0';
-				std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+				std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 				GetSession()->bout << s1 << "(net" << pStatus->GetNetworkVersion() << ")\r\n";
 			}
 		}
