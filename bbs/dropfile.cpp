@@ -186,7 +186,7 @@ void CreatePCBoardSysDropFile() {
 		pcb.packflag = 27;
 		pcb.bpsflag = 32;
 		// Added for PCB 14.5 Revision
-		std::auto_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
+		std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 		strcpy(pcb.lastevent, pStatus->GetLastDate());
 		pcb.exittodos = '0';
 		pcb.eventupcoming = '0';

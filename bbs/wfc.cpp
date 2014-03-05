@@ -123,7 +123,7 @@ void wfc_screen() {
 	}
 
 	int nNumNewMessages = check_new_mail( GetSession()->usernum );
-	std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+	std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 	if ( GetSession()->wfc_status == 0 ) {
 		GetSession()->localIO()->SetCursor( WLocalIO::cursorNone );
 		GetSession()->localIO()->LocalCls();

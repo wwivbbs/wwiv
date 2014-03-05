@@ -257,6 +257,6 @@ bool StatusMgr::Write(statusrec *pStatus) {
 }
 
 const int StatusMgr::GetUserCount() {
-	std::auto_ptr<WStatus>pStatus(GetStatus());
+	std::unique_ptr<WStatus>pStatus(GetStatus());
 	return pStatus->GetNumUsers();
 }
