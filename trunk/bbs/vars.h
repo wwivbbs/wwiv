@@ -28,6 +28,11 @@
 #include "vardec.h"
 #include "net.h"
 
+
+#ifndef MAX_PATH
+#define MAX_PATH 260
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifdef _DEFINE_GLOBALS_
