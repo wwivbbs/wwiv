@@ -30,6 +30,14 @@ GENERAL INFORMATION:
     get the WWIVSYNC.ZIP and unzip it into your WWIV50 directory.
 
 
+                       *** Attention XP Users ***
+   
+    You need to download the Visual Studio 2013 redistributable files from:
+    http://www.microsoft.com/en-us/download/details.aspx?id=40784
+    and install this package before using WWIV (or any other software
+    compiled with Visual Studio 2013).
+
+
 ==============================================================================
 
 LABEL: WWIV-5_0_62
