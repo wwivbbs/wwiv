@@ -200,7 +200,7 @@ void KillEMail() {
 
 
 void LastCallers() {
-	std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+	std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 	if ( pStatus->GetNumCallsToday()> 0 ) {
 		if ( GetApplication()->HasConfigFlag( OP_FLAGS_SHOW_CITY_ST ) &&
 		        ( syscfg.sysconfig & sysconfig_extended_info ) ) {
@@ -549,7 +549,7 @@ void ResetQscan() {
 
 
 void MemoryStatus() {
-	std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+	std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 	GetSession()->bout.NewLine();
 	GetSession()->bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
 }
@@ -617,7 +617,7 @@ void VotePrint() {
 
 
 void YesturdaysLog() {
-	std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+	std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 	print_local_file( pStatus->GetLogFileName(), "" );
 }
 
@@ -765,7 +765,7 @@ void ClearQScan() {
 	case RETURN:
 		break;
 	case 'A': {
-		std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+		std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 		for ( int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++ ) {
 			qsc_p[i] = pStatus->GetQScanPointer() - 1L;
 		}
@@ -774,7 +774,7 @@ void ClearQScan() {
 	}
 	break;
 	case 'C':
-		std::auto_ptr<WStatus> pStatus( GetApplication()->GetStatusManager()->GetStatus() );
+		std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
 		GetSession()->bout.NewLine();
 		qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
 		GetSession()->bout << "Messages on " << subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name << " marked as read.\r\n";

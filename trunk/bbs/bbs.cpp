@@ -137,7 +137,7 @@ int WApplication::doWFCEvents() {
 	int lokb;
 	static int mult_time;
 
-	std::auto_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
+	std::unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
 	do {
 		write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
 		set_net_num( 0 );
@@ -1017,7 +1017,7 @@ int WApplication::Run(int argc, char *argv[]) {
 	}
 
 	if ( event_only ) {
-		std::auto_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
+		std::unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
 		cleanup_events();
 		if ( !wwiv::stringUtils::IsEquals( date(), pStatus->GetLastDate() ) ) {
 			// This may be another node, but the user explicitly wanted to run the beginday
