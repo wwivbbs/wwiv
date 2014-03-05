@@ -88,6 +88,7 @@ WLocalIO::WLocalIO() {
 
 WLocalIO::~WLocalIO() {
 	SetConsoleScreenBufferSize( m_hConOut, m_originalConsoleSize );
+	SetConsoleTextAttribute(m_hConOut, 0x07);
 }
 
 
