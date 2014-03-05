@@ -75,7 +75,7 @@ bool iscan1(int si, bool quick)
 
 	// make sure we have cache space
 	if (!cache) {
-		cache = static_cast<postrec *>( BbsAllocA(MAX_TO_CACHE * sizeof( postrec ) ) );
+		cache = static_cast<postrec *>( malloc(MAX_TO_CACHE * sizeof( postrec ) ) );
 		if (!cache) {
 			return false;
 		}
@@ -330,7 +330,7 @@ void delete_message(int mn) {
 
 	if ( fileSub.IsOpen() ) {
 		if ( mn > 0 && mn <= GetSession()->GetNumMessagesInCurrentMessageArea() ) {
-			char *pBuffer = static_cast<char *>( BbsAllocA( BUFSIZE ) );
+			char *pBuffer = static_cast<char *>( malloc( BUFSIZE ) );
 			if (pBuffer) {
 				postrec *p1 = get_post( mn );
 				remove_link( &( p1->msg ), subboards[GetSession()->GetCurrentReadMessageArea()].filename );
