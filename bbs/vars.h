@@ -45,7 +45,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 __EXTRN__ char	ansistr[81],
-           g_szAttachmentDirectory[81],
            charbuffer[ 255 ],
            dc[81],
            dcd[81],
@@ -152,11 +151,6 @@ __EXTRN__ double
 extratimecall,
 timeon,
 time_event;
-
-__EXTRN__ ch_action *actions[MAX_NUM_ACT];
-__EXTRN__ ch_type channels[11];
-
-
 
 #if defined (INIT) || defined (NETWORK) || defined (FIX)
 __EXTRN__ configrec syscfg;
