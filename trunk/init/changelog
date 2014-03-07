@@ -1,0 +1,39 @@
+	Init 5.0 Change Log
+	~~~~~~~~~~~~~~~~~~~
+
+ 
+01-Jan-2001 Rushfan
+	Renamed C files to cpp files, made new directory structure for 
+	init 5.0.
+
+04-Jan-2001 Rushfan
+	First completed working WIN32 port of INIT 5.0
+	
+12-7-2003 Rushfan 
+	Fixed modems list not scrolling
+	
+12-7-2003 Rushfan 
+	Control-A and Control-E now move to the beginning and end of the editfield.
+	Fixed GPF's on a 1st run of init 5.0
+
+12-9-2003 Rushfan 
+	removed corruption issues
+	change exit(-1) to exit(2)
+	
+12-10-2003 Rushfan 
+	Removed global datadirok, made read_status return a bool
+	
+19-Feb-2004 Rushfan
+	Disabled registration information, you can now use any number of instances you want.
+	Removed LLC from WWIV Software Services.
+
+02-Mar-2014 WSS
+    Updated headers to reflect licensing change.
+    Removed all references to registration requirement and set max_inst to 999.
+    
+03-Mar-2013 Rushfan
+    Fixed up code to compile with VS2013 and current WWIV sources. 
+
+06-Mar-2013 Rushfan
+    Fixed project references to be relative to $(ProjectDir)
+	
