@@ -21,11 +21,7 @@
 #define __INCLUDED_PLATFORM_INCL1_H__
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // WIN32 Specific section
-//
-//
-//
 //
 
 #if defined (_WIN32)
@@ -40,17 +36,7 @@
 #endif // defined (_MSC_VER)
 
 #include <direct.h>
-
-#ifndef __BORLANDC__
 #include <sys/utime.h>
-#else
-#ifndef __MFC_COMPAT__
-#define __MFC_COMPAT__
-#endif // __MFC_COMPAT__
-#include <sys/stat.h>
-#include <utime.h>
-#endif  // __BORLANDC__
-
 #include <conio.h>
 #include <dos.h>
 #include <io.h>
@@ -64,10 +50,6 @@
 #define MAX_DIR		_MAX_DIR
 #define MAX_FNAME	_MAX_FNAME
 #define MAX_EXT		_MAX_EXT
-
-#ifdef __BORLANDC__
-#define timezone _timezone
-#else	// __BORLANDC__
 
 enum COLORS {
 	BLACK,
@@ -87,7 +69,6 @@ enum COLORS {
 	YELLOW,
 	WHITE
 };
-#endif	// __BORLANDC__
 
 
 #if defined (__GNUC__)
@@ -137,11 +118,7 @@ enum COLORS {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//
 // UNIX Common Section.
-//
-//
-//
 //
 
 #if defined ( __unix__ ) || defined ( __APPLE__ )
@@ -216,47 +193,4 @@ enum COLORS {
 #endif // defined ( __unix__ )
 
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// DOS Specific section
-//
-//
-//
-//
-
-#if defined (__MSDOS__)
-
-#include <sys/stat.h>
-#include <utime.h>
-#include <conio.h>
-#include <dos.h>
-#include <dir.h>
-#include <direct.h>
-#include <io.h>
-#include <process.h>
-#include <share.h>
-
-#define WWIV_FILE_SEPERATOR_CHAR	'\\'
-#define WWIV_FILE_SEPERATOR_STRING	"\\"
-
-#define MAX_DRIVE	MAXDRIVE
-#define MAX_DIR		MAXDIR
-#define MAX_FNAME	MAXFILE
-#define MAX_EXT		MAXEXT
-#define MAX_PATH	MAXPATH
-
-#define timezone _timezone
-#define _putenv(s)	putenv(s)
-
-#ifndef UNREFERENCED_PARAMETER( X )
-#define UNREFERENCED_PARAMETER( X )   ( X )
-#endif // UNREFERENCED_PARAMETER
-
-#define WWIV_VSNPRINTF vsnprintf
-
-#endif	 // __MSDOS__
-
-
 #endif // __INCLUDED_PLATFORM_INCL1_H__
-
-
