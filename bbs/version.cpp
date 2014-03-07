@@ -25,7 +25,7 @@ const char *beta_version = " (Development)";
 
 // this is used to set the status.wwiv_version
 // leaving at 431 until we break file compatability
-unsigned int wwiv_num_version = 431;
+unsigned short wwiv_num_version = 431;
 
 // Data/time of this build
 const char *wwiv_date = __DATE__ ", " __TIME__;
