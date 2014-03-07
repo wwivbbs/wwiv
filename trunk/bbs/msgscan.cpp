@@ -111,7 +111,8 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 					}
 				}
 				if (nNumRepliesForThisThread) {
-					GetSession()->bout << "|#9Current Message has |#6" << nNumRepliesForThisThread << "|#9" << (nNumRepliesForThisThread == 1) ? "reply." : "replies.";
+					GetSession()->bout << "|#9Current Message has |#6" << nNumRepliesForThisThread << "|#9"
+						<< ((nNumRepliesForThisThread == 1) ? " reply." : " replies.");
 				}
 				GetSession()->bout << wwiv::endl;;
 			}
