@@ -44,17 +44,9 @@ void print(int color, char *fmt,...) {
 	vsprintf(s, fmt, ap);
 	va_end(ap);
 
-#ifdef __BORLANDC__
-	textcolor(YELLOW);
-	cputs(" þ ");
-	textcolor(color);
-	strcat(s, "\r\n");
-	cputs(s);
-#else
 	fputs(" þ ", stdout);
 	puts(s);
 	color = color;
-#endif
 }
 
 void stripnl(char *instr) {

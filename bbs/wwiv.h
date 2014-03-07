@@ -82,13 +82,6 @@
 #endif // _MSC_VER
 
 //
-// Include platform set after standard header files
-//
-
-#include "platform/incl2.h"
-
-
-//
 // WWIV includes
 //
 #include "wtypes.h"

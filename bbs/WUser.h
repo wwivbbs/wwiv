@@ -33,7 +33,6 @@
 #pragma pack( 1 )
 #endif
 
-
 #include <cstring>
 #include "vardec.h"
 
@@ -42,9 +41,7 @@
  */
 class WUser {
   public:
-	//
 	// Constants
-	//
 
 	// USERREC.inact
 	static const int userDeleted                ;// = 0x01;
@@ -92,12 +89,11 @@ class WUser {
 	static const int twentyFourHourClock        ;// = 0x00040000;
 	static const int msgPriority                ;// = 0x00080000;  // not used?
 
-//
-// Data
-//
+  //
+  // Data
+  //
   public:
 	struct userrec data;
-
 
   public:
 	//
