@@ -18,6 +18,7 @@
 /**************************************************************************/
 #import <Foundation/Foundation.h>
 
+extern "C" {
 const char *GetMacVersionString()
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -33,3 +34,6 @@ const char *GetOSNameString()
 	[pool release];
 	return name;
 }
+
+}
+
