@@ -31,11 +31,9 @@ typedef unsigned char       BYTE;
 typedef short               INT16;
 typedef unsigned short      UINT16;
 
-
 //
 // Defined on everything except for WIN32
 //
-
 #if !defined (_WIN32)
 typedef unsigned char       UCHAR;
 typedef unsigned short      WORD;
@@ -56,42 +54,5 @@ typedef long                LONG32;
 #endif  // HIBYTE
 
 #endif // !_WIN32
-
-
-//
-// MSDOS specific defines
-//
-#if defined ( __MSDOS__ )
-typedef unsigned char bool;
-#endif // __MSDOS__
-
-
-//
-// WIN32 Specific
-//
-
-
-#if defined ( _WIN32 ) && ( _MSC_VER < 1300 )
-
-#undef min
-#undef max
-
-// Add std::min and std::max because of MSVC 6.0 lameness.
-namespace std {
-
-template<class _Ty> inline
-const _Ty& max(const _Ty& a, const _Ty& b) {
-	return a < b ? b : a;
-}
-
-template<class _Ty> inline
-const _Ty& min(const _Ty& a, const _Ty& b) {
-	return b < a ? b : a;
-}
-
-}
-
-#endif // _MSC_VER < 1300
-
 
 #endif	// __INCLUDED_WTYPES_H__
