@@ -22,7 +22,8 @@
 
 static int g_nChatOpSecLvl;
 static int g_nNumActions;
-
+static ch_action *actions[MAX_NUM_ACT];
+static ch_type channels[11];
 
 
 int  rip_words(int nStartPos, char *cmsg, char *wd, int size, char lookfor);
@@ -53,8 +54,6 @@ void load_channels( WIniFile *pIniFile );
 int  userinst(char *user);
 int  grabname(char *pszMessage, int ch);
 bool usercomp( const char *st1, const char *st2);
-
-
 
 void chat_room() {
 	int oiia = iia;
