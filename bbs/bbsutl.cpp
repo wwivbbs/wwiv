@@ -232,6 +232,11 @@ bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bo
 			}
 	} while ( !done && !hangup );
 
+	if (hangup) {
+		// Caller isn't here, so we are not saving any message.
+		return false;
+	}
+
 	if ( ch != RETURN ) {
 		std::string::size_type lastwordstart = cp - 1;
 		while ( lastwordstart > 0 && pszBuffer[lastwordstart] != SPACE && pszBuffer[lastwordstart] != BACKSPACE ) {
