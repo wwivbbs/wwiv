@@ -44,7 +44,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/deps/pdcurses-3.4/include;$(ProjectDir)/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../deps/pdcurses-3.4/include;$(ProjectDir)/include</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
@@ -97,6 +97,11 @@
     <ClInclude Include="..\..\..\wwiv\textui\include\textui\SubWindow.h" />
     <ClInclude Include="..\..\..\wwiv\textui\include\textui\View.h" />
     <ClInclude Include="..\..\..\wwiv\textui\include\textui\Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\deps\pdcurses-3.4\pdcurses.vcxproj">
+      <Project>{ec52ceda-4f35-469a-8975-98776ea8ea93}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
