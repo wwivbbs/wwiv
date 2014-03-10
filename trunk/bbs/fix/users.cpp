@@ -22,6 +22,9 @@
 #include "log.h"
 #include "users.h"
 
+// This causes compile errors before wwiv.h That seems broken
+#include <vector>
+
 
 void checkUserList() {
 	WFile userFile(syscfg.datadir, USER_LST);
@@ -42,17 +45,39 @@ void checkUserList() {
 		Print(OK, true, "Reasonable number.");
 	}
 
+	std::vector<smalrec> names;
+
 	for(int i = 1; i <= userMgr.GetNumberOfUserRecords(); i++) {
 		WUser user;
 		userMgr.ReadUser(&user, i);
 		user.FixUp();
 		userMgr.WriteUser(&user, i);
+		if (!user.IsUserDeleted() && !user.IsUserInactive()) {
+			smalrec name = { 0 };
+			strcpy((char*) name.name, user.GetName());
+			name.number = i;
+			names.push_back(name);
+		}
+	};
+
+	std::sort(names.begin(), names.end(), [](const smalrec& a, const smalrec& b) -> bool {
+		return strcmp((char*) a.name, (char*)  b.name) < 0;
+	});
+
+	for (const auto& name : names) {
+		printf("[%d:%s] ", name.number, name.name);
 	}
+	printf("size=%d %ld\n", names.size(), sizeof(smalrec)* names.size());
 
 	Print(OK, true, "Checking NAMES.LST");
 	WFile nameFile(syscfg.datadir, NAMES_LST);
 	if(!nameFile.Exists()) {
 		Print(NOK, true, "%s does not exist, regenerating", nameFile.GetFullPathName().c_str());
+		nameFile.Close();
+		nameFile.Open(WFile::modeCreateFile | WFile::modeBinary | WFile::modeWriteOnly);
+		nameFile.Write(&names[0], sizeof(smalrec) * names.size());
+		nameFile.Close();
+
 	} else {
 		if(nameFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
 			unsigned long size = nameFile.GetLength();
