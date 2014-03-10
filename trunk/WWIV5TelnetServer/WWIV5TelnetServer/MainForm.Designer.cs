@@ -34,14 +34,14 @@
             this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.runLocalNodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.listBoxNodes = new System.Windows.Forms.ListBox();
             this.messages = new System.Windows.Forms.TextBox();
-            this.runLocalNodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -99,6 +99,18 @@
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(155, 6);
+            // 
+            // runLocalNodeToolStripMenuItem
+            // 
+            this.runLocalNodeToolStripMenuItem.Name = "runLocalNodeToolStripMenuItem";
+            this.runLocalNodeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.runLocalNodeToolStripMenuItem.Text = "Run Local Node";
+            this.runLocalNodeToolStripMenuItem.Click += new System.EventHandler(this.runLocalNodeToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(155, 6);
             // 
             // exitToolStripMenuItem
             // 
@@ -166,18 +178,6 @@
             this.messages.Size = new System.Drawing.Size(238, 232);
             this.messages.TabIndex = 0;
             // 
-            // runLocalNodeToolStripMenuItem
-            // 
-            this.runLocalNodeToolStripMenuItem.Name = "runLocalNodeToolStripMenuItem";
-            this.runLocalNodeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
-            this.runLocalNodeToolStripMenuItem.Text = "Run Local Node";
-            this.runLocalNodeToolStripMenuItem.Click += new System.EventHandler(this.runLocalNodeToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(155, 6);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -187,7 +187,7 @@
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
-            this.Text = "WWIV5TelnetServer";
+            this.Text = "WWIV5 Telnet Server";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.menuStrip1.ResumeLayout(false);
