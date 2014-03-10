@@ -101,6 +101,8 @@ namespace WWIV5TelnetServer
             startToolStripMenuItem.Enabled = true;
             stopToolStripMenuItem.Enabled = false;
             preferencesToolStripMenuItem.Enabled = true;
+            // Clear the list of nodes in the list.
+            listBoxNodes.Items.Clear();
         }
 
         private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)
