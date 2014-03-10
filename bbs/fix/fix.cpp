@@ -73,7 +73,7 @@ char *stripfn(const char *pszFileName) {
 /****************************************************************************/
 void ShowBanner() {
 	printf("WWIV Bulletin Board System - %s\n", wwiv_version);
-	printf("Copyright (c) 1998-2004, WWIV Software Services.\n");
+	printf("Copyright (c) 1998-2014, WWIV Software Services.\n");
 	printf("All Rights Reserved.\n\n");
 	printf("Compile Time : %s\n\n",wwiv_date);
 }
