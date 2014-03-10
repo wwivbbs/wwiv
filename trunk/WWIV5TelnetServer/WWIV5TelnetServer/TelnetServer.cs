@@ -98,7 +98,15 @@ namespace WWIV5TelnetServer
                     Socket socket = server.Accept();
                     Console.WriteLine("After accept.");
                     NodeStatus node = getNextNode();
-                    string ip = socket.RemoteEndPoint.ToString();
+                    string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
+                    // HACK
+                    if (ip == "202.39.236.116")
+                    {
+                        // This IP has been bad. Blacklist it until proper filtering is added.
+                        OnStatusMessageUpdated("Attempt from blacklisted IP.");
+                        Thread.Sleep(1000);
+                        node = null;
+                    }
                     OnStatusMessageUpdated("Connection from " + ip);
                     if (node != null)
                     {
