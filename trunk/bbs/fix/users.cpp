@@ -26,10 +26,12 @@
 #include <vector>
 #include <set>
 
-extern bool force_experimental;
+namespace wwiv {
+namespace fix {
 
-void checkUserList() {
-	WFile userFile(syscfg.datadir, USER_LST);
+int FixUsersCommand::Execute() {
+    std::cout << "Runnning FixDirectoriesCommand::Execute" << std::endl;
+    	WFile userFile(syscfg.datadir, USER_LST);
 	if(!userFile.Exists()) {
 		Print(NOK, true, "%s does not exist.", userFile.GetFullPathName().c_str());
 		giveUp();
@@ -82,9 +84,6 @@ void checkUserList() {
 		return equal < 0;
 	});
 
-	for (const auto& sr : smallrecords) {
-		//printf("[%d:%s] ", sr.number, sr.name);
-	}
 	printf("size=%d %ld\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
 
 	Print(OK, true, "Checking NAMES.LST");
@@ -110,5 +109,8 @@ void checkUserList() {
 		}
 		nameFile.Close();
 	}
-
+    return 0;
 }
+
+}  // namespace fix
+}  // namespace wwiv

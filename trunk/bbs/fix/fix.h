@@ -16,11 +16,38 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_FIX_H__
+#define __INCLUDED_FIX_H__
 
-bool mkdirs(char *s);
+class WFile;
+
 void giveUp();
 void maybeGiveUp();
-void checkFileSize(WFile &file, unsigned long len);
-bool checkDirExists(WFile &dir, const char *desc);
 
-extern int num_dirs, num_subs;
+namespace wwiv {
+namespace fix {
+
+bool checkDirExists(WFile &dir, const char *desc);
+class FixConfiguration;
+
+class Command {
+public:
+    virtual int Execute() = 0;
+};
+
+class BaseCommand : public Command {
+public:
+    BaseCommand(FixConfiguration* config);
+    virtual ~BaseCommand();
+
+protected:
+    FixConfiguration* config() const { return config_; }
+
+private:
+    FixConfiguration* config_;
+};
+
+}  // namespace fix
+}  // namespace wwiv
+
+#endif  // __INCLUDED_FIX_H__

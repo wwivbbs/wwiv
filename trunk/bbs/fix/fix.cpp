@@ -16,109 +16,58 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "fix.h"
 
 #define _DEFINE_GLOBALS_
 #include "wwiv.h"
 #include "log.h"
 #include "dirs.h"
 #include "users.h"
+#include "fix_config.h"
 
-/****************************************************************************/
-/*                      GLOBALS                                             */
-/****************************************************************************/
-bool force_yes;
-bool force_experimental;
-int num_dirs = 0;
-int num_subs = 0;
+#include <algorithm>
+#include <map>
 
-/****************************************************************************/
-/*                      STUBS                                               */
-/****************************************************************************/
+void giveUp();
+void maybeGiveUp();
 
-char *stripfn(const char *pszFileName) {
-	static char szStaticFileName[15];
-	char szTempFileName[ MAX_PATH ];
+namespace wwiv {
+namespace fix {
 
-	WWIV_ASSERT(pszFileName);
+BaseCommand::BaseCommand(FixConfiguration* config) : config_(config) {}
+BaseCommand::~BaseCommand() {}
 
-	int nSepIndex = -1;
-	for (int i = 0; i < wwiv::stringUtils::GetStringLength(pszFileName); i++) {
-		if ( pszFileName[i] == '\\' || pszFileName[i] == ':' || pszFileName[i] == '/' ) {
-			nSepIndex = i;
-		}
-	}
-	if (nSepIndex != -1) {
-		strcpy( szTempFileName, &( pszFileName[nSepIndex + 1] ) );
-	} else {
-		strcpy( szTempFileName, pszFileName );
-	}
-	for ( int i1 = 0; i1 < wwiv::stringUtils::GetStringLength( szTempFileName ); i1++ ) {
-		if ( szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z' ) {
-			szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
-		}
-	}
-	int j = 0;
-	while ( szTempFileName[j] != 0 ) {
-		if ( szTempFileName[j] == SPACE ) {
-			strcpy( &szTempFileName[j], &szTempFileName[j + 1] );
-		} else {
-			++j;
-		}
-	}
-	strcpy( szStaticFileName, szTempFileName );
-	return szStaticFileName;
-}
+class CriticalFilesCommand : public BaseCommand {
+public:
+    CriticalFilesCommand(FixConfiguration* config) : BaseCommand(config) {}
+    virtual ~CriticalFilesCommand() {}
 
-/****************************************************************************/
-/*                      LOCALS                                              */
-/****************************************************************************/
-void ShowBanner() {
-	printf("WWIV Bulletin Board System - %s\n", wwiv_version);
-	printf("Copyright (c) 1998-2014, WWIV Software Services.\n");
-	printf("All Rights Reserved.\n\n");
-	printf("Compile Time : %s\n\n",wwiv_date);
-}
+    virtual int Execute() {
+         std::vector<std::string> datafiles { ARCHIVER_DAT, WFC_DAT, COLOR_DAT };
 
-void ShowHelp() {
-	printf("Command Line Usage:\n\n");
-	printf("\t-Y\t= Force Yes to All Prompts\n");
-	printf("\t-U\t= Skip User Record Check\n");
-	printf("\t-X\t= Use Experimental features\n");
-	printf("\n");
-	exit(0);
-}
+	    Print(OK, true, "Checking for Critical DATA files...");
+        for (const auto& datafile : datafiles) {
+            WFile file(syscfg.datadir, datafile);
+		    if(!file.Exists()) {
+			    Print(NOK, true, "Critical file: %s is missing", datafile);
+		    }
+	    }
+	    Print(OK, true, "All critical DATA files found");
+        return 0;
+    }
+};
 
-void giveUp() {
-	Print(NOK, true, "Giving up.");
-	exit(-1);
-}
+class NoopCommand : public BaseCommand {
+public:
+    NoopCommand(FixConfiguration* config, const std::string& name) : BaseCommand(config), name_(name) {}
 
-void maybeGiveUp(void) {
-	if (!force_experimental) {
-		Print(OK, true, "Future expansion might try to fix this problem.");
-		giveUp();
-	}
-	else {
-		Print(OK, true, "Using Experimental Features");
-	}
-}
+    virtual int Execute() {
+        std::cout << "NoopCommand::Execute: " << name_ << std::endl;
+        return 0;
+    }
+    std::string name_;
+};
 
-void checkFileSize(WFile &file, unsigned long len) {
-	if(!file.IsOpen()) {
-		int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
-		file.Open(nFileMode);
-	}
-	unsigned long actual = file.GetLength();
-	file.Close();
-	if(actual < len) {
-		Print(NOK, true, "%s too short (%ld<%ld).", file.GetFullPathName().c_str(), actual, len);
-		giveUp();
-	}
-	if(actual > len) {
-		Print(NOK, true, "%s too long (%ld>%ld).", file.GetFullPathName().c_str(), actual, len);
-		Print(NOK, true, "Attempting to continue.");
-	}
-}
 
 bool checkDirExists(WFile &dir, const char *desc) {
 	bool exist = dir.Exists();
@@ -126,10 +75,10 @@ bool checkDirExists(WFile &dir, const char *desc) {
 		Print(NOK, false, "Unable to find dir '%s'", dir.GetFullPathName().c_str());
 		Print(NOK, false, "for '%s' dir", desc);
 		printf("   Do you wish to CREATE it (y/N)?\n");
-		char ch[128];
-		std::cin >> ch;
-		if(ch[0] == 'Y' || ch[0] == 'y') {
-			exist = WWIV_make_path(dir.GetFullPathName().c_str());
+		std::string s;
+		std::cin >> s;
+		if(s[0] == 'Y' || s[0] == 'y') {
+			exist = WWIV_make_path(dir.GetFullPathName().c_str()) != 0;
 			if(!exist) {
 				Print(NOK, true, "Unable to create dir '%s' for %s dir.", dir.GetFullPathName().c_str(), desc);
 			}
@@ -138,100 +87,137 @@ bool checkDirExists(WFile &dir, const char *desc) {
 	return exist;
 }
 
-/****************************************************************************/
-/*                      CHECK METHODS                                       */
-/****************************************************************************/
+// Kinda hacky but this is needed to giveup, maybeGiveUp.
+static FixConfiguration* configuration;
 
-void saveStatus() {
-	WFile statusDat(syscfg.datadir, STATUS_DAT);
 
-	statusDat.Open(WFile::modeReadWrite | WFile::modeBinary);
-	statusDat.Write(&status, sizeof(statusrec));
-	statusDat.Close();
-}
+class FixApplication {
+ public:
+     FixApplication() : num_dirs_(0) {
+        ShowBanner();
+     	// open the log
+	    OpenLogFile("FIX.LOG");
+     }
+     ~FixApplication() {
+        CloseLogFile();
+     }
 
-void initStatusDat() {
-	int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
-	bool update = false;
-	WFile statusDat(syscfg.datadir, STATUS_DAT);
-	if(!statusDat.Exists()) {
-		Print(NOK, true, "%s NOT FOUND.", statusDat.GetFullPathName().c_str());
-		Print(OK, true, "Recreating %s.", statusDat.GetFullPathName().c_str());
-		memset(&status, 0, sizeof(statusrec));
-		strcpy(status.date1, "00/00/00");
-		strcpy(status.date2, status.date1);
-		strcpy(status.date3, status.date1);
-		strcpy(status.log1, "000000.log");
-		strcpy(status.log2, "000000.log");
-		strcpy(status.gfiledate, "00/00/00");
-		status.callernum = 65535;
-		status.wwiv_version = wwiv_num_version;
-		update = true;
-	} else {
-		checkFileSize(statusDat, sizeof(statusrec));
-		Print(OK, true, "Reading %s...", statusDat.GetFullPathName().c_str());
-		if (!statusDat.Open(nFileMode)) {
-			Print(NOK, true, "%s NOT FOUND.", statusDat.GetFullPathName().c_str());
-			giveUp();
-		}
-		statusDat.Read(&status, sizeof(statusrec));
-		statusDat.Close();
+    void ShowBanner() {
+        std::cout << "WWIV Bulletin Board System -" << wwiv_version << std::endl
+            << "Copyright (c) 1998-2014, WWIV Software Services.\n"
+            << "All Rights Reserved.\n\n"
+            << "Compile Time : " << wwiv_date << std::endl << std::endl;
+    }
 
-		// version check
-		if(status.wwiv_version > wwiv_num_version) {
-			Print(NOK, true, "Incorrect version of fix (this is for %d, you need %d)", wwiv_num_version, status.wwiv_version);
-			giveUp();
-		}
+    void checkFileSize(WFile &file, unsigned long len) {
+	    if(!file.IsOpen()) {
+		    int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
+		    file.Open(nFileMode);
+	    }
+	    unsigned long actual = file.GetLength();
+	    file.Close();
+	    if(actual < len) {
+		    Print(NOK, true, "%s too short (%ld<%ld).", file.GetFullPathName().c_str(), actual, len);
+		    giveUp();
+	    }
+	    if(actual > len) {
+		    Print(NOK, true, "%s too long (%ld>%ld).", file.GetFullPathName().c_str(), actual, len);
+		    Print(NOK, true, "Attempting to continue.");
+	    }
+    }
 
-		time_t val = time(NULL);
-		char *curDate = dateFromTimeT(val);
-		if(strcmp(status.date1, curDate)) {
-			strcpy(status.date1, curDate);
-			update = true;
-			Print(OK, true, "Date error in STATUS.DAT (status.date1) corrected");
-		}
+    void saveStatus() {
+	    WFile statusDat(syscfg.datadir, STATUS_DAT);
 
-		val -= 86400L;
-		curDate = dateFromTimeT(val);
-		if(strcmp(status.date2, curDate)) {
-			strcpy(status.date2, curDate);
-			update = true;
-			Print(OK, true, "Date error in STATUS.DAT (status.date2) corrected");
-		}
-		char logFile[512];
-		snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
-		if(strcmp(status.log1, logFile)) {
-			strcpy(status.log1, logFile);
-			update = true;
-			Print(OK, true, "Log filename error in STATUS.DAT (status.log1) corrected");
-		}
+	    statusDat.Open(WFile::modeReadWrite | WFile::modeBinary);
+	    statusDat.Write(&status, sizeof(statusrec));
+	    statusDat.Close();
+    }
 
-		val -= 86400L;
-		curDate = dateFromTimeT(val);
-		if(strcmp(status.date3, curDate)) {
-			strcpy(status.date3, curDate);
-			update = true;
-			Print(OK, true, "Date error in STATUS.DAT (status.date3) corrected");
-		}
-		snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
-		if(strcmp(status.log2, logFile)) {
-			strcpy(status.log2, logFile);
-			update = true;
-			Print(OK, true, "Log filename error in STATUS.DAT (status.log2) corrected");
-		}
-	}
-	if(update) {
-		saveStatus();
-	}
-}
+    void initStatusDat() {
+	    int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
+	    bool update = false;
+	    WFile statusDat(syscfg.datadir, STATUS_DAT);
+	    if(!statusDat.Exists()) {
+		    Print(NOK, true, "%s NOT FOUND.", statusDat.GetFullPathName().c_str());
+		    Print(OK, true, "Recreating %s.", statusDat.GetFullPathName().c_str());
+		    memset(&status, 0, sizeof(statusrec));
+		    strcpy(status.date1, "00/00/00");
+		    strcpy(status.date2, status.date1);
+		    strcpy(status.date3, status.date1);
+		    strcpy(status.log1, "000000.log");
+		    strcpy(status.log2, "000000.log");
+		    strcpy(status.gfiledate, "00/00/00");
+		    status.callernum = 65535;
+		    status.wwiv_version = wwiv_num_version;
+		    update = true;
+	    } else {
+		    checkFileSize(statusDat, sizeof(statusrec));
+		    Print(OK, true, "Reading %s...", statusDat.GetFullPathName().c_str());
+		    if (!statusDat.Open(nFileMode)) {
+			    Print(NOK, true, "%s NOT FOUND.", statusDat.GetFullPathName().c_str());
+			    giveUp();
+		    }
+		    statusDat.Read(&status, sizeof(statusrec));
+		    statusDat.Close();
 
-void initDirsDat() {
-	WFile dirsDat(syscfg.datadir, DIRS_DAT);
-	if(!dirsDat.Exists()) {
-		Print(NOK, true, "%s NOT FOUND.", dirsDat.GetFullPathName().c_str());
-		maybeGiveUp();
-	} else {
-		Print(OK, true, "Reading %s...", dirsDat.GetFullPathName().c_str());
+		    // version check
+		    if(status.wwiv_version > wwiv_num_version) {
+			    Print(NOK, true, "Incorrect version of fix (this is for %d, you need %d)", wwiv_num_version, status.wwiv_version);
+			    giveUp();
+		    }
+
+		    time_t val = time(NULL);
+		    char *curDate = dateFromTimeT(val);
+		    if(strcmp(status.date1, curDate)) {
+			    strcpy(status.date1, curDate);
+			    update = true;
+			    Print(OK, true, "Date error in STATUS.DAT (status.date1) corrected");
+		    }
+
+		    val -= 86400L;
+		    curDate = dateFromTimeT(val);
+		    if(strcmp(status.date2, curDate)) {
+			    strcpy(status.date2, curDate);
+			    update = true;
+			    Print(OK, true, "Date error in STATUS.DAT (status.date2) corrected");
+		    }
+		    char logFile[512];
+		    snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
+		    if(strcmp(status.log1, logFile)) {
+			    strcpy(status.log1, logFile);
+			    update = true;
+			    Print(OK, true, "Log filename error in STATUS.DAT (status.log1) corrected");
+		    }
+
+		    val -= 86400L;
+		    curDate = dateFromTimeT(val);
+		    if(strcmp(status.date3, curDate)) {
+			    strcpy(status.date3, curDate);
+			    update = true;
+			    Print(OK, true, "Date error in STATUS.DAT (status.date3) corrected");
+		    }
+		    snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
+		    if(strcmp(status.log2, logFile)) {
+			    strcpy(status.log2, logFile);
+			    update = true;
+			    Print(OK, true, "Log filename error in STATUS.DAT (status.log2) corrected");
+		    }
+	    }
+	    if(update) {
+		    saveStatus();
+	    }
+    }
+
+    void initDirsDat() {
+	    WFile dirsDat(syscfg.datadir, DIRS_DAT);
+	    if(!dirsDat.Exists()) {
+		    Print(NOK, true, "%s NOT FOUND.", dirsDat.GetFullPathName().c_str());
+		    maybeGiveUp();
+            return;
+        }
+
+        Print(OK, true, "Reading %s...", dirsDat.GetFullPathName().c_str());
 		int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
 		dirsDat.Open(nFileMode);
 		directories = (directoryrec *)bbsmalloc(dirsDat.GetLength() + 1);
@@ -239,18 +225,18 @@ void initDirsDat() {
 			Print(NOK, true, "Couldn't allocate %ld bytes for %s.", dirsDat.GetLength(), dirsDat.GetFullPathName().c_str());
 			giveUp();
 		}
-		num_dirs = (dirsDat.Read(directories, dirsDat.GetLength())) / sizeof(directoryrec);
+		num_dirs_ = (dirsDat.Read(directories, dirsDat.GetLength())) / sizeof(directoryrec);
 		dirsDat.Close();
-		Print(OK, true, "Found %d directories", num_dirs);
-	}
-}
+		Print(OK, true, "Found %d directories", num_dirs_);
+    }
 
-void initSubsDat() {
-	WFile subsDat(syscfg.datadir, SUBS_DAT);
-	if(!subsDat.Exists()) {
-		Print(NOK, true, "%s NOT FOUND.", subsDat.GetFullPathName().c_str());
-		maybeGiveUp();
-	} else {
+    void initSubsDat() {
+	    WFile subsDat(syscfg.datadir, SUBS_DAT);
+	    if(!subsDat.Exists()) {
+		    Print(NOK, true, "%s NOT FOUND.", subsDat.GetFullPathName().c_str());
+		    maybeGiveUp();
+            return;
+	    } 
 		Print(OK, true, "Reading %s...", subsDat.GetFullPathName().c_str());
 		int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
 		subsDat.Open(nFileMode);
@@ -259,120 +245,96 @@ void initSubsDat() {
 			Print(NOK, true, "Couldn't allocate %ld bytes for %s.", subsDat.GetLength(), subsDat.GetFullPathName().c_str());
 			giveUp();
 		}
-		num_subs = (subsDat.Read(subboards, subsDat.GetLength())) / sizeof(subboardrec);
+		int num_subs = (subsDat.Read(subboards, subsDat.GetLength())) / sizeof(subboardrec);
 		subsDat.Close();
 		Print(OK, true, "Found %d subs", num_subs);
+    }
+
+    void Init() {
+	    WFile configFile(CONFIG_DAT);
+	    if (!configFile.Exists()) {
+		    Print(NOK, true, "%s NOT FOUND.", CONFIG_DAT);
+		    giveUp();
+	    }
+	    int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
+
+	    checkFileSize(configFile, sizeof(configrec));
+	    Print(OK, true, "Reading %s...", configFile.GetFullPathName().c_str());
+	    configFile.Open(nFileMode);
+	    int readIn = configFile.Read(&syscfg, sizeof(configrec));
+	    configFile.Close();
+	    if(readIn != sizeof(configrec)) {
+		    Print(NOK, true, "Failed to read %s (%d != %d)", configFile.GetFullPathName().c_str(), readIn, sizeof(configrec));
+		    giveUp();
+	    }
+	    syscfg.userreclen = sizeof(userrec);
+
+	    WFile dataDir(syscfg.datadir);
+	    if(!checkDirExists(dataDir, "Data")) {
+		    Print(NOK, true, "Must find DATA directory to continue.");
+		    giveUp();
+	    }
+
+	    initStatusDat();
+	    initDirsDat();
+	    initSubsDat();
+    }
+
+    void Run(FixConfiguration *config) {
+        this->Init();
+
+        std::unique_ptr<Command> cmd_dirs(new FixDirectoriesCommand(config, num_dirs_));
+        std::unique_ptr<Command> cmd_critical_files(new CriticalFilesCommand(config));
+        std::unique_ptr<Command> cmd_users(new FixUsersCommand(config));
+	    std::map<std::string, wwiv::fix::Command*> command_map;
+        command_map["dirs"] = cmd_dirs.get();
+        command_map["critical_files"] = cmd_critical_files.get();
+        command_map["users"] = cmd_users.get();
+
+        for (const auto& command : config->commands()) {
+            std::cout << "executing command: " << command;
+            command_map.at(command)->Execute();
+        }
+        
+        this->saveStatus();
+    }
+
+private:
+    int num_dirs_;
+};
+
+}  // namespace fix
+}  // namespace wwiv
+
+void giveUp() {
+	Print(NOK, true, "Giving up.");
+	exit(-1);
+}
+
+void maybeGiveUp() {
+	if (!wwiv::fix::configuration->flag_experimental) {
+		Print(OK, true, "Future expansion might try to fix this problem.");
+		giveUp();
+	}
+	else {
+		Print(OK, true, "Using Experimental Features");
 	}
 }
 
-void init() {
-	WFile configFile(CONFIG_DAT);
-	if (!configFile.Exists()) {
-		Print(NOK, true, "%s NOT FOUND.", CONFIG_DAT);
-		giveUp();
-	}
-	int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
-
-	checkFileSize(configFile, sizeof(configrec));
-	Print(OK, true, "Reading %s...", configFile.GetFullPathName().c_str());
-	configFile.Open(nFileMode);
-	int readIn = configFile.Read(&syscfg, sizeof(configrec));
-	configFile.Close();
-	if(readIn != sizeof(configrec)) {
-		Print(NOK, true, "Failed to read %s (%d != %d)", configFile.GetFullPathName().c_str(), readIn, sizeof(configrec));
-		giveUp();
-	}
-	syscfg.userreclen = sizeof(userrec);
-
-	WFile dataDir(syscfg.datadir);
-	if(!checkDirExists(dataDir, "Data")) {
-		Print(NOK, true, "Must find DATA directory to continue.");
-		giveUp();
-	}
-
-	initStatusDat();
-	initDirsDat();
-	initSubsDat();
-}
-
-void checkCriticalFiles() {
-	const char *dataFiles[] = {
-		ARCHIVER_DAT,
-		WFC_DAT,
-		COLOR_DAT,
-		NULL
-	};
-
-	Print(OK, true, "Checking for Critical DATA files...");
-	int fileNo = 0;
-	while(dataFiles[fileNo] != NULL) {
-		WFile file(syscfg.datadir, dataFiles[fileNo]);
-		if(!file.Exists()) {
-			Print(NOK, true, "Critical file: %s is missing", dataFiles[fileNo]);
-		}
-		fileNo++;
-	}
-	Print(OK, true, "All critical DATA files found");
-}
-
-/****************************************************************************/
 int main(int argc, char *argv[]) {
-	int i;
-	char *ss;
-	time_t startTime;
-	time_t endTime;
-	bool usercheck = true;
-	force_experimental = false;
+	time_t startTime = time(nullptr);
 
-	ShowBanner();
-	for (i = 1; i < argc; i++) {
-		ss = argv[i];
-		if ((*ss == '/') || (*ss == '-')) {
-			switch (toupper(ss[1])) {
-			case 'Y':
-				force_yes = true;
-				break;
-			case 'U':
-				usercheck = false;
-				break;
-			case 'X':
-				force_experimental = true;
-				break;
-			case '?':
-				ShowHelp();
-				break;
-			}
-		} else {
-			Print(NOK, false, "Unknown argument: '%s'", ss);
-		}
-	}
+    std::vector<std::string> command_names {"critical_files", "dirs", "users"};
+    using wwiv::fix::FixConfiguration;
+    std::unique_ptr<FixConfiguration> config(new FixConfiguration(command_names));
+    wwiv::fix::configuration = config.get();
+    wwiv::fix::FixApplication app;
+    config->ParseCommandLine(argc, argv);
 
-	// get the current time in seconds
-	startTime = time(NULL);
-	// open the log
-	OpenLogFile("FIX.LOG");
+    app.Run(config.get());
 
-	// read in all critical data
-	init();
-
-	checkAllDirs();
-	checkCriticalFiles();
-	if (usercheck) {
-		checkUserList();
-	}
-
-	saveStatus();
-
-	/*
-	  if (usercheck)
-	    check_nameslist();
-	  find_max_qscan();
-	  check_msg_consistency();
-	*/
-	endTime = time(NULL);
-
+    // TODO(rushfan): Add new commands for find_max_qscan and check_msg_consistency
+	time_t endTime = time(nullptr);
 	Print(OK, true, "FIX Completed.  Time elapsed: %d seconds\n\n", (endTime-startTime));
-	CloseLogFile();
-
 	return 0;
 }
