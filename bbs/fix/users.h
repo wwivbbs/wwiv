@@ -16,5 +16,23 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_USERS_H__
+#define __INCLUDED_USERS_H__
 
-void checkUserList();
+
+namespace wwiv {
+namespace fix {
+
+class FixUsersCommand : public BaseCommand {
+public:
+    FixUsersCommand(FixConfiguration* config) : BaseCommand(config) {}
+    virtual ~FixUsersCommand() {}
+
+    virtual int Execute();
+};
+
+}  // namespace fix
+}  // namespace wwiv
+
+
+#endif  // __INCLUDED_USERS_H__

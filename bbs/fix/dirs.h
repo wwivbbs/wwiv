@@ -16,5 +16,25 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_DIRS_H__
+#define __INCLUDED_DIRS_H__
 
-void checkAllDirs();
+#include "fix.h"
+
+namespace wwiv {
+namespace fix {
+
+class FixDirectoriesCommand : public BaseCommand {
+public:
+    FixDirectoriesCommand(FixConfiguration* config, int num_dirs) : BaseCommand(config), num_dirs_(num_dirs) {}
+    virtual ~FixDirectoriesCommand() {}
+
+    virtual int Execute();
+private:
+    int num_dirs_;
+};
+
+}  // namespace fix
+}  // namespace wwiv
+
+#endif  // __INCLUDED_DIRS_H__ 

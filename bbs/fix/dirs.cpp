@@ -22,15 +22,18 @@
 #include "log.h"
 #include "dirs.h"
 
+namespace wwiv {
+namespace fix {
+
 void checkAllDirsExist() {
 	Print(OK, true, "Checking Directories...");
 
 	const char *dirs[] = {syscfg.msgsdir, syscfg.gfilesdir, syscfg.menudir, syscfg.datadir, syscfg.dloadsdir,
-	                      syscfg.tempdir, NULL
+	                      syscfg.tempdir, nullptr
 	                     };
 
 	int i = 0;
-	while(dirs[i] != NULL) {
+	while(dirs[i] != nullptr) {
 		WFile dir(dirs[i]);
 		if(!checkDirExists(dir, dir.GetFullPathName().c_str())) {
 			Print(NOK, true, "%s directory is missing", dir.GetFullPathName().c_str());
@@ -41,7 +44,7 @@ void checkAllDirsExist() {
 	Print(OK, true, "Basic directories present...");
 }
 
-void checkFileAreas() {
+void checkFileAreas(int num_dirs) {
 	Print(OK, true, "Checking %d directories", num_dirs);
 	for(int i = 0; i < num_dirs; i++) {
 		if(!(directories[i].mask & mask_cdrom) && !(directories[i].mask & mask_offline)) {
@@ -65,7 +68,7 @@ void checkFileAreas() {
 							recordFile.Write(&upload, sizeof(uploadsrec));
 						}
 						if(numFiles >= 1) {
-							ext_desc_rec *extDesc = NULL;
+							ext_desc_rec *extDesc = nullptr;
 							unsigned int recNo = 0;
 							std::string filenameExt = directories[i].filename;
 							filenameExt.append(".ext");
@@ -121,8 +124,9 @@ void checkFileAreas() {
 									recordFile.Write(&upload, sizeof(uploadsrec));
 								}
 							}
-							if(extDesc != NULL) {
+							if(extDesc != nullptr) {
 								BbsFreeMemory(extDesc);
+                                extDesc = nullptr;
 							}
 						}
 						recordFile.Close();
@@ -141,8 +145,15 @@ void checkFileAreas() {
 	}
 }
 
-void checkAllDirs() {
+
+int FixDirectoriesCommand::Execute() {
+    std::cout << "Runnning FixDirectoriesCommand::Execute" << std::endl;
 	checkAllDirsExist();
-	checkFileAreas();
+	checkFileAreas(num_dirs_);
+    return 0;
 }
+
+
+}  // namespace fix
+}  // namespavce wwiv
 
