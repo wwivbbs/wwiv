@@ -1,0 +1,8 @@
+Debug
+Release
+*.sdf
+*.suo
+bin
+obj
+*.vcxproj.user
+
