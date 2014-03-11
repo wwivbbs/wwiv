@@ -110,9 +110,8 @@ int GetAnsiStatusAndShowWelcomeScreen( int nNetworkOnly ) {
 			strcpy( szCurrentSpeed, GetSession()->GetCurrentSpeed().c_str() );
 			GetSession()->bout << "CONNECT " << WWIV_STRUPR( szCurrentSpeed ) << "\r\n\r\n";
 		}
-		char szOSVersion[ 255 ];
-		WWIV_GetOSVersion( szOSVersion, 250, true );
-		GetSession()->bout << "\r\nWWIV " << wwiv_version << "/" << szOSVersion << " " << beta_version << wwiv::endl;
+		std::string osVersion = WWIV_GetOSVersion();
+		GetSession()->bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
 		GetSession()->bout << "Copyright (c) 1998-2014 WWIV Software Services." << wwiv::endl;
 		GetSession()->bout << "All Rights Reserved." << wwiv::endl;
 
@@ -841,9 +840,8 @@ void DisplayUserLoginInformation() {
 		}
 	}
 
-	char szOSVersion[100];
-	WWIV_GetOSVersion( szOSVersion, sizeof(szOSVersion), true );
-	GetSession()->bout << "|#9OS|#0................ |#2" << szOSVersion << wwiv::endl;
+
+	GetSession()->bout << "|#9OS|#0................ |#2" << WWIV_GetOSVersion() << wwiv::endl;
 
 	GetSession()->bout << "|#9Instance|#0.......... |#2" << GetApplication()->GetInstanceNumber() << "\r\n\n";
 	if ( GetSession()->GetCurrentUser()->GetForwardUserNumber() ) {
