@@ -27,6 +27,7 @@
 /*                      GLOBALS                                             */
 /****************************************************************************/
 bool force_yes;
+bool force_experimental;
 int num_dirs = 0;
 int num_subs = 0;
 
@@ -82,6 +83,7 @@ void ShowHelp() {
 	printf("Command Line Usage:\n\n");
 	printf("\t-Y\t= Force Yes to All Prompts\n");
 	printf("\t-U\t= Skip User Record Check\n");
+	printf("\t-X\t= Use Experimental features\n");
 	printf("\n");
 	exit(0);
 }
@@ -92,8 +94,13 @@ void giveUp() {
 }
 
 void maybeGiveUp(void) {
-	Print(OK, true, "Future expansion might try to fix this problem.");
-	giveUp();
+	if (!force_experimental) {
+		Print(OK, true, "Future expansion might try to fix this problem.");
+		giveUp();
+	}
+	else {
+		Print(OK, true, "Using Experimental Features");
+	}
 }
 
 void checkFileSize(WFile &file, unsigned long len) {
@@ -315,6 +322,7 @@ int main(int argc, char *argv[]) {
 	time_t startTime;
 	time_t endTime;
 	bool usercheck = true;
+	force_experimental = false;
 
 	ShowBanner();
 	for (i = 1; i < argc; i++) {
@@ -326,6 +334,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'U':
 				usercheck = false;
+				break;
+			case 'X':
+				force_experimental = true;
 				break;
 			case '?':
 				ShowHelp();

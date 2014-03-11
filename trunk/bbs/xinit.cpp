@@ -853,7 +853,10 @@ bool WApplication::read_names() {
 	if ( smallist ) {
 		BbsFreeMemory( smallist );
 	}
-	smallist = static_cast<smalrec *>( BbsAllocWithComment( static_cast<long>( syscfg.maxusers ) * static_cast<long>( sizeof( smalrec ) ),
+
+	int maxNumberOfUsers = std::max<int>(statusMgr->GetUserCount(), syscfg.maxusers);
+
+	smallist = static_cast<smalrec *>(BbsAllocWithComment(static_cast<long>(maxNumberOfUsers)* static_cast<long>(sizeof(smalrec)),
 	                                   "names.lst - try decreasing max users in INIT" ) );
 	WWIV_ASSERT( smallist != NULL );
 
@@ -862,7 +865,7 @@ bool WApplication::read_names() {
 		std::cout << file.GetName() << " NOT FOUND.\r\n";
 		return false;
 	}
-	file.Read( smallist, sizeof( smalrec ) * statusMgr->GetUserCount() );
+	file.Read(smallist, maxNumberOfUsers * sizeof(smalrec));
 	file.Close();
 	return true;
 }

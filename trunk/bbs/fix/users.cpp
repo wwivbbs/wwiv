@@ -24,7 +24,9 @@
 
 // This causes compile errors before wwiv.h That seems broken
 #include <vector>
+#include <set>
 
+extern bool force_experimental;
 
 void checkUserList() {
 	WFile userFile(syscfg.datadir, USER_LST);
@@ -40,12 +42,13 @@ void checkUserList() {
 	Print(OK, true, "TBD: Check for trashed user recs.");
 	if(userMgr.GetNumberOfUserRecords() > syscfg.maxusers) {
 		Print(OK, true, "Might be too many.");
-		maybeGiveUp();
+			maybeGiveUp();
 	} else {
 		Print(OK, true, "Reasonable number.");
 	}
 
-	std::vector<smalrec> names;
+	std::vector<smalrec> smallrecords;
+	std::set<std::string> names;
 
 	for(int i = 1; i <= userMgr.GetNumberOfUserRecords(); i++) {
 		WUser user;
@@ -53,29 +56,45 @@ void checkUserList() {
 		user.FixUp();
 		userMgr.WriteUser(&user, i);
 		if (!user.IsUserDeleted() && !user.IsUserInactive()) {
-			smalrec name = { 0 };
-			strcpy((char*) name.name, user.GetName());
-			name.number = i;
-			names.push_back(name);
+			smalrec sr = { 0 };
+			strcpy((char*) sr.name, user.GetName());
+			sr.number = i;
+			std::string namestring((char*) sr.name);
+			if (names.find(namestring) == names.end()) {
+				smallrecords.push_back(sr);
+				names.insert(namestring);
+			}
+			else {
+				std::cout << "[skipping " << namestring << " #" << sr.number << "]";
+			}
 		}
 	};
 
-	std::sort(names.begin(), names.end(), [](const smalrec& a, const smalrec& b) -> bool {
-		return strcmp((char*) a.name, (char*)  b.name) < 0;
+	std::sort(smallrecords.begin(), smallrecords.end(), [](const smalrec& a, const smalrec& b) -> bool {
+		int equal = strcmp((char*)a.name, (char*)b.name);
+
+		// Sort by user number if names match.
+		if (equal == 0) {
+			return a.number < b.number;
+		}
+
+		// Otherwise sort by name comparison.
+		return equal < 0;
 	});
 
-	for (const auto& name : names) {
-		printf("[%d:%s] ", name.number, name.name);
+	for (const auto& sr : smallrecords) {
+		//printf("[%d:%s] ", sr.number, sr.name);
 	}
-	printf("size=%d %ld\n", names.size(), sizeof(smalrec)* names.size());
+	printf("size=%d %ld\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
 
 	Print(OK, true, "Checking NAMES.LST");
 	WFile nameFile(syscfg.datadir, NAMES_LST);
 	if(!nameFile.Exists()) {
-		Print(NOK, true, "%s does not exist, regenerating", nameFile.GetFullPathName().c_str());
+		Print(NOK, true, "%s does not exist, regenerating with %d names", nameFile.GetFullPathName().c_str(),
+			smallrecords.size());
 		nameFile.Close();
 		nameFile.Open(WFile::modeCreateFile | WFile::modeBinary | WFile::modeWriteOnly);
-		nameFile.Write(&names[0], sizeof(smalrec) * names.size());
+		nameFile.Write(&smallrecords[0], sizeof(smalrec) * smallrecords.size());
 		nameFile.Close();
 
 	} else {
@@ -86,7 +105,7 @@ void checkUserList() {
 				status.users = recs;
 				Print(NOK, true, "STATUS.DAT contained an incorrect user count.");
 			} else {
-				Print(OK, true, "STATUS.DAT matches expected user count.");
+				Print(OK, true, "STATUS.DAT matches expected user count of %d users.", status.users);
 			}
 		}
 		nameFile.Close();
