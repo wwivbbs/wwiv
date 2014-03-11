@@ -28,133 +28,72 @@ void WWIV_Sound(int nFreq, int nDly) {
 
 int WWIV_GetRandomNumber(int nMaxValue) {
 #if defined (_WIN32)
-
 	int num = rand();
 	float rn = static_cast<float>( num/RAND_MAX );
 	return static_cast<int>((nMaxValue-1) * rn);
-
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
-
 	int num = random();
 	float rn = static_cast<float>( num/RAND_MAX );
 	return static_cast<int>((nMaxValue-1) * rn);
-
-#elif defined (__OS2__)
-
-#error "port this!"
-
 #else
-
 #error "port this!"
-
-
 #endif
 }
 
-bool WWIV_GetOSVersion(	char * pszOSVersionString,
-                        int nBufferSize,
-                        bool bFullVersion) {
-
+std::string WWIV_GetOSVersion() {
+	std::string buffer;
 #if defined (_WIN32)
-
 	OSVERSIONINFO os;
-	char szBuffer[200];
 
 	os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
 	if (!GetVersionEx(&os))
 	{
-		strcpy(pszOSVersionString, "WIN32");
-		return false;
+		return std::string("WIN32");
 	}
-
 	switch (os.dwPlatformId)
 	{
-	case VER_PLATFORM_WIN32_WINDOWS:
-		if ((os.dwMajorVersion == 4) && (os.dwMinorVersion == 0))
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows 95");
-		}
-		else if (os.dwMajorVersion == 4 && os.dwMinorVersion == 10)
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows 98");
-			if (os.szCSDVersion[1] == 'A')
-			{
-				strcat(szBuffer, "SE ");
-			}
-		}
-		else if (os.dwMajorVersion == 4 && os.dwMinorVersion == 90)
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows ME");
-		}
-		else
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows %ld%c%ld", os.dwMajorVersion, '.', os.dwMinorVersion);
-		}
-		break;
 	case VER_PLATFORM_WIN32_NT:
-		if (os.dwMajorVersion == 5)
-		{
-			switch (os.dwMinorVersion)
-			{
+		if (os.dwMajorVersion == 5)	{
+			switch (os.dwMinorVersion) {
 			case 0:
-				snprintf(szBuffer, sizeof(szBuffer), "Windows 2000 %s", (bFullVersion ? os.szCSDVersion : ""));
+				wwiv::stringUtils::FormatString(buffer, "Windows 2000 %s", os.szCSDVersion);
 				break;
 			case 1:
-				snprintf(szBuffer, sizeof(szBuffer), "Windows XP %s", (bFullVersion ? os.szCSDVersion : ""));
+				wwiv::stringUtils::FormatString(buffer, "Windows XP %s", os.szCSDVersion);
 				break;
 			case 2:
-				snprintf(szBuffer, sizeof(szBuffer), "Windows Server 2003 %s", (bFullVersion ? os.szCSDVersion : ""));
+				wwiv::stringUtils::FormatString(buffer, "Windows Server 2003 %s", os.szCSDVersion);
 				break;
 			}
 		}
-		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 0)
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows Vista %s", (bFullVersion ? os.szCSDVersion : ""));
+		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 0)	{
+			switch (os.dwMinorVersion) {
+			case 0:
+				wwiv::stringUtils::FormatString(buffer, "Windows Vista %s", os.szCSDVersion);
+				break;
+			case 1:
+				wwiv::stringUtils::FormatString(buffer, "Windows 7 %s", os.szCSDVersion);
+			case 2:
+				wwiv::stringUtils::FormatString(buffer, "Windows 8 %s", os.szCSDVersion);
+			case 3:
+				wwiv::stringUtils::FormatString(buffer, "Windows 8.1 %s", os.szCSDVersion);
+				break;
+			default:
+				wwiv::stringUtils::FormatString(buffer, "Windows NT %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
+				break;
+			}
 		}
-		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 1)
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows 7 %s", (bFullVersion ? os.szCSDVersion : ""));
-		}
-		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 2)
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows 8 %s", (bFullVersion ? os.szCSDVersion : ""));
-		}
-		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 3)
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows 8.1 %s", (bFullVersion ? os.szCSDVersion : ""));
-		}
-		else
-		{
-			snprintf(szBuffer, sizeof(szBuffer), "Windows NT %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, (bFullVersion ? os.szCSDVersion : ""));
-		}
-		break;
-	case VER_PLATFORM_WIN32s:
-		// Don't know why we need this, we won't run here.
-		snprintf(szBuffer, sizeof(szBuffer), "WIN32s on Windows 3.1");
 		break;
 	default:
-		snprintf(szBuffer, sizeof(szBuffer), "WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
+		wwiv::stringUtils::FormatString(buffer, "WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
 	}
-
-	if (nBufferSize < wwiv::stringUtils::GetStringLength(szBuffer))
-	{
-		szBuffer[nBufferSize - 1] = '\0';
-	}
-	strcpy(pszOSVersionString, szBuffer);
 
 #elif defined (__OS2__)
-
 	//
 	// TODO Add OS/2 version information code here..
-	//
-	strcpy(pszOSVersionString, "OS/2");
-
-
+	buffer = std::string("OS/2");
 #elif defined ( __linux__ )
-
-	char szBuffer[200];
-	strcpy(szBuffer, "Linux");
+	buffer = std::string("Linux");
 	WFile info("/proc/sys/kernel", "osrelease");
 
 	if(info.Exists()) {
@@ -163,25 +102,16 @@ bool WWIV_GetOSVersion(	char * pszOSVersionString,
 			char szBuffer2[100];
 			info.Read(&szBuffer2, 100);
 			info.Close();
-			snprintf( szBuffer, sizeof( szBuffer ), "Linux %s", szBuffer2 );
+			buffer = "Linux " + szBuffer2;
 		}
 	}
-	strcpy(pszOSVersionString, szBuffer);
-
 #elif defined ( __APPLE__ )
-
-	strcpy( pszOSVersionString, GetOSNameString() );
-	strcat( pszOSVersionString, " " );
-	strcat( pszOSVersionString, GetMacVersionString() );
-
+	wwiv::stringUtils::FormatString(buffer, "%s %s", GetOSNameString(), GetMacVersionString() );
 #elif defined ( __unix__ )
-
-	//
 	// TODO Add Linux version information code here..
-	//
-	strcpy(pszOSVersionString, "UNIX");
-
+	buffer = "UNIX";
 #else
 #error "What's the platform here???"
 #endif
+	return buffer;
 }

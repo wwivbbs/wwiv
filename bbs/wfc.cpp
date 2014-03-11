@@ -113,7 +113,6 @@ bool iscdrom( char drive ) {
 
 void wfc_screen() {
 	char szBuffer[ 255 ];
-	char szOSVersion[ 255 ];
 	instancerec ir;
 	WUser u;
 	static double wfc_time=0, poll_time=0;
@@ -141,9 +140,9 @@ void wfc_screen() {
 		sprintf( szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, GetApplication()->GetInstanceNumber() );
 		GetSession()->localIO()->LocalXYAPrintf( 1 + ( ( 76 - strlen( szBuffer ) ) / 2 ), 4, 15, szBuffer );
 		GetSession()->localIO()->LocalXYAPrintf( 8, 1, 14, fulldate() );
-		WWIV_GetOSVersion( szOSVersion, 100, true );
+		std::string osVersion = WWIV_GetOSVersion();
 		GetSession()->localIO()->LocalXYAPrintf( 40, 1, 3, "OS: " );
-		GetSession()->localIO()->LocalXYAPrintf( 44, 1, 14, szOSVersion );
+		GetSession()->localIO()->LocalXYAPrintf(44, 1, 14, osVersion.c_str());
 		GetSession()->localIO()->LocalXYAPrintf( 21, 6, 14, "%d", pStatus->GetNumCallsToday() );
 		GetSession()->localIO()->LocalXYAPrintf( 21, 7, 14, "%d", fwaiting );
 		if ( nNumNewMessages ) {

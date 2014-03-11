@@ -20,6 +20,8 @@
 #ifndef __INCLUDED_WUTIL_H__
 #define __INCLUDED_WUTIL_H__
 
+#include <string>
+
 void WWIV_Sound(int nFreq, int nDly);
 
 int WWIV_GetRandomNumber(int nMaxValue);
@@ -29,7 +31,7 @@ int WWIV_GetRandomNumber(int nMaxValue);
 // nBufferSize is the size of the buffer pointed to by pszOSVersionString
 // returns true on success, false on error
 //
-bool WWIV_GetOSVersion(char * pszOSVersionString, int nBufferSize, bool bFullVersion);
+std::string WWIV_GetOSVersion();
 
 
 #endif // __INCLUDED_WUTIL_H__
