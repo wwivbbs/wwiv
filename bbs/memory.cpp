@@ -19,8 +19,6 @@
 
 #include "wwiv.h"
 
-
-
 /**
  * Attempts to allocate lNumBytes (+1) bytes on the heap, returns ptr to memory
  * if successful.  Exits the BBS if it fails to allocate the required memory

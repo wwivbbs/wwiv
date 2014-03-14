@@ -30,7 +30,7 @@ namespace wwiv {
 namespace fix {
 
 int FixUsersCommand::Execute() {
-    std::cout << "Runnning FixDirectoriesCommand::Execute" << std::endl;
+    std::cout << "Runnning FixUsersCommand::Execute" << std::endl;
     	WFile userFile(syscfg.datadir, USER_LST);
 	if(!userFile.Exists()) {
 		Print(NOK, true, "%s does not exist.", userFile.GetFullPathName().c_str());
