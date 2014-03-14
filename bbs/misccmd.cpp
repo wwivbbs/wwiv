@@ -470,7 +470,7 @@ void time_bank() {
 int getnetnum( const char *pszNetworkName ) {
 	WWIV_ASSERT( pszNetworkName );
 	for ( int i = 0; i < GetSession()->GetMaxNetworkNumber(); i++ ) {
-		if ( wwiv::stringUtils::IsEqualsIgnoreCase( net_networks[i].name, pszNetworkName ) ) {
+		if ( wwiv::strings::IsEqualsIgnoreCase( net_networks[i].name, pszNetworkName ) ) {
 			return i;
 		}
 	}

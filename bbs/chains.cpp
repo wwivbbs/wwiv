@@ -280,17 +280,17 @@ void do_chains() {
 			GetSession()->SetMMKeyArea( WSession::mmkeyChains );
 			GetSession()->bout << "\r\n|#6Please wait...\r\n";
 			run_chain( map[ nChainNumber - 1 ] );
-		} else if ( wwiv::stringUtils::IsEquals(ss, "Q") ) {
+		} else if ( wwiv::strings::IsEquals(ss, "Q") ) {
 			GetSession()->SetMMKeyArea( WSession::mmkeyMessageAreas );
 			done = true;
-		} else if ( wwiv::stringUtils::IsEquals(ss, "?") ) {
+		} else if ( wwiv::strings::IsEquals(ss, "?") ) {
 			show_chains(&mapp, map);
-		} else if ( wwiv::stringUtils::IsEquals(ss, "P") ) {
+		} else if ( wwiv::strings::IsEquals(ss, "P") ) {
 			if (start > 0) {
 				start -= 14;
 			}
 			start = std::max<int>( start, 0 );
-		} else if ( wwiv::stringUtils::IsEquals(ss, "N") ) {
+		} else if ( wwiv::strings::IsEquals(ss, "N") ) {
 			if (start + 14 < mapp) {
 				start += 14;
 			}

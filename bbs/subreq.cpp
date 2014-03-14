@@ -99,7 +99,7 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
 				if (s[0] > ' ') {
 					ss = strtok(s, " \r\n\t");
 					if (ss) {
-						if ( wwiv::stringUtils::IsEqualsIgnoreCase( ss, type ) ) {
+						if ( wwiv::strings::IsEqualsIgnoreCase( ss, type ) ) {
 							ss = strtok(NULL, " \r\n\t");
 							if (ss) {
 								short h = static_cast<short>(atol(ss));
@@ -296,7 +296,7 @@ void sub_xtr_add(int n, int nn) {
 		return;
 	}
 
-	xnp->type = wwiv::stringUtils::StringToUnsignedShort(xnp->stype);
+	xnp->type = wwiv::strings::StringToUnsignedShort(xnp->stype);
 
 	if ( xnp->type ) {
 		sprintf(xnp->stype, "%u", xnp->type);
@@ -325,11 +325,11 @@ void sub_xtr_add(int n, int nn) {
 					GetSession()->bout.NewLine();
 					GetSession()->bout << "|#2Which category is this sub in (0 for unknown/misc)? ";
 					input(s, 3);
-					i = wwiv::stringUtils::StringToUnsignedShort(s);
-					if ( i || wwiv::stringUtils::IsEquals( s, "0" ) ) {
+					i = wwiv::strings::StringToUnsignedShort(s);
+					if ( i || wwiv::strings::IsEquals( s, "0" ) ) {
 						WTextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
 						while (ff.ReadLine(s, 100)) {
-							i1 = wwiv::stringUtils::StringToUnsignedShort(s);
+							i1 = wwiv::strings::StringToUnsignedShort(s);
 							if (i1 == i) {
 								gc = 1;
 								xnp->category = i;
@@ -337,7 +337,7 @@ void sub_xtr_add(int n, int nn) {
 							}
 						}
 						file.Close();
-						if ( wwiv::stringUtils::IsEquals( s, "0" ) ) {
+						if ( wwiv::strings::IsEquals( s, "0" ) ) {
 							gc = 1;
 						} else if (!xnp->category) {
 							GetSession()->bout << "Illegal/invalid category.\r\n\n";

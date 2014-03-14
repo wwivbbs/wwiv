@@ -52,7 +52,7 @@ void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSy
 		nUserNumber = finduser1(szEmailAddress);
 		if (nUserNumber > 0) {
 			*pUserNumber = static_cast< unsigned short >( nUserNumber );
-		} else if ( wwiv::stringUtils::IsEquals( szEmailAddress, "SYSOP" ) ) { // Add 4.31 Build3
+		} else if ( wwiv::strings::IsEquals( szEmailAddress, "SYSOP" ) ) { // Add 4.31 Build3
 			*pUserNumber = 1;
 		} else {
 			GetSession()->bout << "Unknown user.\r\n";
@@ -114,7 +114,7 @@ void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSy
 		if (*pSystemNumber && ss1) {
 			for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
 				set_net_num(i);
-				if ( wwiv::stringUtils::IsEqualsIgnoreCase( ss1, GetSession()->GetNetworkName() ) ) {
+				if ( wwiv::strings::IsEqualsIgnoreCase( ss1, GetSession()->GetNetworkName() ) ) {
 					if (!valid_system(*pSystemNumber)) {
 						GetSession()->bout.NewLine();
 						GetSession()->bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";

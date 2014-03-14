@@ -196,7 +196,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
 	++ss;
 	for (i = 0; i < MAX_ARCS; i++) {
 		if (!ok) {
-			ok = wwiv::stringUtils::IsEqualsIgnoreCase( ss, arcs[i].extension );
+			ok = wwiv::strings::IsEqualsIgnoreCase( ss, arcs[i].extension );
 		}
 	}
 	if (!ok) {
@@ -243,7 +243,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
 		if ( GetApplication()->HasConfigFlag( OP_FLAGS_IDZ_DESC ) ) {
 			ss = strtok(b, "\n");
 			if (ss) {
-				for (i = 0; i < wwiv::stringUtils::GetStringLength(ss); i++) {
+				for (i = 0; i < wwiv::strings::GetStringLength(ss); i++) {
 					if ((strchr( reinterpret_cast<char*>( const_cast<unsigned char*>( invalid_chars ) ), ss[i]) != NULL) && (ss[i] != CZ)) {
 						ss[i] = '\x20';
 					}
@@ -372,11 +372,11 @@ void tag_it() {
 		}
 		GetSession()->bout << "\r\n|#2Tagging: |#4" << s3 << wwiv::endl;
 	}
-	for (i2 = 0; i2 < wwiv::stringUtils::GetStringLength(s3); i2++) {
+	for (i2 = 0; i2 < wwiv::strings::GetStringLength(s3); i2++) {
 		sprintf(s1, "%s", s3 + i2);
 		i4 = 0;
 		bad = false;
-		for (i3 = 0; i3 < wwiv::stringUtils::GetStringLength(s1); i3++) {
+		for (i3 = 0; i3 < wwiv::strings::GetStringLength(s1); i3++) {
 			if ((s1[i3] == ' ') || (s1[i3] == ',') || (s1[i3] == ';')) {
 				s1[i3] = 0;
 				i4 = 1;
@@ -680,7 +680,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
 		if (dn == -1) {
 			return 0;
 		} else {
-			for (i = 0; i < wwiv::stringUtils::GetStringLength(pszDescription); i++) {
+			for (i = 0; i < wwiv::strings::GetStringLength(pszDescription); i++) {
 				if (pszDescription[i] == RETURN) {
 					pszDescription[i] = SPACE;
 				}
@@ -1234,7 +1234,7 @@ void removenotthere() {
 
 int find_batch_queue( const char *pszFileName ) {
 	for (int i = 0; i < GetSession()->numbatch; i++) {
-		if ( wwiv::stringUtils::IsEquals( pszFileName, batch[i].filename ) ) {
+		if ( wwiv::strings::IsEquals( pszFileName, batch[i].filename ) ) {
 			return i;
 		}
 	}

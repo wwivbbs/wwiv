@@ -308,7 +308,7 @@ bool fill_sec(int sn) {
 			if (s1[0]) {
 				chd = 1;
 				i = 0;
-				while ( wwiv::stringUtils::StringCompare(s1, g[i].description) > 0 && i < nf ) {
+				while ( wwiv::strings::StringCompare(s1, g[i].description) > 0 && i < nf ) {
 					++i;
 				}
 				for (i1 = nf; i1 > i; i1--) {

@@ -193,7 +193,7 @@ char getkey()
 	bool beepyet = false;
 	timelastchar1 = timer1();
 
-	using namespace wwiv::stringUtils;
+	using namespace wwiv::strings;
 	long tv = ( so() || IsEqualsIgnoreCase( GetSession()->GetCurrentSpeed().c_str(), "TELNET" ) ) ? 10920L : 3276L;
 	long tv1 = tv - 1092L;     // change 4.31 Build3
 

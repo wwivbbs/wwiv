@@ -144,7 +144,7 @@ void process_full_result( const std::string& resultCode ) {
 
 	while (ss) {
 		for (int i2 = 0; i2 < modem_i->num_resl; i2++) {
-			if ( wwiv::stringUtils::IsEquals( modem_i->resl[i2].result, ss ) ) {
+			if ( wwiv::strings::IsEquals( modem_i->resl[i2].result, ss ) ) {
 				do_result(&(modem_i->resl[i2]));
 				break;
 			}

@@ -102,7 +102,7 @@ void wwivnode( WUser *pUser, int mode) {
 			pausescr();
 		}
 	}
-	if ( wwiv::stringUtils::IsEquals( pUser->GetDataPhoneNumber(),
+	if ( wwiv::strings::IsEquals( pUser->GetDataPhoneNumber(),
 	                                  reinterpret_cast<char*>( csne->phone ) ) ) {
 		if ( pUser->GetSl() < GetSession()->asv.sl ) {
 			pUser->SetSl( GetSession()->asv.sl );
@@ -198,7 +198,7 @@ int callback() {
 				ok = 0;
 			}
 		}
-		for (i1 = 0; i1 < wwiv::stringUtils::GetStringLength(s1) - 1; i1++) {
+		for (i1 = 0; i1 < wwiv::strings::GetStringLength(s1) - 1; i1++) {
 			if ( ( s1[i1] < '0' || s1[i1] > '9' ) && s1[i1] != '-' ) {
 				ok = 0;
 			}

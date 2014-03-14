@@ -1396,7 +1396,7 @@ void WApplication::create_phone_file() {
 				phoneNumFile.Write( &p, sizeof( phonerec ) );
 			}
 			if ( szTempDataNumber[0] &&
-			        !wwiv::stringUtils::IsEquals( szTempVoiceNumber, szTempDataNumber ) &&
+			        !wwiv::strings::IsEquals( szTempVoiceNumber, szTempDataNumber ) &&
 			        !strstr( szTempVoiceNumber, "000-" ) ) {
 				strcpy( reinterpret_cast<char*>( p.phone ), szTempDataNumber );
 				phoneNumFile.Write( &p, sizeof( phonerec ) );

@@ -22,7 +22,7 @@
 bool isr1( int nUserNumber, int nNumUsers, const char *pszName ) {
 	int cp = 0;
 	while ( cp < nNumUsers &&
-	        wwiv::stringUtils::StringCompare( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) > 0 ) {
+	        wwiv::strings::StringCompare( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) > 0 ) {
 		++cp;
 	}
 	for ( int i = nNumUsers; i > cp; i-- ) {
@@ -530,7 +530,7 @@ void print_net_listing( bool bForcePause ) {
 				}
 
 				strcpy(s2, csne.name);
-				for (int i1 = 0; i1 < wwiv::stringUtils::GetStringLength(s2); i1++) {
+				for (int i1 = 0; i1 < wwiv::strings::GetStringLength(s2); i1++) {
 					s2[i1] = upcase(s2[i1]);
 				}
 
@@ -673,7 +673,7 @@ void mailr() {
 					}
 					if (m.status & status_new_net) {
 						tp -= 1;
-						if (wwiv::stringUtils::GetStringLength(m.title) <= tp) {
+						if (wwiv::strings::GetStringLength(m.title) <= tp) {
 							nn = m.title[tp + 1];
 						} else {
 							nn = 0;
@@ -894,7 +894,7 @@ void beginday( bool displayStatus ) {
 	WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
 	pStatus->ValidateAndFixDates();
 
-	if ( wwiv::stringUtils::IsEquals( date(), pStatus->GetLastDate() ) ) {
+	if ( wwiv::strings::IsEquals( date(), pStatus->GetLastDate() ) ) {
 		GetApplication()->GetStatusManager()->CommitTransaction( pStatus );
 		return;
 	}

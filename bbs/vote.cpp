@@ -150,7 +150,7 @@ void vote_question(int i, int ii) {
 	if (i1 > v.numanswers) {
 		i1 = 0;
 	}
-	if ( i1 == 0 && !wwiv::stringUtils::IsEquals( pszAnswer, "0" ) ) {
+	if ( i1 == 0 && !wwiv::strings::IsEquals( pszAnswer, "0" ) ) {
 		return;
 	}
 
@@ -229,9 +229,9 @@ void vote() {
 		int nQuestionNum = atoi( pszAnswer );
 		if ( nQuestionNum > 0 && nQuestionNum <= mapp ) {
 			vote_question( nQuestionNum, map[ nQuestionNum ] );
-		} else if ( wwiv::stringUtils::IsEquals( pszAnswer, "Q" ) ) {
+		} else if ( wwiv::strings::IsEquals( pszAnswer, "Q" ) ) {
 			done = true;
-		} else if ( wwiv::stringUtils::IsEquals( pszAnswer, "?" ) ) {
+		} else if ( wwiv::strings::IsEquals( pszAnswer, "?" ) ) {
 			print_quest( mapp, &map[0] );
 		}
 	} while ( !done && !hangup );

@@ -471,7 +471,7 @@ void readmail( int mode ) {
 				}
 				strcat( s, " " );
 				strcat( s, stripcolors( m.title ) );
-				while ( wwiv::stringUtils::GetStringLength( stripcolors( s ) ) > GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) {
+				while ( wwiv::strings::GetStringLength( stripcolors( s ) ) > GetSession()->GetCurrentUser()->GetScreenChars() - 1 ) {
 					s[strlen(s) - 1] = '\0';
 				}
 			}
@@ -803,7 +803,7 @@ void readmail( int mode ) {
 						break;
 					}
 					for (i1 = 0; (i1 < GetSession()->num_subs) && (usub[i1].subnum != -1); i1++) {
-						if ( wwiv::stringUtils::IsEquals( usub[i1].keys, ss1 ) ) {
+						if ( wwiv::strings::IsEquals( usub[i1].keys, ss1 ) ) {
 							i = i1;
 						}
 					}
@@ -933,7 +933,7 @@ void readmail( int mode ) {
 
 				GetSession()->bout << "|#2Forward to: ";
 				input(s, 75);
-				if (((i3 = strcspn(s, "@")) != (wwiv::stringUtils::GetStringLength(s))) && (isalpha(s[i3 + 1]))) {
+				if (((i3 = strcspn(s, "@")) != (wwiv::strings::GetStringLength(s))) && (isalpha(s[i3 + 1]))) {
 					if (strstr(s, "@32767") == NULL) {
 						WWIV_STRLWR(s1);
 						strcat(s, " @32767");
@@ -951,7 +951,7 @@ void readmail( int mode ) {
 					if (nUserNumber || nSystemNumber) {
 						if (nSystemNumber) {
 							if ( nSystemNumber == 1 && nUserNumber == 0 &&
-							        wwiv::stringUtils::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ) {
+							        wwiv::strings::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ) {
 								strcpy( s1, net_email_name );
 							} else if ( GetSession()->GetMaxNetworkNumber() > 1 ) {
 								if ( nUserNumber ) {
@@ -1074,7 +1074,7 @@ void readmail( int mode ) {
 					if (ch == '@') {
 						GetSession()->bout << "\r\n|#9Enter user name or number:\r\n:";
 						input( s, 75, true );
-						if ( ( ( i = strcspn(s, "@" ) ) != wwiv::stringUtils::GetStringLength( s ) )
+						if ( ( ( i = strcspn(s, "@" ) ) != wwiv::strings::GetStringLength( s ) )
 						        && isalpha( s[i + 1] ) ) {
 							if (strstr(s, "@32767") == NULL) {
 								WWIV_STRLWR(s);

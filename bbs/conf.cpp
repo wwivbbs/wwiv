@@ -706,7 +706,7 @@ int modify_conf(int conftype,  int which ) {
 			input( minSl, 3 );
 			if ( !minSl.empty() ) {
 				if ( atoi( minSl.c_str() ) >= 0 && atoi( minSl.c_str() ) <= 255 ) {
-					c.minsl = wwiv::stringUtils::StringToUnsignedChar( minSl.c_str() );
+					c.minsl = wwiv::strings::StringToUnsignedChar( minSl.c_str() );
 					changed = 1;
 				}
 			}
@@ -718,7 +718,7 @@ int modify_conf(int conftype,  int which ) {
 			input(s, 3);
 			if (s[0]) {
 				if ((atoi(s) >= 0) && (atoi(s) <= 255)) {
-					c.maxsl = wwiv::stringUtils::StringToUnsignedChar(s);
+					c.maxsl = wwiv::strings::StringToUnsignedChar(s);
 					changed = 1;
 				}
 			}
@@ -729,7 +729,7 @@ int modify_conf(int conftype,  int which ) {
 			input(s, 3);
 			if (s[0]) {
 				if ((atoi(s) >= 0) && (atoi(s) <= 255)) {
-					c.mindsl = wwiv::stringUtils::StringToUnsignedChar(s);
+					c.mindsl = wwiv::strings::StringToUnsignedChar(s);
 					changed = 1;
 				}
 			}
@@ -740,7 +740,7 @@ int modify_conf(int conftype,  int which ) {
 			input(s, 3);
 			if (s[0]) {
 				if ((atoi(s) >= 0) && (atoi(s) <= 255)) {
-					c.maxdsl = wwiv::stringUtils::StringToUnsignedChar(s);
+					c.maxdsl = wwiv::strings::StringToUnsignedChar(s);
 					changed = 1;
 				}
 			}
@@ -750,7 +750,7 @@ int modify_conf(int conftype,  int which ) {
 			GetSession()->bout << "|#2Min Age: ";
 			input(s, 2);
 			if (s[0]) {
-				c.minage = wwiv::stringUtils::StringToUnsignedChar(s);
+				c.minage = wwiv::strings::StringToUnsignedChar(s);
 				changed = 1;
 			}
 			break;
@@ -760,7 +760,7 @@ int modify_conf(int conftype,  int which ) {
 			input(s, 3);
 			if (s[0]) {
 				if ((atoi(s) >= 0) && (atoi(s) <= 255)) {
-					c.maxage = wwiv::stringUtils::StringToUnsignedChar(s);
+					c.maxage = wwiv::strings::StringToUnsignedChar(s);
 					changed = 1;
 				}
 			}
@@ -1247,32 +1247,32 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
 						switch (i) {
 						case 1:
 							if (strlen(ts) >= 2) {
-								conferences[cc].status = wwiv::stringUtils::StringToUnsignedShort(&ts[1]);
+								conferences[cc].status = wwiv::strings::StringToUnsignedShort(&ts[1]);
 							}
 							break;
 						case 2:
-							conferences[cc].minsl = wwiv::stringUtils::StringToUnsignedChar(ts);
+							conferences[cc].minsl = wwiv::strings::StringToUnsignedChar(ts);
 							break;
 						case 3:
-							conferences[cc].maxsl = wwiv::stringUtils::StringToUnsignedChar(ts);
+							conferences[cc].maxsl = wwiv::strings::StringToUnsignedChar(ts);
 							break;
 						case 4:
-							conferences[cc].mindsl = wwiv::stringUtils::StringToUnsignedChar(ts);
+							conferences[cc].mindsl = wwiv::strings::StringToUnsignedChar(ts);
 							break;
 						case 5:
-							conferences[cc].maxdsl = wwiv::stringUtils::StringToUnsignedChar(ts);
+							conferences[cc].maxdsl = wwiv::strings::StringToUnsignedChar(ts);
 							break;
 						case 6:
-							conferences[cc].minage = wwiv::stringUtils::StringToUnsignedChar(ts);
+							conferences[cc].minage = wwiv::strings::StringToUnsignedChar(ts);
 							break;
 						case 7:
-							conferences[cc].maxage = wwiv::stringUtils::StringToUnsignedChar(ts);
+							conferences[cc].maxage = wwiv::strings::StringToUnsignedChar(ts);
 							break;
 						case 8:
-							conferences[cc].minbps = wwiv::stringUtils::StringToUnsignedShort(ts);
+							conferences[cc].minbps = wwiv::strings::StringToUnsignedShort(ts);
 							break;
 						case 9:
-							conferences[cc].sex = wwiv::stringUtils::StringToUnsignedChar(ts);
+							conferences[cc].sex = wwiv::strings::StringToUnsignedChar(ts);
 							break;
 						case 10:
 							conferences[cc].ar = static_cast<unsigned short>( str_to_arword( ts ) );

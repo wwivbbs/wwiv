@@ -40,24 +40,22 @@ const char *DELIMS_WHITE = " \t\r\n";
 
 bool IsColorCode( char c );
 
-
 namespace wwiv {
-namespace stringUtils {
+namespace strings {
+
 /**
  * sprintf type function for STL string classes.
- * @param str The STL string
  * @param pszFormattedText The format specifier
  * @param ... Variable arguments
  */
-std::string::size_type FormatString( std::string& str, const char *pszFormattedText, ... ) {
+std::string StringPrintf(const char *pszFormattedText, ...) {
 	va_list ap;
 	char szBuffer[ 1024 ];
 
 	va_start( ap, pszFormattedText );
-	WWIV_VSNPRINTF( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
+	WWIV_ASSERT(WWIV_VSNPRINTF( szBuffer, sizeof( szBuffer ), pszFormattedText, ap ) >= 0);
 	va_end( ap );
-	str = szBuffer;
-	return str.length();
+	return std::string(szBuffer);
 }
 
 /**
@@ -503,7 +501,7 @@ char *StringRemoveChar( const char *pszString, char chCharacterToRemove ) {
 	strcpy(s_strip_string, "");
 
 	int i1  = 0;
-	for (int i = 0; i < wwiv::stringUtils::GetStringLength(pszString); i++) {
+	for (int i = 0; i < wwiv::strings::GetStringLength(pszString); i++) {
 		if ( pszString[i] != chCharacterToRemove ) {
 			s_strip_string[i1] = pszString[i];
 			i1++;
@@ -549,7 +547,7 @@ void properize( char *pszText ) {
 		return;
 	}
 
-	for (int i = 0; i < wwiv::stringUtils::GetStringLength(pszText); i++) {
+	for (int i = 0; i < wwiv::strings::GetStringLength(pszText); i++) {
 		if ((i == 0) || ((i > 0) && ((pszText[i - 1] == ' ') || (pszText[i - 1] == '-') ||
 		                             (pszText[i - 1] == '.')))) {
 			pszText[i] = wwiv::UpperCase<char>(pszText[i]);

@@ -595,7 +595,7 @@ char *mmkey( int dl, bool bListOption ) {
 								if ( isdigit( cmd2[0] ) ) {
 									if ( GetSession()->GetMMKeyArea() == WSession::mmkeyMessageAreas && dl == 0 ) {
 										for (i = 0; i < GetSession()->num_subs && usub[i].subnum != -1; i++ ) {
-											if ( wwiv::stringUtils::IsEquals( usub[i].keys, cmd2 ) ) {
+											if ( wwiv::strings::IsEquals( usub[i].keys, cmd2 ) ) {
 												GetSession()->bout.NewLine();
 												break;
 											}
@@ -603,7 +603,7 @@ char *mmkey( int dl, bool bListOption ) {
 									}
 									if ( GetSession()->GetMMKeyArea() == WSession::mmkeyFileAreas && dl == 1 ) {
 										for ( i = 0; i < GetSession()->num_dirs; i++ ) {
-											if ( wwiv::stringUtils::IsEquals( udir[i].keys, cmd2 ) ) {
+											if ( wwiv::strings::IsEquals( udir[i].keys, cmd2 ) ) {
 												GetSession()->bout.NewLine();
 												break;
 											}

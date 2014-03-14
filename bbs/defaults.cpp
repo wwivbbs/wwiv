@@ -67,7 +67,7 @@ void select_editor() {
 	int nEditor = atoi( ss );
 	if ( nEditor >= 1 && nEditor <= GetSession()->GetNumberOfEditors() ) {
 		GetSession()->GetCurrentUser()->SetDefaultEditor( nEditor );
-	} else if ( wwiv::stringUtils::IsEquals( ss, "0") ) {
+	} else if ( wwiv::strings::IsEquals( ss, "0") ) {
 		GetSession()->GetCurrentUser()->SetDefaultEditor( 0 );
 		GetSession()->GetCurrentUser()->ClearStatusFlag( WUser::autoQuote );
 	}
@@ -460,20 +460,20 @@ void config_qscan() {
 				char* s = mmkey( 0 );
 				if (s[0]) {
 					for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1); i++) {
-						if ( wwiv::stringUtils::IsEquals( usub[i].keys, s ) ) {
+						if ( wwiv::strings::IsEquals( usub[i].keys, s ) ) {
 							qsc_q[usub[i].subnum / 32] ^= (1L << (usub[i].subnum % 32));
 						}
-						if ( wwiv::stringUtils::IsEquals( s, "S" ) ) {
+						if ( wwiv::strings::IsEquals( s, "S" ) ) {
 							qsc_q[usub[i].subnum / 32] |= (1L << (usub[i].subnum % 32));
 						}
-						if ( wwiv::stringUtils::IsEquals( s, "C" ) ) {
+						if ( wwiv::strings::IsEquals( s, "C" ) ) {
 							qsc_q[usub[i].subnum / 32] &= ~(1L << (usub[i].subnum % 32));
 						}
 					}
-					if ( wwiv::stringUtils::IsEquals( s, "Q" ) ) {
+					if ( wwiv::strings::IsEquals( s, "Q" ) ) {
 						done = true;
 					}
-					if ( wwiv::stringUtils::IsEquals( s, "?" ) ) {
+					if ( wwiv::strings::IsEquals( s, "?" ) ) {
 						l_config_qscan();
 					}
 				}
@@ -1064,12 +1064,12 @@ void config_scan_plus(int type) {
 #endif
 						qsc_q[usub[top + pos].subnum / 32] ^= (1L << (usub[top + pos].subnum % 32));
 				} else {
-					if ( wwiv::stringUtils::IsEquals( udir[0].keys, "0" ) ) {
+					if ( wwiv::strings::IsEquals( udir[0].keys, "0" ) ) {
 						sysdir = 1;
 					}
 					for (this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
 						sprintf(s, "%d", sysdir ? top + pos : top + pos + 1);
-						if ( wwiv::stringUtils::IsEquals( s, udir[this_dir].keys ) ) {
+						if ( wwiv::strings::IsEquals( s, udir[this_dir].keys ) ) {
 							ad = udir[this_dir].subnum;
 							qsc_n[ad / 32] ^= (1L << (ad % 32));
 						}
@@ -1115,12 +1115,12 @@ void config_scan_plus(int type) {
 					} else {
 						int this_dir, sysdir = 0;
 						int ad;
-						if ( wwiv::stringUtils::IsEquals( udir[0].keys, "0" ) ) {
+						if ( wwiv::strings::IsEquals( udir[0].keys, "0" ) ) {
 							sysdir = 1;
 						}
 						for (this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
 							sprintf(s, "%d", sysdir ? top + pos : top + pos + 1);
-							if ( wwiv::stringUtils::IsEquals( s, udir[this_dir].keys ) ) {
+							if ( wwiv::strings::IsEquals( s, udir[this_dir].keys ) ) {
 								ad = udir[this_dir].subnum;
 								qsc_n[ad / 32] ^= (1L << (ad % 32));
 							}
@@ -1295,14 +1295,14 @@ void undrawscan(int filepos, long tagged) {
 
 long is_inscan( int dir ) {
 	bool sysdir = false;
-	if ( wwiv::stringUtils::IsEquals( udir[0].keys, "0" ) ) {
+	if ( wwiv::strings::IsEquals( udir[0].keys, "0" ) ) {
 		sysdir = true;
 	}
 
 	for ( int this_dir = 0; ( this_dir < GetSession()->num_dirs ); this_dir++ ) {
 		char szDir[50];
 		sprintf( szDir, "%d", sysdir ? dir : dir + 1 );
-		if ( wwiv::stringUtils::IsEquals( szDir, udir[this_dir].keys ) ) {
+		if ( wwiv::strings::IsEquals( szDir, udir[this_dir].keys ) ) {
 			int ad = udir[this_dir].subnum;
 			return ( qsc_n[ad / 32] & ( 1L << ad % 32 ) );
 		}

@@ -178,7 +178,7 @@ int ShowLoginAndGetUserNumber( int nNetworkOnly, char* pszUserName ) {
 			if ( szUserName[ 0 ] == GetSession()->GetCurrentUser()->GetRealName()[ 0 ] ) {
 				char szTempUserName[ 255 ];
 				strcpy( szTempUserName, GetSession()->GetCurrentUser()->GetRealName() );
-				if ( wwiv::stringUtils::IsEquals( szUserName, WWIV_STRUPR( szTempUserName ) ) &&
+				if ( wwiv::strings::IsEquals( szUserName, WWIV_STRUPR( szTempUserName ) ) &&
 				        !GetSession()->GetCurrentUser()->IsUserDeleted() ) {
 					GetSession()->bout << "|#5Do you mean " << GetSession()->GetCurrentUser()->GetUserNameAndNumber( i ) << "? ";
 					if ( yesno() ) {
@@ -301,7 +301,7 @@ void ExecuteWWIVNetworkRequest( const char *pszUserName ) {
 					if ( ss ) {
 						*ss = 0;
 					}
-					if ( wwiv::stringUtils::IsEqualsIgnoreCase( szBuffer, szUserName ) ) {
+					if ( wwiv::strings::IsEqualsIgnoreCase( szBuffer, szUserName ) ) {
 						ok = true;
 					}
 				}
@@ -373,7 +373,7 @@ void LeaveBadPasswordFeedback( int ans ) {
 
 void CheckCallRestrictions() {
 	if ( !hangup && GetSession()->usernum > 0 && GetSession()->GetCurrentUser()->IsRestrictionLogon() &&
-	        wwiv::stringUtils::IsEquals( date(), GetSession()->GetCurrentUser()->GetLastOn() ) &&
+	        wwiv::strings::IsEquals( date(), GetSession()->GetCurrentUser()->GetLastOn() ) &&
 	        GetSession()->GetCurrentUser()->GetTimesOnToday() > 0 ) {
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "|#6Sorry, you can only logon once per day.\r\n";
@@ -456,7 +456,7 @@ void getuser() {
 
 		if ( nNetworkOnly && GetSession()->usernum != -2 ) {
 			if ( GetSession()->usernum != -4 ||
-			        !wwiv::stringUtils::IsEquals( szUserName, "DNM" ) ) {
+			        !wwiv::strings::IsEquals( szUserName, "DNM" ) ) {
 				GetSession()->usernum = 0;
 			}
 		}
@@ -539,7 +539,7 @@ void FixUserLinesAndColors() {
 
 void UpdateUserStatsForLogin() {
 	strcpy( g_szLastLoginDate, date() );
-	if ( wwiv::stringUtils::IsEquals( g_szLastLoginDate, GetSession()->GetCurrentUser()->GetLastOn() ) ) {
+	if ( wwiv::strings::IsEquals( g_szLastLoginDate, GetSession()->GetCurrentUser()->GetLastOn() ) ) {
 		GetSession()->GetCurrentUser()->SetTimesOnToday( GetSession()->GetCurrentUser()->GetTimesOnToday() + 1 );
 	} else {
 		GetSession()->GetCurrentUser()->SetTimesOnToday( 1 );

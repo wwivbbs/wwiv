@@ -547,7 +547,7 @@ void drawfile( int filepos, int filenum ) {
 
 int compare_criteria( struct search_record * sr, uploadsrec * ur ) {
 	// "        .   "
-	if ( !wwiv::stringUtils::IsEquals( sr->filemask, "        .   " ) ) {
+	if ( !wwiv::strings::IsEquals( sr->filemask, "        .   " ) ) {
 		if ( !compare( sr->filemask, ur->filename ) ) {
 			return 0;
 		}
