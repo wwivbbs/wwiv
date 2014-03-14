@@ -380,7 +380,7 @@ static bool IsSamePost(postrec * p1, postrec * p2) {
 	        p1->qscan == p2->qscan &&
 	        p1->ownersys == p2->ownersys &&
 	        p1->owneruser == p2->owneruser &&
-	        wwiv::stringUtils::IsEquals( p1->title, p2->title ) ) {
+	        wwiv::strings::IsEquals( p1->title, p2->title ) ) {
 		return true;
 	}
 	return false;

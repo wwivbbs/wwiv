@@ -97,7 +97,7 @@ unsigned long bytes_to_k( unsigned long lBytes ) {
 
 int check_batch_queue(const char *pszFileName) {
 	for (int i = 0; i < GetSession()->numbatch; i++) {
-		if ( wwiv::stringUtils::IsEquals( pszFileName, batch[i].filename ) ) {
+		if ( wwiv::strings::IsEquals( pszFileName, batch[i].filename ) ) {
 			return (batch[i].sending) ? 1 : -1;
 		}
 	}
@@ -202,7 +202,7 @@ void get_arc_cmd( char *pszOutBuffer, const char *pszArcFileName, int cmd, const
 	}
 	++ss;
 	for ( int i = 0; i < MAX_ARCS; i++ ) {
-		if ( wwiv::stringUtils::IsEqualsIgnoreCase(ss, arcs[i].extension) ) {
+		if ( wwiv::strings::IsEqualsIgnoreCase(ss, arcs[i].extension) ) {
 			switch (cmd) {
 			case 0:
 				strcpy(szArcCmd, arcs[i].arcl);
@@ -330,7 +330,7 @@ void dliscan1(int nDirectoryNum) {
 	} else {
 		FileAreaSetRecord( fileDownload, 0 );
 		fileDownload.Read( &u, sizeof( uploadsrec ) );
-		if ( !wwiv::stringUtils::IsEquals( u.filename, "|MARKER|" ) ) {
+		if ( !wwiv::strings::IsEquals( u.filename, "|MARKER|" ) ) {
 			GetSession()->numf = u.numbytes;
 			memset(&u, 0, sizeof(uploadsrec));
 			strcpy(u.filename, "|MARKER|");
@@ -370,7 +370,7 @@ void dliscan_hash(int nDirectoryNum) {
 	} else {
 		FileAreaSetRecord( file, 0 );
 		file.Read( &u, sizeof( uploadsrec ) );
-		if ( wwiv::stringUtils::IsEquals( u.filename, "|MARKER|" ) ) {
+		if ( wwiv::strings::IsEquals( u.filename, "|MARKER|" ) ) {
 			GetSession()->m_DirectoryDateCache[nDirectoryNum] = u.daten;
 		} else {
 			time((time_t *) &(GetSession()->m_DirectoryDateCache[nDirectoryNum]));
@@ -389,7 +389,7 @@ void add_extended_description(const char *pszFileName, const char *pszDescriptio
 	ext_desc_type ed;
 
 	strcpy( ed.name, pszFileName );
-	ed.len = static_cast<short>( wwiv::stringUtils::GetStringLength( pszDescription ) );
+	ed.len = static_cast<short>( wwiv::strings::GetStringLength( pszDescription ) );
 
 	WFile file( g_szExtDescrFileName );
 	file.Open(	WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
@@ -421,7 +421,7 @@ void delete_extended_description(const char *pszFileName) {
 		fileExtDescr.Read( &ed, sizeof( ext_desc_type ) );
 		if (ed.len < 10000) {
 			fileExtDescr.Read( ss, ed.len );
-			if ( !wwiv::stringUtils::IsEquals( pszFileName, ed.name ) ) {
+			if ( !wwiv::strings::IsEquals( pszFileName, ed.name ) ) {
 				if (r != w) {
 					fileExtDescr.Seek( w, WFile::seekBegin );
 					fileExtDescr.Write( &ed, sizeof( ext_desc_type ) );
@@ -444,7 +444,7 @@ char *read_extended_description(const char *pszFileName) {
 
 	if ( ed_got && ed_info ) {
 		for (int i = 0; i < ed_num; i++) {
-			if ( wwiv::stringUtils::IsEquals( pszFileName, ed_info[i].name ) ) {
+			if ( wwiv::strings::IsEquals( pszFileName, ed_info[i].name ) ) {
 				WFile fileExtDescr( g_szExtDescrFileName );
 				if ( !fileExtDescr.Open( WFile::modeBinary | WFile::modeReadOnly ) ) {
 					return NULL;
@@ -453,7 +453,7 @@ char *read_extended_description(const char *pszFileName) {
 				ext_desc_type ed;
 				int nNumRead = fileExtDescr.Read( &ed, sizeof( ext_desc_type ) );
 				if ( nNumRead == sizeof( ext_desc_type ) &&
-				        wwiv::stringUtils::IsEquals( pszFileName, ed.name ) ) {
+				        wwiv::strings::IsEquals( pszFileName, ed.name ) ) {
 					char* ss = static_cast<char *>( BbsAllocA( ed.len + 10 ) );
 					if (ss) {
 						fileExtDescr.Read( ss, ed.len );
@@ -478,7 +478,7 @@ char *read_extended_description(const char *pszFileName) {
 				fileExtDescr.Seek( lCurPos, WFile::seekBegin );
 				ext_desc_type ed;
 				lCurPos += static_cast<long>( fileExtDescr.Read( &ed, sizeof( ext_desc_type ) ) );
-				if ( wwiv::stringUtils::IsEquals( pszFileName, ed.name ) ) {
+				if ( wwiv::strings::IsEquals( pszFileName, ed.name ) ) {
 					char* ss = static_cast<char *>( BbsAllocA( ed.len + 10 ) );
 					if (ss) {
 						fileExtDescr.Read( ss, ed.len );
@@ -565,7 +565,7 @@ void align( char *pszFileName ) {
 		bInvalid = true;
 	}
 
-	for ( int i = 0; i < wwiv::stringUtils::GetStringLength(pszFileName); i++ ) {
+	for ( int i = 0; i < wwiv::strings::GetStringLength(pszFileName); i++ ) {
 		if ( pszFileName[i] == '\\' || pszFileName[i] == '/' ||
 		        pszFileName[i] == ':'  || pszFileName[i] == '<' ||
 		        pszFileName[i] == '>'  || pszFileName[i] == '|' ) {
@@ -693,7 +693,7 @@ void printinfo(uploadsrec * u, bool *abort) {
 			strcpy( s1, "N/A" );
 		}
 	}
-	for ( i = 0; i < 5 - wwiv::stringUtils::GetStringLength( s1 ); i++ ) {
+	for ( i = 0; i < 5 - wwiv::strings::GetStringLength( s1 ); i++ ) {
 		s[i] = SPACE;
 	}
 	s[i] = '\0';
@@ -706,7 +706,7 @@ void printinfo(uploadsrec * u, bool *abort) {
 		osan( ( okansi() ? "\xBA" : "|" ), abort, &next );
 		sprintf( s1, "%d", u->numdloads );
 
-		for ( i = 0; i < 4 - wwiv::stringUtils::GetStringLength( s1 ); i++ ) {
+		for ( i = 0; i < 4 - wwiv::strings::GetStringLength( s1 ); i++ ) {
 			s[i] = SPACE;
 		}
 		s[i] = '\0';
@@ -1110,7 +1110,7 @@ void remlist( const char *pszFileName ) {
 		for ( int i = 0; i < GetSession()->tagptr; i++ ) {
 			strcpy( szListFileName, filelist[i].u.filename );
 			align( szListFileName );
-			if ( wwiv::stringUtils::IsEquals( szFileName, szListFileName ) ) {
+			if ( wwiv::strings::IsEquals( szFileName, szListFileName ) ) {
 				for ( int i2 = i; i2 < GetSession()->tagptr - 1; i2++ ) {
 					filelist[ i2 ] = filelist[ i2 + 1 ];
 				}

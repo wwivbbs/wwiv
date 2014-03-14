@@ -162,7 +162,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
 		                                  pUser->GetNumFeedbackSent(), pUser->GetNumMailWaiting(), pUser->GetNumNetEmailSent(), pUser->GetNumDeletedPosts() );
 
 		GetSession()->bout.WriteFormatted("|#9   Call Stats   : |#9(Total: |#1%u|#9) (Today: |#1%d|#9) (Illegal: |#6%d|#9)\r\n",
-		                                  pUser->GetNumLogons(), ( !wwiv::stringUtils::IsEquals( pUser->GetLastOn(), date() ) ) ? 0 : pUser->GetTimesOnToday(), pUser->GetNumIllegalLogons() );
+		                                  pUser->GetNumLogons(), ( !wwiv::strings::IsEquals( pUser->GetLastOn(), date() ) ) ? 0 : pUser->GetTimesOnToday(), pUser->GetNumIllegalLogons() );
 
 		GetSession()->bout.WriteFormatted("|#9   Up/Dnld Stats: |#9(Up: |#1%u |#9files in |#1%lu|#9k)  (Dn: |#1%u |#9files in |#1%lu|#9k)\r\n",
 		                                  pUser->GetFilesUploaded(), pUser->GetUploadK(), pUser->GetFilesDownloaded(), pUser->GetDownloadK() );
@@ -315,41 +315,41 @@ int matchuser( WUser *pUser ) {
 					tmp = 1;
 					tmp1 = atoi(parm);
 
-					if ( wwiv::stringUtils::IsEquals( fcn, "SL" ) ) {
+					if ( wwiv::strings::IsEquals( fcn, "SL" ) ) {
 						if (less) {
 							tmp = (tmp1 > pUser->GetSl() );
 						} else {
 							tmp = ( tmp1 < pUser->GetSl() );
 						}
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "DSL" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "DSL" ) ) {
 						if (less) {
 							tmp = ( tmp1 > pUser->GetDsl() );
 						} else {
 							tmp = (tmp1 < pUser->GetDsl() );
 						}
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "AR" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "AR" ) ) {
 						if ( parm[0] >= 'A' && parm[0] <= 'P' ) {
 							tmp1 = 1 << (parm[0] - 'A');
 							tmp = pUser->HasArFlag( tmp1 ) ? 1 : 0;
 						} else {
 							tmp = 0;
 						}
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "DAR" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "DAR" ) ) {
 						if ((parm[0] >= 'A') && (parm[0] <= 'P')) {
 							tmp1 = 1 << (parm[0] - 'A');
 							tmp = pUser->HasDarFlag( tmp1 ) ? 1 : 0;
 						} else {
 							tmp = 0;
 						}
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "SEX" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "SEX" ) ) {
 						tmp = parm[0] == pUser->GetGender();
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "AGE" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "AGE" ) ) {
 						if (less) {
 							tmp = ( tmp1 > pUser->GetAge() );
 						} else {
 							tmp = ( tmp1 < pUser->GetAge() );
 						}
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "LASTON" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "LASTON" ) ) {
 						time(&l);
 						tmp2 = static_cast<unsigned int>( ( l - pUser->GetLastOnDateNumber() ) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT );
 						if (less) {
@@ -357,21 +357,21 @@ int matchuser( WUser *pUser ) {
 						} else {
 							tmp = tmp2 > tmp1;
 						}
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "AREACODE" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "AREACODE" ) ) {
 						tmp = !strncmp( parm, pUser->GetVoicePhoneNumber(), 3 );
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "RESTRICT" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "RESTRICT" ) ) {
 						;
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "LOGONS" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "LOGONS" ) ) {
 						if (less) {
 							tmp = pUser->GetNumLogons() < tmp1;
 						} else {
 							tmp = pUser->GetNumLogons() > tmp1;
 						}
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "REALNAME" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "REALNAME" ) ) {
 						strcpy( ts, pUser->GetRealName() );
 						WWIV_STRUPR( ts );
 						tmp = ( strstr( ts, parm ) != NULL );
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "BAUD" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "BAUD" ) ) {
 						if (less) {
 							tmp = pUser->GetLastBaudRate() < tmp1;
 						} else {
@@ -380,7 +380,7 @@ int matchuser( WUser *pUser ) {
 
 						// begin callback additions
 
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "CBV" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "CBV" ) ) {
 						if (less) {
 							tmp = pUser->GetCbv() < tmp1;
 						} else {
@@ -389,7 +389,7 @@ int matchuser( WUser *pUser ) {
 
 						// end callback additions
 
-					} else if ( wwiv::stringUtils::IsEquals( fcn, "COMP_TYPE" ) ) {
+					} else if ( wwiv::strings::IsEquals( fcn, "COMP_TYPE" ) ) {
 						tmp = pUser->GetComputerType() == tmp1;
 					}
 				} else {
@@ -732,7 +732,7 @@ void uedit( int usern, int other ) {
 						add_phone_number( nUserNumber, user.GetVoicePhoneNumber() );
 					}
 					if ( user.GetDataPhoneNumber()[0] &&
-					        !wwiv::stringUtils::IsEquals( user.GetVoicePhoneNumber(),  user.GetDataPhoneNumber()  ) ) {
+					        !wwiv::strings::IsEquals( user.GetVoicePhoneNumber(),  user.GetDataPhoneNumber()  ) ) {
 						add_phone_number( nUserNumber, user.GetDataPhoneNumber() );
 					}
 

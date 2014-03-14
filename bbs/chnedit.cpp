@@ -317,7 +317,7 @@ void modify_chain( int nCurrentChainNumber ) {
 				if ((atoi(s) > 255) || (atoi(s) < 0)) {
 					s[0] = 0;
 				} else {
-					r.minage = wwiv::stringUtils::StringToUnsignedChar(s);
+					r.minage = wwiv::strings::StringToUnsignedChar(s);
 				}
 				GetSession()->bout << "|#5New maximum age? ";
 				input(s, 3);
@@ -328,7 +328,7 @@ void modify_chain( int nCurrentChainNumber ) {
 					if (atoi(s) > 255) {
 						r.maxage = 255;
 					} else {
-						r.maxage = wwiv::stringUtils::StringToUnsignedChar(s);
+						r.maxage = wwiv::strings::StringToUnsignedChar(s);
 					}
 				}
 			}

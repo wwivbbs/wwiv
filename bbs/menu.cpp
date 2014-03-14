@@ -58,8 +58,8 @@ char *MenuGetParam(char *pszSrc, char *pszParam);
 char *MenuSkipSpaces(char *pszSrc);
 void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript);
 
-using wwiv::stringUtils::IsEqualsIgnoreCase;
-using wwiv::stringUtils::IsEquals;
+using wwiv::strings::IsEqualsIgnoreCase;
+using wwiv::strings::IsEquals;
 
 bool CheckMenuPassword( char* pszCorrectPassword ) {
 	std::string password = IsEqualsIgnoreCase( pszCorrectPassword, "*SYSTEM" ) ? syscfg.systempw : pszCorrectPassword;

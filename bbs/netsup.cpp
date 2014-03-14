@@ -875,7 +875,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
 					strcpy(on, nm + i);
 				}
 				if ( net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
-				        wwiv::stringUtils::IsEqualsIgnoreCase( net_networks[nFromNetworkNumber].name, "Internet" ) ) {
+				        wwiv::strings::IsEqualsIgnoreCase( net_networks[nFromNetworkNumber].name, "Internet" ) ) {
 					sprintf(newname, "%s%s", qn, on);
 				} else {
 					if (on[0]) {
@@ -1366,7 +1366,7 @@ void force_callout(int dw) {
 						odc[odci - 1] = static_cast< char >( odci + '0' );
 						odc[odci] = 0;
 					}
-					if ( wwiv::stringUtils::IsEqualsIgnoreCase( net_networks[netw].name, GetSession()->GetNetworkName() ) ) {
+					if ( wwiv::strings::IsEqualsIgnoreCase( net_networks[netw].name, GetSession()->GetNetworkName() ) ) {
 						nitu = i;
 					}
 				}

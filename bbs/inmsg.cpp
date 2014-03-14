@@ -237,7 +237,7 @@ bool GetMessageToName( const char *aux ) {
 	// post so there's no reason in wasting everyone's time in the loop...
 	WWIV_ASSERT( aux );
 	if ( GetSession()->GetCurrentReadMessageArea() == -1 ||
-	        wwiv::stringUtils::IsEqualsIgnoreCase( aux, "email" ) ) {
+	        wwiv::strings::IsEqualsIgnoreCase( aux, "email" ) ) {
 		return 0;
 	}
 
@@ -248,7 +248,7 @@ bool GetMessageToName( const char *aux ) {
 		for ( int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++ ) {
 			xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
 			if ( net_networks[xnp->net_num].type == net_type_fidonet &&
-			        !wwiv::stringUtils::IsEqualsIgnoreCase( aux, "email" ) ) {
+			        !wwiv::strings::IsEqualsIgnoreCase( aux, "email" ) ) {
 				bHasAddress = true;
 				GetSession()->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
 				newline = false;
@@ -299,7 +299,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
 		while ( inli( s, szRollOverLine, 160, true, bAllowPrevious ) ) {
 			--curli;
 			strcpy(szRollOverLine, &(lin[(curli) * LEN]));
-			if (wwiv::stringUtils::GetStringLength(szRollOverLine) > GetSession()->GetCurrentUser()->GetScreenChars() - 1) {
+			if (wwiv::strings::GetStringLength(szRollOverLine) > GetSession()->GetCurrentUser()->GetScreenChars() - 1) {
 				szRollOverLine[ GetSession()->GetCurrentUser()->GetScreenChars() - 2 ] = '\0';
 			}
 		}
@@ -308,18 +308,18 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
 		}
 		bCheckMessageSize = true;
 		if (s[0] == '/') {
-			if ( ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/HELP" ) ) ||
-			        ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/H" ) ) ||
-			        ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/?" ) ) ) {
+			if ( ( wwiv::strings::IsEqualsIgnoreCase( s, "/HELP" ) ) ||
+			        ( wwiv::strings::IsEqualsIgnoreCase( s, "/H" ) ) ||
+			        ( wwiv::strings::IsEqualsIgnoreCase( s, "/?" ) ) ) {
 				bCheckMessageSize = false;
 				printfile(EDITOR_NOEXT);
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s,"/QUOTE" ) ||
-			            wwiv::stringUtils::IsEqualsIgnoreCase( s,"/Q" ) ) {
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s,"/QUOTE" ) ||
+			            wwiv::strings::IsEqualsIgnoreCase( s,"/Q" ) ) {
 				bCheckMessageSize = false;
 				if (quotes_ind != NULL) {
 					get_quote( 0 );
 				}
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/LI" ) ) {
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s, "/LI" ) ) {
 				bCheckMessageSize = false;
 				if ( okansi() ) {
 					next = false;
@@ -341,7 +341,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
 						strcpy(s1, &(s1[1]));
 						int i5 = 0;
 						int i4 = 0;
-						for (i4 = 0; i4 < wwiv::stringUtils::GetStringLength(s1); i4++) {
+						for (i4 = 0; i4 < wwiv::strings::GetStringLength(s1); i4++) {
 							if ((s1[i4] == 8) || (s1[i4] == 3)) {
 								--i5;
 							} else {
@@ -358,32 +358,32 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
 					GetSession()->bout.NewLine();
 					GetSession()->bout << "Continue...\r\n";
 				}
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/ES" ) ||
-			            wwiv::stringUtils::IsEqualsIgnoreCase( s, "/S" ) ) {
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s, "/ES" ) ||
+			            wwiv::strings::IsEqualsIgnoreCase( s, "/S" ) ) {
 				bSaveMessage = true;
 				done = true;
 				bCheckMessageSize = false;
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/ESY" ) ||
-			            wwiv::stringUtils::IsEqualsIgnoreCase( s, "/SY" )  ) {
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s, "/ESY" ) ||
+			            wwiv::strings::IsEqualsIgnoreCase( s, "/SY" )  ) {
 				bSaveMessage = true;
 				done = true;
 				bCheckMessageSize = false;
 				setanon = 1;
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/ESN" ) ||
-			            wwiv::stringUtils::IsEqualsIgnoreCase( s, "/SN" ) ) {
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s, "/ESN" ) ||
+			            wwiv::strings::IsEqualsIgnoreCase( s, "/SN" ) ) {
 				bSaveMessage = true;
 				done = true;
 				bCheckMessageSize = false;
 				setanon = -1;
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/ABT" ) ||
-			            wwiv::stringUtils::IsEqualsIgnoreCase( s, "/A"  ) ) {
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s, "/ABT" ) ||
+			            wwiv::strings::IsEqualsIgnoreCase( s, "/A"  ) ) {
 				done = true;
 				bCheckMessageSize = false;
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/CLR" ) ) {
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s, "/CLR" ) ) {
 				bCheckMessageSize = false;
 				curli = 0;
 				GetSession()->bout << "Message cleared... Start over...\r\n\n";
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/RL" ) ) {
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s, "/RL" ) ) {
 				bCheckMessageSize = false;
 				if (curli) {
 					--curli;
@@ -391,7 +391,7 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
 				} else {
 					GetSession()->bout << "Nothing to replace.\r\n";
 				}
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s, "/TI" ) ) {
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s, "/TI" ) ) {
 				bCheckMessageSize = false;
 				if ( okansi() ) {
 					GetSession()->bout << "|#1Subj|#7: |#2" ;
@@ -405,11 +405,11 @@ bool InternalMessageEditor( char *lin, int maxli, int &curli, int &setanon, char
 			}
 			strcpy( s1, s );
 			s1[3] = '\0';
-			if ( wwiv::stringUtils::IsEqualsIgnoreCase( s1, "/C:" ) ) {
+			if ( wwiv::strings::IsEqualsIgnoreCase( s1, "/C:" ) ) {
 				s1[0] = 2;
 				strcpy( ( &s1[1] ), &( s[3] ) );
 				strcpy( s, s1 );
-			} else if ( wwiv::stringUtils::IsEqualsIgnoreCase( s1, "/SU" ) &&
+			} else if ( wwiv::strings::IsEqualsIgnoreCase( s1, "/SU" ) &&
 			            s[3] == '/' && curli > 0 ) {
 				strcpy( s1, &( s[4] ) );
 				char *ss = strstr( s1, "/" );
@@ -558,7 +558,7 @@ bool ExternalMessageEditor( int maxli, int &setanon, char *pszTitle, const char 
 
 
 void UpdateMessageBufferTheadsInfo( char *pszMessageBuffer, long *plBufferLength, const char *aux ) {
-	if ( !wwiv::stringUtils::IsEqualsIgnoreCase( aux, "email" ) ) {
+	if ( !wwiv::strings::IsEqualsIgnoreCase( aux, "email" ) ) {
 		long msgid = time( NULL );
 		long targcrc = crc32buf( pszMessageBuffer, strlen( pszMessageBuffer ) );
 		char szBuffer[ 255 ];
@@ -583,7 +583,7 @@ void UpdateMessageBufferTheadsInfo( char *pszMessageBuffer, long *plBufferLength
 void UpdateMessageBufferInReplyToInfo( char *pszMessageBuffer, long *plBufferLength, const char *aux ) {
 	char szBuffer[ 255 ];
 	if ( irt_name[0] &&
-	        !wwiv::stringUtils::IsEqualsIgnoreCase(aux, "email") &&
+	        !wwiv::strings::IsEqualsIgnoreCase(aux, "email") &&
 	        xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
 		for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++) {
 			xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
@@ -614,7 +614,7 @@ void UpdateMessageBufferInReplyToInfo( char *pszMessageBuffer, long *plBufferLen
 	}
 
 	if ( irt_name[0] &&
-	        !wwiv::stringUtils::IsEqualsIgnoreCase( aux, "email" ) ) {
+	        !wwiv::strings::IsEqualsIgnoreCase( aux, "email" ) ) {
 		sprintf(szBuffer, "BY: %s", irt_name);
 		AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
 	}
@@ -625,9 +625,9 @@ void UpdateMessageBufferInReplyToInfo( char *pszMessageBuffer, long *plBufferLen
 void UpdateMessageBufferTagLine( char *pszMessageBuffer, long *plBufferLength, const char *aux ) {
 	char szMultiMail[] = "Multi-Mail";
 	if ( xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets &&
-	        !wwiv::stringUtils::IsEqualsIgnoreCase( aux, "email" ) &&
+	        !wwiv::strings::IsEqualsIgnoreCase( aux, "email" ) &&
 	        (! ( subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_no_tag ) ) &&
-	        !wwiv::stringUtils::IsEqualsIgnoreCase( irt, szMultiMail ) ) {
+	        !wwiv::strings::IsEqualsIgnoreCase( irt, szMultiMail ) ) {
 		char szFileName[ MAX_PATH ];
 		for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++) {
 			xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];

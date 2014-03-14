@@ -85,9 +85,7 @@ enum COLORS {
 //
 // OS/2 Specific Section
 //
-//
-//
-//
+
 
 #ifdef	 __OS2__
 
@@ -112,9 +110,6 @@ enum COLORS {
 #define WWIV_VSNPRINTF vsnprintf
 
 #endif	 // __OS2__
-
-
-
 
 
 ////////////////////////////////////////////////////////////////////////////////

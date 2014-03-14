@@ -92,7 +92,7 @@ void read_call_out_list() {
 					con->options		= 0;
 					con->call_anyway	= 0;
 					con->password[0]	= 0;
-					con->sysnum			= wwiv::stringUtils::StringToUnsignedShort(&(ss[p]));
+					con->sysnum			= wwiv::strings::StringToUnsignedShort(&(ss[p]));
 					con->min_hr			= -1;
 					con->max_hr			= -1;
 					con->times_per_day	= 0;
@@ -122,35 +122,35 @@ void read_call_out_list() {
 				case '!':
 					con->options |= options_once_per_day;
 					++p;
-					con->times_per_day = wwiv::stringUtils::StringToUnsignedChar(&(ss[p]));
+					con->times_per_day = wwiv::strings::StringToUnsignedChar(&(ss[p]));
 					if (!con->times_per_day) {
 						con->times_per_day = 1;
 					}
 					break;
 				case '%':
 					++p;
-					con->macnum = wwiv::stringUtils::StringToUnsignedChar(&(ss[p]));
+					con->macnum = wwiv::strings::StringToUnsignedChar(&(ss[p]));
 					break;
 				case '/':
 					++p;
-					con->call_anyway = wwiv::stringUtils::StringToUnsignedChar(&(ss[p]));
+					con->call_anyway = wwiv::strings::StringToUnsignedChar(&(ss[p]));
 					++p;
 					break;
 				case '#':
 					++p;
-					con->call_x_days = wwiv::stringUtils::StringToUnsignedChar(&(ss[p]));
+					con->call_x_days = wwiv::strings::StringToUnsignedChar(&(ss[p]));
 					break;
 				case '(':
 					++p;
-					con->min_hr = wwiv::stringUtils::StringToChar(&(ss[p]));
+					con->min_hr = wwiv::strings::StringToChar(&(ss[p]));
 					break;
 				case ')':
 					++p;
-					con->max_hr = wwiv::stringUtils::StringToChar(&(ss[p]));
+					con->max_hr = wwiv::strings::StringToChar(&(ss[p]));
 					break;
 				case '|':
 					++p;
-					con->min_k = wwiv::stringUtils::StringToUnsignedShort(&(ss[p]));
+					con->min_k = wwiv::strings::StringToUnsignedShort(&(ss[p]));
 					if (!con->min_k) {
 						con->min_k = 0;
 					}

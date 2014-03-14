@@ -177,7 +177,7 @@ int try_to_ul_wh(char *pszFileName) {
 					strcat( s1, ", "  );
 				}
 				strcat( s1, arcs[i].extension );
-				if ( wwiv::stringUtils::IsEquals( s + 9, arcs[i].extension ) ) {
+				if ( wwiv::strings::IsEquals( s + 9, arcs[i].extension ) ) {
 					ok = 1;
 				}
 			}

@@ -369,13 +369,13 @@ void gfile_sec( int sn ) {
 		GetSession()->bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf << "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
 		ss = mmkey( 2 );
 		i = atoi(ss);
-		if ( wwiv::stringUtils::IsEquals( ss, "Q" ) ) {
+		if ( wwiv::strings::IsEquals( ss, "Q" ) ) {
 			done = true;
-		} else if ( wwiv::stringUtils::IsEquals( ss, "E" ) && so() ) {
+		} else if ( wwiv::strings::IsEquals( ss, "E" ) && so() ) {
 			done = true;
 			gfiles3( sn );
 		}
-		if ( wwiv::stringUtils::IsEquals( ss, "A" ) && so() ) {
+		if ( wwiv::strings::IsEquals( ss, "A" ) && so() ) {
 			BbsFreeMemory( g );
 			fill_sec( sn );
 			g = read_sec( sn, &nf );
@@ -388,7 +388,7 @@ void gfile_sec( int sn ) {
 			for ( i = 1; i <= nf / 10; i++ ) {
 				odc[i - 1] = static_cast<char>( i + '0' );
 			}
-		} else if ( wwiv::stringUtils::IsEquals(ss, "R") && so() ) {
+		} else if ( wwiv::strings::IsEquals(ss, "R") && so() ) {
 			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#2G-file number to delete? ";
 			ss1 = mmkey( 2 );
@@ -414,9 +414,9 @@ void gfile_sec( int sn ) {
 					GetSession()->bout << "\r\nDeleted.\r\n\n";
 				}
 			}
-		} else if ( wwiv::stringUtils::IsEquals( ss, "?" ) ) {
+		} else if ( wwiv::strings::IsEquals( ss, "?" ) ) {
 			list_gfiles( g, nf, sn );
-		} else if ( wwiv::stringUtils::IsEquals( ss, "Q" ) ) {
+		} else if ( wwiv::strings::IsEquals( ss, "Q" ) ) {
 			done = true;
 		} else if ( i > 0 && i <= nf ) {
 			sprintf( szFileName, "%s%c%s", gfilesec[sn].filename, WWIV_FILE_SEPERATOR_CHAR, g[i - 1].filename );
@@ -425,17 +425,17 @@ void gfile_sec( int sn ) {
 			if ( i1 == 0 ) {
 				sysoplogf( "Read G-file '%s'", g[i - 1].filename );
 			}
-		} else if ( wwiv::stringUtils::IsEquals( ss, "D" ) ) {
+		} else if ( wwiv::strings::IsEquals( ss, "D" ) ) {
 			bool done1 = false;
 			while ( !done1 && !hangup ) {
 				GetSession()->bout << "|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5";
 				ss = mmkey( 2 );
 				i2 = atoi( ss );
 				abort = false;
-				if ( wwiv::stringUtils::IsEquals( ss, "?" ) ) {
+				if ( wwiv::strings::IsEquals( ss, "?" ) ) {
 					list_gfiles( g, nf, sn );
 					GetSession()->bout << "|#9Current G|#1-|#9File Section |#1: |#5" << gfilesec[sn].name << wwiv::endl;
-				} else if ( wwiv::stringUtils::IsEquals( ss, "Q" ) ) {
+				} else if ( wwiv::strings::IsEquals( ss, "Q" ) ) {
 					list_gfiles( g, nf, sn );
 					done1 = true;
 				} else if ( !abort ) {
@@ -533,12 +533,12 @@ void gfiles() {
 		GetSession()->bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
 		GetSession()->bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap << "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
 		char * ss = mmkey( 2 );
-		if ( wwiv::stringUtils::IsEquals( ss, "Q" ) ) {
+		if ( wwiv::strings::IsEquals( ss, "Q" ) ) {
 			done = true;
-		} else if ( wwiv::stringUtils::IsEquals( ss, "G" ) && so() ) {
+		} else if ( wwiv::strings::IsEquals( ss, "G" ) && so() ) {
 			done = true;
 			gfiles2();
-		} else if ( wwiv::stringUtils::IsEquals( ss, "A" ) && cs() ) {
+		} else if ( wwiv::strings::IsEquals( ss, "A" ) && cs() ) {
 			bool bIsSectionFull = false;
 			for ( i = 0; i < nmap && !bIsSectionFull; i++ ) {
 				GetSession()->bout.NewLine();

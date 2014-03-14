@@ -75,7 +75,7 @@ char *GetQuoteInitials() {
 	}
 
 	int i1=1;
-	for ( int i=1; i < wwiv::stringUtils::GetStringLength(irt_name) && i1 < 6 && irt_name[i] != '#' && irt_name[i] != '<' && ste(i) && brtnm != 2; i++ ) {
+	for ( int i=1; i < wwiv::strings::GetStringLength(irt_name) && i1 < 6 && irt_name[i] != '#' && irt_name[i] != '<' && ste(i) && brtnm != 2; i++ ) {
 		if ( irt_name[i]==32 && irt_name[i+1]!='#' && irt_name[i+1]!=96 && irt_name[i+1]!='<' ) {
 			if ( irt_name[ i + 1 ] == '(' ) {
 				if ( !isdigit( irt_name[ i + 2 ] ) ) {

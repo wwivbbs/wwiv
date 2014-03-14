@@ -108,7 +108,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 
 	mod_dir = -1;
 	for ( int i1 = 0; i1 < GetSession()->num_dirs && udir[i1].subnum != -1; i1++ ) {
-		if ( wwiv::stringUtils::IsEquals( udir[i1].keys, ss1 ) ) {
+		if ( wwiv::strings::IsEquals( udir[i1].keys, ss1 ) ) {
 			mod_dir = i1;
 		}
 	}

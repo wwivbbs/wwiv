@@ -52,14 +52,14 @@ void remove_from_temp( const char *pszFileName, const char *pszDirectoryName, bo
 		// We don't want to delete ".", "..", or any of the door drop files
 		// (you can't delete . or .. anyway!  but it's a waste of time to try...
 		//
-		if ( !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "chain.txt" ) &&
-		        !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "door.sys" ) &&
-		        !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "door32.sys" ) &&
-		        !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "dorinfo1.def" ) &&
-		        !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "callinfo.bbs" ) &&
-		        !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "pcboard.sys" ) &&
-		        !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "." ) &&
-		        !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, ".." ) ) {
+		if ( !wwiv::strings::IsEqualsIgnoreCase( szFileName, "chain.txt" ) &&
+		        !wwiv::strings::IsEqualsIgnoreCase( szFileName, "door.sys" ) &&
+		        !wwiv::strings::IsEqualsIgnoreCase( szFileName, "door32.sys" ) &&
+		        !wwiv::strings::IsEqualsIgnoreCase( szFileName, "dorinfo1.def" ) &&
+		        !wwiv::strings::IsEqualsIgnoreCase( szFileName, "callinfo.bbs" ) &&
+		        !wwiv::strings::IsEqualsIgnoreCase( szFileName, "pcboard.sys" ) &&
+		        !wwiv::strings::IsEqualsIgnoreCase( szFileName, "." ) &&
+		        !wwiv::strings::IsEqualsIgnoreCase( szFileName, ".." ) ) {
 			if ( bPrintStatus ) {
 				std::cout << "Deleting TEMP file: " << pszDirectoryName << szFileName << std::endl;
 			}
@@ -336,7 +336,7 @@ char *stripfn(const char *pszFileName) {
 	WWIV_ASSERT(pszFileName);
 
 	int nSepIndex = -1;
-	for (int i = 0; i < wwiv::stringUtils::GetStringLength(pszFileName); i++) {
+	for (int i = 0; i < wwiv::strings::GetStringLength(pszFileName); i++) {
 		if ( pszFileName[i] == '\\' || pszFileName[i] == ':' || pszFileName[i] == '/' ) {
 			nSepIndex = i;
 		}
@@ -346,7 +346,7 @@ char *stripfn(const char *pszFileName) {
 	} else {
 		strcpy( szTempFileName, pszFileName );
 	}
-	for ( int i1 = 0; i1 < wwiv::stringUtils::GetStringLength( szTempFileName ); i1++ ) {
+	for ( int i1 = 0; i1 < wwiv::strings::GetStringLength( szTempFileName ); i1++ ) {
 		if ( szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z' ) {
 			szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
 		}
@@ -422,7 +422,7 @@ char *get_wildlist( char *pszFileMask ) {
 	if ( strchr( pszFileMask, WWIV_FILE_SEPERATOR_CHAR ) == NULL) {
 		pszFileMask[0] = '\0';
 	} else {
-		for ( int i = 0; i < wwiv::stringUtils::GetStringLength( pszFileMask ); i++ ) {
+		for ( int i = 0; i < wwiv::strings::GetStringLength( pszFileMask ); i++ ) {
 			if ( pszFileMask[i] == WWIV_FILE_SEPERATOR_CHAR ) {
 				mark = i + 1;
 			}
@@ -432,7 +432,7 @@ char *get_wildlist( char *pszFileMask ) {
 	pszFileMask[mark] = 0;
 	pszPath = pszFileMask;
 	pszFileMask[mark] = t;
-	t = static_cast<char>( wwiv::stringUtils::GetStringLength( pszPath ) );
+	t = static_cast<char>( wwiv::strings::GetStringLength( pszPath ) );
 	strcat( pszPath, fnd.GetFileName() );
 	int i = 1;
 	for ( i = 1;; i++ ) {
@@ -660,7 +660,7 @@ char* W_DateString(time_t tDateTime, char* mode , char* delim) {
 	strcpy(str, "");
 
 	// cycle thru mode string
-	for (i = 0; i < wwiv::stringUtils::GetStringLength(mode); i++) {
+	for (i = 0; i < wwiv::strings::GetStringLength(mode); i++) {
 		switch(mode[i]) {
 		case 'W':
 			strftime(s, 40, "%A,", pTm);

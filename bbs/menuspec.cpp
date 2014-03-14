@@ -147,7 +147,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
 
 int FindDN( char *pszDownloadFileName ) {
 	for (int i = 0; (i < GetSession()->num_dirs); i++) {
-		if ( wwiv::stringUtils::IsEqualsIgnoreCase( directories[i].filename, pszDownloadFileName ) ) {
+		if ( wwiv::strings::IsEqualsIgnoreCase( directories[i].filename, pszDownloadFileName ) ) {
 			return i;
 		}
 	}
@@ -180,7 +180,7 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree ) {
 
 int FindDoorNo( char *pszDoor ) {
 	for ( int i = 0; i < GetSession()->GetNumberOfChains(); i++ ) {
-		if ( wwiv::stringUtils::IsEqualsIgnoreCase( chains[i].description, pszDoor ) ) {
+		if ( wwiv::strings::IsEqualsIgnoreCase( chains[i].description, pszDoor ) ) {
 			return i;
 		}
 	}
@@ -238,7 +238,7 @@ void ChangeSubNumber() {
 
 	char* s = mmkey( 0 );
 	for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1); i++) {
-		if ( wwiv::stringUtils::IsEquals( usub[i].keys, s ) ) {
+		if ( wwiv::strings::IsEquals( usub[i].keys, s ) ) {
 			GetSession()->SetCurrentMessageArea( i );
 		}
 	}
@@ -258,7 +258,7 @@ void ChangeDirNumber() {
 			continue;
 		}
 		for (int i = 0; i < GetSession()->num_dirs; i++) {
-			if ( wwiv::stringUtils::IsEquals( udir[i].keys, s ) ) {
+			if ( wwiv::strings::IsEquals( udir[i].keys, s ) ) {
 				GetSession()->SetCurrentFileArea( i );
 				done = true;
 			}

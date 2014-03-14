@@ -102,7 +102,7 @@ void dirlist( int mode ) {
 					ss = mmkey( 1, true );
 					if ( isdigit( ss[0] ) ) {
 						for ( int i3 = 0; i3 < GetSession()->num_dirs; i3++ ) {
-							if ( wwiv::stringUtils::IsEquals(udir[i3].keys, ss) ) {
+							if ( wwiv::strings::IsEquals(udir[i3].keys, ss) ) {
 								GetSession()->SetCurrentFileArea( i3 );
 								os      = udir[GetSession()->GetCurrentFileArea()].subnum;
 								done    = true;
@@ -149,15 +149,15 @@ void dirlist( int mode ) {
 				GetSession()->bout.WriteFormatted("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1, is ? nd - 1 : nd);
 			}
 			ss = mmkey( 0, true );
-			if ( wwiv::stringUtils::IsEquals( ss, "" ) ||
-			        wwiv::stringUtils::IsEquals( ss, "Q" ) ||
-			        wwiv::stringUtils::IsEquals( ss, "\r" ) ) {
+			if ( wwiv::strings::IsEquals( ss, "" ) ||
+			        wwiv::strings::IsEquals( ss, "Q" ) ||
+			        wwiv::strings::IsEquals( ss, "\r" ) ) {
 				if ( okconf( GetSession()->GetCurrentUser() ) ) {
 					setuconf(CONF_DIRS, oc, os);
 				}
 				done = true;
 			}
-			if ( wwiv::stringUtils::IsEquals( ss, "J" ) ) {
+			if ( wwiv::strings::IsEquals( ss, "J" ) ) {
 				if ( okconf( GetSession()->GetCurrentUser() ) ) {
 					jump_conf(CONF_DIRS);
 				}
@@ -167,7 +167,7 @@ void dirlist( int mode ) {
 			}
 			if ( isdigit( ss[0] ) ) {
 				for ( int i3 = 0; i3 < GetSession()->num_dirs; i3++ ) {
-					if ( wwiv::stringUtils::IsEquals( udir[i3].keys, ss ) ) {
+					if ( wwiv::strings::IsEquals( udir[i3].keys, ss ) ) {
 						GetSession()->SetCurrentFileArea( i3 );
 						os = udir[GetSession()->GetCurrentFileArea()].subnum;
 						done = true;

@@ -56,7 +56,7 @@ void delete_phone_number( int usernum, const char *phone ) {
 	int i;
 	for (i = 0; i < nNumRecords; i++) {
 		if ( p[i].usernum == usernum &&
-		        wwiv::stringUtils::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) ) {
+		        wwiv::strings::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) ) {
 			break;
 		}
 	}
@@ -90,7 +90,7 @@ int find_phone_number(const char *phone) {
 	phoneFile.Close();
 	int i = 0;
 	for (i = 0; i < nNumRecords; i++) {
-		if ( wwiv::stringUtils::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) ) {
+		if ( wwiv::strings::IsEquals( reinterpret_cast<char*>( p[i].phone ), phone ) ) {
 			WUser user;
 			GetApplication()->GetUserManager()->ReadUser( &user, p[i].usernum );
 			if ( !user.IsUserDeleted() ) {

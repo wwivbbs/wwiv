@@ -43,7 +43,7 @@ int		try_to_ul_wh(char *pszFileName);
 void	normalupload(int dn);
 
 
-using namespace wwiv::stringUtils;
+using namespace wwiv::strings;
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ void downloaded( char *pszFileName, long lCharsPerSecond ) {
 	uploadsrec u;
 
 	for (int i1 = 0; i1 < GetSession()->numbatch; i1++) {
-		if ( wwiv::stringUtils::IsEquals(pszFileName, batch[i1].filename) &&
+		if ( wwiv::strings::IsEquals(pszFileName, batch[i1].filename) &&
 		        batch[i1].sending ) {
 			dliscan1(batch[i1].dir);
 			int nRecNum = recno( batch[i1].filename );
@@ -189,7 +189,7 @@ void uploaded( char *pszFileName, long lCharsPerSecond ) {
 	uploadsrec u;
 
 	for ( int i1 = 0; i1 < GetSession()->numbatch; i1++ ) {
-		if ( wwiv::stringUtils::IsEquals( pszFileName, batch[i1].filename ) &&
+		if ( wwiv::strings::IsEquals( pszFileName, batch[i1].filename ) &&
 		        !batch[i1].sending ) {
 			dliscan1( batch[i1].dir );
 			int nRecNum = recno( batch[i1].filename );
@@ -208,7 +208,7 @@ void uploaded( char *pszFileName, long lCharsPerSecond ) {
 					char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
 					sprintf( szSourceFileName, "%s%s", syscfgovr.batchdir, pszFileName );
 					sprintf( szDestFileName, "%s%s", directories[batch[i1].dir].path, pszFileName );
-					if ( !wwiv::stringUtils::IsEquals( szSourceFileName, szDestFileName ) &&
+					if ( !wwiv::strings::IsEquals( szSourceFileName, szDestFileName ) &&
 					        WFile::Exists( szSourceFileName ) ) {
 						bool found = false;
 						if ( szSourceFileName[1] != ':' && szDestFileName[1] != ':' ) {

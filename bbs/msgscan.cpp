@@ -60,7 +60,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 		if ( GetSession()->IsMessageThreadingEnabled() ) {
 			for ( int nTempOuterMessageIterator = 0; nTempOuterMessageIterator <= GetSession()->GetNumMessagesInCurrentMessageArea(); nTempOuterMessageIterator++ ) {
 				for ( int nTempMessageIterator = 0; nTempMessageIterator <= GetSession()->GetNumMessagesInCurrentMessageArea(); nTempMessageIterator++ ) {
-					if ( wwiv::stringUtils::IsEquals( thread[nTempOuterMessageIterator].parent_code, thread[nTempMessageIterator].message_code ) ) {
+					if ( wwiv::strings::IsEquals( thread[nTempOuterMessageIterator].parent_code, thread[nTempMessageIterator].message_code ) ) {
 						thread[nTempOuterMessageIterator].parent_num = thread[nTempMessageIterator].msg_num;
 						nTempMessageIterator = GetSession()->GetNumMessagesInCurrentMessageArea() + 1;
 					}
@@ -105,7 +105,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 				}
 				int nNumRepliesForThisThread = 0;
 				for ( int nTempMessageIterator = 0; nTempMessageIterator <= GetSession()->GetNumMessagesInCurrentMessageArea(); nTempMessageIterator++ ) {
-					if ( wwiv::stringUtils::IsEquals( thread[nTempMessageIterator].parent_code, thread[nMessageNumber].message_code ) &&
+					if ( wwiv::strings::IsEquals( thread[nTempMessageIterator].parent_code, thread[nMessageNumber].message_code ) &&
 					        nTempMessageIterator != nMessageNumber ) {
 						nNumRepliesForThisThread++;
 					}
@@ -417,7 +417,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 					printfile(MUSTREAD_NOEXT);
 				} else {
 					for ( int j = nMessageNumber; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++ ) {
-						if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) &&
+						if ( wwiv::strings::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) &&
 						        j != nMessageNumber ) {
 							nMessageNumber = j;
 							j = GetSession()->GetNumMessagesInCurrentMessageArea();
@@ -439,7 +439,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 					}
 					int j = 0;
 					for (j = nMessageNumber; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++) {
-						if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[original].message_code ) &&
+						if ( wwiv::strings::IsEquals( thread[j].parent_code, thread[original].message_code ) &&
 						        j != nMessageNumber ) {
 							nMessageNumber = j;
 							break;
@@ -524,7 +524,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			HandleMessageLoad();
 			break;
 		}
-	} else if ( wwiv::stringUtils::IsEquals( szUserInput, "ClearScreen" ) ) {
+	} else if ( wwiv::strings::IsEquals( szUserInput, "ClearScreen" ) ) {
 		bputch('\x0c');
 	}
 }
@@ -924,7 +924,7 @@ void HandleMessageMove( int &nMessageNumber ) {
 		}
 		bool ok = false;
 		for ( int i1 = 0; ( i1 < GetSession()->num_subs && usub[i1].subnum != -1 && !ok ); i1++ ) {
-			if ( wwiv::stringUtils::IsEquals( usub[i1].keys, ss1 ) ) {
+			if ( wwiv::strings::IsEquals( usub[i1].keys, ss1 ) ) {
 				nTempSubNum = i1;
 				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#9Copying to " << subboards[usub[nTempSubNum].subnum].name << wwiv::endl;
@@ -1117,7 +1117,7 @@ void HandleListReplies( int nMessageNumber ) {
 			GetSession()->bout << "|#2Current Message has the following replies:\r\n";
 			int nNumRepliesForThisThread = 0;
 			for (int j = 0; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++) {
-				if ( wwiv::stringUtils::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) ) {
+				if ( wwiv::strings::IsEquals( thread[j].parent_code, thread[nMessageNumber].message_code ) ) {
 					GetSession()->bout << "    |#9Message #|#6" << j << ".\r\n";
 					nNumRepliesForThisThread++;
 				}

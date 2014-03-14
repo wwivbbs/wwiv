@@ -63,10 +63,9 @@ void get_user_ppp_addr() {
 		return;
 	}
 	set_net_num( GetSession()->GetNetworkNumber() );
-	wwiv::stringUtils::FormatString( GetSession()->internetFullEmailAddress,
-	                                 "%s@%s",
+	GetSession()->internetFullEmailAddress = wwiv::strings::StringPrintf("%s@%s",
 	                                 GetSession()->internetEmailName.c_str(),
-	                                 GetSession()->internetEmailDomain.c_str() );
+	                                 GetSession()->internetEmailDomain.c_str());
 	WTextFile acctFile( GetSession()->GetNetworkDataDirectory(), ACCT_INI, "rt" );
 	char szLine[ 260 ];
 	if ( acctFile.IsOpen() ) {
@@ -95,13 +94,13 @@ void get_user_ppp_addr() {
 		int j = 0;
 		char szLocalUserName[ 255 ];
 		strcpy( szLocalUserName, GetSession()->GetCurrentUser()->GetName() );
-		for ( int i = 0; ( i < wwiv::stringUtils::GetStringLength( szLocalUserName ) ) && ( i < 61 ); i++ ) {
+		for ( int i = 0; ( i < wwiv::strings::GetStringLength( szLocalUserName ) ) && ( i < 61 ); i++ ) {
 			if ( szLocalUserName[ i ] != '.' ) {
 				szLine[ j++ ] = translate_table[ (int)szLocalUserName[ i ] ];
 			}
 		}
 		szLine[ j ] = '\0';
-		wwiv::stringUtils::FormatString( GetSession()->internetFullEmailAddress, "%s@%s", szLine, GetSession()->internetPopDomain.c_str() );
+		GetSession()->internetFullEmailAddress = wwiv::strings::StringPrintf("%s@%s", szLine, GetSession()->internetPopDomain.c_str());
 	}
 }
 
@@ -229,7 +228,7 @@ void write_inet_addr( const char *pszInternetEmailAddress, int nUserNumber ) {
 				char* ss = strtok(szLine, "=");
 				if (ss) {
 					StringTrim(ss);
-					if ( wwiv::stringUtils::IsEqualsIgnoreCase( szLine, szDefaultUserAddr ) ) {
+					if ( wwiv::strings::IsEqualsIgnoreCase( szLine, szDefaultUserAddr ) ) {
 						match = true;
 					}
 				}

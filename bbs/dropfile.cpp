@@ -411,10 +411,10 @@ const std::string create_chain_file() {
 	}
 
 
-	if ( com_speed == 1 || com_speed == 49664 ) {
+	if (com_speed == 1 || com_speed == 49664) {
 		cspeed = "115200";
 	} else {
-		wwiv::stringUtils::FormatString( cspeed, "%ul", com_speed );
+		cspeed = wwiv::strings::StringPrintf("%ul", com_speed);
 	}
 
 	create_drop_files();

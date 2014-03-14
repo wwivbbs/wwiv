@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 
-using namespace wwiv::stringUtils;
+using namespace wwiv::strings;
 
 
 WIniFile::WIniFile(const std::string fileName ) {
