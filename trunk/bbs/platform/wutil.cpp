@@ -66,15 +66,17 @@ std::string WWIV_GetOSVersion() {
 				break;
 			}
 		}
-		else if (os.dwMajorVersion == 6 && os.dwMinorVersion == 0)	{
+		else if (os.dwMajorVersion == 6)	{
 			switch (os.dwMinorVersion) {
 			case 0:
 				wwiv::stringUtils::FormatString(buffer, "Windows Vista %s", os.szCSDVersion);
 				break;
 			case 1:
 				wwiv::stringUtils::FormatString(buffer, "Windows 7 %s", os.szCSDVersion);
+				break;
 			case 2:
 				wwiv::stringUtils::FormatString(buffer, "Windows 8 %s", os.szCSDVersion);
+				break;
 			case 3:
 				wwiv::stringUtils::FormatString(buffer, "Windows 8.1 %s", os.szCSDVersion);
 				break;
