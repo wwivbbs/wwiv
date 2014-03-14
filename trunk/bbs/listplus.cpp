@@ -634,7 +634,7 @@ int load_config_listing(int config) {
 			len = fileConfig.Read( &config_listing, sizeof( user_config ) );
 			fileConfig.Close();
 			if ( len != sizeof( user_config ) ||
-			        !wwiv::stringUtils::IsEqualsIgnoreCase( config_listing.name, user.GetName() ) ) {
+			        !wwiv::strings::IsEqualsIgnoreCase( config_listing.name, user.GetName() ) ) {
 				memset( &config_listing, 0, sizeof( config_listing ) );
 				strcpy( config_listing.name, user.GetName() );
 				CheckLPColors();
@@ -826,11 +826,11 @@ char *lp_read_extended_description(const char *pszFileName) {
 
 	if ( ed_info && fileExt.IsOpen() ) {
 		for (int i = 0; i < ed_num; i++) {
-			if ( wwiv::stringUtils::IsEquals( pszFileName, ed_info[i].name ) ) {
+			if ( wwiv::strings::IsEquals( pszFileName, ed_info[i].name ) ) {
 				fileExt.Seek( ed_info[i].offset, WFile::seekBegin );
 				l = fileExt.Read( &ed, sizeof( ext_desc_type ) );
 
-				if ( l == sizeof( ext_desc_type ) && wwiv::stringUtils::IsEquals(pszFileName, ed.name) ) {
+				if ( l == sizeof( ext_desc_type ) && wwiv::strings::IsEquals(pszFileName, ed.name) ) {
 					ss = static_cast<char *>( BbsAllocA( ed.len + 10 ) );
 					WWIV_ASSERT( ss );
 					if (ss) {
@@ -864,7 +864,7 @@ void lp_get_ed_info() {
 	long l, l1;
 	ext_desc_type ed;
 
-	if ( !wwiv::stringUtils::IsEquals( last_g_szExtDescrFileName, g_szExtDescrFileName ) ) {
+	if ( !wwiv::strings::IsEquals( last_g_szExtDescrFileName, g_szExtDescrFileName ) ) {
 		lp_zap_ed_info();
 		strcpy( last_g_szExtDescrFileName, g_szExtDescrFileName );
 
@@ -1095,12 +1095,12 @@ void sysop_configure() {
 		case 'J':
 			GetSession()->bout << "Enter max amount of lines to show (0=disabled) ";
 			input( s, 2, true );
-			lp_config.max_screen_lines_to_show = wwiv::stringUtils::StringToShort(s);
+			lp_config.max_screen_lines_to_show = wwiv::strings::StringToShort(s);
 			break;
 		case 'K':
 			GetSession()->bout << "Enter minimum extended description lines to show ";
 			input( s, 2, true );
-			lp_config.show_at_least_extended = wwiv::stringUtils::StringToShort(s);
+			lp_config.show_at_least_extended = wwiv::strings::StringToShort(s);
 			break;
 		case 'L':
 			lp_config.no_configuration = !lp_config.no_configuration;
@@ -1495,7 +1495,7 @@ int rename_filename( const char *pszFileName, int dn ) {
 		}
 		if ( s[0] ) {
 			align( s );
-			if ( !wwiv::stringUtils::IsEquals( s, "        .   " ) ) {
+			if ( !wwiv::strings::IsEquals( s, "        .   " ) ) {
 				strcpy( s1, directories[dn].path );
 				strcpy( s2, s1 );
 				strcat( s1, s );
@@ -1747,7 +1747,7 @@ int move_filename( const char *pszFileName, int dn ) {
 				nDestDirNum = -1;
 				if ( ss[0] ) {
 					for ( int i1 = 0; ( i1 < GetSession()->num_dirs ) && ( udir[i1].subnum != -1 ); i1++ ) {
-						if ( wwiv::stringUtils::IsEquals( udir[i1].keys, ss ) ) {
+						if ( wwiv::strings::IsEquals( udir[i1].keys, ss ) ) {
 							nDestDirNum = i1;
 						}
 					}
@@ -1845,7 +1845,7 @@ int move_filename( const char *pszFileName, int dn ) {
 				add_extended_description(u.filename, ss);
 				BbsFreeMemory(ss);
 			}
-			if ( !wwiv::stringUtils::IsEquals( szSourceFileName, szDestFileName ) &&
+			if ( !wwiv::strings::IsEquals( szSourceFileName, szDestFileName ) &&
 			        ListPlusExist( szSourceFileName ) ) {
 				StringRemoveWhitespace( szSourceFileName );
 				StringRemoveWhitespace( szDestFileName );

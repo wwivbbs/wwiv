@@ -246,7 +246,7 @@ void SubList() {
 					ss = mmkey( 0, true );
 					if ( isdigit( ss[0] ) ) {
 						for ( i2 = 0; i2 < GetSession()->num_subs; i2++ ) {
-							if ( wwiv::stringUtils::IsEquals( usub[i2].keys, ss ) ) {
+							if ( wwiv::strings::IsEquals( usub[i2].keys, ss ) ) {
 								GetSession()->SetCurrentMessageArea( i2 );
 								oldSub = usub[GetSession()->GetCurrentMessageArea()].subnum;
 								done = true;
@@ -288,21 +288,21 @@ void SubList() {
 				}
 				ss = mmkey( 0, true );
 
-				if ( wwiv::stringUtils::IsEquals( ss, "?" ) ) {
+				if ( wwiv::strings::IsEquals( ss, "?" ) ) {
 					p = 1;
 					ns = i = i1 = 0;
 				}
 
-				if ( wwiv::stringUtils::IsEquals( ss, " " ) ||
-				        wwiv::stringUtils::IsEquals( ss, "Q" ) ||
-				        wwiv::stringUtils::IsEquals( ss, "\r" ) ) {
+				if ( wwiv::strings::IsEquals( ss, " " ) ||
+				        wwiv::strings::IsEquals( ss, "Q" ) ||
+				        wwiv::strings::IsEquals( ss, "\r" ) ) {
 					GetSession()->bout.NewLine( 2 );
 					done = true;
 					if ( !okconf( GetSession()->GetCurrentUser() ) ) {
 						abort = true;
 					}
 				}
-				if ( wwiv::stringUtils::IsEquals( ss, "J" ) ) {
+				if ( wwiv::strings::IsEquals( ss, "J" ) ) {
 					if ( okconf( GetSession()->GetCurrentUser() ) ) {
 						jump_conf( CONF_SUBS );
 					}
@@ -311,7 +311,7 @@ void SubList() {
 				}
 				if (isdigit(ss[0])) {
 					for (i2 = 0; i2 < GetSession()->num_subs; i2++) {
-						if ( wwiv::stringUtils::IsEquals( usub[i2].keys, ss ) ) {
+						if ( wwiv::strings::IsEquals( usub[i2].keys, ss ) ) {
 							GetSession()->SetCurrentMessageArea( i2 );
 							oldSub = usub[GetSession()->GetCurrentMessageArea()].subnum;
 							done = true;

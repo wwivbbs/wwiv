@@ -311,7 +311,7 @@ void input_state() {
 	std::string state;
 	do {
 		GetSession()->bout.NewLine();
-		if ( wwiv::stringUtils::IsEquals( GetSession()->GetCurrentUser()->GetCountry(), "CAN" ) ) {
+		if ( wwiv::strings::IsEquals( GetSession()->GetCurrentUser()->GetCountry(), "CAN" ) ) {
 			GetSession()->bout << "|#3Enter your province (i.e. QC).\r\n";
 		} else {
 			GetSession()->bout << "|#3Enter your state (i.e. CA). \r\n";
@@ -349,7 +349,7 @@ void input_zipcode() {
 	do {
 		int len = 7;
 		GetSession()->bout.NewLine();
-		if ( wwiv::stringUtils::IsEquals( GetSession()->GetCurrentUser()->GetCountry(), "USA" ) ) {
+		if ( wwiv::strings::IsEquals( GetSession()->GetCurrentUser()->GetCountry(), "USA" ) ) {
 			GetSession()->bout << "|#3Enter your zipcode as #####-#### \r\n";
 			len = 10;
 		} else {
@@ -1402,7 +1402,7 @@ void DoMinimalNewUser() {
 		if (GetSession()->GetCurrentUser()->GetZipcode()[0] == 0) {
 			bool ok = false;
 			do {
-				if ( wwiv::stringUtils::IsEquals( GetSession()->GetCurrentUser()->GetCountry(), "USA" ) ) {
+				if ( wwiv::strings::IsEquals( GetSession()->GetCurrentUser()->GetCountry(), "USA" ) ) {
 					Input1( reinterpret_cast<char*>( GetSession()->GetCurrentUser()->data.zipcode ), s1, 5, true, INPUT_MODE_FILE_UPPER );
 					check_zip( GetSession()->GetCurrentUser()->GetZipcode(), 2 );
 				} else {

@@ -306,7 +306,7 @@ int check_for_files(const char *pszFileName) {
 	if (ss) {
 		ss++;
 		for (int i = 0; arc_t[i].arc_name; i++) {
-			if ( wwiv::stringUtils::IsEqualsIgnoreCase( ss, arc_t[i].arc_name ) ) {
+			if ( wwiv::strings::IsEqualsIgnoreCase( ss, arc_t[i].arc_name ) ) {
 				return arc_t[i].func( pszFileName );
 			}
 		}
@@ -370,10 +370,10 @@ void add_arc( const char *arc, const char *pszFileName, int dos ) {
 
 	sprintf( szArchiveFileName, "%s.%s", arc, arcs[ARC_NUMBER].extension );
 	// TODO - This logic is still broken since chain.* and door.* won't match
-	if ( wwiv::stringUtils::IsEqualsIgnoreCase( pszFileName, "chain.txt" ) ||
-	        wwiv::stringUtils::IsEqualsIgnoreCase( pszFileName, "door.sys" ) ||
-	        wwiv::stringUtils::IsEqualsIgnoreCase( pszFileName, "chain.*" )  ||
-	        wwiv::stringUtils::IsEqualsIgnoreCase( pszFileName, "door.*" ) ) {
+	if ( wwiv::strings::IsEqualsIgnoreCase( pszFileName, "chain.txt" ) ||
+	        wwiv::strings::IsEqualsIgnoreCase( pszFileName, "door.sys" ) ||
+	        wwiv::strings::IsEqualsIgnoreCase( pszFileName, "chain.*" )  ||
+	        wwiv::strings::IsEqualsIgnoreCase( pszFileName, "door.*" ) ) {
 		return;
 	}
 
@@ -413,7 +413,7 @@ void add_temp_arc() {
 		strcat( szInputFileMask, ".*" );
 	}
 	strcpy( szFileMask, stripfn( szInputFileMask ) );
-	for ( int i = 0; i < wwiv::stringUtils::GetStringLength( szFileMask ); i++ ) {
+	for ( int i = 0; i < wwiv::strings::GetStringLength( szFileMask ); i++ ) {
 		if ( szFileMask[i] == '|' || szFileMask[i] == '>' ||
 		        szFileMask[i] == '<' || szFileMask[i] == ';' ||
 		        szFileMask[i] == ' ' || szFileMask[i] == ':' ||
@@ -457,8 +457,8 @@ void list_temp_dir() {
 		char szFileName[ MAX_PATH ];
 		strcpy( szFileName, fnd.GetFileName() );
 
-		if ( !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "chain.txt" ) &&
-		        !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "door.sys" ) ) {
+		if ( !wwiv::strings::IsEqualsIgnoreCase( szFileName, "chain.txt" ) &&
+		        !wwiv::strings::IsEqualsIgnoreCase( szFileName, "door.sys" ) ) {
 			align( szFileName );
 			char szBuffer[ 255 ];
 			sprintf( szBuffer, "%12s  %-8ld", szFileName, fnd.GetFileSize() );
@@ -539,16 +539,16 @@ void temp_extract() {
 					if (!okfn(s1)) {
 						ok1 = false;
 					}
-					if ( wwiv::stringUtils::IsEquals( s1, "?" ) ) {
+					if ( wwiv::strings::IsEquals( s1, "?" ) ) {
 						list_arc_out(stripfn(u.filename), directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
 						s1[0] = '\0';
 					}
-					if ( wwiv::stringUtils::IsEquals( s1, "Q" ) ) {
+					if ( wwiv::strings::IsEquals( s1, "Q" ) ) {
 						ok = false;
 						s1[0] = '\0';
 					}
 					i2 = 0;
-					for (i1 = 0; i1 < wwiv::stringUtils::GetStringLength(s1); i1++) {
+					for (i1 = 0; i1 < wwiv::strings::GetStringLength(s1); i1++) {
 						if ((s1[i1] == '|') || (s1[i1] == '>') || (s1[i1] == '<') || (s1[i1] == ';') || (s1[i1] == ' ')) {
 							i2 = 1;
 						}
@@ -612,8 +612,8 @@ void list_temp_text() {
 		while ( bFound && ok ) {
 			strcpy(szFileName, fnd.GetFileName());
 			sprintf(s, "%s%s", syscfgovr.tempdir, szFileName);
-			if ( !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "chain.txt" ) &&
-			        !wwiv::stringUtils::IsEqualsIgnoreCase( szFileName, "door.sys" ) ) {
+			if ( !wwiv::strings::IsEqualsIgnoreCase( szFileName, "chain.txt" ) &&
+			        !wwiv::strings::IsEqualsIgnoreCase( szFileName, "door.sys" ) ) {
 				GetSession()->bout.NewLine();
 				GetSession()->bout << "Listing " << szFileName << wwiv::endl;
 				GetSession()->bout.NewLine();
@@ -734,7 +734,7 @@ void move_file_t() {
 				d1 = -1;
 				if (pszDirectoryNum[0]) {
 					for (int i1 = 0; (i1 < GetSession()->num_dirs) && (udir[i1].subnum != -1); i1++) {
-						if ( wwiv::stringUtils::IsEquals( udir[i1].keys, pszDirectoryNum ) ) {
+						if ( wwiv::strings::IsEquals( udir[i1].keys, pszDirectoryNum ) ) {
 							d1 = i1;
 						}
 					}
@@ -816,7 +816,7 @@ void move_file_t() {
 				}
 				StringRemoveWhitespace( s1 );
 				StringRemoveWhitespace( s2 );
-				if ( !wwiv::stringUtils::IsEquals( s1, s2 ) && WFile::Exists( s1 ) ) {
+				if ( !wwiv::strings::IsEquals( s1, s2 ) && WFile::Exists( s1 ) ) {
 					bool bSameDrive = false;
 					if ( s1[1] != ':' && s2[1] != ':' ) {
 						bSameDrive = true;

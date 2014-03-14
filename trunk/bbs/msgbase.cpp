@@ -54,7 +54,7 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOu
 	strOutOriginStr.clear();
 	strOutOriginStr2.clear();
 
-	if ( wwiv::stringUtils::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ||
+	if ( wwiv::strings::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ||
 	        nSystemNumber == 32767 ) {
 		strOutOriginStr = "Internet Mail and Newsgroups";
 		return;
@@ -614,26 +614,26 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
 	} else {
 		std::string logMessagePart;
 		if ( ( nSystemNumber == 1 &&
-		        wwiv::stringUtils::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ) ||
+		        wwiv::strings::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ) ||
 		        nSystemNumber == 32767 ) {
 			logMessagePart = net_email_name;
 		} else {
 			if ( GetSession()->GetMaxNetworkNumber() > 1 ) {
 				if ( nUserNumber == 0 ) {
-					wwiv::stringUtils::FormatString( logMessagePart, "%s @%u.%s", net_email_name, nSystemNumber, GetSession()->GetNetworkName() );
+					logMessagePart = wwiv::strings::StringPrintf("%s @%u.%s", net_email_name, nSystemNumber, GetSession()->GetNetworkName());
 				} else {
-					wwiv::stringUtils::FormatString( logMessagePart, "#%u @%u.%s", nUserNumber, nSystemNumber, GetSession()->GetNetworkName() );
+					logMessagePart = wwiv::strings::StringPrintf("#%u @%u.%s", nUserNumber, nSystemNumber, GetSession()->GetNetworkName());
 				}
 			} else {
 				if ( nUserNumber == 0 ) {
-					wwiv::stringUtils::FormatString( logMessagePart, "%s @%u", net_email_name, nSystemNumber );
+					logMessagePart = wwiv::strings::StringPrintf("%s @%u", net_email_name, nSystemNumber);
 				} else {
-					wwiv::stringUtils::FormatString( logMessagePart, "#%u @%u", nUserNumber, nSystemNumber );
+					logMessagePart = wwiv::strings::StringPrintf("#%u @%u", nUserNumber, nSystemNumber);
 				}
 			}
 		}
 		logMessage += logMessagePart;
-		sysoplog( logMessage );
+		sysoplog(logMessage);
 	}
 
 	WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
@@ -765,7 +765,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 		}
 	} else {
 		if ( ( nSystemNumber == 1 && nUserNumber == 0 &&
-		        wwiv::stringUtils::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ) ||
+		        wwiv::strings::IsEqualsIgnoreCase( GetSession()->GetNetworkName(), "Internet" ) ) ||
 		        nSystemNumber == 32767 ) {
 			strcpy( szDestination, net_email_name );
 		} else {
@@ -885,7 +885,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 				} else {
 					if ( carbon_copy[j].nSystemNumber == 1 &&
 					        carbon_copy[j].nUserNumber == 0 &&
-					        wwiv::stringUtils::IsEqualsIgnoreCase( carbon_copy[j].net_name, "Internet" ) ) {
+					        wwiv::strings::IsEqualsIgnoreCase( carbon_copy[j].net_name, "Internet" ) ) {
 						strcpy( szDestination, carbon_copy[j].net_email_name );
 					} else {
 						set_net_num( carbon_copy[j].net_num );
@@ -905,7 +905,7 @@ void email( int nUserNumber, int nSystemNumber, bool forceit, int anony, bool fo
 					}
 				}
 				if ( j == 0 ) {
-					wwiv::stringUtils::FormatString( s1, "\003""6Original To: \003""1%s", szDestination );
+					s1 = wwiv::strings::StringPrintf("\003""6Original To: \003""1%s", szDestination);
 					lineadd( &messageRecord, s1.c_str(), "email" );
 					s1 = "\003""6Carbon Copy: \003""1";
 				} else {

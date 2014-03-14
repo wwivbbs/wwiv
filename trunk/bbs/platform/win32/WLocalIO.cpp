@@ -22,7 +22,6 @@
 
 extern int oldy = 0;
 
-
 const int WLocalIO::cursorNone      = 0;
 const int WLocalIO::cursorNormal    = 1;
 const int WLocalIO::cursorSolid     = 2;
@@ -51,8 +50,6 @@ void WLocalIO::set_attr_xy(int x, int y, int a) {
 
 	WriteConsoleOutputAttribute( m_hConOut, reinterpret_cast< LPWORD >( &a ), 1, loc, &cb );
 }
-
-
 
 
 WLocalIO::WLocalIO() {
@@ -957,7 +954,7 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
 		dar[16] = '\0';
 		ar[16] = '\0';
 		restrict[16] = '\0';
-		if ( !wwiv::stringUtils::IsEquals( pSession->GetCurrentUser()->GetLastOn(), date() ) ) {
+		if ( !wwiv::strings::IsEquals( pSession->GetCurrentUser()->GetLastOn(), date() ) ) {
 			strcpy( lo, pSession->GetCurrentUser()->GetLastOn() );
 		} else {
 			_snprintf( lo, sizeof( lo ), "Today:%2d", pSession->GetCurrentUser()->GetTimesOnToday() );

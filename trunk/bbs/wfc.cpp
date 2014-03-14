@@ -48,7 +48,7 @@ void wfc_init() {
 	if ( iniFile.Open( INI_TAG ) ) {
 		const char *pszDriveList = iniFile.GetValue( "WFC_DRIVES" );
 		if ( pszDriveList != NULL ) {
-			for ( int j = 0; j < wwiv::stringUtils::GetStringLength( pszDriveList ); j++ ) {
+			for ( int j = 0; j < wwiv::strings::GetStringLength( pszDriveList ); j++ ) {
 				GetSession()->wfcdrvs[ j ] = pszDriveList[ j ] - '@';
 				if ( GetSession()->wfcdrvs[ j ] < 2 ) {
 					GetSession()->wfcdrvs[ j ] = 2;

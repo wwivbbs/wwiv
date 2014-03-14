@@ -270,7 +270,7 @@ int WUserManager::FindUser(std::string searchString) {
 	                                 static_cast<const void *>(smallist),
 	                                 static_cast<size_t>(GetApplication()->GetStatusManager()->GetUserCount()),
 	                                 sizeof(smalrec),
-	                                 (int(*) (const void *, const void *)) wwiv::stringUtils::StringCompareIgnoreCase);
+	                                 (int(*) (const void *, const void *)) wwiv::strings::StringCompareIgnoreCase);
 	if(sr != NULL) {
 		return sr->number;
 	}
@@ -284,7 +284,7 @@ int WUserManager::FindUser(std::string searchString) {
 			int bytesRead = usersFile->Read(&userRec, sizeof(smalrec));
 			if (bytesRead != sizeof(smalrec)) {
 				done = true;
-			} else if (!wwiv::stringUtils::StringCompareIgnoreCase(searchString.c_str(), (const char *)userRec.name)) {
+			} else if (!wwiv::strings::StringCompareIgnoreCase(searchString.c_str(), (const char *)userRec.name)) {
 				return(userRec.number);
 			}
 		}

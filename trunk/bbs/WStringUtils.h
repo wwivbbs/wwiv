@@ -24,12 +24,11 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif	// _MSC_VER 
 
-
 #include <string>
 
 namespace wwiv {
-namespace stringUtils {
-std::string::size_type FormatString( std::string& str, const char *pszFormattedText, ... );
+namespace strings {
+std::string StringPrintf(const char *pszFormattedText, ...);
 int GetStringLength( const char * pszString );
 bool IsEquals( const char *pszString1, const char *pszString2 );
 bool IsEqualsIgnoreCase( const char *pszString1, const char *pszString2 );
@@ -47,16 +46,12 @@ const _Ty UpperCase(const _Ty a) {
 	return static_cast< _Ty >( nRet );
 }
 
-
 template<class _Ty>
 const _Ty LowerCase(const _Ty a) {
 	int nRet = ::tolower( a );
 	return static_cast< _Ty >( nRet );
 }
-
-
 }
-
 
 // Function Prototypes
 const char *charstr( int nStringLength, int chRepeatChar );
@@ -83,7 +78,6 @@ std::string& StringLowerCase( std::string& s );
 void properize( char *pszText );
 std::string properize( const std::string text );
 
-
 #if defined ( _WIN32 ) && ( _MSC_VER > 1310 )
 #define WWIV_STRDUP( s ) _strdup( s )
 #define WWIV_STRUPR( s ) _strupr( s )
@@ -99,7 +93,6 @@ std::string properize( const std::string text );
 #define WWIV_STRLWR( s ) strlwr( s )
 #define WWIV_STRICMP( a, b ) stricmp( a, b )
 #define WWIV_STRNICMP( a, b, c) strnicmp( a, b, c )
-
 #else
 #define WWIV_STRDUP( s ) strdup( s )
 #define WWIV_STRUPR( s ) strupr( s )
@@ -108,7 +101,6 @@ std::string properize( const std::string text );
 #define WWIV_STRICMP( a, b ) strcasecmp( a, b )
 #define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
 #endif
-
 
 #endif // __INCLUDED_WStringUtils_H__
 

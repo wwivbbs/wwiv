@@ -80,7 +80,7 @@ void normalupload(int dn) {
 					supportedExtensions += ", ";
 				}
 				supportedExtensions += arcs[k].extension;
-				if ( wwiv::stringUtils::IsEquals( szInputFileName + 9, arcs[k].extension ) ) {
+				if ( wwiv::strings::IsEquals( szInputFileName + 9, arcs[k].extension ) ) {
 					ok = 1;
 				}
 			}
@@ -107,7 +107,7 @@ void normalupload(int dn) {
 		GetSession()->bout.NewLine();
 		GetSession()->bout << "That file is already in the batch queue.\r\n\n";
 	} else {
-		if ( !wwiv::stringUtils::IsEquals( szInputFileName, "        .   " ) ) {
+		if ( !wwiv::strings::IsEquals( szInputFileName, "        .   " ) ) {
 			GetSession()->bout << "|#5Upload '" << szInputFileName << "' to " << d.name << "? ";
 		} else {
 			ok = 0;

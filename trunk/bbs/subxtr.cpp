@@ -160,7 +160,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
 						}
 						ss2 = skipspace(++ss1);
 						for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
-							if ( wwiv::stringUtils::IsEqualsIgnoreCase( net_networks[i].name, ss1 ) ) {
+							if ( wwiv::strings::IsEqualsIgnoreCase( net_networks[i].name, ss1 ) ) {
 								break;
 							}
 						}
@@ -169,7 +169,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
 							ss1 = ss2;
 							ss2 = skipspace(ss2);
 							strncpy(xsubsn[nn].stype, ss1, 7);
-							xsubsn[nn].type = wwiv::stringUtils::StringToUnsignedShort( xsubsn[nn].stype );
+							xsubsn[nn].type = wwiv::strings::StringToUnsignedShort( xsubsn[nn].stype );
 							if (xsubsn[nn].type) {
 								sprintf(xsubsn[nn].stype, "%u", xsubsn[nn].type);
 							}
@@ -178,10 +178,10 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
 							xsubsn[nn].flags = atol(ss1);
 							ss1 = ss2;
 							ss2 = skipspace(ss2);
-							xsubsn[nn].host = wwiv::stringUtils::StringToShort( ss1 );
+							xsubsn[nn].host = wwiv::strings::StringToShort( ss1 );
 							ss1 = ss2;
 							ss2 = skipspace(ss2);
-							xsubsn[nn].category = wwiv::stringUtils::StringToShort(ss1);
+							xsubsn[nn].category = wwiv::strings::StringToShort(ss1);
 							nn++;
 							xsubs[curn].num_nets++;
 							xsubs[curn].num_nets_max++;
@@ -248,7 +248,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
 						ss2 = skipspace(ss1);
 						xnp = fsub(n, atoi(ss1));
 						if (xnp) {
-							xnp->host = wwiv::stringUtils::StringToShort(ss2);
+							xnp->host = wwiv::strings::StringToShort(ss2);
 						}
 					}
 					BbsFreeMemory(ss);
@@ -263,7 +263,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
 					if (ss) {
 						for (ss1 = ss; (*ss1) && ((*ss1 < '0') || (*ss1 > '9')); ss1++)
 							;
-						xsubsn[i].host = wwiv::stringUtils::StringToShort( ss1 );
+						xsubsn[i].host = wwiv::strings::StringToShort( ss1 );
 						BbsFreeMemory(ss);
 					}
 				}

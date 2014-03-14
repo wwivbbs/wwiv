@@ -83,7 +83,7 @@ void asv() {
 
 			ph1[0] = 0;
 			if ( GetSession()->GetCurrentUser()->GetDataPhoneNumber()[0] &&
-			        !wwiv::stringUtils::IsEquals( GetSession()->GetCurrentUser()->GetDataPhoneNumber(), "999-999-9999" ) ) {
+			        !wwiv::strings::IsEquals( GetSession()->GetCurrentUser()->GetDataPhoneNumber(), "999-999-9999" ) ) {
 				GetSession()->bout.NewLine();
 				GetSession()->bout << "|#9Is |#2" << GetSession()->GetCurrentUser()->GetDataPhoneNumber() << "|#9 the number of your BBS? ";
 				if (yesno()) {
@@ -141,7 +141,7 @@ void asv() {
 				if ( *reg_num == 0 ) {
 					strcpy(s, sysname);
 					strcpy(s1, (strstr(WWIV_STRUPR(s), "SERVER")));
-					if ( wwiv::stringUtils::IsEquals( s1, "SERVER" ) ) {
+					if ( wwiv::strings::IsEquals( s1, "SERVER" ) ) {
 						GetSession()->bout.NewLine();
 						GetSession()->bout << "|#5Is " << sysname << " a server in " << GetSession()->GetNetworkName() << "? ";
 						if ( noyes() ) {

@@ -340,7 +340,7 @@ void modify_sub(int n) {
 				sprintf(szFile2, "%s%s.dat", syscfg.msgsdir, r.filename);
 				if ( r.storage_type == 2 && !WFile::Exists( szFile1 ) &&
 				        !WFile::Exists( szFile2 ) &&
-				        !wwiv::stringUtils::IsEquals( r.filename, "NONAME" ) ) {
+				        !wwiv::strings::IsEquals( r.filename, "NONAME" ) ) {
 					GetSession()->bout.NewLine();
 					GetSession()->bout << "|#7Rename current data files (.SUB/.DAT)? ";
 					if (yesno()) {
@@ -466,10 +466,10 @@ void modify_sub(int n) {
 
 			if (ch2 == 'A') {
 				sub_xtr_add(n, -1);
-				if ( wwiv::stringUtils::IsEquals( subboards[n].name, "** New WWIV Message Area **" ) ) {
+				if ( wwiv::strings::IsEquals( subboards[n].name, "** New WWIV Message Area **" ) ) {
 					strncpy( subboards[n].name, xsubs[n].desc, 40 );
 				}
-				if ( wwiv::stringUtils::IsEquals( subboards[n].name, "NONAME" ) ) {
+				if ( wwiv::strings::IsEquals( subboards[n].name, "NONAME" ) ) {
 					strncpy(subboards[n].filename, xsubs[n].nets->stype, 8);
 				}
 			} else if ( ch2 == 'D' || ch2 == 'M' ) {

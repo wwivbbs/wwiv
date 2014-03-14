@@ -32,7 +32,7 @@
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"
 
-using wwiv::stringUtils::IsEqualsIgnoreCase;
+using wwiv::strings::IsEqualsIgnoreCase;
 using std::string;
 
 //

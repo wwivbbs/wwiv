@@ -42,7 +42,7 @@ void InsertSmallRecord(int nUserNumber, const char *pszName) {
 	int cp = 0;
 	WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
 	while ( cp < pStatus->GetNumUsers() &&
-	        wwiv::stringUtils::StringCompare( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) > 0 ) {
+	        wwiv::strings::StringCompare( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) > 0 ) {
 		++cp;
 	}
 	for ( int i = pStatus->GetNumUsers(); i > cp; i-- ) {
@@ -71,10 +71,10 @@ void InsertSmallRecord(int nUserNumber, const char *pszName) {
 void DeleteSmallRecord( const char *pszName ) {
 	int cp = 0;
 	WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
-	while ( cp < pStatus->GetNumUsers() && !wwiv::stringUtils::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) ) {
+	while ( cp < pStatus->GetNumUsers() && !wwiv::strings::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) ) {
 		++cp;
 	}
-	if ( !wwiv::stringUtils::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) ) {
+	if ( !wwiv::strings::IsEquals( pszName, reinterpret_cast<char*>( smallist[cp].name ) ) ) {
 		GetApplication()->GetStatusManager()->AbortTransaction( pStatus );
 		sysoplogfi( false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", pszName );
 		sysoplog( "#*#*#*# Run //resetf to fix it", false );

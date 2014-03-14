@@ -518,8 +518,7 @@ void remove_post() {
 	for ( int j = 1; j <= GetSession()->GetNumMessagesInCurrentMessageArea() && !abort; j++ ) {
 		if ( get_post( j )->ownersys == 0 && get_post( j )->owneruser == GetSession()->usernum ) {
 			any = true;
-			std::string buffer;
-			wwiv::stringUtils::FormatString( buffer, "%u: %60.60s", j, get_post( j )->title );
+			std::string buffer = wwiv::strings::StringPrintf("%u: %60.60s", j, get_post( j )->title);
 			pla( buffer.c_str(), &abort );
 		}
 	}

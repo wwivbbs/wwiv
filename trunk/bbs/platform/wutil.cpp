@@ -41,57 +41,43 @@ int WWIV_GetRandomNumber(int nMaxValue) {
 }
 
 std::string WWIV_GetOSVersion() {
-	std::string buffer;
 #if defined (_WIN32)
 	OSVERSIONINFO os;
-
 	os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (!GetVersionEx(&os))
-	{
+	if (!GetVersionEx(&os)) {
 		return std::string("WIN32");
 	}
-	switch (os.dwPlatformId)
-	{
+	switch (os.dwPlatformId) {
 	case VER_PLATFORM_WIN32_NT:
 		if (os.dwMajorVersion == 5)	{
 			switch (os.dwMinorVersion) {
 			case 0:
-				wwiv::stringUtils::FormatString(buffer, "Windows 2000 %s", os.szCSDVersion);
-				break;
+				return wwiv::strings::StringPrintf("Windows 2000 %s", os.szCSDVersion);
 			case 1:
-				wwiv::stringUtils::FormatString(buffer, "Windows XP %s", os.szCSDVersion);
-				break;
+				return wwiv::strings::StringPrintf("Windows XP %s", os.szCSDVersion);
 			case 2:
-				wwiv::stringUtils::FormatString(buffer, "Windows Server 2003 %s", os.szCSDVersion);
-				break;
+				return wwiv::strings::StringPrintf("Windows Server 2003 %s", os.szCSDVersion);
 			}
 		}
-		else if (os.dwMajorVersion == 6)	{
+		else if (os.dwMajorVersion == 6) {
 			switch (os.dwMinorVersion) {
 			case 0:
-				wwiv::stringUtils::FormatString(buffer, "Windows Vista %s", os.szCSDVersion);
-				break;
+				return wwiv::strings::StringPrintf("Windows Vista %s", os.szCSDVersion);
 			case 1:
-				wwiv::stringUtils::FormatString(buffer, "Windows 7 %s", os.szCSDVersion);
-				break;
+				return wwiv::strings::StringPrintf("Windows 7 %s", os.szCSDVersion);
 			case 2:
-				wwiv::stringUtils::FormatString(buffer, "Windows 8 %s", os.szCSDVersion);
-				break;
+				return wwiv::strings::StringPrintf("Windows 8 %s", os.szCSDVersion);
 			case 3:
-				wwiv::stringUtils::FormatString(buffer, "Windows 8.1 %s", os.szCSDVersion);
-				break;
+				return wwiv::strings::StringPrintf("Windows 8.1 %s", os.szCSDVersion);
 			default:
-				wwiv::stringUtils::FormatString(buffer, "Windows NT %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
-				break;
+				return wwiv::strings::StringPrintf("Windows NT %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
 			}
 		}
 		break;
 	default:
-		wwiv::stringUtils::FormatString(buffer, "WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
+		return wwiv::strings::StringPrintf("WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
 	}
-
 #elif defined (__OS2__)
-	//
 	// TODO Add OS/2 version information code here..
 	buffer = std::string("OS/2");
 #elif defined ( __linux__ )
@@ -108,12 +94,11 @@ std::string WWIV_GetOSVersion() {
 		}
 	}
 #elif defined ( __APPLE__ )
-	wwiv::stringUtils::FormatString(buffer, "%s %s", GetOSNameString(), GetMacVersionString() );
+	return return wwiv::strings::StringPrintf("%s %s", GetOSNameString(), GetMacVersionString() );
 #elif defined ( __unix__ )
 	// TODO Add Linux version information code here..
 	buffer = "UNIX";
 #else
 #error "What's the platform here???"
 #endif
-	return buffer;
 }
