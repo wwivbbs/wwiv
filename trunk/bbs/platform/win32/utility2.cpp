@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 
+#ifndef NOT_BBS
 // Used only by WWIV_make_abs_cmd
 
 char *exts[] = {
@@ -31,8 +32,6 @@ char *exts[] = {
 	0
 };
 
-
-#ifndef NOT_BBS
 void WWIV_make_abs_cmd( std::string& out ) {
 	// pszOutBuffer must be at least MAX_PATH in size.
 	char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH], *ss1;

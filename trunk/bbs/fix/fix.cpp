@@ -71,25 +71,27 @@ public:
 
 bool checkDirExists(WFile &dir, const char *desc) {
 	bool exist = dir.Exists();
-	if(!exist) {
-		Print(NOK, false, "Unable to find dir '%s'", dir.GetFullPathName().c_str());
-		Print(NOK, false, "for '%s' dir", desc);
-		printf("   Do you wish to CREATE it (y/N)?\n");
-		std::string s;
-		std::cin >> s;
-		if(s[0] == 'Y' || s[0] == 'y') {
-			exist = WWIV_make_path(dir.GetFullPathName().c_str()) != 0;
-			if(!exist) {
-				Print(NOK, true, "Unable to create dir '%s' for %s dir.", dir.GetFullPathName().c_str(), desc);
-			}
+	if(exist) {
+        return true;
+    }
+
+	Print(NOK, false, "Unable to find dir '%s'", dir.GetFullPathName().c_str());
+	Print(NOK, false, "for '%s' dir", desc);
+	printf("   Do you wish to CREATE it (y/N)?\n");
+	std::string s;
+	std::cin >> s;
+	if(s[0] == 'Y' || s[0] == 'y') {
+		bool exist = WWIV_make_path(dir.GetFullPathName().c_str()) != 0;
+		if(!exist) {
+			Print(NOK, true, "Unable to create dir '%s' for %s dir.", dir.GetFullPathName().c_str(), desc);
+            return false;
 		}
 	}
-	return exist;
+	return true;
 }
 
 // Kinda hacky but this is needed to giveup, maybeGiveUp.
 static FixConfiguration* configuration;
-
 
 class FixApplication {
  public:
@@ -98,7 +100,11 @@ class FixApplication {
      	// open the log
 	    OpenLogFile("FIX.LOG");
      }
+
      ~FixApplication() {
+        for (auto m : command_map) {
+            delete m.second;
+        }
         CloseLogFile();
      }
 
@@ -250,6 +256,12 @@ class FixApplication {
 		Print(OK, true, "Found %d subs", num_subs);
     }
 
+    void LoadCommands(FixConfiguration*& config) {
+        command_map["dirs"] = new FixDirectoriesCommand(config, num_dirs_);
+        command_map["critical_files"] = new CriticalFilesCommand(config);
+        command_map["users"] = new FixUsersCommand(config);
+    }
+
     void Init() {
 	    WFile configFile(CONFIG_DAT);
 	    if (!configFile.Exists()) {
@@ -282,25 +294,20 @@ class FixApplication {
 
     void Run(FixConfiguration *config) {
         this->Init();
-
-        std::unique_ptr<Command> cmd_dirs(new FixDirectoriesCommand(config, num_dirs_));
-        std::unique_ptr<Command> cmd_critical_files(new CriticalFilesCommand(config));
-        std::unique_ptr<Command> cmd_users(new FixUsersCommand(config));
-	    std::map<std::string, wwiv::fix::Command*> command_map;
-        command_map["dirs"] = cmd_dirs.get();
-        command_map["critical_files"] = cmd_critical_files.get();
-        command_map["users"] = cmd_users.get();
+        this->LoadCommands(config);
 
         for (const auto& command : config->commands()) {
-            std::cout << "executing command: " << command;
+            std::cout << "executing command: " << command << std::endl;
             command_map.at(command)->Execute();
         }
-        
+
         this->saveStatus();
     }
 
 private:
     int num_dirs_;
+    std::map<std::string, wwiv::fix::Command*> command_map;
+
 };
 
 }  // namespace fix
