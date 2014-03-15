@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "platform/wutil.h"
+
 
 void WWIV_Sound(int nFreq, int nDly) {
 #ifdef _WIN32
@@ -106,4 +108,5 @@ std::string WWIV_GetOSVersion() {
 #else
 #error "What's the platform here???"
 #endif
+    return std::string("UNKNOWN OS");
 }

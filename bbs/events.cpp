@@ -85,7 +85,7 @@ void init_events() {
 		BbsFreeMemory( events );
 		events = NULL;
 	}
-	events = static_cast<eventsrec *>( BbsAllocWithComment(MAX_EVENT * sizeof(eventsrec), "external events") );
+	events = static_cast<eventsrec *>(BbsAllocA(MAX_EVENT * sizeof(eventsrec)));
 	WWIV_ASSERT( events != NULL );
 
 	WFile eventsFile( syscfg.datadir, EVENTS_DAT );
