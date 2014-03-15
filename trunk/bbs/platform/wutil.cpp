@@ -87,19 +87,17 @@ std::string WWIV_GetOSVersion() {
 	// TODO Add OS/2 version information code here..
 	return std::string("OS/2");
 #elif defined ( __linux__ )
-	std::string buffer = std::string("Linux");
 	WFile info("/proc/sys/kernel", "osrelease");
-
 	if(info.Exists()) {
-		info.Open();
-		if(info.IsOpen()) {
-			char szBuffer2[100];
-			info.Read(&szBuffer2, 100);
-			info.Close();
-			buffer = "Linux " + szBuffer2;
-		}
+          info.Open();
+	  if(info.IsOpen()) {
+	    char osrelease[100];
+	    info.Read(&osrelease, 100);
+	    info.Close();
+	    return wwiv::strings::StringPrintf("Linux %s", osrelease);
+	  }
 	}
-	return buffer;
+	return std::string("Linux");
 #elif defined ( __APPLE__ )
 	return wwiv::strings::StringPrintf("%s %s", GetOSNameString(), GetMacVersionString() );
 #elif defined ( __unix__ )
