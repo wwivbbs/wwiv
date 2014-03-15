@@ -57,6 +57,9 @@ std::string WWIV_GetOSVersion() {
 				return wwiv::strings::StringPrintf("Windows XP %s", os.szCSDVersion);
 			case 2:
 				return wwiv::strings::StringPrintf("Windows Server 2003 %s", os.szCSDVersion);
+			default:
+				return wwiv::strings::StringPrintf("Windows NT %ld%c%ld %s",
+				    os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
 			}
 		}
 		else if (os.dwMajorVersion == 6) {
@@ -70,7 +73,8 @@ std::string WWIV_GetOSVersion() {
 			case 3:
 				return wwiv::strings::StringPrintf("Windows 8.1 %s", os.szCSDVersion);
 			default:
-				return wwiv::strings::StringPrintf("Windows NT %ld%c%ld %s", os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
+				return wwiv::strings::StringPrintf("Windows NT %ld%c%ld %s",
+ 				    os.dwMajorVersion, '.', os.dwMinorVersion, os.szCSDVersion);
 			}
 		}
 		break;
@@ -79,9 +83,9 @@ std::string WWIV_GetOSVersion() {
 	}
 #elif defined (__OS2__)
 	// TODO Add OS/2 version information code here..
-	buffer = std::string("OS/2");
+	return std::string("OS/2");
 #elif defined ( __linux__ )
-	buffer = std::string("Linux");
+	std::string buffer = std::string("Linux");
 	WFile info("/proc/sys/kernel", "osrelease");
 
 	if(info.Exists()) {
@@ -93,11 +97,12 @@ std::string WWIV_GetOSVersion() {
 			buffer = "Linux " + szBuffer2;
 		}
 	}
+	return buffer;
 #elif defined ( __APPLE__ )
-	return return wwiv::strings::StringPrintf("%s %s", GetOSNameString(), GetMacVersionString() );
+	return wwiv::strings::StringPrintf("%s %s", GetOSNameString(), GetMacVersionString() );
 #elif defined ( __unix__ )
 	// TODO Add Linux version information code here..
-	buffer = "UNIX";
+	return std::string("UNIX");
 #else
 #error "What's the platform here???"
 #endif

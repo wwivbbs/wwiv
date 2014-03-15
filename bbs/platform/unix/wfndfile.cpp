@@ -64,8 +64,8 @@ int fname_ok( const struct dirent *ent )
 	const char *s1 = fileSpec;
 	const char *s2 = ent->d_name;
 
-	if( wwiv::stringUtils::IsEquals( s2, "." ) ||
-	        wwiv::stringUtils::IsEquals( s2, ".." ) ) {
+	if( wwiv::strings::IsEquals( s2, "." ) ||
+	        wwiv::strings::IsEquals( s2, ".." ) ) {
 		return 0;
 	}
 
@@ -146,8 +146,8 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
 	strcpy(szDirectoryName, getdir_from_file(pszFileSpec));
 	strcpy(szFileName, stripfn(pszFileSpec));
 
-	if ( wwiv::stringUtils::IsEquals( szFileName, "*.*" )  ||
-	        wwiv::stringUtils::IsEquals( szFileName, "*" ) ) {
+	if ( wwiv::strings::IsEquals( szFileName, "*.*" )  ||
+	        wwiv::strings::IsEquals( szFileName, "*" ) ) {
 		memset( szFileSpec, '?', 255 );
 	} else {
 		f = laststar = szFileSpec[0] = 0;

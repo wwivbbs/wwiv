@@ -866,7 +866,7 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
 		dar[16] = '\0';
 		ar[16] = '\0';
 		restrict[16] = '\0';
-		if ( !wwiv::stringUtils::IsEquals( pSession->GetCurrentUser()->GetLastOn(), date() ) ) {
+		if ( !wwiv::strings::IsEquals( pSession->GetCurrentUser()->GetLastOn(), date() ) ) {
 			strcpy( lo, pSession->GetCurrentUser()->GetLastOn() );
 		} else {
 			snprintf( lo, sizeof( lo ), "Today:%2d", pSession->GetCurrentUser()->GetTimesOnToday() );
