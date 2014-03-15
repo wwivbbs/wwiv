@@ -20,7 +20,7 @@
 #include "wwiv.h"
 
 
-char *interpret( char chKey ) {
+const char *interpret( char chKey ) {
 	static char s[255];
 
 	memset( s, 0, sizeof( s ) );

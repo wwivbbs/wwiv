@@ -46,7 +46,7 @@ int bputch( char c, bool bUseInternalBuffer ) {
 
 	if ( change_color == BPUTCH_MACRO_CHAR_CODE ) {
 		change_color = BPUTCH_NO_CODE;
-		return GetSession()->bout.Write( static_cast<char *>( interpret( c ) ) );
+		return GetSession()->bout.Write( static_cast<const char *>( interpret( c ) ) );
 	} else if ( change_color == BPUTCH_CTRLO_CODE ) {
 		if ( c == CO ) {
 			change_color = BPUTCH_MACRO_CHAR_CODE;
