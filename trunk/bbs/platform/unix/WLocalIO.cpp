@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-
+#include "platform/wutil.h"
 
 const int WLocalIO::cursorNone      = 0;
 const int WLocalIO::cursorNormal    = 1;
