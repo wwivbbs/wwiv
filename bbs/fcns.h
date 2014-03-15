@@ -406,7 +406,7 @@ int  setiia(int poll_ticks);
 
 // File: interpret.cpp
 
-char *interpret( char chKey );
+const char *interpret( char chKey );
 
 
 // File: lilo.cpp

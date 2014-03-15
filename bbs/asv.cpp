@@ -287,7 +287,7 @@ void asv() {
 
 int printasv(const char *pszFileName, int num, bool abort) {
 	char buff[1024], nums[9];
-	register unsigned int j;
+	unsigned int j;
 	int bytes_read;
 	int okprint = 0;
 	int i1 = 0, found = 0, asv_num = 0;
