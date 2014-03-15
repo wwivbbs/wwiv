@@ -708,7 +708,7 @@ void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
 void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
 	char szListFileName[MAX_PATH], szDownloadLogEntry[255];
 
-	sprintf(szDownloadLogEntry, "%s BATCH Upload: Files - %ld", pszDescription, GetSession()->numbatch - GetSession()->numbatchdl);
+	sprintf(szDownloadLogEntry, "%s BATCH Upload: Files - %d", pszDescription, GetSession()->numbatch - GetSession()->numbatchdl);
 	if (bHangupAfterDl) {
 		strcat(szDownloadLogEntry, ", HAD");
 	}
@@ -733,7 +733,7 @@ void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
 void bibatch(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
 	char szDownloadLogEntry[ 255 ];
 
-	sprintf(szDownloadLogEntry, "%s BATCH Transfer: Send - %ld, Rec'd - %ld",
+	sprintf(szDownloadLogEntry, "%s BATCH Transfer: Send - %d, Rec'd - %d",
 	        pszDescription, GetSession()->numbatchdl, GetSession()->numbatch - GetSession()->numbatchdl);
 	if (bHangupAfterDl) {
 		strcat(szDownloadLogEntry, ", HAD");
