@@ -92,7 +92,6 @@
 #include "WComm.h"
 #include "platform/WFile.h"
 #include "WTextFile.h"
-#include "platform/wutil.h"
 #include "instmsg.h"
 #include "WConstants.h"
 #include "net.h"

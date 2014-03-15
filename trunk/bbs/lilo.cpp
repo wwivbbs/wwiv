@@ -20,6 +20,8 @@
 #include "wwiv.h"
 #include "menusupp.h"
 #include <memory>
+#include "platform/wutil.h"
+
 
 #define SECS_PER_DAY 86400L
 

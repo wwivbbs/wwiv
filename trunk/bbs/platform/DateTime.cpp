@@ -117,39 +117,19 @@ char *filedate( const char *pszFileName, char *pszReturnValue ) {
 double timer()
 /* This function returns the time, in seconds since midnight. */
 {
-
-#ifdef NEVER
-
-
-#define SECSINMINUTE 60
-#define SECSINHOUR (60 * SECSINMINUTE)
-	SYSTEMTIME st;
-	GetLocalTime( &st );
-
-	long l = ( st.wHour * SECSINHOUR ) + ( st.wMinute * SECSINMINUTE ) + st.wSecond;
-	double cputim = static_cast<double>( l ) +
-	                ( static_cast<double>( st.wMilliseconds ) / 1000 );
-	return cputim;
-
-#else
 	time_t ti       = time( NULL );
 	struct tm *t    = localtime( &ti );
 
-	double cp = static_cast<double>( t->tm_hour * SECONDS_PER_HOUR_FLOAT ) +
-	            static_cast<double>( t->tm_min * SECONDS_PER_MINUTE_FLOAT ) +
-	            static_cast<double>( t->tm_sec );
-
-	return cp;
-#endif
-
+	return static_cast<double>( t->tm_hour * SECONDS_PER_HOUR_FLOAT ) +
+        static_cast<double>( t->tm_min * SECONDS_PER_MINUTE_FLOAT ) +
+	    static_cast<double>( t->tm_sec );
 }
 
 
 long timer1()
 /* This function returns the time, in ticks since midnight. */
 {
-#define TICKS_PER_SECOND 18.2
-
+    static const double TICKS_PER_SECOND = 18.2;
 	return static_cast<long>( timer() * TICKS_PER_SECOND );
 }
 
@@ -211,7 +191,7 @@ int dow() {
 /*
  * Returns current time as string formatted like HH:MM:SS (01:13:00).
  */
-char *ctim( double d ) {
+char *ctim(double d) {
 	static char szCurrentTime[10];
 
 	if (d < 0) {
@@ -230,9 +210,7 @@ char *ctim( double d ) {
 /*
 * Returns current time as string formatted as HH hours, MM minutes, SS seconds
 */
-char *ctim2( double d, char *ch2 ) {
-	std::string result = "";
-
+std::string ctim2(double d) {
 	char szHours[20], szMinutes[20], szSeconds[20];
 
 	long h = static_cast<long>( d / SECONDS_PER_HOUR_FLOAT );
@@ -257,6 +235,7 @@ char *ctim2( double d, char *ch2 ) {
 		snprintf( szSeconds, sizeof( szSeconds ), "|#1%ld |#9%s", s, (s > 1) ? "seconds" : "second" );
 	}
 
+	std::string result;
 	if (h == 0) {
 		if (m == 0) {
 			if (s == 0) {
@@ -287,12 +266,8 @@ char *ctim2( double d, char *ch2 ) {
 			}
 		}
 	}
-	strcpy( ch2, result.c_str() );
-	return ch2;
+	return result;
 }
-
-
-
 
 /* This should not be a problem 'till 2005 or so */
 int years_old( int nMonth, int nDay, int nYear ) {
