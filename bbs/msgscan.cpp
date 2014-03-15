@@ -228,7 +228,7 @@ void SetupThreadRecordsBeforeScan() {
 	}
 
 	// We use +2 since if we post a message we'll need more than +1
-	thread = static_cast<threadrec *>( BbsAllocWithComment( ( GetSession()->GetNumMessagesInCurrentMessageArea() + 2 ) * sizeof( threadrec ), "Thread Record" ) );
+	thread = static_cast<threadrec *>(BbsAllocA((GetSession()->GetNumMessagesInCurrentMessageArea() + 2) * sizeof( threadrec )));
 	WWIV_ASSERT(thread != NULL);
 
 	for (unsigned short tempnum = 1; tempnum <= GetSession()->GetNumMessagesInCurrentMessageArea(); tempnum++) { // was 0.

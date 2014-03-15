@@ -806,7 +806,7 @@ int try_to_download(const char *pszFileMask, int dn) {
 
 
 void download() {
-	char ch, s[81], s1[81], buff[81];
+	char ch, s[81], s1[81];
 	int i = 0, color = 0, count;
 	bool ok = true;
 	int dn, ip, rtn = 0, useconf;
@@ -922,7 +922,7 @@ void download() {
 	}
 	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#1Files in Batch Queue   : |#2" << GetSession()->numbatch << wwiv::endl;
-	GetSession()->bout << "|#1Estimated Download Time: |#2" << ctim2( batchtime, buff ) << wwiv::endl;
+	GetSession()->bout << "|#1Estimated Download Time: |#2" << ctim2(batchtime) << wwiv::endl;
 	GetSession()->bout.NewLine();
 	rtn = batchdl( 3 );
 	if (rtn) {

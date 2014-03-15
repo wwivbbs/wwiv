@@ -509,6 +509,8 @@ void input_screensize() {
 
 
 bool CheckPasswordComplexity( WUser *pUser, std::string& password ) {
+    UNREFERENCED_PARAMETER(pUser);
+
 	if( password.length() < 3 ) {
 		//TODO - the min length should be in wwiv.ini
 		return false;

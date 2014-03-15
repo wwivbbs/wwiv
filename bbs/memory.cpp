@@ -20,35 +20,6 @@
 #include "wwiv.h"
 
 /**
- * Attempts to allocate lNumBytes (+1) bytes on the heap, returns ptr to memory
- * if successful.  Exits the BBS if it fails to allocate the required memory
- * <P>
- * @param lNumBytes Number of bytes to allocate
- * @param pszComment Friendly name of the memory region to be allocated
- * @return (void *) The memory that is allocated
- */
-void* BbsAllocWithComment( size_t lNumBytes, const char *pszComment ) {
-	WWIV_ASSERT( lNumBytes >= 0 );
-	if ( lNumBytes <= 0 ) {
-		lNumBytes = 1;
-	}
-	void* pBuffer = bbsmalloc( lNumBytes );
-#ifndef NOT_BBS
-	if ( !pBuffer ) {
-		char szBuffer[ 255 ];
-		snprintf( szBuffer, sizeof( szBuffer ), "Insufficient memory (%ld bytes) for %s.\n", lNumBytes, pszComment );
-		std::cout << szBuffer;
-		WWIV_OutputDebugString( szBuffer );
-		GetApplication()->AbortBBS();
-	}
-	memset( ( void * ) pBuffer, 0, lNumBytes );
-#endif
-	return pBuffer;
-}
-
-
-
-/**
  * Attempts to allocate nbytes (+1) bytes on the heap, returns ptr to memory
  * if successful.  Writes to sysoplog if unable to allocate the required memory
  * <P>

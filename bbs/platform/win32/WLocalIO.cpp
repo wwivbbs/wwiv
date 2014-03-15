@@ -18,6 +18,7 @@
 
 #ifndef NOT_BBS
 #include "wwiv.h"
+#include "platform/wutil.h"
 #endif
 
 extern int oldy = 0;
