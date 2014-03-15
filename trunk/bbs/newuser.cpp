@@ -752,7 +752,7 @@ bool CanCreateNewUserAccountHere() {
 			if ( password == syscfg.newuserpw ) {
 				ok = true;
 			} else {
-				sysoplogf( false, "Wrong newuser password: %s", password.c_str() );
+				sysoplogf( "Wrong newuser password: %s", password.c_str() );
 			}
 		} while ( !ok && !hangup && ( nPasswordAttempt++ < 4 ) );
 		if (!ok) {
