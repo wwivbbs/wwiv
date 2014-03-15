@@ -53,7 +53,7 @@ std::string StringPrintf(const char *pszFormattedText, ...) {
 	char szBuffer[ 1024 ];
 
 	va_start( ap, pszFormattedText );
-	WWIV_ASSERT(WWIV_VSNPRINTF( szBuffer, sizeof( szBuffer ), pszFormattedText, ap ) >= 0);
+	WWIV_VSNPRINTF( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
 	va_end( ap );
 	return std::string(szBuffer);
 }
