@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 
-#ifndef __INCLUDED_FCnNS_H__
+#ifndef __INCLUDED_FCNS_H__
 #define __INCLUDED_FCNS_H__
 
 #ifdef _MSC_VER
