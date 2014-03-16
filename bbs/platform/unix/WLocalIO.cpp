@@ -537,10 +537,12 @@ void WLocalIO::skey(char ch) {
 					break;
 				case F10:                          /* F10 */
 					if (chatting == 0) {
+						char szUnusedChatLine[81];
+						szUnusedChatLine[0]=0;
 						if (syscfg.sysconfig & sysconfig_2_way) {
-							chat1("", true);
+							chat1(szUnusedChatLine, true);
 						} else {
-							chat1("", false);
+							chat1(szUnusedChatLine, false);
 						}
 					} else {
 						chatting = 0;
@@ -548,7 +550,9 @@ void WLocalIO::skey(char ch) {
 					break;
 				case CF10:                         /* Ctrl-F10 */
 					if (chatting == 0) {
-						chat1("", false);
+						char szUnusedChatLine[81];
+						szUnusedChatLine[0]=0;
+						chat1(szUnusedChatLine, false);
 					} else {
 						chatting = 0;
 					}
