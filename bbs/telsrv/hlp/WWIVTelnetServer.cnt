@@ -1,7 +1,0 @@
-:Base WWIVTelnetServer.hlp
-:Title WWIV Telnet Server
-1 WWIV Telnet Server
-2 Overview=main_index
-2 General Preferences=HIDD_DIALOG_PREFERENCES
-2 Logging=HIDD_DIALOG_LOGGING
-2 Sounds=HIDD_DIALOG_SOUNDS
