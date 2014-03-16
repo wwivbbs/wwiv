@@ -25,7 +25,7 @@
 namespace wwiv {
 namespace fix {
 
-void FixConfiguration::ParseCommandLine(int argc, char* argv[]) {
+void FixConfiguration::ParseCommandLine(int argc, char** argv) {
     	for (int i = 1; i < argc; i++) {
 		char* ss = argv[i];
 		if (*ss == '/' || *ss == '-') {
