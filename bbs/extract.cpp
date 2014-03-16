@@ -28,7 +28,7 @@
 //
 
 
-void compress_file(char *pszFileName, char *pszDirectoryName);
+void compress_file(const char *pszFileName, const char *pszDirectoryName);
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ void compress_file(char *pszFileName, char *pszDirectoryName);
 //
 
 
-void compress_file( char *pszFileName, char *pszDirectoryName ) {
+void compress_file( const char *pszFileName, const char *pszDirectoryName ) {
 	WWIV_ASSERT( pszFileName );
 	WWIV_ASSERT( pszDirectoryName );
 
