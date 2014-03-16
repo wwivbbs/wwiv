@@ -128,6 +128,39 @@ int fname_ok( const struct dirent *ent )
 	return ok;
 }
 
+char *strip_filename(const char *pszFileName) {
+	WWIV_ASSERT(pszFileName);
+	static char szStaticFileName[15];
+	char szTempFileName[MAX_PATH];
+
+	int nSepIndex = -1;
+	for (int i = 0; i < strlen(pszFileName); i++) {
+		if ( pszFileName[i] == '\\' || pszFileName[i] == ':' || pszFileName[i] == '/' ) {
+			nSepIndex = i;
+		}
+	}
+	if (nSepIndex != -1) {
+		strcpy( szTempFileName, &( pszFileName[nSepIndex + 1] ) );
+	} else {
+		strcpy( szTempFileName, pszFileName );
+	}
+	for ( int i1 = 0; i1 < strlen( szTempFileName ); i1++ ) {
+		if ( szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z' ) {
+			szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
+		}
+	}
+	int j = 0;
+	while ( szTempFileName[j] != 0 ) {
+		if ( szTempFileName[j] == SPACE ) {
+			strcpy( &szTempFileName[j], &szTempFileName[j + 1] );
+		} else {
+			++j;
+		}
+	}
+	strcpy( szStaticFileName, szTempFileName );
+	return szStaticFileName;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -144,7 +177,7 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
 	dos_flag = 0;
 
 	strcpy(szDirectoryName, getdir_from_file(pszFileSpec));
-	strcpy(szFileName, stripfn(pszFileSpec));
+	strcpy(szFileName, strip_filename(pszFileSpec));
 
 	if ( wwiv::strings::IsEquals( szFileName, "*.*" )  ||
 	        wwiv::strings::IsEquals( szFileName, "*" ) ) {

@@ -31,7 +31,7 @@ public:
         : flag_yes(false), flag_experimental(false), flag_check_users(true), commands_(commands) {}
 	~FixConfiguration() {}
 
-    void ParseCommandLine(int argc, char* argv[]);
+    void ParseCommandLine(int argc, char** argv);
 
 	bool flag_yes;
 	bool flag_experimental;
