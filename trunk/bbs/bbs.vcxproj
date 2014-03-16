@@ -108,6 +108,7 @@
     <ClInclude Include="prot\zmodem.h" />
     <ClInclude Include="Runnable.h" />
     <ClInclude Include="subxtr.h" />
+    <ClInclude Include="sysoplog.h" />
     <ClInclude Include="unittests.h" />
     <ClInclude Include="vardec.h" />
     <ClInclude Include="vars.h" />

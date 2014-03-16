@@ -87,7 +87,7 @@
 
 #define MENU_MAX_KEYS (10)
 
-
+class WFile;
 
 struct MenuHeader {
 	char   szSig[10];      /* Menu Signature */

@@ -16,10 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-
-#include "wwiv.h"
 #include "wios.h"
+
+//TODO(rushfan): Remove this one too after fcns.h goes away
+#include <iostream>
+#include "platform/platformfcns.h"
+#include <process.h>
 
 
 #define TRACE_DEBUGSTRING

@@ -23,6 +23,8 @@
 #pragma once
 #endif
 
+#include "vardec.h"
+#include "net.h"
 #include "menu.h" // Only needed by defaults
 
 // File: asv.cpp
@@ -751,16 +753,7 @@ void chat1(char *pszChatLine, bool two_way);
 
 
 // File: sysoplog.cpp
-
-void GetSysopLogFileName(const char *d, char *pszLogFileName);
-void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName);
-void catsl();
-void sysopchar(const std::string text);
-void sysoplog(const std::string text, bool bIndent = true);
-void sysoplogf( const char *pszFormat, ... );
-void sysoplogfi( bool bIndent, const char *pszFormat, ... );
-
-
+#include "sysoplog.h"
 // File: sysopf.cpp
 
 void reset_files();
