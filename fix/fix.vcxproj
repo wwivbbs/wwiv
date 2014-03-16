@@ -40,11 +40,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
-    <IncludePath>$(ProjectDir)..\;$(ProjectDir)..\platform;$(ProjectDir)..\platform\win32;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\bbs;$(ProjectDir)..\bbs\platform;$(ProjectDir)..\bbs\platform\win32;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
-    <IncludePath>$(ProjectDir)..\;$(ProjectDir)..\platform;$(ProjectDir)..\platform\win32;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\bbs;$(ProjectDir)..\bbs\platform;$(ProjectDir)..\bbs\platform\win32;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -81,15 +81,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\memory.cpp" />
-    <ClCompile Include="..\platform\DateTime.cpp" />
-    <ClCompile Include="..\platform\win32\filesupp.cpp" />
-    <ClCompile Include="..\platform\win32\utility2.cpp" />
-    <ClCompile Include="..\platform\win32\WFile.cpp" />
-    <ClCompile Include="..\platform\win32\wfndfile.cpp" />
-    <ClCompile Include="..\version.cpp" />
-    <ClCompile Include="..\WStringUtils.cpp" />
-    <ClCompile Include="..\WUser.cpp" />
+    <ClCompile Include="..\bbs\memory.cpp" />
+    <ClCompile Include="..\bbs\platform\DateTime.cpp" />
+    <ClCompile Include="..\bbs\platform\win32\filesupp.cpp" />
+    <ClCompile Include="..\bbs\platform\win32\utility2.cpp" />
+    <ClCompile Include="..\bbs\platform\win32\WFile.cpp" />
+    <ClCompile Include="..\bbs\platform\win32\wfndfile.cpp" />
+    <ClCompile Include="..\bbs\version.cpp" />
+    <ClCompile Include="..\bbs\WStringUtils.cpp" />
+    <ClCompile Include="..\bbs\WUser.cpp" />
     <ClCompile Include="dirs.cpp" />
     <ClCompile Include="fix.cpp" />
     <ClCompile Include="fix_config.cpp" />
@@ -97,11 +97,11 @@
     <ClCompile Include="users.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\platform\platformfcns.h" />
-    <ClInclude Include="..\platform\WFile.h" />
-    <ClInclude Include="..\platform\wfndfile.h" />
-    <ClInclude Include="..\WStringUtils.h" />
-    <ClInclude Include="..\WUser.h" />
+    <ClInclude Include="..\bbs\platform\platformfcns.h" />
+    <ClInclude Include="..\bbs\platform\WFile.h" />
+    <ClInclude Include="..\bbs\platform\wfndfile.h" />
+    <ClInclude Include="..\bbs\WStringUtils.h" />
+    <ClInclude Include="..\bbs\WUser.h" />
     <ClInclude Include="dirs.h" />
     <ClInclude Include="fix.h" />
     <ClInclude Include="fix_config.h" />
