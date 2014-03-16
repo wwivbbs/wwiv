@@ -16,11 +16,19 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "Wiot.h"
 #pragma comment(lib, "Ws2_32.lib")
 
-#include "wwiv.h"
-#include "Wiot.h"
+#include <iostream>
+#include <process.h>
 
+#include "WUser.h"
+#include "platform/WFile.h"
+#include "platform/platformfcns.h"
+#include "fcns.h"
+
+#include "platform/incl1.h"
+#include "wwivassert.h"
 //
 // Constants related to Telnet IAC options and such.
 //

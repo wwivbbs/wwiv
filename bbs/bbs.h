@@ -27,8 +27,9 @@
 #include "platform/WFile.h"
 #include "Runnable.h"
 
-class WComm;
 class StatusMgr;
+class WComm;
+class WUserManager;
 
 /*!
  * @header WWIV 5.0 Main Application

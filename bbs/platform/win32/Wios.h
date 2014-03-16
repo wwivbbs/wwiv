@@ -20,10 +20,11 @@
 #if !defined (__INCLUDED_WIOS_H__)
 #define __INCLUDED_WIOS_H__
 
-
 #include "WComm.h"
 #include <queue>
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 class WIOSerial : public WComm {
 

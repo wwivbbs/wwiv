@@ -67,19 +67,10 @@
 #include <ctime>
 #include <fcntl.h>
 
-
-#if defined( _MSC_VER )
-#pragma warning( push, 3 )
-#endif // _MSC_VER
-
 #include <algorithm>
 #include <locale>
 #include <sstream>
 #include <iostream>
-
-#if defined( _MSC_VER )
-#pragma warning( pop )
-#endif // _MSC_VER
 
 //
 // WWIV includes
