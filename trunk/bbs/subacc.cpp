@@ -432,9 +432,8 @@ void resynch(int *msgnum, postrec * pp) {
 void pack_sub(int si) {
 	if (iscan1(si, false)) {
 		if ( open_sub( true ) && subboards[si].storage_type == 2 ) {
-
-			char *sfn = subboards[si].filename;
-			char *nfn = "PACKTMP$";
+			const char *sfn = subboards[si].filename;
+			const char *nfn = "PACKTMP$";
 
 			char fn1[MAX_PATH], fn2[MAX_PATH];
 			sprintf(fn1, "%s%s.dat", syscfg.msgsdir, sfn);

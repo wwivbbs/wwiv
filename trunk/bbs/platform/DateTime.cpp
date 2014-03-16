@@ -91,26 +91,22 @@ time_t date_to_daten(const char *datet) {
  * Returns the date a file was last modified as a string
  *
  * The following line would show the date that your BBS.EXE was last changed:
- * char szBuffer[ 81 ];
- * GetSession()->bout.Write("BBS was last modified on %s at %s\r\n",filedate( "BBS.EXE", szBuffer ),
+ * char date[81];
+ * filedate("bbs.exe", &date);
+ * GetSession()->bout.Write("BBS was last modified on %s at %s\r\n", date,
  *     filetime("BBS.EXE"));
  *
  */
-char *filedate( const char *pszFileName, char *pszReturnValue ) {
+void filedate( const char *pszFileName, char *pszReturnValue ) {
 	WFile file( pszFileName );
-	if ( !file.Exists() )
-
-		if ( !file.Open( WFile::modeReadOnly ) ) {
-			return "";
-		}
-
+	if (!file.Exists() && !file.Open(WFile::modeReadOnly)) {
+		return;
+	}
 	time_t tFileDate = file.GetFileTime();
 	struct tm *pTm = localtime( &tFileDate );
 
 	// We use 9 here since that is the size of the date format MM/DD/YY + NULL
 	snprintf( pszReturnValue, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, ( pTm->tm_year % 100 ) );
-
-	return pszReturnValue;
 }
 
 

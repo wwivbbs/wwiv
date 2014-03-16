@@ -858,7 +858,7 @@ void download() {
 							}
 						}
 						GetSession()->bout.BackLine();
-						sprintf(s1, "%3ld %s", GetSession()->numbatch + 1, s);
+						sprintf(s1, "%3d %s", GetSession()->numbatch + 1, s);
 						GetSession()->bout.Color( 1 );
 						GetSession()->bout << s1;
 						foundany = dn = 0;
