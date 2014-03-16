@@ -79,7 +79,7 @@ void valscan() {
 						continue;
 					case 'V': {
 						open_sub( true );
-						resynch( GetSession()->GetCurrentReadMessageArea(), &i, NULL );
+						resynch(&i, nullptr);
 						postrec *p1 = get_post( i );
 						p1->status &= ~status_pending_net;
 						write_post( i, p1 );
@@ -94,7 +94,7 @@ void valscan() {
 						        subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net &&
 						        xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets ) {
 							open_sub( true );
-							resynch( GetSession()->GetCurrentReadMessageArea(), &i, NULL );
+							resynch(&i, nullptr);
 							postrec *p1 = get_post( i );
 							p1->status &= ~status_pending_net;
 							write_post( i, p1 );
@@ -107,7 +107,7 @@ void valscan() {
 						if ( lcs() ) {
 							if ( i > 0 ) {
 								open_sub( true );
-								resynch( GetSession()->GetCurrentReadMessageArea(), &i, NULL );
+								resynch(&i, nullptr);
 								postrec p2 = *get_post( i );
 								delete_message( i );
 								close_sub();
@@ -136,7 +136,7 @@ void valscan() {
 										}
 									}
 								}
-								resynch( GetSession()->GetCurrentReadMessageArea(), &i, &p2 );
+								resynch(&i, &p2);
 							}
 						}
 						break;

@@ -386,12 +386,8 @@ static bool IsSamePost(postrec * p1, postrec * p2) {
 	return false;
 }
 
-void resynch(int subnum, int *msgnum, postrec * pp) {
+void resynch(int *msgnum, postrec * pp) {
 	postrec p, *pp1;
-
-	// don't care about this param now
-	int i = subnum;
-
 	if (pp) {
 		p = *pp;
 	} else {
@@ -412,7 +408,7 @@ void resynch(int subnum, int *msgnum, postrec * pp) {
 			if ( *msgnum > GetSession()->GetNumMessagesInCurrentMessageArea() ) {
 				*msgnum = GetSession()->GetNumMessagesInCurrentMessageArea() + 1;
 			}
-			for ( i = *msgnum - 1; i > 0; i-- ) {
+			for ( int i = *msgnum - 1; i > 0; i-- ) {
 				pp1 = get_post( i );
 				if ( IsSamePost( &p, pp1 ) || ( p.qscan >= pp1->qscan ) ) {
 					*msgnum = i;
@@ -421,7 +417,7 @@ void resynch(int subnum, int *msgnum, postrec * pp) {
 			}
 			*msgnum = 0;
 		} else {
-			for ( i = *msgnum + 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++ ) {
+			for ( int i = *msgnum + 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++ ) {
 				pp1 = get_post( i );
 				if ( IsSamePost( &p, pp1 ) || ( p.qscan <= pp1->qscan ) ) {
 					*msgnum = i;

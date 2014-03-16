@@ -859,8 +859,8 @@ void readmail( int mode ) {
 						iscan( GetSession()->GetCurrentMessageArea() );
 						GetSession()->bout << "\r\n\n|#9Message moved.\r\n\n";
 						int nTempNumMsgs = GetSession()->GetNumMessagesInCurrentMessageArea();
-						resynch( GetSession()->GetCurrentMessageArea(), (int*) &nTempNumMsgs, &p );
-						GetSession()->SetNumMessagesInCurrentMessageArea( nTempNumMsgs );
+						resynch(&nTempNumMsgs, &p);
+						GetSession()->SetNumMessagesInCurrentMessageArea(nTempNumMsgs);
 					} else {
 						tmp_disable_conf( false );
 					}

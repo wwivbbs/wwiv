@@ -715,7 +715,7 @@ postrec *get_post( int mn );
 void    delete_message(int mn);
 void    write_post(int mn, postrec * pp);
 void    add_post(postrec * pp);
-void    resynch(int subnum, int *msgnum, postrec * pp);
+void    resynch(int *msgnum, postrec * pp);
 
 
 // File: subedit.cpp
