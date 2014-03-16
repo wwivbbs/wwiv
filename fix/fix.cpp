@@ -49,7 +49,7 @@ public:
         for (const auto& datafile : datafiles) {
             WFile file(syscfg.datadir, datafile);
 		    if(!file.Exists()) {
-			    Print(NOK, true, "Critical file: %s is missing", datafile);
+			    Print(NOK, true, "Critical file: %s is missing", datafile.c_str());
 		    }
 	    }
 	    Print(OK, true, "All critical DATA files found");

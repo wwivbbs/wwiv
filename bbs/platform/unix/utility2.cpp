@@ -19,11 +19,14 @@
 
 #include "wwiv.h"
 
+#if !defined(NOT_BBS)
+
 void WWIV_make_abs_cmd( std::string& out ) {
 	if ( out.find("/") != std::string::npos ) {
 		out = std::string( GetApplication()->GetHomeDir() ) + out;
 	}
 }
+#endif  // NOT_BBS
 
 
 #define LAST(s) s[strlen(s)-1]
