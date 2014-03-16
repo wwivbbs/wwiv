@@ -160,8 +160,6 @@ enum COLORS {
 #define SWAP32( X ) OSSwapInt32( X )
 #define SWAP64( X ) OSSwapInt64( X )
 
-#include "macversioninfo.h"
-
 #endif // __APPLE__
 
 enum COLORS {
