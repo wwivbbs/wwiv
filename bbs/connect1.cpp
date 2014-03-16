@@ -32,6 +32,7 @@
 void read_bbs_list();
 int system_index( int ts );
 
+using wwiv::strings::StringPrintf;
 
 void zap_call_out_list() {
 	if (net_networks[GetSession()->GetNetworkNumber()].con) {
@@ -342,12 +343,7 @@ void set_net_num( int nNetworkNumber ) {
 		net_sysnum = net_networks[GetSession()->GetNetworkNumber()].sysnum;
 		GetSession()->SetCurrentNetworkType( net_networks[ GetSession()->GetNetworkNumber() ].type );
 
-		GetApplication()->m_networkNumEnvVar = "WWIV_NET=";
-#if defined(_MSC_VER) && ( _MSC_VER <= 1600 ) // handle MSVC 2010 and older without to_string
-		GetApplication()->m_networkNumEnvVar += GetSession()->GetNetworkNumber();
-#else
-		GetApplication()->m_networkNumEnvVar += std::to_string(GetSession()->GetNetworkNumber());
-#endif
+		GetApplication()->m_networkNumEnvVar = StringPrintf("WWIV_NET=%d", GetSession()->GetNetworkNumber());
 	}
 }
 

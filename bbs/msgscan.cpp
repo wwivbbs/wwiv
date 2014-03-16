@@ -71,7 +71,7 @@ void scan( int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleSca
 		CheckForHangup();
 		set_net_num( (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) ? xsubs[GetSession()->GetCurrentReadMessageArea()].nets[0].net_num : 0 );
 		if ( nScanOptionType != SCAN_OPTION_READ_PROMPT ) {
-			resynch( GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL );
+			resynch(&nMessageNumber, nullptr);
 		}
 		write_inst( INST_LOC_SUBS, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE );
 
@@ -293,7 +293,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 	} else {
 		GetSession()->bout << szReadPrompt;
 		input( szUserInput, 5, true );
-		resynch( GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL );
+		resynch(&nMessageNumber, nullptr);
 		while (szUserInput[0] == 32) {
 			char szTempBuffer[ 255 ];
 			strcpy(szTempBuffer, &(szUserInput[1]));
@@ -465,7 +465,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 		case 'N':
 			if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea())) {
 				open_sub( true );
-				resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+				resynch(&nMessageNumber, nullptr);
 				postrec *p3 = get_post(nMessageNumber);
 				p3->status ^= status_no_delete;
 				write_post(nMessageNumber, p3);
@@ -484,7 +484,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 			        subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_val_net &&
 			        xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
 				open_sub( true );
-				resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+				resynch(&nMessageNumber, nullptr);
 				postrec *p3 = get_post(nMessageNumber);
 				p3->status ^= status_pending_net;
 				write_post(nMessageNumber, p3);
@@ -502,7 +502,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 		case 'U':
 			if ( lcs() && nMessageNumber > 0 && nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea() ) {
 				open_sub( true );
-				resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+				resynch(&nMessageNumber, nullptr);
 				postrec *p3 = get_post(nMessageNumber);
 				p3->anony = 0;
 				write_post(nMessageNumber, p3);
@@ -940,7 +940,7 @@ void HandleMessageMove( int &nMessageNumber ) {
 		}
 		if (nTempSubNum != -1) {
 			open_sub( true );
-			resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+			resynch(&nMessageNumber, nullptr);
 			postrec p2 = *get_post(nMessageNumber);
 			postrec p1 = p2;
 			long lMessageLen;
@@ -990,7 +990,7 @@ void HandleMessageMove( int &nMessageNumber ) {
 			iscan(GetSession()->GetCurrentMessageArea());
 			GetSession()->bout.NewLine();
 			GetSession()->bout << "|#9Message moved.\r\n\n";
-			resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, &p1);
+			resynch(&nMessageNumber, &p1);
 		} else {
 			tmp_disable_conf( false );
 		}
@@ -1040,7 +1040,7 @@ void HandleMessageReply( int &nMessageNumber ) {
 		GetSession()->threadID = "";
 	}
 	post();
-	resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, &p2);
+	resynch(&nMessageNumber, &p2);
 	grab_quotes(NULL, NULL);
 }
 
@@ -1048,7 +1048,7 @@ void HandleMessageDelete( int &nMessageNumber ) {
 	if (lcs()) {
 		if (nMessageNumber) {
 			open_sub( true );
-			resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, NULL);
+			resynch(&nMessageNumber, nullptr);
 			postrec p2 = *get_post(nMessageNumber);
 			delete_message(nMessageNumber);
 			close_sub();
@@ -1077,7 +1077,7 @@ void HandleMessageDelete( int &nMessageNumber ) {
 					}
 				}
 			}
-			resynch(GetSession()->GetCurrentMessageArea(), &nMessageNumber, &p2);
+			resynch(&nMessageNumber, &p2);
 		}
 	}
 }
