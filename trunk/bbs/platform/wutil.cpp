@@ -20,6 +20,10 @@
 #include "wwiv.h"
 #include "platform/wutil.h"
 
+#if defined(__APPLE__)
+#include "macversioninfo.h"
+#endif  // __APPLE__
+
 
 void WWIV_Sound(int nFreq, int nDly) {
 #ifdef _WIN32
