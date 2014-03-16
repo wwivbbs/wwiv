@@ -429,4 +429,67 @@ void resynch(int *msgnum, postrec * pp) {
 	}
 }
 
-#endif
+void pack_sub(int si) {
+	if (iscan1(si, false)) {
+		if ( open_sub( true ) && subboards[si].storage_type == 2 ) {
+
+			char *sfn = subboards[si].filename;
+			char *nfn = "PACKTMP$";
+
+			char fn1[MAX_PATH], fn2[MAX_PATH];
+			sprintf(fn1, "%s%s.dat", syscfg.msgsdir, sfn);
+			sprintf(fn2, "%s%s.dat", syscfg.msgsdir, nfn);
+
+			GetSession()->bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" << subboards[si].name << wwiv::endl;
+
+			for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++) {
+				if (i % 10 == 0) {
+					GetSession()->bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
+				}
+				postrec *p = get_post( i );
+				if (p) {
+					long lMessageSize;
+					char *mt = readfile( &(p->msg), sfn, &lMessageSize );
+					if (!mt) {
+						mt = static_cast<char *>( BbsAllocA( 10 ) );
+						WWIV_ASSERT(mt);
+						if (mt) {
+							strcpy(mt, "??");
+							lMessageSize = 3;
+						}
+					}
+					if (mt) {
+						savefile(mt, lMessageSize, &(p->msg), nfn);
+						write_post(i, p);
+					}
+				}
+				GetSession()->bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
+			}
+
+			WFile::Remove(fn1);
+			WFile::Rename(fn2, fn1);
+
+			close_sub();
+			GetSession()->bout << "|#7\xFE |#1Done Packing " << GetSession()->GetNumMessagesInCurrentMessageArea() << " messages.                              \r\n";
+		}
+	}
+}
+
+
+void pack_all_subs( bool bFromCommandline ) {
+	tmp_disable_pause( true );
+
+	bool abort = false, next = false;
+	int i = 0;
+	while ( !hangup && !abort && i < GetSession()->num_subs ) {
+		pack_sub(i);
+		checka(&abort, &next);
+		i++;
+	}
+	if (abort) {
+		GetSession()->bout << "|#6Aborted.\r\n";
+	}
+	tmp_disable_pause( false );
+}
+
+#endif  // NOT_BBS
