@@ -16,10 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifdef _MSC_VER
-#pragma once
-#endif
-
 #if !defined ( __INCLUDED_WSESSION_H__ )
 #define __INCLUDED_WSESSION_H__
 

@@ -15,13 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-
 #ifndef __INCLUDED_FCNS_H__
 #define __INCLUDED_FCNS_H__
-
-#ifdef _MSC_VER
-#pragma once
-#endif
 
 #include "vardec.h"
 #include "net.h"

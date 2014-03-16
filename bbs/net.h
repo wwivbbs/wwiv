@@ -16,7 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #ifndef __INCLUDED_NET_H__
 #define __INCLUDED_NET_H__
 
