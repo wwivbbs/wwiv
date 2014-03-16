@@ -379,7 +379,9 @@ void preload_subs() {
 	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#1Caching message areas";
 	int i1 = 3;
-	for ( GetSession()->SetMessageAreaCacheNumber( 0 ); GetSession()->GetMessageAreaCacheNumber() < GetSession()->num_subs && !abort; GetSession()->SetMessageAreaCacheNumber( GetSession()->GetMessageAreaCacheNumber() + 1 ) ) {
+	for ( GetSession()->SetMessageAreaCacheNumber( 0 ); 
+        GetSession()->GetMessageAreaCacheNumber() < GetSession()->num_subs && !abort; 
+        GetSession()->SetMessageAreaCacheNumber( GetSession()->GetMessageAreaCacheNumber() + 1 ) ) {
 		if ( !GetSession()->m_SubDateCache[GetSession()->GetMessageAreaCacheNumber()] ) {
 			iscan1( GetSession()->GetMessageAreaCacheNumber(), true );
 		}
