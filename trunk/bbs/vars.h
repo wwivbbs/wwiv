@@ -16,18 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #ifndef __INCLUDED_VARS_H__
 #define __INCLUDED_VARS_H__
-
-#ifdef _MSC_VER
-#pragma once
-#endif
 
 #include "wtypes.h"
 #include "vardec.h"
 #include "net.h"
-
 
 #ifndef MAX_PATH
 #define MAX_PATH 260

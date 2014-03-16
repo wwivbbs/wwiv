@@ -16,13 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #ifndef __INCLUDED_INSTMSG_H__
 #define __INCLUDED_INSTMSG_H__
-
-#ifdef _MSC_VER
-#pragma once
-#endif
 
 #define INST_MSG_STRING      1  // A string to print out to the user
 #define INST_MSG_SHUTDOWN    2  // Hangs up, ends BBS execution
