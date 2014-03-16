@@ -102,7 +102,9 @@ enum COLORS {
 
 #define SOCKET		    int
 #define HANDLE		    int
+#ifndef MAX_PATH
 #define MAX_PATH	    256
+#endif
 
 #define WWIV_FILE_SEPERATOR_CHAR	'\\'
 #define WWIV_FILE_SEPERATOR_STRING	"\\"
@@ -132,7 +134,9 @@ enum COLORS {
 #define SH_DENYWR	0
 #define SOCKET		int
 #define HANDLE		int
-#define MAX_PATH	256
+#ifndef MAX_PATH
+#define MAX_PATH 260
+#endif
 #define MAX_EXT		256
 #define MAX_DIR		256
 #define MAX_FNAME	256

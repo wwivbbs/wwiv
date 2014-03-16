@@ -22,6 +22,7 @@
 #include "bbs.h"
 #include "WSession.h"
 #include "platform/incl1.h"
+#include "platform/platformfcns.h"  // for strupr
 #include "platform/wfndfile.h"
 #include "platform/WLocalIO.h"
 
