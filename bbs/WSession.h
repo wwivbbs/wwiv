@@ -23,6 +23,8 @@
 #if !defined ( __INCLUDED_WSESSION_H__ )
 #define __INCLUDED_WSESSION_H__
 
+#include "vardec.h"
+#include "WUser.h"
 
 //
 // WSession - Holds information and status data about the current user
@@ -40,10 +42,10 @@
 #pragma warning( disable: 4511 4512 )
 #endif // _MSC_VER
 
-
 class WApplication;
 class WLocalIO;
 class WComm;
+class WUser;
 
 class WSession {
   public:

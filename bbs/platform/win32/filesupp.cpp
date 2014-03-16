@@ -16,9 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
-#include "wwiv.h"
-
+#include "bbs.h"
+#include "platform/incl1.h"
 
 double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);
 

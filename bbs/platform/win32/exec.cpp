@@ -16,13 +16,29 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+//#include "wwiv.h"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
-#include "wwiv.h"
+#include <algorithm>
+#include <ctime>
+#include <string>
+#include <sstream>
 
-#if defined(_WIN32) && !defined(_USING_V110_SDK71_) && ( _MSC_VER >= 1800 )
-// this header is available from vs2013 or later
-#include <VersionHelpers.h>
-#endif
+#include "bbs.h"
+#include "WComm.h"
+#include "platform/WFile.h"
+#include "platform/platformfcns.h"
+#include "sysoplog.h"
+#include "WTextFile.h"
+#include "WSession.h"
+#include "vars.h"
+
+// from com.cpp. 
+// this is only used in the 9x support and will be remvoed shortly
+void makeansi( int attr, char *pszOutBuffer, bool forceit);
+
+
 
 bool CreateSyncTempFile( std::string &outFileName, const std::string commandLine );
 void CreateSyncFosCommandLine( std::string &outCommandLine, const std::string tempFilePath, int nSyncMode );

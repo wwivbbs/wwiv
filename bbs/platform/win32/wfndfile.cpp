@@ -16,9 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#include "wwiv.h"
-
+#include "platform/wfndfile.h"
 
 bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
 	__open(pszFileSpec, nTypeMask);

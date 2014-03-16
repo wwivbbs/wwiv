@@ -17,7 +17,21 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include <cstring>
+
+#include "bbs.h"
+#include "WSession.h"
+#include "platform/incl1.h"
+#include "platform/wfndfile.h"
+#include "platform/WLocalIO.h"
+
+// prototype from utility.cpp
+bool okansi();
+char *stripfn(const char *pszFileName);
+
+// from xfer.cpp
+void align(char *pszFileName);
+
 
 #if defined (_WIN32)
 #define SNPRINTF _snprintf
@@ -66,5 +80,6 @@ void show_files( const char *pszFileName, const char *pszDirectoryName ) {
 	GetSession()->bout << charstr( GetSession()->GetCurrentUser()->GetScreenChars() - 1, c );
 	GetSession()->bout.NewLine( 2 );
 }
+
 
 
