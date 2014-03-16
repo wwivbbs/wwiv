@@ -351,8 +351,6 @@ void gfiles();
 void modify_sec(int n);
 void gfileedit();
 bool fill_sec(int sn);
-void pack_all_subs( bool bFromCommandline );
-void pack_sub(int si);
 
 
 // File: hop.cpp
@@ -707,15 +705,17 @@ const std::string stuff_in( const std::string commandline, const std::string arg
 
 // File: subacc.cpp
 
-void    close_sub();
-bool    open_sub(bool wr);
-bool    iscan1(int si, bool quick);
-int     iscan(int b);
+void close_sub();
+bool open_sub(bool wr);
+bool iscan1(int si, bool quick);
+int iscan(int b);
 postrec *get_post( int mn );
-void    delete_message(int mn);
-void    write_post(int mn, postrec * pp);
-void    add_post(postrec * pp);
-void    resynch(int *msgnum, postrec * pp);
+void delete_message(int mn);
+void write_post(int mn, postrec * pp);
+void add_post(postrec * pp);
+void resynch(int *msgnum, postrec * pp);
+void pack_all_subs( bool bFromCommandline );
+void pack_sub(int si);
 
 
 // File: subedit.cpp
