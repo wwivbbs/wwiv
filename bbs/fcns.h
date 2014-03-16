@@ -256,7 +256,7 @@ char *date();
 char *fulldate();
 char *times();
 time_t date_to_daten(const char *datet);
-char *filedate(const char *fpath, char *rtn);
+void filedate(const char *fpath, char *rtn);
 double timer();
 long timer1();
 bool isleap( int nYear );
