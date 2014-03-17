@@ -265,6 +265,12 @@ int ExecExternalProgram( const std::string commandLine, int flags ) {
 		if ( bUsingSync ) {
 			fprintf( hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(), GetLastError() );
 		}
+
+        // If we return here, we may have to reopen the communications port.
+        if ( ok_modem_stuff && !bUsingSync ) {
+		    GetSession()->remoteIO()->open();
+		    GetSession()->remoteIO()->dtr( true );
+	    }
 		return -1;
 	}
 
