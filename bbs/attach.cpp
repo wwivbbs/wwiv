@@ -252,8 +252,7 @@ void attach_file(int mode) {
 									}
 								} else {
 									sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), szFileToAttach);
-									unsigned char u_filetype;
-									receive_file( szFullPathName, &ok, reinterpret_cast<char*>( &u_filetype ), "", 0 );
+									receive_file(szFullPathName, &ok, "", 0);
 								}
 								if (ok) {
 									WFile attachmentFile( szFullPathName );

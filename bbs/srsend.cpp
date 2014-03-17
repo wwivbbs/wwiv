@@ -171,7 +171,7 @@ int GetXYModemBlockSize( bool bBlockSize1K ) {
 }
 
 
-void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch ) {
+void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch ) {
 	char ch;
 
 	long cp = 0L;
@@ -211,16 +211,6 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft,
 
 	if (!okstart(&bUseCRC, &abort)) {
 		abort = true;
-	}
-	if ( ft && !abort && !hangup ) {
-		ch = send_b(file, lFileSize, 4, ft, &bUseCRC, pszWorkingFileName, &terr, &abort);
-		if (ch == CX) {
-			abort = true;
-		}
-		if ( ch == CU ) {
-			send_b( file, 0L, 3, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
-			abort = true;
-		}
 	}
 	if ( bUseYModem && !abort && !hangup ) {
 		ch = send_b(file, lFileSize, 5, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
@@ -280,7 +270,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft,
 }
 
 
-void zmodem_send(const char *pszFileName, bool *sent, double *percent, char ft  ) {
+void zmodem_send(const char *pszFileName, bool *sent, double *percent) {
 	*sent = false;
 	*percent = 0.0;
 
