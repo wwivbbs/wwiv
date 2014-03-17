@@ -193,11 +193,11 @@ int try_to_ul_wh(char *pszFileName) {
 		}
 	}
 	strcpy(u.filename, s);
-	u.ownerusr  = static_cast<unsigned short>( GetSession()->usernum );
-	u.ownersys  = 0;
+	u.ownerusr = static_cast<unsigned short>( GetSession()->usernum );
+	u.ownersys = 0;
 	u.numdloads = 0;
-	u.filetype  = 0;
-	u.mask      = 0;
+	u.unused_filetype = 0;
+	u.mask = 0;
 	strncpy( u.upby, GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ), sizeof( u.upby ) );
 	u.upby[36]  = '\0';
 	strcpy(u.date, date());

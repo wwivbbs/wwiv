@@ -581,7 +581,7 @@ struct uploadsrec {
 	     upby[37],                               // name of upload user
 	     actualdate[9];                          // actual file date
 
-	unsigned char filetype;                     // file type for apples
+	unsigned char unused_filetype;               // file type for apples
 
 	unsigned short numdloads,                   // number times d/l'ed
 	         ownersys, ownerusr,                     // who uploaded it

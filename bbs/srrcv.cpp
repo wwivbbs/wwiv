@@ -137,7 +137,7 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC ) {
 }
 
 
-void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUseCRC ) {
+void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC ) {
 	char b[1025], x[81], ch;
 	unsigned char bln;
 	int i1, i2, i3;
@@ -288,7 +288,8 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
 				rputch( CU );
 			}
 		} else if (i == 8) {
-			*ft = bln;
+			// This used to be where the filetype was set.
+            //*ft = bln;
 			rputch( CF );
 			nConsecErrors = 0;
 		} else if (i == 9) {
@@ -316,7 +317,7 @@ void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUs
 }
 
 
-void zmodem_receive(const char *pszFileName, char *ft, bool *received ) {
+void zmodem_receive(const char *pszFileName, bool *received ) {
 	char *pszWorkingFileName = WWIV_STRDUP( pszFileName );
 	StringRemoveWhitespace( pszWorkingFileName );
 

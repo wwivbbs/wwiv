@@ -95,7 +95,7 @@ void normalupload(int dn) {
 	u.ownerusr = static_cast<unsigned short>( GetSession()->usernum );
 	u.ownersys = 0;
 	u.numdloads = 0;
-	u.filetype = 0;
+	u.unused_filetype = 0;
 	u.mask = 0;
 	strcpy( u.upby, GetSession()->GetCurrentUser()->GetUserNameAndNumber( GetSession()->usernum ) );
 	strcpy( u.date, date() );
@@ -206,7 +206,7 @@ void normalupload(int dn) {
 			if ( xfer ) {
 				write_inst(INST_LOC_UPLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
 				double ti = timer();
-				receive_file( szReceiveFileName, &ok, reinterpret_cast<char*>( &u.filetype ) , u.filename, dn );
+				receive_file( szReceiveFileName, &ok, u.filename, dn);
 				ti = timer() - ti;
 				if (ti < 0) {
 					ti += SECONDS_PER_HOUR_FLOAT * HOURS_PER_DAY_FLOAT;

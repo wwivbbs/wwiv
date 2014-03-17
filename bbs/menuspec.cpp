@@ -96,9 +96,9 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
 			}
 			bool sent = false;
 			if (bOkToDL == -1) {
-				send_file(s1, &sent, &abort, u.filetype, u.filename, dn, -2L);
+				send_file(s1, &sent, &abort, u.filename, dn, -2L);
 			} else {
-				send_file(s1, &sent, &abort, u.filetype, u.filename, dn, u.numbytes);
+				send_file(s1, &sent, &abort, u.filename, dn, u.numbytes);
 			}
 
 			if (sent) {

@@ -345,7 +345,7 @@ void download_temp_arc(const char *pszFileName, int xfer) {
 		bool abort = false;
 		char szFileToSend[81];
 		sprintf( szFileToSend, "%s.%s", pszFileName, arcs[ARC_NUMBER].extension );
-		send_file( szDownloadFileName, &sent, &abort, 0, szFileToSend, -1, lFileSize );
+		send_file( szDownloadFileName, &sent, &abort, szFileToSend, -1, lFileSize );
 		if (sent) {
 			if (xfer) {
 				GetSession()->GetCurrentUser()->SetFilesDownloaded( GetSession()->GetCurrentUser()->GetFilesDownloaded() + 1 );
