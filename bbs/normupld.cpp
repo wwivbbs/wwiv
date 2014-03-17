@@ -113,8 +113,13 @@ void normalupload(int dn) {
 			ok = 0;
 		}
 	}
+    char szUnalignedFile[MAX_PATH];
+    strcpy(szUnalignedFile, szInputFileName);
+    unalign(szUnalignedFile);
+    char szReceiveFileName[ MAX_PATH ];
+    sprintf(szReceiveFileName, "%s%s", d.path, szUnalignedFile);
 	if ( ok && yesno() ) {
-		WFile file( d.path, szInputFileName );
+		WFile file( d.path, szUnalignedFile );
 		if ( file.Exists() ) {
 			if ( dcs() ) {
 				xfer = false;
@@ -201,8 +206,6 @@ void normalupload(int dn) {
 				BbsFreeMemory( pszExtendedDescription );
 			}
 			GetSession()->bout.NewLine();
-			char szReceiveFileName[ MAX_PATH ];
-			memset( szReceiveFileName, 0, sizeof( szReceiveFileName ) );
 			if ( xfer ) {
 				write_inst(INST_LOC_UPLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
 				double ti = timer();
