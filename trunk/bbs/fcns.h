@@ -660,9 +660,9 @@ bool ok_prot(int nProtocolNum, xfertype xt);
 char *prot_name(int nProtocolNum);
 int  get_protocol(xfertype xt);
 void ascii_send(const char *pszFileName, bool *sent, double *percent);
-void maybe_internal(const char *pszFileName, bool *xferred, double *percent, char ft, char *ftp, bool bSend, int prot);
-void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const char *sfn, int dn, long fs);
-void receive_file(const char *pszFileName, int *received, char *ft, const char *sfn, int dn);
+void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot);
+void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn, int dn, long fs);
+void receive_file(const char *pszFileName, int *received, const char *sfn, int dn);
 char end_batch1();
 void endbatch();
 
@@ -671,8 +671,8 @@ void endbatch();
 
 char modemkey(int *tout);
 int  receive_block(char *b, unsigned char *bln, bool bUseCRC);
-void xymodem_receive(const char *pszFileName, char *ft, bool *received, bool bUseCRC);
-void zmodem_receive(const char *pszFileName, char *ft, bool *received );
+void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC);
+void zmodem_receive(const char *pszFileName, bool *received );
 
 
 // File: srsend.cpp
@@ -680,8 +680,8 @@ void zmodem_receive(const char *pszFileName, char *ft, bool *received );
 void send_block(char *b, int nBlockType, bool bUseCRC, char byBlockNumber);
 char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUseCRC, const char *pszFileName, int *terr, bool *abort);
 bool okstart(bool *bUseCRC, bool *abort);
-void xymodem_send(const char *pszFileName, bool *sent, double *percent, char ft, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch );
-void zmodem_send(const char *pszFileName, bool *sent, double *percent, char ft  );
+void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUseCRC, bool bUseYModem, bool bUseYModemBatch );
+void zmodem_send(const char *pszFileName, bool *sent, double *percent);
 
 
 // File: strings.cpp

@@ -409,7 +409,7 @@ bool upload_file( const char *pszFileName, int nDirectoryNum, const char *pszDes
 	u.ownerusr = static_cast< unsigned short >( GetSession()->usernum );
 	u.ownersys = 0;
 	u.numdloads = 0;
-	u.filetype = 0;
+	u.unused_filetype = 0;
 	u.mask = 0;
 	if ( !( d.mask & mask_cdrom ) && !check_ul_event( nDirectoryNum, &u ) ) {
 		GetSession()->bout << pszFileName << " was deleted by upload event.\r\n";

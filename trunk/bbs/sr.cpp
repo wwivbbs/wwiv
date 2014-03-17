@@ -421,7 +421,7 @@ void ascii_send(const char *pszFileName, bool *sent, double *percent) {
 }
 
 
-void maybe_internal(const char *pszFileName, bool *xferred, double *percent, char ft, char *ftp, bool bSend, int prot) {
+void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot) {
 	if (over_intern && (over_intern[prot - 2].othr & othr_override_internal) &&
 	        ((bSend && over_intern[prot - 2].sendfn[0]) ||
 	         (!bSend && over_intern[prot - 2].receivefn[0]))) {
@@ -433,29 +433,29 @@ void maybe_internal(const char *pszFileName, bool *xferred, double *percent, cha
 			if (bSend) {
 				switch (prot) {
 				case WWIV_INTERNAL_PROT_XMODEM:
-					xymodem_send(pszFileName, xferred, percent, ft, false, false, false);
+					xymodem_send(pszFileName, xferred, percent, false, false, false);
 					break;
 				case WWIV_INTERNAL_PROT_XMODEMCRC:
-					xymodem_send(pszFileName, xferred, percent, ft, true, false, false);
+					xymodem_send(pszFileName, xferred, percent, true, false, false);
 					break;
 				case WWIV_INTERNAL_PROT_YMODEM:
-					xymodem_send(pszFileName, xferred, percent, ft, true, true, false);
+					xymodem_send(pszFileName, xferred, percent, true, true, false);
 					break;
 				case WWIV_INTERNAL_PROT_ZMODEM:
-					zmodem_send( pszFileName, xferred, percent, ft );
+					zmodem_send( pszFileName, xferred, percent);
 					break;
 				}
 			} else {
 				switch (prot) {
 				case WWIV_INTERNAL_PROT_XMODEM:
-					xymodem_receive( pszFileName, ftp, xferred, false );
+					xymodem_receive( pszFileName, xferred, false );
 					break;
 				case WWIV_INTERNAL_PROT_XMODEMCRC:
 				case WWIV_INTERNAL_PROT_YMODEM:
-					xymodem_receive( pszFileName, ftp, xferred, true );
+					xymodem_receive( pszFileName, xferred, true );
 					break;
 				case WWIV_INTERNAL_PROT_ZMODEM:
-					zmodem_receive( pszFileName, ftp, xferred );
+					zmodem_receive( pszFileName, xferred );
 					break;
 				}
 			}
@@ -466,7 +466,7 @@ void maybe_internal(const char *pszFileName, bool *xferred, double *percent, cha
 }
 
 
-void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const char *sfn, int dn, long fs) {
+void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn, int dn, long fs) {
 	double percent, t;
 
 	*sent = false;
@@ -503,7 +503,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const 
 		case WWIV_INTERNAL_PROT_XMODEMCRC:
 		case WWIV_INTERNAL_PROT_YMODEM:
 		case WWIV_INTERNAL_PROT_ZMODEM:
-			maybe_internal(pszFileName, sent, &percent, ft, NULL, true, nProtocol);
+			maybe_internal(pszFileName, sent, &percent, true, nProtocol);
 			break;
 		case WWIV_INTERNAL_PROT_BATCH:
 			ok = true;
@@ -569,7 +569,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, char ft, const 
 }
 
 
-void receive_file(const char *pszFileName, int *received, char *ft, const char *sfn, int dn) {
+void receive_file(const char *pszFileName, int *received, const char *sfn, int dn) {
 	bool bReceived;
 	int nProtocol = (dn == -1) ? get_protocol(xf_up_temp) : get_protocol(xf_up);
 
@@ -584,7 +584,8 @@ void receive_file(const char *pszFileName, int *received, char *ft, const char *
 	case WWIV_INTERNAL_PROT_XMODEMCRC:
 	case WWIV_INTERNAL_PROT_YMODEM:
 	case WWIV_INTERNAL_PROT_ZMODEM: {
-		maybe_internal(pszFileName, &bReceived, NULL, 0, ft, false, nProtocol);
+        std::cout << "maybe_internal, filename=" << pszFileName;
+		maybe_internal(pszFileName, &bReceived, NULL, false, nProtocol);
 		*received = ( bReceived ) ? 1 : 0;
 	}
 	break;

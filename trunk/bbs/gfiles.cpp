@@ -449,7 +449,7 @@ void gfile_sec( int sn ) {
 							file.Close();
 							bool sent = false;
 							abort = false;
-							send_file(szFileName, &sent, &abort, 0, g[i2 - 1].filename, -1, lFileSize);
+							send_file(szFileName, &sent, &abort, g[i2 - 1].filename, -1, lFileSize);
 							char s1[ 255 ];
 							if ( sent ) {
 								sprintf( s1, "|#2%s |#9successfully transferred|#1.|#0\r\n", g[i2 - 1].filename );

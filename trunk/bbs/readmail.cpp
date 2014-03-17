@@ -663,7 +663,7 @@ void readmail( int mode ) {
 				sprintf( s1, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename );
 				bool sentt;
 				bool abortt;
-				send_file( s1, &sentt, &abortt, 0, fsr.filename, -1, fsr.numbytes );
+				send_file( s1, &sentt, &abortt, fsr.filename, -1, fsr.numbytes );
 				if ( sentt ) {
 					GetSession()->bout << "\r\nAttached file sent.\r\n";
 					sysoplogf( "Downloaded %ldk of attached file %s.", ( fsr.numbytes + 1023 )/1024, fsr.filename );
@@ -1191,7 +1191,7 @@ void readmail( int mode ) {
 					fileTemp.Close();
 					BbsFreeMemory(b);
 					bool bSent;
-					send_file( fileTemp.GetFullPathName().c_str(), &bSent, 0, 0, fileTemp.GetFullPathName().c_str(), -1, len );
+					send_file( fileTemp.GetFullPathName().c_str(), &bSent, 0, fileTemp.GetFullPathName().c_str(), -1, len );
 					if ( i ) {
 						GetSession()->bout << "E-mail download successful.\r\n";
 						sysoplog("Downloaded E-mail");

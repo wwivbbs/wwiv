@@ -341,7 +341,7 @@ void zmbatchdl(bool bHangupAfterDl) {
 				write_inst(INST_LOC_DOWNLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
 				StringRemoveWhitespace( szSendFileName );
 				double percent;
-				zmodem_send( szSendFileName, &ok, &percent, u.filetype );
+				zmodem_send(szSendFileName, &ok, &percent);
 				if (ok) {
 					downloaded(u.filename, 0);
 				}
@@ -425,7 +425,7 @@ void ymbatchdl(bool bHangupAfterDl) {
 				}
 				write_inst(INST_LOC_DOWNLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
 				double percent;
-				xymodem_send( szSendFileName, &ok, &percent, u.filetype, true, true, true );
+				xymodem_send( szSendFileName, &ok, &percent, true, true, true );
 				if ( ok ) {
 					downloaded( u.filename, 0 );
 				}
