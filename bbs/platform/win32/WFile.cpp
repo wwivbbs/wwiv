@@ -198,20 +198,19 @@ bool WFile::Open( int nFileMode, int nShareMode, int nPermissions ) {
 				m_pLogger->LogMessage("\rThe file %s is busy.  Try again later.\r\n", m_szFileName);
 			}
 		}
-	}
+    }
 
 
 	if ( m_nDebugLevel > 1 ) {
 		m_pLogger->LogMessage("\rSH_OPEN %s, access=%u, handle=%d.\r\n", m_szFileName, nFileMode, m_hFile);
 	}
 
-	if ( WFile::IsFileHandleValid( m_hFile ) ) {
-		m_bOpen = true;
-		return true;
-	} else {
-		m_bOpen = false;
-		return false;
-	}
+	m_bOpen = WFile::IsFileHandleValid( m_hFile );
+    if (m_hFile == -1) {
+        std::cout << "error opening file: " << m_szFileName << "; error: " << strerror(errno) << std::endl;
+        this->m_errorText = _strerror("_sopen");
+    }
+    return m_bOpen;
 }
 
 
