@@ -93,6 +93,7 @@ class WFile {
 	bool    m_bOpen;
 	bool    m_bCloseOnExit;
 	char    m_szFileName[ MAX_PATH + 1 ];
+    std::string m_errorText;
 	static  WLogger* m_pLogger;
 	static  int m_nDebugLevel;
 
@@ -136,7 +137,7 @@ class WFile {
 	}
 
 	virtual int Writeln( const std::string& s ) {
-		return  this->Writeln( s.c_str(), s.length() );
+		return this->Writeln( s.c_str(), s.length() );
 	}
 
 	virtual long GetLength();
@@ -176,6 +177,8 @@ class WFile {
 	virtual const std::string GetFullPathName() {
 		return std::string(m_szFileName);
 	}
+
+    virtual const std::string GetLastError() const { return m_errorText; }
 
   private:
 
