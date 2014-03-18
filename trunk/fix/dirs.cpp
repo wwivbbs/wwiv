@@ -44,6 +44,25 @@ void checkAllDirsExist() {
 	Print(OK, true, "Basic directories present...");
 }
 
+// HACK - make string friendly unalign in BBS. This one is cribbed from batch.cpp
+static char *unalign(char *pszFileName) {
+	char* pszTemp = strstr(pszFileName, " ");
+	if (pszTemp) {
+		*pszTemp++ = '\0';
+		char* pszTemp2 = strstr(pszTemp, ".");
+		if (pszTemp2) {
+			strcat( pszFileName, pszTemp2 );
+		}
+	}
+	return pszFileName;
+}
+
+static std::string Unalign(const char* filename) {
+    char s[MAX_PATH];
+    strcpy(s, filename);
+    return std::string(unalign(s));
+}
+
 void checkFileAreas(int num_dirs) {
 	Print(OK, true, "Checking %d directories", num_dirs);
 	for(int i = 0; i < num_dirs; i++) {
@@ -109,15 +128,21 @@ void checkFileAreas(int num_dirs) {
 									modified = true;
 									Print(NOK, true, "Fixed extended description for '%s'.", upload.filename);
 								}
-								WFile file(directories[i].path, upload.filename);
-								if (file.Exists()) {
-									file.Open(WFile::modeReadOnly | WFile::modeBinary);
-									if (upload.numbytes != (unsigned long)file.GetLength()) {
-										upload.numbytes = file.GetLength();
-										modified = true;
-										Print(NOK, true, "Fixed file size for '%s'.", upload.filename);
-									}
-									file.Close();
+								WFile file(directories[i].path, Unalign(upload.filename));
+								if (strlen(upload.filename)>0 && file.Exists()) {
+									if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
+                                        Print(OK, false, "Checking file '%s'.", file.GetFullPathName().c_str());
+                                        if (upload.numbytes != (unsigned long)file.GetLength()) {
+
+										    upload.numbytes = file.GetLength();
+										    modified = true;
+										    Print(NOK, true, "Fixed file size for '%s'.", upload.filename);
+									    }
+									    file.Close();
+                                    } else {
+                                        Print(NOK, true, "Unable to open file '%s', error '%s'.", 
+                                            file.GetFullPathName().c_str(), file.GetLastError().c_str());
+                                    }
 								}
 								if(modified) {
 									recordFile.Seek(sizeof(uploadsrec) * fileNo, WFile::seekBegin);
