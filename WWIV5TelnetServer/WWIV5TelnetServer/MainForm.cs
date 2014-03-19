@@ -142,12 +142,15 @@ namespace WWIV5TelnetServer
             Action<string> logger = delegate(string s) { server_StatusMessage(this, new StatusMessageEventArgs(s)); };
             Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, logger);
             Process p = launcher.launchLocalNode(Convert.ToInt32(Properties.Settings.Default.localNode));
-            new Thread(delegate()
+            Thread localNodeCleanupThread = new Thread(delegate()
             {
                 p.WaitForExit();
                 MethodInvoker d = delegate() { this.runLocalNodeToolStripMenuItem.Enabled = true; };
                 this.Invoke(d);                
-            }).Start();
+            });
+            // Set this to be a background thread so we can still exit and not wait for it.
+            localNodeCleanupThread.IsBackground = true;
+            localNodeCleanupThread.Start();
         }
 
     }
