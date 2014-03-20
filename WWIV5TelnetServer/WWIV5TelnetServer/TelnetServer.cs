@@ -86,7 +86,7 @@ namespace WWIV5TelnetServer
 
         private void Run()
         {
-            Int32 port = 23;
+            Int32 port = Convert.ToInt32(Properties.Settings.Default.port);
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             server.Bind(new IPEndPoint(IPAddress.Any, port));
             server.Listen(4);
