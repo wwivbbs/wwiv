@@ -23,27 +23,27 @@
 // the status.dat since we know INIT already did it for us.
 
 
-static int statusfile = -1;
-
 void InitStatusMgr::Get(bool bFailOnFailure, bool bLockFile)
 {
-	char s[81];
-	
-	if (statusfile < 0) 
-	{
-		sprintf(s, "%sSTATUS.DAT", syscfg.datadir);
-		int nLockMode = (bLockFile) ? (O_RDWR | O_BINARY) : (O_RDONLY | O_BINARY);
-		statusfile = sh_open1(s, nLockMode);
-	} 
-	else 
-	{
-		_lseek(statusfile, 0L, SEEK_SET);
-	}
-	if ((statusfile < 0) && (!bFailOnFailure))
-	{
-		Printf("%s NOT FOUND\r\n", s);
-		exit( 1 );
-	} 
+    WFile file(syscfg.datadir, "status.dat");
+    int mode = WFile::modeBinary;
+    int shareMode = WFile::shareDenyNone;
+    int perm = WFile::permRead;
+    if (bLockFile) {
+        mode |= WFile::modeReadWrite;
+        shareMode = WFile::shareDenyReadWrite;
+        perm = WFile::permReadWrite;
+    } else {
+        mode |= WFile::modeReadOnly;
+    }
+    if (!file.Open(mode, shareMode, perm)) {
+        if (bFailOnFailure) {
+		    Printf("%s NOT FOUND\r\n", file.GetFullPathName());
+		    exit( 1 );
+        }
+	} else {
+        file.Seek(0L, WFile::seekBegin);
+    }
 }
 
 void InitStatusMgr::Lock()
@@ -58,22 +58,10 @@ void InitStatusMgr::Read()
 
 void InitStatusMgr::Write()
 {
-	char s[81];
-	
-	if (statusfile < 0) 
-	{
-		sprintf(s, "%sSTATUS.DAT", syscfg.datadir);
-		statusfile = sh_open1(s, O_RDWR | O_BINARY);
-	} 
-	else 
-	{
-		_lseek(statusfile, 0L, SEEK_SET);
-	}
-	
-	if (statusfile >= 0) 
-	{
-		sh_write(statusfile, (void *) (&status), sizeof(statusrec));
-		statusfile = sh_close(statusfile);
+    WFile file(syscfg.datadir, "status.dat");
+    if (file.Open(WFile::modeBinary|WFile::modeReadWrite, WFile::shareDenyWrite, WFile::permReadWrite)) {
+        file.Write(&status, sizeof(statusrec));
+        file.Close();
 	}
 }
 

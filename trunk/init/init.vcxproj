@@ -89,7 +89,6 @@
     <ClInclude Include="platform\testos.h" />
     <ClInclude Include="platform\WFile.h" />
     <ClInclude Include="platform\wfndfile.h" />
-    <ClInclude Include="platform\win32\wshare.h" />
     <ClInclude Include="platform\WLocalIO.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="subacc.h" />
@@ -111,7 +110,6 @@
     <ClCompile Include="platform\win32\WFile.cpp" />
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\win32\WLocalIO.cpp" />
-    <ClCompile Include="platform\win32\wshare.cpp" />
     <ClCompile Include="statusmgr.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

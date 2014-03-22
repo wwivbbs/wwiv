@@ -36,9 +36,6 @@
     <ClInclude Include="platform\WFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\win32\wshare.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ifcns.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -99,9 +96,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="platform\win32\WLocalIO.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="platform\win32\wshare.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="platform\win32\WFile.cpp">

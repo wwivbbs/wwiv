@@ -28,8 +28,6 @@
 
 #define MAX_ALLOWED_PORT 8
 
-
-
 //
 // Make sure right number of OS flags are defined.  Some OSD #defines are
 // defined in this file, so anything that relies on thse values MUST
@@ -45,7 +43,6 @@
 //
 
 #include "incl1.h"
-
 
 //
 // Normal ANSI C type includes
@@ -90,11 +87,8 @@ typedef struct {
 #include "WlocalIO.h"
 #include "WFile.h"
 
-#include "wshare.h"
-
 #include "init.h"
 #include "InitSession.h"
-
 
 // Misc Junk for now
 #define textattr(x) curatr = (x)
