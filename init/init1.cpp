@@ -858,58 +858,51 @@ void fix_user_rec(userrec *u)
 
 int number_userrecs()
 {
-	char szFileName[MAX_PATH];
-
-    sprintf( szFileName,"%sUSER.LST",syscfg.datadir );
-	int hFile = sh_open(szFileName,O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-	int nFileLength = static_cast<int>( ( filelength( hFile ) / syscfg.userreclen ) - 1 );
-	hFile = sh_close( hFile );
-	return nFileLength;
+    WFile file(syscfg.datadir, "USER.LST");
+    if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
+        WFile::shareDenyReadWrite, WFile::permRead)) {
+        return static_cast<int>(file.GetLength());
+    }
+    WWIV_ASSERT(false);
+    return -1;
 }
 
 
 void read_user(unsigned int un, userrec *u)
 {
-	char szFileName[MAX_PATH];
-
     if (((useron) && ((long) un==initinfo.usernum)) || ((wfc) && (un==1))) 
 	{
 		*u=thisuser;
 		fix_user_rec(u);
 		return;
 	}
-	
-	sprintf(szFileName,"%sUSER.LST",syscfg.datadir);
-	
-	int hFile = sh_open(szFileName,O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-	if ( hFile < 0 ) 
-	{
+
+    WFile file(syscfg.datadir, "USER.LST");
+    if (!file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareDenyReadWrite, WFile::permReadWrite)) {
 		u->inact=inact_deleted;
 		fix_user_rec(u);
 		return;
-	}
-	
-	int nu=((int) (filelength( hFile )/syscfg.userreclen)-1);
+    }
+
+    int nu = static_cast<int>((file.GetLength() / syscfg.userreclen) - 1);
 	
 	if ((int) un>nu) 
 	{
-		sh_close( hFile );
+        file.Close();
 		u->inact=inact_deleted;
 		fix_user_rec(u);
 		return;
 	}
 	long pos = ((long) syscfg.userreclen) * ((long) un);
-	sh_lseek( hFile, pos, SEEK_SET );
-	sh_read(hFile, (void *)u, syscfg.userreclen);
-	sh_close(hFile);
+    file.Seek(pos, WFile::seekBegin);
+    file.Read(u, syscfg.userreclen);
+    file.Close();
 	fix_user_rec(u);
 }
 
 
 void write_user(unsigned int un, userrec *u)
 {
-	char szFileName[MAX_PATH];
-	
 	if ((un<1) || (un>syscfg.maxusers))
 	{
 		return;
@@ -920,13 +913,15 @@ void write_user(unsigned int un, userrec *u)
 		thisuser=*u;
 	}
 	
-	sprintf(szFileName,"%sUSER.LST",syscfg.datadir);
-	int hFile = sh_open(szFileName,O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-	
-	long pos=((long) syscfg.userreclen) * ((long) un);
-	sh_lseek(hFile,pos,SEEK_SET);
-	sh_write(hFile, (void *)u, syscfg.userreclen);
-	sh_close(hFile);
+    {
+        WFile file(syscfg.datadir, "USER.LST");
+        if (file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite)) {
+            long pos = un * syscfg.userreclen;
+            file.Seek(pos, WFile::seekBegin);
+            file.Write(u, syscfg.userreclen);
+            file.Close();
+        }
+    }
 	
     user_config SecondUserRec;
 	strcpy(SecondUserRec.name, (char *) thisuser.name);
@@ -934,11 +929,12 @@ void write_user(unsigned int un, userrec *u)
 	SecondUserRec.cHotKeys = 1;
 	SecondUserRec.cMenuType = 0;
 	
-	sprintf(szFileName,"%sUSER.DAT",syscfg.datadir);
-	hFile=sh_open(szFileName,O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-	sh_lseek(hFile,((INT32) un * (INT32) sizeof(user_config)),SEEK_SET);
-	sh_write(hFile, &SecondUserRec, sizeof(user_config));
-	sh_close(hFile);
+    WFile file(syscfg.datadir, "USER.DAT");
+    if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite)) {
+        file.Seek(un * sizeof(user_config), WFile::seekBegin);
+        file.Write(&SecondUserRec, sizeof(user_config));
+        file.Close();
+    }
 }
 
 
