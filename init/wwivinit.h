@@ -19,7 +19,9 @@
 #ifndef __INCLUDED_WWIVINIT_H__
 #define __INCLUDED_WWIVINIT_H__
 
+#ifndef NOT_BBS
 #define NOT_BBS 0 
+#endif  // NOT_BBS
 
 // defined in VARS.H net_networks_rec *net_networks;
 // defined in VARS.H int initinfo.net_num_max;
@@ -27,6 +29,7 @@
 #define MAX_LANGUAGES 100
 
 #define MAX_ALLOWED_PORT 8
+
 
 //
 // Make sure right number of OS flags are defined.  Some OSD #defines are
@@ -77,14 +80,17 @@ typedef struct {
 //
 // WWIV includes
 //
+#ifndef INIT
 #define INIT
+#endif  // INIT
+
 #include "wtypes.h"	
 #include "vardec.h"
 #include "WConstants.h"
 #include "ifcns.h"
 #include "vars.h"
 #include "wfndfile.h"
-#include "WlocalIO.h"
+#include "WLocalIO.h"
 #include "WFile.h"
 
 #include "init.h"

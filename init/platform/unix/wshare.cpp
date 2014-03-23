@@ -1,3 +1,4 @@
+
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
@@ -16,36 +17,31 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#ifndef __INCLUDED_PLATFORM_TESTOS_H__
-#define __INCLUDED_PLATFORM_TESTOS_H__
+#include "WTextFile.h"
 
 
-#if defined( WORDS_BIGENDIAN )
-#define __BIG_ENDIAN__
-#endif // WORDS_BIGENDIAN
+#include <sys/file.h>
 
-//
-// Sanity check the #defines
-//
+const int WTextFile::TRIES = 100;
+const int WTextFile::WAIT_TIME = 10;
+/*
+ * Debug Levels:
+ * ==========================================================================
+ *	0 turns all debug operations off
+ *	1 or greater shows file information if the file must be waited upon.
+ *	2 or greater shows file information when an attempt is made to open a file.
+ *	3 or greater shows file information BEFORE any attempt is made to open a file.
+ *	4 or greater waits for key from console with each file open.
+ *
+ */
 
-#if !defined( _WIN32 ) && !defined( __OS2__ ) && !defined( __unix__ ) && !defined( __MSDOS__ ) && !defined( __APPLE__ )
-#error "Either _WIN32, __OS2__, or __unix__ must be defined"
-#endif
+FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode ) {
+	FILE *f = fopen(pszFileName, pszFileMode);
 
-#if defined( _WIN32 ) && defined(__OS2__)
-#error "Either _WIN32 or __OS2__ must be defined, but NOT both!"
-#endif
+	if (f != NULL) {
+		flock(fileno(f), (strpbrk(pszFileMode, "wa+")) ? LOCK_EX : LOCK_SH);
+	}
 
-#if defined( _WIN32 ) && defined( __unix__ )
-#error "Either _WIN32 or __unix__ must be defined, but NOT both!"
-#endif
+	return f;
+}
 
-#if defined( __OS2__ ) && defined( __unix__ )
-#error "Either __OS2__ or __unix__ must be defined, but not both!"
-#endif
-
-
-
-
-#endif // __INCLUDED_PLATFORM_TESTOS_H__
