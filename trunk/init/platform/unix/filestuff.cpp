@@ -17,35 +17,60 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_PLATFORM_TESTOS_H__
-#define __INCLUDED_PLATFORM_TESTOS_H__
+
+#include "wwiv.h"
+
+#ifdef __APPLE__
+#include <sys/param.h>
+#include <sys/mount.h>
+#else
+#include <sys/vfs.h>
+#endif // __APPLE__
 
 
-#if defined( WORDS_BIGENDIAN )
-#define __BIG_ENDIAN__
-#endif // WORDS_BIGENDIAN
+double WWIV_GetFreeSpaceForPath(const char * szPath) {
+	struct statfs fs;
+	double fk;
 
-//
-// Sanity check the #defines
-//
-
-#if !defined( _WIN32 ) && !defined( __OS2__ ) && !defined( __unix__ ) && !defined( __MSDOS__ ) && !defined( __APPLE__ )
-#error "Either _WIN32, __OS2__, or __unix__ must be defined"
+	if (statfs(szPath, &fs)) {
+#ifdef _DEBUG_BBS
+		fprintf(stderr, "%s: ", szPath);
 #endif
+		perror("freek1()");
+		return(0.0);
+	}
 
-#if defined( _WIN32 ) && defined(__OS2__)
-#error "Either _WIN32 or __OS2__ must be defined, but NOT both!"
-#endif
+	fk = ((double) fs.f_bsize * (double) fs.f_bavail) / 1024.0;
 
-#if defined( _WIN32 ) && defined( __unix__ )
-#error "Either _WIN32 or __unix__ must be defined, but NOT both!"
-#endif
-
-#if defined( __OS2__ ) && defined( __unix__ )
-#error "Either __OS2__ or __unix__ must be defined, but not both!"
-#endif
+	return(fk);
+}
 
 
+void WWIV_ChangeDirTo(const char *pszDirectoryName) {
+	chdir( pszDirectoryName );
+}
 
 
-#endif // __INCLUDED_PLATFORM_TESTOS_H__
+void WWIV_GetDir( char *pszDirectoryName, bool bSlashAtEnd ) {
+	getcwd( pszDirectoryName, 80 );
+	if ( bSlashAtEnd ) {
+		if ( pszDirectoryName[ strlen( pszDirectoryName )-1 ]!= '/' ) {
+			strcat( pszDirectoryName, "/" );
+		}
+	}
+}
+
+
+void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
+	char *pszTemp = WWIV_STRDUP(pszPath);
+	char *pTempFn = strrchr(pszTemp, '/');
+	if (pTempFn != NULL) {
+		*pTempFn = 0;
+		pTempFn++;
+	} else {
+		pTempFn = pszTemp;
+	}
+	strcpy(pszFileName, pTempFn);
+	BbsFreeMemory(pszTemp);
+}
+
