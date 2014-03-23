@@ -287,6 +287,7 @@ void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nexts
 	GetSession()->bout.NewLine();
 	char szUserInput[ 81 ];
 	if (express) {
+        szUserInput[0] = '\0';
 		szReadPrompt[0]		= '\0';
 		szSubNamePrompt[0]	= '\0';
 		GetSession()->bout.NewLine( 2 );
