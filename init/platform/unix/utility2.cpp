@@ -17,35 +17,57 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_PLATFORM_TESTOS_H__
-#define __INCLUDED_PLATFORM_TESTOS_H__
+#include "wwiv.h"
+
+#if !defined(NOT_BBS)
+
+void WWIV_make_abs_cmd( std::string& out ) {
+	if ( out.find("/") != std::string::npos ) {
+		out = std::string( GetApplication()->GetHomeDir() ) + out;
+	}
+}
+#endif  // NOT_BBS
 
 
-#if defined( WORDS_BIGENDIAN )
-#define __BIG_ENDIAN__
-#endif // WORDS_BIGENDIAN
+#define LAST(s) s[strlen(s)-1]
 
-//
-// Sanity check the #defines
-//
+int WWIV_make_path(const char *s) {
+	char current_path[MAX_PATH], *p, *flp;
 
-#if !defined( _WIN32 ) && !defined( __OS2__ ) && !defined( __unix__ ) && !defined( __MSDOS__ ) && !defined( __APPLE__ )
-#error "Either _WIN32, __OS2__, or __unix__ must be defined"
+	p = flp = WWIV_STRDUP(s);
+	getcwd(current_path, MAX_PATH);
+	if(LAST(p) == WWIV_FILE_SEPERATOR_CHAR)
+		LAST(p) = 0;
+	if(*p == WWIV_FILE_SEPERATOR_CHAR) {
+		chdir(WWIV_FILE_SEPERATOR_STRING);
+		p++;
+	}
+	for(; (p = strtok(p, WWIV_FILE_SEPERATOR_STRING)) != 0; p = 0) {
+		if(chdir(p)) {
+			if(mkdir(p)) {
+				chdir(current_path);
+				return -1;
+			}
+			chdir(p);
+		}
+	}
+	chdir(current_path);
+	if(flp) {
+		BbsFreeMemory(flp);
+	}
+	return 0;
+}
+
+#if defined (LAST)
+#undef LAST
 #endif
 
-#if defined( _WIN32 ) && defined(__OS2__)
-#error "Either _WIN32 or __OS2__ must be defined, but NOT both!"
-#endif
+void WWIV_Delay(unsigned long usec) {
+	if(usec) {
+		usleep(usec);
+	}
+}
 
-#if defined( _WIN32 ) && defined( __unix__ )
-#error "Either _WIN32 or __unix__ must be defined, but NOT both!"
-#endif
-
-#if defined( __OS2__ ) && defined( __unix__ )
-#error "Either __OS2__ or __unix__ must be defined, but not both!"
-#endif
-
-
-
-
-#endif // __INCLUDED_PLATFORM_TESTOS_H__
+void WWIV_OutputDebugString( const char *pszString ) {
+	//std::cout << pszString;
+}

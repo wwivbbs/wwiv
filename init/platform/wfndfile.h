@@ -34,7 +34,7 @@ protected:
 	long lTypeMask;
 	bool bIsOpen;
 
-	void __open(const char * pszFileSpec, UINT32 nTypeMask) 
+	void __open(const char * pszFileSpec, unsigned int nTypeMask) 
 	{
 		strcpy(szFileSpec, pszFileSpec);
 		lTypeMask = nTypeMask;
@@ -45,7 +45,7 @@ protected:
 #if defined (_WIN32)
 	WIN32_FIND_DATA ffdata;
 	HANDLE	hFind;
-#elif defined (_UNIX)
+#elif defined (__unix__)
 	DIR	*dir;
 	bool dos_flag;
 #elif defined (__OS2__)
@@ -59,7 +59,7 @@ protected:
 
 public:
 	WFindFile() { this->__close(); }
-	bool open(const char * pszFileSpec, UINT32 nTypeMask);
+	bool open(const char * pszFileSpec, unsigned int nTypeMask);
 	bool next();
 	bool close();
 	virtual ~WFindFile() { close(); }
