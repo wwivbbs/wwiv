@@ -91,7 +91,6 @@ class WFile {
 
 	int     m_hFile;
 	bool    m_bOpen;
-	bool    m_bCloseOnExit;
 	char    m_szFileName[ MAX_PATH + 1 ];
     std::string m_errorText;
 	static  WLogger* m_pLogger;
@@ -147,8 +146,6 @@ class WFile {
 	virtual bool Exists() const;
 	virtual bool Delete( bool bUseTrashCan = false );
 
-	virtual void SetCloseOnExit( bool bCloseOnExit );
-
 	virtual bool IsDirectory();
 	virtual bool IsFile();
 
@@ -179,17 +176,6 @@ class WFile {
 	}
 
     virtual const std::string GetLastError() const { return m_errorText; }
-
-  private:
-
-	/////////////////////////////////////////////////////////////////////////
-	//
-	// Private Implemtation Details
-	//
-
-	virtual bool IsCloseOnExit() {
-		return m_bCloseOnExit;
-	}
 
   public:
 
