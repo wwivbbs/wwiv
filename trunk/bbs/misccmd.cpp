@@ -235,7 +235,7 @@ void list_users( int mode ) {
 	GetApplication()->GetStatusManager()->RefreshStatusCache();
 
 	WFile userList( syscfg.datadir, USER_LST );
-	int nNumUserRecords = ( static_cast<int>( userList.GetLength() / syscfg.userreclen ) - 1 );
+	int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
 	for ( int i = 0; ( i < nNumUserRecords ) && !abort && !hangup; i++ ) {
 		GetSession()->usernum = 0;
