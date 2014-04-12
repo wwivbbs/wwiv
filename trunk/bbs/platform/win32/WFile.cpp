@@ -108,14 +108,13 @@ WFile::WFile( const std::string dirName, const std::string fileName ) {
 
 void WFile::init() {
 	m_bOpen                 = false;
-	m_bCloseOnExit          = true;
 	m_hFile                 = WFile::invalid_handle;
 	ZeroMemory( m_szFileName, MAX_PATH + 1 );
 }
 
 
 WFile::~WFile() {
-	if ( this->IsOpen() && this->IsCloseOnExit() ) {
+	if (this->IsOpen()) {
 		this->Close();
 	}
 }
@@ -294,20 +293,13 @@ bool WFile::Delete( bool bUseTrashCan ) {
 	}
 }
 
-
-void WFile::SetCloseOnExit( bool bCloseOnExit ) {
-	m_bCloseOnExit = bCloseOnExit;
-}
-
-
 bool WFile::IsDirectory() {
 	DWORD dwAttributes = GetFileAttributes( m_szFileName );
 	return ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ) ? true : false;
 }
 
-
 bool WFile::IsFile() {
-	return this->IsDirectory() ? false : true;
+	return !this->IsDirectory();
 }
 
 

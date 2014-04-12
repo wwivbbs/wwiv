@@ -99,14 +99,13 @@ WFile::WFile( const std::string dirName, const std::string fileName ) {
 
 void WFile::init() {
 	m_bOpen                 = false;
-	m_bCloseOnExit          = true;
 	m_hFile                 = WFile::invalid_handle;
 	memset( m_szFileName, 0, MAX_PATH + 1 );
 }
 
 
 WFile::~WFile() {
-	if ( this->IsOpen() && this->IsCloseOnExit() ) {
+	if (this->IsOpen()) {
 		this->Close();
 	}
 }
@@ -245,18 +244,11 @@ bool WFile::Delete( bool bUseTrashCan ) {
 	return ( unlink(m_szFileName ) == 0 ) ? true : false;
 }
 
-
-void WFile::SetCloseOnExit( bool bCloseOnExit ) {
-	m_bCloseOnExit = bCloseOnExit;
-}
-
-
 bool WFile::IsDirectory() {
 	struct stat statbuf;
 	stat(m_szFileName, &statbuf);
 	return(statbuf.st_mode & 0x0040000 ? true : false);
 }
-
 
 bool WFile::IsFile() {
 	return(!IsDirectory());
