@@ -91,7 +91,6 @@ class WFile {
 
 	int     m_hFile;
 	bool    m_bOpen;
-	bool    m_bCloseOnExit;
 	char    m_szFileName[ MAX_PATH + 1 ];
 	static  WLogger* m_pLogger;
 	static  int m_nDebugLevel;
@@ -145,9 +144,6 @@ class WFile {
 
 	virtual bool Exists() const;
 	virtual bool Delete( bool bUseTrashCan = false );
-
-	virtual void SetCloseOnExit( bool bCloseOnExit );
-
 	virtual bool IsDirectory();
 	virtual bool IsFile();
 
@@ -175,17 +171,6 @@ class WFile {
 
 	virtual const std::string GetFullPathName() {
 		return std::string(m_szFileName);
-	}
-
-  private:
-
-	/////////////////////////////////////////////////////////////////////////
-	//
-	// Private Implemtation Details
-	//
-
-	virtual bool IsCloseOnExit() {
-		return m_bCloseOnExit;
 	}
 
   public:
