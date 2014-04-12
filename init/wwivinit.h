@@ -144,5 +144,25 @@ __EXTRN__ userrec thisuser;
 __EXTRN__ initinfo_rec initinfo;
 
 
+#if defined(__linux__) 
+
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#define _strupr strupr
+#define _open open
+#define _close close
+#define _lseek lseek
+#define _read read
+#define _write write
+
+void strupr (char *str) 
+{   while (*str) 
+    { 
+      *str = toupper (*str) ; 
+      str ++ ; 
+    } 
+}
+
+#endif  // __linux__
 
 #endif // __INCLUDED_WWIVINIT_H__
