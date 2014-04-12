@@ -529,7 +529,7 @@ void NetworkSetup()
 	while (!bDone)
 	{
 		clear();
-		mvprintw(0, 0, "Network Setup");
+		mvprintw(0, 0, "Network Setup [%u networks]", netCount);
 		mvprintw(2, 0, "Net Number      :  %u", netNumber);
 		mvprintw(3, 0, "1) Network Name :  %s", netrec.name);
 		mvprintw(4, 0, "2) Network Dir  :  %s", netrec.dir);
@@ -590,7 +590,7 @@ void NetworkSetup()
 			}
 			break;
 		case ']':
-			if(netNumber < netCount)
+		        if(netNumber < (netCount - 1))
 			{
 				fseek(fp, netNumber * sizeof(net_networks_rec), SEEK_SET);
 				fwrite(&netrec, 1, sizeof(net_networks_rec), fp);
