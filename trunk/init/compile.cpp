@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwivinit.h"
-
+#include <string.h>
 
 char *tokens[] = 
 {
@@ -745,7 +745,9 @@ void hlt(int y, int x, int nc)
 {
 	for (int x1=x; x1<(x+nc); x1++)
 	{
-		app->localIO->set_attr_xy(x1, y, 0x1f);
+#ifdef _WIN32
+	  app->localIO->set_attr_xy(x1, y, 0x1f);
+#endif  // _WIN32
 	}
 }
 
@@ -753,7 +755,9 @@ void unhlt(int y, int x, int nc)
 {
 	for (int x1=x; x1<(x+nc); x1++)
 	{
+#ifdef _WIN32
 		app->localIO->set_attr_xy(x1, y, 0x03);
+#endif  // _WIN32
 	}
 }
 
