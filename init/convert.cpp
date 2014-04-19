@@ -105,7 +105,6 @@ typedef struct
 /****************************************************************************/
 
 static int qfl;
-unsigned long *qsc, *qsc_n, *qsc_q, *qsc_p;
 
 #ifdef INIT
 extern configrec syscfg;
