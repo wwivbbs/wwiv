@@ -1353,7 +1353,7 @@ WApplication::~WApplication() {
 }
 
 
-int main( int argc, char *argv[] ) {
+int bbsmain( int argc, char *argv[] ) {
 	app = new WApplication();
 	return GetApplication()->BBSMainLoop( argc, argv );
 }
