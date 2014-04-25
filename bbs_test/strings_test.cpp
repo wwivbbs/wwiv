@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)2007, WWIV Software Services                  */
+/*             Copyright (C)2008, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,39 +16,37 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if defined ( _DEBUG )
+#include "gtest/gtest.h"
 
-#include "wwiv.h"
-#include "WOutStreamBuffer.h"
 #include "WStringUtils.h"
-#include "XferTest.h"
 
 using std::cout;
 using std::endl;
 using std::ostringstream;
 using std::string;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( XferTest );
-
-
-void XferTest::testOkfn()
-{
-    CPPUNIT_ASSERT( !okfn("") );
-    CPPUNIT_ASSERT( okfn("foo") );
-    CPPUNIT_ASSERT( okfn("foo.bar") );
-    CPPUNIT_ASSERT( !okfn("/foo") );
-    CPPUNIT_ASSERT( !okfn("<foo") );
-    CPPUNIT_ASSERT( !okfn(">foo") );
-    CPPUNIT_ASSERT( !okfn("`foo") );
-    CPPUNIT_ASSERT( !okfn("-foo") );
-    CPPUNIT_ASSERT( !okfn(" foo") );
-    CPPUNIT_ASSERT( !okfn("@foo") );
-    CPPUNIT_ASSERT( !okfn(".foo") );
-    CPPUNIT_ASSERT( !okfn("COM1") );
-    CPPUNIT_ASSERT( !okfn("PRN") );
-    CPPUNIT_ASSERT( !okfn("KBD$") );
-    CPPUNIT_ASSERT( okfn("COM1A") );
+TEST(StringsTest, StringColors) {
+    EXPECT_EQ( string(""), stripcolors(string("")) );
+    EXPECT_EQ( string("|"), stripcolors(string("|")) );
+    EXPECT_EQ( string("|0"), stripcolors(string("|0")) );
+    EXPECT_EQ( string("12345"), stripcolors(string("12345")) );
+    EXPECT_EQ( string("abc"), stripcolors(string("abc")) );
+    EXPECT_EQ( string("1 abc"), stripcolors(string("\x031 abc")) );
+    EXPECT_EQ( string("\x03 abc"), stripcolors(string("\x03 abc")) );
+    EXPECT_EQ( string("abc"), stripcolors(string("|15abc")) );
 }
 
-
-#endif
+TEST(StringsTest, Properize) {
+    EXPECT_EQ( string("Rushfan"), properize( string("rushfan") ) );
+    EXPECT_EQ( string("Rushfan"), properize( string("rUSHFAN") ) );
+    EXPECT_EQ( string(""), properize( string("") ) );
+    EXPECT_EQ( string(" "), properize( string(" ") ) );
+    EXPECT_EQ( string("-"), properize( string("-") ) );
+    EXPECT_EQ( string("."), properize( string(".") ) );
+    EXPECT_EQ( string("R"), properize( string("R") ) );
+    EXPECT_EQ( string("R"), properize( string("r") ) );
+    EXPECT_EQ( string("Ru"), properize( string("RU") ) );
+    EXPECT_EQ( string("R.U"), properize( string("r.u") ) );
+    EXPECT_EQ( string("R U"), properize( string("r u") ) );
+    EXPECT_EQ( string("Rushfan"), properize( string("Rushfan") ) );
+}
