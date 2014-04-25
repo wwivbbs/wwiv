@@ -96,7 +96,6 @@ set(COMMON_SOURCES
  sysoplog.cpp
  trytoul.cpp
  uedit.cpp
- unittests.cpp
  user.cpp
  utility.cpp
  valscan.cpp
