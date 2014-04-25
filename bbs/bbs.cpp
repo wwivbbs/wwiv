@@ -28,7 +28,6 @@
 
 #include <memory>
 #include "bbs.h"
-#include "unittests.h"
 
 #if defined( _WIN32 )
 #include "platform/win32/InternalTelnetServer.h"
@@ -471,10 +470,6 @@ int WApplication::doWFCEvents() {
 				break;
 			// Run Terminal Program
 			case 'T':
-#ifdef _DEBUG
-				RunUnitTests("");
-				getkey();
-#else
 				if ( AllowLocalSysop() && syscfg.terminal[0] ) {
 					write_inst( INST_LOC_TERM, 0, INST_FLAGS_NONE );
 					ExecuteExternalProgram( syscfg.terminal, EFLAG_NONE );
@@ -484,7 +479,6 @@ int WApplication::doWFCEvents() {
 					GetSession()->localIO()->LocalGotoXY( 2, 23 );
 					GetSession()->bout << "|#6No terminal program defined.";
 				}
-#endif // _DEBUG
 				break;
 			// UserEdit
 			case 'U':

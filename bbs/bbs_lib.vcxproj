@@ -111,7 +111,6 @@
     <ClInclude Include="Runnable.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="sysoplog.h" />
-    <ClInclude Include="unittests.h" />
     <ClInclude Include="vardec.h" />
     <ClInclude Include="vars.h" />
     <ClInclude Include="WComm.h" />
@@ -232,7 +231,6 @@
     <ClCompile Include="sysoplog.cpp" />
     <ClCompile Include="trytoul.cpp" />
     <ClCompile Include="uedit.cpp" />
-    <ClCompile Include="unittests.cpp" />
     <ClCompile Include="user.cpp" />
     <ClCompile Include="utility.cpp" />
     <ClCompile Include="valscan.cpp" />
