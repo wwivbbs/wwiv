@@ -16,40 +16,53 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if defined ( _DEBUG )
+#include "gtest/gtest.h"
 
-#include "wwiv.h"
-#include "WOutStreamBuffer.h"
-#include "WStringUtils.h"
-#include "StuffInTest.h"
+#include "vars.h"
 
 using std::cout;
 using std::endl;
 using std::ostringstream;
 using std::string;
 
-CPPUNIT_TEST_SUITE_REGISTRATION( StuffInTest );
+//TODO(rushfan): create stuffin.h
+const std::string stuff_in( const std::string commandline, const std::string arg1,
+                            const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5 );
 
-void StuffInTest::testSimpleCase() 
-{
+class StuffInTest : public testing::Test {
+protected:
+    virtual void SetUp() {
+        incom = false;
+        com_speed = 0;
+        modem_speed = 0;
+        syscfgovr.primaryport = 0;
+        syscfgovr.tempdir[0] = 0;
+        syscfg.gfilesdir = "C:\temp";
+    }
+ public:
+    const std::string StuffInTest::t(const std::string name) {
+        ostringstream os;
+        os << syscfgovr.tempdir << name;
+        return string(os.str());
+    }
+};
+
+TEST_F(StuffInTest, SimpleCase) {
     const string actual = stuff_in("foo %1 %c %2 %k", "one", "two", "", "", "");
 
     ostringstream expected;
     expected << "foo one " << t("chain.txt") << " two " << syscfg.gfilesdir << "comment.txt";
 
-    CPPUNIT_ASSERT_EQUAL(expected.str(), actual);
+    EXPECT_EQ(expected.str(), actual);
 }
 
 
-void StuffInTest::testEmpty() 
-{
+TEST_F(StuffInTest, Empty) {
     const string actual = stuff_in("", "", "", "", "", "");
-
-    CPPUNIT_ASSERT_EQUAL(string(""), actual);
+    EXPECT_EQ(0, actual.length());
 }
 
-void StuffInTest::testAllNumbers() 
-{
+TEST_F(StuffInTest, AllNumbers) {
 // Param     Description                       Example
 // ---------------------------------------------------------------------
 //  %%       A single '%'                      "%"
@@ -57,11 +70,10 @@ void StuffInTest::testAllNumbers()
     const string actual = stuff_in("%0%1%2%3%4%5%6%%", "1", "2", "3", "4", "5");
     string expected = "12345%";
 
-    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    EXPECT_EQ(expected, actual);
 }
 
-void StuffInTest::testAllDropFiles() 
-{
+TEST_F(StuffInTest, AllDropFiles) {
 // Param     Description                       Example
 // ---------------------------------------------------------------------
 //  %A       callinfo full pathname            "c:\wwiv\temp\callinfo.bbs"
@@ -81,57 +93,42 @@ void StuffInTest::testAllDropFiles()
              << t("pcboard.sys")    << " "
              << t("door.sys")       << " ";
 
-    CPPUNIT_ASSERT_EQUAL(expected.str(), actual_lower);
-    CPPUNIT_ASSERT_EQUAL(expected.str(), actual_upper);
+    EXPECT_EQ(expected.str(), actual_lower);
+    EXPECT_EQ(expected.str(), actual_upper);
 }
 
-void StuffInTest::testPortAndNode() 
-{
+TEST_F(StuffInTest, PortAndNode) {
 // Param     Description                       Example
 // ---------------------------------------------------------------------
 //  %N       Instance number                   "1"
 //  %P       Com port number                   "1"
-    CPPUNIT_ASSERT_EQUAL(string("0"), stuff_in("%P", "", "", "", "", ""));
+    EXPECT_EQ(string("0"), stuff_in("%P", "", "", "", "", ""));
     
     incom = true;
     syscfgovr.primaryport = 1;
-    CPPUNIT_ASSERT_EQUAL(string("1"), stuff_in("%P", "", "", "", "", ""));
+    EXPECT_EQ(string("1"), stuff_in("%P", "", "", "", "", ""));
 
-    CPPUNIT_ASSERT_EQUAL(string("1"), stuff_in("%N", "", "", "", "", ""));
+    // TODO(Rushfan): Figure out how to get GetApplication() working in tests and
+    // reenable this one.
+//    EXPECT_EQ(string("1"), stuff_in("%N", "", "", "", "", ""));
 }
 
-void StuffInTest::testSpeeds()
-{
+TEST_F(StuffInTest, Speeds) {
 // Param     Description                       Example
 // ---------------------------------------------------------------------
 //  %M       Modem baud rate                   "14400"
 //  %S       Com port baud rate                "38400"
-    CPPUNIT_ASSERT_EQUAL(string("0"), stuff_in("%M", "", "", "", "", ""));
-    CPPUNIT_ASSERT_EQUAL(string("0"), stuff_in("%S", "", "", "", "", ""));
+    EXPECT_EQ(string("0"), stuff_in("%M", "", "", "", "", ""));
+    EXPECT_EQ(string("0"), stuff_in("%S", "", "", "", "", ""));
 
     modem_speed = 38400;
-    CPPUNIT_ASSERT_EQUAL(string("38400"), stuff_in("%M", "", "", "", "", ""));
+    EXPECT_EQ(string("38400"), stuff_in("%M", "", "", "", "", ""));
 
     com_speed = 38400;
-    CPPUNIT_ASSERT_EQUAL(string("38400"), stuff_in("%S", "", "", "", "", ""));
+    EXPECT_EQ(string("38400"), stuff_in("%S", "", "", "", "", ""));
 
     com_speed = 1;
-    CPPUNIT_ASSERT_EQUAL(string("115200"), stuff_in("%S", "", "", "", "", ""));
+    EXPECT_EQ(string("115200"), stuff_in("%S", "", "", "", "", ""));
 }
 
-void StuffInTest::tearDown()
-{
-    incom = false;
-    com_speed = 0;
-    modem_speed = 0;
-    syscfgovr.primaryport = 0;
-}
 
-const std::string StuffInTest::t(const std::string name)
-{
-    ostringstream os;
-    os << syscfgovr.tempdir << name;
-    return string(os.str());
-}
-
-#endif
