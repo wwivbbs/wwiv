@@ -26,6 +26,7 @@ set(COMMON_SOURCES
  bbsutl.cpp
  bbsutl1.cpp
  bbsutl2.cpp
+ bbs_main.cpp
  bgetch.cpp
  bputch.cpp
  callback.cpp
