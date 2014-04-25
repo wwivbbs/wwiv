@@ -1,4 +1,4 @@
-WWIV v4.30 uses a new menu system that allows you to select from a variety
+WWIV v5.00 uses a new menu system that allows you to select from a variety
 of menu types, providing you with a new level of individual configuration.
 Each menu set provides an option for both standard and pulldown styles, as
 well as a "hot-key" support toggle.
