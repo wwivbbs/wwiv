@@ -929,13 +929,6 @@ int WApplication::Run(int argc, char *argv[]) {
 				if ( argumentRaw == "--help" ) {
 					ShowUsage();
 					exit( 0 );
-#ifdef _DEBUG
-				} else if ( argumentRaw.substr(0, 6) == "--test" ) {
-					this->InitializeBBS();
-					std::string suite = argumentRaw.length() > 7 ? argumentRaw.substr( 7 ) : "";
-					bool ok = RunUnitTests( suite );
-					ExitBBSImpl( ok ? m_nOkLevel : m_nErrorLevel );
-#endif // _DEBUG
 				}
 			}
 			break;
