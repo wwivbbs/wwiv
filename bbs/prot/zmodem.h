@@ -402,7 +402,7 @@ extern	FILE	*ZOpenFile(char *name, u_long crc, ZModem *info) ;
 
 extern	int	ZXmitHdr( int type, int format, u_char data[4], ZModem *info);
 int ZXmitHdrHex( int type, u_char data[4], ZModem *info );
-int ZXmitHdrBin( int type, u_char data[4], register ZModem *info );
+int ZXmitHdrBin( int type, u_char data[4], ZModem *info );
 int ZXmitHdrBin32( int type, u_char data[4], ZModem *info );
 extern	u_char	*putZdle( u_char *ptr, u_char c, ZModem *info ) ;
 
