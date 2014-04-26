@@ -40,7 +40,7 @@ protected:
         syscfg.gfilesdir = "C:\temp";
     }
  public:
-    const std::string StuffInTest::t(const std::string name) {
+    const std::string t(const std::string name) {
         ostringstream os;
         os << syscfgovr.tempdir << name;
         return string(os.str());

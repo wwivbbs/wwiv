@@ -26,7 +26,6 @@ set(COMMON_SOURCES
  bbsutl.cpp
  bbsutl1.cpp
  bbsutl2.cpp
- bbs_main.cpp
  bgetch.cpp
  bputch.cpp
  callback.cpp
@@ -112,6 +111,8 @@ set(COMMON_SOURCES
  xinit.cpp
 )
 
+set(BBS_MAIN bbs_main.cpp)
+
 include_directories(prot)
 set(ZMODEM_SOURCES 
   prot/crctab.cpp
@@ -150,6 +151,7 @@ if(UNIX)
 endif()
 
 
-
-add_executable(bbs ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES})
+add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
+add_executable(bbs ${BBS_MAIN})
+target_link_libraries(bbs bbs_lib)
 
