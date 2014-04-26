@@ -26,8 +26,8 @@ using std::ostringstream;
 using std::string;
 
 //TODO(rushfan): create stuffin.h
-const std::string stuff_in( const std::string commandline, const std::string arg1,
-                            const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5 );
+const string stuff_in(const std::string commandline, const std::string arg1,
+		       const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5);
 
 class StuffInTest : public testing::Test {
 protected:
@@ -37,14 +37,17 @@ protected:
         modem_speed = 0;
         syscfgovr.primaryport = 0;
         syscfgovr.tempdir[0] = 0;
-        syscfg.gfilesdir = "C:\temp";
+        gfiles_dir = "C:\\temp";
+        syscfg.gfilesdir = const_cast<char*>(gfiles_dir.c_str());
     }
- public:
+public:
     const std::string t(const std::string name) {
         ostringstream os;
         os << syscfgovr.tempdir << name;
         return string(os.str());
     }
+private:
+  string gfiles_dir;
 };
 
 TEST_F(StuffInTest, SimpleCase) {
