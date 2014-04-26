@@ -34,6 +34,8 @@ void maybeGiveUp();
 namespace wwiv {
 namespace fix {
 
+Command::~Command() {}
+
 BaseCommand::BaseCommand(FixConfiguration* config) : config_(config) {}
 BaseCommand::~BaseCommand() {}
 
