@@ -145,7 +145,7 @@ void Usage() {
 int main(int argc, char *argv[]) {
 	int retval = 0;
 	int strnum = -1;
-	register int iX;
+	int iX;
 
 	print(LIGHTBLUE, "MenuTell v%d.%02d for %s", VER / 256, VER % 256,
 	      wwiv_version);

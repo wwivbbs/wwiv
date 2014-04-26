@@ -256,7 +256,7 @@ ProcessPacket() {
 
 	if( protocol == Xmodem ) {
 		/* compute checksum */
-		register int csum = calcChecksum(packet+2, pktLen) ;
+		int csum = calcChecksum(packet+2, pktLen) ;
 		if( csum != (u_char) packet[2+pktLen] )
 			return rejectPacket() ;
 	} else {
