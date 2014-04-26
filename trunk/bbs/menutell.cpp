@@ -25,7 +25,7 @@
 
 #include "filenames.h"
 #include "platform/incl1.h"
-#include "platform/WFile.h"
+#include "platform/wfile.h"
 #include "vardec.h"
 #include "version.cpp"
 

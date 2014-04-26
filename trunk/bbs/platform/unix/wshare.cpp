@@ -17,7 +17,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "WTextFile.h"
+#include "wtextfile.h"
 
 
 #include <sys/file.h>

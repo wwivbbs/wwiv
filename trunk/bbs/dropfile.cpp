@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "WTextFile.h"
+#include "wtextfile.h"
 #include <memory>
 
 //

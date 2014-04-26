@@ -21,7 +21,7 @@
 #define __INCLUDED_PLATFORM_WFILLE_H__
 
 #include <cstring>
-#include "WStringUtils.h"
+#include "wstringutils.h"
 
 #ifndef MAX_PATH
 #define MAX_PATH 260

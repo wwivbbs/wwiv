@@ -19,8 +19,8 @@
 #ifndef __INCLUDED_BBS_H__
 #define __INCLUDED_BBS_H__
 
-#include "platform/WFile.h"
-#include "Runnable.h"
+#include "platform/wfile.h"
+#include "runnable.h"
 
 class StatusMgr;
 class WComm;

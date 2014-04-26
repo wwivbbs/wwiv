@@ -21,7 +21,7 @@
 #define __INCLUDED_WIOU_H__
 
 
-#include "WComm.h"
+#include "wcomm.h"
 #include <termios.h>
 #include <sys/poll.h>
 #include <sys/ioctl.h>

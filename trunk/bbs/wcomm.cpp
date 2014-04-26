@@ -26,12 +26,12 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif  // _CRT_SECURE_NO_DEPRECATE
 #include <windows.h>
-#include "platform/win32/Wios.h"
-#include "platform/win32/Wiot.h"
+#include "platform/win32/wios.h"
+#include "platform/win32/wiot.h"
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
-#include "Wiou.h"
+#include "wiou.h"
 #endif
-#include "WComm.h"
+#include "wcomm.h"
 
 char WComm::m_szErrorText[8192];
 

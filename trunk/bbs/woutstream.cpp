@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwiv.h"
-#include "WOutStreamBuffer.h"
-#include "WStringUtils.h"
+#include "woutstreambuffer.h"
+#include "wstringutils.h"
 
 using std::ostream;
 
