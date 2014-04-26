@@ -217,8 +217,8 @@ int comparedl(uploadsrec * x, uploadsrec * y, int type) {
 void quicksort(int l, int r, int type) {
 	uploadsrec a, a2, x;
 
-	register int i = l;
-	register int j = r;
+	int i = l;
+	int j = r;
 	WFile fileDownload( g_szDownloadFileName );
 	fileDownload.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
 

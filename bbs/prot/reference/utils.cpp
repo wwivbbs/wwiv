@@ -126,7 +126,7 @@ sendStr(char *str, int len)
 int
 calcChecksum(char *ptr, int count)
 {
-	register int csum = 0 ;
+	int csum = 0 ;
 	while( --count >= 0 )
 	  csum += (u_char) *ptr++ ;
 	return csum & 255 ;
