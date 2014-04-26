@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 
-#include "platform/WLocalIO.h"
+#include "platform/wlocal_io.h"
 #include "net.h"
 
 const int WSession::mmkeyMessageAreas   = 0;

@@ -17,17 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "WConstants.h"
+#include "wconstants.h"
 #include "filenames.h"
-#include "platform/WFile.h"
-#include "WUser.h"
-#include "WSession.h"
-#include "WStringUtils.h"
+#include "platform/wfile.h"
+#include "wuser.h"
+#include "wsession.h"
+#include "wstringutils.h"
 #include "vars.h"
 #include "bbs.h"
 #include <cstdlib>
 #include <memory>
-#include "WStatus.h"
+#include "wstatus.h"
 
 // TODO - Remove this and finduser, finduser1, ISR, DSR, and add_add
 #include "fcns.h"

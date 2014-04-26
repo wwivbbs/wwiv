@@ -27,9 +27,9 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include "platform/WFile.h"
-#include "WUser.h"
-#include "WStringUtils.h"
+#include "platform/wfile.h"
+#include "wuser.h"
+#include "wstringutils.h"
 #include "filenames.h"
 #include <iostream>
 #include <memory>
@@ -39,11 +39,11 @@
 #endif // _WIN32
 
 #ifndef NOT_BBS
-#include "WSession.h"
+#include "wsession.h"
 #include "bbs.h"
-#include "WConstants.h"
+#include "wconstants.h"
 #include "vars.h"
-#include "WStatus.h"
+#include "wstatus.h"
 #endif // NOT_BBS
 
 

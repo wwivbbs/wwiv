@@ -39,7 +39,7 @@
 #include <sys/stat.h>
 #include "zmodem.h"
 #include "crctab.h"
-#include "WStringUtils.h"
+#include "wstringutils.h"
 
 #if defined(_MSC_VER)
 #pragma warning( push )

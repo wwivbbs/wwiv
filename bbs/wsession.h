@@ -20,7 +20,7 @@
 #define __INCLUDED_WSESSION_H__
 
 #include "vardec.h"
-#include "WUser.h"
+#include "wuser.h"
 
 //
 // WSession - Holds information and status data about the current user
@@ -31,7 +31,7 @@
 // associated with this instance of WWIV globally (not tied to a user)
 //
 
-#include "WOutStreamBuffer.h"
+#include "woutstreambuffer.h"
 
 #if defined(_MSC_VER)
 #pragma warning( push )

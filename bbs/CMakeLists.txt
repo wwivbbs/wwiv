@@ -5,15 +5,15 @@ include_directories(.)
 include_directories(platform)
 
 set(COMMON_SOURCES 
- FindUser.cpp
- SmallRecord.cpp
- WComm.cpp
- WOutStream.cpp
- WOutStreamBuffer.cpp
- WSession.cpp
- WStringUtils.cpp
- WTextFile.cpp
- WUser.cpp
+ finduser.cpp
+ smallrecord.cpp
+ wcomm.cpp
+ woutstream.cpp
+ woutstreambuffer.cpp
+ wsession.cpp
+ wstringutils.cpp
+ wtextfile.cpp
+ wuser.cpp
  asv.cpp
  attach.cpp
  automsg.cpp
@@ -131,14 +131,14 @@ if(UNIX)
 	platform/unix/exec.cpp 
 	platform/unix/reboot.cpp 
 	platform/unix/utility2.cpp 
-	platform/unix/WFile.cpp 
+	platform/unix/wfile.cpp 
 	platform/unix/wfndfile.cpp 
-	platform/unix/WLocalIO.cpp
-	platform/DateTime.cpp
+	platform/unix/wlocal_io.cpp
+	platform/datetime.cpp
 	platform/unix/wshare.cpp
 	platform/unix/stringstuff.cpp 
 	platform/unix/filestuff.cpp 
-	platform/unix/Wiou.cpp)
+	platform/unix/wiou.cpp)
   if(APPLE)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.mm)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
