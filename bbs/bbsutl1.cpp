@@ -396,7 +396,7 @@ void describe_area_code(int nAreaCode, char *pszDescription) {
 		int nCurrentAreaCode = atoi( ss1 );
 		if ( nCurrentAreaCode && nCurrentAreaCode == nAreaCode ) {
 			done = true;
-		} else {
+		} else if (!nCurrentAreaCode) {
 			strcpy(pszDescription, ss1);
 		}
 		ss1 = strtok(NULL, "\r\n");
@@ -439,7 +439,7 @@ void describe_area_code_prefix( int nAreaCode, int nTargetTown, char *pszDescrip
 		int nCurrentTown = atoi(ss1);
 		if ( nCurrentTown && nCurrentTown == nTargetTown ) {
 			done = true;
-		} else {
+		} else if (!nCurrentTown) {
 			strcpy( pszDescription, ss1 );
 		}
 		ss1 = strtok( NULL, "\r\n" );
