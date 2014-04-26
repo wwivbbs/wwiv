@@ -22,14 +22,14 @@
 
 WFile hLogFile;
 
-char* szLogTypeArray[] = {
+static const char* szLogTypeArray[] = {
 	"+ ",
 	"! ",
 	"? ",
 	0
 };
 
-void Print(int nType, bool bLogIt, char* szText, ...) {
+void Print(int nType, bool bLogIt, const char* szText, ...) {
 	char szBuffer[256];
 	va_list ap;
 
@@ -51,7 +51,7 @@ void Print(int nType, bool bLogIt, char* szText, ...) {
 	}
 }
 
-bool OpenLogFile(char* szFileName) {
+bool OpenLogFile(const char* szFileName) {
 	struct tm *time_now;
 	time_t secs_now;
 	char str[81];

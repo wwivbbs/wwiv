@@ -28,7 +28,7 @@ public:
     FixUsersCommand(FixConfiguration* config) : BaseCommand(config) {}
     virtual ~FixUsersCommand() {}
 
-    virtual int Execute();
+    virtual int Execute() override;
 };
 
 }  // namespace fix

@@ -29,7 +29,7 @@ public:
     FixDirectoriesCommand(FixConfiguration* config, int num_dirs) : BaseCommand(config), num_dirs_(num_dirs) {}
     virtual ~FixDirectoriesCommand() {}
 
-    virtual int Execute();
+    virtual int Execute() override;;
 private:
     int num_dirs_;
 };

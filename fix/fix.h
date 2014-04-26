@@ -32,7 +32,8 @@ class FixConfiguration;
 
 class Command {
 public:
-    virtual int Execute() = 0;
+   virtual int Execute() = 0;
+   virtual ~Command();
 };
 
 class BaseCommand : public Command {
