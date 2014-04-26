@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "WStringUtils.h"
+#include "wstringutils.h"
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -27,7 +27,7 @@
 #include <cstdarg>
 #include "wwivassert.h"
 #include "wtypes.h"
-#include "WConstants.h"
+#include "wconstants.h"
 #include "platform/incl1.h"
 
 unsigned char *translate_letters[] = {

@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 
-#include "WOutStreamBuffer.h"
+#include "woutstreambuffer.h"
 
 WOutStreamBuffer::WOutStreamBuffer() {
 }

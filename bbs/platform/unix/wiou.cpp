@@ -19,8 +19,8 @@
 
 
 #include "wwiv.h"
-#include "WComm.h"
-#include "Wiou.h"
+#include "wcomm.h"
+#include "wiou.h"
 #include <termios.h>
 #include <sys/poll.h>
 #include <sys/ioctl.h>

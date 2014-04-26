@@ -20,11 +20,11 @@
 #include <cstring>
 
 #include "bbs.h"
-#include "WSession.h"
+#include "wsession.h"
 #include "platform/incl1.h"
 #include "platform/platformfcns.h"  // for strupr
 #include "platform/wfndfile.h"
-#include "platform/WLocalIO.h"
+#include "platform/wlocal_io.h"
 
 // prototype from utility.cpp
 bool okansi();
