@@ -7,8 +7,7 @@ include_directories(../bbs)
 include_directories(../bbs/platform)
 
 set(test_sources
-  strings_test.cpp  stuffin_test.cpp  xfer_test.cpp
-  # TODO(rushfan): Add wfile tests
+  strings_test.cpp  stuffin_test.cpp  wfile_test.cpp xfer_test.cpp
 )
 
 if(UNIX) 
