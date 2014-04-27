@@ -22,7 +22,7 @@ class FileTest : public testing::Test {
         char local_dir_template[_MAX_PATH];
         char temp_path[_MAX_PATH];
         GetTempPath(_MAX_PATH, temp_path);
-	static char *dir_template = "fnXXXXXX";
+        static char *dir_template = "fnXXXXXX";
         sprintf(local_dir_template, "%s%s", temp_path, dir_template);
         char *result = _mktemp(local_dir_template);
         if (!CreateDirectory(result, NULL)) {

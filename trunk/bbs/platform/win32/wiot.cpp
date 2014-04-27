@@ -74,12 +74,7 @@ WIOTelnet::WIOTelnet( unsigned int nHandle ) : m_hSocket( static_cast<SOCKET>( n
 }
 
 
-bool WIOTelnet::setup(char parity, int wordlen, int stopbits, unsigned long baud) {
-	UNREFERENCED_PARAMETER( parity );
-	UNREFERENCED_PARAMETER( wordlen );
-	UNREFERENCED_PARAMETER( stopbits );
-	UNREFERENCED_PARAMETER( baud );
-
+bool WIOTelnet::setup(char, int, int, unsigned long) {
 	return true;
 }
 

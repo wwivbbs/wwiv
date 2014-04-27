@@ -144,7 +144,7 @@ void set_baud(unsigned int)
 /* This function initializes the com buffer, setting up the interrupt,
 * and com parameters
 */
-void initportb(int_num)
+void initportb(int)
 {
 }
 
