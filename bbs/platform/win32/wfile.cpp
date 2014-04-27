@@ -277,8 +277,7 @@ bool WFile::Exists() const {
 }
 
 
-bool WFile::Delete( bool bUseTrashCan ) {
-	UNREFERENCED_PARAMETER( bUseTrashCan );
+bool WFile::Delete(bool bUseTrashCan) {
 	if ( this->IsOpen() ) {
 		this->Close();
 	}
