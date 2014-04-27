@@ -25,6 +25,10 @@
 #include <windows.h>
 #endif // _WIN32
 
+#if defined ( __APPLE__ ) && !defined ( __unix__ )
+#define __unix__ 1
+#endif
+
 class WFindFile
 {
 protected:
