@@ -203,18 +203,20 @@ int WFile::Write( const void * pBuffer, size_t nCount ) {
 
 
 long WFile::GetLength() {
-	WWIV_ASSERT( WFile::IsFileHandleValid( m_hFile ) );
+  struct stat fileinfo; 
 
-	if (! IsOpen() ) {
-		return -1;
-	}
-
-	// Save Current position, then seek to the end of the file, then retore the original position
-	size_t nSavedPosition = lseek(m_hFile, 0L, SEEK_CUR);		/* No "ftell()" equiv */
-	size_t len = lseek(m_hFile, 0L, SEEK_END);
-	lseek(m_hFile, nSavedPosition, SEEK_SET);
-
-	return static_cast<long>( len );
+  if (IsOpen() ) {
+    // File is open, use fstat
+    if (fstat(m_hFile, &fileinfo) != 0) { 
+      return -1;
+    }
+  } else {
+    // stat works on filenames, not filehandles.
+    if (stat(m_szFileName, &fileinfo) != 0) { 
+      return -1;
+    }
+  }
+  return fileinfo.st_size;
 }
 
 
