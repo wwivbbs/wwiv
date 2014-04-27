@@ -81,7 +81,7 @@ int yn();
 int ny();
 char onek(const char *s);
 void OutputStringRaw(const char *s);
-void editline(char *s, int len, int status, int *returncode,char *ss);
+void editline(char *s, int len, int status, int *returncode, const char *ss);
 int toggleitem(int value, const char **strings, int num, int *returncode);
 double timer();
 long timer1();

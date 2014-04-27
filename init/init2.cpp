@@ -32,40 +32,21 @@ extern net_networks_rec *net_networks;
 
 extern int inst;
 /****************************************************************************/
+char *ctim(double d) {
+  static char szCurrentTime[10];
 
-char *ctim(double d)
-{
-	static char ch[10],cm[10],cs[10];
-	
-	long h = static_cast<long>( d / 3600.0 );
-	d-=(double) (h*3600);
-	long m = static_cast<long>( d / 60.0 );
-	d-=(double) (m*60);
-	long s = static_cast<long>( d );
-	
-	_ltoa( h, ch, 10 );
-	_ltoa( m, cm, 10 );
-	if (cm[1]==0) 
-	{
-		cm[2]=0;
-		cm[1]=cm[0];
-		cm[0]='0';
-	}
-	_ltoa(s, cs, 10);
-	if (cs[1]==0) 
-	{
-		cs[2]=0;
-		cs[1]=cs[0];
-		cs[0]='0';
-	}
-	strcat(ch,":");
-	strcat(ch,cm);
-	strcat(ch,":");
-	strcat(ch,cs);
-	return ch;
+  if (d < 0) {
+    d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
+  }
+  long lHour = static_cast<long>( d / SECONDS_PER_HOUR_FLOAT );
+  d -= static_cast<double>( lHour * HOURS_PER_DAY );
+  long lMinute = static_cast<long>( d / MINUTES_PER_HOUR_FLOAT );
+  d -= static_cast<double>( lMinute * MINUTES_PER_HOUR );
+  long lSecond = static_cast<long>( d );
+  snprintf( szCurrentTime, sizeof( szCurrentTime ), "%2.2ld:%2.2ld:%2.2ld", lHour, lMinute, lSecond );
+
+  return szCurrentTime;
 }
-
-
 
 void trimstr(char *s)
 {
