@@ -1,5 +1,8 @@
 #include "gtest/gtest.h"
+#include "platform/incl1.h"
 #include "platform/wfile.h"
+
+#include "wstringutils.h"
 
 #include <stdio.h>
 #include <string>
@@ -14,6 +17,12 @@
 
 using std::cout;
 using std::string;
+using wwiv::strings::StringPrintf;
+
+// incl1.h defines mkdir
+#ifdef mkdir
+#undef mkdir
+#endif
 
 class FileTest : public testing::Test {
  public:
@@ -36,6 +45,16 @@ class FileTest : public testing::Test {
 #endif
         return std::string(result);
     }
+
+  string CreateTempFile(const string& name, const string& contents) {
+    string tmp = TempDir();
+    string path = StringPrintf("%s%c%s", tmp.c_str(), WWIV_FILE_SEPERATOR_CHAR,
+			       name.c_str());
+    FILE* file = fopen(path.c_str(), "w");
+    fputs(contents.c_str(), file);
+    fclose(file);
+    return path;
+  }
 };
 
 TEST_F(FileTest, DoesNotExist) {
@@ -55,4 +74,17 @@ TEST_F(FileTest, Exists) {
     ASSERT_EQ(0, mkdir(dne.GetFullPathName().c_str(), 0777));
 #endif  // _WIN32
     ASSERT_TRUE(dne.Exists());
+}
+
+TEST_F(FileTest, Length_Open) {
+  string path = CreateTempFile("Length_Open", "Hello World");
+  WFile file(path);
+  file.Open(WFile::modeBinary | WFile::modeReadOnly);
+  ASSERT_EQ(11, file.GetLength());
+}
+
+TEST_F(FileTest, Length_NotOpen) {
+  string path = CreateTempFile("Length_NotOpen", "Hello World");
+  WFile file(path);
+  ASSERT_EQ(11, file.GetLength());
 }
