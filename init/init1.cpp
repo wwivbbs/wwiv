@@ -83,9 +83,8 @@ void *malloca( unsigned long nbytes )
 /****************************************************************************/
 
 
-int check_comport(int pn)
+int check_comport(int)
 {
-    UNREFERENCED_PARAMETER( pn );
 #if defined (_WIN32) 
 	return 3;
 #else
@@ -97,9 +96,8 @@ int check_comport(int pn)
 
 
 /* This function outputs one character to the com port */
-void outcomch(char ch)
+void outcomch(char)
 {
-    UNREFERENCED_PARAMETER( ch );
 }
 
 
@@ -138,18 +136,16 @@ void dump()
 
 
 /* This function sets the com speed to that passed */
-void set_baud(unsigned int rate)
+void set_baud(unsigned int)
 {
-    UNREFERENCED_PARAMETER( rate );
 }
 
 
 /* This function initializes the com buffer, setting up the interrupt,
 * and com parameters
 */
-void initportb(int port_num)
+void initportb(int_num)
 {
-    UNREFERENCED_PARAMETER( port_num );
 }
 
 /****************************************************************************/
@@ -163,16 +159,14 @@ void closeport()
 
 
 /* This function sets the DTR pin to the status given */
-void dtr(int i)
+void dtr(int)
 {
-    UNREFERENCED_PARAMETER( i );
 }
 
 
 /* This function sets the RTS pin to the status given */
-void rts(int i)
+void rts(int)
 {
-    UNREFERENCED_PARAMETER( i );
 }
 
 

@@ -156,7 +156,7 @@ enum COLORS {
 #define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
 
 #ifndef UNREFERENCED_PARAMETER
-#define UNREFERENCED_PARAMETER( X )   ( X )
+#define UNREFERENCED_PARAMETER(X)   (void)(X)
 #endif // UNREFERENCED_PARAMETER
 
 #if defined( __APPLE__ )
