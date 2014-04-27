@@ -155,10 +155,6 @@ enum COLORS {
 #define _getcwd(a,b)	getcwd(a,b)
 #define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
 
-#ifndef UNREFERENCED_PARAMETER
-#define UNREFERENCED_PARAMETER(X)   (void)(X)
-#endif // UNREFERENCED_PARAMETER
-
 #if defined( __APPLE__ )
 #define SWAP16( X ) OSSwapInt16( X )
 #define SWAP32( X ) OSSwapInt32( X )
