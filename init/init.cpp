@@ -61,7 +61,7 @@ void load_modems()
 }
 
 
-int set_modem_info( char *mt, bool bPause )
+int set_modem_info(const char *mt, bool bPause)
 {
     nlx();
     char szModemDatFileName[ MAX_PATH ];
@@ -146,7 +146,7 @@ void select_modem()
         Printf( "No modems defined.\n" );
         textattr( 11 );
         Printf( "Press Any Key" );
-        getch();
+        app->localIO->getchd();
         return;
     }
 
@@ -177,7 +177,7 @@ void select_modem()
 
 /****************************************************************************/
 
-char *nettypes[] = 
+static const char *nettypes[] = 
 {
     "WWIVnet ",
     "Fido    ",
@@ -339,7 +339,7 @@ void networks()
         Printf("You have not installed the networking software.  Unzip NETxx.ZIP\r\n");
         Printf("to the main BBS directory and re-run INIT.\r\n\n");
         Printf("Hit any key to return to the Main Menu.\r\n");
-        getche();
+        app->localIO->getchd();
         return;
     }
 
@@ -636,7 +636,7 @@ int verify_dir(char *typeDir, char *dirName)
             sprintf(s, "Create %s? ", dirName);
             textattr( 10 );
             app->localIO->LocalPuts(s);
-            ch = getch();
+            ch = app->localIO->getchd();
             if (toupper(ch) == 'Y') 
             {
                 mkdir(dirName);
