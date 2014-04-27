@@ -122,7 +122,7 @@ static UNS_32_BITS crc_32_tab[] = {
 
 
 unsigned long int crc32buf(const char *pBuffer, size_t nLength) {
-	register unsigned long int oldcrc32;
+	unsigned long int oldcrc32;
 	oldcrc32 = 0xFFFFFFFF;
 	for (; nLength; --nLength, ++pBuffer) {
 		oldcrc32 = UPDC32(*pBuffer, oldcrc32);
