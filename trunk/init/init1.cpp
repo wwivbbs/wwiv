@@ -494,7 +494,7 @@ int editlinestrlen( char *pszText )
 
 
 /* editline edits a string, doing I/O to the screen only. */
-void editline(char *s, int len, int status, int *returncode, char *ss)
+void editline(char *s, int len, int status, int *returncode, const char *ss)
 {
     int i;
     int oldatr = curatr;
