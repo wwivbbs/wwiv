@@ -78,10 +78,11 @@ void dirlist( int mode ) {
 				}
 				dliscan1( nDirectoryNumber );
 				if ( udir[GetSession()->GetCurrentFileArea()].subnum == udir[i1].subnum ) {
-					sprintf( s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3|B1|15 %-40.40s |#9\xB3 |#9%4ld|B0",
-					         udir[i1].keys, scanme.c_str(), directories[ nDirectoryNumber ].name, GetSession()->numf );
+					sprintf( s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3|B1|15 %-40.40s |#9\xB3 |#9%4d|B0",
+					         udir[i1].keys, scanme.c_str(), directories[nDirectoryNumber].name, 
+                             GetSession()->numf );
 				} else {
-					sprintf( s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4ld",
+					sprintf( s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d",
 					         udir[i1].keys, scanme.c_str(),
 					         (((mode == 1) && (directories[udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
 					         directories[ nDirectoryNumber ].name, GetSession()->numf );
