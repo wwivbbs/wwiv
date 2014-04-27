@@ -115,7 +115,7 @@ void makeansi( int attr, char *pszOutBuffer, bool forceit )
 * display to the color desired, from the current function.
 */
 {
-	char *temp = "04261537";
+	static const char *temp = "04261537";
 
 	int catr = curatr;
 	pszOutBuffer[0] = '\0';

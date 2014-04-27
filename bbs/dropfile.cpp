@@ -333,7 +333,7 @@ void CreateDoorSysDropFile() {
 		        GetMinutesRemainingForDropFile());
 		file.WriteFormatted( szLine );
 		std::string ansiStatus = ( okansi() ) ? "GR" : "NG";
-		sprintf(szLine, "%s\n%u\n%c\n%s\n%lu\n%s\n%lu\n%c\n%u\n%u\n%u\n%u\n",
+		sprintf(szLine, "%s\n%u\n%c\n%s\n%d\n%s\n%d\n%c\n%u\n%u\n%u\n%u\n",
 		        ansiStatus.c_str(),
 		        GetSession()->GetCurrentUser()->GetScreenLines(),
 		        GetSession()->GetCurrentUser()->IsExpert() ? 'Y' : 'N',

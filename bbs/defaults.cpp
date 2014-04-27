@@ -214,7 +214,7 @@ const std::string DescribeColorCode( int nColorCode ) {
 	}
 
 	if (nColorCode & 0x08) {
-		os << checkcomp( "Ami" ) || checkcomp( "Mac" ) ? ", Bold" : ", Intense";
+		os << (checkcomp( "Ami" ) || checkcomp( "Mac" )) ? ", Bold" : ", Intense";
 	}
 	if (nColorCode & 0x80) {
 		if (checkcomp("Ami")) {
