@@ -324,8 +324,7 @@ void WIOSerial::StartThreads() {
 }
 
 
-void WIOSerial::close( bool bIsTemporary ) {
-	UNREFERENCED_PARAMETER( bIsTemporary );
+void WIOSerial::close(bool) {
 	if (!bOpen) {
 		WIOS_TRACE("WIOSerial::close called when port not open\n");
 		return;
@@ -420,8 +419,7 @@ char WIOSerial::peek() {
 }
 
 
-unsigned int WIOSerial::read( char *buffer, unsigned int count ) {
-	UNREFERENCED_PARAMETER( count );
+unsigned int WIOSerial::read(char *buffer, unsigned int) {
 	int nRet = 0;
 	char * pszTemp = buffer;
 
@@ -437,8 +435,7 @@ unsigned int WIOSerial::read( char *buffer, unsigned int count ) {
 }
 
 
-unsigned int WIOSerial::write(const char *buffer, unsigned int count, bool bNoTranslation ) {
-	UNREFERENCED_PARAMETER( bNoTranslation );
+unsigned int WIOSerial::write(const char *buffer, unsigned int count, bool) {
 	return writeImpl( buffer, count );
 }
 
