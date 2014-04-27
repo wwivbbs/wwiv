@@ -19,7 +19,7 @@
 #include "wwivinit.h"
 #include <string.h>
 
-char *tokens[] = 
+static const char *tokens[] = 
 {
     "FILE:",
     "NAME:",
@@ -117,7 +117,7 @@ void skip_num()
 
 tok_val get_tok()
 {
-    char **ss=tokens;
+    const char **ss=tokens;
     tok_val t=tok_file;
 
     skip_ws();

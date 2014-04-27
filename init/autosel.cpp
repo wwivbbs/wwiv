@@ -24,16 +24,12 @@
  */
 void pr1(char *s)
 {
-    for (int i = 0; s[i] > 0; i++)
-    {
-        if (s[i] == 255)
-        {
-            wait1(9);
-        }
-        else
-        {
-            outcomch(s[i]);
-        }
+  for (int i = 0; s[i] > 0; i++) {
+    if (static_cast<unsigned char>(s[i]) == 255) {
+      wait1(9);
+    } else {
+      outcomch(s[i]);
     }
+  }
 }
 

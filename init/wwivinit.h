@@ -144,7 +144,7 @@ __EXTRN__ userrec thisuser;
 __EXTRN__ initinfo_rec initinfo;
 
 
-#if defined(__linux__) 
+#if defined(__unix__) 
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
@@ -154,6 +154,7 @@ __EXTRN__ initinfo_rec initinfo;
 #define _lseek lseek
 #define _read read
 #define _write write
+#define chsize ftruncate
 
 void strupr (char *str) 
 {   while (*str) 
@@ -161,6 +162,14 @@ void strupr (char *str)
       *str = toupper (*str) ; 
       str ++ ; 
     } 
+}
+
+long filelength(int handle) {
+  struct stat fileinfo; 
+  if (fstat(handle, &fileinfo) != 0) { 
+    return -1;
+  }
+  return fileinfo.st_size;
 }
 
 #endif  // __linux__

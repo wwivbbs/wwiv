@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "wwivinit.h"
 #include "common.h"
+#include <string>
 
 extern char configdat[];
 extern char bbsdir[];
@@ -452,7 +453,7 @@ int ny()
 	return( ch == *str_yes || ch == 13 );
 }
 
-char onek(char *pszKeys)
+char onek(const char *pszKeys)
 {
 	char ch = 0;
 	
@@ -469,7 +470,7 @@ char onek(char *pszKeys)
 
 
 /* This (obviously) outputs a string TO THE SCREEN ONLY */
-void OutputStringRaw(char *pszText)
+void OutputStringRaw(const char *pszText)
 {
 	
 	for (int i=0; pszText[i]!=0; i++) 
@@ -688,9 +689,9 @@ void editline(char *s, int len, int status, int *returncode, char *ss)
                     break;
                 default:
                     {
-                        char ods[ 255 ];
-                        sprintf( ods, "char = %d\r\n", ch );
-                        OutputDebugString( ods );
+		      // char ods[ 255 ];
+		      // sprintf( ods, "char = %d\r\n", ch );
+		      // OutputDebugString( ods );
                     }
                     break;
                 }
@@ -713,8 +714,6 @@ void editline(char *s, int len, int status, int *returncode, char *ss)
     sprintf( szFinishedString, "%-255s", s );
     szFinishedString[ len ] = '\0';
     app->localIO->LocalGotoXY( cx, cy ); 
-    //OutputDebugString( szFinishedString );
-    //OutputDebugString( "\r\n" );
     curatr=oldatr;
     OutputStringRaw( szFinishedString );
     app->localIO->LocalGotoXY( cx, cy ); 
@@ -723,7 +722,7 @@ void editline(char *s, int len, int status, int *returncode, char *ss)
 }
 
 
-int toggleitem(int value, char **strings, int num, int *returncode)
+int toggleitem(int value, const char **strings, int num, int *returncode)
 {
 	if ( value < 0 || value >= num )
     {
@@ -1040,7 +1039,7 @@ void wait1(long l)
 }
 
 
-int exist(char *pszFileName)
+int exist(const char *pszFileName)
 {
 	WFindFile fnd;
 	return ((fnd.open(pszFileName, 0) == false) ? 0 : 1);
@@ -1203,7 +1202,7 @@ void Printf( const char *pszFormat, ... )
 
 /****************************************************************************/
 
-void create_text(char *pszFileName)
+void create_text(const char *pszFileName)
 {
 	char szFullFileName[MAX_PATH];
     char szMessage[ 255 ];
@@ -1221,16 +1220,13 @@ void create_text(char *pszFileName)
 
 void cvtx(unsigned short sp, char *rc)
 {
-	resultrec *rr;
-	char s[81];
-	
 	if (*rc) 
 	{
-		rr=&(result_codes[num_result_codes++]);
-		itoa(sp,s,10);
-		strcpy(rr->curspeed,s);
-		strcpy(rr->return_code,rc);
-		rr->modem_speed=sp;
+	        resultrec *rr = &(result_codes[num_result_codes++]);
+		std::string s = std::to_string(sp);
+		strcpy(rr->curspeed, s.c_str());
+		strcpy(rr->return_code, rc);
+		rr->modem_speed = sp;
 		if ((syscfg.sysconfig & sysconfig_high_speed) &&
 			(syscfgovr.primaryport < MAX_ALLOWED_PORT))
 		{
@@ -1639,7 +1635,7 @@ void init_files()
 }
 
 
-void convert_modem_info(char *fn)
+void convert_modem_info(const char *fn)
 {
 	char szFileName[ MAX_PATH ];
 	FILE *pFile;
@@ -1709,7 +1705,7 @@ void init_modem_info()
 void new_init()
 {
 	const int ENTRIES = 12;
-	char *dirname[] = 
+	const char *dirname[] = 
 	{ 
 		"ATTACH",
 		"DATA",
