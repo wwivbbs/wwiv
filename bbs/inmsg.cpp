@@ -544,6 +544,7 @@ bool ExternalMessageEditor( int maxli, int &setanon, char *pszTitle, const char 
 			file.Close();
 		} else if ( WFile::Exists( szFileNameFEditInf ) ) {
 			WFile file( szFileNameFEditInf );
+            file.Open(WFile::modeBinary|WFile::modeReadOnly);
 			if ( file.Read( &fedit_data, sizeof( fedit_data ) ) ) {
 				strcpy( pszTitle, fedit_data.ttl );
 				setanon = fedit_data.anon;
