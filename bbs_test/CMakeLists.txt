@@ -7,7 +7,8 @@ include_directories(../bbs)
 include_directories(../bbs/platform)
 
 set(test_sources
-  strings_test.cpp  stuffin_test.cpp  wfile_test.cpp xfer_test.cpp
+  bbs_helper.cpp file_helper.cpp 
+  printfile_test.cpp strings_test.cpp  stuffin_test.cpp  wfile_test.cpp xfer_test.cpp
 )
 
 if(UNIX) 
