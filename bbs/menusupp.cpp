@@ -557,7 +557,7 @@ void PackMessages() {
 	GetSession()->bout.NewLine();
 	GetSession()->bout << "|#5Pack all subs? ";
 	if ( yesno() ) {
-		pack_all_subs( false );
+		pack_all_subs();
 	} else {
 		pack_sub( usub[GetSession()->GetCurrentMessageArea()].subnum );
 	}
