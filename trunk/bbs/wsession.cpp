@@ -72,7 +72,6 @@ WSession::WSession( WApplication *pApplication ) {
 	m_nCurrentConferenceMessageArea         = 0;
 	m_nFileAreaCache = m_nMessageAreaCache  = 0;
 	m_nBeginDayNodeNumber                   = 0;
-	m_nGlobalDebugLevel                     = 0;
 	m_nMaxNumberMessageAreas                = 0;
 	m_nMaxNumberFileAreas                   = 0;
 	m_nNumMessagesReadThisLogon             = 0;
