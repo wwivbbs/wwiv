@@ -16,23 +16,27 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "printfile.h"
 
-#include "wwiv.h"
+#include <cstdlib>
+#include <memory>
+#include <string>
 
+#include "bbs.h"
+#include "wsession.h"
+#include "platform/incl1.h"
+#include "platform/wfile.h"
+#include "platform/wlocal_io.h"
+#include "fcns.h"
+#include "vars.h"
+#include "wconstants.h"
+#include "wwivassert.h"
 
 /**
- * Prints the file pszFileName.  Returns true if the file exists and is not
- * zero length.  Returns false if the file does not exist or is zero length
- *
- * @param pszFileName Name of the file to display
- * @param bAbortable If true, a keyboard input may abort the display
- * @param bForcePause Should pauses be used even for ANSI files - Normally
- *        pause on screen is disabled for ANSI files.
- *
- * @return true if the file exists and is not zero length
+ * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause ) {
-	char szFileName[ MAX_PATH ];
+std::string CreateFullPathToPrint(const char* pszFileName) {
+    char szFileName[ MAX_PATH ];
 
 	WWIV_ASSERT( pszFileName );
 
@@ -59,7 +63,7 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause ) {
 				strcpy( pszTempFileName, ".msg" );
 			}
 		}
-		if ( !WFile::Exists( pszFileName ) ) {
+		if ( !WFile::Exists( szFileName ) ) {
 			sprintf( szFileName, "%s%s", syscfg.gfilesdir, pszFileName );
 		}
 		if ( strchr( szFileName, '.' ) == NULL ) {
@@ -82,11 +86,26 @@ bool printfile( const char *pszFileName, bool bAbortable, bool bForcePause ) {
 			}
 		}
 	}
+    return std::string(szFileName);
+}
 
+/**
+ * Prints the file pszFileName.  Returns true if the file exists and is not
+ * zero length.  Returns false if the file does not exist or is zero length
+ *
+ * @param pszFileName Name of the file to display
+ * @param bAbortable If true, a keyboard input may abort the display
+ * @param bForcePause Should pauses be used even for ANSI files - Normally
+ *        pause on screen is disabled for ANSI files.
+ *
+ * @return true if the file exists and is not zero length
+ */
+bool printfile(const char *pszFileName, bool bAbortable, bool bForcePause) {
+    std::string full_path_name = CreateFullPathToPrint(pszFileName);
 	long lFileSize;
-	char* ss = get_file( szFileName, &lFileSize );
+	char *ss = get_file(full_path_name.c_str(), &lFileSize);
 
-	if ( ss != NULL ) {
+	if (ss != nullptr) {
 		long lCurPos = 0;
 		bool bHasAnsi = false;
 		while ( lCurPos < lFileSize && !hangup ) {

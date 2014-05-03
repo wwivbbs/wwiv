@@ -37,8 +37,8 @@ protected:
         modem_speed = 0;
         syscfgovr.primaryport = 0;
         syscfgovr.tempdir[0] = 0;
-        gfiles_dir = "C:\\temp";
-        syscfg.gfilesdir = const_cast<char*>(gfiles_dir.c_str());
+        gfiles_dir_ = "C:\\temp";
+        syscfg.gfilesdir = const_cast<char*>(gfiles_dir_.c_str());
     }
 public:
     const std::string t(const std::string name) {
@@ -47,7 +47,7 @@ public:
         return string(os.str());
     }
 private:
-  string gfiles_dir;
+  string gfiles_dir_;
 };
 
 TEST_F(StuffInTest, SimpleCase) {

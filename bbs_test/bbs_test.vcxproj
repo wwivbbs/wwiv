@@ -81,8 +81,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bbs_helper.cpp" />
     <ClCompile Include="bbs_test_main.cpp" />
     <ClCompile Include="file_helper.cpp" />
+    <ClCompile Include="printfile_test.cpp" />
     <ClCompile Include="strings_test.cpp" />
     <ClCompile Include="stuffin_test.cpp" />
     <ClCompile Include="wfile_test.cpp" />
@@ -97,6 +99,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bbs_helper.h" />
     <ClInclude Include="file_helper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

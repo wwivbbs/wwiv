@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "printfile.h"
 
 
 // How far to indent extended descriptions

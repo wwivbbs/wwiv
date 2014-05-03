@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2014, WWIV Software Services             */
+/*             Copyright (C)2014, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,28 +16,36 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_FILE_HELPER_H__
-#define __INCLUDED_FILE_HELPER_H__
+#include "bbs_helper.h"
+#include "gtest/gtest.h"
 
+#include <algorithm>
 #include <string>
+#include "bbs.h"
+#include "platform/incl1.h"
+#include "platform/wfile.h"
+#include "vars.h"
+#include "wuser.h"
+#include "wsession.h"
 
-/**
- * Helper class for tests requing local filesystem access.  
- *
- * Note: This class can not use WFile since it is used by the tests for WFile.
- */
-class FileHelper {
-public:
-    FileHelper();
-    // Returns a fully qualified path name to "name" under the temporary directory.
-    const std::string DirName(const std::string& name) const;
-    // Creates a directory.
-    bool Mkdir(const std::string& name) const ;
-    std::string CreateTempFile(const std::string& name, const std::string& contents);
-    const std::string& TempDir() const { return tmp_; }
-private:
-    static std::string CreateTempDir();
-    std::string tmp_;
-};
+void BbsHelper::SetUp() {
+    std::string temp = files_.TempDir();
+    ASSERT_TRUE(files_.Mkdir("gfiles"));
+    ASSERT_TRUE(files_.Mkdir("en"));
+    ASSERT_TRUE(files_.Mkdir("en/gfiles"));
+    app_.reset(CreateApplication());
 
-#endif // __INCLUDED_FILE_HELPER_H__
+    dir_gfiles_ = files_.DirName("gfiles");
+    dir_en_gfiles_ = files_.DirName("en/gfiles");
+#ifdef _WIN32
+    std::replace(dir_gfiles_.begin(), dir_gfiles_.end(), '/', WWIV_FILE_SEPERATOR_CHAR);
+    std::replace(dir_en_gfiles_.begin(), dir_en_gfiles_.end(), '/', WWIV_FILE_SEPERATOR_CHAR);
+#endif  // _WIN32
+
+    syscfg.gfilesdir = const_cast<char*>(dir_gfiles_.c_str());
+    GetSession()->pszLanguageDir = const_cast<char*>(dir_en_gfiles_.c_str());
+    user_ = GetSession()->GetCurrentUser();
+}
+
+void BbsHelper::TearDown() {
+}

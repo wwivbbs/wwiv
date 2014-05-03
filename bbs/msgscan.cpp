@@ -19,6 +19,8 @@
 
 #include "wwiv.h"
 
+#include "printfile.h"
+
 
 void SetupThreadRecordsBeforeScan();
 void HandleScanReadPrompt( int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done, bool &quit, int &val );

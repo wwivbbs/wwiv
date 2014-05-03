@@ -18,13 +18,9 @@ TEST(FileTest, Exists) {
     FileHelper file;
     string tmp = file.TempDir();
     GTEST_ASSERT_NE("", tmp);
+    ASSERT_TRUE(file.Mkdir("newdir"));
     WFile dne(tmp, "newdir");
-#ifdef _WIN32
-    ASSERT_EQ(0, _mkdir(dne.GetFullPathName().c_str()));
-#else
-    ASSERT_EQ(0, mkdir(dne.GetFullPathName().c_str(), 0777));
-#endif  // _WIN32
-    ASSERT_TRUE(dne.Exists());
+    ASSERT_TRUE(dne.Exists()) << dne.GetFullPathName(); 
 }
 
 TEST(FileTest, Length_Open) {

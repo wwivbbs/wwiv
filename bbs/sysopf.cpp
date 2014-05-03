@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "printfile.h"
 
 bool isr1( int nUserNumber, int nNumUsers, const char *pszName ) {
 	int cp = 0;

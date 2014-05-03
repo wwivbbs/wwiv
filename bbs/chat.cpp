@@ -17,14 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 
-
 #include "wwiv.h"
+#include "printfile.h"
 
 static int g_nChatOpSecLvl;
 static int g_nNumActions;
 static ch_action *actions[MAX_NUM_ACT];
 static ch_type channels[11];
-
 
 int  rip_words(int nStartPos, char *cmsg, char *wd, int size, char lookfor);
 int  f_action(int nStartPos, int nEndPos, char *pszAWord);

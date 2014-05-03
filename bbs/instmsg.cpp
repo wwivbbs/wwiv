@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "printfile.h"
 
 // Local functions
 void send_inst_msg( inst_msg_header * ih, const char *msg );
