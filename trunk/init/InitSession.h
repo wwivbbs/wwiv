@@ -134,9 +134,6 @@ public:
     int  GetBeginDayNodeNumber() const              { return m_nBeginDayNodeNumber; }
     void SetBeginDayNodeNumber( int n )             { m_nBeginDayNodeNumber = n; }
 
-    int  GetGlobalDebugLevel() const                { return m_nGlobalDebugLevel; }
-    void SetGlobalDebugLevel( int n )               { m_nGlobalDebugLevel = n; }
-
     bool IsExecUseWaitForInputIdle() const          { return m_nExecUseWaitForInputIdle ? true : false; }
     void SetExecUseWaitForInputIdle( bool b )       { m_nExecUseWaitForInputIdle = ( b ) ? 1 : 0; }
 
