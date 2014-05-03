@@ -21,11 +21,11 @@
 
 #include <algorithm>
 #include <iostream>
-#include <io.h>
 #include <stdio.h>
 #include <string>
 
 #ifdef _WIN32
+#include <io.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #undef GetFullPathName
@@ -52,7 +52,7 @@ bool FileHelper::Mkdir(const std::string& name) const {
 #ifdef _WIN32
     return CreateDirectory(path.c_str(), NULL) ? true:false;
 #else
-    return mkdir(path.c_str(), 777);
+    return (mkdir(path.c_str()) == 0);
 #endif
 }
 
