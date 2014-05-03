@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "listplus.h"
-
+#include "printfile.h"
 
 //
 // Local function prototypes

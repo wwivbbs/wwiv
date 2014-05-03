@@ -16,9 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-// $Header$
-
+ 
 #include "wwiv.h"
+#include "printfile.h"
 
 //
 // Local function prototypes

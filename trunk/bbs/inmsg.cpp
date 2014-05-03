@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "printfile.h"
 
 //
 // Local function prototypes

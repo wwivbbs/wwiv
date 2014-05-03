@@ -21,6 +21,7 @@
 #include "wwiv.h"
 #undef _DEFINE_GLOBALS_
 #include "platform/wutil.h"
+#include "printfile.h"
 
 #if defined ( __APPLE__ ) && !defined ( __unix__ )
 #define __unix__ 1
@@ -1331,10 +1332,11 @@ WApplication::~WApplication() {
 	}
 }
 
-void CreateApplication() {
+WApplication* CreateApplication() {
 	app = new WApplication();
     sess = new WSession( app );
 	WFile::SetLogger( app );
+    return app;
 }
 
 int bbsmain( int argc, char *argv[] ) {

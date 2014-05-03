@@ -614,13 +614,6 @@ void newuser();
 
 void pausescr();
 
-
-// File: printfile.cpp
-
-void print_local_file( const char *ss, const char *ss1 );
-bool printfile( const char *pszFileName, bool bAbortable = true, bool bForcePause = true );
-
-
 // File: quote.cpp
 
 void grab_quotes(messagerec * m, const char *aux);
