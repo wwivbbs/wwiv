@@ -60,7 +60,7 @@ int FixUsersCommand::Execute() {
 		if (!user.IsUserDeleted() && !user.IsUserInactive()) {
 			smalrec sr = { 0 };
 			strcpy((char*) sr.name, user.GetName());
-			sr.number = i;
+			sr.number = static_cast<unsigned short>(i);
 			std::string namestring((char*) sr.name);
 			if (names.find(namestring) == names.end()) {
 				smallrecords.push_back(sr);

@@ -257,6 +257,7 @@ class WApplication : public WLogger, Runnable {
 
 // Function Prototypes
 WApplication* GetApplication();
+void CreateApplication();
 
 
 class WSession;

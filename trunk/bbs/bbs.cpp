@@ -915,7 +915,7 @@ int WApplication::Run(int argc, char *argv[]) {
 				} else {
 					GetSession()->bout << "\r\n|#7\xFE |#5Packing all subs: \r\n";
 					sysoplog( "* Packing All Message Areas" );
-					pack_all_subs( true );
+					pack_all_subs();
 				}
 				ExitBBSImpl( m_nOkLevel );
 			}
@@ -1331,11 +1331,13 @@ WApplication::~WApplication() {
 	}
 }
 
-
-int bbsmain( int argc, char *argv[] ) {
+void CreateApplication() {
 	app = new WApplication();
     sess = new WSession( app );
 	WFile::SetLogger( app );
+}
 
+int bbsmain( int argc, char *argv[] ) {
+    CreateApplication();
 	return GetApplication()->BBSMainLoop( argc, argv );
 }

@@ -475,7 +475,7 @@ void pack_sub(int si) {
 }
 
 
-void pack_all_subs( bool bFromCommandline ) {
+void pack_all_subs() {
 	tmp_disable_pause( true );
 
 	bool abort = false, next = false;
