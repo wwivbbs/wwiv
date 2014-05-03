@@ -276,14 +276,6 @@ class WSession {
 	void SetBeginDayNodeNumber( int n )             {
 		m_nBeginDayNodeNumber = n;
 	}
-
-	int  GetGlobalDebugLevel() const                {
-		return m_nGlobalDebugLevel;
-	}
-	void SetGlobalDebugLevel( int n )               {
-		m_nGlobalDebugLevel = n;
-	}
-
 	bool IsExecUseWaitForInputIdle() const          {
 		return m_bExecUseWaitForInputIdle;
 	}
@@ -432,7 +424,6 @@ class WSession {
 	            m_nCurrentConferenceFileArea,
 	            m_nNumMsgsInCurrentSub,
 	            m_nBeginDayNodeNumber,
-	            m_nGlobalDebugLevel,
 	            m_nExecUseWaitForInputTimeout,
 	            m_nExecChildProcessWaitTime,
 	            m_nMaxNumberMessageAreas,
