@@ -16,28 +16,28 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_FILE_HELPER_H__
-#define __INCLUDED_FILE_HELPER_H__
+#ifndef __INCLUDED_BBS_HELPER_H__
+#define __INCLUDED_BBS_HELPER_H__
 
+#include <memory>
 #include <string>
+#include "bbs.h"
+#include "file_helper.h"
+#include "wuser.h"
 
-/**
- * Helper class for tests requing local filesystem access.  
- *
- * Note: This class can not use WFile since it is used by the tests for WFile.
- */
-class FileHelper {
+class BbsHelper {
 public:
-    FileHelper();
-    // Returns a fully qualified path name to "name" under the temporary directory.
-    const std::string DirName(const std::string& name) const;
-    // Creates a directory.
-    bool Mkdir(const std::string& name) const ;
-    std::string CreateTempFile(const std::string& name, const std::string& contents);
-    const std::string& TempDir() const { return tmp_; }
-private:
-    static std::string CreateTempDir();
-    std::string tmp_;
+    virtual void SetUp();
+    virtual void TearDown();
+    FileHelper& files() { return files_; }
+    WUser* user() const { return user_; }
+public:
+    FileHelper files_;
+    std::string dir_gfiles_;
+    std::string dir_en_gfiles_;
+    std::string dir_menus_;
+    std::unique_ptr<WApplication> app_;
+    WUser* user_;
 };
 
-#endif // __INCLUDED_FILE_HELPER_H__
+#endif // __INCLUDED_BBS_HELPER_H__

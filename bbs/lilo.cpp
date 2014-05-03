@@ -18,9 +18,11 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "menusupp.h"
 #include <memory>
+
+#include "menusupp.h"
 #include "platform/wutil.h"
+#include "printfile.h"
 
 
 #define SECS_PER_DAY 86400L

@@ -31,8 +31,6 @@ class WUserManager;
  * Main Starting point of the WWIV 5.0 System.
  */
 
-
-
 /*!
  * @class WApplication  Main Application object for WWIV 5.0
  */
@@ -252,19 +250,15 @@ class WApplication : public WLogger, Runnable {
 	bool make_abs_path(char *checkdir);
 	void check_phonenum();
 	void create_phone_file();
-
 };
 
 // Function Prototypes
 WApplication* GetApplication();
-void CreateApplication();
-
+WApplication* CreateApplication();
 
 class WSession;
 
 WSession* GetSession();
-
-
 
 #endif // __INCLUDED_BBS_H__
 

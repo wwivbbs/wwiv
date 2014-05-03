@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "listplus.h"
+#include "printfile.h"
 
 
 user_config config_listing;

@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "wwiv.h"
+#include "printfile.h"
 
 
 //////////////////////////////////////////////////////////////////////////////

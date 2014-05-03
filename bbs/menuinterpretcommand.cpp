@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include "menu.h"
 #include "menusupp.h"
+#include "printfile.h"
 
 
 void InterpretCommand( MenuInstanceData * pMenuData, const char *pszScript ) {

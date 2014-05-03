@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "printfile.h"
 
 
 void gfl_hdr(int which);

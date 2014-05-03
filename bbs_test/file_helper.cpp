@@ -17,7 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 #include "file_helper.h"
+#include "gtest/gtest.h"
 
+#include <algorithm>
+#include <iostream>
 #include <io.h>
 #include <stdio.h>
 #include <string>
@@ -33,36 +36,57 @@
 #include "platform/incl1.h"
 #include "wstringutils.h"
 
-// incl1.h defines mkdir
-#ifdef mkdir
-#undef mkdir
-#endif
+using std::string;
 
-std::string FileHelper::TempDir() {
-#ifdef _WIN32
-        char local_dir_template[_MAX_PATH];
-        char temp_path[_MAX_PATH];
-        GetTempPath(_MAX_PATH, temp_path);
-        static char *dir_template = "fnXXXXXX";
-        sprintf(local_dir_template, "%s%s", temp_path, dir_template);
-        char *result = _mktemp(local_dir_template);
-        if (!CreateDirectory(result, NULL)) {
-            *result = '\0';
-        }
-#else
-    char local_dir_template[MAX_PATH];
-	static const char kTemplate[] = "/tmp/fileXXXXXX";
-	strcpy(local_dir_template, kTemplate);
-	char *result = mkdtemp(local_dir_template);
-#endif
-        return std::string(result);
+FileHelper::FileHelper() {
+    tmp_ = FileHelper::CreateTempDir();
 }
 
-std::string FileHelper::CreateTempFile(const std::string& name, const std::string& contents) {
+const std::string FileHelper::DirName(const std::string& name) const {
+    return wwiv::strings::StringPrintf("%s%c%s%c", tmp_.c_str(), 
+        WWIV_FILE_SEPERATOR_CHAR, name.c_str(), WWIV_FILE_SEPERATOR_CHAR);
+}
+
+bool FileHelper::Mkdir(const std::string& name) const {
+    const std::string path = DirName(name); 
+#ifdef _WIN32
+    return CreateDirectory(path.c_str(), NULL) ? true:false;
+#else
+    return mkdir(path.c_str(), 777);
+#endif
+}
+
+// static
+std::string FileHelper::CreateTempDir() {
+#ifdef _WIN32
+    char local_dir_template[_MAX_PATH];
+    char temp_path[_MAX_PATH];
+    GetTempPath(_MAX_PATH, temp_path);
+    static char *dir_template = "fnXXXXXX";
+    sprintf(local_dir_template, "%s%s", temp_path, dir_template);
+    char *result = _mktemp(local_dir_template);
+    if (!CreateDirectory(result, NULL)) {
+        *result = '\0';
+    }
+#else
+    char local_dir_template[MAX_PATH];
+    static const char kTemplate[] = "/tmp/fileXXXXXX";
+    strcpy(local_dir_template, kTemplate);
+    char *result = mkdtemp(local_dir_template);
+#endif
+    return std::string(result);
+}
+
+std::string FileHelper::CreateTempFile(const std::string& orig_name, const std::string& contents) {
     std::string tmp = TempDir();
+    string name = orig_name;
+#ifdef _WIN32
+    std::replace(name.begin(), name.end(), '/', WWIV_FILE_SEPERATOR_CHAR);
+#endif  // _WIN32
     std::string path = wwiv::strings::StringPrintf("%s%c%s", tmp.c_str(), 
         WWIV_FILE_SEPERATOR_CHAR, name.c_str());
     FILE* file = fopen(path.c_str(), "w");
+    assert(file);
     fputs(contents.c_str(), file);
     fclose(file);
     return path;
