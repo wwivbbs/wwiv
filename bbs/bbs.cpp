@@ -777,7 +777,6 @@ int WApplication::Run(int argc, char *argv[]) {
 	m_nInstance = 1;
 	no_hangup = false;
 	ok_modem_stuff = true;
-	GetSession()->SetGlobalDebugLevel( 0 );
 
 #if defined( __unix__ )
 	// HACK to make WWIV5/X just work w/o any command line
@@ -809,7 +808,7 @@ int WApplication::Run(int argc, char *argv[]) {
 			case 'C':
 				break;
 			case 'D':
-				GetSession()->SetGlobalDebugLevel( atoi( argument.c_str() ) );
+                WFile::SetDebugLevel(std::stoi(argument));
 				break;
 			case 'E':
 				event_only = true;
@@ -820,22 +819,22 @@ int WApplication::Run(int argc, char *argv[]) {
 				m_bUserAlreadyOn = true;
 				break;
 			case 'S':
-				us = static_cast<unsigned int>( atol( argument.c_str() ) );
-				if ( ( us % 300 ) && us != 115200 ) {
+				us = static_cast<unsigned int>(std::stol(argument));
+				if ((us % 300) && us != 115200) {
 					us = ui;
 				}
 				break;
 			case 'Q':
-				m_nOkLevel = atoi( argument.c_str() );
+				m_nOkLevel = std::stoi(argument);
 				break;
 			case 'A':
-				m_nErrorLevel = atoi( argument.c_str() );
+				m_nErrorLevel = std::stoi(argument);
 				break;
 			case 'O':
 				ooneuser = true;
 				break;
 			case 'H':
-				hSockOrComm = atoi( argument.c_str() );
+				hSockOrComm = std::stoi(argument);
 				break;
 			case 'P':
 				systemPassword = argument;
@@ -843,7 +842,7 @@ int WApplication::Run(int argc, char *argv[]) {
 				break;
 			case 'I':
 			case 'N': {
-				m_nInstance = atoi( argument.c_str() );
+				m_nInstance = std::stoi(argument);
 				if ( m_nInstance <= 0 || m_nInstance > 999 ) {
 					std::cout << "Your Instance can only be 1..999, you tried instance #" << m_nInstance << std::endl;
 					exit( m_nErrorLevel );
@@ -856,7 +855,7 @@ int WApplication::Run(int argc, char *argv[]) {
 #endif
 				break;
 			case 'R':
-				num_min = atoi( argument.c_str() );
+				num_min = std::stoi(argument);
 				break;
 			case 'U':
 				this_usernum = wwiv::strings::StringToUnsignedShort( argument.c_str() );
@@ -1160,30 +1159,23 @@ void WApplication::ShowUsage() {
 
 
 WApplication::WApplication() {
-	sess			        = new WSession( this );
-	statusMgr			    = new StatusMgr();
-	userManager			    = new WUserManager();
-	m_nOkLevel			    = WApplication::exitLevelOK;
-	m_nErrorLevel		    = WApplication::exitLevelNotOK;
-	m_nInstance			    = 1;
-	m_bUserAlreadyOn	    = false;
-	m_nBbsShutdownStatus    = WApplication::shutdownNone;
-	m_fShutDownTime         = 0.0;
+	statusMgr = new StatusMgr();
+	userManager	= new WUserManager();
+	m_nOkLevel = WApplication::exitLevelOK;
+	m_nErrorLevel = WApplication::exitLevelNotOK;
+	m_nInstance = 1;
+	m_bUserAlreadyOn = false;
+	m_nBbsShutdownStatus = WApplication::shutdownNone;
+	m_fShutDownTime = 0.0;
 	m_nWfcStatus = 0;
-
-	WFile::SetLogger( this );
-	WFile::SetDebugLevel( GetSession()->GetGlobalDebugLevel() );
 
 	// TODO this should move into the WSystemConfig object (syscfg wrapper) once it is established.
 	if(syscfg.userreclen == 0) {
 		syscfg.userreclen = sizeof(userrec);
 	}
-
 	_tzset();
-
 	// Set the home directory
 	_getcwd( m_szCurrentDirectory, MAX_PATH );
-
 }
 
 
@@ -1342,5 +1334,8 @@ WApplication::~WApplication() {
 
 int bbsmain( int argc, char *argv[] ) {
 	app = new WApplication();
+    sess = new WSession( app );
+	WFile::SetLogger( app );
+
 	return GetApplication()->BBSMainLoop( argc, argv );
 }

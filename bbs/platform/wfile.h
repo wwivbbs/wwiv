@@ -199,9 +199,10 @@ class WFile {
 	static void SetLogger( WLogger* pLogger ) {
 		m_pLogger = pLogger;
 	}
-	static void SetDebugLevel( int nDebugLevel ) {
+	static void SetDebugLevel(int nDebugLevel) {
 		m_nDebugLevel = nDebugLevel;
 	}
+    static int GetDebugLevel() { return m_nDebugLevel; }
 };
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__

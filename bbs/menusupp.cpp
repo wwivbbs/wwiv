@@ -449,11 +449,9 @@ void CallOut() {
 
 
 void Debug() {
-	GetSession()->SetGlobalDebugLevel( GetSession()->GetGlobalDebugLevel() + 1 );
-	if ( GetSession()->GetGlobalDebugLevel() > 4 ) {
-		GetSession()->SetGlobalDebugLevel( 0 );
-	}
-	GetSession()->bout << "|#5New Debug Level: " << GetSession()->GetGlobalDebugLevel() << wwiv::endl;
+    int new_level = (WFile::GetDebugLevel() + 1) % 5;
+    WFile::SetDebugLevel(new_level);
+	GetSession()->bout << "|#5New Debug Level: " << new_level << wwiv::endl;
 }
 
 
