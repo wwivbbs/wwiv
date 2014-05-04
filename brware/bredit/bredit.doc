@@ -1,0 +1,71 @@
+               ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+               ³               BREdit Version 1.0              ³
+               ³      Full Screen Message Editor For WWIV      ³
+               ³ Copyright 1999 Art Johnston, BRWare Authors   ³
+               ³    Based on the code from FEditby Rob Raper   ³
+               ³     Portions Copyright 1993-1999 Rob Raper    ³
+               ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+
+
+
+INSTALLATION
+============
+
+Installation of BREdit is very striaght forward.
+
+1) Create a directory to hold BREdit (i.e. C:\WWIV\BREDIT)
+2) Unzip the distribution (or copy BREDIT.*) to the directory
+   2a) i.e. PkUnZip BREDIT10.ZIP C:\WWIV\BREDIT
+        -or-
+   2b) COPY BREDIT* C:\WWIV\BREDIT
+
+
+
+CONFIGURATION
+=============
+
+Add an external editor to WWIV via the INIT.EXE command from a dos shell.
+Here are the settings to use for BREdit
+
+      ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+      ³ Description     : BREdit                      ³
+      ³ Filename to run remotely                      ³
+      ³ X:\WWIV\BREDIT\BREDIT %1 %2 %3 %4             ³
+      ³ Filename to run locally                       ³
+      ³ X:\wwiv\BREDIT\BREDIT %1 %2 %3 %4 S           ³
+      ³                                               ³
+      ³ <ESC> when done.                              ³
+      ³                                               ³
+      ³ %1 = filename to edit                         ³
+      ³ %2 = chars per line                           ³
+      ³ %3 = lines per page                           ³
+      ³ %4 = max lines                                ³
+      ³ %5 = instance number                          ³
+      ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+
+
+SUPPORT
+=======
+        Internet e-mail support  (brware@robsite.org)
+
+
+        BRware Support Sub/Mailing List
+        -------------------------------
+                Sub Type: BRWARE
+                Host: @700.FileNet
+
+
+        Internet Mailing List: "n700@filenet.wwiv.net" (BRWARE)
+
+
+
+
+
+ACKNOWLEDGEMENTS
+================
+
+Special thanks to Rob Raper for allowing BRWare to use the code from FEdit
+to create BREdit.
+
