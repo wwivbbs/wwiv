@@ -94,7 +94,9 @@ bool inli( char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, b
 bool so();
 bool cs();
 bool lcs();
-void checka(bool *abort, bool *next);
+bool checka();
+bool checka(bool *abort);
+bool checka(bool *abort, bool *next);
 void pla(const std::string text, bool *abort);
 void plal(const std::string text, std::string::size_type limit, bool *abort);
 bool sysop2();

@@ -41,7 +41,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
 	uploadsrec u;
 	WUser ur;
 	char s1[81], s2[81];
-	bool abort = false, next = false;
+	bool abort = false;
 
 	int dn = FindDN( pszDirFileName );
 
@@ -52,8 +52,7 @@ int MenuDownload( char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL,
 	dliscan1(dn);
 	int nRecordNumber = recno( pszDownloadFileName );
 	if (nRecordNumber <= 0) {
-		next = 0;
-		checka(&abort, &next);
+		checka(&abort);
 		if (abort) {
 			return -1;
 		} else {
@@ -411,10 +410,7 @@ void ReadSelectedMessages(int chWhichMessages, int iWhere) {
 					scan(1, SCAN_OPTION_READ_MESSAGE, &nextsub, false );
 				}
 			}
-
-			bool abort = false, next = false;
-			checka(&abort, &next);
-			if (abort) {
+			if (checka()) {
 				nextsub = 0;
 			}
 		}

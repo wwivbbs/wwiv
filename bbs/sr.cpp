@@ -393,15 +393,14 @@ void ascii_send(const char *pszFileName, bool *sent, double *percent) {
 		long lTotalBytes = 0L;
 		bool abort = false;
 		while ( nNumRead && !hangup && !abort ) {
-			bool next = false;
 			int nBufferPos = 0;
 			while ( !hangup && !abort && nBufferPos < nNumRead ) {
 				CheckForHangup();
 				bputch(b[nBufferPos++]);
-				checka(&abort, &next);
+				checka(&abort);
 			}
 			lTotalBytes += static_cast<long>( nBufferPos );
-			checka(&abort, &next);
+			checka(&abort);
 			nNumRead = file.Read( b, 1024 );
 		}
 		file.Close();

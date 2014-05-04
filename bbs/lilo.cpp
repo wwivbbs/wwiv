@@ -172,7 +172,7 @@ int ShowLoginAndGetUserNumber( int nNetworkOnly, char* pszUserName ) {
 	int nUserNumber = finduser( szUserName );
 	if ( nUserNumber == 0 && szUserName[ 0 ] != '\0' ) {
 		GetSession()->bout << "Searching...";
-		bool abort = false, next = false;
+		bool abort = false;
 		for ( int i = 1; i < GetApplication()->GetStatusManager()->GetUserCount() && nUserNumber == 0 && !hangup && !abort; i++ ) {
 			if ( i % 25 == 0 ) { // changed from 15 since computers are faster now-a-days
 				GetSession()->bout << ".";
@@ -190,7 +190,7 @@ int ShowLoginAndGetUserNumber( int nNetworkOnly, char* pszUserName ) {
 					}
 				}
 			}
-			checka( &abort, &next );
+			checka(&abort);
 		}
 	}
 	strcpy( pszUserName, szUserName );

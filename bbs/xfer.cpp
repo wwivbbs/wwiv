@@ -843,8 +843,7 @@ void listfiles() {
 			printinfo(&u, &abort);
 			fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
 		} else if ( bkbhit() ) {
-			bool next = false;
-			checka(&abort, &next);
+			checka(&abort);
 		}
 	}
 	fileDownload.Close();
@@ -878,8 +877,7 @@ void nscandir( int nDirNum, bool *abort ) {
 				printinfo( &u, abort );
 				fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
 			} else if ( bkbhit() ) {
-				bool next = false;
-				checka( abort, &next );
+				checka(abort);
 			}
 		}
 		fileDownload.Close();
@@ -1030,8 +1028,7 @@ void searchall() {
 					printinfo( &u, &abort );
 					fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
 				} else if ( bkbhit() ) {
-					bool next = false;
-					checka( &abort, &next );
+					checka(&abort);
 				}
 			}
 			fileDownload.Close();
