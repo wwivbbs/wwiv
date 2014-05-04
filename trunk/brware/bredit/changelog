@@ -1,0 +1,25 @@
+BREdit ChangeLog
+================
+
+BREdit 1.1.1
+============
+Added /IM for importing files
+Cleaned up some ANSI display problems.
+Changed recommended configuration to 'H' for remote users.
+
+
+BREdit 1.0.2
+============
+Cleaned up some source code.
+Changed Fedit* to BREdit*
+Changed numbering scheme to three digits
+
+
+BREdit 1.0 (Build 1)
+============
+Changed name to BREdit
+Updated copyright notices
+Initial public release
+
+
+

@@ -1,0 +1,47 @@
+If you cannot use the arrow keys due to term program limitations, check to see
+if your term program has DOORWAY capability.  If it does, the arrow keys can
+be accessed through it.  
+
+                            7ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿ 
+                            7³ 1Full Screen Editor 7³
+                            7ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+               0(C) Copyright 1999 by Art Johnston, BRWare Authors
+                 0(C) Portions Copyright 1990-1995 by Rob Raper
+                              All Rights Reserved
+
+This editor has been designed with the WWIV standard editor in mind.  Most
+commands are the same, and therefore, macros made for use with the single line
+editor will work with this editor.  
+
+1/S7 or 1/ES   -  7Save message                1Ctrl-P  -  7Change colors
+1/ABT        -  7Abort message               1Ctrl-W  -  7Delete word
+1/C:         -  7Center current line         1Ctrl-N  -  7Same as backspace
+1/LI         -  7Text preview                1Ctrl-X  -  7Clear current line
+1/CLR        -  7Clear message               1Ctrl-R  -  7Redraw Screen
+1HOME        -  7Move to start of line       1Ctrl-Y  -  7Remove current line
+1END         -  7Move to end of line         1DEL     -  7Delete character
+1Arrow Keys  -  7Maneuver around text        1INS     -  7Toggle insert mode
+
+These commands may or may not be available to you:
+
+1/SY         -  7Save anonymously            1/TI     -  7Change title of post
+1/SN         -  7Save non-anonymously
+
+The editor will beep when the max lines (displayed on status line) has been
+reached.  Macros are fully implimented.  Lines can be broken by hitting return
+where you want to separate lines, and can be re-joined by using the backspace
+or del keys, as many word processors will.
+
+                       7ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                       7³ 1Keyboard Equivalences 7³
+                       7ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+Some terminal programs don't follow the ANSI standard for certain keys, but
+use Word Star's command structure instead.  Because WWIV's macros interfere
+with this command set, FEdit can't support it.  It only works with the ANSI
+standard.  This standard is as follows (^[ means Esc):
+
+1^[[A  7 Up         1^[[B  7 Down         1^[[D  7Left     1   ^[[C  7Right
+1^V     7Insert     1^G     7Delete       1^[[H  7Home        1^[[K  7End
+
