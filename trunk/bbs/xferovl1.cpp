@@ -301,7 +301,7 @@ int read_idz_all() {
 int read_idz(int mode, int tempdir) {
 	char s[81], s1[255];
 	int i, count = 0;
-	bool abort = false, next = false;
+	bool abort = false;
 	uploadsrec u;
 
 	if (mode) {
@@ -337,7 +337,7 @@ int read_idz(int mode, int tempdir) {
 				fileDownload.Write( &u, sizeof( uploadsrec ) );
 			}
 		}
-		checka(&abort, &next);
+		checka(&abort);
 	}
 	fileDownload.Close();
 	if (mode) {
@@ -750,7 +750,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
 
 int try_to_download(const char *pszFileMask, int dn) {
 	int rtn;
-	bool abort, next;
+	bool abort = false;
 	bool ok = false;
 	uploadsrec u;
 	char s1[81], s3[81];
@@ -758,8 +758,7 @@ int try_to_download(const char *pszFileMask, int dn) {
 	dliscan1(dn);
 	int i = recno( pszFileMask );
 	if (i <= 0) {
-		abort = next = false;
-		checka(&abort, &next);
+		checka(&abort);
 		return ( (abort) ? -1 : 0 );
 	}
 	ok = true;

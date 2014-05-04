@@ -307,10 +307,32 @@ bool lcs() {
 
 /**
  * Checks to see if user aborted whatever he/she was doing.
+ * Sets abort to true if control-C/X or Q was pressed.
+ * returns the value of abort
+ */
+bool checka() {
+    bool ignored_abort = false;
+    bool ignored_next = false;
+    return checka(&ignored_abort, &ignored_next);
+}
+
+/**
+ * Checks to see if user aborted whatever he/she was doing.
+ * Sets abort to true if control-C/X or Q was pressed.
+ * returns the value of abort
+ */
+bool checka(bool *abort) {
+    bool ignored_next = false;
+    return checka(abort, &ignored_next);
+}
+
+/**
+ * Checks to see if user aborted whatever he/she was doing.
  * Sets next to true if control-N was hit, for zipping past messages quickly.
  * Sets abort to true if control-C/X or Q was pressed.
+ * returns the value of abort
  */
-void checka(bool *abort, bool *next) {
+bool checka(bool *abort, bool *next) {
 	if (nsp == -1) {
 		*abort = true;
 		nsp = 0;
@@ -338,6 +360,7 @@ void checka(bool *abort, bool *next) {
 			break;
 		}
 	}
+    return *abort;
 }
 
 // Prints an abortable string (contained in *pszText). Returns 1 in *abort if the
@@ -348,15 +371,13 @@ void pla(const std::string text, bool *abort) {
 	if (CheckForHangup()) {
 		*abort = true;
 	}
-
-	bool next;
-	checka(abort, &next);
+	checka(abort);
 	for( std::string::const_iterator iter = text.begin(); iter != text.end() && !*abort; ++iter ) {
-		bputch( *iter, true );
-		checka( abort, &next );
+		bputch(*iter, true);
+		checka(abort);
 	}
 	FlushOutComChBuffer();
-	if ( !*abort ) {
+	if (!*abort) {
 		GetSession()->bout.NewLine();
 	}
 }
@@ -367,8 +388,7 @@ void plal(const std::string text, std::string::size_type limit, bool *abort) {
 		*abort = true;
 	}
 
-	bool next;
-	checka(abort, &next);
+	checka(abort);
 
 	limit += text.length() - stripcolors(text).length();
 	std::string::size_type nCharsDisplayed = 0;
@@ -376,7 +396,7 @@ void plal(const std::string text, std::string::size_type limit, bool *abort) {
 		if ( *iter != '\r' && *iter != '\n' ) {
 			bputch( *iter, true );
 		}
-		checka( abort, &next );
+		checka(abort);
 	}
 
 	FlushOutComChBuffer();

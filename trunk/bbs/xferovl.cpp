@@ -556,8 +556,8 @@ bool maybe_upload( const char *pszFileName, int nDirectoryNum, const char *pszDe
  * the optional words (size, date/time) are ignored completely.
  */
 void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
-	char s[255], *fn1 = NULL, *pszDescription = NULL, last_fn[81], *ext = NULL;
-	bool abort = false, next = false;
+	char s[255], *fn1 = nullptr, *pszDescription = nullptr, last_fn[81], *ext = nullptr;
+	bool abort = false;
 	int ok1, i;
 	bool ok = true;
 	uploadsrec u;
@@ -633,7 +633,7 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
 						++pszDescription;
 					}
 					ok = maybe_upload( fn1, nDirectoryNum, pszDescription );
-					checka(&abort, &next);
+					checka(&abort);
 					if (abort) {
 						ok = false;
 					}
@@ -693,8 +693,7 @@ bool uploadall(int nDirectoryNum) {
 			ok = maybe_upload(pszCurrentFile, nDirectoryNum, NULL);
 		}
 		bFound = fnd.next();
-		bool next;
-		checka(&abort, &next);
+		checka(&abort);
 	}
 	if ( !ok || abort ) {
 		GetSession()->bout << "|#6Aborted.\r\n";
@@ -1256,7 +1255,6 @@ void finddescription() {
 	}
 	int ocd = GetSession()->GetCurrentFileArea();
 	bool abort = false;
-	bool next = true;
 	g_num_listed = 0;
 	count = 0;
 	color = 3;
@@ -1306,7 +1304,7 @@ void finddescription() {
 					printinfo(&u, &abort);
 					fileDownload.Open( WFile::modeBinary | WFile::modeReadOnly );
 				} else if ( bkbhit() ) {
-					checka( &abort, &next );
+					checka(&abort);
 				}
 			}
 			fileDownload.Close();
@@ -1336,7 +1334,6 @@ void arc_l() {
 	align(szFileSpec);
 	dliscan();
 	bool abort = false;
-	bool next = false;
 	int nRecordNum = recno(szFileSpec);
 	do {
 		if ( nRecordNum > 0 ) {
@@ -1349,7 +1346,7 @@ void arc_l() {
 			if (i1) {
 				abort = true;
 			}
-			checka(&abort, &next);
+			checka(&abort);
 			nRecordNum = nrecno( szFileSpec, nRecordNum );
 		}
 	} while ( nRecordNum > 0 && !hangup && !abort );

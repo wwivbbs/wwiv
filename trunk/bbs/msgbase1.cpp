@@ -393,9 +393,9 @@ void nscan( int nStartingSubNum ) {
 		if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
 			qscan(i, &nNextSubNumber);
 		}
-		bool abort = false, next = false;
-		checka( &abort, &next );
-		if ( abort ) {
+		bool abort = false;
+		checka(&abort);
+		if (abort) {
 			nNextSubNumber = 0;
 		}
 	}
