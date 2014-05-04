@@ -1,0 +1,37 @@
+COMPILER_HOME   = C:\TC
+BIN             = $(COMPILER_HOME)\bin
+INCLUDE         = $(COMPILER_HOME)\include
+LIB             = $(COMPILER_HOME)\lib
+CC              = $(BIN)\tcc.exe
+OBJ             = .\obj
+OPTS            = -ml -c -I$(INCLUDE) -L$(LIB) -n$(OBJ) -eBREdit
+OPTS2           = -ml -ll -I$(INCLUDE) -L$(LIB) -n$(OBJ) -eBREdit
+
+#.CPP.OBJ:        $(CC) $(OPTS2) $(OBJ)\*.OBJ
+
+
+all: ARGUMENT.OBJ BREDIT.OBJ EDITOR.OBJ FEDITIO.OBJ FILEMGR.OBJ FILEVIEW.OBJ QUOTE.OBJ
+        $(CC) $(OPTS2) $(OBJ)\*.OBJ
+
+ARGUMENT.OBJ:   ARGUMENT.CPP
+        $(CC) $(OPTS) $*.CPP
+
+BREDIT.OBJ:     BREDIT.CPP
+        $(CC) $(OPTS) $*.CPP
+
+EDITOR.OBJ:     EDITOR.CPP
+        $(CC) $(OPTS) $*.CPP
+
+FEDITIO.OBJ:    FEDITIO.CPP
+        $(CC) $(OPTS) $*.CPP
+
+FILEMGR.OBJ:    FILEMGR.CPP
+        $(CC) $(OPTS) $*.CPP
+
+FILEVIEW.OBJ:   FILEVIEW.CPP
+        $(CC) $(OPTS) $*.CPP
+
+QUOTE.OBJ:      QUOTE.CPP
+        $(CC) $(OPTS) $*.CPP
+
+
