@@ -44,7 +44,6 @@ protected:
 };
 
 TEST_F(PrintFileTest, LanguageDir) {
-    const string tmpdir = helper.files().TempDir();
     const string expected_ans = CreateTempFile("en/gfiles/one.ans");
     const string expected_bw = CreateTempFile("en/gfiles/one.b&w");
     const string expected_msg = CreateTempFile("en/gfiles/one.msg");
@@ -64,8 +63,7 @@ TEST_F(PrintFileTest, LanguageDir) {
     EXPECT_EQ(expected_ans, actual_ans);
 }
 
-TEST_F(PrintFileTest, GFilesOnly) {
-    const string tmpdir = helper.files().TempDir();
+TEST_F(PrintFileTest, GFilesOnly_NoExt) {
     const string expected_ans = CreateTempFile("gfiles/one.ans");
     const string expected_bw = CreateTempFile("gfiles/one.b&w");
     const string expected_msg = CreateTempFile("gfiles/one.msg");
@@ -80,4 +78,23 @@ TEST_F(PrintFileTest, GFilesOnly) {
     helper.user()->SetStatusFlag(WUser::color);
     string actual_ans = CreateFullPathToPrint("one");
     EXPECT_EQ(expected_ans, actual_ans);
+}
+
+TEST_F(PrintFileTest, WithExtension) {
+    const string expected_ans = CreateTempFile("gfiles/one.ans");
+    const string expected_bw = CreateTempFile("gfiles/one.b&w");
+    const string expected_msg = CreateTempFile("gfiles/one.msg");
+
+    string actual_msg = CreateFullPathToPrint("one.msg");
+    EXPECT_EQ(expected_msg, actual_msg);
+    string actual_bw = CreateFullPathToPrint("one.b&w");
+    EXPECT_EQ(expected_bw, actual_bw);
+    string actual_ans = CreateFullPathToPrint("one.ans");
+    EXPECT_EQ(expected_ans, actual_ans);
+}
+
+TEST_F(PrintFileTest, FullyQualified) {
+    const string expected = CreateTempFile("gfiles/one.ans");
+    string actual = CreateFullPathToPrint(expected);
+    EXPECT_EQ(expected, actual);
 }

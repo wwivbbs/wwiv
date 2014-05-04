@@ -21,7 +21,7 @@
 
 #include <string>
 
-std::string CreateFullPathToPrint(const char* pszFileName);
+std::string CreateFullPathToPrint(const std::string& basename);
 void print_local_file( const char *ss, const char *ss1 );
 bool printfile( const char *pszFileName, bool bAbortable = true, bool bForcePause = true );
 

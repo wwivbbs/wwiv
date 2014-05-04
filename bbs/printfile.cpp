@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "bbs.h"
 #include "wsession.h"
@@ -32,61 +33,50 @@
 #include "wconstants.h"
 #include "wwivassert.h"
 
+using std::string;
+using wwiv::strings::StringPrintf;
+
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-std::string CreateFullPathToPrint(const char* pszFileName) {
-    char szFileName[ MAX_PATH ];
-
-	WWIV_ASSERT( pszFileName );
-
-	if ( WFile::Exists( pszFileName ) ) {
-		strcpy( szFileName, pszFileName );
-	} else {
-		sprintf( szFileName, "%s%s", GetSession()->pszLanguageDir, pszFileName );
-		if ( strchr( szFileName, '.' ) == NULL ) {
-			char* pszTempFileName = szFileName + strlen( szFileName );
-			if ( GetSession()->GetCurrentUser()->HasAnsi() ) {
-				if ( GetSession()->GetCurrentUser()->HasColor() ) {
-					strcpy( pszTempFileName, ".ans" );
-					if ( !WFile::Exists( szFileName ) ) {
-						*pszTempFileName = '\0';
-					}
-				}
-				if ( !( *pszTempFileName ) ) {
-					strcpy( pszTempFileName, ".b&w" );
-					if ( !WFile::Exists( szFileName ) ) {
-						strcpy( pszTempFileName, ".msg" );
-					}
-				}
-			} else {
-				strcpy( pszTempFileName, ".msg" );
-			}
-		}
-		if ( !WFile::Exists( szFileName ) ) {
-			sprintf( szFileName, "%s%s", syscfg.gfilesdir, pszFileName );
-		}
-		if ( strchr( szFileName, '.' ) == NULL ) {
-			char* pszTempFileName2 = szFileName + strlen( szFileName );
-			if ( GetSession()->GetCurrentUser()->HasAnsi() ) {
-				if ( GetSession()->GetCurrentUser()->HasColor() ) {
-					strcpy( pszTempFileName2, ".ans" );
-					if ( !WFile::Exists( szFileName ) ) {
-						pszTempFileName2[0] = '\0';
-					}
-				}
-				if ( !pszTempFileName2[0] ) {
-					strcpy( pszTempFileName2, ".b&w" );
-					if ( !WFile::Exists( szFileName ) ) {
-						strcpy( pszTempFileName2, ".msg" );
-					}
-				}
-			} else {
-				strcpy( pszTempFileName2, ".msg" );
-			}
-		}
-	}
-    return std::string(szFileName);
+string CreateFullPathToPrint(const std::string& basename) {
+    if (WFile::Exists(basename)) {
+        return basename;
+    }
+    std::vector<string> dirs{ GetSession()->pszLanguageDir, syscfg.gfilesdir };
+    for (const auto& base : dirs) {
+        WFile file(base, basename);
+        if (basename.find('.') != string::npos) {
+            // We have a file with extension.
+            if (file.Exists()) {
+                return file.GetFullPathName();
+            }
+            // Since no wwiv filenames contain embedded dots skip to the next directory.
+            continue;
+        }
+        const string root_filename = file.GetFullPathName();
+        if (GetSession()->GetCurrentUser()->HasAnsi()) {
+            if (GetSession()->GetCurrentUser()->HasColor()) {
+                // ANSI and color
+                string candidate = StringPrintf("%s.ans", root_filename.c_str());
+                if (WFile::Exists(candidate)) {
+                    return candidate;
+                }
+            }
+            // ANSI.
+            string candidate = StringPrintf("%s.b&w", root_filename.c_str());
+            if (WFile::Exists(candidate)) {
+                return candidate;
+            }
+        }
+        // ANSI/Color optional
+        string candidate = StringPrintf("%s.msg", root_filename.c_str());
+        if (WFile::Exists(candidate)) {
+            return candidate;
+        }
+    }
+    // Nothing matched, return the input.
+    return basename;
 }
 
 /**
