@@ -112,8 +112,8 @@ bool printfile(const char *pszFileName, bool bAbortable, bool bForcePause) {
 			}
 			bputch( ss[lCurPos++], true );
 			if ( bAbortable ) {
-				bool next = false, abort = false;
-				checka( &abort, &next );
+				bool abort = false;
+				checka(&abort);
 				if ( abort ) {
 					break;
 				}
@@ -128,7 +128,7 @@ bool printfile(const char *pszFileName, bool bAbortable, bool bForcePause) {
 		FlushOutComChBuffer();
 		BbsFreeMemory( ss );
 		// If the file is empty, lets' return false here since nothing was displayed.
-		return ( lFileSize > 0 ) ? true : false;
+		return (lFileSize > 0);
 	}
 	return false;
 }

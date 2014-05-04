@@ -478,11 +478,11 @@ void pack_sub(int si) {
 void pack_all_subs() {
 	tmp_disable_pause( true );
 
-	bool abort = false, next = false;
+	bool abort = false;
 	int i = 0;
 	while ( !hangup && !abort && i < GetSession()->num_subs ) {
 		pack_sub(i);
-		checka(&abort, &next);
+		checka(&abort);
 		i++;
 	}
 	if (abort) {

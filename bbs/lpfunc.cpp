@@ -82,7 +82,7 @@ int listfiles_plus_function( int type ) {
 	for (int this_dir = 0; (this_dir < GetSession()->num_dirs) && (!hangup) && (udir[this_dir].subnum != -1) && !all_done; this_dir++) {
 		int also_this_dir = udir[this_dir].subnum;
 		bool scan_dir = false;
-		checka(&all_done, &all_done);
+		checka(&all_done);
 
 		if (search_rec.alldirs == THIS_DIR) {
 			if (this_dir == save_dir) {
@@ -112,7 +112,7 @@ int listfiles_plus_function( int type ) {
 
 			WFile fileDownload( g_szDownloadFileName );
 			while (!done && !hangup && !all_done) {
-				checka(&all_done, &all_done);
+				checka(&all_done);
 				if (!amount) {
 					if ( !fileDownload.Open( WFile::modeBinary|WFile::modeReadOnly ) ) {
 						done = true;

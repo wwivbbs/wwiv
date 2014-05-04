@@ -766,8 +766,7 @@ void HandleScanReadFind( int &nMessageNumber, int &nScanOptionType ) {
 		} else {
 			nTempMsgNum--;
 		}
-		bool next = true;
-		checka(&abort, &next);
+		checka(&abort);
 		if (!(nTempMsgNum % 5)) {
 			GetSession()->bout.WriteFormatted("%5.5d", nTempMsgNum);
 			for (int i1 = 0; i1 < 5; i1++) {

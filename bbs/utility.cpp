@@ -370,7 +370,7 @@ void stripfn_inplace( char *pszFileName ) {
 
 
 void preload_subs() {
-	bool abort = false, next = false;
+	bool abort = false;
 
 	if ( g_preloaded ) {
 		return;
@@ -396,7 +396,7 @@ void preload_subs() {
 			}
 			GetSession()->bout << "\b\b\b\b\b";
 		}
-		checka(&abort, &next);
+		checka(&abort);
 	}
 	if ( !abort ) {
 		GetSession()->bout << "|#1...done!\r\n";

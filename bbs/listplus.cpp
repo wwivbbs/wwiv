@@ -2159,7 +2159,6 @@ void view_file(const char *pszFileName) {
 	} else {
 		dliscan();
 		bool abort = false;
-		bool next = false;
 		i = recno(pszFileName);
 		do {
 			if (i > 0) {
@@ -2173,7 +2172,7 @@ void view_file(const char *pszFileName) {
 				if (i1) {
 					abort = true;
 				}
-				checka(&abort, &next);
+				checka(&abort);
 				i = nrecno(pszFileName, i);
 			}
 		} while ( i > 0 && !hangup && !abort );
@@ -2185,16 +2184,15 @@ void view_file(const char *pszFileName) {
 
 int lp_try_to_download( const char *pszFileMask, int dn ) {
 	int i, rtn, ok2;
-	bool abort = false, next = false;
+	bool abort = false;
 	uploadsrec u;
 	char s1[81], s3[81];
 
 	dliscan1(dn);
 	i = recno(pszFileMask);
 	if (i <= 0) {
-		abort = next = 0;
-		checka(&abort, &next);
-		return ( abort ) ? -1 : 0;
+		checka(&abort);
+		return (abort) ? -1 : 0;
 	}
 	bool ok = true;
 
