@@ -46,20 +46,6 @@ Here are the settings to use for BREdit
 
 
 
-SUPPORT
-=======
-        Internet e-mail support  (brware@robsite.org)
-
-
-        BRware Support Sub/Mailing List
-        -------------------------------
-                Sub Type: BRWARE
-                Host: @700.FileNet
-
-
-        Internet Mailing List: "n700@filenet.wwiv.net" (BRWARE)
-
-
 
 
 
