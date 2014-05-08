@@ -26,8 +26,6 @@
  * @param lNumBytes Number of bytes to allocate
  */
 void *BbsAllocA( size_t lNumBytes ) {
-	WWIV_ASSERT( lNumBytes > 0 );
-
 	void* pBuffer = bbsmalloc( lNumBytes + 1 );
 	memset( pBuffer, 0, lNumBytes );
 	WWIV_ASSERT( pBuffer );
