@@ -26,7 +26,7 @@
 static int netw;
 time_t last_time_c;
 
-void fixup_long( unsigned long *f, time_t l );
+void fixup_long( uint32_t *f, time_t l );
 
 
 void rename_pend( const char *pszDirectory, const char *pszFileName ) {
@@ -421,13 +421,13 @@ bool ok_to_call(int i) {
 
 #define WEIGHT 30.0
 
-void fixup_long( unsigned long *f, time_t l ) {
-	if ( *f > static_cast<unsigned long>(l) ) {
-		*f = static_cast<unsigned long>(l);
+void fixup_long( uint32_t *f, time_t l ) {
+	if ( *f > static_cast<uint32_t>(l) ) {
+		*f = static_cast<uint32_t>(l);
 	}
 
-	if (*f + (SECONDS_PER_DAY * 30L) < static_cast<unsigned long>(l)) {
-		*f = static_cast<unsigned long>(l) - (SECONDS_PER_DAY * 30L);
+	if (*f + (SECONDS_PER_DAY * 30L) < static_cast<uint32_t>(l)) {
+		*f = static_cast<uint32_t>(l) - (SECONDS_PER_DAY * 30L);
 	}
 }
 
