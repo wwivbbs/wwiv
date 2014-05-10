@@ -86,22 +86,22 @@ typedef struct {
 
 #include "wtypes.h"	
 #include "vardec.h"
-#include "WConstants.h"
+#include "wconstants.h"
 #include "ifcns.h"
 #include "vars.h"
 #include "wfndfile.h"
-#include "WLocalIO.h"
-#include "WFile.h"
+#include "wlocal_io.h"
+#include "wfile.h"
 
 #include "init.h"
-#include "InitSession.h"
+#include "initsession.h"
 
 // Misc Junk for now
 #define textattr(x) curatr = (x)
 
 
 // STRUCTS %%TODO: move 'em
-
+#pragma pack(push, 1)
 typedef struct {
   char description[81],                     /* protocol description */
    receivefn[81],                           /* receive filename */
@@ -137,6 +137,7 @@ struct initinfo_rec
     int usernum;
     int nNumMsgsInCurrentSub;
 };
+#pragma pack(pop)
 
 __EXTRN__ WInitApp *app;
 __EXTRN__ InitSession *sess;

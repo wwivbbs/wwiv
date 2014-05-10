@@ -125,15 +125,14 @@ void sysinfo1()
         save_status();
     }
 
-
-    _ultoa((int)syscfg.newusersl,j3,10);
-    _ultoa((int)syscfg.newuserdsl,j4,10);
+    sprintf(j3, "%u", syscfg.newusersl);
+    sprintf(j4, "%u", syscfg.newuserdsl);
     print_time(syscfg.sysoplowtime,j6);
     print_time(syscfg.sysophightime,j7);
     print_time(syscfg.netlowtime,j1);
     print_time(syscfg.nethightime,j10);
-    _ultoa((int)syscfg.maxwaiting,j9,10);
-    _ultoa(syscfg.maxusers,j11,10);
+    sprintf(j9, "%u", syscfg.maxwaiting);
+    sprintf(j11, "%u", syscfg.maxusers);
     if (syscfg.closedsystem)
     {
         strcpy( j12, "Y" );
@@ -142,12 +141,12 @@ void sysinfo1()
     {
         strcpy( j12, "N" );
     }
-    _ltoa( status.callernum1,j17,10);
-    _ultoa(status.days,j19,10);
-    _ltoa( static_cast<long>( syscfg.newusergold ), j5, 10 );
+    sprintf(j17, "%u", status.callernum1);
+    sprintf(j19, "%u", status.days);
+    sprintf(j5, "%u", syscfg.newusergold);
     sprintf(j8,"%5.3f",syscfg.req_ratio);
     sprintf(j18,"%5.3f",syscfg.post_call_ratio);
-    _ltoa(syscfg.wwiv_reg_number,j0,10);
+    sprintf(j0, "%d", syscfg.wwiv_reg_number);
 
     strcpy(rs,restrict_string);
     for (i=0; i<=15; i++) 
@@ -247,19 +246,19 @@ void sysinfo1()
         case 6:
             editline(j3,3,NUM_ONLY,&i1,"");
             syscfg.newusersl=atoi(j3);
-            _ultoa(syscfg.newusersl,j3,10);
+	    sprintf(j3, "%u", syscfg.newusersl);
             Printf("%-3s",j3);
             break;
         case 7:
             editline(j4,3,NUM_ONLY,&i1,"");
             syscfg.newuserdsl=atoi(j4);
-            _ultoa(syscfg.newuserdsl,j4,10);
+	    sprintf(j4, "%u", syscfg.newuserdsl);
             Printf("%-3s",j4);
             break;
         case 8:
             editline(j5,5,NUM_ONLY,&i1,"");
             syscfg.newusergold=(float) atoi(j5);
-            _ltoa((long)syscfg.newusergold,j5,10);
+	    sprintf(j5, "%d", syscfg.newusergold);
             Printf("%-5s",j5);
             break;
         case 9:
