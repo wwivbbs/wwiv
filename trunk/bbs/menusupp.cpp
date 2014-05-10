@@ -252,7 +252,7 @@ void GoodBye() {
 			batchdl( 1 );
 		}
 	}
-	sprintf(szFileName, "%s%s", GetSession()->pszLanguageDir, LOGOFF_MAT);
+	sprintf(szFileName, "%s%s", GetSession()->language_dir.c_str(), LOGOFF_MAT);
 	if (!WFile::Exists(szFileName)) {
 		sprintf(szFileName, "%s%s", syscfg.gfilesdir, LOGOFF_MAT);
 	}

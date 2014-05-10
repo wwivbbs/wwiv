@@ -17,16 +17,20 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs_helper.h"
-#include "gtest/gtest.h"
+#include <sstream>
 
 #include <algorithm>
+#include <iostream>
 #include <string>
+
 #include "bbs.h"
 #include "platform/incl1.h"
 #include "platform/wfile.h"
 #include "vars.h"
 #include "wuser.h"
 #include "wsession.h"
+
+#include "gtest/gtest.h"
 
 void BbsHelper::SetUp() {
     std::string temp = files_.TempDir();
@@ -43,7 +47,9 @@ void BbsHelper::SetUp() {
 #endif  // _WIN32
 
     syscfg.gfilesdir = const_cast<char*>(dir_gfiles_.c_str());
-    GetSession()->pszLanguageDir = const_cast<char*>(dir_en_gfiles_.c_str());
+    WSession* session = GetSession();
+
+    session->language_dir = dir_en_gfiles_;
     user_ = GetSession()->GetCurrentUser();
 }
 

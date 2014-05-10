@@ -936,7 +936,7 @@ const std::string GetMenuDirectory(const std::string menuPath, const std::string
 
 const std::string GetMenuDirectory() {
 	std::ostringstream os;
-	os << GetSession()->pszLanguageDir << "menus" << WWIV_FILE_SEPERATOR_CHAR;
+	os << GetSession()->language_dir << "menus" << WWIV_FILE_SEPERATOR_CHAR;
 	return std::string(os.str());
 }
 

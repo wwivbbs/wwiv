@@ -18,13 +18,14 @@
 /**************************************************************************/
 
 #include "wstringutils.h"
-#include <cstdio>
-#include <cstring>
-#include <string>
-#include <iostream>
-#include <sstream>
 #include <algorithm>
 #include <cstdarg>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
+#include <iostream>
+#include <sstream>
+#include <string>
 #include "wwivassert.h"
 #include "wtypes.h"
 #include "wconstants.h"

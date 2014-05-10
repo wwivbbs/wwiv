@@ -53,8 +53,8 @@ WSession::WSession( WApplication *pApplication ) {
 	max_chains                              = 0;
 	max_gfilesec                            = 0;
 	screen_saver_time                       = 0;
+	language_dir = "";
 	m_currentSpeed                          = "";
-	pszLanguageDir                          = NULL;
 	m_nForcedReadSubNumber                  = 0;
 	m_bThreadSubs                           = false;
 	m_bAllowCC                              = false;
