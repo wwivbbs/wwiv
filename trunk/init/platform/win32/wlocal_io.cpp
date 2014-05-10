@@ -22,7 +22,7 @@
 #include <sstream>
 
 #include "wwivinit.h"
-#include "WLocalIO.h"
+#include "wlocal_io.h"
 
 extern int oldy = 0;
 
