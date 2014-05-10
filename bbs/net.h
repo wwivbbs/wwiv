@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_NET_H__
 #define __INCLUDED_NET_H__
 
+#include <cstdint>
+
 #pragma pack(push, 1)
 
 /* Defining USE_FTS activates The File Transfer System */
@@ -43,7 +45,7 @@ struct net_header_rec {
 	          main_type,  /* main message type */
 	          minor_type, /* minor message type */
 	          list_len;   /* # of entries in system list */
-	unsigned long   daten,      /* date/time sent */
+	uint32_t   daten,      /* date/time sent */
 	         length;     /* # of bytes of msg after header */
 	unsigned short	method;		/* method of compression */
 };
@@ -92,7 +94,7 @@ struct net_contact_rec {
 	unsigned short  systemnumber,       /* System number of the contact */
 	         numcontacts,        /* # of contacts with system */
 	         numfails;           /* # of consec failed calls out */
-	unsigned long   firstcontact,       /* time of first contact w/ system */
+	uint32_t firstcontact,       /* time of first contact w/ system */
 	         lastcontact,        /* time of most recent contact */
 	         lastcontactsent,    /* time of last contact w/data sent */
 	         lasttry,            /* time of last try to connect */
@@ -136,7 +138,7 @@ struct net_system_list_rec {
 	union {
 		unsigned short  rout_fact;  /* routing factor */
 		float           cost;       /* cost factor */
-		long            temp;       /* temporary variable */
+		int32_t            temp;       /* temporary variable */
 	} xx;
 };
 
@@ -258,9 +260,9 @@ struct net_networks_rec {
 #ifdef USE_FTS
 struct fts_header {
 	char            filename[13];       /* name of file */
-	long            filesize;           /* size of file */
+	int32_t            filesize;           /* size of file */
 	char            description[59];    /* description  */
-	unsigned long   crc32value;         /* crc value of file */
+	uint32_t   crc32value;         /* crc value of file */
 	short           maintype,           /* fts maintype */
 	                fdltype,            /* fdl type */
 	                chunkcount,         /* number of this chunk */
@@ -285,7 +287,7 @@ struct fdlrec_rec {
 	char  name[61];
 	short fdl,
 	      host;
-	long  status;
+	int32_t  status;
 	char  res[41];
 };
 
@@ -293,7 +295,7 @@ struct bltrec_rec {
 	char  name[61];
 	short blt,
 	      host;
-	long  status;
+	int32_t  status;
 	char  res[41];
 };
 
