@@ -131,10 +131,6 @@ int GetAnsiStatusAndShowWelcomeScreen( int nNetworkOnly ) {
 					printfile( WELCOME_ANS );
 				}
 			} else if ( ans == 0 ) {
-				WSession* tmpsession = GetSession();
-				const char* tmplanguage = tmpsession->language_dir.c_str();
-			    printf("GetAnsiStatus... %ld, %s\n", GetSession(), GetSession()->language_dir.c_str());
-
 				printfile( WELCOME_MSG );
 			}
 		} else {
