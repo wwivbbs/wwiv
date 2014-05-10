@@ -20,16 +20,10 @@
 #ifndef __INCLUDED_VARDEC_H__
 #define __INCLUDED_VARDEC_H__
 
-#ifdef _WIN32
-#pragma pack(push, 1)
-#elif defined ( __unix__ ) || defined ( __APPLE__ )
-#pragma pack( 1 )
-#endif
-
-
 #include "wtypes.h"
 
 
+#pragma pack(push, 1)
 
 // DATA FOR EVERY USER
 struct userrec {
@@ -1367,9 +1361,6 @@ struct arch {
 #define BbsFreeMemory(x) free(x)
 #endif // bbsmaloc
 
-
-#ifdef _WIN32
 #pragma pack(pop)
-#endif // _WIN32
 
 #endif // __INCLUDED_VARDEC_H__
