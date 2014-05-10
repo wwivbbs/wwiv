@@ -22,7 +22,6 @@
 #include <sys/wait.h>
 
 #include "../wwiv.h"
-#include "../WStringUtils.h"
 
 using namespace std;
 
