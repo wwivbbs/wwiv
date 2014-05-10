@@ -32,13 +32,6 @@
 #include <string>
 #include "vardec.h"
 
-
-#ifdef _WIN32
-#pragma pack( push, 1 )
-#elif defined ( __unix__ ) || defined ( __APPLE__ )
-#pragma pack( 1 )
-#endif
-
 /**
  * User Class - Represents a User record
  */
@@ -885,10 +878,5 @@ class WUserManager {
 		return m_bUserWritesAllowed;
 	}
 };
-
-
-#ifdef _WIN32
-#pragma pack( pop )
-#endif // _WIN32
 
 #endif // __INCLUDED_PLATFORM_WUSER_H__

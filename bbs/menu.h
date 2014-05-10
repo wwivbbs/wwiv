@@ -22,12 +22,6 @@
 #include "wtypes.h"
 #include <string>
 
-#ifdef _WIN32
-#pragma pack(push, 1)
-#elif defined ( __unix__ ) || defined ( __APPLE__ )
-#pragma pack( 1 )
-#endif
-
 #define MENU
 #define MENU_VERSION 0x0100
 
@@ -83,6 +77,9 @@
 #define MENU_MAX_KEYS (10)
 
 class WFile;
+
+
+#pragma pack(push, 1)
 
 struct MenuHeader {
 	char   szSig[10];      /* Menu Signature */
@@ -170,8 +167,9 @@ struct MenuInstanceData {
 	char *szPrompt;
 	MenuRecIndex *index;
 	MenuHeader header;   /* Hold header info for current menu set in memory */
-
 };
+
+#pragma pack(pop)
 
 // Functions used b bbs.cpp and defaults.cpp
 void mainmenu();
@@ -195,10 +193,5 @@ int  GetMenuIndex( const char* pszCommand );
 void Menus(MenuInstanceData * pMenuData, const std::string menuDirectory, const std::string menuName);
 char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
 void AMDisplayHelp(MenuInstanceData * pMenuData);
-
-#ifdef _WIN32
-#pragma pack(pop)
-#endif
-
 
 #endif  // __INCLUDED_MENU_H__
