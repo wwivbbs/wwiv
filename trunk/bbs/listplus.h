@@ -19,12 +19,6 @@
 #ifndef __INCLUDED_LISTPLUS_H__
 #define __INCLUDED_LISTPLUS_H__
 
-#ifdef _WIN32
-#pragma pack( push,  1)
-#elif defined ( __unix__ ) || defined ( __APPLE__ )
-#pragma pack( 1 )
-#endif
-
 // #define FORCE_LP
 // If the person has ansi, then they are foced to use listplus
 
@@ -113,9 +107,7 @@ extern int foundany;
 #define cfl_description             0x00000400
 #define cfl_header                  0x80000000L
 
-
-
-
+#pragma pack( push,  1)
 
 struct listplus_config {
 	long fi, lssm, sent;
@@ -154,6 +146,7 @@ struct listplus_config {
 	short int forced_config;
 };
 
+#pragma pack(pop)
 
 extern struct listplus_config	lp_config;
 extern user_config				list_config;
@@ -168,12 +161,5 @@ extern int						lp_config_loaded;
 #define STR_NOT         '!'
 #define STR_OPEN_PAREN  '('
 #define STR_CLOSE_PAREN ')'
-
-
-#ifdef _WIN32
-#pragma pack(pop)
-#endif // _WIN32
-
-
 
 #endif	// __INCLUDED_LISTPLUS_H__

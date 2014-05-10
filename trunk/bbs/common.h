@@ -20,12 +20,7 @@
 #ifndef __INCLUDED_COMMON_H__
 #define __INCLUDED_COMMON_H__
 
-#ifdef _WIN32
 #pragma pack(push, 1)
-#elif defined ( __unix__ ) || defined ( __APPLE__ )
-#pragma pack( 1 )
-#endif
-
 
 struct side_menu_colors {
 	int normal_highlight;   // used to all be unsigned.
@@ -70,11 +65,6 @@ struct user_config {
 	char junk[118];   // AMENU took 11 bytes from here
 };
 
-
-#ifdef _WIN32
 #pragma pack(pop)
-#endif // _WIN32
-
-
 
 #endif // __INCLUDED_COMMON_H__
