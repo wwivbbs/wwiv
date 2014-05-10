@@ -27,14 +27,17 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #endif  // _CRT_SECURE_NO_DEPRECATE
 
+#include <sstream>
+#include <cstring>
+#include <string>
+#include "vardec.h"
+
+
 #ifdef _WIN32
 #pragma pack( push, 1 )
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #pragma pack( 1 )
 #endif
-
-#include <cstring>
-#include "vardec.h"
 
 /**
  * User Class - Represents a User record

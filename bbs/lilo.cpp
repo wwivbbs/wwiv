@@ -62,18 +62,18 @@ void CleanUserInfo() {
 
 bool random_screen( const char *mpfn ) {
 	char szBuffer[ 255 ];
-	sprintf( szBuffer, "%s%s%s", GetSession()->pszLanguageDir, mpfn, ".0" );
+	sprintf( szBuffer, "%s%s%s", GetSession()->language_dir.c_str(), mpfn, ".0" );
 	if ( WFile::Exists( szBuffer ) ) {
 		int nNumberOfScreens = 0;
 		for ( int i = 0; i < 1000; i++ ) {
-			sprintf( szBuffer, "%s%s.%d", GetSession()->pszLanguageDir, mpfn, i );
+		        sprintf( szBuffer, "%s%s.%d", GetSession()->language_dir.c_str(), mpfn, i );
 			if ( WFile::Exists( szBuffer ) ) {
 				nNumberOfScreens++;
 			} else {
 				break;
 			}
 		}
-		sprintf( szBuffer, "%s%s.%d", GetSession()->pszLanguageDir, mpfn, WWIV_GetRandomNumber( nNumberOfScreens ) );
+		sprintf( szBuffer, "%s%s.%d", GetSession()->language_dir.c_str(), mpfn, WWIV_GetRandomNumber( nNumberOfScreens ) );
 		printfile( szBuffer );
 		return true;
 	}
@@ -121,7 +121,7 @@ int GetAnsiStatusAndShowWelcomeScreen( int nNetworkOnly ) {
 
 		ans = check_ansi();
 		char szFileName[ MAX_PATH ];
-		sprintf( szFileName, "%s%s", GetSession()->pszLanguageDir, WELCOME_ANS );
+		sprintf( szFileName, "%s%s", GetSession()->language_dir.c_str(), WELCOME_ANS );
 		if ( WFile::Exists( szFileName ) ) {
 			GetSession()->bout.NewLine();
 			if ( ans > 0 ) {
@@ -131,11 +131,15 @@ int GetAnsiStatusAndShowWelcomeScreen( int nNetworkOnly ) {
 					printfile( WELCOME_ANS );
 				}
 			} else if ( ans == 0 ) {
+				WSession* tmpsession = GetSession();
+				const char* tmplanguage = tmpsession->language_dir.c_str();
+			    printf("GetAnsiStatus... %ld, %s\n", GetSession(), GetSession()->language_dir.c_str());
+
 				printfile( WELCOME_MSG );
 			}
 		} else {
 			if ( ans ) {
-				sprintf( szFileName, "%s%s.0", GetSession()->pszLanguageDir, WELCOME_NOEXT );
+			        sprintf( szFileName, "%s%s.0", GetSession()->language_dir.c_str(), WELCOME_NOEXT );
 				if ( WFile::Exists( szFileName ) ) {
 					random_screen( WELCOME_NOEXT );
 				} else {
