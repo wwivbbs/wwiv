@@ -20,6 +20,7 @@
 #ifndef __INCLUDED_VARDEC_H__
 #define __INCLUDED_VARDEC_H__
 
+#include <cstdint>
 #include "wtypes.h"
 
 
@@ -115,7 +116,7 @@ struct userrec {
 	char
 	res_short[40];                           // reserved for short values
 
-	unsigned long
+	uint32_t
 	msgread,                                 // total num msgs read
 	uk,                                      // number of k uploaded
 	dk,                                      // number of k downloaded
@@ -169,7 +170,7 @@ struct slrec {
 	         messages_read,                          // messages allowed to read
 	         emails,                                 // number emails allowed
 	         posts;                                  // number posts allowed
-	unsigned long ability;                      // bit mapped abilities
+	uint32_t ability;                      // bit mapped abilities
 };
 
 
@@ -279,7 +280,7 @@ struct configrec {
 
 	char newuser_c[51];                         // newuser event
 
-	unsigned long wwiv_reg_number;              // user's reg number
+	uint32_t wwiv_reg_number;              // user's reg number
 
 	char dial_prefix[21];
 
@@ -300,7 +301,7 @@ struct configrec {
 
 	unsigned char email_storage_type;           // how to store email
 
-	unsigned long sysconfig1,
+	uint32_t sysconfig1,
 	         rrd;                                    // shareware expiration date
 
 	char menudir[81];                           // path for menu dir
@@ -369,7 +370,7 @@ struct small_configrec {
 	valrec          autoval[10];        // sysop quik-validation dat
 
 
-	unsigned long   wwiv_reg_number,   // user's reg number
+	uint32_t wwiv_reg_number,   // user's reg number
 	         sysconfig1,
 	         rrd;
 };
@@ -409,13 +410,13 @@ struct statusrec {
 	         uptoday,                                // files uploaded today
 	         activetoday;                            // Minutes active today
 
-	unsigned long qscanptr;                     // Q-scan pointer value
+	uint32_t qscanptr;                     // Q-scan pointer value
 
 	char amsganon;                              // auto-message anony stat
 
 	unsigned short amsguser;                    // user who wrote a-msg
 
-	unsigned long callernum1;                   // caller number
+	uint32_t callernum1;                   // caller number
 
 	unsigned short net_edit_stuff;              // word for net editor
 
@@ -425,7 +426,7 @@ struct statusrec {
 
 	float net_bias;                             // network bias factor
 
-	long last_connect,                          // date last connect.net
+	int32_t last_connect,                          // date last connect.net
 	     last_bbslist;                            // date last bbslist.net
 
 	float net_req_free;                         // net free factor def 3
@@ -486,7 +487,7 @@ struct smalrec {
 // TYPE TO TELL WHERE A MESSAGE IS STORED
 struct messagerec {
 	unsigned char storage_type;                 // how it is stored
-	unsigned long stored_as;                    // where it is stored
+	uint32_t stored_as;                    // where it is stored
 };
 
 
@@ -500,7 +501,7 @@ struct postrec {
 	unsigned short ownersys,                    // what system it came from
 	         owneruser;                              // who posted it
 
-	unsigned long qscan,                        // qscan pointer
+	uint32_t qscan,                        // qscan pointer
 	         daten;                                  // numerical date posted
 
 	messagerec msg;                             // where to find it
@@ -520,7 +521,7 @@ struct mailrec {
 	         tosys,                                  // destination system
 	         touser;                                 // destination user
 
-	unsigned long daten;                        // date it was sent
+	uint32_t daten;                        // date it was sent
 
 	messagerec msg;                             // where to find it
 };
@@ -532,7 +533,7 @@ struct tmpmailrec {
 	unsigned short fromsys,                     // originating system
 	         fromuser;                               // originating user
 
-	unsigned long daten;                        // date it was sent
+	uint32_t daten;                        // date it was sent
 
 	messagerec msg;                             // where to find it
 };
@@ -581,7 +582,7 @@ struct uploadsrec {
 	         ownersys, ownerusr,                     // who uploaded it
 	         mask;                                   // file type mask
 
-	unsigned long daten,                        // date uploaded
+	uint32_t daten,                        // date uploaded
 	         numbytes;                               // number bytes long file is
 };
 
@@ -654,7 +655,7 @@ struct editorrec {
 	char description[81],                       // description of editor
 	     filename[81];                           // how to run the editor
 
-	unsigned long xxUNUSED;                     // TODO This was not used (config)
+	uint32_t xxUNUSED;                     // TODO This was not used (config)
 
 	char filenamecon[81];                       // how to run locally
 
@@ -685,7 +686,7 @@ struct batchrec {
 
 	float time;
 
-	long len;
+	int32_t len;
 };
 
 
@@ -902,7 +903,7 @@ struct gfilerec {
 	char description[81],                       // description of file
 	     filename[13];                           // filename of file
 
-	long daten;                                 // date added
+	int32_t daten;                                 // date added
 };
 
 
@@ -1064,9 +1065,9 @@ struct filestatusrec {
 
 	char filename[13];
 
-	long id;
+	int32_t id;
 
-	unsigned long numbytes;
+	uint32_t numbytes;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1231,7 +1232,7 @@ struct threadrec {
 struct ext_desc_rec {
 	char name[13];
 
-	long offset;
+	int32_t offset;
 };
 
 
@@ -1255,9 +1256,9 @@ struct instancerec {
 	number, user;
 	unsigned short
 	flags, loc, subloc;
-	unsigned long last_update;
+	uint32_t last_update;
 	unsigned short modem_speed;
-	unsigned long inst_started;
+	uint32_t inst_started;
 	unsigned char
 	extra[80];
 };
@@ -1294,49 +1295,49 @@ struct fedit_data_rec {
 #define ZIP_CENT_END_SIG 0x06054b50
 
 struct zip_local_header {
-	unsigned long   signature;                  // 0x04034b50
+	uint32_t   signature;                  // 0x04034b50
 	unsigned short  extract_ver;
 	unsigned short  flags;
 	unsigned short  comp_meth;
 	unsigned short  mod_time;
 	unsigned short  mod_date;
-	unsigned long   crc_32;
-	unsigned long   comp_size;
-	unsigned long   uncomp_size;
+	uint32_t   crc_32;
+	uint32_t   comp_size;
+	uint32_t   uncomp_size;
 	unsigned short  filename_len;
 	unsigned short  extra_length;
 };
 
 
 struct zip_central_dir {
-	unsigned long   signature;                  // 0x02014b50
+	uint32_t   signature;                  // 0x02014b50
 	unsigned short  made_ver;
 	unsigned short  extract_ver;
 	unsigned short  flags;
 	unsigned short  comp_meth;
 	unsigned short  mod_time;
 	unsigned short  mod_date;
-	unsigned long   crc_32;
-	unsigned long   comp_size;
-	unsigned long   uncomp_size;
+	uint32_t   crc_32;
+	uint32_t   comp_size;
+	uint32_t   uncomp_size;
 	unsigned short  filename_len;
 	unsigned short  extra_len;
 	unsigned short  comment_len;
 	unsigned short  disk_start;
 	unsigned short  int_attr;
-	unsigned long   ext_attr;
-	unsigned long   rel_ofs_header;
+	uint32_t   ext_attr;
+	uint32_t   rel_ofs_header;
 };
 
 
 struct zip_end_dir {
-	unsigned long   signature;                  // 0x06054b50
+	uint32_t   signature;                  // 0x06054b50
 	unsigned short  disk_num;
 	unsigned short  cent_dir_disk_num;
 	unsigned short  total_entries_this_disk;
 	unsigned short  total_entries_total;
-	unsigned long   central_dir_size;
-	unsigned long   ofs_cent_dir;
+	uint32_t   central_dir_size;
+	uint32_t   ofs_cent_dir;
 	unsigned short  comment_len;
 };
 
@@ -1344,9 +1345,9 @@ struct zip_end_dir {
 struct arch {
 	unsigned char type;
 	char name[13];
-	long len;
+	int32_t len;
 	short int date, time, crc;
-	long size;
+	int32_t size;
 };
 
 
