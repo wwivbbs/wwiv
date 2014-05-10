@@ -2,6 +2,7 @@
 #include "gtest/gtest.h"
 #include "platform/wfile.h"
 
+#include <iostream>
 #include <string>
 
 using std::string;

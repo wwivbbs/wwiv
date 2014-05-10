@@ -504,7 +504,7 @@ bool set_language_1(int n) {
 
 	GetSession()->SetCurrentLanguageNumber( n );
 	cur_lang_name = languages[idx].name;
-	GetSession()->pszLanguageDir = languages[idx].dir;
+	GetSession()->language_dir = languages[idx].dir;
 
 	strncpy(str_yes, "Yes", sizeof(str_yes) - 1);
 	strncpy(str_no, "No", sizeof(str_no) - 1);

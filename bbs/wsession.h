@@ -19,6 +19,9 @@
 #if !defined ( __INCLUDED_WSESSION_H__ )
 #define __INCLUDED_WSESSION_H__
 
+#include <iostream>
+#include <string>
+
 #include "vardec.h"
 #include "wuser.h"
 
@@ -463,7 +466,7 @@ class WSession {
 	unsigned int *m_DirectoryDateCache,
 	         *m_SubDateCache;
 
-	char		*pszLanguageDir;
+	std::string language_dir;
 	char		*cur_lang_name;
 
 	int         wfcdrvs[5],

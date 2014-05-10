@@ -19,6 +19,7 @@
 #include "printfile.h"
 
 #include <cstdlib>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -43,7 +44,9 @@ string CreateFullPathToPrint(const std::string& basename) {
     if (WFile::Exists(basename)) {
         return basename;
     }
-    std::vector<string> dirs{ GetSession()->pszLanguageDir, syscfg.gfilesdir };
+    string langdir(GetSession()->language_dir);
+    string gfilesdir(syscfg.gfilesdir);
+    std::vector<string> dirs{ langdir, gfilesdir };
     for (const auto& base : dirs) {
         WFile file(base, basename);
         if (basename.find('.') != string::npos) {
