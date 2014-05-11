@@ -342,7 +342,7 @@ bool WFile::ExistsWildcard( const std::string pszWildCard ) {
 
 bool WFile::CopyFile( const std::string sourceFileName, const std::string destFileName ) {
 	if ( sourceFileName != destFileName && WFile::Exists( sourceFileName ) && !WFile::Exists( destFileName ) ) {
-		char *pBuffer = static_cast<char *>( BbsAllocA( 16400 ) );
+		char *pBuffer = static_cast<char *>( malloc( 16400 ) );
 		if ( pBuffer == NULL ) {
 			return false;
 		}

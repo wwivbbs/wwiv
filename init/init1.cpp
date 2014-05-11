@@ -1745,7 +1745,7 @@ void new_init()
 		} 
 		else 
 		{
-			WOSD_ChangeDirTo(bbsdir);
+			WWIV_ChangeDirTo(bbsdir);
 		}
 	}
 	Printf(".\n\n");

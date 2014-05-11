@@ -71,3 +71,12 @@ void WWIV_Delay(unsigned long usec) {
 void WWIV_OutputDebugString( const char *pszString ) {
 	//std::cout << pszString;
 }
+
+
+long filelength(int handle) {
+  struct stat fileinfo; 
+  if (fstat(handle, &fileinfo) != 0) { 
+    return -1;
+  }
+  return fileinfo.st_size;
+}

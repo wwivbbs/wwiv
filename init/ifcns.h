@@ -156,12 +156,14 @@ void create_arcs();
 // ** OSD CODE **
 
 /* File: filesupp.cpp */
-void WOSD_ChangeDirTo(const char *s);
-void WOSD_GetDir(char *s, int be);
+void WWIV_ChangeDirTo(const char *s);
+void WWIV_GetDir(char *s, int be);
 
 
 /* File: utility2.cpp */
 void WWIV_Delay(unsigned long usec);
 
+// File: stringstuff.cpp
+char *strupr(char *s);
 
 #endif
