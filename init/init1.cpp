@@ -486,6 +486,12 @@ int editlinestrlen( char *pszText )
 }
 
 
+void editline(std::string* s, int len, int status, int *returncode, const char *ss) {
+    char pszBuffer[255];
+    strcpy(pszBuffer, s->c_str());
+    editline(pszBuffer, len, status, returncode, ss);
+    s->assign(pszBuffer);
+}
 
 /* editline edits a string, doing I/O to the screen only. */
 void editline(char *s, int len, int status, int *returncode, const char *ss)
@@ -851,7 +857,7 @@ void fix_user_rec(userrec *u)
 
 int number_userrecs()
 {
-    WFile file(syscfg.datadir, "USER.LST");
+    WFile file(syscfg.datadir, "user.lst");
     if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
         WFile::shareDenyReadWrite, WFile::permRead)) {
         return static_cast<int>(file.GetLength());
@@ -870,7 +876,7 @@ void read_user(unsigned int un, userrec *u)
 		return;
 	}
 
-    WFile file(syscfg.datadir, "USER.LST");
+    WFile file(syscfg.datadir, "user.lst");
     if (!file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareDenyReadWrite, WFile::permReadWrite)) {
 		u->inact=inact_deleted;
 		fix_user_rec(u);
@@ -907,7 +913,7 @@ void write_user(unsigned int un, userrec *u)
 	}
 	
     {
-        WFile file(syscfg.datadir, "USER.LST");
+        WFile file(syscfg.datadir, "user.lst");
         if (file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite)) {
             long pos = un * syscfg.userreclen;
             file.Seek(pos, WFile::seekBegin);
@@ -922,7 +928,7 @@ void write_user(unsigned int un, userrec *u)
 	SecondUserRec.cHotKeys = 1;
 	SecondUserRec.cMenuType = 0;
 	
-    WFile file(syscfg.datadir, "USER.DAT");
+    WFile file(syscfg.datadir, "user.dat");
     if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite)) {
         file.Seek(un * sizeof(user_config), WFile::seekBegin);
         file.Write(&SecondUserRec, sizeof(user_config));
@@ -942,7 +948,7 @@ int open_qscn()
 	
 	if (qscn_file==-1) 
 	{
-		sprintf(szFileName,"%sUSER.QSC",syscfg.datadir);
+		sprintf(szFileName,"%suser.qsc",syscfg.datadir);
 		qscn_file=open(szFileName,O_RDWR|O_BINARY|O_CREAT, S_IREAD|S_IWRITE);
 		if (qscn_file<0) 
 		{
@@ -1044,7 +1050,7 @@ void save_status()
 {
 	char szFileName[MAX_PATH];
 	
-	sprintf(szFileName,"%sSTATUS.DAT",syscfg.datadir);
+	sprintf(szFileName,"%sstatus.dat",syscfg.datadir);
 	int statusfile=open(szFileName,O_RDWR | O_BINARY | O_CREAT, S_IREAD|S_IWRITE);
 	write(statusfile, (void *)(&status), sizeof(statusrec));
 	close(statusfile);
@@ -1078,7 +1084,7 @@ bool read_status()
 {
 	char szFileName[81];
 	
-	sprintf(szFileName,"%sSTATUS.DAT",syscfg.datadir);
+	sprintf(szFileName,"%sstatus.dat",syscfg.datadir);
 	int statusfile=open(szFileName,O_RDWR | O_BINARY);
 	if (statusfile>=0) 
 	{
@@ -1253,7 +1259,7 @@ void convert_result_codes()
 	cvtx(19200,syscfg.connect_19200_a);
     
     char szFileName[ MAX_PATH ];
-    sprintf(szFileName,"%sRESULTS.DAT",syscfg.datadir);
+    sprintf(szFileName,"%sresults.dat",syscfg.datadir);
 	int hFile = open( szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
 	write( hFile, result_codes, num_result_codes * sizeof( resultrec ) );
 	close( hFile );
@@ -1280,17 +1286,17 @@ void init_files()
 	
 	strcpy(syscfg.systempw,"SYSOP");
 	Printf(".");
-	sprintf(syscfg.msgsdir,"%sMSGS\\", bbsdir);
+	sprintf(syscfg.msgsdir,"%smsgs\\", bbsdir);
 	Printf(".");
-	sprintf(syscfg.gfilesdir,"%sGFILES\\", bbsdir);
+	sprintf(syscfg.gfilesdir,"%sgfiles\\", bbsdir);
 	Printf(".");
-	sprintf(syscfg.datadir,"%sDATA\\", bbsdir);
+	sprintf(syscfg.datadir,"%sdata\\", bbsdir);
 	Printf(".");
-	sprintf(syscfg.dloadsdir,"%sDLOADS\\", bbsdir);
+	sprintf(syscfg.dloadsdir,"%sdloads\\", bbsdir);
 	Printf(".");
-	sprintf(syscfg.tempdir,"%sTEMP1\\", bbsdir);
+	sprintf(syscfg.tempdir,"%stemp1\\", bbsdir);
 	Printf(".");
-	sprintf(syscfg.menudir,"%sGFILES\\MENUS\\", bbsdir);
+	sprintf(syscfg.menudir,"%sgfiles\\menus\\", bbsdir);
 	Printf(".");
 	strcpy(syscfg.batchdir, syscfg.tempdir);
 	Printf(".");
@@ -1493,7 +1499,7 @@ void init_files()
 	write_user(1, &thisuser);
 	write_qscn(1,qsc,0);
 	Printf(".");
-	int hFile = open("DATA\\NAMES.LST",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+	int hFile = open("data\\names.lst",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 	close(hFile);
 	
 	Printf(".");
@@ -1505,7 +1511,7 @@ void init_files()
 	s1.postsl=20;
 	s1.maxmsgs=50;
 	s1.storage_type=2;
-	hFile=open("DATA\\SUBS.DAT",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+	hFile=open("data\\subs.dat",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 	write(hFile, (void *) (&s1), sizeof(subboardrec));
 	close(hFile);
 	
@@ -1514,20 +1520,20 @@ void init_files()
 	Printf(".");
 	strcpy(d1.name,"Sysop");
 	strcpy(d1.filename,"SYSOP");
-	strcpy(d1.path,"DLOADS\\SYSOP\\");
+	strcpy(d1.path,"dloads\\sysop\\");
 	mkdir(d1.path);
 	d1.dsl=100;
 	d1.maxfiles=50;
 	d1.type=65535;
 	Printf(".");
-	hFile=open("DATA\\DIRS.DAT",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+	hFile=open("data\\dirs.dat",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 	write(hFile, (void *) (&d1), sizeof(directoryrec));
 	
 	memset(&d1, 0, sizeof(directoryrec));
 	
 	strcpy(d1.name,"Miscellaneous");
-	strcpy(d1.filename,"MISC");
-	strcpy(d1.path,"DLOADS\\MISC\\");
+	strcpy(d1.filename,"misc");
+	strcpy(d1.path,"dloads\\misc\\");
 	mkdir(d1.path);
 	d1.dsl=10;
 	d1.age=0;
@@ -1544,42 +1550,42 @@ void init_files()
 	textattr( 3 );
 	
 	Printf(".");
-	rename("WWIVINI.500","WWIV.INI");
+	rename("wwivini.500","wwiv.ini");
 	Printf(".");
-	rename("MENUCMDS.DAT","DATA\\MENUCMDS.DAT");
+	rename("menucmds.dat","data\\menucmds.dat");
 	Printf(".");
-	rename("REGIONS.DAT", "DATA\\REGIONS.DAT");
+	rename("regions.dat", "data\\regions.dat");
 	Printf(".");
-	rename("WFC.DAT", "DATA\\WFC.DAT");
+	rename("wfc.dat", "data\\wfc.dat");
 	Printf(".");
-	rename("MODEMS.500","DATA\\MODEMS.MDM");
+	rename("modems.500","data\\modems.mdm");
 	Printf(".");
-//	rename("ENGLISH.STR", "GFILES\\BBS.STR");
+//	rename("english.str", "gfiles\\bbs.str");
 //	Printf(".");
-//	rename("INI.STR", "GFILES\\INI.STR");
+//	rename("ini.str", "gfiles\\ini.str");
 //	Printf(".");
-//	rename("SYSOPLOG.STR", "GFILES\\SYSOPLOG.STR");
+//	rename("sysoplog.str", "gfiles\\sysoplog.str");
 //	Printf(".");
-//	rename("CHAT.STR", "GFILES\\CHAT.STR");
+//	rename("chat.str", "gfiles\\chat.str");
 //	Printf(".");
-//	rename("YES.STR", "GFILES\\YES.STR");
+//	rename("yes.str", "gfiles\\yes.str");
 //	Printf(".");
-//	rename("NO.STR", "GFILES\\NO.STR");
+//	rename("no.str", "gfiles\\no.str");
 //	Printf(".");
-	create_text("WELCOME.MSG");
-	create_text("NEWUSER.MSG");
-	create_text("FEEDBACK.MSG");
-	create_text("SYSTEM.MSG");
-	create_text("LOGON.MSG");
-	create_text("LOGOFF.MSG");
-	create_text("LOGOFF.MTR");
-	create_text("COMMENT.TXT");
+	create_text("welcome.msg");
+	create_text("newuser.msg");
+	create_text("feedback.msg");
+	create_text("system.msg");
+	create_text("logon.msg");
+	create_text("logoff.msg");
+	create_text("logoff.mtr");
+	create_text("comment.txt");
 	
 	WFindFile fnd;
-	fnd.open("*.MDM", 0);
+	fnd.open("*.mdm", 0);
 	while (fnd.next()) 
 	{
-		sprintf(s2,"DATA\\%s",fnd.GetFileName());
+		sprintf(s2,"data\\%s",fnd.GetFileName());
 		rename(fnd.GetFileName(), s2);
 	}
 	
@@ -1594,28 +1600,28 @@ void init_files()
 	textattr( 11 );
 	Puts("Decompressing archives.  Please wait");
 	textattr( 3 );
-	if (exist("EN-MENUS.ZIP")) 
+	if (exist("en-menus.zip")) 
 	{
 		Printf(".");
-		system("unzip -qq -o EN-MENUS.ZIP -dGFILES ");
+		system("unzip -qq -o EN-menus.zip -dgfiles ");
 		Printf(".");
-		rename("EN-MENUS.ZIP", "DLOADS\\SYSOP\\EN-MENUS.ZIP");
+		rename("en-menus.zip", "dloads\\sysop\\en-menus.zip");
 		Printf(".");
 	}
-	if (exist("REGIONS.ZIP")) 
+	if (exist("regions.zip")) 
 	{
 		Printf(".");
-		system("unzip -qq -o REGIONS.ZIP -dDATA");
+		system("unzip -qq -o regions.zip -ddata");
 		Printf(".");
-		rename("REGIONS.ZIP", "DLOADS\\SYSOP\\REGIONS.ZIP");
+		rename("regions.zip", "dloads\\sysop\\regions.zip");
 		Printf(".");
 	}
-	if (exist("ZIP-CITY.ZIP")) 
+	if (exist("zip-city.zip")) 
 	{
 		Printf(".");
-		system("unzip -qq -o ZIP-CITY.ZIP -dDATA");
+		system("unzip -qq -o zip-city.zip -ddata");
 		Printf(".");
-		rename("ZIP-CITY.ZIP", "DLOADS\\SYSOP\\ZIP-CITY.ZIP");
+		rename("zip-city.zip", "dloads\\sysop\\zip-city.zip");
 		Printf(".");
 	}
 	// we changed the environment, clear the change
@@ -1635,7 +1641,7 @@ void convert_modem_info(const char *fn)
 	FILE *pFile;
 	int i;
 	
-	sprintf(szFileName,"%s%s.MDM",syscfg.datadir,fn);
+	sprintf(szFileName,"%s%s.mdm",syscfg.datadir,fn);
 	pFile = fopen(szFileName,"w");
 	if (!pFile) 
 	{
@@ -1701,18 +1707,18 @@ void new_init()
 	const int ENTRIES = 12;
 	const char *dirname[] = 
 	{ 
-		"ATTACH",
-		"DATA",
-		"DATA\\REGIONS",
-		"DATA\\ZIP-CITY",
-		"GFILES",
-		"GFILES\\MENUS",
-		"MSGS",
-		"DLOADS",
-		"DLOADS\\MISC",
-		"DLOADS\\SYSOP",
-		"TEMP1",
-		"TEMP2",
+		"attach",
+		"data",
+		"data\\regions",
+		"data\\zip-city",
+		"gfiles",
+		"gfiles\\menus",
+		"msgs",
+		"dloads",
+		"dloads\\misc",
+		"dloads\\sysop",
+		"temp1",
+		"temp2",
 		0L,
 	};
 	textattr( 14 );
@@ -1759,7 +1765,7 @@ int verify_inst_dirs(configoverrec *co, int inst)
 	configoverrec tco;
 	char szMessage[255];
 	
-	int hFile = open( "CONFIG.OVR", O_RDONLY | O_BINARY );
+	int hFile = open( "config.ovr", O_RDONLY | O_BINARY );
 	if ( hFile > 0 )
 	{
 		int n = filelength( hFile ) / sizeof(configoverrec);

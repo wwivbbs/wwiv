@@ -332,13 +332,13 @@ void sysinfo1()
         case 16:
             editline(j9,3,NUM_ONLY,&i1,"");
             syscfg.maxwaiting=atoi(j9);
-            _ultoa(syscfg.maxwaiting,j9,10);
+            sprintf(j9, "%u", syscfg.maxwaiting);
             Printf("%-3s",j9);
             break;
         case 17:
             editline(j11,5,NUM_ONLY,&i1,"");
             syscfg.maxusers=atoi(j11);
-            _ultoa(syscfg.maxusers,j11,10);
+            sprintf(j11, "%u", syscfg.maxusers);
             Printf("%-5s",j11);
             break;
         case 18:
@@ -346,7 +346,7 @@ void sysinfo1()
             if ((unsigned long) atol(j17)!=status.callernum1) 
             {
                 status.callernum1=atol(j17);
-                _ltoa(status.callernum1,j17,10);
+                sprintf(j17, "%u", status.callernum1);
                 Printf("%-7s",j17);
                 save_status();
             }
@@ -356,7 +356,7 @@ void sysinfo1()
             if (atoi(j19) != status.days) 
             {
                 status.days = atoi(j19);
-                _ultoa((int)status.days,j19,10);
+                sprintf(j19, "%u", status.days);
                 Printf("%-7s",j19);
                 save_status();
             }
@@ -504,14 +504,10 @@ void PrintComPortInfo(int comPortNumber)
 void setupcom()
 {
 	int i1;
-	char szComport[10];
-	
-	_ultoa(syscfgovr.primaryport,szComport,10);
-	
-	//ultoa(syscfg.baudrate[syscfgovr.primaryport],j2,10);
+    std::string comport = std::to_string(syscfgovr.primaryport);
 	app->localIO->LocalCls();
 
-    Printf("Com Port      : %s\n\n",szComport);
+    Printf("Com Port      : %s\n\n", comport.c_str());
 	textattr(14);
 	Puts("\r\n<ESC> when done.");
 	textattr(3);
@@ -526,16 +522,10 @@ void setupcom()
 		switch(cp) 
 		{
 		case 0:
-			editline(szComport,2,NUM_ONLY,&i1,"");
-			syscfgovr.primaryport=atoi(szComport);
-			_ultoa(syscfgovr.primaryport,szComport,10);
-			Printf("%-2s",szComport);
-			/*
-			if (syscfgovr.primaryport <= MAX_ALLOWED_PORT)
-			{
-				_ultoa(syscfg.baudrate[syscfgovr.primaryport],j2,10);
-			}
-			*/
+			editline(&comport,2,NUM_ONLY,&i1,"");
+			syscfgovr.primaryport = std::stoi(comport);
+            comport = std::to_string(syscfgovr.primaryport);
+			Printf("%-2s", comport.c_str());
 			PrintComPortInfo(syscfgovr.primaryport);
 			break;
 		}
@@ -572,7 +562,7 @@ int read_subs()
 {
 	char szFileName[MAX_PATH];
 	
-	sprintf(szFileName,"%sSUBS.DAT",syscfg.datadir);
+	sprintf(szFileName,"%ssubs.dat",syscfg.datadir);
 	int i = open(szFileName,O_RDWR | O_BINARY);
 	if ( i > 0 ) 
 	{
@@ -604,7 +594,7 @@ void write_subs()
 	
 	if (subboards) 
 	{
-		sprintf(szFileName,"%sSUBS.DAT",syscfg.datadir);
+		sprintf(szFileName,"%ssubs.dat",syscfg.datadir);
 		int i=open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
 		if (i>0) 
 		{
@@ -681,7 +671,7 @@ void del_net(int nn)
     write_subs();
 
     char szFileName[ MAX_PATH ];
-    sprintf(szFileName,"%sEMAIL.DAT",syscfg.datadir);
+    sprintf(szFileName,"%semail.dat",syscfg.datadir);
     int hFile = open(szFileName,O_BINARY | O_RDWR);
     if (hFile!=-1) 
     {
@@ -751,7 +741,7 @@ void del_net(int nn)
     }
     initinfo.net_num_max--;
 
-    sprintf( szFileName, "%sNETWORKS.DAT", syscfg.datadir );
+    sprintf( szFileName, "%snetworks.dat", syscfg.datadir );
     i=open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     write(i,(void *)net_networks, initinfo.net_num_max*sizeof(net_networks_rec));
     close(i);																														
@@ -806,7 +796,7 @@ void insert_net(int nn)
     write_subs();
 
     char szFileName[ MAX_PATH ];
-    sprintf(szFileName,"%sEMAIL.DAT",syscfg.datadir);
+    sprintf(szFileName,"%semail.dat",syscfg.datadir);
     int hFile=open(szFileName,O_BINARY | O_RDWR);
     if (hFile!=-1) 
     {
@@ -861,9 +851,9 @@ void insert_net(int nn)
     initinfo.net_num_max++;
     memset(&(net_networks[nn]),0,sizeof(net_networks_rec));
     strcpy(net_networks[nn].name,"NewNet");
-    strcpy(net_networks[nn].dir,"NEWNET.DIR\\");
+    strcpy(net_networks[nn].dir,"newnet.dir\\");
 
-    sprintf( szFileName, "%sNETWORKS.DAT", syscfg.datadir );
+    sprintf( szFileName, "%snetworks.dat", syscfg.datadir );
     i=open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     write(i,(void *)net_networks, initinfo.net_num_max*sizeof(net_networks_rec));
     close(i);																														
@@ -964,8 +954,8 @@ void convert_to(int num_subs, int num_dirs)
     }
 
 
-    sprintf(oqfn,"%sUSER.QSC",syscfg.datadir);
-    sprintf(nqfn,"%sUSERQSC.NEW",syscfg.datadir);
+    sprintf(oqfn,"%suser.qsc",syscfg.datadir);
+    sprintf(nqfn,"%suserqsc.new",syscfg.datadir);
 
     oqf=open(oqfn,O_RDWR|O_BINARY);
     if (oqf<0) 
@@ -1310,7 +1300,7 @@ void up_langs()
     } while ( !done && !hangup );
 
     char szFileName[ MAX_PATH ];
-    sprintf( szFileName, "%LANGUAGE.DAT", syscfg.datadir );
+    sprintf( szFileName, "%language.dat", syscfg.datadir );
     unlink(szFileName);
     int hFile = open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     write(hFile,(void *)languages, initinfo.num_languages*sizeof(languagerec));
@@ -1466,7 +1456,7 @@ void extrn_editors()
 		}
 	} while ( !done && !hangup );
     char szFileName[ MAX_PATH ];
-    sprintf( szFileName, "%sEDITORS.DAT", syscfg.datadir );
+    sprintf( szFileName, "%seditors.dat", syscfg.datadir );
 	int hFile = open( szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
 	write(hFile,(void *)editors, initinfo.numeditors*sizeof(editorrec));
 	close(hFile);
@@ -1531,7 +1521,7 @@ void edit_prot(int n)
     bool done=false;
     int cp=0;
     int i1=NEXT;
-    _ultoa(c.ok1,s,10);
+    sprintf(s, "%u", c.ok1);
     if (c.othr & othr_error_correct)
     {
         strcpy(s1,"Y");
@@ -1583,8 +1573,8 @@ void edit_prot(int n)
         case 1:
             editline(s,3,NUM_ONLY,&i1,"");
             trimstr(s);
-            c.ok1=atoi(s);
-            _ultoa(c.ok1,s,10);
+            c.ok1 = atoi(s);
+            sprintf(s, "%u", c.ok1);
             Puts(s);
             break;
         case 2:
@@ -1796,12 +1786,12 @@ void extrn_prots()
         }
     } while ( !done && !hangup );
     char szFileName[ MAX_PATH ];
-    sprintf( szFileName, "%sNEXTERN.DAT", syscfg.datadir );
+    sprintf( szFileName, "%snextern.dat", syscfg.datadir );
     int hFile=open( szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
     write(hFile,(void *)externs, initinfo.numexterns*sizeof(newexternalrec));
     close(hFile);
 
-    sprintf(szFileName,"%sNINTERN.DAT",syscfg.datadir);
+    sprintf(szFileName,"%snintern.dat",syscfg.datadir);
     if ((over_intern[0].othr|over_intern[1].othr|over_intern[2].othr)&othr_override_internal) 
     {
         hFile=open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);

@@ -118,7 +118,7 @@ static configrec syscfg;
 void c_setup()
 {
 #ifndef INIT
-  int hFile = open("CONFIG.DAT",O_RDONLY|O_BINARY);
+  int hFile = open("config.dat",O_RDONLY|O_BINARY);
   if ( hFile > 0 ) 
   {
     read( hFile, &syscfg, sizeof( syscfg ) );
@@ -127,7 +127,7 @@ void c_setup()
 #endif
 #ifndef INIT
   } else {
-    Printf("CONFIG.DAT not found; run in main BBS dir.\n");
+    Printf("config.dat not found; run in main BBS dir.\n");
   }
 #endif
   if (!syscfg.max_subs)
@@ -170,10 +170,10 @@ void c_old_to_new()
     char szQScanFileName[ MAX_PATH ];
     char szOldUserListFileName[ MAX_PATH ];
 
-    sprintf( szUserListFileName, "%sUSER.LST", syscfg.datadir );
-    sprintf( szNewUserListFileName, "%sUSER.NEW", syscfg.datadir );
-    sprintf( szQScanFileName, "%sUSER.QSC", syscfg.datadir );
-    sprintf( szOldUserListFileName, "%sUSER.OLD", syscfg.datadir );
+    sprintf( szUserListFileName, "%suser.lst", syscfg.datadir );
+    sprintf( szNewUserListFileName, "%suser.new", syscfg.datadir );
+    sprintf( szQScanFileName, "%suser.qsc", syscfg.datadir );
+    sprintf( szOldUserListFileName, "%suser.old", syscfg.datadir );
 
 
     int hOldUserFile = _open(szUserListFileName,O_RDONLY|O_BINARY);
@@ -334,7 +334,7 @@ void c_old_to_new()
     syscfg.fsoffset=OFFOF(forwardsys);
     syscfg.fnoffset=OFFOF(net_num);
 
-    int hFile = _open( "CONFIG.DAT", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE );
+    int hFile = _open( "config.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE );
     if ( hFile > 0 ) 
     {
         _write( hFile, &syscfg, sizeof( syscfg ) );
@@ -349,17 +349,12 @@ void c_old_to_new()
 bool c_IsUserListInOldFormat()
 {
     char szQScanFileName[ MAX_PATH ];
-    sprintf( szQScanFileName, "%sUSER.QSC", syscfg.datadir );
-    if ( access( szQScanFileName, 0 ) == 0 )
-    {
+    sprintf( szQScanFileName, "%suser.qsc", syscfg.datadir );
+    if ( access( szQScanFileName, 0 ) == 0 ) {
         // new format 
-        // return 1;
         return false;
-    }
-    else
-    {
+    } else {
         // old format
-        // return 0;
         return true;
     }
 }
@@ -410,7 +405,6 @@ void main()
 
     if ( !c_IsUserListInOldFormat() ) 
     {
-        // convert back to old format
         Printf( "Your userrec is already in the new format.\n" );
     } 
     else 
