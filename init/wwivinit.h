@@ -157,21 +157,9 @@ __EXTRN__ initinfo_rec initinfo;
 #define _write write
 #define chsize ftruncate
 
-void strupr (char *str) 
-{   while (*str) 
-    { 
-      *str = toupper (*str) ; 
-      str ++ ; 
-    } 
-}
+// in platform/unix/utility2.cpp
+long filelength(int handle);
 
-long filelength(int handle) {
-  struct stat fileinfo; 
-  if (fstat(handle, &fileinfo) != 0) { 
-    return -1;
-  }
-  return fileinfo.st_size;
-}
 
 #endif  // __linux__
 

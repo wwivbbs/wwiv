@@ -38,6 +38,11 @@ long lTypeMask;
 //
 // Local functions
 //
+
+bool IsEquals( const char *pszString1, const char *pszString2 ) {
+	return (strcmp(pszString1, pszString2) == 0);
+}
+
 char *getdir_from_file(const char *pszFileName) {
 	static char s[256];
 	int i;
@@ -64,8 +69,7 @@ int fname_ok( const struct dirent *ent )
 	const char *s1 = fileSpec;
 	const char *s2 = ent->d_name;
 
-	if( wwiv::strings::IsEquals( s2, "." ) ||
-	        wwiv::strings::IsEquals( s2, ".." ) ) {
+	if(IsEquals(s2, ".") || IsEquals(s2, "..")) {
 		return 0;
 	}
 
@@ -179,9 +183,8 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
 	strcpy(szDirectoryName, getdir_from_file(pszFileSpec));
 	strcpy(szFileName, strip_filename(pszFileSpec));
 
-	if ( wwiv::strings::IsEquals( szFileName, "*.*" )  ||
-	        wwiv::strings::IsEquals( szFileName, "*" ) ) {
-		memset( szFileSpec, '?', 255 );
+	if (IsEquals(szFileName, "*.*") || IsEquals(szFileName, "*")) {
+		memset(szFileSpec, '?', 255);
 	} else {
 		f = laststar = szFileSpec[0] = 0;
 		for (i=0; i<strlen(szFileName); i++) {

@@ -24,10 +24,10 @@
 #include <windows.h>
 #endif // _WIN32
 
-double WOSD_WIN32_FreeSpaceForDriveLetter(int nDrive);
+double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);
 
 
-bool WOSD_CopyFile(const char * szSourceFileName, const char * szDestFileName)
+bool WWIV_CopyFile(const char * szSourceFileName, const char * szDestFileName)
 {
     return CopyFileA(szSourceFileName, szDestFileName, 0) ? true : false;
 }
@@ -38,7 +38,7 @@ bool WOSD_CopyFile(const char * szSourceFileName, const char * szDestFileName)
  *
  * @param nDrive The drive number to get the free disk space for.
  */
-double WOSD_WIN32_FreeSpaceForDriveLetter(int nDrive)
+double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive)
 {
     DWORD spc, bps, nfc, ntc;
     // win95 osr2+ allows the GetDiskFreeSpaceEx call
@@ -64,7 +64,7 @@ double WOSD_WIN32_FreeSpaceForDriveLetter(int nDrive)
 }
 
 
-double WOSD_GetFreeSpaceForPath(const char * szPath)
+double WWIV_GetFreeSpaceForPath(const char * szPath)
 {
 	char szWWIVHome[MAX_PATH];
 	strcpy(szWWIVHome, "C:\\");
@@ -77,12 +77,12 @@ double WOSD_GetFreeSpaceForPath(const char * szPath)
     
 	nDrive = toupper(nDrive) - 'A' + 1;
 
-    return WOSD_WIN32_FreeSpaceForDriveLetter( nDrive );
+    return WWIV_WIN32_FreeSpaceForDriveLetter( nDrive );
 
 }
 
 
-void WOSD_ChangeDirTo(const char *s)
+void WWIV_ChangeDirTo(const char *s)
 {
     char s1[81];
     int i, db;
@@ -114,7 +114,7 @@ void WOSD_ChangeDirTo(const char *s)
 }
 
 
-void WOSD_GetDir(char *s, int be)
+void WWIV_GetDir(char *s, int be)
 {
     strcpy(s, "X:\\");
     s[0] = 'A' + (_getdrive() - 1);
@@ -129,7 +129,7 @@ void WOSD_GetDir(char *s, int be)
 }
 
 
-void WOSD_GetFileNameFromPath(const char *pszPath, char *pszFileName)
+void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName)
 {
 	_splitpath(pszPath, NULL, NULL, pszFileName, NULL);
 }
