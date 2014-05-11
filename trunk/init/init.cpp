@@ -36,9 +36,9 @@ char modem_notes[MODEM_NOTES_LEN];
 char bbsdir[MAX_PATH];
 
 int inst=1;
-char configdat[20]="CONFIG.DAT";
-char statusdat[20]="STATUS.DAT";
-char modemdat[20]="MODEM.DAT";
+char configdat[20]="config.dat";
+char statusdat[20]="status.dat";
+char modemdat[20]="modem.dat";
 
 const char* g_pszCopyrightString = "Copyright (c) 1998-2014, WWIV Software Services";
 
@@ -66,7 +66,7 @@ int set_modem_info(const char *mt, bool bPause)
     nlx();
     char szModemDatFileName[ MAX_PATH ];
     char szRawFileName[ MAX_PATH ];
-    sprintf(szRawFileName,"%s%s.MDM",syscfg.datadir,mt);
+    sprintf(szRawFileName,"%s%s.mdm",syscfg.datadir,mt);
     sprintf(szModemDatFileName,"%s%s",syscfg.datadir, modemdat);
     unsigned int nModemBaud;
     char szConfigLine[161];
@@ -271,8 +271,8 @@ void edit_net(int nn)
     {
         char szInputFileName[ MAX_PATH ];
         char szOutputFileName[ MAX_PATH ];
-        sprintf(szInputFileName,"%sSUBS.XTR",syscfg.datadir);
-        sprintf(szOutputFileName,"%sSUBSXTR.NEW",syscfg.datadir);
+        sprintf(szInputFileName,"%ssubs.xtr",syscfg.datadir);
+        sprintf(szOutputFileName,"%ssubsxtr.new",syscfg.datadir);
         FILE *pInputFile = fopen(szInputFileName,"r");
         if (pInputFile) 
         {
@@ -310,7 +310,7 @@ void edit_net(int nn)
                 fclose(pOutputFile);
                 fclose(pInputFile);
                 char szOldSubsFileName[ MAX_PATH ];
-                sprintf( szOldSubsFileName, "%sSUBSXTR.OLD", syscfg.datadir );
+                sprintf( szOldSubsFileName, "%ssubsxtr.old", syscfg.datadir );
                 unlink( szOldSubsFileName );
                 rename( szInputFileName, szOldSubsFileName );
                 unlink( szInputFileName );
@@ -471,7 +471,7 @@ void networks()
     } while ( !done && !hangup );
 
     char szFileName[ MAX_PATH ];
-    sprintf( szFileName, "%sNETWORKS.DAT", syscfg.datadir);
+    sprintf( szFileName, "%snetworks.dat", syscfg.datadir);
     int hFile = open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     write( hFile, net_networks, initinfo.net_num_max * sizeof( net_networks_rec ) );
     close( hFile );																														
@@ -512,7 +512,7 @@ void tweak_dir(char *s)
     int i=strlen(s);
     if (i==0)
     {
-        sprintf(s,"TEMP%d",inst);
+        sprintf(s,"temp%d",inst);
     } 
     else 
     {
@@ -536,7 +536,7 @@ void convcfg()
     if ( hFile > 0 )
     {
         textattr( 14 );
-        Printf("Converting CONFIG.DAT to 4.30/5.00 format...\r\n");
+        Printf("Converting config.dat to 4.30/5.00 format...\r\n");
         textattr( 3 );
         WWIV_Delay(1000);
         read(hFile, (void *) (&syscfg), sizeof(configrec));
@@ -569,7 +569,7 @@ void convcfg()
         close(hFile);
 
         char szFileName[ MAX_PATH ];
-        sprintf(szFileName,"%sARCHIVER.DAT",syscfg.datadir);
+        sprintf(szFileName,"%sarchiver.dat",syscfg.datadir);
         hFile=open(szFileName,O_WRONLY | O_BINARY | O_CREAT);
         if ( hFile < 0 ) 
         {
@@ -763,7 +763,7 @@ int WInitApp::main(int argc, char *argv[])
             configfile=open(configdat,O_RDWR | O_BINARY);
             read(configfile,(void *) (&syscfg), sizeof(configrec));
 
-            configfile=open("CONFIG.OVR", O_RDWR|O_BINARY);
+            configfile=open("config.ovr", O_RDWR|O_BINARY);
             lseek(configfile, (inst-1)*sizeof(configoverrec), SEEK_SET);
             read(configfile, &syscfgovr, sizeof(configoverrec));
 
@@ -779,7 +779,7 @@ int WInitApp::main(int argc, char *argv[])
     }
     if ( inst != 1 )
     {
-        sprintf(modemdat,"MODEM.%03.3d",inst);
+        sprintf(modemdat,"modem.%03.3d",inst);
     }
 
     initinfo.topdata = 0;
@@ -788,9 +788,9 @@ int WInitApp::main(int argc, char *argv[])
     if ( configfile < 0 )
     {
         textattr( 12 );
-        Printf("%s NOT FOUND.\n",configdat);
+        Printf("%s NOT FOUND.\n", configdat);
         inst=1;
-        strcpy(modemdat, "MODEM.DAT");
+        strcpy(modemdat, "modem.dat");
         textattr( 14 );
         Puts("\n\n\nPerform initial installation? ");
         textattr( 3 );
@@ -809,11 +809,11 @@ int WInitApp::main(int argc, char *argv[])
             else 
             {
 #ifdef OLD_STUFF
-                configfile=open("CONFIG.DAT", O_RDONLY|O_BINARY);
+                configfile=open("config.dat", O_RDONLY|O_BINARY);
                 read(configfile, &syscfg, sizeof(configrec));
                 close(configfile);
                 save_config();
-                sprintf(s,"%sMODEM.DAT",syscfg.datadir);
+                sprintf(s,"%smodem.dat",syscfg.datadir);
                 hFile = open(s,O_RDONLY | O_BINARY);
                 if ( hFile > 0 ) 
                 {
@@ -864,7 +864,7 @@ int WInitApp::main(int argc, char *argv[])
     }
 
 
-    configfile=open("CONFIG.OVR", O_RDWR|O_BINARY);
+    configfile=open("config.ovr", O_RDWR|O_BINARY);
 
     max_inst = 999;
 
@@ -876,7 +876,7 @@ int WInitApp::main(int argc, char *argv[])
     close(configfile);
 
     // truncate instance.dat to max authorized instances
-    sprintf( s, "%sINSTANCE.DAT", syscfg.datadir );
+    sprintf( s, "%sinstance.dat", syscfg.datadir );
     configfile=open(s, O_RDWR|O_BINARY);
     if ((configfile > 0) && ((filelength(configfile) > (max_inst*(int)sizeof(instancerec))))) 
     {
@@ -885,7 +885,7 @@ int WInitApp::main(int argc, char *argv[])
     close(configfile);
 
     // truncate unauthorized modem files.
-    sprintf(s,"%sMODEM.*",syscfg.datadir);
+    sprintf(s,"%smodem.*",syscfg.datadir);
     WFindFile fnd;
     fnd.open(s, 0);
     while (fnd.next()) 
@@ -903,7 +903,7 @@ int WInitApp::main(int argc, char *argv[])
         }
     }
 
-    configfile=open("CONFIG.OVR", O_RDONLY|O_BINARY);
+    configfile=open("config.ovr", O_RDONLY|O_BINARY);
 
     if ((configfile>0) && (filelength(configfile) < inst*(int)sizeof(configoverrec))) 
     {
@@ -959,7 +959,7 @@ int WInitApp::main(int argc, char *argv[])
         save_config();
     }
     
-    sprintf(s,"%sARCHIVER.DAT",syscfg.datadir);
+    sprintf(s,"%sarchiver.dat",syscfg.datadir);
     hFile=open(s,O_RDONLY | O_BINARY);
     if (hFile < 0)
     {
@@ -1020,7 +1020,7 @@ int WInitApp::main(int argc, char *argv[])
     } 
 
     result_codes= (resultrec *) bbsmalloc(40*sizeof(resultrec));
-    sprintf(s,"%sRESULTS.DAT",syscfg.datadir);
+    sprintf(s,"%sresults.dat",syscfg.datadir);
     hFile=open(s,O_RDWR | O_BINARY);
     if (hFile>0) 
     {
@@ -1045,7 +1045,7 @@ int WInitApp::main(int argc, char *argv[])
     externs=(newexternalrec *) bbsmalloc(15 * sizeof(newexternalrec));
     editors=(editorrec *)   bbsmalloc(10 * sizeof(editorrec));
     initinfo.numeditors=initinfo.numexterns=0;
-    sprintf( s, "%sNEXTERN.DAT", syscfg.datadir );
+    sprintf( s, "%snextern.dat", syscfg.datadir );
     hFile=open(s,O_RDWR | O_BINARY);
     if (hFile>0) 
     {
@@ -1055,7 +1055,7 @@ int WInitApp::main(int argc, char *argv[])
     else 
     {
         oexterns = (externalrec *) bbsmalloc(15*sizeof(externalrec));
-        sprintf(s1,"%sEXTERN.DAT",syscfg.datadir);
+        sprintf(s1,"%sextern.dat",syscfg.datadir);
         hFile=open(s1,O_RDONLY | O_BINARY);
         if (hFile>0) 
         {
@@ -1080,14 +1080,14 @@ int WInitApp::main(int argc, char *argv[])
     }
     over_intern=(newexternalrec *) bbsmalloc(3*sizeof(newexternalrec));
     memset(over_intern,0, 3*sizeof(newexternalrec));
-    sprintf(s,"%sNINTERN.DAT",syscfg.datadir);
+    sprintf(s,"%snintern.dat",syscfg.datadir);
     hFile=open(s,O_RDWR|O_BINARY);
     if (hFile>0)
     {
         read(hFile,over_intern, 3*sizeof(newexternalrec));
         close(hFile);
     }
-    sprintf( s, "%sEDITORS.DAT", syscfg.datadir );
+    sprintf( s, "%seditors.dat", syscfg.datadir );
     hFile=open(s,O_RDWR | O_BINARY);
     if (hFile>0) 
     {
@@ -1129,7 +1129,7 @@ int WInitApp::main(int argc, char *argv[])
             }
             memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
 
-            sprintf(s,"%sNETWORKS.DAT", syscfg.datadir);
+            sprintf(s,"%snetworks.dat", syscfg.datadir);
             hFile=open(s,O_RDONLY|O_BINARY);
             if (hFile>0) 
             {
@@ -1170,7 +1170,7 @@ int WInitApp::main(int argc, char *argv[])
         exit( 2 );
     }
 
-    sprintf(s,"%sLANGUAGE.DAT",syscfg.datadir);
+    sprintf(s,"%slanguage.dat",syscfg.datadir);
     i=open(s,O_RDONLY|O_BINARY);
     if (i>=0) 
     {
