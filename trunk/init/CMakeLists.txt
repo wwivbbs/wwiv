@@ -5,7 +5,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(BBS_SOURCE_DIR  ../bbs)
 include_directories(platform)
 include_directories(${BBS_SOURCE_DIR})
-include_directories(${BBS_SOURCE_DIR}/platform)
 
 add_definitions(-DINIT -DNOT_BBS)
 
@@ -29,5 +28,6 @@ if(UNIX)
 	)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
+#include_directories(${BBS_SOURCE_DIR}/platform)
 
 add_executable(init ${COMMON_SOURCES} ${PLATFORM_SOURCES})
