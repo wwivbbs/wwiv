@@ -26,7 +26,7 @@ void edit_arc(int nn)
 	
 	int i = nn;
 	char szFileName[ MAX_PATH ];
-	sprintf(szFileName,"%sARCHIVER.DAT",syscfg.datadir);
+	sprintf(szFileName,"%sarchiver.dat",syscfg.datadir);
 	int hFile=_open(szFileName, O_RDWR | O_BINARY);
 	if (hFile<0) 
 	{
@@ -237,7 +237,7 @@ void ed_slx(int *sln)
 		switch(cp) 
 		{
 		case 0:
-			_ultoa(cursl,s,10);
+            sprintf(s, "%d", cursl);
 			editline(s,3,NUM_ONLY,&i1,"");
 			i=atoi(s);
 			while (i<0)
@@ -255,35 +255,35 @@ void ed_slx(int *sln)
 			}
 			break;
 		case 1:
-			_ultoa(syscfg.sl[cursl].time_per_day,s,10);
+            sprintf(s, "%u", syscfg.sl[cursl].time_per_day);
 			editline(s,5,NUM_ONLY,&i1,"");
 			i=atoi(s);
 			syscfg.sl[cursl].time_per_day=i;
 			Printf("%-5u",i);
 			break;
 		case 2:
-			_ultoa(syscfg.sl[cursl].time_per_logon,s,10);
+            sprintf(s, "%u", syscfg.sl[cursl].time_per_logon);
 			editline(s,5,NUM_ONLY,&i1,"");
 			i=atoi(s);
 			syscfg.sl[cursl].time_per_logon=i;
 			Printf("%-5u",i);
 			break;
 		case 3:
-			_ultoa(syscfg.sl[cursl].messages_read,s,10);
+            sprintf(s, "%u", syscfg.sl[cursl].messages_read);
 			editline(s,5,NUM_ONLY,&i1,"");
 			i=atoi(s);
 			syscfg.sl[cursl].messages_read=i;
 			Printf("%-5u",i);
 			break;
 		case 4:
-			_ultoa(syscfg.sl[cursl].emails,s,10);
+            sprintf(s, "%u", syscfg.sl[cursl].emails);
 			editline(s,3,NUM_ONLY,&i1,"");
 			i=atoi(s);
 			syscfg.sl[cursl].emails=i;
 			Printf("%-3u",i);
 			break;
 		case 5:
-			_ultoa(syscfg.sl[cursl].posts,s,10);
+            sprintf(s, "%u", syscfg.sl[cursl].posts);
 			editline(s,3,NUM_ONLY,&i1,"");
 			i=atoi(s);
 			syscfg.sl[cursl].posts=i;
@@ -601,7 +601,7 @@ void edit_autoval(int n)
 		switch(cp) 
 		{
 		case 0:
-			_ultoa(v.sl,s,10);
+            sprintf(s, "%u", v.sl);
 			editline(s,3,NUM_ONLY,&i1,"");
 			i=atoi(s);
 			if ((i<0) || (i>254))
@@ -612,7 +612,7 @@ void edit_autoval(int n)
 			Printf("%-3d",i);
 			break;
 		case 1:
-			_ultoa(v.dsl,s,10);
+            sprintf(s, "%u", v.dsl);
 			editline(s,3,NUM_ONLY,&i1,"");
 			i=atoi(s);
 			if ((i<0) || (i>254))
@@ -755,7 +755,7 @@ void create_arcs()
 	}
 	
 	char szFileName[MAX_PATH];
-	sprintf(szFileName,"%sARCHIVER.DAT",syscfg.datadir);
+	sprintf(szFileName,"%sarchiver.dat",syscfg.datadir);
 	int hFile = _open(szFileName,O_WRONLY | O_BINARY | O_CREAT | O_EXCL, S_IWRITE);
 	if (hFile<0) 
 	{
