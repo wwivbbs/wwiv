@@ -163,7 +163,9 @@ void WWIV_GetDir(char *s, int be);
 /* File: utility2.cpp */
 void WWIV_Delay(unsigned long usec);
 
+#ifndef _WIN32
 // File: stringstuff.cpp
 char *strupr(char *s);
+#endif 
 
 #endif

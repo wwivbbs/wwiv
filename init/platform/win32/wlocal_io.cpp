@@ -23,6 +23,7 @@
 
 #include "wwivinit.h"
 #include "wlocal_io.h"
+#include "wstringutils.h"
 
 extern int oldy = 0;
 
