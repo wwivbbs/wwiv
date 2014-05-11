@@ -651,7 +651,7 @@ int verify_dir(char *typeDir, char *dirName)
         textattr( 3 );
         rc = 1;
     }
-    WOSD_ChangeDirTo(bbsdir);
+    WWIV_ChangeDirTo(bbsdir);
     return rc;
 }
 
@@ -706,7 +706,7 @@ int WInitApp::main(int argc, char *argv[])
     ss=getenv("WWIV_DIR");
     if (ss) 
     {
-        WOSD_ChangeDirTo(ss);
+        WWIV_ChangeDirTo(ss);
     }
     defscreenbottom=app->localIO->GetDefaultScreenBottom();
     getcwd(bbsdir, MAX_PATH);
@@ -992,7 +992,7 @@ int WInitApp::main(int argc, char *argv[])
         } 
         else
         {
-            WOSD_ChangeDirTo(bbsdir);
+            WWIV_ChangeDirTo(bbsdir);
         }
 
         strcpy(s, syscfgovr.batchdir);
@@ -1015,7 +1015,7 @@ int WInitApp::main(int argc, char *argv[])
         } 
         else
         {
-            WOSD_ChangeDirTo(bbsdir);
+            WWIV_ChangeDirTo(bbsdir);
         }
     } 
 

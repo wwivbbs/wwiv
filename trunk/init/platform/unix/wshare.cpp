@@ -17,7 +17,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "WTextFile.h"
+#if 0
 
 
 #include <sys/file.h>
@@ -45,3 +45,4 @@ FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode ) {
 	return f;
 }
 
+#endif  // 0

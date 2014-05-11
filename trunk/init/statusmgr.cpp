@@ -38,7 +38,7 @@ void InitStatusMgr::Get(bool bFailOnFailure, bool bLockFile)
     }
     if (!file.Open(mode, shareMode, perm)) {
         if (bFailOnFailure) {
-		    Printf("%s NOT FOUND\r\n", file.GetFullPathName());
+	  Printf("%s NOT FOUND\r\n", file.GetFullPathName().c_str());
 		    exit( 1 );
         }
 	} else {

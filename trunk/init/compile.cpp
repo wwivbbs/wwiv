@@ -331,7 +331,7 @@ void grab_result(result_info *r)
             else 
             {
                 grab_string(r->result,40);
-                strupr(r->result);
+                _strupr(r->result);
             }
             break;
         case tok_eol:
