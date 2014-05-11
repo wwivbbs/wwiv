@@ -17,8 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include <iostream>
+#include <string>
+
+#include "platform/wlocal_io.h"
 #include "platform/wutil.h"
+#include "wconstants.h"
 
 const int WLocalIO::cursorNone      = 0;
 const int WLocalIO::cursorNormal    = 1;
@@ -28,6 +32,12 @@ const int WLocalIO::topdataNone     = 0;
 const int WLocalIO::topdataSystem   = 1;
 const int WLocalIO::topdataUser     = 2;
 
+const int WLocalIO::scrollUp = 0;
+const int WLocalIO::scrollDown = 1;
+
+static bool x_only = false;
+static int curatr = 7;
+static char endofline[81];
 
 WLocalIO::WLocalIO() {
 	// These 2 lines must remain in here.
@@ -49,6 +59,7 @@ WLocalIO::~WLocalIO() {
 
 
 void WLocalIO::set_global_handle( bool bOpenFile, bool bOnlyUpdateVariable ) {
+#if !defined (NOT_BBS)
 	char szFileName[ MAX_PATH ];
 
 	if (x_only) {
@@ -79,11 +90,12 @@ void WLocalIO::set_global_handle( bool bOpenFile, bool bOnlyUpdateVariable ) {
 			}
 		}
 	}
+#endif  // NOT_BBS
 }
 
 
 void WLocalIO::global_char(char ch) {
-
+#if !defined (NOT_BBS)
 	if (global_buf && fileGlobalCap.IsOpen()) {
 		global_buf[global_ptr++] = ch;
 		if (global_ptr == GLOBAL_SIZE) {
@@ -91,9 +103,11 @@ void WLocalIO::global_char(char ch) {
 			global_ptr = 0;
 		}
 	}
+#endif  // NOT_BBS
 }
 
 void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
+#if !defined(NOT_BBS)
 	static bool bOldGlobalHandle;
 	char szTempFileName[ MAX_PATH ];
 
@@ -139,6 +153,7 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
 		}
 	}
 	timelastchar1 = timer1();
+#endif  // NOT_BBS
 }
 
 
@@ -311,10 +326,7 @@ void WLocalIO::LocalPutch(unsigned char ch) {
 	} else if ( ch == BACKSPACE ) {
 		LocalBackspace();
 	} else if ( ch == CG ) {
-		if ( !outcom ) {
-			// TODO Make the bell sound configurable.
-			WWIV_Sound( 500, 4 );
-		}
+	  // Bell
 	}
 #endif
 }
@@ -412,7 +424,7 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
  * set_protect sets the number of lines protected at the top of the screen.
  */
 void WLocalIO::set_protect(int l) {
-#if defined ( __APPLE__ )
+#if defined (__APPLE__) && !defined (NOT_BBS)
 	SetTopLine( l );
 	GetSession()->screenlinest = ( GetSession()->using_modem ) ? GetSession()->GetCurrentUser()->GetScreenLines() : defscreenbottom + 1 - GetTopLine();
 #endif
@@ -455,7 +467,7 @@ void WLocalIO::alt_key( int nKeyCode ) {
  * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
  */
 void WLocalIO::skey(char ch) {
-#if defined ( __APPLE__ )
+#if defined (__APPLE__) && !defined (NOT_BBS)
 	int nKeyCode = static_cast<unsigned char>( ch );
 	int i, i1;
 
@@ -567,7 +579,7 @@ void WLocalIO::skey(char ch) {
 			alt_key( nKeyCode );
 		}
 	}
-#endif
+#endif // __APPLE__ && !NOT_BBS
 }
 
 
@@ -583,7 +595,7 @@ static const char * pszTopScrItems[] = {
 };
 
 void WLocalIO::tleft(bool bCheckForTimeOut) {
-#if defined ( __APPLE__ )
+#if defined (__APPLE__) && !defined (NOT_BBS)
 	static char sbuf[200];
 	static char *ss[8];
 
@@ -773,7 +785,7 @@ void WLocalIO::UpdateNativeTitleBar() {
 }
 
 void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInstanceNumber ) {
-#if defined ( __APPLE__ )
+#if defined (__APPLE__) && !defined (NOT_BBS)
 	char i;
 	char sl[82], ar[17], dar[17], restrict[17], rst[17], lo[90];
 
@@ -925,4 +937,8 @@ void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInsta
 
 	lines_listed = lll;
 #endif
+}
+
+void WLocalIO::LocalScrollScreen(int nTop, int nBottom, int nDirection) {
+  // TODO(rushfan): Implement me
 }
