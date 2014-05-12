@@ -65,7 +65,7 @@ void resetTermios(void)
 unsigned char _getch() 
 {
   char ch;
-  initTermios(echo);
+  initTermios();
   ch = getchar();
   resetTermios();
   return static_cast<unsigned char>(ch);
@@ -1073,7 +1073,7 @@ int save_config()
 	write(configfile,(void *) (&syscfg), sizeof(configrec));
 	close(configfile);
 	
-	configfile=open("CONFIG.OVR",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+	configfile=open("config.ovr",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 	if (configfile>0) 
 	{
 		n=filelength(configfile)/sizeof(configoverrec);
