@@ -20,6 +20,10 @@
 #include "common.h"
 #include <string>
 
+#ifdef __unix__
+#include <termios.h>
+#endif  // __unix__
+
 extern char configdat[];
 extern char bbsdir[];
 
@@ -39,6 +43,35 @@ extern int inst;
 static int wfc = 0;
 static int useron = 0;
 
+#ifdef __unix__
+static struct termios oldios, newios;
+/* Initialize new terminal i/o settings */
+void initTermios() 
+{
+  tcgetattr(0, &oldios); /* grab old terminal i/o settings */
+  newios = oldios; /* make new settings same as old settings */
+  newios.c_lflag &= ~ICANON; /* disable buffered i/o */
+  newios.c_lflag &= ~ECHO; /* set echo mode */
+  tcsetattr(0, TCSANOW, &newios); /* use these new terminal i/o settings now */
+}
+
+/* Restore old terminal i/o settings */
+void resetTermios(void) 
+{
+  tcsetattr(0, TCSANOW, &oldios);
+}
+
+
+unsigned char _getch() 
+{
+  char ch;
+  initTermios(echo);
+  ch = getchar();
+  resetTermios();
+  return static_cast<unsigned char>(ch);
+}
+
+#endif  //__unix__
 
 void init()
 {
@@ -103,25 +136,6 @@ void outcomch(char)
 
 
 char peek1c()
-{
-	return 0;
-}
-
-
-/* This function returns one character from the com port, or a zero if
-* no character is waiting
-*/
-char get1c()
-{
-	return 0;
-}
-
-
-
-/* This returns a value telling if there is a character waiting in the com
-* buffer.
-*/
-int comhit()
 {
 	return 0;
 }
@@ -198,30 +212,6 @@ void backspace()
 	local_echo = oldecho;
 }
 
-
-/* This function checks both the local keyboard, and the remote terminal
-* (if any) for input.  If there is input, the key is returned.  If there
-* is no input, a zero is returned.  Function keys hit are interpreted as
-* such within the routine and not returned.
-*/
-unsigned char inkey()
-{
-	char ch=0;
-	
-	if (app->localIO->LocalKeyPressed()) 
-	{
-		ch = app->localIO->getchd1();
-		if ((!ch)  || (ch==224))
-		{
-			app->localIO->getchd1();
-		}
-		timelastchar1=timer1();
-	}
-	return ch;
-}
-
-
-
 /* This converts a character to uppercase */
 unsigned char upcase(unsigned char ch)
 {
@@ -239,49 +229,7 @@ unsigned char upcase(unsigned char ch)
 */
 unsigned char getkey()
 {
-	unsigned char ch;
-	int beepyet;
-	long dd,tv,tv1;
-	
-	beepyet = 0;
-	timelastchar1=timer1();
-	
-	tv=3276L;
-	
-	tv1=tv/2;
-	
-	lines_listed = 0;
-	do 
-	{
-		while ( !app->localIO->LocalKeyPressed() && !hangup ) 
-		{
-			dd = timer1();
-			if ((dd<timelastchar1) && ((dd+1000)>timelastchar1))
-			{
-				timelastchar1=dd;
-			}
-			if (labs(dd - timelastchar1) > 65536L)
-			{
-				timelastchar1 -= 1572480L;
-			}
-			if (((dd - timelastchar1) > tv1) && (!beepyet)) 
-			{
-				beepyet = 1;
-				app->localIO->LocalPutch( 7 );
-			}
-			if (labs(dd - timelastchar1) > tv) 
-			{
-				nlx();
-				textattr( 11 );
-				Puts("Activity timeout.  Exiting Program....");
-				textattr( 7 );
-				nlx();
-				hangup = 1;
-			}
-		}
-		ch = inkey();
-	} while (!ch && !hangup);
-	return ch;
+    return static_cast<unsigned char>(_getch());
 }
 
 
@@ -515,10 +463,10 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
     bool bInsert = false;
     do 
     {
-        unsigned char ch = app->localIO->getchd();
+        unsigned char ch = _getch();
         if ( ch == 0 || ch == 224 ) 
         {
-            ch=app->localIO->getchd();
+            ch=_getch();
             switch ( ch ) 
             {
             case F1:
@@ -1207,7 +1155,7 @@ void create_text(const char *pszFileName)
 	char szFullFileName[MAX_PATH];
     char szMessage[ 255 ];
 	
-    sprintf( szFullFileName, "GFILES\\%s", pszFileName );
+    sprintf( szFullFileName, "gfiles\\%s", pszFileName );
 	int hFile = open( szFullFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
     sprintf( szMessage, "This is %s.\r\nEdit to suit your needs.\r\n\x1a" );
 	write( hFile, szMessage, strlen( szMessage ) );
@@ -1222,7 +1170,7 @@ void cvtx(unsigned short sp, char *rc)
 {
 	if (*rc) 
 	{
-	        resultrec *rr = &(result_codes[num_result_codes++]);
+	    resultrec *rr = &(result_codes[num_result_codes++]);
 		std::string s = std::to_string(sp);
 		strcpy(rr->curspeed, s.c_str());
 		strcpy(rr->return_code, rc);
