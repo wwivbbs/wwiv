@@ -580,34 +580,6 @@ unsigned char WLocalIO::getchd() {
 	return rc;
 }
 
-
-/****************************************************************************/
-/*
-* returns the ASCII code of the next character waiting in the
-* keyboard buffer.  If there are no characters waiting in the
-* keyboard buffer, then it returns immediately with a value
-* of 255.
-*
-* A value of 0 is returned for all extended keys (such as F1,
-* Alt-X, etc.).  The function must be called again upon receiving
-* a value of 0 to obtain the value of the extended key pressed.
-*/
-unsigned char WLocalIO::getchd1() {
-	if ( !( HasKeyBeenPressed() || ExtendedKeyWaiting ) ) {
-		return 255;
-	}
-	if (ExtendedKeyWaiting) {
-		ExtendedKeyWaiting = 0;
-		return GetKeyboardChar();
-	}
-	unsigned char rc = GetKeyboardChar();
-	if ( rc == 0 || rc == 0xe0 ) {
-		ExtendedKeyWaiting = 1;
-	}
-	return rc;
-}
-
-
 void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
 	*cc = static_cast<char>( curatr );
 	strcpy(xl, endofline);
@@ -761,7 +733,6 @@ void WLocalIO::SetCursor(int cursorStyle) {
 	}
 }
 
-
 void WLocalIO::LocalClrEol() {
 	CONSOLE_SCREEN_BUFFER_INFO ConInfo;
 	DWORD cb;
@@ -771,8 +742,6 @@ void WLocalIO::LocalClrEol() {
 	FillConsoleOutputCharacter( m_hConOut, ' ', len, ConInfo.dwCursorPosition, &cb );
 	FillConsoleOutputAttribute( m_hConOut, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb );
 }
-
-
 
 void WLocalIO::LocalWriteScreenBuffer( const char *pszBuffer ) {
 	CHAR_INFO ci[2000];
@@ -793,66 +762,9 @@ int WLocalIO::GetDefaultScreenBottom() {
 	return ( m_consoleBufferInfo.dwSize.Y - 1 );
 }
 
-
 bool HasKeyBeenPressed() {
 	return ( _kbhit() ) ? true : false;
-
-	// TODO - This code below doesn't work, hence we aren't using it.
-	// Ideally, we should support mouse input, and try to not use the
-	// generic CRT functions whenever possible to get a better Win32
-	// feel to everything, but until the code works, it's disabled.
-#if 0
-
-	PINPUT_RECORD pIRBuf;
-	DWORD NumPeeked;
-	bool bHasKeyBeenPressed = false;
-
-	DWORD dwNumEvents;  // NumPending
-	GetNumberOfConsoleInputEvents( m_hConIn, &dwNumEvents );
-	if ( dwNumEvents == 0 ) {
-		return false;
-	}
-
-	PINPUT_RECORD pInputRec = ( PINPUT_RECORD ) bbsmalloc( dwNumEvents * sizeof( INPUT_RECORD ) );
-	if ( !pInputRec ) {
-		// Really something bad happened here.
-		return false;
-	}
-
-	DWORD dwNumEventsRead;
-	if ( PeekConsoleInput( m_hConIn, pInputRec, dwNumEvents, &dwNumEventsRead ) ) {
-		for( int i=0; i < dwNumEventsRead; i++ ) {
-			if ( pInputRec->EventType == KEY_EVENT &&
-			        pInputRec->Event.KeyEvent.bKeyDown &&
-			        ( pInputRec->Event.KeyEvent.uChar.AsciiChar ||
-			IsExtendedKeyCode( pInputRec->Event.KeyEvent ) ) {
-			bHasKeyBeenPressed = true;
-			break;
-		}
-		pInputRec++;
-	}
 }
-
-// Scan all of the peeked events to determine if any is a key event
-// which should be recognized.
-for ( ; NumPeeked > 0 ; NumPeeked--, pIRBuf++ ) {
-		if ( (pIRBuf->EventType == KEY_EVENT) &&
-		        (pIRBuf->Event.KeyEvent.bKeyDown) &&
-		        ( pIRBuf->Event.KeyEvent.uChar.AsciiChar ||
-		          _getextendedkeycode( &(pIRBuf->Event.KeyEvent) ) ) ) {
-			// Key event corresponding to an ASCII character or an
-			// extended code. In either case, success!
-			ret = TRUE;
-		}
-	}
-
-	BbsFreeMemory( pInputRec );
-
-	return bHasKeyBeenPressed;
-#endif
-
-}
-
 
 unsigned char GetKeyboardChar() {
 	return static_cast< unsigned char >( _getch() );

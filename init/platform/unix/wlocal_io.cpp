@@ -702,22 +702,6 @@ unsigned char WLocalIO::getchd() {
 }
 
 
-/****************************************************************************/
-/*
-* returns the ASCII code of the next character waiting in the
-* keyboard buffer.  If there are no characters waiting in the
-* keyboard buffer, then it returns immediately with a value
-* of 255.
-*
-* A value of 0 is returned for all extended keys (such as F1,
-* Alt-X, etc.).  The function must be called again upon receiving
-* a value of 0 to obtain the value of the extended key pressed.
-*/
-unsigned char WLocalIO::getchd1() {
-	return 0;
-}
-
-
 void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
 	*cl = 0;
 	*atr= 0;

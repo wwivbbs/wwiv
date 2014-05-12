@@ -57,13 +57,15 @@ WInitApp* GetApplication();
 
 /* File: init1.cpp */
 
+#ifndef _WIN32
+unsigned char _getch(); 
+#endif  // _WIN32
+
 void init();
 void *malloca(unsigned long nbytes);
 int check_comport(int pn);
 void outcomch(char ch);
 char peek1c();
-char get1c();
-int comhit();
 void dump();
 void set_baud(unsigned int rate);
 void initportb(int port_num);
@@ -72,7 +74,6 @@ void dtr(int i);
 void rts(int i);
 void pausescr();
 void backspace();
-unsigned char inkey();
 unsigned char upcase(unsigned char ch);
 unsigned char getkey();
 void input1( char *pszOutText, int nMaxLength, bool bAllowLowerCase );
