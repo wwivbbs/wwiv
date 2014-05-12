@@ -164,7 +164,6 @@ class WLocalIO {
 	void UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInstanceNumber );
 	bool  LocalKeyPressed();
 	unsigned char getchd();
-	unsigned char getchd1();
 	void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc);
 	int  LocalGetChar();
 	/*
