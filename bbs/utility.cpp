@@ -649,7 +649,6 @@ char* W_DateString(time_t tDateTime, char* mode , char* delim) {
 	char    s[40];                  // formattable string
 	static char str[50];            // the DateString
 
-	time(&tDateTime);
 	struct tm * pTm = localtime(&tDateTime);
 
 	WWIV_ASSERT(mode);
