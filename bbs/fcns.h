@@ -22,6 +22,8 @@
 #include "net.h"
 #include "menu.h" // Only needed by defaults
 
+class WUser;
+
 // File: asv.cpp
 
 void asv();
@@ -801,7 +803,7 @@ int side_menu(int *menu_pos, bool redraw, char *menu_items[], int xpos, int ypos
 slrec getslrec(int nSl);
 void WWIV_SetFileTime(const char* pszFileName, const time_t tTime);
 bool okfsed();
-char* W_DateString(time_t tDateTime, char* mode , char* delim);
+char* W_DateString(time_t tDateTime, const char* mode , const char* delim);
 
 
 // File: wqscn.cpp
