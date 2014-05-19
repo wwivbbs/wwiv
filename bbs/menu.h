@@ -19,8 +19,9 @@
 #ifndef __INCLUDED_MENU_H__
 #define __INCLUDED_MENU_H__
 
-#include "wtypes.h"
 #include <string>
+#include "vars.h"
+#include "wtypes.h"
 
 #define MENU
 #define MENU_VERSION 0x0100
@@ -35,8 +36,6 @@
 // 'iWhere' : Which subs to read in function ReadSelectedMessages
 #define RM_ALL_SUBS   (-1)
 #define RM_QSCAN_SUBS (-2)
-
-
 
 #define MENU_FLAG_DELETED   (0x01)
 #define MENU_FLAG_MAINMENU  (0x02)
