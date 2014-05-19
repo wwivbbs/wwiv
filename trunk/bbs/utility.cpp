@@ -16,15 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "wwiv.h"
-
 
 extern const unsigned char *translate_letters[];
 static int disable_conf_cnt = 0;
 
 template<class _Ty> inline const _Ty& in_range( const _Ty& minValue, const _Ty& maxValue, const _Ty& value );
-
 
 /**
  * Deletes files from a directory.  This is meant to be used only in the temp
@@ -192,7 +189,6 @@ double ratio() {
 	return ( r > 99.998 ) ? 99.998 : r;
 }
 
-
 /**
  * Gets the current users post/call ratio.
  */
@@ -204,8 +200,6 @@ double post_ratio() {
 	           static_cast<float>( GetSession()->GetCurrentUser()->GetNumLogons() );
 	return ( r > 99.998 ) ? 99.998 : r;
 }
-
-
 
 double nsl() {
 	double rtn = 1.00;
@@ -644,25 +638,28 @@ bool okfsed() {
 // Returns      : Properized date/time string as requested
 // Author(s)    : WSS
 //************************************************
-char* W_DateString(time_t tDateTime, char* mode , char* delim) {
-	int     i;                      // loop counter
+char* W_DateString(time_t tDateTime, const char* pszOrigMode , const char* delim) {
+	WWIV_ASSERT(pszOrigMode);
+
+    int     i;                      // loop counter
 	char    s[40];                  // formattable string
 	static char str[50];            // the DateString
 
 	struct tm * pTm = localtime(&tDateTime);
 
-	WWIV_ASSERT(mode);
+    char szMode[41];
+    strcpy(szMode, pszOrigMode);
 	WWIV_ASSERT(delim);
 
 	// convert mode string to uppercase
-	WWIV_STRUPR(mode);
+	WWIV_STRUPR(szMode);
 
 	// initialize return string
 	strcpy(str, "");
 
 	// cycle thru mode string
-	for (i = 0; i < wwiv::strings::GetStringLength(mode); i++) {
-		switch(mode[i]) {
+	for (i = 0; i < wwiv::strings::GetStringLength(szMode); i++) {
+		switch(szMode[i]) {
 		case 'W':
 			strftime(s, 40, "%A,", pTm);
 			break;
@@ -689,22 +686,18 @@ char* W_DateString(time_t tDateTime, char* mode , char* delim) {
 		case 'Y':
 			strftime(s, 40, "%Y", pTm);
 			break;
-		} //end switch(mode[i])
+		} //end switch(szMode2[i])
 
 		// add the component
 		strcat(str, s);
 
 		// if there are more items to add, adda a space
-		if ( i < static_cast<int>( strlen(mode) -1 ) ) {
+		if ( i < static_cast<int>( strlen(szMode) -1 ) ) {
 			strcat(str, " ");
 		}
 	} //end for(i = 0;....)
-
-
 	return str;
-
 } //end W_DateString
-
 
 template<class _Ty> inline const _Ty& in_range( const _Ty& minValue, const _Ty& maxValue, const _Ty& value ) {
 	return std::max( std::min( maxValue, value ), minValue );
