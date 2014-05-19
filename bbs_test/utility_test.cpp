@@ -16,42 +16,35 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs_helper.h"
-#include <sstream>
+// Needed by time_t in WWIV. Must be specified before gtest.h since that will
+// define time_t for us.
+#define _USE_32BIT_TIME_T
 
-#include <algorithm>
-#include <iostream>
-#include <string>
-
-#include "bbs.h"
-#include "platform/incl1.h"
-#include "platform/wfile.h"
-#include "vars.h"
-#include "wuser.h"
-#include "wsession.h"
-
+#include <ctime>
 #include "gtest/gtest.h"
+#include "bbs_helper.h"
 
-void BbsHelper::SetUp() {
-    std::string temp = files_.TempDir();
-    ASSERT_TRUE(files_.Mkdir("gfiles"));
-    ASSERT_TRUE(files_.Mkdir("en"));
-    ASSERT_TRUE(files_.Mkdir("en/gfiles"));
-    app_.reset(CreateApplication());
+char* W_DateString(time_t tDateTime, const char* pszOrigMode , const char* delim);
 
-    dir_gfiles_ = files_.DirName("gfiles");
-    dir_en_gfiles_ = files_.DirName("en/gfiles");
-#ifdef _WIN32
-    std::replace(dir_gfiles_.begin(), dir_gfiles_.end(), '/', WWIV_FILE_SEPERATOR_CHAR);
-    std::replace(dir_en_gfiles_.begin(), dir_en_gfiles_.end(), '/', WWIV_FILE_SEPERATOR_CHAR);
-#endif  // _WIN32
+static const time_t MAY_18_2014 = 1400461200;
 
-    syscfg.gfilesdir = const_cast<char*>(dir_gfiles_.c_str());
-    WSession* session = GetSession();
+using std::cout;
+using std::endl;
+using std::string;
 
-    session->language_dir = dir_en_gfiles_;
-    user_ = GetSession()->GetCurrentUser();
-}
+class UtilityTest : public ::testing::Test {
+protected:
+    virtual void SetUp() {
+        helper.SetUp();
+    }
 
-void BbsHelper::TearDown() {
+    BbsHelper helper;
+};
+
+TEST_F(UtilityTest, DateString) {
+    char *res = W_DateString(MAY_18_2014, "Y", "");
+    ASSERT_STREQ("2014", res);
+
+    char *res2 = W_DateString(MAY_18_2014, "WDT", "");
+    ASSERT_STREQ("Sunday, May 18, 2014 06:00 PM", res2);
 }
