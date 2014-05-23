@@ -778,32 +778,7 @@ void add_ass(int nNumPoints, const char *pszReason);
 
 
 // File: utility.cpp
-
-void remove_from_temp( const char *pszFileName, const char *pszDirectoryName, bool bPrintStatus );
-bool sysop1();
-void ToggleScrollLockKey();
-bool okansi();
-void reset_disable_conf();
-void tmp_disable_conf(bool disable);
-void tmp_disable_pause(bool disable);
-void frequent_init();
-double ratio();
-double post_ratio();
-double nsl();
-void wait1(long l);
-void Wait(double d);
-double freek1(const char *pszPathName);
-void send_net(net_header_rec * nh, unsigned short int *list, const char *text, const char *byname);
-void giveup_timeslice();
-char *stripfn(const char *pszFileName);
-void stripfn_inplace(char *pszFileName);
-void preload_subs();
-char *get_wildlist(char *pszFileMask);
-int side_menu(int *menu_pos, bool redraw, char *menu_items[], int xpos, int ypos, struct side_menu_colors * smc);
-slrec getslrec(int nSl);
-void WWIV_SetFileTime(const char* pszFileName, const time_t tTime);
-bool okfsed();
-char* W_DateString(time_t tDateTime, const char* mode , const char* delim);
+#include "utility.h"
 
 
 // File: wqscn.cpp

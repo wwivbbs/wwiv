@@ -255,7 +255,8 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 				sprintf( dir_path,"%s%s", directories[udir[mod_dir].subnum].path, StringRemoveChar( s2, '.' ) );
 				WTextFile file( idz_fn, "w" );
 				file.WriteFormatted( "%.58s\n", szDescription );
-				file.WriteFormatted( "Copyright (c) %s, %s\n", W_DateString(tDateTime,"Y", ""), author );
+                const std::string datetime = W_DateString(tDateTime,"Y", "");
+				file.WriteFormatted( "Copyright (c) %s, %s\n", datetime.c_str(), author );
 				file.WriteFormatted( "Distribution is LIMITED by the WWIV Source\n" );
 				file.WriteFormatted( "Code EULA.  Email WSS at 1@50 or wss@wwiv.com\n" );
 				file.WriteFormatted( "for a copy of the EULA or more information.\n" );
