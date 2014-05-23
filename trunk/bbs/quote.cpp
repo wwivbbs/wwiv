@@ -316,7 +316,8 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
 		p+=2;
 		len=len-(p-b);
 		b=p;
-		strcpy( s2, W_DateString( tDateTime, "WDT", "at" ) );
+        const std::string datetime = W_DateString( tDateTime, "WDT", "at" );
+		strcpy( s2, datetime.c_str() );
 
 		//    s2[strlen(s2)-1]='\0';
 		std::string tb = properize(strip_to_node(s1));

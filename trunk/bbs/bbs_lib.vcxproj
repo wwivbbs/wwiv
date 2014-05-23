@@ -112,6 +112,7 @@
     <ClInclude Include="runnable.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="sysoplog.h" />
+    <ClInclude Include="utility.h" />
     <ClInclude Include="vardec.h" />
     <ClInclude Include="vars.h" />
     <ClInclude Include="wcomm.h" />
