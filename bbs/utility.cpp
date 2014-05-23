@@ -638,28 +638,23 @@ bool okfsed() {
 // Returns      : Properized date/time string as requested
 // Author(s)    : WSS
 //************************************************
-char* W_DateString(time_t tDateTime, const char* pszOrigMode , const char* delim) {
-	WWIV_ASSERT(pszOrigMode);
-
+std::string W_DateString(time_t tDateTime, const std::string& origMode , const std::string& timeDelim) {
     int     i;                      // loop counter
 	char    s[40];                  // formattable string
-	static char str[50];            // the DateString
-
+    std::string str;
 	struct tm * pTm = localtime(&tDateTime);
 
-    char szMode[41];
-    strcpy(szMode, pszOrigMode);
-	WWIV_ASSERT(delim);
+    std::string mode = origMode;
+    std::transform(mode.begin(), mode.end(), mode.begin(), ::toupper);
 
-	// convert mode string to uppercase
-	WWIV_STRUPR(szMode);
-
-	// initialize return string
-	strcpy(str, "");
-
+    bool first = true;
 	// cycle thru mode string
-	for (i = 0; i < wwiv::strings::GetStringLength(szMode); i++) {
-		switch(szMode[i]) {
+	for (auto& ch : mode) {
+        if (!first) {
+            str += " ";
+        }
+        first = false;
+		switch(ch) {
 		case 'W':
 			strftime(s, 40, "%A,", pTm);
 			break;
@@ -667,10 +662,9 @@ char* W_DateString(time_t tDateTime, const char* pszOrigMode , const char* delim
 			strftime(s, 40, "%B %d, %Y", pTm);
 			break;
 		case 'T':
-			if (strlen(delim) > 0) {
+			if (timeDelim.length() > 0) {
 				// if there is a delimiter, add it with spaces
-				strcat(str, delim);
-				strcat(str, " ");
+                str += timeDelim; str += " ";
 			}
 
 			// which form of the clock is in use?
@@ -687,16 +681,10 @@ char* W_DateString(time_t tDateTime, const char* pszOrigMode , const char* delim
 			strftime(s, 40, "%Y", pTm);
 			break;
 		} //end switch(szMode2[i])
-
 		// add the component
-		strcat(str, s);
-
-		// if there are more items to add, adda a space
-		if ( i < static_cast<int>( strlen(szMode) -1 ) ) {
-			strcat(str, " ");
-		}
+        str += s;
 	} //end for(i = 0;....)
-	return str;
+	return std::string(str.c_str());
 } //end W_DateString
 
 template<class _Ty> inline const _Ty& in_range( const _Ty& minValue, const _Ty& maxValue, const _Ty& value ) {
