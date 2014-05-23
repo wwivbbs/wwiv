@@ -20,12 +20,14 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #include "../wwiv.h"
 
 using namespace std;
 
 #define MAX_NODES 500
+#define BBSHOME "/home/bbs/"
 
 configrec cfgRec;
 configoverrec *cfgOverlayRec = NULL;
@@ -37,6 +39,8 @@ void loadNodeData();
 void loadUsedNodeData();
 
 void launchNode(int nodeNumber);
+void huphandler(int mysignal);
+void huphandler2(int mysignal);
 
 /**
  *  This program is the manager of the nodes for the WWIV BBS software
@@ -46,9 +50,16 @@ int main(int argc, char *argv[])
 {
   bool foundNode = false;
   int newNodeNumber = 1;
+  chdir(BBSHOME); // hardcoded home dir of BBS. config.dat/config.ovr should be here.
   loadConfigDat();
   loadNodeData();
   loadUsedNodeData();
+
+  signal (SIGQUIT, SIG_DFL);
+  signal (SIGTERM, SIG_DFL);
+  signal (SIGALRM, SIG_DFL);
+  signal (SIGINT, SIG_DFL); 
+  signal (SIGHUP, huphandler);
 
   if(maxNodes == 0)
   {
@@ -126,7 +137,7 @@ void loadNodeData()
 
 void loadUsedNodeData()
 {
-  for(int counter = 1; counter < maxNodes; counter++)
+  for(int counter = 1; counter <= maxNodes; counter++)
   {
     struct stat buf;
     char nodeFile[256];
@@ -151,5 +162,16 @@ void launchNode(int nodeNumber)
   printf("Invoking WWIV with cmd line:\n%s\n", sysCmd);
   system(sysCmd);
   unlink(nodeFile);
+}
+
+void huphandler(int mysignal) {
+	signal (SIGHUP, huphandler2); // catch the SIGHUP we send below
+	printf("\nSending SIGHUP to BBS after receiving %d...\n", mysignal);
+	kill(0,SIGHUP); // send SIGHUP to process group
+}
+
+void huphandler2(int mysignal) {
+	signal (SIGHUP, SIG_DFL); // reset to default handler
+	printf("\nWaiting for BBS to die after signal %d...\n", mysignal);
 }
 
