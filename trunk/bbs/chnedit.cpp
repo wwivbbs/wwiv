@@ -412,9 +412,13 @@ void chainedit() {
 		case 'I':
 			if ( GetSession()->GetNumberOfChains() < GetSession()->max_chains ) {
 				GetSession()->bout.NewLine();
-				GetSession()->bout << "|#2Insert before which chain? ";
+				GetSession()->bout << "|#2Insert before which chain ('$' for end) : ";
 				input(s, 2);
-				i = atoi(s);
+                if (s[0] == '$') {
+                    i =  GetSession()->GetNumberOfChains();
+                } else {
+				    i = atoi(s);
+                }
 				if ( s[0] != '\0' && i >= 0 && i <= GetSession()->GetNumberOfChains() ) {
 					insert_chain(i);
 				}
