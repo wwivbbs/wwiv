@@ -24,7 +24,7 @@
 #include "gtest/gtest.h"
 #include "bbs_helper.h"
 
-char* W_DateString(time_t tDateTime, const char* pszOrigMode , const char* delim);
+#include "utility.h"
 
 static const time_t MAY_18_2014 = 1400461200;
 
@@ -41,10 +41,20 @@ protected:
     BbsHelper helper;
 };
 
-TEST_F(UtilityTest, DateString) {
-    char *res = W_DateString(MAY_18_2014, "Y", "");
-    ASSERT_STREQ("2014", res);
+TEST_F(UtilityTest, DateString_Y) {
+    std::string res = W_DateString(MAY_18_2014, "Y", "");
+    ASSERT_STREQ("2014", res.c_str());
 
-    char *res2 = W_DateString(MAY_18_2014, "WDT", "");
-    ASSERT_STREQ("Sunday, May 18, 2014 06:00 PM", res2);
+    std::string res2 = W_DateString(MAY_18_2014, "YY", "");
+    ASSERT_STREQ("2014 2014", res2.c_str());
+}
+
+TEST_F(UtilityTest, DateString_WDT) {
+    std::string res = W_DateString(MAY_18_2014, "WDT", "");
+    ASSERT_STREQ("Sunday, May 18, 2014 06:00 PM", res.c_str());
+
+    std::string res2 = W_DateString(MAY_18_2014, "WDT", "at");
+    ASSERT_STREQ("Sunday, May 18, 2014 at 06:00 PM", res2.c_str());
+
+
 }
