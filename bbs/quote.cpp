@@ -365,8 +365,6 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
 			len = len - ( p - b );
 			b = p;
 		}
-		char ch = CZ;
-		fileInputMsg.Write( &ch, 1 );
 		fileInputMsg.Close();
 		if ( GetSession()->GetCurrentUser()->GetNumMessagesPosted() < 10 ) {
 			printfile(QUOTE_NOEXT);

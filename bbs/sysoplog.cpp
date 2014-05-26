@@ -117,12 +117,7 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text) {
 			return;
 		}
 		if ( logFile.GetLength() ) {
-			logFile.Seek( -1L, WFile::seekEnd );
-			char chLastChar;
-			logFile.Read( &chLastChar, 1 );
-			if ( chLastChar == CZ ) {
-				logFile.Seek( -1L, WFile::seekEnd );
-			}
+            logFile.Seek(0L, WFile::seekEnd);
 		}
 		std::string logLine;
 		if ( midline > 0 ) {
@@ -144,12 +139,7 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text) {
 			return;
 		}
 		if ( logFile.GetLength() ) {
-			logFile.Seek( -1L, WFile::seekEnd );
-			char chLastChar;
-			logFile.Read( &chLastChar, 1 );
-			if ( chLastChar == CZ ) {
-				logFile.Seek( -1L, WFile::seekEnd );
-			}
+			logFile.Seek( 0L, WFile::seekEnd );
 		}
 		std::string logLine;
 		if ( midline == 0 || ( midline + 2 + text.length() ) > 78 ) {
