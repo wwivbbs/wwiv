@@ -74,7 +74,6 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 	     szFileName[MAX_PATH],                    // mod filename
 	     strip_cmd[MAX_PATH],                  // Strip command
 	     compressed_fn[MAX_PATH],               // compressed filename
-	     eof = CZ,                        // EOF indicator
 	     ch,                              // switch key
 	     *ss1,                            // mmKey
 	     dir_path[MAX_PATH],                    // path to directory
@@ -165,9 +164,8 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 		file.Open( WFile::modeBinary|WFile::modeCreateFile|WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite );
 		file.Seek( 0L, WFile::seekEnd );
 		file.Write( b, len );
-		file.Write( &eof, 1 );
 		file.Close();
-		GetSession()->bout << "Message written toL " << szFileName << wwiv::endl;
+		GetSession()->bout << "Message written to: " << szFileName << wwiv::endl;
 		sprintf( strip_cmd, "STRIPNET.EXE %s", szFileName );
 		ExecuteExternalProgram( strip_cmd, EFLAG_ABORT | EFLAG_TOPSCREEN );
 		compress_file( s2, s1 );
