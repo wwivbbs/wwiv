@@ -366,8 +366,6 @@ bool checka(bool *abort, bool *next) {
 // Prints an abortable string (contained in *pszText). Returns 1 in *abort if the
 // string was aborted, else *abort should be zero.
 void pla(const std::string text, bool *abort) {
-	WWIV_ASSERT( !text.empty() );
-
 	if (CheckForHangup()) {
 		*abort = true;
 	}
