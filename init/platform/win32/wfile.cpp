@@ -169,10 +169,10 @@ bool WFile::SetName( const std::string fileName ) {
 bool WFile::SetName( const std::string dirName, const std::string fileName ) {
 	std::stringstream fullPathName;
 	fullPathName << dirName;
-	if ( !dirName.empty() && dirName[ dirName.length() - 1 ] == '\\' ) {
+	if ( !dirName.empty() && dirName[ dirName.length() - 1 ] == pathSeparatorChar ) {
 		fullPathName << fileName;
 	} else {
-		fullPathName << "\\" << fileName;
+		fullPathName << pathSeparatorChar << fileName;
 	}
 	return SetName( fullPathName.str() );
 }
@@ -392,10 +392,11 @@ bool WFile::Exists( const std::string fileName ) {
 
 bool WFile::Exists( const std::string directoryName, const std::string fileName ) {
 	std::stringstream fullPathName;
-	if ( !directoryName.empty() && directoryName[ directoryName.length() - 1 ] == '\\' ) {
+    const char last = directoryName[directoryName.length() - 1];
+	if ( !directoryName.empty() && (last == '\\' || last == '/')) {
 		fullPathName << directoryName << fileName;
 	} else {
-		fullPathName << directoryName << "/" << fileName;
+		fullPathName << directoryName << pathSeparatorChar << fileName;
 	}
 	return Exists( fullPathName.str() );
 }

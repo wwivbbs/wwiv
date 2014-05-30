@@ -64,9 +64,11 @@ void trimstrpath(char *s)
 	trimstr( s );
 	
 	int i=strlen(s);
-	if (i && (s[i-1]!='\\'))
+	if (i && (s[i-1] != WFile::pathSeparatorChar))
 	{
-		strcat(s,"\\");
+        // We don't have pathSeparatorString.
+        s[i] = WFile::pathSeparatorChar;
+        s[i+1] = 0;
 	}
 }
 

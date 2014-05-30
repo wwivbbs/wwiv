@@ -711,10 +711,7 @@ int WInitApp::main(int argc, char *argv[])
     defscreenbottom=app->localIO->GetDefaultScreenBottom();
     getcwd(bbsdir, MAX_PATH);
 
-    if (bbsdir[strlen(bbsdir)-1] != '\\')
-    {
-        strcat(bbsdir, "\\");
-    }
+    trimstrpath(bbsdir);
 
     init();
 
