@@ -16,9 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-// Needed by time_t in WWIV. Must be specified before gtest.h since that will
-// define time_t for us.
-#define _USE_32BIT_TIME_T
 
 #include <ctime>
 #include "gtest/gtest.h"

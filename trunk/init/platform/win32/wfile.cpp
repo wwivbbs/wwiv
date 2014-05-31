@@ -17,46 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOKEYSTATES
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define NOATOM
-#define NOCLIPBOARD
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOMINMAX
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NOCRYPT
-
-// Define these for MFC projects
-#define NOTAPE
-#define NOIMAGE
-#define NOPROXYSTUB
-#define NORPC
-#define NOIME
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef CopyFile
+#undef GetFileTime
 #undef GetFullPathName
 #undef MoveFile
 
@@ -65,15 +29,15 @@
 #include "platform/WFile.h"
 #include "platform/wfndfile.h"
 #include "wwivassert.h"
-#include <fcntl.h>
-#include <io.h>
-#include <cstring>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <sys/stat.h>
 #include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <iostream>
+#include <io.h>
 #include <share.h>
+#include <sstream>
+#include <string>
+#include <sys/stat.h>
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -238,13 +202,12 @@ bool WFile::Open( int nFileMode, int nShareMode, int nPermissions ) {
 		m_pLogger->LogMessage("\rSH_OPEN %s, access=%u, handle=%d.\r\n", m_szFileName, nFileMode, m_hFile);
 	}
 
-	if ( WFile::IsFileHandleValid( m_hFile ) ) {
-		m_bOpen = true;
-		return true;
-	} else {
-		m_bOpen = false;
-		return false;
-	}
+	m_bOpen = WFile::IsFileHandleValid( m_hFile );
+    if (m_hFile == -1) {
+        std::cout << "error opening file: " << m_szFileName << "; error: " << strerror(errno) << std::endl;
+        this->m_errorText = _strerror("_sopen");
+    }
+    return m_bOpen;
 }
 
 
@@ -312,7 +275,7 @@ bool WFile::Exists() const {
 }
 
 
-bool WFile::Delete( bool bUseTrashCan ) {
+bool WFile::Delete(bool bUseTrashCan) {
 	if ( this->IsOpen() ) {
 		this->Close();
 	}
@@ -333,7 +296,7 @@ bool WFile::IsDirectory() {
 }
 
 bool WFile::IsFile() {
-	return this->IsDirectory() ? false : true;
+	return !this->IsDirectory();
 }
 
 
@@ -392,8 +355,7 @@ bool WFile::Exists( const std::string fileName ) {
 
 bool WFile::Exists( const std::string directoryName, const std::string fileName ) {
 	std::stringstream fullPathName;
-    const char last = directoryName[directoryName.length() - 1];
-	if ( !directoryName.empty() && (last == '\\' || last == '/')) {
+	if ( !directoryName.empty() && directoryName[directoryName.length() - 1] == pathSeparatorChar) {
 		fullPathName << directoryName << fileName;
 	} else {
 		fullPathName << directoryName << pathSeparatorChar << fileName;

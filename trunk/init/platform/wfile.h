@@ -22,6 +22,7 @@
 
 #include <cstring>
 #include <string>
+#include "wstringutils.h"
 
 #ifndef MAX_PATH
 #define MAX_PATH 260
@@ -29,6 +30,7 @@
 
 #if defined (_WIN32)
 #undef CopyFile
+#undef GetFileTime
 #undef GetFullPathName
 #undef MoveFile
 #endif
@@ -92,6 +94,7 @@ class WFile {
 	int     m_hFile;
 	bool    m_bOpen;
 	char    m_szFileName[ MAX_PATH + 1 ];
+    std::string m_errorText;
 	static  WLogger* m_pLogger;
 	static  int m_nDebugLevel;
 
@@ -135,7 +138,7 @@ class WFile {
 	}
 
 	virtual int Writeln( const std::string& s ) {
-		return  this->Writeln( s.c_str(), s.length() );
+		return this->Writeln( s.c_str(), s.length() );
 	}
 
 	virtual long GetLength();
@@ -144,6 +147,7 @@ class WFile {
 
 	virtual bool Exists() const;
 	virtual bool Delete( bool bUseTrashCan = false );
+
 	virtual bool IsDirectory();
 	virtual bool IsFile();
 
@@ -151,7 +155,7 @@ class WFile {
 	virtual time_t GetFileTime();
 
 	virtual char *GetParent() {
-		char *tmpCopy = strdup(m_szFileName);
+		char *tmpCopy = WWIV_STRDUP(m_szFileName);
 		char *p = &tmpCopy[strlen(tmpCopy)-1];
 		while(*p != WFile::pathSeparatorChar) {
 			p--;
@@ -172,6 +176,8 @@ class WFile {
 	virtual const std::string GetFullPathName() {
 		return std::string(m_szFileName);
 	}
+
+    virtual const std::string GetLastError() const { return m_errorText; }
 
   public:
 
@@ -195,9 +201,10 @@ class WFile {
 	static void SetLogger( WLogger* pLogger ) {
 		m_pLogger = pLogger;
 	}
-	static void SetDebugLevel( int nDebugLevel ) {
+	static void SetDebugLevel(int nDebugLevel) {
 		m_nDebugLevel = nDebugLevel;
 	}
+    static int GetDebugLevel() { return m_nDebugLevel; }
 };
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__
