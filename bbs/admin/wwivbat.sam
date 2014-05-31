@@ -26,9 +26,6 @@ if errorlevel 3 goto ABNORMALEND
 REM ***** Errorlevel 2 is a normal quit or escape from the BBS  
 if errorlevel 2 goto END  
 
-REM ***** Otherwise, turn of and unload the fossil driver
-XU PORT:1:OFF
-X00.EXE
 REM ***** And go back to the top of the loop to reload.
 goto LOOP
 
