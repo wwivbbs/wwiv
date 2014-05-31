@@ -16,28 +16,28 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "wwiv.h"
+#include "platform/WFile.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "shellapi.h"
 #undef CopyFile
+#undef GetFileTime
 #undef GetFullPathName
 #undef MoveFile
 
-#include "shellapi.h"
-
-#include "platform/WFile.h"
 #include "platform/wfndfile.h"
 #include "wwivassert.h"
-#include <fcntl.h>
-#include <io.h>
-#include <cstring>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <sys/stat.h>
 #include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <iostream>
+#include <io.h>
 #include <share.h>
+#include <sstream>
+#include <string>
+#include <sys/stat.h>
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -105,13 +105,11 @@ WFile::WFile( const std::string dirName, const std::string fileName ) {
 	SetName( dirName, fileName );
 }
 
-
 void WFile::init() {
 	m_bOpen                 = false;
 	m_hFile                 = WFile::invalid_handle;
 	ZeroMemory( m_szFileName, MAX_PATH + 1 );
 }
-
 
 WFile::~WFile() {
 	if (this->IsOpen()) {
@@ -135,10 +133,10 @@ bool WFile::SetName( const std::string fileName ) {
 bool WFile::SetName( const std::string dirName, const std::string fileName ) {
 	std::stringstream fullPathName;
 	fullPathName << dirName;
-	if ( !dirName.empty() && dirName[ dirName.length() - 1 ] == '\\' ) {
+	if ( !dirName.empty() && dirName[ dirName.length() - 1 ] == pathSeparatorChar ) {
 		fullPathName << fileName;
 	} else {
-		fullPathName << "\\" << fileName;
+		fullPathName << pathSeparatorChar << fileName;
 	}
 	return SetName( fullPathName.str() );
 }
@@ -197,7 +195,7 @@ bool WFile::Open( int nFileMode, int nShareMode, int nPermissions ) {
 				m_pLogger->LogMessage("\rThe file %s is busy.  Try again later.\r\n", m_szFileName);
 			}
 		}
-    }
+	}
 
 
 	if ( m_nDebugLevel > 1 ) {
@@ -357,10 +355,10 @@ bool WFile::Exists( const std::string fileName ) {
 
 bool WFile::Exists( const std::string directoryName, const std::string fileName ) {
 	std::stringstream fullPathName;
-	if ( !directoryName.empty() && directoryName[ directoryName.length() - 1 ] == '\\' ) {
+	if ( !directoryName.empty() && directoryName[directoryName.length() - 1] == pathSeparatorChar) {
 		fullPathName << directoryName << fileName;
 	} else {
-		fullPathName << directoryName << "/" << fileName;
+		fullPathName << directoryName << pathSeparatorChar << fileName;
 	}
 	return Exists( fullPathName.str() );
 }

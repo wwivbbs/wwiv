@@ -24,19 +24,6 @@
 // defined in this file, so anything that relies on thse values MUST
 // be included after testos.h has been included.
 //
-
-// make sure we use 32bit time_t even on x64 platforms.
-// this can't be in platform/incl1.h due to other includes of
-// windows headers so putting it here.
-#define _USE_32BIT_TIME_T
-
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif  // _CRT_SECURE_NO_WARNINGS
-#ifndef _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_DEPRECATE
-#endif  // _CRT_SECURE_NO_DEPRECATE
-
 #include "platform/testos.h"
 
 #include "wwivassert.h"

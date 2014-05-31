@@ -21,6 +21,8 @@
 #define __INCLUDED_PLATFORM_WFILLE_H__
 
 #include <cstring>
+#include <ctime>
+#include <string>
 #include "wstringutils.h"
 
 #ifndef MAX_PATH
@@ -29,6 +31,7 @@
 
 #if defined (_WIN32)
 #undef CopyFile
+#undef GetFileTime
 #undef GetFullPathName
 #undef MoveFile
 #endif

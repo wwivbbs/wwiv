@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_VARS_H__
 #define __INCLUDED_VARS_H__
 
+#include <ctime>
+
 #include "wtypes.h"
 #include "vardec.h"
 #include "net.h"

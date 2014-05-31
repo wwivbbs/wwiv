@@ -13,16 +13,6 @@ ECHO.
 ECHO         ******************************************************
 ECHO.
 ECHO.
-ECHO Press Control-C to abort
-pause
-
-rem ******************************* display license agreement
-cls
-cd %1
-type license.agr | more
-ECHO.
-ECHO.
-ECHO.
 rem ******************************* run INIT to convert data files to
 rem ******************************* v5.00 format
 ECHO Press Control-C to abort
