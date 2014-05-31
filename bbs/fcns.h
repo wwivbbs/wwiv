@@ -18,6 +18,9 @@
 #ifndef __INCLUDED_FCNS_H__
 #define __INCLUDED_FCNS_H__
 
+#include <ctime>
+#include <string>
+
 #include "vardec.h"
 #include "net.h"
 #include "menu.h" // Only needed by defaults
