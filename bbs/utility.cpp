@@ -17,7 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#ifdef _WIN32
 #include <sys/utime.h>
+#endif  // WIN32
 
 #include "wwiv.h"
 
