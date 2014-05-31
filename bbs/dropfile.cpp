@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "wwiv.h"
+#include "wcomm.h"
 #include "wtextfile.h"
 
 //

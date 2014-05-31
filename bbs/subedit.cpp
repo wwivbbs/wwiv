@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "subxtr.h"
+#include "wtextfile.h"
 
 //
 // Local Function Prototypes

@@ -16,9 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <cstdint>
 
 #include "wwiv.h"
 #include "menu.h"
+#include "platform/wfndfile.h"
 
 bool GetMenuDir( std::string& menuDir );
 bool GetMenuMenu( const std::string& pszDirectoryName, std::string& menuName );
@@ -30,6 +32,15 @@ void DisplayHeader(MenuHeader * Header, int nCur, int nAmount, const char *pszDi
 void EditPulldownColors(MenuHeader * H);
 void ListMenuMenus(const char *pszDirectoryName );
 
+#ifndef _WIN32
+#ifndef LOBYTE
+#define LOBYTE(w)           ((uint8_t)(w))
+#endif  // LOBYTE
+
+#ifndef HIBYTE
+#define HIBYTE(w)           ((uint8_t)(((uint16_t)(w) >> 8) & 0xFF))
+#endif  // HIBYTE
+#endif
 
 
 void EditMenus() {
@@ -84,7 +95,7 @@ void EditMenus() {
 			MenuSysopLog(fileEditMenu.GetFullPathName());
 			return;
 		}
-		nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec));
+		nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec));
 		--nAmount;
 		if (nAmount < 0) {
 			MenuSysopLog("Menu is corrupt.");
@@ -110,7 +121,7 @@ void EditMenus() {
 				break;
 			case '[':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				--nCur;
 				if (nCur < 0) {
 					nCur = nAmount;
@@ -119,7 +130,7 @@ void EditMenus() {
 				break;
 			case ']':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				++nCur;
 				if (nCur > nAmount) {
 					nCur = 0;
@@ -130,7 +141,7 @@ void EditMenus() {
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				memset(&Menu, 0, sizeof(MenuRec));
 
-				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 
 				nCur = nAmount + 1;
 				memset(&Menu, 0, sizeof(MenuRec));
@@ -138,7 +149,7 @@ void EditMenus() {
 				Menu.iMaxDSL = 255;
 
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				ReadMenuRec(fileEditMenu, &Menu, nCur);
 				break;
 			case '0':
@@ -274,7 +285,7 @@ void EditMenus() {
 
 			case '[':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				--nCur;
 				if (nCur < 0) {
 					nCur = nAmount;
@@ -283,7 +294,7 @@ void EditMenus() {
 				break;
 			case ']':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				++nCur;
 				if (nCur > nAmount) {
 					nCur = 0;
@@ -293,13 +304,13 @@ void EditMenus() {
 			case 'Z':
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
 				memset(&Menu, 0, sizeof(MenuRec));
-				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				nCur = nAmount + 1;
 				memset(&Menu, 0, sizeof(MenuRec));
 				Menu.iMaxSL = 255;
 				Menu.iMaxDSL = 255;
 				WriteMenuRec(fileEditMenu, &Menu, nCur);
-				nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
+				nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
 				ReadMenuRec(fileEditMenu, &Menu, nCur);
 				break;
 			case '1':
@@ -469,7 +480,7 @@ void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *
 		pausescr();
 		return;
 	}
-	int nAmount = static_cast<INT16>(fileEditMenu.GetLength() / sizeof(MenuRec));
+	int nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec));
 
 	for (int nRec = 1; nRec < nAmount; nRec++) {
 		MenuRec menu;

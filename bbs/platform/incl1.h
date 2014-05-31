@@ -113,12 +113,6 @@
 #define _getcwd(a,b)	getcwd(a,b)
 #define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
 
-#if defined( __APPLE__ )
-#define SWAP16( X ) OSSwapInt16( X )
-#define SWAP32( X ) OSSwapInt32( X )
-#define SWAP64( X ) OSSwapInt64( X )
-
-#endif // __APPLE__
 #define WWIV_VSNPRINTF vsnprintf
 
 #endif // defined ( __unix__ )

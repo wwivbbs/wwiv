@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "ini.h"
+#include "wtextfile.h"
 
 #include "wwiv.h"
 

@@ -21,6 +21,7 @@
 #include "wwiv.h"
 
 #include "instmsg.h"
+#include "subxtr.h"
 #include "printfile.h"
 
 

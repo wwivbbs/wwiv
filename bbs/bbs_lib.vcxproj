@@ -121,7 +121,6 @@
     <ClInclude Include="wstatus.h" />
     <ClInclude Include="wstringutils.h" />
     <ClInclude Include="wtextfile.h" />
-    <ClInclude Include="wtypes.h" />
     <ClInclude Include="wuser.h" />
     <ClInclude Include="wwiv.h" />
     <ClInclude Include="wwivassert.h" />

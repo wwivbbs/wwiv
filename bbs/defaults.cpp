@@ -19,6 +19,7 @@
 #include "wwivcolors.h"
 
 #include "wwiv.h"
+#include "common.h"
 #include "menu.h"
 #include "printfile.h"
 

@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "platform/wfndfile.h"
 #include "printfile.h"
 
 //

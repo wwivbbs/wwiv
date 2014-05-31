@@ -19,6 +19,7 @@
 #include <algorithm>
 
 #include "wwiv.h"
+#include "wcomm.h"
 
 //
 // Local functions

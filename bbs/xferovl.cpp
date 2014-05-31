@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "platform/wfndfile.h"
+#include "wtextfile.h"
 
 //
 // private functions
@@ -1230,7 +1232,7 @@ void finddescription() {
 	char s[81], s1[81];
 
 	if (ok_listplus()) {
-		listfiles_plus(SEARCH_ALL);
+		listfiles_plus(LP_SEARCH_ALL);
 		return;
 	}
 

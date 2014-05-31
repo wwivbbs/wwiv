@@ -21,7 +21,6 @@
 
 #include <ctime>
 
-#include "wtypes.h"
 #include "vardec.h"
 #include "net.h"
 
@@ -49,7 +48,6 @@ __EXTRN__ char	ansistr[81],
            dtc[81],
            g_szExtDescrFileName[MAX_PATH],
            endofline[81],
-           //g_szMessageGatFileName[MAX_PATH],
            irt[81],
            irt_name[205],
            irt_sub[81],
@@ -63,7 +61,7 @@ __EXTRN__ char	ansistr[81],
            str_yes[81],
            tc[81];
 
-__EXTRN__ BYTE  checksum;
+__EXTRN__ unsigned char  checksum;
 
 __EXTRN__ int	ansiptr,
             bquote,

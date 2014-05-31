@@ -19,6 +19,8 @@
 
 #include "wwiv.h"
 #include "platform/wutil.h"
+#include "wcomm.h"
+#include "wtextfile.h"
 
 
 /**

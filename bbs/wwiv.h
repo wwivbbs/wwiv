@@ -38,26 +38,16 @@
 //
 // WWIV includes
 //
-#include "wtypes.h"
 #include "vardec.h"
 #include "wuser.h"
 #include "wsession.h"
 #include "bbs.h"
-#include "wcomm.h"
 #include "platform/wfile.h"
-#include "wtextfile.h"
 #include "wconstants.h"
-#include "net.h"
-#include "common.h"
 #include "fcns.h"
 #include "platform/platformfcns.h"
 #include "vars.h"
-#include "subxtr.h"
-#include "platform/wfndfile.h"
-#include "wstringutils.h"
-#include "woutstreambuffer.h"
 #include "wstatus.h"
-#include "ini.h"
 #include "platform/wlocal_io.h"
 
 #include "filenames.h"

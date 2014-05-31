@@ -19,7 +19,7 @@
 #include <algorithm>
 
 #include "wwiv.h"
-
+#include "subxtr.h"
 
 void valscan() {
 	// Must be local cosysop or better

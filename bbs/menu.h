@@ -19,9 +19,10 @@
 #ifndef __INCLUDED_MENU_H__
 #define __INCLUDED_MENU_H__
 
+#include <cstdint>
 #include <string>
+
 #include "vars.h"
-#include "wtypes.h"
 
 #define MENU
 #define MENU_VERSION 0x0100
@@ -82,33 +83,33 @@ class WFile;
 
 struct MenuHeader {
 	char   szSig[10];      /* Menu Signature */
-	INT16  nHeadBytes;     /* Size of Menu header */
-	INT16  nBodyBytes;     /* Size of Menu Record */
+	uint16_t  nHeadBytes;     /* Size of Menu header */
+	uint16_t  nBodyBytes;     /* Size of Menu Record */
 	char   MISC[50];
 
-	INT16  nVersion;
-	INT16  nEmpty;
-	BYTE   nFlags;
+	uint16_t  nVersion;
+	uint16_t  nEmpty;
+	uint8_t   nFlags;
 
-	BYTE   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
-	BYTE   nLogging;     /* Types of logging, Key, None, command, desc       */
+	uint8_t   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
+	uint8_t   nLogging;     /* Types of logging, Key, None, command, desc       */
 
-	BYTE   nForceHelp;   /* force, dont force, on entrance only              */
-	BYTE   nAllowedMenu; /* Can pulldown, regular or both menus be used?     */
+	uint8_t   nForceHelp;   /* force, dont force, on entrance only              */
+	uint8_t   nAllowedMenu; /* Can pulldown, regular or both menus be used?     */
 
-	BYTE  nTitleColor, nMainBorderColor, nMainBoxColor, nMainTextColor,
+	uint8_t  nTitleColor, nMainBorderColor, nMainBoxColor, nMainTextColor,
 	      nMainTextHLColor, nMainSelectedColor, nMainSelectedHLColor;
 
-	BYTE  nItemBorderColor, nItemBoxColor, nItemTextColor, nItemTextHLColor,
+	uint8_t  nItemBorderColor, nItemBoxColor, nItemTextColor, nItemTextHLColor,
 	      nItemSelectedColor, nItemSelectedHLColor;
 
 	char   szMenuTitle[21];
 	char   MISC2[60];
 	char   szPassWord[21];     /* required for entry of menu */
-	INT16  nMinSL, nMinDSL;    /* required for entry of menu */
-	UINT16 uAR, uDAR;          /* required for entry of menu */
-	UINT16 uRestrict;          /* not allowed restrictions   */
-	BYTE   nSysop, nCoSysop;   /* Must be either sysop or co */
+	uint16_t  nMinSL, nMinDSL;    /* required for entry of menu */
+	uint16_t uAR, uDAR;          /* required for entry of menu */
+	uint16_t uRestrict;          /* not allowed restrictions   */
+	uint8_t   nSysop, nCoSysop;   /* Must be either sysop or co */
 	char   MISC3[30];
 	char   szScript[101];      /* Gets executed on entry     */
 	char   szExitScript[101];  /* Executed on rtn from menu  */
@@ -117,7 +118,7 @@ struct MenuHeader {
 
 
 struct MenuRec {
-	BYTE nFlags;   /* AFLAG_????? */
+	uint8_t nFlags;   /* AFLAG_????? */
 
 	char szKey[MENU_MAX_KEYS+1];  /* Keystrock to execute menu item   */
 	char szExecute[101];          /* Command to execute               */
@@ -130,15 +131,15 @@ struct MenuRec {
 	char szInstanceMessage[81];
 
 	/* Security */
-	INT16 nMinSL,  iMaxSL;
-	INT16 nMinDSL, iMaxDSL;
-	UINT16 uAR, uDAR;        /* Must match all specified to be able to run     */
-	UINT16 uRestrict;        /* If any of these restrictions, you cant execute */
-	BYTE nSysop, nCoSysop;   /* true and false, does it take a co/sysop to run */
+	uint16_t nMinSL,  iMaxSL;
+	uint16_t nMinDSL, iMaxDSL;
+	uint16_t uAR, uDAR;        /* Must match all specified to be able to run     */
+	uint16_t uRestrict;        /* If any of these restrictions, you cant execute */
+	uint8_t nSysop, nCoSysop;   /* true and false, does it take a co/sysop to run */
 	char szPassWord[21];
 
-	INT16 nHide;             /* Hide text from PD/Regular/both or no menus */
-	INT16 nPDFlags;          /* special characteristis for pulldowns       */
+	uint16_t nHide;             /* Hide text from PD/Regular/both or no menus */
+	uint16_t nPDFlags;          /* special characteristis for pulldowns       */
 
 	char szExtendedHelp[13]; /* filename to detailed help on this item */
 
@@ -149,8 +150,8 @@ struct MenuRec {
 
 struct MenuRecIndex {
 	char szKey[MENU_MAX_KEYS+1];
-	INT16 nRec;				/* allows alot of records    */
-	BYTE	nFlags;             /* Quick access to the flags */
+	uint16_t nRec;				/* allows alot of records    */
+	uint8_t	nFlags;             /* Quick access to the flags */
 };
 
 
@@ -158,10 +159,10 @@ struct MenuInstanceData {
 	char szMenu[MAX_PATH];
 	char szPath[MAX_PATH];
 	WFile *pMenuFile;
-	INT16 nAmountRecs;
-	INT16 nFinished;
+	uint16_t nAmountRecs;
+	uint16_t nFinished;
 
-	INT16 nReload;  /* true if we are going to reload the menus */
+	uint16_t nReload;  /* true if we are going to reload the menus */
 
 	char *szPrompt;
 	MenuRecIndex *index;

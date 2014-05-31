@@ -21,6 +21,7 @@
 
 #include "platform/wlocal_io.h"
 #include "net.h"
+#include "wcomm.h"
 
 const int WSession::mmkeyMessageAreas   = 0;
 const int WSession::mmkeyFileAreas      = 1;

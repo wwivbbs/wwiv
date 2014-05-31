@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "common.h"
 #include "listplus.h"
 #include "printfile.h"
 
@@ -93,7 +94,7 @@ int listfiles_plus_function( int type ) {
 				scan_dir = true;
 			}
 
-			if ((search_rec.alldirs == ALL_DIRS) && (type != NSCAN_NSCAN)) {
+			if ((search_rec.alldirs == ALL_DIRS) && (type != LP_NSCAN_NSCAN)) {
 				scan_dir = true;
 			}
 		}

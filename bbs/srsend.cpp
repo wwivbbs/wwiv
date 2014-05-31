@@ -20,7 +20,7 @@
 /**************************************************************************/
 #include <cmath>
 #include "wwiv.h"
-
+#include "wcomm.h"
 
 bool NewZModemSendFile( const char *pszFileName );
 

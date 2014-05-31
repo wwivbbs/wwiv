@@ -20,6 +20,7 @@
 #ifndef NOT_BBS
 #include "wwiv.h"
 #endif
+#include "subxtr.h"
 
 
 #ifndef MAX_TO_CACHE

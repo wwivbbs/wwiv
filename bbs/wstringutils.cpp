@@ -27,7 +27,6 @@
 #include <sstream>
 #include <string>
 #include "wwivassert.h"
-#include "wtypes.h"
 #include "wconstants.h"
 #include "platform/incl1.h"
 
