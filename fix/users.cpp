@@ -23,6 +23,7 @@
 #include "users.h"
 
 // This causes compile errors before wwiv.h That seems broken
+#include <algorithm>
 #include <vector>
 #include <set>
 

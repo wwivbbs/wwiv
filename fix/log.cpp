@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <stdarg.h>
 
 #include "wwiv.h"
 #include "log.h"
