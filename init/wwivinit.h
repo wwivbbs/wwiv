@@ -45,7 +45,7 @@
 // Include OSD set of standard header files
 //
 
-#include "incl1.h"
+#include "platform/incl1.h"
 
 //
 // Normal ANSI C type includes
@@ -68,6 +68,7 @@
 //
 // Data
 //
+#pragma pack(push, 1)
 typedef struct {
   short int frm_state;
   short int to_state;
@@ -75,6 +76,7 @@ typedef struct {
   char *send;
   char *recv;
 } autosel_data;
+#pragma pack(pop)
 
 
 //
