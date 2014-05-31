@@ -875,11 +875,13 @@ int WInitApp::main(int argc, char *argv[])
     // truncate instance.dat to max authorized instances
     sprintf( s, "%sinstance.dat", syscfg.datadir );
     configfile=open(s, O_RDWR|O_BINARY);
-    if ((configfile > 0) && ((filelength(configfile) > (max_inst*(int)sizeof(instancerec))))) 
-    {
-        chsize(configfile, (max_inst * sizeof(instancerec)));
+    if (configfile != -1) {
+        if (filelength(configfile) > (max_inst * sizeof(instancerec)))
+        {
+            chsize(configfile, max_inst * sizeof(instancerec));
+        }
+        close(configfile);
     }
-    close(configfile);
 
     // truncate unauthorized modem files.
     sprintf(s,"%smodem.*",syscfg.datadir);

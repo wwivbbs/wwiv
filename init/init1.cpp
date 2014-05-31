@@ -860,28 +860,27 @@ void write_user(unsigned int un, userrec *u)
 		thisuser=*u;
 	}
 	
-    {
-        WFile file(syscfg.datadir, "user.lst");
-        if (file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite)) {
-            long pos = un * syscfg.userreclen;
-            file.Seek(pos, WFile::seekBegin);
-            file.Write(u, syscfg.userreclen);
-            file.Close();
-        }
+    WFile file(syscfg.datadir, "user.lst");
+    if (file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite)) {
+        long pos = un * syscfg.userreclen;
+        file.Seek(pos, WFile::seekBegin);
+        file.Write(u, syscfg.userreclen);
+        file.Close();
     }
 	
-    user_config SecondUserRec;
+    user_config SecondUserRec = { 0 };
 	strcpy(SecondUserRec.name, (char *) thisuser.name);
 	strcpy(SecondUserRec.szMenuSet, "WWIV");
 	SecondUserRec.cHotKeys = 1;
 	SecondUserRec.cMenuType = 0;
 	
-    WFile file(syscfg.datadir, "user.dat");
-    if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite)) {
-        file.Seek(un * sizeof(user_config), WFile::seekBegin);
-        file.Write(&SecondUserRec, sizeof(user_config));
-        file.Close();
+    WFile userdat(syscfg.datadir, "user.dat");
+    if (userdat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone, WFile::permReadWrite)) {
+        userdat.Seek(un * sizeof(user_config), WFile::seekBegin);
+        userdat.Write(&SecondUserRec, sizeof(user_config));
+        userdat.Close();
     }
+
 }
 
 

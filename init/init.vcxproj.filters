@@ -30,9 +30,6 @@
     <ClInclude Include="platform\wfndfile.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\WLocalIO.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="platform\WFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -52,6 +49,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wwivinit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="platform\wlocal_io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -95,13 +95,13 @@
     <ClCompile Include="platform\win32\wfndfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\win32\WLocalIO.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="platform\win32\WFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="subacc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="platform\win32\wlocal_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
