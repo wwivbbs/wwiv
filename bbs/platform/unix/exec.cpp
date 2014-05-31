@@ -16,11 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
+#include <sys/wait.h>
 
 #include "wwiv.h"
+#include "wcomm.h"
 
-#include <sys/wait.h>
 //
 // Local function prototypes
 //
