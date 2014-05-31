@@ -89,7 +89,7 @@ class WLocalIO {
 	CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
 #endif
 
-#if defined ( __APPLE__ )
+#if defined ( __unix__ )
 	short m_cursorPositionX;
 	short m_cursorPositionY;
 #endif
