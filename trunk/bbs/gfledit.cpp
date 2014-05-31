@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "platform/wfndfile.h"
 
 
 char *gfiledata( int nSectionNum, char *pBuffer );

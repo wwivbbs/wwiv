@@ -19,7 +19,9 @@
 #include <algorithm>
 
 #include "wwiv.h"
+#include "subxtr.h"
 #include "printfile.h"
+#include "wtextfile.h"
 
 //
 // Local function prototypes

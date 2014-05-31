@@ -19,6 +19,9 @@
 #ifndef __INCLUDED_LISTPLUS_H__
 #define __INCLUDED_LISTPLUS_H__
 
+
+#include "common.h"
+
 // #define FORCE_LP
 // If the person has ansi, then they are foced to use listplus
 

@@ -19,6 +19,7 @@
 #include <cmath>
 
 #include "wwiv.h"
+#include "wcomm.h"
 
 bool NewZModemReceiveFile( const char *pszFileName );
 

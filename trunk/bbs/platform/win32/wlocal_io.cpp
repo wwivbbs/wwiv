@@ -21,6 +21,7 @@
 #ifndef NOT_BBS
 #include "wwiv.h"
 #include "platform/wutil.h"
+#include "wcomm.h"
 #endif
 
 extern int oldy = 0;

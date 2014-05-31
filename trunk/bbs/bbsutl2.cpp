@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "ini.h"
 
 /**
  * The default list of computer types

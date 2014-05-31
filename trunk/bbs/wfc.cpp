@@ -22,6 +22,7 @@
 #include "wwiv.h"
 #include "instmsg.h"
 #include "platform/wutil.h"
+#include "ini.h"
 
 
 #if !defined ( __unix__ )

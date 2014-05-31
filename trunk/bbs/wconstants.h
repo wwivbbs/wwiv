@@ -311,10 +311,10 @@
 #define NUMBERS    0
 
 // Defines for listplus
-#define LIST_DIR    0
-#define SEARCH_ALL  1
-#define NSCAN_DIR   2
-#define NSCAN_NSCAN 3
+#define LP_LIST_DIR    0
+#define LP_SEARCH_ALL  1
+#define LP_NSCAN_DIR   2
+#define LP_NSCAN_NSCAN 3
 
 #define ALL_DIRS    0
 #define THIS_DIR    1

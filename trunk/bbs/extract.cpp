@@ -17,8 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwiv.h"
-#include "printfile.h"
 
+#include "platform/wfndfile.h"
+#include "printfile.h"
+#include "wtextfile.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

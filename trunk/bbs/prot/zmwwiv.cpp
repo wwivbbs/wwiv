@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "wcomm.h"
+
 // Local Functions
 int ZModemWindowStatus( const char *fmt, ... );
 int ZModemWindowXferStatus( const char *fmt, ... );

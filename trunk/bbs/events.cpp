@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include "instmsg.h"
 #include "printfile.h"
+#include "wcomm.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
 #define __unix__ 1

@@ -21,8 +21,6 @@
 #define __INCLUDED_VARDEC_H__
 
 #include <cstdint>
-#include "wtypes.h"
-
 
 #pragma pack(push, 1)
 

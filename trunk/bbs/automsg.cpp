@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "wwiv.h"
+#include "wtextfile.h"
 
 char ShowAMsgMenuAndGetInput( const std::string& autoMessageLockFileName );
 void write_automessage();

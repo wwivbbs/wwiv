@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "wwiv.h"
+#include "wtextfile.h"
 
 bool create_conf_file(int conftype);
 bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list);

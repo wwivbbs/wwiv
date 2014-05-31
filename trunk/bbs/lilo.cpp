@@ -20,10 +20,12 @@
 #include "wwiv.h"
 #include <memory>
 
+#include "ini.h"
 #include "instmsg.h"
 #include "menusupp.h"
 #include "platform/wutil.h"
 #include "printfile.h"
+#include "wcomm.h"
 
 
 #define SECS_PER_DAY 86400L

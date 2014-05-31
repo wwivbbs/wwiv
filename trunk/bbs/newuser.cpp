@@ -20,7 +20,9 @@
 #include "wwiv.h"
 #include <algorithm>
 
+#include "ini.h"
 #include "printfile.h"
+#include "wtextfile.h"
 
 //
 // Local function prototypes
