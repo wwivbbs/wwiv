@@ -86,7 +86,6 @@ typedef struct {
 #define INIT
 #endif  // INIT
 
-#include "wtypes.h"	
 #include "vardec.h"
 #include "wconstants.h"
 #include "ifcns.h"
