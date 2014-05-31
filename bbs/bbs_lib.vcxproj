@@ -95,7 +95,6 @@
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="platform\incl1.h" />
-    <ClInclude Include="platform\incl2.h" />
     <ClInclude Include="platform\platformfcns.h" />
     <ClInclude Include="platform\testos.h" />
     <ClInclude Include="platform\wfile.h" />
@@ -126,6 +125,7 @@
     <ClInclude Include="wuser.h" />
     <ClInclude Include="wwiv.h" />
     <ClInclude Include="wwivassert.h" />
+    <ClInclude Include="wwivcolors.h" />
     <ClInclude Include="xinitini.h" />
   </ItemGroup>
   <ItemGroup>

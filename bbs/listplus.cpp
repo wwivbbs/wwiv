@@ -16,10 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <algorithm>
+#include <csignal>
 
 #include "wwiv.h"
+
+#include "instmsg.h"
 #include "listplus.h"
 #include "printfile.h"
+#include "wwivcolors.h"
 
 
 user_config config_listing;
@@ -246,7 +251,6 @@ void catch_divide_by_zero(int x) {
 	sysoplog( "Caught divide by 0" );
 }
 
-
 int listfiles_plus(int type) {
 	int save_topdata = GetSession()->topdata;
 	int save_dir = GetSession()->GetCurrentFileArea();
@@ -368,7 +372,7 @@ int lp_add_batch(const char *pszFileName, int dn, long fs) {
 
 
 int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struct search_record * search_rec) {
-	char szBuffer[MAX_PATH], szFileName[MAX_PATH], szFileExt[MAX_EXT];
+	char szBuffer[MAX_PATH], szFileName[MAX_PATH], szFileExt[MAX_PATH];
 	char szFileInformation[1024], element[150];
 	int chars_this_line = 0, numl = 0, cpos = 0, will_fit = 78;
 	char ch = 0;

@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include <memory>
 
+#include "instmsg.h"
 #include "menusupp.h"
 #include "platform/wutil.h"
 #include "printfile.h"

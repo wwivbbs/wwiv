@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "instmsg.h"
 
 #if defined ( __unix__ ) || defined ( __APPLE__ )
 #include <sys/types.h>

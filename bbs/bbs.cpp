@@ -16,26 +16,28 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#define _DEFINE_GLOBALS_
-#include "wwiv.h"
-#undef _DEFINE_GLOBALS_
-#include "platform/wutil.h"
-#include "printfile.h"
-
 #if defined ( __APPLE__ ) && !defined ( __unix__ )
 #define __unix__ 1
 #endif
 
+#include <direct.h>
 #include <memory>
+
+#define _DEFINE_GLOBALS_
+#include "wwiv.h"
+#undef _DEFINE_GLOBALS_
+
 #include "bbs.h"
+#include "instmsg.h"
+#include "menu.h" // for mainmenu
+#include "platform/wutil.h"
 
 #if defined( _WIN32 )
 #include "platform/win32/InternalTelnetServer.h"
 #include "platform/win32/Wiot.h"
 #endif // _WIN32
+#include "printfile.h"
 
-#include "menu.h" // for mainmenu
 
 static bool bUsingPppProject = true;
 extern time_t last_time_c;

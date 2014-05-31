@@ -43,7 +43,7 @@ void align(char *pszFileName);
 // Displays list of files matching filespec pszFileName in directory pszDirectoryName.
 void show_files( const char *pszFileName, const char *pszDirectoryName ) {
 	char s[MAX_PATH];
-	char drive[MAX_DRIVE], direc[MAX_DIR], file[MAX_FNAME], ext[MAX_EXT];
+	char drive[MAX_PATH], direc[MAX_PATH], file[MAX_PATH], ext[MAX_PATH];
 
 	char c = ( okansi() ) ? '\xCD' : '=';
 	GetSession()->bout.NewLine();

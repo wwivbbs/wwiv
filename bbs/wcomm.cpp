@@ -16,22 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "wcomm.h"
 
 #if defined ( _WIN32 )
 #define WIN32_LEAN_AND_MEAN
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif  // _CRT_SECURE_NO_WARNINGS
-#ifndef _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_DEPRECATE
-#endif  // _CRT_SECURE_NO_DEPRECATE
 #include <windows.h>
 #include "platform/win32/wios.h"
 #include "platform/win32/wiot.h"
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #include "wiou.h"
 #endif
-#include "wcomm.h"
 
 char WComm::m_szErrorText[8192];
 

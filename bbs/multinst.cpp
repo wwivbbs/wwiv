@@ -18,16 +18,13 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-
-
+#include "instmsg.h"
 
 //
 // Local funciton prototypes
 //
 
 void GetInstanceActivityString( instancerec &ir, char *pszOutActivity );
-
-
 
 /*
  * Builds a string (in pszOutInstanceString) like:
