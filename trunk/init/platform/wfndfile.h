@@ -20,6 +20,8 @@
 #ifndef __INCLUDED_WFNDFILE_H__
 #define __INCLUDED_WFNDFILE_H__
 
+#include "platform/wfile.h"
+
 #if defined( _WIN32 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -36,6 +38,7 @@ protected:
 	char szFileSpec[MAX_PATH];
 	long lFileSize;
 	long lTypeMask;
+	unsigned char nFileType;
 	bool bIsOpen;
 
 	void __open(const char * pszFileSpec, unsigned int nTypeMask) 
@@ -50,8 +53,10 @@ protected:
 	WIN32_FIND_DATA ffdata;
 	HANDLE	hFind;
 #elif defined (__unix__)
-	DIR	*dir;
 	bool dos_flag;
+	struct dirent **entries;
+	int nMatches;
+	int nCurrentEntry;
 #elif defined (__OS2__)
 #error "Hey OS/2 Dude... WRITE ME!"
 #elif defined (__MSDOS__)

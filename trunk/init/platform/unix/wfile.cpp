@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "platform/wfndfile.h"
+
 #include "wwiv.h"
 #include <sys/file.h>
 #include <sys/stat.h>
