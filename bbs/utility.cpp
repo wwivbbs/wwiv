@@ -22,6 +22,8 @@
 #endif  // WIN32
 
 #include "wwiv.h"
+#include "common.h"
+#include "platform/wfndfile.h"
 
 extern const unsigned char *translate_letters[];
 static int disable_conf_cnt = 0;

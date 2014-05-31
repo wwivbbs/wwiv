@@ -16,13 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <cstdint>
 
 #include "wwiv.h"
 
+#include "common.h"
 #include "instmsg.h"
 #include "menu.h"
 #include "menusupp.h"
 #include "printfile.h"
+#include "wtextfile.h"
 
 static user_config *pSecondUserRec;         // Userrec2 style setup
 static int nSecondUserRecLoaded;            // Whos config is loaded
@@ -254,7 +257,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
 	// -----------------------------------
 	if ( pMenuData->pMenuFile->IsOpen() ) {
 		long lSize = pMenuData->pMenuFile->GetLength();
-		pMenuData->nAmountRecs = static_cast<INT16>(lSize / sizeof(MenuRec));
+		pMenuData->nAmountRecs = static_cast<uint16_t>(lSize / sizeof(MenuRec));
 	} else {
 		// Unable to open menu
 		MenuSysopLog("Unable to open Menu");

@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+
+#include "ini.h"
 #include "instmsg.h"
 #include "printfile.h"
 

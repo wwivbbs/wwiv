@@ -277,13 +277,13 @@ int listfiles_plus(int type) {
 
 	lines_listed = 0;
 
-	if (type != NSCAN_NSCAN) {
+	if (type != LP_NSCAN_NSCAN) {
 		tmp_disable_conf( false );
 	}
 
 	GetSession()->GetCurrentUser()->SetStatus( save_status );
 
-	if ( type == NSCAN_DIR || type == SEARCH_ALL ) {  // change Build3
+	if ( type == LP_NSCAN_DIR || type == LP_SEARCH_ALL ) {  // change Build3
 		GetSession()->SetCurrentFileArea( save_dir );
 	}
 	dliscan();
@@ -937,18 +937,18 @@ int prep_search_rec(struct search_record * search_rec, int type) {
 	memset(search_rec, 0, sizeof(struct search_record));
 	search_rec->search_extended = lp_config.search_extended_on;
 
-	if (type == LIST_DIR) {
+	if (type == LP_LIST_DIR) {
 		file_mask(search_rec->filemask);
 		search_rec->alldirs = THIS_DIR;
-	} else if (type == SEARCH_ALL) {
+	} else if (type == LP_SEARCH_ALL) {
 		search_rec->alldirs = ALL_DIRS;
 		if (!search_criteria(search_rec)) {
 			return 0;
 		}
-	} else if (type == NSCAN_DIR) {
+	} else if (type == LP_NSCAN_DIR) {
 		search_rec->alldirs = THIS_DIR;
 		search_rec->nscandate = nscandate;
-	} else if (type == NSCAN_NSCAN) {
+	} else if (type == LP_NSCAN_NSCAN) {
 		g_flags |= g_flag_scanned_files;
 		search_rec->nscandate = nscandate;
 		search_rec->alldirs = ALL_DIRS;
@@ -1368,49 +1368,49 @@ void update_user_config_screen( uploadsrec * u, int which ) {
 
 	if ( which < 1 || which == 1 ) {
 		GetSession()->bout.GotoXY(37, 4);
-		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_fname ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.SystemColor( static_cast<uint8_t>( config_listing.lp_options & cfl_fname ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
 		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 0 ] ];
 	}
 	if ( which < 1 || which == 2 ) {
 		GetSession()->bout.GotoXY( 37, 5 );
-		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_extension ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.SystemColor( static_cast<uint8_t>( config_listing.lp_options & cfl_extension ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
 		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 1 ] ];
 	}
 	if ( which < 1 || which == 3 ) {
 		GetSession()->bout.GotoXY( 37, 6 );
-		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_dloads ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.SystemColor( static_cast<uint8_t>( config_listing.lp_options & cfl_dloads ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
 		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 2 ] ];
 	}
 	if ( which < 1 || which == 4 ) {
 		GetSession()->bout.GotoXY( 37, 7 );
-		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_kbytes ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.SystemColor( static_cast<uint8_t>( config_listing.lp_options & cfl_kbytes ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
 		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 3 ] ];
 	}
 	if ( which < 1 || which == 5 ) {
 		GetSession()->bout.GotoXY( 37, 8 );
-		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_description ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.SystemColor( static_cast<uint8_t>( config_listing.lp_options & cfl_description ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
 		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 10 ] ];
 	}
 	if ( which < 1 || which == 6 ) {
 		GetSession()->bout.GotoXY( 37, 9 );
-		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_date_uploaded ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.SystemColor( static_cast<uint8_t>( config_listing.lp_options & cfl_date_uploaded ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
 		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[ config_listing.lp_colors[ 4 ] ];
 	}
 	if ( which < 1 || which == 7 ) {
 		GetSession()->bout.GotoXY( 37, 10 );
-		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_file_points ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.SystemColor( static_cast<uint8_t>( config_listing.lp_options & cfl_file_points ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
 		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[config_listing.lp_colors[5]];
@@ -1424,14 +1424,14 @@ void update_user_config_screen( uploadsrec * u, int which ) {
 	}
 	if ( which < 1 || which == 9 ) {
 		GetSession()->bout.GotoXY( 37, 12 );
-		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_upby ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
+		GetSession()->bout.SystemColor( static_cast<uint8_t>( config_listing.lp_options & cfl_upby ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4 ) ) );
 		GetSession()->bout << "\xFE ";
 		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 		GetSession()->bout << lp_color_list[config_listing.lp_colors[7]];
 	}
 	if ( which < 1 || which == 10 ) {
 		GetSession()->bout.GotoXY( 37, 13 );
-		GetSession()->bout.SystemColor( static_cast<BYTE>( config_listing.lp_options & cfl_header ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4) ) );
+		GetSession()->bout.SystemColor( static_cast<uint8_t>( config_listing.lp_options & cfl_header ? RED + ( BLUE << 4 ) : BLACK + ( BLUE << 4) ) );
 		GetSession()->bout << "\xFE ";
 		GetSession()->bout.SystemColor( BLACK + ( BLUE << 4 ) );
 	}

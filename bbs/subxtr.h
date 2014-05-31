@@ -29,6 +29,7 @@
  *  host - host system of sub, or 0 if locally hosted
  *  stype - string sub type (up to 7 chars)
  */
+
 struct xtrasubsnetrec {
 	long flags;
 	short net_num;
@@ -37,10 +38,6 @@ struct xtrasubsnetrec {
 	short category;
 	char stype[8];
 };
-
-
-#define XTRA_NET_AUTO_ADDDROP 0x00000001    /* can auto add-drop the sub */
-#define XTRA_NET_AUTO_INFO    0x00000002    /* sends subs.lst info for sub */
 
 
 /*
@@ -58,8 +55,9 @@ struct xtrasubsrec {
 	xtrasubsnetrec *nets;
 };
 
+#define XTRA_NET_AUTO_ADDDROP 0x00000001    /* can auto add-drop the sub */
+#define XTRA_NET_AUTO_INFO    0x00000002    /* sends subs.lst info for sub */
 #define XTRA_MALLOCED         0x80000000    /* "nets" is malloced */
-
 #define XTRA_MASK             (~(XTRA_MALLOCED))
 
 

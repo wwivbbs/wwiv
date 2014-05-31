@@ -820,7 +820,7 @@ void file_mask( char *pszFileMask ) {
 
 void listfiles() {
 	if ( ok_listplus() ) {
-		listfiles_plus( LIST_DIR );
+		listfiles_plus( LP_LIST_DIR );
 		return;
 	}
 
@@ -861,7 +861,7 @@ void nscandir( int nDirNum, bool *abort ) {
 	dliscan();
 	if ( this_date >= nscandate ) {
 		if ( ok_listplus() ) {
-			*abort = listfiles_plus(NSCAN_DIR) ? 1 : 0;
+			*abort = listfiles_plus(LP_NSCAN_DIR) ? 1 : 0;
 			GetSession()->SetCurrentFileArea( nOldCurDir );
 			return;
 		}
@@ -905,7 +905,7 @@ void nscanall() {
 	}
 	if ( ok_listplus() ) {
 		int save_dir = GetSession()->GetCurrentFileArea();
-		listfiles_plus( NSCAN_NSCAN );
+		listfiles_plus( LP_NSCAN_NSCAN );
 		if ( bScanAllConfs ) {
 			tmp_disable_conf( false );
 		}
@@ -953,7 +953,7 @@ void searchall() {
 	char szFileMask[81];
 
 	if ( ok_listplus() ) {
-		listfiles_plus( SEARCH_ALL );
+		listfiles_plus( LP_SEARCH_ALL );
 		return;
 	}
 

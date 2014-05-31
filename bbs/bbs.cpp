@@ -30,6 +30,8 @@
 
 #define _DEFINE_GLOBALS_
 #include "wwiv.h"
+// This has to be included here to define "xtrasubsrec *xsubs;"
+#include "subxtr.h"
 #undef _DEFINE_GLOBALS_
 
 #include "bbs.h"

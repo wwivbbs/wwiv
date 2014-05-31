@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 #include <curses.h>
 
-#include "../wtypes.h"
 #include "../platform/incl1.h"
 #include "../vardec.h"
 #include "../net.h"

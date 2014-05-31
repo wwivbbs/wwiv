@@ -19,6 +19,8 @@
 #include <memory>
 
 #include "wwiv.h"
+#include "ini.h"
+#include "platform/wfndfile.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
 #define __unix__ 1

@@ -16,11 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <cstdint>
 
 #include "wwiv.h"
 #include "instmsg.h"
+#include "subxtr.h"
 #include "printfile.h"
-
+#include "wtextfile.h"
 //
 // Local Functions
 //
@@ -832,7 +834,7 @@ void readmail( int mode ) {
 						if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
 							p.status |= status_pending_net;
 						}
-						p.msg.storage_type = (BYTE) subboards[GetSession()->GetCurrentReadMessageArea()].storage_type;
+						p.msg.storage_type = (uint8_t) subboards[GetSession()->GetCurrentReadMessageArea()].storage_type;
 						savefile(b, len, &(p.msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename );
 						WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
 						p.qscan = pStatus->IncrementQScanPointer();
