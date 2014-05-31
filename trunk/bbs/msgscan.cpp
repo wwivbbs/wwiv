@@ -16,9 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <algorithm>
 
 #include "wwiv.h"
 
+#include "instmsg.h"
 #include "printfile.h"
 
 

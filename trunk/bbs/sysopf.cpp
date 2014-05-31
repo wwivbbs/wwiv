@@ -17,7 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <memory>
+
 #include "wwiv.h"
+#include "instmsg.h"
 #include "printfile.h"
 
 bool isr1( int nUserNumber, int nNumUsers, const char *pszName ) {

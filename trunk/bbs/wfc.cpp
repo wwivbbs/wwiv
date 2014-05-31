@@ -17,7 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <memory>
+
 #include "wwiv.h"
+#include "instmsg.h"
 #include "platform/wutil.h"
 
 

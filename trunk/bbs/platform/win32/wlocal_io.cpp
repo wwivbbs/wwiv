@@ -15,6 +15,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <algorithm>
+#include <conio.h>
 
 #ifndef NOT_BBS
 #include "wwiv.h"

@@ -28,48 +28,10 @@
 
 #if defined (_MSC_VER)
 #pragma component(browser, off)
-
-#if !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
-
 #endif // defined (_MSC_VER)
-
-#include <direct.h>
-#include <sys/utime.h>
-#include <conio.h>
-#include <dos.h>
-#include <io.h>
-#include <process.h>
-#include <share.h>
 
 #define WWIV_FILE_SEPERATOR_CHAR	'\\'
 #define WWIV_FILE_SEPERATOR_STRING	"\\"
-
-#define MAX_DRIVE	_MAX_DRIVE
-#define MAX_DIR		_MAX_DIR
-#define MAX_FNAME	_MAX_FNAME
-#define MAX_EXT		_MAX_EXT
-
-enum COLORS {
-	BLACK,
-	BLUE,
-	GREEN,
-	CYAN,
-	RED,
-	MAGENTA,
-	BROWN,
-	LIGHTGRAY,
-	DARKGRAY,
-	LIGHTBLUE,
-	LIGHTGREEN,
-	LIGHTCYAN,
-	LIGHTRED,
-	LIGHTMAGENTA,
-	YELLOW,
-	WHITE
-};
-
 
 #if defined (__GNUC__)
 #define timezone _timezone
@@ -137,10 +99,6 @@ enum COLORS {
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
-#define MAX_EXT		256
-#define MAX_DIR		256
-#define MAX_FNAME	256
-#define MAX_DRIVE	256
 #define SOCKADDR_IN	struct sockaddr_in
 #define LPSOCKADDR	(struct sockaddr *)
 #define INVALID_SOCKET	-1
@@ -161,26 +119,6 @@ enum COLORS {
 #define SWAP64( X ) OSSwapInt64( X )
 
 #endif // __APPLE__
-
-enum COLORS {
-	BLACK,
-	BLUE,
-	GREEN,
-	CYAN,
-	RED,
-	MAGENTA,
-	BROWN,
-	LIGHTGRAY,
-	DARKGRAY,
-	LIGHTBLUE,
-	LIGHTGREEN,
-	LIGHTCYAN,
-	LIGHTRED,
-	LIGHTMAGENTA,
-	YELLOW,
-	WHITE
-};
-
 #define WWIV_VSNPRINTF vsnprintf
 
 #endif // defined ( __unix__ )

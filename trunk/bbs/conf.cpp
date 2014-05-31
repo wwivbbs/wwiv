@@ -16,9 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <algorithm>
+#include <vector>
 
 #include "wwiv.h"
-#include <vector>
 
 bool create_conf_file(int conftype);
 bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list);

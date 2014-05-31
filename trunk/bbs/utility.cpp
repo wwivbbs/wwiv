@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <algorithm>
+#include <sys/utime.h>
+
 #include "wwiv.h"
 
 extern const unsigned char *translate_letters[];
@@ -639,7 +642,6 @@ bool okfsed() {
 // Author(s)    : WSS
 //************************************************
 std::string W_DateString(time_t tDateTime, const std::string& origMode , const std::string& timeDelim) {
-    int     i;                      // loop counter
 	char    s[40];                  // formattable string
     std::string str;
 	struct tm * pTm = localtime(&tDateTime);

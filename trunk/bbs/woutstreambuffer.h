@@ -17,12 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#if !defined ( __INCLUDED_WStreamBuffer_H__ )
-#define __INCLUDED_WStreamBuffer_H__
-
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
+#ifndef __INCLUDED_WSTREAMBUFFER_H__
+#define __INCLUDED_WSTREAMBUFFER_H__
 
 #include <iostream>
 #include <streambuf>
@@ -130,4 +126,4 @@ endl (std::basic_ostream<charT, traits>& strm ) {
 #pragma warning( pop )
 #endif
 
-#endif  // __INCLUDED_WStreamBuffer_H__
+#endif  // __INCLUDED_WSTREAMBUFFER_H__
