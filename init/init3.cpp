@@ -756,7 +756,7 @@ void create_arcs()
 	
 	char szFileName[MAX_PATH];
 	sprintf(szFileName,"%sarchiver.dat",syscfg.datadir);
-	int hFile = _open(szFileName,O_WRONLY | O_BINARY | O_CREAT | O_EXCL, S_IWRITE);
+	int hFile = _open(szFileName,O_WRONLY | O_BINARY | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
 	if (hFile<0) 
 	{
 		Printf("Couldn't open '%s' for writing.\n",szFileName);
