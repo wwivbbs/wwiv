@@ -20,6 +20,8 @@
 #ifndef __INCLUDED_WFNDFILE_H__
 #define __INCLUDED_WFNDFILE_H__
 
+#include <string.h>
+
 #if defined( _WIN32 )
 #define NOGDICAPMASKS
 #define NOSYSMETRICS
@@ -61,6 +63,8 @@
 #undef CopyFile
 #undef GetFullPathName
 #endif // _WIN32
+
+#include "vars.h"
 
 class WFindFile {
   protected:
