@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "instmsg.h"
+#include <stdarg.h>
 
 #include "wwiv.h"
 #include "printfile.h"

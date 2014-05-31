@@ -18,15 +18,16 @@
 /**************************************************************************/
 #include "fix.h"
 
+#include <algorithm>
+#include <map>
+#include <memory>
+
 #define _DEFINE_GLOBALS_
 #include "wwiv.h"
 #include "log.h"
 #include "dirs.h"
 #include "users.h"
 #include "fix_config.h"
-
-#include <algorithm>
-#include <map>
 
 void giveUp();
 void maybeGiveUp();

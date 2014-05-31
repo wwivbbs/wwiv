@@ -20,8 +20,13 @@
 #define __unix__ 1
 #endif
 
+#ifdef _WIN32
 #include <direct.h>
+#endif  // WIN32
+
+#include <cmath>
 #include <memory>
+#include <stdarg.h>
 
 #define _DEFINE_GLOBALS_
 #include "wwiv.h"

@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <stdarg.h>
+
 #include "wwiv.h"
 #include "woutstreambuffer.h"
 #include "wstringutils.h"
