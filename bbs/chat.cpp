@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "instmsg.h"
 #include "printfile.h"
 
 static int g_nChatOpSecLvl;

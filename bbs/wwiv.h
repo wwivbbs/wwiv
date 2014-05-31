@@ -35,29 +35,6 @@
 
 #include "platform/incl1.h"
 
-
-//
-// Normal ANSI C type includes
-//
-#include <memory>
-#include <cstdlib>
-#include <cstdio>
-#include <cerrno>
-
-#include <cmath>
-#include <csignal>
-#include <cstdarg>
-#include <cstring>
-#include <string>
-#include <sys/stat.h>
-#include <ctime>
-#include <fcntl.h>
-
-#include <algorithm>
-#include <locale>
-#include <sstream>
-#include <iostream>
-
 //
 // WWIV includes
 //
@@ -69,7 +46,6 @@
 #include "wcomm.h"
 #include "platform/wfile.h"
 #include "wtextfile.h"
-#include "instmsg.h"
 #include "wconstants.h"
 #include "net.h"
 #include "common.h"

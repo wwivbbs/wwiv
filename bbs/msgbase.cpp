@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "instmsg.h"
 
 #define EMAIL_STORAGE 2
 

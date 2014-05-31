@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "instmsg.h"
 #include "printfile.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )

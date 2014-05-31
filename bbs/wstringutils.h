@@ -16,13 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#if !defined ( __INCLUDED_WStringUtils_H__ )
-#define __INCLUDED_WStringUtils_H__
-
-#if defined( _MSC_VER ) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
+#ifndef __INCLUDED_WSTRINGUTILS_H__
+#define __INCLUDED_WSTRINGUTILS_H__
 
 #include <string>
 
@@ -102,5 +97,4 @@ std::string properize( const std::string text );
 #define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
 #endif
 
-#endif // __INCLUDED_WStringUtils_H__
-
+#endif  // __INCLUDED_WSTRINGUTILS_H__

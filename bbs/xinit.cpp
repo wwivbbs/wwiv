@@ -17,8 +17,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <algorithm>
 
 #include "wwiv.h"
+#include "instmsg.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
 #define __unix__ 1

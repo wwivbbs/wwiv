@@ -16,9 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <memory>
+#include <vector>
 
 #include "wwiv.h"
-#include <vector>
 
 char ShowAMsgMenuAndGetInput( const std::string& autoMessageLockFileName );
 void write_automessage();

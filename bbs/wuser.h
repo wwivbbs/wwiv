@@ -20,13 +20,6 @@
 #ifndef __INCLUDED_WUSER_H__
 #define __INCLUDED_WUSER_H__
 
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif  // _CRT_SECURE_NO_WARNINGS
-#ifndef _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_DEPRECATE
-#endif  // _CRT_SECURE_NO_DEPRECATE
-
 #include <sstream>
 #include <cstring>
 #include <string>

@@ -28,10 +28,6 @@
 *	Copyright (c) 1995 by Edward A. Falk
 *	January, 1995
 */
-#if defined(_MSC_VER) && !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _CRT_SECURE_NO_DEPRECATE
-
 
 #include <cstdio>
 #include <cstdlib>

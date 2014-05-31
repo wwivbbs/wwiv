@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "instmsg.h"
 
 #include "wwiv.h"
 #include "printfile.h"
