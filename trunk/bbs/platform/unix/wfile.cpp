@@ -16,14 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "platform/wfile.h"
 
-#include "wwiv.h"
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sstream>
 #include <string>
 #include <iostream>
 #include <algorithm>
+
+#include "wwiv.h"
+#include "platform/wfndfile.h"
 
 #if defined( __APPLE__ )
 #if !defined( O_BINARY )

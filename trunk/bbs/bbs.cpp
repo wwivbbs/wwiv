@@ -44,7 +44,7 @@
 #include "platform/win32/Wiot.h"
 #endif // _WIN32
 #include "printfile.h"
-
+#include "wcomm.h"
 
 static bool bUsingPppProject = true;
 extern time_t last_time_c;
