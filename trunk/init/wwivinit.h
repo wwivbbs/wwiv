@@ -90,8 +90,8 @@ typedef struct {
 #include "wconstants.h"
 #include "ifcns.h"
 #include "vars.h"
-#include "wfndfile.h"
-#include "wlocal_io.h"
+#include "platform/wfndfile.h"
+#include "platform/wlocal_io.h"
 #include "wfile.h"
 
 #include "init.h"

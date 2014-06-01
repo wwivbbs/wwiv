@@ -31,6 +31,7 @@
 
 bool HasKeyBeenPressed();
 unsigned char GetKeyboardChar();
+static int GetTopLine() { return 0; }
 
 /*
  * Sets screen attribute at screen pos x,y to attribute contained in a.
@@ -47,9 +48,7 @@ void WLocalIO::set_attr_xy(int x, int y, int a) {
 }
 
 WLocalIO::WLocalIO() {
-	SetTopLine( 0 );
 	ExtendedKeyWaiting = 0;
-	wx = 0;
 
 	m_hConOut = GetStdHandle( STD_OUTPUT_HANDLE );
 	m_hConIn  = GetStdHandle( STD_INPUT_HANDLE );

@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "platform/WFile.h"
 
+#include "platform/wfndfile.h"
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "shellapi.h"
@@ -26,7 +28,6 @@
 #undef GetFullPathName
 #undef MoveFile
 
-#include "platform/wfndfile.h"
 #include "wwivassert.h"
 #include <cerrno>
 #include <cstring>

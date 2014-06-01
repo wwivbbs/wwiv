@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <cmath>
 #ifdef _WIN32
 #include <sys/utime.h>
 #endif  // WIN32
