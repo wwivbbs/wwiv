@@ -30,57 +30,28 @@
 class WStatus;
 class WSession;
 
-struct screentype {
-	short x1, y1, topline1, curatr1;
-
-#ifdef _WIN32
-	CHAR_INFO* scrn1;
-#else
-	char *scrn1;
-#endif
-};
-
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
 class WLocalIO {
 
   public:
-	static const int cursorNone;
-	static const int cursorNormal;
-	static const int cursorSolid;
+        static const int cursorNone = 0;
+	static const int cursorNormal = 1;
+	static const int cursorSolid = 2;
 
-	static const int topdataNone;
-	static const int topdataSystem;
-	static const int topdataUser;
+	static const int topdataNone = 0;
+	static const int topdataSystem = 1;
+	static const int topdataUser = 2;
 
-	static const int scrollDown;
-	static const int scrollUp;
-
-  private:
-	std::string  m_chatReason;
-	WFile   fileGlobalCap; // g_hGlobalCapHandle;
-	bool    m_bSysopAlert;
-	int     m_nTopLine;
-	int     m_nScreenBottom;
-	screentype m_ScreenSave;
-
+	static const int scrollDown = 1;
+	static const int scrollUp = 0;
 
   private:
-	void ExecuteTemporaryCommand( const char *pszCommand );
-	char scan_to_char( int nKeyCode );
-	void alt_key( int nKeyCode );
 	int  GetEditLineStringLength( const char *pszText );
+	int     m_nScreenBottom;
 
   protected:
 	int ExtendedKeyWaiting;
-	char *global_buf;
-	int global_ptr;
-	int wx;
-
-#if defined ( __OS2__ )
-	unsigned char CellStr[3];
-	VIOMODEINFO vmi;
-#endif
 
 #if defined ( _WIN32 )
 	COORD  m_cursorPosition;
@@ -105,40 +76,12 @@ class WLocalIO {
 	WLocalIO( const WLocalIO& copy );
 	virtual ~WLocalIO();
 
-	void SetChatReason( char* pszChatReason ) {
-		m_chatReason = pszChatReason;
-	}
-	void ClearChatReason() {
-		m_chatReason.clear();
-	}
-
-	const int GetTopLine() const {
-		return m_nTopLine;
-	}
-	void SetTopLine( int nTopLine ) {
-		m_nTopLine = nTopLine;
-	}
-
 	const int GetScreenBottom() const {
 		return m_nScreenBottom;
 	}
 	void SetScreenBottom( int nScreenBottom ) {
 		m_nScreenBottom = nScreenBottom;
 	}
-
-	void SetSysopAlert( bool b ) {
-		m_bSysopAlert = b;
-	}
-	const bool GetSysopAlert() const {
-		return m_bSysopAlert;
-	}
-	void ToggleSysopAlert() {
-		m_bSysopAlert = !m_bSysopAlert;
-	}
-
-	void set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable = false );
-	void global_char(char ch);
-	void set_x_only(int tf, const char *pszFileName, int ovwr);
 	void LocalGotoXY(int x, int y);
 	int  WhereX();
 	int  WhereY();
@@ -156,13 +99,6 @@ class WLocalIO {
 	int  LocalXYPrintf( int x, int y, const char *pszFormattedText, ... );
 	int  LocalXYAPrintf( int x, int y, int nAttribute, const char *pszFormattedText, ... );
 	void pr_Wait(bool displayWait);
-	void set_protect(int l);
-	void savescreen();
-	void restorescreen();
-	void skey(char ch);
-	void tleft(bool bCheckForTimeOut);
-	void UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInstanceNumber );
-	bool  LocalKeyPressed();
 	unsigned char getchd();
 	void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc);
 	int  LocalGetChar();
