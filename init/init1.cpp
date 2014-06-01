@@ -134,21 +134,6 @@ void outcomch(char)
 }
 
 
-
-char peek1c()
-{
-	return 0;
-}
-
-
-
-/* This function clears the com buffer */
-void dump()
-{
-}
-
-
-
 /* This function sets the com speed to that passed */
 void set_baud(unsigned int)
 {
@@ -170,22 +155,6 @@ void initportb(int)
 void closeport()
 {
 }
-
-
-/* This function sets the DTR pin to the status given */
-void dtr(int)
-{
-}
-
-
-/* This function sets the RTS pin to the status given */
-void rts(int)
-{
-}
-
-
-/****************************************************************************/
-
 
 /* This will pause output, displaying the [PAUSE] message, and wait for
 * a key to be hit.
@@ -379,25 +348,6 @@ int yn()
 	return( ch == *str_yes );
 }
 
-
-
-/* This is the same as yn(), except C/R is assumed to be "Y" */
-int ny()
-{
-	char ch=0;
-	static char *str_yes="Yes";
-	static char *str_no="No";
-	
-	while ((!hangup) &&
-		((ch = upcase(getkey())) != *str_yes) &&
-		(ch != *str_no) &&
-		(ch != 13))
-		;
-	Puts((ch == *str_no) ? str_no : str_yes);
-	nlx();
-	return( ch == *str_yes || ch == 13 );
-}
-
 char onek(const char *pszKeys)
 {
 	char ch = 0;
@@ -435,7 +385,6 @@ int editlinestrlen( char *pszText )
 	}
 	return i;
 }
-
 
 void editline(std::string* s, int len, int status, int *returncode, const char *ss) {
     char pszBuffer[255];
@@ -1157,7 +1106,7 @@ void create_text(const char *pszFileName)
 	char szFullFileName[MAX_PATH];
     char szMessage[ 255 ];
 	
-    sprintf( szFullFileName, "gfiles\\%s", pszFileName );
+    sprintf( szFullFileName, "gfiles%c%s", WWIV_FILE_SEPERATOR_CHAR, pszFileName );
 	int hFile = open( szFullFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
     sprintf( szMessage, "This is %s.\r\nEdit to suit your needs.\r\n\x1a" );
 	write( hFile, szMessage, strlen( szMessage ) );
@@ -1236,17 +1185,17 @@ void init_files()
 	
 	strcpy(syscfg.systempw,"SYSOP");
 	Printf(".");
-	sprintf(syscfg.msgsdir,"%smsgs\\", bbsdir);
+	sprintf(syscfg.msgsdir,"%smsgs%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
 	Printf(".");
-	sprintf(syscfg.gfilesdir,"%sgfiles\\", bbsdir);
+	sprintf(syscfg.gfilesdir,"%sgfiles%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
 	Printf(".");
-	sprintf(syscfg.datadir,"%sdata\\", bbsdir);
+	sprintf(syscfg.datadir,"%sdata%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
 	Printf(".");
-	sprintf(syscfg.dloadsdir,"%sdloads\\", bbsdir);
+	sprintf(syscfg.dloadsdir,"%sdloads%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
 	Printf(".");
-	sprintf(syscfg.tempdir,"%stemp1\\", bbsdir);
+	sprintf(syscfg.tempdir,"%stemp1%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
 	Printf(".");
-	sprintf(syscfg.menudir,"%sgfiles\\menus\\", bbsdir);
+	sprintf(syscfg.menudir,"%sgfiles%cmenus%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
 	Printf(".");
 	strcpy(syscfg.batchdir, syscfg.tempdir);
 	Printf(".");
@@ -1449,7 +1398,7 @@ void init_files()
 	write_user(1, &thisuser);
 	write_qscn(1,qsc,0);
 	Printf(".");
-	int hFile = open("data\\names.lst",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+	int hFile = open("data/names.lst", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 	close(hFile);
 	
 	Printf(".");
@@ -1461,7 +1410,7 @@ void init_files()
 	s1.postsl=20;
 	s1.maxmsgs=50;
 	s1.storage_type=2;
-	hFile=open("data\\subs.dat",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+	hFile=open("data/subs.dat",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 	write(hFile, (void *) (&s1), sizeof(subboardrec));
 	close(hFile);
 	
@@ -1476,7 +1425,7 @@ void init_files()
 	d1.maxfiles=50;
 	d1.type=65535;
 	Printf(".");
-	hFile=open("data\\dirs.dat",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+	hFile=open("data/dirs.dat",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 	write(hFile, (void *) (&d1), sizeof(directoryrec));
 	
 	memset(&d1, 0, sizeof(directoryrec));
@@ -1535,7 +1484,7 @@ void init_files()
 	fnd.open("*.mdm", 0);
 	while (fnd.next()) 
 	{
-		sprintf(s2,"data\\%s",fnd.GetFileName());
+		sprintf(s2,"data%c%s", WWIV_FILE_SEPERATOR_CHAR, fnd.GetFileName());
 		rename(fnd.GetFileName(), s2);
 	}
 	
@@ -1659,14 +1608,14 @@ void new_init()
 	{ 
 		"attach",
 		"data",
-		"data\\regions",
-		"data\\zip-city",
+		"data/regions",
+		"data/zip-city",
 		"gfiles",
-		"gfiles\\menus",
+		"gfiles/menus",
 		"msgs",
 		"dloads",
-		"dloads\\misc",
-		"dloads\\sysop",
+		"dloads/misc",
+		"dloads/sysop",
 		"temp1",
 		"temp2",
 		0L,
