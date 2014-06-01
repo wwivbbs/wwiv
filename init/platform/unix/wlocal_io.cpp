@@ -25,8 +25,13 @@
 #include "platform/wutil.h"
 #include "wconstants.h"
 
+
+// local impl of _getch
+unsigned char _getch();
+
+
 static int curatr = 7;
-static char endofline[81];
+
 
 WLocalIO::WLocalIO() {
 	// These 2 lines must remain in here.
@@ -255,49 +260,10 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
 * a value of 0 to obtain the value of the extended key pressed.
 */
 unsigned char WLocalIO::getchd() {
-	return 0;
+  return _getch();
 }
-
-
-void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
-	*cl = 0;
-	*atr= 0;
-	*cc = static_cast<char>( curatr );
-	strcpy( xl, endofline );
-}
-
-
-/**
- * LocalGetChar - gets character entered at local console.
- *                <B>Note: This is a blocking function call.</B>
- *
- * @return int value of key entered
- */
-
-int  WLocalIO::LocalGetChar() {
-	return getchar();
-}
-
-
-void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
-	x=x;
-	y=y;
-	xlen=xlen;
-	ylen=ylen;
-}
-
-
-void WLocalIO::SetCursor(int cursorStyle) {
-}
-
-
 
 void WLocalIO::LocalClrEol() {
-}
-
-
-void WLocalIO::LocalWriteScreenBuffer(const char *pszBuffer) {
-	pszBuffer = pszBuffer; // No warning
 }
 
 
@@ -305,25 +271,6 @@ int WLocalIO::GetDefaultScreenBottom() {
 	return 25;
 }
 
-
-/**
- * Edits a string, doing local screen I/O only.
- */
-void WLocalIO::LocalEditLine( char *s, int len, int status, int *returncode, char *ss ) {
-}
-
-
-int WLocalIO::GetEditLineStringLength( const char *pszText ) {
-	int i = strlen( pszText );
-	while ( i >= 0 && ( /*pszText[i-1] == 32 ||*/ static_cast<unsigned char>( pszText[i-1] ) == 176 ) ) {
-		--i;
-	}
-	return i;
-}
-
-
-void WLocalIO::UpdateNativeTitleBar() {
-}
 
 void WLocalIO::LocalScrollScreen(int nTop, int nBottom, int nDirection) {
   // TODO(rushfan): Implement me
