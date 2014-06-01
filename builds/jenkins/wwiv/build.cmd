@@ -1,4 +1,4 @@
-rem ************************************************************************************************
+rem ****************************************************************************
 rem WWIV 5.0 Build Script.
 rem
 rem Required Variables:
@@ -13,10 +13,21 @@ rem   VS 2013 [C:\Program Files (x86)\Microsoft Visual Studio 12.0]
 rem   msbuild [in PATH, set by vcvarsall.bat]
 rem   
 rem 
-rem ************************************************************************************************
+rem ****************************************************************************
 
-call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
-echo "Subversion revision: %SVN_REVISION%"
+@if exist "%ProgramFiles(x86)%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" (
+  call "%ProgramFiles(x86)%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
+)
+
+@if exist "%ProgramFiles%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" (
+  call "%ProgramFiles%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
+)
+
+set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
+set RELEASE_ZIP=%WORKSPACE%\archives\wwiv-build-%SVN_REVISION%-%BUILD_NUMBER%.zip
+echo Workspace: %WORKSPACE%         
+echo Revision:  %SVN_REVISION%
+echo  Archive:  %RELEASE_ZIP%
 
 cd %WORKSPACE%\bbs
 %TEXT_TRANSFORM% -a !!version!%SVN_REVISION% version.template
@@ -32,25 +43,32 @@ msbuild init.vcxproj /t:Build /p:Configuration=Release /detailedsummary
 cd %WORKSPACE%\fix
 msbuild fix.vcxproj /t:Build /p:Configuration=Release /detailedsummary /property:EnableEnhancedInstructionSet=NoExtensions
 
-cd %WORKSPACE%
-mkdir release
-del /q release
-mkdir archives
-del /q archives
-copy bbs\Release\bbs.exe release\
-copy bbs\readme.txt release\readme-bbs.txt
-copy bbs\whatsnew.txt release\whatsnew.txt
-copy WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe release\
-copy init\Release\init.exe release\
-copy fix\Release\fix.exe release\
+cd %WORKSPACE%\
+if not exist %WORKSPACE%\release (
+  echo Creating %WORKSPACE\release
+  mkdir %WORKSPACE%\release
+)
+del /q %WORKSPACE%\release
+if not exist %WORKSPACE%\archives (
+   echo Creating %WORKSPACE%\archives
+   mkdir %WORKSPACE%\archives
+)
+del /q %WORKSPACE%\archives
+copy %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\
+copy %WORKSPACE%\bbs\readme.txt %WORKSPACE%\release\readme-bbs.txt
+copy %WORKSPACE%\bbs\whatsnew.txt %WORKSPACE%\release\whatsnew.txt
+copy %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\
+copy %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\
+copy %WORKSPACE%\fix\Release\fix.exe %WORKSPACE%\release\
 
 echo Build URL %BUILD_URL% > release\build.nfo
 echo Subversion Build: %SVN_REVISION% >> release\build.nfo
 
-cd release
-"C:\Program Files\7-Zip\7z.exe" a -tzip -y %WORKSPACE%\archives\wwiv-build-%SVN_REVISION%-%BUILD_NUMBER%.zip *
+cd %WORKSPACE%\release
+%ZIP_EXE% a -tzip -y %WORKSPACE%\archives\wwiv-build-%SVN_REVISION%-%BUILD_NUMBER%.zip *
 
-echo "Archive contents:"
-"C:\Program Files\7-Zip\7z.exe" l %WORKSPACE%\archives\wwiv-build-%SVN_REVISION%-%BUILD_NUMBER%.zip
-cd %WORKSPACE%
+echo Archive File: %RELEASE_ZIP%
+echo Archive contents:
+%ZIP_EXE% l %RELEASE_ZIP%
+cd %WORKSPACE%\
 
