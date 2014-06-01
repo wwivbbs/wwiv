@@ -1,19 +1,19 @@
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
 echo "Subversion revision: %SVN_REVISION%"
+
 cd %WORKSPACE%\bbs
 %TEXT_TRANSFORM% -a !!version!%SVN_REVISION% version.template
 msbuild bbs_lib.vcxproj /t:Build /p:Configuration=Release /detailedsummary
 msbuild bbs.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-cd %WORKSPACE%\telsrv
-msbuild WWIVTelnetServer.vcxproj /t:Build /p:Configuration=Release /detailedsummary /property:EnableEnhancedInstructionSet=NoExtensions
+
 cd %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer
-msbuild WWIV5TelnetServer.csproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild WWIV5TelnetServer.csproj /t:Rebuild /p:Configuration=Release /detailedsummary
+
 cd %WORKSPACE%\init
 msbuild init.vcxproj /t:Build /p:Configuration=Release /detailedsummary
 
 cd %WORKSPACE%\fix
 msbuild fix.vcxproj /t:Build /p:Configuration=Release /detailedsummary /property:EnableEnhancedInstructionSet=NoExtensions
-
 
 cd %WORKSPACE%
 mkdir release
