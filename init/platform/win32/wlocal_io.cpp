@@ -25,19 +25,6 @@
 #include "wlocal_io.h"
 #include "wstringutils.h"
 
-extern int oldy = 0;
-
-const int WLocalIO::cursorNone      = 0;
-const int WLocalIO::cursorNormal    = 1;
-const int WLocalIO::cursorSolid     = 2;
-
-const int WLocalIO::topdataNone     = 0;
-const int WLocalIO::topdataSystem   = 1;
-const int WLocalIO::topdataUser     = 2;
-
-const int WLocalIO::scrollUp = 0;
-const int WLocalIO::scrollDown = 1;
-
 //
 // local functions
 //
@@ -58,9 +45,6 @@ void WLocalIO::set_attr_xy(int x, int y, int a) {
 
 	WriteConsoleOutputAttribute( m_hConOut, reinterpret_cast< LPWORD >( &a ), 1, loc, &cb );
 }
-
-
-
 
 WLocalIO::WLocalIO() {
 	SetTopLine( 0 );
@@ -92,24 +76,10 @@ WLocalIO::WLocalIO() {
 	SetScreenBottom(m_consoleBufferInfo.dwSize.Y - 1);
 }
 
-
 WLocalIO::~WLocalIO() {
 	SetConsoleScreenBufferSize( m_hConOut, m_originalConsoleSize );
 	SetConsoleTextAttribute(m_hConOut, static_cast<short>(0x07));
 }
-
-
-void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable ) {
-}
-
-
-void WLocalIO::global_char(char ch) {
-}
-
-void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
-
-}
-
 
 void WLocalIO::LocalGotoXY(int x, int y)
 // This, obviously, moves the cursor to the location specified, offset from
@@ -122,10 +92,6 @@ void WLocalIO::LocalGotoXY(int x, int y)
 	y += GetTopLine();
 	y = std::min<int>( y, GetScreenBottom() );
 
-	if (x_only) {
-		wx = x;
-		return;
-	}
 	m_cursorPosition.X = static_cast< short > ( x );
 	m_cursorPosition.Y = static_cast< short > ( y );
 	SetConsoleCursorPosition(m_hConOut,m_cursorPosition);
@@ -140,10 +106,6 @@ int WLocalIO::WhereX()
 * means the cursor is at the left-most position
 */
 {
-	if (x_only) {
-		return( wx );
-	}
-
 	CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
 	GetConsoleScreenBufferInfo(m_hConOut,&m_consoleBufferInfo);
 
@@ -309,19 +271,6 @@ void WLocalIO::LocalPutchRaw(unsigned char ch)
  * BS, and BELL are interpreted as commands instead of characters.
  */
 void WLocalIO::LocalPutch( unsigned char ch ) {
-	if ( x_only ) {
-		if ( ch > 31 ) {
-			wx = ( wx + 1 ) % 80;
-		} else if ( ch == RETURN || ch == CL ) {
-			wx = 0;
-		} else if ( ch == BACKSPACE ) {
-			if ( wx ) {
-				wx--;
-			}
-		}
-		return;
-	}
-
 	if ( ch > 31 ) {
 		LocalPutchRaw(ch);
 	} else if ( ch == CM ) {
@@ -406,156 +355,6 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
 	LocalXYPuts( x, y, szBuffer );
 	curatr = nOldColor;
 	return nNumWritten;
-}
-
-
-void WLocalIO::set_protect(int l) //JZ Set_Protect Fix
-// set_protect sets the number of lines protected at the top of the screen.
-{
-	if ( l != GetTopLine() ) {
-		COORD coord;
-		coord.X = 0;
-		coord.Y = static_cast< short > ( l );
-
-		if (l > GetTopLine()) {
-			if ( ( WhereY() + GetTopLine() - l ) < 0 ) {
-				CHAR_INFO lpFill;
-				SMALL_RECT scrnl;
-
-				scrnl.Top = static_cast< short > ( GetTopLine() );
-				scrnl.Left = 0;
-				scrnl.Bottom = static_cast< short > ( GetScreenBottom() );
-				scrnl.Right = 79; //%%TODO - JZ Make the console size user defined
-
-				lpFill.Char.AsciiChar = ' ';
-				lpFill.Attributes = 0;
-
-				coord.X = 0;
-				coord.Y = static_cast< short > ( l );
-				ScrollConsoleScreenBuffer(m_hConOut, &scrnl, NULL, coord, &lpFill);
-				LocalGotoXY( WhereX(), WhereY() + l - GetTopLine() );
-			}
-			oldy += (GetTopLine() - l);
-		} else {
-			DWORD written;
-			FillConsoleOutputAttribute(m_hConOut,0,(GetTopLine() - l) * 80,coord,&written);
-			oldy += (GetTopLine() - l);
-		}
-	}
-	SetTopLine( l );
-//	GetSession()->screenlinest = ( GetSession()->using_modem ) ? GetSession()->GetCurrentUser()->GetScreenLines() : defscreenbottom + 1 - GetTopLine();
-}
-
-
-void WLocalIO::savescreen() {
-	COORD topleft;
-	CONSOLE_SCREEN_BUFFER_INFO bufinfo;
-	SMALL_RECT region;
-
-	GetConsoleScreenBufferInfo(m_hConOut,&bufinfo);
-	topleft.Y = topleft.X = region.Top = region.Left = 0;
-	region.Bottom = static_cast< short > ( bufinfo.dwSize.Y - 1 );
-	region.Right  = static_cast< short > ( bufinfo.dwSize.X - 1 );
-
-	if (!m_ScreenSave.scrn1) {
-		m_ScreenSave.scrn1= static_cast< CHAR_INFO *> ( bbsmalloc((bufinfo.dwSize.X*bufinfo.dwSize.Y)*sizeof(CHAR_INFO)) );
-	}
-
-	if (m_ScreenSave.scrn1) {
-		ReadConsoleOutput(m_hConOut,(CHAR_INFO *)m_ScreenSave.scrn1,bufinfo.dwSize,topleft,&region);
-	}
-
-	m_ScreenSave.x1 = static_cast< short > ( WhereX() );
-	m_ScreenSave.y1 = static_cast< short > ( WhereY() );
-	m_ScreenSave.topline1 = static_cast< short > ( GetTopLine() );
-	m_ScreenSave.curatr1 = static_cast< short > ( curatr );
-}
-
-
-/*
- * restorescreen restores a screen previously saved with savescreen
- */
-void WLocalIO::restorescreen() {
-	if (m_ScreenSave.scrn1) {
-		// COORD size;
-		COORD topleft;
-		CONSOLE_SCREEN_BUFFER_INFO bufinfo;
-		SMALL_RECT region;
-
-		GetConsoleScreenBufferInfo(m_hConOut,&bufinfo);
-		topleft.Y = topleft.X = region.Top = region.Left = 0;
-		region.Bottom = static_cast< short > ( bufinfo.dwSize.Y - 1 );
-		region.Right  = static_cast< short > ( bufinfo.dwSize.X - 1 );
-
-		WriteConsoleOutput(m_hConOut,m_ScreenSave.scrn1,bufinfo.dwSize,topleft,&region);
-		BbsFreeMemory(m_ScreenSave.scrn1);
-		m_ScreenSave.scrn1 = NULL;
-	}
-	SetTopLine( m_ScreenSave.topline1 );
-	curatr = m_ScreenSave.curatr1;
-	LocalGotoXY(m_ScreenSave.x1, m_ScreenSave.y1);
-}
-
-
-void WLocalIO::ExecuteTemporaryCommand( const char *pszCommand ) {
-
-}
-
-
-char xlate[] = {
-	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, 0, 0, 0,
-	'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0, 0, 0, 0, 0,
-	'Z', 'X', 'C', 'V', 'B', 'N', 'M',
-};
-
-
-char WLocalIO::scan_to_char( int nKeyCode ) {
-	return ( nKeyCode >= 16 && nKeyCode <= 50 ) ? xlate[ nKeyCode - 16 ] : '\x00';
-}
-
-
-void WLocalIO::alt_key( int nKeyCode ) {
-}
-
-
-/*
- * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
- */
-void WLocalIO::skey( char ch ) {
-
-}
-
-
-static const char * pszTopScrItems[] = {
-	"Comm Disabled",
-	"Temp Sysop",
-	"Capture",
-	"Alert",
-	"อออออออ",
-	"Available",
-	"อออออออออออ",
-	"%s chatting with %s"
-};
-
-
-void WLocalIO::tleft(bool bCheckForTimeOut) {
-}
-
-
-void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInstanceNumber ) {
-}
-
-
-/****************************************************************************/
-
-
-/**
- * IsLocalKeyPressed - returns whether or not a key been pressed at the local console.
- *
- * @return true if a key has been pressed at the local console, false otherwise
- */
-bool WLocalIO::LocalKeyPressed() {
-	return (x_only ? 0 : (HasKeyBeenPressed() || ExtendedKeyWaiting)) ? true : false;
 }
 
 /****************************************************************************/
