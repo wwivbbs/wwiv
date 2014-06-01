@@ -84,8 +84,6 @@ struct screentype {
 };
 
 
-
-
 class WLocalIO {
 
   public:

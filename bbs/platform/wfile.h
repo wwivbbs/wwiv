@@ -29,13 +29,6 @@
 #define MAX_PATH 260
 #endif
 
-#if defined (_WIN32)
-#undef CopyFile
-#undef GetFileTime
-#undef GetFullPathName
-#undef MoveFile
-#endif
-
 class WLogger {
   public:
 	/////////////////////////////////////////////////////////////////////////
