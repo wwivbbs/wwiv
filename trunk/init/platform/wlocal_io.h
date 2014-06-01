@@ -35,20 +35,11 @@ class WSession;
 class WLocalIO {
 
   public:
-        static const int cursorNone = 0;
-	static const int cursorNormal = 1;
-	static const int cursorSolid = 2;
-
-	static const int topdataNone = 0;
-	static const int topdataSystem = 1;
-	static const int topdataUser = 2;
-
 	static const int scrollDown = 1;
 	static const int scrollUp = 0;
 
   private:
-	int  GetEditLineStringLength( const char *pszText );
-	int     m_nScreenBottom;
+	int  m_nScreenBottom;
 
   protected:
 	int ExtendedKeyWaiting;
@@ -100,19 +91,7 @@ class WLocalIO {
 	int  LocalXYAPrintf( int x, int y, int nAttribute, const char *pszFormattedText, ... );
 	void pr_Wait(bool displayWait);
 	unsigned char getchd();
-	void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc);
-	int  LocalGetChar();
-	/*
-	 * MakeLocalWindow makes a "shadowized" window with the upper-left hand corner at
-	 * (x,y), and the lower-right corner at (x+xlen,y+ylen).
-	 */
-	void MakeLocalWindow(int x, int y, int xlen, int ylen);
-	void SetCursor(int cursorStyle);
-	void LocalWriteScreenBuffer(const char *pszBuffer);
 	int  GetDefaultScreenBottom();
-
-	void LocalEditLine(char *s, int len, int status, int *returncode, char *ss);
-	void UpdateNativeTitleBar();
 
 	void LocalScrollScreen(int nTop, int nBottom, int nDirection);
 };
