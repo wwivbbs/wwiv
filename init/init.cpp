@@ -471,36 +471,11 @@ void networks()
     } while ( !done && !hangup );
 
     char szFileName[ MAX_PATH ];
-    sprintf( szFileName, "%snetworks.dat", syscfg.datadir);
+    sprintf( szFileName, "%s%cnetworks.dat", syscfg.datadir, WWIV_FILE_SEPERATOR_CHAR);
     int hFile = open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     write( hFile, net_networks, initinfo.net_num_max * sizeof( net_networks_rec ) );
     close( hFile );																														
 }
-
-
-/****************************************************************************/
-
-void calc_CRC(unsigned char b)
-{
-    checksum += b;
-    crc ^= (((unsigned short) (b)) << 8);
-    for (int i = 0; i<8; i++ )
-    {
-        if (crc & 0x8000) 
-        {
-            crc=(crc << 1);
-            crc ^= 0x1021;
-        } 
-        else
-        {
-            crc=(crc << 1);
-        }
-    }
-}
-
-
-/****************************************************************************/
-
 
 void tweak_dir(char *s)
 {
@@ -541,7 +516,7 @@ void convcfg()
         WWIV_Delay(1000);
         read(hFile, (void *) (&syscfg), sizeof(configrec));
         syscfg.rrd = static_cast<unsigned long>(time(NULL)+(86400L*60));
-        sprintf(syscfg.menudir, "%sMENUS\\", syscfg.gfilesdir);
+        sprintf(syscfg.menudir, "%sMENUS%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
         strcpy(syscfg.logoff_c, " ");
         strcpy(syscfg.v_scan_c, " ");
 
@@ -942,7 +917,7 @@ int WInitApp::main(int argc, char *argv[])
     }
 
 
-    if ((syscfg.userreclen==0) || (syscfgovr.batchdir[0]==0)) 
+    if ((syscfg.userreclen==0) || (syscfgovr.batchdir[0]==0))  // i think this block should be removed
     {
         if (syscfg.userreclen==0) 
         {

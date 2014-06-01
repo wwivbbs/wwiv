@@ -43,7 +43,6 @@ char *mdm_name(int mdm_num);
 void select_modem();
 void edit_net(int nn);
 void networks();
-void calc_CRC(unsigned char b);
 void tweak_dir(char *s);
 void convcfg();
 void printcfg();
@@ -65,13 +64,9 @@ void init();
 void *malloca(unsigned long nbytes);
 int check_comport(int pn);
 void outcomch(char ch);
-char peek1c();
-void dump();
 void set_baud(unsigned int rate);
 void initportb(int port_num);
 void closeport();
-void dtr(int i);
-void rts(int i);
 void pausescr();
 void backspace();
 unsigned char upcase(unsigned char ch);
@@ -79,7 +74,6 @@ unsigned char getkey();
 void input1( char *pszOutText, int nMaxLength, bool bAllowLowerCase );
 void input( char *pszOutText, int nMaxLength );
 int yn();
-int ny();
 char onek(const char *s);
 void OutputStringRaw(const char *s);
 void editline(std::string* s, int len, int status, int *returncode, const char *ss);
@@ -116,7 +110,6 @@ int GetNextSelectionPosition( int nMin, int nMax, int nCurrentPos, int nReturnCo
 
 /* File: init2.cpp */
 
-char *ctim(double d);
 void trimstr(char *s);
 void trimstrpath(char *s);
 void print_time(unsigned short t, char *s);

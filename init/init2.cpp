@@ -31,22 +31,6 @@ extern int num_result_codes;
 extern net_networks_rec *net_networks;
 
 extern int inst;
-/****************************************************************************/
-char *ctim(double d) {
-  static char szCurrentTime[10];
-
-  if (d < 0) {
-    d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
-  }
-  long lHour = static_cast<long>( d / SECONDS_PER_HOUR_FLOAT );
-  d -= static_cast<double>( lHour * HOURS_PER_DAY );
-  long lMinute = static_cast<long>( d / MINUTES_PER_HOUR_FLOAT );
-  d -= static_cast<double>( lMinute * MINUTES_PER_HOUR );
-  long lSecond = static_cast<long>( d );
-  snprintf( szCurrentTime, sizeof( szCurrentTime ), "%2.2ld:%2.2ld:%2.2ld", lHour, lMinute, lSecond );
-
-  return szCurrentTime;
-}
 
 void trimstr(char *s)
 {
