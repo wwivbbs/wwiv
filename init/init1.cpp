@@ -286,7 +286,10 @@ void input1(char *pszOutText, int nMaxLength, bool bAllowLowerCase )
 			else switch(ch) 
 			{
 			  case 14:
+				  // 13 on Win32
 			  case 13:
+				  // 10 on unix
+			  case 10:
 				  pszOutText[curpos] = 0;
 				  done = true;
 				  local_echo = true;
