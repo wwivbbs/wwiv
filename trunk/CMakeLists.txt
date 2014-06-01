@@ -5,4 +5,4 @@ add_subdirectory(deps/gtest-1.7.0)
 add_subdirectory(bbs)
 add_subdirectory(bbs_test)
 add_subdirectory(fix)
-
+add_subdirectory(init)
