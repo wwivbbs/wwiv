@@ -1,3 +1,20 @@
+rem ************************************************************************************************
+rem WWIV 5.0 Build Script.
+rem
+rem Required Variables:
+rem WORKSPACE - wwiv-svn root directory
+rem BUILD_NUMBER - Jenkins Build number (arbitrary and monotonically increasing)
+rem SVN_REVISION - subversion build number.
+rem TEXT_TRANSFORM - path to text transform tool from visual studio
+rem
+rem Installed Software:
+rem   7-Zip [C:\Program Files\7-Zip\7z.exe]
+rem   VS 2013 [C:\Program Files (x86)\Microsoft Visual Studio 12.0]
+rem   msbuild [in PATH, set by vcvarsall.bat]
+rem   
+rem 
+rem ************************************************************************************************
+
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
 echo "Subversion revision: %SVN_REVISION%"
 
@@ -36,4 +53,4 @@ cd release
 echo "Archive contents:"
 "C:\Program Files\7-Zip\7z.exe" l %WORKSPACE%\archives\wwiv-build-%SVN_REVISION%-%BUILD_NUMBER%.zip
 cd %WORKSPACE%
-rem C:\bin\zip -j %WORKSPACE%\archives\wwiv-build-%SVN_REVISION%-%BUILD_NUMBER%.zip release\*
+
