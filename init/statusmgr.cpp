@@ -18,6 +18,11 @@
 /**************************************************************************/
 #include "wwivinit.h"
 
+// Not sure why this is needed.
+#ifdef GetFullPathName
+#undef GetFullPathName
+#endif 
+
 
 // Stipped down version of what the BBS uses, this one will not create
 // the status.dat since we know INIT already did it for us.
