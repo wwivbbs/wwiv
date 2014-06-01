@@ -25,28 +25,12 @@
 #include "platform/wutil.h"
 #include "wconstants.h"
 
-const int WLocalIO::cursorNone      = 0;
-const int WLocalIO::cursorNormal    = 1;
-const int WLocalIO::cursorSolid     = 2;
-
-const int WLocalIO::topdataNone     = 0;
-const int WLocalIO::topdataSystem   = 1;
-const int WLocalIO::topdataUser     = 2;
-
-const int WLocalIO::scrollUp = 0;
-const int WLocalIO::scrollDown = 1;
-
-static bool x_only = false;
 static int curatr = 7;
 static char endofline[81];
 
 WLocalIO::WLocalIO() {
 	// These 2 lines must remain in here.
 	ExtendedKeyWaiting = 0;
-	wx = 0;
-	//m_nWfcStatus = 0;
-
-	// TODO (for kwalker) Add Linux platform specific console maniuplation stuff
 }
 
 
@@ -59,17 +43,6 @@ WLocalIO::~WLocalIO() {
 }
 
 
-void WLocalIO::set_global_handle( bool bOpenFile, bool bOnlyUpdateVariable ) {
-}
-
-
-void WLocalIO::global_char(char ch) {
-}
-
-void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
-}
-
-
 /*
  * This, obviously, moves the cursor to the location specified, offset from
  * the protected dispaly at the top of the screen.  Note: this function
@@ -79,13 +52,8 @@ void WLocalIO::LocalGotoXY(int x, int y) {
 	x = std::max<int>( x, 0 );
 	x = std::min<int>( x, 79 );
 	y = std::max<int>( y, 0 );
-	y += GetTopLine();
 	y = std::min<int>( y, GetScreenBottom() );
 
-	if (x_only) {
-		wx = x;
-		return;
-	}
 	m_cursorPositionX = static_cast< short > ( x );
 	m_cursorPositionY = static_cast< short > ( y );
 
@@ -100,9 +68,6 @@ void WLocalIO::LocalGotoXY(int x, int y) {
  * means the cursor is at the left-most position
  */
 int WLocalIO::WhereX() {
-	if (x_only) {
-		return( wx );
-	}
 	return m_cursorPositionX;
 }
 
@@ -161,7 +126,7 @@ void WLocalIO::LocalBackspace() {
 	std::cout << "\b";
 	if( m_cursorPositionX >= 0 ) {
 		m_cursorPositionX--;
-	} else if( m_cursorPositionY != GetTopLine() ) {
+	} else if (m_cursorPositionY != 0) {
 		m_cursorPositionX = 79;
 		m_cursorPositionY--;
 	}
@@ -195,18 +160,6 @@ void WLocalIO::LocalPutchRaw(unsigned char ch) {
  * BS, and BELL are interpreted as commands instead of characters.
  */
 void WLocalIO::LocalPutch(unsigned char ch) {
-	if ( x_only ) {
-		if ( ch > 31 ) {
-			wx = ( wx + 1 ) % 80;
-		} else if ( ch == RETURN || ch == CL ) {
-			wx = 0;
-		} else if ( ch == BACKSPACE ) {
-			if ( wx ) {
-				wx--;
-			}
-		}
-		return;
-	}
 	if ( ch > 31 ) {
 		LocalPutchRaw(ch);
 	} else if ( ch == CM ) {
@@ -291,81 +244,6 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
 	return nNumWritten;
 }
 
-
-
-/*
- * set_protect sets the number of lines protected at the top of the screen.
- */
-void WLocalIO::set_protect(int l) {
-}
-
-
-void WLocalIO::savescreen() {
-}
-
-
-/*
- * restorescreen restores a screen previously saved with savescreen
- */
-void WLocalIO::restorescreen() {
-}
-
-
-void WLocalIO::ExecuteTemporaryCommand( const char *pszCommand ) {
-}
-
-
-char xlate[] = {
-	'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, 0, 0, 0,
-	'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0, 0, 0, 0, 0,
-	'Z', 'X', 'C', 'V', 'B', 'N', 'M',
-};
-
-
-char WLocalIO::scan_to_char( int nKeyCode ) {
-	return ( nKeyCode >= 16 && nKeyCode <= 50 ) ? xlate[ nKeyCode - 16 ] : '\x00';
-}
-
-
-void WLocalIO::alt_key( int nKeyCode ) {
-	// TODO: implement macro support
-}
-
-
-/*
- * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
- */
-void WLocalIO::skey(char ch) {
-}
-
-
-static const char * pszTopScrItems[] = {
-	"Comm Disabled",
-	"Temp Sysop",
-	"Capture",
-	"Alert",
-	"ÕÕÕÕÕÕÕ",
-	"Available",
-	"ÕÕÕÕÕÕÕÕÕÕÕ",
-	"%s chatting with %s"
-};
-
-void WLocalIO::tleft(bool bCheckForTimeOut) {
-}
-
-
-/****************************************************************************/
-
-
-/**
- * IsLocalKeyPressed - returns whether or not a key been pressed at the local console.
- *
- * @return true if a key has been pressed at the local console, false otherwise
- */
-bool WLocalIO::LocalKeyPressed() {
-	return false;
-}
-
 /****************************************************************************/
 /*
 * returns the ASCII code of the next character waiting in the
@@ -445,9 +323,6 @@ int WLocalIO::GetEditLineStringLength( const char *pszText ) {
 
 
 void WLocalIO::UpdateNativeTitleBar() {
-}
-
-void WLocalIO::UpdateTopScreen( WStatus* pStatus, WSession *pSession, int nInstanceNumber ) {
 }
 
 void WLocalIO::LocalScrollScreen(int nTop, int nBottom, int nDirection) {
