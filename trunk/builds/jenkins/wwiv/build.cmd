@@ -55,18 +55,24 @@ if not exist %WORKSPACE%\archives (
 del /q %WORKSPACE%\archives
 
 
+echo Create Menus (EN)
+cd %WORKSPACE%\bbs\admin\menus\en
+%ZIP_EXE% a -tzip -r %WORKSPACE%\release\en-menus.zip *
+
+cd %WORKSPACE%\
 echo Copying files to staging directory.
+copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe
+copy /v/y %WORKSPACE%\bbs\readme.txt %WORKSPACE%\release\readme-bbs.txt
+copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe
+copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe
+copy /v/y %WORKSPACE%\fix\Release\fix.exe %WORKSPACE%\release\fix.exe
+copy /v/y %WORKSPACE%\bbs\admin\* %WORKSPACE%\release\
 
-copy %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe
-copy %WORKSPACE%\bbs\readme.txt %WORKSPACE%\release\readme-bbs.txt
-copy %WORKSPACE%\bbs\whatsnew.txt %WORKSPACE%\release\whatsnew.txt
-copy %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe
-copy %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe
-copy %WORKSPACE%\fix\Release\fix.exe %WORKSPACE%\release\fix.exe
-
+echo Creating build.nfo file
 echo Build URL %BUILD_URL% > release\build.nfo
 echo Subversion Build: %SVN_REVISION% >> release\build.nfo
 
+echo Creating release archive: %RELEASE_ZIP%
 cd %WORKSPACE%\release
 %ZIP_EXE% a -tzip -y %RELEASE_ZIP%
 
