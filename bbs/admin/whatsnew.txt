@@ -1,7 +1,14 @@
 ==============================================================================
                            WWIV 5.0 What's New List
-                 Copyright 1999-2004 WWIV Software Services
+                 Copyright 1999-2014 WWIV Software Services
 ==============================================================================
+
+What's New in 2014
+~~~~~~~~~~~~~~~~~~
+* Many more things work.
+* Init is open sourced
+* Full self-bootstrapping support. No longer need 4.30 installed first.
+
 
 What's New in Beta-2
 ~~~~~~~~~~~~~~~~~~~~~
