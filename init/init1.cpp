@@ -1081,8 +1081,6 @@ void nlx( int numLines )
 	}
 }
 
-
-
 /**
  * Printf sytle output function.  Most init output code should use this.
  */
@@ -1097,17 +1095,6 @@ void Printf( const char *pszFormat, ... )
     Puts( szBuffer );
 }
 
-
-
-/****************************************************************************/
-
-#ifdef _MSC_VER
-  // For some lame reason this was crashing on the release build. I looked through the disassembly
-  // for where this was called from init_files and there was no call to this method, the contents
-  // were inlined (and looks like something in the optimization was botched).
-  // In any case, if you remove this, make sure a fresh install of init works.
-__declspec(noinline) 
-#endif
 void create_text(const char *pszFileName)
 {
 	char szFullFileName[MAX_PATH];
@@ -1119,10 +1106,6 @@ void create_text(const char *pszFileName)
 	write( hFile, szMessage, strlen( szMessage ) );
 	close( hFile );
 }
-
-
-/****************************************************************************/
-
 
 void cvtx(unsigned short sp, char *rc)
 {
@@ -1144,7 +1127,6 @@ void cvtx(unsigned short sp, char *rc)
 		}
 	}
 }
-
 
 void convert_result_codes()
 {
