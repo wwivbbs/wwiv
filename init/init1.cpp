@@ -335,17 +335,17 @@ void input(char *pszOutText, int nMaxLength)
 int yn()
 {
 	char ch=0;
-	char *str_yes="Yes";
-	char *str_no="No";
-	
-	while ((!hangup) &&
+	const char *str_yes="Yes";
+	const char *str_no="No";
+
+	while (!hangup &&
 		((ch = upcase(getkey())) != *str_yes) &&
 		(ch != *str_no) &&
 		(ch != 13) && (ch!=27))
 		;
 	Puts((ch == *str_yes) ? str_yes : str_no);
 	nlx();
-	return( ch == *str_yes );
+	return (ch == *str_yes);
 }
 
 char onek(const char *pszKeys)
