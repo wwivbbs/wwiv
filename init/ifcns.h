@@ -129,7 +129,7 @@ void edit_lang(int nn);
 void up_langs();
 void edit_editor(int n);
 void extrn_editors();
-char *prot_name(int pn);
+const char *prot_name(int pn);
 void edit_prot(int n);
 void extrn_prots();
 

@@ -129,7 +129,7 @@ void sysinfo1()
     }
     sprintf(j17, "%u", status.callernum1);
     sprintf(j19, "%u", status.days);
-    sprintf(j5, "%u", syscfg.newusergold);
+    sprintf(j5, "%g", syscfg.newusergold);
     sprintf(j8,"%5.3f",syscfg.req_ratio);
     sprintf(j18,"%5.3f",syscfg.post_call_ratio);
     sprintf(j0, "%d", syscfg.wwiv_reg_number);
@@ -244,7 +244,7 @@ void sysinfo1()
         case 8:
             editline(j5,5,NUM_ONLY,&i1,"");
             syscfg.newusergold=(float) atoi(j5);
-	    sprintf(j5, "%d", syscfg.newusergold);
+	    sprintf(j5, "%g", syscfg.newusergold);
             Printf("%-5s",j5);
             break;
         case 9:
@@ -1286,7 +1286,7 @@ void up_langs()
     } while ( !done && !hangup );
 
     char szFileName[ MAX_PATH ];
-    sprintf( szFileName, "%language.dat", syscfg.datadir );
+    sprintf( szFileName, "%slanguage.dat", syscfg.datadir );
     unlink(szFileName);
     int hFile = open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     write(hFile,(void *)languages, initinfo.num_languages*sizeof(languagerec));
@@ -1451,35 +1451,24 @@ void extrn_editors()
 /****************************************************************************/
 
 
-char *prot_name(int pn)
-{
-	char *ss=">NONE<";
-	
-	switch(pn) {
-    case 1:
-		ss="ASCII";
-		break;
-    case 2:
-		ss="Xmodem";
-		break;
-    case 3:
-		ss="Xmodem-CRC";
-		break;
-    case 4:
-		ss="Ymodem";
-		break;
-    case 5:
-		ss="Batch";
-		break;
-    default:
-		if ((pn>5) || (pn<(initinfo.numexterns+6)))
-		{
-			ss=externs[pn-6].description;
-		}
-		break;
-	}
-	
-	return ss;
+const char *prot_name(int pn) {
+  switch(pn) {
+  case 1:
+    return "ASCII";
+  case 2:
+    return "Xmodem";
+  case 3:
+    return "Xmodem-CRC";
+  case 4:
+    return "Ymodem";
+  case 5:
+    return "Batch";
+  default:
+    if (pn > 5 || pn < (initinfo.numexterns+6)) {
+	return externs[pn-6].description;
+    }
+  }
+  return ">NONE<";
 }
 
 
