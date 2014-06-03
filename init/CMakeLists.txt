@@ -10,9 +10,9 @@ add_definitions(-DINIT -DNOT_BBS)
 
 
 set(COMMON_SOURCES
-  autosel.cpp compile.cpp convert.cpp
+  compile.cpp convert.cpp
   init.cpp init1.cpp init2.cpp init3.cpp
-  initsession.cpp subacc.cpp statusmgr.cpp
+  subacc.cpp
   )
 
 if(UNIX) 

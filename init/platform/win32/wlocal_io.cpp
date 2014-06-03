@@ -195,7 +195,6 @@ void WLocalIO::LocalCls() {
 	ScrollConsoleScreenBuffer(m_hConOut, &scrollRect, NULL, dest, &fill);
 
 	LocalGotoXY(0, 0);
-	lines_listed = 0;
 	curatr = nOldCurrentAttribute;
 }
 
@@ -280,11 +279,6 @@ void WLocalIO::LocalPutch( unsigned char ch ) {
 		LocalCls();
 	} else if ( ch == BACKSPACE ) {
 		LocalBackspace();
-	} else if ( ch == CG ) {
-		if ( !outcom ) {
-			// TODO Make the bell sound configurable.
-			//WWIV_Sound( 500, 4 );
-		}
 	}
 }
 
@@ -348,7 +342,6 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
 	int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
 	va_end( ap );
 
-	// GetSession()->bout.SystemColor( nAttribute );
 	int nOldColor = curatr;
 	curatr = nAttribute;
 	LocalXYPuts( x, y, szBuffer );

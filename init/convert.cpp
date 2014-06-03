@@ -140,7 +140,7 @@ void c_setup()
   }
   if (!syscfg.menudir) 
   {
-      sprintf( syscfg.menudir, "%sMENUS\\", syscfg.gfilesdir );
+      sprintf( syscfg.menudir, "%sMENUS%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR );
   }
 
   if (!syscfg.userreclen)

@@ -75,31 +75,11 @@ unsigned char _getch()
 
 void init()
 {
-	initinfo.screenbottom=defscreenbottom=app->localIO->GetDefaultScreenBottom();
-	initinfo.curlsub=-1;
-	initinfo.curldir=-1;
-	use_workspace = false;
-	chat_file = false;
-	do_event=0;
-	
-	initinfo.topdata=0;
-	ansiptr=0;
 	curatr=0x03;
-	incom = false;
-    outcom = false;
-	charbufferpointer=0;
-	initinfo.topline=0;
-	endofline[0]=0;
-	hangup = false;
-	hungup = false;
-	chatcall = false;
-	change_color=0;
-	chatting=0;
+	hangup = false;  // TODO(rushfan): Remove this from init
 	local_echo = true;
-	lines_listed=0;
-	initinfo.using_modem=0;
 	thisuser.sysstatus=0;
-    daylight = 0; // C Runtime Variable
+    daylight = 0; // C Runtime Variable -- WHY?
 }
 
 
@@ -115,46 +95,6 @@ void *malloca( unsigned long nbytes )
 
 /****************************************************************************/
 
-
-int check_comport(int)
-{
-#if defined (_WIN32) 
-	return 3;
-#else
-	return 0;
-#endif
-}
-
-/****************************************************************************/
-
-
-/* This function outputs one character to the com port */
-void outcomch(char)
-{
-}
-
-
-/* This function sets the com speed to that passed */
-void set_baud(unsigned int)
-{
-}
-
-
-/* This function initializes the com buffer, setting up the interrupt,
-* and com parameters
-*/
-void initportb(int)
-{
-}
-
-/****************************************************************************/
-
-/* This function closes out the com port, removing the interrupt routine,
-* etc.
-*/
-void closeport()
-{
-}
 
 /* This will pause output, displaying the [PAUSE] message, and wait for
 * a key to be hit.
@@ -318,15 +258,11 @@ void input1(char *pszOutText, int nMaxLength, bool bAllowLowerCase )
 	}
 }
 
-
-
 /* This will input an upper-case string */
 void input(char *pszOutText, int nMaxLength)
 {
 	input1( pszOutText, nMaxLength, false );
 }
-
-
 
 /* The keyboard is checked for either a Y, N, or C/R to be hit.  C/R is
 * assumed to be the same as a N.  Yes or No is output, and yn is set to
@@ -588,21 +524,12 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                     app->localIO->LocalGotoXY(cx+pos,cy); 
                     break;
                 default:
-                    {
-		      // char ods[ 255 ];
-		      // sprintf( ods, "char = %d\r\n", ch );
-		      // OutputDebugString( ods );
-                    }
                     break;
                 }
             }
         }
     } while ( !done );
-    //app->localIO->LocalGotoXY(cx,cy);
-    //curatr=oldatr;
-    //OutputStringRaw(s);
-    //app->localIO->LocalGotoXY(cx,cy);
- 
+
     int z = strlen( s );
     while ( z >= 0 && static_cast<unsigned char>( s[z-1] ) == 176 )
     {
@@ -617,8 +544,6 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
     curatr=oldatr;
     OutputStringRaw( szFinishedString );
     app->localIO->LocalGotoXY( cx, cy ); 
-       
-    //return here
 }
 
 
@@ -1406,22 +1331,22 @@ void init_files()
 	memset(&d1, 0, sizeof(directoryrec));
 	
 	Printf(".");
-	strcpy(d1.name,"Sysop");
-	strcpy(d1.filename,"SYSOP");
-	strcpy(d1.path,"dloads\\sysop\\");
+	strcpy(d1.name, "Sysop");
+	strcpy(d1.filename, "SYSOP");
+    sprintf(d1.path, "dloads%csysop%c", WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
 	mkdir(d1.path);
 	d1.dsl=100;
 	d1.maxfiles=50;
 	d1.type=65535;
 	Printf(".");
 	hFile=open("data/dirs.dat",O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-	write(hFile, (void *) (&d1), sizeof(directoryrec));
+	write(hFile, &d1, sizeof(directoryrec));
 	
 	memset(&d1, 0, sizeof(directoryrec));
 	
-	strcpy(d1.name,"Miscellaneous");
-	strcpy(d1.filename,"misc");
-	strcpy(d1.path,"dloads\\misc\\");
+	strcpy(d1.name, "Miscellaneous");
+	strcpy(d1.filename, "misc");
+	sprintf(d1.path, "dloads%cmisc%c", WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
 	mkdir(d1.path);
 	d1.dsl=10;
 	d1.age=0;
@@ -1440,13 +1365,18 @@ void init_files()
 	Printf(".");
 	rename("wwivini.500","wwiv.ini");
 	Printf(".");
-	rename("menucmds.dat","data\\menucmds.dat");
+    char szDestination[MAX_PATH];
+    sprintf(szDestination, "data%cmenucmds.dat", WWIV_FILE_SEPERATOR_CHAR);
+	rename("menucmds.dat",szDestination);
 	Printf(".");
-	rename("regions.dat", "data\\regions.dat");
+    sprintf(szDestination, "data%cregions.dat", WWIV_FILE_SEPERATOR_CHAR);
+	rename("regions.dat", szDestination);
 	Printf(".");
-	rename("wfc.dat", "data\\wfc.dat");
+    sprintf(szDestination, "data%cwfc.dat", WWIV_FILE_SEPERATOR_CHAR);
+	rename("wfc.dat", szDestination);
 	Printf(".");
-	rename("modems.500","data\\modems.mdm");
+    sprintf(szDestination, "data%cmodems.mdm", WWIV_FILE_SEPERATOR_CHAR);
+	rename("modems.500", szDestination);
 	Printf(".");
     // Create the sample files.
 	create_text("welcome.msg");
@@ -1479,26 +1409,35 @@ void init_files()
 	textattr( 3 );
 	if (exist("en-menus.zip")) 
 	{
+        char szDestination[MAX_PATH];
 		Printf(".");
 		system("unzip -qq -o EN-menus.zip -dgfiles ");
 		Printf(".");
-		rename("en-menus.zip", "dloads\\sysop\\en-menus.zip");
+        sprintf(szDestination, "dloads%csysop%cen-menus.zip", 
+            WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
+		rename("en-menus.zip", szDestination);
 		Printf(".");
 	}
 	if (exist("regions.zip")) 
 	{
+        char szDestination[MAX_PATH];
 		Printf(".");
 		system("unzip -qq -o regions.zip -ddata");
 		Printf(".");
-		rename("regions.zip", "dloads\\sysop\\regions.zip");
+        sprintf(szDestination, "dloads%csysop%cregions.zip", 
+            WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
+		rename("regions.zip", szDestination);
 		Printf(".");
 	}
 	if (exist("zip-city.zip")) 
 	{
+        char szDestination[MAX_PATH];
 		Printf(".");
 		system("unzip -qq -o zip-city.zip -ddata");
 		Printf(".");
-		rename("zip-city.zip", "dloads\\sysop\\zip-city.zip");
+        sprintf(szDestination, "dloads%csysop%czip-city.zip", 
+            WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
+		rename("zip-city.zip", szDestination);
 		Printf(".");
 	}
 	// we changed the environment, clear the change
@@ -1514,7 +1453,7 @@ void init_files()
 
 void convert_modem_info(const char *fn)
 {
-	char szFileName[ MAX_PATH ];
+	char szFileName[MAX_PATH];
 	FILE *pFile;
 	int i;
 	
@@ -1631,10 +1570,6 @@ void new_init()
 	
 	init_modem_info();
 }
-
-
-/**********
-******************************************************************/
 
 int verify_inst_dirs(configoverrec *co, int inst)
 {
