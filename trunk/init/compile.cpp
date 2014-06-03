@@ -359,7 +359,7 @@ FILE *open_modem(char *fn, int *sof)
     }
 
     strcpy(s,fn);
-    char *ss = strrchr( s, '\\' );
+    char *ss = strrchr( s, WWIV_FILE_SEPERATOR_CHAR );
     if (ss)
     {
         ++ss;

@@ -75,19 +75,6 @@ int set_modem_info(const char *mt, bool bPause)
         strcpy(syscfgovr.modem_type, mt);
         Printf("Modem info '%s' compiled.\r\n\n",syscfgovr.modem_type);
         save_config();
-        /*
-        if ( szConfigLine[0] && nModemBaud ) 
-        {
-            // need to configure modem
-            textattr( 11 );
-            Printf("Configuring modem...\n\n");
-            textattr( 3 );
-            initportb(syscfgovr.primaryport);
-            set_baud( nModemBaud );
-            pr1( szConfigLine );
-            closeport();
-        }
-        */
         if (modem_notes[0]) 
         {
             // there are some notes about the modem 
@@ -479,24 +466,20 @@ void networks()
 
 void tweak_dir(char *s)
 {
-    if (inst==1)
-    {
+    if (inst==1) {
         return;
     }
 
     int i=strlen(s);
-    if (i==0)
-    {
+    if (i==0) {
         sprintf(s,"temp%d",inst);
-    } 
-    else 
-    {
+    } else {
         char *lcp = s + i - 1;
-        while ((((*lcp>='0') && (*lcp<='9')) || (*lcp=='\\')) && (lcp>=s))
+        while ((((*lcp>='0') && (*lcp<='9')) || (*lcp==WWIV_FILE_SEPERATOR_CHAR)) && (lcp>=s))
         {
             lcp--;
         }
-        sprintf(lcp+1,"%d\\",inst);
+        sprintf(lcp+1, "%d%c", inst, WWIV_FILE_SEPERATOR_CHAR);
     }
 }
 
@@ -515,7 +498,6 @@ void convcfg()
         textattr( 3 );
         WWIV_Delay(1000);
         read(hFile, (void *) (&syscfg), sizeof(configrec));
-        syscfg.rrd = static_cast<unsigned long>(time(NULL)+(86400L*60));
         sprintf(syscfg.menudir, "%sMENUS%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
         strcpy(syscfg.logoff_c, " ");
         strcpy(syscfg.v_scan_c, " ");
@@ -655,9 +637,7 @@ int main(int argc, char* argv[])
 
 int WInitApp::main(int argc, char *argv[])
 {
-    statusMgr = new InitStatusMgr();
     localIO = new WLocalIO();
-    sess = new InitSession();
 
     char s[81],s1[81],ch;
     int i1, newbbs=0, configfile, pwok=0;
@@ -683,7 +663,6 @@ int WInitApp::main(int argc, char *argv[])
     {
         WWIV_ChangeDirTo(ss);
     }
-    defscreenbottom=app->localIO->GetDefaultScreenBottom();
     getcwd(bbsdir, MAX_PATH);
 
     trimstrpath(bbsdir);
@@ -754,7 +733,6 @@ int WInitApp::main(int argc, char *argv[])
         sprintf(modemdat,"modem.%03.3d",inst);
     }
 
-    initinfo.topdata = 0;
     bool done = false;
     configfile=open(configdat,O_RDWR | O_BINARY);
     if ( configfile < 0 )
@@ -851,7 +829,7 @@ int WInitApp::main(int argc, char *argv[])
     sprintf( s, "%sinstance.dat", syscfg.datadir );
     configfile=open(s, O_RDWR|O_BINARY);
     if (configfile != -1) {
-        if (filelength(configfile) > (max_inst * sizeof(instancerec)))
+        if (filelength(configfile) > static_cast<long>(max_inst * sizeof(instancerec)))
         {
             chsize(configfile, max_inst * sizeof(instancerec));
         }
@@ -954,7 +932,9 @@ int WInitApp::main(int argc, char *argv[])
         }
         else 
         {
-            if ((s[i - 1] == '\\') && (s[i - 2] != ':'))
+            // This is on because on UNIX we are not going to have :/ in the filename.
+            // This is just to trim the trailing slash unless it's a path like C:\
+            if ((s[i - 1] == WWIV_FILE_SEPERATOR_CHAR) && (s[i - 2] != ':'))
             {
                 s[i - 1] = 0;
             }
@@ -977,7 +957,8 @@ int WInitApp::main(int argc, char *argv[])
         }
         else 
         {
-            if ((s[i - 1] == '\\') && (s[i - 2] != ':'))
+            // See comment above.
+            if ((s[i - 1] == WWIV_FILE_SEPERATOR_CHAR) && (s[i - 2] != ':'))
             {
                 s[i - 1] = 0;
             }
@@ -1297,7 +1278,7 @@ int WInitApp::main(int argc, char *argv[])
         int x = 0;
         app->localIO->LocalXYPuts( x, y++, "1. General System Configuration");
         app->localIO->LocalXYPuts( x, y++, "2. System Paths");
-#if !defined (_UNIX)
+#if !defined (_unix__)
         app->localIO->LocalXYPuts( x, y++, "3. Communications Port Configuration");
         char szTempBuffer[ 255 ];
         sprintf( szTempBuffer, "5. Manually Select Modem Type (now %s)\r\n", !syscfgovr.modem_type[0]?">UNSET<":syscfgovr.modem_type );
@@ -1332,12 +1313,12 @@ int WInitApp::main(int argc, char *argv[])
             setpaths();
             break;
         case '3':
-#if !defined (_UNIX)
+#if !defined (__Unix__)
             setupcom();
 #endif
             break;
         case '5':
-#if !defined (_UNIX)
+#if !defined (__unix__)
             select_modem();
 #endif
             break;
@@ -1382,10 +1363,6 @@ int WInitApp::main(int argc, char *argv[])
 	// Don't leak the localIO (also fix the color when the app exits)
 	delete app->localIO;
     return 0;
-}
-
-InitSession* GetSession() {
-	return sess;
 }
 
 WInitApp* GetApplication() {

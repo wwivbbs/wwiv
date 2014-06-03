@@ -29,6 +29,16 @@ static int last_msgnum;                     // last msgnum read
 static WFile fileSub;						// WFile object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
+
+// locals
+static int m_nCurrentReadMessageArea, m_nNumMsgsInCurrentSub, subchg;
+int  GetCurrentReadMessageArea() { return m_nCurrentReadMessageArea; }
+void SetCurrentReadMessageArea(int n) { m_nCurrentReadMessageArea = n; }
+
+int  GetNumMessagesInCurrentMessageArea() { return m_nNumMsgsInCurrentSub; }
+void SetNumMessagesInCurrentMessageArea( int n ) { m_nNumMsgsInCurrentSub = n; }
+
+
 void close_sub() {
 	if ( fileSub.IsOpen() ) {
 		fileSub.Close();
@@ -49,7 +59,7 @@ bool open_sub(bool wr) {
 			believe_cache = false;
 			fileSub.Seek( 0L, WFile::seekBegin );
 			fileSub.Read( &p, sizeof( postrec ) );
-			GetSession()->SetNumMessagesInCurrentMessageArea( p.owneruser );
+			SetNumMessagesInCurrentMessageArea( p.owneruser );
 		}
 	} else {
 		fileSub.SetName( subdat_fn );
@@ -59,7 +69,7 @@ bool open_sub(bool wr) {
 	return fileSub.IsOpen();
 }
 
-bool iscan1(int si, bool quick)
+bool iscan1(int si)
 // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
 // don't worry about anything detailed, just grab qscan info.
 {
@@ -73,22 +83,18 @@ bool iscan1(int si, bool quick)
 		}
 	}
 	// forget it if an invalid sub #
-	if ( si < 0 || si >= GetSession()->num_subs ) {
+	if ( si < 0 || si >= initinfo.num_subs ) {
 		return false;
 	}
 
-	// skip this stuff if being called from the WFC cache code
-	if (!quick) {
-		// see if a sub has changed
-		GetApplication()->GetStatusManager()->RefreshStatusCache();
-		if ( GetSession()->subchg ) {
-			GetSession()->SetCurrentReadMessageArea( -1 );
-		}
+	// see if a sub has changed
+	if (subchg) {
+		SetCurrentReadMessageArea( -1 );
+	}
 
-		// if already have this one set, nothing more to do
-		if ( si == GetSession()->GetCurrentReadMessageArea() ) {
-			return true;
-		}
+	// if already have this one set, nothing more to do
+	if ( si == GetCurrentReadMessageArea() ) {
+		return true;
 	}
 	// sub cache no longer valid
 	believe_cache = false;
@@ -108,14 +114,14 @@ bool iscan1(int si, bool quick)
 	}
 
 	// set sub
-	GetSession()->SetCurrentReadMessageArea( si );
-	GetSession()->subchg = 0;
+	SetCurrentReadMessageArea( si );
+	subchg = 0;
 	last_msgnum = 0;
 
 	// read in first rec, specifying # posts
 	fileSub.Seek( 0L, WFile::seekBegin );
 	fileSub.Read( &p, sizeof( postrec ) );
-	GetSession()->SetNumMessagesInCurrentMessageArea( p.owneruser );
+	SetNumMessagesInCurrentMessageArea( p.owneruser );
 
 
 	// close file
@@ -136,13 +142,13 @@ postrec *get_post( int mn )
 		return NULL;
 	}
 
-	if (GetSession()->subchg == 1) {
+	if (subchg == 1) {
 		// sub has changed (detected in GetApplication()->GetStatusManager()->Read); invalidate cache
 		believe_cache = false;
 
 		// kludge: subch==2 leaves subch indicating change, but the '2' value
 		// indicates, to this routine, that it has been handled at this level
-		GetSession()->subchg = 2;
+		subchg = 2;
 	}
 	// see if we need new cache info
 	if ( !believe_cache ||
@@ -157,27 +163,27 @@ postrec *get_post( int mn )
 		}
 
 		// re-read # msgs, if needed
-		if ( GetSession()->subchg == 2 ) {
+		if ( subchg == 2 ) {
 			fileSub.Seek( 0L, WFile::seekBegin );
 			fileSub.Read( &p, sizeof( postrec ) );
-			GetSession()->SetNumMessagesInCurrentMessageArea( p.owneruser );
+			SetNumMessagesInCurrentMessageArea( p.owneruser );
 
 			// another kludge: subch==3 indicates we have re-read # msgs also
 			// only used so we don't do this every time through
-			GetSession()->subchg = 3;
+			subchg = 3;
 
 			// adjust msgnum, if it is no longer valid
-			if ( mn > GetSession()->GetNumMessagesInCurrentMessageArea() ) {
-				mn = GetSession()->GetNumMessagesInCurrentMessageArea();
+			if ( mn > GetNumMessagesInCurrentMessageArea() ) {
+				mn = GetNumMessagesInCurrentMessageArea();
 			}
 		}
 		// select new starting point of cache
 		if ( mn >= last_msgnum ) {
 			// going forward
-			if ( GetSession()->GetNumMessagesInCurrentMessageArea() <= MAX_TO_CACHE) {
+			if ( GetNumMessagesInCurrentMessageArea() <= MAX_TO_CACHE) {
 				cache_start = 1;
-			} else if ( mn > ( GetSession()->GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE  ) ) {
-				cache_start = GetSession()->GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE + 1;
+			} else if ( mn > ( GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE  ) ) {
+				cache_start = GetNumMessagesInCurrentMessageArea() - MAX_TO_CACHE + 1;
 			} else {
 				cache_start = mn;
 			}
@@ -206,7 +212,7 @@ postrec *get_post( int mn )
 		believe_cache = true;
 	}
 	// error if msg # invalid
-	if ( mn < 1 || mn > GetSession()->GetNumMessagesInCurrentMessageArea() ) {
+	if ( mn < 1 || mn > GetNumMessagesInCurrentMessageArea() ) {
 		return NULL;
 	}
 	last_msgnum = mn;

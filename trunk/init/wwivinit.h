@@ -95,7 +95,6 @@ typedef struct {
 #include "wfile.h"
 
 #include "init.h"
-#include "initsession.h"
 
 // Misc Junk for now
 #define textattr(x) curatr = (x)
@@ -124,17 +123,11 @@ typedef struct {
 
 struct initinfo_rec
 {
-    int topline;
-    int screenbottom;
     int numexterns;
     int numeditors;
     int num_languages;
     int net_num_max;
     int num_subs;
-    int curlsub;
-    int curldir;
-    int topdata;
-    int using_modem;
     int usernum;
     int nNumMsgsInCurrentSub;
 };
@@ -144,7 +137,6 @@ __EXTRN__ WInitApp *app;
 __EXTRN__ InitSession *sess;
 __EXTRN__ userrec thisuser;
 __EXTRN__ initinfo_rec initinfo;
-
 
 #if defined(__unix__) 
 
@@ -161,7 +153,6 @@ __EXTRN__ initinfo_rec initinfo;
 // in platform/unix/utility2.cpp
 long filelength(int handle);
 
-
-#endif  // __linux__
+#endif  // __unix__
 
 #endif // __INCLUDED_WWIVINIT_H__
