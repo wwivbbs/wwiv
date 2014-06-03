@@ -21,42 +21,6 @@
 #define __INCLUDED_INIT_H__
 
 /*!
- * @class InitStatusMgr Manages STATUS.DAT
- */
-class InitStatusMgr
-{
-public:
-	/*!
-	 * @function InitStatusMgr Constructor
-	 */
-	InitStatusMgr() {}
-	~InitStatusMgr() {}
-	/*!
-	 * @function Read Loads the contents of STATUS.DAT
-	 */
-	void Read();
-	/*!
-	 * @function Write Writes the contents of STATUS.DAT
-	 */
-	void Write();
-	/*!
-	 * @function Lock Aquires write lock on STATUS.DAT
-	 */
-	void Lock();
-	/*!
-	 * @function Get Loads the contents of STATUS.DAT with
-	 *           control on failure and lock mode
-	 * @param bFailOnFailure Exit the BBS if reading the file fails
-	 * @param bLockFile Aquires write lock 
-	 */
-	void Get(bool bFailOnFailure, bool bLockFile);
-
-	void RefreshStatusCache() {
-		this->Get(false, false);
-	}
-};
-
-/*!
  * @class WInitApp  Main Application object for WWIV 5.0
  */
 class WInitApp
@@ -68,16 +32,6 @@ public:
 
 	int main(int argc, char* argv[]);
 	WLocalIO *localIO;
-
-	InitStatusMgr* GetStatusManager() {
-		return statusMgr;
-	}
-
-	/*!
-	 * @var statusMgr pointer to the InitStatusMgr class.
-	 */
-	InitStatusMgr* statusMgr;
-
 };
 	
 

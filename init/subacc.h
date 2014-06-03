@@ -20,15 +20,10 @@
 #ifndef __INCLUDED_SUBACC_H__
 #define __INCLUDED_SUBACC_H__
 
-
 void    close_sub();
 bool    open_sub(bool wr);
-bool    iscan1(int si, bool quick);
-int     iscan(int b);
+bool    iscan1(int si);
 postrec *get_post(int mn);
-void    delete_message(int mn);
 void    write_post(int mn, postrec * pp);
-void    add_post(postrec * pp);
-void    resynch(int subnum, int *msgnum, postrec * pp);
 
 #endif  // __INCLUDED_SUBACC_H__

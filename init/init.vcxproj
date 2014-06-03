@@ -85,36 +85,27 @@
   <ItemGroup>
     <ClInclude Include="ifcns.h" />
     <ClInclude Include="init.h" />
-    <ClInclude Include="initsession.h" />
     <ClInclude Include="platform\testos.h" />
     <ClInclude Include="platform\wfile.h" />
     <ClInclude Include="platform\wfndfile.h" />
     <ClInclude Include="platform\wlocal_io.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="subacc.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="w5assert.h" />
     <ClInclude Include="wwivinit.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="autosel.cpp" />
     <ClCompile Include="compile.cpp" />
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="init.cpp" />
     <ClCompile Include="init1.cpp" />
     <ClCompile Include="init2.cpp" />
     <ClCompile Include="init3.cpp" />
-    <ClCompile Include="InitSession.cpp" />
     <ClCompile Include="platform\win32\filesupp.cpp" />
     <ClCompile Include="platform\win32\utility2.cpp" />
     <ClCompile Include="platform\win32\wfile.cpp" />
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\win32\wlocal_io.cpp" />
-    <ClCompile Include="statusmgr.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="subacc.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -19,10 +19,6 @@
 #ifndef _IFCNS_H_
 #define _IFCNS_H_
 
-/* File: autosel.cpp */
-void pr1(char *s);
-
-
 /* File: compile.cpp */
 void get_descriptions(char *pth, char ***descrs, int *n, autosel_data **ad, int *nn);
 int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsigned *pnModemBaud);
@@ -62,11 +58,6 @@ unsigned char _getch();
 
 void init();
 void *malloca(unsigned long nbytes);
-int check_comport(int pn);
-void outcomch(char ch);
-void set_baud(unsigned int rate);
-void initportb(int port_num);
-void closeport();
 void pausescr();
 void backspace();
 unsigned char upcase(unsigned char ch);
@@ -115,10 +106,8 @@ void trimstrpath(char *s);
 void print_time(unsigned short t, char *s);
 unsigned short get_time(char *s);
 void sysinfo1();
-void sysinfo2();
 void setpaths();
 void setupcom();
-int xlate_from_char(char ch);
 int read_subs();
 void write_subs();
 void del_net(int nn);

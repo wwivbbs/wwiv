@@ -464,26 +464,15 @@ void setpaths()
 void PrintComPortInfo(int comPortNumber)
 {
 	app->localIO->LocalGotoXY(0,8);
-	if (comPortNumber) 
-	{
-		switch(check_comport(comPortNumber)) 
-		{
-		case 0: // no com port
-			Printf("No com port detected on COM%d:                  \n", syscfgovr.primaryport);
-			break;
-		case 1: // normal com port
-			Printf("Unbuffered UART on COM%d:                       \n", syscfgovr.primaryport);
-			break;
-		case 2: // buffering UART
-			Printf("Buffered UART on COM%d:                         \n", syscfgovr.primaryport);
-		case 3: // OS does not support detection
-			Printf("OS Supported Communications on COM%d:           \n", syscfgovr.primaryport);
-		}
-	} 
-	else 
-	{
-		Printf("Modem usage disabled.                               \r\n\n");
-	}
+	if (!comPortNumber) {
+        return;
+    }
+
+#ifdef _WIN32
+    Printf("OS Supported Communications on COM%d:           \n", syscfgovr.primaryport);
+#else
+    Printf("No com port detected on COM%d:                  \n", syscfgovr.primaryport);
+#endif
 }
 
 
@@ -523,26 +512,6 @@ void setupcom()
 	} while ( !done && !hangup );
 	save_config();
 }
-
-
-/****************************************************************************/
-
-
-int xlate_from_char(char ch)
-{
-	if ((ch<='0') || ((ch>'9') && (ch<'A')) || (ch>'Z'))
-	{
-		return 34;
-	}
-	if (ch<='9')
-	{
-		return( ch - '1' );
-	}
-	return( ch - 'A' + 9 );
-}
-
-
-/****************************************************************************/
 
 int read_subs()
 {
@@ -631,7 +600,7 @@ void del_net(int nn)
         }
         if (i2>=i) 
         {
-            iscan1(i,false);
+            iscan1(i);
             open_sub(true);
             for (i1=1; i1<=initinfo.nNumMsgsInCurrentSub; i1++) 
             {
@@ -761,7 +730,7 @@ void insert_net(int nn)
         }
         if (i2>=i) 
         {
-            iscan1(i, false);
+            iscan1(i);
             open_sub(true);
             for (i1=1; i1<=initinfo.nNumMsgsInCurrentSub; i1++) 
             {
@@ -830,14 +799,13 @@ void insert_net(int nn)
 
     BbsFreeMemory(u);
 
-    for (i=initinfo.net_num_max; i>nn; i--) 
-    {
+    for (i=initinfo.net_num_max; i>nn; i--) {
         net_networks[i]=net_networks[i-1];
     }
     initinfo.net_num_max++;
-    memset(&(net_networks[nn]),0,sizeof(net_networks_rec));
-    strcpy(net_networks[nn].name,"NewNet");
-    strcpy(net_networks[nn].dir,"newnet.dir\\");
+    memset(&(net_networks[nn]), 0, sizeof(net_networks_rec));
+    strcpy(net_networks[nn].name, "NewNet");
+    sprintf(net_networks[nn].dir, "newnet.dir%c", WWIV_FILE_SEPERATOR_CHAR);
 
     sprintf( szFileName, "%snetworks.dat", syscfg.datadir );
     i=open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
