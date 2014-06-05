@@ -24,7 +24,7 @@
 #undef GetFullPathName
 #undef MoveFile
 
-#include "shellapi.h"
+#include <shellapi.h>
 
 #include "platform/WFile.h"
 #include "platform/wfndfile.h"

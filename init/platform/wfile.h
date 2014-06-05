@@ -22,7 +22,6 @@
 
 #include <cstring>
 #include <string>
-#include "wstringutils.h"
 
 #ifndef MAX_PATH
 #define MAX_PATH 260
@@ -155,7 +154,7 @@ class WFile {
 	virtual time_t GetFileTime();
 
 	virtual char *GetParent() {
-		char *tmpCopy = WWIV_STRDUP(m_szFileName);
+		char *tmpCopy = strdup(m_szFileName);
 		char *p = &tmpCopy[strlen(tmpCopy)-1];
 		while(*p != WFile::pathSeparatorChar) {
 			p--;
