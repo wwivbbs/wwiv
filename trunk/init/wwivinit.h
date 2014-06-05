@@ -37,7 +37,7 @@
 // be included after testos.h has been included.
 //
 
-#include "testos.h"
+#include "platform/testos.h"
 
 #include "w5assert.h"
 
@@ -92,7 +92,7 @@ typedef struct {
 #include "vars.h"
 #include "platform/wfndfile.h"
 #include "platform/wlocal_io.h"
-#include "wfile.h"
+#include "platform/wfile.h"
 
 #include "init.h"
 

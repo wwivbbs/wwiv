@@ -16,63 +16,25 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_PLATFORM_CURSESIO_H__
+#define __INCLUDED_PLATFORM_CURSESIO_H__
 
-#ifndef __INCLUDED_PLATFORM_WLOCALIO_H__
-#define __INCLUDED_PLATFORM_WLOCALIO_H__
+#include "platform/wlocal_io.h"
+#undef MOUSE_MOVED
+#include <curses.h>
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif // _WIN32
-
-#include "wfile.h"
-
-class WStatus;
-class WSession;
-
-// This C++ class should encompass all Local Input/Output from The BBS.
-// You should use a routine in here instead of using printf, puts, etc.
-class WLocalIO {
+// Curses implementation of the WLocalIO subset required by Init.
+class CursesIO : public WLocalIO {
 
   public:
-	static const int scrollDown = 1;
-	static const int scrollUp = 0;
-
-  private:
-	int  m_nScreenBottom;
-
-  protected:
-	int ExtendedKeyWaiting;
-
-#if defined ( _WIN32 )
-	COORD  m_cursorPosition;
-	HANDLE m_hConOut;
-	HANDLE m_hConIn;
-	CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
-#endif
-
-#if defined ( __unix__ ) || defined ( __APPLE__ )
-	short m_cursorPositionX;
-	short m_cursorPositionY;
-#endif
-
-  public:
-#if defined ( _WIN32 )
-	virtual void set_attr_xy(int x, int y, int a);
-	COORD m_originalConsoleSize;
-#endif // _WIN32
-
 	// Constructor/Destructor
-	WLocalIO();
-	WLocalIO( const WLocalIO& copy );
-	virtual ~WLocalIO();
-
-	const int GetScreenBottom() const {
-		return m_nScreenBottom;
-	}
-	void SetScreenBottom( int nScreenBottom ) {
-		m_nScreenBottom = nScreenBottom;
-	}
+	CursesIO();
+	CursesIO( const CursesIO& copy );
+	virtual ~CursesIO();
+#ifdef _WIN32
+    // N.B. This is only used by compile.cpp
+    virtual void set_attr_xy(int x, int y, int a);
+#endif
 	virtual void LocalGotoXY(int x, int y);
 	virtual int  WhereX();
 	virtual int  WhereY();
@@ -87,6 +49,13 @@ class WLocalIO {
 	virtual void LocalXYPuts( int x, int y, const char *pszText );
 	virtual int getchd();
 	virtual void LocalScrollScreen(int nTop, int nBottom, int nDirection);
+
+private:
+    WINDOW *window_;
+    int max_x_;
+    int max_y_;
 };
 
-#endif // __INCLUDED_PLATFORM_WLOCALIO_H__
+
+
+#endif // __INCLUDED_PLATFORM_CURSESIO_H__

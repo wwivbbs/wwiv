@@ -41,11 +41,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)\platform;$(ProjectDir)\platform\win32;$(ProjectDir)\..\bbs;$(ProjectDir)\..\bbs\platform;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\platform\win32;$(ProjectDir)\..\bbs;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)\platform;$(ProjectDir)\platform\win32;$(ProjectDir)\..\bbs;$(ProjectDir)\..\bbs\platform;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\platform\win32;$(ProjectDir)\..\bbs;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClInclude Include="ifcns.h" />
     <ClInclude Include="init.h" />
+    <ClInclude Include="platform\curses_io.h" />
     <ClInclude Include="platform\testos.h" />
     <ClInclude Include="platform\wfile.h" />
     <ClInclude Include="platform\wfndfile.h" />
@@ -101,12 +102,18 @@
     <ClCompile Include="init1.cpp" />
     <ClCompile Include="init2.cpp" />
     <ClCompile Include="init3.cpp" />
+    <ClCompile Include="platform\curses_io.cpp" />
     <ClCompile Include="platform\win32\filesupp.cpp" />
     <ClCompile Include="platform\win32\utility2.cpp" />
     <ClCompile Include="platform\win32\wfile.cpp" />
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\win32\wlocal_io.cpp" />
     <ClCompile Include="subacc.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\deps\pdcurses-3.4\pdcurses.vcxproj">
+      <Project>{ec52ceda-4f35-469a-8975-98776ea8ea93}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
