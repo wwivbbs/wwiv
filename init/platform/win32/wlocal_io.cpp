@@ -22,21 +22,18 @@
 #include <sstream>
 
 #include "wwivinit.h"
-#include "wlocal_io.h"
-#include "wstringutils.h"
+#include "platform/wlocal_io.h"
 
 //
 // local functions
 //
 
-bool HasKeyBeenPressed();
-unsigned char GetKeyboardChar();
+static unsigned char GetKeyboardChar();
 static int GetTopLine() { return 0; }
 
 /*
  * Sets screen attribute at screen pos x,y to attribute contained in a.
  */
-
 void WLocalIO::set_attr_xy(int x, int y, int a) {
 	COORD loc = {0};
 	DWORD cb = {0};
@@ -294,62 +291,9 @@ void WLocalIO::LocalPuts( const char *pszText )
 
 void WLocalIO::LocalXYPuts( int x, int y, const char *pszText ) {
 	LocalGotoXY( x, y );
-	LocalFastPuts( pszText );
+	LocalPuts( pszText );
 }
 
-
-void WLocalIO::LocalFastPuts( const char *pszText )
-// This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
-{
-	DWORD cb = 0;
-	int len = strlen( pszText );
-
-	SetConsoleTextAttribute( m_hConOut, static_cast< short > ( curatr ) );
-	WriteConsole( m_hConOut, pszText, len, &cb, NULL );
-	m_cursorPosition.X = m_cursorPosition.X + static_cast< short >( cb );
-}
-
-
-int  WLocalIO::LocalPrintf( const char *pszFormattedText, ... ) {
-	va_list ap;
-	char szBuffer[ 1024 ];
-
-	va_start( ap, pszFormattedText );
-	int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
-	va_end( ap );
-	LocalFastPuts( szBuffer );
-	return nNumWritten;
-}
-
-
-int  WLocalIO::LocalXYPrintf( int x, int y, const char *pszFormattedText, ... ) {
-	va_list ap;
-	char szBuffer[ 1024 ];
-
-	va_start( ap, pszFormattedText );
-	int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
-	va_end( ap );
-	LocalXYPuts( x, y, szBuffer );
-	return nNumWritten;
-}
-
-
-int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszFormattedText, ... ) {
-	va_list ap;
-	char szBuffer[ 1024 ];
-
-	va_start( ap, pszFormattedText );
-	int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
-	va_end( ap );
-
-	int nOldColor = curatr;
-	curatr = nAttribute;
-	LocalXYPuts( x, y, szBuffer );
-	curatr = nOldColor;
-	return nNumWritten;
-}
-
-/****************************************************************************/
 /*
 * returns the ASCII code of the next character waiting in the
 * keyboard buffer.  If there are no characters waiting in the
@@ -359,7 +303,7 @@ int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszForm
 * Alt-X, etc.).  The function must be called again upon receiving
 * a value of 0 to obtain the value of the extended key pressed.
 */
-unsigned char WLocalIO::getchd() {
+int WLocalIO::getchd() {
 	if (ExtendedKeyWaiting) {
 		ExtendedKeyWaiting = 0;
 		return GetKeyboardChar();
@@ -379,14 +323,6 @@ void WLocalIO::LocalClrEol() {
 	GetConsoleScreenBufferInfo( m_hConOut,&ConInfo );
 	FillConsoleOutputCharacter( m_hConOut, ' ', len, ConInfo.dwCursorPosition, &cb );
 	FillConsoleOutputAttribute( m_hConOut, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb );
-}
-
-int WLocalIO::GetDefaultScreenBottom() {
-	return ( m_consoleBufferInfo.dwSize.Y - 1 );
-}
-
-bool HasKeyBeenPressed() {
-	return ( _kbhit() ) ? true : false;
 }
 
 unsigned char GetKeyboardChar() {

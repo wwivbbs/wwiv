@@ -20,6 +20,7 @@
 
 #include "wwivinit.h"
 #include "version.cpp"
+#include "platform/curses_io.h"
 
 char **mdm_desc;
 int mdm_count=0, mdm_cur;
@@ -637,7 +638,13 @@ int main(int argc, char* argv[])
 
 int WInitApp::main(int argc, char *argv[])
 {
-    localIO = new WLocalIO();
+    // HACK
+    const std::string curses = "--curses";
+    if (argc > 1 && curses == argv[1]) {
+        localIO = new CursesIO();
+    } else {
+        localIO = new WLocalIO();
+    }
 
     char s[81],s1[81],ch;
     int i1, newbbs=0, configfile, pwok=0;
