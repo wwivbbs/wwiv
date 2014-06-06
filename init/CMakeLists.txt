@@ -12,10 +12,13 @@ add_definitions(-DINIT -DNOT_BBS)
 set(COMMON_SOURCES
   compile.cpp convert.cpp
   init.cpp init1.cpp init2.cpp init3.cpp
-  subacc.cpp
+  subacc.cpp platform/curses_io.cpp
   )
 
 if(UNIX) 
+  find_package(Curses REQUIRED)
+  message("Curses Library: ${CURSES_LIBRARIES}") 
+
   include_directories(platform/unix)
   set(PLATFORM_SOURCES 
 	platform/unix/filestuff.cpp
@@ -31,3 +34,4 @@ endif()
 #include_directories(${BBS_SOURCE_DIR}/platform)
 
 add_executable(init ${COMMON_SOURCES} ${PLATFORM_SOURCES})
+target_link_libraries(init ${CURSES_LIBRARIES})
