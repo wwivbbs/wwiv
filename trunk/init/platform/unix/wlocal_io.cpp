@@ -193,82 +193,14 @@ void WLocalIO::LocalPuts(const char *s) {
 
 void WLocalIO::LocalXYPuts( int x, int y, const char *pszText ) {
 	LocalGotoXY( x, y );
-	LocalFastPuts( pszText );
+	LocalPuts( pszText );
 }
 
-
-/*
- * This RAPIDLY outputs ONE LINE to the screen only
- */
-void WLocalIO::LocalFastPuts(const char *s) {
-	m_cursorPositionX += strlen( s );
-	m_cursorPositionX %= 80;
-
-	// TODO: set current attributes
-
-	std::cout << s;
-}
-
-
-int  WLocalIO::LocalPrintf( const char *pszFormattedText, ... ) {
-	va_list ap;
-	char szBuffer[ 1024 ];
-
-	va_start( ap, pszFormattedText );
-	int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
-	va_end( ap );
-	LocalFastPuts( szBuffer );
-	return nNumWritten;
-}
-
-
-int  WLocalIO::LocalXYPrintf( int x, int y, const char *pszFormattedText, ... ) {
-	va_list ap;
-	char szBuffer[ 1024 ];
-
-	va_start( ap, pszFormattedText );
-	int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
-	va_end( ap );
-	LocalXYPuts( x, y, szBuffer );
-	return nNumWritten;
-}
-
-
-int  WLocalIO::LocalXYAPrintf( int x, int y, int nAttribute, const char *pszFormattedText, ... ) {
-	va_list ap;
-	char szBuffer[ 1024 ];
-
-	va_start( ap, pszFormattedText );
-	int nNumWritten = vsnprintf( szBuffer, sizeof( szBuffer ), pszFormattedText, ap );
-	va_end( ap );
-
-	int nOldColor = curatr;
-	curatr = nAttribute;
-	LocalXYPuts( x, y, szBuffer );
-	curatr = nOldColor;
-	return nNumWritten;
-}
-
-/****************************************************************************/
-/*
-* returns the ASCII code of the next character waiting in the
-* keyboard buffer.  If there are no characters waiting in the
-* keyboard buffer, then it waits for one.
-*
-* A value of 0 is returned for all extended keys (such as F1,
-* Alt-X, etc.).  The function must be called again upon receiving
-* a value of 0 to obtain the value of the extended key pressed.
-*/
-unsigned char WLocalIO::getchd() {
+int WLocalIO::getchd() {
   return _getch();
 }
 
 void WLocalIO::LocalClrEol() {
-}
-
-
-int WLocalIO::GetDefaultScreenBottom() {
-	return 25;
 }
 
 

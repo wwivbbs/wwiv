@@ -33,9 +33,11 @@
 
 static int GetTopLine() { return 0; }
 
+#ifdef _WIN32
 void CursesIO::set_attr_xy(int x, int y, int a) {
     //TODO(rushfan): Implement me if needed for compile.cpp
 }
+#endif  // _WIN32
 
 CursesIO::CursesIO() {
     window_ = initscr();
