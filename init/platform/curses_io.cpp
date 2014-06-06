@@ -47,6 +47,7 @@ CursesIO::CursesIO() {
     max_x_ = getmaxx(stdscr);
     max_y_ = getmaxy(stdscr);
     SetScreenBottom(max_y_);
+    start_color();
     refresh();
 }
 

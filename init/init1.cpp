@@ -351,25 +351,29 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
     bool bInsert = false;
     do 
     {
-        unsigned char ch = _getch();
+        unsigned char ch = getkey();
         if ( ch == 0 || ch == 224 ) 
         {
-            ch=_getch();
+            ch=getkey();
             switch ( ch ) 
             {
             case F1:
+            case KEY_F(1): // curses
                 done = true;
                 *returncode=DONE;
                 break;
-            case HOME: 
+            case HOME:
+	    case KEY_HOME: // curses
                 pos=0; 
                 app->localIO->LocalGotoXY( cx, cy ); 
                 break;        
-            case END: 
+            case END:
+            case KEY_END: // curses
                 pos=editlinestrlen( s ); 
                 app->localIO->LocalGotoXY( cx + pos, cy ); 
                 break;  
-            case RARROW: 
+            case RARROW:
+            case KEY_RIGHT: // curses
                 if (pos<len) 
                 {                       //right
                     int nMaxPos = editlinestrlen( s );
@@ -380,7 +384,8 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                     }
                 }
                 break;
-            case LARROW: 
+            case LARROW:
+            case KEY_LEFT: // curses
                 if ( pos > 0 ) 
                 {                         //left
                     pos--;
@@ -389,14 +394,17 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                 break;
             case UPARROW:
             case CO:                                      //return
+            case KEY_UP: // curses
                 done = true;
                 *returncode=PREV;
                 break;
             case DNARROW:
+            case KEY_DOWN: // curses
                 done = true;
                 *returncode=NEXT;
                 break;
             case INSERT:
+            case KEY_IC: // curses
                 if (status!=SET) 
                 {
                     if ( bInsert ) 
@@ -416,6 +424,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                 }
                 break;
             case KEY_DELETE:
+	    case KEY_DL: // curses
                 if (status!=SET) 
                 {
                     for ( i = pos; i < len; i++ )
@@ -549,7 +558,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
 
 int toggleitem(int value, const char **strings, int num, int *returncode)
 {
-	if ( value < 0 || value >= num )
+    if ( value < 0 || value >= num )
     {
 		value=0;
     }
@@ -569,16 +578,16 @@ int toggleitem(int value, const char **strings, int num, int *returncode)
 			ch=app->localIO->getchd();
 			switch (ch) 
             {
-			case 59:
+			case 59: // F1
 				done = true;
 				*returncode=DONE;
 				break;
-			case 72:
-			case 15:
+			case 72: // UP
+			case 15: // SHIFT-TAB
 				done = true;
 				*returncode=PREV;
 				break;
-			case 80:
+			case 80: // DOWN
 				done = true;
 				*returncode=NEXT;
 				break;
