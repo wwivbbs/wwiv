@@ -71,7 +71,7 @@ void *malloca( unsigned long nbytes )
 */
 void pausescr()
 {
-	textattr(13);
+	textattr(COLOR_MAGENTA);
 	Puts( "[PAUSE]" );
 	textattr(COLOR_CYAN);
 	getkey();
@@ -1390,7 +1390,7 @@ void convert_modem_info(const char *fn)
 	if (!pFile) 
 	{
 		Printf( "Couldn't open '%s' for writing.\n", szFileName );
-		textattr(7);
+		textattr(COLOR_WHITE);
 		exit( 2 );
 	}
 	
@@ -1480,9 +1480,9 @@ void new_init()
 		{
 			if ( mkdir( dirname[i] ) ) 
 			{
-				textattr(12);
+				textattr(COLOR_RED);
 				Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname[i]);
-				textattr(7);
+				textattr(COLOR_WHITE);
 				exit( 2 );
 			}
 		} 
@@ -1535,7 +1535,7 @@ int verify_inst_dirs(configoverrec *co, int inst)
 	}
 	if (rc) {
 		app->localIO->LocalGotoXY(0, 8);
-		textattr(12);
+		textattr(COLOR_RED);
 		app->localIO->LocalPuts(szMessage);
 		WWIV_Delay(2000);
 		for (i = 0; i < (int) strlen(szMessage); i++)
