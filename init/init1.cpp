@@ -43,36 +43,6 @@ extern int inst;
 static int wfc = 0;
 static int useron = 0;
 
-#ifdef __unix__
-static struct termios oldios, newios;
-/* Initialize new terminal i/o settings */
-void initTermios() 
-{
-  tcgetattr(0, &oldios); /* grab old terminal i/o settings */
-  newios = oldios; /* make new settings same as old settings */
-  newios.c_lflag &= ~ICANON; /* disable buffered i/o */
-  newios.c_lflag &= ~ECHO; /* set echo mode */
-  tcsetattr(0, TCSANOW, &newios); /* use these new terminal i/o settings now */
-}
-
-/* Restore old terminal i/o settings */
-void resetTermios(void) 
-{
-  tcsetattr(0, TCSANOW, &oldios);
-}
-
-
-unsigned char _getch() 
-{
-  char ch;
-  initTermios();
-  ch = getchar();
-  resetTermios();
-  return static_cast<unsigned char>(ch);
-}
-
-#endif  //__unix__
-
 void init()
 {
 	curatr=0x03;
@@ -124,8 +94,7 @@ void backspace()
 /* This converts a character to uppercase */
 int upcase(int ch)
 {
-	if ((ch > '`') && (ch < '{'))
-	{
+	if ((ch > '`') && (ch < '{')) {
 		ch = ch - 32;
 	}
 	return ch;
@@ -138,7 +107,7 @@ int upcase(int ch)
 */
 int getkey()
 {
-    return static_cast<unsigned char>(_getch());
+    return (getch());
 }
 
 
@@ -151,7 +120,7 @@ void input1(char *pszOutText, int nMaxLength, bool bAllowLowerCase )
 {
 	int curpos=0, in_ansi=0;
     bool done = false;
-	int ch;
+	unsigned char ch;
 	
 	while (!done && !hangup) 
 	{
@@ -270,7 +239,7 @@ void input(char *pszOutText, int nMaxLength)
 */
 int yn()
 {
-	int ch=0;
+	char ch=0;
 	const char *str_yes="Yes";
 	const char *str_no="No";
 
@@ -286,7 +255,7 @@ int yn()
 
 char onek(const char *pszKeys)
 {
-	int ch = 0;
+	char ch = 0;
 	
 	while (!strchr(pszKeys, ch = upcase(getkey())) && !hangup)
 		;
@@ -305,7 +274,7 @@ void OutputStringRaw(const char *pszText) {
 	for (int i=0; pszText[i]!=0; i++) 
 	{
 		char ch=pszText[i];
-		app->localIO->LocalPutchRaw(ch);
+		app->localIO->LocalPutch(ch);
 	}
 }
 
@@ -347,199 +316,152 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
     bool done=false;
     int pos = 0;
     bool bInsert = false;
-    do 
-    {
+    do {
         int ch = getkey();
-        if ( ch == 0 || ch == 224 ) 
-        {
-            ch=getkey();
-            switch ( ch ) 
-            {
-            case F1:
-            case KEY_F(1): // curses
-                done = true;
-                *returncode=DONE;
-                break;
-            case HOME:
-	    case KEY_HOME: // curses
-                pos=0; 
-                app->localIO->LocalGotoXY( cx, cy ); 
-                break;        
-            case END:
-            case KEY_END: // curses
-                pos=editlinestrlen( s ); 
-                app->localIO->LocalGotoXY( cx + pos, cy ); 
-                break;  
-            case RARROW:
-            case KEY_RIGHT: // curses
-                if (pos<len) 
-                {                       //right
-                    int nMaxPos = editlinestrlen( s );
-                    if ( pos < nMaxPos )
-                    {
-                        pos++;
-                        app->localIO->LocalGotoXY( cx + pos, cy );
-                    }
-                }
-                break;
-            case LARROW:
-            case KEY_LEFT: // curses
-                if ( pos > 0 ) 
-                {                         //left
-                    pos--;
+        switch ( ch ) {
+        case KEY_F(1): // curses
+            done = true;
+            *returncode=DONE;
+            break;
+    	case KEY_HOME: // curses
+            pos=0; 
+            app->localIO->LocalGotoXY( cx, cy ); 
+            break;        
+        case KEY_END: // curses
+            pos=editlinestrlen( s ); 
+            app->localIO->LocalGotoXY( cx + pos, cy ); 
+            break;  
+        case KEY_RIGHT: // curses
+            if (pos < len) {                       //right
+                int nMaxPos = editlinestrlen( s );
+                if (pos < nMaxPos) {
+                    pos++;
                     app->localIO->LocalGotoXY( cx + pos, cy );
                 }
-                break;
-            case UPARROW:
-            case CO:                                      //return
-            case KEY_UP: // curses
-                done = true;
-                *returncode=PREV;
-                break;
-            case DNARROW:
-            case KEY_DOWN: // curses
-                done = true;
-                *returncode=NEXT;
-                break;
-            case INSERT:
-            case KEY_IC: // curses
-                if (status!=SET) 
-                {
-                    if ( bInsert ) 
-                    {
-                        bInsert = false;
-                        app->localIO->LocalGotoXY(77,0);
-                        OutputStringRaw("OVR");
-                        app->localIO->LocalGotoXY(cx+pos,cy);
-                    } 
-                    else 
-                    {
-                        bInsert = true;
-                        app->localIO->LocalGotoXY(77,0);
-                        OutputStringRaw("INS");
-                        app->localIO->LocalGotoXY(cx+pos,cy);
-                    }
-                }
-                break;
-            case KEY_DELETE:
-	    case KEY_DL: // curses
-                if (status!=SET) 
-                {
-                    for ( i = pos; i < len; i++ )
-                    {
-                        s[i]=s[i+1];
-                    }
-                    s[len-1] = static_cast<char>(background_character);
-                    app->localIO->LocalGotoXY(cx,cy);
-                    OutputStringRaw(s);
+            }
+            break;
+        case KEY_LEFT: // curses
+            if ( pos > 0 ) 
+            {                         //left
+                pos--;
+                app->localIO->LocalGotoXY( cx + pos, cy );
+            }
+            break;
+        case CO:                                      //return
+        case KEY_UP: // curses
+            done = true;
+            *returncode=PREV;
+            break;
+        case KEY_DOWN: // curses
+            done = true;
+            *returncode=NEXT;
+            break;
+        case KEY_IC: // curses
+            if (status!=SET) {
+                if (bInsert) {
+                    bInsert = false;
+                    app->localIO->LocalGotoXY(77,0);
+                    OutputStringRaw("OVR");
+                    app->localIO->LocalGotoXY(cx+pos,cy);
+                } else {
+                    bInsert = true;
+                    app->localIO->LocalGotoXY(77,0);
+                    OutputStringRaw("INS");
                     app->localIO->LocalGotoXY(cx+pos,cy);
                 }
-                break;
             }
-        } 
-        else 
-        {
-            if (ch>31) 
-            {
-                if (status==UPPER_ONLY)
-                {
+            break;
+	    case KEY_DC: // curses
+            if (status!=SET) {
+                for ( i = pos; i < len; i++ ) {
+                    s[i]=s[i+1];
+                }
+                s[len-1] = static_cast<char>(background_character);
+                app->localIO->LocalGotoXY(cx,cy);
+                OutputStringRaw(s);
+                app->localIO->LocalGotoXY(cx+pos,cy);
+            }
+            break;
+        default:
+            if (ch>31) {
+                if (status==UPPER_ONLY) {
                     ch=upcase( ch );
                 }
-                if ( status == SET )
-                {
+                if ( status == SET ) {
                     ch = upcase( ch );
-                    if (ch!=' ') 
-                    {
+                    if (ch!=' ')  {
                         int i1 = 1;
-                        for ( i = 0; i < len; i++ )
-                        {
-                            if ( ch == ss[i] && i1 ) 
-                            {
+                        for ( i = 0; i < len; i++ ) {
+                            if ( ch == ss[i] && i1 ) {
                                 i1=0;
                                 pos=i;
                                 app->localIO->LocalGotoXY(cx+pos,cy);
-                                if (s[pos]==' ')
-                                {
+                                if (s[pos]==' ') {
                                     ch=ss[pos];
-                                }
-                                else
-                                {
+                                } else {
                                     ch=' ';
                                 }
                             }
-                            if ( i1 )
-                            {
+                            if ( i1 ) {
                                 ch=ss[pos];
                             }
                         }
                     }
                 }
                 if ((pos<len)&&((status==ALL) || (status==UPPER_ONLY) || (status==SET) ||
-                    ((status==NUM_ONLY) && (((ch>='0') && (ch<='9')) || (ch==' '))))) 
-                {
-                    if ( bInsert ) 
-                    {
-                        for (i=len-1; i>pos; i--)
-                        {
+                    ((status==NUM_ONLY) && (((ch>='0') && (ch<='9')) || (ch==' '))))) {
+                    if ( bInsert )  {
+                        for (i=len-1; i>pos; i--) {
                             s[i]=s[i-1];
                         }
                         s[pos++]=ch;
                         app->localIO->LocalGotoXY(cx,cy);
                         OutputStringRaw(s);
                         app->localIO->LocalGotoXY(cx+pos,cy);
-                    } 
-                    else 
-                    {
+                    }  else  {
                         s[pos++]=ch;
-                        app->localIO->LocalPutchRaw(ch);
+                        app->localIO->LocalPutch(ch);
                     }
-                }
-            } 
-            else 
-            {
-                switch( ch ) 
-                {
-                case RETURN:                                        //return
-                case TAB:
-                    done = true;
-                    *returncode=NEXT;
-                    break;
-                case ESC:                                    //esc
-                    done = true;
-                    *returncode=DONE;
-                    break;
-                case BACKSPACE:                                    //backspace
-                    if (pos>0) 
-                    {
-                        for (i=pos-1; i<len; i++)
-                        {
-                            s[i]=s[i+1];
-                        }
-                        s[len-1] = static_cast<char>(background_character);
-                        pos--;
-                        app->localIO->LocalGotoXY(cx,cy);
-                        OutputStringRaw(s);
-                        app->localIO->LocalGotoXY(cx+pos,cy);
-                    }
-                    break;
-                case CA: // control-a
-                    pos=0; 
-                    app->localIO->LocalGotoXY(cx,cy); 
-                    break; 
-                case CE: // control-e
-                    pos=editlinestrlen(s); 
-                    app->localIO->LocalGotoXY(cx+pos,cy); 
-                    break;
-                default:
-                    break;
                 }
             }
+            break;
+        case RETURN:                                        //return
+        case TAB:
+            done = true;
+            *returncode=NEXT;
+            break;
+        case ESC:                                    //esc
+            done = true;
+            *returncode=DONE;
+            break;
+        case KEY_BACKSPACE: // curses
+        case BACKSPACE:                                    //backspace
+            if (pos>0) {
+                for (i=pos-1; i<len; i++) {
+                    s[i]=s[i+1];
+                }
+                s[len-1] = static_cast<char>(background_character);
+                pos--;
+                app->localIO->LocalGotoXY(cx,cy);
+                OutputStringRaw(s);
+                app->localIO->LocalGotoXY(cx+pos,cy);
+            }
+            break;
+        case CA: // control-a
+            pos=0; 
+            app->localIO->LocalGotoXY(cx,cy); 
+            break; 
+        case CE: // control-e
+            pos=editlinestrlen(s); 
+            app->localIO->LocalGotoXY(cx+pos,cy); 
+            break;
         }
+
+
     } while ( !done );
 
     int z = strlen( s );
-    while ( z >= 0 && static_cast<unsigned char>( s[z-1] ) == 176 )
-    {
+    while (z >= 0 && static_cast<unsigned char>( s[z-1] ) == background_character) {
         --z;
     }
     s[z] = '\0';

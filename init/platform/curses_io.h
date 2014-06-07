@@ -24,13 +24,17 @@
 #include <curses.h>
 
 // Curses implementation of the WLocalIO subset required by Init.
-class CursesIO : public WLocalIO {
+class CursesIO {
 
   public:
 	// Constructor/Destructor
 	CursesIO();
 	CursesIO( const CursesIO& copy );
 	virtual ~CursesIO();
+
+    static const int scrollDown = 1;
+	static const int scrollUp = 0;
+
 #ifdef _WIN32
     // N.B. This is only used by compile.cpp
     virtual void set_attr_xy(int x, int y, int a);
@@ -38,17 +42,15 @@ class CursesIO : public WLocalIO {
 	virtual void LocalGotoXY(int x, int y);
 	virtual int  WhereX();
 	virtual int  WhereY();
-	virtual void LocalLf();
-	virtual void LocalCr();
 	virtual void LocalCls();
 	virtual void LocalClrEol();
-	virtual void LocalBackspace();
-	virtual void LocalPutchRaw(unsigned char ch);
 	virtual void LocalPutch(unsigned char ch);
 	virtual void LocalPuts( const char *pszText );
 	virtual void LocalXYPuts( int x, int y, const char *pszText );
 	virtual int getchd();
 	virtual void LocalScrollScreen(int nTop, int nBottom, int nDirection);
+
+    const int GetScreenBottom() const {	return max_y_; }
 
 private:
     WINDOW *window_;
