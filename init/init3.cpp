@@ -50,7 +50,7 @@ void edit_arc(int nn)
 		if (i == 0) 
 		{
 			Printf("Archiver #%d  ", i+1);
-			textattr(14);
+			textattr(COLOR_YELLOW);
 			Printf("(Default)\r\n\n");
 		} 
 		else
@@ -73,7 +73,7 @@ void edit_arc(int nn)
 		textattr(COLOR_CYAN);
 		Printf("                                                             \r\n");
 		Printf("                                                             \r\n");
-		textattr(14);
+		textattr(COLOR_YELLOW);
 		Puts("<ENTER> to edit    <ESC> when done.");
 		textattr(COLOR_CYAN);
 		nlx();
@@ -89,7 +89,7 @@ void edit_arc(int nn)
 			    Printf("the archiver and extension should be used. I.E.:             \r\n");
 			    Printf("c:\\bin\\arcs\\zip.exe -a %%1 %%2                              \r\n");
 			    Printf("                                                             \r\n");
-			    textattr(14);
+			    textattr(COLOR_YELLOW);
 			    Printf("<ESC> when done\r\n");
 			    textattr(COLOR_CYAN);
                 bool done = false;
@@ -404,7 +404,7 @@ void sec_levs()
 	up_sl(cursl);
 	bool done = false;
 	app->localIO->LocalGotoXY(0,12);
-	textattr(14);
+	textattr(COLOR_YELLOW);
 	Puts("\r\n<ESC> to exit\r\n");
 	textattr(11);
 	Printf("[ = down one SL    ] = up one SL\r\n");
@@ -420,7 +420,7 @@ void sec_levs()
 		{
 		case '\r':
 			app->localIO->LocalGotoXY(0,12);
-			textattr(14);
+			textattr(COLOR_YELLOW);
 			Puts("\r\n<ESC> to exit\r\n");
 			textattr(COLOR_CYAN);
 			Printf("                                \r\n");
@@ -429,7 +429,7 @@ void sec_levs()
 			Puts("\r\n          \r\n");
 			ed_slx(&cursl);
 			app->localIO->LocalGotoXY(0,12);
-			textattr(14);
+			textattr(COLOR_YELLOW);
 			Puts("\r\n<ESC> to exit\r\n");
 			textattr(11);
 			Printf("[ = down one SL    ] = up one SL\r\n");
@@ -589,7 +589,7 @@ void edit_autoval(int n)
 	Printf("AR           : %s\n",ar);
 	Printf("DAR          : %s\n",dar);
 	Printf("Restrictions : %s\n",r);
-	textattr(14);
+	textattr(COLOR_YELLOW);
 	Puts("\r\n\r\n<ESC> to exit\r\n");
 	textattr(COLOR_CYAN);
 	bool done = false;
@@ -672,7 +672,7 @@ void autoval_levs()
 	do 
 	{
 		list_autoval();
-		textattr(14);
+		textattr(COLOR_YELLOW);
 		Puts("Which (0-9, Q=Quit) ? ");
 		textattr(COLOR_CYAN);
 		char ch = onek("Q0123456789\033");
@@ -760,7 +760,7 @@ void create_arcs()
 	if (hFile<0) 
 	{
 		Printf("Couldn't open '%s' for writing.\n",szFileName);
-		textattr(7);
+		textattr(COLOR_WHITE);
 		exit( 1 );
 	}
 	_write(hFile, (void *)arc, MAX_ARCS * sizeof(arcrec));

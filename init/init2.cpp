@@ -382,7 +382,7 @@ void setpaths()
 
     textattr(COLOR_YELLOW);
     Puts("\r\n<ESC> when done.\r\n\r\n\r\n");
-    textattr(13);
+    textattr(COLOR_MAGENTA);
     Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\r\n\n");
     textattr(11);
     Printf(" Changing any of these (except Temporary and Batch) requires YOU\r\n");
@@ -531,7 +531,7 @@ int read_subs()
 		if (!subboards) 
 		{
 			Printf("needed %ld bytes\n",filelength(i));
-			textattr(7);
+			textattr(COLOR_WHITE);
 			exit( 2 );
 		}
 		
@@ -542,7 +542,7 @@ int read_subs()
 	else 
 	{
 		Printf( "%s NOT FOUND.\n", szFileName );
-		textattr(7);
+		textattr(COLOR_WHITE);
 		exit( 2 );
 	}
 	return 0;
@@ -1164,7 +1164,7 @@ void up_langs()
                 if ((i>0) && (i<=initinfo.num_languages)) 
                 {
                     nlx();
-                    textattr(12);
+                    textattr(COLOR_RED);
                     Puts("Are you sure? ");
                     textattr(COLOR_CYAN);
                     ch=onek("YN\r");
@@ -1195,7 +1195,7 @@ void up_langs()
         case 'I':
             if (initinfo.num_languages>=MAX_LANGUAGES) 
             {
-                textattr(12);
+                textattr(COLOR_RED);
                 Printf("Too many languages.\r\n");
                 textattr(COLOR_CYAN);
                 nlx();
@@ -1211,7 +1211,7 @@ void up_langs()
             i=atoi(s);
             if ((i>0) && (i<=initinfo.num_languages+1)) 
             {
-                textattr(12);
+                textattr(COLOR_RED);
                 Puts("Are you sure? ");
                 textattr(COLOR_CYAN);
                 ch=onek("YN\r");
@@ -1355,7 +1355,7 @@ void extrn_editors()
 			if (initinfo.numeditors) 
 			{
 				nlx();
-				textattr(12);
+				textattr(COLOR_RED);
 				Printf( "Edit which (1-%d) ? ", initinfo.numeditors );
 				textattr(COLOR_CYAN);
 				input(s,2);
@@ -1370,7 +1370,7 @@ void extrn_editors()
 			if (initinfo.numeditors) 
 			{
 				nlx();
-				textattr(12);
+				textattr(COLOR_RED);
 				Printf( "Delete which (1-%d) ? ", initinfo.numeditors);
 				textattr(COLOR_CYAN);
 				input(s,2);
@@ -1388,7 +1388,7 @@ void extrn_editors()
 		case 'I':
 			if (initinfo.numeditors>=10) 
 			{
-				textattr(12);
+				textattr(COLOR_RED);
 				Printf("Too many editors.\r\n");
 				textattr(COLOR_CYAN);
 				nlx();
@@ -1496,7 +1496,7 @@ void edit_prot(int n)
     Printf("%%4 = modem speed\r\n");
     Printf("%%5 = filename list to receive for batch UL and bi-directional batch\r\n");
     nlx();
-    textattr(13);
+    textattr(COLOR_MAGENTA);
     Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\r\n");
     textattr(COLOR_CYAN);
 
@@ -1701,7 +1701,7 @@ void extrn_prots()
         case 'I':
             if (initinfo.numexterns>=15) 
             {
-                textattr(12);
+                textattr(COLOR_RED);
                 Printf("Too many external protocols.\r\n");
                 textattr(COLOR_CYAN);
                 nlx();
