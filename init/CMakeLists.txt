@@ -26,7 +26,6 @@ if(UNIX)
 	platform/unix/utility2.cpp 
 	platform/unix/wfile.cpp 
 	platform/unix/wfndfile.cpp 
-	platform/unix/wlocal_io.cpp
 	platform/unix/wshare.cpp 
 	)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

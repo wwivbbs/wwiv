@@ -22,7 +22,6 @@
 #include <sstream>
 
 #include "wwivinit.h"
-#include "wlocal_io.h"
 
 //TODO(rushfan): Don't include windows.h from wlocal_io anymore. Make a WinConsoleIU subclass like
 // this CursesIO class and move the Window.h definition into there.
@@ -47,7 +46,7 @@ CursesIO::CursesIO() {
     nonl();
     max_x_ = getmaxx(stdscr);
     max_y_ = getmaxy(stdscr);
-    SetScreenBottom(max_y_);
+
     start_color();
     /*
     init_pair(1, COLOR_CYAN, COLOR_BLACK);
@@ -100,30 +99,6 @@ int CursesIO::WhereY() {
     return getcury(stdscr);
 }
 
-void CursesIO::LocalLf() {
-/* This function performs a linefeed to the screen (but not remotely) by
-* either moving the cursor down one line, or scrolling the logical screen
-* up one line.
-*/
-    // TODO(rushfan): Implement me
-#if 0
-	if ( WhereY() >= GetScreenBottom() ) {
-        scroll(stdscr);
-	} else {
-		m_cursorPosition.Y++;
-		SetConsoleCursorPosition(m_hConOut,m_cursorPosition);
-	}
-#endif
-}
-
-/**
- * Returns the local cursor to the left-most position on the screen.
- */
-void CursesIO::LocalCr() {
-    int y = WhereY();
-    LocalGotoXY(0, y);
-}
-
 /**
  * Clears the local logical screen
  */
@@ -134,10 +109,6 @@ void CursesIO::LocalCls() {
 	LocalGotoXY(0, 0);
 }
 
-void CursesIO::LocalBackspace() {
-    // TODO(rushfan): Inline into only caller in WLocalIO.
-}
-
 static void SetCursesAttribute() {
     unsigned long attr = COLOR_PAIR(curatr);
     unsigned long f = curatr & 0xff00;
@@ -145,12 +116,6 @@ static void SetCursesAttribute() {
         attr |= A_BOLD;
     }
     attron(attr);
-}
-
-void CursesIO::LocalPutchRaw(unsigned char ch) {
-    SetCursesAttribute();
-    addch(ch);
-    refresh();
 }
 
 /**

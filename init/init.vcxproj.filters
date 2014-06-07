@@ -45,9 +45,6 @@
     <ClInclude Include="wwivinit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="platform\wlocal_io.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="platform\curses_io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -84,9 +81,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="subacc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="platform\win32\wlocal_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="platform\curses_io.cpp">

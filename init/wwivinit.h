@@ -91,7 +91,7 @@ typedef struct {
 #include "ifcns.h"
 #include "vars.h"
 #include "platform/wfndfile.h"
-#include "platform/wlocal_io.h"
+#include "platform/curses_io.h"
 #include "platform/wfile.h"
 
 #include "init.h"

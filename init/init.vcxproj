@@ -89,7 +89,6 @@
     <ClInclude Include="platform\testos.h" />
     <ClInclude Include="platform\wfile.h" />
     <ClInclude Include="platform\wfndfile.h" />
-    <ClInclude Include="platform\wlocal_io.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="subacc.h" />
     <ClInclude Include="w5assert.h" />
@@ -107,7 +106,6 @@
     <ClCompile Include="platform\win32\utility2.cpp" />
     <ClCompile Include="platform\win32\wfile.cpp" />
     <ClCompile Include="platform\win32\wfndfile.cpp" />
-    <ClCompile Include="platform\win32\wlocal_io.cpp" />
     <ClCompile Include="subacc.cpp" />
   </ItemGroup>
   <ItemGroup>

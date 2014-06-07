@@ -803,7 +803,7 @@ int select_strings(char **strs, int count, int cur, int yt, int yb, int xl, int 
                     cur_lin--;
                     if (cur_lin<0) 
                     {
-                        app->localIO->LocalScrollScreen( yt, yb, WLocalIO::scrollDown );
+                        app->localIO->LocalScrollScreen( yt, yb, CursesIO::scrollDown );
                         cur_lin++;
                         app->localIO->LocalGotoXY(xl,cur_lin+yt);
                         app->localIO->LocalPuts(strs[cur_sel]);
@@ -821,7 +821,7 @@ int select_strings(char **strs, int count, int cur, int yt, int yb, int xl, int 
                     cur_lin++;
                     if (cur_lin > (yb-yt)) 
                     {
-                        app->localIO->LocalScrollScreen( yt, yb, WLocalIO::scrollUp );
+                        app->localIO->LocalScrollScreen( yt, yb, CursesIO::scrollUp );
                         cur_lin--;
                         app->localIO->LocalGotoXY(xl,cur_lin+yt);
                         app->localIO->LocalPuts(strs[cur_sel]);
