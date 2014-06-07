@@ -370,7 +370,8 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                 }
             }
             break;
-	    case KEY_DC: // curses
+	case KEY_DC: // curses
+	case CD: // control-d
             if (status!=SET) {
                 for ( i = pos; i < len; i++ ) {
                     s[i]=s[i+1];
