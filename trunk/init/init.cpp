@@ -639,11 +639,11 @@ int main(int argc, char* argv[])
 int WInitApp::main(int argc, char *argv[])
 {
     // HACK
-    const std::string curses = "--curses";
+    const std::string curses = "--nocurses";
     if (argc > 1 && curses == argv[1]) {
-        localIO = new CursesIO();
-    } else {
         localIO = new WLocalIO();
+    } else {
+        localIO = new CursesIO();
     }
 
     char s[81],s1[81],ch;
