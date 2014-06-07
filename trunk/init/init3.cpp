@@ -46,7 +46,7 @@ void edit_arc(int nn)
 		app->localIO->LocalCls();
 		textattr(11);
 		Printf("                 Archiver Configuration\r\n\n");
-		textattr(3);
+		textattr(COLOR_CYAN);
 		if (i == 0) 
 		{
 			Printf("Archiver #%d  ", i+1);
@@ -57,7 +57,7 @@ void edit_arc(int nn)
 		{
 			Printf("Archiver #%d           \n\n", i+1);
 		}
-		textattr(3);
+		textattr(COLOR_CYAN);
 		Printf("Archiver Name      : %s\n", arc[i].name);
 		Printf("Archiver Extension : %s\n", arc[i].extension);
 		Printf("List Archive       : %s\n", arc[i].arcl);
@@ -70,12 +70,12 @@ void edit_arc(int nn)
 		Printf("                                                             \r\n");
 		textattr(11);
 		Printf("[ = Previous Archiver  ] = Next Archiver\r\n");
-		textattr(3);
+		textattr(COLOR_CYAN);
 		Printf("                                                             \r\n");
 		Printf("                                                             \r\n");
 		textattr(14);
 		Puts("<ENTER> to edit    <ESC> when done.");
-		textattr(3);
+		textattr(COLOR_CYAN);
 		nlx();
 		char ch=onek("\033[]\r");
 		switch(ch) 
@@ -91,7 +91,7 @@ void edit_arc(int nn)
 			    Printf("                                                             \r\n");
 			    textattr(14);
 			    Printf("<ESC> when done\r\n");
-			    textattr(3);
+			    textattr(COLOR_CYAN);
                 bool done = false;
 			    do 
 			    {
@@ -387,7 +387,7 @@ void ed_slx(int *sln)
 void sec_levs()
 {
 	app->localIO->LocalCls();
-	textattr(3);
+	textattr(COLOR_CYAN);
 	Printf("Security level   : \r\n");
 	Printf("Time per day     : \r\n");
 	Printf("Time per logon   : \r\n");
@@ -410,7 +410,7 @@ void sec_levs()
 	Printf("[ = down one SL    ] = up one SL\r\n");
 	Printf("{ = down 10 SL     } = up 10 SL\r\n");
 	Printf("<C/R> = edit SL data\r\n");
-	textattr(3);
+	textattr(COLOR_CYAN);
 	do 
 	{
 		app->localIO->LocalGotoXY(0,18);
@@ -422,7 +422,7 @@ void sec_levs()
 			app->localIO->LocalGotoXY(0,12);
 			textattr(14);
 			Puts("\r\n<ESC> to exit\r\n");
-			textattr(3);
+			textattr(COLOR_CYAN);
 			Printf("                                \r\n");
 			Printf("                               \r\n");
 			Printf("                    \r\n");
@@ -435,7 +435,7 @@ void sec_levs()
 			Printf("[ = down one SL    ] = up one SL\r\n");
 			Printf("{ = down 10 SL     } = up 10 SL\r\n");
 			Printf("<C/R> = edit SL data\r\n");
-			textattr(3);
+			textattr(COLOR_CYAN);
 			break;
 		case '\033':
 			done = true;
@@ -591,7 +591,7 @@ void edit_autoval(int n)
 	Printf("Restrictions : %s\n",r);
 	textattr(14);
 	Puts("\r\n\r\n<ESC> to exit\r\n");
-	textattr(3);
+	textattr(COLOR_CYAN);
 	bool done = false;
 	cp=0;
 	do 
@@ -674,7 +674,7 @@ void autoval_levs()
 		list_autoval();
 		textattr(14);
 		Puts("Which (0-9, Q=Quit) ? ");
-		textattr(3);
+		textattr(COLOR_CYAN);
 		char ch = onek("Q0123456789\033");
 		if ( ch == 'Q' || ch == '\033' )
 		{
