@@ -301,9 +301,7 @@ char onek(const char *pszKeys)
 
 
 /* This (obviously) outputs a string TO THE SCREEN ONLY */
-void OutputStringRaw(const char *pszText)
-{
-	
+void OutputStringRaw(const char *pszText) {
 	for (int i=0; pszText[i]!=0; i++) 
 	{
 		char ch=pszText[i];
@@ -311,12 +309,12 @@ void OutputStringRaw(const char *pszText)
 	}
 }
 
+int background_character = 0xb0;
 
 int editlinestrlen( char *pszText )
 {
 	int i = strlen( pszText );
-	while ( i >= 0 && ( /*pszText[i-1] == 32 ||*/ static_cast<unsigned char>( pszText[i-1] ) == 176 ) )
-	{
+	while ( i >= 0 && (static_cast<unsigned char>( pszText[i-1] ) == background_character)) {
 		--i;
 	}
 	return i;
@@ -338,10 +336,10 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
     int cy=app->localIO->WhereY();
     for ( i = strlen( s ); i < len; i++ )
     {
-        s[i] = '\xB0';
+        s[i] = static_cast<char>(background_character);
     }
     s[len] = '\0';
-    curatr=0x1F;
+    textattr(0x1f);
     OutputStringRaw(s);
     app->localIO->LocalGotoXY(77,0);
     OutputStringRaw("OVR");
@@ -431,7 +429,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                     {
                         s[i]=s[i+1];
                     }
-                    s[len-1] = '\xB0';
+                    s[len-1] = static_cast<char>(background_character);
                     app->localIO->LocalGotoXY(cx,cy);
                     OutputStringRaw(s);
                     app->localIO->LocalGotoXY(cx+pos,cy);
@@ -493,7 +491,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                     else 
                     {
                         s[pos++]=ch;
-                        app->localIO->LocalPutch(ch);
+                        app->localIO->LocalPutchRaw(ch);
                     }
                 }
             } 
@@ -517,7 +515,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                         {
                             s[i]=s[i+1];
                         }
-                        s[len-1]='\xB0';
+                        s[len-1] = static_cast<char>(background_character);
                         pos--;
                         app->localIO->LocalGotoXY(cx,cy);
                         OutputStringRaw(s);

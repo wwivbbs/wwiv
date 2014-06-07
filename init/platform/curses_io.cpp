@@ -44,10 +44,24 @@ CursesIO::CursesIO() {
     raw();
     keypad(stdscr, TRUE);
     noecho();
+    nonl();
     max_x_ = getmaxx(stdscr);
     max_y_ = getmaxy(stdscr);
     SetScreenBottom(max_y_);
     start_color();
+    /*
+    init_pair(1, COLOR_CYAN, COLOR_BLACK);
+    init_pair(2, COLOR_MAGENTA, COLOR_BLACK);
+    init_pair(3, COLOR_RED, COLOR_BLACK);
+    init_pair(4, COLOR_CYAN | A_BOLD, COLOR_BLACK);
+    init_pair(5, COLOR_YELLOW | A_BOLD, COLOR_BLACK);
+    init_pair(7, COLOR_WHITE | A_BOLD, COLOR_BLUE);
+    */
+    for (short b=0; b<COLORS; b++) {
+        for (short f=0; f<COLORS; f++) {
+            init_pair( (b * 16) + f, f, b);
+        }
+    }
     refresh();
 }
 
@@ -114,6 +128,7 @@ void CursesIO::LocalCr() {
  * Clears the local logical screen
  */
 void CursesIO::LocalCls() {
+    attron(COLOR_PAIR(7));
     clear();
     refresh();
 	LocalGotoXY(0, 0);
@@ -123,7 +138,17 @@ void CursesIO::LocalBackspace() {
     // TODO(rushfan): Inline into only caller in WLocalIO.
 }
 
+static void SetCursesAttribute() {
+    unsigned long attr = COLOR_PAIR(curatr);
+    unsigned long f = curatr & 0xff00;
+    if (f > 7) {
+        attr |= A_BOLD;
+    }
+    attron(attr);
+}
+
 void CursesIO::LocalPutchRaw(unsigned char ch) {
+    SetCursesAttribute();
     addch(ch);
     refresh();
 }
@@ -133,11 +158,13 @@ void CursesIO::LocalPutchRaw(unsigned char ch) {
  * BS, and BELL are interpreted as commands instead of characters.
  */
 void CursesIO::LocalPutch( unsigned char ch ) {
+    SetCursesAttribute();
     addch(ch);
     refresh();
 }
 
 void CursesIO::LocalPuts( const char *pszText ) {
+    SetCursesAttribute();
     if (strlen(pszText) == 2) {
         if (pszText[0] == '\r' && pszText[1] == '\n') {
             LocalGotoXY(0, WhereY() + 1);
@@ -158,6 +185,7 @@ int CursesIO::getchd() {
 }
 
 void CursesIO::LocalClrEol() {
+    SetCursesAttribute();
     clrtoeol();
     refresh();
 }
