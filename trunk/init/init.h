@@ -32,7 +32,7 @@ public:
 	virtual ~WInitApp() {}
 
 	int main(int argc, char* argv[]);
-	WLocalIO *localIO;
+	CursesIO *localIO;
 };
 	
 

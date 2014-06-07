@@ -52,10 +52,6 @@ WInitApp* GetApplication();
 
 /* File: init1.cpp */
 
-#ifndef _WIN32
-unsigned char _getch(); 
-#endif  // _WIN32
-
 void init();
 void *malloca(unsigned long nbytes);
 void pausescr();
