@@ -152,6 +152,7 @@ void sysinfo1()
     }
     j2[16]=0;
     app->localIO->LocalCls();
+    textattr(COLOR_CYAN);
     Printf("System PW        : %s\n",syscfg.systempw);
     Printf("System name      : %s\n",syscfg.systemname);
     Printf("System phone     : %s\n",syscfg.systemphone);
@@ -178,9 +179,9 @@ void sysinfo1()
     Printf("Caller number    : %-7s\n",j17);
     Printf("Days active      : %-7s\n",j19);
 
-    textattr(14);
+    textattr(COLOR_YELLOW);
     Puts("\r\n<ESC> when done.");
-    textattr(3);
+    textattr(COLOR_CYAN);
 
     cp=0;
     bool done=false;
@@ -360,29 +361,34 @@ void sysinfo1()
 
 /****************************************************************************/
 
+#if __unix__
+#define EDITLINE_FILENAME_CASE ALL
+#else
+#define EDITLINE_FILENAME_CASE UPPER_ONLY
+#endif  // __unix__
 
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir */
 void setpaths()
 {
     app->localIO->LocalCls();
-    textattr( 3 );
-    Printf("Messages Directory : %s\n",syscfg.msgsdir);
-    Printf("GFiles Directory   : %s\n",syscfg.gfilesdir);
-    Printf("Menu Directory     : %s\n",syscfg.menudir);
-    Printf("Data Directory     : %s\n",syscfg.datadir);
-    Printf("Downloads Directory: %s\n",syscfg.dloadsdir);
-    Printf("Temporary Directory: %s\n",syscfgovr.tempdir);
-    Printf("Batch Directory    : %s\n",syscfgovr.batchdir);
+    textattr(COLOR_CYAN);
+    Printf("Messages Directory : %s\n", syscfg.msgsdir);
+    Printf("GFiles Directory   : %s\n", syscfg.gfilesdir);
+    Printf("Menu Directory     : %s\n", syscfg.menudir);
+    Printf("Data Directory     : %s\n", syscfg.datadir);
+    Printf("Downloads Directory: %s\n", syscfg.dloadsdir);
+    Printf("Temporary Directory: %s\n", syscfgovr.tempdir);
+    Printf("Batch Directory    : %s\n", syscfgovr.batchdir);
 
-    textattr( 14 );
+    textattr(COLOR_YELLOW);
     Puts("\r\n<ESC> when done.\r\n\r\n\r\n");
-    textattr( 13 );
+    textattr(13);
     Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\r\n\n");
-    textattr( 11 );
+    textattr(11);
     Printf(" Changing any of these (except Temporary and Batch) requires YOU\r\n");
     Printf(" to MANUALLY move files and / or directory structures.  Consult the\r\n");
     Printf(" documentation prior to changing any of these settings.\r\n");
-    textattr( 3 );
+    textattr(COLOR_CYAN);
 
     int i1;
     int cp = 0;
@@ -394,35 +400,35 @@ void setpaths()
         {
         case 0:
             app->localIO->LocalGotoXY(21,cp);
-            editline(syscfg.msgsdir,50,UPPER_ONLY,&i1,"");
+            editline(syscfg.msgsdir,50,EDITLINE_FILENAME_CASE,&i1,"");
             trimstrpath(syscfg.msgsdir);
             Puts(syscfg.msgsdir);
             //          verify_dir("Messages", syscfg.msgsdir);
             break;
         case 1:
             app->localIO->LocalGotoXY(21,cp);
-            editline(syscfg.gfilesdir,50,UPPER_ONLY,&i1,"");
+            editline(syscfg.gfilesdir,50,EDITLINE_FILENAME_CASE,&i1,"");
             trimstrpath(syscfg.gfilesdir);
             Puts(syscfg.gfilesdir);
             //          verify_dir("Gfiles", syscfg.gfilesdir);
             break;
         case 2:
             app->localIO->LocalGotoXY(21,cp);
-            editline(syscfg.menudir,50,UPPER_ONLY,&i1,"");
+            editline(syscfg.menudir,50,EDITLINE_FILENAME_CASE,&i1,"");
             trimstrpath(syscfg.menudir);
             Puts(syscfg.menudir);
             //          verify_dir("Menu", syscfg.menudir);
             break;
         case 3:
             app->localIO->LocalGotoXY(21,cp);
-            editline(syscfg.datadir,50,UPPER_ONLY,&i1,"");
+            editline(syscfg.datadir,50,EDITLINE_FILENAME_CASE,&i1,"");
             trimstrpath(syscfg.datadir);
             Puts(syscfg.datadir);
             //          verify_dir("Data", syscfg.datadir);
             break;
         case 4:
             app->localIO->LocalGotoXY(21,cp);
-            editline(syscfg.dloadsdir,50,UPPER_ONLY,&i1,"");
+            editline(syscfg.dloadsdir,50,EDITLINE_FILENAME_CASE,&i1,"");
             trimstrpath(syscfg.dloadsdir);
             Puts(syscfg.dloadsdir);
             //          verify_dir("Downloads", syscfg.dloadsdir);
@@ -431,7 +437,7 @@ void setpaths()
             do 
             {
                 app->localIO->LocalGotoXY(21,cp);
-                editline(syscfgovr.tempdir,50,UPPER_ONLY,&i1,"");
+                editline(syscfgovr.tempdir,50,EDITLINE_FILENAME_CASE,&i1,"");
                 trimstrpath(syscfgovr.tempdir);
                 Puts(syscfgovr.tempdir);
                 //        } while ((verify_dir("Temporary", syscfgovr.tempdir)) ||
@@ -441,7 +447,7 @@ void setpaths()
             do 
             {
                 app->localIO->LocalGotoXY(21,cp);
-                editline(syscfgovr.batchdir,50,UPPER_ONLY,&i1,"");
+                editline(syscfgovr.batchdir,50,EDITLINE_FILENAME_CASE,&i1,"");
                 trimstrpath(syscfgovr.batchdir);
                 Puts(syscfgovr.batchdir);
                 //        } while ((verify_dir("Batch", syscfgovr.batchdir)) ||
@@ -483,9 +489,9 @@ void setupcom()
 	app->localIO->LocalCls();
 
     Printf("Com Port      : %s\n\n", comport.c_str());
-	textattr(14);
+	textattr(COLOR_YELLOW);
 	Puts("\r\n<ESC> when done.");
-	textattr(3);
+	textattr(COLOR_CYAN);
 	
 	PrintComPortInfo(syscfgovr.primaryport);
 	
@@ -968,12 +974,12 @@ void up_subs_dirs()
 
     app->localIO->LocalCls();
 
-    textattr(3);
+    textattr(COLOR_CYAN);
     Printf("Current max # subs: %d\r\n",syscfg.max_subs);
     Printf("Current max # dirs: %d\r\n",syscfg.max_dirs);
     nlx(2);
 
-    textattr(14);
+    textattr(COLOR_YELLOW);
     Puts("Change # subs or # dirs? ");
     if (yn()) 
     {
@@ -983,9 +989,9 @@ void up_subs_dirs()
         Printf("value unchanged.  All values will be rounded up to the next 32.\r\n");
         Printf("Values can range from 32-1024\r\n\n");
 
-        textattr(14);
+        textattr(COLOR_YELLOW);
         Puts("New max subs: ");
-        textattr(3);
+        textattr(COLOR_CYAN);
         input(s,4);
         num_subs=atoi(s);
         if (!num_subs)
@@ -993,9 +999,9 @@ void up_subs_dirs()
             num_subs=syscfg.max_subs;
         }
 		nlx(2);
-        textattr(14);
+        textattr(COLOR_YELLOW);
         Puts("New max dirs: ");
-        textattr(3);
+        textattr(COLOR_CYAN);
         input(s,4);
         num_dirs=atoi(s);
         if (!num_dirs)
@@ -1033,7 +1039,7 @@ void up_subs_dirs()
         if ((num_subs!=syscfg.max_subs) || (num_dirs!=syscfg.max_dirs)) 
         {
             nlx();
-            textattr(14);
+            textattr(COLOR_YELLOW);
             Printf("Change to %d subs and", num_subs);
             Printf(" %d dirs? ", num_dirs);
             if (yn()) 
@@ -1061,9 +1067,9 @@ void edit_lang(int nn)
     Printf("Language name  : %s\n",n->name);
     Printf("Data Directory : %s\n",n->dir);
     Printf("Menu Directory : %s\n",n->mdir);
-    textattr(14);
+    textattr(COLOR_YELLOW);
     Puts("\r\n<ESC> when done.\r\n\r\n");
-    textattr(3);
+    textattr(COLOR_CYAN);
     do 
     {
         app->localIO->LocalGotoXY(17,cp);
@@ -1083,12 +1089,12 @@ void edit_lang(int nn)
             Puts("                  ");
             break;
         case 1:
-            editline(n->dir,60,UPPER_ONLY,&i1,"");
+            editline(n->dir,60,EDITLINE_FILENAME_CASE,&i1,"");
             trimstrpath(n->dir);
             Puts(n->dir);
             break;
         case 2:
-            editline(n->mdir,60,UPPER_ONLY,&i1,"");
+            editline(n->mdir,60,EDITLINE_FILENAME_CASE,&i1,"");
             trimstrpath(n->mdir);
             Puts(n->mdir);
             break;
@@ -1122,9 +1128,9 @@ void up_langs()
             Printf( "%-2d. %-20s    %-50s\r\n", i+1, languages[i].name, languages[i].dir);
         }
         nlx();
-        textattr(14);
+        textattr(COLOR_YELLOW);
         Puts("Languages: M:odify, D:elete, I:nsert, Q:uit : ");
-        textattr(3);
+        textattr(COLOR_CYAN);
         char ch = onek("Q\033MID");
         switch( ch ) 
         {
@@ -1134,10 +1140,10 @@ void up_langs()
             break;
         case 'M':
             nlx();
-            textattr(14);
+            textattr(COLOR_YELLOW);
             sprintf(s1,"Edit which (1-%d) ? ",initinfo.num_languages);
             Puts(s1);
-            textattr(3);
+            textattr(COLOR_CYAN);
             input(s,2);
             i=atoi(s);
             if ((i>0) && (i<=initinfo.num_languages))
@@ -1150,9 +1156,9 @@ void up_langs()
             {
                 nlx();
                 sprintf(s1,"Delete which (1-%d) ? ",initinfo.num_languages);
-                textattr(14);
+                textattr(COLOR_YELLOW);
                 Puts(s1);
-                textattr(3);
+                textattr(COLOR_CYAN);
                 input(s,2);
                 i=atoi(s);
                 if ((i>0) && (i<=initinfo.num_languages)) 
@@ -1160,7 +1166,7 @@ void up_langs()
                     nlx();
                     textattr(12);
                     Puts("Are you sure? ");
-                    textattr(3);
+                    textattr(COLOR_CYAN);
                     ch=onek("YN\r");
                     if (ch=='Y') 
                     {
@@ -1181,7 +1187,7 @@ void up_langs()
                 nlx();
                 textattr(11);
                 Printf("You must leave at least one language.\r\n");
-                textattr(3);
+                textattr(COLOR_CYAN);
                 nlx();
                 app->localIO->getchd();
             }
@@ -1191,23 +1197,23 @@ void up_langs()
             {
                 textattr(12);
                 Printf("Too many languages.\r\n");
-                textattr(3);
+                textattr(COLOR_CYAN);
                 nlx();
                 app->localIO->getchd();
                 break;
             }
             nlx();
-            textattr(14);
+            textattr(COLOR_YELLOW);
             sprintf(s1,"Insert before which (1-%d) ? ",initinfo.num_languages+1);
             Puts(s1);
-            textattr(3);
+            textattr(COLOR_CYAN);
             input(s,2);
             i=atoi(s);
             if ((i>0) && (i<=initinfo.num_languages+1)) 
             {
                 textattr(12);
                 Puts("Are you sure? ");
-                textattr(3);
+                textattr(COLOR_CYAN);
                 ch=onek("YN\r");
                 if (ch=='Y') 
                 {
@@ -1277,7 +1283,7 @@ void edit_editor(int n)
     Printf("Description     : %s\n",c.description);
     Printf("Filename to run remotely\r\n%s\n",c.filename);
     Printf("Filename to run locally\r\n%s\n",c.filenamecon);
-    textattr(14);
+    textattr(COLOR_YELLOW);
     Puts("\r\n<ESC> when done.\r\n\r\n");
     textattr(11);
     Printf("%%1 = filename to edit\r\n");
@@ -1285,7 +1291,7 @@ void edit_editor(int n)
     Printf("%%3 = lines per page\r\n");
     Printf("%%4 = max lines\r\n");
     Printf("%%5 = instance number\r\n");
-    textattr(3);
+    textattr(COLOR_CYAN);
 
     do 
     {
@@ -1335,9 +1341,9 @@ void extrn_editors()
 			Printf( "%d. %s\r\n", i + 1, editors[i].description);
 		}
 		nlx();
-		textattr(14);
+		textattr(COLOR_YELLOW);
 		Puts("Editors: M:odify, D:elete, I:nsert, Q:uit : ");
-		textattr(3);
+		textattr(COLOR_CYAN);
 		char ch = onek("Q\033MID");
 		switch(ch) 
 		{
@@ -1351,7 +1357,7 @@ void extrn_editors()
 				nlx();
 				textattr(12);
 				Printf( "Edit which (1-%d) ? ", initinfo.numeditors );
-				textattr(3);
+				textattr(COLOR_CYAN);
 				input(s,2);
 				i=atoi(s);
 				if ((i>0) && (i<=initinfo.numeditors))
@@ -1366,7 +1372,7 @@ void extrn_editors()
 				nlx();
 				textattr(12);
 				Printf( "Delete which (1-%d) ? ", initinfo.numeditors);
-				textattr(3);
+				textattr(COLOR_CYAN);
 				input(s,2);
 				i=atoi(s);
 				if ((i>0) && (i<=initinfo.numeditors)) 
@@ -1384,14 +1390,14 @@ void extrn_editors()
 			{
 				textattr(12);
 				Printf("Too many editors.\r\n");
-				textattr(3);
+				textattr(COLOR_CYAN);
 				nlx();
 				break;
 			}
 			nlx();
-			textattr(14);
+			textattr(COLOR_YELLOW);
 			Printf( "Insert before which (1-%d) ? ", initinfo.numeditors + 1 );
-			textattr(3);
+			textattr(COLOR_CYAN);
 			input(s,2);
 			i=atoi(s);
 			if ((i>0) && (i<=initinfo.numeditors+1)) 
@@ -1481,7 +1487,7 @@ void edit_prot(int n)
     Printf("Receive batch command line:\r\n%s\r\n", c.receivebatchfn );
     Printf("Send batch command line:\r\n%s\r\n", c.sendbatchfn );
     Printf("Bi-directional transfer command line:\r\n%s\r\n", c.bibatchfn );
-    textattr(14);
+    textattr(COLOR_YELLOW);
     Puts("\r\n<ESC> when done.\r\n\r\n");
     textattr(11);
     Printf("%%1 = com port baud rate\r\n");
@@ -1492,7 +1498,7 @@ void edit_prot(int n)
     nlx();
     textattr(13);
     Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\r\n");
-    textattr(3);
+    textattr(COLOR_CYAN);
 
     do 
     {
@@ -1635,9 +1641,9 @@ void extrn_prots()
         }
         nMaxProtocolNumber = initinfo.numexterns + 6;
         nlx();
-        textattr(14);
+        textattr(COLOR_YELLOW);
         Puts("Externals: M:odify, D:elete, I:nsert, Q:uit : ");
-        textattr(3);
+        textattr(COLOR_CYAN);
         char ch = onek("Q\033MID");
         switch(ch) 
         {
@@ -1647,9 +1653,9 @@ void extrn_prots()
             break;
         case 'M':
             nlx();
-            textattr(14);
+            textattr(COLOR_YELLOW);
             Printf( "Edit which (2-%d) ? ", nMaxProtocolNumber );
-            textattr(3);
+            textattr(COLOR_CYAN);
             input(s,2);
             i=-1;
             if ((s[0]>='2') && (s[0]<='9') && (s[0]!='5'))
@@ -1671,7 +1677,7 @@ void extrn_prots()
                 nlx();
                 textattr( 14 );
                 Printf(  "Delete which (6-%d) ? ", nMaxProtocolNumber );
-                textattr(3);
+                textattr(COLOR_CYAN);
                 input(s,2);
                 i=-1;
                 if ((s[0]>='6') && (s[0]<='9'))
@@ -1697,14 +1703,14 @@ void extrn_prots()
             {
                 textattr(12);
                 Printf("Too many external protocols.\r\n");
-                textattr(3);
+                textattr(COLOR_CYAN);
                 nlx();
                 break;
             }
             nlx();
-            textattr(14);
+            textattr(COLOR_YELLOW);
             Printf( "Insert before which (6-%d) ? ", nMaxProtocolNumber );
-            textattr(3);
+            textattr(COLOR_CYAN);
             input(s,2);
             i=-1;
             if ((s[0]>='6') && (s[0]<='9'))

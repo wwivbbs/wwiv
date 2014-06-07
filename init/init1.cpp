@@ -71,12 +71,11 @@ void *malloca( unsigned long nbytes )
 */
 void pausescr()
 {
-	textattr( 13 );
+	textattr(13);
 	Puts( "[PAUSE]" );
-	textattr( 3 );
+	textattr(COLOR_CYAN);
 	getkey();
-	for (int i = 0; i < 7; i++)
-	{
+	for (int i = 0; i < 7; i++) {
 		backspace();
 	}
 }
@@ -308,7 +307,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
         s[i] = static_cast<char>(background_character);
     }
     s[len] = '\0';
-    textattr(0x1f);
+    textattr((16 * COLOR_BLUE) + COLOR_WHITE);
     OutputStringRaw(s);
     app->localIO->LocalGotoXY(77,0);
     OutputStringRaw("OVR");
@@ -1020,9 +1019,9 @@ void init_files()
 	subboardrec s1;
 	directoryrec d1;
 	
-	textattr( 11 );
+	textattr(11);
 	Puts("Creating Data Files.");
-	textattr( 3 );
+	textattr(COLOR_CYAN);
 	
 	memset(&syscfg, 0, sizeof(configrec));
 	
@@ -1287,9 +1286,9 @@ void init_files()
 	close(hFile);
 	Printf(".\n\n");
 	////////////////////////////////////////////////////////////////////////////
-	textattr( 11 );
+	textattr(11);
 	Puts("Copying String and Miscellaneous files.");
-	textattr( 3 );
+	textattr(COLOR_CYAN);
 	
 	Printf(".");
 	rename("wwivini.500","wwiv.ini");
@@ -1333,9 +1332,9 @@ void init_files()
 	Printf(".\n\n");
 	
 	////////////////////////////////////////////////////////////////////////////
-	textattr( 11 );
+	textattr(11);
 	Puts("Decompressing archives.  Please wait");
-	textattr( 3 );
+	textattr(COLOR_CYAN);
 	if (exist("en-menus.zip")) 
 	{
         char szDestination[MAX_PATH];
@@ -1375,7 +1374,7 @@ void init_files()
 		putenv("TZ=");
 	}
 	
-	textattr( 3 );
+	textattr(COLOR_CYAN);
 	Printf(".\n\n");
 }
 
@@ -1391,7 +1390,7 @@ void convert_modem_info(const char *fn)
 	if (!pFile) 
 	{
 		Printf( "Couldn't open '%s' for writing.\n", szFileName );
-		textattr( 7 );
+		textattr(7);
 		exit( 2 );
 	}
 	
@@ -1466,25 +1465,24 @@ void new_init()
 		"temp2",
 		0L,
 	};
-	textattr( 14 );
+	textattr(COLOR_YELLOW);
 	Puts("\r\n\r\nNow performing installation.  Please wait...\r\n\r\n");
-	textattr( 3 );
+	textattr(COLOR_CYAN);
 	////////////////////////////////////////////////////////////////////////////
-	textattr( 11 );
+	textattr(11);
 	Puts("Creating Directories");
-	textattr( 11 );
-	for (int i = 0; i < ENTRIES; ++i) 
-	{
-		textattr( 11 );
+	textattr(11);
+	for (int i = 0; i < ENTRIES; ++i) {
+		textattr(11);
 		Printf(".");
 		int nRet = chdir(dirname[i]);
 		if ( nRet ) 
 		{
 			if ( mkdir( dirname[i] ) ) 
 			{
-				textattr( 12 );
+				textattr(12);
 				Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname[i]);
-				textattr( 7 );
+				textattr(7);
 				exit( 2 );
 			}
 		} 
@@ -1535,10 +1533,9 @@ int verify_inst_dirs(configoverrec *co, int inst)
 		}
 		close( hFile );
 	}
-	if (rc) 
-	{
+	if (rc) {
 		app->localIO->LocalGotoXY(0, 8);
-		textattr( 12 );
+		textattr(12);
 		app->localIO->LocalPuts(szMessage);
 		WWIV_Delay(2000);
 		for (i = 0; i < (int) strlen(szMessage); i++)
@@ -1546,9 +1543,9 @@ int verify_inst_dirs(configoverrec *co, int inst)
 			Printf("\b \b");
 		}
 		
-		textattr( 14 );
+		textattr(COLOR_YELLOW);
 		app->localIO->LocalPuts("<ESC> when done.");
-		textattr( 3 );
+		textattr(COLOR_CYAN);
 	}
 	return 0;
 }
