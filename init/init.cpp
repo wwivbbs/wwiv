@@ -93,7 +93,7 @@ int set_modem_info(const char *mt, bool bPause)
     } 
     else 
     {
-        textattr(12);
+        textattr(COLOR_RED);
         Printf("Modem info for '%s' does not exist.\n", mt);
         textattr(COLOR_CYAN);
         nlx();
@@ -130,7 +130,7 @@ void select_modem()
 
     if ( mdm_count == 0 )
     {
-        textattr(12);
+        textattr(COLOR_RED);
         Printf( "No modems defined.\n" );
         textattr(11);
         Printf( "Press Any Key" );
@@ -146,7 +146,7 @@ void select_modem()
     textattr(COLOR_YELLOW); Printf("<ESC>");
     textattr(COLOR_BLUE);  Printf("=abort\n");
     textattr(COLOR_YELLOW); Printf("Current: ");
-    textattr(10); Printf("%s\n",mdm_desc[mdm_cur]);
+    textattr(COLOR_GREEN); Printf("%s\n",mdm_desc[mdm_cur]);
     textattr(COLOR_CYAN);
 
     int nModemNumber = select_strings(mdm_desc, mdm_count, mdm_cur, 3, 24, 0, 79);
@@ -372,7 +372,7 @@ void networks()
         case 'D':
             if (!OKAD) 
             {
-                textattr(12);
+                textattr(COLOR_RED);
                 Printf("You must run the BBS once to set up some variables before deleting a network.\r\n");
                 textattr(COLOR_CYAN);
                 app->localIO->getchd();
@@ -390,14 +390,14 @@ void networks()
                 if ((nNetNumber>0) && (nNetNumber<=initinfo.net_num_max)) 
                 {
                     nlx();
-                    textattr(13);
+                    textattr(COLOR_MAGENTA);
                     Puts("Are you sure? ");
                     textattr(COLOR_CYAN);
                     ch=onek("YN\r");
                     if (ch=='Y') 
                     {
                         nlx();
-                        textattr(12);
+                        textattr(COLOR_RED);
                         Puts("Are you REALLY sure? ");
                         textattr(COLOR_CYAN);
                         ch=onek("YN\r");
@@ -411,7 +411,7 @@ void networks()
             else 
             {
                 nlx();
-                textattr(12);
+                textattr(COLOR_RED);
                 Printf("You must leave at least one network.\r\n");
                 textattr(COLOR_CYAN);
                 nlx();
@@ -429,7 +429,7 @@ void networks()
             }
             if (initinfo.net_num_max>=MAX_NETWORKS) 
             {
-                textattr(12);
+                textattr(COLOR_RED);
                 Printf("Too many networks.\r\n");
                 textattr(COLOR_CYAN);
                 nlx();
@@ -582,7 +582,7 @@ int verify_dir(char *typeDir, char *dirName)
     {
         app->localIO->LocalGotoXY(0, 8);
         sprintf(s, "The %s directory: %s is invalid!", typeDir, dirName);
-        textattr(12);
+        textattr(COLOR_RED);
         app->localIO->LocalPuts(s);
         WWIV_Delay(2000);
         for (unsigned int i = 0; i < strlen(s); i++)
@@ -592,7 +592,7 @@ int verify_dir(char *typeDir, char *dirName)
         if ((strcmp(typeDir, "Temporary") == 0) || (strcmp(typeDir, "Batch") == 0)) 
         {
             sprintf(s, "Create %s? ", dirName);
-            textattr(10);
+            textattr(COLOR_GREEN);
             app->localIO->LocalPuts(s);
             ch = app->localIO->getchd();
             if (toupper(ch) == 'Y') 
@@ -653,7 +653,7 @@ int WInitApp::main(int argc, char *argv[])
     char *ss = getenv("BBS");
     if (ss && (strncmp(ss,"WWIV",4)==0)) 
     {
-        textattr(12);
+        textattr(COLOR_RED);
         Printf("\n\nYou can not run the initialization program from a subshell of the BBS.\n");
         Printf("You must exit the BBS or run INIT from a new Command Shell\n\n\n");
         textattr(COLOR_WHITE);
@@ -738,7 +738,7 @@ int WInitApp::main(int argc, char *argv[])
     configfile=open(configdat,O_RDWR | O_BINARY);
     if ( configfile < 0 )
     {
-        textattr(12);
+        textattr(COLOR_RED);
         Printf("%s NOT FOUND.\n", configdat);
         inst=1;
         strcpy(modemdat, "modem.dat");
@@ -1214,7 +1214,7 @@ int WInitApp::main(int argc, char *argv[])
             textattr(COLOR_WHITE);
             app->localIO->LocalCls();
             nlx(2);
-            textattr(12);
+            textattr(COLOR_RED);
             Printf("I'm sorry, that isn't the correct system password.\r\n");
             textattr(COLOR_WHITE);
             exit(2);
@@ -1230,7 +1230,7 @@ int WInitApp::main(int argc, char *argv[])
                 Printf("Please update the convert.c file with your old userrec, make any\r\n");
                 Printf("modifications necessary to copy over new fields, then compile and\r\n");
                 Printf("run it.\r\n\n");
-                textattr(13);
+                textattr(COLOR_MAGENTA);
                 Puts("[PAUSE]");
                 textattr(COLOR_CYAN);
                 app->localIO->getchd();
@@ -1244,7 +1244,7 @@ int WInitApp::main(int argc, char *argv[])
                     Printf( "Please wait...\r\n" );
                     c_old_to_new();
                     nlx();
-                    textattr(13);
+                    textattr(COLOR_MAGENTA);
                     Puts( "[PAUSE]" );
                     textattr(COLOR_CYAN);
                     app->localIO->getchd();
@@ -1256,7 +1256,7 @@ int WInitApp::main(int argc, char *argv[])
 
     do {
         app->localIO->LocalCls();
-        textattr(31);
+        textattr((16 * COLOR_BLUE) | COLOR_WHITE);
         Printf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version );
         app->localIO->LocalClrEol();
         nlx();
