@@ -122,7 +122,7 @@ void backspace()
 }
 
 /* This converts a character to uppercase */
-unsigned char upcase(unsigned char ch)
+int upcase(int ch)
 {
 	if ((ch > '`') && (ch < '{'))
 	{
@@ -136,7 +136,7 @@ unsigned char upcase(unsigned char ch)
 * remote com port (if applicable).  After 1.5 minutes of inactivity, a
 * beep is sounded.  After 3 minutes of inactivity, the user is hung up.
 */
-unsigned char getkey()
+int getkey()
 {
     return static_cast<unsigned char>(_getch());
 }
@@ -151,7 +151,7 @@ void input1(char *pszOutText, int nMaxLength, bool bAllowLowerCase )
 {
 	int curpos=0, in_ansi=0;
     bool done = false;
-	unsigned char ch;
+	int ch;
 	
 	while (!done && !hangup) 
 	{
@@ -270,7 +270,7 @@ void input(char *pszOutText, int nMaxLength)
 */
 int yn()
 {
-	char ch=0;
+	int ch=0;
 	const char *str_yes="Yes";
 	const char *str_no="No";
 
@@ -286,7 +286,7 @@ int yn()
 
 char onek(const char *pszKeys)
 {
-	char ch = 0;
+	int ch = 0;
 	
 	while (!strchr(pszKeys, ch = upcase(getkey())) && !hangup)
 		;
@@ -349,7 +349,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
     bool bInsert = false;
     do 
     {
-        unsigned char ch = getkey();
+        int ch = getkey();
         if ( ch == 0 || ch == 224 ) 
         {
             ch=getkey();
