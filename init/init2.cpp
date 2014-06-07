@@ -1675,7 +1675,7 @@ void extrn_prots()
             if (initinfo.numexterns) 
             {
                 nlx();
-                textattr( 14 );
+                textattr(COLOR_YELLOW);
                 Printf(  "Delete which (6-%d) ? ", nMaxProtocolNumber );
                 textattr(COLOR_CYAN);
                 input(s,2);
