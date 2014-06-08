@@ -89,6 +89,7 @@
     <ClCompile Include="stuffin_test.cpp" />
     <ClCompile Include="utility_test.cpp" />
     <ClCompile Include="wfile_test.cpp" />
+    <ClCompile Include="wutil_test.cpp" />
     <ClCompile Include="xfer_test.cpp" />
   </ItemGroup>
   <ItemGroup>
