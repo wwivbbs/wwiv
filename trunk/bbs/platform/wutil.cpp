@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <random>
 
 #include "wwiv.h"
 #include "platform/wutil.h"
@@ -33,17 +34,11 @@ void WWIV_Sound(int nFreq, int nDly) {
 
 
 int WWIV_GetRandomNumber(int nMaxValue) {
-#if defined (_WIN32)
-	int num = rand();
-	float rn = static_cast<float>( num/RAND_MAX );
-	return static_cast<int>((nMaxValue-1) * rn);
-#elif defined ( __unix__ ) || defined ( __APPLE__ )
-	int num = random();
-	float rn = static_cast<float>( num/RAND_MAX );
-	return static_cast<int>((nMaxValue-1) * rn);
-#else
-#error "port this!"
-#endif
+  static std::random_device rdev;
+  static std::default_random_engine re(rdev());
+    
+  std::uniform_int_distribution<int> dist(0, nMaxValue);
+  return dist(re);
 }
 
 std::string WWIV_GetOSVersion() {
