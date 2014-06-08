@@ -455,7 +455,7 @@ void networks() {
             }
             break;
         }
-    } while ( !done && !hangup );
+    } while (!done);
 
     char szFileName[ MAX_PATH ];
     sprintf( szFileName, "%s%cnetworks.dat", syscfg.datadir, WWIV_FILE_SEPERATOR_CHAR);
@@ -1203,7 +1203,7 @@ int WInitApp::main(int argc, char *argv[])
         textattr(COLOR_CYAN);
         Puts("SY: ");
         local_echo = false;
-        input1(s, 20, false);
+        input(s, 20);
         if (strcmp(s,(syscfg.systempw))!=0) 
         {
             textattr(COLOR_WHITE);
@@ -1340,7 +1340,7 @@ int WInitApp::main(int argc, char *argv[])
             app->localIO->getchd();
             break;
         }
-    } while ( !done && !hangup );
+    } while (!done);
 
 	app->localIO->LocalCls();
 	// Don't leak the localIO (also fix the color when the app exits)
