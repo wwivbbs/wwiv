@@ -27,9 +27,7 @@
 // defined in VARS.H int initinfo.net_num_max;
 #define MAX_NETWORKS 100
 #define MAX_LANGUAGES 100
-
 #define MAX_ALLOWED_PORT 8
-
 
 //
 // Make sure right number of OS flags are defined.  Some OSD #defines are
