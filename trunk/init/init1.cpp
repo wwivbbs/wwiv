@@ -370,6 +370,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                 }
             }
             break;
+        case 0x7f:  // yet some other delete key
 	case KEY_DC: // curses
 	case CD: // control-d
             if (status!=SET) {
@@ -434,8 +435,8 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
             done = true;
             *returncode=DONE;
             break;
-        case KEY_BACKSPACE: // curses
-        case BACKSPACE:                                    //backspace
+        case KEY_BACKSPACE:  // curses
+        case BACKSPACE:  //backspace
             if (pos>0) {
                 for (i=pos-1; i<len; i++) {
                     s[i]=s[i+1];
