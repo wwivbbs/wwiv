@@ -1539,7 +1539,6 @@ int verify_inst_dirs(configoverrec *co, int inst)
 		app->localIO->LocalGotoXY(0, 8);
 		textattr(COLOR_RED);
 		app->localIO->LocalPuts(szMessage);
-		WWIV_Delay(2000);
 		for (i = 0; i < (int) strlen(szMessage); i++)
 		{
 			Printf("\b \b");

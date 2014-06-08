@@ -139,12 +139,14 @@ void WWIV_ChangeDirTo(const char *s);
 void WWIV_GetDir(char *s, int be);
 
 
-/* File: utility2.cpp */
-void WWIV_Delay(unsigned long usec);
 
 #ifndef _WIN32
-// File: stringstuff.cpp
+/* File: stringstuff.cpp */
 char *strupr(char *s);
-#endif 
+
+/* File: utility2.cpp */
+long filelength(int handle);
+#endif  // _WIN32
+
 
 #endif

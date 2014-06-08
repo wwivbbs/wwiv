@@ -497,7 +497,6 @@ void convcfg()
         textattr(COLOR_YELLOW);
         Printf("Converting config.dat to 4.30/5.00 format...\r\n");
         textattr(COLOR_CYAN);
-        WWIV_Delay(1000);
         read(hFile, (void *) (&syscfg), sizeof(configrec));
         sprintf(syscfg.menudir, "%sMENUS%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
         strcpy(syscfg.logoff_c, " ");
@@ -532,10 +531,8 @@ void convcfg()
         if ( hFile < 0 ) 
         {
             Printf("Couldn't open '%s' for writing.\n", szFileName );
-            WWIV_Delay(1000);
             Printf("Creating new file....");
             create_arcs();
-            WWIV_Delay(1000);
             Printf("\n");
             hFile=open(szFileName,O_WRONLY | O_BINARY | O_CREAT);
         }
@@ -584,7 +581,6 @@ int verify_dir(char *typeDir, char *dirName)
         sprintf(s, "The %s directory: %s is invalid!", typeDir, dirName);
         textattr(COLOR_RED);
         app->localIO->LocalPuts(s);
-        WWIV_Delay(2000);
         for (unsigned int i = 0; i < strlen(s); i++)
         {
             Printf("\b \b");
