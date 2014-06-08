@@ -58,7 +58,6 @@ void pausescr();
 void backspace();
 int upcase(int ch);
 int getkey();
-void input1( char *pszOutText, int nMaxLength, bool bAllowLowerCase );
 void input( char *pszOutText, int nMaxLength );
 int yn();
 char onek(const char *s);

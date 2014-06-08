@@ -137,7 +137,7 @@ void edit_arc(int nn)
                     {
                         done = true;
                     }
-			    } while ( !done && !hangup );
+			    } while (!done);
             }
 			break;
 		case '\033':
@@ -160,7 +160,7 @@ void edit_arc(int nn)
 			}
 			break;
 		}
-  } while ( !done1 && !hangup );
+  } while (!done1);
   
   // copy first four new fomat archivers to oldarcsrec 
   
@@ -379,7 +379,7 @@ void ed_slx(int *sln)
         {
             done = true;
         }
-	} while ( !done && !hangup );
+	} while (!done);
 	*sln=cursl;
 }
 
@@ -489,7 +489,7 @@ void sec_levs()
 			up_sl(cursl);
 			break;
 		}
-	} while ( !hangup && !done );
+	} while (!done);
 	save_config();
 }
 
@@ -661,7 +661,7 @@ void edit_autoval(int n)
         {
             done = true;
         }
-	} while ( !done && !hangup );
+	} while (!done);
 	syscfg.autoval[n]=v;
 }
 
@@ -691,7 +691,7 @@ void autoval_levs()
 				edit_autoval(ch-'1');
 			}
 		}
-	} while ( !done && !hangup );
+	} while (!done);
 	save_config();
 }
 
