@@ -900,31 +900,7 @@ int save_config()
 
 void Puts( const char *pszText )
 {
-	int i = 0;
-	char szBuffer[ 255 ];
-	
-	while ( *pszText )
-	{
-		if (*pszText=='\n') 
-		{
-			szBuffer[i] = '\0';
-			app->localIO->LocalPuts( szBuffer );
-			i = 0;
-			app->localIO->LocalPuts( "\r\n" );
-			app->localIO->LocalClrEol();
-		} 
-		else if ( *pszText != '\r' )
-		{
-			szBuffer[ i++ ] = *pszText;
-		}
-		++pszText;
-	}
-	
-	if ( i ) 
-	{
-		szBuffer[ i ] = '\0';
-		app->localIO->LocalPuts( szBuffer );
-	}
+	app->localIO->LocalPuts(pszText);
 }
 
 
@@ -942,12 +918,12 @@ void nlx( int numLines )
 void Printf( const char *pszFormat, ... )
 {
     va_list ap;
-    char szBuffer[ 2048 ];
+    char szBuffer[ 1024 ];
     
     va_start( ap, pszFormat );
     vsnprintf( szBuffer, 2048, pszFormat, ap );
     va_end( ap );
-    Puts( szBuffer );
+    app->localIO->LocalPuts( szBuffer );
 }
 
 void create_text(const char *pszFileName)
