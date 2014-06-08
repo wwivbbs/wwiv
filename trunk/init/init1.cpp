@@ -115,121 +115,66 @@ int getkey()
 * by a C/R.  if (bAllowLowerCase) is true lowercase is allowed, otherwise all
 * characters are converted to uppercase.
 */
-void input1(char *pszOutText, int nMaxLength, bool bAllowLowerCase )
-{
-	int curpos=0, in_ansi=0;
-    bool done = false;
-	unsigned char ch;
-	
-	while (!done && !hangup) 
-	{
-		ch = getkey();
-		if (in_ansi) 
-		{
-			if ((in_ansi==1) && (ch!='['))
-			{
-				in_ansi=0;
-			}
-			else 
-			{
-				if (in_ansi==1)
-				{
-					in_ansi=2;
-				}
-				else if (((ch<'0') || (ch>'9')) && (ch!=';'))
-				{
-					in_ansi=3;
-				}
-				else
-				{
-					in_ansi=2;
-				}
-			}
-		}
-		if (!in_ansi) 
-		{
-			if (ch > 31) 
-			{
-				if (curpos < nMaxLength) 
-				{
-					if ( !bAllowLowerCase )
-					{
-						ch = upcase(ch);
-					}
-					pszOutText[curpos++] = ch;
-					app->localIO->LocalPutch(local_echo ? ch : '\xFE');
-				}
-			} 
-			else switch(ch) 
-			{
-			  case 14:
-				  // 13 on Win32
-			  case 13:
-				  // 10 on unix
-			  case 10:
-				  pszOutText[curpos] = 0;
-				  done = true;
-				  local_echo = true;
-				  break;
-			  case 23: // Ctrl-W 
-				  if (curpos) 
-				  {
-					  do 
-					  {
-						  curpos--;
-						  backspace();
-						  if (pszOutText[curpos]==26)
-						  {
-							  backspace();
-						  }
-					  } while ((curpos) && (pszOutText[curpos-1]!=32));
-				  }
-				  break;
-			  case 26:
-				  break;
-			  case 8:
-				  if (curpos) 
-				  {
-					  curpos--;
-					  backspace();
-					  if (pszOutText[curpos] == 26)
-					  {
-						  backspace();
-					  }
-				  }
-				  break;
-			  case 21:
-			  case 24:
-				  while (curpos) 
-				  {
-					  curpos--;
-					  backspace();
-					  if (pszOutText[curpos] == 26)
-					  {
-						  backspace();
-					  }
-				  }
-				  break;
-			  case 27:
-				  in_ansi=1;
-				  break;
-			}
-		}
-		if (in_ansi==3)
-		{
-			in_ansi=0;
-		}
-	}
-	if (hangup)
-	{
-		pszOutText[0] = '\0';
-	}
-}
-
-/* This will input an upper-case string */
 void input(char *pszOutText, int nMaxLength)
 {
-	input1( pszOutText, nMaxLength, false );
+	int curpos=0;
+    bool done = false;
+	
+	while (!done) {
+		int ch = getkey();
+		switch(ch) {
+		  case 14:
+			  // 13 on Win32
+		  case 13:
+			  // 10 on unix
+		  case 10:
+		  case KEY_ENTER:
+			  pszOutText[curpos] = 0;
+			  done = true;
+			  local_echo = true;
+			  break;
+		  case 23: // Ctrl-W
+			  if (curpos) {
+				  do {
+					  curpos--;
+					  backspace();
+					  if (pszOutText[curpos]==26) {
+						  backspace();
+					  }
+				  } while (curpos && (pszOutText[curpos-1]!=32));
+			  }
+			  break;
+		  case 26:
+			  break;
+		  case 8:
+		  case KEY_BACKSPACE:
+			  if (curpos) {
+				  curpos--;
+				  backspace();
+				  if (pszOutText[curpos] == 26) {
+					  backspace();
+				  }
+			  }
+			  break;
+		  case 21:
+		  case 24:
+			  while (curpos) {
+				  curpos--;
+				  backspace();
+				  if (pszOutText[curpos] == 26) {
+					  backspace();
+				  }
+			  }
+			  break;
+		  default:
+			if (ch > 31 && curpos < nMaxLength) {
+				ch = upcase(ch);
+				pszOutText[curpos++] = ch;
+				app->localIO->LocalPutch(local_echo ? ch : '\xFE');
+			}
+			break;
+		}
+	}
 }
 
 /* The keyboard is checked for either a Y, N, or C/R to be hit.  C/R is
@@ -242,8 +187,7 @@ int yn()
 	const char *str_yes="Yes";
 	const char *str_no="No";
 
-	while (!hangup &&
-		((ch = upcase(getkey())) != *str_yes) &&
+	while ((ch = upcase(getkey()) != *str_yes) &&
 		(ch != *str_no) &&
 		(ch != 13) && (ch!=27))
 		;
@@ -256,12 +200,8 @@ char onek(const char *pszKeys)
 {
 	char ch = 0;
 	
-	while (!strchr(pszKeys, ch = upcase(getkey())) && !hangup)
+	while (!strchr(pszKeys, ch = upcase(getkey())))
 		;
-	if (hangup)
-	{
-		ch = pszKeys[0];
-	}
 	app->localIO->LocalPutch( ch );
 	nlx();
 	return ch;
