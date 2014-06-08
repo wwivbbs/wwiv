@@ -150,9 +150,6 @@ __EXTRN__ initinfo_rec initinfo;
 #define _write write
 #define chsize ftruncate
 
-// in platform/unix/utility2.cpp
-long filelength(int handle);
-
 #endif  // __unix__
 
 #endif // __INCLUDED_WWIVINIT_H__
