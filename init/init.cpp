@@ -47,7 +47,7 @@ void load_modems()
 {
     if ( mdm_count == 0 )
     {
-        Printf("Please wait...\r\n");
+        Printf("Please wait...\n");
         get_descriptions( syscfg.datadir, &mdm_desc, &mdm_count, &autosel_info, &num_autosel );
 
         for (int i=0; i<mdm_count; i++) 
@@ -74,7 +74,7 @@ int set_modem_info(const char *mt, bool bPause)
     if ( compile( szRawFileName, szModemDatFileName, modem_notes, MODEM_NOTES_LEN, szConfigLine, &nModemBaud ) ) 
     {
         strcpy(syscfgovr.modem_type, mt);
-        Printf("Modem info '%s' compiled.\r\n\n",syscfgovr.modem_type);
+        Printf("Modem info '%s' compiled.\n\n",syscfgovr.modem_type);
         save_config();
         if (modem_notes[0]) 
         {
@@ -132,13 +132,13 @@ void select_modem()
     {
         textattr(COLOR_RED);
         Printf( "No modems defined.\n" );
-        textattr(11);
+        textattr(COLOR_MAGENTA);
         Printf( "Press Any Key" );
         app->localIO->getchd();
         return;
     }
 
-    textattr(11); Printf("Select modem type: ");
+    textattr(COLOR_CYAN); Printf("Select modem type: ");
     textattr(COLOR_YELLOW); Printf("<UP>,<DN>,<P-UP>,<P-DN> ");
     textattr(COLOR_BLUE);  Printf("to scroll, ");
     textattr(COLOR_YELLOW); Printf("<CR>");
@@ -198,7 +198,7 @@ void edit_net(int nn)
     Printf( "Node number    : %u\n", n->sysnum  );
     Printf( "Data Directory : %s\n", n->dir );
     textattr(COLOR_YELLOW);
-    Puts("\r\n<ESC> when done.\r\n\r\n");
+    Puts("\n<ESC> when done.\n\n");
     textattr(COLOR_CYAN);
     do 
     {
@@ -315,18 +315,17 @@ void edit_net(int nn)
 
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
-void networks()
-{
+void networks() {
     char s[181],s1[81];
     bool done = false;
 
-    if (!exist("NETWORK.EXE")) 
-    {
+    if (!exist("NETWORK.EXE")) {
         app->localIO->LocalCls();
         nlx();
-        Printf("You have not installed the networking software.  Unzip NETxx.ZIP\r\n");
-        Printf("to the main BBS directory and re-run INIT.\r\n\n");
-        Printf("Hit any key to return to the Main Menu.\r\n");
+        textattr(COLOR_MAGENTA);
+        Printf("You have not installed the networking software.  Unzip NETxx.ZIP\n");
+        Printf("to the main BBS directory and re-run INIT.\n\n");
+        Printf("Hit any key to return to the Main Menu.\n");
         app->localIO->getchd();
         return;
     }
@@ -341,7 +340,7 @@ void networks()
             {
                 pausescr();
             }
-            Printf( "%-2d. %-15s   @%-5u  %s\r\n", i+1, net_networks[i].name, net_networks[i].sysnum, net_networks[i].dir);
+            Printf( "%-2d. %-15s   @%-5u  %s\n", i+1, net_networks[i].name, net_networks[i].sysnum, net_networks[i].dir);
         }
         nlx();
         textattr(COLOR_YELLOW);
@@ -373,7 +372,7 @@ void networks()
             if (!OKAD) 
             {
                 textattr(COLOR_RED);
-                Printf("You must run the BBS once to set up some variables before deleting a network.\r\n");
+                Printf("You must run the BBS once to set up some variables before deleting a network.\n");
                 textattr(COLOR_CYAN);
                 app->localIO->getchd();
                 break;
@@ -412,7 +411,7 @@ void networks()
             {
                 nlx();
                 textattr(COLOR_RED);
-                Printf("You must leave at least one network.\r\n");
+                Printf("You must leave at least one network.\n");
                 textattr(COLOR_CYAN);
                 nlx();
                 app->localIO->getchd();
@@ -422,7 +421,7 @@ void networks()
             if (!OKAD) 
             {
                 textattr(COLOR_YELLOW);
-                Printf("You must run the BBS once to set up some variables before inserting a network.\r\n");
+                Printf("You must run the BBS once to set up some variables before inserting a network.\n");
                 textattr(COLOR_CYAN);
                 app->localIO->getchd();
                 break;
@@ -430,7 +429,7 @@ void networks()
             if (initinfo.net_num_max>=MAX_NETWORKS) 
             {
                 textattr(COLOR_RED);
-                Printf("Too many networks.\r\n");
+                Printf("Too many networks.\n");
                 textattr(COLOR_CYAN);
                 nlx();
                 app->localIO->getchd();
@@ -495,7 +494,7 @@ void convcfg()
     if ( hFile > 0 )
     {
         textattr(COLOR_YELLOW);
-        Printf("Converting config.dat to 4.30/5.00 format...\r\n");
+        Printf("Converting config.dat to 4.30/5.00 format...\n");
         textattr(COLOR_CYAN);
         read(hFile, (void *) (&syscfg), sizeof(configrec));
         sprintf(syscfg.menudir, "%sMENUS%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
@@ -612,12 +611,12 @@ int verify_dir(char *typeDir, char *dirName)
 
 void show_help()
 {
-    Printf("   ,x    - Specify Instance (where x is the Instance)\r\n");
-    Printf("   -C    - Recompile modem configuration\r\n");
-    Printf("   -D    - Edit Directories\r\n");
-    Printf("   -L    - Rebuild LOCAL.MDM info\r\n");
-    Printf("   -Pxxx - Password via commandline (where xxx is your password)\r\n");
-    Printf("\r\n\n\n");
+    Printf("   ,x    - Specify Instance (where x is the Instance)\n");
+    Printf("   -C    - Recompile modem configuration\n");
+    Printf("   -D    - Edit Directories\n");
+    Printf("   -L    - Rebuild LOCAL.MDM info\n");
+    Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
+    Printf("\n\n\n");
 
 }
 
@@ -673,7 +672,7 @@ int WInitApp::main(int argc, char *argv[])
     nlx();
     Printf( g_pszCopyrightString );
     app->localIO->LocalClrEol();
-    textattr(11);
+    textattr(COLOR_WHITE);
     nlx(2);
     textattr(COLOR_CYAN);
 
@@ -747,8 +746,8 @@ int WInitApp::main(int argc, char *argv[])
             {
                 new_init();
                 nlx(2);
-                textattr(11);
-                Printf("Your system password defaults to 'SYSOP'.\r\n");
+                textattr(COLOR_YELLOW);
+                Printf("Your system password defaults to 'SYSOP'.\n");
                 textattr(COLOR_CYAN);
                 nlx();
                 newbbs=1;
@@ -978,7 +977,7 @@ int WInitApp::main(int argc, char *argv[])
     else 
     {
 #ifdef ASFD
-        Printf("\r\nConverting result codes...\r\n\n");
+        Printf("\nConverting result codes...\n\n");
         convert_result_codes();
 #endif
     }
@@ -1167,7 +1166,7 @@ int WInitApp::main(int argc, char *argv[])
                 textattr(COLOR_WHITE);
                 app->localIO->LocalCls();
                 nlx(3);
-                Printf("Modem configured....\r\n");
+                Printf("Modem configured....\n");
                 nlx(3);
                 exit( 0 );
                 break;
@@ -1193,8 +1192,8 @@ int WInitApp::main(int argc, char *argv[])
     if (newbbs) 
     {
         nlx();
-        textattr(11);
-        Printf("You will now need to enter the system password, 'SYSOP'.\r\n\n");
+        textattr(COLOR_CYAN);
+        Printf("You will now need to enter the system password, 'SYSOP'.\n\n");
     }
 
 
@@ -1211,7 +1210,7 @@ int WInitApp::main(int argc, char *argv[])
             app->localIO->LocalCls();
             nlx(2);
             textattr(COLOR_RED);
-            Printf("I'm sorry, that isn't the correct system password.\r\n");
+            Printf("I'm sorry, that isn't the correct system password.\n");
             textattr(COLOR_WHITE);
             exit(2);
         }
@@ -1221,12 +1220,11 @@ int WInitApp::main(int argc, char *argv[])
         if (c_IsUserListInOldFormat()) {
             nlx();
             if (c_check_old_struct()) {
-                textattr(11);
-                Printf("You have a non-standard userlist.\r\n");
-                Printf("Please update the convert.c file with your old userrec, make any\r\n");
-                Printf("modifications necessary to copy over new fields, then compile and\r\n");
-                Printf("run it.\r\n\n");
                 textattr(COLOR_MAGENTA);
+                Printf("You have a non-standard userlist.\n");
+                Printf("Please update the convert.c file with your old userrec, make any\n");
+                Printf("modifications necessary to copy over new fields, then compile and\n");
+                Printf("run it.\n\n");
                 Puts("[PAUSE]");
                 textattr(COLOR_CYAN);
                 app->localIO->getchd();
@@ -1236,8 +1234,8 @@ int WInitApp::main(int argc, char *argv[])
                 Puts("Convert your userlist to the v4.30 format? ");
                 textattr(COLOR_CYAN);
                 if (yn()) {
-                    textattr(11);
-                    Printf( "Please wait...\r\n" );
+                    textattr(COLOR_MAGENTA);
+                    Printf( "Please wait...\n" );
                     c_old_to_new();
                     nlx();
                     textattr(COLOR_MAGENTA);
@@ -1266,7 +1264,7 @@ int WInitApp::main(int argc, char *argv[])
 #if !defined (_unix__)
         app->localIO->LocalXYPuts( x, y++, "3. Communications Port Configuration");
         char szTempBuffer[ 255 ];
-        sprintf( szTempBuffer, "5. Manually Select Modem Type (now %s)\r\n", !syscfgovr.modem_type[0]?">UNSET<":syscfgovr.modem_type );
+        sprintf( szTempBuffer, "5. Manually Select Modem Type (now %s)", !syscfgovr.modem_type[0]?">UNSET<":syscfgovr.modem_type );
         app->localIO->LocalXYPuts( x, y++, szTempBuffer );
 #endif
         app->localIO->LocalXYPuts( x, y++, "6. External Protocol Configuration");
