@@ -44,14 +44,14 @@ void edit_arc(int nn)
 		int cp = 4;
 		done1 = false;
 		app->localIO->LocalCls();
-		textattr(11);
-		Printf("                 Archiver Configuration\r\n\n");
+		textattr(COLOR_YELLOW);
+		Printf("                 Archiver Configuration\n\n");
 		textattr(COLOR_CYAN);
 		if (i == 0) 
 		{
 			Printf("Archiver #%d  ", i+1);
 			textattr(COLOR_YELLOW);
-			Printf("(Default)\r\n\n");
+			Printf("(Default)\n\n");
 		} 
 		else
 		{
@@ -67,12 +67,12 @@ void edit_arc(int nn)
 		Printf("Comment Archive    : %s\n", arc[i].arck);
 		Printf("Test Archive       : %s\n", arc[i].arct);
 		app->localIO->LocalGotoXY(0,13);
-		Printf("                                                             \r\n");
+		Printf("                                                             \n");
 		textattr(11);
-		Printf("[ = Previous Archiver  ] = Next Archiver\r\n");
+		Printf("[ = Previous Archiver  ] = Next Archiver\n");
 		textattr(COLOR_CYAN);
-		Printf("                                                             \r\n");
-		Printf("                                                             \r\n");
+		Printf("                                                             \n");
+		Printf("                                                             \n");
 		textattr(COLOR_YELLOW);
 		Puts("<ENTER> to edit    <ESC> when done.");
 		textattr(COLOR_CYAN);
@@ -83,14 +83,14 @@ void edit_arc(int nn)
 		case '\r':
             {
 			    app->localIO->LocalGotoXY(0,13);
-			    Printf("                                                             \r\n");
-			    Printf("%%1 %%2 ect. are parameters passed.  Minimum of two on Add and \r\n");
-			    Printf("Extract command lines. For added security, a complete path to\r\n");
-			    Printf("the archiver and extension should be used. I.E.:             \r\n");
-			    Printf("c:\\bin\\arcs\\zip.exe -a %%1 %%2                              \r\n");
-			    Printf("                                                             \r\n");
+			    Printf("                                                             \n");
+			    Printf("%%1 %%2 ect. are parameters passed.  Minimum of two on Add and \n");
+			    Printf("Extract command lines. For added security, a complete path to\n");
+			    Printf("the archiver and extension should be used. I.E.:             \n");
+			    Printf("c:\\bin\\arcs\\zip.exe -a %%1 %%2                              \n");
+			    Printf("                                                             \n");
 			    textattr(COLOR_YELLOW);
-			    Printf("<ESC> when done\r\n");
+			    Printf("<ESC> when done\n");
 			    textattr(COLOR_CYAN);
                 bool done = false;
 			    do 
@@ -388,28 +388,28 @@ void sec_levs()
 {
 	app->localIO->LocalCls();
 	textattr(COLOR_CYAN);
-	Printf("Security level   : \r\n");
-	Printf("Time per day     : \r\n");
-	Printf("Time per logon   : \r\n");
-	Printf("Messages read    : \r\n");
-	Printf("Emails per day   : \r\n");
-	Printf("Posts per day    : \r\n");
-	Printf("Post anony       : \r\n");
-	Printf("Email anony      : \r\n");
-	Printf("Read anony posts : \r\n");
-	Printf("Read anony email : \r\n");
-	Printf("Limited co-sysop : \r\n");
-	Printf("Co-sysop         : \r\n");
+	Printf("Security level   : \n");
+	Printf("Time per day     : \n");
+	Printf("Time per logon   : \n");
+	Printf("Messages read    : \n");
+	Printf("Emails per day   : \n");
+	Printf("Posts per day    : \n");
+	Printf("Post anony       : \n");
+	Printf("Email anony      : \n");
+	Printf("Read anony posts : \n");
+	Printf("Read anony email : \n");
+	Printf("Limited co-sysop : \n");
+	Printf("Co-sysop         : \n");
 	int cursl = 10;
 	up_sl(cursl);
 	bool done = false;
 	app->localIO->LocalGotoXY(0,12);
 	textattr(COLOR_YELLOW);
-	Puts("\r\n<ESC> to exit\r\n");
+	Puts("\n<ESC> to exit\n");
 	textattr(11);
-	Printf("[ = down one SL    ] = up one SL\r\n");
-	Printf("{ = down 10 SL     } = up 10 SL\r\n");
-	Printf("<C/R> = edit SL data\r\n");
+	Printf("[ = down one SL    ] = up one SL\n");
+	Printf("{ = down 10 SL     } = up 10 SL\n");
+	Printf("<C/R> = edit SL data\n");
 	textattr(COLOR_CYAN);
 	do 
 	{
@@ -421,20 +421,20 @@ void sec_levs()
 		case '\r':
 			app->localIO->LocalGotoXY(0,12);
 			textattr(COLOR_YELLOW);
-			Puts("\r\n<ESC> to exit\r\n");
+			Puts("\n<ESC> to exit\n");
 			textattr(COLOR_CYAN);
-			Printf("                                \r\n");
-			Printf("                               \r\n");
-			Printf("                    \r\n");
-			Puts("\r\n          \r\n");
+			Printf("                                \n");
+			Printf("                               \n");
+			Printf("                    \n");
+			Puts("\n          \n");
 			ed_slx(&cursl);
 			app->localIO->LocalGotoXY(0,12);
 			textattr(COLOR_YELLOW);
-			Puts("\r\n<ESC> to exit\r\n");
+			Puts("\n<ESC> to exit\n");
 			textattr(11);
-			Printf("[ = down one SL    ] = up one SL\r\n");
-			Printf("{ = down 10 SL     } = up 10 SL\r\n");
-			Printf("<C/R> = edit SL data\r\n");
+			Printf("[ = down one SL    ] = up one SL\n");
+			Printf("{ = down 10 SL     } = up 10 SL\n");
+			Printf("<C/R> = edit SL data\n");
 			textattr(COLOR_CYAN);
 			break;
 		case '\033':
@@ -501,8 +501,8 @@ void list_autoval()
 	valrec v;
 	
 	app->localIO->LocalCls();
-	Printf("NUM  SL   DSL  AR                DAR               RESTRICTIONS\r\n");
-	Printf("---  ---  ---  ----------------  ----------------  ----------------\r\n");
+	Printf("NUM  SL   DSL  AR                DAR               RESTRICTIONS\n");
+	Printf("---  ---  ---  ----------------  ----------------  ----------------\n");
 	strcpy(s3,restrict_string);
 	for ( int i1 = 0; i1 < 10; i1++ ) 
 	{
@@ -538,7 +538,7 @@ void list_autoval()
 		ar[16]=0;
 		dar[16]=0;
 		
-		Printf( "%3d  %3d  %3d  %16s  %16s  %16s\r\n",i1+1,v.sl,v.dsl,ar,dar,r );
+		Printf( "%3d  %3d  %3d  %16s  %16s  %16s\n",i1+1,v.sl,v.dsl,ar,dar,r );
 	}
 	nlx(2);
 }
@@ -590,7 +590,7 @@ void edit_autoval(int n)
 	Printf("DAR          : %s\n",dar);
 	Printf("Restrictions : %s\n",r);
 	textattr(COLOR_YELLOW);
-	Puts("\r\n\r\n<ESC> to exit\r\n");
+	Puts("\n\n<ESC> to exit\n");
 	textattr(COLOR_CYAN);
 	bool done = false;
 	cp=0;

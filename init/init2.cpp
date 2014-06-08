@@ -180,7 +180,7 @@ void sysinfo1()
     Printf("Days active      : %-7s\n",j19);
 
     textattr(COLOR_YELLOW);
-    Puts("\r\n<ESC> when done.");
+    Puts("\n<ESC> when done.");
     textattr(COLOR_CYAN);
 
     cp=0;
@@ -381,13 +381,13 @@ void setpaths()
     Printf("Batch Directory    : %s\n", syscfgovr.batchdir);
 
     textattr(COLOR_YELLOW);
-    Puts("\r\n<ESC> when done.\r\n\r\n\r\n");
+    Puts("\n<ESC> when done.\n\n\n");
     textattr(COLOR_MAGENTA);
-    Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\r\n\n");
-    textattr(11);
-    Printf(" Changing any of these (except Temporary and Batch) requires YOU\r\n");
-    Printf(" to MANUALLY move files and / or directory structures.  Consult the\r\n");
-    Printf(" documentation prior to changing any of these settings.\r\n");
+    Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\n\n");
+    textattr(COLOR_YELLOW);
+    Printf(" Changing any of these (except Temporary and Batch) requires YOU\n");
+    Printf(" to MANUALLY move files and / or directory structures.  Consult the\n");
+    Printf(" documentation prior to changing any of these settings.\n");
     textattr(COLOR_CYAN);
 
     int i1;
@@ -490,7 +490,7 @@ void setupcom()
 
     Printf("Com Port      : %s\n\n", comport.c_str());
 	textattr(COLOR_YELLOW);
-	Puts("\r\n<ESC> when done.");
+	Puts("\n<ESC> when done.");
 	textattr(COLOR_CYAN);
 	
 	PrintComPortInfo(syscfgovr.primaryport);
@@ -868,7 +868,7 @@ void convert_to(int num_subs, int num_dirs)
     nqsc=(unsigned long *)bbsmalloc(nqscn_len);
     if (!nqsc) 
     {
-        Printf("Could not allocate %d bytes for new quickscan rec\r\n",nqscn_len);
+        Printf("Could not allocate %d bytes for new quickscan rec\n",nqscn_len);
         return;
     }
     memset(nqsc, 0, nqscn_len);
@@ -884,7 +884,7 @@ void convert_to(int num_subs, int num_dirs)
     if (!oqsc) 
     {
         BbsFreeMemory(nqsc);
-        Printf("Could not allocate %d bytes for old quickscan rec\r\n",syscfg.qscn_len);
+        Printf("Could not allocate %d bytes for old quickscan rec\n",syscfg.qscn_len);
         return;
     }
     memset(oqsc, 0, syscfg.qscn_len);
@@ -921,7 +921,7 @@ void convert_to(int num_subs, int num_dirs)
     if (oqf<0) 
     {
         BbsFreeMemory(nqsc); BbsFreeMemory(oqsc);
-        Printf("Could not open user.qsc\r\n");
+        Printf("Could not open user.qsc\n");
         return;
     }
     nqf=open(nqfn,O_RDWR|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE);
@@ -929,7 +929,7 @@ void convert_to(int num_subs, int num_dirs)
     {
         BbsFreeMemory(nqsc); BbsFreeMemory(oqsc);
         close(oqf);
-        Printf("Could not open userqsc.new\r\n");
+        Printf("Could not open userqsc.new\n");
         return;
     }
 
@@ -975,8 +975,8 @@ void up_subs_dirs()
     app->localIO->LocalCls();
 
     textattr(COLOR_CYAN);
-    Printf("Current max # subs: %d\r\n",syscfg.max_subs);
-    Printf("Current max # dirs: %d\r\n",syscfg.max_dirs);
+    Printf("Current max # subs: %d\n",syscfg.max_subs);
+    Printf("Current max # dirs: %d\n",syscfg.max_dirs);
     nlx(2);
 
     textattr(COLOR_YELLOW);
@@ -984,10 +984,10 @@ void up_subs_dirs()
     if (yn()) 
     {
         nlx();
-        textattr(11);
-        Printf("Enter the new max subs/dirs you wish.  Just hit <enter> to leave that\r\n");
-        Printf("value unchanged.  All values will be rounded up to the next 32.\r\n");
-        Printf("Values can range from 32-1024\r\n\n");
+        textattr(COLOR_CYAN);
+        Printf("Enter the new max subs/dirs you wish.  Just hit <enter> to leave that\n");
+        Printf("value unchanged.  All values will be rounded up to the next 32.\n");
+        Printf("Values can range from 32-1024\n\n");
 
         textattr(COLOR_YELLOW);
         Puts("New max subs: ");
@@ -1045,8 +1045,8 @@ void up_subs_dirs()
             if (yn()) 
             {
                 nlx();
-                textattr(11);
-                Printf("Please wait...\r\n");
+                textattr(COLOR_MAGENTA);
+                Printf("Please wait...\n");
                 convert_to(num_subs, num_dirs);
             }
         }
@@ -1068,7 +1068,7 @@ void edit_lang(int nn)
     Printf("Data Directory : %s\n",n->dir);
     Printf("Menu Directory : %s\n",n->mdir);
     textattr(COLOR_YELLOW);
-    Puts("\r\n<ESC> when done.\r\n\r\n");
+    Puts("\n<ESC> when done.\n\n");
     textattr(COLOR_CYAN);
     do 
     {
@@ -1125,7 +1125,7 @@ void up_langs()
             {
                 pausescr();
             }
-            Printf( "%-2d. %-20s    %-50s\r\n", i+1, languages[i].name, languages[i].dir);
+            Printf( "%-2d. %-20s    %-50s\n", i+1, languages[i].name, languages[i].dir);
         }
         nlx();
         textattr(COLOR_YELLOW);
@@ -1185,8 +1185,8 @@ void up_langs()
             else 
             {
                 nlx();
-                textattr(11);
-                Printf("You must leave at least one language.\r\n");
+                textattr(COLOR_RED);
+                Printf("You must leave at least one language.\n");
                 textattr(COLOR_CYAN);
                 nlx();
                 app->localIO->getchd();
@@ -1196,7 +1196,7 @@ void up_langs()
             if (initinfo.num_languages>=MAX_LANGUAGES) 
             {
                 textattr(COLOR_RED);
-                Printf("Too many languages.\r\n");
+                Printf("Too many languages.\n");
                 textattr(COLOR_CYAN);
                 nlx();
                 app->localIO->getchd();
@@ -1281,16 +1281,16 @@ void edit_editor(int n)
     bool done=false;
     int cp=0;
     Printf("Description     : %s\n",c.description);
-    Printf("Filename to run remotely\r\n%s\n",c.filename);
-    Printf("Filename to run locally\r\n%s\n",c.filenamecon);
+    Printf("Filename to run remotely\n%s\n",c.filename);
+    Printf("Filename to run locally\n%s\n",c.filenamecon);
     textattr(COLOR_YELLOW);
-    Puts("\r\n<ESC> when done.\r\n\r\n");
+    Puts("\n<ESC> when done.\n\n");
     textattr(11);
-    Printf("%%1 = filename to edit\r\n");
-    Printf("%%2 = chars per line\r\n");
-    Printf("%%3 = lines per page\r\n");
-    Printf("%%4 = max lines\r\n");
-    Printf("%%5 = instance number\r\n");
+    Printf("%%1 = filename to edit\n");
+    Printf("%%2 = chars per line\n");
+    Printf("%%3 = lines per page\n");
+    Printf("%%4 = max lines\n");
+    Printf("%%5 = instance number\n");
     textattr(COLOR_CYAN);
 
     do 
@@ -1338,7 +1338,7 @@ void extrn_editors()
 		nlx();
 		for (i=0; i<initinfo.numeditors; i++) 
 		{
-			Printf( "%d. %s\r\n", i + 1, editors[i].description);
+			Printf( "%d. %s\n", i + 1, editors[i].description);
 		}
 		nlx();
 		textattr(COLOR_YELLOW);
@@ -1389,7 +1389,7 @@ void extrn_editors()
 			if (initinfo.numeditors>=10) 
 			{
 				textattr(COLOR_RED);
-				Printf("Too many editors.\r\n");
+				Printf("Too many editors.\n");
 				textattr(COLOR_CYAN);
 				nlx();
 				break;
@@ -1482,22 +1482,22 @@ void edit_prot(int n)
     Printf("Description          : %s\n",c.description);
     Printf("Xfer OK code         : %s\n",s);
     Printf("Require MNP/LAPM     : %s\n",s1);
-    Printf("Receive command line:\r\n%s\r\n", c.receivefn );
-    Printf("Send command line:\r\n%s\r\n", c.sendfn );
-    Printf("Receive batch command line:\r\n%s\r\n", c.receivebatchfn );
-    Printf("Send batch command line:\r\n%s\r\n", c.sendbatchfn );
-    Printf("Bi-directional transfer command line:\r\n%s\r\n", c.bibatchfn );
+    Printf("Receive command line:\n%s\n", c.receivefn );
+    Printf("Send command line:\n%s\n", c.sendfn );
+    Printf("Receive batch command line:\n%s\n", c.receivebatchfn );
+    Printf("Send batch command line:\n%s\n", c.sendbatchfn );
+    Printf("Bi-directional transfer command line:\n%s\n", c.bibatchfn );
     textattr(COLOR_YELLOW);
-    Puts("\r\n<ESC> when done.\r\n\r\n");
+    Puts("\n<ESC> when done.\n\n");
     textattr(11);
-    Printf("%%1 = com port baud rate\r\n");
-    Printf("%%2 = port number\r\n");
-    Printf("%%3 = filename to send/receive, filename list to send for batch\r\n");
-    Printf("%%4 = modem speed\r\n");
-    Printf("%%5 = filename list to receive for batch UL and bi-directional batch\r\n");
+    Printf("%%1 = com port baud rate\n");
+    Printf("%%2 = port number\n");
+    Printf("%%3 = filename to send/receive, filename list to send for batch\n");
+    Printf("%%4 = modem speed\n");
+    Printf("%%5 = filename list to receive for batch UL and bi-directional batch\n");
     nlx();
     textattr(COLOR_MAGENTA);
-    Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\r\n");
+    Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\n");
     textattr(COLOR_CYAN);
 
     do 
@@ -1543,7 +1543,7 @@ void edit_prot(int n)
                 {
                     c.othr &= (~othr_error_correct);
                 }
-                OutputStringRaw(s1);
+                app->localIO->LocalPuts(s1);
             }
             break;
         case 3:
@@ -1636,7 +1636,7 @@ void extrn_prots()
             {
                 continue;
             }
-            Printf( "%c. %s\r\n",(i<10)?(i+'0'):(i-10+BASE_CHAR), prot_name( i ) );
+            Printf( "%c. %s\n",(i<10)?(i+'0'):(i-10+BASE_CHAR), prot_name( i ) );
             //maxp=s[0];
         }
         nMaxProtocolNumber = initinfo.numexterns + 6;
@@ -1702,7 +1702,7 @@ void extrn_prots()
             if (initinfo.numexterns>=15) 
             {
                 textattr(COLOR_RED);
-                Printf("Too many external protocols.\r\n");
+                Printf("Too many external protocols.\n");
                 textattr(COLOR_CYAN);
                 nlx();
                 break;

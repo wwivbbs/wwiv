@@ -58,7 +58,7 @@ void *malloca( unsigned long nbytes )
 	void *pBuffer = bbsmalloc( nbytes + 1 );
 	if ( pBuffer == NULL ) 
 	{
-		Printf( "\r\nNot enough memory, needed %ld bytes.\r\n\n", nbytes );
+		Printf( "\nNot enough memory, needed %ld bytes.\n\n", nbytes );
 	}
 	return pBuffer;
 }
@@ -267,17 +267,7 @@ char onek(const char *pszKeys)
 	return ch;
 }
 
-
-/* This (obviously) outputs a string TO THE SCREEN ONLY */
-void OutputStringRaw(const char *pszText) {
-	for (int i=0; pszText[i]!=0; i++) 
-	{
-		char ch=pszText[i];
-		app->localIO->LocalPutch(ch);
-	}
-}
-
-int background_character = 0xb0;
+static int background_character = 0xb0;
 
 int editlinestrlen( char *pszText )
 {
@@ -308,9 +298,9 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
     }
     s[len] = '\0';
     textattr((16 * COLOR_BLUE) + COLOR_WHITE);
-    OutputStringRaw(s);
+    app->localIO->LocalPuts(s);
     app->localIO->LocalGotoXY(77,0);
-    OutputStringRaw("OVR");
+    app->localIO->LocalPuts("OVR");
     app->localIO->LocalGotoXY(cx,cy);
     bool done=false;
     int pos = 0;
@@ -360,12 +350,12 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                 if (bInsert) {
                     bInsert = false;
                     app->localIO->LocalGotoXY(77,0);
-                    OutputStringRaw("OVR");
+                    app->localIO->LocalPuts("OVR");
                     app->localIO->LocalGotoXY(cx+pos,cy);
                 } else {
                     bInsert = true;
                     app->localIO->LocalGotoXY(77,0);
-                    OutputStringRaw("INS");
+                    app->localIO->LocalPuts("INS");
                     app->localIO->LocalGotoXY(cx+pos,cy);
                 }
             }
@@ -378,7 +368,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                 }
                 s[len-1] = static_cast<char>(background_character);
                 app->localIO->LocalGotoXY(cx,cy);
-                OutputStringRaw(s);
+                app->localIO->LocalPuts(s);
                 app->localIO->LocalGotoXY(cx+pos,cy);
             }
             break;
@@ -416,7 +406,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                         }
                         s[pos++]=ch;
                         app->localIO->LocalGotoXY(cx,cy);
-                        OutputStringRaw(s);
+                        app->localIO->LocalPuts(s);
                         app->localIO->LocalGotoXY(cx+pos,cy);
                     }  else  {
                         s[pos++]=ch;
@@ -444,7 +434,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                 s[len-1] = static_cast<char>(background_character);
                 pos--;
                 app->localIO->LocalGotoXY(cx,cy);
-                OutputStringRaw(s);
+                app->localIO->LocalPuts(s);
                 app->localIO->LocalGotoXY(cx+pos,cy);
             }
             break;
@@ -472,15 +462,14 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
     szFinishedString[ len ] = '\0';
     app->localIO->LocalGotoXY( cx, cy ); 
     curatr=oldatr;
-    OutputStringRaw( szFinishedString );
+    app->localIO->LocalPuts( szFinishedString );
     app->localIO->LocalGotoXY( cx, cy ); 
 }
 
 
 int toggleitem(int value, const char **strings, int num, int *returncode)
 {
-    if ( value < 0 || value >= num )
-    {
+    if ( value < 0 || value >= num ) {
 		value=0;
     }
 	
@@ -488,67 +477,50 @@ int toggleitem(int value, const char **strings, int num, int *returncode)
 	int cx=app->localIO->WhereX();
 	int cy=app->localIO->WhereY();
 	int curatr=0x1f;
-	OutputStringRaw(strings[value]);
+	app->localIO->LocalPuts(strings[value]);
 	app->localIO->LocalGotoXY(cx,cy);
 	bool done = false;
-	do 
-    {
-		int ch = app->localIO->getchd();
-		if ( ch == 0 || ch == 224) 
-        {
-			ch=app->localIO->getchd();
-			switch (ch) 
-            {
-			case 59: // F1
-				done = true;
-				*returncode=DONE;
-				break;
-			case 72: // UP
-			case 15: // SHIFT-TAB
-				done = true;
-				*returncode=PREV;
-				break;
-			case 80: // DOWN
-				done = true;
-				*returncode=NEXT;
-				break;
+	do  {
+		int ch=app->localIO->getchd();
+		switch (ch) {
+        case KEY_ENTER:
+		case RETURN:
+		case TAB:
+			done = true;
+			*returncode=NEXT;
+			break;
+		case ESC:
+			done = true;
+			*returncode=DONE;
+			break;
+		case KEY_F(1): // F1
+			done = true;
+			*returncode=DONE;
+			break;
+		case KEY_UP: // UP
+        case KEY_BTAB: // SHIFT-TAB
+			done = true;
+			*returncode=PREV;
+			break;
+		case KEY_DOWN: // DOWN
+			done = true;
+			*returncode=NEXT;
+			break;
+        default:
+			if ( ch == 32 ) {
+				value= ( value + 1 ) % num;
+				app->localIO->LocalPuts( strings[value] );
+				app->localIO->LocalGotoXY( cx, cy );
 			}
-		} 
-        else 
-        {
-			if ( ch > 31 ) 
-            {
-				if ( ch == 32 ) 
-                {
-					value= ( value + 1 ) % num;
-					OutputStringRaw( strings[value] );
-					app->localIO->LocalGotoXY( cx, cy );
-				}
-			} 
-            else 
-            {
-				switch( ch ) 
-                {
-				case RETURN:
-				case TAB:
-					done = true;
-					*returncode=NEXT;
-					break;
-				case ESC:
-					done = true;
-					*returncode=DONE;
-					break;
-				}
-			}
+            break;
 		}
 	} while ( !done );
 	app->localIO->LocalGotoXY(cx,cy);
 	curatr=oldatr;
-	OutputStringRaw(strings[value]);
+	app->localIO->LocalPuts(strings[value]);
 	app->localIO->LocalGotoXY(cx,cy);
 	return value;
 }
-
 
 int GetNextSelectionPosition( int nMin, int nMax, int nCurrentPos, int nReturnCode )
 {
@@ -574,27 +546,6 @@ int GetNextSelectionPosition( int nMin, int nMax, int nCurrentPos, int nReturnCo
     }
     return nCurrentPos;
 }
-
-
-/* This function returns the time, in seconds since midnight. */
-double timer()
-{
-	time_t ti = time( NULL );
-	struct tm *t  = localtime(&ti);
-	
-	return ( t->tm_hour * 3600.0 ) + ( t->tm_min * 60.0 ) + ( t->tm_sec );
-}
-
-
-#define TICKS_PER_SECOND 18.2
-
-
-/* This function returns the time, in ticks since midnight. */
-long timer1()
-{
-	return static_cast<long>( timer() * TICKS_PER_SECOND );
-}
-
 
 void fix_user_rec(userrec *u)
 {
@@ -784,15 +735,6 @@ void write_qscn(unsigned int un, unsigned long *qscn, int stayopen)
 	}
 }
 
-
-void wait1(long l)
-{
-	long l1 = timer1()+l;
-	while (timer1()<l1)
-		;
-}
-
-
 int exist(const char *pszFileName)
 {
 	WFindFile fnd;
@@ -906,8 +848,7 @@ void Puts( const char *pszText )
 
 void nlx( int numLines )
 {
-	for ( int i=0; i < numLines; i++ )
-	{
+	for ( int i=0; i < numLines; i++ ) {
 		Puts( "\r\n" );
 	}
 }
@@ -933,7 +874,7 @@ void create_text(const char *pszFileName)
 	
     sprintf( szFullFileName, "gfiles%c%s", WWIV_FILE_SEPERATOR_CHAR, pszFileName );
 	int hFile = open( szFullFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
-    sprintf( szMessage, "This is %s.\r\nEdit to suit your needs.\r\n\x1a", pszFileName);
+    sprintf( szMessage, "This is %s.\nEdit to suit your needs.\n\x1a", pszFileName);
 	write( hFile, szMessage, strlen( szMessage ) );
 	close( hFile );
 }
@@ -997,7 +938,7 @@ void init_files()
 	subboardrec s1;
 	directoryrec d1;
 	
-	textattr(11);
+	textattr(COLOR_YELLOW);
 	Puts("Creating Data Files.");
 	textattr(COLOR_CYAN);
 	
@@ -1264,7 +1205,7 @@ void init_files()
 	close(hFile);
 	Printf(".\n\n");
 	////////////////////////////////////////////////////////////////////////////
-	textattr(11);
+	textattr(COLOR_YELLOW);
 	Puts("Copying String and Miscellaneous files.");
 	textattr(COLOR_CYAN);
 	
@@ -1310,7 +1251,7 @@ void init_files()
 	Printf(".\n\n");
 	
 	////////////////////////////////////////////////////////////////////////////
-	textattr(11);
+	textattr(COLOR_YELLOW);
 	Puts("Decompressing archives.  Please wait");
 	textattr(COLOR_CYAN);
 	if (exist("en-menus.zip")) 
@@ -1427,8 +1368,7 @@ void init_modem_info()
 void new_init()
 {
 	const int ENTRIES = 12;
-	const char *dirname[] = 
-	{ 
+	const char *dirname[] = { 
 		"attach",
 		"data",
 		"data/regions",
@@ -1444,12 +1384,9 @@ void new_init()
 		0L,
 	};
 	textattr(COLOR_YELLOW);
-	Puts("\r\n\r\nNow performing installation.  Please wait...\r\n\r\n");
+	Puts("\n\nNow performing installation.  Please wait...\n\n");
 	textattr(COLOR_CYAN);
-	////////////////////////////////////////////////////////////////////////////
-	textattr(11);
 	Puts("Creating Directories");
-	textattr(11);
 	for (int i = 0; i < ENTRIES; ++i) {
 		textattr(11);
 		Printf(".");
