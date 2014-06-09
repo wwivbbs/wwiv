@@ -18,6 +18,8 @@
 /**************************************************************************/
 #define _DEFINE_GLOBALS_
 
+#include <curses.h>
+
 #include "wwivinit.h"
 #include "version.cpp"
 #include "platform/curses_io.h"
@@ -793,17 +795,16 @@ int WInitApp::main(int argc, char *argv[])
         }
     }
 
-    if (filelength(configfile) != sizeof(configrec)) 
-    {
+    if (filelength(configfile) != sizeof(configrec)) {
         close(configfile);
         convcfg();
         configfile=open(configdat,O_RDWR | O_BINARY);
     }
 
-    read( configfile, &syscfg, sizeof( configrec ) );
+    read(configfile, &syscfg, sizeof(configrec));
     close(configfile);
 
-    if ( syscfg.xmark != -1 ) 
+    if (syscfg.xmark != -1)
     {
         syscfg.xmark = -1;
         syscfg.regcode[0]=0;

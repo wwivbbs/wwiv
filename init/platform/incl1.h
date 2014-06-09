@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2007, WWIV Software Services             */
+/*                 WWIV Initialization Utility Version 5.0                */
+/*             Copyright (C)1998-2014, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -28,11 +28,6 @@
 
 #if defined (_MSC_VER)
 #pragma component(browser, off)
-
-#if !defined( _CRT_SECURE_NO_DEPRECATE )
-#define _CRT_SECURE_NO_DEPRECATE
-#endif	// _MSC_VER 
-
 #endif // defined (_MSC_VER)
 
 #include <direct.h>
@@ -51,26 +46,6 @@
 #define MAX_FNAME	_MAX_FNAME
 #define MAX_EXT		_MAX_EXT
 
-enum COLORS {
-	BLACK,
-	BLUE,
-	GREEN,
-	CYAN,
-	RED,
-	MAGENTA,
-	BROWN,
-	LIGHTGRAY,
-	DARKGRAY,
-	LIGHTBLUE,
-	LIGHTGREEN,
-	LIGHTCYAN,
-	LIGHTRED,
-	LIGHTMAGENTA,
-	YELLOW,
-	WHITE
-};
-
-
 #if defined (__GNUC__)
 #define timezone _timezone
 #endif // __GNUC__
@@ -79,39 +54,6 @@ enum COLORS {
 #define snprintf _snprintf
 
 #endif	 // _WIN32
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// OS/2 Specific Section
-//
-
-
-#ifdef	 __OS2__
-
-#define  INCL_DOSPROCESS
-#include <os2.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <conio.h>
-#include <dos.h>
-#include <io.h>
-#include <process.h>
-#include <share.h>
-
-
-#define SOCKET		    int
-#define HANDLE		    int
-#ifndef MAX_PATH
-#define MAX_PATH	    256
-#endif
-
-#define WWIV_FILE_SEPERATOR_CHAR	'\\'
-#define WWIV_FILE_SEPERATOR_STRING	"\\"
-
-#define WWIV_VSNPRINTF vsnprintf
-
-#endif	 // __OS2__
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,32 +96,6 @@ enum COLORS {
 #define _putenv(s)	putenv(s)
 #define _getcwd(a,b)	getcwd(a,b)
 #define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
-
-#if defined( __APPLE__ )
-#define SWAP16( X ) OSSwapInt16( X )
-#define SWAP32( X ) OSSwapInt32( X )
-#define SWAP64( X ) OSSwapInt64( X )
-
-#endif // __APPLE__
-
-enum COLORS {
-	BLACK,
-	BLUE,
-	GREEN,
-	CYAN,
-	RED,
-	MAGENTA,
-	BROWN,
-	LIGHTGRAY,
-	DARKGRAY,
-	LIGHTBLUE,
-	LIGHTGREEN,
-	LIGHTCYAN,
-	LIGHTRED,
-	LIGHTMAGENTA,
-	YELLOW,
-	WHITE
-};
 
 #define WWIV_VSNPRINTF vsnprintf
 

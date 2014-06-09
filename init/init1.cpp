@@ -16,9 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+
+#include <string>
+#include <curses.h>
+
 #include "wwivinit.h"
 #include "common.h"
-#include <string>
 
 #ifdef __unix__
 #include <termios.h>
@@ -706,16 +709,6 @@ char *date()
 	return ds;
 }
 
-
-char *times()
-{
-	static char ti[9];
-	
-	time_t tim = time(NULL);
-	struct tm *t = localtime(&tim);
-	sprintf(ti,"%02d:%02d:%02d",t->tm_hour,t->tm_min,t->tm_sec);
-	return ti;
-}
 
 /** returns true if status.dat is read correctly */
 bool read_status()

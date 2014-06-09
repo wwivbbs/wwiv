@@ -72,7 +72,6 @@ void write_qscn(unsigned int un, unsigned long *qscn, int stayopen);
 int exist(const char *s);
 void save_status();
 char *date();
-char *times();
 bool read_status();
 int save_config();
 void Puts( const char *pszText );
