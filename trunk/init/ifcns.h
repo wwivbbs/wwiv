@@ -130,9 +130,6 @@ void create_arcs();
 
 /* File: filesupp.cpp */
 void WWIV_ChangeDirTo(const char *s);
-void WWIV_GetDir(char *s, int be);
-
-
 
 #ifndef _WIN32
 /* File: stringstuff.cpp */
