@@ -365,6 +365,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                 }
             }
             break;
+        case KEY_ENTER:
         case RETURN:                                        //return
         case TAB:
             done = true;
