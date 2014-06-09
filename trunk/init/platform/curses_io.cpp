@@ -30,8 +30,6 @@
 #include "curses.h"
 
 
-static int GetTopLine() { return 0; }
-
 #ifdef _WIN32
 void CursesIO::set_attr_xy(int x, int y, int a) {
     //TODO(rushfan): Implement me if needed for compile.cpp
@@ -39,7 +37,7 @@ void CursesIO::set_attr_xy(int x, int y, int a) {
 #endif  // _WIN32
 
 CursesIO::CursesIO() {
-    window_ = initscr();
+    initscr();
     raw();
     keypad(stdscr, TRUE);
     noecho();
@@ -48,14 +46,7 @@ CursesIO::CursesIO() {
     max_y_ = getmaxy(stdscr);
 
     start_color();
-    /*
-    init_pair(1, COLOR_CYAN, COLOR_BLACK);
-    init_pair(2, COLOR_MAGENTA, COLOR_BLACK);
-    init_pair(3, COLOR_RED, COLOR_BLACK);
-    init_pair(4, COLOR_CYAN | A_BOLD, COLOR_BLACK);
-    init_pair(5, COLOR_YELLOW | A_BOLD, COLOR_BLACK);
-    init_pair(7, COLOR_WHITE | A_BOLD, COLOR_BLUE);
-    */
+
     for (short b=0; b<COLORS; b++) {
         for (short f=0; f<COLORS; f++) {
             init_pair( (b * 16) + f, f, b);
@@ -69,14 +60,12 @@ CursesIO::~CursesIO() {
 }
 
 void CursesIO::LocalGotoXY(int x, int y) {
-// This, obviously, moves the cursor to the location specified, offset from
-// the protected dispaly at the top of the screen.  Note: this function
-// is 0 based, so (0,0) is the upper left hand corner.
-	x = std::max<int>( x, 0 );
-	x = std::min<int>( x, max_x_ );
-	y = std::max<int>( y, 0 );
-	y += GetTopLine();
-	y = std::min<int>( y, max_y_ );
+// Moves the cursor to the location specified
+// Note: this function is 0 based, so (0,0) is the upper left hand corner.
+	x = std::max<int>(x, 0);
+	x = std::min<int>(x, max_x_);
+	y = std::max<int>(y, 0);
+	y = std::min<int>(y, max_y_);
 
     move(y, x);
     refresh();
@@ -122,13 +111,13 @@ static void SetCursesAttribute() {
  * This function outputs one character to the local screen.  C/R, L/F, TOF,
  * BS, and BELL are interpreted as commands instead of characters.
  */
-void CursesIO::LocalPutch( unsigned char ch ) {
+void CursesIO::LocalPutch(unsigned char ch) {
     SetCursesAttribute();
     addch(ch);
     refresh();
 }
 
-void CursesIO::LocalPuts( const char *pszText ) {
+void CursesIO::LocalPuts(const char *pszText) {
     SetCursesAttribute();
     if (strlen(pszText) == 2) {
         if (pszText[0] == '\r' && pszText[1] == '\n') {
@@ -140,7 +129,7 @@ void CursesIO::LocalPuts( const char *pszText ) {
     refresh();
 }
 
-void CursesIO::LocalXYPuts( int x, int y, const char *pszText ) {
+void CursesIO::LocalXYPuts(int x, int y, const char *pszText) {
     LocalGotoXY(x, y);
     LocalPuts(pszText);
 }

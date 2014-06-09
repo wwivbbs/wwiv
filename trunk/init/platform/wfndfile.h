@@ -41,8 +41,7 @@ protected:
 	unsigned char nFileType;
 	bool bIsOpen;
 
-	void __open(const char * pszFileSpec, unsigned int nTypeMask) 
-	{
+	void __open(const char * pszFileSpec, unsigned int nTypeMask) {
 		strcpy(szFileSpec, pszFileSpec);
 		lTypeMask = nTypeMask;
 	}
@@ -57,10 +56,6 @@ protected:
 	struct dirent **entries;
 	int nMatches;
 	int nCurrentEntry;
-#elif defined (__OS2__)
-#error "Hey OS/2 Dude... WRITE ME!"
-#elif defined (__MSDOS__)
-	ffblk hFind;
 #else
 #error "No platform specified, cannot build this __FILE__"
 #endif
@@ -83,8 +78,7 @@ public:
 /**
  * Bit-mapped values for what WFindFile is searching
  */
-enum 
-{
+enum {
 	WFINDFILE_FILES = 0x01,
 	WFINDFILE_DIRS	= 0x02
 };

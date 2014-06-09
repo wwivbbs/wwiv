@@ -105,19 +105,6 @@
 #define COMMAND_AZ       (AZ+256)
 
 
-
-// The final character of an ansi sequence
-#define OB ('[')
-#define O ('O')
-#define A_HOME ('H')
-#define A_LEFT ('D')
-#define A_END ('K')
-#define A_UP ('A')
-#define A_DOWN ('B')
-#define A_RIGHT ('C')
-#define A_INSERT ('r')
-#define A_DELETE ('s')
-
 #define SPACE        32
 
 #define RETURN      13
