@@ -44,12 +44,6 @@ void convcfg();
 void printcfg();
 int verify_dir(char *typeDir, char *dirName);
 
-class InitSession;
-class WInitApp;
-InitSession* GetSession();
-WInitApp* GetApplication();
-
-
 /* File: init1.cpp */
 
 void init();
