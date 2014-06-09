@@ -17,10 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 
+#ifdef _WIN32
 #include <direct.h>
+#include <io.h>
+#endif 
 #include <string>
 #include <curses.h>
-#include <io.h>
+
 
 #include "wwivinit.h"
 #include "common.h"

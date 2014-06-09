@@ -19,8 +19,10 @@
 #define _DEFINE_GLOBALS_
 
 #include <curses.h>
+#ifdef _WIN32
 #include <direct.h>
 #include <io.h>
+#endif
 
 #include "wwivinit.h"
 #include "version.cpp"
