@@ -76,7 +76,6 @@ typedef struct {
 } autosel_data;
 #pragma pack(pop)
 
-
 //
 // WWIV includes
 //
@@ -96,7 +95,6 @@ typedef struct {
 
 // Misc Junk for now
 #define textattr(x) curatr = (x)
-
 
 // STRUCTS %%TODO: move 'em
 #pragma pack(push, 1)
@@ -119,8 +117,7 @@ typedef struct {
    com_speed;                               /* speed com port runs at */
 } resultrec;
 
-struct initinfo_rec
-{
+struct initinfo_rec {
     int numexterns;
     int numeditors;
     int num_languages;
@@ -130,6 +127,8 @@ struct initinfo_rec
     int nNumMsgsInCurrentSub;
 };
 #pragma pack(pop)
+
+class InitSession;
 
 __EXTRN__ WInitApp *app;
 __EXTRN__ InitSession *sess;
