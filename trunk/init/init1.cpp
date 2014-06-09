@@ -17,8 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <direct.h>
 #include <string>
 #include <curses.h>
+#include <io.h>
 
 #include "wwivinit.h"
 #include "common.h"

@@ -26,35 +26,11 @@
 
 #if defined (_WIN32)
 
-#if defined (_MSC_VER)
-#pragma component(browser, off)
-#endif // defined (_MSC_VER)
-
-#include <direct.h>
-#include <sys/utime.h>
-#include <conio.h>
-#include <dos.h>
-#include <io.h>
-#include <process.h>
-#include <share.h>
-
 #define WWIV_FILE_SEPERATOR_CHAR	'\\'
 #define WWIV_FILE_SEPERATOR_STRING	"\\"
-
-#define MAX_DRIVE	_MAX_DRIVE
-#define MAX_DIR		_MAX_DIR
 #define MAX_FNAME	_MAX_FNAME
-#define MAX_EXT		_MAX_EXT
-
-#if defined (__GNUC__)
-#define timezone _timezone
-#endif // __GNUC__
-
-#define WWIV_VSNPRINTF _vsnprintf
-#define snprintf _snprintf
 
 #endif	 // _WIN32
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // UNIX Common Section.
@@ -72,10 +48,6 @@
 #include <utime.h>
 #define O_BINARY	0
 #define O_TEXT		0
-#define SH_DENYNO	0
-#define SH_DENYWR	0
-#define SOCKET		int
-#define HANDLE		int
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
@@ -83,21 +55,10 @@
 #define MAX_DIR		256
 #define MAX_FNAME	256
 #define MAX_DRIVE	256
-#define SOCKADDR_IN	struct sockaddr_in
-#define LPSOCKADDR	(struct sockaddr *)
-#define INVALID_SOCKET	-1
-#define SOCKET_ERROR	-1
-#define ADDR_ANY	INADDR_ANY
-#define SOCKADDR	struct sockaddr
 #define WWIV_FILE_SEPERATOR_CHAR	'/'
 #define WWIV_FILE_SEPERATOR_STRING	"/"
 
-#define _tzset(s)	tzset(s)
-#define _putenv(s)	putenv(s)
-#define _getcwd(a,b)	getcwd(a,b)
 #define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
-
-#define WWIV_VSNPRINTF vsnprintf
 
 #endif // defined ( __unix__ )
 
