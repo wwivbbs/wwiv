@@ -183,14 +183,16 @@ void input(char *pszOutText, int nMaxLength)
 */
 int yn()
 {
-	char ch=0;
 	const char *str_yes="Yes";
 	const char *str_no="No";
 
-	while ((ch = upcase(getkey()) != *str_yes) &&
+	int ch=0;
+	do {
+		ch = upcase(getkey());
+		printf("[%c - %d]", ch, ch);
+	} while ((ch != *str_yes) &&
 		(ch != *str_no) &&
-		(ch != 13) && (ch!=27))
-		;
+		(ch != 13) && (ch!=27));
 	Puts((ch == *str_yes) ? str_yes : str_no);
 	nlx();
 	return (ch == *str_yes);
