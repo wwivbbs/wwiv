@@ -22,6 +22,19 @@
 int pd_getkey();
 
 
+// The final character of an ansi sequence
+#define OB ('[')
+#define O ('O')
+#define A_HOME ('H')
+#define A_LEFT ('D')
+#define A_END ('K')
+#define A_UP ('A')
+#define A_DOWN ('B')
+#define A_RIGHT ('C')
+#define A_INSERT ('r')
+#define A_DELETE ('s')
+
+
 int pd_getkey() {
 	g_flags |= g_flag_allow_extended;
 	int x = getkey();

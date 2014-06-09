@@ -19,10 +19,6 @@
 #ifndef __INCLUDED_PLATFORM_CURSESIO_H__
 #define __INCLUDED_PLATFORM_CURSESIO_H__
 
-#include "platform/wlocal_io.h"
-#undef MOUSE_MOVED
-#include <curses.h>
-
 // Curses implementation of the WLocalIO subset required by Init.
 class CursesIO {
 
@@ -53,11 +49,8 @@ class CursesIO {
     const int GetScreenBottom() const {	return max_y_; }
 
 private:
-    WINDOW *window_;
     int max_x_;
     int max_y_;
 };
-
-
 
 #endif // __INCLUDED_PLATFORM_CURSESIO_H__

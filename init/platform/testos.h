@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2007, WWIV Software Services             */
+/*                 WWIV Initialization Utility Version 5.0                */
+/*             Copyright (C)1998-2014, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -33,19 +33,8 @@
 #error "Either _WIN32, __OS2__, or __unix__ must be defined"
 #endif
 
-#if defined( _WIN32 ) && defined(__OS2__)
-#error "Either _WIN32 or __OS2__ must be defined, but NOT both!"
-#endif
-
 #if defined( _WIN32 ) && defined( __unix__ )
 #error "Either _WIN32 or __unix__ must be defined, but NOT both!"
 #endif
-
-#if defined( __OS2__ ) && defined( __unix__ )
-#error "Either __OS2__ or __unix__ must be defined, but not both!"
-#endif
-
-
-
 
 #endif // __INCLUDED_PLATFORM_TESTOS_H__
