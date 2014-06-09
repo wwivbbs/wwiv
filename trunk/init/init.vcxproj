@@ -90,7 +90,6 @@
     <ClInclude Include="platform\testos.h" />
     <ClInclude Include="platform\wfile.h" />
     <ClInclude Include="platform\wfndfile.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="subacc.h" />
     <ClInclude Include="w5assert.h" />
     <ClInclude Include="wwivinit.h" />
