@@ -19,6 +19,8 @@
 #define _DEFINE_GLOBALS_
 
 #include <curses.h>
+#include <direct.h>
+#include <io.h>
 
 #include "wwivinit.h"
 #include "version.cpp"

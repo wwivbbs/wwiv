@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include <curses.h>
+#include <io.h>
 
 #include "wwivinit.h"
 
