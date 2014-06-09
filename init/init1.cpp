@@ -1332,18 +1332,14 @@ void new_init()
 		textattr(11);
 		Printf(".");
 		int nRet = chdir(dirname[i]);
-		if ( nRet ) 
-		{
-			if ( mkdir( dirname[i] ) ) 
-			{
+		if (nRet) {
+			if (mkdir(dirname[i])) {
 				textattr(COLOR_RED);
 				Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname[i]);
 				textattr(COLOR_WHITE);
 				exit( 2 );
 			}
-		} 
-		else 
-		{
+		} else {
 			WWIV_ChangeDirTo(bbsdir);
 		}
 	}

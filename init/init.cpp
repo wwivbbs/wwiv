@@ -661,8 +661,7 @@ int WInitApp::main(int argc, char *argv[])
         exit(2);
     }
     ss=getenv("WWIV_DIR");
-    if (ss) 
-    {
+    if (ss) {
         WWIV_ChangeDirTo(ss);
     }
     getcwd(bbsdir, MAX_PATH);
@@ -923,8 +922,7 @@ int WInitApp::main(int argc, char *argv[])
         close(hFile);
     }
 
-    if (inst > 1) 
-    {
+    if (inst > 1) {
         strcpy(s, syscfgovr.tempdir);
         i = strlen(s);
         if (s[0] == 0) {
@@ -937,12 +935,9 @@ int WInitApp::main(int argc, char *argv[])
             }
             i1 = chdir(s);
         }
-        if (i1 != 0) 
-        {
+        if (i1 != 0) {
             mkdir(s);
-        } 
-        else
-        {
+        } else {
             WWIV_ChangeDirTo(bbsdir);
         }
 
@@ -961,12 +956,9 @@ int WInitApp::main(int argc, char *argv[])
             }
             i1 = chdir(s);
         }
-        if (i1) 
-        {
+        if (i1) {
             mkdir(s);
-        } 
-        else
-        {
+        } else {
             WWIV_ChangeDirTo(bbsdir);
         }
     } 
