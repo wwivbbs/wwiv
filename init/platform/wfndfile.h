@@ -24,6 +24,7 @@
 
 #if defined( _WIN32 )
 #define WIN32_LEAN_AND_MEAN
+#undef MOUSE_MOVED
 #include <windows.h>
 #endif // _WIN32
 

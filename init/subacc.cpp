@@ -22,6 +22,10 @@
 #define MAX_TO_CACHE 15                     // max postrecs to hold in cache
 #endif
 
+#ifdef _WIN32
+#define snprintf _snprintf
+#endif  // _WIN32
+
 static postrec *cache;                      // points to sub cache memory
 static bool believe_cache;                  // true if cache is valid
 static int cache_start;                     // starting msgnum of cache
