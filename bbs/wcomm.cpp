@@ -81,7 +81,5 @@ WComm* WComm::CreateComm( bool bUseSockets, unsigned int nHandle ) {
 		//return new WIOSerial( nHandle );
 	}
 	*/
-#elif defined ( __OS2 )
-#error "You must implement the stuff to write with!!!"
 #endif
 }

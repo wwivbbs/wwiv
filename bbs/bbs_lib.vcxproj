@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -96,7 +96,6 @@
     <ClInclude Include="net.h" />
     <ClInclude Include="platform\incl1.h" />
     <ClInclude Include="platform\platformfcns.h" />
-    <ClInclude Include="platform\testos.h" />
     <ClInclude Include="platform\wfile.h" />
     <ClInclude Include="platform\wfndfile.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />

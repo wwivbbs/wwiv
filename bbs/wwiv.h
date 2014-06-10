@@ -19,25 +19,10 @@
 #ifndef __INCLUDED_WWIV_H__
 #define __INCLUDED_WWIV_H__
 
-//
-// Make sure right number of OS flags are defined.  Some platform #defines are
-// defined in this file, so anything that relies on thse values MUST
-// be included after testos.h has been included.
-//
-#include "platform/testos.h"
-
 #include "wwivassert.h"
-
-
-//
-// Include platform set of standard header files
-//
-
 #include "platform/incl1.h"
 
-//
 // WWIV includes
-//
 #include "vardec.h"
 #include "wuser.h"
 #include "wsession.h"

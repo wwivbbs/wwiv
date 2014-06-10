@@ -145,16 +145,7 @@ void ToggleScrollLockKey() {
  * scoll lock LED), the sysop is assumed to be available.
  */
 bool sysop1() {
-#if defined (__OS2__)
-#if !defined(KBDSTF_SCROLLLOCK_ON)
-#define KBDSTF_SCROLLLOCK_ON 0x0010
-#endif
-
-	KBDINFO ki;
-	KbdGetStatus( &ki, 0 );
-	return ( ki.fsState & KBDSTF_SCROLLLOCK_ON );
-
-#elif defined (_WIN32)
+#if defined (_WIN32)
 	return ( GetKeyState( VK_SCROLL ) & 0x1 );
 #else
 	return false;

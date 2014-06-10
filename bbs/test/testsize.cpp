@@ -18,10 +18,6 @@
 /**************************************************************************/
 /////////////////////////////////////////////////////////////////////////////
 // WWIV 5.0 Structure Size test application
-//
-//
-//
-//
 
 #include <stdio.h>
 #ifdef __MSDOS__
@@ -35,10 +31,8 @@
 #include <windows.h>
 #endif // _WIN32
 
-#include "../platform/testos.h"
 #include "../vardec.h"
 #include "../net.h"
-
 
 #define EXIT_NORMAL     0
 #define EXIT_BAD_PARAMS 1

@@ -116,11 +116,6 @@ class WLocalIO {
 	int global_ptr;
 	int wx;
 
-#if defined ( __OS2__ )
-	unsigned char CellStr[3];
-	VIOMODEINFO vmi;
-#endif
-
 #if defined ( _WIN32 )
 	COORD  m_cursorPosition;
 	HANDLE m_hConOut;
