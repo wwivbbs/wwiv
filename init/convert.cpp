@@ -16,10 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>
 #endif
+#include <sys/stat.h>
 
+#include "ifcns.h"
+#include "init.h"
+#include "platform/incl1.h"
 #include "wwivinit.h"
 
 

@@ -19,11 +19,14 @@
 #ifndef _IFCNS_H_
 #define _IFCNS_H_
 
+#include <string>
+#include "ivardec.h"
+#include "vardec.h"
+
 /* File: compile.cpp */
 void get_descriptions(char *pth, char ***descrs, int *n, autosel_data **ad, int *nn);
 int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsigned *pnModemBaud);
 int select_strings(char **strs, int count, int cur, int yt, int yb, int xl, int xr);
-
 
 /* File: convert.cpp */
 void c_setup();

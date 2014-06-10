@@ -48,6 +48,9 @@
     <ClInclude Include="platform\wfndfile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ivardec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp">

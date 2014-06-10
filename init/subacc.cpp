@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwivinit.h"
+#include "platform/wfile.h"
 
 #ifndef MAX_TO_CACHE
 #define MAX_TO_CACHE 15                     // max postrecs to hold in cache

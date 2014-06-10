@@ -17,10 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 #include <curses.h>
+#include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>
 #endif
+#include <sys/stat.h>
 
+#include "ifcns.h"
+#include "init.h"
+#include "wconstants.h"
 #include "wwivinit.h"
 
 
