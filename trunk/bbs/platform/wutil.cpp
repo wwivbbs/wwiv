@@ -82,9 +82,6 @@ std::string WWIV_GetOSVersion() {
 	default:
 		return wwiv::strings::StringPrintf("WIN32 Compatable OS v%d%c%d", os.dwMajorVersion, '.', os.dwMinorVersion);
 	}
-#elif defined (__OS2__)
-	// TODO Add OS/2 version information code here..
-	return std::string("OS/2");
 #elif defined ( __linux__ )
 	WFile info("/proc/sys/kernel", "osrelease");
 	if(info.Exists()) {

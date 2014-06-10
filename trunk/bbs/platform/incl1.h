@@ -44,39 +44,6 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-// OS/2 Specific Section
-//
-
-
-#ifdef	 __OS2__
-
-#define  INCL_DOSPROCESS
-#include <os2.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <conio.h>
-#include <dos.h>
-#include <io.h>
-#include <process.h>
-#include <share.h>
-
-
-#define SOCKET		    int
-#define HANDLE		    int
-#ifndef MAX_PATH
-#define MAX_PATH	    256
-#endif
-
-#define WWIV_FILE_SEPERATOR_CHAR	'\\'
-#define WWIV_FILE_SEPERATOR_STRING	"\\"
-
-#define WWIV_VSNPRINTF vsnprintf
-
-#endif	 // __OS2__
-
-
-////////////////////////////////////////////////////////////////////////////////
 // UNIX Common Section.
 //
 

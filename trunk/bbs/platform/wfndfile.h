@@ -61,14 +61,7 @@ class WFindFile {
 	struct dirent **entries;
 	int nMatches;
 	int nCurrentEntry;
-#elif defined (__OS2__)
-#error "Hey OS/2 Dude... WRITE ME!"
-#elif defined (__MSDOS__)
-	ffblk hFind;
-#else
-#error "No platform specified, cannot build this __FILE__"
 #endif
-
 
   public:
 	WFindFile() {
