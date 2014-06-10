@@ -18,7 +18,9 @@
 /**************************************************************************/
 #include "platform/wfndfile.h"
 
-#include "wwiv.h"
+#include <dirent.h>
+#include <iostream>
+#include "w5assert.h"
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -156,7 +158,7 @@ char *strip_filename(const char *pszFileName) {
 	}
 	int j = 0;
 	while ( szTempFileName[j] != 0 ) {
-		if ( szTempFileName[j] == SPACE ) {
+		if ( szTempFileName[j] == 32 ) {
 			strcpy( &szTempFileName[j], &szTempFileName[j + 1] );
 		} else {
 			++j;
