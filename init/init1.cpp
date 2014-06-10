@@ -58,11 +58,9 @@ extern int inst;
 static int wfc = 0;
 static int useron = 0;
 
-void init()
-{
+void init() {
 	curatr=0x03;
 	hangup = false;  // TODO(rushfan): Remove this from init
-	local_echo = true;
 	thisuser.sysstatus=0;
     daylight = 0; // C Runtime Variable -- WHY?
 }
@@ -97,17 +95,12 @@ void pausescr()
 
 
 /* This function executes a backspace, space, backspace sequence. */
-void backspace()
-{
-	bool oldecho = local_echo;
-	local_echo = true;
+void backspace() {
 	Printf( "\b \b" );
-	local_echo = oldecho;
 }
 
 /* This converts a character to uppercase */
-int upcase(int ch)
-{
+int upcase(int ch) {
 	if ((ch > '`') && (ch < '{')) {
 		ch = ch - 32;
 	}
@@ -125,28 +118,32 @@ int getkey()
 }
 
 
+int input_number(int max_digits) {
+    char s[81];
+    int return_code = 0;
+    editline(s, max_digits, NUM_ONLY, &return_code, "");
+    if (strlen(s) == 0) { return 0; }
+    return atoi(s);
+}
 
 /* This will input a line of data, maximum nMaxLength characters long, terminated
 * by a C/R.  if (bAllowLowerCase) is true lowercase is allowed, otherwise all
 * characters are converted to uppercase.
 */
-void input(char *pszOutText, int nMaxLength)
-{
+void input_password(char *pszOutText, int nMaxLength) {
 	int curpos=0;
     bool done = false;
 	
 	while (!done) {
 		int ch = getkey();
 		switch(ch) {
-		  case 14:
-			  // 13 on Win32
-		  case 13:
-			  // 10 on unix
-		  case 10:
+		  case 14: 
+          case 13: // 13 on Win32
+		  case 10: // 10 on unix
 		  case KEY_ENTER:
+          case PADENTER:
 			  pszOutText[curpos] = 0;
 			  done = true;
-			  local_echo = true;
 			  break;
 		  case 23: // Ctrl-W
 			  if (curpos) {
@@ -186,7 +183,7 @@ void input(char *pszOutText, int nMaxLength)
 			if (ch > 31 && curpos < nMaxLength) {
 				ch = upcase(ch);
 				pszOutText[curpos++] = ch;
-				app->localIO->LocalPutch(local_echo ? ch : '\xFE');
+				app->localIO->LocalPutch('\xFE');
 			}
 			break;
 		}
@@ -197,8 +194,7 @@ void input(char *pszOutText, int nMaxLength)
 * assumed to be the same as a N.  Yes or No is output, and yn is set to
 * zero if No was returned, and yn() is non-zero if Y was hit.
 */
-int yn()
-{
+int yn() {
 	const char *str_yes="Yes";
 	const char *str_no="No";
 
@@ -214,8 +210,7 @@ int yn()
 	return (ch == *str_yes);
 }
 
-char onek(const char *pszKeys)
-{
+char onek(const char *pszKeys) {
 	char ch = 0;
 	
 	while (!strchr(pszKeys, ch = upcase(getkey())))
@@ -318,8 +313,8 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
                 }
             }
             break;
-	case KEY_DC: // curses
-	case CD: // control-d
+	    case KEY_DC: // curses
+	    case CD: // control-d
             if (status!=SET) {
                 for ( i = pos; i < len; i++ ) {
                     s[i]=s[i+1];
@@ -374,12 +369,13 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
             }
             break;
         case KEY_ENTER:
-        case RETURN:                                        //return
+        case PADENTER:
+        case RETURN: // return
         case TAB:
             done = true;
             *returncode=NEXT;
             break;
-        case ESC:                                    //esc
+        case ESC: // esc
             done = true;
             *returncode=DONE;
             break;
@@ -483,19 +479,16 @@ int toggleitem(int value, const char **strings, int num, int *returncode)
 
 int GetNextSelectionPosition( int nMin, int nMax, int nCurrentPos, int nReturnCode )
 {
-    switch( nReturnCode ) 
-    {
+    switch(nReturnCode) {
     case PREV:
         --nCurrentPos;
-        if ( nCurrentPos < nMin )
-        {
+        if (nCurrentPos < nMin) {
             nCurrentPos = nMax;
         }
         break;
     case NEXT:
         ++nCurrentPos;
-        if ( nCurrentPos > nMax )
-        {
+        if (nCurrentPos > nMax) {
             nCurrentPos = nMin;
         }
         break;
@@ -600,11 +593,7 @@ void write_user(unsigned int un, userrec *u)
 
 }
 
-
-/****************************************************************************/
-
-
-int qscn_file=-1;
+static int qscn_file=-1;
 
 int open_qscn()
 {
