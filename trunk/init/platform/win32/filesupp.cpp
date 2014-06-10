@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "ifcns.h"
 #include "wwivinit.h"
 
 #if defined( _WIN32 )
