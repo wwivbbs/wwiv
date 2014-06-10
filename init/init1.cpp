@@ -152,9 +152,10 @@ void input(char *pszOutText, int nMaxLength)
 				  } while (curpos && (pszOutText[curpos-1]!=32));
 			  }
 			  break;
-		  case 26:
+		  case 26:  // control Z
 			  break;
-		  case 8:
+		  case 8: 
+          case 7f: // some other backspace
 		  case KEY_BACKSPACE:
 			  if (curpos) {
 				  curpos--;
@@ -164,8 +165,8 @@ void input(char *pszOutText, int nMaxLength)
 				  }
 			  }
 			  break;
-		  case 21:
-		  case 24:
+		  case 21: // control U
+		  case 24: // control X
 			  while (curpos) {
 				  curpos--;
 				  backspace();
