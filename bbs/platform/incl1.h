@@ -22,20 +22,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // WIN32 Specific section
-//
 
 #if defined (_WIN32)
 
-#if defined (_MSC_VER)
-#pragma component(browser, off)
-#endif // defined (_MSC_VER)
-
 #define WWIV_FILE_SEPERATOR_CHAR	'\\'
 #define WWIV_FILE_SEPERATOR_STRING	"\\"
-
-#if defined (__GNUC__)
-#define timezone _timezone
-#endif // __GNUC__
 
 #define WWIV_VSNPRINTF _vsnprintf
 #define snprintf _snprintf
@@ -45,7 +36,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // UNIX Common Section.
-//
 
 #if defined ( __unix__ ) || defined ( __APPLE__ )
 
@@ -61,17 +51,10 @@
 #define O_TEXT		0
 #define SH_DENYNO	0
 #define SH_DENYWR	0
-#define SOCKET		int
-#define HANDLE		int
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
-#define SOCKADDR_IN	struct sockaddr_in
-#define LPSOCKADDR	(struct sockaddr *)
-#define INVALID_SOCKET	-1
-#define SOCKET_ERROR	-1
-#define ADDR_ANY	INADDR_ANY
-#define SOCKADDR	struct sockaddr
+
 #define WWIV_FILE_SEPERATOR_CHAR	'/'
 #define WWIV_FILE_SEPERATOR_STRING	"/"
 
@@ -83,6 +66,5 @@
 #define WWIV_VSNPRINTF vsnprintf
 
 #endif // defined ( __unix__ )
-
 
 #endif // __INCLUDED_PLATFORM_INCL1_H__
