@@ -981,7 +981,6 @@ void convert_to(int num_subs, int num_dirs)
 
 void up_subs_dirs()
 {
-    char s[81];
     int num_subs, num_dirs;
 
     app->localIO->LocalCls();
@@ -1004,8 +1003,7 @@ void up_subs_dirs()
         textattr(COLOR_YELLOW);
         Puts("New max subs: ");
         textattr(COLOR_CYAN);
-        input(s,4);
-        num_subs=atoi(s);
+        num_subs = input_number(4);
         if (!num_subs)
         {
             num_subs=syscfg.max_subs;
@@ -1014,8 +1012,7 @@ void up_subs_dirs()
         textattr(COLOR_YELLOW);
         Puts("New max dirs: ");
         textattr(COLOR_CYAN);
-        input(s,4);
-        num_dirs=atoi(s);
+        num_dirs = input_number(4);
         if (!num_dirs)
         {
             num_dirs=syscfg.max_dirs;
@@ -1123,7 +1120,7 @@ void edit_lang(int nn)
 
 void up_langs()
 {
-    char s[181],s1[81];
+    char s1[81];
     int i,i1,i2;
 
     bool done=false;
@@ -1156,8 +1153,7 @@ void up_langs()
             sprintf(s1,"Edit which (1-%d) ? ",initinfo.num_languages);
             Puts(s1);
             textattr(COLOR_CYAN);
-            input(s,2);
-            i=atoi(s);
+            i = input_number(2);
             if ((i>0) && (i<=initinfo.num_languages))
             {
                 edit_lang(i-1);
@@ -1171,8 +1167,7 @@ void up_langs()
                 textattr(COLOR_YELLOW);
                 Puts(s1);
                 textattr(COLOR_CYAN);
-                input(s,2);
-                i=atoi(s);
+                i = input_number(2);
                 if ((i>0) && (i<=initinfo.num_languages)) 
                 {
                     nlx();
@@ -1219,8 +1214,7 @@ void up_langs()
             sprintf(s1,"Insert before which (1-%d) ? ",initinfo.num_languages+1);
             Puts(s1);
             textattr(COLOR_CYAN);
-            input(s,2);
-            i=atoi(s);
+            i = input_number(2);
             if ((i>0) && (i<=initinfo.num_languages+1)) 
             {
                 textattr(COLOR_RED);
@@ -1340,15 +1334,14 @@ void edit_editor(int n)
 
 void extrn_editors()
 {
-	char s[81];
-	int i,i1;
+	int i1;
 	
 	bool done=false;
 	do 
 	{
 		app->localIO->LocalCls();
 		nlx();
-		for (i=0; i<initinfo.numeditors; i++) 
+		for (int i=0; i<initinfo.numeditors; i++) 
 		{
 			Printf( "%d. %s\n", i + 1, editors[i].description);
 		}
@@ -1370,8 +1363,7 @@ void extrn_editors()
 				textattr(COLOR_RED);
 				Printf( "Edit which (1-%d) ? ", initinfo.numeditors );
 				textattr(COLOR_CYAN);
-				input(s,2);
-				i=atoi(s);
+				int i = input_number(2);
 				if ((i>0) && (i<=initinfo.numeditors))
 				{
 					edit_editor(i-1);
@@ -1385,8 +1377,7 @@ void extrn_editors()
 				textattr(COLOR_RED);
 				Printf( "Delete which (1-%d) ? ", initinfo.numeditors);
 				textattr(COLOR_CYAN);
-				input(s,2);
-				i=atoi(s);
+				int i = input_number(2);
 				if ((i>0) && (i<=initinfo.numeditors)) 
 				{
 					for (i1=i-1; i1<initinfo.numeditors; i1++)
@@ -1410,8 +1401,7 @@ void extrn_editors()
 			textattr(COLOR_YELLOW);
 			Printf( "Insert before which (1-%d) ? ", initinfo.numeditors + 1 );
 			textattr(COLOR_CYAN);
-			input(s,2);
-			i=atoi(s);
+			int i = input_number(2);
 			if ((i>0) && (i<=initinfo.numeditors+1)) 
 			{
 				for (i1=initinfo.numeditors; i1>i-1; i1--)
@@ -1633,25 +1623,20 @@ void edit_prot(int n)
 
 void extrn_prots()
 {
-    char s[81];
-    int i,i1;
-    int nMaxProtocolNumber = 6;
-
     bool done=false;
     do 
     {
         app->localIO->LocalCls();
         nlx();
-        for (i=2; i<6+initinfo.numexterns; i++) 
+        for (int i=2; i<6+initinfo.numexterns; i++) 
         {
             if (i==5)
             {
                 continue;
             }
             Printf( "%c. %s\n",(i<10)?(i+'0'):(i-10+BASE_CHAR), prot_name( i ) );
-            //maxp=s[0];
         }
-        nMaxProtocolNumber = initinfo.numexterns + 6;
+        int nMaxProtocolNumber = initinfo.numexterns + 6;
         nlx();
         textattr(COLOR_YELLOW);
         Puts("Externals: M:odify, D:elete, I:nsert, Q:uit : ");
@@ -1663,26 +1648,17 @@ void extrn_prots()
         case '\033':
             done=true;
             break;
-        case 'M':
+        case 'M': {
             nlx();
             textattr(COLOR_YELLOW);
             Printf( "Edit which (2-%d) ? ", nMaxProtocolNumber );
             textattr(COLOR_CYAN);
-            input(s,2);
-            i=-1;
-            if ((s[0]>='2') && (s[0]<='9') && (s[0]!='5'))
-            {
-                i=s[0]-'0';
-            }
-            if ((s[0]>=BASE_CHAR) && (s[0]<=END_CHAR))
-            {
-                i=s[0]-BASE_CHAR+10;
-            }
+            int i = input_number(2);
             if ((i>-1) && (i<initinfo.numexterns+6))
             {
                 edit_prot(i);
             }
-            break;
+        } break;
         case 'D':
             if (initinfo.numexterns) 
             {
@@ -1690,19 +1666,10 @@ void extrn_prots()
                 textattr(COLOR_YELLOW);
                 Printf(  "Delete which (6-%d) ? ", nMaxProtocolNumber );
                 textattr(COLOR_CYAN);
-                input(s,2);
-                i=-1;
-                if ((s[0]>='6') && (s[0]<='9'))
-                {
-                    i=s[0]-'6';
-                }
-                if ((s[0]>=BASE_CHAR) && (s[0]<=END_CHAR))
-                {
-                    i=s[0]-BASE_CHAR+4;
-                }
+                int i = input_number(2);
                 if ((i>-1) && (i<initinfo.numexterns)) 
                 {
-                    for (i1=i; i1<initinfo.numexterns; i1++)
+                    for (int i1=i; i1<initinfo.numexterns; i1++)
                     {
                         externs[i1]=externs[i1+1];
                     }
@@ -1723,19 +1690,9 @@ void extrn_prots()
             textattr(COLOR_YELLOW);
             Printf( "Insert before which (6-%d) ? ", nMaxProtocolNumber );
             textattr(COLOR_CYAN);
-            input(s,2);
-            i=-1;
-            if ((s[0]>='6') && (s[0]<='9'))
-            {
-                i=s[0]-'6';
-            }
-            if ((s[0]>=BASE_CHAR) && (s[0]<=END_CHAR))
-            {
-                i=s[0]-BASE_CHAR+4;
-            }
-            if ((i>-1) && (i<=initinfo.numexterns)) 
-            {
-                for (i1=initinfo.numexterns; i1>i; i1--)
+            int i = input_number(2);
+            if ((i>-1) && (i<=initinfo.numexterns)) {
+                for (int i1=initinfo.numexterns; i1>i; i1--)
                 {
                     externs[i1]=externs[i1-1];
                 }
@@ -1753,17 +1710,14 @@ void extrn_prots()
     close(hFile);
 
     sprintf(szFileName,"%snintern.dat",syscfg.datadir);
-    if ((over_intern[0].othr|over_intern[1].othr|over_intern[2].othr)&othr_override_internal) 
-    {
+    if ((over_intern[0].othr|over_intern[1].othr|over_intern[2].othr)&othr_override_internal) {
         hFile=open(szFileName,O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
         if (hFile>0) 
         {
             write(hFile,over_intern, 3*sizeof(newexternalrec));
             close(hFile);
         }
-    } 
-    else
-    {
+    } else {
         unlink(szFileName);
     }
 }

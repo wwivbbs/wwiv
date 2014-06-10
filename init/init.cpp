@@ -373,10 +373,8 @@ void networks() {
                 textattr(COLOR_YELLOW);
                 Puts(s1);
                 textattr(COLOR_CYAN);
-                input(s,2);
-                int nNetNumber = atoi(s);
-                if ( nNetNumber > 0 && nNetNumber <= initinfo.net_num_max )
-                {
+                int nNetNumber = input_number(2);
+                if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max) {
                     edit_net( nNetNumber - 1 );
                 }
             }
@@ -397,8 +395,7 @@ void networks() {
                 sprintf(s1,"Delete which (1-%d) ? ",initinfo.net_num_max);
                 textattr(COLOR_CYAN);
                 Puts(s1);
-                input(s,2);
-                int nNetNumber=atoi(s);
+                int nNetNumber = input_number(2);
                 if ((nNetNumber>0) && (nNetNumber<=initinfo.net_num_max)) 
                 {
                     nlx();
@@ -453,8 +450,7 @@ void networks() {
             sprintf(s1,"Insert before which (1-%d) ? ",initinfo.net_num_max+1);
             Puts(s1);
             textattr(COLOR_CYAN);
-            input(s,2);
-            int nNetNumber=atoi(s);
+            int nNetNumber = input_number(2);
             if ((nNetNumber>0) && (nNetNumber<=initinfo.net_num_max+1)) 
             {
                 textattr(COLOR_YELLOW);
@@ -1206,8 +1202,7 @@ int WInitApp::main(int argc, char *argv[])
         nlx();
         textattr(COLOR_CYAN);
         Puts("SY: ");
-        local_echo = false;
-        input(s, 20);
+        input_password(s, 20);
         if (strcmp(s,(syscfg.systempw))!=0) 
         {
             textattr(COLOR_WHITE);
