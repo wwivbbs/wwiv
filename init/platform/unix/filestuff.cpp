@@ -16,14 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "wwiv.h"
-
-#ifdef __APPLE__
-#include <sys/param.h>
-#include <sys/mount.h>
-#else
-#include <sys/vfs.h>
-#endif // __APPLE__
+#include <unistd.h>
 
 void WWIV_ChangeDirTo(const char *pszDirectoryName) {
   chdir( pszDirectoryName );
