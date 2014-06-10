@@ -37,7 +37,7 @@ int WWIV_GetRandomNumber(int nMaxValue) {
   static std::random_device rdev;
   static std::default_random_engine re(rdev());
     
-  std::uniform_int_distribution<int> dist(0, nMaxValue);
+  std::uniform_int_distribution<int> dist(0, nMaxValue - 1);
   return dist(re);
 }
 
