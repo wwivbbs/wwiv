@@ -49,23 +49,14 @@
 #define NODEFERWINDOWPOS
 #define NOMCX
 #define NOCRYPT
-
-// Define these for MFC projects
-#define NOTAPE
-#define NOIMAGE
-#define NOPROXYSTUB
-#define NORPC
-#define NOIME
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef CopyFile
 #undef GetFullPathName
 
 #endif // _WIN32
-//
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
-//
 
 #define GLOBAL_SIZE 4096
 
@@ -82,7 +73,6 @@ struct screentype {
 	char *scrn1;
 #endif
 };
-
 
 class WLocalIO {
 
