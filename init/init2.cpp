@@ -17,11 +17,19 @@
 /*                                                                        */
 /**************************************************************************/
 #include <curses.h>
+#include <fcntl.h>
+#include <string>
 #ifdef _WIN32
 #include <io.h>
 #endif
+#include <sys/stat.h>
+
 #include "wwivinit.h"
+#include "ifcns.h"
+#include "init.h"
 #include "subacc.h"
+#include "platform/incl1.h"
+#include "platform/wfile.h"
 
 extern char **mdm_desc;
 extern int mdm_count, mdm_cur;

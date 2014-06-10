@@ -16,11 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <cstring>
+#include "ifcns.h"
+#include "init.h"
+#include "vars.h"
 #include "wwivinit.h"
-#include <string.h>
+#include "wconstants.h"
+#include "platform/incl1.h"
+#include "platform/wfndfile.h"
 
-static const char *tokens[] = 
-{
+static const char *tokens[] = {
     "FILE:",
     "NAME:",
     "INIT:",
@@ -56,8 +61,7 @@ static const char *tokens[] =
     NULL
 };
 
-typedef enum 
-{
+typedef enum {
     tok_file=0,
     tok_name,
     tok_init,

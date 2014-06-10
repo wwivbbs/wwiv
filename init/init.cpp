@@ -19,14 +19,21 @@
 #define _DEFINE_GLOBALS_
 
 #include <curses.h>
+#include <fcntl.h>
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
 #endif
+#include <sys/stat.h>
 
+#include "ifcns.h"
+#include "init.h"
 #include "wwivinit.h"
 #include "version.cpp"
+#include "wconstants.h"
 #include "platform/curses_io.h"
+#include "platform/incl1.h"
+#include "platform/wfndfile.h"
 
 char **mdm_desc;
 int mdm_count=0, mdm_cur;

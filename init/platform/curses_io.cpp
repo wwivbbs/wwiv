@@ -22,6 +22,7 @@
 #include <sstream>
 
 #include "wwivinit.h"
+#include "platform/curses_io.h"
 
 //TODO(rushfan): Don't include windows.h from wlocal_io anymore. Make a WinConsoleIU subclass like
 // this CursesIO class and move the Window.h definition into there.

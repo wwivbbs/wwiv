@@ -17,16 +17,23 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <fcntl.h>
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
 #endif 
 #include <string>
 #include <curses.h>
+#include <sys/stat.h>
 
-
-#include "wwivinit.h"
 #include "common.h"
+#include "ifcns.h"
+#include "init.h"
+#include "w5assert.h"
+#include "wconstants.h"
+#include "wwivinit.h"
+#include "platform/incl1.h"
+#include "platform/wfndfile.h"
 
 #ifdef __unix__
 #include <termios.h>
@@ -155,7 +162,7 @@ void input(char *pszOutText, int nMaxLength)
 		  case 26:  // control Z
 			  break;
 		  case 8: 
-          case 7f: // some other backspace
+          case 0x7f: // some other backspace
 		  case KEY_BACKSPACE:
 			  if (curpos) {
 				  curpos--;

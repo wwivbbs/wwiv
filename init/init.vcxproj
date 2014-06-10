@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClInclude Include="ifcns.h" />
     <ClInclude Include="init.h" />
+    <ClInclude Include="ivardec.h" />
     <ClInclude Include="platform\curses_io.h" />
     <ClInclude Include="platform\incl1.h" />
     <ClInclude Include="platform\testos.h" />
