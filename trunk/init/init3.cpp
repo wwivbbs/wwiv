@@ -16,10 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <cstring>
 #include <curses.h>
 #include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>
+#else
+#include <unistd.h>
 #endif
 #include <sys/stat.h>
 
@@ -27,7 +30,7 @@
 #include "init.h"
 #include "wconstants.h"
 #include "wwivinit.h"
-
+#include "platform/incl1.h"
 
 void edit_arc(int nn)
 {
