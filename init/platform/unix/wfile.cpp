@@ -19,18 +19,18 @@
 
 #include "platform/wfndfile.h"
 
-#include "wwiv.h"
+#include <algorithm>
+#include <iostream>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sstream>
 #include <string>
-#include <iostream>
-#include <algorithm>
+#include <unistd.h>
 
-#if defined( __APPLE__ )
+#include "w5assert.h"
+
 #if !defined( O_BINARY )
 #define O_BINARY 0
-#endif
 #endif
 
 
@@ -348,13 +348,13 @@ bool WFile::CopyFile( const std::string sourceFileName, const std::string destFi
 		}
 		int hSourceFile = open( sourceFileName.c_str(), O_RDONLY | O_BINARY );
 		if(!hSourceFile) {
-			BbsFreeMemory(pBuffer);
+			free(pBuffer);
 			return false;
 		}
 
 		int hDestFile = open( destFileName.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
 		if(!hDestFile) {
-			BbsFreeMemory(pBuffer);
+			free(pBuffer);
 			close(hSourceFile);
 			return false;
 		}
@@ -368,7 +368,7 @@ bool WFile::CopyFile( const std::string sourceFileName, const std::string destFi
 
 		hSourceFile=close(hSourceFile);
 		hDestFile=close(hDestFile);
-		BbsFreeMemory(pBuffer);
+		free(pBuffer);
 	}
 
 	// I'm not sure about the logic here since you would think we should return true
