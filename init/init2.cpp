@@ -1448,18 +1448,14 @@ const char *prot_name(int pn) {
 }
 
 
-void edit_prot(int n)
-{
+void edit_prot(int n) {
     char s[81],s1[81];
     newexternalrec c;
 
     app->localIO->LocalCls();
-    if (n>=6)
-    {
+    if (n>=6) {
         c=externs[n-6];
-    }
-    else 
-    {
+    } else {
         c=over_intern[n-2];
         strcpy(c.description, prot_name(n));
         strcpy(c.receivebatchfn,"-- N/A --");
@@ -1473,12 +1469,9 @@ void edit_prot(int n)
     int cp=0;
     int i1=NEXT;
     sprintf(s, "%u", c.ok1);
-    if (c.othr & othr_error_correct)
-    {
+    if (c.othr & othr_error_correct) {
         strcpy(s1,"Y");
-    }
-    else
-    {
+    } else {
         strcpy(s1,"N");
     }
     Printf("Description          : %s\n",c.description);
@@ -1502,18 +1495,13 @@ void edit_prot(int n)
     Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\n");
     textattr(COLOR_CYAN);
 
-    do 
-    {
-        if (cp<3)
-        {
+    do {
+        if (cp<3) {
             app->localIO->LocalGotoXY(23,cp);
-        }
-        else
-        {
+        } else {
             app->localIO->LocalGotoXY(0, cp*2-2);
         }
-        switch(cp) 
-        {
+        switch(cp) {
         case 0:
             if (n>=6) 
             {
@@ -1667,10 +1655,10 @@ void extrn_prots()
                 Printf(  "Delete which (6-%d) ? ", nMaxProtocolNumber );
                 textattr(COLOR_CYAN);
                 int i = input_number(2);
+		if (i>0) { i -= 6; }
                 if ((i>-1) && (i<initinfo.numexterns)) 
                 {
-                    for (int i1=i; i1<initinfo.numexterns; i1++)
-                    {
+                    for (int i1=i; i1<initinfo.numexterns; i1++) {
                         externs[i1]=externs[i1+1];
                     }
                     --initinfo.numexterns;
@@ -1691,15 +1679,18 @@ void extrn_prots()
             Printf( "Insert before which (6-%d) ? ", nMaxProtocolNumber );
             textattr(COLOR_CYAN);
             int i = input_number(2);
-            if ((i>-1) && (i<=initinfo.numexterns)) {
-                for (int i1=initinfo.numexterns; i1>i; i1--)
+            if ((i>-1) && (i<=initinfo.numexterns + 6)) {
+                for (int i1=initinfo.numexterns; i1>i-6; i1--)
                 {
                     externs[i1]=externs[i1-1];
                 }
                 ++initinfo.numexterns;
-                memset(externs+i,0,sizeof(newexternalrec));
-                edit_prot(i+6);
-            }
+                memset(externs+i-6,0,sizeof(newexternalrec));
+                edit_prot(i);
+            } else {
+	      Printf("Invalid entry: %d", i);
+	      app->localIO->getchd();
+	    }
             break;
         }
     } while ( !done && !hangup );
