@@ -139,9 +139,11 @@ void input_password(char *pszOutText, int nMaxLength) {
 		switch(ch) {
 		  case 14: 
           case 13: // 13 on Win32
-		  case 10: // 10 on unix
-		  case KEY_ENTER:
+	  case 10: // 10 on unix
+	  case KEY_ENTER:
+#ifdef PADENTER
           case PADENTER:
+#endif
 			  pszOutText[curpos] = 0;
 			  done = true;
 			  break;
@@ -369,7 +371,9 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
             }
             break;
         case KEY_ENTER:
-        case PADENTER:
+#ifdef PADENTER
+          case PADENTER:
+#endif
         case RETURN: // return
         case TAB:
             done = true;
