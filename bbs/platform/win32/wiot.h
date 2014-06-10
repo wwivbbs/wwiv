@@ -16,21 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #if !defined (__INCLUDED_WIOT_H__)
 #define __INCLUDED_WIOT_H__
-
 
 #include "WComm.h"
 #include <queue>
 
 #if defined( _WIN32 )
-extern "C"
-{
+extern "C" {
 #include <winsock2.h>
 }
 #endif // _WIN32
-
 
 class WIOTelnet : public WComm {
   public:
@@ -79,7 +75,6 @@ class WIOTelnet : public WComm {
 	virtual unsigned int GetHandle() const;
 	virtual unsigned int GetDoorHandle() const;
 
-
   public:
 	static void InitializeWinsock();
 
@@ -99,10 +94,7 @@ class WIOTelnet : public WComm {
 	HANDLE m_hReadThread;
 	HANDLE m_hReadStopEvent;
 	bool   m_bThreadsStarted;
-
 };
-
-
 
 #endif  // #if !defined (__INCLUDED_WIOT_H__)
 
