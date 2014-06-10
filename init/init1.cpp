@@ -805,15 +805,14 @@ void nlx( int numLines )
 /**
  * Printf sytle output function.  Most init output code should use this.
  */
-void Printf( const char *pszFormat, ... )
-{
+void Printf(const char *pszFormat, ...) {
     va_list ap;
-    char szBuffer[ 1024 ];
+    char szBuffer[1024];
     
-    va_start( ap, pszFormat );
-    vsnprintf( szBuffer, 2048, pszFormat, ap );
-    va_end( ap );
-    app->localIO->LocalPuts( szBuffer );
+    va_start(ap, pszFormat);
+    vsnprintf(szBuffer, 1024, pszFormat, ap);
+    va_end(ap);
+    app->localIO->LocalPuts(szBuffer);
 }
 
 void create_text(const char *pszFileName)
