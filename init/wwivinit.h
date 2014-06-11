@@ -20,7 +20,7 @@
 #define __INCLUDED_WWIVINIT_H__
 
 #ifndef NOT_BBS
-#define NOT_BBS 0 
+#define NOT_BBS 0
 #endif  // NOT_BBS
 
 #ifndef INIT
@@ -46,7 +46,7 @@ __EXTRN__ InitSession *sess;
 __EXTRN__ userrec thisuser;
 __EXTRN__ initinfo_rec initinfo;
 
-#if defined(__unix__) 
+#if defined(__unix__)
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp

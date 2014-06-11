@@ -34,79 +34,79 @@
 
 #ifdef _WIN32
 void CursesIO::set_attr_xy(int x, int y, int a) {
-    //TODO(rushfan): Implement me if needed for compile.cpp
+  //TODO(rushfan): Implement me if needed for compile.cpp
 }
 #endif  // _WIN32
 
 CursesIO::CursesIO() {
-    initscr();
-    raw();
-    keypad(stdscr, TRUE);
-    noecho();
-    nonl();
-    max_x_ = getmaxx(stdscr);
-    max_y_ = getmaxy(stdscr);
+  initscr();
+  raw();
+  keypad(stdscr, TRUE);
+  noecho();
+  nonl();
+  max_x_ = getmaxx(stdscr);
+  max_y_ = getmaxy(stdscr);
 
-    start_color();
+  start_color();
 
-    for (short b=0; b<COLORS; b++) {
-        for (short f=0; f<COLORS; f++) {
-            init_pair( (b * 16) + f, f, b);
-        }
+  for (short b = 0; b < COLORS; b++) {
+    for (short f = 0; f < COLORS; f++) {
+      init_pair((b * 16) + f, f, b);
     }
-    refresh();
+  }
+  refresh();
 }
 
 CursesIO::~CursesIO() {
-    endwin();
+  endwin();
 }
 
 void CursesIO::LocalGotoXY(int x, int y) {
 // Moves the cursor to the location specified
 // Note: this function is 0 based, so (0,0) is the upper left hand corner.
-	x = std::max<int>(x, 0);
-	x = std::min<int>(x, max_x_);
-	y = std::max<int>(y, 0);
-	y = std::min<int>(y, max_y_);
+  x = std::max<int>(x, 0);
+  x = std::min<int>(x, max_x_);
+  y = std::max<int>(y, 0);
+  y = std::min<int>(y, max_y_);
 
-    move(y, x);
-    refresh();
+  move(y, x);
+  refresh();
 }
 
 int CursesIO::WhereX() {
-/* This function returns the current X cursor position, as the number of
-* characters from the left hand side of the screen.  An X position of zero
-* means the cursor is at the left-most position
-*/
-    return getcurx(stdscr);
+  /* This function returns the current X cursor position, as the number of
+  * characters from the left hand side of the screen.  An X position of zero
+  * means the cursor is at the left-most position
+  */
+  return getcurx(stdscr);
 }
 
 int CursesIO::WhereY() {
-/* This function returns the Y cursor position, as the line number from
-* the top of the logical window.  The offset due to the protected top
-* of the screen display is taken into account.  A WhereY() of zero means
-* the cursor is at the top-most position it can be at.
-*/
-    return getcury(stdscr);
+  /* This function returns the Y cursor position, as the line number from
+  * the top of the logical window.  The offset due to the protected top
+  * of the screen display is taken into account.  A WhereY() of zero means
+  * the cursor is at the top-most position it can be at.
+  */
+  return getcury(stdscr);
 }
 
 /**
  * Clears the local logical screen
  */
 void CursesIO::LocalCls() {
-    attron(COLOR_PAIR(7));
-    clear();
-    refresh();
-	LocalGotoXY(0, 0);
+  attron(COLOR_PAIR(7));
+  clear();
+  refresh();
+  LocalGotoXY(0, 0);
 }
 
 static void SetCursesAttribute() {
-    unsigned long attr = COLOR_PAIR(curatr);
-    unsigned long f = curatr & 0x0f;
-    if (f > 7) {
-        attr |= A_BOLD;
-    }
-    attrset(attr);
+  unsigned long attr = COLOR_PAIR(curatr);
+  unsigned long f = curatr & 0x0f;
+  if (f > 7) {
+    attr |= A_BOLD;
+  }
+  attrset(attr);
 }
 
 /**
@@ -114,38 +114,38 @@ static void SetCursesAttribute() {
  * BS, and BELL are interpreted as commands instead of characters.
  */
 void CursesIO::LocalPutch(unsigned char ch) {
-    SetCursesAttribute();
-    addch(ch);
-    refresh();
+  SetCursesAttribute();
+  addch(ch);
+  refresh();
 }
 
 void CursesIO::LocalPuts(const char *pszText) {
-    SetCursesAttribute();
-    if (strlen(pszText) == 2) {
-        if (pszText[0] == '\r' && pszText[1] == '\n') {
-            LocalGotoXY(0, WhereY() + 1);
-            return;
-        }
+  SetCursesAttribute();
+  if (strlen(pszText) == 2) {
+    if (pszText[0] == '\r' && pszText[1] == '\n') {
+      LocalGotoXY(0, WhereY() + 1);
+      return;
     }
-    addstr(pszText);
-    refresh();
+  }
+  addstr(pszText);
+  refresh();
 }
 
 void CursesIO::LocalXYPuts(int x, int y, const char *pszText) {
-    LocalGotoXY(x, y);
-    LocalPuts(pszText);
+  LocalGotoXY(x, y);
+  LocalPuts(pszText);
 }
 
 int CursesIO::getchd() {
-    return getch();
+  return getch();
 }
 
 void CursesIO::LocalClrEol() {
-    SetCursesAttribute();
-    clrtoeol();
-    refresh();
+  SetCursesAttribute();
+  clrtoeol();
+  refresh();
 }
 
 void CursesIO::LocalScrollScreen(int nTop, int nBottom, int nDirection) {
-    //TODO(rushfan): Implement if needed for compile.cpp
+  //TODO(rushfan): Implement if needed for compile.cpp
 }

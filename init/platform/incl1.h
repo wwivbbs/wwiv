@@ -26,11 +26,11 @@
 
 #if defined (_WIN32)
 
-#define WWIV_FILE_SEPERATOR_CHAR	'\\'
-#define WWIV_FILE_SEPERATOR_STRING	"\\"
-#define MAX_FNAME	_MAX_FNAME
+#define WWIV_FILE_SEPERATOR_CHAR  '\\'
+#define WWIV_FILE_SEPERATOR_STRING  "\\"
+#define MAX_FNAME _MAX_FNAME
 
-#endif	 // _WIN32
+#endif   // _WIN32
 
 ////////////////////////////////////////////////////////////////////////////////
 // UNIX Common Section.
@@ -46,19 +46,19 @@
 #include <netinet/in.h>
 #include <dirent.h>
 #include <utime.h>
-#define O_BINARY	0
-#define O_TEXT		0
+#define O_BINARY  0
+#define O_TEXT    0
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
-#define MAX_EXT		256
-#define MAX_DIR		256
-#define MAX_FNAME	256
-#define MAX_DRIVE	256
-#define WWIV_FILE_SEPERATOR_CHAR	'/'
-#define WWIV_FILE_SEPERATOR_STRING	"/"
+#define MAX_EXT   256
+#define MAX_DIR   256
+#define MAX_FNAME 256
+#define MAX_DRIVE 256
+#define WWIV_FILE_SEPERATOR_CHAR  '/'
+#define WWIV_FILE_SEPERATOR_STRING  "/"
 
-#define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
+#define mkdir(x)  mkdir(x, S_IRWXU | S_IRWXG)
 
 #endif // defined ( __unix__ )
 

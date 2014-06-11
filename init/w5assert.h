@@ -34,4 +34,4 @@
 
 #endif // _DEBUG
 
-#endif	// __INCLUDED_W5ASSERT_H__
+#endif  // __INCLUDED_W5ASSERT_H__
