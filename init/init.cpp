@@ -329,7 +329,7 @@ void edit_net(int nn)
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
 void networks() {
-    char s[181],s1[81];
+    char s1[81];
     bool done = false;
 
     if (!exist("NETWORK.EXE")) {
