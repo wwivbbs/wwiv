@@ -489,7 +489,8 @@ std::string GetHelpFileName(MenuInstanceData * pMenuData) {
 }
 
 void AMDisplayHelp(MenuInstanceData * pMenuData) {
-  if (!printfile(GetHelpFileName(pMenuData).c_str(), true)) {
+  const std::string filename = GetHelpFileName(pMenuData);
+  if (!printfile(filename.c_str(), true)) {
     GenerateMenu(pMenuData);
   }
 }
@@ -814,7 +815,8 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
 }
 
 void OpenMenuDescriptions() {
-  hMenuDesc = fopen(GetMenuDescriptionFile().c_str(), "r");
+  const std::string menu_description_file = GetMenuDescriptionFile();
+  hMenuDesc = fopen(menu_description_file.c_str(), "r");
 }
 
 void CloseMenuDescriptions() {
