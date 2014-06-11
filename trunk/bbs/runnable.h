@@ -22,15 +22,15 @@
 
 
 class Runnable {
-  public:
-	/////////////////////////////////////////////////////////////////////////
-	//
-	// Member functions
-	//
+ public:
+  /////////////////////////////////////////////////////////////////////////
+  //
+  // Member functions
+  //
 
-	Runnable() {}
-	virtual ~Runnable() {}
-	virtual int Run( int argc, char *argv[] ) = 0;
+  Runnable() {}
+  virtual ~Runnable() {}
+  virtual int Run(int argc, char *argv[]) = 0;
 };
 
 #endif // __INCLUDED_RUNNABLE_H__

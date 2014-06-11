@@ -25,27 +25,27 @@
 #endif
 
 int  set_strings_fn(int filen, char *pszDirectoryName, char *pszFileName, int allowwrite) {
-	return false;
+  return false;
 }
 
 void put_string(int filen, int n, char *pszText) {
-	return;
+  return;
 }
 
 int  cachestat() {
-	return 0;
+  return 0;
 }
 
 int  num_strings(int filen) {
-	return 0;
+  return 0;
 }
 
 char *getrandomstring(int filen) {
-	return "";
+  return "";
 }
 
 void close_strfiles() {
-	return;
+  return;
 }
 
 

@@ -31,12 +31,12 @@
  */
 
 struct xtrasubsnetrec {
-	long flags;
-	short net_num;
-	unsigned short type;
-	short host;
-	short category;
-	char stype[8];
+  long flags;
+  short net_num;
+  unsigned short type;
+  short host;
+  short category;
+  char stype[8];
 };
 
 
@@ -48,11 +48,11 @@ struct xtrasubsnetrec {
  *  nets - pointer to network info for sub
  */
 struct xtrasubsrec {
-	long flags;
-	char desc[61];
-	short num_nets;
-	short num_nets_max;
-	xtrasubsnetrec *nets;
+  long flags;
+  char desc[61];
+  short num_nets;
+  short num_nets_max;
+  xtrasubsnetrec *nets;
 };
 
 #define XTRA_NET_AUTO_ADDDROP 0x00000001    /* can auto add-drop the sub */

@@ -21,147 +21,147 @@
 
 
 void HopSub() {
-	char s1[81], s2[81];
+  char s1[81], s2[81];
 
-	bool abort = false;
-	int nc = 0;
-	while (uconfsub[nc].confnum != -1) {
-		nc++;
-	}
+  bool abort = false;
+  int nc = 0;
+  while (uconfsub[nc].confnum != -1) {
+    nc++;
+  }
 
-	if ( okansi() ) {
-		GetSession()->bout << "\r\x1b[K";
-	} else {
-		GetSession()->bout.NewLine();
-	}
-	GetSession()->bout << "|#9Enter name or partial name of sub to hop to:\r\n:";
-	if ( okansi() ) {
-		newline = false;
-	}
-	input( s1, 40, true );
-	if (!s1[0]) {
-		return;
-	}
-	if ( !okansi() ) {
-		GetSession()->bout.NewLine();
-	}
+  if (okansi()) {
+    GetSession()->bout << "\r\x1b[K";
+  } else {
+    GetSession()->bout.NewLine();
+  }
+  GetSession()->bout << "|#9Enter name or partial name of sub to hop to:\r\n:";
+  if (okansi()) {
+    newline = false;
+  }
+  input(s1, 40, true);
+  if (!s1[0]) {
+    return;
+  }
+  if (!okansi()) {
+    GetSession()->bout.NewLine();
+  }
 
-	int c = 0;
-	int oc = GetSession()->GetCurrentConferenceMessageArea();
-	int os = usub[GetSession()->GetCurrentMessageArea()].subnum;
+  int c = 0;
+  int oc = GetSession()->GetCurrentConferenceMessageArea();
+  int os = usub[GetSession()->GetCurrentMessageArea()].subnum;
 
-	while ((c < nc) && !abort ) {
-		if ( okconf( GetSession()->GetCurrentUser() ) ) {
-			setuconf(CONF_SUBS, c, -1);
-		}
-		int i = 0;
-		while ((i < GetSession()->num_subs) && (usub[i].subnum != -1) && !abort ) {
-			strcpy(s2, subboards[usub[i].subnum].name);
-			for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
-				;
-			if (strstr(s2, s1) != NULL) {
-				if ( okansi() ) {
-					GetSession()->bout << "\r\x1b[K";
-				}
-				if ( !okansi() ) {
-					GetSession()->bout.NewLine();
-				}
-				GetSession()->bout << "|#5Do you mean \"" << subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
-				char ch = onek_ncr("QYN\r");
-				if (ch == 'Y') {
-					abort = true;
-					GetSession()->SetCurrentMessageArea( i );
-					break;
-				} else if (ch == 'Q') {
-					abort = true;
-					if ( okconf( GetSession()->GetCurrentUser() ) ) {
-						setuconf(CONF_SUBS, oc, os);
-					}
-					break;
-				}
-			}
-			++i;
-		}
-		c++;
-		if ( !okconf( GetSession()->GetCurrentUser() ) ) {
-			break;
-		}
-	}
-	if ( okconf( GetSession()->GetCurrentUser() ) && !abort ) {
-		setuconf(CONF_SUBS, oc, os);
-	}
+  while ((c < nc) && !abort) {
+    if (okconf(GetSession()->GetCurrentUser())) {
+      setuconf(CONF_SUBS, c, -1);
+    }
+    int i = 0;
+    while ((i < GetSession()->num_subs) && (usub[i].subnum != -1) && !abort) {
+      strcpy(s2, subboards[usub[i].subnum].name);
+      for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
+        ;
+      if (strstr(s2, s1) != NULL) {
+        if (okansi()) {
+          GetSession()->bout << "\r\x1b[K";
+        }
+        if (!okansi()) {
+          GetSession()->bout.NewLine();
+        }
+        GetSession()->bout << "|#5Do you mean \"" << subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
+        char ch = onek_ncr("QYN\r");
+        if (ch == 'Y') {
+          abort = true;
+          GetSession()->SetCurrentMessageArea(i);
+          break;
+        } else if (ch == 'Q') {
+          abort = true;
+          if (okconf(GetSession()->GetCurrentUser())) {
+            setuconf(CONF_SUBS, oc, os);
+          }
+          break;
+        }
+      }
+      ++i;
+    }
+    c++;
+    if (!okconf(GetSession()->GetCurrentUser())) {
+      break;
+    }
+  }
+  if (okconf(GetSession()->GetCurrentUser()) && !abort) {
+    setuconf(CONF_SUBS, oc, os);
+  }
 }
 
 
 void HopDir() {
-	char s1[81], s2[81];
-	bool abort = false;
+  char s1[81], s2[81];
+  bool abort = false;
 
-	int nc = 0;
-	while ( uconfdir[nc].confnum != -1 ) {
-		nc++;
-	}
+  int nc = 0;
+  while (uconfdir[nc].confnum != -1) {
+    nc++;
+  }
 
-	if ( okansi() ) {
-		GetSession()->bout << "\r\x1b[K";
-	} else {
-		GetSession()->bout.NewLine();
-	}
-	GetSession()->bout << "|#9Enter name or partial name of dir to hop to:\r\n:";
-	if ( okansi() ) {
-		newline = false;
-	}
-	input( s1, 20, true );
-	if (!s1[0]) {
-		return;
-	}
-	if ( !okansi() ) {
-		GetSession()->bout.NewLine();
-	}
+  if (okansi()) {
+    GetSession()->bout << "\r\x1b[K";
+  } else {
+    GetSession()->bout.NewLine();
+  }
+  GetSession()->bout << "|#9Enter name or partial name of dir to hop to:\r\n:";
+  if (okansi()) {
+    newline = false;
+  }
+  input(s1, 20, true);
+  if (!s1[0]) {
+    return;
+  }
+  if (!okansi()) {
+    GetSession()->bout.NewLine();
+  }
 
-	int c = 0;
-	int oc = GetSession()->GetCurrentConferenceFileArea();
-	int os = udir[GetSession()->GetCurrentFileArea()].subnum;
+  int c = 0;
+  int oc = GetSession()->GetCurrentConferenceFileArea();
+  int os = udir[GetSession()->GetCurrentFileArea()].subnum;
 
-	while ( c < nc && !abort ) {
-		if ( okconf( GetSession()->GetCurrentUser() ) ) {
-			setuconf(CONF_DIRS, c, -1);
-		}
-		int i = 0;
-		while ((i < GetSession()->num_dirs) && (udir[i].subnum != -1) && (!abort)) {
-			strcpy(s2, directories[udir[i].subnum].name);
-			for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
-				;
-			if (strstr(s2, s1) != NULL) {
-				if ( okansi() ) {
-					GetSession()->bout << "\r\x1b[K";
-				} else {
-					GetSession()->bout.NewLine();
-				}
-				GetSession()->bout << "|#5Do you mean \"" << directories[udir[i].subnum].name << "\" (Y/N/Q)? ";
-				char ch = onek_ncr("QYN\r");
-				if (ch == 'Y') {
-					abort = true;
-					GetSession()->SetCurrentFileArea( i );
-					break;
-				} else if (ch == 'Q') {
-					abort = true;
-					if ( okconf( GetSession()->GetCurrentUser() ) ) {
-						setuconf(CONF_DIRS, oc, os);
-					}
-					break;
-				}
-			}
-			++i;
-		}
-		c++;
-		if ( !okconf( GetSession()->GetCurrentUser() ) ) {
-			break;
-		}
-	}
-	if ( okconf( GetSession()->GetCurrentUser() ) && !abort ) {
-		setuconf(CONF_DIRS, oc, os);
-	}
+  while (c < nc && !abort) {
+    if (okconf(GetSession()->GetCurrentUser())) {
+      setuconf(CONF_DIRS, c, -1);
+    }
+    int i = 0;
+    while ((i < GetSession()->num_dirs) && (udir[i].subnum != -1) && (!abort)) {
+      strcpy(s2, directories[udir[i].subnum].name);
+      for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
+        ;
+      if (strstr(s2, s1) != NULL) {
+        if (okansi()) {
+          GetSession()->bout << "\r\x1b[K";
+        } else {
+          GetSession()->bout.NewLine();
+        }
+        GetSession()->bout << "|#5Do you mean \"" << directories[udir[i].subnum].name << "\" (Y/N/Q)? ";
+        char ch = onek_ncr("QYN\r");
+        if (ch == 'Y') {
+          abort = true;
+          GetSession()->SetCurrentFileArea(i);
+          break;
+        } else if (ch == 'Q') {
+          abort = true;
+          if (okconf(GetSession()->GetCurrentUser())) {
+            setuconf(CONF_DIRS, oc, os);
+          }
+          break;
+        }
+      }
+      ++i;
+    }
+    c++;
+    if (!okconf(GetSession()->GetCurrentUser())) {
+      break;
+    }
+  }
+  if (okconf(GetSession()->GetCurrentUser()) && !abort) {
+    setuconf(CONF_DIRS, oc, os);
+  }
 }
 
 

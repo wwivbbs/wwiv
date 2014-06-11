@@ -26,677 +26,677 @@
 
 // DATA FOR EVERY USER
 struct userrec {
-	unsigned char
-	name[31],                                // user's name/handle
-	     realname[21],                            // user's real name
-	     callsign[7],                             // user's amateur callsign
-	     phone[13],                               // user's phone number
-	     dataphone[13],                           // user's data phone
-	     street[31],                              // street address
-	     city[31],                                // city
-	     state[3],                                // state code [MO, CA, etc]
-	     country[4],                              // country [USA, CAN, FRA, etc]
-	     zipcode[11],                             // zipcode [#####-####]
-	     pw[9],                                   // user's password
-	     laston[9],                               // last date on
-	     firston[9],                              // first date on
-	     note[61],                                // sysop's note about user
-	     macros[3][81],                           // macro keys
-	     sex;                                     // user's sex
+  unsigned char
+  name[31],                                // user's name/handle
+       realname[21],                            // user's real name
+       callsign[7],                             // user's amateur callsign
+       phone[13],                               // user's phone number
+       dataphone[13],                           // user's data phone
+       street[31],                              // street address
+       city[31],                                // city
+       state[3],                                // state code [MO, CA, etc]
+       country[4],                              // country [USA, CAN, FRA, etc]
+       zipcode[11],                             // zipcode [#####-####]
+       pw[9],                                   // user's password
+       laston[9],                               // last date on
+       firston[9],                              // first date on
+       note[61],                                // sysop's note about user
+       macros[3][81],                           // macro keys
+       sex;                                     // user's sex
 
-	char
-	email[65],                               // Internet mail address
-	      res_char[13];                            // bytes for more strings
+  char
+  email[65],                               // Internet mail address
+        res_char[13];                            // bytes for more strings
 
-	unsigned char
-	age,                                     // user's age
-	inact;                                   // if deleted or inactive
+  unsigned char
+  age,                                     // user's age
+  inact;                                   // if deleted or inactive
 
-	signed char comp_type;                       // computer type
+  signed char comp_type;                       // computer type
 
-	unsigned char defprot,                       // default transfer protocol
-	         defed,                                   // default editor
-	         screenchars,                             // screen width
-	         screenlines,                             // screen height
-	         num_extended,                            // extended description lines
-	         optional_val,                            // optional lines in msgs
-	         sl,                                      // security level
-	         dsl,                                     // transfer security level
-	         exempt,                                  // exempt from ratios, etc
-	         colors[10],                              // user's colors
-	         bwcolors[10],                            // user's b&w colors
-	         votes[20],                               // user's votes
-	         illegal,                                 // illegal logons
-	         waiting,                                 // number mail waiting
-	         ontoday,                                 // num times on today
-	         month,                                   // birth month
-	         day,                                     // birth day
-	         year,                                    // birth year
-	         language,                                // language to use
-	         cbv;                                     // called back
+  unsigned char defprot,                       // default transfer protocol
+           defed,                                   // default editor
+           screenchars,                             // screen width
+           screenlines,                             // screen height
+           num_extended,                            // extended description lines
+           optional_val,                            // optional lines in msgs
+           sl,                                      // security level
+           dsl,                                     // transfer security level
+           exempt,                                  // exempt from ratios, etc
+           colors[10],                              // user's colors
+           bwcolors[10],                            // user's b&w colors
+           votes[20],                               // user's votes
+           illegal,                                 // illegal logons
+           waiting,                                 // number mail waiting
+           ontoday,                                 // num times on today
+           month,                                   // birth month
+           day,                                     // birth day
+           year,                                    // birth year
+           language,                                // language to use
+           cbv;                                     // called back
 
-	char
-	res_byte[49];
+  char
+  res_byte[49];
 
-	unsigned short
-	homeuser,                                // user number where user can found
-	homesys,                                 // system where user can be found
-	forwardusr,                              // mail forwarded to this user number
-	forwardsys,                              // mail forwarded to this sys number
-	net_num,                                 // net num for forwarding
-	msgpost,                                 // number messages posted
-	emailsent,                               // number of email sent
-	feedbacksent,                            // number of f-back sent
-	fsenttoday1,                             // feedbacks today
-	posttoday,                               // number posts today
-	etoday,                                  // number emails today
-	ar,                                      // board access
-	dar,                                     // directory access
-	restrict,                                // restrictions on account
-	ass_pts,                                 // bad things the user did
-	uploaded,                                // number files uploaded
-	downloaded,                              // number files downloaded
-	lastrate,                                // last baud rate on
-	logons,                                  // total number of logons
-	emailnet,                                // email sent via net
-	postnet,                                 // posts sent thru net
-	deletedposts,                            // how many posts deleted
-	chainsrun,                               // how many "chains" run
-	gfilesread,                              // how many gfiles read
-	banktime,                                // how many mins in timebank
-	homenet,                                 // home net number
-	subconf,                                 // previous conference subs
-	dirconf;                                 // previous conference dirs
-	unsigned short
-	subnum,                                  // last sub at logoff
-	dirnum;                                  // last dir at logoff
+  unsigned short
+  homeuser,                                // user number where user can found
+  homesys,                                 // system where user can be found
+  forwardusr,                              // mail forwarded to this user number
+  forwardsys,                              // mail forwarded to this sys number
+  net_num,                                 // net num for forwarding
+  msgpost,                                 // number messages posted
+  emailsent,                               // number of email sent
+  feedbacksent,                            // number of f-back sent
+  fsenttoday1,                             // feedbacks today
+  posttoday,                               // number posts today
+  etoday,                                  // number emails today
+  ar,                                      // board access
+  dar,                                     // directory access
+  restrict,                                // restrictions on account
+  ass_pts,                                 // bad things the user did
+  uploaded,                                // number files uploaded
+  downloaded,                              // number files downloaded
+  lastrate,                                // last baud rate on
+  logons,                                  // total number of logons
+  emailnet,                                // email sent via net
+  postnet,                                 // posts sent thru net
+  deletedposts,                            // how many posts deleted
+  chainsrun,                               // how many "chains" run
+  gfilesread,                              // how many gfiles read
+  banktime,                                // how many mins in timebank
+  homenet,                                 // home net number
+  subconf,                                 // previous conference subs
+  dirconf;                                 // previous conference dirs
+  unsigned short
+  subnum,                                  // last sub at logoff
+  dirnum;                                  // last dir at logoff
 
-	char
-	res_short[40];                           // reserved for short values
+  char
+  res_short[40];                           // reserved for short values
 
-	uint32_t
-	msgread,                                 // total num msgs read
-	uk,                                      // number of k uploaded
-	dk,                                      // number of k downloaded
-	daten,                                   // numerical time last on
-	sysstatus,                               // status/defaults
-	wwiv_regnum,                             // user's WWIV reg number
-	filepoints,                              // points to spend for files
-	registered,                              // numerical registration date
-	expires,                                 // numerical expiration date
-	datenscan,                               // numerical date of last file scan
-	nameinfo;                                // bit mapping for name case
+  uint32_t
+  msgread,                                 // total num msgs read
+  uk,                                      // number of k uploaded
+  dk,                                      // number of k downloaded
+  daten,                                   // numerical time last on
+  sysstatus,                               // status/defaults
+  wwiv_regnum,                             // user's WWIV reg number
+  filepoints,                              // points to spend for files
+  registered,                              // numerical registration date
+  expires,                                 // numerical expiration date
+  datenscan,                               // numerical date of last file scan
+  nameinfo;                                // bit mapping for name case
 
-	char
-	res_long[40];                            // reserved for long values
+  char
+  res_long[40];                            // reserved for long values
 
-	float
-	timeontoday,                             // time on today
-	extratime,                               // time left today
-	timeon,                                  // total time on system
-	pos_account,                             // $ credit
-	neg_account,                             // $ debit
-	gold;                                    // game money
+  float
+  timeontoday,                             // time on today
+  extratime,                               // time left today
+  timeon,                                  // total time on system
+  pos_account,                             // $ credit
+  neg_account,                             // $ debit
+  gold;                                    // game money
 
-	char
-	res_float[32];                           // reserved for real values
+  char
+  res_float[32];                           // reserved for real values
 
-	char
-	res_gp[94];                              // reserved for whatever
+  char
+  res_gp[94];                              // reserved for whatever
 
-	unsigned short int qwk_max_msgs;
-	unsigned short int qwk_max_msgs_per_sub;
-	unsigned short int qwk_dont_scan_mail:    1;
-	unsigned short int qwk_delete_mail:       1;
-	unsigned short int qwk_dontsetnscan:      1;
-	unsigned short int qwk_remove_color:      1;
-	unsigned short int qwk_convert_color:     1;
-	unsigned short int qwk_archive:           3;
-	unsigned short int qwk_leave_bulletin:    1;
-	unsigned short int qwk_dontscanfiles:     1;
-	unsigned short int qwk_keep_routing:      1;
-	unsigned short int full_desc:             1;
-	unsigned short int qwk_protocol:          4;
+  unsigned short int qwk_max_msgs;
+  unsigned short int qwk_max_msgs_per_sub;
+  unsigned short int qwk_dont_scan_mail:    1;
+  unsigned short int qwk_delete_mail:       1;
+  unsigned short int qwk_dontsetnscan:      1;
+  unsigned short int qwk_remove_color:      1;
+  unsigned short int qwk_convert_color:     1;
+  unsigned short int qwk_archive:           3;
+  unsigned short int qwk_leave_bulletin:    1;
+  unsigned short int qwk_dontscanfiles:     1;
+  unsigned short int qwk_keep_routing:      1;
+  unsigned short int full_desc:             1;
+  unsigned short int qwk_protocol:          4;
 
 };
 
 
 // SECLEV DATA FOR 1 SL
 struct slrec {
-	unsigned short time_per_day,                // time allowed on per day
-	         time_per_logon,                         // time allowed on per logon
-	         messages_read,                          // messages allowed to read
-	         emails,                                 // number emails allowed
-	         posts;                                  // number posts allowed
-	uint32_t ability;                      // bit mapped abilities
+  unsigned short time_per_day,                // time allowed on per day
+           time_per_logon,                         // time allowed on per logon
+           messages_read,                          // messages allowed to read
+           emails,                                 // number emails allowed
+           posts;                                  // number posts allowed
+  uint32_t ability;                      // bit mapped abilities
 };
 
 
 // AUTO-VALIDATION DATA
 struct valrec {
-	unsigned char sl,                           // SL
-	         dsl;                                    // DSL
+  unsigned char sl,                           // SL
+           dsl;                                    // DSL
 
-	unsigned short ar,                          // AR
-	         dar,                                    // DAR
-	         restrict;                               // restrictions
+  unsigned short ar,                          // AR
+           dar,                                    // DAR
+           restrict;                               // restrictions
 };
 
 
 struct oldarcrec {
-	char extension[4],                          // extension for archive
-	     arca[32],                               // add commandline
-	     arce[32],                               // extract commandline
-	     arcl[32];                               // list commandline
+  char extension[4],                          // extension for archive
+       arca[32],                               // add commandline
+       arce[32],                               // extract commandline
+       arcl[32];                               // list commandline
 };
 
 struct arcrec {
-	char name[32],                              // name of the archiver
-	     extension[4],                           // extension for archive
-	     arca[50],                               // add commandline
-	     arce[50],                               // extract commandline
-	     arcl[50],                               // list commandline
-	     arcd[50],                               // delete commandline
-	     arck[50],                               // comment commandline
-	     arct[50];                               // test commandline
+  char name[32],                              // name of the archiver
+       extension[4],                           // extension for archive
+       arca[50],                               // add commandline
+       arce[50],                               // extract commandline
+       arcl[50],                               // list commandline
+       arcd[50],                               // delete commandline
+       arck[50],                               // comment commandline
+       arct[50];                               // test commandline
 };
 
 
 // STATIC SYSTEM INFORMATION
 struct configrec {
-	char newuserpw[21],                         // new user password
-	     systempw[21],                           // system password
-	     msgsdir[81],                            // path for msgs directory
-	     gfilesdir[81],                          // path for gfiles dir
-	     datadir[81],                            // path for data directory
-	     dloadsdir[81],                          // path for dloads dir
-	     ramdrive,                               // drive for ramdisk
-	     tempdir[81],                            // path for temporary directory
-	     xmark,                                  // 0xff
-	     regcode[83],                            // registration code
-	     bbs_init_modem[51],                     // modem initialization cmd
-	     answer[21],                             // modem answer cmd
-	     connect_300[21],                        // modem responses for
-	     connect_1200[21],                       // connections made at
-	     connect_2400[21],                       // various speeds
-	     connect_9600[21],                       // ""
-	     connect_19200[21],                      // ""
-	     no_carrier[21],                         // modem disconnect
-	     ring[21],                               // modem ring
-	     terminal[21],                           // DOS cmd for run term prg
-	     systemname[51],                         // BBS system name
-	     systemphone[13],                        // BBS system phone number
-	     sysopname[51],                          // sysop's name
-	     executestr[51];                         // mail route path name
+  char newuserpw[21],                         // new user password
+       systempw[21],                           // system password
+       msgsdir[81],                            // path for msgs directory
+       gfilesdir[81],                          // path for gfiles dir
+       datadir[81],                            // path for data directory
+       dloadsdir[81],                          // path for dloads dir
+       ramdrive,                               // drive for ramdisk
+       tempdir[81],                            // path for temporary directory
+       xmark,                                  // 0xff
+       regcode[83],                            // registration code
+       bbs_init_modem[51],                     // modem initialization cmd
+       answer[21],                             // modem answer cmd
+       connect_300[21],                        // modem responses for
+       connect_1200[21],                       // connections made at
+       connect_2400[21],                       // various speeds
+       connect_9600[21],                       // ""
+       connect_19200[21],                      // ""
+       no_carrier[21],                         // modem disconnect
+       ring[21],                               // modem ring
+       terminal[21],                           // DOS cmd for run term prg
+       systemname[51],                         // BBS system name
+       systemphone[13],                        // BBS system phone number
+       sysopname[51],                          // sysop's name
+       executestr[51];                         // mail route path name
 
-	unsigned char newusersl,                    // new user SL
-	         newuserdsl,                             // new user DSL
-	         maxwaiting,                             // max mail waiting
-	         comport[5],                             // what connected to comm
-	         com_ISR[5],                             // Com Interrupts
-	         primaryport,                            // primary comm port
-	         newuploads,                             // file dir new uploads go
-	         closedsystem;                           // if system is closed
+  unsigned char newusersl,                    // new user SL
+           newuserdsl,                             // new user DSL
+           maxwaiting,                             // max mail waiting
+           comport[5],                             // what connected to comm
+           com_ISR[5],                             // Com Interrupts
+           primaryport,                            // primary comm port
+           newuploads,                             // file dir new uploads go
+           closedsystem;                           // if system is closed
 
-	unsigned short systemnumber,                // BBS system number
-	         baudrate[5],                            // Baud rate for com ports
-	         com_base[5],                            // Com base addresses
-	         maxusers,                               // max users on system
-	         newuser_restrict,                       // new user restrictions
-	         sysconfig,                              // System configuration
-	         sysoplowtime,                           // Chat time on
-	         sysophightime,                          // Chat time off
-	         executetime;                            // time to run mail router
+  unsigned short systemnumber,                // BBS system number
+           baudrate[5],                            // Baud rate for com ports
+           com_base[5],                            // Com base addresses
+           maxusers,                               // max users on system
+           newuser_restrict,                       // new user restrictions
+           sysconfig,                              // System configuration
+           sysoplowtime,                           // Chat time on
+           sysophightime,                          // Chat time off
+           executetime;                            // time to run mail router
 
-	float req_ratio,                            // required up/down ratio
-	      newusergold;                            // new user gold
+  float req_ratio,                            // required up/down ratio
+        newusergold;                            // new user gold
 
-	slrec sl[256];                              // security level data
+  slrec sl[256];                              // security level data
 
-	valrec autoval[10];                         // sysop quik-validation data
+  valrec autoval[10];                         // sysop quik-validation data
 
-	char hangupphone[21],                       // string to hang up phone
-	     pickupphone[21];                        // string to pick up phone
+  char hangupphone[21],                       // string to hang up phone
+       pickupphone[21];                        // string to pick up phone
 
-	unsigned short netlowtime,                  // net time on
-	         nethightime;                            // net time off
+  unsigned short netlowtime,                  // net time on
+           nethightime;                            // net time off
 
-	char connect_300_a[21],                     // alternate connect string
-	     connect_1200_a[21],                     // alternate connect string
-	     connect_2400_a[21],                     // alternate connect string
-	     connect_9600_a[21],                     // alternate connect string
-	     connect_19200_a[21];                    // alternate connect string
+  char connect_300_a[21],                     // alternate connect string
+       connect_1200_a[21],                     // alternate connect string
+       connect_2400_a[21],                     // alternate connect string
+       connect_9600_a[21],                     // alternate connect string
+       connect_19200_a[21];                    // alternate connect string
 
-	oldarcrec arcs[4];                          // old archivers
+  oldarcrec arcs[4];                          // old archivers
 
-	char beginday_c[51],                        // beginday event
-	     logon_c[51];                            // logon event
+  char beginday_c[51],                        // beginday event
+       logon_c[51];                            // logon event
 
-	short userreclen,                           // user record length
-	      waitingoffset,                          // mail waiting offset
-	      inactoffset;                            // inactive offset
+  short userreclen,                           // user record length
+        waitingoffset,                          // mail waiting offset
+        inactoffset;                            // inactive offset
 
-	char newuser_c[51];                         // newuser event
+  char newuser_c[51];                         // newuser event
 
-	uint32_t wwiv_reg_number;              // user's reg number
+  uint32_t wwiv_reg_number;              // user's reg number
 
-	char dial_prefix[21];
+  char dial_prefix[21];
 
-	float post_call_ratio;
+  float post_call_ratio;
 
-	char upload_c[51],                          // upload event
-	     dszbatchdl[81], modem_type[9], batchdir[81];
+  char upload_c[51],                          // upload event
+       dszbatchdl[81], modem_type[9], batchdir[81];
 
-	short sysstatusoffset;                      // system status offset
+  short sysstatusoffset;                      // system status offset
 
-	char network_type;                          // network type ID
+  char network_type;                          // network type ID
 
-	short fuoffset, fsoffset, fnoffset;         // offset values
+  short fuoffset, fsoffset, fnoffset;         // offset values
 
-	unsigned short max_subs,                    // max subboards
-	         max_dirs,                               // max directories
-	         qscn_len;                               // qscan pointer length
+  unsigned short max_subs,                    // max subboards
+           max_dirs,                               // max directories
+           qscn_len;                               // qscan pointer length
 
-	unsigned char email_storage_type;           // how to store email
+  unsigned char email_storage_type;           // how to store email
 
-	uint32_t sysconfig1,
-	         rrd;                                    // shareware expiration date
+  uint32_t sysconfig1,
+           rrd;                                    // shareware expiration date
 
-	char menudir[81];                           // path for menu dir
+  char menudir[81];                           // path for menu dir
 
-	char logoff_c[51];                          // logoff event
+  char logoff_c[51];                          // logoff event
 
-	char v_scan_c[51];                          // virus scanning event
+  char v_scan_c[51];                          // virus scanning event
 
-	char res[400];                              // RESERVED
+  char res[400];                              // RESERVED
 };
 
 
 struct small_configrec {
-	char          * newuserpw,          // new user password
-	              * systempw,           // system password
+  char          * newuserpw,          // new user password
+                * systempw,           // system password
 
-	              * msgsdir,            // path for msgs directory
-	              * gfilesdir,          // path for gfiles dir
-	              * datadir,            // path for data directory
-	              * dloadsdir,          // path for dloads dir
-	              * batchdir,
-	              * menudir,            // path for menu dir
-	              * ansidir,            // path for ansi dir
-	              * terminal,           // DOS cmd for run term prg
+                * msgsdir,            // path for msgs directory
+                * gfilesdir,          // path for gfiles dir
+                * datadir,            // path for data directory
+                * dloadsdir,          // path for dloads dir
+                * batchdir,
+                * menudir,            // path for menu dir
+                * ansidir,            // path for ansi dir
+                * terminal,           // DOS cmd for run term prg
 
-	              * systemname,         // BBS system name
-	              * systemphone,        // BBS system phone number
-	              * sysopname,          // sysop's name
-	              * regcode,            // registration code
-	              * executestr,         // mail route path name
+                * systemname,         // BBS system name
+                * systemphone,        // BBS system phone number
+                * sysopname,          // sysop's name
+                * regcode,            // registration code
+                * executestr,         // mail route path name
 
-	              * beginday_c,         // beginday event
-	              * logon_c,            // logon event
-	              * logoff_c,           // logoff event
-	              * newuser_c,          // newuser event
-	              * upload_c,           // upload event
-	              * v_scan_c,           // virus scanner command line
-	              * dszbatchdl,
-	              * dial_prefix;
+                * beginday_c,         // beginday event
+                * logon_c,            // logon event
+                * logoff_c,           // logoff event
+                * newuser_c,          // newuser event
+                * upload_c,           // upload event
+                * v_scan_c,           // virus scanner command line
+                * dszbatchdl,
+                * dial_prefix;
 
-	unsigned char   newusersl,          // new user SL
-	         newuserdsl,         // new user DSL
-	         maxwaiting,         // max mail waiting
-	         newuploads,         // file dir new uploads go
-	         closedsystem;       // if system is closed
-
-
-	unsigned short  systemnumber,       // BBS system number
-	         maxusers,           // max users on system
-	         newuser_restrict,   // new user restrictions
-	         sysconfig,          // System configuration
-	         sysoplowtime,       // Chat time on
-	         sysophightime,      // Chat time off
-	         executetime,        // time to run mail router
-	         netlowtime,         // net time on
-	         nethightime,        // net time off
-	         max_subs,
-	         max_dirs,
-	         qscn_len,
-	         userreclen;
-
-	float           post_call_ratio,
-	                req_ratio,
-	                newusergold;
-
-	valrec          autoval[10];        // sysop quik-validation dat
+  unsigned char   newusersl,          // new user SL
+           newuserdsl,         // new user DSL
+           maxwaiting,         // max mail waiting
+           newuploads,         // file dir new uploads go
+           closedsystem;       // if system is closed
 
 
-	uint32_t wwiv_reg_number,   // user's reg number
-	         sysconfig1,
-	         rrd;
+  unsigned short  systemnumber,       // BBS system number
+           maxusers,           // max users on system
+           newuser_restrict,   // new user restrictions
+           sysconfig,          // System configuration
+           sysoplowtime,       // Chat time on
+           sysophightime,      // Chat time off
+           executetime,        // time to run mail router
+           netlowtime,         // net time on
+           nethightime,        // net time off
+           max_subs,
+           max_dirs,
+           qscn_len,
+           userreclen;
+
+  float           post_call_ratio,
+                  req_ratio,
+                  newusergold;
+
+  valrec          autoval[10];        // sysop quik-validation dat
+
+
+  uint32_t wwiv_reg_number,   // user's reg number
+           sysconfig1,
+           rrd;
 };
 
 
 // overlay information per instance
 struct configoverrec {
-	unsigned char   com_ISR[9],
-	         primaryport;
-	unsigned short  com_base[9];
-	char            modem_type[9],
-	                tempdir[81],
-	                batchdir[81];
-	unsigned short  comflags;
-	char            bootdrive;
-	char            res[310];
+  unsigned char   com_ISR[9],
+           primaryport;
+  unsigned short  com_base[9];
+  char            modem_type[9],
+                  tempdir[81],
+                  batchdir[81];
+  unsigned short  comflags;
+  char            bootdrive;
+  char            res[310];
 };
 
 
 // DYNAMIC SYSTEM STATUS
 struct statusrec {
-	char date1[9],                              // last date active
-	     date2[9],                               // date before now
-	     date3[9],                               // two days ago
-	     log1[13],                               // yesterday's log
-	     log2[13],                               // two days ago log
-	     gfiledate[9],                           // date gfiles last updated
-	     filechange[7];                          // flags for files changing
+  char date1[9],                              // last date active
+       date2[9],                               // date before now
+       date3[9],                               // two days ago
+       log1[13],                               // yesterday's log
+       log2[13],                               // two days ago log
+       gfiledate[9],                           // date gfiles last updated
+       filechange[7];                          // flags for files changing
 
-	unsigned short localposts,                  // how many local posts today
-	         users,                                  // Current number of users
-	         callernum,                              // Current caller number
-	         callstoday,                             // Number of calls today
-	         msgposttoday,                           // Messages posted today
-	         emailtoday,                             // Email sent today
-	         fbacktoday,                             // Feedback sent today
-	         uptoday,                                // files uploaded today
-	         activetoday;                            // Minutes active today
+  unsigned short localposts,                  // how many local posts today
+           users,                                  // Current number of users
+           callernum,                              // Current caller number
+           callstoday,                             // Number of calls today
+           msgposttoday,                           // Messages posted today
+           emailtoday,                             // Email sent today
+           fbacktoday,                             // Feedback sent today
+           uptoday,                                // files uploaded today
+           activetoday;                            // Minutes active today
 
-	uint32_t qscanptr;                     // Q-scan pointer value
+  uint32_t qscanptr;                     // Q-scan pointer value
 
-	char amsganon;                              // auto-message anony stat
+  char amsganon;                              // auto-message anony stat
 
-	unsigned short amsguser;                    // user who wrote a-msg
+  unsigned short amsguser;                    // user who wrote a-msg
 
-	uint32_t callernum1;                   // caller number
+  uint32_t callernum1;                   // caller number
 
-	unsigned short net_edit_stuff;              // word for net editor
+  unsigned short net_edit_stuff;              // word for net editor
 
-	unsigned short wwiv_version;                // tell what version it is
+  unsigned short wwiv_version;                // tell what version it is
 
-	unsigned short net_version;                 // tell what version of net
+  unsigned short net_version;                 // tell what version of net
 
-	float net_bias;                             // network bias factor
+  float net_bias;                             // network bias factor
 
-	int32_t last_connect,                          // date last connect.net
-	     last_bbslist;                            // date last bbslist.net
+  int32_t last_connect,                          // date last connect.net
+          last_bbslist;                            // date last bbslist.net
 
-	float net_req_free;                         // net free factor def 3
+  float net_req_free;                         // net free factor def 3
 
-	unsigned short days;                        // # days BBS active
+  unsigned short days;                        // # days BBS active
 
-	char res[29];                               // RESERVED
+  char res[29];                               // RESERVED
 };
 
 
 struct colorrec {
-	unsigned char resx[240];
+  unsigned char resx[240];
 };
 
 
 // MESSAGE BASE INFORMATION
 struct subboardrec {
-	char name[41],                              // board name
-	     filename[9],                            // board database filename
-	     key;                                    // board special key
+  char name[41],                              // board name
+       filename[9],                            // board database filename
+       key;                                    // board special key
 
-	unsigned char readsl,                       // sl required to read
-	         postsl,                                 // sl required to post
-	         anony,                                  // anonymous board?
-	         age;                                    // minimum age for sub
+  unsigned char readsl,                       // sl required to read
+           postsl,                                 // sl required to post
+           anony,                                  // anonymous board?
+           age;                                    // minimum age for sub
 
-	unsigned short maxmsgs,                     // max # of msgs
-	         ar,                                     // AR for sub-board
-	         storage_type,                           // how messages are stored
-	         type;                                   // 4 digit board type
+  unsigned short maxmsgs,                     // max # of msgs
+           ar,                                     // AR for sub-board
+           storage_type,                           // how messages are stored
+           type;                                   // 4 digit board type
 };
 
 
 // UPLOAD DIRECTORY INFORMATION
 struct directoryrec {
-	char name[41],                              // directory name
-	     filename[9],                            // direct database filename
-	     path[81];                               // filename path
+  char name[41],                              // directory name
+       filename[9],                            // direct database filename
+       path[81];                               // filename path
 
-	unsigned char dsl,                          // DSL for directory
-	         age;                                    // minimum age for directory
+  unsigned char dsl,                          // DSL for directory
+           age;                                    // minimum age for directory
 
-	unsigned short dar,                         // DAR for directory
-	         maxfiles,                               // max files for directory
-	         mask,                                   // file type mask
-	         type;                                   // 4 digit directory type
+  unsigned short dar,                         // DAR for directory
+           maxfiles,                               // max files for directory
+           mask,                                   // file type mask
+           type;                                   // 4 digit directory type
 };
 
 
 // QUICK REFERNCE TO FIND USER NUMBER FROM NAME
 struct smalrec {
-	unsigned char name[31];
+  unsigned char name[31];
 
-	unsigned short number;
+  unsigned short number;
 };
 
 
 // TYPE TO TELL WHERE A MESSAGE IS STORED
 struct messagerec {
-	unsigned char storage_type;                 // how it is stored
-	uint32_t stored_as;                    // where it is stored
+  unsigned char storage_type;                 // how it is stored
+  uint32_t stored_as;                    // where it is stored
 };
 
 
 // DATA HELD FOR EVERY POST
 struct postrec {
-	char title[81];                             // title of post
+  char title[81];                             // title of post
 
-	unsigned char anony,                        // anony-stat of message
-	         status;                                 // bit-mapped status
+  unsigned char anony,                        // anony-stat of message
+           status;                                 // bit-mapped status
 
-	unsigned short ownersys,                    // what system it came from
-	         owneruser;                              // who posted it
+  unsigned short ownersys,                    // what system it came from
+           owneruser;                              // who posted it
 
-	uint32_t qscan,                        // qscan pointer
-	         daten;                                  // numerical date posted
+  uint32_t qscan,                        // qscan pointer
+           daten;                                  // numerical date posted
 
-	messagerec msg;                             // where to find it
+  messagerec msg;                             // where to find it
 };
 
 
 
 // DATA HELD FOR EVERY E-MAIL OR F-BACK
 struct mailrec {
-	char title[81];                             // E-mail title
+  char title[81];                             // E-mail title
 
-	unsigned char anony,                        // anonymous mail?
-	         status;                                 // status for e-mail
+  unsigned char anony,                        // anonymous mail?
+           status;                                 // status for e-mail
 
-	unsigned short fromsys,                     // originating system
-	         fromuser,                               // originating user
-	         tosys,                                  // destination system
-	         touser;                                 // destination user
+  unsigned short fromsys,                     // originating system
+           fromuser,                               // originating user
+           tosys,                                  // destination system
+           touser;                                 // destination user
 
-	uint32_t daten;                        // date it was sent
+  uint32_t daten;                        // date it was sent
 
-	messagerec msg;                             // where to find it
+  messagerec msg;                             // where to find it
 };
 
 // USED IN READMAIL TO STORE EMAIL INFO
 struct tmpmailrec {
-	short index;                                // index into email.dat
+  short index;                                // index into email.dat
 
-	unsigned short fromsys,                     // originating system
-	         fromuser;                               // originating user
+  unsigned short fromsys,                     // originating system
+           fromuser;                               // originating user
 
-	uint32_t daten;                        // date it was sent
+  uint32_t daten;                        // date it was sent
 
-	messagerec msg;                             // where to find it
+  messagerec msg;                             // where to find it
 };
 
 
 // SHORT RESPONSE FOR USER, TELLING HIS MAIL HAS BEEN READ
 struct shortmsgrec {
-	char message[81];                           // short message to user
+  char message[81];                           // short message to user
 
-	unsigned short tosys, touser;               // who it is to
+  unsigned short tosys, touser;               // who it is to
 };
 
 
 
 // VOTING RESPONSE DATA
 struct voting_response {
-	char response[81];                          // Voting question response
+  char response[81];                          // Voting question response
 
-	unsigned short numresponses;                // number of responses
+  unsigned short numresponses;                // number of responses
 };
 
 
 
 // VOTING DATA INFORMATION
 struct votingrec {
-	char question[81];                          // Question
+  char question[81];                          // Question
 
-	unsigned char numanswers;                   // number of responses
+  unsigned char numanswers;                   // number of responses
 
-	voting_response responses[20];              // actual responses
+  voting_response responses[20];              // actual responses
 };
 
 
 
 // DATA HELD FOR EVERY UPLOAD
 struct uploadsrec {
-	char filename[13],                          // filename
-	     description[59],                        // file description
-	     date[9],                                // date u/l'ed
-	     upby[37],                               // name of upload user
-	     actualdate[9];                          // actual file date
+  char filename[13],                          // filename
+       description[59],                        // file description
+       date[9],                                // date u/l'ed
+       upby[37],                               // name of upload user
+       actualdate[9];                          // actual file date
 
-	unsigned char unused_filetype;               // file type for apples
+  unsigned char unused_filetype;               // file type for apples
 
-	unsigned short numdloads,                   // number times d/l'ed
-	         ownersys, ownerusr,                     // who uploaded it
-	         mask;                                   // file type mask
+  unsigned short numdloads,                   // number times d/l'ed
+           ownersys, ownerusr,                     // who uploaded it
+           mask;                                   // file type mask
 
-	uint32_t daten,                        // date uploaded
-	         numbytes;                               // number bytes long file is
+  uint32_t daten,                        // date uploaded
+           numbytes;                               // number bytes long file is
 };
 
 
 struct tagrec {
-	uploadsrec u;                               // file information
+  uploadsrec u;                               // file information
 
-	short directory;                            // directory number
+  short directory;                            // directory number
 
-	unsigned short dir_mask;                    // directory mask
+  unsigned short dir_mask;                    // directory mask
 };
 
 
 // ZLOG INFORMATION FOR PAST SYSTEM USAGE
 struct zlogrec {
-	char date[9];                               // zlog for what date
+  char date[9];                               // zlog for what date
 
-	unsigned short active,                      // number minutes active
-	         calls,                                  // number calls
-	         posts,                                  // number posts
-	         email,                                  // number e-mail
-	         fback,                                  // number f-back
-	         up;                                     // number uploads
+  unsigned short active,                      // number minutes active
+           calls,                                  // number calls
+           posts,                                  // number posts
+           email,                                  // number e-mail
+           fback,                                  // number f-back
+           up;                                     // number uploads
 };
 
 
 
 // DATA FOR OTHER PROGRAMS AVAILABLE
 struct chainfilerec {
-	char filename[81],                          // filename for .chn file
-	     description[81];                        // description of it
+  char filename[81],                          // filename for .chn file
+       description[81];                        // description of it
 
-	unsigned char sl,                           // seclev restriction
-	         ansir;                                  // if ANSI required
+  unsigned char sl,                           // seclev restriction
+           ansir;                                  // if ANSI required
 
-	unsigned short ar;                          // AR restriction
+  unsigned short ar;                          // AR restriction
 };
 
 
 struct chainregrec {
-	short int regby[5],                         // who registered
-	      usage;                                  // number of runs
+  short int regby[5],                         // who registered
+        usage;                                  // number of runs
 
-	unsigned char minage,                       // minimum age necessary
-	         maxage;                                 // maximum age allowed
+  unsigned char minage,                       // minimum age necessary
+           maxage;                                 // maximum age allowed
 
-	char space[50];                             // reserved space
+  char space[50];                             // reserved space
 };
 
 
 // DATA FOR EXTERNAL PROTOCOLS
 
 struct newexternalrec {
-	char description[81],                       // protocol description
-	     receivefn[81],                          // receive filename
-	     sendfn[81],                             // send filename
-	     receivebatchfn[81],                     // batch receive cmd
-	     sendbatchfn[81],                        // batch send cmd
-	     bibatchfn[81];                          // batch send/receive cmd
+  char description[81],                       // protocol description
+       receivefn[81],                          // receive filename
+       sendfn[81],                             // send filename
+       receivebatchfn[81],                     // batch receive cmd
+       sendbatchfn[81],                        // batch send cmd
+       bibatchfn[81];                          // batch send/receive cmd
 
-	unsigned short ok1,                         // if sent
-	         othr;                                   // other flags
+  unsigned short ok1,                         // if sent
+           othr;                                   // other flags
 
-	char pad[22];
+  char pad[22];
 };
 
 
 // DATA FOR EXTERNAL EDITORS
 struct editorrec {
-	char description[81],                       // description of editor
-	     filename[81];                           // how to run the editor
+  char description[81],                       // description of editor
+       filename[81];                           // how to run the editor
 
-	uint32_t xxUNUSED;                     // TODO This was not used (config)
+  uint32_t xxUNUSED;                     // TODO This was not used (config)
 
-	char filenamecon[81];                       // how to run locally
+  char filenamecon[81];                       // how to run locally
 
-	char res[119];
+  char res[119];
 };
 
 
 
 // DATA FOR CONVERSION OF MAIN MENU KEYS TO SUB-BOARD NUMBERS
 struct usersubrec {
-	char keys[5];
+  char keys[5];
 
-	short subnum;
+  short subnum;
 };
 
 
 struct userconfrec {
-	short confnum;
+  short confnum;
 };
 
 
 struct batchrec {
-	char sending;
+  char sending;
 
-	char filename[13];
+  char filename[13];
 
-	short dir;
+  short dir;
 
-	float time;
+  float time;
 
-	int32_t len;
+  int32_t len;
 };
 
 
 enum xfertype {
-	xf_up,
-	xf_down,
-	xf_up_temp,
-	xf_down_temp,
-	xf_up_batch,
-	xf_down_batch,
-	xf_bi,
-	xf_none
+  xf_up,
+  xf_down,
+  xf_up_temp,
+  xf_down_temp,
+  xf_up_batch,
+  xf_down_batch,
+  xf_bi,
+  xf_none
 };
 
 // USERREC.inact
@@ -857,62 +857,62 @@ enum xfertype {
 #define g_flag_disable_mci          0x00000040
 #define g_flag_ansi_movement        0x00000080
 
-#define PREV        		    1
-#define NEXT        		    2
-#define DONE        		    4
-#define ABORTED     		    8
+#define PREV                1
+#define NEXT                2
+#define DONE                4
+#define ABORTED             8
 
-#define NUM_ONLY    		    1
-#define UPPER_ONLY   		    2
-#define ALL         		    4
-#define SET           		    8
+#define NUM_ONLY            1
+#define UPPER_ONLY          2
+#define ALL                 4
+#define SET                   8
 
 #define XFER_TIME(b) (modem_speed?\
     (((double)(((b)+127)/128))*1280.0/((double)modem_speed))\
     :0.0)
 
 struct line {
-	char text[160];
+  char text[160];
 
-	struct line *prev, *next;
+  struct line *prev, *next;
 };
 
 
 struct ext_desc_type {
-	char name[13];
+  char name[13];
 
-	short len;
+  short len;
 };
 
 
 struct gfiledirrec {
-	char name[41],                              // g-file section name
-	     filename[9];                            // g-file database filename
+  char name[41],                              // g-file section name
+       filename[9];                            // g-file database filename
 
-	unsigned char sl,                           // sl required to read
-	         age;                                    // minimum age for section
+  unsigned char sl,                           // sl required to read
+           age;                                    // minimum age for section
 
-	unsigned short maxfiles,                    // max # of files
-	         ar;                                     // AR for g-file section
+  unsigned short maxfiles,                    // max # of files
+           ar;                                     // AR for g-file section
 };
 
 
 struct gfilerec {
-	char description[81],                       // description of file
-	     filename[13];                           // filename of file
+  char description[81],                       // description of file
+       filename[13];                           // filename of file
 
-	int32_t daten;                                 // date added
+  int32_t daten;                                 // date added
 };
 
 
 struct languagerec {
-	char name[20];                              // language name
+  char name[20];                              // language name
 
-	unsigned char num;                          // language number
+  unsigned char num;                          // language number
 
-	char dir[79],                               // language directory
-	     mdir[79],                               // menu directory
-	     adir[79];                               // ansi directory
+  char dir[79],                               // language directory
+       mdir[79],                               // menu directory
+       adir[79];                               // ansi directory
 };
 
 
@@ -936,94 +936,94 @@ struct languagerec {
 #define flag_append   16                    // description string should be appended
 ///////////////////////////////////////////////////////////////////////////////
 
-#define SECONDS_PER_HOUR		    3600L
-#define SECONDS_PER_HOUR_FLOAT	    3600.0
-#define SECONDS_PER_DAY			    86400L
+#define SECONDS_PER_HOUR        3600L
+#define SECONDS_PER_HOUR_FLOAT      3600.0
+#define SECONDS_PER_DAY         86400L
 #define SECONDS_PER_DAY_FLOAT       86400.0
 #define HOURS_PER_DAY               24L
 #define HOURS_PER_DAY_FLOAT         24.0
 #define MINUTES_PER_HOUR            60L
 #define MINUTES_PER_HOUR_FLOAT      60.0
 #define SECONDS_PER_MINUTE          60L
-#define SECONDS_PER_MINUTE_FLOAT	60.0
+#define SECONDS_PER_MINUTE_FLOAT  60.0
 
 
 struct result_info {
-	char result[41];
-	char description[31];
-	unsigned short main_mode;
-	unsigned short flag_mask;
-	unsigned short flag_value;
-	unsigned short com_speed;
-	unsigned short modem_speed;
+  char result[41];
+  char description[31];
+  unsigned short main_mode;
+  unsigned short flag_mask;
+  unsigned short flag_value;
+  unsigned short com_speed;
+  unsigned short modem_speed;
 };
 
 
 struct modem_info {
-	unsigned short ver;
+  unsigned short ver;
 
-	char name[81];
+  char name[81];
 
-	char init[161];
+  char init[161];
 
-	char setu[161];
+  char setu[161];
 
-	char ansr[81];
+  char ansr[81];
 
-	char pick[81];
+  char pick[81];
 
-	char hang[81];
+  char hang[81];
 
-	char dial[81];
+  char dial[81];
 
-	char sepr[10];
+  char sepr[10];
 
-	result_info defl;
+  result_info defl;
 
-	unsigned short num_resl;
+  unsigned short num_resl;
 
-	result_info resl[1];
+  result_info resl[1];
 };
 
 
 // Dropfile stuff
 
 struct pcboard_sys_rec {
-	char    display[2], printer[2], page_bell[2], alarm[2], sysop_next,
-	        errcheck[2], graphics, nodechat, openbps[5], connectbps[5];
+  char    display[2], printer[2], page_bell[2], alarm[2], sysop_next,
+          errcheck[2], graphics, nodechat, openbps[5], connectbps[5];
 
-	short int usernum;
+  short int usernum;
 
-	char firstname[15], password[12];
+  char firstname[15], password[12];
 
-	short int time_on, prev_used;
+  short int time_on, prev_used;
 
-	char time_logged[5];
+  char time_logged[5];
 
-	short int time_limit, down_limit;
+  short int time_limit, down_limit;
 
-	char curconf, bitmap1[5], bitmap2[5];
+  char curconf, bitmap1[5], bitmap2[5];
 
-	short int time_added, time_credit;
+  short int time_added, time_credit;
 
-	char slanguage[4], name[25];
+  char slanguage[4], name[25];
 
-	short int sminsleft;
+  short int sminsleft;
 
-	char snodenum, seventtime[5], seventactive[2],
-	     sslide[2], smemmsg[4], scomport, packflag, bpsflag;
+  char snodenum, seventtime[5], seventactive[2],
+       sslide[2], smemmsg[4], scomport, packflag, bpsflag;
 
-	// PCB 14.5 extra stuff
-	char ansi, lastevent[8];
+  // PCB 14.5 extra stuff
+  char ansi, lastevent[8];
 
-	short int lasteventmin;
+  short int lasteventmin;
 
-	char exittodos, eventupcoming;
+  char exittodos, eventupcoming;
 
-	short int lastconfarea;
+  short int lastconfarea;
 
-	char hconfbitmap;
-	// end PCB 14.5 additions
+  char hconfbitmap;
+  // end PCB 14.5 additions
 };
 
 // conferencing stuff
@@ -1040,32 +1040,32 @@ struct pcboard_sys_rec {
 #define MAX_CONFERENCES 26
 
 struct confrec {
-	unsigned char designator,                 // A to Z?
-	         name[61],                                // Name of conference
-	         minsl,                                   // Minimum SL needed for access
-	         maxsl,                                   // Maximum SL allowed for access
-	         mindsl,                                  // Minimum DSL needed for access
-	         maxdsl,                                  // Maximum DSL allowed for acces
-	         minage,                                  // Minimum age needed for access
-	         maxage,                                  // Maximum age allowed for acces
-	         sex;                                     // Gender: 0=male, 1=female 2=all
-	SUBCONF_TYPE status,                      // Bit-mapped stuff
-	             minbps,                                  // Minimum bps rate for access
-	             ar,                                      // ARs necessary for access
-	             dar,                                     // DARs necessary for access
-	             num,                                     // Num "subs" in this conference
-	             maxnum,                                  // max num subs allocated in 'subs'
-	             *subs;                                    // "Sub" numbers in the conference
+  unsigned char designator,                 // A to Z?
+           name[61],                                // Name of conference
+           minsl,                                   // Minimum SL needed for access
+           maxsl,                                   // Maximum SL allowed for access
+           mindsl,                                  // Minimum DSL needed for access
+           maxdsl,                                  // Maximum DSL allowed for acces
+           minage,                                  // Minimum age needed for access
+           maxage,                                  // Maximum age allowed for acces
+           sex;                                     // Gender: 0=male, 1=female 2=all
+  SUBCONF_TYPE status,                      // Bit-mapped stuff
+               minbps,                                  // Minimum bps rate for access
+               ar,                                      // ARs necessary for access
+               dar,                                     // DARs necessary for access
+               num,                                     // Num "subs" in this conference
+               maxnum,                                  // max num subs allocated in 'subs'
+               *subs;                                    // "Sub" numbers in the conference
 };
 
 struct filestatusrec {
-	short int user;
+  short int user;
 
-	char filename[13];
+  char filename[13];
 
-	int32_t id;
+  int32_t id;
 
-	uint32_t numbytes;
+  uint32_t numbytes;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1152,15 +1152,15 @@ struct filestatusrec {
 ///////////////////////////////////////////////////////////////////////////////
 
 struct asv_rec {
-	unsigned char
-	sl, dsl, exempt;
+  unsigned char
+  sl, dsl, exempt;
 
-	unsigned short
-	ar, dar, restrict;
+  unsigned short
+  ar, dar, restrict;
 };
 
 struct adv_asv_rec {
-	unsigned char reg_wwiv, nonreg_wwiv, non_wwiv, cosysop;
+  unsigned char reg_wwiv, nonreg_wwiv, non_wwiv, cosysop;
 };
 
 
@@ -1168,11 +1168,11 @@ struct adv_asv_rec {
 // begin callback additions
 
 struct cbv_rec {
-	unsigned char
-	sl, dsl, exempt, longdistance, forced, repeat;
+  unsigned char
+  sl, dsl, exempt, longdistance, forced, repeat;
 
-	unsigned short
-	ar, dar, restrict;
+  unsigned short
+  ar, dar, restrict;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1181,9 +1181,9 @@ struct cbv_rec {
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
 
 struct phonerec {
-	short int usernum;                        // user's number
+  short int usernum;                        // user's number
 
-	unsigned char phone[13];                  // user's phone number
+  unsigned char phone[13];                  // user's phone number
 };
 
 // begin events additions
@@ -1198,16 +1198,16 @@ struct phonerec {
 #define EVENT_RUNTODAY     0x8000           // has it run today?
 
 struct eventsrec {
-	char cmd[81];                             // commandline to execute
+  char cmd[81];                             // commandline to execute
 
-	short int days,                           // days to run this event
-		time,                                 // time to run event in minutes
-		instance,                             // instance to run event on
-		status,                               // bit mapped event status
-		period,                               // execution period
-	    lastrun;                              // timestamp of last execution
+  short int days,                           // days to run this event
+        time,                                 // time to run event in minutes
+        instance,                             // instance to run event on
+        status,                               // bit mapped event status
+        period,                               // execution period
+        lastrun;                              // timestamp of last execution
 
-	char resv[25];                            // reserved
+  char resv[25];                            // reserved
 };
 
 // end events additions
@@ -1216,21 +1216,21 @@ struct eventsrec {
 ///////////////////////////////////////////////////////////////////////////////
 
 struct threadrec {
-	short int used;                           // Record used?
+  short int used;                           // Record used?
 
-	unsigned short int msg_num,               // Message Number
-	         parent_num;                              // Parent Message #
+  unsigned short int msg_num,               // Message Number
+           parent_num;                              // Parent Message #
 
-	char message_code[20],                    // Message's ID Code
-	     parent_code[20];                         // Message's Reply Code
+  char message_code[20],                    // Message's ID Code
+       parent_code[20];                         // Message's Reply Code
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 struct ext_desc_rec {
-	char name[13];
+  char name[13];
 
-	int32_t offset;
+  int32_t offset;
 };
 
 
@@ -1244,46 +1244,46 @@ struct ext_desc_rec {
 #define INPUT_MODE_PHONE     5
 
 // Used by scan(...)
-#define SCAN_OPTION_READ_PROMPT		0
-#define SCAN_OPTION_LIST_TITLES		1
-#define SCAN_OPTION_READ_MESSAGE	2
+#define SCAN_OPTION_READ_PROMPT   0
+#define SCAN_OPTION_LIST_TITLES   1
+#define SCAN_OPTION_READ_MESSAGE  2
 
 
 struct instancerec {
-	short
-	number, user;
-	unsigned short
-	flags, loc, subloc;
-	uint32_t last_update;
-	unsigned short modem_speed;
-	uint32_t inst_started;
-	unsigned char
-	extra[80];
+  short
+  number, user;
+  unsigned short
+  flags, loc, subloc;
+  uint32_t last_update;
+  unsigned short modem_speed;
+  uint32_t inst_started;
+  unsigned char
+  extra[80];
 };
 
 struct ch_action {
-	int r;
-	char aword[12];
-	char toprint[80];
-	char toperson[80];
-	char toall[80];
-	char singular[80];
+  int r;
+  char aword[12];
+  char toprint[80];
+  char toperson[80];
+  char toall[80];
+  char singular[80];
 };
 
 struct ch_type {
-	char name[60];
-	int sl;
-	char ar;
-	char sex;
-	char min_age;
-	char max_age;
+  char name[60];
+  int sl;
+  char ar;
+  char sex;
+  char min_age;
+  char max_age;
 };
 
 
 struct fedit_data_rec {
-	char tlen,
-	     ttl[81],
-	     anon;
+  char tlen,
+       ttl[81],
+       anon;
 };
 
 
@@ -1293,59 +1293,59 @@ struct fedit_data_rec {
 #define ZIP_CENT_END_SIG 0x06054b50
 
 struct zip_local_header {
-	uint32_t   signature;                  // 0x04034b50
-	unsigned short  extract_ver;
-	unsigned short  flags;
-	unsigned short  comp_meth;
-	unsigned short  mod_time;
-	unsigned short  mod_date;
-	uint32_t   crc_32;
-	uint32_t   comp_size;
-	uint32_t   uncomp_size;
-	unsigned short  filename_len;
-	unsigned short  extra_length;
+  uint32_t   signature;                  // 0x04034b50
+  unsigned short  extract_ver;
+  unsigned short  flags;
+  unsigned short  comp_meth;
+  unsigned short  mod_time;
+  unsigned short  mod_date;
+  uint32_t   crc_32;
+  uint32_t   comp_size;
+  uint32_t   uncomp_size;
+  unsigned short  filename_len;
+  unsigned short  extra_length;
 };
 
 
 struct zip_central_dir {
-	uint32_t   signature;                  // 0x02014b50
-	unsigned short  made_ver;
-	unsigned short  extract_ver;
-	unsigned short  flags;
-	unsigned short  comp_meth;
-	unsigned short  mod_time;
-	unsigned short  mod_date;
-	uint32_t   crc_32;
-	uint32_t   comp_size;
-	uint32_t   uncomp_size;
-	unsigned short  filename_len;
-	unsigned short  extra_len;
-	unsigned short  comment_len;
-	unsigned short  disk_start;
-	unsigned short  int_attr;
-	uint32_t   ext_attr;
-	uint32_t   rel_ofs_header;
+  uint32_t   signature;                  // 0x02014b50
+  unsigned short  made_ver;
+  unsigned short  extract_ver;
+  unsigned short  flags;
+  unsigned short  comp_meth;
+  unsigned short  mod_time;
+  unsigned short  mod_date;
+  uint32_t   crc_32;
+  uint32_t   comp_size;
+  uint32_t   uncomp_size;
+  unsigned short  filename_len;
+  unsigned short  extra_len;
+  unsigned short  comment_len;
+  unsigned short  disk_start;
+  unsigned short  int_attr;
+  uint32_t   ext_attr;
+  uint32_t   rel_ofs_header;
 };
 
 
 struct zip_end_dir {
-	uint32_t   signature;                  // 0x06054b50
-	unsigned short  disk_num;
-	unsigned short  cent_dir_disk_num;
-	unsigned short  total_entries_this_disk;
-	unsigned short  total_entries_total;
-	uint32_t   central_dir_size;
-	uint32_t   ofs_cent_dir;
-	unsigned short  comment_len;
+  uint32_t   signature;                  // 0x06054b50
+  unsigned short  disk_num;
+  unsigned short  cent_dir_disk_num;
+  unsigned short  total_entries_this_disk;
+  unsigned short  total_entries_total;
+  uint32_t   central_dir_size;
+  uint32_t   ofs_cent_dir;
+  unsigned short  comment_len;
 };
 
 
 struct arch {
-	unsigned char type;
-	char name[13];
-	int32_t len;
-	short int date, time, crc;
-	int32_t size;
+  unsigned char type;
+  char name[13];
+  int32_t len;
+  short int date, time, crc;
+  int32_t size;
 };
 
 

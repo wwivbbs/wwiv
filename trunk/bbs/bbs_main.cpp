@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-int bbsmain( int argc, char *argv[] );
+int bbsmain(int argc, char *argv[]);
 
-int main( int argc, char *argv[] ) {
-    return bbsmain(argc, argv);
+int main(int argc, char *argv[]) {
+  return bbsmain(argc, argv);
 }

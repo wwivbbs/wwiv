@@ -24,129 +24,132 @@ void pausescr()
 // This will pause output, displaying the [PAUSE] message, and wait
 // a key to be hit.
 {
-	int i1, i3, warned;
-	int i = 0;
-	char s[81];
-	char ch;
-	double ttotal;
-	time_t tstart, tstop;
+  int i1, i3, warned;
+  int i = 0;
+  char s[81];
+  char ch;
+  double ttotal;
+  time_t tstart, tstop;
 
-	if ( x_only ) {
-		return;
-	}
+  if (x_only) {
+    return;
+  }
 
-	nsp = 0;
+  nsp = 0;
 
-	int oiia = setiia( 0 );
+  int oiia = setiia(0);
 
-	char * ss = str_pause;
-	int i2 = i1 = strlen(ss);
+  char * ss = str_pause;
+  int i2 = i1 = strlen(ss);
 
-	bool com_freeze = incom;
+  bool com_freeze = incom;
 
-	if ( !incom && outcom ) {
-		incom = true;
-	}
+  if (!incom && outcom) {
+    incom = true;
+  }
 
-	if ( okansi() ) {
-		GetSession()->bout.ResetColors();
+  if (okansi()) {
+    GetSession()->bout.ResetColors();
 
-		i1 = strlen( reinterpret_cast<char*>( stripcolors( ss ) ) );
-		i = curatr;
-		GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor( 3 ) :
-		                                GetSession()->GetCurrentUser()->GetBWColor( 3 ) );
-		GetSession()->bout << ss << "\x1b[" << i1 << "D";
-		GetSession()->bout.SystemColor( i );
-	} else {
-		if ( okansi() ) {
-			i = curatr;
-			GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor( 3 ) : GetSession()->GetCurrentUser()->GetBWColor( 3 ) );
-		}
-		for (i3 = 0; i3 < i2; i3++) {
-			if ( ( ss[i3] == CC ) && i1 > 1 ) {
-				i1 -= 2;
-			}
-			GetSession()->bout << ss;
-			for ( i3 = 0; i3 < i1; i3++ ) {
-				GetSession()->bout.BackSpace();
-			}
-			if ( okansi() ) {
-				GetSession()->bout.SystemColor( i );
-			}
-		}
-	}
+    i1 = strlen(reinterpret_cast<char*>(stripcolors(ss)));
+    i = curatr;
+    GetSession()->bout.SystemColor(GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor(
+                                     3) :
+                                   GetSession()->GetCurrentUser()->GetBWColor(3));
+    GetSession()->bout << ss << "\x1b[" << i1 << "D";
+    GetSession()->bout.SystemColor(i);
+  } else {
+    if (okansi()) {
+      i = curatr;
+      GetSession()->bout.SystemColor(GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor(
+                                       3) : GetSession()->GetCurrentUser()->GetBWColor(3));
+    }
+    for (i3 = 0; i3 < i2; i3++) {
+      if ((ss[i3] == CC) && i1 > 1) {
+        i1 -= 2;
+      }
+      GetSession()->bout << ss;
+      for (i3 = 0; i3 < i1; i3++) {
+        GetSession()->bout.BackSpace();
+      }
+      if (okansi()) {
+        GetSession()->bout.SystemColor(i);
+      }
+    }
+  }
 
-	if ( okansi() ) {
-		time( &tstart );
+  if (okansi()) {
+    time(&tstart);
 
-		lines_listed = 0;
-		warned = 0;
-		do {
-			while ( !bkbhit() && !hangup ) {
-				time( &tstop );
-				ttotal = difftime( tstop, tstart );
-				if ( ttotal == 120 ) {
-					if ( !warned ) {
-						warned = 1;
-						bputch( CG );
-						GetSession()->bout.SystemColor( GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor( 6 ) :
-						                                GetSession()->GetCurrentUser()->GetBWColor( 6 ) );
-						GetSession()->bout << ss;
-						for ( i3 = 0; i3 < i2; i3++ ) {
-							if ( s[i3] == 3 && i1 > 1 ) {
-								i1 -= 2;
-							}
-						}
-						GetSession()->bout << "\x1b[" << i1 << "D";
-						GetSession()->bout.SystemColor( i );
-					}
-				} else {
-					if ( ttotal > 180 ) {
-						bputch( CG );
-						for ( i3 = 0; i3 < i1; i3++ ) {
-							bputch( ' ' );
-						}
-						GetSession()->bout << "\x1b[" << i1 << "D";
-						GetSession()->bout.SystemColor( i );
-						setiia( oiia );
-						return;
-					}
-				}
-				WWIV_Delay( 100 );
-				WWIV_Delay( 0 );
-				CheckForHangup();
-			}
-			ch = bgetch();
-			int nKey = wwiv::UpperCase< int >( ch );
-			switch ( nKey ) {
-			case ESC:
-			case 'Q':
-			case 'N':
-				if ( !bkbhit() ) {
-					nsp = -1;
-				}
-				break;
-			case 'C':
-			case '=':
-				if ( GetSession()->GetCurrentUser()->HasPause() ) {
-					nsp = 1;
-					GetSession()->GetCurrentUser()->ToggleStatusFlag( WUser::pauseOnPage );
-				}
-				break;
-			default:
-				break;
-			}
-		} while ( !ch && !hangup );
-		for ( i3 = 0; i3 < i1; i3++ ) {
-			bputch(' ');
-		}
-		GetSession()->bout << "\x1b[" << i1 << "D";
-		GetSession()->bout.SystemColor( i );
-		setiia( oiia );
-	}
-	if ( !com_freeze ) {
-		incom = false;
-	}
+    lines_listed = 0;
+    warned = 0;
+    do {
+      while (!bkbhit() && !hangup) {
+        time(&tstop);
+        ttotal = difftime(tstop, tstart);
+        if (ttotal == 120) {
+          if (!warned) {
+            warned = 1;
+            bputch(CG);
+            GetSession()->bout.SystemColor(GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor(
+                                             6) :
+                                           GetSession()->GetCurrentUser()->GetBWColor(6));
+            GetSession()->bout << ss;
+            for (i3 = 0; i3 < i2; i3++) {
+              if (s[i3] == 3 && i1 > 1) {
+                i1 -= 2;
+              }
+            }
+            GetSession()->bout << "\x1b[" << i1 << "D";
+            GetSession()->bout.SystemColor(i);
+          }
+        } else {
+          if (ttotal > 180) {
+            bputch(CG);
+            for (i3 = 0; i3 < i1; i3++) {
+              bputch(' ');
+            }
+            GetSession()->bout << "\x1b[" << i1 << "D";
+            GetSession()->bout.SystemColor(i);
+            setiia(oiia);
+            return;
+          }
+        }
+        WWIV_Delay(100);
+        WWIV_Delay(0);
+        CheckForHangup();
+      }
+      ch = bgetch();
+      int nKey = wwiv::UpperCase< int >(ch);
+      switch (nKey) {
+      case ESC:
+      case 'Q':
+      case 'N':
+        if (!bkbhit()) {
+          nsp = -1;
+        }
+        break;
+      case 'C':
+      case '=':
+        if (GetSession()->GetCurrentUser()->HasPause()) {
+          nsp = 1;
+          GetSession()->GetCurrentUser()->ToggleStatusFlag(WUser::pauseOnPage);
+        }
+        break;
+      default:
+        break;
+      }
+    } while (!ch && !hangup);
+    for (i3 = 0; i3 < i1; i3++) {
+      bputch(' ');
+    }
+    GetSession()->bout << "\x1b[" << i1 << "D";
+    GetSession()->bout.SystemColor(i);
+    setiia(oiia);
+  }
+  if (!com_freeze) {
+    incom = false;
+  }
 }
 
 

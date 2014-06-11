@@ -24,19 +24,19 @@
  * The default list of computer types
  */
 static const char *default_ctypes[] = {
-	"IBM PC (8088)",
-	"IBM PS/2",
-	"IBM AT (80286)",
-	"IBM AT (80386)",
-	"IBM AT (80486)",
-	"Pentium",
-	"Apple 2",
-	"Apple Mac",
-	"Commodore Amiga",
-	"Commodore",
-	"Atari",
-	"Other",
-	0L,
+  "IBM PC (8088)",
+  "IBM PS/2",
+  "IBM AT (80286)",
+  "IBM AT (80386)",
+  "IBM AT (80486)",
+  "Pentium",
+  "Apple 2",
+  "Apple Mac",
+  "Commodore Amiga",
+  "Commodore",
+  "Atari",
+  "Other",
+  0L,
 };
 
 
@@ -51,10 +51,10 @@ static const int MAX_DEFAULT_CTYPE_VALUE = 11;
  * @param nColor the color in which to display the string
  * @param bAddNL if true, add a new line character at the end.
  */
-void repeat_char( char x, int amount, int nColor ) {
-	GetSession()->bout.Color( nColor );
-	GetSession()->bout << charstr( amount, x );
-	GetSession()->bout.NewLine();
+void repeat_char(char x, int amount, int nColor) {
+  GetSession()->bout.Color(nColor);
+  GetSession()->bout << charstr(amount, x);
+  GetSession()->bout.NewLine();
 }
 
 
@@ -67,25 +67,25 @@ void repeat_char( char x, int amount, int nColor ) {
  * @return The text describing computer type num
  */
 const char *ctypes(int num) {
-	static char szCtype[81];
+  static char szCtype[81];
 
-	WIniFile iniFile( WWIV_INI );
-	if ( iniFile.Open( "CTYPES" ) ) {
-		char szCompType[ 100 ];
-		sprintf(szCompType, "COMP_TYPE[%d]", num+1);
-		const char *ss = iniFile.GetValue( szCompType );
-		if (ss && *ss) {
-			strcpy(szCtype, ss);
-			if (ss) {
-				return szCtype;
-			}
-		}
-		return NULL;
-	}
-	if ( ( num < 0 ) || ( num > MAX_DEFAULT_CTYPE_VALUE ) ) {
-		return NULL;
-	}
-	return default_ctypes[num];
+  WIniFile iniFile(WWIV_INI);
+  if (iniFile.Open("CTYPES")) {
+    char szCompType[ 100 ];
+    sprintf(szCompType, "COMP_TYPE[%d]", num + 1);
+    const char *ss = iniFile.GetValue(szCompType);
+    if (ss && *ss) {
+      strcpy(szCtype, ss);
+      if (ss) {
+        return szCtype;
+      }
+    }
+    return NULL;
+  }
+  if ((num < 0) || (num > MAX_DEFAULT_CTYPE_VALUE)) {
+    return NULL;
+  }
+  return default_ctypes[num];
 }
 
 
@@ -99,14 +99,14 @@ const char *ctypes(int num) {
  * @param next The next flag (Output Parameter)
  */
 void osan(const std::string text, bool *abort, bool *next) {
-	CheckForHangup();
-	checka(abort, next);
+  CheckForHangup();
+  checka(abort, next);
 
-	for( std::string::const_iterator iter = text.begin(); iter != text.end() && !(*abort) && !hangup; iter++ ) {
-		bputch( *iter, true );   // RF20020927 use buffered bputch
-		checka( abort, next );
-	}
-	FlushOutComChBuffer();
+  for (std::string::const_iterator iter = text.begin(); iter != text.end() && !(*abort) && !hangup; iter++) {
+    bputch(*iter, true);     // RF20020927 use buffered bputch
+    checka(abort, next);
+  }
+  FlushOutComChBuffer();
 }
 
 
@@ -121,40 +121,40 @@ void osan(const std::string text, bool *abort, bool *next) {
  * @param next The next flag (Output Parameter)
  */
 void plan(int nWWIVColor, const std::string text, bool *abort, bool *next) {
-	GetSession()->bout.Color( nWWIVColor );
-	osan( text, abort, next );
-	if (!(*abort)) {
-		GetSession()->bout.NewLine();
-	}
+  GetSession()->bout.Color(nWWIVColor);
+  osan(text, abort, next);
+  if (!(*abort)) {
+    GetSession()->bout.NewLine();
+  }
 }
 
 /**
  * @todo Document this
  */
-std::string strip_to_node( const std::string txt ) {
-	std::ostringstream os;
-	if (txt.find("@") != std::string::npos) {
-		bool ok = true;
-		for (std::string::const_iterator i = txt.begin(); i != txt.end(); i++) {
-			if (ok) {
-				os << *i;
-			}
-			if ((i+1) != txt.end() && (i+2) != txt.end() && *(i + 2) == '#') {
-				ok = false;
-			}
-		}
-		return std::string( os.str() );
-	} else if (txt.find("AT") != std::string::npos) {
-		bool ok = true;
-		for (std::string::const_iterator i = txt.begin() + 2; i != txt.end(); i++) {
-			if (ok) {
-				os << *i;
-			}
-			if (*(i + 1) == '`') {
-				ok = false;
-			}
-		}
-		return std::string( os.str() );
-	}
-	return std::string( txt );
+std::string strip_to_node(const std::string txt) {
+  std::ostringstream os;
+  if (txt.find("@") != std::string::npos) {
+    bool ok = true;
+    for (std::string::const_iterator i = txt.begin(); i != txt.end(); i++) {
+      if (ok) {
+        os << *i;
+      }
+      if ((i + 1) != txt.end() && (i + 2) != txt.end() && *(i + 2) == '#') {
+        ok = false;
+      }
+    }
+    return std::string(os.str());
+  } else if (txt.find("AT") != std::string::npos) {
+    bool ok = true;
+    for (std::string::const_iterator i = txt.begin() + 2; i != txt.end(); i++) {
+      if (ok) {
+        os << *i;
+      }
+      if (*(i + 1) == '`') {
+        ok = false;
+      }
+    }
+    return std::string(os.str());
+  }
+  return std::string(txt);
 }
