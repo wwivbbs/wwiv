@@ -226,8 +226,7 @@ void grab_result(result_info *r)
     do 
     {
         t=get_tok();
-        switch(t) 
-        {
+        switch(t) {
         case tok_ms:
             r->modem_speed = (unsigned int) atol(curl);
             skip_num();
@@ -238,49 +237,41 @@ void grab_result(result_info *r)
             break;
         case tok_as:
             r->flag_mask &= ~flag_as;
-            if (*curl=='Y') 
-            {
+            if (*curl=='Y') {
                 r->flag_value |= flag_as;
-            } 
-            else if (*curl!='N') 
-            {
+            } else if (*curl!='N') {
                 Printf("Unknown flag value 'AS=%c' in line %d\n\n",*curl,curline);
+                nlx();
             }
             ++curl;
             break;
         case tok_ec:
             r->flag_mask &= ~flag_ec;
-            if (*curl=='Y') 
-            {
+            if (*curl=='Y') {
                 r->flag_value |= flag_ec;
-            } 
-            else if (*curl!='N') 
-            {
+            } else if (*curl!='N') {
                 Printf("Unknown flag value 'EC=%c' in line %d\n\n",*curl,curline);
+                nlx();
             }
             ++curl;
             break;
         case tok_dc:
             r->flag_mask &= ~flag_dc;
-            if (*curl=='Y') 
-            {
+            if (*curl=='Y') {
                 r->flag_value |= flag_dc;
-            } 
-            else if (*curl!='N') 
-            {
+            } else if (*curl!='N') {
                 Printf("Unknown flag value 'DC=%c' in line %d\n\n",*curl,curline);
+                nlx();
             }
             ++curl;
             break;
         case tok_fc:
             r->flag_mask &= ~flag_fc;
-            if (*curl=='Y') 
-            {
+            if (*curl=='Y') {
                 r->flag_value |= flag_fc;
-            } 
-            else if (*curl!='N') 
-            {
+            } else if (*curl!='N') {
                 Printf("Unknown flag value 'FC=%c' in line %d\n\n",*curl,curline);
+                nlx();
             }
             ++curl;
             break;
@@ -315,25 +306,19 @@ void grab_result(result_info *r)
             r->main_mode = mode_cid_name;
             break;
         case tok_quote:
-            if (r->result[0]) 
-            {
+            if (r->result[0]) {
                 grab_string(r->description,30);
                 r->flag_value &= (~flag_append);
-            } 
-            else 
-            {
+            } else {
                 grab_string(r->result,40);
                 _strupr(r->result);
             }
             break;
         case tok_sing_quote:
-            if (r->result[0]) 
-            {
+            if (r->result[0]) {
                 grab_string(r->description,30);
                 r->flag_value |= flag_append;
-            } 
-            else 
-            {
+            } else {
                 grab_string(r->result,40);
                 _strupr(r->result);
             }
@@ -343,6 +328,7 @@ void grab_result(result_info *r)
         default:
             t=tok_inval;
             Printf("Unknown token in line %d:\n%s\n\n",curline,curl);
+            nlx();
             break;
         }
     } while ((t!=tok_inval) && (t!=tok_eol));
@@ -461,93 +447,90 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
         if ((s[0]) && (s[0]!='#') && (s[0]!='\n')) 
         {
             curl=s;
-            switch(get_tok()) 
-            {
+            switch(get_tok()) {
             case tok_file:
-                if (sof) 
-                {
+                if (sof) {
                     cont=0;
                 }
                 break;
             case tok_name:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
                 grab_string(mi->name,80);
                 break;
             case tok_init:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
                 grab_string(mi->init,160);
                 break;
             case tok_setu:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
                 grab_string(mi->setu,160);
                 break;
             case tok_conf:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
                 grab_string(conf,160);
                 break;
             case tok_ansr:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
                 grab_string(mi->ansr,80);
                 break;
             case tok_pick:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
                 grab_string(mi->pick,80);
                 break;
             case tok_hang:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
                 grab_string(mi->hang,80);
                 break;
             case tok_note:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
-                if (notes) 
-                {
+                if (notes) {
                     grab_string(notes+strlen(notes), notelen-strlen(notes));
                 }
                 break;
             case tok_dial:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
                 grab_string(mi->dial,80);
                 break;
             case tok_sepr:
-                if (get_tok() != tok_quote) 
-                {
+                if (get_tok() != tok_quote) {
                     Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    nlx();
                     break;
                 }
                 grab_string(mi->sepr,9);
@@ -561,6 +544,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             default:
                 Printf("Unknown line %d:\n%s\n\n",curline,s);
+                nlx();
                 break;
             }
         }
@@ -571,23 +555,16 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
     fwrite(mi, 1, i, pFile);
     fclose(pFile);
     *pnModemBaud=mi->defl.com_speed;
-    BbsFreeMemory(mi);
+    free(mi);
     return 1;
 }
 
-
-/****************************************************************************/
-
-int fcmp( const void *a, const void *b )
-{
+int fcmp( const void *a, const void *b ) {
     char **aa = ( char ** ) a;
     char **bb = ( char ** ) b;
 
     return strcmp( *aa,*bb );
 }
-
-
-/****************************************************************************/
 
 void get_descriptions(char *pth, char ***descrs, int *n, autosel_data **ad, int *nn)
 {
@@ -705,18 +682,21 @@ void get_descriptions(char *pth, char ***descrs, int *n, autosel_data **ad, int 
           skip_num();
           if (get_tok() != tok_quote) {
             Printf("Error on line: '%s'\n",s);
+            nlx();
             break;
           }
           grab_string(s3,8);
           asd[autosel].type = strdup(s3);
           if (get_tok() != tok_quote) {
             Printf("Error on line: '%s'\n",s);
+            nlx();
             break;
           }
           grab_string(s3,80);
           asd[autosel].send = strdup(s3);
           if (get_tok() != tok_quote) {
             Printf("Error on line: '%s'\n",s);
+            nlx();
             break;
           }
           grab_string(s3,80);
@@ -735,7 +715,6 @@ void get_descriptions(char *pth, char ***descrs, int *n, autosel_data **ad, int 
     *n=num;
     *nn=autosel;
     qsort(*descrs, *n, sizeof(char *), fcmp);
-
   }
 }
 
