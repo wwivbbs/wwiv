@@ -773,7 +773,7 @@ void create_arcs()
 	{
 		Printf("Couldn't open '%s' for writing.\n",szFileName);
 		textattr(COLOR_WHITE);
-		exit( 1 );
+		exit_init(1);
 	}
 	_write(hFile, (void *)arc, MAX_ARCS * sizeof(arcrec));
 	_close(hFile);

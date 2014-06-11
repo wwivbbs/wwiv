@@ -1237,7 +1237,7 @@ void convert_modem_info(const char *fn)
 	{
 		Printf( "Couldn't open '%s' for writing.\n", szFileName );
 		textattr(COLOR_WHITE);
-		exit( 2 );
+		exit_init(2);
 	}
 	
 	fprintf(pFile,"NAME: \"Local defaults\"\n");
@@ -1323,7 +1323,7 @@ void new_init()
 				textattr(COLOR_RED);
 				Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname[i]);
 				textattr(COLOR_WHITE);
-				exit( 2 );
+				exit_init(2);
 			}
 		} else {
 			WWIV_ChangeDirTo(bbsdir);
@@ -1387,3 +1387,9 @@ int verify_inst_dirs(configoverrec *co, int inst)
 	return 0;
 }
 
+void exit_init(int level) {
+	// Don't leak the localIO (also fix the color when the app exits)
+	delete app->localIO;
+
+	exit(level);
+}
