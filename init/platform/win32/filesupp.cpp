@@ -25,7 +25,7 @@
 #endif // _WIN32
 
 void WWIV_ChangeDirTo(const char *s) {
-    if (!SetCurrentDirectory(s)) {
-        Printf("SetCurrentDirectory failed (%d)\n", GetLastError());
-    }
+  if (!SetCurrentDirectory(s)) {
+    Printf("SetCurrentDirectory failed (%d)\n", GetLastError());
+  }
 }

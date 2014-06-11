@@ -25,15 +25,14 @@
 /*!
  * @class WInitApp  Main Application object for WWIV 5.0
  */
-class WInitApp
-{
-public:	
-	WInitApp() {}
-	virtual ~WInitApp() {}
+class WInitApp {
+ public:
+  WInitApp() {}
+  virtual ~WInitApp() {}
 
-	int main(int argc, char* argv[]);
-	CursesIO *localIO;
+  int main(int argc, char* argv[]);
+  CursesIO *localIO;
 };
-	
+
 
 #endif

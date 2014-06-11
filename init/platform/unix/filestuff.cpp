@@ -19,5 +19,5 @@
 #include <unistd.h>
 
 void WWIV_ChangeDirTo(const char *pszDirectoryName) {
-  chdir( pszDirectoryName );
+  chdir(pszDirectoryName);
 }

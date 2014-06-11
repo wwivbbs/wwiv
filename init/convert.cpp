@@ -125,14 +125,12 @@ static configrec syscfg;
 
 /****************************************************************************/
 
-void c_setup()
-{
+void c_setup() {
 #ifndef INIT
-  int hFile = open("config.dat",O_RDONLY|O_BINARY);
-  if ( hFile > 0 ) 
-  {
-    read( hFile, &syscfg, sizeof( syscfg ) );
-    close( hFile);
+  int hFile = open("config.dat", O_RDONLY | O_BINARY);
+  if (hFile > 0) {
+    read(hFile, &syscfg, sizeof(syscfg));
+    close(hFile);
 
 #endif
 #ifndef INIT
@@ -140,297 +138,264 @@ void c_setup()
     Printf("config.dat not found; run in main BBS dir.\n");
   }
 #endif
-  if (!syscfg.max_subs)
-  {
-    syscfg.max_subs=64;
+  if (!syscfg.max_subs) {
+    syscfg.max_subs = 64;
   }
-  if (!syscfg.max_dirs)
-  {
-    syscfg.max_dirs=64;
+  if (!syscfg.max_dirs) {
+    syscfg.max_dirs = 64;
   }
-  if (!syscfg.menudir) 
-  {
-      sprintf( syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR );
+  if (!syscfg.menudir) {
+    sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
   }
 
-  if (!syscfg.userreclen)
-  {
-    syscfg.userreclen=sizeof(olduserrec);
+  if (!syscfg.userreclen) {
+    syscfg.userreclen = sizeof(olduserrec);
   }
 
-  qfl=4*(1+syscfg.max_subs+((syscfg.max_subs+31)/32)+((syscfg.max_dirs+31)/32));
-  syscfg.qscn_len=qfl;
+  qfl = 4 * (1 + syscfg.max_subs + ((syscfg.max_subs + 31) / 32) + ((syscfg.max_dirs + 31) / 32));
+  syscfg.qscn_len = qfl;
 
-  qsc=(unsigned long *)bbsmalloc(qfl);
+  qsc = (unsigned long *)bbsmalloc(qfl);
 
-  qsc_n=qsc+1;
-  qsc_q=qsc_n+((syscfg.max_dirs+31)/32);
-  qsc_p=qsc_q+((syscfg.max_subs+31)/32);
+  qsc_n = qsc + 1;
+  qsc_q = qsc_n + ((syscfg.max_dirs + 31) / 32);
+  qsc_p = qsc_q + ((syscfg.max_subs + 31) / 32);
 }
 
 /****************************************************************************/
 
-void c_old_to_new()
-{
-    int i1;
-    olduserrec old;
-    userrec _new, u;
-    char szUserListFileName[ MAX_PATH ];
-    char szNewUserListFileName[ MAX_PATH ];
-    char szQScanFileName[ MAX_PATH ];
-    char szOldUserListFileName[ MAX_PATH ];
+void c_old_to_new() {
+  int i1;
+  olduserrec old;
+  userrec _new, u;
+  char szUserListFileName[ MAX_PATH ];
+  char szNewUserListFileName[ MAX_PATH ];
+  char szQScanFileName[ MAX_PATH ];
+  char szOldUserListFileName[ MAX_PATH ];
 
-    sprintf( szUserListFileName, "%suser.lst", syscfg.datadir );
-    sprintf( szNewUserListFileName, "%suser.new", syscfg.datadir );
-    sprintf( szQScanFileName, "%suser.qsc", syscfg.datadir );
-    sprintf( szOldUserListFileName, "%suser.old", syscfg.datadir );
+  sprintf(szUserListFileName, "%suser.lst", syscfg.datadir);
+  sprintf(szNewUserListFileName, "%suser.new", syscfg.datadir);
+  sprintf(szQScanFileName, "%suser.qsc", syscfg.datadir);
+  sprintf(szOldUserListFileName, "%suser.old", syscfg.datadir);
 
 
-    int hOldUserFile = _open(szUserListFileName,O_RDONLY|O_BINARY);
-    if ( hOldUserFile < 0 ) 
-    {
-        Printf("Couldn't open '%s'\n",szUserListFileName);
-        return;
-    }
-    int hNewUserFile = _open(szNewUserListFileName,O_RDWR|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE);
-    if ( hNewUserFile < 0 ) 
-    {
-        _close( hOldUserFile );
-        Printf("Couldn't create '%s'\n",szNewUserListFileName);
-        return;
-    }
-    int hQScanFile = _open(szQScanFileName,O_RDWR|O_BINARY|O_CREAT|O_TRUNC, S_IREAD|S_IWRITE);
-    if ( hQScanFile < 0 ) 
-    {
-        _close( hOldUserFile );
-        _close(hNewUserFile);
-        Printf("Couldn't create '%s'\n",szQScanFileName);
-        return;
-    }
-
-    int nu = filelength( hOldUserFile ) / syscfg.userreclen;
-
-    for (int i = 0; i < nu; i++ ) 
-    {
-        if ( i % 10 == 0 )
-        {
-            Printf( "%u/%u\r", i , nu );
-        }
-
-        memset(&old,0,sizeof(old));
-        memset(&_new,0,sizeof(_new));
-        memset(qsc,0,qfl);
-
-        if (i) 
-        {
-            _lseek(hOldUserFile,((long)i)*((long)syscfg.userreclen), SEEK_SET);
-            _read(hOldUserFile,&old,syscfg.userreclen);
-
-            C_STR(name);
-            C_STR(realname);
-            C_STR(callsign);
-            C_STR(phone);
-            C_STR(pw);
-            C_STR(laston);
-            C_STR(firston);
-            C_STR(note);
-            for (i1=0; i1<3; i1++)
-            {
-                C_STR(macros[i1]);
-            }
-            C_NUM(sex);
-            C_NUM(age);
-            C_NUM(inact);
-            C_NUM(comp_type);
-            C_NUM(defprot);
-            C_NUM(defed);
-            C_NUM(screenchars);
-            C_NUM(screenlines);
-            C_NUM(sl);
-            C_NUM(dsl);
-            C_NUM(exempt);
-            for (i1=0; i1<8; i1++) 
-            {
-                C_NUM(colors[i1]);
-                C_NUM(bwcolors[i1]);
-            }
-            _new.colors[8]=1;
-            _new.colors[9]=3;
-            _new.bwcolors[8]=7;
-            _new.bwcolors[9]=7;
-            for (i1=0; i1<20; i1++)
-            {
-                C_NUM(votes[i1]);
-            }
-            C_NUM(illegal);
-            C_NUM(waiting);
-            C_NUM(ontoday);
-            C_NUM(homeuser);
-            C_NUM(homesys);
-            C_NUM(forwardusr);
-            C_NUM(forwardsys);
-            C_NUM(msgpost);
-            C_NUM(emailsent);
-            C_NUM(feedbacksent);
-            C_NUM(posttoday);
-            C_NUM(etoday);
-            C_NUM(ar);
-            C_NUM(dar);
-            C_NUM(restrict);
-            C_NUM(ass_pts);
-            C_NUM(uploaded);
-            C_NUM(downloaded);
-            C_NUM(lastrate);
-            C_NUM(logons);
-            C_NUM(msgread);
-            C_NUM(uk);
-            C_NUM(dk);
-            C_NUM(daten);
-            C_NUM(sysstatus);
-            C_NUM(timeontoday);
-            C_NUM(extratime);
-            C_NUM(timeon);
-            C_NUM(pos_account);
-            C_NUM(neg_account);
-            C_NUM(gold);
-            C_NUM(month);
-            C_NUM(day);
-            C_NUM(year);
-            C_NUM(emailnet);
-            C_NUM(postnet);
-            C_NUM(fsenttoday1);
-            C_NUM(num_extended);
-            C_NUM(optional_val);
-            C_NUM(wwiv_regnum);
-            C_NUM(net_num);
-
-            *qsc=old.sysopsub;
-            if (*qsc==255)
-            {
-                *qsc=999;
-            }
-            qsc_n[0]=old.nscn1;
-            qsc_n[1]=old.nscn2;
-            qsc_q[0]=old.qscn;
-            qsc_q[1]=old.qscn2;
-
-            for (i1=0; i1<32; i1++) 
-            {
-                qsc_p[i1]=old.qscnptr[i1];
-                qsc_p[i1+32]=old.qscnptr2[i1];
-            }
-        }
-
-        _lseek(hNewUserFile,((long)i)*((long)sizeof(_new)), SEEK_SET);
-        _write(hNewUserFile,&_new,sizeof(_new));
-
-        _lseek(hQScanFile,((long)i)*((long)qfl),SEEK_SET);
-        _write( hQScanFile, qsc, qfl );
-
-    }
+  int hOldUserFile = _open(szUserListFileName, O_RDONLY | O_BINARY);
+  if (hOldUserFile < 0) {
+    Printf("Couldn't open '%s'\n", szUserListFileName);
+    return;
+  }
+  int hNewUserFile = _open(szNewUserListFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  if (hNewUserFile < 0) {
+    _close(hOldUserFile);
+    Printf("Couldn't create '%s'\n", szNewUserListFileName);
+    return;
+  }
+  int hQScanFile = _open(szQScanFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  if (hQScanFile < 0) {
     _close(hOldUserFile);
     _close(hNewUserFile);
-    _close(hQScanFile);
+    Printf("Couldn't create '%s'\n", szQScanFileName);
+    return;
+  }
 
-    unlink(szOldUserListFileName);
-    rename(szUserListFileName,szOldUserListFileName);
-    rename(szNewUserListFileName,szUserListFileName);
+  int nu = filelength(hOldUserFile) / syscfg.userreclen;
 
-    syscfg.userreclen=sizeof(u);
-    syscfg.waitingoffset=OFFOF(waiting);
-    syscfg.inactoffset=OFFOF(inact);
-    syscfg.sysstatusoffset=OFFOF(sysstatus);
-    syscfg.fuoffset=OFFOF(forwardusr);
-    syscfg.fsoffset=OFFOF(forwardsys);
-    syscfg.fnoffset=OFFOF(net_num);
-
-    int hFile = _open( "config.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE );
-    if ( hFile > 0 ) 
-    {
-        _write( hFile, &syscfg, sizeof( syscfg ) );
-        _close( hFile );
+  for (int i = 0; i < nu; i++) {
+    if (i % 10 == 0) {
+      Printf("%u/%u\r", i , nu);
     }
-    Printf( "\nDone.\n" );
+
+    memset(&old, 0, sizeof(old));
+    memset(&_new, 0, sizeof(_new));
+    memset(qsc, 0, qfl);
+
+    if (i) {
+      _lseek(hOldUserFile, ((long)i) * ((long)syscfg.userreclen), SEEK_SET);
+      _read(hOldUserFile, &old, syscfg.userreclen);
+
+      C_STR(name);
+      C_STR(realname);
+      C_STR(callsign);
+      C_STR(phone);
+      C_STR(pw);
+      C_STR(laston);
+      C_STR(firston);
+      C_STR(note);
+      for (i1 = 0; i1 < 3; i1++) {
+        C_STR(macros[i1]);
+      }
+      C_NUM(sex);
+      C_NUM(age);
+      C_NUM(inact);
+      C_NUM(comp_type);
+      C_NUM(defprot);
+      C_NUM(defed);
+      C_NUM(screenchars);
+      C_NUM(screenlines);
+      C_NUM(sl);
+      C_NUM(dsl);
+      C_NUM(exempt);
+      for (i1 = 0; i1 < 8; i1++) {
+        C_NUM(colors[i1]);
+        C_NUM(bwcolors[i1]);
+      }
+      _new.colors[8] = 1;
+      _new.colors[9] = 3;
+      _new.bwcolors[8] = 7;
+      _new.bwcolors[9] = 7;
+      for (i1 = 0; i1 < 20; i1++) {
+        C_NUM(votes[i1]);
+      }
+      C_NUM(illegal);
+      C_NUM(waiting);
+      C_NUM(ontoday);
+      C_NUM(homeuser);
+      C_NUM(homesys);
+      C_NUM(forwardusr);
+      C_NUM(forwardsys);
+      C_NUM(msgpost);
+      C_NUM(emailsent);
+      C_NUM(feedbacksent);
+      C_NUM(posttoday);
+      C_NUM(etoday);
+      C_NUM(ar);
+      C_NUM(dar);
+      C_NUM(restrict);
+      C_NUM(ass_pts);
+      C_NUM(uploaded);
+      C_NUM(downloaded);
+      C_NUM(lastrate);
+      C_NUM(logons);
+      C_NUM(msgread);
+      C_NUM(uk);
+      C_NUM(dk);
+      C_NUM(daten);
+      C_NUM(sysstatus);
+      C_NUM(timeontoday);
+      C_NUM(extratime);
+      C_NUM(timeon);
+      C_NUM(pos_account);
+      C_NUM(neg_account);
+      C_NUM(gold);
+      C_NUM(month);
+      C_NUM(day);
+      C_NUM(year);
+      C_NUM(emailnet);
+      C_NUM(postnet);
+      C_NUM(fsenttoday1);
+      C_NUM(num_extended);
+      C_NUM(optional_val);
+      C_NUM(wwiv_regnum);
+      C_NUM(net_num);
+
+      *qsc = old.sysopsub;
+      if (*qsc == 255) {
+        *qsc = 999;
+      }
+      qsc_n[0] = old.nscn1;
+      qsc_n[1] = old.nscn2;
+      qsc_q[0] = old.qscn;
+      qsc_q[1] = old.qscn2;
+
+      for (i1 = 0; i1 < 32; i1++) {
+        qsc_p[i1] = old.qscnptr[i1];
+        qsc_p[i1 + 32] = old.qscnptr2[i1];
+      }
+    }
+
+    _lseek(hNewUserFile, ((long)i) * ((long)sizeof(_new)), SEEK_SET);
+    _write(hNewUserFile, &_new, sizeof(_new));
+
+    _lseek(hQScanFile, ((long)i) * ((long)qfl), SEEK_SET);
+    _write(hQScanFile, qsc, qfl);
+
+  }
+  _close(hOldUserFile);
+  _close(hNewUserFile);
+  _close(hQScanFile);
+
+  unlink(szOldUserListFileName);
+  rename(szUserListFileName, szOldUserListFileName);
+  rename(szNewUserListFileName, szUserListFileName);
+
+  syscfg.userreclen = sizeof(u);
+  syscfg.waitingoffset = OFFOF(waiting);
+  syscfg.inactoffset = OFFOF(inact);
+  syscfg.sysstatusoffset = OFFOF(sysstatus);
+  syscfg.fuoffset = OFFOF(forwardusr);
+  syscfg.fsoffset = OFFOF(forwardsys);
+  syscfg.fnoffset = OFFOF(net_num);
+
+  int hFile = _open("config.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  if (hFile > 0) {
+    _write(hFile, &syscfg, sizeof(syscfg));
+    _close(hFile);
+  }
+  Printf("\nDone.\n");
 }
 
 
 /****************************************************************************/
 
-bool c_IsUserListInOldFormat()
-{
-    char szQScanFileName[ MAX_PATH ];
-    sprintf( szQScanFileName, "%suser.qsc", syscfg.datadir );
-    if ( access( szQScanFileName, 0 ) == 0 ) {
-        // new format 
-        return false;
-    } else {
-        // old format
-        return true;
-    }
+bool c_IsUserListInOldFormat() {
+  char szQScanFileName[ MAX_PATH ];
+  sprintf(szQScanFileName, "%suser.qsc", syscfg.datadir);
+  if (access(szQScanFileName, 0) == 0) {
+    // new format
+    return false;
+  } else {
+    // old format
+    return true;
+  }
 }
 
 /****************************************************************************/
 
-int c_check_old_struct()
-{
-    olduserrec u;
+int c_check_old_struct() {
+  olduserrec u;
 
-    if ((syscfg.userreclen) && (syscfg.userreclen!=sizeof(u)) && (syscfg.userreclen!=700))
-    {
-        return 1;
-    }
-    if ((syscfg.waitingoffset) && (syscfg.waitingoffset != OFFOF(waiting)))
-    {
-        return 1;
-    }
-    if ((syscfg.inactoffset) && (syscfg.inactoffset != OFFOF(inact)))
-    {
-        return 1;
-    }
-    if ((syscfg.sysstatusoffset) && (syscfg.sysstatusoffset != OFFOF(sysstatus)))
-    {
-        return 1;
-    }
-    if ((syscfg.fuoffset) && (syscfg.fuoffset != OFFOF(forwardusr)))
-    {
-        return 1;
-    }
-    if ((syscfg.fsoffset) && (syscfg.fsoffset != OFFOF(forwardsys)))
-    {
-        return 1;
-    }
-    if ((syscfg.fnoffset) && (syscfg.fnoffset != OFFOF(net_num)))
-    {
-        return 1;
-    }
-    return 0;
+  if ((syscfg.userreclen) && (syscfg.userreclen != sizeof(u)) && (syscfg.userreclen != 700)) {
+    return 1;
+  }
+  if ((syscfg.waitingoffset) && (syscfg.waitingoffset != OFFOF(waiting))) {
+    return 1;
+  }
+  if ((syscfg.inactoffset) && (syscfg.inactoffset != OFFOF(inact))) {
+    return 1;
+  }
+  if ((syscfg.sysstatusoffset) && (syscfg.sysstatusoffset != OFFOF(sysstatus))) {
+    return 1;
+  }
+  if ((syscfg.fuoffset) && (syscfg.fuoffset != OFFOF(forwardusr))) {
+    return 1;
+  }
+  if ((syscfg.fsoffset) && (syscfg.fsoffset != OFFOF(forwardsys))) {
+    return 1;
+  }
+  if ((syscfg.fnoffset) && (syscfg.fnoffset != OFFOF(net_num))) {
+    return 1;
+  }
+  return 0;
 }
 
 /****************************************************************************/
 
 #ifndef INIT
-void main()
-{
-    c_setup();
+void main() {
+  c_setup();
 
-    if ( !c_IsUserListInOldFormat() ) 
-    {
-        Printf( "Your userrec is already in the new format.\n" );
-    } 
-    else 
-    {
-        // convert to new format
-        if ( c_check_old_struct( )) 
-        {
-            Printf( "Your current userrec format is unknown.\n" );
-            Printf( "Please copy your old userrec format into convert.cpp,\n" );
-            Printf( "and compile and run it.\n" );
-        } 
-        else 
-        {
-            c_old_to_new();
-            Printf( "Userlist converted.\n" );
-        }
+  if (!c_IsUserListInOldFormat()) {
+    Printf("Your userrec is already in the new format.\n");
+  } else {
+    // convert to new format
+    if (c_check_old_struct()) {
+      Printf("Your current userrec format is unknown.\n");
+      Printf("Please copy your old userrec format into convert.cpp,\n");
+      Printf("and compile and run it.\n");
+    } else {
+      c_old_to_new();
+      Printf("Userlist converted.\n");
     }
+  }
 }
 #endif

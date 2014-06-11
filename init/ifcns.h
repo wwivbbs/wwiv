@@ -71,9 +71,9 @@ void save_status();
 char *date();
 bool read_status();
 int save_config();
-void Puts( const char *pszText );
-void nlx( int numLines = 1 );
-void Printf( const char *pszFormat, ... );
+void Puts(const char *pszText);
+void nlx(int numLines = 1);
+void Printf(const char *pszFormat, ...);
 void create_text(const char *fn);
 void cvtx(unsigned short sp, char *rc);
 void convert_result_codes();
@@ -84,7 +84,7 @@ void new_init();
 int verify_inst_dirs(configoverrec *co, int inst);
 void read_user(unsigned int un, userrec *u);
 void write_user(unsigned int un, userrec *u);
-int GetNextSelectionPosition( int nMin, int nMax, int nCurrentPos, int nReturnCode );
+int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode);
 void exit_init(int level);
 
 /* File: init2.cpp */
