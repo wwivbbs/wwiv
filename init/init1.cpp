@@ -1130,7 +1130,7 @@ void init_files()
 	d1.type=0;
 	write(hFile, (void *) (&d1), sizeof(directoryrec));
 	close(hFile);
-	Printf(".\n\n");
+	Printf(".\n");
 	////////////////////////////////////////////////////////////////////////////
 	textattr(COLOR_YELLOW);
 	Puts("Copying String and Miscellaneous files.");
@@ -1175,7 +1175,7 @@ void init_files()
 		putenv("TZ=EST5EDT");
 	}
 	
-	Printf(".\n\n");
+	Printf(".\n");
 	
 	////////////////////////////////////////////////////////////////////////////
 	textattr(COLOR_YELLOW);
@@ -1221,7 +1221,7 @@ void init_files()
 	}
 	
 	textattr(COLOR_CYAN);
-	Printf(".\n\n");
+	Printf(".\n");
 }
 
 
@@ -1251,7 +1251,7 @@ void convert_modem_info(const char *fn)
 	fprintf(pFile,"DEFL: MS=%u CS=%u EC=N DC=N AS=N FC=%c\n",
 		syscfg.baudrate[syscfgovr.primaryport],
 		syscfg.baudrate[syscfgovr.primaryport],
-		/* syscfg.sysconfig & sysconfig_flow_control?'Y':'N' */ 'X' );
+		/* syscfg.sysconfig & sysconfig_flow_control?'Y':'N' */ 'N' );
 	fprintf(pFile,"RESL: \"0\"     \"Normal\"       NORM\n");
 	fprintf(pFile,"RESL: \"OK\"    \"Normal\"       NORM\n");
 	fprintf(pFile,"RESL: \"%s\"    \"Ring\"         RING\n",syscfg.ring);
@@ -1312,8 +1312,8 @@ void new_init()
 	};
 	textattr(COLOR_YELLOW);
 	Puts("\n\nNow performing installation.  Please wait...\n\n");
-	textattr(COLOR_CYAN);
 	Puts("Creating Directories");
+	textattr(COLOR_CYAN);
 	for (int i = 0; i < ENTRIES; ++i) {
 		textattr(11);
 		Printf(".");
@@ -1329,7 +1329,7 @@ void new_init()
 			WWIV_ChangeDirTo(bbsdir);
 		}
 	}
-	Printf(".\n\n");
+	Printf(".\n");
 	
 	init_files();
 	

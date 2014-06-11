@@ -75,8 +75,7 @@ void load_modems()
 }
 
 
-int set_modem_info(const char *mt, bool bPause)
-{
+int set_modem_info(const char *mt, bool bPause) {
     nlx();
     char szModemDatFileName[ MAX_PATH ];
     char szRawFileName[ MAX_PATH ];
@@ -87,7 +86,7 @@ int set_modem_info(const char *mt, bool bPause)
     if ( compile( szRawFileName, szModemDatFileName, modem_notes, MODEM_NOTES_LEN, szConfigLine, &nModemBaud ) ) 
     {
         strcpy(syscfgovr.modem_type, mt);
-        Printf("Modem info '%s' compiled.\n\n",syscfgovr.modem_type);
+        Printf("Modem info '%s' compiled.\n",syscfgovr.modem_type);
         save_config();
         if (modem_notes[0]) 
         {
@@ -99,7 +98,7 @@ int set_modem_info(const char *mt, bool bPause)
                 Printf("\n[PAUSE]");
                 textattr(COLOR_CYAN);
                 app->localIO->getchd();
-                Printf("\n\n");
+                Printf("\n");
             }
         }
         return 1;
@@ -335,9 +334,10 @@ void networks() {
     if (!exist("NETWORK.EXE")) {
         app->localIO->LocalCls();
         nlx();
-        textattr(COLOR_MAGENTA);
+        textattr(COLOR_RED);
         Printf("You have not installed the networking software.  Unzip NETxx.ZIP\n");
         Printf("to the main BBS directory and re-run INIT.\n\n");
+	textattr(COLOR_MAGENTA);
         Printf("Hit any key to return to the Main Menu.\n");
         app->localIO->getchd();
         return;
@@ -659,7 +659,7 @@ int WInitApp::main(int argc, char *argv[])
     {
         textattr(COLOR_RED);
         Printf("\n\nYou can not run the initialization program from a subshell of the BBS.\n");
-        Printf("You must exit the BBS or run INIT from a new Command Shell\n\n\n");
+        Printf("You must exit the BBS or run INIT from a new Command Shell\n");
         textattr(COLOR_WHITE);
         exit(2);
     }
@@ -685,21 +685,17 @@ int WInitApp::main(int argc, char *argv[])
     textattr(COLOR_CYAN);
 
     char *pszInstanceNumber = getenv("WWIV_INSTANCE");
-    if ( pszInstanceNumber )
-    {
-        inst=atoi( pszInstanceNumber );
+    if (pszInstanceNumber) {
+        inst = atoi(pszInstanceNumber);
     }
 
-    for ( i = 1; i < argc; ++i )
-    {
-        if ( i == 1 && argv[i][0] == '?' )
-        {
+    for (i = 1; i < argc; ++i) {
+        if (i == 1 && argv[i][0] == '?') {
             show_help();
             exit( 0 );
         }
 
-        if (argv[i][0]==',') 
-        {
+        if (argv[i][0]==',') {
             int nInstanceNumber = atoi( argv[i] + 1 );
             if ( nInstanceNumber >= 1 && nInstanceNumber < 1000 ) 
             {
@@ -707,14 +703,12 @@ int WInitApp::main(int argc, char *argv[])
             }
             break;
         }
-        if ( argv[i][0] == 'P' || argv[i][0] == 'p' ) 
-        {
+        if (argv[i][0] == 'P' || argv[i][0] == 'p') {
             printcfg();
             break;
         }
 
-        if ((argv[i][1] == 'D') || (argv[i][1] == 'd')) 
-        {
+        if ((argv[i][1] == 'D') || (argv[i][1] == 'd')) {
             configfile=open(configdat,O_RDWR | O_BINARY);
             read(configfile,(void *) (&syscfg), sizeof(configrec));
 
@@ -728,12 +722,10 @@ int WInitApp::main(int argc, char *argv[])
         }
     }
 
-    if ( inst < 1 || inst >= 1000 )
-    {
+    if (inst < 1 || inst >= 1000) {
         inst = 1;
     }
-    if ( inst != 1 )
-    {
+    if (inst != 1) {
         sprintf(modemdat,"modem.%03.3d",inst);
     }
 
@@ -742,26 +734,22 @@ int WInitApp::main(int argc, char *argv[])
     if ( configfile < 0 )
     {
         textattr(COLOR_RED);
-        Printf("%s NOT FOUND.\n", configdat);
+        Printf("%s NOT FOUND.\n\n", configdat);
         inst=1;
         strcpy(modemdat, "modem.dat");
         textattr(COLOR_YELLOW);
-        Puts("\n\n\nPerform initial installation? ");
+        Puts("Perform initial installation? ");
         textattr(COLOR_CYAN);
-        if (yn()) 
-        {
-            if (inst==1) 
-            {
+        if (yn()) {
+            if (inst==1) {
                 new_init();
-                nlx(2);
+                nlx(1);
                 textattr(COLOR_YELLOW);
                 Printf("Your system password defaults to 'SYSOP'.\n");
                 textattr(COLOR_CYAN);
                 nlx();
                 newbbs=1;
-            } 
-            else 
-            {
+            } else {
 #ifdef OLD_STUFF
                 configfile=open("config.dat", O_RDONLY|O_BINARY);
                 read(configfile, &syscfg, sizeof(configrec));
@@ -769,12 +757,10 @@ int WInitApp::main(int argc, char *argv[])
                 save_config();
                 sprintf(s,"%smodem.dat",syscfg.datadir);
                 hFile = open(s,O_RDONLY | O_BINARY);
-                if ( hFile > 0 ) 
-                {
-                    l=filelength( hFile );
+                if (hFile > 0) {
+                    l=filelength(hFile);
                     modem_i = malloca(l);
-                    if (!modem_i) 
-                    {
+                    if (!modem_i) {
                         textattr(COLOR_WHITE);
                         exit(0);
                     }
@@ -783,8 +769,7 @@ int WInitApp::main(int argc, char *argv[])
 
                     sprintf(s,"%s%s",syscfg.datadir,modemdat);
                     hFile = open(s,O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-                    if ( hFile > 0 ) 
-                    {
+                    if (hFile > 0) {
                         write(hFile,modem_i, l);
                         close(hFile);
                     }
@@ -793,11 +778,9 @@ int WInitApp::main(int argc, char *argv[])
 #endif
             }
             configfile = open( configdat, O_RDWR | O_BINARY );
-        } 
-        else 
-        {
+        } else {
             textattr(COLOR_WHITE);
-            exit( 1 );
+            exit(1);
         }
     }
 
@@ -977,7 +960,7 @@ int WInitApp::main(int argc, char *argv[])
     else 
     {
 #ifdef ASFD
-        Printf("\nConverting result codes...\n\n");
+        Printf("\nConverting result codes...\n");
         convert_result_codes();
 #endif
     }
@@ -1193,7 +1176,8 @@ int WInitApp::main(int argc, char *argv[])
     {
         nlx();
         textattr(COLOR_CYAN);
-        Printf("You will now need to enter the system password, 'SYSOP'.\n\n");
+        Printf("You will now need to enter the system password, 'SYSOP'.\n");
+	nlx();
     }
 
 
@@ -1219,11 +1203,12 @@ int WInitApp::main(int argc, char *argv[])
         if (c_IsUserListInOldFormat()) {
             nlx();
             if (c_check_old_struct()) {
-                textattr(COLOR_MAGENTA);
+                textattr(COLOR_RED);
                 Printf("You have a non-standard userlist.\n");
                 Printf("Please update the convert.c file with your old userrec, make any\n");
                 Printf("modifications necessary to copy over new fields, then compile and\n");
-                Printf("run it.\n\n");
+                Printf("run it.\n");
+		textattr(COLOR_MAGENTA);
                 Puts("[PAUSE]");
                 textattr(COLOR_CYAN);
                 app->localIO->getchd();
