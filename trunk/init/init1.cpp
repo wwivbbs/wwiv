@@ -87,7 +87,7 @@ void pausescr()
 	textattr(COLOR_MAGENTA);
 	Puts( "[PAUSE]" );
 	textattr(COLOR_CYAN);
-	getkey();
+	getch();
 	for (int i = 0; i < 7; i++) {
 		backspace();
 	}
@@ -107,17 +107,6 @@ int upcase(int ch) {
 	return ch;
 }
 
-
-/* This function returns one character from either the local keyboard or
-* remote com port (if applicable).  After 1.5 minutes of inactivity, a
-* beep is sounded.  After 3 minutes of inactivity, the user is hung up.
-*/
-int getkey()
-{
-    return (getch());
-}
-
-
 int input_number(int max_digits) {
     char s[81];
     int return_code = 0;
@@ -136,7 +125,7 @@ void input_password(char *pszOutText, int nMaxLength) {
     bool done = false;
 	
 	while (!done) {
-		int ch = getkey();
+		int ch = getch();
 		switch(ch) {
 		  case 14: 
           case 13: // 13 on Win32
@@ -203,7 +192,7 @@ int yn() {
 
 	int ch=0;
 	do {
-		ch = upcase(getkey());
+		ch = upcase(getch());
 		printf("[%c - %d]", ch, ch);
 	} while ((ch != *str_yes) &&
 		(ch != *str_no) &&
@@ -216,7 +205,7 @@ int yn() {
 char onek(const char *pszKeys) {
 	char ch = 0;
 	
-	while (!strchr(pszKeys, ch = upcase(getkey())))
+	while (!strchr(pszKeys, ch = upcase(getch())))
 		;
 	app->localIO->LocalPutch( ch );
 	nlx();
@@ -262,34 +251,33 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
     int pos = 0;
     bool bInsert = false;
     do {
-        int ch = getkey();
-        switch ( ch ) {
+        int ch = getch();
+        switch (ch) {
         case KEY_F(1): // curses
             done = true;
             *returncode=DONE;
             break;
     	case KEY_HOME: // curses
             pos=0; 
-            app->localIO->LocalGotoXY( cx, cy ); 
+            app->localIO->LocalGotoXY(cx, cy);
             break;        
         case KEY_END: // curses
             pos=editlinestrlen( s ); 
-            app->localIO->LocalGotoXY( cx + pos, cy ); 
+            app->localIO->LocalGotoXY(cx + pos, cy);
             break;  
         case KEY_RIGHT: // curses
             if (pos < len) {                       //right
-                int nMaxPos = editlinestrlen( s );
+                int nMaxPos = editlinestrlen(s);
                 if (pos < nMaxPos) {
                     pos++;
-                    app->localIO->LocalGotoXY( cx + pos, cy );
+                    app->localIO->LocalGotoXY(cx + pos, cy);
                 }
             }
             break;
         case KEY_LEFT: // curses
-            if ( pos > 0 ) 
-            {                         //left
+            if (pos > 0) { //left
                 pos--;
-                app->localIO->LocalGotoXY( cx + pos, cy );
+                app->localIO->LocalGotoXY(cx + pos, cy);
             }
             break;
         case CO:                                      //return
@@ -407,8 +395,6 @@ void editline(char *s, int len, int status, int *returncode, const char *ss)
             app->localIO->LocalGotoXY(cx+pos,cy); 
             break;
         }
-
-
     } while ( !done );
 
     int z = strlen( s );

@@ -54,7 +54,6 @@ void *malloca(unsigned long nbytes);
 void pausescr();
 void backspace();
 int upcase(int ch);
-int getkey();
 int input_number(int max_digits);
 void input_password(char *pszOutText, int nMaxLength);
 int yn();
