@@ -37,6 +37,10 @@ static char *pMenuStrings;
 static char **ppMenuStringsIndex;
 static int nNumMenuCmds;
 
+using std::string;
+using wwiv::strings::IsEqualsIgnoreCase;
+using wwiv::strings::IsEquals;
+
 //
 // Local function prototypes
 //
@@ -48,15 +52,15 @@ void StartMenus();
 void CloseMenu(MenuInstanceData * pMenuData);
 bool OpenMenu(MenuInstanceData * pMenuData);
 bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword);
-bool LoadMenuRecord(MenuInstanceData * pMenuData, std::string& command, MenuRec * pMenu);
-void MenuExecuteCommand(MenuInstanceData * pMenuData, std::string& command);
-void LogUserFunction(MenuInstanceData * pMenuData, std::string& command, MenuRec * pMenu);
+bool LoadMenuRecord(MenuInstanceData * pMenuData, string& command, MenuRec * pMenu);
+void MenuExecuteCommand(MenuInstanceData * pMenuData, string& command);
+void LogUserFunction(MenuInstanceData * pMenuData, string& command, MenuRec * pMenu);
 void PrintMenuPrompt(MenuInstanceData * pMenuData);
-bool AMIsNumber(std::string& command);
+bool AMIsNumber(string& command);
 void QueryMenuSet();
 void WriteMenuSetup(int nUserNum);
 void UnloadMenuSetup();
-std::string GetCommand(MenuInstanceData * pMenuData);
+string GetCommand(MenuInstanceData * pMenuData);
 bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool bCheckPassword);
 void GenerateMenu(MenuInstanceData * pMenuData);
 char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig);
@@ -64,18 +68,15 @@ char *MenuGetParam(char *pszSrc, char *pszParam);
 char *MenuSkipSpaces(char *pszSrc);
 void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript);
 
-using wwiv::strings::IsEqualsIgnoreCase;
-using wwiv::strings::IsEquals;
 
 bool CheckMenuPassword(char* pszCorrectPassword) {
-  std::string password = IsEqualsIgnoreCase(pszCorrectPassword, "*SYSTEM") ? syscfg.systempw : pszCorrectPassword;
+  string password = IsEqualsIgnoreCase(pszCorrectPassword, "*SYSTEM") ? syscfg.systempw : pszCorrectPassword;
 
   GetSession()->bout.NewLine();
-  std::string passwordFromUser;
+  string passwordFromUser;
   input_password("|#2SY: ", passwordFromUser, 20);
   return passwordFromUser == password;
 }
-
 
 // returns -1 of the item is not matched, this will fall though to the
 // default case in InterpretCommand
@@ -153,7 +154,6 @@ void mainmenu() {
   ppMenuStringsIndex = NULL;
 }
 
-
 void StartMenus() {
   MenuInstanceData* pMenuData = static_cast<MenuInstanceData *>(bbsmalloc(sizeof(MenuInstanceData)));
   pMenuData->pMenuFile = NULL;
@@ -196,8 +196,7 @@ void StartMenus() {
   }
 }
 
-
-void Menus(MenuInstanceData * pMenuData, const std::string menuDirectory, const std::string menuName) {
+void Menus(MenuInstanceData * pMenuData, const string menuDirectory, const string menuName) {
   strcpy(pMenuData->szPath, menuDirectory.c_str());
   strcpy(pMenuData->szMenu, menuName.c_str());
 
@@ -214,7 +213,7 @@ void Menus(MenuInstanceData * pMenuData, const std::string menuDirectory, const 
 
     while (!hangup && pMenuData->nFinished == 0) {
       PrintMenuPrompt(pMenuData);
-      std::string command = GetCommand(pMenuData);
+      string command = GetCommand(pMenuData);
       MenuExecuteCommand(pMenuData, command);
     }
   } else if (IsEqualsIgnoreCase(menuName.c_str(), "main")) {     // default menu name
@@ -222,7 +221,6 @@ void Menus(MenuInstanceData * pMenuData, const std::string menuDirectory, const 
   }
   CloseMenu(pMenuData);
 }
-
 
 void CloseMenu(MenuInstanceData * pMenuData) {
   if (pMenuData->pMenuFile != NULL && pMenuData->pMenuFile->IsOpen()) {
@@ -241,7 +239,6 @@ void CloseMenu(MenuInstanceData * pMenuData) {
     pMenuData->szPrompt = NULL;
   }
 }
-
 
 bool OpenMenu(MenuInstanceData * pMenuData) {
   CloseMenu(pMenuData);
@@ -325,7 +322,6 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   return true;
 }
 
-
 bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword) {
   if ((pHeader->nFlags & MENU_FLAG_DELETED) ||
       (GetSession()->GetEffectiveSl() < pHeader->nMinSL) ||
@@ -373,8 +369,7 @@ bool CheckMenuSecurity(MenuHeader * pHeader, bool bCheckPassword) {
   return true;
 }
 
-
-bool LoadMenuRecord(MenuInstanceData * pMenuData, std::string& command, MenuRec * pMenu) {
+bool LoadMenuRecord(MenuInstanceData * pMenuData, string& command, MenuRec * pMenu) {
   memset(pMenu, 0, sizeof(MenuRec));
 
   // ------------------------------------------------
@@ -417,7 +412,7 @@ bool LoadMenuRecord(MenuInstanceData * pMenuData, std::string& command, MenuRec 
 }
 
 
-void MenuExecuteCommand(MenuInstanceData * pMenuData, std::string& command) {
+void MenuExecuteCommand(MenuInstanceData * pMenuData, string& command) {
   MenuRec menu;
 
   if (LoadMenuRecord(pMenuData, command, &menu)) {
@@ -429,7 +424,7 @@ void MenuExecuteCommand(MenuInstanceData * pMenuData, std::string& command) {
 }
 
 
-void LogUserFunction(MenuInstanceData * pMenuData, std::string& command, MenuRec * pMenu) {
+void LogUserFunction(MenuInstanceData * pMenuData, string& command, MenuRec * pMenu) {
   switch (pMenuData->header.nLogging) {
   case MENU_LOGTYPE_KEY:
     sysopchar(command.c_str());
@@ -446,9 +441,7 @@ void LogUserFunction(MenuInstanceData * pMenuData, std::string& command, MenuRec
   }
 }
 
-
-
-void MenuSysopLog(const std::string msg) {
+void MenuSysopLog(const string msg) {
   std::ostringstream logStream;
   logStream << "*MENU* : " << msg;
 
@@ -457,30 +450,26 @@ void MenuSysopLog(const std::string msg) {
   GetSession()->bout.NewLine();
 }
 
-
 void PrintMenuPrompt(MenuInstanceData * pMenuData) {
   if (!GetSession()->GetCurrentUser()->IsExpert() || pMenuData->header.nForceHelp == MENU_HELP_FORCE) {
     AMDisplayHelp(pMenuData);
   }
-
   TurnMCIOn();
-
   if (pMenuData->szPrompt) {
     GetSession()->bout << pMenuData->szPrompt;
   }
-
   TurnMCIOff();
 }
 
-std::string GetHelpFileName(MenuInstanceData * pMenuData) {
+string GetHelpFileName(MenuInstanceData * pMenuData) {
   if (GetSession()->GetCurrentUser()->HasAnsi()) {
     if (GetSession()->GetCurrentUser()->HasColor()) {
-      std::string filename = GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "ans");
+      string filename = GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "ans");
       if (WFile::Exists(filename)) {
         return filename;
       }
     }
-    std::string filename = GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "b&w");
+    string filename = GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "b&w");
     if (WFile::Exists(filename)) {
       return filename;
     }
@@ -489,7 +478,7 @@ std::string GetHelpFileName(MenuInstanceData * pMenuData) {
 }
 
 void AMDisplayHelp(MenuInstanceData * pMenuData) {
-  const std::string filename = GetHelpFileName(pMenuData);
+  const string filename = GetHelpFileName(pMenuData);
   if (!printfile(filename.c_str(), true)) {
     GenerateMenu(pMenuData);
   }
@@ -502,26 +491,22 @@ void TurnMCIOff() {
   }
 }
 
-
 void TurnMCIOn() {
   g_flags &= ~g_flag_disable_mci;
 }
 
-
-
-bool AMIsNumber(std::string& command) {
+bool AMIsNumber(string& command) {
   if (!command.length()) {
     return false;
   }
 
-  for (std::string::iterator iter = command.begin(); iter != command.end(); ++iter) {
-    if (isdigit(*iter) == 0) {
+  for (const auto& ch : command) {
+    if (isdigit(ch) == 0) {
       return false;
     }
   }
   return true;
 }
-
 
 void ConfigUserMenuSet() {
   char szMsg[101], szDesc[101];
@@ -558,7 +543,7 @@ void ConfigUserMenuSet() {
       ListMenuDirs();
       GetSession()->bout.NewLine(2);
       GetSession()->bout << "|15Enter the menu set to use : |#0";
-      std::string menuSetName;
+      string menuSetName;
       inputl(menuSetName, 8);
       if (ValidateMenuSet(menuSetName.c_str())) {
         OpenMenuDescriptions();
@@ -670,8 +655,6 @@ bool ValidateMenuSet(const char *pszMenuDir) {
   return WFile::Exists(GetMenuDirectory(pszMenuDir), "main.mnu");
 }
 
-
-
 bool LoadMenuSetup(int nUserNum) {
   if (!pSecondUserRec) {
     MenuSysopLog("Mem Error");
@@ -707,7 +690,6 @@ bool LoadMenuSetup(int nUserNum) {
   return false;
 }
 
-
 void WriteMenuSetup(int nUserNum) {
   if (!nUserNum) {
     return;
@@ -727,34 +709,32 @@ void WriteMenuSetup(int nUserNum) {
   userConfig.Close();
 }
 
-
 void UnloadMenuSetup() {
   nSecondUserRecLoaded = 0;
   memset(pSecondUserRec, 0, sizeof(user_config));
 }
 
-std::string GetCommand(MenuInstanceData * pMenuData) {
+string GetCommand(MenuInstanceData * pMenuData) {
   if (pSecondUserRec->cHotKeys == HOTKEYS_ON) {
     if (pMenuData->header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
       GetSession()->SetMMKeyArea(WSession::mmkeyFileAreas);
       write_inst(INST_LOC_XFER, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
-      return std::string(mmkey(1));
+      return string(mmkey(1));
     } else if (pMenuData->header.nNumbers == MENU_NUMFLAG_SUBNUMBER) {
       GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
       write_inst(INST_LOC_MAIN, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
-      return std::string(mmkey(0));
+      return string(mmkey(0));
     } else {
       odc[0] = '/';
       odc[1] = '\0';
-      return std::string(mmkey(2));
+      return string(mmkey(2));
     }
   } else {
-    std::string text;
+    string text;
     input(text, 50);
-    return std::string(text);
+    return string(text);
   }
 }
-
 
 bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool bCheckPassword) {
   // Looks like this is here just to keep a compiler warning away
@@ -815,7 +795,7 @@ bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool b
 }
 
 void OpenMenuDescriptions() {
-  const std::string menu_description_file = GetMenuDescriptionFile();
+  const string menu_description_file = GetMenuDescriptionFile();
   hMenuDesc = fopen(menu_description_file.c_str(), "r");
 }
 
@@ -828,7 +808,7 @@ void CloseMenuDescriptions() {
 }
 
 
-char *GetMenuDescription(const std::string& name, char *pszDesc) {
+char *GetMenuDescription(const string& name, char *pszDesc) {
   if (!hMenuDesc) {
     *pszDesc = 0;
     return NULL;
@@ -927,31 +907,30 @@ void SetMenuDescription(const char *pszName, const char *pszDesc) {
   }
 }
 
-const std::string GetMenuDescriptionFile() {
+const string GetMenuDescriptionFile() {
   std::ostringstream os;
   os << GetMenuDirectory() << DESCRIPT_ION;
-  return std::string(os.str());
+  return string(os.str());
 }
 
-const std::string GetMenuDirectory(const std::string menuPath) {
+const string GetMenuDirectory(const string menuPath) {
   std::ostringstream os;
   os << GetMenuDirectory() << menuPath << WWIV_FILE_SEPERATOR_STRING;
-  return std::string(os.str());
+  return string(os.str());
 }
 
-const std::string GetMenuDirectory(const std::string menuPath, const std::string menuName,
-                                   const std::string extension) {
+const string GetMenuDirectory(const string menuPath, const string menuName,
+                                   const string extension) {
   std::ostringstream os;
   os << GetMenuDirectory() << menuPath << WWIV_FILE_SEPERATOR_STRING << menuName << "." << extension;
-  return std::string(os.str());
+  return string(os.str());
 }
 
-const std::string GetMenuDirectory() {
+const string GetMenuDirectory() {
   std::ostringstream os;
   os << GetSession()->language_dir << "menus" << WWIV_FILE_SEPERATOR_CHAR;
-  return std::string(os.str());
+  return string(os.str());
 }
-
 
 void GenerateMenu(MenuInstanceData * pMenuData) {
   MenuRec menu;
@@ -1007,7 +986,6 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
   GetSession()->bout.NewLine(2);
   return;
 }
-
 
 // MenuParseLine(szSrc, szCmd, szParam1, szParam2)
 //
@@ -1077,8 +1055,6 @@ char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2
   return pszSrc;
 }
 
-
-
 char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig) {
   if (pszSrc[0] == ',') {
     if (bMore == 0) {
@@ -1100,7 +1076,6 @@ char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig) {
 
   return pszSrc;
 }
-
 
 char *MenuGetParam(char *pszSrc, char *pszParam) {
   pszSrc = MenuSkipSpaces(pszSrc);
