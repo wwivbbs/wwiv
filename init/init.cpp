@@ -661,7 +661,7 @@ int WInitApp::main(int argc, char *argv[])
         Printf("\n\nYou can not run the initialization program from a subshell of the BBS.\n");
         Printf("You must exit the BBS or run INIT from a new Command Shell\n");
         textattr(COLOR_WHITE);
-        exit(2);
+        exit_init(2);
     }
     ss=getenv("WWIV_DIR");
     if (ss) {
@@ -692,7 +692,7 @@ int WInitApp::main(int argc, char *argv[])
     for (i = 1; i < argc; ++i) {
         if (i == 1 && argv[i][0] == '?') {
             show_help();
-            exit( 0 );
+            exit_init(0);
         }
 
         if (argv[i][0]==',') {
@@ -718,7 +718,7 @@ int WInitApp::main(int argc, char *argv[])
 
             setpaths();
             app->localIO->LocalCls();
-            exit( 0 );
+            exit_init(0);
         }
     }
 
@@ -762,7 +762,7 @@ int WInitApp::main(int argc, char *argv[])
                     modem_i = malloca(l);
                     if (!modem_i) {
                         textattr(COLOR_WHITE);
-                        exit(0);
+                        exit_init(0);
                     }
                     read( hFile, modem_i, (unsigned) l );
                     close( hFile );
@@ -780,7 +780,7 @@ int WInitApp::main(int argc, char *argv[])
             configfile = open( configdat, O_RDWR | O_BINARY );
         } else {
             textattr(COLOR_WHITE);
-            exit(1);
+            exit_init(1);
         }
     }
 
@@ -1055,7 +1055,7 @@ int WInitApp::main(int argc, char *argv[])
             {
                 Printf("needed %d bytes\n",MAX_NETWORKS * sizeof(net_networks_rec));
                 textattr(COLOR_WHITE);
-                exit(2);
+                exit_init(2);
             }
             memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
 
@@ -1097,7 +1097,7 @@ int WInitApp::main(int argc, char *argv[])
     {
         Printf("needed %d bytes\n",MAX_LANGUAGES*sizeof(languagerec));
         textattr(COLOR_WHITE);
-        exit(2);
+        exit_init(2);
     }
 
     sprintf(s,"%slanguage.dat",syscfg.datadir);
@@ -1148,20 +1148,19 @@ int WInitApp::main(int argc, char *argv[])
                 save_config();
                 textattr(COLOR_WHITE);
                 app->localIO->LocalCls();
-                nlx(3);
+                nlx(2);
                 Printf("Modem configured....\n");
-                nlx(3);
-                exit( 0 );
+                nlx(2);
+                exit_init(0);
                 break;
             case 'L': // re-build local modem info
                 convert_modem_info("LOCAL");
                 set_modem_info("LOCAL", false);
                 save_config();
                 textattr(COLOR_WHITE);
-                exit(0);
+                exit_init(0);
             case 'P': // Enter password on commandline
-                if (stricmp(s+2, syscfg.systempw)==0)
-                {
+                if (stricmp(s+2, syscfg.systempw)==0) {
                     pwok=1;
                 }
                 break;
@@ -1195,7 +1194,7 @@ int WInitApp::main(int argc, char *argv[])
             textattr(COLOR_RED);
             Printf("I'm sorry, that isn't the correct system password.\n");
             textattr(COLOR_WHITE);
-            exit(2);
+            exit_init(2);
         }
     }
 

@@ -544,7 +544,7 @@ int read_subs()
 		{
 			Printf("needed %ld bytes\n",filelength(i));
 			textattr(COLOR_WHITE);
-			exit( 2 );
+			exit_init(2);
 		}
 		
 		initinfo.num_subs=(read(i,subboards, (filelength(i))))/
@@ -555,7 +555,7 @@ int read_subs()
 	{
 		Printf( "%s NOT FOUND.\n", szFileName );
 		textattr(COLOR_WHITE);
-		exit( 2 );
+		exit_init(2);
 	}
 	return 0;
 }
