@@ -24,54 +24,54 @@
 namespace wwiv {
 namespace strings {
 std::string StringPrintf(const char *pszFormattedText, ...);
-int GetStringLength( const char * pszString );
-bool IsEquals( const char *pszString1, const char *pszString2 );
-bool IsEqualsIgnoreCase( const char *pszString1, const char *pszString2 );
-int  StringCompareIgnoreCase( const char *pszString1, const char *pszString2 );
-int  StringCompare( const char *pszString1, const char *pszString2 );
-short StringToShort( const char *pszString );
-unsigned short StringToUnsignedShort( const char *pszString );
-char StringToChar( const char *pszString );
-unsigned char StringToUnsignedChar( const char *pszString );
+int GetStringLength(const char * pszString);
+bool IsEquals(const char *pszString1, const char *pszString2);
+bool IsEqualsIgnoreCase(const char *pszString1, const char *pszString2);
+int  StringCompareIgnoreCase(const char *pszString1, const char *pszString2);
+int  StringCompare(const char *pszString1, const char *pszString2);
+short StringToShort(const char *pszString);
+unsigned short StringToUnsignedShort(const char *pszString);
+char StringToChar(const char *pszString);
+unsigned char StringToUnsignedChar(const char *pszString);
 }
 
 template<class _Ty>
 const _Ty UpperCase(const _Ty a) {
-	int nRet = ::toupper( a );
-	return static_cast< _Ty >( nRet );
+  int nRet = ::toupper(a);
+  return static_cast< _Ty >(nRet);
 }
 
 template<class _Ty>
 const _Ty LowerCase(const _Ty a) {
-	int nRet = ::tolower( a );
-	return static_cast< _Ty >( nRet );
+  int nRet = ::tolower(a);
+  return static_cast< _Ty >(nRet);
 }
 }
 
 // Function Prototypes
-const char *charstr( int nStringLength, int chRepeatChar );
-void StringTrimEnd( char *pszString );
-std::string& StringTrim( std::string& s );
-char *stripcolors( const char *pszOrig );
-std::string stripcolors( const std::string& orig);
-unsigned char upcase( unsigned char ch );
-unsigned char locase( unsigned char ch );
+const char *charstr(int nStringLength, int chRepeatChar);
+void StringTrimEnd(char *pszString);
+std::string& StringTrim(std::string& s);
+char *stripcolors(const char *pszOrig);
+std::string stripcolors(const std::string& orig);
+unsigned char upcase(unsigned char ch);
+unsigned char locase(unsigned char ch);
 char *StringJustify(char *pszString, int nLength, int bg, int nJustificationType);
 char *StringTrim(char *pszString);
-std::string& StringTrim( std::string& s );
-std::string& StringTrimEnd( std::string& s );
-std::string& StringTrimBegin( std::string& s );
+std::string& StringTrim(std::string& s);
+std::string& StringTrimEnd(std::string& s);
+std::string& StringTrimBegin(std::string& s);
 char *stristr(char *pszString, char *pszPattern);
 void single_space(char *pszText);
 char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const char *brk);
 char *StringRemoveWhitespace(char *str);
-char *StringRemoveChar( const char *pszString, char chCharacterToRemove );
+char *StringRemoveChar(const char *pszString, char chCharacterToRemove);
 char *StringReplace(char *pszString, size_t nMaxBufferSize, const char *pszOldString, const char *pszNewString);
-std::string& StringUpperCase( std::string& s );
-std::string& StringLowerCase( std::string& s );
+std::string& StringUpperCase(std::string& s);
+std::string& StringLowerCase(std::string& s);
 
-void properize( char *pszText );
-std::string properize( const std::string text );
+void properize(char *pszText);
+std::string properize(const std::string text);
 
 #if defined ( _WIN32 ) && ( _MSC_VER > 1310 )
 #define WWIV_STRDUP( s ) _strdup( s )

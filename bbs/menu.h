@@ -82,91 +82,91 @@ class WFile;
 #pragma pack(push, 1)
 
 struct MenuHeader {
-	char   szSig[10];      /* Menu Signature */
-	uint16_t  nHeadBytes;     /* Size of Menu header */
-	uint16_t  nBodyBytes;     /* Size of Menu Record */
-	char   MISC[50];
+  char   szSig[10];      /* Menu Signature */
+  uint16_t  nHeadBytes;     /* Size of Menu header */
+  uint16_t  nBodyBytes;     /* Size of Menu Record */
+  char   MISC[50];
 
-	uint16_t  nVersion;
-	uint16_t  nEmpty;
-	uint8_t   nFlags;
+  uint16_t  nVersion;
+  uint16_t  nEmpty;
+  uint8_t   nFlags;
 
-	uint8_t   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
-	uint8_t   nLogging;     /* Types of logging, Key, None, command, desc       */
+  uint8_t   nNumbers;     /* What does a number do?  Set sub#, Dir#, nothing? */
+  uint8_t   nLogging;     /* Types of logging, Key, None, command, desc       */
 
-	uint8_t   nForceHelp;   /* force, dont force, on entrance only              */
-	uint8_t   nAllowedMenu; /* Can pulldown, regular or both menus be used?     */
+  uint8_t   nForceHelp;   /* force, dont force, on entrance only              */
+  uint8_t   nAllowedMenu; /* Can pulldown, regular or both menus be used?     */
 
-	uint8_t  nTitleColor, nMainBorderColor, nMainBoxColor, nMainTextColor,
-	      nMainTextHLColor, nMainSelectedColor, nMainSelectedHLColor;
+  uint8_t  nTitleColor, nMainBorderColor, nMainBoxColor, nMainTextColor,
+           nMainTextHLColor, nMainSelectedColor, nMainSelectedHLColor;
 
-	uint8_t  nItemBorderColor, nItemBoxColor, nItemTextColor, nItemTextHLColor,
-	      nItemSelectedColor, nItemSelectedHLColor;
+  uint8_t  nItemBorderColor, nItemBoxColor, nItemTextColor, nItemTextHLColor,
+           nItemSelectedColor, nItemSelectedHLColor;
 
-	char   szMenuTitle[21];
-	char   MISC2[60];
-	char   szPassWord[21];     /* required for entry of menu */
-	uint16_t  nMinSL, nMinDSL;    /* required for entry of menu */
-	uint16_t uAR, uDAR;          /* required for entry of menu */
-	uint16_t uRestrict;          /* not allowed restrictions   */
-	uint8_t   nSysop, nCoSysop;   /* Must be either sysop or co */
-	char   MISC3[30];
-	char   szScript[101];      /* Gets executed on entry     */
-	char   szExitScript[101];  /* Executed on rtn from menu  */
+  char   szMenuTitle[21];
+  char   MISC2[60];
+  char   szPassWord[21];     /* required for entry of menu */
+  uint16_t  nMinSL, nMinDSL;    /* required for entry of menu */
+  uint16_t uAR, uDAR;          /* required for entry of menu */
+  uint16_t uRestrict;          /* not allowed restrictions   */
+  uint8_t   nSysop, nCoSysop;   /* Must be either sysop or co */
+  char   MISC3[30];
+  char   szScript[101];      /* Gets executed on entry     */
+  char   szExitScript[101];  /* Executed on rtn from menu  */
 };
 
 
 
 struct MenuRec {
-	uint8_t nFlags;   /* AFLAG_????? */
+  uint8_t nFlags;   /* AFLAG_????? */
 
-	char szKey[MENU_MAX_KEYS+1];  /* Keystrock to execute menu item   */
-	char szExecute[101];          /* Command to execute               */
-	char szMenuText[41];          /* Menu description                 */
-	char szPDText[41];            /* Pulldown menu text               */
+  char szKey[MENU_MAX_KEYS + 1]; /* Keystrock to execute menu item   */
+  char szExecute[101];          /* Command to execute               */
+  char szMenuText[41];          /* Menu description                 */
+  char szPDText[41];            /* Pulldown menu text               */
 
-	char szHelp[81];              /* Help for this item               */
-	char szSysopLog[51];          /* Msg to put in the log            */
+  char szHelp[81];              /* Help for this item               */
+  char szSysopLog[51];          /* Msg to put in the log            */
 
-	char szInstanceMessage[81];
+  char szInstanceMessage[81];
 
-	/* Security */
-	uint16_t nMinSL,  iMaxSL;
-	uint16_t nMinDSL, iMaxDSL;
-	uint16_t uAR, uDAR;        /* Must match all specified to be able to run     */
-	uint16_t uRestrict;        /* If any of these restrictions, you cant execute */
-	uint8_t nSysop, nCoSysop;   /* true and false, does it take a co/sysop to run */
-	char szPassWord[21];
+  /* Security */
+  uint16_t nMinSL,  iMaxSL;
+  uint16_t nMinDSL, iMaxDSL;
+  uint16_t uAR, uDAR;        /* Must match all specified to be able to run     */
+  uint16_t uRestrict;        /* If any of these restrictions, you cant execute */
+  uint8_t nSysop, nCoSysop;   /* true and false, does it take a co/sysop to run */
+  char szPassWord[21];
 
-	uint16_t nHide;             /* Hide text from PD/Regular/both or no menus */
-	uint16_t nPDFlags;          /* special characteristis for pulldowns       */
+  uint16_t nHide;             /* Hide text from PD/Regular/both or no menus */
+  uint16_t nPDFlags;          /* special characteristis for pulldowns       */
 
-	char szExtendedHelp[13]; /* filename to detailed help on this item */
+  char szExtendedHelp[13]; /* filename to detailed help on this item */
 
-	char unused_data[79];
+  char unused_data[79];
 
 };
 
 
 struct MenuRecIndex {
-	char szKey[MENU_MAX_KEYS+1];
-	uint16_t nRec;				/* allows alot of records    */
-	uint8_t	nFlags;             /* Quick access to the flags */
+  char szKey[MENU_MAX_KEYS + 1];
+  uint16_t nRec;        /* allows alot of records    */
+  uint8_t nFlags;             /* Quick access to the flags */
 };
 
 
 struct MenuInstanceData {
-	char szMenu[MAX_PATH];
-	char szPath[MAX_PATH];
-	WFile *pMenuFile;
-	uint16_t nAmountRecs;
-	uint16_t nFinished;
+  char szMenu[MAX_PATH];
+  char szPath[MAX_PATH];
+  WFile *pMenuFile;
+  uint16_t nAmountRecs;
+  uint16_t nFinished;
 
-	uint16_t nReload;  /* true if we are going to reload the menus */
+  uint16_t nReload;  /* true if we are going to reload the menus */
 
-	char *szPrompt;
-	MenuRecIndex *index;
-	MenuHeader header;   /* Hold header info for current menu set in memory */
+  char *szPrompt;
+  MenuRecIndex *index;
+  MenuHeader header;   /* Hold header info for current menu set in memory */
 };
 
 #pragma pack(pop)
@@ -183,13 +183,13 @@ const std::string GetMenuDirectory();
 void MenuSysopLog(const std::string pszMsg);
 void OpenMenuDescriptions();
 void CloseMenuDescriptions();
-char *GetMenuDescription( const std::string& name, char *pszDesc );
+char *GetMenuDescription(const std::string& name, char *pszDesc);
 void SetMenuDescription(const char *pszName, const char *pszDesc);
 
 // Used by menuinterpretcommand.cpp
 void TurnMCIOff();
 void TurnMCIOn();
-int  GetMenuIndex( const char* pszCommand );
+int  GetMenuIndex(const char* pszCommand);
 void Menus(MenuInstanceData * pMenuData, const std::string menuDirectory, const std::string menuName);
 char *MenuParseLine(char *pszSrc, char *pszCmd, char *pszParam1, char *pszParam2);
 void AMDisplayHelp(MenuInstanceData * pMenuData);

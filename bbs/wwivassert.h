@@ -35,4 +35,4 @@
 
 #endif // _DEBUG
 
-#endif	// __INCLUDED_WWIVASSERT_H__
+#endif  // __INCLUDED_WWIVASSERT_H__
