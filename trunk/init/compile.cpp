@@ -240,7 +240,7 @@ void grab_result(result_info *r)
             if (*curl=='Y') {
                 r->flag_value |= flag_as;
             } else if (*curl!='N') {
-                Printf("Unknown flag value 'AS=%c' in line %d\n\n",*curl,curline);
+                Printf("Unknown flag value 'AS=%c' in line %d\n",*curl,curline);
                 nlx();
             }
             ++curl;
@@ -250,7 +250,7 @@ void grab_result(result_info *r)
             if (*curl=='Y') {
                 r->flag_value |= flag_ec;
             } else if (*curl!='N') {
-                Printf("Unknown flag value 'EC=%c' in line %d\n\n",*curl,curline);
+                Printf("Unknown flag value 'EC=%c' in line %d\n",*curl,curline);
                 nlx();
             }
             ++curl;
@@ -260,7 +260,7 @@ void grab_result(result_info *r)
             if (*curl=='Y') {
                 r->flag_value |= flag_dc;
             } else if (*curl!='N') {
-                Printf("Unknown flag value 'DC=%c' in line %d\n\n",*curl,curline);
+                Printf("Unknown flag value 'DC=%c' in line %d\n",*curl,curline);
                 nlx();
             }
             ++curl;
@@ -270,7 +270,7 @@ void grab_result(result_info *r)
             if (*curl=='Y') {
                 r->flag_value |= flag_fc;
             } else if (*curl!='N') {
-                Printf("Unknown flag value 'FC=%c' in line %d\n\n",*curl,curline);
+                Printf("Unknown flag value 'FC=%c' in line %d\n",*curl,curline);
                 nlx();
             }
             ++curl;
@@ -327,7 +327,7 @@ void grab_result(result_info *r)
             break;
         default:
             t=tok_inval;
-            Printf("Unknown token in line %d:\n%s\n\n",curline,curl);
+            Printf("Unknown token in line %d:\n%s\n",curline,curl);
             nlx();
             break;
         }
@@ -455,7 +455,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_name:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -463,7 +463,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_init:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -471,7 +471,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_setu:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -479,7 +479,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_conf:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -487,7 +487,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_ansr:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -495,7 +495,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_pick:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -503,7 +503,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_hang:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -511,7 +511,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_note:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -521,7 +521,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_dial:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -529,7 +529,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 break;
             case tok_sepr:
                 if (get_tok() != tok_quote) {
-                    Printf("Expected quote on line %d:%s\n\n",curline,s);
+                    Printf("Expected quote on line %d:%s\n",curline,s);
                     nlx();
                     break;
                 }
@@ -543,7 +543,7 @@ int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsig
                 ++(mi->num_resl);
                 break;
             default:
-                Printf("Unknown line %d:\n%s\n\n",curline,s);
+                Printf("Unknown line %d:\n%s\n",curline,s);
                 nlx();
                 break;
             }
