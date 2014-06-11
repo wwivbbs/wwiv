@@ -1,0 +1,4202 @@
+60001	IL	Alden
+60002	IL	Antioch
+60004	IL	Arlington Heights
+60005	IL	Arlington Heights
+60006	IL	Arlington Heights
+60007	IL	Elk Grove Village
+60008	IL	Rolling Meadows
+60009	IL	Elk Grove Village
+60010	IL	Barrington
+60011	IL	Barrington
+60012	IL	Crystal Lake
+60013	IL	Cary
+60014	IL	Crystal Lake
+60015	IL	Deerfield
+60016	IL	Des Plaines
+60017	IL	Des Plaines
+60018	IL	Des Plaines
+60019	IL	Des Plaines
+60020	IL	Fox Lake
+60021	IL	Fox River Grove
+60022	IL	Glencoe
+60025	IL	Glenview
+60026	IL	Glenview Nas
+60029	IL	Golf
+60030	IL	Grayslake
+60031	IL	Gurnee
+60033	IL	Harvard
+60034	IL	Hebron
+60035	IL	Highland Park
+60037	IL	Fort Sheridan
+60038	IL	Palatine
+60039	IL	Crystal Lake
+60040	IL	Highwood
+60041	IL	Ingleside
+60042	IL	Island Lake
+60043	IL	Kenilworth
+60044	IL	Lake Bluff
+60045	IL	Lake Forest
+60046	IL	Lake Villa
+60047	IL	Lake Zurich
+60048	IL	Libertyville
+60049	IL	Long Grove
+60050	IL	Mc Henry
+60051	IL	Mc Henry
+60053	IL	Morton Grove
+60055	IL	Palatine
+60056	IL	Mount Prospect
+60060	IL	Mundelein
+60061	IL	Vernon Hills
+60062	IL	Northbrook
+60063	IL	Deerfield
+60064	IL	North Chicago
+60065	IL	Northbrook
+60067	IL	Palatine
+60068	IL	Park Ridge
+60069	IL	Lincolnshire
+60070	IL	Prospect Heights
+60071	IL	Richmond
+60072	IL	Ringwood
+60073	IL	Round Lake
+60074	IL	Palatine
+60075	IL	Russell
+60076	IL	Skokie
+60077	IL	Skokie
+60078	IL	Palatine
+60079	IL	Waukegan
+60080	IL	Solon Mills
+60081	IL	Spring Grove
+60082	IL	Techny
+60083	IL	Wadsworth
+60084	IL	Wauconda
+60085	IL	Waukegan
+60086	IL	North Chicago
+60087	IL	Waukegan
+60088	IL	Great Lakes
+60089	IL	Buffalo Grove
+60090	IL	Wheeling
+60091	IL	Wilmette
+60092	IL	Libertyville
+60093	IL	Winnetka
+60094	IL	Palatine
+60095	IL	Palatine
+60096	IL	Winthrop Harbor
+60097	IL	Wonder Lake
+60098	IL	Woodstock
+60099	IL	Zion
+60101	IL	Addison
+60102	IL	Algonquin
+60103	IL	Bartlett
+60104	IL	Bellwood
+60105	IL	Bensenville
+60106	IL	Bensenville
+60107	IL	Streamwood
+60108	IL	Bloomingdale
+60109	IL	Burlington
+60110	IL	Carpentersville
+60111	IL	Clare
+60112	IL	Cortland
+60113	IL	Creston
+60114	IL	Addison
+60115	IL	De Kalb
+60116	IL	Carol Stream
+60117	IL	Bloomingdale
+60118	IL	Dundee
+60119	IL	Elburn
+60120	IL	Elgin
+60121	IL	Elgin
+60122	IL	Elgin
+60123	IL	Elgin
+60125	IL	Carol Stream
+60126	IL	Elmhurst
+60128	IL	Carol Stream
+60129	IL	Esmond
+60130	IL	Forest Park
+60131	IL	Franklin Park
+60132	IL	Carol Stream
+60134	IL	Geneva
+60135	IL	Genoa
+60136	IL	Gilberts
+60137	IL	Glen Ellyn
+60138	IL	Glen Ellyn
+60139	IL	Glendale Heights
+60140	IL	Hampshire
+60141	IL	Hines
+60142	IL	Huntley
+60143	IL	Itasca
+60144	IL	Kaneville
+60145	IL	Kingston
+60146	IL	Kirkland
+60147	IL	Lafox
+60148	IL	Lombard
+60150	IL	Malta
+60151	IL	Maple Park
+60152	IL	Marengo
+60153	IL	Maywood
+60154	IL	Westchester
+60155	IL	Carol Stream
+60157	IL	Medinah
+60158	IL	Carol Stream
+60159	IL	Schaumburg
+60160	IL	Melrose Park
+60161	IL	Melrose Park
+60162	IL	Hillside
+60163	IL	Berkeley
+60164	IL	Melrose Park
+60165	IL	Stone Park
+60168	IL	Schaumburg
+60170	IL	Plato Center
+60171	IL	River Grove
+60172	IL	Roselle
+60173	IL	Schaumburg
+60174	IL	Saint Charles
+60175	IL	Saint Charles
+60176	IL	Schiller Park
+60177	IL	South Elgin
+60178	IL	Sycamore
+60179	IL	Hoffman Estates
+60180	IL	Union
+60181	IL	Villa Park
+60182	IL	Virgil
+60183	IL	Wasco
+60184	IL	Wayne
+60185	IL	West Chicago
+60186	IL	West Chicago
+60187	IL	Wheaton
+60188	IL	Carol Stream
+60189	IL	Wheaton
+60190	IL	Winfield
+60191	IL	Wood Dale
+60192	IL	Schaumburg
+60193	IL	Schaumburg
+60194	IL	Schaumburg
+60195	IL	Schaumburg
+60196	IL	Schaumburg
+60197	IL	Carol Stream
+60198	IL	Carol Stream
+60199	IL	Carol Stream
+60201	IL	Evanston
+60202	IL	Evanston
+60203	IL	Evanston
+60204	IL	Evanston
+60208	IL	Evanston
+60209	IL	Evanston
+60251	IL	Palatine
+60301	IL	Oak Park
+60302	IL	Oak Park
+60303	IL	Oak Park
+60304	IL	Oak Park
+60305	IL	River Forest
+60351	IL	Carol Stream
+60353	IL	Carol Stream
+60401	IL	Beecher
+60402	IL	Berwyn
+60406	IL	Blue Island
+60407	IL	Braceville
+60408	IL	Braidwood
+60409	IL	Calumet City
+60410	IL	Channahon
+60411	IL	Chicago Heights
+60415	IL	Chicago Ridge
+60416	IL	Coal City
+60417	IL	Crete
+60419	IL	Dolton
+60420	IL	Dwight
+60421	IL	Elwood
+60422	IL	Flossmoor
+60423	IL	Frankfort
+60424	IL	Gardner
+60425	IL	Glenwood
+60426	IL	Harvey
+60429	IL	Hazel Crest
+60430	IL	Homewood
+60431	IL	Joliet
+60432	IL	Joliet
+60433	IL	Joliet
+60434	IL	Joliet
+60435	IL	Joliet
+60436	IL	Joliet
+60437	IL	Kinsman
+60438	IL	Lansing
+60439	IL	Lemont
+60440	IL	Bolingbrook
+60441	IL	Lockport
+60442	IL	Manhattan
+60443	IL	Matteson
+60444	IL	Mazon
+60445	IL	Midlothian
+60446	IL	Romeoville
+60447	IL	Minooka
+60448	IL	Mokena
+60449	IL	Monee
+60450	IL	Morris
+60451	IL	New Lenox
+60452	IL	Oak Forest
+60453	IL	Oak Lawn
+60454	IL	Oak Lawn
+60455	IL	Bridgeview
+60456	IL	Hometown
+60457	IL	Hickory Hills
+60458	IL	Justice
+60459	IL	Burbank
+60460	IL	Odell
+60461	IL	Olympia Fields
+60462	IL	Orland Park
+60463	IL	Palos Heights
+60464	IL	Palos Park
+60465	IL	Palos Hills
+60466	IL	Park Forest
+60468	IL	Peotone
+60469	IL	Posen
+60470	IL	Ransom
+60471	IL	Richton Park
+60472	IL	Robbins
+60473	IL	South Holland
+60474	IL	South Wilmington
+60475	IL	Steger
+60476	IL	Thornton
+60477	IL	Tinley Park
+60478	IL	Country Club Hills
+60479	IL	Verona
+60480	IL	Willow Springs
+60481	IL	Wilmington
+60482	IL	Worth
+60499	IL	Bedford Park
+60501	IL	Summit Argo
+60504	IL	Aurora
+60505	IL	Aurora
+60506	IL	Aurora
+60507	IL	Aurora
+60510	IL	Batavia
+60511	IL	Big Rock
+60512	IL	Bristol
+60513	IL	Brookfield
+60514	IL	Clarendon Hills
+60515	IL	Downers Grove
+60516	IL	Downers Grove
+60517	IL	Woodridge
+60518	IL	Earlville
+60519	IL	Eola
+60520	IL	Hinckley
+60521	IL	Hinsdale
+60522	IL	Hinsdale
+60525	IL	La Grange
+60526	IL	La Grange Park
+60527	IL	Hinsdale
+60530	IL	Lee
+60531	IL	Leland
+60532	IL	Lisle
+60534	IL	Lyons
+60536	IL	Millbrook
+60537	IL	Millington
+60538	IL	Montgomery
+60539	IL	Mooseheart
+60540	IL	Naperville
+60541	IL	Newark
+60542	IL	North Aurora
+60543	IL	Oswego
+60544	IL	Plainfield
+60545	IL	Plano
+60546	IL	Riverside
+60548	IL	Sandwich
+60549	IL	Serena
+60550	IL	Shabbona
+60551	IL	Sheridan
+60552	IL	Somonauk
+60553	IL	Steward
+60554	IL	Sugar Grove
+60555	IL	Warrenville
+60556	IL	Waterman
+60557	IL	Wedron
+60558	IL	Western Springs
+60559	IL	Westmont
+60560	IL	Yorkville
+60561	IL	Darien
+60563	IL	Naperville
+60564	IL	Naperville
+60565	IL	Naperville
+60566	IL	Naperville
+60567	IL	Naperville
+60568	IL	Aurora
+60570	IL	Hinsdale
+60572	IL	Fox Valley
+60597	IL	Fox Valley
+60598	IL	Aurora
+60599	IL	Fox Valley
+60601	IL	Chicago
+60602	IL	Chicago
+60603	IL	Chicago
+60604	IL	Chicago
+60605	IL	Chicago
+60606	IL	Chicago
+60607	IL	Chicago
+60608	IL	Chicago
+60609	IL	Chicago
+60610	IL	Chicago
+60611	IL	Chicago
+60612	IL	Chicago
+60613	IL	Chicago
+60614	IL	Chicago
+60615	IL	Chicago
+60616	IL	Chicago
+60617	IL	Chicago
+60618	IL	Chicago
+60619	IL	Chicago
+60620	IL	Chicago
+60621	IL	Chicago
+60622	IL	Chicago
+60623	IL	Chicago
+60624	IL	Chicago
+60625	IL	Chicago
+60626	IL	Chicago
+60627	IL	Riverdale
+60628	IL	Chicago
+60629	IL	Chicago
+60630	IL	Chicago
+60631	IL	Chicago
+60632	IL	Chicago
+60633	IL	Chicago
+60634	IL	Chicago
+60635	IL	Elmwood Park
+60636	IL	Chicago
+60637	IL	Chicago
+60638	IL	Chicago
+60639	IL	Chicago
+60640	IL	Chicago
+60641	IL	Chicago
+60642	IL	Evergreen Park
+60643	IL	Chicago
+60644	IL	Chicago
+60645	IL	Chicago
+60646	IL	Chicago
+60647	IL	Chicago
+60649	IL	Chicago
+60650	IL	Cicero
+60651	IL	Chicago
+60652	IL	Chicago
+60653	IL	Chicago
+60654	IL	Chicago
+60655	IL	Chicago
+60656	IL	Chicago
+60657	IL	Chicago
+60658	IL	Chicago
+60659	IL	Chicago
+60660	IL	Chicago
+60661	IL	Chicago
+60663	IL	Chicago
+60664	IL	Chicago
+60665	IL	Chicago
+60666	IL	Amf Ohare
+60667	IL	Chicago
+60668	IL	Chicago
+60669	IL	Chicago
+60670	IL	Chicago
+60671	IL	Chicago
+60672	IL	Chicago
+60673	IL	Chicago
+60674	IL	Chicago
+60675	IL	Chicago
+60678	IL	Chicago
+60679	IL	Chicago
+60680	IL	Chicago
+60681	IL	Chicago
+60682	IL	Chicago
+60684	IL	Chicago
+60685	IL	Chicago
+60687	IL	Chicago
+60690	IL	Chicago
+60691	IL	Chicago
+60693	IL	Chicago
+60694	IL	Chicago
+60697	IL	Chicago
+60699	IL	Chicago
+60701	IL	Chicago
+60707	IL	Elmwood Park
+60714	IL	Niles
+60804	IL	Cicero
+60805	IL	Evergreen Park
+60901	IL	Kankakee
+60902	IL	Kankakee
+60910	IL	Aroma Park
+60911	IL	Ashkum
+60912	IL	Beaverville
+60913	IL	Bonfield
+60914	IL	Bourbonnais
+60915	IL	Bradley
+60917	IL	Buckingham
+60918	IL	Buckley
+60919	IL	Cabery
+60920	IL	Campus
+60921	IL	Chatsworth
+60922	IL	Chebanse
+60924	IL	Cissna Park
+60926	IL	Claytonville
+60927	IL	Clifton
+60928	IL	Crescent City
+60929	IL	Cullom
+60930	IL	Danforth
+60931	IL	Donovan
+60932	IL	East Lynn
+60933	IL	Elliott
+60934	IL	Emington
+60935	IL	Essex
+60936	IL	Gibson City
+60938	IL	Gilman
+60939	IL	Goodwine
+60940	IL	Grant Park
+60941	IL	Herscher
+60942	IL	Hoopeston
+60944	IL	Hopkins Park
+60945	IL	Iroquois
+60946	IL	Kempton
+60948	IL	Loda
+60949	IL	Ludlow
+60950	IL	Manteno
+60951	IL	Martinton
+60952	IL	Melvin
+60953	IL	Milford
+60954	IL	Momence
+60955	IL	Onarga
+60956	IL	Papineau
+60957	IL	Paxton
+60959	IL	Piper City
+60960	IL	Rankin
+60961	IL	Reddick
+60962	IL	Roberts
+60963	IL	Rossville
+60964	IL	Saint Anne
+60966	IL	Sheldon
+60967	IL	Stockland
+60968	IL	Thawville
+60969	IL	Union Hill
+60970	IL	Watseka
+60973	IL	Wellington
+60974	IL	Woodland
+61001	IL	Apple River
+61006	IL	Ashton
+61007	IL	Baileyville
+61008	IL	Belvidere
+61010	IL	Byron
+61011	IL	Caledonia
+61012	IL	Capron
+61013	IL	Cedarville
+61014	IL	Chadwick
+61015	IL	Chana
+61016	IL	Cherry Valley
+61017	IL	Coleta
+61018	IL	Dakota
+61019	IL	Davis
+61020	IL	Davis Junction
+61021	IL	Dixon
+61024	IL	Durand
+61025	IL	East Dubuque
+61027	IL	Eleroy
+61028	IL	Elizabeth
+61030	IL	Forreston
+61031	IL	Franklin Grove
+61032	IL	Freeport
+61036	IL	Galena
+61037	IL	Galt
+61038	IL	Garden Prairie
+61039	IL	German Valley
+61041	IL	Hanover
+61042	IL	Harmon
+61043	IL	Holcomb
+61044	IL	Kent
+61046	IL	Lanark
+61047	IL	Leaf River
+61048	IL	Lena
+61049	IL	Lindenwood
+61050	IL	Mc Connell
+61051	IL	Milledgeville
+61052	IL	Monroe Center
+61053	IL	Mount Carroll
+61054	IL	Mount Morris
+61057	IL	Nachusa
+61058	IL	Nelson
+61059	IL	Nora
+61060	IL	Orangeville
+61061	IL	Oregon
+61062	IL	Pearl City
+61063	IL	Pecatonica
+61064	IL	Polo
+61065	IL	Poplar Grove
+61067	IL	Ridott
+61068	IL	Rochelle
+61070	IL	Rock City
+61071	IL	Rock Falls
+61072	IL	Rockton
+61073	IL	Roscoe
+61074	IL	Savanna
+61075	IL	Scales Mound
+61076	IL	Scioto Mills
+61077	IL	Seward
+61078	IL	Shannon
+61079	IL	Shirland
+61080	IL	South Beloit
+61081	IL	Sterling
+61084	IL	Stillman Valley
+61085	IL	Stockton
+61087	IL	Warren
+61088	IL	Winnebago
+61089	IL	Winslow
+61091	IL	Woosung
+61101	IL	Rockford
+61102	IL	Rockford
+61103	IL	Rockford
+61104	IL	Rockford
+61105	IL	Rockford
+61106	IL	Rockford
+61107	IL	Rockford
+61108	IL	Rockford
+61109	IL	Rockford
+61110	IL	Rockford
+61111	IL	Loves Park
+61112	IL	Rockford
+61114	IL	Rockford
+61115	IL	Machesney Park
+61125	IL	Rockford
+61126	IL	Rockford
+61130	IL	Loves Park
+61131	IL	Loves Park
+61132	IL	Loves Park
+61201	IL	Rock Island
+61204	IL	Rock Island
+61206	IL	Rock Island
+61230	IL	Albany
+61231	IL	Aledo
+61232	IL	Andalusia
+61233	IL	Andover
+61234	IL	Annawan
+61235	IL	Atkinson
+61236	IL	Barstow
+61237	IL	Buffalo Prairie
+61238	IL	Cambridge
+61239	IL	Carbon Cliff
+61240	IL	Coal Valley
+61241	IL	Colona
+61242	IL	Cordova
+61243	IL	Deer Grove
+61244	IL	East Moline
+61250	IL	Erie
+61251	IL	Fenton
+61252	IL	Fulton
+61254	IL	Geneseo
+61256	IL	Hampton
+61257	IL	Hillsdale
+61258	IL	Hooppole
+61259	IL	Illinois City
+61260	IL	Joy
+61261	IL	Lyndon
+61262	IL	Lynn Center
+61263	IL	Matherville
+61264	IL	Milan
+61265	IL	Moline
+61266	IL	Moline
+61270	IL	Morrison
+61272	IL	New Boston
+61273	IL	Orion
+61274	IL	Osco
+61275	IL	Port Byron
+61276	IL	Preemption
+61277	IL	Prophetstown
+61278	IL	Rapids City
+61279	IL	Reynolds
+61281	IL	Sherrard
+61282	IL	Silvis
+61283	IL	Tampico
+61284	IL	Taylor Ridge
+61285	IL	Thomson
+61299	IL	Rock Island
+61301	IL	La Salle
+61310	IL	Amboy
+61311	IL	Ancona
+61312	IL	Arlington
+61313	IL	Blackstone
+61314	IL	Buda
+61315	IL	Bureau
+61316	IL	Cedar Point
+61317	IL	Cherry
+61318	IL	Compton
+61319	IL	Cornell
+61320	IL	Dalzell
+61321	IL	Dana
+61322	IL	Depue
+61323	IL	Dover
+61324	IL	Eldena
+61325	IL	Grand Ridge
+61326	IL	Granville
+61327	IL	Hennepin
+61328	IL	Kasbeer
+61329	IL	Ladd
+61330	IL	La Moille
+61331	IL	Lee Center
+61332	IL	Leonore
+61333	IL	Long Point
+61334	IL	Lostant
+61335	IL	Mc Nabb
+61336	IL	Magnolia
+61337	IL	Malden
+61338	IL	Manlius
+61340	IL	Mark
+61341	IL	Marseilles
+61342	IL	Mendota
+61344	IL	Mineral
+61345	IL	Neponset
+61346	IL	New Bedford
+61348	IL	Oglesby
+61349	IL	Ohio
+61350	IL	Ottawa
+61353	IL	Paw Paw
+61354	IL	Peru
+61356	IL	Princeton
+61358	IL	Rutland
+61359	IL	Seatonville
+61360	IL	Seneca
+61361	IL	Sheffield
+61362	IL	Spring Valley
+61363	IL	Standard
+61364	IL	Streator
+61367	IL	Sublette
+61368	IL	Tiskilwa
+61369	IL	Toluca
+61370	IL	Tonica
+61371	IL	Triumph
+61372	IL	Troy Grove
+61373	IL	Utica
+61374	IL	Van Orin
+61375	IL	Varna
+61376	IL	Walnut
+61377	IL	Wenona
+61378	IL	West Brooklyn
+61379	IL	Wyanet
+61401	IL	Galesburg
+61402	IL	Galesburg
+61410	IL	Abingdon
+61411	IL	Adair
+61412	IL	Alexis
+61413	IL	Alpha
+61414	IL	Altona
+61415	IL	Avon
+61416	IL	Bardolph
+61417	IL	Berwick
+61418	IL	Biggsville
+61419	IL	Bishop Hill
+61420	IL	Blandinsville
+61421	IL	Bradford
+61422	IL	Bushnell
+61423	IL	Cameron
+61424	IL	Camp Grove
+61425	IL	Carman
+61426	IL	Castleton
+61427	IL	Cuba
+61428	IL	Dahinda
+61430	IL	East Galesburg
+61431	IL	Ellisville
+61432	IL	Fairview
+61433	IL	Fiatt
+61434	IL	Galva
+61435	IL	Gerlaw
+61436	IL	Gilson
+61437	IL	Gladstone
+61438	IL	Good Hope
+61439	IL	Henderson
+61440	IL	Industry
+61441	IL	Ipava
+61442	IL	Keithsburg
+61443	IL	Kewanee
+61447	IL	Kirkwood
+61448	IL	Knoxville
+61449	IL	La Fayette
+61450	IL	La Harpe
+61451	IL	Laura
+61452	IL	Littleton
+61453	IL	Little York
+61454	IL	Lomax
+61455	IL	Macomb
+61458	IL	Maquon
+61459	IL	Marietta
+61460	IL	Media
+61462	IL	Monmouth
+61465	IL	New Windsor
+61466	IL	North Henderson
+61467	IL	Oneida
+61468	IL	Opheim
+61469	IL	Oquawka
+61470	IL	Prairie City
+61471	IL	Raritan
+61472	IL	Rio
+61473	IL	Roseville
+61474	IL	Saint Augustine
+61475	IL	Sciota
+61476	IL	Seaton
+61477	IL	Smithfield
+61478	IL	Smithshire
+61479	IL	Speer
+61480	IL	Stronghurst
+61482	IL	Table Grove
+61483	IL	Toulon
+61484	IL	Vermont
+61485	IL	Victoria
+61486	IL	Viola
+61488	IL	Wataga
+61489	IL	Williamsfield
+61490	IL	Woodhull
+61491	IL	Wyoming
+61501	IL	Astoria
+61516	IL	Benson
+61517	IL	Brimfield
+61518	IL	Brimfield
+61519	IL	Bryant
+61520	IL	Canton
+61523	IL	Chillicothe
+61524	IL	Dunfermline
+61525	IL	Dunlap
+61526	IL	Edelstein
+61528	IL	Edwards
+61529	IL	Elmwood
+61530	IL	Eureka
+61531	IL	Farmington
+61532	IL	Forest City
+61533	IL	Glasford
+61534	IL	Green Valley
+61535	IL	Groveland
+61536	IL	Hanna City
+61537	IL	Henry
+61539	IL	Kingston Mines
+61540	IL	Lacon
+61541	IL	La Rose
+61542	IL	Lewistown
+61543	IL	Liverpool
+61544	IL	London Mills
+61545	IL	Lowpoint
+61546	IL	Manito
+61547	IL	Mapleton
+61548	IL	Metamora
+61550	IL	Morton
+61552	IL	Mossville
+61553	IL	Norris
+61554	IL	Pekin
+61555	IL	Pekin
+61558	IL	Pekin
+61559	IL	Princeville
+61560	IL	Putnam
+61561	IL	Roanoke
+61562	IL	Rome
+61563	IL	Saint David
+61564	IL	South Pekin
+61565	IL	Sparland
+61567	IL	Topeka
+61568	IL	Tremont
+61569	IL	Trivoli
+61570	IL	Washburn
+61571	IL	Washington
+61572	IL	Yates City
+61601	IL	Peoria
+61602	IL	Peoria
+61603	IL	Peoria
+61604	IL	Peoria
+61605	IL	Peoria
+61606	IL	Peoria
+61607	IL	Peoria
+61610	IL	Creve Coeur
+61611	IL	East Peoria
+61612	IL	Peoria
+61613	IL	Peoria
+61614	IL	Peoria
+61615	IL	Peoria
+61625	IL	Peoria
+61628	IL	Peoria
+61629	IL	Peoria
+61630	IL	Peoria
+61632	IL	Peoria
+61633	IL	Peoria
+61634	IL	Peoria
+61635	IL	Peoria
+61636	IL	Peoria
+61637	IL	Peoria
+61638	IL	Peoria
+61639	IL	Peoria
+61640	IL	Peoria
+61641	IL	Peoria
+61643	IL	Peoria
+61644	IL	Peoria
+61650	IL	Peoria
+61651	IL	Peoria
+61652	IL	Peoria
+61653	IL	Peoria
+61654	IL	Peoria
+61655	IL	Peoria
+61656	IL	Peoria
+61701	IL	Bloomington
+61702	IL	Bloomington
+61704	IL	Bloomington
+61709	IL	Bloomington
+61710	IL	Bloomington
+61720	IL	Anchor
+61721	IL	Armington
+61722	IL	Arrowsmith
+61723	IL	Atlanta
+61724	IL	Bellflower
+61725	IL	Carlock
+61726	IL	Chenoa
+61727	IL	Clinton
+61728	IL	Colfax
+61729	IL	Congerville
+61730	IL	Cooksville
+61731	IL	Cropsey
+61732	IL	Danvers
+61733	IL	Deer Creek
+61734	IL	Delavan
+61735	IL	Dewitt
+61736	IL	Downs
+61737	IL	Ellsworth
+61738	IL	El Paso
+61739	IL	Fairbury
+61740	IL	Flanagan
+61741	IL	Forrest
+61742	IL	Goodfield
+61743	IL	Graymont
+61744	IL	Gridley
+61745	IL	Heyworth
+61747	IL	Hopedale
+61748	IL	Hudson
+61749	IL	Kenney
+61750	IL	Lane
+61751	IL	Lawndale
+61752	IL	Le Roy
+61753	IL	Lexington
+61754	IL	Mc Lean
+61755	IL	Mackinaw
+61756	IL	Maroa
+61758	IL	Merna
+61759	IL	Minier
+61760	IL	Minonk
+61761	IL	Normal
+61764	IL	Pontiac
+61769	IL	Saunemin
+61770	IL	Saybrook
+61771	IL	Secor
+61772	IL	Shirley
+61773	IL	Sibley
+61774	IL	Stanford
+61775	IL	Strawn
+61776	IL	Towanda
+61777	IL	Wapella
+61778	IL	Waynesville
+61790	IL	Normal
+61791	IL	Bloomington
+61799	IL	Bloomington
+61801	IL	Urbana
+61802	IL	Urbana
+61803	IL	Urbana
+61810	IL	Allerton
+61811	IL	Alvin
+61812	IL	Armstrong
+61813	IL	Bement
+61814	IL	Bismarck
+61815	IL	Bondville
+61816	IL	Broadlands
+61817	IL	Catlin
+61818	IL	Cerro Gordo
+61820	IL	Champaign
+61821	IL	Champaign
+61824	IL	Champaign
+61825	IL	Champaign
+61826	IL	Champaign
+61830	IL	Cisco
+61831	IL	Collison
+61832	IL	Danville
+61833	IL	Tilton
+61834	IL	Danville
+61839	IL	De Land
+61840	IL	Dewey
+61841	IL	Fairmount
+61842	IL	Farmer City
+61843	IL	Fisher
+61844	IL	Fithian
+61845	IL	Foosland
+61846	IL	Georgetown
+61847	IL	Gifford
+61848	IL	Henning
+61849	IL	Homer
+61850	IL	Indianola
+61851	IL	Ivesdale
+61852	IL	Longview
+61853	IL	Mahomet
+61854	IL	Mansfield
+61855	IL	Milmine
+61856	IL	Monticello
+61857	IL	Muncie
+61858	IL	Oakwood
+61859	IL	Ogden
+61862	IL	Penfield
+61863	IL	Pesotum
+61864	IL	Philo
+61865	IL	Potomac
+61866	IL	Rantoul
+61870	IL	Ridge Farm
+61871	IL	Royal
+61872	IL	Sadorus
+61873	IL	Saint Joseph
+61874	IL	Savoy
+61875	IL	Seymour
+61876	IL	Sidell
+61877	IL	Sidney
+61878	IL	Thomasboro
+61880	IL	Tolono
+61882	IL	Weldon
+61883	IL	Westville
+61884	IL	White Heath
+61910	IL	Arcola
+61911	IL	Arthur
+61912	IL	Ashmore
+61913	IL	Atwood
+61914	IL	Bethany
+61917	IL	Brocton
+61919	IL	Camargo
+61920	IL	Charleston
+61924	IL	Chrisman
+61925	IL	Dalton City
+61928	IL	Gays
+61929	IL	Hammond
+61930	IL	Hindsboro
+61931	IL	Humboldt
+61932	IL	Hume
+61933	IL	Kansas
+61936	IL	La Place
+61937	IL	Lovington
+61938	IL	Mattoon
+61940	IL	Metcalf
+61941	IL	Murdock
+61942	IL	Newman
+61943	IL	Oakland
+61944	IL	Paris
+61949	IL	Redmon
+61951	IL	Sullivan
+61953	IL	Tuscola
+61955	IL	Vermilion
+61956	IL	Villa Grove
+61957	IL	Windsor
+62001	IL	Alhambra
+62002	IL	Alton
+62006	IL	Batchtown
+62009	IL	Benld
+62010	IL	Bethalto
+62011	IL	Bingham
+62012	IL	Brighton
+62013	IL	Brussels
+62014	IL	Bunker Hill
+62015	IL	Butler
+62016	IL	Carrollton
+62017	IL	Coffeen
+62018	IL	Cottage Hills
+62019	IL	Donnellson
+62021	IL	Dorsey
+62022	IL	Dow
+62023	IL	Eagarville
+62024	IL	East Alton
+62025	IL	Edwardsville
+62026	IL	Edwardsville
+62027	IL	Eldred
+62028	IL	Elsah
+62030	IL	Fidelity
+62031	IL	Fieldon
+62032	IL	Fillmore
+62033	IL	Gillespie
+62034	IL	Glen Carbon
+62035	IL	Godfrey
+62036	IL	Golden Eagle
+62037	IL	Grafton
+62040	IL	Granite City
+62044	IL	Greenfield
+62045	IL	Hamburg
+62046	IL	Hamel
+62047	IL	Hardin
+62048	IL	Hartford
+62049	IL	Hillsboro
+62050	IL	Hillview
+62051	IL	Irving
+62052	IL	Jerseyville
+62053	IL	Kampsville
+62054	IL	Kane
+62056	IL	Litchfield
+62058	IL	Livingston
+62059	IL	Lovejoy
+62060	IL	Madison
+62061	IL	Marine
+62062	IL	Maryville
+62063	IL	Medora
+62065	IL	Michael
+62067	IL	Moro
+62069	IL	Mount Olive
+62070	IL	Mozier
+62071	IL	National Stock Yards
+62074	IL	New Douglas
+62075	IL	Nokomis
+62076	IL	Ohlman
+62077	IL	Panama
+62078	IL	Patterson
+62079	IL	Piasa
+62080	IL	Ramsey
+62081	IL	Rockbridge
+62082	IL	Roodhouse
+62083	IL	Rosamond
+62084	IL	Roxana
+62085	IL	Sawyerville
+62086	IL	Sorento
+62087	IL	South Roxana
+62088	IL	Staunton
+62089	IL	Taylor Springs
+62090	IL	Venice
+62091	IL	Walshville
+62092	IL	White Hall
+62093	IL	Wilsonville
+62094	IL	Witt
+62095	IL	Wood River
+62097	IL	Worden
+62098	IL	Wrights
+62201	IL	East Saint Louis
+62202	IL	East Saint Louis
+62203	IL	East Saint Louis
+62204	IL	East Saint Louis
+62205	IL	East Saint Louis
+62206	IL	East Saint Louis
+62207	IL	East Saint Louis
+62208	IL	Fairview Heights
+62214	IL	Addieville
+62215	IL	Albers
+62216	IL	Aviston
+62217	IL	Baldwin
+62218	IL	Bartelso
+62219	IL	Beckemeyer
+62220	IL	Belleville
+62221	IL	Belleville
+62222	IL	Belleville
+62223	IL	Belleville
+62224	IL	Mascoutah
+62225	IL	Scott Air Force Base
+62226	IL	Belleville
+62230	IL	Breese
+62231	IL	Carlyle
+62232	IL	Caseyville
+62233	IL	Chester
+62234	IL	Collinsville
+62236	IL	Columbia
+62237	IL	Coulterville
+62238	IL	Cutler
+62239	IL	Dupo
+62240	IL	East Carondelet
+62241	IL	Ellis Grove
+62242	IL	Evansville
+62243	IL	Freeburg
+62244	IL	Fults
+62245	IL	Germantown
+62246	IL	Greenville
+62247	IL	Hagarstown
+62248	IL	Hecker
+62249	IL	Highland
+62250	IL	Hoffman
+62252	IL	Huey
+62253	IL	Keyesport
+62254	IL	Lebanon
+62255	IL	Lenzburg
+62256	IL	Maeystown
+62257	IL	Marissa
+62258	IL	Mascoutah
+62259	IL	Menard
+62260	IL	Millstadt
+62261	IL	Modoc
+62262	IL	Mulberry Grove
+62263	IL	Nashville
+62264	IL	New Athens
+62265	IL	New Baden
+62266	IL	New Memphis
+62268	IL	Oakdale
+62269	IL	O Fallon
+62271	IL	Okawville
+62272	IL	Percy
+62273	IL	Pierron
+62274	IL	Pinckneyville
+62275	IL	Pocahontas
+62277	IL	Prairie Du Rocher
+62278	IL	Red Bud
+62279	IL	Renault
+62280	IL	Rockwood
+62281	IL	Saint Jacob
+62282	IL	Saint Libory
+62283	IL	Shattuc
+62284	IL	Smithboro
+62285	IL	Smithton
+62286	IL	Sparta
+62288	IL	Steeleville
+62289	IL	Summerfield
+62292	IL	Tilden
+62293	IL	Trenton
+62294	IL	Troy
+62295	IL	Valmeyer
+62297	IL	Walsh
+62298	IL	Waterloo
+62301	IL	Quincy
+62305	IL	Quincy
+62306	IL	Quincy
+62310	IL	Adrian
+62311	IL	Augusta
+62312	IL	Barry
+62313	IL	Basco
+62314	IL	Baylis
+62316	IL	Bowen
+62318	IL	Burnside
+62319	IL	Camden
+62320	IL	Camp Point
+62321	IL	Carthage
+62323	IL	Chambersburg
+62324	IL	Clayton
+62325	IL	Coatsburg
+62326	IL	Colchester
+62328	IL	Columbus
+62329	IL	Colusa
+62330	IL	Dallas City
+62332	IL	Detroit
+62334	IL	Elvaston
+62336	IL	Ferris
+62338	IL	Fowler
+62339	IL	Golden
+62340	IL	Griggsville
+62341	IL	Hamilton
+62343	IL	Hull
+62344	IL	Huntsville
+62345	IL	Kinderhook
+62346	IL	La Prairie
+62347	IL	Liberty
+62348	IL	Lima
+62349	IL	Loraine
+62351	IL	Mendon
+62352	IL	Milton
+62353	IL	Mount Sterling
+62354	IL	Nauvoo
+62355	IL	Nebo
+62356	IL	New Canton
+62357	IL	New Salem
+62358	IL	Niota
+62359	IL	Paloma
+62360	IL	Payson
+62361	IL	Pearl
+62362	IL	Perry
+62363	IL	Pittsfield
+62365	IL	Plainville
+62366	IL	Pleasant Hill
+62367	IL	Plymouth
+62370	IL	Rockport
+62373	IL	Sutter
+62374	IL	Tennessee
+62375	IL	Timewell
+62376	IL	Ursa
+62378	IL	Versailles
+62379	IL	Warsaw
+62380	IL	West Point
+62401	IL	Effingham
+62410	IL	Allendale
+62411	IL	Altamont
+62413	IL	Annapolis
+62414	IL	Beecher City
+62415	IL	Birds
+62417	IL	Bridgeport
+62418	IL	Brownstown
+62419	IL	Calhoun
+62420	IL	Casey
+62421	IL	Claremont
+62422	IL	Cowden
+62423	IL	Dennison
+62424	IL	Dieterich
+62425	IL	Dundas
+62426	IL	Edgewood
+62427	IL	Flat Rock
+62428	IL	Greenup
+62431	IL	Herrick
+62432	IL	Hidalgo
+62433	IL	Hutsonville
+62434	IL	Ingraham
+62435	IL	Janesville
+62436	IL	Jewett
+62438	IL	Lakewood
+62439	IL	Lawrenceville
+62440	IL	Lerna
+62441	IL	Marshall
+62442	IL	Martinsville
+62443	IL	Mason
+62444	IL	Mode
+62445	IL	Montrose
+62446	IL	Mount Erie
+62447	IL	Neoga
+62448	IL	Newton
+62449	IL	Oblong
+62450	IL	Olney
+62451	IL	Palestine
+62452	IL	Parkersburg
+62454	IL	Robinson
+62458	IL	Saint Elmo
+62459	IL	Sainte Marie
+62460	IL	Saint Francisville
+62461	IL	Shumway
+62462	IL	Sigel
+62463	IL	Stewardson
+62464	IL	Stoy
+62465	IL	Strasburg
+62466	IL	Sumner
+62467	IL	Teutopolis
+62468	IL	Toledo
+62469	IL	Trilla
+62471	IL	Vandalia
+62473	IL	Watson
+62474	IL	Westfield
+62475	IL	West Liberty
+62476	IL	West Salem
+62477	IL	West Union
+62478	IL	West York
+62479	IL	Wheeler
+62480	IL	Willow Hill
+62481	IL	Yale
+62501	IL	Argenta
+62510	IL	Assumption
+62511	IL	Atwater
+62512	IL	Beason
+62513	IL	Blue Mound
+62514	IL	Boody
+62515	IL	Buffalo
+62517	IL	Bulpitt
+62518	IL	Chestnut
+62519	IL	Cornland
+62520	IL	Dawson
+62521	IL	Decatur
+62522	IL	Decatur
+62523	IL	Decatur
+62524	IL	Decatur
+62525	IL	Decatur
+62526	IL	Decatur
+62527	IL	Decatur
+62530	IL	Divernon
+62531	IL	Edinburg
+62532	IL	Elwin
+62533	IL	Farmersville
+62534	IL	Findlay
+62535	IL	Forsyth
+62536	IL	Glenarm
+62537	IL	Harristown
+62538	IL	Harvel
+62539	IL	Illiopolis
+62540	IL	Kincaid
+62541	IL	Lake Fork
+62543	IL	Latham
+62544	IL	Macon
+62545	IL	Mechanicsburg
+62546	IL	Morrisonville
+62547	IL	Mount Auburn
+62548	IL	Mount Pulaski
+62549	IL	Mt Zion
+62550	IL	Moweaqua
+62551	IL	Niantic
+62552	IL	Oakley
+62553	IL	Oconee
+62554	IL	Oreana
+62555	IL	Owaneco
+62556	IL	Palmer
+62557	IL	Pana
+62558	IL	Pawnee
+62560	IL	Raymond
+62561	IL	Riverton
+62563	IL	Rochester
+62565	IL	Shelbyville
+62567	IL	Stonington
+62568	IL	Taylorville
+62570	IL	Tovey
+62571	IL	Tower Hill
+62572	IL	Waggoner
+62573	IL	Warrensburg
+62601	IL	Alexander
+62610	IL	Alsey
+62611	IL	Arenzville
+62612	IL	Ashland
+62613	IL	Athens
+62615	IL	Auburn
+62617	IL	Bath
+62618	IL	Beardstown
+62621	IL	Bluffs
+62622	IL	Bluff Springs
+62624	IL	Browning
+62625	IL	Cantrall
+62626	IL	Carlinville
+62627	IL	Chandlerville
+62628	IL	Chapin
+62629	IL	Chatham
+62630	IL	Chesterfield
+62631	IL	Concord
+62633	IL	Easton
+62634	IL	Elkhart
+62635	IL	Emden
+62638	IL	Franklin
+62639	IL	Frederick
+62640	IL	Girard
+62642	IL	Greenview
+62643	IL	Hartsburg
+62644	IL	Havana
+62649	IL	Hettick
+62650	IL	Jacksonville
+62651	IL	Jacksonville
+62655	IL	Kilbourne
+62656	IL	Lincoln
+62659	IL	Lincoln's New Salem
+62660	IL	Literberry
+62661	IL	Loami
+62662	IL	Lowder
+62663	IL	Manchester
+62664	IL	Mason City
+62665	IL	Meredosia
+62666	IL	Middletown
+62667	IL	Modesto
+62668	IL	Murrayville
+62670	IL	New Berlin
+62671	IL	New Holland
+62672	IL	Nilwood
+62673	IL	Oakford
+62674	IL	Palmyra
+62675	IL	Petersburg
+62676	IL	Plainview
+62677	IL	Pleasant Plains
+62681	IL	Rushville
+62682	IL	San Jose
+62683	IL	Scottville
+62684	IL	Sherman
+62685	IL	Shipman
+62686	IL	Standard City
+62688	IL	Tallula
+62689	IL	Thayer
+62690	IL	Virden
+62691	IL	Virginia
+62692	IL	Waverly
+62693	IL	Williamsville
+62694	IL	Winchester
+62695	IL	Woodson
+62701	IL	Springfield
+62702	IL	Springfield
+62703	IL	Springfield
+62704	IL	Springfield
+62705	IL	Springfield
+62706	IL	Springfield
+62707	IL	Springfield
+62708	IL	Springfield
+62709	IL	Springfield
+62711	IL	Springfield
+62712	IL	Springfield
+62713	IL	Springfield
+62715	IL	Springfield
+62716	IL	Springfield
+62718	IL	Springfield
+62719	IL	Springfield
+62720	IL	Springfield
+62721	IL	Springfield
+62722	IL	Springfield
+62723	IL	Springfield
+62726	IL	Springfield
+62736	IL	Springfield
+62739	IL	Springfield
+62746	IL	Springfield
+62756	IL	Springfield
+62757	IL	Springfield
+62761	IL	Springfield
+62762	IL	Springfield
+62763	IL	Springfield
+62764	IL	Springfield
+62765	IL	Springfield
+62766	IL	Springfield
+62767	IL	Springfield
+62769	IL	Springfield
+62776	IL	Springfield
+62777	IL	Springfield
+62781	IL	Springfield
+62786	IL	Springfield
+62791	IL	Springfield
+62794	IL	Springfield
+62796	IL	Springfield
+62801	IL	Centralia
+62803	IL	Hoyleton
+62805	IL	Akin
+62806	IL	Albion
+62807	IL	Alma
+62808	IL	Ashley
+62809	IL	Barnhill
+62810	IL	Belle Rive
+62811	IL	Bellmont
+62812	IL	Benton
+62814	IL	Bluford
+62815	IL	Bone Gap
+62816	IL	Bonnie
+62817	IL	Broughton
+62818	IL	Browns
+62819	IL	Buckner
+62820	IL	Burnt Prairie
+62821	IL	Carmi
+62822	IL	Christopher
+62823	IL	Cisne
+62824	IL	Clay City
+62825	IL	Coello
+62827	IL	Crossville
+62828	IL	Dahlgren
+62829	IL	Dale
+62830	IL	Dix
+62831	IL	Du Bois
+62832	IL	Du Quoin
+62833	IL	Ellery
+62834	IL	Emma
+62835	IL	Enfield
+62836	IL	Ewing
+62837	IL	Fairfield
+62838	IL	Farina
+62839	IL	Flora
+62840	IL	Frankfort Heights
+62841	IL	Freeman Spur
+62842	IL	Geff
+62843	IL	Golden Gate
+62844	IL	Grayville
+62845	IL	Herald
+62846	IL	Ina
+62847	IL	Iola
+62848	IL	Irvington
+62849	IL	Iuka
+62850	IL	Johnsonville
+62851	IL	Keenes
+62852	IL	Keensburg
+62853	IL	Kell
+62854	IL	Kinmundy
+62855	IL	Lancaster
+62856	IL	Logan
+62857	IL	Loogootee
+62858	IL	Louisville
+62859	IL	Mc Leansboro
+62860	IL	Macedonia
+62861	IL	Maunie
+62862	IL	Mill Shoals
+62863	IL	Mount Carmel
+62864	IL	Mount Vernon
+62865	IL	Mulkeytown
+62866	IL	Nason
+62867	IL	New Haven
+62868	IL	Noble
+62869	IL	Norris City
+62870	IL	Odin
+62871	IL	Omaha
+62872	IL	Opdyke
+62874	IL	Orient
+62875	IL	Patoka
+62876	IL	Radom
+62877	IL	Richview
+62878	IL	Rinard
+62879	IL	Sailor Springs
+62880	IL	Saint Peter
+62881	IL	Salem
+62882	IL	Sandoval
+62883	IL	Scheller
+62884	IL	Sesser
+62885	IL	Shobonier
+62886	IL	Sims
+62887	IL	Springerton
+62888	IL	Tamaroa
+62889	IL	Texico
+62890	IL	Thompsonville
+62891	IL	Valier
+62892	IL	Vernon
+62893	IL	Walnut Hill
+62894	IL	Waltonville
+62895	IL	Wayne City
+62896	IL	West Frankfort
+62897	IL	Whittington
+62898	IL	Woodlawn
+62899	IL	Xenia
+62901	IL	Carbondale
+62902	IL	Carbondale
+62903	IL	Carbondale
+62905	IL	Alto Pass
+62906	IL	Anna
+62907	IL	Ava
+62908	IL	Belknap
+62909	IL	Boles
+62910	IL	Brookport
+62912	IL	Buncombe
+62913	IL	Cache
+62914	IL	Cairo
+62915	IL	Cambria
+62916	IL	Campbell Hill
+62917	IL	Carrier Mills
+62918	IL	Carterville
+62919	IL	Cave In Rock
+62920	IL	Cobden
+62921	IL	Colp
+62922	IL	Creal Springs
+62923	IL	Cypress
+62924	IL	De Soto
+62926	IL	Dongola
+62927	IL	Dowell
+62928	IL	Eddyville
+62929	IL	Elco
+62930	IL	Eldorado
+62931	IL	Elizabethtown
+62932	IL	Elkville
+62933	IL	Energy
+62934	IL	Equality
+62935	IL	Galatia
+62938	IL	Golconda
+62939	IL	Goreville
+62940	IL	Gorham
+62941	IL	Grand Chain
+62942	IL	Grand Tower
+62943	IL	Grantsburg
+62944	IL	Hamletsburg
+62946	IL	Harrisburg
+62947	IL	Herod
+62948	IL	Herrin
+62949	IL	Hurst
+62950	IL	Jacob
+62951	IL	Johnston City
+62952	IL	Jonesboro
+62953	IL	Joppa
+62954	IL	Junction
+62955	IL	Karbers Ridge
+62956	IL	Karnak
+62957	IL	Mc Clure
+62958	IL	Makanda
+62959	IL	Marion
+62960	IL	Metropolis
+62961	IL	Millcreek
+62962	IL	Miller City
+62963	IL	Mound City
+62964	IL	Mounds
+62965	IL	Muddy
+62966	IL	Murphysboro
+62967	IL	New Burnside
+62969	IL	Olive Branch
+62970	IL	Olmsted
+62971	IL	Oraville
+62972	IL	Ozark
+62973	IL	Perks
+62974	IL	Pittsburg
+62975	IL	Pomona
+62976	IL	Pulaski
+62977	IL	Raleigh
+62979	IL	Ridgway
+62982	IL	Rosiclare
+62983	IL	Royalton
+62984	IL	Shawneetown
+62985	IL	Simpson
+62987	IL	Stonefort
+62988	IL	Tamms
+62990	IL	Thebes
+62991	IL	Tunnel Hill
+62992	IL	Ullin
+62993	IL	Unity
+62994	IL	Vergennes
+62995	IL	Vienna
+62996	IL	Villa Ridge
+62997	IL	Willisville
+62998	IL	Wolf Lake
+62999	IL	Zeigler
+63001	MO	Allenton
+63005	MO	Chesterfield
+63006	MO	Chesterfield
+63010	MO	Arnold
+63011	MO	Ballwin
+63012	MO	Barnhart
+63013	MO	Beaufort
+63014	MO	Berger
+63015	MO	Catawissa
+63016	MO	Cedar Hill
+63017	MO	Chesterfield
+63019	MO	Crystal City
+63020	MO	De Soto
+63021	MO	Ballwin
+63022	MO	Ballwin
+63023	MO	Dittmer
+63025	MO	Eureka
+63026	MO	Fenton
+63028	MO	Festus
+63030	MO	Fletcher
+63031	MO	Florissant
+63032	MO	Florissant
+63033	MO	Florissant
+63034	MO	Florissant
+63036	MO	French Village
+63037	MO	Gerald
+63038	MO	Glencoe
+63039	MO	Gray Summit
+63040	MO	Grover
+63041	MO	Grubville
+63042	MO	Hazelwood
+63043	MO	Maryland Heights
+63044	MO	Bridgeton
+63045	MO	Earth City
+63047	MO	Hematite
+63048	MO	Herculaneum
+63049	MO	High Ridge
+63050	MO	Hillsboro
+63051	MO	House Springs
+63052	MO	Imperial
+63053	MO	Kimmswick
+63055	MO	Labadie
+63056	MO	Leslie
+63057	MO	Liguori
+63060	MO	Lonedell
+63061	MO	Luebbering
+63065	MO	Mapaville
+63066	MO	Morse Mill
+63068	MO	New Haven
+63069	MO	Pacific
+63070	MO	Pevely
+63071	MO	Richwoods
+63072	MO	Robertsville
+63073	MO	Saint Albans
+63074	MO	Saint Ann
+63077	MO	Saint Clair
+63079	MO	Stanton
+63080	MO	Sullivan
+63084	MO	Union
+63087	MO	Valles Mines
+63088	MO	Valley Park
+63089	MO	Villa Ridge
+63090	MO	Washington
+63091	MO	Rosebud
+63099	MO	Fenton
+63101	MO	Saint Louis
+63102	MO	Saint Louis
+63103	MO	Saint Louis
+63104	MO	Saint Louis
+63105	MO	Saint Louis
+63106	MO	Saint Louis
+63107	MO	Saint Louis
+63108	MO	Saint Louis
+63109	MO	Saint Louis
+63110	MO	Saint Louis
+63111	MO	Saint Louis
+63112	MO	Saint Louis
+63113	MO	Saint Louis
+63114	MO	Saint Louis
+63115	MO	Saint Louis
+63116	MO	Saint Louis
+63117	MO	Saint Louis
+63118	MO	Saint Louis
+63119	MO	Saint Louis
+63120	MO	Saint Louis
+63121	MO	Saint Louis
+63122	MO	Saint Louis
+63123	MO	Saint Louis
+63124	MO	Saint Louis
+63125	MO	Saint Louis
+63126	MO	Saint Louis
+63127	MO	Saint Louis
+63128	MO	Saint Louis
+63129	MO	Saint Louis
+63130	MO	Saint Louis
+63131	MO	Saint Louis
+63132	MO	Saint Louis
+63133	MO	Saint Louis
+63134	MO	Saint Louis
+63135	MO	Saint Louis
+63136	MO	Saint Louis
+63137	MO	Saint Louis
+63138	MO	Saint Louis
+63139	MO	Saint Louis
+63140	MO	Saint Louis
+63141	MO	Saint Louis
+63143	MO	Saint Louis
+63144	MO	Saint Louis
+63145	MO	Saint Louis
+63146	MO	Saint Louis
+63147	MO	Saint Louis
+63150	MO	Saint Louis
+63151	MO	Saint Louis
+63153	MO	Saint Louis
+63155	MO	Saint Louis
+63156	MO	Saint Louis
+63157	MO	Saint Louis
+63158	MO	Saint Louis
+63160	MO	Saint Louis
+63163	MO	Saint Louis
+63164	MO	Saint Louis
+63166	MO	Saint Louis
+63167	MO	Saint Louis
+63169	MO	Saint Louis
+63171	MO	Saint Louis
+63177	MO	Saint Louis
+63178	MO	Saint Louis
+63179	MO	Saint Louis
+63180	MO	Saint Louis
+63182	MO	Saint Louis
+63188	MO	Saint Louis
+63195	MO	Saint Louis
+63196	MO	Saint Louis
+63197	MO	Saint Louis
+63198	MO	Saint Louis
+63199	MO	Saint Louis
+63301	MO	Saint Charles
+63302	MO	Saint Charles
+63303	MO	Saint Charles
+63304	MO	Saint Charles
+63330	MO	Annada
+63332	MO	Augusta
+63333	MO	Bellflower
+63334	MO	Bowling Green
+63336	MO	Clarksville
+63338	MO	Cottleville
+63339	MO	Curryville
+63341	MO	Defiance
+63342	MO	Dutzow
+63343	MO	Elsberry
+63344	MO	Eolia
+63345	MO	Farber
+63346	MO	Flinthill
+63347	MO	Foley
+63348	MO	Foristell
+63349	MO	Hawk Point
+63350	MO	High Hill
+63351	MO	Jonesburg
+63352	MO	Laddonia
+63353	MO	Louisiana
+63357	MO	Marthasville
+63359	MO	Middletown
+63361	MO	Montgomery City
+63362	MO	Moscow Mills
+63363	MO	New Florence
+63364	MO	New Hartford
+63365	MO	New Melle
+63366	MO	O Fallon
+63367	MO	Lake Saint Louis
+63369	MO	Old Monroe
+63370	MO	Olney
+63371	MO	Paynesville
+63373	MO	Portage Des Sioux
+63376	MO	Saint Peters
+63377	MO	Silex
+63378	MO	Treloar
+63379	MO	Troy
+63381	MO	Truxton
+63382	MO	Vandalia
+63383	MO	Warrenton
+63384	MO	Wellsville
+63385	MO	Wentzville
+63386	MO	West Alton
+63387	MO	Whiteside
+63388	MO	Williamsburg
+63389	MO	Winfield
+63390	MO	Wright City
+63401	MO	Hannibal
+63430	MO	Alexandria
+63431	MO	Anabel
+63432	MO	Arbela
+63433	MO	Ashburn
+63434	MO	Bethel
+63435	MO	Canton
+63436	MO	Center
+63437	MO	Clarence
+63438	MO	Durham
+63439	MO	Emden
+63440	MO	Ewing
+63441	MO	Frankford
+63442	MO	Granger
+63443	MO	Hunnewell
+63445	MO	Kahoka
+63446	MO	Knox City
+63447	MO	La Belle
+63448	MO	La Grange
+63450	MO	Lentner
+63451	MO	Leonard
+63452	MO	Lewistown
+63453	MO	Luray
+63454	MO	Maywood
+63456	MO	Monroe City
+63457	MO	Monticello
+63458	MO	Newark
+63459	MO	New London
+63460	MO	Novelty
+63461	MO	Palmyra
+63462	MO	Perry
+63463	MO	Philadelphia
+63464	MO	Plevna
+63465	MO	Revere
+63466	MO	Saint Patrick
+63467	MO	Saverton
+63468	MO	Shelbina
+63469	MO	Shelbyville
+63470	MO	Steffenville
+63471	MO	Taylor
+63472	MO	Wayland
+63473	MO	Williamstown
+63474	MO	Wyaconda
+63501	MO	Kirksville
+63530	MO	Atlanta
+63531	MO	Baring
+63532	MO	Bevier
+63533	MO	Brashear
+63534	MO	Callao
+63535	MO	Coatsville
+63536	MO	Downing
+63537	MO	Edina
+63538	MO	Elmer
+63539	MO	Ethel
+63540	MO	Gibbs
+63541	MO	Glenwood
+63543	MO	Gorin
+63544	MO	Green Castle
+63545	MO	Green City
+63546	MO	Greentop
+63547	MO	Hurdland
+63548	MO	Lancaster
+63549	MO	La Plata
+63551	MO	Livonia
+63552	MO	Macon
+63555	MO	Memphis
+63556	MO	Milan
+63557	MO	New Boston
+63558	MO	New Cambria
+63559	MO	Novinger
+63560	MO	Pollock
+63561	MO	Queen City
+63563	MO	Rutledge
+63565	MO	Unionville
+63566	MO	Winigan
+63567	MO	Worthington
+63601	MO	Park Hills
+63620	MO	Annapolis
+63621	MO	Arcadia
+63622	MO	Belgrade
+63623	MO	Belleview
+63624	MO	Bismarck
+63625	MO	Black
+63626	MO	Blackwell
+63627	MO	Bloomsdale
+63628	MO	Bonne Terre
+63629	MO	Bunker
+63630	MO	Cadet
+63631	MO	Caledonia
+63632	MO	Cascade
+63633	MO	Centerville
+63636	MO	Des Arc
+63637	MO	Doe Run
+63638	MO	Ellington
+63640	MO	Farmington
+63645	MO	Fredericktown
+63646	MO	Glover
+63648	MO	Irondale
+63650	MO	Ironton
+63651	MO	Knob Lick
+63653	MO	Leadwood
+63654	MO	Lesterville
+63655	MO	Marquand
+63656	MO	Middle Brook
+63660	MO	Mineral Point
+63661	MO	New Offenburg
+63662	MO	Patton
+63663	MO	Pilot Knob
+63664	MO	Potosi
+63665	MO	Redford
+63666	MO	Reynolds
+63670	MO	Sainte Genevieve
+63673	MO	Saint Mary
+63674	MO	Tiff
+63675	MO	Vulcan
+63701	MO	Cape Girardeau
+63702	MO	Cape Girardeau
+63703	MO	Cape Girardeau
+63705	MO	Cape Girardeau
+63730	MO	Advance
+63732	MO	Altenburg
+63735	MO	Bell City
+63736	MO	Benton
+63737	MO	Brazeau
+63738	MO	Brownwood
+63739	MO	Burfordville
+63740	MO	Chaffee
+63742	MO	Commerce
+63743	MO	Daisy
+63744	MO	Delta
+63745	MO	Dutchtown
+63746	MO	Farrar
+63747	MO	Friedheim
+63748	MO	Frohna
+63750	MO	Gipsy
+63751	MO	Glenallen
+63752	MO	Gordonville
+63753	MO	Grassy
+63755	MO	Jackson
+63758	MO	Kelso
+63760	MO	Leopold
+63763	MO	Mc Gee
+63764	MO	Marble Hill
+63766	MO	Millersville
+63767	MO	Morley
+63769	MO	Oak Ridge
+63770	MO	Old Appleton
+63771	MO	Oran
+63772	MO	Painton
+63774	MO	Perkins
+63775	MO	Perryville
+63776	MO	Mc Bride
+63779	MO	Pocahontas
+63780	MO	Scott City
+63781	MO	Sedgewickville
+63782	MO	Sturdivant
+63783	MO	Uniontown
+63784	MO	Vanduser
+63785	MO	Whitewater
+63787	MO	Zalma
+63801	MO	Sikeston
+63820	MO	Anniston
+63821	MO	Arbyrd
+63822	MO	Bernie
+63823	MO	Bertrand
+63824	MO	Blodgett
+63825	MO	Bloomfield
+63826	MO	Braggadocio
+63827	MO	Bragg City
+63828	MO	Canalou
+63829	MO	Cardwell
+63830	MO	Caruthersville
+63833	MO	Catron
+63834	MO	Charleston
+63837	MO	Clarkton
+63838	MO	Conran
+63839	MO	Cooter
+63840	MO	Deering
+63841	MO	Dexter
+63845	MO	East Prairie
+63846	MO	Essex
+63847	MO	Gibson
+63848	MO	Gideon
+63849	MO	Gobler
+63850	MO	Grayridge
+63851	MO	Hayti
+63852	MO	Holcomb
+63853	MO	Holland
+63855	MO	Hornersville
+63857	MO	Kennett
+63860	MO	Kewanee
+63862	MO	Lilbourn
+63863	MO	Malden
+63866	MO	Marston
+63867	MO	Matthews
+63868	MO	Morehouse
+63869	MO	New Madrid
+63870	MO	Parma
+63871	MO	Pascola
+63873	MO	Portageville
+63874	MO	Risco
+63875	MO	Rives
+63876	MO	Senath
+63877	MO	Steele
+63878	MO	Tallapoosa
+63879	MO	Wardell
+63880	MO	Whiteoak
+63881	MO	Wolf Island
+63882	MO	Wyatt
+63901	MO	Poplar Bluff
+63902	MO	Poplar Bluff
+63931	MO	Briar
+63932	MO	Broseley
+63933	MO	Campbell
+63934	MO	Clubb
+63935	MO	Doniphan
+63936	MO	Dudley
+63937	MO	Ellsinore
+63938	MO	Fagus
+63939	MO	Fairdealing
+63940	MO	Fisk
+63941	MO	Fremont
+63942	MO	Gatewood
+63943	MO	Grandin
+63944	MO	Greenville
+63945	MO	Harviell
+63947	MO	Hiram
+63950	MO	Lodi
+63951	MO	Lowndes
+63952	MO	Mill Spring
+63953	MO	Naylor
+63954	MO	Neelyville
+63955	MO	Oxly
+63956	MO	Patterson
+63957	MO	Piedmont
+63960	MO	Puxico
+63961	MO	Qulin
+63962	MO	Rombauer
+63963	MO	Shook
+63964	MO	Silva
+63965	MO	Van Buren
+63966	MO	Wappapello
+63967	MO	Williamsville
+64001	MO	Alma
+64011	MO	Bates City
+64012	MO	Belton
+64013	MO	Blue Springs
+64014	MO	Blue Springs
+64015	MO	Blue Springs
+64016	MO	Buckner
+64017	MO	Camden
+64018	MO	Camden Point
+64019	MO	Centerview
+64020	MO	Concordia
+64021	MO	Corder
+64022	MO	Dover
+64024	MO	Excelsior Springs
+64028	MO	Farley
+64029	MO	Grain Valley
+64030	MO	Grandview
+64034	MO	Greenwood
+64035	MO	Hardin
+64036	MO	Henrietta
+64037	MO	Higginsville
+64040	MO	Holden
+64048	MO	Holt
+64050	MO	Independence
+64051	MO	Independence
+64052	MO	Independence
+64053	MO	Independence
+64054	MO	Independence
+64055	MO	Independence
+64056	MO	Independence
+64057	MO	Independence
+64058	MO	Independence
+64060	MO	Kearney
+64061	MO	Kingsville
+64062	MO	Lawson
+64063	MO	Lees Summit
+64064	MO	Lees Summit
+64065	MO	Lees Summit
+64066	MO	Levasy
+64067	MO	Lexington
+64068	MO	Liberty
+64070	MO	Lone Jack
+64071	MO	Mayview
+64072	MO	Missouri City
+64073	MO	Mosby
+64074	MO	Napoleon
+64075	MO	Oak Grove
+64076	MO	Odessa
+64077	MO	Orrick
+64078	MO	Peculiar
+64079	MO	Platte City
+64080	MO	Pleasant Hill
+64081	MO	Lees Summit
+64082	MO	Lees Summit
+64083	MO	Raymore
+64084	MO	Rayville
+64085	MO	Richmond
+64086	MO	Lees Summit
+64088	MO	Sibley
+64089	MO	Smithville
+64090	MO	Strasburg
+64092	MO	Waldron
+64093	MO	Warrensburg
+64096	MO	Waverly
+64097	MO	Wellington
+64098	MO	Weston
+64101	MO	Kansas City
+64102	MO	Kansas City
+64105	MO	Kansas City
+64106	MO	Kansas City
+64108	MO	Kansas City
+64109	MO	Kansas City
+64110	MO	Kansas City
+64111	MO	Kansas City
+64112	MO	Kansas City
+64113	MO	Kansas City
+64114	MO	Kansas City
+64116	MO	Kansas City
+64117	MO	Kansas City
+64118	MO	Kansas City
+64119	MO	Kansas City
+64120	MO	Kansas City
+64123	MO	Kansas City
+64124	MO	Kansas City
+64125	MO	Kansas City
+64126	MO	Kansas City
+64127	MO	Kansas City
+64128	MO	Kansas City
+64129	MO	Kansas City
+64130	MO	Kansas City
+64131	MO	Kansas City
+64132	MO	Kansas City
+64133	MO	Kansas City
+64134	MO	Kansas City
+64136	MO	Kansas City
+64137	MO	Kansas City
+64138	MO	Kansas City
+64139	MO	Kansas City
+64141	MO	Kansas City
+64142	MO	Kansas City
+64144	MO	Kansas City
+64145	MO	Kansas City
+64146	MO	Kansas City
+64147	MO	Kansas City
+64148	MO	Kansas City
+64149	MO	Kansas City
+64150	MO	Kansas City
+64151	MO	Kansas City
+64152	MO	Kansas City
+64153	MO	Kansas City
+64154	MO	Kansas City
+64155	MO	Kansas City
+64156	MO	Kansas City
+64157	MO	Kansas City
+64158	MO	Kansas City
+64160	MO	Kansas City
+64161	MO	Kansas City
+64163	MO	Kansas City
+64164	MO	Kansas City
+64165	MO	Kansas City
+64166	MO	Kansas City
+64167	MO	Kansas City
+64168	MO	Kansas City
+64170	MO	Kansas City
+64171	MO	Kansas City
+64172	MO	Kansas City
+64173	MO	Kansas City
+64179	MO	Kansas City
+64180	MO	Kansas City
+64183	MO	Kansas City
+64184	MO	Kansas City
+64185	MO	Kansas City
+64187	MO	Kansas City
+64188	MO	Kansas City
+64189	MO	Kansas City
+64190	MO	Kansas City
+64191	MO	Kansas City
+64192	MO	Kansas City
+64193	MO	Kansas City
+64194	MO	Kansas City
+64195	MO	Kansas City
+64196	MO	Kansas City
+64197	MO	Kansas City
+64198	MO	Kansas City
+64199	MO	Kansas City
+64401	MO	Agency
+64402	MO	Albany
+64420	MO	Allendale
+64421	MO	Amazonia
+64422	MO	Amity
+64423	MO	Barnard
+64424	MO	Bethany
+64426	MO	Blythedale
+64427	MO	Bolckow
+64428	MO	Burlington Junction
+64429	MO	Cameron
+64430	MO	Clarksdale
+64431	MO	Clearmont
+64432	MO	Clyde
+64433	MO	Conception
+64434	MO	Conception Junction
+64436	MO	Cosby
+64437	MO	Craig
+64438	MO	Darlington
+64439	MO	Dearborn
+64440	MO	De Kalb
+64441	MO	Denver
+64442	MO	Eagleville
+64443	MO	Easton
+64444	MO	Edgerton
+64445	MO	Elmo
+64446	MO	Fairfax
+64447	MO	Fairport
+64448	MO	Faucett
+64449	MO	Fillmore
+64451	MO	Forest City
+64453	MO	Gentry
+64454	MO	Gower
+64455	MO	Graham
+64456	MO	Grant City
+64457	MO	Guilford
+64458	MO	Hatfield
+64459	MO	Helena
+64461	MO	Hopkins
+64463	MO	King City
+64465	MO	Lathrop
+64466	MO	Maitland
+64467	MO	Martinsville
+64468	MO	Maryville
+64469	MO	Maysville
+64470	MO	Mound City
+64471	MO	New Hampton
+64473	MO	Oregon
+64474	MO	Osborn
+64475	MO	Parnell
+64476	MO	Pickering
+64477	MO	Plattsburg
+64478	MO	Quitman
+64479	MO	Ravenwood
+64480	MO	Rea
+64481	MO	Ridgeway
+64482	MO	Rock Port
+64483	MO	Rosendale
+64484	MO	Rushville
+64485	MO	Savannah
+64486	MO	Sheridan
+64487	MO	Skidmore
+64489	MO	Stanberry
+64490	MO	Stewartsville
+64491	MO	Tarkio
+64492	MO	Trimble
+64493	MO	Turney
+64494	MO	Union Star
+64496	MO	Watson
+64497	MO	Weatherby
+64498	MO	Westboro
+64499	MO	Worth
+64501	MO	Saint Joseph
+64502	MO	Saint Joseph
+64503	MO	Saint Joseph
+64504	MO	Saint Joseph
+64505	MO	Saint Joseph
+64506	MO	Saint Joseph
+64507	MO	Saint Joseph
+64508	MO	Saint Joseph
+64601	MO	Chillicothe
+64620	MO	Altamont
+64621	MO	Avalon
+64622	MO	Bogard
+64623	MO	Bosworth
+64624	MO	Braymer
+64625	MO	Breckenridge
+64628	MO	Brookfield
+64630	MO	Browning
+64631	MO	Bucklin
+64632	MO	Cainsville
+64633	MO	Carrollton
+64635	MO	Chula
+64636	MO	Coffey
+64637	MO	Cowgill
+64638	MO	Dawn
+64639	MO	De Witt
+64640	MO	Gallatin
+64641	MO	Galt
+64642	MO	Gilman City
+64643	MO	Hale
+64644	MO	Hamilton
+64645	MO	Harris
+64646	MO	Humphreys
+64647	MO	Jameson
+64648	MO	Jamesport
+64649	MO	Kidder
+64650	MO	Kingston
+64651	MO	Laclede
+64652	MO	Laredo
+64653	MO	Linneus
+64654	MO	Lock Springs
+64655	MO	Lucerne
+64656	MO	Ludlow
+64657	MO	Mc Fall
+64658	MO	Marceline
+64659	MO	Meadville
+64660	MO	Mendon
+64661	MO	Mercer
+64664	MO	Mooresville
+64665	MO	Mount Moriah
+64667	MO	Newtown
+64668	MO	Norborne
+64670	MO	Pattonsburg
+64671	MO	Polo
+64672	MO	Powersville
+64673	MO	Princeton
+64674	MO	Purdin
+64676	MO	Rothville
+64679	MO	Spickard
+64680	MO	Stet
+64681	MO	Sumner
+64682	MO	Tina
+64683	MO	Trenton
+64686	MO	Utica
+64687	MO	Wakenda
+64688	MO	Wheeling
+64689	MO	Winston
+64701	MO	Harrisonville
+64720	MO	Adrian
+64722	MO	Amoret
+64723	MO	Amsterdam
+64724	MO	Appleton City
+64725	MO	Archie
+64726	MO	Blairstown
+64728	MO	Bronaugh
+64730	MO	Butler
+64733	MO	Chilhowee
+64734	MO	Cleveland
+64735	MO	Clinton
+64738	MO	Collins
+64739	MO	Creighton
+64740	MO	Deepwater
+64741	MO	Deerfield
+64742	MO	Drexel
+64743	MO	East Lynne
+64744	MO	El Dorado Springs
+64745	MO	Foster
+64746	MO	Freeman
+64747	MO	Garden City
+64748	MO	Golden City
+64750	MO	Harwood
+64751	MO	Horton
+64752	MO	Hume
+64755	MO	Jasper
+64756	MO	Jerico Springs
+64759	MO	Lamar
+64760	MO	Latour
+64761	MO	Leeton
+64762	MO	Liberal
+64763	MO	Lowry City
+64765	MO	Metz
+64766	MO	Milford
+64767	MO	Milo
+64769	MO	Mindenmines
+64770	MO	Montrose
+64771	MO	Moundville
+64772	MO	Nevada
+64776	MO	Osceola
+64777	MO	Passaic
+64778	MO	Richards
+64779	MO	Rich Hill
+64780	MO	Rockville
+64781	MO	Roscoe
+64783	MO	Schell City
+64784	MO	Sheldon
+64788	MO	Urich
+64789	MO	Vista
+64790	MO	Walker
+64801	MO	Joplin
+64802	MO	Joplin
+64803	MO	Joplin
+64804	MO	Joplin
+64830	MO	Alba
+64831	MO	Anderson
+64832	MO	Asbury
+64833	MO	Avilla
+64834	MO	Carl Junction
+64835	MO	Carterville
+64836	MO	Carthage
+64840	MO	Diamond
+64841	MO	Duenweg
+64842	MO	Fairview
+64843	MO	Goodman
+64844	MO	Granby
+64847	MO	Lanagan
+64848	MO	La Russell
+64849	MO	Neck City
+64850	MO	Neosho
+64853	MO	Newtonia
+64854	MO	Noel
+64855	MO	Oronogo
+64856	MO	Pineville
+64857	MO	Purcell
+64858	MO	Racine
+64859	MO	Reeds
+64861	MO	Rocky Comfort
+64862	MO	Sarcoxie
+64863	MO	South West City
+64864	MO	Saginaw
+64865	MO	Seneca
+64866	MO	Stark City
+64867	MO	Stella
+64868	MO	Tiff City
+64869	MO	Waco
+64870	MO	Webb City
+64873	MO	Wentworth
+64874	MO	Wheaton
+64944	MO	Kansas City
+64999	MO	Kansas City
+65001	MO	Argyle
+65010	MO	Ashland
+65011	MO	Barnett
+65013	MO	Belle
+65014	MO	Bland
+65016	MO	Bonnots Mill
+65017	MO	Brumley
+65018	MO	California
+65020	MO	Camdenton
+65022	MO	Cedar City
+65023	MO	Centertown
+65024	MO	Chamois
+65025	MO	Clarksburg
+65026	MO	Eldon
+65031	MO	Etterville
+65032	MO	Eugene
+65034	MO	Fortuna
+65035	MO	Freeburg
+65036	MO	Gasconade
+65037	MO	Gravois Mills
+65038	MO	Laurie
+65039	MO	Hartsburg
+65040	MO	Henley
+65041	MO	Hermann
+65042	MO	High Point
+65043	MO	Holts Summit
+65046	MO	Jamestown
+65047	MO	Kaiser
+65048	MO	Koeltztown
+65049	MO	Lake Ozark
+65050	MO	Latham
+65051	MO	Linn
+65052	MO	Linn Creek
+65053	MO	Lohman
+65054	MO	Loose Creek
+65055	MO	Mc Girk
+65056	MO	McKittrick
+65058	MO	Meta
+65059	MO	Mokane
+65061	MO	Morrison
+65062	MO	Mount Sterling
+65063	MO	New Bloomfield
+65064	MO	Olean
+65065	MO	Osage Beach
+65066	MO	Owensville
+65067	MO	Portland
+65068	MO	Prairie Home
+65069	MO	Rhineland
+65072	MO	Rocky Mount
+65074	MO	Russellville
+65075	MO	Saint Elizabeth
+65076	MO	Saint Thomas
+65077	MO	Steedman
+65078	MO	Stover
+65079	MO	Sunrise Beach
+65080	MO	Tebbetts
+65081	MO	Tipton
+65082	MO	Tuscumbia
+65083	MO	Ulman
+65084	MO	Versailles
+65085	MO	Westphalia
+65101	MO	Jefferson City
+65102	MO	Jefferson City
+65103	MO	Jefferson City
+65104	MO	Jefferson City
+65105	MO	Jefferson City
+65106	MO	Jefferson City
+65107	MO	Jefferson City
+65108	MO	Jefferson City
+65109	MO	Jefferson City
+65110	MO	Jefferson City
+65111	MO	Jefferson City
+65201	MO	Columbia
+65202	MO	Columbia
+65203	MO	Columbia
+65205	MO	Columbia
+65211	MO	Columbia
+65212	MO	Columbia
+65215	MO	Columbia
+65216	MO	Columbia
+65217	MO	Columbia
+65218	MO	Columbia
+65230	MO	Armstrong
+65231	MO	Auxvasse
+65232	MO	Benton City
+65233	MO	Boonville
+65236	MO	Brunswick
+65237	MO	Bunceton
+65239	MO	Cairo
+65240	MO	Centralia
+65243	MO	Clark
+65244	MO	Clifton Hill
+65246	MO	Dalton
+65247	MO	Excello
+65248	MO	Fayette
+65250	MO	Franklin
+65251	MO	Fulton
+65254	MO	Glasgow
+65255	MO	Hallsville
+65256	MO	Harrisburg
+65257	MO	Higbee
+65258	MO	Holliday
+65259	MO	Huntsville
+65260	MO	Jacksonville
+65261	MO	Keytesville
+65262	MO	Kingdom City
+65263	MO	Madison
+65264	MO	Martinsburg
+65265	MO	Mexico
+65270	MO	Moberly
+65274	MO	New Franklin
+65275	MO	Paris
+65276	MO	Pilot Grove
+65278	MO	Renick
+65279	MO	Rocheport
+65280	MO	Rush Hill
+65281	MO	Salisbury
+65282	MO	Santa Fe
+65283	MO	Stoutsville
+65284	MO	Sturgeon
+65285	MO	Thompson
+65286	MO	Triplett
+65287	MO	Wooldridge
+65299	MO	Mid Missouri
+65301	MO	Sedalia
+65302	MO	Sedalia
+65305	MO	Whiteman Air Force Base
+65320	MO	Arrow Rock
+65321	MO	Blackburn
+65322	MO	Blackwater
+65323	MO	Calhoun
+65324	MO	Climax Springs
+65325	MO	Cole Camp
+65326	MO	Edwards
+65327	MO	Emma
+65329	MO	Florence
+65330	MO	Gilliam
+65332	MO	Green Ridge
+65333	MO	Houstonia
+65334	MO	Hughesville
+65335	MO	Ionia
+65336	MO	Knob Noster
+65337	MO	La Monte
+65338	MO	Lincoln
+65339	MO	Malta Bend
+65340	MO	Marshall
+65344	MO	Miami
+65345	MO	Mora
+65347	MO	Nelson
+65348	MO	Otterville
+65349	MO	Slater
+65350	MO	Smithton
+65351	MO	Sweet Springs
+65354	MO	Syracuse
+65355	MO	Warsaw
+65360	MO	Windsor
+65401	MO	Rolla
+65402	MO	Rolla
+65409	MO	Rolla
+65433	MO	Bendavis
+65436	MO	Beulah
+65438	MO	Birch Tree
+65439	MO	Bixby
+65440	MO	Boss
+65441	MO	Bourbon
+65443	MO	Brinktown
+65444	MO	Bucyrus
+65446	MO	Cherryville
+65449	MO	Cook Station
+65452	MO	Crocker
+65453	MO	Cuba
+65456	MO	Davisville
+65457	MO	Devils Elbow
+65459	MO	Dixon
+65461	MO	Duke
+65462	MO	Edgar Springs
+65463	MO	Eldridge
+65464	MO	Elk Creek
+65466	MO	Eminence
+65468	MO	Eunice
+65470	MO	Falcon
+65473	MO	Fort Leonard Wood
+65479	MO	Hartshorn
+65483	MO	Houston
+65484	MO	Huggins
+65486	MO	Iberia
+65501	MO	Jadwin
+65529	MO	Jerome
+65532	MO	Lake Spring
+65534	MO	Laquey
+65535	MO	Leasburg
+65536	MO	Lebanon
+65540	MO	Lecoma
+65541	MO	Lenox
+65542	MO	Licking
+65543	MO	Lynchburg
+65546	MO	Montier
+65548	MO	Mountain View
+65550	MO	Newburg
+65552	MO	Plato
+65555	MO	Raymondville
+65556	MO	Richland
+65557	MO	Roby
+65559	MO	Saint James
+65560	MO	Salem
+65564	MO	Solo
+65565	MO	Steelville
+65566	MO	Viburnum
+65567	MO	Stoutland
+65570	MO	Success
+65571	MO	Summersville
+65572	MO	Swedeborg
+65573	MO	Teresita
+65580	MO	Vichy
+65582	MO	Vienna
+65583	MO	Waynesville
+65586	MO	Wesco
+65588	MO	Winona
+65589	MO	Yukon
+65590	MO	Long Lane
+65591	MO	Montreal
+65601	MO	Aldrich
+65603	MO	Arcola
+65604	MO	Ash Grove
+65605	MO	Aurora
+65606	MO	Alton
+65607	MO	Caplinger Mills
+65608	MO	Ava
+65609	MO	Bakersfield
+65610	MO	Billings
+65611	MO	Blue Eye
+65612	MO	Bois D Arc
+65613	MO	Bolivar
+65614	MO	Bradleyville
+65615	MO	Branson
+65616	MO	Branson
+65617	MO	Brighton
+65618	MO	Brixey
+65619	MO	Brookline Station
+65620	MO	Bruner
+65622	MO	Buffalo
+65623	MO	Butterfield
+65624	MO	Cape Fair
+65625	MO	Cassville
+65626	MO	Caulfield
+65627	MO	Cedarcreek
+65629	MO	Chadwick
+65630	MO	Chestnutridge
+65631	MO	Clever
+65632	MO	Conway
+65633	MO	Crane
+65634	MO	Cross Timbers
+65635	MO	Dadeville
+65636	MO	Diggins
+65637	MO	Dora
+65638	MO	Drury
+65640	MO	Dunnegan
+65641	MO	Eagle Rock
+65644	MO	Elkland
+65645	MO	Eudora
+65646	MO	Everton
+65647	MO	Exeter
+65648	MO	Fair Grove
+65649	MO	Fair Play
+65650	MO	Flemington
+65652	MO	Fordland
+65653	MO	Forsyth
+65654	MO	Freistatt
+65655	MO	Gainesville
+65656	MO	Galena
+65657	MO	Garrison
+65658	MO	Golden
+65659	MO	Goodson
+65660	MO	Graff
+65661	MO	Greenfield
+65662	MO	Grovespring
+65663	MO	Half Way
+65664	MO	Halltown
+65666	MO	Hardenville
+65667	MO	Hartville
+65668	MO	Hermitage
+65669	MO	Highlandville
+65672	MO	Hollister
+65673	MO	Hollister
+65674	MO	Humansville
+65675	MO	Hurley
+65676	MO	Isabella
+65679	MO	Kirbyville
+65680	MO	Kissee Mills
+65681	MO	Lampe
+65682	MO	Lockwood
+65685	MO	Louisburg
+65686	MO	Kimberling City
+65688	MO	Brandsville
+65689	MO	Cabool
+65690	MO	Couch
+65692	MO	Koshkonong
+65701	MO	Mc Clurg
+65702	MO	Macomb
+65704	MO	Mansfield
+65705	MO	Marionville
+65706	MO	Marshfield
+65707	MO	Miller
+65708	MO	Monett
+65710	MO	Morrisville
+65711	MO	Mountain Grove
+65712	MO	Mount Vernon
+65713	MO	Niangua
+65714	MO	Nixa
+65715	MO	Noble
+65717	MO	Norwood
+65720	MO	Oldfield
+65721	MO	Ozark
+65722	MO	Phillipsburg
+65723	MO	Pierce City
+65724	MO	Pittsburg
+65725	MO	Pleasant Hope
+65726	MO	Point Lookout
+65727	MO	Polk
+65728	MO	Ponce De Leon
+65729	MO	Pontiac
+65730	MO	Powell
+65731	MO	Powersite
+65732	MO	Preston
+65733	MO	Protem
+65734	MO	Purdy
+65735	MO	Quincy
+65737	MO	Reeds Spring
+65738	MO	Republic
+65739	MO	Ridgedale
+65740	MO	Rockaway Beach
+65741	MO	Rockbridge
+65742	MO	Rogersville
+65744	MO	Rueter
+65745	MO	Seligman
+65746	MO	Seymour
+65747	MO	Shell Knob
+65752	MO	South Greenfield
+65753	MO	Sparta
+65754	MO	Spokane
+65755	MO	Squires
+65756	MO	Stotts City
+65757	MO	Strafford
+65759	MO	Taneyville
+65760	MO	Tecumseh
+65761	MO	Theodosia
+65762	MO	Thornfield
+65764	MO	Tunas
+65765	MO	Turners
+65766	MO	Udall
+65767	MO	Urbana
+65768	MO	Vanzant
+65769	MO	Verona
+65770	MO	Walnut Grove
+65771	MO	Walnut Shade
+65772	MO	Washburn
+65773	MO	Wasola
+65774	MO	Weaubleau
+65775	MO	West Plains
+65776	MO	South Fork
+65777	MO	Moody
+65778	MO	Myrtle
+65779	MO	Wheatland
+65781	MO	Willard
+65783	MO	Windyville
+65784	MO	Zanoni
+65785	MO	Stockton
+65786	MO	Macks Creek
+65787	MO	Roach
+65788	MO	Peace Valley
+65789	MO	Pomona
+65790	MO	Pottersville
+65791	MO	Thayer
+65793	MO	Willow Springs
+65801	MO	Springfield
+65802	MO	Springfield
+65803	MO	Springfield
+65804	MO	Springfield
+65805	MO	Springfield
+65806	MO	Springfield
+65807	MO	Springfield
+65808	MO	Springfield
+65809	MO	Springfield
+65810	MO	Springfield
+65817	MO	Springfield
+65890	MO	Springfield
+65898	MO	Springfield
+65899	MO	Springfield
+66002	KS	Atchison
+66006	KS	Baldwin City
+66007	KS	Basehor
+66008	KS	Bendena
+66010	KS	Blue Mound
+66012	KS	Bonner Springs
+66013	KS	Bucyrus
+66014	KS	Centerville
+66015	KS	Colony
+66016	KS	Cummings
+66017	KS	Denton
+66018	KS	De Soto
+66019	KS	Clearview City
+66020	KS	Easton
+66021	KS	Edgerton
+66023	KS	Effingham
+66024	KS	Elwood
+66025	KS	Eudora
+66026	KS	Fontana
+66027	KS	Fort Leavenworth
+66030	KS	Gardner
+66031	KS	New Century
+66032	KS	Garnett
+66033	KS	Greeley
+66035	KS	Highland
+66036	KS	Hillsdale
+66039	KS	Kincaid
+66040	KS	La Cygne
+66041	KS	Lancaster
+66042	KS	Lane
+66043	KS	Lansing
+66044	KS	Lawrence
+66045	KS	Lawrence
+66046	KS	Lawrence
+66047	KS	Lawrence
+66048	KS	Leavenworth
+66049	KS	Lawrence
+66050	KS	Lecompton
+66051	KS	Olathe
+66052	KS	Linwood
+66053	KS	Louisburg
+66054	KS	Mc Louth
+66056	KS	Mound City
+66058	KS	Muscotah
+66060	KS	Nortonville
+66061	KS	Olathe
+66062	KS	Olathe
+66063	KS	Olathe
+66064	KS	Osawatomie
+66066	KS	Oskaloosa
+66067	KS	Ottawa
+66070	KS	Ozawkie
+66071	KS	Paola
+66072	KS	Parker
+66073	KS	Perry
+66075	KS	Pleasanton
+66076	KS	Pomona
+66077	KS	Potter
+66078	KS	Princeton
+66079	KS	Rantoul
+66080	KS	Richmond
+66083	KS	Spring Hill
+66085	KS	Stilwell
+66086	KS	Tonganoxie
+66087	KS	Troy
+66088	KS	Valley Falls
+66090	KS	Wathena
+66091	KS	Welda
+66092	KS	Wellsville
+66093	KS	Westphalia
+66094	KS	White Cloud
+66095	KS	Williamsburg
+66097	KS	Winchester
+66101	KS	Kansas City
+66102	KS	Kansas City
+66103	KS	Kansas City
+66104	KS	Kansas City
+66105	KS	Kansas City
+66106	KS	Kansas City
+66109	KS	Kansas City
+66110	KS	Kansas City
+66111	KS	Kansas City
+66112	KS	Kansas City
+66113	KS	Edwardsville
+66115	KS	Kansas City
+66117	KS	Kansas City
+66118	KS	Kansas City
+66119	KS	Kansas City
+66160	KS	Kansas City
+66201	KS	Shawnee Mission
+66202	KS	Shawnee Mission
+66203	KS	Shawnee Mission
+66204	KS	Shawnee Mission
+66205	KS	Shawnee Mission
+66206	KS	Shawnee Mission
+66207	KS	Shawnee Mission
+66208	KS	Shawnee Mission
+66209	KS	Shawnee Mission
+66210	KS	Shawnee Mission
+66211	KS	Shawnee Mission
+66212	KS	Shawnee Mission
+66213	KS	Shawnee Mission
+66214	KS	Shawnee Mission
+66215	KS	Shawnee Mission
+66216	KS	Shawnee Mission
+66217	KS	Shawnee Mission
+66218	KS	Shawnee Mission
+66219	KS	Shawnee Mission
+66220	KS	Shawnee Mission
+66221	KS	Shawnee Mission
+66222	KS	Shawnee Mission
+66223	KS	Shawnee Mission
+66224	KS	Shawnee Mission
+66225	KS	Shawnee Mission
+66226	KS	Shawnee Mission
+66227	KS	Shawnee Mission
+66250	KS	Shawnee Mission
+66276	KS	Shawnee Mission
+66279	KS	Shawnee Mission
+66282	KS	Shawnee Mission
+66285	KS	Shawnee Mission
+66401	KS	Alma
+66402	KS	Auburn
+66403	KS	Axtell
+66404	KS	Baileyville
+66406	KS	Beattie
+66407	KS	Belvue
+66408	KS	Bern
+66409	KS	Berryton
+66411	KS	Blue Rapids
+66412	KS	Bremen
+66413	KS	Burlingame
+66414	KS	Carbondale
+66415	KS	Centralia
+66416	KS	Circleville
+66417	KS	Corning
+66418	KS	Delia
+66419	KS	Denison
+66420	KS	Dover
+66422	KS	Emmett
+66423	KS	Eskridge
+66424	KS	Everest
+66425	KS	Fairview
+66426	KS	Fostoria
+66427	KS	Frankfort
+66428	KS	Goff
+66429	KS	Grantville
+66431	KS	Harveyville
+66432	KS	Havensville
+66433	KS	Marysville
+66434	KS	Hiawatha
+66436	KS	Holton
+66438	KS	Home
+66439	KS	Horton
+66440	KS	Hoyt
+66441	KS	Junction City
+66442	KS	Fort Riley
+66449	KS	Leonardville
+66450	KS	Louisville
+66451	KS	Lyndon
+66501	KS	Mc Farland
+66502	KS	Manhattan
+66503	KS	Manhattan
+66505	KS	Manhattan
+66506	KS	Manhattan
+66507	KS	Maple Hill
+66508	KS	Marysville
+66509	KS	Mayetta
+66510	KS	Melvern
+66512	KS	Meriden
+66514	KS	Milford
+66515	KS	Morrill
+66516	KS	Netawaka
+66517	KS	Ogden
+66518	KS	Oketo
+66520	KS	Olsburg
+66521	KS	Onaga
+66522	KS	Oneida
+66523	KS	Osage City
+66524	KS	Overbrook
+66526	KS	Paxico
+66527	KS	Powhattan
+66528	KS	Quenemo
+66531	KS	Riley
+66532	KS	Robinson
+66533	KS	Rossville
+66534	KS	Sabetha
+66535	KS	Saint George
+66536	KS	Saint Marys
+66537	KS	Scranton
+66538	KS	Seneca
+66539	KS	Silver Lake
+66540	KS	Soldier
+66541	KS	Summerfield
+66542	KS	Tecumseh
+66543	KS	Vassar
+66544	KS	Vermillion
+66546	KS	Wakarusa
+66547	KS	Wamego
+66548	KS	Waterville
+66549	KS	Westmoreland
+66550	KS	Wetmore
+66551	KS	Wheaton
+66552	KS	Whiting
+66554	KS	Randolph
+66555	KS	Marysville
+66601	KS	Topeka
+66603	KS	Topeka
+66604	KS	Topeka
+66605	KS	Topeka
+66606	KS	Topeka
+66607	KS	Topeka
+66608	KS	Topeka
+66609	KS	Topeka
+66610	KS	Topeka
+66611	KS	Topeka
+66612	KS	Topeka
+66614	KS	Topeka
+66615	KS	Topeka
+66616	KS	Topeka
+66617	KS	Topeka
+66618	KS	Topeka
+66619	KS	Topeka
+66620	KS	Topeka
+66621	KS	Topeka
+66622	KS	Topeka
+66624	KS	Topeka
+66625	KS	Topeka
+66626	KS	Topeka
+66628	KS	Topeka
+66629	KS	Topeka
+66634	KS	Topeka
+66636	KS	Topeka
+66637	KS	Topeka
+66638	KS	Topeka
+66642	KS	Topeka
+66647	KS	Topeka
+66652	KS	Topeka
+66653	KS	Topeka
+66658	KS	Topeka
+66667	KS	Topeka
+66675	KS	Topeka
+66683	KS	Topeka
+66686	KS	Topeka
+66692	KS	Topeka
+66699	KS	Topeka
+66701	KS	Fort Scott
+66710	KS	Altoona
+66711	KS	Arcadia
+66712	KS	Arma
+66713	KS	Baxter Springs
+66714	KS	Benedict
+66716	KS	Bronson
+66717	KS	Buffalo
+66720	KS	Chanute
+66724	KS	Cherokee
+66725	KS	Columbus
+66727	KS	Coyville
+66728	KS	Crestline
+66732	KS	Elsmore
+66733	KS	Erie
+66734	KS	Farlington
+66735	KS	Franklin
+66736	KS	Fredonia
+66738	KS	Fulton
+66739	KS	Galena
+66740	KS	Galesburg
+66741	KS	Garland
+66742	KS	Gas
+66743	KS	Girard
+66746	KS	Hepler
+66748	KS	Humboldt
+66749	KS	Iola
+66751	KS	La Harpe
+66753	KS	Mc Cune
+66754	KS	Mapleton
+66755	KS	Moran
+66756	KS	Mulberry
+66757	KS	Neodesha
+66758	KS	Neosho Falls
+66759	KS	New Albany
+66760	KS	Opolis
+66761	KS	Piqua
+66762	KS	Pittsburg
+66763	KS	Frontenac
+66767	KS	Prescott
+66769	KS	Redfield
+66770	KS	Riverton
+66771	KS	Saint Paul
+66772	KS	Savonburg
+66773	KS	Scammon
+66775	KS	Stark
+66776	KS	Thayer
+66777	KS	Toronto
+66778	KS	Treece
+66779	KS	Uniontown
+66780	KS	Walnut
+66781	KS	Weir
+66782	KS	West Mineral
+66783	KS	Yates Center
+66801	KS	Emporia
+66830	KS	Admire
+66833	KS	Allen
+66834	KS	Alta Vista
+66835	KS	Americus
+66838	KS	Burdick
+66839	KS	Burlington
+66840	KS	Burns
+66842	KS	Cassoday
+66843	KS	Cedar Point
+66845	KS	Cottonwood Falls
+66846	KS	Council Grove
+66849	KS	Dwight
+66850	KS	Elmdale
+66851	KS	Florence
+66852	KS	Gridley
+66853	KS	Hamilton
+66854	KS	Hartford
+66855	KS	Lamont
+66856	KS	Lebo
+66857	KS	Le Roy
+66858	KS	Lincolnville
+66859	KS	Lost Springs
+66860	KS	Madison
+66861	KS	Marion
+66862	KS	Matfield Green
+66863	KS	Neal
+66864	KS	Neosho Rapids
+66865	KS	Olpe
+66866	KS	Peabody
+66868	KS	Reading
+66869	KS	Strong City
+66870	KS	Virgil
+66871	KS	Waverly
+66872	KS	White City
+66873	KS	Wilsey
+66901	KS	Concordia
+66930	KS	Agenda
+66931	KS	Ames
+66932	KS	Athol
+66933	KS	Barnes
+66935	KS	Belleville
+66936	KS	Burr Oak
+66937	KS	Clifton
+66938	KS	Clyde
+66939	KS	Courtland
+66940	KS	Cuba
+66941	KS	Esbon
+66942	KS	Formoso
+66943	KS	Greenleaf
+66944	KS	Haddam
+66945	KS	Hanover
+66946	KS	Hollenberg
+66948	KS	Jamestown
+66949	KS	Jewell
+66951	KS	Kensington
+66952	KS	Lebanon
+66953	KS	Linn
+66955	KS	Mahaska
+66956	KS	Mankato
+66958	KS	Morrowville
+66959	KS	Munden
+66960	KS	Narka
+66961	KS	Norway
+66962	KS	Palmer
+66963	KS	Randall
+66964	KS	Republic
+66966	KS	Scandia
+66967	KS	Smith Center
+66968	KS	Washington
+66970	KS	Webber
+67001	KS	Andale
+67002	KS	Andover
+67003	KS	Anthony
+67004	KS	Argonia
+67005	KS	Arkansas City
+67008	KS	Atlanta
+67009	KS	Attica
+67010	KS	Augusta
+67012	KS	Beaumont
+67013	KS	Belle Plaine
+67016	KS	Bentley
+67017	KS	Benton
+67018	KS	Bluff City
+67019	KS	Burden
+67020	KS	Burrton
+67021	KS	Byers
+67022	KS	Caldwell
+67023	KS	Cambridge
+67024	KS	Cedar Vale
+67025	KS	Cheney
+67026	KS	Clearwater
+67028	KS	Coats
+67029	KS	Coldwater
+67030	KS	Colwich
+67031	KS	Conway Springs
+67035	KS	Cunningham
+67036	KS	Danville
+67037	KS	Derby
+67038	KS	Dexter
+67039	KS	Douglass
+67041	KS	Elbing
+67042	KS	El Dorado
+67045	KS	Eureka
+67047	KS	Fall River
+67049	KS	Freeport
+67050	KS	Garden Plain
+67051	KS	Geuda Springs
+67052	KS	Goddard
+67053	KS	Goessel
+67054	KS	Greensburg
+67055	KS	Greenwich
+67056	KS	Halstead
+67057	KS	Hardtner
+67058	KS	Harper
+67059	KS	Haviland
+67060	KS	Haysville
+67061	KS	Hazelton
+67062	KS	Hesston
+67063	KS	Hillsboro
+67065	KS	Isabel
+67066	KS	Iuka
+67067	KS	Kechi
+67068	KS	Kingman
+67070	KS	Kiowa
+67071	KS	Lake City
+67072	KS	Latham
+67073	KS	Lehigh
+67074	KS	Leon
+67101	KS	Maize
+67102	KS	Maple City
+67103	KS	Mayfield
+67104	KS	Medicine Lodge
+67105	KS	Milan
+67106	KS	Milton
+67107	KS	Moundridge
+67108	KS	Mount Hope
+67109	KS	Mullinville
+67110	KS	Mulvane
+67111	KS	Murdock
+67112	KS	Nashville
+67114	KS	Newton
+67117	KS	North Newton
+67118	KS	Norwich
+67119	KS	Oxford
+67120	KS	Peck
+67122	KS	Piedmont
+67123	KS	Potwin
+67124	KS	Pratt
+67127	KS	Protection
+67128	KS	Rago
+67131	KS	Rock
+67132	KS	Rosalia
+67133	KS	Rose Hill
+67134	KS	Sawyer
+67135	KS	Sedgwick
+67137	KS	Severy
+67138	KS	Sharon
+67140	KS	South Haven
+67142	KS	Spivey
+67143	KS	Sun City
+67144	KS	Towanda
+67146	KS	Udall
+67147	KS	Valley Center
+67149	KS	Viola
+67150	KS	Waldron
+67151	KS	Walton
+67152	KS	Wellington
+67154	KS	Whitewater
+67155	KS	Wilmore
+67156	KS	Winfield
+67159	KS	Zenda
+67201	KS	Wichita
+67202	KS	Wichita
+67203	KS	Wichita
+67204	KS	Wichita
+67205	KS	Wichita
+67206	KS	Wichita
+67207	KS	Wichita
+67208	KS	Wichita
+67209	KS	Wichita
+67210	KS	Wichita
+67211	KS	Wichita
+67212	KS	Wichita
+67213	KS	Wichita
+67214	KS	Wichita
+67215	KS	Wichita
+67216	KS	Wichita
+67217	KS	Wichita
+67218	KS	Wichita
+67219	KS	Wichita
+67220	KS	Wichita
+67221	KS	Mc Connell A F B
+67223	KS	Wichita
+67226	KS	Wichita
+67227	KS	Wichita
+67228	KS	Wichita
+67230	KS	Wichita
+67231	KS	Wichita
+67232	KS	Wichita
+67233	KS	Wichita
+67235	KS	Wichita
+67236	KS	Wichita
+67251	KS	Wichita
+67256	KS	Wichita
+67257	KS	Wichita
+67259	KS	Wichita
+67260	KS	Wichita
+67275	KS	Wichita
+67276	KS	Wichita
+67277	KS	Wichita
+67278	KS	Wichita
+67301	KS	Independence
+67330	KS	Altamont
+67332	KS	Bartlett
+67333	KS	Caney
+67334	KS	Chautauqua
+67335	KS	Cherryvale
+67336	KS	Chetopa
+67337	KS	Coffeyville
+67340	KS	Dearing
+67341	KS	Dennis
+67342	KS	Edna
+67344	KS	Elk City
+67345	KS	Elk Falls
+67346	KS	Grenola
+67347	KS	Havana
+67349	KS	Howard
+67351	KS	Liberty
+67352	KS	Longton
+67353	KS	Moline
+67354	KS	Mound Valley
+67355	KS	Niotaze
+67356	KS	Oswego
+67357	KS	Parsons
+67360	KS	Peru
+67361	KS	Sedan
+67363	KS	Sycamore
+67364	KS	Tyro
+67401	KS	Salina
+67402	KS	Salina
+67410	KS	Abilene
+67414	KS	Ada
+67416	KS	Assaria
+67417	KS	Aurora
+67418	KS	Barnard
+67420	KS	Beloit
+67422	KS	Bennington
+67423	KS	Beverly
+67425	KS	Brookville
+67427	KS	Bushton
+67428	KS	Canton
+67430	KS	Cawker City
+67431	KS	Chapman
+67432	KS	Clay Center
+67436	KS	Delphos
+67437	KS	Downs
+67438	KS	Durham
+67439	KS	Ellsworth
+67441	KS	Enterprise
+67442	KS	Falun
+67443	KS	Galva
+67444	KS	Geneseo
+67445	KS	Glasco
+67446	KS	Glen Elder
+67447	KS	Green
+67448	KS	Gypsum
+67449	KS	Herington
+67450	KS	Holyrood
+67451	KS	Hope
+67452	KS	Hunter
+67454	KS	Kanopolis
+67455	KS	Lincoln
+67456	KS	Lindsborg
+67457	KS	Little River
+67458	KS	Longford
+67459	KS	Lorraine
+67460	KS	McPherson
+67464	KS	Marquette
+67466	KS	Miltonvale
+67467	KS	Minneapolis
+67468	KS	Morganville
+67470	KS	New Cambria
+67473	KS	Osborne
+67474	KS	Portis
+67475	KS	Ramona
+67476	KS	Roxbury
+67478	KS	Simpson
+67479	KS	Smolan
+67480	KS	Solomon
+67481	KS	Sylvan Grove
+67482	KS	Talmage
+67483	KS	Tampa
+67484	KS	Tescott
+67485	KS	Tipton
+67487	KS	Wakefield
+67488	KS	Wells
+67490	KS	Wilson
+67491	KS	Windom
+67492	KS	Woodbine
+67501	KS	Hutchinson
+67502	KS	Hutchinson
+67504	KS	Hutchinson
+67505	KS	South Hutchinson
+67510	KS	Abbyville
+67511	KS	Albert
+67512	KS	Alden
+67513	KS	Alexander
+67514	KS	Arlington
+67515	KS	Arnold
+67516	KS	Bazine
+67517	KS	Beaver
+67518	KS	Beeler
+67519	KS	Belpre
+67520	KS	Bison
+67521	KS	Brownell
+67522	KS	Buhler
+67523	KS	Burdett
+67524	KS	Chase
+67525	KS	Claflin
+67526	KS	Ellinwood
+67529	KS	Garfield
+67530	KS	Great Bend
+67543	KS	Haven
+67544	KS	Hoisington
+67545	KS	Hudson
+67546	KS	Inman
+67547	KS	Kinsley
+67548	KS	La Crosse
+67550	KS	Larned
+67552	KS	Lewis
+67553	KS	Liebenthal
+67554	KS	Lyons
+67556	KS	Mc Cracken
+67557	KS	Macksville
+67559	KS	Nekoma
+67560	KS	Ness City
+67561	KS	Nickerson
+67563	KS	Offerle
+67564	KS	Olmitz
+67565	KS	Otis
+67566	KS	Partridge
+67567	KS	Pawnee Rock
+67568	KS	Plevna
+67570	KS	Pretty Prairie
+67572	KS	Ransom
+67573	KS	Raymond
+67574	KS	Rozel
+67575	KS	Rush Center
+67576	KS	Saint John
+67578	KS	Stafford
+67579	KS	Sterling
+67581	KS	Sylvia
+67583	KS	Turon
+67584	KS	Utica
+67585	KS	Yoder
+67601	KS	Hays
+67621	KS	Agra
+67622	KS	Almena
+67623	KS	Alton
+67625	KS	Bogue
+67626	KS	Bunker Hill
+67627	KS	Catharine
+67628	KS	Cedar
+67629	KS	Clayton
+67631	KS	Collyer
+67632	KS	Damar
+67634	KS	Dorrance
+67635	KS	Dresden
+67637	KS	Ellis
+67638	KS	Gaylord
+67639	KS	Glade
+67640	KS	Gorham
+67642	KS	Hill City
+67643	KS	Jennings
+67644	KS	Kirwin
+67645	KS	Lenora
+67646	KS	Logan
+67647	KS	Long Island
+67648	KS	Lucas
+67649	KS	Luray
+67650	KS	Morland
+67651	KS	Natoma
+67653	KS	Norcatur
+67654	KS	Norton
+67656	KS	Ogallah
+67657	KS	Palco
+67658	KS	Paradise
+67659	KS	Penokee
+67660	KS	Pfeifer
+67661	KS	Phillipsburg
+67663	KS	Plainville
+67664	KS	Prairie View
+67665	KS	Russell
+67667	KS	Schoenchen
+67669	KS	Stockton
+67670	KS	Stuttgart
+67671	KS	Victoria
+67672	KS	Wa Keeney
+67673	KS	Waldo
+67674	KS	Walker
+67675	KS	Woodston
+67701	KS	Colby
+67730	KS	Atwood
+67731	KS	Bird City
+67732	KS	Brewster
+67733	KS	Edson
+67734	KS	Gem
+67735	KS	Goodland
+67736	KS	Gove
+67737	KS	Grainfield
+67738	KS	Grinnell
+67739	KS	Herndon
+67740	KS	Hoxie
+67741	KS	Kanorado
+67743	KS	Levant
+67744	KS	Ludell
+67745	KS	Mc Donald
+67747	KS	Monument
+67748	KS	Oakley
+67749	KS	Oberlin
+67751	KS	Park
+67752	KS	Quinter
+67753	KS	Rexford
+67755	KS	Russell Springs
+67756	KS	Saint Francis
+67757	KS	Selden
+67758	KS	Sharon Springs
+67761	KS	Wallace
+67762	KS	Weskan
+67764	KS	Winona
+67801	KS	Dodge City
+67831	KS	Ashland
+67834	KS	Bucklin
+67835	KS	Cimarron
+67836	KS	Coolidge
+67837	KS	Copeland
+67838	KS	Deerfield
+67839	KS	Dighton
+67840	KS	Englewood
+67841	KS	Ensign
+67842	KS	Ford
+67843	KS	Fort Dodge
+67844	KS	Fowler
+67846	KS	Garden City
+67849	KS	Hanston
+67850	KS	Healy
+67851	KS	Holcomb
+67853	KS	Ingalls
+67854	KS	Jetmore
+67855	KS	Johnson
+67856	KS	Kalvesta
+67857	KS	Kendall
+67858	KS	Kingsdown
+67859	KS	Kismet
+67860	KS	Lakin
+67861	KS	Leoti
+67862	KS	Manter
+67863	KS	Marienthal
+67864	KS	Meade
+67865	KS	Minneola
+67867	KS	Montezuma
+67868	KS	Pierceville
+67869	KS	Plains
+67870	KS	Satanta
+67871	KS	Scott City
+67876	KS	Spearville
+67877	KS	Sublette
+67878	KS	Syracuse
+67879	KS	Tribune
+67880	KS	Ulysses
+67882	KS	Wright
+67901	KS	Liberal
+67905	KS	Liberal
+67950	KS	Elkhart
+67951	KS	Hugoton
+67952	KS	Moscow
+67953	KS	Richfield
+67954	KS	Rolla
+68001	NE	Abie
+68002	NE	Arlington
+68003	NE	Ashland
+68004	NE	Bancroft
+68005	NE	Bellevue
+68007	NE	Bennington
+68008	NE	Blair
+68009	NE	Blair
+68010	NE	Boys Town
+68014	NE	Bruno
+68015	NE	Cedar Bluffs
+68016	NE	Cedar Creek
+68017	NE	Ceresco
+68018	NE	Colon
+68019	NE	Craig
+68020	NE	Decatur
+68022	NE	Elkhorn
+68023	NE	Fort Calhoun
+68025	NE	Fremont
+68026	NE	Fremont
+68028	NE	Gretna
+68029	NE	Herman
+68030	NE	Homer
+68031	NE	Hooper
+68033	NE	Ithaca
+68034	NE	Kennard
+68035	NE	Leshara
+68036	NE	Linwood
+68037	NE	Louisville
+68038	NE	Lyons
+68039	NE	Macy
+68040	NE	Malmo
+68041	NE	Mead
+68042	NE	Memphis
+68044	NE	Nickerson
+68045	NE	Oakland
+68046	NE	Papillion
+68047	NE	Pender
+68048	NE	Plattsmouth
+68050	NE	Prague
+68054	NE	Richfield
+68055	NE	Rosalie
+68056	NE	St Columbans
+68057	NE	Scribner
+68058	NE	South Bend
+68059	NE	Springfield
+68061	NE	Tekamah
+68062	NE	Thurston
+68063	NE	Uehling
+68064	NE	Valley
+68065	NE	Valparaiso
+68066	NE	Wahoo
+68067	NE	Walthill
+68068	NE	Washington
+68069	NE	Waterloo
+68070	NE	Weston
+68071	NE	Winnebago
+68072	NE	Winslow
+68073	NE	Yutan
+68101	NE	Omaha
+68102	NE	Omaha
+68103	NE	Omaha
+68104	NE	Omaha
+68105	NE	Omaha
+68106	NE	Omaha
+68107	NE	Omaha
+68108	NE	Omaha
+68109	NE	Omaha
+68110	NE	Omaha
+68111	NE	Omaha
+68112	NE	Omaha
+68113	NE	Offutt A F B
+68114	NE	Omaha
+68116	NE	Omaha
+68117	NE	Omaha
+68118	NE	Omaha
+68119	NE	Omaha
+68120	NE	Omaha
+68122	NE	Omaha
+68123	NE	Bellevue
+68124	NE	Omaha
+68127	NE	Omaha
+68128	NE	Lavista
+68130	NE	Omaha
+68131	NE	Omaha
+68132	NE	Omaha
+68133	NE	Papillion
+68134	NE	Omaha
+68135	NE	Omaha
+68136	NE	Omaha
+68137	NE	Omaha
+68138	NE	Omaha
+68139	NE	Omaha
+68142	NE	Omaha
+68144	NE	Omaha
+68147	NE	Bellevue
+68152	NE	Omaha
+68154	NE	Omaha
+68155	NE	Omaha
+68157	NE	Omaha
+68164	NE	Omaha
+68172	NE	Omaha
+68175	NE	Omaha
+68176	NE	Omaha
+68178	NE	Omaha
+68179	NE	Omaha
+68180	NE	Omaha
+68181	NE	Omaha
+68182	NE	Omaha
+68183	NE	Omaha
+68198	NE	Omaha
+68301	NE	Adams
+68303	NE	Alexandria
+68304	NE	Alvo
+68305	NE	Auburn
+68307	NE	Avoca
+68309	NE	Barneston
+68310	NE	Beatrice
+68313	NE	Beaver Crossing
+68314	NE	Bee
+68315	NE	Belvidere
+68316	NE	Benedict
+68317	NE	Bennet
+68318	NE	Blue Springs
+68319	NE	Bradshaw
+68320	NE	Brock
+68321	NE	Brownville
+68322	NE	Bruning
+68323	NE	Burchard
+68324	NE	Burr
+68325	NE	Byron
+68326	NE	Carleton
+68327	NE	Chester
+68328	NE	Clatonia
+68329	NE	Cook
+68330	NE	Cordova
+68331	NE	Cortland
+68332	NE	Crab Orchard
+68333	NE	Crete
+68335	NE	Davenport
+68336	NE	Davey
+68337	NE	Dawson
+68338	NE	Daykin
+68339	NE	Denton
+68340	NE	Deshler
+68341	NE	De Witt
+68342	NE	Diller
+68343	NE	Dorchester
+68344	NE	Douglas
+68345	NE	Du Bois
+68346	NE	Dunbar
+68347	NE	Eagle
+68348	NE	Elk Creek
+68349	NE	Elmwood
+68350	NE	Endicott
+68351	NE	Exeter
+68352	NE	Fairbury
+68354	NE	Fairmont
+68355	NE	Falls City
+68357	NE	Filley
+68358	NE	Firth
+68359	NE	Friend
+68360	NE	Garland
+68361	NE	Geneva
+68362	NE	Gilead
+68364	NE	Goehner
+68365	NE	Grafton
+68366	NE	Greenwood
+68367	NE	Gresham
+68368	NE	Hallam
+68370	NE	Hebron
+68371	NE	Henderson
+68372	NE	Hickman
+68374	NE	Holmesville
+68375	NE	Hubbell
+68376	NE	Humboldt
+68377	NE	Jansen
+68378	NE	Johnson
+68380	NE	Lewiston
+68381	NE	Liberty
+68382	NE	Lorton
+68401	NE	Mc Cool Junction
+68402	NE	Malcolm
+68403	NE	Manley
+68404	NE	Martell
+68405	NE	Milford
+68406	NE	Milligan
+68407	NE	Murdock
+68409	NE	Murray
+68410	NE	Nebraska City
+68413	NE	Nehawka
+68414	NE	Nemaha
+68415	NE	Odell
+68416	NE	Ohiowa
+68417	NE	Otoe
+68418	NE	Palmyra
+68419	NE	Panama
+68420	NE	Pawnee City
+68421	NE	Peru
+68422	NE	Pickrell
+68423	NE	Pleasant Dale
+68424	NE	Plymouth
+68428	NE	Raymond
+68429	NE	Reynolds
+68430	NE	Roca
+68431	NE	Rulo
+68433	NE	Salem
+68434	NE	Seward
+68436	NE	Shickley
+68437	NE	Shubert
+68438	NE	Sprague
+68439	NE	Staplehurst
+68440	NE	Steele City
+68441	NE	Steinauer
+68442	NE	Stella
+68443	NE	Sterling
+68444	NE	Strang
+68445	NE	Swanton
+68446	NE	Syracuse
+68447	NE	Table Rock
+68448	NE	Talmage
+68450	NE	Tecumseh
+68452	NE	Ong
+68453	NE	Tobias
+68454	NE	Unadilla
+68455	NE	Union
+68456	NE	Utica
+68457	NE	Verdon
+68458	NE	Virginia
+68460	NE	Waco
+68461	NE	Walton
+68462	NE	Waverly
+68463	NE	Weeping Water
+68464	NE	Western
+68465	NE	Wilber
+68466	NE	Wymore
+68467	NE	York
+68501	NE	Lincoln
+68502	NE	Lincoln
+68503	NE	Lincoln
+68504	NE	Lincoln
+68505	NE	Lincoln
+68506	NE	Lincoln
+68507	NE	Lincoln
+68508	NE	Lincoln
+68509	NE	Lincoln
+68510	NE	Lincoln
+68512	NE	Lincoln
+68514	NE	Lincoln
+68516	NE	Lincoln
+68517	NE	Lincoln
+68520	NE	Lincoln
+68521	NE	Lincoln
+68522	NE	Lincoln
+68523	NE	Lincoln
+68524	NE	Lincoln
+68526	NE	Lincoln
+68527	NE	Lincoln
+68528	NE	Lincoln
+68529	NE	Lincoln
+68531	NE	Lincoln
+68532	NE	Lincoln
+68542	NE	Lincoln
+68544	NE	Lincoln
+68572	NE	Lincoln
+68583	NE	Lincoln
+68588	NE	Lincoln
+68601	NE	Columbus
+68602	NE	Columbus
+68620	NE	Albion
+68621	NE	Ames
+68622	NE	Bartlett
+68623	NE	Belgrade
+68624	NE	Bellwood
+68626	NE	Brainard
+68627	NE	Cedar Rapids
+68628	NE	Clarks
+68629	NE	Clarkson
+68631	NE	Creston
+68632	NE	David City
+68633	NE	Dodge
+68634	NE	Duncan
+68635	NE	Dwight
+68636	NE	Elgin
+68637	NE	Ericson
+68638	NE	Fullerton
+68640	NE	Genoa
+68641	NE	Howells
+68642	NE	Humphrey
+68643	NE	Leigh
+68644	NE	Lindsay
+68647	NE	Monroe
+68648	NE	Morse Bluff
+68649	NE	North Bend
+68651	NE	Osceola
+68652	NE	Petersburg
+68653	NE	Platte Center
+68654	NE	Polk
+68655	NE	Primrose
+68658	NE	Rising City
+68659	NE	Rogers
+68660	NE	Saint Edward
+68661	NE	Schuyler
+68662	NE	Shelby
+68663	NE	Silver Creek
+68664	NE	Snyder
+68665	NE	Spalding
+68666	NE	Stromsburg
+68667	NE	Surprise
+68669	NE	Ulysses
+68701	NE	Norfolk
+68702	NE	Norfolk
+68710	NE	Allen
+68711	NE	Amelia
+68713	NE	Atkinson
+68714	NE	Bassett
+68715	NE	Battle Creek
+68716	NE	Beemer
+68717	NE	Belden
+68718	NE	Bloomfield
+68719	NE	Bristow
+68720	NE	Brunswick
+68722	NE	Butte
+68723	NE	Carroll
+68724	NE	Center
+68725	NE	Chambers
+68726	NE	Clearwater
+68727	NE	Coleridge
+68728	NE	Concord
+68729	NE	Creighton
+68730	NE	Crofton
+68731	NE	Dakota City
+68732	NE	Dixon
+68733	NE	Emerson
+68734	NE	Emmet
+68735	NE	Ewing
+68736	NE	Fordyce
+68737	NE	Foster
+68738	NE	Hadar
+68739	NE	Hartington
+68740	NE	Hoskins
+68741	NE	Hubbard
+68742	NE	Inman
+68743	NE	Jackson
+68745	NE	Laurel
+68746	NE	Lynch
+68747	NE	McLean
+68748	NE	Madison
+68749	NE	Magnet
+68751	NE	Maskell
+68752	NE	Meadow Grove
+68753	NE	Mills
+68755	NE	Naper
+68756	NE	Neligh
+68757	NE	Newcastle
+68758	NE	Newman Grove
+68759	NE	Newport
+68760	NE	Niobrara
+68761	NE	Oakdale
+68763	NE	Oneill
+68764	NE	Orchard
+68765	NE	Osmond
+68766	NE	Page
+68767	NE	Pierce
+68768	NE	Pilger
+68769	NE	Plainview
+68770	NE	Ponca
+68771	NE	Randolph
+68772	NE	Rose
+68773	NE	Royal
+68774	NE	Saint Helena
+68776	NE	South Sioux City
+68777	NE	Spencer
+68778	NE	Springview
+68779	NE	Stanton
+68780	NE	Stuart
+68781	NE	Tilden
+68783	NE	Verdigre
+68784	NE	Wakefield
+68785	NE	Waterbury
+68786	NE	Wausa
+68787	NE	Wayne
+68788	NE	West Point
+68789	NE	Winnetoon
+68790	NE	Winside
+68791	NE	Wisner
+68792	NE	Wynot
+68801	NE	Grand Island
+68802	NE	Grand Island
+68803	NE	Grand Island
+68810	NE	Alda
+68812	NE	Amherst
+68813	NE	Anselmo
+68814	NE	Ansley
+68815	NE	Arcadia
+68816	NE	Archer
+68817	NE	Ashton
+68818	NE	Aurora
+68819	NE	Berwyn
+68820	NE	Boelus
+68821	NE	Brewster
+68822	NE	Broken Bow
+68823	NE	Burwell
+68824	NE	Cairo
+68825	NE	Callaway
+68826	NE	Central City
+68827	NE	Chapman
+68828	NE	Comstock
+68831	NE	Dannebrog
+68832	NE	Doniphan
+68833	NE	Dunning
+68834	NE	Eddyville
+68835	NE	Elba
+68836	NE	Elm Creek
+68837	NE	Elyria
+68838	NE	Farwell
+68840	NE	Gibbon
+68841	NE	Giltner
+68842	NE	Greeley
+68843	NE	Hampton
+68844	NE	Hazard
+68846	NE	Hordville
+68847	NE	Kearney
+68848	NE	Kearney
+68849	NE	Kearney
+68850	NE	Lexington
+68852	NE	Litchfield
+68853	NE	Loup City
+68854	NE	Marquette
+68855	NE	Mason City
+68856	NE	Merna
+68858	NE	Miller
+68859	NE	North Loup
+68860	NE	Oconto
+68861	NE	Odessa
+68862	NE	Ord
+68863	NE	Overton
+68864	NE	Palmer
+68865	NE	Phillips
+68866	NE	Pleasanton
+68869	NE	Ravenna
+68870	NE	Riverdale
+68871	NE	Rockville
+68872	NE	Saint Libory
+68873	NE	Saint Paul
+68874	NE	Sargent
+68875	NE	Scotia
+68876	NE	Shelton
+68878	NE	Sumner
+68879	NE	Taylor
+68880	NE	Weissert
+68881	NE	Westerville
+68882	NE	Wolbach
+68883	NE	Wood River
+68901	NE	Hastings
+68902	NE	Hastings
+68920	NE	Alma
+68922	NE	Arapahoe
+68923	NE	Atlanta
+68924	NE	Axtell
+68925	NE	Ayr
+68926	NE	Beaver City
+68927	NE	Bertrand
+68928	NE	Bladen
+68929	NE	Bloomington
+68930	NE	Blue Hill
+68932	NE	Campbell
+68933	NE	Clay Center
+68934	NE	Deweese
+68935	NE	Edgar
+68936	NE	Edison
+68937	NE	Elwood
+68938	NE	Fairfield
+68939	NE	Franklin
+68940	NE	Funk
+68941	NE	Glenvil
+68942	NE	Guide Rock
+68943	NE	Hardy
+68944	NE	Harvard
+68945	NE	Heartwell
+68946	NE	Hendley
+68947	NE	Hildreth
+68948	NE	Holbrook
+68949	NE	Holdrege
+68950	NE	Holstein
+68951	NE	Huntley
+68952	NE	Inavale
+68954	NE	Inland
+68955	NE	Juniata
+68956	NE	Kenesaw
+68957	NE	Lawrence
+68958	NE	Loomis
+68959	NE	Minden
+68960	NE	Naponee
+68961	NE	Nelson
+68963	NE	Norman
+68964	NE	Oak
+68966	NE	Orleans
+68967	NE	Oxford
+68969	NE	Ragan
+68970	NE	Red Cloud
+68971	NE	Republican City
+68972	NE	Riverton
+68973	NE	Roseland
+68974	NE	Ruskin
+68975	NE	Saronville
+68976	NE	Smithfield
+68977	NE	Stamford
+68978	NE	Superior
+68979	NE	Sutton
+68980	NE	Trumbull
+68981	NE	Upland
+68982	NE	Wilcox
+69001	NE	Mc Cook
+69020	NE	Bartley
+69021	NE	Benkelman
+69022	NE	Cambridge
+69023	NE	Champion
+69024	NE	Culbertson
+69025	NE	Curtis
+69026	NE	Danbury
+69027	NE	Enders
+69028	NE	Eustis
+69029	NE	Farnam
+69030	NE	Haigler
+69031	NE	Hamlet
+69032	NE	Hayes Center
+69033	NE	Imperial
+69034	NE	Indianola
+69036	NE	Lebanon
+69037	NE	Max
+69038	NE	Maywood
+69039	NE	Moorefield
+69040	NE	Palisade
+69041	NE	Parks
+69042	NE	Stockville
+69043	NE	Stratton
+69044	NE	Trenton
+69045	NE	Wauneta
+69046	NE	Wilsonville
+69101	NE	North Platte
+69103	NE	North Platte
+69120	NE	Arnold
+69121	NE	Arthur
+69122	NE	Big Springs
+69123	NE	Brady
+69125	NE	Broadwater
+69127	NE	Brule
+69128	NE	Bushnell
+69129	NE	Chappell
+69130	NE	Cozad
+69131	NE	Dalton
+69132	NE	Dickens
+69133	NE	Dix
+69134	NE	Elsie
+69135	NE	Elsmere
+69138	NE	Gothenburg
+69140	NE	Grant
+69141	NE	Gurley
+69142	NE	Halsey
+69143	NE	Hershey
+69144	NE	Keystone
+69145	NE	Kimball
+69146	NE	Lemoyne
+69147	NE	Lewellen
+69148	NE	Lisco
+69149	NE	Lodgepole
+69150	NE	Madrid
+69151	NE	Maxwell
+69152	NE	Mullen
+69153	NE	Ogallala
+69154	NE	Oshkosh
+69155	NE	Paxton
+69156	NE	Potter
+69157	NE	Purdum
+69160	NE	Sidney
+69161	NE	Seneca
+69162	NE	Sidney
+69163	NE	Stapleton
+69165	NE	Sutherland
+69166	NE	Thedford
+69167	NE	Tryon
+69168	NE	Venango
+69169	NE	Wallace
+69170	NE	Wellfleet
+69171	NE	Willow Island
+69190	NE	Oshkosh
+69201	NE	Valentine
+69210	NE	Ainsworth
+69211	NE	Cody
+69212	NE	Crookston
+69214	NE	Johnstown
+69216	NE	Kilgore
+69217	NE	Long Pine
+69218	NE	Merriman
+69219	NE	Nenzel
+69220	NE	Sparks
+69221	NE	Wood Lake
+69301	NE	Alliance
+69331	NE	Angora
+69333	NE	Ashby
+69334	NE	Bayard
+69335	NE	Bingham
+69336	NE	Bridgeport
+69337	NE	Chadron
+69339	NE	Crawford
+69340	NE	Ellsworth
+69341	NE	Gering
+69343	NE	Gordon
+69345	NE	Harrisburg
+69346	NE	Harrison
+69347	NE	Hay Springs
+69348	NE	Hemingford
+69349	NE	Henry
+69350	NE	Hyannis
+69351	NE	Lakeside
+69352	NE	Lyman
+69353	NE	McGrew
+69354	NE	Marsland
+69355	NE	Melbeta
+69356	NE	Minatare
+69357	NE	Mitchell
+69358	NE	Morrill
+69360	NE	Rushville
+69361	NE	Scottsbluff
+69363	NE	Scottsbluff
+69365	NE	Whiteclay
+69366	NE	Whitman
+69367	NE	Whitney

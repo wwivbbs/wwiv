@@ -1,0 +1,3261 @@
+00401	NY	Pleasantville
+00501	NY	Holtsville
+00544	NY	Holtsville
+00601	PR	Adjuntas
+00602	PR	Aguada
+00603	PR	Aguadilla
+00604	PR	Aguadilla
+00605	PR	Aguadilla
+00606	PR	Maricao
+00610	PR	Anasco
+00611	PR	Angeles
+00612	PR	Arecibo
+00613	PR	Arecibo
+00614	PR	Arecibo
+00616	PR	Bajadero
+00617	PR	Barceloneta
+00622	PR	Boqueron
+00623	PR	Cabo Rojo
+00624	PR	Penuelas
+00627	PR	Camuy
+00631	PR	Castaner
+00636	PR	Rosario
+00637	PR	Sabana Grande
+00638	PR	Ciales
+00641	PR	Utuado
+00646	PR	Dorado
+00647	PR	Ensenada
+00650	PR	Florida
+00652	PR	Garrochales
+00653	PR	Guanica
+00656	PR	Guayanilla
+00659	PR	Hatillo
+00660	PR	Hormigueros
+00662	PR	Isabela
+00664	PR	Jayuya
+00667	PR	Lajas
+00669	PR	Lares
+00670	PR	Las Marias
+00674	PR	Manati
+00676	PR	Moca
+00677	PR	Rincon
+00678	PR	Quebradillas
+00680	PR	Mayaguez
+00681	PR	Mayaguez
+00683	PR	San German
+00685	PR	San Sebastian
+00687	PR	Morovis
+00688	PR	Sabana Hoyos
+00690	PR	San Antonio
+00692	PR	Vega Alta
+00693	PR	Vega Baja
+00694	PR	Vega Baja
+00698	PR	Yauco
+00703	PR	Aguas Buenas
+00704	PR	Aguirre
+00705	PR	Aibonito
+00707	PR	Maunabo
+00714	PR	Arroyo
+00715	PR	Mercedita
+00718	PR	Naguabo
+00719	PR	Naranjito
+00720	PR	Orocovis
+00721	PR	Palmer
+00723	PR	Patillas
+00725	PR	Caguas
+00726	PR	Caguas
+00729	PR	Canovanas
+00731	PR	Ponce
+00732	PR	Ponce
+00733	PR	Ponce
+00734	PR	Ponce
+00735	PR	Ceiba
+00736	PR	Cayey
+00737	PR	Cayey
+00738	PR	Fajardo
+00739	PR	Cidra
+00740	PR	Puerto Real
+00741	PR	Punta Santiago
+00742	PR	Roosevelt Roads
+00744	PR	Rio Blanco
+00745	PR	Rio Grande
+00751	PR	Salinas
+00754	PR	San Lorenzo
+00757	PR	Santa Isabel
+00765	PR	Vieques
+00766	PR	Villalba
+00767	PR	Yabucoa
+00769	PR	Coamo
+00771	PR	Las Piedras
+00772	PR	Loiza
+00773	PR	Luquillo
+00775	PR	Culebra
+00777	PR	Juncos
+00778	PR	Gurabo
+00780	PR	Coto Laurel
+00782	PR	Comerio
+00783	PR	Corozal
+00784	PR	Guayama
+00785	PR	Guayama
+00786	PR	La Plata
+00791	PR	Humacao
+00792	PR	Humacao
+00794	PR	Barranquitas
+00795	PR	Juana Diaz
+00801	VI	Saint Thomas
+00802	VI	Saint Thomas
+00803	VI	Saint Thomas
+00804	VI	Saint Thomas
+00805	VI	Saint Thomas
+00820	VI	Christiansted
+00821	VI	Christiansted
+00822	VI	Christiansted
+00823	VI	Christiansted
+00824	VI	Christiansted
+00830	VI	Saint John
+00831	VI	Saint John
+00840	VI	Frederiksted
+00841	VI	Frederiksted
+00850	VI	Kingshill
+00851	VI	Kingshill
+00901	PR	San Juan
+00902	PR	San Juan
+00906	PR	San Juan
+00907	PR	San Juan
+00908	PR	San Juan
+00909	PR	San Juan
+00910	PR	San Juan
+00911	PR	San Juan
+00912	PR	San Juan
+00913	PR	San Juan
+00914	PR	San Juan
+00915	PR	San Juan
+00916	PR	San Juan
+00917	PR	San Juan
+00918	PR	San Juan
+00919	PR	San Juan
+00920	PR	San Juan
+00921	PR	San Juan
+00922	PR	San Juan
+00923	PR	San Juan
+00924	PR	San Juan
+00925	PR	San Juan
+00926	PR	San Juan
+00927	PR	San Juan
+00928	PR	San Juan
+00929	PR	San Juan
+00930	PR	San Juan
+00931	PR	San Juan
+00934	PR	Fort Buchanan
+00935	PR	San Juan
+00936	PR	San Juan
+00937	PR	San Juan
+00938	PR	San Juan
+00939	PR	San Juan
+00940	PR	San Juan
+00949	PR	Toa Baja
+00950	PR	Toa Baja
+00951	PR	Toa Baja
+00952	PR	Sabana Seca
+00953	PR	Toa Alta
+00954	PR	Toa Alta
+00955	PR	San Juan
+00956	PR	Bayamon
+00957	PR	Bayamon
+00958	PR	Bayamon
+00959	PR	Bayamon
+00960	PR	Bayamon
+00961	PR	Bayamon
+00962	PR	Catano
+00963	PR	Catano
+00965	PR	Guaynabo
+00966	PR	Guaynabo
+00968	PR	Guaynabo
+00969	PR	Guaynabo
+00970	PR	Guaynabo
+00971	PR	Guaynabo
+00975	PR	San Juan
+00976	PR	Trujillo Alto
+00977	PR	Trujillo Alto
+00978	PR	Saint Just
+00979	PR	Carolina
+00981	PR	Carolina
+00982	PR	Carolina
+00983	PR	Carolina
+00984	PR	Carolina
+00985	PR	Carolina
+00986	PR	Carolina
+00987	PR	Carolina
+00988	PR	Carolina
+01001	MA	Agawam
+01002	MA	Amherst
+01003	MA	Amherst
+01004	MA	Amherst
+01005	MA	Barre
+01007	MA	Belchertown
+01008	MA	Blandford
+01009	MA	Bondsville
+01010	MA	Brimfield
+01011	MA	Chester
+01012	MA	Chesterfield
+01013	MA	Chicopee
+01014	MA	Chicopee
+01020	MA	Chicopee
+01021	MA	Chicopee
+01022	MA	Chicopee
+01026	MA	Cummington
+01027	MA	Easthampton
+01028	MA	East Longmeadow
+01029	MA	East Otis
+01030	MA	Feeding Hills
+01031	MA	Gilbertville
+01032	MA	Goshen
+01033	MA	Granby
+01034	MA	Granville
+01035	MA	Hadley
+01036	MA	Hampden
+01037	MA	Hardwick
+01038	MA	Hatfield
+01039	MA	Haydenville
+01040	MA	Holyoke
+01041	MA	Holyoke
+01050	MA	Huntington
+01053	MA	Leeds
+01054	MA	Leverett
+01056	MA	Ludlow
+01057	MA	Monson
+01059	MA	North Amherst
+01060	MA	Northampton
+01061	MA	Northampton
+01063	MA	Northampton
+01066	MA	North Hatfield
+01068	MA	Oakham
+01069	MA	Palmer
+01070	MA	Plainfield
+01071	MA	Russell
+01072	MA	Shutesbury
+01073	MA	Southampton
+01074	MA	South Barre
+01075	MA	South Hadley
+01077	MA	Southwick
+01079	MA	Thorndike
+01080	MA	Three Rivers
+01081	MA	Wales
+01082	MA	Ware
+01083	MA	Warren
+01084	MA	West Chesterfield
+01085	MA	Westfield
+01086	MA	Westfield
+01088	MA	West Hatfield
+01089	MA	West Springfield
+01090	MA	West Springfield
+01092	MA	West Warren
+01093	MA	Whately
+01094	MA	Wheelwright
+01095	MA	Wilbraham
+01096	MA	Williamsburg
+01097	MA	Woronoco
+01098	MA	Worthington
+01101	MA	Springfield
+01102	MA	Springfield
+01103	MA	Springfield
+01104	MA	Springfield
+01105	MA	Springfield
+01106	MA	Longmeadow
+01107	MA	Springfield
+01108	MA	Springfield
+01109	MA	Springfield
+01111	MA	Springfield
+01114	MA	Springfield
+01115	MA	Springfield
+01116	MA	Longmeadow
+01118	MA	Springfield
+01119	MA	Springfield
+01128	MA	Springfield
+01129	MA	Springfield
+01133	MA	Springfield
+01138	MA	Springfield
+01139	MA	Springfield
+01144	MA	Springfield
+01151	MA	Indian Orchard
+01152	MA	Springfield
+01199	MA	Springfield
+01201	MA	Pittsfield
+01202	MA	Pittsfield
+01203	MA	Pittsfield
+01220	MA	Adams
+01222	MA	Ashley Falls
+01223	MA	Becket
+01224	MA	Berkshire
+01225	MA	Cheshire
+01226	MA	Dalton
+01227	MA	Dalton
+01229	MA	Glendale
+01230	MA	Great Barrington
+01235	MA	Hinsdale
+01236	MA	Housatonic
+01237	MA	Lanesboro
+01238	MA	Lee
+01240	MA	Lenox
+01242	MA	Lenox Dale
+01243	MA	Middlefield
+01244	MA	Mill River
+01245	MA	Monterey
+01247	MA	North Adams
+01252	MA	North Egremont
+01253	MA	Otis
+01254	MA	Richmond
+01255	MA	Sandisfield
+01256	MA	Savoy
+01257	MA	Sheffield
+01258	MA	South Egremont
+01259	MA	Southfield
+01260	MA	South Lee
+01262	MA	Stockbridge
+01263	MA	Stockbridge
+01264	MA	Tyringham
+01266	MA	West Stockbridge
+01267	MA	Williamstown
+01270	MA	Windsor
+01301	MA	Greenfield
+01302	MA	Greenfield
+01330	MA	Ashfield
+01331	MA	Athol
+01337	MA	Bernardston
+01338	MA	Buckland
+01339	MA	Charlemont
+01340	MA	Colrain
+01341	MA	Conway
+01342	MA	Deerfield
+01343	MA	Drury
+01344	MA	Erving
+01346	MA	Heath
+01347	MA	Lake Pleasant
+01349	MA	Turners Falls
+01350	MA	Monroe Bridge
+01351	MA	Montague
+01354	MA	Northfield
+01355	MA	New Salem
+01360	MA	Northfield
+01364	MA	Orange
+01366	MA	Petersham
+01367	MA	Rowe
+01368	MA	Royalston
+01369	MA	Shattuckville
+01370	MA	Shelburne Falls
+01373	MA	South Deerfield
+01375	MA	Sunderland
+01376	MA	Turners Falls
+01378	MA	Warwick
+01379	MA	Wendell
+01380	MA	Wendell Depot
+01420	MA	Fitchburg
+01430	MA	Ashburnham
+01431	MA	Ashby
+01432	MA	Ayer
+01433	MA	Ft Devens
+01436	MA	Baldwinville
+01438	MA	East Templeton
+01440	MA	Gardner
+01441	MA	Gardner
+01450	MA	Groton
+01451	MA	Harvard
+01452	MA	Hubbardston
+01453	MA	Leominster
+01460	MA	Littleton
+01462	MA	Lunenburg
+01463	MA	Pepperell
+01464	MA	Shirley
+01467	MA	Still River
+01468	MA	Templeton
+01469	MA	Townsend
+01470	MA	Groton
+01471	MA	Groton
+01472	MA	West Groton
+01473	MA	Westminster
+01474	MA	West Townsend
+01475	MA	Winchendon
+01477	MA	Winchendon Springs
+01501	MA	Auburn
+01503	MA	Berlin
+01504	MA	Blackstone
+01505	MA	Boylston
+01506	MA	Brookfield
+01507	MA	Charlton
+01508	MA	Charlton City
+01509	MA	Charlton Depot
+01510	MA	Clinton
+01515	MA	East Brookfield
+01516	MA	Douglas
+01517	MA	East Princeton
+01518	MA	Fiskdale
+01519	MA	Grafton
+01520	MA	Holden
+01521	MA	Holland
+01522	MA	Jefferson
+01523	MA	Lancaster
+01524	MA	Leicester
+01525	MA	Linwood
+01526	MA	Manchaug
+01527	MA	Millbury
+01529	MA	Millville
+01531	MA	New Braintree
+01532	MA	Northborough
+01534	MA	Northbridge
+01535	MA	North Brookfield
+01536	MA	North Grafton
+01537	MA	North Oxford
+01538	MA	North Uxbridge
+01539	MA	Oakdale
+01540	MA	Oxford
+01541	MA	Princeton
+01542	MA	Rochdale
+01543	MA	Rutland
+01545	MA	Shrewsbury
+01546	MA	Shrewsbury
+01550	MA	Southbridge
+01560	MA	South Grafton
+01561	MA	South Lancaster
+01562	MA	Spencer
+01564	MA	Sterling
+01566	MA	Sturbridge
+01568	MA	Upton
+01569	MA	Uxbridge
+01570	MA	Webster
+01571	MA	Dudley
+01580	MA	Westborough
+01581	MA	Westborough
+01582	MA	Westborough
+01583	MA	West Boylston
+01585	MA	West Brookfield
+01586	MA	West Millbury
+01588	MA	Whitinsville
+01590	MA	Sutton
+01601	MA	Worcester
+01602	MA	Worcester
+01603	MA	Worcester
+01604	MA	Worcester
+01605	MA	Worcester
+01606	MA	Worcester
+01607	MA	Worcester
+01608	MA	Worcester
+01609	MA	Worcester
+01610	MA	Worcester
+01611	MA	Cherry Valley
+01612	MA	Paxton
+01613	MA	Worcester
+01614	MA	Worcester
+01615	MA	Worcester
+01653	MA	Worcester
+01654	MA	Worcester
+01655	MA	Worcester
+01701	MA	Framingham
+01702	MA	Framingham
+01703	MA	Framingham
+01704	MA	Framingham
+01705	MA	Framingham
+01718	MA	Village Of Nagog Woods
+01719	MA	Boxborough
+01720	MA	Acton
+01721	MA	Ashland
+01730	MA	Bedford
+01731	MA	Hanscom Afb
+01740	MA	Bolton
+01741	MA	Carlisle
+01742	MA	Concord
+01745	MA	Fayville
+01746	MA	Holliston
+01747	MA	Hopedale
+01748	MA	Hopkinton
+01749	MA	Hudson
+01752	MA	Marlborough
+01754	MA	Maynard
+01756	MA	Mendon
+01757	MA	Milford
+01760	MA	Natick
+01770	MA	Sherborn
+01772	MA	Southborough
+01773	MA	Lincoln
+01775	MA	Stow
+01776	MA	Sudbury
+01778	MA	Wayland
+01784	MA	Woodville
+01801	MA	Woburn
+01803	MA	Burlington
+01805	MA	Burlington
+01806	MA	Woburn
+01807	MA	Woburn
+01808	MA	Woburn
+01810	MA	Andover
+01812	MA	Andover
+01813	MA	Woburn
+01815	MA	Woburn
+01821	MA	Billerica
+01822	MA	Billerica
+01824	MA	Chelmsford
+01826	MA	Dracut
+01827	MA	Dunstable
+01830	MA	Haverhill
+01831	MA	Haverhill
+01832	MA	Haverhill
+01833	MA	Georgetown
+01834	MA	Groveland
+01835	MA	Haverhill
+01840	MA	Lawrence
+01841	MA	Lawrence
+01842	MA	Lawrence
+01843	MA	Lawrence
+01844	MA	Methuen
+01845	MA	North Andover
+01850	MA	Lowell
+01851	MA	Lowell
+01852	MA	Lowell
+01853	MA	Lowell
+01854	MA	Lowell
+01860	MA	Merrimac
+01862	MA	North Billerica
+01863	MA	North Chelmsford
+01864	MA	North Reading
+01865	MA	Nutting Lake
+01866	MA	Pinehurst
+01867	MA	Reading
+01876	MA	Tewksbury
+01879	MA	Tyngsboro
+01880	MA	Wakefield
+01885	MA	West Boxford
+01886	MA	Westford
+01887	MA	Wilmington
+01888	MA	Woburn
+01889	MA	North Reading
+01890	MA	Winchester
+01899	MA	Andover
+01901	MA	Lynn
+01902	MA	Lynn
+01903	MA	Lynn
+01904	MA	Lynn
+01905	MA	Lynn
+01906	MA	Saugus
+01907	MA	Swampscott
+01908	MA	Nahant
+01910	MA	Lynn
+01913	MA	Amesbury
+01915	MA	Beverly
+01921	MA	Boxford
+01922	MA	Byfield
+01923	MA	Danvers
+01929	MA	Essex
+01930	MA	Gloucester
+01931	MA	Gloucester
+01936	MA	Hamilton
+01937	MA	Hathorne
+01938	MA	Ipswich
+01940	MA	Lynnfield
+01944	MA	Manchester
+01945	MA	Marblehead
+01947	MA	Marblehead
+01949	MA	Middleton
+01950	MA	Newburyport
+01951	MA	Newbury
+01952	MA	Salisbury
+01960	MA	Peabody
+01961	MA	Peabody
+01965	MA	Prides Crossing
+01966	MA	Rockport
+01969	MA	Rowley
+01970	MA	Salem
+01971	MA	Salem
+01982	MA	South Hamilton
+01983	MA	Topsfield
+01984	MA	Wenham
+01985	MA	West Newbury
+02018	MA	Accord
+02019	MA	Bellingham
+02020	MA	Brant Rock
+02021	MA	Canton
+02025	MA	Cohasset
+02026	MA	Dedham
+02027	MA	Dedham
+02030	MA	Dover
+02031	MA	East Mansfield
+02032	MA	East Walpole
+02035	MA	Foxboro
+02038	MA	Franklin
+02040	MA	Greenbush
+02041	MA	Green Harbor
+02043	MA	Hingham
+02044	MA	Hingham
+02045	MA	Hull
+02047	MA	Humarock
+02048	MA	Mansfield
+02050	MA	Marshfield
+02051	MA	Marshfield Hills
+02052	MA	Medfield
+02053	MA	Medway
+02054	MA	Millis
+02055	MA	Minot
+02056	MA	Norfolk
+02059	MA	North Marshfield
+02060	MA	North Scituate
+02061	MA	Norwell
+02062	MA	Norwood
+02065	MA	Ocean Bluff
+02066	MA	Scituate
+02067	MA	Sharon
+02070	MA	Sheldonville
+02071	MA	South Walpole
+02072	MA	Stoughton
+02081	MA	Walpole
+02090	MA	Westwood
+02093	MA	Wrentham
+02101	MA	Boston
+02102	MA	Boston
+02103	MA	Boston
+02104	MA	Boston
+02105	MA	Boston
+02106	MA	Boston
+02107	MA	Boston
+02108	MA	Boston
+02109	MA	Boston
+02110	MA	Boston
+02111	MA	Boston
+02112	MA	Boston
+02113	MA	Boston
+02114	MA	Boston
+02115	MA	Boston
+02116	MA	Boston
+02117	MA	Boston
+02118	MA	Roxbury
+02119	MA	Roxbury
+02120	MA	Roxbury
+02121	MA	Dorchester
+02122	MA	Dorchester
+02123	MA	Boston
+02124	MA	Dorchester
+02125	MA	Dorchester
+02126	MA	Mattapan
+02127	MA	Boston
+02128	MA	Boston
+02129	MA	Charlestown
+02130	MA	Jamaica Plain
+02131	MA	Roslindale
+02132	MA	West Roxbury
+02133	MA	Boston
+02134	MA	Allston
+02135	MA	Brighton
+02136	MA	Hyde Park
+02137	MA	Readville
+02138	MA	Cambridge
+02139	MA	Cambridge
+02140	MA	Cambridge
+02141	MA	Cambridge
+02142	MA	Cambridge
+02143	MA	Somerville
+02144	MA	Somerville
+02145	MA	Somerville
+02146	MA	Brookline
+02147	MA	Brookline Village
+02148	MA	Malden
+02149	MA	Everett
+02150	MA	Chelsea
+02151	MA	Revere
+02152	MA	Winthrop
+02153	MA	Medford
+02154	MA	Waltham
+02155	MA	Medford
+02156	MA	West Medford
+02157	MA	Babson Park
+02158	MA	Newton
+02159	MA	Newton
+02160	MA	Newton
+02161	MA	Newton
+02162	MA	Newton
+02163	MA	Boston
+02164	MA	Newton
+02165	MA	Newton
+02166	MA	Auburndale
+02167	MA	Chestnut Hill
+02168	MA	Waban
+02169	MA	Quincy
+02170	MA	Quincy
+02171	MA	Quincy
+02172	MA	Watertown
+02173	MA	Lexington
+02174	MA	Arlington
+02175	MA	Arlington Heights
+02176	MA	Melrose
+02177	MA	Melrose
+02178	MA	Belmont
+02179	MA	Waverley
+02180	MA	Stoneham
+02181	MA	Wellesley
+02184	MA	Braintree
+02185	MA	Braintree
+02186	MA	Milton
+02187	MA	Milton Village
+02188	MA	Weymouth
+02189	MA	Weymouth
+02190	MA	Weymouth
+02191	MA	Weymouth
+02192	MA	Needham
+02193	MA	Weston
+02194	MA	Needham
+02195	MA	Newton
+02196	MA	Boston
+02199	MA	Boston
+02201	MA	Boston
+02202	MA	Boston
+02203	MA	Boston
+02204	MA	Boston
+02205	MA	Boston
+02206	MA	Boston
+02207	MA	Boston
+02208	MA	Boston
+02209	MA	Boston
+02210	MA	Boston
+02211	MA	Boston
+02212	MA	Boston
+02215	MA	Boston
+02216	MA	Boston
+02217	MA	Boston
+02222	MA	Boston
+02238	MA	Cambridge
+02239	MA	Cambridge
+02241	MA	Boston
+02254	MA	Waltham
+02258	MA	Newton
+02266	MA	Boston
+02269	MA	Quincy
+02272	MA	Watertown
+02277	MA	Watertown
+02293	MA	Boston
+02295	MA	Boston
+02297	MA	Boston
+02322	MA	Avon
+02324	MA	Bridgewater
+02325	MA	Bridgewater
+02327	MA	Bryantville
+02330	MA	Carver
+02331	MA	Duxbury
+02332	MA	Duxbury
+02333	MA	East Bridgewater
+02334	MA	Easton
+02337	MA	Elmwood
+02338	MA	Halifax
+02339	MA	Hanover
+02341	MA	Hanson
+02343	MA	Holbrook
+02344	MA	Middleboro
+02345	MA	Manomet
+02346	MA	Middleboro
+02347	MA	Lakeville
+02348	MA	Middleboro
+02349	MA	Middleboro
+02350	MA	Monponsett
+02351	MA	Abington
+02355	MA	North Carver
+02356	MA	North Easton
+02357	MA	North Easton
+02358	MA	North Pembroke
+02359	MA	Pembroke
+02360	MA	Plymouth
+02361	MA	Plymouth
+02362	MA	Plymouth
+02363	MA	Plymouth
+02364	MA	Kingston
+02366	MA	South Carver
+02367	MA	Plympton
+02368	MA	Randolph
+02370	MA	Rockland
+02375	MA	South Easton
+02379	MA	West Bridgewater
+02381	MA	White Horse Beach
+02382	MA	Whitman
+02401	MA	Brockton
+02402	MA	Brockton
+02403	MA	Brockton
+02404	MA	Brockton
+02405	MA	Brockton
+02411	MA	Brockton
+02499	MA	Brockton
+02532	MA	Buzzards Bay
+02534	MA	Cataumet
+02535	MA	Chilmark
+02536	MA	East Falmouth
+02537	MA	East Sandwich
+02538	MA	East Wareham
+02539	MA	Edgartown
+02540	MA	Falmouth
+02541	MA	Falmouth
+02542	MA	Buzzards Bay
+02543	MA	Woods Hole
+02552	MA	Menemsha
+02553	MA	Monument Beach
+02554	MA	Nantucket
+02556	MA	North Falmouth
+02557	MA	Oak Bluffs
+02558	MA	Onset
+02559	MA	Pocasset
+02561	MA	Sagamore
+02562	MA	Sagamore Beach
+02563	MA	Sandwich
+02564	MA	Siasconset
+02565	MA	Silver Beach
+02568	MA	Vineyard Haven
+02571	MA	Wareham
+02573	MA	Vineyard Haven
+02574	MA	West Falmouth
+02575	MA	West Tisbury
+02576	MA	West Wareham
+02584	MA	Nantucket
+02601	MA	Hyannis
+02630	MA	Barnstable
+02631	MA	Brewster
+02632	MA	Centerville
+02633	MA	Chatham
+02634	MA	Centerville
+02635	MA	Cotuit
+02636	MA	Centerville
+02637	MA	Cummaquid
+02638	MA	Dennis
+02639	MA	Dennis Port
+02641	MA	East Dennis
+02642	MA	Eastham
+02643	MA	East Orleans
+02644	MA	Forestdale
+02645	MA	Harwich
+02646	MA	Harwich Port
+02647	MA	Hyannis Port
+02648	MA	Marstons Mills
+02649	MA	Mashpee
+02650	MA	North Chatham
+02651	MA	North Eastham
+02652	MA	North Truro
+02653	MA	Orleans
+02655	MA	Osterville
+02657	MA	Provincetown
+02659	MA	South Chatham
+02660	MA	South Dennis
+02661	MA	South Harwich
+02662	MA	South Orleans
+02663	MA	South Wellfleet
+02664	MA	South Yarmouth
+02666	MA	Truro
+02667	MA	Wellfleet
+02668	MA	West Barnstable
+02669	MA	West Chatham
+02670	MA	West Dennis
+02671	MA	West Harwich
+02672	MA	West Hyannisport
+02673	MA	West Yarmouth
+02675	MA	Yarmouth Port
+02702	MA	Assonet
+02703	MA	Attleboro
+02712	MA	Chartley
+02713	MA	Cuttyhunk
+02714	MA	Dartmouth
+02715	MA	Dighton
+02717	MA	East Freetown
+02718	MA	East Taunton
+02719	MA	Fairhaven
+02720	MA	Fall River
+02721	MA	Fall River
+02722	MA	Fall River
+02723	MA	Fall River
+02724	MA	Fall River
+02725	MA	Somerset
+02726	MA	Somerset
+02738	MA	Marion
+02739	MA	Mattapoisett
+02740	MA	New Bedford
+02741	MA	New Bedford
+02742	MA	New Bedford
+02743	MA	Acushnet
+02744	MA	New Bedford
+02745	MA	New Bedford
+02746	MA	New Bedford
+02747	MA	Dartmouth
+02748	MA	Dartmouth
+02754	MA	North Dighton
+02760	MA	North Attleboro
+02761	MA	North Attleboro
+02762	MA	Plainville
+02763	MA	Attleboro Falls
+02764	MA	North Dighton
+02766	MA	Norton
+02767	MA	Raynham
+02768	MA	Raynham Center
+02769	MA	Rehoboth
+02770	MA	Rochester
+02771	MA	Seekonk
+02777	MA	Swansea
+02779	MA	Berkley
+02780	MA	Taunton
+02790	MA	Westport
+02791	MA	Westport Point
+02801	RI	Adamsville
+02802	RI	Albion
+02804	RI	Ashaway
+02806	RI	Barrington
+02807	RI	Block Island
+02808	RI	Bradford
+02809	RI	Bristol
+02812	RI	Carolina
+02813	RI	Charlestown
+02814	RI	Chepachet
+02815	RI	Clayville
+02816	RI	Coventry
+02817	RI	West Greenwich
+02818	RI	East Greenwich
+02822	RI	Exeter
+02823	RI	Fiskeville
+02824	RI	Forestdale
+02825	RI	Foster
+02826	RI	Glendale
+02827	RI	Greene
+02828	RI	Greenville
+02829	RI	Harmony
+02830	RI	Harrisville
+02831	RI	Hope
+02832	RI	Hope Valley
+02833	RI	Hopkinton
+02835	RI	Jamestown
+02836	RI	Kenyon
+02837	RI	Little Compton
+02838	RI	Manville
+02839	RI	Mapleville
+02840	RI	Newport
+02841	RI	Newport
+02842	RI	Middletown
+02852	RI	North Kingstown
+02854	RI	North Kingstown
+02857	RI	North Scituate
+02858	RI	Oakland
+02859	RI	Pascoag
+02860	RI	Pawtucket
+02861	RI	Pawtucket
+02862	RI	Pawtucket
+02863	RI	Central Falls
+02864	RI	Cumberland
+02865	RI	Lincoln
+02871	RI	Portsmouth
+02872	RI	Prudence Island
+02873	RI	Rockville
+02874	RI	Saunderstown
+02875	RI	Shannock
+02876	RI	Slatersville
+02877	RI	Slocum
+02878	RI	Tiverton
+02879	RI	Wakefield
+02880	RI	Wakefield
+02881	RI	Kingston
+02882	RI	Narragansett
+02883	RI	Peace Dale
+02885	RI	Warren
+02886	RI	Warwick
+02887	RI	Warwick
+02888	RI	Warwick
+02889	RI	Warwick
+02891	RI	Westerly
+02892	RI	West Kingston
+02893	RI	West Warwick
+02894	RI	Wood River Junction
+02895	RI	Woonsocket
+02896	RI	North Smithfield
+02898	RI	Wyoming
+02901	RI	Providence
+02902	RI	Providence
+02903	RI	Providence
+02904	RI	Providence
+02905	RI	Providence
+02906	RI	Providence
+02907	RI	Providence
+02908	RI	Providence
+02909	RI	Providence
+02910	RI	Cranston
+02911	RI	North Providence
+02912	RI	Providence
+02914	RI	East Providence
+02915	RI	Riverside
+02916	RI	Rumford
+02917	RI	Smithfield
+02918	RI	Providence
+02919	RI	Johnston
+02920	RI	Cranston
+02921	RI	Cranston
+02940	RI	Providence
+03031	NH	Amherst
+03032	NH	Auburn
+03033	NH	Brookline
+03034	NH	Candia
+03036	NH	Chester
+03037	NH	Deerfield
+03038	NH	Derry
+03040	NH	East Candia
+03041	NH	East Derry
+03042	NH	Epping
+03043	NH	Francestown
+03044	NH	Fremont
+03045	NH	Goffstown
+03047	NH	Greenfield
+03048	NH	Greenville
+03049	NH	Hollis
+03051	NH	Hudson
+03052	NH	Litchfield
+03053	NH	Londonderry
+03054	NH	Merrimack
+03055	NH	Milford
+03057	NH	Mont Vernon
+03060	NH	Nashua
+03061	NH	Nashua
+03062	NH	Nashua
+03063	NH	Nashua
+03070	NH	New Boston
+03071	NH	New Ipswich
+03073	NH	North Salem
+03076	NH	Pelham
+03077	NH	Raymond
+03079	NH	Salem
+03082	NH	Lyndeborough
+03084	NH	Temple
+03086	NH	Wilton
+03087	NH	Windham
+03101	NH	Manchester
+03102	NH	Manchester
+03103	NH	Manchester
+03104	NH	Manchester
+03105	NH	Manchester
+03106	NH	Hooksett
+03107	NH	Manchester
+03108	NH	Manchester
+03109	NH	Manchester
+03110	NH	Bedford
+03111	NH	Manchester
+03215	NH	Waterville Valley
+03216	NH	Andover
+03217	NH	Ashland
+03218	NH	Barnstead
+03220	NH	Belmont
+03221	NH	Bradford
+03222	NH	Bristol
+03223	NH	Campton
+03224	NH	Canterbury
+03225	NH	Center Barnstead
+03226	NH	Center Harbor
+03227	NH	Center Sandwich
+03229	NH	Contoocook
+03230	NH	Danbury
+03231	NH	East Andover
+03232	NH	East Hebron
+03233	NH	Elkins
+03234	NH	Epsom
+03235	NH	Franklin
+03237	NH	Gilmanton
+03238	NH	Glencliff
+03240	NH	Grafton
+03241	NH	Hebron
+03242	NH	Henniker
+03243	NH	Hill
+03244	NH	Hillsboro
+03245	NH	Holderness
+03246	NH	Laconia
+03247	NH	Laconia
+03251	NH	Lincoln
+03252	NH	Lochmere
+03253	NH	Meredith
+03254	NH	Moultonborough
+03255	NH	Newbury
+03256	NH	New Hampton
+03257	NH	New London
+03259	NH	North Sandwich
+03260	NH	North Sutton
+03261	NH	Northwood
+03262	NH	North Woodstock
+03263	NH	Pittsfield
+03264	NH	Plymouth
+03265	NH	Andover
+03266	NH	Rumney
+03268	NH	Salisbury
+03269	NH	Sanbornton
+03272	NH	South Newbury
+03273	NH	South Sutton
+03274	NH	Stinson Lake
+03275	NH	Suncook
+03276	NH	Tilton
+03278	NH	Warner
+03279	NH	Warren
+03280	NH	Washington
+03281	NH	Weare
+03282	NH	Wentworth
+03284	NH	Springfield
+03287	NH	Wilmot
+03289	NH	Winnisquam
+03290	NH	Nottingham
+03291	NH	West Nottingham
+03293	NH	Woodstock
+03301	NH	Concord
+03302	NH	Concord
+03303	NH	Concord
+03304	NH	Bow
+03305	NH	Concord
+03431	NH	Keene
+03435	NH	Keene
+03440	NH	Antrim
+03441	NH	Ashuelot
+03442	NH	Bennington
+03443	NH	Chesterfield
+03444	NH	Dublin
+03445	NH	Sullivan
+03446	NH	East Swanzey
+03447	NH	Fitzwilliam
+03448	NH	Gilsum
+03449	NH	Hancock
+03450	NH	Harrisville
+03451	NH	Hinsdale
+03452	NH	Jaffrey
+03455	NH	Marlborough
+03456	NH	Marlow
+03457	NH	Munsonville
+03458	NH	Peterborough
+03461	NH	Rindge
+03462	NH	Spofford
+03464	NH	Stoddard
+03465	NH	Troy
+03466	NH	West Chesterfield
+03467	NH	Westmoreland
+03468	NH	West Peterborough
+03469	NH	West Swanzey
+03470	NH	Winchester
+03561	NH	Littleton
+03570	NH	Berlin
+03574	NH	Bethlehem
+03575	NH	Bretton Woods
+03576	NH	Colebrook
+03579	NH	Errol
+03580	NH	Franconia
+03581	NH	Gorham
+03582	NH	Groveton
+03583	NH	Jefferson
+03584	NH	Lancaster
+03585	NH	Lisbon
+03587	NH	Meadows
+03588	NH	Milan
+03589	NH	Mount Washington
+03590	NH	North Stratford
+03592	NH	Pittsburg
+03595	NH	Twin Mountain
+03597	NH	West Stewartstown
+03598	NH	Whitefield
+03601	NH	Acworth
+03602	NH	Alstead
+03603	NH	Charlestown
+03604	NH	Drewsville
+03605	NH	East Lempster
+03606	NH	Lempster
+03607	NH	South Acworth
+03608	NH	Walpole
+03609	NH	North Walpole
+03740	NH	Bath
+03741	NH	Canaan
+03743	NH	Claremont
+03745	NH	Cornish
+03746	NH	Cornish Flat
+03748	NH	Enfield
+03749	NH	Enfield Center
+03750	NH	Etna
+03751	NH	Georges Mills
+03752	NH	Goshen
+03753	NH	Grantham
+03754	NH	Guild
+03755	NH	Hanover
+03756	NH	Lebanon
+03765	NH	Haverhill
+03766	NH	Lebanon
+03768	NH	Lyme
+03769	NH	Lyme Center
+03770	NH	Meriden
+03771	NH	Monroe
+03772	NH	Mount Sunapee
+03773	NH	Newport
+03774	NH	North Haverhill
+03777	NH	Orford
+03779	NH	Piermont
+03780	NH	Pike
+03781	NH	Plainfield
+03782	NH	Sunapee
+03784	NH	West Lebanon
+03785	NH	Woodsville
+03801	NH	Portsmouth
+03802	NH	Portsmouth
+03803	NH	Portsmouth
+03804	NH	Portsmouth
+03805	NH	Rollinsford
+03809	NH	Alton
+03810	NH	Alton Bay
+03811	NH	Atkinson
+03812	NH	Bartlett
+03813	NH	Center Conway
+03814	NH	Center Ossipee
+03815	NH	Center Strafford
+03816	NH	Center Tuftonboro
+03817	NH	Chocorua
+03818	NH	Conway
+03819	NH	Danville
+03820	NH	Dover
+03821	NH	Dover
+03822	NH	Dover
+03824	NH	Durham
+03825	NH	Barrington
+03826	NH	East Hampstead
+03827	NH	East Kingston
+03830	NH	East Wakefield
+03832	NH	Eaton Center
+03833	NH	Exeter
+03835	NH	Farmington
+03836	NH	Freedom
+03837	NH	Gilmanton Iron Works
+03838	NH	Glen
+03839	NH	Rochester
+03840	NH	Greenland
+03841	NH	Hampstead
+03842	NH	Hampton
+03843	NH	Hampton
+03844	NH	Hampton Falls
+03845	NH	Intervale
+03846	NH	Jackson
+03847	NH	Kearsarge
+03848	NH	Kingston
+03849	NH	Madison
+03850	NH	Melvin Village
+03851	NH	Milton
+03852	NH	Milton Mills
+03853	NH	Mirror Lake
+03854	NH	New Castle
+03855	NH	New Durham
+03856	NH	Newfields
+03857	NH	Newmarket
+03858	NH	Newton
+03859	NH	Newton Junction
+03860	NH	North Conway
+03862	NH	North Hampton
+03864	NH	Ossipee
+03865	NH	Plaistow
+03866	NH	Rochester
+03867	NH	Rochester
+03868	NH	Rochester
+03869	NH	Rollinsford
+03870	NH	Rye
+03871	NH	Rye Beach
+03872	NH	Sanbornville
+03873	NH	Sandown
+03874	NH	Seabrook
+03875	NH	Silver Lake
+03878	NH	Somersworth
+03882	NH	South Effingham
+03883	NH	South Tamworth
+03884	NH	Strafford
+03885	NH	Stratham
+03886	NH	Tamworth
+03887	NH	Union
+03890	NH	West Ossipee
+03894	NH	Wolfeboro
+03896	NH	Wolfeboro Falls
+03897	NH	Wonalancet
+03901	ME	Berwick
+03902	ME	Cape Neddick
+03903	ME	Eliot
+03904	ME	Kittery
+03905	ME	Kittery Point
+03906	ME	North Berwick
+03907	ME	Ogunquit
+03908	ME	South Berwick
+03909	ME	York
+03910	ME	York Beach
+03911	ME	York Harbor
+04001	ME	Acton
+04002	ME	Alfred
+04003	ME	Bailey Island
+04004	ME	Bar Mills
+04005	ME	Biddeford
+04006	ME	Biddeford Pool
+04007	ME	Biddeford
+04008	ME	Bowdoinham
+04009	ME	Bridgton
+04010	ME	Brownfield
+04011	ME	Brunswick
+04013	ME	Bustins Island
+04014	ME	Cape Porpoise
+04015	ME	Casco
+04016	ME	Center Lovell
+04017	ME	Chebeague Island
+04019	ME	Cliff Island
+04020	ME	Cornish
+04021	ME	Cumberland Center
+04022	ME	Denmark
+04024	ME	East Baldwin
+04027	ME	East Lebanon
+04028	ME	East Parsonfield
+04029	ME	East Sebago
+04030	ME	East Waterboro
+04032	ME	Freeport
+04033	ME	Freeport
+04037	ME	Fryeburg
+04038	ME	Gorham
+04039	ME	Gray
+04040	ME	Harrison
+04041	ME	Hiram
+04042	ME	Hollis Center
+04043	ME	Kennebunk
+04046	ME	Kennebunkport
+04047	ME	Kezar Falls
+04048	ME	Limerick
+04049	ME	Limington
+04050	ME	Long Island
+04051	ME	Lovell
+04053	ME	Merepoint
+04054	ME	Moody
+04055	ME	Naples
+04056	ME	Newfield
+04057	ME	North Bridgton
+04060	ME	North Shapleigh
+04061	ME	North Waterboro
+04062	ME	Windham
+04063	ME	Ocean Park
+04064	ME	Old Orchard Beach
+04066	ME	Orrs Island
+04068	ME	Porter
+04069	ME	Pownal
+04070	ME	Scarborough
+04071	ME	Raymond
+04072	ME	Saco
+04073	ME	Sanford
+04074	ME	Scarborough
+04075	ME	Sebago Lake
+04076	ME	Shapleigh
+04077	ME	South Casco
+04078	ME	South Freeport
+04079	ME	Harpswell
+04081	ME	South Waterford
+04082	ME	South Windham
+04083	ME	Springvale
+04084	ME	Standish
+04085	ME	Steep Falls
+04086	ME	Topsham
+04087	ME	Waterboro
+04088	ME	Waterford
+04090	ME	Wells
+04091	ME	West Baldwin
+04092	ME	Westbrook
+04093	ME	West Buxton
+04094	ME	West Kennebunk
+04095	ME	West Newfield
+04096	ME	Yarmouth
+04097	ME	North Yarmouth
+04098	ME	Westbrook
+04101	ME	Portland
+04102	ME	Portland
+04103	ME	Portland
+04104	ME	Portland
+04105	ME	Falmouth
+04106	ME	South Portland
+04107	ME	Cape Elizabeth
+04108	ME	Peaks Island
+04109	ME	Portland
+04110	ME	Cumberland Foreside
+04112	ME	Portland
+04116	ME	South Portland
+04122	ME	Portland
+04123	ME	Portland
+04124	ME	Portland
+04210	ME	Auburn
+04211	ME	Auburn
+04212	ME	Auburn
+04216	ME	Andover
+04217	ME	Bethel
+04219	ME	Bryant Pond
+04220	ME	Buckfield
+04221	ME	Canton
+04222	ME	Durham
+04223	ME	Danville
+04224	ME	Dixfield
+04225	ME	Dryden
+04226	ME	East Andover
+04227	ME	East Dixfield
+04228	ME	East Livermore
+04230	ME	East Poland
+04231	ME	East Stoneham
+04234	ME	East Wilton
+04236	ME	Greene
+04237	ME	Hanover
+04238	ME	Hebron
+04239	ME	Jay
+04240	ME	Lewiston
+04241	ME	Lewiston
+04243	ME	Lewiston
+04250	ME	Lisbon
+04252	ME	Lisbon Falls
+04253	ME	Livermore
+04254	ME	Livermore Falls
+04255	ME	Locke Mills
+04256	ME	Mechanic Falls
+04257	ME	Mexico
+04258	ME	Minot
+04259	ME	Monmouth
+04260	ME	New Gloucester
+04261	ME	Newry
+04262	ME	North Jay
+04263	ME	Leeds
+04265	ME	North Monmouth
+04266	ME	North Turner
+04267	ME	North Waterford
+04268	ME	Norway
+04270	ME	Oxford
+04271	ME	Paris
+04274	ME	Poland
+04275	ME	Roxbury
+04276	ME	Rumford
+04278	ME	Rumford Center
+04279	ME	Rumford Point
+04280	ME	Sabattus
+04281	ME	South Paris
+04282	ME	Turner
+04283	ME	Turner Center
+04284	ME	Wayne
+04285	ME	Weld
+04286	ME	West Bethel
+04287	ME	West Bowdoin
+04288	ME	West Minot
+04289	ME	West Paris
+04290	ME	Peru
+04291	ME	West Poland
+04292	ME	Sumner
+04294	ME	Wilton
+04330	ME	Augusta
+04332	ME	Augusta
+04333	ME	Augusta
+04336	ME	Augusta
+04338	ME	Augusta
+04341	ME	Coopers Mills
+04342	ME	Dresden
+04343	ME	East Winthrop
+04344	ME	Farmingdale
+04345	ME	Gardiner
+04346	ME	Randolph
+04347	ME	Hallowell
+04348	ME	Jefferson
+04349	ME	Kents Hill
+04350	ME	Litchfield
+04351	ME	Manchester
+04352	ME	Mount Vernon
+04353	ME	Whitefield
+04354	ME	Palermo
+04355	ME	Readfield
+04357	ME	Richmond
+04358	ME	South China
+04359	ME	South Gardiner
+04360	ME	Vienna
+04361	ME	Weeks Mills
+04363	ME	Windsor
+04364	ME	Winthrop
+04401	ME	Bangor
+04402	ME	Bangor
+04406	ME	Abbot Village
+04408	ME	Aurora
+04410	ME	Bradford
+04411	ME	Bradley
+04412	ME	Brewer
+04413	ME	Brookton
+04414	ME	Brownville
+04415	ME	Brownville Junction
+04416	ME	Bucksport
+04417	ME	Burlington
+04418	ME	Cardville
+04419	ME	Carmel
+04420	ME	Castine
+04421	ME	Castine
+04422	ME	Charleston
+04423	ME	Costigan
+04424	ME	Danforth
+04426	ME	Dover Foxcroft
+04427	ME	East Corinth
+04428	ME	Eddington
+04429	ME	Holden
+04430	ME	East Millinocket
+04431	ME	East Orland
+04434	ME	Etna
+04435	ME	Exeter
+04438	ME	Frankfort
+04441	ME	Greenville
+04442	ME	Greenville Junction
+04443	ME	Guilford
+04444	ME	Hampden
+04448	ME	Howland
+04449	ME	Hudson
+04450	ME	Kenduskeag
+04451	ME	Kingman
+04453	ME	Lagrange
+04454	ME	Lambert Lake
+04455	ME	Lee
+04456	ME	Levant
+04457	ME	Lincoln
+04458	ME	Lincoln Center
+04459	ME	Mattawamkeag
+04460	ME	Medway
+04461	ME	Milford
+04462	ME	Millinocket
+04463	ME	Milo
+04464	ME	Monson
+04467	ME	Olamon
+04468	ME	Old Town
+04469	ME	Orono
+04471	ME	Orient
+04472	ME	Orland
+04473	ME	Orono
+04474	ME	Orrington
+04475	ME	Passadumkeag
+04476	ME	Penobscot
+04478	ME	Rockwood
+04479	ME	Sangerville
+04481	ME	Sebec
+04482	ME	Sebec Lake
+04485	ME	Shirley Mills
+04487	ME	Springfield
+04488	ME	Stetson
+04489	ME	Stillwater
+04490	ME	Topsfield
+04491	ME	Vanceboro
+04492	ME	Waite
+04493	ME	West Enfield
+04495	ME	Winn
+04496	ME	Winterport
+04497	ME	Wytopitlock
+04530	ME	Bath
+04535	ME	Alna
+04536	ME	Bayville
+04537	ME	Boothbay
+04538	ME	Boothbay Harbor
+04539	ME	Bristol
+04541	ME	Chamberlain
+04543	ME	Damariscotta
+04544	ME	East Boothbay
+04547	ME	Friendship
+04548	ME	Georgetown
+04549	ME	Isle Of Springs
+04551	ME	Bremen
+04552	ME	Newagen
+04553	ME	Newcastle
+04554	ME	New Harbor
+04555	ME	Nobleboro
+04556	ME	Edgecomb
+04558	ME	Pemaquid
+04562	ME	Phippsburg
+04563	ME	Cushing
+04564	ME	Round Pond
+04565	ME	Sebasco Estates
+04567	ME	Small Point
+04568	ME	South Bristol
+04570	ME	Squirrel Island
+04571	ME	Trevett
+04572	ME	Waldoboro
+04573	ME	Walpole
+04574	ME	Washington
+04575	ME	West Boothbay Harbor
+04576	ME	West Southport
+04578	ME	Wiscasset
+04579	ME	Woolwich
+04605	ME	Ellsworth
+04606	ME	Addison
+04607	ME	Gouldsboro
+04608	ME	Atlantic
+04609	ME	Bar Harbor
+04611	ME	Beals
+04612	ME	Bernard
+04613	ME	Birch Harbor
+04614	ME	Blue Hill
+04615	ME	Blue Hill Falls
+04616	ME	Brooklin
+04617	ME	Brooksville
+04619	ME	Calais
+04622	ME	Cherryfield
+04623	ME	Columbia Falls
+04624	ME	Corea
+04625	ME	Cranberry Isles
+04626	ME	Cutler
+04627	ME	Deer Isle
+04628	ME	Dennysville
+04629	ME	East Blue Hill
+04630	ME	East Machias
+04631	ME	Eastport
+04634	ME	Franklin
+04635	ME	Frenchboro
+04637	ME	Grand Lake Stream
+04638	ME	Grove
+04640	ME	Hancock
+04642	ME	Harborside
+04643	ME	Harrington
+04644	ME	Hulls Cove
+04645	ME	Isle Au Haut
+04646	ME	Islesford
+04648	ME	Jonesboro
+04649	ME	Jonesport
+04650	ME	Little Deer Isle
+04652	ME	Lubec
+04653	ME	Bass Harbor
+04654	ME	Machias
+04655	ME	Machiasport
+04656	ME	Manset
+04657	ME	Meddybemps
+04658	ME	Milbridge
+04659	ME	Minturn
+04660	ME	Mount Desert
+04662	ME	Northeast Harbor
+04664	ME	Sullivan
+04665	ME	Otter Creek
+04666	ME	Pembroke
+04667	ME	Perry
+04668	ME	Princeton
+04669	ME	Prospect Harbor
+04671	ME	Robbinston
+04672	ME	Salsbury Cove
+04673	ME	Sargentville
+04674	ME	Seal Cove
+04675	ME	Seal Harbor
+04676	ME	Sedgwick
+04677	ME	Sorrento
+04679	ME	Southwest Harbor
+04680	ME	Steuben
+04681	ME	Stonington
+04683	ME	Sunset
+04684	ME	Surry
+04685	ME	Swans Island
+04686	ME	Wesley
+04690	ME	West Tremont
+04691	ME	Whiting
+04693	ME	Winter Harbor
+04694	ME	Woodland
+04730	ME	Houlton
+04732	ME	Ashland
+04733	ME	Benedicta
+04734	ME	Blaine
+04735	ME	Bridgewater
+04736	ME	Caribou
+04737	ME	Clayton Lake
+04738	ME	Crouseville
+04739	ME	Eagle Lake
+04740	ME	Easton
+04741	ME	Estcourt Station
+04742	ME	Fort Fairfield
+04743	ME	Fort Kent
+04744	ME	Fort Kent Mills
+04745	ME	Frenchville
+04746	ME	Grand Isle
+04747	ME	Island Falls
+04750	ME	Limestone
+04751	ME	Limestone
+04756	ME	Madawaska
+04757	ME	Mapleton
+04758	ME	Mars Hill
+04759	ME	Masardis
+04760	ME	Monticello
+04761	ME	New Limerick
+04762	ME	New Sweden
+04763	ME	Oakfield
+04764	ME	Oxbow
+04765	ME	Patten
+04766	ME	Perham
+04768	ME	Portage
+04769	ME	Presque Isle
+04770	ME	Quimby
+04772	ME	Saint Agatha
+04773	ME	Saint David
+04774	ME	Saint Francis
+04775	ME	Sheridan
+04776	ME	Sherman Mills
+04777	ME	Sherman Station
+04779	ME	Sinclair
+04780	ME	Smyrna Mills
+04781	ME	Soldier Pond
+04782	ME	Stacyville
+04783	ME	Stockholm
+04784	ME	Upper Frenchville
+04785	ME	Van Buren
+04786	ME	Washburn
+04787	ME	Westfield
+04788	ME	Winterville
+04841	ME	Rockland
+04843	ME	Camden
+04846	ME	Glen Cove
+04847	ME	Hope
+04848	ME	Islesboro
+04849	ME	Lincolnville
+04850	ME	Lincolnville Center
+04851	ME	Matinicus
+04852	ME	Monhegan
+04853	ME	North Haven
+04854	ME	Owls Head
+04855	ME	Port Clyde
+04856	ME	Rockport
+04857	ME	Saint George
+04858	ME	South Thomaston
+04859	ME	Spruce Head
+04860	ME	Tenants Harbor
+04861	ME	Thomaston
+04862	ME	Union
+04863	ME	Vinalhaven
+04864	ME	Warren
+04865	ME	West Rockport
+04901	ME	Waterville
+04903	ME	Waterville
+04910	ME	Albion
+04911	ME	Anson
+04912	ME	Athens
+04915	ME	Belfast
+04917	ME	Belgrade
+04918	ME	Belgrade Lakes
+04920	ME	Bingham
+04921	ME	Brooks
+04922	ME	Burnham
+04923	ME	Cambridge
+04924	ME	Canaan
+04925	ME	Caratunk
+04926	ME	China
+04927	ME	Clinton
+04928	ME	Corinna
+04929	ME	Detroit
+04930	ME	Dexter
+04932	ME	Dixmont
+04933	ME	East Newport
+04935	ME	East Vassalboro
+04936	ME	Eustis
+04937	ME	Fairfield
+04938	ME	Farmington
+04939	ME	Garland
+04940	ME	Farmington Falls
+04941	ME	Freedom
+04942	ME	Harmony
+04943	ME	Hartland
+04944	ME	Hinckley
+04945	ME	Jackman
+04947	ME	Kingfield
+04949	ME	Liberty
+04950	ME	Madison
+04951	ME	Monroe
+04952	ME	Morrill
+04953	ME	Newport
+04954	ME	New Portland
+04955	ME	New Sharon
+04956	ME	New Vineyard
+04957	ME	Norridgewock
+04958	ME	North Anson
+04961	ME	North New Portland
+04962	ME	North Vassalboro
+04963	ME	Oakland
+04964	ME	Oquossoc
+04965	ME	Palmyra
+04966	ME	Phillips
+04967	ME	Pittsfield
+04969	ME	Plymouth
+04970	ME	Rangeley
+04971	ME	Saint Albans
+04972	ME	Sandy Point
+04973	ME	Searsmont
+04974	ME	Searsport
+04975	ME	Shawmut
+04976	ME	Skowhegan
+04978	ME	Smithfield
+04979	ME	Solon
+04981	ME	Stockton Springs
+04982	ME	Stratton
+04983	ME	Strong
+04984	ME	Temple
+04985	ME	West Forks
+04986	ME	Thorndike
+04987	ME	Troy
+04988	ME	Unity
+04989	ME	Vassalboro
+04992	ME	West Farmington
+05001	VT	White River Junction
+05009	VT	White River Junction
+05030	VT	Ascutney
+05031	VT	Barnard
+05032	VT	Bethel
+05033	VT	Bradford
+05034	VT	Bridgewater
+05035	VT	Bridgewater Corners
+05036	VT	Brookfield
+05037	VT	Brownsville
+05038	VT	Chelsea
+05039	VT	Corinth
+05040	VT	East Corinth
+05041	VT	East Randolph
+05042	VT	East Ryegate
+05043	VT	East Thetford
+05044	VT	Ely
+05045	VT	Fairlee
+05046	VT	Groton
+05047	VT	Hartford
+05048	VT	Hartland
+05049	VT	Hartland Four Corners
+05050	VT	Mc Indoe Falls
+05051	VT	Newbury
+05052	VT	North Hartland
+05053	VT	North Pomfret
+05054	VT	North Thetford
+05055	VT	Norwich
+05056	VT	Plymouth
+05058	VT	Post Mills
+05059	VT	Quechee
+05060	VT	Randolph
+05061	VT	Randolph Center
+05062	VT	Reading
+05065	VT	Sharon
+05067	VT	South Pomfret
+05068	VT	South Royalton
+05069	VT	South Ryegate
+05070	VT	South Strafford
+05071	VT	South Woodstock
+05072	VT	Strafford
+05073	VT	Taftsville
+05074	VT	Thetford
+05075	VT	Thetford Center
+05076	VT	East Corinth
+05077	VT	Tunbridge
+05079	VT	Vershire
+05081	VT	Wells River
+05083	VT	West Fairlee
+05084	VT	West Hartford
+05085	VT	West Newbury
+05086	VT	West Topsham
+05088	VT	Wilder
+05089	VT	Windsor
+05091	VT	Woodstock
+05101	VT	Bellows Falls
+05141	VT	Cambridgeport
+05142	VT	Cavendish
+05143	VT	Chester
+05144	VT	Chester Depot
+05146	VT	Grafton
+05148	VT	Londonderry
+05149	VT	Ludlow
+05150	VT	North Springfield
+05151	VT	Perkinsville
+05152	VT	Peru
+05153	VT	Proctorsville
+05154	VT	Saxtons River
+05155	VT	South Londonderry
+05156	VT	Springfield
+05158	VT	Westminster
+05159	VT	Westminster Station
+05161	VT	Weston
+05201	VT	Bennington
+05250	VT	Arlington
+05251	VT	Dorset
+05252	VT	East Arlington
+05253	VT	East Dorset
+05254	VT	Manchester
+05255	VT	Manchester Center
+05257	VT	North Bennington
+05260	VT	North Pownal
+05261	VT	Pownal
+05262	VT	Shaftsbury
+05301	VT	Brattleboro
+05302	VT	Brattleboro
+05303	VT	Brattleboro
+05304	VT	Brattleboro
+05340	VT	Bondville
+05341	VT	East Dover
+05342	VT	Jacksonville
+05343	VT	Jamaica
+05344	VT	Marlboro
+05345	VT	Newfane
+05346	VT	Putney
+05350	VT	Readsboro
+05351	VT	South Newfane
+05352	VT	Readsboro
+05353	VT	Townshend
+05354	VT	Vernon
+05355	VT	Wardsboro
+05356	VT	West Dover
+05357	VT	West Dummerston
+05358	VT	West Halifax
+05359	VT	West Townshend
+05360	VT	West Wardsboro
+05361	VT	Whitingham
+05362	VT	Williamsville
+05363	VT	Wilmington
+05401	VT	Burlington
+05402	VT	Burlington
+05403	VT	South Burlington
+05404	VT	Winooski
+05405	VT	Burlington
+05406	VT	Burlington
+05407	VT	South Burlington
+05439	VT	Colchester
+05440	VT	Alburg
+05441	VT	Bakersfield
+05442	VT	Belvidere Center
+05443	VT	Bristol
+05444	VT	Cambridge
+05445	VT	Charlotte
+05446	VT	Colchester
+05447	VT	East Berkshire
+05448	VT	East Fairfield
+05449	VT	Colchester
+05450	VT	Enosburg Falls
+05451	VT	Essex
+05452	VT	Essex Junction
+05453	VT	Essex Junction
+05454	VT	Fairfax
+05455	VT	Fairfield
+05456	VT	Ferrisburg
+05457	VT	Franklin
+05458	VT	Grand Isle
+05459	VT	Highgate Center
+05460	VT	Highgate Springs
+05461	VT	Hinesburg
+05462	VT	Huntington
+05463	VT	Isle La Motte
+05464	VT	Jeffersonville
+05465	VT	Jericho
+05466	VT	Jonesville
+05468	VT	Milton
+05469	VT	Monkton
+05470	VT	Montgomery
+05471	VT	Montgomery Center
+05472	VT	New Haven
+05473	VT	North Ferrisburg
+05474	VT	North Hero
+05476	VT	Richford
+05477	VT	Richmond
+05478	VT	Saint Albans
+05479	VT	Saint Albans
+05481	VT	Saint Albans Bay
+05482	VT	Shelburne
+05483	VT	Sheldon
+05485	VT	Sheldon Springs
+05486	VT	South Hero
+05487	VT	Starksboro
+05488	VT	Swanton
+05489	VT	Underhill
+05490	VT	Underhill Center
+05491	VT	Vergennes
+05492	VT	Waterville
+05494	VT	Westford
+05495	VT	Williston
+05501	MA	Andover
+05544	MA	Andover
+05601	VT	Montpelier
+05602	VT	Montpelier
+05603	VT	Montpelier
+05604	VT	Montpelier
+05609	VT	Montpelier
+05620	VT	Montpelier
+05633	VT	Montpelier
+05640	VT	Adamant
+05641	VT	Barre
+05647	VT	Cabot
+05648	VT	Calais
+05649	VT	East Barre
+05650	VT	East Calais
+05651	VT	East Montpelier
+05652	VT	Eden
+05653	VT	Eden Mills
+05654	VT	Graniteville
+05655	VT	Hyde Park
+05656	VT	Johnson
+05657	VT	Lake Elmore
+05658	VT	Marshfield
+05660	VT	Moretown
+05661	VT	Morrisville
+05662	VT	Moscow
+05663	VT	Northfield
+05664	VT	Northfield Falls
+05665	VT	North Hyde Park
+05666	VT	North Montpelier
+05667	VT	Plainfield
+05669	VT	Roxbury
+05670	VT	South Barre
+05671	VT	Waterbury
+05672	VT	Stowe
+05673	VT	Waitsfield
+05674	VT	Warren
+05675	VT	Washington
+05676	VT	Waterbury
+05677	VT	Waterbury Center
+05678	VT	Websterville
+05679	VT	Williamstown
+05680	VT	Wolcott
+05681	VT	Woodbury
+05682	VT	Worcester
+05701	VT	Rutland
+05702	VT	Rutland
+05730	VT	Belmont
+05731	VT	Benson
+05732	VT	Bomoseen
+05733	VT	Brandon
+05734	VT	Bridport
+05735	VT	Castleton
+05736	VT	Center Rutland
+05737	VT	Chittenden
+05738	VT	Cuttingsville
+05739	VT	Danby
+05740	VT	East Middlebury
+05741	VT	East Poultney
+05742	VT	East Wallingford
+05743	VT	Fair Haven
+05744	VT	Florence
+05745	VT	Forest Dale
+05746	VT	Gaysville
+05747	VT	Granville
+05748	VT	Hancock
+05750	VT	Hydeville
+05751	VT	Killington
+05753	VT	Middlebury
+05757	VT	Middletown Springs
+05758	VT	Mount Holly
+05759	VT	North Clarendon
+05760	VT	Orwell
+05761	VT	Pawlet
+05762	VT	Pittsfield
+05763	VT	Pittsford
+05764	VT	Poultney
+05765	VT	Proctor
+05766	VT	Middlebury
+05767	VT	Rochester
+05768	VT	Rupert
+05769	VT	Salisbury
+05770	VT	Shoreham
+05772	VT	Stockbridge
+05773	VT	Wallingford
+05774	VT	Wells
+05775	VT	West Pawlet
+05776	VT	West Rupert
+05777	VT	West Rutland
+05778	VT	Whiting
+05819	VT	Saint Johnsbury
+05820	VT	Albany
+05821	VT	Barnet
+05822	VT	Barton
+05823	VT	Beebe Plain
+05824	VT	Concord
+05825	VT	Coventry
+05826	VT	Craftsbury
+05827	VT	Craftsbury Common
+05828	VT	Danville
+05829	VT	Derby
+05830	VT	Derby Line
+05832	VT	East Burke
+05833	VT	East Charleston
+05836	VT	East Hardwick
+05837	VT	East Haven
+05838	VT	East Saint Johnsbury
+05839	VT	Glover
+05840	VT	Granby
+05841	VT	Greensboro
+05842	VT	Greensboro Bend
+05843	VT	Hardwick
+05845	VT	Irasburg
+05846	VT	Island Pond
+05847	VT	Lowell
+05848	VT	Lower Waterford
+05849	VT	Lyndon
+05850	VT	Lyndon Center
+05851	VT	Lyndonville
+05853	VT	Morgan
+05855	VT	Newport
+05857	VT	Newport Center
+05858	VT	North Concord
+05859	VT	North Troy
+05860	VT	Orleans
+05861	VT	Passumpsic
+05862	VT	Peacham
+05863	VT	Saint Johnsbury Center
+05866	VT	Sheffield
+05867	VT	Sutton
+05868	VT	Troy
+05871	VT	West Burke
+05872	VT	West Charleston
+05873	VT	West Danville
+05874	VT	Westfield
+05875	VT	West Glover
+05901	VT	Averill
+05902	VT	Beecher Falls
+05903	VT	Canaan
+05904	VT	Gilman
+05905	VT	Guildhall
+05906	VT	Lunenburg
+05907	VT	Norton
+06001	CT	Avon
+06002	CT	Bloomfield
+06006	CT	Windsor
+06010	CT	Bristol
+06011	CT	Bristol
+06013	CT	Burlington
+06016	CT	Broad Brook
+06018	CT	Canaan
+06019	CT	Canton
+06020	CT	Canton Center
+06021	CT	Colebrook
+06022	CT	Collinsville
+06023	CT	East Berlin
+06024	CT	East Canaan
+06025	CT	East Glastonbury
+06026	CT	East Granby
+06027	CT	East Hartland
+06028	CT	East Windsor Hill
+06029	CT	Ellington
+06030	CT	Farmington
+06031	CT	Falls Village
+06032	CT	Farmington
+06033	CT	Glastonbury
+06034	CT	Farmington
+06035	CT	Granby
+06037	CT	Kensington
+06039	CT	Lakeville
+06040	CT	Manchester
+06041	CT	Manchester
+06043	CT	Bolton
+06045	CT	Manchester
+06049	CT	Melrose
+06050	CT	New Britain
+06051	CT	New Britain
+06052	CT	New Britain
+06053	CT	New Britain
+06057	CT	New Hartford
+06058	CT	Norfolk
+06059	CT	North Canton
+06060	CT	North Granby
+06061	CT	Pine Meadow
+06062	CT	Plainville
+06063	CT	Pleasant Valley
+06064	CT	Poquonock
+06065	CT	Riverton
+06066	CT	Vernon Rockville
+06067	CT	Rocky Hill
+06068	CT	Salisbury
+06069	CT	Sharon
+06070	CT	Simsbury
+06071	CT	Somers
+06072	CT	Somersville
+06073	CT	South Glastonbury
+06074	CT	South Windsor
+06075	CT	Stafford
+06076	CT	Stafford Springs
+06077	CT	Staffordville
+06078	CT	Suffield
+06079	CT	Taconic
+06080	CT	Suffield
+06081	CT	Tariffville
+06082	CT	Enfield
+06083	CT	Enfield
+06084	CT	Tolland
+06085	CT	Unionville
+06087	CT	Unionville
+06088	CT	East Windsor
+06089	CT	Weatogue
+06090	CT	West Granby
+06091	CT	West Hartland
+06092	CT	West Simsbury
+06093	CT	West Suffield
+06094	CT	Winchester Center
+06095	CT	Windsor
+06096	CT	Windsor Locks
+06098	CT	Winsted
+06101	CT	Hartford
+06102	CT	Hartford
+06103	CT	Hartford
+06104	CT	Hartford
+06105	CT	Hartford
+06106	CT	Hartford
+06107	CT	W Hartford
+06108	CT	East Hartford
+06109	CT	Wethersfield
+06110	CT	W Hartford
+06111	CT	Newington
+06112	CT	Hartford
+06114	CT	Hartford
+06115	CT	Hartford
+06117	CT	W Hartford
+06118	CT	East Hartford
+06119	CT	W Hartford
+06120	CT	Hartford
+06123	CT	Hartford
+06126	CT	Hartford
+06127	CT	W Hartford
+06128	CT	East Hartford
+06129	CT	Wethersfield
+06131	CT	Newington
+06132	CT	Hartford
+06133	CT	W Hartford
+06134	CT	Hartford
+06137	CT	W Hartford
+06138	CT	East Hartford
+06140	CT	Hartford
+06141	CT	Hartford
+06142	CT	Hartford
+06143	CT	Hartford
+06144	CT	Hartford
+06145	CT	Hartford
+06146	CT	Hartford
+06147	CT	Hartford
+06150	CT	Hartford
+06151	CT	Hartford
+06152	CT	Hartford
+06153	CT	Hartford
+06154	CT	Hartford
+06155	CT	Hartford
+06156	CT	Hartford
+06160	CT	Hartford
+06161	CT	Hartford
+06167	CT	Hartford
+06176	CT	Hartford
+06180	CT	Hartford
+06183	CT	Hartford
+06199	CT	Hartford
+06226	CT	Willimantic
+06230	CT	Abington
+06231	CT	Amston
+06232	CT	Andover
+06233	CT	Ballouville
+06234	CT	Brooklyn
+06235	CT	Chaplin
+06237	CT	Columbia
+06238	CT	Coventry
+06239	CT	Danielson
+06241	CT	Dayville
+06242	CT	Eastford
+06243	CT	East Killingly
+06244	CT	East Woodstock
+06245	CT	Fabyan
+06246	CT	Grosvenor Dale
+06247	CT	Hampton
+06248	CT	Hebron
+06249	CT	Lebanon
+06250	CT	Mansfield Center
+06251	CT	Mansfield Depot
+06254	CT	North Franklin
+06255	CT	North Grosvenordale
+06256	CT	North Windham
+06258	CT	Pomfret
+06259	CT	Pomfret Center
+06260	CT	Putnam
+06262	CT	Quinebaug
+06263	CT	Rogers
+06264	CT	Scotland
+06265	CT	South Willington
+06266	CT	South Windham
+06267	CT	South Woodstock
+06268	CT	Storrs Mansfield
+06269	CT	Storrs Mansfield
+06277	CT	Thompson
+06278	CT	Ashford
+06279	CT	Willington
+06280	CT	Windham
+06281	CT	Woodstock
+06282	CT	Woodstock Valley
+06320	CT	New London
+06330	CT	Baltic
+06331	CT	Canterbury
+06332	CT	Central Village
+06333	CT	East Lyme
+06334	CT	Bozrah
+06335	CT	Gales Ferry
+06336	CT	Gilman
+06337	CT	Glasgo
+06339	CT	Ledyard
+06340	CT	Groton
+06349	CT	Groton
+06350	CT	Hanover
+06351	CT	Jewett City
+06353	CT	Montville
+06354	CT	Moosup
+06355	CT	Mystic
+06357	CT	Niantic
+06359	CT	North Stonington
+06360	CT	Norwich
+06365	CT	Preston
+06370	CT	Oakdale
+06371	CT	Old Lyme
+06372	CT	Old Mystic
+06373	CT	Oneco
+06374	CT	Plainfield
+06375	CT	Quaker Hill
+06376	CT	South Lyme
+06377	CT	Sterling
+06378	CT	Stonington
+06379	CT	Pawcatuck
+06380	CT	Taftville
+06382	CT	Uncasville
+06383	CT	Versailles
+06384	CT	Voluntown
+06385	CT	Waterford
+06386	CT	Waterford
+06387	CT	Wauregan
+06388	CT	West Mystic
+06389	CT	Yantic
+06390	NY	Fishers Island
+06401	CT	Ansonia
+06403	CT	Beacon Falls
+06404	CT	Botsford
+06405	CT	Branford
+06409	CT	Centerbrook
+06410	CT	Cheshire
+06411	CT	Cheshire
+06412	CT	Chester
+06413	CT	Clinton
+06414	CT	Cobalt
+06415	CT	Colchester
+06416	CT	Cromwell
+06417	CT	Deep River
+06418	CT	Derby
+06419	CT	Killingworth
+06420	CT	Salem
+06422	CT	Durham
+06423	CT	East Haddam
+06424	CT	East Hampton
+06426	CT	Essex
+06430	CT	Fairfield
+06431	CT	Fairfield
+06432	CT	Fairfield
+06436	CT	Greens Farms
+06437	CT	Guilford
+06438	CT	Haddam
+06439	CT	Hadlyme
+06440	CT	Hawleyville
+06441	CT	Higganum
+06442	CT	Ivoryton
+06443	CT	Madison
+06444	CT	Marion
+06447	CT	Marlborough
+06450	CT	Meriden
+06451	CT	Meriden
+06454	CT	Meriden
+06455	CT	Middlefield
+06456	CT	Middle Haddam
+06457	CT	Middletown
+06459	CT	Middletown
+06460	CT	Milford
+06461	CT	Bridgeport
+06466	CT	Milford
+06467	CT	Milldale
+06468	CT	Monroe
+06469	CT	Moodus
+06470	CT	Newtown
+06471	CT	North Branford
+06472	CT	Northford
+06473	CT	North Haven
+06474	CT	North Westchester
+06475	CT	Old Saybrook
+06477	CT	Orange
+06478	CT	Oxford
+06479	CT	Plantsville
+06480	CT	Portland
+06481	CT	Rockfall
+06482	CT	Sandy Hook
+06483	CT	Seymour
+06484	CT	Shelton
+06487	CT	South Britain
+06488	CT	Southbury
+06489	CT	Southington
+06490	CT	Southport
+06491	CT	Stevenson
+06492	CT	Wallingford
+06493	CT	Wallingford
+06494	CT	Wallingford
+06497	CT	Stratford
+06498	CT	Westbrook
+06501	CT	New Haven
+06502	CT	New Haven
+06503	CT	New Haven
+06504	CT	New Haven
+06505	CT	New Haven
+06506	CT	New Haven
+06507	CT	New Haven
+06508	CT	New Haven
+06509	CT	New Haven
+06510	CT	New Haven
+06511	CT	New Haven
+06512	CT	East Haven
+06513	CT	New Haven
+06514	CT	Hamden
+06515	CT	New Haven
+06516	CT	West Haven
+06517	CT	Hamden
+06518	CT	Hamden
+06519	CT	New Haven
+06520	CT	New Haven
+06521	CT	New Haven
+06524	CT	Bethany
+06525	CT	Woodbridge
+06530	CT	New Haven
+06531	CT	New Haven
+06532	CT	New Haven
+06533	CT	New Haven
+06534	CT	New Haven
+06535	CT	New Haven
+06536	CT	New Haven
+06537	CT	New Haven
+06538	CT	New Haven
+06540	CT	New Haven
+06601	CT	Bridgeport
+06602	CT	Bridgeport
+06604	CT	Bridgeport
+06605	CT	Bridgeport
+06606	CT	Bridgeport
+06607	CT	Bridgeport
+06608	CT	Bridgeport
+06610	CT	Bridgeport
+06611	CT	Trumbull
+06612	CT	Easton
+06650	CT	Bridgeport
+06673	CT	Bridgeport
+06699	CT	Bridgeport
+06701	CT	Waterbury
+06702	CT	Waterbury
+06703	CT	Waterbury
+06704	CT	Waterbury
+06705	CT	Waterbury
+06706	CT	Waterbury
+06708	CT	Waterbury
+06710	CT	Waterbury
+06712	CT	Prospect
+06716	CT	Wolcott
+06720	CT	Waterbury
+06721	CT	Waterbury
+06722	CT	Waterbury
+06723	CT	Waterbury
+06724	CT	Waterbury
+06725	CT	Waterbury
+06726	CT	Waterbury
+06749	CT	Waterbury
+06750	CT	Bantam
+06751	CT	Bethlehem
+06752	CT	Bridgewater
+06753	CT	Cornwall
+06754	CT	Cornwall Bridge
+06755	CT	Gaylordsville
+06756	CT	Goshen
+06757	CT	Kent
+06758	CT	Lakeside
+06759	CT	Litchfield
+06762	CT	Middlebury
+06763	CT	Morris
+06770	CT	Naugatuck
+06776	CT	New Milford
+06777	CT	New Preston Marble Dale
+06778	CT	Northfield
+06779	CT	Oakville
+06781	CT	Pequabuck
+06782	CT	Plymouth
+06783	CT	Roxbury
+06784	CT	Sherman
+06785	CT	South Kent
+06786	CT	Terryville
+06787	CT	Thomaston
+06790	CT	Torrington
+06791	CT	Harwinton
+06793	CT	Washington Depot
+06794	CT	Washington Depot
+06795	CT	Watertown
+06796	CT	West Cornwall
+06798	CT	Woodbury
+06801	CT	Bethel
+06804	CT	Brookfield
+06807	CT	Cos Cob
+06810	CT	Danbury
+06811	CT	Danbury
+06812	CT	New Fairfield
+06813	CT	Danbury
+06814	CT	Danbury
+06816	CT	Danbury
+06817	CT	Danbury
+06820	CT	Darien
+06829	CT	Georgetown
+06830	CT	Greenwich
+06831	CT	Greenwich
+06832	CT	Greenwich
+06836	CT	Greenwich
+06840	CT	New Canaan
+06842	CT	New Canaan
+06850	CT	Norwalk
+06851	CT	Norwalk
+06852	CT	Norwalk
+06853	CT	Norwalk
+06854	CT	Norwalk
+06855	CT	Norwalk
+06856	CT	Norwalk
+06857	CT	Norwalk
+06858	CT	Norwalk
+06859	CT	Norwalk
+06860	CT	Norwalk
+06870	CT	Old Greenwich
+06875	CT	Redding Center
+06876	CT	Redding Ridge
+06877	CT	Ridgefield
+06878	CT	Riverside
+06879	CT	Ridgefield
+06880	CT	Westport
+06881	CT	Westport
+06883	CT	Weston
+06888	CT	Westport
+06889	CT	Westport
+06896	CT	Redding
+06897	CT	Wilton
+06901	CT	Stamford
+06902	CT	Stamford
+06903	CT	Stamford
+06904	CT	Stamford
+06905	CT	Stamford
+06906	CT	Stamford
+06907	CT	Stamford
+06910	CT	Stamford
+06911	CT	Stamford
+06912	CT	Stamford
+06913	CT	Stamford
+06914	CT	Stamford
+06920	CT	Stamford
+06921	CT	Stamford
+06922	CT	Stamford
+06925	CT	Stamford
+06926	CT	Stamford
+06927	CT	Stamford
+06928	CT	Stamford
+07001	NJ	Avenel
+07002	NJ	Bayonne
+07003	NJ	Bloomfield
+07004	NJ	Fairfield
+07005	NJ	Boonton
+07006	NJ	Caldwell
+07007	NJ	Caldwell
+07008	NJ	Carteret
+07009	NJ	Cedar Grove
+07010	NJ	Cliffside Park
+07011	NJ	Clifton
+07012	NJ	Clifton
+07013	NJ	Clifton
+07014	NJ	Clifton
+07015	NJ	Clifton
+07016	NJ	Cranford
+07017	NJ	East Orange
+07018	NJ	East Orange
+07019	NJ	East Orange
+07020	NJ	Edgewater
+07021	NJ	Essex Fells
+07022	NJ	Fairview
+07023	NJ	Fanwood
+07024	NJ	Fort Lee
+07026	NJ	Garfield
+07027	NJ	Garwood
+07028	NJ	Glen Ridge
+07029	NJ	Harrison
+07030	NJ	Hoboken
+07031	NJ	North Arlington
+07032	NJ	Kearny
+07033	NJ	Kenilworth
+07034	NJ	Lake Hiawatha
+07035	NJ	Lincoln Park
+07036	NJ	Linden
+07039	NJ	Livingston
+07040	NJ	Maplewood
+07041	NJ	Millburn
+07042	NJ	Montclair
+07043	NJ	Montclair
+07044	NJ	Verona
+07045	NJ	Montville
+07046	NJ	Mountain Lakes
+07047	NJ	North Bergen
+07050	NJ	Orange
+07051	NJ	Orange
+07052	NJ	West Orange
+07054	NJ	Parsippany
+07055	NJ	Passaic
+07057	NJ	Wallington
+07058	NJ	Pine Brook
+07059	NJ	Warren
+07060	NJ	Plainfield
+07061	NJ	Plainfield
+07062	NJ	Plainfield
+07063	NJ	Plainfield
+07064	NJ	Port Reading
+07065	NJ	Rahway
+07066	NJ	Clark
+07067	NJ	Colonia
+07068	NJ	Roseland
+07070	NJ	Rutherford
+07071	NJ	Lyndhurst
+07072	NJ	Carlstadt
+07073	NJ	East Rutherford
+07074	NJ	Moonachie
+07075	NJ	Wood Ridge
+07076	NJ	Scotch Plains
+07077	NJ	Sewaren
+07078	NJ	Short Hills
+07079	NJ	South Orange
+07080	NJ	South Plainfield
+07081	NJ	Springfield
+07082	NJ	Towaco
+07083	NJ	Union
+07087	NJ	Union City
+07088	NJ	Vauxhall
+07090	NJ	Westfield
+07091	NJ	Westfield
+07092	NJ	Mountainside
+07093	NJ	West New York
+07094	NJ	Secaucus
+07095	NJ	Woodbridge
+07096	NJ	Secaucus
+07097	NJ	Jersey City
+07098	NJ	Avenel
+07099	NJ	Kearny
+07101	NJ	Newark
+07102	NJ	Newark
+07103	NJ	Newark
+07104	NJ	Newark
+07105	NJ	Newark
+07106	NJ	Newark
+07107	NJ	Newark
+07108	NJ	Newark
+07109	NJ	Belleville
+07110	NJ	Nutley
+07111	NJ	Irvington
+07112	NJ	Newark
+07114	NJ	Newark
+07175	NJ	Newark
+07182	NJ	Newark
+07184	NJ	Newark
+07188	NJ	Newark
+07189	NJ	Newark
+07191	NJ	Newark
+07192	NJ	Newark
+07193	NJ	Newark
+07194	NJ	Newark
+07195	NJ	Newark
+07197	NJ	Newark
+07198	NJ	Newark
+07199	NJ	Newark
+07201	NJ	Elizabeth
+07202	NJ	Elizabeth
+07203	NJ	Roselle
+07204	NJ	Roselle Park
+07205	NJ	Hillside
+07206	NJ	Elizabeth
+07207	NJ	Elizabeth
+07208	NJ	Elizabeth
+07215	NJ	Elizabeth
+07216	NJ	Elizabeth
+07302	NJ	Jersey City
+07303	NJ	Jersey City
+07304	NJ	Jersey City
+07305	NJ	Jersey City
+07306	NJ	Jersey City
+07307	NJ	Jersey City
+07308	NJ	Jersey City
+07309	NJ	Jersey City
+07310	NJ	Jersey City
+07311	NJ	Jersey City
+07399	NJ	Jersey City
+07401	NJ	Allendale
+07403	NJ	Bloomingdale
+07405	NJ	Butler
+07407	NJ	Elmwood Park
+07410	NJ	Fair Lawn
+07416	NJ	Franklin
+07417	NJ	Franklin Lakes
+07418	NJ	Glenwood
+07419	NJ	Hamburg
+07420	NJ	Haskell
+07421	NJ	Hewitt
+07422	NJ	Highland Lakes
+07423	NJ	Ho Ho Kus
+07424	NJ	Little Falls
+07428	NJ	Mc Afee
+07430	NJ	Mahwah
+07432	NJ	Midland Park
+07435	NJ	Newfoundland
+07436	NJ	Oakland
+07438	NJ	Oak Ridge
+07439	NJ	Ogdensburg
+07440	NJ	Pequannock
+07442	NJ	Pompton Lakes
+07444	NJ	Pompton Plains
+07446	NJ	Ramsey
+07450	NJ	Ridgewood
+07451	NJ	Ridgewood
+07452	NJ	Glen Rock
+07456	NJ	Ringwood
+07457	NJ	Riverdale
+07458	NJ	Saddle River
+07460	NJ	Stockholm
+07461	NJ	Sussex
+07462	NJ	Vernon
+07463	NJ	Waldwick
+07465	NJ	Wanaque
+07470	NJ	Wayne
+07474	NJ	Wayne
+07477	NJ	Wayne
+07480	NJ	West Milford
+07481	NJ	Wyckoff
+07495	NJ	Mahwah
+07498	NJ	Mahwah
+07501	NJ	Paterson
+07502	NJ	Paterson
+07503	NJ	Paterson
+07504	NJ	Paterson
+07505	NJ	Paterson
+07506	NJ	Hawthorne
+07507	NJ	Hawthorne
+07508	NJ	Haledon
+07509	NJ	Paterson
+07510	NJ	Paterson
+07511	NJ	Totowa
+07512	NJ	Totowa
+07513	NJ	Paterson
+07514	NJ	Paterson
+07522	NJ	Paterson
+07524	NJ	Paterson
+07530	NJ	Paterson
+07533	NJ	Paterson
+07538	NJ	Haledon
+07543	NJ	Paterson
+07544	NJ	Paterson
+07601	NJ	Hackensack
+07602	NJ	Hackensack
+07603	NJ	Bogota
+07604	NJ	Hasbrouck Heights
+07605	NJ	Leonia
+07606	NJ	South Hackensack
+07607	NJ	Maywood
+07608	NJ	Teterboro
+07620	NJ	Alpine
+07621	NJ	Bergenfield
+07624	NJ	Closter
+07626	NJ	Cresskill
+07627	NJ	Demarest
+07628	NJ	Dumont
+07630	NJ	Emerson
+07631	NJ	Englewood
+07632	NJ	Englewood Cliffs
+07640	NJ	Harrington Park
+07641	NJ	Haworth
+07642	NJ	Hillsdale
+07643	NJ	Little Ferry
+07644	NJ	Lodi
+07645	NJ	Montvale
+07646	NJ	New Milford
+07647	NJ	Northvale
+07648	NJ	Norwood
+07649	NJ	Oradell
+07650	NJ	Palisades Park
+07652	NJ	Paramus
+07653	NJ	Paramus
+07656	NJ	Park Ridge
+07657	NJ	Ridgefield
+07660	NJ	Ridgefield Park
+07661	NJ	River Edge
+07662	NJ	Rochelle Park
+07663	NJ	Saddle Brook
+07666	NJ	Teaneck
+07670	NJ	Tenafly
+07675	NJ	Westwood
+07688	NJ	Teaneck
+07701	NJ	Red Bank
+07702	NJ	Shrewsbury
+07703	NJ	Fort Monmouth
+07704	NJ	Fair Haven
+07709	NJ	Allenhurst
+07710	NJ	Adelphia
+07711	NJ	Allenhurst
+07712	NJ	Asbury Park
+07715	NJ	Belmar
+07716	NJ	Atlantic Highlands
+07717	NJ	Avon By The Sea
+07718	NJ	Belford
+07719	NJ	Belmar
+07720	NJ	Bradley Beach
+07721	NJ	Cliffwood
+07722	NJ	Colts Neck
+07723	NJ	Deal
+07724	NJ	Eatontown
+07726	NJ	Englishtown
+07727	NJ	Farmingdale
+07728	NJ	Freehold
+07730	NJ	Hazlet
+07731	NJ	Howell
+07732	NJ	Highlands
+07733	NJ	Holmdel
+07734	NJ	Keansburg
+07735	NJ	Keyport
+07737	NJ	Leonardo
+07738	NJ	Lincroft
+07739	NJ	Little Silver
+07740	NJ	Long Branch
+07746	NJ	Marlboro
+07747	NJ	Matawan
+07748	NJ	Middletown
+07750	NJ	Monmouth Beach
+07751	NJ	Morganville
+07752	NJ	Navesink
+07753	NJ	Neptune
+07754	NJ	Neptune
+07755	NJ	Oakhurst
+07756	NJ	Ocean Grove
+07757	NJ	Oceanport
+07758	NJ	Port Monmouth
+07760	NJ	Rumson
+07762	NJ	Spring Lake
+07763	NJ	Tennent
+07764	NJ	West Long Branch
+07765	NJ	Wickatunk
+07777	NJ	Holmdel
+07799	NJ	Eatontown
+07801	NJ	Dover
+07802	NJ	Dover
+07803	NJ	Mine Hill
+07806	NJ	Picatinny Arsenal
+07820	NJ	Allamuchy
+07821	NJ	Andover
+07822	NJ	Augusta
+07823	NJ	Belvidere
+07825	NJ	Blairstown
+07826	NJ	Branchville
+07827	NJ	Montague
+07828	NJ	Budd Lake
+07829	NJ	Buttzville
+07830	NJ	Califon
+07831	NJ	Changewater
+07832	NJ	Columbia
+07833	NJ	Delaware
+07834	NJ	Denville
+07836	NJ	Flanders
+07837	NJ	Glasser
+07838	NJ	Great Meadows
+07839	NJ	Greendell
+07840	NJ	Hackettstown
+07842	NJ	Hibernia
+07843	NJ	Hopatcong
+07844	NJ	Hope
+07845	NJ	Ironia
+07846	NJ	Johnsonburg
+07847	NJ	Kenvil
+07848	NJ	Lafayette
+07849	NJ	Lake Hopatcong
+07850	NJ	Landing
+07851	NJ	Layton
+07852	NJ	Ledgewood
+07853	NJ	Long Valley
+07855	NJ	Middleville
+07856	NJ	Mount Arlington
+07857	NJ	Netcong
+07860	NJ	Newton
+07863	NJ	Oxford
+07865	NJ	Port Murray
+07866	NJ	Rockaway
+07869	NJ	Randolph
+07870	NJ	Schooleys Mountain
+07871	NJ	Sparta
+07874	NJ	Stanhope
+07875	NJ	Stillwater
+07876	NJ	Succasunna
+07877	NJ	Swartswood
+07878	NJ	Mount Tabor
+07879	NJ	Tranquility
+07880	NJ	Vienna
+07881	NJ	Wallpack Center
+07882	NJ	Washington
+07885	NJ	Wharton
+07890	NJ	Branchville
+07901	NJ	Summit
+07902	NJ	Summit
+07920	NJ	Basking Ridge
+07921	NJ	Bedminster
+07922	NJ	Berkeley Heights
+07924	NJ	Bernardsville
+07926	NJ	Brookside
+07927	NJ	Cedar Knolls
+07928	NJ	Chatham
+07930	NJ	Chester
+07931	NJ	Far Hills
+07932	NJ	Florham Park
+07933	NJ	Gillette
+07934	NJ	Gladstone
+07935	NJ	Green Village
+07936	NJ	East Hanover
+07938	NJ	Liberty Corner
+07939	NJ	Lyons
+07940	NJ	Madison
+07945	NJ	Mendham
+07946	NJ	Millington
+07950	NJ	Morris Plains
+07960	NJ	Morristown
+07961	NJ	Morristown
+07962	NJ	Morristown
+07963	NJ	Morristown
+07970	NJ	Mount Freedom
+07974	NJ	New Providence
+07976	NJ	New Vernon
+07977	NJ	Peapack
+07978	NJ	Pluckemin
+07979	NJ	Pottersville
+07980	NJ	Stirling
+07981	NJ	Whippany
+07983	NJ	Whippany
+07999	NJ	Whippany
+08001	NJ	Alloway
+08002	NJ	Cherry Hill
+08003	NJ	Cherry Hill
+08004	NJ	Atco
+08005	NJ	Barnegat
+08006	NJ	Barnegat Light
+08007	NJ	Barrington
+08008	NJ	Beach Haven
+08009	NJ	Berlin
+08010	NJ	Beverly
+08011	NJ	Birmingham
+08012	NJ	Blackwood
+08014	NJ	Bridgeport
+08015	NJ	Browns Mills
+08016	NJ	Burlington
+08018	NJ	Cedar Brook
+08019	NJ	Chatsworth
+08020	NJ	Clarksboro
+08021	NJ	Clementon
+08022	NJ	Columbus
+08023	NJ	Deepwater
+08025	NJ	Ewan
+08026	NJ	Gibbsboro
+08027	NJ	Gibbstown
+08028	NJ	Glassboro
+08029	NJ	Glendora
+08030	NJ	Gloucester City
+08031	NJ	Bellmawr
+08032	NJ	Grenloch
+08033	NJ	Haddonfield
+08034	NJ	Cherry Hill
+08035	NJ	Haddon Heights
+08036	NJ	Hainesport
+08037	NJ	Hammonton
+08038	NJ	Hancocks Bridge
+08039	NJ	Harrisonville
+08041	NJ	Jobstown
+08042	NJ	Juliustown
+08043	NJ	Voorhees
+08045	NJ	Lawnside
+08046	NJ	Willingboro
+08048	NJ	Lumberton
+08049	NJ	Magnolia
+08050	NJ	Manahawkin
+08051	NJ	Mantua
+08052	NJ	Maple Shade
+08053	NJ	Marlton
+08054	NJ	Mount Laurel
+08055	NJ	Medford
+08056	NJ	Mickleton
+08057	NJ	Moorestown
+08059	NJ	Mount Ephraim
+08060	NJ	Mount Holly
+08061	NJ	Mount Royal
+08062	NJ	Mullica Hill
+08063	NJ	National Park
+08064	NJ	New Lisbon
+08065	NJ	Palmyra
+08066	NJ	Paulsboro
+08067	NJ	Pedricktown
+08068	NJ	Pemberton
+08069	NJ	Penns Grove
+08070	NJ	Pennsville
+08071	NJ	Pitman
+08072	NJ	Quinton
+08073	NJ	Rancocas
+08074	NJ	Richwood
+08075	NJ	Riverside
+08076	NJ	Riverton
+08077	NJ	Riverton
+08078	NJ	Runnemede
+08079	NJ	Salem
+08080	NJ	Sewell
+08081	NJ	Sicklerville
+08083	NJ	Somerdale
+08084	NJ	Stratford
+08085	NJ	Swedesboro
+08086	NJ	Thorofare
+08087	NJ	Tuckerton
+08088	NJ	Vincentown
+08089	NJ	Waterford Works
+08090	NJ	Wenonah
+08091	NJ	West Berlin
+08092	NJ	West Creek
+08093	NJ	Westville
+08094	NJ	Williamstown
+08095	NJ	Winslow
+08096	NJ	Woodbury
+08097	NJ	Woodbury Heights
+08098	NJ	Woodstown
+08099	NJ	Bellmawr
+08101	NJ	Camden
+08102	NJ	Camden
+08103	NJ	Camden
+08104	NJ	Camden
+08105	NJ	Camden
+08106	NJ	Audubon
+08107	NJ	Oaklyn
+08108	NJ	Collingswood
+08109	NJ	Merchantville
+08110	NJ	Pennsauken
+08201	NJ	Absecon
+08202	NJ	Avalon
+08203	NJ	Brigantine
+08204	NJ	Cape May
+08210	NJ	Cape May Court House
+08212	NJ	Cape May Point
+08213	NJ	Cologne
+08214	NJ	Dennisville
+08215	NJ	Egg Harbor City
+08217	NJ	Elwood
+08218	NJ	Goshen
+08219	NJ	Green Creek
+08220	NJ	Leeds Point
+08221	NJ	Linwood
+08222	NJ	Linwood
+08223	NJ	Marmora
+08224	NJ	New Gretna
+08225	NJ	Northfield
+08226	NJ	Ocean City
+08227	NJ	Linwood
+08230	NJ	Ocean View
+08231	NJ	Oceanville
+08232	NJ	Pleasantville
+08233	NJ	Pleasantville
+08234	NJ	Egg Harbor Township
+08240	NJ	Pomona
+08241	NJ	Port Republic
+08242	NJ	Rio Grande
+08243	NJ	Sea Isle City
+08244	NJ	Somers Point
+08245	NJ	South Dennis
+08246	NJ	South Seaville
+08247	NJ	Stone Harbor
+08248	NJ	Strathmere
+08250	NJ	Tuckahoe
+08251	NJ	Villas
+08252	NJ	Whitesboro
+08260	NJ	Wildwood
+08270	NJ	Woodbine
+08302	NJ	Bridgeton
+08310	NJ	Buena
+08311	NJ	Cedarville
+08312	NJ	Clayton
+08313	NJ	Deerfield Street
+08314	NJ	Delmont
+08315	NJ	Dividing Creek
+08316	NJ	Dorchester
+08317	NJ	Dorothy
+08318	NJ	Elmer
+08319	NJ	Estell Manor
+08320	NJ	Fairton
+08321	NJ	Fortescue
+08322	NJ	Franklinville
+08323	NJ	Greenwich
+08324	NJ	Heislerville
+08326	NJ	Landisville
+08327	NJ	Leesburg
+08328	NJ	Malaga
+08329	NJ	Mauricetown
+08330	NJ	Mays Landing
+08332	NJ	Millville
+08340	NJ	Milmay
+08341	NJ	Minotola
+08342	NJ	Mizpah
+08343	NJ	Monroeville
+08344	NJ	Newfield
+08345	NJ	Newport
+08346	NJ	Newtonville
+08347	NJ	Norma
+08348	NJ	Port Elizabeth
+08349	NJ	Port Norris
+08350	NJ	Richland
+08352	NJ	Rosenhayn
+08353	NJ	Shiloh
+08358	NJ	Cherry Hill
+08360	NJ	Vineland
+08370	NJ	Riverside
+08401	NJ	Atlantic City
+08402	NJ	Margate City
+08403	NJ	Longport
+08404	NJ	Atlantic City
+08405	NJ	Atlantic City
+08406	NJ	Ventnor City
+08411	NJ	Atlantic City
+08501	NJ	Allentown
+08502	NJ	Belle Mead
+08504	NJ	Blawenburg
+08505	NJ	Bordentown
+08510	NJ	Clarksburg
+08511	NJ	Cookstown
+08512	NJ	Cranbury
+08514	NJ	Creamridge
+08515	NJ	Crosswicks
+08518	NJ	Florence
+08520	NJ	Hightstown
+08525	NJ	Hopewell
+08526	NJ	Imlaystown
+08527	NJ	Jackson
+08528	NJ	Kingston
+08530	NJ	Lambertville
+08533	NJ	New Egypt
+08534	NJ	Pennington
+08535	NJ	Perrineville
+08536	NJ	Plainsboro
+08540	NJ	Princeton
+08541	NJ	Princeton
+08542	NJ	Princeton
+08543	NJ	Princeton
+08544	NJ	Princeton
+08550	NJ	Princeton Junction
+08551	NJ	Ringoes
+08553	NJ	Rocky Hill
+08554	NJ	Roebling
+08555	NJ	Roosevelt
+08556	NJ	Rosemont
+08557	NJ	Sergeantsville
+08558	NJ	Skillman
+08559	NJ	Stockton
+08560	NJ	Titusville
+08561	NJ	Windsor
+08562	NJ	Wrightstown
+08570	NJ	Cranbury
+08601	NJ	Trenton
+08602	NJ	Trenton
+08603	NJ	Trenton
+08604	NJ	Trenton
+08605	NJ	Trenton
+08606	NJ	Trenton
+08607	NJ	Trenton
+08608	NJ	Trenton
+08609	NJ	Trenton
+08610	NJ	Trenton
+08611	NJ	Trenton
+08618	NJ	Trenton
+08619	NJ	Trenton
+08620	NJ	Trenton
+08625	NJ	Trenton
+08628	NJ	Trenton
+08629	NJ	Trenton
+08638	NJ	Trenton
+08640	NJ	Trenton
+08641	NJ	Trenton
+08645	NJ	Trenton
+08646	NJ	Trenton
+08647	NJ	Trenton
+08648	NJ	Trenton
+08650	NJ	Trenton
+08666	NJ	Trenton
+08677	NJ	Trenton
+08690	NJ	Trenton
+08691	NJ	Trenton
+08695	NJ	Trenton
+08701	NJ	Lakewood
+08720	NJ	Allenwood
+08721	NJ	Bayville
+08722	NJ	Beachwood
+08723	NJ	Brick
+08724	NJ	Brick
+08730	NJ	Brielle
+08731	NJ	Forked River
+08732	NJ	Island Heights
+08733	NJ	Lakehurst
+08734	NJ	Lanoka Harbor
+08735	NJ	Lavallette
+08736	NJ	Manasquan
+08738	NJ	Mantoloking
+08739	NJ	Normandy Beach
+08740	NJ	Ocean Gate
+08741	NJ	Pine Beach
+08742	NJ	Point Pleasant Beach
+08750	NJ	Sea Girt
+08751	NJ	Seaside Heights
+08752	NJ	Seaside Park
+08753	NJ	Toms River
+08754	NJ	Toms River
+08755	NJ	Toms River
+08756	NJ	Toms River
+08757	NJ	Toms River
+08758	NJ	Waretown
+08759	NJ	Whiting
+08801	NJ	Annandale
+08802	NJ	Asbury
+08803	NJ	Baptistown
+08804	NJ	Bloomsbury
+08805	NJ	Bound Brook
+08807	NJ	Bridgewater
+08808	NJ	Broadway
+08809	NJ	Clinton
+08810	NJ	Dayton
+08812	NJ	Dunellen
+08816	NJ	East Brunswick
+08817	NJ	Edison
+08818	NJ	Edison
+08820	NJ	Edison
+08821	NJ	Flagtown
+08822	NJ	Flemington
+08823	NJ	Franklin Park
+08824	NJ	Kendall Park
+08825	NJ	Frenchtown
+08826	NJ	Glen Gardner
+08827	NJ	Hampton
+08828	NJ	Helmetta
+08829	NJ	High Bridge
+08830	NJ	Iselin
+08831	NJ	Jamesburg
+08832	NJ	Keasbey
+08833	NJ	Lebanon
+08834	NJ	Little York
+08835	NJ	Manville
+08836	NJ	Martinsville
+08837	NJ	Edison
+08840	NJ	Metuchen
+08846	NJ	Middlesex
+08848	NJ	Milford
+08850	NJ	Milltown
+08852	NJ	Monmouth Junction
+08853	NJ	Neshanic Station
+08854	NJ	Piscataway
+08855	NJ	Piscataway
+08857	NJ	Old Bridge
+08858	NJ	Oldwick
+08859	NJ	Parlin
+08861	NJ	Perth Amboy
+08862	NJ	Perth Amboy
+08863	NJ	Fords
+08865	NJ	Phillipsburg
+08867	NJ	Pittstown
+08868	NJ	Quakertown
+08869	NJ	Raritan
+08870	NJ	Readington
+08871	NJ	Sayreville
+08872	NJ	Sayreville
+08873	NJ	Somerset
+08875	NJ	Somerset
+08876	NJ	Somerville
+08877	NJ	South River
+08878	NJ	South Amboy
+08879	NJ	South Amboy
+08880	NJ	South Bound Brook
+08882	NJ	South River
+08884	NJ	Spotswood
+08885	NJ	Stanton
+08886	NJ	Stewartsville
+08887	NJ	Three Bridges
+08888	NJ	Whitehouse
+08889	NJ	Whitehouse Station
+08890	NJ	Zarephath
+08896	NJ	Raritan
+08899	NJ	Edison
+08901	NJ	New Brunswick
+08902	NJ	North Brunswick
+08903	NJ	New Brunswick
+08904	NJ	Highland Park
+08905	NJ	New Brunswick
+08906	NJ	New Brunswick
+08922	NJ	New Brunswick
+08933	NJ	New Brunswick
+08988	NJ	New Brunswick
+08989	NJ	New Brunswick

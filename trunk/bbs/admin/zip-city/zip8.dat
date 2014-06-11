@@ -1,0 +1,2749 @@
+80001	CO	Arvada
+80002	CO	Arvada
+80003	CO	Arvada
+80004	CO	Arvada
+80005	CO	Arvada
+80006	CO	Arvada
+80007	CO	Arvada
+80010	CO	Aurora
+80011	CO	Aurora
+80012	CO	Aurora
+80013	CO	Aurora
+80014	CO	Aurora
+80015	CO	Aurora
+80016	CO	Aurora
+80017	CO	Aurora
+80018	CO	Aurora
+80019	CO	Aurora
+80020	CO	Broomfield
+80021	CO	Broomfield
+80022	CO	Commerce City
+80024	CO	Dupont
+80025	CO	Eldorado Springs
+80026	CO	Lafayette
+80027	CO	Louisville
+80028	CO	Louisville
+80030	CO	Westminster
+80031	CO	Westminster
+80033	CO	Wheat Ridge
+80034	CO	Wheat Ridge
+80035	CO	Westminster
+80036	CO	Westminster
+80037	CO	Commerce City
+80038	CO	Broomfield
+80040	CO	Aurora
+80041	CO	Aurora
+80042	CO	Aurora
+80044	CO	Aurora
+80045	CO	Aurora
+80046	CO	Aurora
+80047	CO	Aurora
+80101	CO	Agate
+80102	CO	Bennett
+80103	CO	Byers
+80104	CO	Castle Rock
+80105	CO	Deer Trail
+80106	CO	Elbert
+80107	CO	Elizabeth
+80110	CO	Englewood
+80111	CO	Englewood
+80112	CO	Englewood
+80116	CO	Franktown
+80117	CO	Kiowa
+80118	CO	Larkspur
+80120	CO	Littleton
+80121	CO	Littleton
+80122	CO	Littleton
+80123	CO	Littleton
+80124	CO	Littleton
+80125	CO	Littleton
+80126	CO	Littleton
+80127	CO	Littleton
+80131	CO	Louviers
+80132	CO	Monument
+80133	CO	Palmer Lake
+80134	CO	Parker
+80135	CO	Sedalia
+80136	CO	Strasburg
+80137	CO	Watkins
+80150	CO	Englewood
+80151	CO	Englewood
+80154	CO	Englewood
+80155	CO	Englewood
+80160	CO	Littleton
+80161	CO	Littleton
+80162	CO	Littleton
+80163	CO	Littleton
+80165	CO	Littleton
+80166	CO	Littleton
+80201	CO	Denver
+80202	CO	Denver
+80203	CO	Denver
+80204	CO	Denver
+80205	CO	Denver
+80206	CO	Denver
+80207	CO	Denver
+80208	CO	Denver
+80209	CO	Denver
+80210	CO	Denver
+80211	CO	Denver
+80212	CO	Denver
+80214	CO	Denver
+80215	CO	Lakewood
+80216	CO	Denver
+80217	CO	Denver
+80218	CO	Denver
+80219	CO	Denver
+80220	CO	Denver
+80221	CO	Denver
+80222	CO	Denver
+80223	CO	Denver
+80224	CO	Denver
+80225	CO	Denver
+80226	CO	Lakewood
+80227	CO	Denver
+80228	CO	Lakewood
+80229	CO	Denver
+80230	CO	Denver
+80231	CO	Denver
+80232	CO	Lakewood
+80233	CO	Denver
+80234	CO	Denver
+80235	CO	Denver
+80236	CO	Denver
+80237	CO	Denver
+80239	CO	Denver
+80241	CO	Denver
+80243	CO	Denver
+80244	CO	Denver
+80248	CO	Denver
+80249	CO	Denver
+80250	CO	Denver
+80251	CO	Denver
+80252	CO	Denver
+80254	CO	Denver
+80255	CO	Denver
+80256	CO	Denver
+80257	CO	Denver
+80259	CO	Denver
+80261	CO	Denver
+80262	CO	Denver
+80263	CO	Denver
+80264	CO	Denver
+80265	CO	Denver
+80266	CO	Denver
+80270	CO	Denver
+80271	CO	Denver
+80273	CO	Denver
+80274	CO	Denver
+80275	CO	Denver
+80279	CO	Denver
+80280	CO	Denver
+80281	CO	Denver
+80290	CO	Denver
+80291	CO	Denver
+80292	CO	Denver
+80293	CO	Denver
+80294	CO	Denver
+80295	CO	Denver
+80299	CO	Denver
+80301	CO	Boulder
+80302	CO	Boulder
+80303	CO	Boulder
+80304	CO	Boulder
+80306	CO	Boulder
+80307	CO	Boulder
+80308	CO	Boulder
+80309	CO	Boulder
+80310	CO	Boulder
+80314	CO	Boulder
+80321	CO	Boulder
+80322	CO	Boulder
+80323	CO	Boulder
+80328	CO	Boulder
+80329	CO	Boulder
+80401	CO	Golden
+80402	CO	Golden
+80403	CO	Golden
+80419	CO	Golden
+80420	CO	Alma
+80421	CO	Bailey
+80422	CO	Black Hawk
+80423	CO	Bond
+80424	CO	Breckenridge
+80425	CO	Buffalo Creek
+80426	CO	Burns
+80427	CO	Central City
+80428	CO	Clark
+80429	CO	Climax
+80430	CO	Coalmont
+80432	CO	Como
+80433	CO	Conifer
+80434	CO	Cowdrey
+80435	CO	Dillon
+80436	CO	Dumont
+80437	CO	Evergreen
+80438	CO	Empire
+80439	CO	Evergreen
+80440	CO	Fairplay
+80441	CO	Foxton
+80442	CO	Fraser
+80443	CO	Frisco
+80444	CO	Georgetown
+80446	CO	Granby
+80447	CO	Grand Lake
+80448	CO	Grant
+80449	CO	Hartsel
+80451	CO	Hot Sulphur Springs
+80452	CO	Idaho Springs
+80453	CO	Idledale
+80454	CO	Indian Hills
+80455	CO	Jamestown
+80456	CO	Jefferson
+80457	CO	Kittredge
+80459	CO	Kremmling
+80461	CO	Leadville
+80463	CO	Mc Coy
+80465	CO	Morrison
+80466	CO	Nederland
+80467	CO	Oak Creek
+80468	CO	Parshall
+80469	CO	Phippsburg
+80470	CO	Pine
+80471	CO	Pinecliffe
+80473	CO	Rand
+80474	CO	Rollinsville
+80475	CO	Shawnee
+80476	CO	Silver Plume
+80477	CO	Steamboat Springs
+80478	CO	Tabernash
+80479	CO	Toponas
+80480	CO	Walden
+80481	CO	Ward
+80482	CO	Winter Park
+80483	CO	Yampa
+80487	CO	Steamboat Springs
+80488	CO	Steamboat Springs
+80498	CO	Silverthorne
+80501	CO	Longmont
+80502	CO	Longmont
+80503	CO	Longmont
+80504	CO	Longmont
+80510	CO	Allenspark
+80511	CO	Estes Park
+80512	CO	Bellvue
+80513	CO	Berthoud
+80514	CO	Dacono
+80515	CO	Drake
+80516	CO	Erie
+80517	CO	Estes Park
+80520	CO	Firestone
+80521	CO	Fort Collins
+80522	CO	Fort Collins
+80523	CO	Fort Collins
+80524	CO	Fort Collins
+80525	CO	Fort Collins
+80526	CO	Fort Collins
+80527	CO	Fort Collins
+80530	CO	Frederick
+80532	CO	Glen Haven
+80533	CO	Hygiene
+80534	CO	Johnstown
+80535	CO	Laporte
+80536	CO	Livermore
+80537	CO	Loveland
+80538	CO	Loveland
+80539	CO	Loveland
+80540	CO	Lyons
+80541	CO	Masonville
+80542	CO	Mead
+80543	CO	Milliken
+80544	CO	Niwot
+80545	CO	Red Feather Lakes
+80546	CO	Severance
+80547	CO	Timnath
+80549	CO	Wellington
+80550	CO	Windsor
+80551	CO	Windsor
+80553	CO	Fort Collins
+80601	CO	Brighton
+80610	CO	Ault
+80611	CO	Briggsdale
+80612	CO	Carr
+80614	CO	Eastlake
+80615	CO	Eaton
+80620	CO	Evans
+80621	CO	Fort Lupton
+80622	CO	Galeton
+80623	CO	Gilcrest
+80624	CO	Gill
+80631	CO	Greeley
+80632	CO	Greeley
+80633	CO	Greeley
+80634	CO	Greeley
+80638	CO	Greeley
+80639	CO	Greeley
+80640	CO	Henderson
+80642	CO	Hudson
+80643	CO	Keenesburg
+80644	CO	Kersey
+80645	CO	La Salle
+80646	CO	Lucerne
+80648	CO	Nunn
+80649	CO	Orchard
+80650	CO	Pierce
+80651	CO	Platteville
+80652	CO	Roggen
+80653	CO	Weldona
+80654	CO	Wiggins
+80701	CO	Fort Morgan
+80705	CO	Log Lane Village
+80720	CO	Akron
+80721	CO	Amherst
+80722	CO	Atwood
+80723	CO	Brush
+80726	CO	Crook
+80727	CO	Eckley
+80728	CO	Fleming
+80729	CO	Grover
+80731	CO	Haxtun
+80732	CO	Hereford
+80733	CO	Hillrose
+80734	CO	Holyoke
+80735	CO	Idalia
+80736	CO	Iliff
+80737	CO	Julesburg
+80740	CO	Lindon
+80741	CO	Merino
+80742	CO	New Raymer
+80743	CO	Otis
+80744	CO	Ovid
+80745	CO	Padroni
+80746	CO	Paoli
+80747	CO	Peetz
+80749	CO	Sedgwick
+80750	CO	Snyder
+80751	CO	Sterling
+80754	CO	Stoneham
+80755	CO	Vernon
+80757	CO	Woodrow
+80758	CO	Wray
+80759	CO	Yuma
+80801	CO	Anton
+80802	CO	Arapahoe
+80804	CO	Arriba
+80805	CO	Bethune
+80806	CO	Boyero
+80807	CO	Burlington
+80808	CO	Calhan
+80809	CO	Cascade
+80810	CO	Cheyenne Wells
+80812	CO	Cope
+80813	CO	Cripple Creek
+80814	CO	Divide
+80815	CO	Flagler
+80816	CO	Florissant
+80817	CO	Fountain
+80818	CO	Genoa
+80819	CO	Green Mountain Falls
+80820	CO	Guffey
+80821	CO	Hugo
+80822	CO	Joes
+80823	CO	Karval
+80824	CO	Kirk
+80825	CO	Kit Carson
+80826	CO	Limon
+80827	CO	Lake George
+80828	CO	Limon
+80829	CO	Manitou Springs
+80830	CO	Matheson
+80831	CO	Peyton
+80832	CO	Ramah
+80833	CO	Rush
+80834	CO	Seibert
+80835	CO	Simla
+80836	CO	Stratton
+80840	CO	U S A F Academy
+80841	CO	U S A F Academy
+80860	CO	Victor
+80861	CO	Vona
+80862	CO	Wild Horse
+80863	CO	Woodland Park
+80864	CO	Yoder
+80866	CO	Woodland Park
+80901	CO	Colorado Springs
+80903	CO	Colorado Springs
+80904	CO	Colorado Springs
+80905	CO	Colorado Springs
+80906	CO	Colorado Springs
+80907	CO	Colorado Springs
+80908	CO	Colorado Springs
+80909	CO	Colorado Springs
+80910	CO	Colorado Springs
+80911	CO	Colorado Springs
+80912	CO	Colorado Springs
+80913	CO	Colorado Springs
+80914	CO	Colorado Springs
+80915	CO	Colorado Springs
+80916	CO	Colorado Springs
+80917	CO	Colorado Springs
+80918	CO	Colorado Springs
+80919	CO	Colorado Springs
+80920	CO	Colorado Springs
+80921	CO	Colorado Springs
+80922	CO	Colorado Springs
+80925	CO	Colorado Springs
+80926	CO	Colorado Springs
+80928	CO	Colorado Springs
+80929	CO	Colorado Springs
+80930	CO	Colorado Springs
+80931	CO	Colorado Springs
+80932	CO	Colorado Springs
+80933	CO	Colorado Springs
+80934	CO	Colorado Springs
+80935	CO	Colorado Springs
+80936	CO	Colorado Springs
+80937	CO	Colorado Springs
+80940	CO	Colorado Springs
+80941	CO	Colorado Springs
+80942	CO	Colorado Springs
+80943	CO	Colorado Springs
+80944	CO	Colorado Springs
+80945	CO	Colorado Springs
+80946	CO	Colorado Springs
+80947	CO	Colorado Springs
+80949	CO	Colorado Springs
+80950	CO	Colorado Springs
+80960	CO	Colorado Springs
+80962	CO	Colorado Springs
+80970	CO	Colorado Springs
+80977	CO	Colorado Springs
+80995	CO	Colorado Springs
+80997	CO	Colorado Springs
+81001	CO	Pueblo
+81002	CO	Pueblo
+81003	CO	Pueblo
+81004	CO	Pueblo
+81005	CO	Pueblo
+81006	CO	Pueblo
+81007	CO	Pueblo
+81008	CO	Pueblo
+81009	CO	Pueblo
+81010	CO	Pueblo
+81011	CO	Pueblo
+81012	CO	Pueblo
+81013	CO	Pueblo
+81014	CO	Pueblo
+81015	CO	Pueblo
+81019	CO	Colorado City
+81020	CO	Aguilar
+81021	CO	Arlington
+81022	CO	Avondale
+81023	CO	Beulah
+81024	CO	Boncarbo
+81025	CO	Boone
+81026	CO	Eads
+81027	CO	Branson
+81028	CO	Bristol
+81029	CO	Campo
+81030	CO	Cheraw
+81032	CO	Cokedale
+81033	CO	Crowley
+81034	CO	Crowley
+81036	CO	Eads
+81038	CO	Fort Lyon
+81039	CO	Fowler
+81040	CO	Gardner
+81041	CO	Granada
+81042	CO	Gulnare
+81043	CO	Hartman
+81044	CO	Hasty
+81045	CO	Haswell
+81046	CO	Hoehne
+81047	CO	Holly
+81049	CO	Kim
+81050	CO	La Junta
+81052	CO	Lamar
+81054	CO	Las Animas
+81055	CO	La Veta
+81057	CO	Mc Clave
+81058	CO	Manzanola
+81059	CO	Model
+81062	CO	Olney Springs
+81063	CO	Ordway
+81064	CO	Pritchett
+81066	CO	Red Wing
+81067	CO	Rocky Ford
+81069	CO	Rye
+81070	CO	Segundo
+81071	CO	Sheridan Lake
+81073	CO	Springfield
+81074	CO	Starkville
+81075	CO	Stonington
+81076	CO	Sugar City
+81077	CO	Swink
+81081	CO	Trinchera
+81082	CO	Trinidad
+81084	CO	Two Buttes
+81087	CO	Vilas
+81089	CO	Walsenburg
+81090	CO	Walsh
+81091	CO	Weston
+81092	CO	Wiley
+81101	CO	Alamosa
+81102	CO	Alamosa
+81120	CO	Antonito
+81121	CO	Arboles
+81122	CO	Bayfield
+81123	CO	Blanca
+81124	CO	Capulin
+81125	CO	Center
+81126	CO	Chama
+81127	CO	Chimney Rock
+81128	CO	Chromo
+81129	CO	Conejos
+81130	CO	Creede
+81131	CO	Crestone
+81132	CO	Del Norte
+81133	CO	Fort Garland
+81134	CO	Garcia
+81135	CO	Homelake
+81136	CO	Hooper
+81137	CO	Ignacio
+81138	CO	Jaroso
+81140	CO	La Jara
+81141	CO	Manassa
+81143	CO	Moffat
+81144	CO	Monte Vista
+81146	CO	Mosca
+81147	CO	Pagosa Springs
+81148	CO	Romeo
+81149	CO	Saguache
+81150	CO	San Acacio
+81151	CO	Sanford
+81152	CO	San Luis
+81153	CO	San Pablo
+81154	CO	South Fork
+81155	CO	Villa Grove
+81157	CO	Pagosa Springs
+81201	CO	Salida
+81210	CO	Almont
+81211	CO	Buena Vista
+81212	CO	Canon City
+81215	CO	Canon City
+81220	CO	Cimarron
+81221	CO	Coal Creek
+81222	CO	Coaldale
+81223	CO	Cotopaxi
+81224	CO	Crested Butte
+81225	CO	Crested Butte
+81226	CO	Florence
+81227	CO	Monarch
+81228	CO	Granite
+81230	CO	Gunnison
+81231	CO	Gunnison
+81232	CO	Hillside
+81233	CO	Howard
+81235	CO	Lake City
+81236	CO	Nathrop
+81237	CO	Ohio City
+81239	CO	Parlin
+81240	CO	Penrose
+81241	CO	Pitkin
+81242	CO	Poncha Springs
+81243	CO	Powderhorn
+81244	CO	Rockvale
+81246	CO	Canon City
+81247	CO	Gunnison
+81248	CO	Sargents
+81251	CO	Twin Lakes
+81252	CO	Westcliffe
+81253	CO	Wetmore
+81290	CO	Florence
+81301	CO	Durango
+81302	CO	Durango
+81320	CO	Cahone
+81321	CO	Cortez
+81323	CO	Dolores
+81324	CO	Dove Creek
+81325	CO	Egnar
+81326	CO	Hesperus
+81327	CO	Lewis
+81328	CO	Mancos
+81329	CO	Marvel
+81330	CO	Mesa Verde National Park
+81331	CO	Pleasant View
+81332	CO	Rico
+81333	CO	Slick Rock
+81334	CO	Towaoc
+81335	CO	Yellow Jacket
+81401	CO	Montrose
+81402	CO	Montrose
+81410	CO	Austin
+81411	CO	Bedrock
+81413	CO	Cedaredge
+81414	CO	Cory
+81415	CO	Crawford
+81416	CO	Delta
+81418	CO	Eckert
+81419	CO	Hotchkiss
+81420	CO	Lazear
+81421	CO	Maher
+81422	CO	Naturita
+81423	CO	Norwood
+81424	CO	Nucla
+81425	CO	Olathe
+81426	CO	Ophir
+81427	CO	Ouray
+81428	CO	Paonia
+81429	CO	Paradox
+81430	CO	Placerville
+81431	CO	Redvale
+81432	CO	Ridgway
+81433	CO	Silverton
+81434	CO	Somerset
+81435	CO	Telluride
+81501	CO	Grand Junction
+81502	CO	Grand Junction
+81503	CO	Grand Junction
+81504	CO	Grand Junction
+81505	CO	Grand Junction
+81506	CO	Grand Junction
+81520	CO	Clifton
+81521	CO	Fruita
+81522	CO	Gateway
+81523	CO	Glade Park
+81524	CO	Loma
+81525	CO	Mack
+81526	CO	Palisade
+81527	CO	Whitewater
+81601	CO	Glenwood Springs
+81602	CO	Glenwood Springs
+81610	CO	Dinosaur
+81611	CO	Aspen
+81612	CO	Aspen
+81615	CO	Snowmass Village
+81620	CO	Avon
+81621	CO	Basalt
+81623	CO	Carbondale
+81624	CO	Collbran
+81625	CO	Craig
+81626	CO	Craig
+81628	CO	El Jebel
+81630	CO	De Beque
+81631	CO	Eagle
+81632	CO	Edwards
+81633	CO	Dinosaur
+81635	CO	Parachute
+81636	CO	Battlement Mesa
+81637	CO	Gypsum
+81638	CO	Hamilton
+81639	CO	Hayden
+81640	CO	Maybell
+81641	CO	Meeker
+81642	CO	Meredith
+81643	CO	Mesa
+81645	CO	Minturn
+81646	CO	Molina
+81647	CO	New Castle
+81648	CO	Rangely
+81649	CO	Red Cliff
+81650	CO	Rifle
+81652	CO	Silt
+81653	CO	Slater
+81654	CO	Snowmass
+81655	CO	Wolcott
+81656	CO	Woody Creek
+81657	CO	Vail
+81658	CO	Vail
+82001	WY	Cheyenne
+82002	WY	Cheyenne
+82003	WY	Cheyenne
+82005	WY	Fe Warren Afb
+82006	WY	Cheyenne
+82007	WY	Cheyenne
+82008	WY	Cheyenne
+82009	WY	Cheyenne
+82010	WY	Cheyenne
+82050	WY	Albin
+82051	WY	Bosler
+82052	WY	Buford
+82053	WY	Burns
+82054	WY	Carpenter
+82055	WY	Centennial
+82058	WY	Garrett
+82059	WY	Granite Canon
+82060	WY	Hillsdale
+82061	WY	Horse Creek
+82063	WY	Jelm
+82070	WY	Laramie
+82071	WY	Laramie
+82081	WY	Meriden
+82082	WY	Pine Bluffs
+82083	WY	Rock River
+82084	WY	Tie Siding
+82190	WY	Yellowstone National Park
+82201	WY	Wheatland
+82210	WY	Chugwater
+82212	WY	Fort Laramie
+82213	WY	Glendo
+82214	WY	Guernsey
+82215	WY	Hartville
+82217	WY	Hawk Springs
+82218	WY	Huntley
+82219	WY	Jay Em
+82221	WY	Lagrange
+82222	WY	Lance Creek
+82223	WY	Lingle
+82224	WY	Lost Springs
+82225	WY	Lusk
+82227	WY	Manville
+82229	WY	Shawnee
+82240	WY	Torrington
+82242	WY	Van Tassell
+82243	WY	Veteran
+82244	WY	Yoder
+82301	WY	Rawlins
+82310	WY	Jeffrey City
+82321	WY	Baggs
+82322	WY	Bairoil
+82323	WY	Dixon
+82324	WY	Elk Mountain
+82325	WY	Encampment
+82327	WY	Hanna
+82329	WY	Medicine Bow
+82331	WY	Saratoga
+82332	WY	Savery
+82334	WY	Sinclair
+82335	WY	Walcott
+82336	WY	Wamsutter
+82401	WY	Worland
+82410	WY	Basin
+82411	WY	Burlington
+82412	WY	Byron
+82414	WY	Cody
+82420	WY	Cowley
+82421	WY	Deaver
+82422	WY	Emblem
+82423	WY	Frannie
+82426	WY	Greybull
+82427	WY	Hamilton Dome
+82428	WY	Hyattville
+82430	WY	Kirby
+82431	WY	Lovell
+82432	WY	Manderson
+82433	WY	Meeteetse
+82434	WY	Otto
+82435	WY	Powell
+82440	WY	Ralston
+82441	WY	Shell
+82442	WY	Ten Sleep
+82443	WY	Thermopolis
+82450	WY	Wapiti
+82501	WY	Riverton
+82510	WY	Arapahoe
+82512	WY	Crowheart
+82513	WY	Dubois
+82514	WY	Fort Washakie
+82515	WY	Hudson
+82516	WY	Kinnear
+82520	WY	Lander
+82523	WY	Pavillion
+82524	WY	Saint Stephens
+82601	WY	Casper
+82602	WY	Casper
+82604	WY	Casper
+82605	WY	Casper
+82609	WY	Casper
+82615	WY	Casper
+82620	WY	Alcova
+82630	WY	Arminto
+82631	WY	Bill
+82633	WY	Douglas
+82635	WY	Edgerton
+82636	WY	Evansville
+82637	WY	Glenrock
+82638	WY	Hiland
+82639	WY	Kaycee
+82640	WY	Linch
+82642	WY	Lysite
+82643	WY	Midwest
+82644	WY	Mills
+82646	WY	Natrona
+82648	WY	Powder River
+82649	WY	Shoshoni
+82701	WY	Newcastle
+82710	WY	Aladdin
+82711	WY	Alva
+82712	WY	Beulah
+82713	WY	Carlile
+82714	WY	Devils Tower
+82715	WY	Four Corners
+82716	WY	Gillette
+82717	WY	Gillette
+82718	WY	Gillette
+82720	WY	Hulett
+82721	WY	Moorcroft
+82723	WY	Osage
+82724	WY	Oshoto
+82725	WY	Recluse
+82727	WY	Rozet
+82729	WY	Sundance
+82730	WY	Upton
+82731	WY	Weston
+82732	WY	Wright
+82801	WY	Sheridan
+82831	WY	Arvada
+82832	WY	Banner
+82833	WY	Big Horn
+82834	WY	Buffalo
+82835	WY	Clearmont
+82836	WY	Dayton
+82837	WY	Leiter
+82838	WY	Parkman
+82839	WY	Ranchester
+82840	WY	Saddlestring
+82842	WY	Story
+82844	WY	Wolf
+82845	WY	Wyarno
+82901	WY	Rock Springs
+82902	WY	Rock Springs
+82922	WY	Bondurant
+82923	WY	Boulder
+82925	WY	Cora
+82926	WY	Eden
+82929	WY	Little America
+82930	WY	Evanston
+82931	WY	Evanston
+82932	WY	Farson
+82933	WY	Fort Bridger
+82934	WY	Granger
+82935	WY	Green River
+82936	WY	Lonetree
+82937	WY	Lyman
+82938	WY	Mc Kinnon
+82939	WY	Mountain View
+82941	WY	Pinedale
+82942	WY	Point Of Rocks
+82943	WY	Reliance
+82944	WY	Robertson
+82945	WY	Superior
+83001	WY	Jackson
+83002	WY	Jackson
+83011	WY	Kelly
+83012	WY	Moose
+83013	WY	Moran
+83014	WY	Wilson
+83025	WY	Teton Village
+83101	WY	Kemmerer
+83110	WY	Afton
+83111	WY	Auburn
+83112	WY	Bedford
+83113	WY	Big Piney
+83114	WY	Cokeville
+83115	WY	Daniel
+83116	WY	Diamondville
+83118	WY	Etna
+83119	WY	Fairview
+83120	WY	Freedom
+83121	WY	Frontier
+83122	WY	Grover
+83123	WY	La Barge
+83124	WY	Opal
+83126	WY	Smoot
+83127	WY	Thayne
+83128	WY	Alpine
+83201	ID	Pocatello
+83202	ID	Pocatello
+83203	ID	Fort Hall
+83204	ID	Pocatello
+83205	ID	Pocatello
+83206	ID	Pocatello
+83209	ID	Pocatello
+83210	ID	Aberdeen
+83211	ID	American Falls
+83212	ID	Arbon
+83213	ID	Arco
+83214	ID	Arimo
+83215	ID	Atomic City
+83217	ID	Bancroft
+83218	ID	Basalt
+83220	ID	Bern
+83221	ID	Blackfoot
+83223	ID	Bloomington
+83226	ID	Challis
+83227	ID	Clayton
+83228	ID	Clifton
+83229	ID	Cobalt
+83230	ID	Conda
+83232	ID	Dayton
+83233	ID	Dingle
+83234	ID	Downey
+83235	ID	Ellis
+83236	ID	Firth
+83237	ID	Franklin
+83238	ID	Geneva
+83239	ID	Georgetown
+83241	ID	Grace
+83243	ID	Holbrook
+83244	ID	Howe
+83245	ID	Inkom
+83246	ID	Lava Hot Springs
+83250	ID	Mc Cammon
+83251	ID	Mackay
+83252	ID	Malad City
+83253	ID	May
+83254	ID	Montpelier
+83255	ID	Moore
+83256	ID	Moreland
+83260	ID	Ovid
+83261	ID	Paris
+83262	ID	Pingree
+83263	ID	Preston
+83271	ID	Rockland
+83272	ID	Saint Charles
+83274	ID	Shelley
+83276	ID	Soda Springs
+83277	ID	Springfield
+83278	ID	Stanley
+83280	ID	Stone
+83281	ID	Swanlake
+83283	ID	Thatcher
+83285	ID	Wayan
+83286	ID	Weston
+83287	ID	Fish Haven
+83301	ID	Twin Falls
+83302	ID	Rogerson
+83303	ID	Twin Falls
+83311	ID	Albion
+83312	ID	Almo
+83313	ID	Bellevue
+83314	ID	Bliss
+83316	ID	Buhl
+83318	ID	Burley
+83320	ID	Carey
+83321	ID	Castleford
+83322	ID	Corral
+83323	ID	Declo
+83324	ID	Dietrich
+83325	ID	Eden
+83326	ID	Elba
+83327	ID	Fairfield
+83328	ID	Filer
+83330	ID	Gooding
+83332	ID	Hagerman
+83333	ID	Hailey
+83334	ID	Hansen
+83335	ID	Hazelton
+83336	ID	Heyburn
+83337	ID	Hill City
+83338	ID	Jerome
+83340	ID	Ketchum
+83341	ID	Kimberly
+83342	ID	Malta
+83343	ID	Minidoka
+83344	ID	Murtaugh
+83346	ID	Oakley
+83347	ID	Paul
+83348	ID	Picabo
+83349	ID	Richfield
+83350	ID	Rupert
+83352	ID	Shoshone
+83353	ID	Sun Valley
+83354	ID	Sun Valley
+83355	ID	Wendell
+83401	ID	Idaho Falls
+83402	ID	Idaho Falls
+83403	ID	Idaho Falls
+83404	ID	Idaho Falls
+83405	ID	Idaho Falls
+83406	ID	Idaho Falls
+83415	ID	Idaho Falls
+83420	ID	Ashton
+83421	ID	Chester
+83422	ID	Driggs
+83423	ID	Dubois
+83424	ID	Felt
+83425	ID	Hamer
+83427	ID	Iona
+83428	ID	Irwin
+83429	ID	Island Park
+83431	ID	Lewisville
+83433	ID	Macks Inn
+83434	ID	Menan
+83435	ID	Monteview
+83436	ID	Newdale
+83437	ID	Palisades
+83438	ID	Parker
+83440	ID	Rexburg
+83441	ID	Rexburg
+83442	ID	Rigby
+83443	ID	Ririe
+83444	ID	Roberts
+83445	ID	Saint Anthony
+83446	ID	Spencer
+83447	ID	Squirrel
+83448	ID	Sugar City
+83449	ID	Swan Valley
+83450	ID	Terreton
+83451	ID	Teton
+83452	ID	Tetonia
+83454	ID	Ucon
+83455	ID	Victor
+83460	ID	Rexburg
+83462	ID	Carmen
+83463	ID	Gibbonsville
+83464	ID	Leadore
+83465	ID	Lemhi
+83466	ID	North Fork
+83467	ID	Salmon
+83468	ID	Tendoy
+83469	ID	Shoup
+83501	ID	Lewiston
+83520	ID	Ahsahka
+83522	ID	Cottonwood
+83523	ID	Craigmont
+83524	ID	Culdesac
+83525	ID	Elk City
+83526	ID	Ferdinand
+83530	ID	Grangeville
+83531	ID	Fenn
+83533	ID	Greencreek
+83535	ID	Juliaetta
+83536	ID	Kamiah
+83537	ID	Kendrick
+83538	ID	Cottonwood
+83539	ID	Kooskia
+83540	ID	Lapwai
+83541	ID	Lenore
+83542	ID	Lucile
+83543	ID	Nezperce
+83544	ID	Orofino
+83545	ID	Peck
+83546	ID	Pierce
+83547	ID	Pollock
+83548	ID	Reubens
+83549	ID	Riggins
+83551	ID	Spalding
+83552	ID	Stites
+83553	ID	Weippe
+83554	ID	White Bird
+83555	ID	Winchester
+83601	ID	Atlanta
+83602	ID	Banks
+83604	ID	Bruneau
+83605	ID	Caldwell
+83606	ID	Caldwell
+83610	ID	Cambridge
+83611	ID	Cascade
+83612	ID	Council
+83615	ID	Donnelly
+83616	ID	Eagle
+83617	ID	Emmett
+83619	ID	Fruitland
+83620	ID	Fruitvale
+83622	ID	Garden Valley
+83623	ID	Glenns Ferry
+83624	ID	Grand View
+83626	ID	Greenleaf
+83627	ID	Hammett
+83628	ID	Homedale
+83629	ID	Horseshoe Bend
+83630	ID	Huston
+83631	ID	Idaho City
+83632	ID	Indian Valley
+83633	ID	King Hill
+83634	ID	Kuna
+83635	ID	Lake Fork
+83636	ID	Letha
+83637	ID	Lowman
+83638	ID	Mc Call
+83639	ID	Marsing
+83641	ID	Melba
+83642	ID	Meridian
+83643	ID	Mesa
+83644	ID	Middleton
+83645	ID	Midvale
+83647	ID	Mountain Home
+83648	ID	Mountain Home A F B
+83650	ID	Murphy
+83651	ID	Nampa
+83652	ID	Nampa
+83653	ID	Nampa
+83654	ID	New Meadows
+83655	ID	New Plymouth
+83656	ID	Notus
+83657	ID	Ola
+83660	ID	Parma
+83661	ID	Payette
+83666	ID	Placerville
+83669	ID	Star
+83670	ID	Sweet
+83671	ID	Warren
+83672	ID	Weiser
+83676	ID	Wilder
+83677	ID	Yellow Pine
+83680	ID	Meridian
+83686	ID	Nampa
+83687	ID	Nampa
+83701	ID	Boise
+83702	ID	Boise
+83703	ID	Boise
+83704	ID	Boise
+83705	ID	Boise
+83706	ID	Boise
+83707	ID	Boise
+83708	ID	Boise
+83709	ID	Boise
+83711	ID	Boise
+83712	ID	Boise
+83713	ID	Boise
+83714	ID	Boise
+83715	ID	Boise
+83716	ID	Boise
+83719	ID	Boise
+83720	ID	Boise
+83721	ID	Boise
+83722	ID	Boise
+83723	ID	Boise
+83724	ID	Boise
+83725	ID	Boise
+83726	ID	Boise
+83727	ID	Boise
+83728	ID	Boise
+83729	ID	Boise
+83730	ID	Boise
+83731	ID	Boise
+83732	ID	Boise
+83733	ID	Boise
+83735	ID	Boise
+83744	ID	Boise
+83756	ID	Boise
+83757	ID	Boise
+83788	ID	Boise
+83801	ID	Athol
+83802	ID	Avery
+83803	ID	Bayview
+83804	ID	Blanchard
+83805	ID	Bonners Ferry
+83806	ID	Bovill
+83808	ID	Calder
+83809	ID	Careywood
+83810	ID	Cataldo
+83811	ID	Clark Fork
+83812	ID	Clarkia
+83813	ID	Cocolalla
+83814	ID	Coeur D Alene
+83816	ID	Coeur D Alene
+83821	ID	Coolin
+83822	ID	Oldtown
+83823	ID	Deary
+83824	ID	Desmet
+83825	ID	Dover
+83826	ID	Eastport
+83827	ID	Elk River
+83830	ID	Fernwood
+83832	ID	Genesee
+83833	ID	Harrison
+83834	ID	Harvard
+83835	ID	Hayden
+83836	ID	Hope
+83837	ID	Kellogg
+83839	ID	Kingston
+83840	ID	Kootenai
+83841	ID	Laclede
+83842	ID	Medimont
+83843	ID	Moscow
+83844	ID	Moscow
+83845	ID	Moyie Springs
+83846	ID	Mullan
+83847	ID	Naples
+83848	ID	Nordman
+83849	ID	Osburn
+83850	ID	Pinehurst
+83851	ID	Plummer
+83852	ID	Ponderay
+83853	ID	Porthill
+83854	ID	Post Falls
+83855	ID	Potlatch
+83856	ID	Priest River
+83857	ID	Princeton
+83858	ID	Rathdrum
+83860	ID	Sagle
+83861	ID	Saint Maries
+83862	ID	Samuels
+83864	ID	Sandpoint
+83865	ID	Colburn
+83866	ID	Santa
+83867	ID	Silverton
+83868	ID	Smelterville
+83869	ID	Spirit Lake
+83870	ID	Tensed
+83871	ID	Troy
+83872	ID	Viola
+83873	ID	Wallace
+83874	ID	Murray
+83876	ID	Worley
+83877	ID	Post Falls
+84001	UT	Altamont
+84002	UT	Altonah
+84003	UT	American Fork
+84004	UT	Alpine
+84006	UT	Bingham Canyon
+84007	UT	Bluebell
+84008	UT	Bonanza
+84010	UT	Bountiful
+84011	UT	Bountiful
+84012	UT	Bridgeland
+84013	UT	Cedar Valley
+84014	UT	Centerville
+84015	UT	Clearfield
+84016	UT	Clearfield
+84017	UT	Coalville
+84018	UT	Croydon
+84020	UT	Draper
+84021	UT	Duchesne
+84022	UT	Dugway
+84023	UT	Dutch John
+84024	UT	Echo
+84025	UT	Farmington
+84026	UT	Fort Duchesne
+84027	UT	Fruitland
+84028	UT	Garden City
+84029	UT	Grantsville
+84030	UT	Gusher
+84031	UT	Hanna
+84032	UT	Heber City
+84033	UT	Henefer
+84034	UT	Ibapah
+84035	UT	Jensen
+84036	UT	Kamas
+84037	UT	Kaysville
+84038	UT	Laketown
+84039	UT	Lapoint
+84040	UT	Layton
+84041	UT	Layton
+84042	UT	Lindon
+84043	UT	Lehi
+84044	UT	Magna
+84046	UT	Manila
+84047	UT	Midvale
+84049	UT	Midway
+84050	UT	Morgan
+84051	UT	Mountain Home
+84052	UT	Myton
+84053	UT	Neola
+84054	UT	North Salt Lake
+84055	UT	Oakley
+84056	UT	Hill Afb
+84057	UT	Orem
+84058	UT	Orem
+84059	UT	Orem
+84060	UT	Park City
+84061	UT	Peoa
+84062	UT	Pleasant Grove
+84063	UT	Randlett
+84064	UT	Randolph
+84065	UT	Riverton
+84066	UT	Roosevelt
+84067	UT	Roy
+84068	UT	Park City
+84069	UT	Rush Valley
+84070	UT	Sandy
+84071	UT	Stockton
+84072	UT	Tabiona
+84073	UT	Talmage
+84074	UT	Tooele
+84075	UT	Syracuse
+84076	UT	Tridell
+84078	UT	Vernal
+84079	UT	Vernal
+84080	UT	Vernon
+84082	UT	Wallsburg
+84083	UT	Wendover
+84084	UT	West Jordan
+84085	UT	Whiterocks
+84086	UT	Woodruff
+84087	UT	Woods Cross
+84088	UT	West Jordan
+84090	UT	Sandy
+84091	UT	Sandy
+84092	UT	Sandy
+84093	UT	Sandy
+84094	UT	Sandy
+84095	UT	South Jordan
+84097	UT	Orem
+84098	UT	Park City
+84101	UT	Salt Lake City
+84102	UT	Salt Lake City
+84103	UT	Salt Lake City
+84104	UT	Salt Lake City
+84105	UT	Salt Lake City
+84106	UT	Salt Lake City
+84107	UT	Salt Lake City
+84108	UT	Salt Lake City
+84109	UT	Salt Lake City
+84110	UT	Salt Lake City
+84111	UT	Salt Lake City
+84112	UT	Salt Lake City
+84113	UT	Salt Lake City
+84114	UT	Salt Lake City
+84115	UT	Salt Lake City
+84116	UT	Salt Lake City
+84117	UT	Salt Lake City
+84118	UT	Salt Lake City
+84119	UT	Salt Lake City
+84120	UT	Salt Lake City
+84121	UT	Salt Lake City
+84122	UT	Salt Lake City
+84123	UT	Salt Lake City
+84124	UT	Salt Lake City
+84125	UT	Salt Lake City
+84126	UT	Salt Lake City
+84127	UT	Salt Lake City
+84128	UT	Salt Lake City
+84130	UT	Salt Lake City
+84131	UT	Salt Lake City
+84132	UT	Salt Lake City
+84133	UT	Salt Lake City
+84134	UT	Salt Lake City
+84135	UT	Salt Lake City
+84136	UT	Salt Lake City
+84137	UT	Salt Lake City
+84138	UT	Salt Lake City
+84139	UT	Salt Lake City
+84140	UT	Salt Lake City
+84141	UT	Salt Lake City
+84142	UT	Salt Lake City
+84143	UT	Salt Lake City
+84144	UT	Salt Lake City
+84145	UT	Salt Lake City
+84147	UT	Salt Lake City
+84148	UT	Salt Lake City
+84150	UT	Salt Lake City
+84151	UT	Salt Lake City
+84152	UT	Salt Lake City
+84153	UT	Salt Lake City
+84157	UT	Salt Lake City
+84158	UT	Salt Lake City
+84165	UT	Salt Lake City
+84170	UT	Salt Lake City
+84171	UT	Salt Lake City
+84180	UT	Salt Lake City
+84184	UT	Salt Lake City
+84185	UT	Salt Lake City
+84189	UT	Salt Lake City
+84190	UT	Salt Lake City
+84199	UT	Salt Lake City
+84201	UT	Ogden
+84244	UT	Ogden
+84301	UT	Bear River City
+84302	UT	Brigham City
+84304	UT	Cache Junction
+84305	UT	Clarkston
+84306	UT	Collinston
+84307	UT	Corinne
+84308	UT	Cornish
+84309	UT	Deweyville
+84310	UT	Eden
+84311	UT	Fielding
+84312	UT	Garland
+84313	UT	Grouse Creek
+84314	UT	Honeyville
+84315	UT	Hooper
+84316	UT	Howell
+84317	UT	Huntsville
+84318	UT	Hyde Park
+84319	UT	Hyrum
+84320	UT	Lewiston
+84321	UT	Logan
+84322	UT	Logan
+84323	UT	Logan
+84324	UT	Mantua
+84325	UT	Mendon
+84326	UT	Millville
+84327	UT	Newton
+84328	UT	Paradise
+84329	UT	Park Valley
+84330	UT	Plymouth
+84331	UT	Portage
+84332	UT	Providence
+84333	UT	Richmond
+84334	UT	Riverside
+84335	UT	Smithfield
+84336	UT	Snowville
+84337	UT	Tremonton
+84338	UT	Trenton
+84339	UT	Wellsville
+84340	UT	Willard
+84341	UT	Logan
+84401	UT	Ogden
+84402	UT	Ogden
+84403	UT	Ogden
+84404	UT	Ogden
+84405	UT	Ogden
+84407	UT	Ogden
+84408	UT	Ogden
+84409	UT	Ogden
+84412	UT	Ogden
+84414	UT	Ogden
+84501	UT	Price
+84510	UT	Aneth
+84511	UT	Blanding
+84512	UT	Bluff
+84513	UT	Castle Dale
+84515	UT	Cisco
+84516	UT	Clawson
+84518	UT	Cleveland
+84520	UT	East Carbon
+84521	UT	Elmo
+84522	UT	Emery
+84523	UT	Ferron
+84525	UT	Green River
+84526	UT	Helper
+84527	UT	Hiawatha
+84528	UT	Huntington
+84529	UT	Kenilworth
+84530	UT	La Sal
+84531	UT	Mexican Hat
+84532	UT	Moab
+84533	UT	Lake Powell
+84534	UT	Montezuma Creek
+84535	UT	Monticello
+84536	UT	Monument Valley
+84537	UT	Orangeville
+84539	UT	Sunnyside
+84540	UT	Thompson
+84542	UT	Wellington
+84601	UT	Provo
+84602	UT	Provo
+84603	UT	Provo
+84604	UT	Provo
+84605	UT	Provo
+84606	UT	Provo
+84620	UT	Aurora
+84621	UT	Axtell
+84622	UT	Centerfield
+84623	UT	Chester
+84624	UT	Delta
+84626	UT	Elberta
+84627	UT	Ephraim
+84628	UT	Eureka
+84629	UT	Fairview
+84630	UT	Fayette
+84631	UT	Fillmore
+84632	UT	Fountain Green
+84633	UT	Goshen
+84634	UT	Gunnison
+84635	UT	Hinckley
+84636	UT	Holden
+84637	UT	Kanosh
+84638	UT	Leamington
+84639	UT	Levan
+84640	UT	Lynndyl
+84642	UT	Manti
+84643	UT	Mayfield
+84644	UT	Meadow
+84645	UT	Mona
+84646	UT	Moroni
+84647	UT	Mount Pleasant
+84648	UT	Nephi
+84649	UT	Oak City
+84650	UT	Oasis
+84651	UT	Payson
+84652	UT	Redmond
+84653	UT	Salem
+84654	UT	Salina
+84655	UT	Santaquin
+84656	UT	Scipio
+84657	UT	Sigurd
+84660	UT	Spanish Fork
+84662	UT	Spring City
+84663	UT	Springville
+84664	UT	Mapleton
+84665	UT	Sterling
+84667	UT	Wales
+84701	UT	Richfield
+84710	UT	Alton
+84711	UT	Annabella
+84712	UT	Antimony
+84713	UT	Beaver
+84714	UT	Beryl
+84715	UT	Bicknell
+84716	UT	Boulder
+84717	UT	Bryce Canyon
+84718	UT	Cannonville
+84719	UT	Brian Head
+84720	UT	Cedar City
+84721	UT	Cedar City
+84722	UT	Central
+84723	UT	Circleville
+84724	UT	Elsinore
+84725	UT	Enterprise
+84726	UT	Escalante
+84728	UT	Garrison
+84729	UT	Glendale
+84730	UT	Glenwood
+84731	UT	Greenville
+84732	UT	Greenwich
+84733	UT	Gunlock
+84734	UT	Hanksville
+84735	UT	Hatch
+84736	UT	Henrieville
+84737	UT	Hurricane
+84738	UT	Ivins
+84739	UT	Joseph
+84740	UT	Junction
+84741	UT	Kanab
+84742	UT	Kanarraville
+84743	UT	Kingston
+84744	UT	Koosharem
+84745	UT	La Verkin
+84746	UT	Leeds
+84747	UT	Loa
+84749	UT	Lyman
+84750	UT	Marysvale
+84751	UT	Milford
+84752	UT	Minersville
+84753	UT	Modena
+84754	UT	Monroe
+84755	UT	Mount Carmel
+84756	UT	Newcastle
+84757	UT	New Harmony
+84758	UT	Orderville
+84759	UT	Panguitch
+84760	UT	Paragonah
+84761	UT	Parowan
+84762	UT	Duck Creek Village
+84763	UT	Rockville
+84764	UT	Bryce
+84765	UT	Santa Clara
+84766	UT	Sevier
+84767	UT	Springdale
+84770	UT	Saint George
+84771	UT	Saint George
+84772	UT	Summit
+84773	UT	Teasdale
+84774	UT	Toquerville
+84775	UT	Torrey
+84776	UT	Tropic
+84779	UT	Virgin
+84780	UT	Washington
+84781	UT	Pine Valley
+84782	UT	Veyo
+84783	UT	Dammeron Valley
+84784	UT	Hildale
+84790	UT	Saint George
+85001	AZ	Phoenix
+85002	AZ	Phoenix
+85003	AZ	Phoenix
+85004	AZ	Phoenix
+85005	AZ	Phoenix
+85006	AZ	Phoenix
+85007	AZ	Phoenix
+85008	AZ	Phoenix
+85009	AZ	Phoenix
+85010	AZ	Phoenix
+85011	AZ	Phoenix
+85012	AZ	Phoenix
+85013	AZ	Phoenix
+85014	AZ	Phoenix
+85015	AZ	Phoenix
+85016	AZ	Phoenix
+85017	AZ	Phoenix
+85018	AZ	Phoenix
+85019	AZ	Phoenix
+85020	AZ	Phoenix
+85021	AZ	Phoenix
+85022	AZ	Phoenix
+85023	AZ	Phoenix
+85024	AZ	Phoenix
+85025	AZ	Phoenix
+85026	AZ	Phoenix
+85027	AZ	Phoenix
+85028	AZ	Phoenix
+85029	AZ	Phoenix
+85030	AZ	Phoenix
+85031	AZ	Phoenix
+85032	AZ	Phoenix
+85033	AZ	Phoenix
+85034	AZ	Phoenix
+85035	AZ	Phoenix
+85036	AZ	Phoenix
+85037	AZ	Phoenix
+85038	AZ	Phoenix
+85039	AZ	Phoenix
+85040	AZ	Phoenix
+85041	AZ	Phoenix
+85043	AZ	Phoenix
+85044	AZ	Phoenix
+85045	AZ	Phoenix
+85046	AZ	Phoenix
+85048	AZ	Phoenix
+85051	AZ	Phoenix
+85055	AZ	Phoenix
+85060	AZ	Phoenix
+85061	AZ	Phoenix
+85062	AZ	Phoenix
+85063	AZ	Phoenix
+85064	AZ	Phoenix
+85065	AZ	Phoenix
+85066	AZ	Phoenix
+85067	AZ	Phoenix
+85068	AZ	Phoenix
+85069	AZ	Phoenix
+85071	AZ	Phoenix
+85072	AZ	Phoenix
+85073	AZ	Phoenix
+85074	AZ	Phoenix
+85075	AZ	Phoenix
+85076	AZ	Phoenix
+85077	AZ	Phoenix
+85078	AZ	Phoenix
+85079	AZ	Phoenix
+85080	AZ	Phoenix
+85082	AZ	Phoenix
+85086	AZ	Phoenix
+85098	AZ	Phoenix
+85099	AZ	Phoenix
+85201	AZ	Mesa
+85202	AZ	Mesa
+85203	AZ	Mesa
+85204	AZ	Mesa
+85205	AZ	Mesa
+85206	AZ	Mesa
+85207	AZ	Mesa
+85208	AZ	Mesa
+85210	AZ	Mesa
+85211	AZ	Mesa
+85212	AZ	Mesa
+85213	AZ	Mesa
+85214	AZ	Mesa
+85215	AZ	Mesa
+85216	AZ	Mesa
+85217	AZ	Apache Junction
+85219	AZ	Apache Junction
+85220	AZ	Apache Junction
+85221	AZ	Bapchule
+85222	AZ	Casa Grande
+85223	AZ	Arizona City
+85224	AZ	Chandler
+85225	AZ	Chandler
+85226	AZ	Chandler
+85227	AZ	Chandler Heights
+85228	AZ	Coolidge
+85230	AZ	Casa Grande
+85231	AZ	Eloy
+85232	AZ	Florence
+85233	AZ	Gilbert
+85234	AZ	Gilbert
+85235	AZ	Hayden
+85236	AZ	Higley
+85237	AZ	Kearny
+85239	AZ	Maricopa
+85240	AZ	Mesa
+85241	AZ	Picacho
+85242	AZ	Queen Creek
+85244	AZ	Chandler
+85245	AZ	Red Rock
+85246	AZ	Chandler
+85247	AZ	Sacaton
+85248	AZ	Chandler
+85249	AZ	Chandler
+85250	AZ	Scottsdale
+85251	AZ	Scottsdale
+85252	AZ	Scottsdale
+85253	AZ	Paradise Valley
+85254	AZ	Scottsdale
+85255	AZ	Scottsdale
+85256	AZ	Scottsdale
+85257	AZ	Scottsdale
+85258	AZ	Scottsdale
+85259	AZ	Scottsdale
+85260	AZ	Scottsdale
+85261	AZ	Scottsdale
+85262	AZ	Scottsdale
+85263	AZ	Rio Verde
+85264	AZ	Fort McDowell
+85266	AZ	Scottsdale
+85267	AZ	Scottsdale
+85268	AZ	Fountain Hills
+85269	AZ	Fountain Hills
+85271	AZ	Scottsdale
+85272	AZ	Stanfield
+85273	AZ	Superior
+85274	AZ	Mesa
+85275	AZ	Mesa
+85277	AZ	Mesa
+85278	AZ	Apache Junction
+85279	AZ	Florence
+85280	AZ	Tempe
+85281	AZ	Tempe
+85282	AZ	Tempe
+85283	AZ	Tempe
+85284	AZ	Tempe
+85285	AZ	Tempe
+85287	AZ	Tempe
+85289	AZ	Tempe
+85290	AZ	Tortilla Flat
+85291	AZ	Valley Farms
+85292	AZ	Winkelman
+85296	AZ	Gilbert
+85299	AZ	Gilbert
+85301	AZ	Glendale
+85302	AZ	Glendale
+85303	AZ	Glendale
+85304	AZ	Glendale
+85305	AZ	Glendale
+85306	AZ	Glendale
+85307	AZ	Glendale
+85308	AZ	Glendale
+85309	AZ	Luke Afb
+85310	AZ	Glendale
+85311	AZ	Glendale
+85312	AZ	Glendale
+85313	AZ	Glendale
+85318	AZ	Glendale
+85320	AZ	Aguila
+85321	AZ	Ajo
+85322	AZ	Arlington
+85323	AZ	Avondale
+85324	AZ	Black Canyon City
+85325	AZ	Bouse
+85326	AZ	Buckeye
+85327	AZ	Cave Creek
+85328	AZ	Cibola
+85329	AZ	Cashion
+85331	AZ	Cave Creek
+85332	AZ	Congress
+85333	AZ	Dateland
+85334	AZ	Ehrenberg
+85335	AZ	El Mirage
+85336	AZ	Gadsden
+85337	AZ	Gila Bend
+85338	AZ	Goodyear
+85339	AZ	Laveen
+85340	AZ	Litchfield Park
+85341	AZ	Lukeville
+85342	AZ	Morristown
+85343	AZ	Palo Verde
+85344	AZ	Parker
+85345	AZ	Peoria
+85346	AZ	Quartzsite
+85347	AZ	Roll
+85348	AZ	Salome
+85349	AZ	San Luis
+85350	AZ	Somerton
+85351	AZ	Sun City
+85352	AZ	Tacna
+85353	AZ	Tolleson
+85354	AZ	Tonopah
+85355	AZ	Waddell
+85356	AZ	Wellton
+85357	AZ	Wenden
+85358	AZ	Wickenburg
+85359	AZ	Quartzsite
+85360	AZ	Wikieup
+85361	AZ	Wittmann
+85362	AZ	Yarnell
+85363	AZ	Youngtown
+85364	AZ	Yuma
+85365	AZ	Yuma
+85366	AZ	Yuma
+85367	AZ	Yuma
+85369	AZ	Yuma
+85371	AZ	Poston
+85372	AZ	Sun City
+85373	AZ	Sun City
+85374	AZ	Surprise
+85375	AZ	Sun City West
+85376	AZ	Sun City West
+85377	AZ	Carefree
+85380	AZ	Peoria
+85381	AZ	Peoria
+85382	AZ	Peoria
+85390	AZ	Wickenburg
+85501	AZ	Globe
+85502	AZ	Globe
+85530	AZ	Bylas
+85531	AZ	Central
+85532	AZ	Claypool
+85533	AZ	Clifton
+85534	AZ	Duncan
+85535	AZ	Eden
+85536	AZ	Fort Thomas
+85539	AZ	Miami
+85540	AZ	Morenci
+85541	AZ	Payson
+85542	AZ	Peridot
+85543	AZ	Pima
+85544	AZ	Pine
+85545	AZ	Roosevelt
+85546	AZ	Safford
+85547	AZ	Payson
+85548	AZ	Safford
+85550	AZ	San Carlos
+85551	AZ	Solomon
+85552	AZ	Thatcher
+85553	AZ	Tonto Basin
+85554	AZ	Young
+85601	AZ	Arivaca
+85602	AZ	Benson
+85603	AZ	Bisbee
+85605	AZ	Bowie
+85606	AZ	Cochise
+85607	AZ	Douglas
+85608	AZ	Douglas
+85609	AZ	Dragoon
+85610	AZ	Elfrida
+85611	AZ	Elgin
+85613	AZ	Fort Huachuca
+85614	AZ	Green Valley
+85615	AZ	Hereford
+85616	AZ	Huachuca City
+85617	AZ	Mc Neal
+85618	AZ	Mammoth
+85619	AZ	Mount Lemmon
+85620	AZ	Naco
+85621	AZ	Nogales
+85622	AZ	Green Valley
+85623	AZ	Oracle
+85624	AZ	Patagonia
+85625	AZ	Pearce
+85626	AZ	Pirtleville
+85627	AZ	Pomerene
+85628	AZ	Nogales
+85629	AZ	Sahuarita
+85630	AZ	Saint David
+85631	AZ	San Manuel
+85632	AZ	San Simon
+85633	AZ	Sasabe
+85634	AZ	Sells
+85635	AZ	Sierra Vista
+85636	AZ	Sierra Vista
+85637	AZ	Sonoita
+85638	AZ	Tombstone
+85639	AZ	Topawa
+85640	AZ	Tumacacori
+85641	AZ	Vail
+85643	AZ	Willcox
+85644	AZ	Willcox
+85645	AZ	Amado
+85646	AZ	Tubac
+85648	AZ	Rio Rico
+85652	AZ	Cortaro
+85653	AZ	Marana
+85654	AZ	Rillito
+85655	AZ	Douglas
+85662	AZ	Nogales
+85670	AZ	Fort Huachuca
+85671	AZ	Sierra Vista
+85701	AZ	Tucson
+85702	AZ	Tucson
+85703	AZ	Tucson
+85704	AZ	Tucson
+85705	AZ	Tucson
+85706	AZ	Tucson
+85707	AZ	Tucson
+85708	AZ	Tucson
+85709	AZ	Tucson
+85710	AZ	Tucson
+85711	AZ	Tucson
+85712	AZ	Tucson
+85713	AZ	Tucson
+85714	AZ	Tucson
+85715	AZ	Tucson
+85716	AZ	Tucson
+85717	AZ	Tucson
+85718	AZ	Tucson
+85719	AZ	Tucson
+85720	AZ	Tucson
+85721	AZ	Tucson
+85722	AZ	Tucson
+85723	AZ	Tucson
+85724	AZ	Tucson
+85725	AZ	Tucson
+85726	AZ	Tucson
+85728	AZ	Tucson
+85730	AZ	Tucson
+85731	AZ	Tucson
+85732	AZ	Tucson
+85733	AZ	Tucson
+85734	AZ	Tucson
+85735	AZ	Tucson
+85736	AZ	Tucson
+85737	AZ	Tucson
+85738	AZ	Catalina
+85739	AZ	Tucson
+85740	AZ	Tucson
+85741	AZ	Tucson
+85742	AZ	Tucson
+85743	AZ	Tucson
+85744	AZ	Tucson
+85745	AZ	Tucson
+85746	AZ	Tucson
+85747	AZ	Tucson
+85748	AZ	Tucson
+85749	AZ	Tucson
+85750	AZ	Tucson
+85751	AZ	Tucson
+85752	AZ	Tucson
+85754	AZ	Tucson
+85775	AZ	Tucson
+85777	AZ	Tucson
+85901	AZ	Show Low
+85911	AZ	Cibeque
+85912	AZ	White Mountain Lake
+85920	AZ	Alpine
+85922	AZ	Blue
+85923	AZ	Clay Springs
+85924	AZ	Concho
+85925	AZ	Eagar
+85926	AZ	Fort Apache
+85927	AZ	Greer
+85928	AZ	Heber
+85929	AZ	Lakeside
+85930	AZ	Mc Nary
+85931	AZ	Forest Lakes
+85932	AZ	Nutrioso
+85933	AZ	Overgaard
+85934	AZ	Pinedale
+85935	AZ	Pinetop
+85936	AZ	Saint Johns
+85937	AZ	Snowflake
+85938	AZ	Springerville
+85939	AZ	Taylor
+85940	AZ	Vernon
+85941	AZ	Whiteriver
+85942	AZ	Woodruff
+86001	AZ	Flagstaff
+86002	AZ	Flagstaff
+86003	AZ	Flagstaff
+86004	AZ	Flagstaff
+86011	AZ	Flagstaff
+86015	AZ	Bellemont
+86016	AZ	Gray Mountain
+86017	AZ	Munds Park
+86018	AZ	Parks
+86020	AZ	Cameron
+86021	AZ	Colorado City
+86022	AZ	Fredonia
+86023	AZ	Grand Canyon
+86024	AZ	Happy Jack
+86025	AZ	Holbrook
+86028	AZ	Petrified Forest Natl Pk
+86029	AZ	Sun Valley
+86030	AZ	Hotevilla
+86031	AZ	Indian Wells
+86032	AZ	Joseph City
+86033	AZ	Kayenta
+86034	AZ	Keams Canyon
+86035	AZ	Leupp
+86036	AZ	Marble Canyon
+86038	AZ	Mormon Lake
+86039	AZ	Kykotsmovi Village
+86040	AZ	Page
+86042	AZ	Polacca
+86043	AZ	Second Mesa
+86044	AZ	Tonalea
+86045	AZ	Tuba City
+86046	AZ	Williams
+86047	AZ	Winslow
+86052	AZ	North Rim
+86053	AZ	Kaibito
+86054	AZ	Shonto
+86301	AZ	Prescott
+86302	AZ	Prescott
+86303	AZ	Prescott
+86304	AZ	Prescott
+86312	AZ	Prescott Valley
+86313	AZ	Prescott
+86314	AZ	Prescott Valley
+86320	AZ	Ash Fork
+86321	AZ	Bagdad
+86322	AZ	Camp Verde
+86323	AZ	Chino Valley
+86324	AZ	Clarkdale
+86325	AZ	Cornville
+86326	AZ	Cottonwood
+86327	AZ	Dewey
+86329	AZ	Humboldt
+86330	AZ	Iron Springs
+86331	AZ	Jerome
+86332	AZ	Kirkland
+86333	AZ	Mayer
+86334	AZ	Paulden
+86335	AZ	Rimrock
+86336	AZ	Sedona
+86337	AZ	Seligman
+86338	AZ	Skull Valley
+86339	AZ	Sedona
+86340	AZ	Sedona
+86341	AZ	Sedona
+86342	AZ	Lake Montezuma
+86343	AZ	Crown King
+86351	AZ	Sedona
+86401	AZ	Kingman
+86402	AZ	Kingman
+86403	AZ	Lake Havasu City
+86404	AZ	Lake Havasu City
+86405	AZ	Lake Havasu City
+86406	AZ	Lake Havasu City
+86411	AZ	Hackberry
+86412	AZ	Hualapai
+86413	AZ	Golden Valley
+86426	AZ	Bullhead City
+86427	AZ	Fort Mohave
+86429	AZ	Bullhead City
+86430	AZ	Bullhead City
+86431	AZ	Chloride
+86432	AZ	Littlefield
+86433	AZ	Oatman
+86434	AZ	Peach Springs
+86435	AZ	Supai
+86436	AZ	Topock
+86437	AZ	Valentine
+86438	AZ	Yucca
+86439	AZ	Bullhead City
+86440	AZ	Mohave Valley
+86441	AZ	Dolan Springs
+86442	AZ	Bullhead City
+86443	AZ	Temple Bar Marina
+86444	AZ	Meadview
+86445	AZ	Willow Beach
+86502	AZ	Chambers
+86503	AZ	Chinle
+86504	AZ	Fort Defiance
+86505	AZ	Ganado
+86506	AZ	Houck
+86507	AZ	Lukachukai
+86508	AZ	Lupton
+86510	AZ	Pinon
+86511	AZ	Saint Michaels
+86512	AZ	Sanders
+86514	AZ	Teec Nos Pos
+86515	AZ	Window Rock
+86520	AZ	Blue Gap
+86535	AZ	Dennehotso
+86538	AZ	Many Farms
+86540	AZ	Nazlini
+86544	AZ	Red Valley
+86545	AZ	Rock Point
+86547	AZ	Round Rock
+86549	AZ	Sawmill
+86556	AZ	Tsaile
+87001	NM	Algodones
+87002	NM	Belen
+87004	NM	Bernalillo
+87005	NM	Bluewater
+87006	NM	Bosque
+87007	NM	Casa Blanca
+87008	NM	Cedar Crest
+87009	NM	Cedarvale
+87010	NM	Cerrillos
+87011	NM	Claunch
+87012	NM	Coyote
+87013	NM	Cuba
+87014	NM	Cubero
+87015	NM	Edgewood
+87016	NM	Estancia
+87017	NM	Gallina
+87018	NM	Counselor
+87020	NM	Grants
+87021	NM	Milan
+87022	NM	Isleta
+87023	NM	Jarales
+87024	NM	Jemez Pueblo
+87025	NM	Jemez Springs
+87026	NM	Laguna
+87027	NM	La Jara
+87028	NM	La Joya
+87029	NM	Lindrith
+87031	NM	Los Lunas
+87032	NM	Mc Intosh
+87034	NM	Pueblo Of Acoma
+87035	NM	Moriarty
+87036	NM	Mountainair
+87037	NM	Nageezi
+87038	NM	New Laguna
+87040	NM	Paguate
+87041	NM	Pena Blanca
+87042	NM	Peralta
+87043	NM	Placitas
+87044	NM	Ponderosa
+87045	NM	Prewitt
+87046	NM	Regina
+87047	NM	Sandia Park
+87048	NM	Corrales
+87049	NM	San Fidel
+87051	NM	San Rafael
+87052	NM	Santo Domingo Pueblo
+87053	NM	San Ysidro
+87056	NM	Stanley
+87057	NM	Tajique
+87059	NM	Tijeras
+87060	NM	Tome
+87061	NM	Torreon
+87062	NM	Veguita
+87063	NM	Willard
+87064	NM	Youngsville
+87068	NM	Bosque Farms
+87070	NM	Clines Corners
+87072	NM	Cochiti Pueblo
+87083	NM	Cochiti Lake
+87101	NM	Albuquerque
+87102	NM	Albuquerque
+87103	NM	Albuquerque
+87104	NM	Albuquerque
+87105	NM	Albuquerque
+87106	NM	Albuquerque
+87107	NM	Albuquerque
+87108	NM	Albuquerque
+87109	NM	Albuquerque
+87110	NM	Albuquerque
+87111	NM	Albuquerque
+87112	NM	Albuquerque
+87113	NM	Albuquerque
+87114	NM	Albuquerque
+87115	NM	Albuquerque
+87116	NM	Albuquerque
+87117	NM	Kirtland Afb
+87118	NM	Albuquerque
+87119	NM	Albuquerque
+87120	NM	Albuquerque
+87121	NM	Albuquerque
+87122	NM	Albuquerque
+87123	NM	Albuquerque
+87124	NM	Rio Rancho
+87125	NM	Albuquerque
+87131	NM	Albuquerque
+87140	NM	Albuquerque
+87153	NM	Albuquerque
+87154	NM	Albuquerque
+87158	NM	Albuquerque
+87174	NM	Rio Rancho
+87176	NM	Albuquerque
+87180	NM	Albuquerque
+87184	NM	Albuquerque
+87185	NM	Albuquerque
+87187	NM	Albuquerque
+87190	NM	Albuquerque
+87191	NM	Albuquerque
+87192	NM	Albuquerque
+87193	NM	Albuquerque
+87194	NM	Albuquerque
+87195	NM	Albuquerque
+87196	NM	Albuquerque
+87197	NM	Albuquerque
+87198	NM	Albuquerque
+87199	NM	Albuquerque
+87201	NM	Albuquerque
+87300	NM	Gallup
+87301	NM	Gallup
+87302	NM	Gallup
+87305	NM	Gallup
+87310	NM	Brimhall
+87311	NM	Church Rock
+87312	NM	Continental Divide
+87313	NM	Crownpoint
+87315	NM	Fence Lake
+87316	NM	Fort Wingate
+87317	NM	Gamerco
+87319	NM	Mentmore
+87320	NM	Mexican Springs
+87321	NM	Ramah
+87322	NM	Rehoboth
+87323	NM	Thoreau
+87325	NM	Tohatchi
+87326	NM	Vanderwagen
+87327	NM	Zuni
+87328	NM	Navajo
+87347	NM	Jamestown
+87357	NM	Pinehill
+87364	NM	Sheep Springs
+87365	NM	Smith Lake
+87375	NM	Yatahey
+87401	NM	Farmington
+87402	NM	Farmington
+87410	NM	Aztec
+87412	NM	Blanco
+87413	NM	Bloomfield
+87415	NM	Flora Vista
+87416	NM	Fruitland
+87417	NM	Kirtland
+87418	NM	La Plata
+87419	NM	Navajo Dam
+87420	NM	Shiprock
+87421	NM	Waterflow
+87455	NM	Newcomb
+87461	NM	Sanostee
+87499	NM	Farmington
+87500	NM	Santa Fe
+87501	NM	Santa Fe
+87502	NM	Santa Fe
+87503	NM	Santa Fe
+87504	NM	Santa Fe
+87505	NM	Santa Fe
+87506	NM	Santa Fe
+87509	NM	Santa Fe
+87510	NM	Abiquiu
+87511	NM	Alcalde
+87512	NM	Amalia
+87513	NM	Arroyo Hondo
+87514	NM	Arroyo Seco
+87515	NM	Canjilon
+87516	NM	Canones
+87517	NM	Carson
+87518	NM	Cebolla
+87519	NM	Cerro
+87520	NM	Chama
+87521	NM	Chamisal
+87522	NM	Chimayo
+87523	NM	Cordova
+87524	NM	Costilla
+87525	NM	Taos Ski Valley
+87527	NM	Dixon
+87528	NM	Dulce
+87529	NM	El Prado
+87530	NM	El Rito
+87531	NM	Embudo
+87532	NM	Espanola
+87533	NM	Espanola
+87535	NM	Glorieta
+87536	NM	Gonzales Ranch
+87537	NM	Hernandez
+87538	NM	Ilfeld
+87539	NM	La Madera
+87540	NM	Lamy
+87543	NM	Llano
+87544	NM	Los Alamos
+87545	NM	Los Alamos
+87548	NM	Medanales
+87549	NM	Ojo Caliente
+87551	NM	Los Ojos
+87552	NM	Pecos
+87553	NM	Penasco
+87554	NM	Petaca
+87556	NM	Questa
+87557	NM	Ranchos De Taos
+87558	NM	Red River
+87560	NM	Ribera
+87561	NM	Rodarte
+87562	NM	Rowe
+87563	NM	Rutheron
+87564	NM	San Cristobal
+87565	NM	San Jose
+87566	NM	San Juan Pueblo
+87567	NM	Santa Cruz
+87568	NM	Sena
+87569	NM	Serafina
+87571	NM	Taos
+87573	NM	Tererro
+87574	NM	Tesuque
+87575	NM	Tierra Amarilla
+87576	NM	Trampas
+87577	NM	Tres Piedras
+87578	NM	Truchas
+87579	NM	Vadito
+87580	NM	Valdez
+87581	NM	Vallecitos
+87582	NM	Velarde
+87583	NM	Villanueva
+87592	NM	Santa Fe
+87594	NM	Santa Fe
+87701	NM	Las Vegas
+87710	NM	Angel Fire
+87711	NM	Anton Chico
+87712	NM	Buena Vista
+87713	NM	Chacon
+87714	NM	Cimarron
+87715	NM	Cleveland
+87718	NM	Eagle Nest
+87722	NM	Guadalupita
+87723	NM	Holman
+87724	NM	La Loma
+87728	NM	Maxwell
+87729	NM	Miami
+87730	NM	Mills
+87731	NM	Montezuma
+87732	NM	Mora
+87733	NM	Mosquero
+87734	NM	Ocate
+87735	NM	Ojo Feliz
+87736	NM	Rainsville
+87740	NM	Raton
+87742	NM	Rociada
+87743	NM	Roy
+87745	NM	Sapello
+87746	NM	Solano
+87747	NM	Springer
+87749	NM	Ute Park
+87750	NM	Valmora
+87752	NM	Wagon Mound
+87753	NM	Watrous
+87801	NM	Socorro
+87820	NM	Aragon
+87821	NM	Datil
+87823	NM	Lemitar
+87824	NM	Luna
+87825	NM	Magdalena
+87827	NM	Pie Town
+87828	NM	Polvadera
+87829	NM	Quemado
+87830	NM	Reserve
+87831	NM	San Acacia
+87832	NM	San Antonio
+87901	NM	Truth Or Consequences
+87930	NM	Arrey
+87931	NM	Caballo
+87933	NM	Derry
+87935	NM	Elephant Butte
+87936	NM	Garfield
+87937	NM	Hatch
+87939	NM	Monticello
+87940	NM	Rincon
+87941	NM	Salem
+87942	NM	Williamsburg
+87943	NM	Winston
+88001	NM	Las Cruces
+88002	NM	White Sands Missile Range
+88003	NM	Las Cruces
+88004	NM	Las Cruces
+88005	NM	Las Cruces
+88006	NM	Las Cruces
+88008	NM	Santa Teresa
+88009	NM	Playas
+88011	NM	Las Cruces
+88012	NM	Las Cruces
+88020	NM	Animas
+88021	NM	Anthony
+88022	NM	Arenas Valley
+88023	NM	Bayard
+88024	NM	Berino
+88025	NM	Buckhorn
+88026	NM	Santa Clara
+88027	NM	Chamberino
+88028	NM	Cliff
+88029	NM	Columbus
+88030	NM	Deming
+88031	NM	Deming
+88032	NM	Dona Ana
+88033	NM	Fairacres
+88034	NM	Faywood
+88036	NM	Fort Bayard
+88038	NM	Gila
+88039	NM	Glenwood
+88040	NM	Hachita
+88041	NM	Hanover
+88042	NM	Hillsboro
+88043	NM	Hurley
+88044	NM	La Mesa
+88045	NM	Lordsburg
+88046	NM	Mesilla
+88047	NM	Mesilla Park
+88048	NM	Mesquite
+88049	NM	Mimbres
+88051	NM	Mule Creek
+88052	NM	Organ
+88053	NM	Pinos Altos
+88054	NM	Radium Springs
+88055	NM	Redrock
+88056	NM	Rodeo
+88058	NM	San Miguel
+88061	NM	Silver City
+88062	NM	Silver City
+88063	NM	Sunland Park
+88065	NM	Tyrone
+88072	NM	Vado
+88101	NM	Clovis
+88102	NM	Clovis
+88103	NM	Cannon Afb
+88112	NM	Broadview
+88113	NM	Causey
+88114	NM	Crossroads
+88115	NM	Dora
+88116	NM	Elida
+88118	NM	Floyd
+88119	NM	Fort Sumner
+88120	NM	Grady
+88121	NM	House
+88122	NM	Kenna
+88123	NM	Lingo
+88124	NM	Melrose
+88125	NM	Milnesand
+88126	NM	Pep
+88130	NM	Portales
+88132	NM	Rogers
+88133	NM	Saint Vrain
+88134	NM	Taiban
+88135	NM	Texico
+88136	NM	Yeso
+88201	NM	Roswell
+88202	NM	Roswell
+88210	NM	Artesia
+88211	NM	Artesia
+88213	NM	Caprock
+88220	NM	Carlsbad
+88221	NM	Carlsbad
+88230	NM	Dexter
+88231	NM	Eunice
+88232	NM	Hagerman
+88240	NM	Hobbs
+88241	NM	Hobbs
+88242	NM	Hobbs
+88244	NM	Hobbs
+88250	NM	Hope
+88252	NM	Jal
+88253	NM	Lake Arthur
+88254	NM	Lakewood
+88255	NM	Loco Hills
+88256	NM	Loving
+88260	NM	Lovington
+88262	NM	Mc Donald
+88263	NM	Malaga
+88264	NM	Maljamar
+88265	NM	Monument
+88267	NM	Tatum
+88268	NM	Whites City
+88301	NM	Carrizozo
+88310	NM	Alamogordo
+88311	NM	Alamogordo
+88312	NM	Alto
+88314	NM	Bent
+88316	NM	Capitan
+88317	NM	Cloudcroft
+88318	NM	Corona
+88321	NM	Encino
+88323	NM	Fort Stanton
+88324	NM	Glencoe
+88325	NM	High Rolls Mountain Park
+88330	NM	Holloman Air Force Base
+88336	NM	Hondo
+88337	NM	La Luz
+88338	NM	Lincoln
+88339	NM	Mayhill
+88340	NM	Mescalero
+88341	NM	Nogal
+88342	NM	Orogrande
+88343	NM	Picacho
+88344	NM	Pinon
+88345	NM	Ruidoso
+88346	NM	Ruidoso Downs
+88347	NM	Sacramento
+88348	NM	San Patricio
+88349	NM	Sunspot
+88350	NM	Timberon
+88351	NM	Tinnie
+88352	NM	Tularosa
+88353	NM	Vaughn
+88354	NM	Weed
+88401	NM	Tucumcari
+88410	NM	Amistad
+88411	NM	Bard
+88414	NM	Capulin
+88415	NM	Clayton
+88416	NM	Conchas Dam
+88417	NM	Cuervo
+88418	NM	Des Moines
+88419	NM	Folsom
+88421	NM	Garita
+88422	NM	Gladstone
+88424	NM	Grenville
+88426	NM	Logan
+88427	NM	Mc Alister
+88429	NM	Mount Dora
+88430	NM	Nara Visa
+88431	NM	Newkirk
+88433	NM	Quay
+88434	NM	San Jon
+88435	NM	Santa Rosa
+88436	NM	Sedan
+88437	NM	Seneca
+88439	NM	Trementina
+88441	NM	Bell Ranch
+88510	TX	El Paso
+88511	TX	El Paso
+88512	TX	El Paso
+88513	TX	El Paso
+88514	TX	El Paso
+88515	TX	El Paso
+88516	TX	El Paso
+88517	TX	El Paso
+88518	TX	El Paso
+88519	TX	El Paso
+88520	TX	El Paso
+88521	TX	El Paso
+88523	TX	El Paso
+88524	TX	El Paso
+88525	TX	El Paso
+88526	TX	El Paso
+88527	TX	El Paso
+88528	TX	El Paso
+88529	TX	El Paso
+88530	TX	El Paso
+88531	TX	El Paso
+88532	TX	El Paso
+88533	TX	El Paso
+88534	TX	El Paso
+88535	TX	El Paso
+88536	TX	El Paso
+88538	TX	El Paso
+88539	TX	El Paso
+88540	TX	El Paso
+88541	TX	El Paso
+88542	TX	El Paso
+88543	TX	El Paso
+88544	TX	El Paso
+88545	TX	El Paso
+88546	TX	El Paso
+88547	TX	El Paso
+88548	TX	El Paso
+88549	TX	El Paso
+88550	TX	El Paso
+88553	TX	El Paso
+88554	TX	El Paso
+88555	TX	El Paso
+88556	TX	El Paso
+88557	TX	El Paso
+88558	TX	El Paso
+88559	TX	El Paso
+88560	TX	El Paso
+88561	TX	El Paso
+88562	TX	El Paso
+88563	TX	El Paso
+88565	TX	El Paso
+88566	TX	El Paso
+88567	TX	El Paso
+88568	TX	El Paso
+88569	TX	El Paso
+88570	TX	El Paso
+88571	TX	El Paso
+88572	TX	El Paso
+88573	TX	El Paso
+88574	TX	El Paso
+88575	TX	El Paso
+88576	TX	El Paso
+88577	TX	El Paso
+88578	TX	El Paso
+88579	TX	El Paso
+88580	TX	El Paso
+88581	TX	El Paso
+88582	TX	El Paso
+88583	TX	El Paso
+88584	TX	El Paso
+88585	TX	El Paso
+88586	TX	El Paso
+88587	TX	El Paso
+88588	TX	El Paso
+88589	TX	El Paso
+88590	TX	El Paso
+88595	TX	El Paso
+88901	NV	The Lakes
+88905	NV	The Lakes
+89001	NV	Alamo
+89003	NV	Beatty
+89004	NV	Blue Diamond
+89005	NV	Boulder City
+89006	NV	Boulder City
+89007	NV	Bunkerville
+89008	NV	Caliente
+89009	NV	Henderson
+89010	NV	Dyer
+89011	NV	Henderson
+89012	NV	Henderson
+89013	NV	Goldfield
+89014	NV	Henderson
+89015	NV	Henderson
+89016	NV	Henderson
+89017	NV	Hiko
+89018	NV	Indian Springs
+89019	NV	Jean
+89020	NV	Amargosa Valley
+89021	NV	Logandale
+89022	NV	Manhattan
+89023	NV	Mercury
+89024	NV	Mesquite
+89025	NV	Moapa
+89026	NV	Jean
+89027	NV	Mesquite
+89028	NV	Laughlin
+89029	NV	Laughlin
+89030	NV	North Las Vegas
+89031	NV	North Las Vegas
+89033	NV	North Las Vegas
+89036	NV	North Las Vegas
+89039	NV	Cal Nev Ari
+89040	NV	Overton
+89041	NV	Pahrump
+89042	NV	Panaca
+89043	NV	Pioche
+89045	NV	Round Mountain
+89046	NV	Searchlight
+89047	NV	Silverpeak
+89048	NV	Pahrump
+89049	NV	Tonopah
+89070	NV	Indian Springs
+89101	NV	Las Vegas
+89102	NV	Las Vegas
+89103	NV	Las Vegas
+89104	NV	Las Vegas
+89106	NV	Las Vegas
+89107	NV	Las Vegas
+89108	NV	Las Vegas
+89109	NV	Las Vegas
+89110	NV	Las Vegas
+89111	NV	Las Vegas
+89112	NV	Las Vegas
+89113	NV	Las Vegas
+89114	NV	Las Vegas
+89115	NV	Las Vegas
+89116	NV	Las Vegas
+89117	NV	Las Vegas
+89118	NV	Las Vegas
+89119	NV	Las Vegas
+89120	NV	Las Vegas
+89121	NV	Las Vegas
+89122	NV	Las Vegas
+89123	NV	Las Vegas
+89124	NV	Las Vegas
+89125	NV	Las Vegas
+89126	NV	Las Vegas
+89127	NV	Las Vegas
+89128	NV	Las Vegas
+89129	NV	Las Vegas
+89130	NV	Las Vegas
+89131	NV	Las Vegas
+89132	NV	Las Vegas
+89133	NV	Las Vegas
+89134	NV	Las Vegas
+89135	NV	Las Vegas
+89137	NV	Las Vegas
+89138	NV	Las Vegas
+89139	NV	Las Vegas
+89150	NV	Las Vegas
+89151	NV	Las Vegas
+89152	NV	Las Vegas
+89153	NV	Las Vegas
+89154	NV	Las Vegas
+89155	NV	Las Vegas
+89158	NV	Las Vegas
+89159	NV	Las Vegas
+89160	NV	Las Vegas
+89163	NV	The Lakes
+89164	NV	Las Vegas
+89170	NV	Las Vegas
+89177	NV	Las Vegas
+89180	NV	Las Vegas
+89185	NV	Las Vegas
+89191	NV	Nellis Afb
+89193	NV	Las Vegas
+89195	NV	Las Vegas
+89199	NV	Las Vegas
+89301	NV	Ely
+89310	NV	Austin
+89311	NV	Baker
+89314	NV	Duckwater
+89315	NV	East Ely
+89316	NV	Eureka
+89317	NV	Lund
+89318	NV	Mc Gill
+89319	NV	Ruth
+89402	NV	Crystal Bay
+89403	NV	Dayton
+89404	NV	Denio
+89405	NV	Empire
+89406	NV	Fallon
+89407	NV	Fallon
+89408	NV	Fernley
+89409	NV	Gabbs
+89410	NV	Gardnerville
+89411	NV	Genoa
+89412	NV	Gerlach
+89413	NV	Glenbrook
+89414	NV	Golconda
+89415	NV	Hawthorne
+89418	NV	Imlay
+89419	NV	Lovelock
+89420	NV	Luning
+89421	NV	Mc Dermitt
+89422	NV	Mina
+89423	NV	Minden
+89424	NV	Nixon
+89425	NV	Orovada
+89426	NV	Paradise Valley
+89427	NV	Schurz
+89428	NV	Silver City
+89429	NV	Silver Springs
+89430	NV	Smith
+89431	NV	Sparks
+89432	NV	Sparks
+89433	NV	Sun Valley
+89434	NV	Sparks
+89435	NV	Sparks
+89436	NV	Sparks
+89438	NV	Valmy
+89439	NV	Verdi
+89440	NV	Virginia City
+89442	NV	Wadsworth
+89444	NV	Wellington
+89445	NV	Winnemucca
+89446	NV	Winnemucca
+89447	NV	Yerington
+89448	NV	Zephyr Cove
+89449	NV	Stateline
+89450	NV	Incline Village
+89451	NV	Incline Village
+89452	NV	Incline Village
+89496	NV	Fallon
+89501	NV	Reno
+89502	NV	Reno
+89503	NV	Reno
+89504	NV	Reno
+89505	NV	Reno
+89506	NV	Reno
+89507	NV	Reno
+89509	NV	Reno
+89510	NV	Reno
+89511	NV	Reno
+89512	NV	Reno
+89513	NV	Reno
+89515	NV	Reno
+89520	NV	Reno
+89523	NV	Reno
+89533	NV	Reno
+89550	NV	Reno
+89557	NV	Reno
+89564	NV	Reno
+89570	NV	Reno
+89595	NV	Reno
+89599	NV	Reno
+89701	NV	Carson City
+89702	NV	Carson City
+89703	NV	Carson City
+89704	NV	Washoe Valley
+89705	NV	Carson City
+89706	NV	Carson City
+89710	NV	Carson City
+89711	NV	Carson City
+89712	NV	Carson City
+89713	NV	Carson City
+89714	NV	Carson City
+89721	NV	Carson City
+89801	NV	Elko
+89802	NV	Elko
+89803	NV	Elko
+89820	NV	Battle Mountain
+89821	NV	Crescent Valley
+89822	NV	Carlin
+89823	NV	Deeth
+89824	NV	Halleck
+89825	NV	Jackpot
+89826	NV	Jarbidge
+89828	NV	Lamoille
+89830	NV	Montello
+89831	NV	Mountain City
+89832	NV	Owyhee
+89833	NV	Ruby Valley
+89834	NV	Tuscarora
+89835	NV	Wells
+89883	NV	West Wendover
