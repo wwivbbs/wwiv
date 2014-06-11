@@ -85,6 +85,7 @@ int verify_inst_dirs(configoverrec *co, int inst);
 void read_user(unsigned int un, userrec *u);
 void write_user(unsigned int un, userrec *u);
 int GetNextSelectionPosition( int nMin, int nMax, int nCurrentPos, int nReturnCode );
+void exit_init(int level);
 
 /* File: init2.cpp */
 
