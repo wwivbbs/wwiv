@@ -132,146 +132,146 @@
 #define INI_STR_EXEC_USE_WAIT_FOR_IDLE  129
 #define INI_STR_EXEC_CHILD_WAIT_TIME    130
 #define INI_STR_EXEC_WAIT_FOR_IDLE_TIME 131
-#define INI_STR_NEW_SCAN_AT_LOGIN		132
+#define INI_STR_NEW_SCAN_AT_LOGIN   132
 
 
 static const char* INI_OPTIONS_ARRAY[] = {
-	"// entry #0.. ignore *",   // 0
-	"//---SYSTEM OPTIONS---*",
-	"SPAWNOPT",
-	"NUCOLOR",
-	"NUCOLORBW",
-	"TOPCOLOR",                 // 5
-	"F1COLOR",
-	"EDITLINECOLOR",
-	"CHATSELCOLOR",
-	"MSG_COLOR",
-	"",                         // 10
-	"",
-	"",
-	"//---SYSTEM COMMANDS---*",
-	"TERMINAL_CMD",
-	"EXECUTE_CMD",              // 15
-	"UPLOAD_CMD",
-	"BEGINDAY_CMD",
-	"NEWUSER_CMD",
-	"LOGON_CMD",
-	"LOGOFF_CMD",               // 20
-	"VSCAN_CMD",
-	"",
-	"",
-	"//---NETWORK SETTINGS---*",
-	"NET_CLEANUP_CMD1",         // 25
-	"NET_CLEANUP_CMD2",
-	"NET_CALLOUT",
-	"FIDO_PROCESS",
-	"",
-	"",                         // 30
-	"",
-	"//---SYSTEM SETTINGS---*",
-	"FORCE_FBACK",
-	"FORCE_NEWUSER",
-	"FORCE_SCAN",               // 35
-	"FORCE_SCAN_SUBNUM",
-	"CHECK_HANGUP",
-	"HANGUP_DUP_PHONES",
-	"POSTTIME_COMPENS",
-	"SHOW_HIER",                // 40
-	"IDZ_DESC",
-	"SETLDATE",
-	"NEW_CHATSOUND",
-	"SLASH_SZ",
-	"READ_CD_IDZ",              // 45
-	"FSED_EXT_DESC",
-	"FAST_TAG_RELIST",
-	"MAIL_PROMPT",
-	"SHOW_CITY_ST",
-	"LOCAL_SYSOP",              // 50
-	"2WAY_CHAT",
-	"OFF_HOOK",
-	"TITLEBAR",
-	"LOG_DOWNLOADS",
-	"CLOSE_XFER",               // 55
-	"ALL_UL_TO_SYSOP",
-	"NO_EASY_DL",
-	"NEW_EXTRACT",
-	"FAST_SEARCH",
-	"USER_REGISTRATION",        // 60
-	"MSG_TAG",
-	"CHAIN_REG",
-	"CAN_SAVE_SSM",
-	"EXTRA_COLOR",
-	"BEEP_CHAT",                // 65
-	"TWO_COLOR_CHAT",
-	"ALLOW_ALIASES",
-	"USE_LIST",
-	"FREE_PHONE",
-	"EXTENDED_USERINFO",        // 70
-	"NEWUSER_MIN",
-	"ALLOW_CC_BCC",
-	"THREAD_SUBS",
-	"DISABLE_PD",
-	"MAIL_WHO_LEN",             // 75
-	"ATTACH_DIR",
-	"ENABLE_PIPES",
-	"ENABLE_MCI",
-	"24HR_CLOCK",
-	"",                         // 80
-	"",
-	"",
-	"//---SYSTEM MAXIMUMS---*",
-	"MAX_BATCH",
-	"MAX_EXTEND_LINES",         // 85
-	"MAX_CHAINS",
-	"MAX_GFILESEC",
-	"RATIO",
-	"",
-	"",                         // 90
-	"//---CALLOUT/WFC---*",
-	"CALLOUT_ANSI",
-	"CALLOUT_COLOR",
-	"CALLOUT_HIGHLIGHT",
-	"CALLOUT_NORMAL",           // 95
-	"CALLOUT_COLOR_TEXT",
-	"WFC_SCREEN",
-	"SCREEN_SAVER_TIME",
-	"WFC_DRIVES",
-	"",                         // 100
-	"",
-	"//---ASV/CALLBACK SETTINGS---*",
-	"USE_SIMPLE_ASV",
-	"SIMPLE_ASV",
-	"USE_ADVANCED_ASV",         // 100
-	"ADVANCED_ASV",
-	"USE_CALLBACK",
-	"CALLBACK",
-	"USE_VOICE_VAL",
-	"AUTO_USER_PURGE",          // 110
-	"NO_PURGE_SL",
-	"NO_PURGE_SL",
-	"",
-	"",
-	"",							// 115
-	"",
-	"",
-	"",
-	"",
-	"",							// 120
-	"",
-	"",
-	"",
-	"",
-	"//--- New WWIV 5.0 Settings ---", // 125
-	"BEGINDAYNODENUMBER",       // 126
-	"INTERNALZMODEM",			// 127
-	"EXEC_LOGSYNCFOSS",			// 128
-	"EXEC_USECWAITFORIDLE",		// 129
-	"EXEC_CHILDWAITTIME",		// 130
-	"EXEC_WAITFORIDLETIME",		// 131
-	"NEW_SCAN_AT_LOGIN",		// 132
-	NULL,
-	NULL
+  "// entry #0.. ignore *",   // 0
+  "//---SYSTEM OPTIONS---*",
+  "SPAWNOPT",
+  "NUCOLOR",
+  "NUCOLORBW",
+  "TOPCOLOR",                 // 5
+  "F1COLOR",
+  "EDITLINECOLOR",
+  "CHATSELCOLOR",
+  "MSG_COLOR",
+  "",                         // 10
+  "",
+  "",
+  "//---SYSTEM COMMANDS---*",
+  "TERMINAL_CMD",
+  "EXECUTE_CMD",              // 15
+  "UPLOAD_CMD",
+  "BEGINDAY_CMD",
+  "NEWUSER_CMD",
+  "LOGON_CMD",
+  "LOGOFF_CMD",               // 20
+  "VSCAN_CMD",
+  "",
+  "",
+  "//---NETWORK SETTINGS---*",
+  "NET_CLEANUP_CMD1",         // 25
+  "NET_CLEANUP_CMD2",
+  "NET_CALLOUT",
+  "FIDO_PROCESS",
+  "",
+  "",                         // 30
+  "",
+  "//---SYSTEM SETTINGS---*",
+  "FORCE_FBACK",
+  "FORCE_NEWUSER",
+  "FORCE_SCAN",               // 35
+  "FORCE_SCAN_SUBNUM",
+  "CHECK_HANGUP",
+  "HANGUP_DUP_PHONES",
+  "POSTTIME_COMPENS",
+  "SHOW_HIER",                // 40
+  "IDZ_DESC",
+  "SETLDATE",
+  "NEW_CHATSOUND",
+  "SLASH_SZ",
+  "READ_CD_IDZ",              // 45
+  "FSED_EXT_DESC",
+  "FAST_TAG_RELIST",
+  "MAIL_PROMPT",
+  "SHOW_CITY_ST",
+  "LOCAL_SYSOP",              // 50
+  "2WAY_CHAT",
+  "OFF_HOOK",
+  "TITLEBAR",
+  "LOG_DOWNLOADS",
+  "CLOSE_XFER",               // 55
+  "ALL_UL_TO_SYSOP",
+  "NO_EASY_DL",
+  "NEW_EXTRACT",
+  "FAST_SEARCH",
+  "USER_REGISTRATION",        // 60
+  "MSG_TAG",
+  "CHAIN_REG",
+  "CAN_SAVE_SSM",
+  "EXTRA_COLOR",
+  "BEEP_CHAT",                // 65
+  "TWO_COLOR_CHAT",
+  "ALLOW_ALIASES",
+  "USE_LIST",
+  "FREE_PHONE",
+  "EXTENDED_USERINFO",        // 70
+  "NEWUSER_MIN",
+  "ALLOW_CC_BCC",
+  "THREAD_SUBS",
+  "DISABLE_PD",
+  "MAIL_WHO_LEN",             // 75
+  "ATTACH_DIR",
+  "ENABLE_PIPES",
+  "ENABLE_MCI",
+  "24HR_CLOCK",
+  "",                         // 80
+  "",
+  "",
+  "//---SYSTEM MAXIMUMS---*",
+  "MAX_BATCH",
+  "MAX_EXTEND_LINES",         // 85
+  "MAX_CHAINS",
+  "MAX_GFILESEC",
+  "RATIO",
+  "",
+  "",                         // 90
+  "//---CALLOUT/WFC---*",
+  "CALLOUT_ANSI",
+  "CALLOUT_COLOR",
+  "CALLOUT_HIGHLIGHT",
+  "CALLOUT_NORMAL",           // 95
+  "CALLOUT_COLOR_TEXT",
+  "WFC_SCREEN",
+  "SCREEN_SAVER_TIME",
+  "WFC_DRIVES",
+  "",                         // 100
+  "",
+  "//---ASV/CALLBACK SETTINGS---*",
+  "USE_SIMPLE_ASV",
+  "SIMPLE_ASV",
+  "USE_ADVANCED_ASV",         // 100
+  "ADVANCED_ASV",
+  "USE_CALLBACK",
+  "CALLBACK",
+  "USE_VOICE_VAL",
+  "AUTO_USER_PURGE",          // 110
+  "NO_PURGE_SL",
+  "NO_PURGE_SL",
+  "",
+  "",
+  "",             // 115
+  "",
+  "",
+  "",
+  "",
+  "",             // 120
+  "",
+  "",
+  "",
+  "",
+  "//--- New WWIV 5.0 Settings ---", // 125
+  "BEGINDAYNODENUMBER",       // 126
+  "INTERNALZMODEM",     // 127
+  "EXEC_LOGSYNCFOSS",     // 128
+  "EXEC_USECWAITFORIDLE",   // 129
+  "EXEC_CHILDWAITTIME",   // 130
+  "EXEC_WAITFORIDLETIME",   // 131
+  "NEW_SCAN_AT_LOGIN",    // 132
+  NULL,
+  NULL
 };
 
 
-#endif	// __INCLUDED_XINITINI_H__
+#endif  // __INCLUDED_XINITINI_H__

@@ -50,74 +50,74 @@ using std::string;
 //  -3      = Remote Command
 //  -4      = Unknown Special Login
 //
-int finduser( const std::string searchString ) {
-	WUser user;
+int finduser(const std::string searchString) {
+  WUser user;
 
-	guest_user = false;
-	GetApplication()->GetUserManager()->SetUserWritesAllowed( true );
-	if ( searchString == "NEW" ) {
-		return -1;
-	}
-	if ( searchString == "!-@NETWORK@-!" ) {
-		return -2;
-	}
-	if ( searchString == "!-@REMOTE@-!" ) {
-		return -3;
-	}
-	int nUserNumber = atoi( searchString.c_str() );
-	if ( nUserNumber > 0 ) {
-		GetApplication()->GetUserManager()->ReadUser( &user, nUserNumber );
-		if ( user.IsUserDeleted() ) {
-			//printf( "DEBUG: User %s is deleted!\r\n", user.GetName() );
-			return 0;
-		}
-		return nUserNumber;
-	}
-	nUserNumber = GetApplication()->GetUserManager()->FindUser(searchString);
-	if (nUserNumber == 0L) {
-		return 0;
-	} else {
-		GetApplication()->GetUserManager()->ReadUser(&user, nUserNumber);
-		if ( user.IsUserDeleted() ) {
-			return 0;
-		} else {
-			if ( IsEqualsIgnoreCase( user.GetName(), "GUEST" ) ) {
-				guest_user = true;
-				GetApplication()->GetUserManager()->SetUserWritesAllowed( false );
-			}
-			return nUserNumber;
-		}
-	}
+  guest_user = false;
+  GetApplication()->GetUserManager()->SetUserWritesAllowed(true);
+  if (searchString == "NEW") {
+    return -1;
+  }
+  if (searchString == "!-@NETWORK@-!") {
+    return -2;
+  }
+  if (searchString == "!-@REMOTE@-!") {
+    return -3;
+  }
+  int nUserNumber = atoi(searchString.c_str());
+  if (nUserNumber > 0) {
+    GetApplication()->GetUserManager()->ReadUser(&user, nUserNumber);
+    if (user.IsUserDeleted()) {
+      //printf( "DEBUG: User %s is deleted!\r\n", user.GetName() );
+      return 0;
+    }
+    return nUserNumber;
+  }
+  nUserNumber = GetApplication()->GetUserManager()->FindUser(searchString);
+  if (nUserNumber == 0L) {
+    return 0;
+  } else {
+    GetApplication()->GetUserManager()->ReadUser(&user, nUserNumber);
+    if (user.IsUserDeleted()) {
+      return 0;
+    } else {
+      if (IsEqualsIgnoreCase(user.GetName(), "GUEST")) {
+        guest_user = true;
+        GetApplication()->GetUserManager()->SetUserWritesAllowed(false);
+      }
+      return nUserNumber;
+    }
+  }
 }
 
 
 // Takes user name/handle as parameter, and returns user number, if found,
 // else returns 0.
-int finduser1( const string searchString ) {
-	if ( searchString.empty() ) {
-		return 0;
-	}
-	int nFindUserNum = finduser( searchString );
-	if ( nFindUserNum > 0 ) {
-		return nFindUserNum;
-	}
+int finduser1(const string searchString) {
+  if (searchString.empty()) {
+    return 0;
+  }
+  int nFindUserNum = finduser(searchString);
+  if (nFindUserNum > 0) {
+    return nFindUserNum;
+  }
 
-	string userNamePart = searchString;
-	StringUpperCase(userNamePart);
-	for ( int i1 = 0; i1 < GetApplication()->GetStatusManager()->GetUserCount(); i1++ ) {
-		if ( strstr( reinterpret_cast<char*>( smallist[i1].name ), userNamePart.c_str()) != NULL ) {
-			int nCurrentUserNum = smallist[i1].number;
-			WUser user;
-			GetApplication()->GetUserManager()->ReadUser( &user, nCurrentUserNum );
-			GetSession()->bout << "|#5Do you mean " << user.GetUserNameAndNumber( nCurrentUserNum ) << " (Y/N/Q)? ";
-			char ch = ynq();
-			if ( ch == 'Y' ) {
-				return nCurrentUserNum;
-			}
-			if ( ch == 'Q' ) {
-				return 0;
-			}
-		}
-	}
-	return 0;
+  string userNamePart = searchString;
+  StringUpperCase(userNamePart);
+  for (int i1 = 0; i1 < GetApplication()->GetStatusManager()->GetUserCount(); i1++) {
+    if (strstr(reinterpret_cast<char*>(smallist[i1].name), userNamePart.c_str()) != NULL) {
+      int nCurrentUserNum = smallist[i1].number;
+      WUser user;
+      GetApplication()->GetUserManager()->ReadUser(&user, nCurrentUserNum);
+      GetSession()->bout << "|#5Do you mean " << user.GetUserNameAndNumber(nCurrentUserNum) << " (Y/N/Q)? ";
+      char ch = ynq();
+      if (ch == 'Y') {
+        return nCurrentUserNum;
+      }
+      if (ch == 'Q') {
+        return 0;
+      }
+    }
+  }
+  return 0;
 }

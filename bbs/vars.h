@@ -39,43 +39,43 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-__EXTRN__ char	ansistr[81],
-           charbuffer[ 255 ],
-           dc[81],
-           dcd[81],
-           g_szDownloadFileName[MAX_PATH],
-           g_szDSZLogFileName[MAX_PATH],
-           dtc[81],
-           g_szExtDescrFileName[MAX_PATH],
-           endofline[81],
-           irt[81],
-           irt_name[205],
-           irt_sub[81],
-           net_email_name[205],
-           odc[81],
-           *quotes_nrm,
-           *quotes_ind,
-           str_no[81],
-           str_pause[81],
-           str_quit[81],
-           str_yes[81],
-           tc[81];
+__EXTRN__ char  ansistr[81],
+          charbuffer[ 255 ],
+          dc[81],
+          dcd[81],
+          g_szDownloadFileName[MAX_PATH],
+          g_szDSZLogFileName[MAX_PATH],
+          dtc[81],
+          g_szExtDescrFileName[MAX_PATH],
+          endofline[81],
+          irt[81],
+          irt_name[205],
+          irt_sub[81],
+          net_email_name[205],
+          odc[81],
+          *quotes_nrm,
+          *quotes_ind,
+          str_no[81],
+          str_pause[81],
+          str_quit[81],
+          str_yes[81],
+          tc[81];
 
 __EXTRN__ unsigned char  checksum;
 
-__EXTRN__ int	ansiptr,
-            bquote,
-            change_color,
-            charbufferpointer,
-            chatting,
-            defscreenbottom,
-            do_event,
-            equote,
-            fsenttoday,
-            fwaiting,
-            lines_listed,
-            questused[20],
-            nsp;
+__EXTRN__ int ansiptr,
+          bquote,
+          change_color,
+          charbufferpointer,
+          chatting,
+          defscreenbottom,
+          do_event,
+          equote,
+          fsenttoday,
+          fwaiting,
+          lines_listed,
+          questused[20],
+          nsp;
 
 __EXTRN__ bool  bChatLine,
           g_preloaded,
@@ -119,12 +119,12 @@ modem_flag,
 modem_mode,
 modem_speed;
 
-__EXTRN__ int	curatr,
-            dirconfnum,
-            subconfnum;
+__EXTRN__ int curatr,
+          dirconfnum,
+          subconfnum;
 
-__EXTRN__ int	g_num_listed,
-            timelastchar1;
+__EXTRN__ int g_num_listed,
+          timelastchar1;
 
 __EXTRN__ time_t nscandate;
 

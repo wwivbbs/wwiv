@@ -23,23 +23,23 @@
 #pragma pack(push, 1)
 
 struct side_menu_colors {
-	int normal_highlight;   // used to all be unsigned.
-	int normal_menu_item;
-	int current_highlight;
-	int current_menu_item;
+  int normal_highlight;   // used to all be unsigned.
+  int normal_menu_item;
+  int current_highlight;
+  int current_menu_item;
 };
 
 
 
 struct search_record {
-	char filemask[13];
+  char filemask[13];
 
-	unsigned long nscandate;
+  unsigned long nscandate;
 
-	char search[81];
+  char search[81];
 
-	int alldirs;
-	int search_extended;
+  int alldirs;
+  int search_extended;
 };
 
 
@@ -51,18 +51,18 @@ struct search_record {
 
 
 struct user_config {
-	char name[31];          // verify against a user
+  char name[31];          // verify against a user
 
-	unsigned long status;
+  unsigned long status;
 
-	unsigned long lp_options;
-	unsigned char lp_colors[32];
+  unsigned long lp_options;
+  unsigned char lp_colors[32];
 
-	char szMenuSet[9];   // Selected AMENU set to use
-	char cHotKeys;       // Use hot keys in AMENU
-	char cMenuType;      // Use pulldown or regular menus
+  char szMenuSet[9];   // Selected AMENU set to use
+  char cHotKeys;       // Use hot keys in AMENU
+  char cMenuType;      // Use pulldown or regular menus
 
-	char junk[118];   // AMENU took 11 bytes from here
+  char junk[118];   // AMENU took 11 bytes from here
 };
 
 #pragma pack(pop)

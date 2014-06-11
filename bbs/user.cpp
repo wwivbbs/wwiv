@@ -34,20 +34,20 @@
 /*
 * Checks status of given userrec to see if conferencing is turned on.
 */
-bool okconf( WUser *pUser ) {
-	if ( g_flags & g_flag_disable_conf ) {
-		return false;
-	}
+bool okconf(WUser *pUser) {
+  if (g_flags & g_flag_disable_conf) {
+    return false;
+  }
 
-	return pUser->HasStatusFlag( WUser::conference );
+  return pUser->HasStatusFlag(WUser::conference);
 }
 
 
 
-void add_ass( int nNumPoints, const char *pszReason ) {
-	sysoplog(  "***" );
-	sysoplogf( "*** ASS-PTS: %d, Reason: [%s]", nNumPoints, pszReason );
-	GetSession()->GetCurrentUser()->IncrementAssPoints( nNumPoints );
+void add_ass(int nNumPoints, const char *pszReason) {
+  sysoplog("***");
+  sysoplogf("*** ASS-PTS: %d, Reason: [%s]", nNumPoints, pszReason);
+  GetSession()->GetCurrentUser()->IncrementAssPoints(nNumPoints);
 }
 
 

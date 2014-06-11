@@ -37,4 +37,4 @@
 
 #include "filenames.h"
 
-#endif	// __INCLUDED_WWIV_H__
+#endif  // __INCLUDED_WWIV_H__

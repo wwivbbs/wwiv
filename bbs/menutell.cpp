@@ -36,137 +36,139 @@ static char *Strs;
 static char **StrIdx;
 int iNumStrs;
 
-void print(int color, char *fmt,...) {
-	va_list ap;
-	char s[512];
+void print(int color, char *fmt, ...) {
+  va_list ap;
+  char s[512];
 
-	va_start(ap, fmt);
-	vsprintf(s, fmt, ap);
-	va_end(ap);
+  va_start(ap, fmt);
+  vsprintf(s, fmt, ap);
+  va_end(ap);
 
-	fputs(" þ ", stdout);
-	puts(s);
-	color = color;
+  fputs(" þ ", stdout);
+  puts(s);
+  color = color;
 }
 
 void stripnl(char *instr) {
-	unsigned int i;
+  unsigned int i;
 
-	if (strlen(instr) == 0)
-		return;
+  if (strlen(instr) == 0) {
+    return;
+  }
 
-	i = 0;
-	do {
-		if ((instr[i] == '\n') || (instr[i] == '\r')) {
-			instr[i] = '\0';
-		}
-		i++;
-	} while (i < strlen(instr));
+  i = 0;
+  do {
+    if ((instr[i] == '\n') || (instr[i] == '\r')) {
+      instr[i] = '\0';
+    }
+    i++;
+  } while (i < strlen(instr));
 }
 
 void ReadChainText() {
-	FILE *fp;
-	char szTemp[MAX_PATH];
-	int iX;
+  FILE *fp;
+  char szTemp[MAX_PATH];
+  int iX;
 
-	sprintf(szTemp, "CHAIN.TXT");
-	fp = fopen(szTemp, "rt");
-	if (!fp) {
-		print(LIGHTRED, "");
-		print(LIGHTRED, "ERR: Unable to open chain.txt");
-		exit(1);
-	}
-	for (iX = 0; iX <= 17; iX++) {
-		fgets(datadir, 80, fp);
-	}
+  sprintf(szTemp, "CHAIN.TXT");
+  fp = fopen(szTemp, "rt");
+  if (!fp) {
+    print(LIGHTRED, "");
+    print(LIGHTRED, "ERR: Unable to open chain.txt");
+    exit(1);
+  }
+  for (iX = 0; iX <= 17; iX++) {
+    fgets(datadir, 80, fp);
+  }
 
-	stripnl(datadir);
+  stripnl(datadir);
 }
 
 void ReadMenuSetup() {
 
-	if (Strs == NULL) {
-		char szTemp[MAX_PATH];
-		FILE *fp;
-		int iAmt, *index, iLen, iX;
+  if (Strs == NULL) {
+    char szTemp[MAX_PATH];
+    FILE *fp;
+    int iAmt, *index, iLen, iX;
 
-		sprintf(szTemp, "%s%s", datadir, MENUCMDS_DAT);
-		fp = fopen(szTemp, "rb");
-		if (!fp) {
-			print(LIGHTRED, "");
-			print(LIGHTRED, "ERR: Unable to open menucmds.dat");
-			exit(1);
-		}
-		fseek(fp, 0, SEEK_END);
-		iLen = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
+    sprintf(szTemp, "%s%s", datadir, MENUCMDS_DAT);
+    fp = fopen(szTemp, "rb");
+    if (!fp) {
+      print(LIGHTRED, "");
+      print(LIGHTRED, "ERR: Unable to open menucmds.dat");
+      exit(1);
+    }
+    fseek(fp, 0, SEEK_END);
+    iLen = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
-		fread(&iAmt, 2, 1, fp);
-		if (iAmt == 0) {
-			print(LIGHTRED, "");
-			print(LIGHTRED, "ERR: No menu strings found in menucmds.dat");
-			exit(1);
-		}
-		iNumStrs = iAmt;
+    fread(&iAmt, 2, 1, fp);
+    if (iAmt == 0) {
+      print(LIGHTRED, "");
+      print(LIGHTRED, "ERR: No menu strings found in menucmds.dat");
+      exit(1);
+    }
+    iNumStrs = iAmt;
 
-		index = (int *)bbsmalloc(sizeof(int) * iAmt);
-		fread(index, 2, iAmt, fp);
-		iLen -= ftell(fp);
-		Strs = (char *)bbsmalloc(iLen);
-		StrIdx = (char **)bbsmalloc(sizeof(char **) * iAmt);
-		fread(Strs, iLen, 1, fp);
-		fclose(fp);
+    index = (int *)bbsmalloc(sizeof(int) * iAmt);
+    fread(index, 2, iAmt, fp);
+    iLen -= ftell(fp);
+    Strs = (char *)bbsmalloc(iLen);
+    StrIdx = (char **)bbsmalloc(sizeof(char **) * iAmt);
+    fread(Strs, iLen, 1, fp);
+    fclose(fp);
 
-		for (iX = 0; iX < iAmt; iX++)
-			StrIdx[iX] = Strs + index[iX];
+    for (iX = 0; iX < iAmt; iX++) {
+      StrIdx[iX] = Strs + index[iX];
+    }
 
-		free(index);
-	}
+    free(index);
+  }
 }
 
 void Usage() {
-	/* Long line split to avoid line wrap */
-	print(LIGHTGREEN, "");
-	print(LIGHTGREEN, "Purpose:");
-	print(LIGHTGREEN, "");
-	print(LIGHTCYAN, "   Program to give you the string number of a"
-	      " menu command in MENUCMDS.DAT");
-	print(LIGHTCYAN, "Makes modding the Asylum Menus a lot easier."
-	      "  If you've ever added a new");
-	print(LIGHTCYAN, "command to MENUCMDS.DAT (and MENU.C) you'll probably"
-	      " find this useful.");
-	print(LIGHTGREEN, "");
-	print(LIGHTGREEN, "Usage:");
-	print(LIGHTGREEN, "");
-	print(LIGHTCYAN, "   MenuTell.exe <MenuStringVar>");
-	exit(1);
+  /* Long line split to avoid line wrap */
+  print(LIGHTGREEN, "");
+  print(LIGHTGREEN, "Purpose:");
+  print(LIGHTGREEN, "");
+  print(LIGHTCYAN, "   Program to give you the string number of a"
+        " menu command in MENUCMDS.DAT");
+  print(LIGHTCYAN, "Makes modding the Asylum Menus a lot easier."
+        "  If you've ever added a new");
+  print(LIGHTCYAN, "command to MENUCMDS.DAT (and MENU.C) you'll probably"
+        " find this useful.");
+  print(LIGHTGREEN, "");
+  print(LIGHTGREEN, "Usage:");
+  print(LIGHTGREEN, "");
+  print(LIGHTCYAN, "   MenuTell.exe <MenuStringVar>");
+  exit(1);
 }
 
 int main(int argc, char *argv[]) {
-	int retval = 0;
-	int strnum = -1;
-	int iX;
+  int retval = 0;
+  int strnum = -1;
+  int iX;
 
-	print(LIGHTBLUE, "MenuTell v%d.%02d for %s", VER / 256, VER % 256,
-	      wwiv_version);
-	ReadChainText();
-	ReadMenuSetup();
-	if (argc < 2) {
-		Usage();
-	}
-	for (iX = 0; iX <= iNumStrs; iX++) {
-		if (!WWIV_STRICMP(StrIdx[iX], argv[1])) {
-			strnum = iX;
-		}
-	}
+  print(LIGHTBLUE, "MenuTell v%d.%02d for %s", VER / 256, VER % 256,
+        wwiv_version);
+  ReadChainText();
+  ReadMenuSetup();
+  if (argc < 2) {
+    Usage();
+  }
+  for (iX = 0; iX <= iNumStrs; iX++) {
+    if (!WWIV_STRICMP(StrIdx[iX], argv[1])) {
+      strnum = iX;
+    }
+  }
 
-	if (strnum < 0) {
-		print(LIGHTRED, "");
-		print(LIGHTRED, "Unable to find string %s in MENUCMDS.DAT", argv[1]);
-		retval = 1;
-	} else {
-		print(LIGHTCYAN, "");
-		print(LIGHTCYAN, "%s = StrIdx[%d]", StrIdx[strnum], strnum);
-	}
-	return (retval);
+  if (strnum < 0) {
+    print(LIGHTRED, "");
+    print(LIGHTRED, "Unable to find string %s in MENUCMDS.DAT", argv[1]);
+    retval = 1;
+  } else {
+    print(LIGHTCYAN, "");
+    print(LIGHTCYAN, "%s = StrIdx[%d]", StrIdx[strnum], strnum);
+  }
+  return (retval);
 }
