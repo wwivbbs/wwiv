@@ -1,0 +1,4592 @@
+10001	NY	New York
+10002	NY	New York
+10003	NY	New York
+10004	NY	New York
+10005	NY	New York
+10006	NY	New York
+10007	NY	New York
+10008	NY	New York
+10009	NY	New York
+10010	NY	New York
+10011	NY	New York
+10012	NY	New York
+10013	NY	New York
+10014	NY	New York
+10015	NY	New York
+10016	NY	New York
+10017	NY	New York
+10018	NY	New York
+10019	NY	New York
+10020	NY	New York
+10021	NY	New York
+10022	NY	New York
+10023	NY	New York
+10024	NY	New York
+10025	NY	New York
+10026	NY	New York
+10027	NY	New York
+10028	NY	New York
+10029	NY	New York
+10030	NY	New York
+10031	NY	New York
+10032	NY	New York
+10033	NY	New York
+10034	NY	New York
+10035	NY	New York
+10036	NY	New York
+10037	NY	New York
+10038	NY	New York
+10039	NY	New York
+10040	NY	New York
+10041	NY	New York
+10043	NY	New York
+10044	NY	New York
+10045	NY	New York
+10046	NY	New York
+10047	NY	New York
+10048	NY	New York
+10055	NY	New York
+10060	NY	New York
+10072	NY	New York
+10079	NY	New York
+10080	NY	New York
+10081	NY	New York
+10082	NY	New York
+10087	NY	New York
+10090	NY	New York
+10094	NY	New York
+10095	NY	New York
+10096	NY	New York
+10098	NY	New York
+10099	NY	New York
+10101	NY	New York
+10102	NY	New York
+10103	NY	New York
+10104	NY	New York
+10105	NY	New York
+10106	NY	New York
+10107	NY	New York
+10108	NY	New York
+10109	NY	New York
+10110	NY	New York
+10111	NY	New York
+10112	NY	New York
+10113	NY	New York
+10114	NY	New York
+10115	NY	New York
+10116	NY	New York
+10117	NY	New York
+10118	NY	New York
+10119	NY	New York
+10120	NY	New York
+10121	NY	New York
+10122	NY	New York
+10123	NY	New York
+10124	NY	New York
+10125	NY	New York
+10126	NY	New York
+10128	NY	New York
+10129	NY	New York
+10130	NY	New York
+10131	NY	New York
+10132	NY	New York
+10133	NY	New York
+10138	NY	New York
+10149	NY	New York
+10150	NY	New York
+10151	NY	New York
+10152	NY	New York
+10153	NY	New York
+10154	NY	New York
+10155	NY	New York
+10156	NY	New York
+10157	NY	New York
+10158	NY	New York
+10159	NY	New York
+10160	NY	New York
+10161	NY	New York
+10162	NY	New York
+10163	NY	New York
+10164	NY	New York
+10165	NY	New York
+10166	NY	New York
+10167	NY	New York
+10168	NY	New York
+10169	NY	New York
+10170	NY	New York
+10171	NY	New York
+10172	NY	New York
+10173	NY	New York
+10174	NY	New York
+10175	NY	New York
+10176	NY	New York
+10177	NY	New York
+10178	NY	New York
+10184	NY	New York
+10185	NY	New York
+10196	NY	New York
+10197	NY	New York
+10199	NY	New York
+10203	NY	New York
+10211	NY	New York
+10212	NY	New York
+10213	NY	New York
+10242	NY	New York
+10249	NY	New York
+10256	NY	New York
+10257	NY	New York
+10258	NY	New York
+10259	NY	New York
+10260	NY	New York
+10261	NY	New York
+10265	NY	New York
+10268	NY	New York
+10269	NY	New York
+10270	NY	New York
+10271	NY	New York
+10272	NY	New York
+10273	NY	New York
+10274	NY	New York
+10275	NY	New York
+10276	NY	New York
+10277	NY	New York
+10278	NY	New York
+10279	NY	New York
+10280	NY	New York
+10281	NY	New York
+10282	NY	New York
+10285	NY	New York
+10286	NY	New York
+10292	NY	New York
+10301	NY	Staten Island
+10302	NY	Staten Island
+10303	NY	Staten Island
+10304	NY	Staten Island
+10305	NY	Staten Island
+10306	NY	Staten Island
+10307	NY	Staten Island
+10308	NY	Staten Island
+10309	NY	Staten Island
+10310	NY	Staten Island
+10311	NY	Staten Island
+10312	NY	Staten Island
+10313	NY	Staten Island
+10314	NY	Staten Island
+10451	NY	Bronx
+10452	NY	Bronx
+10453	NY	Bronx
+10454	NY	Bronx
+10455	NY	Bronx
+10456	NY	Bronx
+10457	NY	Bronx
+10458	NY	Bronx
+10459	NY	Bronx
+10460	NY	Bronx
+10461	NY	Bronx
+10462	NY	Bronx
+10463	NY	Bronx
+10464	NY	Bronx
+10465	NY	Bronx
+10466	NY	Bronx
+10467	NY	Bronx
+10468	NY	Bronx
+10469	NY	Bronx
+10470	NY	Bronx
+10471	NY	Bronx
+10472	NY	Bronx
+10473	NY	Bronx
+10474	NY	Bronx
+10475	NY	Bronx
+10499	NY	Bronx
+10501	NY	Amawalk
+10502	NY	Ardsley
+10503	NY	Ardsley On Hudson
+10504	NY	Armonk
+10505	NY	Baldwin Place
+10506	NY	Bedford
+10507	NY	Bedford Hills
+10509	NY	Brewster
+10510	NY	Briarcliff Manor
+10511	NY	Buchanan
+10512	NY	Carmel
+10514	NY	Chappaqua
+10516	NY	Cold Spring
+10517	NY	Crompond
+10518	NY	Cross River
+10519	NY	Croton Falls
+10520	NY	Croton On Hudson
+10521	NY	Croton On Hudson
+10522	NY	Dobbs Ferry
+10523	NY	Elmsford
+10524	NY	Garrison
+10526	NY	Goldens Bridge
+10527	NY	Granite Springs
+10528	NY	Harrison
+10530	NY	Hartsdale
+10532	NY	Hawthorne
+10533	NY	Irvington
+10535	NY	Jefferson Valley
+10536	NY	Katonah
+10537	NY	Lake Peekskill
+10538	NY	Larchmont
+10540	NY	Lincolndale
+10541	NY	Mahopac
+10542	NY	Mahopac Falls
+10543	NY	Mamaroneck
+10545	NY	Maryknoll
+10546	NY	Millwood
+10547	NY	Mohegan Lake
+10548	NY	Montrose
+10549	NY	Mount Kisco
+10550	NY	Mount Vernon
+10551	NY	Mount Vernon
+10552	NY	Mount Vernon
+10553	NY	Mount Vernon
+10557	NY	Mount Vernon
+10558	NY	Mount Vernon
+10559	NY	Mount Vernon
+10560	NY	North Salem
+10562	NY	Ossining
+10566	NY	Peekskill
+10570	NY	Pleasantville
+10571	NY	Pleasantville
+10572	NY	Pleasantville
+10573	NY	Port Chester
+10576	NY	Pound Ridge
+10577	NY	Purchase
+10578	NY	Purdys
+10579	NY	Putnam Valley
+10580	NY	Rye
+10581	NY	Rye
+10583	NY	Scarsdale
+10587	NY	Shenorock
+10588	NY	Shrub Oak
+10589	NY	Somers
+10590	NY	South Salem
+10591	NY	Tarrytown
+10594	NY	Thornwood
+10595	NY	Valhalla
+10596	NY	Verplanck
+10597	NY	Waccabuc
+10598	NY	Yorktown Heights
+10601	NY	White Plains
+10602	NY	White Plains
+10603	NY	White Plains
+10604	NY	White Plains
+10605	NY	White Plains
+10606	NY	White Plains
+10607	NY	White Plains
+10610	NY	White Plains
+10625	NY	White Plains
+10629	NY	White Plains
+10633	NY	White Plains
+10650	NY	White Plains
+10701	NY	Yonkers
+10702	NY	Yonkers
+10703	NY	Yonkers
+10704	NY	Yonkers
+10705	NY	Yonkers
+10706	NY	Hastings On Hudson
+10707	NY	Tuckahoe
+10708	NY	Bronxville
+10709	NY	Eastchester
+10710	NY	Yonkers
+10801	NY	New Rochelle
+10802	NY	New Rochelle
+10803	NY	Pelham
+10804	NY	New Rochelle
+10805	NY	New Rochelle
+10901	NY	Suffern
+10910	NY	Arden
+10911	NY	Bear Mountain
+10912	NY	Bellvale
+10913	NY	Blauvelt
+10914	NY	Blooming Grove
+10915	NY	Bullville
+10916	NY	Campbell Hall
+10917	NY	Central Valley
+10918	NY	Chester
+10919	NY	Circleville
+10920	NY	Congers
+10921	NY	Florida
+10922	NY	Fort Montgomery
+10923	NY	Garnerville
+10924	NY	Goshen
+10925	NY	Greenwood Lake
+10926	NY	Harriman
+10927	NY	Haverstraw
+10928	NY	Highland Falls
+10930	NY	Highland Mills
+10931	NY	Hillburn
+10932	NY	Howells
+10933	NY	Johnson
+10940	NY	Middletown
+10941	NY	Middletown
+10943	NY	Middletown
+10950	NY	Monroe
+10951	NY	Rockland M P C
+10952	NY	Monsey
+10953	NY	Mountainville
+10954	NY	Nanuet
+10956	NY	New City
+10958	NY	New Hampton
+10959	NY	New Milford
+10960	NY	Nyack
+10962	NY	Orangeburg
+10963	NY	Otisville
+10964	NY	Palisades
+10965	NY	Pearl River
+10968	NY	Piermont
+10969	NY	Pine Island
+10970	NY	Pomona
+10973	NY	Slate Hill
+10974	NY	Sloatsburg
+10975	NY	Southfields
+10976	NY	Sparkill
+10977	NY	Spring Valley
+10979	NY	Sterling Forest
+10980	NY	Stony Point
+10981	NY	Sugar Loaf
+10982	NY	Tallman
+10983	NY	Tappan
+10984	NY	Thiells
+10985	NY	Thompson Ridge
+10986	NY	Tomkins Cove
+10987	NY	Tuxedo Park
+10988	NY	Unionville
+10989	NY	Valley Cottage
+10990	NY	Warwick
+10992	NY	Washingtonville
+10993	NY	West Haverstraw
+10994	NY	West Nyack
+10995	NY	West Nyack
+10996	NY	West Point
+10997	NY	West Point
+10998	NY	Westtown
+11001	NY	Floral Park
+11002	NY	Floral Park
+11003	NY	Elmont
+11004	NY	Glen Oaks
+11005	NY	Floral Park
+11010	NY	Franklin Square
+11020	NY	Great Neck
+11021	NY	Great Neck
+11022	NY	Great Neck
+11023	NY	Great Neck
+11024	NY	Great Neck
+11025	NY	Great Neck
+11026	NY	Great Neck
+11027	NY	Great Neck
+11030	NY	Manhasset
+11040	NY	New Hyde Park
+11041	NY	New Hyde Park
+11042	NY	New Hyde Park
+11043	NY	New Hyde Park
+11044	NY	New Hyde Park
+11050	NY	Port Washington
+11051	NY	Port Washington
+11052	NY	Port Washington
+11053	NY	Port Washington
+11054	NY	Port Washington
+11055	NY	Port Washington
+11096	NY	Inwood
+11099	NY	New Hyde Park
+11101	NY	Long Island City
+11102	NY	Long Island City
+11103	NY	Long Island City
+11104	NY	Long Island City
+11105	NY	Long Island City
+11106	NY	Long Island City
+11120	NY	Long Island City
+11201	NY	Brooklyn
+11202	NY	Brooklyn
+11203	NY	Brooklyn
+11204	NY	Brooklyn
+11205	NY	Brooklyn
+11206	NY	Brooklyn
+11207	NY	Brooklyn
+11208	NY	Brooklyn
+11209	NY	Brooklyn
+11210	NY	Brooklyn
+11211	NY	Brooklyn
+11212	NY	Brooklyn
+11213	NY	Brooklyn
+11214	NY	Brooklyn
+11215	NY	Brooklyn
+11216	NY	Brooklyn
+11217	NY	Brooklyn
+11218	NY	Brooklyn
+11219	NY	Brooklyn
+11220	NY	Brooklyn
+11221	NY	Brooklyn
+11222	NY	Brooklyn
+11223	NY	Brooklyn
+11224	NY	Brooklyn
+11225	NY	Brooklyn
+11226	NY	Brooklyn
+11228	NY	Brooklyn
+11229	NY	Brooklyn
+11230	NY	Brooklyn
+11231	NY	Brooklyn
+11232	NY	Brooklyn
+11233	NY	Brooklyn
+11234	NY	Brooklyn
+11235	NY	Brooklyn
+11236	NY	Brooklyn
+11237	NY	Brooklyn
+11238	NY	Brooklyn
+11239	NY	Brooklyn
+11240	NY	Brooklyn
+11241	NY	Brooklyn
+11242	NY	Brooklyn
+11243	NY	Brooklyn
+11244	NY	Brooklyn
+11245	NY	Brooklyn
+11247	NY	Brooklyn
+11248	NY	Brooklyn
+11249	NY	Brooklyn
+11251	NY	Brooklyn
+11252	NY	Brooklyn
+11254	NY	Brooklyn
+11255	NY	Brooklyn
+11256	NY	Brooklyn
+11351	NY	Flushing
+11352	NY	Flushing
+11353	NY	Flushing
+11354	NY	Flushing
+11355	NY	Flushing
+11356	NY	Flushing
+11357	NY	Flushing
+11358	NY	Flushing
+11359	NY	Flushing
+11360	NY	Flushing
+11361	NY	Flushing
+11362	NY	Flushing
+11363	NY	Flushing
+11364	NY	Flushing
+11365	NY	Flushing
+11366	NY	Flushing
+11367	NY	Flushing
+11368	NY	Flushing
+11369	NY	Flushing
+11370	NY	Flushing
+11371	NY	Flushing
+11372	NY	Flushing
+11373	NY	Flushing
+11374	NY	Flushing
+11375	NY	Flushing
+11377	NY	Flushing
+11378	NY	Flushing
+11379	NY	Flushing
+11380	NY	Flushing
+11381	NY	Flushing
+11385	NY	Flushing
+11386	NY	Flushing
+11388	NY	Flushing
+11390	NY	Flushing
+11402	NY	Jamaica
+11405	NY	Jamaica
+11406	NY	Jamaica
+11407	NY	Jamaica
+11408	NY	Jamaica
+11410	NY	Jamaica
+11411	NY	Jamaica
+11412	NY	Jamaica
+11413	NY	Jamaica
+11414	NY	Jamaica
+11415	NY	Jamaica
+11416	NY	Jamaica
+11417	NY	Jamaica
+11418	NY	Jamaica
+11419	NY	Jamaica
+11420	NY	Jamaica
+11421	NY	Jamaica
+11422	NY	Jamaica
+11423	NY	Jamaica
+11424	NY	Jamaica
+11425	NY	Jamaica
+11426	NY	Jamaica
+11427	NY	Jamaica
+11428	NY	Jamaica
+11429	NY	Jamaica
+11430	NY	Jamaica
+11431	NY	Jamaica
+11432	NY	Jamaica
+11433	NY	Jamaica
+11434	NY	Jamaica
+11435	NY	Jamaica
+11436	NY	Jamaica
+11439	NY	Jamaica
+11440	NY	Jamaica
+11441	NY	Jamaica
+11446	NY	Jamaica
+11447	NY	Jamaica
+11450	NY	Jamaica
+11451	NY	Jamaica
+11452	NY	Jamaica
+11460	NY	Jamaica
+11470	NY	Jamaica
+11472	NY	Jamaica
+11474	NY	Jamaica
+11476	NY	Jamaica
+11478	NY	Jamaica
+11480	NY	Jamaica
+11482	NY	Jamaica
+11484	NY	Jamaica
+11486	NY	Jamaica
+11488	NY	Jamaica
+11499	NY	Jamaica
+11501	NY	Mineola
+11507	NY	Albertson
+11509	NY	Atlantic Beach
+11510	NY	Baldwin
+11514	NY	Carle Place
+11516	NY	Cedarhurst
+11518	NY	East Rockaway
+11520	NY	Freeport
+11530	NY	Garden City
+11531	NY	Garden City
+11535	NY	Garden City
+11536	NY	Garden City
+11542	NY	Glen Cove
+11545	NY	Glen Head
+11547	NY	Glenwood Landing
+11548	NY	Greenvale
+11550	NY	Hempstead
+11551	NY	Hempstead
+11552	NY	West Hempstead
+11553	NY	Uniondale
+11554	NY	East Meadow
+11555	NY	Uniondale
+11556	NY	Uniondale
+11557	NY	Hewlett
+11558	NY	Island Park
+11559	NY	Lawrence
+11560	NY	Locust Valley
+11561	NY	Long Beach
+11563	NY	Lynbrook
+11564	NY	Lynbrook
+11565	NY	Malverne
+11566	NY	Merrick
+11568	NY	Old Westbury
+11569	NY	Point Lookout
+11570	NY	Rockville Centre
+11571	NY	Rockville Centre
+11572	NY	Oceanside
+11575	NY	Roosevelt
+11576	NY	Roslyn
+11577	NY	Roslyn Heights
+11579	NY	Sea Cliff
+11580	NY	Valley Stream
+11581	NY	Valley Stream
+11582	NY	Valley Stream
+11583	NY	Valley Stream
+11588	NY	Uniondale
+11590	NY	Westbury
+11592	NY	Rockville Centre
+11593	NY	Westbury
+11594	NY	Westbury
+11595	NY	Westbury
+11596	NY	Williston Park
+11597	NY	Westbury
+11598	NY	Woodmere
+11599	NY	Garden City
+11690	NY	Far Rockaway
+11691	NY	Far Rockaway
+11692	NY	Far Rockaway
+11693	NY	Far Rockaway
+11694	NY	Far Rockaway
+11695	NY	Far Rockaway
+11696	NY	Inwood
+11697	NY	Far Rockaway
+11701	NY	Amityville
+11702	NY	Babylon
+11703	NY	North Babylon
+11704	NY	West Babylon
+11705	NY	Bayport
+11706	NY	Bay Shore
+11707	NY	West Babylon
+11709	NY	Bayville
+11710	NY	Bellmore
+11713	NY	Bellport
+11714	NY	Bethpage
+11715	NY	Blue Point
+11716	NY	Bohemia
+11717	NY	Brentwood
+11718	NY	Brightwaters
+11719	NY	Brookhaven
+11720	NY	Centereach
+11721	NY	Centerport
+11722	NY	Central Islip
+11724	NY	Cold Spring Harbor
+11725	NY	Commack
+11726	NY	Copiague
+11727	NY	Coram
+11729	NY	Deer Park
+11730	NY	East Islip
+11731	NY	East Northport
+11732	NY	East Norwich
+11733	NY	East Setauket
+11735	NY	Farmingdale
+11736	NY	Farmingdale
+11737	NY	Farmingdale
+11738	NY	Farmingville
+11739	NY	Great River
+11740	NY	Greenlawn
+11741	NY	Holbrook
+11742	NY	Holtsville
+11743	NY	Huntington
+11745	NY	Smithtown
+11746	NY	Huntington Station
+11747	NY	Melville
+11749	NY	Farmingville
+11750	NY	Huntington Station
+11751	NY	Islip
+11752	NY	Islip Terrace
+11753	NY	Jericho
+11754	NY	Kings Park
+11755	NY	Lake Grove
+11756	NY	Levittown
+11757	NY	Lindenhurst
+11758	NY	Massapequa
+11760	NY	Hauppauge
+11762	NY	Massapequa Park
+11763	NY	Medford
+11764	NY	Miller Place
+11765	NY	Mill Neck
+11766	NY	Mount Sinai
+11767	NY	Nesconset
+11768	NY	Northport
+11769	NY	Oakdale
+11770	NY	Ocean Beach
+11771	NY	Oyster Bay
+11772	NY	Patchogue
+11773	NY	Syosset
+11774	NY	Farmingdale
+11775	NY	Melville
+11776	NY	Port Jefferson Station
+11777	NY	Port Jefferson
+11778	NY	Rocky Point
+11779	NY	Ronkonkoma
+11780	NY	Saint James
+11782	NY	Sayville
+11783	NY	Seaford
+11784	NY	Selden
+11786	NY	Shoreham
+11787	NY	Smithtown
+11788	NY	Hauppauge
+11789	NY	Sound Beach
+11790	NY	Stony Brook
+11791	NY	Syosset
+11792	NY	Wading River
+11793	NY	Wantagh
+11794	NY	Stony Brook
+11795	NY	West Islip
+11796	NY	West Sayville
+11797	NY	Woodbury
+11798	NY	Wyandanch
+11801	NY	Hicksville
+11802	NY	Hicksville
+11803	NY	Plainview
+11804	NY	Old Bethpage
+11805	NY	Hicksville
+11815	NY	Hicksville
+11819	NY	Hicksville
+11853	NY	Jericho
+11854	NY	Hicksville
+11855	NY	Hicksville
+11901	NY	Riverhead
+11930	NY	Amagansett
+11931	NY	Aquebogue
+11932	NY	Bridgehampton
+11933	NY	Calverton
+11934	NY	Center Moriches
+11935	NY	Cutchogue
+11937	NY	East Hampton
+11939	NY	East Marion
+11940	NY	East Moriches
+11941	NY	Eastport
+11942	NY	East Quogue
+11944	NY	Greenport
+11946	NY	Hampton Bays
+11947	NY	Jamesport
+11948	NY	Laurel
+11949	NY	Manorville
+11950	NY	Mastic
+11951	NY	Mastic Beach
+11952	NY	Mattituck
+11953	NY	Middle Island
+11954	NY	Montauk
+11955	NY	Moriches
+11956	NY	New Suffolk
+11957	NY	Orient
+11958	NY	Peconic
+11959	NY	Quogue
+11960	NY	Remsenburg
+11961	NY	Ridge
+11962	NY	Sagaponack
+11963	NY	Sag Harbor
+11964	NY	Shelter Island
+11965	NY	Shelter Island Heights
+11967	NY	Shirley
+11968	NY	Southampton
+11969	NY	Southampton
+11970	NY	South Jamesport
+11971	NY	Southold
+11972	NY	Speonk
+11973	NY	Upton
+11975	NY	Wainscott
+11976	NY	Water Mill
+11977	NY	Westhampton
+11978	NY	Westhampton Beach
+11980	NY	Yaphank
+12007	NY	Alcove
+12008	NY	Alplaus
+12009	NY	Altamont
+12010	NY	Amsterdam
+12015	NY	Athens
+12016	NY	Auriesville
+12017	NY	Austerlitz
+12018	NY	Averill Park
+12019	NY	Ballston Lake
+12020	NY	Ballston Spa
+12022	NY	Berlin
+12023	NY	Berne
+12024	NY	Brainard
+12025	NY	Broadalbin
+12027	NY	Burnt Hills
+12028	NY	Buskirk
+12029	NY	Canaan
+12031	NY	Carlisle
+12032	NY	Caroga Lake
+12033	NY	Castleton On Hudson
+12035	NY	Central Bridge
+12036	NY	Charlotteville
+12037	NY	Chatham
+12040	NY	Cherry Plain
+12041	NY	Clarksville
+12042	NY	Climax
+12043	NY	Cobleskill
+12045	NY	Coeymans
+12046	NY	Coeymans Hollow
+12047	NY	Cohoes
+12050	NY	Columbiaville
+12051	NY	Coxsackie
+12052	NY	Cropseyville
+12053	NY	Delanson
+12054	NY	Delmar
+12055	NY	Dormansville
+12056	NY	Duanesburg
+12057	NY	Eagle Bridge
+12058	NY	Earlton
+12059	NY	East Berne
+12060	NY	East Chatham
+12061	NY	East Greenbush
+12062	NY	East Nassau
+12063	NY	East Schodack
+12064	NY	East Worcester
+12065	NY	Clifton Park
+12066	NY	Esperance
+12067	NY	Feura Bush
+12068	NY	Fonda
+12069	NY	Fort Hunter
+12070	NY	Fort Johnson
+12071	NY	Fultonham
+12072	NY	Fultonville
+12073	NY	Gallupville
+12074	NY	Galway
+12075	NY	Ghent
+12076	NY	Gilboa
+12077	NY	Glenmont
+12078	NY	Gloversville
+12082	NY	Grafton
+12083	NY	Greenville
+12084	NY	Guilderland
+12085	NY	Guilderland Center
+12086	NY	Hagaman
+12087	NY	Hannacroix
+12089	NY	Hoosick
+12090	NY	Hoosick Falls
+12092	NY	Howes Cave
+12093	NY	Jefferson
+12094	NY	Johnsonville
+12095	NY	Johnstown
+12106	NY	Kinderhook
+12107	NY	Knox
+12108	NY	Lake Pleasant
+12110	NY	Latham
+12111	NY	Latham
+12113	NY	Lawyersville
+12115	NY	Malden Bridge
+12116	NY	Maryland
+12117	NY	Mayfield
+12118	NY	Mechanicville
+12120	NY	Medusa
+12121	NY	Melrose
+12122	NY	Middleburgh
+12123	NY	Nassau
+12124	NY	New Baltimore
+12125	NY	New Lebanon
+12128	NY	Newtonville
+12130	NY	Niverville
+12131	NY	North Blenheim
+12132	NY	North Chatham
+12133	NY	North Hoosick
+12134	NY	Northville
+12136	NY	Old Chatham
+12137	NY	Pattersonville
+12138	NY	Petersburg
+12139	NY	Piseco
+12140	NY	Poestenkill
+12141	NY	Quaker Street
+12143	NY	Ravena
+12144	NY	Rensselaer
+12147	NY	Rensselaerville
+12148	NY	Rexford
+12149	NY	Richmondville
+12150	NY	Rotterdam Junction
+12151	NY	Round Lake
+12153	NY	Sand Lake
+12154	NY	Schaghticoke
+12155	NY	Schenevus
+12156	NY	Schodack Landing
+12157	NY	Schoharie
+12158	NY	Selkirk
+12159	NY	Slingerlands
+12160	NY	Sloansville
+12161	NY	South Bethlehem
+12162	NY	South Schodack
+12164	NY	Speculator
+12165	NY	Spencertown
+12166	NY	Sprakers
+12167	NY	Stamford
+12168	NY	Stephentown
+12169	NY	Stephentown
+12170	NY	Stillwater
+12172	NY	Stottville
+12173	NY	Stuyvesant
+12174	NY	Stuyvesant Falls
+12175	NY	Summit
+12176	NY	Surprise
+12177	NY	Tribes Hill
+12179	NY	Troy
+12180	NY	Troy
+12181	NY	Troy
+12182	NY	Troy
+12183	NY	Troy
+12184	NY	Valatie
+12185	NY	Valley Falls
+12186	NY	Voorheesville
+12187	NY	Warnerville
+12188	NY	Waterford
+12189	NY	Watervliet
+12190	NY	Wells
+12192	NY	Coxsackie
+12193	NY	Westerlo
+12194	NY	West Fulton
+12195	NY	West Lebanon
+12196	NY	West Sand Lake
+12197	NY	Worcester
+12198	NY	Wynantskill
+12201	NY	Albany
+12202	NY	Albany
+12203	NY	Albany
+12204	NY	Albany
+12205	NY	Albany
+12206	NY	Albany
+12207	NY	Albany
+12208	NY	Albany
+12209	NY	Albany
+12210	NY	Albany
+12211	NY	Albany
+12212	NY	Albany
+12214	NY	Albany
+12220	NY	Albany
+12222	NY	Albany
+12223	NY	Albany
+12224	NY	Albany
+12225	NY	Albany
+12226	NY	Albany
+12227	NY	Albany
+12228	NY	Albany
+12229	NY	Albany
+12230	NY	Albany
+12231	NY	Albany
+12232	NY	Albany
+12233	NY	Albany
+12234	NY	Albany
+12235	NY	Albany
+12236	NY	Albany
+12237	NY	Albany
+12238	NY	Albany
+12239	NY	Albany
+12240	NY	Albany
+12241	NY	Albany
+12242	NY	Albany
+12243	NY	Albany
+12244	NY	Albany
+12245	NY	Albany
+12246	NY	Albany
+12247	NY	Albany
+12248	NY	Albany
+12249	NY	Albany
+12250	NY	Albany
+12252	NY	Albany
+12255	NY	Albany
+12256	NY	Albany
+12257	NY	Albany
+12260	NY	Albany
+12261	NY	Albany
+12262	NY	Albany
+12288	NY	Albany
+12301	NY	Schenectady
+12302	NY	Scotia
+12303	NY	Schenectady
+12304	NY	Schenectady
+12305	NY	Schenectady
+12306	NY	Schenectady
+12307	NY	Schenectady
+12308	NY	Schenectady
+12309	NY	Schenectady
+12325	NY	Glenville
+12345	NY	Schenectady
+12401	NY	Kingston
+12402	NY	Kingston
+12404	NY	Accord
+12405	NY	Acra
+12406	NY	Arkville
+12407	NY	Ashland
+12409	NY	Bearsville
+12410	NY	Big Indian
+12411	NY	Bloomington
+12412	NY	Boiceville
+12413	NY	Cairo
+12414	NY	Catskill
+12416	NY	Chichester
+12417	NY	Connelly
+12418	NY	Cornwallville
+12419	NY	Cottekill
+12420	NY	Cragsmoor
+12421	NY	Denver
+12422	NY	Durham
+12423	NY	East Durham
+12424	NY	East Jewett
+12427	NY	Elka Park
+12428	NY	Ellenville
+12429	NY	Esopus
+12430	NY	Fleischmanns
+12431	NY	Freehold
+12432	NY	Glasco
+12433	NY	Glenford
+12434	NY	Grand Gorge
+12435	NY	Greenfield Park
+12436	NY	Haines Falls
+12438	NY	Halcottsville
+12439	NY	Hensonville
+12440	NY	High Falls
+12441	NY	Highmount
+12442	NY	Hunter
+12443	NY	Hurley
+12444	NY	Jewett
+12446	NY	Kerhonkson
+12448	NY	Lake Hill
+12449	NY	Lake Katrine
+12450	NY	Lanesville
+12451	NY	Leeds
+12452	NY	Lexington
+12453	NY	Malden On Hudson
+12454	NY	Maplecrest
+12455	NY	Margaretville
+12456	NY	Mount Marion
+12457	NY	Mount Tremper
+12458	NY	Napanoch
+12459	NY	New Kingston
+12460	NY	Oak Hill
+12461	NY	Olivebridge
+12463	NY	Palenville
+12464	NY	Phoenicia
+12465	NY	Pine Hill
+12466	NY	Port Ewen
+12468	NY	Prattsville
+12469	NY	Preston Hollow
+12470	NY	Purling
+12471	NY	Rifton
+12472	NY	Rosendale
+12473	NY	Round Top
+12474	NY	Roxbury
+12475	NY	Ruby
+12477	NY	Saugerties
+12480	NY	Shandaken
+12481	NY	Shokan
+12482	NY	South Cairo
+12483	NY	Spring Glen
+12484	NY	Stone Ridge
+12485	NY	Tannersville
+12486	NY	Tillson
+12487	NY	Ulster Park
+12489	NY	Wawarsing
+12490	NY	West Camp
+12491	NY	West Hurley
+12492	NY	West Kill
+12493	NY	West Park
+12494	NY	West Shokan
+12495	NY	Willow
+12496	NY	Windham
+12498	NY	Woodstock
+12501	NY	Amenia
+12502	NY	Ancram
+12503	NY	Ancramdale
+12504	NY	Annandale On Hudson
+12506	NY	Bangall
+12507	NY	Barrytown
+12508	NY	Beacon
+12510	NY	Billings
+12511	NY	Castle Point
+12512	NY	Chelsea
+12513	NY	Claverack
+12514	NY	Clinton Corners
+12515	NY	Clintondale
+12516	NY	Copake
+12517	NY	Copake Falls
+12518	NY	Cornwall
+12520	NY	Cornwall On Hudson
+12521	NY	Craryville
+12522	NY	Dover Plains
+12523	NY	Elizaville
+12524	NY	Fishkill
+12525	NY	Gardiner
+12526	NY	Germantown
+12527	NY	Glenham
+12528	NY	Highland
+12529	NY	Hillsdale
+12530	NY	Hollowville
+12531	NY	Holmes
+12533	NY	Hopewell Junction
+12534	NY	Hudson
+12537	NY	Hughsonville
+12538	NY	Hyde Park
+12540	NY	Lagrangeville
+12541	NY	Livingston
+12542	NY	Marlboro
+12543	NY	Maybrook
+12544	NY	Mellenville
+12545	NY	Millbrook
+12546	NY	Millerton
+12547	NY	Milton
+12548	NY	Modena
+12549	NY	Montgomery
+12550	NY	Newburgh
+12551	NY	Newburgh
+12552	NY	Newburgh
+12553	NY	New Windsor
+12555	NY	Mid Hudson
+12561	NY	New Paltz
+12563	NY	Patterson
+12564	NY	Pawling
+12565	NY	Philmont
+12566	NY	Pine Bush
+12567	NY	Pine Plains
+12568	NY	Plattekill
+12569	NY	Pleasant Valley
+12570	NY	Poughquag
+12571	NY	Red Hook
+12572	NY	Rhinebeck
+12574	NY	Rhinecliff
+12575	NY	Rock Tavern
+12577	NY	Salisbury Mills
+12578	NY	Salt Point
+12580	NY	Staatsburg
+12581	NY	Stanfordville
+12582	NY	Stormville
+12583	NY	Tivoli
+12584	NY	Vails Gate
+12585	NY	Verbank
+12586	NY	Walden
+12588	NY	Walker Valley
+12589	NY	Wallkill
+12590	NY	Wappingers Falls
+12592	NY	Wassaic
+12593	NY	West Copake
+12594	NY	Wingdale
+12600	NY	Poughkeepsie
+12601	NY	Poughkeepsie
+12602	NY	Poughkeepsie
+12603	NY	Poughkeepsie
+12604	NY	Poughkeepsie
+12701	NY	Monticello
+12719	NY	Barryville
+12720	NY	Bethel
+12721	NY	Bloomingburg
+12722	NY	Burlingham
+12723	NY	Callicoon
+12724	NY	Callicoon Center
+12725	NY	Claryville
+12726	NY	Cochecton
+12727	NY	Cochecton Center
+12729	NY	Cuddebackville
+12732	NY	Eldred
+12733	NY	Fallsburg
+12734	NY	Ferndale
+12736	NY	Fremont Center
+12737	NY	Glen Spey
+12738	NY	Glen Wild
+12739	NY	Godeffroy
+12740	NY	Grahamsville
+12741	NY	Hankins
+12742	NY	Harris
+12743	NY	Highland Lake
+12745	NY	Hortonville
+12746	NY	Huguenot
+12747	NY	Hurleyville
+12748	NY	Jeffersonville
+12749	NY	Kauneonga Lake
+12750	NY	Kenoza Lake
+12751	NY	Kiamesha Lake
+12752	NY	Lake Huntington
+12753	NY	Lew Beach
+12754	NY	Liberty
+12758	NY	Livingston Manor
+12759	NY	Loch Sheldrake
+12760	NY	Long Eddy
+12762	NY	Mongaup Valley
+12763	NY	Mountain Dale
+12764	NY	Narrowsburg
+12765	NY	Neversink
+12766	NY	North Branch
+12767	NY	Obernburg
+12768	NY	Parksville
+12769	NY	Phillipsport
+12770	NY	Pond Eddy
+12771	NY	Port Jervis
+12775	NY	Rock Hill
+12776	NY	Roscoe
+12777	NY	Forestburgh
+12778	NY	Smallwood
+12779	NY	South Fallsburg
+12780	NY	Sparrow Bush
+12781	NY	Summitville
+12782	NY	Sundown
+12783	NY	Swan Lake
+12784	NY	Thompsonville
+12785	NY	Westbrookville
+12786	NY	White Lake
+12787	NY	White Sulphur Springs
+12788	NY	Woodbourne
+12789	NY	Woodridge
+12790	NY	Wurtsboro
+12791	NY	Youngsville
+12792	NY	Yulan
+12801	NY	Glens Falls
+12803	NY	South Glens Falls
+12804	NY	Queensbury
+12808	NY	Adirondack
+12809	NY	Argyle
+12810	NY	Athol
+12811	NY	Bakers Mills
+12812	NY	Blue Mountain Lake
+12814	NY	Bolton Landing
+12815	NY	Brant Lake
+12816	NY	Cambridge
+12817	NY	Chestertown
+12819	NY	Clemons
+12820	NY	Cleverdale
+12821	NY	Comstock
+12822	NY	Corinth
+12823	NY	Cossayuna
+12824	NY	Diamond Point
+12827	NY	Fort Ann
+12828	NY	Fort Edward
+12831	NY	Gansevoort
+12832	NY	Granville
+12833	NY	Greenfield Center
+12834	NY	Greenwich
+12835	NY	Hadley
+12836	NY	Hague
+12837	NY	Hampton
+12838	NY	Hartford
+12839	NY	Hudson Falls
+12841	NY	Huletts Landing
+12842	NY	Indian Lake
+12843	NY	Johnsburg
+12844	NY	Kattskill Bay
+12845	NY	Lake George
+12846	NY	Lake Luzerne
+12847	NY	Long Lake
+12848	NY	Middle Falls
+12849	NY	Middle Granville
+12850	NY	Middle Grove
+12851	NY	Minerva
+12852	NY	Newcomb
+12853	NY	North Creek
+12854	NY	North Granville
+12855	NY	North Hudson
+12856	NY	North River
+12857	NY	Olmstedville
+12858	NY	Paradox
+12859	NY	Porter Corners
+12860	NY	Pottersville
+12861	NY	Putnam Station
+12862	NY	Riparius
+12863	NY	Rock City Falls
+12864	NY	Sabael
+12865	NY	Salem
+12866	NY	Saratoga Springs
+12870	NY	Schroon Lake
+12871	NY	Schuylerville
+12872	NY	Severance
+12873	NY	Shushan
+12874	NY	Silver Bay
+12878	NY	Stony Creek
+12879	NY	Newcomb
+12883	NY	Ticonderoga
+12884	NY	Victory Mills
+12885	NY	Warrensburg
+12886	NY	Wevertown
+12887	NY	Whitehall
+12901	NY	Plattsburgh
+12903	NY	Plattsburgh
+12910	NY	Altona
+12911	NY	Keeseville
+12912	NY	Au Sable Forks
+12913	NY	Bloomingdale
+12914	NY	Bombay
+12915	NY	Brainardsville
+12916	NY	Brushton
+12917	NY	Burke
+12918	NY	Cadyville
+12919	NY	Champlain
+12920	NY	Chateaugay
+12921	NY	Chazy
+12922	NY	Childwold
+12923	NY	Churubusco
+12924	NY	Keeseville
+12926	NY	Constable
+12927	NY	Cranberry Lake
+12928	NY	Crown Point
+12929	NY	Dannemora
+12930	NY	Dickinson Center
+12932	NY	Elizabethtown
+12933	NY	Ellenburg
+12934	NY	Ellenburg Center
+12935	NY	Ellenburg Depot
+12936	NY	Essex
+12937	NY	Fort Covington
+12939	NY	Gabriels
+12941	NY	Jay
+12942	NY	Keene
+12943	NY	Keene Valley
+12944	NY	Keeseville
+12945	NY	Lake Clear
+12946	NY	Lake Placid
+12949	NY	Lawrenceville
+12950	NY	Lewis
+12952	NY	Lyon Mountain
+12953	NY	Malone
+12955	NY	Lyon Mountain
+12956	NY	Mineville
+12957	NY	Moira
+12958	NY	Mooers
+12959	NY	Mooers Forks
+12960	NY	Moriah
+12961	NY	Moriah Center
+12962	NY	Morrisonville
+12964	NY	New Russia
+12965	NY	Nicholville
+12966	NY	North Bangor
+12967	NY	North Lawrence
+12969	NY	Owls Head
+12970	NY	Paul Smiths
+12972	NY	Peru
+12973	NY	Piercefield
+12974	NY	Port Henry
+12975	NY	Port Kent
+12976	NY	Rainbow Lake
+12977	NY	Ray Brook
+12978	NY	Redford
+12979	NY	Rouses Point
+12980	NY	Saint Regis Falls
+12981	NY	Saranac
+12983	NY	Saranac Lake
+12985	NY	Schuyler Falls
+12986	NY	Tupper Lake
+12987	NY	Upper Jay
+12989	NY	Vermontville
+12992	NY	West Chazy
+12993	NY	Westport
+12995	NY	Whippleville
+12996	NY	Willsboro
+12997	NY	Wilmington
+12998	NY	Witherbee
+13020	NY	Apulia Station
+13021	NY	Auburn
+13022	NY	Auburn
+13024	NY	Auburn
+13026	NY	Aurora
+13027	NY	Baldwinsville
+13028	NY	Bernhards Bay
+13029	NY	Brewerton
+13030	NY	Bridgeport
+13031	NY	Camillus
+13032	NY	Canastota
+13033	NY	Cato
+13034	NY	Cayuga
+13035	NY	Cazenovia
+13036	NY	Central Square
+13037	NY	Chittenango
+13039	NY	Cicero
+13040	NY	Cincinnatus
+13041	NY	Clay
+13042	NY	Cleveland
+13043	NY	Clockville
+13044	NY	Constantia
+13045	NY	Cortland
+13051	NY	Delphi Falls
+13052	NY	De Ruyter
+13053	NY	Dryden
+13054	NY	Durhamville
+13055	NY	East Freetown
+13056	NY	East Homer
+13057	NY	East Syracuse
+13060	NY	Elbridge
+13061	NY	Erieville
+13062	NY	Etna
+13063	NY	Fabius
+13064	NY	Fair Haven
+13065	NY	Fayette
+13066	NY	Fayetteville
+13068	NY	Freeville
+13069	NY	Fulton
+13071	NY	Genoa
+13072	NY	Georgetown
+13073	NY	Groton
+13074	NY	Hannibal
+13076	NY	Hastings
+13077	NY	Homer
+13078	NY	Jamesville
+13080	NY	Jordan
+13081	NY	King Ferry
+13082	NY	Kirkville
+13083	NY	Lacona
+13084	NY	La Fayette
+13087	NY	Little York
+13088	NY	Liverpool
+13089	NY	Liverpool
+13090	NY	Liverpool
+13092	NY	Locke
+13093	NY	Lycoming
+13101	NY	Mc Graw
+13102	NY	Mc Lean
+13103	NY	Mallory
+13104	NY	Manlius
+13107	NY	Maple View
+13108	NY	Marcellus
+13110	NY	Marietta
+13111	NY	Martville
+13112	NY	Memphis
+13113	NY	Meridian
+13114	NY	Mexico
+13115	NY	Minetto
+13116	NY	Minoa
+13117	NY	Montezuma
+13118	NY	Moravia
+13119	NY	Mottville
+13120	NY	Nedrow
+13121	NY	New Haven
+13122	NY	New Woodstock
+13123	NY	North Bay
+13124	NY	North Pitcher
+13126	NY	Oswego
+13129	NY	Georgetown
+13130	NY	Owasco
+13131	NY	Parish
+13132	NY	Pennellville
+13134	NY	Peterboro
+13135	NY	Phoenix
+13136	NY	Pitcher
+13137	NY	Plainville
+13138	NY	Pompey
+13139	NY	Poplar Ridge
+13140	NY	Port Byron
+13141	NY	Preble
+13142	NY	Pulaski
+13143	NY	Red Creek
+13144	NY	Richland
+13145	NY	Sandy Creek
+13146	NY	Savannah
+13147	NY	Scipio Center
+13148	NY	Seneca Falls
+13150	NY	Sennett
+13151	NY	Sheds
+13152	NY	Skaneateles
+13153	NY	Skaneateles Falls
+13154	NY	South Butler
+13155	NY	South Otselic
+13156	NY	Sterling
+13157	NY	Sylvan Beach
+13158	NY	Truxton
+13159	NY	Tully
+13160	NY	Union Springs
+13162	NY	Verona Beach
+13163	NY	Wampsville
+13164	NY	Warners
+13165	NY	Waterloo
+13166	NY	Weedsport
+13167	NY	West Monroe
+13201	NY	Syracuse
+13202	NY	Syracuse
+13203	NY	Syracuse
+13204	NY	Syracuse
+13205	NY	Syracuse
+13206	NY	Syracuse
+13207	NY	Syracuse
+13208	NY	Syracuse
+13209	NY	Syracuse
+13210	NY	Syracuse
+13211	NY	Syracuse
+13212	NY	Syracuse
+13214	NY	Syracuse
+13215	NY	Syracuse
+13217	NY	Syracuse
+13219	NY	Syracuse
+13220	NY	Syracuse
+13221	NY	Syracuse
+13224	NY	Syracuse
+13225	NY	Syracuse
+13244	NY	Syracuse
+13250	NY	Syracuse
+13251	NY	Syracuse
+13252	NY	Syracuse
+13260	NY	Syracuse
+13261	NY	Syracuse
+13290	NY	Syracuse
+13301	NY	Alder Creek
+13302	NY	Altmar
+13303	NY	Ava
+13304	NY	Barneveld
+13305	NY	Beaver Falls
+13308	NY	Blossvale
+13309	NY	Boonville
+13310	NY	Bouckville
+13312	NY	Brantingham
+13313	NY	Bridgewater
+13314	NY	Brookfield
+13315	NY	Burlington Flats
+13316	NY	Camden
+13317	NY	Canajoharie
+13318	NY	Cassville
+13319	NY	Chadwicks
+13320	NY	Cherry Valley
+13321	NY	Clark Mills
+13322	NY	Clayville
+13323	NY	Clinton
+13324	NY	Cold Brook
+13325	NY	Constableville
+13326	NY	Cooperstown
+13327	NY	Croghan
+13328	NY	Deansboro
+13329	NY	Dolgeville
+13331	NY	Eagle Bay
+13332	NY	Earlville
+13333	NY	East Springfield
+13334	NY	Eaton
+13335	NY	Edmeston
+13337	NY	Fly Creek
+13338	NY	Forestport
+13339	NY	Fort Plain
+13340	NY	Frankfort
+13341	NY	Franklin Springs
+13342	NY	Garrattsville
+13343	NY	Glenfield
+13345	NY	Greig
+13346	NY	Hamilton
+13348	NY	Hartwick
+13350	NY	Herkimer
+13352	NY	Hinckley
+13353	NY	Hoffmeister
+13354	NY	Holland Patent
+13355	NY	Hubbardsville
+13357	NY	Ilion
+13360	NY	Inlet
+13361	NY	Jordanville
+13362	NY	Knoxboro
+13363	NY	Lee Center
+13364	NY	Leonardsville
+13365	NY	Little Falls
+13367	NY	Lowville
+13368	NY	Lyons Falls
+13401	NY	Mc Connellsville
+13402	NY	Madison
+13403	NY	Marcy
+13404	NY	Martinsburg
+13406	NY	Middleville
+13407	NY	Mohawk
+13408	NY	Morrisville
+13409	NY	Munnsville
+13410	NY	Nelliston
+13411	NY	New Berlin
+13413	NY	New Hartford
+13415	NY	New Lisbon
+13416	NY	Newport
+13417	NY	New York Mills
+13418	NY	North Brookfield
+13419	NY	North Western
+13420	NY	Old Forge
+13421	NY	Oneida
+13424	NY	Oriskany
+13425	NY	Oriskany Falls
+13426	NY	Orwell
+13428	NY	Palatine Bridge
+13431	NY	Poland
+13433	NY	Port Leyden
+13435	NY	Prospect
+13436	NY	Raquette Lake
+13437	NY	Redfield
+13438	NY	Remsen
+13439	NY	Richfield Springs
+13440	NY	Rome
+13441	NY	Rome
+13442	NY	Rome
+13449	NY	Rome
+13450	NY	Roseboom
+13452	NY	Saint Johnsville
+13454	NY	Salisbury Center
+13455	NY	Sangerfield
+13456	NY	Sauquoit
+13457	NY	Schuyler Lake
+13459	NY	Sharon Springs
+13460	NY	Sherburne
+13461	NY	Sherrill
+13464	NY	Smyrna
+13465	NY	Solsville
+13468	NY	Springfield Center
+13469	NY	Stittville
+13470	NY	Stratford
+13471	NY	Taberg
+13472	NY	Thendara
+13473	NY	Turin
+13475	NY	Van Hornesville
+13476	NY	Vernon
+13477	NY	Vernon Center
+13478	NY	Verona
+13479	NY	Washington Mills
+13480	NY	Waterville
+13482	NY	West Burlington
+13483	NY	Westdale
+13484	NY	West Eaton
+13485	NY	West Edmeston
+13486	NY	Westernville
+13488	NY	Westford
+13489	NY	West Leyden
+13490	NY	Westmoreland
+13491	NY	West Winfield
+13492	NY	Whitesboro
+13493	NY	Williamstown
+13494	NY	Woodgate
+13495	NY	Yorkville
+13501	NY	Utica
+13502	NY	Utica
+13503	NY	Utica
+13504	NY	Utica
+13505	NY	Utica
+13599	NY	Utica
+13601	NY	Watertown
+13602	NY	Watertown
+13603	NY	Watertown
+13605	NY	Adams
+13606	NY	Adams Center
+13607	NY	Alexandria Bay
+13608	NY	Antwerp
+13609	NY	Balmat
+13610	NY	Rodman
+13611	NY	Belleville
+13612	NY	Black River
+13613	NY	Brasher Falls
+13614	NY	Brier Hill
+13615	NY	Brownville
+13616	NY	Calcium
+13617	NY	Canton
+13618	NY	Cape Vincent
+13619	NY	Carthage
+13620	NY	Castorland
+13621	NY	Chase Mills
+13622	NY	Chaumont
+13623	NY	Chippewa Bay
+13624	NY	Clayton
+13625	NY	Colton
+13626	NY	Copenhagen
+13627	NY	Deer River
+13628	NY	Deferiet
+13630	NY	De Kalb Junction
+13631	NY	Denmark
+13632	NY	Depauville
+13633	NY	De Peyster
+13634	NY	Dexter
+13635	NY	Edwards
+13636	NY	Ellisburg
+13637	NY	Evans Mills
+13638	NY	Felts Mills
+13639	NY	Fine
+13640	NY	Wellesley Island
+13641	NY	Fishers Landing
+13642	NY	Gouverneur
+13643	NY	Great Bend
+13645	NY	Hailesboro
+13646	NY	Hammond
+13647	NY	Hannawa Falls
+13648	NY	Harrisville
+13649	NY	Helena
+13650	NY	Henderson
+13651	NY	Henderson Harbor
+13652	NY	Hermon
+13654	NY	Heuvelton
+13655	NY	Hogansburg
+13656	NY	La Fargeville
+13657	NY	Limerick
+13658	NY	Lisbon
+13659	NY	Lorraine
+13660	NY	Madrid
+13661	NY	Mannsville
+13662	NY	Massena
+13664	NY	Morristown
+13665	NY	Natural Bridge
+13666	NY	Newton Falls
+13667	NY	Norfolk
+13668	NY	Norwood
+13669	NY	Ogdensburg
+13670	NY	Oswegatchie
+13671	NY	Oxbow
+13672	NY	Parishville
+13673	NY	Philadelphia
+13674	NY	Pierrepont Manor
+13675	NY	Plessis
+13676	NY	Potsdam
+13677	NY	Pyrites
+13678	NY	Raymondville
+13679	NY	Redwood
+13680	NY	Rensselaer Falls
+13681	NY	Richville
+13682	NY	Rodman
+13683	NY	Rooseveltown
+13684	NY	Russell
+13685	NY	Sackets Harbor
+13687	NY	South Colton
+13688	NY	South Rutland
+13690	NY	Star Lake
+13691	NY	Theresa
+13692	NY	Thousand Island Park
+13693	NY	Three Mile Bay
+13694	NY	Waddington
+13695	NY	Wanakena
+13696	NY	West Stockholm
+13697	NY	Winthrop
+13699	NY	Potsdam
+13730	NY	Afton
+13731	NY	Andes
+13732	NY	Apalachin
+13733	NY	Bainbridge
+13734	NY	Barton
+13736	NY	Berkshire
+13737	NY	Bible School Park
+13738	NY	Blodgett Mills
+13739	NY	Bloomville
+13740	NY	Bovina Center
+13743	NY	Candor
+13744	NY	Castle Creek
+13745	NY	Chenango Bridge
+13746	NY	Chenango Forks
+13747	NY	Colliersville
+13748	NY	Conklin
+13749	NY	Corbettsville
+13750	NY	Davenport
+13751	NY	Davenport Center
+13752	NY	De Lancey
+13753	NY	Delhi
+13754	NY	Deposit
+13755	NY	Downsville
+13756	NY	East Branch
+13757	NY	East Meredith
+13758	NY	East Pharsalia
+13760	NY	Endicott
+13761	NY	Endicott
+13762	NY	Endwell
+13763	NY	Endicott
+13774	NY	Fishs Eddy
+13775	NY	Franklin
+13776	NY	Gilbertsville
+13777	NY	Glen Aubrey
+13778	NY	Greene
+13780	NY	Guilford
+13782	NY	Hamden
+13783	NY	Hancock
+13784	NY	Harford
+13786	NY	Harpersfield
+13787	NY	Harpursville
+13788	NY	Hobart
+13790	NY	Johnson City
+13794	NY	Killawog
+13795	NY	Kirkwood
+13796	NY	Laurens
+13797	NY	Lisle
+13801	NY	Mc Donough
+13802	NY	Maine
+13803	NY	Marathon
+13804	NY	Masonville
+13806	NY	Meridale
+13807	NY	Milford
+13808	NY	Morris
+13809	NY	Mount Upton
+13810	NY	Mount Vision
+13811	NY	Newark Valley
+13812	NY	Nichols
+13813	NY	Nineveh
+13814	NY	North Norwich
+13815	NY	Norwich
+13820	NY	Oneonta
+13825	NY	Otego
+13826	NY	Ouaquaga
+13827	NY	Owego
+13830	NY	Oxford
+13832	NY	Plymouth
+13833	NY	Port Crane
+13834	NY	Portlandville
+13835	NY	Richford
+13837	NY	Shinhopple
+13838	NY	Sidney
+13839	NY	Sidney Center
+13840	NY	Smithboro
+13841	NY	Smithville Flats
+13842	NY	South Kortright
+13843	NY	South New Berlin
+13844	NY	South Plymouth
+13845	NY	Tioga Center
+13846	NY	Treadwell
+13847	NY	Trout Creek
+13848	NY	Tunnel
+13849	NY	Unadilla
+13850	NY	Vestal
+13851	NY	Vestal
+13856	NY	Walton
+13859	NY	Wells Bridge
+13860	NY	West Davenport
+13861	NY	West Oneonta
+13862	NY	Whitney Point
+13863	NY	Willet
+13864	NY	Willseyville
+13865	NY	Windsor
+13901	NY	Binghamton
+13902	NY	Binghamton
+13903	NY	Binghamton
+13904	NY	Binghamton
+13905	NY	Binghamton
+14001	NY	Akron
+14003	NY	Alabama
+14004	NY	Alden
+14005	NY	Alexander
+14006	NY	Angola
+14008	NY	Appleton
+14009	NY	Arcade
+14010	NY	Athol Springs
+14011	NY	Attica
+14012	NY	Barker
+14013	NY	Basom
+14020	NY	Batavia
+14021	NY	Batavia
+14024	NY	Bliss
+14025	NY	Boston
+14026	NY	Bowmansville
+14027	NY	Brant
+14028	NY	Burt
+14029	NY	Centerville
+14030	NY	Chaffee
+14031	NY	Clarence
+14032	NY	Clarence Center
+14033	NY	Colden
+14034	NY	Collins
+14035	NY	Collins Center
+14036	NY	Corfu
+14037	NY	Cowlesville
+14038	NY	Crittenden
+14039	NY	Dale
+14040	NY	Darien Center
+14041	NY	Dayton
+14042	NY	Delevan
+14043	NY	Depew
+14047	NY	Derby
+14048	NY	Dunkirk
+14051	NY	East Amherst
+14052	NY	East Aurora
+14054	NY	East Bethany
+14055	NY	East Concord
+14056	NY	East Pembroke
+14057	NY	Eden
+14058	NY	Elba
+14059	NY	Elma
+14060	NY	Farmersville Station
+14061	NY	Farnham
+14062	NY	Forestville
+14063	NY	Fredonia
+14065	NY	Freedom
+14066	NY	Gainesville
+14067	NY	Gasport
+14068	NY	Getzville
+14069	NY	Glenwood
+14070	NY	Gowanda
+14072	NY	Grand Island
+14075	NY	Hamburg
+14080	NY	Holland
+14081	NY	Irving
+14082	NY	Java Center
+14083	NY	Java Village
+14085	NY	Lake View
+14086	NY	Lancaster
+14091	NY	Lawtons
+14092	NY	Lewiston
+14094	NY	Lockport
+14095	NY	Lockport
+14098	NY	Lyndonville
+14101	NY	Machias
+14102	NY	Marilla
+14103	NY	Medina
+14105	NY	Middleport
+14107	NY	Model City
+14108	NY	Newfane
+14109	NY	Niagara University
+14110	NY	North Boston
+14111	NY	North Collins
+14112	NY	North Evans
+14113	NY	North Java
+14120	NY	North Tonawanda
+14125	NY	Oakfield
+14126	NY	Olcott
+14127	NY	Orchard Park
+14129	NY	Perrysburg
+14130	NY	Pike
+14131	NY	Ransomville
+14132	NY	Sanborn
+14133	NY	Sandusky
+14134	NY	Sardinia
+14135	NY	Sheridan
+14136	NY	Silver Creek
+14138	NY	South Dayton
+14139	NY	South Wales
+14140	NY	Spring Brook
+14141	NY	Springville
+14143	NY	Stafford
+14144	NY	Stella Niagara
+14145	NY	Strykersville
+14150	NY	Tonawanda
+14151	NY	Tonawanda
+14166	NY	Van Buren Point
+14167	NY	Varysburg
+14168	NY	Versailles
+14169	NY	Wales Center
+14170	NY	West Falls
+14171	NY	West Valley
+14172	NY	Wilson
+14173	NY	Yorkshire
+14174	NY	Youngstown
+14201	NY	Buffalo
+14202	NY	Buffalo
+14203	NY	Buffalo
+14204	NY	Buffalo
+14205	NY	Buffalo
+14206	NY	Buffalo
+14207	NY	Buffalo
+14208	NY	Buffalo
+14209	NY	Buffalo
+14210	NY	Buffalo
+14211	NY	Buffalo
+14212	NY	Buffalo
+14213	NY	Buffalo
+14214	NY	Buffalo
+14215	NY	Buffalo
+14216	NY	Buffalo
+14217	NY	Buffalo
+14218	NY	Buffalo
+14219	NY	Buffalo
+14220	NY	Buffalo
+14221	NY	Buffalo
+14222	NY	Buffalo
+14223	NY	Buffalo
+14224	NY	Buffalo
+14225	NY	Buffalo
+14226	NY	Buffalo
+14227	NY	Buffalo
+14228	NY	Buffalo
+14231	NY	Buffalo
+14233	NY	Buffalo
+14240	NY	Buffalo
+14241	NY	Buffalo
+14260	NY	Buffalo
+14261	NY	Buffalo
+14263	NY	Buffalo
+14264	NY	Buffalo
+14265	NY	Buffalo
+14266	NY	Buffalo
+14267	NY	Buffalo
+14269	NY	Buffalo
+14270	NY	Buffalo
+14271	NY	Buffalo
+14272	NY	Buffalo
+14273	NY	Buffalo
+14276	NY	Buffalo
+14280	NY	Buffalo
+14301	NY	Niagara Falls
+14302	NY	Niagara Falls
+14303	NY	Niagara Falls
+14304	NY	Niagara Falls
+14305	NY	Niagara Falls
+14410	NY	Adams Basin
+14411	NY	Albion
+14413	NY	Alton
+14414	NY	Avon
+14415	NY	Bellona
+14416	NY	Bergen
+14418	NY	Branchport
+14420	NY	Brockport
+14422	NY	Byron
+14423	NY	Caledonia
+14424	NY	Canandaigua
+14425	NY	Farmington
+14427	NY	Castile
+14428	NY	Churchville
+14429	NY	Clarendon
+14430	NY	Clarkson
+14432	NY	Clifton Springs
+14433	NY	Clyde
+14435	NY	Conesus
+14437	NY	Dansville
+14441	NY	Dresden
+14442	NY	Eagle Harbor
+14443	NY	East Bloomfield
+14444	NY	East Palmyra
+14445	NY	East Rochester
+14449	NY	East Williamson
+14450	NY	Fairport
+14452	NY	Fancher
+14453	NY	Fishers
+14454	NY	Geneseo
+14456	NY	Geneva
+14461	NY	Gorham
+14462	NY	Groveland
+14463	NY	Hall
+14464	NY	Hamlin
+14466	NY	Hemlock
+14467	NY	Henrietta
+14468	NY	Hilton
+14469	NY	Bloomfield
+14470	NY	Holley
+14471	NY	Honeoye
+14472	NY	Honeoye Falls
+14474	NY	Industry
+14475	NY	Ionia
+14476	NY	Kendall
+14477	NY	Kent
+14478	NY	Keuka Park
+14479	NY	Knowlesville
+14480	NY	Lakeville
+14481	NY	Leicester
+14482	NY	Le Roy
+14485	NY	Lima
+14486	NY	Linwood
+14487	NY	Livonia
+14488	NY	Livonia Center
+14489	NY	Lyons
+14502	NY	Macedon
+14504	NY	Manchester
+14505	NY	Marion
+14506	NY	Mendon
+14507	NY	Middlesex
+14508	NY	Morton
+14510	NY	Mount Morris
+14511	NY	Mumford
+14512	NY	Naples
+14513	NY	Newark
+14514	NY	North Chili
+14515	NY	North Greece
+14516	NY	North Rose
+14517	NY	Nunda
+14518	NY	Oaks Corners
+14519	NY	Ontario
+14520	NY	Ontario Center
+14521	NY	Ovid
+14522	NY	Palmyra
+14525	NY	Pavilion
+14526	NY	Penfield
+14527	NY	Penn Yan
+14529	NY	Perkinsville
+14530	NY	Perry
+14532	NY	Phelps
+14533	NY	Piffard
+14534	NY	Pittsford
+14536	NY	Portageville
+14537	NY	Port Gibson
+14538	NY	Pultneyville
+14539	NY	Retsof
+14541	NY	Romulus
+14542	NY	Rose
+14543	NY	Rush
+14544	NY	Rushville
+14545	NY	Scottsburg
+14546	NY	Scottsville
+14547	NY	Seneca Castle
+14548	NY	Shortsville
+14549	NY	Silver Lake
+14550	NY	Silver Springs
+14551	NY	Sodus
+14555	NY	Sodus Point
+14556	NY	Sonyea
+14557	NY	South Byron
+14558	NY	South Lima
+14559	NY	Spencerport
+14560	NY	Springwater
+14561	NY	Stanley
+14563	NY	Union Hill
+14564	NY	Victor
+14568	NY	Walworth
+14569	NY	Warsaw
+14571	NY	Waterport
+14572	NY	Wayland
+14580	NY	Webster
+14584	NY	Webster Crossing
+14585	NY	West Bloomfield
+14586	NY	West Henrietta
+14588	NY	Willard
+14589	NY	Williamson
+14590	NY	Wolcott
+14591	NY	Wyoming
+14592	NY	York
+14601	NY	Rochester
+14602	NY	Rochester
+14603	NY	Rochester
+14604	NY	Rochester
+14605	NY	Rochester
+14606	NY	Rochester
+14607	NY	Rochester
+14608	NY	Rochester
+14609	NY	Rochester
+14610	NY	Rochester
+14611	NY	Rochester
+14612	NY	Rochester
+14613	NY	Rochester
+14614	NY	Rochester
+14615	NY	Rochester
+14616	NY	Rochester
+14617	NY	Rochester
+14618	NY	Rochester
+14619	NY	Rochester
+14620	NY	Rochester
+14621	NY	Rochester
+14622	NY	Rochester
+14623	NY	Rochester
+14624	NY	Rochester
+14625	NY	Rochester
+14626	NY	Rochester
+14627	NY	Rochester
+14638	NY	Rochester
+14639	NY	Rochester
+14642	NY	Rochester
+14643	NY	Rochester
+14644	NY	Rochester
+14645	NY	Rochester
+14646	NY	Rochester
+14647	NY	Rochester
+14649	NY	Rochester
+14650	NY	Rochester
+14651	NY	Rochester
+14652	NY	Rochester
+14653	NY	Rochester
+14660	NY	Rochester
+14664	NY	Rochester
+14673	NY	Rochester
+14683	NY	Rochester
+14692	NY	Rochester
+14694	NY	Rochester
+14701	NY	Jamestown
+14702	NY	Jamestown
+14703	NY	Jamestown
+14704	NY	Jamestown
+14706	NY	Allegany
+14707	NY	Allentown
+14708	NY	Alma
+14709	NY	Angelica
+14710	NY	Ashville
+14711	NY	Belfast
+14712	NY	Bemus Point
+14714	NY	Black Creek
+14715	NY	Bolivar
+14716	NY	Brocton
+14717	NY	Caneadea
+14718	NY	Cassadaga
+14719	NY	Cattaraugus
+14720	NY	Celoron
+14721	NY	Ceres
+14722	NY	Chautauqua
+14723	NY	Cherry Creek
+14724	NY	Clymer
+14726	NY	Conewango Valley
+14727	NY	Cuba
+14728	NY	Dewittville
+14729	NY	East Otto
+14730	NY	East Randolph
+14731	NY	Ellicottville
+14732	NY	Ellington
+14733	NY	Falconer
+14735	NY	Fillmore
+14736	NY	Findley Lake
+14737	NY	Franklinville
+14738	NY	Frewsburg
+14739	NY	Friendship
+14740	NY	Gerry
+14741	NY	Great Valley
+14742	NY	Greenhurst
+14743	NY	Hinsdale
+14744	NY	Houghton
+14745	NY	Hume
+14747	NY	Kennedy
+14748	NY	Kill Buck
+14749	NY	Knapp Creek
+14750	NY	Lakewood
+14751	NY	Leon
+14752	NY	Lily Dale
+14753	NY	Limestone
+14754	NY	Little Genesee
+14755	NY	Little Valley
+14756	NY	Maple Springs
+14757	NY	Mayville
+14758	NY	Niobe
+14759	NY	North Clymer
+14760	NY	Olean
+14766	NY	Otto
+14767	NY	Panama
+14769	NY	Portland
+14770	NY	Portville
+14772	NY	Randolph
+14774	NY	Richburg
+14775	NY	Ripley
+14776	NY	Rossburg
+14777	NY	Rushford
+14778	NY	Saint Bonaventure
+14779	NY	Salamanca
+14781	NY	Sherman
+14782	NY	Sinclairville
+14783	NY	Steamburg
+14784	NY	Stockton
+14785	NY	Stow
+14786	NY	West Clarksville
+14787	NY	Westfield
+14788	NY	Westons Mills
+14801	NY	Addison
+14802	NY	Alfred
+14803	NY	Alfred Station
+14804	NY	Almond
+14805	NY	Alpine
+14806	NY	Andover
+14807	NY	Arkport
+14808	NY	Atlanta
+14809	NY	Avoca
+14810	NY	Bath
+14812	NY	Beaver Dams
+14813	NY	Belmont
+14814	NY	Big Flats
+14815	NY	Bradford
+14816	NY	Breesport
+14817	NY	Brooktondale
+14818	NY	Burdett
+14819	NY	Cameron
+14820	NY	Cameron Mills
+14821	NY	Campbell
+14822	NY	Canaseraga
+14823	NY	Canisteo
+14824	NY	Cayuta
+14825	NY	Chemung
+14826	NY	Cohocton
+14827	NY	Coopers Plains
+14830	NY	Corning
+14831	NY	Corning
+14836	NY	Dalton
+14837	NY	Dundee
+14838	NY	Erin
+14839	NY	Greenwood
+14840	NY	Hammondsport
+14841	NY	Hector
+14842	NY	Himrod
+14843	NY	Hornell
+14844	NY	Horseheads
+14845	NY	Horseheads
+14846	NY	Hunt
+14847	NY	Interlaken
+14850	NY	Ithaca
+14851	NY	Ithaca
+14852	NY	Ithaca
+14853	NY	Ithaca
+14854	NY	Jacksonville
+14855	NY	Jasper
+14856	NY	Kanona
+14857	NY	Lakemont
+14858	NY	Lindley
+14859	NY	Lockwood
+14860	NY	Lodi
+14861	NY	Lowman
+14863	NY	Mecklenburg
+14864	NY	Millport
+14865	NY	Montour Falls
+14867	NY	Newfield
+14869	NY	Odessa
+14870	NY	Painted Post
+14871	NY	Pine City
+14872	NY	Pine Valley
+14873	NY	Prattsburgh
+14874	NY	Pulteney
+14876	NY	Reading Center
+14877	NY	Rexville
+14878	NY	Rock Stream
+14879	NY	Savona
+14880	NY	Scio
+14881	NY	Slaterville Springs
+14882	NY	Lansing
+14883	NY	Spencer
+14884	NY	Swain
+14885	NY	Troupsburg
+14886	NY	Trumansburg
+14887	NY	Tyrone
+14888	NY	Valois
+14889	NY	Van Etten
+14891	NY	Watkins Glen
+14892	NY	Waverly
+14893	NY	Wayne
+14894	NY	Wellsburg
+14895	NY	Wellsville
+14896	NY	West Danby
+14897	NY	Whitesville
+14898	NY	Woodhull
+14901	NY	Elmira
+14902	NY	Elmira
+14903	NY	Elmira
+14904	NY	Elmira
+14905	NY	Elmira
+14925	NY	Elmira
+14975	NY	Elmira
+15001	PA	Aliquippa
+15003	PA	Ambridge
+15004	PA	Atlasburg
+15005	PA	Baden
+15006	PA	Bairdford
+15007	PA	Bakerstown
+15009	PA	Beaver
+15010	PA	Beaver Falls
+15012	PA	Belle Vernon
+15014	PA	Brackenridge
+15015	PA	Bradfordwoods
+15017	PA	Bridgeville
+15018	PA	Buena Vista
+15019	PA	Bulger
+15020	PA	Bunola
+15021	PA	Burgettstown
+15022	PA	Charleroi
+15024	PA	Cheswick
+15025	PA	Clairton
+15026	PA	Clinton
+15027	PA	Conway
+15028	PA	Coulters
+15030	PA	Creighton
+15031	PA	Cuddy
+15032	PA	Curtisville
+15033	PA	Donora
+15034	PA	Dravosburg
+15035	PA	East Mc Keesport
+15036	PA	Eldersville
+15037	PA	Elizabeth
+15038	PA	Elrama
+15042	PA	Freedom
+15043	PA	Georgetown
+15044	PA	Gibsonia
+15045	PA	Glassport
+15046	PA	Glenwillard
+15047	PA	Greenock
+15049	PA	Harwick
+15050	PA	Hookstown
+15051	PA	Indianola
+15052	PA	Industry
+15053	PA	Joffre
+15054	PA	Langeloth
+15055	PA	Lawrence
+15056	PA	Leetsdale
+15057	PA	Mc Donald
+15059	PA	Midland
+15060	PA	Midway
+15061	PA	Monaca
+15062	PA	Monessen
+15063	PA	Monongahela
+15064	PA	Morgan
+15065	PA	Natrona Heights
+15066	PA	New Brighton
+15067	PA	New Eagle
+15068	PA	New Kensington
+15069	PA	New Kensington
+15071	PA	Oakdale
+15072	PA	Pricedale
+15074	PA	Rochester
+15075	PA	Rural Ridge
+15076	PA	Russellton
+15077	PA	Shippingport
+15078	PA	Slovan
+15081	PA	South Heights
+15082	PA	Sturgeon
+15083	PA	Sutersville
+15084	PA	Tarentum
+15085	PA	Trafford
+15086	PA	Warrendale
+15087	PA	Webster
+15088	PA	West Elizabeth
+15089	PA	West Newton
+15090	PA	Wexford
+15091	PA	Wildwood
+15095	PA	Warrendale
+15096	PA	Warrendale
+15101	PA	Allison Park
+15102	PA	Bethel Park
+15104	PA	Braddock
+15106	PA	Carnegie
+15108	PA	Coraopolis
+15110	PA	Duquesne
+15112	PA	East Pittsburgh
+15116	PA	Glenshaw
+15120	PA	Homestead
+15122	PA	West Mifflin
+15123	PA	West Mifflin
+15126	PA	Imperial
+15127	PA	Ingomar
+15129	PA	Library
+15130	PA	Mc Keesport
+15131	PA	Mc Keesport
+15132	PA	Mc Keesport
+15133	PA	Mc Keesport
+15134	PA	Mc Keesport
+15135	PA	Mc Keesport
+15136	PA	Mc Kees Rocks
+15137	PA	North Versailles
+15139	PA	Oakmont
+15140	PA	Pitcairn
+15142	PA	Presto
+15143	PA	Sewickley
+15144	PA	Springdale
+15145	PA	Turtle Creek
+15146	PA	Monroeville
+15147	PA	Verona
+15148	PA	Wilmerding
+15189	PA	Sewickley
+15201	PA	Pittsburgh
+15202	PA	Pittsburgh
+15203	PA	Pittsburgh
+15204	PA	Pittsburgh
+15205	PA	Pittsburgh
+15206	PA	Pittsburgh
+15207	PA	Pittsburgh
+15208	PA	Pittsburgh
+15209	PA	Pittsburgh
+15210	PA	Pittsburgh
+15211	PA	Pittsburgh
+15212	PA	Pittsburgh
+15213	PA	Pittsburgh
+15214	PA	Pittsburgh
+15215	PA	Pittsburgh
+15216	PA	Pittsburgh
+15217	PA	Pittsburgh
+15218	PA	Pittsburgh
+15219	PA	Pittsburgh
+15220	PA	Pittsburgh
+15221	PA	Pittsburgh
+15222	PA	Pittsburgh
+15223	PA	Pittsburgh
+15224	PA	Pittsburgh
+15225	PA	Pittsburgh
+15226	PA	Pittsburgh
+15227	PA	Pittsburgh
+15228	PA	Pittsburgh
+15229	PA	Pittsburgh
+15230	PA	Pittsburgh
+15231	PA	Pittsburgh
+15232	PA	Pittsburgh
+15233	PA	Pittsburgh
+15234	PA	Pittsburgh
+15235	PA	Pittsburgh
+15236	PA	Pittsburgh
+15237	PA	Pittsburgh
+15238	PA	Pittsburgh
+15239	PA	Pittsburgh
+15240	PA	Pittsburgh
+15241	PA	Pittsburgh
+15242	PA	Pittsburgh
+15243	PA	Pittsburgh
+15244	PA	Pittsburgh
+15250	PA	Pittsburgh
+15251	PA	Pittsburgh
+15252	PA	Pittsburgh
+15253	PA	Pittsburgh
+15254	PA	Pittsburgh
+15255	PA	Pittsburgh
+15257	PA	Pittsburgh
+15258	PA	Pittsburgh
+15259	PA	Pittsburgh
+15260	PA	Pittsburgh
+15261	PA	Pittsburgh
+15262	PA	Pittsburgh
+15263	PA	Pittsburgh
+15264	PA	Pittsburgh
+15265	PA	Pittsburgh
+15266	PA	Pittsburgh
+15267	PA	Pittsburgh
+15268	PA	Pittsburgh
+15270	PA	Pittsburgh
+15272	PA	Pittsburgh
+15274	PA	Pittsburgh
+15275	PA	Pittsburgh
+15276	PA	Pittsburgh
+15277	PA	Pittsburgh
+15278	PA	Pittsburgh
+15279	PA	Pittsburgh
+15281	PA	Pittsburgh
+15282	PA	Pittsburgh
+15283	PA	Pittsburgh
+15285	PA	Pittsburgh
+15286	PA	Pittsburgh
+15290	PA	Pittsburgh
+15301	PA	Washington
+15310	PA	Aleppo
+15311	PA	Amity
+15312	PA	Avella
+15313	PA	Beallsville
+15314	PA	Bentleyville
+15315	PA	Bobtown
+15316	PA	Brave
+15317	PA	Canonsburg
+15320	PA	Carmichaels
+15321	PA	Cecil
+15322	PA	Clarksville
+15323	PA	Claysville
+15324	PA	Cokeburg
+15325	PA	Crucible
+15327	PA	Dilliner
+15329	PA	Prosperity
+15330	PA	Eighty Four
+15331	PA	Ellsworth
+15332	PA	Finleyville
+15333	PA	Fredericktown
+15334	PA	Garards Fort
+15336	PA	Gastonville
+15337	PA	Graysville
+15338	PA	Greensboro
+15339	PA	Hendersonville
+15340	PA	Hickory
+15341	PA	Holbrook
+15342	PA	Houston
+15344	PA	Jefferson
+15345	PA	Marianna
+15346	PA	Mather
+15347	PA	Meadow Lands
+15348	PA	Millsboro
+15349	PA	Mount Morris
+15350	PA	Muse
+15351	PA	Nemacolin
+15352	PA	New Freeport
+15353	PA	Nineveh
+15354	PA	Pine Bank
+15357	PA	Rices Landing
+15358	PA	Richeyville
+15359	PA	Rogersville
+15360	PA	Scenery Hill
+15361	PA	Southview
+15362	PA	Spraggs
+15363	PA	Strabane
+15364	PA	Sycamore
+15365	PA	Taylorstown
+15366	PA	Van Voorhis
+15367	PA	Venetia
+15368	PA	Vestaburg
+15370	PA	Waynesburg
+15376	PA	West Alexander
+15377	PA	West Finley
+15378	PA	Westland
+15379	PA	West Middletown
+15380	PA	Wind Ridge
+15401	PA	Uniontown
+15410	PA	Adah
+15411	PA	Addison
+15412	PA	Allenport
+15413	PA	Allison
+15415	PA	Brier Hill
+15416	PA	Brownfield
+15417	PA	Brownsville
+15419	PA	California
+15420	PA	Cardale
+15421	PA	Chalkhill
+15422	PA	Chestnut Ridge
+15423	PA	Coal Center
+15424	PA	Confluence
+15425	PA	Connellsville
+15427	PA	Daisytown
+15428	PA	Dawson
+15429	PA	Denbo
+15430	PA	Dickerson Run
+15431	PA	Dunbar
+15432	PA	Dunlevy
+15433	PA	East Millsboro
+15434	PA	Elco
+15435	PA	Fairbank
+15436	PA	Fairchance
+15437	PA	Farmington
+15438	PA	Fayette City
+15439	PA	Gans
+15440	PA	Gibbon Glade
+15442	PA	Grindstone
+15443	PA	Hibbs
+15444	PA	Hiller
+15445	PA	Hopwood
+15446	PA	Indian Head
+15447	PA	Isabella
+15448	PA	Jacobs Creek
+15449	PA	Keisterville
+15450	PA	La Belle
+15451	PA	Lake Lynn
+15454	PA	Leckrone
+15455	PA	Leisenring
+15456	PA	Lemont Furnace
+15458	PA	Mc Clellandtown
+15459	PA	Markleysburg
+15460	PA	Martin
+15461	PA	Masontown
+15462	PA	Melcroft
+15463	PA	Merrittstown
+15464	PA	Mill Run
+15465	PA	Mount Braddock
+15466	PA	Newell
+15467	PA	New Geneva
+15468	PA	New Salem
+15469	PA	Normalville
+15470	PA	Ohiopyle
+15472	PA	Oliver
+15473	PA	Perryopolis
+15474	PA	Point Marion
+15475	PA	Republic
+15476	PA	Ronco
+15477	PA	Roscoe
+15478	PA	Smithfield
+15479	PA	Smithton
+15480	PA	Smock
+15482	PA	Star Junction
+15483	PA	Stockdale
+15484	PA	Uledi
+15485	PA	Ursina
+15486	PA	Vanderbilt
+15488	PA	Waltersburg
+15489	PA	West Leisenring
+15490	PA	White
+15492	PA	Wickhaven
+15501	PA	Somerset
+15502	PA	Hidden Valley
+15510	PA	Somerset
+15520	PA	Acosta
+15521	PA	Alum Bank
+15522	PA	Bedford
+15530	PA	Berlin
+15531	PA	Boswell
+15532	PA	Boynton
+15533	PA	Breezewood
+15534	PA	Buffalo Mills
+15535	PA	Clearville
+15536	PA	Crystal Spring
+15537	PA	Everett
+15538	PA	Fairhope
+15539	PA	Fishertown
+15540	PA	Fort Hill
+15541	PA	Friedens
+15542	PA	Garrett
+15544	PA	Gray
+15545	PA	Hyndman
+15546	PA	Jenners
+15547	PA	Jennerstown
+15548	PA	Kantner
+15549	PA	Listie
+15550	PA	Manns Choice
+15551	PA	Markleton
+15552	PA	Meyersdale
+15553	PA	New Baltimore
+15554	PA	New Paris
+15555	PA	Quecreek
+15557	PA	Rockwood
+15558	PA	Salisbury
+15559	PA	Schellsburg
+15560	PA	Shanksville
+15561	PA	Sipesville
+15562	PA	Springs
+15563	PA	Stoystown
+15564	PA	Wellersburg
+15565	PA	West Salisbury
+15601	PA	Greensburg
+15605	PA	Greensburg
+15606	PA	Greensburg
+15610	PA	Acme
+15611	PA	Adamsburg
+15612	PA	Alverton
+15613	PA	Apollo
+15615	PA	Ardara
+15616	PA	Armbrust
+15617	PA	Arona
+15618	PA	Avonmore
+15619	PA	Bovard
+15620	PA	Bradenville
+15621	PA	Calumet
+15622	PA	Champion
+15623	PA	Claridge
+15624	PA	Crabtree
+15625	PA	Darragh
+15626	PA	Delmont
+15627	PA	Derry
+15628	PA	Donegal
+15629	PA	East Vandergrift
+15630	PA	Edmon
+15631	PA	Everson
+15632	PA	Export
+15633	PA	Forbes Road
+15634	PA	Grapeville
+15635	PA	Hannastown
+15636	PA	Harrison City
+15637	PA	Herminie
+15638	PA	Hostetter
+15639	PA	Hunker
+15640	PA	Hutchinson
+15641	PA	Hyde Park
+15642	PA	Irwin
+15644	PA	Jeannette
+15646	PA	Jones Mills
+15647	PA	Larimer
+15650	PA	Latrobe
+15655	PA	Laughlintown
+15656	PA	Leechburg
+15658	PA	Ligonier
+15660	PA	Lowber
+15661	PA	Loyalhanna
+15662	PA	Luxor
+15663	PA	Madison
+15664	PA	Mammoth
+15665	PA	Manor
+15666	PA	Mount Pleasant
+15668	PA	Murrysville
+15670	PA	New Alexandria
+15671	PA	New Derry
+15672	PA	New Stanton
+15673	PA	North Apollo
+15674	PA	Norvelt
+15675	PA	Penn
+15676	PA	Pleasant Unity
+15677	PA	Rector
+15678	PA	Rillton
+15679	PA	Ruffs Dale
+15680	PA	Salina
+15681	PA	Saltsburg
+15682	PA	Schenley
+15683	PA	Scottdale
+15684	PA	Slickville
+15685	PA	Southwest
+15686	PA	Spring Church
+15687	PA	Stahlstown
+15688	PA	Tarrs
+15689	PA	United
+15690	PA	Vandergrift
+15691	PA	Wendel
+15692	PA	Westmoreland City
+15693	PA	Whitney
+15695	PA	Wyano
+15696	PA	Youngstown
+15697	PA	Youngwood
+15698	PA	Yukon
+15701	PA	Indiana
+15705	PA	Indiana
+15710	PA	Alverda
+15711	PA	Anita
+15712	PA	Arcadia
+15713	PA	Aultman
+15714	PA	Barnesboro
+15715	PA	Big Run
+15716	PA	Black Lick
+15717	PA	Blairsville
+15720	PA	Brush Valley
+15721	PA	Burnside
+15722	PA	Carrolltown
+15723	PA	Chambersville
+15724	PA	Cherry Tree
+15725	PA	Clarksburg
+15727	PA	Clune
+15728	PA	Clymer
+15729	PA	Commodore
+15730	PA	Coolspring
+15731	PA	Coral
+15732	PA	Creekside
+15733	PA	De Lancey
+15734	PA	Dixonville
+15736	PA	Elderton
+15737	PA	Elmora
+15738	PA	Emeigh
+15739	PA	Ernest
+15740	PA	Frostburg
+15741	PA	Gipsy
+15742	PA	Glen Campbell
+15744	PA	Hamilton
+15745	PA	Heilwood
+15746	PA	Hillsdale
+15747	PA	Home
+15748	PA	Homer City
+15750	PA	Josephine
+15751	PA	Juneau
+15752	PA	Kent
+15753	PA	La Jose
+15754	PA	Lucernemines
+15756	PA	Mc Intyre
+15757	PA	Mahaffey
+15758	PA	Marchand
+15759	PA	Marion Center
+15760	PA	Marsteller
+15761	PA	Mentcle
+15762	PA	Nicktown
+15763	PA	Northpoint
+15764	PA	Oliveburg
+15765	PA	Penn Run
+15767	PA	Punxsutawney
+15770	PA	Ringgold
+15771	PA	Rochester Mills
+15772	PA	Rossiter
+15773	PA	Saint Benedict
+15774	PA	Shelocta
+15775	PA	Spangler
+15776	PA	Sprankle Mills
+15777	PA	Starford
+15778	PA	Timblin
+15779	PA	Torrance
+15780	PA	Valier
+15781	PA	Walston
+15783	PA	West Lebanon
+15784	PA	Worthville
+15801	PA	Du Bois
+15821	PA	Benezett
+15822	PA	Brandy Camp
+15823	PA	Brockport
+15824	PA	Brockway
+15825	PA	Brookville
+15827	PA	Byrnedale
+15828	PA	Clarington
+15829	PA	Corsica
+15831	PA	Dagus Mines
+15832	PA	Driftwood
+15834	PA	Emporium
+15840	PA	Falls Creek
+15841	PA	Force
+15845	PA	Johnsonburg
+15846	PA	Kersey
+15847	PA	Knox Dale
+15848	PA	Luthersburg
+15849	PA	Penfield
+15851	PA	Reynoldsville
+15853	PA	Ridgway
+15856	PA	Rockton
+15857	PA	Saint Marys
+15860	PA	Sigel
+15861	PA	Sinnamahoning
+15863	PA	Stump Creek
+15864	PA	Summerville
+15865	PA	Sykesville
+15866	PA	Troutville
+15868	PA	Weedville
+15870	PA	Wilcox
+15901	PA	Johnstown
+15902	PA	Johnstown
+15904	PA	Johnstown
+15905	PA	Johnstown
+15906	PA	Johnstown
+15907	PA	Johnstown
+15909	PA	Johnstown
+15915	PA	Johnstown
+15920	PA	Armagh
+15921	PA	Beaverdale
+15922	PA	Belsano
+15923	PA	Bolivar
+15924	PA	Cairnbrook
+15925	PA	Cassandra
+15926	PA	Central City
+15927	PA	Colver
+15928	PA	Davidsville
+15929	PA	Dilltown
+15930	PA	Dunlo
+15931	PA	Ebensburg
+15934	PA	Elton
+15935	PA	Hollsopple
+15936	PA	Hooversville
+15937	PA	Jerome
+15938	PA	Lilly
+15940	PA	Loretto
+15942	PA	Mineral Point
+15943	PA	Nanty Glo
+15944	PA	New Florence
+15945	PA	Parkhill
+15946	PA	Portage
+15948	PA	Revloc
+15949	PA	Robinson
+15951	PA	Saint Michael
+15952	PA	Salix
+15953	PA	Seanor
+15954	PA	Seward
+15955	PA	Sidman
+15956	PA	South Fork
+15957	PA	Strongstown
+15958	PA	Summerhill
+15959	PA	Tire Hill
+15960	PA	Twin Rocks
+15961	PA	Vintondale
+15962	PA	Wilmore
+15963	PA	Windber
+16001	PA	Butler
+16002	PA	Butler
+16003	PA	Butler
+16016	PA	Boyers
+16017	PA	Boyers
+16018	PA	Boyers
+16020	PA	Boyers
+16021	PA	Branchton
+16022	PA	Bruin
+16023	PA	Cabot
+16024	PA	Callery
+16025	PA	Chicora
+16027	PA	Connoquenessing
+16028	PA	East Brady
+16029	PA	East Butler
+16030	PA	Eau Claire
+16033	PA	Evans City
+16034	PA	Fenelton
+16035	PA	Forestville
+16036	PA	Foxburg
+16037	PA	Harmony
+16038	PA	Harrisville
+16039	PA	Herman
+16040	PA	Hilliards
+16041	PA	Karns City
+16045	PA	Lyndora
+16046	PA	Mars
+16048	PA	North Washington
+16049	PA	Parker
+16050	PA	Petrolia
+16051	PA	Portersville
+16052	PA	Prospect
+16053	PA	Renfrew
+16054	PA	Saint Petersburg
+16055	PA	Sarver
+16056	PA	Saxonburg
+16057	PA	Slippery Rock
+16058	PA	Turkey City
+16059	PA	Valencia
+16061	PA	West Sunbury
+16063	PA	Zelienople
+16066	PA	Cranberry Twp
+16101	PA	New Castle
+16102	PA	New Castle
+16103	PA	New Castle
+16105	PA	New Castle
+16107	PA	New Castle
+16108	PA	New Castle
+16110	PA	Adamsville
+16111	PA	Atlantic
+16112	PA	Bessemer
+16113	PA	Clark
+16114	PA	Clarks Mills
+16115	PA	Darlington
+16116	PA	Edinburg
+16117	PA	Ellwood City
+16120	PA	Enon Valley
+16121	PA	Farrell
+16123	PA	Fombell
+16124	PA	Fredonia
+16125	PA	Greenville
+16127	PA	Grove City
+16130	PA	Hadley
+16131	PA	Hartstown
+16132	PA	Hillsville
+16133	PA	Jackson Center
+16134	PA	Jamestown
+16136	PA	Koppel
+16137	PA	Mercer
+16140	PA	New Bedford
+16141	PA	New Galilee
+16142	PA	New Wilmington
+16143	PA	Pulaski
+16145	PA	Sandy Lake
+16146	PA	Sharon
+16148	PA	Hermitage
+16150	PA	Sharpsville
+16151	PA	Sheakleyville
+16153	PA	Stoneboro
+16154	PA	Transfer
+16155	PA	Villa Maria
+16156	PA	Volant
+16157	PA	Wampum
+16159	PA	West Middlesex
+16160	PA	West Pittsburg
+16161	PA	Wheatland
+16172	PA	New Wilmington
+16201	PA	Kittanning
+16210	PA	Adrian
+16211	PA	Beyer
+16212	PA	Cadogan
+16213	PA	Callensburg
+16214	PA	Clarion
+16215	PA	Kittanning
+16216	PA	Climax
+16217	PA	Cooksburg
+16218	PA	Cowansville
+16220	PA	Crown
+16221	PA	Curllsville
+16222	PA	Dayton
+16223	PA	Distant
+16224	PA	Fairmount City
+16225	PA	Fisher
+16226	PA	Ford City
+16228	PA	Ford Cliff
+16229	PA	Freeport
+16230	PA	Hawthorn
+16232	PA	Knox
+16233	PA	Leeper
+16234	PA	Limestone
+16235	PA	Lucinda
+16236	PA	Mc Grann
+16238	PA	Manorville
+16239	PA	Marienville
+16240	PA	Mayport
+16242	PA	New Bethlehem
+16244	PA	Nu Mine
+16245	PA	Oak Ridge
+16246	PA	Plumville
+16248	PA	Rimersburg
+16249	PA	Rural Valley
+16250	PA	Sagamore
+16253	PA	Seminole
+16254	PA	Shippenville
+16255	PA	Sligo
+16256	PA	Smicksburg
+16257	PA	Snydersburg
+16258	PA	Strattanville
+16259	PA	Templeton
+16260	PA	Vowinckel
+16261	PA	Widnoon
+16262	PA	Worthington
+16263	PA	Yatesboro
+16301	PA	Oil City
+16311	PA	Carlton
+16312	PA	Chandlers Valley
+16313	PA	Clarendon
+16314	PA	Cochranton
+16316	PA	Conneaut Lake
+16317	PA	Cooperstown
+16319	PA	Cranberry
+16321	PA	East Hickory
+16322	PA	Endeavor
+16323	PA	Franklin
+16326	PA	Fryburg
+16327	PA	Guys Mills
+16328	PA	Hydetown
+16329	PA	Irvine
+16331	PA	Kossuth
+16332	PA	Lickingville
+16333	PA	Ludlow
+16334	PA	Marble
+16335	PA	Meadville
+16340	PA	Pittsfield
+16341	PA	Pleasantville
+16342	PA	Polk
+16343	PA	Reno
+16344	PA	Rouseville
+16345	PA	Russell
+16346	PA	Seneca
+16347	PA	Sheffield
+16350	PA	Sugar Grove
+16351	PA	Tidioute
+16352	PA	Tiona
+16353	PA	Tionesta
+16354	PA	Titusville
+16360	PA	Townville
+16361	PA	Tylersburg
+16362	PA	Utica
+16364	PA	Venus
+16365	PA	Warren
+16366	PA	Warren
+16367	PA	Warren
+16368	PA	Irvine
+16369	PA	Irvine
+16370	PA	West Hickory
+16371	PA	Youngsville
+16372	PA	Clintonville
+16373	PA	Emlenton
+16374	PA	Kennerdell
+16375	PA	Lamartine
+16388	PA	Meadville
+16401	PA	Albion
+16402	PA	Bear Lake
+16403	PA	Cambridge Springs
+16404	PA	Centerville
+16405	PA	Columbus
+16406	PA	Conneautville
+16407	PA	Corry
+16410	PA	Cranesville
+16411	PA	East Springfield
+16412	PA	Edinboro
+16413	PA	Elgin
+16415	PA	Fairview
+16416	PA	Garland
+16417	PA	Girard
+16420	PA	Grand Valley
+16421	PA	Harborcreek
+16422	PA	Harmonsburg
+16423	PA	Lake City
+16424	PA	Linesville
+16426	PA	Mc Kean
+16427	PA	Mill Village
+16428	PA	North East
+16430	PA	North Springfield
+16432	PA	Riceville
+16433	PA	Saegertown
+16434	PA	Spartansburg
+16435	PA	Springboro
+16436	PA	Spring Creek
+16438	PA	Union City
+16440	PA	Venango
+16441	PA	Waterford
+16442	PA	Wattsburg
+16443	PA	West Springfield
+16444	PA	Edinboro
+16475	PA	Albion
+16501	PA	Erie
+16502	PA	Erie
+16503	PA	Erie
+16504	PA	Erie
+16505	PA	Erie
+16506	PA	Erie
+16507	PA	Erie
+16508	PA	Erie
+16509	PA	Erie
+16510	PA	Erie
+16511	PA	Erie
+16512	PA	Erie
+16514	PA	Erie
+16515	PA	Erie
+16522	PA	Erie
+16530	PA	Erie
+16531	PA	Erie
+16532	PA	Erie
+16533	PA	Erie
+16534	PA	Erie
+16538	PA	Erie
+16541	PA	Erie
+16544	PA	Erie
+16546	PA	Erie
+16550	PA	Erie
+16553	PA	Erie
+16554	PA	Erie
+16558	PA	Erie
+16563	PA	Erie
+16565	PA	Erie
+16601	PA	Altoona
+16602	PA	Altoona
+16603	PA	Altoona
+16611	PA	Alexandria
+16613	PA	Ashville
+16614	PA	Bakers Summit
+16616	PA	Beccaria
+16617	PA	Bellwood
+16619	PA	Blandburg
+16620	PA	Brisbin
+16621	PA	Broad Top
+16622	PA	Calvin
+16623	PA	Cassville
+16624	PA	Chest Springs
+16625	PA	Claysburg
+16627	PA	Coalport
+16629	PA	Coupon
+16630	PA	Cresson
+16631	PA	Curryville
+16633	PA	Defiance
+16634	PA	Dudley
+16635	PA	Duncansville
+16636	PA	Dysart
+16637	PA	East Freedom
+16638	PA	Entriken
+16639	PA	Fallentimber
+16640	PA	Flinton
+16641	PA	Gallitzin
+16644	PA	Glasgow
+16645	PA	Glen Hope
+16646	PA	Hastings
+16647	PA	Hesston
+16648	PA	Hollidaysburg
+16650	PA	Hopewell
+16651	PA	Houtzdale
+16652	PA	Huntingdon
+16654	PA	Huntingdon
+16655	PA	Imler
+16656	PA	Irvona
+16657	PA	James Creek
+16659	PA	Loysburg
+16660	PA	Mc Connellstown
+16661	PA	Madera
+16662	PA	Martinsburg
+16663	PA	Morann
+16664	PA	New Enterprise
+16665	PA	Newry
+16666	PA	Osceola Mills
+16667	PA	Osterburg
+16668	PA	Patton
+16669	PA	Petersburg
+16670	PA	Queen
+16671	PA	Ramey
+16672	PA	Riddlesburg
+16673	PA	Roaring Spring
+16674	PA	Robertsdale
+16675	PA	Saint Boniface
+16677	PA	Sandy Ridge
+16678	PA	Saxton
+16679	PA	Six Mile Run
+16680	PA	Smithmill
+16681	PA	Smokerun
+16682	PA	Sproul
+16683	PA	Spruce Creek
+16684	PA	Tipton
+16685	PA	Todd
+16686	PA	Tyrone
+16689	PA	Waterfall
+16691	PA	Wells Tannery
+16692	PA	Westover
+16693	PA	Williamsburg
+16694	PA	Wood
+16695	PA	Woodbury
+16698	PA	Houtzdale
+16699	PA	Cresson
+16701	PA	Bradford
+16720	PA	Austin
+16724	PA	Crosby
+16725	PA	Custer City
+16726	PA	Cyclone
+16727	PA	Derrick City
+16728	PA	De Young
+16729	PA	Duke Center
+16730	PA	East Smethport
+16731	PA	Eldred
+16732	PA	Gifford
+16733	PA	Hazel Hurst
+16734	PA	James City
+16735	PA	Kane
+16738	PA	Lewis Run
+16740	PA	Mount Jewett
+16743	PA	Port Allegany
+16744	PA	Rew
+16745	PA	Rixford
+16746	PA	Roulette
+16748	PA	Shinglehouse
+16749	PA	Smethport
+16750	PA	Turtlepoint
+16751	PA	Westline
+16801	PA	State College
+16802	PA	University Park
+16803	PA	State College
+16804	PA	State College
+16805	PA	State College
+16820	PA	Aaronsburg
+16821	PA	Allport
+16822	PA	Beech Creek
+16823	PA	Bellefonte
+16825	PA	Bigler
+16826	PA	Blanchard
+16827	PA	Boalsburg
+16828	PA	Centre Hall
+16829	PA	Clarence
+16830	PA	Clearfield
+16832	PA	Coburn
+16833	PA	Curwensville
+16834	PA	Drifting
+16835	PA	Fleming
+16836	PA	Frenchville
+16837	PA	Glen Richey
+16838	PA	Grampian
+16839	PA	Grassflat
+16840	PA	Hawk Run
+16841	PA	Howard
+16843	PA	Hyde
+16844	PA	Julian
+16845	PA	Karthaus
+16847	PA	Kylertown
+16848	PA	Lamar
+16849	PA	Lanse
+16850	PA	Lecontes Mills
+16851	PA	Lemont
+16852	PA	Madisonburg
+16853	PA	Milesburg
+16854	PA	Millheim
+16855	PA	Mineral Springs
+16856	PA	Mingoville
+16858	PA	Morrisdale
+16859	PA	Moshannon
+16860	PA	Munson
+16861	PA	New Millport
+16863	PA	Olanta
+16864	PA	Orviston
+16865	PA	Pennsylvania Furnace
+16866	PA	Philipsburg
+16868	PA	Pine Grove Mills
+16870	PA	Port Matilda
+16871	PA	Pottersdale
+16872	PA	Rebersburg
+16873	PA	Shawville
+16874	PA	Snow Shoe
+16875	PA	Spring Mills
+16876	PA	Wallaceton
+16877	PA	Warriors Mark
+16878	PA	West Decatur
+16879	PA	Winburne
+16881	PA	Woodland
+16882	PA	Woodward
+16901	PA	Wellsboro
+16910	PA	Alba
+16911	PA	Arnot
+16912	PA	Blossburg
+16914	PA	Columbia Cross Roads
+16915	PA	Coudersport
+16917	PA	Covington
+16918	PA	Cowanesque
+16920	PA	Elkland
+16921	PA	Gaines
+16922	PA	Galeton
+16923	PA	Genesee
+16925	PA	Gillett
+16926	PA	Granville Summit
+16927	PA	Harrison Valley
+16928	PA	Knoxville
+16929	PA	Lawrenceville
+16930	PA	Liberty
+16932	PA	Mainesburg
+16933	PA	Mansfield
+16935	PA	Middlebury Center
+16936	PA	Millerton
+16937	PA	Mills
+16938	PA	Morris
+16939	PA	Morris Run
+16940	PA	Nelson
+16941	PA	Genesee
+16942	PA	Osceola
+16943	PA	Sabinsville
+16945	PA	Sylvania
+16946	PA	Tioga
+16947	PA	Troy
+16948	PA	Ulysses
+16950	PA	Westfield
+17001	PA	Camp Hill
+17002	PA	Allensville
+17003	PA	Annville
+17004	PA	Belleville
+17005	PA	Berrysburg
+17006	PA	Blain
+17007	PA	Boiling Springs
+17008	PA	Bowmansdale
+17009	PA	Burnham
+17010	PA	Campbelltown
+17011	PA	Camp Hill
+17012	PA	Camp Hill
+17013	PA	Carlisle
+17014	PA	Cocolamus
+17015	PA	Colebrook
+17016	PA	Cornwall
+17017	PA	Dalmatia
+17018	PA	Dauphin
+17019	PA	Dillsburg
+17020	PA	Duncannon
+17021	PA	East Waterford
+17022	PA	Elizabethtown
+17023	PA	Elizabethville
+17024	PA	Elliottsburg
+17025	PA	Enola
+17026	PA	Fredericksburg
+17027	PA	Grantham
+17028	PA	Grantville
+17029	PA	Granville
+17030	PA	Gratz
+17031	PA	Green Park
+17032	PA	Halifax
+17033	PA	Hershey
+17034	PA	Highspire
+17035	PA	Honey Grove
+17036	PA	Hummelstown
+17037	PA	Ickesburg
+17038	PA	Jonestown
+17039	PA	Kleinfeltersville
+17040	PA	Landisburg
+17041	PA	Lawn
+17042	PA	Lebanon
+17043	PA	Lemoyne
+17044	PA	Lewistown
+17045	PA	Liverpool
+17046	PA	Lebanon
+17047	PA	Loysville
+17048	PA	Lykens
+17049	PA	Mc Alisterville
+17051	PA	Mc Veytown
+17052	PA	Mapleton Depot
+17053	PA	Marysville
+17054	PA	Mattawana
+17055	PA	Mechanicsburg
+17056	PA	Mexico
+17057	PA	Middletown
+17058	PA	Mifflin
+17059	PA	Mifflintown
+17060	PA	Mill Creek
+17061	PA	Millersburg
+17062	PA	Millerstown
+17063	PA	Milroy
+17064	PA	Mount Gretna
+17065	PA	Mount Holly Springs
+17066	PA	Mount Union
+17067	PA	Myerstown
+17068	PA	New Bloomfield
+17069	PA	New Buffalo
+17070	PA	New Cumberland
+17071	PA	New Germantown
+17072	PA	New Kingstown
+17073	PA	Newmanstown
+17074	PA	Newport
+17075	PA	Newton Hamilton
+17076	PA	Oakland Mills
+17077	PA	Ono
+17078	PA	Palmyra
+17080	PA	Pillow
+17081	PA	Plainfield
+17082	PA	Port Royal
+17083	PA	Quentin
+17084	PA	Reedsville
+17085	PA	Rexmont
+17086	PA	Richfield
+17087	PA	Richland
+17088	PA	Schaefferstown
+17089	PA	Camp Hill
+17090	PA	Shermans Dale
+17093	PA	Summerdale
+17094	PA	Thompsontown
+17097	PA	Wiconisco
+17098	PA	Williamstown
+17099	PA	Yeagertown
+17101	PA	Harrisburg
+17102	PA	Harrisburg
+17103	PA	Harrisburg
+17104	PA	Harrisburg
+17105	PA	Harrisburg
+17106	PA	Harrisburg
+17107	PA	Harrisburg
+17108	PA	Harrisburg
+17109	PA	Harrisburg
+17110	PA	Harrisburg
+17111	PA	Harrisburg
+17112	PA	Harrisburg
+17113	PA	Harrisburg
+17120	PA	Harrisburg
+17121	PA	Harrisburg
+17122	PA	Harrisburg
+17123	PA	Harrisburg
+17124	PA	Harrisburg
+17125	PA	Harrisburg
+17126	PA	Harrisburg
+17127	PA	Harrisburg
+17128	PA	Harrisburg
+17129	PA	Harrisburg
+17130	PA	Harrisburg
+17140	PA	Harrisburg
+17177	PA	Harrisburg
+17201	PA	Chambersburg
+17210	PA	Amberson
+17211	PA	Artemas
+17212	PA	Big Cove Tannery
+17213	PA	Blairs Mills
+17214	PA	Blue Ridge Summit
+17215	PA	Burnt Cabins
+17217	PA	Concord
+17219	PA	Doylesburg
+17220	PA	Dry Run
+17221	PA	Fannettsburg
+17222	PA	Fayetteville
+17223	PA	Fort Littleton
+17224	PA	Fort Loudon
+17225	PA	Greencastle
+17228	PA	Harrisonville
+17229	PA	Hustontown
+17231	PA	Lemasters
+17232	PA	Lurgan
+17233	PA	Mc Connellsburg
+17235	PA	Marion
+17236	PA	Mercersburg
+17237	PA	Mont Alto
+17238	PA	Needmore
+17239	PA	Neelyton
+17240	PA	Newburg
+17241	PA	Newville
+17243	PA	Orbisonia
+17244	PA	Orrstown
+17246	PA	Pleasant Hall
+17247	PA	Quincy
+17249	PA	Rockhill Furnace
+17250	PA	Rouzerville
+17251	PA	Roxbury
+17252	PA	Saint Thomas
+17253	PA	Saltillo
+17254	PA	Scotland
+17255	PA	Shade Gap
+17256	PA	Shady Grove
+17257	PA	Shippensburg
+17260	PA	Shirleysburg
+17261	PA	South Mountain
+17262	PA	Spring Run
+17263	PA	State Line
+17264	PA	Three Springs
+17265	PA	Upperstrasburg
+17266	PA	Walnut Bottom
+17267	PA	Warfordsburg
+17268	PA	Waynesboro
+17270	PA	Williamson
+17271	PA	Willow Hill
+17272	PA	Zullinger
+17294	PA	Blue Ridge Summit
+17301	PA	Abbottstown
+17302	PA	Airville
+17303	PA	Arendtsville
+17304	PA	Aspers
+17306	PA	Bendersville
+17307	PA	Biglerville
+17309	PA	Brogue
+17310	PA	Cashtown
+17311	PA	Codorus
+17312	PA	Craley
+17313	PA	Dallastown
+17314	PA	Delta
+17315	PA	Dover
+17316	PA	East Berlin
+17317	PA	East Prospect
+17318	PA	Emigsville
+17319	PA	Etters
+17320	PA	Fairfield
+17321	PA	Fawn Grove
+17322	PA	Felton
+17323	PA	Franklintown
+17324	PA	Gardners
+17325	PA	Gettysburg
+17326	PA	Gettysburg
+17327	PA	Glen Rock
+17329	PA	Glenville
+17331	PA	Hanover
+17332	PA	Hanover
+17333	PA	Hanover
+17337	PA	Idaville
+17339	PA	Lewisberry
+17340	PA	Littlestown
+17342	PA	Loganville
+17343	PA	Mc Knightstown
+17344	PA	Mc Sherrystown
+17345	PA	Manchester
+17346	PA	Menges Mills
+17347	PA	Mount Wolf
+17349	PA	New Freedom
+17350	PA	New Oxford
+17352	PA	New Park
+17353	PA	Orrtanna
+17354	PA	Porters Sideling
+17355	PA	Railroad
+17356	PA	Red Lion
+17358	PA	Rossville
+17360	PA	Seven Valleys
+17361	PA	Shrewsbury
+17362	PA	Spring Grove
+17363	PA	Stewartstown
+17364	PA	Thomasville
+17365	PA	Wellsville
+17366	PA	Windsor
+17368	PA	Wrightsville
+17370	PA	York Haven
+17371	PA	York New Salem
+17372	PA	York Springs
+17375	PA	Peach Glen
+17401	PA	York
+17402	PA	York
+17403	PA	York
+17404	PA	York
+17405	PA	York
+17406	PA	York
+17407	PA	York
+17415	PA	York
+17501	PA	Akron
+17502	PA	Bainbridge
+17503	PA	Bart
+17504	PA	Bausman
+17505	PA	Bird In Hand
+17506	PA	Blue Ball
+17507	PA	Bowmansville
+17508	PA	Brownstown
+17509	PA	Christiana
+17512	PA	Columbia
+17516	PA	Conestoga
+17517	PA	Denver
+17518	PA	Drumore
+17519	PA	East Earl
+17520	PA	East Petersburg
+17521	PA	Elm
+17522	PA	Ephrata
+17527	PA	Gap
+17528	PA	Goodville
+17529	PA	Gordonville
+17532	PA	Holtwood
+17533	PA	Hopeland
+17534	PA	Intercourse
+17535	PA	Kinzers
+17536	PA	Kirkwood
+17537	PA	Lampeter
+17538	PA	Landisville
+17540	PA	Leola
+17543	PA	Lititz
+17545	PA	Manheim
+17547	PA	Marietta
+17549	PA	Martindale
+17550	PA	Maytown
+17551	PA	Millersville
+17552	PA	Mount Joy
+17554	PA	Mountville
+17555	PA	Narvon
+17557	PA	New Holland
+17560	PA	New Providence
+17562	PA	Paradise
+17563	PA	Peach Bottom
+17564	PA	Penryn
+17565	PA	Pequea
+17566	PA	Quarryville
+17567	PA	Reamstown
+17568	PA	Refton
+17569	PA	Reinholds
+17570	PA	Rheems
+17572	PA	Ronks
+17573	PA	Ronks
+17575	PA	Silver Spring
+17576	PA	Smoketown
+17577	PA	Soudersburg
+17578	PA	Stevens
+17579	PA	Strasburg
+17580	PA	Talmage
+17581	PA	Terre Hill
+17582	PA	Washington Boro
+17583	PA	West Willow
+17584	PA	Willow Street
+17585	PA	Witmer
+17601	PA	Lancaster
+17602	PA	Lancaster
+17603	PA	Lancaster
+17604	PA	Lancaster
+17605	PA	Lancaster
+17606	PA	Lancaster
+17607	PA	Lancaster
+17608	PA	Lancaster
+17699	PA	Lancaster
+17701	PA	Williamsport
+17703	PA	Williamsport
+17705	PA	Williamsport
+17720	PA	Antes Fort
+17721	PA	Avis
+17722	PA	Bodines
+17723	PA	Jersey Shore
+17724	PA	Canton
+17726	PA	Castanea
+17727	PA	Cedar Run
+17728	PA	Cogan Station
+17729	PA	Cross Fork
+17730	PA	Dewart
+17731	PA	Eagles Mere
+17734	PA	Farrandsville
+17735	PA	Grover
+17737	PA	Hughesville
+17738	PA	Hyner
+17739	PA	Jersey Mills
+17740	PA	Jersey Shore
+17742	PA	Lairdsville
+17743	PA	Leroy
+17744	PA	Linden
+17745	PA	Lock Haven
+17747	PA	Loganton
+17748	PA	Mc Elhattan
+17749	PA	Mc Ewensville
+17750	PA	Mackeyville
+17751	PA	Mill Hall
+17752	PA	Montgomery
+17754	PA	Montoursville
+17756	PA	Muncy
+17758	PA	Muncy Valley
+17759	PA	Nisbet
+17760	PA	North Bend
+17762	PA	Picture Rocks
+17763	PA	Ralston
+17764	PA	Renovo
+17765	PA	Roaring Branch
+17767	PA	Salona
+17768	PA	Shunk
+17769	PA	Slate Run
+17770	PA	Sonestown
+17771	PA	Trout Run
+17772	PA	Turbotville
+17773	PA	Tylersville
+17774	PA	Unityville
+17776	PA	Waterville
+17777	PA	Watsontown
+17778	PA	Westport
+17779	PA	Woolrich
+17801	PA	Sunbury
+17810	PA	Allenwood
+17812	PA	Beaver Springs
+17813	PA	Beavertown
+17814	PA	Benton
+17815	PA	Bloomsburg
+17820	PA	Catawissa
+17821	PA	Danville
+17822	PA	Danville
+17823	PA	Dornsife
+17824	PA	Elysburg
+17825	PA	Excelsior
+17827	PA	Freeburg
+17828	PA	Gowen City
+17829	PA	Hartleton
+17830	PA	Herndon
+17831	PA	Hummels Wharf
+17832	PA	Marion Heights
+17833	PA	Kreamer
+17834	PA	Kulpmont
+17835	PA	Laurelton
+17836	PA	Leck Kill
+17837	PA	Lewisburg
+17839	PA	Light Street
+17840	PA	Locust Gap
+17841	PA	Mc Clure
+17842	PA	Middleburg
+17843	PA	Beaver Springs
+17844	PA	Mifflinburg
+17845	PA	Millmont
+17846	PA	Millville
+17847	PA	Milton
+17850	PA	Montandon
+17851	PA	Mount Carmel
+17853	PA	Mount Pleasant Mills
+17855	PA	New Berlin
+17856	PA	New Columbia
+17857	PA	Northumberland
+17858	PA	Numidia
+17859	PA	Orangeville
+17860	PA	Paxinos
+17861	PA	Paxtonville
+17862	PA	Penns Creek
+17864	PA	Port Trevorton
+17865	PA	Potts Grove
+17866	PA	Coal Township
+17867	PA	Rebuck
+17868	PA	Riverside
+17870	PA	Selinsgrove
+17872	PA	Shamokin
+17876	PA	Shamokin Dam
+17877	PA	Snydertown
+17878	PA	Stillwater
+17880	PA	Swengel
+17881	PA	Trevorton
+17882	PA	Troxelville
+17883	PA	Vicksburg
+17884	PA	Washingtonville
+17885	PA	Weikert
+17886	PA	West Milton
+17887	PA	White Deer
+17888	PA	Wilburton
+17889	PA	Winfield
+17901	PA	Pottsville
+17920	PA	Aristes
+17921	PA	Ashland
+17922	PA	Auburn
+17923	PA	Branchdale
+17925	PA	Brockton
+17927	PA	Centralia
+17929	PA	Cressona
+17930	PA	Cumbola
+17931	PA	Frackville
+17932	PA	Frackville
+17933	PA	Friedensburg
+17934	PA	Gilberton
+17935	PA	Girardville
+17936	PA	Gordon
+17938	PA	Hegins
+17939	PA	Helfenstein
+17941	PA	Klingerstown
+17942	PA	Landingville
+17943	PA	Lavelle
+17944	PA	Llewellyn
+17945	PA	Locustdale
+17946	PA	Lost Creek
+17948	PA	Mahanoy City
+17949	PA	Mahanoy Plane
+17951	PA	Mar Lin
+17952	PA	Mary D
+17953	PA	Middleport
+17954	PA	Minersville
+17957	PA	Muir
+17959	PA	New Philadelphia
+17960	PA	New Ringgold
+17961	PA	Orwigsburg
+17963	PA	Pine Grove
+17964	PA	Pitman
+17965	PA	Port Carbon
+17966	PA	Ravine
+17967	PA	Ringtown
+17968	PA	Sacramento
+17970	PA	Saint Clair
+17972	PA	Schuylkill Haven
+17974	PA	Seltzer
+17976	PA	Shenandoah
+17978	PA	Spring Glen
+17979	PA	Summit Station
+17980	PA	Tower City
+17981	PA	Tremont
+17982	PA	Tuscarora
+17983	PA	Valley View
+17985	PA	Zion Grove
+18001	PA	Lehigh Valley
+18002	PA	Lehigh Valley
+18003	PA	Lehigh Valley
+18010	PA	Ackermanville
+18011	PA	Alburtis
+18012	PA	Aquashicola
+18013	PA	Bangor
+18014	PA	Bath
+18015	PA	Bethlehem
+18016	PA	Bethlehem
+18017	PA	Bethlehem
+18018	PA	Bethlehem
+18025	PA	Bethlehem
+18030	PA	Bowmanstown
+18031	PA	Breinigsville
+18032	PA	Catasauqua
+18034	PA	Center Valley
+18035	PA	Cherryville
+18036	PA	Coopersburg
+18037	PA	Coplay
+18038	PA	Danielsville
+18039	PA	Durham
+18040	PA	Easton
+18041	PA	East Greenville
+18042	PA	Easton
+18043	PA	Easton
+18044	PA	Easton
+18045	PA	Easton
+18046	PA	East Texas
+18049	PA	Emmaus
+18050	PA	Flicksville
+18051	PA	Fogelsville
+18052	PA	Whitehall
+18053	PA	Germansville
+18054	PA	Green Lane
+18055	PA	Hellertown
+18056	PA	Hereford
+18058	PA	Kunkletown
+18059	PA	Laurys Station
+18060	PA	Limeport
+18062	PA	Macungie
+18063	PA	Martins Creek
+18064	PA	Nazareth
+18065	PA	Neffs
+18066	PA	New Tripoli
+18067	PA	Northampton
+18068	PA	Old Zionsville
+18069	PA	Orefield
+18070	PA	Palm
+18071	PA	Palmerton
+18072	PA	Pen Argyl
+18073	PA	Pennsburg
+18074	PA	Perkiomenville
+18076	PA	Red Hill
+18077	PA	Riegelsville
+18078	PA	Schnecksville
+18079	PA	Slatedale
+18080	PA	Slatington
+18081	PA	Springtown
+18083	PA	Stockertown
+18084	PA	Sumneytown
+18085	PA	Tatamy
+18086	PA	Treichlers
+18087	PA	Trexlertown
+18088	PA	Walnutport
+18091	PA	Wind Gap
+18092	PA	Zionsville
+18098	PA	Emmaus
+18099	PA	Emmaus
+18101	PA	Allentown
+18102	PA	Allentown
+18103	PA	Allentown
+18104	PA	Allentown
+18105	PA	Allentown
+18106	PA	Allentown
+18109	PA	Allentown
+18175	PA	Allentown
+18195	PA	Allentown
+18201	PA	Hazleton
+18210	PA	Albrightsville
+18211	PA	Andreas
+18212	PA	Ashfield
+18214	PA	Barnesville
+18216	PA	Beaver Meadows
+18218	PA	Coaldale
+18219	PA	Conyngham
+18220	PA	Delano
+18221	PA	Drifton
+18222	PA	Drums
+18223	PA	Ebervale
+18224	PA	Freeland
+18225	PA	Harleigh
+18229	PA	Jim Thorpe
+18230	PA	Junedale
+18231	PA	Kelayres
+18232	PA	Lansford
+18234	PA	Lattimer Mines
+18235	PA	Lehighton
+18237	PA	McAdoo
+18239	PA	Milnesville
+18240	PA	Nesquehoning
+18241	PA	Nuremberg
+18242	PA	Oneida
+18243	PA	Pardeesville
+18244	PA	Parryville
+18245	PA	Quakake
+18246	PA	Rock Glen
+18247	PA	Saint Johns
+18248	PA	Sheppton
+18249	PA	Sugarloaf
+18250	PA	Summit Hill
+18251	PA	Sybertsville
+18252	PA	Tamaqua
+18254	PA	Tresckow
+18255	PA	Weatherly
+18256	PA	Weston
+18301	PA	East Stroudsburg
+18320	PA	Analomink
+18321	PA	Bartonsville
+18322	PA	Brodheadsville
+18323	PA	Buck Hill Falls
+18324	PA	Bushkill
+18325	PA	Canadensis
+18326	PA	Cresco
+18327	PA	Delaware Water Gap
+18328	PA	Dingmans Ferry
+18330	PA	Effort
+18331	PA	Gilbert
+18332	PA	Henryville
+18333	PA	Kresgeville
+18334	PA	Long Pond
+18335	PA	Marshalls Creek
+18336	PA	Matamoras
+18337	PA	Milford
+18340	PA	Millrift
+18341	PA	Minisink Hills
+18342	PA	Mountainhome
+18343	PA	Mount Bethel
+18344	PA	Mount Pocono
+18346	PA	Pocono Summit
+18347	PA	Pocono Lake
+18348	PA	Pocono Lake Preserve
+18349	PA	Pocono Manor
+18350	PA	Pocono Pines
+18351	PA	Portland
+18352	PA	Reeders
+18353	PA	Saylorsburg
+18354	PA	Sciota
+18355	PA	Scotrun
+18356	PA	Shawnee On Delaware
+18357	PA	Skytop
+18360	PA	Stroudsburg
+18370	PA	Swiftwater
+18371	PA	Tamiment
+18372	PA	Tannersville
+18373	PA	Unity House
+18401	PA	Aldenville
+18403	PA	Archbald
+18405	PA	Beach Lake
+18407	PA	Carbondale
+18410	PA	Chinchilla
+18411	PA	Clarks Summit
+18413	PA	Clifford
+18414	PA	Dalton
+18415	PA	Damascus
+18416	PA	Elmhurst
+18417	PA	Equinunk
+18419	PA	Factoryville
+18420	PA	Fleetville
+18421	PA	Forest City
+18424	PA	Gouldsboro
+18425	PA	Greeley
+18426	PA	Greentown
+18427	PA	Hamlin
+18428	PA	Hawley
+18430	PA	Herrick Center
+18431	PA	Honesdale
+18433	PA	Jermyn
+18434	PA	Jessup
+18435	PA	Lackawaxen
+18436	PA	Lake Ariel
+18437	PA	Lake Como
+18438	PA	Lakeville
+18439	PA	Lakewood
+18440	PA	La Plume
+18441	PA	Lenoxville
+18443	PA	Milanville
+18444	PA	Moscow
+18445	PA	Newfoundland
+18446	PA	Nicholson
+18447	PA	Olyphant
+18448	PA	Olyphant
+18449	PA	Orson
+18451	PA	Paupack
+18452	PA	Peckville
+18453	PA	Pleasant Mount
+18454	PA	Poyntelle
+18455	PA	Preston Park
+18456	PA	Prompton
+18457	PA	Rowland
+18458	PA	Shohola
+18459	PA	South Canaan
+18460	PA	South Sterling
+18461	PA	Starlight
+18462	PA	Starrucca
+18463	PA	Sterling
+18464	PA	Tafton
+18465	PA	Thompson
+18466	PA	Tobyhanna
+18469	PA	Tyler Hill
+18470	PA	Union Dale
+18471	PA	Waverly
+18472	PA	Waymart
+18473	PA	White Mills
+18501	PA	Scranton
+18502	PA	Scranton
+18503	PA	Scranton
+18504	PA	Scranton
+18505	PA	Scranton
+18507	PA	Moosic
+18508	PA	Scranton
+18509	PA	Scranton
+18510	PA	Scranton
+18512	PA	Scranton
+18514	PA	Scranton
+18515	PA	Scranton
+18517	PA	Taylor
+18518	PA	Old Forge
+18519	PA	Dickson City
+18522	PA	Scranton
+18540	PA	Scranton
+18577	PA	Scranton
+18601	PA	Beach Haven
+18602	PA	Bear Creek
+18603	PA	Berwick
+18610	PA	Blakeslee
+18611	PA	Cambra
+18612	PA	Dallas
+18614	PA	Dushore
+18615	PA	Falls
+18616	PA	Forksville
+18617	PA	Glen Lyon
+18618	PA	Harveys Lake
+18619	PA	Hillsgrove
+18621	PA	Hunlock Creek
+18622	PA	Huntington Mills
+18623	PA	Laceyville
+18624	PA	Lake Harmony
+18625	PA	Lake Winola
+18626	PA	Laporte
+18627	PA	Lehman
+18628	PA	Lopez
+18629	PA	Mehoopany
+18630	PA	Meshoppen
+18631	PA	Mifflinville
+18632	PA	Mildred
+18634	PA	Nanticoke
+18635	PA	Nescopeck
+18636	PA	Noxen
+18637	PA	Nuangola
+18640	PA	Pittston
+18641	PA	Pittston
+18642	PA	Duryea
+18643	PA	Pittston
+18644	PA	Wyoming
+18651	PA	Plymouth
+18653	PA	Ransom
+18654	PA	Shawanese
+18655	PA	Shickshinny
+18656	PA	Sweet Valley
+18657	PA	Tunkhannock
+18660	PA	Wapwallopen
+18661	PA	White Haven
+18690	PA	Dallas
+18701	PA	Wilkes Barre
+18702	PA	Wilkes Barre
+18703	PA	Wilkes Barre
+18704	PA	Kingston
+18705	PA	Wilkes Barre
+18706	PA	Wilkes Barre
+18707	PA	Mountain Top
+18708	PA	Shavertown
+18709	PA	Luzerne
+18710	PA	Wilkes Barre
+18711	PA	Wilkes Barre
+18761	PA	Wilkes Barre
+18762	PA	Wilkes Barre
+18763	PA	Wilkes Barre
+18764	PA	Wilkes Barre
+18765	PA	Wilkes Barre
+18766	PA	Wilkes Barre
+18767	PA	Wilkes Barre
+18768	PA	Wilkes Barre
+18769	PA	Wilkes Barre
+18773	PA	Wilkes Barre
+18774	PA	Wilkes Barre
+18801	PA	Montrose
+18810	PA	Athens
+18812	PA	Brackney
+18813	PA	Brooklyn
+18814	PA	Burlington
+18815	PA	Camptown
+18816	PA	Dimock
+18817	PA	East Smithfield
+18818	PA	Friendsville
+18820	PA	Gibson
+18821	PA	Great Bend
+18822	PA	Hallstead
+18823	PA	Harford
+18824	PA	Hop Bottom
+18825	PA	Jackson
+18826	PA	Kingsley
+18827	PA	Lanesboro
+18828	PA	Lawton
+18829	PA	Le Raysville
+18830	PA	Little Meadows
+18831	PA	Milan
+18832	PA	Monroeton
+18833	PA	New Albany
+18834	PA	New Milford
+18837	PA	Rome
+18839	PA	Rushville
+18840	PA	Sayre
+18842	PA	South Gibson
+18843	PA	South Montrose
+18844	PA	Springville
+18845	PA	Stevensville
+18846	PA	Sugar Run
+18847	PA	Susquehanna
+18848	PA	Towanda
+18850	PA	Ulster
+18851	PA	Warren Center
+18853	PA	Wyalusing
+18854	PA	Wysox
+18901	PA	Doylestown
+18910	PA	Bedminster
+18911	PA	Blooming Glen
+18912	PA	Buckingham
+18913	PA	Carversville
+18914	PA	Chalfont
+18915	PA	Colmar
+18916	PA	Danboro
+18917	PA	Dublin
+18918	PA	Earlington
+18920	PA	Erwinna
+18921	PA	Ferndale
+18922	PA	Forest Grove
+18923	PA	Fountainville
+18924	PA	Franconia
+18925	PA	Furlong
+18926	PA	Gardenville
+18927	PA	Hilltown
+18928	PA	Holicong
+18929	PA	Jamison
+18930	PA	Kintnersville
+18931	PA	Lahaska
+18932	PA	Line Lexington
+18933	PA	Lumberville
+18934	PA	Mechanicsville
+18935	PA	Milford Square
+18936	PA	Montgomeryville
+18938	PA	New Hope
+18940	PA	Newtown
+18942	PA	Ottsville
+18943	PA	Penns Park
+18944	PA	Perkasie
+18946	PA	Pineville
+18947	PA	Pipersville
+18949	PA	Plumsteadville
+18950	PA	Point Pleasant
+18951	PA	Quakertown
+18953	PA	Revere
+18954	PA	Richboro
+18955	PA	Richlandtown
+18956	PA	Rushland
+18957	PA	Salford
+18958	PA	Salfordville
+18960	PA	Sellersville
+18962	PA	Silverdale
+18963	PA	Solebury
+18964	PA	Souderton
+18966	PA	Southampton
+18968	PA	Spinnerstown
+18969	PA	Telford
+18970	PA	Trumbauersville
+18971	PA	Tylersport
+18972	PA	Upper Black Eddy
+18974	PA	Warminster
+18976	PA	Warrington
+18977	PA	Washington Crossing
+18979	PA	Woxall
+18980	PA	Wycombe
+18981	PA	Zionhill
+18991	PA	Warminster
+19001	PA	Abington
+19002	PA	Ambler
+19003	PA	Ardmore
+19004	PA	Bala Cynwyd
+19006	PA	Huntingdon Valley
+19007	PA	Bristol
+19008	PA	Broomall
+19009	PA	Bryn Athyn
+19010	PA	Bryn Mawr
+19012	PA	Cheltenham
+19013	PA	Chester
+19014	PA	Aston
+19015	PA	Brookhaven
+19016	PA	Chester
+19017	PA	Chester Heights
+19018	PA	Clifton Heights
+19019	PA	Philadelphia
+19020	PA	Bensalem
+19021	PA	Croydon
+19022	PA	Crum Lynne
+19023	PA	Darby
+19025	PA	Dresher
+19026	PA	Drexel Hill
+19027	PA	Elkins Park
+19028	PA	Edgemont
+19029	PA	Essington
+19030	PA	Fairless Hills
+19031	PA	Flourtown
+19032	PA	Folcroft
+19033	PA	Folsom
+19034	PA	Fort Washington
+19035	PA	Gladwyne
+19036	PA	Glenolden
+19037	PA	Glen Riddle Lima
+19038	PA	Glenside
+19039	PA	Gradyville
+19040	PA	Hatboro
+19041	PA	Haverford
+19043	PA	Holmes
+19044	PA	Horsham
+19046	PA	Jenkintown
+19047	PA	Langhorne
+19048	PA	Langhorne
+19049	PA	Langhorne
+19050	PA	Lansdowne
+19052	PA	Lenni
+19053	PA	Feasterville Trevose
+19054	PA	Levittown
+19055	PA	Levittown
+19056	PA	Levittown
+19057	PA	Levittown
+19058	PA	Levittown
+19059	PA	Levittown
+19061	PA	Marcus Hook
+19063	PA	Media
+19064	PA	Springfield
+19065	PA	Media
+19066	PA	Merion Station
+19067	PA	Morrisville
+19070	PA	Morton
+19072	PA	Narberth
+19073	PA	Newtown Square
+19074	PA	Norwood
+19075	PA	Oreland
+19076	PA	Prospect Park
+19078	PA	Ridley Park
+19079	PA	Sharon Hill
+19080	PA	Wayne
+19081	PA	Swarthmore
+19082	PA	Upper Darby
+19083	PA	Havertown
+19085	PA	Villanova
+19086	PA	Wallingford
+19087	PA	Wayne
+19088	PA	Wayne
+19089	PA	Wayne
+19090	PA	Willow Grove
+19091	PA	Media
+19092	PA	Philadelphia
+19093	PA	Philadelphia
+19094	PA	Woodlyn
+19095	PA	Wyncote
+19096	PA	Wynnewood
+19098	PA	Holmes
+19099	PA	Philadelphia
+19101	PA	Philadelphia
+19102	PA	Philadelphia
+19103	PA	Philadelphia
+19104	PA	Philadelphia
+19105	PA	Philadelphia
+19106	PA	Philadelphia
+19107	PA	Philadelphia
+19108	PA	Philadelphia
+19109	PA	Philadelphia
+19110	PA	Philadelphia
+19111	PA	Philadelphia
+19112	PA	Philadelphia
+19113	PA	Philadelphia
+19114	PA	Philadelphia
+19115	PA	Philadelphia
+19116	PA	Philadelphia
+19118	PA	Philadelphia
+19119	PA	Philadelphia
+19120	PA	Philadelphia
+19121	PA	Philadelphia
+19122	PA	Philadelphia
+19123	PA	Philadelphia
+19124	PA	Philadelphia
+19125	PA	Philadelphia
+19126	PA	Philadelphia
+19127	PA	Philadelphia
+19128	PA	Philadelphia
+19129	PA	Philadelphia
+19130	PA	Philadelphia
+19131	PA	Philadelphia
+19132	PA	Philadelphia
+19133	PA	Philadelphia
+19134	PA	Philadelphia
+19135	PA	Philadelphia
+19136	PA	Philadelphia
+19137	PA	Philadelphia
+19138	PA	Philadelphia
+19139	PA	Philadelphia
+19140	PA	Philadelphia
+19141	PA	Philadelphia
+19142	PA	Philadelphia
+19143	PA	Philadelphia
+19144	PA	Philadelphia
+19145	PA	Philadelphia
+19146	PA	Philadelphia
+19147	PA	Philadelphia
+19148	PA	Philadelphia
+19149	PA	Philadelphia
+19150	PA	Philadelphia
+19151	PA	Philadelphia
+19152	PA	Philadelphia
+19153	PA	Philadelphia
+19154	PA	Philadelphia
+19155	PA	Philadelphia
+19160	PA	Philadelphia
+19161	PA	Philadelphia
+19162	PA	Philadelphia
+19170	PA	Philadelphia
+19171	PA	Philadelphia
+19172	PA	Philadelphia
+19173	PA	Philadelphia
+19175	PA	Philadelphia
+19177	PA	Philadelphia
+19178	PA	Philadelphia
+19179	PA	Philadelphia
+19181	PA	Philadelphia
+19182	PA	Philadelphia
+19183	PA	Philadelphia
+19184	PA	Philadelphia
+19185	PA	Philadelphia
+19187	PA	Philadelphia
+19188	PA	Philadelphia
+19191	PA	Philadelphia
+19192	PA	Philadelphia
+19193	PA	Philadelphia
+19196	PA	Philadelphia
+19197	PA	Philadelphia
+19244	PA	Philadelphia
+19255	PA	Philadelphia
+19301	PA	Paoli
+19310	PA	Atglen
+19311	PA	Avondale
+19312	PA	Berwyn
+19316	PA	Brandamore
+19317	PA	Chadds Ford
+19318	PA	Chatham
+19319	PA	Cheyney
+19320	PA	Coatesville
+19330	PA	Cochranville
+19331	PA	Concordville
+19333	PA	Devon
+19335	PA	Downingtown
+19339	PA	Concordville
+19340	PA	Concordville
+19341	PA	Exton
+19342	PA	Glen Mills
+19343	PA	Glenmoore
+19344	PA	Honey Brook
+19345	PA	Immaculata
+19346	PA	Kelton
+19347	PA	Kemblesville
+19348	PA	Kennett Square
+19350	PA	Landenberg
+19351	PA	Lewisville
+19352	PA	Lincoln University
+19353	PA	Lionville
+19354	PA	Lyndell
+19355	PA	Malvern
+19357	PA	Mendenhall
+19358	PA	Modena
+19360	PA	New London
+19362	PA	Nottingham
+19363	PA	Oxford
+19365	PA	Parkesburg
+19366	PA	Pocopson
+19367	PA	Pomeroy
+19369	PA	Sadsburyville
+19370	PA	Steelville
+19371	PA	Suplee
+19372	PA	Thorndale
+19373	PA	Thornton
+19374	PA	Toughkenamon
+19375	PA	Unionville
+19376	PA	Wagontown
+19380	PA	West Chester
+19381	PA	West Chester
+19382	PA	West Chester
+19383	PA	West Chester
+19390	PA	West Grove
+19395	PA	Westtown
+19397	PA	Southeastern
+19398	PA	Southeastern
+19399	PA	Southeastern
+19401	PA	Norristown
+19403	PA	Norristown
+19404	PA	Norristown
+19405	PA	Bridgeport
+19406	PA	King Of Prussia
+19407	PA	Audubon
+19408	PA	Eagleville
+19409	PA	Fairview Village
+19420	PA	Arcola
+19421	PA	Birchrunville
+19422	PA	Blue Bell
+19423	PA	Cedars
+19424	PA	Blue Bell
+19425	PA	Chester Springs
+19426	PA	Collegeville
+19428	PA	Conshohocken
+19429	PA	Conshohocken
+19430	PA	Creamery
+19432	PA	Devault
+19435	PA	Frederick
+19436	PA	Gwynedd
+19437	PA	Gwynedd Valley
+19438	PA	Harleysville
+19440	PA	Hatfield
+19441	PA	Harleysville
+19442	PA	Kimberton
+19443	PA	Kulpsville
+19444	PA	Lafayette Hill
+19446	PA	Lansdale
+19450	PA	Lederach
+19451	PA	Mainland
+19452	PA	Miquon
+19453	PA	Mont Clare
+19454	PA	North Wales
+19455	PA	North Wales
+19456	PA	Oaks
+19457	PA	Parker Ford
+19460	PA	Phoenixville
+19462	PA	Plymouth Meeting
+19464	PA	Pottstown
+19465	PA	Pottstown
+19468	PA	Royersford
+19470	PA	Saint Peters
+19472	PA	Sassamansville
+19473	PA	Schwenksville
+19474	PA	Skippack
+19475	PA	Spring City
+19477	PA	Spring House
+19478	PA	Spring Mount
+19480	PA	Uwchland
+19481	PA	Valley Forge
+19482	PA	Valley Forge
+19483	PA	Valley Forge
+19484	PA	Valley Forge
+19485	PA	Valley Forge
+19486	PA	West Point
+19487	PA	King Of Prussia
+19488	PA	Norristown
+19489	PA	Norristown
+19490	PA	Worcester
+19492	PA	Zieglerville
+19493	PA	Valley Forge
+19494	PA	Valley Forge
+19495	PA	Valley Forge
+19496	PA	Valley Forge
+19501	PA	Adamstown
+19503	PA	Bally
+19504	PA	Barto
+19505	PA	Bechtelsville
+19506	PA	Bernville
+19507	PA	Bethel
+19508	PA	Birdsboro
+19510	PA	Blandon
+19511	PA	Bowers
+19512	PA	Boyertown
+19516	PA	Centerport
+19517	PA	Dauberville
+19518	PA	Douglassville
+19519	PA	Earlville
+19520	PA	Elverson
+19522	PA	Fleetwood
+19523	PA	Geigertown
+19525	PA	Gilbertsville
+19526	PA	Hamburg
+19529	PA	Kempton
+19530	PA	Kutztown
+19533	PA	Leesport
+19534	PA	Lenhartsville
+19535	PA	Limekiln
+19536	PA	Lyon Station
+19538	PA	Maxatawny
+19539	PA	Mertztown
+19540	PA	Mohnton
+19541	PA	Mohrsville
+19542	PA	Monocacy Station
+19543	PA	Morgantown
+19544	PA	Mount Aetna
+19545	PA	New Berlinville
+19547	PA	Oley
+19548	PA	Pine Forge
+19549	PA	Port Clinton
+19550	PA	Rehrersburg
+19551	PA	Robesonia
+19554	PA	Shartlesville
+19555	PA	Shoemakersville
+19557	PA	Stony Run
+19559	PA	Strausstown
+19560	PA	Temple
+19562	PA	Topton
+19564	PA	Virginville
+19565	PA	Wernersville
+19567	PA	Womelsdorf
+19601	PA	Reading
+19602	PA	Reading
+19603	PA	Reading
+19604	PA	Reading
+19605	PA	Reading
+19606	PA	Reading
+19607	PA	Reading
+19608	PA	Reading
+19609	PA	Reading
+19610	PA	Reading
+19611	PA	Reading
+19612	PA	Reading
+19640	PA	Reading
+19701	DE	Bear
+19702	DE	Newark
+19703	DE	Claymont
+19706	DE	Delaware City
+19707	DE	Hockessin
+19708	DE	Kirkwood
+19709	DE	Middletown
+19710	DE	Montchanin
+19711	DE	Newark
+19712	DE	Newark
+19713	DE	Newark
+19714	DE	Newark
+19715	DE	Newark
+19716	DE	Newark
+19717	DE	Newark
+19718	DE	Newark
+19720	DE	New Castle
+19721	DE	New Castle
+19725	DE	Newark
+19726	DE	Newark
+19730	DE	Odessa
+19731	DE	Port Penn
+19732	DE	Rockland
+19733	DE	Saint Georges
+19734	DE	Townsend
+19735	DE	Winterthur
+19736	DE	Yorklyn
+19801	DE	Wilmington
+19802	DE	Wilmington
+19803	DE	Wilmington
+19804	DE	Wilmington
+19805	DE	Wilmington
+19806	DE	Wilmington
+19807	DE	Wilmington
+19808	DE	Wilmington
+19809	DE	Wilmington
+19810	DE	Wilmington
+19850	DE	Wilmington
+19880	DE	Wilmington
+19884	DE	Wilmington
+19885	DE	Wilmington
+19886	DE	Wilmington
+19887	DE	Wilmington
+19889	DE	Wilmington
+19890	DE	Wilmington
+19891	DE	Wilmington
+19892	DE	Wilmington
+19893	DE	Wilmington
+19894	DE	Wilmington
+19895	DE	Wilmington
+19896	DE	Wilmington
+19897	DE	Wilmington
+19898	DE	Wilmington
+19899	DE	Wilmington
+19901	DE	Dover
+19902	DE	Dover Afb
+19903	DE	Dover
+19904	DE	Dover
+19905	DE	Dover
+19930	DE	Bethany Beach
+19931	DE	Bethel
+19933	DE	Bridgeville
+19934	DE	Camden Wyoming
+19936	DE	Cheswold
+19938	DE	Clayton
+19939	DE	Dagsboro
+19940	DE	Delmar
+19941	DE	Ellendale
+19942	DE	Farmington
+19943	DE	Felton
+19944	DE	Fenwick Island
+19945	DE	Frankford
+19946	DE	Frederica
+19947	DE	Georgetown
+19950	DE	Greenwood
+19951	DE	Harbeson
+19952	DE	Harrington
+19953	DE	Hartly
+19954	DE	Houston
+19955	DE	Kenton
+19956	DE	Laurel
+19958	DE	Lewes
+19960	DE	Lincoln
+19961	DE	Little Creek
+19962	DE	Magnolia
+19963	DE	Milford
+19964	DE	Marydel
+19966	DE	Millsboro
+19967	DE	Millville
+19968	DE	Milton
+19969	DE	Nassau
+19970	DE	Ocean View
+19971	DE	Rehoboth Beach
+19973	DE	Seaford
+19975	DE	Selbyville
+19977	DE	Smyrna
+19979	DE	Viola
+19980	DE	Woodside
