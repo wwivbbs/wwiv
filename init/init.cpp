@@ -506,7 +506,7 @@ void convcfg()
         Printf("Converting config.dat to 4.30/5.00 format...\n");
         textattr(COLOR_CYAN);
         read(hFile, (void *) (&syscfg), sizeof(configrec));
-        sprintf(syscfg.menudir, "%sMENUS%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
+        sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
         strcpy(syscfg.logoff_c, " ");
         strcpy(syscfg.v_scan_c, " ");
 
