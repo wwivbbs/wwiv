@@ -59,6 +59,10 @@ echo Create Menus (EN)
 cd %WORKSPACE%\bbs\admin\menus\en
 %ZIP_EXE% a -tzip -r %WORKSPACE%\release\en-menus.zip *
 
+cd %WORKSPACE%\bbs\admin
+%ZIP_EXE% a -tzip -r %WORKSPACE%\release\zip-city.zip zip-city\*
+%ZIP_EXE% a -tzip -r %WORKSPACE%\release\regions.zip regions\*
+
 cd %WORKSPACE%\
 echo Copying files to staging directory.
 copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe
