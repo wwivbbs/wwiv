@@ -48,13 +48,13 @@ struct resultrec {
 };
 
 struct initinfo_rec {
-    int numexterns;
-    int numeditors;
-    int num_languages;
-    int net_num_max;
-    int num_subs;
-    int usernum;
-    int nNumMsgsInCurrentSub;
+  int numexterns;
+  int numeditors;
+  int num_languages;
+  int net_num_max;
+  int num_subs;
+  int usernum;
+  int nNumMsgsInCurrentSub;
 };
 #pragma pack(pop)
 

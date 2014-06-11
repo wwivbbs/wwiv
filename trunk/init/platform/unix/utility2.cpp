@@ -22,8 +22,8 @@
 
 
 long filelength(int handle) {
-  struct stat fileinfo; 
-  if (fstat(handle, &fileinfo) != 0) { 
+  struct stat fileinfo;
+  if (fstat(handle, &fileinfo) != 0) {
     return -1;
   }
   return fileinfo.st_size;

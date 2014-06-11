@@ -32,47 +32,60 @@
 #define __unix__ 1
 #endif
 
-class WFindFile
-{
-protected:
-	char szFileName[MAX_PATH];
-	char szFileSpec[MAX_PATH];
-	long lFileSize;
-	long lTypeMask;
-	unsigned char nFileType;
-	bool bIsOpen;
+class WFindFile {
+ protected:
+  char szFileName[MAX_PATH];
+  char szFileSpec[MAX_PATH];
+  long lFileSize;
+  long lTypeMask;
+  unsigned char nFileType;
+  bool bIsOpen;
 
-	void __open(const char * pszFileSpec, unsigned int nTypeMask) {
-		strcpy(szFileSpec, pszFileSpec);
-		lTypeMask = nTypeMask;
-	}
+  void __open(const char * pszFileSpec, unsigned int nTypeMask) {
+    strcpy(szFileSpec, pszFileSpec);
+    lTypeMask = nTypeMask;
+  }
 
-	void __close() { szFileName[0] = '\0'; szFileSpec[0] = '\0'; lFileSize=0; lTypeMask = 0; bIsOpen=false;}
+  void __close() {
+    szFileName[0] = '\0';
+    szFileSpec[0] = '\0';
+    lFileSize = 0;
+    lTypeMask = 0;
+    bIsOpen = false;
+  }
 
 #if defined (_WIN32)
-	WIN32_FIND_DATA ffdata;
-	HANDLE	hFind;
+  WIN32_FIND_DATA ffdata;
+  HANDLE  hFind;
 #elif defined (__unix__)
-	bool dos_flag;
-	struct dirent **entries;
-	int nMatches;
-	int nCurrentEntry;
+  bool dos_flag;
+  struct dirent **entries;
+  int nMatches;
+  int nCurrentEntry;
 #else
 #error "No platform specified, cannot build this __FILE__"
 #endif
 
 
-public:
-	WFindFile() { this->__close(); }
-	bool open(const char * pszFileSpec, unsigned int nTypeMask);
-	bool next();
-	bool close();
-	virtual ~WFindFile() { close(); }
+ public:
+  WFindFile() {
+    this->__close();
+  }
+  bool open(const char * pszFileSpec, unsigned int nTypeMask);
+  bool next();
+  bool close();
+  virtual ~WFindFile() {
+    close();
+  }
 
-	const char * GetFileName() { return (const char*) &szFileName; }
-	long GetFileSize() { return lFileSize; }
-	bool IsDirectory();
-	bool IsFile();
+  const char * GetFileName() {
+    return (const char*) &szFileName;
+  }
+  long GetFileSize() {
+    return lFileSize;
+  }
+  bool IsDirectory();
+  bool IsFile();
 };
 
 
@@ -80,9 +93,9 @@ public:
  * Bit-mapped values for what WFindFile is searching
  */
 enum {
-	WFINDFILE_FILES = 0x01,
-	WFINDFILE_DIRS	= 0x02
+  WFINDFILE_FILES = 0x01,
+  WFINDFILE_DIRS  = 0x02
 };
 
 
-#endif	// __INCLUDED_WFNDFILE_H__
+#endif  // __INCLUDED_WFNDFILE_H__
