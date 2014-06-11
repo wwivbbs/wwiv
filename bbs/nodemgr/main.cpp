@@ -28,6 +28,7 @@ using namespace std;
 
 #define MAX_NODES 500
 #define BBSHOME "/home/bbs/"
+#define BBS_BINARY "bbs"
 
 configrec cfgRec;
 configoverrec *cfgOverlayRec = NULL;
@@ -157,7 +158,7 @@ void launchNode(int nodeNumber)
   fp = fopen(nodeFile, "wb");
   fclose(fp);
   char sysCmd[512];
-  sprintf((char *)sysCmd, "./wwiv /N%u /I%u", nodeNumber, nodeNumber);
+  sprintf((char *)sysCmd, "./%s /N%u /I%u", BBS_BINARY, nodeNumber, nodeNumber);
 
   printf("Invoking WWIV with cmd line:\n%s\n", sysCmd);
   system(sysCmd);
