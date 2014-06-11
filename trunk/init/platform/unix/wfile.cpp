@@ -235,14 +235,6 @@ bool WFile::Exists() const {
 }
 
 
-bool WFile::Delete( bool bUseTrashCan ) {
-	if( this->IsOpen() ) {
-		this->Close();
-	}
-	return ( unlink(m_szFileName ) == 0 ) ? true : false;
-}
-
-
 bool WFile::IsDirectory() {
 	struct stat statbuf;
 	stat(m_szFileName, &statbuf);
@@ -283,19 +275,6 @@ time_t WFile::GetFileTime() {
 // Static functions
 //
 
-bool WFile::Remove( const std::string fileName ) {
-	WWIV_ASSERT( !fileName.empty() );
-	return ( unlink(fileName.c_str()) ? false : true );
-}
-
-bool WFile::Remove( const std::string directoryName, const std::string fileName ) {
-	WWIV_ASSERT( !directoryName.empty() );
-	WWIV_ASSERT( !fileName.empty() );
-	std::stringstream fullFileName;
-	fullFileName << directoryName << fileName;
-	return WFile::Remove( fullFileName.str() );
-}
-
 bool WFile::Rename( const std::string origFileName, const std::string newFileName ) {
 	WWIV_ASSERT( !origFileName.empty() );
 	WWIV_ASSERT( !newFileName.empty() );
@@ -322,64 +301,16 @@ bool WFile::Exists( const std::string directoryName, const std::string fileName 
 	return Exists( fullFileName.str() );
 }
 
-
-bool WFile::SetFilePermissions( const std::string fileName, int nPermissions ) {
+bool WFile::SetFilePermissions(const std::string fileName, int nPermissions) {
 	WWIV_ASSERT( !fileName.empty() );
-	return ( chmod( fileName.c_str(), nPermissions ) == 0 ) ? true : false;
+	return (chmod(fileName.c_str(), nPermissions) == 0);
 }
 
-
-bool WFile::IsFileHandleValid( int hFile ) {
-	return ( hFile != WFile::invalid_handle ) ? true : false;
+bool WFile::IsFileHandleValid(int hFile) {
+	return (hFile != WFile::invalid_handle) ? true : false;
 }
 
-
-bool WFile::ExistsWildcard( const std::string pszWildCard ) {
+bool WFile::ExistsWildcard(const std::string pszWildCard) {
 	WFindFile fnd;
 	return(fnd.open(pszWildCard.c_str(), 0));
-}
-
-
-bool WFile::CopyFile( const std::string sourceFileName, const std::string destFileName ) {
-	if ( sourceFileName != destFileName && WFile::Exists( sourceFileName ) && !WFile::Exists( destFileName ) ) {
-		char *pBuffer = static_cast<char *>( malloc( 16400 ) );
-		if ( pBuffer == NULL ) {
-			return false;
-		}
-		int hSourceFile = open( sourceFileName.c_str(), O_RDONLY | O_BINARY );
-		if(!hSourceFile) {
-			free(pBuffer);
-			return false;
-		}
-
-		int hDestFile = open( destFileName.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE );
-		if(!hDestFile) {
-			free(pBuffer);
-			close(hSourceFile);
-			return false;
-		}
-
-		int i = read(hSourceFile, (void *) pBuffer, 16384);
-
-		while (i > 0) {
-			write(hDestFile, (void *) pBuffer, i);
-			i = read(hSourceFile, (void *) pBuffer, 16384);
-		}
-
-		hSourceFile=close(hSourceFile);
-		hDestFile=close(hDestFile);
-		free(pBuffer);
-	}
-
-	// I'm not sure about the logic here since you would think we should return true
-	// in the last block, and false here.  This seems fishy
-	return true;
-}
-
-bool WFile::MoveFile( const std::string sourceFileName, const std::string destFileName ) {
-	//TODO: Atani needs to see if Rushfan buggered up this implementation
-	if ( CopyFile( sourceFileName, destFileName ) ) {
-		return Remove( sourceFileName );
-	}
-	return false;
 }

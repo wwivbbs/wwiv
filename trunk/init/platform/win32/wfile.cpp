@@ -16,16 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef CopyFile
-#undef GetFileTime
-#undef GetFullPathName
-#undef MoveFile
-
-#include <shellapi.h>
-
 #include "platform/WFile.h"
 #include "platform/wfndfile.h"
 #include "wwivassert.h"
@@ -269,25 +259,8 @@ void WFile::SetLength( long lNewLength ) {
 	_chsize( m_hFile, lNewLength );
 }
 
-
 bool WFile::Exists() const {
 	return WFile::Exists( m_szFileName );
-}
-
-
-bool WFile::Delete(bool bUseTrashCan) {
-	if ( this->IsOpen() ) {
-		this->Close();
-	}
-	if ( bUseTrashCan ) {
-		SHFILEOPSTRUCT sh= {0};
-		sh.pFrom=m_szFileName;
-		sh.wFunc=FO_DELETE;
-		sh.fFlags=FOF_ALLOWUNDO;
-		return (SHFileOperation( &sh ) == 0 && sh.fAnyOperationsAborted == FALSE );
-	} else {
-		return DeleteFile( m_szFileName ) ? true : false;
-	}
 }
 
 bool WFile::IsDirectory() {
@@ -298,7 +271,6 @@ bool WFile::IsDirectory() {
 bool WFile::IsFile() {
 	return !this->IsDirectory();
 }
-
 
 bool WFile::SetFilePermissions( int nPermissions ) {
 	return( _chmod( m_szFileName, nPermissions ) == 0 ) ? true : false;
@@ -326,23 +298,6 @@ time_t WFile::GetFileTime() {
 //
 // Static functions
 //
-
-bool WFile::Remove( const std::string fileName ) {
-	return ( DeleteFile( fileName.c_str() ) ) ? true : false;
-}
-
-
-bool WFile::Remove( const std::string directoryName, const std::string fileName ) {
-	std::string strFullFileName = directoryName;
-	strFullFileName += fileName;
-	return WFile::Remove( strFullFileName );
-}
-
-
-bool WFile::Rename( const std::string origFileName, const std::string newFileName ) {
-	return MoveFile( origFileName.c_str(), newFileName.c_str() ) ? true : false;
-}
-
 
 bool WFile::Exists( const std::string fileName ) {
 	// If one of these assertions are thrown, then replace this call with
@@ -379,14 +334,3 @@ bool WFile::SetFilePermissions( const std::string fileName, int nPermissions ) {
 bool WFile::IsFileHandleValid( int hFile ) {
 	return ( hFile != WFile::invalid_handle ) ? true : false;
 }
-
-bool WFile::CopyFile( const std::string sourceFileName, const std::string destFileName ) {
-	return ::CopyFileA(sourceFileName.c_str(), destFileName.c_str(), FALSE) ? true : false;
-}
-
-bool WFile::MoveFile( const std::string sourceFileName, const std::string destFileName ) {
-	return ::MoveFileA(sourceFileName.c_str(), destFileName.c_str()) ? true : false;
-}
-
-
-

@@ -16,7 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #ifndef __INCLUDED_PLATFORM_WFILLE_H__
 #define __INCLUDED_PLATFORM_WFILLE_H__
 
@@ -25,13 +24,6 @@
 
 #ifndef MAX_PATH
 #define MAX_PATH 260
-#endif
-
-#if defined (_WIN32)
-#undef CopyFile
-#undef GetFileTime
-#undef GetFullPathName
-#undef MoveFile
 #endif
 
 class WLogger {
@@ -50,7 +42,6 @@ class WLogger {
  * WFile - File I/O Class.
  */
 class WFile {
-
   public:
 	/////////////////////////////////////////////////////////////////////////
 	//
@@ -145,7 +136,6 @@ class WFile {
 	virtual void SetLength( long lNewLength );
 
 	virtual bool Exists() const;
-	virtual bool Delete( bool bUseTrashCan = false );
 
 	virtual bool IsDirectory();
 	virtual bool IsFile();
@@ -185,14 +175,10 @@ class WFile {
 	// static functions
 	//
 
-	static bool Remove( const std::string fileName );
-	static bool Remove( const std::string directoryName, const std::string fileName );
 	static bool Rename( const std::string origFileName, const std::string newFileName );
 	static bool Exists( const std::string fileName );
 	static bool Exists( const std::string directoryName, const std::string fileName );
 	static bool ExistsWildcard( const std::string wildCard );
-	static bool CopyFile( const std::string sourceFileName, const std::string destFileName );
-	static bool MoveFile( const std::string sourceFileName, const std::string destFileName );
 
 	static bool SetFilePermissions( const std::string fileName, int nPermissions );
 	static bool IsFileHandleValid( int hFile );
