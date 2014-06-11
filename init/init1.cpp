@@ -193,7 +193,6 @@ int yn() {
 	int ch=0;
 	do {
 		ch = upcase(getch());
-		printf("[%c - %d]", ch, ch);
 	} while ((ch != *str_yes) &&
 		(ch != *str_no) &&
 		(ch != 13) && (ch!=27));
