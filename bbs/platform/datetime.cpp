@@ -20,48 +20,48 @@
 #include "wwiv.h"
 
 char *dateFromTimeTForLog(time_t t) {
-	static char szDateString[11];
-	struct tm * pTm = localtime( &t );
+  static char szDateString[11];
+  struct tm * pTm = localtime(&t);
 
-	snprintf( szDateString, sizeof( szDateString ), "%02d%02d%02d", pTm->tm_year % 100, pTm->tm_mon+1, pTm->tm_mday );
-	return szDateString;
+  snprintf(szDateString, sizeof(szDateString), "%02d%02d%02d", pTm->tm_year % 100, pTm->tm_mon + 1, pTm->tm_mday);
+  return szDateString;
 }
 
 char *dateFromTimeT(time_t t) {
-	static char szDateString[11];
-	struct tm * pTm = localtime( &t );
+  static char szDateString[11];
+  struct tm * pTm = localtime(&t);
 
-	snprintf( szDateString, sizeof( szDateString ), "%02d/%02d/%02d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year % 100 );
-	return szDateString;
+  snprintf(szDateString, sizeof(szDateString), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+  return szDateString;
 }
 
 char *date() {
-	static char szDateString[11];
-	time_t t = time( NULL );
-	struct tm * pTm = localtime( &t );
+  static char szDateString[11];
+  time_t t = time(NULL);
+  struct tm * pTm = localtime(&t);
 
-	snprintf( szDateString, sizeof( szDateString ), "%02d/%02d/%02d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year % 100 );
-	return szDateString;
+  snprintf(szDateString, sizeof(szDateString), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+  return szDateString;
 }
 
 
 char *fulldate() {
-	static char szDateString[11];
-	time_t t = time( NULL );
-	struct tm * pTm = localtime( &t );
+  static char szDateString[11];
+  time_t t = time(NULL);
+  struct tm * pTm = localtime(&t);
 
-	snprintf( szDateString, sizeof( szDateString ), "%02d/%02d/%4d", pTm->tm_mon+1, pTm->tm_mday, pTm->tm_year + 1900 );
-	return szDateString;
+  snprintf(szDateString, sizeof(szDateString), "%02d/%02d/%4d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year + 1900);
+  return szDateString;
 }
 
 
 char *times() {
-	static char szTimeString[9];
+  static char szTimeString[9];
 
-	time_t tim = time( NULL );
-	struct tm *t = localtime( &tim );
-	snprintf( szTimeString, sizeof( szTimeString ), "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec );
-	return szTimeString;
+  time_t tim = time(NULL);
+  struct tm *t = localtime(&tim);
+  snprintf(szTimeString, sizeof(szTimeString), "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
+  return szTimeString;
 }
 
 
@@ -71,19 +71,19 @@ char *times() {
 //
 
 time_t date_to_daten(const char *datet) {
-	if ( strlen( datet ) != 8 ) {
-		return 0;
-	}
+  if (strlen(datet) != 8) {
+    return 0;
+  }
 
-	time_t t = time( NULL );
-	struct tm * pTm = localtime( &t );
-	pTm->tm_mon		= atoi( datet );
-	pTm->tm_mday	= atoi( datet + 3 );
-	pTm->tm_year	= 1900 + atoi( datet + 6 );       // fixed for 1920-2019
-	if ( datet[6] < '2' ) {
-		pTm->tm_year += 100;
-	}
-	return mktime( pTm );
+  time_t t = time(NULL);
+  struct tm * pTm = localtime(&t);
+  pTm->tm_mon   = atoi(datet);
+  pTm->tm_mday  = atoi(datet + 3);
+  pTm->tm_year  = 1900 + atoi(datet + 6);         // fixed for 1920-2019
+  if (datet[6] < '2') {
+    pTm->tm_year += 100;
+  }
+  return mktime(pTm);
 }
 
 
@@ -97,45 +97,45 @@ time_t date_to_daten(const char *datet) {
  *     filetime("BBS.EXE"));
  *
  */
-void filedate( const char *pszFileName, char *pszReturnValue ) {
-	WFile file( pszFileName );
-	if (!file.Exists() && !file.Open(WFile::modeReadOnly)) {
-		return;
-	}
-	time_t tFileDate = file.GetFileTime();
-	struct tm *pTm = localtime( &tFileDate );
+void filedate(const char *pszFileName, char *pszReturnValue) {
+  WFile file(pszFileName);
+  if (!file.Exists() && !file.Open(WFile::modeReadOnly)) {
+    return;
+  }
+  time_t tFileDate = file.GetFileTime();
+  struct tm *pTm = localtime(&tFileDate);
 
-	// We use 9 here since that is the size of the date format MM/DD/YY + NULL
-	snprintf( pszReturnValue, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, ( pTm->tm_year % 100 ) );
+  // We use 9 here since that is the size of the date format MM/DD/YY + NULL
+  snprintf(pszReturnValue, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, (pTm->tm_year % 100));
 }
 
 
 double timer()
 /* This function returns the time, in seconds since midnight. */
 {
-	time_t ti       = time( NULL );
-	struct tm *t    = localtime( &ti );
+  time_t ti       = time(NULL);
+  struct tm *t    = localtime(&ti);
 
-	return static_cast<double>( t->tm_hour * SECONDS_PER_HOUR_FLOAT ) +
-        static_cast<double>( t->tm_min * SECONDS_PER_MINUTE_FLOAT ) +
-	    static_cast<double>( t->tm_sec );
+  return static_cast<double>(t->tm_hour * SECONDS_PER_HOUR_FLOAT) +
+         static_cast<double>(t->tm_min * SECONDS_PER_MINUTE_FLOAT) +
+         static_cast<double>(t->tm_sec);
 }
 
 
 long timer1()
 /* This function returns the time, in ticks since midnight. */
 {
-    static const double TICKS_PER_SECOND = 18.2;
-	return static_cast<long>( timer() * TICKS_PER_SECOND );
+  static const double TICKS_PER_SECOND = 18.2;
+  return static_cast<long>(timer() * TICKS_PER_SECOND);
 }
 
 
 void ToggleScrollLockKey() {
 #if defined( _WIN32 )
-	// Simulate a key press
-	keybd_event( VK_SCROLL, 0x45, KEYEVENTF_EXTENDEDKEY | 0, 0 );
-	// Simulate a key release
-	keybd_event( VK_SCROLL, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
+  // Simulate a key press
+  keybd_event(VK_SCROLL, 0x45, KEYEVENTF_EXTENDEDKEY | 0, 0);
+  // Simulate a key release
+  keybd_event(VK_SCROLL, 0x45, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
 #endif // _WIN32
 }
 
@@ -146,30 +146,30 @@ void ToggleScrollLockKey() {
  */
 bool sysop1() {
 #if defined (_WIN32)
-	return ( GetKeyState( VK_SCROLL ) & 0x1 );
+  return (GetKeyState(VK_SCROLL) & 0x1);
 #else
-	return false;
+  return false;
 #endif
 }
 
 
-bool isleap ( int nYear ) {
-	WWIV_ASSERT( nYear >= 0 );
-	return nYear % 400 == 0 || ( nYear % 4 == 0 && nYear % 100 != 0 );
+bool isleap(int nYear) {
+  WWIV_ASSERT(nYear >= 0);
+  return nYear % 400 == 0 || (nYear % 4 == 0 && nYear % 100 != 0);
 }
 
 
 /** returns day of week, 0=Sun, 6=Sat */
 int dow() {
 #ifdef _WIN32
-	struct tm * newtime;
-	time_t long_time = time( &long_time );  // Get time as long integer.
-	newtime = localtime( &long_time );      // Convert to local time.
-	return newtime->tm_wday;
+  struct tm * newtime;
+  time_t long_time = time(&long_time);    // Get time as long integer.
+  newtime = localtime(&long_time);        // Convert to local time.
+  return newtime->tm_wday;
 #else // _WIN32
-	struct tm t;
-	asctime(&t);
-	return static_cast<unsigned char>( t.tm_wday );
+  struct tm t;
+  asctime(&t);
+  return static_cast<unsigned char>(t.tm_wday);
 #endif // _WIN32
 }
 
@@ -179,108 +179,108 @@ int dow() {
  * Returns current time as string formatted like HH:MM:SS (01:13:00).
  */
 char *ctim(double d) {
-	static char szCurrentTime[10];
+  static char szCurrentTime[10];
 
-	if (d < 0) {
-		d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
-	}
-	long lHour = static_cast<long>( d / SECONDS_PER_HOUR_FLOAT );
-	d -= static_cast<double>( lHour * HOURS_PER_DAY );
-	long lMinute = static_cast<long>( d / MINUTES_PER_HOUR_FLOAT );
-	d -= static_cast<double>( lMinute * MINUTES_PER_HOUR );
-	long lSecond = static_cast<long>( d );
-	snprintf( szCurrentTime, sizeof( szCurrentTime ), "%2.2ld:%2.2ld:%2.2ld", lHour, lMinute, lSecond );
+  if (d < 0) {
+    d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
+  }
+  long lHour = static_cast<long>(d / SECONDS_PER_HOUR_FLOAT);
+  d -= static_cast<double>(lHour * HOURS_PER_DAY);
+  long lMinute = static_cast<long>(d / MINUTES_PER_HOUR_FLOAT);
+  d -= static_cast<double>(lMinute * MINUTES_PER_HOUR);
+  long lSecond = static_cast<long>(d);
+  snprintf(szCurrentTime, sizeof(szCurrentTime), "%2.2ld:%2.2ld:%2.2ld", lHour, lMinute, lSecond);
 
-	return szCurrentTime;
+  return szCurrentTime;
 }
 
 /*
 * Returns current time as string formatted as HH hours, MM minutes, SS seconds
 */
 std::string ctim2(double d) {
-	char szHours[20], szMinutes[20], szSeconds[20];
+  char szHours[20], szMinutes[20], szSeconds[20];
 
-	long h = static_cast<long>( d / SECONDS_PER_HOUR_FLOAT );
-	d -= static_cast<double>( h * SECONDS_PER_HOUR );
-	long m = static_cast<long>( d / SECONDS_PER_MINUTE_FLOAT );
-	d -= static_cast<double>( m * SECONDS_PER_MINUTE );
-	long s = static_cast<long>( d );
+  long h = static_cast<long>(d / SECONDS_PER_HOUR_FLOAT);
+  d -= static_cast<double>(h * SECONDS_PER_HOUR);
+  long m = static_cast<long>(d / SECONDS_PER_MINUTE_FLOAT);
+  d -= static_cast<double>(m * SECONDS_PER_MINUTE);
+  long s = static_cast<long>(d);
 
-	if (h == 0) {
-		strcpy(szHours, "");
-	} else {
-		snprintf( szHours, sizeof( szHours ), "|#1%ld |#9%s", h, (h > 1) ? "hours" : "hour" );
-	}
-	if (m == 0) {
-		strcpy(szMinutes, "");
-	} else {
-		snprintf( szMinutes, sizeof( szMinutes ), "|#1%ld |#9%s", m, (m > 1) ? "minutes" : "minute" );
-	}
-	if (s == 0) {
-		strcpy(szSeconds, "");
-	} else {
-		snprintf( szSeconds, sizeof( szSeconds ), "|#1%ld |#9%s", s, (s > 1) ? "seconds" : "second" );
-	}
+  if (h == 0) {
+    strcpy(szHours, "");
+  } else {
+    snprintf(szHours, sizeof(szHours), "|#1%ld |#9%s", h, (h > 1) ? "hours" : "hour");
+  }
+  if (m == 0) {
+    strcpy(szMinutes, "");
+  } else {
+    snprintf(szMinutes, sizeof(szMinutes), "|#1%ld |#9%s", m, (m > 1) ? "minutes" : "minute");
+  }
+  if (s == 0) {
+    strcpy(szSeconds, "");
+  } else {
+    snprintf(szSeconds, sizeof(szSeconds), "|#1%ld |#9%s", s, (s > 1) ? "seconds" : "second");
+  }
 
-	std::string result;
-	if (h == 0) {
-		if (m == 0) {
-			if (s == 0) {
-				result = " ";
-			} else {
-				result = szSeconds;
-			}
-		} else {
-			result = szMinutes;
-			if (s != 0) {
-				result += ", ";
-				result += szSeconds;
-			}
-		}
-	} else {
-		result = szHours;
-		if (m == 0) {
-			if (s != 0) {
-				result += ", ";
-				result += szSeconds;
-			}
-		} else {
-			result += ", ";
-			result += szMinutes;
-			if (s != 0) {
-				result += ", ";
-				result += szSeconds;
-			}
-		}
-	}
-	return result;
+  std::string result;
+  if (h == 0) {
+    if (m == 0) {
+      if (s == 0) {
+        result = " ";
+      } else {
+        result = szSeconds;
+      }
+    } else {
+      result = szMinutes;
+      if (s != 0) {
+        result += ", ";
+        result += szSeconds;
+      }
+    }
+  } else {
+    result = szHours;
+    if (m == 0) {
+      if (s != 0) {
+        result += ", ";
+        result += szSeconds;
+      }
+    } else {
+      result += ", ";
+      result += szMinutes;
+      if (s != 0) {
+        result += ", ";
+        result += szSeconds;
+      }
+    }
+  }
+  return result;
 }
 
 /* This should not be a problem 'till 2005 or so */
-int years_old( int nMonth, int nDay, int nYear ) {
-	time_t t = time( NULL );
-	struct tm * pTm = localtime( &t );
+int years_old(int nMonth, int nDay, int nYear) {
+  time_t t = time(NULL);
+  struct tm * pTm = localtime(&t);
 
-	if ( pTm->tm_year < nYear ) {
-		return 0;
-	}
-	if ( pTm->tm_year == nYear ) {
-		if ( pTm->tm_mon < nMonth ) {
-			return 0;
-		}
-		if ( pTm->tm_mon == nMonth ) {
-			if ( pTm->tm_mday < nDay ) {
-				return 0;
-			}
-		}
-	}
-	int nAge = pTm->tm_year - nYear;
-	if ( pTm->tm_mon < nMonth ) {
-		--nAge;
-	} else if ( ( pTm->tm_mon == nMonth ) && ( pTm->tm_mday < nDay ) ) {
-		--nAge;
-	}
-	return nAge;
+  if (pTm->tm_year < nYear) {
+    return 0;
+  }
+  if (pTm->tm_year == nYear) {
+    if (pTm->tm_mon < nMonth) {
+      return 0;
+    }
+    if (pTm->tm_mon == nMonth) {
+      if (pTm->tm_mday < nDay) {
+        return 0;
+      }
+    }
+  }
+  int nAge = pTm->tm_year - nYear;
+  if (pTm->tm_mon < nMonth) {
+    --nAge;
+  } else if ((pTm->tm_mon == nMonth) && (pTm->tm_mday < nDay)) {
+    --nAge;
+  }
+  return nAge;
 }
 
 

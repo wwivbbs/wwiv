@@ -25,57 +25,57 @@
 // Local function prototypes
 //
 
-int UnixSpawn (char *pszCommand, char* environ[]);
+int UnixSpawn(char *pszCommand, char* environ[]);
 
 //
 // Implementation
 //
 
-int ExecExternalProgram( const std::string commandLine, int flags ) {
-	(void)flags;
+int ExecExternalProgram(const std::string commandLine, int flags) {
+  (void)flags;
 
-	if (ok_modem_stuff) {
-		GetSession()->remoteIO()->close( true );
-	}
+  if (ok_modem_stuff) {
+    GetSession()->remoteIO()->close(true);
+  }
 
-	char s[256];
-	strcpy(s, commandLine.c_str());
-	int i = UnixSpawn(s, NULL);
+  char s[256];
+  strcpy(s, commandLine.c_str());
+  int i = UnixSpawn(s, NULL);
 
-	// reengage comm stuff
-	if (ok_modem_stuff) {
-		GetSession()->remoteIO()->open();
-		GetSession()->remoteIO()->dtr( true );
-	}
+  // reengage comm stuff
+  if (ok_modem_stuff) {
+    GetSession()->remoteIO()->open();
+    GetSession()->remoteIO()->dtr(true);
+  }
 
-	return i;
+  return i;
 }
 
 
-int UnixSpawn (char *pszCommand, char* environ[]) {
-	if (pszCommand == 0) {
-		return 1;
-	}
-	int pid = fork();
-	if (pid == -1) {
-		return -1;
-	}
-	if (pid == 0) {
-		const char* argv[4] = { "/bin/sh", "-c", pszCommand, 0 };
-		execv("/bin/sh", const_cast<char ** const>(argv));
-		exit(127);
-	}
+int UnixSpawn(char *pszCommand, char* environ[]) {
+  if (pszCommand == 0) {
+    return 1;
+  }
+  int pid = fork();
+  if (pid == -1) {
+    return -1;
+  }
+  if (pid == 0) {
+    const char* argv[4] = { "/bin/sh", "-c", pszCommand, 0 };
+    execv("/bin/sh", const_cast<char ** const>(argv));
+    exit(127);
+  }
 
-	for( ;; ) {
-		int nStatusCode = 1;
-		if (waitpid(pid, &nStatusCode, 0) == -1) {
-			if (errno != EINTR) {
-				return -1;
-			}
-		} else {
-			return nStatusCode;
-		}
-	}
+  for (;;) {
+    int nStatusCode = 1;
+    if (waitpid(pid, &nStatusCode, 0) == -1) {
+      if (errno != EINTR) {
+        return -1;
+      }
+    } else {
+      return nStatusCode;
+    }
+  }
 }
 
 
