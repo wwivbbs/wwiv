@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 void WWIV_RebootComputer() {
-	// Note: We don't allow this on WIN32, so this method
-	// does not do anything.
+  // Note: We don't allow this on WIN32, so this method
+  // does not do anything.
 }
 
 

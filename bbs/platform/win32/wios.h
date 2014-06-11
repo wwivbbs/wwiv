@@ -28,47 +28,47 @@
 
 class WIOSerial : public WComm {
 
-  public:
-	WIOSerial( unsigned int nHandle );
-	virtual ~WIOSerial();
+ public:
+  WIOSerial(unsigned int nHandle);
+  virtual ~WIOSerial();
 
-	virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
-	virtual unsigned int open();
-	virtual void close( bool bIsTemporary );
-	virtual void StopThreads();
-	virtual void StartThreads();
-	virtual unsigned int putW(unsigned char ch);
-	virtual unsigned char getW();
-	virtual bool dtr(bool raise);
-	virtual void flushOut();
-	virtual void purgeOut();
-	virtual void purgeIn();
-	virtual unsigned int put(unsigned char ch);
-	virtual char peek();
-	virtual unsigned int read(char *buffer, unsigned int count);
-	virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false);
-	unsigned int writeImpl(const char *buffer, unsigned int count);
-	virtual bool carrier();
-	virtual bool incoming();
-	virtual unsigned int GetHandle() const;
+  virtual bool setup(char parity, int wordlen, int stopbits, unsigned long baud);
+  virtual unsigned int open();
+  virtual void close(bool bIsTemporary);
+  virtual void StopThreads();
+  virtual void StartThreads();
+  virtual unsigned int putW(unsigned char ch);
+  virtual unsigned char getW();
+  virtual bool dtr(bool raise);
+  virtual void flushOut();
+  virtual void purgeOut();
+  virtual void purgeIn();
+  virtual unsigned int put(unsigned char ch);
+  virtual char peek();
+  virtual unsigned int read(char *buffer, unsigned int count);
+  virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false);
+  unsigned int writeImpl(const char *buffer, unsigned int count);
+  virtual bool carrier();
+  virtual bool incoming();
+  virtual unsigned int GetHandle() const;
 
-  protected:
-	virtual bool SetBaudRate(unsigned long speed);
-	DWORD GetDCBCodeForSpeed( unsigned long speed );
-	static unsigned int __stdcall InboundSerialProc(LPVOID hCommHandle);
-	static bool HandleASuccessfulRead( LPCTSTR pszBuffer, DWORD dwNumRead, WIOSerial* pSerial );
+ protected:
+  virtual bool SetBaudRate(unsigned long speed);
+  DWORD GetDCBCodeForSpeed(unsigned long speed);
+  static unsigned int __stdcall InboundSerialProc(LPVOID hCommHandle);
+  static bool HandleASuccessfulRead(LPCTSTR pszBuffer, DWORD dwNumRead, WIOSerial* pSerial);
 
-  protected:
-	bool   bOpen;
-	DCB    dcb;
-	COMMTIMEOUTS oldtimeouts;
+ protected:
+  bool   bOpen;
+  DCB    dcb;
+  COMMTIMEOUTS oldtimeouts;
 
-	HANDLE m_hReadThread;
-	HANDLE hWriteThread;
-	HANDLE hComm;
-	HANDLE m_hReadStopEvent;
-	std::queue<char> m_inputQueue;
-	HANDLE m_hInBufferMutex;
+  HANDLE m_hReadThread;
+  HANDLE hWriteThread;
+  HANDLE hComm;
+  HANDLE m_hReadStopEvent;
+  std::queue<char> m_inputQueue;
+  HANDLE m_hInBufferMutex;
 };
 
 

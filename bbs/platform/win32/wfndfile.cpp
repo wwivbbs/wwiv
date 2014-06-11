@@ -19,64 +19,64 @@
 #include "platform/wfndfile.h"
 
 bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
-	__open(pszFileSpec, nTypeMask);
+  __open(pszFileSpec, nTypeMask);
 
-	// Set this with the initial value
-	hFind = INVALID_HANDLE_VALUE;
+  // Set this with the initial value
+  hFind = INVALID_HANDLE_VALUE;
 
-	hFind = FindFirstFile(pszFileSpec, &ffdata);
-	if (hFind == INVALID_HANDLE_VALUE) {
-		return false;
-	}
+  hFind = FindFirstFile(pszFileSpec, &ffdata);
+  if (hFind == INVALID_HANDLE_VALUE) {
+    return false;
+  }
 
-	if (ffdata.cAlternateFileName[0] == '\0') {
-		strncpy(szFileName,ffdata.cFileName, sizeof(szFileName));
-	} else {
-		strncpy(szFileName,ffdata.cAlternateFileName, sizeof(szFileName));
-	}
+  if (ffdata.cAlternateFileName[0] == '\0') {
+    strncpy(szFileName, ffdata.cFileName, sizeof(szFileName));
+  } else {
+    strncpy(szFileName, ffdata.cAlternateFileName, sizeof(szFileName));
+  }
 
-	lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
+  lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
 
-	return true;
+  return true;
 
 }
 
 
 
 bool WFindFile::next() {
-	if (!FindNextFile(hFind, &ffdata)) {
-		return false;
-	}
+  if (!FindNextFile(hFind, &ffdata)) {
+    return false;
+  }
 
-	if (hFind == INVALID_HANDLE_VALUE) {
-		return false;
-	}
+  if (hFind == INVALID_HANDLE_VALUE) {
+    return false;
+  }
 
-	if (ffdata.cAlternateFileName[0] == '\0') {
-		strncpy(szFileName,ffdata.cFileName, sizeof(szFileName));
-	} else {
-		strncpy(szFileName,ffdata.cAlternateFileName, sizeof(szFileName));
-	}
+  if (ffdata.cAlternateFileName[0] == '\0') {
+    strncpy(szFileName, ffdata.cFileName, sizeof(szFileName));
+  } else {
+    strncpy(szFileName, ffdata.cAlternateFileName, sizeof(szFileName));
+  }
 
-	lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
+  lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
 
-	return true;
+  return true;
 }
 
 
 bool WFindFile::close() {
-	__close();
-	FindClose(hFind);
-	return true;
+  __close();
+  FindClose(hFind);
+  return true;
 }
 
 
 bool WFindFile::IsDirectory() {
-	return ( IsFile() ) ? false : true;
+  return (IsFile()) ? false : true;
 }
 
 
 bool WFindFile::IsFile() {
-	return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
+  return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
 }
 

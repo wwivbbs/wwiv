@@ -29,48 +29,48 @@
 
 
 double WWIV_GetFreeSpaceForPath(const char * szPath) {
-	struct statfs fs;
-	double fk;
+  struct statfs fs;
+  double fk;
 
-	if (statfs(szPath, &fs)) {
+  if (statfs(szPath, &fs)) {
 #ifdef _DEBUG_BBS
-		fprintf(stderr, "%s: ", szPath);
+    fprintf(stderr, "%s: ", szPath);
 #endif
-		perror("freek1()");
-		return(0.0);
-	}
+    perror("freek1()");
+    return (0.0);
+  }
 
-	fk = ((double) fs.f_bsize * (double) fs.f_bavail) / 1024.0;
+  fk = ((double) fs.f_bsize * (double) fs.f_bavail) / 1024.0;
 
-	return(fk);
+  return (fk);
 }
 
 
 void WWIV_ChangeDirTo(const char *pszDirectoryName) {
-	chdir( pszDirectoryName );
+  chdir(pszDirectoryName);
 }
 
 
-void WWIV_GetDir( char *pszDirectoryName, bool bSlashAtEnd ) {
-	getcwd( pszDirectoryName, 80 );
-	if ( bSlashAtEnd ) {
-		if ( pszDirectoryName[ strlen( pszDirectoryName )-1 ]!= '/' ) {
-			strcat( pszDirectoryName, "/" );
-		}
-	}
+void WWIV_GetDir(char *pszDirectoryName, bool bSlashAtEnd) {
+  getcwd(pszDirectoryName, 80);
+  if (bSlashAtEnd) {
+    if (pszDirectoryName[ strlen(pszDirectoryName) - 1 ] != '/') {
+      strcat(pszDirectoryName, "/");
+    }
+  }
 }
 
 
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
-	char *pszTemp = WWIV_STRDUP(pszPath);
-	char *pTempFn = strrchr(pszTemp, '/');
-	if (pTempFn != NULL) {
-		*pTempFn = 0;
-		pTempFn++;
-	} else {
-		pTempFn = pszTemp;
-	}
-	strcpy(pszFileName, pTempFn);
-	BbsFreeMemory(pszTemp);
+  char *pszTemp = WWIV_STRDUP(pszPath);
+  char *pTempFn = strrchr(pszTemp, '/');
+  if (pTempFn != NULL) {
+    *pTempFn = 0;
+    pTempFn++;
+  } else {
+    pTempFn = pszTemp;
+  }
+  strcpy(pszFileName, pTempFn);
+  BbsFreeMemory(pszTemp);
 }
 

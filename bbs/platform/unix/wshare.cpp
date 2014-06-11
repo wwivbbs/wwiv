@@ -27,21 +27,21 @@ const int WTextFile::WAIT_TIME = 10;
 /*
  * Debug Levels:
  * ==========================================================================
- *	0 turns all debug operations off
- *	1 or greater shows file information if the file must be waited upon.
- *	2 or greater shows file information when an attempt is made to open a file.
- *	3 or greater shows file information BEFORE any attempt is made to open a file.
- *	4 or greater waits for key from console with each file open.
+ *  0 turns all debug operations off
+ *  1 or greater shows file information if the file must be waited upon.
+ *  2 or greater shows file information when an attempt is made to open a file.
+ *  3 or greater shows file information BEFORE any attempt is made to open a file.
+ *  4 or greater waits for key from console with each file open.
  *
  */
 
-FILE* WTextFile::OpenImpl( const char* pszFileName, const char* pszFileMode ) {
-	FILE *f = fopen(pszFileName, pszFileMode);
+FILE* WTextFile::OpenImpl(const char* pszFileName, const char* pszFileMode) {
+  FILE *f = fopen(pszFileName, pszFileMode);
 
-	if (f != NULL) {
-		flock(fileno(f), (strpbrk(pszFileMode, "wa+")) ? LOCK_EX : LOCK_SH);
-	}
+  if (f != NULL) {
+    flock(fileno(f), (strpbrk(pszFileMode, "wa+")) ? LOCK_EX : LOCK_SH);
+  }
 
-	return f;
+  return f;
 }
 

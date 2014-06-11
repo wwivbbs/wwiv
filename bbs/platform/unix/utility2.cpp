@@ -21,10 +21,10 @@
 
 #if !defined(NOT_BBS)
 
-void WWIV_make_abs_cmd( std::string& out ) {
-	if ( out.find("/") != std::string::npos ) {
-		out = std::string( GetApplication()->GetHomeDir() ) + out;
-	}
+void WWIV_make_abs_cmd(std::string& out) {
+  if (out.find("/") != std::string::npos) {
+    out = std::string(GetApplication()->GetHomeDir()) + out;
+  }
 }
 #endif  // NOT_BBS
 
@@ -32,30 +32,31 @@ void WWIV_make_abs_cmd( std::string& out ) {
 #define LAST(s) s[strlen(s)-1]
 
 int WWIV_make_path(const char *s) {
-	char current_path[MAX_PATH], *p, *flp;
+  char current_path[MAX_PATH], *p, *flp;
 
-	p = flp = WWIV_STRDUP(s);
-	getcwd(current_path, MAX_PATH);
-	if(LAST(p) == WWIV_FILE_SEPERATOR_CHAR)
-		LAST(p) = 0;
-	if(*p == WWIV_FILE_SEPERATOR_CHAR) {
-		chdir(WWIV_FILE_SEPERATOR_STRING);
-		p++;
-	}
-	for(; (p = strtok(p, WWIV_FILE_SEPERATOR_STRING)) != 0; p = 0) {
-		if(chdir(p)) {
-			if(mkdir(p)) {
-				chdir(current_path);
-				return -1;
-			}
-			chdir(p);
-		}
-	}
-	chdir(current_path);
-	if(flp) {
-		BbsFreeMemory(flp);
-	}
-	return 0;
+  p = flp = WWIV_STRDUP(s);
+  getcwd(current_path, MAX_PATH);
+  if (LAST(p) == WWIV_FILE_SEPERATOR_CHAR) {
+    LAST(p) = 0;
+  }
+  if (*p == WWIV_FILE_SEPERATOR_CHAR) {
+    chdir(WWIV_FILE_SEPERATOR_STRING);
+    p++;
+  }
+  for (; (p = strtok(p, WWIV_FILE_SEPERATOR_STRING)) != 0; p = 0) {
+    if (chdir(p)) {
+      if (mkdir(p)) {
+        chdir(current_path);
+        return -1;
+      }
+      chdir(p);
+    }
+  }
+  chdir(current_path);
+  if (flp) {
+    BbsFreeMemory(flp);
+  }
+  return 0;
 }
 
 #if defined (LAST)
@@ -63,11 +64,11 @@ int WWIV_make_path(const char *s) {
 #endif
 
 void WWIV_Delay(unsigned long usec) {
-	if(usec) {
-		usleep(usec);
-	}
+  if (usec) {
+    usleep(usec);
+  }
 }
 
-void WWIV_OutputDebugString( const char *pszString ) {
-	//std::cout << pszString;
+void WWIV_OutputDebugString(const char *pszString) {
+  //std::cout << pszString;
 }
