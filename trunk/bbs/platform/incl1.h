@@ -25,13 +25,13 @@
 
 #if defined (_WIN32)
 
-#define WWIV_FILE_SEPERATOR_CHAR	'\\'
-#define WWIV_FILE_SEPERATOR_STRING	"\\"
+#define WWIV_FILE_SEPERATOR_CHAR  '\\'
+#define WWIV_FILE_SEPERATOR_STRING  "\\"
 
 #define WWIV_VSNPRINTF _vsnprintf
 #define snprintf _snprintf
 
-#endif	 // _WIN32
+#endif   // _WIN32
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,21 +47,21 @@
 #include <netinet/in.h>
 #include <dirent.h>
 #include <utime.h>
-#define O_BINARY	0
-#define O_TEXT		0
-#define SH_DENYNO	0
-#define SH_DENYWR	0
+#define O_BINARY  0
+#define O_TEXT    0
+#define SH_DENYNO 0
+#define SH_DENYWR 0
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
 
-#define WWIV_FILE_SEPERATOR_CHAR	'/'
-#define WWIV_FILE_SEPERATOR_STRING	"/"
+#define WWIV_FILE_SEPERATOR_CHAR  '/'
+#define WWIV_FILE_SEPERATOR_STRING  "/"
 
-#define _tzset(s)	tzset(s)
-#define _putenv(s)	putenv(s)
-#define _getcwd(a,b)	getcwd(a,b)
-#define mkdir(x)	mkdir(x, S_IRWXU | S_IRWXG)
+#define _tzset(s) tzset(s)
+#define _putenv(s)  putenv(s)
+#define _getcwd(a,b)  getcwd(a,b)
+#define mkdir(x)  mkdir(x, S_IRWXU | S_IRWXG)
 
 #define WWIV_VSNPRINTF vsnprintf
 

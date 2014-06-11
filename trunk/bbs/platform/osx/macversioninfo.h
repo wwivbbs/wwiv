@@ -19,6 +19,6 @@
 
 extern "C"
 {
-	const char *GetMacVersionString();
-	const char *GetOSNameString();
+  const char *GetMacVersionString();
+  const char *GetOSNameString();
 }
