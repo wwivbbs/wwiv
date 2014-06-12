@@ -28,8 +28,9 @@
 
 #include "ifcns.h"
 #include "init.h"
-#include "wwivinit.h"
+#include "regcode.h"
 #include "version.cpp"
+#include "wwivinit.h"
 #include "wconstants.h"
 #include "platform/curses_io.h"
 #include "platform/incl1.h"
@@ -1031,6 +1032,7 @@ int WInitApp::main(int argc, char *argv[]) {
     app->localIO->LocalXYPuts(x, y++, "A. Archiver Configuration");
     app->localIO->LocalXYPuts(x, y++, "L. Language Configuration");
     app->localIO->LocalXYPuts(x, y++, "N. Network Configuration");
+    app->localIO->LocalXYPuts(x, y++, "R. Registration Information");
     app->localIO->LocalXYPuts(x, y++, "U. Update Sub/Directory Maximums");
     app->localIO->LocalXYPuts(x, y++, "Q. Quit");
 
@@ -1039,7 +1041,7 @@ int WInitApp::main(int argc, char *argv[]) {
     app->localIO->LocalXYPuts(x, y++, szTempBuffer);
     textattr(COLOR_CYAN);
     lines_listed = 0;
-    switch (onek("Q123456789ALNPUVZ\033")) {
+    switch (onek("Q123456789ALNPRUVZ\033")) {
     case 'Q':
     case '\033':
       textattr(COLOR_WHITE);
@@ -1089,6 +1091,9 @@ int WInitApp::main(int argc, char *argv[]) {
       nlx();
       printcfg();
       app->localIO->getchd();
+      break;
+    case 'R':
+      edit_registration_code();
       break;
     case 'V':
       nlx();
