@@ -500,7 +500,7 @@ int number_userrecs() {
   WFile file(syscfg.datadir, "user.lst");
   if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
                 WFile::shareDenyReadWrite, WFile::permRead)) {
-    return static_cast<int>(file.GetLength());
+    return static_cast<int>(file.GetLength() / sizeof(userrec)) - 1;
   }
   WWIV_ASSERT(false);
   return -1;

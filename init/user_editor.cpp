@@ -65,7 +65,7 @@ int editline_int(uint32_t* value) {
 }
 
 void show_user(int user_number, const userrec *user) {
-  PrintfY(0, "%-30s", user->name);
+  PrintfY(0, "%-30s %-4d", user->name, user_number);
   PrintfY(1, "%-20s", user->realname);
   PrintfY(2, "%-3d", user->sl);
   PrintfY(3, "%-3d", user->dsl);
@@ -188,7 +188,7 @@ void user_editor() {
   Printf("Computer Type    : \n");
   Printf("WWIV Registration: \n");
 
-  int current_usernum = 1;
+  unsigned short int current_usernum = 1;
   userrec user;
   read_user(current_usernum, &user);
   show_user(current_usernum, &user);
@@ -198,41 +198,44 @@ void user_editor() {
   do {
     app->localIO->LocalGotoXY(0, 20);
     Puts("Command: ");
-    char ch = onek("\033[]{}\r");
+    char ch = onek("Q\033[]{}\r");
     switch (ch) {
     case '\r':
       clear_help();
       edit_user(current_usernum, &user);
       show_help();
       break;
+    case 'Q':
     case '\033':
       done = true;
-      break;
+      return;
     case ']':
-      current_usernum++;
-      current_usernum %= (number_userrecs() + 1);
-      read_user(current_usernum, &user);
-      show_user(current_usernum, &user);
+      if (++current_usernum > number_userrecs()) {
+        current_usernum = 1;
+      }
       break;
-    case '[':
-      current_usernum--;
-      current_usernum %= (number_userrecs() + 1);
-      read_user(current_usernum, &user);
-      show_user(current_usernum, &user);
-      break;
+    case '[': {
+      if (--current_usernum < 1) {
+        current_usernum = number_userrecs();
+      }
+    } break;
     case '}':
       current_usernum += 10;
-      current_usernum %= (number_userrecs() + 1);
-      read_user(current_usernum, &user);
-      show_user(current_usernum, &user);
+      if (current_usernum > number_userrecs()) {
+        current_usernum = 1;
+      }
       break;
     case '{':
       current_usernum -= 10;
-      current_usernum %= (number_userrecs() + 1);
-      read_user(current_usernum, &user);
-      show_user(current_usernum, &user);
+      if (current_usernum < 1) {
+        current_usernum = number_userrecs();
+      }
       break;
     }
+
+    read_user(current_usernum, &user);
+    show_user(current_usernum, &user);
+
   } while (!done);
 }
 
