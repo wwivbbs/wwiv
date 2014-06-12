@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                 WWIV Initialization Utility Version 5.0                */
-/*             Copyright (C)1998-2014, WWIV Software Services             */
+/*                 Copyright (C)2014, WWIV Software Services              */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
