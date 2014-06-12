@@ -99,7 +99,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
   GetSession()->bout << "|#2L|#9) Real Name    : |#1" << pUser->GetRealName() << wwiv::endl;
   if (bLongFormat) {
     if (pUser->GetStreet()[0]) {
-      GetSession()->bout << "|#2%%|#9) Address      : |#1" << pUser->GetStreet() << wwiv::endl;
+      GetSession()->bout << "|#2%|#9) Address      : |#1" << pUser->GetStreet() << wwiv::endl;
     }
     if (pUser->GetCity()[0] || pUser->GetState()[0] ||
         pUser->GetCountry()[0] || pUser->GetZipcode()[0]) {
