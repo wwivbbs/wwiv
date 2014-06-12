@@ -46,6 +46,12 @@ int editline(unsigned char *s, int len) {
   return return_code;
 }
 
+int editline(char *s, int len) {
+  int return_code = 0;
+  editline(s, len, ALL, &return_code, "");
+  return return_code;
+}
+
 int editline_byte(uint8_t* value) {
   char s[21];
   int return_code = 0;
@@ -65,6 +71,7 @@ int editline_int(uint32_t* value) {
 }
 
 void show_user(int user_number, const userrec *user) {
+  textattr(COLOR_CYAN);
   PrintfY(0, "%-30s %-4d", user->name, user_number);
   PrintfY(1, "%-20s", user->realname);
   PrintfY(2, "%-3d", user->sl);
@@ -73,7 +80,7 @@ void show_user(int user_number, const userrec *user) {
   PrintfY(5, "%-30s", user->city);
   PrintfY(6, "%-2s", user->state);
   PrintfY(7, "%-10s", user->zipcode);
-  PrintfY(8, "%2d/%2d/%4d", user->month, user->day, user->year);
+  PrintfY(8, "%2.2d/%2.2d/%4.4d", user->month, user->day, user->year + 1900);
   PrintfY(9, "%-8s", user->pw);
   PrintfY(10, "%-12s", user->phone);
   PrintfY(11, "%-12s", user->dataphone);
@@ -114,8 +121,9 @@ void edit_user(int user_number, userrec *user) {
       i1 = editline(user->zipcode, 10);
       break;
     case 8: {
-      // i1 = editline(user->mo, 10);
-      i1 = NEXT;
+      char birthday[81];
+      sprintf(birthday, "%2.2d/%2.2d/%4.4d", user->month, user->day, user->year + 1900);
+      i1 = editline(birthday, 10);
     } break;
     case 9:
       i1 = editline(user->pw, 8);
@@ -160,14 +168,10 @@ static void show_help() {
 
 static void clear_help() {
   textattr(COLOR_CYAN);
-  app->localIO->LocalGotoXY(0, 14);
-  app->localIO->LocalClrEol();
-  app->localIO->LocalGotoXY(0, 15);
-  app->localIO->LocalClrEol();
-  app->localIO->LocalGotoXY(0, 16);
-  app->localIO->LocalClrEol();
-  app->localIO->LocalGotoXY(0, 17);
-  app->localIO->LocalClrEol();
+  for (int y = 14; y <= 17; y++) {
+    app->localIO->LocalGotoXY(0, y);
+    app->localIO->LocalClrEol();
+  }
 }
 
 void user_editor() {
@@ -198,12 +202,19 @@ void user_editor() {
   do {
     app->localIO->LocalGotoXY(0, 20);
     Puts("Command: ");
-    char ch = onek("Q\033[]{}\r");
+    char ch = onek("\033Q[]{}\r");
     switch (ch) {
     case '\r':
       clear_help();
       edit_user(current_usernum, &user);
-      show_help();
+      app->localIO->LocalGotoXY(0, 20);
+      textattr(COLOR_YELLOW);
+      Puts("Save User?");
+      if (yn()) {
+        write_user(current_usernum, &user);
+      }
+      app->localIO->LocalGotoXY(0, 20);
+      app->localIO->LocalClrEol();
       break;
     case 'Q':
     case '\033':
