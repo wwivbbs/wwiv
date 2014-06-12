@@ -1,0 +1,9 @@
+--style=google 
+-U 
+-s2 
+-H 
+--pad-oper 
+--add-brackets 
+--convert-tabs  
+--max-code-length=120 
+
