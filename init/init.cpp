@@ -295,13 +295,12 @@ void networks() {
   if (!exist("NETWORK.EXE")) {
     app->localIO->LocalCls();
     nlx();
-    textattr(COLOR_RED);
-    Printf("You have not installed the networking software.  Unzip NETxx.ZIP\n");
-    Printf("to the main BBS directory and re-run INIT.\n\n");
     textattr(COLOR_MAGENTA);
-    Printf("Hit any key to return to the Main Menu.\n");
+    Printf("WARNING\n");
+    Printf("You have not installed the networking software.  Unzip netxx.zip\n");
+    Printf("to the main BBS directory and re-run init.\n\n");
+    Printf("Hit any key to continue.\n");
     app->localIO->getchd();
-    return;
   }
 
   do {
