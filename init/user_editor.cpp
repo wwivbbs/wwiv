@@ -72,7 +72,9 @@ int editline_int(uint32_t* value) {
 
 void show_user(int user_number, const userrec *user) {
   textattr(COLOR_CYAN);
-  PrintfY(0, "%-30s %-4d", user->name, user_number);
+  char name[41];
+  sprintf(name, "%s #%d", user->name, user_number);
+  PrintfY(0, "%-30s", name);
   PrintfY(1, "%-20s", user->realname);
   PrintfY(2, "%-3d", user->sl);
   PrintfY(3, "%-3d", user->dsl);
@@ -90,10 +92,9 @@ void show_user(int user_number, const userrec *user) {
 
 void edit_user(int user_number, userrec *user) {
   show_user(user_number, user);
-  bool done = false;
   int cp = 0;
-  do {
-    int i1 = 0;
+  for (;;) {
+    int i1 = DONE;
     app->localIO->LocalGotoXY(X_POSITION, cp);
     switch (cp) {
     case 0: {
@@ -112,7 +113,7 @@ void edit_user(int user_number, userrec *user) {
       i1 = editline(user->street, 30);
       break;
     case 5:
-      i1 = editline(user->city, 10);
+      i1 = editline(user->city, 30);
       break;
     case 6:
       i1 = editline(user->state, 2);
@@ -147,11 +148,9 @@ void edit_user(int user_number, userrec *user) {
     }
     cp = GetNextSelectionPosition(0, 13, cp, i1);
     if (i1 == DONE) {
-
-      // write_user(user_number, &user);
-      done = true;
+      return;
     }
-  } while (!done);
+  }
 }
 
 
