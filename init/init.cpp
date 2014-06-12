@@ -168,18 +168,13 @@ void select_modem() {
   }
 }
 
-
-/****************************************************************************/
-
 static const char *nettypes[] = {
   "WWIVnet ",
   "Fido    ",
   "Internet",
 };
 
-
-#define MAX_NETTYPES (sizeof(nettypes)/sizeof(nettypes[0]))
-
+static const int MAX_NETTYPES = sizeof(nettypes)/sizeof(nettypes[0]);
 
 void edit_net(int nn) {
   char szOldNetworkName[20];
@@ -289,7 +284,6 @@ void edit_net(int nn) {
     }
   }
 }
-
 
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
@@ -549,7 +543,6 @@ int verify_dir(char *typeDir, char *dirName) {
   return rc;
 }
 
-
 void show_help() {
   Printf("   ,x    - Specify Instance (where x is the Instance)\n");
   Printf("   -C    - Recompile modem configuration\n");
@@ -559,10 +552,6 @@ void show_help() {
   Printf("\n\n\n");
 
 }
-
-
-/****************************************************************************/
-
 
 int main(int argc, char* argv[]) {
   app = new WInitApp();
@@ -576,7 +565,7 @@ int WInitApp::main(int argc, char *argv[]) {
   char s[81], s1[81], ch;
   int i1, newbbs = 0, configfile, pwok = 0;
   int i;
-  int max_inst = 2, yep;
+  int max_inst = 2;
   int hFile = -1;
   externalrec *oexterns;
 
@@ -675,33 +664,6 @@ int WInitApp::main(int argc, char *argv[]) {
         textattr(COLOR_CYAN);
         nlx();
         newbbs = 1;
-      } else {
-#ifdef OLD_STUFF
-        configfile = open("config.dat", O_RDONLY | O_BINARY);
-        read(configfile, &syscfg, sizeof(configrec));
-        close(configfile);
-        save_config();
-        sprintf(s, "%smodem.dat", syscfg.datadir);
-        hFile = open(s, O_RDONLY | O_BINARY);
-        if (hFile > 0) {
-          l = filelength(hFile);
-          modem_i = malloca(l);
-          if (!modem_i) {
-            textattr(COLOR_WHITE);
-            exit_init(0);
-          }
-          read(hFile, modem_i, (unsigned) l);
-          close(hFile);
-
-          sprintf(s, "%s%s", syscfg.datadir, modemdat);
-          hFile = open(s, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-          if (hFile > 0) {
-            write(hFile, modem_i, l);
-            close(hFile);
-          }
-          free(modem_i);
-        }
-#endif
       }
       configfile = open(configdat, O_RDWR | O_BINARY);
     } else {
@@ -719,50 +681,9 @@ int WInitApp::main(int argc, char *argv[]) {
   read(configfile, &syscfg, sizeof(configrec));
   close(configfile);
 
-  if (syscfg.xmark != -1) {
-    syscfg.xmark = -1;
-    syscfg.regcode[0] = 0;
-  }
-
-
-  configfile = open("config.ovr", O_RDWR | O_BINARY);
-
   max_inst = 999;
 
-  // truncate config.ovr to max authorized instances
-  if ((configfile > 0) && ((filelength(configfile) > (max_inst * (int) sizeof(configoverrec))))) {
-    chsize(configfile, (max_inst * sizeof(configoverrec)));
-  }
-  close(configfile);
-
-  // truncate instance.dat to max authorized instances
-  sprintf(s, "%sinstance.dat", syscfg.datadir);
-  configfile = open(s, O_RDWR | O_BINARY);
-  if (configfile != -1) {
-    if (filelength(configfile) > static_cast<long>(max_inst * sizeof(instancerec))) {
-      chsize(configfile, max_inst * sizeof(instancerec));
-    }
-    close(configfile);
-  }
-
-  // truncate unauthorized modem files.
-  sprintf(s, "%smodem.*", syscfg.datadir);
-  WFindFile fnd;
-  fnd.open(s, 0);
-  while (fnd.next()) {
-    strcpy(s, fnd.GetFileName());
-    strcpy(s1, s + (strlen(s) - 3));
-    if (isdigit(s1[0])) {
-      yep  = atoi(s1);
-      if (yep > max_inst) {
-        sprintf(s1, "%s%s", syscfg.datadir, s);
-        unlink(s1);
-      }
-    }
-  }
-
   configfile = open("config.ovr", O_RDONLY | O_BINARY);
-
   if ((configfile > 0) && (filelength(configfile) < inst * (int)sizeof(configoverrec))) {
     close(configfile);
     configfile = -1;
@@ -792,20 +713,6 @@ int WInitApp::main(int argc, char *argv[]) {
     lseek(configfile, (inst - 1)*sizeof(configoverrec), SEEK_SET);
     read(configfile, &syscfgovr, sizeof(configoverrec));
     close(configfile);
-  }
-
-
-  if ((syscfg.userreclen == 0) || (syscfgovr.batchdir[0] == 0)) { // i think this block should be removed
-    if (syscfg.userreclen == 0) {
-      syscfg.userreclen = 700;
-      syscfg.waitingoffset = 423;
-      syscfg.inactoffset = 385;
-    }
-
-    if (syscfgovr.batchdir[0] == 0) {
-      strcpy(syscfgovr.batchdir, syscfgovr.tempdir);
-    }
-    save_config();
   }
 
   sprintf(s, "%sarchiver.dat", syscfg.datadir);
@@ -1047,7 +954,6 @@ int WInitApp::main(int argc, char *argv[]) {
     Printf("You will now need to enter the system password, 'SYSOP'.\n");
     nlx();
   }
-
 
   if (!pwok) {
     nlx();
