@@ -21,6 +21,7 @@
 #define __INCLUDED_VARDEC_H__
 
 #include <cstdint>
+#include <cstdlib> // for malloc TODO(rushfan): Remove this and bbsmalloc
 
 #pragma pack(push, 1)
 
