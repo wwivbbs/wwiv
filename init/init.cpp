@@ -18,6 +18,8 @@
 /**************************************************************************/
 #define _DEFINE_GLOBALS_
 
+#include <cstdlib>
+#include <cstring>
 #include <curses.h>
 #include <fcntl.h>
 #ifdef _WIN32
