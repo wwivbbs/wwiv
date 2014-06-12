@@ -19,6 +19,7 @@
 #include "user_editor.h"
 
 #include <curses.h>
+#include <cstdint>
 #include "ifcns.h"
 #include "init.h"
 #include "wwivinit.h"
@@ -39,6 +40,29 @@ void PrintfY(int y, const char *pszFormat, ...) {
   app->localIO->LocalPuts(szBuffer);
 }
 
+int editline(unsigned char *s, int len) {
+  int return_code = 0;
+  editline(reinterpret_cast<char*>(s), len, ALL, &return_code, "");
+  return return_code;
+}
+
+int editline_byte(uint8_t* value) {
+  char s[21];
+  int return_code = 0;
+  sprintf(s, "%-3u", *value);
+  editline(s, 3, NUM_ONLY, &return_code, "");
+  *value = atoi(s);
+  return return_code;
+}
+
+int editline_int(uint32_t* value) {
+  char s[21];
+  int return_code = 0;
+  sprintf(s, "%-7u", *value);
+  editline(s, 7, NUM_ONLY, &return_code, "");
+  *value = atoi(s);
+  return return_code;
+}
 
 void show_user(int user_number, const userrec *user) {
   PrintfY(0, "%-30s", user->name);
@@ -49,11 +73,12 @@ void show_user(int user_number, const userrec *user) {
   PrintfY(5, "%-30s", user->city);
   PrintfY(6, "%-2s", user->state);
   PrintfY(7, "%-10s", user->zipcode);
-  PrintfY(8, "%-8s", user->pw);
-  PrintfY(9, "%-12s", user->phone);
-  PrintfY(10, "%-12s", user->dataphone);
-  PrintfY(11, "%-3d", user->comp_type);
-  PrintfY(12, "%-12d", user->wwiv_regnum);
+  PrintfY(8, "%2d/%2d/%4d", user->month, user->day, user->year);
+  PrintfY(9, "%-8s", user->pw);
+  PrintfY(10, "%-12s", user->phone);
+  PrintfY(11, "%-12s", user->dataphone);
+  PrintfY(12, "%-3d", user->comp_type);
+  PrintfY(13, "%-12d", user->wwiv_regnum);
 }
 
 void edit_user(int user_number, userrec *user) {
@@ -65,48 +90,54 @@ void edit_user(int user_number, userrec *user) {
     app->localIO->LocalGotoXY(X_POSITION, cp);
     switch (cp) {
     case 0: {
-      char s[81];
-      sprintf(s, "%s", user->name);
-      editline(s, 30, ALL, &i1, "");
-      //sprintf(s, "%d", cursl);
-      //editline(s, 3, NUM_ONLY, &i1, "");
-      //i = atoi(s);
-      //while (i < 0) {
-      //  i += 255;
-      //}
-      //while (i > 255) {
-      //  i -= 255;
-      //}
-      //if (i != cursl) {
-      //  cursl = i;
-      //  up_sl(cursl);
-      //}
+      i1 = editline(user->name, 30);
     } break;
     case 1:
-      //sprintf(s, "%u", syscfg.sl[cursl].time_per_day);
-      //editline(s, 5, NUM_ONLY, &i1, "");
-      //i = atoi(s);
-      //syscfg.sl[cursl].time_per_day = i;
-      //Printf("%-5u", i);
+      i1 = editline(user->realname, 20);
       break;
     case 2:
-      //sprintf(s, "%u", syscfg.sl[cursl].time_per_logon);
-      //editline(s, 5, NUM_ONLY, &i1, "");
-      //i = atoi(s);
-      //syscfg.sl[cursl].time_per_logon = i;
-      //Printf("%-5u", i);
+      i1 = editline_byte(&user->sl);
       break;
     case 3:
-      //sprintf(s, "%u", syscfg.sl[cursl].messages_read);
-      //editline(s, 5, NUM_ONLY, &i1, "");
-      //i = atoi(s);
-      //syscfg.sl[cursl].messages_read = i;
-      //Printf("%-5u", i);
+      i1 = editline_byte(&user->dsl);
+      break;
+    case 4:
+      i1 = editline(user->street, 30);
+      break;
+    case 5:
+      i1 = editline(user->city, 10);
+      break;
+    case 6:
+      i1 = editline(user->state, 2);
+      break;
+    case 7:
+      i1 = editline(user->zipcode, 10);
+      break;
+    case 8: {
+      // i1 = editline(user->mo, 10);
+      i1 = NEXT;
+    } break;
+    case 9:
+      i1 = editline(user->pw, 8);
+      break;
+    case 10:
+      i1 = editline(user->phone, 12);
+      break;
+    case 11:
+      i1 = editline(user->dataphone, 12);
+      break;
+    case 12: {
+      uint8_t c = user->comp_type;
+      i1 = editline_byte(&c);
+      user->comp_type = c;
+    } break;
+    case 13:
+      i1 = editline_int(&user->wwiv_regnum);
       break;
     default:
       break;
     }
-    cp = GetNextSelectionPosition(0, 0, cp, i1);
+    cp = GetNextSelectionPosition(0, 13, cp, i1);
     if (i1 == DONE) {
 
       // write_user(user_number, &user);
@@ -115,6 +146,29 @@ void edit_user(int user_number, userrec *user) {
   } while (!done);
 }
 
+
+static void show_help() {
+  app->localIO->LocalGotoXY(0, 14);
+  textattr(COLOR_YELLOW);
+  Puts("\n<ESC> to exit\n");
+  textattr(11);
+  Printf("[ = down one user  ] = up one user\n");
+  Printf("{ = down 10 user   } = up 10 user\n");
+  Printf("<C/R> = edit SL data\n");
+  textattr(COLOR_CYAN);
+}
+
+static void clear_help() {
+  textattr(COLOR_CYAN);
+  app->localIO->LocalGotoXY(0, 14);
+  app->localIO->LocalClrEol();
+  app->localIO->LocalGotoXY(0, 15);
+  app->localIO->LocalClrEol();
+  app->localIO->LocalGotoXY(0, 16);
+  app->localIO->LocalClrEol();
+  app->localIO->LocalGotoXY(0, 17);
+  app->localIO->LocalClrEol();
+}
 
 void user_editor() {
   app->localIO->LocalCls();
@@ -139,38 +193,17 @@ void user_editor() {
   read_user(current_usernum, &user);
   show_user(current_usernum, &user);
   bool done = false;
-  app->localIO->LocalGotoXY(0, 12);
-  textattr(COLOR_YELLOW);
-  Puts("\n<ESC> to exit\n");
-  textattr(11);
-  Printf("[ = down one user  ] = up one user\n");
-  Printf("{ = down 10 user   } = up 10 user\n");
-  Printf("<C/R> = edit SL data\n");
-  textattr(COLOR_CYAN);
+
+  show_help();
   do {
-    app->localIO->LocalGotoXY(0, 18);
+    app->localIO->LocalGotoXY(0, 20);
     Puts("Command: ");
     char ch = onek("\033[]{}\r");
     switch (ch) {
     case '\r':
-      textattr(COLOR_CYAN);
-      app->localIO->LocalGotoXY(0, 13);
-      app->localIO->LocalClrEol();
-      app->localIO->LocalGotoXY(0, 14);
-      app->localIO->LocalClrEol();
-      app->localIO->LocalGotoXY(0, 15);
-      app->localIO->LocalClrEol();
-      app->localIO->LocalGotoXY(0, 16);
-      app->localIO->LocalClrEol();
-      app->localIO->LocalGotoXY(0, 17);
-      app->localIO->LocalClrEol();
+      clear_help();
       edit_user(current_usernum, &user);
-      app->localIO->LocalGotoXY(0, 13);
-      textattr(COLOR_CYAN);
-      Printf("[ = down one user  ] = up one user\n");
-      Printf("{ = down 10 user   } = up 10 user\n");
-      Printf("<C/R> = edit SL data\n");
-      textattr(COLOR_CYAN);
+      show_help();
       break;
     case '\033':
       done = true;
