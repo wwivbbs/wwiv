@@ -62,5 +62,18 @@
 
 #endif // defined ( __unix__ )
 
+#ifdef __APPLE__
+#define WWIV_STRICMP(a, b) strcasecmp(a, b)
+#define _strupr strupr
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+
+#define _close close
+#define _write write
+#define _lseek lseek
+#define _read read
+#define _open open
+
+#endif  // __APPLE__
 
 #endif // __INCLUDED_PLATFORM_INCL1_H__
