@@ -94,6 +94,7 @@
     <ClInclude Include="platform\wfndfile.h" />
     <ClInclude Include="regcode.h" />
     <ClInclude Include="subacc.h" />
+    <ClInclude Include="user_editor.h" />
     <ClInclude Include="w5assert.h" />
     <ClInclude Include="wwivinit.h" />
   </ItemGroup>
@@ -110,6 +111,7 @@
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="regcode.cpp" />
     <ClCompile Include="subacc.cpp" />
+    <ClCompile Include="user_editor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\deps\pdcurses-3.4\pdcurses.vcxproj">

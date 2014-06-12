@@ -29,12 +29,14 @@
 #include "ifcns.h"
 #include "init.h"
 #include "regcode.h"
+#include "user_editor.h"
 #include "version.cpp"
 #include "wwivinit.h"
 #include "wconstants.h"
 #include "platform/curses_io.h"
 #include "platform/incl1.h"
 #include "platform/wfndfile.h"
+
 
 char **mdm_desc;
 int mdm_count = 0, mdm_cur;
@@ -1040,7 +1042,7 @@ int WInitApp::main(int argc, char *argv[]) {
     app->localIO->LocalXYPuts(x, y++, szTempBuffer);
     textattr(COLOR_CYAN);
     lines_listed = 0;
-    switch (onek("Q123456789ALNPRUVZ\033")) {
+    switch (onek("Q123456789ALNPRUVX\033")) {
     case 'Q':
     case '\033':
       textattr(COLOR_WHITE);
@@ -1077,14 +1079,11 @@ int WInitApp::main(int argc, char *argv[]) {
     case 'A':
       edit_arc(0);
       break;
-    case 'N':
-      networks();
-      break;
-    case 'U':
-      up_subs_dirs();
-      break;
     case 'L':
       up_langs();
+      break;
+    case 'N':
+      networks();
       break;
     case 'P':
       nlx();
@@ -1094,11 +1093,16 @@ int WInitApp::main(int argc, char *argv[]) {
     case 'R':
       edit_registration_code();
       break;
+    case 'U':
+      up_subs_dirs();
+      break;
     case 'V':
       nlx();
       Printf("WWIV %s%s INIT compiled %s\n", wwiv_version, beta_version, const_cast<char*>(wwiv_date));
       app->localIO->getchd();
       break;
+    case 'X':
+      user_editor();
     }
   } while (!done);
 
