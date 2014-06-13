@@ -10,7 +10,7 @@
 |#5 º |#7F |#1> |#2Search by File Description      |#5º |#7T |#1> |#2Set Transfer Options         |#5º|#0
 |#5 º |#7S |#1> |#2Search by File Name             |#5º |#7W |#1> |#2Menu of Slash Commands       |#5º|#0
 |#5 º |#7L |#1> |#2List Files - Current Directory  |#5º |#7X |#1> |#2Toggle Expert mode (menus)   |#5º|#0
-|#5 º |#7N |#1> |#2List all New Files              |#5º |#7Y |#1> |#2Your Tranfer Stats           |#5º|#0
+|#5 º |#7N |#1> |#2List all New Files              |#5º |#7Y |#1> |#2Your Transfer Stats          |#5º|#0
 |#5 º |#7P |#1> |#2Set New Search Date             |#5ÇÄÄÄÄÄÄÄÄ|#4 Archive Commands |#5ÄÄÄÄÄÄÄÄ¶|#0
 |#5 º |#7* |#1> |#2List all Directories            |#5º |#7E |#1> |#2Extract files from Archive   |#5º|#0
 |#5 º |#7>|#1,|#7]|#1,|#7+ |#1> |#2Move Forward One Directory  |#5º |#7G |#1> |#2Access Archive Command Menu  |#5º|#0
