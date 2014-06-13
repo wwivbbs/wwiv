@@ -6,7 +6,7 @@
 |#7º|#2R|#1>|#0 Remove a message|#7       ³|#2C|#1>|#0 Chat with Sysop|#7    ³|#2F|#1>|#0 Send Feedback|#7         º
 |#7º|#2S|#1>|#0 Scan Current Msg Base|#7  ³|#2I|#1>|#0 System Information|#7 ³|#2K|#1>|#0 Kill Sent E-mail|#7      º
 |#7º|#2Z|#1>|#0 Scan All Subs Non-Stop|#7 ³|#2L|#1>|#0 Last Caller List|#7   ³                     |#7    º
-|#7º|#2#|#1>|#0 Enter Number of Sub|#7    ³|#2O|#1>|#0 Log Off|#7            ÃÄÄÄ|#4System Features|#7ÄÄÄÄÄÄÄ¶
+|#7º|#2#|#1>|#0 Enter Number of Sub|#7    ³|#2O|#1>|#0 Log Off|#7            ÃÄÄÄÄÄ|#4System Features|#7ÄÄÄÄÄ¶
 |#7º|#2J|#1>|#0 Join Conference|#7        ³|#2U|#0 or |#2~ |#1>|#0 User List|#7    ³|#2D|#1>|#0 Change Your Defaults|#7  º
 |#7º|#2*|#1>|#0 List Subs Available|#7    ³|#2V|#1>|#0 Voting Booth|#7       ³|#2G|#1>|#0 Read General Files|#7    º
 |#7º|#2>|#0, |#2]|#0 or |#2+|#1>|#0 Advance 1 Sub|#7  ³|#2X|#1>|#0 Toggle Xpert Mode|#7  ³|#2T|#1>|#0 Transfer Section|#7      º
