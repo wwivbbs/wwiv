@@ -29,6 +29,7 @@
 #include "common.h"
 #include "ifcns.h"
 #include "init.h"
+#include "input.h"
 #include "w5assert.h"
 #include "wconstants.h"
 #include "wwivinit.h"
@@ -726,30 +727,12 @@ int save_config() {
   return (0);
 }
 
-
-void Puts(const char *pszText) {
-  app->localIO->LocalPuts(pszText);
-}
-
-
 void nlx(int numLines) {
   for (int i = 0; i < numLines; i++) {
     Puts("\r\n");
   }
 }
 
-/**
- * Printf sytle output function.  Most init output code should use this.
- */
-void Printf(const char *pszFormat, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, 1024, pszFormat, ap);
-  va_end(ap);
-  app->localIO->LocalPuts(szBuffer);
-}
 
 void create_text(const char *pszFileName) {
   char szFullFileName[MAX_PATH];
