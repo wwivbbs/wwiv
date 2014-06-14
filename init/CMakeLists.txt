@@ -12,6 +12,7 @@ add_definitions(-DINIT -DNOT_BBS)
 set(COMMON_SOURCES
   compile.cpp convert.cpp
   init.cpp init1.cpp init2.cpp init3.cpp
+  input.cpp
   user_editor.cpp regcode.cpp
   subacc.cpp platform/curses_io.cpp
   )
