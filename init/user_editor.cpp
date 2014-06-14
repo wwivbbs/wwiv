@@ -20,145 +20,83 @@
 
 #include <curses.h>
 #include <cstdint>
+#include <string>
+
 #include "ifcns.h"
 #include "init.h"
+#include "input.h"
 #include "wwivinit.h"
 
 static const int X_POSITION = 19;
 
-/**
- * Printf sytle output function.  Most init output code should use this.
- */
-void PrintfY(int y, const char *pszFormat, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, 1024, pszFormat, ap);
-  va_end(ap);
-  app->localIO->LocalGotoXY(X_POSITION, y);
-  app->localIO->LocalPuts(szBuffer);
-}
-
-int editline(unsigned char *s, int len) {
-  int return_code = 0;
-  editline(reinterpret_cast<char*>(s), len, ALL, &return_code, "");
-  return return_code;
-}
-
-int editline(char *s, int len) {
-  int return_code = 0;
-  editline(s, len, ALL, &return_code, "");
-  return return_code;
-}
-
-int editline_byte(uint8_t* value) {
-  char s[21];
-  int return_code = 0;
-  sprintf(s, "%-3u", *value);
-  editline(s, 3, NUM_ONLY, &return_code, "");
-  *value = atoi(s);
-  return return_code;
-}
-
-int editline_int(uint32_t* value) {
-  char s[21];
-  int return_code = 0;
-  sprintf(s, "%-7u", *value);
-  editline(s, 7, NUM_ONLY, &return_code, "");
-  *value = atoi(s);
-  return return_code;
-}
 
 void show_user(int user_number, const userrec *user) {
   textattr(COLOR_CYAN);
   char name[41];
   sprintf(name, "%s #%d", user->name, user_number);
-  PrintfY(0, "%-30s", name);
-  PrintfY(1, "%-20s", user->realname);
-  PrintfY(2, "%-3d", user->sl);
-  PrintfY(3, "%-3d", user->dsl);
-  PrintfY(4, "%-30s", user->street);
-  PrintfY(5, "%-30s", user->city);
-  PrintfY(6, "%-2s", user->state);
-  PrintfY(7, "%-10s", user->zipcode);
-  PrintfY(8, "%2.2d/%2.2d/%4.4d", user->month, user->day, user->year + 1900);
-  PrintfY(9, "%-8s", user->pw);
-  PrintfY(10, "%-12s", user->phone);
-  PrintfY(11, "%-12s", user->dataphone);
-  PrintfY(12, "%-3d", user->comp_type);
-  PrintfY(13, "%-12d", user->wwiv_regnum);
+  PrintfY(X_POSITION, 0, "%-30s", name);
+  PrintfY(X_POSITION, 1, "%-20s", user->realname);
+  PrintfY(X_POSITION, 2, "%-3d", user->sl);
+  PrintfY(X_POSITION, 3, "%-3d", user->dsl);
+  PrintfY(X_POSITION, 4, "%-30s", user->street);
+  PrintfY(X_POSITION, 5, "%-30s", user->city);
+  PrintfY(X_POSITION, 6, "%-2s", user->state);
+  PrintfY(X_POSITION, 7, "%-10s", user->zipcode);
+  PrintfY(X_POSITION, 8, "%2.2d/%2.2d/%4.4d", user->month, user->day, user->year + 1900);
+  PrintfY(X_POSITION, 9, "%-8s", user->pw);
+  PrintfY(X_POSITION, 10, "%-12s", user->phone);
+  PrintfY(X_POSITION, 11, "%-12s", user->dataphone);
+  PrintfY(X_POSITION, 12, "%-3d", user->comp_type);
+  PrintfY(X_POSITION, 13, "%-12d", user->wwiv_regnum);
 }
 
 void edit_user(int user_number, userrec *user) {
   show_user(user_number, user);
-  int cp = 0;
-  for (;;) {
-    int i1 = DONE;
-    app->localIO->LocalGotoXY(X_POSITION, cp);
-    switch (cp) {
-    case 0: {
-      i1 = editline(user->name, 30);
-    } break;
-    case 1:
-      i1 = editline(user->realname, 20);
-      break;
-    case 2:
-      i1 = editline_byte(&user->sl);
-      break;
-    case 3:
-      i1 = editline_byte(&user->dsl);
-      break;
-    case 4:
-      i1 = editline(user->street, 30);
-      break;
-    case 5:
-      i1 = editline(user->city, 30);
-      break;
-    case 6:
-      i1 = editline(user->state, 2);
-      break;
-    case 7:
-      i1 = editline(user->zipcode, 10);
-      break;
-    case 8: {
-      char birthday[81];
-      sprintf(birthday, "%2.2d/%2.2d/%4.4d", user->month, user->day, user->year + 1900);
-      i1 = editline(birthday, 10);
-    } break;
-    case 9:
-      i1 = editline(user->pw, 8);
-      break;
-    case 10:
-      i1 = editline(user->phone, 12);
-      break;
-    case 11:
-      i1 = editline(user->dataphone, 12);
-      break;
-    case 12: {
-      uint8_t c = user->comp_type;
-      i1 = editline_byte(&c);
-      user->comp_type = c;
-    } break;
-    case 13:
-      i1 = editline_int(&user->wwiv_regnum);
-      break;
-    default:
-      break;
-    }
-    cp = GetNextSelectionPosition(0, 13, cp, i1);
-    if (i1 == DONE) {
-      return;
-    }
-  }
-}
 
+  EditItems items{
+    new StringEditItem<unsigned char*>(X_POSITION, 0, 30, user->name),
+    new StringEditItem<unsigned char*>(X_POSITION, 1, 20, user->realname),
+    new NumberEditItem<uint8_t *>(X_POSITION, 2, &user->sl),
+    new NumberEditItem<uint8_t *>(X_POSITION, 3, &user->dsl),
+    new StringEditItem<unsigned char*>(X_POSITION, 4, 30, user->street),
+    new StringEditItem<unsigned char*>(X_POSITION, 5, 30, user->city),
+    new StringEditItem<unsigned char*>(X_POSITION, 6, 2, user->state),
+    new StringEditItem<unsigned char*>(X_POSITION, 7, 10, user->zipcode),
+    new CustomEditItem(X_POSITION, 8, 10, 
+        [&user]() -> std::string { 
+          char birthday[81];
+          sprintf(birthday, "%2.2d/%2.2d/%4.4d", user->month, user->day, user->year + 1900);
+          return std::string(birthday);
+        },
+        [&user](const std::string& s) {
+          if (s[3] != '/' || s[6] != '/') {
+            return;
+          }
+          int month = std::stoi(s.substr(0, 2));
+          if (month < 1 || month > 12) { return; }
+          int day = std::stoi(s.substr(3, 2));
+          if (day < 1 || day > 31) { return; }
+          int year = std::stoi(s.substr(6, 4));
+          if (year < 1900 || year > 2014) { return ; }
+
+          user->month = month;
+          user->day = day;
+          user->year = year - 1900;
+        }),
+    new StringEditItem<unsigned char*>(X_POSITION, 9, 8, user->pw),
+    new StringEditItem<unsigned char*>(X_POSITION, 10, 12, user->phone),
+    new StringEditItem<unsigned char*>(X_POSITION, 11, 12, user->dataphone),
+    new NumberEditItem<int8_t *>(X_POSITION, 12, &user->comp_type),
+    new NumberEditItem<uint32_t *>(X_POSITION, 13, &user->wwiv_regnum),
+  };
+  items.Run();
+}
 
 static void show_help() {
   app->localIO->LocalGotoXY(0, 14);
   textattr(COLOR_YELLOW);
   Puts("\n<ESC> to exit\n");
-  textattr(11);
+  textattr(COLOR_CYAN);
   Printf("[ = down one user  ] = up one user\n");
   Printf("{ = down 10 user   } = up 10 user\n");
   Printf("<C/R> = edit SL data\n");
@@ -173,8 +111,20 @@ static void clear_help() {
   }
 }
 
+static void show_error_no_users() {
+  textattr(COLOR_RED);
+  Printf("You must have users added before using user editor.");
+  Printf("\n\n");
+  pausescr();
+}
+
 void user_editor() {
+  int number_users = number_userrecs();
   app->localIO->LocalCls();
+  if (number_users < 1) {
+    show_error_no_users();
+    return;
+  }
   textattr(COLOR_CYAN);
   Printf("Name/Handle      : \n");
   Printf("Real Name        : \n");
@@ -220,25 +170,25 @@ void user_editor() {
       done = true;
       return;
     case ']':
-      if (++current_usernum > number_userrecs()) {
+      if (++current_usernum > number_users) {
         current_usernum = 1;
       }
       break;
     case '[': {
       if (--current_usernum < 1) {
-        current_usernum = number_userrecs();
+        current_usernum = number_users;
       }
     } break;
     case '}':
       current_usernum += 10;
-      if (current_usernum > number_userrecs()) {
+      if (current_usernum > number_users) {
         current_usernum = 1;
       }
       break;
     case '{':
       current_usernum -= 10;
       if (current_usernum < 1) {
-        current_usernum = number_userrecs();
+        current_usernum = number_users;
       }
       break;
     }
