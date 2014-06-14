@@ -35,14 +35,16 @@ using std::vector;
 template<> int StringEditItem<char *>::Run() {
   app->localIO->LocalGotoXY(x_, y_);
   int return_code = 0;
-  editline(data_, maxsize_, ALL, &return_code, "");
+  int status = uppercase_ ? UPPER_ONLY : ALL;
+  editline(data_, maxsize_, status, &return_code, "");
   return return_code;
 }
 
 template<> int StringEditItem<unsigned char *>::Run() {
   app->localIO->LocalGotoXY(x_, y_);
   int return_code = 0;
-  editline(reinterpret_cast<char*>(data_), maxsize_, ALL, &return_code, "");
+  int status = uppercase_ ? UPPER_ONLY : ALL;
+  editline(reinterpret_cast<char*>(data_), maxsize_, status, &return_code, "");
   return return_code;
 }
 
@@ -84,9 +86,24 @@ int CustomEditItem::Run() {
   return return_code;
 }
 
+void CustomEditItem::Display() const {
+  app->localIO->LocalGotoXY(x_, y_);
+  std::string blanks(maxsize_, ' ');
+  Puts(blanks.c_str());
+
+  string s = to_field_();
+  if (display_) {
+    display_(s);
+  } else {
+    app->localIO->LocalGotoXY(x_, y_);
+    Puts(s.c_str());
+  }
+}
+
 void EditItems::Run() {
   int cp = 0;
   const int size = static_cast<int>(items_.size());
+  Display();
   for (;;) {
     int i1 = items_[cp]->Run();
     if (i1 == PREV) {
@@ -100,6 +117,14 @@ void EditItems::Run() {
     } else if (i1 == DONE) {
       return;
     }
+  }
+}
+
+void EditItems::Display() const {
+  textattr(COLOR_CYAN);
+
+  for (BaseEditItem* item : items_) {
+    item->Display();
   }
 }
 
