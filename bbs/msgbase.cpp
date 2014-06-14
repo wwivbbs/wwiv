@@ -582,7 +582,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
       WFile fileNetworkPacket(szNetFileName);
       fileNetworkPacket.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
                              WFile::permReadWrite);
-      fileNetworkPacket.Seek(0L, WFile::seekBegin);
+      fileNetworkPacket.Seek(0L, WFile::seekEnd);
       fileNetworkPacket.Write(&nh, sizeof(net_header_rec));
       fileNetworkPacket.Write(b1, nh.length);
       fileNetworkPacket.Close();
