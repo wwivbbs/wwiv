@@ -20,6 +20,7 @@
 
 #include <curses.h>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <initializer_list>
 #include <string>
