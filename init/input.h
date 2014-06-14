@@ -23,6 +23,13 @@
 #include <string>
 #include <vector>
 
+#include "ifcns.h" // Just for Puts
+#include "init.h"
+#include "platform/curses_io.h"
+
+class WInitApp;
+extern WInitApp *app;
+
 class BaseEditItem {
 public:
   BaseEditItem(int x, int y, int maxsize)
@@ -77,20 +84,21 @@ protected:
 template<typename T> class StringEditItem : public EditItem<T> {
 public:
   StringEditItem(int x, int y, int maxsize, T data, bool uppercase) 
-    : EditItem(x, y, maxsize, data), uppercase_(uppercase) {}
+    : EditItem<T>(x, y, maxsize, data), uppercase_(uppercase) {}
   virtual ~StringEditItem() {}
 
   virtual int Run();
+
 protected:
   virtual void DefaultDisplay() const {
-    app->localIO->LocalGotoXY(x_, y_);
-    std::string blanks(maxsize_, ' ');
+    app->localIO->LocalGotoXY(this->x_, this->y_);
+    std::string blanks(this->maxsize_, ' ');
     Puts(blanks.c_str());
 
     char pattern[81];
-    sprintf(pattern, "%%-%ds", maxsize_);
-    app->localIO->LocalGotoXY(x_, y_);
-    Printf(pattern, data_);
+    sprintf(pattern, "%%-%ds", this->maxsize_);
+    app->localIO->LocalGotoXY(this->x_, this->y_);
+    Printf(pattern, this->data_);
   }
 private:
   bool uppercase_;
@@ -99,17 +107,17 @@ private:
 
 template<typename T> class NumberEditItem : public EditItem<T*> {
 public:
-  NumberEditItem(int x, int y, T* data) : EditItem(x, y, 0, data) {}
+  NumberEditItem(int x, int y, T* data) : EditItem<T*>(x, y, 0, data) {}
   virtual ~NumberEditItem() {}
 
   virtual int Run();
 protected:
   virtual void DefaultDisplay() const {
-    app->localIO->LocalGotoXY(x_, y_);
-    std::string blanks(maxsize_, ' ');
+    app->localIO->LocalGotoXY(this->x_, this->y_);
+    std::string blanks(this->maxsize_, ' ');
     Puts(blanks.c_str());
-    app->localIO->LocalGotoXY(x_, y_);
-    Printf("%-7d", *data_);
+    app->localIO->LocalGotoXY(this->x_, this->y_);
+    Printf("%-7d", *this->data_);
   }
 };
 
