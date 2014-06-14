@@ -56,7 +56,6 @@ void backspace();
 int upcase(int ch);
 int input_number(int max_digits);
 void input_password(char *pszOutText, int nMaxLength);
-int yn();
 char onek(const char *s);
 void editline(std::string* s, int len, int status, int *returncode, const char *ss);
 void editline(char *s, int len, int status, int *returncode, const char *ss);

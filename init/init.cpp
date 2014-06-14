@@ -651,10 +651,7 @@ int WInitApp::main(int argc, char *argv[]) {
     Printf("%s NOT FOUND.\n\n", configdat);
     inst = 1;
     strcpy(modemdat, "modem.dat");
-    textattr(COLOR_YELLOW);
-    Puts("Perform initial installation? ");
-    textattr(COLOR_CYAN);
-    if (yn()) {
+    if (dialog_yn("Perform initial installation")) {
       if (inst == 1) {
         new_init();
         nlx(1);
@@ -985,10 +982,7 @@ int WInitApp::main(int argc, char *argv[]) {
         app->localIO->getchd();
         nlx();
       } else {
-        textattr(COLOR_YELLOW);
-        Puts("Convert your userlist to the v4.30 format? ");
-        textattr(COLOR_CYAN);
-        if (yn()) {
+        if (dialog_yn("Convert your userlist to the v4.30 format")) {
           textattr(COLOR_MAGENTA);
           Printf("Please wait...\n");
           c_old_to_new();

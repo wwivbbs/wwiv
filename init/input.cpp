@@ -172,3 +172,23 @@ void Printf(const char *pszFormat, ...) {
   app->localIO->LocalPuts(szBuffer);
 }
 
+bool dialog_yn(const std::string prompt) {
+  const int maxx = getmaxx(stdscr);
+  const int maxy = getmaxy(stdscr);
+  std::string s = prompt + " ? ";
+  const int width = s.size() + 4;
+  const int startx = (maxx - s.size()) / 2;
+  const int starty = (maxy - 3) / 2;
+  WINDOW *dialog = newwin(3, width, starty, startx);
+  wbkgd(dialog, COLOR_PAIR(31));
+  wattrset(dialog, COLOR_PAIR(31));
+  wattron(dialog, A_BOLD);
+  box(dialog, 0, 0);
+  mvwaddstr(dialog, 1, 2, s.c_str());
+  wrefresh(dialog);
+  int ch = wgetch(dialog);
+  delwin(dialog);
+  redrawwin(stdscr);
+  refresh();
+  return ch == 'Y' || ch == 'y';
+}

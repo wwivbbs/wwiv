@@ -870,9 +870,7 @@ void up_subs_dirs() {
   Printf("Current max # dirs: %d\n", syscfg.max_dirs);
   nlx(2);
 
-  textattr(COLOR_YELLOW);
-  Puts("Change # subs or # dirs? ");
-  if (yn()) {
+  if (dialog_yn("Change # subs or # dirs")) {
     nlx();
     textattr(COLOR_CYAN);
     Printf("Enter the new max subs/dirs you wish.  Just hit <enter> to leave that\n");
@@ -919,9 +917,10 @@ void up_subs_dirs() {
     if ((num_subs != syscfg.max_subs) || (num_dirs != syscfg.max_dirs)) {
       nlx();
       textattr(COLOR_YELLOW);
-      Printf("Change to %d subs and", num_subs);
-      Printf(" %d dirs? ", num_dirs);
-      if (yn()) {
+      char text[81];
+      sprintf(text, "Change to %d subs and %d dirs? ", num_subs, num_dirs);
+
+      if (dialog_yn(text)) {
         nlx();
         textattr(COLOR_MAGENTA);
         Printf("Please wait...\n");
