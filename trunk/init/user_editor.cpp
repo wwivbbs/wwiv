@@ -56,8 +56,8 @@ void edit_user(int user_number, userrec *user) {
   EditItems items{
     new StringEditItem<unsigned char*>(X_POSITION, 0, 30, user->name),
     new StringEditItem<unsigned char*>(X_POSITION, 1, 20, user->realname),
-    new NumberEditItem<uint8_t *>(X_POSITION, 2, &user->sl),
-    new NumberEditItem<uint8_t *>(X_POSITION, 3, &user->dsl),
+    new NumberEditItem<uint8_t>(X_POSITION, 2, &user->sl),
+    new NumberEditItem<uint8_t>(X_POSITION, 3, &user->dsl),
     new StringEditItem<unsigned char*>(X_POSITION, 4, 30, user->street),
     new StringEditItem<unsigned char*>(X_POSITION, 5, 30, user->city),
     new StringEditItem<unsigned char*>(X_POSITION, 6, 2, user->state),
@@ -86,8 +86,8 @@ void edit_user(int user_number, userrec *user) {
     new StringEditItem<unsigned char*>(X_POSITION, 9, 8, user->pw),
     new StringEditItem<unsigned char*>(X_POSITION, 10, 12, user->phone),
     new StringEditItem<unsigned char*>(X_POSITION, 11, 12, user->dataphone),
-    new NumberEditItem<int8_t *>(X_POSITION, 12, &user->comp_type),
-    new NumberEditItem<uint32_t *>(X_POSITION, 13, &user->wwiv_regnum),
+    new NumberEditItem<int8_t>(X_POSITION, 12, &user->comp_type),
+    new NumberEditItem<uint32_t>(X_POSITION, 13, &user->wwiv_regnum),
   };
   items.Run();
 }
