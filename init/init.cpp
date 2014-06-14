@@ -109,11 +109,6 @@ int set_modem_info(const char *mt, bool bPause) {
   }
 }
 
-
-
-/****************************************************************************/
-
-
 char *mdm_name(int mdm_num) {
   static char s_szModemName[ 255 ];
 
@@ -125,7 +120,6 @@ char *mdm_name(int mdm_num) {
 
   return s_szModemName;
 }
-
 
 // select modem type
 void select_modem() {
@@ -1036,11 +1030,12 @@ int WInitApp::main(int argc, char *argv[]) {
     app->localIO->LocalXYPuts(x, y++, "L. Language Configuration");
     app->localIO->LocalXYPuts(x, y++, "N. Network Configuration");
     app->localIO->LocalXYPuts(x, y++, "R. Registration Information");
-    app->localIO->LocalXYPuts(x, y++, "U. Update Sub/Directory Maximums");
+    app->localIO->LocalXYPuts(x, y++, "U. User Editor");
+    app->localIO->LocalXYPuts(x, y++, "X. Update Sub/Directory Maximums");
     app->localIO->LocalXYPuts(x, y++, "Q. Quit");
 
     y++;
-    sprintf(szTempBuffer, "Instance %d: Which (1-9, A,L,N,R,U,Q) ? ", inst);
+    sprintf(szTempBuffer, "Instance %d: Which (1-9, A,L,N,Q,R,U,X) ? ", inst);
     app->localIO->LocalXYPuts(x, y++, szTempBuffer);
     textattr(COLOR_CYAN);
     lines_listed = 0;
@@ -1096,7 +1091,7 @@ int WInitApp::main(int argc, char *argv[]) {
       edit_registration_code();
       break;
     case 'U':
-      up_subs_dirs();
+      user_editor();
       break;
     case 'V':
       nlx();
@@ -1104,16 +1099,12 @@ int WInitApp::main(int argc, char *argv[]) {
       app->localIO->getchd();
       break;
     case 'X':
-      user_editor();
+      up_subs_dirs();
+      break;
     }
   } while (!done);
 
-  app->localIO->LocalCls();
   // Don't leak the localIO (also fix the color when the app exits)
   delete app->localIO;
   return 0;
-}
-
-WInitApp* GetApplication() {
-  return app;
 }
