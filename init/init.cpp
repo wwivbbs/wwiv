@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 
 #include "ifcns.h"
+#include "input.h"
 #include "init.h"
 #include "regcode.h"
 #include "user_editor.h"

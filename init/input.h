@@ -30,6 +30,14 @@
 class WInitApp;
 extern WInitApp *app;
 
+// Function prototypes
+void Puts(const char *pszText);
+void PutsXY(int x, int y, const char *pszText);
+void Printf(const char *pszFormat, ...);
+void PrintfXY(int x, int y, const char *pszFormat, ...);
+
+
+
 class BaseEditItem {
 public:
   BaseEditItem(int x, int y, int maxsize)
@@ -56,11 +64,9 @@ public:
 
   void set_displayfn(displayfn f) { display_ = f; }
   virtual void Display(const std::string& custom) const {
-    app->localIO->LocalGotoXY(x_, y_);
     std::string blanks(maxsize_, ' ');
-    Puts(blanks.c_str());
-    app->localIO->LocalGotoXY(x_, y_);
-    Puts(custom.c_str());
+    PutsXY(x_, y_, blanks.c_str());
+    PutsXY(x_, y_, custom.c_str());
   };
 
   virtual void Display() const { 
@@ -91,14 +97,12 @@ public:
 
 protected:
   virtual void DefaultDisplay() const {
-    app->localIO->LocalGotoXY(this->x_, this->y_);
     std::string blanks(this->maxsize_, ' ');
-    Puts(blanks.c_str());
+    PutsXY(this->x_, this->y_, blanks.c_str());
 
     char pattern[81];
     sprintf(pattern, "%%-%ds", this->maxsize_);
-    app->localIO->LocalGotoXY(this->x_, this->y_);
-    Printf(pattern, this->data_);
+    PrintfXY(this->x_, this->y_, pattern, this->data_);
   }
 private:
   bool uppercase_;
@@ -113,11 +117,9 @@ public:
   virtual int Run();
 protected:
   virtual void DefaultDisplay() const {
-    app->localIO->LocalGotoXY(this->x_, this->y_);
     std::string blanks(this->maxsize_, ' ');
-    Puts(blanks.c_str());
-    app->localIO->LocalGotoXY(this->x_, this->y_);
-    Printf("%-7d", *this->data_);
+    PutsXY(this->x_, this->y_, blanks.c_str());
+    PrintfXY(this->x_, this->y_, "%-7d", *this->data_);
   }
 };
 
@@ -154,9 +156,5 @@ public:
 private:
   std::vector<BaseEditItem*> items_;
 };
-
-
-// Function prototypes
-void PrintfY(int x, int y, const char *pszFormat, ...);
 
 #endif // __INCLUDED_INPUT_H__

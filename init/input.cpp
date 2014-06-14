@@ -141,7 +141,7 @@ EditItems::~EditItems() {
 /**
  * Printf sytle output function.  Most init output code should use this.
  */
-void PrintfY(int x, int y, const char *pszFormat, ...) {
+void PrintfXY(int x, int y, const char *pszFormat, ...) {
   va_list ap;
   char szBuffer[1024];
 
@@ -150,3 +150,25 @@ void PrintfY(int x, int y, const char *pszFormat, ...) {
   va_end(ap);
   app->localIO->LocalXYPuts(x, y, szBuffer);
 }
+
+void Puts(const char *pszText) {
+  app->localIO->LocalPuts(pszText);
+}
+
+void PutsXY(int x, int y, const char *pszText) {
+  app->localIO->LocalXYPuts(x, y,pszText);
+}
+
+/**
+ * Printf sytle output function.  Most init output code should use this.
+ */
+void Printf(const char *pszFormat, ...) {
+  va_list ap;
+  char szBuffer[1024];
+
+  va_start(ap, pszFormat);
+  vsnprintf(szBuffer, 1024, pszFormat, ap);
+  va_end(ap);
+  app->localIO->LocalPuts(szBuffer);
+}
+

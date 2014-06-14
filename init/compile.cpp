@@ -20,6 +20,7 @@
 #include <cstring>
 #include "ifcns.h"
 #include "init.h"
+#include "input.h"
 #include "vars.h"
 #include "wwivinit.h"
 #include "wconstants.h"
