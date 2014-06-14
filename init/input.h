@@ -30,6 +30,8 @@ void PutsXY(int x, int y, const char *pszText);
 void Printf(const char *pszFormat, ...);
 void PrintfXY(int x, int y, const char *pszFormat, ...);
 
+bool dialog_yn(const std::string prompt);
+
 
 class BaseEditItem {
 public:
