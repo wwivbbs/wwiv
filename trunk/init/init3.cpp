@@ -28,6 +28,7 @@
 
 #include "ifcns.h"
 #include "init.h"
+#include "input.h"
 #include "wconstants.h"
 #include "wwivinit.h"
 #include "platform/incl1.h"

@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "ifcns.h"
+#include "input.h"
 #include "wwivinit.h"
 
 #if defined( _WIN32 )

@@ -27,6 +27,7 @@
 #include "wwivinit.h"
 #include "ifcns.h"
 #include "init.h"
+#include "input.h"
 #include "subacc.h"
 #include "platform/incl1.h"
 #include "platform/wfile.h"

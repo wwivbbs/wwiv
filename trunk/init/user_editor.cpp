@@ -27,8 +27,13 @@
 #include "input.h"
 #include "wwivinit.h"
 
-static const int X_POSITION = 19;
+static const int COL1_POSITION = 19;
+static const int COL2_POSITION = 50;
 static const int PROMPT_LINE = 22;
+
+static bool IsUserDeleted(userrec *user) {
+  return user->inact & inact_deleted;
+}
 
 void show_user(EditItems* items, userrec* user) {
   items->Display();
@@ -38,21 +43,33 @@ void show_user(EditItems* items, userrec* user) {
     app->localIO->LocalXYPuts(50, i, blank.c_str());
   }
   textattr(COLOR_CYAN);
-  app->localIO->LocalGotoXY(50, 0);
-  if (user->inact & 0x01) {
+  if (user->inact & inact_deleted) {
     textattr(COLOR_RED);
-    Puts("[[ DELETED USER ]]");
-  } else if (user->inact & 0x02) {
+    PutsXY(COL2_POSITION, 0, "[[ DELETED USER ]]");
+  } else if (user->inact & inact_inactive) {
     textattr(COLOR_RED);
-    Puts("[[ INACTIVE USER ]]");
+    PutsXY(COL2_POSITION, 0, "[[ INACTIVE USER ]]");
   }
   textattr(COLOR_CYAN);
+  int y = 1;
+  PrintfXY(COL2_POSITION, y++, "First on         : %s", user->firston);
+  PrintfXY(COL2_POSITION, y++, "Last on          : %s", user->laston);
+  y++;
+  PrintfXY(COL2_POSITION, y++, "Total Calls      : %d", user->logons);
+  PrintfXY(COL2_POSITION, y++, "Today Calls      : %d", user->ontoday);
+  PrintfXY(COL2_POSITION, y++, "Illegal Logons   : %d", user->illegal);
+  y++;
+  PrintfXY(COL2_POSITION, y++, "Number of Posts  : %d", user->msgpost);
+  PrintfXY(COL2_POSITION, y++, "Number of Emails : %d", user->emailsent);
+  PrintfXY(COL2_POSITION, y++, "Num Feedback Sent: %d", user->feedbacksent);
+  PrintfXY(COL2_POSITION, y++, "Messages Waiting : %d", user->waiting);
+  PrintfXY(COL2_POSITION, y++, "Net Email Sent   : %d", user->emailnet);
+  PrintfXY(COL2_POSITION, y++, "Num Deleted Posts: %d", user->deletedposts);
 }
 
 static void show_help(int start_line) {
-  app->localIO->LocalGotoXY(0, start_line);
   textattr(COLOR_YELLOW);
-  Puts("\n<ESC> to exit\n");
+  PutsXY(0, start_line, "\n<ESC> to exit\n");
   textattr(COLOR_CYAN);
   Printf("[ = down one user  ] = up one user\n");
   Printf("{ = down 10 user   } = up 10 user\n");
@@ -104,14 +121,14 @@ void user_editor() {
   userrec user;
   read_user(current_usernum, &user);
 
-  auto user_name_field = new StringEditItem<unsigned char*>(X_POSITION, 0, 30, user.name, true);
+  auto user_name_field = new StringEditItem<unsigned char*>(COL1_POSITION, 0, 30, user.name, true);
   user_name_field->set_displayfn([&]() -> std::string {
     char name[81];
     sprintf(name, "%s #%d", user.name, current_usernum);
     return std::string(name);
   });
 
-  auto birthday_field = new CustomEditItem(X_POSITION, 8, 10, 
+  auto birthday_field = new CustomEditItem(COL1_POSITION, 8, 10, 
       [&user]() -> std::string { 
         char birthday[81];
         sprintf(birthday, "%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
@@ -136,42 +153,46 @@ void user_editor() {
 
   EditItems items{
     user_name_field,
-    new StringEditItem<unsigned char*>(X_POSITION, 1, 20, user.realname, false),
-    new NumberEditItem<uint8_t>(X_POSITION, 2, &user.sl),
-    new NumberEditItem<uint8_t>(X_POSITION, 3, &user.dsl),
-    new StringEditItem<unsigned char*>(X_POSITION, 4, 30, user.street, false),
-    new StringEditItem<unsigned char*>(X_POSITION, 5, 30, user.city, false),
-    new StringEditItem<unsigned char*>(X_POSITION, 6, 2, user.state, false),
-    new StringEditItem<unsigned char*>(X_POSITION, 7, 10, user.zipcode, true),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 1, 20, user.realname, false),
+    new NumberEditItem<uint8_t>(COL1_POSITION, 2, &user.sl),
+    new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.dsl),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 4, 30, user.street, false),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 5, 30, user.city, false),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 6, 2, user.state, false),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 7, 10, user.zipcode, true),
     birthday_field,
-    new StringEditItem<unsigned char*>(X_POSITION, 9, 8, user.pw, true),
-    new StringEditItem<unsigned char*>(X_POSITION, 10, 12, user.phone, true),
-    new StringEditItem<unsigned char*>(X_POSITION, 11, 12, user.dataphone, true),
-    new NumberEditItem<int8_t>(X_POSITION, 12, &user.comp_type),
-    new NumberEditItem<uint32_t>(X_POSITION, 13, &user.wwiv_regnum),
-    new StringEditItem<unsigned char*>(X_POSITION, 14, 60, user.note, false),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 9, 8, user.pw, true),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 10, 12, user.phone, true),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 11, 12, user.dataphone, true),
+    new NumberEditItem<int8_t>(COL1_POSITION, 12, &user.comp_type),
+    new NumberEditItem<uint32_t>(COL1_POSITION, 13, &user.wwiv_regnum),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 14, 60, user.note, false),
   };
 
   show_user(&items, &user);
 
   for (;;)  {
     show_help(14 + 1);
-    app->localIO->LocalGotoXY(0, PROMPT_LINE);
-    Puts("Command: ");
+    PutsXY(0, PROMPT_LINE, "Command: ");
     char ch = onek("\033Q[]{}\r");
     switch (ch) {
-    case '\r':
-      clear_help(14 + 1);
-      items.Run();
-      app->localIO->LocalGotoXY(0, PROMPT_LINE);
-      textattr(COLOR_YELLOW);
-      Puts("Save User?");
-      if (yn()) {
-        write_user(current_usernum, &user);
+    case '\r': {
+      if (IsUserDeleted(&user)) {
+        textattr(COLOR_RED);
+        PutsXY(0, PROMPT_LINE, "Can not edit a deleted user.\n\n");
+        pausescr();
+      } else {
+        clear_help(14 + 1);
+        items.Run();
+        textattr(COLOR_YELLOW);
+        PutsXY(0, PROMPT_LINE, "Save User?");
+        if (yn()) {
+          write_user(current_usernum, &user);
+        }
       }
       app->localIO->LocalGotoXY(0, PROMPT_LINE);
       app->localIO->LocalClrEol();
-      break;
+    } break;
     case 'Q':
     case '\033':
       return;
