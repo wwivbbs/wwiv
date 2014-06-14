@@ -23,19 +23,12 @@
 #include <string>
 #include <vector>
 
-#include "ifcns.h" // Just for Puts
-#include "init.h"
-#include "platform/curses_io.h"
-
-class WInitApp;
-extern WInitApp *app;
 
 // Function prototypes
 void Puts(const char *pszText);
 void PutsXY(int x, int y, const char *pszText);
 void Printf(const char *pszFormat, ...);
 void PrintfXY(int x, int y, const char *pszFormat, ...);
-
 
 
 class BaseEditItem {
