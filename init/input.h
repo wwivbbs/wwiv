@@ -60,9 +60,9 @@ public:
 };
 
 
-template<typename T> class NumberEditItem : public EditItem<T> {
+template<typename T> class NumberEditItem : public EditItem<T*> {
 public:
-  NumberEditItem(int x, int y, T data) : EditItem(x, y, 0, data) {}
+  NumberEditItem(int x, int y, T* data) : EditItem(x, y, 0, data) {}
   virtual ~NumberEditItem() {}
 
   virtual int Run();

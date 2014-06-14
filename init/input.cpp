@@ -47,7 +47,7 @@ template<> int StringEditItem<unsigned char *>::Run() {
 }
 
 template<typename T> 
-static int EditNumberItem(T data, int maxlen) {
+static int EditNumberItem(T* data, int maxlen) {
   char s[21];
   int return_code = 0;
   sprintf(s, "%-7u", *data);
@@ -56,19 +56,19 @@ static int EditNumberItem(T data, int maxlen) {
   return return_code;
 }
 
-template<> int NumberEditItem<uint32_t*>::Run() {
+template<> int NumberEditItem<uint32_t>::Run() {
   app->localIO->LocalGotoXY(x_, y_);
-  return EditNumberItem<uint32_t*>(data_, 5);
+  return EditNumberItem<uint32_t>(data_, 5);
 }
 
-template<> int NumberEditItem<int8_t*>::Run() {
+template<> int NumberEditItem<int8_t>::Run() {
   app->localIO->LocalGotoXY(x_, y_);
-  return EditNumberItem<int8_t*>(data_, 3);
+  return EditNumberItem<int8_t>(data_, 3);
 }
 
-template<> int NumberEditItem<uint8_t*>::Run() {
+template<> int NumberEditItem<uint8_t>::Run() {
   app->localIO->LocalGotoXY(x_, y_);
-  return EditNumberItem<uint8_t*>(data_, 3);
+  return EditNumberItem<uint8_t>(data_, 3);
 }
 
 int CustomEditItem::Run() {
