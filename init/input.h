@@ -30,6 +30,7 @@ public:
   virtual ~BaseEditItem() {}
 
   virtual int Run() = 0;
+  virtual void Display() const = 0;
 
 protected:
   int x_;
@@ -41,22 +42,58 @@ protected:
 template<typename T>
 class EditItem : public BaseEditItem {
 public:
+  typedef std::function<std::string(void)> displayfn;
+
   EditItem(int x, int y, int maxsize, T data) : BaseEditItem(x, y, maxsize), data_(data) {};
   virtual ~EditItem() {}
 
+  void set_displayfn(displayfn f) { display_ = f; }
+  virtual void Display(const std::string& custom) const {
+    app->localIO->LocalGotoXY(x_, y_);
+    std::string blanks(maxsize_, ' ');
+    Puts(blanks.c_str());
+    app->localIO->LocalGotoXY(x_, y_);
+    Puts(custom.c_str());
+  };
+
+  virtual void Display() const { 
+    if (display_) { 
+      Display(display_()); 
+    } else {
+      DefaultDisplay();
+    }
+  }
+
 protected:
+  virtual void DefaultDisplay() const = 0;
+
   const T data() const { return data_; }
   void set_data(T data) { data_ = data; }
   T data_;
+  displayfn display_;
 };
 
 
 template<typename T> class StringEditItem : public EditItem<T> {
 public:
-  StringEditItem(int x, int y, int maxsize, T data) : EditItem(x, y, maxsize, data) {}
+  StringEditItem(int x, int y, int maxsize, T data, bool uppercase) 
+    : EditItem(x, y, maxsize, data), uppercase_(uppercase) {}
   virtual ~StringEditItem() {}
 
   virtual int Run();
+protected:
+  virtual void DefaultDisplay() const {
+    app->localIO->LocalGotoXY(x_, y_);
+    std::string blanks(maxsize_, ' ');
+    Puts(blanks.c_str());
+
+    char pattern[81];
+    sprintf(pattern, "%%-%ds", maxsize_);
+    app->localIO->LocalGotoXY(x_, y_);
+    Printf(pattern, data_);
+  }
+private:
+  bool uppercase_;
 };
 
 
@@ -66,11 +103,20 @@ public:
   virtual ~NumberEditItem() {}
 
   virtual int Run();
+protected:
+  virtual void DefaultDisplay() const {
+    app->localIO->LocalGotoXY(x_, y_);
+    std::string blanks(maxsize_, ' ');
+    Puts(blanks.c_str());
+    app->localIO->LocalGotoXY(x_, y_);
+    Printf("%-7d", *data_);
+  }
 };
 
 
 class CustomEditItem : public BaseEditItem {
 public:
+  typedef std::function<void(const std::string&)> displayfn;
   typedef std::function<std::string(void)> prefn;
   typedef std::function<void(const std::string&)> postfn;
   CustomEditItem(int x, int y, int maxsize,
@@ -79,10 +125,13 @@ public:
         to_field_(to_field), from_field_(from_field) {}
 
   virtual int Run();
+  virtual void Display() const;
+  void set_displayfn(CustomEditItem::displayfn f) { display_ = f; }
 
 private:
   prefn to_field_;
   postfn from_field_;
+  displayfn display_;
 };
 
 
@@ -92,6 +141,7 @@ public:
   virtual ~EditItems();
 
   virtual void Run();
+  virtual void Display() const;
 
 private:
   std::vector<BaseEditItem*> items_;

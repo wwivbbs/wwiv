@@ -28,72 +28,29 @@
 #include "wwivinit.h"
 
 static const int X_POSITION = 19;
+static const int PROMPT_LINE = 22;
 
+void show_user(EditItems* items, userrec* user) {
+  items->Display();
 
-void show_user(int user_number, const userrec *user) {
+  for (int i=0; i<13; i++) {
+    std::string blank(30, ' ');
+    app->localIO->LocalXYPuts(50, i, blank.c_str());
+  }
   textattr(COLOR_CYAN);
-  char name[41];
-  sprintf(name, "%s #%d", user->name, user_number);
-  PrintfY(X_POSITION, 0, "%-30s", name);
-  PrintfY(X_POSITION, 1, "%-20s", user->realname);
-  PrintfY(X_POSITION, 2, "%-3d", user->sl);
-  PrintfY(X_POSITION, 3, "%-3d", user->dsl);
-  PrintfY(X_POSITION, 4, "%-30s", user->street);
-  PrintfY(X_POSITION, 5, "%-30s", user->city);
-  PrintfY(X_POSITION, 6, "%-2s", user->state);
-  PrintfY(X_POSITION, 7, "%-10s", user->zipcode);
-  PrintfY(X_POSITION, 8, "%2.2d/%2.2d/%4.4d", user->month, user->day, user->year + 1900);
-  PrintfY(X_POSITION, 9, "%-8s", user->pw);
-  PrintfY(X_POSITION, 10, "%-12s", user->phone);
-  PrintfY(X_POSITION, 11, "%-12s", user->dataphone);
-  PrintfY(X_POSITION, 12, "%-3d", user->comp_type);
-  PrintfY(X_POSITION, 13, "%-12d", user->wwiv_regnum);
+  app->localIO->LocalGotoXY(50, 0);
+  if (user->inact & 0x01) {
+    textattr(COLOR_RED);
+    Puts("[[ DELETED USER ]]");
+  } else if (user->inact & 0x02) {
+    textattr(COLOR_RED);
+    Puts("[[ INACTIVE USER ]]");
+  }
+  textattr(COLOR_CYAN);
 }
 
-void edit_user(int user_number, userrec *user) {
-  show_user(user_number, user);
-
-  EditItems items{
-    new StringEditItem<unsigned char*>(X_POSITION, 0, 30, user->name),
-    new StringEditItem<unsigned char*>(X_POSITION, 1, 20, user->realname),
-    new NumberEditItem<uint8_t>(X_POSITION, 2, &user->sl),
-    new NumberEditItem<uint8_t>(X_POSITION, 3, &user->dsl),
-    new StringEditItem<unsigned char*>(X_POSITION, 4, 30, user->street),
-    new StringEditItem<unsigned char*>(X_POSITION, 5, 30, user->city),
-    new StringEditItem<unsigned char*>(X_POSITION, 6, 2, user->state),
-    new StringEditItem<unsigned char*>(X_POSITION, 7, 10, user->zipcode),
-    new CustomEditItem(X_POSITION, 8, 10, 
-        [&user]() -> std::string { 
-          char birthday[81];
-          sprintf(birthday, "%2.2d/%2.2d/%4.4d", user->month, user->day, user->year + 1900);
-          return std::string(birthday);
-        },
-        [&user](const std::string& s) {
-          if (s[3] != '/' || s[6] != '/') {
-            return;
-          }
-          int month = std::stoi(s.substr(0, 2));
-          if (month < 1 || month > 12) { return; }
-          int day = std::stoi(s.substr(3, 2));
-          if (day < 1 || day > 31) { return; }
-          int year = std::stoi(s.substr(6, 4));
-          if (year < 1900 || year > 2014) { return ; }
-
-          user->month = month;
-          user->day = day;
-          user->year = year - 1900;
-        }),
-    new StringEditItem<unsigned char*>(X_POSITION, 9, 8, user->pw),
-    new StringEditItem<unsigned char*>(X_POSITION, 10, 12, user->phone),
-    new StringEditItem<unsigned char*>(X_POSITION, 11, 12, user->dataphone),
-    new NumberEditItem<int8_t>(X_POSITION, 12, &user->comp_type),
-    new NumberEditItem<uint32_t>(X_POSITION, 13, &user->wwiv_regnum),
-  };
-  items.Run();
-}
-
-static void show_help() {
-  app->localIO->LocalGotoXY(0, 14);
+static void show_help(int start_line) {
+  app->localIO->LocalGotoXY(0, start_line);
   textattr(COLOR_YELLOW);
   Puts("\n<ESC> to exit\n");
   textattr(COLOR_CYAN);
@@ -103,9 +60,9 @@ static void show_help() {
   textattr(COLOR_CYAN);
 }
 
-static void clear_help() {
+static void clear_help(int start_line) {
   textattr(COLOR_CYAN);
-  for (int y = 14; y <= 17; y++) {
+  for (int y = start_line; y <= PROMPT_LINE-1; y++) {
     app->localIO->LocalGotoXY(0, y);
     app->localIO->LocalClrEol();
   }
@@ -125,6 +82,7 @@ void user_editor() {
     show_error_no_users();
     return;
   }
+
   textattr(COLOR_CYAN);
   Printf("Name/Handle      : \n");
   Printf("Real Name        : \n");
@@ -140,34 +98,82 @@ void user_editor() {
   Printf("Data Phone Number: \n");
   Printf("Computer Type    : \n");
   Printf("WWIV Registration: \n");
+  Printf("Sysop Note       : \n");
 
   unsigned short int current_usernum = 1;
   userrec user;
   read_user(current_usernum, &user);
-  show_user(current_usernum, &user);
-  bool done = false;
 
-  show_help();
-  do {
-    app->localIO->LocalGotoXY(0, 20);
+  auto user_name_field = new StringEditItem<unsigned char*>(X_POSITION, 0, 30, user.name, true);
+  user_name_field->set_displayfn([&]() -> std::string {
+    char name[81];
+    sprintf(name, "%s #%d", user.name, current_usernum);
+    return std::string(name);
+  });
+
+  auto birthday_field = new CustomEditItem(X_POSITION, 8, 10, 
+      [&user]() -> std::string { 
+        char birthday[81];
+        sprintf(birthday, "%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
+        return std::string(birthday);
+      },
+      [&user](const std::string& s) {
+        if (s[3] != '/' || s[6] != '/') {
+          return;
+        }
+        int month = std::stoi(s.substr(0, 2));
+        if (month < 1 || month > 12) { return; }
+        int day = std::stoi(s.substr(3, 2));
+        if (day < 1 || day > 31) { return; }
+        int year = std::stoi(s.substr(6, 4));
+        if (year < 1900 || year > 2014) { return ; }
+
+        user.month = month;
+        user.day = day;
+        user.year = year - 1900;
+      });
+
+
+  EditItems items{
+    user_name_field,
+    new StringEditItem<unsigned char*>(X_POSITION, 1, 20, user.realname, false),
+    new NumberEditItem<uint8_t>(X_POSITION, 2, &user.sl),
+    new NumberEditItem<uint8_t>(X_POSITION, 3, &user.dsl),
+    new StringEditItem<unsigned char*>(X_POSITION, 4, 30, user.street, false),
+    new StringEditItem<unsigned char*>(X_POSITION, 5, 30, user.city, false),
+    new StringEditItem<unsigned char*>(X_POSITION, 6, 2, user.state, false),
+    new StringEditItem<unsigned char*>(X_POSITION, 7, 10, user.zipcode, true),
+    birthday_field,
+    new StringEditItem<unsigned char*>(X_POSITION, 9, 8, user.pw, true),
+    new StringEditItem<unsigned char*>(X_POSITION, 10, 12, user.phone, true),
+    new StringEditItem<unsigned char*>(X_POSITION, 11, 12, user.dataphone, true),
+    new NumberEditItem<int8_t>(X_POSITION, 12, &user.comp_type),
+    new NumberEditItem<uint32_t>(X_POSITION, 13, &user.wwiv_regnum),
+    new StringEditItem<unsigned char*>(X_POSITION, 14, 60, user.note, false),
+  };
+
+  show_user(&items, &user);
+
+  for (;;)  {
+    show_help(14 + 1);
+    app->localIO->LocalGotoXY(0, PROMPT_LINE);
     Puts("Command: ");
     char ch = onek("\033Q[]{}\r");
     switch (ch) {
     case '\r':
-      clear_help();
-      edit_user(current_usernum, &user);
-      app->localIO->LocalGotoXY(0, 20);
+      clear_help(14 + 1);
+      items.Run();
+      app->localIO->LocalGotoXY(0, PROMPT_LINE);
       textattr(COLOR_YELLOW);
       Puts("Save User?");
       if (yn()) {
         write_user(current_usernum, &user);
       }
-      app->localIO->LocalGotoXY(0, 20);
+      app->localIO->LocalGotoXY(0, PROMPT_LINE);
       app->localIO->LocalClrEol();
       break;
     case 'Q':
     case '\033':
-      done = true;
       return;
     case ']':
       if (++current_usernum > number_users) {
@@ -194,8 +200,7 @@ void user_editor() {
     }
 
     read_user(current_usernum, &user);
-    show_user(current_usernum, &user);
-
-  } while (!done);
+    show_user(&items, &user);
+  }
 }
 
