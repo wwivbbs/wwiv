@@ -184,9 +184,7 @@ void user_editor() {
       } else {
         clear_help(14 + 1);
         items.Run();
-        textattr(COLOR_YELLOW);
-        PutsXY(0, PROMPT_LINE, "Save User?");
-        if (yn()) {
+        if (dialog_yn("Save User")) {
           write_user(current_usernum, &user);
         }
       }
