@@ -146,7 +146,7 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) 
   sprintf(szPacketName, "%sp0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
   WFile file(szPacketName);
   file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite);
-  file.Seek(0L, WFile::seekBegin);
+  file.Seek(0L, WFile::seekEnd);
   file.Write(&nh, sizeof(net_header_rec));
   file.Write(pszMessageText, nh.length);
   file.Close();
