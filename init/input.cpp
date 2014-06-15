@@ -310,7 +310,7 @@ char onek(const char *pszKeys) {
   return ch;
 }
 
-static int background_character = 0xb0;
+static int background_character = 32;;
 
 static int editlinestrlen(char *pszText) {
   int i = strlen(pszText);
