@@ -103,10 +103,12 @@ void CursesIO::LocalCls() {
 static void SetCursesAttribute() {
   unsigned long attr = COLOR_PAIR(curatr);
   unsigned long f = curatr & 0x0f;
+  attrset(attr);
   if (f > 7) {
     attr |= A_BOLD;
+  } else {
+    attroff(A_BOLD);
   }
-  attrset(attr);
 }
 
 /**
