@@ -53,7 +53,6 @@ void trimstr(char *s) {
   s[i] = '\0';
 }
 
-
 void trimstrpath(char *s) {
   trimstr(s);
 
