@@ -18,12 +18,7 @@
 /**************************************************************************/
 #include "regcode.h"
 
-#include <cstring>
 #include <curses.h>
-#include <fcntl.h>
-#ifdef _WIN32
-#include <io.h>
-#endif
 
 #include "ifcns.h"
 #include "input.h"
