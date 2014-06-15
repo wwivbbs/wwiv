@@ -19,6 +19,7 @@
 #include "regcode.h"
 
 #include <cstring>
+#include <curses.h>
 #include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>
@@ -29,32 +30,16 @@
 #include "init.h"
 #include "wwivinit.h"
 
+
 void edit_registration_code() {
-  textattr(3);
+  textattr(COLOR_CYAN);
   app->localIO->LocalCls();
-  char regnum[15];
-  sprintf(regnum, "%ld", syscfg.wwiv_reg_number);
-  Printf("Registration Number  : %s\n", regnum);
+  Printf("Registration Number  : %d\n", syscfg.wwiv_reg_number);
   nlx(2);
-  textattr(14);
+  textattr(COLOR_YELLOW);
   Printf("<ESC> when done.\n");
 
-  bool done = false;
-  int i1 = 0;
-  int cp = 0;
-  do {
-    textattr(3);
-    app->localIO->LocalGotoXY(23, cp);
-    switch (cp) {
-    case 0:
-      editline(regnum, 7, NUM_ONLY, &i1, "");
-      syscfg.wwiv_reg_number = atoi(regnum);
-      sprintf(regnum, "%-7d", syscfg.wwiv_reg_number);
-      Puts(regnum);
-      break;
-    }
-    cp = GetNextSelectionPosition(0, 0, cp, i1);
-    done = (i1 == DONE);
-  } while (!done && !hangup);
+  EditItems items{ new NumberEditItem<uint32_t>(23, 0, &syscfg.wwiv_reg_number) };
+  items.Run();
   save_config();
 }
