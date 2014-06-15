@@ -94,7 +94,7 @@ int CursesIO::WhereY() {
  * Clears the local logical screen
  */
 void CursesIO::LocalCls() {
-  attron(COLOR_PAIR(7));
+  attrset(COLOR_PAIR(7));
   clear();
   refresh();
   LocalGotoXY(0, 0);
