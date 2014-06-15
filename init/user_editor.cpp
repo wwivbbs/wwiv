@@ -69,20 +69,42 @@ void show_user(EditItems* items, userrec* user) {
 
 static void show_help(int start_line) {
   textattr(COLOR_YELLOW);
-  PutsXY(0, start_line, "\n<ESC> to exit\n");
-  textattr(COLOR_CYAN);
-  Printf("[ = down one user  ] = up one user\n");
-  Printf("{ = down 10 user   } = up 10 user\n");
-  Printf("<C/R> = edit SL data\n");
-  textattr(COLOR_CYAN);
+  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
+  mvaddstr(start_line + 2, 0, "Esc");
+  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
+  addstr("-Exit ");
+
+  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
+  addstr("[");
+  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
+  addstr("-Previous ");
+  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
+  addstr("]");
+  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
+  addstr("-Next ");
+  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
+  addstr("{");
+  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
+  addstr("-Previous 10 ");
+  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
+  addstr("}");
+  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
+  addstr("-Next 10 ");
+
+  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
+  addstr("Enter");
+  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
+  addstr("-Edit ");
+  refresh();
 }
 
 static void clear_help(int start_line) {
   textattr(COLOR_CYAN);
   for (int y = start_line; y <= PROMPT_LINE-1; y++) {
-    app->localIO->LocalGotoXY(0, y);
-    app->localIO->LocalClrEol();
+    move(y, 0);
+    clrtoeol();
   }
+  refresh();
 }
 
 static void show_error_no_users() {
@@ -188,8 +210,9 @@ void user_editor() {
           write_user(current_usernum, &user);
         }
       }
-      app->localIO->LocalGotoXY(0, PROMPT_LINE);
-      app->localIO->LocalClrEol();
+      move(PROMPT_LINE, 0); 
+      clrtoeol();
+      refresh();
     } break;
     case 'Q':
     case '\033':

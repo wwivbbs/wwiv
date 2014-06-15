@@ -33,8 +33,7 @@
 
 
 // local functions.
-void backspace();
-
+void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength);
 
 using std::string;
 using std::vector;
@@ -205,6 +204,24 @@ bool dialog_yn(const std::string prompt) {
   return ch == 'Y' || ch == 'y';
 }
 
+void input_password(const std::string prompt, char *out, int max_length) {
+  const int maxx = getmaxx(stdscr);
+  const int maxy = getmaxy(stdscr);
+  const int width = prompt.size() + 6 + max_length;
+  const int startx = (maxx - prompt.size() - max_length) / 2;
+  const int starty = (maxy - 3) / 2;
+  WINDOW *dialog = newwin(3, width, starty, startx);
+  wbkgd(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
+  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
+  wattron(dialog, A_BOLD);
+  box(dialog, 0, 0);
+  mvwaddstr(dialog, 1, 2, prompt.c_str());
+  wrefresh(dialog);
+  winput_password(dialog, out, max_length);
+  delwin(dialog);
+  redrawwin(stdscr);
+  refresh();
+}
 
 int input_number(int max_digits) {
   char s[81];
@@ -221,12 +238,12 @@ int input_number(int max_digits) {
 * by a C/R.  if (bAllowLowerCase) is true lowercase is allowed, otherwise all
 * characters are converted to uppercase.
 */
-void input_password(char *pszOutText, int nMaxLength) {
+void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
   int curpos = 0;
   bool done = false;
 
   while (!done) {
-    int ch = getch();
+    int ch = wgetch(dialog);
     switch (ch) {
     case 14:
     case 13: // 13 on Win32
@@ -242,9 +259,9 @@ void input_password(char *pszOutText, int nMaxLength) {
       if (curpos) {
         do {
           curpos--;
-          backspace();
+          waddstr(dialog, "\b \b");
           if (pszOutText[curpos] == 26) {
-            backspace();
+            waddstr(dialog, "\b \b");
           }
         } while (curpos && (pszOutText[curpos - 1] != 32));
       }
@@ -256,9 +273,9 @@ void input_password(char *pszOutText, int nMaxLength) {
     case KEY_BACKSPACE:
       if (curpos) {
         curpos--;
-        backspace();
+        waddstr(dialog, "\b \b");
         if (pszOutText[curpos] == 26) {
-          backspace();
+          waddstr(dialog, "\b \b");
         }
       }
       break;
@@ -266,9 +283,9 @@ void input_password(char *pszOutText, int nMaxLength) {
     case 24: // control X
       while (curpos) {
         curpos--;
-        backspace();
+        waddstr(dialog, "\b \b");
         if (pszOutText[curpos] == 26) {
-          backspace();
+          waddstr(dialog, "\b \b");
         }
       }
       break;
@@ -276,7 +293,7 @@ void input_password(char *pszOutText, int nMaxLength) {
       if (ch > 31 && curpos < nMaxLength) {
         ch = upcase(ch);
         pszOutText[curpos++] = ch;
-        app->localIO->LocalPutch('\xFE');
+        waddch(dialog, '\xFE');
       }
       break;
     }
@@ -575,11 +592,6 @@ void pausescr() {
   textattr(COLOR_CYAN);
   getch();
   for (int i = 0; i < 7; i++) {
-    backspace();
+    waddstr(stdscr, "\b \b");
   }
-}
-
-/* This function executes a backspace, space, backspace sequence. */
-static void backspace() {
-  Printf("\b \b");
 }
