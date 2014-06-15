@@ -192,8 +192,8 @@ bool dialog_yn(const std::string prompt) {
   const int startx = (maxx - s.size()) / 2;
   const int starty = (maxy - 3) / 2;
   WINDOW *dialog = newwin(3, width, starty, startx);
-  wbkgd(dialog, COLOR_PAIR(31));
-  wattrset(dialog, COLOR_PAIR(31));
+  wbkgd(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
+  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
   wattron(dialog, A_BOLD);
   box(dialog, 0, 0);
   mvwaddstr(dialog, 1, 2, s.c_str());
