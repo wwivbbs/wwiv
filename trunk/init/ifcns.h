@@ -50,16 +50,7 @@ int verify_dir(char *typeDir, char *dirName);
 /* File: init1.cpp */
 
 void init();
-void *malloca(unsigned long nbytes);
-void pausescr();
-void backspace();
 int upcase(int ch);
-int input_number(int max_digits);
-void input_password(char *pszOutText, int nMaxLength);
-char onek(const char *s);
-void editline(std::string* s, int len, int status, int *returncode, const char *ss);
-void editline(char *s, int len, int status, int *returncode, const char *ss);
-int toggleitem(int value, const char **strings, int num, int *returncode);
 int number_userrecs();
 int open_qscn();
 void close_qscn();
@@ -70,7 +61,6 @@ void save_status();
 char *date();
 bool read_status();
 int save_config();
-void nlx(int numLines = 1);
 void create_text(const char *fn);
 void cvtx(unsigned short sp, char *rc);
 void convert_result_codes();
@@ -81,7 +71,6 @@ void new_init();
 int verify_inst_dirs(configoverrec *co, int inst);
 void read_user(unsigned int un, userrec *u);
 void write_user(unsigned int un, userrec *u);
-int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode);
 void exit_init(int level);
 
 /* File: init2.cpp */
