@@ -33,7 +33,6 @@ void nlx(int numLines = 1);
 
 bool dialog_yn(const std::string prompt);
 int input_number(int max_digits);
-void input_password(char *pszOutText, int nMaxLength);
 char onek(const char *s);
 void editline(std::string* s, int len, int status, int *returncode, const char *ss);
 void editline(char *s, int len, int status, int *returncode, const char *ss);
@@ -41,6 +40,7 @@ int toggleitem(int value, const char **strings, int num, int *returncode);
 void pausescr();
 
 int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode);
+void input_password(const std::string prompt, char *out, int max_length);
 
 
 

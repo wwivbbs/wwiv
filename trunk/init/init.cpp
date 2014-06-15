@@ -953,9 +953,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   if (!pwok) {
     nlx();
-    textattr(COLOR_CYAN);
-    Puts("SY: ");
-    input_password(s, 20);
+    input_password("SY:", s, 20);
     if (strcmp(s, (syscfg.systempw)) != 0) {
       textattr(COLOR_WHITE);
       app->localIO->LocalCls();
