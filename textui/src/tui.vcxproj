@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>TUI</ProjectName>
+    <ProjectGuid>{23A3CDA5-3028-4CB0-B698-EB9D09DB4A90}</ProjectGuid>
+    <RootNamespace>TUI</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include;$(SolutionDir)\..\deps\pdcurses-3.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\deps\pdcurses-3.2\include;$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <PrecompiledHeaderFile>TextUI.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Colors.cpp" />
+    <ClCompile Include="Command.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="Desktop.cpp" />
+    <ClCompile Include="InputBox.cpp" />
+    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="MenuBar.cpp" />
+    <ClCompile Include="MenuItem.cpp" />
+    <ClCompile Include="MessageBox.cpp" />
+    <ClCompile Include="PopupMenu.cpp" />
+    <ClCompile Include="SubWindow.cpp" />
+    <ClCompile Include="UIWindow.cpp" />
+    <ClCompile Include="View.cpp" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\addch.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\addchstr.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\addstr.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\attr.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\beep.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\bkgd.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\border.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\clear.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\color.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\debug.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\delch.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\deleteln.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\deprec.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\getch.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\getstr.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\getyx.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\inch.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\inchstr.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\initscr.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\inopts.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\insch.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\insstr.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\instr.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\kernel.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\keyname.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\mouse.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\move.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\outopts.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\overlay.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\pad.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\printw.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\refresh.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\scanw.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\scr_dump.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\scroll.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\slk.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\termattr.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\terminfo.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\touch.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\util.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\window.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcclip.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcdisp.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcgetsc.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdckbd.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcscrn.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcsetsc.c" />
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcutil.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\deps\pdcurses-3.2\include\curspriv.h" />
+    <ClInclude Include="..\..\deps\pdcurses-3.2\src\win32\pdcwin.h" />
+    <ClInclude Include="..\include\textui\Colors.h" />
+    <ClInclude Include="..\include\textui\Command.h" />
+    <ClInclude Include="..\include\textui\Component.h" />
+    <ClInclude Include="..\include\textui\Desktop.h" />
+    <ClInclude Include="..\include\textui\InputBox.h" />
+    <ClInclude Include="..\include\textui\Menu.h" />
+    <ClInclude Include="..\include\textui\MenuBar.h" />
+    <ClInclude Include="..\include\textui\MenuItem.h" />
+    <ClInclude Include="..\include\textui\MessageBox.h" />
+    <ClInclude Include="..\include\textui\PopupMenu.h" />
+    <ClInclude Include="..\include\textui\SubWindow.h" />
+    <ClInclude Include="..\include\TextUI.h" />
+    <ClInclude Include="..\include\textui\View.h" />
+    <ClInclude Include="..\include\textui\Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcurses.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

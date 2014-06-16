@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\pdcurses">
+      <UniqueIdentifier>{37b45b5a-f9e4-443c-aed6-e468e1abdec3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\pdcurses\common">
+      <UniqueIdentifier>{3a7f9cf5-ddb7-4d22-b9f9-c92fe047c211}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\pdcurses\win32">
+      <UniqueIdentifier>{7d26a524-be34-4576-8b90-cb296a225a3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Colors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Command.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Desktop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InputBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuItem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PopupMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SubWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UIWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="View.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\addch.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\addchstr.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\addstr.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\attr.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\beep.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\bkgd.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\border.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\clear.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\color.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\debug.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\delch.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\deleteln.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\deprec.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\getch.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\getstr.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\getyx.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\inch.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\inchstr.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\initscr.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\inopts.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\insch.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\insstr.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\instr.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\kernel.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\keyname.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\mouse.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\move.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\outopts.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\overlay.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\pad.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\printw.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\refresh.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\scanw.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\scr_dump.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\scroll.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\slk.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\termattr.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\terminfo.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\touch.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\util.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\pdcurses\window.c">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcclip.c">
+      <Filter>Source Files\pdcurses\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcdisp.c">
+      <Filter>Source Files\pdcurses\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcgetsc.c">
+      <Filter>Source Files\pdcurses\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdckbd.c">
+      <Filter>Source Files\pdcurses\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcscrn.c">
+      <Filter>Source Files\pdcurses\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcsetsc.c">
+      <Filter>Source Files\pdcurses\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcutil.c">
+      <Filter>Source Files\pdcurses\win32</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\deps\pdcurses-3.2\include\curspriv.h">
+      <Filter>Source Files\pdcurses\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\deps\pdcurses-3.2\src\win32\pdcwin.h">
+      <Filter>Source Files\pdcurses\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\Colors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\Command.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\Component.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\Desktop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\InputBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\Menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\MenuBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\MenuItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\MessageBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\PopupMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\SubWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\TextUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\View.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\textui\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\deps\pdcurses-3.2\src\win32\pdcurses.rc">
+      <Filter>Source Files\pdcurses\win32</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>
