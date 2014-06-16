@@ -6,6 +6,7 @@ bin
 obj
 *.vcxproj.user
 .project
+.cproject
 .settings
 cmake_install.cmake
 CMakeFiles
