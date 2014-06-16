@@ -5,4 +5,10 @@ Release
 bin
 obj
 *.vcxproj.user
+.project
+.settings
+cmake_install.cmake
+CMakeFiles
+CMakeCache.txt
+a.out
 
