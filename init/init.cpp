@@ -471,9 +471,6 @@ int WInitApp::main(int argc, char *argv[]) {
 
   app->localIO->LocalCls();
   textattr((16 * COLOR_BLUE) + COLOR_WHITE);
-  Printf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
-  app->localIO->LocalClrEol();
-  nlx();
   Printf(g_pszCopyrightString);
   app->localIO->LocalClrEol();
   textattr(COLOR_WHITE);
@@ -819,9 +816,6 @@ int WInitApp::main(int argc, char *argv[]) {
   do {
     app->localIO->LocalCls();
     textattr((16 * COLOR_BLUE) | COLOR_WHITE);
-    Printf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
-    app->localIO->LocalClrEol();
-    nlx();
     Puts(g_pszCopyrightString);
     app->localIO->LocalClrEol();
     textattr(COLOR_CYAN);
@@ -842,6 +836,7 @@ int WInitApp::main(int argc, char *argv[]) {
     app->localIO->LocalXYPuts(x, y++, "X. Update Sub/Directory Maximums");
     app->localIO->LocalXYPuts(x, y++, "Q. Quit");
 
+    werase(app->localIO->footer());
     y++;
     char szTempBuffer[255];
     sprintf(szTempBuffer, "Instance %d: Which (1,2,6-9,A,I,L,N,Q,R,U,X) ? ", inst);

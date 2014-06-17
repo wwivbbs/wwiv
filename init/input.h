@@ -153,14 +153,18 @@ private:
 
 class EditItems {
 public:
+  typedef std::function<void(void)> additional_helpfn;
   EditItems(std::initializer_list<BaseEditItem*> l) : items_(l) {}
   virtual ~EditItems();
 
+  void set_additional_helpfn(additional_helpfn f) { additional_helpfn_ = f; }
   virtual void Run();
   virtual void Display() const;
+  virtual void ShowHelp() const;
 
 private:
   std::vector<BaseEditItem*> items_;
+  additional_helpfn additional_helpfn_;
 };
 
 #endif // __INCLUDED_INPUT_H__

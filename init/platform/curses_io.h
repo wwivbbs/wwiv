@@ -40,12 +40,16 @@ class CursesIO {
   virtual void LocalXYPuts(int x, int y, const char *pszText);
   virtual int getchd();
   virtual void LocalScrollScreen(int nTop, int nBottom, int nDirection);
+  virtual void Refresh();
+  virtual WINDOW* window() const { return window_; }
+  virtual WINDOW* footer() const { return footer_; }
 
  private:
   void SetCursesAttribute();
   int max_x_;
   int max_y_;
   WINDOW *window_;
+  WINDOW *footer_;
 };
 
 #endif // __INCLUDED_PLATFORM_CURSESIO_H__
