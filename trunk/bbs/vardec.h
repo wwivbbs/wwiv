@@ -384,7 +384,7 @@ struct configoverrec {
                   tempdir[81],
                   batchdir[81];
   unsigned short  comflags;
-  char            bootdrive;
+  char            unused_bootdrive;
   char            res[310];
 };
 

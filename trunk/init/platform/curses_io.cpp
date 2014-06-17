@@ -24,19 +24,7 @@
 
 #include "wwivinit.h"
 #include "platform/curses_io.h"
-
-//TODO(rushfan): Don't include windows.h from wlocal_io anymore. Make a WinConsoleIU subclass like
-// this CursesIO class and move the Window.h definition into there.
-#undef MOUSE_MOVED
-
 #include "curses.h"
-
-
-#ifdef _WIN32
-void CursesIO::set_attr_xy(int x, int y, int a) {
-  //TODO(rushfan): Implement me if needed for compile.cpp
-}
-#endif  // _WIN32
 
 CursesIO::CursesIO() {
   initscr();
