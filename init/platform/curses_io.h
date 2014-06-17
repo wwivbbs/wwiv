@@ -21,7 +21,7 @@
 
 #include <curses.h>
 
-// Curses implementation of the WLocalIO subset required by Init.
+// Curses implementation of screen display routines for Init.
 class CursesIO {
 
  public:
@@ -30,16 +30,15 @@ class CursesIO {
   CursesIO(const CursesIO& copy);
   virtual ~CursesIO();
 
-  virtual void LocalGotoXY(int x, int y);
+  virtual void GotoXY(int x, int y);
   virtual int  WhereX();
   virtual int  WhereY();
-  virtual void LocalCls();
-  virtual void LocalClrEol();
-  virtual void LocalPutch(unsigned char ch);
-  virtual void LocalPuts(const char *pszText);
-  virtual void LocalXYPuts(int x, int y, const char *pszText);
-  virtual int getchd();
-  virtual void LocalScrollScreen(int nTop, int nBottom, int nDirection);
+  virtual void Cls();
+  virtual void ClrEol();
+  virtual void Putch(unsigned char ch);
+  virtual void Puts(const char *pszText);
+  virtual void PutsXY(int x, int y, const char *pszText);
+  virtual int GetChar();
   virtual void Refresh();
   virtual WINDOW* window() const { return window_; }
   virtual WINDOW* footer() const { return footer_; }

@@ -28,7 +28,7 @@
 
 void edit_registration_code() {
   textattr(COLOR_CYAN);
-  app->localIO->LocalCls();
+  out->Cls();
   Printf("Registration Number  : %d\n", syscfg.wwiv_reg_number);
   nlx(2);
   textattr(COLOR_YELLOW);

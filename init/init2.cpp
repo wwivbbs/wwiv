@@ -136,7 +136,7 @@ void sysinfo1() {
     }
   }
   j2[16] = 0;
-  app->localIO->LocalCls();
+  out->Cls();
   textattr(COLOR_CYAN);
   Printf("System PW        : %s\n", syscfg.systempw);
   Printf("System name      : %s\n", syscfg.systemname);
@@ -171,7 +171,7 @@ void sysinfo1() {
   cp = 0;
   bool done = false;
   do {
-    app->localIO->LocalGotoXY(19, cp);
+    out->GotoXY(19, cp);
     switch (cp) {
     case 0:
       editline(syscfg.systempw, 20, UPPER_ONLY, &i1, "");
@@ -336,7 +336,7 @@ void sysinfo1() {
 
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir */
 void setpaths() {
-  app->localIO->LocalCls();
+  out->Cls();
   textattr(COLOR_CYAN);
   Printf("Messages Directory : %s\n", syscfg.msgsdir);
   Printf("GFiles Directory   : %s\n", syscfg.gfilesdir);
@@ -363,35 +363,35 @@ void setpaths() {
     done = false;
     switch (cp) {
     case 0:
-      app->localIO->LocalGotoXY(21, cp);
+      out->GotoXY(21, cp);
       editline(syscfg.msgsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.msgsdir);
       Puts(syscfg.msgsdir);
       //          verify_dir("Messages", syscfg.msgsdir);
       break;
     case 1:
-      app->localIO->LocalGotoXY(21, cp);
+      out->GotoXY(21, cp);
       editline(syscfg.gfilesdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.gfilesdir);
       Puts(syscfg.gfilesdir);
       //          verify_dir("Gfiles", syscfg.gfilesdir);
       break;
     case 2:
-      app->localIO->LocalGotoXY(21, cp);
+      out->GotoXY(21, cp);
       editline(syscfg.menudir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.menudir);
       Puts(syscfg.menudir);
       //          verify_dir("Menu", syscfg.menudir);
       break;
     case 3:
-      app->localIO->LocalGotoXY(21, cp);
+      out->GotoXY(21, cp);
       editline(syscfg.datadir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.datadir);
       Puts(syscfg.datadir);
       //          verify_dir("Data", syscfg.datadir);
       break;
     case 4:
-      app->localIO->LocalGotoXY(21, cp);
+      out->GotoXY(21, cp);
       editline(syscfg.dloadsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.dloadsdir);
       Puts(syscfg.dloadsdir);
@@ -399,7 +399,7 @@ void setpaths() {
       break;
     case 5:
       do {
-        app->localIO->LocalGotoXY(21, cp);
+        out->GotoXY(21, cp);
         editline(syscfgovr.tempdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
         trimstrpath(syscfgovr.tempdir);
         Puts(syscfgovr.tempdir);
@@ -408,7 +408,7 @@ void setpaths() {
       break;
     case 6:
       do {
-        app->localIO->LocalGotoXY(21, cp);
+        out->GotoXY(21, cp);
         editline(syscfgovr.batchdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
         trimstrpath(syscfgovr.batchdir);
         Puts(syscfgovr.batchdir);
@@ -803,7 +803,7 @@ void convert_to(int num_subs, int num_dirs) {
 void up_subs_dirs() {
   int num_subs, num_dirs;
 
-  app->localIO->LocalCls();
+  out->Cls();
 
   textattr(COLOR_CYAN);
   Printf("Current max # subs: %d\n", syscfg.max_subs);
@@ -876,7 +876,7 @@ void edit_lang(int nn) {
   int i1;
   languagerec *n;
 
-  app->localIO->LocalCls();
+  out->Cls();
   bool done = false;
   int cp = 0;
   n = &(languages[nn]);
@@ -887,7 +887,7 @@ void edit_lang(int nn) {
   Puts("\n<ESC> when done.\n\n");
   textattr(COLOR_CYAN);
   do {
-    app->localIO->LocalGotoXY(17, cp);
+    out->GotoXY(17, cp);
     switch (cp) {
     case 0:
       editline(n->name, sizeof(n->name) - 1, ALL, &i1, "");
@@ -927,7 +927,7 @@ void up_langs() {
 
   bool done = false;
   do {
-    app->localIO->LocalCls();
+    out->Cls();
     nlx();
     for (i = 0; i < initinfo.num_languages; i++) {
       if (i && ((i % 23) == 0)) {
@@ -986,7 +986,7 @@ void up_langs() {
         Printf("You must leave at least one language.\n");
         textattr(COLOR_CYAN);
         nlx();
-        app->localIO->getchd();
+        out->GetChar();
       }
       break;
     case 'I':
@@ -995,7 +995,7 @@ void up_langs() {
         Printf("Too many languages.\n");
         textattr(COLOR_CYAN);
         nlx();
-        app->localIO->getchd();
+        out->GetChar();
         break;
       }
       nlx();
@@ -1060,7 +1060,7 @@ void edit_editor(int n) {
   int i1;
   editorrec c;
 
-  app->localIO->LocalCls();
+  out->Cls();
   c = editors[n];
   bool done = false;
   int cp = 0;
@@ -1080,13 +1080,13 @@ void edit_editor(int n) {
   do {
     switch (cp) {
     case 0:
-      app->localIO->LocalGotoXY(18, 0);
+      out->GotoXY(18, 0);
       break;
     case 1:
-      app->localIO->LocalGotoXY(0, 2);
+      out->GotoXY(0, 2);
       break;
     case 2:
-      app->localIO->LocalGotoXY(0, 4);
+      out->GotoXY(0, 4);
       break;
     }
     switch (cp) {
@@ -1117,7 +1117,7 @@ void extrn_editors() {
 
   bool done = false;
   do {
-    app->localIO->LocalCls();
+    out->Cls();
     nlx();
     for (int i = 0; i < initinfo.numeditors; i++) {
       Printf("%d. %s\n", i + 1, editors[i].description);
@@ -1220,7 +1220,7 @@ void edit_prot(int n) {
   char s[81], s1[81];
   newexternalrec c;
 
-  app->localIO->LocalCls();
+  out->Cls();
   if (n >= 6) {
     c = externs[n - 6];
   } else {
@@ -1264,9 +1264,9 @@ void edit_prot(int n) {
 
   do {
     if (cp < 3) {
-      app->localIO->LocalGotoXY(23, cp);
+      out->GotoXY(23, cp);
     } else {
-      app->localIO->LocalGotoXY(0, cp * 2 - 2);
+      out->GotoXY(0, cp * 2 - 2);
     }
     switch (cp) {
     case 0:
@@ -1294,7 +1294,7 @@ void edit_prot(int n) {
         } else {
           c.othr &= (~othr_error_correct);
         }
-        app->localIO->LocalPuts(s1);
+        out->Puts(s1);
       }
       break;
     case 3:
@@ -1360,7 +1360,7 @@ void edit_prot(int n) {
 void extrn_prots() {
   bool done = false;
   do {
-    app->localIO->LocalCls();
+    out->Cls();
     nlx();
     for (int i = 2; i < 6 + initinfo.numexterns; i++) {
       if (i == 5) {
@@ -1430,7 +1430,7 @@ void extrn_prots() {
         edit_prot(i);
       } else {
         Printf("Invalid entry: %d", i);
-        app->localIO->getchd();
+        out->GetChar();
       }
       break;
     }

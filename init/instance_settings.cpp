@@ -52,12 +52,12 @@ void show_instance(EditItems* items) {
 static void show_help() {
 
   // Additions
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(app->localIO->footer(), A_BOLD); 
-  waddstr(app->localIO->footer(), "A");
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(app->localIO->footer(), A_BOLD);
-  waddstr(app->localIO->footer(), "-Add ");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(out->footer(), A_BOLD); 
+  waddstr(out->footer(), "A");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(out->footer(), A_BOLD);
+  waddstr(out->footer(), "-Add ");
 }
 
 int number_instances() {
@@ -117,7 +117,7 @@ static void tweak_dir(char *s, int inst) {
 void instance_editor() {
   configoverrec instance;
   int num_instances = number_instances();
-  app->localIO->LocalCls();
+  out->Cls();
 
   textattr(COLOR_CYAN);
   Printf("Temporary Directory: %s\n", syscfgovr.tempdir);
@@ -145,8 +145,8 @@ void instance_editor() {
         write_instance(current_instance, &instance);
       }
       move(PROMPT_LINE, 0); 
-      wclrtoeol(app->localIO->window());
-      app->localIO->Refresh();
+      wclrtoeol(out->window());
+      out->Refresh();
     } break;
     case 'A': {
       num_instances++;
@@ -156,7 +156,7 @@ void instance_editor() {
     } break;
     case 'Q':
     case '\033': {
-      werase(app->localIO->footer());
+      werase(out->footer());
       return;
     }
     case ']':

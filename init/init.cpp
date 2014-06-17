@@ -60,7 +60,7 @@ void edit_net(int nn) {
   char szOldNetworkName[20];
   char *ss;
 
-  app->localIO->LocalCls();
+  out->Cls();
   bool done = false;
   int cp = 1;
   net_networks_rec *n = &(net_networks[nn]);
@@ -80,9 +80,9 @@ void edit_net(int nn) {
   textattr(COLOR_CYAN);
   do {
     if (cp) {
-      app->localIO->LocalGotoXY(17, cp + 1);
+      out->GotoXY(17, cp + 1);
     } else {
-      app->localIO->LocalGotoXY(17, cp);
+      out->GotoXY(17, cp);
     }
     int nNext = 0;
     switch (cp) {
@@ -172,18 +172,18 @@ void networks() {
   bool done = false;
 
   if (!exist("NETWORK.EXE")) {
-    app->localIO->LocalCls();
+    out->Cls();
     nlx();
     textattr(COLOR_MAGENTA);
     Printf("WARNING\n");
     Printf("You have not installed the networking software.  Unzip netxx.zip\n");
     Printf("to the main BBS directory and re-run init.\n\n");
     Printf("Hit any key to continue.\n");
-    app->localIO->getchd();
+    out->GetChar();
   }
 
   do {
-    app->localIO->LocalCls();
+    out->Cls();
     nlx();
     for (int i = 0; i < initinfo.net_num_max; i++) {
       if (i && ((i % 23) == 0)) {
@@ -218,7 +218,7 @@ void networks() {
         textattr(COLOR_RED);
         Printf("You must run the BBS once to set up some variables before deleting a network.\n");
         textattr(COLOR_CYAN);
-        app->localIO->getchd();
+        out->GetChar();
         break;
       }
       if (initinfo.net_num_max > 1) {
@@ -251,7 +251,7 @@ void networks() {
         Printf("You must leave at least one network.\n");
         textattr(COLOR_CYAN);
         nlx();
-        app->localIO->getchd();
+        out->GetChar();
       }
       break;
     case 'I':
@@ -259,7 +259,7 @@ void networks() {
         textattr(COLOR_YELLOW);
         Printf("You must run the BBS once to set up some variables before inserting a network.\n");
         textattr(COLOR_CYAN);
-        app->localIO->getchd();
+        out->GetChar();
         break;
       }
       if (initinfo.net_num_max >= MAX_NETWORKS) {
@@ -267,7 +267,7 @@ void networks() {
         Printf("Too many networks.\n");
         textattr(COLOR_CYAN);
         nlx();
-        app->localIO->getchd();
+        out->GetChar();
         break;
       }
       nlx();
@@ -394,18 +394,18 @@ int verify_dir(char *typeDir, char *dirName) {
   fnd.open(dirName, 0);
 
   if (fnd.next() && fnd.IsDirectory()) {
-    app->localIO->LocalGotoXY(0, 8);
+    out->GotoXY(0, 8);
     sprintf(s, "The %s directory: %s is invalid!", typeDir, dirName);
     textattr(COLOR_RED);
-    app->localIO->LocalPuts(s);
+    out->Puts(s);
     for (unsigned int i = 0; i < strlen(s); i++) {
       Printf("\b \b");
     }
     if ((strcmp(typeDir, "Temporary") == 0) || (strcmp(typeDir, "Batch") == 0)) {
       sprintf(s, "Create %s? ", dirName);
       textattr(COLOR_GREEN);
-      app->localIO->LocalPuts(s);
-      ch = app->localIO->getchd();
+      out->Puts(s);
+      ch = out->GetChar();
       if (toupper(ch) == 'Y') {
         mkdir(dirName);
       }
@@ -414,7 +414,7 @@ int verify_dir(char *typeDir, char *dirName) {
       }
     }
     textattr(COLOR_YELLOW);
-    app->localIO->LocalPuts("<ESC> when done.");
+    out->Puts("<ESC> when done.");
     textattr(COLOR_CYAN);
     rc = 1;
   }
@@ -470,10 +470,10 @@ int WInitApp::main(int argc, char *argv[]) {
 
   init();
 
-  app->localIO->LocalCls();
+  out->Cls();
   textattr((16 * COLOR_BLUE) + COLOR_WHITE);
   Printf(g_pszCopyrightString);
-  app->localIO->LocalClrEol();
+  out->ClrEol();
   textattr(COLOR_WHITE);
   nlx(2);
   textattr(COLOR_CYAN);
@@ -512,7 +512,7 @@ int WInitApp::main(int argc, char *argv[]) {
       close(configfile);
 
       setpaths();
-      app->localIO->LocalCls();
+      out->Cls();
       exit_init(0);
     }
   }
@@ -775,7 +775,7 @@ int WInitApp::main(int argc, char *argv[]) {
     input_password("SY:", s, 20);
     if (strcmp(s, (syscfg.systempw)) != 0) {
       textattr(COLOR_WHITE);
-      app->localIO->LocalCls();
+      out->Cls();
       nlx(2);
       textattr(COLOR_RED);
       Printf("I'm sorry, that isn't the correct system password.\n");
@@ -796,7 +796,7 @@ int WInitApp::main(int argc, char *argv[]) {
         textattr(COLOR_MAGENTA);
         Puts("[PAUSE]");
         textattr(COLOR_CYAN);
-        app->localIO->getchd();
+        out->GetChar();
         nlx();
       } else {
         if (dialog_yn("Convert your userlist to the v4.30 format")) {
@@ -807,7 +807,7 @@ int WInitApp::main(int argc, char *argv[]) {
           textattr(COLOR_MAGENTA);
           Puts("[PAUSE]");
           textattr(COLOR_CYAN);
-          app->localIO->getchd();
+          out->GetChar();
           nlx();
         }
       }
@@ -815,33 +815,33 @@ int WInitApp::main(int argc, char *argv[]) {
   }
 
   do {
-    app->localIO->LocalCls();
+    out->Cls();
     textattr((16 * COLOR_BLUE) | COLOR_WHITE);
     Puts(g_pszCopyrightString);
-    app->localIO->LocalClrEol();
+    out->ClrEol();
     textattr(COLOR_CYAN);
     int y = 3;
     int x = 0;
-    app->localIO->LocalXYPuts(x, y++, "1. General System Configuration");
-    app->localIO->LocalXYPuts(x, y++, "2. System Paths");
-    app->localIO->LocalXYPuts(x, y++, "6. External Protocol Configuration");
-    app->localIO->LocalXYPuts(x, y++, "7. External Editor Configuration");
-    app->localIO->LocalXYPuts(x, y++, "8. Security Level Configuration");
-    app->localIO->LocalXYPuts(x, y++, "9. Auto-Validation Level Configuration");
-    app->localIO->LocalXYPuts(x, y++, "A. Archiver Configuration");
-    app->localIO->LocalXYPuts(x, y++, "I. Instance Configuration");
-    app->localIO->LocalXYPuts(x, y++, "L. Language Configuration");
-    app->localIO->LocalXYPuts(x, y++, "N. Network Configuration");
-    app->localIO->LocalXYPuts(x, y++, "R. Registration Information");
-    app->localIO->LocalXYPuts(x, y++, "U. User Editor");
-    app->localIO->LocalXYPuts(x, y++, "X. Update Sub/Directory Maximums");
-    app->localIO->LocalXYPuts(x, y++, "Q. Quit");
+    out->PutsXY(x, y++, "1. General System Configuration");
+    out->PutsXY(x, y++, "2. System Paths");
+    out->PutsXY(x, y++, "6. External Protocol Configuration");
+    out->PutsXY(x, y++, "7. External Editor Configuration");
+    out->PutsXY(x, y++, "8. Security Level Configuration");
+    out->PutsXY(x, y++, "9. Auto-Validation Level Configuration");
+    out->PutsXY(x, y++, "A. Archiver Configuration");
+    out->PutsXY(x, y++, "I. Instance Configuration");
+    out->PutsXY(x, y++, "L. Language Configuration");
+    out->PutsXY(x, y++, "N. Network Configuration");
+    out->PutsXY(x, y++, "R. Registration Information");
+    out->PutsXY(x, y++, "U. User Editor");
+    out->PutsXY(x, y++, "X. Update Sub/Directory Maximums");
+    out->PutsXY(x, y++, "Q. Quit");
 
-    werase(app->localIO->footer());
+    werase(out->footer());
     y++;
     char szTempBuffer[255];
     sprintf(szTempBuffer, "Instance %d: Which (1,2,6-9,A,I,L,N,Q,R,U,X) ? ", inst);
-    app->localIO->LocalXYPuts(x, y++, szTempBuffer);
+    out->PutsXY(x, y++, szTempBuffer);
     textattr(COLOR_CYAN);
     lines_listed = 0;
     switch (onek("Q126789AILNPRUVX\033")) {
@@ -883,7 +883,7 @@ int WInitApp::main(int argc, char *argv[]) {
     case 'P':
       nlx();
       printcfg();
-      app->localIO->getchd();
+      out->GetChar();
       break;
     case 'R':
       edit_registration_code();
@@ -894,7 +894,7 @@ int WInitApp::main(int argc, char *argv[]) {
     case 'V':
       nlx();
       Printf("WWIV %s%s INIT compiled %s\n", wwiv_version, beta_version, const_cast<char*>(wwiv_date));
-      app->localIO->getchd();
+      out->GetChar();
       break;
     case 'X':
       up_subs_dirs();

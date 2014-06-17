@@ -39,7 +39,7 @@ using std::string;
 using std::vector;
 
 template<> int StringEditItem<char *>::Run() {
-  app->localIO->LocalGotoXY(x_, y_);
+  out->GotoXY(x_, y_);
   int return_code = 0;
   int status = uppercase_ ? UPPER_ONLY : ALL;
   editline(data_, maxsize_, status, &return_code, "");
@@ -47,7 +47,7 @@ template<> int StringEditItem<char *>::Run() {
 }
 
 template<> int StringEditItem<unsigned char *>::Run() {
-  app->localIO->LocalGotoXY(x_, y_);
+  out->GotoXY(x_, y_);
   int return_code = 0;
   int status = uppercase_ ? UPPER_ONLY : ALL;
   editline(reinterpret_cast<char*>(data_), maxsize_, status, &return_code, "");
@@ -65,22 +65,22 @@ static int EditNumberItem(T* data, int maxlen) {
 }
 
 template<> int NumberEditItem<uint32_t>::Run() {
-  app->localIO->LocalGotoXY(x_, y_);
+  out->GotoXY(x_, y_);
   return EditNumberItem<uint32_t>(data_, 5);
 }
 
 template<> int NumberEditItem<int8_t>::Run() {
-  app->localIO->LocalGotoXY(x_, y_);
+  out->GotoXY(x_, y_);
   return EditNumberItem<int8_t>(data_, 3);
 }
 
 template<> int NumberEditItem<uint8_t>::Run() {
-  app->localIO->LocalGotoXY(x_, y_);
+  out->GotoXY(x_, y_);
   return EditNumberItem<uint8_t>(data_, 3);
 }
 
 int CustomEditItem::Run() {
-  app->localIO->LocalGotoXY(x_, y_);
+  out->GotoXY(x_, y_);
   std::string s = to_field_();
   char data[81];
   strcpy(data, s.c_str());
@@ -93,7 +93,7 @@ int CustomEditItem::Run() {
 }
 
 void CustomEditItem::Display() const {
-  app->localIO->LocalGotoXY(x_, y_);
+  out->GotoXY(x_, y_);
   std::string blanks(maxsize_, ' ');
   Puts(blanks.c_str());
 
@@ -101,7 +101,7 @@ void CustomEditItem::Display() const {
   if (display_) {
     display_(s);
   } else {
-    app->localIO->LocalGotoXY(x_, y_);
+    out->GotoXY(x_, y_);
     Puts(s.c_str());
   }
 }
@@ -140,51 +140,51 @@ void EditItems::Display() const {
 }
 
 void EditItems::ShowHelp() const {
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(app->localIO->footer(), A_BOLD); 
-  mvwaddstr(app->localIO->footer(), 0, 0, "Esc");
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(app->localIO->footer(), A_BOLD);
-  waddstr(app->localIO->footer(), "-Exit ");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(out->footer(), A_BOLD); 
+  mvwaddstr(out->footer(), 0, 0, "Esc");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(out->footer(), A_BOLD);
+  waddstr(out->footer(), "-Exit ");
 
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(app->localIO->footer(), A_BOLD); 
-  waddstr(app->localIO->footer(), "[");
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(app->localIO->footer(), A_BOLD);
-  waddstr(app->localIO->footer(), "-Previous ");
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(app->localIO->footer(), A_BOLD); 
-  waddstr(app->localIO->footer(), "]");
-  wattrset(app->localIO->footer(), COLOR_PAIR(COLOR_BLUE * 16) + (COLOR_CYAN)); 
-  wattroff(app->localIO->footer(), A_BOLD);
-  waddstr(app->localIO->footer(), "-Next ");
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(app->localIO->footer(), A_BOLD); 
-  waddstr(app->localIO->footer(), "{");
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(app->localIO->footer(), A_BOLD);
-  waddstr(app->localIO->footer(), "-Previous 10 ");
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(app->localIO->footer(), A_BOLD); 
-  waddstr(app->localIO->footer(), "}");
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(app->localIO->footer(), A_BOLD);
-  waddstr(app->localIO->footer(), "-Next 10 ");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(out->footer(), A_BOLD); 
+  waddstr(out->footer(), "[");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(out->footer(), A_BOLD);
+  waddstr(out->footer(), "-Previous ");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(out->footer(), A_BOLD); 
+  waddstr(out->footer(), "]");
+  wattrset(out->footer(), COLOR_PAIR(COLOR_BLUE * 16) + (COLOR_CYAN)); 
+  wattroff(out->footer(), A_BOLD);
+  waddstr(out->footer(), "-Next ");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(out->footer(), A_BOLD); 
+  waddstr(out->footer(), "{");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(out->footer(), A_BOLD);
+  waddstr(out->footer(), "-Previous 10 ");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(out->footer(), A_BOLD); 
+  waddstr(out->footer(), "}");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(out->footer(), A_BOLD);
+  waddstr(out->footer(), "-Next 10 ");
 
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
-  wattron(app->localIO->footer(), A_BOLD); 
-  waddstr(app->localIO->footer(), "Enter");
-  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(app->localIO->footer(), A_BOLD);
-  waddstr(app->localIO->footer(), "-Edit ");  
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
+  wattron(out->footer(), A_BOLD); 
+  waddstr(out->footer(), "Enter");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(out->footer(), A_BOLD);
+  waddstr(out->footer(), "-Edit ");  
 
   if (additional_helpfn_) {
-    wmove(app->localIO->footer(), 1, 0);
+    wmove(out->footer(), 1, 0);
     additional_helpfn_();
   }
 
-  wrefresh(app->localIO->footer());
+  wrefresh(out->footer());
 }
 
 EditItems::~EditItems() {
@@ -196,8 +196,8 @@ EditItems::~EditItems() {
   }
 
   // Clear the help bar on exit.
-  werase(app->localIO->footer());
-  wrefresh(app->localIO->footer());
+  werase(out->footer());
+  wrefresh(out->footer());
 }
 
 /**
@@ -210,15 +210,15 @@ void PrintfXY(int x, int y, const char *pszFormat, ...) {
   va_start(ap, pszFormat);
   vsnprintf(szBuffer, 1024, pszFormat, ap);
   va_end(ap);
-  app->localIO->LocalXYPuts(x, y, szBuffer);
+  out->PutsXY(x, y, szBuffer);
 }
 
 void Puts(const char *pszText) {
-  app->localIO->LocalPuts(pszText);
+  out->Puts(pszText);
 }
 
 void PutsXY(int x, int y, const char *pszText) {
-  app->localIO->LocalXYPuts(x, y,pszText);
+  out->PutsXY(x, y,pszText);
 }
 
 /**
@@ -231,7 +231,7 @@ void Printf(const char *pszFormat, ...) {
   va_start(ap, pszFormat);
   vsnprintf(szBuffer, 1024, pszFormat, ap);
   va_end(ap);
-  app->localIO->LocalPuts(szBuffer);
+  out->Puts(szBuffer);
 }
 
 void nlx(int numLines) {
@@ -256,13 +256,13 @@ bool dialog_yn(const std::string prompt) {
   wrefresh(dialog);
   int ch = wgetch(dialog);
   delwin(dialog);
-  redrawwin(app->localIO->window());
-  app->localIO->Refresh();
+  redrawwin(out->window());
+  out->Refresh();
   return ch == 'Y' || ch == 'y';
-  touchwin(app->localIO->window());
+  touchwin(out->window());
 }
 
-void input_password(const std::string prompt, char *out, int max_length) {
+void input_password(const std::string prompt, char *output, int max_length) {
   const int maxx = getmaxx(stdscr);
   const int maxy = getmaxy(stdscr);
   const int width = prompt.size() + 6 + max_length;
@@ -275,11 +275,11 @@ void input_password(const std::string prompt, char *out, int max_length) {
   box(dialog, 0, 0);
   mvwaddstr(dialog, 1, 2, prompt.c_str());
   wrefresh(dialog);
-  winput_password(dialog, out, max_length);
+  winput_password(dialog, output, max_length);
   delwin(dialog);
-  redrawwin(app->localIO->window());
-  app->localIO->Refresh();
-  touchwin(app->localIO->window());
+  redrawwin(out->window());
+  out->Refresh();
+  touchwin(out->window());
 }
 
 int input_number(int max_digits) {
@@ -366,7 +366,7 @@ void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
 char onek(const char *pszKeys) {
   char ch = 0;
 
-  while (!strchr(pszKeys, ch = upcase(wgetch(app->localIO->window()))))
+  while (!strchr(pszKeys, ch = upcase(wgetch(out->window()))))
     ;
   return ch;
 }
@@ -392,22 +392,22 @@ void editline(std::string* s, int len, int status, int *returncode, const char *
 void editline(char *s, int len, int status, int *returncode, const char *ss) {
   int i;
   int oldatr = curatr;
-  int cx = app->localIO->WhereX();
-  int cy = app->localIO->WhereY();
+  int cx = out->WhereX();
+  int cy = out->WhereY();
   for (i = strlen(s); i < len; i++) {
     s[i] = static_cast<char>(background_character);
   }
   s[len] = '\0';
   textattr((16 * COLOR_BLUE) + COLOR_WHITE);
-  app->localIO->LocalPuts(s);
-  app->localIO->LocalGotoXY(76, 0);
-  app->localIO->LocalPuts("OVR");
-  app->localIO->LocalGotoXY(cx, cy);
+  out->Puts(s);
+  out->GotoXY(76, 0);
+  out->Puts("OVR");
+  out->GotoXY(cx, cy);
   bool done = false;
   int pos = 0;
   bool bInsert = false;
   do {
-    int ch = wgetch(app->localIO->window());
+    int ch = wgetch(out->window());
     switch (ch) {
     case KEY_F(1): // curses
       done = true;
@@ -415,25 +415,25 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
       break;
     case KEY_HOME: // curses
       pos = 0;
-      app->localIO->LocalGotoXY(cx, cy);
+      out->GotoXY(cx, cy);
       break;
     case KEY_END: // curses
       pos = editlinestrlen(s);
-      app->localIO->LocalGotoXY(cx + pos, cy);
+      out->GotoXY(cx + pos, cy);
       break;
     case KEY_RIGHT: // curses
       if (pos < len) {                       //right
         int nMaxPos = editlinestrlen(s);
         if (pos < nMaxPos) {
           pos++;
-          app->localIO->LocalGotoXY(cx + pos, cy);
+          out->GotoXY(cx + pos, cy);
         }
       }
       break;
     case KEY_LEFT: // curses
       if (pos > 0) { //left
         pos--;
-        app->localIO->LocalGotoXY(cx + pos, cy);
+        out->GotoXY(cx + pos, cy);
       }
       break;
     case CO:                                      //return
@@ -449,14 +449,14 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
       if (status != SET) {
         if (bInsert) {
           bInsert = false;
-          app->localIO->LocalGotoXY(77, 0);
-          app->localIO->LocalPuts("OVR");
-          app->localIO->LocalGotoXY(cx + pos, cy);
+          out->GotoXY(77, 0);
+          out->Puts("OVR");
+          out->GotoXY(cx + pos, cy);
         } else {
           bInsert = true;
-          app->localIO->LocalGotoXY(77, 0);
-          app->localIO->LocalPuts("INS");
-          app->localIO->LocalGotoXY(cx + pos, cy);
+          out->GotoXY(77, 0);
+          out->Puts("INS");
+          out->GotoXY(cx + pos, cy);
         }
       }
       break;
@@ -467,9 +467,9 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
           s[i] = s[i + 1];
         }
         s[len - 1] = static_cast<char>(background_character);
-        app->localIO->LocalGotoXY(cx, cy);
-        app->localIO->LocalPuts(s);
-        app->localIO->LocalGotoXY(cx + pos, cy);
+        out->GotoXY(cx, cy);
+        out->Puts(s);
+        out->GotoXY(cx + pos, cy);
       }
       break;
     default:
@@ -485,7 +485,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
               if (ch == ss[i] && i1) {
                 i1 = 0;
                 pos = i;
-                app->localIO->LocalGotoXY(cx + pos, cy);
+                out->GotoXY(cx + pos, cy);
                 if (s[pos] == ' ') {
                   ch = ss[pos];
                 } else {
@@ -505,12 +505,12 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
               s[i] = s[i - 1];
             }
             s[pos++] = ch;
-            app->localIO->LocalGotoXY(cx, cy);
-            app->localIO->LocalPuts(s);
-            app->localIO->LocalGotoXY(cx + pos, cy);
+            out->GotoXY(cx, cy);
+            out->Puts(s);
+            out->GotoXY(cx + pos, cy);
           }  else  {
             s[pos++] = ch;
-            app->localIO->LocalPutch(ch);
+            out->Putch(ch);
           }
         }
       }
@@ -537,18 +537,18 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
         }
         s[len - 1] = static_cast<char>(background_character);
         pos--;
-        app->localIO->LocalGotoXY(cx, cy);
-        app->localIO->LocalPuts(s);
-        app->localIO->LocalGotoXY(cx + pos, cy);
+        out->GotoXY(cx, cy);
+        out->Puts(s);
+        out->GotoXY(cx + pos, cy);
       }
       break;
     case CA: // control-a
       pos = 0;
-      app->localIO->LocalGotoXY(cx, cy);
+      out->GotoXY(cx, cy);
       break;
     case CE: // control-e
       pos = editlinestrlen(s);
-      app->localIO->LocalGotoXY(cx + pos, cy);
+      out->GotoXY(cx + pos, cy);
       break;
     }
   } while (!done);
@@ -562,10 +562,10 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   char szFinishedString[ 260 ];
   sprintf(szFinishedString, "%-255s", s);
   szFinishedString[ len ] = '\0';
-  app->localIO->LocalGotoXY(cx, cy);
+  out->GotoXY(cx, cy);
   curatr = oldatr;
-  app->localIO->LocalPuts(szFinishedString);
-  app->localIO->LocalGotoXY(cx, cy);
+  out->Puts(szFinishedString);
+  out->GotoXY(cx, cy);
 }
 
 int toggleitem(int value, const char **strings, int num, int *returncode) {
@@ -574,14 +574,14 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
   }
 
   int oldatr = curatr;
-  int cx = app->localIO->WhereX();
-  int cy = app->localIO->WhereY();
+  int cx = out->WhereX();
+  int cy = out->WhereY();
   int curatr = 0x1f;
-  app->localIO->LocalPuts(strings[value]);
-  app->localIO->LocalGotoXY(cx, cy);
+  out->Puts(strings[value]);
+  out->GotoXY(cx, cy);
   bool done = false;
   do  {
-    int ch = app->localIO->getchd();
+    int ch = out->GetChar();
     switch (ch) {
     case KEY_ENTER:
     case RETURN:
@@ -609,16 +609,16 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
     default:
       if (ch == 32) {
         value = (value + 1) % num;
-        app->localIO->LocalPuts(strings[value]);
-        app->localIO->LocalGotoXY(cx, cy);
+        out->Puts(strings[value]);
+        out->GotoXY(cx, cy);
       }
       break;
     }
   } while (!done);
-  app->localIO->LocalGotoXY(cx, cy);
+  out->GotoXY(cx, cy);
   curatr = oldatr;
-  app->localIO->LocalPuts(strings[value]);
-  app->localIO->LocalGotoXY(cx, cy);
+  out->Puts(strings[value]);
+  out->GotoXY(cx, cy);
   return value;
 }
 
@@ -651,7 +651,7 @@ void pausescr() {
   textattr(COLOR_MAGENTA);
   Puts("[PAUSE]");
   textattr(COLOR_CYAN);
-  wgetch(app->localIO->window());
+  wgetch(out->window());
   for (int i = 0; i < 7; i++) {
     waddstr(stdscr, "\b \b");
   }
