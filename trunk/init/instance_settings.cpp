@@ -20,6 +20,7 @@
 
 #include <curses.h>
 #include <cstdint>
+#include <cstring>
 #include <fcntl.h>
 #ifdef _WIN32
 #include <direct.h>
@@ -148,6 +149,7 @@ static void tweak_dir(char *s, int inst) {
     sprintf(lcp + 1, "%d%c", inst, WWIV_FILE_SEPERATOR_CHAR);
   }
 }
+
 void instance_editor() {
   configoverrec instance;
   int num_instances = number_instances();
