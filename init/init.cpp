@@ -575,9 +575,6 @@ int WInitApp::main(int argc, char *argv[]) {
     strcpy(syscfgovr.modem_type, syscfg.modem_type);
     strcpy(syscfgovr.tempdir, syscfg.tempdir);
     strcpy(syscfgovr.batchdir, syscfg.batchdir);
-    if (syscfg.sysconfig & sysconfig_high_speed) {
-      syscfgovr.comflags |= comflags_buffered_uart;
-    }
     tweak_dir(syscfgovr.tempdir);
     tweak_dir(syscfgovr.batchdir);
   } else {
