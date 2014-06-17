@@ -425,22 +425,6 @@ void setpaths() {
   save_config();
 }
 
-/****************************************************************************/
-
-
-void PrintComPortInfo(int comPortNumber) {
-  app->localIO->LocalGotoXY(0, 8);
-  if (!comPortNumber) {
-    return;
-  }
-
-#ifdef _WIN32
-  Printf("OS Supported Communications on COM%d:           \n", syscfgovr.primaryport);
-#else
-  Printf("No com port detected on COM%d:                  \n", syscfgovr.primaryport);
-#endif
-}
-
 int read_subs() {
   char szFileName[MAX_PATH];
 
