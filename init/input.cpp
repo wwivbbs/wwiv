@@ -127,11 +127,62 @@ void EditItems::Run() {
 }
 
 void EditItems::Display() const {
+  // Show help bar.
+  ShowHelp();
+  if (additional_helpfn_)
+
   textattr(COLOR_CYAN);
 
   for (BaseEditItem* item : items_) {
     item->Display();
   }
+}
+
+void EditItems::ShowHelp() const {
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(app->localIO->footer(), A_BOLD); 
+  mvwaddstr(app->localIO->footer(), 0, 0, "Esc");
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(app->localIO->footer(), A_BOLD);
+  waddstr(app->localIO->footer(), "-Exit ");
+
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(app->localIO->footer(), A_BOLD); 
+  waddstr(app->localIO->footer(), "[");
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(app->localIO->footer(), A_BOLD);
+  waddstr(app->localIO->footer(), "-Previous ");
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(app->localIO->footer(), A_BOLD); 
+  waddstr(app->localIO->footer(), "]");
+  wattrset(app->localIO->footer(), COLOR_PAIR(COLOR_BLUE * 16) + (COLOR_CYAN)); 
+  wattroff(app->localIO->footer(), A_BOLD);
+  waddstr(app->localIO->footer(), "-Next ");
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(app->localIO->footer(), A_BOLD); 
+  waddstr(app->localIO->footer(), "{");
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(app->localIO->footer(), A_BOLD);
+  waddstr(app->localIO->footer(), "-Previous 10 ");
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(app->localIO->footer(), A_BOLD); 
+  waddstr(app->localIO->footer(), "}");
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(app->localIO->footer(), A_BOLD);
+  waddstr(app->localIO->footer(), "-Next 10 ");
+
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
+  wattron(app->localIO->footer(), A_BOLD); 
+  waddstr(app->localIO->footer(), "Enter");
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(app->localIO->footer(), A_BOLD);
+  waddstr(app->localIO->footer(), "-Edit ");  
+
+  if (additional_helpfn_) {
+    additional_helpfn_();
+  }
+
+  wrefresh(app->localIO->footer());
 }
 
 EditItems::~EditItems() {
@@ -141,6 +192,10 @@ EditItems::~EditItems() {
   for (auto item : items_) {
     delete item;
   }
+
+  // Clear the help bar on exit.
+  werase(app->localIO->footer());
+  wrefresh(app->localIO->footer());
 }
 
 /**
@@ -199,9 +254,10 @@ bool dialog_yn(const std::string prompt) {
   wrefresh(dialog);
   int ch = wgetch(dialog);
   delwin(dialog);
-  redrawwin(stdscr);
-  refresh();
+  redrawwin(app->localIO->window());
+  app->localIO->Refresh();
   return ch == 'Y' || ch == 'y';
+  touchwin(app->localIO->window());
 }
 
 void input_password(const std::string prompt, char *out, int max_length) {
@@ -219,8 +275,9 @@ void input_password(const std::string prompt, char *out, int max_length) {
   wrefresh(dialog);
   winput_password(dialog, out, max_length);
   delwin(dialog);
-  redrawwin(stdscr);
-  refresh();
+  redrawwin(app->localIO->window());
+  app->localIO->Refresh();
+  touchwin(app->localIO->window());
 }
 
 int input_number(int max_digits) {
@@ -307,10 +364,8 @@ void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
 char onek(const char *pszKeys) {
   char ch = 0;
 
-  while (!strchr(pszKeys, ch = upcase(getch())))
+  while (!strchr(pszKeys, ch = upcase(wgetch(app->localIO->window()))))
     ;
-  app->localIO->LocalPutch(ch);
-  nlx();
   return ch;
 }
 
@@ -343,14 +398,14 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   s[len] = '\0';
   textattr((16 * COLOR_BLUE) + COLOR_WHITE);
   app->localIO->LocalPuts(s);
-  app->localIO->LocalGotoXY(77, 0);
+  app->localIO->LocalGotoXY(76, 0);
   app->localIO->LocalPuts("OVR");
   app->localIO->LocalGotoXY(cx, cy);
   bool done = false;
   int pos = 0;
   bool bInsert = false;
   do {
-    int ch = getch();
+    int ch = wgetch(app->localIO->window());
     switch (ch) {
     case KEY_F(1): // curses
       done = true;
@@ -594,7 +649,7 @@ void pausescr() {
   textattr(COLOR_MAGENTA);
   Puts("[PAUSE]");
   textattr(COLOR_CYAN);
-  getch();
+  wgetch(app->localIO->window());
   for (int i = 0; i < 7; i++) {
     waddstr(stdscr, "\b \b");
   }
