@@ -293,7 +293,11 @@ void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
       if (ch > 31 && curpos < nMaxLength) {
         ch = upcase(ch);
         pszOutText[curpos++] = ch;
+#ifdef _WIN32
+        waddch(dialog, ACS_CKBOARD);
+#else
         waddch(dialog, ACS_DIAMOND);
+#endif  // _WIN32
       }
       break;
     }
