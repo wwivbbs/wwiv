@@ -21,13 +21,6 @@
 
 // Data
 #pragma pack(push, 1)
-typedef struct {
-  short int frm_state;
-  short int to_state;
-  char *type;
-  char *send;
-  char *recv;
-} autosel_data;
 
 struct externalrec {
   char description[81],                     /* protocol description */
@@ -36,15 +29,6 @@ struct externalrec {
 
   unsigned short ok1, ok2,                  /* if sent */
    nok1, nok2;                              /* if not sent */
-};
-
-struct resultrec {
-  char curspeed[23];                        /* description of speed */
-
-  char return_code[23];                     /* modem result code */
-
-  unsigned short modem_speed,               /* speed modems talk at */
-   com_speed;                               /* speed com port runs at */
 };
 
 struct initinfo_rec {
