@@ -43,13 +43,15 @@ class CursesIO {
   virtual void Refresh();
   virtual WINDOW* window() const { return window_; }
   virtual WINDOW* footer() const { return footer_; }
+  virtual WINDOW* header() const { return header_; }
 
  private:
   void SetCursesAttribute();
   int max_x_;
   int max_y_;
-  WINDOW *window_;
-  WINDOW *footer_;
+  WINDOW* window_;
+  WINDOW* footer_;
+  WINDOW* header_;
 };
 
 #endif // __INCLUDED_PLATFORM_CURSESIO_H__
