@@ -58,7 +58,6 @@ static void show_help() {
   wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
   wattroff(app->localIO->footer(), A_BOLD);
   waddstr(app->localIO->footer(), "-Add ");
-  wrefresh(app->localIO->footer());
 }
 
 int number_instances() {

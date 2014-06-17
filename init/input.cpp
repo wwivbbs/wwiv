@@ -180,6 +180,7 @@ void EditItems::ShowHelp() const {
   waddstr(app->localIO->footer(), "-Edit ");  
 
   if (additional_helpfn_) {
+    wmove(app->localIO->footer(), 1, 0);
     additional_helpfn_();
   }
 

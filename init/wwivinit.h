@@ -39,10 +39,11 @@
 // Misc Junk for now
 #define textattr(x) curatr = (x)
 class WInitApp;
+class CursesIO;
 
 __EXTRN__ WInitApp *app;
-//__EXTRN__ userrec thisuser;
 __EXTRN__ initinfo_rec initinfo;
+extern CursesIO* out;
 
 #if defined(__unix__)
 

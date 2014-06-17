@@ -41,8 +41,8 @@
 #include "platform/incl1.h"
 #include "platform/wfndfile.h"
 
+CursesIO* out;
 char bbsdir[MAX_PATH];
-
 int inst = 1;
 char configdat[20] = "config.dat";
 
@@ -437,9 +437,10 @@ int main(int argc, char* argv[]) {
   return app->main(argc, argv);
 }
 
-
 int WInitApp::main(int argc, char *argv[]) {
   localIO = new CursesIO();
+  out = localIO;
+
 
   char s[81], s1[81], ch;
   int i1, newbbs = 0, configfile, pwok = 0;
