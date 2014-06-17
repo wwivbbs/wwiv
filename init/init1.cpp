@@ -312,7 +312,7 @@ void create_text(const char *pszFileName) {
 
 void init_files() {
   int i;
-  char s2[81], *env;
+  char *env;
   valrec v;
   slrec sl;
   subboardrec s1;
