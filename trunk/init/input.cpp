@@ -293,7 +293,7 @@ void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
       if (ch > 31 && curpos < nMaxLength) {
         ch = upcase(ch);
         pszOutText[curpos++] = ch;
-        waddch(dialog, '\xFE');
+        waddch(dialog, ACS_DIAMOND);
       }
       break;
     }
