@@ -834,6 +834,7 @@ int WInitApp::main(int argc, char *argv[]) {
     app->localIO->LocalXYPuts(x, y++, "8. Security Level Configuration");
     app->localIO->LocalXYPuts(x, y++, "9. Auto-Validation Level Configuration");
     app->localIO->LocalXYPuts(x, y++, "A. Archiver Configuration");
+    app->localIO->LocalXYPuts(x, y++, "I. Instance Configuration");
     app->localIO->LocalXYPuts(x, y++, "L. Language Configuration");
     app->localIO->LocalXYPuts(x, y++, "N. Network Configuration");
     app->localIO->LocalXYPuts(x, y++, "R. Registration Information");
@@ -843,7 +844,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
     y++;
     char szTempBuffer[255];
-    sprintf(szTempBuffer, "Instance %d: Which (1,2,6-9,A,L,N,Q,R,U,X) ? ", inst);
+    sprintf(szTempBuffer, "Instance %d: Which (1,2,6-9,A,I,L,N,Q,R,U,X) ? ", inst);
     app->localIO->LocalXYPuts(x, y++, szTempBuffer);
     textattr(COLOR_CYAN);
     lines_listed = 0;
