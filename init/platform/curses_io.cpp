@@ -41,19 +41,20 @@ CursesIO::CursesIO() {
 
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
-  WINDOW* header = newwin(1, 0, 0, 0);
+  header_ = newwin(1, 0, 0, 0);
   footer_ = newwin(2, 0, stdscr_maxy-2, 0);
-  wbkgd(header, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
-  wattrset(header, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
-  wattron(header, A_BOLD);
+  wbkgd(header_, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
+  wattrset(header_, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
+  wattron(header_, A_BOLD);
   char s[81];
   sprintf(s, "WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
-  waddstr(header, s);
+  waddstr(header_, s);
   wbkgd(footer_, COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
-  wrefresh(header);
+  wrefresh(header_);
   wrefresh(footer_);
-  redrawwin(header);
+  redrawwin(header_);
   window_ = subwin(stdscr, stdscr_maxy-3, stdscr_maxx, 1, 0);
+  touchwin(stdscr);
   max_x_ = getmaxx(window_);
   max_y_ = getmaxy(window_);
   touchwin(window_);
