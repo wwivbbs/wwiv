@@ -31,6 +31,7 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "platform/incl1.h"
 #include "wwivinit.h"
 
 static const int COL1_POSITION = 21;
@@ -75,6 +76,13 @@ static void show_help(int start_line) {
   addstr("Enter");
   attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
   addstr("-Edit ");
+
+  // Additions
+  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
+  addstr("A");
+  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
+  addstr("-Add ");
+
   refresh();
 }
 
@@ -124,6 +132,22 @@ bool write_instance(int num, configoverrec* instance) {
   return true;
 }
 
+static void tweak_dir(char *s, int inst) {
+  if (inst == 1) {
+    return;
+  }
+
+  int i = strlen(s);
+  if (i == 0) {
+    sprintf(s, "temp%d", inst);
+  } else {
+    char *lcp = s + i - 1;
+    while ((((*lcp >= '0') && (*lcp <= '9')) || (*lcp == WWIV_FILE_SEPERATOR_CHAR)) && (lcp >= s)) {
+      lcp--;
+    }
+    sprintf(lcp + 1, "%d%c", inst, WWIV_FILE_SEPERATOR_CHAR);
+  }
+}
 void instance_editor() {
   configoverrec instance;
   int num_instances = number_instances();
@@ -146,7 +170,7 @@ void instance_editor() {
   for (;;)  {
     show_help(14 + 1);
     PutsXY(0, PROMPT_LINE, "Command: ");
-    char ch = onek("\033Q[]{}\r");
+    char ch = onek("\033AQ[]{}\r");
     switch (ch) {
     case '\r': {
       clear_help(14 + 1);
@@ -157,6 +181,12 @@ void instance_editor() {
       move(PROMPT_LINE, 0); 
       clrtoeol();
       refresh();
+    } break;
+    case 'A': {
+      num_instances++;
+      tweak_dir(instance.tempdir, num_instances);
+      tweak_dir(instance.batchdir, num_instances);
+      write_instance(num_instances, &instance);
     } break;
     case 'Q':
     case '\033':
