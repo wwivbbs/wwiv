@@ -32,23 +32,39 @@ CursesIO::CursesIO() {
   keypad(stdscr, TRUE);
   noecho();
   nonl();
-  window_ = stdscr;
-  max_x_ = getmaxx(window_);
-  max_y_ = getmaxy(window_);
-
   start_color();
-
   for (short b = 0; b < COLORS; b++) {
     for (short f = 0; f < COLORS; f++) {
       init_pair((b * 16) + f, f, b);
     }
   }
+
+  int stdscr_maxx = getmaxx(stdscr);
+  int stdscr_maxy = getmaxy(stdscr);
+  WINDOW* header = newwin(1, 0, 0, 0);
+  footer_ = newwin(2, 0, stdscr_maxy-2, 0);
+  wbkgd(header, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
+  wattrset(header, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
+  wattron(header, A_BOLD);
+  char s[81];
+  sprintf(s, "WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
+  waddstr(header, s);
+  wbkgd(footer_, COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
+  wrefresh(header);
+  wrefresh(footer_);
+  redrawwin(header);
+  window_ = subwin(stdscr, stdscr_maxy-3, stdscr_maxx, 1, 0);
+  max_x_ = getmaxx(window_);
+  max_y_ = getmaxy(window_);
+  touchwin(window_);
   wrefresh(window_);
 }
 
 CursesIO::~CursesIO() {
   endwin();
 }
+
+void CursesIO::Refresh() { wrefresh(window_); }
 
 void CursesIO::LocalGotoXY(int x, int y) {
 // Moves the cursor to the location specified

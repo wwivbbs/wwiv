@@ -36,7 +36,7 @@
 #include "wwivinit.h"
 
 static const int COL1_POSITION = 21;
-static const int PROMPT_LINE = 22;
+static const int PROMPT_LINE = 6;
 
 
 #if __unix__
@@ -49,51 +49,16 @@ void show_instance(EditItems* items) {
   items->Display();
 }
 
-static void show_help(int start_line) {
-  textattr(COLOR_YELLOW);
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  mvaddstr(start_line + 2, 0, "Esc");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Exit ");
-
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("[");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Previous ");
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("]");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Next ");
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("{");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Previous 10 ");
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("}");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Next 10 ");
-
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("Enter");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Edit ");
+static void show_help() {
 
   // Additions
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("A");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Add ");
-
-  refresh();
-}
-
-static void clear_help(int start_line) {
-  textattr(COLOR_CYAN);
-  for (int y = start_line; y <= PROMPT_LINE-1; y++) {
-    move(y, 0);
-    clrtoeol();
-  }
-  refresh();
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(app->localIO->footer(), A_BOLD); 
+  waddstr(app->localIO->footer(), "A");
+  wattrset(app->localIO->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(app->localIO->footer(), A_BOLD);
+  waddstr(app->localIO->footer(), "-Add ");
+  wrefresh(app->localIO->footer());
 }
 
 int number_instances() {
@@ -166,23 +131,23 @@ void instance_editor() {
     new StringEditItem<char*>(COL1_POSITION, 0, 50, instance.tempdir, FILENAME_UPPERCASE),
     new StringEditItem<char*>(COL1_POSITION, 1, 50, instance.batchdir, FILENAME_UPPERCASE),
   };
+  items.set_additional_helpfn(show_help);
 
   show_instance(&items);
 
   for (;;)  {
-    show_help(14 + 1);
     PutsXY(0, PROMPT_LINE, "Command: ");
     char ch = onek("\033AQ[]{}\r");
     switch (ch) {
     case '\r': {
-      clear_help(14 + 1);
+      //clear_help(14 + 1);
       items.Run();
       if (dialog_yn("Save Instance")) {
         write_instance(current_instance, &instance);
       }
       move(PROMPT_LINE, 0); 
-      clrtoeol();
-      refresh();
+      wclrtoeol(app->localIO->window());
+      app->localIO->Refresh();
     } break;
     case 'A': {
       num_instances++;
@@ -191,8 +156,10 @@ void instance_editor() {
       write_instance(num_instances, &instance);
     } break;
     case 'Q':
-    case '\033':
+    case '\033': {
+      werase(app->localIO->footer());
       return;
+    }
     case ']':
       if (++current_instance > num_instances) {
         current_instance = 1;

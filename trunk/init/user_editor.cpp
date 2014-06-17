@@ -29,7 +29,7 @@
 
 static const int COL1_POSITION = 19;
 static const int COL2_POSITION = 50;
-static const int PROMPT_LINE = 22;
+static const int PROMPT_LINE = 21;
 
 static bool IsUserDeleted(userrec *user) {
   return user->inact & inact_deleted;
@@ -65,46 +65,6 @@ void show_user(EditItems* items, userrec* user) {
   PrintfXY(COL2_POSITION, y++, "Messages Waiting : %d", user->waiting);
   PrintfXY(COL2_POSITION, y++, "Net Email Sent   : %d", user->emailnet);
   PrintfXY(COL2_POSITION, y++, "Num Deleted Posts: %d", user->deletedposts);
-}
-
-static void show_help(int start_line) {
-  textattr(COLOR_YELLOW);
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  mvaddstr(start_line + 2, 0, "Esc");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Exit ");
-
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("[");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Previous ");
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("]");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Next ");
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("{");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Previous 10 ");
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("}");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Next 10 ");
-
-  attrset(COLOR_PAIR(COLOR_YELLOW)); attron(A_BOLD); 
-  addstr("Enter");
-  attrset(COLOR_PAIR(COLOR_CYAN)); attroff(A_BOLD);
-  addstr("-Edit ");
-  refresh();
-}
-
-static void clear_help(int start_line) {
-  textattr(COLOR_CYAN);
-  for (int y = start_line; y <= PROMPT_LINE-1; y++) {
-    move(y, 0);
-    clrtoeol();
-  }
-  refresh();
 }
 
 static void show_error_no_users() {
@@ -194,7 +154,6 @@ void user_editor() {
   show_user(&items, &user);
 
   for (;;)  {
-    show_help(14 + 1);
     PutsXY(0, PROMPT_LINE, "Command: ");
     char ch = onek("\033Q[]{}\r");
     switch (ch) {
@@ -204,15 +163,14 @@ void user_editor() {
         PutsXY(0, PROMPT_LINE, "Can not edit a deleted user.\n\n");
         pausescr();
       } else {
-        clear_help(14 + 1);
         items.Run();
         if (dialog_yn("Save User")) {
           write_user(current_usernum, &user);
         }
       }
-      move(PROMPT_LINE, 0); 
-      clrtoeol();
-      refresh();
+      wmove(app->localIO->window(), PROMPT_LINE, 0); 
+      wclrtoeol(app->localIO->window());
+      app->localIO->Refresh();
     } break;
     case 'Q':
     case '\033':
