@@ -31,6 +31,7 @@
 #include "ifcns.h"
 #include "input.h"
 #include "init.h"
+#include "instance_settings.h"
 #include "regcode.h"
 #include "user_editor.h"
 #include "version.cpp"
@@ -505,10 +506,12 @@ int WInitApp::main(int argc, char *argv[]) {
     if ((argv[i][1] == 'D') || (argv[i][1] == 'd')) {
       configfile = open(configdat, O_RDWR | O_BINARY);
       read(configfile, (void *)(&syscfg), sizeof(configrec));
+      close(configfile);
 
       configfile = open("config.ovr", O_RDWR | O_BINARY);
       lseek(configfile, (inst - 1)*sizeof(configoverrec), SEEK_SET);
       read(configfile, &syscfgovr, sizeof(configoverrec));
+      close(configfile);
 
       setpaths();
       app->localIO->LocalCls();
@@ -844,7 +847,7 @@ int WInitApp::main(int argc, char *argv[]) {
     app->localIO->LocalXYPuts(x, y++, szTempBuffer);
     textattr(COLOR_CYAN);
     lines_listed = 0;
-    switch (onek("Q126789ALNPRUVX\033")) {
+    switch (onek("Q126789AILNPRUVX\033")) {
     case 'Q':
     case '\033':
       textattr(COLOR_WHITE);
@@ -870,6 +873,9 @@ int WInitApp::main(int argc, char *argv[]) {
       break;
     case 'A':
       edit_arc(0);
+      break;
+    case 'I':
+      instance_editor();
       break;
     case 'L':
       up_langs();
