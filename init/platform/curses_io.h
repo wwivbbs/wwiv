@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_PLATFORM_CURSESIO_H__
 #define __INCLUDED_PLATFORM_CURSESIO_H__
 
+#include <curses.h>
+
 // Curses implementation of the WLocalIO subset required by Init.
 class CursesIO {
 
@@ -40,8 +42,10 @@ class CursesIO {
   virtual void LocalScrollScreen(int nTop, int nBottom, int nDirection);
 
  private:
+  void SetCursesAttribute();
   int max_x_;
   int max_y_;
+  WINDOW *window_;
 };
 
 #endif // __INCLUDED_PLATFORM_CURSESIO_H__
