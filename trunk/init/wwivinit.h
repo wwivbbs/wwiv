@@ -38,12 +38,10 @@
 
 // Misc Junk for now
 #define textattr(x) curatr = (x)
-class InitSession;
 class WInitApp;
 
 __EXTRN__ WInitApp *app;
-__EXTRN__ InitSession *sess;
-__EXTRN__ userrec thisuser;
+//__EXTRN__ userrec thisuser;
 __EXTRN__ initinfo_rec initinfo;
 
 #if defined(__unix__)

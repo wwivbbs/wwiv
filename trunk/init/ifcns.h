@@ -16,17 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef _IFCNS_H_
-#define _IFCNS_H_
+#ifndef __INCLUDED_IFCNS_H__
+#define __INCLUDED_IFCNS_H__
 
 #include <string>
 #include "ivardec.h"
 #include "vardec.h"
-
-/* File: compile.cpp */
-void get_descriptions(char *pth, char ***descrs, int *n, autosel_data **ad, int *nn);
-int compile(char *infn, char *outfn, char *notes, int notelen, char *conf, unsigned *pnModemBaud);
-int select_strings(char **strs, int count, int cur, int yt, int yb, int xl, int xr);
 
 /* File: convert.cpp */
 void c_setup();
@@ -36,10 +31,6 @@ int c_check_old_struct();
 
 /* File: init.cpp */
 
-void load_modems();
-int set_modem_info(const char *mt, bool bPause);
-char *mdm_name(int mdm_num);
-void select_modem();
 void edit_net(int nn);
 void networks();
 void tweak_dir(char *s);
@@ -62,11 +53,7 @@ char *date();
 bool read_status();
 int save_config();
 void create_text(const char *fn);
-void cvtx(unsigned short sp, char *rc);
-void convert_result_codes();
 void init_files();
-void convert_modem_info(const char *fn);
-void init_modem_info();
 void new_init();
 int verify_inst_dirs(configoverrec *co, int inst);
 void read_user(unsigned int un, userrec *u);
@@ -81,7 +68,6 @@ void print_time(unsigned short t, char *s);
 unsigned short get_time(char *s);
 void sysinfo1();
 void setpaths();
-void setupcom();
 int read_subs();
 void write_subs();
 void del_net(int nn);
@@ -123,5 +109,4 @@ char *strupr(char *s);
 long filelength(int handle);
 #endif  // _WIN32
 
-
-#endif
+#endif  // __INCLUDED_IFCNS_H__

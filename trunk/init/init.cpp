@@ -40,133 +40,12 @@
 #include "platform/incl1.h"
 #include "platform/wfndfile.h"
 
-
-char **mdm_desc;
-int mdm_count = 0, mdm_cur;
-
-autosel_data *autosel_info;
-int num_autosel;
-
-resultrec *result_codes;
-int num_result_codes;
-
-#define MODEM_NOTES_LEN 4096
-char modem_notes[MODEM_NOTES_LEN];
-
 char bbsdir[MAX_PATH];
 
 int inst = 1;
 char configdat[20] = "config.dat";
-char statusdat[20] = "status.dat";
-char modemdat[20] = "modem.dat";
 
 const char* g_pszCopyrightString = "Copyright (c) 1998-2014, WWIV Software Services";
-
-void load_modems() {
-  if (mdm_count == 0) {
-    Printf("Please wait...\n");
-    get_descriptions(syscfg.datadir, &mdm_desc, &mdm_count, &autosel_info, &num_autosel);
-
-    for (int i = 0; i < mdm_count; i++) {
-      if (strncmp(mdm_desc[i], syscfgovr.modem_type, strlen(syscfgovr.modem_type)) == 0) {
-        mdm_cur = i;
-        break;
-      }
-    }
-  }
-}
-
-
-int set_modem_info(const char *mt, bool bPause) {
-  nlx();
-  char szModemDatFileName[ MAX_PATH ];
-  char szRawFileName[ MAX_PATH ];
-  sprintf(szRawFileName, "%s%s.mdm", syscfg.datadir, mt);
-  sprintf(szModemDatFileName, "%s%s", syscfg.datadir, modemdat);
-  unsigned int nModemBaud;
-  char szConfigLine[161];
-  if (compile(szRawFileName, szModemDatFileName, modem_notes, MODEM_NOTES_LEN, szConfigLine, &nModemBaud)) {
-    strcpy(syscfgovr.modem_type, mt);
-    Printf("Modem info '%s' compiled.\n", syscfgovr.modem_type);
-    save_config();
-    if (modem_notes[0]) {
-      // there are some notes about the modem
-      Printf("%s\n", modem_notes);
-      if (bPause) {
-        textattr(COLOR_MAGENTA);
-        Printf("\n[PAUSE]");
-        textattr(COLOR_CYAN);
-        app->localIO->getchd();
-        Printf("\n");
-      }
-    }
-    return 1;
-  } else {
-    textattr(COLOR_RED);
-    Printf("Modem info for '%s' does not exist.\n", mt);
-    textattr(COLOR_CYAN);
-    nlx();
-    return 0;
-  }
-}
-
-char *mdm_name(int mdm_num) {
-  static char s_szModemName[ 255 ];
-
-  strcpy(s_szModemName, mdm_desc[mdm_num]);
-  char *pszDelim = strchr(s_szModemName, ' ');
-  if (pszDelim) {
-    *pszDelim = '\0';
-  }
-
-  return s_szModemName;
-}
-
-// select modem type
-void select_modem() {
-  app->localIO->LocalCls();
-  load_modems();
-  app->localIO->LocalCls();
-
-  if (mdm_count == 0) {
-    textattr(COLOR_RED);
-    Printf("No modems defined.\n");
-    textattr(COLOR_MAGENTA);
-    Printf("Press Any Key");
-    app->localIO->getchd();
-    return;
-  }
-
-  textattr(COLOR_CYAN);
-  Printf("Select modem type: ");
-  textattr(COLOR_YELLOW);
-  Printf("<UP>,<DN>,<P-UP>,<P-DN> ");
-  textattr(COLOR_BLUE);
-  Printf("to scroll, ");
-  textattr(COLOR_YELLOW);
-  Printf("<CR>");
-  textattr(COLOR_BLUE);
-  Printf("=select, ");
-  textattr(COLOR_YELLOW);
-  Printf("<ESC>");
-  textattr(COLOR_BLUE);
-  Printf("=abort\n");
-  textattr(COLOR_YELLOW);
-  Printf("Current: ");
-  textattr(COLOR_GREEN);
-  Printf("%s\n", mdm_desc[mdm_cur]);
-  textattr(COLOR_CYAN);
-
-  int nModemNumber = select_strings(mdm_desc, mdm_count, mdm_cur, 3, 24, 0, 79);
-
-  if (nModemNumber != -1) {
-    app->localIO->LocalCls();
-    if (set_modem_info(mdm_name(nModemNumber), true)) {
-      mdm_cur = nModemNumber;
-      save_config();
-    }
-  }
-}
 
 static const char *nettypes[] = {
   "WWIVnet ",
@@ -640,9 +519,6 @@ int WInitApp::main(int argc, char *argv[]) {
   if (inst < 1 || inst >= 1000) {
     inst = 1;
   }
-  if (inst != 1) {
-    sprintf(modemdat, "modem.%03.3d", inst);
-  }
 
   bool done = false;
   configfile = open(configdat, O_RDWR | O_BINARY);
@@ -650,7 +526,6 @@ int WInitApp::main(int argc, char *argv[]) {
     textattr(COLOR_RED);
     Printf("%s NOT FOUND.\n\n", configdat);
     inst = 1;
-    strcpy(modemdat, "modem.dat");
     if (dialog_yn("Perform initial installation")) {
       if (inst == 1) {
         new_init();
@@ -756,25 +631,10 @@ int WInitApp::main(int argc, char *argv[]) {
     }
   }
 
-  result_codes = (resultrec *) bbsmalloc(40 * sizeof(resultrec));
-  sprintf(s, "%sresults.dat", syscfg.datadir);
-  hFile = open(s, O_RDWR | O_BINARY);
-  if (hFile > 0) {
-    num_result_codes = (read(hFile, result_codes, 40 * sizeof(resultrec))) / sizeof(resultrec);
-    close(hFile);
-  } else {
-#ifdef ASFD
-    Printf("\nConverting result codes...\n");
-    convert_result_codes();
-#endif
-  }
   if (!syscfg.dial_prefix[0]) {
     strcpy(syscfg.dial_prefix, "ATDT");
   }
 
-  thisuser.screenchars = 80;
-  thisuser.screenlines = 25;
-  thisuser.sysstatus = 0L;
   externs = (newexternalrec *) bbsmalloc(15 * sizeof(newexternalrec));
   editors = (editorrec *)   bbsmalloc(10 * sizeof(editorrec));
   initinfo.numeditors = initinfo.numexterns = 0;
@@ -823,20 +683,6 @@ int WInitApp::main(int argc, char *argv[]) {
 
   bool bDataDirectoryOk = read_status();
   if (bDataDirectoryOk) {
-    sprintf(s, "%s%s", syscfg.datadir, modemdat);
-    if (!exist(s) && (inst == 1)) {
-      if (syscfgovr.modem_type[0]) {
-        if (!set_modem_info(syscfgovr.modem_type, true)) {
-          convert_modem_info("LOCAL");
-          set_modem_info("LOCAL", true);
-        }
-      } else {
-        convert_modem_info("LOCAL");
-        set_modem_info("LOCAL", true);
-      }
-      save_config();
-    }
-
     if ((status.net_version >= 31) || (status.net_version == 0)) {
       net_networks = (net_networks_rec *) bbsmalloc(MAX_NETWORKS * sizeof(net_networks_rec));
       if (!net_networks) {
@@ -907,31 +753,6 @@ int WInitApp::main(int argc, char *argv[]) {
     if ((s[0] == '-') || (s[0] == '/')) {
       ch = upcase(s[1]);
       switch (ch) {
-      case 'C': // Compile modem info
-        if (s[2]) {
-          strcpy(s1, s + 2);
-          s1[8] = 0;
-          for (i1 = 0; s1[i1]; i1++) {
-            s1[i1] = upcase(s1[i1]);
-          }
-        } else {
-          strcpy(s1, syscfgovr.modem_type);
-        }
-        set_modem_info(s1, false);
-        save_config();
-        textattr(COLOR_WHITE);
-        app->localIO->LocalCls();
-        nlx(2);
-        Printf("Modem configured....\n");
-        nlx(2);
-        exit_init(0);
-        break;
-      case 'L': // re-build local modem info
-        convert_modem_info("LOCAL");
-        set_modem_info("LOCAL", false);
-        save_config();
-        textattr(COLOR_WHITE);
-        exit_init(0);
       case 'P': // Enter password on commandline
         if (stricmp(s + 2, syscfg.systempw) == 0) {
           pwok = 1;
@@ -1008,13 +829,6 @@ int WInitApp::main(int argc, char *argv[]) {
     int x = 0;
     app->localIO->LocalXYPuts(x, y++, "1. General System Configuration");
     app->localIO->LocalXYPuts(x, y++, "2. System Paths");
-#if !defined (_unix__)
-    app->localIO->LocalXYPuts(x, y++, "3. Communications Port Configuration");
-    char szTempBuffer[ 255 ];
-    sprintf(szTempBuffer, "5. Manually Select Modem Type (now %s)",
-            !syscfgovr.modem_type[0] ? ">UNSET<" : syscfgovr.modem_type);
-    app->localIO->LocalXYPuts(x, y++, szTempBuffer);
-#endif
     app->localIO->LocalXYPuts(x, y++, "6. External Protocol Configuration");
     app->localIO->LocalXYPuts(x, y++, "7. External Editor Configuration");
     app->localIO->LocalXYPuts(x, y++, "8. Security Level Configuration");
@@ -1028,11 +842,12 @@ int WInitApp::main(int argc, char *argv[]) {
     app->localIO->LocalXYPuts(x, y++, "Q. Quit");
 
     y++;
-    sprintf(szTempBuffer, "Instance %d: Which (1-9, A,L,N,Q,R,U,X) ? ", inst);
+    char szTempBuffer[255];
+    sprintf(szTempBuffer, "Instance %d: Which (1,2,6-9,A,L,N,Q,R,U,X) ? ", inst);
     app->localIO->LocalXYPuts(x, y++, szTempBuffer);
     textattr(COLOR_CYAN);
     lines_listed = 0;
-    switch (onek("Q123456789ALNPRUVX\033")) {
+    switch (onek("Q126789ALNPRUVX\033")) {
     case 'Q':
     case '\033':
       textattr(COLOR_WHITE);
@@ -1043,16 +858,6 @@ int WInitApp::main(int argc, char *argv[]) {
       break;
     case '2':
       setpaths();
-      break;
-    case '3':
-#if !defined (__Unix__)
-      setupcom();
-#endif
-      break;
-    case '5':
-#if !defined (__unix__)
-      select_modem();
-#endif
       break;
     case '6':
       extrn_prots();
