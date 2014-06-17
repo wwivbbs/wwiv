@@ -131,8 +131,6 @@ void EditItems::Display() const {
   ShowHelp();
   if (additional_helpfn_)
     additional_helpfn();
-  touchwin(app->localIO->header());
-  wrefresh(app->localIO->header());
 
   textattr(COLOR_CYAN);
 
@@ -199,9 +197,6 @@ EditItems::~EditItems() {
   // Clear the help bar on exit.
   werase(app->localIO->footer());
   wrefresh(app->localIO->footer());
-
-  touchwin(app->localIO->header());
-  wrefresh(app->localIO->header());
 }
 
 /**
@@ -411,8 +406,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   int pos = 0;
   bool bInsert = false;
   do {
-    //int ch = wgetch(app->localIO->window());
-    int ch = getch();
+    int ch = wgetch(app->localIO->window());
     switch (ch) {
     case KEY_F(1): // curses
       done = true;

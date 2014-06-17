@@ -53,7 +53,10 @@ CursesIO::CursesIO() {
   wrefresh(header_);
   wrefresh(footer_);
   redrawwin(header_);
-  window_ = subwin(stdscr, stdscr_maxy-3, stdscr_maxx, 1, 0);
+
+  window_ = newwin(stdscr_maxy-3, stdscr_maxx, 1, 0);
+  keypad(window_, TRUE);
+
   touchwin(stdscr);
   max_x_ = getmaxx(window_);
   max_y_ = getmaxy(window_);
