@@ -876,12 +876,12 @@ int WApplication::Run(int argc, char *argv[]) {
         }
         m_bUserAlreadyOn = true;
         break;
-      /*
-                      case 'W':
-                      this->InitializeBBS();
-              this->doWFCEvents();
-              exit( m_nOkLevel );
-      */
+      case 'W': {
+        ok_modem_stuff = false;
+        this->InitializeBBS();
+        this->doWFCEvents();
+        exit( m_nOkLevel );
+      } break;
       case 'X': {
         char argument2Char = wwiv::UpperCase<char>(argument.at(0));
         if (argument2Char == 'T' || argument2Char == 'C') {
