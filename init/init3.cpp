@@ -53,7 +53,7 @@ void edit_arc(int nn) {
   do {
     int cp = 4;
     done1 = false;
-    app->localIO->LocalCls();
+    out->Cls();
     textattr(COLOR_YELLOW);
     Printf("                 Archiver Configuration\n\n");
     textattr(COLOR_CYAN);
@@ -73,7 +73,7 @@ void edit_arc(int nn) {
     Printf("Delete from Archive: %s\n", arc[i].arcd);
     Printf("Comment Archive    : %s\n", arc[i].arck);
     Printf("Test Archive       : %s\n", arc[i].arct);
-    app->localIO->LocalGotoXY(0, 13);
+    out->GotoXY(0, 13);
     Printf("                                                             \n");
     textattr(11);
     Printf("[ = Previous Archiver  ] = Next Archiver\n");
@@ -87,7 +87,7 @@ void edit_arc(int nn) {
     char ch = onek("\033[]\r");
     switch (ch) {
     case '\r': {
-      app->localIO->LocalGotoXY(0, 13);
+      out->GotoXY(0, 13);
       Printf("                                                             \n");
       Printf("%%1 %%2 ect. are parameters passed.  Minimum of two on Add and \n");
       Printf("Extract command lines. For added security, a complete path to\n");
@@ -100,7 +100,7 @@ void edit_arc(int nn) {
       bool done = false;
       do {
         int i1 = 0;
-        app->localIO->LocalGotoXY(21, cp);
+        out->GotoXY(21, cp);
         switch (cp) {
         case 4:
           editline(arc[i].name, 31, ALL, &i1, "");
@@ -187,24 +187,24 @@ void pr_st(int cursl, int ln, int an) {
   char s[81];
 
   up_str(s, cursl, an);
-  app->localIO->LocalGotoXY(19, ln);
+  out->GotoXY(19, ln);
   Puts(s);
 }
 
 
 void up_sl(int cursl) {
   slrec ss = syscfg.sl[cursl];
-  app->localIO->LocalGotoXY(19, 0);
+  out->GotoXY(19, 0);
   Printf("%-3u", cursl);
-  app->localIO->LocalGotoXY(19, 1);
+  out->GotoXY(19, 1);
   Printf("%-5u", ss.time_per_day);
-  app->localIO->LocalGotoXY(19, 2);
+  out->GotoXY(19, 2);
   Printf("%-5u", ss.time_per_logon);
-  app->localIO->LocalGotoXY(19, 3);
+  out->GotoXY(19, 3);
   Printf("%-5u", ss.messages_read);
-  app->localIO->LocalGotoXY(19, 4);
+  out->GotoXY(19, 4);
   Printf("%-3u", ss.emails);
-  app->localIO->LocalGotoXY(19, 5);
+  out->GotoXY(19, 5);
   Printf("%-3u", ss.posts);
   pr_st(cursl, 6, ability_post_anony);
   pr_st(cursl, 7, ability_email_anony);
@@ -226,7 +226,7 @@ void ed_slx(int *sln) {
   int cp = 0;
   do {
     int i1 = 0;
-    app->localIO->LocalGotoXY(19, cp);
+    out->GotoXY(19, cp);
     switch (cp) {
     case 0:
       sprintf(s, "%d", cursl);
@@ -355,7 +355,7 @@ void ed_slx(int *sln) {
 
 
 void sec_levs() {
-  app->localIO->LocalCls();
+  out->Cls();
   textattr(COLOR_CYAN);
   Printf("Security level   : \n");
   Printf("Time per day     : \n");
@@ -372,7 +372,7 @@ void sec_levs() {
   int cursl = 10;
   up_sl(cursl);
   bool done = false;
-  app->localIO->LocalGotoXY(0, 12);
+  out->GotoXY(0, 12);
   textattr(COLOR_YELLOW);
   Puts("\n<ESC> to exit\n");
   textattr(11);
@@ -381,12 +381,12 @@ void sec_levs() {
   Printf("<C/R> = edit SL data\n");
   textattr(COLOR_CYAN);
   do {
-    app->localIO->LocalGotoXY(0, 18);
+    out->GotoXY(0, 18);
     Puts("Command: ");
     char ch = onek("\033[]{}\r");
     switch (ch) {
     case '\r':
-      app->localIO->LocalGotoXY(0, 12);
+      out->GotoXY(0, 12);
       textattr(COLOR_YELLOW);
       Puts("\n<ESC> to exit\n");
       textattr(COLOR_CYAN);
@@ -395,7 +395,7 @@ void sec_levs() {
       Printf("                    \n");
       Puts("\n          \n");
       ed_slx(&cursl);
-      app->localIO->LocalGotoXY(0, 12);
+      out->GotoXY(0, 12);
       textattr(COLOR_YELLOW);
       Puts("\n<ESC> to exit\n");
       textattr(11);
@@ -458,7 +458,7 @@ void list_autoval() {
   int i;
   valrec v;
 
-  app->localIO->LocalCls();
+  out->Cls();
   Printf("NUM  SL   DSL  AR                DAR               RESTRICTIONS\n");
   Printf("---  ---  ---  ----------------  ----------------  ----------------\n");
   strcpy(s3, restrict_string);
@@ -518,7 +518,7 @@ void edit_autoval(int n) {
   r[16] = 0;
   ar[16] = 0;
   dar[16] = 0;
-  app->localIO->LocalCls();
+  out->Cls();
   Printf("Auto-validation data for: Alt-F%d\n\n", n + 1);
   Printf("SL           : %d\n", v.sl);
   Printf("DSL          : %d\n", v.dsl);
@@ -532,7 +532,7 @@ void edit_autoval(int n) {
   cp = 0;
   do {
     int i1 = 0;
-    app->localIO->LocalGotoXY(15, cp + 2);
+    out->GotoXY(15, cp + 2);
     switch (cp) {
     case 0:
       sprintf(s, "%u", v.sl);
