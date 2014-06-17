@@ -303,7 +303,7 @@ void create_text(const char *pszFileName) {
 
   sprintf(szFullFileName, "gfiles%c%s", WWIV_FILE_SEPERATOR_CHAR, pszFileName);
   int hFile = open(szFullFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  sprintf(szMessage, "This is %s.\nEdit to suit your needs.\n\x1a", pszFileName);
+  sprintf(szMessage, "This is %s.\nEdit to suit your needs.\n", pszFileName);
   write(hFile, szMessage, strlen(szMessage));
   close(hFile);
 }
