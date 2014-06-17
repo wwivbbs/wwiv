@@ -711,15 +711,15 @@ int verify_inst_dirs(configoverrec *co, int inst) {
     close(hFile);
   }
   if (rc) {
-    app->localIO->LocalGotoXY(0, 8);
+    out->GotoXY(0, 8);
     textattr(COLOR_RED);
-    app->localIO->LocalPuts(szMessage);
+    out->Puts(szMessage);
     for (i = 0; i < (int) strlen(szMessage); i++) {
       Printf("\b \b");
     }
 
     textattr(COLOR_YELLOW);
-    app->localIO->LocalPuts("<ESC> when done.");
+    out->Puts("<ESC> when done.");
     textattr(COLOR_CYAN);
   }
   return 0;

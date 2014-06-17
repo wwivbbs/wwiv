@@ -65,14 +65,19 @@ CursesIO::CursesIO() {
 }
 
 CursesIO::~CursesIO() {
+  delwin(footer_);
+  delwin(header_);
+  delwin(window_);
   endwin();
 }
 
 void CursesIO::Refresh() { wrefresh(window_); }
 
-void CursesIO::LocalGotoXY(int x, int y) {
-// Moves the cursor to the location specified
-// Note: this function is 0 based, so (0,0) is the upper left hand corner.
+/**
+ * Moves the cursor to the location specified
+ * Note: this function is 0 based, so (0,0) is the upper left hand corner.
+ */
+void CursesIO::GotoXY(int x, int y) {
   x = std::max<int>(x, 0);
   x = std::min<int>(x, max_x_);
   y = std::max<int>(y, 0);
@@ -82,31 +87,29 @@ void CursesIO::LocalGotoXY(int x, int y) {
   wrefresh(window_);
 }
 
+/* This function returns the current X cursor position, as the number of
+* characters from the left hand side of the screen.  An X position of zero
+* means the cursor is at the left-most position
+*/
 int CursesIO::WhereX() {
-  /* This function returns the current X cursor position, as the number of
-  * characters from the left hand side of the screen.  An X position of zero
-  * means the cursor is at the left-most position
-  */
   return getcurx(window_);
 }
 
+/* This function returns the Y cursor position, as the line number from
+* the top of the logical window_.
+*/
 int CursesIO::WhereY() {
-  /* This function returns the Y cursor position, as the line number from
-  * the top of the logical window_.  The offset due to the protected top
-  * of the screen display is taken into account.  A WhereY() of zero means
-  * the cursor is at the top-most position it can be at.
-  */
   return getcury(window_);
 }
 
 /**
  * Clears the local logical screen
  */
-void CursesIO::LocalCls() {
+void CursesIO::Cls() {
   wattrset(window_, COLOR_PAIR(7));
   wclear(window_);
   wrefresh(window_);
-  LocalGotoXY(0, 0);
+  GotoXY(0, 0);
 }
 
 void CursesIO::SetCursesAttribute() {
@@ -120,21 +123,17 @@ void CursesIO::SetCursesAttribute() {
   }
 }
 
-/**
- * This function outputs one character to the local screen.  C/R, L/F, TOF,
- * BS, and BELL are interpreted as commands instead of characters.
- */
-void CursesIO::LocalPutch(unsigned char ch) {
+void CursesIO::Putch(unsigned char ch) {
   SetCursesAttribute();
   waddch(window_, ch);
   wrefresh(window_);
 }
 
-void CursesIO::LocalPuts(const char *pszText) {
+void CursesIO::Puts(const char *pszText) {
   SetCursesAttribute();
   if (strlen(pszText) == 2) {
     if (pszText[0] == '\r' && pszText[1] == '\n') {
-      LocalGotoXY(0, WhereY() + 1);
+      GotoXY(0, WhereY() + 1);
       return;
     }
   }
@@ -142,21 +141,17 @@ void CursesIO::LocalPuts(const char *pszText) {
   wrefresh(window_);
 }
 
-void CursesIO::LocalXYPuts(int x, int y, const char *pszText) {
-  LocalGotoXY(x, y);
-  LocalPuts(pszText);
+void CursesIO::PutsXY(int x, int y, const char *pszText) {
+  GotoXY(x, y);
+  Puts(pszText);
 }
 
-int CursesIO::getchd() {
+int CursesIO::GetChar() {
   return wgetch(window_);
 }
 
-void CursesIO::LocalClrEol() {
+void CursesIO::ClrEol() {
   SetCursesAttribute();
   wclrtoeol(window_);
   wrefresh(window_);
-}
-
-void CursesIO::LocalScrollScreen(int nTop, int nBottom, int nDirection) {
-  //TODO(rushfan): Implement if needed for compile.cpp
 }

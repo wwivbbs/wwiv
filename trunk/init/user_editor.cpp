@@ -40,7 +40,7 @@ void show_user(EditItems* items, userrec* user) {
 
   for (int i=0; i<13; i++) {
     std::string blank(30, ' ');
-    app->localIO->LocalXYPuts(50, i, blank.c_str());
+    out->PutsXY(50, i, blank.c_str());
   }
   textattr(COLOR_CYAN);
   if (user->inact & inact_deleted) {
@@ -76,7 +76,7 @@ static void show_error_no_users() {
 
 void user_editor() {
   int number_users = number_userrecs();
-  app->localIO->LocalCls();
+  out->Cls();
   if (number_users < 1) {
     show_error_no_users();
     return;
@@ -168,9 +168,9 @@ void user_editor() {
           write_user(current_usernum, &user);
         }
       }
-      wmove(app->localIO->window(), PROMPT_LINE, 0); 
-      wclrtoeol(app->localIO->window());
-      app->localIO->Refresh();
+      wmove(out->window(), PROMPT_LINE, 0); 
+      wclrtoeol(out->window());
+      out->Refresh();
     } break;
     case 'Q':
     case '\033':
