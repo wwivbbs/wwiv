@@ -100,7 +100,6 @@
     <ClInclude Include="wwivinit.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="compile.cpp" />
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="init.cpp" />
     <ClCompile Include="init1.cpp" />

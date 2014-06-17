@@ -32,15 +32,6 @@
 #include "platform/incl1.h"
 #include "platform/wfile.h"
 
-extern char **mdm_desc;
-extern int mdm_count, mdm_cur;
-
-extern void *autosel_info;
-extern int num_autosel;
-
-extern resultrec *result_codes;
-extern int num_result_codes;
-
 extern net_networks_rec *net_networks;
 
 extern int inst;
@@ -448,40 +439,6 @@ void PrintComPortInfo(int comPortNumber) {
 #else
   Printf("No com port detected on COM%d:                  \n", syscfgovr.primaryport);
 #endif
-}
-
-
-void setupcom() {
-  int i1;
-  std::string comport = std::to_string(syscfgovr.primaryport);
-  app->localIO->LocalCls();
-
-  Printf("Com Port      : %s\n\n", comport.c_str());
-  textattr(COLOR_YELLOW);
-  Puts("\n<ESC> when done.");
-  textattr(COLOR_CYAN);
-
-  PrintComPortInfo(syscfgovr.primaryport);
-
-  int cp = 0;
-  bool done = false;
-  do {
-    app->localIO->LocalGotoXY(16, cp);
-    switch (cp) {
-    case 0:
-      editline(&comport, 2, NUM_ONLY, &i1, "");
-      syscfgovr.primaryport = std::stoi(comport);
-      comport = std::to_string(syscfgovr.primaryport);
-      Printf("%-2s", comport.c_str());
-      PrintComPortInfo(syscfgovr.primaryport);
-      break;
-    }
-    cp = GetNextSelectionPosition(0, 0, cp, i1);
-    if (i1 == DONE) {
-      done = true;
-    }
-  } while (!done && !hangup);
-  save_config();
 }
 
 int read_subs() {

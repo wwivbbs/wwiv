@@ -43,15 +43,6 @@
 extern char configdat[];
 extern char bbsdir[];
 
-extern char **mdm_desc;
-extern int mdm_count, mdm_cur;
-
-extern autosel_data *autosel_info;
-extern int num_autosel;
-
-extern resultrec *result_codes;
-extern int num_result_codes;
-
 extern net_networks_rec *net_networks;
 
 extern int inst;
@@ -62,7 +53,6 @@ static int useron = 0;
 void init() {
   curatr = 0x03;
   hangup = false;  // TODO(rushfan): Remove this from init
-  thisuser.sysstatus = 0;
   daylight = 0; // C Runtime Variable -- WHY?
 }
 
@@ -99,12 +89,6 @@ int number_userrecs() {
 
 
 void read_user(unsigned int un, userrec *u) {
-  if (((useron) && ((long) un == initinfo.usernum)) || ((wfc) && (un == 1))) {
-    *u = thisuser;
-    fix_user_rec(u);
-    return;
-  }
-
   WFile file(syscfg.datadir, "user.lst");
   if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyReadWrite,
                  WFile::permReadWrite)) {
@@ -134,10 +118,6 @@ void write_user(unsigned int un, userrec *u) {
     return;
   }
 
-  if (((useron) && ((long) un == initinfo.usernum)) || ((wfc) && (un == 1))) {
-    thisuser = *u;
-  }
-
   WFile file(syscfg.datadir, "user.lst");
   if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
                 WFile::permReadWrite)) {
@@ -148,7 +128,7 @@ void write_user(unsigned int un, userrec *u) {
   }
 
   user_config SecondUserRec = { 0 };
-  strcpy(SecondUserRec.name, (char *) thisuser.name);
+  strcpy(SecondUserRec.name, (char *) u->name);
   strcpy(SecondUserRec.szMenuSet, "WWIV");
   SecondUserRec.cHotKeys = 1;
   SecondUserRec.cMenuType = 0;
@@ -328,49 +308,7 @@ void create_text(const char *pszFileName) {
   close(hFile);
 }
 
-void cvtx(unsigned short sp, char *rc) {
-  if (*rc) {
-    resultrec *rr = &(result_codes[num_result_codes++]);
-    std::string s = std::to_string(sp);
-    strcpy(rr->curspeed, s.c_str());
-    strcpy(rr->return_code, rc);
-    rr->modem_speed = sp;
-    if ((syscfg.sysconfig & sysconfig_high_speed) &&
-        (syscfgovr.primaryport < MAX_ALLOWED_PORT)) {
-      rr->com_speed = syscfg.baudrate[syscfgovr.primaryport];
-    } else {
-      rr->com_speed = sp;
-    }
-  }
-}
-
-void convert_result_codes() {
-  num_result_codes = 1;
-  strcpy(result_codes[0].curspeed, "No Carrier");
-  strcpy(result_codes[0].return_code, syscfg.no_carrier);
-  result_codes[0].modem_speed = 0;
-  result_codes[0].com_speed = 0;
-  cvtx(300, syscfg.connect_300);
-  cvtx(300, syscfg.connect_300_a);
-  cvtx(1200, syscfg.connect_1200);
-  cvtx(1200, syscfg.connect_1200_a);
-  cvtx(2400, syscfg.connect_2400);
-  cvtx(2400, syscfg.connect_2400_a);
-  cvtx(9600, syscfg.connect_9600);
-  cvtx(9600, syscfg.connect_9600_a);
-  cvtx(19200, syscfg.connect_19200);
-  cvtx(19200, syscfg.connect_19200_a);
-
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%sresults.dat", syscfg.datadir);
-  int hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(hFile, result_codes, num_result_codes * sizeof(resultrec));
-  close(hFile);
-}
-
-/****************************************************************************/
-
-#define OFFOF(x) (short) (((long)(&(thisuser.x))) - ((long)&thisuser))
+#define OFFOF(x) (short) (((long)(&(user_record.x))) - ((long)&user_record))
 
 void init_files() {
   int i;
@@ -444,8 +382,8 @@ void init_files() {
   syscfg.com_base[3] = 0x3e8;
   syscfg.com_base[4] = 0x2e8;
   Printf(".");
-  syscfg.comport[1] = 1;
-  syscfg.primaryport = 1;
+  syscfg.comport[1] = 0;
+  syscfg.primaryport = 0;
   Printf(".");
   syscfg.newuploads = 0;
   syscfg.maxusers = 500;
@@ -515,7 +453,8 @@ void init_files() {
     syscfg.sl[i] = sl;
   }
 
-  syscfg.userreclen = static_cast<short>(sizeof(thisuser));
+  userrec user_record;
+  syscfg.userreclen = static_cast<short>(sizeof(user_record));
   syscfg.waitingoffset = OFFOF(waiting);
   syscfg.inactoffset = OFFOF(inact);
   syscfg.sysstatusoffset = OFFOF(sysstatus);
@@ -569,11 +508,13 @@ void init_files() {
   memset(qsc, 0, syscfg.qscn_len);
 
   save_status();
-  memset(&thisuser, 0, sizeof(thisuser));
-  write_user(0, &thisuser);
+  userrec u;
+  memset(&u, 0, sizeof(u));
+  write_user(0, &u);
   write_qscn(0, qsc, 0);
-  thisuser.inact = inact_deleted;
-  write_user(1, &thisuser);
+  u.inact = inact_deleted;
+  // Note: this is where init makes a user record #1 that is deleted for new installs.
+  write_user(1, &u);
   write_qscn(1, qsc, 0);
   Printf(".");
   int hFile = open("data/names.lst", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
@@ -639,8 +580,6 @@ void init_files() {
   sprintf(szDestination, "data%cwfc.dat", WWIV_FILE_SEPERATOR_CHAR);
   rename("wfc.dat", szDestination);
   Printf(".");
-  sprintf(szDestination, "data%cmodems.mdm", WWIV_FILE_SEPERATOR_CHAR);
-  rename("modems.500", szDestination);
   Printf(".");
   // Create the sample files.
   create_text("welcome.msg");
@@ -652,15 +591,8 @@ void init_files() {
   create_text("logoff.mtr");
   create_text("comment.txt");
 
-  WFindFile fnd;
-  fnd.open("*.mdm", 0);
-  while (fnd.next()) {
-    sprintf(s2, "data%c%s", WWIV_FILE_SEPERATOR_CHAR, fnd.GetFileName());
-    rename(fnd.GetFileName(), s2);
-  }
-
   if ((env = getenv("TZ")) == NULL) {
-    putenv("TZ=EST5EDT");
+    putenv("TZ=PST8PDT");
   }
 
   Printf(".\n");
@@ -708,66 +640,6 @@ void init_files() {
   Printf(".\n");
 }
 
-
-void convert_modem_info(const char *fn) {
-  char szFileName[MAX_PATH];
-  FILE *pFile;
-  int i;
-
-  sprintf(szFileName, "%s%s.mdm", syscfg.datadir, fn);
-  pFile = fopen(szFileName, "w");
-  if (!pFile) {
-    Printf("Couldn't open '%s' for writing.\n", szFileName);
-    textattr(COLOR_WHITE);
-    exit_init(2);
-  }
-
-  fprintf(pFile, "NAME: \"Local defaults\"\n");
-  fprintf(pFile, "INIT: \"%s\"\n", syscfg.bbs_init_modem);
-  fprintf(pFile, "SETU: \"\"\n");
-  fprintf(pFile, "ANSR: \"%s\"\n", syscfg.answer);
-  fprintf(pFile, "PICK: \"%s\"\n", syscfg.pickupphone);
-  fprintf(pFile, "HANG: \"%s\"\n", syscfg.hangupphone);
-  fprintf(pFile, "DIAL: \"%s\"\n", syscfg.dial_prefix);
-  fprintf(pFile, "SEPR: \"\"\n");
-  fprintf(pFile, "DEFL: MS=%u CS=%u EC=N DC=N AS=N FC=%c\n",
-          syscfg.baudrate[syscfgovr.primaryport],
-          syscfg.baudrate[syscfgovr.primaryport],
-          /* syscfg.sysconfig & sysconfig_flow_control?'Y':'N' */ 'N');
-  fprintf(pFile, "RESL: \"0\"     \"Normal\"       NORM\n");
-  fprintf(pFile, "RESL: \"OK\"    \"Normal\"       NORM\n");
-  fprintf(pFile, "RESL: \"%s\"    \"Ring\"         RING\n", syscfg.ring);
-
-  for (i = 0; i < num_result_codes; i++) {
-    if (result_codes[i].modem_speed) {
-      fprintf(pFile, "RESL: \"%s\"    \"%s\"         CON MS=%u CS=%u\n",
-              result_codes[i].return_code, result_codes[i].curspeed,
-              result_codes[i].modem_speed, result_codes[i].com_speed);
-    } else {
-      fprintf(pFile, "RESL: \"%s\"    \"%s\"         DIS\n",
-              result_codes[i].return_code, result_codes[i].curspeed);
-    }
-  }
-
-  fclose(pFile);
-}
-
-
-void init_modem_info() {
-  get_descriptions(syscfg.datadir, &mdm_desc, &mdm_count, &autosel_info, &num_autosel);
-
-  // The modem type isn't used much, and should be used less under Win32
-  syscfgovr.primaryport = 1;
-  if (!set_modem_info("LOCAL", true)) {
-    result_codes = (resultrec *) bbsmalloc(40 * sizeof(resultrec));
-    convert_result_codes();
-    convert_modem_info("LOCAL");
-    BbsFreeMemory(result_codes);
-    set_modem_info("LOCAL", true);
-  }
-}
-
-
 void new_init() {
   const int ENTRIES = 12;
   const char *dirname[] = {
@@ -807,8 +679,6 @@ void new_init() {
   Printf(".\n");
 
   init_files();
-
-  init_modem_info();
 }
 
 int verify_inst_dirs(configoverrec *co, int inst) {
