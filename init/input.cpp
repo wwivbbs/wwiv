@@ -147,6 +147,13 @@ void EditItems::ShowHelp() const {
   wattroff(out->footer(), A_BOLD);
   waddstr(out->footer(), "-Exit ");
 
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
+  wattron(out->footer(), A_BOLD); 
+  waddstr(out->footer(), "Enter");
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(out->footer(), A_BOLD);
+  waddstr(out->footer(), "-Edit ");  
+
   wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
   wattron(out->footer(), A_BOLD); 
   waddstr(out->footer(), "[");
@@ -156,7 +163,7 @@ void EditItems::ShowHelp() const {
   wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
   wattron(out->footer(), A_BOLD); 
   waddstr(out->footer(), "]");
-  wattrset(out->footer(), COLOR_PAIR(COLOR_BLUE * 16) + (COLOR_CYAN)); 
+  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
   wattroff(out->footer(), A_BOLD);
   waddstr(out->footer(), "-Next ");
   wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
@@ -171,13 +178,6 @@ void EditItems::ShowHelp() const {
   wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
   wattroff(out->footer(), A_BOLD);
   waddstr(out->footer(), "-Next 10 ");
-
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
-  wattron(out->footer(), A_BOLD); 
-  waddstr(out->footer(), "Enter");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(out->footer(), A_BOLD);
-  waddstr(out->footer(), "-Edit ");  
 
   if (additional_helpfn_) {
     wmove(out->footer(), 1, 0);
