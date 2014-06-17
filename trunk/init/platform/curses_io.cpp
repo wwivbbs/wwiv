@@ -32,8 +32,9 @@ CursesIO::CursesIO() {
   keypad(stdscr, TRUE);
   noecho();
   nonl();
-  max_x_ = getmaxx(stdscr);
-  max_y_ = getmaxy(stdscr);
+  window_ = stdscr;
+  max_x_ = getmaxx(window_);
+  max_y_ = getmaxy(window_);
 
   start_color();
 
@@ -42,7 +43,7 @@ CursesIO::CursesIO() {
       init_pair((b * 16) + f, f, b);
     }
   }
-  refresh();
+  wrefresh(window_);
 }
 
 CursesIO::~CursesIO() {
@@ -57,8 +58,8 @@ void CursesIO::LocalGotoXY(int x, int y) {
   y = std::max<int>(y, 0);
   y = std::min<int>(y, max_y_);
 
-  move(y, x);
-  refresh();
+  wmove(window_, y, x);
+  wrefresh(window_);
 }
 
 int CursesIO::WhereX() {
@@ -66,36 +67,36 @@ int CursesIO::WhereX() {
   * characters from the left hand side of the screen.  An X position of zero
   * means the cursor is at the left-most position
   */
-  return getcurx(stdscr);
+  return getcurx(window_);
 }
 
 int CursesIO::WhereY() {
   /* This function returns the Y cursor position, as the line number from
-  * the top of the logical window.  The offset due to the protected top
+  * the top of the logical window_.  The offset due to the protected top
   * of the screen display is taken into account.  A WhereY() of zero means
   * the cursor is at the top-most position it can be at.
   */
-  return getcury(stdscr);
+  return getcury(window_);
 }
 
 /**
  * Clears the local logical screen
  */
 void CursesIO::LocalCls() {
-  attrset(COLOR_PAIR(7));
-  clear();
-  refresh();
+  wattrset(window_, COLOR_PAIR(7));
+  wclear(window_);
+  wrefresh(window_);
   LocalGotoXY(0, 0);
 }
 
-static void SetCursesAttribute() {
+void CursesIO::SetCursesAttribute() {
   unsigned long attr = COLOR_PAIR(curatr);
   unsigned long f = curatr & 0x0f;
-  attrset(attr);
+  wattrset(window_, attr);
   if (f > 7) {
-    attr |= A_BOLD;
+    wattron(window_, A_BOLD);
   } else {
-    attroff(A_BOLD);
+    wattroff(window_, A_BOLD);
   }
 }
 
@@ -105,8 +106,8 @@ static void SetCursesAttribute() {
  */
 void CursesIO::LocalPutch(unsigned char ch) {
   SetCursesAttribute();
-  addch(ch);
-  refresh();
+  waddch(window_, ch);
+  wrefresh(window_);
 }
 
 void CursesIO::LocalPuts(const char *pszText) {
@@ -117,8 +118,8 @@ void CursesIO::LocalPuts(const char *pszText) {
       return;
     }
   }
-  addstr(pszText);
-  refresh();
+  waddstr(window_, pszText);
+  wrefresh(window_);
 }
 
 void CursesIO::LocalXYPuts(int x, int y, const char *pszText) {
@@ -127,13 +128,13 @@ void CursesIO::LocalXYPuts(int x, int y, const char *pszText) {
 }
 
 int CursesIO::getchd() {
-  return getch();
+  return wgetch(window_);
 }
 
 void CursesIO::LocalClrEol() {
   SetCursesAttribute();
-  clrtoeol();
-  refresh();
+  wclrtoeol(window_);
+  wrefresh(window_);
 }
 
 void CursesIO::LocalScrollScreen(int nTop, int nBottom, int nDirection) {
