@@ -60,260 +60,9 @@ void trimstrpath(char *s) {
     s[i + 1] = 0;
   }
 }
-int read_subs() {
-  char szFileName[MAX_PATH];
-
-  sprintf(szFileName, "%ssubs.dat", syscfg.datadir);
-  int i = open(szFileName, O_RDWR | O_BINARY);
-  if (i > 0) {
-    subboards = (subboardrec *) bbsmalloc(filelength(i) + 1);
-    if (!subboards) {
-      Printf("needed %ld bytes\n", filelength(i));
-      textattr(COLOR_WHITE);
-      exit_init(2);
-    }
-
-    initinfo.num_subs = (read(i, subboards, (filelength(i)))) /
-                        sizeof(subboardrec);
-    close(i);
-  } else {
-    Printf("%s NOT FOUND.\n", szFileName);
-    textattr(COLOR_WHITE);
-    exit_init(2);
-  }
-  return 0;
-}
-
-
-void write_subs() {
-  char szFileName[MAX_PATH];
-
-  if (subboards) {
-    sprintf(szFileName, "%ssubs.dat", syscfg.datadir);
-    int i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-    if (i > 0) {
-      write(i, (void *)&subboards[0], initinfo.num_subs * sizeof(subboardrec));
-      close(i);
-    }
-    initinfo.num_subs = 0;
-    BbsFreeMemory(subboards);
-    subboards = NULL;
-  }
-}
-
-
-#define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
-#define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
-
-
-void del_net(int nn) {
-  int i, t, r, nu, i1, i2;
-  mailrec m;
-  char *u;
-  postrec *p;
-
-  read_subs();
-
-  for (i = 0; i < initinfo.num_subs; i++) {
-    if (subboards[i].age & 0x80) {
-      if (subboards[i].name[40] == nn) {
-        subboards[i].type = 0;
-        subboards[i].age &= 0x7f;
-        subboards[i].name[40] = 0;
-      } else if (subboards[i].name[40] > nn) {
-        subboards[i].name[40]--;
-      }
-    }
-    for (i2 = 0; i2 < i; i2++) {
-      if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
-        break;
-      }
-    }
-    if (i2 >= i) {
-      iscan1(i);
-      open_sub(true);
-      for (i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
-        p = get_post(i1);
-        if (p->status & status_post_new_net) {
-          if (p->title[80] == nn) {
-            p->title[80] = -1;
-            write_post(i1, p);
-          } else if (p->title[80] > nn) {
-            p->title[80]--;
-            write_post(i1, p);
-          }
-        }
-      }
-      close_sub();
-    }
-  }
-
-  write_subs();
-
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%semail.dat", syscfg.datadir);
-  int hFile = open(szFileName, O_BINARY | O_RDWR);
-  if (hFile != -1) {
-    t = (int)(filelength(hFile) / sizeof(mailrec));
-    for (r = 0; r < t; r++) {
-      lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
-      read(hFile, (void *)&m, sizeof(mailrec));
-      if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
-        if (m.status & status_source_verified) {
-          i = 78;
-        } else {
-          i = 80;
-        }
-        if ((int) strlen(m.title) >= i) {
-          m.title[i] = m.title[i - 1] = 0;
-        }
-        m.status |= status_new_net;
-        if (m.title[i] == nn) {
-          m.title[i] = -1;
-        } else if (m.title[i] > nn) {
-          m.title[i]--;
-        }
-        lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
-        write(hFile, (void *)&m, sizeof(mailrec));
-      }
-    }
-    close(hFile);
-  }
-
-
-  u = (char *)bbsmalloc(syscfg.userreclen);
-
-  read_user(1, (userrec *)u);
-  nu = number_userrecs();
-  for (i = 1; i <= nu; i++) {
-    read_user(i, (userrec *)u);
-    if (UINT(u, syscfg.fsoffset)) {
-      if (UCHAR(u, syscfg.fnoffset) == nn) {
-        UINT(u, syscfg.fsoffset) = UINT(u, syscfg.fuoffset) = UCHAR(u, syscfg.fnoffset) = 0;
-        write_user(i, (userrec *)u);
-      } else if (UCHAR(u, syscfg.fnoffset) > nn) {
-        UCHAR(u, syscfg.fnoffset)--;
-        write_user(i, (userrec *)u);
-      }
-    }
-  }
-
-  BbsFreeMemory(u);
-
-  for (i = nn; i < initinfo.net_num_max; i++) {
-    net_networks[i] = net_networks[i + 1];
-  }
-  initinfo.net_num_max--;
-
-  sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
-  i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(i, (void *)net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
-  close(i);
-}
-
-
-void insert_net(int nn) {
-  int i, t, r, nu, i1, i2;
-  mailrec m;
-  char *u;
-  postrec *p;
-
-  read_subs();
-
-  for (i = 0; i < initinfo.num_subs; i++) {
-    if (subboards[i].age & 0x80) {
-      if (subboards[i].name[40] >= nn) {
-        subboards[i].name[40]++;
-      }
-    }
-    for (i2 = 0; i2 < i; i2++) {
-      if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
-        break;
-      }
-    }
-    if (i2 >= i) {
-      iscan1(i);
-      open_sub(true);
-      for (i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
-        p = get_post(i1);
-        if (p->status & status_post_new_net) {
-          if (p->title[80] >= nn) {
-            p->title[80]++;
-            write_post(i1, p);
-          }
-        }
-      }
-      close_sub();
-    }
-  }
-
-  write_subs();
-
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%semail.dat", syscfg.datadir);
-  int hFile = open(szFileName, O_BINARY | O_RDWR);
-  if (hFile != -1) {
-    t = (int)(filelength(hFile) / sizeof(mailrec));
-    for (r = 0; r < t; r++) {
-      lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
-      read(hFile, (void *)&m, sizeof(mailrec));
-      if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
-        i = (m.status & status_source_verified) ? 78 : 80;
-        if ((int) strlen(m.title) >= i) {
-          m.title[i] = m.title[i - 1] = 0;
-        }
-        m.status |= status_new_net;
-        if (m.title[i] >= nn) {
-          m.title[i]++;
-        }
-        lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
-        write(hFile, (void *)&m, sizeof(mailrec));
-      }
-    }
-    close(hFile);
-  }
-
-  u = (char *)bbsmalloc(syscfg.userreclen);
-
-  read_user(1, (userrec *)u);
-  nu = number_userrecs();
-  for (i = 1; i <= nu; i++) {
-    read_user(i, (userrec *)u);
-    if (UINT(u, syscfg.fsoffset)) {
-      if (UCHAR(u, syscfg.fnoffset) >= nn) {
-        UCHAR(u, syscfg.fnoffset)++;
-        write_user(i, (userrec *)u);
-      }
-    }
-  }
-
-
-  BbsFreeMemory(u);
-
-  for (i = initinfo.net_num_max; i > nn; i--) {
-    net_networks[i] = net_networks[i - 1];
-  }
-  initinfo.net_num_max++;
-  memset(&(net_networks[nn]), 0, sizeof(net_networks_rec));
-  strcpy(net_networks[nn].name, "NewNet");
-  sprintf(net_networks[nn].dir, "newnet.dir%c", WWIV_FILE_SEPERATOR_CHAR);
-
-  sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
-  i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(i, (void *)net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
-  close(i);
-
-  edit_net(nn);
-}
-
-
-/****************************************************************************/
-
-
 #define MAX_SUBS_DIRS 4096
 
-
-void convert_to(int num_subs, int num_dirs) {
+static void convert_to(int num_subs, int num_dirs) {
   int oqf, nqf, nu, i;
   char oqfn[81], nqfn[81];
   unsigned long *nqsc, *nqsc_n, *nqsc_q, *nqsc_p;
@@ -505,8 +254,6 @@ void up_subs_dirs() {
   }
 }
 
-
-
 void edit_lang(int nn) {
   int i1;
   languagerec *n;
@@ -553,8 +300,6 @@ void edit_lang(int nn) {
     }
   } while (!done && !hangup);
 }
-
-
 
 void up_langs() {
   char s1[81];
@@ -687,10 +432,6 @@ void up_langs() {
   close(hFile);
 }
 
-
-/****************************************************************************/
-
-
 void edit_editor(int n) {
   int i1;
   editorrec c;
@@ -745,7 +486,6 @@ void edit_editor(int n) {
   } while (!done && !hangup);
   editors[n] = c;
 }
-
 
 void extrn_editors() {
   int i1;
@@ -827,9 +567,6 @@ void extrn_editors() {
   close(hFile);
 }
 
-/****************************************************************************/
-
-
 const char *prot_name(int pn) {
   switch (pn) {
   case 1:
@@ -849,7 +586,6 @@ const char *prot_name(int pn) {
   }
   return ">NONE<";
 }
-
 
 void edit_prot(int n) {
   char s[81], s1[81];
@@ -987,10 +723,8 @@ void edit_prot(int n) {
   }
 }
 
-
 #define BASE_CHAR '!'
 #define END_CHAR (BASE_CHAR+10)
-
 
 void extrn_prots() {
   bool done = false;
@@ -1087,5 +821,3 @@ void extrn_prots() {
     unlink(szFileName);
   }
 }
-
-
