@@ -33,7 +33,6 @@ int c_check_old_struct();
 
 void edit_net(int nn);
 void networks();
-void tweak_dir(char *s);
 void convcfg();
 void printcfg();
 int verify_dir(char *typeDir, char *dirName);

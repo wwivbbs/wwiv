@@ -43,7 +43,6 @@
 
 CursesIO* out;
 char bbsdir[MAX_PATH];
-int inst = 1;
 char configdat[20] = "config.dat";
 
 static const char *nettypes[] = {
@@ -294,26 +293,6 @@ void networks() {
   close(hFile);
 }
 
-void tweak_dir(char *s) {
-  if (inst == 1) {
-    return;
-  }
-
-  int i = strlen(s);
-  if (i == 0) {
-    sprintf(s, "temp%d", inst);
-  } else {
-    char *lcp = s + i - 1;
-    while ((((*lcp >= '0') && (*lcp <= '9')) || (*lcp == WWIV_FILE_SEPERATOR_CHAR)) && (lcp >= s)) {
-      lcp--;
-    }
-    sprintf(lcp + 1, "%d%c", inst, WWIV_FILE_SEPERATOR_CHAR);
-  }
-}
-
-/****************************************************************************/
-
-
 void convcfg() {
   arcrec arc[MAX_ARCS];
 
@@ -437,9 +416,8 @@ int WInitApp::main(int argc, char *argv[]) {
   localIO = new CursesIO();
   out = localIO;
 
-
   char s[81], s1[81], ch;
-  int i1, newbbs = 0, configfile, pwok = 0;
+  int newbbs = 0, configfile, pwok = 0;
   int i;
   int max_inst = 2;
   int hFile = -1;
@@ -470,24 +448,12 @@ int WInitApp::main(int argc, char *argv[]) {
   nlx(1);
   textattr(COLOR_CYAN);
 
-  char *pszInstanceNumber = getenv("WWIV_INSTANCE");
-  if (pszInstanceNumber) {
-    inst = atoi(pszInstanceNumber);
-  }
-
   for (i = 1; i < argc; ++i) {
     if (i == 1 && argv[i][0] == '?') {
       show_help();
       exit_init(0);
     }
 
-    if (argv[i][0] == ',') {
-      int nInstanceNumber = atoi(argv[i] + 1);
-      if (nInstanceNumber >= 1 && nInstanceNumber < 1000) {
-        inst = nInstanceNumber;
-      }
-      break;
-    }
     if (argv[i][0] == 'P' || argv[i][0] == 'p') {
       printcfg();
       break;
@@ -499,7 +465,7 @@ int WInitApp::main(int argc, char *argv[]) {
       close(configfile);
 
       configfile = open("config.ovr", O_RDWR | O_BINARY);
-      lseek(configfile, (inst - 1)*sizeof(configoverrec), SEEK_SET);
+      lseek(configfile, 0, SEEK_SET);
       read(configfile, &syscfgovr, sizeof(configoverrec));
       close(configfile);
 
@@ -509,26 +475,19 @@ int WInitApp::main(int argc, char *argv[]) {
     }
   }
 
-  if (inst < 1 || inst >= 1000) {
-    inst = 1;
-  }
-
   bool done = false;
   configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile < 0) {
     textattr(COLOR_RED);
     Printf("%s NOT FOUND.\n\n", configdat);
-    inst = 1;
     if (dialog_yn("Perform initial installation")) {
-      if (inst == 1) {
-        new_init();
-        nlx(1);
-        textattr(COLOR_YELLOW);
-        Printf("Your system password defaults to 'SYSOP'.\n");
-        textattr(COLOR_CYAN);
-        nlx();
-        newbbs = 1;
-      }
+      new_init();
+      nlx(1);
+      textattr(COLOR_YELLOW);
+      Printf("Your system password defaults to 'SYSOP'.\n");
+      textattr(COLOR_CYAN);
+      nlx();
+      newbbs = 1;
       configfile = open(configdat, O_RDWR | O_BINARY);
     } else {
       textattr(COLOR_WHITE);
@@ -548,7 +507,7 @@ int WInitApp::main(int argc, char *argv[]) {
   max_inst = 999;
 
   configfile = open("config.ovr", O_RDONLY | O_BINARY);
-  if ((configfile > 0) && (filelength(configfile) < inst * (int)sizeof(configoverrec))) {
+  if ((configfile > 0) && (filelength(configfile) < (int)sizeof(configoverrec))) {
     close(configfile);
     configfile = -1;
   }
@@ -568,10 +527,8 @@ int WInitApp::main(int argc, char *argv[]) {
     strcpy(syscfgovr.modem_type, syscfg.modem_type);
     strcpy(syscfgovr.tempdir, syscfg.tempdir);
     strcpy(syscfgovr.batchdir, syscfg.batchdir);
-    tweak_dir(syscfgovr.tempdir);
-    tweak_dir(syscfgovr.batchdir);
   } else {
-    lseek(configfile, (inst - 1)*sizeof(configoverrec), SEEK_SET);
+    lseek(configfile, 0, SEEK_SET);
     read(configfile, &syscfgovr, sizeof(configoverrec));
     close(configfile);
   }
@@ -582,43 +539,6 @@ int WInitApp::main(int argc, char *argv[]) {
     create_arcs();
   } else {
     close(hFile);
-  }
-
-  if (inst > 1) {
-    strcpy(s, syscfgovr.tempdir);
-    i = strlen(s);
-    if (s[0] == 0) {
-      i1 = 1;
-    } else  {
-      // This is on because on UNIX we are not going to have :/ in the filename.
-      // This is just to trim the trailing slash unless it's a path like "C:\"
-      if ((s[i - 1] == WWIV_FILE_SEPERATOR_CHAR) && (s[i - 2] != ':')) {
-        s[i - 1] = 0;
-      }
-      i1 = chdir(s);
-    }
-    if (i1 != 0) {
-      mkdir(s);
-    } else {
-      WWIV_ChangeDirTo(bbsdir);
-    }
-
-    strcpy(s, syscfgovr.batchdir);
-    i = strlen(s);
-    if (s[0] == 0) {
-      i1 = 1;
-    } else {
-      // See comment above.
-      if ((s[i - 1] == WWIV_FILE_SEPERATOR_CHAR) && (s[i - 2] != ':')) {
-        s[i - 1] = 0;
-      }
-      i1 = chdir(s);
-    }
-    if (i1) {
-      mkdir(s);
-    } else {
-      WWIV_ChangeDirTo(bbsdir);
-    }
   }
 
   if (!syscfg.dial_prefix[0]) {
@@ -831,9 +751,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
     werase(out->footer());
     y++;
-    char szTempBuffer[255];
-    sprintf(szTempBuffer, "Instance %d: Which (1,2,6-9,A,I,L,N,Q,R,U,X) ? ", inst);
-    out->PutsXY(x, y++, szTempBuffer);
+    out->PutsXY(x, y++, "Command (1,2,6-9,A,I,L,N,Q,R,U,X) ? ");
     textattr(COLOR_CYAN);
     lines_listed = 0;
     switch (onek("Q126789AILNPRUVX\033")) {
