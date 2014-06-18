@@ -214,7 +214,7 @@ struct configrec {
        ramdrive,                               // drive for ramdisk
        tempdir[81],                            // path for temporary directory
        xmark,                                  // 0xff
-       regcode[83],                            // registration code
+       unused_regcode[83],                     // registration code
        bbs_init_modem[51],                     // modem initialization cmd
        answer[21],                             // modem answer cmd
        connect_300[21],                        // modem responses for
@@ -301,7 +301,7 @@ struct configrec {
   unsigned char email_storage_type;           // how to store email
 
   uint32_t sysconfig1,
-           rrd;                                    // shareware expiration date
+           unused_rrd;                        // shareware expiration date
 
   char menudir[81];                           // path for menu dir
 
@@ -329,7 +329,6 @@ struct small_configrec {
                 * systemname,         // BBS system name
                 * systemphone,        // BBS system phone number
                 * sysopname,          // sysop's name
-                * regcode,            // registration code
                 * executestr,         // mail route path name
 
                 * beginday_c,         // beginday event
