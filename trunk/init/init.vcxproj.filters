@@ -66,6 +66,9 @@
     <ClInclude Include="system_info.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="paths.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp">
@@ -111,6 +114,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="system_info.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="paths.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

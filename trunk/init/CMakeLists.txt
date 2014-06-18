@@ -11,10 +11,18 @@ add_definitions(-DINIT -DNOT_BBS)
 
 set(COMMON_SOURCES
   convert.cpp
-  init.cpp init1.cpp init2.cpp init3.cpp
-  input.cpp instance_settings.cpp
-  user_editor.cpp regcode.cpp
-  subacc.cpp platform/curses_io.cpp
+  init.cpp 
+  init1.cpp 
+  init2.cpp 
+  init3.cpp
+  input.cpp 
+  instance_settings.cpp
+  paths.cpp
+  platform/curses_io.cpp
+  regcode.cpp
+  subacc.cpp 
+  system_info.cpp
+  user_editor.cpp 
   )
 
 if(UNIX) 

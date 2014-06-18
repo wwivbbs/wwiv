@@ -32,6 +32,7 @@
 #include "input.h"
 #include "init.h"
 #include "instance_settings.h"
+#include "paths.h"
 #include "regcode.h"
 #include "system_info.h"
 #include "user_editor.h"
