@@ -11,10 +11,10 @@
 50012	IA	Ames
 50013	IA	Ames
 50014	IA	Ames
-50015	IA	Ankeny
 50020	IA	Anita
 50021	IA	Ankeny
 50022	IA	Atlantic
+50023	IA	Ankeny
 50025	IA	Audubon
 50026	IA	Bagley
 50027	IA	Barnes City
@@ -49,7 +49,7 @@
 50059	IA	Cooper
 50060	IA	Corydon
 50061	IA	Cumming
-50062	IA	Dallas
+50062	IA	Melcher-dallas
 50063	IA	Dallas Center
 50064	IA	Dana
 50065	IA	Davis City
@@ -65,6 +65,7 @@
 50075	IA	Ellsworth
 50076	IA	Exira
 50078	IA	Ferguson
+50099	IA	Boone
 50101	IA	Galt
 50102	IA	Garden City
 50103	IA	Garden Grove
@@ -123,7 +124,7 @@
 50160	IA	Martensdale
 50161	IA	Maxwell
 50162	IA	Melbourne
-50163	IA	Melcher
+50163	IA	Melcher-dallas
 50164	IA	Menlo
 50165	IA	Millerton
 50166	IA	Milo
@@ -134,9 +135,6 @@
 50171	IA	Montezuma
 50173	IA	Montour
 50174	IA	Murray
-50177	IA	Grinnell
-50197	IA	Knoxville
-50198	IA	Knoxville
 50201	IA	Nevada
 50206	IA	New Providence
 50207	IA	New Sharon
@@ -151,7 +149,6 @@
 50218	IA	Patterson
 50219	IA	Pella
 50220	IA	Perry
-50221	IA	Pershing
 50222	IA	Peru
 50223	IA	Pilot Mound
 50225	IA	Pleasantville
@@ -226,7 +223,9 @@
 50321	IA	Des Moines
 50322	IA	Urbandale
 50323	IA	Urbandale
+50324	IA	Windsor Heights
 50325	IA	Clive
+50327	IA	Pleasant Hill
 50328	IA	Des Moines
 50329	IA	Des Moines
 50330	IA	Des Moines
@@ -236,11 +235,9 @@
 50334	IA	Des Moines
 50335	IA	Des Moines
 50336	IA	Des Moines
-50338	IA	Des Moines
 50339	IA	Des Moines
 50340	IA	Des Moines
 50347	IA	Des Moines
-50350	IA	Des Moines
 50359	IA	Des Moines
 50360	IA	Des Moines
 50361	IA	Des Moines
@@ -259,7 +256,7 @@
 50395	IA	Des Moines
 50396	IA	Des Moines
 50397	IA	Des Moines
-50398	IA	West Des Moines
+50398	IA	Urbandale
 50401	IA	Mason City
 50402	IA	Mason City
 50420	IA	Alexander
@@ -382,7 +379,6 @@
 50583	IA	Sac City
 50585	IA	Sioux Rapids
 50586	IA	Somers
-50587	IA	Rinard
 50588	IA	Storm Lake
 50590	IA	Swea City
 50591	IA	Thor
@@ -425,7 +421,6 @@
 50634	IA	Gilbertville
 50635	IA	Gladbrook
 50636	IA	Greene
-50637	IA	Green Mountain
 50638	IA	Grundy Center
 50641	IA	Hazleton
 50642	IA	Holland
@@ -470,7 +465,6 @@
 50704	IA	Waterloo
 50706	IA	Waterloo
 50707	IA	Evansdale
-50799	IA	Waterloo
 50801	IA	Creston
 50830	IA	Afton
 50831	IA	Arispe
@@ -483,15 +477,12 @@
 50841	IA	Corning
 50842	IA	Cromwell
 50843	IA	Cumberland
-50844	IA	Delphos
 50845	IA	Diagonal
 50846	IA	Fontanelle
 50847	IA	Grant
 50848	IA	Gravity
 50849	IA	Greenfield
-50850	IA	Kent
 50851	IA	Lenox
-50852	IA	Maloy
 50853	IA	Massena
 50854	IA	Mount Ayr
 50857	IA	Nodaway
@@ -508,6 +499,8 @@
 50950	IA	Des Moines
 50980	IA	Des Moines
 50981	IA	Des Moines
+50982	IA	Des Moines
+50983	IA	Des Moines
 51001	IA	Akron
 51002	IA	Alta
 51003	IA	Alton
@@ -523,7 +516,6 @@
 51014	IA	Cleghorn
 51015	IA	Climbing Hill
 51016	IA	Correctionville
-51017	IA	Craig
 51018	IA	Cushing
 51019	IA	Danbury
 51020	IA	Galva
@@ -559,9 +551,7 @@
 51054	IA	Sergeant Bluff
 51055	IA	Sloan
 51056	IA	Smithland
-51057	IA	Struble
 51058	IA	Sutherland
-51059	IA	Turin
 51060	IA	Ute
 51061	IA	Washta
 51062	IA	Westfield
@@ -572,10 +562,8 @@
 51104	IA	Sioux City
 51105	IA	Sioux City
 51106	IA	Sioux City
-51107	IA	Sioux City
 51108	IA	Sioux City
 51109	IA	Sioux City
-51110	IA	Sioux City
 51111	IA	Sioux City
 51201	IA	Sheldon
 51230	IA	Alvord
@@ -598,7 +586,6 @@
 51249	IA	Sibley
 51250	IA	Sioux Center
 51301	IA	Spencer
-51330	IA	Allendorf
 51331	IA	Arnolds Park
 51333	IA	Dickens
 51334	IA	Estherville
@@ -611,7 +598,6 @@
 51345	IA	Harris
 51346	IA	Hartley
 51347	IA	Lake Park
-51349	IA	May City
 51350	IA	Melvin
 51351	IA	Milford
 51354	IA	Ocheyedan
@@ -705,7 +691,6 @@
 51571	IA	Silver City
 51572	IA	Soldier
 51573	IA	Stanton
-51574	IA	Tennant
 51575	IA	Treynor
 51576	IA	Underwood
 51577	IA	Walnut
@@ -734,9 +719,7 @@
 51652	IA	Sidney
 51653	IA	Tabor
 51654	IA	Thurman
-51655	IA	Bartlett
 51656	IA	Yorktown
-51693	IA	Shenandoah
 52001	IA	Dubuque
 52002	IA	Dubuque
 52003	IA	Dubuque
@@ -764,7 +747,6 @@
 52052	IA	Guttenberg
 52053	IA	Holy Cross
 52054	IA	La Motte
-52055	IA	Littleport
 52056	IA	Luxemburg
 52057	IA	Manchester
 52060	IA	Maquoketa
@@ -783,9 +765,8 @@
 52077	IA	Volga
 52078	IA	Worthington
 52079	IA	Zwingle
+52099	IA	Dubuque
 52101	IA	Decorah
-52130	IA	Alpha
-52131	IA	Burr Oak
 52132	IA	Calmar
 52133	IA	Castalia
 52134	IA	Chester
@@ -798,7 +779,6 @@
 52146	IA	Harpers Ferry
 52147	IA	Hawkeye
 52149	IA	Highlandville
-52150	IA	Jackson Junction
 52151	IA	Lansing
 52154	IA	Lawler
 52155	IA	Lime Springs
@@ -844,11 +824,9 @@
 52223	IA	Delhi
 52224	IA	Dysart
 52225	IA	Elberon
-52226	IA	Elwood
 52227	IA	Ely
 52228	IA	Fairfax
 52229	IA	Garrison
-52230	IA	Hale
 52231	IA	Harper
 52232	IA	Hartwick
 52233	IA	Hiawatha
@@ -865,7 +843,6 @@
 52247	IA	Kalona
 52248	IA	Keota
 52249	IA	Keystone
-52250	IA	Kinross
 52251	IA	Ladora
 52252	IA	Langworthy
 52253	IA	Lisbon
@@ -899,7 +876,6 @@
 52328	IA	Robins
 52329	IA	Rowley
 52330	IA	Ryan
-52331	IA	Scotch Grove
 52332	IA	Shellsburg
 52333	IA	Solon
 52334	IA	South Amana
@@ -939,6 +915,7 @@
 52409	IA	Cedar Rapids
 52410	IA	Cedar Rapids
 52411	IA	Cedar Rapids
+52497	IA	Cedar Rapids
 52498	IA	Cedar Rapids
 52499	IA	Cedar Rapids
 52501	IA	Ottumwa
@@ -1032,7 +1009,6 @@
 52720	IA	Atalissa
 52721	IA	Bennett
 52722	IA	Bettendorf
-52725	IA	Big Rock
 52726	IA	Blue Grass
 52727	IA	Bryant
 52728	IA	Buffalo
@@ -1041,6 +1017,7 @@
 52731	IA	Charlotte
 52732	IA	Clinton
 52733	IA	Clinton
+52734	IA	Clinton
 52736	IA	Clinton
 52737	IA	Columbus City
 52738	IA	Columbus Junction
@@ -1092,7 +1069,6 @@
 53006	WI	Brownsville
 53007	WI	Butler
 53008	WI	Brookfield
-53009	WI	Byron
 53010	WI	Campbellsport
 53011	WI	Cascade
 53012	WI	Cedarburg
@@ -1149,7 +1125,6 @@
 53074	WI	Port Washington
 53075	WI	Random Lake
 53076	WI	Richfield
-53077	WI	Rockfield
 53078	WI	Rubicon
 53079	WI	Saint Cloud
 53080	WI	Saukville
@@ -1160,12 +1135,12 @@
 53086	WI	Slinger
 53088	WI	Stockbridge
 53089	WI	Sussex
+53090	WI	West Bend
 53091	WI	Theresa
 53092	WI	Thiensville
 53093	WI	Waldo
 53094	WI	Watertown
 53095	WI	West Bend
-53096	WI	West Bend
 53097	WI	Mequon
 53098	WI	Watertown
 53099	WI	Woodland
@@ -1229,11 +1204,13 @@
 53186	WI	Waukesha
 53187	WI	Waukesha
 53188	WI	Waukesha
+53189	WI	Waukesha
 53190	WI	Whitewater
 53191	WI	Williams Bay
 53192	WI	Wilmot
 53194	WI	Woodworth
 53195	WI	Zenda
+53199	WI	Silver Lake
 53201	WI	Milwaukee
 53202	WI	Milwaukee
 53203	WI	Milwaukee
@@ -1266,17 +1243,13 @@
 53234	WI	Milwaukee
 53235	WI	Saint Francis
 53237	WI	Milwaukee
+53244	WI	Milwaukee
 53259	WI	Milwaukee
 53263	WI	Milwaukee
 53267	WI	Milwaukee
 53268	WI	Milwaukee
-53270	WI	Milwaukee
-53277	WI	Milwaukee
+53274	WI	Milwaukee
 53278	WI	Milwaukee
-53280	WI	Milwaukee
-53281	WI	Milwaukee
-53284	WI	Milwaukee
-53285	WI	Milwaukee
 53288	WI	Milwaukee
 53290	WI	Milwaukee
 53293	WI	Milwaukee
@@ -1330,6 +1303,7 @@
 53545	WI	Janesville
 53546	WI	Janesville
 53547	WI	Janesville
+53548	WI	Janesville
 53549	WI	Jefferson
 53550	WI	Juda
 53551	WI	Lake Mills
@@ -1368,7 +1342,6 @@
 53588	WI	Spring Green
 53589	WI	Stoughton
 53590	WI	Sun Prairie
-53591	WI	Sun Prairie
 53593	WI	Verona
 53594	WI	Waterloo
 53595	WI	Dodgeville
@@ -1384,8 +1357,6 @@
 53706	WI	Madison
 53707	WI	Madison
 53708	WI	Madison
-53709	WI	Madison
-53710	WI	Madison
 53711	WI	Madison
 53713	WI	Madison
 53714	WI	Madison
@@ -1397,16 +1368,15 @@
 53725	WI	Madison
 53726	WI	Madison
 53744	WI	Madison
+53774	WI	Madison
 53777	WI	Madison
 53778	WI	Madison
 53779	WI	Madison
-53780	WI	Madison
 53782	WI	Madison
 53783	WI	Madison
 53784	WI	Madison
 53785	WI	Madison
 53786	WI	Madison
-53787	WI	Madison
 53788	WI	Madison
 53789	WI	Madison
 53790	WI	Madison
@@ -1441,7 +1411,6 @@
 53911	WI	Arlington
 53913	WI	Baraboo
 53916	WI	Beaver Dam
-53917	WI	Beaver Dam
 53919	WI	Brandon
 53920	WI	Briggsville
 53922	WI	Burnett
@@ -1478,6 +1447,7 @@
 53955	WI	Poynette
 53956	WI	Randolph
 53957	WI	Randolph
+53958	WI	Reedsburg
 53959	WI	Reedsburg
 53960	WI	Rio
 53961	WI	Rock Springs
@@ -1497,7 +1467,6 @@
 54009	WI	Dresser
 54010	WI	East Ellsworth
 54011	WI	Ellsworth
-54012	WI	Emerald
 54013	WI	Glenwood City
 54014	WI	Hager City
 54015	WI	Hammond
@@ -1512,7 +1481,7 @@
 54026	WI	Star Prairie
 54027	WI	Wilson
 54028	WI	Woodville
-54082	WI	Saint Joseph
+54082	WI	Houlton
 54101	WI	Abrams
 54102	WI	Amberg
 54103	WI	Armstrong Creek
@@ -1566,16 +1535,13 @@
 54173	WI	Suamico
 54174	WI	Suring
 54175	WI	Townsend
-54176	WI	Underhill
 54177	WI	Wausaukee
 54180	WI	Wrightstown
 54182	WI	Zachow
 54201	WI	Algoma
 54202	WI	Baileys Harbor
-54203	WI	Branch
 54204	WI	Brussels
 54205	WI	Casco
-54206	WI	Cato
 54207	WI	Collins
 54208	WI	Denmark
 54209	WI	Egg Harbor
@@ -1594,7 +1560,6 @@
 54228	WI	Mishicot
 54229	WI	New Franken
 54230	WI	Reedsville
-54231	WI	Rio Creek
 54232	WI	Saint Nazianz
 54234	WI	Sister Bay
 54235	WI	Sturgeon Bay
@@ -1655,7 +1620,6 @@
 54441	WI	Hewitt
 54442	WI	Irma
 54443	WI	Junction City
-54444	WI	Kempster
 54446	WI	Loyal
 54447	WI	Lublin
 54448	WI	Marathon
@@ -1663,7 +1627,6 @@
 54450	WI	Mattoon
 54451	WI	Medford
 54452	WI	Merrill
-54453	WI	Milan
 54454	WI	Milladore
 54455	WI	Mosinee
 54456	WI	Neillsville
@@ -1743,7 +1706,7 @@
 54558	WI	Saint Germain
 54559	WI	Saxon
 54560	WI	Sayner
-54561	WI	Starlake
+54561	WI	Star Lake
 54562	WI	Three Lakes
 54563	WI	Tony
 54564	WI	Tripoli
@@ -1760,7 +1723,6 @@
 54614	WI	Bangor
 54615	WI	Black River Falls
 54616	WI	Blair
-54617	WI	Bloom City
 54618	WI	Camp Douglas
 54619	WI	Cashton
 54620	WI	Cataract
@@ -1837,7 +1799,6 @@
 54741	WI	Fairchild
 54742	WI	Fall Creek
 54743	WI	Gilmanton
-54744	WI	Hillsdale
 54745	WI	Holcombe
 54746	WI	Humbird
 54747	WI	Independence
@@ -1904,7 +1865,6 @@
 54848	WI	Ladysmith
 54849	WI	Lake Nebagamon
 54850	WI	La Pointe
-54851	WI	Lewis
 54853	WI	Luck
 54854	WI	Maple
 54855	WI	Marengo
@@ -1916,7 +1876,6 @@
 54862	WI	Ojibwa
 54864	WI	Poplar
 54865	WI	Port Wing
-54866	WI	Poskin
 54867	WI	Radisson
 54868	WI	Rice Lake
 54870	WI	Sarona
@@ -1972,7 +1931,6 @@
 54948	WI	Leopolis
 54949	WI	Manawa
 54950	WI	Marion
-54951	WI	Medina
 54952	WI	Menasha
 54956	WI	Neenah
 54957	WI	Neenah
@@ -1989,7 +1947,6 @@
 54970	WI	Redgranite
 54971	WI	Ripon
 54974	WI	Rosendale
-54975	WI	Royalton
 54976	WI	Saxeville
 54977	WI	Scandinavia
 54978	WI	Tilleda
@@ -2005,7 +1962,6 @@
 55001	MN	Afton
 55002	MN	Almelund
 55003	MN	Bayport
-55004	MN	Beroun
 55005	MN	Bethel
 55006	MN	Braham
 55007	MN	Brook Park
@@ -2020,7 +1976,7 @@
 55017	MN	Dalbo
 55018	MN	Dennison
 55019	MN	Dundas
-55020	MN	Elko
+55020	MN	Elko New Market
 55021	MN	Faribault
 55024	MN	Farmington
 55025	MN	Forest Lake
@@ -2046,7 +2002,7 @@
 55051	MN	Mora
 55052	MN	Morristown
 55053	MN	Nerstrand
-55054	MN	New Market
+55054	MN	Elko New Market
 55055	MN	Newport
 55056	MN	North Branch
 55057	MN	Northfield
@@ -2106,6 +2062,7 @@
 55127	MN	Saint Paul
 55128	MN	Saint Paul
 55129	MN	Saint Paul
+55130	MN	Saint Paul
 55133	MN	Saint Paul
 55144	MN	Saint Paul
 55145	MN	Saint Paul
@@ -2123,15 +2080,13 @@
 55172	MN	Saint Paul
 55175	MN	Saint Paul
 55177	MN	Saint Paul
-55182	MN	Saint Paul
+55187	MN	Saint Paul
 55188	MN	Saint Paul
-55189	MN	Saint Paul
-55190	MN	Saint Paul
 55191	MN	Saint Paul
 55301	MN	Albertville
 55302	MN	Annandale
 55303	MN	Anoka
-55304	MN	Anoka
+55304	MN	Andover
 55305	MN	Hopkins
 55306	MN	Burnsville
 55307	MN	Arlington
@@ -2171,7 +2126,7 @@
 55342	MN	Hector
 55343	MN	Hopkins
 55344	MN	Eden Prairie
-55345	MN	Hopkins
+55345	MN	Minnetonka
 55346	MN	Eden Prairie
 55347	MN	Eden Prairie
 55348	MN	Maple Plain
@@ -2193,7 +2148,7 @@
 55365	MN	Monticello
 55366	MN	New Auburn
 55367	MN	New Germany
-55368	MN	Norwood
+55368	MN	Norwood Young America
 55369	MN	Osseo
 55370	MN	Plato
 55371	MN	Princeton
@@ -2280,10 +2235,12 @@
 55458	MN	Minneapolis
 55459	MN	Minneapolis
 55460	MN	Minneapolis
+55467	MN	Minneapolis
 55468	MN	Minneapolis
 55470	MN	Minneapolis
 55472	MN	Minneapolis
 55473	MN	Minneapolis
+55474	MN	Minneapolis
 55478	MN	Minneapolis
 55479	MN	Minneapolis
 55480	MN	Minneapolis
@@ -2297,6 +2254,7 @@
 55551	MN	Young America
 55552	MN	Young America
 55553	MN	Young America
+55554	MN	Norwood
 55555	MN	Young America
 55556	MN	Young America
 55557	MN	Young America
@@ -2314,12 +2272,12 @@
 55569	MN	Osseo
 55570	MN	Maple Plain
 55571	MN	Maple Plain
-55572	MN	Maple Plain
+55572	MN	Rockford
 55573	MN	Young America
 55574	MN	Maple Plain
 55575	MN	Howard Lake
 55576	MN	Maple Plain
-55577	MN	Maple Plain
+55577	MN	Rockford
 55578	MN	Maple Plain
 55579	MN	Maple Plain
 55580	MN	Monticello
@@ -2379,7 +2337,6 @@
 55724	MN	Cotton
 55725	MN	Crane Lake
 55726	MN	Cromwell
-55729	MN	Duquette
 55730	MN	Grand Rapids
 55731	MN	Ely
 55732	MN	Embarrass
@@ -2400,11 +2357,10 @@
 55751	MN	Iron
 55752	MN	Jacobson
 55753	MN	Keewatin
-55754	MN	Kelly Lake
 55756	MN	Kerrick
 55757	MN	Kettle River
 55758	MN	Kinney
-55760	MN	McGregor
+55760	MN	Mcgregor
 55763	MN	Makinen
 55764	MN	Marble
 55765	MN	Meadowlands
@@ -2425,7 +2381,6 @@
 55785	MN	Swatara
 55786	MN	Taconite
 55787	MN	Tamarack
-55789	MN	Toivola
 55790	MN	Tower
 55791	MN	Twig
 55792	MN	Virginia
@@ -2511,7 +2466,6 @@
 55975	MN	Spring Valley
 55976	MN	Stewartville
 55977	MN	Taopi
-55978	MN	Theilman
 55979	MN	Utica
 55981	MN	Wabasha
 55982	MN	Waltham
@@ -2565,7 +2519,6 @@
 56050	MN	Kasota
 56051	MN	Kiester
 56052	MN	Kilkenny
-56053	MN	Klossner
 56054	MN	Lafayette
 56055	MN	Lake Crystal
 56056	MN	La Salle
@@ -2574,7 +2527,6 @@
 56060	MN	Lewisville
 56062	MN	Madelia
 56063	MN	Madison Lake
-56064	MN	Manchester
 56065	MN	Mapleton
 56068	MN	Minnesota Lake
 56069	MN	Montgomery
@@ -2583,7 +2535,6 @@
 56073	MN	New Ulm
 56074	MN	Nicollet
 56075	MN	Northrop
-56076	MN	Oakland
 56078	MN	Pemberton
 56080	MN	Saint Clair
 56081	MN	Saint James
@@ -2596,7 +2547,6 @@
 56089	MN	Twin Lakes
 56090	MN	Vernon Center
 56091	MN	Waldorf
-56092	MN	Walters
 56093	MN	Waseca
 56096	MN	Waterville
 56097	MN	Wells
@@ -2604,7 +2554,6 @@
 56101	MN	Windom
 56110	MN	Adrian
 56111	MN	Alpha
-56112	MN	Amiret
 56113	MN	Arco
 56114	MN	Avoca
 56115	MN	Balaton
@@ -2663,7 +2612,6 @@
 56176	MN	Trimont
 56177	MN	Trosky
 56178	MN	Tyler
-56179	MN	Verdi
 56180	MN	Walnut Grove
 56181	MN	Welcome
 56183	MN	Westbrook
@@ -2704,7 +2652,6 @@
 56243	MN	Grove City
 56244	MN	Hancock
 56245	MN	Hanley Falls
-56246	MN	Hawick
 56248	MN	Herman
 56249	MN	Holloway
 56251	MN	Kandiyohi
@@ -2723,7 +2670,6 @@
 56267	MN	Morris
 56270	MN	Morton
 56271	MN	Murdock
-56272	MN	Nassau
 56273	MN	New London
 56274	MN	Norcross
 56276	MN	Odessa
@@ -2787,7 +2733,6 @@
 56343	MN	Kensington
 56344	MN	Lastrup
 56345	MN	Little Falls
-56346	MN	Long Prairie
 56347	MN	Long Prairie
 56349	MN	Lowry
 56350	MN	Mc Grath
@@ -2816,19 +2761,20 @@
 56377	MN	Sartell
 56378	MN	Sauk Centre
 56379	MN	Sauk Rapids
-56380	MN	Sedan
 56381	MN	Starbuck
 56382	MN	Swanville
 56384	MN	Upsala
 56385	MN	Villard
 56386	MN	Wahkon
 56387	MN	Waite Park
+56388	MN	Waite Park
 56389	MN	West Union
 56393	MN	Saint Cloud
 56395	MN	Saint Cloud
 56396	MN	Saint Cloud
 56397	MN	Saint Cloud
 56398	MN	Saint Cloud
+56399	MN	Saint Cloud
 56401	MN	Brainerd
 56425	MN	Baxter
 56430	MN	Ah Gwah Ching
@@ -2855,7 +2801,6 @@
 56456	MN	Jenkins
 56458	MN	Lake George
 56459	MN	Lake Hubert
-56460	MN	Lake Itasca
 56461	MN	Laporte
 56464	MN	Menahga
 56465	MN	Merrifield
@@ -2874,12 +2819,10 @@
 56481	MN	Verndale
 56482	MN	Wadena
 56484	MN	Walker
-56485	MN	Whipholt
 56501	MN	Detroit Lakes
 56502	MN	Detroit Lakes
 56510	MN	Ada
 56511	MN	Audubon
-56513	MN	Baker
 56514	MN	Barnesville
 56515	MN	Battle Lake
 56516	MN	Bejou
@@ -2917,7 +2860,7 @@
 56552	MN	Hitterdal
 56553	MN	Kent
 56554	MN	Lake Park
-56556	MN	McIntosh
+56556	MN	Mcintosh
 56557	MN	Mahnomen
 56560	MN	Moorhead
 56561	MN	Moorhead
@@ -2988,7 +2931,7 @@
 56666	MN	Ponemah
 56667	MN	Puposky
 56668	MN	Ranier
-56669	MN	Ray
+56669	MN	Kabetogama
 56670	MN	Redby
 56671	MN	Redlake
 56672	MN	Remer
@@ -3008,7 +2951,6 @@
 56701	MN	Thief River Falls
 56710	MN	Alvarado
 56711	MN	Angle Inlet
-56712	MN	Angus
 56713	MN	Argyle
 56714	MN	Badger
 56715	MN	Brooks
@@ -3048,6 +2990,17 @@
 56761	MN	Wannaska
 56762	MN	Warren
 56763	MN	Warroad
+56901	DC	Parcel Return Service
+56902	DC	Parcel Return Service
+56904	DC	Parcel Return Service
+56915	DC	Parcel Return Service
+56920	DC	Parcel Return Service
+56933	DC	Parcel Return Service
+56944	DC	Parcel Return Service
+56945	DC	Parcel Return Service
+56950	DC	Parcel Return Service
+56965	DC	Parcel Return Service
+56972	DC	Parcel Return Service
 57001	SD	Alcester
 57002	SD	Aurora
 57003	SD	Baltic
@@ -3086,7 +3039,6 @@
 57041	SD	Lyons
 57042	SD	Madison
 57043	SD	Marion
-57044	SD	Meckling
 57045	SD	Menno
 57046	SD	Mission Hill
 57047	SD	Monroe
@@ -3115,14 +3067,12 @@
 57071	SD	Volga
 57072	SD	Volin
 57073	SD	Wakonda
-57074	SD	Ward
 57075	SD	Wentworth
 57076	SD	Winfred
 57077	SD	Worthing
 57078	SD	Yankton
 57079	SD	Yankton
 57101	SD	Sioux Falls
-57102	SD	Sioux Falls
 57103	SD	Sioux Falls
 57104	SD	Sioux Falls
 57105	SD	Sioux Falls
@@ -3131,14 +3081,11 @@
 57108	SD	Sioux Falls
 57109	SD	Sioux Falls
 57110	SD	Sioux Falls
-57115	SD	Buffalo Ridge
-57116	SD	Sioux Falls
 57117	SD	Sioux Falls
 57118	SD	Sioux Falls
+57186	SD	Sioux Falls
 57188	SD	Sioux Falls
 57189	SD	Sioux Falls
-57190	SD	Sioux Falls
-57191	SD	Sioux Falls
 57192	SD	Sioux Falls
 57193	SD	Sioux Falls
 57194	SD	Sioux Falls
@@ -3147,7 +3094,6 @@
 57197	SD	Sioux Falls
 57198	SD	Sioux Falls
 57201	SD	Watertown
-57202	SD	Waverly
 57212	SD	Arlington
 57213	SD	Astoria
 57214	SD	Badger
@@ -3162,7 +3108,6 @@
 57225	SD	Clark
 57226	SD	Clear Lake
 57227	SD	Corona
-57229	SD	Crocker
 57231	SD	De Smet
 57232	SD	Eden
 57233	SD	Erwin
@@ -3175,7 +3120,6 @@
 57241	SD	Hayti
 57242	SD	Hazel
 57243	SD	Henry
-57244	SD	Hetland
 57245	SD	Kranzburg
 57246	SD	Labolt
 57247	SD	Lake City
@@ -3242,7 +3186,6 @@
 57354	SD	Kaylor
 57355	SD	Kimball
 57356	SD	Lake Andes
-57357	SD	Ravinia
 57358	SD	Lane
 57359	SD	Letcher
 57361	SD	Marty
@@ -3301,10 +3244,9 @@
 57454	SD	Langford
 57455	SD	Lebanon
 57456	SD	Leola
-57457	SD	Longlake
+57457	SD	Long Lake
 57460	SD	Mansfield
 57461	SD	Mellette
-57462	SD	Mina
 57465	SD	Northville
 57466	SD	Onaka
 57467	SD	Orient
@@ -3320,13 +3262,11 @@
 57477	SD	Turton
 57479	SD	Warner
 57481	SD	Westport
-57483	SD	Zell
 57501	SD	Pierre
 57520	SD	Agar
 57521	SD	Belvidere
 57522	SD	Blunt
 57523	SD	Burke
-57526	SD	Carter
 57528	SD	Colome
 57529	SD	Dallas
 57531	SD	Draper
@@ -3338,17 +3278,14 @@
 57538	SD	Herrick
 57540	SD	Holabird
 57541	SD	Ideal
-57542	SD	Iona
 57543	SD	Kadoka
 57544	SD	Kennebec
-57545	SD	Keyapaha
 57547	SD	Long Valley
 57548	SD	Lower Brule
 57551	SD	Martin
 57552	SD	Midland
 57553	SD	Milesville
 57555	SD	Mission
-57557	SD	Mission Ridge
 57559	SD	Murdo
 57560	SD	Norris
 57562	SD	Okaton
@@ -3364,7 +3301,6 @@
 57574	SD	Tuthill
 57576	SD	Vivian
 57577	SD	Wanblee
-57578	SD	Wewela
 57579	SD	White River
 57580	SD	Winner
 57584	SD	Witten
@@ -3376,8 +3312,6 @@
 57623	SD	Dupree
 57625	SD	Eagle Butte
 57626	SD	Faith
-57628	SD	Firesteel
-57629	SD	Glad Valley
 57630	SD	Glencross
 57631	SD	Glenham
 57632	SD	Herreid
@@ -3389,26 +3323,24 @@
 57640	SD	Lodgepole
 57641	SD	Mc Intosh
 57642	SD	Mc Laughlin
-57643	SD	Mahto
 57644	SD	Meadow
 57645	SD	Morristown
 57646	SD	Mound City
-57647	SD	Parade
 57648	SD	Pollock
 57649	SD	Prairie City
 57650	SD	Ralph
 57651	SD	Reva
 57652	SD	Ridgeview
-57653	SD	Shadehill
 57656	SD	Timber Lake
 57657	SD	Trail City
 57658	SD	Wakpala
+57659	SD	Walker
 57660	SD	Watauga
 57661	SD	Whitehorse
 57701	SD	Rapid City
 57702	SD	Rapid City
+57703	SD	Rapid City
 57706	SD	Ellsworth Afb
-57708	SD	Bethlehem
 57709	SD	Rapid City
 57714	SD	Allen
 57716	SD	Batesland
@@ -3419,15 +3351,12 @@
 57722	SD	Buffalo Gap
 57724	SD	Camp Crook
 57725	SD	Caputa
-57729	SD	Creighton
 57730	SD	Custer
 57732	SD	Deadwood
 57735	SD	Edgemont
-57736	SD	Elm Springs
 57737	SD	Enning
 57738	SD	Fairburn
 57741	SD	Fort Meade
-57742	SD	Fruitdale
 57744	SD	Hermosa
 57745	SD	Hill City
 57747	SD	Hot Springs
@@ -3438,7 +3367,6 @@
 57754	SD	Lead
 57755	SD	Ludlow
 57756	SD	Manderson
-57757	SD	Marcus
 57758	SD	Mud Butte
 57759	SD	Nemo
 57760	SD	Newell
@@ -3446,18 +3374,14 @@
 57762	SD	Nisland
 57763	SD	Oelrichs
 57764	SD	Oglala
-57765	SD	Opal
 57766	SD	Oral
 57767	SD	Owanka
 57769	SD	Piedmont
 57770	SD	Pine Ridge
 57772	SD	Porcupine
 57773	SD	Pringle
-57774	SD	Provo
 57775	SD	Quinn
 57776	SD	Redig
-57777	SD	Redowl
-57778	SD	Rochford
 57779	SD	Saint Onge
 57780	SD	Scenic
 57782	SD	Smithwick
@@ -3470,7 +3394,6 @@
 57792	SD	White Owl
 57793	SD	Whitewood
 57794	SD	Wounded Knee
-57795	SD	Zeona
 57799	SD	Spearfish
 58001	ND	Abercrombie
 58002	ND	Absaraka
@@ -3483,7 +3406,6 @@
 58011	ND	Buffalo
 58012	ND	Casselton
 58013	ND	Cayuga
-58014	ND	Chaffee
 58015	ND	Christine
 58016	ND	Clifford
 58017	ND	Cogswell
@@ -3498,7 +3420,6 @@
 58035	ND	Galesburg
 58036	ND	Gardner
 58038	ND	Grandin
-58039	ND	Great Bend
 58040	ND	Gwinner
 58041	ND	Hankinson
 58042	ND	Harwood
@@ -3513,7 +3434,7 @@
 58053	ND	Lidgerwood
 58054	ND	Lisbon
 58056	ND	Luverne
-58057	ND	McLeod
+58057	ND	Mcleod
 58058	ND	Mantador
 58059	ND	Mapleton
 58060	ND	Milnor
@@ -3544,7 +3465,6 @@
 58109	ND	Fargo
 58121	ND	Fargo
 58122	ND	Fargo
-58123	ND	Fargo
 58124	ND	Fargo
 58125	ND	Fargo
 58126	ND	Fargo
@@ -3558,7 +3478,6 @@
 58208	ND	Grand Forks
 58210	ND	Adams
 58212	ND	Aneta
-58213	ND	Ardoch
 58214	ND	Arvilla
 58216	ND	Bathgate
 58218	ND	Buxton
@@ -3586,7 +3505,7 @@
 58249	ND	Langdon
 58250	ND	Lankin
 58251	ND	Larimore
-58254	ND	McVille
+58254	ND	Mcville
 58255	ND	Maida
 58256	ND	Manvel
 58257	ND	Mayville
@@ -3618,7 +3537,6 @@
 58317	ND	Bisbee
 58318	ND	Bottineau
 58319	ND	Bremen
-58320	ND	Brinsmade
 58321	ND	Brocket
 58323	ND	Calvin
 58324	ND	Cando
@@ -3629,7 +3547,6 @@
 58331	ND	Egeland
 58332	ND	Esmond
 58335	ND	Fort Totten
-58337	ND	Hamberg
 58338	ND	Hampden
 58339	ND	Hansboro
 58341	ND	Harvey
@@ -3644,7 +3561,6 @@
 58355	ND	Nekoma
 58356	ND	New Rockford
 58357	ND	Oberon
-58359	ND	Orrin
 58361	ND	Pekin
 58362	ND	Penn
 58363	ND	Perth
@@ -3682,7 +3598,6 @@
 58429	ND	Dazey
 58430	ND	Denhoff
 58431	ND	Dickey
-58432	ND	Eckelson
 58433	ND	Edgeley
 58436	ND	Ellendale
 58438	ND	Fessenden
@@ -3702,8 +3617,8 @@
 58458	ND	Lamoure
 58460	ND	Lehr
 58461	ND	Litchville
-58463	ND	McClusky
-58464	ND	McHenry
+58463	ND	Mcclusky
+58464	ND	Mchenry
 58466	ND	Marion
 58467	ND	Medina
 58472	ND	Montpelier
@@ -3721,7 +3636,6 @@
 58486	ND	Sykeston
 58487	ND	Tappen
 58488	ND	Tuttle
-58489	ND	Venturia
 58490	ND	Verona
 58492	ND	Wimbledon
 58494	ND	Wing
@@ -3730,6 +3644,7 @@
 58497	ND	Ypsilanti
 58501	ND	Bismarck
 58502	ND	Bismarck
+58503	ND	Bismarck
 58504	ND	Bismarck
 58505	ND	Bismarck
 58506	ND	Bismarck
@@ -3753,7 +3668,6 @@
 58545	ND	Hazen
 58549	ND	Kintyre
 58552	ND	Linton
-58553	ND	McKenzie
 58554	ND	Mandan
 58558	ND	Menoken
 58559	ND	Mercer
@@ -3808,7 +3722,6 @@
 58654	ND	Sentinel Butte
 58655	ND	South Heart
 58656	ND	Taylor
-58657	ND	Trotters
 58701	ND	Minot
 58702	ND	Minot
 58703	ND	Minot
@@ -3837,11 +3750,10 @@
 58741	ND	Granville
 58744	ND	Karlsruhe
 58746	ND	Kenmare
-58747	ND	Kief
 58748	ND	Kramer
 58750	ND	Lansford
 58752	ND	Lignite
-58755	ND	McGregor
+58755	ND	Mcgregor
 58756	ND	Makoti
 58757	ND	Mandaree
 58758	ND	Martin
@@ -3919,7 +3831,7 @@
 59032	MT	Grass Range
 59033	MT	Greycliff
 59034	MT	Hardin
-59035	MT	Yellowtail
+59035	MT	Fort Smith
 59036	MT	Harlowton
 59037	MT	Huntley
 59038	MT	Hysham
@@ -3945,7 +3857,7 @@
 59066	MT	Pryor
 59067	MT	Rapelje
 59068	MT	Red Lodge
-59069	MT	Reedpoint
+59069	MT	Reed Point
 59070	MT	Roberts
 59071	MT	Roscoe
 59072	MT	Roundup
@@ -3960,7 +3872,7 @@
 59082	MT	Springdale
 59083	MT	Sumatra
 59084	MT	Teigen
-59085	MT	Twodot
+59085	MT	Two Dot
 59086	MT	Wilsall
 59087	MT	Winnett
 59088	MT	Worden
@@ -4000,7 +3912,6 @@
 59242	MT	Homestead
 59243	MT	Lambert
 59244	MT	Larslan
-59245	MT	Mc Cabe
 59247	MT	Medicine Lake
 59248	MT	Nashua
 59250	MT	Opheim
@@ -4048,7 +3959,6 @@
 59344	MT	Plevna
 59345	MT	Powderville
 59347	MT	Rosebud
-59348	MT	Sonnette
 59349	MT	Terry
 59351	MT	Volborg
 59353	MT	Wibaux
@@ -4080,11 +3990,10 @@
 59435	MT	Ethridge
 59436	MT	Fairfield
 59440	MT	Floweree
-59441	MT	Forestgrove
+59441	MT	Forest Grove
 59442	MT	Fort Benton
 59443	MT	Fort Shaw
 59444	MT	Galata
-59445	MT	Garneill
 59446	MT	Geraldine
 59447	MT	Geyser
 59448	MT	Heart Butte
@@ -4107,14 +4016,13 @@
 59469	MT	Raynesford
 59471	MT	Roy
 59472	MT	Sand Coulee
-59473	MT	Santa Rita
 59474	MT	Shelby
 59477	MT	Simms
 59479	MT	Stanford
 59480	MT	Stockett
 59482	MT	Sunburst
 59483	MT	Sun River
-59484	MT	Sweetgrass
+59484	MT	Sweet Grass
 59485	MT	Ulm
 59486	MT	Valier
 59487	MT	Vaughn
@@ -4178,6 +4086,7 @@
 59716	MT	Big Sky
 59717	MT	Bozeman
 59718	MT	Bozeman
+59719	MT	Bozeman
 59720	MT	Cameron
 59721	MT	Cardwell
 59722	MT	Deer Lodge
@@ -4206,7 +4115,7 @@
 59752	MT	Three Forks
 59754	MT	Twin Bridges
 59755	MT	Virginia City
-59756	MT	Warmsprings
+59756	MT	Warm Springs
 59758	MT	West Yellowstone
 59759	MT	Whitehall
 59760	MT	Willow Creek
@@ -4238,7 +4147,6 @@
 59833	MT	Florence
 59834	MT	Frenchtown
 59835	MT	Grantsdale
-59836	MT	Greenough
 59837	MT	Hall
 59840	MT	Hamilton
 59841	MT	Pinesdale
@@ -4270,7 +4178,6 @@
 59874	MT	Trout Creek
 59875	MT	Victor
 59901	MT	Kalispell
-59902	MT	Kalispell
 59903	MT	Kalispell
 59904	MT	Kalispell
 59910	MT	Big Arm

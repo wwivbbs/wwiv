@@ -78,6 +78,7 @@
 90078	CA	Los Angeles
 90079	CA	Los Angeles
 90080	CA	Los Angeles
+90081	CA	Los Angeles
 90082	CA	Los Angeles
 90083	CA	Los Angeles
 90084	CA	Los Angeles
@@ -85,18 +86,19 @@
 90087	CA	Los Angeles
 90088	CA	Los Angeles
 90089	CA	Los Angeles
+90090	CA	Dodgertown
 90091	CA	Los Angeles
 90093	CA	Los Angeles
-90094	CA	Los Angeles
+90094	CA	Playa Vista
 90095	CA	Los Angeles
 90096	CA	Los Angeles
-90097	CA	Los Angeles
 90099	CA	Los Angeles
 90101	CA	Los Angeles
 90102	CA	Los Angeles
-90185	CA	Los Angeles
-90201	CA	Bell
-90202	CA	Bell Gardens
+90103	CA	Los Angeles
+90189	CA	Los Angeles
+90201	CA	Bell Gardens
+90202	CA	Bell
 90209	CA	Beverly Hills
 90210	CA	Beverly Hills
 90211	CA	Beverly Hills
@@ -212,7 +214,6 @@
 90660	CA	Pico Rivera
 90661	CA	Pico Rivera
 90662	CA	Pico Rivera
-90665	CA	Pico Rivera
 90670	CA	Santa Fe Springs
 90671	CA	Santa Fe Springs
 90680	CA	Stanton
@@ -246,6 +247,7 @@
 90747	CA	Carson
 90748	CA	Wilmington
 90749	CA	Carson
+90755	CA	Signal Hill
 90801	CA	Long Beach
 90802	CA	Long Beach
 90803	CA	Long Beach
@@ -274,10 +276,13 @@
 90848	CA	Long Beach
 90853	CA	Long Beach
 90888	CA	Long Beach
+90895	CA	Carson
+90899	CA	Long Beach
 91001	CA	Altadena
 91003	CA	Altadena
 91006	CA	Arcadia
 91007	CA	Arcadia
+91008	CA	Duarte
 91009	CA	Duarte
 91010	CA	Duarte
 91011	CA	La Canada Flintridge
@@ -296,8 +301,6 @@
 91042	CA	Tujunga
 91043	CA	Tujunga
 91046	CA	Verdugo City
-91050	CA	Pasadena
-91051	CA	Pasadena
 91066	CA	Arcadia
 91077	CA	Arcadia
 91101	CA	Pasadena
@@ -322,15 +325,13 @@
 91126	CA	Pasadena
 91129	CA	Pasadena
 91131	CA	Pasadena
-91175	CA	Pasadena
 91182	CA	Pasadena
 91184	CA	Pasadena
 91185	CA	Pasadena
-91186	CA	Pasadena
-91187	CA	Pasadena
 91188	CA	Pasadena
 91189	CA	Pasadena
 91191	CA	Pasadena
+91199	CA	Pasadena
 91201	CA	Glendale
 91202	CA	Glendale
 91203	CA	Glendale
@@ -353,12 +354,11 @@
 91304	CA	Canoga Park
 91305	CA	Canoga Park
 91306	CA	Winnetka
-91307	CA	Canoga Park
-91308	CA	Canoga Park
+91307	CA	West Hills
+91308	CA	West Hills
 91309	CA	Canoga Park
 91310	CA	Castaic
 91311	CA	Chatsworth
-91312	CA	Chatsworth
 91313	CA	Chatsworth
 91316	CA	Encino
 91319	CA	Newbury Park
@@ -367,7 +367,7 @@
 91322	CA	Newhall
 91324	CA	Northridge
 91325	CA	Northridge
-91326	CA	Northridge
+91326	CA	Porter Ranch
 91327	CA	Northridge
 91328	CA	Northridge
 91329	CA	Northridge
@@ -393,17 +393,18 @@
 91356	CA	Tarzana
 91357	CA	Tarzana
 91358	CA	Thousand Oaks
-91359	CA	Thousand Oaks
+91359	CA	Westlake Village
 91360	CA	Thousand Oaks
 91361	CA	Westlake Village
 91362	CA	Thousand Oaks
-91363	CA	Westlake Village
+91363	CA	Thousand Oaks
 91364	CA	Woodland Hills
 91365	CA	Woodland Hills
 91367	CA	Woodland Hills
 91371	CA	Woodland Hills
 91372	CA	Calabasas
 91376	CA	Agoura Hills
+91377	CA	Oak Park
 91380	CA	Santa Clarita
 91381	CA	Stevenson Ranch
 91382	CA	Santa Clarita
@@ -411,7 +412,9 @@
 91384	CA	Castaic
 91385	CA	Valencia
 91386	CA	Canyon Country
+91387	CA	Canyon Country
 91388	CA	Van Nuys
+91390	CA	Santa Clarita
 91392	CA	Sylmar
 91393	CA	North Hills
 91394	CA	Granada Hills
@@ -470,8 +473,8 @@
 91615	CA	North Hollywood
 91616	CA	North Hollywood
 91617	CA	Valley Village
-91618	CA	Universal City
-91701	CA	Alta Loma
+91618	CA	North Hollywood
+91701	CA	Rancho Cucamonga
 91702	CA	Azusa
 91706	CA	Baldwin Park
 91708	CA	Chino
@@ -481,9 +484,6 @@
 91714	CA	City Of Industry
 91715	CA	City Of Industry
 91716	CA	City Of Industry
-91718	CA	Corona
-91719	CA	Corona
-91720	CA	Corona
 91722	CA	Covina
 91723	CA	Covina
 91724	CA	Covina
@@ -494,7 +494,7 @@
 91733	CA	South El Monte
 91734	CA	El Monte
 91735	CA	El Monte
-91737	CA	Alta Loma
+91737	CA	Rancho Cucamonga
 91739	CA	Rancho Cucamonga
 91740	CA	Glendora
 91741	CA	Glendora
@@ -512,7 +512,6 @@
 91756	CA	Monterey Park
 91758	CA	Ontario
 91759	CA	Mt Baldy
-91760	CA	Norco
 91761	CA	Ontario
 91762	CA	Ontario
 91763	CA	Montclair
@@ -540,7 +539,7 @@
 91792	CA	West Covina
 91793	CA	West Covina
 91795	CA	Walnut
-91797	CA	Baldwin Park
+91797	CA	Pomona
 91798	CA	Ontario
 91799	CA	Pomona
 91801	CA	Alhambra
@@ -565,6 +564,7 @@
 91915	CA	Chula Vista
 91916	CA	Descanso
 91917	CA	Dulzura
+91921	CA	Chula Vista
 91931	CA	Guatay
 91932	CA	Imperial Beach
 91933	CA	Imperial Beach
@@ -594,6 +594,9 @@
 92007	CA	Cardiff By The Sea
 92008	CA	Carlsbad
 92009	CA	Carlsbad
+92010	CA	Carlsbad
+92011	CA	Carlsbad
+92013	CA	Carlsbad
 92014	CA	Del Mar
 92018	CA	Carlsbad
 92019	CA	El Cajon
@@ -637,7 +640,9 @@
 92072	CA	Santee
 92074	CA	Poway
 92075	CA	Solana Beach
+92078	CA	San Marcos
 92079	CA	San Marcos
+92081	CA	Vista
 92082	CA	Valley Center
 92083	CA	Vista
 92084	CA	Vista
@@ -758,6 +763,8 @@
 92242	CA	Earp
 92243	CA	El Centro
 92244	CA	El Centro
+92247	CA	La Quinta
+92248	CA	La Quinta
 92249	CA	Heber
 92250	CA	Holtville
 92251	CA	Imperial
@@ -786,7 +793,7 @@
 92278	CA	Twentynine Palms
 92280	CA	Vidal
 92281	CA	Westmorland
-92282	CA	White Water
+92282	CA	Whitewater
 92283	CA	Winterhaven
 92284	CA	Yucca Valley
 92285	CA	Landers
@@ -807,7 +814,6 @@
 92316	CA	Bloomington
 92317	CA	Blue Jay
 92318	CA	Bryn Mawr
-92319	CA	Cadiz
 92320	CA	Calimesa
 92321	CA	Cedar Glen
 92322	CA	Cedarpines Park
@@ -818,6 +824,7 @@
 92327	CA	Daggett
 92328	CA	Death Valley
 92329	CA	Phelan
+92331	CA	Fontana
 92332	CA	Essex
 92333	CA	Fawnskin
 92334	CA	Fontana
@@ -829,6 +836,7 @@
 92340	CA	Hesperia
 92341	CA	Green Valley Lake
 92342	CA	Helendale
+92344	CA	Hesperia
 92345	CA	Hesperia
 92346	CA	Highland
 92347	CA	Hinkley
@@ -862,6 +870,7 @@
 92392	CA	Victorville
 92393	CA	Victorville
 92394	CA	Victorville
+92395	CA	Victorville
 92397	CA	Wrightwood
 92398	CA	Yermo
 92399	CA	Yucaipa
@@ -879,9 +888,7 @@
 92413	CA	San Bernardino
 92414	CA	San Bernardino
 92415	CA	San Bernardino
-92416	CA	San Bernardino
 92418	CA	San Bernardino
-92420	CA	San Bernardino
 92423	CA	San Bernardino
 92424	CA	San Bernardino
 92427	CA	San Bernardino
@@ -899,7 +906,7 @@
 92515	CA	Riverside
 92516	CA	Riverside
 92517	CA	Riverside
-92518	CA	March Air Force Base
+92518	CA	March Air Reserve Base
 92519	CA	Riverside
 92521	CA	Riverside
 92522	CA	Riverside
@@ -944,23 +951,22 @@
 92595	CA	Wildomar
 92596	CA	Winchester
 92599	CA	Perris
-92601	CA	Atwood
 92602	CA	Irvine
 92603	CA	Irvine
 92604	CA	Irvine
 92605	CA	Huntington Beach
 92606	CA	Irvine
 92607	CA	Laguna Niguel
+92609	CA	El Toro
 92610	CA	Foothill Ranch
 92612	CA	Irvine
-92613	CA	Orange
 92614	CA	Irvine
 92615	CA	Huntington Beach
 92616	CA	Irvine
+92617	CA	Irvine
 92618	CA	Irvine
 92619	CA	Irvine
 92620	CA	Irvine
-92621	CA	Brea
 92623	CA	Irvine
 92624	CA	Capistrano Beach
 92625	CA	Corona Del Mar
@@ -969,17 +975,7 @@
 92628	CA	Costa Mesa
 92629	CA	Dana Point
 92630	CA	Lake Forest
-92631	CA	Fullerton
-92632	CA	Fullerton
-92633	CA	Fullerton
-92634	CA	Fullerton
-92635	CA	Fullerton
-92640	CA	Garden Grove
-92641	CA	Garden Grove
-92642	CA	Garden Grove
-92643	CA	Garden Grove
-92644	CA	Garden Grove
-92645	CA	Garden Grove
+92637	CA	Laguna Woods
 92646	CA	Huntington Beach
 92647	CA	Huntington Beach
 92648	CA	Huntington Beach
@@ -998,13 +994,6 @@
 92661	CA	Newport Beach
 92662	CA	Newport Beach
 92663	CA	Newport Beach
-92664	CA	Orange
-92665	CA	Orange
-92666	CA	Orange
-92667	CA	Orange
-92668	CA	Orange
-92669	CA	Orange
-92670	CA	Placentia
 92672	CA	San Clemente
 92673	CA	San Clemente
 92674	CA	San Clemente
@@ -1013,19 +1002,17 @@
 92677	CA	Laguna Niguel
 92678	CA	Trabuco Canyon
 92679	CA	Trabuco Canyon
-92680	CA	Tustin
-92681	CA	Tustin
 92683	CA	Westminster
 92684	CA	Westminster
-92686	CA	Yorba Linda
-92687	CA	Yorba Linda
+92685	CA	Westminster
 92688	CA	Rancho Santa Margarita
 92690	CA	Mission Viejo
 92691	CA	Mission Viejo
 92692	CA	Mission Viejo
 92693	CA	San Juan Capistrano
+92694	CA	Ladera Ranch
 92697	CA	Irvine
-92698	CA	Irvine
+92698	CA	Aliso Viejo
 92701	CA	Santa Ana
 92702	CA	Santa Ana
 92703	CA	Santa Ana
@@ -1038,15 +1025,8 @@
 92710	CA	Irvine
 92711	CA	Santa Ana
 92712	CA	Santa Ana
-92713	CA	Irvine
-92714	CA	Irvine
-92715	CA	Irvine
-92716	CA	Irvine
-92717	CA	Irvine
-92718	CA	Irvine
-92720	CA	Irvine
+92725	CA	Santa Ana
 92728	CA	Fountain Valley
-92730	CA	Irvine
 92735	CA	Santa Ana
 92780	CA	Tustin
 92781	CA	Tustin
@@ -1060,6 +1040,7 @@
 92806	CA	Anaheim
 92807	CA	Anaheim
 92808	CA	Anaheim
+92809	CA	Anaheim
 92811	CA	Atwood
 92812	CA	Anaheim
 92814	CA	Anaheim
@@ -1089,6 +1070,7 @@
 92856	CA	Orange
 92857	CA	Orange
 92859	CA	Orange
+92860	CA	Norco
 92861	CA	Villa Park
 92862	CA	Orange
 92863	CA	Orange
@@ -1100,6 +1082,13 @@
 92869	CA	Orange
 92870	CA	Placentia
 92871	CA	Placentia
+92877	CA	Corona
+92878	CA	Corona
+92879	CA	Corona
+92880	CA	Corona
+92881	CA	Corona
+92882	CA	Corona
+92883	CA	Corona
 92885	CA	Yorba Linda
 92886	CA	Yorba Linda
 92887	CA	Yorba Linda
@@ -1130,6 +1119,7 @@
 93033	CA	Oxnard
 93034	CA	Oxnard
 93035	CA	Oxnard
+93036	CA	Oxnard
 93040	CA	Piru
 93041	CA	Port Hueneme
 93042	CA	Point Mugu Nawc
@@ -1144,6 +1134,7 @@
 93066	CA	Somis
 93067	CA	Summerland
 93093	CA	Simi Valley
+93094	CA	Simi Valley
 93099	CA	Simi Valley
 93101	CA	Santa Barbara
 93102	CA	Santa Barbara
@@ -1176,22 +1167,19 @@
 93208	CA	Camp Nelson
 93210	CA	Coalinga
 93212	CA	Corcoran
-93214	CA	Cuyama
 93215	CA	Delano
 93216	CA	Delano
-93217	CA	Di Giorgio
 93218	CA	Ducor
 93219	CA	Earlimart
 93220	CA	Edison
 93221	CA	Exeter
-93222	CA	Frazier Park
+93222	CA	Pine Mountain Club
 93223	CA	Farmersville
 93224	CA	Fellows
 93225	CA	Frazier Park
 93226	CA	Glennville
 93227	CA	Goshen
 93230	CA	Hanford
-93231	CA	Hanford
 93232	CA	Hanford
 93234	CA	Huron
 93235	CA	Ivanhoe
@@ -1238,6 +1226,7 @@
 93285	CA	Wofford Heights
 93286	CA	Woodlake
 93287	CA	Woody
+93290	CA	Visalia
 93291	CA	Visalia
 93292	CA	Visalia
 93301	CA	Bakersfield
@@ -1252,6 +1241,7 @@
 93311	CA	Bakersfield
 93312	CA	Bakersfield
 93313	CA	Bakersfield
+93314	CA	Bakersfield
 93380	CA	Bakersfield
 93381	CA	Bakersfield
 93382	CA	Bakersfield
@@ -1263,7 +1253,6 @@
 93388	CA	Bakersfield
 93389	CA	Bakersfield
 93390	CA	Bakersfield
-93399	CA	Bakersfield
 93401	CA	San Luis Obispo
 93402	CA	Los Osos
 93403	CA	San Luis Obispo
@@ -1309,11 +1298,13 @@
 93455	CA	Santa Maria
 93456	CA	Santa Maria
 93457	CA	Santa Maria
+93458	CA	Santa Maria
 93460	CA	Santa Ynez
 93461	CA	Shandon
 93463	CA	Solvang
 93464	CA	Solvang
 93465	CA	Templeton
+93475	CA	Oceano
 93483	CA	Grover Beach
 93501	CA	Mojave
 93502	CA	Mojave
@@ -1362,7 +1353,6 @@
 93562	CA	Trona
 93563	CA	Valyermo
 93581	CA	Tehachapi
-93582	CA	Tehachapi
 93584	CA	Lancaster
 93586	CA	Lancaster
 93590	CA	Palmdale
@@ -1387,6 +1377,7 @@
 93615	CA	Cutler
 93616	CA	Del Rey
 93618	CA	Dinuba
+93619	CA	Clovis
 93620	CA	Dos Palos
 93621	CA	Dunlap
 93622	CA	Firebaugh
@@ -1396,12 +1387,12 @@
 93626	CA	Friant
 93627	CA	Helm
 93628	CA	Hume
-93629	CA	Huntington Lake
 93630	CA	Kerman
 93631	CA	Kingsburg
 93633	CA	Kings Canyon National Pk
 93634	CA	Lakeshore
 93635	CA	Los Banos
+93636	CA	Madera
 93637	CA	Madera
 93638	CA	Madera
 93639	CA	Madera
@@ -1417,7 +1408,7 @@
 93649	CA	Piedra
 93650	CA	Fresno
 93651	CA	Prather
-93652	CA	Raisin
+93652	CA	Raisin City
 93653	CA	Raymond
 93654	CA	Reedley
 93656	CA	Riverdale
@@ -1454,12 +1445,15 @@
 93720	CA	Fresno
 93721	CA	Fresno
 93722	CA	Fresno
+93723	CA	Fresno
 93724	CA	Fresno
 93725	CA	Fresno
 93726	CA	Fresno
 93727	CA	Fresno
 93728	CA	Fresno
 93729	CA	Fresno
+93730	CA	Fresno
+93737	CA	Fresno
 93740	CA	Fresno
 93741	CA	Fresno
 93744	CA	Fresno
@@ -1467,10 +1461,8 @@
 93747	CA	Fresno
 93750	CA	Fresno
 93755	CA	Fresno
-93759	CA	Fresno
 93760	CA	Fresno
 93761	CA	Fresno
-93762	CA	Fresno
 93764	CA	Fresno
 93765	CA	Fresno
 93771	CA	Fresno
@@ -1483,7 +1475,6 @@
 93778	CA	Fresno
 93779	CA	Fresno
 93780	CA	Fresno
-93782	CA	Fresno
 93784	CA	Fresno
 93786	CA	Fresno
 93790	CA	Fresno
@@ -1499,11 +1490,10 @@
 93906	CA	Salinas
 93907	CA	Salinas
 93908	CA	Salinas
-93911	CA	Salinas
 93912	CA	Salinas
 93915	CA	Salinas
 93920	CA	Big Sur
-93921	CA	Carmel
+93921	CA	Carmel By The Sea
 93922	CA	Carmel
 93923	CA	Carmel
 93924	CA	Carmel Valley
@@ -1515,7 +1505,6 @@
 93932	CA	Lockwood
 93933	CA	Marina
 93940	CA	Monterey
-93941	CA	Monterey
 93942	CA	Monterey
 93943	CA	Monterey
 93944	CA	Monterey
@@ -1526,11 +1515,10 @@
 93960	CA	Soledad
 93962	CA	Spreckels
 94002	CA	Belmont
-94003	CA	Belmont
 94005	CA	Brisbane
 94010	CA	Burlingame
 94011	CA	Burlingame
-94012	CA	Burlingame
+94013	CA	Daly City
 94014	CA	Daly City
 94015	CA	Daly City
 94016	CA	Daly City
@@ -1546,9 +1534,7 @@
 94026	CA	Menlo Park
 94027	CA	Atherton
 94028	CA	Portola Valley
-94029	CA	Menlo Park
 94030	CA	Millbrae
-94031	CA	Millbrae
 94035	CA	Mountain View
 94037	CA	Montara
 94038	CA	Moss Beach
@@ -1558,8 +1544,6 @@
 94042	CA	Mountain View
 94043	CA	Mountain View
 94044	CA	Pacifica
-94045	CA	Pacifica
-94059	CA	Redwood City
 94060	CA	Pescadero
 94061	CA	Redwood City
 94062	CA	Redwood City
@@ -1567,21 +1551,15 @@
 94064	CA	Redwood City
 94065	CA	Redwood City
 94066	CA	San Bruno
-94067	CA	San Bruno
 94070	CA	San Carlos
-94071	CA	San Carlos
 94074	CA	San Gregorio
 94080	CA	South San Francisco
 94083	CA	South San Francisco
+94085	CA	Sunnyvale
 94086	CA	Sunnyvale
 94087	CA	Sunnyvale
 94088	CA	Sunnyvale
 94089	CA	Sunnyvale
-94090	CA	Sunnyvale
-94091	CA	Sunnyvale
-94096	CA	San Bruno
-94098	CA	San Bruno
-94099	CA	South San Francisco
 94101	CA	San Francisco
 94102	CA	San Francisco
 94103	CA	San Francisco
@@ -1635,24 +1613,19 @@
 94154	CA	San Francisco
 94155	CA	San Francisco
 94156	CA	San Francisco
-94157	CA	San Francisco
+94158	CA	San Francisco
 94159	CA	San Francisco
 94160	CA	San Francisco
 94161	CA	San Francisco
 94162	CA	San Francisco
 94163	CA	San Francisco
 94164	CA	San Francisco
-94165	CA	San Francisco
-94166	CA	San Francisco
-94167	CA	San Francisco
-94168	CA	San Francisco
-94169	CA	San Francisco
-94170	CA	San Francisco
 94171	CA	San Francisco
 94172	CA	San Francisco
 94175	CA	San Francisco
 94177	CA	San Francisco
 94188	CA	San Francisco
+94199	CA	San Francisco
 94203	CA	Sacramento
 94204	CA	Sacramento
 94205	CA	Sacramento
@@ -1670,7 +1643,6 @@
 94237	CA	Sacramento
 94239	CA	Sacramento
 94240	CA	Sacramento
-94243	CA	Sacramento
 94244	CA	Sacramento
 94245	CA	Sacramento
 94246	CA	Sacramento
@@ -1679,7 +1651,6 @@
 94249	CA	Sacramento
 94250	CA	Sacramento
 94252	CA	Sacramento
-94253	CA	Sacramento
 94254	CA	Sacramento
 94256	CA	Sacramento
 94257	CA	Sacramento
@@ -1719,24 +1690,18 @@
 94302	CA	Palo Alto
 94303	CA	Palo Alto
 94304	CA	Palo Alto
-94305	CA	Palo Alto
+94305	CA	Stanford
 94306	CA	Palo Alto
-94307	CA	Palo Alto
-94308	CA	Palo Alto
 94309	CA	Palo Alto
-94310	CA	Palo Alto
 94401	CA	San Mateo
 94402	CA	San Mateo
 94403	CA	San Mateo
 94404	CA	San Mateo
-94405	CA	San Mateo
-94406	CA	San Mateo
-94407	CA	San Mateo
-94408	CA	San Mateo
-94409	CA	San Mateo
 94497	CA	San Mateo
 94501	CA	Alameda
 94502	CA	Alameda
+94503	CA	American Canyon
+94505	CA	Discovery Bay
 94506	CA	Danville
 94507	CA	Alamo
 94508	CA	Angwin
@@ -1764,6 +1729,7 @@
 94530	CA	El Cerrito
 94531	CA	Antioch
 94533	CA	Fairfield
+94534	CA	Fairfield
 94535	CA	Travis Afb
 94536	CA	Fremont
 94537	CA	Fremont
@@ -1810,7 +1776,7 @@
 94579	CA	San Leandro
 94580	CA	San Lorenzo
 94581	CA	Napa
-94582	CA	Pleasanton
+94582	CA	San Ramon
 94583	CA	San Ramon
 94585	CA	Suisun City
 94586	CA	Sunol
@@ -1840,20 +1806,16 @@
 94613	CA	Oakland
 94614	CA	Oakland
 94615	CA	Oakland
-94616	CA	Oakland
 94617	CA	Oakland
 94618	CA	Oakland
 94619	CA	Oakland
 94620	CA	Piedmont
 94621	CA	Oakland
+94622	CA	Oakland
 94623	CA	Oakland
 94624	CA	Oakland
 94625	CA	Oakland
-94626	CA	Oakland
-94627	CA	Oakland
-94643	CA	Oakland
 94649	CA	Oakland
-94650	CA	Oakland
 94659	CA	Oakland
 94660	CA	Oakland
 94661	CA	Oakland
@@ -1884,7 +1846,6 @@
 94901	CA	San Rafael
 94903	CA	San Rafael
 94904	CA	Greenbrae
-94911	CA	San Rafael
 94912	CA	San Rafael
 94913	CA	San Rafael
 94914	CA	Kentfield
@@ -1894,7 +1855,7 @@
 94923	CA	Bodega Bay
 94924	CA	Bolinas
 94925	CA	Corte Madera
-94926	CA	Cotati
+94926	CA	Rohnert Park
 94927	CA	Rohnert Park
 94928	CA	Rohnert Park
 94929	CA	Dillon Beach
@@ -1952,7 +1913,6 @@
 95013	CA	Coyote
 95014	CA	Cupertino
 95015	CA	Cupertino
-95016	CA	Cupertino
 95017	CA	Davenport
 95018	CA	Felton
 95019	CA	Freedom
@@ -1998,7 +1958,6 @@
 95076	CA	Watsonville
 95077	CA	Watsonville
 95101	CA	San Jose
-95102	CA	San Jose
 95103	CA	San Jose
 95106	CA	San Jose
 95108	CA	San Jose
@@ -2007,7 +1966,6 @@
 95111	CA	San Jose
 95112	CA	San Jose
 95113	CA	San Jose
-95114	CA	San Jose
 95115	CA	San Jose
 95116	CA	San Jose
 95117	CA	San Jose
@@ -2030,12 +1988,10 @@
 95134	CA	San Jose
 95135	CA	San Jose
 95136	CA	San Jose
-95137	CA	San Jose
 95138	CA	San Jose
 95139	CA	San Jose
 95140	CA	Mount Hamilton
 95141	CA	San Jose
-95142	CA	San Jose
 95148	CA	San Jose
 95150	CA	San Jose
 95151	CA	San Jose
@@ -2051,7 +2007,6 @@
 95161	CA	San Jose
 95164	CA	San Jose
 95170	CA	San Jose
-95171	CA	San Jose
 95172	CA	San Jose
 95173	CA	San Jose
 95190	CA	San Jose
@@ -2100,7 +2055,7 @@
 95247	CA	Murphys
 95248	CA	Rail Road Flat
 95249	CA	San Andreas
-95250	CA	Sheep Ranch
+95250	CA	San Andreas
 95251	CA	Vallecito
 95252	CA	Valley Springs
 95253	CA	Victor
@@ -2110,13 +2065,11 @@
 95258	CA	Woodbridge
 95267	CA	Stockton
 95269	CA	Stockton
-95290	CA	Stockton
 95296	CA	Stockton
 95297	CA	Stockton
-95298	CA	Stockton
 95301	CA	Atwater
 95303	CA	Ballico
-95304	CA	Banta
+95304	CA	Tracy
 95305	CA	Big Oak Flat
 95306	CA	Catheys Valley
 95307	CA	Ceres
@@ -2125,7 +2078,7 @@
 95311	CA	Coulterville
 95312	CA	Cressey
 95313	CA	Crows Landing
-95314	CA	Dardanelle
+95314	CA	Pinecrest
 95315	CA	Delhi
 95316	CA	Denair
 95317	CA	El Nido
@@ -2150,7 +2103,6 @@
 95338	CA	Mariposa
 95340	CA	Merced
 95341	CA	Merced
-95342	CA	Atwater
 95343	CA	Merced
 95344	CA	Merced
 95345	CA	Midpines
@@ -2181,6 +2133,7 @@
 95374	CA	Stevinson
 95375	CA	Strawberry
 95376	CA	Tracy
+95377	CA	Tracy
 95378	CA	Tracy
 95379	CA	Tuolumne
 95380	CA	Turlock
@@ -2192,7 +2145,7 @@
 95387	CA	Westley
 95388	CA	Winton
 95389	CA	Yosemite National Park
-95390	CA	Riverbank
+95391	CA	Tracy
 95397	CA	Modesto
 95401	CA	Santa Rosa
 95402	CA	Santa Rosa
@@ -2201,7 +2154,6 @@
 95405	CA	Santa Rosa
 95406	CA	Santa Rosa
 95407	CA	Santa Rosa
-95408	CA	Santa Rosa
 95409	CA	Santa Rosa
 95410	CA	Albion
 95412	CA	Annapolis
@@ -2241,7 +2193,7 @@
 95452	CA	Kenwood
 95453	CA	Lakeport
 95454	CA	Laytonville
-95456	CA	Littleriver
+95456	CA	Little River
 95457	CA	Lower Lake
 95458	CA	Lucerne
 95459	CA	Manchester
@@ -2252,6 +2204,7 @@
 95464	CA	Nice
 95465	CA	Occidental
 95466	CA	Philo
+95467	CA	Hidden Valley Lake
 95468	CA	Point Arena
 95469	CA	Potter Valley
 95470	CA	Redwood Valley
@@ -2277,7 +2230,7 @@
 95511	CA	Alderpoint
 95514	CA	Blocksburg
 95518	CA	Arcata
-95519	CA	McKinleyville
+95519	CA	Mckinleyville
 95521	CA	Arcata
 95524	CA	Bayside
 95525	CA	Blue Lake
@@ -2326,7 +2279,7 @@
 95602	CA	Auburn
 95603	CA	Auburn
 95604	CA	Auburn
-95605	CA	Broderick
+95605	CA	West Sacramento
 95606	CA	Brooks
 95607	CA	Capay
 95608	CA	Carmichael
@@ -2339,11 +2292,10 @@
 95615	CA	Courtland
 95616	CA	Davis
 95617	CA	Davis
-95618	CA	El Macero
+95618	CA	Davis
 95619	CA	Diamond Springs
 95620	CA	Dixon
 95621	CA	Citrus Heights
-95622	CA	Nicolaus
 95623	CA	El Dorado
 95624	CA	Elk Grove
 95625	CA	Elmira
@@ -2364,14 +2316,13 @@
 95640	CA	Ione
 95641	CA	Isleton
 95642	CA	Jackson
-95643	CA	Kelsey
 95644	CA	Kit Carson
 95645	CA	Knights Landing
 95646	CA	Kirkwood
 95648	CA	Lincoln
 95650	CA	Loomis
 95651	CA	Lotus
-95652	CA	McClellan Afb
+95652	CA	Mcclellan
 95653	CA	Madison
 95654	CA	Martell
 95655	CA	Mather
@@ -2436,9 +2387,9 @@
 95736	CA	Weimar
 95741	CA	Rancho Cordova
 95742	CA	Rancho Cordova
-95743	CA	Rancho Cordova
 95746	CA	Granite Bay
 95747	CA	Roseville
+95757	CA	Elk Grove
 95758	CA	Elk Grove
 95759	CA	Elk Grove
 95762	CA	El Dorado Hills
@@ -2447,6 +2398,7 @@
 95776	CA	Woodland
 95798	CA	West Sacramento
 95799	CA	West Sacramento
+95811	CA	Sacramento
 95812	CA	Sacramento
 95813	CA	Sacramento
 95814	CA	Sacramento
@@ -2481,13 +2433,11 @@
 95851	CA	Sacramento
 95852	CA	Sacramento
 95853	CA	Sacramento
-95857	CA	Sacramento
 95860	CA	Sacramento
 95864	CA	Sacramento
 95865	CA	Sacramento
 95866	CA	Sacramento
 95867	CA	Sacramento
-95873	CA	Sacramento
 95887	CA	Sacramento
 95894	CA	Sacramento
 95899	CA	Sacramento
@@ -2504,7 +2454,7 @@
 95919	CA	Brownsville
 95920	CA	Butte City
 95922	CA	Camptonville
-95923	CA	Canyondam
+95923	CA	Canyon Dam
 95924	CA	Cedar Ridge
 95925	CA	Challenge
 95926	CA	Chico
@@ -2512,7 +2462,6 @@
 95928	CA	Chico
 95929	CA	Chico
 95930	CA	Clipper Mills
-95931	CA	College City
 95932	CA	Colusa
 95934	CA	Crescent Mills
 95935	CA	Dobbins
@@ -2555,7 +2504,7 @@
 95974	CA	Richvale
 95975	CA	Rough And Ready
 95976	CA	Chico
-95977	CA	Smartville
+95977	CA	Smartsville
 95978	CA	Stirling City
 95979	CA	Stonyford
 95980	CA	Storrie
@@ -2611,11 +2560,10 @@
 96050	CA	Klamath River
 96051	CA	Lakehead
 96052	CA	Lewiston
-96053	CA	McArthur
 96054	CA	Lookout
 96055	CA	Los Molinos
-96056	CA	McArthur
-96057	CA	McCloud
+96056	CA	Mcarthur
+96057	CA	Mccloud
 96058	CA	Macdoel
 96059	CA	Manton
 96061	CA	Mill Creek
@@ -2651,7 +2599,7 @@
 96097	CA	Yreka
 96099	CA	Redding
 96101	CA	Alturas
-96103	CA	Blairsden
+96103	CA	Blairsden-graeagle
 96104	CA	Cedarville
 96105	CA	Chilcoot
 96106	CA	Clio
@@ -2675,6 +2623,7 @@
 96124	CA	Calpine
 96125	CA	Sierra City
 96126	CA	Sierraville
+96127	CA	Susanville
 96128	CA	Standish
 96129	CA	Beckwourth
 96130	CA	Susanville
@@ -2694,7 +2643,6 @@
 96150	CA	South Lake Tahoe
 96151	CA	South Lake Tahoe
 96152	CA	South Lake Tahoe
-96153	CA	South Lake Tahoe
 96154	CA	South Lake Tahoe
 96155	CA	South Lake Tahoe
 96156	CA	South Lake Tahoe
@@ -2703,6 +2651,182 @@
 96160	CA	Truckee
 96161	CA	Truckee
 96162	CA	Truckee
+96201	AP	Apo
+96202	AP	Apo
+96203	AP	Apo
+96204	AP	Apo
+96205	AP	Apo
+96206	AP	Apo
+96207	AP	Apo
+96209	AP	Dpo
+96212	AP	Apo
+96213	AP	Apo
+96214	AP	Apo
+96215	AP	Apo
+96217	AP	Apo
+96218	AP	Apo
+96219	AP	Apo
+96220	AP	Apo
+96221	AP	Apo
+96224	AP	Apo
+96257	AP	Apo
+96258	AP	Apo
+96259	AP	Apo
+96260	AP	Apo
+96262	AP	Apo
+96264	AP	Apo
+96266	AP	Apo
+96267	AP	Apo
+96269	AP	Fpo
+96271	AP	Apo
+96275	AP	Apo
+96276	AP	Apo
+96278	AP	Apo
+96283	AP	Apo
+96284	AP	Apo
+96297	AP	Apo
+96303	AP	Dpo
+96306	AP	Fpo
+96309	AP	Fpo
+96310	AP	Fpo
+96311	AP	Apo
+96313	AP	Fpo
+96319	AP	Apo
+96321	AP	Fpo
+96322	AP	Fpo
+96323	AP	Apo
+96326	AP	Apo
+96328	AP	Apo
+96330	AP	Apo
+96336	AP	Apo
+96337	AP	Apo
+96338	AP	Apo
+96339	AP	Fpo
+96343	AP	Apo
+96346	AP	Fpo
+96347	AP	Fpo
+96348	AP	Fpo
+96349	AP	Fpo
+96350	AP	Fpo
+96351	AP	Fpo
+96362	AP	Fpo
+96365	AP	Apo
+96367	AP	Apo
+96368	AP	Apo
+96370	AP	Fpo
+96372	AP	Fpo
+96373	AP	Fpo
+96374	AP	Fpo
+96375	AP	Fpo
+96376	AP	Apo
+96377	AP	Fpo
+96378	AP	Apo
+96379	AP	Fpo
+96384	AP	Apo
+96386	AP	Apo
+96387	AP	Fpo
+96388	AP	Fpo
+96400	AP	Apo
+96401	AP	Apo
+96426	AP	Fpo
+96427	AP	Fpo
+96444	AP	Fpo
+96447	AP	Apo
+96501	AP	Fpo
+96502	AP	Fpo
+96503	AP	Fpo
+96507	AP	Dpo
+96510	AP	Fpo
+96511	AP	Fpo
+96515	AP	Dpo
+96516	AP	Fpo
+96517	AP	Fpo
+96518	AP	Fpo
+96520	AP	Dpo
+96521	AP	Dpo
+96522	AP	Fpo
+96530	AP	Dpo
+96531	AP	Fpo
+96532	AP	Dpo
+96534	AP	Fpo
+96535	AP	Dpo
+96536	AP	Fpo
+96537	AP	Fpo
+96538	AP	Fpo
+96540	AP	Fpo
+96541	AP	Apo
+96542	AP	Apo
+96543	AP	Apo
+96544	AP	Fpo
+96546	AP	Apo
+96547	AP	Apo
+96548	AP	Apo
+96549	AP	Dpo
+96550	AP	Apo
+96551	AP	Dpo
+96552	AP	Apo
+96553	AP	Apo
+96554	AP	Dpo
+96555	AP	Apo
+96557	AP	Apo
+96562	AP	Dpo
+96577	AP	Apo
+96595	AP	Fpo
+96598	AP	Fpo
+96599	AP	Fpo
+96601	AP	Fpo
+96602	AP	Fpo
+96603	AP	Fpo
+96604	AP	Fpo
+96605	AP	Fpo
+96606	AP	Fpo
+96607	AP	Fpo
+96608	AP	Fpo
+96609	AP	Fpo
+96610	AP	Fpo
+96611	AP	Fpo
+96612	AP	Fpo
+96613	AP	Fpo
+96614	AP	Fpo
+96615	AP	Fpo
+96616	AP	Fpo
+96617	AP	Fpo
+96619	AP	Fpo
+96620	AP	Fpo
+96621	AP	Fpo
+96622	AP	Fpo
+96624	AP	Fpo
+96628	AP	Fpo
+96629	AP	Fpo
+96634	AP	Fpo
+96643	AP	Fpo
+96650	AP	Fpo
+96657	AP	Fpo
+96660	AP	Fpo
+96661	AP	Fpo
+96662	AP	Fpo
+96663	AP	Fpo
+96664	AP	Fpo
+96665	AP	Fpo
+96666	AP	Fpo
+96667	AP	Fpo
+96668	AP	Fpo
+96669	AP	Fpo
+96670	AP	Fpo
+96671	AP	Fpo
+96672	AP	Fpo
+96673	AP	Fpo
+96674	AP	Fpo
+96675	AP	Fpo
+96677	AP	Fpo
+96678	AP	Fpo
+96679	AP	Fpo
+96681	AP	Fpo
+96682	AP	Fpo
+96683	AP	Fpo
+96686	AP	Fpo
+96687	AP	Fpo
+96698	AP	Fpo
 96701	HI	Aiea
 96703	HI	Anahola
 96704	HI	Captain Cook
@@ -2735,7 +2859,7 @@
 96734	HI	Kailua
 96737	HI	Ocean View
 96738	HI	Waikoloa
-96739	HI	Kailua Kona
+96739	HI	Keauhou
 96740	HI	Kailua Kona
 96741	HI	Kalaheo
 96742	HI	Kalaupapa
@@ -2770,7 +2894,6 @@
 96772	HI	Naalehu
 96773	HI	Ninole
 96774	HI	Ookala
-96775	HI	Paauhau
 96776	HI	Paauilo
 96777	HI	Pahala
 96778	HI	Pahoa
@@ -2828,47 +2951,36 @@
 96839	HI	Honolulu
 96840	HI	Honolulu
 96841	HI	Honolulu
-96842	HI	Honolulu
 96843	HI	Honolulu
 96844	HI	Honolulu
-96845	HI	Honolulu
 96846	HI	Honolulu
 96847	HI	Honolulu
 96848	HI	Honolulu
 96849	HI	Honolulu
 96850	HI	Honolulu
-96853	HI	Hickam Afb
+96853	HI	J B P H H
 96854	HI	Wheeler Army Airfield
 96857	HI	Schofield Barracks
 96858	HI	Fort Shafter
-96859	HI	Tripler Army Medical Ctr
-96860	HI	Pearl Harbor
+96859	HI	Tripler Army Medical Center
+96860	HI	J B P H H
 96861	HI	Camp H M Smith
-96862	HI	Barbers Point N A S
 96863	HI	M C B H Kaneohe Bay
 96898	HI	Wake Island
-96910	GU	Agana
-96911	GU	Tamuning
+96910	GU	Hagatna
 96912	GU	Dededo
 96913	GU	Barrigada
-96914	GU	Yona
 96915	GU	Santa Rita
 96916	GU	Merizo
 96917	GU	Inarajan
-96918	GU	Umatac
 96919	GU	Agana Heights
 96921	GU	Barrigada
-96922	GU	Asan
 96923	GU	Mangilao
-96924	GU	Chalan Pago
-96925	GU	Piti
-96926	GU	Sinajana
-96927	GU	Mongmong
 96928	GU	Agat
 96929	GU	Yigo
-96930	GU	Talofofo
 96931	GU	Tamuning
-96932	GU	Agana
+96932	GU	Hagatna
+96939	PW	Palau
 96940	PW	Palau
 96941	FM	Pohnpei
 96942	FM	Chuuk
@@ -2944,6 +3056,8 @@
 97077	OR	Beaverton
 97078	OR	Beaverton
 97080	OR	Gresham
+97086	OR	Happy Valley
+97089	OR	Damascus
 97101	OR	Amity
 97102	OR	Arch Cape
 97103	OR	Astoria
@@ -2967,7 +3081,7 @@
 97124	OR	Hillsboro
 97125	OR	Manning
 97127	OR	Lafayette
-97128	OR	McMinnville
+97128	OR	Mcminnville
 97130	OR	Manzanita
 97131	OR	Nehalem
 97132	OR	Newberg
@@ -3020,6 +3134,7 @@
 97233	OR	Portland
 97236	OR	Portland
 97238	OR	Portland
+97239	OR	Portland
 97240	OR	Portland
 97242	OR	Portland
 97251	OR	Portland
@@ -3062,7 +3177,9 @@
 97312	OR	Salem
 97313	OR	Salem
 97314	OR	Salem
+97317	OR	Salem
 97321	OR	Albany
+97322	OR	Albany
 97324	OR	Alsea
 97325	OR	Aumsville
 97326	OR	Blodgett
@@ -3089,7 +3206,6 @@
 97355	OR	Lebanon
 97357	OR	Logsden
 97358	OR	Lyons
-97359	OR	Marion
 97360	OR	Mill City
 97361	OR	Monmouth
 97362	OR	Mount Angel
@@ -3175,7 +3291,6 @@
 97457	OR	Myrtle Creek
 97458	OR	Myrtle Point
 97459	OR	North Bend
-97460	OR	Norway
 97461	OR	Noti
 97462	OR	Oakland
 97463	OR	Oakridge
@@ -3183,11 +3298,12 @@
 97465	OR	Port Orford
 97466	OR	Powers
 97467	OR	Reedsport
-97468	OR	Remote
 97469	OR	Riddle
 97470	OR	Roseburg
-97472	OR	Saginaw
+97471	OR	Roseburg
+97472	OR	Cottage Grove
 97473	OR	Scottsburg
+97475	OR	Springfield
 97476	OR	Sixes
 97477	OR	Springfield
 97478	OR	Springfield
@@ -3221,6 +3337,7 @@
 97525	OR	Gold Hill
 97526	OR	Grants Pass
 97527	OR	Grants Pass
+97528	OR	Grants Pass
 97530	OR	Jacksonville
 97531	OR	Kerby
 97532	OR	Merlin
@@ -3279,7 +3396,6 @@
 97737	OR	Gilchrist
 97738	OR	Hines
 97739	OR	La Pine
-97740	OR	Lawen
 97741	OR	Madras
 97750	OR	Mitchell
 97751	OR	Paulina
@@ -3300,7 +3416,6 @@
 97818	OR	Boardman
 97819	OR	Bridgeport
 97820	OR	Canyon City
-97821	OR	Cayuse
 97823	OR	Condon
 97824	OR	Cove
 97825	OR	Dayville
@@ -3308,7 +3423,6 @@
 97827	OR	Elgin
 97828	OR	Enterprise
 97830	OR	Fossil
-97831	OR	Fox
 97833	OR	Haines
 97834	OR	Halfway
 97835	OR	Helix
@@ -3336,7 +3450,6 @@
 97868	OR	Pilot Rock
 97869	OR	Prairie City
 97870	OR	Richland
-97872	OR	Ritter
 97873	OR	Seneca
 97874	OR	Spray
 97875	OR	Stanfield
@@ -3390,6 +3503,7 @@
 98027	WA	Issaquah
 98028	WA	Kenmore
 98029	WA	Issaquah
+98030	WA	Kent
 98031	WA	Kent
 98032	WA	Kent
 98033	WA	Kirkland
@@ -3416,7 +3530,6 @@
 98057	WA	Renton
 98058	WA	Renton
 98059	WA	Renton
-98060	WA	Seattle
 98061	WA	Rollingbay
 98062	WA	Seahurst
 98063	WA	Federal Way
@@ -3427,8 +3540,13 @@
 98071	WA	Auburn
 98072	WA	Woodinville
 98073	WA	Redmond
-98082	WA	Bothell
+98074	WA	Sammamish
+98075	WA	Sammamish
+98077	WA	Woodinville
+98082	WA	Mill Creek
 98083	WA	Kirkland
+98087	WA	Lynnwood
+98089	WA	Kent
 98092	WA	Auburn
 98093	WA	Federal Way
 98101	WA	Seattle
@@ -3443,6 +3561,7 @@
 98110	WA	Bainbridge Island
 98111	WA	Seattle
 98112	WA	Seattle
+98113	WA	Seattle
 98114	WA	Seattle
 98115	WA	Seattle
 98116	WA	Seattle
@@ -3454,20 +3573,20 @@
 98124	WA	Seattle
 98125	WA	Seattle
 98126	WA	Seattle
+98127	WA	Seattle
 98129	WA	Seattle
-98130	WA	Seattle
 98131	WA	Seattle
 98132	WA	Seattle
 98133	WA	Seattle
 98134	WA	Seattle
 98136	WA	Seattle
 98138	WA	Seattle
-98140	WA	Seattle
+98139	WA	Seattle
+98141	WA	Seattle
 98144	WA	Seattle
 98145	WA	Seattle
 98146	WA	Seattle
 98148	WA	Seattle
-98150	WA	Seattle
 98151	WA	Seattle
 98154	WA	Seattle
 98155	WA	Seattle
@@ -3475,17 +3594,23 @@
 98160	WA	Seattle
 98161	WA	Seattle
 98164	WA	Seattle
+98165	WA	Seattle
 98166	WA	Seattle
 98168	WA	Seattle
+98170	WA	Seattle
 98171	WA	Seattle
 98174	WA	Seattle
+98175	WA	Seattle
 98177	WA	Seattle
 98178	WA	Seattle
 98181	WA	Seattle
 98184	WA	Seattle
 98185	WA	Seattle
 98188	WA	Seattle
+98189	WA	Seattle
+98190	WA	Seattle
 98191	WA	Seattle
+98194	WA	Seattle
 98195	WA	Seattle
 98198	WA	Seattle
 98199	WA	Seattle
@@ -3496,6 +3621,7 @@
 98206	WA	Everett
 98207	WA	Everett
 98208	WA	Everett
+98213	WA	Everett
 98220	WA	Acme
 98221	WA	Anacortes
 98222	WA	Blakely Island
@@ -3505,6 +3631,7 @@
 98226	WA	Bellingham
 98227	WA	Bellingham
 98228	WA	Bellingham
+98229	WA	Bellingham
 98230	WA	Blaine
 98231	WA	Blaine
 98232	WA	Bow
@@ -3519,7 +3646,6 @@
 98243	WA	Deer Harbor
 98244	WA	Deming
 98245	WA	Eastsound
-98246	WA	Bow
 98247	WA	Everson
 98248	WA	Ferndale
 98249	WA	Freeland
@@ -3531,7 +3657,7 @@
 98256	WA	Index
 98257	WA	La Conner
 98258	WA	Lake Stevens
-98259	WA	Lakewood
+98259	WA	North Lakewood
 98260	WA	Langley
 98261	WA	Lopez Island
 98262	WA	Lummi Island
@@ -3551,6 +3677,7 @@
 98279	WA	Olga
 98280	WA	Orcas
 98281	WA	Point Roberts
+98282	WA	Camano Island
 98283	WA	Rockport
 98284	WA	Sedro Woolley
 98286	WA	Shaw Island
@@ -3586,7 +3713,6 @@
 98331	WA	Forks
 98332	WA	Gig Harbor
 98333	WA	Fox Island
-98334	WA	Sequim
 98335	WA	Gig Harbor
 98336	WA	Glenoma
 98337	WA	Bremerton
@@ -3624,6 +3750,7 @@
 98372	WA	Puyallup
 98373	WA	Puyallup
 98374	WA	Puyallup
+98375	WA	Puyallup
 98376	WA	Quilcene
 98377	WA	Randle
 98378	WA	Retsil
@@ -3637,6 +3764,7 @@
 98387	WA	Spanaway
 98388	WA	Steilacoom
 98390	WA	Sumner
+98391	WA	Bonney Lake
 98392	WA	Suquamish
 98393	WA	Tracyton
 98394	WA	Vaughn
@@ -3658,22 +3786,24 @@
 98413	WA	Tacoma
 98415	WA	Tacoma
 98416	WA	Tacoma
+98417	WA	Tacoma
 98418	WA	Tacoma
+98419	WA	Tacoma
 98421	WA	Tacoma
 98422	WA	Tacoma
 98424	WA	Tacoma
 98430	WA	Camp Murray
 98431	WA	Tacoma
 98433	WA	Tacoma
-98434	WA	Tacoma
-98438	WA	Tacoma
-98439	WA	Tacoma
+98438	WA	Mcchord Afb
+98439	WA	Lakewood
 98442	WA	Tacoma
 98443	WA	Tacoma
 98444	WA	Tacoma
 98445	WA	Tacoma
 98446	WA	Tacoma
 98447	WA	Tacoma
+98448	WA	Tacoma
 98450	WA	Tacoma
 98455	WA	Tacoma
 98460	WA	Tacoma
@@ -3684,21 +3814,23 @@
 98471	WA	Tacoma
 98477	WA	Tacoma
 98481	WA	Tacoma
+98490	WA	Tacoma
 98492	WA	Tacoma
 98493	WA	Tacoma
-98494	WA	Tacoma
-98497	WA	Tacoma
-98498	WA	Tacoma
-98499	WA	Tacoma
+98496	WA	Lakewood
+98497	WA	Lakewood
+98498	WA	Lakewood
+98499	WA	Lakewood
 98501	WA	Olympia
 98502	WA	Olympia
-98503	WA	Olympia
+98503	WA	Lacey
 98504	WA	Olympia
 98505	WA	Olympia
 98506	WA	Olympia
 98507	WA	Olympia
 98508	WA	Olympia
 98509	WA	Lacey
+98511	WA	Tumwater
 98512	WA	Olympia
 98513	WA	Olympia
 98516	WA	Olympia
@@ -3729,8 +3861,8 @@
 98554	WA	Lebam
 98555	WA	Lilliwaup
 98556	WA	Littlerock
-98557	WA	McCleary
-98558	WA	McKenna
+98557	WA	Mccleary
+98558	WA	Mckenna
 98559	WA	Malone
 98560	WA	Matlock
 98561	WA	Menlo
@@ -3828,6 +3960,7 @@
 98684	WA	Vancouver
 98685	WA	Vancouver
 98686	WA	Vancouver
+98687	WA	Vancouver
 98801	WA	Wenatchee
 98802	WA	East Wenatchee
 98807	WA	Wenatchee
@@ -3887,7 +4020,7 @@
 98923	WA	Cowiche
 98925	WA	Easton
 98926	WA	Ellensburg
-98929	WA	Goose Prairie
+98929	WA	Naches
 98930	WA	Grandview
 98932	WA	Granger
 98933	WA	Harrah
@@ -3920,7 +4053,6 @@
 99012	WA	Fairfield
 99013	WA	Ford
 99014	WA	Four Lakes
-99015	WA	Freeman
 99016	WA	Greenacres
 99017	WA	Lamont
 99018	WA	Latah
@@ -3964,7 +4096,6 @@
 99124	WA	Elmer City
 99125	WA	Endicott
 99126	WA	Evans
-99127	WA	Saint John
 99128	WA	Farmington
 99129	WA	Fruitland
 99130	WA	Garfield
@@ -4027,6 +4158,7 @@
 99214	WA	Spokane
 99215	WA	Spokane
 99216	WA	Spokane
+99217	WA	Spokane
 99218	WA	Spokane
 99219	WA	Spokane
 99220	WA	Spokane
@@ -4035,8 +4167,6 @@
 99228	WA	Spokane
 99251	WA	Spokane
 99252	WA	Spokane
-99254	WA	Spokane
-99255	WA	Spokane
 99256	WA	Spokane
 99258	WA	Spokane
 99260	WA	Spokane
@@ -4049,15 +4179,14 @@
 99323	WA	Burbank
 99324	WA	College Place
 99326	WA	Connell
-99327	WA	Cunningham
 99328	WA	Dayton
 99329	WA	Dixie
 99330	WA	Eltopia
-99332	WA	Hatton
 99333	WA	Hooper
 99335	WA	Kahlotus
 99336	WA	Kennewick
 99337	WA	Kennewick
+99338	WA	Kennewick
 99341	WA	Lind
 99343	WA	Mesa
 99344	WA	Othello
@@ -4069,6 +4198,7 @@
 99350	WA	Prosser
 99352	WA	Richland
 99353	WA	West Richland
+99354	WA	Richland
 99356	WA	Roosevelt
 99357	WA	Royal City
 99359	WA	Starbuck
@@ -4084,14 +4214,13 @@
 99502	AK	Anchorage
 99503	AK	Anchorage
 99504	AK	Anchorage
-99505	AK	Fort Richardson
-99506	AK	Elmendorf Afb
+99505	AK	Jber
+99506	AK	Jber
 99507	AK	Anchorage
 99508	AK	Anchorage
 99509	AK	Anchorage
 99510	AK	Anchorage
 99511	AK	Anchorage
-99512	AK	Anchorage
 99513	AK	Anchorage
 99514	AK	Anchorage
 99515	AK	Anchorage
@@ -4104,7 +4233,11 @@
 99522	AK	Anchorage
 99523	AK	Anchorage
 99524	AK	Anchorage
+99529	AK	Anchorage
+99530	AK	Anchorage
 99540	AK	Indian
+99545	AK	Kongiganak
+99546	AK	Adak
 99547	AK	Atka
 99548	AK	Chignik Lake
 99549	AK	Port Heiden
@@ -4138,7 +4271,6 @@
 99580	AK	Ekwok
 99581	AK	Emmonak
 99583	AK	False Pass
-99584	AK	Flat
 99585	AK	Marshall
 99586	AK	Gakona
 99587	AK	Girdwood
@@ -4165,11 +4297,13 @@
 99620	AK	Kotlik
 99621	AK	Kwethluk
 99622	AK	Kwigillingok
+99623	AK	Wasilla
 99624	AK	Larsen Bay
 99625	AK	Levelock
 99626	AK	Lower Kalskag
 99627	AK	Mc Grath
 99628	AK	Manokotak
+99629	AK	Wasilla
 99630	AK	Mekoryuk
 99631	AK	Moose Pass
 99632	AK	Mountain Village
@@ -4204,7 +4338,7 @@
 99663	AK	Seldovia
 99664	AK	Seward
 99665	AK	Shageluk
-99666	AK	Sheldon Point
+99666	AK	Nunam Iqua
 99667	AK	Skwentna
 99668	AK	Sleetmute
 99669	AK	Soldotna
@@ -4258,6 +4392,7 @@
 99727	AK	Buckland
 99729	AK	Cantwell
 99730	AK	Central
+99731	AK	Fort Greely
 99732	AK	Chicken
 99733	AK	Circle
 99734	AK	Prudhoe Bay
@@ -4304,7 +4439,7 @@
 99776	AK	Tanacross
 99777	AK	Tanana
 99778	AK	Teller
-99779	AK	Tetlin
+99779	AK	Tok
 99780	AK	Tok
 99781	AK	Venetie
 99782	AK	Wainwright
@@ -4320,6 +4455,7 @@
 99802	AK	Juneau
 99803	AK	Juneau
 99811	AK	Juneau
+99812	AK	Juneau
 99820	AK	Angoon
 99821	AK	Auke Bay
 99824	AK	Douglas
