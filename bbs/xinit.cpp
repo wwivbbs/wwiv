@@ -621,9 +621,7 @@ bool WApplication::ReadConfig() {
   syscfg.autoval[9]       = full_syscfg.autoval[9];
 
   syscfg.wwiv_reg_number  = full_syscfg.wwiv_reg_number;
-  syscfg.regcode          = full_syscfg.regcode;
   syscfg.sysconfig1       = full_syscfg.sysconfig1;
-  syscfg.rrd              = full_syscfg.rrd;
 
   return true;
 }
@@ -703,7 +701,8 @@ bool WApplication::SaveConfig() {
 
     full_syscfg.wwiv_reg_number = syscfg.wwiv_reg_number;
     full_syscfg.sysconfig1      = syscfg.sysconfig1;
-    full_syscfg.rrd             = syscfg.rrd;
+    full_syscfg.unused_rrd = 0;
+    full_syscfg.unused_regcode[0] = 0;
 
     configFile.Seek(0, WFile::seekBegin);
     configFile.Write(&full_syscfg, sizeof(configrec));
