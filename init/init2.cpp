@@ -34,8 +34,6 @@
 
 extern net_networks_rec *net_networks;
 
-extern int inst;
-
 void trimstr(char *s) {
   int i = strlen(s);
   while ((i >= 0) && (s[i - 1] == 32)) {

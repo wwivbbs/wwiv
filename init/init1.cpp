@@ -40,15 +40,7 @@
 #include <termios.h>
 #endif  // __unix__
 
-extern char configdat[];
 extern char bbsdir[];
-
-extern net_networks_rec *net_networks;
-
-extern int inst;
-
-static int wfc = 0;
-static int useron = 0;
 
 void init() {
   curatr = 0x03;
@@ -169,13 +161,6 @@ void close_qscn() {
 
 
 void read_qscn(unsigned int un, unsigned long *qscn, int stayopen) {
-  if (((useron) && ((long) un == initinfo.usernum)) || ((wfc) && (un == 1))) {
-    for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
-      qscn[i] = qsc[i];
-    }
-    return;
-  }
-
   if (open_qscn()) {
     long pos = ((long)syscfg.qscn_len) * ((long)un);
     if (pos + (long)syscfg.qscn_len <= filelength(qscn_file)) {
@@ -199,13 +184,6 @@ void read_qscn(unsigned int un, unsigned long *qscn, int stayopen) {
 }
 
 void write_qscn(unsigned int un, unsigned long *qscn, int stayopen) {
-
-  if (((useron) && ((long) un == initinfo.usernum)) || ((wfc) && (un == 1))) {
-    for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
-      qsc[i] = qscn[i];
-    }
-  }
-
   if (open_qscn()) {
     long pos = ((long)syscfg.qscn_len) * ((long)un);
     lseek(qscn_file, pos, SEEK_SET);
@@ -259,37 +237,29 @@ bool read_status() {
 
 
 int save_config() {
-  int configfile, n;
+  int configfile;
 
-  if (inst == 1) {
-    if (syscfgovr.primaryport < 5) {
-      syscfg.primaryport = syscfgovr.primaryport;
-      syscfg.com_ISR[syscfg.primaryport] = syscfgovr.com_ISR[syscfgovr.primaryport];
-      syscfg.com_base[syscfg.primaryport] = syscfgovr.com_base[syscfgovr.primaryport];
-      strcpy(syscfg.modem_type, syscfgovr.modem_type);
-      strcpy(syscfg.tempdir, syscfgovr.tempdir);
-      strcpy(syscfg.batchdir, syscfgovr.batchdir);
-      if (syscfgovr.comflags & comflags_buffered_uart) {
-        syscfg.sysconfig |= sysconfig_high_speed;
-      } else {
-        syscfg.sysconfig &= ~sysconfig_high_speed;
-      }
+  if (syscfgovr.primaryport < 5) {
+    syscfg.primaryport = syscfgovr.primaryport;
+    syscfg.com_ISR[syscfg.primaryport] = syscfgovr.com_ISR[syscfgovr.primaryport];
+    syscfg.com_base[syscfg.primaryport] = syscfgovr.com_base[syscfgovr.primaryport];
+    strcpy(syscfg.modem_type, syscfgovr.modem_type);
+    strcpy(syscfg.tempdir, syscfgovr.tempdir);
+    strcpy(syscfg.batchdir, syscfgovr.batchdir);
+    if (syscfgovr.comflags & comflags_buffered_uart) {
+      syscfg.sysconfig |= sysconfig_high_speed;
+    } else {
+      syscfg.sysconfig &= ~sysconfig_high_speed;
     }
   }
 
-  configfile = open(configdat, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  configfile = open("config.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   write(configfile, (void *)(&syscfg), sizeof(configrec));
   close(configfile);
 
   configfile = open("config.ovr", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   if (configfile > 0) {
-    n = filelength(configfile) / sizeof(configoverrec);
-    while (n < (inst - 1)) {
-      lseek(configfile, 0L, SEEK_END);
-      write(configfile, &syscfgovr, sizeof(configoverrec));
-      n++;
-    }
-    lseek(configfile, sizeof(configoverrec) * (inst - 1), SEEK_SET);
+    lseek(configfile, 0, SEEK_SET);
     write(configfile, &syscfgovr, sizeof(configoverrec));
     close(configfile);
   }
