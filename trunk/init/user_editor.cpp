@@ -29,7 +29,7 @@
 
 static const int COL1_POSITION = 19;
 static const int COL2_POSITION = 50;
-static const int PROMPT_LINE = 21;
+static const int PROMPT_LINE = 18;
 
 static bool IsUserDeleted(userrec *user) {
   return user->inact & inact_deleted;

@@ -164,10 +164,7 @@ void sysinfo1() {
   Printf("Caller number    : %-7s\n", j17);
   Printf("Days active      : %-7s\n", j19);
 
-  textattr(COLOR_YELLOW);
-  Puts("\n<ESC> when done.");
   textattr(COLOR_CYAN);
-
   cp = 0;
   bool done = false;
   do {
@@ -343,17 +340,14 @@ void setpaths() {
   Printf("Menu Directory     : %s\n", syscfg.menudir);
   Printf("Data Directory     : %s\n", syscfg.datadir);
   Printf("Downloads Directory: %s\n", syscfg.dloadsdir);
-  Printf("Temporary Directory: %s\n", syscfgovr.tempdir);
-  Printf("Batch Directory    : %s\n", syscfgovr.batchdir);
 
-  textattr(COLOR_YELLOW);
-  Puts("\n<ESC> when done.\n\n\n");
   textattr(COLOR_MAGENTA);
+  nlx(2);
   Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\n\n");
   textattr(COLOR_YELLOW);
-  Printf(" Changing any of these (except Temporary and Batch) requires YOU\n");
-  Printf(" to MANUALLY move files and / or directory structures.  Consult the\n");
-  Printf(" documentation prior to changing any of these settings.\n");
+  Printf(" Changing any of these requires YOU to MANUALLY move files and / or \n");
+  Printf(" directory structures.  Consult the documentation prior to changing \n");
+  Printf(" any of these settings.\n");
   textattr(COLOR_CYAN);
 
   int i1;
@@ -397,26 +391,8 @@ void setpaths() {
       Puts(syscfg.dloadsdir);
       //          verify_dir("Downloads", syscfg.dloadsdir);
       break;
-    case 5:
-      do {
-        out->GotoXY(21, cp);
-        editline(syscfgovr.tempdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
-        trimstrpath(syscfgovr.tempdir);
-        Puts(syscfgovr.tempdir);
-        //        } while ((verify_dir("Temporary", syscfgovr.tempdir)) ||
-      } while (verify_inst_dirs(&syscfgovr, inst));
-      break;
-    case 6:
-      do {
-        out->GotoXY(21, cp);
-        editline(syscfgovr.batchdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
-        trimstrpath(syscfgovr.batchdir);
-        Puts(syscfgovr.batchdir);
-        //        } while ((verify_dir("Batch", syscfgovr.batchdir)) ||
-      } while (verify_inst_dirs(&syscfgovr, inst));
-      break;
     }
-    cp = GetNextSelectionPosition(0, 6, cp, i1);
+    cp = GetNextSelectionPosition(0, 4, cp, i1);
     if (i1 == DONE) {
       done = true;
     }
