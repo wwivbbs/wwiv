@@ -33,6 +33,7 @@
 #include "init.h"
 #include "instance_settings.h"
 #include "regcode.h"
+#include "system_info.h"
 #include "user_editor.h"
 #include "version.cpp"
 #include "wwivinit.h"
@@ -400,7 +401,6 @@ int verify_dir(char *typeDir, char *dirName) {
 }
 
 void show_help() {
-  Printf("   ,x    - Specify Instance (where x is the Instance)\n");
   Printf("   -D    - Edit Directories\n");
   Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
   Printf("\n\n\n");
@@ -419,22 +419,9 @@ int WInitApp::main(int argc, char *argv[]) {
   char s[81], s1[81], ch;
   int newbbs = 0, configfile, pwok = 0;
   int i;
-  int max_inst = 2;
-  int hFile = -1;
   externalrec *oexterns;
 
-  strcpy(str_yes, "Yes");
-  strcpy(str_no, "No");
-
-  char *ss = getenv("BBS");
-  if (ss && (strncmp(ss, "WWIV", 4) == 0)) {
-    textattr(COLOR_RED);
-    Printf("\n\nYou can not run the initialization program from a subshell of the BBS.\n");
-    Printf("You must exit the BBS or run INIT from a new Command Shell\n");
-    textattr(COLOR_WHITE);
-    exit_init(2);
-  }
-  ss = getenv("WWIV_DIR");
+  char *ss = getenv("WWIV_DIR");
   if (ss) {
     WWIV_ChangeDirTo(ss);
   }
@@ -475,7 +462,6 @@ int WInitApp::main(int argc, char *argv[]) {
     }
   }
 
-  bool done = false;
   configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile < 0) {
     textattr(COLOR_RED);
@@ -503,8 +489,6 @@ int WInitApp::main(int argc, char *argv[]) {
 
   read(configfile, &syscfg, sizeof(configrec));
   close(configfile);
-
-  max_inst = 999;
 
   configfile = open("config.ovr", O_RDONLY | O_BINARY);
   if ((configfile > 0) && (filelength(configfile) < (int)sizeof(configoverrec))) {
@@ -534,7 +518,7 @@ int WInitApp::main(int argc, char *argv[]) {
   }
 
   sprintf(s, "%sarchiver.dat", syscfg.datadir);
-  hFile = open(s, O_RDONLY | O_BINARY);
+  int hFile = open(s, O_RDONLY | O_BINARY);
   if (hFile < 0) {
     create_arcs();
   } else {
@@ -727,6 +711,7 @@ int WInitApp::main(int argc, char *argv[]) {
     }
   }
 
+  bool done = false;
   do {
     out->Cls();
     out->SetDefaultFooter();
