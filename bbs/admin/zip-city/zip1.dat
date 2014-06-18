@@ -47,7 +47,10 @@
 10048	NY	New York
 10055	NY	New York
 10060	NY	New York
+10065	NY	New York
+10069	NY	New York
 10072	NY	New York
+10075	NY	New York
 10079	NY	New York
 10080	NY	New York
 10081	NY	New York
@@ -122,11 +125,13 @@
 10176	NY	New York
 10177	NY	New York
 10178	NY	New York
+10179	NY	New York
 10184	NY	New York
 10185	NY	New York
 10196	NY	New York
 10197	NY	New York
 10199	NY	New York
+10200	NY	New York
 10203	NY	New York
 10211	NY	New York
 10212	NY	New York
@@ -244,10 +249,10 @@
 10553	NY	Mount Vernon
 10557	NY	Mount Vernon
 10558	NY	Mount Vernon
-10559	NY	Mount Vernon
 10560	NY	North Salem
 10562	NY	Ossining
 10566	NY	Peekskill
+10567	NY	Cortlandt Manor
 10570	NY	Pleasantville
 10571	NY	Pleasantville
 10572	NY	Pleasantville
@@ -257,7 +262,6 @@
 10578	NY	Purdys
 10579	NY	Putnam Valley
 10580	NY	Rye
-10581	NY	Rye
 10583	NY	Scarsdale
 10587	NY	Shenorock
 10588	NY	Shrub Oak
@@ -272,15 +276,11 @@
 10601	NY	White Plains
 10602	NY	White Plains
 10603	NY	White Plains
-10604	NY	White Plains
+10604	NY	West Harrison
 10605	NY	White Plains
 10606	NY	White Plains
 10607	NY	White Plains
 10610	NY	White Plains
-10625	NY	White Plains
-10629	NY	White Plains
-10633	NY	White Plains
-10650	NY	White Plains
 10701	NY	Yonkers
 10702	NY	Yonkers
 10703	NY	Yonkers
@@ -323,8 +323,8 @@
 10940	NY	Middletown
 10941	NY	Middletown
 10943	NY	Middletown
+10949	NY	Monroe
 10950	NY	Monroe
-10951	NY	Rockland M P C
 10952	NY	Monsey
 10953	NY	Mountainville
 10954	NY	Nanuet
@@ -359,7 +359,6 @@
 10992	NY	Washingtonville
 10993	NY	West Haverstraw
 10994	NY	West Nyack
-10995	NY	West Nyack
 10996	NY	West Point
 10997	NY	West Point
 10998	NY	Westtown
@@ -392,11 +391,12 @@
 11096	NY	Inwood
 11099	NY	New Hyde Park
 11101	NY	Long Island City
-11102	NY	Long Island City
-11103	NY	Long Island City
-11104	NY	Long Island City
-11105	NY	Long Island City
-11106	NY	Long Island City
+11102	NY	Astoria
+11103	NY	Astoria
+11104	NY	Sunnyside
+11105	NY	Astoria
+11106	NY	Astoria
+11109	NY	Long Island City
 11120	NY	Long Island City
 11201	NY	Brooklyn
 11202	NY	Brooklyn
@@ -452,63 +452,56 @@
 11256	NY	Brooklyn
 11351	NY	Flushing
 11352	NY	Flushing
-11353	NY	Flushing
 11354	NY	Flushing
 11355	NY	Flushing
-11356	NY	Flushing
-11357	NY	Flushing
+11356	NY	College Point
+11357	NY	Whitestone
 11358	NY	Flushing
-11359	NY	Flushing
-11360	NY	Flushing
-11361	NY	Flushing
-11362	NY	Flushing
-11363	NY	Flushing
-11364	NY	Flushing
-11365	NY	Flushing
-11366	NY	Flushing
+11359	NY	Bayside
+11360	NY	Bayside
+11361	NY	Bayside
+11362	NY	Little Neck
+11363	NY	Little Neck
+11364	NY	Oakland Gardens
+11365	NY	Fresh Meadows
+11366	NY	Fresh Meadows
 11367	NY	Flushing
-11368	NY	Flushing
-11369	NY	Flushing
-11370	NY	Flushing
+11368	NY	Corona
+11369	NY	East Elmhurst
+11370	NY	East Elmhurst
 11371	NY	Flushing
-11372	NY	Flushing
-11373	NY	Flushing
-11374	NY	Flushing
-11375	NY	Flushing
-11377	NY	Flushing
-11378	NY	Flushing
-11379	NY	Flushing
-11380	NY	Flushing
+11372	NY	Jackson Heights
+11373	NY	Elmhurst
+11374	NY	Rego Park
+11375	NY	Forest Hills
+11377	NY	Woodside
+11378	NY	Maspeth
+11379	NY	Middle Village
+11380	NY	Elmhurst
 11381	NY	Flushing
-11385	NY	Flushing
-11386	NY	Flushing
-11388	NY	Flushing
+11385	NY	Ridgewood
+11386	NY	Ridgewood
 11390	NY	Flushing
-11402	NY	Jamaica
 11405	NY	Jamaica
-11406	NY	Jamaica
-11407	NY	Jamaica
-11408	NY	Jamaica
-11410	NY	Jamaica
-11411	NY	Jamaica
-11412	NY	Jamaica
-11413	NY	Jamaica
-11414	NY	Jamaica
-11415	NY	Jamaica
-11416	NY	Jamaica
-11417	NY	Jamaica
-11418	NY	Jamaica
-11419	NY	Jamaica
-11420	NY	Jamaica
-11421	NY	Jamaica
-11422	NY	Jamaica
-11423	NY	Jamaica
+11411	NY	Cambria Heights
+11412	NY	Saint Albans
+11413	NY	Springfield Gardens
+11414	NY	Howard Beach
+11415	NY	Kew Gardens
+11416	NY	Ozone Park
+11417	NY	Ozone Park
+11418	NY	Richmond Hill
+11419	NY	South Richmond Hill
+11420	NY	South Ozone Park
+11421	NY	Woodhaven
+11422	NY	Rosedale
+11423	NY	Hollis
 11424	NY	Jamaica
 11425	NY	Jamaica
-11426	NY	Jamaica
-11427	NY	Jamaica
-11428	NY	Jamaica
-11429	NY	Jamaica
+11426	NY	Bellerose
+11427	NY	Queens Village
+11428	NY	Queens Village
+11429	NY	Queens Village
 11430	NY	Jamaica
 11431	NY	Jamaica
 11432	NY	Jamaica
@@ -517,24 +510,7 @@
 11435	NY	Jamaica
 11436	NY	Jamaica
 11439	NY	Jamaica
-11440	NY	Jamaica
-11441	NY	Jamaica
-11446	NY	Jamaica
-11447	NY	Jamaica
-11450	NY	Jamaica
 11451	NY	Jamaica
-11452	NY	Jamaica
-11460	NY	Jamaica
-11470	NY	Jamaica
-11472	NY	Jamaica
-11474	NY	Jamaica
-11476	NY	Jamaica
-11478	NY	Jamaica
-11480	NY	Jamaica
-11482	NY	Jamaica
-11484	NY	Jamaica
-11486	NY	Jamaica
-11488	NY	Jamaica
 11499	NY	Jamaica
 11501	NY	Mineola
 11507	NY	Albertson
@@ -552,6 +528,7 @@
 11545	NY	Glen Head
 11547	NY	Glenwood Landing
 11548	NY	Greenvale
+11549	NY	Hempstead
 11550	NY	Hempstead
 11551	NY	Hempstead
 11552	NY	West Hempstead
@@ -565,7 +542,6 @@
 11560	NY	Locust Valley
 11561	NY	Long Beach
 11563	NY	Lynbrook
-11564	NY	Lynbrook
 11565	NY	Malverne
 11566	NY	Merrick
 11568	NY	Old Westbury
@@ -580,11 +556,8 @@
 11580	NY	Valley Stream
 11581	NY	Valley Stream
 11582	NY	Valley Stream
-11583	NY	Valley Stream
-11588	NY	Uniondale
 11590	NY	Westbury
-11592	NY	Rockville Centre
-11593	NY	Westbury
+11592	NY	Rockville Center
 11594	NY	Westbury
 11595	NY	Westbury
 11596	NY	Williston Park
@@ -593,12 +566,11 @@
 11599	NY	Garden City
 11690	NY	Far Rockaway
 11691	NY	Far Rockaway
-11692	NY	Far Rockaway
+11692	NY	Arverne
 11693	NY	Far Rockaway
-11694	NY	Far Rockaway
+11694	NY	Rockaway Park
 11695	NY	Far Rockaway
-11696	NY	Inwood
-11697	NY	Far Rockaway
+11697	NY	Breezy Point
 11701	NY	Amityville
 11702	NY	Babylon
 11703	NY	North Babylon
@@ -606,6 +578,7 @@
 11705	NY	Bayport
 11706	NY	Bay Shore
 11707	NY	West Babylon
+11708	NY	Amityville
 11709	NY	Bayville
 11710	NY	Bellmore
 11713	NY	Bellport
@@ -636,10 +609,9 @@
 11741	NY	Holbrook
 11742	NY	Holtsville
 11743	NY	Huntington
-11745	NY	Smithtown
 11746	NY	Huntington Station
 11747	NY	Melville
-11749	NY	Farmingville
+11749	NY	Islandia
 11750	NY	Huntington Station
 11751	NY	Islip
 11752	NY	Islip Terrace
@@ -649,7 +621,7 @@
 11756	NY	Levittown
 11757	NY	Lindenhurst
 11758	NY	Massapequa
-11760	NY	Hauppauge
+11760	NY	Islandia
 11762	NY	Massapequa Park
 11763	NY	Medford
 11764	NY	Miller Place
@@ -689,7 +661,6 @@
 11802	NY	Hicksville
 11803	NY	Plainview
 11804	NY	Old Bethpage
-11805	NY	Hicksville
 11815	NY	Hicksville
 11819	NY	Hicksville
 11853	NY	Jericho
@@ -815,8 +786,6 @@
 12107	NY	Knox
 12108	NY	Lake Pleasant
 12110	NY	Latham
-12111	NY	Latham
-12113	NY	Lawyersville
 12115	NY	Malden Bridge
 12116	NY	Maryland
 12117	NY	Mayfield
@@ -855,7 +824,6 @@
 12159	NY	Slingerlands
 12160	NY	Sloansville
 12161	NY	South Bethlehem
-12162	NY	South Schodack
 12164	NY	Speculator
 12165	NY	Spencertown
 12166	NY	Sprakers
@@ -869,7 +837,6 @@
 12175	NY	Summit
 12176	NY	Surprise
 12177	NY	Tribes Hill
-12179	NY	Troy
 12180	NY	Troy
 12181	NY	Troy
 12182	NY	Troy
@@ -881,7 +848,7 @@
 12188	NY	Waterford
 12189	NY	Watervliet
 12190	NY	Wells
-12192	NY	Coxsackie
+12192	NY	West Coxsackie
 12193	NY	Westerlo
 12194	NY	West Fulton
 12195	NY	West Lebanon
@@ -937,10 +904,9 @@
 12257	NY	Albany
 12260	NY	Albany
 12261	NY	Albany
-12262	NY	Albany
 12288	NY	Albany
 12301	NY	Schenectady
-12302	NY	Scotia
+12302	NY	Schenectady
 12303	NY	Schenectady
 12304	NY	Schenectady
 12305	NY	Schenectady
@@ -948,7 +914,7 @@
 12307	NY	Schenectady
 12308	NY	Schenectady
 12309	NY	Schenectady
-12325	NY	Glenville
+12325	NY	Schenectady
 12345	NY	Schenectady
 12401	NY	Kingston
 12402	NY	Kingston
@@ -1079,7 +1045,7 @@
 12551	NY	Newburgh
 12552	NY	Newburgh
 12553	NY	New Windsor
-12555	NY	Mid Hudson
+12555	NY	Newburgh
 12561	NY	New Paltz
 12563	NY	Patterson
 12564	NY	Pawling
@@ -1108,7 +1074,6 @@
 12592	NY	Wassaic
 12593	NY	West Copake
 12594	NY	Wingdale
-12600	NY	Poughkeepsie
 12601	NY	Poughkeepsie
 12602	NY	Poughkeepsie
 12603	NY	Poughkeepsie
@@ -1130,7 +1095,6 @@
 12736	NY	Fremont Center
 12737	NY	Glen Spey
 12738	NY	Glen Wild
-12739	NY	Godeffroy
 12740	NY	Grahamsville
 12741	NY	Hankins
 12742	NY	Harris
@@ -1143,7 +1107,6 @@
 12750	NY	Kenoza Lake
 12751	NY	Kiamesha Lake
 12752	NY	Lake Huntington
-12753	NY	Lew Beach
 12754	NY	Liberty
 12758	NY	Livingston Manor
 12759	NY	Loch Sheldrake
@@ -1165,7 +1128,6 @@
 12779	NY	South Fallsburg
 12780	NY	Sparrow Bush
 12781	NY	Summitville
-12782	NY	Sundown
 12783	NY	Swan Lake
 12784	NY	Thompsonville
 12785	NY	Westbrookville
@@ -1344,7 +1306,6 @@
 13052	NY	De Ruyter
 13053	NY	Dryden
 13054	NY	Durhamville
-13055	NY	East Freetown
 13056	NY	East Homer
 13057	NY	East Syracuse
 13060	NY	Elbridge
@@ -1396,8 +1357,6 @@
 13123	NY	North Bay
 13124	NY	North Pitcher
 13126	NY	Oswego
-13129	NY	Georgetown
-13130	NY	Owasco
 13131	NY	Parish
 13132	NY	Pennellville
 13134	NY	Peterboro
@@ -1415,8 +1374,6 @@
 13146	NY	Savannah
 13147	NY	Scipio Center
 13148	NY	Seneca Falls
-13150	NY	Sennett
-13151	NY	Sheds
 13152	NY	Skaneateles
 13153	NY	Skaneateles Falls
 13154	NY	South Butler
@@ -1447,16 +1404,17 @@
 13214	NY	Syracuse
 13215	NY	Syracuse
 13217	NY	Syracuse
+13218	NY	Syracuse
 13219	NY	Syracuse
 13220	NY	Syracuse
 13221	NY	Syracuse
 13224	NY	Syracuse
 13225	NY	Syracuse
+13235	NY	Syracuse
 13244	NY	Syracuse
 13250	NY	Syracuse
 13251	NY	Syracuse
 13252	NY	Syracuse
-13260	NY	Syracuse
 13261	NY	Syracuse
 13290	NY	Syracuse
 13301	NY	Alder Creek
@@ -1529,7 +1487,6 @@
 13416	NY	Newport
 13417	NY	New York Mills
 13418	NY	North Brookfield
-13419	NY	North Western
 13420	NY	Old Forge
 13421	NY	Oneida
 13424	NY	Oriskany
@@ -1590,14 +1547,12 @@
 13505	NY	Utica
 13599	NY	Utica
 13601	NY	Watertown
-13602	NY	Watertown
+13602	NY	Fort Drum
 13603	NY	Watertown
 13605	NY	Adams
 13606	NY	Adams Center
 13607	NY	Alexandria Bay
 13608	NY	Antwerp
-13609	NY	Balmat
-13610	NY	Rodman
 13611	NY	Belleville
 13612	NY	Black River
 13613	NY	Brasher Falls
@@ -1670,7 +1625,6 @@
 13684	NY	Russell
 13685	NY	Sackets Harbor
 13687	NY	South Colton
-13688	NY	South Rutland
 13690	NY	Star Lake
 13691	NY	Theresa
 13692	NY	Thousand Island Park
@@ -1699,7 +1653,7 @@
 13749	NY	Corbettsville
 13750	NY	Davenport
 13751	NY	Davenport Center
-13752	NY	De Lancey
+13752	NY	Delancey
 13753	NY	Delhi
 13754	NY	Deposit
 13755	NY	Downsville
@@ -1779,7 +1733,6 @@
 13904	NY	Binghamton
 13905	NY	Binghamton
 14001	NY	Akron
-14003	NY	Alabama
 14004	NY	Alden
 14005	NY	Alexander
 14006	NY	Angola
@@ -1922,11 +1875,9 @@
 14263	NY	Buffalo
 14264	NY	Buffalo
 14265	NY	Buffalo
-14266	NY	Buffalo
 14267	NY	Buffalo
 14269	NY	Buffalo
 14270	NY	Buffalo
-14271	NY	Buffalo
 14272	NY	Buffalo
 14273	NY	Buffalo
 14276	NY	Buffalo
@@ -1957,9 +1908,7 @@
 14435	NY	Conesus
 14437	NY	Dansville
 14441	NY	Dresden
-14442	NY	Eagle Harbor
 14443	NY	East Bloomfield
-14444	NY	East Palmyra
 14445	NY	East Rochester
 14449	NY	East Williamson
 14450	NY	Fairport
@@ -1978,7 +1927,6 @@
 14470	NY	Holley
 14471	NY	Honeoye
 14472	NY	Honeoye Falls
-14474	NY	Industry
 14475	NY	Ionia
 14476	NY	Kendall
 14477	NY	Kent
@@ -2048,7 +1996,6 @@
 14571	NY	Waterport
 14572	NY	Wayland
 14580	NY	Webster
-14584	NY	Webster Crossing
 14585	NY	West Bloomfield
 14586	NY	West Henrietta
 14588	NY	Willard
@@ -2056,7 +2003,6 @@
 14590	NY	Wolcott
 14591	NY	Wyoming
 14592	NY	York
-14601	NY	Rochester
 14602	NY	Rochester
 14603	NY	Rochester
 14604	NY	Rochester
@@ -2096,7 +2042,6 @@
 14651	NY	Rochester
 14652	NY	Rochester
 14653	NY	Rochester
-14660	NY	Rochester
 14664	NY	Rochester
 14673	NY	Rochester
 14683	NY	Rochester
@@ -2104,8 +2049,6 @@
 14694	NY	Rochester
 14701	NY	Jamestown
 14702	NY	Jamestown
-14703	NY	Jamestown
-14704	NY	Jamestown
 14706	NY	Allegany
 14707	NY	Allentown
 14708	NY	Alma
@@ -2145,7 +2088,6 @@
 14745	NY	Hume
 14747	NY	Kennedy
 14748	NY	Kill Buck
-14749	NY	Knapp Creek
 14750	NY	Lakewood
 14751	NY	Leon
 14752	NY	Lily Dale
@@ -2155,7 +2097,6 @@
 14756	NY	Maple Springs
 14757	NY	Mayville
 14758	NY	Niobe
-14759	NY	North Clymer
 14760	NY	Olean
 14766	NY	Otto
 14767	NY	Panama
@@ -2164,7 +2105,6 @@
 14772	NY	Randolph
 14774	NY	Richburg
 14775	NY	Ripley
-14776	NY	Rossburg
 14777	NY	Rushford
 14778	NY	Saint Bonaventure
 14779	NY	Salamanca
@@ -2212,7 +2152,6 @@
 14841	NY	Hector
 14842	NY	Himrod
 14843	NY	Hornell
-14844	NY	Horseheads
 14845	NY	Horseheads
 14846	NY	Hunt
 14847	NY	Interlaken
@@ -2250,14 +2189,12 @@
 14885	NY	Troupsburg
 14886	NY	Trumansburg
 14887	NY	Tyrone
-14888	NY	Valois
 14889	NY	Van Etten
 14891	NY	Watkins Glen
 14892	NY	Waverly
 14893	NY	Wayne
 14894	NY	Wellsburg
 14895	NY	Wellsville
-14896	NY	West Danby
 14897	NY	Whitesville
 14898	NY	Woodhull
 14901	NY	Elmira
@@ -2266,7 +2203,6 @@
 14904	NY	Elmira
 14905	NY	Elmira
 14925	NY	Elmira
-14975	NY	Elmira
 15001	PA	Aliquippa
 15003	PA	Ambridge
 15004	PA	Atlasburg
@@ -2295,14 +2231,13 @@
 15033	PA	Donora
 15034	PA	Dravosburg
 15035	PA	East Mc Keesport
-15036	PA	Eldersville
 15037	PA	Elizabeth
 15038	PA	Elrama
 15042	PA	Freedom
 15043	PA	Georgetown
 15044	PA	Gibsonia
 15045	PA	Glassport
-15046	PA	Glenwillard
+15046	PA	Crescent
 15047	PA	Greenock
 15049	PA	Harwick
 15050	PA	Hookstown
@@ -2357,13 +2292,12 @@
 15123	PA	West Mifflin
 15126	PA	Imperial
 15127	PA	Ingomar
-15129	PA	Library
-15130	PA	Mc Keesport
-15131	PA	Mc Keesport
-15132	PA	Mc Keesport
-15133	PA	Mc Keesport
-15134	PA	Mc Keesport
-15135	PA	Mc Keesport
+15129	PA	South Park
+15131	PA	Mckeesport
+15132	PA	Mckeesport
+15133	PA	Mckeesport
+15134	PA	Mckeesport
+15135	PA	Mckeesport
 15136	PA	Mc Kees Rocks
 15137	PA	North Versailles
 15139	PA	Oakmont
@@ -2375,7 +2309,6 @@
 15146	PA	Monroeville
 15147	PA	Verona
 15148	PA	Wilmerding
-15189	PA	Sewickley
 15201	PA	Pittsburgh
 15202	PA	Pittsburgh
 15203	PA	Pittsburgh
@@ -2440,6 +2373,7 @@
 15268	PA	Pittsburgh
 15270	PA	Pittsburgh
 15272	PA	Pittsburgh
+15273	PA	Pittsburgh
 15274	PA	Pittsburgh
 15275	PA	Pittsburgh
 15276	PA	Pittsburgh
@@ -2451,7 +2385,10 @@
 15283	PA	Pittsburgh
 15285	PA	Pittsburgh
 15286	PA	Pittsburgh
+15288	PA	Pittsburgh
+15289	PA	Pittsburgh
 15290	PA	Pittsburgh
+15295	PA	Pittsburgh
 15301	PA	Washington
 15310	PA	Aleppo
 15311	PA	Amity
@@ -2491,7 +2428,6 @@
 15351	PA	Nemacolin
 15352	PA	New Freeport
 15353	PA	Nineveh
-15354	PA	Pine Bank
 15357	PA	Rices Landing
 15358	PA	Richeyville
 15359	PA	Rogersville
@@ -2520,7 +2456,7 @@
 15417	PA	Brownsville
 15419	PA	California
 15420	PA	Cardale
-15421	PA	Chalkhill
+15421	PA	Chalk Hill
 15422	PA	Chestnut Ridge
 15423	PA	Coal Center
 15424	PA	Confluence
@@ -2645,7 +2581,6 @@
 15627	PA	Derry
 15628	PA	Donegal
 15629	PA	East Vandergrift
-15630	PA	Edmon
 15631	PA	Everson
 15632	PA	Export
 15633	PA	Forbes Road
@@ -2707,7 +2642,7 @@
 15711	PA	Anita
 15712	PA	Arcadia
 15713	PA	Aultman
-15714	PA	Barnesboro
+15714	PA	Northern Cambria
 15715	PA	Big Run
 15716	PA	Black Lick
 15717	PA	Blairsville
@@ -2738,7 +2673,6 @@
 15747	PA	Home
 15748	PA	Homer City
 15750	PA	Josephine
-15751	PA	Juneau
 15752	PA	Kent
 15753	PA	La Jose
 15754	PA	Lucernemines
@@ -2938,7 +2872,6 @@
 16213	PA	Callensburg
 16214	PA	Clarion
 16215	PA	Kittanning
-16216	PA	Climax
 16217	PA	Cooksburg
 16218	PA	Cowansville
 16220	PA	Crown
@@ -3017,8 +2950,8 @@
 16365	PA	Warren
 16366	PA	Warren
 16367	PA	Warren
-16368	PA	Irvine
-16369	PA	Irvine
+16368	PA	Warren
+16369	PA	Warren
 16370	PA	West Hickory
 16371	PA	Youngsville
 16372	PA	Clintonville
@@ -3088,7 +3021,6 @@
 16550	PA	Erie
 16553	PA	Erie
 16554	PA	Erie
-16558	PA	Erie
 16563	PA	Erie
 16565	PA	Erie
 16601	PA	Altoona
@@ -3096,7 +3028,6 @@
 16603	PA	Altoona
 16611	PA	Alexandria
 16613	PA	Ashville
-16614	PA	Bakers Summit
 16616	PA	Beccaria
 16617	PA	Bellwood
 16619	PA	Blandburg
@@ -3189,7 +3120,6 @@
 16748	PA	Shinglehouse
 16749	PA	Smethport
 16750	PA	Turtlepoint
-16751	PA	Westline
 16801	PA	State College
 16802	PA	University Park
 16803	PA	State College
@@ -3297,7 +3227,7 @@
 17012	PA	Camp Hill
 17013	PA	Carlisle
 17014	PA	Cocolamus
-17015	PA	Colebrook
+17015	PA	Carlisle
 17016	PA	Cornwall
 17017	PA	Dalmatia
 17018	PA	Dauphin
@@ -3313,7 +3243,6 @@
 17028	PA	Grantville
 17029	PA	Granville
 17030	PA	Gratz
-17031	PA	Green Park
 17032	PA	Halifax
 17033	PA	Hershey
 17034	PA	Highspire
@@ -3332,6 +3261,7 @@
 17047	PA	Loysville
 17048	PA	Lykens
 17049	PA	Mc Alisterville
+17050	PA	Mechanicsburg
 17051	PA	Mc Veytown
 17052	PA	Mapleton Depot
 17053	PA	Marysville
@@ -3371,6 +3301,7 @@
 17088	PA	Schaefferstown
 17089	PA	Camp Hill
 17090	PA	Shermans Dale
+17091	PA	Lebanon
 17093	PA	Summerdale
 17094	PA	Thompsontown
 17097	PA	Wiconisco
@@ -3403,6 +3334,7 @@
 17140	PA	Harrisburg
 17177	PA	Harrisburg
 17201	PA	Chambersburg
+17202	PA	Chambersburg
 17210	PA	Amberson
 17211	PA	Artemas
 17212	PA	Big Cove Tannery
@@ -3454,7 +3386,6 @@
 17270	PA	Williamson
 17271	PA	Willow Hill
 17272	PA	Zullinger
-17294	PA	Blue Ridge Summit
 17301	PA	Abbottstown
 17302	PA	Airville
 17303	PA	Arendtsville
@@ -3484,6 +3415,8 @@
 17331	PA	Hanover
 17332	PA	Hanover
 17333	PA	Hanover
+17334	PA	Hanover
+17335	PA	Hanover
 17337	PA	Idaville
 17339	PA	Lewisberry
 17340	PA	Littlestown
@@ -3491,7 +3424,6 @@
 17343	PA	Mc Knightstown
 17344	PA	Mc Sherrystown
 17345	PA	Manchester
-17346	PA	Menges Mills
 17347	PA	Mount Wolf
 17349	PA	New Freedom
 17350	PA	New Oxford
@@ -3520,6 +3452,7 @@
 17405	PA	York
 17406	PA	York
 17407	PA	York
+17408	PA	York
 17415	PA	York
 17501	PA	Akron
 17502	PA	Bainbridge
@@ -3570,10 +3503,9 @@
 17569	PA	Reinholds
 17570	PA	Rheems
 17572	PA	Ronks
-17573	PA	Ronks
+17573	PA	Lancaster
 17575	PA	Silver Spring
 17576	PA	Smoketown
-17577	PA	Soudersburg
 17578	PA	Stevens
 17579	PA	Strasburg
 17580	PA	Talmage
@@ -3590,14 +3522,16 @@
 17606	PA	Lancaster
 17607	PA	Lancaster
 17608	PA	Lancaster
+17611	PA	Lancaster
+17622	PA	Lancaster
 17699	PA	Lancaster
 17701	PA	Williamsport
+17702	PA	Williamsport
 17703	PA	Williamsport
 17705	PA	Williamsport
 17720	PA	Antes Fort
 17721	PA	Avis
-17722	PA	Bodines
-17723	PA	Jersey Shore
+17723	PA	Cammal
 17724	PA	Canton
 17726	PA	Castanea
 17727	PA	Cedar Run
@@ -3605,14 +3539,12 @@
 17729	PA	Cross Fork
 17730	PA	Dewart
 17731	PA	Eagles Mere
-17734	PA	Farrandsville
 17735	PA	Grover
 17737	PA	Hughesville
-17738	PA	Hyner
+17738	PA	North Bend
 17739	PA	Jersey Mills
 17740	PA	Jersey Shore
 17742	PA	Lairdsville
-17743	PA	Leroy
 17744	PA	Linden
 17745	PA	Lock Haven
 17747	PA	Loganton
@@ -3624,7 +3556,6 @@
 17754	PA	Montoursville
 17756	PA	Muncy
 17758	PA	Muncy Valley
-17759	PA	Nisbet
 17760	PA	North Bend
 17762	PA	Picture Rocks
 17763	PA	Ralston
@@ -3633,7 +3564,6 @@
 17767	PA	Salona
 17768	PA	Shunk
 17769	PA	Slate Run
-17770	PA	Sonestown
 17771	PA	Trout Run
 17772	PA	Turbotville
 17773	PA	Tylersville
@@ -3653,9 +3583,7 @@
 17822	PA	Danville
 17823	PA	Dornsife
 17824	PA	Elysburg
-17825	PA	Excelsior
 17827	PA	Freeburg
-17828	PA	Gowen City
 17829	PA	Hartleton
 17830	PA	Herndon
 17831	PA	Hummels Wharf
@@ -3665,7 +3593,7 @@
 17835	PA	Laurelton
 17836	PA	Leck Kill
 17837	PA	Lewisburg
-17839	PA	Light Street
+17839	PA	Lightstreet
 17840	PA	Locust Gap
 17841	PA	Mc Clure
 17842	PA	Middleburg
@@ -3711,7 +3639,6 @@
 17922	PA	Auburn
 17923	PA	Branchdale
 17925	PA	Brockton
-17927	PA	Centralia
 17929	PA	Cressona
 17930	PA	Cumbola
 17931	PA	Frackville
@@ -3721,7 +3648,6 @@
 17935	PA	Girardville
 17936	PA	Gordon
 17938	PA	Hegins
-17939	PA	Helfenstein
 17941	PA	Klingerstown
 17942	PA	Landingville
 17943	PA	Lavelle
@@ -3767,6 +3693,7 @@
 18016	PA	Bethlehem
 18017	PA	Bethlehem
 18018	PA	Bethlehem
+18020	PA	Bethlehem
 18025	PA	Bethlehem
 18030	PA	Bowmanstown
 18031	PA	Breinigsville
@@ -3834,6 +3761,7 @@
 18175	PA	Allentown
 18195	PA	Allentown
 18201	PA	Hazleton
+18202	PA	Hazleton
 18210	PA	Albrightsville
 18211	PA	Andreas
 18212	PA	Ashfield
@@ -3853,12 +3781,11 @@
 18232	PA	Lansford
 18234	PA	Lattimer Mines
 18235	PA	Lehighton
-18237	PA	McAdoo
+18237	PA	Mcadoo
 18239	PA	Milnesville
 18240	PA	Nesquehoning
 18241	PA	Nuremberg
 18242	PA	Oneida
-18243	PA	Pardeesville
 18244	PA	Parryville
 18245	PA	Quakake
 18246	PA	Rock Glen
@@ -3872,6 +3799,7 @@
 18255	PA	Weatherly
 18256	PA	Weston
 18301	PA	East Stroudsburg
+18302	PA	East Stroudsburg
 18320	PA	Analomink
 18321	PA	Bartonsville
 18322	PA	Brodheadsville
@@ -3911,7 +3839,6 @@
 18371	PA	Tamiment
 18372	PA	Tannersville
 18373	PA	Unity House
-18401	PA	Aldenville
 18403	PA	Archbald
 18405	PA	Beach Lake
 18407	PA	Carbondale
@@ -3983,7 +3910,7 @@
 18515	PA	Scranton
 18517	PA	Taylor
 18518	PA	Old Forge
-18519	PA	Dickson City
+18519	PA	Scranton
 18522	PA	Scranton
 18540	PA	Scranton
 18577	PA	Scranton
@@ -4014,7 +3941,6 @@
 18634	PA	Nanticoke
 18635	PA	Nescopeck
 18636	PA	Noxen
-18637	PA	Nuangola
 18640	PA	Pittston
 18641	PA	Pittston
 18642	PA	Duryea
@@ -4040,17 +3966,13 @@
 18709	PA	Luzerne
 18710	PA	Wilkes Barre
 18711	PA	Wilkes Barre
-18761	PA	Wilkes Barre
 18762	PA	Wilkes Barre
-18763	PA	Wilkes Barre
 18764	PA	Wilkes Barre
 18765	PA	Wilkes Barre
 18766	PA	Wilkes Barre
 18767	PA	Wilkes Barre
-18768	PA	Wilkes Barre
 18769	PA	Wilkes Barre
 18773	PA	Wilkes Barre
-18774	PA	Wilkes Barre
 18801	PA	Montrose
 18810	PA	Athens
 18812	PA	Brackney
@@ -4076,7 +3998,6 @@
 18833	PA	New Albany
 18834	PA	New Milford
 18837	PA	Rome
-18839	PA	Rushville
 18840	PA	Sayre
 18842	PA	South Gibson
 18843	PA	South Montrose
@@ -4090,6 +4011,7 @@
 18853	PA	Wyalusing
 18854	PA	Wysox
 18901	PA	Doylestown
+18902	PA	Doylestown
 18910	PA	Bedminster
 18911	PA	Blooming Glen
 18912	PA	Buckingham
@@ -4191,8 +4113,8 @@
 19044	PA	Horsham
 19046	PA	Jenkintown
 19047	PA	Langhorne
-19048	PA	Langhorne
-19049	PA	Langhorne
+19048	PA	Fort Washington
+19049	PA	Fort Washington
 19050	PA	Lansdowne
 19052	PA	Lenni
 19053	PA	Feasterville Trevose
@@ -4201,7 +4123,7 @@
 19056	PA	Levittown
 19057	PA	Levittown
 19058	PA	Levittown
-19059	PA	Levittown
+19060	PA	Garnet Valley
 19061	PA	Marcus Hook
 19063	PA	Media
 19064	PA	Springfield
@@ -4296,6 +4218,7 @@
 19172	PA	Philadelphia
 19173	PA	Philadelphia
 19175	PA	Philadelphia
+19176	PA	Philadelphia
 19177	PA	Philadelphia
 19178	PA	Philadelphia
 19179	PA	Philadelphia
@@ -4306,9 +4229,12 @@
 19185	PA	Philadelphia
 19187	PA	Philadelphia
 19188	PA	Philadelphia
+19190	PA	Philadelphia
 19191	PA	Philadelphia
 19192	PA	Philadelphia
 19193	PA	Philadelphia
+19194	PA	Philadelphia
+19195	PA	Philadelphia
 19196	PA	Philadelphia
 19197	PA	Philadelphia
 19244	PA	Philadelphia
@@ -4351,7 +4277,6 @@
 19366	PA	Pocopson
 19367	PA	Pomeroy
 19369	PA	Sadsburyville
-19370	PA	Steelville
 19371	PA	Suplee
 19372	PA	Thorndale
 19373	PA	Thornton
@@ -4362,6 +4287,7 @@
 19381	PA	West Chester
 19382	PA	West Chester
 19383	PA	West Chester
+19388	PA	West Chester
 19390	PA	West Grove
 19395	PA	Westtown
 19397	PA	Southeastern
@@ -4375,6 +4301,7 @@
 19407	PA	Audubon
 19408	PA	Eagleville
 19409	PA	Fairview Village
+19415	PA	Eagleville
 19420	PA	Arcola
 19421	PA	Birchrunville
 19422	PA	Blue Bell
@@ -4398,7 +4325,6 @@
 19446	PA	Lansdale
 19450	PA	Lederach
 19451	PA	Mainland
-19452	PA	Miquon
 19453	PA	Mont Clare
 19454	PA	North Wales
 19455	PA	North Wales
@@ -4443,7 +4369,6 @@
 19511	PA	Bowers
 19512	PA	Boyertown
 19516	PA	Centerport
-19517	PA	Dauberville
 19518	PA	Douglassville
 19519	PA	Earlville
 19520	PA	Elverson
@@ -4472,7 +4397,6 @@
 19551	PA	Robesonia
 19554	PA	Shartlesville
 19555	PA	Shoemakersville
-19557	PA	Stony Run
 19559	PA	Strausstown
 19560	PA	Temple
 19562	PA	Topton
@@ -4551,6 +4475,7 @@
 19903	DE	Dover
 19904	DE	Dover
 19905	DE	Dover
+19906	DE	Dover
 19930	DE	Bethany Beach
 19931	DE	Bethel
 19933	DE	Bridgeville
@@ -4560,7 +4485,6 @@
 19939	DE	Dagsboro
 19940	DE	Delmar
 19941	DE	Ellendale
-19942	DE	Farmington
 19943	DE	Felton
 19944	DE	Fenwick Island
 19945	DE	Frankford

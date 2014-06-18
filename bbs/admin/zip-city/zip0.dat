@@ -1,4 +1,3 @@
-00401	NY	Pleasantville
 00501	NY	Holtsville
 00544	NY	Holtsville
 00601	PR	Adjuntas
@@ -42,6 +41,7 @@
 00678	PR	Quebradillas
 00680	PR	Mayaguez
 00681	PR	Mayaguez
+00682	PR	Mayaguez
 00683	PR	San German
 00685	PR	San Sebastian
 00687	PR	Morovis
@@ -57,6 +57,8 @@
 00707	PR	Maunabo
 00714	PR	Arroyo
 00715	PR	Mercedita
+00716	PR	Ponce
+00717	PR	Ponce
 00718	PR	Naguabo
 00719	PR	Naranjito
 00720	PR	Orocovis
@@ -64,7 +66,10 @@
 00723	PR	Patillas
 00725	PR	Caguas
 00726	PR	Caguas
+00727	PR	Caguas
+00728	PR	Ponce
 00729	PR	Canovanas
+00730	PR	Ponce
 00731	PR	Ponce
 00732	PR	Ponce
 00733	PR	Ponce
@@ -102,18 +107,18 @@
 00792	PR	Humacao
 00794	PR	Barranquitas
 00795	PR	Juana Diaz
-00801	VI	Saint Thomas
-00802	VI	Saint Thomas
-00803	VI	Saint Thomas
-00804	VI	Saint Thomas
-00805	VI	Saint Thomas
+00801	VI	St Thomas
+00802	VI	St Thomas
+00803	VI	St Thomas
+00804	VI	St Thomas
+00805	VI	St Thomas
 00820	VI	Christiansted
 00821	VI	Christiansted
 00822	VI	Christiansted
 00823	VI	Christiansted
 00824	VI	Christiansted
-00830	VI	Saint John
-00831	VI	Saint John
+00830	VI	St John
+00831	VI	St John
 00840	VI	Frederiksted
 00841	VI	Frederiksted
 00850	VI	Kingshill
@@ -146,11 +151,11 @@
 00929	PR	San Juan
 00930	PR	San Juan
 00931	PR	San Juan
+00933	PR	San Juan
 00934	PR	Fort Buchanan
 00935	PR	San Juan
 00936	PR	San Juan
 00937	PR	San Juan
-00938	PR	San Juan
 00939	PR	San Juan
 00940	PR	San Juan
 00949	PR	Toa Baja
@@ -227,6 +232,7 @@
 01059	MA	North Amherst
 01060	MA	Northampton
 01061	MA	Northampton
+01062	MA	Florence
 01063	MA	Northampton
 01066	MA	North Hatfield
 01068	MA	Oakham
@@ -266,7 +272,6 @@
 01108	MA	Springfield
 01109	MA	Springfield
 01111	MA	Springfield
-01114	MA	Springfield
 01115	MA	Springfield
 01116	MA	Longmeadow
 01118	MA	Springfield
@@ -279,6 +284,7 @@
 01144	MA	Springfield
 01151	MA	Indian Orchard
 01152	MA	Springfield
+01195	MA	Springfield
 01199	MA	Springfield
 01201	MA	Pittsfield
 01202	MA	Pittsfield
@@ -331,17 +337,16 @@
 01344	MA	Erving
 01346	MA	Heath
 01347	MA	Lake Pleasant
-01349	MA	Turners Falls
+01349	MA	Millers Falls
 01350	MA	Monroe Bridge
 01351	MA	Montague
-01354	MA	Northfield
+01354	MA	Gill
 01355	MA	New Salem
 01360	MA	Northfield
 01364	MA	Orange
 01366	MA	Petersham
 01367	MA	Rowe
 01368	MA	Royalston
-01369	MA	Shattuckville
 01370	MA	Shelburne Falls
 01373	MA	South Deerfield
 01375	MA	Sunderland
@@ -353,11 +358,11 @@
 01430	MA	Ashburnham
 01431	MA	Ashby
 01432	MA	Ayer
-01433	MA	Ft Devens
+01434	MA	Devens
 01436	MA	Baldwinville
 01438	MA	East Templeton
 01440	MA	Gardner
-01441	MA	Gardner
+01441	MA	Westminster
 01450	MA	Groton
 01451	MA	Harvard
 01452	MA	Hubbardston
@@ -406,7 +411,6 @@
 01536	MA	North Grafton
 01537	MA	North Oxford
 01538	MA	North Uxbridge
-01539	MA	Oakdale
 01540	MA	Oxford
 01541	MA	Princeton
 01542	MA	Rochdale
@@ -552,7 +556,6 @@
 01940	MA	Lynnfield
 01944	MA	Manchester
 01945	MA	Marblehead
-01947	MA	Marblehead
 01949	MA	Middleton
 01950	MA	Newburyport
 01951	MA	Newbury
@@ -607,13 +610,6 @@
 02081	MA	Walpole
 02090	MA	Westwood
 02093	MA	Wrentham
-02101	MA	Boston
-02102	MA	Boston
-02103	MA	Boston
-02104	MA	Boston
-02105	MA	Boston
-02106	MA	Boston
-02107	MA	Boston
 02108	MA	Boston
 02109	MA	Boston
 02110	MA	Boston
@@ -624,13 +620,13 @@
 02115	MA	Boston
 02116	MA	Boston
 02117	MA	Boston
-02118	MA	Roxbury
+02118	MA	Boston
 02119	MA	Roxbury
-02120	MA	Roxbury
+02120	MA	Roxbury Crossing
 02121	MA	Dorchester
 02122	MA	Dorchester
 02123	MA	Boston
-02124	MA	Dorchester
+02124	MA	Dorchester Center
 02125	MA	Dorchester
 02126	MA	Mattapan
 02127	MA	Boston
@@ -652,65 +648,36 @@
 02143	MA	Somerville
 02144	MA	Somerville
 02145	MA	Somerville
-02146	MA	Brookline
-02147	MA	Brookline Village
 02148	MA	Malden
 02149	MA	Everett
 02150	MA	Chelsea
 02151	MA	Revere
 02152	MA	Winthrop
 02153	MA	Medford
-02154	MA	Waltham
 02155	MA	Medford
 02156	MA	West Medford
-02157	MA	Babson Park
-02158	MA	Newton
-02159	MA	Newton
-02160	MA	Newton
-02161	MA	Newton
-02162	MA	Newton
 02163	MA	Boston
-02164	MA	Newton
-02165	MA	Newton
-02166	MA	Auburndale
-02167	MA	Chestnut Hill
-02168	MA	Waban
 02169	MA	Quincy
 02170	MA	Quincy
 02171	MA	Quincy
-02172	MA	Watertown
-02173	MA	Lexington
-02174	MA	Arlington
-02175	MA	Arlington Heights
 02176	MA	Melrose
-02177	MA	Melrose
-02178	MA	Belmont
-02179	MA	Waverley
 02180	MA	Stoneham
-02181	MA	Wellesley
 02184	MA	Braintree
 02185	MA	Braintree
 02186	MA	Milton
 02187	MA	Milton Village
 02188	MA	Weymouth
-02189	MA	Weymouth
-02190	MA	Weymouth
-02191	MA	Weymouth
-02192	MA	Needham
-02193	MA	Weston
-02194	MA	Needham
-02195	MA	Newton
+02189	MA	East Weymouth
+02190	MA	South Weymouth
+02191	MA	North Weymouth
 02196	MA	Boston
 02199	MA	Boston
 02201	MA	Boston
-02202	MA	Boston
 02203	MA	Boston
 02204	MA	Boston
 02205	MA	Boston
 02206	MA	Boston
 02207	MA	Boston
-02208	MA	Boston
-02209	MA	Boston
 02210	MA	Boston
 02211	MA	Boston
 02212	MA	Boston
@@ -718,18 +685,23 @@
 02216	MA	Boston
 02217	MA	Boston
 02222	MA	Boston
+02228	MA	East Boston
 02238	MA	Cambridge
 02239	MA	Cambridge
 02241	MA	Boston
-02254	MA	Waltham
-02258	MA	Newton
 02266	MA	Boston
 02269	MA	Quincy
-02272	MA	Watertown
-02277	MA	Watertown
+02283	MA	Boston
+02284	MA	Boston
 02293	MA	Boston
 02295	MA	Boston
 02297	MA	Boston
+02298	MA	Boston
+02301	MA	Brockton
+02302	MA	Brockton
+02303	MA	Brockton
+02304	MA	Brockton
+02305	MA	Brockton
 02322	MA	Avon
 02324	MA	Bridgewater
 02325	MA	Bridgewater
@@ -742,13 +714,14 @@
 02337	MA	Elmwood
 02338	MA	Halifax
 02339	MA	Hanover
+02340	MA	Hanover
 02341	MA	Hanson
 02343	MA	Holbrook
 02344	MA	Middleboro
 02345	MA	Manomet
 02346	MA	Middleboro
 02347	MA	Lakeville
-02348	MA	Middleboro
+02348	MA	Lakeville
 02349	MA	Middleboro
 02350	MA	Monponsett
 02351	MA	Abington
@@ -760,7 +733,6 @@
 02360	MA	Plymouth
 02361	MA	Plymouth
 02362	MA	Plymouth
-02363	MA	Plymouth
 02364	MA	Kingston
 02366	MA	South Carver
 02367	MA	Plympton
@@ -770,13 +742,42 @@
 02379	MA	West Bridgewater
 02381	MA	White Horse Beach
 02382	MA	Whitman
-02401	MA	Brockton
-02402	MA	Brockton
-02403	MA	Brockton
-02404	MA	Brockton
-02405	MA	Brockton
-02411	MA	Brockton
-02499	MA	Brockton
+02420	MA	Lexington
+02421	MA	Lexington
+02445	MA	Brookline
+02446	MA	Brookline
+02447	MA	Brookline Village
+02451	MA	Waltham
+02452	MA	Waltham
+02453	MA	Waltham
+02454	MA	Waltham
+02455	MA	North Waltham
+02456	MA	New Town
+02457	MA	Babson Park
+02458	MA	Newton
+02459	MA	Newton Center
+02460	MA	Newtonville
+02461	MA	Newton Highlands
+02462	MA	Newton Lower Falls
+02464	MA	Newton Upper Falls
+02465	MA	West Newton
+02466	MA	Auburndale
+02467	MA	Chestnut Hill
+02468	MA	Waban
+02471	MA	Watertown
+02472	MA	Watertown
+02474	MA	Arlington
+02475	MA	Arlington Heights
+02476	MA	Arlington
+02477	MA	Watertown
+02478	MA	Belmont
+02479	MA	Waverley
+02481	MA	Wellesley Hills
+02482	MA	Wellesley
+02492	MA	Needham
+02493	MA	Weston
+02494	MA	Needham Heights
+02495	MA	Nonantum
 02532	MA	Buzzards Bay
 02534	MA	Cataumet
 02535	MA	Chilmark
@@ -802,7 +803,7 @@
 02565	MA	Silver Beach
 02568	MA	Vineyard Haven
 02571	MA	Wareham
-02573	MA	Vineyard Haven
+02573	MA	West Chop
 02574	MA	West Falmouth
 02575	MA	West Tisbury
 02576	MA	West Wareham
@@ -873,9 +874,8 @@
 02744	MA	New Bedford
 02745	MA	New Bedford
 02746	MA	New Bedford
-02747	MA	Dartmouth
-02748	MA	Dartmouth
-02754	MA	North Dighton
+02747	MA	North Dartmouth
+02748	MA	South Dartmouth
 02760	MA	North Attleboro
 02761	MA	North Attleboro
 02762	MA	Plainville
@@ -890,6 +890,7 @@
 02777	MA	Swansea
 02779	MA	Berkley
 02780	MA	Taunton
+02783	MA	Taunton
 02790	MA	Westport
 02791	MA	Westport Point
 02801	RI	Adamsville
@@ -996,6 +997,7 @@
 03043	NH	Francestown
 03044	NH	Fremont
 03045	NH	Goffstown
+03046	NH	Dunbarton
 03047	NH	Greenfield
 03048	NH	Greenville
 03049	NH	Hollis
@@ -1009,6 +1011,7 @@
 03061	NH	Nashua
 03062	NH	Nashua
 03063	NH	Nashua
+03064	NH	Nashua
 03070	NH	New Boston
 03071	NH	New Ipswich
 03073	NH	North Salem
@@ -1045,7 +1048,6 @@
 03229	NH	Contoocook
 03230	NH	Danbury
 03231	NH	East Andover
-03232	NH	East Hebron
 03233	NH	Elkins
 03234	NH	Epsom
 03235	NH	Franklin
@@ -1055,10 +1057,11 @@
 03241	NH	Hebron
 03242	NH	Henniker
 03243	NH	Hill
-03244	NH	Hillsboro
+03244	NH	Hillsborough
 03245	NH	Holderness
 03246	NH	Laconia
 03247	NH	Laconia
+03249	NH	Gilford
 03251	NH	Lincoln
 03252	NH	Lochmere
 03253	NH	Meredith
@@ -1066,13 +1069,13 @@
 03255	NH	Newbury
 03256	NH	New Hampton
 03257	NH	New London
+03258	NH	Chichester
 03259	NH	North Sandwich
 03260	NH	North Sutton
 03261	NH	Northwood
 03262	NH	North Woodstock
 03263	NH	Pittsfield
 03264	NH	Plymouth
-03265	NH	Andover
 03266	NH	Rumney
 03268	NH	Salisbury
 03269	NH	Sanbornton
@@ -1087,16 +1090,20 @@
 03281	NH	Weare
 03282	NH	Wentworth
 03284	NH	Springfield
+03285	NH	Thornton
 03287	NH	Wilmot
 03289	NH	Winnisquam
 03290	NH	Nottingham
 03291	NH	West Nottingham
 03293	NH	Woodstock
+03298	NH	Tilton
+03299	NH	Tilton
 03301	NH	Concord
 03302	NH	Concord
 03303	NH	Concord
 03304	NH	Bow
 03305	NH	Concord
+03307	NH	Loudon
 03431	NH	Keene
 03435	NH	Keene
 03440	NH	Antrim
@@ -1105,7 +1112,7 @@
 03443	NH	Chesterfield
 03444	NH	Dublin
 03445	NH	Sullivan
-03446	NH	East Swanzey
+03446	NH	Swanzey
 03447	NH	Fitzwilliam
 03448	NH	Gilsum
 03449	NH	Hancock
@@ -1114,7 +1121,7 @@
 03452	NH	Jaffrey
 03455	NH	Marlborough
 03456	NH	Marlow
-03457	NH	Munsonville
+03457	NH	Nelson
 03458	NH	Peterborough
 03461	NH	Rindge
 03462	NH	Spofford
@@ -1137,11 +1144,12 @@
 03583	NH	Jefferson
 03584	NH	Lancaster
 03585	NH	Lisbon
-03587	NH	Meadows
+03586	NH	Sugar Hill
 03588	NH	Milan
 03589	NH	Mount Washington
 03590	NH	North Stratford
 03592	NH	Pittsburg
+03593	NH	Randolph
 03595	NH	Twin Mountain
 03597	NH	West Stewartstown
 03598	NH	Whitefield
@@ -1149,8 +1157,7 @@
 03602	NH	Alstead
 03603	NH	Charlestown
 03604	NH	Drewsville
-03605	NH	East Lempster
-03606	NH	Lempster
+03605	NH	Lempster
 03607	NH	South Acworth
 03608	NH	Walpole
 03609	NH	North Walpole
@@ -1174,7 +1181,6 @@
 03769	NH	Lyme Center
 03770	NH	Meriden
 03771	NH	Monroe
-03772	NH	Mount Sunapee
 03773	NH	Newport
 03774	NH	North Haverhill
 03777	NH	Orford
@@ -1188,7 +1194,7 @@
 03802	NH	Portsmouth
 03803	NH	Portsmouth
 03804	NH	Portsmouth
-03805	NH	Rollinsford
+03805	NH	Newington
 03809	NH	Alton
 03810	NH	Alton Bay
 03811	NH	Atkinson
@@ -1203,6 +1209,7 @@
 03820	NH	Dover
 03821	NH	Dover
 03822	NH	Dover
+03823	NH	Madbury
 03824	NH	Durham
 03825	NH	Barrington
 03826	NH	East Hampstead
@@ -1236,6 +1243,7 @@
 03858	NH	Newton
 03859	NH	Newton Junction
 03860	NH	North Conway
+03861	NH	Lee
 03862	NH	North Hampton
 03864	NH	Ossipee
 03865	NH	Plaistow
@@ -1250,7 +1258,7 @@
 03874	NH	Seabrook
 03875	NH	Silver Lake
 03878	NH	Somersworth
-03882	NH	South Effingham
+03882	NH	Effingham
 03883	NH	South Tamworth
 03884	NH	Strafford
 03885	NH	Stratham
@@ -1292,12 +1300,13 @@
 04021	ME	Cumberland Center
 04022	ME	Denmark
 04024	ME	East Baldwin
-04027	ME	East Lebanon
-04028	ME	East Parsonfield
-04029	ME	East Sebago
+04027	ME	Lebanon
+04028	ME	East Parsonsfield
+04029	ME	Sebago
 04030	ME	East Waterboro
 04032	ME	Freeport
 04033	ME	Freeport
+04034	ME	Freeport
 04037	ME	Fryeburg
 04038	ME	Gorham
 04039	ME	Gray
@@ -1306,17 +1315,15 @@
 04042	ME	Hollis Center
 04043	ME	Kennebunk
 04046	ME	Kennebunkport
-04047	ME	Kezar Falls
+04047	ME	Parsonsfield
 04048	ME	Limerick
 04049	ME	Limington
 04050	ME	Long Island
 04051	ME	Lovell
-04053	ME	Merepoint
 04054	ME	Moody
 04055	ME	Naples
 04056	ME	Newfield
 04057	ME	North Bridgton
-04060	ME	North Shapleigh
 04061	ME	North Waterboro
 04062	ME	Windham
 04063	ME	Ocean Park
@@ -1334,7 +1341,6 @@
 04077	ME	South Casco
 04078	ME	South Freeport
 04079	ME	Harpswell
-04081	ME	South Waterford
 04082	ME	South Windham
 04083	ME	Springvale
 04084	ME	Standish
@@ -1345,7 +1351,7 @@
 04090	ME	Wells
 04091	ME	West Baldwin
 04092	ME	Westbrook
-04093	ME	West Buxton
+04093	ME	Buxton
 04094	ME	West Kennebunk
 04095	ME	West Newfield
 04096	ME	Yarmouth
@@ -1382,7 +1388,7 @@
 04227	ME	East Dixfield
 04228	ME	East Livermore
 04230	ME	East Poland
-04231	ME	East Stoneham
+04231	ME	Stoneham
 04234	ME	East Wilton
 04236	ME	Greene
 04237	ME	Hanover
@@ -1395,7 +1401,7 @@
 04252	ME	Lisbon Falls
 04253	ME	Livermore
 04254	ME	Livermore Falls
-04255	ME	Locke Mills
+04255	ME	Greenwood
 04256	ME	Mechanic Falls
 04257	ME	Mexico
 04258	ME	Minot
@@ -1413,16 +1419,13 @@
 04274	ME	Poland
 04275	ME	Roxbury
 04276	ME	Rumford
-04278	ME	Rumford Center
-04279	ME	Rumford Point
 04280	ME	Sabattus
 04281	ME	South Paris
 04282	ME	Turner
-04283	ME	Turner Center
 04284	ME	Wayne
 04285	ME	Weld
 04286	ME	West Bethel
-04287	ME	West Bowdoin
+04287	ME	Bowdoin
 04288	ME	West Minot
 04289	ME	West Paris
 04290	ME	Peru
@@ -1453,12 +1456,11 @@
 04358	ME	South China
 04359	ME	South Gardiner
 04360	ME	Vienna
-04361	ME	Weeks Mills
 04363	ME	Windsor
 04364	ME	Winthrop
 04401	ME	Bangor
 04402	ME	Bangor
-04406	ME	Abbot Village
+04406	ME	Abbot
 04408	ME	Aurora
 04410	ME	Bradford
 04411	ME	Bradley
@@ -1468,15 +1470,14 @@
 04415	ME	Brownville Junction
 04416	ME	Bucksport
 04417	ME	Burlington
-04418	ME	Cardville
+04418	ME	Greenbush
 04419	ME	Carmel
 04420	ME	Castine
 04421	ME	Castine
 04422	ME	Charleston
-04423	ME	Costigan
 04424	ME	Danforth
 04426	ME	Dover Foxcroft
-04427	ME	East Corinth
+04427	ME	Corinth
 04428	ME	Eddington
 04429	ME	Holden
 04430	ME	East Millinocket
@@ -1497,7 +1498,6 @@
 04455	ME	Lee
 04456	ME	Levant
 04457	ME	Lincoln
-04458	ME	Lincoln Center
 04459	ME	Mattawamkeag
 04460	ME	Medway
 04461	ME	Milford
@@ -1516,7 +1516,6 @@
 04478	ME	Rockwood
 04479	ME	Sangerville
 04481	ME	Sebec
-04482	ME	Sebec Lake
 04485	ME	Shirley Mills
 04487	ME	Springfield
 04488	ME	Stetson
@@ -1530,7 +1529,6 @@
 04497	ME	Wytopitlock
 04530	ME	Bath
 04535	ME	Alna
-04536	ME	Bayville
 04537	ME	Boothbay
 04538	ME	Boothbay Harbor
 04539	ME	Bristol
@@ -1541,7 +1539,6 @@
 04548	ME	Georgetown
 04549	ME	Isle Of Springs
 04551	ME	Bremen
-04552	ME	Newagen
 04553	ME	Newcastle
 04554	ME	New Harbor
 04555	ME	Nobleboro
@@ -1551,7 +1548,6 @@
 04563	ME	Cushing
 04564	ME	Round Pond
 04565	ME	Sebasco Estates
-04567	ME	Small Point
 04568	ME	South Bristol
 04570	ME	Squirrel Island
 04571	ME	Trevett
@@ -1559,19 +1555,17 @@
 04573	ME	Walpole
 04574	ME	Washington
 04575	ME	West Boothbay Harbor
-04576	ME	West Southport
+04576	ME	Southport
 04578	ME	Wiscasset
 04579	ME	Woolwich
 04605	ME	Ellsworth
 04606	ME	Addison
 04607	ME	Gouldsboro
-04608	ME	Atlantic
 04609	ME	Bar Harbor
 04611	ME	Beals
 04612	ME	Bernard
 04613	ME	Birch Harbor
 04614	ME	Blue Hill
-04615	ME	Blue Hill Falls
 04616	ME	Brooklin
 04617	ME	Brooksville
 04619	ME	Calais
@@ -1588,7 +1582,6 @@
 04634	ME	Franklin
 04635	ME	Frenchboro
 04637	ME	Grand Lake Stream
-04638	ME	Grove
 04640	ME	Hancock
 04642	ME	Harborside
 04643	ME	Harrington
@@ -1602,14 +1595,11 @@
 04653	ME	Bass Harbor
 04654	ME	Machias
 04655	ME	Machiasport
-04656	ME	Manset
 04657	ME	Meddybemps
 04658	ME	Milbridge
-04659	ME	Minturn
 04660	ME	Mount Desert
 04662	ME	Northeast Harbor
 04664	ME	Sullivan
-04665	ME	Otter Creek
 04666	ME	Pembroke
 04667	ME	Perry
 04668	ME	Princeton
@@ -1628,10 +1618,9 @@
 04684	ME	Surry
 04685	ME	Swans Island
 04686	ME	Wesley
-04690	ME	West Tremont
 04691	ME	Whiting
 04693	ME	Winter Harbor
-04694	ME	Woodland
+04694	ME	Baileyville
 04730	ME	Houlton
 04732	ME	Ashland
 04733	ME	Benedicta
@@ -1654,7 +1643,6 @@
 04756	ME	Madawaska
 04757	ME	Mapleton
 04758	ME	Mars Hill
-04759	ME	Masardis
 04760	ME	Monticello
 04761	ME	New Limerick
 04762	ME	New Sweden
@@ -1664,23 +1652,19 @@
 04766	ME	Perham
 04768	ME	Portage
 04769	ME	Presque Isle
-04770	ME	Quimby
 04772	ME	Saint Agatha
 04773	ME	Saint David
 04774	ME	Saint Francis
 04775	ME	Sheridan
-04776	ME	Sherman Mills
-04777	ME	Sherman Station
+04776	ME	Sherman
+04777	ME	Stacyville
 04779	ME	Sinclair
 04780	ME	Smyrna Mills
-04781	ME	Soldier Pond
-04782	ME	Stacyville
+04781	ME	Wallagrass
 04783	ME	Stockholm
-04784	ME	Upper Frenchville
 04785	ME	Van Buren
 04786	ME	Washburn
 04787	ME	Westfield
-04788	ME	Winterville
 04841	ME	Rockland
 04843	ME	Camden
 04846	ME	Glen Cove
@@ -1694,7 +1678,6 @@
 04854	ME	Owls Head
 04855	ME	Port Clyde
 04856	ME	Rockport
-04857	ME	Saint George
 04858	ME	South Thomaston
 04859	ME	Spruce Head
 04860	ME	Tenants Harbor
@@ -1717,7 +1700,7 @@
 04923	ME	Cambridge
 04924	ME	Canaan
 04925	ME	Caratunk
-04926	ME	China
+04926	ME	China Village
 04927	ME	Clinton
 04928	ME	Corinna
 04929	ME	Detroit
@@ -1746,7 +1729,7 @@
 04956	ME	New Vineyard
 04957	ME	Norridgewock
 04958	ME	North Anson
-04961	ME	North New Portland
+04961	ME	New Portland
 04962	ME	North Vassalboro
 04963	ME	Oakland
 04964	ME	Oquossoc
@@ -1789,7 +1772,6 @@
 05041	VT	East Randolph
 05042	VT	East Ryegate
 05043	VT	East Thetford
-05044	VT	Ely
 05045	VT	Fairlee
 05046	VT	Groton
 05047	VT	Hartford
@@ -1817,7 +1799,7 @@
 05073	VT	Taftsville
 05074	VT	Thetford
 05075	VT	Thetford Center
-05076	VT	East Corinth
+05076	VT	Topsham
 05077	VT	Tunbridge
 05079	VT	Vershire
 05081	VT	Wells River
@@ -1870,7 +1852,7 @@
 05346	VT	Putney
 05350	VT	Readsboro
 05351	VT	South Newfane
-05352	VT	Readsboro
+05352	VT	Stamford
 05353	VT	Townshend
 05354	VT	Vernon
 05355	VT	Wardsboro
@@ -1889,8 +1871,9 @@
 05405	VT	Burlington
 05406	VT	Burlington
 05407	VT	South Burlington
+05408	VT	Burlington
 05439	VT	Colchester
-05440	VT	Alburg
+05440	VT	Alburgh
 05441	VT	Bakersfield
 05442	VT	Belvidere Center
 05443	VT	Bristol
@@ -1906,7 +1889,7 @@
 05453	VT	Essex Junction
 05454	VT	Fairfax
 05455	VT	Fairfield
-05456	VT	Ferrisburg
+05456	VT	Ferrisburgh
 05457	VT	Franklin
 05458	VT	Grand Isle
 05459	VT	Highgate Center
@@ -1922,7 +1905,7 @@
 05470	VT	Montgomery
 05471	VT	Montgomery Center
 05472	VT	New Haven
-05473	VT	North Ferrisburg
+05473	VT	North Ferrisburgh
 05474	VT	North Hero
 05476	VT	Richford
 05477	VT	Richmond
@@ -2019,7 +2002,7 @@
 05763	VT	Pittsford
 05764	VT	Poultney
 05765	VT	Proctor
-05766	VT	Middlebury
+05766	VT	Ripton
 05767	VT	Rochester
 05768	VT	Rupert
 05769	VT	Salisbury
@@ -2109,13 +2092,13 @@
 06033	CT	Glastonbury
 06034	CT	Farmington
 06035	CT	Granby
-06037	CT	Kensington
+06037	CT	Berlin
 06039	CT	Lakeville
 06040	CT	Manchester
 06041	CT	Manchester
+06042	CT	Manchester
 06043	CT	Bolton
 06045	CT	Manchester
-06049	CT	Melrose
 06050	CT	New Britain
 06051	CT	New Britain
 06052	CT	New Britain
@@ -2126,7 +2109,7 @@
 06060	CT	North Granby
 06061	CT	Pine Meadow
 06062	CT	Plainville
-06063	CT	Pleasant Valley
+06063	CT	Barkhamsted
 06064	CT	Poquonock
 06065	CT	Riverton
 06066	CT	Vernon Rockville
@@ -2166,28 +2149,28 @@
 06104	CT	Hartford
 06105	CT	Hartford
 06106	CT	Hartford
-06107	CT	W Hartford
+06107	CT	West Hartford
 06108	CT	East Hartford
 06109	CT	Wethersfield
-06110	CT	W Hartford
+06110	CT	West Hartford
 06111	CT	Newington
 06112	CT	Hartford
 06114	CT	Hartford
 06115	CT	Hartford
-06117	CT	W Hartford
+06117	CT	West Hartford
 06118	CT	East Hartford
-06119	CT	W Hartford
+06119	CT	West Hartford
 06120	CT	Hartford
 06123	CT	Hartford
 06126	CT	Hartford
-06127	CT	W Hartford
+06127	CT	West Hartford
 06128	CT	East Hartford
 06129	CT	Wethersfield
 06131	CT	Newington
 06132	CT	Hartford
-06133	CT	W Hartford
+06133	CT	West Hartford
 06134	CT	Hartford
-06137	CT	W Hartford
+06137	CT	West Hartford
 06138	CT	East Hartford
 06140	CT	Hartford
 06141	CT	Hartford
@@ -2260,7 +2243,7 @@
 06334	CT	Bozrah
 06335	CT	Gales Ferry
 06336	CT	Gilman
-06337	CT	Glasgo
+06338	CT	Mashantucket
 06339	CT	Ledyard
 06340	CT	Groton
 06349	CT	Groton
@@ -2297,6 +2280,7 @@
 06403	CT	Beacon Falls
 06404	CT	Botsford
 06405	CT	Branford
+06408	CT	Cheshire
 06409	CT	Centerbrook
 06410	CT	Cheshire
 06411	CT	Cheshire
@@ -2313,10 +2297,6 @@
 06423	CT	East Haddam
 06424	CT	East Hampton
 06426	CT	Essex
-06430	CT	Fairfield
-06431	CT	Fairfield
-06432	CT	Fairfield
-06436	CT	Greens Farms
 06437	CT	Guilford
 06438	CT	Haddam
 06439	CT	Hadlyme
@@ -2334,8 +2314,7 @@
 06457	CT	Middletown
 06459	CT	Middletown
 06460	CT	Milford
-06461	CT	Bridgeport
-06466	CT	Milford
+06461	CT	Milford
 06467	CT	Milldale
 06468	CT	Monroe
 06469	CT	Moodus
@@ -2356,11 +2335,11 @@
 06487	CT	South Britain
 06488	CT	Southbury
 06489	CT	Southington
-06490	CT	Southport
 06491	CT	Stevenson
 06492	CT	Wallingford
 06493	CT	Wallingford
 06494	CT	Wallingford
+06495	CT	Wallingford
 06497	CT	Stratford
 06498	CT	Westbrook
 06501	CT	New Haven
@@ -2406,6 +2385,8 @@
 06610	CT	Bridgeport
 06611	CT	Trumbull
 06612	CT	Easton
+06614	CT	Stratford
+06615	CT	Stratford
 06650	CT	Bridgeport
 06673	CT	Bridgeport
 06699	CT	Bridgeport
@@ -2453,7 +2434,8 @@
 06787	CT	Thomaston
 06790	CT	Torrington
 06791	CT	Harwinton
-06793	CT	Washington Depot
+06792	CT	Torrington
+06793	CT	Washington
 06794	CT	Washington Depot
 06795	CT	Watertown
 06796	CT	West Cornwall
@@ -2469,11 +2451,15 @@
 06816	CT	Danbury
 06817	CT	Danbury
 06820	CT	Darien
+06824	CT	Fairfield
+06825	CT	Fairfield
+06828	CT	Fairfield
 06829	CT	Georgetown
 06830	CT	Greenwich
 06831	CT	Greenwich
 06832	CT	Greenwich
 06836	CT	Greenwich
+06838	CT	Greens Farms
 06840	CT	New Canaan
 06842	CT	New Canaan
 06850	CT	Norwalk
@@ -2498,6 +2484,7 @@
 06883	CT	Weston
 06888	CT	Westport
 06889	CT	Westport
+06890	CT	Southport
 06896	CT	Redding
 06897	CT	Wilton
 06901	CT	Stamford
@@ -2580,6 +2567,7 @@
 07066	NJ	Clark
 07067	NJ	Colonia
 07068	NJ	Roseland
+07069	NJ	Watchung
 07070	NJ	Rutherford
 07071	NJ	Lyndhurst
 07072	NJ	Carlstadt
@@ -2594,6 +2582,7 @@
 07081	NJ	Springfield
 07082	NJ	Towaco
 07083	NJ	Union
+07086	NJ	Weehawken
 07087	NJ	Union City
 07088	NJ	Vauxhall
 07090	NJ	Westfield
@@ -2604,7 +2593,6 @@
 07095	NJ	Woodbridge
 07096	NJ	Secaucus
 07097	NJ	Jersey City
-07098	NJ	Avenel
 07099	NJ	Kearny
 07101	NJ	Newark
 07102	NJ	Newark
@@ -2629,7 +2617,6 @@
 07193	NJ	Newark
 07194	NJ	Newark
 07195	NJ	Newark
-07197	NJ	Newark
 07198	NJ	Newark
 07199	NJ	Newark
 07201	NJ	Elizabeth
@@ -2637,11 +2624,9 @@
 07203	NJ	Roselle
 07204	NJ	Roselle Park
 07205	NJ	Hillside
-07206	NJ	Elizabeth
+07206	NJ	Elizabethport
 07207	NJ	Elizabeth
 07208	NJ	Elizabeth
-07215	NJ	Elizabeth
-07216	NJ	Elizabeth
 07302	NJ	Jersey City
 07303	NJ	Jersey City
 07304	NJ	Jersey City
@@ -2652,6 +2637,7 @@
 07309	NJ	Jersey City
 07310	NJ	Jersey City
 07311	NJ	Jersey City
+07395	NJ	Jersey City
 07399	NJ	Jersey City
 07401	NJ	Allendale
 07403	NJ	Bloomingdale
@@ -2695,7 +2681,6 @@
 07480	NJ	West Milford
 07481	NJ	Wyckoff
 07495	NJ	Mahwah
-07498	NJ	Mahwah
 07501	NJ	Paterson
 07502	NJ	Paterson
 07503	NJ	Paterson
@@ -2712,7 +2697,6 @@
 07514	NJ	Paterson
 07522	NJ	Paterson
 07524	NJ	Paterson
-07530	NJ	Paterson
 07533	NJ	Paterson
 07538	NJ	Haledon
 07543	NJ	Paterson
@@ -2756,12 +2740,14 @@
 07666	NJ	Teaneck
 07670	NJ	Tenafly
 07675	NJ	Westwood
-07688	NJ	Teaneck
+07676	NJ	Township Of Washington
+07677	NJ	Woodcliff Lake
+07699	NJ	Teterboro
 07701	NJ	Red Bank
 07702	NJ	Shrewsbury
 07703	NJ	Fort Monmouth
 07704	NJ	Fair Haven
-07709	NJ	Allenhurst
+07709	NJ	Red Bank
 07710	NJ	Adelphia
 07711	NJ	Allenhurst
 07712	NJ	Asbury Park
@@ -2805,7 +2791,6 @@
 07763	NJ	Tennent
 07764	NJ	West Long Branch
 07765	NJ	Wickatunk
-07777	NJ	Holmdel
 07799	NJ	Eatontown
 07801	NJ	Dover
 07802	NJ	Dover
@@ -2886,7 +2871,7 @@
 07946	NJ	Millington
 07950	NJ	Morris Plains
 07960	NJ	Morristown
-07961	NJ	Morristown
+07961	NJ	Convent Station
 07962	NJ	Morristown
 07963	NJ	Morristown
 07970	NJ	Mount Freedom
@@ -2986,7 +2971,7 @@
 08093	NJ	Westville
 08094	NJ	Williamstown
 08095	NJ	Winslow
-08096	NJ	Woodbury
+08096	NJ	West Deptford
 08097	NJ	Woodbury Heights
 08098	NJ	Woodstown
 08099	NJ	Bellmawr
@@ -3004,6 +2989,7 @@
 08202	NJ	Avalon
 08203	NJ	Brigantine
 08204	NJ	Cape May
+08205	NJ	Absecon
 08210	NJ	Cape May Court House
 08212	NJ	Cape May Point
 08213	NJ	Cologne
@@ -3014,16 +3000,13 @@
 08219	NJ	Green Creek
 08220	NJ	Leeds Point
 08221	NJ	Linwood
-08222	NJ	Linwood
 08223	NJ	Marmora
 08224	NJ	New Gretna
 08225	NJ	Northfield
 08226	NJ	Ocean City
-08227	NJ	Linwood
 08230	NJ	Ocean View
 08231	NJ	Oceanville
 08232	NJ	Pleasantville
-08233	NJ	Pleasantville
 08234	NJ	Egg Harbor Township
 08240	NJ	Pomona
 08241	NJ	Port Republic
@@ -3074,25 +3057,24 @@
 08350	NJ	Richland
 08352	NJ	Rosenhayn
 08353	NJ	Shiloh
-08358	NJ	Cherry Hill
 08360	NJ	Vineland
-08370	NJ	Riverside
+08361	NJ	Vineland
+08362	NJ	Vineland
 08401	NJ	Atlantic City
 08402	NJ	Margate City
 08403	NJ	Longport
 08404	NJ	Atlantic City
 08405	NJ	Atlantic City
 08406	NJ	Ventnor City
-08411	NJ	Atlantic City
 08501	NJ	Allentown
 08502	NJ	Belle Mead
 08504	NJ	Blawenburg
 08505	NJ	Bordentown
-08510	NJ	Clarksburg
+08510	NJ	Millstone Township
 08511	NJ	Cookstown
 08512	NJ	Cranbury
-08514	NJ	Creamridge
-08515	NJ	Crosswicks
+08514	NJ	Cream Ridge
+08515	NJ	Chesterfield
 08518	NJ	Florence
 08520	NJ	Hightstown
 08525	NJ	Hopewell
@@ -3102,7 +3084,7 @@
 08530	NJ	Lambertville
 08533	NJ	New Egypt
 08534	NJ	Pennington
-08535	NJ	Perrineville
+08535	NJ	Millstone Township
 08536	NJ	Plainsboro
 08540	NJ	Princeton
 08541	NJ	Princeton
@@ -3121,7 +3103,6 @@
 08560	NJ	Titusville
 08561	NJ	Windsor
 08562	NJ	Wrightstown
-08570	NJ	Cranbury
 08601	NJ	Trenton
 08602	NJ	Trenton
 08603	NJ	Trenton
@@ -3140,15 +3121,14 @@
 08628	NJ	Trenton
 08629	NJ	Trenton
 08638	NJ	Trenton
-08640	NJ	Trenton
+08640	NJ	Fort Dix
 08641	NJ	Trenton
 08645	NJ	Trenton
 08646	NJ	Trenton
 08647	NJ	Trenton
-08648	NJ	Trenton
+08648	NJ	Lawrence Township
 08650	NJ	Trenton
 08666	NJ	Trenton
-08677	NJ	Trenton
 08690	NJ	Trenton
 08691	NJ	Trenton
 08695	NJ	Trenton
@@ -3179,7 +3159,7 @@
 08756	NJ	Toms River
 08757	NJ	Toms River
 08758	NJ	Waretown
-08759	NJ	Whiting
+08759	NJ	Manchester Township
 08801	NJ	Annandale
 08802	NJ	Asbury
 08803	NJ	Baptistown
@@ -3204,7 +3184,7 @@
 08828	NJ	Helmetta
 08829	NJ	High Bridge
 08830	NJ	Iselin
-08831	NJ	Jamesburg
+08831	NJ	Monroe Township
 08832	NJ	Keasbey
 08833	NJ	Lebanon
 08834	NJ	Little York
@@ -3212,6 +3192,7 @@
 08836	NJ	Martinsville
 08837	NJ	Edison
 08840	NJ	Metuchen
+08844	NJ	Hillsborough
 08846	NJ	Middlesex
 08848	NJ	Milford
 08850	NJ	Milltown
@@ -3235,8 +3216,6 @@
 08873	NJ	Somerset
 08875	NJ	Somerset
 08876	NJ	Somerville
-08877	NJ	South River
-08878	NJ	South Amboy
 08879	NJ	South Amboy
 08880	NJ	South Bound Brook
 08882	NJ	South River
@@ -3247,7 +3226,6 @@
 08888	NJ	Whitehouse
 08889	NJ	Whitehouse Station
 08890	NJ	Zarephath
-08896	NJ	Raritan
 08899	NJ	Edison
 08901	NJ	New Brunswick
 08902	NJ	North Brunswick
@@ -3259,3 +3237,433 @@
 08933	NJ	New Brunswick
 08988	NJ	New Brunswick
 08989	NJ	New Brunswick
+09001	AE	Apo
+09002	AE	Apo
+09003	AE	Apo
+09004	AE	Apo
+09005	AE	Apo
+09006	AE	Apo
+09007	AE	Apo
+09008	AE	Apo
+09009	AE	Apo
+09010	AE	Apo
+09011	AE	Apo
+09012	AE	Apo
+09013	AE	Apo
+09014	AE	Apo
+09020	AE	Apo
+09021	AE	Apo
+09028	AE	Apo
+09031	AE	Apo
+09033	AE	Apo
+09034	AE	Apo
+09036	AE	Apo
+09038	AE	Apo
+09042	AE	Apo
+09045	AE	Apo
+09046	AE	Apo
+09049	AE	Apo
+09051	AE	Apo
+09053	AE	Apo
+09054	AE	Apo
+09055	AE	Apo
+09056	AE	Apo
+09058	AE	Apo
+09059	AE	Apo
+09060	AE	Apo
+09063	AE	Apo
+09067	AE	Apo
+09068	AE	Apo
+09069	AE	Apo
+09074	AE	Apo
+09075	AE	Apo
+09076	AE	Apo
+09079	AE	Apo
+09080	AE	Apo
+09081	AE	Apo
+09086	AE	Apo
+09088	AE	Apo
+09089	AE	Apo
+09090	AE	Apo
+09092	AE	Apo
+09094	AE	Apo
+09095	AE	Apo
+09096	AE	Apo
+09099	AE	Apo
+09100	AE	Apo
+09102	AE	Apo
+09103	AE	Apo
+09104	AE	Apo
+09107	AE	Apo
+09110	AE	Apo
+09112	AE	Apo
+09114	AE	Apo
+09123	AE	Apo
+09126	AE	Apo
+09128	AE	Apo
+09131	AE	Apo
+09136	AE	Apo
+09137	AE	Apo
+09138	AE	Apo
+09139	AE	Apo
+09140	AE	Apo
+09142	AE	Apo
+09143	AE	Apo
+09154	AE	Apo
+09165	AE	Apo
+09166	AE	Apo
+09169	AE	Apo
+09172	AE	Apo
+09173	AE	Apo
+09175	AE	Apo
+09177	AE	Apo
+09180	AE	Apo
+09182	AE	Apo
+09183	AE	Apo
+09185	AE	Apo
+09186	AE	Apo
+09201	AE	Apo
+09211	AE	Apo
+09212	AE	Apo
+09213	AE	Dpo
+09214	AE	Apo
+09225	AE	Apo
+09226	AE	Apo
+09227	AE	Apo
+09229	AE	Apo
+09237	AE	Apo
+09244	AE	Apo
+09245	AE	Apo
+09250	AE	Apo
+09252	AE	Apo
+09261	AE	Apo
+09262	AE	Apo
+09263	AE	Apo
+09264	AE	Apo
+09265	AE	Dpo
+09266	AE	Apo
+09267	AE	Apo
+09300	AE	Apo
+09301	AE	Apo
+09302	AE	Apo
+09303	AE	Apo
+09304	AE	Apo
+09305	AE	Apo
+09306	AE	Apo
+09307	AE	Apo
+09308	AE	Apo
+09309	AE	Apo
+09310	AE	Apo
+09311	AE	Apo
+09312	AE	Apo
+09313	AE	Apo
+09314	AE	Apo
+09315	AE	Apo
+09316	AE	Apo
+09317	AE	Apo
+09318	AE	Apo
+09319	AE	Apo
+09320	AE	Apo
+09321	AE	Apo
+09322	AE	Apo
+09323	AE	Apo
+09324	AE	Apo
+09327	AE	Apo
+09328	AE	Apo
+09330	AE	Apo
+09331	AE	Apo
+09332	AE	Apo
+09333	AE	Apo
+09334	AE	Apo
+09336	AE	Apo
+09337	AE	Apo
+09338	AE	Apo
+09339	AE	Apo
+09340	AE	Apo
+09342	AE	Apo
+09343	AE	Apo
+09344	AE	Apo
+09346	AE	Apo
+09347	AE	Apo
+09348	AE	Apo
+09350	AE	Apo
+09351	AE	Apo
+09352	AE	Apo
+09353	AE	Apo
+09354	AE	Apo
+09355	AE	Apo
+09356	AE	Apo
+09357	AE	Apo
+09358	AE	Apo
+09359	AE	Apo
+09360	AE	Apo
+09361	AE	Apo
+09362	AE	Apo
+09363	AE	Fpo
+09364	AE	Apo
+09365	AE	Apo
+09366	AE	Apo
+09367	AE	Apo
+09368	AE	Apo
+09369	AE	Fpo
+09370	AE	Apo
+09371	AE	Apo
+09372	AE	Fpo
+09373	AE	Fpo
+09374	AE	Apo
+09375	AE	Apo
+09376	AE	Fpo
+09377	AE	Fpo
+09378	AE	Apo
+09379	AE	Fpo
+09380	AE	Apo
+09381	AE	Apo
+09382	AE	Apo
+09383	AE	Apo
+09384	AE	Apo
+09386	AE	Apo
+09387	AE	Apo
+09388	AE	Apo
+09389	AE	Apo
+09390	AE	Apo
+09391	AE	Apo
+09393	AE	Apo
+09394	AE	Fpo
+09396	AE	Apo
+09397	AE	Apo
+09399	AE	Apo
+09402	AE	Apo
+09403	AE	Apo
+09409	AE	Fpo
+09420	AE	Fpo
+09421	AE	Apo
+09447	AE	Apo
+09454	AE	Apo
+09456	AE	Apo
+09459	AE	Apo
+09461	AE	Apo
+09463	AE	Apo
+09464	AE	Apo
+09468	AE	Apo
+09469	AE	Apo
+09470	AE	Apo
+09494	AE	Apo
+09496	AE	Apo
+09498	AE	Dpo
+09499	AE	Fpo
+09501	AE	Fpo
+09502	AE	Fpo
+09503	AE	Fpo
+09504	AE	Fpo
+09505	AE	Fpo
+09506	AE	Fpo
+09507	AE	Fpo
+09508	AE	Fpo
+09509	AE	Fpo
+09510	AE	Fpo
+09511	AE	Fpo
+09513	AE	Fpo
+09517	AE	Fpo
+09524	AE	Fpo
+09532	AE	Fpo
+09534	AE	Fpo
+09543	AE	Fpo
+09545	AE	Fpo
+09549	AE	Fpo
+09550	AE	Fpo
+09554	AE	Fpo
+09556	AE	Fpo
+09557	AE	Fpo
+09564	AE	Fpo
+09565	AE	Fpo
+09566	AE	Fpo
+09567	AE	Fpo
+09568	AE	Fpo
+09569	AE	Fpo
+09570	AE	Fpo
+09573	AE	Fpo
+09574	AE	Fpo
+09575	AE	Fpo
+09576	AE	Fpo
+09577	AE	Fpo
+09578	AE	Fpo
+09579	AE	Fpo
+09581	AE	Fpo
+09582	AE	Fpo
+09586	AE	Fpo
+09587	AE	Fpo
+09588	AE	Fpo
+09589	AE	Fpo
+09590	AE	Fpo
+09591	AE	Fpo
+09593	AE	Fpo
+09594	AE	Fpo
+09596	AE	Fpo
+09599	AE	Fpo
+09601	AE	Apo
+09602	AE	Apo
+09603	AE	Apo
+09604	AE	Apo
+09605	AE	Apo
+09606	AE	Apo
+09607	AE	Fpo
+09608	AE	Fpo
+09609	AE	Fpo
+09610	AE	Apo
+09611	AE	Apo
+09612	AE	Fpo
+09613	AE	Apo
+09617	AE	Apo
+09618	AE	Fpo
+09619	AE	Fpo
+09620	AE	Fpo
+09621	AE	Fpo
+09622	AE	Fpo
+09623	AE	Fpo
+09624	AE	Dpo
+09625	AE	Fpo
+09626	AE	Fpo
+09627	AE	Fpo
+09630	AE	Apo
+09631	AE	Fpo
+09633	AE	Apo
+09636	AE	Fpo
+09642	AE	Dpo
+09643	AE	Apo
+09644	AE	Fpo
+09645	AE	Fpo
+09647	AE	Apo
+09648	AE	Fpo
+09649	AE	Fpo
+09701	AE	Dpo
+09702	AE	Apo
+09703	AE	Apo
+09704	AE	Apo
+09705	AE	Apo
+09706	AE	Apo
+09707	AE	Dpo
+09708	AE	Apo
+09709	AE	Apo
+09710	AE	Dpo
+09711	AE	Apo
+09713	AE	Apo
+09714	AE	Apo
+09715	AE	Dpo
+09716	AE	Dpo
+09717	AE	Apo
+09718	AE	Dpo
+09719	AE	Apo
+09720	AE	Apo
+09721	AE	Dpo
+09722	AE	Apo
+09723	AE	Dpo
+09724	AE	Apo
+09726	AE	Dpo
+09727	AE	Dpo
+09728	AE	Dpo
+09729	AE	Fpo
+09730	AE	Dpo
+09731	AE	Dpo
+09732	AE	Apo
+09733	AE	Fpo
+09734	AE	Dpo
+09735	AE	Apo
+09736	AE	Dpo
+09737	AE	Dpo
+09738	AE	Dpo
+09739	AE	Dpo
+09740	AE	Apo
+09741	AE	Dpo
+09742	AE	Dpo
+09743	AE	Apo
+09744	AE	Dpo
+09745	AE	Apo
+09746	AE	Apo
+09747	AE	Fpo
+09748	AE	Dpo
+09749	AE	Apo
+09750	AE	Dpo
+09751	AE	Apo
+09752	AE	Apo
+09753	AE	Apo
+09754	AE	Apo
+09755	AE	Apo
+09756	AE	Apo
+09757	AE	Apo
+09758	AE	Dpo
+09759	AE	Dpo
+09762	AE	Dpo
+09769	AE	Dpo
+09771	AE	Apo
+09777	AE	Dpo
+09780	AE	Apo
+09789	AE	Apo
+09790	AE	Apo
+09798	AE	Apo
+09801	AE	Apo
+09802	AE	Apo
+09803	AE	Apo
+09804	AE	Apo
+09805	AE	Fpo
+09806	AE	Apo
+09807	AE	Dpo
+09808	AE	Apo
+09809	AE	Fpo
+09810	AE	Apo
+09811	AE	Dpo
+09812	AE	Dpo
+09813	AE	Dpo
+09814	AE	Dpo
+09815	AE	Apo
+09816	AE	Dpo
+09817	AE	Dpo
+09818	AE	Apo
+09819	AE	Apo
+09820	AE	Dpo
+09821	AE	Apo
+09822	AE	Apo
+09823	AE	Dpo
+09824	AE	Apo
+09825	AE	Dpo
+09826	AE	Dpo
+09827	AE	Dpo
+09828	AE	Dpo
+09829	AE	Apo
+09830	AE	Dpo
+09831	AE	Dpo
+09832	AE	Apo
+09833	AE	Apo
+09834	AE	Fpo
+09835	AE	Fpo
+09836	AE	Dpo
+09837	AE	Fpo
+09838	AE	Fpo
+09839	AE	Apo
+09840	AE	Fpo
+09841	AE	Apo
+09842	AE	Dpo
+09843	AE	Apo
+09844	AE	Fpo
+09845	AE	Dpo
+09846	AE	Dpo
+09848	AE	Apo
+09852	AE	Apo
+09853	AE	Apo
+09855	AE	Apo
+09858	AE	Apo
+09859	AE	Fpo
+09862	AE	Apo
+09865	AE	Fpo
+09868	AE	Apo
+09870	AE	Dpo
+09871	AE	Dpo
+09872	AE	Dpo
+09873	AE	Dpo
+09874	AE	Dpo
+09875	AE	Dpo
+09876	AE	Dpo
+09880	AE	Dpo
+09888	AE	Apo
+09890	AE	Apo
+09892	AE	Dpo
+09898	AE	Apo

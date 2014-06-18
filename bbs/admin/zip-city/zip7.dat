@@ -17,10 +17,8 @@
 70039	LA	Boutte
 70040	LA	Braithwaite
 70041	LA	Buras
-70042	LA	Carlisle
 70043	LA	Chalmette
 70044	LA	Chalmette
-70046	LA	Davant
 70047	LA	Destrehan
 70049	LA	Edgard
 70050	LA	Empire
@@ -38,7 +36,6 @@
 70063	LA	Kenner
 70064	LA	Kenner
 70065	LA	Kenner
-70066	LA	Killona
 70067	LA	Lafitte
 70068	LA	La Place
 70069	LA	La Place
@@ -61,8 +58,10 @@
 70090	LA	Vacherie
 70091	LA	Venice
 70092	LA	Violet
+70093	LA	Belle Chasse
 70094	LA	Westwego
 70096	LA	Westwego
+70097	LA	Kenner
 70112	LA	New Orleans
 70113	LA	New Orleans
 70114	LA	New Orleans
@@ -154,7 +153,6 @@
 70373	LA	Larose
 70374	LA	Lockport
 70375	LA	Mathews
-70376	LA	Modeste
 70377	LA	Montegut
 70380	LA	Morgan City
 70381	LA	Morgan City
@@ -208,10 +206,11 @@
 70464	LA	Talisheek
 70465	LA	Tangipahoa
 70466	LA	Tickfaw
-70467	LA	Angie
+70467	LA	Varnado
 70469	LA	Slidell
 70470	LA	Mandeville
 70471	LA	Mandeville
+70500	LA	Lafayette
 70501	LA	Lafayette
 70502	LA	Lafayette
 70503	LA	Lafayette
@@ -266,6 +265,7 @@
 70559	LA	Morse
 70560	LA	New Iberia
 70562	LA	New Iberia
+70563	LA	New Iberia
 70569	LA	Lydia
 70570	LA	Opelousas
 70571	LA	Opelousas
@@ -284,6 +284,8 @@
 70591	LA	Welsh
 70592	LA	Youngsville
 70593	LA	Lafayette
+70595	LA	Lafayette
+70596	LA	Lafayette
 70598	LA	Lafayette
 70601	LA	Lake Charles
 70602	LA	Lake Charles
@@ -305,7 +307,6 @@
 70638	LA	Elizabeth
 70639	LA	Evans
 70640	LA	Fenton
-70642	LA	Fullerton
 70643	LA	Grand Chenier
 70644	LA	Grant
 70645	LA	Hackberry
@@ -327,20 +328,19 @@
 70662	LA	Sugartown
 70663	LA	Sulphur
 70664	LA	Sulphur
+70665	LA	Sulphur
 70668	LA	Vinton
 70669	LA	Westlake
 70704	LA	Baker
+70706	LA	Denham Springs
 70707	LA	Gonzales
 70710	LA	Addis
 70711	LA	Albany
 70712	LA	Angola
 70714	LA	Baker
 70715	LA	Batchelor
-70716	LA	Bayou Goula
-70717	LA	Blanks
 70718	LA	Brittany
 70719	LA	Brusly
-70720	LA	Bueche
 70721	LA	Carville
 70722	LA	Clinton
 70723	LA	Convent
@@ -364,7 +364,6 @@
 70748	LA	Jackson
 70749	LA	Jarreau
 70750	LA	Krotz Springs
-70751	LA	Labarre
 70752	LA	Lakeland
 70753	LA	Lettsworth
 70754	LA	Livingston
@@ -389,7 +388,6 @@
 70777	LA	Slaughter
 70778	LA	Sorrento
 70780	LA	Sunshine
-70781	LA	Torbert
 70782	LA	Tunica
 70783	LA	Ventress
 70784	LA	Wakefield
@@ -431,10 +429,12 @@
 70835	LA	Baton Rouge
 70836	LA	Baton Rouge
 70837	LA	Baton Rouge
+70873	LA	Baton Rouge
 70874	LA	Baton Rouge
 70879	LA	Baton Rouge
 70883	LA	Baton Rouge
 70884	LA	Baton Rouge
+70891	LA	Baton Rouge
 70892	LA	Baton Rouge
 70893	LA	Baton Rouge
 70894	LA	Baton Rouge
@@ -455,7 +455,6 @@
 71021	LA	Cullen
 71023	LA	Doyline
 71024	LA	Dubberly
-71025	LA	East Point
 71027	LA	Frierson
 71028	LA	Gibsland
 71029	LA	Gilliam
@@ -464,7 +463,6 @@
 71032	LA	Grand Cane
 71033	LA	Greenwood
 71034	LA	Hall Summit
-71036	LA	Harmon
 71037	LA	Haughton
 71038	LA	Haynesville
 71039	LA	Heflin
@@ -526,6 +524,7 @@
 71138	LA	Shreveport
 71148	LA	Shreveport
 71149	LA	Shreveport
+71150	LA	Shreveport
 71151	LA	Shreveport
 71152	LA	Shreveport
 71153	LA	Shreveport
@@ -549,6 +548,7 @@
 71211	LA	Monroe
 71212	LA	Monroe
 71213	LA	Monroe
+71217	LA	Monroe
 71218	LA	Archibald
 71219	LA	Baskin
 71220	LA	Bastrop
@@ -689,22 +689,20 @@
 71440	LA	Joyce
 71441	LA	Kelly
 71443	LA	Kurthwood
-71444	LA	Lacamp
 71446	LA	Leesville
 71447	LA	Lena
 71448	LA	Longleaf
 71449	LA	Many
 71450	LA	Marthaville
-71451	LA	Melder
 71452	LA	Melrose
 71454	LA	Montgomery
 71455	LA	Mora
 71456	LA	Natchez
 71457	LA	Natchitoches
 71458	LA	Natchitoches
-71459	LA	Leesville
+71459	LA	Fort Polk
 71460	LA	Negreet
-71461	LA	Newllano
+71461	LA	New Llano
 71462	LA	Noble
 71463	LA	Oakdale
 71465	LA	Olla
@@ -720,20 +718,19 @@
 71477	LA	Tioga
 71479	LA	Tullos
 71480	LA	Urania
-71481	LA	Verda
 71483	LA	Winnfield
 71485	LA	Woodworth
 71486	LA	Zwolle
 71496	LA	Leesville
 71497	LA	Natchitoches
 71601	AR	Pine Bluff
-71602	AR	Pine Bluff
+71602	AR	White Hall
 71603	AR	Pine Bluff
 71611	AR	Pine Bluff
+71612	AR	White Hall
 71613	AR	Pine Bluff
 71630	AR	Arkansas City
 71631	AR	Banks
-71634	AR	Collins
 71635	AR	Crossett
 71638	AR	Dermott
 71639	AR	Dumas
@@ -743,14 +740,13 @@
 71644	AR	Grady
 71646	AR	Hamburg
 71647	AR	Hermitage
-71649	AR	Jennie
-71650	AR	Jerome
 71651	AR	Jersey
 71652	AR	Kingsland
 71653	AR	Lake Village
 71654	AR	Mc Gehee
 71655	AR	Monticello
 71656	AR	Monticello
+71657	AR	Monticello
 71658	AR	Montrose
 71659	AR	Moscow
 71660	AR	New Edinburg
@@ -758,7 +754,7 @@
 71662	AR	Pickens
 71663	AR	Portland
 71665	AR	Rison
-71666	AR	Mc Gehee
+71666	AR	Rohwer
 71667	AR	Star City
 71670	AR	Tillar
 71671	AR	Warren
@@ -768,6 +764,7 @@
 71677	AR	Winchester
 71678	AR	Yorktown
 71701	AR	Camden
+71711	AR	Camden
 71720	AR	Bearden
 71721	AR	Beirne
 71722	AR	Bluff City
@@ -789,6 +786,7 @@
 71751	AR	Louann
 71752	AR	Mc Neil
 71753	AR	Magnolia
+71754	AR	Magnolia
 71758	AR	Mount Holly
 71759	AR	Norphlet
 71762	AR	Smackover
@@ -796,9 +794,7 @@
 71764	AR	Stephens
 71765	AR	Strong
 71766	AR	Thornton
-71767	AR	Hampton
-71768	AR	Urbana
-71769	AR	Village
+71768	AR	El Dorado
 71770	AR	Waldo
 71772	AR	Whelen Springs
 71801	AR	Hope
@@ -852,7 +848,6 @@
 71922	AR	Antoine
 71923	AR	Arkadelphia
 71929	AR	Bismarck
-71931	AR	Blakely
 71932	AR	Board Camp
 71933	AR	Bonnerdale
 71935	AR	Caddo Gap
@@ -863,7 +858,6 @@
 71943	AR	Glenwood
 71944	AR	Grannis
 71945	AR	Hatfield
-71946	AR	Hatton
 71949	AR	Jessieville
 71950	AR	Kirby
 71951	AR	Hot Springs National Park
@@ -894,7 +888,6 @@
 72005	AR	Amagon
 72006	AR	Augusta
 72007	AR	Austin
-72009	AR	Balch
 72010	AR	Bald Knob
 72011	AR	Bauxite
 72012	AR	Beebe
@@ -904,6 +897,7 @@
 72016	AR	Bigelow
 72017	AR	Biscoe
 72018	AR	Benton
+72019	AR	Benton
 72020	AR	Bradford
 72021	AR	Brinkley
 72022	AR	Bryant
@@ -918,6 +912,7 @@
 72031	AR	Clinton
 72032	AR	Conway
 72033	AR	Conway
+72034	AR	Conway
 72035	AR	Conway
 72036	AR	Cotton Plant
 72037	AR	Coy
@@ -949,7 +944,6 @@
 72068	AR	Higginson
 72069	AR	Holly Grove
 72070	AR	Houston
-72071	AR	Howell
 72072	AR	Humnoke
 72073	AR	Humphrey
 72074	AR	Hunter
@@ -972,7 +966,7 @@
 72102	AR	Mc Rae
 72103	AR	Mabelvale
 72104	AR	Malvern
-72105	AR	Jones Mills
+72105	AR	Jones Mill
 72106	AR	Mayflower
 72107	AR	Menifee
 72108	AR	Monroe
@@ -1017,7 +1011,6 @@
 72156	AR	Solgohachia
 72157	AR	Springfield
 72158	AR	Benton
-72159	AR	Steprock
 72160	AR	Stuttgart
 72164	AR	Sweet Home
 72165	AR	Thida
@@ -1037,6 +1030,7 @@
 72183	AR	Wrightsville
 72189	AR	Mc Crory
 72190	AR	North Little Rock
+72198	AR	North Little Rock
 72199	AR	North Little Rock
 72201	AR	Little Rock
 72202	AR	Little Rock
@@ -1045,7 +1039,6 @@
 72205	AR	Little Rock
 72206	AR	Little Rock
 72207	AR	Little Rock
-72208	AR	Ferndale
 72209	AR	Little Rock
 72210	AR	Little Rock
 72211	AR	Little Rock
@@ -1057,9 +1050,11 @@
 72219	AR	Little Rock
 72221	AR	Little Rock
 72222	AR	Little Rock
+72223	AR	Little Rock
 72225	AR	Little Rock
 72227	AR	Little Rock
 72231	AR	Little Rock
+72260	AR	Little Rock
 72295	AR	Little Rock
 72301	AR	West Memphis
 72303	AR	West Memphis
@@ -1067,15 +1062,12 @@
 72311	AR	Aubrey
 72312	AR	Barton
 72313	AR	Bassett
-72314	AR	Birdeye
 72315	AR	Blytheville
 72316	AR	Blytheville
-72317	AR	Blytheville
 72319	AR	Gosnell
 72320	AR	Brickeys
 72321	AR	Burdette
 72322	AR	Caldwell
-72323	AR	Chatfield
 72324	AR	Cherry Valley
 72325	AR	Clarkedale
 72326	AR	Colt
@@ -1118,10 +1110,8 @@
 72376	AR	Proctor
 72377	AR	Rivervale
 72379	AR	Snow Lake
-72381	AR	Tomato
 72383	AR	Turner
 72384	AR	Turrell
-72385	AR	Twist
 72386	AR	Tyronza
 72387	AR	Vanndale
 72389	AR	Wabash
@@ -1131,7 +1121,6 @@
 72394	AR	Widener
 72395	AR	Wilson
 72396	AR	Wynne
-72397	AR	Wynne
 72401	AR	Jonesboro
 72402	AR	Jonesboro
 72403	AR	Jonesboro
@@ -1203,7 +1192,6 @@
 72512	AR	Horseshoe Bend
 72513	AR	Ash Flat
 72515	AR	Bexar
-72516	AR	Boswell
 72517	AR	Brockwell
 72519	AR	Calico Rock
 72520	AR	Camp
@@ -1236,7 +1224,6 @@
 72554	AR	Mammoth Spring
 72555	AR	Marcella
 72556	AR	Melbourne
-72557	AR	Moko
 72560	AR	Mountain View
 72561	AR	Mount Pleasant
 72562	AR	Newark
@@ -1261,9 +1248,7 @@
 72587	AR	Wiseman
 72601	AR	Harrison
 72602	AR	Harrison
-72610	AR	Alco
 72611	AR	Alpena
-72612	AR	Bass
 72613	AR	Beaver
 72615	AR	Bergman
 72616	AR	Berryville
@@ -1288,10 +1273,11 @@
 72642	AR	Lakeview
 72644	AR	Lead Hill
 72645	AR	Leslie
-72648	AR	Dogpatch
+72648	AR	Marble Falls
 72650	AR	Marshall
 72651	AR	Midway
 72653	AR	Mountain Home
+72654	AR	Mountain Home
 72655	AR	Mount Judea
 72657	AR	Timbo
 72658	AR	Norfork
@@ -1359,7 +1345,6 @@
 72764	AR	Springdale
 72765	AR	Springdale
 72766	AR	Springdale
-72767	AR	Springtown
 72768	AR	Sulphur Springs
 72769	AR	Summers
 72770	AR	Tontitown
@@ -1367,10 +1352,11 @@
 72774	AR	West Fork
 72776	AR	Witter
 72801	AR	Russellville
+72802	AR	Russellville
 72811	AR	Russellville
+72812	AR	Russellville
 72820	AR	Alix
 72821	AR	Altus
-72822	AR	Atkins
 72823	AR	Atkins
 72824	AR	Belleville
 72826	AR	Blue Mountain
@@ -1389,7 +1375,6 @@
 72841	AR	Harvey
 72842	AR	Havana
 72843	AR	Hector
-72844	AR	Hunt
 72845	AR	Knoxville
 72846	AR	Lamar
 72847	AR	London
@@ -1404,7 +1389,6 @@
 72860	AR	Rover
 72863	AR	Scranton
 72865	AR	Subiaco
-72867	AR	Waveland
 72901	AR	Fort Smith
 72902	AR	Fort Smith
 72903	AR	Fort Smith
@@ -1420,7 +1404,6 @@
 72919	AR	Fort Smith
 72921	AR	Alma
 72923	AR	Barling
-72924	AR	Bates
 72926	AR	Boles
 72927	AR	Booneville
 72928	AR	Branch
@@ -1446,6 +1429,7 @@
 72952	AR	Rudy
 72955	AR	Uniontown
 72956	AR	Van Buren
+72957	AR	Van Buren
 72958	AR	Waldron
 72959	AR	Winslow
 73001	OK	Albert
@@ -1459,7 +1443,7 @@
 73009	OK	Binger
 73010	OK	Blanchard
 73011	OK	Bradley
-73012	OK	Bray
+73012	OK	Edmond
 73013	OK	Edmond
 73014	OK	Calumet
 73015	OK	Carnegie
@@ -1472,7 +1456,8 @@
 73022	OK	Concho
 73023	OK	Chickasha
 73024	OK	Corn
-73025	OK	Countyline
+73025	OK	Edmond
+73026	OK	Norman
 73027	OK	Coyle
 73028	OK	Crescent
 73029	OK	Cyril
@@ -1481,17 +1466,15 @@
 73032	OK	Dougherty
 73033	OK	Eakly
 73034	OK	Edmond
-73035	OK	Elmore City
 73036	OK	El Reno
 73038	OK	Fort Cobb
-73039	OK	Foster
+73039	OK	Davis
 73040	OK	Geary
 73041	OK	Gotebo
 73042	OK	Gracemont
 73043	OK	Greenfield
 73044	OK	Guthrie
 73045	OK	Harrah
-73046	OK	Hennepin
 73047	OK	Hinton
 73048	OK	Hydro
 73049	OK	Jones
@@ -1520,22 +1503,17 @@
 73073	OK	Orlando
 73074	OK	Paoli
 73075	OK	Pauls Valley
-73076	OK	Pernell
 73077	OK	Perry
 73078	OK	Piedmont
 73079	OK	Pocasset
 73080	OK	Purcell
-73081	OK	Ratliff City
 73082	OK	Rush Springs
 73083	OK	Edmond
 73084	OK	Spencer
 73085	OK	Yukon
 73086	OK	Sulphur
-73087	OK	Tatums
-73088	OK	Tussy
 73089	OK	Tuttle
 73090	OK	Union City
-73091	OK	Velma
 73092	OK	Verden
 73093	OK	Washington
 73094	OK	Washita
@@ -1610,16 +1588,15 @@
 73170	OK	Oklahoma City
 73172	OK	Oklahoma City
 73173	OK	Oklahoma City
-73177	OK	Oklahoma City
 73178	OK	Oklahoma City
 73179	OK	Oklahoma City
-73180	OK	Oklahoma City
 73184	OK	Oklahoma City
 73185	OK	Oklahoma City
 73189	OK	Oklahoma City
 73190	OK	Oklahoma City
 73193	OK	Oklahoma City
 73194	OK	Oklahoma City
+73195	OK	Oklahoma City
 73196	OK	Oklahoma City
 73197	OK	Oklahoma City
 73198	OK	Oklahoma City
@@ -1629,8 +1606,11 @@
 73401	OK	Ardmore
 73402	OK	Ardmore
 73403	OK	Ardmore
+73425	OK	Countyline
 73430	OK	Burneyville
 73432	OK	Coleman
+73433	OK	Elmore City
+73434	OK	Foster
 73435	OK	Fox
 73436	OK	Gene Autry
 73437	OK	Graham
@@ -1640,12 +1620,15 @@
 73441	OK	Leon
 73442	OK	Loco
 73443	OK	Lone Grove
+73444	OK	Hennepin
 73446	OK	Madill
 73447	OK	Mannsville
 73448	OK	Marietta
 73449	OK	Mead
 73450	OK	Milburn
+73451	OK	Ardmore
 73453	OK	Overbrook
+73454	OK	Ardmore
 73455	OK	Ravia
 73456	OK	Ringling
 73458	OK	Springer
@@ -1653,6 +1636,10 @@
 73460	OK	Tishomingo
 73461	OK	Wapanucka
 73463	OK	Wilson
+73481	OK	Ratliff City
+73487	OK	Tatums
+73488	OK	Tussy
+73491	OK	Velma
 73501	OK	Lawton
 73502	OK	Lawton
 73503	OK	Fort Sill
@@ -1708,7 +1695,6 @@
 73571	OK	Vinson
 73572	OK	Walters
 73573	OK	Waurika
-73575	OK	Duncan
 73601	OK	Clinton
 73620	OK	Arapaho
 73622	OK	Bessie
@@ -1731,7 +1717,6 @@
 73651	OK	Hobart
 73654	OK	Leedey
 73655	OK	Lone Wolf
-73656	OK	Mayfield
 73658	OK	Oakwood
 73659	OK	Putnam
 73660	OK	Reydon
@@ -1756,7 +1741,6 @@
 73720	OK	Bison
 73722	OK	Burlington
 73724	OK	Canton
-73725	OK	Capron
 73726	OK	Carmen
 73727	OK	Carrier
 73728	OK	Cherokee
@@ -1807,9 +1791,7 @@
 73842	OK	Freedom
 73843	OK	Gage
 73844	OK	Gate
-73847	OK	Knowles
 73848	OK	Laverne
-73849	OK	Logan
 73851	OK	May
 73852	OK	Mooreland
 73853	OK	Mutual
@@ -1840,7 +1822,6 @@
 74005	OK	Bartlesville
 74006	OK	Bartlesville
 74008	OK	Bixby
-74009	OK	Bowring
 74010	OK	Bristow
 74011	OK	Broken Arrow
 74012	OK	Broken Arrow
@@ -1850,6 +1831,7 @@
 74016	OK	Chelsea
 74017	OK	Claremore
 74018	OK	Claremore
+74019	OK	Claremore
 74020	OK	Cleveland
 74021	OK	Collinsville
 74022	OK	Copan
@@ -1983,7 +1965,6 @@
 74349	OK	Ketchum
 74350	OK	Langley
 74352	OK	Locust Grove
-74353	OK	Mazie
 74354	OK	Miami
 74355	OK	Miami
 74358	OK	North Miami
@@ -2018,6 +1999,7 @@
 74436	OK	Haskell
 74437	OK	Henryetta
 74438	OK	Hitchita
+74439	OK	Braggs
 74440	OK	Hoyt
 74441	OK	Hulbert
 74442	OK	Indianola
@@ -2040,7 +2022,6 @@
 74463	OK	Taft
 74464	OK	Tahlequah
 74465	OK	Tahlequah
-74466	OK	Tullahassee
 74467	OK	Wagoner
 74468	OK	Wainwright
 74469	OK	Warner
@@ -2048,8 +2029,8 @@
 74471	OK	Welling
 74472	OK	Whitefield
 74477	OK	Wagoner
-74501	OK	McAlester
-74502	OK	McAlester
+74501	OK	Mcalester
+74502	OK	Mcalester
 74521	OK	Albion
 74522	OK	Alderson
 74523	OK	Antlers
@@ -2069,7 +2050,7 @@
 74545	OK	Gowen
 74546	OK	Haileyville
 74547	OK	Hartshorne
-74549	OK	Honobia
+74549	OK	Kiamichi Christian Mission
 74552	OK	Kinta
 74553	OK	Kiowa
 74554	OK	Krebs
@@ -2094,7 +2075,6 @@
 74578	OK	Wilburton
 74601	OK	Ponca City
 74602	OK	Ponca City
-74603	OK	Ponca City
 74604	OK	Ponca City
 74630	OK	Billings
 74631	OK	Blackwell
@@ -2150,6 +2130,7 @@
 74766	OK	Wright City
 74801	OK	Shawnee
 74802	OK	Shawnee
+74804	OK	Shawnee
 74818	OK	Seminole
 74820	OK	Ada
 74821	OK	Ada
@@ -2174,7 +2155,7 @@
 74848	OK	Holdenville
 74849	OK	Konawa
 74850	OK	Lamar
-74851	OK	Mc Loud
+74851	OK	Mcloud
 74852	OK	Macomb
 74854	OK	Maud
 74855	OK	Meeker
@@ -2210,7 +2191,7 @@
 74941	OK	Keota
 74942	OK	Leflore
 74943	OK	Lequire
-74944	OK	McCurtain
+74944	OK	Mccurtain
 74945	OK	Marble City
 74946	OK	Moffett
 74947	OK	Monroe
@@ -2233,7 +2214,6 @@
 75002	TX	Allen
 75006	TX	Carrollton
 75007	TX	Carrollton
-75008	TX	Carrollton
 75009	TX	Celina
 75010	TX	Carrollton
 75011	TX	Carrollton
@@ -2245,6 +2225,7 @@
 75019	TX	Coppell
 75020	TX	Denison
 75021	TX	Denison
+75022	TX	Flower Mound
 75023	TX	Plano
 75024	TX	Plano
 75025	TX	Plano
@@ -2253,6 +2234,8 @@
 75028	TX	Flower Mound
 75029	TX	Lewisville
 75030	TX	Rowlett
+75032	TX	Rockwall
+75033	TX	Frisco
 75034	TX	Frisco
 75035	TX	Frisco
 75037	TX	Irving
@@ -2266,14 +2249,14 @@
 75045	TX	Garland
 75046	TX	Garland
 75047	TX	Garland
-75048	TX	Garland
+75048	TX	Sachse
 75049	TX	Garland
 75050	TX	Grand Prairie
 75051	TX	Grand Prairie
 75052	TX	Grand Prairie
 75053	TX	Grand Prairie
 75054	TX	Grand Prairie
-75056	TX	Lewisville
+75056	TX	The Colony
 75057	TX	Lewisville
 75058	TX	Gunter
 75060	TX	Irving
@@ -2283,21 +2266,23 @@
 75065	TX	Lake Dallas
 75067	TX	Lewisville
 75068	TX	Little Elm
-75069	TX	Mc Kinney
-75070	TX	Mc Kinney
+75069	TX	Mckinney
+75070	TX	Mckinney
+75071	TX	Mckinney
 75074	TX	Plano
 75075	TX	Plano
 75076	TX	Pottsboro
+75077	TX	Lewisville
 75078	TX	Prosper
 75080	TX	Richardson
 75081	TX	Richardson
 75082	TX	Richardson
 75083	TX	Richardson
-75084	TX	Irving
 75085	TX	Richardson
 75086	TX	Plano
 75087	TX	Rockwall
 75088	TX	Rowlett
+75089	TX	Rowlett
 75090	TX	Sherman
 75091	TX	Sherman
 75092	TX	Sherman
@@ -2312,16 +2297,17 @@
 75104	TX	Cedar Hill
 75105	TX	Chatfield
 75106	TX	Cedar Hill
+75109	TX	Corsicana
 75110	TX	Corsicana
 75114	TX	Crandall
-75115	TX	De Soto
+75115	TX	Desoto
 75116	TX	Duncanville
 75117	TX	Edgewood
 75118	TX	Elmo
 75119	TX	Ennis
 75120	TX	Ennis
 75121	TX	Copeville
-75123	TX	De Soto
+75123	TX	Desoto
 75124	TX	Eustace
 75125	TX	Ferris
 75126	TX	Forney
@@ -2346,6 +2332,7 @@
 75153	TX	Powell
 75154	TX	Red Oak
 75155	TX	Rice
+75156	TX	Mabank
 75157	TX	Rosser
 75158	TX	Scurry
 75159	TX	Seagoville
@@ -2360,9 +2347,9 @@
 75169	TX	Wills Point
 75172	TX	Wilmer
 75173	TX	Nevada
-75180	TX	Mesquite
+75180	TX	Balch Springs
 75181	TX	Mesquite
-75182	TX	Mesquite
+75182	TX	Sunnyvale
 75185	TX	Mesquite
 75187	TX	Mesquite
 75189	TX	Royse City
@@ -2403,7 +2390,6 @@
 75236	TX	Dallas
 75237	TX	Dallas
 75238	TX	Dallas
-75239	TX	Dallas
 75240	TX	Dallas
 75241	TX	Dallas
 75242	TX	Dallas
@@ -2418,6 +2404,7 @@
 75251	TX	Dallas
 75252	TX	Dallas
 75253	TX	Dallas
+75254	TX	Dallas
 75258	TX	Dallas
 75260	TX	Dallas
 75261	TX	Dallas
@@ -2435,8 +2422,6 @@
 75285	TX	Dallas
 75286	TX	Dallas
 75287	TX	Dallas
-75294	TX	Dallas
-75295	TX	Dallas
 75301	TX	Dallas
 75303	TX	Dallas
 75310	TX	Dallas
@@ -2446,17 +2431,21 @@
 75320	TX	Dallas
 75323	TX	Dallas
 75326	TX	Dallas
+75334	TX	Dallas
 75336	TX	Dallas
 75339	TX	Dallas
+75340	TX	Dallas
 75342	TX	Dallas
-75346	TX	Dallas
-75350	TX	Dallas
+75343	TX	Dallas
+75344	TX	Dallas
 75353	TX	Dallas
 75354	TX	Dallas
 75355	TX	Dallas
 75356	TX	Dallas
 75357	TX	Dallas
+75358	TX	Dallas
 75359	TX	Dallas
+75360	TX	Dallas
 75363	TX	Dallas
 75364	TX	Dallas
 75367	TX	Dallas
@@ -2618,6 +2607,7 @@
 75642	TX	Elysian Fields
 75643	TX	Gary
 75644	TX	Gilmer
+75645	TX	Gilmer
 75647	TX	Gladewater
 75650	TX	Hallsville
 75651	TX	Harleton
@@ -2668,6 +2658,7 @@
 75713	TX	Tyler
 75750	TX	Arp
 75751	TX	Athens
+75752	TX	Athens
 75754	TX	Ben Wheeler
 75755	TX	Big Sandy
 75756	TX	Brownsboro
@@ -2696,10 +2687,12 @@
 75790	TX	Van
 75791	TX	Whitehouse
 75792	TX	Winona
+75797	TX	Big Sandy
 75798	TX	Tyler
 75799	TX	Tyler
 75801	TX	Palestine
 75802	TX	Palestine
+75803	TX	Palestine
 75831	TX	Buffalo
 75832	TX	Cayuga
 75833	TX	Centerville
@@ -2754,7 +2747,6 @@
 75943	TX	Douglass
 75944	TX	Etoile
 75946	TX	Garrison
-75947	TX	Geneva
 75948	TX	Hemphill
 75949	TX	Huntington
 75951	TX	Jasper
@@ -2767,6 +2759,7 @@
 75962	TX	Nacogdoches
 75963	TX	Nacogdoches
 75964	TX	Nacogdoches
+75965	TX	Nacogdoches
 75966	TX	Newton
 75968	TX	Pineland
 75969	TX	Pollok
@@ -2780,7 +2773,6 @@
 75979	TX	Woodville
 75980	TX	Zavalla
 75990	TX	Woodville
-76000	TX	Arlington
 76001	TX	Arlington
 76002	TX	Arlington
 76003	TX	Arlington
@@ -2840,6 +2832,7 @@
 76078	TX	Rhome
 76082	TX	Springtown
 76084	TX	Venus
+76085	TX	Weatherford
 76086	TX	Weatherford
 76087	TX	Weatherford
 76088	TX	Weatherford
@@ -2867,7 +2860,7 @@
 76114	TX	Fort Worth
 76115	TX	Fort Worth
 76116	TX	Fort Worth
-76117	TX	Fort Worth
+76117	TX	Haltom City
 76118	TX	Fort Worth
 76119	TX	Fort Worth
 76120	TX	Fort Worth
@@ -2876,7 +2869,7 @@
 76123	TX	Fort Worth
 76124	TX	Fort Worth
 76126	TX	Fort Worth
-76127	TX	Carswell Afb
+76127	TX	Naval Air Station/ Jrb
 76129	TX	Fort Worth
 76130	TX	Fort Worth
 76131	TX	Fort Worth
@@ -2895,8 +2888,8 @@
 76162	TX	Fort Worth
 76163	TX	Fort Worth
 76164	TX	Fort Worth
+76166	TX	Fort Worth
 76177	TX	Fort Worth
-76178	TX	Fort Worth
 76179	TX	Fort Worth
 76180	TX	North Richland Hills
 76181	TX	Fort Worth
@@ -2918,6 +2911,8 @@
 76206	TX	Denton
 76207	TX	Denton
 76208	TX	Denton
+76209	TX	Denton
+76210	TX	Denton
 76225	TX	Alvord
 76226	TX	Argyle
 76227	TX	Aubrey
@@ -2957,8 +2952,6 @@
 76299	TX	Roanoke
 76301	TX	Wichita Falls
 76302	TX	Wichita Falls
-76303	TX	Wichita Falls
-76304	TX	Wichita Falls
 76305	TX	Wichita Falls
 76306	TX	Wichita Falls
 76307	TX	Wichita Falls
@@ -2985,7 +2978,6 @@
 76377	TX	Petrolia
 76379	TX	Scotland
 76380	TX	Seymour
-76383	TX	Vera
 76384	TX	Vernon
 76385	TX	Vernon
 76388	TX	Weinert
@@ -3072,15 +3064,14 @@
 76541	TX	Killeen
 76542	TX	Killeen
 76543	TX	Killeen
-76544	TX	Killeen
+76544	TX	Fort Hood
 76545	TX	Killeen
 76546	TX	Killeen
 76547	TX	Killeen
 76548	TX	Harker Heights
+76549	TX	Killeen
 76550	TX	Lampasas
-76552	TX	Leon Junction
-76554	TX	Little River
-76555	TX	Maysfield
+76554	TX	Little River Academy
 76556	TX	Milano
 76557	TX	Moody
 76558	TX	Mound
@@ -3095,7 +3086,6 @@
 76571	TX	Salado
 76573	TX	Schwertner
 76574	TX	Taylor
-76576	TX	Gatesville
 76577	TX	Thorndale
 76578	TX	Thrall
 76579	TX	Troy
@@ -3125,6 +3115,7 @@
 76641	TX	Frost
 76642	TX	Groesbeck
 76643	TX	Hewitt
+76644	TX	Laguna Park
 76645	TX	Hillsboro
 76648	TX	Hubbard
 76649	TX	Iredell
@@ -3145,9 +3136,7 @@
 76670	TX	Milford
 76671	TX	Morgan
 76673	TX	Mount Calm
-76675	TX	Otto
 76676	TX	Penelope
-76677	TX	Perry
 76678	TX	Prairie Hill
 76679	TX	Purdon
 76680	TX	Reagan
@@ -3177,12 +3166,11 @@
 76715	TX	Waco
 76716	TX	Waco
 76795	TX	Waco
-76796	TX	Waco
 76797	TX	Waco
 76798	TX	Waco
 76799	TX	Waco
 76801	TX	Brownwood
-76802	TX	Brownwood
+76802	TX	Early
 76803	TX	Brownwood
 76804	TX	Brownwood
 76820	TX	Art
@@ -3216,7 +3204,6 @@
 76864	TX	Mullin
 76865	TX	Norton
 76866	TX	Paint Rock
-76867	TX	Pear Valley
 76869	TX	Pontotoc
 76870	TX	Priddy
 76871	TX	Richland Springs
@@ -3402,6 +3389,8 @@
 77243	TX	Houston
 77244	TX	Houston
 77245	TX	Houston
+77246	TX	Houston
+77247	TX	Houston
 77248	TX	Houston
 77249	TX	Houston
 77250	TX	Houston
@@ -3429,12 +3418,15 @@
 77273	TX	Houston
 77274	TX	Houston
 77275	TX	Houston
+77276	TX	Houston
 77277	TX	Houston
+77278	TX	Houston
 77279	TX	Houston
 77280	TX	Houston
-77281	TX	Houston
 77282	TX	Houston
 77284	TX	Houston
+77285	TX	Houston
+77286	TX	Houston
 77287	TX	Houston
 77288	TX	Houston
 77289	TX	Houston
@@ -3442,6 +3434,8 @@
 77291	TX	Houston
 77292	TX	Houston
 77293	TX	Houston
+77294	TX	Houston
+77296	TX	Houston
 77297	TX	Houston
 77298	TX	Houston
 77299	TX	Houston
@@ -3452,7 +3446,10 @@
 77305	TX	Conroe
 77306	TX	Conroe
 77315	TX	North Houston
-77325	TX	Humble
+77316	TX	Montgomery
+77318	TX	Willis
+77320	TX	Huntsville
+77325	TX	Kingwood
 77326	TX	Ace
 77327	TX	Cleveland
 77328	TX	Cleveland
@@ -3464,19 +3461,21 @@
 77336	TX	Huffman
 77337	TX	Hufsmith
 77338	TX	Humble
-77339	TX	Humble
+77339	TX	Kingwood
 77340	TX	Huntsville
 77341	TX	Huntsville
 77342	TX	Huntsville
 77343	TX	Huntsville
 77344	TX	Huntsville
-77345	TX	Humble
+77345	TX	Kingwood
 77346	TX	Humble
 77347	TX	Humble
 77348	TX	Huntsville
 77349	TX	Huntsville
 77350	TX	Leggett
 77351	TX	Livingston
+77353	TX	Magnolia
+77354	TX	Magnolia
 77355	TX	Magnolia
 77356	TX	Montgomery
 77357	TX	New Caney
@@ -3510,11 +3509,14 @@
 77388	TX	Spring
 77389	TX	Spring
 77391	TX	Spring
+77393	TX	Spring
 77396	TX	Humble
+77399	TX	Livingston
 77401	TX	Bellaire
 77402	TX	Bellaire
 77404	TX	Bay City
 77406	TX	Richmond
+77407	TX	Richmond
 77410	TX	Cypress
 77411	TX	Alief
 77412	TX	Altair
@@ -3560,7 +3562,6 @@
 77459	TX	Missouri City
 77460	TX	Nada
 77461	TX	Needville
-77462	TX	Newgulf
 77463	TX	Old Ocean
 77464	TX	Orchard
 77465	TX	Palacios
@@ -3591,7 +3592,9 @@
 77492	TX	Katy
 77493	TX	Katy
 77494	TX	Katy
+77496	TX	Sugar Land
 77497	TX	Stafford
+77498	TX	Sugar Land
 77501	TX	Pasadena
 77502	TX	Pasadena
 77503	TX	Pasadena
@@ -3612,6 +3615,7 @@
 77520	TX	Baytown
 77521	TX	Baytown
 77522	TX	Baytown
+77523	TX	Baytown
 77530	TX	Channelview
 77531	TX	Clute
 77532	TX	Crosby
@@ -3706,11 +3710,11 @@
 77706	TX	Beaumont
 77707	TX	Beaumont
 77708	TX	Beaumont
-77709	TX	Voth
+77709	TX	Beaumont
 77710	TX	Beaumont
-77711	TX	Lumberton
 77713	TX	Beaumont
 77720	TX	Beaumont
+77725	TX	Beaumont
 77726	TX	Beaumont
 77801	TX	Bryan
 77802	TX	Bryan
@@ -3727,7 +3731,6 @@
 77836	TX	Caldwell
 77837	TX	Calvert
 77838	TX	Chriesman
-77839	TX	Clay
 77840	TX	College Station
 77841	TX	College Station
 77842	TX	College Station
@@ -3780,8 +3783,7 @@
 77969	TX	La Salle
 77970	TX	La Ward
 77971	TX	Lolita
-77972	TX	Long Mott
-77973	TX	McFaddin
+77973	TX	Mcfaddin
 77974	TX	Meyersville
 77975	TX	Moulton
 77976	TX	Nursery
@@ -3791,7 +3793,6 @@
 77982	TX	Port O Connor
 77983	TX	Seadrift
 77984	TX	Shiner
-77985	TX	Speaks
 77986	TX	Sublime
 77987	TX	Sweet Home
 77988	TX	Telferner
@@ -3839,7 +3840,6 @@
 78049	TX	Laredo
 78050	TX	Leming
 78052	TX	Lytle
-78053	TX	Mc Coy
 78054	TX	Macdona
 78055	TX	Medina
 78056	TX	Mico
@@ -3885,7 +3885,7 @@
 78130	TX	New Braunfels
 78131	TX	New Braunfels
 78132	TX	New Braunfels
-78133	TX	New Braunfels
+78133	TX	Canyon Lake
 78135	TX	New Braunfels
 78140	TX	Nixon
 78141	TX	Nordheim
@@ -3896,7 +3896,7 @@
 78146	TX	Pettus
 78147	TX	Poth
 78148	TX	Universal City
-78150	TX	Universal City
+78150	TX	Randolph A F B
 78151	TX	Runge
 78152	TX	Saint Hedwig
 78154	TX	Schertz
@@ -3943,7 +3943,7 @@
 78233	TX	San Antonio
 78234	TX	San Antonio
 78235	TX	San Antonio
-78236	TX	San Antonio
+78236	TX	Lackland A F B
 78237	TX	San Antonio
 78238	TX	San Antonio
 78239	TX	San Antonio
@@ -4085,11 +4085,11 @@
 78477	TX	Corpus Christi
 78478	TX	Corpus Christi
 78480	TX	Corpus Christi
-78501	TX	McAllen
-78502	TX	McAllen
-78503	TX	McAllen
-78504	TX	McAllen
-78505	TX	McAllen
+78501	TX	Mcallen
+78502	TX	Mcallen
+78503	TX	Mcallen
+78504	TX	Mcallen
+78505	TX	Mcallen
 78516	TX	Alamo
 78520	TX	Brownsville
 78521	TX	Brownsville
@@ -4102,6 +4102,8 @@
 78538	TX	Edcouch
 78539	TX	Edinburg
 78540	TX	Edinburg
+78541	TX	Edinburg
+78542	TX	Edinburg
 78543	TX	Elsa
 78545	TX	Falcon Heights
 78547	TX	Garciasville
@@ -4127,6 +4129,7 @@
 78570	TX	Mercedes
 78572	TX	Mission
 78573	TX	Mission
+78574	TX	Mission
 78575	TX	Olmito
 78576	TX	Penitas
 78577	TX	Pharr
@@ -4151,7 +4154,6 @@
 78598	TX	Port Mansfield
 78599	TX	Weslaco
 78602	TX	Bastrop
-78603	TX	Bebe
 78604	TX	Belmont
 78605	TX	Bertram
 78606	TX	Blanco
@@ -4180,6 +4182,7 @@
 78630	TX	Cedar Park
 78631	TX	Harper
 78632	TX	Harwood
+78633	TX	Georgetown
 78634	TX	Hutto
 78635	TX	Hye
 78636	TX	Johnson City
@@ -4200,7 +4203,7 @@
 78654	TX	Marble Falls
 78655	TX	Martindale
 78656	TX	Maxwell
-78657	TX	Marble Falls
+78657	TX	Horseshoe Bay
 78658	TX	Ottine
 78659	TX	Paige
 78660	TX	Pflugerville
@@ -4208,7 +4211,7 @@
 78662	TX	Red Rock
 78663	TX	Round Mountain
 78664	TX	Round Rock
-78665	TX	Sandy
+78665	TX	Round Rock
 78666	TX	San Marcos
 78667	TX	San Marcos
 78669	TX	Spicewood
@@ -4223,6 +4226,7 @@
 78680	TX	Round Rock
 78681	TX	Round Rock
 78682	TX	Round Rock
+78683	TX	Round Rock
 78691	TX	Pflugerville
 78701	TX	Austin
 78702	TX	Austin
@@ -4289,7 +4293,6 @@
 78767	TX	Austin
 78768	TX	Austin
 78769	TX	Austin
-78771	TX	Austin
 78772	TX	Austin
 78773	TX	Austin
 78774	TX	Austin
@@ -4297,13 +4300,13 @@
 78779	TX	Austin
 78780	TX	Austin
 78781	TX	Austin
-78782	TX	Austin
 78783	TX	Austin
 78785	TX	Austin
 78786	TX	Austin
-78787	TX	Austin
 78788	TX	Austin
 78789	TX	Austin
+78798	TX	Austin
+78799	TX	Austin
 78801	TX	Uvalde
 78802	TX	Uvalde
 78827	TX	Asherton
@@ -4365,7 +4368,7 @@
 78957	TX	Smithville
 78959	TX	Waelder
 78960	TX	Warda
-78961	TX	Round Top
+78961	TX	Warrenton
 78962	TX	Weimar
 78963	TX	West Point
 79001	TX	Adrian
@@ -4409,7 +4412,7 @@
 79053	TX	Lazbuddie
 79054	TX	Lefors
 79056	TX	Lipscomb
-79057	TX	McLean
+79057	TX	Mclean
 79058	TX	Masterson
 79059	TX	Miami
 79061	TX	Mobeetie
@@ -4422,7 +4425,7 @@
 79070	TX	Perryton
 79072	TX	Plainview
 79073	TX	Plainview
-79077	TX	Samnorwood
+79077	TX	Sam Norwood
 79078	TX	Sanford
 79079	TX	Shamrock
 79080	TX	Skellytown
@@ -4460,57 +4463,35 @@
 79119	TX	Amarillo
 79120	TX	Amarillo
 79121	TX	Amarillo
-79123	TX	Amarillo
 79124	TX	Amarillo
 79159	TX	Amarillo
-79160	TX	Amarillo
-79161	TX	Amarillo
-79163	TX	Amarillo
-79164	TX	Amarillo
-79165	TX	Amarillo
 79166	TX	Amarillo
-79167	TX	Amarillo
 79168	TX	Amarillo
-79170	TX	Amarillo
-79171	TX	Amarillo
 79172	TX	Amarillo
-79173	TX	Amarillo
 79174	TX	Amarillo
-79175	TX	Amarillo
-79176	TX	Amarillo
 79178	TX	Amarillo
-79180	TX	Amarillo
-79181	TX	Amarillo
-79182	TX	Amarillo
-79184	TX	Amarillo
 79185	TX	Amarillo
-79186	TX	Amarillo
 79187	TX	Amarillo
-79188	TX	Amarillo
 79189	TX	Amarillo
 79201	TX	Childress
 79220	TX	Afton
 79221	TX	Aiken
-79222	TX	Carey
 79223	TX	Cee Vee
-79224	TX	Chalk
 79225	TX	Chillicothe
 79226	TX	Clarendon
 79227	TX	Crowell
 79229	TX	Dickens
 79230	TX	Dodson
 79231	TX	Dougherty
-79232	TX	Dumont
 79233	TX	Estelline
 79234	TX	Flomot
 79235	TX	Floydada
 79236	TX	Guthrie
 79237	TX	Hedley
-79238	TX	Kirkland
 79239	TX	Lakeview
 79240	TX	Lelia Lake
 79241	TX	Lockney
-79243	TX	McAdoo
+79243	TX	Mcadoo
 79244	TX	Matador
 79245	TX	Memphis
 79247	TX	Odell
@@ -4596,14 +4577,13 @@
 79453	TX	Lubbock
 79457	TX	Lubbock
 79464	TX	Lubbock
-79489	TX	Reese Air Force Base
 79490	TX	Lubbock
 79491	TX	Lubbock
 79493	TX	Lubbock
 79499	TX	Lubbock
 79501	TX	Anson
 79502	TX	Aspermont
-79503	TX	Stamford
+79503	TX	Avoca
 79504	TX	Baird
 79505	TX	Benjamin
 79506	TX	Blackwell
@@ -4669,7 +4649,6 @@
 79706	TX	Midland
 79707	TX	Midland
 79708	TX	Midland
-79709	TX	Midland
 79710	TX	Midland
 79711	TX	Midland
 79712	TX	Midland
@@ -4707,7 +4686,6 @@
 79764	TX	Odessa
 79765	TX	Odessa
 79766	TX	Odessa
-79767	TX	Odessa
 79768	TX	Odessa
 79769	TX	Odessa
 79770	TX	Orla
@@ -4715,7 +4693,6 @@
 79776	TX	Penwell
 79777	TX	Pyote
 79778	TX	Rankin
-79779	TX	Royalty
 79780	TX	Saragosa
 79781	TX	Sheffield
 79782	TX	Stanton
@@ -4741,7 +4718,6 @@
 79847	TX	Salt Flat
 79848	TX	Sanderson
 79849	TX	San Elizario
-79850	TX	Shafter
 79851	TX	Sierra Blanca
 79852	TX	Terlingua
 79853	TX	Tornillo
@@ -4761,9 +4737,9 @@
 79913	TX	El Paso
 79914	TX	El Paso
 79915	TX	El Paso
-79916	TX	El Paso
+79916	TX	Fort Bliss
 79917	TX	El Paso
-79918	TX	El Paso
+79918	TX	Fort Bliss
 79920	TX	El Paso
 79922	TX	El Paso
 79923	TX	El Paso
@@ -4771,6 +4747,7 @@
 79925	TX	El Paso
 79926	TX	El Paso
 79927	TX	El Paso
+79928	TX	El Paso
 79929	TX	El Paso
 79930	TX	El Paso
 79931	TX	El Paso
@@ -4799,28 +4776,11 @@
 79958	TX	El Paso
 79960	TX	El Paso
 79961	TX	El Paso
-79966	TX	El Paso
 79968	TX	El Paso
-79973	TX	El Paso
-79974	TX	El Paso
-79975	TX	El Paso
 79976	TX	El Paso
-79977	TX	El Paso
 79978	TX	El Paso
 79980	TX	El Paso
-79982	TX	El Paso
-79983	TX	El Paso
-79984	TX	El Paso
-79985	TX	El Paso
-79986	TX	El Paso
-79987	TX	El Paso
-79988	TX	El Paso
-79989	TX	El Paso
 79990	TX	El Paso
-79991	TX	El Paso
-79992	TX	El Paso
-79993	TX	El Paso
-79994	TX	El Paso
 79995	TX	El Paso
 79996	TX	El Paso
 79997	TX	El Paso
