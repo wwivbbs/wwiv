@@ -53,7 +53,6 @@
 40077	KY	Westport
 40078	KY	Willisburg
 40104	KY	Battletown
-40106	KY	Big Spring
 40107	KY	Boston
 40108	KY	Brandenburg
 40109	KY	Brooks
@@ -64,6 +63,8 @@
 40118	KY	Fairdale
 40119	KY	Falls Of Rough
 40121	KY	Fort Knox
+40122	KY	Fort Knox
+40129	KY	Hillview
 40140	KY	Garfield
 40142	KY	Guston
 40143	KY	Hardinsburg
@@ -79,7 +80,6 @@
 40160	KY	Radcliff
 40161	KY	Rhodelia
 40162	KY	Rineyville
-40164	KY	SE Ree
 40165	KY	Shepherdsville
 40170	KY	Stephensport
 40171	KY	Union Star
@@ -138,6 +138,8 @@
 40272	KY	Louisville
 40280	KY	Louisville
 40281	KY	Louisville
+40282	KY	Louisville
+40283	KY	Louisville
 40285	KY	Louisville
 40287	KY	Louisville
 40289	KY	Louisville
@@ -151,7 +153,6 @@
 40297	KY	Louisville
 40298	KY	Louisville
 40299	KY	Louisville
-40309	KY	Bowen
 40310	KY	Burgin
 40311	KY	Carlisle
 40312	KY	Clay City
@@ -159,11 +160,9 @@
 40316	KY	Denniston
 40317	KY	Elliottville
 40319	KY	Farmers
-40320	KY	Ford
 40322	KY	Frenchburg
 40324	KY	Georgetown
 40328	KY	Gravel Switch
-40329	KY	Haldeman
 40330	KY	Harrodsburg
 40334	KY	Hope
 40336	KY	Irvine
@@ -209,7 +208,6 @@
 40409	KY	Brodhead
 40410	KY	Bryantsville
 40419	KY	Crab Orchard
-40421	KY	Dabolt
 40422	KY	Danville
 40423	KY	Danville
 40434	KY	Gray Hawk
@@ -226,7 +224,6 @@
 40460	KY	Orlando
 40461	KY	Paint Lick
 40464	KY	Parksville
-40467	KY	Peoples
 40468	KY	Perryville
 40472	KY	Ravenna
 40473	KY	Renfro Valley
@@ -239,7 +236,6 @@
 40489	KY	Waynesburg
 40492	KY	Wildie
 40495	KY	Winston
-40501	KY	Lexington
 40502	KY	Lexington
 40503	KY	Lexington
 40504	KY	Lexington
@@ -276,19 +272,9 @@
 40581	KY	Lexington
 40582	KY	Lexington
 40583	KY	Lexington
-40584	KY	Lexington
-40585	KY	Lexington
-40586	KY	Lexington
-40587	KY	Lexington
 40588	KY	Lexington
-40589	KY	Lexington
-40590	KY	Lexington
 40591	KY	Lexington
-40592	KY	Lexington
-40593	KY	Lexington
-40594	KY	Lexington
-40595	KY	Lexington
-40596	KY	Lexington
+40598	KY	Lexington
 40601	KY	Frankfort
 40602	KY	Frankfort
 40603	KY	Frankfort
@@ -311,7 +297,6 @@
 40743	KY	London
 40744	KY	London
 40745	KY	London
-40751	KY	Marydell
 40754	KY	Nevisdale
 40755	KY	Pittsburg
 40759	KY	Rockholds
@@ -332,7 +317,6 @@
 40820	KY	Cranks
 40823	KY	Cumberland
 40824	KY	Dayhoit
-40825	KY	Dizney
 40826	KY	Eolia
 40827	KY	Essie
 40828	KY	Evarts
@@ -352,7 +336,6 @@
 40862	KY	Partridge
 40863	KY	Pathfork
 40865	KY	Putney
-40867	KY	Smith
 40868	KY	Stinnett
 40870	KY	Totz
 40873	KY	Wallins Creek
@@ -360,7 +343,6 @@
 40902	KY	Arjay
 40903	KY	Artemus
 40906	KY	Barbourville
-40911	KY	Baughman
 40913	KY	Beverly
 40914	KY	Big Creek
 40915	KY	Bimble
@@ -385,7 +367,6 @@
 40962	KY	Manchester
 40964	KY	Mary Alice
 40965	KY	Middlesboro
-40970	KY	Mills
 40972	KY	Oneida
 40977	KY	Pineville
 40979	KY	Roark
@@ -404,7 +385,6 @@
 41006	KY	Butler
 41007	KY	California
 41008	KY	Carrollton
-41009	KY	Constance
 41010	KY	Corinth
 41011	KY	Covington
 41012	KY	Covington
@@ -469,14 +449,10 @@
 41114	KY	Ashland
 41121	KY	Argillite
 41124	KY	Blaine
-41125	KY	Bruin
-41127	KY	Camp Dix
 41128	KY	Carter
 41129	KY	Catlettsburg
-41131	KY	Concord
 41132	KY	Denton
 41135	KY	Emerson
-41137	KY	Firebrick
 41139	KY	Flatwoods
 41141	KY	Garrison
 41142	KY	Grahn
@@ -484,15 +460,12 @@
 41144	KY	Greenup
 41146	KY	Hitchins
 41149	KY	Isonville
-41150	KY	Jacobs
-41156	KY	Lloyd
 41159	KY	Martha
 41160	KY	Mazie
 41164	KY	Olive Hill
 41166	KY	Quincy
 41168	KY	Rush
 41169	KY	Russell
-41170	KY	Saint Paul
 41171	KY	Sandy Hook
 41173	KY	Soldier
 41174	KY	South Portsmouth
@@ -506,13 +479,11 @@
 41203	KY	Beauty
 41204	KY	Boons Camp
 41214	KY	Debord
-41215	KY	Denver
 41216	KY	East Point
 41219	KY	Flatgap
 41222	KY	Hagerhill
 41224	KY	Inez
 41226	KY	Keaton
-41228	KY	Leander
 41230	KY	Louisa
 41231	KY	Lovely
 41232	KY	Lowmansville
@@ -531,7 +502,6 @@
 41265	KY	Van Lear
 41267	KY	Warfield
 41268	KY	West Van Lear
-41269	KY	Whitehouse
 41271	KY	Williamsport
 41274	KY	Wittensville
 41301	KY	Campton
@@ -545,8 +515,6 @@
 41333	KY	Heidelberg
 41338	KY	Island City
 41339	KY	Jackson
-41342	KY	Lee City
-41344	KY	Lerose
 41347	KY	Lone
 41348	KY	Lost Creek
 41351	KY	Mistletoe
@@ -558,27 +526,17 @@
 41366	KY	Rousseau
 41367	KY	Rowdy
 41368	KY	Saint Helens
-41377	KY	Talbert
-41378	KY	Tallega
 41385	KY	Vancleve
 41386	KY	Vincent
 41390	KY	Whick
 41397	KY	Zoe
 41408	KY	Cannel City
-41410	KY	Cisco
 41413	KY	Crockett
-41419	KY	Edna
 41421	KY	Elkfork
-41422	KY	Elsie
 41425	KY	Ezel
 41426	KY	Falcon
-41427	KY	Flat Fork
 41433	KY	Gapville
-41443	KY	Insko
-41444	KY	Ivyton
 41451	KY	Malone
-41452	KY	Marshallville
-41457	KY	Moon
 41459	KY	Ophir
 41464	KY	Royalton
 41465	KY	Salyersville
@@ -601,7 +559,6 @@
 41531	KY	Hardy
 41534	KY	Hellier
 41535	KY	Huddy
-41536	KY	Jamboree
 41537	KY	Jenkins
 41538	KY	Jonancy
 41539	KY	Kimper
@@ -609,11 +566,9 @@
 41542	KY	Lookout
 41543	KY	Mc Andrews
 41544	KY	Mc Carr
-41546	KY	Mc Veigh
 41547	KY	Majestic
 41548	KY	Mouthcard
 41549	KY	Myra
-41550	KY	Nelse
 41553	KY	Phelps
 41554	KY	Phyllis
 41555	KY	Pinsonfork
@@ -628,7 +583,6 @@
 41566	KY	Steele
 41567	KY	Stone
 41568	KY	Stopover
-41569	KY	Toler
 41571	KY	Varney
 41572	KY	Virgie
 41601	KY	Allen
@@ -639,21 +593,17 @@
 41606	KY	Bevinsville
 41607	KY	Blue River
 41612	KY	Bypro
-41614	KY	Craynor
 41615	KY	Dana
 41616	KY	David
 41619	KY	Drift
 41621	KY	Dwale
 41622	KY	Eastern
-41626	KY	Endicott
 41630	KY	Garrett
 41631	KY	Grethel
 41632	KY	Gunlock
 41635	KY	Harold
 41636	KY	Hi Hat
-41639	KY	Honaker
 41640	KY	Hueysville
-41641	KY	Hunter
 41642	KY	Ivel
 41643	KY	Lackey
 41645	KY	Langley
@@ -668,7 +618,6 @@
 41663	KY	Tram
 41666	KY	Wayland
 41667	KY	Weeksbury
-41668	KY	West Prestonsburg
 41669	KY	Wheelwright
 41701	KY	Hazard
 41702	KY	Hazard
@@ -681,9 +630,7 @@
 41723	KY	Busy
 41725	KY	Carrie
 41727	KY	Chavies
-41728	KY	Cinda
 41729	KY	Combs
-41730	KY	Confluence
 41731	KY	Cornettsville
 41735	KY	Delphia
 41736	KY	Dice
@@ -710,7 +657,6 @@
 41777	KY	Yeaddiss
 41778	KY	Yerkes
 41804	KY	Blackey
-41805	KY	Brinkley
 41810	KY	Cromona
 41812	KY	Deane
 41815	KY	Ermine
@@ -731,7 +677,7 @@
 41837	KY	Mayking
 41838	KY	Millstone
 41839	KY	Mousie
-41840	KY	Fleming Neon
+41840	KY	Neon
 41843	KY	Pine Top
 41844	KY	Pippa Passes
 41845	KY	Premium
@@ -767,7 +713,6 @@
 42041	KY	Fulton
 42044	KY	Gilbertsville
 42045	KY	Grand Rivers
-42046	KY	Hamlin
 42047	KY	Hampton
 42048	KY	Hardin
 42049	KY	Hazel
@@ -778,7 +723,6 @@
 42055	KY	Kuttawa
 42056	KY	La Center
 42058	KY	Ledbetter
-42059	KY	Lola
 42060	KY	Lovelaceville
 42061	KY	Lowes
 42063	KY	Lynnville
@@ -817,7 +761,6 @@
 42140	KY	Gamaliel
 42141	KY	Glasgow
 42142	KY	Glasgow
-42150	KY	Halfway
 42151	KY	Hestand
 42152	KY	Hiseville
 42153	KY	Holland
@@ -834,11 +777,9 @@
 42171	KY	Smiths Grove
 42201	KY	Aberdeen
 42202	KY	Adairville
-42203	KY	Allegre
 42204	KY	Allensville
 42206	KY	Auburn
 42207	KY	Bee Spring
-42209	KY	Brooklyn
 42210	KY	Brownsville
 42211	KY	Cadiz
 42214	KY	Center
@@ -851,29 +792,23 @@
 42223	KY	Fort Campbell
 42232	KY	Gracey
 42234	KY	Guthrie
-42235	KY	Hadley
 42236	KY	Herndon
 42240	KY	Hopkinsville
 42241	KY	Hopkinsville
-42251	KY	Huntsville
 42252	KY	Jetson
 42254	KY	La Fayette
 42256	KY	Lewisburg
-42257	KY	Lindseyville
 42259	KY	Mammoth Cave
 42261	KY	Morgantown
 42262	KY	Oak Grove
 42265	KY	Olmstead
 42266	KY	Pembroke
-42267	KY	Provo
-42270	KY	Richardsville
 42273	KY	Rochester
 42274	KY	Rockfield
 42275	KY	Roundhill
 42276	KY	Russellville
 42280	KY	Sharon Grove
 42283	KY	South Union
-42284	KY	Sunfish
 42285	KY	Sweeden
 42286	KY	Trenton
 42287	KY	Welchs Creek
@@ -912,7 +847,6 @@
 42356	KY	Maple Mount
 42361	KY	Olaton
 42364	KY	Pellville
-42365	KY	Penrod
 42366	KY	Philpot
 42367	KY	Powderly
 42368	KY	Reynolds Station
@@ -934,6 +868,7 @@
 42410	KY	Earlington
 42411	KY	Fredonia
 42413	KY	Hanson
+42419	KY	Henderson
 42420	KY	Henderson
 42431	KY	Madisonville
 42436	KY	Manitou
@@ -969,8 +904,6 @@
 42541	KY	Middleburg
 42544	KY	Nancy
 42553	KY	Science Hill
-42554	KY	Shopville
-42555	KY	Sloans Valley
 42558	KY	Tateville
 42564	KY	West Somerset
 42565	KY	Windsor
@@ -978,10 +911,8 @@
 42567	KY	Eubank
 42602	KY	Albany
 42603	KY	Alpha
-42607	KY	Beulah Heights
 42629	KY	Jamestown
 42631	KY	Marshes Siding
-42632	KY	Mill Springs
 42633	KY	Monticello
 42634	KY	Parkers Lake
 42635	KY	Pine Knot
@@ -992,7 +923,6 @@
 42653	KY	Whitley City
 42701	KY	Elizabethtown
 42702	KY	Elizabethtown
-42711	KY	Bakerton
 42712	KY	Big Clifty
 42713	KY	Bonnieville
 42715	KY	Breeding
@@ -1010,7 +940,6 @@
 42731	KY	Dubre
 42732	KY	Eastview
 42733	KY	Elk Horn
-42735	KY	Fairplay
 42740	KY	Glendale
 42741	KY	Glens Fork
 42742	KY	Gradyville
@@ -1024,16 +953,12 @@
 42757	KY	Magnolia
 42758	KY	Mannsville
 42759	KY	Marrowbone
-42761	KY	Milltown
 42762	KY	Millwood
 42764	KY	Mount Sherman
 42765	KY	Munfordville
 42776	KY	Sonora
-42780	KY	Steff
 42782	KY	Summersville
-42783	KY	Summit
 42784	KY	Upton
-42786	KY	Waterview
 42788	KY	White Mills
 43001	OH	Alexandria
 43002	OH	Amlin
@@ -1078,8 +1003,7 @@
 43050	OH	Mount Vernon
 43054	OH	New Albany
 43055	OH	Newark
-43056	OH	Newark
-43057	OH	Newark
+43056	OH	Heath
 43058	OH	Newark
 43060	OH	North Lewisburg
 43061	OH	Ostrander
@@ -1089,6 +1013,7 @@
 43066	OH	Radnor
 43067	OH	Raymond
 43068	OH	Reynoldsburg
+43069	OH	Reynoldsburg
 43070	OH	Rosewood
 43071	OH	Saint Louisville
 43072	OH	Saint Paris
@@ -1105,7 +1030,7 @@
 43085	OH	Columbus
 43086	OH	Westerville
 43093	OH	Newark
-43099	OH	Blacklick
+43098	OH	Hebron
 43101	OH	Adelphi
 43102	OH	Amanda
 43103	OH	Ashville
@@ -1153,6 +1078,10 @@
 43162	OH	West Jefferson
 43163	OH	West Rushville
 43164	OH	Williamsport
+43194	OH	Lockbourne
+43195	OH	Groveport
+43196	OH	Groveport
+43198	OH	Groveport
 43199	OH	Groveport
 43201	OH	Columbus
 43202	OH	Columbus
@@ -1189,26 +1118,19 @@
 43236	OH	Columbus
 43240	OH	Columbus
 43251	OH	Columbus
-43253	OH	Columbus
 43260	OH	Columbus
 43265	OH	Columbus
 43266	OH	Columbus
-43267	OH	Columbus
 43268	OH	Columbus
-43269	OH	Columbus
 43270	OH	Columbus
 43271	OH	Columbus
 43272	OH	Columbus
 43279	OH	Columbus
-43284	OH	Columbus
-43285	OH	Columbus
-43286	OH	Columbus
 43287	OH	Columbus
 43291	OH	Columbus
 43299	OH	Columbus
 43301	OH	Marion
 43302	OH	Marion
-43305	OH	Marion
 43306	OH	Marion
 43307	OH	Marion
 43310	OH	Belle Center
@@ -1352,7 +1274,6 @@
 43570	OH	West Unity
 43571	OH	Whitehouse
 43601	OH	Toledo
-43602	OH	Toledo
 43603	OH	Toledo
 43604	OH	Toledo
 43605	OH	Toledo
@@ -1372,12 +1293,9 @@
 43619	OH	Northwood
 43620	OH	Toledo
 43623	OH	Toledo
-43624	OH	Toledo
 43635	OH	Toledo
 43652	OH	Toledo
-43653	OH	Toledo
 43654	OH	Toledo
-43655	OH	Toledo
 43656	OH	Toledo
 43657	OH	Toledo
 43659	OH	Toledo
@@ -1423,7 +1341,7 @@
 43752	OH	Laings
 43754	OH	Lewisville
 43755	OH	Lore City
-43756	OH	Mc Connelsville
+43756	OH	Mcconnelsville
 43757	OH	Malaga
 43758	OH	Malta
 43759	OH	Morristown
@@ -1434,7 +1352,6 @@
 43766	OH	New Straitsville
 43767	OH	Norwich
 43768	OH	Old Washington
-43770	OH	Pennsville
 43771	OH	Philo
 43772	OH	Pleasant City
 43773	OH	Quaker City
@@ -1510,12 +1427,11 @@
 43950	OH	Saint Clairsville
 43951	OH	Lafferty
 43952	OH	Steubenville
-43960	OH	Stewartsville
+43953	OH	Steubenville
 43961	OH	Stratton
 43962	OH	Summitville
 43963	OH	Tiltonsville
 43964	OH	Toronto
-43966	OH	Unionport
 43967	OH	Warnock
 43968	OH	Wellsville
 43970	OH	Wolf Run
@@ -1531,7 +1447,6 @@
 43985	OH	Holloway
 43986	OH	Jewett
 43988	OH	Scio
-43989	OH	Short Creek
 44001	OH	Amherst
 44003	OH	Andover
 44004	OH	Ashtabula
@@ -1594,6 +1509,8 @@
 44093	OH	Williamsfield
 44094	OH	Willoughby
 44095	OH	Eastlake
+44096	OH	Willoughby
+44097	OH	Eastlake
 44099	OH	Windsor
 44101	OH	Cleveland
 44102	OH	Cleveland
@@ -1642,13 +1559,10 @@
 44145	OH	Westlake
 44146	OH	Bedford
 44147	OH	Broadview Heights
-44177	OH	Cleveland
+44149	OH	Strongsville
 44178	OH	Cleveland
-44179	OH	Cleveland
 44181	OH	Cleveland
-44184	OH	Cleveland
 44185	OH	Cleveland
-44186	OH	Cleveland
 44188	OH	Cleveland
 44189	OH	Cleveland
 44190	OH	Cleveland
@@ -1673,7 +1587,7 @@
 44221	OH	Cuyahoga Falls
 44222	OH	Cuyahoga Falls
 44223	OH	Cuyahoga Falls
-44224	OH	Cuyahoga Falls
+44224	OH	Stow
 44230	OH	Doylestown
 44231	OH	Garrettsville
 44232	OH	Green
@@ -1682,7 +1596,6 @@
 44235	OH	Homerville
 44236	OH	Hudson
 44237	OH	Hudson
-44238	OH	Hudson
 44240	OH	Kent
 44241	OH	Streetsboro
 44242	OH	Kent
@@ -1737,14 +1650,11 @@
 44325	OH	Akron
 44326	OH	Akron
 44328	OH	Akron
-44329	OH	Akron
-44331	OH	Akron
 44333	OH	Akron
-44334	OH	Akron
+44334	OH	Fairlawn
 44372	OH	Akron
 44393	OH	Akron
 44396	OH	Akron
-44397	OH	Akron
 44398	OH	Akron
 44399	OH	Akron
 44401	OH	Berlin Center
@@ -1801,7 +1711,6 @@
 44484	OH	Warren
 44485	OH	Warren
 44486	OH	Warren
-44487	OH	Warren
 44488	OH	Warren
 44490	OH	Washingtonville
 44491	OH	West Farmington
@@ -1822,8 +1731,6 @@
 44514	OH	Youngstown
 44515	OH	Youngstown
 44555	OH	Youngstown
-44598	OH	Youngstown
-44599	OH	Youngstown
 44601	OH	Alliance
 44606	OH	Apple Creek
 44607	OH	Augusta
@@ -1913,21 +1820,16 @@
 44709	OH	Canton
 44710	OH	Canton
 44711	OH	Canton
-44712	OH	Canton
 44714	OH	Canton
 44718	OH	Canton
-44720	OH	Canton
+44720	OH	North Canton
 44721	OH	Canton
-44730	OH	Canton
+44730	OH	East Canton
 44735	OH	Canton
 44750	OH	Canton
-44760	OH	Canton
 44767	OH	Canton
-44798	OH	Canton
 44799	OH	Canton
-44801	OH	Adrian
 44802	OH	Alvada
-44803	OH	Amsden
 44804	OH	Arcadia
 44805	OH	Ashland
 44807	OH	Attica
@@ -2008,9 +1910,7 @@
 45013	OH	Hamilton
 45014	OH	Fairfield
 45015	OH	Hamilton
-45018	OH	Hamilton
-45020	OH	Hamilton
-45023	OH	Hamilton
+45018	OH	Fairfield
 45025	OH	Hamilton
 45026	OH	Hamilton
 45030	OH	Harrison
@@ -2042,8 +1942,6 @@
 45069	OH	West Chester
 45070	OH	West Elkton
 45071	OH	West Chester
-45073	OH	Monroe
-45099	OH	Monroe
 45101	OH	Aberdeen
 45102	OH	Amelia
 45103	OH	Batavia
@@ -2087,7 +1985,6 @@
 45160	OH	Owensville
 45162	OH	Pleasant Plain
 45164	OH	Port William
-45165	OH	Greenfield
 45166	OH	Reesville
 45167	OH	Ripley
 45168	OH	Russellville
@@ -2106,7 +2003,6 @@
 45207	OH	Cincinnati
 45208	OH	Cincinnati
 45209	OH	Cincinnati
-45210	OH	Cincinnati
 45211	OH	Cincinnati
 45212	OH	Cincinnati
 45213	OH	Cincinnati
@@ -2165,6 +2061,7 @@
 45274	OH	Cincinnati
 45275	OH	Cincinnati
 45277	OH	Cincinnati
+45280	OH	Cincinnati
 45296	OH	Cincinnati
 45298	OH	Cincinnati
 45299	OH	Cincinnati
@@ -2195,7 +2092,6 @@
 45326	OH	Fletcher
 45327	OH	Germantown
 45328	OH	Gettysburg
-45329	OH	Gordon
 45330	OH	Gratis
 45331	OH	Greenville
 45332	OH	Hollansburg
@@ -2249,13 +2145,13 @@
 45388	OH	Yorkshire
 45389	OH	Christiansburg
 45390	OH	Union City
+45400	OH	Dayton
 45401	OH	Dayton
 45402	OH	Dayton
 45403	OH	Dayton
 45404	OH	Dayton
 45405	OH	Dayton
 45406	OH	Dayton
-45407	OH	Dayton
 45408	OH	Dayton
 45409	OH	Dayton
 45410	OH	Dayton
@@ -2285,7 +2181,6 @@
 45439	OH	Dayton
 45440	OH	Dayton
 45441	OH	Dayton
-45444	OH	Dayton
 45448	OH	Dayton
 45449	OH	Dayton
 45454	OH	Dayton
@@ -2419,7 +2314,6 @@
 45778	OH	Stewart
 45779	OH	Syracuse
 45780	OH	The Plains
-45781	OH	Torch
 45782	OH	Trimble
 45783	OH	Tuppers Plains
 45784	OH	Vincent
@@ -2512,7 +2406,6 @@
 45897	OH	Williamstown
 45898	OH	Willshire
 45899	OH	Wren
-45944	OH	Cincinnati
 45999	OH	Cincinnati
 46001	IN	Alexandria
 46011	IN	Anderson
@@ -2530,13 +2423,13 @@
 46034	IN	Cicero
 46035	IN	Colfax
 46036	IN	Elwood
+46037	IN	Fishers
 46038	IN	Fishers
 46039	IN	Forest
 46040	IN	Fortville
 46041	IN	Frankfort
 46044	IN	Frankton
 46045	IN	Goldsmith
-46046	IN	Hillisburg
 46047	IN	Hobbs
 46048	IN	Ingalls
 46049	IN	Kempton
@@ -2549,6 +2442,7 @@
 46058	IN	Mulberry
 46060	IN	Noblesville
 46061	IN	Noblesville
+46062	IN	Noblesville
 46063	IN	Orestes
 46064	IN	Pendleton
 46065	IN	Rossville
@@ -2562,6 +2456,8 @@
 46075	IN	Whitestown
 46076	IN	Windfall
 46077	IN	Zionsville
+46082	IN	Carmel
+46085	IN	Fishers
 46102	IN	Advance
 46103	IN	Amo
 46104	IN	Arlington
@@ -2572,13 +2468,13 @@
 46111	IN	Brooklyn
 46112	IN	Brownsburg
 46113	IN	Camby
-46114	IN	Cartersburg
 46115	IN	Carthage
 46117	IN	Charlottesville
 46118	IN	Clayton
 46120	IN	Cloverdale
 46121	IN	Coatesville
 46122	IN	Danville
+46123	IN	Avon
 46124	IN	Edinburgh
 46125	IN	Eminence
 46126	IN	Fairland
@@ -2653,6 +2549,7 @@
 46230	IN	Indianapolis
 46231	IN	Indianapolis
 46234	IN	Indianapolis
+46235	IN	Indianapolis
 46236	IN	Indianapolis
 46237	IN	Indianapolis
 46239	IN	Indianapolis
@@ -2670,6 +2567,7 @@
 46256	IN	Indianapolis
 46259	IN	Indianapolis
 46260	IN	Indianapolis
+46262	IN	Indianapolis
 46266	IN	Indianapolis
 46268	IN	Indianapolis
 46274	IN	Indianapolis
@@ -2683,12 +2581,14 @@
 46290	IN	Indianapolis
 46291	IN	Indianapolis
 46295	IN	Indianapolis
+46296	IN	Indianapolis
 46298	IN	Indianapolis
 46301	IN	Beverly Shores
 46302	IN	Boone Grove
 46303	IN	Cedar Lake
 46304	IN	Chesterton
 46307	IN	Crown Point
+46308	IN	Crown Point
 46310	IN	Demotte
 46311	IN	Dyer
 46312	IN	East Chicago
@@ -2730,17 +2630,17 @@
 46382	IN	Union Mills
 46383	IN	Valparaiso
 46384	IN	Valparaiso
+46385	IN	Valparaiso
 46390	IN	Wanatah
 46391	IN	Westville
 46392	IN	Wheatfield
 46393	IN	Wheeler
 46394	IN	Whiting
-46399	IN	Lowell
 46401	IN	Gary
 46402	IN	Gary
 46403	IN	Gary
 46404	IN	Gary
-46405	IN	Gary
+46405	IN	Lake Station
 46406	IN	Gary
 46407	IN	Gary
 46408	IN	Gary
@@ -2763,6 +2663,7 @@
 46524	IN	Etna Green
 46526	IN	Goshen
 46527	IN	Goshen
+46528	IN	Goshen
 46530	IN	Granger
 46531	IN	Grovertown
 46532	IN	Hamlet
@@ -2787,7 +2688,6 @@
 46562	IN	Pierceton
 46563	IN	Plymouth
 46565	IN	Shipshewana
-46566	IN	Sidney
 46567	IN	Syracuse
 46570	IN	Tippecanoe
 46571	IN	Topeka
@@ -2796,11 +2696,11 @@
 46574	IN	Walkerton
 46580	IN	Warsaw
 46581	IN	Warsaw
+46582	IN	Warsaw
 46590	IN	Winona Lake
 46595	IN	Wyatt
 46601	IN	South Bend
 46604	IN	South Bend
-46612	IN	South Bend
 46613	IN	South Bend
 46614	IN	South Bend
 46615	IN	South Bend
@@ -2811,7 +2711,6 @@
 46624	IN	South Bend
 46626	IN	South Bend
 46628	IN	South Bend
-46629	IN	South Bend
 46634	IN	South Bend
 46635	IN	South Bend
 46637	IN	South Bend
@@ -2828,7 +2727,6 @@
 46711	IN	Berne
 46713	IN	Bippus
 46714	IN	Bluffton
-46720	IN	Brimfield
 46721	IN	Butler
 46723	IN	Churubusco
 46725	IN	Columbia City
@@ -2842,7 +2740,6 @@
 46741	IN	Grabill
 46742	IN	Hamilton
 46743	IN	Harlan
-46744	IN	Helmer
 46745	IN	Hoagland
 46746	IN	Howe
 46747	IN	Hudson
@@ -2895,6 +2792,7 @@
 46807	IN	Fort Wayne
 46808	IN	Fort Wayne
 46809	IN	Fort Wayne
+46814	IN	Fort Wayne
 46815	IN	Fort Wayne
 46816	IN	Fort Wayne
 46818	IN	Fort Wayne
@@ -2978,7 +2876,7 @@
 46967	IN	Onward
 46968	IN	Ora
 46970	IN	Peru
-46971	IN	Grissom Afb
+46971	IN	Grissom Arb
 46974	IN	Roann
 46975	IN	Rochester
 46977	IN	Rockfield
@@ -2986,7 +2884,6 @@
 46979	IN	Russiaville
 46980	IN	Servia
 46982	IN	Silver Lake
-46983	IN	Sims
 46984	IN	Somerset
 46985	IN	Star City
 46986	IN	Swayzee
@@ -3085,12 +2982,12 @@
 47174	IN	Sulphur
 47175	IN	Taswell
 47177	IN	Underwood
+47190	IN	Jeffersonville
 47199	IN	Jeffersonville
 47201	IN	Columbus
 47202	IN	Columbus
 47203	IN	Columbus
 47220	IN	Brownstown
-47222	IN	Burney
 47223	IN	Butlerville
 47224	IN	Canaan
 47225	IN	Clarksburg
@@ -3114,7 +3011,6 @@
 47250	IN	Madison
 47260	IN	Medora
 47261	IN	Millhousen
-47262	IN	Nebraska
 47263	IN	New Point
 47264	IN	Norman
 47265	IN	North Vernon
@@ -3326,7 +3222,6 @@
 47665	IN	Owensville
 47666	IN	Patoka
 47670	IN	Princeton
-47671	IN	Princeton
 47683	IN	Somerville
 47701	IN	Evansville
 47702	IN	Evansville
@@ -3347,6 +3242,7 @@
 47721	IN	Evansville
 47722	IN	Evansville
 47724	IN	Evansville
+47725	IN	Evansville
 47727	IN	Evansville
 47728	IN	Evansville
 47730	IN	Evansville
@@ -3373,8 +3269,6 @@
 47809	IN	Terre Haute
 47811	IN	Terre Haute
 47812	IN	Terre Haute
-47813	IN	Terre Haute
-47814	IN	Terre Haute
 47830	IN	Bellmore
 47831	IN	Blanford
 47832	IN	Bloomingdale
@@ -3405,7 +3299,7 @@
 47861	IN	Merom
 47862	IN	Montezuma
 47863	IN	New Goshen
-47864	IN	New Lebanon
+47864	IN	Sullivan
 47865	IN	Paxton
 47866	IN	Pimento
 47868	IN	Poland
@@ -3430,6 +3324,7 @@
 47905	IN	Lafayette
 47906	IN	West Lafayette
 47907	IN	West Lafayette
+47909	IN	Lafayette
 47916	IN	Alamo
 47917	IN	Ambia
 47918	IN	Attica
@@ -3480,7 +3375,6 @@
 47971	IN	Oxford
 47974	IN	Perrysville
 47975	IN	Pine Village
-47976	IN	Earl Park
 47977	IN	Remington
 47978	IN	Rensselaer
 47980	IN	Reynolds
@@ -3521,6 +3415,7 @@
 48028	MI	Harsens Island
 48030	MI	Hazel Park
 48032	MI	Jeddo
+48033	MI	Southfield
 48034	MI	Southfield
 48035	MI	Clinton Township
 48036	MI	Clinton Township
@@ -3564,7 +3459,9 @@
 48082	MI	Saint Clair Shores
 48083	MI	Troy
 48084	MI	Troy
+48085	MI	Troy
 48086	MI	Southfield
+48088	MI	Warren
 48089	MI	Warren
 48090	MI	Warren
 48091	MI	Warren
@@ -3588,6 +3485,7 @@
 48111	MI	Belleville
 48112	MI	Belleville
 48113	MI	Ann Arbor
+48114	MI	Brighton
 48115	MI	Bridgewater
 48116	MI	Brighton
 48117	MI	Carleton
@@ -3631,6 +3529,7 @@
 48165	MI	New Hudson
 48166	MI	Newport
 48167	MI	Northville
+48168	MI	Northville
 48169	MI	Pinckney
 48170	MI	Plymouth
 48173	MI	Rockwood
@@ -3652,6 +3551,7 @@
 48190	MI	Whittaker
 48191	MI	Willis
 48192	MI	Wyandotte
+48193	MI	Riverview
 48195	MI	Southgate
 48197	MI	Ypsilanti
 48198	MI	Ypsilanti
@@ -3698,9 +3598,7 @@
 48242	MI	Detroit
 48243	MI	Detroit
 48244	MI	Detroit
-48254	MI	Detroit
 48255	MI	Detroit
-48258	MI	Detroit
 48260	MI	Detroit
 48264	MI	Detroit
 48265	MI	Detroit
@@ -3709,15 +3607,11 @@
 48268	MI	Detroit
 48269	MI	Detroit
 48272	MI	Detroit
-48274	MI	Detroit
 48275	MI	Detroit
 48277	MI	Detroit
 48278	MI	Detroit
 48279	MI	Detroit
 48288	MI	Detroit
-48295	MI	Detroit
-48297	MI	Detroit
-48299	MI	Detroit
 48301	MI	Bloomfield Hills
 48302	MI	Bloomfield Hills
 48303	MI	Bloomfield Hills
@@ -3786,7 +3680,6 @@
 48391	MI	Walled Lake
 48393	MI	Wixom
 48397	MI	Warren
-48398	MI	Clawson
 48401	MI	Applegate
 48410	MI	Argyle
 48411	MI	Atlas
@@ -3846,6 +3739,7 @@
 48473	MI	Swartz Creek
 48475	MI	Ubly
 48476	MI	Vernon
+48480	MI	Grand Blanc
 48501	MI	Flint
 48502	MI	Flint
 48503	MI	Flint
@@ -3904,6 +3798,7 @@
 48635	MI	Lupton
 48636	MI	Luzerne
 48637	MI	Merrill
+48638	MI	Saginaw
 48640	MI	Midland
 48641	MI	Midland
 48642	MI	Midland
@@ -3964,7 +3859,6 @@
 48748	MI	National City
 48749	MI	Omer
 48750	MI	Oscoda
-48753	MI	Oscoda
 48754	MI	Owendale
 48755	MI	Pigeon
 48756	MI	Prescott
@@ -3980,7 +3874,7 @@
 48766	MI	Twining
 48767	MI	Unionville
 48768	MI	Vassar
-48769	MI	Tuscola
+48769	MI	Vassar
 48770	MI	Whittemore
 48787	MI	Frankenmuth
 48801	MI	Alma
@@ -4029,9 +3923,10 @@
 48849	MI	Lake Odessa
 48850	MI	Lakeview
 48851	MI	Lyons
-48852	MI	McBrides
+48852	MI	Mcbrides
 48853	MI	Maple Rapids
 48854	MI	Mason
+48855	MI	Howell
 48856	MI	Middleton
 48857	MI	Morrice
 48858	MI	Mount Pleasant
@@ -4039,7 +3934,7 @@
 48860	MI	Muir
 48861	MI	Mulliken
 48862	MI	North Star
-48863	MI	Oak Grove
+48863	MI	Howell
 48864	MI	Okemos
 48865	MI	Orleans
 48866	MI	Ovid
@@ -4074,7 +3969,6 @@
 48897	MI	Woodland
 48901	MI	Lansing
 48906	MI	Lansing
-48907	MI	Lansing
 48908	MI	Lansing
 48909	MI	Lansing
 48910	MI	Lansing
@@ -4094,6 +3988,7 @@
 48933	MI	Lansing
 48937	MI	Lansing
 48950	MI	Lansing
+48951	MI	Lansing
 48956	MI	Lansing
 48980	MI	Lansing
 49001	MI	Kalamazoo
@@ -4131,6 +4026,7 @@
 49034	MI	Climax
 49035	MI	Cloverdale
 49036	MI	Coldwater
+49037	MI	Battle Creek
 49038	MI	Coloma
 49039	MI	Hagar Shores
 49040	MI	Colon
@@ -4140,6 +4036,7 @@
 49045	MI	Decatur
 49046	MI	Delton
 49047	MI	Dowagiac
+49048	MI	Kalamazoo
 49050	MI	Dowling
 49051	MI	East Leroy
 49052	MI	Fulton
@@ -4258,12 +4155,9 @@
 49271	MI	Pittsford
 49272	MI	Pleasant Lake
 49274	MI	Reading
-49275	MI	Ridgeway
 49276	MI	Riga
 49277	MI	Rives Junction
-49278	MI	Rollin
 49279	MI	Sand Creek
-49280	MI	Seneca
 49281	MI	Somerset
 49282	MI	Somerset Center
 49283	MI	Spring Arbor
@@ -4376,7 +4270,7 @@
 49459	MI	Walkerville
 49460	MI	West Olive
 49461	MI	Whitehall
-49463	MI	Wabaningo
+49463	MI	Sylvan Beach
 49464	MI	Zeeland
 49468	MI	Grandville
 49501	MI	Grand Rapids
@@ -4387,15 +4281,19 @@
 49506	MI	Grand Rapids
 49507	MI	Grand Rapids
 49508	MI	Grand Rapids
-49509	MI	Grand Rapids
+49509	MI	Wyoming
 49510	MI	Grand Rapids
 49512	MI	Grand Rapids
 49514	MI	Grand Rapids
 49515	MI	Grand Rapids
 49516	MI	Grand Rapids
 49518	MI	Grand Rapids
+49519	MI	Wyoming
 49523	MI	Grand Rapids
+49525	MI	Grand Rapids
+49528	MI	Grand Rapids
 49530	MI	Grand Rapids
+49534	MI	Grand Rapids
 49544	MI	Grand Rapids
 49546	MI	Grand Rapids
 49548	MI	Grand Rapids
@@ -4500,6 +4398,7 @@
 49729	MI	Ellsworth
 49730	MI	Elmira
 49733	MI	Frederic
+49734	MI	Gaylord
 49735	MI	Gaylord
 49736	MI	Goetzville
 49737	MI	Good Hart
@@ -4533,7 +4432,6 @@
 49775	MI	Pointe Aux Pins
 49776	MI	Posen
 49777	MI	Presque Isle
-49778	MI	Brimley
 49779	MI	Rogers City
 49780	MI	Rudyard
 49781	MI	Saint Ignace
@@ -4543,7 +4441,7 @@
 49785	MI	Kincheloe
 49786	MI	Kincheloe
 49788	MI	Kincheloe
-49790	MI	Strongs
+49790	MI	Eckerman
 49791	MI	Topinabee
 49792	MI	Tower
 49793	MI	Trout Lake
@@ -4558,7 +4456,6 @@
 49807	MI	Bark River
 49808	MI	Big Bay
 49812	MI	Carney
-49813	MI	Cedar River
 49814	MI	Champion
 49815	MI	Channing
 49816	MI	Chatham
@@ -4582,7 +4479,6 @@
 49839	MI	Grand Marais
 49840	MI	Gulliver
 49841	MI	Gwinn
-49843	MI	Gwinn
 49845	MI	Harris
 49847	MI	Hermansville
 49848	MI	Ingalls
@@ -4599,7 +4495,6 @@
 49865	MI	National Mine
 49866	MI	Negaunee
 49868	MI	Newberry
-49869	MI	Northland
 49870	MI	Norway
 49871	MI	Palmer
 49872	MI	Perkins
@@ -4627,7 +4522,6 @@
 49903	MI	Amasa
 49905	MI	Atlantic Mine
 49908	MI	Baraga
-49909	MI	Beechwood
 49910	MI	Bergland
 49911	MI	Bessemer
 49912	MI	Bruce Crossing
@@ -4640,7 +4534,6 @@
 49920	MI	Crystal Falls
 49921	MI	Dodgeville
 49922	MI	Dollar Bay
-49924	MI	Eagle River
 49925	MI	Ewen
 49927	MI	Gaastra
 49929	MI	Greenland
@@ -4650,7 +4543,6 @@
 49935	MI	Iron River
 49938	MI	Ironwood
 49942	MI	Kearsarge
-49943	MI	Kenton
 49945	MI	Lake Linden
 49946	MI	Lanse
 49947	MI	Marenisco

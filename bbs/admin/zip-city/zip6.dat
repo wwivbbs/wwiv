@@ -20,7 +20,7 @@
 60021	IL	Fox River Grove
 60022	IL	Glencoe
 60025	IL	Glenview
-60026	IL	Glenview Nas
+60026	IL	Glenview
 60029	IL	Golf
 60030	IL	Grayslake
 60031	IL	Gurnee
@@ -39,16 +39,15 @@
 60046	IL	Lake Villa
 60047	IL	Lake Zurich
 60048	IL	Libertyville
-60049	IL	Long Grove
-60050	IL	Mc Henry
-60051	IL	Mc Henry
+60049	IL	Lake Zurich
+60050	IL	Mchenry
+60051	IL	Mchenry
 60053	IL	Morton Grove
 60055	IL	Palatine
 60056	IL	Mount Prospect
 60060	IL	Mundelein
 60061	IL	Vernon Hills
 60062	IL	Northbrook
-60063	IL	Deerfield
 60064	IL	North Chicago
 60065	IL	Northbrook
 60067	IL	Palatine
@@ -64,7 +63,6 @@
 60077	IL	Skokie
 60078	IL	Palatine
 60079	IL	Waukegan
-60080	IL	Solon Mills
 60081	IL	Spring Grove
 60082	IL	Techny
 60083	IL	Wadsworth
@@ -97,16 +95,16 @@
 60111	IL	Clare
 60112	IL	Cortland
 60113	IL	Creston
-60114	IL	Addison
-60115	IL	De Kalb
+60115	IL	Dekalb
 60116	IL	Carol Stream
 60117	IL	Bloomingdale
 60118	IL	Dundee
 60119	IL	Elburn
 60120	IL	Elgin
 60121	IL	Elgin
-60122	IL	Elgin
+60122	IL	Carol Stream
 60123	IL	Elgin
+60124	IL	Elgin
 60125	IL	Carol Stream
 60126	IL	Elmhurst
 60128	IL	Carol Stream
@@ -114,6 +112,7 @@
 60130	IL	Forest Park
 60131	IL	Franklin Park
 60132	IL	Carol Stream
+60133	IL	Hanover Park
 60134	IL	Geneva
 60135	IL	Genoa
 60136	IL	Gilberts
@@ -134,9 +133,9 @@
 60152	IL	Marengo
 60153	IL	Maywood
 60154	IL	Westchester
-60155	IL	Carol Stream
+60155	IL	Broadview
+60156	IL	Lake In The Hills
 60157	IL	Medinah
-60158	IL	Carol Stream
 60159	IL	Schaumburg
 60160	IL	Melrose Park
 60161	IL	Melrose Park
@@ -145,6 +144,7 @@
 60164	IL	Melrose Park
 60165	IL	Stone Park
 60168	IL	Schaumburg
+60169	IL	Hoffman Estates
 60170	IL	Plato Center
 60171	IL	River Grove
 60172	IL	Roselle
@@ -157,7 +157,6 @@
 60179	IL	Hoffman Estates
 60180	IL	Union
 60181	IL	Villa Park
-60182	IL	Virgil
 60183	IL	Wasco
 60184	IL	Wayne
 60185	IL	West Chicago
@@ -167,13 +166,12 @@
 60189	IL	Wheaton
 60190	IL	Winfield
 60191	IL	Wood Dale
-60192	IL	Schaumburg
+60192	IL	Hoffman Estates
 60193	IL	Schaumburg
 60194	IL	Schaumburg
 60195	IL	Schaumburg
 60196	IL	Schaumburg
 60197	IL	Carol Stream
-60198	IL	Carol Stream
 60199	IL	Carol Stream
 60201	IL	Evanston
 60202	IL	Evanston
@@ -181,22 +179,24 @@
 60204	IL	Evanston
 60208	IL	Evanston
 60209	IL	Evanston
-60251	IL	Palatine
+60290	IL	Chicago
 60301	IL	Oak Park
 60302	IL	Oak Park
 60303	IL	Oak Park
 60304	IL	Oak Park
 60305	IL	River Forest
-60351	IL	Carol Stream
-60353	IL	Carol Stream
+60399	IL	Wood Dale
 60401	IL	Beecher
 60402	IL	Berwyn
+60403	IL	Crest Hill
+60404	IL	Shorewood
 60406	IL	Blue Island
 60407	IL	Braceville
 60408	IL	Braidwood
 60409	IL	Calumet City
 60410	IL	Channahon
 60411	IL	Chicago Heights
+60412	IL	Chicago Heights
 60415	IL	Chicago Ridge
 60416	IL	Coal City
 60417	IL	Crete
@@ -208,6 +208,7 @@
 60424	IL	Gardner
 60425	IL	Glenwood
 60426	IL	Harvey
+60428	IL	Markham
 60429	IL	Hazel Crest
 60430	IL	Homewood
 60431	IL	Joliet
@@ -246,6 +247,7 @@
 60464	IL	Palos Park
 60465	IL	Palos Hills
 60466	IL	Park Forest
+60467	IL	Orland Park
 60468	IL	Peotone
 60469	IL	Posen
 60470	IL	Ransom
@@ -261,8 +263,14 @@
 60480	IL	Willow Springs
 60481	IL	Wilmington
 60482	IL	Worth
+60484	IL	University Park
+60487	IL	Tinley Park
+60490	IL	Bolingbrook
+60491	IL	Homer Glen
 60499	IL	Bedford Park
 60501	IL	Summit Argo
+60502	IL	Aurora
+60503	IL	Aurora
 60504	IL	Aurora
 60505	IL	Aurora
 60506	IL	Aurora
@@ -280,9 +288,10 @@
 60520	IL	Hinckley
 60521	IL	Hinsdale
 60522	IL	Hinsdale
+60523	IL	Oak Brook
 60525	IL	La Grange
 60526	IL	La Grange Park
-60527	IL	Hinsdale
+60527	IL	Willowbrook
 60530	IL	Lee
 60531	IL	Leland
 60532	IL	Lisle
@@ -319,7 +328,9 @@
 60567	IL	Naperville
 60568	IL	Aurora
 60570	IL	Hinsdale
-60572	IL	Fox Valley
+60572	IL	Aurora
+60585	IL	Plainfield
+60586	IL	Plainfield
 60597	IL	Fox Valley
 60598	IL	Aurora
 60599	IL	Fox Valley
@@ -349,7 +360,6 @@
 60624	IL	Chicago
 60625	IL	Chicago
 60626	IL	Chicago
-60627	IL	Riverdale
 60628	IL	Chicago
 60629	IL	Chicago
 60630	IL	Chicago
@@ -357,21 +367,19 @@
 60632	IL	Chicago
 60633	IL	Chicago
 60634	IL	Chicago
-60635	IL	Elmwood Park
 60636	IL	Chicago
 60637	IL	Chicago
 60638	IL	Chicago
 60639	IL	Chicago
 60640	IL	Chicago
 60641	IL	Chicago
-60642	IL	Evergreen Park
+60642	IL	Chicago
 60643	IL	Chicago
 60644	IL	Chicago
 60645	IL	Chicago
 60646	IL	Chicago
 60647	IL	Chicago
 60649	IL	Chicago
-60650	IL	Cicero
 60651	IL	Chicago
 60652	IL	Chicago
 60653	IL	Chicago
@@ -379,23 +387,19 @@
 60655	IL	Chicago
 60656	IL	Chicago
 60657	IL	Chicago
-60658	IL	Chicago
 60659	IL	Chicago
 60660	IL	Chicago
 60661	IL	Chicago
 60663	IL	Chicago
 60664	IL	Chicago
-60665	IL	Chicago
-60666	IL	Amf Ohare
-60667	IL	Chicago
+60666	IL	Chicago
 60668	IL	Chicago
 60669	IL	Chicago
 60670	IL	Chicago
-60671	IL	Chicago
-60672	IL	Chicago
 60673	IL	Chicago
 60674	IL	Chicago
 60675	IL	Chicago
+60677	IL	Chicago
 60678	IL	Chicago
 60679	IL	Chicago
 60680	IL	Chicago
@@ -403,20 +407,28 @@
 60682	IL	Chicago
 60684	IL	Chicago
 60685	IL	Chicago
+60686	IL	Chicago
 60687	IL	Chicago
+60688	IL	Chicago
+60689	IL	Chicago
 60690	IL	Chicago
 60691	IL	Chicago
 60693	IL	Chicago
 60694	IL	Chicago
+60695	IL	Chicago
+60696	IL	Chicago
 60697	IL	Chicago
 60699	IL	Chicago
 60701	IL	Chicago
+60706	IL	Harwood Heights
 60707	IL	Elmwood Park
+60712	IL	Lincolnwood
 60714	IL	Niles
+60803	IL	Alsip
 60804	IL	Cicero
 60805	IL	Evergreen Park
+60827	IL	Riverdale
 60901	IL	Kankakee
-60902	IL	Kankakee
 60910	IL	Aroma Park
 60911	IL	Ashkum
 60912	IL	Beaverville
@@ -459,6 +471,7 @@
 60955	IL	Onarga
 60956	IL	Papineau
 60957	IL	Paxton
+60958	IL	Pembroke Township
 60959	IL	Piper City
 60960	IL	Rankin
 60961	IL	Reddick
@@ -483,7 +496,6 @@
 61014	IL	Chadwick
 61015	IL	Chana
 61016	IL	Cherry Valley
-61017	IL	Coleta
 61018	IL	Dakota
 61019	IL	Davis
 61020	IL	Davis Junction
@@ -513,7 +525,6 @@
 61053	IL	Mount Carroll
 61054	IL	Mount Morris
 61057	IL	Nachusa
-61058	IL	Nelson
 61059	IL	Nora
 61060	IL	Orangeville
 61061	IL	Oregon
@@ -529,7 +540,6 @@
 61073	IL	Roscoe
 61074	IL	Savanna
 61075	IL	Scales Mound
-61076	IL	Scioto Mills
 61077	IL	Seward
 61078	IL	Shannon
 61079	IL	Shirland
@@ -562,7 +572,6 @@
 61132	IL	Loves Park
 61201	IL	Rock Island
 61204	IL	Rock Island
-61206	IL	Rock Island
 61230	IL	Albany
 61231	IL	Aledo
 61232	IL	Andalusia
@@ -721,7 +730,7 @@
 61465	IL	New Windsor
 61466	IL	North Henderson
 61467	IL	Oneida
-61468	IL	Opheim
+61468	IL	Ophiem
 61469	IL	Oquawka
 61470	IL	Prairie City
 61471	IL	Raritan
@@ -746,7 +755,6 @@
 61501	IL	Astoria
 61516	IL	Benson
 61517	IL	Brimfield
-61518	IL	Brimfield
 61519	IL	Bryant
 61520	IL	Canton
 61523	IL	Chillicothe
@@ -805,22 +813,19 @@
 61613	IL	Peoria
 61614	IL	Peoria
 61615	IL	Peoria
+61616	IL	Peoria Heights
 61625	IL	Peoria
-61628	IL	Peoria
 61629	IL	Peoria
 61630	IL	Peoria
-61632	IL	Peoria
 61633	IL	Peoria
 61634	IL	Peoria
-61635	IL	Peoria
+61635	IL	East Peoria
 61636	IL	Peoria
 61637	IL	Peoria
 61638	IL	Peoria
 61639	IL	Peoria
-61640	IL	Peoria
 61641	IL	Peoria
 61643	IL	Peoria
-61644	IL	Peoria
 61650	IL	Peoria
 61651	IL	Peoria
 61652	IL	Peoria
@@ -831,6 +836,7 @@
 61701	IL	Bloomington
 61702	IL	Bloomington
 61704	IL	Bloomington
+61705	IL	Bloomington
 61709	IL	Bloomington
 61710	IL	Bloomington
 61720	IL	Anchor
@@ -901,6 +907,7 @@
 61818	IL	Cerro Gordo
 61820	IL	Champaign
 61821	IL	Champaign
+61822	IL	Champaign
 61824	IL	Champaign
 61825	IL	Champaign
 61826	IL	Champaign
@@ -1125,7 +1132,6 @@
 62280	IL	Rockwood
 62281	IL	Saint Jacob
 62282	IL	Saint Libory
-62283	IL	Shattuc
 62284	IL	Smithboro
 62285	IL	Smithton
 62286	IL	Sparta
@@ -1140,13 +1146,11 @@
 62301	IL	Quincy
 62305	IL	Quincy
 62306	IL	Quincy
-62310	IL	Adrian
 62311	IL	Augusta
 62312	IL	Barry
 62313	IL	Basco
 62314	IL	Baylis
 62316	IL	Bowen
-62318	IL	Burnside
 62319	IL	Camden
 62320	IL	Camp Point
 62321	IL	Carthage
@@ -1154,10 +1158,8 @@
 62324	IL	Clayton
 62325	IL	Coatsburg
 62326	IL	Colchester
-62328	IL	Columbus
 62329	IL	Colusa
 62330	IL	Dallas City
-62332	IL	Detroit
 62334	IL	Elvaston
 62336	IL	Ferris
 62338	IL	Fowler
@@ -1200,7 +1202,6 @@
 62411	IL	Altamont
 62413	IL	Annapolis
 62414	IL	Beecher City
-62415	IL	Birds
 62417	IL	Bridgeport
 62418	IL	Brownstown
 62419	IL	Calhoun
@@ -1259,7 +1260,6 @@
 62481	IL	Yale
 62501	IL	Argenta
 62510	IL	Assumption
-62511	IL	Atwater
 62512	IL	Beason
 62513	IL	Blue Mound
 62514	IL	Boody
@@ -1274,7 +1274,6 @@
 62524	IL	Decatur
 62525	IL	Decatur
 62526	IL	Decatur
-62527	IL	Decatur
 62530	IL	Divernon
 62531	IL	Edinburg
 62532	IL	Elwin
@@ -1296,7 +1295,6 @@
 62549	IL	Mt Zion
 62550	IL	Moweaqua
 62551	IL	Niantic
-62552	IL	Oakley
 62553	IL	Oconee
 62554	IL	Oreana
 62555	IL	Owaneco
@@ -1345,7 +1343,7 @@
 62651	IL	Jacksonville
 62655	IL	Kilbourne
 62656	IL	Lincoln
-62659	IL	Lincoln's New Salem
+62659	IL	Lincolns New Salem
 62660	IL	Literberry
 62661	IL	Loami
 62662	IL	Lowder
@@ -1361,14 +1359,12 @@
 62673	IL	Oakford
 62674	IL	Palmyra
 62675	IL	Petersburg
-62676	IL	Plainview
 62677	IL	Pleasant Plains
 62681	IL	Rushville
 62682	IL	San Jose
 62683	IL	Scottville
 62684	IL	Sherman
 62685	IL	Shipman
-62686	IL	Standard City
 62688	IL	Tallula
 62689	IL	Thayer
 62690	IL	Virden
@@ -1385,15 +1381,12 @@
 62706	IL	Springfield
 62707	IL	Springfield
 62708	IL	Springfield
-62709	IL	Springfield
 62711	IL	Springfield
 62712	IL	Springfield
 62713	IL	Springfield
 62715	IL	Springfield
 62716	IL	Springfield
-62718	IL	Springfield
 62719	IL	Springfield
-62720	IL	Springfield
 62721	IL	Springfield
 62722	IL	Springfield
 62723	IL	Springfield
@@ -1458,9 +1451,7 @@
 62842	IL	Geff
 62843	IL	Golden Gate
 62844	IL	Grayville
-62845	IL	Herald
 62846	IL	Ina
-62847	IL	Iola
 62848	IL	Irvington
 62849	IL	Iuka
 62850	IL	Johnsonville
@@ -1522,7 +1513,6 @@
 62909	IL	Boles
 62910	IL	Brookport
 62912	IL	Buncombe
-62913	IL	Cache
 62914	IL	Cairo
 62915	IL	Cambria
 62916	IL	Campbell Hill
@@ -1537,7 +1527,6 @@
 62926	IL	Dongola
 62927	IL	Dowell
 62928	IL	Eddyville
-62929	IL	Elco
 62930	IL	Eldorado
 62931	IL	Elizabethtown
 62932	IL	Elkville
@@ -1550,7 +1539,6 @@
 62941	IL	Grand Chain
 62942	IL	Grand Tower
 62943	IL	Grantsburg
-62944	IL	Hamletsburg
 62946	IL	Harrisburg
 62947	IL	Herod
 62948	IL	Herrin
@@ -1590,7 +1578,6 @@
 62987	IL	Stonefort
 62988	IL	Tamms
 62990	IL	Thebes
-62991	IL	Tunnel Hill
 62992	IL	Ullin
 62993	IL	Unity
 62994	IL	Vergennes
@@ -1615,6 +1602,7 @@
 63021	MO	Ballwin
 63022	MO	Ballwin
 63023	MO	Dittmer
+63024	MO	Ballwin
 63025	MO	Eureka
 63026	MO	Fenton
 63028	MO	Festus
@@ -1712,7 +1700,6 @@
 63147	MO	Saint Louis
 63150	MO	Saint Louis
 63151	MO	Saint Louis
-63153	MO	Saint Louis
 63155	MO	Saint Louis
 63156	MO	Saint Louis
 63157	MO	Saint Louis
@@ -1730,6 +1717,7 @@
 63180	MO	Saint Louis
 63182	MO	Saint Louis
 63188	MO	Saint Louis
+63190	MO	Saint Louis
 63195	MO	Saint Louis
 63196	MO	Saint Louis
 63197	MO	Saint Louis
@@ -1764,13 +1752,12 @@
 63361	MO	Montgomery City
 63362	MO	Moscow Mills
 63363	MO	New Florence
-63364	MO	New Hartford
 63365	MO	New Melle
 63366	MO	O Fallon
 63367	MO	Lake Saint Louis
+63368	MO	O Fallon
 63369	MO	Old Monroe
 63370	MO	Olney
-63371	MO	Paynesville
 63373	MO	Portage Des Sioux
 63376	MO	Saint Peters
 63377	MO	Silex
@@ -1824,7 +1811,6 @@
 63467	MO	Saverton
 63468	MO	Shelbina
 63469	MO	Shelbyville
-63470	MO	Steffenville
 63471	MO	Taylor
 63472	MO	Wayland
 63473	MO	Williamstown
@@ -1882,7 +1868,6 @@
 63638	MO	Ellington
 63640	MO	Farmington
 63645	MO	Fredericktown
-63646	MO	Glover
 63648	MO	Irondale
 63650	MO	Ironton
 63651	MO	Knob Lick
@@ -1891,7 +1876,6 @@
 63655	MO	Marquand
 63656	MO	Middle Brook
 63660	MO	Mineral Point
-63661	MO	New Offenburg
 63662	MO	Patton
 63663	MO	Pilot Knob
 63664	MO	Potosi
@@ -1904,7 +1888,6 @@
 63701	MO	Cape Girardeau
 63702	MO	Cape Girardeau
 63703	MO	Cape Girardeau
-63705	MO	Cape Girardeau
 63730	MO	Advance
 63732	MO	Altenburg
 63735	MO	Bell City
@@ -1923,7 +1906,6 @@
 63750	MO	Gipsy
 63751	MO	Glenallen
 63752	MO	Gordonville
-63753	MO	Grassy
 63755	MO	Jackson
 63758	MO	Kelso
 63760	MO	Leopold
@@ -1934,7 +1916,6 @@
 63769	MO	Oak Ridge
 63770	MO	Old Appleton
 63771	MO	Oran
-63772	MO	Painton
 63774	MO	Perkins
 63775	MO	Perryville
 63776	MO	Mc Bride
@@ -1961,7 +1942,6 @@
 63833	MO	Catron
 63834	MO	Charleston
 63837	MO	Clarkton
-63838	MO	Conran
 63839	MO	Cooter
 63840	MO	Deering
 63841	MO	Dexter
@@ -1984,7 +1964,6 @@
 63868	MO	Morehouse
 63869	MO	New Madrid
 63870	MO	Parma
-63871	MO	Pascola
 63873	MO	Portageville
 63874	MO	Risco
 63875	MO	Rives
@@ -2012,7 +1991,6 @@
 63943	MO	Grandin
 63944	MO	Greenville
 63945	MO	Harviell
-63947	MO	Hiram
 63950	MO	Lodi
 63951	MO	Lowndes
 63952	MO	Mill Spring
@@ -2030,6 +2008,7 @@
 63966	MO	Wappapello
 63967	MO	Williamsville
 64001	MO	Alma
+64002	MO	Lees Summit
 64011	MO	Bates City
 64012	MO	Belton
 64013	MO	Blue Springs
@@ -2070,6 +2049,7 @@
 64066	MO	Levasy
 64067	MO	Lexington
 64068	MO	Liberty
+64069	MO	Liberty
 64070	MO	Lone Jack
 64071	MO	Mayview
 64072	MO	Missouri City
@@ -2111,6 +2091,7 @@
 64118	MO	Kansas City
 64119	MO	Kansas City
 64120	MO	Kansas City
+64121	MO	Kansas City
 64123	MO	Kansas City
 64124	MO	Kansas City
 64125	MO	Kansas City
@@ -2128,14 +2109,13 @@
 64138	MO	Kansas City
 64139	MO	Kansas City
 64141	MO	Kansas City
-64142	MO	Kansas City
 64144	MO	Kansas City
 64145	MO	Kansas City
 64146	MO	Kansas City
 64147	MO	Kansas City
 64148	MO	Kansas City
 64149	MO	Kansas City
-64150	MO	Kansas City
+64150	MO	Riverside
 64151	MO	Kansas City
 64152	MO	Kansas City
 64153	MO	Kansas City
@@ -2144,7 +2124,6 @@
 64156	MO	Kansas City
 64157	MO	Kansas City
 64158	MO	Kansas City
-64160	MO	Kansas City
 64161	MO	Kansas City
 64163	MO	Kansas City
 64164	MO	Kansas City
@@ -2155,7 +2134,6 @@
 64170	MO	Kansas City
 64171	MO	Kansas City
 64172	MO	Kansas City
-64173	MO	Kansas City
 64179	MO	Kansas City
 64180	MO	Kansas City
 64183	MO	Kansas City
@@ -2163,7 +2141,6 @@
 64185	MO	Kansas City
 64187	MO	Kansas City
 64188	MO	Kansas City
-64189	MO	Kansas City
 64190	MO	Kansas City
 64191	MO	Kansas City
 64192	MO	Kansas City
@@ -2201,7 +2178,7 @@
 64444	MO	Edgerton
 64445	MO	Elmo
 64446	MO	Fairfax
-64447	MO	Fairport
+64447	MO	Maysville
 64448	MO	Faucett
 64449	MO	Fillmore
 64451	MO	Forest City
@@ -2226,7 +2203,6 @@
 64475	MO	Parnell
 64476	MO	Pickering
 64477	MO	Plattsburg
-64478	MO	Quitman
 64479	MO	Ravenwood
 64480	MO	Rea
 64481	MO	Ridgeway
@@ -2256,7 +2232,6 @@
 64508	MO	Saint Joseph
 64601	MO	Chillicothe
 64620	MO	Altamont
-64621	MO	Avalon
 64622	MO	Bogard
 64623	MO	Bosworth
 64624	MO	Braymer
@@ -2294,7 +2269,6 @@
 64660	MO	Mendon
 64661	MO	Mercer
 64664	MO	Mooresville
-64665	MO	Mount Moriah
 64667	MO	Newtown
 64668	MO	Norborne
 64670	MO	Pattonsburg
@@ -2309,7 +2283,6 @@
 64682	MO	Tina
 64683	MO	Trenton
 64686	MO	Utica
-64687	MO	Wakenda
 64688	MO	Wheeling
 64689	MO	Winston
 64701	MO	Harrisonville
@@ -2336,12 +2309,10 @@
 64747	MO	Garden City
 64748	MO	Golden City
 64750	MO	Harwood
-64751	MO	Horton
 64752	MO	Hume
 64755	MO	Jasper
 64756	MO	Jerico Springs
 64759	MO	Lamar
-64760	MO	Latour
 64761	MO	Leeton
 64762	MO	Liberal
 64763	MO	Lowry City
@@ -2353,7 +2324,6 @@
 64771	MO	Moundville
 64772	MO	Nevada
 64776	MO	Osceola
-64777	MO	Passaic
 64778	MO	Richards
 64779	MO	Rich Hill
 64780	MO	Rockville
@@ -2361,7 +2331,7 @@
 64783	MO	Schell City
 64784	MO	Sheldon
 64788	MO	Urich
-64789	MO	Vista
+64789	MO	Osceola
 64790	MO	Walker
 64801	MO	Joplin
 64802	MO	Joplin
@@ -2413,12 +2383,10 @@
 65017	MO	Brumley
 65018	MO	California
 65020	MO	Camdenton
-65022	MO	Cedar City
 65023	MO	Centertown
 65024	MO	Chamois
 65025	MO	Clarksburg
 65026	MO	Eldon
-65031	MO	Etterville
 65032	MO	Eugene
 65034	MO	Fortuna
 65035	MO	Freeburg
@@ -2440,7 +2408,6 @@
 65053	MO	Lohman
 65054	MO	Loose Creek
 65055	MO	Mc Girk
-65056	MO	McKittrick
 65058	MO	Meta
 65059	MO	Mokane
 65061	MO	Morrison
@@ -2527,7 +2494,7 @@
 65285	MO	Thompson
 65286	MO	Triplett
 65287	MO	Wooldridge
-65299	MO	Mid Missouri
+65299	MO	Columbia
 65301	MO	Sedalia
 65302	MO	Sedalia
 65305	MO	Whiteman Air Force Base
@@ -2563,7 +2530,6 @@
 65401	MO	Rolla
 65402	MO	Rolla
 65409	MO	Rolla
-65433	MO	Bendavis
 65436	MO	Beulah
 65438	MO	Birch Tree
 65439	MO	Bixby
@@ -2572,7 +2538,7 @@
 65443	MO	Brinktown
 65444	MO	Bucyrus
 65446	MO	Cherryville
-65449	MO	Cook Station
+65449	MO	Cook Sta
 65452	MO	Crocker
 65453	MO	Cuba
 65456	MO	Davisville
@@ -2596,7 +2562,6 @@
 65534	MO	Laquey
 65535	MO	Leasburg
 65536	MO	Lebanon
-65540	MO	Lecoma
 65541	MO	Lenox
 65542	MO	Licking
 65543	MO	Lynchburg
@@ -2615,11 +2580,10 @@
 65567	MO	Stoutland
 65570	MO	Success
 65571	MO	Summersville
-65572	MO	Swedeborg
-65573	MO	Teresita
 65580	MO	Vichy
 65582	MO	Vienna
 65583	MO	Waynesville
+65584	MO	Saint Robert
 65586	MO	Wesco
 65588	MO	Winona
 65589	MO	Yukon
@@ -2642,7 +2606,7 @@
 65616	MO	Branson
 65617	MO	Brighton
 65618	MO	Brixey
-65619	MO	Brookline Station
+65619	MO	Brookline
 65620	MO	Bruner
 65622	MO	Buffalo
 65623	MO	Butterfield
@@ -2676,7 +2640,6 @@
 65656	MO	Galena
 65657	MO	Garrison
 65658	MO	Golden
-65659	MO	Goodson
 65660	MO	Graff
 65661	MO	Greenfield
 65662	MO	Grovespring
@@ -2788,8 +2751,10 @@
 65808	MO	Springfield
 65809	MO	Springfield
 65810	MO	Springfield
+65814	MO	Springfield
 65817	MO	Springfield
 65890	MO	Springfield
+65897	MO	Springfield
 65898	MO	Springfield
 65899	MO	Springfield
 66002	KS	Atchison
@@ -2819,7 +2784,7 @@
 66035	KS	Highland
 66036	KS	Hillsdale
 66039	KS	Kincaid
-66040	KS	La Cygne
+66040	KS	Lacygne
 66041	KS	Lancaster
 66042	KS	Lane
 66043	KS	Lansing
@@ -2881,38 +2846,41 @@
 66118	KS	Kansas City
 66119	KS	Kansas City
 66160	KS	Kansas City
-66201	KS	Shawnee Mission
-66202	KS	Shawnee Mission
-66203	KS	Shawnee Mission
-66204	KS	Shawnee Mission
-66205	KS	Shawnee Mission
-66206	KS	Shawnee Mission
-66207	KS	Shawnee Mission
-66208	KS	Shawnee Mission
-66209	KS	Shawnee Mission
-66210	KS	Shawnee Mission
-66211	KS	Shawnee Mission
-66212	KS	Shawnee Mission
-66213	KS	Shawnee Mission
-66214	KS	Shawnee Mission
-66215	KS	Shawnee Mission
-66216	KS	Shawnee Mission
-66217	KS	Shawnee Mission
-66218	KS	Shawnee Mission
-66219	KS	Shawnee Mission
-66220	KS	Shawnee Mission
-66221	KS	Shawnee Mission
-66222	KS	Shawnee Mission
-66223	KS	Shawnee Mission
-66224	KS	Shawnee Mission
-66225	KS	Shawnee Mission
-66226	KS	Shawnee Mission
-66227	KS	Shawnee Mission
+66201	KS	Mission
+66202	KS	Mission
+66203	KS	Shawnee
+66204	KS	Overland Park
+66205	KS	Mission
+66206	KS	Leawood
+66207	KS	Overland Park
+66208	KS	Prairie Village
+66209	KS	Leawood
+66210	KS	Overland Park
+66211	KS	Leawood
+66212	KS	Overland Park
+66213	KS	Overland Park
+66214	KS	Overland Park
+66215	KS	Lenexa
+66216	KS	Shawnee
+66217	KS	Shawnee
+66218	KS	Shawnee
+66219	KS	Lenexa
+66220	KS	Lenexa
+66221	KS	Overland Park
+66222	KS	Mission
+66223	KS	Overland Park
+66224	KS	Overland Park
+66225	KS	Overland Park
+66226	KS	Shawnee
+66227	KS	Lenexa
 66250	KS	Shawnee Mission
+66251	KS	Overland Park
 66276	KS	Shawnee Mission
 66279	KS	Shawnee Mission
-66282	KS	Shawnee Mission
-66285	KS	Shawnee Mission
+66282	KS	Overland Park
+66283	KS	Overland Park
+66285	KS	Lenexa
+66286	KS	Shawnee
 66401	KS	Alma
 66402	KS	Auburn
 66403	KS	Axtell
@@ -2941,7 +2909,6 @@
 66429	KS	Grantville
 66431	KS	Harveyville
 66432	KS	Havensville
-66433	KS	Marysville
 66434	KS	Hiawatha
 66436	KS	Holton
 66438	KS	Home
@@ -2950,7 +2917,6 @@
 66441	KS	Junction City
 66442	KS	Fort Riley
 66449	KS	Leonardville
-66450	KS	Louisville
 66451	KS	Lyndon
 66501	KS	Mc Farland
 66502	KS	Manhattan
@@ -2994,10 +2960,8 @@
 66548	KS	Waterville
 66549	KS	Westmoreland
 66550	KS	Wetmore
-66551	KS	Wheaton
 66552	KS	Whiting
 66554	KS	Randolph
-66555	KS	Marysville
 66601	KS	Topeka
 66603	KS	Topeka
 66604	KS	Topeka
@@ -3023,19 +2987,15 @@
 66626	KS	Topeka
 66628	KS	Topeka
 66629	KS	Topeka
-66634	KS	Topeka
 66636	KS	Topeka
 66637	KS	Topeka
-66638	KS	Topeka
 66642	KS	Topeka
 66647	KS	Topeka
 66652	KS	Topeka
 66653	KS	Topeka
-66658	KS	Topeka
 66667	KS	Topeka
 66675	KS	Topeka
 66683	KS	Topeka
-66686	KS	Topeka
 66692	KS	Topeka
 66699	KS	Topeka
 66701	KS	Fort Scott
@@ -3049,7 +3009,6 @@
 66720	KS	Chanute
 66724	KS	Cherokee
 66725	KS	Columbus
-66727	KS	Coyville
 66728	KS	Crestline
 66732	KS	Elsmore
 66733	KS	Erie
@@ -3130,7 +3089,6 @@
 66873	KS	Wilsey
 66901	KS	Concordia
 66930	KS	Agenda
-66931	KS	Ames
 66932	KS	Athol
 66933	KS	Barnes
 66935	KS	Belleville
@@ -3242,7 +3200,6 @@
 67123	KS	Potwin
 67124	KS	Pratt
 67127	KS	Protection
-67128	KS	Rago
 67131	KS	Rock
 67132	KS	Rosalia
 67133	KS	Rose Hill
@@ -3284,21 +3241,14 @@
 67218	KS	Wichita
 67219	KS	Wichita
 67220	KS	Wichita
-67221	KS	Mc Connell A F B
+67221	KS	Mcconnell Afb
 67223	KS	Wichita
 67226	KS	Wichita
 67227	KS	Wichita
 67228	KS	Wichita
 67230	KS	Wichita
-67231	KS	Wichita
 67232	KS	Wichita
-67233	KS	Wichita
 67235	KS	Wichita
-67236	KS	Wichita
-67251	KS	Wichita
-67256	KS	Wichita
-67257	KS	Wichita
-67259	KS	Wichita
 67260	KS	Wichita
 67275	KS	Wichita
 67276	KS	Wichita
@@ -3334,7 +3284,6 @@
 67401	KS	Salina
 67402	KS	Salina
 67410	KS	Abilene
-67414	KS	Ada
 67416	KS	Assaria
 67417	KS	Aurora
 67418	KS	Barnard
@@ -3369,7 +3318,7 @@
 67457	KS	Little River
 67458	KS	Longford
 67459	KS	Lorraine
-67460	KS	McPherson
+67460	KS	Mcpherson
 67464	KS	Marquette
 67466	KS	Miltonvale
 67467	KS	Minneapolis
@@ -3380,7 +3329,6 @@
 67475	KS	Ramona
 67476	KS	Roxbury
 67478	KS	Simpson
-67479	KS	Smolan
 67480	KS	Solomon
 67481	KS	Sylvan Grove
 67482	KS	Talmage
@@ -3388,7 +3336,6 @@
 67484	KS	Tescott
 67485	KS	Tipton
 67487	KS	Wakefield
-67488	KS	Wells
 67490	KS	Wilson
 67491	KS	Windom
 67492	KS	Woodbine
@@ -3403,7 +3350,6 @@
 67514	KS	Arlington
 67515	KS	Arnold
 67516	KS	Bazine
-67517	KS	Beaver
 67518	KS	Beeler
 67519	KS	Belpre
 67520	KS	Bison
@@ -3488,9 +3434,8 @@
 67665	KS	Russell
 67667	KS	Schoenchen
 67669	KS	Stockton
-67670	KS	Stuttgart
 67671	KS	Victoria
-67672	KS	Wa Keeney
+67672	KS	Wakeeney
 67673	KS	Waldo
 67674	KS	Walker
 67675	KS	Woodston
@@ -3516,7 +3461,6 @@
 67751	KS	Park
 67752	KS	Quinter
 67753	KS	Rexford
-67755	KS	Russell Springs
 67756	KS	Saint Francis
 67757	KS	Selden
 67758	KS	Sharon Springs
@@ -3543,9 +3487,7 @@
 67853	KS	Ingalls
 67854	KS	Jetmore
 67855	KS	Johnson
-67856	KS	Kalvesta
 67857	KS	Kendall
-67858	KS	Kingsdown
 67859	KS	Kismet
 67860	KS	Lakin
 67861	KS	Leoti
@@ -3597,7 +3539,6 @@
 68031	NE	Hooper
 68033	NE	Ithaca
 68034	NE	Kennard
-68035	NE	Leshara
 68036	NE	Linwood
 68037	NE	Louisville
 68038	NE	Lyons
@@ -3611,7 +3552,6 @@
 68047	NE	Pender
 68048	NE	Plattsmouth
 68050	NE	Prague
-68054	NE	Richfield
 68055	NE	Rosalie
 68056	NE	St Columbans
 68057	NE	Scribner
@@ -3653,7 +3593,7 @@
 68123	NE	Bellevue
 68124	NE	Omaha
 68127	NE	Omaha
-68128	NE	Lavista
+68128	NE	La Vista
 68130	NE	Omaha
 68131	NE	Omaha
 68132	NE	Omaha
@@ -3666,6 +3606,7 @@
 68139	NE	Omaha
 68142	NE	Omaha
 68144	NE	Omaha
+68145	NE	Omaha
 68147	NE	Bellevue
 68152	NE	Omaha
 68154	NE	Omaha
@@ -3681,6 +3622,7 @@
 68181	NE	Omaha
 68182	NE	Omaha
 68183	NE	Omaha
+68197	NE	Omaha
 68198	NE	Omaha
 68301	NE	Adams
 68303	NE	Alexandria
@@ -3744,11 +3686,11 @@
 68370	NE	Hebron
 68371	NE	Henderson
 68372	NE	Hickman
-68374	NE	Holmesville
 68375	NE	Hubbell
 68376	NE	Humboldt
 68377	NE	Jansen
 68378	NE	Johnson
+68379	NE	Julian
 68380	NE	Lewiston
 68381	NE	Liberty
 68382	NE	Lorton
@@ -3834,8 +3776,6 @@
 68531	NE	Lincoln
 68532	NE	Lincoln
 68542	NE	Lincoln
-68544	NE	Lincoln
-68572	NE	Lincoln
 68583	NE	Lincoln
 68588	NE	Lincoln
 68601	NE	Columbus
@@ -3908,7 +3848,6 @@
 68734	NE	Emmet
 68735	NE	Ewing
 68736	NE	Fordyce
-68737	NE	Foster
 68738	NE	Hadar
 68739	NE	Hartington
 68740	NE	Hoskins
@@ -3917,7 +3856,7 @@
 68743	NE	Jackson
 68745	NE	Laurel
 68746	NE	Lynch
-68747	NE	McLean
+68747	NE	Mclean
 68748	NE	Madison
 68749	NE	Magnet
 68751	NE	Maskell
@@ -3939,7 +3878,6 @@
 68769	NE	Plainview
 68770	NE	Ponca
 68771	NE	Randolph
-68772	NE	Rose
 68773	NE	Royal
 68774	NE	Saint Helena
 68776	NE	South Sioux City
@@ -3969,7 +3907,6 @@
 68816	NE	Archer
 68817	NE	Ashton
 68818	NE	Aurora
-68819	NE	Berwyn
 68820	NE	Boelus
 68821	NE	Brewster
 68822	NE	Broken Bow
@@ -3992,6 +3929,7 @@
 68842	NE	Greeley
 68843	NE	Hampton
 68844	NE	Hazard
+68845	NE	Kearney
 68846	NE	Hordville
 68847	NE	Kearney
 68848	NE	Kearney
@@ -4021,7 +3959,6 @@
 68876	NE	Shelton
 68878	NE	Sumner
 68879	NE	Taylor
-68880	NE	Weissert
 68881	NE	Westerville
 68882	NE	Wolbach
 68883	NE	Wood River
@@ -4056,7 +3993,6 @@
 68948	NE	Holbrook
 68949	NE	Holdrege
 68950	NE	Holstein
-68951	NE	Huntley
 68952	NE	Inavale
 68954	NE	Inland
 68955	NE	Juniata
@@ -4066,7 +4002,6 @@
 68959	NE	Minden
 68960	NE	Naponee
 68961	NE	Nelson
-68963	NE	Norman
 68964	NE	Oak
 68966	NE	Orleans
 68967	NE	Oxford
@@ -4096,7 +4031,6 @@
 69028	NE	Eustis
 69029	NE	Farnam
 69030	NE	Haigler
-69031	NE	Hamlet
 69032	NE	Hayes Center
 69033	NE	Imperial
 69034	NE	Indianola
@@ -4184,11 +4118,10 @@
 69346	NE	Harrison
 69347	NE	Hay Springs
 69348	NE	Hemingford
-69349	NE	Henry
 69350	NE	Hyannis
 69351	NE	Lakeside
 69352	NE	Lyman
-69353	NE	McGrew
+69353	NE	Mcgrew
 69354	NE	Marsland
 69355	NE	Melbeta
 69356	NE	Minatare

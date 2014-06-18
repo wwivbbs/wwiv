@@ -17,8 +17,11 @@
 20018	DC	Washington
 20019	DC	Washington
 20020	DC	Washington
+20022	DC	Washington
+20023	DC	Washington
 20024	DC	Washington
 20026	DC	Washington
+20027	DC	Washington
 20029	DC	Washington
 20030	DC	Washington
 20032	DC	Washington
@@ -36,7 +39,6 @@
 20045	DC	Washington
 20046	DC	Washington
 20047	DC	Washington
-20048	DC	Washington
 20049	DC	Washington
 20050	DC	Washington
 20051	DC	Washington
@@ -68,13 +70,11 @@
 20080	DC	Washington
 20081	DC	Washington
 20082	DC	Washington
-20084	DC	Washington
 20088	DC	Washington
 20090	DC	Washington
 20091	DC	Washington
 20097	DC	Washington
 20098	DC	Washington
-20099	DC	Washington
 20101	VA	Dulles
 20102	VA	Dulles
 20103	VA	Dulles
@@ -147,6 +147,7 @@
 20186	VA	Warrenton
 20187	VA	Warrenton
 20188	VA	Warrenton
+20189	VA	Dulles
 20190	VA	Reston
 20191	VA	Reston
 20192	VA	Herndon
@@ -161,11 +162,9 @@
 20202	DC	Washington
 20203	DC	Washington
 20204	DC	Washington
-20205	DC	Washington
 20206	DC	Washington
 20207	DC	Washington
 20208	DC	Washington
-20209	DC	Washington
 20210	DC	Washington
 20211	DC	Washington
 20212	DC	Washington
@@ -186,10 +185,10 @@
 20228	DC	Washington
 20229	DC	Washington
 20230	DC	Washington
-20231	DC	Washington
 20232	DC	Washington
 20233	DC	Washington
 20235	DC	Washington
+20237	DC	Washington
 20238	DC	Washington
 20239	DC	Washington
 20240	DC	Washington
@@ -209,41 +208,36 @@
 20270	DC	Washington
 20277	DC	Washington
 20289	DC	Washington
-20292	DC	Washington
 20299	DC	Washington
 20301	DC	Washington
+20303	DC	Washington
 20306	DC	Washington
 20307	DC	Washington
 20310	DC	Washington
 20314	DC	Washington
-20315	DC	Washington
 20317	DC	Washington
 20318	DC	Washington
 20319	DC	Washington
 20330	DC	Washington
-20332	DC	Washington
-20336	DC	Washington
-20337	DC	Washington
-20338	DC	Washington
 20340	DC	Washington
 20350	DC	Washington
+20355	DC	Washington
 20370	DC	Washington
 20372	DC	Washington
-20373	DC	Washington
-20374	DC	Washington
+20373	DC	Naval Anacost Annex
+20374	DC	Washington Navy Yard
 20375	DC	Washington
+20376	DC	Washington Navy Yard
 20380	DC	Washington
-20388	DC	Washington
+20388	DC	Washington Navy Yard
 20389	DC	Washington
 20390	DC	Washington
-20391	DC	Washington
+20391	DC	Washington Navy Yard
 20392	DC	Washington
 20393	DC	Washington
 20394	DC	Washington
 20395	DC	Washington
-20396	DC	Washington
-20397	DC	Washington
-20398	DC	Washington
+20398	DC	Washington Navy Yard
 20401	DC	Washington
 20402	DC	Washington
 20403	DC	Washington
@@ -260,6 +254,7 @@
 20414	DC	Washington
 20415	DC	Washington
 20416	DC	Washington
+20417	DC	Washington
 20418	DC	Washington
 20419	DC	Washington
 20420	DC	Washington
@@ -302,7 +297,9 @@
 20506	DC	Washington
 20507	DC	Washington
 20508	DC	Washington
+20509	DC	Washington
 20510	DC	Washington
+20511	DC	Washington
 20515	DC	Washington
 20520	DC	Washington
 20521	DC	Washington
@@ -312,6 +309,8 @@
 20525	DC	Washington
 20526	DC	Washington
 20527	DC	Washington
+20528	DC	Washington
+20529	DC	Washington
 20530	DC	Washington
 20531	DC	Washington
 20532	DC	Washington
@@ -331,7 +330,6 @@
 20547	DC	Washington
 20548	DC	Washington
 20549	DC	Washington
-20550	DC	Washington
 20551	DC	Washington
 20552	DC	Washington
 20553	DC	Washington
@@ -356,12 +354,13 @@
 20581	DC	Washington
 20585	DC	Washington
 20586	DC	Washington
+20588	MD	Dhs
 20590	DC	Washington
 20591	DC	Washington
 20593	DC	Washington
 20594	DC	Washington
-20595	DC	Washington
 20597	DC	Washington
+20598	VA	Dhs
 20599	DC	Washington
 20601	MD	Waldorf
 20602	MD	Waldorf
@@ -497,7 +496,6 @@
 20777	MD	Highland
 20778	MD	West River
 20779	MD	Tracys Landing
-20780	MD	Hyattsville
 20781	MD	Hyattsville
 20782	MD	Hyattsville
 20783	MD	Hyattsville
@@ -505,13 +503,14 @@
 20785	MD	Hyattsville
 20787	MD	Hyattsville
 20788	MD	Hyattsville
-20789	MD	Hyattsville
 20790	MD	Capitol Heights
 20791	MD	Capitol Heights
+20792	MD	Upper Marlboro
 20794	MD	Jessup
 20797	MD	Southern Md Facility
 20799	MD	Capitol Heights
-20800	MD	Suburb Maryland Fac
+20810	MD	Bethesda
+20811	MD	Bethesda
 20812	MD	Glen Echo
 20813	MD	Bethesda
 20814	MD	Bethesda
@@ -556,11 +555,11 @@
 20879	MD	Gaithersburg
 20880	MD	Washington Grove
 20882	MD	Gaithersburg
+20883	MD	Gaithersburg
 20884	MD	Gaithersburg
 20885	MD	Gaithersburg
-20886	MD	Gaithersburg
+20886	MD	Montgomery Village
 20889	MD	Bethesda
-20890	MD	Suburb Maryland Fac
 20891	MD	Kensington
 20892	MD	Bethesda
 20894	MD	Bethesda
@@ -585,7 +584,7 @@
 20915	MD	Silver Spring
 20916	MD	Silver Spring
 20918	MD	Silver Spring
-20990	MD	Silver Spring
+20993	MD	Silver Spring
 20997	MD	Silver Spring
 21001	MD	Aberdeen
 21005	MD	Aberdeen Proving Ground
@@ -598,10 +597,8 @@
 21017	MD	Belcamp
 21018	MD	Benson
 21020	MD	Boring
-21021	MD	Bradshaw
 21022	MD	Brooklandville
 21023	MD	Butler
-21024	MD	Cardiff
 21027	MD	Chase
 21028	MD	Churchville
 21029	MD	Clarksville
@@ -626,18 +623,18 @@
 21052	MD	Fort Howard
 21053	MD	Freeland
 21054	MD	Gambrills
-21055	MD	Garrison
 21056	MD	Gibson Island
 21057	MD	Glen Arm
 21060	MD	Glen Burnie
 21061	MD	Glen Burnie
 21062	MD	Glen Burnie
+21065	MD	Hunt Valley
 21071	MD	Glyndon
 21074	MD	Hampstead
+21075	MD	Elkridge
 21076	MD	Hanover
 21077	MD	Harmans
 21078	MD	Havre De Grace
-21080	MD	Henryton
 21082	MD	Hydes
 21084	MD	Jarrettsville
 21085	MD	Joppa
@@ -648,7 +645,6 @@
 21093	MD	Lutherville Timonium
 21094	MD	Lutherville Timonium
 21098	MD	Hanover
-21101	MD	Magnolia
 21102	MD	Manchester
 21104	MD	Marriottsville
 21105	MD	Maryland Line
@@ -686,11 +682,11 @@
 21201	MD	Baltimore
 21202	MD	Baltimore
 21203	MD	Baltimore
-21204	MD	Baltimore
+21204	MD	Towson
 21205	MD	Baltimore
 21206	MD	Baltimore
-21207	MD	Baltimore
-21208	MD	Baltimore
+21207	MD	Gwynn Oak
+21208	MD	Pikesville
 21209	MD	Baltimore
 21210	MD	Baltimore
 21211	MD	Baltimore
@@ -701,31 +697,33 @@
 21216	MD	Baltimore
 21217	MD	Baltimore
 21218	MD	Baltimore
-21219	MD	Baltimore
-21220	MD	Baltimore
-21221	MD	Baltimore
-21222	MD	Baltimore
+21219	MD	Sparrows Point
+21220	MD	Middle River
+21221	MD	Essex
+21222	MD	Dundalk
 21223	MD	Baltimore
 21224	MD	Baltimore
-21225	MD	Baltimore
-21226	MD	Baltimore
+21225	MD	Brooklyn
+21226	MD	Curtis Bay
 21227	MD	Halethorpe
-21228	MD	Baltimore
+21228	MD	Catonsville
 21229	MD	Baltimore
 21230	MD	Baltimore
 21231	MD	Baltimore
 21233	MD	Baltimore
-21234	MD	Baltimore
+21234	MD	Parkville
 21235	MD	Baltimore
-21236	MD	Baltimore
-21237	MD	Baltimore
+21236	MD	Nottingham
+21237	MD	Rosedale
 21239	MD	Baltimore
 21240	MD	Baltimore
 21241	MD	Baltimore
-21244	MD	Baltimore
+21244	MD	Windsor Mill
 21250	MD	Baltimore
 21251	MD	Baltimore
-21252	MD	Baltimore
+21252	MD	Towson
+21260	MD	Baltimore
+21261	MD	Baltimore
 21263	MD	Baltimore
 21264	MD	Baltimore
 21265	MD	Baltimore
@@ -742,7 +740,7 @@
 21283	MD	Baltimore
 21284	MD	Baltimore
 21285	MD	Baltimore
-21286	MD	Baltimore
+21286	MD	Towson
 21287	MD	Baltimore
 21288	MD	Baltimore
 21289	MD	Baltimore
@@ -754,6 +752,7 @@
 21403	MD	Annapolis
 21404	MD	Annapolis
 21405	MD	Annapolis
+21409	MD	Annapolis
 21411	MD	Annapolis
 21412	MD	Annapolis
 21501	MD	Cumberland
@@ -779,7 +778,6 @@
 21542	MD	Midland
 21543	MD	Midlothian
 21545	MD	Mount Savage
-21546	MD	Nikep
 21550	MD	Oakland
 21555	MD	Oldtown
 21556	MD	Pinto
@@ -817,7 +815,7 @@
 21643	MD	Hurlock
 21644	MD	Ingleside
 21645	MD	Kennedyville
-21647	MD	McDaniel
+21647	MD	Mcdaniel
 21648	MD	Madison
 21649	MD	Marydel
 21650	MD	Massey
@@ -826,7 +824,7 @@
 21653	MD	Newcomb
 21654	MD	Oxford
 21655	MD	Preston
-21656	MD	Church Hill
+21656	MD	Price
 21657	MD	Queen Anne
 21658	MD	Queenstown
 21659	MD	Rhodesdale
@@ -880,7 +878,6 @@
 21727	MD	Emmitsburg
 21733	MD	Fairplay
 21734	MD	Funkstown
-21736	MD	Gapland
 21737	MD	Glenelg
 21738	MD	Glenwood
 21740	MD	Hagerstown
@@ -898,7 +895,6 @@
 21758	MD	Knoxville
 21759	MD	Ladiesburg
 21762	MD	Libertytown
-21764	MD	Linwood
 21765	MD	Lisbon
 21766	MD	Little Orleans
 21767	MD	Maugansville
@@ -935,9 +931,7 @@
 21811	MD	Berlin
 21813	MD	Bishopville
 21814	MD	Bivalve
-21816	MD	Chance
 21817	MD	Crisfield
-21820	MD	Dames Quarter
 21821	MD	Deal Island
 21822	MD	Eden
 21824	MD	Ewell
@@ -951,6 +945,7 @@
 21840	MD	Nanticoke
 21841	MD	Newark
 21842	MD	Ocean City
+21843	MD	Ocean City
 21849	MD	Parsonsburg
 21850	MD	Pittsville
 21851	MD	Pocomoke City
@@ -965,9 +960,7 @@
 21865	MD	Tyaskin
 21866	MD	Tylerton
 21867	MD	Upper Fairmount
-21868	MD	Upper Hill
 21869	MD	Vienna
-21870	MD	Wenona
 21871	MD	Westover
 21872	MD	Whaleyville
 21874	MD	Willards
@@ -990,25 +983,10 @@
 21921	MD	Elkton
 21922	MD	Elkton
 21930	MD	Georgetown
-22001	VA	Aldie
-22002	VA	Amissville
 22003	VA	Annandale
 22009	VA	Burke
-22010	VA	Arcola
-22011	VA	Ashburn
-22012	VA	Bluemont
-22013	VA	Bristow
-22014	VA	Broad Run
 22015	VA	Burke
-22016	VA	Calverton
-22017	VA	Casanova
-22018	VA	Catharpin
-22019	VA	Catlett
-22020	VA	Centreville
-22021	VA	Chantilly
-22022	VA	Chantilly
-22024	VA	Clifton
-22025	VA	Delaplane
+22025	VA	Dumfries
 22026	VA	Dumfries
 22027	VA	Dunn Loring
 22030	VA	Fairfax
@@ -1029,53 +1007,32 @@
 22046	VA	Falls Church
 22047	VA	Falls Church
 22060	VA	Fort Belvoir
-22065	VA	Gainesville
 22066	VA	Great Falls
 22067	VA	Greenway
-22068	VA	Hamilton
-22069	VA	Haymarket
-22070	VA	Herndon
-22071	VA	Herndon
-22075	VA	Leesburg
-22078	VA	Lincoln
 22079	VA	Lorton
-22080	VA	Lovettsville
 22081	VA	Merrifield
 22082	VA	Merrifield
-22090	VA	Reston
-22091	VA	Reston
 22092	VA	Herndon
 22093	VA	Ashburn
-22094	VA	Reston
 22095	VA	Herndon
 22096	VA	Reston
 22101	VA	Mc Lean
 22102	VA	Mc Lean
-22103	VA	West McLean
+22103	VA	West Mclean
 22106	VA	Mc Lean
+22107	VA	Mc Lean
+22108	VA	Mc Lean
 22109	VA	Mc Lean
-22110	VA	Manassas
-22111	VA	Manassas
-22115	VA	Marshall
 22116	VA	Merrifield
-22117	VA	Middleburg
 22118	VA	Merrifield
 22119	VA	Merrifield
 22120	VA	Merrifield
 22121	VA	Mount Vernon
 22122	VA	Newington
-22123	VA	Nokesville
 22124	VA	Oakton
 22125	VA	Occoquan
-22128	VA	Orlean
-22129	VA	Paeonian Springs
-22130	VA	Paris
-22131	VA	Philomont
-22132	VA	Purcellville
 22134	VA	Quantico
 22135	VA	Quantico
-22140	VA	Rectortown
-22141	VA	Round Hill
 22150	VA	Springfield
 22151	VA	Springfield
 22152	VA	Springfield
@@ -1085,21 +1042,18 @@
 22159	VA	Springfield
 22160	VA	Springfield
 22161	VA	Springfield
-22171	VA	The Plains
 22172	VA	Triangle
-22176	VA	Upperville
 22180	VA	Vienna
 22181	VA	Vienna
 22182	VA	Vienna
 22183	VA	Vienna
 22184	VA	Vienna
 22185	VA	Vienna
-22186	VA	Warrenton
-22190	VA	Waterford
 22191	VA	Woodbridge
 22192	VA	Woodbridge
 22193	VA	Woodbridge
 22194	VA	Woodbridge
+22195	VA	Woodbridge
 22199	VA	Lorton
 22201	VA	Arlington
 22202	VA	Arlington
@@ -1110,7 +1064,7 @@
 22207	VA	Arlington
 22209	VA	Arlington
 22210	VA	Arlington
-22211	VA	Ft Myer
+22211	VA	Fort Myer
 22212	VA	Arlington
 22213	VA	Arlington
 22214	VA	Arlington
@@ -1156,6 +1110,7 @@
 22333	VA	Alexandria
 22334	VA	Alexandria
 22336	VA	Alexandria
+22350	VA	Alexandria
 22401	VA	Fredericksburg
 22402	VA	Fredericksburg
 22403	VA	Fredericksburg
@@ -1182,7 +1137,6 @@
 22454	VA	Dunnsville
 22456	VA	Edwardsville
 22460	VA	Farnham
-22461	VA	Foneswood
 22463	VA	Garrisonville
 22469	VA	Hague
 22471	VA	Hartwood
@@ -1221,20 +1175,20 @@
 22546	VA	Ruther Glen
 22547	VA	Sealston
 22548	VA	Sharps
-22549	VA	Shiloh
+22551	VA	Spotsylvania
 22552	VA	Sparta
 22553	VA	Spotsylvania
 22554	VA	Stafford
 22555	VA	Stafford
+22556	VA	Stafford
 22558	VA	Stratford
 22560	VA	Tappahannock
 22565	VA	Thornburg
 22567	VA	Unionville
-22568	VA	Mine Run
 22570	VA	Village
 22572	VA	Warsaw
 22576	VA	Weems
-22577	VA	Westmoreland
+22577	VA	Sandy Point
 22578	VA	White Stone
 22579	VA	Wicomico Church
 22580	VA	Woodford
@@ -1254,7 +1208,6 @@
 22627	VA	Flint Hill
 22630	VA	Front Royal
 22637	VA	Gore
-22638	VA	Winchester
 22639	VA	Hume
 22640	VA	Huntly
 22641	VA	Strasburg
@@ -1312,6 +1265,8 @@
 22748	VA	Wolftown
 22749	VA	Woodville
 22801	VA	Harrisonburg
+22802	VA	Harrisonburg
+22803	VA	Harrisonburg
 22807	VA	Harrisonburg
 22810	VA	Basye
 22811	VA	Bergton
@@ -1355,7 +1310,6 @@
 22922	VA	Arrington
 22923	VA	Barboursville
 22924	VA	Batesville
-22929	VA	Cobham
 22931	VA	Covesville
 22932	VA	Crozet
 22935	VA	Dyke
@@ -1372,8 +1326,6 @@
 22948	VA	Locust Dale
 22949	VA	Lovingston
 22952	VA	Lyndhurst
-22953	VA	Madison Mills
-22954	VA	Massies Mill
 22957	VA	Montpelier Station
 22958	VA	Nellysford
 22959	VA	North Garden
@@ -1401,7 +1353,6 @@
 23011	VA	Barhamsville
 23014	VA	Beaumont
 23015	VA	Beaverdam
-23017	VA	Bellamy
 23018	VA	Bena
 23021	VA	Bohannon
 23022	VA	Bremo Bluff
@@ -1420,7 +1371,6 @@
 23045	VA	Diggs
 23047	VA	Doswell
 23050	VA	Dutton
-23054	VA	Fife
 23055	VA	Fork Union
 23056	VA	Foster
 23058	VA	Glen Allen
@@ -1438,13 +1388,13 @@
 23070	VA	Hardyville
 23071	VA	Hartfield
 23072	VA	Hayes
-23075	VA	Highland Springs
+23075	VA	Henrico
 23076	VA	Hudgins
 23079	VA	Jamaica
 23081	VA	Jamestown
 23083	VA	Jetersville
 23084	VA	Kents Store
-23085	VA	King And Queen Court Hous
+23085	VA	King And Queen Court House
 23086	VA	King William
 23089	VA	Lanexa
 23090	VA	Lightfoot
@@ -1463,6 +1413,7 @@
 23111	VA	Mechanicsville
 23112	VA	Midlothian
 23113	VA	Midlothian
+23114	VA	Midlothian
 23115	VA	Millers Tavern
 23116	VA	Mechanicsville
 23117	VA	Mineral
@@ -1511,7 +1462,6 @@
 23187	VA	Williamsburg
 23188	VA	Williamsburg
 23190	VA	Woods Cross Roads
-23191	VA	Zanoni
 23192	VA	Montpelier
 23218	VA	Richmond
 23219	VA	Richmond
@@ -1523,47 +1473,43 @@
 23225	VA	Richmond
 23226	VA	Richmond
 23227	VA	Richmond
-23228	VA	Richmond
-23229	VA	Richmond
+23228	VA	Henrico
+23229	VA	Henrico
 23230	VA	Richmond
-23231	VA	Richmond
+23231	VA	Henrico
 23232	VA	Richmond
-23233	VA	Richmond
+23233	VA	Henrico
 23234	VA	Richmond
 23235	VA	Richmond
 23236	VA	Richmond
 23237	VA	Richmond
-23238	VA	Richmond
+23238	VA	Henrico
 23240	VA	Richmond
 23241	VA	Richmond
-23242	VA	Richmond
+23242	VA	Henrico
 23249	VA	Richmond
 23250	VA	Richmond
-23255	VA	Richmond
+23255	VA	Henrico
 23260	VA	Richmond
 23261	VA	Richmond
-23266	VA	Richmond
 23269	VA	Richmond
-23270	VA	Richmond
-23272	VA	Richmond
-23273	VA	Richmond
+23273	VA	Henrico
 23274	VA	Richmond
-23275	VA	Richmond
 23276	VA	Richmond
 23278	VA	Richmond
 23279	VA	Richmond
-23280	VA	Richmond
 23282	VA	Richmond
 23284	VA	Richmond
 23285	VA	Richmond
 23286	VA	Richmond
-23288	VA	Richmond
+23288	VA	Henrico
 23289	VA	Richmond
 23290	VA	Richmond
 23291	VA	Richmond
 23292	VA	Richmond
 23293	VA	Richmond
-23294	VA	Richmond
+23294	VA	Henrico
+23295	VA	Richmond
 23297	VA	Richmond
 23298	VA	Richmond
 23301	VA	Accomac
@@ -1587,8 +1533,8 @@
 23326	VA	Chesapeake
 23327	VA	Chesapeake
 23328	VA	Chesapeake
-23336	VA	Chincoteague
-23337	VA	Chincoteague
+23336	VA	Chincoteague Island
+23337	VA	Wallops Island
 23341	VA	Craddockville
 23345	VA	Davis Wharf
 23347	VA	Eastville
@@ -1605,7 +1551,6 @@
 23398	VA	Jamesville
 23399	VA	Jenkins Bridge
 23401	VA	Keller
-23403	VA	Lee Mont
 23404	VA	Locustville
 23405	VA	Machipongo
 23407	VA	Mappsville
@@ -1645,6 +1590,7 @@
 23450	VA	Virginia Beach
 23451	VA	Virginia Beach
 23452	VA	Virginia Beach
+23453	VA	Virginia Beach
 23454	VA	Virginia Beach
 23455	VA	Virginia Beach
 23456	VA	Virginia Beach
@@ -1659,7 +1605,6 @@
 23465	VA	Virginia Beach
 23466	VA	Virginia Beach
 23467	VA	Virginia Beach
-23468	VA	Virginia Beach
 23471	VA	Virginia Beach
 23479	VA	Virginia Beach
 23480	VA	Wachapreague
@@ -1690,13 +1635,12 @@
 23521	VA	Norfolk
 23523	VA	Norfolk
 23529	VA	Norfolk
-23530	VA	Norfolk
 23541	VA	Norfolk
 23551	VA	Norfolk
 23601	VA	Newport News
 23602	VA	Newport News
 23603	VA	Newport News
-23604	VA	Newport News
+23604	VA	Fort Eustis
 23605	VA	Newport News
 23606	VA	Newport News
 23607	VA	Newport News
@@ -1704,10 +1648,8 @@
 23609	VA	Newport News
 23612	VA	Newport News
 23628	VA	Newport News
-23630	VA	Newport News
-23631	VA	Hampton
-23651	VA	Hampton
-23653	VA	Hampton
+23630	VA	Hampton
+23651	VA	Fort Monroe
 23661	VA	Hampton
 23662	VA	Poquoson
 23663	VA	Hampton
@@ -1737,10 +1679,11 @@
 23803	VA	Petersburg
 23804	VA	Petersburg
 23805	VA	Petersburg
-23806	VA	Petersburg
+23806	VA	Virginia State University
 23821	VA	Alberta
 23822	VA	Ammon
 23824	VA	Blackstone
+23825	VA	Blackstone
 23827	VA	Boykins
 23828	VA	Branchville
 23829	VA	Capron
@@ -1749,6 +1692,7 @@
 23832	VA	Chesterfield
 23833	VA	Church Road
 23834	VA	Colonial Heights
+23836	VA	Chester
 23837	VA	Courtland
 23838	VA	Chesterfield
 23839	VA	Dendron
@@ -1793,7 +1737,6 @@
 23899	VA	Claremont
 23901	VA	Farmville
 23909	VA	Farmville
-23911	VA	Andersonville
 23915	VA	Baskerville
 23917	VA	Boydton
 23919	VA	Bracey
@@ -1906,9 +1849,8 @@
 24089	VA	Fieldale
 24090	VA	Fincastle
 24091	VA	Floyd
-24092	VA	Gladehill
+24092	VA	Glade Hill
 24093	VA	Glen Lyn
-24094	VA	Goldbond
 24095	VA	Goodview
 24101	VA	Hardy
 24102	VA	Henry
@@ -1946,8 +1888,8 @@
 24150	VA	Ripplemead
 24151	VA	Rocky Mount
 24153	VA	Salem
-24156	VA	Salem
-24157	VA	Salem
+24155	VA	Roanoke
+24157	VA	Roanoke
 24161	VA	Sandy Level
 24162	VA	Shawsville
 24165	VA	Spencer
@@ -1965,6 +1907,7 @@
 24201	VA	Bristol
 24202	VA	Bristol
 24203	VA	Bristol
+24205	VA	Bristol
 24209	VA	Bristol
 24210	VA	Abingdon
 24211	VA	Abingdon
@@ -2008,8 +1951,6 @@
 24281	VA	Rose Hill
 24282	VA	Saint Charles
 24283	VA	Saint Paul
-24285	VA	Stonega
-24289	VA	Trammel
 24290	VA	Weber City
 24292	VA	Whitetop
 24293	VA	Wise
@@ -2046,18 +1987,15 @@
 24366	VA	Rocky Gap
 24368	VA	Rural Retreat
 24370	VA	Saltville
-24373	VA	Seven Mile Ford
 24374	VA	Speedwell
 24375	VA	Sugar Grove
 24377	VA	Tannersville
-24378	VA	Trout Dale
-24379	VA	Volney
+24378	VA	Troutdale
 24380	VA	Willis
 24381	VA	Woodlawn
 24382	VA	Wytheville
 24401	VA	Staunton
 24402	VA	Staunton
-24407	VA	Staunton
 24411	VA	Augusta Springs
 24412	VA	Bacova
 24413	VA	Blue Grass
@@ -2094,7 +2032,6 @@
 24472	VA	Raphine
 24473	VA	Rockbridge Baths
 24474	VA	Selma
-24475	VA	Spottswood
 24476	VA	Steeles Tavern
 24477	VA	Stuarts Draft
 24479	VA	Swoope
@@ -2159,7 +2096,6 @@
 24579	VA	Natural Bridge Station
 24580	VA	Nelson
 24581	VA	Norwood
-24585	VA	Republican Grove
 24586	VA	Ringgold
 24588	VA	Rustburg
 24589	VA	Scottsburg
@@ -2183,7 +2119,6 @@
 24612	VA	Doran
 24613	VA	Falls Mills
 24614	VA	Grundy
-24618	VA	Harman
 24619	VA	Horsepen
 24620	VA	Hurley
 24622	VA	Jewell Ridge
@@ -2206,7 +2141,6 @@
 24657	VA	Whitewood
 24658	VA	Wolford
 24701	WV	Bluefield
-24710	WV	Alpoca
 24712	WV	Athens
 24714	WV	Beeson
 24715	WV	Bramwell
@@ -2221,37 +2155,29 @@
 24736	WV	Matoaka
 24737	WV	Montcalm
 24738	WV	Nemours
-24739	WV	Oakvale
+24739	WV	Princeton
 24740	WV	Princeton
 24747	WV	Rock
 24751	WV	Wolfe
 24801	WV	Welch
 24808	WV	Anawalt
-24810	WV	Ashland
 24811	WV	Avondale
 24813	WV	Bartley
 24815	WV	Berwind
 24816	WV	Big Sandy
 24817	WV	Bradshaw
 24818	WV	Brenton
-24819	WV	Canebrake
-24820	WV	Capels
-24821	WV	Caretta
 24822	WV	Clear Fork
 24823	WV	Coal Mountain
-24824	WV	Coalwood
-24825	WV	Crumpler
 24826	WV	Cucumber
 24827	WV	Cyclone
 24828	WV	Davy
 24829	WV	Eckman
 24830	WV	Elbert
 24831	WV	Elkhorn
-24832	WV	English
 24834	WV	Fanrock
 24836	WV	Gary
 24839	WV	Hanover
-24841	WV	Havaco
 24842	WV	Hemphill
 24843	WV	Hensley
 24844	WV	Iaeger
@@ -2262,11 +2188,9 @@
 24849	WV	Jesse
 24850	WV	Jolo
 24851	WV	Justice
-24852	WV	Keystone
 24853	WV	Kimball
 24854	WV	Kopperston
 24855	WV	Kyle
-24856	WV	Leckie
 24857	WV	Lynco
 24859	WV	Marianna
 24860	WV	Matheny
@@ -2281,65 +2205,48 @@
 24872	WV	Panther
 24873	WV	Paynesville
 24874	WV	Pineville
-24877	WV	Powhatan
 24878	WV	Premier
 24879	WV	Raysal
 24880	WV	Rock View
 24881	WV	Roderfield
 24882	WV	Simon
-24883	WV	Skygusty
 24884	WV	Squire
-24886	WV	Superior
 24887	WV	Switchback
 24888	WV	Thorpe
-24889	WV	Twin Branch
 24892	WV	War
 24894	WV	Warriormine
 24895	WV	Wilcoe
-24896	WV	Wolf Pen
-24897	WV	Worth
 24898	WV	Wyoming
-24899	WV	Yukon
 24901	WV	Lewisburg
 24902	WV	Fairlea
 24910	WV	Alderson
 24915	WV	Arbovale
 24916	WV	Asbury
-24917	WV	Auto
 24918	WV	Ballard
-24919	WV	Ballengee
 24920	WV	Bartow
-24923	WV	Bozoo
 24924	WV	Buckeye
 24925	WV	Caldwell
 24927	WV	Cass
-24928	WV	Clintonville
 24931	WV	Crawley
 24934	WV	Dunmore
 24935	WV	Forest Hill
-24936	WV	Fort Spring
 24938	WV	Frankford
 24941	WV	Gap Mills
-24942	WV	Glace
 24943	WV	Grassy Meadows
 24944	WV	Green Bank
 24945	WV	Greenville
 24946	WV	Hillsboro
-24950	WV	Kieffer
 24951	WV	Lindside
 24954	WV	Marlinton
 24957	WV	Maxwelton
-24958	WV	Meadow Bluff
-24961	WV	Neola
+24961	WV	White Sulphur Springs
 24962	WV	Pence Springs
 24963	WV	Peterstown
 24966	WV	Renick
 24970	WV	Ronceverte
-24973	WV	Sarton
 24974	WV	Secondcreek
 24976	WV	Sinks Grove
 24977	WV	Smoot
-24980	WV	Sweet Springs
 24981	WV	Talcott
 24983	WV	Union
 24984	WV	Waiteville
@@ -2349,16 +2256,12 @@
 24993	WV	Wolfcreek
 25002	WV	Alloy
 25003	WV	Alum Creek
-25004	WV	Ameagle
 25005	WV	Amma
 25007	WV	Arnett
 25008	WV	Artie
 25009	WV	Ashford
-25010	WV	Bald Knob
 25011	WV	Bancroft
-25014	WV	Beards Fork
 25015	WV	Belle
-25018	WV	Bentree
 25019	WV	Bickmore
 25021	WV	Bim
 25022	WV	Blair
@@ -2369,7 +2272,6 @@
 25030	WV	Bomont
 25031	WV	Boomer
 25033	WV	Buffalo
-25034	WV	Burnwell
 25035	WV	Cabin Creek
 25036	WV	Cannelton
 25039	WV	Cedar Grove
@@ -2377,12 +2279,10 @@
 25043	WV	Clay
 25044	WV	Clear Creek
 25045	WV	Clendenin
-25046	WV	Clio
 25047	WV	Clothier
 25048	WV	Colcord
 25049	WV	Comfort
 25051	WV	Costa
-25052	WV	Crown Hill
 25053	WV	Danville
 25054	WV	Dawes
 25057	WV	Deep Water
@@ -2406,10 +2306,8 @@
 25088	WV	Glen
 25090	WV	Glen Ferris
 25093	WV	Gordon
-25095	WV	Grimms Landing
 25102	WV	Handley
 25103	WV	Hansford
-25105	WV	Harrison
 25106	WV	Henderson
 25107	WV	Hernshaw
 25108	WV	Hewett
@@ -2422,9 +2320,7 @@
 25115	WV	Kanawha Falls
 25118	WV	Kimberly
 25119	WV	Kincaid
-25120	WV	Kingston
 25121	WV	Lake
-25122	WV	Leewood
 25123	WV	Leon
 25124	WV	Liberty
 25125	WV	Lizemores
@@ -2433,37 +2329,30 @@
 25132	WV	Mammoth
 25133	WV	Maysel
 25134	WV	Miami
-25135	WV	Montcoal
 25136	WV	Montgomery
 25139	WV	Mount Carbon
 25140	WV	Naoma
 25141	WV	Nebo
 25142	WV	Nellis
 25143	WV	Nitro
-25147	WV	Ohley
 25148	WV	Orgas
 25149	WV	Ottawa
-25150	WV	Ovapa
 25152	WV	Page
 25154	WV	Peytona
 25156	WV	Pinch
-25158	WV	Pliny
 25159	WV	Poca
 25160	WV	Pond Gap
 25161	WV	Powellton
 25162	WV	Pratt
-25163	WV	Prenter
 25164	WV	Procious
 25165	WV	Racine
 25168	WV	Red House
 25169	WV	Ridgeview
-25172	WV	Robertsburg
 25173	WV	Robson
 25174	WV	Rock Creek
 25177	WV	Saint Albans
 25180	WV	Saxon
 25181	WV	Seth
-25182	WV	Sharon
 25183	WV	Sharples
 25185	WV	Mount Olive
 25186	WV	Smithers
@@ -2483,7 +2372,6 @@
 25231	WV	Advent
 25234	WV	Arnoldsburg
 25235	WV	Chloe
-25237	WV	Clifton
 25239	WV	Cottageville
 25241	WV	Evans
 25243	WV	Gandeeville
@@ -2491,13 +2379,9 @@
 25245	WV	Given
 25247	WV	Hartford
 25248	WV	Kenna
-25250	WV	Lakin
 25251	WV	Left Hand
 25252	WV	Le Roy
 25253	WV	Letart
-25255	WV	Letter Gap
-25256	WV	Linden
-25258	WV	Lockney
 25259	WV	Looneyville
 25260	WV	Mason
 25261	WV	Millstone
@@ -2509,14 +2393,8 @@
 25268	WV	Orma
 25270	WV	Reedy
 25271	WV	Ripley
-25272	WV	Rock Castle
-25274	WV	Sand Ridge
 25275	WV	Sandyville
 25276	WV	Spencer
-25279	WV	Statts Mills
-25280	WV	Stumptown
-25281	WV	Tariff
-25283	WV	Valley Fork
 25285	WV	Wallback
 25286	WV	Walton
 25287	WV	West Columbia
@@ -2569,6 +2447,9 @@
 25396	WV	Charleston
 25401	WV	Martinsburg
 25402	WV	Martinsburg
+25403	WV	Martinsburg
+25404	WV	Martinsburg
+25405	WV	Martinsburg
 25410	WV	Bakerton
 25411	WV	Berkeley Springs
 25413	WV	Bunker Hill
@@ -2581,7 +2462,7 @@
 25425	WV	Harpers Ferry
 25427	WV	Hedgesville
 25428	WV	Inwood
-25429	WV	Kearneysville
+25429	WV	Martinsburg
 25430	WV	Kearneysville
 25431	WV	Levels
 25432	WV	Millville
@@ -2608,7 +2489,6 @@
 25514	WV	Fort Gay
 25515	WV	Gallipolis Ferry
 25517	WV	Genoa
-25519	WV	Glenhayes
 25520	WV	Glenwood
 25521	WV	Griffithsville
 25523	WV	Hamlin
@@ -2623,7 +2503,6 @@
 25541	WV	Milton
 25544	WV	Myra
 25545	WV	Ona
-25546	WV	Palermo
 25547	WV	Pecks Mill
 25550	WV	Point Pleasant
 25555	WV	Prichard
@@ -2631,11 +2510,9 @@
 25559	WV	Salt Rock
 25560	WV	Scott Depot
 25562	WV	Shoals
-25563	WV	Sias
 25564	WV	Sod
 25565	WV	Spurlockville
 25567	WV	Sumerco
-25568	WV	Sweetland
 25569	WV	Teays
 25570	WV	Wayne
 25571	WV	West Hamlin
@@ -2649,27 +2526,20 @@
 25612	WV	Chauncey
 25614	WV	Cora
 25617	WV	Davin
-25620	WV	Emmett
 25621	WV	Gilbert
-25623	WV	Hampden
 25624	WV	Henlawson
 25625	WV	Holden
 25628	WV	Kistler
 25630	WV	Lorado
-25631	WV	Lundale
 25632	WV	Lyburn
 25634	WV	Mallory
 25635	WV	Man
-25636	WV	Monaville
 25637	WV	Mount Gay
 25638	WV	Omar
 25639	WV	Peach Creek
-25643	WV	Rossmore
 25644	WV	Sarah Ann
-25645	WV	Stirrat
 25646	WV	Stollings
 25647	WV	Switzer
-25648	WV	Taplin
 25649	WV	Verdunville
 25650	WV	Verner
 25651	WV	Wharncliffe
@@ -2687,18 +2557,13 @@
 25674	WV	Kermit
 25676	WV	Lenore
 25678	WV	Matewan
-25682	WV	Meador
 25685	WV	Naugatuck
 25686	WV	Newtown
-25687	WV	Nolan
 25688	WV	North Matewan
 25690	WV	Ragland
 25691	WV	Rawl
 25692	WV	Red Jacket
-25693	WV	Sprigg
-25694	WV	Thacker
 25696	WV	Varney
-25697	WV	Vulcan
 25699	WV	Wilsondale
 25701	WV	Huntington
 25702	WV	Huntington
@@ -2746,8 +2611,6 @@
 25811	WV	Amigo
 25812	WV	Ansted
 25813	WV	Beaver
-25814	WV	Beckwith
-25816	WV	Blue Jay
 25817	WV	Bolt
 25818	WV	Bradley
 25820	WV	Camp Creek
@@ -2755,7 +2618,6 @@
 25825	WV	Cool Ridge
 25826	WV	Corinne
 25827	WV	Crab Orchard
-25828	WV	Cranberry
 25831	WV	Danese
 25832	WV	Daniels
 25833	WV	Dothan
@@ -2768,22 +2630,18 @@
 25844	WV	Glen Daniel
 25845	WV	Glen Fork
 25846	WV	Glen Jean
-25847	WV	Glen Morgan
 25848	WV	Glen Rogers
 25849	WV	Glen White
 25851	WV	Harper
 25853	WV	Helen
 25854	WV	Hico
 25855	WV	Hilltop
-25856	WV	Jonben
 25857	WV	Josephine
-25859	WV	Kilsyth
 25860	WV	Lanark
 25862	WV	Lansing
 25864	WV	Layland
 25865	WV	Lester
 25866	WV	Lochgelly
-25867	WV	Long Branch
 25868	WV	Lookout
 25870	WV	Maben
 25871	WV	Mabscott
@@ -2801,11 +2659,8 @@
 25907	WV	Prince
 25908	WV	Princewick
 25909	WV	Prosperity
-25910	WV	Quinnimont
 25911	WV	Raleigh
-25912	WV	Ramsey
 25913	WV	Ravencliff
-25914	WV	Redstar
 25915	WV	Rhodell
 25916	WV	Sabine
 25917	WV	Scarbro
@@ -2814,27 +2669,22 @@
 25920	WV	Slab Fork
 25921	WV	Sophia
 25922	WV	Spanishburg
-25926	WV	Sprague
+25926	WV	Beckley
 25927	WV	Stanaford
 25928	WV	Stephenson
-25931	WV	Summerlee
 25932	WV	Surveyor
-25934	WV	Terry
 25936	WV	Thurmond
 25938	WV	Victor
 25942	WV	Winona
 25943	WV	Wyco
 25951	WV	Hinton
 25958	WV	Charmco
-25961	WV	Crichton
 25962	WV	Rainelle
 25965	WV	Elton
 25966	WV	Green Sulphur Springs
-25967	WV	Hines
 25969	WV	Jumping Branch
 25971	WV	Lerona
 25972	WV	Leslie
-25973	WV	Lockbridge
 25976	WV	Meadow Bridge
 25977	WV	Meadow Creek
 25978	WV	Nimitz
@@ -2843,7 +2693,6 @@
 25984	WV	Rupert
 25985	WV	Sandstone
 25986	WV	Spring Dale
-25988	WV	True
 25989	WV	White Oak
 26003	WV	Wheeling
 26030	WV	Beech Bottom
@@ -2856,7 +2705,7 @@
 26037	WV	Follansbee
 26038	WV	Glen Dale
 26039	WV	Glen Easton
-26040	WV	Mc Mechen
+26040	WV	Mcmechen
 26041	WV	Moundsville
 26047	WV	New Cumberland
 26050	WV	Newell
@@ -2875,16 +2724,16 @@
 26104	WV	Parkersburg
 26105	WV	Vienna
 26106	WV	Parkersburg
+26120	WV	Mineral Wells
+26121	WV	Mineral Wells
 26133	WV	Belleville
 26134	WV	Belmont
-26135	WV	Bens Run
 26136	WV	Big Bend
 26137	WV	Big Springs
 26138	WV	Brohard
 26141	WV	Creston
 26142	WV	Davisville
 26143	WV	Elizabeth
-26145	WV	Five Forks
 26146	WV	Friendly
 26147	WV	Grantsville
 26148	WV	Macfarlan
@@ -2901,24 +2750,20 @@
 26167	WV	Reader
 26169	WV	Rockport
 26170	WV	Saint Marys
-26173	WV	Sherman
 26175	WV	Sistersville
 26178	WV	Smithville
 26180	WV	Walker
 26181	WV	Washington
 26184	WV	Waverly
-26186	WV	Wileyville
 26187	WV	Williamstown
 26201	WV	Buckhannon
 26202	WV	Fenwick
 26203	WV	Erbacon
 26205	WV	Craigsville
 26206	WV	Cowen
-26207	WV	Cottle
 26208	WV	Camden On Gauley
 26209	WV	Snowshoe
 26210	WV	Adrian
-26214	WV	Century
 26215	WV	Cleveland
 26217	WV	Diana
 26218	WV	French Creek
@@ -2959,7 +2804,6 @@
 26287	WV	Parsons
 26288	WV	Webster Springs
 26289	WV	Red Creek
-26290	WV	Saint George
 26291	WV	Slatyfork
 26292	WV	Thomas
 26293	WV	Valley Bend
@@ -2971,46 +2815,36 @@
 26306	WV	Clarksburg
 26320	WV	Alma
 26321	WV	Alum Bridge
-26322	WV	Alvy
 26323	WV	Anmoore
 26325	WV	Auburn
 26327	WV	Berea
-26328	WV	Blandville
 26330	WV	Bridgeport
-26332	WV	Bristol
-26334	WV	Brownton
 26335	WV	Burnsville
 26337	WV	Cairo
 26338	WV	Camden
 26339	WV	Center Point
 26342	WV	Coxs Mills
 26343	WV	Crawford
-26344	WV	Dawmont
 26346	WV	Ellenboro
 26347	WV	Flemington
 26348	WV	Folsom
 26349	WV	Galloway
-26350	WV	Gilmer
 26351	WV	Glenville
 26354	WV	Grafton
-26360	WV	Greenwood
 26361	WV	Gypsy
 26362	WV	Harrisville
 26366	WV	Haywood
 26369	WV	Hepzibah
 26372	WV	Horner
 26374	WV	Independence
-26375	WV	Industrial
 26376	WV	Ireland
 26377	WV	Jacksonburg
 26378	WV	Jane Lew
-26383	WV	Lima
 26384	WV	Linn
 26385	WV	Lost Creek
 26386	WV	Lumberport
 26404	WV	Meadowbrook
 26405	WV	Moatsville
-26407	WV	Mountain
 26408	WV	Mount Clare
 26410	WV	Newburg
 26411	WV	New Milton
@@ -3020,7 +2854,6 @@
 26419	WV	Pine Grove
 26421	WV	Pullman
 26422	WV	Reynoldsville
-26423	WV	Roanoke
 26424	WV	Rosemont
 26425	WV	Rowlesburg
 26426	WV	Salem
@@ -3034,33 +2867,28 @@
 26440	WV	Thornton
 26443	WV	Troy
 26444	WV	Tunnelton
-26446	WV	Valley Chapel
 26447	WV	Walkersville
 26448	WV	Wallace
 26451	WV	West Milford
 26452	WV	Weston
 26456	WV	West Union
 26461	WV	Wilsonburg
-26462	WV	Wolf Summit
 26463	WV	Wyatt
+26501	WV	Morgantown
 26502	WV	Morgantown
-26503	WV	Morgantown
 26504	WV	Morgantown
 26505	WV	Morgantown
 26506	WV	Morgantown
 26507	WV	Morgantown
+26508	WV	Morgantown
 26519	WV	Albright
 26520	WV	Arthurdale
 26521	WV	Blacksville
-26522	WV	Booth
 26524	WV	Bretz
 26525	WV	Bruceton Mills
 26527	WV	Cassville
-26529	WV	Core
 26531	WV	Dellslow
-26533	WV	Everettville
 26534	WV	Granville
-26535	WV	Hazelton
 26537	WV	Kingwood
 26541	WV	Maidsville
 26542	WV	Masontown
@@ -3090,16 +2918,13 @@
 26586	WV	Montana Mines
 26587	WV	Rachel
 26588	WV	Rivesville
-26589	WV	Wadestown
 26590	WV	Wana
 26591	WV	Worthington
 26601	WV	Sutton
 26610	WV	Birch River
 26611	WV	Cedarville
-26612	WV	Centralia
 26615	WV	Copen
 26617	WV	Dille
-26618	WV	Elmira
 26619	WV	Exchange
 26621	WV	Flatwoods
 26623	WV	Frametown
@@ -3107,19 +2932,14 @@
 26627	WV	Heaters
 26629	WV	Little Birch
 26631	WV	Napier
-26633	WV	Nicut
-26634	WV	Perkins
 26636	WV	Rosedale
 26638	WV	Shock
-26639	WV	Strange Creek
-26641	WV	Wilsie
 26651	WV	Summersville
 26656	WV	Belva
 26660	WV	Calvin
 26662	WV	Canvas
 26667	WV	Drennen
 26671	WV	Gilboa
-26674	WV	Jodie
 26675	WV	Keslers Cross Lanes
 26676	WV	Leivasy
 26678	WV	Mount Lookout
@@ -3134,7 +2954,6 @@
 26707	WV	Bayard
 26710	WV	Burlington
 26711	WV	Capon Bridge
-26713	WV	Corinth
 26714	WV	Delray
 26716	WV	Eglon
 26717	WV	Elk Garden
@@ -3142,9 +2961,7 @@
 26720	WV	Gormania
 26722	WV	Green Spring
 26726	WV	Keyser
-26729	WV	Kirby
 26731	WV	Lahmansville
-26734	WV	Medley
 26739	WV	Mount Storm
 26743	WV	New Creek
 26750	WV	Piedmont
@@ -3154,24 +2971,19 @@
 26761	WV	Shanks
 26763	WV	Springfield
 26764	WV	Terra Alta
-26765	WV	Three Churches
 26767	WV	Wiley Ford
-26769	WV	Horse Shoe Run
 26801	WV	Baker
 26802	WV	Brandywine
 26804	WV	Circleville
-26806	WV	Fort Seybert
 26807	WV	Franklin
 26808	WV	High View
 26810	WV	Lost City
 26812	WV	Mathias
 26814	WV	Riverton
 26815	WV	Sugar Grove
-26816	WV	Arthur
 26817	WV	Bloomery
 26818	WV	Fisher
 26823	WV	Capon Springs
-26824	WV	Junction
 26833	WV	Maysville
 26836	WV	Moorefield
 26838	WV	Milam
@@ -3244,10 +3056,10 @@
 27127	NC	Winston Salem
 27130	NC	Winston Salem
 27150	NC	Winston Salem
-27151	NC	Winston Salem
+27151	NC	Winston-salem
 27152	NC	Winston Salem
 27155	NC	Winston Salem
-27156	NC	Winston Salem
+27156	NC	Winston-salem
 27157	NC	Winston Salem
 27198	NC	Winston Salem
 27199	NC	Winston Salem
@@ -3255,6 +3067,7 @@
 27202	NC	Altamahaw
 27203	NC	Asheboro
 27204	NC	Asheboro
+27205	NC	Asheboro
 27207	NC	Bear Creek
 27208	NC	Bennett
 27209	NC	Biscoe
@@ -3275,11 +3088,10 @@
 27239	NC	Denton
 27242	NC	Eagle Springs
 27243	NC	Efland
-27244	NC	Elon College
+27244	NC	Elon
 27247	NC	Ether
 27248	NC	Franklinville
 27249	NC	Gibsonville
-27251	NC	Glendon
 27252	NC	Goldston
 27253	NC	Graham
 27256	NC	Gulf
@@ -3326,6 +3138,7 @@
 27326	NC	Ruffin
 27330	NC	Sanford
 27331	NC	Sanford
+27332	NC	Sanford
 27340	NC	Saxapahaw
 27341	NC	Seagrove
 27342	NC	Sedalia
@@ -3349,6 +3162,7 @@
 27376	NC	West End
 27377	NC	Whitsett
 27379	NC	Yanceyville
+27395	NC	Greensboro
 27401	NC	Greensboro
 27402	NC	Greensboro
 27403	NC	Greensboro
@@ -3375,6 +3189,7 @@
 27455	NC	Greensboro
 27480	NC	Greensboro
 27495	NC	Greensboro
+27497	NC	Greensboro
 27498	NC	Greensboro
 27499	NC	Greensboro
 27501	NC	Angier
@@ -3393,15 +3208,18 @@
 27514	NC	Chapel Hill
 27515	NC	Chapel Hill
 27516	NC	Chapel Hill
+27517	NC	Chapel Hill
 27518	NC	Cary
 27519	NC	Cary
 27520	NC	Clayton
 27521	NC	Coats
 27522	NC	Creedmoor
-27523	NC	Eagle Rock
+27523	NC	Apex
 27524	NC	Four Oaks
 27525	NC	Franklinton
 27526	NC	Fuquay Varina
+27527	NC	Clayton
+27528	NC	Clayton
 27529	NC	Garner
 27530	NC	Goldsboro
 27531	NC	Goldsboro
@@ -3409,6 +3227,8 @@
 27533	NC	Goldsboro
 27534	NC	Goldsboro
 27536	NC	Henderson
+27537	NC	Henderson
+27539	NC	Apex
 27540	NC	Holly Springs
 27541	NC	Hurdle Mills
 27542	NC	Kenly
@@ -3427,7 +3247,7 @@
 27560	NC	Morrisville
 27562	NC	New Hill
 27563	NC	Norlina
-27564	NC	Northside
+27564	NC	Creedmoor
 27565	NC	Oxford
 27568	NC	Pine Level
 27569	NC	Princeton
@@ -3435,6 +3255,7 @@
 27571	NC	Rolesville
 27572	NC	Rougemont
 27573	NC	Roxboro
+27574	NC	Roxboro
 27576	NC	Selma
 27577	NC	Smithfield
 27581	NC	Stem
@@ -3468,6 +3289,7 @@
 27614	NC	Raleigh
 27615	NC	Raleigh
 27616	NC	Raleigh
+27617	NC	Raleigh
 27619	NC	Raleigh
 27620	NC	Raleigh
 27621	NC	Raleigh
@@ -3525,6 +3347,7 @@
 27812	NC	Bethel
 27813	NC	Black Creek
 27814	NC	Blounts Creek
+27815	NC	Rocky Mount
 27816	NC	Castalia
 27817	NC	Chocowinity
 27818	NC	Como
@@ -3547,7 +3370,6 @@
 27835	NC	Greenville
 27836	NC	Greenville
 27837	NC	Grimesland
-27838	NC	Gumberry
 27839	NC	Halifax
 27840	NC	Hamilton
 27841	NC	Hassell
@@ -3557,7 +3379,6 @@
 27845	NC	Jackson
 27846	NC	Jamesville
 27847	NC	Kelford
-27848	NC	Lasker
 27849	NC	Lewiston Woodville
 27850	NC	Littleton
 27851	NC	Lucama
@@ -3568,7 +3389,6 @@
 27856	NC	Nashville
 27857	NC	Oak City
 27858	NC	Greenville
-27859	NC	Palmyra
 27860	NC	Pantego
 27861	NC	Parmele
 27862	NC	Pendleton
@@ -3690,6 +3510,7 @@
 28032	NC	Cramerton
 28033	NC	Crouse
 28034	NC	Dallas
+28035	NC	Davidson
 28036	NC	Davidson
 28037	NC	Denver
 28038	NC	Earl
@@ -3698,7 +3519,6 @@
 28041	NC	Faith
 28042	NC	Fallston
 28043	NC	Forest City
-28051	NC	Gastonia
 28052	NC	Gastonia
 28053	NC	Gastonia
 28054	NC	Gastonia
@@ -3730,6 +3550,7 @@
 28101	NC	Mc Adenville
 28102	NC	Mc Farlan
 28103	NC	Marshville
+28104	NC	Matthews
 28105	NC	Matthews
 28106	NC	Matthews
 28107	NC	Midland
@@ -3740,6 +3561,7 @@
 28112	NC	Monroe
 28114	NC	Mooresboro
 28115	NC	Mooresville
+28117	NC	Mooresville
 28119	NC	Morven
 28120	NC	Mount Holly
 28123	NC	Mount Mourne
@@ -3799,7 +3621,6 @@
 28222	NC	Charlotte
 28223	NC	Charlotte
 28224	NC	Charlotte
-28225	NC	Charlotte
 28226	NC	Charlotte
 28227	NC	Charlotte
 28228	NC	Charlotte
@@ -3825,12 +3646,13 @@
 28256	NC	Charlotte
 28258	NC	Charlotte
 28260	NC	Charlotte
-28261	NC	Charlotte
 28262	NC	Charlotte
+28263	NC	Charlotte
 28265	NC	Charlotte
 28266	NC	Charlotte
 28269	NC	Charlotte
 28270	NC	Charlotte
+28271	NC	Charlotte
 28272	NC	Charlotte
 28273	NC	Charlotte
 28274	NC	Charlotte
@@ -3840,15 +3662,12 @@
 28280	NC	Charlotte
 28281	NC	Charlotte
 28282	NC	Charlotte
-28283	NC	Charlotte
 28284	NC	Charlotte
 28285	NC	Charlotte
-28286	NC	Charlotte
 28287	NC	Charlotte
 28288	NC	Charlotte
 28289	NC	Charlotte
 28290	NC	Charlotte
-28294	NC	Charlotte
 28296	NC	Charlotte
 28297	NC	Charlotte
 28299	NC	Charlotte
@@ -3859,17 +3678,17 @@
 28305	NC	Fayetteville
 28306	NC	Fayetteville
 28307	NC	Fort Bragg
-28308	NC	Pope A F B
+28308	NC	Pope Army Airfield
 28309	NC	Fayetteville
 28310	NC	Fort Bragg
 28311	NC	Fayetteville
+28312	NC	Fayetteville
 28314	NC	Fayetteville
 28315	NC	Aberdeen
 28318	NC	Autryville
 28319	NC	Barnesville
 28320	NC	Bladenboro
 28323	NC	Bunnlevel
-28324	NC	Butters
 28325	NC	Calypso
 28326	NC	Cameron
 28327	NC	Carthage
@@ -3902,7 +3721,7 @@
 28357	NC	Lumber Bridge
 28358	NC	Lumberton
 28359	NC	Lumberton
-28361	NC	McCain
+28360	NC	Lumberton
 28362	NC	Marietta
 28363	NC	Marston
 28364	NC	Maxton
@@ -3948,6 +3767,7 @@
 28408	NC	Wilmington
 28409	NC	Wilmington
 28410	NC	Wilmington
+28411	NC	Wilmington
 28412	NC	Wilmington
 28420	NC	Ash
 28421	NC	Atkinson
@@ -3971,7 +3791,6 @@
 28443	NC	Hampstead
 28444	NC	Harrells
 28445	NC	Holly Ridge
-28446	NC	Ingold
 28447	NC	Ivanhoe
 28448	NC	Kelly
 28449	NC	Kure Beach
@@ -3995,8 +3814,7 @@
 28467	NC	Calabash
 28468	NC	Sunset Beach
 28469	NC	Ocean Isle Beach
-28470	NC	South Brunswick
-28471	NC	Watha
+28470	NC	Shallotte
 28472	NC	Whiteville
 28478	NC	Willard
 28479	NC	Winnabow
@@ -4037,7 +3855,7 @@
 28542	NC	Camp Lejeune
 28543	NC	Tarawa Terrace
 28544	NC	Midway Park
-28545	NC	McCutcheon Field
+28545	NC	Mccutcheon Field
 28546	NC	Jacksonville
 28547	NC	Camp Lejeune
 28551	NC	La Grange
@@ -4085,7 +3903,6 @@
 28611	NC	Collettsville
 28612	NC	Connellys Springs
 28613	NC	Conover
-28614	NC	Cranberry
 28615	NC	Creston
 28616	NC	Crossnore
 28617	NC	Crumpler
@@ -4095,6 +3912,7 @@
 28622	NC	Elk Park
 28623	NC	Ennice
 28624	NC	Ferguson
+28625	NC	Statesville
 28626	NC	Fleetwood
 28627	NC	Glade Valley
 28628	NC	Glen Alpine
@@ -4200,7 +4018,7 @@
 28737	NC	Glenwood
 28738	NC	Hazelwood
 28739	NC	Hendersonville
-28740	NC	Greenmountain
+28740	NC	Green Mountain
 28741	NC	Highlands
 28742	NC	Horse Shoe
 28743	NC	Hot Springs
@@ -4219,6 +4037,7 @@
 28756	NC	Mill Spring
 28757	NC	Montreat
 28758	NC	Mountain Home
+28759	NC	Mills River
 28760	NC	Naples
 28761	NC	Nebo
 28762	NC	Old Fort
@@ -4240,6 +4059,7 @@
 28782	NC	Tryon
 28783	NC	Tuckasegee
 28784	NC	Tuxedo
+28785	NC	Waynesville
 28786	NC	Waynesville
 28787	NC	Weaverville
 28788	NC	Webster
@@ -4275,9 +4095,9 @@
 29014	SC	Blackstock
 29015	SC	Blair
 29016	SC	Blythewood
-29017	SC	Borden
 29018	SC	Bowman
 29020	SC	Camden
+29021	SC	Camden
 29030	SC	Cameron
 29031	SC	Carlisle
 29032	SC	Cassatt
@@ -4314,7 +4134,6 @@
 29073	SC	Lexington
 29074	SC	Liberty Hill
 29075	SC	Little Mountain
-29077	SC	Lone Star
 29078	SC	Lugoff
 29079	SC	Lydia
 29080	SC	Lynchburg
@@ -4324,7 +4143,6 @@
 29102	SC	Manning
 29104	SC	Mayesville
 29105	SC	Monetta
-29106	SC	Monticello
 29107	SC	Neeses
 29108	SC	Newberry
 29111	SC	New Zion
@@ -4337,7 +4155,6 @@
 29118	SC	Orangeburg
 29122	SC	Peak
 29123	SC	Pelion
-29124	SC	Perry
 29125	SC	Pinewood
 29126	SC	Pomaria
 29127	SC	Prosperity
@@ -4372,7 +4189,6 @@
 29171	SC	West Columbia
 29172	SC	West Columbia
 29175	SC	Westville
-29176	SC	White Oak
 29177	SC	White Rock
 29178	SC	Whitmire
 29180	SC	Winnsboro
@@ -4417,8 +4233,8 @@
 29305	SC	Spartanburg
 29306	SC	Spartanburg
 29307	SC	Spartanburg
-29316	SC	Spartanburg
-29318	SC	Spartanburg
+29316	SC	Boiling Springs
+29318	SC	Boiling Springs
 29319	SC	Spartanburg
 29320	SC	Arcadia
 29321	SC	Buffalo
@@ -4465,24 +4281,25 @@
 29388	SC	Woodruff
 29390	SC	Duncan
 29391	SC	Duncan
+29395	SC	Jonesville
 29401	SC	Charleston
 29402	SC	Charleston
 29403	SC	Charleston
 29404	SC	Charleston Afb
-29405	SC	Charleston
+29405	SC	North Charleston
 29406	SC	Charleston
 29407	SC	Charleston
 29409	SC	Charleston
-29410	SC	Charleston
+29410	SC	Hanahan
 29412	SC	Charleston
 29413	SC	Charleston
 29414	SC	Charleston
-29415	SC	Charleston
+29415	SC	North Charleston
 29416	SC	Charleston
 29417	SC	Charleston
-29418	SC	Charleston
-29419	SC	Charleston
-29420	SC	Charleston
+29418	SC	North Charleston
+29419	SC	North Charleston
+29420	SC	North Charleston
 29422	SC	Charleston
 29423	SC	Charleston
 29424	SC	Charleston
@@ -4517,6 +4334,7 @@
 29461	SC	Moncks Corner
 29464	SC	Mount Pleasant
 29465	SC	Mount Pleasant
+29466	SC	Mount Pleasant
 29468	SC	Pineville
 29469	SC	Pinopolis
 29470	SC	Ravenel
@@ -4558,7 +4376,6 @@
 29536	SC	Dillon
 29540	SC	Darlington
 29541	SC	Effingham
-29542	SC	Floyd Dale
 29543	SC	Fork
 29544	SC	Galivants Ferry
 29545	SC	Green Sea
@@ -4594,6 +4411,7 @@
 29584	SC	Patrick
 29585	SC	Pawleys Island
 29587	SC	Myrtle Beach
+29588	SC	Myrtle Beach
 29589	SC	Rains
 29590	SC	Salters
 29591	SC	Scranton
@@ -4626,6 +4444,7 @@
 29623	SC	Anderson
 29624	SC	Anderson
 29625	SC	Anderson
+29626	SC	Anderson
 29627	SC	Belton
 29628	SC	Calhoun Falls
 29630	SC	Central
@@ -4695,6 +4514,8 @@
 29703	SC	Bowling Green
 29704	SC	Catawba
 29706	SC	Chester
+29707	SC	Fort Mill
+29708	SC	Fort Mill
 29709	SC	Chesterfield
 29710	SC	Clover
 29712	SC	Edgemoor
@@ -4703,7 +4524,6 @@
 29716	SC	Fort Mill
 29717	SC	Hickory Grove
 29718	SC	Jefferson
-29719	SC	Kings Creek
 29720	SC	Lancaster
 29721	SC	Lancaster
 29722	SC	Lancaster
@@ -4726,12 +4546,12 @@
 29802	SC	Aiken
 29803	SC	Aiken
 29804	SC	Aiken
+29805	SC	Aiken
 29808	SC	Aiken
 29809	SC	New Ellenton
 29810	SC	Allendale
 29812	SC	Barnwell
 29813	SC	Hilda
-29814	SC	Kline
 29816	SC	Bath
 29817	SC	Blackville
 29819	SC	Bradley
@@ -4763,6 +4583,7 @@
 29851	SC	Warrenville
 29853	SC	Williston
 29856	SC	Windsor
+29860	SC	North Augusta
 29861	SC	North Augusta
 29899	SC	Mc Cormick
 29901	SC	Beaufort
@@ -4770,9 +4591,12 @@
 29903	SC	Beaufort
 29904	SC	Beaufort
 29905	SC	Beaufort
+29906	SC	Beaufort
+29907	SC	Ladys Island
+29909	SC	Okatie
 29910	SC	Bluffton
 29911	SC	Brunson
-29912	SC	Coosawatchie
+29912	SC	Coosawhatchie
 29913	SC	Crocketville
 29914	SC	Dale
 29915	SC	Daufuskie Island
