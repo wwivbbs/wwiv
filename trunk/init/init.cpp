@@ -422,9 +422,7 @@ int verify_dir(char *typeDir, char *dirName) {
 
 void show_help() {
   Printf("   ,x    - Specify Instance (where x is the Instance)\n");
-  Printf("   -C    - Recompile modem configuration\n");
   Printf("   -D    - Edit Directories\n");
-  Printf("   -L    - Rebuild LOCAL.MDM info\n");
   Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
   Printf("\n\n\n");
 

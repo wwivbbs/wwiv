@@ -41,7 +41,9 @@ void pausescr();
 
 int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode);
 void input_password(const std::string prompt, char *out, int max_length);
-void input_password(const std::string prompt, std::vector<std::string>& text, char *output, int max_length);
+void input_password(const std::string prompt, const std::vector<std::string>& text, char *output, int max_length);
+void messagebox(const std::string text);
+void messagebox(const std::vector<std::string>& text);
 
 
 
