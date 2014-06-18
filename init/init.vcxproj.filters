@@ -72,21 +72,30 @@
     <ClInclude Include="networks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="languages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="archivers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="protocols.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="levels.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="convert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="init1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="init2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="init3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="platform\win32\filesupp.cpp">
@@ -123,6 +132,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="networks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="languages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="archivers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="editors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="protocols.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="levels.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

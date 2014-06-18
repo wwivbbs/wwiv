@@ -27,11 +27,10 @@
  */
 class WInitApp {
  public:
-  WInitApp() {}
-  virtual ~WInitApp() {}
+  WInitApp();
+  virtual ~WInitApp();
 
   int main(int argc, char* argv[]);
-  CursesIO *localIO;
 };
 
 

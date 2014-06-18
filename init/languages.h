@@ -16,9 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PATHS_H__
-#define __INCLUDED_PATHS_H__
+#ifndef __INCLUDED_LANGUAGES_H__
+#define __INCLUDED_LANGUAGES_H__
 
-void setpaths();
+void edit_languages();
 
-#endif // __INCLUDED_PATHS_H__
+#endif // __INCLUDED_LANGUAGES_H__

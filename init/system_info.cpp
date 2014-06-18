@@ -282,6 +282,6 @@ void sysinfo1() {
     if (i1 == DONE) {
       done = true;
     }
-  } while (!done && !hangup);
+  } while (!done);
   save_config();
 }
