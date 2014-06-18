@@ -63,9 +63,6 @@ void exit_init(int level);
 
 void trimstr(char *s);
 void trimstrpath(char *s);
-void print_time(unsigned short t, char *s);
-unsigned short get_time(char *s);
-void sysinfo1();
 void setpaths();
 int read_subs();
 void write_subs();
