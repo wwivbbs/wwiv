@@ -818,7 +818,7 @@ void WApplication::read_networks() {
     while (!fileNetIni.IsEndOfFile()) {
       char szBuffer[ 255 ];
       fileNetIni.ReadLine(szBuffer, 80);
-      szBuffer[strlen(szBuffer) - 1] = 0;
+      szBuffer[sizeof(szBuffer) - 1] = 0;
       StringRemoveWhitespace(szBuffer);
       if (!WWIV_STRNICMP(szBuffer, "DOMAIN=", 7) && GetSession()->internetEmailDomain.empty()) {
         GetSession()->internetEmailDomain = &(szBuffer[7]);
