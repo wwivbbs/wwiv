@@ -745,6 +745,7 @@ void WApplication::read_arcs() {
       lFileSize = MAX_ARCS * sizeof(arcrec);
     }
     arcs = static_cast<arcrec *>(BbsAllocA(lFileSize));
+    archiverFile.Read(arcs, lFileSize);
     WWIV_ASSERT(arcs != NULL);
   }
 }
