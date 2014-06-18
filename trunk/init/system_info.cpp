@@ -18,8 +18,7 @@
 /**************************************************************************/
 #include "user_editor.h"
 
-#include <curses.h>
-#include <cstdint>
+#include <cstring>
 #include <string>
 
 #include "ifcns.h"

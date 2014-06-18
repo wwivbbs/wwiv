@@ -18,8 +18,7 @@
 /**************************************************************************/
 #include "template.h"
 
-#include <curses.h>
-#include <cstdint>
+#include <cstring>
 #include <string>
 #include <fcntl.h>
 #ifdef _WIN32
