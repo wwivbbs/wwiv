@@ -306,7 +306,9 @@ void GoodBye() {
       write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
       GetSession()->bout.ClearScreen();
       GetSession()->bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
+      tmp_disable_pause(true);
       printfile(LOGOFF_NOEXT);
+      tmp_disable_pause(false);
       GetSession()->GetCurrentUser()->SetLastSubNum(GetSession()->GetCurrentMessageArea());
       GetSession()->GetCurrentUser()->SetLastDirNum(GetSession()->GetCurrentFileArea());
       if (okconf(GetSession()->GetCurrentUser())) {
