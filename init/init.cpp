@@ -46,8 +46,6 @@ char bbsdir[MAX_PATH];
 int inst = 1;
 char configdat[20] = "config.dat";
 
-const char* g_pszCopyrightString = "Copyright (c) 1998-2014, WWIV Software Services";
-
 static const char *nettypes[] = {
   "WWIVnet ",
   "Fido    ",
@@ -471,11 +469,7 @@ int WInitApp::main(int argc, char *argv[]) {
   init();
 
   out->Cls();
-  textattr((16 * COLOR_BLUE) + COLOR_WHITE);
-  Printf(g_pszCopyrightString);
-  out->ClrEol();
-  textattr(COLOR_WHITE);
-  nlx(2);
+  nlx(1);
   textattr(COLOR_CYAN);
 
   char *pszInstanceNumber = getenv("WWIV_INSTANCE");
@@ -772,7 +766,8 @@ int WInitApp::main(int argc, char *argv[]) {
 
   if (!pwok) {
     nlx();
-    input_password("SY:", s, 20);
+    std::vector<std::string> lines { "Please enter the System Password. "};
+    input_password("SY:", lines, s, 20);
     if (strcmp(s, (syscfg.systempw)) != 0) {
       textattr(COLOR_WHITE);
       out->Cls();
@@ -816,11 +811,10 @@ int WInitApp::main(int argc, char *argv[]) {
 
   do {
     out->Cls();
-    textattr((16 * COLOR_BLUE) | COLOR_WHITE);
-    Puts(g_pszCopyrightString);
-    out->ClrEol();
+    out->SetDefaultFooter();
+
     textattr(COLOR_CYAN);
-    int y = 3;
+    int y = 1;
     int x = 0;
     out->PutsXY(x, y++, "1. General System Configuration");
     out->PutsXY(x, y++, "2. System Paths");
@@ -851,33 +845,42 @@ int WInitApp::main(int argc, char *argv[]) {
       done = true;
       break;
     case '1':
+      out->SetDefaultFooter();
       sysinfo1();
       break;
     case '2':
+      out->SetDefaultFooter();
       setpaths();
       break;
     case '6':
+      out->SetDefaultFooter();
       extrn_prots();
       break;
     case '7':
+      out->SetDefaultFooter();
       extrn_editors();
       break;
     case '8':
+      out->SetDefaultFooter();
       sec_levs();
       break;
     case '9':
+      out->SetDefaultFooter();
       autoval_levs();
       break;
     case 'A':
+      out->SetDefaultFooter();
       edit_arc(0);
       break;
     case 'I':
       instance_editor();
       break;
     case 'L':
+      out->SetDefaultFooter();
       up_langs();
       break;
     case 'N':
+      out->SetDefaultFooter();
       networks();
       break;
     case 'P':
@@ -886,6 +889,7 @@ int WInitApp::main(int argc, char *argv[]) {
       out->GetChar();
       break;
     case 'R':
+      out->SetDefaultFooter();
       edit_registration_code();
       break;
     case 'U':
@@ -897,6 +901,7 @@ int WInitApp::main(int argc, char *argv[]) {
       out->GetChar();
       break;
     case 'X':
+      out->SetDefaultFooter();
       up_subs_dirs();
       break;
     }

@@ -43,6 +43,7 @@ class CursesIO {
   virtual WINDOW* window() const { return window_; }
   virtual WINDOW* footer() const { return footer_; }
   virtual WINDOW* header() const { return header_; }
+  virtual void SetDefaultFooter();
 
  private:
   void SetCursesAttribute();
