@@ -10,16 +10,20 @@ add_definitions(-DINIT -DNOT_BBS)
 
 
 set(COMMON_SOURCES
-  convert.cpp
+  archivers.cpp
+  editors.cpp
   init.cpp 
   init1.cpp 
   init2.cpp 
   init3.cpp
   input.cpp 
   instance_settings.cpp
+  languages.cpp
+  levels.cpp
   networks.cpp
   paths.cpp
   platform/curses_io.cpp
+  protocols.cpp
   regcode.cpp
   subacc.cpp 
   system_info.cpp

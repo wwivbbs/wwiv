@@ -26,6 +26,7 @@
 #include <curses.h>
 #include <sys/stat.h>
 
+#include "archivers.h"
 #include "common.h"
 #include "ifcns.h"
 #include "init.h"
@@ -42,21 +43,7 @@
 
 extern char bbsdir[];
 
-void init() {
-  curatr = 0x03;
-  hangup = false;  // TODO(rushfan): Remove this from init
-  daylight = 0; // C Runtime Variable -- WHY?
-}
-
-/* This converts a character to uppercase */
-int upcase(int ch) {
-  if ((ch > '`') && (ch < '{')) {
-    ch = ch - 32;
-  }
-  return ch;
-}
-
-void fix_user_rec(userrec *u) {
+static void fix_user_rec(userrec *u) {
   u->name[sizeof(u->name) - 1] = 0;
   u->realname[sizeof(u->realname) - 1] = 0;
   u->callsign[sizeof(u->callsign) - 1] = 0;
@@ -697,7 +684,8 @@ int verify_inst_dirs(configoverrec *co, int inst) {
 
 void exit_init(int level) {
   // Don't leak the localIO (also fix the color when the app exits)
-  delete app->localIO;
+  delete out;
+  out = nullptr;
 
   exit(level);
 }

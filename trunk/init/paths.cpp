@@ -27,12 +27,6 @@
 #include "input.h"
 #include "wwivinit.h"
 
-#if __unix__
-#define EDITLINE_FILENAME_CASE ALL
-#else
-#define EDITLINE_FILENAME_CASE UPPER_ONLY
-#endif  // __unix__
-
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir */
 void setpaths() {
   out->Cls();

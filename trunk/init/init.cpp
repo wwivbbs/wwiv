@@ -18,21 +18,29 @@
 /**************************************************************************/
 #define _DEFINE_GLOBALS_
 
+#include <cctype>
 #include <cstdlib>
 #include <cstring>
 #include <curses.h>
 #include <fcntl.h>
+#include <memory>
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
 #endif
 #include <sys/stat.h>
 
+#include "archivers.h"
+#include "editors.h"
 #include "ifcns.h"
 #include "input.h"
 #include "init.h"
 #include "instance_settings.h"
+#include "languages.h"
+#include "levels.h"
+#include "networks.h"
 #include "paths.h"
+#include "protocols.h"
 #include "regcode.h"
 #include "system_info.h"
 #include "user_editor.h"
@@ -47,124 +55,7 @@ CursesIO* out;
 char bbsdir[MAX_PATH];
 char configdat[20] = "config.dat";
 
-static const char *nettypes[] = {
-  "WWIVnet ",
-  "Fido    ",
-  "Internet",
-};
-
-static const int MAX_NETTYPES = sizeof(nettypes)/sizeof(nettypes[0]);
-
-void edit_net(int nn) {
-  char szOldNetworkName[20];
-  char *ss;
-
-  out->Cls();
-  bool done = false;
-  int cp = 1;
-  net_networks_rec *n = &(net_networks[nn]);
-  strcpy(szOldNetworkName, n->name);
-
-  if (n->type >= MAX_NETTYPES) {
-    n->type = 0;
-  }
-
-  Printf("Network type   : %s\n\n", nettypes[n->type]);
-
-  Printf("Network name   : %s\n", n->name);
-  Printf("Node number    : %u\n", n->sysnum);
-  Printf("Data Directory : %s\n", n->dir);
-  textattr(COLOR_YELLOW);
-  Puts("\n<ESC> when done.\n\n");
-  textattr(COLOR_CYAN);
-  do {
-    if (cp) {
-      out->GotoXY(17, cp + 1);
-    } else {
-      out->GotoXY(17, cp);
-    }
-    int nNext = 0;
-    switch (cp) {
-    case 0:
-      n->type = toggleitem(n->type, nettypes, MAX_NETTYPES, &nNext);
-      break;
-    case 1: {
-      editline(n->name, 15, ALL, &nNext, "");
-      trimstr(n->name);
-      ss = strchr(n->name, ' ');
-      if (ss) {
-        *ss = 0;
-      }
-      Puts(n->name);
-      Puts("                  ");
-    }
-    break;
-    case 2: {
-      char szTempBuffer[ 255 ];
-      sprintf(szTempBuffer, "%u", n->sysnum);
-      editline(szTempBuffer, 5, NUM_ONLY, &nNext, "");
-      trimstr(szTempBuffer);
-      n->sysnum = atoi(szTempBuffer);
-      sprintf(szTempBuffer, "%u", n->sysnum);
-      Puts(szTempBuffer);
-    }
-    break;
-    case 3: {
-      editline(n->dir, 60, UPPER_ONLY, &nNext, "");
-      trimstrpath(n->dir);
-      Puts(n->dir);
-    }
-    break;
-    }
-    cp = GetNextSelectionPosition(0, 3, cp, nNext);
-    if (nNext == DONE) {
-      done = true;
-    }
-  } while (!done && !hangup);
-
-  if (strcmp(szOldNetworkName, n->name)) {
-    char szInputFileName[ MAX_PATH ];
-    char szOutputFileName[ MAX_PATH ];
-    sprintf(szInputFileName, "%ssubs.xtr", syscfg.datadir);
-    sprintf(szOutputFileName, "%ssubsxtr.new", syscfg.datadir);
-    FILE *pInputFile = fopen(szInputFileName, "r");
-    if (pInputFile) {
-      FILE *pOutputFile = fopen(szOutputFileName, "w");
-      if (pOutputFile) {
-        char szBuffer[ 255 ];
-        while (fgets(szBuffer, 80, pInputFile)) {
-          if (szBuffer[0] == '$') {
-            ss = strchr(szBuffer, ' ');
-            if (ss) {
-              *ss = 0;
-              if (stricmp(szOldNetworkName, szBuffer + 1) == 0) {
-                fprintf(pOutputFile, "$%s %s", n->name, ss + 1);
-              } else {
-                fprintf(pOutputFile, "%s %s", szBuffer, ss + 1);
-              }
-            } else {
-              fprintf(pOutputFile, "%s", szBuffer);
-            }
-          } else {
-            fprintf(pOutputFile, "%s", szBuffer);
-          }
-        }
-        fclose(pOutputFile);
-        fclose(pInputFile);
-        char szOldSubsFileName[ MAX_PATH ];
-        sprintf(szOldSubsFileName, "%ssubsxtr.old", syscfg.datadir);
-        unlink(szOldSubsFileName);
-        rename(szInputFileName, szOldSubsFileName);
-        unlink(szInputFileName);
-        rename(szOutputFileName, szInputFileName);
-      } else {
-        fclose(pInputFile);
-      }
-    }
-  }
-}
-
-void convcfg() {
+static void convcfg() {
   arcrec arc[MAX_ARCS];
 
   int hFile = open(configdat, O_RDWR | O_BINARY);
@@ -211,8 +102,7 @@ void convcfg() {
   }
 }
 
-
-void printcfg() {
+static void printcfg() {
   int hFile = open(configdat, O_RDWR | O_BINARY);
   if (hFile > 0) {
     read(hFile, (void *)(&syscfg), sizeof(configrec));
@@ -232,7 +122,6 @@ void printcfg() {
   }
   close(hFile);
 }
-
 
 int verify_dir(char *typeDir, char *dirName) {
   int rc = 0;
@@ -270,23 +159,29 @@ int verify_dir(char *typeDir, char *dirName) {
   return rc;
 }
 
-void show_help() {
+static void show_help() {
   Printf("   -D    - Edit Directories\n");
   Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
   Printf("\n\n\n");
 
 }
 
+WInitApp::WInitApp() {
+  out = new CursesIO();
+}
+
+WInitApp::~WInitApp() {
+  delete out;
+  out = nullptr;
+}
+
 int main(int argc, char* argv[]) {
-  app = new WInitApp();
+  std::unique_ptr<WInitApp> app(new WInitApp());
   return app->main(argc, argv);
 }
 
 int WInitApp::main(int argc, char *argv[]) {
-  localIO = new CursesIO();
-  out = localIO;
-
-  char s[81], s1[81], ch;
+  char s[81], s1[81];
   int newbbs = 0, configfile, pwok = 0;
   int i;
   externalrec *oexterns;
@@ -299,36 +194,56 @@ int WInitApp::main(int argc, char *argv[]) {
 
   trimstrpath(bbsdir);
 
-  init();
+  daylight = 0; // C Runtime Variable -- WHY? from init()
 
   out->Cls();
-  nlx(1);
   textattr(COLOR_CYAN);
 
+  configfile = open(configdat, O_RDWR | O_BINARY);
+  if (configfile > 0) {
+    // try to read it initially so we can process args right.
+    read(configfile, &syscfg, sizeof(configrec));
+    close(configfile);
+  }
   for (i = 1; i < argc; ++i) {
-    if (i == 1 && argv[i][0] == '?') {
-      show_help();
-      exit_init(0);
+    if (strlen(argv[i]) < 2) {
+      continue;
     }
 
-    if (argv[i][0] == 'P' || argv[i][0] == 'p') {
-      printcfg();
-      break;
-    }
+    if (argv[i][0] == '-') {
+      char ch = toupper(argv[i][1]);
+      switch (ch) {
+      case 'S':
+        printcfg();
+        exit_init(0);
+        break;
+      case 'P': {
+        if (strlen(argv[i]) > 2) {
+          if (stricmp(argv[i] + 2, syscfg.systempw) == 0) {
+            pwok = 1;
+          }
+        }
+        break;
+      }
+      case 'D': {
+        configfile = open(configdat, O_RDWR | O_BINARY);
+        read(configfile, (void *)(&syscfg), sizeof(configrec));
+        close(configfile);
 
-    if ((argv[i][1] == 'D') || (argv[i][1] == 'd')) {
-      configfile = open(configdat, O_RDWR | O_BINARY);
-      read(configfile, (void *)(&syscfg), sizeof(configrec));
-      close(configfile);
+        configfile = open("config.ovr", O_RDWR | O_BINARY);
+        lseek(configfile, 0, SEEK_SET);
+        read(configfile, &syscfgovr, sizeof(configoverrec));
+        close(configfile);
 
-      configfile = open("config.ovr", O_RDWR | O_BINARY);
-      lseek(configfile, 0, SEEK_SET);
-      read(configfile, &syscfgovr, sizeof(configoverrec));
-      close(configfile);
-
-      setpaths();
-      out->Cls();
-      exit_init(0);
+        setpaths();
+        out->Cls();
+        exit_init(0);
+      } break;
+      case '?':
+        show_help();
+        exit_init(0);
+        break;
+      }
     }
   }
 
@@ -338,10 +253,7 @@ int WInitApp::main(int argc, char *argv[]) {
     Printf("%s NOT FOUND.\n\n", configdat);
     if (dialog_yn("Perform initial installation")) {
       new_init();
-      nlx(1);
-      textattr(COLOR_YELLOW);
-      Printf("Your system password defaults to 'SYSOP'.\n");
-      textattr(COLOR_CYAN);
+      messagebox("Your system password defaults to 'SYSOP'.");
       nlx();
       newbbs = 1;
       configfile = open(configdat, O_RDWR | O_BINARY);
@@ -427,7 +339,7 @@ int WInitApp::main(int argc, char *argv[]) {
         close(hFile);
       }
     }
-    BbsFreeMemory(oexterns);
+    free(oexterns);
   }
   over_intern = (newexternalrec *) bbsmalloc(3 * sizeof(newexternalrec));
   memset(over_intern, 0, 3 * sizeof(newexternalrec));
@@ -506,27 +418,9 @@ int WInitApp::main(int argc, char *argv[]) {
     strncpy(languages->dir, syscfg.gfilesdir, sizeof(languages->dir) - 1);
     strncpy(languages->mdir, syscfg.gfilesdir, sizeof(languages->mdir) - 1);
   }
-  c_setup();
 
   if (languages->mdir[0] == 0) {
     strncpy(languages->mdir, syscfg.gfilesdir, sizeof(languages->mdir) - 1);
-  }
-
-  for (i = 1; i < argc; i++) {
-    strcpy(s, argv[i]);
-    if ((s[0] == '-') || (s[0] == '/')) {
-      ch = upcase(s[1]);
-      switch (ch) {
-      case 'P': // Enter password on commandline
-        if (stricmp(s + 2, syscfg.systempw) == 0) {
-          pwok = 1;
-        }
-        break;
-      case '?':   // Display usage information
-        show_help();
-        break;
-      }
-    }
   }
 
   if (newbbs) {
@@ -548,36 +442,6 @@ int WInitApp::main(int argc, char *argv[]) {
       Printf("I'm sorry, that isn't the correct system password.\n");
       textattr(COLOR_WHITE);
       exit_init(2);
-    }
-  }
-
-  if (bDataDirectoryOk) {
-    if (c_IsUserListInOldFormat()) {
-      nlx();
-      if (c_check_old_struct()) {
-        textattr(COLOR_RED);
-        Printf("You have a non-standard userlist.\n");
-        Printf("Please update the convert.c file with your old userrec, make any\n");
-        Printf("modifications necessary to copy over new fields, then compile and\n");
-        Printf("run it.\n");
-        textattr(COLOR_MAGENTA);
-        Puts("[PAUSE]");
-        textattr(COLOR_CYAN);
-        out->GetChar();
-        nlx();
-      } else {
-        if (dialog_yn("Convert your userlist to the v4.30 format")) {
-          textattr(COLOR_MAGENTA);
-          Printf("Please wait...\n");
-          c_old_to_new();
-          nlx();
-          textattr(COLOR_MAGENTA);
-          Puts("[PAUSE]");
-          textattr(COLOR_CYAN);
-          out->GetChar();
-          nlx();
-        }
-      }
     }
   }
 
@@ -648,7 +512,7 @@ int WInitApp::main(int argc, char *argv[]) {
       break;
     case 'L':
       out->SetDefaultFooter();
-      up_langs();
+      edit_languages();
       break;
     case 'N':
       out->SetDefaultFooter();
@@ -679,6 +543,7 @@ int WInitApp::main(int argc, char *argv[]) {
   } while (!done);
 
   // Don't leak the localIO (also fix the color when the app exits)
-  delete app->localIO;
+  delete out;
+  out = nullptr;
   return 0;
 }

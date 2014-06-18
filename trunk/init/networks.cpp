@@ -37,8 +37,17 @@
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
 
+static const char *nettypes[] = {
+  "WWIVnet ",
+  "Fido    ",
+  "Internet",
+};
 
-int read_subs() {
+static const int MAX_NETTYPES = sizeof(nettypes)/sizeof(nettypes[0]);
+
+static void edit_net(int nn);
+
+static int read_subs() {
   char szFileName[MAX_PATH];
 
   sprintf(szFileName, "%ssubs.dat", syscfg.datadir);
@@ -62,7 +71,7 @@ int read_subs() {
   return 0;
 }
 
-void write_subs() {
+static void write_subs() {
   char szFileName[MAX_PATH];
 
   if (subboards) {
@@ -73,12 +82,12 @@ void write_subs() {
       close(i);
     }
     initinfo.num_subs = 0;
-    BbsFreeMemory(subboards);
+    free(subboards);
     subboards = NULL;
   }
 }
 
-void del_net(int nn) {
+static void del_net(int nn) {
   int i, t, r, nu, i1, i2;
   mailrec m;
   char *u;
@@ -170,7 +179,7 @@ void del_net(int nn) {
     }
   }
 
-  BbsFreeMemory(u);
+  free(u);
 
   for (i = nn; i < initinfo.net_num_max; i++) {
     net_networks[i] = net_networks[i + 1];
@@ -183,8 +192,7 @@ void del_net(int nn) {
   close(i);
 }
 
-
-void insert_net(int nn) {
+static void insert_net(int nn) {
   int i, t, r, nu, i1, i2;
   mailrec m;
   char *u;
@@ -260,7 +268,7 @@ void insert_net(int nn) {
   }
 
 
-  BbsFreeMemory(u);
+  free(u);
 
   for (i = initinfo.net_num_max; i > nn; i--) {
     net_networks[i] = net_networks[i - 1];
@@ -277,8 +285,6 @@ void insert_net(int nn) {
 
   edit_net(nn);
 }
-
-
 
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
@@ -409,4 +415,113 @@ void networks() {
   int hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   write(hFile, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   close(hFile);
+}
+
+static void edit_net(int nn) {
+  char szOldNetworkName[20];
+  char *ss;
+
+  out->Cls();
+  bool done = false;
+  int cp = 1;
+  net_networks_rec *n = &(net_networks[nn]);
+  strcpy(szOldNetworkName, n->name);
+
+  if (n->type >= MAX_NETTYPES) {
+    n->type = 0;
+  }
+
+  Printf("Network type   : %s\n\n", nettypes[n->type]);
+
+  Printf("Network name   : %s\n", n->name);
+  Printf("Node number    : %u\n", n->sysnum);
+  Printf("Data Directory : %s\n", n->dir);
+  textattr(COLOR_YELLOW);
+  Puts("\n<ESC> when done.\n\n");
+  textattr(COLOR_CYAN);
+  do {
+    if (cp) {
+      out->GotoXY(17, cp + 1);
+    } else {
+      out->GotoXY(17, cp);
+    }
+    int nNext = 0;
+    switch (cp) {
+    case 0:
+      n->type = toggleitem(n->type, nettypes, MAX_NETTYPES, &nNext);
+      break;
+    case 1: {
+      editline(n->name, 15, ALL, &nNext, "");
+      trimstr(n->name);
+      ss = strchr(n->name, ' ');
+      if (ss) {
+        *ss = 0;
+      }
+      Puts(n->name);
+      Puts("                  ");
+    }
+    break;
+    case 2: {
+      char szTempBuffer[ 255 ];
+      sprintf(szTempBuffer, "%u", n->sysnum);
+      editline(szTempBuffer, 5, NUM_ONLY, &nNext, "");
+      trimstr(szTempBuffer);
+      n->sysnum = atoi(szTempBuffer);
+      sprintf(szTempBuffer, "%u", n->sysnum);
+      Puts(szTempBuffer);
+    }
+    break;
+    case 3: {
+      editline(n->dir, 60, UPPER_ONLY, &nNext, "");
+      trimstrpath(n->dir);
+      Puts(n->dir);
+    }
+    break;
+    }
+    cp = GetNextSelectionPosition(0, 3, cp, nNext);
+    if (nNext == DONE) {
+      done = true;
+    }
+  } while (!done);
+
+  if (strcmp(szOldNetworkName, n->name)) {
+    char szInputFileName[ MAX_PATH ];
+    char szOutputFileName[ MAX_PATH ];
+    sprintf(szInputFileName, "%ssubs.xtr", syscfg.datadir);
+    sprintf(szOutputFileName, "%ssubsxtr.new", syscfg.datadir);
+    FILE *pInputFile = fopen(szInputFileName, "r");
+    if (pInputFile) {
+      FILE *pOutputFile = fopen(szOutputFileName, "w");
+      if (pOutputFile) {
+        char szBuffer[ 255 ];
+        while (fgets(szBuffer, 80, pInputFile)) {
+          if (szBuffer[0] == '$') {
+            ss = strchr(szBuffer, ' ');
+            if (ss) {
+              *ss = 0;
+              if (stricmp(szOldNetworkName, szBuffer + 1) == 0) {
+                fprintf(pOutputFile, "$%s %s", n->name, ss + 1);
+              } else {
+                fprintf(pOutputFile, "%s %s", szBuffer, ss + 1);
+              }
+            } else {
+              fprintf(pOutputFile, "%s", szBuffer);
+            }
+          } else {
+            fprintf(pOutputFile, "%s", szBuffer);
+          }
+        }
+        fclose(pOutputFile);
+        fclose(pInputFile);
+        char szOldSubsFileName[ MAX_PATH ];
+        sprintf(szOldSubsFileName, "%ssubsxtr.old", syscfg.datadir);
+        unlink(szOldSubsFileName);
+        rename(szInputFileName, szOldSubsFileName);
+        unlink(szInputFileName);
+        rename(szOutputFileName, szInputFileName);
+      } else {
+        fclose(pInputFile);
+      }
+    }
+  }
 }

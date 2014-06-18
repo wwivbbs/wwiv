@@ -16,9 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PATHS_H__
-#define __INCLUDED_PATHS_H__
+#ifndef __INCLUDED_ARCHIVERS_H__
+#define __INCLUDED_ARCHIVERS_H__
 
-void setpaths();
+void edit_arc(int nn);
+void create_arcs();
 
-#endif // __INCLUDED_PATHS_H__
+#endif // __INCLUDED_ARCHIVERS_H__
