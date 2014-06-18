@@ -17,6 +17,7 @@ set(COMMON_SOURCES
   init3.cpp
   input.cpp 
   instance_settings.cpp
+  networks.cpp
   paths.cpp
   platform/curses_io.cpp
   regcode.cpp
