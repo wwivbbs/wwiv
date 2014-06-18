@@ -89,6 +89,7 @@
     <ClInclude Include="input.h" />
     <ClInclude Include="instance_settings.h" />
     <ClInclude Include="ivardec.h" />
+    <ClInclude Include="paths.h" />
     <ClInclude Include="platform\curses_io.h" />
     <ClInclude Include="platform\incl1.h" />
     <ClInclude Include="platform\wfile.h" />
@@ -108,6 +109,7 @@
     <ClCompile Include="init3.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="instance_settings.cpp" />
+    <ClCompile Include="paths.cpp" />
     <ClCompile Include="platform\curses_io.cpp" />
     <ClCompile Include="platform\win32\filesupp.cpp" />
     <ClCompile Include="platform\win32\wfile.cpp" />
