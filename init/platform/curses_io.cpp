@@ -26,6 +26,8 @@
 #include "platform/curses_io.h"
 #include "curses.h"
 
+static const char* copyrightString = "Copyright (c) 1998-2014, WWIV Software Services";
+
 CursesIO::CursesIO() {
   initscr();
   raw();
@@ -41,20 +43,21 @@ CursesIO::CursesIO() {
 
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
-  header_ = newwin(1, 0, 0, 0);
+  header_ = newwin(2, 0, 0, 0);
   footer_ = newwin(2, 0, stdscr_maxy-2, 0);
   wbkgd(header_, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
   wattrset(header_, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
   wattron(header_, A_BOLD);
   char s[81];
   sprintf(s, "WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
-  waddstr(header_, s);
+  mvwprintw(header_, 0, 0, s);
+  mvwaddstr(header_, 1, 0, copyrightString);
   wbkgd(footer_, COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
   wrefresh(header_);
   wrefresh(footer_);
   redrawwin(header_);
 
-  window_ = newwin(stdscr_maxy-3, stdscr_maxx, 1, 0);
+  window_ = newwin(stdscr_maxy-4, stdscr_maxx, 2, 0);
   keypad(window_, TRUE);
 
   touchwin(stdscr);
@@ -154,4 +157,16 @@ void CursesIO::ClrEol() {
   SetCursesAttribute();
   wclrtoeol(window_);
   wrefresh(window_);
+}
+
+void CursesIO::SetDefaultFooter() {
+  werase(footer_);
+  wmove(footer_, 0, 0);
+  wattrset(footer_, COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
+  wattron(footer_, A_BOLD); 
+  mvwaddstr(footer_, 0, 0, "Esc");
+  wattrset(footer_, COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
+  wattroff(footer_, A_BOLD);
+  waddstr(footer_, "-Exit ");
+  wrefresh(footer_);
 }

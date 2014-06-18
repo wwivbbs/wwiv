@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "input.h"
 
+#include <algorithm>
 #include <curses.h>
 #include <cstdint>
 #include <cstring>
@@ -218,7 +219,7 @@ void Puts(const char *pszText) {
 }
 
 void PutsXY(int x, int y, const char *pszText) {
-  out->PutsXY(x, y,pszText);
+  out->PutsXY(x, y, pszText);
 }
 
 /**
@@ -240,46 +241,58 @@ void nlx(int numLines) {
   }
 }
 
-bool dialog_yn(const std::string prompt) {
+static WINDOW* CreateDialogWindow(int height, int width) {
   const int maxx = getmaxx(stdscr);
   const int maxy = getmaxy(stdscr);
-  std::string s = prompt + " ? ";
-  const int width = s.size() + 4;
-  const int startx = (maxx - s.size()) / 2;
-  const int starty = (maxy - 3) / 2;
-  WINDOW *dialog = newwin(3, width, starty, startx);
+  const int startx = (maxx - width - 4) / 2;
+  const int starty = (maxy - height - 2) / 2;
+  WINDOW *dialog = newwin(height + 2, width + 4, starty, startx);
   wbkgd(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
   wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
   wattron(dialog, A_BOLD);
   box(dialog, 0, 0);
-  mvwaddstr(dialog, 1, 2, s.c_str());
-  wrefresh(dialog);
-  int ch = wgetch(dialog);
+  return dialog;
+}
+
+static void CloseDialog(WINDOW* dialog) {
   delwin(dialog);
   redrawwin(out->window());
   out->Refresh();
-  return ch == 'Y' || ch == 'y';
   touchwin(out->window());
 }
 
+bool dialog_yn(const std::string prompt) {
+  std::string s = prompt + " ? ";
+  WINDOW *dialog = CreateDialogWindow(1, s.size());
+  mvwaddstr(dialog, 1, 2, s.c_str());
+  wrefresh(dialog);
+  int ch = wgetch(dialog);
+  CloseDialog(dialog);
+  return ch == 'Y' || ch == 'y';
+}
+
+
 void input_password(const std::string prompt, char *output, int max_length) {
-  const int maxx = getmaxx(stdscr);
-  const int maxy = getmaxy(stdscr);
-  const int width = prompt.size() + 6 + max_length;
-  const int startx = (maxx - prompt.size() - max_length) / 2;
-  const int starty = (maxy - 3) / 2;
-  WINDOW *dialog = newwin(3, width, starty, startx);
-  wbkgd(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
+  vector<std::string> empty;
+  input_password(prompt, empty, output, max_length);
+}
+
+void input_password(const std::string prompt, vector<std::string>& text, char *output, int max_length) {
+  int maxlen = prompt.size() + max_length;
+  for (const auto& s : text) {
+    maxlen = std::max<int>(maxlen, s.length());
+  }
+  WINDOW *dialog = CreateDialogWindow(text.size() + 2, maxlen);
+  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_CYAN));
+  int curline = 1;
+  for (const auto& s : text) {
+    mvwaddstr(dialog, curline++, 2, s.c_str());
+  }
   wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
-  wattron(dialog, A_BOLD);
-  box(dialog, 0, 0);
-  mvwaddstr(dialog, 1, 2, prompt.c_str());
+  mvwaddstr(dialog, text.size() + 2, 2, prompt.c_str());
   wrefresh(dialog);
   winput_password(dialog, output, max_length);
-  delwin(dialog);
-  redrawwin(out->window());
-  out->Refresh();
-  touchwin(out->window());
+  CloseDialog(dialog);
 }
 
 int input_number(int max_digits) {
@@ -298,10 +311,11 @@ int input_number(int max_digits) {
 * characters are converted to uppercase.
 */
 void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
-  int curpos = 0;
-  bool done = false;
+  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
 
-  while (!done) {
+  int curpos = 0;
+
+  for (;;) {
     int ch = wgetch(dialog);
     switch (ch) {
     case 14:
@@ -311,9 +325,8 @@ void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
 #ifdef PADENTER
     case PADENTER:
 #endif
-      pszOutText[curpos] = 0;
-      done = true;
-      break;
+      pszOutText[curpos] = '\0';
+      return;
     case 23: // Ctrl-W
       if (curpos) {
         do {
@@ -327,6 +340,10 @@ void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
       break;
     case 26:  // control Z
       break;
+    case 27:  { // escape
+      pszOutText[0] = '\0';
+      return;
+    };
     case 8:
     case 0x7f: // some other backspace
     case KEY_BACKSPACE:
