@@ -19,6 +19,7 @@
 #include "input.h"
 
 #include <algorithm>
+#include <cctype>
 #include <curses.h>
 #include <cstdint>
 #include <cstring>
@@ -31,7 +32,6 @@
 #include "init.h"
 #include "wwivinit.h"
 #include "wconstants.h"
-
 
 // local functions.
 void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength);
@@ -392,7 +392,7 @@ void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
       break;
     default:
       if (ch > 31 && curpos < nMaxLength) {
-        ch = upcase(ch);
+        ch = toupper(ch);
         pszOutText[curpos++] = ch;
 #ifdef _WIN32
         waddch(dialog, ACS_CKBOARD);
@@ -408,7 +408,7 @@ void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
 char onek(const char *pszKeys) {
   char ch = 0;
 
-  while (!strchr(pszKeys, ch = upcase(wgetch(out->window()))))
+  while (!strchr(pszKeys, ch = toupper(wgetch(out->window()))))
     ;
   return ch;
 }
@@ -517,10 +517,10 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
     default:
       if (ch > 31) {
         if (status == UPPER_ONLY) {
-          ch = upcase(ch);
+          ch = toupper(ch);
         }
         if (status == SET) {
-          ch = upcase(ch);
+          ch = toupper(ch);
           if (ch != ' ')  {
             int i1 = 1;
             for (i = 0; i < len; i++) {

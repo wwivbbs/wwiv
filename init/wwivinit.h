@@ -27,6 +27,15 @@
 #define INIT
 #endif  // INIT
 
+#ifndef EDITLINE_FILENAME_CASE
+#if __unix__
+#define EDITLINE_FILENAME_CASE ALL
+#else
+#define EDITLINE_FILENAME_CASE UPPER_ONLY
+#endif  // __unix__
+#endif  // EDITLINE_FILENAME_CASE
+
+
 #include "ivardec.h"
 #include "vars.h"
 
@@ -38,11 +47,10 @@
 
 // Misc Junk for now
 #define textattr(x) curatr = (x)
-class WInitApp;
-class CursesIO;
 
-__EXTRN__ WInitApp *app;
 __EXTRN__ initinfo_rec initinfo;
+
+class CursesIO;
 extern CursesIO* out;
 
 #if defined(__unix__)
