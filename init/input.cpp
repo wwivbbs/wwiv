@@ -277,7 +277,7 @@ void input_password(const std::string prompt, char *output, int max_length) {
   input_password(prompt, empty, output, max_length);
 }
 
-void input_password(const std::string prompt, vector<std::string>& text, char *output, int max_length) {
+void input_password(const std::string prompt, const vector<std::string>& text, char *output, int max_length) {
   int maxlen = prompt.size() + max_length;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
@@ -292,6 +292,31 @@ void input_password(const std::string prompt, vector<std::string>& text, char *o
   mvwaddstr(dialog, text.size() + 2, 2, prompt.c_str());
   wrefresh(dialog);
   winput_password(dialog, output, max_length);
+  CloseDialog(dialog);
+}
+
+void messagebox(const std::string text) {
+  const vector<string> vector = { text };
+  messagebox(vector);
+}
+
+void messagebox(const std::vector<std::string>& text) {
+  const string prompt = "Press Any Key";
+  int maxlen = prompt.length();
+  for (const auto& s : text) {
+    maxlen = std::max<int>(maxlen, s.length());
+  }
+  WINDOW *dialog = CreateDialogWindow(text.size() + 2, maxlen);
+  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_CYAN));
+  int curline = 1;
+  for (const auto& s : text) {
+    mvwaddstr(dialog, curline++, 2, s.c_str());
+  }
+  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
+  int x = (maxlen - prompt.length()) / 2;
+  mvwaddstr(dialog, text.size() + 2, x + 2, prompt.c_str());
+  wrefresh(dialog);
+  wgetch(dialog);
   CloseDialog(dialog);
 }
 
