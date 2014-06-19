@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "template.h"
+#include "editors.h"
 
 #include <curses.h>
 #include <cstdint>
@@ -31,6 +31,7 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "platform/incl1.h"
 #include "wwivinit.h"
 
 

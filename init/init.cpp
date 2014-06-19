@@ -28,6 +28,7 @@
 #include <direct.h>
 #include <io.h>
 #endif
+#include <locale.h>
 #include <sys/stat.h>
 
 #include "archivers.h"
@@ -185,6 +186,8 @@ int WInitApp::main(int argc, char *argv[]) {
   int newbbs = 0, configfile, pwok = 0;
   int i;
   externalrec *oexterns;
+
+  setlocale (LC_ALL,"");
 
   char *ss = getenv("WWIV_DIR");
   if (ss) {
