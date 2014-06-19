@@ -20,6 +20,7 @@
 
 #include <curses.h>
 #include <cstdint>
+#include <cstring>
 #include <fcntl.h>
 #ifdef _WIN32
 #include <direct.h>
@@ -31,6 +32,7 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "platform/incl1.h"
 #include "wwivinit.h"
 
 

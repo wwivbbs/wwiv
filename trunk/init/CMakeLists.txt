@@ -15,7 +15,6 @@ set(COMMON_SOURCES
   init.cpp 
   init1.cpp 
   init2.cpp 
-  init3.cpp
   input.cpp 
   instance_settings.cpp
   languages.cpp
