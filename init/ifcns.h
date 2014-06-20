@@ -30,8 +30,6 @@ int verify_dir(char *typeDir, char *dirName);
 /* File: init1.cpp */
 
 int number_userrecs();
-int open_qscn();
-void close_qscn();
 void read_qscn(unsigned int un, unsigned long *qscn, int stayopen);
 void write_qscn(unsigned int un, unsigned long *qscn, int stayopen);
 int exist(const char *s);
@@ -40,7 +38,6 @@ char *date();
 bool read_status();
 int save_config();
 void create_text(const char *fn);
-void init_files();
 void new_init();
 int verify_inst_dirs(configoverrec *co, int inst);
 void read_user(unsigned int un, userrec *u);

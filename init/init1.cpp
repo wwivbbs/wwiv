@@ -66,7 +66,6 @@ int number_userrecs() {
   return -1;
 }
 
-
 void read_user(unsigned int un, userrec *u) {
   WFile file(syscfg.datadir, "user.lst");
   if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyReadWrite,
@@ -90,7 +89,6 @@ void read_user(unsigned int un, userrec *u) {
   file.Close();
   fix_user_rec(u);
 }
-
 
 void write_user(unsigned int un, userrec *u) {
   if ((un < 1) || (un > syscfg.maxusers)) {
@@ -124,7 +122,7 @@ void write_user(unsigned int un, userrec *u) {
 
 static int qscn_file = -1;
 
-int open_qscn() {
+static int open_qscn() {
   char szFileName[MAX_PATH];
 
   if (qscn_file == -1) {
@@ -138,14 +136,12 @@ int open_qscn() {
   return 1;
 }
 
-
-void close_qscn() {
+static void close_qscn() {
   if (qscn_file != -1) {
     close(qscn_file);
     qscn_file = -1;
   }
 }
-
 
 void read_qscn(unsigned int un, unsigned long *qscn, int stayopen) {
   if (open_qscn()) {
@@ -186,7 +182,6 @@ int exist(const char *pszFileName) {
   return ((fnd.open(pszFileName, 0) == false) ? 0 : 1);
 }
 
-
 void save_status() {
   char szFileName[MAX_PATH];
 
@@ -195,7 +190,6 @@ void save_status() {
   write(statusfile, (void *)(&status), sizeof(statusrec));
   close(statusfile);
 }
-
 
 char *date() {
   static char ds[9];
@@ -206,7 +200,6 @@ char *date() {
   sprintf(ds, "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
   return ds;
 }
-
 
 /** returns true if status.dat is read correctly */
 bool read_status() {
@@ -221,7 +214,6 @@ bool read_status() {
   }
   return false;
 }
-
 
 int save_config() {
   int configfile;
@@ -260,16 +252,15 @@ void create_text(const char *pszFileName) {
 
   sprintf(szFullFileName, "gfiles%c%s", WWIV_FILE_SEPERATOR_CHAR, pszFileName);
   int hFile = open(szFullFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  sprintf(szMessage, "This is %s.\nEdit to suit your needs.\n", pszFileName);
+  sprintf(szMessage, "This is %s.\nEdit to suit your needs.\r\n", pszFileName);
   write(hFile, szMessage, strlen(szMessage));
   close(hFile);
 }
 
 #define OFFOF(x) (short) (((long)(&(user_record.x))) - ((long)&user_record))
 
-void init_files() {
+static void init_files() {
   int i;
-  char *env;
   valrec v;
   slrec sl;
   subboardrec s1;
@@ -547,11 +538,6 @@ void init_files() {
   create_text("logoff.msg");
   create_text("logoff.mtr");
   create_text("comment.txt");
-
-  if ((env = getenv("TZ")) == NULL) {
-    putenv("TZ=PST8PDT");
-  }
-
   Printf(".\n");
 
   ////////////////////////////////////////////////////////////////////////////
@@ -588,11 +574,6 @@ void init_files() {
     rename("zip-city.zip", szDestination);
     Printf(".");
   }
-  // we changed the environment, clear the change
-  if (env == NULL) {
-    putenv("TZ=");
-  }
-
   textattr(COLOR_CYAN);
   Printf(".\n");
 }
