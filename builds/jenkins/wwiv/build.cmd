@@ -28,6 +28,7 @@ echo Workspace: %WORKSPACE%
 echo Revision:  %SVN_REVISION%
 echo Archive:   %RELEASE_ZIP%
 
+@rem Build BBS, init, telnetserver
 cd %WORKSPACE%\bbs
 %TEXT_TRANSFORM% -a !!version!%SVN_REVISION% version.template
 msbuild bbs_lib.vcxproj /t:Build /p:Configuration=Release /detailedsummary
@@ -41,6 +42,19 @@ msbuild init.vcxproj /t:Build /p:Configuration=Release /detailedsummary
 
 cd %WORKSPACE%\fix
 msbuild fix.vcxproj /t:Build /p:Configuration=Release /detailedsummary /property:EnableEnhancedInstructionSet=NoExtensions
+
+@rem build WINS
+cd %WORKSPACE%\wins
+
+msbuild exp\exp.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild network\network.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild news\news.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild ntime\ntime.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild pop\pop.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild pppurge\pppurge.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release /detailedsummary
 
 cd %WORKSPACE%\
 if not exist %WORKSPACE%\release (
@@ -64,13 +78,25 @@ cd %WORKSPACE%\bbs\admin
 %ZIP_EXE% a -tzip -r %WORKSPACE%\release\regions.zip regions\*
 
 cd %WORKSPACE%\
-echo Copying files to staging directory.
+echo Copying BBS files to staging directory.
 copy /v/y %WORKSPACE%\bbs\Release\bbs.exe %WORKSPACE%\release\bbs.exe
 copy /v/y %WORKSPACE%\bbs\readme.txt %WORKSPACE%\release\readme-bbs.txt
 copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\release\WWIV5TelnetServer.exe %WORKSPACE%\release\WWIV5TelnetServer.exe
 copy /v/y %WORKSPACE%\init\Release\init.exe %WORKSPACE%\release\init.exe
 copy /v/y %WORKSPACE%\fix\Release\fix.exe %WORKSPACE%\release\fix.exe
 copy /v/y %WORKSPACE%\bbs\admin\* %WORKSPACE%\release\
+
+echo Copying WINS files to staging area
+set WINS=%WORKSPACE%\wins
+copy /v/y %WINS%\exp\Release\exp.exe %WORKSPACE%\release\exp.exe
+copy /v/y %WINS%\network\Release\network.exe %WORKSPACE%\release\network.exe
+copy /v/y %WINS%\news\Release\news.exe %WORKSPACE%\release\news.exe
+copy /v/y %WINS%\ntime\Release\ntime.exe %WORKSPACE%\release\ntime.exe
+copy /v/y %WINS%\pop\Release\pop.exe %WORKSPACE%\release\pop.exe
+copy /v/y %WINS%\pppurge\Release\pppurge.exe %WORKSPACE%\release\pppurge.exe
+copy /v/y %WINS%\ppputil\Release\ppputil.exe %WORKSPACE%\release\ppputil.exe
+copy /v/y %WINS%\qotd\Release\qotd.exe %WORKSPACE%\release\qotd.exe
+copy /v/y %WINS%\uu\Release\uu.exe %WORKSPACE%\release\uu.exe
 
 echo Creating build.nfo file
 echo Build URL %BUILD_URL% > release\build.nfo
