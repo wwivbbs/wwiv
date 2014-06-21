@@ -23,21 +23,22 @@ using System.Text;
 
 namespace WWIV5TelnetServer
 {
-    class StatusMessageEventArgs : EventArgs
+  class StatusMessageEventArgs : EventArgs
+  {
+    public enum MessageType { Connect, Disconnect , Status, LogInfo, LogDebug, LogWarning, LogError}
+    public StatusMessageEventArgs(string message, MessageType type)
     {
-        private string message;
-        public StatusMessageEventArgs(string message)
-        {
-            this.message = message;
-        }
-
-        public string Message
-        {
-            get
-            {
-                return message;
-            }
-        }
-    
+      this.Message = message;
+      this.Type = type;
     }
+
+    public string Message { get; private set; }
+    public MessageType Type { get; private set; }
+
+    public bool IsConnectionRelated() {
+      var type = this.Type;
+      return type == MessageType.Connect || type == MessageType.Disconnect || type == MessageType.Status;
+    }
+  }
+
 }
