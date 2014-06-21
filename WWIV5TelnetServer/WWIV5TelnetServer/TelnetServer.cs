@@ -53,7 +53,7 @@ namespace WWIV5TelnetServer
         {
             launcherThread = new Thread(Run);
             launcherThread.Start();
-            OnStatusMessageUpdated("Telnet Server Started");
+            OnStatusMessageUpdated("Telnet Server Started", StatusMessageEventArgs.MessageType.LogInfo);
             lowNode = Convert.ToInt32(Properties.Settings.Default.startNode);
             highNode = Convert.ToInt32(Properties.Settings.Default.endNode);
             var size = highNode - lowNode + 1;
@@ -68,10 +68,10 @@ namespace WWIV5TelnetServer
         {
             if (launcherThread == null)
             {
-                OnStatusMessageUpdated("ERROR: LauncherThread was never set.");
+              OnStatusMessageUpdated("ERROR: LauncherThread was never set.", StatusMessageEventArgs.MessageType.LogError);
                 return;
             }
-            OnStatusMessageUpdated("Stopping Telnet Server.");
+            OnStatusMessageUpdated("Stopping Telnet Server.", StatusMessageEventArgs.MessageType.LogInfo);
             if (server != null)
             {
                 server.Close();
@@ -81,7 +81,7 @@ namespace WWIV5TelnetServer
             launcherThread.Join();
             launcherThread = null;
             nodes = null;
-            OnStatusMessageUpdated("Telnet Server Stopped");
+            OnStatusMessageUpdated("Telnet Server Stopped", StatusMessageEventArgs.MessageType.LogInfo);
         }
 
         private void Run()
@@ -92,7 +92,7 @@ namespace WWIV5TelnetServer
             server.Listen(4);
             while (true)
             {
-                OnStatusMessageUpdated("Waiting for connection.");
+              OnStatusMessageUpdated("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
                 try 
                 {
                     Socket socket = server.Accept();
@@ -103,15 +103,15 @@ namespace WWIV5TelnetServer
                     if (ip == "202.39.236.116")
                     {
                         // This IP has been bad. Blacklist it until proper filtering is added.
-                        OnStatusMessageUpdated("Attempt from blacklisted IP.");
+                      OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
                         Thread.Sleep(1000);
                         node = null;
                     }
-                    OnStatusMessageUpdated("Connection from " + ip);
+                    OnStatusMessageUpdated("Connection from " + ip, StatusMessageEventArgs.MessageType.Connect);
                     if (node != null)
                     {
                         node.RemoteAddress = ip;
-                        OnStatusMessageUpdated("Launching Node #" + node.Node);
+                        OnStatusMessageUpdated("Launching Node #" + node.Node, StatusMessageEventArgs.MessageType.LogInfo);
                         Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
                         instanceThread.Start();
                         OnNodeUpdated(node);
@@ -119,7 +119,7 @@ namespace WWIV5TelnetServer
                     else
                     {
                         // Send BUSY signal.
-                        OnStatusMessageUpdated("Sending Busy Signal.");
+                      OnStatusMessageUpdated("Sending Busy Signal.", StatusMessageEventArgs.MessageType.Status);
                         byte[] busy = System.Text.Encoding.ASCII.GetBytes("BUSY");
                         try {
                             socket.Send(busy);
@@ -141,7 +141,7 @@ namespace WWIV5TelnetServer
                 var argumentsTemplate = Properties.Settings.Default.parameters;
                 var homeDirectory = Properties.Settings.Default.homeDirectory;
 
-                Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, OnStatusMessageUpdated);
+                Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, DebugLog);
                 var socketHandle = socket.Handle.ToInt32();
                 Process p = launcher.launchTelnetNode(node.Node, socketHandle);
                 p.WaitForExit();
@@ -180,9 +180,9 @@ namespace WWIV5TelnetServer
             return null;
         }
 
-        protected virtual void OnStatusMessageUpdated(string message)
+        protected virtual void OnStatusMessageUpdated(string message, StatusMessageEventArgs.MessageType type)
         {
-            StatusMessageEventArgs e = new StatusMessageEventArgs(message);
+            StatusMessageEventArgs e = new StatusMessageEventArgs(message, type);
             var handler = StatusMessageChanged;
             if (handler != null)
             {
@@ -190,6 +190,15 @@ namespace WWIV5TelnetServer
             }
         }
 
+        protected virtual void DebugLog(string message)
+        {
+          StatusMessageEventArgs e = new StatusMessageEventArgs(message, StatusMessageEventArgs.MessageType.LogDebug);
+          var handler = StatusMessageChanged;
+          if (handler != null)
+          {
+            StatusMessageChanged(this, e);
+          }
+        }
 
         protected virtual void OnNodeUpdated(NodeStatus nodeStatus)
         {

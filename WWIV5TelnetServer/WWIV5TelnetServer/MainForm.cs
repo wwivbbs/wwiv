@@ -39,6 +39,7 @@ namespace WWIV5TelnetServer
             InitializeComponent();
             startToolStripMenuItem.Enabled = true;
             stopToolStripMenuItem.Enabled = false;
+            notifyIcon1.Visible = false;
             server.StatusMessageChanged += server_StatusMessage;
             server.NodeStatusChanged += server_NodeStatusChanged;
         }
@@ -70,7 +71,7 @@ namespace WWIV5TelnetServer
             Console.WriteLine("Properties.Settings.Default.useBalloons: " + Properties.Settings.Default.useBalloons);
             Action a = delegate() { 
               messages.AppendText(message + "\r\n");
-              if (notifyIcon1.Visible && Properties.Settings.Default.useBalloons)
+              if (notifyIcon1.Visible && Properties.Settings.Default.useBalloons && e.IsConnectionRelated())
               { 
                 notifyIcon1.BalloonTipText = e.Message;
                 notifyIcon1.ShowBalloonTip(5000);
@@ -150,7 +151,9 @@ namespace WWIV5TelnetServer
             var argumentsTemplate = Properties.Settings.Default.parameters;
             var homeDirectory = Properties.Settings.Default.homeDirectory;
 
-            Action<string> logger = delegate(string s) { server_StatusMessage(this, new StatusMessageEventArgs(s)); };
+            Action<string> logger = delegate(string s) { 
+              server_StatusMessage(this, new StatusMessageEventArgs(s, StatusMessageEventArgs.MessageType.LogDebug)); 
+            };
             Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, logger);
             Process p = launcher.launchLocalNode(Convert.ToInt32(Properties.Settings.Default.localNode));
             Thread localNodeCleanupThread = new Thread(delegate()
