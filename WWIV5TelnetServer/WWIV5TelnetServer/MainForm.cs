@@ -67,7 +67,15 @@ namespace WWIV5TelnetServer
         {
             var message = String.Format("{0}: {1}", DateTime.Now.ToString(), e.Message);
             Console.WriteLine(message);
-            Action a = delegate() { messages.AppendText(message + "\r\n"); };
+            Console.WriteLine("Properties.Settings.Default.useBalloons: " + Properties.Settings.Default.useBalloons);
+            Action a = delegate() { 
+              messages.AppendText(message + "\r\n");
+              if (notifyIcon1.Visible && Properties.Settings.Default.useBalloons)
+              { 
+                notifyIcon1.BalloonTipText = e.Message;
+                notifyIcon1.ShowBalloonTip(5000);
+              }
+            };
             if (this.messages.InvokeRequired)
             {
                 this.Invoke(a);
@@ -92,6 +100,7 @@ namespace WWIV5TelnetServer
             startToolStripMenuItem.Enabled = false;
             stopToolStripMenuItem.Enabled = true;
             preferencesToolStripMenuItem.Enabled = false;
+            notifyIcon1.Text = "WWIV Telnet Server: Active";
         }
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
@@ -103,6 +112,7 @@ namespace WWIV5TelnetServer
             preferencesToolStripMenuItem.Enabled = true;
             // Clear the list of nodes in the list.
             listBoxNodes.Items.Clear();
+            notifyIcon1.Text = "WWIV Telnet Server: Offline";
         }
 
         private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -124,6 +134,7 @@ namespace WWIV5TelnetServer
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            notifyIcon1.Text = "WWIV Telnet Server: Offline";
             if (Properties.Settings.Default.autostart)
             {
                 Console.WriteLine("AutoStarting server.");
@@ -151,6 +162,30 @@ namespace WWIV5TelnetServer
             // Set this to be a background thread so we can still exit and not wait for it.
             localNodeCleanupThread.IsBackground = true;
             localNodeCleanupThread.Start();
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+          notifyIcon1.BalloonTipTitle = "WWIV Telnet Server";
+          notifyIcon1.BalloonTipText = "Double click to reopen application.";
+          notifyIcon1.Text = "WWIV Telnet Server";
+
+          if (FormWindowState.Minimized == this.WindowState)
+          {
+            notifyIcon1.Visible = true;
+            notifyIcon1.ShowBalloonTip(500);
+            this.Hide();
+          }
+          else if (FormWindowState.Normal == this.WindowState)
+          {
+            notifyIcon1.Visible = false;
+          }
+        }
+
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+          this.Show();
+          this.WindowState = FormWindowState.Normal;
         }
 
     }
