@@ -65,7 +65,7 @@ void select_editor() {
     }
   }
   GetSession()->bout.NewLine();
-  GetSession()->bout << "|#9Which editor (|#31-" << GetSession()->GetNumberOfEditors() << ", <C/R>=leave as is|#9) ? ";
+  GetSession()->bout << "|#9Which editor (|#31-" << GetSession()->GetNumberOfEditors() << ", <Q>=leave as is|#9) ? ";
   char *ss = mmkey(2);
   int nEditor = atoi(ss);
   if (nEditor >= 1 && nEditor <= GetSession()->GetNumberOfEditors()) {
@@ -882,6 +882,7 @@ void defaults(MenuInstanceData * pMenuData) {
       break;
     }
   } while (!done && !hangup);
+  GetSession()->WriteCurrentUser();
 }
 
 
