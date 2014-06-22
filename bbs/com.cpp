@@ -173,7 +173,6 @@ void resetnsp() {
 
 bool bkbhit() {
   if (x_only) {
-    std::cout << "x_only set!" << std::endl;
     return false;
   }
 
