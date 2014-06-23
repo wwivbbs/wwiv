@@ -519,7 +519,7 @@ void Packers() {
       sysoplog("@ Ran WWIVMail/QWK");
       std::string chain_file = create_chain_file();
       std::string command_line = wwiv::strings::StringPrintf("wwivqwk %s", chain_file.c_str());
-      ExecuteExternalProgram(command_line, EFLAG_NONE);
+      ExecuteExternalProgram(command_line, EFLAG_FOSSIL);
       return;
     }
     case '2':
