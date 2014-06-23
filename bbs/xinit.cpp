@@ -170,10 +170,10 @@ static eventinfo_t eventinfo[] = {
 };
 
 
-static const char *get_key_str(int n, const char *index = NULL) {
+static const char *get_key_str(int n, const char *index = nullptr) {
   static char str[255];
   if (!index) {
-    return INI_OPTIONS_ARRAY[ n ];
+    return INI_OPTIONS_ARRAY[n];
   }
   sprintf(str, "%s[%s]", INI_OPTIONS_ARRAY[ n ], index);
   return str;
@@ -328,6 +328,10 @@ bool WApplication::ReadINIFile() {
         GetSession()->newuser_bwcolors[nTempColorNum] = atoi(ss);
       }
     }
+
+    GetSession()->SetMessageThreadingEnabled(iniFile.GetBooleanValue("THREAD_SUBS"));
+    GetSession()->SetCarbonCopyEnabled(iniFile.GetBooleanValue("ALLOW_CC_BCC"));
+
 
     // pull out sysop-side colors
     GetSession()->SetTopScreenColor(iniFile.GetNumericValue(get_key_str(INI_STR_TOPCOLOR),
@@ -1234,13 +1238,6 @@ void WApplication::InitializeBBS() {
   XINIT_PRINTF(" * Reading Full Screen Message Editors.\r\n");
   read_editors();
 
-  XINIT_PRINTF("* Parsing WWIV.INI.\r\n");
-  WIniFile iniFile(WWIV_INI);
-  if (iniFile.Open(INI_TAG)) {
-    GetSession()->SetMessageThreadingEnabled(iniFile.GetBooleanValue("THREAD_SUBS"));
-    GetSession()->SetCarbonCopyEnabled(iniFile.GetBooleanValue("ALLOW_CC_BCC"));
-  }
-  iniFile.Close();
   if (WWIV_make_path(m_attachmentDirectory.c_str())) {
     std::cout << "\r\nYour file attachment directory is invalid.\r\n";
     std::cout << "It is now set to: " << m_attachmentDirectory << "'\r\n\n";
