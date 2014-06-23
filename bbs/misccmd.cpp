@@ -501,7 +501,6 @@ void uudecode(const char *pszInputFileName, const char *pszOutputFileName) {
 
 
 void Packers() {
-  bool done = false;
   do {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#1Message Packet Options:\r\n";
@@ -518,16 +517,11 @@ void Packers() {
       // We used to write STATUS_DAT here.  I don't think we need to anymore.
       GetSession()->localIO()->set_protect(0);
       sysoplog("@ Ran WWIVMail/QWK");
-      char szCommandLine[ MAX_PATH ];
-      if (GetApplication()->GetInstanceNumber() == 1) {
-        sprintf(szCommandLine, "wwivqwk chain.txt");
-      } else {
-        sprintf(szCommandLine, "wwivqwk chain.%03u", GetApplication()->GetInstanceNumber());
-      }
-      ExecuteExternalProgram(szCommandLine, EFLAG_NONE);
-      done = true;
+      std::string chain_file = create_chain_file();
+      std::string command_line = wwiv::strings::StringPrintf("wwivqwk %s", chain_file.c_str());
+      ExecuteExternalProgram(command_line, EFLAG_NONE);
+      return;
     }
-    break;
     case '2':
       GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
       if (yesno()) {
@@ -541,17 +535,15 @@ void Packers() {
       } else {
         GetSession()->bout << "|#6Aborted.\r\n";
       }
-      done = true;
-      break;
+      return;
     case '3':
       GetSession()->bout.ClearScreen();
       config_qscan();
       GetSession()->bout.ClearScreen();
       break;
     default:
-      done = true;
-      break;
+      return;
     }
-  } while (!done && !hangup);
+  } while (!hangup);
 }
 
