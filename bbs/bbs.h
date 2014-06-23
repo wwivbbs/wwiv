@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_BBS_H__
 #define __INCLUDED_BBS_H__
 
+#include <memory>
 #include "platform/wfile.h"
 #include "runnable.h"
 
@@ -48,33 +49,11 @@ class WApplication : public WLogger, Runnable {
   static const int shutdownImmediate = 4;
 
  public:
-  // former global variables and system_operation_rec members
-  // to be moved
-  unsigned long flags;
-  unsigned short spawn_opts[20];
-
-
- private:
-  unsigned short  m_unx;
-  /*! @var m_szCurrentDirectory The current directory where WWIV lives */
-  char            m_szCurrentDirectory[ MAX_PATH ];
-  int             m_nOkLevel;
-  int             m_nErrorLevel;
-  int             m_nInstance;
-  char            m_szNetworkExtension[ 5 ];
-  double          last_time;
-  bool            m_bUserAlreadyOn;
-  bool            m_bNeedToCleanNetwork;
-  int             m_nBbsShutdownStatus;
-  double          m_fShutDownTime;
-  int             m_nWfcStatus;
-
-  StatusMgr*      statusMgr;
-  WUserManager*   userManager;
-  std::string     m_attachmentDirectory;
+  WApplication();
+  WApplication(const WApplication& copy);
+  virtual ~WApplication();
 
  protected:
-
   /*!
    * @function GetCaller WFC Screen loop
    */
@@ -104,10 +83,6 @@ class WApplication : public WLogger, Runnable {
   void ShowUsage();
 
  public:
-  WApplication();
-  WApplication(const WApplication& copy);
-  virtual ~WApplication();
-
   /*!
    * @function BBSMainLoop - Main BBS loop.. (old main functon)
    */
@@ -214,9 +189,14 @@ class WApplication : public WLogger, Runnable {
   void UpdateShutDownStatus();
   void ToggleShutDown();
 
+  // former global variables and system_operation_rec members
+  // to be moved
+  unsigned long flags;
+  unsigned short spawn_opts[20];
+
 
  private:
-  int  GetShutDownStatus() const          {
+  int  GetShutDownStatus() const {
     return m_nBbsShutdownStatus;
   }
   void SetShutDownStatus(int n)         {
@@ -250,6 +230,25 @@ class WApplication : public WLogger, Runnable {
   bool make_abs_path(char *checkdir);
   void check_phonenum();
   void create_phone_file();
+
+private:
+  unsigned short  m_unx;
+  /*! @var m_szCurrentDirectory The current directory where WWIV lives */
+  char            m_szCurrentDirectory[ MAX_PATH ];
+  int             m_nOkLevel;
+  int             m_nErrorLevel;
+  int             m_nInstance;
+  char            m_szNetworkExtension[ 5 ];
+  double          last_time;
+  bool            m_bUserAlreadyOn;
+  bool            m_bNeedToCleanNetwork;
+  int             m_nBbsShutdownStatus;
+  double          m_fShutDownTime;
+  int             m_nWfcStatus;
+
+  StatusMgr*      statusMgr;
+  WUserManager*   userManager;
+  std::string     m_attachmentDirectory;
 };
 
 // Function Prototypes

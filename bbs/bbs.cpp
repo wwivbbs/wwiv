@@ -1159,17 +1159,9 @@ void WApplication::ShowUsage() {
 
 
 
-WApplication::WApplication() {
-  statusMgr = new StatusMgr();
-  userManager = new WUserManager();
-  m_nOkLevel = WApplication::exitLevelOK;
-  m_nErrorLevel = WApplication::exitLevelNotOK;
-  m_nInstance = 1;
-  m_bUserAlreadyOn = false;
-  m_nBbsShutdownStatus = WApplication::shutdownNone;
-  m_fShutDownTime = 0.0;
-  m_nWfcStatus = 0;
-
+WApplication::WApplication() : statusMgr(new StatusMgr()), userManager(new WUserManager()), m_nOkLevel(exitLevelOK), 
+    m_nErrorLevel(exitLevelNotOK), m_nInstance(-1), m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone), m_fShutDownTime(0),
+    m_nWfcStatus(0) {
   // TODO this should move into the WSystemConfig object (syscfg wrapper) once it is established.
   if (syscfg.userreclen == 0) {
     syscfg.userreclen = sizeof(userrec);
