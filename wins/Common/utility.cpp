@@ -179,7 +179,8 @@ void cd_to( const char *s )
     _chdir( s1 );
     if ( s[1] == ':' ) 
     {
-        _chdrive( s[0] - 'A' + 1 );	// FIX, On Win32, _chdrive is 'A' = 1, etc..
+        int drive = toupper(s[0]) - 'A' + 1;
+        _chdrive( drive - 'A' + 1 );	// FIX, On Win32, _chdrive is 'A' = 1, etc..
         if ( s[2] == 0 )
         {
             _chdir( "\\" );
@@ -283,18 +284,18 @@ bool exists(const char *s)
 int make_path(char *s)
 {
 	SEH_PUSH("make_path");
-    char drive, current_path[MAX_PATH], current_drive, *p, *flp;
+    char current_path[MAX_PATH], *p, *flp;
 
     p = flp = _strdup(s);
     _getdcwd(0, current_path, MAX_PATH);
-    current_drive = ( char ) ( *current_path - '@' );
+    int current_drive = toupper(*current_path) - '@';
     if (LAST(p) == WWIV_FILE_SEPERATOR_CHAR)
 	{
         LAST(p) = 0;
 	}
     if (p[1] == ':') 
 	{
-        drive = ( char ) ( toupper(p[0]) - 'A' + 1 );
+        int drive = toupper(p[0]) - 'A' + 1;
         if (_chdrive(drive)) 
 		{
             _chdir(current_path);
