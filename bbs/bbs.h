@@ -37,15 +37,15 @@ class WUserManager;
 class WApplication : public WLogger, Runnable {
  public:
   // Constants
-  static const int exitLevelOK;
-  static const int exitLevelNotOK;
-  static const int exitLevelQuit;
+  static const int exitLevelOK = 0;
+  static const int exitLevelNotOK = 1;
+  static const int exitLevelQuit = 2;
 
-  static const int shutdownNone;
-  static const int shutdownThreeMinutes;
-  static const int shutdownTwoMinutes;
-  static const int shutdownOneMinute;
-  static const int shutdownImmediate;
+  static const int shutdownNone = 0;
+  static const int shutdownThreeMinutes = 1;
+  static const int shutdownTwoMinutes = 2;
+  static const int shutdownOneMinute = 3;
+  static const int shutdownImmediate = 4;
 
  public:
   // former global variables and system_operation_rec members
