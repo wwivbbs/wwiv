@@ -54,17 +54,6 @@ static WSession* sess;
 //////////////////////////////////////////////////////////////////////////////
 // Implementation
 //
-
-const int WApplication::exitLevelOK          = 0;
-const int WApplication::exitLevelNotOK       = 1;
-const int WApplication::exitLevelQuit        = 2;
-
-const int WApplication::shutdownNone         = 0;
-const int WApplication::shutdownThreeMinutes = 1;
-const int WApplication::shutdownTwoMinutes   = 2;
-const int WApplication::shutdownOneMinute    = 3;
-const int WApplication::shutdownImmediate    = 4;
-
 WApplication* GetApplication() {
   return app;
 }
