@@ -696,7 +696,7 @@ void WApplication::GotCaller(unsigned int ms, unsigned long cs) {
     GetSession()->localIO()->LocalCls();
   }
   com_speed   = cs;
-  modem_speed = static_cast<unsigned short>(ms);
+  modem_speed = ms;
   GetSession()->ReadCurrentUser(1);
   read_qscn(1, qsc, false);
   GetSession()->ResetEffectiveSl();
