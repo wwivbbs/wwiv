@@ -102,7 +102,7 @@ void CreateDoorInfoDropFile() {
   if (fileDorInfoSys.IsOpen()) {
     fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", syscfg.systemname, syscfg.sysopname,
                                   incom ? syscfgovr.primaryport : 0);
-    fileDorInfoSys.WriteFormatted("%lu ", ((GetSession()->using_modem) ? com_speed : 0));
+    fileDorInfoSys.WriteFormatted("%u ", ((GetSession()->using_modem) ? com_speed : 0));
     fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
     if (syscfg.sysconfig & sysconfig_no_alias) {
       char szTemp[81];
@@ -149,7 +149,8 @@ void CreatePCBoardSysDropFile() {
       pcb.ansi = '0';
     }
     pcb.nodechat = 32;
-    sprintf(pcb.openbps, "%-5.5s", GetComSpeedInDropfileFormat(com_speed).c_str());
+    std::string com_speed_str = GetComSpeedInDropfileFormat(com_speed);
+    sprintf(pcb.openbps, "%-5.5s", com_speed_str.c_str());
     if (!incom) {
       strcpy(pcb.connectbps, "Local");
     } else {
@@ -288,17 +289,18 @@ void CreateDoor32SysDropFile() {
 
   WTextFile file(fileName, "wt");
   if (file.IsOpen()) {
-    file.WriteFormatted("%d\n",       GetDoor32CommType());
-    file.WriteFormatted("%u\n",            GetSession()->remoteIO()->GetDoorHandle());
-    file.WriteFormatted("%s\n",       GetComSpeedInDropfileFormat(com_speed).c_str());
-    file.WriteFormatted("WWIV %s\n",       wwiv_version);
-    file.WriteFormatted("999999\n");        // we don't want to share this
-    file.WriteFormatted("%s\n",         GetSession()->GetCurrentUser()->GetRealName());
-    file.WriteFormatted("%s\n",       GetSession()->GetCurrentUser()->GetName());
-    file.WriteFormatted("%d\n",       GetSession()->GetCurrentUser()->GetSl());
-    file.WriteFormatted("%d\n",       GetDoor32TimeLeft(nsl()));
-    file.WriteFormatted("%d\n",       GetDoor32Emulation());
-    file.WriteFormatted("%u\n",       GetApplication()->GetInstanceNumber());
+    file.WriteFormatted("%d\n",     GetDoor32CommType());
+    file.WriteFormatted("%u\n",     GetSession()->remoteIO()->GetDoorHandle());
+    std::string cspeed = GetComSpeedInDropfileFormat(com_speed);
+    file.WriteFormatted("%s\n",      cspeed.c_str());
+    file.WriteFormatted("WWIV %s\n", wwiv_version);
+    file.WriteFormatted("999999\n"); // we don't want to share this
+    file.WriteFormatted("%s\n",      GetSession()->GetCurrentUser()->GetRealName());
+    file.WriteFormatted("%s\n",      GetSession()->GetCurrentUser()->GetName());
+    file.WriteFormatted("%d\n",      GetSession()->GetCurrentUser()->GetSl());
+    file.WriteFormatted("%d\n",      GetDoor32TimeLeft(nsl()));
+    file.WriteFormatted("%d\n",      GetDoor32Emulation());
+    file.WriteFormatted("%u\n",      GetApplication()->GetInstanceNumber());
     file.Close();
   }
 }
