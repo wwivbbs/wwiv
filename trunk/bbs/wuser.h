@@ -409,7 +409,7 @@ class WUser {
     strcpy(reinterpret_cast<char*>(data.macros[ nLine ]), s);
   }
   const char GetGender() const            {
-    return static_cast<char>(data.sex);
+    return data.sex == 'F' ? 'F' : 'M';
   }
   void SetGender(const char c)          {
     data.sex = static_cast<unsigned char>(c);
