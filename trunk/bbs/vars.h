@@ -116,8 +116,9 @@ net_sysnum,
 crc,
 *gat,
 modem_flag,
-modem_mode,
-modem_speed;
+modem_mode;
+
+__EXTRN__ int modem_speed;
 
 __EXTRN__ int curatr,
           dirconfnum,
