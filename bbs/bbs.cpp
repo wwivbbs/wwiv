@@ -617,9 +617,6 @@ int WApplication::LocalLogon() {
       GetSession()->localIO()->LocalFastPuts(YesNoString(true));
       GetSession()->bout << wwiv::endl;
       lokb = 1;
-      if ((syscfg.sysconfig & sysconfig_off_hook) == 0) {
-        sess->remoteIO()->dtr(false);
-      }
     } else if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
       // The ch == 224 is a Win32'ism
       GetSession()->localIO()->getchd1();
@@ -667,9 +664,6 @@ int WApplication::LocalLogon() {
       bputch(ch);
       GetSession()->localIO()->LocalPuts("\r\n\r\n\r\n\r\n\r\n\r\n");
       lokb = 2;
-      if ((syscfg.sysconfig & sysconfig_off_hook) == 0) {
-        sess->remoteIO()->dtr(false);
-      }
       GetSession()->ResetEffectiveSl();
       changedsl();
       if (!set_language(GetSession()->GetCurrentUser()->GetLanguage())) {

@@ -51,7 +51,7 @@ void rputs(const char *pszText)
  * @param allowa allow aborting from the keyboard
  */
 void get_modem_line(std::string& line, double d, bool allowa) {
-#ifndef __unix__
+#ifdef NEVER
   char ch = 0, ch1;
   double t;
 
@@ -216,31 +216,6 @@ void holdphone(bool bPickUpPhone) {
   }
 
   GetSession()->remoteIO()->dtr(true);
-
-  if (bPickUpPhone) {
-    if (!global_xx) {
-      if (syscfg.sysconfig & sysconfig_off_hook) {
-        do_result(&(modem_i->defl));
-        rputs(modem_i->pick);
-        xtime = timer();
-        global_xx = true;
-      }
-    }
-  } else {
-    if (syscfg.sysconfig & sysconfig_off_hook) {
-      if (global_xx) {
-        global_xx = false;
-        GetSession()->remoteIO()->dtr(true);
-        if (fabs(xtime - timer()) < modem_time) {
-          GetSession()->localIO()->LocalPuts("\r\n\r\nWaiting for modem...");
-        }
-        while (fabs(xtime - timer()) < modem_time)
-          ;
-        rputs(modem_i->hang);
-        imodem(false);
-      }
-    }
-  }
 #endif
 }
 
@@ -251,7 +226,7 @@ void holdphone(bool bPickUpPhone) {
  * @param x Init or Setup.  0 = init, 1 = setup
  */
 void imodem(bool bSetup) {
-#ifndef __unix__
+#ifdef NEVER
   std::string s;
 
   if (!ok_modem_stuff) {
@@ -317,7 +292,7 @@ void imodem(bool bSetup) {
 
 
 void answer_phone() {
-#ifndef __unix__
+#ifdef NEVER
   if (!ok_modem_stuff) {
     return;
   }

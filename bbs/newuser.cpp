@@ -1047,6 +1047,11 @@ void SendNewUserFeedbackIfRequired() {
     return;
   }
 
+  if (syscfg.sysconfig & sysconfig_no_newuser_feedback) {
+    // If NEWUSER_FEEDBACK=N don't attempt to send newuser feedback.
+    return;
+  }
+
   if (GetApplication()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     noabort(FEEDBACK_NOEXT);
   } else if (printfile(FEEDBACK_NOEXT)) {
