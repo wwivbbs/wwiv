@@ -312,7 +312,7 @@ void WIOTelnet::StopThreads() {
   switch (dwRes) {
   case WAIT_OBJECT_0:
     CloseHandle(m_hReadThread);
-    m_hReadThread = NULL;
+    m_hReadThread = nullptr;
     // Thread Ended
     break;
   case WAIT_TIMEOUT:
