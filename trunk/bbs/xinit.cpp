@@ -228,7 +228,7 @@ static ini_flags_type sysinfo_flags[] = {
 static ini_flags_type sysconfig_flags[] = {
   {INI_STR_LOCAL_SYSOP, true, sysconfig_no_local},
   {INI_STR_2WAY_CHAT, false, sysconfig_2_way},
-  {INI_STR_OFF_HOOK, false, sysconfig_off_hook},
+  {INI_STR_NO_NEWUSER_FEEDBACK, false, sysconfig_no_newuser_feedback},
   {INI_STR_TITLEBAR, false, sysconfig_titlebar},
   {INI_STR_LOG_DOWNLOADS, false, sysconfig_log_dl},
   {INI_STR_CLOSE_XFER, false, sysconfig_no_xfer},
