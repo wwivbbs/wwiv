@@ -976,10 +976,6 @@ int WApplication::Run(int argc, char *argv[]) {
 
   // If we are telnet...
   if (bTelnetInstance) {
-    // If the com port is set to 0 here, then ok_modem_stuff is cleared
-    // in the call to init.  Well.. If we are running native sockets, we
-    // could care less about the com port... So set it back to true here
-    // ... the better solution would just be to tell init to "get bent"
     ok_modem_stuff = true;
     sess->remoteIO()->open();
   }

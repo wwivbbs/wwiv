@@ -1148,11 +1148,11 @@ void WApplication::InitializeBBS() {
 
 #if !defined( __unix__ )
   if (!syscfgovr.primaryport) {
-    ok_modem_stuff = false;
+    syscfgovr.primaryport = 1;
   }
 #endif // __unix__
 
-  languages = NULL;
+  languages = nullptr;
   if (!read_language()) {
     AbortBBS();
   }
