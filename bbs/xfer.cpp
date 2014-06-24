@@ -361,7 +361,9 @@ void dliscan_hash(int nDirectoryNum) {
     return;
   }
 
-  WFile file(syscfg.datadir, directories[nDirectoryNum].filename);
+  std::string dir = wwiv::strings::StringPrintf("%s%s.dir", 
+      syscfg.datadir, directories[nDirectoryNum].filename);
+  WFile file(dir);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     time((time_t *) & (GetSession()->m_DirectoryDateCache[nDirectoryNum]));
     return;
