@@ -154,7 +154,7 @@ void CreatePCBoardSysDropFile() {
     if (!incom) {
       strcpy(pcb.connectbps, "Local");
     } else {
-      sprintf(pcb.connectbps, "%-5.5u", modem_speed);
+      sprintf(pcb.connectbps, "%-5.5d", modem_speed);
     }
     pcb.usernum = static_cast<short>(GetSession()->usernum);
     char szName[ 255 ];
@@ -314,9 +314,10 @@ void CreateDoorSysDropFile() {
   WTextFile file(fileName, "wt");
   if (file.IsOpen()) {
     char szLine[255];
-    sprintf(szLine, "COM%d\n%s\n%c\n%u\n%u\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
+    std::string cspeed = GetComSpeedInDropfileFormat(com_speed);
+    sprintf(szLine, "COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
             (GetSession()->using_modem) ? syscfgovr.primaryport : 0,
-            GetComSpeedInDropfileFormat(com_speed).c_str(),
+            cspeed.c_str(),
             '8',
             GetApplication()->GetInstanceNumber(),                       // node
             (GetSession()->using_modem) ? modem_speed : 14400,
@@ -455,7 +456,7 @@ const std::string create_chain_file() {
     file.WriteFormatted("%d\n%d\n%d\n%u\n%10.2f\n%s\n%s\n%s\n",
                         cs(), so(), okansi(), incom, nsl(), syscfg.gfilesdir, syscfg.datadir, szTemporaryLogFileName);
     if (GetSession()->using_modem) {
-      file.WriteFormatted("%u\n", modem_speed);
+      file.WriteFormatted("%d\n", modem_speed);
     } else {
       file.WriteFormatted("KB\n");
     }
