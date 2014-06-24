@@ -8,7 +8,9 @@ What's New in 2014
 * Many more things work.
 * Init is open sourced
 * Full self-bootstrapping support. No longer need 4.30 installed first.
-
+* Added new parameter for chains/commands %H = Telnet Socket Handle
+* Added wwiv.ini setting NO_NEWUSER_FEEDBACK. If set to Y no newuser messages
+  will be sent at all.
 
 What's New in Beta-2
 ~~~~~~~~~~~~~~~~~~~~~

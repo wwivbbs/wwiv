@@ -809,7 +809,7 @@ enum xfertype {
 #define sysconfig_no_local          0x00001
 #define sysconfig_no_beep           0x00002
 #define sysconfig_enable_pipes      0x00004
-#define sysconfig_off_hook          0x00008
+#define sysconfig_no_newuser_feedback 0x00008
 #define sysconfig_two_color         0x00010
 #define sysconfig_enable_mci        0x00020
 #define sysconfig_titlebar          0x00040

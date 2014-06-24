@@ -67,7 +67,7 @@
 #define INI_STR_SHOW_CITY_ST            49
 #define INI_STR_LOCAL_SYSOP             50
 #define INI_STR_2WAY_CHAT               51
-#define INI_STR_OFF_HOOK                52
+#define INI_STR_NO_NEWUSER_FEEDBACK      52
 #define INI_STR_TITLEBAR                53
 #define INI_STR_LOG_DOWNLOADS           54
 #define INI_STR_CLOSE_XFER              55
@@ -188,7 +188,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "SHOW_CITY_ST",
   "LOCAL_SYSOP",              // 50
   "2WAY_CHAT",
-  "OFF_HOOK",
+  "NO_NEWUSER_FEEDBACK",
   "TITLEBAR",
   "LOG_DOWNLOADS",
   "CLOSE_XFER",               // 55
