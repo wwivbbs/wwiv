@@ -209,7 +209,6 @@ class WStatus {
 };
 
 
-
 /*!
  * @class StatusMgr Manages STATUS.DAT
  */
@@ -255,9 +254,6 @@ class StatusMgr {
 
   const int GetUserCount();
 };
-
-
-
 
 #endif // __INCLUDED_WSTATUS_H__
 
