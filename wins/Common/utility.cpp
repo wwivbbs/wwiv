@@ -180,10 +180,10 @@ void cd_to( const char *s )
     if ( s[1] == ':' ) 
     {
         int drive = toupper(s[0]) - 'A' + 1;
-        _chdrive( drive - 'A' + 1 );	// FIX, On Win32, _chdrive is 'A' = 1, etc..
-        if ( s[2] == 0 )
+        _chdrive(drive);	// FIX, On Win32, _chdrive is 'A' = 1, etc..
+        if (s[2] == 0)
         {
-            _chdir( "\\" );
+            _chdir("\\");
         }
     }
 }
