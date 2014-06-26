@@ -455,7 +455,7 @@ void instance_edit() {
         hangup = true;
         hang_it_up();
         holdphone(false);
-        wait1(18);
+        Wait(1);
         GetApplication()->QuitBBS();
       }
       break;

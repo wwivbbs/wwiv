@@ -239,7 +239,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
     if (ch == CX) {
       abort = true;
     } else if (ch == CU) {
-      wait1(18);
+      Wait(1);
       dump();
       send_b(file, 0L, 3, 0, &bUseCRC, pszWorkingFileName, &terr, &abort);
       abort = true;

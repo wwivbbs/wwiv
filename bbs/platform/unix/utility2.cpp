@@ -63,8 +63,9 @@ int WWIV_make_path(const char *s) {
 #undef LAST
 #endif
 
-void WWIV_Delay(unsigned long usec) {
-  if (usec) {
+void WWIV_Delay(unsigned long msec) {
+  if (msec) {
+    unsigned long usec = msec * 1000;
     usleep(usec);
   }
 }
