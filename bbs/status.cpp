@@ -136,7 +136,7 @@ bool StatusMgr::Get(bool bLockFile) {
   } else {
     m_statusFile.Seek(0L, WFile::seekBegin);
   }
-  if (!m_statusFile .IsOpen()) {
+  if (!m_statusFile.IsOpen()) {
     sysoplog("CANNOT READ STATUS");
     return false;
   } else {
