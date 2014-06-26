@@ -263,7 +263,7 @@ void wait1(long l) {
 
 
 void Wait(double d) {
-  wait1(static_cast< long >(18.2 * d));
+  wait1(static_cast<long>(18.2 * d));
 }
 
 

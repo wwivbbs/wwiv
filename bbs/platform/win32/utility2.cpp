@@ -154,8 +154,8 @@ int WWIV_make_path(const char *s) {
 #endif
 
 
-void WWIV_Delay(unsigned long usec) {
-  Sleep(usec);
+void WWIV_Delay(unsigned long msec) {
+  Sleep(msec);
 }
 
 void WWIV_OutputDebugString(const char *pszString) {

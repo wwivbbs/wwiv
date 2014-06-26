@@ -43,7 +43,7 @@ void WWIV_RebootComputer();
 // $PLATFORM/utility2.cpp
 void WWIV_make_abs_cmd(std::string& out);
 int WWIV_make_path(const char *s);
-void WWIV_Delay(unsigned long usec);
+void WWIV_Delay(unsigned long msec);
 void WWIV_OutputDebugString(const char *pszString);
 
 // $PLATFORM/exec.cpp
