@@ -1414,7 +1414,7 @@ void force_callout(int dw) {
               GetSession()->SetUserOnline(false);
             }
             hang_it_up();
-            wait1(90);
+            Wait(5);
           }
           if (!dw || nr < 1) {
             nr = 1;
