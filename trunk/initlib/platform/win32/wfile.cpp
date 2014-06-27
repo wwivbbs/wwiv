@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "platform/WFile.h"
 #include "platform/wfndfile.h"
-#include "wwivassert.h"
+#include "w5assert.h"
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>

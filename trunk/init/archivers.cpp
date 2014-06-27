@@ -33,7 +33,7 @@
 #include "init.h"
 #include "input.h"
 #include "platform/incl1.h"
-#include "wconstants.h" // for MAX_ARCHIVERS
+#include "bbs/wconstants.h" // for MAX_ARCHIVERS
 #include "wwivinit.h"
 
 

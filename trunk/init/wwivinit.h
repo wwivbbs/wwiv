@@ -37,7 +37,7 @@
 
 
 #include "ivardec.h"
-#include "vars.h"
+#include "bbs/vars.h"
 
 // defined in VARS.H net_networks_rec *net_networks;
 // defined in VARS.H int initinfo.net_num_max;

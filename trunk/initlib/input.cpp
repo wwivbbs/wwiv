@@ -28,11 +28,8 @@
 #include <string>
 #include <vector>
 
-//#include "ifcns.h"
-//#include "init.h"
-//#include "wwivinit.h"
 #include "platform/curses_io.h"
-#include "wconstants.h"
+#include "bbs/wconstants.h"
 
 extern CursesIO* out;
 
