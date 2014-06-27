@@ -1090,7 +1090,7 @@ void uedit(int usern, int other) {
   } while (!bDoneWithUEdit && !hangup);
 
   if (u_qsc) {
-    BbsFreeMemory(u_qsc);
+    free(u_qsc);
   }
 
   u_qsc = NULL;

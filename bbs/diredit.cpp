@@ -309,7 +309,7 @@ void swap_dirs(int dir1, int dir2) {
       write_qscn(i, pTempQScan, true);
     }
     close_qscn();
-    BbsFreeMemory(pTempQScan);
+    free(pTempQScan);
   }
   directoryrec drt = directories[dir1];
   directories[dir1] = directories[dir2];
@@ -374,7 +374,7 @@ void insert_dir(int n) {
       write_qscn(i, pTempQScan, true);
     }
     close_qscn();
-    BbsFreeMemory(pTempQScan);
+    free(pTempQScan);
   }
 }
 
@@ -423,7 +423,7 @@ void delete_dir(int n) {
       write_qscn(i, pTempQScan, true);
     }
     close_qscn();
-    BbsFreeMemory(pTempQScan);
+    free(pTempQScan);
   }
 }
 

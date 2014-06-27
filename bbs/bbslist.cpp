@@ -80,7 +80,7 @@ bool IsBBSPhoneNumberUnique(const std::string& phoneNumber) {
         ok = false;
       }
     }
-    BbsFreeMemory(ss);
+    free(ss);
     ss = NULL;
     file.Close();
   }

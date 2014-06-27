@@ -611,7 +611,7 @@ void swap_subs(int sub1, int sub2) {
       write_qscn(i, pTempQScan, true);
     }
     close_qscn();
-    BbsFreeMemory(pTempQScan);
+    free(pTempQScan);
   }
 
   subboardrec sbt     = subboards[sub1];
@@ -695,7 +695,7 @@ void insert_sub(int n) {
       write_qscn(i, pTempQScan, true);
     }
     close_qscn();
-    BbsFreeMemory(pTempQScan);
+    free(pTempQScan);
   }
   save_subs();
 
@@ -722,7 +722,7 @@ void delete_sub(int n) {
     sub_xtr_del(n, 0, 1);
   }
   if (xsubs[n].nets && (xsubs[n].flags & XTRA_MALLOCED)) {
-    BbsFreeMemory(xsubs[n].nets);
+    free(xsubs[n].nets);
   }
 
   for (i = n; i < GetSession()->num_subs; i++) {
@@ -766,7 +766,7 @@ void delete_sub(int n) {
       write_qscn(i, pTempQScan, true);
     }
     close_qscn();
-    BbsFreeMemory(pTempQScan);
+    free(pTempQScan);
   }
   save_subs();
 

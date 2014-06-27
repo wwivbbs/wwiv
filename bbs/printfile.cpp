@@ -129,7 +129,7 @@ bool printfile(const char *pszFileName, bool bAbortable, bool bForcePause) {
       }
     }
     FlushOutComChBuffer();
-    BbsFreeMemory(ss);
+    free(ss);
     // If the file is empty, lets' return false here since nothing was displayed.
     return (lFileSize > 0);
   }
@@ -162,7 +162,7 @@ void print_local_file(const char *ss, const char *ss1) {
         }
         strcpy(szCmdLine, szCmdLine2);
       }
-      BbsFreeMemory(pszTempSS1);
+      free(pszTempSS1);
     } else {
       sprintf(szCmdLine, "%s %s", "LIST", ss);
       if (ss1[0]) {
@@ -174,7 +174,7 @@ void print_local_file(const char *ss, const char *ss1) {
           sprintf(szCmdLine2, "%s %s", szCmdLine, ss1);
         }
         strcpy(szCmdLine, szCmdLine2);
-        BbsFreeMemory(pszTempSS1);
+        free(pszTempSS1);
       }
     }
     ExecuteExternalProgram(szCmdLine, EFLAG_NONE);
@@ -187,6 +187,6 @@ void print_local_file(const char *ss, const char *ss1) {
     GetSession()->bout.NewLine(2);
     pausescr();
   }
-  BbsFreeMemory(pszTempSS);
+  free(pszTempSS);
 }
 

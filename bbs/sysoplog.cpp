@@ -86,7 +86,7 @@ void catsl() {
         }
         wholeLogFile.Close();
       }
-      BbsFreeMemory(pLogBuffer);
+      free(pLogBuffer);
     }
   }
 }

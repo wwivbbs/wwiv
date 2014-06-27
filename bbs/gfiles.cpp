@@ -387,7 +387,7 @@ void gfile_sec(int sn) {
       gfiles3(sn);
     }
     if (wwiv::strings::IsEquals(ss, "A") && so()) {
-      BbsFreeMemory(g);
+      free(g);
       fill_sec(sn);
       g = read_sec(sn, &nf);
       if (g == NULL) {
@@ -482,7 +482,7 @@ void gfile_sec(int sn) {
       }
     }
   }
-  BbsFreeMemory(g);
+  free(g);
   strcpy(odc, xdc);
 }
 
@@ -536,7 +536,7 @@ void gfiles() {
   }
   if (nmap == 0) {
     GetSession()->bout << "\r\nNo G-file sections available.\r\n\n";
-    BbsFreeMemory(map);
+    free(map);
     return;
   }
   list_sec(map, nmap);
@@ -569,6 +569,6 @@ void gfiles() {
     }
   }
 
-  BbsFreeMemory(map);
+  free(map);
 }
 

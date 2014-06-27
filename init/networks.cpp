@@ -53,7 +53,7 @@ static int read_subs() {
   sprintf(szFileName, "%ssubs.dat", syscfg.datadir);
   int i = open(szFileName, O_RDWR | O_BINARY);
   if (i > 0) {
-    subboards = (subboardrec *) bbsmalloc(filelength(i) + 1);
+    subboards = (subboardrec *) malloc(filelength(i) + 1);
     if (!subboards) {
       Printf("needed %ld bytes\n", filelength(i));
       textattr(COLOR_WHITE);
@@ -162,7 +162,7 @@ static void del_net(int nn) {
   }
 
 
-  u = (char *)bbsmalloc(syscfg.userreclen);
+  u = (char *)malloc(syscfg.userreclen);
 
   read_user(1, (userrec *)u);
   nu = number_userrecs();
@@ -253,7 +253,7 @@ static void insert_net(int nn) {
     close(hFile);
   }
 
-  u = (char *)bbsmalloc(syscfg.userreclen);
+  u = (char *)malloc(syscfg.userreclen);
 
   read_user(1, (userrec *)u);
   nu = number_userrecs();

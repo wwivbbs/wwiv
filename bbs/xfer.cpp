@@ -39,7 +39,7 @@ void finddevs(std::vector<string>& devices);
 
 void zap_ed_info() {
   if (ed_info) {
-    BbsFreeMemory(ed_info);
+    free(ed_info);
     ed_info = NULL;
   }
   ed_num = 0;
@@ -439,7 +439,7 @@ void delete_extended_description(const char *pszFileName) {
   }
   fileExtDescr.SetLength(w);
   fileExtDescr.Close();
-  BbsFreeMemory(ss);
+  free(ss);
   zap_ed_info();
 }
 
@@ -554,7 +554,7 @@ void print_extended(const char *pszFileName, bool *abort, int numlist, int inden
     if (GetSession()->localIO()->WhereX()) {
       GetSession()->bout.NewLine();
     }
-    BbsFreeMemory(ss);
+    free(ss);
   } else if (GetSession()->localIO()->WhereX()) {
     GetSession()->bout.NewLine();
   }

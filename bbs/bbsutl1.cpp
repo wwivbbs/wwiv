@@ -221,7 +221,7 @@ void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSy
           *pUserNumber = *pSystemNumber = 0;
         }
       }
-      BbsFreeMemory(ss);
+      free(ss);
     } else {
       if (*pSystemNumber == net_sysnum) {
         *pSystemNumber = 0;
@@ -404,7 +404,7 @@ void describe_area_code(int nAreaCode, char *pszDescription) {
     ss1 = strtok(NULL, "\r\n");
   }
 
-  BbsFreeMemory(ss);
+  free(ss);
 }
 
 
@@ -446,7 +446,7 @@ void describe_area_code_prefix(int nAreaCode, int nTargetTown, char *pszDescript
     }
     ss1 = strtok(NULL, "\r\n");
   }
-  BbsFreeMemory(ss);
+  free(ss);
 }
 
 

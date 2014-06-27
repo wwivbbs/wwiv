@@ -113,10 +113,10 @@ void grab_quotes(messagerec * m, const char *aux) {
   WFile::SetFilePermissions(szQuotesIndexFileName, WFile::permReadWrite);
   WFile::Remove(szQuotesIndexFileName);
   if (quotes_nrm) {
-    BbsFreeMemory(quotes_nrm);
+    free(quotes_nrm);
   }
   if (quotes_ind) {
-    BbsFreeMemory(quotes_ind);
+    free(quotes_ind);
   }
 
   quotes_nrm = quotes_ind = NULL;
@@ -281,7 +281,7 @@ void grab_quotes(messagerec * m, const char *aux) {
           ff.Close();
         }
 #else
-        BbsFreeMemory(quotes_nrm);
+        free(quotes_nrm);
         quotes_nrm = NULL;
         quotes_nrm_l = 0;
 #endif
@@ -375,7 +375,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
     }
     irt_name[0] = '\0';
   }
-  BbsFreeMemory(org);
+  free(org);
 }
 
 

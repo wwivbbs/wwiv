@@ -480,6 +480,6 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
       }
     }
   }
-  BbsFreeMemory(b);
+  free(b);
 }
 

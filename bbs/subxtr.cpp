@@ -27,7 +27,7 @@ static char *mallocin_file(const char *pszFileName, long *len) {
   WFile file(pszFileName);
   if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
     *len = file.GetLength();
-    ss = static_cast<char *>(bbsmalloc(*len + 20));
+    ss = static_cast<char *>(malloc(*len + 20));
     if (ss) {
       file.Read(ss, *len);
       ss[*len] = 0;
@@ -79,18 +79,18 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
   if (xsubs) {
     for (i = 0; i < nNumSubs; i++) {
       if ((xsubs[i].flags & XTRA_MALLOCED) && xsubs[i].nets) {
-        BbsFreeMemory(xsubs[i].nets);
+        free(xsubs[i].nets);
       }
     }
-    BbsFreeMemory(xsubs);
+    free(xsubs);
     if (xsubsn) {
-      BbsFreeMemory(xsubsn);
+      free(xsubsn);
     }
     xsubsn = NULL;
     xsubs = NULL;
   }
   long l = static_cast<long>(nMaxSubs) * sizeof(xtrasubsrec);
-  xsubs = static_cast<xtrasubsrec *>(bbsmalloc(l + 1));
+  xsubs = static_cast<xtrasubsrec *>(malloc(l + 1));
   if (!xsubs) {
     std::cout << "Insufficient memory (" << l << "d bytes) for SUBS.XTR" << std::endl;
     return false;
@@ -116,7 +116,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
         ++nn;
       }
     }
-    BbsFreeMemory(ss);
+    free(ss);
   } else {
     for (i = 0; i < nNumSubs; i++) {
       if (subboards[i].type) {
@@ -126,7 +126,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
   }
   if (nn) {
     l = static_cast<long>(nn) * sizeof(xtrasubsnetrec);
-    xsubsn = static_cast<xtrasubsnetrec *>(bbsmalloc(l));
+    xsubsn = static_cast<xtrasubsnetrec *>(malloc(l));
     if (!xsubsn) {
       std::cout << "Insufficient memory (" << l << " bytes) for net subs info" << std::endl;
       return false;
@@ -198,7 +198,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
           break;
         }
       }
-      BbsFreeMemory(ss);
+      free(ss);
     } else {
       for (curn = 0; curn < nNumSubs; curn++) {
         if (subboards[curn].type) {
@@ -227,7 +227,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
               xnp->flags |= XTRA_NET_AUTO_ADDDROP;
             }
           }
-          BbsFreeMemory(ss);
+          free(ss);
         }
         sprintf(s, "%sSUBS.PUB", net_networks[n].dir);
         ss = mallocin_file(s, &l);
@@ -238,7 +238,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
               xnp->flags |= XTRA_NET_AUTO_INFO;
             }
           }
-          BbsFreeMemory(ss);
+          free(ss);
         }
         sprintf(s, "%sNNALL.NET", net_networks[n].dir);
         ss = mallocin_file(s, &l);
@@ -253,7 +253,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
               xnp->host = wwiv::strings::StringToShort(ss2);
             }
           }
-          BbsFreeMemory(ss);
+          free(ss);
         }
       }
       for (i = 0; i < nn; i++) {
@@ -266,7 +266,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
             for (ss1 = ss; (*ss1) && ((*ss1 < '0') || (*ss1 > '9')); ss1++)
               ;
             xsubsn[i].host = wwiv::strings::StringToShort(ss1);
-            BbsFreeMemory(ss);
+            free(ss);
           }
         }
       }

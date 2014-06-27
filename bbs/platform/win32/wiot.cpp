@@ -241,7 +241,7 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
 
 unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTranslation) {
   int nRet;
-  char * pszBuffer = reinterpret_cast<char*>(bbsmalloc(count * 2 + 100));
+  char * pszBuffer = reinterpret_cast<char*>(malloc(count * 2 + 100));
   ZeroMemory(pszBuffer, (count * 2) + 100);
   int nCount = count;
 
@@ -271,11 +271,11 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
         if (WSAGetLastError() != WSAENOTSOCK) {
           std::cout << "DEBUG: in write(), expected to send " << count << " character(s), actually sent " << nRet << std::endl;
         }
-        BbsFreeMemory(pszBuffer);
+        free(pszBuffer);
         return 0;
       }
     } else {
-      BbsFreeMemory(pszBuffer);
+      free(pszBuffer);
       return nRet;
     }
     WWIV_Delay(0);

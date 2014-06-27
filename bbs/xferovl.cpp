@@ -164,7 +164,7 @@ void move_file() {
       fileDownload.Close();
       if (ss) {
         add_extended_description(u.filename, ss);
-        BbsFreeMemory(ss);
+        free(ss);
       }
       StringRemoveWhitespace(s1);
       StringRemoveWhitespace(s2);
@@ -342,7 +342,7 @@ void rename_file() {
             if (ss) {
               delete_extended_description(u.filename);
               add_extended_description(s, ss);
-              BbsFreeMemory(ss);
+              free(ss);
             }
             strcpy(u.filename, s);
           } else {
@@ -364,7 +364,7 @@ void rename_file() {
       if (ss) {
         GetSession()->bout << "|#5Delete it? ";
         if (yesno()) {
-          BbsFreeMemory(ss);
+          free(ss);
           delete_extended_description(u.filename);
           u.mask &= ~mask_extended;
         } else {
@@ -374,7 +374,7 @@ void rename_file() {
           if (ss) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
-            BbsFreeMemory(ss);
+            free(ss);
           }
         }
       } else {
@@ -382,14 +382,14 @@ void rename_file() {
                                     directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, u.filename);
         if (ss) {
           add_extended_description(u.filename, ss);
-          BbsFreeMemory(ss);
+          free(ss);
           u.mask |= mask_extended;
         } else {
           u.mask &= ~mask_extended;
         }
       }
     } else if (ss) {
-      BbsFreeMemory(ss);
+      free(ss);
       u.mask |= mask_extended;
     } else {
       u.mask &= ~mask_extended;
@@ -674,7 +674,7 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
   }
 
   if (ext) {
-    BbsFreeMemory(ext);
+    free(ext);
   }
 }
 
@@ -1036,7 +1036,7 @@ void modify_database(const char *pszFileName, bool add) {
     fileAllow.SetLength(len - 13);
   }
 
-  BbsFreeMemory(bfr);
+  free(bfr);
   fileAllow.Close();
 }
 

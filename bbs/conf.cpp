@@ -514,7 +514,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
       WWIV_ASSERT(tptr != NULL);
       if (tptr) {
         memmove(tptr, c->subs, (c->maxnum - CONF_MULTIPLE) * sizeof(SUBCONF_TYPE));
-        BbsFreeMemory(c->subs);
+        free(c->subs);
         c->subs = tptr;
       } else {
         GetSession()->bout << "|#6Not enough memory left to insert anything.\r\n";
@@ -1308,10 +1308,10 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
             std::cout << "Out of memory on conference file #" << cc + 1 << ", " <<
                       syscfg.datadir << pszFileName << "." << std::endl;
             for (i2 = 0; i2 < cc; i2++) {
-              BbsFreeMemory(conferences[i2].subs);
+              free(conferences[i2].subs);
             }
-            BbsFreeMemory(conferences);
-            BbsFreeMemory(ls);
+            free(conferences);
+            free(ls);
             f.Close();
             return NULL;
           }
@@ -1339,7 +1339,7 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
     }
   }
   f.Close();
-  BbsFreeMemory(ls);
+  free(ls);
   return conferences;
 }
 
@@ -1373,10 +1373,10 @@ void read_in_conferences(int conftype) {
   if (*cpp) {
     for (i = 0; i < *np; i++) {
       if ((*cpp)[i].subs) {
-        BbsFreeMemory((*cpp)[i].subs);
+        free((*cpp)[i].subs);
       }
     }
-    BbsFreeMemory(*cpp);
+    free(*cpp);
     *cpp = NULL;
   }
   if (!WFile::Exists(s)) {

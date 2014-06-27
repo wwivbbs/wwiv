@@ -210,7 +210,7 @@ int set_strings_fn(int filen, char *pszDirectoryName, char *pszFileName, int all
 
 #ifdef CACHE_LEN
       if (!str_cache)
-        str_cache = static_cast<char *>( bbsmalloc( CACHE_LEN ) );
+        str_cache = static_cast<char *>( malloc( CACHE_LEN ) );
 
       if (str_cache) {
         sp = (strhdr *) str_cache;

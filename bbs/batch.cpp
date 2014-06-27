@@ -690,11 +690,11 @@ void ProcessDSZLogFile() {
           handle_dszline(lines[i1]);
         }
       }
-      BbsFreeMemory(ss);
+      free(ss);
     }
     fileDszLog.Close();
   }
-  BbsFreeMemory(lines);
+  free(lines);
 }
 
 

@@ -26,7 +26,7 @@
  * @param lNumBytes Number of bytes to allocate
  */
 void *BbsAllocA(size_t lNumBytes) {
-  void* pBuffer = bbsmalloc(lNumBytes + 1);
+  void* pBuffer = malloc(lNumBytes + 1);
   memset(pBuffer, 0, lNumBytes);
   WWIV_ASSERT(pBuffer);
 #ifndef NOT_BBS
@@ -68,7 +68,7 @@ char **BbsAlloc2D(int nRow, int nCol, int nSize) {
     hangup = true;
     GetSession()->bout.NewLine();
 #endif
-    BbsFreeMemory(pdata);
+    free(pdata);
     return NULL;
   }
   for (int i = 0; i < nRow; i++) {
@@ -81,8 +81,8 @@ char **BbsAlloc2D(int nRow, int nCol, int nSize) {
 
 void BbsFree2D(char **pa) {
   if (pa) {
-    BbsFreeMemory(*pa);
-    BbsFreeMemory(pa);
+    free(*pa);
+    free(pa);
   }
 }
 

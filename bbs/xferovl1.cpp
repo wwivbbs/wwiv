@@ -67,7 +67,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
                          WFile::permReadWrite);
         fileExtDesc.Write(*sss, strlen(*sss));
         fileExtDesc.Close();
-        BbsFreeMemory(*sss);
+        free(*sss);
         *sss = NULL;
       } else {
         WFile::Remove(s);
@@ -98,7 +98,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
       }
     } else {
       if (*sss) {
-        BbsFreeMemory(*sss);
+        free(*sss);
       }
       if ((*sss = static_cast<char *>(BbsAllocA(10240))) == NULL) {
         return;
@@ -153,14 +153,14 @@ void modify_extended_description(char **sss, const char *dest, const char *title
       } while ((i++ < GetSession()->max_extend_lines) && (s1[0]));
       GetSession()->GetCurrentUser()->SetScreenChars(nSavedScreenSize);
       if (*sss[0] == '\0') {
-        BbsFreeMemory(*sss);
+        free(*sss);
         *sss = NULL;
       }
     }
     GetSession()->bout << "|#5Is this what you want? ";
     i = !yesno();
     if (i) {
-      BbsFreeMemory(*sss);
+      free(*sss);
       *sss = NULL;
     }
   } while (i);
@@ -226,7 +226,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
     GetSession()->bout << "|#9Reading in |#2" << stripfn(s) << "|#9 as extended description...";
     ss = read_extended_description(u->filename);
     if (ss) {
-      BbsFreeMemory(ss);
+      free(ss);
       delete_extended_description(u->filename);
     }
     if ((b = static_cast<char *>(BbsAllocA(GetSession()->max_extend_lines * 256 + 1))) == NULL) {
@@ -274,7 +274,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
       add_extended_description(u->filename, ss);
       u->mask |= mask_extended;
     }
-    BbsFreeMemory(b);
+    free(b);
     GetSession()->bout << "Done!\r\n";
   }
   WFile::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
