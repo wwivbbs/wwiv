@@ -21,9 +21,6 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="platform\WFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ifcns.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,9 +40,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="platform\incl1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\wfndfile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ivardec.h">
@@ -98,19 +92,7 @@
     <ClCompile Include="init2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\win32\filesupp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="platform\win32\wfndfile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="platform\win32\WFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="subacc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="platform\curses_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="regcode.cpp">
