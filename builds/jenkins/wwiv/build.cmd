@@ -37,6 +37,9 @@ msbuild bbs.vcxproj /t:Build /p:Configuration=Release /detailedsummary
 cd %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer
 msbuild WWIV5TelnetServer.csproj /t:Rebuild /p:Configuration=Release /detailedsummary
 
+cd %WORKSPACE%\initlib
+msbuild initlib.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+
 cd %WORKSPACE%\init
 msbuild init.vcxproj /t:Build /p:Configuration=Release /detailedsummary
 
