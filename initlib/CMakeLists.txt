@@ -2,11 +2,9 @@
 cmake_minimum_required (VERSION 2.6)
 project (INITLIB)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(BBS_SOURCE_DIR  ../bbs)
 include_directories(platform)
-include_directories(${BBS_SOURCE_DIR})
 
-add_definitions(-DINIT -DNOT_BBS)
+add_definitions(-DNOT_BBS)
 
 set(COMMON_SOURCES
   input.cpp
