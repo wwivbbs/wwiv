@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "platform/wfile.h"
 
+#include <unistd.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sstream>
@@ -74,7 +75,7 @@ const char WFile::separatorChar     = ':';
 WLogger*  WFile::m_pLogger;
 int       WFile::m_nDebugLevel;
 
-// WAIT_TIME is 10 seconds, 1 second = 1000 useconds
+// WAIT_TIME is 10 seconds, 1 second = 1000 mseconds
 #define WAIT_TIME 10000
 #define TRIES 100
 
@@ -164,12 +165,12 @@ bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
     int count = 1;
     if (access(m_szFileName, 0) != -1) {
 #if !defined(NOT_BBS)
-      WWIV_Delay(WAIT_TIME);
+      usleep(WAIT_TIME);
 #endif // #if !defined(NOT_BBS)
       m_hFile = open(m_szFileName, nFileMode, nShareMode);
       while ((m_hFile < 0 && errno == EACCES) && count < TRIES) {
 #if !defined(NOT_BBS)
-        WWIV_Delay((count % 2) ? WAIT_TIME : 0);
+        usleep((count % 2) ? WAIT_TIME : 0);
 #endif // #if !defined(NOT_BBS)
         count++;
         m_hFile = open(m_szFileName, nFileMode, nShareMode);
