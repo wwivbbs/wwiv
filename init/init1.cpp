@@ -31,7 +31,6 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
-#include "w5assert.h"
 #include "wconstants.h"
 #include "wwivinit.h"
 #include "platform/incl1.h"
@@ -63,7 +62,6 @@ int number_userrecs() {
                 WFile::shareDenyReadWrite, WFile::permRead)) {
     return static_cast<int>(file.GetLength() / sizeof(userrec)) - 1;
   }
-  WWIV_ASSERT(false);
   return -1;
 }
 
