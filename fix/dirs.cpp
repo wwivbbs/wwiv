@@ -94,7 +94,7 @@ void checkFileAreas(int num_dirs) {
 							WFile extDescFile(syscfg.datadir, filenameExt.c_str());
 							if(extDescFile.Exists()) {
 								if(extDescFile.Open(WFile::modeReadWrite | WFile::modeBinary)) {
-									extDesc = (ext_desc_rec *)bbsmalloc(numFiles * sizeof(ext_desc_rec));
+									extDesc = (ext_desc_rec *)malloc(numFiles * sizeof(ext_desc_rec));
 									unsigned long offs = 0;
 									while(offs < (unsigned long)extDescFile.GetLength() && recNo < numFiles) {
 										ext_desc_type ed;
@@ -150,7 +150,7 @@ void checkFileAreas(int num_dirs) {
 								}
 							}
 							if(extDesc != nullptr) {
-								BbsFreeMemory(extDesc);
+								free(extDesc);
                                 extDesc = nullptr;
 							}
 						}

@@ -269,7 +269,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   if (*sent && !bUseYModemBatch) {
     GetSession()->bout << "-=> File transmission complete.\r\n\n";
   }
-  BbsFreeMemory(pszWorkingFileName);
+  free(pszWorkingFileName);
 }
 
 
@@ -289,6 +289,6 @@ void zmodem_send(const char *pszFileName, bool *sent, double *percent) {
     *sent = true;
     *percent = 100.0;
   }
-  BbsFreeMemory(pszWorkingFileName);
+  free(pszWorkingFileName);
 }
 

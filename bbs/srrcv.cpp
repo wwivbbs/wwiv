@@ -331,6 +331,6 @@ void zmodem_receive(const char *pszFileName, bool *received) {
   GetSession()->remoteIO()->SetBinaryMode(bOldBinaryMode);
 
   *received = (bResult) ? true : false;
-  BbsFreeMemory(pszWorkingFileName);
+  free(pszWorkingFileName);
 }
 

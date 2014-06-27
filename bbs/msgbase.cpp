@@ -250,7 +250,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
   }
   break;
   }
-  BbsFreeMemory(b);
+  free(b);
 }
 
 
@@ -333,7 +333,7 @@ void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
                WFile::permReadWrite);
   fileOut.Write(b, lOrigSize);
   fileOut.Close();
-  BbsFreeMemory(b);
+  free(b);
 
   use_workspace = (bNoEditAllowed || !okfsed()) ? true : false;
 
@@ -411,12 +411,12 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
       }
       *pUserNumber = userRecord.GetForwardUserNumber();
       *pSystemNumber = userRecord.GetForwardSystemNumber();
-      BbsFreeMemory(ss);
+      free(ss);
       set_net_num(userRecord.GetForwardNetNumber());
       return true;
     }
     if (ss[ nCurrentUser ]) {
-      BbsFreeMemory(ss);
+      free(ss);
       return false;
     }
     ss[ nCurrentUser ] = 1;
@@ -430,13 +430,13 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
         *pUserNumber = 0;
         *pSystemNumber = 0;
       }
-      BbsFreeMemory(ss);
+      free(ss);
       return false;
     }
     nCurrentUser = userRecord.GetForwardUserNumber() ;
     GetApplication()->GetUserManager()->ReadUser(&userRecord, nCurrentUser);
   }
-  BbsFreeMemory(ss);
+  free(ss);
   *pSystemNumber = 0;
   *pUserNumber = nCurrentUser;
   return true;
@@ -553,7 +553,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
     nh.daten = m.daten;
     nh.method = 0;
     if ((b1 = static_cast<char*>(BbsAllocA(lEmailFileLen + 768))) == NULL) {
-      BbsFreeMemory(b);
+      free(b);
       return;
     }
     i = 0;
@@ -587,8 +587,8 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
       fileNetworkPacket.Write(b1, nh.length);
       fileNetworkPacket.Close();
     }
-    BbsFreeMemory(b);
-    BbsFreeMemory(b1);
+    free(b);
+    free(b1);
   }
   std::string logMessage = "Mail sent to ";
   if (nSystemNumber == 0) {
@@ -1240,7 +1240,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
     expressabort = true;
   }
   if (ss != NULL) {
-    BbsFreeMemory(ss);
+    free(ss);
   }
   tmp_disable_pause(false);
   if (ansi && GetSession()->topdata && GetSession()->IsUserOnline()) {
@@ -1374,7 +1374,7 @@ void lineadd(messagerec * pMessageRecord, const char *sx, std::string fileName) 
       gat[i] = static_cast< unsigned short >(new1);
       save_gat(pMessageFile);
     }
-    BbsFreeMemory(b);
+    free(b);
     pMessageFile->Close();
     delete pMessageFile;
   }

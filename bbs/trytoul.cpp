@@ -316,7 +316,7 @@ int try_to_ul_wh(char *pszFileName) {
         if (ss) {
           GetSession()->bout << "|#5Delete it? ";
           if (yesno()) {
-            BbsFreeMemory(ss);
+            free(ss);
             delete_extended_description(u.filename);
             u.mask &= ~mask_extended;
           } else {
@@ -325,21 +325,21 @@ int try_to_ul_wh(char *pszFileName) {
             if (ss) {
               delete_extended_description(u.filename);
               add_extended_description(u.filename, ss);
-              BbsFreeMemory(ss);
+              free(ss);
             }
           }
         } else {
           modify_extended_description(&ss, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, u.filename);
           if (ss) {
             add_extended_description(u.filename, ss);
-            BbsFreeMemory(ss);
+            free(ss);
             u.mask |= mask_extended;
           } else {
             u.mask &= ~mask_extended;
           }
         }
       } else if (ss) {
-        BbsFreeMemory(ss);
+        free(ss);
         u.mask |= mask_extended;
       } else {
         u.mask &= ~mask_extended;

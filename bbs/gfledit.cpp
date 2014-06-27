@@ -346,6 +346,6 @@ bool fill_sec(int sn) {
     pStatus->SetGFileDate(date());
     GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
   }
-  BbsFreeMemory(g);
+  free(g);
   return !ok;
 }

@@ -339,7 +339,7 @@ void readmail(int mode) {
   WWIV_ASSERT(pFileEmail);
   if (!pFileEmail->IsOpen()) {
     GetSession()->bout << "\r\n\nNo mail file exists!\r\n\n";
-    BbsFreeMemory(mloc);
+    free(mloc);
     return;
   }
   int mfl = pFileEmail->GetLength() / sizeof(mailrec);
@@ -364,7 +364,7 @@ void readmail(int mode) {
   }
   if (mw == 0) {
     GetSession()->bout << "\r\n\n|#3You have no mail.\r\n\n";
-    BbsFreeMemory(mloc);
+    free(mloc);
     return;
   }
   if (mw == 1) {
@@ -450,7 +450,7 @@ void readmail(int mode) {
               if (strlen(s1) > GetSession()->mail_who_field_len) {
                 s1[ GetSession()->mail_who_field_len ] = '\0';
               }
-              BbsFreeMemory(b);
+              free(b);
             } else {
               if (GetSession()->GetMaxNetworkNumber() > 1) {
                 sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, net_networks[nn].name, ss1);
@@ -496,7 +496,7 @@ void readmail(int mode) {
     GetSession()->bout << "|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ";
     input(s, 3, true);
     if (strchr(s, 'Q') != NULL) {
-      BbsFreeMemory(mloc);
+      free(mloc);
       return;
     }
     i = atoi(s);
@@ -1201,7 +1201,7 @@ void readmail(int mode) {
                         WFile::permReadWrite);
           fileTemp.Write(b, len);
           fileTemp.Close();
-          BbsFreeMemory(b);
+          free(b);
           bool bSent;
           send_file(fileTemp.GetFullPathName().c_str(), &bSent, 0, fileTemp.GetFullPathName().c_str(), -1, len);
           if (i) {
@@ -1216,7 +1216,7 @@ void readmail(int mode) {
     } while (!i1 && !hangup);
   } while (!hangup && !done);
 
-  BbsFreeMemory(mloc);
+  free(mloc);
 }
 
 

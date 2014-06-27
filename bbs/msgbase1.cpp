@@ -61,13 +61,13 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber) {
   }
   char* b1 = static_cast<char *>(BbsAllocA(netHeaderOrig.length + 100));
   if (b1 == NULL) {
-    BbsFreeMemory(b);
+    free(b);
     set_net_num(nOrigNetNumber);
     return;
   }
   strcpy(b1, pPostRecord->title);
   memmove(&(b1[strlen(pPostRecord->title) + 1]), b, lMessageLength);
-  BbsFreeMemory(b);
+  free(b);
 
   for (int n = 0; n < xsubs[nSubNumber].num_nets; n++) {
     xtrasubsnetrec* xnp = &(xsubs[nSubNumber].nets[n]);
@@ -100,7 +100,7 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber) {
           continue;
         }
         if ((b = static_cast<char *>(BbsAllocA(len1 + 100L))) == NULL) {
-          BbsFreeMemory(pList);
+          free(pList);
           continue;
         }
         file.Read(b, len1);
@@ -123,11 +123,11 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber) {
             }
           }
         }
-        BbsFreeMemory(b);
+        free(b);
       }
       if (!nh.list_len) {
         if (pList) {
-          BbsFreeMemory(pList);
+          free(pList);
         }
         continue;
       }
@@ -141,11 +141,11 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber) {
       gate_msg(&nh, b1, xnp->net_num, xnp->stype, pList, nNetNumber);
     }
     if (pList) {
-      BbsFreeMemory(pList);
+      free(pList);
     }
   }
 
-  BbsFreeMemory(b1);
+  free(b1);
   set_net_num(nOrigNetNumber);
 }
 
@@ -320,7 +320,7 @@ void grab_user_name(messagerec * pMessageRecord, const char *pszFileName) {
     } else {
       net_email_name[0] = '\0';
     }
-    BbsFreeMemory(ss);
+    free(ss);
   } else {
     net_email_name[0] = '\0';
   }

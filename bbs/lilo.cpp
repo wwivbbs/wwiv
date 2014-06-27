@@ -696,7 +696,7 @@ void UpdateLastOnFileAndUserLog() {
     }
   }
   if (ss != NULL) {
-    BbsFreeMemory(ss);
+    free(ss);
   }
 }
 

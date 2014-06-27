@@ -77,22 +77,22 @@ bool WIniFile::Open(const std::string primarySection, const std::string secondar
 bool WIniFile::Close() {
   m_bOpen = false;
   if (m_primarySection.pIniSectionBuffer) {
-    BbsFreeMemory(m_primarySection.pIniSectionBuffer);
+    free(m_primarySection.pIniSectionBuffer);
     if (m_primarySection.pKeyArray) {
-      BbsFreeMemory(m_primarySection.pKeyArray);
+      free(m_primarySection.pKeyArray);
     }
     if (m_primarySection.pValueArray) {
-      BbsFreeMemory(m_primarySection.pValueArray);
+      free(m_primarySection.pValueArray);
     }
   }
   memset(&m_primarySection, 0, sizeof(m_primarySection));
   if (m_secondarySection.pIniSectionBuffer) {
-    BbsFreeMemory(m_secondarySection.pIniSectionBuffer);
+    free(m_secondarySection.pIniSectionBuffer);
     if (m_secondarySection.pKeyArray) {
-      BbsFreeMemory(m_secondarySection.pKeyArray);
+      free(m_secondarySection.pKeyArray);
     }
     if (m_secondarySection.pValueArray) {
-      BbsFreeMemory(m_secondarySection.pValueArray);
+      free(m_secondarySection.pValueArray);
     }
   }
   memset(&m_secondarySection, 0, sizeof(m_secondarySection));
@@ -154,7 +154,7 @@ const long WIniFile::GetNumericValue(const char *pszKey, int defaultValue) {
 char *WIniFile::ReadSectionIntoMemory(const std::string &fileName, long begin, long end) {
   WFile file(fileName);
   if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
-    char *ss = static_cast<char *>(bbsmalloc(end - begin + 2));
+    char *ss = static_cast<char *>(malloc(end - begin + 2));
     if (ss) {
       file.Seek(begin, WFile::seekBegin);
       file.Read(ss, (end - begin + 1));
@@ -253,7 +253,7 @@ void WIniFile::Parse(char *pBuffer, ini_info_type * pIniSection) {
 
   // first, count # pszKey-pValueArray pairs
   unsigned int i1 = strlen(pBuffer);
-  char* tempb = static_cast<char *>(bbsmalloc(i1 + 20));
+  char* tempb = static_cast<char *>(malloc(i1 + 20));
   if (!tempb) {
     return;
   }
@@ -277,20 +277,20 @@ void WIniFile::Parse(char *pBuffer, ini_info_type * pIniSection) {
     }
   }
 
-  BbsFreeMemory(tempb);
+  free(tempb);
 
   if (!count) {
     return;
   }
 
   // now, allocate space for pKeyArray-pValueArray pairs
-  pIniSection->pKeyArray = static_cast<char **>(bbsmalloc(count * sizeof(char *)));
+  pIniSection->pKeyArray = static_cast<char **>(malloc(count * sizeof(char *)));
   if (!pIniSection->pKeyArray) {
     return;
   }
-  pIniSection->pValueArray = static_cast<char **>(bbsmalloc(count * sizeof(char *)));
+  pIniSection->pValueArray = static_cast<char **>(malloc(count * sizeof(char *)));
   if (!pIniSection->pValueArray) {
-    BbsFreeMemory(pIniSection->pKeyArray);
+    free(pIniSection->pKeyArray);
     pIniSection->pKeyArray = NULL;
     return;
   }

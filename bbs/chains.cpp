@@ -257,7 +257,7 @@ void do_chains() {
   }
   if (mapp == 0) {
     GetSession()->bout << "\r\n\n|#5Sorry, no external programs available.\r\n";
-    BbsFreeMemory(map);
+    free(map);
     GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
     return;
   }
@@ -305,6 +305,6 @@ void do_chains() {
     }
   } while (!hangup  && !done);
 
-  BbsFreeMemory(map);
+  free(map);
 }
 

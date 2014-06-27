@@ -71,7 +71,7 @@ void delete_phone_number(int usernum, const char *phone) {
     phoneFile.Write(p, static_cast<long>(nNumRecords * sizeof(phonerec)));
     phoneFile.Close();
   }
-  BbsFreeMemory(p);
+  free(p);
 }
 
 
@@ -99,7 +99,7 @@ int find_phone_number(const char *phone) {
       }
     }
   }
-  BbsFreeMemory(p);
+  free(p);
   if (i < nNumRecords) {
     return p[i].usernum;
   }

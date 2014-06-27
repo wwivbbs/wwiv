@@ -619,7 +619,7 @@ void add_action(ch_action act) {
 // Removes the actions from memory
 void free_actions() {
   for (int i = 0; i <= g_nNumActions; i++) {
-    BbsFreeMemory(actions[i]);
+    free(actions[i]);
   }
 }
 

@@ -450,7 +450,7 @@ static void init_files() {
   status.net_bias = 0.001f;
   status.net_req_free = 3.0;
 
-  qsc = (unsigned long *)bbsmalloc(syscfg.qscn_len);
+  qsc = (unsigned long *)malloc(syscfg.qscn_len);
   Printf(".");
   memset(qsc, 0, syscfg.qscn_len);
 

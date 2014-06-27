@@ -439,17 +439,17 @@ void free_vars(float **weight, int **try1) {
   if (weight || try1) {
     for (int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++) {
       if (try1 && try1[nNetNumber]) {
-        BbsFreeMemory(try1[nNetNumber]);
+        free(try1[nNetNumber]);
       }
       if (weight && weight[nNetNumber]) {
-        BbsFreeMemory(weight[nNetNumber]);
+        free(weight[nNetNumber]);
       }
     }
     if (try1) {
-      BbsFreeMemory(try1);
+      free(try1);
     }
     if (weight) {
-      BbsFreeMemory(weight);
+      free(weight);
     }
   }
 }
@@ -494,7 +494,7 @@ void attempt_callout() {
     return;
   }
   if ((weight = static_cast<float **>(BbsAllocA(sizeof(float *) * GetSession()->GetMaxNetworkNumber()))) == NULL) {
-    BbsFreeMemory(try1);
+    free(try1);
     return;
   }
   memset(try1, 0, sizeof(int *) * GetSession()->GetMaxNetworkNumber());
@@ -1275,9 +1275,9 @@ int ansicallout() {
     curatr = color3;
     GetSession()->localIO()->LocalCls();
     netw = (netpos[pos]);
-    BbsFreeMemory(nodenum);
-    BbsFreeMemory(netpos);
-    BbsFreeMemory(ipos);
+    free(nodenum);
+    free(netpos);
+    free(ipos);
   } else {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#2Which system: ";
@@ -1442,7 +1442,7 @@ void force_callout(int dw) {
               GetSession()->bout << "|#9Retries |#0= |#2" << nr << "|#9, Current |#0= |#2" << tc << "|#9, Remaining |#0= |#2" << nr -
                                  tc << "|#9. ESC to abort.\r\n";
               if (nr == tc) {
-                BbsFreeMemory(ss);
+                free(ss);
                 ss = NULL;
               }
               do_callout(sn);
@@ -1453,7 +1453,7 @@ void force_callout(int dw) {
     }
   }
   if (ss) {
-    BbsFreeMemory(ss);
+    free(ss);
   }
 }
 

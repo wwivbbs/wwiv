@@ -36,7 +36,7 @@ using wwiv::strings::StringPrintf;
 
 void zap_call_out_list() {
   if (net_networks[GetSession()->GetNetworkNumber()].con) {
-    BbsFreeMemory(net_networks[GetSession()->GetNetworkNumber()].con);
+    free(net_networks[GetSession()->GetNetworkNumber()].con);
     net_networks[ GetSession()->GetNetworkNumber() ].con = NULL;
     net_networks[ GetSession()->GetNetworkNumber() ].num_con = 0;
   }
@@ -63,7 +63,7 @@ void read_call_out_list() {
         ++net_networks[GetSession()->GetNetworkNumber()].num_con;
       }
     }
-    BbsFreeMemory(ss);
+    free(ss);
     if ((net_networks[GetSession()->GetNetworkNumber()].con = (net_call_out_rec *)
          BbsAllocA(static_cast<long>((net_networks[GetSession()->GetNetworkNumber()].num_con + 2) *
                                      sizeof(net_call_out_rec)))) == NULL) {
@@ -192,7 +192,7 @@ void read_call_out_list() {
         }
       }
     }
-    BbsFreeMemory(ss);
+    free(ss);
   }
 }
 
@@ -203,11 +203,11 @@ int bbs_list_net_no = -1;
 
 void zap_bbs_list() {
   if (csn) {
-    BbsFreeMemory(csn);
+    free(csn);
     csn = NULL;
   }
   if (csn_index) {
-    BbsFreeMemory(csn_index);
+    free(csn_index);
     csn_index = NULL;
   }
   GetSession()->num_sys_list  = 0;
@@ -310,7 +310,7 @@ net_system_list_rec *next_system(int ts) {
 
 void zap_contacts() {
   if (net_networks[GetSession()->GetNetworkNumber()].ncn) {
-    BbsFreeMemory(net_networks[GetSession()->GetNetworkNumber()].ncn);
+    free(net_networks[GetSession()->GetNetworkNumber()].ncn);
     net_networks[GetSession()->GetNetworkNumber()].ncn = NULL;
     net_networks[GetSession()->GetNetworkNumber()].num_ncn = 0;
   }

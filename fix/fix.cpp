@@ -229,7 +229,7 @@ class FixApplication {
         Print(OK, true, "Reading %s...", dirsDat.GetFullPathName().c_str());
 		int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
 		dirsDat.Open(nFileMode);
-		directories = (directoryrec *)bbsmalloc(dirsDat.GetLength() + 1);
+		directories = (directoryrec *)malloc(dirsDat.GetLength() + 1);
 		if(directories == NULL) {
 			Print(NOK, true, "Couldn't allocate %ld bytes for %s.", dirsDat.GetLength(), dirsDat.GetFullPathName().c_str());
 			giveUp();
@@ -249,7 +249,7 @@ class FixApplication {
 		Print(OK, true, "Reading %s...", subsDat.GetFullPathName().c_str());
 		int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
 		subsDat.Open(nFileMode);
-		subboards = (subboardrec *)bbsmalloc(subsDat.GetLength() + 1);
+		subboards = (subboardrec *)malloc(subsDat.GetLength() + 1);
 		if(subboards == NULL) {
 			Print(NOK, true, "Couldn't allocate %ld bytes for %s.", subsDat.GetLength(), subsDat.GetFullPathName().c_str());
 			giveUp();

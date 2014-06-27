@@ -184,7 +184,7 @@ int oneuser() {
     }
     mml_started = 1;
     if (ss == NULL) {
-      BbsFreeMemory(mml_s);
+      free(mml_s);
       mml_s = NULL;
       return -1;
     }
@@ -359,7 +359,7 @@ void slash_e() {
         mml_started = 0;
         add_list(nUserNumber, &numu, MAX_LIST, so());
         if (mml_s) {
-          BbsFreeMemory(mml_s);
+          free(mml_s);
           mml_s = NULL;
         }
       }

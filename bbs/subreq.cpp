@@ -235,7 +235,7 @@ void sub_xtr_add(int n, int nn) {
       }
 
       if (xsubs[n].flags & XTRA_MALLOCED) {
-        BbsFreeMemory(xsubs[n].nets);
+        free(xsubs[n].nets);
       }
 
       xsubs[n].nets = xnp;
@@ -463,7 +463,7 @@ int amount_of_subscribers(const char *pszNetworkFileName) {
         }
       }
     }
-    BbsFreeMemory(b);
+    free(b);
   }
   return numnodes;
 }
