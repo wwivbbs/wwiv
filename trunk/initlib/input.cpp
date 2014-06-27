@@ -28,10 +28,26 @@
 #include <string>
 #include <vector>
 
-#include "ifcns.h"
-#include "init.h"
-#include "wwivinit.h"
+//#include "ifcns.h"
+//#include "init.h"
+//#include "wwivinit.h"
+#include "platform/curses_io.h"
 #include "wconstants.h"
+
+extern CursesIO* out;
+
+#define PREV                1
+#define NEXT                2
+#define DONE                4
+#define ABORTED             8
+
+#define NUM_ONLY            1
+#define UPPER_ONLY          2
+#define ALL                 4
+#define SET                   8
+
+#define textattr(x) curatr = (x)
+extern int curatr;
 
 // local functions.
 void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength);

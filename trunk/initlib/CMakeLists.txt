@@ -9,6 +9,7 @@ include_directories(${BBS_SOURCE_DIR})
 add_definitions(-DINIT -DNOT_BBS)
 
 set(COMMON_SOURCES
+  input.cpp
   platform/curses_io.cpp
   )
 
