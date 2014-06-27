@@ -4,7 +4,6 @@ project (INIT)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(platform)
 include_directories(..)
-include_directories(../bbs)
 include_directories(../initlib)
 include_directories(../initlib/platform)
 

@@ -20,11 +20,10 @@
 #define __INCLUDED_WWIVINIT_H__
 
 #ifndef NOT_BBS
-#define NOT_BBS 0
+#error "NOT_BBS MUST BE DEFINED"
 #endif  // NOT_BBS
-
 #ifndef INIT
-#define INIT
+#error "INIT MUST BE DEFINED"
 #endif  // INIT
 
 #ifndef EDITLINE_FILENAME_CASE
