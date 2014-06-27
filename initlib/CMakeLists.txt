@@ -8,7 +8,6 @@ include_directories(${BBS_SOURCE_DIR})
 
 add_definitions(-DINIT -DNOT_BBS)
 
-
 set(COMMON_SOURCES
   platform/curses_io.cpp
   )
@@ -27,7 +26,5 @@ if(UNIX)
 	)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
-#include_directories(${BBS_SOURCE_DIR}/platform)
 
-add_executable(init ${COMMON_SOURCES} ${PLATFORM_SOURCES})
-target_link_libraries(init ${CURSES_LIBRARIES})
+add_library(initlib ${COMMON_SOURCES} ${PLATFORM_SOURCES})
