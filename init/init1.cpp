@@ -27,11 +27,11 @@
 #include <sys/stat.h>
 
 #include "archivers.h"
-#include "common.h"
+#include "bbs/common.h"
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
-#include "wconstants.h"
+#include "bbs/wconstants.h"
 #include "wwivinit.h"
 #include "platform/incl1.h"
 #include "platform/wfile.h"
