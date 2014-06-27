@@ -41,11 +41,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)\platform\win32;$(ProjectDir)\..\bbs\;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(ProjectDir)..\initlib\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(ProjectDir)..\initlib\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)\platform\win32;$(ProjectDir)\..\bbs\;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(ProjectDir)..\initlib\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(ProjectDir)..\initlib\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -111,7 +111,6 @@
     <ClCompile Include="init.cpp" />
     <ClCompile Include="init1.cpp" />
     <ClCompile Include="init2.cpp" />
-    <ClCompile Include="input.cpp" />
     <ClCompile Include="instance_settings.cpp" />
     <ClCompile Include="languages.cpp" />
     <ClCompile Include="levels.cpp" />

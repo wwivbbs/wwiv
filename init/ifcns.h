@@ -21,7 +21,7 @@
 
 #include <string>
 #include "ivardec.h"
-#include "vardec.h"
+#include "bbs/vardec.h"
 
 /* File: init.cpp */
 
