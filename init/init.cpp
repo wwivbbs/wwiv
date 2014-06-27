@@ -56,6 +56,7 @@ CursesIO* out;
 char bbsdir[MAX_PATH];
 char configdat[20] = "config.dat";
 
+
 static void convcfg() {
   arcrec arc[MAX_ARCS];
 

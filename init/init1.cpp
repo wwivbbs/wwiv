@@ -35,6 +35,7 @@
 #include "wconstants.h"
 #include "wwivinit.h"
 #include "platform/incl1.h"
+#include "platform/wfile.h"
 #include "platform/wfndfile.h"
 
 #ifdef __unix__
