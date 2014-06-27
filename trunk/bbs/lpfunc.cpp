@@ -72,7 +72,7 @@ int listfiles_plus_function(int type) {
     return 0;
   }
   if (!prep_search_rec(&search_rec, type)) {
-    BbsFreeMemory(file_recs);
+    free(file_recs);
     BbsFree2D(menu_items);
     return 0;
   }
@@ -545,7 +545,7 @@ TOGGLE_EXTENDED:
     }
   }
 
-  BbsFreeMemory(file_recs);
+  free(file_recs);
   BbsFree2D(menu_items);
 
   return (all_done) ? 1 : 0;
@@ -617,10 +617,10 @@ int compare_criteria(struct search_record * sr, uploadsrec * ur) {
     strcat(buff, ur->description);
 
     if (lp_compare_strings(buff, sr->search)) {
-      BbsFreeMemory(buff);
+      free(buff);
       return 1;
     }
-    BbsFreeMemory(buff);
+    free(buff);
 
     return 0;                               // if we get here, we failed search test, so exit with 0 */
 

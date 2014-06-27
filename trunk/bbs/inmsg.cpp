@@ -94,7 +94,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     GetSession()->bout << "|#6Aborted.\r\n";
     pMessageRecord->stored_as = 0xffffffff;
     if (!fsed) {
-      BbsFreeMemory(lin);
+      free(lin);
     }
     setiia(oiia);
     return;
@@ -135,7 +135,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
       if (fileExtEd.IsOpen()) {
         fileExtEd.Close();
       }
-      BbsFreeMemory(lin);
+      free(lin);
       GetSession()->bout << "Out of memory.\r\n";
       pMessageRecord->stored_as = 0xffffffff;
       setiia(oiia);
@@ -204,7 +204,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     pMessageRecord->stored_as = 0xffffffff;
   }
   if (!fsed) {
-    BbsFreeMemory(lin);
+    free(lin);
   }
   charbufferpointer = 0;
   charbuffer[0] = '\0';

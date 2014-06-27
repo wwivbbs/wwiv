@@ -245,7 +245,7 @@ void process_inst_msgs() {
       }
       int hi = handle_inst_msg(&ih, m);
       if (m) {
-        BbsFreeMemory(m);
+        free(m);
         m = NULL;
       }
       if (hi == INST_MSG_SHUTDOWN) {

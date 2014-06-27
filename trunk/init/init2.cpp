@@ -84,7 +84,7 @@ static void convert_to(int num_subs, int num_dirs) {
 
   nqscn_len = 4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32));
 
-  nqsc = (unsigned long *)bbsmalloc(nqscn_len);
+  nqsc = (unsigned long *)malloc(nqscn_len);
   if (!nqsc) {
     Printf("Could not allocate %d bytes for new quickscan rec\n", nqscn_len);
     return;
@@ -98,7 +98,7 @@ static void convert_to(int num_subs, int num_dirs) {
   memset(nqsc_n, 0xff, ((num_dirs + 31) / 32) * 4);
   memset(nqsc_q, 0xff, ((num_subs + 31) / 32) * 4);
 
-  oqsc = (unsigned long *)bbsmalloc(syscfg.qscn_len);
+  oqsc = (unsigned long *)malloc(syscfg.qscn_len);
   if (!oqsc) {
     free(nqsc);
     Printf("Could not allocate %d bytes for old quickscan rec\n", syscfg.qscn_len);

@@ -315,8 +315,8 @@ int WInitApp::main(int argc, char *argv[]) {
     strcpy(syscfg.dial_prefix, "ATDT");
   }
 
-  externs = (newexternalrec *) bbsmalloc(15 * sizeof(newexternalrec));
-  editors = (editorrec *)   bbsmalloc(10 * sizeof(editorrec));
+  externs = (newexternalrec *) malloc(15 * sizeof(newexternalrec));
+  editors = (editorrec *)   malloc(10 * sizeof(editorrec));
   initinfo.numeditors = initinfo.numexterns = 0;
   sprintf(s, "%snextern.dat", syscfg.datadir);
   hFile = open(s, O_RDWR | O_BINARY);
@@ -324,7 +324,7 @@ int WInitApp::main(int argc, char *argv[]) {
     initinfo.numexterns = (read(hFile, (void *)externs, 15 * sizeof(newexternalrec))) / sizeof(newexternalrec);
     close(hFile);
   } else {
-    oexterns = (externalrec *) bbsmalloc(15 * sizeof(externalrec));
+    oexterns = (externalrec *) malloc(15 * sizeof(externalrec));
     sprintf(s1, "%sextern.dat", syscfg.datadir);
     hFile = open(s1, O_RDONLY | O_BINARY);
     if (hFile > 0) {
@@ -345,7 +345,7 @@ int WInitApp::main(int argc, char *argv[]) {
     }
     free(oexterns);
   }
-  over_intern = (newexternalrec *) bbsmalloc(3 * sizeof(newexternalrec));
+  over_intern = (newexternalrec *) malloc(3 * sizeof(newexternalrec));
   memset(over_intern, 0, 3 * sizeof(newexternalrec));
   sprintf(s, "%snintern.dat", syscfg.datadir);
   hFile = open(s, O_RDWR | O_BINARY);
@@ -364,7 +364,7 @@ int WInitApp::main(int argc, char *argv[]) {
   bool bDataDirectoryOk = read_status();
   if (bDataDirectoryOk) {
     if ((status.net_version >= 31) || (status.net_version == 0)) {
-      net_networks = (net_networks_rec *) bbsmalloc(MAX_NETWORKS * sizeof(net_networks_rec));
+      net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
       if (!net_networks) {
         Printf("needed %d bytes\n", MAX_NETWORKS * sizeof(net_networks_rec));
         textattr(COLOR_WHITE);
@@ -402,7 +402,7 @@ int WInitApp::main(int argc, char *argv[]) {
     }
   }
 
-  languages = (languagerec*) bbsmalloc(MAX_LANGUAGES * sizeof(languagerec));
+  languages = (languagerec*) malloc(MAX_LANGUAGES * sizeof(languagerec));
   if (!languages) {
     Printf("needed %d bytes\n", MAX_LANGUAGES * sizeof(languagerec));
     textattr(COLOR_WHITE);

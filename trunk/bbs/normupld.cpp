@@ -205,7 +205,7 @@ void normalupload(int dn) {
       if (pszExtendedDescription) {
         add_extended_description(u.filename, pszExtendedDescription);
         u.mask |= mask_extended;
-        BbsFreeMemory(pszExtendedDescription);
+        free(pszExtendedDescription);
       }
       GetSession()->bout.NewLine();
       if (xfer) {

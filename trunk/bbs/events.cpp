@@ -85,7 +85,7 @@ void sort_events() {
 
 void init_events() {
   if (events) {
-    BbsFreeMemory(events);
+    free(events);
     events = NULL;
   }
   events = static_cast<eventsrec *>(BbsAllocA(MAX_EVENT * sizeof(eventsrec)));

@@ -110,7 +110,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
       global_buf = static_cast<char *>(BbsAllocA(GLOBAL_SIZE));
       if (!bOpen || !global_buf) {
         if (global_buf) {
-          BbsFreeMemory(global_buf);
+          free(global_buf);
           global_buf = NULL;
         }
       }
@@ -120,7 +120,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
       fileGlobalCap.Write(global_buf, global_ptr);
       fileGlobalCap.Close();
       if (global_buf) {
-        BbsFreeMemory(global_buf);
+        free(global_buf);
         global_buf = NULL;
       }
     }
@@ -147,7 +147,7 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
         fileGlobalCap.Write(global_buf, global_ptr);
         fileGlobalCap.Close();
         if (global_buf) {
-          BbsFreeMemory(global_buf);
+          free(global_buf);
           global_buf = NULL;
         }
       }
@@ -177,7 +177,7 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
       global_buf = static_cast<char *>(BbsAllocA(GLOBAL_SIZE));
       if (!fileGlobalCap.IsOpen() || !global_buf) {
         if (global_buf) {
-          BbsFreeMemory(global_buf);
+          free(global_buf);
           global_buf = NULL;
         }
         set_x_only(0, NULL, 0);
@@ -536,7 +536,7 @@ void WLocalIO::savescreen() {
   region.Right  = static_cast< short >(bufinfo.dwSize.X - 1);
 
   if (!m_ScreenSave.scrn1) {
-    m_ScreenSave.scrn1 = static_cast< CHAR_INFO *>(bbsmalloc((bufinfo.dwSize.X * bufinfo.dwSize.Y) * sizeof(CHAR_INFO)));
+    m_ScreenSave.scrn1 = static_cast< CHAR_INFO *>(malloc((bufinfo.dwSize.X * bufinfo.dwSize.Y) * sizeof(CHAR_INFO)));
   }
 
   if (m_ScreenSave.scrn1) {
@@ -566,7 +566,7 @@ void WLocalIO::restorescreen() {
     region.Right  = static_cast< short >(bufinfo.dwSize.X - 1);
 
     WriteConsoleOutput(m_hConOut, m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
-    BbsFreeMemory(m_ScreenSave.scrn1);
+    free(m_ScreenSave.scrn1);
     m_ScreenSave.scrn1 = NULL;
   }
   SetTopLine(m_ScreenSave.topline1);
@@ -628,7 +628,7 @@ void WLocalIO::alt_key(int nKeyCode) {
             ss1 = strtok(NULL, "\r\n");
           }
         }
-        BbsFreeMemory(ss);
+        free(ss);
       }
 
       if (szCommand[0]) {
@@ -1291,7 +1291,7 @@ bool HasKeyBeenPressed() {
     return false;
   }
 
-  PINPUT_RECORD pInputRec = (PINPUT_RECORD) bbsmalloc(dwNumEvents * sizeof(INPUT_RECORD));
+  PINPUT_RECORD pInputRec = (PINPUT_RECORD) malloc(dwNumEvents * sizeof(INPUT_RECORD));
   if (!pInputRec) {
     // Really something bad happened here.
     return false;
@@ -1324,7 +1324,7 @@ for (; NumPeeked > 0 ; NumPeeked--, pIRBuf++) {
     }
   }
 
-  BbsFreeMemory(pInputRec);
+  free(pInputRec);
 
   return bHasKeyBeenPressed;
 #endif

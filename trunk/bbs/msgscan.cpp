@@ -201,7 +201,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
           nNumMsgsSent++;
         }
 
-        BbsFreeMemory(p3);
+        free(p3);
       } else {
         close_sub();
       }
@@ -227,7 +227,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
   }
   GetSession()->bout.NewLine();
   if (thread) {
-    BbsFreeMemory(thread);
+    free(thread);
   }
   thread = NULL;
 }
@@ -235,7 +235,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
 
 void SetupThreadRecordsBeforeScan() {
   if (thread) {
-    BbsFreeMemory(thread);
+    free(thread);
   }
 
   // We use +2 since if we post a message we'll need more than +1
@@ -284,7 +284,7 @@ void SetupThreadRecordsBeforeScan() {
         thread[tempnum].used = 1;
       }
     }
-    BbsFreeMemory(b);
+    free(b);
   }
 }
 
@@ -803,7 +803,7 @@ void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
       b = WWIV_STRUPR(b);
       fnd = (strstr(WWIV_STRUPR(stripcolors(get_post(nTempMsgNum)->title)), szFindString)
              || strstr(b, szFindString)) ? true : false;
-      BbsFreeMemory(b);
+      free(b);
     }
   }
   if (fnd) {
@@ -888,7 +888,7 @@ void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
           }
           szTempBuffer[lTempBufferPos] = 0;
           strcat(szPrompt, szTempBuffer);
-          BbsFreeMemory(b);
+          free(b);
         }
       }
     }
@@ -920,7 +920,7 @@ void HandleMessageDownload(int nMessageNumber) {
                   WFile::permReadWrite);
     fileTemp.Write(b, lMessageLen);
     fileTemp.Close();
-    BbsFreeMemory(b);
+    free(b);
     bool bFileAbortStatus;
     bool bStatus;
     send_file(fileTemp.GetFullPathName().c_str(), &bStatus, &bFileAbortStatus, fileTemp.GetFullPathName().c_str(), -1,

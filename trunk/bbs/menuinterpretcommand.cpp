@@ -49,14 +49,14 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
     case 0: {
       // "MENU"
       // Spawn a new menu
-      MenuInstanceData *pNewMenuData = static_cast<MenuInstanceData *>(bbsmalloc(sizeof(MenuInstanceData)));
+      MenuInstanceData *pNewMenuData = static_cast<MenuInstanceData *>(malloc(sizeof(MenuInstanceData)));
 
       memset(pNewMenuData, 0, sizeof(MenuInstanceData));
       pNewMenuData->nFinished = 0;
       pNewMenuData->nReload = 0;
 
       Menus(pNewMenuData, pMenuData->szPath, szParam1);
-      BbsFreeMemory(pNewMenuData);
+      free(pNewMenuData);
     }
     break;
     case 1: {

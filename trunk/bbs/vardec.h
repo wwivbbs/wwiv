@@ -21,7 +21,6 @@
 #define __INCLUDED_VARDEC_H__
 
 #include <cstdint>
-#include <cstdlib> // for malloc TODO(rushfan): Remove this and bbsmalloc
 
 #pragma pack(push, 1)
 
@@ -1347,18 +1346,6 @@ struct arch {
   short int date, time, crc;
   int32_t size;
 };
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-#ifndef bbsmalloc
-#define bbsmalloc(x) malloc(x)
-#define BbsFreeMemory(x) free(x)
-#endif // bbsmaloc
 
 #pragma pack(pop)
 

@@ -750,8 +750,8 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
         GetSession()->bout.NewLine();
         ++numl;
       }
-      BbsFreeMemory(new_ss);
-      BbsFreeMemory(ss);   // frank's gpf is here.
+      free(new_ss);
+      free(ss);   // frank's gpf is here.
     }
   }
   GetSession()->bout.Color(0);
@@ -811,7 +811,7 @@ int check_lines_needed(uploadsrec * u) {
         ++elines;
         ++tmp;
       }
-      BbsFreeMemory(ss);
+      free(ss);
     }
   }
   if (lc_lines_used + elines > max_lines) {
@@ -858,7 +858,7 @@ char *lp_read_extended_description(const char *pszFileName) {
 
 void lp_zap_ed_info() {
   if (ed_info) {
-    BbsFreeMemory(ed_info);
+    free(ed_info);
     ed_info = NULL;
   }
   if (fileExt.IsOpen()) {
@@ -1527,7 +1527,7 @@ int rename_filename(const char *pszFileName, int dn) {
             if (ss) {
               delete_extended_description(u.filename);
               add_extended_description(s, ss);
-              BbsFreeMemory(ss);
+              free(ss);
             }
             strcpy(u.filename, s);
           } else {
@@ -1550,7 +1550,7 @@ int rename_filename(const char *pszFileName, int dn) {
       if (ss) {
         GetSession()->bout << "|#5Delete it? ";
         if (yesno()) {
-          BbsFreeMemory(ss);
+          free(ss);
           delete_extended_description(u.filename);
           u.mask &= ~mask_extended;
         } else {
@@ -1559,21 +1559,21 @@ int rename_filename(const char *pszFileName, int dn) {
           if (ss) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
-            BbsFreeMemory(ss);
+            free(ss);
           }
         }
       } else {
         modify_extended_description(&ss, directories[dn].name, u.filename);
         if (ss) {
           add_extended_description(u.filename, ss);
-          BbsFreeMemory(ss);
+          free(ss);
           u.mask |= mask_extended;
         } else {
           u.mask &= ~mask_extended;
         }
       }
     } else if (ss) {
-      BbsFreeMemory(ss);
+      free(ss);
       u.mask |= mask_extended;
     } else {
       u.mask &= ~mask_extended;
@@ -1865,7 +1865,7 @@ int move_filename(const char *pszFileName, int dn) {
       }
       if (ss) {
         add_extended_description(u.filename, ss);
-        BbsFreeMemory(ss);
+        free(ss);
       }
       if (!wwiv::strings::IsEquals(szSourceFileName, szDestFileName) &&
           ListPlusExist(szSourceFileName)) {

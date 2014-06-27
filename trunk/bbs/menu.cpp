@@ -111,11 +111,11 @@ void ReadMenuSetup() {
       exit(0);
     }
 
-    short int* index = static_cast<short *>(bbsmalloc(sizeof(short int) * nAmt));
+    short int* index = static_cast<short *>(malloc(sizeof(short int) * nAmt));
     fread(index, 2, nAmt, fp);
     lLen -= ftell(fp);
-    pMenuStrings = static_cast<char *>(bbsmalloc(lLen));
-    ppMenuStringsIndex = static_cast<char **>(bbsmalloc(sizeof(char **) * nAmt));
+    pMenuStrings = static_cast<char *>(malloc(lLen));
+    ppMenuStringsIndex = static_cast<char **>(malloc(sizeof(char **) * nAmt));
     fread(pMenuStrings, lLen, 1, fp);
     fclose(fp);
 
@@ -124,16 +124,16 @@ void ReadMenuSetup() {
     }
     nNumMenuCmds = nAmt;
 
-    BbsFreeMemory(index);
+    free(index);
   }
 }
 
 void mainmenu() {
   if (pSecondUserRec) {
-    BbsFreeMemory(pSecondUserRec);
+    free(pSecondUserRec);
     pSecondUserRec = NULL;
   }
-  pSecondUserRec = static_cast<user_config *>(bbsmalloc(sizeof(user_config)));
+  pSecondUserRec = static_cast<user_config *>(malloc(sizeof(user_config)));
   if (!pSecondUserRec) {
     return;
   }
@@ -144,18 +144,18 @@ void mainmenu() {
     StartMenus();
   }
 
-  BbsFreeMemory(pSecondUserRec);
+  free(pSecondUserRec);
   pSecondUserRec = NULL;
   nSecondUserRecLoaded = 0;
 
-  BbsFreeMemory(pMenuStrings);
+  free(pMenuStrings);
   pMenuStrings = NULL;
-  BbsFreeMemory(ppMenuStringsIndex);
+  free(ppMenuStringsIndex);
   ppMenuStringsIndex = NULL;
 }
 
 void StartMenus() {
-  MenuInstanceData* pMenuData = static_cast<MenuInstanceData *>(bbsmalloc(sizeof(MenuInstanceData)));
+  MenuInstanceData* pMenuData = static_cast<MenuInstanceData *>(malloc(sizeof(MenuInstanceData)));
   pMenuData->pMenuFile = NULL;
   if (!pMenuData) {
     sysoplog("Unable to allocate memory for pMenuData");
@@ -192,7 +192,7 @@ void StartMenus() {
     Menus(pMenuData, pSecondUserRec->szMenuSet, "main"); // default starting menu
   }
   if (pMenuData) {
-    BbsFreeMemory(pMenuData);
+    free(pMenuData);
   }
 }
 
@@ -230,12 +230,12 @@ void CloseMenu(MenuInstanceData * pMenuData) {
   }
 
   if (pMenuData->index != NULL) {
-    BbsFreeMemory(pMenuData->index);
+    free(pMenuData->index);
     pMenuData->index = NULL;
   }
 
   if (pMenuData->szPrompt != NULL) {
-    BbsFreeMemory(pMenuData->szPrompt);
+    free(pMenuData->szPrompt);
     pMenuData->szPrompt = NULL;
   }
 }
@@ -281,7 +281,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
       MenuSysopLog(fileIndex.GetFullPathName());
       return false;
     }
-    pMenuData->index = static_cast<MenuRecIndex *>(bbsmalloc(pMenuData->nAmountRecs * sizeof(MenuRecIndex) + TEST_PADDING));
+    pMenuData->index = static_cast<MenuRecIndex *>(malloc(pMenuData->nAmountRecs * sizeof(MenuRecIndex) + TEST_PADDING));
     if (pMenuData->index != NULL) {
       fileIndex.Read(pMenuData->index, pMenuData->nAmountRecs * sizeof(MenuRecIndex));
     }
@@ -299,7 +299,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   WFile filePrompt(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "pro"));
   if (filePrompt.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite)) {
     long lSize = filePrompt.GetLength();
-    pMenuData->szPrompt = static_cast<char *>(bbsmalloc(lSize + 10 + TEST_PADDING));
+    pMenuData->szPrompt = static_cast<char *>(malloc(lSize + 10 + TEST_PADDING));
     if (pMenuData->szPrompt != NULL) {
       lSize = filePrompt.Read(pMenuData->szPrompt, lSize);
       pMenuData->szPrompt[lSize] = 0;

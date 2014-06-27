@@ -817,7 +817,7 @@ void move_file_t() {
         fileDownload.Close();
         if (pszExtendedDesc) {
           add_extended_description(u.filename, pszExtendedDesc);
-          BbsFreeMemory(pszExtendedDesc);
+          free(pszExtendedDesc);
         }
         StringRemoveWhitespace(s1);
         StringRemoveWhitespace(s2);

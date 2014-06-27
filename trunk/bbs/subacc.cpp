@@ -365,7 +365,7 @@ void delete_message(int mn) {
         // cache is now invalid
         believe_cache = false;
 
-        BbsFreeMemory(pBuffer);
+        free(pBuffer);
       }
     }
   }

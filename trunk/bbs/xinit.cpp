@@ -719,7 +719,7 @@ bool WApplication::SaveConfig() {
 void WApplication::read_nextern() {
   GetSession()->SetNumberOfExternalProtocols(0);
   if (externs) {
-    BbsFreeMemory(externs);
+    free(externs);
     externs = NULL;
   }
 
@@ -738,7 +738,7 @@ void WApplication::read_nextern() {
 
 void WApplication::read_arcs() {
   if (arcs) {
-    BbsFreeMemory(arcs);
+    free(arcs);
     arcs = NULL;
   }
 
@@ -757,7 +757,7 @@ void WApplication::read_arcs() {
 
 void WApplication::read_editors() {
   if (editors) {
-    BbsFreeMemory(editors);
+    free(editors);
     editors = NULL;
   }
   GetSession()->SetNumberOfEditors(0);
@@ -777,7 +777,7 @@ void WApplication::read_editors() {
 
 void WApplication::read_nintern() {
   if (over_intern) {
-    BbsFreeMemory(over_intern);
+    free(over_intern);
     over_intern = NULL;
   }
   WFile file(syscfg.datadir, NINTERN_DAT);
@@ -792,7 +792,7 @@ void WApplication::read_nintern() {
 
 bool WApplication::read_subs() {
   if (subboards) {
-    BbsFreeMemory(subboards);
+    free(subboards);
   }
   subboards = NULL;
   GetSession()->SetMaxNumberMessageAreas(syscfg.max_subs);
@@ -842,7 +842,7 @@ void WApplication::read_networks() {
     fileNetIni.Close();
   }
   if (net_networks) {
-    BbsFreeMemory(net_networks);
+    free(net_networks);
   }
   net_networks = NULL;
   WFile file(syscfg.datadir, NETWORKS_DAT);
@@ -876,7 +876,7 @@ void WApplication::read_networks() {
 
 bool WApplication::read_names() {
   if (smallist) {
-    BbsFreeMemory(smallist);
+    free(smallist);
   }
 
   int maxNumberOfUsers = std::max<int>(statusMgr->GetUserCount(), syscfg.maxusers);
@@ -917,7 +917,7 @@ void WApplication::read_voting() {
 
 bool WApplication::read_dirs() {
   if (directories) {
-    BbsFreeMemory(directories);
+    free(directories);
   }
   directories = NULL;
   GetSession()->SetMaxNumberFileAreas(syscfg.max_dirs);
@@ -938,7 +938,7 @@ bool WApplication::read_dirs() {
 
 void WApplication::read_chains() {
   if (chains) {
-    BbsFreeMemory(chains);
+    free(chains);
   }
   chains = NULL;
   chains = static_cast<chainfilerec *>(BbsAllocA(GetSession()->max_chains * sizeof(chainfilerec)));
@@ -951,7 +951,7 @@ void WApplication::read_chains() {
   file.Close();
   if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     if (chains_reg) {
-      BbsFreeMemory(chains_reg);
+      free(chains_reg);
     }
     chains_reg = NULL;
     chains_reg = static_cast<chainregrec *>(BbsAllocA(GetSession()->max_chains * sizeof(chainregrec)));
@@ -982,7 +982,7 @@ void WApplication::read_chains() {
 
 bool WApplication::read_language() {
   if (languages) {
-    BbsFreeMemory(languages);
+    free(languages);
   }
   languages = NULL;
   WFile file(syscfg.datadir, LANGUAGE_DAT);
@@ -1015,7 +1015,7 @@ bool WApplication::read_language() {
 
 bool WApplication::read_modem() {
   if (modem_i) {
-    BbsFreeMemory(modem_i);
+    free(modem_i);
   }
   modem_i = NULL;
   if (!ok_modem_stuff) {
@@ -1052,7 +1052,7 @@ bool WApplication::read_modem() {
 
 void WApplication::read_gfile() {
   if (gfilesec != NULL) {
-    BbsFreeMemory(gfilesec);
+    free(gfilesec);
     gfilesec = NULL;
   }
   gfilesec = static_cast<gfiledirrec *>(BbsAllocA(static_cast<long>(GetSession()->max_gfilesec * sizeof(gfiledirrec))));

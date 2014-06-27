@@ -1065,7 +1065,7 @@ int WApplication::Run(int argc, char *argv[]) {
       set_net_num(0);
       while (!hangup) {
         if (filelist) {
-          BbsFreeMemory(filelist);
+          free(filelist);
           filelist = NULL;
         }
         zap_ed_info();

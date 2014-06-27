@@ -189,5 +189,5 @@ void voteprint() {
     }
   }
   votingText.Close();
-  BbsFreeMemory(x);
+  free(x);
 }
