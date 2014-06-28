@@ -18,6 +18,7 @@ set(COMMON_SOURCES
   languages.cpp
   levels.cpp
   networks.cpp
+  newinit.cpp
   paths.cpp
   protocols.cpp
   regcode.cpp
