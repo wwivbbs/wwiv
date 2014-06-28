@@ -54,7 +54,7 @@ int WWIV_make_path(const char *s) {
   }
   chdir(current_path);
   if (flp) {
-    BbsFreeMemory(flp);
+    free(flp);
   }
   return 0;
 }
