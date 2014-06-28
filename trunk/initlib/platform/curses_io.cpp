@@ -177,3 +177,18 @@ void CursesIO::SetDefaultFooter() {
   waddstr(footer_, "-Exit ");
   wrefresh(footer_);
 }
+
+void CursesIO::SetIndicatorMode(IndicatorMode mode) {
+  int x = max_x_ - 5;
+  std::string s = "   ";
+  switch (mode) {
+  case IndicatorMode::INSERT:
+    s = "INS";
+    break;
+  case IndicatorMode::OVERWRITE:
+    s = "OVR";
+    break;
+  }
+  mvwaddstr(header_, 1, x, s.c_str());
+  wrefresh(header_);
+}
