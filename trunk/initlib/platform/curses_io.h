@@ -24,6 +24,11 @@
 // Indicator mode for the header bar while editing text.
 enum class IndicatorMode { INSERT, OVERWRITE, NONE };
 
+// Color Scheme
+enum class Scheme { 
+  NORMAL=1, ERROR, WARNING, HIGHLIGHT, HEADER, FOOTER, PROMPT
+};
+
 // Curses implementation of screen display routines for Init.
 class CursesIO {
 
