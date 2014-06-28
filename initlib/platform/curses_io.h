@@ -71,7 +71,6 @@ class CursesIO {
   virtual int  WhereX();
   virtual int  WhereY();
   virtual void Cls();
-  virtual void ClrEol();
   virtual void Putch(unsigned char ch);
   virtual void Puts(const char *pszText);
   virtual void PutsXY(int x, int y, const char *pszText);
@@ -86,10 +85,10 @@ class CursesIO {
   virtual void SetColor(WINDOW* window, Scheme scheme);
   virtual void SetColor(Scheme scheme) { SetColor(window_, scheme); }
 
+  static void Init();
+
  private:
   static std::map<Scheme, SchemeDescription> LoadColorSchemes();
-
-  static void Init();
 
   int max_x_;
   int max_y_;
@@ -97,7 +96,11 @@ class CursesIO {
   WINDOW* footer_;
   WINDOW* header_;
   std::map<Scheme, SchemeDescription> scheme_;
+  IndicatorMode indicator_mode_;
 };
+
+
+extern CursesIO* out;
 
 
 #endif // __INCLUDED_PLATFORM_CURSESIO_H__

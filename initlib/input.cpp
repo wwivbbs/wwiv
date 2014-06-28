@@ -35,8 +35,6 @@
 #undef INSERT
 #endif  // INSERT
 
-extern CursesIO* out;
-
 #define PREV                1
 #define NEXT                2
 #define DONE                4
