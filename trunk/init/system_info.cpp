@@ -101,7 +101,7 @@ void sysinfo1() {
   }
   j2[16] = 0;
   out->Cls();
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   Printf("System PW        : %s\n", syscfg.systempw);
   Printf("System name      : %s\n", syscfg.systemname);
   Printf("System phone     : %s\n", syscfg.systemphone);
@@ -128,7 +128,7 @@ void sysinfo1() {
   Printf("Caller number    : %-7s\n", j17);
   Printf("Days active      : %-7s\n", j19);
 
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   cp = 0;
   bool done = false;
   do {

@@ -30,21 +30,21 @@
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir */
 void setpaths() {
   out->Cls();
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   Printf("Messages Directory : %s\n", syscfg.msgsdir);
   Printf("GFiles Directory   : %s\n", syscfg.gfilesdir);
   Printf("Menu Directory     : %s\n", syscfg.menudir);
   Printf("Data Directory     : %s\n", syscfg.datadir);
   Printf("Downloads Directory: %s\n", syscfg.dloadsdir);
 
-  textattr(COLOR_MAGENTA);
   nlx(2);
+  out->SetColor(Scheme::WARNING);
   Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\n\n");
-  textattr(COLOR_YELLOW);
+  out->SetColor(Scheme::PROMPT);
   Printf(" Changing any of these requires YOU to MANUALLY move files and / or \n");
   Printf(" directory structures.  Consult the documentation prior to changing \n");
   Printf(" any of these settings.\n");
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
 
   int i1;
   int cp = 0;

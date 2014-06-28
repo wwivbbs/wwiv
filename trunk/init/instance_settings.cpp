@@ -51,11 +51,9 @@ void show_instance(EditItems* items) {
 static void show_help() {
 
   // Additions
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(out->footer(), A_BOLD); 
+  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
   waddstr(out->footer(), "A");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(out->footer(), A_BOLD);
+  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
   waddstr(out->footer(), "-Add ");
 }
 
@@ -118,7 +116,7 @@ void instance_editor() {
   int num_instances = number_instances();
   out->Cls();
 
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   Printf("Temporary Directory: %s\n", syscfgovr.tempdir);
   Printf("Batch Directory    : %s\n", syscfgovr.batchdir);
 
