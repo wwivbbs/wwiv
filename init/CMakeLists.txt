@@ -2,10 +2,8 @@
 cmake_minimum_required (VERSION 2.6)
 project (INIT)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(platform)
 include_directories(..)
 include_directories(../initlib)
-include_directories(../initlib/platform)
 
 add_definitions(-DINIT -DNOT_BBS)
 
