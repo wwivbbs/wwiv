@@ -32,7 +32,11 @@ extern unsigned short wwiv_num_version;
 
 static const char* copyrightString = "Copyright (c) 1998-2014, WWIV Software Services";
 
-CursesIO::CursesIO() {
+CursesIO* out;
+
+CursesIO::CursesIO() 
+    : max_x_(0), max_y_(0), window_(nullptr), footer_(nullptr), 
+      header_(nullptr), indicator_mode_(IndicatorMode::NONE) {
   initscr();
   raw();
   keypad(stdscr, TRUE);
@@ -40,11 +44,6 @@ CursesIO::CursesIO() {
   nonl();
   start_color();
   scheme_ = LoadColorSchemes();
-  //for (short b = 0; b < COLORS; b++) {
-  //  for (short f = 0; f < COLORS; f++) {
-  //    init_pair((b * 16) + f, f, b);
-  //  }
-  //}
 
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
@@ -145,11 +144,6 @@ int CursesIO::GetChar() {
   return wgetch(window_);
 }
 
-void CursesIO::ClrEol() {
-  wclrtoeol(window_);
-  wrefresh(window_);
-}
-
 void CursesIO::SetDefaultFooter() {
   werase(footer_);
   wmove(footer_, 0, 0);
@@ -218,5 +212,5 @@ std::map<Scheme, SchemeDescription> CursesIO::LoadColorSchemes() {
 
 // static
 void CursesIO::Init() {
-  // TODO(rushfan): Implement me.
+    out = new CursesIO();
 }
