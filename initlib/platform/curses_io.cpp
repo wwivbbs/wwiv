@@ -22,7 +22,6 @@
 #include <iostream>
 #include <sstream>
 
-//#include "wwivinit.h"
 #include "platform/curses_io.h"
 #include "curses.h"
 
@@ -42,6 +41,15 @@ CursesIO::CursesIO() {
   noecho();
   nonl();
   start_color();
+  /*
+  inir_pair(static_cast<int>(Scheme::NORMAL), COLOR_CYAN, COLOR_BLACK);
+  inir_pair(static_cast<int>(Scheme::ERROR), COLOR_RED, COLOR_BLACK);
+  inir_pair(static_cast<int>(Scheme::WARNING), COLOR_CYAN, COLOR_BLACK);
+  inir_pair(static_cast<int>(Scheme::HILIGHT), COLOR_CYAN, COLOR_BLACK);
+  inir_pair(static_cast<int>(Scheme::HEADER), COLOR_CYAN, COLOR_BLACK);
+  inir_pair(static_cast<int>(Scheme::FOOTER), COLOR_CYAN, COLOR_BLACK);
+  inir_pair(static_cast<int>(Scheme::PROMPT), COLOR_CYAN, COLOR_BLACK);
+  */
   for (short b = 0; b < COLORS; b++) {
     for (short f = 0; f < COLORS; f++) {
       init_pair((b * 16) + f, f, b);
