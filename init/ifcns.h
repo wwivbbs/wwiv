@@ -36,7 +36,6 @@ int exist(const char *s);
 void save_status();
 bool read_status();
 int save_config();
-void create_text(const char *fn);
 void read_user(unsigned int un, userrec *u);
 void write_user(unsigned int un, userrec *u);
 void exit_init(int level);
