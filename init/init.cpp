@@ -40,6 +40,7 @@
 #include "languages.h"
 #include "levels.h"
 #include "networks.h"
+#include "newinit.h"
 #include "paths.h"
 #include "protocols.h"
 #include "regcode.h"
@@ -457,12 +458,12 @@ int WInitApp::main(int argc, char *argv[]) {
     textattr(COLOR_CYAN);
     int y = 1;
     int x = 0;
-    out->PutsXY(x, y++, "1. General System Configuration");
-    out->PutsXY(x, y++, "2. System Paths");
-    out->PutsXY(x, y++, "6. External Protocol Configuration");
-    out->PutsXY(x, y++, "7. External Editor Configuration");
-    out->PutsXY(x, y++, "8. Security Level Configuration");
-    out->PutsXY(x, y++, "9. Auto-Validation Level Configuration");
+    out->PutsXY(x, y++, "G. General System Configuration");
+    out->PutsXY(x, y++, "P. System Paths");
+    out->PutsXY(x, y++, "T. External Transfer Protocol Configuration");
+    out->PutsXY(x, y++, "E. External Editor Configuration");
+    out->PutsXY(x, y++, "S. Security Level Configuration");
+    out->PutsXY(x, y++, "V. Auto-Validation Level Configuration");
     out->PutsXY(x, y++, "A. Archiver Configuration");
     out->PutsXY(x, y++, "I. Instance Configuration");
     out->PutsXY(x, y++, "L. Language Configuration");
@@ -474,36 +475,36 @@ int WInitApp::main(int argc, char *argv[]) {
 
     werase(out->footer());
     y++;
-    out->PutsXY(x, y++, "Command (1,2,6-9,A,I,L,N,Q,R,U,X) ? ");
+    out->PutsXY(x, y++, "Command? ");
     textattr(COLOR_CYAN);
     lines_listed = 0;
-    switch (onek("Q126789AILNPRUVX\033")) {
+    switch (onek("QACEGILNPRSTUVX$\033")) {
     case 'Q':
     case '\033':
       textattr(COLOR_WHITE);
       done = true;
       break;
-    case '1':
+    case 'G':
       out->SetDefaultFooter();
       sysinfo1();
       break;
-    case '2':
+    case 'P':
       out->SetDefaultFooter();
       setpaths();
       break;
-    case '6':
+    case 'T':
       out->SetDefaultFooter();
       extrn_prots();
       break;
-    case '7':
+    case 'E':
       out->SetDefaultFooter();
       extrn_editors();
       break;
-    case '8':
+    case 'S':
       out->SetDefaultFooter();
       sec_levs();
       break;
-    case '9':
+    case 'V':
       out->SetDefaultFooter();
       autoval_levs();
       break;
@@ -522,7 +523,7 @@ int WInitApp::main(int argc, char *argv[]) {
       out->SetDefaultFooter();
       networks();
       break;
-    case 'P':
+    case 'C':
       nlx();
       printcfg();
       out->GetChar();
@@ -534,7 +535,7 @@ int WInitApp::main(int argc, char *argv[]) {
     case 'U':
       user_editor();
       break;
-    case 'V':
+    case '$':
       nlx();
       Printf("WWIV %s%s INIT compiled %s\n", wwiv_version, beta_version, const_cast<char*>(wwiv_date));
       out->GetChar();
