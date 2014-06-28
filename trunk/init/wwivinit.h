@@ -46,9 +46,6 @@
 
 __EXTRN__ initinfo_rec initinfo;
 
-class CursesIO;
-extern CursesIO* out;
-
 #if defined(__unix__)
 
 #define stricmp strcasecmp

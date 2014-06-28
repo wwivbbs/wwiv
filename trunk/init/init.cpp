@@ -53,10 +53,8 @@
 #include "platform/incl1.h"
 #include "platform/wfndfile.h"
 
-CursesIO* out;
 char bbsdir[MAX_PATH];
 char configdat[20] = "config.dat";
-
 
 static void convcfg() {
   arcrec arc[MAX_ARCS];
@@ -169,7 +167,7 @@ static void show_help() {
 }
 
 WInitApp::WInitApp() {
-  out = new CursesIO();
+  CursesIO::Init();
 }
 
 WInitApp::~WInitApp() {
@@ -467,7 +465,6 @@ int WInitApp::main(int argc, char *argv[]) {
     out->PutsXY(x, y++, "X. Update Sub/Directory Maximums");
     out->PutsXY(x, y++, "Q. Quit");
 
-    werase(out->footer());
     y++;
     out->SetColor(Scheme::PROMPT);
     out->PutsXY(x, y++, "Command? ");
@@ -531,6 +528,7 @@ int WInitApp::main(int argc, char *argv[]) {
       break;
     case '$':
       nlx();
+      out->SetDefaultFooter();
       Printf("WWIV %s%s INIT compiled %s\n", wwiv_version, beta_version, const_cast<char*>(wwiv_date));
       out->GetChar();
       break;
