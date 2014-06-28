@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_PLATFORM_CURSESIO_H__
 #define __INCLUDED_PLATFORM_CURSESIO_H__
 
+#include <map>
 #include <curses.h>
 
 // Indicator mode for the header bar while editing text.
@@ -26,7 +27,35 @@ enum class IndicatorMode { INSERT, OVERWRITE, NONE };
 
 // Color Scheme
 enum class Scheme { 
-  NORMAL=1, ERROR, WARNING, HIGHLIGHT, HEADER, FOOTER, PROMPT
+  NORMAL=1, ERROR_TEXT, WARNING, HIGHLIGHT, HEADER, HEADER_COPYRIGHT, 
+  FOOTER_KEY, FOOTER_TEXT, 
+  PROMPT, EDITLINE, INFO, 
+  DIALOG_PROMPT, DIALOG_BOX, DIALOG_TEXT,
+  UNKNOWN
+};
+
+// Describes a color scheme.
+class SchemeDescription {
+public:
+  SchemeDescription(Scheme scheme, int f, int b, bool bold) 
+    : scheme_(scheme), f_(f), b_(b), bold_(bold) {}
+
+  // Make the unknown scheme magenta on a red background to make it easy to spot.
+  SchemeDescription(): scheme_(Scheme::UNKNOWN), f_(COLOR_MAGENTA), b_(COLOR_RED), bold_(true) {}
+
+  // Don't provide a user defined destructor since that will block move semantics
+  // virtual ~SchemeDescription() {}
+
+  int color_pair() const { return static_cast<int>(scheme_); }
+  int f() const { return f_; }
+  int b() const { return b_; }
+  bool bold() const { return bold_; }
+
+private:
+  Scheme scheme_;
+  int f_;
+  int b_;
+  bool bold_;
 };
 
 // Curses implementation of screen display routines for Init.
@@ -53,14 +82,22 @@ class CursesIO {
   virtual WINDOW* header() const { return header_; }
   virtual void SetDefaultFooter();
   virtual void SetIndicatorMode(IndicatorMode mode);
+  virtual attr_t GetAttributesForScheme(Scheme id);
+  virtual void SetColor(WINDOW* window, Scheme scheme);
+  virtual void SetColor(Scheme scheme) { SetColor(window_, scheme); }
 
  private:
-  void SetCursesAttribute();
+  static std::map<Scheme, SchemeDescription> LoadColorSchemes();
+
+  static void Init();
+
   int max_x_;
   int max_y_;
   WINDOW* window_;
   WINDOW* footer_;
   WINDOW* header_;
+  std::map<Scheme, SchemeDescription> scheme_;
 };
+
 
 #endif // __INCLUDED_PLATFORM_CURSESIO_H__

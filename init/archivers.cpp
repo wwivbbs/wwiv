@@ -58,17 +58,17 @@ void edit_arc(int nn) {
     int cp = 4;
     done1 = false;
     out->Cls();
-    textattr(COLOR_YELLOW);
+    out->SetColor(Scheme::PROMPT);
     Printf("                 Archiver Configuration\n\n");
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::NORMAL);
     if (i == 0) {
       Printf("Archiver #%d  ", i + 1);
-      textattr(COLOR_YELLOW);
+      out->SetColor(Scheme::PROMPT);
       Printf("(Default)\n\n");
     } else {
       Printf("Archiver #%d           \n\n", i + 1);
     }
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::NORMAL);
     Printf("Archiver Name      : %s\n", arc[i].name);
     Printf("Archiver Extension : %s\n", arc[i].extension);
     Printf("List Archive       : %s\n", arc[i].arcl);
@@ -79,14 +79,14 @@ void edit_arc(int nn) {
     Printf("Test Archive       : %s\n", arc[i].arct);
     out->GotoXY(0, 13);
     Printf("                                                             \n");
-    textattr(11);
+    out->SetColor(Scheme::NORMAL);
     Printf("[ = Previous Archiver  ] = Next Archiver\n");
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::NORMAL);
     Printf("                                                             \n");
     Printf("                                                             \n");
-    textattr(COLOR_YELLOW);
+    out->SetColor(Scheme::PROMPT);
     Puts("<ENTER> to edit    <ESC> when done.");
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::NORMAL);
     nlx();
     char ch = onek("\033[]\r");
     switch (ch) {
@@ -98,9 +98,9 @@ void edit_arc(int nn) {
       Printf("the archiver and extension should be used. I.E.:             \n");
       Printf("c:\\bin\\arcs\\zip.exe -a %%1 %%2                              \n");
       Printf("                                                             \n");
-      textattr(COLOR_YELLOW);
+      out->SetColor(Scheme::PROMPT);
       Printf("<ESC> when done\n");
-      textattr(COLOR_CYAN);
+      out->SetColor(Scheme::NORMAL);
       bool done = false;
       do {
         int i1 = 0;
@@ -242,7 +242,6 @@ void create_arcs() {
   int hFile = _open(szFileName, O_WRONLY | O_BINARY | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
   if (hFile < 0) {
     Printf("Couldn't open '%s' for writing.\n", szFileName);
-    textattr(COLOR_WHITE);
     exit_init(1);
   }
   _write(hFile, (void *)arc, MAX_ARCS * sizeof(arcrec));

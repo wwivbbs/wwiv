@@ -46,15 +46,15 @@ void edit_editor(int n) {
   Printf("Description     : %s\n", c.description);
   Printf("Filename to run remotely\n%s\n", c.filename);
   Printf("Filename to run locally\n%s\n", c.filenamecon);
-  textattr(COLOR_YELLOW);
+  out->SetColor(Scheme::PROMPT);
   Puts("\n<ESC> when done.\n\n");
-  textattr(11);
+  out->SetColor(Scheme::NORMAL);
   Printf("%%1 = filename to edit\n");
   Printf("%%2 = chars per line\n");
   Printf("%%3 = lines per page\n");
   Printf("%%4 = max lines\n");
   Printf("%%5 = instance number\n");
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
 
   do {
     switch (cp) {
@@ -101,9 +101,9 @@ void extrn_editors() {
       Printf("%d. %s\n", i + 1, editors[i].description);
     }
     nlx();
-    textattr(COLOR_YELLOW);
+    out->SetColor(Scheme::PROMPT);
     Puts("Editors: M:odify, D:elete, I:nsert, Q:uit : ");
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::NORMAL);
     char ch = onek("Q\033MID");
     switch (ch) {
     case 'Q':
@@ -113,9 +113,9 @@ void extrn_editors() {
     case 'M':
       if (initinfo.numeditors) {
         nlx();
-        textattr(COLOR_RED);
+        out->SetColor(Scheme::ERROR_TEXT);
         Printf("Edit which (1-%d) ? ", initinfo.numeditors);
-        textattr(COLOR_CYAN);
+        out->SetColor(Scheme::NORMAL);
         int i = input_number(2);
         if ((i > 0) && (i <= initinfo.numeditors)) {
           edit_editor(i - 1);
@@ -125,9 +125,9 @@ void extrn_editors() {
     case 'D':
       if (initinfo.numeditors) {
         nlx();
-        textattr(COLOR_RED);
+        out->SetColor(Scheme::ERROR_TEXT);
         Printf("Delete which (1-%d) ? ", initinfo.numeditors);
-        textattr(COLOR_CYAN);
+        out->SetColor(Scheme::NORMAL);
         int i = input_number(2);
         if ((i > 0) && (i <= initinfo.numeditors)) {
           for (i1 = i - 1; i1 < initinfo.numeditors; i1++) {
@@ -139,16 +139,16 @@ void extrn_editors() {
       break;
     case 'I':
       if (initinfo.numeditors >= 10) {
-        textattr(COLOR_RED);
+        out->SetColor(Scheme::ERROR_TEXT);
         Printf("Too many editors.\n");
-        textattr(COLOR_CYAN);
+        out->SetColor(Scheme::NORMAL);
         nlx();
         break;
       }
       nlx();
-      textattr(COLOR_YELLOW);
+      out->SetColor(Scheme::PROMPT);
       Printf("Insert before which (1-%d) ? ", initinfo.numeditors + 1);
-      textattr(COLOR_CYAN);
+      out->SetColor(Scheme::NORMAL);
       int i = input_number(2);
       if ((i > 0) && (i <= initinfo.numeditors + 1)) {
         for (i1 = initinfo.numeditors; i1 > i - 1; i1--) {

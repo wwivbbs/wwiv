@@ -44,12 +44,14 @@ static void edit_lang(int nn) {
   bool done = false;
   int cp = 0;
   n = &(languages[nn]);
+  out->SetColor(Scheme::NORMAL);
+
   Printf("Language name  : %s\n", n->name);
   Printf("Data Directory : %s\n", n->dir);
   Printf("Menu Directory : %s\n", n->mdir);
-  textattr(COLOR_YELLOW);
+  out->SetColor(Scheme::PROMPT);
   Puts("\n<ESC> when done.\n\n");
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   do {
     out->GotoXY(17, cp);
     switch (cp) {
@@ -98,9 +100,9 @@ void edit_languages() {
       Printf("%-2d. %-20s    %-50s\n", i + 1, languages[i].name, languages[i].dir);
     }
     nlx();
-    textattr(COLOR_YELLOW);
+    out->SetColor(Scheme::PROMPT);
     Puts("Languages: M:odify, D:elete, I:nsert, Q:uit : ");
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::NORMAL);
     char ch = onek("Q\033MID");
     switch (ch) {
     case 'Q':
@@ -109,10 +111,10 @@ void edit_languages() {
       break;
     case 'M':
       nlx();
-      textattr(COLOR_YELLOW);
+      out->SetColor(Scheme::PROMPT);
       sprintf(s1, "Edit which (1-%d) ? ", initinfo.num_languages);
       Puts(s1);
-      textattr(COLOR_CYAN);
+      out->SetColor(Scheme::NORMAL);
       i = input_number(2);
       if ((i > 0) && (i <= initinfo.num_languages)) {
         edit_lang(i - 1);
@@ -122,15 +124,15 @@ void edit_languages() {
       if (initinfo.num_languages > 1) {
         nlx();
         sprintf(s1, "Delete which (1-%d) ? ", initinfo.num_languages);
-        textattr(COLOR_YELLOW);
+        out->SetColor(Scheme::PROMPT);
         Puts(s1);
-        textattr(COLOR_CYAN);
+        out->SetColor(Scheme::NORMAL);
         i = input_number(2);
         if ((i > 0) && (i <= initinfo.num_languages)) {
           nlx();
-          textattr(COLOR_RED);
+          out->SetColor(Scheme::ERROR_TEXT);
           Puts("Are you sure? ");
-          textattr(COLOR_CYAN);
+          out->SetColor(Scheme::NORMAL);
           ch = onek("YN\r");
           if (ch == 'Y') {
             initinfo.num_languages--;
@@ -144,32 +146,32 @@ void edit_languages() {
         }
       } else {
         nlx();
-        textattr(COLOR_RED);
+        out->SetColor(Scheme::ERROR_TEXT);
         Printf("You must leave at least one language.\n");
-        textattr(COLOR_CYAN);
+        out->SetColor(Scheme::NORMAL);
         nlx();
         out->GetChar();
       }
       break;
     case 'I':
       if (initinfo.num_languages >= MAX_LANGUAGES) {
-        textattr(COLOR_RED);
+        out->SetColor(Scheme::ERROR_TEXT);
         Printf("Too many languages.\n");
-        textattr(COLOR_CYAN);
+        out->SetColor(Scheme::NORMAL);
         nlx();
         out->GetChar();
         break;
       }
       nlx();
-      textattr(COLOR_YELLOW);
+      out->SetColor(Scheme::PROMPT);
       sprintf(s1, "Insert before which (1-%d) ? ", initinfo.num_languages + 1);
       Puts(s1);
-      textattr(COLOR_CYAN);
+      out->SetColor(Scheme::NORMAL);
       i = input_number(2);
       if ((i > 0) && (i <= initinfo.num_languages + 1)) {
-        textattr(COLOR_RED);
+        out->SetColor(Scheme::ERROR_TEXT);
         Puts("Are you sure? ");
-        textattr(COLOR_CYAN);
+        out->SetColor(Scheme::NORMAL);
         ch = onek("YN\r");
         if (ch == 'Y') {
           --i;

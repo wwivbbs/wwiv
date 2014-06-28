@@ -44,9 +44,6 @@
 #define MAX_LANGUAGES 100
 #define MAX_ALLOWED_PORT 8
 
-// Misc Junk for now
-#define textattr(x) curatr = (x)
-
 __EXTRN__ initinfo_rec initinfo;
 
 class CursesIO;

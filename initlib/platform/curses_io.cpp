@@ -29,8 +29,6 @@ extern const char *wwiv_version;
 extern const char *beta_version;
 extern const char *wwiv_date;
 extern unsigned short wwiv_num_version;
-extern int curatr;
-
 
 static const char* copyrightString = "Copyright (c) 1998-2014, WWIV Software Services";
 
@@ -41,33 +39,25 @@ CursesIO::CursesIO() {
   noecho();
   nonl();
   start_color();
-  /*
-  inir_pair(static_cast<int>(Scheme::NORMAL), COLOR_CYAN, COLOR_BLACK);
-  inir_pair(static_cast<int>(Scheme::ERROR), COLOR_RED, COLOR_BLACK);
-  inir_pair(static_cast<int>(Scheme::WARNING), COLOR_CYAN, COLOR_BLACK);
-  inir_pair(static_cast<int>(Scheme::HILIGHT), COLOR_CYAN, COLOR_BLACK);
-  inir_pair(static_cast<int>(Scheme::HEADER), COLOR_CYAN, COLOR_BLACK);
-  inir_pair(static_cast<int>(Scheme::FOOTER), COLOR_CYAN, COLOR_BLACK);
-  inir_pair(static_cast<int>(Scheme::PROMPT), COLOR_CYAN, COLOR_BLACK);
-  */
-  for (short b = 0; b < COLORS; b++) {
-    for (short f = 0; f < COLORS; f++) {
-      init_pair((b * 16) + f, f, b);
-    }
-  }
+  scheme_ = LoadColorSchemes();
+  //for (short b = 0; b < COLORS; b++) {
+  //  for (short f = 0; f < COLORS; f++) {
+  //    init_pair((b * 16) + f, f, b);
+  //  }
+  //}
 
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
   header_ = newwin(2, 0, 0, 0);
   footer_ = newwin(2, 0, stdscr_maxy-2, 0);
-  wbkgd(header_, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
-  wattrset(header_, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
-  wattron(header_, A_BOLD);
+  wbkgd(header_, GetAttributesForScheme(Scheme::HEADER));
   char s[81];
   sprintf(s, "WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
+  SetColor(header_, Scheme::HEADER);
   mvwprintw(header_, 0, 0, s);
+  SetColor(header_, Scheme::HEADER_COPYRIGHT);
   mvwaddstr(header_, 1, 0, copyrightString);
-  wbkgd(footer_, COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
+  wbkgd(footer_, GetAttributesForScheme(Scheme::HEADER));
   wrefresh(header_);
   wrefresh(footer_);
   redrawwin(header_);
@@ -124,31 +114,18 @@ int CursesIO::WhereY() {
  * Clears the local logical screen
  */
 void CursesIO::Cls() {
-  wattrset(window_, COLOR_PAIR(7));
+  SetColor(Scheme::NORMAL);
   wclear(window_);
   wrefresh(window_);
   GotoXY(0, 0);
 }
 
-void CursesIO::SetCursesAttribute() {
-  unsigned long attr = COLOR_PAIR(curatr);
-  unsigned long f = curatr & 0x0f;
-  wattrset(window_, attr);
-  if (f > 7) {
-    wattron(window_, A_BOLD);
-  } else {
-    wattroff(window_, A_BOLD);
-  }
-}
-
 void CursesIO::Putch(unsigned char ch) {
-  SetCursesAttribute();
   waddch(window_, ch);
   wrefresh(window_);
 }
 
 void CursesIO::Puts(const char *pszText) {
-  SetCursesAttribute();
   if (strlen(pszText) == 2) {
     if (pszText[0] == '\r' && pszText[1] == '\n') {
       GotoXY(0, WhereY() + 1);
@@ -169,7 +146,6 @@ int CursesIO::GetChar() {
 }
 
 void CursesIO::ClrEol() {
-  SetCursesAttribute();
   wclrtoeol(window_);
   wrefresh(window_);
 }
@@ -177,11 +153,9 @@ void CursesIO::ClrEol() {
 void CursesIO::SetDefaultFooter() {
   werase(footer_);
   wmove(footer_, 0, 0);
-  wattrset(footer_, COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(footer_, A_BOLD); 
+  SetColor(footer_, Scheme::FOOTER_KEY);
   mvwaddstr(footer_, 0, 0, "Esc");
-  wattrset(footer_, COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(footer_, A_BOLD);
+  SetColor(footer_, Scheme::FOOTER_TEXT);
   waddstr(footer_, "-Exit ");
   wrefresh(footer_);
 }
@@ -199,4 +173,50 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
   }
   mvwaddstr(header_, 1, x, s.c_str());
   wrefresh(header_);
+}
+
+attr_t CursesIO::GetAttributesForScheme(Scheme id) {
+  const SchemeDescription& s = scheme_[id];
+  attr_t attr = COLOR_PAIR(s.color_pair());
+  if (s.bold()) {
+    attr |= A_BOLD;
+  }
+  return attr;
+}
+
+void CursesIO::SetColor(WINDOW* window, Scheme id) {
+  wattrset(window, GetAttributesForScheme(id));
+}
+
+// static 
+std::map<Scheme, SchemeDescription> CursesIO::LoadColorSchemes() {
+  std::map<Scheme, SchemeDescription> scheme;
+
+  // Create a default color scheme, ideally this would be loaded from an INI file or some other
+  // configuration file, but this is a sufficient start.
+  scheme[Scheme::NORMAL] = SchemeDescription(Scheme::NORMAL, COLOR_CYAN, COLOR_BLACK, false);
+  scheme[Scheme::ERROR_TEXT] = SchemeDescription(Scheme::ERROR_TEXT, COLOR_RED, COLOR_BLACK, false);
+  scheme[Scheme::WARNING] = SchemeDescription(Scheme::WARNING, COLOR_MAGENTA, COLOR_BLACK, true);
+  scheme[Scheme::HIGHLIGHT] = SchemeDescription(Scheme::HIGHLIGHT, COLOR_CYAN, COLOR_BLACK, true);
+  scheme[Scheme::HEADER] = SchemeDescription(Scheme::HEADER, COLOR_YELLOW, COLOR_BLUE, true);
+  scheme[Scheme::HEADER_COPYRIGHT] = SchemeDescription(Scheme::HEADER_COPYRIGHT, COLOR_WHITE, COLOR_BLUE, true);
+  scheme[Scheme::FOOTER_KEY] = SchemeDescription(Scheme::FOOTER_KEY, COLOR_YELLOW, COLOR_BLUE, true);
+  scheme[Scheme::FOOTER_TEXT] = SchemeDescription(Scheme::FOOTER_TEXT, COLOR_CYAN, COLOR_BLUE, false);
+  scheme[Scheme::PROMPT] = SchemeDescription(Scheme::PROMPT, COLOR_YELLOW, COLOR_BLACK, true);
+  scheme[Scheme::EDITLINE] = SchemeDescription(Scheme::EDITLINE, COLOR_WHITE, COLOR_BLUE, true);
+  scheme[Scheme::INFO] = SchemeDescription(Scheme::INFO, COLOR_CYAN, COLOR_BLACK, false);
+  scheme[Scheme::DIALOG_PROMPT] = SchemeDescription(Scheme::DIALOG_PROMPT, COLOR_YELLOW, COLOR_BLUE, true);
+  scheme[Scheme::DIALOG_BOX] = SchemeDescription(Scheme::DIALOG_BOX, COLOR_GREEN, COLOR_BLUE, true);
+  scheme[Scheme::DIALOG_TEXT] = SchemeDescription(Scheme::DIALOG_TEXT, COLOR_CYAN, COLOR_BLUE, true);
+
+  // Create the color pairs for each of the colors defined in the color scheme.
+  for (const auto& kv : scheme) {
+    init_pair(kv.second.color_pair(), kv.second.f(), kv.second.b());
+  }
+  return scheme;
+}
+
+// static
+void CursesIO::Init() {
+  // TODO(rushfan): Implement me.
 }

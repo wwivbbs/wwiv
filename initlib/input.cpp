@@ -47,9 +47,6 @@ extern CursesIO* out;
 #define ALL                 4
 #define SET                   8
 
-#define textattr(x) curatr = (x)
-extern int curatr;
-
 // local functions.
 void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength);
 
@@ -150,7 +147,7 @@ void EditItems::Display() const {
   if (additional_helpfn_)
     additional_helpfn();
 
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
 
   for (BaseEditItem* item : items_) {
     item->Display();
@@ -158,43 +155,34 @@ void EditItems::Display() const {
 }
 
 void EditItems::ShowHelp() const {
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(out->footer(), A_BOLD); 
+  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
   mvwaddstr(out->footer(), 0, 0, "Esc");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(out->footer(), A_BOLD);
+  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
   waddstr(out->footer(), "-Exit ");
 
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW));
-  wattron(out->footer(), A_BOLD); 
+  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
   waddstr(out->footer(), "Enter");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(out->footer(), A_BOLD);
+  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
   waddstr(out->footer(), "-Edit ");  
 
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(out->footer(), A_BOLD); 
+  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
   waddstr(out->footer(), "[");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(out->footer(), A_BOLD);
+  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
   waddstr(out->footer(), "-Previous ");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(out->footer(), A_BOLD); 
+
+  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
   waddstr(out->footer(), "]");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(out->footer(), A_BOLD);
+  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
   waddstr(out->footer(), "-Next ");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(out->footer(), A_BOLD); 
+
+  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
   waddstr(out->footer(), "{");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(out->footer(), A_BOLD);
+  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
   waddstr(out->footer(), "-Previous 10 ");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_YELLOW)); 
-  wattron(out->footer(), A_BOLD); 
+
+  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
   waddstr(out->footer(), "}");
-  wattrset(out->footer(), COLOR_PAIR((COLOR_BLUE * 16) + COLOR_CYAN)); 
-  wattroff(out->footer(), A_BOLD);
+  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
   waddstr(out->footer(), "-Next 10 ");
 
   if (additional_helpfn_) {
@@ -264,9 +252,8 @@ static WINDOW* CreateDialogWindow(int height, int width) {
   const int startx = (maxx - width - 4) / 2;
   const int starty = (maxy - height - 2) / 2;
   WINDOW *dialog = newwin(height + 2, width + 4, starty, startx);
-  wbkgd(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_WHITE));
-  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
-  wattron(dialog, A_BOLD);
+  wbkgd(dialog, out->GetAttributesForScheme(Scheme::DIALOG_BOX));
+  out->SetColor(dialog, Scheme::DIALOG_BOX);
   box(dialog, 0, 0);
   return dialog;
 }
@@ -300,12 +287,13 @@ void input_password(const std::string prompt, const vector<std::string>& text, c
     maxlen = std::max<int>(maxlen, s.length());
   }
   WINDOW *dialog = CreateDialogWindow(text.size() + 2, maxlen);
-  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_CYAN));
+  out->SetColor(dialog, Scheme::DIALOG_TEXT);
+
   int curline = 1;
   for (const auto& s : text) {
     mvwaddstr(dialog, curline++, 2, s.c_str());
   }
-  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
+  out->SetColor(dialog, Scheme::DIALOG_PROMPT);
   mvwaddstr(dialog, text.size() + 2, 2, prompt.c_str());
   wrefresh(dialog);
   winput_password(dialog, output, max_length);
@@ -324,12 +312,12 @@ void messagebox(const std::vector<std::string>& text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
   WINDOW *dialog = CreateDialogWindow(text.size() + 2, maxlen);
-  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_CYAN));
+  out->SetColor(dialog, Scheme::DIALOG_TEXT);
   int curline = 1;
   for (const auto& s : text) {
     mvwaddstr(dialog, curline++, 2, s.c_str());
   }
-  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
+  out->SetColor(dialog, Scheme::DIALOG_PROMPT);
   int x = (maxlen - prompt.length()) / 2;
   mvwaddstr(dialog, text.size() + 2, x + 2, prompt.c_str());
   wrefresh(dialog);
@@ -353,7 +341,7 @@ int input_number(int max_digits) {
 * characters are converted to uppercase.
 */
 void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength) {
-  wattrset(dialog, COLOR_PAIR((16 * COLOR_BLUE) + COLOR_YELLOW));
+  out->SetColor(dialog, Scheme::DIALOG_PROMPT);
 
   int curpos = 0;
 
@@ -449,15 +437,17 @@ void editline(std::string* s, int len, int status, int *returncode, const char *
 
 /* editline edits a string, doing I/O to the screen only. */
 void editline(char *s, int len, int status, int *returncode, const char *ss) {
-  int i;
-  int oldatr = curatr;
+  attr_t old_attr;
+  short old_pair;
+  wattr_get(out->window(), &old_attr, &old_pair, nullptr);
   int cx = out->WhereX();
   int cy = out->WhereY();
+  int i;
   for (i = strlen(s); i < len; i++) {
     s[i] = static_cast<char>(background_character);
   }
   s[len] = '\0';
-  textattr((16 * COLOR_BLUE) + COLOR_WHITE);
+  out->SetColor(Scheme::EDITLINE);
   out->Puts(s);
   out->SetIndicatorMode(IndicatorMode::OVERWRITE);
   out->GotoXY(cx, cy);
@@ -619,7 +609,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   sprintf(szFinishedString, "%-255s", s);
   szFinishedString[ len ] = '\0';
   out->GotoXY(cx, cy);
-  curatr = oldatr;
+  wattrset(out->window(), COLOR_PAIR(old_pair) | old_attr);
   out->Puts(szFinishedString);
   out->GotoXY(cx, cy);
   out->SetIndicatorMode(IndicatorMode::NONE);
@@ -630,7 +620,9 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
     value = 0;
   }
 
-  int oldatr = curatr;
+  attr_t old_attr;
+  short old_pair;
+  wattr_get(out->window(), &old_attr, &old_pair, nullptr);
   int cx = out->WhereX();
   int cy = out->WhereY();
   int curatr = 0x1f;
@@ -673,7 +665,7 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
     }
   } while (!done);
   out->GotoXY(cx, cy);
-  curatr = oldatr;
+  wattrset(out->window(), COLOR_PAIR(old_pair) | old_attr);
   out->Puts(strings[value]);
   out->GotoXY(cx, cy);
   return value;
@@ -705,9 +697,9 @@ int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCod
 * a key to be hit.
 */
 void pausescr() {
-  textattr(COLOR_MAGENTA);
+  out->SetColor(Scheme::INFO);
   Puts("[PAUSE]");
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   wgetch(out->window());
   for (int i = 0; i < 7; i++) {
     waddstr(stdscr, "\b \b");

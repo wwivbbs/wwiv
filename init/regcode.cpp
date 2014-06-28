@@ -27,11 +27,11 @@
 
 
 void edit_registration_code() {
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   out->Cls();
   Printf("Registration Number  : %d\n", syscfg.wwiv_reg_number);
   nlx(2);
-  textattr(COLOR_YELLOW);
+  out->SetColor(Scheme::PROMPT);
   Printf("<ESC> when done.\n");
 
   EditItems items{ new NumberEditItem<uint32_t>(23, 0, &syscfg.wwiv_reg_number) };
