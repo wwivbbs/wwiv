@@ -66,7 +66,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
       global_buf = static_cast<char *>(BbsAllocA(GLOBAL_SIZE));
       if (!bOpen || (!global_buf)) {
         if (global_buf) {
-          BbsFreeMemory(global_buf);
+          free(global_buf);
           global_buf = NULL;
         }
       }
@@ -76,7 +76,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
       fileGlobalCap.Write(global_buf, global_ptr);
       fileGlobalCap.Close();
       if (global_buf) {
-        BbsFreeMemory(global_buf);
+        free(global_buf);
         global_buf = NULL;
       }
     }
@@ -105,7 +105,7 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
         fileGlobalCap.Write(global_buf, global_ptr);
         fileGlobalCap.Close();
         if (global_buf) {
-          BbsFreeMemory(global_buf);
+          free(global_buf);
           global_buf = NULL;
         }
       }
@@ -135,7 +135,7 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
       global_buf = static_cast<char *>(BbsAllocA(GLOBAL_SIZE));
       if (!fileGlobalCap.IsOpen() || (!global_buf)) {
         if (global_buf) {
-          BbsFreeMemory(global_buf);
+          free(global_buf);
           global_buf = NULL;
         }
         set_x_only(0, NULL, 0);

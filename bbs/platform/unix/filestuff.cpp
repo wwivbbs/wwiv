@@ -71,6 +71,6 @@ void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
     pTempFn = pszTemp;
   }
   strcpy(pszFileName, pTempFn);
-  BbsFreeMemory(pszTemp);
+  free(pszTemp);
 }
 
