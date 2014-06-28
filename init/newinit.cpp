@@ -69,9 +69,9 @@ static void init_files() {
   subboardrec s1;
   directoryrec d1;
 
-  textattr(COLOR_YELLOW);
+  out->SetColor(Scheme::PROMPT);
   Puts("Creating Data Files.");
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
 
   memset(&syscfg, 0, sizeof(configrec));
 
@@ -314,9 +314,9 @@ static void init_files() {
   close(hFile);
   Printf(".\n");
   ////////////////////////////////////////////////////////////////////////////
-  textattr(COLOR_YELLOW);
+  out->SetColor(Scheme::PROMPT);
   Puts("Copying String and Miscellaneous files.");
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
 
   Printf(".");
   rename("wwivini.500", "wwiv.ini");
@@ -344,9 +344,9 @@ static void init_files() {
   Printf(".\n");
 
   ////////////////////////////////////////////////////////////////////////////
-  textattr(COLOR_YELLOW);
+  out->SetColor(Scheme::PROMPT);
   Puts("Decompressing archives.  Please wait");
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   if (exist("en-menus.zip")) {
     char szDestination[MAX_PATH];
     Printf(".");
@@ -377,7 +377,7 @@ static void init_files() {
     rename("zip-city.zip", szDestination);
     Printf(".");
   }
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   Printf(".\n");
 }
 
@@ -398,19 +398,18 @@ void new_init() {
     "temp2",
     0L,
   };
-  textattr(COLOR_YELLOW);
+  out->SetColor(Scheme::PROMPT);
   Puts("\n\nNow performing installation.  Please wait...\n\n");
   Puts("Creating Directories");
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   for (int i = 0; i < ENTRIES; ++i) {
-    textattr(11);
+    out->SetColor(Scheme::NORMAL);
     Printf(".");
     int nRet = chdir(dirname[i]);
     if (nRet) {
       if (mkdir(dirname[i])) {
-        textattr(COLOR_RED);
+        out->SetColor(Scheme::ERROR_TEXT);
         Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname[i]);
-        textattr(COLOR_WHITE);
         exit_init(2);
       }
     } else {

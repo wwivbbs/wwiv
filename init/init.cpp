@@ -63,9 +63,9 @@ static void convcfg() {
 
   int hFile = open(configdat, O_RDWR | O_BINARY);
   if (hFile > 0) {
-    textattr(COLOR_YELLOW);
+    out->SetColor(Scheme::INFO);
     Printf("Converting config.dat to 4.30/5.00 format...\n");
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::NORMAL);
     read(hFile, (void *)(&syscfg), sizeof(configrec));
     sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
     strcpy(syscfg.logoff_c, " ");
@@ -136,14 +136,14 @@ int verify_dir(char *typeDir, char *dirName) {
   if (fnd.next() && fnd.IsDirectory()) {
     out->GotoXY(0, 8);
     sprintf(s, "The %s directory: %s is invalid!", typeDir, dirName);
-    textattr(COLOR_RED);
+    out->SetColor(Scheme::ERROR_TEXT);
     out->Puts(s);
     for (unsigned int i = 0; i < strlen(s); i++) {
       Printf("\b \b");
     }
     if ((strcmp(typeDir, "Temporary") == 0) || (strcmp(typeDir, "Batch") == 0)) {
       sprintf(s, "Create %s? ", dirName);
-      textattr(COLOR_GREEN);
+      out->SetColor(Scheme::PROMPT);
       out->Puts(s);
       ch = out->GetChar();
       if (toupper(ch) == 'Y') {
@@ -153,9 +153,8 @@ int verify_dir(char *typeDir, char *dirName) {
         Printf("\b \b");
       }
     }
-    textattr(COLOR_YELLOW);
+    out->SetColor(Scheme::PROMPT);
     out->Puts("<ESC> when done.");
-    textattr(COLOR_CYAN);
     rc = 1;
   }
   WWIV_ChangeDirTo(bbsdir);
@@ -202,7 +201,7 @@ int WInitApp::main(int argc, char *argv[]) {
   daylight = 0; // C Runtime Variable -- WHY? from init()
 
   out->Cls();
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
 
   configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile > 0) {
@@ -254,7 +253,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile < 0) {
-    textattr(COLOR_RED);
+    out->SetColor(Scheme::ERROR_TEXT);
     Printf("%s NOT FOUND.\n\n", configdat);
     if (dialog_yn("Perform initial installation")) {
       new_init();
@@ -263,7 +262,6 @@ int WInitApp::main(int argc, char *argv[]) {
       newbbs = 1;
       configfile = open(configdat, O_RDWR | O_BINARY);
     } else {
-      textattr(COLOR_WHITE);
       exit_init(1);
     }
   }
@@ -368,7 +366,6 @@ int WInitApp::main(int argc, char *argv[]) {
       net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
       if (!net_networks) {
         Printf("needed %d bytes\n", MAX_NETWORKS * sizeof(net_networks_rec));
-        textattr(COLOR_WHITE);
         exit_init(2);
       }
       memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
@@ -406,7 +403,6 @@ int WInitApp::main(int argc, char *argv[]) {
   languages = (languagerec*) malloc(MAX_LANGUAGES * sizeof(languagerec));
   if (!languages) {
     Printf("needed %d bytes\n", MAX_LANGUAGES * sizeof(languagerec));
-    textattr(COLOR_WHITE);
     exit_init(2);
   }
 
@@ -430,7 +426,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   if (newbbs) {
     nlx();
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::PROMPT);
     Printf("You will now need to enter the system password, 'SYSOP'.\n");
     nlx();
   }
@@ -440,12 +436,10 @@ int WInitApp::main(int argc, char *argv[]) {
     std::vector<std::string> lines { "Please enter the System Password. "};
     input_password("SY:", lines, s, 20);
     if (strcmp(s, (syscfg.systempw)) != 0) {
-      textattr(COLOR_WHITE);
       out->Cls();
       nlx(2);
-      textattr(COLOR_RED);
+      out->SetColor(Scheme::ERROR_TEXT);
       Printf("I'm sorry, that isn't the correct system password.\n");
-      textattr(COLOR_WHITE);
       exit_init(2);
     }
   }
@@ -455,7 +449,7 @@ int WInitApp::main(int argc, char *argv[]) {
     out->Cls();
     out->SetDefaultFooter();
 
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::NORMAL);
     int y = 1;
     int x = 0;
     out->PutsXY(x, y++, "G. General System Configuration");
@@ -475,13 +469,13 @@ int WInitApp::main(int argc, char *argv[]) {
 
     werase(out->footer());
     y++;
+    out->SetColor(Scheme::PROMPT);
     out->PutsXY(x, y++, "Command? ");
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::NORMAL);
     lines_listed = 0;
     switch (onek("QACEGILNPRSTUVX$\033")) {
     case 'Q':
     case '\033':
-      textattr(COLOR_WHITE);
       done = true;
       break;
     case 'G':

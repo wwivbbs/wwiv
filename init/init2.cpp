@@ -181,29 +181,27 @@ void up_subs_dirs() {
 
   out->Cls();
 
-  textattr(COLOR_CYAN);
+  out->SetColor(Scheme::NORMAL);
   Printf("Current max # subs: %d\n", syscfg.max_subs);
   Printf("Current max # dirs: %d\n", syscfg.max_dirs);
   nlx(2);
 
   if (dialog_yn("Change # subs or # dirs")) {
     nlx();
-    textattr(COLOR_CYAN);
+    out->SetColor(Scheme::INFO);
     Printf("Enter the new max subs/dirs you wish.  Just hit <enter> to leave that\n");
     Printf("value unchanged.  All values will be rounded up to the next 32.\n");
     Printf("Values can range from 32-1024\n\n");
 
-    textattr(COLOR_YELLOW);
+    out->SetColor(Scheme::PROMPT);
     Puts("New max subs: ");
-    textattr(COLOR_CYAN);
     num_subs = input_number(4);
     if (!num_subs) {
       num_subs = syscfg.max_subs;
     }
     nlx(2);
-    textattr(COLOR_YELLOW);
+    out->SetColor(Scheme::PROMPT);
     Puts("New max dirs: ");
-    textattr(COLOR_CYAN);
     num_dirs = input_number(4);
     if (!num_dirs) {
       num_dirs = syscfg.max_dirs;
@@ -232,13 +230,13 @@ void up_subs_dirs() {
 
     if ((num_subs != syscfg.max_subs) || (num_dirs != syscfg.max_dirs)) {
       nlx();
-      textattr(COLOR_YELLOW);
+      out->SetColor(Scheme::PROMPT);
       char text[81];
       sprintf(text, "Change to %d subs and %d dirs? ", num_subs, num_dirs);
 
       if (dialog_yn(text)) {
         nlx();
-        textattr(COLOR_MAGENTA);
+        out->SetColor(Scheme::INFO);
         Printf("Please wait...\n");
         convert_to(num_subs, num_dirs);
       }
