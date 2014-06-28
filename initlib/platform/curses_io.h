@@ -21,6 +21,9 @@
 
 #include <curses.h>
 
+// Indicator mode for the header bar while editing text.
+enum class IndicatorMode { INSERT, OVERWRITE, NONE };
+
 // Curses implementation of screen display routines for Init.
 class CursesIO {
 
@@ -44,6 +47,7 @@ class CursesIO {
   virtual WINDOW* footer() const { return footer_; }
   virtual WINDOW* header() const { return header_; }
   virtual void SetDefaultFooter();
+  virtual void SetIndicatorMode(IndicatorMode mode);
 
  private:
   void SetCursesAttribute();

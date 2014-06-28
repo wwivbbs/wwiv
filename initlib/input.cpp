@@ -29,7 +29,11 @@
 #include <vector>
 
 #include "platform/curses_io.h"
-#include "bbs/wconstants.h"
+#include "bbs/wconstants.h"  // TODO(rushfan): Stop including this
+
+#ifdef INSERT // defined in wconstants.h
+#undef INSERT
+#endif  // INSERT
 
 extern CursesIO* out;
 
@@ -455,8 +459,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   s[len] = '\0';
   textattr((16 * COLOR_BLUE) + COLOR_WHITE);
   out->Puts(s);
-  out->GotoXY(76, 0);
-  out->Puts("OVR");
+  out->SetIndicatorMode(IndicatorMode::OVERWRITE);
   out->GotoXY(cx, cy);
   bool done = false;
   int pos = 0;
@@ -504,13 +507,11 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
       if (status != SET) {
         if (bInsert) {
           bInsert = false;
-          out->GotoXY(77, 0);
-          out->Puts("OVR");
+	  out->SetIndicatorMode(IndicatorMode::OVERWRITE);
           out->GotoXY(cx + pos, cy);
         } else {
           bInsert = true;
-          out->GotoXY(77, 0);
-          out->Puts("INS");
+	  out->SetIndicatorMode(IndicatorMode::INSERT);
           out->GotoXY(cx + pos, cy);
         }
       }
@@ -621,6 +622,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   curatr = oldatr;
   out->Puts(szFinishedString);
   out->GotoXY(cx, cy);
+  out->SetIndicatorMode(IndicatorMode::NONE);
 }
 
 int toggleitem(int value, const char **strings, int num, int *returncode) {
