@@ -155,6 +155,9 @@ void CursesIO::SetDefaultFooter() {
 }
 
 void CursesIO::SetIndicatorMode(IndicatorMode mode) {
+  if (mode == indicator_mode_) {
+    return;
+  }
   int x = max_x_ - 5;
   std::string s = "   ";
   switch (mode) {
@@ -167,6 +170,7 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
   }
   mvwaddstr(header_, 1, x, s.c_str());
   wrefresh(header_);
+  indicator_mode_ = mode;
 }
 
 attr_t CursesIO::GetAttributesForScheme(Scheme id) {

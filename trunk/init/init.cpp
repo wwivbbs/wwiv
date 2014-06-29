@@ -537,6 +537,7 @@ int WInitApp::main(int argc, char *argv[]) {
       up_subs_dirs();
       break;
     }
+    out->SetIndicatorMode(IndicatorMode::NONE);
   } while (!done);
 
   // Don't leak the localIO (also fix the color when the app exits)
