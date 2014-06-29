@@ -22,6 +22,7 @@
 #include <cctype>
 #include <curses.h>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <initializer_list>

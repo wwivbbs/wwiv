@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
+#include <cstdlib>
 #include <fcntl.h>
 #ifdef _WIN32
 #include <direct.h>

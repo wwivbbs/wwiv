@@ -20,6 +20,7 @@
 
 #include <curses.h>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
 #ifdef _WIN32
