@@ -134,6 +134,7 @@ void EditItems::Run() {
         cp = 0;
       }
     } else if (i1 == DONE) {
+      out->SetIndicatorMode(IndicatorMode::NONE);
       return;
     }
   }
@@ -202,6 +203,7 @@ EditItems::~EditItems() {
   // Clear the help bar on exit.
   werase(out->footer());
   wrefresh(out->footer());
+  out->SetIndicatorMode(IndicatorMode::NONE);
 }
 
 /**
@@ -610,7 +612,6 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   wattrset(out->window(), COLOR_PAIR(old_pair) | old_attr);
   out->Puts(szFinishedString);
   out->GotoXY(cx, cy);
-  out->SetIndicatorMode(IndicatorMode::NONE);
 }
 
 int toggleitem(int value, const char **strings, int num, int *returncode) {
