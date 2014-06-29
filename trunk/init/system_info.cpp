@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "user_editor.h"
 
+#include <cstdlib>
 #include <cstring>
 #include <string>
 

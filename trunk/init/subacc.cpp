@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <cstdlib>
 #include "wwivinit.h"
 #include "platform/wfile.h"
 

@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <cstdlib>
 #include <cstring>
 #include <curses.h>
 #include <fcntl.h>
