@@ -154,6 +154,7 @@ void instance_editor() {
     case 'Q':
     case '\033': {
       werase(out->footer());
+      wrefresh(out->footer());
       return;
     }
     case ']':
