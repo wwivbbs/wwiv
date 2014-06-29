@@ -19,6 +19,7 @@
 #include "template.h"
 
 #include <cstring>
+#include <cstdlib>
 #include <string>
 #include <fcntl.h>
 #ifdef _WIN32
