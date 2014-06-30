@@ -18,7 +18,6 @@ if(UNIX)
   include_directories(platform/unix)
   set(PLATFORM_SOURCES 
 	platform/unix/filestuff.cpp
-	platform/unix/utility2.cpp 
 	platform/unix/wfile.cpp 
 	platform/unix/wfndfile.cpp 
 	)
