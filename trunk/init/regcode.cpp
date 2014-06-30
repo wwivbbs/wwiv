@@ -23,6 +23,7 @@
 #include "ifcns.h"
 #include "input.h"
 #include "init.h"
+#include "utility.h"
 #include "wwivinit.h"
 
 

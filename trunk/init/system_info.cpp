@@ -25,6 +25,7 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "utility.h"
 #include "wwivinit.h"
 
 

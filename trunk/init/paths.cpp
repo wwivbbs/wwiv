@@ -21,11 +21,54 @@
 #include <curses.h>
 #include <cstdint>
 #include <string>
+#ifdef _WIN32
+#include <direct.h>
+#endif
 
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "platform/incl1.h"
+#include "platform/wfndfile.h"
+#include "utility.h"
 #include "wwivinit.h"
+
+extern char bbsdir[];
+
+static int verify_dir(char *typeDir, char *dirName) {
+  int rc = 0;
+  char s[81], ch;
+
+  WFindFile fnd;
+  fnd.open(dirName, 0);
+
+  if (fnd.next() && fnd.IsDirectory()) {
+    out->GotoXY(0, 8);
+    sprintf(s, "The %s directory: %s is invalid!", typeDir, dirName);
+    out->SetColor(Scheme::ERROR_TEXT);
+    out->Puts(s);
+    for (unsigned int i = 0; i < strlen(s); i++) {
+      Printf("\b \b");
+    }
+    if ((strcmp(typeDir, "Temporary") == 0) || (strcmp(typeDir, "Batch") == 0)) {
+      sprintf(s, "Create %s? ", dirName);
+      out->SetColor(Scheme::PROMPT);
+      out->Puts(s);
+      ch = out->GetChar();
+      if (toupper(ch) == 'Y') {
+        mkdir(dirName);
+      }
+      for (unsigned int j = 0; j < strlen(s); j++) {
+        Printf("\b \b");
+      }
+    }
+    out->SetColor(Scheme::PROMPT);
+    out->Puts("<ESC> when done.");
+    rc = 1;
+  }
+  WWIV_ChangeDirTo(bbsdir);
+  return rc;
+}
 
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir */
 void setpaths() {

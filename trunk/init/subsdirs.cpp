@@ -32,6 +32,7 @@
 #include "subacc.h"
 #include "platform/incl1.h"
 #include "platform/wfile.h"
+#include "utility.h"
 
 extern net_networks_rec *net_networks;
 
