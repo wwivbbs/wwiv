@@ -33,6 +33,7 @@
 #include "bbs/wconstants.h"
 #include "wwivinit.h"
 #include "platform/incl1.h"
+#include "utility.h"
 
 static void up_str(char *s, int cursl, int an) {
   strcpy(s, (syscfg.sl[cursl].ability & an) ? "Y" : "N");

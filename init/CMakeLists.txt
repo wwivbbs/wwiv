@@ -12,8 +12,6 @@ set(COMMON_SOURCES
   archivers.cpp
   editors.cpp
   init.cpp 
-  init1.cpp 
-  init2.cpp 
   instance_settings.cpp
   languages.cpp
   levels.cpp
@@ -23,8 +21,10 @@ set(COMMON_SOURCES
   protocols.cpp
   regcode.cpp
   subacc.cpp 
+  subsdirs.cpp 
   system_info.cpp
   user_editor.cpp 
+  utility.cpp 
   )
 
 if(UNIX) 

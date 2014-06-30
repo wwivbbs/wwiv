@@ -36,6 +36,7 @@
 #include "input.h"
 #include "wwivinit.h"
 #include "platform/incl1.h"
+#include "utility.h"
 
 extern char bbsdir[];
 

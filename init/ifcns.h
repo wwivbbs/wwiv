@@ -23,29 +23,6 @@
 #include "ivardec.h"
 #include "bbs/vardec.h"
 
-/* File: init.cpp */
-
-int verify_dir(char *typeDir, char *dirName);
-
-/* File: init1.cpp */
-
-int number_userrecs();
-void read_qscn(unsigned int un, unsigned long *qscn, int stayopen);
-void write_qscn(unsigned int un, unsigned long *qscn, int stayopen);
-int exist(const char *s);
-void save_status();
-bool read_status();
-int save_config();
-void read_user(unsigned int un, userrec *u);
-void write_user(unsigned int un, userrec *u);
-void exit_init(int level);
-
-/* File: init2.cpp */
-
-void trimstr(char *s);
-void trimstrpath(char *s);
-void up_subs_dirs();
-
 // ** OSD CODE **
 /* File: filesupp.cpp */
 void WWIV_ChangeDirTo(const char *s);
