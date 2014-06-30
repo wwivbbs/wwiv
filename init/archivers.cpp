@@ -34,6 +34,7 @@
 #include "input.h"
 #include "platform/incl1.h"
 #include "bbs/wconstants.h" // for MAX_ARCHIVERS
+#include "utility.h"
 #include "wwivinit.h"
 
 

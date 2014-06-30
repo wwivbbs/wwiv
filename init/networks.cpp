@@ -33,6 +33,7 @@
 #include "input.h"
 #include "platform/incl1.h"
 #include "subacc.h"
+#include "utility.h"
 #include "wwivinit.h"
 
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))

@@ -101,8 +101,10 @@
     <ClInclude Include="protocols.h" />
     <ClInclude Include="regcode.h" />
     <ClInclude Include="subacc.h" />
+    <ClInclude Include="subsdirs.h" />
     <ClInclude Include="system_info.h" />
     <ClInclude Include="user_editor.h" />
+    <ClInclude Include="utility.h" />
     <ClInclude Include="w5assert.h" />
     <ClInclude Include="wwivinit.h" />
   </ItemGroup>
@@ -110,8 +112,6 @@
     <ClCompile Include="archivers.cpp" />
     <ClCompile Include="editors.cpp" />
     <ClCompile Include="init.cpp" />
-    <ClCompile Include="init1.cpp" />
-    <ClCompile Include="init2.cpp" />
     <ClCompile Include="instance_settings.cpp" />
     <ClCompile Include="languages.cpp" />
     <ClCompile Include="levels.cpp" />
@@ -121,8 +121,10 @@
     <ClCompile Include="protocols.cpp" />
     <ClCompile Include="regcode.cpp" />
     <ClCompile Include="subacc.cpp" />
+    <ClCompile Include="subsdirs.cpp" />
     <ClCompile Include="system_info.cpp" />
     <ClCompile Include="user_editor.cpp" />
+    <ClCompile Include="utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\deps\pdcurses-3.4\pdcurses.vcxproj">

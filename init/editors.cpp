@@ -32,6 +32,7 @@
 #include "init.h"
 #include "input.h"
 #include "platform/incl1.h"
+#include "utility.h"
 #include "wwivinit.h"
 
 

@@ -64,7 +64,6 @@
 
 #ifdef __APPLE__
 #define WWIV_STRICMP(a, b) strcasecmp(a, b)
-#define _strupr strupr
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
 

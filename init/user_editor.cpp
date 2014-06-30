@@ -25,6 +25,7 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "utility.h"
 #include "wwivinit.h"
 
 static const int COL1_POSITION = 19;

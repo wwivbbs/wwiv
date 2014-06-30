@@ -50,7 +50,6 @@ __EXTRN__ initinfo_rec initinfo;
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
-#define _strupr strupr
 #define _open open
 #define _close close
 #define _lseek lseek

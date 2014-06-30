@@ -44,6 +44,7 @@
 #include "paths.h"
 #include "protocols.h"
 #include "regcode.h"
+#include "subsdirs.h"
 #include "system_info.h"
 #include "user_editor.h"
 #include "bbs/version.cpp"
@@ -52,6 +53,7 @@
 #include "platform/curses_io.h"
 #include "platform/incl1.h"
 #include "platform/wfndfile.h"
+#include "utility.h"
 
 char bbsdir[MAX_PATH];
 char configdat[20] = "config.dat";
@@ -122,41 +124,6 @@ static void printcfg() {
     }
   }
   close(hFile);
-}
-
-int verify_dir(char *typeDir, char *dirName) {
-  int rc = 0;
-  char s[81], ch;
-
-  WFindFile fnd;
-  fnd.open(dirName, 0);
-
-  if (fnd.next() && fnd.IsDirectory()) {
-    out->GotoXY(0, 8);
-    sprintf(s, "The %s directory: %s is invalid!", typeDir, dirName);
-    out->SetColor(Scheme::ERROR_TEXT);
-    out->Puts(s);
-    for (unsigned int i = 0; i < strlen(s); i++) {
-      Printf("\b \b");
-    }
-    if ((strcmp(typeDir, "Temporary") == 0) || (strcmp(typeDir, "Batch") == 0)) {
-      sprintf(s, "Create %s? ", dirName);
-      out->SetColor(Scheme::PROMPT);
-      out->Puts(s);
-      ch = out->GetChar();
-      if (toupper(ch) == 'Y') {
-        mkdir(dirName);
-      }
-      for (unsigned int j = 0; j < strlen(s); j++) {
-        Printf("\b \b");
-      }
-    }
-    out->SetColor(Scheme::PROMPT);
-    out->Puts("<ESC> when done.");
-    rc = 1;
-  }
-  WWIV_ChangeDirTo(bbsdir);
-  return rc;
 }
 
 static void show_help() {
