@@ -28,9 +28,6 @@
 void WWIV_ChangeDirTo(const char *s);
 
 #ifndef _WIN32
-/* File: stringstuff.cpp */
-char *strupr(char *s);
-
 /* File: utility2.cpp */
 long filelength(int handle);
 #endif  // _WIN32
