@@ -37,9 +37,6 @@
 #include "platform/wfile.h"
 #include "platform/wfndfile.h"
 
-#ifdef __unix__
-#include <termios.h>
-#endif  // __unix__
 
 extern char bbsdir[];
 
