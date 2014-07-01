@@ -83,6 +83,7 @@
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="input.h" />
     <ClInclude Include="platform\curses_io.h" />
     <ClInclude Include="platform\wfile.h" />
     <ClInclude Include="platform\wfndfile.h" />

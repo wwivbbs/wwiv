@@ -27,6 +27,7 @@
 #include <io.h>
 #endif
 #include <string>
+#include <vector>
 #include <sys/stat.h>
 
 #include "ifcns.h"
@@ -44,17 +45,10 @@ static const int PROMPT_LINE = 6;
 #define FILENAME_UPPERCASE true
 #endif  // __unix__
 
+using std::vector;
+
 void show_instance(EditItems* items) {
   items->Display();
-}
-
-static void show_help() {
-
-  // Additions
-  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
-  waddstr(out->footer(), "A");
-  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
-  waddstr(out->footer(), "-Add ");
 }
 
 int number_instances() {
@@ -127,7 +121,7 @@ void instance_editor() {
     new StringEditItem<char*>(COL1_POSITION, 0, 50, instance.tempdir, FILENAME_UPPERCASE),
     new StringEditItem<char*>(COL1_POSITION, 1, 50, instance.batchdir, FILENAME_UPPERCASE),
   };
-  items.set_additional_helpfn(show_help);
+  items.set_navigation_help_items(EditItems::StandardNavigationHelpItems());
 
   show_instance(&items);
 

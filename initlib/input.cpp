@@ -52,47 +52,6 @@ void winput_password(WINDOW* dialog, char *pszOutText, int nMaxLength);
 using std::string;
 using std::vector;
 
-template<> int StringEditItem<char *>::Run() {
-  out->GotoXY(x_, y_);
-  int return_code = 0;
-  int status = uppercase_ ? UPPER_ONLY : ALL;
-  editline(data_, maxsize_, status, &return_code, "");
-  return return_code;
-}
-
-template<> int StringEditItem<unsigned char *>::Run() {
-  out->GotoXY(x_, y_);
-  int return_code = 0;
-  int status = uppercase_ ? UPPER_ONLY : ALL;
-  editline(reinterpret_cast<char*>(data_), maxsize_, status, &return_code, "");
-  return return_code;
-}
-
-template<typename T> 
-static int EditNumberItem(T* data, int maxlen) {
-  char s[21];
-  int return_code = 0;
-  sprintf(s, "%-7u", *data);
-  editline(s, maxlen, NUM_ONLY, &return_code, "");
-  *data = atoi(s);
-  return return_code;
-}
-
-template<> int NumberEditItem<uint32_t>::Run() {
-  out->GotoXY(x_, y_);
-  return EditNumberItem<uint32_t>(data_, 5);
-}
-
-template<> int NumberEditItem<int8_t>::Run() {
-  out->GotoXY(x_, y_);
-  return EditNumberItem<int8_t>(data_, 3);
-}
-
-template<> int NumberEditItem<uint8_t>::Run() {
-  out->GotoXY(x_, y_);
-  return EditNumberItem<uint8_t>(data_, 3);
-}
-
 int CustomEditItem::Run() {
   out->GotoXY(x_, y_);
   std::string s = to_field_();
@@ -121,6 +80,7 @@ void CustomEditItem::Display() const {
 }
 
 void EditItems::Run() {
+  edit_mode_ = true;
   int cp = 0;
   const int size = static_cast<int>(items_.size());
   Display();
@@ -136,6 +96,8 @@ void EditItems::Run() {
       }
     } else if (i1 == DONE) {
       out->SetIndicatorMode(IndicatorMode::NONE);
+      edit_mode_ = false;
+      Display();
       return;
     }
   }
@@ -143,9 +105,11 @@ void EditItems::Run() {
 
 void EditItems::Display() const {
   // Show help bar.
-  ShowHelp();
-  if (additional_helpfn_)
-    additional_helpfn();
+  if (edit_mode_) {
+    ShowHelpItems(editor_help_items_);
+  } else {
+    ShowHelpItems(navigation_help_items_);
+  }
 
   out->SetColor(Scheme::NORMAL);
 
@@ -154,42 +118,18 @@ void EditItems::Display() const {
   }
 }
 
-void EditItems::ShowHelp() const {
-  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
-  mvwaddstr(out->footer(), 0, 0, "Esc");
-  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
-  waddstr(out->footer(), "-Exit ");
 
-  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
-  waddstr(out->footer(), "Enter");
-  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
-  waddstr(out->footer(), "-Edit ");  
-
-  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
-  waddstr(out->footer(), "[");
-  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
-  waddstr(out->footer(), "-Previous ");
-
-  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
-  waddstr(out->footer(), "]");
-  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
-  waddstr(out->footer(), "-Next ");
-
-  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
-  waddstr(out->footer(), "{");
-  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
-  waddstr(out->footer(), "-Previous 10 ");
-
-  out->SetColor(out->footer(), Scheme::FOOTER_KEY);
-  waddstr(out->footer(), "}");
-  out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
-  waddstr(out->footer(), "-Next 10 ");
-
-  if (additional_helpfn_) {
-    wmove(out->footer(), 1, 0);
-    additional_helpfn_();
+void EditItems::ShowHelpItems(const std::vector<HelpItem>& help_items) const {
+  wmove(out->footer(), 0, 0);
+  wclrtoeol(out->footer());
+  for (const auto& h : help_items) {
+    out->SetColor(out->footer(), Scheme::FOOTER_KEY);
+    waddstr(out->footer(), h.key.c_str());
+    out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
+    waddstr(out->footer(), "-");
+    waddstr(out->footer(), h.description.c_str());
+    waddstr(out->footer(), " ");
   }
-
   wrefresh(out->footer());
 }
 

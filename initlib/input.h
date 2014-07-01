@@ -20,6 +20,7 @@
 #define __INCLUDED_INPUT_H__
 
 #include <functional>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -104,7 +105,13 @@ public:
     : EditItem<T>(x, y, maxsize, data), uppercase_(uppercase) {}
   virtual ~StringEditItem() {}
 
-  virtual int Run();
+  virtual int Run() {
+    out->GotoXY(x_, y_);
+    int return_code = 0;
+    int status = uppercase_ ? UPPER_ONLY : ALL;
+    editline(reinterpret_cast<char*>(data_), maxsize_, status, &return_code, "");
+    return return_code;
+  }
 
 protected:
   virtual void DefaultDisplay() const {
@@ -119,13 +126,22 @@ private:
   bool uppercase_;
 };
 
-
-template<typename T> class NumberEditItem : public EditItem<T*> {
+template<typename T, int MAXLEN = std::numeric_limits<T>::digits10> 
+class NumberEditItem : public EditItem<T*> {
 public:
   NumberEditItem(int x, int y, T* data) : EditItem<T*>(x, y, 0, data) {}
   virtual ~NumberEditItem() {}
 
-  virtual int Run();
+  virtual int Run() {
+    out->GotoXY(x_, y_);
+    char s[21];
+    int return_code = 0;
+    sprintf(s, "%-7u", *data_);
+    editline(s, MAXLEN, NUM_ONLY, &return_code, "");
+    *data_ = atoi(s);
+    return return_code;
+  }
+
 protected:
   virtual void DefaultDisplay() const {
     std::string blanks(this->maxsize_, ' ');
@@ -155,21 +171,54 @@ private:
   displayfn display_;
 };
 
+struct HelpItem {
+  std::string key;
+  std::string description;
+};
 
 class EditItems {
 public:
   typedef std::function<void(void)> additional_helpfn;
-  EditItems(std::initializer_list<BaseEditItem*> l) : items_(l) {}
+  EditItems(std::initializer_list<BaseEditItem*> l) 
+    : items_(l), navigation_help_items_(StandardNavigationHelpItems()),
+      editor_help_items_(StandardEditorHelpItems()), 
+      edit_mode_(false) {}
   virtual ~EditItems();
 
-  void set_additional_helpfn(additional_helpfn f) { additional_helpfn_ = f; }
   virtual void Run();
   virtual void Display() const;
-  virtual void ShowHelp() const;
+  virtual void ShowHelpItems(const std::vector<HelpItem>& help_items) const;
+
+  void set_navigation_help_items(const std::vector<HelpItem> items) { navigation_help_items_ = items; }
+  void set_editor__help_items(const std::vector<HelpItem> items) { editor_help_items_ = items; }
+
+  static std::vector<HelpItem> StandardNavigationHelpItems() {
+    return { {"Esc", "Exit"}, 
+        { "Enter", "Edit" },
+        { "[", "Previous" },
+        { "]", "Next" },
+        { "{", "Previous 10" },
+        { "}", "Next 10" },
+    };
+  }
+
+  static std::vector<HelpItem> StandardEditorHelpItems() {
+    return { {"Esc", "Exit"}, 
+        { "Enter", "Edit" },
+    };
+  }
+
+  static std::vector<HelpItem> ExitOnlyHelpItems() {
+    return { {"Esc", "Exit"}, 
+    };
+  }
+
 
 private:
   std::vector<BaseEditItem*> items_;
-  additional_helpfn additional_helpfn_;
+  std::vector<HelpItem> navigation_help_items_;
+  std::vector<HelpItem> editor_help_items_;
+  bool edit_mode_;
 };
 
 #endif // __INCLUDED_INPUT_H__
