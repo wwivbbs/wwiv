@@ -24,6 +24,12 @@
 #include <string>
 #include <vector>
 
+#include "platform/curses_io.h"
+
+#define NUM_ONLY            1
+#define UPPER_ONLY          2
+#define ALL                 4
+
 
 // Function prototypes
 void Puts(const char *pszText);
@@ -106,10 +112,10 @@ public:
   virtual ~StringEditItem() {}
 
   virtual int Run() {
-    out->GotoXY(x_, y_);
+    out->GotoXY(this->x_, this->y_);
     int return_code = 0;
     int status = uppercase_ ? UPPER_ONLY : ALL;
-    editline(reinterpret_cast<char*>(data_), maxsize_, status, &return_code, "");
+    editline(reinterpret_cast<char*>(this->data_), this->maxsize_, status, &return_code, "");
     return return_code;
   }
 
@@ -133,12 +139,12 @@ public:
   virtual ~NumberEditItem() {}
 
   virtual int Run() {
-    out->GotoXY(x_, y_);
+    out->GotoXY(this->x_, this->y_);
     char s[21];
     int return_code = 0;
-    sprintf(s, "%-7u", *data_);
+    sprintf(s, "%-7u", *this->data_);
     editline(s, MAXLEN, NUM_ONLY, &return_code, "");
-    *data_ = atoi(s);
+    *this->data_ = atoi(s);
     return return_code;
   }
 
