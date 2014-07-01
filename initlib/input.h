@@ -46,7 +46,7 @@ void messagebox(const std::string text);
 void messagebox(const std::vector<std::string>& text);
 
 
-
+// Base item of an editable value, this class does not use templates.
 class BaseEditItem {
 public:
   BaseEditItem(int x, int y, int maxsize)
@@ -63,6 +63,8 @@ protected:
 };
 
 
+// Base item of an editable value that uses templates to hold the
+// value under edit.
 template<typename T>
 class EditItem : public BaseEditItem {
 public:
