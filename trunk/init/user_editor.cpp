@@ -21,6 +21,7 @@
 #include <curses.h>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "ifcns.h"
 #include "init.h"
@@ -31,6 +32,8 @@
 static const int COL1_POSITION = 19;
 static const int COL2_POSITION = 50;
 static const int PROMPT_LINE = 18;
+
+using std::vector;
 
 static bool IsUserDeleted(userrec *user) {
   return user->inact & inact_deleted;
@@ -73,6 +76,12 @@ static void show_error_no_users() {
   Printf("You must have users added before using user editor.");
   Printf("\n\n");
   pausescr();
+}
+
+static vector<HelpItem> create_help_items() {
+  vector<HelpItem> help_items = EditItems::StandardNavigationHelpItems();
+  help_items.push_back({ "A", "Add" });
+  return help_items;
 }
 
 void user_editor() {
@@ -133,7 +142,6 @@ void user_editor() {
         user.year = year - 1900;
       });
 
-
   EditItems items{
     user_name_field,
     new StringEditItem<unsigned char*>(COL1_POSITION, 1, 20, user.realname, false),
@@ -151,6 +159,7 @@ void user_editor() {
     new NumberEditItem<uint32_t>(COL1_POSITION, 13, &user.wwiv_regnum),
     new StringEditItem<unsigned char*>(COL1_POSITION, 14, 60, user.note, false),
   };
+  items.set_navigation_help_items(create_help_items());
 
   show_user(&items, &user);
 
