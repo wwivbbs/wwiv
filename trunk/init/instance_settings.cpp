@@ -111,6 +111,7 @@ void instance_editor() {
   out->Cls();
 
   out->SetColor(Scheme::NORMAL);
+  out->GotoXY(0, 1);
   Printf("Temporary Directory: %s\n", syscfgovr.tempdir);
   Printf("Batch Directory    : %s\n", syscfgovr.batchdir);
 
@@ -118,11 +119,9 @@ void instance_editor() {
   read_instance(current_instance, &instance);
 
   EditItems items{
-    new StringEditItem<char*>(COL1_POSITION, 0, 50, instance.tempdir, FILENAME_UPPERCASE),
-    new StringEditItem<char*>(COL1_POSITION, 1, 50, instance.batchdir, FILENAME_UPPERCASE),
+    new StringEditItem<char*>(COL1_POSITION, 1, 50, instance.tempdir, FILENAME_UPPERCASE),
+    new StringEditItem<char*>(COL1_POSITION, 2, 50, instance.batchdir, FILENAME_UPPERCASE),
   };
-  items.set_navigation_help_items(EditItems::StandardNavigationHelpItems());
-
   show_instance(&items);
 
   for (;;)  {
@@ -130,14 +129,10 @@ void instance_editor() {
     char ch = onek("\033AQ[]{}\r");
     switch (ch) {
     case '\r': {
-      //clear_help(14 + 1);
       items.Run();
       if (dialog_yn("Save Instance")) {
         write_instance(current_instance, &instance);
       }
-      move(PROMPT_LINE, 0); 
-      wclrtoeol(out->window());
-      out->Refresh();
     } break;
     case 'A': {
       num_instances++;
@@ -147,8 +142,6 @@ void instance_editor() {
     } break;
     case 'Q':
     case '\033': {
-      werase(out->footer());
-      wrefresh(out->footer());
       return;
     }
     case ']':
@@ -164,13 +157,13 @@ void instance_editor() {
     case '}':
       current_instance += 10;
       if (current_instance > num_instances) {
-        current_instance = 1;
+        current_instance = num_instances;
       }
       break;
     case '{':
       current_instance -= 10;
       if (current_instance < 1) {
-        current_instance = num_instances;
+        current_instance = 1;
       }
       break;
     }
