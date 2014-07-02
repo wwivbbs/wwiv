@@ -55,13 +55,10 @@ using std::vector;
 int CustomEditItem::Run() {
   out->GotoXY(x_, y_);
   std::string s = to_field_();
-  char data[81];
-  strcpy(data, s.c_str());
 
   int return_code = 0;
   editline(&s, maxsize_, ALL, &return_code, "");
-  s.assign(data);
-  from_field_(data);
+  from_field_(s);
   return return_code;
 }
 
