@@ -109,7 +109,7 @@ void user_editor() {
   Printf("WWIV Registration: \n");
   Printf("Sysop Note       : \n");
 
-  unsigned short int current_usernum = 1;
+  int current_usernum = 1;
   userrec user;
   read_user(current_usernum, &user);
 
@@ -198,13 +198,13 @@ void user_editor() {
     case '}':
       current_usernum += 10;
       if (current_usernum > number_users) {
-        current_usernum = 1;
+        current_usernum = number_users;
       }
       break;
     case '{':
       current_usernum -= 10;
       if (current_usernum < 1) {
-        current_usernum = number_users;
+        current_usernum = 1;
       }
       break;
     }
