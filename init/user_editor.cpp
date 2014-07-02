@@ -55,7 +55,7 @@ void show_user(EditItems* items, userrec* user) {
     PutsXY(COL2_POSITION, 0, "[[ INACTIVE USER ]]");
   }
   out->SetColor(Scheme::NORMAL);
-  int y = 1;
+  int y = 2;
   PrintfXY(COL2_POSITION, y++, "First on         : %s", user->firston);
   PrintfXY(COL2_POSITION, y++, "Last on          : %s", user->laston);
   y++;
@@ -93,6 +93,7 @@ void user_editor() {
   }
 
   out->SetColor(Scheme::NORMAL);
+  out->GotoXY(0, 1);
   Printf("Name/Handle      : \n");
   Printf("Real Name        : \n");
   Printf("SL               : \n");
@@ -113,14 +114,14 @@ void user_editor() {
   userrec user;
   read_user(current_usernum, &user);
 
-  auto user_name_field = new StringEditItem<unsigned char*>(COL1_POSITION, 0, 30, user.name, true);
+  auto user_name_field = new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, user.name, true);
   user_name_field->set_displayfn([&]() -> std::string {
     char name[81];
     sprintf(name, "%s #%d", user.name, current_usernum);
     return std::string(name);
   });
 
-  auto birthday_field = new CustomEditItem(COL1_POSITION, 8, 10, 
+  auto birthday_field = new CustomEditItem(COL1_POSITION, 9, 10, 
       [&user]() -> std::string { 
         char birthday[81];
         sprintf(birthday, "%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
@@ -144,20 +145,20 @@ void user_editor() {
 
   EditItems items{
     user_name_field,
-    new StringEditItem<unsigned char*>(COL1_POSITION, 1, 20, user.realname, false),
-    new NumberEditItem<uint8_t>(COL1_POSITION, 2, &user.sl),
-    new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.dsl),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 4, 30, user.street, false),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 5, 30, user.city, false),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 6, 2, user.state, false),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 7, 10, user.zipcode, true),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, false),
+    new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.sl),
+    new NumberEditItem<uint8_t>(COL1_POSITION, 4, &user.dsl),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 5, 30, user.street, false),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 6, 30, user.city, false),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 7, 2, user.state, false),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 8, 10, user.zipcode, true),
     birthday_field,
-    new StringEditItem<unsigned char*>(COL1_POSITION, 9, 8, user.pw, true),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 10, 12, user.phone, true),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 11, 12, user.dataphone, true),
-    new NumberEditItem<int8_t>(COL1_POSITION, 12, &user.comp_type),
-    new NumberEditItem<uint32_t>(COL1_POSITION, 13, &user.wwiv_regnum),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 14, 60, user.note, false),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 10, 8, user.pw, true),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 11, 12, user.phone, true),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 12, 12, user.dataphone, true),
+    new NumberEditItem<int8_t>(COL1_POSITION, 13, &user.comp_type),
+    new NumberEditItem<uint32_t>(COL1_POSITION, 14, &user.wwiv_regnum),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 15, 60, user.note, false),
   };
   items.set_navigation_help_items(create_help_items());
 
