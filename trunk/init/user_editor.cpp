@@ -128,7 +128,7 @@ void user_editor() {
         return std::string(birthday);
       },
       [&user](const std::string& s) {
-        if (s[3] != '/' || s[6] != '/') {
+        if (s[2] != '/' || s[5] != '/') {
           return;
         }
         int month = std::stoi(s.substr(0, 2));
