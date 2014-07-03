@@ -1096,12 +1096,12 @@ void qwk_sysop(void) {
   while (!done && !hangup) {
     qwk_system_name(sn);
     GetSession()->bout.ClearScreen();
-    GetSession()->bout.WriteFormatted("[1] Hello   file : %s\n", qwk_cfg.hello);
-    GetSession()->bout.WriteFormatted("[2] News    file : %s\n", qwk_cfg.news);
-    GetSession()->bout.WriteFormatted("[3] Goodbye file : %s\n", qwk_cfg.bye);
-    GetSession()->bout.WriteFormatted("[4] Packet name  : %s\n", sn);
-    GetSession()->bout.WriteFormatted("[5] Max messages per packet (0=No max): %d\n", qwk_cfg.max_msgs);
-    GetSession()->bout.WriteFormatted("[6] Modify Bulletins - Current amount= %d\n\n", qwk_cfg.amount_blts);
+    GetSession()->bout.WriteFormatted("[1] Hello   file : %s\r\n", qwk_cfg.hello);
+    GetSession()->bout.WriteFormatted("[2] News    file : %s\r\n", qwk_cfg.news);
+    GetSession()->bout.WriteFormatted("[3] Goodbye file : %s\r\n", qwk_cfg.bye);
+    GetSession()->bout.WriteFormatted("[4] Packet name  : %s\r\n", sn);
+    GetSession()->bout.WriteFormatted("[5] Max messages per packet (0=No max): %d\r\n", qwk_cfg.max_msgs);
+    GetSession()->bout.WriteFormatted("[6] Modify Bulletins - Current amount= %d\r\n\n", qwk_cfg.amount_blts);
     GetSession()->bout.WriteFormatted("Hit <Enter> or Q to save and exit: [12345<CR>] ");
 
     x = onek("Q123456\r\n");
