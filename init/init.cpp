@@ -55,6 +55,19 @@
 #include "platform/wfndfile.h"
 #include "utility.h"
 
+initinfo_rec initinfo;
+configrec syscfg;
+configoverrec syscfgovr;
+statusrec status;
+subboardrec *subboards;
+chainfilerec *chains;
+newexternalrec *externs, *over_intern;
+editorrec *editors;
+arcrec *arcs;
+net_networks_rec *net_networks;
+unsigned long *qsc;
+languagerec *languages;
+
 char bbsdir[MAX_PATH];
 char configdat[20] = "config.dat";
 
@@ -160,8 +173,6 @@ int WInitApp::main(int argc, char *argv[]) {
   getcwd(bbsdir, MAX_PATH);
 
   trimstrpath(bbsdir);
-
-  daylight = 0; // C Runtime Variable -- WHY? from init()
 
   out->Cls();
   out->SetColor(Scheme::NORMAL);
@@ -388,7 +399,6 @@ int WInitApp::main(int argc, char *argv[]) {
     out->SetColor(Scheme::PROMPT);
     out->PutsXY(x, y++, "Command? ");
     out->SetColor(Scheme::NORMAL);
-    lines_listed = 0;
     switch (onek("QACEGILNPRSTUVX$\033")) {
     case 'Q':
     case '\033':
