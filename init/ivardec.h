@@ -22,15 +22,6 @@
 // Data
 #pragma pack(push, 1)
 
-struct externalrec {
-  char description[81],                     /* protocol description */
-   receivefn[81],                           /* receive filename */
-   sendfn[81];                              /* send filename */
-
-  unsigned short ok1, ok2,                  /* if sent */
-   nok1, nok2;                              /* if not sent */
-};
-
 struct initinfo_rec {
   int numexterns;
   int numeditors;
