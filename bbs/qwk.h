@@ -1,3 +1,21 @@
+/**************************************************************************/
+/*                                                                        */
+/*                              WWIV Version 5.0x                         */
+/*             Copyright (C)1998-2014, WWIV Software Services             */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/*                                                                        */
+/**************************************************************************/
 #ifndef _QWK_H_
 #define _QWK_H_
 
@@ -43,7 +61,7 @@
 
 extern int numlock;
 
-
+#pragma pack(push, 1)
 struct qwk_record {
   char status;   // ' ' for public
 
@@ -126,7 +144,7 @@ enum CONFIG_QWK_RETURNS {
   QWK_QUIT_SAVE,
   QWK_ABORT
 };
-
+#pragma pack(pop)
 
 /* File: qwk.c */
 
@@ -181,10 +199,6 @@ const char *qwk_current_text(int pos, char *text);
 
 
 // HACKS
-const char* get_string(int n);
-const char *get_stringx(int filen, int n);
-
-
 #if defined(__unix__)
 
 #define stricmp strcasecmp
@@ -193,5 +207,4 @@ const char *get_stringx(int filen, int n);
 
 #endif  // __unix__
 
-
-#endif
+#endif  // _QWK_H_

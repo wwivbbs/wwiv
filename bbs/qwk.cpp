@@ -139,8 +139,8 @@ void build_qwk_packet(void) {
     qwk_info.file = open(filename, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
     if (qwk_info.file < 1) {
-      GetSession()->bout.Write(get_string(1530));
-      sysoplog(get_stringx(1, 120));
+      GetSession()->bout.Write("Open error");
+      sysoplog("Couldn't open MESSAGES.DAT");
       return;
     }
 
@@ -159,7 +159,7 @@ void build_qwk_packet(void) {
 
 
     memset(&qwk_info.qwk_rec, ' ', sizeof(qwk_info.qwk_rec));
-    strcpy((char *)&qwk_info.qwk_rec, get_string(1532));
+    strcpy((char *)&qwk_info.qwk_rec, "Path\\Filename :");
     append_block(qwk_info.file, (void *)&qwk_info.qwk_rec, sizeof(qwk_info.qwk_rec));
 
     // Logical record number
@@ -202,20 +202,20 @@ void build_qwk_packet(void) {
         9);  /* "9³2Sub1 ³2Sub name                                                    9³8Total9³5New 9³" */
       bputch('³');
       GetSession()->bout.Color(2);
-      GetSession()->bout.WriteFormatted(get_string(1533));
+      GetSession()->bout.WriteFormatted("Sub ");
       GetSession()->bout.Color(9);
       bputch('³');
       GetSession()->bout.Color(3);
-      GetSession()->bout.WriteFormatted(get_string(1534));
+      GetSession()->bout.WriteFormatted("Sub name");
       repeat_char(' ', 52);
       GetSession()->bout.Color(9);
       bputch('³');
       GetSession()->bout.Color(8);
-      GetSession()->bout.WriteFormatted(get_string(1535));
+      GetSession()->bout.WriteFormatted("Total");
       GetSession()->bout.Color(9);
       bputch('³');
       GetSession()->bout.Color(5);
-      GetSession()->bout.WriteFormatted(get_string(1536));
+      GetSession()->bout.WriteFormatted("New");
       GetSession()->bout.Color(9);
       bputch('³');
       GetSession()->bout.NewLine();
@@ -268,7 +268,7 @@ void build_qwk_packet(void) {
 
     if (qwk_info.abort) {
       GetSession()->bout.Color(1);
-      GetSession()->bout.WriteFormatted(get_string(1537));
+      GetSession()->bout.WriteFormatted("Abort everything? (NO=Download what I have gathered)");
       if (!yesno()) {
         qwk_info.abort = 0;
       }
@@ -292,7 +292,7 @@ void build_qwk_packet(void) {
 
     diff3 = diff2 - diff1;
 
-    sprintf(temp, get_stringx(1, 136), diff3);
+    sprintf(temp, "To build QWK, it took %2.4f seconds", diff3);
     sysoplog(temp);
   }
 #endif
@@ -311,7 +311,7 @@ void build_qwk_packet(void) {
   }
 
   if (qwk_info.abort) {
-    sysoplog(get_stringx(1, 119));
+    sysoplog("Aborted");
   }
 
   free(save_qsc_p);         /* free up memory allocated to save qsc pointers */
@@ -590,7 +590,7 @@ void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
   ss = readfile(&m, fn, &len);
 
   if (ss == NULL) {
-    GetSession()->bout.WriteFormatted(get_string(89));
+    GetSession()->bout.WriteFormatted("File not found.");
     GetSession()->bout.NewLine();
     return;
   }
@@ -678,7 +678,7 @@ void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
 
   if (append_block(qwk_info->file, (void *)&qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
     qwk_info->abort = 1; // Must be out of disk space
-    GetSession()->bout.Write(get_string(1539));
+    GetSession()->bout.Write("Write error");
     pausescr();
   }
 
@@ -752,12 +752,9 @@ void make_qwk_ready(char *text, long *len, char *address) {
   temp = (char *)malloc(new_size);
 
   if (!temp) {
-    sysoplog(get_stringx(1, 121));
+    sysoplog("Couldn't allocate memory to make qwk ready");
     return;
   }
-
-
-
   while (pos < *len && new_pos < new_size && !hangup) {
     x = (unsigned char)text[pos];
 
@@ -1043,20 +1040,20 @@ void qwk_menu(void) {
   int key;
   char temp[101], namepath[101];
 
-  qwk_percent = 0.0;
+  qwk_percent = 0;
   qwk_bi_mode = 0;
 
   while (!done && !hangup) {
     GetSession()->bout.ClearScreen();
     printfile("QWK");
     if (so()) {
-      GetSession()->bout.Write(get_string(1541));
+      GetSession()->bout.Write("1) Sysop QWK config");
     }
 
     if (qwk_percent) {
       GetSession()->bout.Color(3);
       GetSession()->bout.NewLine();
-      GetSession()->bout.WriteFormatted("%s %d%%\r\n", get_string(1636), qwk_percent);
+      GetSession()->bout.WriteFormatted("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
     }
     GetSession()->bout.NewLine();
     strcpy(temp, "7[3Q1DCUBS%");
@@ -1083,13 +1080,13 @@ void qwk_menu(void) {
       break;
 
     case 'U':
-      sysoplog(get_stringx(1, 122));
+      sysoplog("Upload REP packet");
       qwk_bi_mode = 0;
       upload_reply_packet();
       break;
 
     case 'D':
-      sysoplog(get_stringx(1, 123));
+      sysoplog("Download QWK packet");
       qwk_system_name(temp);
       strcat(temp, ".REP");
       sprintf(namepath, "%s%s", QWK_DIRECTORY, temp);
@@ -1098,14 +1095,14 @@ void qwk_menu(void) {
       build_qwk_packet();
 
       if (WFile::Exists(namepath)) {
-        sysoplog(get_stringx(1, 124));
+        sysoplog("REP was uploaded");
         qwk_bi_mode = 1;
         upload_reply_packet();
       }
       break;
 
     case 'B':
-      sysoplog(get_stringx(1, 125));
+      sysoplog("Down/Up QWK/REP packet");
       qwk_bi_mode = 1;
 
       qwk_system_name(temp);
@@ -1122,19 +1119,19 @@ void qwk_menu(void) {
 
 
     case 'S':
-      sysoplog(get_stringx(1, 126));
+      sysoplog("Select Subs");
       config_qscan();
       break;
 
     case 'C':
-      sysoplog(get_stringx(1, 127));
+      sysoplog("Config Options");
       config_qwk_bw();
       break;
 
     case '%':
-      sysoplog(get_stringx(1, 129));
+      sysoplog("Set %");
       GetSession()->bout.Color(2);
-      GetSession()->bout.WriteFormatted(get_string(1548));
+      GetSession()->bout.WriteFormatted("Enter percent of all messages in all QSCAN subs to pack:");
       GetSession()->bout.ColorizedInputField(3);
       input(temp, 3);
       qwk_percent = atoi(temp);
@@ -1145,7 +1142,7 @@ void qwk_menu(void) {
 
     case '1':
       if (so()) {
-        sysoplog(get_stringx(1, 128));
+        sysoplog("Ran Sysop Config");
         qwk_sysop();
       }
       break;
@@ -1390,7 +1387,7 @@ int get_qwk_max_msgs(unsigned int *max_msgs, unsigned int *max_per_sub) {
   GetSession()->bout.ClearScreen();
   GetSession()->bout.NewLine();
   GetSession()->bout.Color(2);
-  GetSession()->bout.WriteFormatted(get_string(1550));
+  GetSession()->bout.WriteFormatted("Largest packet you want, in msgs? (0=Unlimited) : ");
   GetSession()->bout.ColorizedInputField(5);
   input(temp, 5);
 
@@ -1400,7 +1397,7 @@ int get_qwk_max_msgs(unsigned int *max_msgs, unsigned int *max_per_sub) {
 
   *max_msgs = atoi(temp);
 
-  GetSession()->bout.WriteFormatted(get_string(1551));
+  GetSession()->bout.WriteFormatted("Most messages you want per sub? ");
   GetSession()->bout.ColorizedInputField(5);
   input(temp, 5);
 
@@ -1421,12 +1418,12 @@ void qwk_nscan(void) {
   char s[201], *ext;
 
   GetSession()->bout.Color(3);
-  GetSession()->bout.Write(get_string(1552));
+  GetSession()->bout.Write("Building NEWFILES.DAT");
 
   sprintf(s, "%s%s", QWK_DIRECTORY, "NEWFILES.DAT");
   newfile = open(s, O_BINARY | O_RDWR | O_TRUNC | O_CREAT, S_IREAD | S_IWRITE;
   if (newfile < 1) {
-    GetSession()->bout.Write(get_string(1553));
+    GetSession()->bout.Write("Open Error");
     return;
   }
 
@@ -1437,7 +1434,7 @@ void qwk_nscan(void) {
     GetSession()->bout.WriteFormatted("%d.", color);
     if (count >= DOTS) {
       GetSession()->bout.WriteFormatted("\r");
-      GetSession()->bout.WriteFormatted(get_string(1184));
+      GetSession()->bout.WriteFormatted("Searching");
       color++;
       count = 0;
       if (color == 4) {
@@ -1460,7 +1457,7 @@ void qwk_nscan(void) {
       if (this_date >= nscandate) {
         sprintf(s, "\r\n\r\n%s - #%s, %d %s.\r\n\r\n",
                 directories[udir[GetSession()->GetCurrentFileArea()].subnum].name,
-                udir[GetSession()->GetCurrentFileArea()].keys, numf, get_string(742));
+                udir[GetSession()->GetCurrentFileArea()].keys, numf, "files");
         write(newfile, (void *) s, strlen(s));
 
         f = open(dlfn, O_RDONLY | O_BINARY);
@@ -1544,7 +1541,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
   read_qwk_cfg(&qwk_cfg);
   if (!GetSession()->GetCurrentUser()->data.qwk_leave_bulletin) {
-    GetSession()->bout.Write(get_string(1554));
+    GetSession()->bout.Write("Grabbing hello/news/goodbye text files...");
 
     if (qwk_cfg.hello[0]) {
       sprintf(parem1, "%s%s", syscfg.gfilesdir, qwk_cfg.hello);
@@ -1605,7 +1602,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     f = open(command.c_str(), O_RDONLY | O_BINARY);
     if (f < 0) {
-      GetSession()->bout.Write(get_string(849));
+      GetSession()->bout.Write("No such file.");
       GetSession()->bout.NewLine();
       qwk_info->abort = 1;
       return;
@@ -1615,7 +1612,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     close(f);
 
     if (numbytes == 0L) {
-      GetSession()->bout.Write(get_string(850));
+      GetSession()->bout.Write("File has nothing in it.");
       qwk_info->abort = 1;
       return;
     }
@@ -1630,9 +1627,9 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       } else {
         GetSession()->bout.NewLine();
         GetSession()->bout.Color(2);
-        GetSession()->bout.Write(get_string(1555));
+        GetSession()->bout.Write("Packet was not successful...");
         GetSession()->bout.Color(1);
-        GetSession()->bout.WriteFormatted(get_string(1556));
+        GetSession()->bout.WriteFormatted("Try transfer again?");
 
         if (!noyes()) {
           done = 1;
@@ -1652,7 +1649,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       char nfile[81];
 
       GetSession()->bout.Color(2);
-      GetSession()->bout.WriteFormatted(get_string(1557));
+      GetSession()->bout.WriteFormatted("Move to what dir? ");
       GetSession()->bout.ColorizedInputField(60);
       input(new_dir, 60);
 
@@ -1671,7 +1668,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
       if (!replacefile(parem1, nfile, true)) {
         GetSession()->bout.Color(7);
-        GetSession()->bout.WriteFormatted(get_string(1558));
+        GetSession()->bout.WriteFormatted("Try again?");
         if (!noyes()) {
           qwk_info->abort = 1;
           done = 1;
@@ -1709,16 +1706,4 @@ int qwk_open_file(char *fn) {
   // strcpy(gatfn,fn); (removed with g_szMessageGatFileName)
   current_gat_section(0);
   return f;
-}
-
-const char* get_string(int n) {
-  static char s[255];
-  sprintf(s, "{String #%d}", n);
-  return s;
-}
-
-const char *get_stringx(int filen, int n) {
-  static char s[255];
-  sprintf(s, "{String File %d/#%d}", filen, n);
-  return s;
 }

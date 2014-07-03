@@ -62,14 +62,14 @@ void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, lo
 int  read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 
 void qwk_remove_email(void) {
-  int i, mw, mfl, curmail, done;
+  int mw, mfl, curmail, done;
   mailrec m;
 
   emchg = false;
 
   tmpmailrec* mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
   if (!mloc) {
-    GetSession()->bout.Write(get_string(1272));
+    GetSession()->bout.Write("Not enough memory.");
     return;
   }
 
@@ -138,7 +138,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
 
   mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
   if (!mloc) {
-    GetSession()->bout.Write(get_string(1272));
+    GetSession()->bout.Write("Not enough memory");
     return;
   }
 
@@ -146,7 +146,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   std::unique_ptr<WFile> f(OpenEmailFile(false));
   if (!f->IsOpen()) {
     GetSession()->bout.NewLine(2);
-    GetSession()->bout.Write(get_string(702));
+    GetSession()->bout.Write("No mail file exists!");
     GetSession()->bout.NewLine();
     free(mloc);
     return;
@@ -175,14 +175,14 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
 
   if (mw == 0) {
     GetSession()->bout.NewLine();
-    GetSession()->bout.Write(get_string(27));
+    GetSession()->bout.Write("You have no mail.");
     GetSession()->bout.NewLine();
     free(mloc);
     return;
   }
 
   GetSession()->bout.Color(7);
-  GetSession()->bout.Write(get_string(1559));
+  GetSession()->bout.Write("Gathering Email");
 
   if (mw == 1) {
     curmail = 0;
@@ -263,10 +263,10 @@ int select_qwk_archiver(struct qwk_junk *qwk_info, int ask) {
   strcpy(allowed, "Q\r");
 
   GetSession()->bout.NewLine();
-  GetSession()->bout.Write(get_string(1560));
+  GetSession()->bout.Write("Select an archiver");
   GetSession()->bout.NewLine();
   if (ask) {
-    GetSession()->bout.Write(get_string(1561));
+    GetSession()->bout.Write("0) Ask me later");
   }
   for (x = 0; x < 4; ++x) {
     strcpy(temp, arcs[x].extension);
@@ -280,7 +280,7 @@ int select_qwk_archiver(struct qwk_junk *qwk_info, int ask) {
     }
   }
   GetSession()->bout.NewLine();
-  GetSession()->bout.WriteFormatted(get_string(1562));
+  GetSession()->bout.WriteFormatted("Enter #  Q to Quit <CR>=1 :");
 
   if (ask) {
     strcat(allowed, "0");
@@ -357,7 +357,7 @@ void upload_reply_packet(void) {
   qwk_system_name(name);
   strcat(name, ".REP");
 
-  GetSession()->bout.WriteFormatted("%s%s%s", get_string(1563), name, get_string(1564));
+  GetSession()->bout.WriteFormatted("Hit 'Y' to upload reply packet %s :", name);
 
   sprintf(namepath, "%s%s", QWK_DIRECTORY, name);
 
@@ -381,9 +381,9 @@ void upload_reply_packet(void) {
       sprintf(namepath, "%s%s", QWK_DIRECTORY, name);
       process_reply_dat(namepath);
     } else {
-      sysoplog(get_stringx(1, 119));
+      sysoplog("Aborted");
       GetSession()->bout.NewLine();
-      GetSession()->bout.WriteFormatted("%s%s", get_string(1565), name);
+      GetSession()->bout.WriteFormatted("%s not found", name);
       GetSession()->bout.NewLine();
     }
   }
@@ -492,12 +492,11 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
   if (un || sy) {
     messagerec msg;
     char s2[81];
-    userrec ur;
     net_system_list_rec *csne;
 
     if (freek1(syscfg.msgsdir) < 10.0) {
       GetSession()->bout.NewLine();
-      GetSession()->bout.Write(get_string(332));
+      GetSession()->bout.Write("Sorry, not enough disk space left.");
       GetSession()->bout.NewLine();
       pausescr();
       return;
@@ -505,10 +504,10 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
 
     if (ForwardMessage(&un, &sy)) {
       GetSession()->bout.NewLine();
-      GetSession()->bout.Write(get_string(651));
+      GetSession()->bout.Write("Mail Forwarded.]");
       GetSession()->bout.NewLine();
       if ((un == 0) && (sy == 0)) {
-        GetSession()->bout.Write(get_string(652));
+        GetSession()->bout.Write("Forwarded to unknown user.");
         pausescr();
         return;
       }
@@ -544,24 +543,23 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     }
 
     if (sy != 0) {
-//      i=0;
       GetSession()->bout.NewLine();
-      GetSession()->bout.WriteFormatted(get_string(654));
+      GetSession()->bout.WriteFormatted("Name of system: ");
       GetSession()->bout.Write(csne -> name);
-      GetSession()->bout.WriteFormatted(get_string(655));
+      GetSession()->bout.WriteFormatted("Number of hops:");
       GetSession()->bout.WriteFormatted("%d", csne->numhops);
       GetSession()->bout.NewLine(2);
     }
 
     GetSession()->bout.ClearScreen();
     GetSession()->bout.Color(2);
-    GetSession()->bout.WriteFormatted("%s 3%s", get_string(1632), s2);
+    GetSession()->bout.WriteFormatted("Sending to: %s", s2);
     GetSession()->bout.NewLine();
     GetSession()->bout.Color(2);
-    GetSession()->bout.WriteFormatted("%s 3%s", get_string(1633), title);
+    GetSession()->bout.WriteFormatted("Titled    : %s", title);
     GetSession()->bout.NewLine(2);
     GetSession()->bout.Color(5);
-    GetSession()->bout.WriteFormatted(get_string(1566));
+    GetSession()->bout.WriteFormatted("Correct?");
 
 
     if (!yesno()) {
@@ -640,7 +638,7 @@ void process_reply_dat(char *name) {
   if (repfile < 0) {
     GetSession()->bout.NewLine();
     GetSession()->bout.Color(3);
-    GetSession()->bout.Write(get_string(1567));
+    GetSession()->bout.Write("Can't open packet.");
     pausescr();
     return;
   }
@@ -698,7 +696,7 @@ void process_reply_dat(char *name) {
         GetSession()->bout.WriteFormatted("It is addressed to 2%s", to);
         GetSession()->bout.NewLine(2);
         GetSession()->bout.Color(7);
-        GetSession()->bout.WriteFormatted(get_string(1568));
+        GetSession()->bout.WriteFormatted("Route into E-Mail?");
         if (noyes()) {
           to_email = 1;
         }
@@ -738,7 +736,7 @@ void process_reply_dat(char *name) {
               GetSession()->bout.WriteFormatted("2) %s", temp);
               GetSession()->bout.NewLine(2);
 
-              GetSession()->bout.WriteFormatted(get_string(1569));
+              GetSession()->bout.WriteFormatted("Which address is correct?");
               GetSession()->bout.ColorizedInputField(1);
 
               x = onek("12");
@@ -760,7 +758,7 @@ void process_reply_dat(char *name) {
       } else if (freek1(syscfg.msgsdir) < 10.0) {
         // Not enough disk space
         GetSession()->bout.NewLine();
-        GetSession()->bout.Write(get_string(332));
+        GetSession()->bout.Write("Sorry, not enough disk space left.");
         pausescr();
       } else {
         qwk_post_text(text, size, title, atoi(tosub) - 1);
@@ -795,7 +793,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
       while (!done5 && !hangup) {
         GetSession()->bout.NewLine();
-        GetSession()->bout.WriteFormatted(get_string(1570));
+        GetSession()->bout.WriteFormatted("Then which sub?  ?=List  Q=Don't Post :");
         input(substr, 3);
 
         StringTrim(substr);
@@ -814,7 +812,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     if (sub >= GetSession()->num_subs || sub < 0) {
       GetSession()->bout.Color(5);
-      GetSession()->bout.Write(get_string(1571));
+      GetSession()->bout.Write("Sub out of range");
 
       ++pass;
       continue;
@@ -825,7 +823,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     while (!hangup) {
       if (!qwk_iscan_literal(GetSession()->GetCurrentMessageArea())) {
         GetSession()->bout.NewLine();
-        GetSession()->bout.WriteFormatted(get_string(1572));
+        GetSession()->bout.WriteFormatted("MSG file is busy on another instance, try again?");
         if (!noyes()) {
           ++pass;
           continue;
@@ -837,7 +835,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     if (GetSession()->GetCurrentReadMessageArea() < 0) {
       GetSession()->bout.Color(5);
-      GetSession()->bout.Write(get_string(1571));
+      GetSession()->bout.Write("Sub out of range");
 
       ++pass;
       continue;
@@ -849,7 +847,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     if ((restrict_post & GetSession()->GetCurrentUser()->data.restrict)
         || (GetSession()->GetCurrentUser()->data.posttoday >= ss.posts)) {
       GetSession()->bout.NewLine();
-      GetSession()->bout.Write(get_string(669));
+      GetSession()->bout.Write("Too many messages posted today.");
       GetSession()->bout.NewLine();
 
       ++pass;
@@ -859,7 +857,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     // User doesn't have enough sl to post on sub
     if (GetSession()->GetEffectiveSl() < subboards[GetSession()->GetCurrentReadMessageArea()].postsl) {
       GetSession()->bout.NewLine();
-      GetSession()->bout.Write(get_string(670));
+      GetSession()->bout.Write("You can't post here.");
       GetSession()->bout.NewLine();
       ++pass;
       continue;
@@ -874,7 +872,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
       if (GetSession()->GetCurrentUser()->data.restrict & restrict_net) {
         GetSession()->bout.NewLine();
-        GetSession()->bout.Write(get_string(671));
+        GetSession()->bout.Write("You can't post on networked sub-boards.");
         GetSession()->bout.NewLine();
         ++pass;
         continue;
@@ -883,18 +881,18 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     GetSession()->bout.ClearScreen();
     GetSession()->bout.Color(2);
-    GetSession()->bout.WriteFormatted(get_string(1573));
+    GetSession()->bout.WriteFormatted("Posting    :");
     GetSession()->bout.Color(3);
     GetSession()->bout.Write(title);
 
     GetSession()->bout.Color(2);
-    GetSession()->bout.WriteFormatted(get_string(1574));
+    GetSession()->bout.WriteFormatted("Posting on :");
     GetSession()->bout.Color(3);
     GetSession()->bout.Write(stripcolors(subboards[GetSession()->GetCurrentReadMessageArea()].name));
 
     if (xsubs[GetSession()->GetCurrentReadMessageArea()].nets) {
       GetSession()->bout.Color(2);
-      GetSession()->bout.WriteFormatted(get_string(1575));
+      GetSession()->bout.WriteFormatted("Going on   :");
       GetSession()->bout.Color(3);
       GetSession()->bout.Write(
         net_networks[xsubs[GetSession()->GetCurrentReadMessageArea()].nets[xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets].net_num].name);
@@ -902,7 +900,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     GetSession()->bout.NewLine();
     GetSession()->bout.Color(5);
-    GetSession()->bout.WriteFormatted(get_string(1566));
+    GetSession()->bout.WriteFormatted("Correct?");
 
     if (noyes()) {
       done = 1;
@@ -935,7 +933,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
       if (f == -1) {
         GetSession()->bout.NewLine();
-        GetSession()->bout.WriteFormatted(get_string(1572));
+        GetSession()->bout.WriteFormatted("MSG file is busy on another instance, try again?");
         if (!noyes()) {
           return;
         }
@@ -948,7 +946,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     // Anonymous
     if (a) {
       GetSession()->bout.Color(1);
-      GetSession()->bout.WriteFormatted(get_string(485));
+      GetSession()->bout.WriteFormatted("Anonymous?");
       a = yesno();
     }
     GetSession()->bout.NewLine();
@@ -987,7 +985,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
         }
       }
       if (dm) {
-        sprintf(s, get_stringx(1, 37), subboards[GetSession()->GetCurrentReadMessageArea()].name);
+        sprintf(s, "Unvalidated net posts on %s.", subboards[GetSession()->GetCurrentReadMessageArea()].name);
         ssm(1, 0, s);
       }
     }
@@ -1022,7 +1020,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     close_sub();
 
-    sprintf(s, get_stringx(1, 38), p.title, subboards[GetSession()->GetCurrentReadMessageArea()].name);
+    sprintf(s, "+ \"%s\" posted on %s", p.title, subboards[GetSession()->GetCurrentReadMessageArea()].name);
     sysoplog(s);
 
     if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
@@ -1098,25 +1096,19 @@ void qwk_sysop(void) {
   while (!done && !hangup) {
     qwk_system_name(sn);
     GetSession()->bout.ClearScreen();
-    GetSession()->bout.WriteFormatted("%s %s", get_string(1576), qwk_cfg.hello);
-    GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("%s %s", get_string(1577), qwk_cfg.news);
-    GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("%s %s", get_string(1578), qwk_cfg.bye);
-    GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("%s %s", get_string(1579), sn);
-    GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("%s %d", get_string(1580), qwk_cfg.max_msgs);
-    GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("%s %d", get_string(1581), qwk_cfg.amount_blts);
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout.WriteFormatted(get_string(1582));
+    GetSession()->bout.WriteFormatted("[1] Hello   file : %s\n", qwk_cfg.hello);
+    GetSession()->bout.WriteFormatted("[2] News    file : %s\n", qwk_cfg.news);
+    GetSession()->bout.WriteFormatted("[3] Goodbye file : %s\n", qwk_cfg.bye);
+    GetSession()->bout.WriteFormatted("[4] Packet name  : %s\n", sn);
+    GetSession()->bout.WriteFormatted("[5] Max messages per packet (0=No max): %d\n", qwk_cfg.max_msgs);
+    GetSession()->bout.WriteFormatted("[6] Modify Bulletins - Current amount= %d\n\n", qwk_cfg.amount_blts);
+    GetSession()->bout.WriteFormatted("Hit <Enter> or Q to save and exit: [12345<CR>] ");
 
     x = onek("Q123456\r\n");
     if (x == '1' || x == '2' || x == '3') {
       GetSession()->bout.NewLine();
       GetSession()->bout.Color(1);
-      GetSession()->bout.WriteFormatted(get_string(1583));
+      GetSession()->bout.WriteFormatted("Enter new filename:");
       GetSession()->bout.ColorizedInputField(12);
     }
 
@@ -1138,7 +1130,7 @@ void qwk_sysop(void) {
       GetSession()->bout.Color(1);
       GetSession()->bout.WriteFormatted("Current name : %s", sn);
       GetSession()->bout.NewLine();
-      GetSession()->bout.WriteFormatted(get_string(1584));
+      GetSession()->bout.WriteFormatted("Enter new packet name: ");
       input(sn, 8);
       if (sn[0]) {
         strcpy(qwk_cfg.packet_name, sn);
@@ -1149,7 +1141,7 @@ void qwk_sysop(void) {
 
     case '5':
       GetSession()->bout.Color(1);
-      GetSession()->bout.WriteFormatted(get_string(1585));
+      GetSession()->bout.WriteFormatted("Enter max messages per packet, 0=No Max: ");
       GetSession()->bout.ColorizedInputField(5);
       input(temp, 5);
       qwk_cfg.max_msgs = atoi(temp);
@@ -1172,7 +1164,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
 
   while (!done && !hangup) {
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1586));
+    GetSession()->bout.WriteFormatted("Add - Delete - ? List - Quit");
     GetSession()->bout.ColorizedInputField(1);
 
     key = onek("Q\rAD?");
@@ -1184,7 +1176,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
 
     case 'D':
       GetSession()->bout.NewLine();
-      GetSession()->bout.WriteFormatted(get_string(1587));
+      GetSession()->bout.WriteFormatted("Which one?");
       GetSession()->bout.ColorizedInputField(2);
 
       input(s, 2);
@@ -1203,21 +1195,21 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
 
     case 'A':
       GetSession()->bout.NewLine();
-      GetSession()->bout.Write(get_string(1588));
+      GetSession()->bout.Write("Enter complete path to Bulletin");
       input(s, 80);
 
       if (!WFile::Exists(s)) {
-        GetSession()->bout.WriteFormatted(get_string(1589));
+        GetSession()->bout.WriteFormatted("File doesn't exist, continue?");
         if (!yesno()) {
           break;
         }
       }
 
-      GetSession()->bout.Write(get_string(1590));
+      GetSession()->bout.Write("Now enter its bulletin name, in the format BLT-????.???");
       input(t, BNAME_SIZE);
 
       if (strnicmp(t, "BLT-", 4) != 0) {
-        GetSession()->bout.Write(get_string(1591));
+        GetSession()->bout.Write("Improper format");
         break;
       }
 
@@ -1234,7 +1226,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
       abort = 0;
       x = 0;
       while (x < qwk_cfg->amount_blts && !abort && !hangup) {
-        GetSession()->bout.WriteFormatted("[%d] %s %s", x + 1, qwk_cfg->bltname[x], get_string(1592));
+        GetSession()->bout.WriteFormatted("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
         GetSession()->bout.NewLine();
         repeat_char(' ', 5);
         GetSession()->bout.WriteFormatted(qwk_cfg->blt[x]);
@@ -1254,42 +1246,41 @@ void config_qwk_bw(void) {
   char text[101];
   int done = 0, key;
 
-
   while (!done && !hangup) {
-    GetSession()->bout.WriteFormatted(get_string(1593));
+    GetSession()->bout.WriteFormatted("A) Scan E-Mail ");
     GetSession()->bout.WriteFormatted(qwk_current_text(0, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1594));
+    GetSession()->bout.WriteFormatted("B) Delete Scanned E-Mail ");
     GetSession()->bout.WriteFormatted(qwk_current_text(1, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1595));
+    GetSession()->bout.WriteFormatted("C) Set N-Scan of messages ");
     GetSession()->bout.WriteFormatted(qwk_current_text(2, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1596));
+    GetSession()->bout.WriteFormatted("D) Remove WWIV color codes ");
     GetSession()->bout.WriteFormatted(qwk_current_text(3, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1597));
+    GetSession()->bout.WriteFormatted("E) Convert WWIV color to ANSI ");
     GetSession()->bout.WriteFormatted(qwk_current_text(4, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1598));
+    GetSession()->bout.WriteFormatted("F) Pack Bulletins ");
     GetSession()->bout.WriteFormatted(qwk_current_text(5, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1599));
+    GetSession()->bout.WriteFormatted("G) Scan New Files ");
     GetSession()->bout.WriteFormatted(qwk_current_text(6, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1600));
+    GetSession()->bout.WriteFormatted("H) Remove routing information ");
     GetSession()->bout.WriteFormatted(qwk_current_text(7, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1601));
+    GetSession()->bout.WriteFormatted("I) Archive to pack QWK with ");
     GetSession()->bout.WriteFormatted(qwk_current_text(8, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1602));
+    GetSession()->bout.WriteFormatted("J) Default transfer protocol ");
     GetSession()->bout.WriteFormatted(qwk_current_text(9, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted(get_string(1603));
+    GetSession()->bout.WriteFormatted("K) Max messages per pack ");
     GetSession()->bout.WriteFormatted(qwk_current_text(10, text));
     GetSession()->bout.NewLine();
-    GetSession()->bout.Write(get_string(1604));
+    GetSession()->bout.Write("Q) Done");
 
     key = onek("QABCDEFGHIJK");
 
@@ -1435,24 +1426,24 @@ const char *qwk_current_text(int pos, char *text) {
 
   case 10:
     if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub && !GetSession()->GetCurrentUser()->data.qwk_max_msgs) {
-      return (get_string(1607));
+      return ("Unlimited/Unlimited");
     } else if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub) {
-      sprintf(text, "%s/%u", get_string(1634), GetSession()->GetCurrentUser()->data.qwk_max_msgs);
+      sprintf(text, "Unlimited/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs);
       return (text);
     } else if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs) {
-      sprintf(text, "%u/%s", GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub, get_string(1634));
+      sprintf(text, "%u/Unlimited", GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub);
       return (text);
     } else {
       sprintf(text, "%u/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs,
               GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub);
-      return (text);
+      return text;
     }
 
   case 11:
-    strcpy(text, get_string(1635));
-    return (text);
+    strcpy(text, "DONE");
+    return text;
   }
 
-  return (NULL);
+  return nullptr;
 }
 
