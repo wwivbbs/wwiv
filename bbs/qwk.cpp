@@ -51,6 +51,14 @@ static unsigned max_msgs;
 // from xfer.cpp
 extern int this_date;
 
+long filelength(int handle) {
+  struct stat fileinfo;
+  if (fstat(handle, &fileinfo) != 0) {
+    return -1;
+  }
+  return fileinfo.st_size;
+}
+
 static bool replacefile(char *src, char *dst, bool stats) {
   if (WFile::Exists(dst)) {
     WFile::Remove(dst);
@@ -786,7 +794,7 @@ void make_qwk_ready(char *text, long *len, char *address) {
       pos += 2;
 
       curatr = save_curatr;
-    } else if (GetSession()->GetCurrentUser()->data.qwk_keep_routing == FALSE && x == 4 && text[pos + 1] == '0') {
+    } else if (GetSession()->GetCurrentUser()->data.qwk_keep_routing == false && x == 4 && text[pos + 1] == '0') {
       if (text[pos + 1] == 0) {
         ++pos;
       } else {
