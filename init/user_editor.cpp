@@ -131,12 +131,16 @@ void user_editor() {
         if (s[2] != '/' || s[5] != '/') {
           return;
         }
+        time_t t;
+        time(&t);
+        struct tm * pTm = localtime(&t);
+        int current_year = pTm->tm_year+1900;
         int month = std::stoi(s.substr(0, 2));
         if (month < 1 || month > 12) { return; }
         int day = std::stoi(s.substr(3, 2));
         if (day < 1 || day > 31) { return; }
         int year = std::stoi(s.substr(6, 4));
-        if (year < 1900 || year > 2014) { return ; }
+        if (year < 1900 || year > current_year) { return ; }
 
         user.month = month;
         user.day = day;
