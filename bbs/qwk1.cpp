@@ -492,7 +492,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
   if (un || sy) {
     messagerec msg;
     char s2[81];
-    net_system_list_rec *csne;
+    net_system_list_rec *csne = nullptr;
 
     if (freek1(syscfg.msgsdir) < 10.0) {
       GetSession()->bout.NewLine();
