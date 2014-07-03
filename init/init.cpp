@@ -148,10 +148,8 @@ int main(int argc, char* argv[]) {
 }
 
 int WInitApp::main(int argc, char *argv[]) {
-  char s[81], s1[81];
-  int newbbs = 0, configfile, pwok = 0;
-  int i;
-  externalrec *oexterns;
+  char s[81];
+  int newbbs = 0, pwok = 0;
 
   setlocale (LC_ALL,"");
 
@@ -168,13 +166,13 @@ int WInitApp::main(int argc, char *argv[]) {
   out->Cls();
   out->SetColor(Scheme::NORMAL);
 
-  configfile = open(configdat, O_RDWR | O_BINARY);
+  int configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile > 0) {
     // try to read it initially so we can process args right.
     read(configfile, &syscfg, sizeof(configrec));
     close(configfile);
   }
-  for (i = 1; i < argc; ++i) {
+  for (int i = 1; i < argc; ++i) {
     if (strlen(argv[i]) < 2) {
       continue;
     }
@@ -195,15 +193,6 @@ int WInitApp::main(int argc, char *argv[]) {
         break;
       }
       case 'D': {
-        configfile = open(configdat, O_RDWR | O_BINARY);
-        read(configfile, (void *)(&syscfg), sizeof(configrec));
-        close(configfile);
-
-        configfile = open("config.ovr", O_RDWR | O_BINARY);
-        lseek(configfile, 0, SEEK_SET);
-        read(configfile, &syscfgovr, sizeof(configoverrec));
-        close(configfile);
-
         setpaths();
         out->Cls();
         exit_init(0);
@@ -222,8 +211,6 @@ int WInitApp::main(int argc, char *argv[]) {
     Printf("%s NOT FOUND.\n\n", configdat);
     if (dialog_yn("Perform initial installation")) {
       new_init();
-      messagebox("Your system password defaults to 'SYSOP'.");
-      nlx();
       newbbs = 1;
       configfile = open(configdat, O_RDWR | O_BINARY);
     } else {
@@ -231,6 +218,7 @@ int WInitApp::main(int argc, char *argv[]) {
     }
   }
 
+  // Convert 4.2X to 4.3 format if needed.
   if (filelength(configfile) != sizeof(configrec)) {
     close(configfile);
     convcfg();
@@ -242,12 +230,13 @@ int WInitApp::main(int argc, char *argv[]) {
 
   configfile = open("config.ovr", O_RDONLY | O_BINARY);
   if ((configfile > 0) && (filelength(configfile) < (int)sizeof(configoverrec))) {
+    // If the config.ovr file is too small then pretend it does not exist.
     close(configfile);
     configfile = -1;
   }
   if (configfile < 0) {
     // slap in the defaults
-    for (i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
       syscfgovr.com_ISR[i + 1] = syscfg.com_ISR[i + 1];
       syscfgovr.com_base[i + 1] = syscfg.com_base[i + 1];
       syscfgovr.com_ISR[i + 5] = syscfg.com_ISR[i + 1];
@@ -280,34 +269,12 @@ int WInitApp::main(int argc, char *argv[]) {
   }
 
   externs = (newexternalrec *) malloc(15 * sizeof(newexternalrec));
-  editors = (editorrec *)   malloc(10 * sizeof(editorrec));
-  initinfo.numeditors = initinfo.numexterns = 0;
+  initinfo.numexterns = 0;
   sprintf(s, "%snextern.dat", syscfg.datadir);
   hFile = open(s, O_RDWR | O_BINARY);
   if (hFile > 0) {
     initinfo.numexterns = (read(hFile, (void *)externs, 15 * sizeof(newexternalrec))) / sizeof(newexternalrec);
     close(hFile);
-  } else {
-    oexterns = (externalrec *) malloc(15 * sizeof(externalrec));
-    sprintf(s1, "%sextern.dat", syscfg.datadir);
-    hFile = open(s1, O_RDONLY | O_BINARY);
-    if (hFile > 0) {
-      initinfo.numexterns = (read(hFile, (void *)oexterns, 15 * sizeof(externalrec))) / sizeof(externalrec);
-      close(hFile);
-      memset(externs, 0, 15 * sizeof(newexternalrec));
-      for (i = 0; i < initinfo.numexterns; i++) {
-        strcpy(externs[i].description, oexterns[i].description);
-        strcpy(externs[i].receivefn, oexterns[i].receivefn);
-        strcpy(externs[i].sendfn, oexterns[i].sendfn);
-        externs[i].ok1 = oexterns[i].ok1;
-      }
-      hFile = open(s, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-      if (hFile > 0) {
-        write(hFile, externs, initinfo.numexterns * sizeof(newexternalrec));
-        close(hFile);
-      }
-    }
-    free(oexterns);
   }
   over_intern = (newexternalrec *) malloc(3 * sizeof(newexternalrec));
   memset(over_intern, 0, 3 * sizeof(newexternalrec));
@@ -317,6 +284,9 @@ int WInitApp::main(int argc, char *argv[]) {
     read(hFile, over_intern, 3 * sizeof(newexternalrec));
     close(hFile);
   }
+
+  initinfo.numeditors = 0;    
+  editors = (editorrec *)   malloc(10 * sizeof(editorrec));
   sprintf(s, "%seditors.dat", syscfg.datadir);
   hFile = open(s, O_RDWR | O_BINARY);
   if (hFile > 0) {
@@ -347,21 +317,6 @@ int WInitApp::main(int argc, char *argv[]) {
         }
         close(hFile);
       }
-
-      /******************************
-      if (!initinfo.net_num_max) {
-      initinfo.net_num_max=1;
-      strcpy(net_networks->name,"NewNet");
-      strcpy(net_networks->dir, bbsdir);
-      strcat(net_networks->dir, "NEWNET\\");
-      net_networks->sysnum=9999;
-      hFile=open(s,O_RDWR|O_BINARY|O_CREAT,S_IREAD|S_IWRITE);
-      if (hFile) {
-      write(i,net_networks,initinfo.net_num_max*sizeof(net_networks_rec));
-      close(i);
-      }
-      }
-      ******************************/
     }
   }
 
@@ -372,11 +327,11 @@ int WInitApp::main(int argc, char *argv[]) {
   }
 
   sprintf(s, "%slanguage.dat", syscfg.datadir);
-  i = open(s, O_RDONLY | O_BINARY);
-  if (i >= 0) {
-    initinfo.num_languages = filelength(i) / sizeof(languagerec);
-    read(i, languages, initinfo.num_languages * sizeof(languagerec));
-    close(i);
+  int hLanguageFile = open(s, O_RDONLY | O_BINARY);
+  if (hLanguageFile >= 0) {
+    initinfo.num_languages = filelength(hLanguageFile) / sizeof(languagerec);
+    read(hLanguageFile, languages, initinfo.num_languages * sizeof(languagerec));
+    close(hLanguageFile);
   }
   if (!initinfo.num_languages) {
     initinfo.num_languages = 1;
@@ -389,16 +344,13 @@ int WInitApp::main(int argc, char *argv[]) {
     strncpy(languages->mdir, syscfg.gfilesdir, sizeof(languages->mdir) - 1);
   }
 
-  if (newbbs) {
-    nlx();
-    out->SetColor(Scheme::PROMPT);
-    Printf("You will now need to enter the system password, 'SYSOP'.\n");
-    nlx();
-  }
-
   if (!pwok) {
     nlx();
     std::vector<std::string> lines { "Please enter the System Password. "};
+    if (newbbs) {
+      lines.insert(lines.begin(), "");
+      lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");
+    }
     input_password("SY:", lines, s, 20);
     if (strcmp(s, (syscfg.systempw)) != 0) {
       out->Cls();
