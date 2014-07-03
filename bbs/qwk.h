@@ -185,5 +185,13 @@ const char* get_string(int n);
 const char *get_stringx(int filen, int n);
 
 
+#if defined(__unix__)
+
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#define chsize ftruncate
+
+#endif  // __unix__
+
 
 #endif
