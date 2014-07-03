@@ -34,17 +34,30 @@
 #endif  // __unix__
 #endif  // EDITLINE_FILENAME_CASE
 
-
+#include "bbs/vardec.h"
+#include "bbs/net.h"
 #include "ivardec.h"
-#include "bbs/vars.h"
 
-// defined in VARS.H net_networks_rec *net_networks;
-// defined in VARS.H int initinfo.net_num_max;
+#if !defined (MAX_PATH)
+#define MAX_PATH 260
+#endif  // MAX_PATH
+
 #define MAX_NETWORKS 100
 #define MAX_LANGUAGES 100
 #define MAX_ALLOWED_PORT 8
 
-__EXTRN__ initinfo_rec initinfo;
+extern configrec syscfg;
+extern configoverrec syscfgovr;
+extern statusrec status;
+extern subboardrec *subboards;
+extern chainfilerec *chains;
+extern newexternalrec *externs, *over_intern;
+extern editorrec *editors;
+extern arcrec *arcs;
+extern net_networks_rec *net_networks;
+extern unsigned long *qsc;
+extern languagerec *languages;
+extern initinfo_rec initinfo;
 
 #if defined(__unix__)
 
