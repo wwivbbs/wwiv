@@ -65,6 +65,41 @@ static char *date() {
 
 #define OFFOF(x) (short) (((long)(&(user_record.x))) - ((long)&user_record))
 
+static int qscn_file = -1;
+static unsigned long *qsc;
+
+static int open_qscn() {
+  char szFileName[MAX_PATH];
+
+  if (qscn_file == -1) {
+    sprintf(szFileName, "%suser.qsc", syscfg.datadir);
+    qscn_file = open(szFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+    if (qscn_file < 0) {
+      qscn_file = -1;
+      return 0;
+    }
+  }
+  return 1;
+}
+
+static void close_qscn() {
+  if (qscn_file != -1) {
+    close(qscn_file);
+    qscn_file = -1;
+  }
+}
+
+static void write_qscn(unsigned int un, unsigned long *qscn, int stayopen) {
+  if (open_qscn()) {
+    long pos = ((long)syscfg.qscn_len) * ((long)un);
+    lseek(qscn_file, pos, SEEK_SET);
+    write(qscn_file, qscn, syscfg.qscn_len);
+    if (!stayopen) {
+      close_qscn();
+    }
+  }
+}
+
 static void init_files() {
   int i;
   valrec v;

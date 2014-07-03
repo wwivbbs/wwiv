@@ -65,7 +65,6 @@ newexternalrec *externs, *over_intern;
 editorrec *editors;
 arcrec *arcs;
 net_networks_rec *net_networks;
-unsigned long *qsc;
 languagerec *languages;
 
 char bbsdir[MAX_PATH];
