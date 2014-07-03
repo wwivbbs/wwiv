@@ -19,6 +19,8 @@
 
 #include "wwiv.h"
 
+// from qwk.c
+void qwk_menu();
 
 void kill_old_email() {
   mailrec m, m1;
@@ -510,7 +512,7 @@ void Packers() {
     GetSession()->bout << "|#7[|#2Q|#7] |#1Quit back to BBS!\r\n";
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#5Choice : ";
-    char ch = onek("1234Q\r ");
+    char ch = onek("1234EQ\r ");
     switch (ch) {
     case '1': {
       // We used to write STATUS_DAT here.  I don't think we need to anymore.
@@ -550,6 +552,9 @@ void Packers() {
       GetSession()->bout.ClearScreen();
       config_qscan();
       GetSession()->bout.ClearScreen();
+      break;
+    case 'E':
+      qwk_menu();
       break;
     default:
       return;

@@ -20,6 +20,8 @@
 
 #include "wwiv.h"
 
+// 
+statusrec status;
 
 //
 // WStatus

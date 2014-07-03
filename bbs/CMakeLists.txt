@@ -77,6 +77,8 @@ set(COMMON_SOURCES
  pause.cpp
  printfile.cpp
  quote.cpp
+ qwk.cpp
+ qwk1.cpp
  readmail.cpp
  shortmsg.cpp
  showfiles.cpp
