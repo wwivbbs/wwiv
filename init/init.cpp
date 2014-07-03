@@ -117,29 +117,7 @@ static void convcfg() {
   }
 }
 
-static void printcfg() {
-  int hFile = open(configdat, O_RDWR | O_BINARY);
-  if (hFile > 0) {
-    read(hFile, (void *)(&syscfg), sizeof(configrec));
-    Printf("syscfg.newuserpw            = %s\n", syscfg.newuserpw);
-    Printf("syscfg.systempw             = %s\n", syscfg.systempw);
-    Printf("syscfg.msgsdir              = %s\n", syscfg.msgsdir);
-    Printf("syscfg.gfilesdir            = %s\n", syscfg.gfilesdir);
-    Printf("syscfg.dloadsdir            = %s\n", syscfg.dloadsdir);
-    Printf("syscfg.menudir              = %s\n", syscfg.menudir);
-
-    for (int i = 0; i < 4; i++) {
-      Printf("syscfg.arcs[%d].extension   = %s\n", i, syscfg.arcs[i].extension);
-      Printf("syscfg.arcs[%d].arca        = %s\n", i, syscfg.arcs[i].arca);
-      Printf("syscfg.arcs[%d].arce        = %s\n", i, syscfg.arcs[i].arce);
-      Printf("syscfg.arcs[%d].arcl        = %s\n", i, syscfg.arcs[i].arcl);
-    }
-  }
-  close(hFile);
-}
-
 static void show_help() {
-  Printf("   -D    - Edit Directories\n");
   Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
   Printf("\n\n\n");
 
@@ -190,10 +168,6 @@ int WInitApp::main(int argc, char *argv[]) {
     if (argv[i][0] == '-') {
       char ch = toupper(argv[i][1]);
       switch (ch) {
-      case 'S':
-        printcfg();
-        exit_init(0);
-        break;
       case 'P': {
         if (strlen(argv[i]) > 2) {
           if (stricmp(argv[i] + 2, syscfg.systempw) == 0) {
@@ -398,7 +372,7 @@ int WInitApp::main(int argc, char *argv[]) {
     out->SetColor(Scheme::PROMPT);
     out->PutsXY(x, y++, "Command? ");
     out->SetColor(Scheme::NORMAL);
-    switch (onek("QACEGILNPRSTUVX$\033")) {
+    switch (onek("QAEGILNPRSTUVX$\033")) {
     case 'Q':
     case '\033':
       done = true;
@@ -441,11 +415,6 @@ int WInitApp::main(int argc, char *argv[]) {
     case 'N':
       out->SetDefaultFooter();
       networks();
-      break;
-    case 'C':
-      nlx();
-      printcfg();
-      out->GetChar();
       break;
     case 'R':
       out->SetDefaultFooter();
