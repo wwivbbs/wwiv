@@ -116,63 +116,6 @@ void write_user(unsigned int un, userrec *u) {
 
 }
 
-static int qscn_file = -1;
-
-static int open_qscn() {
-  char szFileName[MAX_PATH];
-
-  if (qscn_file == -1) {
-    sprintf(szFileName, "%suser.qsc", syscfg.datadir);
-    qscn_file = open(szFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-    if (qscn_file < 0) {
-      qscn_file = -1;
-      return 0;
-    }
-  }
-  return 1;
-}
-
-static void close_qscn() {
-  if (qscn_file != -1) {
-    close(qscn_file);
-    qscn_file = -1;
-  }
-}
-
-void read_qscn(unsigned int un, unsigned long *qscn, int stayopen) {
-  if (open_qscn()) {
-    long pos = ((long)syscfg.qscn_len) * ((long)un);
-    if (pos + (long)syscfg.qscn_len <= filelength(qscn_file)) {
-      lseek(qscn_file, pos, SEEK_SET);
-      read(qscn_file, qscn, syscfg.qscn_len);
-      if (!stayopen) {
-        close_qscn();
-      }
-      return;
-    }
-  }
-
-  if (!stayopen) {
-    close_qscn();
-  }
-
-  memset(qsc, 0, syscfg.qscn_len);
-  *qsc = 999;
-  memset(qsc + 1, 0xff, ((syscfg.max_dirs + 31) / 32) * 4);
-  memset(qsc + 1 + (syscfg.max_dirs + 31) / 32, 0xff, ((syscfg.max_subs + 31) / 32) * 4);
-}
-
-void write_qscn(unsigned int un, unsigned long *qscn, int stayopen) {
-  if (open_qscn()) {
-    long pos = ((long)syscfg.qscn_len) * ((long)un);
-    lseek(qscn_file, pos, SEEK_SET);
-    write(qscn_file, qscn, syscfg.qscn_len);
-    if (!stayopen) {
-      close_qscn();
-    }
-  }
-}
-
 int exist(const char *pszFileName) {
   WFindFile fnd;
   return ((fnd.open(pszFileName, 0) == false) ? 0 : 1);
