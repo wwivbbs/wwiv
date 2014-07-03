@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -51,7 +51,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;_USE_32BIT_TIME_T;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;_USE_32BIT_TIME_T;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions);_CRT_NONSTDC_NO_DEPRECATE</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
@@ -71,7 +71,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions);_CRT_NONSTDC_NO_DEPRECATE</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
@@ -107,6 +107,7 @@
     <ClInclude Include="prot\crctab.h" />
     <ClInclude Include="prot\xmodem.h" />
     <ClInclude Include="prot\zmodem.h" />
+    <ClInclude Include="qwk.h" />
     <ClInclude Include="runnable.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="sysoplog.h" />
@@ -211,6 +212,8 @@
     <ClCompile Include="prot\zmutil.cpp" />
     <ClCompile Include="prot\zmwwiv.cpp" />
     <ClCompile Include="quote.cpp" />
+    <ClCompile Include="qwk.cpp" />
+    <ClCompile Include="qwk1.cpp" />
     <ClCompile Include="readmail.cpp" />
     <ClCompile Include="shortmsg.cpp" />
     <ClCompile Include="showfiles.cpp" />
