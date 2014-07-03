@@ -260,6 +260,7 @@ std::string ctim2(double d) {
 int years_old(int nMonth, int nDay, int nYear) {
   time_t t = time(NULL);
   struct tm * pTm = localtime(&t);
+  nYear = nYear - 1900;
 
   if (pTm->tm_year < nYear) {
     return 0;

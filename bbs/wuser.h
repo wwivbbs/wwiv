@@ -536,10 +536,17 @@ class WUser {
     data.day = static_cast<unsigned char>(n);
   }
   const int GetBirthdayYear() const       {
+    return data.year + 1900;
+  }
+  const int GetBirthdayYearShort() const       {
     return data.year;
   }
   void SetBirthdayYear(int n)           {
-    data.year = static_cast<unsigned char>(n);
+    if(n == 0){
+      data.year = static_cast<unsigned char>(n);
+    }else{
+      data.year = static_cast<unsigned char>(n-1900);
+    }
   }
   const int GetLanguage() const           {
     return data.language;

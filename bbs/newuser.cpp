@@ -434,7 +434,7 @@ void input_age(WUser *pUser) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#6There aren't that many days in that month.\r\n";
     }
-    if (years_old(m, d, (y - 1900)) < 5) {
+    if (years_old(m, d, y) < 5) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "Not likely\r\n";
       ok = false;
@@ -442,7 +442,7 @@ void input_age(WUser *pUser) {
   } while (!ok && !hangup);
   pUser->SetBirthdayMonth(m);
   pUser->SetBirthdayDay(d);
-  pUser->SetBirthdayYear(y - 1900);
+  pUser->SetBirthdayYear(y);
   pUser->SetAge(years_old(pUser->GetBirthdayMonth(), pUser->GetBirthdayDay(), pUser->GetBirthdayYear()));
   GetSession()->bout.NewLine();
 }
@@ -1362,7 +1362,7 @@ void DoMinimalNewUser() {
           ok = true;
           if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (d >= 31)) ||
               ((m == 2) && (((!isleap(y)) && (d == 29)) || (d == 30))) ||
-              (years_old(m, d, y - 1900) < 5) ||
+              (years_old(m, d, y) < 5) ||
               (d > 31) || ((m == 0) || (y == 0) || (d == 0))) {
             ok = false;
           }
@@ -1382,15 +1382,15 @@ void DoMinimalNewUser() {
     }
     GetSession()->GetCurrentUser()->SetBirthdayMonth(m);
     GetSession()->GetCurrentUser()->SetBirthdayDay(d);
-    GetSession()->GetCurrentUser()->SetBirthdayYear(y - 1900);
-    GetSession()->GetCurrentUser()->SetAge(years_old(m, d, y - 1900));
+    GetSession()->GetCurrentUser()->SetBirthdayYear(y);
+    GetSession()->GetCurrentUser()->SetAge(years_old(m, d, y));
     s1[0] = '\0';
     cln_nu();
     GetSession()->bout << "|#2" <<
                        mon[ std::max<int>(0, GetSession()->GetCurrentUser()->GetBirthdayMonth() - 1) ] <<
                        " " <<
                        GetSession()->GetCurrentUser()->GetBirthdayDay() <<
-                       ", 19" <<
+                       ", " <<
                        GetSession()->GetCurrentUser()->GetBirthdayYear() <<
                        " (" <<
                        GetSession()->GetCurrentUser()->GetAge() <<

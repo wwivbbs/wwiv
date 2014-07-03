@@ -245,7 +245,7 @@ void CreateCallInfoBbsDropFile() {
     sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayDay());
     szTemp[2] = '\0';
     memmove(&(szDate[ 5 - strlen(szTemp) ]), &(szTemp[0]), strlen(szTemp));
-    sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayYear());
+    sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayYearShort());
     szTemp[2] = '\0';
     memmove(&(szDate[ 8 - strlen(szTemp) ]), &(szTemp[0]), strlen(szTemp));
     file.WriteFormatted("%s\n", szDate);
@@ -362,7 +362,7 @@ void CreateDoorSysDropFile() {
     sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayDay());
     szTemp[2] = '\0';
     memmove(&(szDate[5 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-    sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayYear());
+    sprintf(szTemp, "%d", GetSession()->GetCurrentUser()->GetBirthdayYearShort());
     szTemp[2] = '\0';
     memmove(&(szDate[8 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
     szDate[9] = '\0';
