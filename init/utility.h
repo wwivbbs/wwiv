@@ -22,8 +22,6 @@
 #include "bbs/vardec.h"
 
 int number_userrecs();
-void read_qscn(unsigned int un, unsigned long *qscn, int stayopen);
-void write_qscn(unsigned int un, unsigned long *qscn, int stayopen);
 int exist(const char *s);
 void save_status();
 bool read_status();

@@ -55,7 +55,6 @@ extern newexternalrec *externs, *over_intern;
 extern editorrec *editors;
 extern arcrec *arcs;
 extern net_networks_rec *net_networks;
-extern unsigned long *qsc;
 extern languagerec *languages;
 extern initinfo_rec initinfo;
 
