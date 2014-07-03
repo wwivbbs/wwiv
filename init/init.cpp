@@ -104,13 +104,13 @@ static void convcfg() {
 
     char szFileName[ MAX_PATH ];
     sprintf(szFileName, "%sarchiver.dat", syscfg.datadir);
-    hFile = open(szFileName, O_WRONLY | O_BINARY | O_CREAT);
+    hFile = open(szFileName, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
     if (hFile < 0) {
       Printf("Couldn't open '%s' for writing.\n", szFileName);
       Printf("Creating new file....");
       create_arcs();
       Printf("\n");
-      hFile = open(szFileName, O_WRONLY | O_BINARY | O_CREAT);
+      hFile = open(szFileName, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
     }
     write(hFile, (void *)arc, MAX_ARCS * sizeof(arcrec));
     close(hFile);

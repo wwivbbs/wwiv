@@ -22,6 +22,7 @@
 #include <memory>
 #include "platform/wfile.h"
 #include "runnable.h"
+#include "wsession.h"
 
 class StatusMgr;
 class WComm;
@@ -254,8 +255,6 @@ private:
 // Function Prototypes
 WApplication* GetApplication();
 WApplication* CreateApplication();
-
-class WSession;
 
 WSession* GetSession();
 

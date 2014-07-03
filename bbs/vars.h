@@ -154,7 +154,9 @@ __EXTRN__ small_configrec syscfg;
 #endif
 
 __EXTRN__ configoverrec syscfgovr;
+#ifdef NOT_BBS
 __EXTRN__ statusrec status;
+#endif  // NOT_BBS
 __EXTRN__ colorrec rescolor;
 __EXTRN__ smalrec *smallist;
 __EXTRN__ subboardrec *subboards;

@@ -170,9 +170,11 @@ WFile * OpenMessageFile(const std::string messageAreaFileName) {
 
 #define GATSECLEN ( GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE )
 #ifndef MSG_STARTING
-#define MSG_STARTING ( static_cast<long>( gat_section ) * GATSECLEN + GAT_SECTION_SIZE )
+#define MSG_STARTING ( gat_section * GATSECLEN + GAT_SECTION_SIZE )
 #endif  // MSG_STARTING
 
+long current_gat_section() { return gat_section; }
+void current_gat_section(long section) { gat_section = section; }
 
 void set_gat_section(WFile *pMessageFile, int section) {
   if (gat_section != section) {
