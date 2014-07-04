@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
+#include "datetime.h"
 #include "wwiv.h"
 
 char *dateFromTimeTForLog(time_t t) {
@@ -77,12 +77,17 @@ time_t date_to_daten(const char *datet) {
 
   time_t t = time(NULL);
   struct tm * pTm = localtime(&t);
-  pTm->tm_mon   = atoi(datet);
+  pTm->tm_mon   = atoi(datet) - 1;
   pTm->tm_mday  = atoi(datet + 3);
-  pTm->tm_year  = 1900 + atoi(datet + 6);         // fixed for 1920-2019
+  // N.B. tm_year is years since 1900
+  pTm->tm_year  = atoi(datet + 6);         // fixed for 1920-2019
   if (datet[6] < '2') {
     pTm->tm_year += 100;
   }
+  pTm->tm_hour = 0;
+  pTm->tm_min = 0;
+  pTm->tm_sec = 0;
+
   return mktime(pTm);
 }
 
@@ -110,9 +115,8 @@ void filedate(const char *pszFileName, char *pszReturnValue) {
 }
 
 
-double timer()
 /* This function returns the time, in seconds since midnight. */
-{
+double timer() {
   time_t ti       = time(NULL);
   struct tm *t    = localtime(&ti);
 
@@ -121,10 +125,8 @@ double timer()
          static_cast<double>(t->tm_sec);
 }
 
-
-long timer1()
 /* This function returns the time, in ticks since midnight. */
-{
+long timer1() {
   static const double TICKS_PER_SECOND = 18.2;
   return static_cast<long>(timer() * TICKS_PER_SECOND);
 }
@@ -172,8 +174,6 @@ int dow() {
   return static_cast<unsigned char>(t.tm_wday);
 #endif // _WIN32
 }
-
-
 
 /*
  * Returns current time as string formatted like HH:MM:SS (01:13:00).

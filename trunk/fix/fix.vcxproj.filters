@@ -33,9 +33,6 @@
     <ClCompile Include="..\bbs\memory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\bbs\platform\DateTime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\bbs\platform\win32\filesupp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,6 +52,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\bbs\WUser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\bbs\datetime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
