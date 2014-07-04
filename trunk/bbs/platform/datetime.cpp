@@ -256,12 +256,15 @@ std::string ctim2(double d) {
   return result;
 }
 
-/* This should not be a problem 'till 2005 or so */
+
 int years_old(int nMonth, int nDay, int nYear) {
   time_t t = time(NULL);
   struct tm * pTm = localtime(&t);
   nYear = nYear - 1900;
+  --nMonth; // Reduce by one because tm_mon is 0-11, not 1-12
 
+  // Find the range of impossible dates (ie, pTm can't be
+  // less than the input date)
   if (pTm->tm_year < nYear) {
     return 0;
   }
@@ -275,6 +278,7 @@ int years_old(int nMonth, int nDay, int nYear) {
       }
     }
   }
+
   int nAge = pTm->tm_year - nYear;
   if (pTm->tm_mon < nMonth) {
     --nAge;
