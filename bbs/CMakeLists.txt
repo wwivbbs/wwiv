@@ -38,6 +38,7 @@ set(COMMON_SOURCES
  confutil.cpp
  connect1.cpp
  crc.cpp
+ datetime.cpp
  defaults.cpp
  diredit.cpp
  dirlist.cpp
@@ -136,7 +137,6 @@ if(UNIX)
 	platform/unix/wfile.cpp 
 	platform/unix/wfndfile.cpp 
 	platform/unix/wlocal_io.cpp
-	platform/datetime.cpp
 	platform/unix/wshare.cpp
 	platform/unix/stringstuff.cpp 
 	platform/unix/filestuff.cpp 
