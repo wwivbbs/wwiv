@@ -78,8 +78,8 @@ struct qwk_record {
   char amount_blocks[6];
   char flag;
 
-  unsigned int conf_num;
-  unsigned int logical_num;
+  uint16_t conf_num;
+  uint16_t logical_num;
   char tagline;
 };
 
