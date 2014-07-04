@@ -447,7 +447,7 @@ void chainedit() {
   } while (!done && !hangup);
 
   WFile chainsFile(syscfg.datadir, CHAINS_DAT);
-  if (chainsFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
+  if (chainsFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile| WFile::modeTruncate, WFile::shareUnknown,
                       WFile::permReadWrite)) {
     chainsFile.Write(chains, GetSession()->GetNumberOfChains() * sizeof(chainfilerec));
     chainsFile.Close();
