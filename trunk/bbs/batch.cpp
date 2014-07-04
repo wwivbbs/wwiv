@@ -465,7 +465,7 @@ void handle_dszline(char *l) {
       lCharsPerSecond = atol(ss);
       break;
     }
-    ss = strtok(NULL, " \t");
+    ss = strtok(nullptr, " \t");
   }
 
   if (ss) {
@@ -666,7 +666,7 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
 
 void ProcessDSZLogFile() {
   char **lines = static_cast<char **>(BbsAllocA(GetSession()->max_batch * sizeof(char *) * 2));
-  WWIV_ASSERT(lines != NULL);
+  WWIV_ASSERT(lines != nullptr);
 
   if (!lines) {
     return;
@@ -676,16 +676,16 @@ void ProcessDSZLogFile() {
   if (fileDszLog.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     int nFileSize = static_cast<int>(fileDszLog.GetLength());
     char *ss = static_cast<char *>(BbsAllocA(nFileSize));
-    WWIV_ASSERT(ss != NULL);
+    WWIV_ASSERT(ss != nullptr);
     if (ss) {
       int nBytesRead = fileDszLog.Read(ss, nFileSize);
       if (nBytesRead > 0) {
         ss[ nBytesRead ] = 0;
         lines[0] = strtok(ss, "\r\n");
         for (int i = 1; (i < GetSession()->max_batch * 2 - 2) && (lines[i - 1]); i++) {
-          lines[i] = strtok(NULL, "\n");
+          lines[i] = strtok(nullptr, "\n");
         }
-        lines[GetSession()->max_batch * 2 - 2] = NULL;
+        lines[GetSession()->max_batch * 2 - 2] = nullptr;
         for (int i1 = 0; lines[i1]; i1++) {
           handle_dszline(lines[i1]);
         }

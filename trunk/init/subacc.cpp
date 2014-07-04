@@ -152,7 +152,7 @@ postrec *get_post(int mn)
   bool bCloseSubFile = false;
 
   if (mn == 0) {
-    return NULL;
+    return nullptr;
   }
 
   if (subchg == 1) {
@@ -170,7 +170,7 @@ postrec *get_post(int mn)
     if (!fileSub.IsOpen()) {
       // open the sub data file, if necessary
       if (!open_sub(false)) {
-        return NULL;
+        return nullptr;
       }
       bCloseSubFile = true;
     }
@@ -226,7 +226,7 @@ postrec *get_post(int mn)
   }
   // error if msg # invalid
   if (mn < 1 || mn > GetNumMessagesInCurrentMessageArea()) {
-    return NULL;
+    return nullptr;
   }
   last_msgnum = mn;
   return (cache + (mn - cache_start));
