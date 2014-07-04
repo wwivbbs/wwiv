@@ -1303,7 +1303,7 @@ void cln_nu() {
 
 void DoMinimalNewUser() {
   int m =  1, d =  1, y = 2000, ch =  0;
-  char s[101], s1[81], m1[3], d1[3], y1[4];
+  char s[101], s1[81], m1[3], d1[3], y1[5];
   static const char *mon[12] = {
     "January",
     "February",
@@ -1328,7 +1328,7 @@ void DoMinimalNewUser() {
   do {
     GetSession()->bout.ClearScreen();
     GetSession()->bout.DisplayLiteBar("%s New User Registration", syscfg.systemname);
-    GetSession()->bout << "|#1[A] Name (real or alias)  : ";
+    GetSession()->bout << "|#1[A] Name (real or alias)    : ";
     if (GetSession()->GetCurrentUser()->GetName()[0] == '\0') {
       bool ok = true;
       char szTempName[ 81 ];
@@ -1346,19 +1346,19 @@ void DoMinimalNewUser() {
     cln_nu();
     GetSession()->bout << "|#2" << GetSession()->GetCurrentUser()->GetName();
     GetSession()->bout.NewLine();
-    GetSession()->bout << "|#1[B] Birth Date (MM/DD/YY) : ";
+    GetSession()->bout << "|#1[B] Birth Date (MM/DD/YYYY) : ";
     if (GetSession()->GetCurrentUser()->GetAge() == 0) {
       bool ok = false;
       do {
         ok = false;
         cln_nu();
-        if ((Input1(s, s1, 8, false, INPUT_MODE_DATE)) == 8) {
+        if ((Input1(s, s1, 10, false, INPUT_MODE_DATE)) == 10) {
           sprintf(m1, "%c%c", s[0], s[1]);
           sprintf(d1, "%c%c", s[3], s[4]);
-          sprintf(y1, "%c%c", s[6], s[7]);
+          sprintf(y1, "%c%c%c%c", s[6], s[7], s[8], s[9]);
           m = atoi(m1);
           d = atoi(d1);
-          y = atoi(y1) + 1900;
+          y = atoi(y1);
           ok = true;
           if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (d >= 31)) ||
               ((m == 2) && (((!isleap(y)) && (d == 29)) || (d == 30))) ||
@@ -1395,7 +1395,7 @@ void DoMinimalNewUser() {
                        " (" <<
                        GetSession()->GetCurrentUser()->GetAge() <<
                        " years old)\r\n";
-    GetSession()->bout << "|#1[C] Sex (Gender)          : ";
+    GetSession()->bout << "|#1[C] Sex (Gender)            : ";
     if (GetSession()->GetCurrentUser()->GetGender() != 'M' && GetSession()->GetCurrentUser()->GetGender()  != 'F') {
       GetSession()->bout.ColorizedInputField(1);
       GetSession()->GetCurrentUser()->SetGender(onek_ncr("MF"));
@@ -1403,7 +1403,7 @@ void DoMinimalNewUser() {
     s1[0] = '\0';
     cln_nu();
     GetSession()->bout << "|#2" << (GetSession()->GetCurrentUser()->GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
-    GetSession()->bout <<  "|#1[D] Country               : " ;
+    GetSession()->bout <<  "|#1[D] Country                 : " ;
     if (GetSession()->GetCurrentUser()->GetCountry()[0] == '\0') {
       Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.country), "", 3, false, INPUT_MODE_FILE_UPPER);
       if (GetSession()->GetCurrentUser()->GetCountry()[0] == '\0') {
@@ -1413,7 +1413,7 @@ void DoMinimalNewUser() {
     s1[0] = '\0';
     cln_nu();
     GetSession()->bout << "|#2" << GetSession()->GetCurrentUser()->GetCountry() << wwiv::endl;
-    GetSession()->bout << "|#1[E] ZIP or Postal Code    : ";
+    GetSession()->bout << "|#1[E] ZIP or Postal Code      : ";
     if (GetSession()->GetCurrentUser()->GetZipcode()[0] == 0) {
       bool ok = false;
       do {
@@ -1431,7 +1431,7 @@ void DoMinimalNewUser() {
     s1[0] = '\0';
     cln_nu();
     GetSession()->bout << "|#2" << GetSession()->GetCurrentUser()->GetZipcode() << wwiv::endl;
-    GetSession()->bout << "|#1[F] City/State/Province   : ";
+    GetSession()->bout << "|#1[F] City/State/Province     : ";
     if (GetSession()->GetCurrentUser()->GetCity()[0] == 0) {
       bool ok = false;
       do {
@@ -1456,7 +1456,7 @@ void DoMinimalNewUser() {
     properize(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.city));
     GetSession()->bout << "|#2" << GetSession()->GetCurrentUser()->GetCity() << ", " <<
                        GetSession()->GetCurrentUser()->GetState() << wwiv::endl;
-    GetSession()->bout << "|#1[G] Internet Mail Address : ";
+    GetSession()->bout << "|#1[G] Internet Mail Address   : ";
     if (GetSession()->GetCurrentUser()->GetEmailAddress()[0] == 0) {
       std::string emailAddress;
       Input1(emailAddress, s1, 44, true, INPUT_MODE_FILE_MIXED);
