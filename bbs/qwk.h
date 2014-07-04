@@ -105,7 +105,7 @@ struct qwk_junk {
   struct qwk_record qwk_rec;
   struct qwk_index qwk_ndx;
 
-  char abort;
+  bool abort;
 
   char in_email;
   char email_title[25];

@@ -435,7 +435,7 @@ char * make_text_file(int filenumber, long *size, int curpos, int blocks) {
   // 'addline' stuff
   qwk = (struct qwk_junk *) malloc((blocks * sizeof(struct qwk_junk)) + 2048);
   if (!qwk) {
-    return NULL;
+    return nullptr;
   }
 
 
@@ -486,7 +486,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
   irt[0] = 0;
   irt_name[0] = 0;
   parse_email_info(to, &un, &sy);
-  grab_quotes(NULL, NULL);
+  grab_quotes(nullptr, nullptr);
 
 
   if (un || sy) {
@@ -713,7 +713,7 @@ void process_reply_dat(char *name) {
       if (to_email) {
         char *temp;
 
-        if ((temp = strstr(text, QWKFrom + 2)) != NULL) {
+        if ((temp = strstr(text, QWKFrom + 2)) != nullptr) {
           char *s;
 
           temp += strlen(QWKFrom + 2); // Get past 'QWKFrom:'
@@ -1068,7 +1068,7 @@ void qwk_receive_file(char *fn, bool *received, int i) {
   case 2:
   case 3:
   case 4:
-    maybe_internal(fn, received, NULL, false, i);
+    maybe_internal(fn, received, nullptr, false, i);
     break;
   default:
     if (incom) {
