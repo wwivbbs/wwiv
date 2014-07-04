@@ -98,7 +98,7 @@ void send_inst_shutdown(int whichinst) {
   ih.dest_inst = static_cast<unsigned short>(whichinst);
   ih.daten = static_cast<unsigned long>(time(NULL));
 
-  send_inst_msg(&ih, NULL);
+  send_inst_msg(&ih, nullptr);
 }
 
 
@@ -120,7 +120,7 @@ void send_inst_cleannet() {
     ih.dest_inst = 1;
     ih.daten = static_cast<unsigned long>(time(NULL));
 
-    send_inst_msg(&ih, NULL);
+    send_inst_msg(&ih, nullptr);
   }
 }
 
@@ -163,7 +163,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
   unsigned short i;
   char xl[81], cl[81], atr[81], cc;
 
-  if (!ih || (ih->msg_size > 0 && msg == NULL)) {
+  if (!ih || (ih->msg_size > 0 && msg == nullptr)) {
     return -1;
   }
 
@@ -216,7 +216,7 @@ void process_inst_msgs() {
   last_iia = timer1();
 
   int oiia = setiia(0);
-  char* m = NULL;
+  char* m = nullptr;
   char szFindFileName[MAX_PATH];
   inst_msg_header ih;
   WFindFile fnd;
@@ -231,13 +231,13 @@ void process_inst_msgs() {
     long lFileSize = file.GetLength();
     long lFilePos = 0L;
     while (lFilePos < lFileSize) {
-      m = NULL;
+      m = nullptr;
       file.Read(&ih, sizeof(inst_msg_header));
       lFilePos += sizeof(inst_msg_header);
       if (ih.msg_size > 0) {
         m = static_cast<char*>(BbsAllocA(ih.msg_size));
         WWIV_ASSERT(m);
-        if (m == NULL) {
+        if (m == nullptr) {
           break;
         }
         file.Read(m, ih.msg_size);
@@ -246,7 +246,7 @@ void process_inst_msgs() {
       int hi = handle_inst_msg(&ih, m);
       if (m) {
         free(m);
-        m = NULL;
+        m = nullptr;
       }
       if (hi == INST_MSG_SHUTDOWN) {
         if (GetSession()->IsUserOnline()) {
@@ -283,7 +283,7 @@ void process_inst_msgs() {
 
 // Gets instancerec for specified instance, returns in ir.
 bool get_inst_info(int nInstanceNum, instancerec * ir) {
-  if (!ir || syscfg.datadir == NULL) {
+  if (!ir || syscfg.datadir == nullptr) {
     return false;
   }
 
@@ -574,7 +574,7 @@ void write_inst(int loc, int subloc, int flags) {
       (ti.loc != INST_LOC_WFC)) {
     re_write = 1;
   }
-  if (re_write && syscfg.datadir != NULL) {
+  if (re_write && syscfg.datadir != nullptr) {
     ti.last_update = static_cast<unsigned long>(time(NULL));
     WFile instFile(syscfg.datadir, INSTANCE_DAT);
     if (instFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
