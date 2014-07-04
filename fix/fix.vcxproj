@@ -81,8 +81,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\bbs\datetime.cpp" />
     <ClCompile Include="..\bbs\memory.cpp" />
-    <ClCompile Include="..\bbs\platform\DateTime.cpp" />
     <ClCompile Include="..\bbs\platform\win32\filesupp.cpp" />
     <ClCompile Include="..\bbs\platform\win32\utility2.cpp" />
     <ClCompile Include="..\bbs\platform\win32\WFile.cpp" />

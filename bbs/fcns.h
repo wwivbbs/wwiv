@@ -253,21 +253,7 @@ unsigned long int crc32buf(const char *pBuffer, size_t nLength);
 
 
 // File: datetime.cpp
-
-char *dateFromTimeTForLog(time_t t);
-char *dateFromTimeT(time_t t);
-char *date();
-char *fulldate();
-char *times();
-time_t date_to_daten(const char *datet);
-void filedate(const char *fpath, char *rtn);
-double timer();
-long timer1();
-bool isleap(int nYear);
-int dow();
-char *ctim(double d);
-std::string ctim2(double d);
-int years_old(int nMonth, int nDay, int nYear);
+#include "datetime.h"
 
 
 // File: defaults.cpp
