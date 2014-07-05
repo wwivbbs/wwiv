@@ -152,7 +152,7 @@ void build_qwk_packet(void);
 void qwk_gather_sub(int bn, struct qwk_junk *qwk_info);
 void qwk_start_read(int msgnum, struct qwk_junk *qwk_info);
 void make_pre_qwk(int msgnum, int *val, struct qwk_junk *qwk_info);
-void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info);
+void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info);
 void make_qwk_ready(char *text, long *len, char *address);
 void qwk_remove_null(char *memory, int size);
 void build_control_dat(struct qwk_junk *qwk_info);

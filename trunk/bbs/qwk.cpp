@@ -486,7 +486,7 @@ void make_pre_qwk(int msgnum, int *val, struct qwk_junk *qwk_info) {
   }
 }
 
-void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
+void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info) {
   struct tm *time_now;
   char n[205], d[81], temp[101];
   char qwk_address[201];
