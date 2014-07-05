@@ -23,6 +23,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <stdlib.h>
 
 #include "platform/curses_io.h"
 
