@@ -199,7 +199,7 @@ const char *qwk_current_text(int pos, char *text);
 
 
 // HACKS
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
