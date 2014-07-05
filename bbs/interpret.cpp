@@ -43,7 +43,7 @@ const char *interpret(char chKey) {
     snprintf(s, sizeof(s), "%d", static_cast<int>(nsl() / 60));
     break;
   case '#':                               // User's number
-    snprintf(s, sizeof(s), "%lu", GetSession()->usernum);
+    snprintf(s, sizeof(s), "%d", GetSession()->usernum);
     break;
   case '$':                               // File points
     snprintf(s, sizeof(s), "%lu", GetSession()->GetCurrentUser()->GetFilePoints());
@@ -185,7 +185,7 @@ const char *interpret(char chKey) {
     strcpy(s, subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name);
     break;
   case 'W':                               // Total # of messages in sub
-    snprintf(s, sizeof(s), "%ld", GetSession()->GetNumMessagesInCurrentMessageArea());
+    snprintf(s, sizeof(s), "%d", GetSession()->GetNumMessagesInCurrentMessageArea());
     break;
   case 'X':                               // User's sex
     snprintf(s, sizeof(s), "%c", GetSession()->GetCurrentUser()->GetGender());

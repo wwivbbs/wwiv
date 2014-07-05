@@ -210,7 +210,7 @@ void build_qwk_packet(void) {
     repeat_char('\xC4', 5);
     bputch('\xC5');
     repeat_char('\xC4', 4);
-    bputch('´');
+    bputch('\xB4');
     GetSession()->bout.NewLine();
   }
 
@@ -227,15 +227,15 @@ void build_qwk_packet(void) {
 
   GetSession()->bout.Color(
     9);      /* "9ÀÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÙ" */
-  bputch('À');
-  repeat_char('Ä', 4);
-  bputch('Á');
-  repeat_char('Ä', 60);
-  bputch('Á');
-  repeat_char('Ä', 5);
-  bputch('Á');
-  repeat_char('Ä', 4);
-  bputch('Ù');
+  bputch('\xC0');
+  repeat_char('\xC4', 4);
+  bputch('\xC1');
+  repeat_char('\xC4', 60);
+  bputch('\xC1');
+  repeat_char('\xC4', 5);
+  bputch('\xC1');
+  repeat_char('\xC4', 4);
+  bputch('\xD9');
   GetSession()->bout.NewLine(2);
 
   if (qwk_info.abort) {
@@ -341,7 +341,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     strncpy(thissub, subboards[GetSession()->GetCurrentReadMessageArea()].name, 65);
     thissub[60] = 0;
-    sprintf(subinfo, "9³2%-4d9³2%-60s9³ 8%-4d9³5%-4d9³",
+    sprintf(subinfo, "\x039\xB3\x032%-4d\x039\xB3\x032%-60s\x039\xB3 \x038%-4d\x039\xB3\x035%-4d\x039\xB3",
             bn + 1, thissub, GetSession()->GetNumMessagesInCurrentMessageArea(),
             GetSession()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
     GetSession()->bout.Write(subinfo);

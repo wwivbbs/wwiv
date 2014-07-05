@@ -467,7 +467,7 @@ void gfile_sec(int sn) {
                 sprintf(s1, "|#2%s |#9successfully transferred|#1.|#0\r\n", g[i2 - 1].filename);
                 done1 = true;
               } else {
-                sprintf(s1, "|#6þ |#9Error transferring |#2%s|#1.|#0", g[i2 - 1].filename);
+                sprintf(s1, "|#6\xFE |#9Error transferring |#2%s|#1.|#0", g[i2 - 1].filename);
                 done1 = true;
               }
               GetSession()->bout.NewLine();

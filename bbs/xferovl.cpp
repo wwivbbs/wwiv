@@ -783,7 +783,7 @@ void relist() {
             i + 1,
             0x03,
             GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0,
-            okansi() ? 'º' : '|');
+            okansi() ? '\xBA' : '|');
     osan(s, &abort, &next);
     if (GetSession()->GetCurrentUser()->IsUseExtraColor()) {
       GetSession()->bout.Color(1);

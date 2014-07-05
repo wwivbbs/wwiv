@@ -47,7 +47,7 @@ void list_ext_colors() {
   GetSession()->bout <<
                      "|#7\xDA\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF";
   GetSession()->bout.GotoXY(40, 8);
-  GetSession()->bout << "|#7³        |#2COLOR LIST|#7       ³";
+  GetSession()->bout << "|#7\xB3        |#2COLOR LIST|#7       \xB3";
   GetSession()->bout.GotoXY(40, 9);
   GetSession()->bout <<
                      "|#7\xC3\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xB4";

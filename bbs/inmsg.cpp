@@ -268,7 +268,7 @@ bool GetMessageToName(const char *aux) {
         } else {
           strcpy(irt_name, toName.c_str());
         }
-        strcpy(irt, "«");
+        strcpy(irt, "\xAB");
       }
     }
   }
@@ -456,7 +456,7 @@ void GetMessageTitle(char *pszTitle, bool force_title) {
       GetSession()->bout << "|#2Title: ";
       GetSession()->bout.ColorizedInputField(60);
     }
-    if (irt[0] != '«' && irt[0]) {
+    if (irt[0] != '\xAB' && irt[0]) {
       char s1[ 255 ];
       char ch = '\0';
       StringTrim(irt);
