@@ -183,7 +183,7 @@ int select_qwk_archiver(struct qwk_junk *qwk_info, int ask);
 void qwk_which_zip(char *thiszip);
 void qwk_which_protocol(char *thisprotocol);
 void upload_reply_packet(void);
-void ready_reply_packet(char *name);
+void ready_reply_packet(const char *packet_name, const char *msg_name);
 void make_text_ready(char *text, long len);
 char * make_text_file(int filenumber, long *size, int curpos, int blocks);
 void qwk_email_text(char *text, long size, char *title, char *to);

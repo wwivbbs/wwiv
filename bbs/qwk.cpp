@@ -141,9 +141,8 @@ void build_qwk_packet(void) {
   qwk_info.personal = -1;
   qwk_info.zero = -1;
 
-  memset(&qwk_info.qwk_rec, ' ', sizeof(qwk_info.qwk_rec));
-  strcpy((char *)&qwk_info.qwk_rec, "Path\\Filename :");
-  append_block(qwk_info.file, (void *)&qwk_info.qwk_rec, sizeof(qwk_info.qwk_rec));
+  // Required header at the start of MESSAGES.DAT
+  write(qwk_info.file, "Produced by Qmail...Copyright (c) 1987 by Sparkware.  All Rights Reserved (For Compatibility with Qmail)                        ", 128);
 
   // Logical record number
   qwk_info.qwk_rec_num = 1;
@@ -552,8 +551,7 @@ void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
   // ss+cur now is where the text starts
   cur = p + p1 + 1;
 
-
-  sprintf(qwk_address, "%s%s", QWKFrom,  n);  // Copy wwivnet address to qwk_address
+  sprintf(qwk_address, "%s%s", QWKFrom, n);  // Copy wwivnet address to qwk_address
   if (!strchr(qwk_address, '@')) {
     sprintf(temp, "@%d", m1->ownersys);
     strcat(qwk_address, temp);
@@ -563,7 +561,6 @@ void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
   if (!qwk_info->in_email) {
     strncpy(qwk_info->qwk_rec.to, "ALL", 3);
   } else {
-
     strncpy(temp, GetSession()->GetCurrentUser()->GetName(), 25);
     temp[25] = 0;
     strupr(temp);
@@ -578,18 +575,13 @@ void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
   strftime(date, 10, "%m-%d-%y", time_now);
   strncpy(qwk_info->qwk_rec.date, date, 8);
 
-
-
   p = 0;
   p1 = 0;
 
   len = len - cur;
   make_qwk_ready(ss + cur, &len, qwk_address);
 
-
-
   amount_blocks = ((int)len / sizeof(qwk_info->qwk_rec)) + 2;
-
 
   // Save Qwk Record
   sprintf(qwk_info->qwk_rec.amount_blocks, "%d", amount_blocks);
@@ -615,14 +607,12 @@ void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
     pausescr();
   }
 
-
   // Save Qwk NDX
   qwk_info->qwk_ndx.pos = qwk_info->qwk_rec_pos;
   _fieeetomsbin(&qwk_info->qwk_ndx.pos, &msbin);
   qwk_info->qwk_ndx.pos = msbin;
 
   qwk_info->qwk_ndx.nouse = 0;
-
 
   if (!qwk_info->in_email) { // Only if currently doing messages...
     // Create new index if it hasnt been already
@@ -711,7 +701,6 @@ void make_qwk_ready(char *text, long *len, char *address) {
 
       curatr = 255;
 
-
       // Only convert to ansi if we have memory for it, but still strip heart
       // code even if we don't have the memory.
       if (new_pos + 10 < new_size) {
@@ -752,7 +741,7 @@ void make_qwk_ready(char *text, long *len, char *address) {
   *len = new_pos;
 
   // Only add address if it does not yet exist
-  if (!strstr(text, QWKFrom + 2)) { // Don't search for dimond or number, just text after that
+  if (!strstr(text, QWKFrom + 2)) { // Don't search for diamond or number, just text after that
     insert_after_routing(text, address, len);
   }
 }
@@ -1178,11 +1167,11 @@ void insert_after_routing(char *text, char *text2insert, long *len) {
 
   while (pos < *len && text[pos] != 0 && !hangup) {
     if (text[pos] == 4 && text[pos + 1] == '0') {
-      while (pos < *len && text[pos] != 'ã' && !hangup) {
+      while (pos < *len && static_cast<unsigned char>(text[pos]) != '\XE3' && !hangup) {
         ++pos;
       }
 
-      if (text[pos] == 'ã') {
+      if (static_cast<unsigned char>(text[pos]) == '\XE3') {
         ++pos;
       }
     } else if (pos < *len) {
@@ -1190,7 +1179,7 @@ void insert_after_routing(char *text, char *text2insert, long *len) {
       long size;
       int addsize;
 
-      strcat(text2insert, "ãã");
+      strcat(text2insert, "\xE3\XE3");
       addsize = strlen(text2insert);
 
       dst = text + pos + addsize;
