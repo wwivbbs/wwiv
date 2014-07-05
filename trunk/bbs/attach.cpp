@@ -296,7 +296,7 @@ void attach_file(int mode) {
                         attachFile.Write(&fsr, sizeof(filestatusrec));
                         attachFile.Close();
                         char szLogLine[ 255 ];
-                        sprintf(szLogLine, "Attached %s (%ld bytes) in message to %s",
+                        sprintf(szLogLine, "Attached %s (%u bytes) in message to %s",
                                 fsr.filename, fsr.numbytes, u.GetUserNameAndNumber(m.touser));
                         GetSession()->bout << "File attached.\r\n" ;
                         sysoplog(szLogLine);
