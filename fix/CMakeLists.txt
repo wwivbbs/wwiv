@@ -16,8 +16,9 @@ set(COMMON_SOURCES
 
 include_directories(${BBS_SOURCE_DIR})
 set(BBS_SOURCES
-  ${BBS_SOURCE_DIR}/version.cpp
+  ${BBS_SOURCE_DIR}/datetime.cpp
   ${BBS_SOURCE_DIR}/memory.cpp
+  ${BBS_SOURCE_DIR}/version.cpp
   ${BBS_SOURCE_DIR}/wstringutils.cpp
   ${BBS_SOURCE_DIR}/wuser.cpp
   )
@@ -28,7 +29,6 @@ if(UNIX)
 	${BBS_SOURCE_DIR}/platform/unix/wfile.cpp 
 	${BBS_SOURCE_DIR}/platform/unix/wfndfile.cpp 
 	${BBS_SOURCE_DIR}/platform/unix/utility2.cpp 
-	${BBS_SOURCE_DIR}/platform/datetime.cpp
 	${BBS_SOURCE_DIR}/platform/unix/stringstuff.cpp 
 	${BBS_SOURCE_DIR}/platform/unix/filestuff.cpp
 	)
