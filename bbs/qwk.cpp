@@ -41,8 +41,10 @@
 long current_gat_section();
 void current_gat_section(long section);
 
-char *QWKFrom = "0QWKFrom:";
+// Also used in qwk1.cpp
+const char *QWKFrom = "\x04""0QWKFrom:";
 int qwk_bi_mode;
+
 static int qwk_percent;
 static char qwk_opened_filename[81];
 static int qwk_opened_file;
@@ -66,7 +68,7 @@ static bool replacefile(char *src, char *dst, bool stats) {
     WFile::Remove(dst);
   }
 
-  return (copyfile(src, dst, stats));
+  return copyfile(src, dst, stats);
 }
 
 static void strip_heart_colors(char *text) {
@@ -175,24 +177,24 @@ void build_qwk_packet(void) {
   if (!qwk_info.abort) {
     GetSession()->bout.Color(9);
     // "9³2Sub1 ³2Sub name                                                    9³8Total9³5New 9³" 
-    bputch('³');
+    bputch('\xB3');
     GetSession()->bout.Color(2);
     GetSession()->bout.WriteFormatted("Sub ");
     GetSession()->bout.Color(9);
-    bputch('³');
+    bputch('\xB3');
     GetSession()->bout.Color(3);
     GetSession()->bout.WriteFormatted("Sub name");
     repeat_char(' ', 52);
     GetSession()->bout.Color(9);
-    bputch('³');
+    bputch('\xB3');
     GetSession()->bout.Color(8);
     GetSession()->bout.WriteFormatted("Total");
     GetSession()->bout.Color(9);
-    bputch('³');
+    bputch('\xB3');
     GetSession()->bout.Color(5);
     GetSession()->bout.WriteFormatted("New");
     GetSession()->bout.Color(9);
-    bputch('³');
+    bputch('\xB3');
     GetSession()->bout.NewLine();
   }
 
@@ -201,14 +203,14 @@ void build_qwk_packet(void) {
   if (!qwk_info.abort) {
     GetSession()->bout.Color(9);
     /* "9ÃÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÅÄÄÄÄ´" */
-    bputch('Ã');
-    repeat_char('Ä', 4);
-    bputch('Å');
-    repeat_char('Ä', 60);
-    bputch('Å');
-    repeat_char('Ä', 5);
-    bputch('Å');
-    repeat_char('Ä', 4);
+    bputch('\xC3');
+    repeat_char('\xC4', 4);
+    bputch('\xC5');
+    repeat_char('\xC4', 60);
+    bputch('\xC5');
+    repeat_char('\xC4', 5);
+    bputch('\xC5');
+    repeat_char('\xC4', 4);
     bputch('´');
     GetSession()->bout.NewLine();
   }
@@ -297,30 +299,21 @@ void build_qwk_packet(void) {
   if (qwk_opened_file > 0) {
     close(qwk_opened_file);
   }
-
 }
 
-
-
-
 void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
-  int i, os, sn;
+  int i, os;
   char subinfo[201], thissub[81];
-  unsigned long qscnptrx, sd;
 
   float temp_percent;
+  int sn = usub[bn].subnum;
 
-
-
-  sn = usub[bn].subnum;
-
-  if ((hangup) || (sn < 0)) {
+  if (hangup || (sn < 0)) {
     return;
   }
 
-
-  qscnptrx = qsc_p[sn];
-  sd = GetSession()->m_SubDateCache[sn];
+  unsigned long qscnptrx = qsc_p[sn];
+  unsigned long sd = GetSession()->m_SubDateCache[sn];
 
   if (qwk_percent || ((!sd) || (sd > qscnptrx))) {
     os = GetSession()->GetCurrentMessageArea();
@@ -346,7 +339,6 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
       i = GetSession()->GetNumMessagesInCurrentMessageArea() - (temp_percent *
           GetSession()->GetNumMessagesInCurrentMessageArea());
     }
-
 
     strncpy(thissub, subboards[GetSession()->GetCurrentReadMessageArea()].name, 65);
     thissub[60] = 0;
@@ -384,7 +376,6 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     checka(&qwk_info->abort);
   }
-
   GetSession()->bout.Color(0);
 }
 
@@ -427,7 +418,6 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
     set_net_num(0);
   }
 
-
   do {
     //++sb.current_item;
     //statusbar(&sb);
@@ -457,8 +447,6 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
 
   bputch('\r');
 }
-
-
 
 void make_pre_qwk(int msgnum, int *val, struct qwk_junk *qwk_info) {
   postrec* p = get_post(msgnum);
@@ -539,7 +527,8 @@ void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
 
   // n = name...
   while ((ss[p] != 13) && ((long)p < len) && (p < 200) && !hangup) {
-    n[p] = ss[p++];
+    n[p] = ss[p];
+    p++;
   }
   n[p] = 0;
   ++p;
@@ -552,7 +541,8 @@ void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
 
   // d = date
   while ((ss[p + p1] != 13) && ((long)p + p1 < len) && (p1 < 60) && !hangup) {
-    d[p1] = ss[(p1++) + p];
+    d[p1] = ss[(p1) + p];
+    p1++;
   }
   d[p1] = 0;
 
@@ -665,11 +655,9 @@ void put_in_qwk(postrec *m1, char *fn, int msgnum, struct qwk_junk *qwk_info) {
   if (f != -1) {
     close(f);
   }
-
   if (ss != nullptr) {
     free(ss);
   }
-
 }
 
 // Takes text, deletes all ascii '10' and converts '13' to '227' (ã)
@@ -760,10 +748,9 @@ void qwk_remove_null(char *memory, int size) {
   int pos = 0;
 
   while (pos < size && !hangup) {
-    if ((char *)memory[pos] == 0) {
-      ((char *)memory)[pos] = ' ';
+    if (memory[pos] == 0) {
+      (memory)[pos] = ' ';
     }
-
     ++pos;
   }
 }
@@ -936,14 +923,10 @@ int _fieeetomsbin(float *src4, float *dest4) {
 
 
 char * qwk_system_name(char *qwkname) {
-  int x;
   struct qwk_config qwk_cfg;
 
   read_qwk_cfg(&qwk_cfg);
-
   strcpy(qwkname, qwk_cfg.packet_name);
-  (qwkname);
-
   close_qwk_cfg(&qwk_cfg);
 
   if (!qwkname[0]) {
@@ -951,7 +934,7 @@ char * qwk_system_name(char *qwkname) {
   }
 
   qwkname[8] = 0;
-  x = 0;
+  int x = 0;
   while (qwkname[x] && !hangup && x < 9) {
     if (qwkname[x] == ' ' || qwkname[x] == '.') {
       qwkname[x] = '-';
@@ -960,7 +943,7 @@ char * qwk_system_name(char *qwkname) {
   }
   qwkname[8] = 0;
   strupr(qwkname);
-  return (qwkname);
+  return qwkname;
 }
 
 
@@ -1175,37 +1158,29 @@ void insert_after_routing(char *text, char *text2insert, long *len) {
 
   while (pos < *len && text[pos] != 0 && !hangup) {
     if (text[pos] == 4 && text[pos + 1] == '0') {
-      while (pos < *len && static_cast<unsigned char>(text[pos]) != '\XE3' && !hangup) {
+      while (pos < *len && text[pos] != '\xE3' && !hangup) {
         ++pos;
       }
 
-      if (static_cast<unsigned char>(text[pos]) == '\XE3') {
+      if (text[pos] == '\xE3') {
         ++pos;
       }
     } else if (pos < *len) {
-      char *dst, *src;
-      long size;
-      int addsize;
+      strcat(text2insert, "\xE3\xE3");
+      int addsize = strlen(text2insert);
 
-      strcat(text2insert, "\xE3\XE3");
-      addsize = strlen(text2insert);
-
-      dst = text + pos + addsize;
-      src = text + pos;
-      size = (*len) - pos + 1;
-
+      char* dst = text + pos + addsize;
+      char* src = text + pos;
+      long size = (*len) - pos + 1;
 
       memmove(dst, src, size);
       strncpy(src, text2insert, addsize);
 
-
       *len = (*len) + addsize;
-
       return;
     }
   }
 }
-
 
 void close_qwk_cfg(struct qwk_config *qwk_cfg) {
   int x = 0;
@@ -1217,12 +1192,9 @@ void close_qwk_cfg(struct qwk_config *qwk_cfg) {
     if (qwk_cfg->bltname[x]) {
       free(qwk_cfg->bltname[x]);
     }
-
     ++x;
   }
 }
-
-
 
 void read_qwk_cfg(struct qwk_config *qwk_cfg) {
   int f;

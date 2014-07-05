@@ -1040,11 +1040,6 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
 int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub, char *title) {
   int x = 0;
-
-  if (title == title) {
-    title = title;
-  }
-
   while (x < amount && !hangup) {
     if (subs[x].import_num == fromsub) {
       return subs[x].to_num;
@@ -1364,78 +1359,78 @@ void config_qwk_bw(void) {
 }
 
 const char *qwk_current_text(int pos, char *text) {
-  char *yesorno[] = {"YES", "NO"};
+  static const char *yesorno[] = { "YES", "NO" };
 
   switch (pos) {
   case 0:
     if (GetSession()->GetCurrentUser()->data.qwk_dont_scan_mail) {
-      return (yesorno[1]);
+      return yesorno[1];
     } else {
-      return (yesorno[0]);
+      return yesorno[0];
     }
   case 1:
     if (GetSession()->GetCurrentUser()->data.qwk_delete_mail) {
-      return (yesorno[0]);
+      return yesorno[0];
     } else {
-      return (yesorno[1]);
+      return yesorno[1];
     }
   case 2:
     if (GetSession()->GetCurrentUser()->data.qwk_dontsetnscan) {
-      return (yesorno[1]);
+      return yesorno[1];
     } else {
-      return (yesorno[0]);
+      return yesorno[0];
     }
   case 3:
     if (GetSession()->GetCurrentUser()->data.qwk_remove_color) {
-      return (yesorno[0]);
+      return yesorno[0];
     } else {
-      return (yesorno[1]);
+      return yesorno[1];
     }
   case 4:
     if (GetSession()->GetCurrentUser()->data.qwk_convert_color) {
-      return (yesorno[0]);
+      return yesorno[0];
     } else {
-      return (yesorno[1]);
+      return yesorno[1];
     }
 
   case 5:
     if (GetSession()->GetCurrentUser()->data.qwk_leave_bulletin) {
-      return (yesorno[1]);
+      return yesorno[1];
     } else {
-      return (yesorno[0]);
+      return yesorno[0];
     }
 
   case 6:
     if (GetSession()->GetCurrentUser()->data.qwk_dontscanfiles) {
-      return (yesorno[1]);
+      return yesorno[1];
     } else {
-      return (yesorno[0]);
+      return yesorno[0];
     }
 
   case 7:
     if (GetSession()->GetCurrentUser()->data.qwk_keep_routing) {
-      return (yesorno[1]);
+      return yesorno[1];
     } else {
-      return (yesorno[0]);
+      return yesorno[0];
     }
 
   case 8:
     qwk_which_zip(text);
-    return (text);
+    return text;
 
   case 9:
     qwk_which_protocol(text);
-    return (text);
+    return text;
 
   case 10:
     if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub && !GetSession()->GetCurrentUser()->data.qwk_max_msgs) {
-      return ("Unlimited/Unlimited");
+      return "Unlimited/Unlimited";
     } else if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub) {
       sprintf(text, "Unlimited/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs);
-      return (text);
+      return text;
     } else if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs) {
       sprintf(text, "%u/Unlimited", GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub);
-      return (text);
+      return text;
     } else {
       sprintf(text, "%u/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs,
               GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub);
