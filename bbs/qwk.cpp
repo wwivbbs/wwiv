@@ -245,10 +245,18 @@ void build_qwk_packet(void) {
     }
   }
 
-  qwk_info.file = close(qwk_info.file);
-  qwk_info.index = close(qwk_info.index);
-  qwk_info.personal = close(qwk_info.personal);
-  qwk_info.zero = close(qwk_info.zero);
+  if (qwk_info.file != -1) {
+    qwk_info.file = close(qwk_info.file);
+  }
+  if (qwk_info.index != -1) {
+    qwk_info.index = close(qwk_info.index);
+  }
+  if (qwk_info.personal != -1) {
+    qwk_info.personal = close(qwk_info.personal);
+  }
+  if (qwk_info.zero != -1) {
+    qwk_info.zero = close(qwk_info.zero);
+  }
 
 
   if (!qwk_info.abort) {
