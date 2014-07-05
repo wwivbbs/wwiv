@@ -62,7 +62,7 @@ void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, lo
 int  read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 
 void qwk_remove_email(void) {
-  int mw, mfl, curmail, done;
+  int mfl, curmail, done;
   mailrec m;
 
   emchg = false;
@@ -81,7 +81,7 @@ void qwk_remove_email(void) {
   }
 
   mfl = f->GetLength() / sizeof(mailrec);
-  mw = 0;
+  uint8_t mw = 0;
 
   for (long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(i * sizeof(mailrec), WFile::seekBegin);
@@ -100,8 +100,7 @@ void qwk_remove_email(void) {
   if (GetSession()->usernum == 1) {
     fwaiting = mw;
   }
-
-
+  
   if (mw == 0) {
     free(mloc);
     return;
@@ -127,22 +126,20 @@ void qwk_remove_email(void) {
 
 
 void qwk_gather_email(struct qwk_junk *qwk_info) {
-  int i, mw, mfl, curmail, done, tp, nn;
+  int i, mfl, curmail, done, tp, nn;
   char filename[201];
   mailrec m;
   postrec junk;
-  slrec ss;
-  tmpmailrec *mloc;
 
   emchg = 0;
 
-  mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
+  tmpmailrec *mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
   if (!mloc) {
     GetSession()->bout.Write("Not enough memory");
     return;
   }
 
-  ss = getslrec(GetSession()->GetEffectiveSl());
+  slrec ss = getslrec(GetSession()->GetEffectiveSl());
   std::unique_ptr<WFile> f(OpenEmailFile(false));
   if (!f->IsOpen()) {
     GetSession()->bout.NewLine(2);
@@ -152,7 +149,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     return;
   }
   mfl = f->GetLength() / sizeof(mailrec);
-  mw = 0;
+  uint8_t mw = 0;
   for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(((long)(i)) * (sizeof(mailrec)), WFile::seekBegin);
     f->Read(&m, sizeof(mailrec));
@@ -171,8 +168,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   if (GetSession()->usernum == 1) {
     fwaiting = mw;
   }
-
-
+  
   if (mw == 0) {
     GetSession()->bout.NewLine();
     GetSession()->bout.Write("You have no mail.");
@@ -190,8 +186,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
 
   curmail = 0;
   done = 0;
-
-
+  
   qwk_info->in_email = 1;
 
   sprintf(filename, "%sPERSONAL.NDX", QWK_DIRECTORY);
@@ -204,8 +199,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
 
     strupr(m.title);
     strncpy(qwk_info->email_title, m.title, 25);
-
-
+    
     i = ((ability_read_email_anony & ss.ability) != 0);
 
     if ((m.fromsys) && (!m.fromuser)) {
@@ -236,11 +230,9 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     junk.owneruser = m.fromuser;
     junk.daten = m.daten;
     junk.msg = m.msg;
-
-
+    
     put_in_qwk(&junk, "EMAIL", curmail, qwk_info);
-
-
+    
     ++curmail;
     if (curmail >= mw) {
       done = 1;
@@ -251,8 +243,6 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   qwk_info->in_email = 0;
   free(mloc);
 }
-
-
 
 int select_qwk_archiver(struct qwk_junk *qwk_info, int ask) {
   int x;
@@ -346,8 +336,6 @@ void upload_reply_packet(void) {
   write_qwk_cfg(&qwk_cfg);
   close_qwk_cfg(&qwk_cfg);
 
-
-
   save_sub = GetSession()->GetCurrentMessageArea();
   if ((uconfsub[1].confnum != -1) && (okconf(GetSession()->GetCurrentUser()))) {
     save_conf = 1;
@@ -411,20 +399,17 @@ void ready_reply_packet(const char *packet_name, const char *msg_name) {
   GetApplication()->CdHome();
 }
 
-
 // Takes reply packet and converts '227' (ã) to '13'
 void make_text_ready(char *text, long len) {
   int pos = 0;
 
   while (pos < len && !hangup) {
-    if ((unsigned char)text[pos] == 227) {
+    if (text[pos] == '\xE3') {
       text[pos] = 13;
     }
-
     ++pos;
   }
 }
-
 
 char * make_text_file(int filenumber, long *size, int curpos, int blocks) {
   struct qwk_junk *qwk;
@@ -458,19 +443,14 @@ char * make_text_file(int filenumber, long *size, int curpos, int blocks) {
   return (temp);
 }
 
-
-
-
-
 void qwk_email_text(char *text, long size, char *title, char *to) {
   int sy, un;
   long thetime;
-  char *st;
 
   strupr(to);
 
   // Remove text name from address, if it doesn't contain " AT " in it
-  st = strstr(to, " AT ");
+  char* st = strstr(to, " AT ");
   if (!st) {
     st = strchr(to, '#');
     if (st) {
@@ -564,11 +544,9 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     GetSession()->bout.Color(5);
     GetSession()->bout.WriteFormatted("Correct?");
 
-
     if (!yesno()) {
       return;
     }
-
 
     msg.storage_type = EMAIL_STORAGE;
 
@@ -588,21 +566,12 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
 
 void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, long thetime) {
   char s[181];
-  int oiia;
-  char *t;
-
-  messagerec m;
-  long pos;
-
-  oiia = iia;
+  int oiia = iia;
   setiia(0);
 
-  m = *m1;
-
-
-  t = (char *)malloc(size + 2048);
-
-  pos = 0;
+  messagerec m = *m1;
+  char* t = (char *)malloc(size + 2048);
+  long pos = 0;
   AddLineToMessageBuffer(t, name, &pos);
 
   strcpy(s, ctime(&thetime));
@@ -617,7 +586,6 @@ void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, con
   }
   savefile(t, pos, &m, aux);
 
-
   *m1 = m;
 
   charbufferpointer = 0;
@@ -625,18 +593,15 @@ void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, con
   setiia(oiia);
 }
 
-
-
 void process_reply_dat(char *name) {
   struct qwk_record qwk;
   char *text;
   long size;
-  int repfile;
   int curpos = 0;
   int done = 0;
   int to_email = 0;
 
-  repfile = open(name, O_RDONLY | O_BINARY);
+  int repfile = open(name, O_RDONLY | O_BINARY);
 
   if (repfile < 0) {
     GetSession()->bout.NewLine();
@@ -650,8 +615,6 @@ void process_reply_dat(char *name) {
   read(repfile, &qwk, sizeof(struct qwk_record));
 
   // Should check to makesure first block contains our bbs id
-
-
   ++curpos;
 
   GetSession()->bout.ClearScreen();
@@ -670,8 +633,6 @@ void process_reply_dat(char *name) {
       char title[26];
       char tosub[8];
 
-
-
       strncpy(blocks, qwk.amount_blocks, 6);
       blocks[6] = 0;
 
@@ -685,7 +646,6 @@ void process_reply_dat(char *name) {
       to[25] = 0;
       strupr(to);
       StringTrim(to);
-
 
       // If in sub 0 or not public, possibly route into email
       if (atoi(tosub) == 0) {
@@ -705,13 +665,11 @@ void process_reply_dat(char *name) {
         }
       }
 
-
       text = make_text_file(repfile, &size, curpos, atoi(blocks) - 1);
       if (!text) {
         curpos += atoi(blocks) - 1;
         continue;
       }
-
 
       if (to_email) {
         char *temp;
@@ -751,11 +709,7 @@ void process_reply_dat(char *name) {
           }
         }
       }
-
-
-
-
-
+            
       if (to_email) {
         qwk_email_text(text, size, title, to);
       } else if (freek1(syscfg.msgsdir) < 10.0) {
@@ -772,22 +726,18 @@ void process_reply_dat(char *name) {
       curpos += atoi(blocks) - 1;
     }
   }
-
   repfile = close(repfile);
 }
-
-
-
 
 void qwk_post_text(char *text, long size, char *title, int sub) {
   messagerec m;
   postrec p;
 
-  int i, dm, a, f, done = 0, pass = 0;
+  int i, dm, f, done = 0, pass = 0;
   slrec ss;
   long thetime;
   char user_name[101];
-
+  uint8_t a;
 
   while (!done && !hangup) {
     if (pass > 0) {
@@ -912,10 +862,6 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     }
   }
 
-
-
-
-
   if (subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_real_name) {
     strcpy(user_name, GetSession()->GetCurrentUser()->GetRealName());
     properize(user_name);
@@ -923,7 +869,6 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     const char* nam1 = GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem(GetSession()->usernum, net_sysnum);
     strcpy(user_name, nam1);
   }
-
 
   time(&thetime);
   qwk_inmsg(text, size, &m, subboards[GetSession()->GetCurrentReadMessageArea()].filename, user_name, thetime);
@@ -943,14 +888,13 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       } else {
         break;
       }
-
     }
 
     // Anonymous
     if (a) {
       GetSession()->bout.Color(1);
       GetSession()->bout.WriteFormatted("Anonymous?");
-      a = yesno();
+      a = yesno() ? 1 : 0;
     }
     GetSession()->bout.NewLine();
 
@@ -959,7 +903,6 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     p.msg = m;
     p.ownersys = 0;
     p.owneruser = GetSession()->usernum;
-
     {
       WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
       pStatus->IncrementQScanPointer();
@@ -1036,9 +979,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
   }
 }
 
-
-
-int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub, char *title) {
+int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub) {
   int x = 0;
   while (x < amount && !hangup) {
     if (subs[x].import_num == fromsub) {
@@ -1142,7 +1083,7 @@ void qwk_sysop(void) {
       GetSession()->bout.WriteFormatted("Enter max messages per packet, 0=No Max: ");
       GetSession()->bout.ColorizedInputField(5);
       input(temp, 5);
-      qwk_cfg.max_msgs = atoi(temp);
+      qwk_cfg.max_msgs = static_cast<uint16_t>(atoi(temp));
       break;
     case '6':
       modify_bulletins(&qwk_cfg);
@@ -1238,7 +1179,6 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
     }
   }
 }
-
 
 void config_qwk_bw(void) {
   char text[101];
@@ -1345,7 +1285,7 @@ void config_qwk_bw(void) {
     }
 
     case 10: {
-      unsigned int max_msgs, max_per_sub;
+      uint16_t max_msgs, max_per_sub;
 
       if (get_qwk_max_msgs(&max_msgs, &max_per_sub)) {
         GetSession()->GetCurrentUser()->data.qwk_max_msgs = max_msgs;
