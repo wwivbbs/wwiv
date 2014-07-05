@@ -94,9 +94,9 @@ void edit_arc(int nn) {
     case '\r': {
       out->GotoXY(0, 13);
       Printf("                                                             \n");
-      Printf("%%1 %%2 ect. are parameters passed.  Minimum of two on Add and \n");
+      Printf("%%1 %%2 etc. are parameters passed.  Minimum of two on Add and \n");
       Printf("Extract command lines. For added security, a complete path to\n");
-      Printf("the archiver and extension should be used. I.E.:             \n");
+      Printf("the archiver and extension should be used. i.e.:             \n");
       Printf("c:\\bin\\arcs\\zip.exe -a %%1 %%2                              \n");
       Printf("                                                             \n");
       out->SetColor(Scheme::PROMPT);
@@ -187,12 +187,12 @@ void create_arcs() {
 
   strncpy(arc[0].name, "Zip", 32);
   strncpy(arc[0].extension, "ZIP", 4);
-  strncpy(arc[0].arca, "zip.exe %1 %2", 50);
-  strncpy(arc[0].arce, "unzip.exe -o %1 %2", 50);
-  strncpy(arc[0].arcl, "unzip.exe -l %1", 50);
-  strncpy(arc[0].arcd, "zip.exe -d %1 -@ < BBSADS.TXT", 50);
-  strncpy(arc[0].arck, "zip.exe -z %1 < COMMENT.TXT", 50);
-  strncpy(arc[0].arct, "unzip.exe -t %1", 50);
+  strncpy(arc[0].arca, "zip %1 %2", 50);
+  strncpy(arc[0].arce, "unzip %1 %2", 50);
+  strncpy(arc[0].arcl, "unzip -l %1", 50);
+  strncpy(arc[0].arcd, "zip -d %1 -@ < BBSADS.TXT", 50);
+  strncpy(arc[0].arck, "zip -z %1 < COMMENT.TXT", 50);
+  strncpy(arc[0].arct, "unzip -t %1", 50);
   strncpy(arc[1].name, "ARJ", 32);
   strncpy(arc[1].extension, "ARJ", 4);
   strncpy(arc[1].arca, "arj.exe a %1 %2", 50);
