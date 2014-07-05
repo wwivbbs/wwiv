@@ -330,6 +330,9 @@ void GetInstanceActivityString(instancerec &ir, char *pszOutActivity) {
     case INST_LOC_WFC:
       snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Waiting for Call");
       break;
+    case INST_LOC_QWK:
+      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In QWK");
+      break;
     default:
       snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Unknown BBS Location!");
       break;
