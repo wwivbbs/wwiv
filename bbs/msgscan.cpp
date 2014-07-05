@@ -572,7 +572,7 @@ void GetScanReadPrompts(int nMessageNumber, char *pszReadPrompt, char *pszSubNam
       sprintf(szTemp, "\bExit Sub");
     }
     //sprintf(pszReadPrompt, "|#7(|#1Read |#21-%lu|#1, |#7[|#2ENTER|#7]|#1 = #|#2%s|#7) :|#0 ", GetSession()->GetNumMessagesInCurrentMessageArea(), szTemp);
-    sprintf(pszReadPrompt, "%s |#7(|#1Read |#2%lu |#1of |#2%lu|#1|#7) : ", pszSubNamePrompt, nMessageNumber,
+    sprintf(pszReadPrompt, "%s |#7(|#1Read |#2%d |#1of |#2%d|#1|#7) : ", pszSubNamePrompt, nMessageNumber,
             GetSession()->GetNumMessagesInCurrentMessageArea());
   }
 }
@@ -864,7 +864,7 @@ void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
       }
       strcat(szPrompt, charstr(51 - strlen(stripcolors(szPrompt)), ' '));
       if (okansi()) {
-        strcat(szPrompt, "|#7³|#1");
+        strcat(szPrompt, "|#7\xB3|#1");
       } else {
         strcat(szPrompt, "|");
       }

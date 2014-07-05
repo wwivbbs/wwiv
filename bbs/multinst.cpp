@@ -52,27 +52,7 @@ void make_inst_str(int nInstanceNum, char *pszOutInstanceString, int nInstanceFo
     strcpy(pszOutInstanceString, szNodeActivity);                 // WFC Addition
     break;
   case INST_FORMAT_OLD:
-    strncat(s, szNodeActivity, sizeof(s));
-    strncat(s, "\r\n|#1", sizeof(s));
-
-    if (ir.flags & INST_FLAGS_ONLINE) {
-      strncat(s, "   CurrUser ", sizeof(s));
-    } else {
-      strncat(s, "   LastUser ", sizeof(s));
-    }
-
-    strncat(s, ": |#2", sizeof(s));
-
-    if (ir.user < syscfg.maxusers && ir.user > 0) {
-      WUser userRecord;
-      GetApplication()->GetUserManager()->ReadUser(&userRecord, ir.user);
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%-30.30s", userRecord.GetUserNameAndNumber(ir.user));
-      strncat(s, szNodeActivity, sizeof(s));
-    } else {
-      snprintf(szNodeActivity, sizeof(szNodeActivity), "%-30.30s", "Nobody");
-      strncat(s, szNodeActivity, sizeof(s));
-    }
-
+    // Not used anymore.
     strcpy(pszOutInstanceString, s);
     break;
   case INST_FORMAT_LIST: {

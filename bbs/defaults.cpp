@@ -220,7 +220,7 @@ const std::string DescribeColorCode(int nColorCode) {
   }
 
   if (nColorCode & 0x08) {
-    os << (checkcomp("Ami") || checkcomp("Mac")) ? ", Bold" : ", Intense";
+    os << ((checkcomp("Ami") || checkcomp("Mac")) ? ", Bold" : ", Intense");
   }
   if (nColorCode & 0x80) {
     if (checkcomp("Ami")) {
@@ -557,7 +557,7 @@ void list_macro(const char *pszMacroText) {
           bputch('|');
           break;
         case TAB:
-          bputch('ù');
+          bputch('\xF9');
           break;
         default:
           bputch('^');
@@ -608,7 +608,7 @@ char *macroedit(char *pszMacroText) {
     case TAB:
       pszMacroText[i++] = ch;
       GetSession()->bout.Color(0);
-      bputch('ù') ;
+      bputch('\xF9') ;
       GetSession()->bout.Color(textclr);
       break;
     default:
@@ -919,7 +919,7 @@ void list_config_scan_plus(int first, int *amount, int type) {
     GetSession()->bout.WriteFormatted("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                                       type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
-  repeat_char('Ä', 79);
+  repeat_char('\xC4', 79);
 
   int max_lines = GetMaxLinesToShowForScanPlus();
 

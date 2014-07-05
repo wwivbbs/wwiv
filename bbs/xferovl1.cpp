@@ -1031,7 +1031,7 @@ void endlist(int mode) {
       }
       GetSession()->bout << "\r|#9Files listed: |#2 " << g_num_listed;
     } else {
-      GetSession()->bout << (mode == 1) ? "\r|#3No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n";
+      GetSession()->bout << ((mode == 1) ? "\r|#3No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n");
     }
   }
 }

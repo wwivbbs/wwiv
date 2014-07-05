@@ -344,7 +344,7 @@ void list_users(int mode) {
       std::string properName = properize(user.GetName());
       char szUserListLine[ 255 ];
       sprintf(szUserListLine,
-              "|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 %-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5hu  |#%d\xB3",
+              "|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 %-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5u  |#%d\xB3",
               FRAME_COLOR, nUserNumber, FRAME_COLOR, in_qscan ? '*' : ' ', properName.c_str(),
               FRAME_COLOR, szCity, FRAME_COLOR, user.GetLastOn(), FRAME_COLOR,
               user.GetLastBaudRate(), FRAME_COLOR);

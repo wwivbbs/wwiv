@@ -374,7 +374,7 @@ void readmail(int mode) {
 
     if ((GetSession()->GetCurrentUser()->GetScreenChars() >= 80) && GetSession()->mail_who_field_len) {
       if (okansi()) {
-        strcpy(s1, "ÁÂÄ");
+        strcpy(s1, "\xC1\xC2\xC4");
       } else {
         strcpy(s1, "++-");
       }
@@ -407,7 +407,7 @@ void readmail(int mode) {
       } else {
         nn = 0;
       }
-      sprintf(s, "|#2%3d%s|#7%c|#1 ", i + 1, m.status & status_seen ? " " : "|#3*", okansi() ? '³' : '|');
+      sprintf(s, "|#2%3d%s|#7%c|#1 ", i + 1, m.status & status_seen ? " " : "|#3*", okansi() ? '\xB3' : '|');
 
       if ((m.anony & anony_sender) && ((ss.ability & ability_read_email_anony) == 0)) {
         strcat(s, ">UNKNOWN<");
@@ -471,7 +471,7 @@ void readmail(int mode) {
         }
         strcat(s, charstr((GetSession()->mail_who_field_len + 1) - strlen(stripcolors(s)), ' '));
         if (okansi()) {
-          strcat(s, "|#7³|#1");
+          strcat(s, "|#7\xB3|#1");
         } else {
           strcat(s, "|");
         }
@@ -484,7 +484,7 @@ void readmail(int mode) {
       pla(s, &abort);
       if ((i == (mw - 1)) && (GetSession()->GetCurrentUser()->GetScreenChars() >= 80) && (!abort)
           && (GetSession()->mail_who_field_len)) {
-        (okansi()) ? strcpy(s1, "ÁÂÄ") : strcpy(s1, "++-");
+        (okansi()) ? strcpy(s1, "\xC1\xC3\xC4") : strcpy(s1, "++-");
         sprintf(s, "|#7%s%c", charstr(4, s1[2]), s1[0]);
         strcat(s, charstr(GetSession()->mail_who_field_len - 4, s1[2]));
         strcat(s, charstr(1, s1[0]));
@@ -515,7 +515,7 @@ void readmail(int mode) {
   do {
     abort = false;
     GetSession()->bout.NewLine(2);
-    sprintf(s, "|#1Msg|#7:  [|#2%u|#7/|#2%lu|#7] |#%dE-Mail\r\n", curmail + 1, mw, GetSession()->GetMessageColor());
+    sprintf(s, "|#1Msg|#7:  [|#2%u|#7/|#2%d|#7] |#%dE-Mail\r\n", curmail + 1, mw, GetSession()->GetMessageColor());
     osan(s, &abort, &next);
     sprintf(s, "|#1Subj|#7: ");
     osan(s, &abort, &next);

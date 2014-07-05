@@ -518,7 +518,7 @@ void print_extended(const char *pszFileName, bool *abort, int numlist, int inden
         if (indent == 1) {
           for (i = 0; i < INDENTION; i++) {
             if (i == 12 || i == 18) {
-              s[ i ] = (okansi() ? 'º' : '|');
+              s[ i ] = (okansi() ? '\xBA' : '|');
             } else {
               s[ i ] = SPACE;
             }
@@ -670,9 +670,9 @@ void printinfo(uploadsrec * u, bool *abort) {
       filelist[GetSession()->tagptr].directory = udir[GetSession()->GetCurrentFileArea()].subnum;
       filelist[GetSession()->tagptr].dir_mask = directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask;
       GetSession()->tagptr++;
-      sprintf(s, "\r|#%d%2ld|#%d%c",
+      sprintf(s, "\r|#%d%2d|#%d%c",
               (check_batch_queue(filelist[GetSession()->tagptr - 1].u.filename)) ? 6 : 0,
-              GetSession()->tagptr, GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0, okansi() ? 'º' : '|');
+              GetSession()->tagptr, GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0, okansi() ? '\xBA' : '|');
       osan(s, abort, &next);
     }
   } else if (!x_only) {
@@ -755,8 +755,8 @@ void printtitle(bool *abort) {
       return;
     }
   }
-  sprintf(szBuffer, "%s%s - #%s, %ld %s.", ss, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name,
-          udir[GetSession()->GetCurrentFileArea()].keys, GetSession()->numf, "files");
+  sprintf(szBuffer, "%s%s - #%s, %d files.", ss, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name,
+          udir[GetSession()->GetCurrentFileArea()].keys, GetSession()->numf);
   GetSession()->bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
   if ((g_num_listed == 0 && GetSession()->tagptr == 0) || GetSession()->tagging == 0 ||
       (GetSession()->GetCurrentUser()->IsUseNoTagging() && g_num_listed == 0)) {
