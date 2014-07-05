@@ -48,7 +48,7 @@ int qwk_bi_mode;
 static int qwk_percent;
 static char qwk_opened_filename[81];
 static int qwk_opened_file;
-static unsigned max_msgs;
+static uint16_t max_msgs;
 
 // from xfer.cpp
 extern int this_date;
@@ -332,12 +332,12 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
       for (i = GetSession()->GetNumMessagesInCurrentMessageArea(); (i > 1) && (get_post(i - 1)->qscan > qscnptrx); i--)
         ;
     } else { // Get last qwk_percent of messages in sub
-      temp_percent = (float)qwk_percent / 100.0;
+      temp_percent = static_cast<float>(qwk_percent) / 100;
       if (temp_percent > 1.0) {
         temp_percent = 1.0;
       }
-      i = GetSession()->GetNumMessagesInCurrentMessageArea() - (temp_percent *
-          GetSession()->GetNumMessagesInCurrentMessageArea());
+      i = GetSession()->GetNumMessagesInCurrentMessageArea() - 
+          static_cast<int>(temp_percent * GetSession()->GetNumMessagesInCurrentMessageArea());
     }
 
     strncpy(thissub, subboards[GetSession()->GetCurrentReadMessageArea()].name, 65);
@@ -606,7 +606,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   }
 
   // Save Qwk NDX
-  qwk_info->qwk_ndx.pos = qwk_info->qwk_rec_pos;
+  qwk_info->qwk_ndx.pos = static_cast<float>(qwk_info->qwk_rec_pos);
   _fieeetomsbin(&qwk_info->qwk_ndx.pos, &msbin);
   qwk_info->qwk_ndx.pos = msbin;
 
@@ -664,11 +664,10 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 // And does other conversions as specified
 void make_qwk_ready(char *text, long *len, char *address) {
   unsigned pos = 0, new_pos = 0;
-  char *temp;
   unsigned char x;
   long new_size = *len + PAD_SPACE + 1;
 
-  temp = static_cast<char *>(malloc(new_size));
+  char* temp = static_cast<char *>(malloc(new_size));
 
   if (!temp) {
     sysoplog("Couldn't allocate memory to make qwk ready");
@@ -676,27 +675,21 @@ void make_qwk_ready(char *text, long *len, char *address) {
   }
   while (pos < *len && new_pos < new_size && !hangup) {
     x = (unsigned char)text[pos];
-
     if (x == 0) {
       break;
-    }
-
-    if (x == 13) {
-      temp[new_pos] = 227;
+    } else if (x == 13) {
+      temp[new_pos] = '\xE3';
       ++pos;
       ++new_pos;
-    }
+    } else if (x == 10 || x < 3) {
     // Strip out Newlines, NULLS, 1's and 2's
-    else if (x == 10 || x < 3) {
       ++pos;
     } else if (GetSession()->GetCurrentUser()->data.qwk_remove_color && x == 3) {
       pos += 2;
     } else if (GetSession()->GetCurrentUser()->data.qwk_convert_color && x == 3) {
       char ansi_string[30];
       int save_curatr = curatr;
-
       curatr = 255;
-
       // Only convert to ansi if we have memory for it, but still strip heart
       // code even if we don't have the memory.
       if (new_pos + 10 < new_size) {
@@ -705,15 +698,13 @@ void make_qwk_ready(char *text, long *len, char *address) {
         strcat(temp, ansi_string);
         new_pos = strlen(temp);
       }
-
       pos += 2;
-
       curatr = save_curatr;
     } else if (GetSession()->GetCurrentUser()->data.qwk_keep_routing == false && x == 4 && text[pos + 1] == '0') {
       if (text[pos + 1] == 0) {
         ++pos;
       } else {
-        while ((unsigned char)text[pos] != (unsigned char)227 && text[pos] != '\r' && pos < *len && text[pos] != 0 && !hangup) {
+        while (text[pos] != '\xE3' && text[pos] != '\r' && pos < *len && text[pos] != 0 && !hangup) {
           ++pos;
         }
       }
@@ -742,8 +733,6 @@ void make_qwk_ready(char *text, long *len, char *address) {
   }
 }
 
-
-
 void qwk_remove_null(char *memory, int size) {
   int pos = 0;
 
@@ -754,9 +743,6 @@ void qwk_remove_null(char *memory, int size) {
     ++pos;
   }
 }
-
-
-
 
 void build_control_dat(struct qwk_junk *qwk_info) {
   FILE *fp;
@@ -783,10 +769,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   }
 
   read_qwk_cfg(&qwk_cfg);
-
-
   qwk_system_name(system_name);
-
 
   fprintf(fp, "%s.QWK\r\n", system_name);
   fprintf(fp, "%s\r\n", "");   // System City and State
@@ -798,17 +781,14 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "%s\r\n", "");
   fprintf(fp, "%s\r\n", "0");
   fprintf(fp, "%d\r\n", qwk_info->qwk_rec_num);
-
-
+  
   for (cur = 0; (usub[cur].subnum != -1) && (cur < GetSession()->num_subs) && (!hangup); cur++) {
     if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
       ++amount;
     }
   }
-
   fprintf(fp, "%d\r\n", amount);
-
-
+  
   fprintf(fp, "0\r\n");
   fprintf(fp, "E-Mail\r\n");
 
@@ -919,9 +899,6 @@ int _fieeetomsbin(float *src4, float *dest4) {
   return 0;
 }
 
-
-
-
 char * qwk_system_name(char *qwkname) {
   struct qwk_config qwk_cfg;
 
@@ -945,8 +922,6 @@ char * qwk_system_name(char *qwkname) {
   strupr(qwkname);
   return qwkname;
 }
-
-
 
 void qwk_menu(void) {
   int done = 0;
@@ -1030,7 +1005,6 @@ void qwk_menu(void) {
       }
       break;
 
-
     case 'S':
       sysoplog("Select Subs");
       config_qscan();
@@ -1048,8 +1022,8 @@ void qwk_menu(void) {
       GetSession()->bout.ColorizedInputField(3);
       input(temp, 3);
       qwk_percent = atoi(temp);
-      if (qwk_percent > 100.0) {
-        qwk_percent = 100.0;
+      if (qwk_percent > 100) {
+        qwk_percent = 100;
       }
       break;
 
@@ -1059,18 +1033,16 @@ void qwk_menu(void) {
         qwk_sysop();
       }
       break;
-
     }
   }
 }
 
 void qwk_send_file(const char *fn, bool *sent, bool *abort) {
   int i, i1;
-  double percent;
+  double percent = 0.0;
 
   *sent = 0;
   *abort = 0;
-
 
   if (GetSession()->GetCurrentUser()->data.qwk_protocol <= 1 || qwk_bi_mode) {
     if (qwk_bi_mode) {
@@ -1081,9 +1053,6 @@ void qwk_send_file(const char *fn, bool *sent, bool *abort) {
   } else {
     i = GetSession()->GetCurrentUser()->data.qwk_protocol;
   }
-
-  percent = 0.0;
-
   switch (i) {
   case -1:
     *abort = 1;
@@ -1109,53 +1078,37 @@ void qwk_send_file(const char *fn, bool *sent, bool *abort) {
 }
 
 int select_qwk_protocol(struct qwk_junk *qwk_info) {
-  int i;
-
-  i = get_protocol(xf_down_temp);
-
+  int i = get_protocol(xf_down_temp);
   switch (i) {
   case -1:
     qwk_info->abort = 1;
     return i;
-
   default:
     return i;
   }
 }
 
-
-
-
 long * qwk_save_qscan(void) {
-  long * save_qsc_p;
-  int i;
-
-  save_qsc_p = (long *)malloc(GetSession()->GetMaxNumberMessageAreas() * sizeof(long));
+  long * save_qsc_p = (long *)malloc(GetSession()->GetMaxNumberMessageAreas() * sizeof(long));
   if (!save_qsc_p) {
     return save_qsc_p;
   }
-
-  for (i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++) {
+  for (int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++) {
     save_qsc_p[i] = qsc_p[i];
   }
-
   return save_qsc_p;
 }
 
 void qwk_restore_qscan(long *save_qsc_p) {
-  int i;
-
-  for (i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++) {
+  for (int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++) {
     qsc_p[i] = save_qsc_p[i];
   }
 }
 
-
 void insert_after_routing(char *text, char *text2insert, long *len) {
-  int pos = 0;
-
   strip_heart_colors(text2insert);
 
+  int pos = 0;
   while (pos < *len && text[pos] != 0 && !hangup) {
     if (text[pos] == 4 && text[pos + 1] == '0') {
       while (pos < *len && text[pos] != '\xE3' && !hangup) {
@@ -1197,23 +1150,17 @@ void close_qwk_cfg(struct qwk_config *qwk_cfg) {
 }
 
 void read_qwk_cfg(struct qwk_config *qwk_cfg) {
-  int f;
   char s[201];
-  int x = 0;
-  long pos;
-
   sprintf(s, "%s%s", syscfg.datadir, "QWK.CFG");
-
   memset(qwk_cfg, 0, sizeof(struct qwk_config));
 
-  f = open(s, O_BINARY | O_RDONLY);
+  int f = open(s, O_BINARY | O_RDONLY);
   if (f < 0) {
     return;
   }
-
   read(f, (void *) qwk_cfg, sizeof(struct qwk_config));
-
-  x = 0;
+  int x = 0;
+  long pos = -1;
   while (x < qwk_cfg->amount_blts) {
     pos = sizeof(struct qwk_config) + (x * BULL_SIZE);
     lseek(f, pos, SEEK_SET);
@@ -1232,27 +1179,24 @@ void read_qwk_cfg(struct qwk_config *qwk_cfg) {
 
     ++x;
   }
-
   close(f);
 }
 
-
-
 void write_qwk_cfg(struct qwk_config *qwk_cfg) {
-  int f, x, new_amount = 0;
+  int new_amount = 0;
   char s[201];
   long pos;
 
   sprintf(s, "%s%s", syscfg.datadir, "QWK.CFG");
 
-  f = open(s, O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  int f = open(s, O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   if (f < 0) {
     return;
   }
 
   write(f, (void *) qwk_cfg, sizeof(struct qwk_config));
 
-  x = 0;
+  int x = 0;
   while (x < qwk_cfg->amount_blts) {
     pos = sizeof(struct qwk_config) + (new_amount * BULL_SIZE);
     lseek(f, pos, SEEK_SET);
@@ -1283,21 +1227,21 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
   close(f);
 }
 
-int get_qwk_max_msgs(unsigned int *max_msgs, unsigned int *max_per_sub) {
-  char temp[6];
-
+int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
   GetSession()->bout.ClearScreen();
   GetSession()->bout.NewLine();
   GetSession()->bout.Color(2);
   GetSession()->bout.WriteFormatted("Largest packet you want, in msgs? (0=Unlimited) : ");
   GetSession()->bout.ColorizedInputField(5);
+
+  char temp[6];
   input(temp, 5);
 
   if (!temp[0]) {
     return 0;
   }
 
-  *max_msgs = atoi(temp);
+  *max_msgs = atoi(temp); 
 
   GetSession()->bout.WriteFormatted("Most messages you want per sub? ");
   GetSession()->bout.ColorizedInputField(5);
@@ -1424,7 +1368,6 @@ void qwk_nscan(void) {
 #endif  // NEVER
 }
 
-
 void finish_qwk(struct qwk_junk *qwk_info) {
   char parem1[201], parem2[201];
   char qwkname[201];
@@ -1477,11 +1420,9 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       }
     }
   }
-  qwk_system_name(qwkname);
-
   close_qwk_cfg(&qwk_cfg);
 
-
+  qwk_system_name(qwkname);
   strcat(qwkname, ".QWK");
 
   if (!GetSession()->GetCurrentUser()->data.qwk_archive
@@ -1582,11 +1523,11 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 }
 
 int qwk_open_file(char *fn) {
-  int f, i;
+  int i;
   char s[81];
 
   sprintf(s, "%s%s.DAT", syscfg.msgsdir, fn);
-  f = open(s, O_RDWR | O_BINARY);
+  int f = open(s, O_RDWR | O_BINARY);
 
   if (f < 0) {
     f = open(s, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
