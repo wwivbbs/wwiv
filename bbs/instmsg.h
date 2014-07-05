@@ -86,6 +86,7 @@
 #define INST_LOC_TERM         46
 #define INST_LOC_EVENTEDIT    47
 #define INST_LOC_GETUSER      48
+#define INST_LOC_QWK          49
 #define INST_LOC_CH1        5000
 #define INST_LOC_CH2        5001
 #define INST_LOC_CH3        5002

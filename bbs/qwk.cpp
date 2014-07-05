@@ -119,8 +119,7 @@ void build_qwk_packet(void) {
   write_qwk_cfg(&qwk_cfg);
   close_qwk_cfg(&qwk_cfg);
 
-  //write_inst(INST_LOC_QWK, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_ONLINE);
-  //read_status();
+  write_inst(INST_LOC_QWK, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_ONLINE);
 
   sprintf(filename, "%sMESSAGES.DAT", QWK_DIRECTORY);
   qwk_info.file = open(filename, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
@@ -131,7 +130,7 @@ void build_qwk_packet(void) {
     return;
   }
 
-    // Setup my optimized open files
+  // Setup my optimized open files
   qwk_opened_filename[0] = 0;
   qwk_opened_file = -1;
 
