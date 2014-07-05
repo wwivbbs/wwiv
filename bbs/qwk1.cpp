@@ -49,7 +49,7 @@
 #define MAXMAIL 255
 #define EMAIL_STORAGE 2
 
-extern char *QWKFrom;
+extern const char *QWKFrom;
 extern int qwk_percent;
 extern int qwk_bi_mode;
 
