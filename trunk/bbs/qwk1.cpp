@@ -374,10 +374,11 @@ void upload_reply_packet(void) {
     }
 
     if (rec) {
-      ready_reply_packet(namepath);
-
       qwk_system_name(name);
       strcat(name, ".MSG");
+
+      ready_reply_packet(namepath, name);
+
       sprintf(namepath, "%s%s", QWK_DIRECTORY, name);
       process_reply_dat(namepath);
     } else {
@@ -401,11 +402,13 @@ static int match_archiver(const std::string filename) {
   return 0;
 }
 
-void ready_reply_packet(char *name) {
-  int archiver = match_archiver(name);
-  std::string command = stuff_in(arcs[archiver].arce, name, QWK_DIRECTORY, "", "", "");
+void ready_reply_packet(const char *packet_name, const char *msg_name) {
+  int archiver = match_archiver(packet_name);
+  std::string command = stuff_in(arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
+  WWIV_ChangeDirTo(QWK_DIRECTORY);
   ExecuteExternalProgram(command, EFLAG_NOPAUSE);
+  GetApplication()->CdHome();
 }
 
 
@@ -665,7 +668,7 @@ void process_reply_dat(char *name) {
       char blocks[7];
       char to[201];
       char title[26];
-      char tosub[7];
+      char tosub[8];
 
 
 
