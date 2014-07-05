@@ -90,8 +90,8 @@ struct qwk_index {
 };
 
 struct qwk_junk {
-  int qwk_rec_num;
-  int qwk_rec_pos;
+  uint16_t qwk_rec_num;
+  uint16_t qwk_rec_pos;
 
   // File number for the MESSAGES.DAT file
   int file;
@@ -115,7 +115,7 @@ struct qwk_config {
   long fu;
   long timesd;
   long timesu;
-  unsigned max_msgs;
+  uint16_t max_msgs;
 
   char hello[13];
   char news[13];
@@ -168,7 +168,7 @@ void insert_after_routing(char *text, char *text2insert, long *len);
 void close_qwk_cfg(struct qwk_config *qwk_cfg);
 void read_qwk_cfg(struct qwk_config *qwk_cfg);
 void write_qwk_cfg(struct qwk_config *qwk_cfg);
-int get_qwk_max_msgs(unsigned int *max_msgs, unsigned int *max_per_sub);
+int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub);
 void qwk_nscan(void);
 void finish_qwk(struct qwk_junk *qwk_info);
 char *qwk_readfile(messagerec *m1, char *aux, long *l);
@@ -190,7 +190,7 @@ void qwk_email_text(char *text, long size, char *title, char *to);
 void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, const char *name, long thetime);
 void process_reply_dat(char *name);
 void qwk_post_text(char *text, long size, char *title, int sub);
-int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub, char *title);
+int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub);
 void qwk_receive_file(char *fn, bool *received, int i);
 void qwk_sysop(void);
 void modify_bulletins(struct qwk_config *qwk_cfg);
