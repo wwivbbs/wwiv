@@ -67,6 +67,10 @@ long filelength(int handle) {
 #endif  // _WIN32
 
 static bool replacefile(char *src, char *dst, bool stats) {
+  if (strlen(dst) == 0) {
+    return false;
+  }
+
   if (WFile::Exists(dst)) {
     WFile::Remove(dst);
   }
@@ -161,62 +165,36 @@ void build_qwk_packet(void) {
   checka(&qwk_info.abort);
 
   GetSession()->bout.ClearScreen();
-  GetSession()->bout.Color(9);
   if (!qwk_info.abort) {
-//    GetSession()->bout << "+" << string(4, '-') << "+" << string(60, '=') << "+" << string(5, '=') << "+" << string(4, '-') << "+" << wwiv::endl;
-    GetSession()->bout << "\xC3" << string(4, '\xC4') << '\xC5' << string(60, '\xC4') << '\xC5' << string(5, '\xC4') 
-      << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
+    GetSession()->bout << "|#7\xDA" << string(4, '\xC4') << '\xC2' << string(60, '\xC4') << '\xC2' << string(5, '\xC4') 
+      << '\xC2' << string(4, '\xC4') << '\xBF' << wwiv::endl;
   }
 
   checka(&qwk_info.abort);
 
   if (!qwk_info.abort) {
-    GetSession()->bout.Color(9);
-    // "9³2Sub1 ³2Sub name                                                    9³8Total9³5New 9³" 
-    bputch('\xB3');
-    GetSession()->bout.Color(2);
-    GetSession()->bout.WriteFormatted("Sub ");
-    GetSession()->bout.Color(9);
-    bputch('\xB3');
-    GetSession()->bout.Color(3);
-    GetSession()->bout.WriteFormatted("Sub name");
-    repeat_char(' ', 52);
-    GetSession()->bout.Color(9);
-    bputch('\xB3');
-    GetSession()->bout.Color(8);
-    GetSession()->bout.WriteFormatted("Total");
-    GetSession()->bout.Color(9);
-    bputch('\xB3');
-    GetSession()->bout.Color(5);
-    GetSession()->bout.WriteFormatted("New");
-    GetSession()->bout.Color(9);
-    bputch('\xB3');
-    GetSession()->bout.NewLine();
+    GetSession()->bout << "|#7\xB3|#2Sub |#7\xB3|#3Sub Name" << string(52, ' ') << "|#7\xB3|#8Total|#7\xB3|#5New |#7\xB3" << wwiv::endl;
   }
 
   checka(&qwk_info.abort);
 
   if (!qwk_info.abort) {
-    GetSession()->bout.Color(9);
-    GetSession()->bout << "\xC3" << string(4, '\xC4') << '\xC5' << string(60, '\xC4') << '\xC5' << string(5, '\xC4') 
+    GetSession()->bout << "|#7xC3" << string(4, '\xC4') << '\xC5' << string(60, '\xC4') << '\xC5' << string(5, '\xC4') 
         << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
   }
 
   msgs_ok = 1;
 
   for (i = 0; (usub[i].subnum != -1) && (i < GetSession()->num_subs) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
-
     msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : 1);
-
     if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
     }
   }
 
-  GetSession()->bout.Color(9);
-   GetSession()->bout << "\xC3" << string(4, '\xC4') << '\xC5' << string(60, '\xC4') << '\xC5' << string(5, '\xC4') 
-        << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
-   GetSession()->bout.NewLine(2);
+  GetSession()->bout << "|#7\xC3" << string(4, '\xC4') << '\xC5' << string(60, '\xC4') << '\xC5' << string(5, '\xC4') 
+      << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
+  GetSession()->bout.NewLine(2);
 
   if (qwk_info.abort) {
     GetSession()->bout.Color(1);
@@ -238,28 +216,20 @@ void build_qwk_packet(void) {
   if (qwk_info.zero != -1) {
     qwk_info.zero = close(qwk_info.zero);
   }
-
-
   if (!qwk_info.abort) {
     build_control_dat(&qwk_info);
   }
-
-
   if (!qwk_info.abort) {
     finish_qwk(&qwk_info);
   }
 
-
-  // Restore on hangup too, someone might have hungup in the middle of
-  // building the list
+  // Restore on hangup too, someone might have hungup in the middle of building the list
   if (qwk_info.abort || GetSession()->GetCurrentUser()->data.qwk_dontsetnscan || hangup) {
     qwk_restore_qscan(save_qsc_p);  // restore nscan pointers if we aborted
   }
-
   if (qwk_info.abort) {
     sysoplog("Aborted");
   }
-
   free(save_qsc_p);         /* free up memory allocated to save qsc pointers */
 
   if (GetSession()->GetCurrentUser()->data.qwk_delete_mail && !qwk_info.abort) {
@@ -267,7 +237,6 @@ void build_qwk_packet(void) {
   }
 
   //read_status();
-
   if (save_conf) {
     tmp_disable_conf(0);
   }
@@ -321,8 +290,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     strncpy(thissub, subboards[GetSession()->GetCurrentReadMessageArea()].name, 65);
     thissub[60] = 0;
-    // TODO(rushfan): Something odd is happening here. The string here seems to have a \x03 at the beginning. Stack corruption?
-    sprintf(subinfo, "\xB3%-4d\xB3%-60s\xB3 %-4d\xB3%-4d\xB3",
+    sprintf(subinfo, "|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, GetSession()->GetNumMessagesInCurrentMessageArea(),
             GetSession()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
     GetSession()->bout.Write(subinfo);
@@ -349,7 +317,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     strncpy(thissub, subboards[GetSession()->GetCurrentReadMessageArea()].name, 65);
     thissub[60] = 0;
-    sprintf(subinfo, "\xB3%-4d\xB3%-60s\xB3 %-4d\xB3%-4d\xB3",
+    sprintf(subinfo, "|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, GetSession()->GetNumMessagesInCurrentMessageArea(), 0);
     GetSession()->bout.Write(subinfo);
     GetSession()->bout.NewLine();
@@ -1469,7 +1437,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         qwk_info->abort = 1;
       }
     }
-  } else while (!done && !hangup) {
+  } else while (!done && !hangup && !qwk_info->abort) {
       char new_dir[61];
       char nfile[81];
 
