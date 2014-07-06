@@ -203,7 +203,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     i = ((ability_read_email_anony & ss.ability) != 0);
 
     if ((m.fromsys) && (!m.fromuser)) {
-      grab_user_name(&(m.msg), "EMAIL");
+      grab_user_name(&(m.msg), "email");
     } else {
       net_email_name[0] = 0;
     }
@@ -231,7 +231,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     junk.daten = m.daten;
     junk.msg = m.msg;
     
-    put_in_qwk(&junk, "EMAIL", curmail, qwk_info);
+    put_in_qwk(&junk, "email", curmail, qwk_info);
     
     ++curmail;
     if (curmail >= mw) {
@@ -553,7 +553,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     time(&thetime);
 
     const char* nam1 = GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem(GetSession()->usernum, net_sysnum);
-    qwk_inmsg(text, size, &msg, "EMAIL", nam1, thetime);
+    qwk_inmsg(text, size, &msg, "email", nam1, thetime);
 
     if (msg.stored_as == 0xffffffff) {
       return;

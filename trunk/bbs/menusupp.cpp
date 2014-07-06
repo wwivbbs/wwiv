@@ -543,7 +543,7 @@ void ResetFiles() {
 
 
 void ResetQscan() {
-  GetSession()->bout << "|#5Reset all QScan/NScan pointers? ";
+  GetSession()->bout << "|#5Reset all QScan/NScan pointers (For All Users)? ";
   if (yesno()) {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
     for (int i = 0; i <= GetApplication()->GetUserManager()->GetNumberOfUserRecords(); i++) {
