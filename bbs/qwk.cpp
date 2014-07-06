@@ -19,6 +19,7 @@
 #include <qwk.h>
 
 #include <memory>
+#include <string>
 
 #include <ctype.h>
 #include <fcntl.h>
@@ -52,6 +53,8 @@ static uint16_t max_msgs;
 
 // from xfer.cpp
 extern int this_date;
+
+using std::string;
 
 #ifndef _WIN32
 long filelength(int handle) {
@@ -158,17 +161,11 @@ void build_qwk_packet(void) {
   checka(&qwk_info.abort);
 
   GetSession()->bout.ClearScreen();
+  GetSession()->bout.Color(9);
   if (!qwk_info.abort) {
-    bputch('+');   /* "9ÚÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄ¿" */
-    repeat_char('-', 4);
-    bputch('+');
-    repeat_char('=', 60);
-    bputch('+');
-    repeat_char('=', 5);
-    bputch('+');
-    repeat_char('-', 4);
-    bputch('+');
-    GetSession()->bout.NewLine();
+//    GetSession()->bout << "+" << string(4, '-') << "+" << string(60, '=') << "+" << string(5, '=') << "+" << string(4, '-') << "+" << wwiv::endl;
+    GetSession()->bout << "\xC3" << string(4, '\xC4') << '\xC5' << string(60, '\xC4') << '\xC5' << string(5, '\xC4') 
+      << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
   }
 
   checka(&qwk_info.abort);
@@ -201,17 +198,8 @@ void build_qwk_packet(void) {
 
   if (!qwk_info.abort) {
     GetSession()->bout.Color(9);
-    /* "9ÃÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÅÄÄÄÄ´" */
-    bputch('\xC3');
-    repeat_char('\xC4', 4);
-    bputch('\xC5');
-    repeat_char('\xC4', 60);
-    bputch('\xC5');
-    repeat_char('\xC4', 5);
-    bputch('\xC5');
-    repeat_char('\xC4', 4);
-    bputch('\xB4');
-    GetSession()->bout.NewLine();
+    GetSession()->bout << "\xC3" << string(4, '\xC4') << '\xC5' << string(60, '\xC4') << '\xC5' << string(5, '\xC4') 
+        << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
   }
 
   msgs_ok = 1;
@@ -225,18 +213,10 @@ void build_qwk_packet(void) {
     }
   }
 
-  GetSession()->bout.Color(
-    9);      /* "9ÀÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÙ" */
-  bputch('\xC0');
-  repeat_char('\xC4', 4);
-  bputch('\xC1');
-  repeat_char('\xC4', 60);
-  bputch('\xC1');
-  repeat_char('\xC4', 5);
-  bputch('\xC1');
-  repeat_char('\xC4', 4);
-  bputch('\xD9');
-  GetSession()->bout.NewLine(2);
+  GetSession()->bout.Color(9);
+   GetSession()->bout << "\xC3" << string(4, '\xC4') << '\xC5' << string(60, '\xC4') << '\xC5' << string(5, '\xC4') 
+        << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
+   GetSession()->bout.NewLine(2);
 
   if (qwk_info.abort) {
     GetSession()->bout.Color(1);
@@ -341,10 +321,12 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     strncpy(thissub, subboards[GetSession()->GetCurrentReadMessageArea()].name, 65);
     thissub[60] = 0;
-    sprintf(subinfo, "\x039\xB3\x032%-4d\x039\xB3\x032%-60s\x039\xB3 \x038%-4d\x039\xB3\x035%-4d\x039\xB3",
+    // TODO(rushfan): Something odd is happening here. The string here seems to have a \x03 at the beginning. Stack corruption?
+    sprintf(subinfo, "\xB3%-4d\xB3%-60s\xB3 %-4d\xB3%-4d\xB3",
             bn + 1, thissub, GetSession()->GetNumMessagesInCurrentMessageArea(),
             GetSession()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
     GetSession()->bout.Write(subinfo);
+    GetSession()->bout.NewLine();
 
     checka(&qwk_info->abort);
 
@@ -367,9 +349,10 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     strncpy(thissub, subboards[GetSession()->GetCurrentReadMessageArea()].name, 65);
     thissub[60] = 0;
-    sprintf(subinfo, "9³2%-4d9³2%-60s9³ 8%-4d9³5%-4d9³",
+    sprintf(subinfo, "\xB3%-4d\xB3%-60s\xB3 %-4d\xB3%-4d\xB3",
             bn + 1, thissub, GetSession()->GetNumMessagesInCurrentMessageArea(), 0);
     GetSession()->bout.Write(subinfo);
+    GetSession()->bout.NewLine();
 
     GetSession()->SetCurrentMessageArea(os);
 
