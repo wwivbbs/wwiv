@@ -28,6 +28,8 @@
 #include <windows.h>
 #undef CopyFile
 #undef GetFullPathName
+#else  // _WIN32
+#include "core/wwivport.h"
 #endif // _WIN32
 
 class WFindFile {

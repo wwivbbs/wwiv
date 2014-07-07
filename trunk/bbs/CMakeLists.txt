@@ -2,6 +2,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (WWIV5)
 include_directories(.)
+include_directories(..)
 include_directories(platform)
 
 set(COMMON_SOURCES 
@@ -11,7 +12,6 @@ set(COMMON_SOURCES
  woutstream.cpp
  woutstreambuffer.cpp
  wsession.cpp
- wstringutils.cpp
  wtextfile.cpp
  wuser.cpp
  asv.cpp
@@ -134,8 +134,6 @@ if(UNIX)
 	platform/unix/exec.cpp 
 	platform/unix/reboot.cpp 
 	platform/unix/utility2.cpp 
-	platform/unix/wfile.cpp 
-	platform/unix/wfndfile.cpp 
 	platform/unix/wlocal_io.cpp
 	platform/unix/wshare.cpp
 	platform/unix/stringstuff.cpp 
@@ -153,5 +151,5 @@ endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
 add_executable(bbs ${BBS_MAIN})
-target_link_libraries(bbs bbs_lib)
+target_link_libraries(bbs bbs_lib core)
 

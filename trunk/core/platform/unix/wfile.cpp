@@ -16,21 +16,23 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "core/wfile.h"
 
-#include "platform/wfndfile.h"
-
-#include <algorithm>
-#include <iostream>
+#include <unistd.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sstream>
 #include <string>
-#include <unistd.h>
+#include <iostream>
+#include <algorithm>
 
-#include "w5assert.h"
+#include "core/wfndfile.h"
+#include "core/wwivassert.h"
 
+#if defined( __APPLE__ )
 #if !defined( O_BINARY )
 #define O_BINARY 0
+#endif
 #endif
 
 
@@ -73,7 +75,7 @@ const char WFile::separatorChar     = ':';
 WLogger*  WFile::m_pLogger;
 int       WFile::m_nDebugLevel;
 
-// WAIT_TIME is 10 seconds, 1 second = 1000 useconds
+// WAIT_TIME is 10 seconds, 1 second = 1000 mseconds
 #define WAIT_TIME 10000
 #define TRIES 100
 
@@ -162,8 +164,14 @@ bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
   if (m_hFile < 0) {
     int count = 1;
     if (access(m_szFileName, 0) != -1) {
+#if !defined(NOT_BBS)
+      usleep(WAIT_TIME);
+#endif // #if !defined(NOT_BBS)
       m_hFile = open(m_szFileName, nFileMode, nShareMode);
       while ((m_hFile < 0 && errno == EACCES) && count < TRIES) {
+#if !defined(NOT_BBS)
+        usleep((count % 2) ? WAIT_TIME : 0);
+#endif // #if !defined(NOT_BBS)
         count++;
         m_hFile = open(m_szFileName, nFileMode, nShareMode);
       }
@@ -235,6 +243,14 @@ bool WFile::Exists() const {
 }
 
 
+bool WFile::Delete() {
+  if (this->IsOpen()) {
+    this->Close();
+  }
+  return (unlink(m_szFileName) == 0) ? true : false;
+}
+
+
 bool WFile::IsDirectory() {
   struct stat statbuf;
   stat(m_szFileName, &statbuf);
@@ -275,6 +291,19 @@ time_t WFile::GetFileTime() {
 // Static functions
 //
 
+bool WFile::Remove(const std::string fileName) {
+  WWIV_ASSERT(!fileName.empty());
+  return (unlink(fileName.c_str()) ? false : true);
+}
+
+bool WFile::Remove(const std::string directoryName, const std::string fileName) {
+  WWIV_ASSERT(!directoryName.empty());
+  WWIV_ASSERT(!fileName.empty());
+  std::stringstream fullFileName;
+  fullFileName << directoryName << fileName;
+  return WFile::Remove(fullFileName.str());
+}
+
 bool WFile::Rename(const std::string origFileName, const std::string newFileName) {
   WWIV_ASSERT(!origFileName.empty());
   WWIV_ASSERT(!newFileName.empty());
@@ -301,16 +330,64 @@ bool WFile::Exists(const std::string directoryName, const std::string fileName) 
   return Exists(fullFileName.str());
 }
 
+
 bool WFile::SetFilePermissions(const std::string fileName, int nPermissions) {
   WWIV_ASSERT(!fileName.empty());
-  return (chmod(fileName.c_str(), nPermissions) == 0);
+  return (chmod(fileName.c_str(), nPermissions) == 0) ? true : false;
 }
+
 
 bool WFile::IsFileHandleValid(int hFile) {
   return (hFile != WFile::invalid_handle) ? true : false;
 }
 
+
 bool WFile::ExistsWildcard(const std::string pszWildCard) {
   WFindFile fnd;
   return (fnd.open(pszWildCard.c_str(), 0));
+}
+
+
+bool WFile::CopyFile(const std::string sourceFileName, const std::string destFileName) {
+  if (sourceFileName != destFileName && WFile::Exists(sourceFileName) && !WFile::Exists(destFileName)) {
+    char *pBuffer = static_cast<char *>(malloc(16400));
+    if (pBuffer == NULL) {
+      return false;
+    }
+    int hSourceFile = open(sourceFileName.c_str(), O_RDONLY | O_BINARY);
+    if (!hSourceFile) {
+      free(pBuffer);
+      return false;
+    }
+
+    int hDestFile = open(destFileName.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+    if (!hDestFile) {
+      free(pBuffer);
+      close(hSourceFile);
+      return false;
+    }
+
+    int i = read(hSourceFile, (void *) pBuffer, 16384);
+
+    while (i > 0) {
+      write(hDestFile, (void *) pBuffer, i);
+      i = read(hSourceFile, (void *) pBuffer, 16384);
+    }
+
+    hSourceFile = close(hSourceFile);
+    hDestFile = close(hDestFile);
+    free(pBuffer);
+  }
+
+  // I'm not sure about the logic here since you would think we should return true
+  // in the last block, and false here.  This seems fishy
+  return true;
+}
+
+bool WFile::MoveFile(const std::string sourceFileName, const std::string destFileName) {
+  //TODO: Atani needs to see if Rushfan buggered up this implementation
+  if (CopyFile(sourceFileName, destFileName)) {
+    return Remove(sourceFileName);
+  }
+  return false;
 }

@@ -3,6 +3,7 @@ project (WWIV5)
 include_directories(.)
 
 include_directories(../deps/gtest-1.7.0/include)
+include_directories(..)
 include_directories(../bbs)
 include_directories(../bbs/platform)
 
@@ -21,4 +22,4 @@ endif()
 
 
 add_executable(bbs_tests ${test_sources})
-target_link_libraries(bbs_tests bbs_lib gtest_main)
+target_link_libraries(bbs_tests bbs_lib core gtest_main)
