@@ -30,7 +30,7 @@
 
 #include "zmodem.h"
 #include "crctab.h"
-#include "wstringutils.h"
+#include "core/wstringutils.h"
 
 #if defined(_MSC_VER)
 #pragma warning( push )

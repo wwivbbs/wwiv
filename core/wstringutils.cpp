@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "core/wstringutils.h"
 
-#include "wstringutils.h"
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
@@ -26,9 +26,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "wwivassert.h"
-#include "wconstants.h"
-#include "platform/incl1.h"
+#include "core/wwivassert.h"
+#include "core/wwivport.h"
 
 unsigned char *translate_letters[] = {
   (unsigned char *)"abcdefghijklmnopqrstuvwxyz‡„†‚”¤",
@@ -168,7 +167,7 @@ const char *charstr(int nStringLength, int chRepeatChar) {
 void StringTrimEnd(char *pszString) {
   WWIV_ASSERT(pszString);
   std::string::size_type i = strlen(pszString);
-  while ((i > 0) && (pszString[i - 1] == SPACE)) {
+  while ((i > 0) && (pszString[i - 1] == 32)) {
     WWIV_ASSERT(i > 0);
     --i;
   }

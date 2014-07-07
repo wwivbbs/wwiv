@@ -21,6 +21,11 @@
 
 #include <string>
 
+#define JUSTIFY_LEFT   0
+#define JUSTIFY_RIGHT  1
+#define JUSTIFY_CENTER 2
+
+
 namespace wwiv {
 namespace strings {
 std::string StringPrintf(const char *pszFormattedText, ...);

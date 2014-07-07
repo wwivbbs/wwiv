@@ -30,16 +30,7 @@
     <ClInclude Include="subacc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="w5assert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="wwivinit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\curses_io.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\incl1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ivardec.h">

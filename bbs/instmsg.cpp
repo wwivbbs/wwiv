@@ -20,7 +20,7 @@
 #include <stdarg.h>
 
 #include "wwiv.h"
-#include "platform/wfndfile.h"
+#include "core/wfndfile.h"
 #include "printfile.h"
 
 // Local functions

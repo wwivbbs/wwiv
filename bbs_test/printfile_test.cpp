@@ -26,7 +26,7 @@
 #include "bbs_helper.h"
 #include "file_helper.h"
 #include "printfile.h"
-#include "wstringutils.h"
+#include "core/wstringutils.h"
 
 using std::cout;
 using std::endl;

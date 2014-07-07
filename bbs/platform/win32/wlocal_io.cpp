@@ -20,7 +20,7 @@
 
 #ifndef NOT_BBS
 #include "wwiv.h"
-#include "platform/wutil.h"
+#include "core/wutil.h"
 #include "wcomm.h"
 #endif
 

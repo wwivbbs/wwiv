@@ -20,7 +20,7 @@
 #define __INCLUDED_BBS_H__
 
 #include <memory>
-#include "platform/wfile.h"
+#include "core/wfile.h"
 #include "runnable.h"
 #include "wsession.h"
 

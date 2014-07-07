@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "platform/wutil.h"
+#include "core/wutil.h"
 
 TEST(GetRandomNumberTest, Basic) {
   int sum = 0;
