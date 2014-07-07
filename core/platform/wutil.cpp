@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include <random>
 
+#include "core/wfile.h"
 #include "core/wutil.h"
 #include "core/wstringutils.h"
 
@@ -89,13 +90,23 @@ std::string WWIV_GetOSVersion() {
 #elif defined ( __linux__ )
   WFile info("/proc/sys/kernel", "osrelease");
   if (info.Exists()) {
-    info.Open();
-    if (info.IsOpen()) {
-      char osrelease[100];
-      info.Read(&osrelease, 100);
-      info.Close();
-      return wwiv::strings::StringPrintf("Linux %s", osrelease);
-    }
+    FILE *kernel_file;
+    struct k_version { unsigned major, minor, update, iteration; };
+    struct k_version k_version;
+    kernel_file = fopen("/proc/sys/kernel/osrelease","r");
+    fscanf(kernel_file,"%u%*c%u%*c%u%*c%u",
+	   &k_version.major,
+	   &k_version.minor,
+	   &k_version.update,
+	   &k_version.iteration);
+    fclose(kernel_file);
+    char osrelease[100];
+    sprintf(osrelease,"%u.%u.%u-%u", k_version.major,
+	    k_version.minor,
+	    k_version.update,
+	    k_version.iteration);
+    info.Close();
+    return wwiv::strings::StringPrintf("Linux %s", osrelease);
   }
   return std::string("Linux");
 #elif defined ( __APPLE__ )
