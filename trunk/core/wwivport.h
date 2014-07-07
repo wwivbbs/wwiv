@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
-/*             Copyright (C)1998-2014, WWIV Software Services             */
+/*                              WWIV Version 5.0x                         */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -22,19 +22,19 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // WIN32 Specific section
-//
 
 #if defined (_WIN32)
 
 #define WWIV_FILE_SEPERATOR_CHAR  '\\'
 #define WWIV_FILE_SEPERATOR_STRING  "\\"
-#define MAX_FNAME _MAX_FNAME
+
+#define WWIV_VSNPRINTF _vsnprintf
+#define snprintf _snprintf
 
 #endif   // _WIN32
 
 ////////////////////////////////////////////////////////////////////////////////
 // UNIX Common Section.
-//
 
 #if defined ( __unix__ ) || defined ( __APPLE__ )
 
@@ -48,23 +48,30 @@
 #include <utime.h>
 #define O_BINARY  0
 #define O_TEXT    0
+#define SH_DENYNO 0
+#define SH_DENYWR 0
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
-#define MAX_EXT   256
-#define MAX_DIR   256
-#define MAX_FNAME 256
-#define MAX_DRIVE 256
+#define MAX_EXT   260
+#define MAX_DIR   260
+#define MAX_FNAME 260
+#define MAX_DRIVE 260
 #define WWIV_FILE_SEPERATOR_CHAR  '/'
 #define WWIV_FILE_SEPERATOR_STRING  "/"
 
+#define _tzset(s) tzset(s)
+#define _putenv(s)  putenv(s)
+#define _getcwd(a,b)  getcwd(a,b)
 #define mkdir(x)  mkdir(x, S_IRWXU | S_IRWXG)
+
+#define WWIV_VSNPRINTF vsnprintf
+
 
 #endif // defined ( __unix__ )
 
 #ifdef __APPLE__
 #define WWIV_STRICMP(a, b) strcasecmp(a, b)
-#define _strupr strupr
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
 

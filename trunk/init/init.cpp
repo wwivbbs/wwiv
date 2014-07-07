@@ -51,8 +51,8 @@
 #include "wwivinit.h"
 #include "bbs/wconstants.h"
 #include "platform/curses_io.h"
-#include "platform/incl1.h"
-#include "platform/wfndfile.h"
+#include "core/wwivport.h"
+#include "core/wfndfile.h"
 #include "utility.h"
 
 initinfo_rec initinfo;

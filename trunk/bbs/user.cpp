@@ -18,13 +18,13 @@
 /**************************************************************************/
 
 
-#include "platform/incl1.h"
+#include "core/wwivport.h"
 #include "wconstants.h"
 #include "filenames.h"
-#include "platform/wfile.h"
+#include "core/wfile.h"
 #include "wuser.h"
 #include "wsession.h"
-#include "wstringutils.h"
+#include "core/wstringutils.h"
 #include "vars.h"
 #include "bbs.h"
 

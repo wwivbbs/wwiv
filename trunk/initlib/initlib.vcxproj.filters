@@ -20,16 +20,7 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="platform\WFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="w5assert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="platform\curses_io.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="platform\wfndfile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="input.h">
@@ -37,12 +28,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="platform\win32\wfndfile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="platform\win32\WFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="platform\curses_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

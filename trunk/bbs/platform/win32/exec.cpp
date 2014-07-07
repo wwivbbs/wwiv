@@ -26,8 +26,9 @@
 
 #include "bbs.h"
 #include "WComm.h"
-#include "platform/WFile.h"
+#include "core/WFile.h"
 #include "platform/platformfcns.h"
+#include "core/wstringutils.h"
 #include "sysoplog.h"
 #include "WTextFile.h"
 #include "WSession.h"

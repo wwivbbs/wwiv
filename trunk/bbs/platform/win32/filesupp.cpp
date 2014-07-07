@@ -22,7 +22,8 @@
 #include <direct.h>
 
 #include "bbs.h"
-#include "platform/incl1.h"
+#include "core/wwivport.h"
+#include "core/wstringutils.h"
 
 double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);
 

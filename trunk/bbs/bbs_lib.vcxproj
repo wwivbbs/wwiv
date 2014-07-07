@@ -41,9 +41,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)\..\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir)\..\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -97,8 +99,6 @@
     <ClInclude Include="net.h" />
     <ClInclude Include="platform\incl1.h" />
     <ClInclude Include="platform\platformfcns.h" />
-    <ClInclude Include="platform\wfile.h" />
-    <ClInclude Include="platform\wfndfile.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />
     <ClInclude Include="platform\win32\wios.h" />
     <ClInclude Include="platform\win32\wiot.h" />
@@ -197,8 +197,6 @@
     <ClCompile Include="platform\win32\InternalTelnetServer.cpp" />
     <ClCompile Include="platform\win32\reboot.cpp" />
     <ClCompile Include="platform\win32\utility2.cpp" />
-    <ClCompile Include="platform\win32\wfile.cpp" />
-    <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\win32\wios.cpp" />
     <ClCompile Include="platform\win32\wiot.cpp" />
     <ClCompile Include="platform\win32\wlocal_io.cpp" />
@@ -247,7 +245,6 @@
     <ClCompile Include="WOutStreamBuffer.cpp" />
     <ClCompile Include="wqscn.cpp" />
     <ClCompile Include="WSession.cpp" />
-    <ClCompile Include="WStringUtils.cpp" />
     <ClCompile Include="WTextFile.cpp" />
     <ClCompile Include="WUser.cpp" />
     <ClCompile Include="xfer.cpp" />
@@ -255,6 +252,11 @@
     <ClCompile Include="xferovl1.cpp" />
     <ClCompile Include="xfertmp.cpp" />
     <ClCompile Include="xinit.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\core\core.vcxproj">
+      <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

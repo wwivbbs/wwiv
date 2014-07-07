@@ -21,9 +21,10 @@
 
 #include "bbs.h"
 #include "wsession.h"
-#include "platform/incl1.h"
+#include "core/wwivport.h"
 #include "platform/platformfcns.h"  // for strupr
-#include "platform/wfndfile.h"
+#include "core/wfndfile.h"
+#include "core/wstringutils.h"
 #include "platform/wlocal_io.h"
 
 // prototype from utility.cpp
@@ -55,6 +56,7 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
   strcpy(file, pszFileName);
   strcpy(ext, "");
 #endif
+
   SNPRINTF(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", WWIV_STRUPR(stripfn(pszFileName)), drive, direc);
   int i = (GetSession()->GetCurrentUser()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
   GetSession()->bout << "|#7" << charstr(i, c) << s;

@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include "subxtr.h"
 #include "wtextfile.h"
+#include "core/wstringutils.h"
 
 //
 // Local Function Prototypes

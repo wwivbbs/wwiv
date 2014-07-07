@@ -20,9 +20,9 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include "platform/wfile.h"
+#include "core/wfile.h"
 #include "wuser.h"
-#include "wstringutils.h"
+#include "core/wstringutils.h"
 #include "filenames.h"
 #include <iostream>
 #include <memory>

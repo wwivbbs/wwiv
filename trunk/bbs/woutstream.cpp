@@ -21,7 +21,7 @@
 
 #include "wwiv.h"
 #include "woutstreambuffer.h"
-#include "wstringutils.h"
+#include "core/wstringutils.h"
 
 using std::ostream;
 

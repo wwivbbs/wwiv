@@ -37,7 +37,7 @@
 #include "bbs.h"
 #include "instmsg.h"
 #include "menu.h" // for mainmenu
-#include "platform/wutil.h"
+#include "core/wutil.h"
 
 #if defined( _WIN32 )
 #include "platform/win32/InternalTelnetServer.h"

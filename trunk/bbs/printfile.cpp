@@ -26,13 +26,14 @@
 
 #include "bbs.h"
 #include "wsession.h"
-#include "platform/incl1.h"
-#include "platform/wfile.h"
+#include "core/wwivport.h"
+#include "core/wfile.h"
+#include "core/wstringutils.h"
+#include "core/wwivassert.h"
 #include "platform/wlocal_io.h"
 #include "fcns.h"
 #include "vars.h"
 #include "wconstants.h"
-#include "wwivassert.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;

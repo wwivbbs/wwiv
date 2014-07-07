@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
-/*             Copyright (C)1998-2014, WWIV Software Services             */
+/*                              WWIV Version 5.0x                         */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,10 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+
 #ifndef __INCLUDED_PLATFORM_WFILLE_H__
 #define __INCLUDED_PLATFORM_WFILLE_H__
 
 #include <cstring>
+#include <ctime>
 #include <string>
 
 #ifndef MAX_PATH
@@ -42,6 +44,7 @@ class WLogger {
  * WFile - File I/O Class.
  */
 class WFile {
+
  public:
   /////////////////////////////////////////////////////////////////////////
   //
@@ -137,6 +140,7 @@ class WFile {
   virtual void SetLength(long lNewLength);
 
   virtual bool Exists() const;
+  virtual bool Delete();
 
   virtual bool IsDirectory();
   virtual bool IsFile();
@@ -178,10 +182,14 @@ class WFile {
   // static functions
   //
 
+  static bool Remove(const std::string fileName);
+  static bool Remove(const std::string directoryName, const std::string fileName);
   static bool Rename(const std::string origFileName, const std::string newFileName);
   static bool Exists(const std::string fileName);
   static bool Exists(const std::string directoryName, const std::string fileName);
   static bool ExistsWildcard(const std::string wildCard);
+  static bool CopyFile(const std::string sourceFileName, const std::string destFileName);
+  static bool MoveFile(const std::string sourceFileName, const std::string destFileName);
 
   static bool SetFilePermissions(const std::string fileName, int nPermissions);
   static bool IsFileHandleValid(int hFile);
