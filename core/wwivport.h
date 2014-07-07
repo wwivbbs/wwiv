@@ -71,7 +71,7 @@
 #endif // defined ( __unix__ )
 
 #ifdef __APPLE__
-#define WWIV_STRICMP(a, b) strcasecmp(a, b)
+
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
 

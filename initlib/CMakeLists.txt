@@ -18,8 +18,6 @@ if(UNIX)
   include_directories(platform/unix)
   set(PLATFORM_SOURCES 
 	platform/unix/filestuff.cpp
-	platform/unix/wfile.cpp 
-	platform/unix/wfndfile.cpp 
 	)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()

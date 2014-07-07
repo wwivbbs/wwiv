@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "platform/wutil.h"
+#include "core/wutil.h"
 #include "wcomm.h"
 
 const int WLocalIO::cursorNone      = 0;
