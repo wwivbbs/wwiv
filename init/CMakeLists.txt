@@ -34,4 +34,4 @@ if(UNIX)
 endif()
 
 add_executable(init ${COMMON_SOURCES})
-target_link_libraries(init initlib ${CURSES_LIBRARIES})
+target_link_libraries(init initlib core ${CURSES_LIBRARIES})

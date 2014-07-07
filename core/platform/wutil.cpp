@@ -27,7 +27,7 @@
 #endif  // _WIN32
 
 #if defined(__APPLE__)
-#include "macversioninfo.h"
+//#include "macversioninfo.h"
 #endif  // __APPLE__
 
 
@@ -99,7 +99,7 @@ std::string WWIV_GetOSVersion() {
   }
   return std::string("Linux");
 #elif defined ( __APPLE__ )
-  return wwiv::strings::StringPrintf("%s %s", GetOSNameString(), GetMacVersionString());
+  return ""; // wwiv::strings::StringPrintf("%s %s", GetOSNameString(), GetMacVersionString());
 #elif defined ( __unix__ )
   // TODO Add Linux version information code here..
   return std::string("UNIX");

@@ -16,11 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "platform/wfndfile.h"
+#include "core/wfndfile.h"
 
 #include <dirent.h>
 #include <iostream>
-#include "w5assert.h"
+#include "core/wstringutils.h"
+#include "core/wwivassert.h"
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -41,11 +42,6 @@ long lTypeMask;
 //
 // Local functions
 //
-
-bool IsEquals(const char *pszString1, const char *pszString2) {
-  return (strcmp(pszString1, pszString2) == 0);
-}
-
 char *getdir_from_file(const char *pszFileName) {
   static char s[256];
   int i;
@@ -71,7 +67,8 @@ int fname_ok(const struct dirent *ent) {
   const char *s1 = fileSpec;
   const char *s2 = ent->d_name;
 
-  if (IsEquals(s2, ".") || IsEquals(s2, "..")) {
+  if (wwiv::strings::IsEquals(s2, ".") ||
+      wwiv::strings::IsEquals(s2, "..")) {
     return 0;
   }
 
@@ -185,7 +182,8 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
   strcpy(szDirectoryName, getdir_from_file(pszFileSpec));
   strcpy(szFileName, strip_filename(pszFileSpec));
 
-  if (IsEquals(szFileName, "*.*") || IsEquals(szFileName, "*")) {
+  if (wwiv::strings::IsEquals(szFileName, "*.*")  ||
+      wwiv::strings::IsEquals(szFileName, "*")) {
     memset(szFileSpec, '?', 255);
   } else {
     f = laststar = szFileSpec[0] = 0;
