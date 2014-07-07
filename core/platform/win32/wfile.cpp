@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2007, WWIV Software Services             */
+/*             Copyright (C)1998-2014, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,19 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "platform/WFile.h"
+#include "core/wfile.h"
 
-#include "platform/wfndfile.h"
+#include "core/wfndfile.h"
+#include "core/wwivassert.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include "shellapi.h"
 #undef CopyFile
 #undef GetFileTime
 #undef GetFullPathName
 #undef MoveFile
 
-#include "wwivassert.h"
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
@@ -276,19 +275,11 @@ bool WFile::Exists() const {
 }
 
 
-bool WFile::Delete(bool bUseTrashCan) {
+bool WFile::Delete() {
   if (this->IsOpen()) {
     this->Close();
   }
-  if (bUseTrashCan) {
-    SHFILEOPSTRUCT sh = {0};
-    sh.pFrom = m_szFileName;
-    sh.wFunc = FO_DELETE;
-    sh.fFlags = FOF_ALLOWUNDO;
-    return (SHFileOperation(&sh) == 0 && sh.fAnyOperationsAborted == FALSE);
-  } else {
-    return DeleteFile(m_szFileName) ? true : false;
-  }
+  return DeleteFile(m_szFileName) ? true : false;
 }
 
 bool WFile::IsDirectory() {
@@ -332,18 +323,15 @@ bool WFile::Remove(const std::string fileName) {
   return (DeleteFile(fileName.c_str())) ? true : false;
 }
 
-
 bool WFile::Remove(const std::string directoryName, const std::string fileName) {
   std::string strFullFileName = directoryName;
   strFullFileName += fileName;
   return WFile::Remove(strFullFileName);
 }
 
-
 bool WFile::Rename(const std::string origFileName, const std::string newFileName) {
   return MoveFile(origFileName.c_str(), newFileName.c_str()) ? true : false;
 }
-
 
 bool WFile::Exists(const std::string fileName) {
   // If one of these assertions are thrown, then replace this call with

@@ -32,7 +32,7 @@
 #include "input.h"
 #include "bbs/wconstants.h"
 #include "wwivinit.h"
-#include "platform/incl1.h"
+#include "core/wwivport.h"
 #include "utility.h"
 
 static void up_str(char *s, int cursl, int an) {

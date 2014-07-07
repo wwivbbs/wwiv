@@ -289,9 +289,11 @@
 #define AR_O 16384                                 /* Added */
 #define AR_P 32768                                 /* Added */
 
+#ifndef JUSTIFY_LEFT
 #define JUSTIFY_LEFT   0
 #define JUSTIFY_RIGHT  1
 #define JUSTIFY_CENTER 2
+#endif  // JUSTIFY_LEFT
 
 // For get_kb_event, decides if the number pad turns '8' into an arrow etc.. or not
 #define NOTNUMBERS 1

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
-/*             Copyright (C)1998-2014, WWIV Software Services             */
+/*                              WWIV Version 5.0x                         */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,17 +20,15 @@
 #ifndef __INCLUDED_WFNDFILE_H__
 #define __INCLUDED_WFNDFILE_H__
 
-#include "platform/wfile.h"
+#include <cstring>
 
 #if defined( _WIN32 )
+#define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
-#undef MOUSE_MOVED
 #include <windows.h>
+#undef CopyFile
+#undef GetFullPathName
 #endif // _WIN32
-
-#if defined ( __APPLE__ ) && !defined ( __unix__ )
-#define __unix__ 1
-#endif
 
 class WFindFile {
  protected:
@@ -57,15 +55,11 @@ class WFindFile {
 #if defined (_WIN32)
   WIN32_FIND_DATA ffdata;
   HANDLE  hFind;
-#elif defined (__unix__)
-  bool dos_flag;
+#elif defined ( __unix__ ) || defined( __APPLE__ )
   struct dirent **entries;
   int nMatches;
   int nCurrentEntry;
-#else
-#error "No platform specified, cannot build this __FILE__"
 #endif
-
 
  public:
   WFindFile() {
@@ -92,7 +86,7 @@ class WFindFile {
 /**
  * Bit-mapped values for what WFindFile is searching
  */
-enum {
+enum WFindFileTypeMask {
   WFINDFILE_FILES = 0x01,
   WFINDFILE_DIRS  = 0x02
 };

@@ -1,6 +1,6 @@
 #include "file_helper.h"
 #include "gtest/gtest.h"
-#include "platform/wfile.h"
+#include "core/wfile.h"
 
 #include <iostream>
 #include <string>

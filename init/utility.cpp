@@ -33,9 +33,9 @@
 #include "input.h"
 #include "bbs/wconstants.h"
 #include "wwivinit.h"
-#include "platform/incl1.h"
-#include "platform/wfile.h"
-#include "platform/wfndfile.h"
+#include "core/wwivport.h"
+#include "core/wfile.h"
+#include "core/wfndfile.h"
 
 
 extern char bbsdir[];

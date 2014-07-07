@@ -23,6 +23,7 @@
 #include "instmsg.h"
 #include "ini.h"
 #include "wtextfile.h"
+#include "core/wstringutils.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
 #define __unix__ 1

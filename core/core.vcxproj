@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{8EBD5A9A-E149-4E24-B5CA-7EBE0CC45A08}</ProjectGuid>
+    <ProjectGuid>{160CA888-2434-48A8-AD4E-02140E3B2C52}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>initlib</RootNamespace>
+    <RootNamespace>core</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -41,18 +41,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\..\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\..\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;WIN32;NOT_BBS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;_CRT_NONSTDC_NO_DEPRECATE;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
@@ -80,24 +80,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="CMakeLists.txt" />
+    <ClCompile Include="platform\win32\wfile.cpp" />
+    <ClCompile Include="platform\win32\wfndfile.cpp" />
+    <ClCompile Include="platform\wutil.cpp" />
+    <ClCompile Include="wstringutils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="input.h" />
-    <ClInclude Include="platform\curses_io.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="input.cpp" />
-    <ClCompile Include="platform\curses_io.cpp" />
-    <ClCompile Include="platform\win32\filesupp.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\core\core.vcxproj">
-      <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\deps\pdcurses-3.4\pdcurses.vcxproj">
-      <Project>{ec52ceda-4f35-469a-8975-98776ea8ea93}</Project>
-    </ProjectReference>
+    <ClInclude Include="platform\wfile.h" />
+    <ClInclude Include="wstringutils.h" />
+    <ClInclude Include="wwivassert.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

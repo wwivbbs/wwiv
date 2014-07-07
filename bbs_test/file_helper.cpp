@@ -33,8 +33,8 @@
 #include <sys/stat.h>
 #endif
 
-#include "platform/incl1.h"
-#include "wstringutils.h"
+#include "core/wwivport.h"
+#include "core/wstringutils.h"
 
 using std::string;
 

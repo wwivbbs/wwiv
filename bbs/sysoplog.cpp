@@ -82,7 +82,7 @@ void catsl() {
           } while (nNumRead == CAT_BUFSIZE);
 
           instLogFile.Close();
-          instLogFile.Delete(false);
+          instLogFile.Delete();
         }
         wholeLogFile.Close();
       }

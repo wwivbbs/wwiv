@@ -23,12 +23,12 @@
 #include <process.h>
 
 #include "WUser.h"
-#include "platform/WFile.h"
+#include "core/wfile.h"
 #include "platform/platformfcns.h"
 #include "fcns.h"
 
-#include "platform/incl1.h"
-#include "wwivassert.h"
+#include "core/wwivport.h"
+#include "core/wwivassert.h"
 //
 // Constants related to Telnet IAC options and such.
 //

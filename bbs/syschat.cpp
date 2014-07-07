@@ -20,7 +20,7 @@
 
 #include "wwiv.h"
 #include "instmsg.h"
-#include "platform/wutil.h"
+#include "core/wutil.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

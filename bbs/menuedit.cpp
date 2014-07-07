@@ -20,7 +20,7 @@
 
 #include "wwiv.h"
 #include "menu.h"
-#include "platform/wfndfile.h"
+#include "core/wfndfile.h"
 
 bool GetMenuDir(std::string& menuDir);
 bool GetMenuMenu(const std::string& pszDirectoryName, std::string& menuName);

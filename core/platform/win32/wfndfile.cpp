@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                 WWIV Initialization Utility Version 5.0                */
-/*             Copyright (C)1998-2014, WWIV Software Services             */
+/*                              WWIV Version 5.0x                         */
+/*             Copyright (C)1998-2007, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,10 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "platform/wfndfile.h"
+#include "core/wfndfile.h"
 
-bool WFindFile::open(const char * pszFileSpec, UINT32 nTypeMask) {
+bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
   __open(pszFileSpec, nTypeMask);
+
   // Set this with the initial value
   hFind = INVALID_HANDLE_VALUE;
 
@@ -29,9 +30,9 @@ bool WFindFile::open(const char * pszFileSpec, UINT32 nTypeMask) {
   }
 
   if (ffdata.cAlternateFileName[0] == '\0') {
-    strcpy(szFileName, ffdata.cFileName);
+    strncpy(szFileName, ffdata.cFileName, sizeof(szFileName));
   } else {
-    strcpy(szFileName, ffdata.cAlternateFileName);
+    strncpy(szFileName, ffdata.cAlternateFileName, sizeof(szFileName));
   }
 
   lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
@@ -52,9 +53,9 @@ bool WFindFile::next() {
   }
 
   if (ffdata.cAlternateFileName[0] == '\0') {
-    strcpy(szFileName, ffdata.cFileName);
+    strncpy(szFileName, ffdata.cFileName, sizeof(szFileName));
   } else {
-    strcpy(szFileName, ffdata.cAlternateFileName);
+    strncpy(szFileName, ffdata.cAlternateFileName, sizeof(szFileName));
   }
 
   lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
@@ -62,23 +63,20 @@ bool WFindFile::next() {
   return true;
 }
 
+
 bool WFindFile::close() {
   __close();
   FindClose(hFind);
   return true;
 }
 
+
 bool WFindFile::IsDirectory() {
-  if (IsFile()) {
-    return false;
-  }
-  return true;
+  return (IsFile()) ? false : true;
 }
 
+
 bool WFindFile::IsFile() {
-  if (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-    return false;
-  }
-  return true;
+  return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
 }
 

@@ -28,8 +28,8 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
-#include "platform/incl1.h"
-#include "platform/wfndfile.h"
+#include "core/wwivport.h"
+#include "core/wfndfile.h"
 #include "utility.h"
 #include "wwivinit.h"
 

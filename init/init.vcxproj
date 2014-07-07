@@ -96,8 +96,6 @@
     <ClInclude Include="networks.h" />
     <ClInclude Include="newinit.h" />
     <ClInclude Include="paths.h" />
-    <ClInclude Include="platform\curses_io.h" />
-    <ClInclude Include="platform\incl1.h" />
     <ClInclude Include="protocols.h" />
     <ClInclude Include="regcode.h" />
     <ClInclude Include="subacc.h" />
@@ -105,7 +103,6 @@
     <ClInclude Include="system_info.h" />
     <ClInclude Include="user_editor.h" />
     <ClInclude Include="utility.h" />
-    <ClInclude Include="w5assert.h" />
     <ClInclude Include="wwivinit.h" />
   </ItemGroup>
   <ItemGroup>
@@ -127,6 +124,9 @@
     <ClCompile Include="utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\core\core.vcxproj">
+      <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\deps\pdcurses-3.4\pdcurses.vcxproj">
       <Project>{ec52ceda-4f35-469a-8975-98776ea8ea93}</Project>
     </ProjectReference>

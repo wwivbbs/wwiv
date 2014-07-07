@@ -24,8 +24,8 @@
 #include <string.h>
 
 #include "filenames.h"
-#include "platform/incl1.h"
-#include "platform/wfile.h"
+#include "core/wwivport.h"
+#include "core/wfile.h"
 #include "vardec.h"
 #include "version.cpp"
 
