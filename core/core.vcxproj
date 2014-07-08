@@ -80,9 +80,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="platform\win32\wfile.cpp" />
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\wutil.cpp" />
+    <ClCompile Include="wfile.cpp" />
+    <ClCompile Include="wfile_win32.cpp" />
     <ClCompile Include="wstringutils.cpp" />
   </ItemGroup>
   <ItemGroup>

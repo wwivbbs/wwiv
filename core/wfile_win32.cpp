@@ -57,7 +57,6 @@
 // Constants
 
 const int WFile::modeDefault        = (_O_RDWR | _O_BINARY);
-const int WFile::modeUnknown        = -1;
 const int WFile::modeAppend         = _O_APPEND;
 const int WFile::modeBinary         = _O_BINARY;
 const int WFile::modeCreateFile     = _O_CREAT;
@@ -67,28 +66,17 @@ const int WFile::modeText           = _O_TEXT;
 const int WFile::modeWriteOnly      = _O_WRONLY;
 const int WFile::modeTruncate       = _O_TRUNC;
 
-const int WFile::shareUnknown       = -1;
 const int WFile::shareDenyReadWrite = SH_DENYRW;
 const int WFile::shareDenyWrite     = SH_DENYWR;
 const int WFile::shareDenyRead      = SH_DENYRD;
 const int WFile::shareDenyNone      = SH_DENYNO;
 
-const int WFile::permUnknown        = -1;
 const int WFile::permWrite          = _S_IWRITE;
 const int WFile::permRead           = _S_IREAD;
 const int WFile::permReadWrite      = (_S_IREAD | _S_IWRITE);
 
-const int WFile::seekBegin          = SEEK_SET;
-const int WFile::seekCurrent        = SEEK_CUR;
-const int WFile::seekEnd            = SEEK_END;
-
-const int WFile::invalid_handle     = -1;
-
 const char WFile::pathSeparatorChar = '\\';
 const char WFile::separatorChar     = ';';
-
-WLogger*  WFile::m_pLogger;
-int       WFile::m_nDebugLevel;
 
 // WAIT_TIME is 10 seconds
 #define WAIT_TIME 10
@@ -96,51 +84,6 @@ int       WFile::m_nDebugLevel;
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
-
-WFile::WFile() {
-  init();
-}
-
-WFile::WFile(const std::string fileName) {
-  init();
-  this->SetName(fileName);
-}
-
-WFile::WFile(const std::string dirName, const std::string fileName) {
-  init();
-  this->SetName(dirName, fileName);
-}
-
-void WFile::init() {
-  m_bOpen                 = false;
-  m_hFile                 = WFile::invalid_handle;
-  memset(m_szFileName, 0, MAX_PATH + 1);
-}
-
-WFile::~WFile() {
-  if (this->IsOpen()) {
-    this->Close();
-  }
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Member functions
-
-bool WFile::SetName(const std::string fileName) {
-  strncpy(m_szFileName, fileName.c_str(), MAX_PATH);
-  return true;
-}
-
-bool WFile::SetName(const std::string dirName, const std::string fileName) {
-  std::stringstream fullPathName;
-  fullPathName << dirName;
-  if (!dirName.empty() && dirName[ dirName.length() - 1 ] == pathSeparatorChar) {
-    fullPathName << fileName;
-  } else {
-    fullPathName << pathSeparatorChar << fileName;
-  }
-  return SetName(fullPathName.str());
-}
 
 bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
   WWIV_ASSERT(this->IsOpen() == false);
@@ -217,24 +160,6 @@ void WFile::Close() {
   }
 }
 
-int WFile::Read(void * pBuffer, size_t nCount) {
-  int ret = read(m_hFile, pBuffer, nCount);
-  if (ret == -1) {
-    std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
-  }
-  // TODO: Make this an WWIV_ASSERT once we get rid of these issues
-  return ret;
-}
-
-int WFile::Write(const void * pBuffer, size_t nCount) {
-  int nRet = _write(m_hFile, pBuffer, nCount);
-  if (nRet == -1) {
-    std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
-  }
-  // TODO: Make this an WWIV_ASSERT once we get rid of these issues
-  return nRet;
-}
-
 long WFile::GetLength() {
   // _stat/_fstat is the 32 bit version on WIN32
   struct _stat fileinfo;
@@ -253,40 +178,14 @@ long WFile::GetLength() {
   return fileinfo.st_size;
 }
 
-long WFile::Seek(long lOffset, int nFrom) {
-  WWIV_ASSERT(nFrom == WFile::seekBegin || nFrom == WFile::seekCurrent || nFrom == WFile::seekEnd);
-  WWIV_ASSERT(WFile::IsFileHandleValid(m_hFile));
-
-  return lseek(m_hFile, lOffset, nFrom);
-}
-
 void WFile::SetLength(long lNewLength) {
   WWIV_ASSERT(WFile::IsFileHandleValid(m_hFile));
   _chsize(m_hFile, lNewLength);
 }
 
-bool WFile::Exists() const {
-  return WFile::Exists(m_szFileName);
-}
-
-bool WFile::Delete() {
-  if (this->IsOpen()) {
-    this->Close();
-  }
-  return (unlink(m_szFileName) == 0) ? true : false;
-}
-
 bool WFile::IsDirectory() {
   DWORD dwAttributes = GetFileAttributes(m_szFileName);
   return (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) ? true : false;
-}
-
-bool WFile::IsFile() {
-  return !this->IsDirectory();
-}
-
-bool WFile::SetFilePermissions(int nPermissions) {
-  return (chmod(m_szFileName, nPermissions) == 0) ? true : false;
 }
 
 time_t WFile::GetFileTime() {
@@ -310,46 +209,12 @@ time_t WFile::GetFileTime() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool WFile::Remove(const std::string fileName) {
-  return (unlink(fileName.c_str()) ? false : true);
-}
-
-bool WFile::Remove(const std::string directoryName, const std::string fileName) {
-  std::string strFullFileName = directoryName;
-  strFullFileName += fileName;
-  return WFile::Remove(strFullFileName);
-}
-
 bool WFile::Rename(const std::string origFileName, const std::string newFileName) {
   return MoveFile(origFileName.c_str(), newFileName.c_str()) ? true : false;
 }
 
 bool WFile::Exists(const std::string fileName) {
   return (access(fileName.c_str(), 0) != -1) ? true : false;
-}
-
-bool WFile::Exists(const std::string directoryName, const std::string fileName) {
-  std::stringstream fullPathName;
-  if (!directoryName.empty() && directoryName[directoryName.length() - 1] == pathSeparatorChar) {
-    fullPathName << directoryName << fileName;
-  } else {
-    fullPathName << directoryName << pathSeparatorChar << fileName;
-  }
-  return Exists(fullPathName.str());
-}
-
-bool WFile::ExistsWildcard(const std::string wildCard) {
-  WFindFile fnd;
-  return (fnd.open(wildCard.c_str(), 0));
-}
-
-bool WFile::SetFilePermissions(const std::string fileName, int nPermissions) {
-  WWIV_ASSERT(!fileName.empty());
-  return (chmod(fileName.c_str(), nPermissions) == 0) ? true : false;
-}
-
-bool WFile::IsFileHandleValid(int hFile) {
-  return (hFile != WFile::invalid_handle) ? true : false;
 }
 
 bool WFile::CopyFile(const std::string sourceFileName, const std::string destFileName) {
