@@ -19,7 +19,7 @@
 
 #include <ctime>
 #include "gtest/gtest.h"
-#include "bbs_helper.h"
+#include "bbs_test/bbs_helper.h"
 
 #include "utility.h"
 
