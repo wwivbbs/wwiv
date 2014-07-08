@@ -23,20 +23,132 @@
 #include "core/wstringutils.h"
 #include "core/wwivassert.h"
 
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Local function prototypes
-//
-char *getdir_from_file(const char *pszFileName);
-int fname_ok(const struct dirent *ent);
-
 int dos_flag = false;
 char fileSpec[256];
 long lTypeMask;
 
 #define TYPE_DIRECTORY  DT_DIR
 #define TYPE_FILE DT_BLK
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Local function prototypes
+char *getdir_from_file(const char *pszFileName);
+int fname_ok(const struct dirent *ent);
+char *strip_filename(const char *pszFileName);
+
+
+bool WFindFile::open(const char* pszFileSpec, unsigned int nTypeMask) {
+  char szFileName[MAX_PATH];
+  char szDirectoryName[MAX_PATH];
+  unsigned int i, f, laststar;
+
+  __open(pszFileSpec, nTypeMask);
+  dos_flag = 0;
+
+  strcpy(szDirectoryName, getdir_from_file(pszFileSpec));
+  strcpy(szFileName, strip_filename(pszFileSpec));
+
+  if (wwiv::strings::IsEquals(szFileName, "*.*")  ||
+      wwiv::strings::IsEquals(szFileName, "*")) {
+    memset(szFileSpec, '?', 255);
+  } else {
+    f = laststar = szFileSpec[0] = 0;
+    for (i = 0; i < strlen(szFileName); i++) {
+      if (szFileName[i] == '*') {
+        if (i < 8) {
+          if (strchr(szFileName, '.') != NULL) {
+            dos_flag = 1;
+            memset(&szFileSpec[f], '?', 8 - i);
+            f += 8 - i;
+            while (szFileName[++i] != '.')
+              ;
+            i--;
+
+            continue;
+          }
+        }
+
+        do {
+          if (szFileName[i] == '.' && i < strlen(szFileName)) {
+            szFileSpec[f++] = '.';
+            break;
+          }
+          szFileSpec[f++] = '?';
+        } while (++i < 255);
+
+      } else {
+        szFileSpec[f++] = szFileName[i];
+      }
+    }
+
+    if (strchr(szFileSpec, '.') == NULL && f < 255) {
+      memset(&szFileSpec[f], '?', 255 - f);
+    }
+
+    if (strstr(szFileName, ".*") != NULL && dos_flag) {
+      memset(&szFileSpec[9], '?', 3);
+    }
+
+    if (strlen(szFileSpec) < 255 && !dos_flag) {
+      memset(&szFileSpec[f], 32, 255 - f);
+    }
+
+  }
+  szFileSpec[255] = 0;
+
+  if (dos_flag) {
+    szFileSpec[12] = 0;
+  }
+
+  strcpy(fileSpec, szFileSpec);
+
+  nMatches = scandir(szDirectoryName, &entries, fname_ok, alphasort);
+  if (nMatches < 0) {
+    std::cout << "could not open dir '" << szDirectoryName << "'\r\n";
+    perror("scandir");
+    return false;
+  }
+  nCurrentEntry = 0;
+
+  next();
+  return (nMatches > 0);
+}
+
+bool WFindFile::next() {
+  if (nCurrentEntry >= nMatches) {
+    return false;
+  }
+  struct dirent *entry = entries[nCurrentEntry++];
+
+  strcpy(szFileName, entry->d_name);
+  lFileSize = entry->d_reclen;
+  nFileType = entry->d_type;
+
+  return true;
+}
+
+bool WFindFile::close() {
+  __close();
+  return true;
+}
+
+bool WFindFile::IsDirectory() {
+  if (nCurrentEntry > nMatches) {
+    return false;
+  }
+
+  return (nFileType & DT_DIR);
+}
+
+bool WFindFile::IsFile() {
+  if (nCurrentEntry > nMatches) {
+    return false;
+  }
+
+  return (nFileType & DT_BLK);
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -163,124 +275,3 @@ char *strip_filename(const char *pszFileName) {
   strcpy(szStaticFileName, szTempFileName);
   return szStaticFileName;
 }
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Exported functions
-//
-//
-
-bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
-  char szFileName[MAX_PATH];
-  char szDirectoryName[MAX_PATH];
-  unsigned int i, f, laststar;
-
-  __open(pszFileSpec, nTypeMask);
-  dos_flag = 0;
-
-  strcpy(szDirectoryName, getdir_from_file(pszFileSpec));
-  strcpy(szFileName, strip_filename(pszFileSpec));
-
-  if (wwiv::strings::IsEquals(szFileName, "*.*")  ||
-      wwiv::strings::IsEquals(szFileName, "*")) {
-    memset(szFileSpec, '?', 255);
-  } else {
-    f = laststar = szFileSpec[0] = 0;
-    for (i = 0; i < strlen(szFileName); i++) {
-      if (szFileName[i] == '*') {
-        if (i < 8) {
-          if (strchr(szFileName, '.') != NULL) {
-            dos_flag = 1;
-            memset(&szFileSpec[f], '?', 8 - i);
-            f += 8 - i;
-            while (szFileName[++i] != '.')
-              ;
-            i--;
-
-            continue;
-          }
-        }
-
-        do {
-          if (szFileName[i] == '.' && i < strlen(szFileName)) {
-            szFileSpec[f++] = '.';
-            break;
-          }
-          szFileSpec[f++] = '?';
-        } while (++i < 255);
-
-      } else {
-        szFileSpec[f++] = szFileName[i];
-      }
-    }
-
-    if (strchr(szFileSpec, '.') == NULL && f < 255) {
-      memset(&szFileSpec[f], '?', 255 - f);
-    }
-
-    if (strstr(szFileName, ".*") != NULL && dos_flag) {
-      memset(&szFileSpec[9], '?', 3);
-    }
-
-    if (strlen(szFileSpec) < 255 && !dos_flag) {
-      memset(&szFileSpec[f], 32, 255 - f);
-    }
-
-  }
-  szFileSpec[255] = 0;
-
-  if (dos_flag) {
-    szFileSpec[12] = 0;
-  }
-
-  strcpy(fileSpec, szFileSpec);
-
-  nMatches = scandir(szDirectoryName, &entries, fname_ok, alphasort);
-  if (nMatches < 0) {
-    std::cout << "could not open dir '" << szDirectoryName << "'\r\n";
-    perror("scandir");
-    return false;
-  }
-  nCurrentEntry = 0;
-
-  next();
-  return (nMatches > 0);
-}
-
-bool WFindFile::next() {
-  if (nCurrentEntry >= nMatches) {
-    return false;
-  }
-  struct dirent *entry = entries[nCurrentEntry++];
-
-  strcpy(szFileName, entry->d_name);
-  lFileSize = entry->d_reclen;
-  nFileType = entry->d_type;
-
-  //std::cout << "wfndfile::next() type=" << (int) entry->d_type  << " name = " << entry->d_name << std::endl;
-  return true;
-}
-
-bool WFindFile::close() {
-  __close();
-  return true;
-}
-
-bool WFindFile::IsDirectory() {
-  //std::cout << (int)nFileType << std::endl;
-  if (nCurrentEntry > nMatches) {
-    return (false);
-  }
-
-  return (nFileType & DT_DIR);
-}
-
-bool WFindFile::IsFile() {
-  if (nCurrentEntry > nMatches) {
-    return (false);
-  }
-
-  return (nFileType & DT_BLK);
-}
-

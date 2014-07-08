@@ -18,26 +18,34 @@
 /**************************************************************************/
 #include "core/wfile.h"
 
-#include "core/wfndfile.h"
-#include "core/wwivassert.h"
+#include <algorithm>
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <iostream>
+#ifdef _WIN32
+#include <io.h>
+#include <share.h>
+#endif  // _WIN32
+#include <sstream>
+#include <string>
+#include <sys/stat.h>
+#ifndef _WIN32
+#include <sys/file.h>
+#include <unistd.h>
+#endif  // _WIN32
 
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef CopyFile
 #undef GetFileTime
 #undef GetFullPathName
 #undef MoveFile
+#endif  // _WIN32
 
-
-#include <cerrno>
-#include <cstring>
-#include <fcntl.h>
-#include <iostream>
-#include <io.h>
-#include <share.h>
-#include <sstream>
-#include <string>
-#include <sys/stat.h>
+#include "core/wfndfile.h"
+#include "core/wwivassert.h"
 
 #if defined( __APPLE__ )
 #if !defined( O_BINARY )
@@ -170,7 +178,7 @@ bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
   m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
   if (m_hFile < 0) {
     int count = 1;
-    if (_access(m_szFileName, 0) != -1) {
+    if (access(m_szFileName, 0) != -1) {
       Sleep(WAIT_TIME);
       m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
       while ((m_hFile < 0 && errno == EACCES) && count < TRIES) {
@@ -197,6 +205,7 @@ bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
     std::cout << "error opening file: " << m_szFileName << "; error: " << strerror(errno) << std::endl;
     this->m_errorText = _strerror("_sopen");
   }
+
   return m_bOpen;
 }
 
@@ -227,6 +236,7 @@ int WFile::Write(const void * pBuffer, size_t nCount) {
 }
 
 long WFile::GetLength() {
+  // _stat/_fstat is the 32 bit version on WIN32
   struct _stat fileinfo;
 
   if (IsOpen()) {
@@ -259,12 +269,11 @@ bool WFile::Exists() const {
   return WFile::Exists(m_szFileName);
 }
 
-
 bool WFile::Delete() {
   if (this->IsOpen()) {
     this->Close();
   }
-  return DeleteFile(m_szFileName) ? true : false;
+  return (unlink(m_szFileName) == 0) ? true : false;
 }
 
 bool WFile::IsDirectory() {
@@ -284,7 +293,7 @@ time_t WFile::GetFileTime() {
   bool bOpenedHere = false;
   if (!this->IsOpen()) {
     bOpenedHere = true;
-    Open(WFile::modeReadOnly);
+    Open();
   }
   WWIV_ASSERT(WFile::IsFileHandleValid(m_hFile));
 
@@ -302,7 +311,7 @@ time_t WFile::GetFileTime() {
 // Static functions
 
 bool WFile::Remove(const std::string fileName) {
-  return (DeleteFile(fileName.c_str())) ? true : false;
+  return (unlink(fileName.c_str()) ? false : true);
 }
 
 bool WFile::Remove(const std::string directoryName, const std::string fileName) {
@@ -316,12 +325,7 @@ bool WFile::Rename(const std::string origFileName, const std::string newFileName
 }
 
 bool WFile::Exists(const std::string fileName) {
-  // If one of these assertions are thrown, then replace this call with
-  // WFile::ExistsWildcard since we are obviously using the wrong call here.
-  WWIV_ASSERT(fileName.find("*") == std::string::npos);
-  WWIV_ASSERT(fileName.find("?") == std::string::npos);
-
-  return (_access(fileName.c_str(), 0) != -1) ? true : false;
+  return (access(fileName.c_str(), 0) != -1) ? true : false;
 }
 
 bool WFile::Exists(const std::string directoryName, const std::string fileName) {

@@ -18,13 +18,31 @@
 /**************************************************************************/
 #include "core/wfile.h"
 
-#include <unistd.h>
-#include <sys/file.h>
-#include <sys/stat.h>
+#include <algorithm>
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <iostream>
+#ifdef _WIN32
+#include <io.h>
+#include <share.h>
+#endif  // _WIN32
 #include <sstream>
 #include <string>
-#include <iostream>
-#include <algorithm>
+#include <sys/stat.h>
+#ifndef _WIN32
+#include <sys/file.h>
+#include <unistd.h>
+#endif  // _WIN32
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef CopyFile
+#undef GetFileTime
+#undef GetFullPathName
+#undef MoveFile
+#endif  // _WIN32
 
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
@@ -129,7 +147,9 @@ bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
 
   // Set default permissions
   if (nPermissions == WFile::permUnknown) {
-    // See platform/WIN32/WFile.cpp for notes on why this is not 0.
+    // modeReadOnly is 0 on Win32, so the test with & always fails.
+    // This means that readonly is always allowed on Win32
+    // hence defaulting to permRead always
     nPermissions = WFile::permRead;
     if ((nFileMode & WFile::modeReadWrite) ||
         (nFileMode & WFile::modeWriteOnly)) {
@@ -146,24 +166,45 @@ bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
   WWIV_ASSERT(nFileMode    != WFile::modeUnknown);
   WWIV_ASSERT(nPermissions != WFile::permUnknown);
 
-  m_hFile =  open(m_szFileName, nFileMode, 0644);
+  if (m_nDebugLevel > 2) {
+    m_pLogger->LogMessage("\rSH_OPEN %s, access=%u\r\n", m_szFileName, nFileMode);
+  }
+
+  m_hFile = open(m_szFileName, nFileMode, 0644);
   if (m_hFile < 0) {
     int count = 1;
     if (access(m_szFileName, 0) != -1) {
       usleep(WAIT_TIME * 1000);
-      m_hFile = open(m_szFileName, nFileMode, nShareMode);
+      m_hFile = open(m_szFileName, nFileMode, 0644);
       while ((m_hFile < 0 && errno == EACCES) && count < TRIES) {
         usleep((count % 2) ? WAIT_TIME * 1000 : 0);
+        if (m_nDebugLevel > 0) {
+          m_pLogger->LogMessage("\rWaiting to access %s %d.  \r", m_szFileName, TRIES - count);
+        }
         count++;
         m_hFile = open(m_szFileName, nFileMode, nShareMode);
       }
+
+      if ((m_hFile < 0) && (m_nDebugLevel > 0)) {
+        m_pLogger->LogMessage("\rThe file %s is busy.  Try again later.\r\n", m_szFileName);
+      }
     }
+  }
+
+  if (m_nDebugLevel > 1) {
+    m_pLogger->LogMessage("\rSH_OPEN %s, access=%u, handle=%d.\r\n", m_szFileName, nFileMode, m_hFile);
   }
 
   m_bOpen = WFile::IsFileHandleValid(m_hFile);
   if (m_bOpen) {
     flock(m_hFile, (nShareMode & shareDenyWrite) ? LOCK_EX : LOCK_SH);
   }
+
+  if (m_hFile == -1) {
+    std::cout << "error opening file: " << m_szFileName << "; error: " << strerror(errno) << std::endl;
+    this->m_errorText = _strerror("_sopen");
+  }
+
   return m_bOpen;
 }
 
@@ -177,14 +218,25 @@ void WFile::Close() {
 }
 
 int WFile::Read(void * pBuffer, size_t nCount) {
-  return read(m_hFile, pBuffer, nCount);
+  int ret = read(m_hFile, pBuffer, nCount);
+  if (ret == -1) {
+    std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
+  }
+  // TODO: Make this an WWIV_ASSERT once we get rid of these issues
+  return ret;
 }
 
 int WFile::Write(const void * pBuffer, size_t nCount) {
-  return write(m_hFile, pBuffer, nCount);
+  int nRet = _write(m_hFile, pBuffer, nCount);
+  if (nRet == -1) {
+    std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
+  }
+  // TODO: Make this an WWIV_ASSERT once we get rid of these issues
+  return nRet;
 }
 
 long WFile::GetLength() {
+  // _stat/_fstat is the 32 bit version on WIN32
   struct stat fileinfo;
 
   if (IsOpen()) {
@@ -216,7 +268,6 @@ void WFile::SetLength(long lNewLength) {
 bool WFile::Exists() const {
   return WFile::Exists(m_szFileName);
 }
-
 
 bool WFile::Delete() {
   if (this->IsOpen()) {
@@ -264,23 +315,16 @@ bool WFile::Remove(const std::string fileName) {
 }
 
 bool WFile::Remove(const std::string directoryName, const std::string fileName) {
-  WWIV_ASSERT(!directoryName.empty());
-  WWIV_ASSERT(!fileName.empty());
-  std::stringstream fullFileName;
-  fullFileName << directoryName << fileName;
-  return WFile::Remove(fullFileName.str());
+  std::string strFullFileName = directoryName;
+  strFullFileName += fileName;
+  return WFile::Remove(strFullFileName);
 }
 
 bool WFile::Rename(const std::string origFileName, const std::string newFileName) {
-  WWIV_ASSERT(!origFileName.empty());
-  WWIV_ASSERT(!newFileName.empty());
   return rename(origFileName.c_str(), newFileName.c_str());
 }
 
 bool WFile::Exists(const std::string fileName) {
-  // Note, if a directory name is passed for pszFileName, it is expected that
-  // this will work with either a trailing slash or without it.
-  WWIV_ASSERT(!fileName.empty());
   struct stat buf;
   return (stat(fileName.c_str(), &buf) ? false : true);
 }
