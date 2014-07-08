@@ -18,11 +18,13 @@
 /**************************************************************************/
 #include "core/wfndfile.h"
 
-bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
-  __open(pszFileSpec, nTypeMask);
+#include <iostream>
+#include "core/wstringutils.h"
+#include "core/wwivassert.h"
 
-  // Set this with the initial value
-  hFind = INVALID_HANDLE_VALUE;
+
+bool WFindFile::open(const char* pszFileSpec, unsigned int nTypeMask) {
+  __open(pszFileSpec, nTypeMask);
 
   hFind = FindFirstFile(pszFileSpec, &ffdata);
   if (hFind == INVALID_HANDLE_VALUE) {
@@ -34,20 +36,14 @@ bool WFindFile::open(const char * pszFileSpec, unsigned int nTypeMask) {
   } else {
     strncpy(szFileName, ffdata.cAlternateFileName, sizeof(szFileName));
   }
-
   lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
-
   return true;
-
 }
-
-
 
 bool WFindFile::next() {
   if (!FindNextFile(hFind, &ffdata)) {
     return false;
   }
-
   if (hFind == INVALID_HANDLE_VALUE) {
     return false;
   }
@@ -57,12 +53,9 @@ bool WFindFile::next() {
   } else {
     strncpy(szFileName, ffdata.cAlternateFileName, sizeof(szFileName));
   }
-
   lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
-
   return true;
 }
-
 
 bool WFindFile::close() {
   __close();
@@ -70,11 +63,9 @@ bool WFindFile::close() {
   return true;
 }
 
-
 bool WFindFile::IsDirectory() {
-  return (IsFile()) ? false : true;
+  return !IsFile();
 }
-
 
 bool WFindFile::IsFile() {
   return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
