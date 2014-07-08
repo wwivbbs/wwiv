@@ -22,11 +22,11 @@
 #include <memory>
 #include <string>
 
-#include "bbs.h"
-#include "bbs_helper.h"
-#include "file_helper.h"
-#include "printfile.h"
+#include "bbs/bbs.h"
+#include "bbs/printfile.h"
+#include "bbs_test/bbs_helper.h"
 #include "core/wstringutils.h"
+#include "core_test/file_helper.h"
 
 using std::cout;
 using std::endl;
