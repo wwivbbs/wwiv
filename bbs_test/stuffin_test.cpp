@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "vars.h"
+#include "bbs/vars.h"
 
 using std::cout;
 using std::endl;

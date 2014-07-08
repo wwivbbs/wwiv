@@ -84,12 +84,10 @@
     <ClCompile Include="bbs_helper.cpp" />
     <ClCompile Include="bbs_test_main.cpp" />
     <ClCompile Include="datetime_test.cpp" />
-    <ClCompile Include="file_helper.cpp" />
     <ClCompile Include="printfile_test.cpp" />
     <ClCompile Include="strings_test.cpp" />
     <ClCompile Include="stuffin_test.cpp" />
     <ClCompile Include="utility_test.cpp" />
-    <ClCompile Include="wfile_test.cpp" />
     <ClCompile Include="wutil_test.cpp" />
     <ClCompile Include="xfer_test.cpp" />
   </ItemGroup>
@@ -97,13 +95,18 @@
     <ProjectReference Include="..\bbs\bbs_lib.vcxproj">
       <Project>{bcf878f6-1997-4c3d-864e-12f0c1b5eb5e}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\core\core.vcxproj">
+      <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\core_test\core_fixtures.vcxproj">
+      <Project>{e5e45f1a-c3c0-49ca-98de-b26185ad8694}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\deps\gtest-1.7.0\msvc\gtest.vcxproj">
       <Project>{c8f6c172-56f2-4e76-b5fa-c3b423b31be7}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs_helper.h" />
-    <ClInclude Include="file_helper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

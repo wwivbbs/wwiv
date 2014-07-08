@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-
 using std::cout;
 using std::endl;
 using std::ostringstream;
@@ -26,7 +25,6 @@ using std::string;
 
 // TODO(rushfan): Make xfer.h
 bool okfn( const std::string fileName );
-
 
 TEST(XferTest, Okfn) {
     EXPECT_TRUE( !okfn("") );

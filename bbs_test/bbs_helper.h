@@ -21,9 +21,9 @@
 
 #include <memory>
 #include <string>
-#include "bbs.h"
-#include "file_helper.h"
-#include "wuser.h"
+#include "bbs/bbs.h"
+#include "core_test/file_helper.h"
+#include "bbs/wuser.h"
 
 class BbsHelper {
 public:
