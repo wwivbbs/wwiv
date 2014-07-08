@@ -149,7 +149,7 @@ int WFile::Read(void * pBuffer, size_t nCount) {
 }
 
 int WFile::Write(const void * pBuffer, size_t nCount) {
-  int nRet = _write(m_hFile, pBuffer, nCount);
+  int nRet = write(m_hFile, pBuffer, nCount);
   if (nRet == -1) {
     std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
   }
