@@ -202,7 +202,7 @@ bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
 
   if (m_hFile == -1) {
     std::cout << "error opening file: " << m_szFileName << "; error: " << strerror(errno) << std::endl;
-    this->m_errorText = _strerror("_sopen");
+    this->m_errorText = strerror(errno);
   }
 
   return m_bOpen;
