@@ -281,7 +281,7 @@ bool WFile::Exists(const std::string fileName) {
   // Note, if a directory name is passed for pszFileName, it is expected that
   // this will work with either a trailing slash or without it.
   WWIV_ASSERT(!fileName.empty());
-`  struct stat buf;
+  struct stat buf;
   return (stat(fileName.c_str(), &buf) ? false : true);
 }
 
