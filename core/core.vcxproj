@@ -83,6 +83,9 @@
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\wutil.cpp" />
     <ClCompile Include="wfile.cpp" />
+    <ClCompile Include="wfile_unix.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="wfile_win32.cpp" />
     <ClCompile Include="wstringutils.cpp" />
   </ItemGroup>

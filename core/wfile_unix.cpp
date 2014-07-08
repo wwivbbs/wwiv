@@ -47,24 +47,8 @@
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 
-#if defined( __APPLE__ )
-#if !defined( O_BINARY )
-#define O_BINARY 0
-#endif
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // Constants
-
-const int WFile::modeDefault        = O_RDWR;
-const int WFile::modeAppend         = O_APPEND;
-const int WFile::modeBinary         = 0;
-const int WFile::modeCreateFile     = O_CREAT;
-const int WFile::modeReadOnly       = O_RDONLY;
-const int WFile::modeReadWrite      = O_RDWR;
-const int WFile::modeText           = 0;
-const int WFile::modeWriteOnly      = O_WRONLY;
-const int WFile::modeTruncate       = O_TRUNC;
 
 const int WFile::shareDenyReadWrite = S_IWRITE;
 const int WFile::shareDenyWrite     = 0;
@@ -176,11 +160,6 @@ long WFile::GetLength() {
     }
   }
   return fileinfo.st_size;
-}
-
-void WFile::SetLength(long lNewLength) {
-  WWIV_ASSERT(WFile::IsFileHandleValid(m_hFile));
-  ftruncate(m_hFile, lNewLength);
 }
 
 bool WFile::IsDirectory() {

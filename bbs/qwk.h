@@ -203,7 +203,6 @@ const char *qwk_current_text(int pos, char *text);
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
-#define chsize ftruncate
 
 #endif  // __unix__
 

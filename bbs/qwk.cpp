@@ -64,6 +64,13 @@ long filelength(int handle) {
   }
   return fileinfo.st_size;
 }
+
+#else  // _WIN32
+
+#if !defined(ftruncate)
+#define ftruncate chsize
+#endif
+
 #endif  // _WIN32
 
 static bool replacefile(char *src, char *dst, bool stats) {
@@ -1490,7 +1497,7 @@ int qwk_open_file(char *fn) {
     }
     write(f, (void *)gat, 4096);
     // strcpy(gatfn,fn); (removed with g_szMessageGatFileName)
-    chsize(f, 4096L + (75L * 1024L));
+    ftruncate(f, 4096L + (75L * 1024L));
     current_gat_section(0);
   }
 
