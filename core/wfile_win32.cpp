@@ -56,16 +56,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
-const int WFile::modeDefault        = (_O_RDWR | _O_BINARY);
-const int WFile::modeAppend         = _O_APPEND;
-const int WFile::modeBinary         = _O_BINARY;
-const int WFile::modeCreateFile     = _O_CREAT;
-const int WFile::modeReadOnly       = _O_RDONLY;
-const int WFile::modeReadWrite      = _O_RDWR;
-const int WFile::modeText           = _O_TEXT;
-const int WFile::modeWriteOnly      = _O_WRONLY;
-const int WFile::modeTruncate       = _O_TRUNC;
-
 const int WFile::shareDenyReadWrite = SH_DENYRW;
 const int WFile::shareDenyWrite     = SH_DENYWR;
 const int WFile::shareDenyRead      = SH_DENYRD;
@@ -176,11 +166,6 @@ long WFile::GetLength() {
     }
   }
   return fileinfo.st_size;
-}
-
-void WFile::SetLength(long lNewLength) {
-  WWIV_ASSERT(WFile::IsFileHandleValid(m_hFile));
-  _chsize(m_hFile, lNewLength);
 }
 
 bool WFile::IsDirectory() {
