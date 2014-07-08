@@ -5,13 +5,14 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(..)
 
 set(COMMON_SOURCES
+  wfile.cpp
+  wfile_unix.cpp
   wstringutils.cpp
   platform/wutil.cpp
   )
 
 if(UNIX) 
   set(PLATFORM_SOURCES 
-	platform/unix/wfile.cpp 
 	platform/unix/wfndfile.cpp 
 	)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
