@@ -6,11 +6,12 @@ include_directories(../deps/gtest-1.7.0/include)
 include_directories(..)
 include_directories(../bbs)
 include_directories(../bbs/platform)
+include_directories(../core_test)
 
 set(test_sources
-  bbs_helper.cpp file_helper.cpp 
+  bbs_helper.cpp
   printfile_test.cpp strings_test.cpp  stuffin_test.cpp  utility_test.cpp
-  wfile_test.cpp wutil_test.cpp xfer_test.cpp
+  wutil_test.cpp xfer_test.cpp
 )
 
 if(UNIX) 
@@ -22,4 +23,4 @@ endif()
 
 
 add_executable(bbs_tests ${test_sources})
-target_link_libraries(bbs_tests bbs_lib core gtest_main)
+target_link_libraries(bbs_tests bbs_lib core core_fixtures gtest_main)
