@@ -83,7 +83,7 @@ TEST(FileTest, GetFileTime_NotOpen) {
     time_t now = time(nullptr);
     string path = helper.CreateTempFile("Length_Open", kHelloWorld);
     WFile file(path);
-    ASSERT_GE(now, file.GetFileTime());
+    ASSERT_LE(now, file.GetFileTime());
 }
 
 TEST(FileTest, GetFileTime_Open) {
@@ -93,7 +93,7 @@ TEST(FileTest, GetFileTime_Open) {
     string path = helper.CreateTempFile("Length_Open", kHelloWorld);
     WFile file(path);
     file.Open(WFile::modeBinary | WFile::modeReadOnly);
-    ASSERT_GE(now, file.GetFileTime());
+    ASSERT_LE(now, file.GetFileTime());
 }
 
 TEST(FileTest, Read) {
