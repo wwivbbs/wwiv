@@ -80,7 +80,7 @@ void input_dataphone() {
                        << "].\r\n";
     Input1(szTempDataPhoneNum, GetSession()->GetCurrentUser()->GetDataPhoneNumber(), 12, true, INPUT_MODE_PHONE);
     if (szTempDataPhoneNum[0] == '\0') {
-      GetSession()->GetCurrentUser()->SetDataPhoneNumber(GetSession()->GetCurrentUser()->GetVoicePhoneNumber());
+      snprintf(szTempDataPhoneNum, 21, "%s", GetSession()->GetCurrentUser()->GetVoicePhoneNumber());
     }
     ok = valid_phone(szTempDataPhoneNum);
 
