@@ -23,26 +23,11 @@
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
-#ifdef _WIN32
-#include <io.h>
-#include <share.h>
-#endif  // _WIN32
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
-#ifndef _WIN32
 #include <sys/file.h>
 #include <unistd.h>
-#endif  // _WIN32
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef CopyFile
-#undef GetFileTime
-#undef GetFullPathName
-#undef MoveFile
-#endif  // _WIN32
 
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
@@ -62,17 +47,13 @@ const int WFile::permReadWrite      = O_RDWR;
 const char WFile::pathSeparatorChar = '/';
 const char WFile::separatorChar     = ':';
 
-// WAIT_TIME is 10 seconds
-#define WAIT_TIME 10
-#define TRIES 100
-
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
 bool WFile::IsDirectory() {
   struct stat statbuf;
   stat(m_szFileName, &statbuf);
-  return (statbuf.st_mode & 0x0040000 ? true : false);
+  return S_ISDIR(statbuf.st_mode);
 }
 
 /////////////////////////////////////////////////////////////////////////////
