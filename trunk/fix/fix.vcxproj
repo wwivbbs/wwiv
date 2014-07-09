@@ -44,7 +44,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
-    <IncludePath>$(ProjectDir)..\bbs;$(ProjectDir)..\bbs\platform;$(ProjectDir)..\bbs\platform\win32;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\;$(ProjectDir)..\bbs;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

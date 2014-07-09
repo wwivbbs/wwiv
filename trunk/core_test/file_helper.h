@@ -32,7 +32,7 @@ public:
     // Returns a fully qualified path name to "name" under the temporary directory.
     const std::string DirName(const std::string& name) const;
     // Creates a directory.
-    bool Mkdir(const std::string& name) const ;
+    bool Mkdir(const std::string& name) const;
     std::string CreateTempFile(const std::string& name, const std::string& contents);
     const std::string& TempDir() const { return tmp_; }
 private:
