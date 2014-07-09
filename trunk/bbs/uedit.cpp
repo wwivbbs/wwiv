@@ -116,7 +116,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
   }
 
   if (pUser->GetCallsign()[0] != '\0') {
-    GetSession()->bout << "|#9C) Call         : |#1" << pUser->GetCallsign() << wwiv::endl;
+    GetSession()->bout << "|#2C|#9) Call         : |#1" << pUser->GetCallsign() << wwiv::endl;
   }
 
   GetSession()->bout << "|#2P|#9) Voice Phone #: |#1" << pUser->GetVoicePhoneNumber() << wwiv::endl;
