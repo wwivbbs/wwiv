@@ -60,6 +60,14 @@
 #define ftruncate chsize
 #endif
 
+#define flock(h, m)
+#else 
+
+#define _stat stat
+#define _fstat fstat
+#define Sleep(x) usleep(()x*1000)
+#define _sopen(n, f, s, p) open(n, f, 0644)
+
 #endif  // _WIN32
 /////////////////////////////////////////////////////////////////////////////
 // Constants
@@ -119,6 +127,88 @@ WFile::~WFile() {
     this->Close();
   }
 }
+
+bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
+  WWIV_ASSERT(this->IsOpen() == false);
+
+  // Set default permissions
+  if (nPermissions == WFile::permUnknown) {
+    // modeReadOnly is 0 on Win32, so the test with & always fails.
+    // This means that readonly is always allowed on Win32
+    // hence defaulting to permRead always
+    nPermissions = WFile::permRead;
+    if ((nFileMode & WFile::modeReadWrite) ||
+        (nFileMode & WFile::modeWriteOnly)) {
+      nPermissions |= WFile::permWrite;
+    }
+  }
+
+  // Set default share mode
+  if (nShareMode == WFile::shareUnknown) {
+    nShareMode = shareDenyWrite;
+    if ((nFileMode & WFile::modeReadWrite) ||
+        (nFileMode & WFile::modeWriteOnly) ||
+        (nPermissions & WFile::permWrite)) {
+      nShareMode = WFile::shareDenyReadWrite;
+    }
+  }
+
+  WWIV_ASSERT(nShareMode   != WFile::shareUnknown);
+  WWIV_ASSERT(nFileMode    != WFile::modeUnknown);
+  WWIV_ASSERT(nPermissions != WFile::permUnknown);
+
+  if (m_nDebugLevel > 2) {
+    m_pLogger->LogMessage("\rSH_OPEN %s, access=%u\r\n", m_szFileName, nFileMode);
+  }
+
+  m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
+  if (m_hFile < 0) {
+    int count = 1;
+    if (access(m_szFileName, 0) != -1) {
+      Sleep(WAIT_TIME);
+      m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
+      while ((m_hFile < 0 && errno == EACCES) && count < TRIES) {
+        Sleep((count % 2) ? WAIT_TIME : 0);
+        if (m_nDebugLevel > 0) {
+          m_pLogger->LogMessage("\rWaiting to access %s %d.  \r", m_szFileName, TRIES - count);
+        }
+        count++;
+        m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
+      }
+
+      if ((m_hFile < 0) && (m_nDebugLevel > 0)) {
+        m_pLogger->LogMessage("\rThe file %s is busy.  Try again later.\r\n", m_szFileName);
+      }
+    }
+  }
+
+  if (m_nDebugLevel > 1) {
+    m_pLogger->LogMessage("\rSH_OPEN %s, access=%u, handle=%d.\r\n", m_szFileName, nFileMode, m_hFile);
+  }
+
+  m_bOpen = WFile::IsFileHandleValid(m_hFile);
+  if (m_bOpen) {
+    flock(m_hFile, (nShareMode & shareDenyWrite) ? LOCK_EX : LOCK_SH);
+  }
+
+  if (m_hFile == -1) {
+    std::cout << "error opening file: " << m_szFileName << "; error: " << strerror(errno) << std::endl;
+    this->m_errorText = strerror(errno);
+  }
+
+  return m_bOpen;
+}
+
+
+void WFile::Close() {
+  if (WFile::IsFileHandleValid(m_hFile)) {
+    flock(m_hFile, LOCK_UN);
+    close(m_hFile);
+    m_hFile = WFile::invalid_handle;
+    m_bOpen = false;
+  }
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
@@ -188,8 +278,47 @@ bool WFile::SetFilePermissions(int nPermissions) {
   return (chmod(m_szFileName, nPermissions) == 0) ? true : false;
 }
 
+long WFile::GetLength() {
+  // _stat/_fstat is the 32 bit version on WIN32
+  struct _stat fileinfo;
+
+  if (IsOpen()) {
+    // File is open, use fstat
+    if (_fstat(m_hFile, &fileinfo) != 0) {
+      return -1;
+    }
+  } else {
+    // stat works on filenames, not filehandles.
+    if (_stat(m_szFileName, &fileinfo) != 0) {
+      return -1;
+    }
+  }
+  return fileinfo.st_size;
+}
+
+time_t WFile::GetFileTime() {
+  bool bOpenedHere = false;
+  if (!this->IsOpen()) {
+    bOpenedHere = true;
+    Open();
+  }
+  WWIV_ASSERT(WFile::IsFileHandleValid(m_hFile));
+
+  // N.B. On Windows with _USE_32BIT_TIME_T defined _fstat == _fstat32.
+  struct _stat buf;
+  time_t nFileTime = (_stat(m_szFileName, &buf) == -1) ? 0 : buf.st_mtime;
+
+  if (bOpenedHere) {
+    Close();
+  }
+  return nFileTime;
+}
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
+
+bool WFile::Rename(const std::string origFileName, const std::string newFileName) {
+  return rename(origFileName.c_str(), newFileName.c_str()) == 0;
+}
 
 bool WFile::Remove(const std::string fileName) {
   return (unlink(fileName.c_str()) ? false : true);

@@ -155,7 +155,7 @@ class WFile {
       p--;
     }
     *p = '\0';
-    return (tmpCopy);
+    return tmpCopy;
   }
 
   virtual char *GetName() {
