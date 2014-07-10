@@ -68,10 +68,6 @@ const int WFile::permReadWrite      = (_S_IREAD | _S_IWRITE);
 const char WFile::pathSeparatorChar = '\\';
 const char WFile::separatorChar     = ';';
 
-// WAIT_TIME is 10 seconds
-#define WAIT_TIME 10
-#define TRIES 100
-
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
@@ -83,10 +79,6 @@ bool WFile::IsDirectory() {
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
-
-bool WFile::Exists(const std::string fileName) {
-  return (access(fileName.c_str(), 0) != -1) ? true : false;
-}
 
 bool WFile::CopyFile(const std::string sourceFileName, const std::string destFileName) {
   return ::CopyFileA(sourceFileName.c_str(), destFileName.c_str(), FALSE) ? true : false;
