@@ -6,14 +6,6 @@ include_directories(..)
 include_directories(platform)
 
 set(COMMON_SOURCES 
- finduser.cpp
- smallrecord.cpp
- wcomm.cpp
- woutstream.cpp
- woutstreambuffer.cpp
- wsession.cpp
- wtextfile.cpp
- wuser.cpp
  asv.cpp
  attach.cpp
  automsg.cpp
@@ -47,6 +39,7 @@ set(COMMON_SOURCES
  events.cpp
  execexternal.cpp
  extract.cpp
+ finduser.cpp
  gfiles.cpp
  gfledit.cpp
  hop.cpp
@@ -77,12 +70,14 @@ set(COMMON_SOURCES
  normupld.cpp
  pause.cpp
  printfile.cpp
+ qscan.cpp
  quote.cpp
  qwk.cpp
  qwk1.cpp
  readmail.cpp
  shortmsg.cpp
  showfiles.cpp
+ smallrecord.cpp
  sr.cpp
  srrcv.cpp
  srsend.cpp
@@ -105,8 +100,14 @@ set(COMMON_SOURCES
  version.cpp
  vote.cpp
  voteedit.cpp
+ wcomm.cpp
  wfc.cpp
+ woutstream.cpp
+ woutstreambuffer.cpp
  wqscn.cpp
+ wsession.cpp
+ wtextfile.cpp
+ wuser.cpp
  xfer.cpp
  xferovl.cpp
  xferovl1.cpp
