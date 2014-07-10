@@ -70,6 +70,8 @@
 
 #endif  // _WIN32
 
+using std::string;
+
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
@@ -330,9 +332,15 @@ bool WFile::Remove(const std::string directoryName, const std::string fileName) 
   return WFile::Remove(strFullFileName);
 }
 
-bool WFile::Exists(const std::string fileName) {
-  struct stat buf;
-  return (stat(fileName.c_str(), &buf) ? false : true);
+bool WFile::Exists(const std::string original_pathname) {
+  struct _stat buf;
+  string fn(original_pathname);
+  if (fn.back() == pathSeparatorChar) {
+    // If the pathname ends in / or \, then remove the last character.
+    fn.pop_back();
+  }
+  int ret = _stat(fn.c_str(), &buf);
+  return ret == 0;
 }
 
 bool WFile::Exists(const std::string directoryName, const std::string fileName) {
