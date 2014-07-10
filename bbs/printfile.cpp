@@ -28,7 +28,7 @@
 #include "wsession.h"
 #include "core/wwivport.h"
 #include "core/wfile.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 #include "core/wwivassert.h"
 #include "platform/wlocal_io.h"
 #include "fcns.h"

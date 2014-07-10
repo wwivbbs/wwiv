@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WSTRINGUTILS_H__
-#define __INCLUDED_WSTRINGUTILS_H__
+#ifndef __INCLUDED_STRINGS_H__
+#define __INCLUDED_STRINGS_H__
 
 #include <string>
 
@@ -28,6 +28,7 @@
 
 namespace wwiv {
 namespace strings {
+
 std::string StringPrintf(const char *pszFormattedText, ...);
 int GetStringLength(const char * pszString);
 bool IsEquals(const char *pszString1, const char *pszString2);
@@ -38,20 +39,22 @@ short StringToShort(const char *pszString);
 unsigned short StringToUnsignedShort(const char *pszString);
 char StringToChar(const char *pszString);
 unsigned char StringToUnsignedChar(const char *pszString);
-}
 
-template<class _Ty>
-const _Ty UpperCase(const _Ty a) {
+}  // namespace strings
+
+template<class T>
+const T UpperCase(const T a) {
   int nRet = ::toupper(a);
-  return static_cast< _Ty >(nRet);
+  return static_cast<T>(nRet);
 }
 
-template<class _Ty>
-const _Ty LowerCase(const _Ty a) {
+template<class T>
+const T LowerCase(const T a) {
   int nRet = ::tolower(a);
-  return static_cast< _Ty >(nRet);
+  return static_cast<T>(nRet);
 }
-}
+
+}  // namespace wwiv
 
 // Function Prototypes
 const char *charstr(int nStringLength, int chRepeatChar);
@@ -102,4 +105,4 @@ std::string properize(const std::string text);
 #define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
 #endif
 
-#endif  // __INCLUDED_WSTRINGUTILS_H__
+#endif  // __INCLUDED_STRINGS_H__

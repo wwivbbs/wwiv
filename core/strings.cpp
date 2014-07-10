@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/wstringutils.h"
+#include "core/strings.h"
 
 #include <algorithm>
 #include <cstdarg>
@@ -404,7 +404,7 @@ char *stristr(char *pszString, char *pszPattern) {
     }
     ++pos;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -440,8 +440,6 @@ void single_space(char *pszText) {
 
 
 char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const char *brk) {
-  bool bCountThis, bFoundFirst = false;
-
   pszToken[0] = '\0';
 
   WWIV_ASSERT(pszText);
@@ -449,12 +447,13 @@ char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const cha
   WWIV_ASSERT(brk);
 
   if (!pszText || !*pszText) {
-    return NULL;
+    return nullptr;
   }
 
   char* lim = pszToken + nTokenLength - 1;
+  bool bFoundFirst = false;
   while (*pszText && pszToken < lim) {
-    bCountThis = true;
+    bool bCountThis = true;
     for (const char* b = brk; *b; b++) {
       if (*pszText == *b) {
         if (bFoundFirst) {
@@ -528,13 +527,13 @@ char *StringReplace(char *pszString, size_t nMaxBufferSize, const char *pszOldSt
   WWIV_ASSERT(pszOldString);
   WWIV_ASSERT(pszNewString);
 
-  if (NULL == (p = strstr(pszString, pszOldString))) {
+  if (nullptr == (p = strstr(pszString, pszOldString))) {
     return pszString;
   }
   int nOldLen = strlen(pszOldString);
   int nNewLen = strlen(pszNewString);
   if ((strlen(pszString) + nNewLen - nOldLen + 1) > nMaxBufferSize) {
-    return NULL;
+    return nullptr;
   }
   memmove(q = p + nNewLen, p + nOldLen, strlen(p + nOldLen) + 1);
   memcpy(p, pszNewString, nNewLen);
@@ -542,7 +541,7 @@ char *StringReplace(char *pszString, size_t nMaxBufferSize, const char *pszOldSt
 }
 
 void properize(char *pszText) {
-  if (pszText == NULL) {
+  if (pszText == nullptr) {
     return;
   }
 

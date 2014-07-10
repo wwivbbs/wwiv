@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "core/wstringutils.h"
+#include "core/strings.h"
 
 using std::cout;
 using std::endl;

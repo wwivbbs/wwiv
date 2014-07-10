@@ -24,7 +24,7 @@
 #include "core/wfile.h"
 #include "wuser.h"
 #include "wsession.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 #include "vars.h"
 #include "bbs.h"
 

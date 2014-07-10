@@ -20,7 +20,7 @@
 
 #include "core/wfile.h"
 #include "core/wutil.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 
 #if defined (_WIN32)
 #define WIN32_LEAN_AND_MEAN

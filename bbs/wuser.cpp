@@ -22,7 +22,7 @@
 #include <cstdlib>
 #include "core/wfile.h"
 #include "wuser.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 #include "filenames.h"
 #include <iostream>
 #include <memory>
