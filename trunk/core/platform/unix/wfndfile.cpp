@@ -20,7 +20,7 @@
 
 #include <dirent.h>
 #include <iostream>
-#include "core/wstringutils.h"
+#include "core/strings.h"
 #include "core/wwivassert.h"
 
 int dos_flag = false;
