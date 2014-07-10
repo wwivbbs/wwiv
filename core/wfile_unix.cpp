@@ -59,11 +59,6 @@ bool WFile::IsDirectory() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool WFile::Exists(const std::string fileName) {
-  struct stat buf;
-  return (stat(fileName.c_str(), &buf) ? false : true);
-}
-
 bool WFile::CopyFile(const std::string sourceFileName, const std::string destFileName) {
   if (sourceFileName != destFileName && WFile::Exists(sourceFileName) && !WFile::Exists(destFileName)) {
     char *pBuffer = static_cast<char *>(malloc(16400));
