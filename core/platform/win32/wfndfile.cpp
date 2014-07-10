@@ -19,7 +19,7 @@
 #include "core/wfndfile.h"
 
 #include <iostream>
-#include "core/wstringutils.h"
+#include "core/strings.h"
 #include "core/wwivassert.h"
 
 

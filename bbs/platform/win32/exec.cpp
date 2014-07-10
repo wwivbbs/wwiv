@@ -28,7 +28,7 @@
 #include "WComm.h"
 #include "core/WFile.h"
 #include "platform/platformfcns.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 #include "sysoplog.h"
 #include "WTextFile.h"
 #include "WSession.h"

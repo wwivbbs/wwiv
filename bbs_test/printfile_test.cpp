@@ -25,7 +25,7 @@
 #include "bbs/bbs.h"
 #include "bbs/printfile.h"
 #include "bbs_test/bbs_helper.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 #include "core_test/file_helper.h"
 
 using std::cout;

@@ -24,7 +24,7 @@
 #include "core/wwivport.h"
 #include "platform/platformfcns.h"  // for strupr
 #include "core/wfndfile.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 #include "platform/wlocal_io.h"
 
 // prototype from utility.cpp

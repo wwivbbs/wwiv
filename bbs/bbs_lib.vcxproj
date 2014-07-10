@@ -123,7 +123,6 @@
     <ClInclude Include="woutstreambuffer.h" />
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
-    <ClInclude Include="wstringutils.h" />
     <ClInclude Include="wtextfile.h" />
     <ClInclude Include="wuser.h" />
     <ClInclude Include="wwiv.h" />

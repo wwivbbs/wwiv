@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "printfile.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 
 
 static unsigned long *u_qsc = 0;
