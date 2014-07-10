@@ -10,8 +10,11 @@ include_directories(../core_test)
 
 set(test_sources
   bbs_helper.cpp
-  printfile_test.cpp strings_test.cpp  stuffin_test.cpp  utility_test.cpp
-  wutil_test.cpp xfer_test.cpp
+  printfile_test.cpp
+  stuffin_test.cpp
+  utility_test.cpp
+  wutil_test.cpp
+  xfer_test.cpp
 )
 
 if(UNIX) 

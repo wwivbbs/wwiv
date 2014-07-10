@@ -21,7 +21,7 @@
 
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 
 // WWIV includes
 #include "vardec.h"

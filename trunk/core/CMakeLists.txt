@@ -7,7 +7,7 @@ include_directories(..)
 set(COMMON_SOURCES
   wfile.cpp
   wfile_unix.cpp
-  wstringutils.cpp
+  strings.cpp
   platform/wutil.cpp
   )
 

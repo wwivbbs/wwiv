@@ -164,7 +164,7 @@ class WFile {
       p--;
     }
     p++;
-    return (p);
+    return p;
   }
 
   virtual const std::string GetFullPathName() {

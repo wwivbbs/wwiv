@@ -36,7 +36,7 @@
 #include "subxtr.h"
 #include "subxtr.h"
 #include "vardec.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 #include "wconstants.h"
 #include "wwivcolors.h"
 

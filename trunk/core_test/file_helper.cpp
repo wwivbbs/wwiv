@@ -34,7 +34,7 @@
 #endif
 
 #include "core/wwivport.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 
 using std::string;
 

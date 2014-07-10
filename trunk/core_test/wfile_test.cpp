@@ -19,7 +19,7 @@
 #include "file_helper.h"
 #include "gtest/gtest.h"
 #include "core/wfile.h"
-#include "core/wstringutils.h"
+#include "core/strings.h"
 
 #include <iostream>
 #include <string>
