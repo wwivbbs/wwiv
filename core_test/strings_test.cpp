@@ -25,6 +25,9 @@ using std::endl;
 using std::ostringstream;
 using std::string;
 
+using wwiv::strings::StrCat;
+using wwiv::strings::StringPrintf;
+
 TEST(StringsTest, StringColors) {
     EXPECT_EQ( string(""), stripcolors(string("")) );
     EXPECT_EQ( string("|"), stripcolors(string("|")) );
@@ -49,4 +52,19 @@ TEST(StringsTest, Properize) {
     EXPECT_EQ( string("R.U"), properize( string("r.u") ) );
     EXPECT_EQ( string("R U"), properize( string("r u") ) );
     EXPECT_EQ( string("Rushfan"), properize( string("Rushfan") ) );
+}
+
+TEST(StringsTest, StringPrintf_Smoke) {
+  static const string kRushfan = "rushfan";
+  EXPECT_EQ(kRushfan, StringPrintf("%s%s", "rush", "fan"));
+  EXPECT_EQ(kRushfan, StringPrintf("%s%c%c%c", "rush", 'f', 'a', 'n'));
+}
+
+TEST(StringsTest, StrCat_Smoke) {
+  static const string kRushfan = "rushfan";
+  EXPECT_EQ(kRushfan, StrCat("rush", "fan"));
+  EXPECT_EQ(kRushfan, StrCat("ru", "sh", "fan"));
+  EXPECT_EQ(kRushfan, StrCat("ru", "sh", "f", "an"));
+  EXPECT_EQ(kRushfan, StrCat("r", "u", "sh", "f", "an"));
+  EXPECT_EQ(kRushfan, StrCat("r", "u", "s", "h", "f", "an"));
 }
