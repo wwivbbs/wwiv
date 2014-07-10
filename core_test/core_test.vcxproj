@@ -41,11 +41,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\deps\gtest-1.7.0\include;$(ProjectDir)..\;$(ProjectDir)..\bbs\;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\..\deps\gtest-1.7.0\include;$(ProjectDir)..\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\deps\gtest-1.7.0\include;$(ProjectDir)..\;$(ProjectDir)..\bbs\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\..\deps\gtest-1.7.0\include;$(ProjectDir)..\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core_test_main.cpp" />
+    <ClCompile Include="transaction_test.cpp" />
     <ClCompile Include="wfile_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

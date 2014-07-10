@@ -197,7 +197,6 @@ void set_gat_section(WFile *pMessageFile, int section) {
   }
 }
 
-
 void save_gat(WFile *pMessageFile) {
   long lSectionPos = static_cast<long>(gat_section) * GATSECLEN;
   pMessageFile->Seek(lSectionPos, WFile::seekBegin);
@@ -206,7 +205,6 @@ void save_gat(WFile *pMessageFile) {
   pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
   GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
 }
-
 
 void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const std::string fileName) {
   WWIV_ASSERT(pMessageRecord);
@@ -254,7 +252,6 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
   }
   free(b);
 }
-
 
 char *readfile(messagerec * pMessageRecord, std::string fileName, long *plMessageLength) {
   char *b =  NULL;
@@ -309,7 +306,6 @@ char *readfile(messagerec * pMessageRecord, std::string fileName, long *plMessag
   }
   return b;
 }
-
 
 void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
   WFile fileOrig(pszFileName);
@@ -1244,7 +1240,6 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   if (ss != NULL) {
     free(ss);
   }
-  tmp_disable_pause(false);
   if (ansi && GetSession()->topdata && GetSession()->IsUserOnline()) {
     GetApplication()->UpdateTopScreen();
   }
@@ -1252,9 +1247,6 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
     g_flags &= ~g_flag_disable_mci;
   }
 }
-
-
-
 
 void read_message(int n, bool *next, int *val) {
   GetSession()->bout.NewLine();
@@ -1334,7 +1326,6 @@ void read_message(int n, bool *next, int *val) {
   }
 }
 
-
 void lineadd(messagerec * pMessageRecord, const char *sx, std::string fileName) {
   char szLine[ 255 ];
   sprintf(szLine, "%s\r\n\x1a", sx);
@@ -1386,5 +1377,3 @@ void lineadd(messagerec * pMessageRecord, const char *sx, std::string fileName) 
     break;
   }
 }
-
-

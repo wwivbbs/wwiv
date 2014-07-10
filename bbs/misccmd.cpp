@@ -17,10 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
+
+#include "bbs/pause.h"
 
 // from qwk.c
 void qwk_menu();
+
+using wwiv::bbs::TempDisablePause;
 
 void kill_old_email() {
   mailrec m, m1;
@@ -527,23 +531,18 @@ void Packers() {
       // TODO(rushfan): Merge this with the code in DownloadPosts
       GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
       if (yesno()) {
-        tmp_disable_pause(true);
+        TempDisablePause disable_pause;
         GetSession()->bout << "\r\nPlease wait...\r\n";
         GetSession()->localIO()->set_x_only(1, "posts.txt", 0);
         bool ac = false;
         if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
           ac = true;
-          tmp_disable_conf(true);
         }
         preload_subs();
         nscan();
-        if (ac) {
-          tmp_disable_conf(false);
-        }
         GetSession()->localIO()->set_x_only(0, NULL, 0);
         add_arc("offline", "posts.txt", 0);
         download_temp_arc("offline", 0);
-        tmp_disable_pause(false);
       } else {
         GetSession()->bout << "|#6Aborted.\r\n";
       }

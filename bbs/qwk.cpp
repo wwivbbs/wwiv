@@ -31,6 +31,8 @@
 
 #include "wwiv.h"
 #include "instmsg.h"
+#include "pause.h"
+#include "qscan.h"
 #include "subxtr.h"
 #include "subxtr.h"
 #include "vardec.h"
@@ -47,14 +49,10 @@ const char *QWKFrom = "\x04""0QWKFrom:";
 int qwk_bi_mode;
 
 static int qwk_percent;
-static char qwk_opened_filename[81];
-static int qwk_opened_file;
 static uint16_t max_msgs;
 
 // from xfer.cpp
 extern int this_date;
-
-using std::string;
 
 #ifndef _WIN32
 long filelength(int handle) {
@@ -72,6 +70,10 @@ long filelength(int handle) {
 #endif
 
 #endif  // _WIN32
+
+using std::string;
+using wwiv::bbs::SaveQScanPointers;
+using wwiv::bbs::TempDisablePause;
 
 static bool replacefile(char *src, char *dst, bool stats) {
   if (strlen(dst) == 0) {
@@ -106,18 +108,15 @@ void build_qwk_packet(void) {
   char filename[201];
   int i, msgs_ok;
   bool save_conf = false;
-  long *save_qsc_p = qwk_save_qscan();
-  if (!save_qsc_p) {
-    return;
-  }
+  SaveQScanPointers save_qscan;
 
   remove_from_temp("*.*", QWK_DIRECTORY, 0);
 
   if ((uconfsub[1].confnum != -1) && (okconf(GetSession()->GetCurrentUser()))) {
     save_conf = true;
-    tmp_disable_conf(1);
+    tmp_disable_conf(true);
   }
-  tmp_disable_pause(1);
+  TempDisablePause disable_pause;
 
   read_qwk_cfg(&qwk_cfg);
   max_msgs = qwk_cfg.max_msgs;
@@ -143,10 +142,6 @@ void build_qwk_packet(void) {
     sysoplog("Couldn't open MESSAGES.DAT");
     return;
   }
-
-  // Setup my optimized open files
-  qwk_opened_filename[0] = 0;
-  qwk_opened_file = -1;
 
   // Setup index and other values
   qwk_info.index = -1;
@@ -232,27 +227,17 @@ void build_qwk_packet(void) {
 
   // Restore on hangup too, someone might have hungup in the middle of building the list
   if (qwk_info.abort || GetSession()->GetCurrentUser()->data.qwk_dontsetnscan || hangup) {
-    qwk_restore_qscan(save_qsc_p);  // restore nscan pointers if we aborted
+    save_qscan.restore();
+    if (qwk_info.abort) {
+      sysoplog("Aborted");
+    }
   }
-  if (qwk_info.abort) {
-    sysoplog("Aborted");
-  }
-  free(save_qsc_p);         /* free up memory allocated to save qsc pointers */
-
   if (GetSession()->GetCurrentUser()->data.qwk_delete_mail && !qwk_info.abort) {
     qwk_remove_email();  // Delete email
   }
 
-  //read_status();
   if (save_conf) {
-    tmp_disable_conf(0);
-  }
-  tmp_disable_pause(0);
-
-  // Close down my optimized open files
-  qwk_opened_filename[0] = 0;
-  if (qwk_opened_file > 0) {
-    close(qwk_opened_file);
+    tmp_disable_conf(false);
   }
 }
 
@@ -347,27 +332,6 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
   if (GetSession()->GetCurrentReadMessageArea() < 0) {
     return;
   }
-
-  /*
-  statusbarrec sb;
-  sbc.width=10;
-  sb.amount_per_square=4;
-  sb.square_list[0]='þ';
-  sb.square_list[1]='°';
-  sb.square_list[2]='±';
-  sb.square_list[3]='²';
-  sb.empty_space='-';
-  sb.side_char1='[';
-  sb.side_char2=']';
-  sb.surround_color=BLUE;
-  sb.box_color=GREEN+(BLUE<<4);
-  sb.total_items=GetSession()->GetNumMessagesInCurrentMessageArea()-msgnum+1;
-  sb.current_item=0;
-
-  bputch('\t');
-  statusbar(&sb);
-  */
-
   // Used to be inside do loop
   if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
     set_net_num(xsubs[GetSession()->GetCurrentReadMessageArea()].nets[0].net_num);
@@ -376,32 +340,24 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
   }
 
   do {
-    //++sb.current_item;
-    //statusbar(&sb);
-
     if ((msgnum > 0) && (msgnum <= GetSession()->GetNumMessagesInCurrentMessageArea())) {
       make_pre_qwk(msgnum, &val, qwk_info);
     }
-
     ++msgnum;
     if (msgnum > GetSession()->GetNumMessagesInCurrentMessageArea()) {
       done = 1;
     }
-
     if (GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub ? amount >
         GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub : 0) {
       done = 1;
     }
-
     if (max_msgs ? qwk_info->qwk_rec_num > max_msgs : 0) {
       done = 1;
     }
-
     ++amount;
     checka(&qwk_info->abort);
 
   } while ((!done) && (!hangup) && !qwk_info->abort);
-
   bputch('\r');
 }
 
@@ -415,20 +371,17 @@ void make_pre_qwk(int msgnum, int *val, struct qwk_junk *qwk_info) {
   }
 
   int nn = GetSession()->GetNetworkNumber();
-
   if (p->status & status_post_new_net) {
     set_net_num(p->title[80]);
   }
 
   put_in_qwk(p, (subboards[GetSession()->GetCurrentReadMessageArea()].filename), msgnum, qwk_info);
-
   if (nn != GetSession()->GetNetworkNumber()) {
     set_net_num(nn);
   }
 
   GetSession()->GetCurrentUser()->SetNumMessagesRead(GetSession()->GetCurrentUser()->GetNumMessagesRead() + 1);
   GetSession()->SetNumMessagesReadThisLogon(GetSession()->GetNumMessagesReadThisLogon() + 1);
-
 
   if (p->qscan > qsc_p[GetSession()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
     qsc_p[GetSession()->GetCurrentReadMessageArea()] = p->qscan;  // And here
@@ -1042,23 +995,6 @@ int select_qwk_protocol(struct qwk_junk *qwk_info) {
     return i;
   default:
     return i;
-  }
-}
-
-long * qwk_save_qscan(void) {
-  long * save_qsc_p = (long *)malloc(GetSession()->GetMaxNumberMessageAreas() * sizeof(long));
-  if (!save_qsc_p) {
-    return save_qsc_p;
-  }
-  for (int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++) {
-    save_qsc_p[i] = qsc_p[i];
-  }
-  return save_qsc_p;
-}
-
-void qwk_restore_qscan(long *save_qsc_p) {
-  for (int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++) {
-    qsc_p[i] = save_qsc_p[i];
   }
 }
 

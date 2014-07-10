@@ -18,10 +18,10 @@
 /**************************************************************************/
 
 #ifndef NOT_BBS
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #endif
-#include "subxtr.h"
-
+#include "bbs/subxtr.h"
+#include "bbs/pause.h"
 
 #ifndef MAX_TO_CACHE
 #define MAX_TO_CACHE 15                     // max postrecs to hold in cache
@@ -34,6 +34,7 @@ static int last_msgnum;                     // last msgnum read
 static WFile fileSub;           // WFile object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
+using wwiv::bbs::TempDisablePause;
 
 void close_sub() {
   if (fileSub.IsOpen()) {
@@ -42,22 +43,17 @@ void close_sub() {
 }
 
 bool open_sub(bool wr) {
-  postrec p;
-
   close_sub();
 
   if (wr) {
-#if (NOT_BBS == 2)
-    fileSub = open_wc(subdat_fn);
-#else
     fileSub.SetName(subdat_fn);
     fileSub.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
                  WFile::permReadWrite);
-#endif
     if (fileSub.IsOpen()) {
       // re-read info from file, to be safe
       believe_cache = false;
       fileSub.Seek(0L, WFile::seekBegin);
+      postrec p;
       fileSub.Read(&p, sizeof(postrec));
       GetSession()->SetNumMessagesInCurrentMessageArea(p.owneruser);
     }
@@ -69,10 +65,9 @@ bool open_sub(bool wr) {
   return fileSub.IsOpen();
 }
 
-bool iscan1(int si, bool quick)
 // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
 // don't worry about anything detailed, just grab qscan info.
-{
+bool iscan1(int si, bool quick) {
   postrec p;
 
   // make sure we have cache space
@@ -89,15 +84,12 @@ bool iscan1(int si, bool quick)
 
   // skip this stuff if being called from the WFC cache code
   if (!quick) {
-#ifndef NOT_BBS
     // go to correct net #
     if (xsubs[si].num_nets) {
       set_net_num(xsubs[si].nets[0].net_num);
     } else {
       set_net_num(0);
     }
-#endif
-
     // see if a sub has changed
     GetApplication()->GetStatusManager()->RefreshStatusCache();
     if (GetSession()->subchg) {
@@ -136,7 +128,6 @@ bool iscan1(int si, bool quick)
   fileSub.Read(&p, sizeof(postrec));
   GetSession()->SetNumMessagesInCurrentMessageArea(p.owneruser);
 
-#ifndef NOT_BBS
   // read in sub date, if don't already know it
   if (GetSession()->m_SubDateCache[si] == 0) {
     if (GetSession()->GetNumMessagesInCurrentMessageArea()) {
@@ -147,7 +138,6 @@ bool iscan1(int si, bool quick)
       GetSession()->m_SubDateCache[si] = 1;
     }
   }
-#endif
 
   // close file
   close_sub();
@@ -156,23 +146,14 @@ bool iscan1(int si, bool quick)
   return true;
 }
 
-
-#ifndef NOT_BBS
-
-int iscan(int b)
 // Initializes use of a sub (usub[] value, not subboards[] value).
-//
-{
+int iscan(int b) {
   return iscan1(usub[b].subnum, false);
 }
 
-#endif
-
-
-postrec *get_post(int mn)
 // Returns info for a post.  Maintains a cache.  Does not correct anything
 // if the sub has changed.
-{
+postrec *get_post(int mn) {
   postrec p;
   bool bCloseSubFile = false;
 
@@ -260,14 +241,12 @@ postrec *get_post(int mn)
 
 
 void write_post(int mn, postrec * pp) {
-  postrec *p1;
-
   if (fileSub.IsOpen()) {
     fileSub.Seek(mn * sizeof(postrec), WFile::seekBegin);
     fileSub.Write(pp, sizeof(postrec));
     if (believe_cache) {
       if (mn >= cache_start && mn < (cache_start + MAX_TO_CACHE)) {
-        p1 = cache + (mn - cache_start);
+        postrec* p1 = cache + (mn - cache_start);
         if (p1 != pp) {
           *p1 = *pp;
         }
@@ -305,17 +284,12 @@ void add_post(postrec * pp) {
     // we've modified the sub
     believe_cache = false;
     GetSession()->subchg = 0;
-#ifndef NOT_BBS
     GetSession()->m_SubDateCache[GetSession()->GetCurrentReadMessageArea()] = pp->qscan;
-#endif
   }
   if (bCloseSubFile) {
     close_sub();
   }
 }
-
-#ifndef NOT_BBS
-
 
 #define BUFSIZE 32000
 
@@ -479,19 +453,14 @@ void pack_sub(int si) {
 
 
 void pack_all_subs() {
-  tmp_disable_pause(true);
+  TempDisablePause diable_pause;
 
-  bool abort = false;
-  int i = 0;
-  while (!hangup && !abort && i < GetSession()->num_subs) {
+  for (int i=0; i < GetSession()->num_subs && !hangup; i++) {
     pack_sub(i);
-    checka(&abort);
-    i++;
+    bool abort = checka();
+    if (abort) {
+      GetSession()->bout << "|#6Aborted.\r\n";
+      return;
+    }
   }
-  if (abort) {
-    GetSession()->bout << "|#6Aborted.\r\n";
-  }
-  tmp_disable_pause(false);
 }
-
-#endif  // NOT_BBS

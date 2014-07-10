@@ -95,7 +95,6 @@ void input_dataphone() {
   }
 }
 
-
 void input_language() {
   if (GetSession()->num_languages > 1) {
     GetSession()->GetCurrentUser()->SetLanguage(255);

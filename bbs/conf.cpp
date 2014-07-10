@@ -18,13 +18,12 @@
 /**************************************************************************/
 #include <algorithm>
 #include <vector>
+#include "bbs/conf.h"
 
 #include "wwiv.h"
 #include "wtextfile.h"
 
-bool create_conf_file(int conftype);
-bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list);
-
+static int disable_conf_cnt = 0;
 
 /* Max line length in conference files */
 #define MAX_CONF_LINE 4096
@@ -34,6 +33,52 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list);
 
 // Locals
 char* GetGenderAllowed(int nGender, char *pszGenderAllowed);
+int  modify_conf(int conftype, int which);
+void insert_conf(int conftype, int n);
+void delete_conf(int conftype, int n);
+bool create_conf_file(int conftype);
+bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list);
+
+
+namespace wwiv {
+namespace bbs {
+
+TempDisableConferences::TempDisableConferences() : wwiv::core::Transaction([] {
+  tmp_disable_conf(false);
+  }, nullptr) {
+  tmp_disable_conf(true);
+}
+
+}  // namespace bbs
+}  // namespace wwiv
+
+void tmp_disable_conf(bool disable) {
+  static int ocs = 0, oss = 0, ocd = 0, osd = 0;
+
+  if (disable) {
+    disable_conf_cnt++;
+    if (okconf(GetSession()->GetCurrentUser())) {
+      g_flags |= g_flag_disable_conf;
+      ocs = GetSession()->GetCurrentConferenceMessageArea();
+      oss = usub[GetSession()->GetCurrentMessageArea()].subnum;
+      ocd = GetSession()->GetCurrentConferenceFileArea();
+      osd = udir[GetSession()->GetCurrentFileArea()].subnum;
+      setuconf(CONF_SUBS, -1, oss);
+      setuconf(CONF_DIRS, -1, osd);
+    }
+  } else if (disable_conf_cnt) {
+    disable_conf_cnt--;
+    if ((disable_conf_cnt == 0) && (g_flags & g_flag_disable_conf)) {
+      g_flags &= ~g_flag_disable_conf;
+      setuconf(CONF_SUBS, ocs, oss);
+      setuconf(CONF_DIRS, ocd, osd);
+    }
+  }
+}
+
+void reset_disable_conf() {
+  disable_conf_cnt = 0;
+}
 
 
 /*

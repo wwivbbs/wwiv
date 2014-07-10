@@ -19,10 +19,11 @@
 /**************************************************************************/
 #include <algorithm>
 
-#include "wwiv.h"
-#include "instmsg.h"
-#include "ini.h"
-#include "wtextfile.h"
+#include "bbs/wwiv.h"
+#include "bbs/instmsg.h"
+#include "bbs/ini.h"
+#include "bbs/pause.h"
+#include "bbs/wtextfile.h"
 #include "core/wstringutils.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
@@ -31,7 +32,6 @@
 
 // Additional INI file function and structure
 #include "xinitini.h"
-
 
 // %%TODO: Turn this warning back on once the rest of the code is cleaned up
 #if defined( _MSC_VER )
@@ -45,8 +45,6 @@
 #define XINIT_PRINTF( x ) std::cout << ( x )
 #endif // __unix__
 
-#define INI_STRFILE 7
-
 struct ini_flags_type {
   int     strnum;
   bool    sense;
@@ -55,6 +53,7 @@ struct ini_flags_type {
 
 unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, unsigned long flags);
 
+using wwiv::bbs::TempDisablePause;
 
 // Turns a string into a bitmapped unsigned short flag for use with
 // ExecuteExternalProgram calls.
@@ -462,10 +461,6 @@ bool WApplication::ReadINIFile() {
   if (omg) {
     GetSession()->max_gfilesec = omg;
   }
-
-  set_strings_fn(INI_STRFILE, NULL, NULL, 0);
-
-  // Success if here
   return true;
 }
 
@@ -1348,10 +1343,9 @@ void WApplication::InitializeBBS() {
   read_bbs_list_index();
   frequent_init();
   if (!m_bUserAlreadyOn) {
-    tmp_disable_pause(true);
+    TempDisablePause disable_pause;
     remove_from_temp("*.*", syscfgovr.tempdir, true);
     remove_from_temp("*.*", syscfgovr.batchdir, true);
-    tmp_disable_pause(false);
     imodem(true);
     cleanup_net();
   }

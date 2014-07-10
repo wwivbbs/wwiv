@@ -17,23 +17,24 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "instmsg.h"
-#include "printfile.h"
+#include <memory>
 
+#include "bbs/wwiv.h"
+#include "bbs/instmsg.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
 
 // How far to indent extended descriptions
 #define INDENTION 24
 
-
 // the archive type to use
 #define ARC_NUMBER 0
-
 
 extern int foundany;
 const unsigned char *invalid_chars =
   (unsigned char *)"Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
 
+using wwiv::bbs::TempDisablePause;
 
 void modify_extended_description(char **sss, const char *dest, const char *title) {
   char s[255], s1[255];
@@ -287,14 +288,13 @@ int read_idz_all() {
   int count = 0;
 
   tmp_disable_conf(true);
-  tmp_disable_pause(true);
+  TempDisablePause disable_pause;
   GetSession()->localIO()->set_protect(0);
   for (int i = 0; (i < GetSession()->num_dirs) && (udir[i].subnum != -1) &&
        (!GetSession()->localIO()->LocalKeyPressed()); i++) {
     count += read_idz(0, i);
   }
   tmp_disable_conf(false);
-  tmp_disable_pause(false);
   GetApplication()->UpdateTopScreen();
   return count;
 }
@@ -306,8 +306,9 @@ int read_idz(int mode, int tempdir) {
   bool abort = false;
   uploadsrec u;
 
+  std::unique_ptr<TempDisablePause> disable_pause;
   if (mode) {
-    tmp_disable_pause(true);
+    disable_pause.reset(new TempDisablePause);
     GetSession()->localIO()->set_protect(0);
     dliscan();
     file_mask(s);
@@ -345,7 +346,6 @@ int read_idz(int mode, int tempdir) {
   fileDownload.Close();
   if (mode) {
     GetApplication()->UpdateTopScreen();
-    tmp_disable_pause(false);
   }
   return count;
 }
@@ -1225,7 +1225,7 @@ void removenotthere() {
   }
 
   tmp_disable_conf(true);
-  tmp_disable_pause(true);
+  TempDisablePause disable_pause;
   int autodel = 0;
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#5Remove N/A files in all directories? ";
@@ -1244,7 +1244,6 @@ void removenotthere() {
     removefilesnotthere(udir[GetSession()->GetCurrentFileArea()].subnum, &autodel);
   }
   tmp_disable_conf(false);
-  tmp_disable_pause(false);
   GetApplication()->UpdateTopScreen();
 }
 
