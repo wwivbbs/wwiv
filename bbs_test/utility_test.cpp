@@ -21,7 +21,7 @@
 #include "gtest/gtest.h"
 #include "bbs_test/bbs_helper.h"
 
-#include "utility.h"
+#include "bbs/utility.h"
 
 static const time_t MAY_18_2014 = 1400461200;
 

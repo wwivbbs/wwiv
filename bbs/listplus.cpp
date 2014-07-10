@@ -19,12 +19,13 @@
 #include <algorithm>
 #include <csignal>
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 
-#include "instmsg.h"
-#include "listplus.h"
-#include "printfile.h"
-#include "wwivcolors.h"
+#include "bbs/instmsg.h"
+#include "bbs/listplus.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
+#include "bbs/wwivcolors.h"
 
 
 user_config config_listing;
@@ -1724,6 +1725,7 @@ int move_filename(const char *pszFileName, int dn) {
   bool ok = false;
 
   tmp_disable_conf(true);
+  wwiv::bbs::TempDisablePause diable_pause;
 
   while (!hangup && nRecNum > 0 && !done) {
     int cp = nRecNum;
@@ -1739,7 +1741,6 @@ int move_filename(const char *pszFileName, int dn) {
     GetSession()->bout << "|#5Move this (Y/N/Q)? ";
     char ch = 0;
     if (bulk_move) {
-      tmp_disable_pause(true);
       GetSession()->bout.Color(1);
       GetSession()->bout << YesNoString(true);
       GetSession()->bout.NewLine();
@@ -1778,7 +1779,6 @@ int move_filename(const char *pszFileName, int dn) {
           if (yesno()) {
             bulk_move = 1;
             bulk_dir = nDestDirNum;
-            tmp_disable_pause(true);
           }
         }
       } else {
@@ -1898,7 +1898,6 @@ int move_filename(const char *pszFileName, int dn) {
   }
 
   tmp_disable_conf(false);
-  tmp_disable_pause(false);
 
   return ret;
 }

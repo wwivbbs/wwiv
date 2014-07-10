@@ -88,6 +88,7 @@
   <ItemGroup>
     <ClInclude Include="bbs.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="conf.h" />
     <ClInclude Include="datetime.h" />
     <ClInclude Include="fcns.h" />
     <ClInclude Include="filenames.h" />
@@ -97,6 +98,7 @@
     <ClInclude Include="menu.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="net.h" />
+    <ClInclude Include="pause.h" />
     <ClInclude Include="platform\incl1.h" />
     <ClInclude Include="platform\platformfcns.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />
@@ -108,6 +110,7 @@
     <ClInclude Include="prot\crctab.h" />
     <ClInclude Include="prot\xmodem.h" />
     <ClInclude Include="prot\zmodem.h" />
+    <ClInclude Include="qscan.h" />
     <ClInclude Include="qwk.h" />
     <ClInclude Include="runnable.h" />
     <ClInclude Include="subxtr.h" />
@@ -210,6 +213,7 @@
     <ClCompile Include="prot\zmodemt.cpp" />
     <ClCompile Include="prot\zmutil.cpp" />
     <ClCompile Include="prot\zmwwiv.cpp" />
+    <ClCompile Include="qscan.cpp" />
     <ClCompile Include="quote.cpp" />
     <ClCompile Include="qwk.cpp" />
     <ClCompile Include="qwk1.cpp" />

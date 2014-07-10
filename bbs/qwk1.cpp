@@ -339,7 +339,7 @@ void upload_reply_packet(void) {
   save_sub = GetSession()->GetCurrentMessageArea();
   if ((uconfsub[1].confnum != -1) && (okconf(GetSession()->GetCurrentUser()))) {
     save_conf = 1;
-    tmp_disable_conf(1);
+    tmp_disable_conf(true);
   }
 
   qwk_system_name(name);
@@ -377,7 +377,7 @@ void upload_reply_packet(void) {
     }
   }
   if (save_conf) {
-    tmp_disable_conf(0);
+    tmp_disable_conf(false);
   }
 
   GetSession()->SetCurrentMessageArea(save_sub);

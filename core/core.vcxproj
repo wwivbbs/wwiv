@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="platform\wfile.h" />
+    <ClInclude Include="transaction.h" />
     <ClInclude Include="wstringutils.h" />
     <ClInclude Include="wwivassert.h" />
   </ItemGroup>
