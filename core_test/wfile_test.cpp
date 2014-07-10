@@ -19,11 +19,13 @@
 #include "file_helper.h"
 #include "gtest/gtest.h"
 #include "core/wfile.h"
+#include "core/wstringutils.h"
 
 #include <iostream>
 #include <string>
 
 using std::string;
+using wwiv::strings::StringPrintf;
 
 TEST(FileTest, DoesNotExist) {
     FileHelper file;
@@ -57,6 +59,16 @@ TEST(FileTest, Exists_Static) {
     ASSERT_TRUE(file.Mkdir("newdir"));
     WFile dne(tmp, "newdir");
     ASSERT_TRUE(WFile::Exists(dne.GetFullPathName())) << dne.GetFullPathName(); 
+}
+
+TEST(FileTest, Exists_TrailingSlash) {
+    FileHelper file;
+    string tmp = file.TempDir();
+    GTEST_ASSERT_NE("", tmp);
+    ASSERT_TRUE(file.Mkdir("newdir"));
+    WFile dne(tmp, "newdir");
+    string path = StringPrintf("%s%c", dne.GetFullPathName().c_str(), WFile::pathSeparatorChar);
+    ASSERT_TRUE(WFile::Exists(path)) << path; 
 }
 
 TEST(FileTest, Length_Open) {
