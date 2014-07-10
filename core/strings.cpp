@@ -39,6 +39,8 @@ const char *DELIMS_WHITE = " \t\r\n";
 
 bool IsColorCode(char c);
 
+using std::string;
+
 namespace wwiv {
 namespace strings {
 
@@ -47,15 +49,46 @@ namespace strings {
  * @param pszFormattedText The format specifier
  * @param ... Variable arguments
  */
-std::string StringPrintf(const char *pszFormattedText, ...) {
-  va_list ap;
+string StringPrintf(const char *pszFormattedText, ...) {
   char szBuffer[ 1024 ];
 
+  va_list ap;
   va_start(ap, pszFormattedText);
   WWIV_VSNPRINTF(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
   va_end(ap);
-  return std::string(szBuffer);
+  return string(szBuffer);
 }
+
+string StrCat(string s1, string s2) {
+  std::ostringstream ss;
+  ss << s1 << s2;
+  return ss.str();
+}
+
+string StrCat(string s1, string s2, string s3) {
+  std::ostringstream ss;
+  ss << s1 << s2 << s3;
+  return ss.str();
+}
+
+string StrCat(string s1, string s2, string s3, string s4) {
+  std::ostringstream ss;
+  ss << s1 << s2 << s3 << s4;
+  return ss.str();
+}
+
+string StrCat(string s1, string s2, string s3, string s4, string s5) {
+  std::ostringstream ss;
+  ss << s1 << s2 << s3 << s4 << s5;
+  return ss.str();
+}
+
+string StrCat(string s1, string s2, string s3, string s4, string s5, string s6) {
+  std::ostringstream ss;
+  ss << s1 << s2 << s3 << s4 << s5 << s6;
+  return ss.str();
+}
+
 
 /**
  * Gets the length of the C style string.  This function returns an int
