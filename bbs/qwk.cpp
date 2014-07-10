@@ -1053,22 +1053,21 @@ void read_qwk_cfg(struct qwk_config *qwk_cfg) {
   }
   read(f, (void *) qwk_cfg, sizeof(struct qwk_config));
   int x = 0;
-  long pos = -1;
   while (x < qwk_cfg->amount_blts) {
-    pos = sizeof(struct qwk_config) + (x * BULL_SIZE);
+    long pos = sizeof(struct qwk_config) + (x * BULL_SIZE);
     lseek(f, pos, SEEK_SET);
     qwk_cfg->blt[x] = (char *)malloc(BULL_SIZE);
-    read(f, (void *)qwk_cfg->blt[x], BULL_SIZE);
+    read(f, qwk_cfg->blt[x], BULL_SIZE);
 
     ++x;
   }
 
   x = 0;
   while (x < qwk_cfg->amount_blts) {
-    pos = sizeof(struct qwk_config) + (qwk_cfg->amount_blts * BULL_SIZE) + (x * BNAME_SIZE);
+    long pos = sizeof(struct qwk_config) + (qwk_cfg->amount_blts * BULL_SIZE) + (x * BNAME_SIZE);
     lseek(f, pos, SEEK_SET);
     qwk_cfg->bltname[x] = (char *)malloc(BNAME_SIZE * qwk_cfg->amount_blts);
-    read(f, (void *)qwk_cfg->bltname[x], BNAME_SIZE);
+    read(f, qwk_cfg->bltname[x], BNAME_SIZE);
 
     ++x;
   }
@@ -1078,7 +1077,6 @@ void read_qwk_cfg(struct qwk_config *qwk_cfg) {
 void write_qwk_cfg(struct qwk_config *qwk_cfg) {
   int new_amount = 0;
   char s[201];
-  long pos;
 
   sprintf(s, "%s%s", syscfg.datadir, "QWK.CFG");
 
@@ -1091,11 +1089,11 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
 
   int x = 0;
   while (x < qwk_cfg->amount_blts) {
-    pos = sizeof(struct qwk_config) + (new_amount * BULL_SIZE);
+    long pos = sizeof(struct qwk_config) + (new_amount * BULL_SIZE);
     lseek(f, pos, SEEK_SET);
 
     if (qwk_cfg->blt[x]) {
-      write(f, (void *)qwk_cfg->blt[x], BULL_SIZE);
+      write(f, qwk_cfg->blt[x], BULL_SIZE);
       ++new_amount;
     }
     ++x;
@@ -1103,7 +1101,7 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
 
   x = 0;
   while (x < qwk_cfg->amount_blts) {
-    pos = sizeof(struct qwk_config) + (qwk_cfg->amount_blts * BULL_SIZE) + (x * BNAME_SIZE);
+    long pos = sizeof(struct qwk_config) + (qwk_cfg->amount_blts * BULL_SIZE) + (x * BNAME_SIZE);
     lseek(f, pos, SEEK_SET);
 
     if (qwk_cfg->bltname[x]) {
@@ -1115,7 +1113,7 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
 
   qwk_cfg->amount_blts = new_amount;
   lseek(f, 0, SEEK_SET);
-  write(f, (void *) qwk_cfg, sizeof(struct qwk_config));
+  write(f, qwk_cfg, sizeof(struct qwk_config));
 
   close(f);
 }
