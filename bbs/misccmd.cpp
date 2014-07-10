@@ -20,11 +20,13 @@
 #include "bbs/wwiv.h"
 
 #include "bbs/pause.h"
+#include "bbs/qscan.h"
 
 // from qwk.c
 void qwk_menu();
 
 using wwiv::bbs::TempDisablePause;
+using wwiv::bbs::SaveQScanPointers;
 
 void kill_old_email() {
   mailrec m, m1;
@@ -532,6 +534,7 @@ void Packers() {
       GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
       if (yesno()) {
         TempDisablePause disable_pause;
+        SaveQScanPointers save_qscan;
         GetSession()->bout << "\r\nPlease wait...\r\n";
         GetSession()->localIO()->set_x_only(1, "posts.txt", 0);
         bool ac = false;
@@ -542,7 +545,11 @@ void Packers() {
         nscan();
         GetSession()->localIO()->set_x_only(0, NULL, 0);
         add_arc("offline", "posts.txt", 0);
-        download_temp_arc("offline", 0);
+        bool sent = download_temp_arc("offline", false);
+        if (!sent) {
+          // If the file was not downloaded, restore the old qscan pointers.
+          save_qscan.restore();
+        }
       } else {
         GetSession()->bout << "|#6Aborted.\r\n";
       }

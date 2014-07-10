@@ -757,7 +757,7 @@ void DownloadPosts() {
       }
       GetSession()->localIO()->set_x_only(0, NULL, 0);
       add_arc("offline", "posts.txt", 0);
-      download_temp_arc("offline", 0);
+      download_temp_arc("offline", false);
     }
   }
 }
@@ -772,7 +772,7 @@ void DownloadFileList() {
       searchall();
       GetSession()->localIO()->set_x_only(0, NULL, 0);
       add_arc("temp", "files.txt", 0);
-      download_temp_arc("temp", 0);
+      download_temp_arc("temp", false);
     }
   }
 }
