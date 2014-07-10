@@ -322,24 +322,24 @@ int check_for_files(const char *pszFileName) {
 }
 
 
-void download_temp_arc(const char *pszFileName, int xfer) {
+bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
   GetSession()->bout << "Downloading " << pszFileName << "." << arcs[ARC_NUMBER].extension << ":\r\n\r\n";
-  if (xfer && !ratio_ok()) {
+  if (count_against_xfer_ratio && !ratio_ok()) {
     GetSession()->bout << "Ratio too low.\r\n";
-    return;
+    return false;
   }
   char szDownloadFileName[ MAX_PATH ];
   sprintf(szDownloadFileName, "%s%s.%s", syscfgovr.tempdir, pszFileName, arcs[ARC_NUMBER].extension);
   WFile file(szDownloadFileName);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     GetSession()->bout << "No such file.\r\n\n";
-    return;
+    return false;
   }
   long lFileSize = file.GetLength();
   file.Close();
   if (lFileSize == 0L) {
     GetSession()->bout << "File has nothing in it.\r\n\n";
-    return;
+    return false;
   }
   double d = XFER_TIME(lFileSize);
   if (d <= nsl()) {
@@ -350,7 +350,7 @@ void download_temp_arc(const char *pszFileName, int xfer) {
     sprintf(szFileToSend, "%s.%s", pszFileName, arcs[ARC_NUMBER].extension);
     send_file(szDownloadFileName, &sent, &abort, szFileToSend, -1, lFileSize);
     if (sent) {
-      if (xfer) {
+      if (count_against_xfer_ratio) {
         GetSession()->GetCurrentUser()->SetFilesDownloaded(GetSession()->GetCurrentUser()->GetFilesDownloaded() + 1);
         GetSession()->GetCurrentUser()->SetDownloadK(GetSession()->GetCurrentUser()->GetDownloadK() + bytes_to_k(lFileSize));
         GetSession()->bout.NewLine(2);
@@ -360,11 +360,13 @@ void download_temp_arc(const char *pszFileName, int xfer) {
       if (GetSession()->IsUserOnline()) {
         GetApplication()->UpdateTopScreen();
       }
+      return true;
     }
   } else {
     GetSession()->bout.NewLine(2);
     GetSession()->bout << "Not enough time left to D/L.\r\n\n";
   }
+  return false;
 }
 
 
@@ -655,7 +657,7 @@ void temporary_stuff() {
       return;
       break;
     case 'D':
-      download_temp_arc("temp", 1);
+      download_temp_arc("temp", true);
       break;
     case 'V':
       list_temp_arc();
