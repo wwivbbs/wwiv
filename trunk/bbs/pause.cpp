@@ -18,12 +18,28 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "pause.h"
 
+namespace wwiv {
+namespace bbs {
 
-void pausescr()
-// This will pause output, displaying the [PAUSE] message, and wait
-// a key to be hit.
-{
+TempDisablePause::TempDisablePause() : wwiv::core::Transaction([] {
+    if (GetSession()->GetCurrentUser()->HasPause()) {
+      g_flags |= g_flag_disable_pause;
+      GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::pauseOnPage);
+    }
+  }, nullptr) {
+  if (g_flags & g_flag_disable_pause) {
+    g_flags &= ~g_flag_disable_pause;
+    GetSession()->GetCurrentUser()->SetStatusFlag(WUser::pauseOnPage);
+  }
+}
+
+}  // namespace bbs
+}  // namespace wwiv
+
+// This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
+void pausescr() {
   int i1, i3, warned;
   int i = 0;
   char s[81];

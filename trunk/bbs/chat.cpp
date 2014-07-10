@@ -17,11 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 
-#include "ini.h"
-#include "instmsg.h"
-#include "printfile.h"
+#include "bbs/ini.h"
+#include "bbs/instmsg.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
 
 static int g_nChatOpSecLvl;
 static int g_nNumActions;
@@ -57,6 +58,8 @@ void load_channels(WIniFile *pIniFile);
 int  userinst(char *user);
 int  grabname(char *pszMessage, int ch);
 bool usercomp(const char *st1, const char *st2);
+
+using wwiv::bbs::TempDisablePause;
 
 void chat_room() {
   int oiia = iia;
@@ -103,7 +106,8 @@ void chat_room() {
     intro(loc);
     GetSession()->bout.NewLine();
   }
-  tmp_disable_pause(true);
+
+  TempDisablePause disable_pause;
   bChatLine = false;
   in_chatroom = true;
   setiia(9);
@@ -135,7 +139,6 @@ void chat_room() {
   setiia(oiia);
   moving(false, loc);
   free_actions();
-  tmp_disable_pause(false);
   in_chatroom = false;
 }
 
@@ -163,7 +166,6 @@ int rip_words(int nStartPos, char *pszMessage, char *wd, int size, char lookfor)
   wd[nSpacePos] = '\0';
   return nPos;
 }
-
 
 int f_action(int nStartPos, int nEndPos, char *pszAWord) {
   int test = ((nEndPos - nStartPos) / 2) + nStartPos;

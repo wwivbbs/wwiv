@@ -27,7 +27,6 @@
 #include "core/wfndfile.h"
 
 extern const unsigned char *translate_letters[];
-static int disable_conf_cnt = 0;
 
 template<class _Ty> inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value);
 
@@ -84,51 +83,6 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
  */
 bool okansi() {
   return GetSession()->GetCurrentUser()->HasAnsi() && !x_only;
-}
-
-
-void reset_disable_conf() {
-  disable_conf_cnt = 0;
-}
-
-
-void tmp_disable_conf(bool disable) {
-  static int ocs = 0, oss = 0, ocd = 0, osd = 0;
-
-  if (disable) {
-    disable_conf_cnt++;
-    if (okconf(GetSession()->GetCurrentUser())) {
-      g_flags |= g_flag_disable_conf;
-      ocs = GetSession()->GetCurrentConferenceMessageArea();
-      oss = usub[GetSession()->GetCurrentMessageArea()].subnum;
-      ocd = GetSession()->GetCurrentConferenceFileArea();
-      osd = udir[GetSession()->GetCurrentFileArea()].subnum;
-      setuconf(CONF_SUBS, -1, oss);
-      setuconf(CONF_DIRS, -1, osd);
-    }
-  } else if (disable_conf_cnt) {
-    disable_conf_cnt--;
-    if ((disable_conf_cnt == 0) && (g_flags & g_flag_disable_conf)) {
-      g_flags &= ~g_flag_disable_conf;
-      setuconf(CONF_SUBS, ocs, oss);
-      setuconf(CONF_DIRS, ocd, osd);
-    }
-  }
-}
-
-
-void tmp_disable_pause(bool disable) {
-  if (disable) {
-    if (GetSession()->GetCurrentUser()->HasPause()) {
-      g_flags |= g_flag_disable_pause;
-      GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::pauseOnPage);
-    }
-  } else {
-    if (g_flags & g_flag_disable_pause) {
-      g_flags &= ~g_flag_disable_pause;
-      GetSession()->GetCurrentUser()->SetStatusFlag(WUser::pauseOnPage);
-    }
-  }
 }
 
 
@@ -246,7 +200,6 @@ double nsl() {
   return in_range<double>(0.0, 32767.0, rtn);
 }
 
-
 void wait1(long l) {
   long lStartTime = timer1();
 
@@ -260,7 +213,6 @@ void wait1(long l) {
     giveup_timeslice();
   }
 }
-
 
 void Wait(double d) {
   wait1(static_cast<long>(18.2 * d));

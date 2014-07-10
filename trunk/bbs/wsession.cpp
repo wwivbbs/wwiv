@@ -23,13 +23,8 @@
 #include "net.h"
 #include "wcomm.h"
 
-const int WSession::mmkeyMessageAreas   = 0;
-const int WSession::mmkeyFileAreas      = 1;
-const int WSession::mmkeyChains         = 2;
-
-
 WSession::WSession(WApplication *pApplication) {
-  m_pLocalIO                              = new WLocalIO();
+  m_pLocalIO = new WLocalIO();
   bout.SetLocalIO(m_pLocalIO);
 
   m_bLastKeyLocal = true;

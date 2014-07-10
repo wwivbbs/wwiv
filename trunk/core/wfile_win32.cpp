@@ -18,40 +18,26 @@
 /**************************************************************************/
 #include "core/wfile.h"
 
-#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
-#include <iostream>
-#ifdef _WIN32
+
 #include <io.h>
 #include <share.h>
-#endif  // _WIN32
+
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
-#ifndef _WIN32
-#include <sys/file.h>
-#include <unistd.h>
-#endif  // _WIN32
 
-#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef CopyFile
 #undef GetFileTime
 #undef GetFullPathName
 #undef MoveFile
-#endif  // _WIN32
 
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
-
-#if defined( __APPLE__ )
-#if !defined( O_BINARY )
-#define O_BINARY 0
-#endif
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants

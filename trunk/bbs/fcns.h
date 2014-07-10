@@ -202,6 +202,8 @@ char onek1(const char *pszAllowableChars);
 
 // File: conf.cpp
 
+void tmp_disable_conf(bool disable);
+void reset_disable_conf();
 int  get_conf_info(int conftype, int *num, confrec ** cpp, char *pszFileName, int *num_s, userconfrec ** uc);
 void jump_conf(int conftype);
 void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int action);
@@ -213,9 +215,6 @@ void save_confs(int conftype, int whichnum, confrec * c);
 void showsubconfs(int conftype, confrec * c);
 void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
 void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which);
-int  modify_conf(int conftype, int which);
-void insert_conf(int conftype, int n);
-void delete_conf(int conftype, int n);
 void conf_edit(int conftype);
 void list_confs(int conftype, int ssc);
 int  select_conf(const char *pszPromptText, int conftype, int listconfs);

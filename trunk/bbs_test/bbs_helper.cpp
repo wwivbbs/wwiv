@@ -23,12 +23,12 @@
 #include <iostream>
 #include <string>
 
-#include "bbs.h"
+#include "bbs/bbs.h"
 #include "core/wwivport.h"
 #include "core/wfile.h"
-#include "vars.h"
-#include "wuser.h"
-#include "wsession.h"
+#include "bbs/vars.h"
+#include "bbs/wuser.h"
+#include "bbs/wsession.h"
 
 #include "gtest/gtest.h"
 

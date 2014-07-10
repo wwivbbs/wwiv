@@ -55,13 +55,13 @@ class WSession {
   WOutStream bout;
 
  public:
-  static const int mmkeyMessageAreas;
-  static const int mmkeyFileAreas;
-  static const int mmkeyChains;
+  static const int mmkeyMessageAreas = 0;
+  static const int mmkeyFileAreas = 1;
+  static const int mmkeyChains = 2;
 
 
  public:
-  WUser* GetCurrentUser()             {
+  WUser* GetCurrentUser() {
     return &m_thisuser;
   }
   void DisplaySysopWorkingIndicator(bool displayWait);
@@ -70,10 +70,10 @@ class WSession {
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(bool bUseSockets, unsigned int nHandle);
 
-  bool IsLastKeyLocal() const                     {
+  bool IsLastKeyLocal() const {
     return m_bLastKeyLocal;
   }
-  void SetLastKeyLocal(bool b)                  {
+  void SetLastKeyLocal(bool b) {
     m_bLastKeyLocal = b;
   }
 

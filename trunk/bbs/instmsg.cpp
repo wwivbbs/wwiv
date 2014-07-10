@@ -17,11 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 #include "instmsg.h"
-#include <stdarg.h>
 
-#include "wwiv.h"
+#include <cstdarg>
+
+#include "bbs/wwiv.h"
 #include "core/wfndfile.h"
-#include "printfile.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
 
 // Local functions
 void send_inst_msg(inst_msg_header * ih, const char *msg);
@@ -30,6 +32,7 @@ void send_inst_str1(int m, int whichinst, const char *pszSendString);
 bool inst_available(instancerec * ir);
 bool inst_available_chat(instancerec * ir);
 
+using wwiv::bbs::TempDisablePause;
 
 void send_inst_msg(inst_msg_header *ih, const char *msg) {
   char szFileName[MAX_PATH];
@@ -57,7 +60,6 @@ void send_inst_msg(inst_msg_header *ih, const char *msg) {
   }
 }
 
-
 #define LAST(s) s[strlen(s)-1]
 
 void send_inst_str1(int m, int whichinst, const char *pszSendString) {
@@ -76,16 +78,13 @@ void send_inst_str1(int m, int whichinst, const char *pszSendString) {
   send_inst_msg(&ih, szTempSendString);
 }
 
-
 void send_inst_str(int whichinst, const char *pszSendString) {
   send_inst_str1(INST_MSG_STRING, whichinst, pszSendString);
 }
 
-
 void send_inst_sysstr(int whichinst, const char *pszSendString) {
   send_inst_str1(INST_MSG_SYSMSG, whichinst, pszSendString);
 }
-
 
 void send_inst_shutdown(int whichinst) {
   inst_msg_header ih;
@@ -100,7 +99,6 @@ void send_inst_shutdown(int whichinst) {
 
   send_inst_msg(&ih, nullptr);
 }
-
 
 void send_inst_cleannet() {
   inst_msg_header ih;
@@ -250,7 +248,7 @@ void process_inst_msgs() {
       }
       if (hi == INST_MSG_SHUTDOWN) {
         if (GetSession()->IsUserOnline()) {
-          tmp_disable_pause(true);
+          TempDisablePause diable_pause;
           GetSession()->bout.NewLine(2);
           printfile(OFFLINE_NOEXT);
           if (GetSession()->IsUserOnline()) {
@@ -260,7 +258,6 @@ void process_inst_msgs() {
             GetSession()->WriteCurrentUser();
             write_qscn(GetSession()->usernum, qsc, false);
           }
-          tmp_disable_pause(false);
         }
         file.Close();
         file.Delete();

@@ -162,8 +162,6 @@ char * qwk_system_name(char *qwkname);
 void qwk_menu(void);
 void qwk_send_file(char *fn, bool *sent, bool *abort);
 int select_qwk_protocol(struct qwk_junk *qwk_info);
-long * qwk_save_qscan(void);
-void qwk_restore_qscan(long *save_qsc_p);
 void insert_after_routing(char *text, char *text2insert, long *len);
 void close_qwk_cfg(struct qwk_config *qwk_cfg);
 void read_qwk_cfg(struct qwk_config *qwk_cfg);

@@ -19,11 +19,14 @@
 
 #include <memory>
 
-#include "wwiv.h"
-#include "instmsg.h"
-#include "menu.h"
-#include "menusupp.h"
-#include "printfile.h"
+#include "bbs/wwiv.h"
+#include "bbs/instmsg.h"
+#include "bbs/menu.h"
+#include "bbs/menusupp.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
+
+using wwiv::bbs::TempDisablePause;
 
 void UnQScan() {
   GetSession()->bout.NewLine();
@@ -286,9 +289,10 @@ void GoodBye() {
         write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
         GetSession()->bout.ClearScreen();
         GetSession()->bout <<  "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
-        tmp_disable_pause(true);
-        printfile(LOGOFF_NOEXT);
-        tmp_disable_pause(false);
+        {
+          TempDisablePause disable_pause;
+          printfile(LOGOFF_NOEXT);
+        }
         GetSession()->GetCurrentUser()->SetLastSubNum(GetSession()->GetCurrentMessageArea());
         GetSession()->GetCurrentUser()->SetLastDirNum(GetSession()->GetCurrentFileArea());
         if (okconf(GetSession()->GetCurrentUser())) {
@@ -306,9 +310,10 @@ void GoodBye() {
       write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
       GetSession()->bout.ClearScreen();
       GetSession()->bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
-      tmp_disable_pause(true);
-      printfile(LOGOFF_NOEXT);
-      tmp_disable_pause(false);
+      {
+        TempDisablePause disable_pause;
+        printfile(LOGOFF_NOEXT);
+      }
       GetSession()->GetCurrentUser()->SetLastSubNum(GetSession()->GetCurrentMessageArea());
       GetSession()->GetCurrentUser()->SetLastDirNum(GetSession()->GetCurrentFileArea());
       if (okconf(GetSession()->GetCurrentUser())) {
@@ -380,14 +385,13 @@ void ToggleExpert() {
 void ExpressScan() {
   express = true;
   expressabort = false;
-  tmp_disable_pause(true);
+  TempDisablePause disable_pause;
   newline = false;
   preload_subs();
   nscan();
   newline = true;
   express = false;
   expressabort = false;
-  tmp_disable_pause(false);
 }
 
 
@@ -894,13 +898,12 @@ void SortDirs() {
     nType = 2;
   }
 
-  tmp_disable_pause(true);
+  TempDisablePause disable_paise;
   if (bSortAll) {
     sort_all(nType);
   } else {
     sortdir(udir[GetSession()->GetCurrentFileArea()].subnum, nType);
   }
-  tmp_disable_pause(false);
 }
 
 
@@ -909,13 +912,12 @@ void ReverseSort() {
   GetSession()->bout << "|#5Sort all dirs? ";
   bool bSortAll = yesno();
   GetSession()->bout.NewLine();
-  tmp_disable_pause(true);
+  TempDisablePause disable_pause;
   if (bSortAll) {
     sort_all(1);
   } else {
     sortdir(udir[GetSession()->GetCurrentFileArea()].subnum, 1);
   }
-  tmp_disable_pause(false);
 }
 
 
