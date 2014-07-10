@@ -69,6 +69,7 @@
 #define _sopen(n, f, s, p) open(n, f, 0644)
 
 #endif  // _WIN32
+
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
@@ -327,6 +328,11 @@ bool WFile::Remove(const std::string directoryName, const std::string fileName) 
   std::string strFullFileName = directoryName;
   strFullFileName += fileName;
   return WFile::Remove(strFullFileName);
+}
+
+bool WFile::Exists(const std::string fileName) {
+  struct stat buf;
+  return (stat(fileName.c_str(), &buf) ? false : true);
 }
 
 bool WFile::Exists(const std::string directoryName, const std::string fileName) {
