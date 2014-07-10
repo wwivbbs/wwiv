@@ -30,6 +30,11 @@ namespace wwiv {
 namespace strings {
 
 std::string StringPrintf(const char *pszFormattedText, ...);
+std::string StrCat(std::string s1, std::string s2);
+std::string StrCat(std::string s1, std::string s2, std::string s3);
+std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4);
+std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5);
+std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5, std::string s6);
 int GetStringLength(const char * pszString);
 bool IsEquals(const char *pszString1, const char *pszString2);
 bool IsEqualsIgnoreCase(const char *pszString1, const char *pszString2);
