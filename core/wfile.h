@@ -84,12 +84,12 @@ class WFile {
 
  private:
 
-  int     m_hFile;
-  bool    m_bOpen;
-  char    m_szFileName[ MAX_PATH + 1 ];
-  std::string m_errorText;
-  static  WLogger* m_pLogger;
-  static  int m_nDebugLevel;
+  int handle_;
+  bool open_;
+  std::string full_path_name_;
+  std::string error_text_;
+  static  WLogger* logger_;
+  static int debug_level_;
 
   void init();
 
@@ -117,7 +117,7 @@ class WFile {
                     int nPermissions = WFile::permUnknown);
   virtual void Close();
   virtual bool IsOpen() const {
-    return m_bOpen;
+    return open_;
   }
 
   virtual int  Read(void * pBuffer, size_t nCount);
@@ -148,8 +148,8 @@ class WFile {
   virtual bool SetFilePermissions(int nPermissions);
   virtual time_t GetFileTime();
 
-  virtual char *GetParent() {
-    char *tmpCopy = strdup(m_szFileName);
+  virtual const char *GetParent() {
+    char *tmpCopy = strdup(full_path_name_.c_str());
     char *p = &tmpCopy[strlen(tmpCopy) - 1];
     while (*p != WFile::pathSeparatorChar) {
       p--;
@@ -158,8 +158,8 @@ class WFile {
     return tmpCopy;
   }
 
-  virtual char *GetName() {
-    char *p = &m_szFileName[strlen(m_szFileName) - 1];
+  virtual const char *GetName() {
+    const char *p = &full_path_name_.c_str()[full_path_name_.size() - 1];
     while (*p != WFile::pathSeparatorChar) {
       p--;
     }
@@ -167,13 +167,8 @@ class WFile {
     return p;
   }
 
-  virtual const std::string GetFullPathName() {
-    return std::string(m_szFileName);
-  }
-
-  virtual const std::string GetLastError() const {
-    return m_errorText;
-  }
+  virtual const std::string GetFullPathName() { return full_path_name_; }
+  virtual const std::string GetLastError() const { return error_text_; }
 
  public:
 
@@ -194,15 +189,9 @@ class WFile {
   static bool SetFilePermissions(const std::string fileName, int nPermissions);
   static bool IsFileHandleValid(int hFile);
 
-  static void SetLogger(WLogger* pLogger) {
-    m_pLogger = pLogger;
-  }
-  static void SetDebugLevel(int nDebugLevel) {
-    m_nDebugLevel = nDebugLevel;
-  }
-  static int GetDebugLevel() {
-    return m_nDebugLevel;
-  }
+  static void SetLogger(WLogger* logger) { logger_ = logger; }
+  static void SetDebugLevel(int nDebugLevel) { debug_level_ = nDebugLevel; }
+  static int GetDebugLevel() { return debug_level_; }
 };
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__

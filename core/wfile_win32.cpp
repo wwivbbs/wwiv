@@ -58,10 +58,9 @@ const char WFile::separatorChar     = ';';
 // Constructors/Destructors
 
 bool WFile::IsDirectory() {
-  DWORD dwAttributes = GetFileAttributes(m_szFileName);
+  DWORD dwAttributes = GetFileAttributes(full_path_name_.c_str());
   return (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) ? true : false;
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions

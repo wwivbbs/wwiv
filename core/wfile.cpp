@@ -95,12 +95,11 @@ const int WFile::seekEnd            = SEEK_END;
 
 const int WFile::invalid_handle     = -1;
 
-WLogger*  WFile::m_pLogger;
-int       WFile::m_nDebugLevel;
+WLogger*  WFile::logger_;
+int WFile::debug_level_;
 
-// WAIT_TIME is 10 seconds
-#define WAIT_TIME 10
-#define TRIES 100
+static const int WAIT_TIME_SECONDS = 10;
+static const int TRIES = 100;
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
@@ -120,9 +119,8 @@ WFile::WFile(const std::string dirName, const std::string fileName) {
 }
 
 void WFile::init() {
-  m_bOpen                 = false;
-  m_hFile                 = WFile::invalid_handle;
-  memset(m_szFileName, 0, MAX_PATH + 1);
+  open_ = false;
+  handle_ = WFile::invalid_handle;
 }
 
 WFile::~WFile() {
@@ -160,63 +158,61 @@ bool WFile::Open(int nFileMode, int nShareMode, int nPermissions) {
   WWIV_ASSERT(nFileMode    != WFile::modeUnknown);
   WWIV_ASSERT(nPermissions != WFile::permUnknown);
 
-  if (m_nDebugLevel > 2) {
-    m_pLogger->LogMessage("\rSH_OPEN %s, access=%u\r\n", m_szFileName, nFileMode);
+  if (debug_level_ > 2) {
+    logger_->LogMessage("\rSH_OPEN %s, access=%u\r\n", full_path_name_.c_str(), nFileMode);
   }
 
-  m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
-  if (m_hFile < 0) {
+  handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, nPermissions);
+  if (handle_ < 0) {
     int count = 1;
-    if (access(m_szFileName, 0) != -1) {
-      Sleep(WAIT_TIME);
-      m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
-      while ((m_hFile < 0 && errno == EACCES) && count < TRIES) {
-        Sleep((count % 2) ? WAIT_TIME : 0);
-        if (m_nDebugLevel > 0) {
-          m_pLogger->LogMessage("\rWaiting to access %s %d.  \r", m_szFileName, TRIES - count);
+    if (access(full_path_name_.c_str(), 0) != -1) {
+      Sleep(WAIT_TIME_SECONDS);
+      handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, nPermissions);
+      while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
+        Sleep((count % 2) ? WAIT_TIME_SECONDS : 0);
+        if (debug_level_ > 0) {
+          logger_->LogMessage("\rWaiting to access %s %d.  \r", full_path_name_.c_str(), TRIES - count);
         }
         count++;
-        m_hFile = _sopen(m_szFileName, nFileMode, nShareMode, nPermissions);
+        handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, nPermissions);
       }
 
-      if ((m_hFile < 0) && (m_nDebugLevel > 0)) {
-        m_pLogger->LogMessage("\rThe file %s is busy.  Try again later.\r\n", m_szFileName);
+      if ((handle_ < 0) && (debug_level_ > 0)) {
+        logger_->LogMessage("\rThe file %s is busy.  Try again later.\r\n", full_path_name_.c_str());
       }
     }
   }
 
-  if (m_nDebugLevel > 1) {
-    m_pLogger->LogMessage("\rSH_OPEN %s, access=%u, handle=%d.\r\n", m_szFileName, nFileMode, m_hFile);
+  if (debug_level_ > 1) {
+    logger_->LogMessage("\rSH_OPEN %s, access=%u, handle=%d.\r\n", full_path_name_.c_str(), nFileMode, handle_);
   }
 
-  m_bOpen = WFile::IsFileHandleValid(m_hFile);
-  if (m_bOpen) {
-    flock(m_hFile, (nShareMode & shareDenyWrite) ? LOCK_EX : LOCK_SH);
+  open_ = WFile::IsFileHandleValid(handle_);
+  if (open_) {
+    flock(handle_, (nShareMode & shareDenyWrite) ? LOCK_EX : LOCK_SH);
   }
 
-  if (m_hFile == -1) {
-    this->m_errorText = strerror(errno);
+  if (handle_ == WFile::invalid_handle) {
+    this->error_text_ = strerror(errno);
   }
 
-  return m_bOpen;
+  return open_;
 }
-
 
 void WFile::Close() {
-  if (WFile::IsFileHandleValid(m_hFile)) {
-    flock(m_hFile, LOCK_UN);
-    close(m_hFile);
-    m_hFile = WFile::invalid_handle;
-    m_bOpen = false;
+  if (WFile::IsFileHandleValid(handle_)) {
+    flock(handle_, LOCK_UN);
+    close(handle_);
+    handle_ = WFile::invalid_handle;
+    open_ = false;
   }
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
 bool WFile::SetName(const std::string fileName) {
-  strncpy(m_szFileName, fileName.c_str(), MAX_PATH);
+  full_path_name_ = fileName;
   return true;
 }
 
@@ -232,7 +228,7 @@ bool WFile::SetName(const std::string dirName, const std::string fileName) {
 }
 
 int WFile::Read(void * pBuffer, size_t nCount) {
-  int ret = read(m_hFile, pBuffer, nCount);
+  int ret = read(handle_, pBuffer, nCount);
   if (ret == -1) {
     std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
   }
@@ -241,7 +237,7 @@ int WFile::Read(void * pBuffer, size_t nCount) {
 }
 
 int WFile::Write(const void * pBuffer, size_t nCount) {
-  int nRet = write(m_hFile, pBuffer, nCount);
+  int nRet = write(handle_, pBuffer, nCount);
   if (nRet == -1) {
     std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
   }
@@ -251,25 +247,25 @@ int WFile::Write(const void * pBuffer, size_t nCount) {
 
 long WFile::Seek(long lOffset, int nFrom) {
   WWIV_ASSERT(nFrom == WFile::seekBegin || nFrom == WFile::seekCurrent || nFrom == WFile::seekEnd);
-  WWIV_ASSERT(WFile::IsFileHandleValid(m_hFile));
+  WWIV_ASSERT(WFile::IsFileHandleValid(handle_));
 
-  return lseek(m_hFile, lOffset, nFrom);
+  return lseek(handle_, lOffset, nFrom);
 }
 
 bool WFile::Exists() const {
-  return WFile::Exists(m_szFileName);
+  return WFile::Exists(full_path_name_);
 }
 
 bool WFile::Delete() {
   if (this->IsOpen()) {
     this->Close();
   }
-  return (unlink(m_szFileName) == 0) ? true : false;
+  return (unlink(full_path_name_.c_str()) == 0) ? true : false;
 }
 
 void WFile::SetLength(long lNewLength) {
-  WWIV_ASSERT(WFile::IsFileHandleValid(m_hFile));
-  ftruncate(m_hFile, lNewLength);
+  WWIV_ASSERT(WFile::IsFileHandleValid(handle_));
+  ftruncate(handle_, lNewLength);
 }
 
 bool WFile::IsFile() {
@@ -277,7 +273,7 @@ bool WFile::IsFile() {
 }
 
 bool WFile::SetFilePermissions(int nPermissions) {
-  return (chmod(m_szFileName, nPermissions) == 0) ? true : false;
+  return (chmod(full_path_name_.c_str(), nPermissions) == 0) ? true : false;
 }
 
 long WFile::GetLength() {
@@ -286,12 +282,12 @@ long WFile::GetLength() {
 
   if (IsOpen()) {
     // File is open, use fstat
-    if (_fstat(m_hFile, &fileinfo) != 0) {
+    if (_fstat(handle_, &fileinfo) != 0) {
       return -1;
     }
   } else {
     // stat works on filenames, not filehandles.
-    if (_stat(m_szFileName, &fileinfo) != 0) {
+    if (_stat(full_path_name_.c_str(), &fileinfo) != 0) {
       return -1;
     }
   }
@@ -304,11 +300,11 @@ time_t WFile::GetFileTime() {
     bOpenedHere = true;
     Open();
   }
-  WWIV_ASSERT(WFile::IsFileHandleValid(m_hFile));
+  WWIV_ASSERT(WFile::IsFileHandleValid(handle_));
 
   // N.B. On Windows with _USE_32BIT_TIME_T defined _fstat == _fstat32.
   struct _stat buf;
-  time_t nFileTime = (_stat(m_szFileName, &buf) == -1) ? 0 : buf.st_mtime;
+  time_t nFileTime = (_stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
 
   if (bOpenedHere) {
     Close();
