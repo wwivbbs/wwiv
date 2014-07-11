@@ -635,7 +635,6 @@ void eventedit() {
         GetSession()->bout.WriteFormatted("%-85s", title.c_str());
         GetSession()->bout.Color(0);
         GetSession()->bout.NewLine(2);
-        GetSession()->bout << "|#91) Terminal Program     : |#2" << syscfg.terminal     << wwiv::endl;
         GetSession()->bout << "|#92) Begin Day Event      : |#2" << syscfg.beginday_c   << wwiv::endl;
         GetSession()->bout << "|#93) Logon Event          : |#2" << syscfg.logon_c      << wwiv::endl;
         GetSession()->bout << "|#94) Logoff Event         : |#2" << syscfg.logoff_c     << wwiv::endl;
@@ -645,12 +644,9 @@ void eventedit() {
         GetSession()->bout << "|#9Q) Quit\r\n";
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7, |#2?|#7=|#1Help|#7) Which? (|#11|#7-|#17|#7) :";
-        ch = onek("Q1234567?");
+        ch = onek("Q234567?");
         GetSession()->localIO()->LocalGotoXY(26, ch - 47);
         switch (ch) {
-        case '1':
-          Input1(syscfg.terminal, syscfg.terminal, 21, true, INPUT_MODE_FILE_UPPER);
-          break;
         case '2':
           Input1(syscfg.beginday_c, syscfg.beginday_c, 51, true, INPUT_MODE_FILE_UPPER);
           break;

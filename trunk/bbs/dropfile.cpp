@@ -183,8 +183,7 @@ void CreatePCBoardSysDropFile() {
     pcb.sminsleft = pcb.time_limit;
     pcb.snodenum = static_cast<char>((num_instances() > 1) ? GetApplication()->GetInstanceNumber() : 0);
     strcpy(pcb.seventtime, "01:00");
-    strcpy(pcb.seventactive, (syscfg.executetime && syscfg.executestr[0]) ?
-           "-1" : " 0");
+    strcpy(pcb.seventactive, " 0");
     strcpy(pcb.sslide, " 0");
     pcb.scomport = syscfgovr.primaryport + '0';
     pcb.packflag = 27;

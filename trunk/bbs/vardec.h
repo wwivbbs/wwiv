@@ -223,11 +223,11 @@ struct configrec {
        connect_19200[21],                      // ""
        no_carrier[21],                         // modem disconnect
        ring[21],                               // modem ring
-       terminal[21],                           // DOS cmd for run term prg
+       unused_terminal[21],                    // UNUSED DOS cmd for run term prg
        systemname[51],                         // BBS system name
        systemphone[13],                        // BBS system phone number
        sysopname[51],                          // sysop's name
-       executestr[51];                         // mail route path name
+       unused_executestr[51];                  // Old single event command (removed in 4.3i0)
 
   unsigned char newusersl,                    // new user SL
            newuserdsl,                             // new user DSL
@@ -323,12 +323,10 @@ struct small_configrec {
                 * batchdir,
                 * menudir,            // path for menu dir
                 * ansidir,            // path for ansi dir
-                * terminal,           // DOS cmd for run term prg
 
                 * systemname,         // BBS system name
                 * systemphone,        // BBS system phone number
                 * sysopname,          // sysop's name
-                * executestr,         // mail route path name
 
                 * beginday_c,         // beginday event
                 * logon_c,            // logon event

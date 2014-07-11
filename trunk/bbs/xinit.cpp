@@ -351,8 +351,6 @@ bool WApplication::ReadINIFile() {
     GetSession()->max_gfilesec = iniFile.GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), GetSession()->max_gfilesec);
 
     // pull out strings
-    //    INI_INIT_STR(INI_STR_TERMINAL_CMD, terminal);
-    //    INI_INIT_STR(INI_STR_EXECUTE_CMD, executestr);
     //    INI_INIT_STR(INI_STR_UPLOAD_CMD, upload_c);
     //    INI_INIT_STR(INI_STR_BEGINDAY_CMD, beginday_c);
     //    INI_INIT_STR(INI_STR_NEWUSER_CMD, newuser_c);
@@ -569,12 +567,10 @@ bool WApplication::ReadConfig() {
   syscfg.dloadsdir        = WWIV_STRDUP(full_syscfg.dloadsdir);
   syscfg.batchdir         = WWIV_STRDUP(full_syscfg.batchdir);
   syscfg.menudir          = WWIV_STRDUP(full_syscfg.menudir);
-  syscfg.terminal         = WWIV_STRDUP(full_syscfg.terminal);
 
   syscfg.systemname       = WWIV_STRDUP(full_syscfg.systemname);
   syscfg.systemphone      = WWIV_STRDUP(full_syscfg.systemphone);
   syscfg.sysopname        = WWIV_STRDUP(full_syscfg.sysopname);
-  syscfg.executestr       = WWIV_STRDUP(full_syscfg.executestr);
 
   syscfg.beginday_c       = WWIV_STRDUP(full_syscfg.beginday_c);
   syscfg.logon_c          = WWIV_STRDUP(full_syscfg.logon_c);
@@ -641,12 +637,11 @@ bool WApplication::SaveConfig() {
     strcpy(full_syscfg.dloadsdir, syscfg.dloadsdir);
     strcpy(full_syscfg.batchdir, syscfg.batchdir);
     strcpy(full_syscfg.menudir, syscfg.menudir);
-    strcpy(full_syscfg.terminal, syscfg.terminal);
+    strcpy(full_syscfg.unused_terminal, "");
 
     strcpy(full_syscfg.systemname, syscfg.systemname);
     strcpy(full_syscfg.systemphone, syscfg.systemphone);
     strcpy(full_syscfg.sysopname, syscfg.sysopname);
-    strcpy(full_syscfg.executestr, syscfg.executestr);
 
     strcpy(full_syscfg.beginday_c, syscfg.beginday_c);
     strcpy(full_syscfg.logon_c, syscfg.logon_c);
