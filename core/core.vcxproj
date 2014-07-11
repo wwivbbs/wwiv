@@ -91,9 +91,9 @@
     <ClCompile Include="strings.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="platform\wfile.h" />
     <ClInclude Include="transaction.h" />
     <ClInclude Include="strings.h" />
+    <ClInclude Include="wfile.h" />
     <ClInclude Include="wwivassert.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
