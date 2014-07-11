@@ -87,10 +87,10 @@ void properize(char *pszText);
 std::string properize(const std::string text);
 
 #if defined ( _WIN32 ) && ( _MSC_VER > 1310 )
-#define WWIV_STRDUP( s ) _strdup( s )
-#define WWIV_STRUPR( s ) _strupr( s )
-#define WWIV_STRREV( s ) _strrev( s )
-#define WWIV_STRLWR( s ) _strlwr( s )
+#define WWIV_STRDUP( s ) strdup( s )
+#define WWIV_STRUPR( s ) strupr( s )
+#define WWIV_STRREV( s ) strrev( s )
+#define WWIV_STRLWR( s ) strlwr( s )
 #define WWIV_STRICMP( a, b ) _stricmp( a, b )
 #define WWIV_STRNICMP( a, b, c) _strnicmp( a, b, c )
 
