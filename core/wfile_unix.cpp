@@ -52,7 +52,7 @@ const char WFile::separatorChar     = ':';
 
 bool WFile::IsDirectory() {
   struct stat statbuf;
-  stat(m_szFileName, &statbuf);
+  stat(full_path_name_.c_str(), &statbuf);
   return S_ISDIR(statbuf.st_mode);
 }
 
