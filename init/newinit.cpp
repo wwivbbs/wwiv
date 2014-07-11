@@ -144,7 +144,7 @@ static void init_files() {
   strcpy(syscfg.hangupphone, "ATH0{");
   Printf(".");
   strcpy(syscfg.pickupphone, "ATH1{");
-  strcpy(syscfg.terminal, "");
+  strcpy(syscfg.unused_terminal, "");
   strcpy(syscfg.systemname, "My WWIV BBS");
   Printf(".");
   strcpy(syscfg.systemphone, "   -   -    ");

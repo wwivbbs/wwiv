@@ -469,18 +469,6 @@ int WApplication::doWFCEvents() {
           getkey();
         }
         break;
-      // Run Terminal Program
-      case 'T':
-        if (AllowLocalSysop() && syscfg.terminal[0]) {
-          write_inst(INST_LOC_TERM, 0, INST_FLAGS_NONE);
-          ExecuteExternalProgram(syscfg.terminal, EFLAG_NONE);
-          imodem(true);
-          imodem(false);
-        } else {
-          GetSession()->localIO()->LocalGotoXY(2, 23);
-          GetSession()->bout << "|#6No terminal program defined.";
-        }
-        break;
       // UserEdit
       case 'U':
         if (AllowLocalSysop()) {
@@ -979,7 +967,6 @@ int WApplication::Run(int argc, char *argv[]) {
     if (syscfg.executetime > 1440) {
       syscfg.executetime -= 1440;
     }
-    syscfg.executestr[0] = '\0';
     time_event = static_cast<double>(syscfg.executetime) * MINUTES_PER_HOUR_FLOAT;
     last_time = time_event - timer();
     if (last_time < 0.0) {
