@@ -162,7 +162,7 @@ int save_config() {
   }
 
   configfile = open("config.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  write(configfile, (void *)(&syscfg), sizeof(configrec));
+  write(configfile, &syscfg, sizeof(configrec));
   close(configfile);
 
   configfile = open("config.ovr", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
