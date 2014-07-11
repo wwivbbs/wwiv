@@ -79,7 +79,7 @@ void old_sublist() {
       }
       if (net_sysnum || GetSession()->GetMaxNetworkNumber() > 1) {
         if (xsubs[usub[i1].subnum].num_nets) {
-          char *ss;
+          const char *ss;
           if (xsubs[usub[i1].subnum].num_nets > 1) {
             ss = "Gated";
           } else {
@@ -133,7 +133,7 @@ void SubList() {
       en,
       msgIndex,                         //message Index
       newTally;                         //new message tally
-  char ch, s[81], s2[10], s3[81], sdf[130], *ss;
+  char ch, s[81], s2[10], s3[81], sdf[130];
   bool next;
 
   oldConf = GetSession()->GetCurrentConferenceMessageArea();
@@ -201,6 +201,7 @@ void SubList() {
         iscan(i1);
         if (net_sysnum || GetSession()->GetMaxNetworkNumber() > 1) {
           if (xsubs[usub[i1].subnum].num_nets) {
+	    const char* ss;
             if (xsubs[usub[i1].subnum].num_nets > 1) {
               wc = 6;
               ss = "Gated";
@@ -247,7 +248,7 @@ void SubList() {
           lines_listed = 0;
           DisplayHorizontalBar(78, 7);
           GetSession()->bout.WriteFormatted("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ", firstp + 1, lastp + 1);
-          ss = mmkey(0, true);
+          const char* ss = mmkey(0, true);
           if (isdigit(ss[0])) {
             for (i2 = 0; i2 < GetSession()->num_subs; i2++) {
               if (wwiv::strings::IsEquals(usub[i2].keys, ss)) {
@@ -290,7 +291,7 @@ void SubList() {
         } else {
           GetSession()->bout.WriteFormatted("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
         }
-        ss = mmkey(0, true);
+        const char* ss = mmkey(0, true);
 
         if (wwiv::strings::IsEquals(ss, "?")) {
           p = 1;

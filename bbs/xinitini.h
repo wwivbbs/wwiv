@@ -32,8 +32,8 @@
 #define INI_STR_MSG_COLOR                9
 
 //---SYSTEM COMMANDS--
-#define INI_STR_TERMINAL_CMD            14
-#define INI_STR_EXECUTE_CMD             15
+// 14
+// 15
 #define INI_STR_UPLOAD_CMD              16
 #define INI_STR_BEGINDAY_CMD            17
 #define INI_STR_NEWUSER_CMD             18
@@ -150,8 +150,8 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "",
   "",
   "//---SYSTEM COMMANDS---*",
-  "TERMINAL_CMD",
-  "EXECUTE_CMD",              // 15
+  "",
+  "",              // 15
   "UPLOAD_CMD",
   "BEGINDAY_CMD",
   "NEWUSER_CMD",
@@ -248,7 +248,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "USE_VOICE_VAL",
   "AUTO_USER_PURGE",          // 110
   "NO_PURGE_SL",
-  "NO_PURGE_SL",
+  "",
   "",
   "",
   "",             // 115
