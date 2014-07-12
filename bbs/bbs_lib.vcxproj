@@ -99,7 +99,6 @@
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="pause.h" />
-    <ClInclude Include="platform\incl1.h" />
     <ClInclude Include="platform\platformfcns.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />
     <ClInclude Include="platform\win32\wios.h" />
