@@ -82,7 +82,7 @@ int bputch(char c, bool bUseInternalBuffer) {
 
 
     if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
-      bputch('|');
+      GetSession()->bout << "|" ;
       return GetSession()->bout.Write(pipe_color) + 1;
     } else {
       char szAnsiColorCode[20];
