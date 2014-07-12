@@ -113,18 +113,22 @@ class WFile {
   virtual bool SetName(const std::string fileName);
   virtual bool SetName(const std::string dirName, const std::string fileName);
 
-  virtual bool Open(int nFileMode = WFile::modeDefault, int nShareMode = WFile::shareUnknown,
+  virtual bool Open(int nFileMode = WFile::modeDefault,
+                    int nShareMode = WFile::shareUnknown,
                     int nPermissions = WFile::permUnknown);
+
   virtual void Close();
   virtual bool IsOpen() const {
     return open_;
   }
 
-  virtual int  Read(void * pBuffer, size_t nCount);
-  virtual int  Write(const void * pBuffer, size_t nCount);
+  virtual int Read(void * pBuffer, size_t nCount);
+  virtual int Write(const void * pBuffer, size_t nCount);
+
   virtual int Write(const std::string& s) {
     return this->Write(s.c_str(), s.length());
   }
+  
   virtual int Writeln(const void *pBuffer, size_t nCount) {
     int ret = this->Write(pBuffer, nCount);
     ret += this->Write("\r\n", 2);

@@ -32,13 +32,6 @@ class WOutStreamBuffer : public std::streambuf {
   virtual std::streamsize xsputn(const char *pszText, std::streamsize numChars);
 };
 
-
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable: 4511 4512 )
-#endif
-
-
 class WComm;
 class WLocalIO;
 
@@ -121,9 +114,5 @@ endl(std::basic_ostream<charT, traits>& strm) {
   return strm;
 }
 }
-
-#if defined(_MSC_VER)
-#pragma warning( pop )
-#endif
 
 #endif  // __INCLUDED_WSTREAMBUFFER_H__
