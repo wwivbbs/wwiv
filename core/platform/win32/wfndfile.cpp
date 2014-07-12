@@ -70,4 +70,3 @@ bool WFindFile::IsDirectory() {
 bool WFindFile::IsFile() {
   return (ffdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? false : true;
 }
-
