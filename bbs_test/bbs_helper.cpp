@@ -37,7 +37,11 @@ void BbsHelper::SetUp() {
     ASSERT_TRUE(files_.Mkdir("gfiles"));
     ASSERT_TRUE(files_.Mkdir("en"));
     ASSERT_TRUE(files_.Mkdir("en/gfiles"));
-    app_.reset(CreateApplication());
+    // Use our own local IO class that will capture the output.
+    io_.reset(new TestIO());
+    // Without local_echo, we won't capture anything.
+    local_echo = true;
+    app_.reset(CreateApplication(io_->local_io()));
 
     dir_gfiles_ = files_.DirName("gfiles");
     dir_en_gfiles_ = files_.DirName("en/gfiles");
@@ -54,4 +58,20 @@ void BbsHelper::SetUp() {
 }
 
 void BbsHelper::TearDown() {
+}
+
+TestIO::TestIO() {
+  local_io_ = new TestLocalIO(&this->captured_);
+}
+
+std::string TestIO::captured() {
+  std::string captured(captured_);
+  captured_.clear();
+  return captured;
+}
+
+TestLocalIO::TestLocalIO(std::string* captured) : WLocalIO(), captured_(captured) {}
+
+void TestLocalIO::LocalPutch(unsigned char ch) {
+  captured_->push_back(ch);
 }

@@ -23,12 +23,19 @@
 #include "net.h"
 #include "wcomm.h"
 
-WSession::WSession(WApplication *pApplication) {
-  m_pLocalIO = new WLocalIO();
+
+WSession::WSession(WApplication* app) : WSession(app, nullptr) {}
+
+WSession::WSession(WApplication* app, WLocalIO* localIO) {
+  if (localIO == nullptr) {
+    m_pLocalIO = new WLocalIO();
+  } else {
+    m_pLocalIO = localIO;
+  }
   bout.SetLocalIO(m_pLocalIO);
 
   m_bLastKeyLocal = true;
-  m_pApplication  = pApplication;
+  m_pApplication  = app;
   m_nEffectiveSl  = 0;
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));
@@ -36,7 +43,6 @@ WSession::WSession(WApplication *pApplication) {
   memset(&asv, 0, sizeof(asv_rec));
   memset(&advasv, 0, sizeof(adv_asv_rec));
   memset(&cbv, 0, sizeof(cbv_rec));
-
 
   m_nTopScreenColor                       = 0;
   m_nUserEditorColor                      = 0;
@@ -151,13 +157,11 @@ bool WSession::WriteCurrentUser() {
   return WriteCurrentUser(usernum);
 }
 
-
 bool WSession::WriteCurrentUser(int nUserNumber) {
   WWIV_ASSERT(m_pApplication);
   WWIV_ASSERT(m_pApplication->GetUserManager());
   return m_pApplication->GetUserManager()->WriteUser(&m_thisuser, nUserNumber);
 }
-
 
 void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
   const std::string waitString = "-=[WAIT]=-";

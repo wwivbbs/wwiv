@@ -63,20 +63,14 @@ class WComm {
   virtual void StartThreads() = 0;
 
   virtual unsigned int GetHandle() const = 0;
-  virtual unsigned int GetDoorHandle() const {
-    return GetHandle();
-  }
+  virtual unsigned int GetDoorHandle() const { return GetHandle(); }
 
   // Get/Set Com Port Number
   virtual int  GetComPort() const;
   virtual void SetComPort(int nNewPort);
 
-  void SetBinaryMode(bool b) {
-    m_bBinaryMode = b;
-  }
-  bool GetBinaryMode() const {
-    return m_bBinaryMode;
-  }
+  void SetBinaryMode(bool b) { m_bBinaryMode = b; }
+  bool GetBinaryMode() const { return m_bBinaryMode; }
 
   void ClearRemoteInformation() {
     m_remoteName = "";
@@ -88,10 +82,10 @@ class WComm {
   void SetRemoteAddress(std::string address) {
     m_remoteAddress = address;
   }
-  const std::string& GetRemoteName() const {
+  const std::string GetRemoteName() const {
     return m_remoteName;
   }
-  const std::string& GetRemoteAddress() const {
+  const std::string GetRemoteAddress() const {
     return m_remoteAddress;
   }
 
