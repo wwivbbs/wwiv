@@ -83,6 +83,7 @@
   <ItemGroup>
     <ClCompile Include="bbs_helper.cpp" />
     <ClCompile Include="bbs_test_main.cpp" />
+    <ClCompile Include="bputch_test.cpp" />
     <ClCompile Include="datetime_test.cpp" />
     <ClCompile Include="printfile_test.cpp" />
     <ClCompile Include="stuffin_test.cpp" />

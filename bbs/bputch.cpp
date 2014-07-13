@@ -17,10 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs.h"
+#include "fcns.h"
+#include "wconstants.h"
+#include "vars.h"
 #include "wcomm.h"
+#include "platform/wlocal_io.h"
+#include "wsession.h"
+
 
 void execute_ansi();
+
 
 #define BPUTCH_LITERAL_PIPE_CODE -1
 #define BPUTCH_NO_CODE 0
