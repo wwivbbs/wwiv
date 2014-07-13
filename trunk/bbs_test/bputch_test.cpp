@@ -54,19 +54,19 @@ protected:
 };
 
 TEST_F(BPutchFileTest, SingleLetter) {
-  bputch('A');
+  EXPECT_EQ(1, bputch('A'));
   EXPECT_STREQ("A", helper.io()->captured().c_str());
 }
 
 TEST_F(BPutchFileTest, MultipleLetters) {
   const string kHelloWorld = "Hello World\r\n";
-  Puts(kHelloWorld);
+  EXPECT_EQ(kHelloWorld.size(), Puts(kHelloWorld));
   EXPECT_EQ(kHelloWorld, helper.io()->captured());
 }
 
 TEST_F(BPutchFileTest, SinglePipe) {
   const string kHelloWorld = "Hello World\r\n";
   const string s = "|#1Hello World\r\n";
-  Puts(s);
+  EXPECT_EQ(kHelloWorld.size(), Puts(s));
   EXPECT_EQ(kHelloWorld, helper.io()->captured());
 }
