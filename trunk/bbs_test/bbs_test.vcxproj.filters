@@ -9,6 +9,7 @@
     <ClCompile Include="utility_test.cpp" />
     <ClCompile Include="wutil_test.cpp" />
     <ClCompile Include="datetime_test.cpp" />
+    <ClCompile Include="bputch_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs_helper.h" />

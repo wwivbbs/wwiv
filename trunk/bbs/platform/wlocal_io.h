@@ -172,7 +172,7 @@ class WLocalIO {
   void LocalClrEol();
   void LocalBackspace();
   void LocalPutchRaw(unsigned char ch);
-  void LocalPutch(unsigned char ch);
+  virtual void LocalPutch(unsigned char ch);
   void LocalPuts(const char *pszText);
   void LocalXYPuts(int x, int y, const char *pszText);
   void LocalFastPuts(const char *pszText);

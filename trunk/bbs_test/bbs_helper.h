@@ -23,21 +23,51 @@
 #include <string>
 #include "bbs/bbs.h"
 #include "core_test/file_helper.h"
+#include "bbs/platform/wlocal_io.h"
 #include "bbs/wuser.h"
 
+class TestIO;
+
+/*
+ * 
+ * Test helper for using code with heavy BBS dependencies.
+ * 
+ * To use, add an instance as a field in the test class.  Then invoke.
+ * BbsHelper::SetUp before use. typically from Test::SetUp.
+ */
 class BbsHelper {
 public:
     virtual void SetUp();
     virtual void TearDown();
     FileHelper& files() { return files_; }
     WUser* user() const { return user_; }
+    TestIO* io() const { return io_.get(); }
 public:
     FileHelper files_;
     std::string dir_gfiles_;
     std::string dir_en_gfiles_;
     std::string dir_menus_;
     std::unique_ptr<WApplication> app_;
+    std::unique_ptr<TestIO> io_;
     WUser* user_;
+};
+
+class TestIO {
+public:
+  TestIO();
+  void Clear() { captured_.clear(); } 
+  std::string captured();
+  WLocalIO* local_io() const { return local_io_; }
+private:
+  WLocalIO* local_io_;
+  std::string captured_;
+};
+
+class TestLocalIO : public WLocalIO {
+public:
+  TestLocalIO(std::string* captured);
+  virtual void LocalPutch(unsigned char ch);
+  std::string* captured_;
 };
 
 #endif // __INCLUDED_BBS_HELPER_H__

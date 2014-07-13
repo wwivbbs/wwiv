@@ -1303,14 +1303,14 @@ WApplication::~WApplication() {
   }
 }
 
-WApplication* CreateApplication() {
+WApplication* CreateApplication(WLocalIO* localIO) {
   app = new WApplication();
-  sess = new WSession(app);
+  sess = new WSession(app, localIO);
   WFile::SetLogger(app);
   return app;
 }
 
 int bbsmain(int argc, char *argv[]) {
-  CreateApplication();
+  CreateApplication(nullptr);
   return GetApplication()->BBSMainLoop(argc, argv);
 }
