@@ -183,3 +183,15 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+
+################################################################################
+#
+# Linux/UNIX files
+#
+#
+*.cmake
+CMakeFiles
+CMakeCache.txt
+Makefile
+*.a
+
