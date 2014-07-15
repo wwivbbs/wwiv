@@ -152,23 +152,20 @@ class WFile {
   virtual bool SetFilePermissions(int nPermissions);
   virtual time_t GetFileTime();
 
-  virtual const char *GetParent() {
-    char *tmpCopy = strdup(full_path_name_.c_str());
-    char *p = &tmpCopy[strlen(tmpCopy) - 1];
-    while (*p != WFile::pathSeparatorChar) {
-      p--;
+  virtual const std::string GetParent() {
+    size_t found = full_path_name_.find_last_of(WFile::pathSeparatorChar);
+    if (found == std::string::npos) {
+      return std::string("");
     }
-    *p = '\0';
-    return tmpCopy;
+    return full_path_name_.substr(0, found);
   }
 
-  virtual const char *GetName() {
-    const char *p = &full_path_name_.c_str()[full_path_name_.size() - 1];
-    while (*p != WFile::pathSeparatorChar) {
-      p--;
+  virtual std::string GetName() {
+    size_t found = full_path_name_.find_last_of(WFile::pathSeparatorChar);
+    if (found == std::string::npos) {
+      return std::string("");
     }
-    p++;
-    return p;
+    return full_path_name_.substr(found + 1);
   }
 
   virtual const std::string GetFullPathName() { return full_path_name_; }
