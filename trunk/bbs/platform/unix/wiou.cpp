@@ -51,18 +51,12 @@ void WIOUnix::set_terminal(bool initMode) {
 }
 
 
-WIOUnix::WIOUnix() {
-  tty_open = 0;
-  if (ttyf != NULL) {
-    return;
-  }
-
-  if ((ttyf = fdopen(::open(TTY, O_RDWR), "r")) == NULL) {
+WIOUnix::WIOUnix() : tty_open(0), ttyf(nullptr) {
+  if ((ttyf = fdopen(::open(TTY, O_RDWR), "r")) == nullptr) {
     ttyf = stdin;
   } else {
     setbuf(ttyf, NULL);
   }
-
 
   int f = fileno(ttyf);
 
