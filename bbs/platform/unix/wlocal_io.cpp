@@ -30,7 +30,7 @@ const int WLocalIO::topdataSystem   = 1;
 const int WLocalIO::topdataUser     = 2;
 
 
-WLocalIO::WLocalIO() {
+WLocalIO::WLocalIO() : global_buf(nullptr), global_ptr(0) {
   // These 2 lines must remain in here.
   ExtendedKeyWaiting = 0;
   wx = 0;

@@ -60,6 +60,8 @@ WLocalIO::WLocalIO() {
   SetTopLine(0);
   SetScreenBottom(0);
   ExtendedKeyWaiting = 0;
+  global_buf = nullptr;
+  global_ptr = 0;
   wx = 0;
 
   m_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
