@@ -127,30 +127,30 @@ TEST(FileTest, GetFileTime_Open) {
 }
 
 TEST(FileTest, Read) {
-    static const string kHelloWorld = "Hello World";
-    FileHelper helper;
-    string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
-    WFile file(path);
-    file.Open(WFile::modeBinary | WFile::modeReadOnly);
-    char buf[255];
-    ASSERT_EQ(kHelloWorld.length(), file.Read(buf, kHelloWorld.length()));
-    buf[11] = 0;
-    ASSERT_STREQ(kHelloWorld.c_str(), buf);
+  static const string kHelloWorld = "Hello World";
+  FileHelper helper;
+  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  WFile file(path);
+  file.Open(WFile::modeBinary | WFile::modeReadOnly);
+  char buf[255];
+  ASSERT_EQ(kHelloWorld.length(), file.Read(buf, kHelloWorld.length()));
+  buf[11] = 0;
+  ASSERT_STREQ(kHelloWorld.c_str(), buf);
 }
 
 TEST(FileTest, GetName) {
   static const string kFileName = this->test_info_->name();
-    FileHelper helper;
-    string path = helper.CreateTempFile(kFileName, "Hello World");
-    WFile file(path);
-    ASSERT_EQ(kFileName, file.GetName());
+  FileHelper helper;
+  string path = helper.CreateTempFile(kFileName, "Hello World");
+  WFile file(path);
+  ASSERT_EQ(kFileName, file.GetName());
 }
 
 TEST(FileTest, GetParent) {
   static const string kFileName = this->test_info_->name();
-    FileHelper helper;
-    string path = helper.CreateTempFile(kFileName, "Hello World");
-    WFile file(path);
-    ASSERT_EQ(helper.TempDir(), file.GetParent());
+  FileHelper helper;
+  string path = helper.CreateTempFile(kFileName, "Hello World");
+  WFile file(path);
+  ASSERT_EQ(helper.TempDir(), file.GetParent());
 }
 
