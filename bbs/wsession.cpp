@@ -37,6 +37,8 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) {
   m_bLastKeyLocal = true;
   m_pApplication  = app;
   m_nEffectiveSl  = 0;
+  m_DirectoryDateCache = 0;
+  m_SubDateCache = 0;
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));
   memset(&newuser_bwcolors, 0, sizeof(newuser_bwcolors));
@@ -106,7 +108,7 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) {
   m_nExecChildProcessWaitTime = 0;
   m_bNewScanAtLogin = false;
   usernum = 0;
-  m_pComm = NULL;
+  m_pComm = nullptr;
 }
 
 WSession::~WSession() {

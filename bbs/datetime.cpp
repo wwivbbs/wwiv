@@ -160,19 +160,11 @@ bool isleap(int nYear) {
   return nYear % 400 == 0 || (nYear % 4 == 0 && nYear % 100 != 0);
 }
 
-
-/** returns day of week, 0=Sun, 6=Sat */
+/* returns day of week, 0=Sun, 6=Sat */
 int dow() {
-#ifdef _WIN32
-  struct tm * newtime;
-  time_t long_time = time(&long_time);    // Get time as long integer.
-  newtime = localtime(&long_time);        // Convert to local time.
+  time_t long_time = time(&long_time);  // Get time as long integer.
+  struct tm* newtime = localtime(&long_time);  // Convert to local time.
   return newtime->tm_wday;
-#else // _WIN32
-  struct tm t;
-  asctime(&t);
-  return static_cast<unsigned char>(t.tm_wday);
-#endif // _WIN32
 }
 
 /*
