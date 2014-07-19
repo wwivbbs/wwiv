@@ -21,7 +21,7 @@
 
 #include "wwiv.h"
 #include "wcomm.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 
 //
 // Local functions

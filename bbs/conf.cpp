@@ -21,7 +21,7 @@
 #include "bbs/conf.h"
 
 #include "wwiv.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 
 static int disable_conf_cnt = 0;
 

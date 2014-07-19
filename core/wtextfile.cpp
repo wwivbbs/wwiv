@@ -16,13 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "core/wtextfile.h"
+
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <stdarg.h>
+#include <cstdarg>
 
-#include "wwiv.h"
-#include "wtextfile.h"
+#include "core/wwivport.h"
 
 WTextFile::WTextFile(const std::string fileName, const std::string fileMode) {
   Open(fileName, fileMode);

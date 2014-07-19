@@ -20,7 +20,7 @@
 #include "wwiv.h"
 #include "core/wutil.h"
 #include "wcomm.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 
 
 /**

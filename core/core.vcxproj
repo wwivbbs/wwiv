@@ -89,11 +89,13 @@
     </ClCompile>
     <ClCompile Include="wfile_win32.cpp" />
     <ClCompile Include="strings.cpp" />
+    <ClCompile Include="wtextfile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="transaction.h" />
     <ClInclude Include="strings.h" />
     <ClInclude Include="wfile.h" />
+    <ClInclude Include="wtextfile.h" />
     <ClInclude Include="wwivassert.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

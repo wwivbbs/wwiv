@@ -25,7 +25,7 @@
 #include "menu.h"
 #include "menusupp.h"
 #include "printfile.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 
 static user_config *pSecondUserRec;         // Userrec2 style setup
 static int nSecondUserRecLoaded;            // Whos config is loaded

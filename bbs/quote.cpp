@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "printfile.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 
 //
 // Local function prototypes
