@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "subxtr.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 #include "core/strings.h"
 
 //

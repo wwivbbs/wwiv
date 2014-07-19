@@ -24,21 +24,19 @@
 #include <string>
 #include <sstream>
 
-#include "bbs.h"
-#include "WComm.h"
+#include "bbs/bbs.h"
+#include "bbs/wcomm.h"
 #include "core/WFile.h"
-#include "platform/platformfcns.h"
+#include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
-#include "sysoplog.h"
-#include "WTextFile.h"
-#include "WSession.h"
-#include "vars.h"
+#include "bbs/sysoplog.h"
+#include "core/wtextfile.h"
+#include "bbs/wsession.h"
+#include "bbs/vars.h"
 
 // from com.cpp.
 // this is only used in the 9x support and will be remvoed shortly
 void makeansi(int attr, char *pszOutBuffer, bool forceit);
-
-
 
 bool CreateSyncTempFile(std::string &outFileName, const std::string commandLine);
 void CreateSyncFosCommandLine(std::string &outCommandLine, const std::string tempFilePath, int nSyncMode);

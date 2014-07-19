@@ -23,7 +23,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/ini.h"
 #include "bbs/pause.h"
-#include "bbs/wtextfile.h"
+#include "core/wtextfile.h"
 #include "core/strings.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )

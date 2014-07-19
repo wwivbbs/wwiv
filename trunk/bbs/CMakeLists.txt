@@ -106,7 +106,6 @@ set(COMMON_SOURCES
  woutstreambuffer.cpp
  wqscn.cpp
  wsession.cpp
- wtextfile.cpp
  wuser.cpp
  xfer.cpp
  xferovl.cpp

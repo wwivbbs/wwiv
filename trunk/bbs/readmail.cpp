@@ -22,7 +22,7 @@
 #include "instmsg.h"
 #include "subxtr.h"
 #include "printfile.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 //
 // Local Functions
 //
