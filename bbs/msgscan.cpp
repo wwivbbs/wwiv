@@ -853,7 +853,9 @@ void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
     if ((get_post(nMessageNumber)->status & (status_unvalidated | status_delete)) && (!lcs())) {
       strcat(szPrompt, "<<< NOT VALIDATED YET >>>");
     } else {
-      strncat(szPrompt, stripcolors(get_post(nMessageNumber)->title), 60);
+      // Need the StringTrim on post title since some FSEDs
+      // added \r in the title string, also gets rid of extra spaces
+      strncat(szPrompt, stripcolors(StringTrim(get_post(nMessageNumber)->title)), 60);
     }
 
     if (GetSession()->GetCurrentUser()->GetScreenChars() >= 80) {
