@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "subxtr.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 
 bool display_sub_categories();
 int find_hostfor(char *type, short *ui, char *pszDescription, short *opt);

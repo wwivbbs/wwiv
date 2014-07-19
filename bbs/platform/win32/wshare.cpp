@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "WTextFile.h"
-#include "core/WFile.h"
+#include "core/wtextfile.h"
+#include "core/wfile.h"
 #include <iostream>
 #include <fcntl.h>
 #include <cerrno>

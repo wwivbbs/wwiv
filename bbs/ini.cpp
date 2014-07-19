@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "ini.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 
 #include "wwiv.h"
 

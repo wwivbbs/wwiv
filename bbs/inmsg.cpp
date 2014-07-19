@@ -21,7 +21,7 @@
 #include "wwiv.h"
 #include "subxtr.h"
 #include "printfile.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 
 //
 // Local function prototypes
@@ -543,6 +543,7 @@ bool ExternalMessageEditor(int maxli, int &setanon, char *pszTitle, const char *
           *ss = '\0';
         }
         setanon = atoi(szAnonString);
+        // TODO(rushfan): This is where we should strip whitespace from the title.
         if (file.ReadLine(pszTitle, 80)) {
           ss = strchr(pszTitle, '\n');
           if (ss) {

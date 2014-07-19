@@ -19,7 +19,7 @@
 
 #include "wwiv.h"
 #include "core/wfndfile.h"
-#include "wtextfile.h"
+#include "core/wtextfile.h"
 
 //
 // private functions

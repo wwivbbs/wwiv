@@ -122,7 +122,6 @@
     <ClInclude Include="woutstreambuffer.h" />
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
-    <ClInclude Include="wtextfile.h" />
     <ClInclude Include="wuser.h" />
     <ClInclude Include="wwiv.h" />
     <ClInclude Include="wwivassert.h" />
@@ -247,7 +246,6 @@
     <ClCompile Include="WOutStreamBuffer.cpp" />
     <ClCompile Include="wqscn.cpp" />
     <ClCompile Include="WSession.cpp" />
-    <ClCompile Include="WTextFile.cpp" />
     <ClCompile Include="WUser.cpp" />
     <ClCompile Include="xfer.cpp" />
     <ClCompile Include="xferovl.cpp" />
