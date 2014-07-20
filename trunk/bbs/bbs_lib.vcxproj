@@ -200,7 +200,6 @@
     <ClCompile Include="platform\win32\wios.cpp" />
     <ClCompile Include="platform\win32\wiot.cpp" />
     <ClCompile Include="platform\win32\wlocal_io.cpp" />
-    <ClCompile Include="platform\win32\wshare.cpp" />
     <ClCompile Include="platform\wutil.cpp" />
     <ClCompile Include="printfile.cpp" />
     <ClCompile Include="prot\crctab.cpp" />

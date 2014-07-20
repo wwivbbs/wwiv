@@ -23,42 +23,28 @@
 #include <cstring>
 #include <string>
 
-class WTextFile {
 
- public:
+class WTextFile {
+public:
   WTextFile(const std::string fileName, const std::string fileMode);
   WTextFile(const std::string directoryName, const std::string fileName, const std::string fileMode);
-  operator FILE*() const {
-    return m_hFile;
-  }
   bool Open(const std::string fileName, const std::string fileMode);
   bool Close();
-  bool IsOpen() {
-    return m_hFile != NULL;
-  }
-  bool IsEndOfFile() {
-    return feof(m_hFile) ? true : false;
-  }
-  int Write(const std::string text) {
-    return fputs(text.c_str(), m_hFile);
-  }
-  int WriteChar(char ch) {
-    return fputc(ch, m_hFile);
-  }
+  bool IsOpen() const { return m_hFile != nullptr; }
+  bool IsEndOfFile() { return feof(m_hFile) ? true : false; }
+  int Write(const std::string text) { return fputs(text.c_str(), m_hFile); }
+  int WriteChar(char ch) { return fputc(ch, m_hFile); }
   int WriteFormatted(const char *pszFormatText, ...);
   int WriteBinary(const void *pBuffer, size_t nSize) {
     return (int)fwrite(pBuffer, nSize, 1, m_hFile);
   }
+  // Reads one line of text, leaving the \r\n in the end of the file.
   bool ReadLine(char *pszBuffer, int nBufferSize) {
     return (fgets(pszBuffer, nBufferSize, m_hFile) != NULL) ? true : false;
   }
-  bool ReadLine(std::string &buffer);
-  long GetPosition() {
-    return ftell(m_hFile);
-  }
-  const std::string& GetFullPathName() {
-    return m_fileName;
-  }
+  bool ReadLine(std::string *buffer);
+  long GetPosition() { return ftell(m_hFile); }
+  const std::string& GetFullPathName() const { return m_fileName; }
 
  public:
   ~WTextFile();
@@ -70,10 +56,7 @@ class WTextFile {
   static FILE* OpenImpl(const char* pszFileName, const char* pszFileMode);
   static const int TRIES;
   static const int WAIT_TIME;
-
 };
-
-
 
 #endif // __INCLUDED_WTEXTFILE_H__
 
