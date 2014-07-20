@@ -135,7 +135,6 @@ if(UNIX)
 	platform/unix/reboot.cpp 
 	platform/unix/utility2.cpp 
 	platform/unix/wlocal_io.cpp
-	platform/unix/wshare.cpp
 	platform/unix/stringstuff.cpp 
 	platform/unix/filestuff.cpp 
 	platform/unix/wiou.cpp)

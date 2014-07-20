@@ -36,7 +36,7 @@ void read_automessage() {
 
   WTextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
   std::string line;
-  if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(line)) {
+  if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(&line)) {
     GetSession()->bout << "|#3No auto-message.\r\n";
     GetSession()->bout.NewLine();
     return;
@@ -55,7 +55,7 @@ void read_automessage() {
   GetSession()->bout << "\r\n|#9Auto message by: |#2" << authorName << "|#0\r\n\n";
 
   int nLineNumber = 0;
-  while (autoMessageFile.ReadLine(line) && nLineNumber++ < 10) {
+  while (autoMessageFile.ReadLine(&line) && nLineNumber++ < 10) {
     StringTrim(line);
     GetSession()->bout.Color(9);
     GetSession()->bout << "|#9" << line << wwiv::endl;
