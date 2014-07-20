@@ -11,6 +11,7 @@ include_directories(../core_test)
 set(test_sources
   bbs_helper.cpp
   bputch_test.cpp
+  pause_test.cpp
   printfile_test.cpp
   stuffin_test.cpp
   utility_test.cpp
