@@ -20,8 +20,9 @@
 #include "gtest/gtest.h"
 
 #include <algorithm>
+#include <cerrno>
+#include <cstdio>
 #include <iostream>
-#include <stdio.h>
 #include <string>
 
 #ifdef _WIN32
@@ -90,4 +91,18 @@ std::string FileHelper::CreateTempFile(const std::string& orig_name, const std::
     fputs(contents.c_str(), file);
     fclose(file);
     return path;
+}
+
+const std::string FileHelper::ReadFile(const std::string name) const {
+  std::FILE *fp = fopen(name.c_str(), "rb");
+  if (!fp) {
+    throw (errno);
+  }
+  string contents;
+  fseek(fp, 0, SEEK_END);
+  contents.resize(ftell(fp));
+  rewind(fp);
+  fread(&contents[0], 1, contents.size(), fp);
+  fclose(fp);
+  return contents;
 }
