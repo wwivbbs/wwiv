@@ -346,7 +346,7 @@ bool play_sdf(const std::string soundFileName, bool abortable) {
 
   // scan each line, ignore lines with words<2
   std::string soundLine;
-  while (soundFile.ReadLine(soundLine)) {
+  while (soundFile.ReadLine(&soundLine)) {
     if (abortable && bkbhit()) {
       break;
     }

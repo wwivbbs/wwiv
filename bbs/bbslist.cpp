@@ -189,7 +189,7 @@ void DeleteBBSListEntry() {
     if (fi.IsOpen()) {
       if (fo.IsOpen()) {
         std::string line;
-        while (fi.ReadLine(line)) {
+        while (fi.ReadLine(&line)) {
           if (strstr(line.c_str(), bbsPhoneNumber.c_str())) {
             ok = true;
           } else {
