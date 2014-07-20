@@ -134,7 +134,11 @@ TEST_F(TextFileTest, GetPosition) {
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_STREQ("a\n", s.c_str());
+#ifdef _WIN32
+  EXPECT_EQ(3, file.GetPosition());
+#else  // _WIN32
   EXPECT_EQ(2, file.GetPosition());
+#endif  // _WIN32
 }
 
 TEST_F(TextFileTest, ReadLine_String) {
