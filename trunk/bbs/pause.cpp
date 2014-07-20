@@ -24,14 +24,14 @@ namespace wwiv {
 namespace bbs {
 
 TempDisablePause::TempDisablePause() : wwiv::core::Transaction([] {
-    if (GetSession()->GetCurrentUser()->HasPause()) {
-      g_flags |= g_flag_disable_pause;
-      GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::pauseOnPage);
+    if (g_flags & g_flag_disable_pause) {
+      g_flags &= ~g_flag_disable_pause;
+      GetSession()->GetCurrentUser()->SetStatusFlag(WUser::pauseOnPage);
     }
   }, nullptr) {
-  if (g_flags & g_flag_disable_pause) {
-    g_flags &= ~g_flag_disable_pause;
-    GetSession()->GetCurrentUser()->SetStatusFlag(WUser::pauseOnPage);
+  if (GetSession()->GetCurrentUser()->HasPause()) {
+    g_flags |= g_flag_disable_pause;
+    GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::pauseOnPage);
   }
 }
 
