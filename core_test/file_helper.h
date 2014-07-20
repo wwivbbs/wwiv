@@ -35,6 +35,7 @@ public:
     bool Mkdir(const std::string& name) const;
     std::string CreateTempFile(const std::string& name, const std::string& contents);
     const std::string& TempDir() const { return tmp_; }
+    const std::string ReadFile(const std::string name) const;
 private:
     static std::string CreateTempDir();
     std::string tmp_;
