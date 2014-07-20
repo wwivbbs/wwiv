@@ -28,13 +28,135 @@
 using std::string;
 using wwiv::strings::StringPrintf;
 
+class TextFileTest : public ::testing::Test {
+protected:
+  virtual void SetUp() {
+    const ::testing::TestInfo* const test_info = 
+        ::testing::UnitTest::GetInstance()->current_test_info();
+    test_name_ = test_info->name();
+    hello_world_path_ = helper_.CreateTempFile(test_name_, kHelloWorld);
+  }
 
-TEST(TextFileTest, Read) {
-  static const string kHelloWorld = "Hello World\n";
-  FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
-  WTextFile file(path, "rt");
+  const string& test_name() const { return test_name_; }
+
+  FileHelper helper_;
+  string hello_world_path_;
+  string test_name_;
+  static const string kHelloWorld;
+};
+
+const string TextFileTest::kHelloWorld = "Hello World\n";
+
+TEST_F(TextFileTest, Constructor_SunnyCase) {
+  WTextFile file(hello_world_path_, "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_STREQ("Hello World\n", s.c_str());
+}
+
+TEST_F(TextFileTest, Constructor_Path_And_Name) {
+  WTextFile file(helper_.TempDir(), this->test_name(), "rt");
+  string s;
+  EXPECT_TRUE(file.ReadLine(&s));
+  EXPECT_STREQ("Hello World\n", s.c_str());
+}
+
+TEST_F(TextFileTest, Write) {
+  string filename;
+  {
+    WTextFile file(helper_.TempDir(), this->test_name(), "wt");
+    file.Write("Hello");
+    filename = file.GetFullPathName();
+    // Let the textfile close.
+  }
+  const string actual = helper_.ReadFile(filename);
+  EXPECT_STREQ("Hello", actual.c_str());
+}
+
+TEST_F(TextFileTest, WriteFormatted) {
+  string filename;
+  {
+    WTextFile file(helper_.TempDir(), this->test_name(), "wt");
+    file.WriteFormatted("%s %s", "Hello", "World");
+    filename = file.GetFullPathName();
+    // Let the textfile close.
+  }
+  const string actual = helper_.ReadFile(filename);
+  EXPECT_STREQ("Hello World", actual.c_str());
+}
+
+TEST_F(TextFileTest, WriteChar) {
+  string filename;
+  {
+    WTextFile file(helper_.TempDir(), this->test_name(), "wt");
+    file.WriteChar('H');
+    filename = file.GetFullPathName();
+    // Let the textfile close.
+  }
+  const string actual = helper_.ReadFile(filename);
+  EXPECT_STREQ("H", actual.c_str());
+}
+
+
+TEST_F(TextFileTest, WriteBinary) {
+  string filename;
+  {
+    WTextFile file(helper_.TempDir(), this->test_name(), "wt");
+    file.WriteBinary(kHelloWorld.c_str(), kHelloWorld.size() - 1);  // trim off \n
+    filename = file.GetFullPathName();
+    // Let the textfile close.
+  }
+  const string actual = helper_.ReadFile(filename);
+  EXPECT_STREQ("Hello World", actual.c_str());
+}
+
+TEST_F(TextFileTest, Close) {
+  WTextFile file(hello_world_path_, "rt");
+  ASSERT_TRUE(file.IsOpen());
+  file.Close();
+  EXPECT_FALSE(file.IsOpen());
+}
+
+TEST_F(TextFileTest, IsEOF) {
+  WTextFile file(hello_world_path_, "rt");
+  string s;
+  EXPECT_TRUE(file.ReadLine(&s));
+  EXPECT_STREQ("Hello World\n", s.c_str());
+
+  EXPECT_FALSE(file.ReadLine(&s));
+  EXPECT_TRUE(file.IsEndOfFile());
+}
+
+TEST_F(TextFileTest, GetPosition) {
+  WTextFile file(hello_world_path_, "rt");
+  ASSERT_EQ(0, file.GetPosition());
+  string s;
+  EXPECT_TRUE(file.ReadLine(&s));
+  EXPECT_EQ(kHelloWorld.size() + 1, file.GetPosition());
+}
+
+TEST_F(TextFileTest, ReadLine_String) {
+  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  WTextFile file(path, "rt");
+  string s;
+  EXPECT_TRUE(file.ReadLine(&s));
+  EXPECT_STREQ("a\n", s.c_str());
+  EXPECT_TRUE(file.ReadLine(&s));
+  EXPECT_STREQ("b\n", s.c_str());
+  EXPECT_TRUE(file.ReadLine(&s));
+  EXPECT_STREQ("c\n", s.c_str());
+  EXPECT_FALSE(file.ReadLine(&s));
+}
+
+TEST_F(TextFileTest, ReadLine_CharArray) {
+  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  WTextFile file(path, "rt");
+  char s[255];
+  EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
+  EXPECT_STREQ("a\n", s);
+  EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
+  EXPECT_STREQ("b\n", s);
+  EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
+  EXPECT_STREQ("c\n", s);
+  EXPECT_FALSE(file.ReadLine(s, sizeof(s)));
 }

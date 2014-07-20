@@ -26,6 +26,7 @@
 #include <string>
 #include <sys/stat.h>
 
+#include "core/strings.h"
 #include "core/wfile.h"
 #include "core/wwivport.h"
 
@@ -50,7 +51,12 @@ WTextFile::WTextFile(const std::string fileName, const std::string fileMode) {
 
 WTextFile::WTextFile(const std::string directoryName, const std::string fileName, const std::string fileMode) {
   std::string fullPathName(directoryName);
+  char last_char = directoryName.back();
+  if (last_char != WFile::pathSeparatorChar) {
+    fullPathName.push_back(WFile::pathSeparatorChar);
+  }
   fullPathName.append(fileName);
+
   Open(fullPathName, fileMode);
 }
 
