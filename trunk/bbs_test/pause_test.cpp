@@ -23,6 +23,7 @@
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/pause.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
@@ -31,41 +32,22 @@ using std::cout;
 using std::endl;
 using std::string;
 
-// From bputch.cpp, defined in fcns.h
-int bputch(char c, bool bUseInternalBuffer = false);
+using wwiv::bbs::TempDisablePause;
 
-
-class BPutchFileTest : public ::testing::Test {
+class PauseTest : public ::testing::Test {
 protected:
     virtual void SetUp() {
         helper.SetUp();
     }
 
-    virtual int Puts(string s) {
-      int count = 0;
-      for (const auto& c : s) {
-        count += bputch(c);
-      }
-      return count;
-    }
-
     BbsHelper helper;
 };
 
-TEST_F(BPutchFileTest, SingleLetter) {
-  EXPECT_EQ(1, bputch('A'));
-  EXPECT_STREQ("A", helper.io()->captured().c_str());
-}
-
-TEST_F(BPutchFileTest, MultipleLetters) {
-  const string kHelloWorld = "Hello World\r\n";
-  EXPECT_EQ(kHelloWorld.size(), Puts(kHelloWorld));
-  EXPECT_EQ(kHelloWorld, helper.io()->captured());
-}
-
-TEST_F(BPutchFileTest, SinglePipe) {
-  const string kHelloWorld = "Hello World\r\n";
-  const string s = "|#1Hello World\r\n";
-  EXPECT_EQ(kHelloWorld.size(), Puts(s));
-  EXPECT_EQ(kHelloWorld, helper.io()->captured());
+TEST_F(PauseTest, Smoke) {
+  helper.user()->SetStatusFlag(WUser::pauseOnPage);
+  {
+    TempDisablePause disable_pause;
+    EXPECT_FALSE(helper.user()->HasPause());
+  }
+  EXPECT_TRUE(helper.user()->HasPause());
 }
