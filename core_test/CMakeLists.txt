@@ -13,6 +13,7 @@ set(fixture_sources
 
 set(test_sources
   strings_test.cpp
+  transaction_test.cpp
   wfile_test.cpp
 )
 
