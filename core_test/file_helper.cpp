@@ -86,7 +86,7 @@ std::string FileHelper::CreateTempFile(const std::string& orig_name, const std::
 #endif  // _WIN32
     std::string path = wwiv::strings::StringPrintf("%s%c%s", tmp.c_str(), 
         WWIV_FILE_SEPERATOR_CHAR, name.c_str());
-    FILE* file = fopen(path.c_str(), "w");
+    FILE* file = fopen(path.c_str(), "wt");
     assert(file);
     fputs(contents.c_str(), file);
     fclose(file);

@@ -128,11 +128,13 @@ TEST_F(TextFileTest, IsEOF) {
 }
 
 TEST_F(TextFileTest, GetPosition) {
-  WTextFile file(hello_world_path_, "rt");
+  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  WTextFile file(path, "rt");
   ASSERT_EQ(0, file.GetPosition());
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_EQ(kHelloWorld.size() + 1, file.GetPosition());
+  EXPECT_STREQ("a\n", s.c_str());
+  EXPECT_EQ(2, file.GetPosition());
 }
 
 TEST_F(TextFileTest, ReadLine_String) {
