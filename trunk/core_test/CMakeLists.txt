@@ -15,6 +15,7 @@ set(test_sources
   strings_test.cpp
   transaction_test.cpp
   wfile_test.cpp
+  wtextfile_test.cpp
 )
 
 if(UNIX) 
