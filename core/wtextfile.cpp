@@ -44,7 +44,6 @@
 const int WTextFile::WAIT_TIME = 10;
 const int WTextFile::TRIES = 100;
 
-
 WTextFile::WTextFile(const std::string fileName, const std::string fileMode) {
   Open(fileName, fileMode);
 }
@@ -60,56 +59,56 @@ WTextFile::WTextFile(const std::string directoryName, const std::string fileName
   Open(fullPathName, fileMode);
 }
 
-bool WTextFile::Open(const std::string fileName, const std::string fileMode) {
-  m_fileName = fileName;
-  m_fileMode = fileMode;
-  m_hFile = WTextFile::OpenImpl(m_fileName.c_str(), m_fileMode.c_str());
-  return m_hFile != nullptr;
+bool WTextFile::Open(const std::string file_name, const std::string file_mode) {
+  file_name_ = file_name;
+  file_mode_ = file_mode;
+  file_ = WTextFile::OpenImpl();
+  return file_ != nullptr;
 }
 
 #ifdef _WIN32
 
-FILE* WTextFile::OpenImpl(const char* pszFileName, const char* pszFileMode) {
+FILE* WTextFile::OpenImpl() {
   int share = SH_DENYWR;
   int md = 0;
-  if (strchr(pszFileMode, 'w') != NULL) {
+  if (strchr(file_mode_.c_str(), 'w') != NULL) {
     share = SH_DENYRD;
     md = O_RDWR | O_CREAT | O_TRUNC;
-  } else if (strchr(pszFileMode, 'a') != NULL) {
+  } else if (strchr(file_mode_.c_str(), 'a') != NULL) {
     share = SH_DENYRD;
     md = O_RDWR | O_CREAT;
   } else {
     md = O_RDONLY;
   }
-  if (strchr(pszFileMode, 'b') != NULL) {
+  if (strchr(file_mode_.c_str(), 'b') != NULL) {
     md |= O_BINARY;
   }
-  if (strchr(pszFileMode, '+') != NULL) {
+  if (strchr(file_mode_.c_str(), '+') != NULL) {
     md &= ~O_RDONLY;
     md |= O_RDWR;
     share = SH_DENYRD;
   }
 
-  int fd = _sopen(pszFileName, md, share, S_IREAD | S_IWRITE);
+  int fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
   if (fd < 0) {
     int count = 1;
-    if (WFile::Exists(pszFileName)) {
+    if (WFile::Exists(file_name_)) {
       ::Sleep(WAIT_TIME);
-      fd = _sopen(pszFileName, md, share, S_IREAD | S_IWRITE);
+      fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
       while ((fd < 0 && errno == EACCES) && count < TRIES) {
         ::Sleep(WAIT_TIME);
         count++;
-        fd = _sopen(pszFileName, md, share, S_IREAD | S_IWRITE);
+        fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
       }
     }
   }
 
   if (fd > 0) {
-    if (strchr(pszFileMode, 'a')) {
+    if (strchr(file_mode_.c_str(), 'a')) {
       _lseek(fd, 0L, SEEK_END);
     }
 
-    FILE *hFile = _fdopen(fd, pszFileMode);
+    FILE *hFile = _fdopen(fd, file_mode_.c_str());
     if (!hFile) {
       _close(fd);
     }
@@ -130,17 +129,17 @@ FILE* WTextFile::OpenImpl(const char* pszFileName, const char* pszFileMode) {
 #endif  // _WIN32
 
 bool WTextFile::Close() {
-  if (m_hFile != nullptr) {
-    fclose(m_hFile);
-    m_hFile = nullptr;
-    return true;
+  if (file_ == nullptr) {
+    return false;
   }
-  return false;
+  fclose(file_);
+  file_ = nullptr;
+  return true;
 }
 
 int WTextFile::WriteFormatted(const char *pszFormatText, ...) {
   va_list ap;
-  char szBuffer[ 4096 ];
+  char szBuffer[4096];
 
   va_start(ap, pszFormatText);
   WWIV_VSNPRINTF(szBuffer, sizeof(szBuffer), pszFormatText, ap);
@@ -150,7 +149,7 @@ int WTextFile::WriteFormatted(const char *pszFormatText, ...) {
 
 bool WTextFile::ReadLine(std::string *buffer) {
   char szBuffer[4096];
-  char *pszBuffer = fgets(szBuffer, sizeof(szBuffer), m_hFile);
+  char *pszBuffer = fgets(szBuffer, sizeof(szBuffer), file_);
   *buffer = szBuffer;
   return (pszBuffer != nullptr);
 }
