@@ -26,34 +26,34 @@
 
 class WTextFile {
 public:
-  WTextFile(const std::string fileName, const std::string fileMode);
-  WTextFile(const std::string directoryName, const std::string fileName, const std::string fileMode);
-  bool Open(const std::string fileName, const std::string fileMode);
+  WTextFile(const std::string file_name, const std::string file_mode);
+  WTextFile(const std::string directory_name, const std::string file_name, const std::string file_mode);
+  bool Open(const std::string file_name, const std::string file_mode);
   bool Close();
-  bool IsOpen() const { return m_hFile != nullptr; }
-  bool IsEndOfFile() { return feof(m_hFile) ? true : false; }
-  int Write(const std::string text) { return fputs(text.c_str(), m_hFile); }
-  int WriteChar(char ch) { return fputc(ch, m_hFile); }
+  bool IsOpen() const { return file_ != nullptr; }
+  bool IsEndOfFile() { return feof(file_) ? true : false; }
+  int Write(const std::string text) { return (fputs(text.c_str(), file_) >= 0) ? text.size() : 0; }
+  int WriteChar(char ch) { return fputc(ch, file_); }
   int WriteFormatted(const char *pszFormatText, ...);
   int WriteBinary(const void *pBuffer, size_t nSize) {
-    return (int)fwrite(pBuffer, nSize, 1, m_hFile);
+    return (int)fwrite(pBuffer, nSize, 1, file_);
   }
   // Reads one line of text, leaving the \r\n in the end of the file.
   bool ReadLine(char *pszBuffer, int nBufferSize) {
-    return (fgets(pszBuffer, nBufferSize, m_hFile) != NULL) ? true : false;
+    return (fgets(pszBuffer, nBufferSize, file_) != NULL) ? true : false;
   }
   bool ReadLine(std::string *buffer);
-  long GetPosition() { return ftell(m_hFile); }
-  const std::string& GetFullPathName() const { return m_fileName; }
+  long GetPosition() { return ftell(file_); }
+  const std::string GetFullPathName() const { return file_name_; }
 
  public:
   ~WTextFile();
 
  private:
-  std::string m_fileName;
-  std::string m_fileMode;
-  FILE*   m_hFile;
-  static FILE* OpenImpl(const char* pszFileName, const char* pszFileMode);
+  std::string file_name_;
+  std::string file_mode_;
+  FILE* file_;
+  FILE* OpenImpl();
   static const int TRIES;
   static const int WAIT_TIME;
 };

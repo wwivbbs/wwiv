@@ -94,7 +94,7 @@ std::string FileHelper::CreateTempFile(const std::string& orig_name, const std::
 }
 
 const std::string FileHelper::ReadFile(const std::string name) const {
-  std::FILE *fp = fopen(name.c_str(), "rb");
+  std::FILE *fp = fopen(name.c_str(), "rt");
   if (!fp) {
     throw (errno);
   }
