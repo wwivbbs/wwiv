@@ -146,7 +146,7 @@ TEST_F(TextFileTest, IsEOF) {
   EXPECT_TRUE(file.IsEndOfFile());
 }
 
-/*
+
 TEST_F(TextFileTest, ReadLine_CA) {
   //const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
   //WTextFile file(path, "rt");
@@ -188,4 +188,3 @@ TEST_F(TextFileTest, GetPosition) {
 #endif  // _WIN32
 }
 
-*/

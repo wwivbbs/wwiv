@@ -118,10 +118,10 @@ FILE* WTextFile::OpenImpl() {
 }
 
 #else  // _WIN32
-FILE* WTextFile::OpenImpl(const char* pszFileName, const char* pszFileMode) {
-  FILE *f = fopen(pszFileName, pszFileMode);
+FILE* WTextFile::OpenImpl() {
+  FILE *f = fopen(file_name_.c_str(), file_mode_.c_str());
   if (f != NULL) {
-    flock(fileno(f), (strpbrk(pszFileMode, "wa+")) ? LOCK_EX : LOCK_SH);
+    flock(fileno(f), (strpbrk(file_mode_.c_str(), "wa+")) ? LOCK_EX : LOCK_SH);
   }
   return f;
 }
@@ -149,9 +149,12 @@ int WTextFile::WriteFormatted(const char *pszFormatText, ...) {
 
 bool WTextFile::ReadLine(std::string *buffer) {
   char szBuffer[4096];
-  char *pszBuffer = fgets(szBuffer, sizeof(szBuffer), file_);
-  *buffer = szBuffer;
-  return (pszBuffer != nullptr);
+  char *p = fgets(szBuffer, sizeof(szBuffer), file_);
+  if (p == nullptr) {
+    return false;
+  }
+  buffer->assign(p);
+  return true;
 }
 
 WTextFile::~WTextFile() {
