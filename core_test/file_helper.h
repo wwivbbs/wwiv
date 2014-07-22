@@ -37,7 +37,7 @@ public:
     const std::string& TempDir() const { return tmp_; }
     const std::string ReadFile(const std::string name) const;
 private:
-    static std::string CreateTempDir();
+    static std::string CreateTempDir(const std::string base);
     std::string tmp_;
 };
 
