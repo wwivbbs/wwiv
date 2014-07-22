@@ -40,7 +40,11 @@
 using std::string;
 
 FileHelper::FileHelper() {
-    tmp_ = FileHelper::CreateTempDir();
+  const ::testing::TestInfo* const test_info =
+      ::testing::UnitTest::GetInstance()->current_test_info();
+  const string dir = wwiv::strings::StrCat(
+    test_info->test_case_name(), "_", test_info->name());
+  tmp_ = FileHelper::CreateTempDir(dir);
 }
 
 const std::string FileHelper::DirName(const std::string& name) const {
@@ -58,24 +62,24 @@ bool FileHelper::Mkdir(const std::string& name) const {
 }
 
 // static
-std::string FileHelper::CreateTempDir() {
+std::string FileHelper::CreateTempDir(const string base) {
 #ifdef _WIN32
     char local_dir_template[_MAX_PATH];
     char temp_path[_MAX_PATH];
     GetTempPath(_MAX_PATH, temp_path);
-    static char *dir_template = "fnXXXXXX";
-    sprintf(local_dir_template, "%s%s", temp_path, dir_template);
-    char *result = _mktemp(local_dir_template);
-    if (!CreateDirectory(result, NULL)) {
-        *result = '\0';
+    time_t now = time(nullptr);
+    sprintf(local_dir_template, "%s%s.%lx", temp_path, base.c_str(), now);
+    if (!CreateDirectory(local_dir_template, NULL)) {
+        return string();
     }
+    return std::string(local_dir_template);
 #else
     char local_dir_template[MAX_PATH];
     static const char kTemplate[] = "/tmp/fileXXXXXX";
     strcpy(local_dir_template, kTemplate);
     char *result = mkdtemp(local_dir_template);
-#endif
     return std::string(result);
+#endif
 }
 
 std::string FileHelper::CreateTempFile(const std::string& orig_name, const std::string& contents) {

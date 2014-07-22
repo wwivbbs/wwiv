@@ -72,6 +72,32 @@ TEST_F(TextFileTest, Append) {
   EXPECT_STREQ("Hello World\nabc", actual.c_str());
 }
 
+TEST_F(TextFileTest, ReadLine_CA) {
+  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  WTextFile file(path, "rt");
+  char s[255];
+  EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
+  EXPECT_STREQ("a\n", s);
+  EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
+  EXPECT_STREQ("b\n", s);
+  EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
+  EXPECT_STREQ("c\n", s);
+  EXPECT_FALSE(file.ReadLine(s, sizeof(s)));
+}
+
+TEST_F(TextFileTest, ReadLine_String) {
+  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  WTextFile file(path, "rt");
+  string s;
+  EXPECT_TRUE(file.ReadLine(&s));
+  EXPECT_STREQ("a\n", s.c_str());
+  EXPECT_TRUE(file.ReadLine(&s));
+  EXPECT_STREQ("b\n", s.c_str());
+  EXPECT_TRUE(file.ReadLine(&s));
+  EXPECT_STREQ("c\n", s.c_str());
+  EXPECT_FALSE(file.ReadLine(&s));
+}
+
 TEST_F(TextFileTest, Write) {
   string filename;
   {
@@ -147,7 +173,7 @@ TEST_F(TextFileTest, IsEOF) {
 }
 
 TEST_F(TextFileTest, GetPosition) {
-  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
+  const string path = helper_.CreateTempFile(test_name_, "a\nb\nc\n");
   WTextFile file(path, "rt");
   ASSERT_EQ(0, file.GetPosition());
   string s;
@@ -160,32 +186,5 @@ TEST_F(TextFileTest, GetPosition) {
 #endif  // _WIN32
 }
 
-/*
-TEST_F(TextFileTest, ReadLine_CA) {
-  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
-  WTextFile file(path, "rt");
-  char s[255];
-  EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
-  EXPECT_STREQ("a\n", s);
-  EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
-  EXPECT_STREQ("b\n", s);
-  EXPECT_TRUE(file.ReadLine(s, sizeof(s)));
-  EXPECT_STREQ("c\n", s);
-  EXPECT_FALSE(file.ReadLine(s, sizeof(s)));
-}
 
 
-TEST_F(TextFileTest, ReadLine_String) {
-  const string path = helper_.CreateTempFile(this->test_name(), "a\nb\nc\n");
-  WTextFile file(path, "rt");
-  string s;
-  EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("a\n", s.c_str());
-  EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("b\n", s.c_str());
-  EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("c\n", s.c_str());
-  //EXPECT_FALSE(file.ReadLine(&s));
-}
-
-*/
