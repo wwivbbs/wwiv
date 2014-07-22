@@ -396,6 +396,8 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
       irt[0]          = '\0';
       irt_name[0]     = '\0';
       GetSession()->threadID = "";
+      post();
+      break;
     case 'W':
       HandleMessageReply(nMessageNumber);
       break;
