@@ -453,7 +453,7 @@ void pack_sub(int si) {
 
 
 void pack_all_subs() {
-  TempDisablePause diable_pause;
+  TempDisablePause disable_pause;
 
   for (int i=0; i < GetSession()->num_subs && !hangup; i++) {
     pack_sub(i);
