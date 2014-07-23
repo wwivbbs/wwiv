@@ -21,10 +21,10 @@
 
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
-#include "bbs/ini.h"
 #include "bbs/pause.h"
-#include "core/wtextfile.h"
+#include "core/inifile.h"
 #include "core/strings.h"
+#include "core/wtextfile.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
 #define __unix__ 1
@@ -291,7 +291,7 @@ bool WApplication::ReadINIFile() {
   // initialize ini communication
   char szInstanceName[255];
   snprintf(szInstanceName, sizeof(szInstanceName), "WWIV-%u", GetInstanceNumber());
-  WIniFile iniFile(WWIV_INI);
+  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
   if (iniFile.Open(szInstanceName, INI_TAG)) {
     ///////////////////////////////////////////////////////////////////////////////
     // DO NOT DO ANYTHING HERE WHICH ALLOCATES MEMORY

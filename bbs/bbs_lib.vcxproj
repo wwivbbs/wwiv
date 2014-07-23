@@ -92,7 +92,6 @@
     <ClInclude Include="datetime.h" />
     <ClInclude Include="fcns.h" />
     <ClInclude Include="filenames.h" />
-    <ClInclude Include="ini.h" />
     <ClInclude Include="instmsg.h" />
     <ClInclude Include="listplus.h" />
     <ClInclude Include="menu.h" />
@@ -166,7 +165,6 @@
     <ClCompile Include="gfledit.cpp" />
     <ClCompile Include="hop.cpp" />
     <ClCompile Include="inetmsg.cpp" />
-    <ClCompile Include="ini.cpp" />
     <ClCompile Include="inmsg.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="instmsg.cpp" />

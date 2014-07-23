@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_FILE_HELPER_H__
 #define __INCLUDED_FILE_HELPER_H__
 
+#include <cstdio>
 #include <string>
 
 /**
@@ -33,6 +34,7 @@ public:
     const std::string DirName(const std::string& name) const;
     // Creates a directory.
     bool Mkdir(const std::string& name) const;
+    FILE* OpenTempFile(const std::string& name, std::string* path);
     std::string CreateTempFile(const std::string& name, const std::string& contents);
     const std::string& TempDir() const { return tmp_; }
     const std::string ReadFile(const std::string name) const;

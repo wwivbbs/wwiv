@@ -20,7 +20,7 @@
 #include "wwiv.h"
 #include <memory>
 
-#include "ini.h"
+#include "core/inifile.h"
 #include "instmsg.h"
 #include "menusupp.h"
 #include "core/wutil.h"
@@ -204,7 +204,7 @@ int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
 
 
 bool IsPhoneRequired() {
-  WIniFile iniFile(WWIV_INI);
+  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
   if (iniFile.Open(INI_TAG)) {
     if (iniFile.GetBooleanValue("NEWUSER_MIN")) {
       return false;

@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "ini.h"
+#include "core/inifile.h"
 
 /**
  * The default list of computer types
@@ -69,7 +69,7 @@ void repeat_char(char x, int amount, int nColor) {
 const char *ctypes(int num) {
   static char szCtype[81];
 
-  WIniFile iniFile(WWIV_INI);
+  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
   if (iniFile.Open("CTYPES")) {
     char szCompType[ 100 ];
     sprintf(szCompType, "COMP_TYPE[%d]", num + 1);

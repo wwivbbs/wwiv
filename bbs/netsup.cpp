@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "wwiv.h"
-#include "ini.h"
+#include "core/inifile.h"
 #include "core/wfndfile.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
@@ -127,7 +127,7 @@ void cleanup_net() {
       GetSession()->localIO()->LocalCls();
     }
 
-    WIniFile iniFile(WWIV_INI);
+    WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
     if (iniFile.Open(INI_TAG)) {
       const char *pszValue = iniFile.GetValue("NET_CLEANUP_CMD1");
       if (pszValue != NULL) {
@@ -955,7 +955,7 @@ void print_call(int sn, int nNetNumber, int i2) {
     got_color = 1;
     color = 30;
 
-    WIniFile iniFile(WWIV_INI);
+    WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
     if (iniFile.Open(INI_TAG)) {
       const char *ss = iniFile.GetValue("CALLOUT_COLOR_TEXT");
       if (ss != NULL) {
@@ -1073,7 +1073,7 @@ int ansicallout() {
     color2 = 59;
     color3 = 7;
     color4 = 30;
-    WIniFile iniFile(WWIV_INI);
+    WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
     if (iniFile.Open(INI_TAG)) {
       callout_ansi = iniFile.GetBooleanValue("CALLOUT_ANSI") ? 1 : 0;
       color1 = iniFile.GetNumericValue("CALLOUT_COLOR", color1);

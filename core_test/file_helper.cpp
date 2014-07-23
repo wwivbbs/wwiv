@@ -82,19 +82,26 @@ std::string FileHelper::CreateTempDir(const string base) {
 #endif
 }
 
-std::string FileHelper::CreateTempFile(const std::string& orig_name, const std::string& contents) {
+FILE* FileHelper::OpenTempFile(const string& orig_name, string* path) {
     std::string tmp = TempDir();
     string name = orig_name;
 #ifdef _WIN32
     std::replace(name.begin(), name.end(), '/', WWIV_FILE_SEPERATOR_CHAR);
 #endif  // _WIN32
-    std::string path = wwiv::strings::StringPrintf("%s%c%s", tmp.c_str(), 
-        WWIV_FILE_SEPERATOR_CHAR, name.c_str());
-    FILE* file = fopen(path.c_str(), "wt");
+    path->assign(wwiv::strings::StringPrintf("%s%c%s", tmp.c_str(), 
+        WWIV_FILE_SEPERATOR_CHAR, name.c_str()));
+    FILE* file = fopen(path->c_str(), "wt");
     assert(file);
-    fputs(contents.c_str(), file);
-    fclose(file);
-    return path;
+    return file;
+}
+
+std::string FileHelper::CreateTempFile(const std::string& orig_name, const std::string& contents) {
+  std::string path;
+  FILE* file = OpenTempFile(orig_name, &path);
+  assert(file);
+  fputs(contents.c_str(), file);
+  fclose(file);
+  return path;
 }
 
 const std::string FileHelper::ReadFile(const std::string name) const {

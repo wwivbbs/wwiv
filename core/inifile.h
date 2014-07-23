@@ -17,8 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_INI_H__
-#define __INCLUDED_INI_H__
+#ifndef __INCLUDED_INIFILE_H__
+#define __INCLUDED_INIFILE_H__
 
 #include <string>
 
@@ -35,9 +35,10 @@ class WIniFile {
   ini_info_type m_primarySection;
   ini_info_type m_secondarySection;
 
+  explicit WIniFile(const std::string filename);
  public:
   // Constructor/Destructor
-  WIniFile(const std::string fileName);
+  WIniFile(const std::string directory, const std::string filename);
   virtual ~WIniFile();
 
   //
@@ -92,4 +93,4 @@ class WIniFile {
 };
 
 
-#endif  // __INCLUDED_INI_H__
+#endif  // __INCLUDED_INIFILE_H__
