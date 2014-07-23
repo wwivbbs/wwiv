@@ -44,7 +44,6 @@ set(COMMON_SOURCES
  gfledit.cpp
  hop.cpp
  inetmsg.cpp
- ini.cpp
  inmsg.cpp
  input.cpp
  instmsg.cpp

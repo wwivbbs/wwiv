@@ -20,8 +20,8 @@
 #include "wwiv.h"
 #include <algorithm>
 
-#include "ini.h"
-#include "printfile.h"
+#include "core/inifile.h"
+#include "bbs/printfile.h"
 #include "core/wtextfile.h"
 
 //
@@ -770,7 +770,7 @@ bool CanCreateNewUserAccountHere() {
 
 
 bool UseMinimalNewUserInfo() {
-  WIniFile iniFile(WWIV_INI);
+  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
   if (iniFile.Open(INI_TAG)) {
     return iniFile.GetBooleanValue("NEWUSER_MIN");
   }

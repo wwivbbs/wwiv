@@ -22,7 +22,7 @@
 #include "wwiv.h"
 #include "instmsg.h"
 #include "core/wutil.h"
-#include "ini.h"
+#include "core/inifile.h"
 
 
 #if !defined ( __unix__ )
@@ -49,7 +49,7 @@ void wfc_init() {
     GetSession()->wfcdrvs[ i ] = 0;
   }
 
-  WIniFile iniFile(WWIV_INI);
+  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
   if (iniFile.Open(INI_TAG)) {
     const char *pszDriveList = iniFile.GetValue("WFC_DRIVES");
     if (pszDriveList != NULL) {
