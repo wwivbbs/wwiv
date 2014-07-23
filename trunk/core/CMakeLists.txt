@@ -5,6 +5,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(..)
 
 set(COMMON_SOURCES
+  inifile.cpp
   wfile.cpp
   wfile_unix.cpp
   wtextfile.cpp

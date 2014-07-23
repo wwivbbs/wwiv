@@ -20,7 +20,7 @@
 #include <memory>
 
 #include "wwiv.h"
-#include "ini.h"
+#include "core/inifile.h"
 #include "instmsg.h"
 #include "printfile.h"
 
@@ -855,7 +855,7 @@ void auto_purge() {
   unsigned int days = 0;
   int skipsl = 0;
 
-  WIniFile iniFile(WWIV_INI);
+  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
   if (iniFile.Open(INI_TAG)) {
     days = iniFile.GetNumericValue("AUTO_USER_PURGE");
     skipsl = iniFile.GetNumericValue("NO_PURGE_SL");

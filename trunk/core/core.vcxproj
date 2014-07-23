@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="inifile.cpp" />
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\wutil.cpp" />
     <ClCompile Include="wfile.cpp" />
@@ -92,6 +93,7 @@
     <ClCompile Include="wtextfile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inifile.h" />
     <ClInclude Include="transaction.h" />
     <ClInclude Include="strings.h" />
     <ClInclude Include="wfile.h" />

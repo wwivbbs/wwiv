@@ -16,13 +16,25 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "ini.h"
+#include <sstream>
+
+#include "core/inifile.h"
+#include "core/strings.h"
+#include "core/wfile.h"
 #include "core/wtextfile.h"
 
-#include "wwiv.h"
-
 using namespace wwiv::strings;
+using std::string;
 
+static string FullPathName(const string& directoryName, const string& fileName) {
+  std::string fullPathName(directoryName);
+  char last_char = directoryName.back();
+  if (last_char != WFile::pathSeparatorChar) {
+    fullPathName.push_back(WFile::pathSeparatorChar);
+  }
+  fullPathName.append(fileName);
+  return fullPathName;
+}
 
 WIniFile::WIniFile(const std::string fileName) {
   m_strFileName = fileName;
@@ -30,6 +42,8 @@ WIniFile::WIniFile(const std::string fileName) {
   memset(&m_primarySection, 0, sizeof(m_primarySection));
   memset(&m_secondarySection, 0, sizeof(m_secondarySection));
 }
+
+WIniFile::WIniFile(const std::string directory, const std::string filename) : WIniFile(FullPathName(directory, filename)) {}
 
 WIniFile::~WIniFile() {
   if (m_bOpen) {
@@ -39,9 +53,6 @@ WIniFile::~WIniFile() {
 
 
 bool WIniFile::Open(const std::string primarySection, const std::string secondarySection) {
-  std::stringstream iniFileStream;
-  iniFileStream << GetApplication()->GetHomeDir() << m_strFileName.c_str();
-
   // first, zap anything there currently
   if (m_bOpen) {
     //TODO ASSERT here, this should not happen
@@ -49,21 +60,21 @@ bool WIniFile::Open(const std::string primarySection, const std::string secondar
   }
 
   // read in primary section
-  char* pBuffer = ReadFile(iniFileStream.str(), primarySection);
+  char* pBuffer = ReadFile(m_strFileName, primarySection);
 
   if (pBuffer) {
     // parse the data
     Parse(pBuffer, &m_primarySection);
 
     // read in secondary file
-    pBuffer = ReadFile(iniFileStream.str(), secondarySection);
+    pBuffer = ReadFile(m_strFileName, secondarySection);
     if (pBuffer) {
       Parse(pBuffer, &m_secondarySection);
     }
 
   } else {
     // read in the secondary section, as the primary one
-    pBuffer = ReadFile(iniFileStream.str(), secondarySection);
+    pBuffer = ReadFile(m_strFileName, secondarySection);
     if (pBuffer) {
       Parse(pBuffer, &m_primarySection);
     }

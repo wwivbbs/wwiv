@@ -19,7 +19,7 @@
 
 #include "bbs/wwiv.h"
 
-#include "bbs/ini.h"
+#include "core/inifile.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
@@ -72,7 +72,7 @@ void chat_room() {
   char szMessageSent[80], szFromMessage[50];
   strcpy(szMessageSent, "|#1[|#9Message Sent|#1]\r\n");
   strcpy(szFromMessage, "|#9From %.12s|#1: %s%s");
-  WIniFile iniFile(CHAT_INI);
+  WIniFile iniFile(GetApplication()->GetHomeDir(), CHAT_INI);
   if (iniFile.Open("CHAT")) {
     g_nChatOpSecLvl = iniFile.GetNumericValue("CHATOP_SL");
     bShowPrompt = iniFile.GetBooleanValue("CH_PROMPT");
