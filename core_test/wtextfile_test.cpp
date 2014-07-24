@@ -52,14 +52,14 @@ TEST_F(TextFileTest, Constructor_SunnyCase) {
   WTextFile file(hello_world_path_, "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("Hello World\n", s.c_str());
+  EXPECT_STREQ("Hello World", s.c_str());
 }
 
 TEST_F(TextFileTest, Constructor_Path_And_Name) {
   WTextFile file(helper_.TempDir(), this->test_name(), "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("Hello World\n", s.c_str());
+  EXPECT_STREQ("Hello World", s.c_str());
 }
 
 TEST_F(TextFileTest, Append) {
@@ -90,11 +90,11 @@ TEST_F(TextFileTest, ReadLine_String) {
   WTextFile file(path, "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("a\n", s.c_str());
+  EXPECT_STREQ("a", s.c_str());
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("b\n", s.c_str());
+  EXPECT_STREQ("b", s.c_str());
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("c\n", s.c_str());
+  EXPECT_STREQ("c", s.c_str());
   EXPECT_FALSE(file.ReadLine(&s));
 }
 
@@ -166,7 +166,7 @@ TEST_F(TextFileTest, IsEOF) {
   WTextFile file(hello_world_path_, "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("Hello World\n", s.c_str());
+  EXPECT_STREQ("Hello World", s.c_str());
 
   EXPECT_FALSE(file.ReadLine(&s));
   EXPECT_TRUE(file.IsEndOfFile());
@@ -178,7 +178,7 @@ TEST_F(TextFileTest, GetPosition) {
   ASSERT_EQ(0, file.GetPosition());
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
-  EXPECT_STREQ("a\n", s.c_str());
+  EXPECT_STREQ("a", s.c_str());
 #ifdef _WIN32
   EXPECT_EQ(3, file.GetPosition());
 #else  // _WIN32

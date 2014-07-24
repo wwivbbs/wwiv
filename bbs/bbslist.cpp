@@ -193,7 +193,7 @@ void DeleteBBSListEntry() {
           if (strstr(line.c_str(), bbsPhoneNumber.c_str())) {
             ok = true;
           } else {
-            fo.Write(line);
+            fo.WriteLine(line);
           }
         }
         fo.Close();

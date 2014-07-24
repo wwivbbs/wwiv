@@ -137,6 +137,18 @@ bool WTextFile::Close() {
   return true;
 }
 
+int WTextFile::WriteLine(const std::string text) { 
+  int num_written = (fputs(text.c_str(), file_) >= 0) ? text.size() : 0;
+#ifdef _WIN32
+  fputs("\r\n", file_);
+#else 
+  fputs("\n", file_);
+#endif  // _WIN32
+  num_written += 2;
+  return num_written;
+}
+
+
 int WTextFile::WriteFormatted(const char *pszFormatText, ...) {
   va_list ap;
   char szBuffer[4096];
@@ -147,12 +159,22 @@ int WTextFile::WriteFormatted(const char *pszFormatText, ...) {
   return Write(szBuffer);
 }
 
+static void StripLineEnd(char *pszString) {
+  size_t i = strlen(pszString);
+  while ((i > 0) && ((pszString[i - 1] == 10) || pszString[i-1] == 13)) {
+    --i;
+  }
+  pszString[i] = '\0';
+}
+
 bool WTextFile::ReadLine(std::string *buffer) {
   char szBuffer[4096];
   char *p = fgets(szBuffer, sizeof(szBuffer), file_);
   if (p == nullptr) {
     return false;
   }
+  // Strip off trailing \r\n
+  StripLineEnd(p);
   buffer->assign(p);
   return true;
 }
