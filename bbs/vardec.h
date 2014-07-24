@@ -294,7 +294,7 @@ struct configrec {
 
   int16_t fuoffset, fsoffset, fnoffset;         // offset values
 
-  unsigned short max_subs,                    // max subboards
+  uint16_t max_subs,                    // max subboards
            max_dirs,                               // max directories
            qscn_len;                               // qscan pointer length
 
@@ -427,7 +427,7 @@ struct statusrec {
 
   float net_req_free;                         // net free factor def 3
 
-  unsigned short days;                        // # days BBS active
+  uint16_t days;                        // # days BBS active
 
   char res[29];                               // RESERVED
 };
@@ -524,7 +524,7 @@ struct mailrec {
 
 // USED IN READMAIL TO STORE EMAIL INFO
 struct tmpmailrec {
-  short index;                                // index into email.dat
+  int16_t index;                                // index into email.dat
 
   uint16_t fromsys,                     // originating system
            fromuser;                               // originating user
@@ -586,7 +586,7 @@ struct uploadsrec {
 struct tagrec {
   uploadsrec u;                               // file information
 
-  short directory;                            // directory number
+  int16_t directory;                            // directory number
 
   uint16_t dir_mask;                    // directory mask
 };
@@ -619,7 +619,7 @@ struct chainfilerec {
 
 
 struct chainregrec {
-  short int regby[5],                         // who registered
+  int16_t regby[5],                         // who registered
         usage;                                  // number of runs
 
   uint8_t minage,                       // minimum age necessary
@@ -664,12 +664,12 @@ struct editorrec {
 struct usersubrec {
   char keys[5];
 
-  short subnum;
+  int16_t subnum;
 };
 
 
 struct userconfrec {
-  short confnum;
+  int16_t confnum;
 };
 
 
@@ -678,7 +678,7 @@ struct batchrec {
 
   char filename[13];
 
-  short dir;
+  int16_t dir;
 
   float time;
 
@@ -879,7 +879,7 @@ struct line {
 struct ext_desc_type {
   char name[13];
 
-  short len;
+  int16_t len;
 };
 
 
@@ -990,23 +990,23 @@ struct pcboard_sys_rec {
   char    display[2], printer[2], page_bell[2], alarm[2], sysop_next,
           errcheck[2], graphics, nodechat, openbps[5], connectbps[5];
 
-  short int usernum;
+  int16_t usernum;
 
   char firstname[15], password[12];
 
-  short int time_on, prev_used;
+  int16_t time_on, prev_used;
 
   char time_logged[5];
 
-  short int time_limit, down_limit;
+  int16_t time_limit, down_limit;
 
   char curconf, bitmap1[5], bitmap2[5];
 
-  short int time_added, time_credit;
+  int16_t time_added, time_credit;
 
   char slanguage[4], name[25];
 
-  short int sminsleft;
+  int16_t sminsleft;
 
   char snodenum, seventtime[5], seventactive[2],
        sslide[2], smemmsg[4], scomport, packflag, bpsflag;
@@ -1014,11 +1014,11 @@ struct pcboard_sys_rec {
   // PCB 14.5 extra stuff
   char ansi, lastevent[8];
 
-  short int lasteventmin;
+  int16_t lasteventmin;
 
   char exittodos, eventupcoming;
 
-  short int lastconfarea;
+  int16_t lastconfarea;
 
   char hconfbitmap;
   // end PCB 14.5 additions
@@ -1057,7 +1057,7 @@ struct confrec {
 };
 
 struct filestatusrec {
-  short int user;
+  int16_t user;
 
   char filename[13];
 
@@ -1179,7 +1179,7 @@ struct cbv_rec {
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
 
 struct phonerec {
-  short int usernum;                        // user's number
+  int16_t usernum;                        // user's number
 
   unsigned char phone[13];                  // user's phone number
 };
@@ -1198,7 +1198,7 @@ struct phonerec {
 struct eventsrec {
   char cmd[81];                             // commandline to execute
 
-  short int days,                           // days to run this event
+  int16_t days,                           // days to run this event
         time,                                 // time to run event in minutes
         instance,                             // instance to run event on
         status,                               // bit mapped event status
@@ -1214,7 +1214,7 @@ struct eventsrec {
 ///////////////////////////////////////////////////////////////////////////////
 
 struct threadrec {
-  short int used;                           // Record used?
+  int16_t used;                           // Record used?
 
   uint16_t msg_num,               // Message Number
            parent_num;                              // Parent Message #
@@ -1342,7 +1342,7 @@ struct arch {
   unsigned char type;
   char name[13];
   int32_t len;
-  short int date, time, crc;
+  int16_t date, time, crc;
   int32_t size;
 };
 
