@@ -905,10 +905,9 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     p.owneruser = GetSession()->usernum;
     {
       WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
-      pStatus->IncrementQScanPointer();
+      p.qscan = pStatus->IncrementQScanPointer();
       GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
     }
-
     time((long *)(&p.daten));
     if (GetSession()->GetCurrentUser()->data.restrict & restrict_validate) {
       p.status = status_unvalidated;
