@@ -38,7 +38,7 @@
 
 
 struct net_header_rec {
-  unsigned short  tosys,    /* destination system */
+  uint16_t  tosys,    /* destination system */
            touser,     /* destination user */
            fromsys,    /* originating system */
            fromuser,   /* originating user */
@@ -47,7 +47,7 @@ struct net_header_rec {
            list_len;   /* # of entries in system list */
   uint32_t   daten,      /* date/time sent */
              length;     /* # of bytes of msg after header */
-  unsigned short  method;   /* method of compression */
+  uint16_t  method;   /* method of compression */
 };
 
 
@@ -91,7 +91,7 @@ struct net_header_rec {
 #define sub_adddrop_error         0xff  /* internal error */
 
 struct net_contact_rec {
-  unsigned short  systemnumber,       /* System number of the contact */
+  uint16_t  systemnumber,       /* System number of the contact */
            numcontacts,        /* # of contacts with system */
            numfails;           /* # of consec failed calls out */
   uint32_t firstcontact,       /* time of first contact w/ system */
@@ -127,16 +127,16 @@ struct net_contact_rec {
 
 
 struct net_system_list_rec {
-  unsigned short  sysnum;         /* system number of the system */
+  uint16_t  sysnum;         /* system number of the system */
   char            phone[13],      /* phone number of system */
                   name[40];       /* name of system */
-  unsigned char   group;          /* group of the system */
-  unsigned short  speed,          /* max baud rate of system */
+  uint8_t   group;          /* group of the system */
+  uint16_t  speed,          /* max baud rate of system */
            other,          /* other info about sys (bit-mapped)*/
            forsys;         /* how to get there */
-  short           numhops;        /* how long to get there */
+  int16_t           numhops;        /* how long to get there */
   union {
-    unsigned short  rout_fact;  /* routing factor */
+    uint16_t  rout_fact;  /* routing factor */
     float           cost;       /* cost factor */
     int32_t            temp;       /* temporary variable */
   } xx;
@@ -173,9 +173,9 @@ struct net_system_list_rec {
 
 
 struct net_interconnect_rec {
-  unsigned short  sysnum,     /* outward calling system */
+  uint16_t  sysnum,     /* outward calling system */
            numsys;     /* num systems it can call */
-  unsigned short  *connect;   /* list of numsys systems */
+  uint16_t  *connect;   /* list of numsys systems */
   float           *cost;      /* list of numsys costs */
 };
 
@@ -193,16 +193,16 @@ struct net_interconnect_rec {
 
 
 struct net_call_out_rec {
-  unsigned short  sysnum;         /* system number */
-  unsigned char   macnum;         /* macro/script to use */
-  unsigned short  options;        /* bit mapped */
-  unsigned char   call_anyway;    /* days between callouts */
+  uint16_t  sysnum;         /* system number */
+  uint8_t   macnum;         /* macro/script to use */
+  uint16_t  options;        /* bit mapped */
+  uint8_t   call_anyway;    /* days between callouts */
   char            min_hr,         /* callout min hour */
                   max_hr;         /* callout max hour */
   char            password[20];   /* password for system */
-  unsigned char   times_per_day;  /* number of calls per day */
-  unsigned char   call_x_days;    /* call only every x days */
-  unsigned short  min_k;          /* minimum # k before callout */
+  uint8_t   times_per_day;  /* number of calls per day */
+  uint8_t   call_x_days;    /* call only every x days */
+  uint16_t  min_k;          /* minimum # k before callout */
   char *          opts;           /* options or NULL */
 };
 
@@ -233,21 +233,21 @@ struct net_call_out_rec {
 #define options_hide_pend     0x0400   /* = hide in pending display */
 
 struct sys_for_rec {
-  unsigned short  sysnum;         /* system number we can call */
-  short           nument;         /* number of entries in list */
-  unsigned short  *list;          /* list of systems */
+  uint16_t  sysnum;         /* system number we can call */
+  int16_t           nument;         /* number of entries in list */
+  uint16_t  *list;          /* list of systems */
 };
 
 
 struct net_networks_rec {
-  unsigned char   type;           /* type of network */
+  uint8_t   type;           /* type of network */
   char            name[16];       /* network name */
   char            dir[69];        /* directory for net data */
-  unsigned short  sysnum;         /* system number */
+  uint16_t  sysnum;         /* system number */
   net_call_out_rec  *con;         /* ptr to callout data */
   net_contact_rec  *ncn;          /* ptr to contact info */
-  short           num_con;        /* number in array */
-  short           num_ncn;        /* number in array */
+  int16_t           num_con;        /* number in array */
+  int16_t           num_ncn;        /* number in array */
 };
 
 #define net_type_wwivnet  0
@@ -263,16 +263,16 @@ struct fts_header {
   int32_t            filesize;           /* size of file */
   char            description[59];    /* description  */
   uint32_t   crc32value;         /* crc value of file */
-  short           maintype,           /* fts maintype */
+  int16_t           maintype,           /* fts maintype */
                   fdltype,            /* fdl type */
                   chunkcount,         /* number of this chunk */
                   totalchunks;        /* total number of chunks */
   char            sysname[60],        /* name of originating system */
                   tonet[16];          /* destination network name */
-  short           tosys,              /* destination system */
+  int16_t           tosys,              /* destination system */
                   touser;             /* destination user */
   char            fromnet[16];        /* originating network name */
-  short           fromsys,            /* originating system */
+  int16_t           fromsys,            /* originating system */
                   fromuser,           /* originating user */
                   ver,                /* version of fts system */
                   info;               /* 1=key 2=sec'd file req  */
@@ -285,7 +285,7 @@ struct fts_header {
 
 struct fdlrec_rec {
   char  name[61];
-  short fdl,
+  int16_t fdl,
         host;
   int32_t  status;
   char  res[41];
@@ -293,7 +293,7 @@ struct fdlrec_rec {
 
 struct bltrec_rec {
   char  name[61];
-  short blt,
+  int16_t blt,
         host;
   int32_t  status;
   char  res[41];
