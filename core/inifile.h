@@ -16,12 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #ifndef __INCLUDED_INIFILE_H__
 #define __INCLUDED_INIFILE_H__
 
 #include <string>
 
+std::string FilePath(const std::string directoryName, const std::string fileName);
 
 class WIniFile {
  private:
@@ -32,29 +32,21 @@ class WIniFile {
     char **pValueArray;
   };
 
-  ini_info_type m_primarySection;
-  ini_info_type m_secondarySection;
-
-  explicit WIniFile(const std::string filename);
  public:
+  WIniFile(const std::string filename, const std::string primarySection, const std::string secondarySection = "");
   // Constructor/Destructor
-  WIniFile(const std::string directory, const std::string filename);
-  virtual ~WIniFile();
+  virtual ~WIniFile(); 
 
-  //
   // Member functions
-  //
-  bool Open(const std::string primarySection, const std::string secondarySection = "");
+  bool Open(const std::string primarySection, const std::string secondarySection);
   bool Close();
-  bool IsOpen() const {
-    return m_bOpen;
-  }
+  bool IsOpen() const { return open_; }
 
   const char* GetValue(const char *pszKey, const char *pszDefaultValue = NULL);
   const long GetNumericValue(const char *pszKey, int nDefaultValue = 0);
   const bool GetBooleanValue(const char *pszKey, bool defaultValue = false);
 
- protected:
+ private:
   /**
    * Reads a specified value from INI file data (contained in *inidata). The
    * name of the value to read is contained in *value_name. If such a name
@@ -67,30 +59,27 @@ class WIniFile {
   /**
    * Allocates memory and returns pointer to location containing requested data within a file.
    */
-  char *ReadSectionIntoMemory(const std::string &fileName, long begin, long end);
+  char *ReadSectionIntoMemory(long begin, long end);
 
   /**
    * Returns begin and end locations for specified subsection within an INI file.
    * If subsection not found then *begin and *end are both set to -1L.
    */
-  void FindSubsectionArea(const std::string& fileName, const std::string& section, long *begin, long *end);
+  void FindSubsectionArea(const std::string& section, long *begin, long *end);
 
   /**
    * Reads a subsection from specified .INI file, the subsection being specified
    * by *pszHeader. Returns a ptr to the subsection data if found and memory is
    * available, else returns NULL.
    */
-  char *ReadFile(const std::string fileName, const std::string header);
+  char *ReadFile(const std::string header);
 
   void Parse(char *pBuffer, ini_info_type * info);
 
-
- private:
-  // Data
-  std::string m_strFileName;
-  bool m_bOpen;
-
+  const std::string file_name_;
+  bool open_;
+  ini_info_type m_primarySection;
+  ini_info_type m_secondarySection;
 };
-
 
 #endif  // __INCLUDED_INIFILE_H__

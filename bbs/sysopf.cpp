@@ -855,8 +855,8 @@ void auto_purge() {
   unsigned int days = 0;
   int skipsl = 0;
 
-  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
-  if (iniFile.Open(INI_TAG)) {
+  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+  if (iniFile.IsOpen()) {
     days = iniFile.GetNumericValue("AUTO_USER_PURGE");
     skipsl = iniFile.GetNumericValue("NO_PURGE_SL");
   }

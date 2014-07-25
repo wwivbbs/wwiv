@@ -69,8 +69,8 @@ void repeat_char(char x, int amount, int nColor) {
 const char *ctypes(int num) {
   static char szCtype[81];
 
-  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
-  if (iniFile.Open("CTYPES")) {
+  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), "CTYPES");
+  if (iniFile.IsOpen()) {
     char szCompType[ 100 ];
     sprintf(szCompType, "COMP_TYPE[%d]", num + 1);
     const char *ss = iniFile.GetValue(szCompType);

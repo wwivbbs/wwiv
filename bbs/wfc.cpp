@@ -49,8 +49,8 @@ void wfc_init() {
     GetSession()->wfcdrvs[ i ] = 0;
   }
 
-  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
-  if (iniFile.Open(INI_TAG)) {
+  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+  if (iniFile.IsOpen()) {
     const char *pszDriveList = iniFile.GetValue("WFC_DRIVES");
     if (pszDriveList != NULL) {
       for (int j = 0; j < wwiv::strings::GetStringLength(pszDriveList); j++) {
