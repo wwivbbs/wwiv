@@ -27,6 +27,8 @@
 #include "printfile.h"
 #include "wcomm.h"
 
+using wwiv::core::IniFile;
+using wwiv::core::FilePath;
 
 #define SECS_PER_DAY 86400L
 
@@ -204,7 +206,7 @@ int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
 
 
 bool IsPhoneRequired() {
-  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     if (iniFile.GetBooleanValue("NEWUSER_MIN")) {
       return false;

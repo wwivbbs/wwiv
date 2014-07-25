@@ -20,6 +20,9 @@
 #include "wwiv.h"
 #include "core/inifile.h"
 
+using wwiv::core::IniFile;
+using wwiv::core::FilePath;
+
 /**
  * The default list of computer types
  */
@@ -69,7 +72,7 @@ void repeat_char(char x, int amount, int nColor) {
 const char *ctypes(int num) {
   static char szCtype[81];
 
-  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), "CTYPES");
+  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), "CTYPES");
   if (iniFile.IsOpen()) {
     char szCompType[ 100 ];
     sprintf(szCompType, "COMP_TYPE[%d]", num + 1);

@@ -770,7 +770,7 @@ bool CanCreateNewUserAccountHere() {
 
 
 bool UseMinimalNewUserInfo() {
-  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI, INI_TAG);
+  wwiv::core::IniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI, INI_TAG);
   if (iniFile.IsOpen()) {
     return iniFile.GetBooleanValue("NEWUSER_MIN");
   }
