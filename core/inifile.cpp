@@ -26,7 +26,7 @@
 using namespace wwiv::strings;
 using std::string;
 
-static string FullPathName(const string& directoryName, const string& fileName) {
+string FilePath(const string directoryName, const string fileName) {
   std::string fullPathName(directoryName);
   char last_char = directoryName.back();
   if (last_char != WFile::pathSeparatorChar) {
@@ -36,17 +36,15 @@ static string FullPathName(const string& directoryName, const string& fileName) 
   return fullPathName;
 }
 
-WIniFile::WIniFile(const std::string fileName) {
-  m_strFileName = fileName;
-  m_bOpen = false;
+WIniFile::WIniFile(const std::string fileName, const std::string primarySection, const std::string secondarySection) 
+    : file_name_(fileName), open_(false) {
   memset(&m_primarySection, 0, sizeof(m_primarySection));
   memset(&m_secondarySection, 0, sizeof(m_secondarySection));
+  Open(primarySection, secondarySection);
 }
 
-WIniFile::WIniFile(const std::string directory, const std::string filename) : WIniFile(FullPathName(directory, filename)) {}
-
 WIniFile::~WIniFile() {
-  if (m_bOpen) {
+  if (open_) {
     Close();
   }
 }
@@ -54,39 +52,39 @@ WIniFile::~WIniFile() {
 
 bool WIniFile::Open(const std::string primarySection, const std::string secondarySection) {
   // first, zap anything there currently
-  if (m_bOpen) {
+  if (open_) {
     //TODO ASSERT here, this should not happen
     Close();
   }
 
   // read in primary section
-  char* pBuffer = ReadFile(m_strFileName, primarySection);
+  char* pBuffer = ReadFile(primarySection);
 
   if (pBuffer) {
     // parse the data
     Parse(pBuffer, &m_primarySection);
 
     // read in secondary file
-    pBuffer = ReadFile(m_strFileName, secondarySection);
+    pBuffer = ReadFile(secondarySection);
     if (pBuffer) {
       Parse(pBuffer, &m_secondarySection);
     }
 
   } else {
     // read in the secondary section, as the primary one
-    pBuffer = ReadFile(m_strFileName, secondarySection);
+    pBuffer = ReadFile(secondarySection);
     if (pBuffer) {
       Parse(pBuffer, &m_primarySection);
     }
   }
 
-  m_bOpen = (m_primarySection.pIniSectionBuffer) ? true : false;
-  return m_bOpen;
+  open_ = (m_primarySection.pIniSectionBuffer) ? true : false;
+  return open_;
 }
 
 
 bool WIniFile::Close() {
-  m_bOpen = false;
+  open_ = false;
   if (m_primarySection.pIniSectionBuffer) {
     free(m_primarySection.pIniSectionBuffer);
     if (m_primarySection.pKeyArray) {
@@ -162,8 +160,8 @@ const long WIniFile::GetNumericValue(const char *pszKey, int defaultValue) {
 }
 
 
-char *WIniFile::ReadSectionIntoMemory(const std::string &fileName, long begin, long end) {
-  WFile file(fileName);
+char *WIniFile::ReadSectionIntoMemory(long begin, long end) {
+  WFile file(file_name_);
   if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
     char *ss = static_cast<char *>(malloc(end - begin + 2));
     if (ss) {
@@ -173,32 +171,25 @@ char *WIniFile::ReadSectionIntoMemory(const std::string &fileName, long begin, l
       return ss;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
-void WIniFile::FindSubsectionArea(const std::string& fileName, const std::string& section, long *begin, long *end) {
-  char s[255];
-
+void WIniFile::FindSubsectionArea(const std::string& section, long *begin, long *end) {
   *begin = *end = -1L;
   std::stringstream ss;
   ss << "[" << section << "]";
   std::string header = ss.str();
 
-  WTextFile file(fileName, "rt");
+  WTextFile file(file_name_, "rt");
   if (!file.IsOpen()) {
     return;
   }
 
   long pos = 0L;
 
+  char s[255];
   while (file.ReadLine(s, sizeof(s) - 1)) {
-    // Get rid of CR/LF at end
-    char *ss = strchr(s, '\n');
-    if (ss) {
-      *ss = '\0';
-    }
-
     // Get rid of trailing/leading spaces
     StringTrim(s);
 
@@ -234,23 +225,23 @@ void WIniFile::FindSubsectionArea(const std::string& fileName, const std::string
 }
 
 
-char *WIniFile::ReadFile(const std::string fileName, const std::string header) {
+char *WIniFile::ReadFile(const std::string header) {
   // Header must be "valid", and file must exist
-  if (header.empty() || !WFile::Exists(fileName)) {
-    return NULL;
+  if (header.empty() || !WFile::Exists(file_name_)) {
+    return nullptr;
   }
 
   // Get area to read in
   long beginloc = -1L, endloc = -1L;
-  FindSubsectionArea(fileName, header, &beginloc, &endloc);
+  FindSubsectionArea(header, &beginloc, &endloc);
 
   // Validate
   if (beginloc >= endloc) {
-    return NULL;
+    return nullptr;
   }
 
   // Allocate pointer to hold data
-  char* ss = ReadSectionIntoMemory(fileName, beginloc, endloc);
+  char* ss = ReadSectionIntoMemory(beginloc, endloc);
   return ss;
 }
 

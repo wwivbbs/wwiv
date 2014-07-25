@@ -127,8 +127,8 @@ void cleanup_net() {
       GetSession()->localIO()->LocalCls();
     }
 
-    WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
-    if (iniFile.Open(INI_TAG)) {
+    WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+    if (iniFile.IsOpen()) {
       const char *pszValue = iniFile.GetValue("NET_CLEANUP_CMD1");
       if (pszValue != NULL) {
         ExecuteExternalProgram(pszValue, GetApplication()->GetSpawnOptions(SPWANOPT_NET_CMD1));
@@ -955,8 +955,8 @@ void print_call(int sn, int nNetNumber, int i2) {
     got_color = 1;
     color = 30;
 
-    WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
-    if (iniFile.Open(INI_TAG)) {
+    WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+    if (iniFile.IsOpen()) {
       const char *ss = iniFile.GetValue("CALLOUT_COLOR_TEXT");
       if (ss != NULL) {
         color = atoi(ss);
@@ -1073,8 +1073,8 @@ int ansicallout() {
     color2 = 59;
     color3 = 7;
     color4 = 30;
-    WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
-    if (iniFile.Open(INI_TAG)) {
+    WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+    if (iniFile.IsOpen()) {
       callout_ansi = iniFile.GetBooleanValue("CALLOUT_ANSI") ? 1 : 0;
       color1 = iniFile.GetNumericValue("CALLOUT_COLOR", color1);
       color2 = iniFile.GetNumericValue("CALLOUT_HIGHLIGHT", color2);

@@ -204,8 +204,8 @@ int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
 
 
 bool IsPhoneRequired() {
-  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
-  if (iniFile.Open(INI_TAG)) {
+  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+  if (iniFile.IsOpen()) {
     if (iniFile.GetBooleanValue("NEWUSER_MIN")) {
       return false;
     }
