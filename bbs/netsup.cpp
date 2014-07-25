@@ -31,6 +31,8 @@ time_t last_time_c;
 
 void fixup_long(uint32_t *f, time_t l);
 
+using wwiv::core::IniFile;
+using wwiv::core::FilePath;
 
 void rename_pend(const char *pszDirectory, const char *pszFileName) {
   char s[ MAX_PATH ], s1[ MAX_PATH ], s2[ MAX_PATH ];
@@ -127,7 +129,7 @@ void cleanup_net() {
       GetSession()->localIO()->LocalCls();
     }
 
-    WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+    IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
       const char *pszValue = iniFile.GetValue("NET_CLEANUP_CMD1");
       if (pszValue != NULL) {
@@ -955,7 +957,7 @@ void print_call(int sn, int nNetNumber, int i2) {
     got_color = 1;
     color = 30;
 
-    WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+    IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
       const char *ss = iniFile.GetValue("CALLOUT_COLOR_TEXT");
       if (ss != NULL) {
@@ -1073,7 +1075,7 @@ int ansicallout() {
     color2 = 59;
     color3 = 7;
     color4 = 30;
-    WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+    IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
       callout_ansi = iniFile.GetBooleanValue("CALLOUT_ANSI") ? 1 : 0;
       color1 = iniFile.GetNumericValue("CALLOUT_COLOR", color1);
