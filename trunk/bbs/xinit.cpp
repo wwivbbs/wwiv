@@ -291,8 +291,8 @@ bool WApplication::ReadINIFile() {
   // initialize ini communication
   char szInstanceName[255];
   snprintf(szInstanceName, sizeof(szInstanceName), "WWIV-%u", GetInstanceNumber());
-  WIniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI);
-  if (iniFile.Open(szInstanceName, INI_TAG)) {
+  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), szInstanceName, INI_TAG);
+  if (iniFile.IsOpen()) {
     ///////////////////////////////////////////////////////////////////////////////
     // DO NOT DO ANYTHING HERE WHICH ALLOCATES MEMORY
     // the ini_init has allocated a lot of memory, and it will be freed

@@ -72,8 +72,8 @@ void chat_room() {
   char szMessageSent[80], szFromMessage[50];
   strcpy(szMessageSent, "|#1[|#9Message Sent|#1]\r\n");
   strcpy(szFromMessage, "|#9From %.12s|#1: %s%s");
-  WIniFile iniFile(GetApplication()->GetHomeDir(), CHAT_INI);
-  if (iniFile.Open("CHAT")) {
+  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), CHAT_INI), "CHAT");
+  if (iniFile.IsOpen()) {
     g_nChatOpSecLvl = iniFile.GetNumericValue("CHATOP_SL");
     bShowPrompt = iniFile.GetBooleanValue("CH_PROMPT");
     load_channels(&iniFile);
