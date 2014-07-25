@@ -24,6 +24,8 @@
 #include "core/wutil.h"
 #include "core/inifile.h"
 
+using wwiv::core::IniFile;
+using wwiv::core::FilePath;
 
 #if !defined ( __unix__ )
 
@@ -49,7 +51,7 @@ void wfc_init() {
     GetSession()->wfcdrvs[ i ] = 0;
   }
 
-  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     const char *pszDriveList = iniFile.GetValue("WFC_DRIVES");
     if (pszDriveList != NULL) {

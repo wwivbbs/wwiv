@@ -28,7 +28,8 @@
 
 using std::string;
 using std::vector;
-
+using wwiv::core::IniFile;
+using wwiv::core::FilePath;
 
 class IniFileTest : public ::testing::Test {
 protected:
@@ -75,7 +76,7 @@ protected:
 
 TEST_F(IniFileTest, Single_GetValue) {
   const string path = this->CreateIniFile("TEST", { "FOO=BAR" } );
-  WIniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_STREQ("BAR", ini.GetValue("FOO"));
   ini.Close();
@@ -83,7 +84,7 @@ TEST_F(IniFileTest, Single_GetValue) {
 
 TEST_F(IniFileTest, Single_GetNumericValue) {
   const string path = this->CreateIniFile("TEST", { "FOO=1234", "BAR=4321", "baz=12345" } );
-  WIniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_EQ(1234, ini.GetNumericValue("FOO"));
   EXPECT_EQ(4321, ini.GetNumericValue("BAR"));
@@ -93,7 +94,7 @@ TEST_F(IniFileTest, Single_GetNumericValue) {
 
 TEST_F(IniFileTest, Single_GetBooleanValue) {
   const string path = this->CreateIniFile("TEST", { "T1=TRUE", "T2=1", "T3=Y", "F1=FALSE", "F2=0", "F3=N", "U=WTF" } );
-  WIniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_TRUE(ini.GetBooleanValue("T1"));
   EXPECT_TRUE(ini.GetBooleanValue("T2"));
@@ -109,20 +110,20 @@ TEST_F(IniFileTest, Single_GetBooleanValue) {
 TEST_F(IniFileTest, Reopen_GetValue) {
   const string path = this->CreateIniFile("TEST", { "FOO=BAR" }, "TEST2", { "BAR=BAZ" } );
   {
-    WIniFile ini(path, "TEST");
+    IniFile ini(path, "TEST");
     ASSERT_TRUE(ini.IsOpen());
     EXPECT_STREQ("BAR", ini.GetValue("FOO"));
     ini.Close();
   }
 
-  WIniFile ini(path, "TEST2");
+  IniFile ini(path, "TEST2");
   EXPECT_STREQ("BAZ", ini.GetValue("BAR"));
   ini.Close();
 }
 
 TEST_F(IniFileTest, TwoSection_GetValue) {
   const string path = this->CreateIniFile("TEST", { "FOO=BAR" }, "TEST-1", { "FOO=BAZ" } );
-  WIniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST-1", "TEST");
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST-1", "TEST");
   ASSERT_TRUE(ini.IsOpen());
   EXPECT_STREQ("BAZ", ini.GetValue("FOO"));
   ini.Close();

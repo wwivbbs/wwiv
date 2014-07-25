@@ -24,6 +24,9 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 
+using wwiv::core::IniFile;
+using wwiv::core::FilePath;
+
 static int g_nChatOpSecLvl;
 static int g_nNumActions;
 static ch_action *actions[MAX_NUM_ACT];
@@ -43,8 +46,8 @@ void cleanup_chat();
 void page_user(int loc);
 void moving(bool bOnline, int loc);
 void out_msg(char *pszMessage, int loc);
-void get_colors(char *pszColorString, WIniFile *pIniFile);
-void load_actions(WIniFile *pIniFile);
+void get_colors(char *pszColorString, IniFile *pIniFile);
+void load_actions(IniFile *pIniFile);
 void add_action(ch_action act);
 void free_actions();
 bool check_action(char *pszMessage, char *pszColorString, int loc);
@@ -54,7 +57,7 @@ void ga(char *pszMessage, char *pszColorString, int loc, int type);
 void list_channels();
 int  change_channels(int loc);
 bool check_ch(int ch);
-void load_channels(WIniFile *pIniFile);
+void load_channels(IniFile *pIniFile);
 int  userinst(char *user);
 int  grabname(char *pszMessage, int ch);
 bool usercomp(const char *st1, const char *st2);
@@ -72,7 +75,7 @@ void chat_room() {
   char szMessageSent[80], szFromMessage[50];
   strcpy(szMessageSent, "|#1[|#9Message Sent|#1]\r\n");
   strcpy(szFromMessage, "|#9From %.12s|#1: %s%s");
-  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), CHAT_INI), "CHAT");
+  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), CHAT_INI), "CHAT");
   if (iniFile.IsOpen()) {
     g_nChatOpSecLvl = iniFile.GetNumericValue("CHATOP_SL");
     bShowPrompt = iniFile.GetBooleanValue("CH_PROMPT");
@@ -547,7 +550,7 @@ void out_msg(char *pszMessage, int loc) {
 
 // Sets pszColorString string for current node
 
-void get_colors(char *pszColorString, WIniFile *pIniFile) {
+void get_colors(char *pszColorString, IniFile *pIniFile) {
   char szKey[10];
 
   sprintf(szKey, "C%u", GetApplication()->GetInstanceNumber());
@@ -556,7 +559,7 @@ void get_colors(char *pszColorString, WIniFile *pIniFile) {
 
 // Loads the actions into memory
 
-void load_actions(WIniFile *pIniFile) {
+void load_actions(IniFile *pIniFile) {
   int to_read = pIniFile->GetNumericValue("NUM_ACTIONS");
   if (!to_read) {
     return;
@@ -910,7 +913,7 @@ bool check_ch(int ch) {
 }
 
 // Loads channel information into memory
-void load_channels(WIniFile *pIniFile) {
+void load_channels(IniFile *pIniFile) {
   char szBuffer[6], szTemp[10];
 
   for (int cn = 1; cn <= 10; cn++) {

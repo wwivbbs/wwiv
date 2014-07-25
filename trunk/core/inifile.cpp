@@ -22,9 +22,14 @@
 #include "core/strings.h"
 #include "core/wfile.h"
 #include "core/wtextfile.h"
+#include "core/wwivassert.h"
 
 using namespace wwiv::strings;
 using std::string;
+
+
+namespace wwiv {
+namespace core {
 
 string FilePath(const string directoryName, const string fileName) {
   std::string fullPathName(directoryName);
@@ -36,25 +41,23 @@ string FilePath(const string directoryName, const string fileName) {
   return fullPathName;
 }
 
-WIniFile::WIniFile(const std::string fileName, const std::string primarySection, const std::string secondarySection) 
+IniFile::IniFile(const std::string fileName, const std::string primarySection, const std::string secondarySection) 
     : file_name_(fileName), open_(false) {
   memset(&m_primarySection, 0, sizeof(m_primarySection));
   memset(&m_secondarySection, 0, sizeof(m_secondarySection));
   Open(primarySection, secondarySection);
 }
 
-WIniFile::~WIniFile() {
+IniFile::~IniFile() {
   if (open_) {
     Close();
   }
 }
 
-
-bool WIniFile::Open(const std::string primarySection, const std::string secondarySection) {
+bool IniFile::Open(const std::string primarySection, const std::string secondarySection) {
   // first, zap anything there currently
   if (open_) {
-    //TODO ASSERT here, this should not happen
-    Close();
+    WWIV_ASSERT(!open_);
   }
 
   // read in primary section
@@ -83,7 +86,7 @@ bool WIniFile::Open(const std::string primarySection, const std::string secondar
 }
 
 
-bool WIniFile::Close() {
+void IniFile::Close() {
   open_ = false;
   if (m_primarySection.pIniSectionBuffer) {
     free(m_primarySection.pIniSectionBuffer);
@@ -105,11 +108,10 @@ bool WIniFile::Close() {
     }
   }
   memset(&m_secondarySection, 0, sizeof(m_secondarySection));
-  return true;
 }
 
 
-const char* WIniFile::GetValue(const char *pszKey, const char *pszDefaultValue) {
+const char* IniFile::GetValue(const char *pszKey, const char *pszDefaultValue) {
   if (!m_primarySection.pIniSectionBuffer || !pszKey || !(*pszKey)) {
     return pszDefaultValue;
   }
@@ -139,13 +141,13 @@ const char* WIniFile::GetValue(const char *pszKey, const char *pszDefaultValue) 
 }
 
 
-const bool WIniFile::GetBooleanValue(const char *pszKey, bool defaultValue) {
+const bool IniFile::GetBooleanValue(const char *pszKey, bool defaultValue) {
   const char *pszValue = GetValue(pszKey);
-  return (pszValue != NULL) ? WIniFile::StringToBoolean(pszValue) : defaultValue;
+  return (pszValue != NULL) ? IniFile::StringToBoolean(pszValue) : defaultValue;
 }
 
 
-bool WIniFile::StringToBoolean(const char *p) {
+bool IniFile::StringToBoolean(const char *p) {
   if (!p) {
     return false;
   }
@@ -154,13 +156,13 @@ bool WIniFile::StringToBoolean(const char *p) {
 }
 
 
-const long WIniFile::GetNumericValue(const char *pszKey, int defaultValue) {
+const long IniFile::GetNumericValue(const char *pszKey, int defaultValue) {
   const char *pszValue = GetValue(pszKey);
   return (pszValue != NULL) ? atoi(pszValue) : defaultValue;
 }
 
 
-char *WIniFile::ReadSectionIntoMemory(long begin, long end) {
+char *IniFile::ReadSectionIntoMemory(long begin, long end) {
   WFile file(file_name_);
   if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
     char *ss = static_cast<char *>(malloc(end - begin + 2));
@@ -175,7 +177,7 @@ char *WIniFile::ReadSectionIntoMemory(long begin, long end) {
 }
 
 
-void WIniFile::FindSubsectionArea(const std::string& section, long *begin, long *end) {
+void IniFile::FindSubsectionArea(const std::string& section, long *begin, long *end) {
   *begin = *end = -1L;
   std::stringstream ss;
   ss << "[" << section << "]";
@@ -225,7 +227,7 @@ void WIniFile::FindSubsectionArea(const std::string& section, long *begin, long 
 }
 
 
-char *WIniFile::ReadFile(const std::string header) {
+char *IniFile::ReadFile(const std::string header) {
   // Header must be "valid", and file must exist
   if (header.empty() || !WFile::Exists(file_name_)) {
     return nullptr;
@@ -246,7 +248,7 @@ char *WIniFile::ReadFile(const std::string header) {
 }
 
 
-void WIniFile::Parse(char *pBuffer, ini_info_type * pIniSection) {
+void IniFile::Parse(char *pBuffer, ini_info_type * pIniSection) {
   char *ss1, *ss, *ss2;
   unsigned int count = 0;
 
@@ -326,3 +328,5 @@ void WIniFile::Parse(char *pBuffer, ini_info_type * pIniSection) {
 }
 
 
+}  // namespace core
+}  // namespace wwiv

@@ -51,9 +51,12 @@ struct ini_flags_type {
   unsigned long value;
 };
 
-unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, unsigned long flags);
-
 using wwiv::bbs::TempDisablePause;
+using wwiv::core::IniFile;
+using wwiv::core::FilePath;
+
+unsigned long GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, unsigned long flags);
+
 
 // Turns a string into a bitmapped unsigned short flag for use with
 // ExecuteExternalProgram calls.
@@ -291,7 +294,7 @@ bool WApplication::ReadINIFile() {
   // initialize ini communication
   char szInstanceName[255];
   snprintf(szInstanceName, sizeof(szInstanceName), "WWIV-%u", GetInstanceNumber());
-  WIniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), szInstanceName, INI_TAG);
+  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), szInstanceName, INI_TAG);
   if (iniFile.IsOpen()) {
     ///////////////////////////////////////////////////////////////////////////////
     // DO NOT DO ANYTHING HERE WHICH ALLOCATES MEMORY
@@ -1422,7 +1425,7 @@ void WApplication::create_phone_file() {
 }
 
 
-unsigned long GetFlagsFromIniFile(WIniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, unsigned long flags) {
+unsigned long GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, unsigned long flags) {
   for (int i = 0; i < nFlagNumber; i++) {
     const char* ss = INI_OPTIONS_ARRAY[ fs[i].strnum ];
     if (ss && pIniFile->GetValue(ss)) {

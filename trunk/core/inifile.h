@@ -21,9 +21,12 @@
 
 #include <string>
 
+namespace wwiv {
+namespace core {
+
 std::string FilePath(const std::string directoryName, const std::string fileName);
 
-class WIniFile {
+class IniFile {
  private:
   struct ini_info_type {
     int nIndex;
@@ -33,13 +36,12 @@ class WIniFile {
   };
 
  public:
-  WIniFile(const std::string filename, const std::string primarySection, const std::string secondarySection = "");
+  IniFile(const std::string filename, const std::string primarySection, const std::string secondarySection = "");
   // Constructor/Destructor
-  virtual ~WIniFile(); 
+  virtual ~IniFile(); 
 
   // Member functions
-  bool Open(const std::string primarySection, const std::string secondarySection);
-  bool Close();
+  void Close();
   bool IsOpen() const { return open_; }
 
   const char* GetValue(const char *pszKey, const char *pszDefaultValue = NULL);
@@ -47,6 +49,13 @@ class WIniFile {
   const bool GetBooleanValue(const char *pszKey, bool defaultValue = false);
 
  private:
+  // This class should not be assigneable via '=' so remove the implicit operator=
+  // and Copy constructor.
+  IniFile(const IniFile& other) = delete;
+  IniFile& operator=(const IniFile& other) = delete;
+
+  bool Open(const std::string primarySection, const std::string secondarySection);
+
   /**
    * Reads a specified value from INI file data (contained in *inidata). The
    * name of the value to read is contained in *value_name. If such a name
@@ -81,5 +90,8 @@ class WIniFile {
   ini_info_type m_primarySection;
   ini_info_type m_secondarySection;
 };
+
+}  // namespace core
+}  // namespace wwiv
 
 #endif  // __INCLUDED_INIFILE_H__
