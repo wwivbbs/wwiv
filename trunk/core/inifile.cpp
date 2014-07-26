@@ -16,7 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <map>
 #include <sstream>
+#include <string>
 
 #include "core/inifile.h"
 #include "core/strings.h"
@@ -25,8 +27,8 @@
 #include "core/wwivassert.h"
 
 using namespace wwiv::strings;
+using std::map;
 using std::string;
-
 
 namespace wwiv {
 namespace core {
@@ -41,112 +43,78 @@ string FilePath(const string directoryName, const string fileName) {
   return fullPathName;
 }
 
-IniFile::IniFile(const std::string fileName, const std::string primarySection, const std::string secondarySection) 
-    : file_name_(fileName), open_(false) {
-  memset(&m_primarySection, 0, sizeof(m_primarySection));
-  memset(&m_secondarySection, 0, sizeof(m_secondarySection));
-  Open(primarySection, secondarySection);
+IniFile::IniFile(const std::string fileName, const std::string primary, const std::string secondary) 
+    : file_name_(fileName), open_(false), primary_(primary), secondary_(secondary) {
+
+  WTextFile file(file_name_, "rt");
+  if (!file.IsOpen()) {
+    open_ = false;
+    return;
+  }
+
+  string section("");
+  string line;
+  while (file.ReadLine(&line)) {
+    StringTrim(line);
+    if (line.size() == 0) {
+      continue;
+    }
+    if (line.front() == '[' && line.back() == ']') {
+      // Section header.
+      section = line.substr(1, line.size() - 2);
+    } else {
+      // Not a section.
+      if (line.find(';') != string::npos) {
+        // we have a comment, remove it.
+        line.erase(line.find(';'));
+      }
+
+      int equals = line.find('=');
+      if (equals == string::npos) {
+        // not a line of the form key = value [; comment]
+        continue;
+      }
+      string key = line.substr(0, equals);
+      string value = line.substr(equals + 1);
+      StringTrim(key);
+      StringTrim(value);
+
+      string real_key = section + "." + key;
+      data_[real_key] = value;
+    }
+  }
+  open_ = true;
 }
 
 IniFile::~IniFile() {
-  if (open_) {
-    Close();
-  }
-}
-
-bool IniFile::Open(const std::string primarySection, const std::string secondarySection) {
-  // first, zap anything there currently
-  if (open_) {
-    WWIV_ASSERT(!open_);
-  }
-
-  // read in primary section
-  char* pBuffer = ReadFile(primarySection);
-
-  if (pBuffer) {
-    // parse the data
-    Parse(pBuffer, &m_primarySection);
-
-    // read in secondary file
-    pBuffer = ReadFile(secondarySection);
-    if (pBuffer) {
-      Parse(pBuffer, &m_secondarySection);
-    }
-
-  } else {
-    // read in the secondary section, as the primary one
-    pBuffer = ReadFile(secondarySection);
-    if (pBuffer) {
-      Parse(pBuffer, &m_primarySection);
-    }
-  }
-
-  open_ = (m_primarySection.pIniSectionBuffer) ? true : false;
-  return open_;
-}
-
-
-void IniFile::Close() {
   open_ = false;
-  if (m_primarySection.pIniSectionBuffer) {
-    free(m_primarySection.pIniSectionBuffer);
-    if (m_primarySection.pKeyArray) {
-      free(m_primarySection.pKeyArray);
-    }
-    if (m_primarySection.pValueArray) {
-      free(m_primarySection.pValueArray);
-    }
-  }
-  memset(&m_primarySection, 0, sizeof(m_primarySection));
-  if (m_secondarySection.pIniSectionBuffer) {
-    free(m_secondarySection.pIniSectionBuffer);
-    if (m_secondarySection.pKeyArray) {
-      free(m_secondarySection.pKeyArray);
-    }
-    if (m_secondarySection.pValueArray) {
-      free(m_secondarySection.pValueArray);
-    }
-  }
-  memset(&m_secondarySection, 0, sizeof(m_secondarySection));
 }
 
-
-const char* IniFile::GetValue(const char *pszKey, const char *pszDefaultValue) {
-  if (!m_primarySection.pIniSectionBuffer || !pszKey || !(*pszKey)) {
-    return pszDefaultValue;
-  }
-
-  // loop through both sets of data and search them, in order
-  for (int i = 0; i <= 1; i++) {
-    ini_info_type *pIniSection;
-    // get pointer to data area to use
-    if (i == 0) {
-      pIniSection = &m_primarySection;
-    } else if (m_secondarySection.pIniSectionBuffer) {
-      pIniSection = &m_secondarySection;
-    } else {
-      break;
-    }
-
-    // search for it
-    for (int i1 = 0; i1 < pIniSection->nIndex; i1++) {
-      if (IsEqualsIgnoreCase(pIniSection->pKeyArray[ i1 ], pszKey)) {
-        return pIniSection->pValueArray[ i1 ];
-      }
-    }
-  }
-
-  // nothing found
-  return pszDefaultValue;
+/* Close is now a NOP */
+void IniFile::Close() {
 }
 
-
-const bool IniFile::GetBooleanValue(const char *pszKey, bool defaultValue) {
-  const char *pszValue = GetValue(pszKey);
-  return (pszValue != NULL) ? IniFile::StringToBoolean(pszValue) : defaultValue;
+const char* IniFile::GetValue(const char *key, const char *default_value)  const {
+  const string primary_key = primary_ + "." + key;
+  auto& it = data_.find(primary_key);
+  if (it != data_.end()) {
+    return it->second.c_str();
+  }
+  // Not in primary, try secondary.
+  const string secondary_key = secondary_ + "." + key;
+  it = data_.find(secondary_key);
+  if (it != data_.end()) {
+    return it->second.c_str();
+  }
+  return default_value;
 }
 
+const bool IniFile::GetBooleanValue(const char *pszKey, bool defaultValue)  const {
+  const char *s = GetValue(pszKey);
+  return (s != nullptr) ? IniFile::StringToBoolean(s) : defaultValue;
+}
 
+// static
 bool IniFile::StringToBoolean(const char *p) {
   if (!p) {
     return false;
@@ -155,176 +123,10 @@ bool IniFile::StringToBoolean(const char *p) {
   return (ch == 'Y' || ch == 'T' || ch == '1');
 }
 
-
-const long IniFile::GetNumericValue(const char *pszKey, int defaultValue) {
-  const char *pszValue = GetValue(pszKey);
-  return (pszValue != NULL) ? atoi(pszValue) : defaultValue;
+const long IniFile::GetNumericValue(const char *key, int default_value) const {
+  const char *s = GetValue(key);
+  return (s != nullptr) ? atoi(s) : default_value;
 }
-
-
-char *IniFile::ReadSectionIntoMemory(long begin, long end) {
-  WFile file(file_name_);
-  if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
-    char *ss = static_cast<char *>(malloc(end - begin + 2));
-    if (ss) {
-      file.Seek(begin, WFile::seekBegin);
-      file.Read(ss, (end - begin + 1));
-      ss[(end - begin + 1)] = '\0';
-      return ss;
-    }
-  }
-  return nullptr;
-}
-
-
-void IniFile::FindSubsectionArea(const std::string& section, long *begin, long *end) {
-  *begin = *end = -1L;
-  const std::string header = StrCat("[", section, "]");
-
-  WTextFile file(file_name_, "rt");
-  if (!file.IsOpen()) {
-    return;
-  }
-
-  long pos = 0L;
-
-  char s[255];
-  while (file.ReadLine(s, sizeof(s) - 1)) {
-    // Get rid of trailing/leading spaces
-    StringTrim(s);
-
-    // A comment or blank line?
-    if (s[0] && s[0] != ';') {
-      // Is it a subsection header?
-      if ((strlen(s) > 2) && (s[0] == '[') && (s[strlen(s) - 1] == ']')) {
-        // Does it match requested subsection name (section)?
-        if (header == s) {
-          if (*begin == -1L) {
-            *begin = file.GetPosition();
-          }
-        } else {
-          if (*begin != -1L) {
-            if (*end == -1L) {
-              *end = pos - 1;
-              break;
-            }
-          }
-        }
-      }
-    }
-    // Update file position pointer
-    pos = file.GetPosition();
-  }
-
-  // Mark end as end of the file if not already found
-  if (*begin != -1L && *end == -1L) {
-    *end = file.GetPosition() - 1;
-  }
-
-  file.Close();
-}
-
-
-char *IniFile::ReadFile(const std::string header) {
-  // Header must be "valid", and file must exist
-  if (header.empty() || !WFile::Exists(file_name_)) {
-    return nullptr;
-  }
-
-  // Get area to read in
-  long beginloc = -1L, endloc = -1L;
-  FindSubsectionArea(header, &beginloc, &endloc);
-
-  // Validate
-  if (beginloc >= endloc) {
-    return nullptr;
-  }
-
-  // Allocate pointer to hold data
-  char* ss = ReadSectionIntoMemory(beginloc, endloc);
-  return ss;
-}
-
-
-void IniFile::Parse(char *pBuffer, ini_info_type * pIniSection) {
-  char *ss1, *ss, *ss2;
-  unsigned int count = 0;
-
-  memset(pIniSection, 0, sizeof(ini_info_type));
-  pIniSection->pIniSectionBuffer = pBuffer;
-
-  // first, count # pszKey-pValueArray pairs
-  unsigned int i1 = strlen(pBuffer);
-  char* tempb = static_cast<char *>(malloc(i1 + 20));
-  if (!tempb) {
-    return;
-  }
-
-  memmove(tempb, pBuffer, i1);
-  tempb[i1] = 0;
-
-  for (ss = strtok(tempb, "\r\n"); ss; ss = strtok(NULL, "\r\n")) {
-    StringTrim(ss);
-    if (ss[0] == 0 || ss[0] == ';') {
-      continue;
-    }
-
-    ss1 = strchr(ss, '=');
-    if (ss1) {
-      *ss1 = 0;
-      StringTrim(ss);
-      if (*ss) {
-        count++;
-      }
-    }
-  }
-
-  free(tempb);
-
-  if (!count) {
-    return;
-  }
-
-  // now, allocate space for pKeyArray-pValueArray pairs
-  pIniSection->pKeyArray = static_cast<char **>(malloc(count * sizeof(char *)));
-  if (!pIniSection->pKeyArray) {
-    return;
-  }
-  pIniSection->pValueArray = static_cast<char **>(malloc(count * sizeof(char *)));
-  if (!pIniSection->pValueArray) {
-    free(pIniSection->pKeyArray);
-    pIniSection->pKeyArray = nullptr;
-    return;
-  }
-  // go through and add in pszKey-pValueArray pairs
-  for (ss = strtok(pBuffer, "\r\n"); ss; ss = strtok(NULL, "\r\n")) {
-    StringTrim(ss);
-    if (ss[0] == 0 || ss[0] == ';') {
-      continue;
-    }
-
-    ss1 = strchr(ss, '=');
-    if (ss1) {
-      *ss1 = 0;
-      StringTrim(ss);
-      if (*ss) {
-        ss1++;
-        ss2 = ss1;
-        while ((ss2[0]) && (ss2[1]) && ((ss2 = strchr(ss2 + 1, ';')) != nullptr)) {
-          if (isspace(*(ss2 - 1))) {
-            *ss2 = 0;
-            break;
-          }
-        }
-        StringTrim(ss1);
-        pIniSection->pKeyArray[pIniSection->nIndex] = ss;
-        pIniSection->pValueArray[pIniSection->nIndex] = ss1;
-        pIniSection->nIndex++;
-      }
-    }
-  }
-}
-
 
 }  // namespace core
 }  // namespace wwiv
