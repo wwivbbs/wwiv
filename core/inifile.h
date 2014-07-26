@@ -20,6 +20,7 @@
 #define __INCLUDED_INIFILE_H__
 
 #include <string>
+#include <map>
 
 namespace wwiv {
 namespace core {
@@ -27,14 +28,6 @@ namespace core {
 std::string FilePath(const std::string directoryName, const std::string fileName);
 
 class IniFile {
- private:
-  struct ini_info_type {
-    int nIndex;
-    char *pIniSectionBuffer;
-    char **pKeyArray;
-    char **pValueArray;
-  };
-
  public:
   IniFile(const std::string filename, const std::string primarySection, const std::string secondarySection = "");
   // Constructor/Destructor
@@ -44,9 +37,9 @@ class IniFile {
   void Close();
   bool IsOpen() const { return open_; }
 
-  const char* GetValue(const char *pszKey, const char *pszDefaultValue = NULL);
-  const long GetNumericValue(const char *pszKey, int nDefaultValue = 0);
-  const bool GetBooleanValue(const char *pszKey, bool defaultValue = false);
+  const char* GetValue(const char *key, const char *default_value = NULL) const;
+  const long GetNumericValue(const char *key, int default_value = 0) const;
+  const bool GetBooleanValue(const char *key, bool default_value = false) const;
 
  private:
   // This class should not be assigneable via '=' so remove the implicit operator=
@@ -54,7 +47,7 @@ class IniFile {
   IniFile(const IniFile& other) = delete;
   IniFile& operator=(const IniFile& other) = delete;
 
-  bool Open(const std::string primarySection, const std::string secondarySection);
+  bool Open();
 
   /**
    * Reads a specified value from INI file data (contained in *inidata). The
@@ -65,30 +58,11 @@ class IniFile {
    */
   static bool StringToBoolean(const char *p);
 
-  /**
-   * Allocates memory and returns pointer to location containing requested data within a file.
-   */
-  char *ReadSectionIntoMemory(long begin, long end);
-
-  /**
-   * Returns begin and end locations for specified subsection within an INI file.
-   * If subsection not found then *begin and *end are both set to -1L.
-   */
-  void FindSubsectionArea(const std::string& section, long *begin, long *end);
-
-  /**
-   * Reads a subsection from specified .INI file, the subsection being specified
-   * by *pszHeader. Returns a ptr to the subsection data if found and memory is
-   * available, else returns NULL.
-   */
-  char *ReadFile(const std::string header);
-
-  void Parse(char *pBuffer, ini_info_type * info);
-
   const std::string file_name_;
   bool open_;
-  ini_info_type m_primarySection;
-  ini_info_type m_secondarySection;
+  const std::string primary_;
+  const std::string secondary_;
+  std::map<std::string, std::string> data_;
 };
 
 }  // namespace core

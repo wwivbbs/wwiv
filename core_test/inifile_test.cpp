@@ -136,3 +136,19 @@ TEST_F(IniFileTest, TwoSection_GetValue) {
   EXPECT_STREQ("BAZ", ini.GetValue("FOO"));
   ini.Close();
 }
+
+TEST_F(IniFileTest, TwoSection_GetValue_OnlyInSecondary) {
+  const string path = this->CreateIniFile("TEST", { "FOO=BAR" }, "TEST-1", { "FOO1=BAZ" } );
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST-1", "TEST");
+  ASSERT_TRUE(ini.IsOpen());
+  EXPECT_STREQ("BAR", ini.GetValue("FOO"));
+  ini.Close();
+}
+
+TEST_F(IniFileTest, CommentAtStart) {
+  const string path = this->CreateIniFile("TEST", { ";FOO=BAR" } );
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST-1", "TEST");
+  ASSERT_TRUE(ini.IsOpen());
+  EXPECT_EQ(nullptr, ini.GetValue("FOO"));
+  ini.Close();
+}
