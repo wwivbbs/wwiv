@@ -1101,20 +1101,37 @@ void WApplication::InitializeBBS() {
     std::cout << "You need to set the date [" << pTm->tm_year << "] & time before running the BBS.\r\n";
     AbortBBS();
   }
+
   if (!ReadConfig()) {
     AbortBBS(true);
   }
 
-  if (syscfgovr.tempdir[0] == '\0' || !WFile::Exists(syscfgovr.tempdir)) {
+  if (syscfgovr.tempdir[0] == '\0') {
     std::cout << "\r\nYour temp dir isn't valid.\r\n";
-    std::cout << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
+    std::cout << "It is empty\r\n\n";
     AbortBBS();
   }
 
-  if (syscfgovr.batchdir[0] == '\0' || !WFile::Exists(syscfgovr.batchdir)) {
+  if (syscfgovr.batchdir[0] == '\0') {
     std::cout << "\r\nYour batch dir isn't valid.\r\n";
-    std::cout << "It is now set to: '" << syscfgovr.batchdir << "'\r\n\n";
+    std::cout << "It is empty\r\n\n";
     AbortBBS();
+  }
+
+  if (!WFile::Exists(syscfgovr.tempdir)) {
+    if (WWIV_make_path(syscfgovr.tempdir) == -1) {
+      std::cout << "\r\nYour temp dir isn't valid.\r\n";
+      std::cout << "It is now set to: '" << syscfgovr.tempdir << "'\r\n\n";
+      AbortBBS();
+    }
+  }
+
+  if (!WFile::Exists(syscfgovr.batchdir)) {
+    if (WWIV_make_path(syscfgovr.batchdir) == -1) {
+      std::cout << "\r\nYour batch dir isn't valid.\r\n";
+      std::cout << "It is now set to: '" << syscfgovr.batchdir << "'\r\n\n";
+      AbortBBS();
+    }
   }
 
   write_inst(INST_LOC_INIT, 0, INST_FLAGS_NONE);
