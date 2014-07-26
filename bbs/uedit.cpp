@@ -22,7 +22,7 @@
 #include "core/strings.h"
 
 
-static unsigned long *u_qsc = 0;
+static uint32_t *u_qsc = 0;
 static char *sp = NULL;
 static char search_pattern[81];
 char *daten_to_date(time_t dt);
@@ -455,7 +455,7 @@ void uedit(int usern, int other) {
   bool bClearScreen = true;
   WUser user;
 
-  u_qsc = static_cast<unsigned long *>(BbsAllocA(syscfg.qscn_len));
+  u_qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
 
   bool full = (incom) ? false : true;
   if (other & 1) {

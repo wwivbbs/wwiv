@@ -581,14 +581,14 @@ void swap_subs(int sub1, int sub2) {
 
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
-  unsigned long *pTempQScan = static_cast< unsigned long *>(BbsAllocA(syscfg.qscn_len));
+  uint32_t *pTempQScan = static_cast< uint32_t *>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
     for (int i = 1; i <= nNumUserRecords; i++) {
       int i1, i2;
       read_qscn(i, pTempQScan, true);
-      unsigned long *pTempQScan_n = pTempQScan + 1;
-      unsigned long *pTempQScan_q = pTempQScan_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
-      unsigned long *pTempQScan_p = pTempQScan_q + (GetSession()->GetMaxNumberMessageAreas() + 31) / 32;
+      uint32_t *pTempQScan_n = pTempQScan + 1;
+      uint32_t *pTempQScan_q = pTempQScan_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
+      uint32_t *pTempQScan_p = pTempQScan_q + (GetSession()->GetMaxNumberMessageAreas() + 31) / 32;
 
       if (pTempQScan_q[sub1 / 32] & (1L << (sub1 % 32))) {
         i1 = 1;
@@ -605,7 +605,7 @@ void swap_subs(int sub1, int sub2) {
         pTempQScan_q[sub1 / 32] ^= (1L << (sub1 % 32));
         pTempQScan_q[sub2 / 32] ^= (1L << (sub2 % 32));
       }
-      unsigned long tl = pTempQScan_p[sub1];
+      uint32_t tl = pTempQScan_p[sub1];
       pTempQScan_p[sub1] = pTempQScan_p[sub2];
       pTempQScan_p[sub2] = tl;
 
@@ -619,7 +619,7 @@ void swap_subs(int sub1, int sub2) {
   subboards[sub1]     = subboards[sub2];
   subboards[sub2]     = sbt;
 
-  unsigned long sdt   = GetSession()->m_SubDateCache[sub1];
+  uint32_t sdt   = GetSession()->m_SubDateCache[sub1];
   GetSession()->m_SubDateCache[sub1]     = GetSession()->m_SubDateCache[sub2];
   GetSession()->m_SubDateCache[sub2]     = sdt;
 
@@ -634,7 +634,7 @@ void swap_subs(int sub1, int sub2) {
 void insert_sub(int n) {
   subboardrec r = { 0 };
   int i, i1, i2;
-  unsigned long *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m1, m2, m3;
+  uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m1, m2, m3;
   SUBCONF_TYPE nconv = (SUBCONF_TYPE) n;
 
   if (n < 0 || n > GetSession()->num_subs) {
@@ -666,7 +666,7 @@ void insert_sub(int n) {
   ++GetSession()->num_subs;
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
-  unsigned long* pTempQScan = static_cast<unsigned long *>(BbsAllocA(syscfg.qscn_len));
+  uint32_t* pTempQScan = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
     pTempQScan_n = pTempQScan + 1;
     pTempQScan_q = pTempQScan_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
@@ -679,7 +679,7 @@ void insert_sub(int n) {
     for (i = 1; i <= nNumUserRecords; i++) {
       read_qscn(i, pTempQScan, true);
 
-      if ((*pTempQScan != 999) && (*pTempQScan >= static_cast<unsigned long>(n))) {
+      if ((*pTempQScan != 999) && (*pTempQScan >= static_cast<uint32_t>(n))) {
         (*pTempQScan)++;
       }
 
@@ -708,7 +708,7 @@ void insert_sub(int n) {
 
 void delete_sub(int n) {
   int i, i1, i2, nNumUserRecords;
-  unsigned long *pTempQScan, *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
+  uint32_t *pTempQScan, *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
   SUBCONF_TYPE nconv = static_cast<SUBCONF_TYPE>(n);
 
   if (n < 0 || n >= GetSession()->num_subs) {
@@ -734,7 +734,7 @@ void delete_sub(int n) {
   --GetSession()->num_subs;
   nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
-  pTempQScan = static_cast<unsigned long *>(BbsAllocA(syscfg.qscn_len + 4));
+  pTempQScan = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len + 4));
   if (pTempQScan) {
     pTempQScan_n = pTempQScan + 1;
     pTempQScan_q = pTempQScan_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
@@ -747,9 +747,9 @@ void delete_sub(int n) {
       read_qscn(i, pTempQScan, true);
 
       if (*pTempQScan != 999) {
-        if (*pTempQScan == static_cast<unsigned long>(n)) {
+        if (*pTempQScan == static_cast<uint32_t>(n)) {
           *pTempQScan = 999;
-        } else if (*pTempQScan > static_cast<unsigned long>(n)) {
+        } else if (*pTempQScan > static_cast<uint32_t>(n)) {
           (*pTempQScan)--;
         }
       }

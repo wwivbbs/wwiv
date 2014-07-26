@@ -66,7 +66,7 @@ static char *date() {
 #define OFFOF(x) (short) (((long)(&(user_record.x))) - ((long)&user_record))
 
 static int qscn_file = -1;
-static unsigned long *qsc;
+static uint32_t *qsc;
 
 static int open_qscn() {
   char szFileName[MAX_PATH];
@@ -89,7 +89,7 @@ static void close_qscn() {
   }
 }
 
-static void write_qscn(unsigned int un, unsigned long *qscn, int stayopen) {
+static void write_qscn(unsigned int un, uint32_t *qscn, int stayopen) {
   if (open_qscn()) {
     long pos = ((long)syscfg.qscn_len) * ((long)un);
     lseek(qscn_file, pos, SEEK_SET);
@@ -292,7 +292,7 @@ static void init_files() {
   status.net_bias = 0.001f;
   status.net_req_free = 3.0;
 
-  qsc = (unsigned long *)malloc(syscfg.qscn_len);
+  qsc = (uint32_t *)malloc(syscfg.qscn_len);
   Printf(".");
   memset(qsc, 0, syscfg.qscn_len);
 

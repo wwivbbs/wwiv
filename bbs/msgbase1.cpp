@@ -337,13 +337,13 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 
   GetSession()->bout.NewLine();
 
-  unsigned long lQuickScanPointer = qsc_p[nSubNumber];
+  uint32_t lQuickScanPointer = qsc_p[nSubNumber];
 
   if (!GetSession()->m_SubDateCache[nSubNumber]) {
     iscan1(nSubNumber, true);
   }
 
-  unsigned long lSubDate = GetSession()->m_SubDateCache[nSubNumber];
+  uint32_t lSubDate = GetSession()->m_SubDateCache[nSubNumber];
   if (!lSubDate || lSubDate > lQuickScanPointer) {
     int nNextSubNumber = *pnNextSubNumber;
     int nOldSubNumber = GetSession()->GetCurrentMessageArea();

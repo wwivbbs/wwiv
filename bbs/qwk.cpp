@@ -252,8 +252,8 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     return;
   }
 
-  unsigned long qscnptrx = qsc_p[sn];
-  unsigned long sd = GetSession()->m_SubDateCache[sn];
+  uint32_t qscnptrx = qsc_p[sn];
+  uint32_t sd = GetSession()->m_SubDateCache[sn];
 
   if (qwk_percent || ((!sd) || (sd > qscnptrx))) {
     os = GetSession()->GetCurrentMessageArea();
@@ -387,7 +387,7 @@ void make_pre_qwk(int msgnum, int *val, struct qwk_junk *qwk_info) {
     qsc_p[GetSession()->GetCurrentReadMessageArea()] = p->qscan;  // And here
   }
   WStatus* pStatus = GetApplication()->GetStatusManager()->GetStatus();
-  unsigned long lQScanPtr = pStatus->GetQScanPointer();
+  uint32_t lQScanPtr = pStatus->GetQScanPointer();
   delete pStatus;
   if (p->qscan >= lQScanPtr) {
     WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();

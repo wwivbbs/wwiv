@@ -42,7 +42,7 @@ void close_qscn() {
 }
 
 
-void read_qscn(int nUserNumber, unsigned long *qscn, bool bStayOpen, bool bForceRead) {
+void read_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen, bool bForceRead) {
   if (!bForceRead) {
     if ((GetSession()->IsUserOnline() && nUserNumber == GetSession()->usernum) ||
         (GetApplication()->GetWfcStatus() && nUserNumber == 1)) {
@@ -76,7 +76,7 @@ void read_qscn(int nUserNumber, unsigned long *qscn, bool bStayOpen, bool bForce
 }
 
 
-void write_qscn(int nUserNumber, unsigned long *qscn, bool bStayOpen) {
+void write_qscn(int nUserNumber, uint32_t *qscn, bool bStayOpen) {
   if ((nUserNumber < 1) || (nUserNumber > syscfg.maxusers) || guest_user) {
     return;
   }

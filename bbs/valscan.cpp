@@ -43,7 +43,7 @@ void valscan() {
       return;
     }
 
-    unsigned long sq = qsc_p[sn];
+    uint32_t sq = qsc_p[sn];
 
     // Must be sub with validation "on"
     if (!(xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets)
