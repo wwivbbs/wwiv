@@ -296,19 +296,7 @@ bool WApplication::ReadINIFile() {
   snprintf(szInstanceName, sizeof(szInstanceName), "WWIV-%u", GetInstanceNumber());
   IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), szInstanceName, INI_TAG);
   if (iniFile.IsOpen()) {
-    ///////////////////////////////////////////////////////////////////////////////
-    // DO NOT DO ANYTHING HERE WHICH ALLOCATES MEMORY
-    // the ini_init has allocated a lot of memory, and it will be freed
-    // by ini_done.  If you need to read anything here which will cause memory
-    // to be allocated, only store the size of the array here, and allocate it
-    // after ini_done.  Or, if necessary, call ini_done(), allocate the memory,
-    // then call ini_init again, and continue processing.
-    ///////////////////////////////////////////////////////////////////////////////
-
-    //
     // found something
-    //
-
     // pull out event flags
     const char *ss;
     for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(GetApplication()->spawn_opts); nTempSpawnOptNum++) {
