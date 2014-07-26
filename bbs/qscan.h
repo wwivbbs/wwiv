@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_QSCAN_H__
 #define __INCLUDED_QSCAN_H__
 
+#include <cstdint>
 #include <memory>
 
 namespace wwiv {
@@ -31,7 +32,7 @@ public:
   void restore() { restore_ = true; }
 private:
   bool restore_;
-  std::unique_ptr<long[]> save_qsc_p_;
+  std::unique_ptr<uint32_t[]> save_qsc_p_;
 };
 
 }  // namespace bbs

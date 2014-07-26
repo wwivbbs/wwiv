@@ -59,8 +59,8 @@ void trimstrpath(char *s) {
 static void convert_to(int num_subs, int num_dirs) {
   int oqf, nqf, nu, i;
   char oqfn[81], nqfn[81];
-  unsigned long *nqsc, *nqsc_n, *nqsc_q, *nqsc_p;
-  unsigned long *oqsc, *oqsc_n, *oqsc_q, *oqsc_p;
+  uint32_t *nqsc, *nqsc_n, *nqsc_q, *nqsc_p;
+  uint32_t *oqsc, *oqsc_n, *oqsc_q, *oqsc_p;
   int l1, l2, l3, nqscn_len;
 
   if (num_subs % 32) {
@@ -86,7 +86,7 @@ static void convert_to(int num_subs, int num_dirs) {
 
   nqscn_len = 4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32));
 
-  nqsc = (unsigned long *)malloc(nqscn_len);
+  nqsc = (uint32_t *)malloc(nqscn_len);
   if (!nqsc) {
     Printf("Could not allocate %d bytes for new quickscan rec\n", nqscn_len);
     return;
@@ -100,7 +100,7 @@ static void convert_to(int num_subs, int num_dirs) {
   memset(nqsc_n, 0xff, ((num_dirs + 31) / 32) * 4);
   memset(nqsc_q, 0xff, ((num_subs + 31) / 32) * 4);
 
-  oqsc = (unsigned long *)malloc(syscfg.qscn_len);
+  oqsc = (uint32_t *)malloc(syscfg.qscn_len);
   if (!oqsc) {
     free(nqsc);
     Printf("Could not allocate %d bytes for old quickscan rec\n", syscfg.qscn_len);

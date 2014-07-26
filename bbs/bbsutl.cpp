@@ -305,7 +305,7 @@ bool lcs() {
     if (*qsc == 999) {
       return true;
     }
-    return (*qsc == static_cast<unsigned long>(usub[GetSession()->GetCurrentMessageArea()].subnum)) ? true : false;
+    return (*qsc == static_cast<uint32_t>(usub[GetSession()->GetCurrentMessageArea()].subnum)) ? true : false;
   }
   return false;
 }

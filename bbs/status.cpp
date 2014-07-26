@@ -143,7 +143,7 @@ bool StatusMgr::Get(bool bLockFile) {
     return false;
   } else {
     char oldFileChangeFlags[7];
-    unsigned long lQScanPtr = status.qscanptr;
+    uint32_t lQScanPtr = status.qscanptr;
     for (int nFcIndex = 0; nFcIndex < 7; nFcIndex++) {
       oldFileChangeFlags[nFcIndex] = status.filechange[nFcIndex];
     }

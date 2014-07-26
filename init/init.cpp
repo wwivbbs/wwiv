@@ -426,6 +426,7 @@ int WInitApp::main(int argc, char *argv[]) {
     case '$':
       nlx();
       out->SetDefaultFooter();
+      Printf("QSCan Lenth: %lu\n", syscfg.qscn_len);
       Printf("WWIV %s%s INIT compiled %s\n", wwiv_version, beta_version, const_cast<char*>(wwiv_date));
       out->GetChar();
       break;
