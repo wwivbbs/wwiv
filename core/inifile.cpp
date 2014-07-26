@@ -96,15 +96,19 @@ void IniFile::Close() {
 
 const char* IniFile::GetValue(const char *key, const char *default_value)  const {
   const string primary_key = primary_ + "." + key;
-  auto& it = data_.find(primary_key);
-  if (it != data_.end()) {
-    return it->second.c_str();
+  {
+    const auto& it = data_.find(primary_key);
+    if (it != data_.end()) {
+      return it->second.c_str();
+    }
   }
   // Not in primary, try secondary.
   const string secondary_key = secondary_ + "." + key;
-  it = data_.find(secondary_key);
-  if (it != data_.end()) {
-    return it->second.c_str();
+  {
+    const auto& it = data_.find(secondary_key);
+    if (it != data_.end()) {
+      return it->second.c_str();
+    }
   }
   return default_value;
 }
