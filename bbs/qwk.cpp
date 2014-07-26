@@ -397,17 +397,9 @@ void make_pre_qwk(int msgnum, int *val, struct qwk_junk *qwk_info) {
 }
 
 void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info) {
-  struct tm *time_now;
   char n[205], d[81], temp[101];
   char qwk_address[201];
-  int f, cur, p, p1;
-  messagerec m;
   char filename[101], date[10];
-  float msbin;
-  int cur_block = 2;
-
-  long len;
-  int amount_blocks = 0;
 
   postrec* pr = get_post(msgnum);
   if (pr == nullptr) {
@@ -420,12 +412,11 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     }
   }
   memset(&qwk_info->qwk_rec, ' ', sizeof(qwk_info->qwk_rec));
-  char* ss = nullptr;
-  m = (m1->msg);
-  f = -1;
-  cur = 0;
+  messagerec m = (m1->msg);
+  int cur = 0;
 
-  ss = readfile(&m, fn, &len);
+  long len;
+  char* ss = readfile(&m, fn, &len);
 
   if (ss == nullptr) {
     GetSession()->bout.WriteFormatted("File not found.");
@@ -433,8 +424,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     return;
   }
 
-  p = 0;
-
+  int p = 0;
   // n = name...
   while ((ss[p] != 13) && ((long)p < len) && (p < 200) && !hangup) {
     n[p] = ss[p];
@@ -444,7 +434,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   ++p;
 
   // if next is ascii 10 (linefeed?) go one more...
-  p1 = 0;
+  int p1 = 0;
   if (ss[p] == 10) {
     ++p;
   }
@@ -479,7 +469,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   strip_heart_colors(n);
   strncpy(qwk_info->qwk_rec.from, strupr(n), 25);
 
-  time_now = localtime((time_t *)&m1->daten);
+  struct tm *time_now = localtime((time_t *)&m1->daten);
   strftime(date, 10, "%m-%d-%y", time_now);
   strncpy(qwk_info->qwk_rec.date, date, 8);
 
@@ -489,7 +479,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   len = len - cur;
   make_qwk_ready(ss + cur, &len, qwk_address);
 
-  amount_blocks = ((int)len / sizeof(qwk_info->qwk_rec)) + 2;
+  int amount_blocks = ((int)len / sizeof(qwk_info->qwk_rec)) + 2;
 
   // Save Qwk Record
   sprintf(qwk_info->qwk_rec.amount_blocks, "%d", amount_blocks);
@@ -508,7 +498,6 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   qwk_info->qwk_rec.conf_num = usub[GetSession()->GetCurrentMessageArea()].subnum + 1;
   qwk_info->qwk_rec.logical_num = qwk_info->qwk_rec_num;
 
-
   if (append_block(qwk_info->file, (void *)&qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
     qwk_info->abort = 1; // Must be out of disk space
     GetSession()->bout.Write("Write error");
@@ -517,9 +506,9 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   // Save Qwk NDX
   qwk_info->qwk_ndx.pos = static_cast<float>(qwk_info->qwk_rec_pos);
+  float msbin;
   _fieeetomsbin(&qwk_info->qwk_ndx.pos, &msbin);
   qwk_info->qwk_ndx.pos = msbin;
-
   qwk_info->qwk_ndx.nouse = 0;
 
   if (!qwk_info->in_email) { // Only if currently doing messages...
@@ -540,12 +529,12 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   }
 
   // Setup next NDX position
-  qwk_info->qwk_rec_pos += amount_blocks;
+  qwk_info->qwk_rec_pos += static_cast<uint16_t>(amount_blocks);
 
+  int cur_block = 2;
   while (cur_block <= amount_blocks && !hangup) {
     int this_pos;
     memset(&qwk_info->qwk_rec, ' ', sizeof(qwk_info->qwk_rec));
-
     this_pos = ((cur_block - 2) * sizeof(qwk_info->qwk_rec));
 
     if (this_pos < len) {
@@ -555,16 +544,12 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     // Save this block
     append_block(qwk_info->file, (void *)&qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));
 
-
     this_pos += sizeof(qwk_info->qwk_rec);
     ++cur_block;
   }
   // Global variable on total amount of records saved
   ++qwk_info->qwk_rec_num;
 
-  if (f != -1) {
-    close(f);
-  }
   if (ss != nullptr) {
     free(ss);
   }
@@ -1132,7 +1117,7 @@ int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
     return 0;
   }
 
-  *max_msgs = atoi(temp); 
+  *max_msgs = static_cast<uint16_t>(atoi(temp)); 
 
   GetSession()->bout.WriteFormatted("Most messages you want per sub? ");
   GetSession()->bout.ColorizedInputField(5);
@@ -1142,7 +1127,7 @@ int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
     return 0;
   }
 
-  *max_per_sub = atoi(temp);
+  *max_per_sub = static_cast<uint16_t>(atoi(temp)); 
 
   return 1;
 }
