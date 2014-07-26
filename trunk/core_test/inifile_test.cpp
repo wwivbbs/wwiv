@@ -82,6 +82,14 @@ TEST_F(IniFileTest, Single_GetValue) {
   ini.Close();
 }
 
+TEST_F(IniFileTest, Single_GetValue_Comment) {
+  const string path = this->CreateIniFile("TEST", { "FOO=BAR  ; BAZ" } );
+  IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
+  ASSERT_TRUE(ini.IsOpen());
+  EXPECT_STREQ("BAR", ini.GetValue("FOO"));
+  ini.Close();
+}
+
 TEST_F(IniFileTest, Single_GetNumericValue) {
   const string path = this->CreateIniFile("TEST", { "FOO=1234", "BAR=4321", "baz=12345" } );
   IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
