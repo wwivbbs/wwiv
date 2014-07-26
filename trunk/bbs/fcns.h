@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_FCNS_H__
 #define __INCLUDED_FCNS_H__
 
+#include <cstdint>
 #include <ctime>
 #include <string>
 
@@ -785,8 +786,8 @@ void add_ass(int nNumPoints, const char *pszReason);
 
 bool open_qscn();
 void close_qscn();
-void read_qscn(int nUserNumber, unsigned long *qscn, bool bStayOpen, bool bForceRead = false);
-void write_qscn(int nUserNumber, unsigned long *qscn, bool bStayOpen);
+void read_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen, bool bForceRead = false);
+void write_qscn(int nUserNumber, uint32_t* qscn, bool bStayOpen);
 
 // File: valscan.cpp
 

@@ -31,7 +31,7 @@
 void input_phone();
 bool check_name(const std::string userName);
 void input_callsign();
-int  find_new_usernum(const WUser *pUser, unsigned long *qsc);
+int  find_new_usernum(const WUser *pUser, uint32_t* qsc);
 void cln_nu();
 
 void CreateNewUserRecord();
@@ -613,7 +613,7 @@ void input_ansistat() {
 }
 
 
-int find_new_usernum(const WUser* pUser, unsigned long *qsc) {
+int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
   WFile userFile(syscfg.datadir, USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile, WFile::shareUnknown,

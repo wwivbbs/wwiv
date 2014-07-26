@@ -134,7 +134,7 @@ __EXTRN__ int
 g_flags,
 com_speed;
 
-__EXTRN__ unsigned long
+__EXTRN__ uint32_t
 *qsc,
 *qsc_n,
 *qsc_q,
@@ -184,7 +184,7 @@ __EXTRN__ confrec *subconfs, *dirconfs;
 
 __EXTRN__ int iia;
 
-__EXTRN__ long last_iia;
+__EXTRN__ int32_t last_iia;
 
 // from version.cpp
 extern const char *wwiv_version;

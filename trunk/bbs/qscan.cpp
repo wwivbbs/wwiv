@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "qscan.h"
 
+#include <cstdint>
 #include <memory>
 #include "bbs.h"
 #include "vars.h"
@@ -27,7 +28,7 @@ namespace wwiv {
 namespace bbs {
 
 SaveQScanPointers::SaveQScanPointers() : restore_(false) {
-  save_qsc_p_.reset(new long[GetSession()->GetMaxNumberMessageAreas()]);
+  save_qsc_p_.reset(new uint32_t[GetSession()->GetMaxNumberMessageAreas()]);
   for (int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++) {
     save_qsc_p_[i] = qsc_p[i];
   }

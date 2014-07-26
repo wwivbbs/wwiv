@@ -48,14 +48,14 @@
 struct ini_flags_type {
   int     strnum;
   bool    sense;
-  unsigned long value;
+  uint32_t value;
 };
 
 using wwiv::bbs::TempDisablePause;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 
-unsigned long GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, unsigned long flags);
+uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
 
 
 // Turns a string into a bitmapped unsigned short flag for use with
@@ -1325,7 +1325,7 @@ void WApplication::InitializeBBS() {
   uconfdir = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   WWIV_ASSERT(uconfdir != NULL);
 
-  qsc = static_cast<unsigned long *>(BbsAllocA(syscfg.qscn_len));
+  qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(qsc != NULL);
   qsc_n = qsc + 1;
   qsc_q = qsc_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
@@ -1430,7 +1430,7 @@ void WApplication::create_phone_file() {
 }
 
 
-unsigned long GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, unsigned long flags) {
+uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags) {
   for (int i = 0; i < nFlagNumber; i++) {
     const char* ss = INI_OPTIONS_ARRAY[ fs[i].strnum ];
     if (ss && pIniFile->GetValue(ss)) {

@@ -286,12 +286,12 @@ void swap_dirs(int dir1, int dir2) {
 
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
-  unsigned long *pTempQScan = static_cast<unsigned long *>(BbsAllocA(syscfg.qscn_len));
+  uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(pTempQScan != NULL);
   if (pTempQScan) {
     for (int i = 1; i <= nNumUserRecords; i++) {
       read_qscn(i, pTempQScan, true);
-      unsigned long *pTempQScan_n = pTempQScan + 1;
+      uint32_t* pTempQScan_n = pTempQScan + 1;
 
       int i1 = 0;
       if (pTempQScan_n[dir1 / 32] & (1L << (dir1 % 32))) {
@@ -353,14 +353,14 @@ void insert_dir(int n) {
 
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
-  unsigned long * pTempQScan = static_cast<unsigned long *>(BbsAllocA(syscfg.qscn_len));
+  uint32_t* pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(pTempQScan != NULL);
   if (pTempQScan) {
-    unsigned long *pTempQScan_n = pTempQScan + 1;
+   uint32_t* pTempQScan_n = pTempQScan + 1;
 
-    unsigned long m1 = 1L << (n % 32);
-    unsigned long m2 = 0xffffffff << ((n % 32) + 1);
-    unsigned long m3 = 0xffffffff >> (32 - (n % 32));
+    uint32_t m1 = 1L << (n % 32);
+    uint32_t m2 = 0xffffffff << ((n % 32) + 1);
+    uint32_t m3 = 0xffffffff >> (32 - (n % 32));
 
     for (i = 1; i <= nNumUserRecords; i++) {
       read_qscn(i, pTempQScan, true);
@@ -381,7 +381,7 @@ void insert_dir(int n) {
 
 void delete_dir(int n) {
   int i, i1;
-  unsigned long *pTempQScan, *pTempQScan_n, m2, m3;
+  uint32_t *pTempQScan, *pTempQScan_n, m2, m3;
   SUBCONF_TYPE nconv;
 
   nconv = static_cast< SUBCONF_TYPE >(n);
@@ -402,7 +402,7 @@ void delete_dir(int n) {
 
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
-  pTempQScan = static_cast<unsigned long *>(BbsAllocA(syscfg.qscn_len));
+  pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   WWIV_ASSERT(pTempQScan != NULL);
   if (pTempQScan) {
     pTempQScan_n = pTempQScan + 1;
