@@ -152,7 +152,7 @@ bool IniFile::StringToBoolean(const char *p) {
     return false;
   }
   char ch = wwiv::UpperCase<char>(*p);
-  return (ch == 'Y' || ch == 'T' || ch == '1') ? true : false;
+  return (ch == 'Y' || ch == 'T' || ch == '1');
 }
 
 
@@ -179,9 +179,7 @@ char *IniFile::ReadSectionIntoMemory(long begin, long end) {
 
 void IniFile::FindSubsectionArea(const std::string& section, long *begin, long *end) {
   *begin = *end = -1L;
-  std::stringstream ss;
-  ss << "[" << section << "]";
-  std::string header = ss.str();
+  const std::string header = StrCat("[", section, "]");
 
   WTextFile file(file_name_, "rt");
   if (!file.IsOpen()) {
@@ -200,7 +198,7 @@ void IniFile::FindSubsectionArea(const std::string& section, long *begin, long *
       // Is it a subsection header?
       if ((strlen(s) > 2) && (s[0] == '[') && (s[strlen(s) - 1] == ']')) {
         // Does it match requested subsection name (section)?
-        if (header == s) {   //if ( WWIV_STRNICMP(&s[0], &szTempHeader[0], strlen( szTempHeader ) ) == 0 )
+        if (header == s) {
           if (*begin == -1L) {
             *begin = file.GetPosition();
           }
@@ -295,7 +293,7 @@ void IniFile::Parse(char *pBuffer, ini_info_type * pIniSection) {
   pIniSection->pValueArray = static_cast<char **>(malloc(count * sizeof(char *)));
   if (!pIniSection->pValueArray) {
     free(pIniSection->pKeyArray);
-    pIniSection->pKeyArray = NULL;
+    pIniSection->pKeyArray = nullptr;
     return;
   }
   // go through and add in pszKey-pValueArray pairs
@@ -312,7 +310,7 @@ void IniFile::Parse(char *pBuffer, ini_info_type * pIniSection) {
       if (*ss) {
         ss1++;
         ss2 = ss1;
-        while ((ss2[0]) && (ss2[1]) && ((ss2 = strchr(ss2 + 1, ';')) != NULL)) {
+        while ((ss2[0]) && (ss2[1]) && ((ss2 = strchr(ss2 + 1, ';')) != nullptr)) {
           if (isspace(*(ss2 - 1))) {
             *ss2 = 0;
             break;
