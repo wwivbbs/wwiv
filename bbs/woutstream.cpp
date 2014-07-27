@@ -33,13 +33,23 @@ std::ostream::int_type WOutStreamBuffer::overflow(std::ostream::int_type c) {
 }
 
 std::streamsize WOutStreamBuffer::xsputn(const char *pszText, std::streamsize numChars) {
+  //fprintf(stderr, "{xsputn[%s] #%u}\n", pszText, numChars);
   if (numChars == 0) {
     return 0;
   }
-  char szBuffer[ 4096 ];
-  strncpy(szBuffer, pszText, 4096);
-  szBuffer[ numChars ] = '\0';
-  return GetSession()->bout.Write(szBuffer);
+  CheckForHangup();
+  if (hangup) {
+    return 0;
+  }
+  for (int i = 0; i < numChars; i++) {
+    if (pszText[i] == 0) {
+      // Hit an embedded \0, stop early.
+      break;
+    }
+    bputch(pszText[i], true);
+  }
+  FlushOutComChBuffer();
+  return numChars;
 }
 
 
