@@ -18,10 +18,13 @@
 /**************************************************************************/
 #include <algorithm>
 #include <memory>
+#include <string>
 
 #include "wwiv.h"
 #include "wcomm.h"
 #include "core/wtextfile.h"
+
+using std::string;
 
 //
 // Local functions
@@ -31,9 +34,9 @@ int GetDoor32CommType();
 int GetDoor32TimeLeft(double seconds);
 void GetNamePartForDropFile(bool lastName, char *pszName);
 void create_drop_files();
-std::string GetComSpeedInDropfileFormat(unsigned long lComSpeed);
+string GetComSpeedInDropfileFormat(unsigned long lComSpeed);
 
-const std::string create_filename(int nDropFileType) {
+const string create_filename(int nDropFileType) {
   std::ostringstream os;
   os << syscfgovr.tempdir;
   switch (nDropFileType) {
@@ -60,7 +63,7 @@ const std::string create_filename(int nDropFileType) {
     os << "chain.txt";
     break;
   }
-  return std::string(os.str());
+  return string(os.str());
 }
 
 
@@ -79,13 +82,13 @@ void GetNamePartForDropFile(bool lastName, char *pszName) {
   }
 }
 
-std::string GetComSpeedInDropfileFormat(unsigned long lComSpeed) {
+string GetComSpeedInDropfileFormat(unsigned long lComSpeed) {
   if (lComSpeed == 1 || lComSpeed == 49664) {
     lComSpeed = 115200;
   }
   std::ostringstream os;
   os << lComSpeed;
-  return std::string(os.str());
+  return string(os.str());
 }
 
 
@@ -96,7 +99,7 @@ long GetMinutesRemainingForDropFile() {
 
 /** make DORINFO1.DEF (RBBS and many others) dropfile */
 void CreateDoorInfoDropFile() {
-  std::string fileName = create_filename(CHAINFILE_DORINFO);
+  string fileName = create_filename(CHAINFILE_DORINFO);
   WFile::Remove(fileName);
   WTextFile fileDorInfoSys(fileName, "wt");
   if (fileDorInfoSys.IsOpen()) {
@@ -129,7 +132,7 @@ void CreateDoorInfoDropFile() {
 
 /** make PCBOARD.SYS (PC Board) drop file */
 void CreatePCBoardSysDropFile() {
-  std::string fileName = create_filename(CHAINFILE_PCBOARD);
+  string fileName = create_filename(CHAINFILE_PCBOARD);
   WFile pcbFile(fileName);
   pcbFile.Delete();
   if (pcbFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
@@ -149,7 +152,7 @@ void CreatePCBoardSysDropFile() {
       pcb.ansi = '0';
     }
     pcb.nodechat = 32;
-    std::string com_speed_str = GetComSpeedInDropfileFormat(com_speed);
+    string com_speed_str = GetComSpeedInDropfileFormat(com_speed);
     sprintf(pcb.openbps, "%-5.5s", com_speed_str.c_str());
     if (!incom) {
       strcpy(pcb.connectbps, "Local");
@@ -203,7 +206,7 @@ void CreatePCBoardSysDropFile() {
 
 void CreateCallInfoBbsDropFile() {
   // make CALLINFO.BBS (WildCat!)
-  std::string fileName = create_filename(CHAINFILE_CALLINFO);
+  string fileName = create_filename(CHAINFILE_CALLINFO);
   WFile::Remove(fileName);
   WTextFile file(fileName, "wt");
   if (file.IsOpen()) {
@@ -220,11 +223,15 @@ void CreateCallInfoBbsDropFile() {
     default:
       file.WriteFormatted("3\n");
     }
-    file.WriteFormatted(" \n%d\n%ld\n%s\n%s\n%ld\n%ld\n%.5s\n0\nABCD\n0\n0\n0\n0\n",
-                        GetSession()->GetCurrentUser()->GetSl(), GetMinutesRemainingForDropFile(),
+    string t = times();
+    file.WriteFormatted(" \n%d\n%ld\n%s\n%s\n%d\n%d\n%.5s\n0\nABCD\n0\n0\n0\n0\n",
+                        GetSession()->GetCurrentUser()->GetSl(),
+			GetMinutesRemainingForDropFile(),
                         GetSession()->GetCurrentUser()->HasAnsi() ? "COLOR" : "MONO",
-                        "X" /* GetSession()->GetCurrentUser()->GetPassword() */ , GetSession()->usernum, static_cast<long>(timeon / 60),
-                        times());
+                        "X" /* GetSession()->GetCurrentUser()->GetPassword() */,
+			GetSession()->usernum,
+			static_cast<int>(timeon / 60),
+                        t.c_str());
     file.WriteFormatted("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
                         GetSession()->GetCurrentUser()->GetVoicePhoneNumber(),
                         GetSession()->GetCurrentUser()->GetLastOn(),
