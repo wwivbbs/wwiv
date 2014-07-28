@@ -435,11 +435,11 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
       if (status != SET) {
         if (bInsert) {
           bInsert = false;
-	  out->SetIndicatorMode(IndicatorMode::OVERWRITE);
+	        out->SetIndicatorMode(IndicatorMode::OVERWRITE);
           out->GotoXY(cx + pos, cy);
         } else {
           bInsert = true;
-	  out->SetIndicatorMode(IndicatorMode::INSERT);
+	        out->SetIndicatorMode(IndicatorMode::INSERT);
           out->GotoXY(cx + pos, cy);
         }
       }
@@ -515,15 +515,17 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
     case 0x7f:  // yet some other delete key
     case KEY_BACKSPACE:  // curses
     case BACKSPACE:  //backspace
-      if (pos > 0) {
-        for (i = pos - 1; i < len; i++) {
-          s[i] = s[i + 1];
+      if (status != SET) {
+        if (pos > 0) {
+          for (i = pos - 1; i < len; i++) {
+            s[i] = s[i + 1];
+          }
+          s[len - 1] = static_cast<char>(background_character);
+          pos--;
+          out->GotoXY(cx, cy);
+          out->Puts(s);
+          out->GotoXY(cx + pos, cy);
         }
-        s[len - 1] = static_cast<char>(background_character);
-        pos--;
-        out->GotoXY(cx, cy);
-        out->Puts(s);
-        out->GotoXY(cx + pos, cy);
       }
       break;
     case CA: // control-a
