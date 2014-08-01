@@ -24,6 +24,9 @@
 #include "bbs/printfile.h"
 #include "core/wtextfile.h"
 
+using wwiv::core::FilePath;
+using wwiv::core::IniFile;
+
 //
 // Local function prototypes
 //
@@ -770,7 +773,7 @@ bool CanCreateNewUserAccountHere() {
 
 
 bool UseMinimalNewUserInfo() {
-  wwiv::core::IniFile iniFile(GetApplication()->GetHomeDir(), WWIV_INI, INI_TAG);
+  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     return iniFile.GetBooleanValue("NEWUSER_MIN");
   }
