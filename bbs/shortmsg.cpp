@@ -168,7 +168,7 @@ void ssm(int nUserNum, int nSystemNum, const char *pszFormat, ...) {
   char szMessageText[2048];
 
   va_start(ap, pszFormat);
-  WWIV_VSNPRINTF(szMessageText, sizeof(szMessageText), pszFormat, ap);
+  vsnprintf(szMessageText, sizeof(szMessageText), pszFormat, ap);
   va_end(ap);
 
   if (nSystemNum == 0) {

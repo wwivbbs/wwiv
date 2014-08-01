@@ -88,7 +88,7 @@ int check_for_files_arc(const char *pszFileName) {
           char szArcFileName[ MAX_PATH ];
           strncpy(szArcFileName, a.name, 13);
           szArcFileName[13] = 0;
-          WWIV_STRUPR(szArcFileName);
+          strupr(szArcFileName);
           if (bad_filename(szArcFileName)) {
             file.Close();
             return 1;
@@ -136,7 +136,7 @@ int check_for_files_zip(const char *pszFileName) {
       case ZIP_LOCAL_SIG:
         file.Read(&zl, sizeof(zl));
         READ_FN(zl.filename_len);
-        WWIV_STRUPR(s);
+        strupr(s);
         if (bad_filename(s)) {
           file.Close();
           return 1;
@@ -147,7 +147,7 @@ int check_for_files_zip(const char *pszFileName) {
       case ZIP_CENT_START_SIG:
         file.Read(&zc, sizeof(zc));
         READ_FN(zc.filename_len);
-        WWIV_STRUPR(s);
+        strupr(s);
         if (bad_filename(s)) {
           file.Close();
           return 1;
@@ -220,7 +220,7 @@ int check_for_files_lzh(const char *pszFileName) {
       break;
     }
     szBuffer[a.fn_len] = '\0';
-    WWIV_STRUPR(szBuffer);
+    strupr(szBuffer);
     if (bad_filename(szBuffer)) {
       err = 1;
       break;
@@ -272,7 +272,7 @@ int check_for_files_arj(const char *pszFileName) {
         file.Read(&sh, 2);
       }
       lCurPos += l2;
-      WWIV_STRUPR(szBuffer);
+      strupr(szBuffer);
       if (bad_filename(szBuffer)) {
         file.Close();
         return 1;

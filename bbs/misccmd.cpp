@@ -325,7 +325,7 @@ void list_users(int mode) {
       char s5[ 41 ];
       strcpy(s5, user.GetCity());
       if (!strstr(user.GetName(), szFindText) &&
-          !strstr(WWIV_STRUPR(s5), szFindText) &&
+          !strstr(strupr(s5), szFindText) &&
           !strstr(user.GetState(), szFindText)) {
         ok = false;
       }

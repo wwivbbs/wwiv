@@ -60,8 +60,6 @@ extern initinfo_rec initinfo;
 
 #if defined(__unix__)
 
-#define stricmp strcasecmp
-#define strnicmp strncasecmp
 #define _open open
 #define _close close
 #define _lseek lseek

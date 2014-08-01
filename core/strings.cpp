@@ -54,7 +54,7 @@ string StringPrintf(const char *pszFormattedText, ...) {
 
   va_list ap;
   va_start(ap, pszFormattedText);
-  WWIV_VSNPRINTF(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
+  vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
   va_end(ap);
   return string(szBuffer);
 }
@@ -134,7 +134,7 @@ int StringCompareIgnoreCase(const char *pszString1, const char *pszString2) {
   WWIV_ASSERT(pszString1);
   WWIV_ASSERT(pszString2);
 
-  return WWIV_STRICMP(pszString1, pszString2);
+  return strcasecmp(pszString1, pszString2);
 }
 
 
@@ -235,36 +235,23 @@ bool IsColorCode(char c) {
 
 
 
+char *stripcolors(const char *pszOrig) {
+  WWIV_ASSERT(pszOrig);
+  static char szNewString[255];
+  const string result = stripcolors(string(pszOrig));
+  strcpy(szNewString, result.c_str());
+  return szNewString;
+}
+
 /**
  * Removes the WWIV color codes and pipe codes from the string
  *
  * @param pszOrig The text from which to remove the color codes.
  * @return A new string without the color codes
  */
-char *stripcolors(const char *pszOrig) {
-  WWIV_ASSERT(pszOrig);
-  static char szNewString[ 255 ];
-  const char * po = pszOrig;
-  char * pn = szNewString;
-  while (*po) {
-    if ((*po == '|') && *(po + 1) && *(po + 2) &&
-        IsColorCode(*(po + 1)) &&
-        IsColorCode(*(po + 2))) {
-      po += 2;
-    } else if (*po == 3 && *(po + 1) && isdigit(*(po + 1))) {
-      po++;
-    } else {
-      *pn++ = *po;
-    }
-    po++;
-  }
-  *pn++ = '\0';
-  return szNewString;
-}
-//TODO(rushfan): Write unit tests for this
-std::string stripcolors(const std::string& orig) {
+std::string stripcolors(const string orig) {
   std::ostringstream os;
-  for (std::string::const_iterator i = orig.begin(); i != orig.end(); i++) {
+  for (string::const_iterator i = orig.begin(); i != orig.end(); i++) {
     if (*i == '|' && (i + 1) != orig.end() && (i + 2) != orig.end() && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {
       ++i;
       ++i;
@@ -274,7 +261,7 @@ std::string stripcolors(const std::string& orig) {
       os << *i;
     }
   }
-  return std::string(os.str());
+  return string(os.str());
 }
 
 
@@ -389,42 +376,38 @@ char *StringTrim(char *pszString) {
  * @param s the string from which to remove spaces
  * @return s with spaces removed.
  */
-std::string& StringTrim(std::string& s) {
-  std::string::size_type pos = s.find_first_not_of(DELIMS_WHITE);
-  s.erase(0, pos);
+std::string StringTrim(std::string* s) {
+  std::string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
+  s->erase(0, pos);
 
-  pos = s.find_last_not_of(DELIMS_WHITE);
-  s.erase(pos + 1);
+  pos = s->find_last_not_of(DELIMS_WHITE);
+  s->erase(pos + 1);
 
-  return s;
+  return *s;
 }
 
 
-std::string& StringTrimBegin(std::string& s) {
-  std::string::size_type pos = s.find_first_not_of(DELIMS_WHITE);
-  s.erase(0, pos);
-  return s;
+std::string StringTrimBegin(std::string* s) {
+  std::string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
+  s->erase(0, pos);
+  return *s;
 }
 
-
-std::string& StringTrimEnd(std::string& s) {
-  std::string::size_type pos = s.find_last_not_of(DELIMS_WHITE);
-  s.erase(pos + 1);
-  return s;
+std::string StringTrimEnd(std::string* s) {
+  std::string::size_type pos = s->find_last_not_of(DELIMS_WHITE);
+  s->erase(pos + 1);
+  return *s;
 }
 
-
-std::string& StringUpperCase(std::string& s) {
-  std::transform(s.begin(), s.end(), s.begin(), (int(*)(int)) toupper);
-  return s;
+std::string StringUpperCase(std::string* s) {
+  std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) toupper);
+  return *s;
 }
 
-
-std::string& StringLowerCase(std::string& s) {
-  std::transform(s.begin(), s.end(), s.begin(), (int(*)(int)) tolower);
-  return s;
+std::string StringLowerCase(std::string* s) {
+  std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) tolower);
+  return *s;
 }
-
 
 /**
  * Returns a pointer to the 1st occurence of pszPattern inside of s1 in a case
@@ -442,7 +425,7 @@ char *stristr(char *pszString, char *pszPattern) {
   int len = strlen(pszPattern), pos = 0;
 
   while (pszString[pos]) {
-    if (WWIV_STRNICMP(pszString + pos, pszPattern, len) == 0) {
+    if (strncasecmp(pszString + pos, pszPattern, len) == 0) {
       return (pszString + pos);
     }
     ++pos;
@@ -481,42 +464,6 @@ void single_space(char *pszText) {
   }
 }
 
-
-char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const char *brk) {
-  pszToken[0] = '\0';
-
-  WWIV_ASSERT(pszText);
-  WWIV_ASSERT(pszToken);
-  WWIV_ASSERT(brk);
-
-  if (!pszText || !*pszText) {
-    return nullptr;
-  }
-
-  char* lim = pszToken + nTokenLength - 1;
-  bool bFoundFirst = false;
-  while (*pszText && pszToken < lim) {
-    bool bCountThis = true;
-    for (const char* b = brk; *b; b++) {
-      if (*pszText == *b) {
-        if (bFoundFirst) {
-          *pszToken = 0;
-          return const_cast<char *>(pszText);
-        } else {
-          bCountThis = false;
-        }
-      }
-    }
-    if (bCountThis) {
-      *pszToken++ = *pszText++;
-      bFoundFirst = true;
-    } else {
-      pszText++;
-    }
-  }
-  *pszToken = '\0';
-  return const_cast<char *>(pszText);
-}
 
 char *StringRemoveWhitespace(char *str) {
   WWIV_ASSERT(str);
@@ -562,27 +509,6 @@ char *StringRemoveChar(const char *pszString, char chCharacterToRemove) {
   return static_cast< char * >(s_strip_string);
 }
 
-
-char *StringReplace(char *pszString, size_t nMaxBufferSize, const char *pszOldString, const char *pszNewString) {
-  char *p, *q;
-
-  WWIV_ASSERT(pszString);
-  WWIV_ASSERT(pszOldString);
-  WWIV_ASSERT(pszNewString);
-
-  if (nullptr == (p = strstr(pszString, pszOldString))) {
-    return pszString;
-  }
-  int nOldLen = strlen(pszOldString);
-  int nNewLen = strlen(pszNewString);
-  if ((strlen(pszString) + nNewLen - nOldLen + 1) > nMaxBufferSize) {
-    return nullptr;
-  }
-  memmove(q = p + nNewLen, p + nOldLen, strlen(p + nOldLen) + 1);
-  memcpy(p, pszNewString, nNewLen);
-  return q;
-}
-
 void properize(char *pszText) {
   if (pszText == nullptr) {
     return;
@@ -597,7 +523,6 @@ void properize(char *pszText) {
     }
   }
 }
-
 
 std::string properize(const std::string text) {
   if (text.empty()) {
@@ -616,11 +541,3 @@ std::string properize(const std::string text) {
   }
   return std::string(os.str());
 }
-
-
-
-
-#if defined( WWIV_STRICMP )
-#undef WWIV_STRICMP
-#endif // WWIV_STRICMP
-

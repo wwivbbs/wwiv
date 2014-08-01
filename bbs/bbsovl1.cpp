@@ -137,7 +137,7 @@ void send_email() {
   std::string::size_type atpos = username.find_first_of("@");
   if (atpos != std::string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
     if (username.find("@32767") == std::string::npos) {
-      StringLowerCase(username);
+      StringLowerCase(&username);
       username += " @32767";
     }
   }

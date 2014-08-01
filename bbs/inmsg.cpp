@@ -460,7 +460,7 @@ void GetMessageTitle(char *pszTitle, bool force_title) {
       char s1[ 255 ];
       char ch = '\0';
       StringTrim(irt);
-      if (WWIV_STRNICMP(stripcolors(irt), "re:", 3) != 0) {
+      if (strncasecmp(stripcolors(irt), "re:", 3) != 0) {
         if (GetSession()->IsNewMailWatiting()) {
           sprintf(s1, "%s", irt);
           irt[0] = '\0';
@@ -607,8 +607,8 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
       }
     }
   }
-  if ((WWIV_STRNICMP("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-      (WWIV_STRNICMP("filenet", GetSession()->GetNetworkName(), 7) == 0)) {
+  if ((strncasecmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
+      (strncasecmp("filenet", GetSession()->GetNetworkName(), 7) == 0)) {
     if (GetSession()->usenetReferencesLine.length() > 0) {
       sprintf(szBuffer, "%c0RReferences: %s", CD, GetSession()->usenetReferencesLine.c_str());
       AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);

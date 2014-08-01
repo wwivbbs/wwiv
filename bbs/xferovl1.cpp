@@ -137,7 +137,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
           }
           *(sss[0] + i4) = 0;
           s[i2] = 0;
-          WWIV_STRREV(s);
+          strrev(s);
           if (strlen(s) > static_cast<unsigned int>(GetSession()->GetCurrentUser()->GetScreenChars() - 1)) {
             s[ GetSession()->GetCurrentUser()->GetScreenChars() - 2 ] = '\0';
           }

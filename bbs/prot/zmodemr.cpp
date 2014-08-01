@@ -253,7 +253,7 @@ int GotSinitData( ZModem *info, int crcGood ) {
 	}
 	info->attn = NULL;
 	if( info->buffer[0] != '\0' ) {
-		info->attn = WWIV_STRDUP(reinterpret_cast<char*>( info->buffer ) );
+		info->attn = strdup(reinterpret_cast<char*>( info->buffer ) );
 	}
 	return ZXmitHdrHex(ZACK, ZEnc4(SerialNo), info);
 }
@@ -313,7 +313,7 @@ void parseFileName( ZModem *info, char *fileinfo ) {
 	if( info->filename != NULL ) {
 		free(info->filename);
 	}
-	info->filename = WWIV_STRDUP(fileinfo);
+	info->filename = strdup(fileinfo);
 	sscanf(ptr, "%d %lo %o %o %d %d %d", &info->len, &info->date,
 	       &info->mode, &serial, &info->filesRem, &info->bytesRem,
 	       &info->fileType);

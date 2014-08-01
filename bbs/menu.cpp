@@ -853,6 +853,42 @@ char *GetMenuDescription(const string& name, char *pszDesc) {
   return pszDesc;
 }
 
+// tokenize a line.
+static char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const char *brk) {
+  pszToken[0] = '\0';
+
+  WWIV_ASSERT(pszText);
+  WWIV_ASSERT(pszToken);
+  WWIV_ASSERT(brk);
+
+  if (!pszText || !*pszText) {
+    return nullptr;
+  }
+
+  char* lim = pszToken + nTokenLength - 1;
+  bool bFoundFirst = false;
+  while (*pszText && pszToken < lim) {
+    bool bCountThis = true;
+    for (const char* b = brk; *b; b++) {
+      if (*pszText == *b) {
+        if (bFoundFirst) {
+          *pszToken = 0;
+          return const_cast<char *>(pszText);
+        } else {
+          bCountThis = false;
+        }
+      }
+    }
+    if (bCountThis) {
+      *pszToken++ = *pszText++;
+      bFoundFirst = true;
+    } else {
+      pszText++;
+    }
+  }
+  *pszToken = '\0';
+  return const_cast<char *>(pszText);
+}
 
 void SetMenuDescription(const char *pszName, const char *pszDesc) {
   char szLine[MAX_PATH], szTok[26];

@@ -374,7 +374,7 @@ int matchuser(WUser *pUser) {
             }
           } else if (wwiv::strings::IsEquals(fcn, "REALNAME")) {
             strcpy(ts, pUser->GetRealName());
-            WWIV_STRUPR(ts);
+            strupr(ts);
             tmp = (strstr(ts, parm) != NULL);
           } else if (wwiv::strings::IsEquals(fcn, "BAUD")) {
             if (less) {

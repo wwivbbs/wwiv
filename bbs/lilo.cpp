@@ -118,7 +118,7 @@ int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
     if (GetSession()->GetCurrentSpeed().length() > 0) {
       char szCurrentSpeed[ 81 ];
       strcpy(szCurrentSpeed, GetSession()->GetCurrentSpeed().c_str());
-      GetSession()->bout << "CONNECT " << WWIV_STRUPR(szCurrentSpeed) << "\r\n\r\n";
+      GetSession()->bout << "CONNECT " << strupr(szCurrentSpeed) << "\r\n\r\n";
     }
     std::string osVersion = WWIV_GetOSVersion();
     GetSession()->bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
@@ -189,7 +189,7 @@ int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
       if (szUserName[ 0 ] == GetSession()->GetCurrentUser()->GetRealName()[ 0 ]) {
         char szTempUserName[ 255 ];
         strcpy(szTempUserName, GetSession()->GetCurrentUser()->GetRealName());
-        if (wwiv::strings::IsEquals(szUserName, WWIV_STRUPR(szTempUserName)) &&
+        if (wwiv::strings::IsEquals(szUserName, strupr(szTempUserName)) &&
             !GetSession()->GetCurrentUser()->IsUserDeleted()) {
           GetSession()->bout << "|#5Do you mean " << GetSession()->GetCurrentUser()->GetUserNameAndNumber(i) << "? ";
           if (yesno()) {

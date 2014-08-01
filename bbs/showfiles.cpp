@@ -57,14 +57,14 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
   strcpy(ext, "");
 #endif
 
-  SNPRINTF(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", WWIV_STRUPR(stripfn(pszFileName)), drive, direc);
+  SNPRINTF(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
   int i = (GetSession()->GetCurrentUser()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
   GetSession()->bout << "|#7" << charstr(i, c) << s;
   i = GetSession()->GetCurrentUser()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
   GetSession()->bout << "|#7" << charstr(i, c);
 
   char szFullPathName[ MAX_PATH ];
-  SNPRINTF(szFullPathName, sizeof(szFullPathName), "%s%s", pszDirectoryName, WWIV_STRUPR(stripfn(pszFileName)));
+  SNPRINTF(szFullPathName, sizeof(szFullPathName), "%s%s", pszDirectoryName, strupr(stripfn(pszFileName)));
   WFindFile fnd;
   bool bFound = fnd.open(szFullPathName, 0);
   while (bFound) {

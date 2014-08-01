@@ -55,7 +55,7 @@ IniFile::IniFile(const std::string fileName, const std::string primary, const st
   string section("");
   string line;
   while (file.ReadLine(&line)) {
-    StringTrim(line);
+    StringTrim(&line);
     if (line.size() == 0) {
       continue;
     }
@@ -76,8 +76,8 @@ IniFile::IniFile(const std::string fileName, const std::string primary, const st
       }
       string key = line.substr(0, equals);
       string value = line.substr(equals + 1);
-      StringTrim(key);
-      StringTrim(value);
+      StringTrim(&key);
+      StringTrim(&value);
 
       string real_key = section + "." + key;
       data_[real_key] = value;

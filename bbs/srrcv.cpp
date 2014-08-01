@@ -322,7 +322,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
 
 
 void zmodem_receive(const char *pszFileName, bool *received) {
-  char *pszWorkingFileName = WWIV_STRDUP(pszFileName);
+  char *pszWorkingFileName = strdup(pszFileName);
   StringRemoveWhitespace(pszWorkingFileName);
 
   bool bOldBinaryMode = GetSession()->remoteIO()->GetBinaryMode();

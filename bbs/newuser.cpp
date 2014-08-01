@@ -556,7 +556,7 @@ void input_pw(WUser *pUser) {
     Input1(password, "", 8, false, INPUT_MODE_FILE_UPPER);
 
     std::string realName = GetSession()->GetCurrentUser()->GetRealName();
-    StringUpperCase(realName);
+    StringUpperCase(&realName);
     if (!CheckPasswordComplexity(pUser, password)) {
       ok = false;
       GetSession()->bout.NewLine(2);
@@ -844,7 +844,7 @@ void DoFullNewUser() {
       for (int nEditor = 0; nEditor < GetSession()->GetNumberOfEditors(); nEditor++) {
         char szEditorDesc[ 121 ];
         strcpy(szEditorDesc, editors[nEditor].description);
-        if (strstr(WWIV_STRUPR(szEditorDesc) , "WWIVEDIT") != NULL) {
+        if (strstr(strupr(szEditorDesc) , "WWIVEDIT") != NULL) {
           GetSession()->GetCurrentUser()->SetDefaultEditor(nEditor + 1);
           nEditor = GetSession()->GetNumberOfEditors();
         }

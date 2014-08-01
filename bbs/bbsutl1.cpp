@@ -63,8 +63,8 @@ void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSy
   } else if (atoi(ss + 1) == 0) {
     for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
       set_net_num(i);
-      if ((WWIV_STRNICMP("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-          ((WWIV_STRNICMP("filenet", GetSession()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767))) {
+      if ((strncasecmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
+          ((strncasecmp("filenet", GetSession()->GetNetworkName(), 7) == 0) && (*pSystemNumber == 32767))) {
         strcpy(net_email_name, szEmailAddress);
         for (ss1 = net_email_name; *ss1; ss1++) {
           if ((*ss1 >= 'A') && (*ss1 <= 'Z')) {
