@@ -252,7 +252,7 @@ int str_to_arword(const char *arstr) {
   char s[81];
 
   strcpy(s, arstr);
-  WWIV_STRUPR(s);
+  strupr(s);
 
   for (int i = 0; i < 16; i++) {
     if (strchr(s, i + 'A') != NULL) {

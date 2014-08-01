@@ -31,6 +31,7 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
 #include "subacc.h"
 #include "utility.h"
@@ -498,7 +499,7 @@ static void edit_net(int nn) {
             ss = strchr(szBuffer, ' ');
             if (ss) {
               *ss = 0;
-              if (stricmp(szOldNetworkName, szBuffer + 1) == 0) {
+              if (strcasecmp(szOldNetworkName, szBuffer + 1) == 0) {
                 fprintf(pOutputFile, "$%s %s", n->name, ss + 1);
               } else {
                 fprintf(pOutputFile, "%s %s", szBuffer, ss + 1);

@@ -198,7 +198,7 @@ void sysoplogf(const char *pszFormat, ...) {
   char szBuffer[2048];
 
   va_start(ap, pszFormat);
-  WWIV_VSNPRINTF(szBuffer, sizeof(szBuffer), pszFormat, ap);
+  vsnprintf(szBuffer, sizeof(szBuffer), pszFormat, ap);
   va_end(ap);
   sysoplog(szBuffer);
 }
@@ -210,7 +210,7 @@ void sysoplogfi(bool bIndent, const char *pszFormat, ...) {
   char szBuffer[2048];
 
   va_start(ap, pszFormat);
-  WWIV_VSNPRINTF(szBuffer, sizeof(szBuffer), pszFormat, ap);
+  vsnprintf(szBuffer, sizeof(szBuffer), pszFormat, ap);
   va_end(ap);
   sysoplog(szBuffer, bIndent);
 }

@@ -47,13 +47,14 @@
 #include "subsdirs.h"
 #include "system_info.h"
 #include "user_editor.h"
-#include "bbs/version.cpp"
 #include "wwivinit.h"
+#include "utility.h"
+#include "bbs/version.cpp"
 #include "bbs/wconstants.h"
 #include "platform/curses_io.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
 #include "core/wfndfile.h"
-#include "utility.h"
 
 initinfo_rec initinfo;
 configrec syscfg;
@@ -170,7 +171,7 @@ int WInitApp::main(int argc, char *argv[]) {
       switch (ch) {
       case 'P': {
         if (strlen(argv[i]) > 2) {
-          if (stricmp(argv[i] + 2, syscfg.systempw) == 0) {
+          if (strcasecmp(argv[i] + 2, syscfg.systempw) == 0) {
             pwok = 1;
           }
         }

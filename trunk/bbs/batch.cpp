@@ -619,11 +619,6 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
   sprintf(sx3, "%d", nSpeed);
   sprintf(sx2, "%d", syscfgovr.primaryport);
 
-  // Frank's hack for FDSZ on TELNET nodes
-  if (IsEqualsIgnoreCase(GetSession()->GetCurrentSpeed().c_str() , "TELNET")) {
-    StringReplace(pszCommandLine, strlen(pszCommandLine), "MDMDSZ", "FDSZ");
-  }
-
   std::string commandLine = stuff_in(pszCommandLine, sx1, sx2, downlist, sx3, uplist);
   if (!commandLine.empty()) {
     WWIV_make_abs_cmd(commandLine);

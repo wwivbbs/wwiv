@@ -28,7 +28,7 @@
 #define WWIV_FILE_SEPERATOR_CHAR  '\\'
 #define WWIV_FILE_SEPERATOR_STRING  "\\"
 
-#define WWIV_VSNPRINTF _vsnprintf
+#define vsnprintf _vsnprintf
 #define snprintf _snprintf
 
 #endif   // _WIN32
@@ -65,15 +65,9 @@
 #define _getcwd(a,b)  getcwd(a,b)
 #define mkdir(x)  mkdir(x, S_IRWXU | S_IRWXG)
 
-#define WWIV_VSNPRINTF vsnprintf
-
-
 #endif // defined ( __unix__ )
 
 #ifdef __APPLE__
-
-#define stricmp strcasecmp
-#define strnicmp strncasecmp
 
 #define _close close
 #define _write write

@@ -1146,7 +1146,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
       GetSession()->bout.Write("Now enter its bulletin name, in the format BLT-????.???");
       input(t, BNAME_SIZE);
 
-      if (strnicmp(t, "BLT-", 4) != 0) {
+      if (strncasecmp(t, "BLT-", 4) != 0) {
         GetSession()->bout.Write("Improper format");
         break;
       }

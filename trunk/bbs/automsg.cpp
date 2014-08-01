@@ -42,7 +42,7 @@ void read_automessage() {
     return;
   }
 
-  std::string authorName = StringTrimEnd(line);
+  std::string authorName = StringTrimEnd(&line);
   if (bAutoMessageAnonymous) {
     if (getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_post_anony) {
       std::stringstream ss;
@@ -56,7 +56,7 @@ void read_automessage() {
 
   int nLineNumber = 0;
   while (autoMessageFile.ReadLine(&line) && nLineNumber++ < 10) {
-    StringTrim(line);
+    StringTrim(&line);
     GetSession()->bout.Color(9);
     GetSession()->bout << "|#9" << line << wwiv::endl;
   }
@@ -76,7 +76,7 @@ void write_automessage() {
     GetSession()->bout << "|#7" << i + 1 << ":|#0";
     std::string line;
     inli(line, rollOver, 70);
-    StringTrimEnd(line);
+    StringTrimEnd(&line);
     lines.push_back(line);
   }
   GetSession()->bout.NewLine();
@@ -97,13 +97,7 @@ void write_automessage() {
     std::string authorName = GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum);
     file.WriteFormatted("%s\r\n", authorName.c_str());
     sysoplog("Changed Auto-message");
-#if defined(_MSC_VER) && (_MSC_VER < 1800)
-    for (std::vector<std::string>::const_iterator iter = lines.begin(); iter != lines.end(); ++iter) {
-      std::string line = (*iter);
-      StringTrimEnd(line);
-#else
     for (const auto& line : lines) {
-#endif
       file.Write(line);
       file.Write("\r\n");
       sysoplog(line, true);
