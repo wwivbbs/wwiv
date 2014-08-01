@@ -30,11 +30,16 @@
 #include <vector>
 #include <sys/stat.h>
 
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
+#include "core/inifile.h"
 #include "core/wwivport.h"
-#include "wwivinit.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "init/wwivinit.h"
+#include "initlib/input.h"
+
+using std::string;
+using wwiv::core::FilePath;
+using wwiv::core::IniFile;
 
 static const int COL1_POSITION = 21;
 static const int PROMPT_LINE = 6;
@@ -106,6 +111,26 @@ static void tweak_dir(char *s, int inst) {
 }
 
 void instance_editor() {
+  IniFile ini("wwiv.ini", "WWIV");
+  if (ini.IsOpen() && ini.GetValue("TEMP_DIRECTORY") != nullptr) {
+    string temp(ini.GetValue("TEMP_DIRECTORY"));
+    string batch(ini.GetValue("BATCH_DIRECTORY", temp.c_str()));
+    int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
+    out->Cls();
+
+    out->SetColor(Scheme::NORMAL);
+    out->GotoXY(0, 1);
+    Printf("Temporary Dir Pattern : %s\n", temp.c_str());
+    Printf("Batch Dir Pattern     : %s\n", batch.c_str());
+    Printf("Number of Instances:  : %d\n", num_instances);
+    nlx(2);
+    out->SetColor(Scheme::WARNING);
+    Printf("To change these values please edit 'wwiv.ini'\n");
+    nlx(2);
+    pausescr();
+    return;
+  }
+
   configoverrec instance;
   int num_instances = number_instances();
   out->Cls();

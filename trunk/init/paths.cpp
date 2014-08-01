@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "template.h"
+#include "paths.h"
 
 #include <curses.h>
 #include <cstdint>

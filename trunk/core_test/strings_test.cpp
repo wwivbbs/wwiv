@@ -25,8 +25,8 @@ using std::endl;
 using std::ostringstream;
 using std::string;
 
-using wwiv::strings::StrCat;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
+
 
 TEST(StringsTest, StringColors) {
     EXPECT_EQ( string(""), stripcolors(string("")) );
@@ -67,4 +67,25 @@ TEST(StringsTest, StrCat_Smoke) {
   EXPECT_EQ(kRushfan, StrCat("ru", "sh", "f", "an"));
   EXPECT_EQ(kRushfan, StrCat("r", "u", "sh", "f", "an"));
   EXPECT_EQ(kRushfan, StrCat("r", "u", "s", "h", "f", "an"));
+}
+
+TEST(StringsTest, StringReplace_EntireString) {
+  string s = "Hello";
+  string world = "World";
+  EXPECT_EQ(world, StringReplace(&s, "Hello", "World"));
+  EXPECT_EQ(world, s);
+}
+
+TEST(StringsTest, StringReplace_PartialString) {
+  string s = "Hello World";
+  string expected = "World World";
+  EXPECT_EQ(expected, StringReplace(&s, "Hello", "World"));
+  EXPECT_EQ(expected, s);
+}
+
+TEST(StringsTest, StringReplace_NotFound) {
+  string s = "Hello World";
+  string expected(s);
+  EXPECT_EQ(expected, StringReplace(&s, "Dude", "Where's my car"));
+  EXPECT_EQ(expected, s);
 }

@@ -168,8 +168,18 @@ unsigned char StringToUnsignedChar(const char *pszString) {
   return static_cast<unsigned char>(atoi(pszString));
 }
 
+const string& StringReplace(string* orig, const string old_string, const string new_string) {
+  string::size_type pos = orig->find(old_string, 0);
+  while (pos != string::npos) {
+    orig->replace(pos, old_string.length(),  new_string);
+    pos = orig->find(old_string, pos + new_string.length());
+  }
+  return *orig;
 }
-}
+
+
+}  // namespace strings
+}  // namespace wwiv
 
 
 /**

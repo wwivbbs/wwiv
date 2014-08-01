@@ -220,18 +220,7 @@ int WInitApp::main(int argc, char *argv[]) {
   }
   if (configfile < 0) {
     // slap in the defaults
-    for (int i = 0; i < 4; i++) {
-      syscfgovr.com_ISR[i + 1] = syscfg.com_ISR[i + 1];
-      syscfgovr.com_base[i + 1] = syscfg.com_base[i + 1];
-      syscfgovr.com_ISR[i + 5] = syscfg.com_ISR[i + 1];
-      syscfgovr.com_base[i + 5] = syscfg.com_base[i + 1];
-    }
-
-    syscfgovr.com_ISR[0] = syscfg.com_ISR[1];
-    syscfgovr.com_base[0] = syscfg.com_base[1];
-
     syscfgovr.primaryport = syscfg.primaryport;
-    strcpy(syscfgovr.modem_type, syscfg.modem_type);
     strcpy(syscfgovr.tempdir, syscfg.tempdir);
     strcpy(syscfgovr.batchdir, syscfg.batchdir);
   } else {

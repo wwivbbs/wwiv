@@ -172,7 +172,8 @@ static void init_files() {
   syscfg.com_base[4] = 0x2e8;
   Printf(".");
   syscfg.comport[1] = 0;
-  syscfg.primaryport = 0;
+  // Always use 1 for the primary port.
+  syscfg.primaryport = 1;
   Printf(".");
   syscfg.newuploads = 0;
   syscfg.maxusers = 500;
@@ -261,14 +262,7 @@ static void init_files() {
   syscfg.post_call_ratio = 0.0;
   strcpy(syscfg.modem_type, "H2400");
 
-  for (i = 0; i < 4; i++) {
-    syscfgovr.com_ISR[i + 1] = syscfg.com_ISR[i + 1];
-    syscfgovr.com_base[i + 1] = syscfg.com_base[i + 1];
-    syscfgovr.com_ISR[i + 5] = syscfg.com_ISR[i + 1];
-    syscfgovr.com_base[i + 5] = syscfg.com_base[i + 1];
-  }
   syscfgovr.primaryport = syscfg.primaryport;
-  strcpy(syscfgovr.modem_type, syscfg.modem_type);
   strcpy(syscfgovr.tempdir, syscfg.tempdir);
   strcpy(syscfgovr.batchdir, syscfg.batchdir);
 
