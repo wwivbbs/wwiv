@@ -44,6 +44,7 @@ short StringToShort(const char *pszString);
 unsigned short StringToUnsignedShort(const char *pszString);
 char StringToChar(const char *pszString);
 unsigned char StringToUnsignedChar(const char *pszString);
+const std::string& StringReplace(std::string* orig, const std::string old_string, const std::string new_string);
 
 }  // namespace strings
 

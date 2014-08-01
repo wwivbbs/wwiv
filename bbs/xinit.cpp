@@ -1,4 +1,3 @@
-
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
@@ -51,9 +50,11 @@ struct ini_flags_type {
   uint32_t value;
 };
 
+using std::string;
 using wwiv::bbs::TempDisablePause;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::strings::StringReplace;
 
 uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
 
@@ -184,9 +185,9 @@ static const char *get_key_str(int n, const char *index = nullptr) {
 
 
 #define INI_GET_ASV(s, f, func, d) \
-{if ((ss=iniFile.GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=NULL) GetSession()->asv.f = func (ss); else GetSession()->asv.f = d;}
+{if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=NULL) GetSession()->asv.f = func (ss); else GetSession()->asv.f = d;}
 #define INI_GET_CALLBACK(s, f, func, d) \
-{if ((ss=iniFile.GetValue(get_key_str(INI_STR_CALLBACK,s)))!=NULL) \
+{if ((ss=ini->GetValue(get_key_str(INI_STR_CALLBACK,s)))!=NULL) \
     GetSession()->cbv.f = func (ss); \
     else GetSession()->cbv.f = d;}
 
@@ -247,7 +248,7 @@ static ini_flags_type sysconfig_flags[] = {
 };
 
 
-bool WApplication::ReadINIFile() {
+IniFile* WApplication::ReadINIFile() {
   // can't allow user to change these on-the-fly
   unsigned short omb = GetSession()->max_batch;
   unsigned short omc = GetSession()->max_chains;
@@ -294,15 +295,15 @@ bool WApplication::ReadINIFile() {
   // initialize ini communication
   char szInstanceName[255];
   snprintf(szInstanceName, sizeof(szInstanceName), "WWIV-%u", GetInstanceNumber());
-  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), szInstanceName, INI_TAG);
-  if (iniFile.IsOpen()) {
+  IniFile* ini(new IniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), szInstanceName, INI_TAG));
+  if (ini->IsOpen()) {
     // found something
     // pull out event flags
     const char *ss;
     for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(GetApplication()->spawn_opts); nTempSpawnOptNum++) {
       char szKeyName[255];
       sprintf(szKeyName, "%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[nTempSpawnOptNum].name);
-      if ((ss = iniFile.GetValue(szKeyName)) != NULL) {
+      if ((ss = ini->GetValue(szKeyName)) != nullptr) {
         GetApplication()->spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
       }
     }
@@ -311,35 +312,35 @@ bool WApplication::ReadINIFile() {
     for (int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++) {
       char szKeyName[255];
       sprintf(szKeyName, "%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
-      if ((ss = iniFile.GetValue(szKeyName)) != NULL && atoi(ss) > 0) {
+      if ((ss = ini->GetValue(szKeyName)) != NULL && atoi(ss) > 0) {
         GetSession()->newuser_colors[nTempColorNum] = atoi(ss);
       }
       sprintf(szKeyName, "%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
-      if ((ss = iniFile.GetValue(szKeyName)) != NULL && atoi(ss) > 0) {
+      if ((ss = ini->GetValue(szKeyName)) != NULL && atoi(ss) > 0) {
         GetSession()->newuser_bwcolors[nTempColorNum] = atoi(ss);
       }
     }
 
-    GetSession()->SetMessageThreadingEnabled(iniFile.GetBooleanValue("THREAD_SUBS"));
-    GetSession()->SetCarbonCopyEnabled(iniFile.GetBooleanValue("ALLOW_CC_BCC"));
+    GetSession()->SetMessageThreadingEnabled(ini->GetBooleanValue("THREAD_SUBS"));
+    GetSession()->SetCarbonCopyEnabled(ini->GetBooleanValue("ALLOW_CC_BCC"));
 
 
     // pull out sysop-side colors
-    GetSession()->SetTopScreenColor(iniFile.GetNumericValue(get_key_str(INI_STR_TOPCOLOR),
+    GetSession()->SetTopScreenColor(ini->GetNumericValue(get_key_str(INI_STR_TOPCOLOR),
                                     GetSession()->GetTopScreenColor()));
-    GetSession()->SetUserEditorColor(iniFile.GetNumericValue(get_key_str(INI_STR_F1COLOR),
+    GetSession()->SetUserEditorColor(ini->GetNumericValue(get_key_str(INI_STR_F1COLOR),
                                      GetSession()->GetUserEditorColor()));
-    GetSession()->SetEditLineColor(iniFile.GetNumericValue(get_key_str(INI_STR_EDITLINECOLOR),
+    GetSession()->SetEditLineColor(ini->GetNumericValue(get_key_str(INI_STR_EDITLINECOLOR),
                                    GetSession()->GetEditLineColor()));
-    GetSession()->SetChatNameSelectionColor(iniFile.GetNumericValue(get_key_str(INI_STR_CHATSELCOLOR),
+    GetSession()->SetChatNameSelectionColor(ini->GetNumericValue(get_key_str(INI_STR_CHATSELCOLOR),
                                             GetSession()->GetChatNameSelectionColor()));
 
     // pull out sizing options
-    GetSession()->max_batch = iniFile.GetNumericValue(get_key_str(INI_STR_MAX_BATCH), GetSession()->max_batch);
-    GetSession()->max_extend_lines = iniFile.GetNumericValue(get_key_str(INI_STR_MAX_EXTEND_LINES),
+    GetSession()->max_batch = ini->GetNumericValue(get_key_str(INI_STR_MAX_BATCH), GetSession()->max_batch);
+    GetSession()->max_extend_lines = ini->GetNumericValue(get_key_str(INI_STR_MAX_EXTEND_LINES),
                                      GetSession()->max_extend_lines);
-    GetSession()->max_gfilesec = iniFile.GetNumericValue(get_key_str(INI_STR_MAX_CHAINS), GetSession()->max_gfilesec);
-    GetSession()->max_gfilesec = iniFile.GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), GetSession()->max_gfilesec);
+    GetSession()->max_gfilesec = ini->GetNumericValue(get_key_str(INI_STR_MAX_CHAINS), GetSession()->max_gfilesec);
+    GetSession()->max_gfilesec = ini->GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), GetSession()->max_gfilesec);
 
     // pull out strings
     //    INI_INIT_STR(INI_STR_UPLOAD_CMD, upload_c);
@@ -348,31 +349,31 @@ bool WApplication::ReadINIFile() {
     //    INI_INIT_STR(INI_STR_LOGON_CMD, logon_c);
     //    INI_INIT_STR(INI_STR_LOGOFF_CMD, logoff_c);
 
-    GetSession()->m_nForcedReadSubNumber = iniFile.GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),
+    GetSession()->m_nForcedReadSubNumber = ini->GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),
                                            GetSession()->m_nForcedReadSubNumber);
-    GetSession()->m_bInternalZmodem = iniFile.GetBooleanValue(get_key_str(INI_STR_INTERNALZMODEM),
+    GetSession()->m_bInternalZmodem = ini->GetBooleanValue(get_key_str(INI_STR_INTERNALZMODEM),
                                       GetSession()->m_bInternalZmodem);
-    GetSession()->m_bNewScanAtLogin = iniFile.GetBooleanValue(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN),
+    GetSession()->m_bNewScanAtLogin = ini->GetBooleanValue(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN),
                                       GetSession()->m_bNewScanAtLogin);
 
-    GetSession()->m_bExecLogSyncFoss = iniFile.GetBooleanValue(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS),
+    GetSession()->m_bExecLogSyncFoss = ini->GetBooleanValue(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS),
                                        GetSession()->m_bExecLogSyncFoss);
-    GetSession()->m_bExecUseWaitForInputIdle = iniFile.GetBooleanValue(get_key_str(INI_STR_EXEC_USE_WAIT_FOR_IDLE),
+    GetSession()->m_bExecUseWaitForInputIdle = ini->GetBooleanValue(get_key_str(INI_STR_EXEC_USE_WAIT_FOR_IDLE),
         GetSession()->m_bExecUseWaitForInputIdle);
-    GetSession()->m_nExecChildProcessWaitTime = iniFile.GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME),
+    GetSession()->m_nExecChildProcessWaitTime = ini->GetNumericValue(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME),
         GetSession()->m_nExecChildProcessWaitTime);
-    GetSession()->m_nExecUseWaitForInputTimeout = iniFile.GetNumericValue(get_key_str(INI_STR_EXEC_WAIT_FOR_IDLE_TIME),
+    GetSession()->m_nExecUseWaitForInputTimeout = ini->GetNumericValue(get_key_str(INI_STR_EXEC_WAIT_FOR_IDLE_TIME),
         GetSession()->m_nExecUseWaitForInputTimeout);
 
-    GetSession()->SetBeginDayNodeNumber(iniFile.GetNumericValue(get_key_str(INI_STR_BEGINDAYNODENUMBER),
+    GetSession()->SetBeginDayNodeNumber(ini->GetNumericValue(get_key_str(INI_STR_BEGINDAYNODENUMBER),
                                         GetSession()->GetBeginDayNodeNumber()));
 
     // pull out sysinfo_flags
-    GetApplication()->SetConfigFlags(GetFlagsFromIniFile(&iniFile, sysinfo_flags, NEL(sysinfo_flags),
+    GetApplication()->SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
                                      GetApplication()->GetConfigFlags()));
 
     // allow override of WSession::m_nMessageColor
-    GetSession()->SetMessageColor(iniFile.GetNumericValue(get_key_str(INI_STR_MSG_COLOR), GetSession()->GetMessageColor()));
+    GetSession()->SetMessageColor(ini->GetNumericValue(get_key_str(INI_STR_MSG_COLOR), GetSession()->GetMessageColor()));
 
     // get asv values
     if (GetApplication()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
@@ -384,10 +385,10 @@ bool WApplication::ReadINIFile() {
       INI_GET_ASV("RESTRICT", restrict, str2restrict, 0);
     }
     if (GetApplication()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
-      GetSession()->advasv.reg_wwiv = iniFile.GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
-      GetSession()->advasv.nonreg_wwiv = iniFile.GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
-      GetSession()->advasv.non_wwiv = iniFile.GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
-      GetSession()->advasv.cosysop = iniFile.GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
+      GetSession()->advasv.reg_wwiv = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
+      GetSession()->advasv.nonreg_wwiv = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
+      GetSession()->advasv.non_wwiv = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
+      GetSession()->advasv.cosysop = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
     }
 
 
@@ -406,19 +407,19 @@ bool WApplication::ReadINIFile() {
 
 
     // sysconfig flags
-    syscfg.sysconfig = static_cast<unsigned short>(GetFlagsFromIniFile(&iniFile, sysconfig_flags,
+    syscfg.sysconfig = static_cast<unsigned short>(GetFlagsFromIniFile(ini, sysconfig_flags,
                        NEL(sysconfig_flags), syscfg.sysconfig));
 
     // misc stuff
-    if (((ss = iniFile.GetValue(get_key_str(INI_STR_MAIL_WHO_LEN))) != NULL) &&
+    if (((ss = ini->GetValue(get_key_str(INI_STR_MAIL_WHO_LEN))) != NULL) &&
         (atoi(ss) > 0 || ss[0] == '0')) {
       GetSession()->mail_who_field_len = atoi(ss);
     }
-    if ((ss = iniFile.GetValue(get_key_str(INI_STR_RATIO))) != NULL) {
+    if ((ss = ini->GetValue(get_key_str(INI_STR_RATIO))) != NULL) {
       syscfg.req_ratio = static_cast<float>(atof(ss));
     }
 
-    if ((ss = iniFile.GetValue(get_key_str(INI_STR_ATTACH_DIR))) != NULL) {
+    if ((ss = ini->GetValue(get_key_str(INI_STR_ATTACH_DIR))) != NULL) {
       m_attachmentDirectory = ss;
       if (m_attachmentDirectory.at(m_attachmentDirectory.length() - 1) != WWIV_FILE_SEPERATOR_CHAR) {
         m_attachmentDirectory += WWIV_FILE_SEPERATOR_STRING;
@@ -429,11 +430,9 @@ bool WApplication::ReadINIFile() {
       m_attachmentDirectory = os.str();
     }
 
-    GetSession()->screen_saver_time = iniFile.GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),
+    GetSession()->screen_saver_time = ini->GetNumericValue(get_key_str(INI_STR_SCREEN_SAVER_TIME),
                                       GetSession()->screen_saver_time);
 
-    // now done
-    iniFile.Close();
   }
 
   GetSession()->max_extend_lines    = std::min<unsigned short>(GetSession()->max_extend_lines, 99);
@@ -450,9 +449,58 @@ bool WApplication::ReadINIFile() {
   if (omg) {
     GetSession()->max_gfilesec = omg;
   }
-  return true;
+  return ini;
 }
 
+static bool ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, IniFile* ini) {
+  string temp_directory(ini->GetValue("TEMP_DIRECTORY"));
+  if (!temp_directory.empty()) {
+    // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also 
+    // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
+    string batch_directory(ini->GetValue("BATCH_DIRECTORY", temp_directory.c_str()));
+
+    // Replace %n with instance number value.
+    string instance_num_string = std::to_string(instance_number);
+    StringReplace(&temp_directory, "%n", instance_num_string);
+    StringReplace(&batch_directory, "%n", instance_num_string);
+
+    WWIV_make_abs_cmd(temp_directory);
+    WWIV_make_abs_cmd(batch_directory);
+
+    syscfgovr.primaryport = full_syscfg->primaryport;
+    strcpy(syscfgovr.tempdir, temp_directory.c_str());
+    strcpy(syscfgovr.batchdir, batch_directory.c_str());
+
+    int max_num_instances = ini->GetNumericValue("NUM_INSTANCES", 4);
+    if (instance_number > max_num_instances) {
+      std::cout << "Not enough instances configured.\r\n";
+      return false;
+    }
+
+    return true;
+  }
+
+  // Read the legacy config.ovr file.
+  WFile configOvrFile(CONFIG_OVR);
+  bool bIsConfigObvOpen = configOvrFile.Open(WFile::modeBinary | WFile::modeReadOnly);
+  if (bIsConfigObvOpen &&
+      configOvrFile.GetLength() < static_cast<long>(instance_number * sizeof(configoverrec))) {
+    configOvrFile.Close();
+    std::cout << "Not enough instances configured.\r\n";
+    return false;
+  }
+  if (!bIsConfigObvOpen) {
+    syscfgovr.primaryport = full_syscfg->primaryport;
+    strcpy(syscfgovr.tempdir, full_syscfg->tempdir);
+    strcpy(syscfgovr.batchdir, full_syscfg->batchdir);
+  } else {
+    long lCurNodeOffset = (instance_number - 1) * sizeof(configoverrec);
+    configOvrFile.Seek(lCurNodeOffset, WFile::seekBegin);
+    configOvrFile.Read(&syscfgovr, sizeof(configoverrec));
+    configOvrFile.Close();
+  }
+  return true;
+}
 
 bool WApplication::ReadConfig() {
   configrec full_syscfg;
@@ -469,33 +517,17 @@ bool WApplication::ReadConfig() {
   // initialize the user manager
   GetUserManager()->InitializeUserManager(full_syscfg.datadir, full_syscfg.userreclen, full_syscfg.maxusers);
 
-  WFile configOvrFile(CONFIG_OVR);
-  bool bIsConfigObvOpen = configOvrFile.Open(WFile::modeBinary | WFile::modeReadOnly);
-  if (bIsConfigObvOpen &&
-      configOvrFile.GetLength() < static_cast<long>(GetInstanceNumber() * sizeof(configoverrec))) {
-    configOvrFile.Close();
-    std::cout << "Not enough instances configured.\r\n";
+  std::unique_ptr<IniFile> ini(ReadINIFile());
+  if (!ini->IsOpen()) {
+    std::cout << "Insufficient memory for system info structure.\r\n";
     AbortBBS();
   }
-  if (!bIsConfigObvOpen) {
-    // slap in the defaults, although this is not used anymore
-    for (int nTempPortNum = 0; nTempPortNum < 4; nTempPortNum++) {
-      syscfgovr.com_ISR[ nTempPortNum + 1 ]   = full_syscfg.com_ISR[ nTempPortNum + 1 ];
-      syscfgovr.com_base[ nTempPortNum + 1 ]  = full_syscfg.com_base[ nTempPortNum + 1 ];
-      syscfgovr.com_ISR[ nTempPortNum + 5 ]   = full_syscfg.com_ISR[ nTempPortNum + 1 ];
-      syscfgovr.com_base[ nTempPortNum + 5 ]  = full_syscfg.com_base[ nTempPortNum + 1 ];
-    }
 
-    syscfgovr.primaryport = full_syscfg.primaryport;
-    strcpy(syscfgovr.modem_type, full_syscfg.modem_type);
-    strcpy(syscfgovr.tempdir, full_syscfg.tempdir);
-    strcpy(syscfgovr.batchdir, full_syscfg.batchdir);
-  } else {
-    long lCurNodeOffset = (GetInstanceNumber() - 1) * sizeof(configoverrec);
-    configOvrFile.Seek(lCurNodeOffset, WFile::seekBegin);
-    configOvrFile.Read(&syscfgovr, sizeof(configoverrec));
-    configOvrFile.Close();
+  bool config_ovr_read = ReadConfigOverlayFile(GetInstanceNumber(), &full_syscfg, ini.get());
+  if (!config_ovr_read) {
+    return false;
   }
+
   make_abs_path(full_syscfg.gfilesdir);
   make_abs_path(full_syscfg.datadir);
   make_abs_path(full_syscfg.msgsdir);
@@ -507,7 +539,6 @@ bool WApplication::ReadConfig() {
 
   make_abs_path(syscfgovr.batchdir);
   strncpy(full_syscfg.batchdir, syscfgovr.batchdir, sizeof(full_syscfg.batchdir));
-
 
   // update user info data
   int userreclen = sizeof(userrec);
@@ -532,21 +563,6 @@ bool WApplication::ReadConfig() {
     full_syscfg.fuoffset        = fuoffset;
     full_syscfg.fsoffset        = fsoffset;
     full_syscfg.fnoffset        = fnoffset;
-  }
-
-  WFile configFile2(CONFIG_DAT);
-  if (configFile2.Open(WFile::modeReadWrite | WFile::modeBinary)) {
-    configFile2.Write(&full_syscfg, sizeof(configrec));
-    configFile2.Close();
-  }
-  WFile ovrFile2(CONFIG_OVR);
-  if (!ovrFile2.Open(WFile::modeBinary | WFile::modeReadWrite) ||
-      ovrFile2.GetLength() < static_cast<long>(GetInstanceNumber() * sizeof(configoverrec))) {
-    ovrFile2.Close();
-  } else {
-    ovrFile2.Seek((GetInstanceNumber() - 1) * sizeof(configoverrec), WFile::seekBegin);
-    ovrFile2.Write(&syscfgovr, sizeof(configoverrec));
-    ovrFile2.Close();
   }
 
   syscfg.newuserpw        = WWIV_STRDUP(full_syscfg.newuserpw);
@@ -1106,6 +1122,8 @@ void WApplication::InitializeBBS() {
     AbortBBS(true);
   }
 
+  XINIT_PRINTF("* Processing configuration file: WWIV.INI.\r\n");
+
   if (syscfgovr.tempdir[0] == '\0') {
     std::cout << "\r\nYour temp dir isn't valid.\r\n";
     std::cout << "It is empty\r\n\n";
@@ -1153,12 +1171,6 @@ void WApplication::InitializeBBS() {
 
   languages = nullptr;
   if (!read_language()) {
-    AbortBBS();
-  }
-
-  XINIT_PRINTF("* Processing configuration file: WWIV.INI.\r\n");
-  if (!ReadINIFile()) {
-    std::cout << "Insufficient memory for system info structure.\r\n";
     AbortBBS();
   }
 
