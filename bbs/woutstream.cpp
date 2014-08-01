@@ -129,7 +129,7 @@ void WOutStream::DisplayLiteBar(const char *pszFormatText, ...) {
   char s[1024], s1[1024];
 
   va_start(ap, pszFormatText);
-  WWIV_VSNPRINTF(s, sizeof(s), pszFormatText, ap);
+  vsnprintf(s, sizeof(s), pszFormatText, ap);
   va_end(ap);
 
   if (strlen(s) % 2 != 0) {
@@ -219,7 +219,7 @@ int  WOutStream::WriteFormatted(const char *pszFormatText, ...) {
   char szBuffer[ 4096 ];
 
   va_start(ap, pszFormatText);
-  WWIV_VSNPRINTF(szBuffer, sizeof(szBuffer), pszFormatText, ap);
+  vsnprintf(szBuffer, sizeof(szBuffer), pszFormatText, ap);
   va_end(ap);
   return Write(szBuffer);
 }

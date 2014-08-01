@@ -145,8 +145,8 @@ void grab_quotes(messagerec * m, const char *aux) {
         l3 = l2 = 0;
         ss1 = NULL;
         GetSession()->internetFullEmailAddress = "";
-        if ((WWIV_STRNICMP("internet", GetSession()->GetNetworkName(), 8) == 0) ||
-            (WWIV_STRNICMP("filenet", GetSession()->GetNetworkName(), 7) == 0)) {
+        if ((strncasecmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
+            (strncasecmp("filenet", GetSession()->GetNetworkName(), 7) == 0)) {
           for (l1 = 0; l1 < lMessageLength; l1++) {
             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
                 (ss[l1 + 3] == 'M')) {
@@ -156,7 +156,7 @@ void grab_quotes(messagerec * m, const char *aux) {
                 l1++;
               }
               temp[l3] = 0;
-              if (WWIV_STRNICMP(temp, "Message-ID", 10) == 0) {
+              if (strncasecmp(temp, "Message-ID", 10) == 0) {
                 if (temp[0] != 0) {
                   ss1 = strtok(temp, ":");
                   if (ss1) {

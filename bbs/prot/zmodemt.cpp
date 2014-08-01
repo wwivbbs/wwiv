@@ -301,8 +301,8 @@ int ZmodemTFile(const char	*pszFileName,
 	}
 
 	info->fileEof = 0;
-	info->filename = WWIV_STRDUP(pszFileName);
-	info->rfilename = WWIV_STRDUP((pszRemoteFileName != NULL) ? pszRemoteFileName : "noname");
+	info->filename = strdup(pszFileName);
+	info->rfilename = strdup((pszRemoteFileName != NULL) ? pszRemoteFileName : "noname");
 	info->filesRem = filesRem;
 	info->bytesRem = bytesRem;
 	info->fileFlags[3] = f0;

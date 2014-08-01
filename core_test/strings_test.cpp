@@ -39,6 +39,13 @@ TEST(StringsTest, StringColors) {
     EXPECT_EQ( string("abc"), stripcolors(string("|15abc")) );
 }
 
+TEST(StringsTest, StringColors_CharStarVersion) {
+    EXPECT_STREQ( "", stripcolors("") );
+    EXPECT_STREQ( "|", stripcolors("|") );
+    EXPECT_STREQ( "|0", stripcolors("|0") );
+    EXPECT_STREQ( "12345", stripcolors( "12345") );
+}
+
 TEST(StringsTest, Properize) {
     EXPECT_EQ( string("Rushfan"), properize( string("rushfan") ) );
     EXPECT_EQ( string("Rushfan"), properize( string("rUSHFAN") ) );

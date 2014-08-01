@@ -141,7 +141,7 @@ void asv() {
         reg_num = next_system_reg(inode);
         if (*reg_num == 0) {
           strcpy(s, sysname);
-          strcpy(s1, (strstr(WWIV_STRUPR(s), "SERVER")));
+          strcpy(s1, (strstr(strupr(s), "SERVER")));
           if (wwiv::strings::IsEquals(s1, "SERVER")) {
             GetSession()->bout.NewLine();
             GetSession()->bout << "|#5Is " << sysname << " a server in " << GetSession()->GetNetworkName() << "? ";

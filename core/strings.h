@@ -35,7 +35,7 @@ std::string StrCat(std::string s1, std::string s2, std::string s3);
 std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4);
 std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5);
 std::string StrCat(std::string s1, std::string s2, std::string s3, std::string s4, std::string s5, std::string s6);
-int GetStringLength(const char * pszString);
+int GetStringLength(const char* pszString);
 bool IsEquals(const char *pszString1, const char *pszString2);
 bool IsEqualsIgnoreCase(const char *pszString1, const char *pszString2);
 int  StringCompareIgnoreCase(const char *pszString1, const char *pszString2);
@@ -65,39 +65,28 @@ const T LowerCase(const T a) {
 // Function Prototypes
 const char *charstr(int nStringLength, int chRepeatChar);
 void StringTrimEnd(char *pszString);
-std::string& StringTrim(std::string& s);
 char *stripcolors(const char *pszOrig);
-std::string stripcolors(const std::string& orig);
+std::string stripcolors(const std::string orig);
 unsigned char upcase(unsigned char ch);
 unsigned char locase(unsigned char ch);
 char *StringJustify(char *pszString, int nLength, int bg, int nJustificationType);
 char *StringTrim(char *pszString);
-std::string& StringTrim(std::string& s);
-std::string& StringTrimEnd(std::string& s);
-std::string& StringTrimBegin(std::string& s);
+std::string StringTrim(std::string* s);
+std::string StringTrimEnd(std::string* s);
+std::string StringTrimBegin(std::string* s);
+std::string StringUpperCase(std::string* s);
+std::string StringLowerCase(std::string* s);
 char *stristr(char *pszString, char *pszPattern);
 void single_space(char *pszText);
-char *stptok(const char *pszText, char *pszToken, size_t nTokenLength, const char *brk);
 char *StringRemoveWhitespace(char *str);
 char *StringRemoveChar(const char *pszString, char chCharacterToRemove);
-char *StringReplace(char *pszString, size_t nMaxBufferSize, const char *pszOldString, const char *pszNewString);
-std::string& StringUpperCase(std::string& s);
-std::string& StringLowerCase(std::string& s);
 
 void properize(char *pszText);
 std::string properize(const std::string text);
 
-#define WWIV_STRDUP( s ) strdup( s )
-#define WWIV_STRUPR( s ) strupr( s )
-#define WWIV_STRREV( s ) strrev( s )
-#define WWIV_STRLWR( s ) strlwr( s )
-
-#if defined (_WIN32) && (_MSC_VER > 1310)
-#define WWIV_STRICMP( a, b ) stricmp( a, b )
-#define WWIV_STRNICMP( a, b, c) strnicmp( a, b, c )
-#else
-#define WWIV_STRICMP( a, b ) strcasecmp( a, b )
-#define WWIV_STRNICMP( a, b, c) strncasecmp( a, b, c )
-#endif
+#ifdef _WIN32
+#define strcasecmp( a, b ) stricmp( a, b )
+#define strncasecmp( a, b, c) strnicmp( a, b, c )
+#endif  // _WIN32
 
 #endif  // __INCLUDED_STRINGS_H__

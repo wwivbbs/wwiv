@@ -113,7 +113,7 @@ void WWIV_make_abs_cmd(std::string& out) {
 int WWIV_make_path(const char *s) {
   char drive, current_path[MAX_PATH], current_drive, *p, *flp;
 
-  p = flp = WWIV_STRDUP(s);
+  p = flp = strdup(s);
   _getdcwd(0, current_path, MAX_PATH);
   current_drive = static_cast< char >(*current_path - '@');
   if (LAST(p) == WWIV_FILE_SEPERATOR_CHAR) {

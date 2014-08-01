@@ -944,7 +944,7 @@ void readmail(int mode) {
         input(s, 75);
         if (((i3 = strcspn(s, "@")) != (wwiv::strings::GetStringLength(s))) && (isalpha(s[i3 + 1]))) {
           if (strstr(s, "@32767") == NULL) {
-            WWIV_STRLWR(s1);
+            strlwr(s1);
             strcat(s, " @32767");
           }
         }
@@ -1088,7 +1088,7 @@ void readmail(int mode) {
             if (((i = strcspn(s, "@")) != wwiv::strings::GetStringLength(s))
                 && isalpha(s[i + 1])) {
               if (strstr(s, "@32767") == NULL) {
-                WWIV_STRLWR(s);
+                strlwr(s);
                 strcat(s, " @32767");
               }
             }

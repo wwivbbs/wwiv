@@ -798,7 +798,7 @@ int WApplication::Run(int argc, char *argv[]) {
         break;
       case 'F':
         fullResultCode = argument;
-        StringUpperCase(fullResultCode);
+        StringUpperCase(&fullResultCode);
         m_bUserAlreadyOn = true;
         break;
       case 'S':
@@ -821,7 +821,7 @@ int WApplication::Run(int argc, char *argv[]) {
         break;
       case 'P':
         systemPassword = argument;
-        StringUpperCase(systemPassword);
+        StringUpperCase(&systemPassword);
         break;
       case 'I':
       case 'N': {
@@ -1209,7 +1209,7 @@ bool WApplication::LogMessage(const char* pszFormat, ...) {
   char szBuffer[2048];
 
   va_start(ap, pszFormat);
-  WWIV_VSNPRINTF(szBuffer, sizeof(szBuffer), pszFormat, ap);
+  vsnprintf(szBuffer, sizeof(szBuffer), pszFormat, ap);
   va_end(ap);
   sysoplog(szBuffer);
   return true;

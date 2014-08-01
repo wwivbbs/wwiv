@@ -89,9 +89,6 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   sprintf(sx3, "%d", nEffectiveXferSpeed);
   sx2[0] = '0' + syscfgovr.primaryport;
   sx2[1] = '\0';
-  if (wwiv::strings::IsEqualsIgnoreCase(GetSession()->GetCurrentSpeed().c_str(), "TELNET")) {
-    StringReplace(s1, strlen(s1), "MDMDSZ", "FDSZ");
-  }
   const std::string command = stuff_in(s1, sx1, sx2, szFileName, sx3, "");
   if (!command.empty()) {
     GetSession()->localIO()->set_protect(0);

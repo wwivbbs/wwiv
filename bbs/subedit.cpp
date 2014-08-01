@@ -322,7 +322,7 @@ void modify_sub(int n) {
         sprintf(szOldSubFileName, "%s%s.sub", syscfg.datadir, szSubBaseName);
         if (WFile::Exists(szOldSubFileName)) {
           for (int i = 0; i < GetSession()->num_subs; i++) {
-            if (WWIV_STRNICMP(subboards[i].filename, szSubBaseName, strlen(szSubBaseName)) == 0) {
+            if (strncasecmp(subboards[i].filename, szSubBaseName, strlen(szSubBaseName)) == 0) {
               strcpy(szOldSubFileName, subboards[i].name);
               break;
             }
