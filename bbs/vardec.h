@@ -374,13 +374,13 @@ struct small_configrec {
 
 // overlay information per instance
 struct configoverrec {
-  uint8_t com_ISR[9],
+  uint8_t unused_com_ISR[9],
           primaryport;
-  uint16_t  com_base[9];
-  char modem_type[9],
+  uint16_t  unused_com_base[9];
+  char unused_modem_type[9],
        tempdir[81],
        batchdir[81];
-  uint16_t comflags;
+  uint16_t unused_comflags;
   char unused_bootdrive;
   char res[310];
 };

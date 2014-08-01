@@ -145,23 +145,7 @@ bool read_status() {
 }
 
 int save_config() {
-  int configfile;
-
-  if (syscfgovr.primaryport < 5) {
-    syscfg.primaryport = syscfgovr.primaryport;
-    syscfg.com_ISR[syscfg.primaryport] = syscfgovr.com_ISR[syscfgovr.primaryport];
-    syscfg.com_base[syscfg.primaryport] = syscfgovr.com_base[syscfgovr.primaryport];
-    strcpy(syscfg.modem_type, syscfgovr.modem_type);
-    strcpy(syscfg.tempdir, syscfgovr.tempdir);
-    strcpy(syscfg.batchdir, syscfgovr.batchdir);
-    if (syscfgovr.comflags & comflags_buffered_uart) {
-      syscfg.sysconfig |= sysconfig_high_speed;
-    } else {
-      syscfg.sysconfig &= ~sysconfig_high_speed;
-    }
-  }
-
-  configfile = open("config.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  int configfile = open("config.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   write(configfile, &syscfg, sizeof(configrec));
   close(configfile);
 
@@ -172,7 +156,7 @@ int save_config() {
     close(configfile);
   }
 
-  return (0);
+  return 0;
 }
 
 void exit_init(int level) {

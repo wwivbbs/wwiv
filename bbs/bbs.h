@@ -20,6 +20,7 @@
 #define __INCLUDED_BBS_H__
 
 #include <memory>
+#include <core/inifile.h>
 #include "core/wfile.h"
 #include "runnable.h"
 #include "wsession.h"
@@ -208,7 +209,7 @@ class WApplication : public WLogger, Runnable {
   void ExitBBSImpl(int nExitLevel);
 
   void InitializeBBS(); // old init() method
-  bool ReadINIFile(); // from xinit.cpp
+  wwiv::core::IniFile* ReadINIFile(); // from xinit.cpp
   bool ReadConfig();
 
   int LocalLogon();
