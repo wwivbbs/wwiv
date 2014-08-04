@@ -62,7 +62,7 @@ void WWIV_GetDir(char *pszDirectoryName, bool bSlashAtEnd) {
 
 
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
-  char *pszTemp = WWIV_STRDUP(pszPath);
+  char *pszTemp = strdup(pszPath);
   char *pTempFn = strrchr(pszTemp, '/');
   if (pTempFn != NULL) {
     *pTempFn = 0;
