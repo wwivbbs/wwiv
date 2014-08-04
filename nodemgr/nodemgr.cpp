@@ -17,12 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/wait.h>
+#include <cstdlib>
 #include <signal.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-#include "../wwiv.h"
+#include "bbs/vardec.h"
+#include "bbs/filenames.h"
 
 using namespace std;
 
