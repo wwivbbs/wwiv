@@ -65,7 +65,6 @@ extern initinfo_rec initinfo;
 #define _lseek lseek
 #define _read read
 #define _write write
-#define chsize ftruncate
 
 #endif  // __unix__
 
