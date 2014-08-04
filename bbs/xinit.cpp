@@ -452,6 +452,13 @@ IniFile* WApplication::ReadINIFile() {
   return ini;
 }
 
+static void EnsureTrailingSlash(string* path) {
+  char last_char = path->back();
+  if (last_char != WFile::pathSeparatorChar) {
+    path->push_back(WFile::pathSeparatorChar);
+  }
+}
+
 static bool ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, IniFile* ini) {
   string temp_directory(ini->GetValue("TEMP_DIRECTORY"));
   if (!temp_directory.empty()) {
@@ -466,6 +473,8 @@ static bool ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, I
 
     WWIV_make_abs_cmd(temp_directory);
     WWIV_make_abs_cmd(batch_directory);
+    EnsureTrailingSlash(&temp_directory);
+    EnsureTrailingSlash(&batch_directory);
 
     syscfgovr.primaryport = full_syscfg->primaryport;
     strcpy(syscfgovr.tempdir, temp_directory.c_str());
