@@ -34,7 +34,7 @@ void WWIV_make_abs_cmd(std::string& out) {
 int WWIV_make_path(const char *s) {
   char current_path[MAX_PATH], *p, *flp;
 
-  p = flp = WWIV_STRDUP(s);
+  p = flp = strdup(s);
   getcwd(current_path, MAX_PATH);
   if (LAST(p) == WWIV_FILE_SEPERATOR_CHAR) {
     LAST(p) = 0;
