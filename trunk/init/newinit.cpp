@@ -262,10 +262,6 @@ static void init_files() {
   syscfg.post_call_ratio = 0.0;
   strcpy(syscfg.modem_type, "H2400");
 
-  syscfgovr.primaryport = syscfg.primaryport;
-  strcpy(syscfgovr.tempdir, syscfg.tempdir);
-  strcpy(syscfgovr.batchdir, syscfg.batchdir);
-
   save_config();
 
   create_arcs();

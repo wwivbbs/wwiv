@@ -144,19 +144,10 @@ bool read_status() {
   return false;
 }
 
-int save_config() {
+void save_config() {
   int configfile = open("config.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   write(configfile, &syscfg, sizeof(configrec));
   close(configfile);
-
-  configfile = open("config.ovr", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  if (configfile > 0) {
-    lseek(configfile, 0, SEEK_SET);
-    write(configfile, &syscfgovr, sizeof(configoverrec));
-    close(configfile);
-  }
-
-  return 0;
 }
 
 void exit_init(int level) {
