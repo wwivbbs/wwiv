@@ -19,13 +19,13 @@
 #ifndef __INCLUDED_INPUT_H__
 #define __INCLUDED_INPUT_H__
 
+#include <cstdlib>
 #include <functional>
 #include <limits>
 #include <string>
 #include <vector>
-#include <stdlib.h>
 
-#include "platform/curses_io.h"
+#include "initlib/platform/curses_io.h"
 
 #define NUM_ONLY            1
 #define UPPER_ONLY          2
