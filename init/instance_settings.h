@@ -19,6 +19,10 @@
 #ifndef __INCLUDED_INSTANCE_SETTINGS_H__
 #define __INCLUDED_INSTANCE_SETTINGS_H__
 
+#include <string>
+
 void instance_editor();
+bool write_instance(int num, const std::string batch_dir, const std::string temp_dir);
+
 
 #endif // __INCLUDED_INSTANCE_SETTINGS_H__

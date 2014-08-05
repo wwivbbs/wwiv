@@ -25,7 +25,7 @@ int number_userrecs();
 int exist(const char *s);
 void save_status();
 bool read_status();
-int save_config();
+void save_config();
 void read_user(unsigned int un, userrec *u);
 void write_user(unsigned int un, userrec *u);
 void exit_init(int level);

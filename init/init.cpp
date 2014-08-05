@@ -54,11 +54,11 @@
 #include "platform/curses_io.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "core/wfile.h"
 #include "core/wfndfile.h"
 
 initinfo_rec initinfo;
 configrec syscfg;
-configoverrec syscfgovr;
 statusrec status;
 subboardrec *subboards;
 chainfilerec *chains;
@@ -213,21 +213,9 @@ int WInitApp::main(int argc, char *argv[]) {
   read(configfile, &syscfg, sizeof(configrec));
   close(configfile);
 
-  configfile = open("config.ovr", O_RDONLY | O_BINARY);
-  if ((configfile > 0) && (filelength(configfile) < (int)sizeof(configoverrec))) {
-    // If the config.ovr file is too small then pretend it does not exist.
-    close(configfile);
-    configfile = -1;
-  }
-  if (configfile < 0) {
-    // slap in the defaults
-    syscfgovr.primaryport = syscfg.primaryport;
-    strcpy(syscfgovr.tempdir, syscfg.tempdir);
-    strcpy(syscfgovr.batchdir, syscfg.batchdir);
-  } else {
-    lseek(configfile, 0, SEEK_SET);
-    read(configfile, &syscfgovr, sizeof(configoverrec));
-    close(configfile);
+  WFile config_overlay("config.ovr");
+  if (!config_overlay.Exists() || config_overlay.GetLength() < sizeof(configoverrec)) {
+    write_instance(1, syscfg.batchdir, syscfg.tempdir);
   }
 
   sprintf(s, "%sarchiver.dat", syscfg.datadir);
