@@ -20,8 +20,6 @@
 #ifndef __INCLUDED_INIT_H__
 #define __INCLUDED_INIT_H__
 
-#include "platform/curses_io.h"
-
 /*!
  * @class WInitApp  Main Application object for WWIV 5.0
  */

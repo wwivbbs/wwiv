@@ -22,6 +22,10 @@
 #include <map>
 #include <curses.h>
 
+#ifdef INSERT // defined in wconstants.h
+#undef INSERT
+#endif  // INSERT
+
 // Indicator mode for the header bar while editing text.
 enum class IndicatorMode { INSERT, OVERWRITE, NONE };
 

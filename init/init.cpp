@@ -31,31 +31,34 @@
 #include <locale.h>
 #include <sys/stat.h>
 
-#include "archivers.h"
-#include "editors.h"
-#include "ifcns.h"
-#include "input.h"
-#include "init.h"
-#include "instance_settings.h"
-#include "languages.h"
-#include "levels.h"
-#include "networks.h"
-#include "newinit.h"
-#include "paths.h"
-#include "protocols.h"
-#include "regcode.h"
-#include "subsdirs.h"
-#include "system_info.h"
-#include "user_editor.h"
-#include "wwivinit.h"
-#include "utility.h"
 #include "bbs/version.cpp"
 #include "bbs/wconstants.h"
-#include "platform/curses_io.h"
+
+#include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "core/wfile.h"
 #include "core/wfndfile.h"
+#include "init/archivers.h"
+#include "init/editors.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "init/instance_settings.h"
+#include "init/languages.h"
+#include "init/levels.h"
+#include "init/networks.h"
+#include "init/newinit.h"
+#include "init/paths.h"
+#include "init/protocols.h"
+#include "init/regcode.h"
+#include "init/subsdirs.h"
+#include "init/system_info.h"
+#include "init/user_editor.h"
+#include "init/wwivinit.h"
+#include "init/utility.h"
+
+#include "initlib/input.h"
+#include "initlib/platform/curses_io.h"
 
 initinfo_rec initinfo;
 configrec syscfg;
@@ -121,7 +124,14 @@ static void convcfg() {
 static void show_help() {
   Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
   Printf("\n\n\n");
+}
 
+static void ValidateConfigOverlayExists() {
+  WFile config_overlay("config.ovr");
+  if (!config_overlay.Exists() || config_overlay.GetLength() < sizeof(configoverrec)) {
+    // Handle the case where there is no config.ovr.
+    write_instance(1, syscfg.batchdir, syscfg.tempdir);
+  }
 }
 
 WInitApp::WInitApp() {
@@ -213,10 +223,7 @@ int WInitApp::main(int argc, char *argv[]) {
   read(configfile, &syscfg, sizeof(configrec));
   close(configfile);
 
-  WFile config_overlay("config.ovr");
-  if (!config_overlay.Exists() || config_overlay.GetLength() < sizeof(configoverrec)) {
-    write_instance(1, syscfg.batchdir, syscfg.tempdir);
-  }
+  ValidateConfigOverlayExists();
 
   sprintf(s, "%sarchiver.dat", syscfg.datadir);
   int hFile = open(s, O_RDONLY | O_BINARY);
