@@ -93,6 +93,17 @@ bool write_instance(int num, configoverrec* instance) {
   return true;
 }
 
+bool write_instance(int num, const std::string batch_dir, const std::string temp_dir) {
+  configoverrec instance;
+  memset(&instance, 0, sizeof(configoverrec));
+
+  // primary port is always 1 now.
+  instance.primaryport = 1;
+  strcpy(instance.batchdir, batch_dir.c_str());
+  strcpy(instance.tempdir, temp_dir.c_str());
+  return write_instance(num, &instance);
+}
+
 static void tweak_dir(char *s, int inst) {
   if (inst == 1) {
     return;
@@ -135,13 +146,13 @@ void instance_editor() {
   int num_instances = number_instances();
   out->Cls();
 
-  out->SetColor(Scheme::NORMAL);
-  out->GotoXY(0, 1);
-  Printf("Temporary Directory: %s\n", syscfgovr.tempdir);
-  Printf("Batch Directory    : %s\n", syscfgovr.batchdir);
-
   int current_instance = 1;
   read_instance(current_instance, &instance);
+
+  out->SetColor(Scheme::NORMAL);
+  out->GotoXY(0, 1);
+  Printf("Temporary Directory: %s\n", instance.tempdir);
+  Printf("Batch Directory    : %s\n", instance.batchdir);
 
   EditItems items{
     new StringEditItem<char*>(COL1_POSITION, 1, 50, instance.tempdir, FILENAME_UPPERCASE),

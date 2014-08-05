@@ -47,7 +47,6 @@
 #define MAX_ALLOWED_PORT 8
 
 extern configrec syscfg;
-extern configoverrec syscfgovr;
 extern statusrec status;
 extern subboardrec *subboards;
 extern chainfilerec *chains;
