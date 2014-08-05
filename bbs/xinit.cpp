@@ -460,8 +460,9 @@ static void EnsureTrailingSlash(string* path) {
 }
 
 static bool ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, IniFile* ini) {
-  string temp_directory(ini->GetValue("TEMP_DIRECTORY"));
-  if (!temp_directory.empty()) {
+  const char* temp_directory_char = ini->GetValue("TEMP_DIRECTORY");
+  if (temp_directory_char != nullptr) {
+    string temp_directory(temp_directory_char);
     // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also 
     // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
     string batch_directory(ini->GetValue("BATCH_DIRECTORY", temp_directory.c_str()));
