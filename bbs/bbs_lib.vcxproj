@@ -193,7 +193,6 @@
     <ClCompile Include="platform\win32\exec.cpp" />
     <ClCompile Include="platform\win32\filesupp.cpp" />
     <ClCompile Include="platform\win32\InternalTelnetServer.cpp" />
-    <ClCompile Include="platform\win32\reboot.cpp" />
     <ClCompile Include="platform\win32\utility2.cpp" />
     <ClCompile Include="platform\win32\wios.cpp" />
     <ClCompile Include="platform\win32\wiot.cpp" />

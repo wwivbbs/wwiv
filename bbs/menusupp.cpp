@@ -530,7 +530,7 @@ void ReadAllMail() {
 
 
 void RebootComputer() {
-  WWIV_RebootComputer();
+  // Does nothing.
 }
 
 

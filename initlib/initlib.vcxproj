@@ -89,7 +89,6 @@
   <ItemGroup>
     <ClCompile Include="input.cpp" />
     <ClCompile Include="platform\curses_io.cpp" />
-    <ClCompile Include="platform\win32\filesupp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\core.vcxproj">

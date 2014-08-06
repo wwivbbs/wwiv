@@ -131,7 +131,6 @@ if(UNIX)
   set(PLATFORM_SOURCES 
 	platform/wutil.cpp 
 	platform/unix/exec.cpp 
-	platform/unix/reboot.cpp 
 	platform/unix/utility2.cpp 
 	platform/unix/wlocal_io.cpp
 	platform/unix/stringstuff.cpp 

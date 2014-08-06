@@ -20,15 +20,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-
 long filelength(int handle) {
   struct stat fileinfo;
   if (fstat(handle, &fileinfo) != 0) {
     return -1;
   }
   return fileinfo.st_size;
-}
-
-void WWIV_ChangeDirTo(const char *pszDirectoryName) {
-  chdir(pszDirectoryName);
 }
