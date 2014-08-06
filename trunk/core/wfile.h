@@ -102,7 +102,7 @@ class WFile {
 
   WFile();
   WFile(const std::string dirName, const std::string fileName);
-  WFile(const std::string strFileName);
+  explicit WFile(const std::string strFileName);
   virtual ~WFile();
 
   /////////////////////////////////////////////////////////////////////////
