@@ -476,7 +476,7 @@ bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_sy
     WFile::EnsureTrailingSlash(&temp_directory);
     WFile::EnsureTrailingSlash(&batch_directory);
 
-    syscfgovr.primaryport = full_syscfg->primaryport;
+    syscfgovr.primaryport = 1;
     strcpy(syscfgovr.tempdir, temp_directory.c_str());
     strcpy(syscfgovr.batchdir, batch_directory.c_str());
 
@@ -499,7 +499,7 @@ bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_sy
     return false;
   }
   if (!bIsConfigObvOpen) {
-    syscfgovr.primaryport = full_syscfg->primaryport;
+    syscfgovr.primaryport = 1;
     strcpy(syscfgovr.tempdir, full_syscfg->tempdir);
     strcpy(syscfgovr.batchdir, full_syscfg->batchdir);
   } else {
