@@ -334,6 +334,15 @@ USE_CALLBACK                    = N         ; Use Callback Verification?
 ;
 USE_VOICE_VAL                 = N           ; Voice validation
 ;
+;
+;=============================================================================
+;                        TEMPORARY DIRECTORY SETTING
+;=============================================================================
+NUM_INSTANCES        = 4
+TEMP_DIRECTORY       = temp%n
+BATCH_DIRECTORY      = batch%n
+;
+;
 ;=============================================================================
 ;                        INSTANCE SPECIFIC OPTIONS
 ;=============================================================================
