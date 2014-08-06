@@ -66,7 +66,7 @@ static int verify_dir(char *typeDir, char *dirName) {
     out->Puts("<ESC> when done.");
     rc = 1;
   }
-  WWIV_ChangeDirTo(bbsdir);
+  chdir(bbsdir);
   return rc;
 }
 

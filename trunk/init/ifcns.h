@@ -23,10 +23,6 @@
 #include "ivardec.h"
 #include "bbs/vardec.h"
 
-// ** OSD CODE **
-/* File: filesupp.cpp */
-void WWIV_ChangeDirTo(const char *s);
-
 #ifndef _WIN32
 /* File: utility2.cpp */
 long filelength(int handle);

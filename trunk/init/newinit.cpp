@@ -441,7 +441,7 @@ void new_init() {
         exit_init(2);
       }
     } else {
-      WWIV_ChangeDirTo(bbsdir);
+      chdir(bbsdir);
     }
   }
   Printf(".\n");

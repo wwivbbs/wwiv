@@ -16,6 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif  // _WIN32
 
 #include "wwiv.h"
 #include "instmsg.h"
@@ -592,7 +597,7 @@ bool external_edit(const char *pszEditFileName, const char *pszNewDirectory, int
   WWIV_make_abs_cmd(editorCommand);
 
   WWIV_GetDir(szCurrentDirectory, false);
-  WWIV_ChangeDirTo(pszNewDirectory);
+  chdir(pszNewDirectory);
 
   WFile::SetFilePermissions(EDITOR_INF, WFile::permReadWrite);
   WFile::Remove(EDITOR_INF);
@@ -602,9 +607,9 @@ bool external_edit(const char *pszEditFileName, const char *pszNewDirectory, int
   std::string strippedFileName;
   strippedFileName = stripfn(pszEditFileName);
   if (pszNewDirectory[0]) {
-    WWIV_ChangeDirTo(pszNewDirectory) ;
+    chdir(pszNewDirectory) ;
     WWIV_GetDir(szFileName, true);
-    WWIV_ChangeDirTo(pszNewDirectory);
+    chdir(pszNewDirectory);
   } else {
     szFileName[0] = '\0';
   }
@@ -660,7 +665,7 @@ bool external_edit(const char *pszEditFileName, const char *pszNewDirectory, int
   }
   ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPWANOPT_FSED));
   lines_listed = 0;
-  WWIV_ChangeDirTo(pszNewDirectory);
+  chdir(pszNewDirectory);
   WFile::Remove(EDITOR_INF);
   WFile::Remove(DISABLE_TAG);
   bool bModifiedOrExists = false;
@@ -675,6 +680,6 @@ bool external_edit(const char *pszEditFileName, const char *pszNewDirectory, int
       }
     }
   }
-  WWIV_ChangeDirTo(szCurrentDirectory);
+  chdir(szCurrentDirectory);
   return bModifiedOrExists;
 }

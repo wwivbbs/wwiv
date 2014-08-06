@@ -210,6 +210,7 @@ class WApplication : public WLogger, Runnable {
 
   void InitializeBBS(); // old init() method
   wwiv::core::IniFile* ReadINIFile(); // from xinit.cpp
+  bool ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, wwiv::core::IniFile* ini);
   bool ReadConfig();
 
   int LocalLogon();
@@ -229,7 +230,7 @@ class WApplication : public WLogger, Runnable {
   bool read_language();
   bool read_modem();
   void read_gfile();
-  bool make_abs_path(char *checkdir);
+  void make_abs_path(char *dir);
   void check_phonenum();
   void create_phone_file();
 

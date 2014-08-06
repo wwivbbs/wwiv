@@ -40,8 +40,11 @@
 #include "core/wutil.h"
 
 #if defined( _WIN32 )
+#include <direct.h>
 #include "platform/win32/InternalTelnetServer.h"
 #include "platform/win32/Wiot.h"
+#else
+#include <unistd.h>
 #endif // _WIN32
 #include "printfile.h"
 #include "wcomm.h"
@@ -753,7 +756,7 @@ int WApplication::Run(int argc, char *argv[]) {
   curatr = 0x07;
   ss = getenv("WWIV_DIR");
   if (ss) {
-    WWIV_ChangeDirTo(ss);
+    chdir(ss);
   }
 
   // Set the instance, this may be changed by a command line argument
@@ -1162,15 +1165,13 @@ WApplication::WApplication(const WApplication& copy) {
   strcpy(m_szCurrentDirectory, copy.m_szCurrentDirectory);
 }
 
-
 void WApplication::CdHome() {
-  WWIV_ChangeDirTo(m_szCurrentDirectory);
+  chdir(m_szCurrentDirectory);
 }
-
 
 const std::string WApplication::GetHomeDir() {
   std::string dir = m_szCurrentDirectory;
-  dir += WWIV_FILE_SEPERATOR_CHAR;
+  WFile::EnsureTrailingSlash(&dir);
   return std::string(dir);
 }
 

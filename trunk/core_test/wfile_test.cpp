@@ -154,3 +154,66 @@ TEST(FileTest, GetParent) {
   ASSERT_EQ(helper.TempDir(), file.GetParent());
 }
 
+TEST(FileTest, EnsureTrailingSlash) {
+    const string single_slash = StringPrintf("temp%c", WFile::pathSeparatorChar);
+    const string double_slash = StringPrintf("temp%c%c", WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+    const string no_slash = "temp";
+
+    string s = single_slash;
+    WFile::EnsureTrailingSlash(&s);
+    EXPECT_EQ(single_slash, s);
+
+    s = double_slash;
+    WFile::EnsureTrailingSlash(&s);
+    EXPECT_EQ(double_slash, s);
+
+    s = no_slash;
+    WFile::EnsureTrailingSlash(&s);
+    EXPECT_EQ(single_slash, s);
+}
+
+TEST(FileTest, CurrentDirectory) {
+  char expected[MAX_PATH];
+  getcwd(expected, MAX_PATH);
+  string actual;
+  WFile::CurrentDirectory(&actual);
+  EXPECT_STREQ(expected, actual.c_str());
+}
+
+TEST(FileTest, MakeAbsolutePath_Relative) {
+  static const string kFileName = this->test_info_->name();
+  FileHelper helper;
+  const string path = helper.CreateTempFile(kFileName, "Hello World");
+
+  string relative(kFileName);
+  WFile::MakeAbsolutePath(helper.TempDir(), &relative);
+  EXPECT_EQ(path, relative);
+}
+
+TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
+  static const string kFileName = this->test_info_->name();
+  FileHelper helper;
+  const string path = helper.CreateTempFile(kFileName, "Hello World");
+
+  string relative(path);  // Note: relative == absolute path (path)
+  WFile::MakeAbsolutePath(helper.TempDir(), &relative);
+  EXPECT_EQ(path, relative);
+}
+
+TEST(FileTest, IsAbsolute) {
+  static const string kFileName = this->test_info_->name();
+  FileHelper helper;
+  const string path = helper.CreateTempFile(kFileName, "Hello World");
+
+  EXPECT_TRUE(WFile::IsAbsolutePath(path));
+  EXPECT_FALSE(WFile::IsAbsolutePath(kFileName));
+}
+
+TEST(FileTest, IsRelative) {
+  static const string kFileName = this->test_info_->name();
+  FileHelper helper;
+  const string path = helper.CreateTempFile(kFileName, "Hello World");
+
+  EXPECT_TRUE(WFile::IsRelativePath(kFileName));
+  EXPECT_FALSE(WFile::IsRelativePath(path));
+}
