@@ -11,6 +11,17 @@ What's New in 2014
 * Added new parameter for chains/commands %H = Telnet Socket Handle
 * Added wwiv.ini setting NO_NEWUSER_FEEDBACK. If set to Y no newuser messages
   will be sent at all.
+* Added wwiv.ini setings to control temp/batch directories. This is no longer
+  configured in init.  For TEMP_DIRECTORY/BATCH_DIRECTORY the %n is replaced
+  by the node number of the instance. Also paths are relative to the bbs home
+  directory (where config.dat lives).  NUM_INSTANCES defines how many intances
+  you want to spawn.  Also node that directories are created on demand by the
+  bbs on startup and config.ovr will be created by legacy tools when you run
+  init.  
+  Here are the default values:
+    TEMP_DIRECTORY = temp%n
+    BATCH_DIRECTORY = batch%n
+    NUM_INSTANCES = 4
 
 What's New in Beta-2
 ~~~~~~~~~~~~~~~~~~~~~

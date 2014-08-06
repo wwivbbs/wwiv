@@ -910,8 +910,8 @@ void beginday(bool displayStatus) {
     GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
     return;
   }
-  GetSession()->bout << "|#7* |#1Running Daily Maintenance...\r\n";
   if (displayStatus) {
+    GetSession()->bout << "|#7* |#1Running Daily Maintenance...\r\n";
     GetSession()->bout << "  |#7* |#1Updating system activity...\r\n";
   }
 
@@ -924,7 +924,6 @@ void beginday(bool displayStatus) {
   z.fback             = pStatus->GetNumFeedbackSentToday();
   z.up                = pStatus->GetNumUploadsToday();
   pStatus->NewDay();
-
 
   if (displayStatus) {
     GetSession()->bout << "  |#7* |#1Cleaning up log files...\r\n";
@@ -999,7 +998,6 @@ void beginday(bool displayStatus) {
   sysoplog("", false);
   sysoplog("* Ran Daily Maintenance...", false);
   sysoplog("", false);
-
 }
 
 

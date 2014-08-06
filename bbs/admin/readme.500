@@ -1,5 +1,5 @@
 readme.500
-05/30/2014
+08/05/2014
 
 
 WWIV 5.0 Getting Started
@@ -10,21 +10,16 @@ configuration files)
 
 Run WWIV5TelnetServer.exe and then select the menu Edit > Preferences and setup
 the information for your configuration (paths, and the starting and ending
-node numbers to use for inbound telnet).  Make sure those nodes are setup
-in INIT50.exe already.  Then choose File > Start Server.  Now the 
-WWIV5TelnetServer (WTS) is listening on a socket and ready to spawn now 
+node numbers to use for inbound telnet). Then choose File > Start Server.
+Now the WWIV5TelnetServer (WTS) is listening on a socket and ready to spawn 
 instances of WWIV.  You do not need to keep multiple copies of WWIV running
-at all times, as the WTS will spawn them as required.  Also, make sure that
-all of the nodes that are telnet are configured in INIT to use COM1.
+at all times, as the WTS will spawn them as required.
 
 *** Be sure to read WHATSNEW.TXT for a list of all the new major features and
 other changes that have happened since 4.30. ***
 
-
-Known Issues
-============
-Serial I/O Support (aka using the modem) has not been tested (and is reported
-not to work).
+NOTE: Serial I/O Support does not work.  Use one of the serial -> telnet
+bridges for "Dial Up" support.
 
 
 File List
@@ -38,9 +33,3 @@ whatsnew.txt            - New Feature List in WWIV 5.0
 bbs.exe                 - Win32 Replacement for bbs.exe
 WWIV5TelnetServer.exe   - WWIV Telnet Server main executable
 
-
-Registration Passcodes:
-=======================
-
-    WWIV 5.0 is Open Source under the Apache 2.0 License.  No registration
-code is needed.
