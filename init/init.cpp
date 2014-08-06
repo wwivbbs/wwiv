@@ -60,6 +60,12 @@
 #include "initlib/input.h"
 #include "initlib/platform/curses_io.h"
 
+using std::string;
+using std::vector;
+using wwiv::core::IniFile;
+using wwiv::strings::StringPrintf;
+using wwiv::strings::StringReplace;
+
 initinfo_rec initinfo;
 configrec syscfg;
 statusrec status;
@@ -127,10 +133,42 @@ static void show_help() {
 }
 
 static void ValidateConfigOverlayExists() {
+  IniFile ini("wwiv.ini", "WWIV");
+  int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
+
   WFile config_overlay("config.ovr");
   if (!config_overlay.Exists() || config_overlay.GetLength() < sizeof(configoverrec)) {
     // Handle the case where there is no config.ovr.
     write_instance(1, syscfg.batchdir, syscfg.tempdir);
+  }
+
+  if (config_overlay.GetLength() < (num_instances * sizeof(configoverrec))) {
+    const string base(bbsdir);
+    // Not enough instances are configured.  Recreate all of them based on INI setting.
+    for (int i=1; i <= num_instances; i++) {
+      string instance_tag = StringPrintf("WWIV-%u", i);
+      IniFile ini("wwiv.ini", instance_tag, "WWIV");
+
+      const char* temp_directory_char = ini.GetValue("TEMP_DIRECTORY");
+      if (temp_directory_char != nullptr) {
+        string temp_directory(temp_directory_char);
+        // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also 
+        // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
+        string batch_directory(ini.GetValue("BATCH_DIRECTORY", temp_directory.c_str()));
+
+        // Replace %n with instance number value.
+        const string instance_num_string = std::to_string(i);
+        StringReplace(&temp_directory, "%n", instance_num_string);
+        StringReplace(&batch_directory, "%n", instance_num_string);
+
+        WFile::MakeAbsolutePath(base, &temp_directory);
+        WFile::MakeAbsolutePath(base, &batch_directory);
+
+        WFile::EnsureTrailingSlash(&temp_directory);
+        WFile::EnsureTrailingSlash(&batch_directory);
+        write_instance(i, batch_directory, temp_directory);
+      }
+    }
   }
 }
 
@@ -156,7 +194,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   char *ss = getenv("WWIV_DIR");
   if (ss) {
-    WWIV_ChangeDirTo(ss);
+    chdir(ss);
   }
   getcwd(bbsdir, MAX_PATH);
 
@@ -315,7 +353,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   if (!pwok) {
     nlx();
-    std::vector<std::string> lines { "Please enter the System Password. "};
+    vector<string> lines { "Please enter the System Password. "};
     if (newbbs) {
       lines.insert(lines.begin(), "");
       lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");

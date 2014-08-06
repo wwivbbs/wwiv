@@ -18,6 +18,11 @@
 /**************************************************************************/
 
 #include <memory>
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif  // _WIN32
 
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
@@ -210,12 +215,12 @@ bool get_file_idz(uploadsrec * u, int dn) {
   WFile::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
   WFile::Remove(syscfgovr.tempdir, DESC_SDI);
 
-  WWIV_ChangeDirTo(directories[dn].path);
+  chdir(directories[dn].path);
   WWIV_GetDir(s, true);
   strcat(s, stripfn(u->filename));
   GetApplication()->CdHome();
   get_arc_cmd(cmd, s, 1, "FILE_ID.DIZ DESC.SDI");
-  WWIV_ChangeDirTo(syscfgovr.tempdir);
+  chdir(syscfgovr.tempdir);
   ExecuteExternalProgram(cmd, EFLAG_TOPSCREEN | EFLAG_NOHUP);
   GetApplication()->CdHome();
   sprintf(s, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
@@ -329,7 +334,7 @@ int read_idz(int mode, int tempdir) {
     if ((compare(s, u.filename)) &&
         (strstr(u.filename, ".COM") == NULL) &&
         (strstr(u.filename, ".EXE") == NULL)) {
-      WWIV_ChangeDirTo(directories[udir[tempdir].subnum].path);
+      chdir(directories[udir[tempdir].subnum].path);
       WWIV_GetDir(s1, true);
       strcat(s1, stripfn(u.filename));
       GetApplication()->CdHome();

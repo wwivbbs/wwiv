@@ -16,6 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif  // _WIN32
 
 #include "wwiv.h"
 #include "core/wfndfile.h"
@@ -384,7 +389,7 @@ void add_arc(const char *arc, const char *pszFileName, int dos) {
 
   get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, pszFileName);
   if (szAddArchiveCommand[0]) {
-    WWIV_ChangeDirTo(syscfgovr.tempdir);
+    chdir(syscfgovr.tempdir);
     GetSession()->localIO()->LocalPuts(szAddArchiveCommand);
     GetSession()->localIO()->LocalPuts("\r\n");
     if (dos) {
@@ -528,9 +533,9 @@ void temp_extract() {
       GetSession()->tagging = ot;
       GetSession()->bout.NewLine();
       if (directories[udir[GetSession()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
-        WWIV_ChangeDirTo(syscfgovr.tempdir);
+        chdir(syscfgovr.tempdir);
       } else {
-        WWIV_ChangeDirTo(directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
+        chdir(directories[udir[GetSession()->GetCurrentFileArea()].subnum].path);
       }
       WWIV_GetDir(s4, true);
       strcat(s4, stripfn(u.filename));
@@ -566,7 +571,7 @@ void temp_extract() {
               strcat(s1, ".*");
             }
             get_arc_cmd(s3, s4, 1, stripfn(s1));
-            WWIV_ChangeDirTo(syscfgovr.tempdir);
+            chdir(syscfgovr.tempdir);
             if (!okfn(s1)) {
               s3[0] = '\0';
             }

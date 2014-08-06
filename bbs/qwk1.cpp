@@ -29,6 +29,8 @@
 #ifdef _WIN32
 #include <direct.h>
 #include <io.h>
+#else
+#include <unistd.h>
 #endif
 #include <sys/stat.h>
 #include "wconstants.h"
@@ -394,7 +396,7 @@ void ready_reply_packet(const char *packet_name, const char *msg_name) {
   int archiver = match_archiver(packet_name);
   std::string command = stuff_in(arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
-  WWIV_ChangeDirTo(QWK_DIRECTORY);
+  chdir(QWK_DIRECTORY);
   ExecuteExternalProgram(command, EFLAG_NOPAUSE);
   GetApplication()->CdHome();
 }

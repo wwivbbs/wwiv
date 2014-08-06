@@ -193,6 +193,11 @@ class WFile {
   static void SetLogger(WLogger* logger) { logger_ = logger; }
   static void SetDebugLevel(int nDebugLevel) { debug_level_ = nDebugLevel; }
   static int GetDebugLevel() { return debug_level_; }
+  static void EnsureTrailingSlash(std::string* path);
+  static void CurrentDirectory(std::string* current_dir);
+  static void MakeAbsolutePath(const std::string base, std::string* relative);
+  static bool IsAbsolutePath(const std::string path);
+  static bool IsRelativePath(const std::string path) { return !IsAbsolutePath(path); }
 };
 
 #endif // __INCLUDED_PLATFORM_WFILLE_H__

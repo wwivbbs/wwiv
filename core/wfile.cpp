@@ -24,6 +24,7 @@
 #include <fcntl.h>
 #include <iostream>
 #ifdef _WIN32
+#include <direct.h>
 #include <io.h>
 #include <share.h>
 #endif  // _WIN32
@@ -38,6 +39,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "Shlwapi.h"
 #undef CopyFile
 #undef GetFileTime
 #undef GetFullPathName
@@ -55,6 +57,9 @@
 #endif
 
 #ifdef _WIN32
+
+// Needed for PathIsRelative
+#pragma comment(lib, "Shlwapi.lib")
 
 #if !defined(ftruncate)
 #define ftruncate chsize
@@ -362,3 +367,40 @@ bool WFile::SetFilePermissions(const std::string fileName, int nPermissions) {
 bool WFile::IsFileHandleValid(int hFile) {
   return (hFile != WFile::invalid_handle) ? true : false;
 }
+
+//static
+void WFile::EnsureTrailingSlash(string* path) {
+  char last_char = path->back();
+  if (last_char != WFile::pathSeparatorChar) {
+    path->push_back(WFile::pathSeparatorChar);
+  }
+}
+
+// static 
+void WFile::CurrentDirectory(string* current_dir) {
+  char s[MAX_PATH];
+  getcwd(s, MAX_PATH);
+  current_dir->assign(s);
+}
+
+// static
+void WFile::MakeAbsolutePath(const std::string base, std::string* relative) {
+  if (!WFile::IsAbsolutePath(*relative)) {
+    WFile dir(base, *relative);
+    relative->assign(dir.GetFullPathName());
+  }
+}
+
+// static
+bool WFile::IsAbsolutePath(const std::string path) {
+  if (path.empty()) {
+    return false;
+  }
+#ifdef _WIN32
+  return ::PathIsRelative(path.c_str()) ? false : true;
+#else
+  return path.front() == WFile::pathSeparatorChar;
+#endif  // _WIN32
+}
+
+
