@@ -22,7 +22,7 @@
 #ifndef NOT_BBS
 // Used only by WWIV_make_abs_cmd
 
-char *exts[] = {
+const char *exts[] = {
   "",
   ".COM",
   ".EXE",
