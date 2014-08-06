@@ -35,10 +35,6 @@ double WWIV_GetFreeSpaceForPath(const char * szPath);
 void WWIV_GetDir(char *s, bool be);
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName);
 
-// $PLATFORM/reboot.cpp
-
-void WWIV_RebootComputer();
-
 // $PLATFORM/utility2.cpp
 void WWIV_make_abs_cmd(std::string& out);
 int WWIV_make_path(const char *s);

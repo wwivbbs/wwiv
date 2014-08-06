@@ -31,9 +31,6 @@
     <ClCompile Include="platform\curses_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="platform\win32\filesupp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
