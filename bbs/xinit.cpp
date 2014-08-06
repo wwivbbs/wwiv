@@ -17,6 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif  // _WIN32
 
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
@@ -452,14 +457,7 @@ IniFile* WApplication::ReadINIFile() {
   return ini;
 }
 
-static void EnsureTrailingSlash(string* path) {
-  char last_char = path->back();
-  if (last_char != WFile::pathSeparatorChar) {
-    path->push_back(WFile::pathSeparatorChar);
-  }
-}
-
-static bool ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, IniFile* ini) {
+bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, IniFile* ini) {
   const char* temp_directory_char = ini->GetValue("TEMP_DIRECTORY");
   if (temp_directory_char != nullptr) {
     string temp_directory(temp_directory_char);
@@ -472,10 +470,11 @@ static bool ReadConfigOverlayFile(int instance_number, configrec* full_syscfg, I
     StringReplace(&temp_directory, "%n", instance_num_string);
     StringReplace(&batch_directory, "%n", instance_num_string);
 
-    WWIV_make_abs_cmd(temp_directory);
-    WWIV_make_abs_cmd(batch_directory);
-    EnsureTrailingSlash(&temp_directory);
-    EnsureTrailingSlash(&batch_directory);
+    const string base_dir = GetHomeDir();
+    WFile::MakeAbsolutePath(base_dir, &batch_directory);
+    WFile::MakeAbsolutePath(base_dir, &temp_directory);
+    WFile::EnsureTrailingSlash(&temp_directory);
+    WFile::EnsureTrailingSlash(&batch_directory);
 
     syscfgovr.primaryport = full_syscfg->primaryport;
     strcpy(syscfgovr.tempdir, temp_directory.c_str());
@@ -1073,30 +1072,16 @@ void WApplication::read_gfile() {
   }
 }
 
-
 /**
  * Makes a path into an absolute path, returns true if original path altered,
  * else returns false
  */
-bool WApplication::make_abs_path(char *pszDirectory) {
-  char szOldDirectory[ MAX_PATH ];
-
-#ifdef __unix__
-  if (strlen(pszDirectory) < 1)
-#else
-  if (strlen(pszDirectory) < 3 || pszDirectory[1] != ':' || pszDirectory[2] != WWIV_FILE_SEPERATOR_CHAR)
-#endif
-  {
-    WWIV_GetDir(szOldDirectory, true);
-    GetApplication()->CdHome();
-    WWIV_ChangeDirTo(pszDirectory);
-    WWIV_GetDir(pszDirectory, true);
-    WWIV_ChangeDirTo(szOldDirectory);
-    return true;
-  }
-  return false;
+void WApplication::make_abs_path(char *pszDirectory) {
+  string base(GetHomeDir());
+  string dir(pszDirectory);
+  WFile::MakeAbsolutePath(base, &dir);
+  strcpy(pszDirectory, dir.c_str());
 }
-
 
 void WApplication::InitializeBBS() {
   std::string newprompt;

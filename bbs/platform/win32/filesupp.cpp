@@ -50,7 +50,6 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive) {
   s[0] = static_cast< char >('A' + static_cast< char >(nDrive - 1));
   char *pszDrive = (nDrive) ? s : NULL;
 
-
   // if we can get the process handle try and determine if it is a valid drive
   pGetDriveType = (P_GDT)GetProcAddress(GetModuleHandle("kernel32.dll"), "GetDriveTypeA");
   if (pGetDriveType != NULL) {
@@ -85,52 +84,18 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive) {
   return -1.0;
 }
 
-
 double WWIV_GetFreeSpaceForPath(const char * szPath) {
 #ifndef NOT_BBS
   int nDrive = GetApplication()->GetHomeDir()[0];
-
   if (szPath[1] == ':') {
     nDrive = szPath[0];
   }
-
   nDrive = wwiv::UpperCase<int> (nDrive - 'A' + 1);
-
   return WWIV_WIN32_FreeSpaceForDriveLetter(nDrive);
 #else
   return 0;
 #endif
 }
-
-
-void WWIV_ChangeDirTo(const char *s) {
-  char szBuffer[MAX_PATH];
-
-  strcpy(szBuffer, s);
-  int i = strlen(szBuffer) - 1;
-  int db = (szBuffer[i] == '\\');
-  if (i == 0) {
-    db = 0;
-  }
-  if ((i == 2) && (szBuffer[1] == ':')) {
-    db = 0;
-  }
-  if (db) {
-    szBuffer[i] = '\0';
-  }
-  _chdir(szBuffer);
-  if (s[1] == ':') {
-    int driveNum = s[0];
-    // handle both upper and lower case in a single line here.  If the drive letter is over 'Z' then it is lower case.
-    driveNum -= driveNum > 'Z' ? 'a' : 'A';
-    driveNum++; // FIX, On Win32, _chdrive is 'A' = 1, etc..
-    _chdrive(driveNum);
-    if (s[2] == 0) {
-      _chdir("\\");
-    }
-  }
-}
-
 
 void WWIV_GetDir(char *s, bool be) {
   strcpy(s, "X:\\");
@@ -143,9 +108,6 @@ void WWIV_GetDir(char *s, bool be) {
   }
 }
 
-
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
   _splitpath(pszPath, NULL, NULL, pszFileName, NULL);
 }
-
-

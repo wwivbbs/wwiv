@@ -18,6 +18,12 @@
 /**************************************************************************/
 #include <algorithm>
 
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif  // _WIN32
+
 #include "wwiv.h"
 #include "instmsg.h"
 #include "printfile.h"
@@ -531,7 +537,7 @@ void make_ul_batch_list(char *pszListFileName) {
   for (int i = 0; i < GetSession()->numbatch; i++) {
     if (!batch[i].sending) {
       char szBatchFileName[MAX_PATH], szCurrentDirectory[MAX_PATH];
-      WWIV_ChangeDirTo(directories[batch[i].dir].path);
+      chdir(directories[batch[i].dir].path);
       WWIV_GetDir(szCurrentDirectory, true);
       GetApplication()->CdHome();
       sprintf(szBatchFileName, "%s%s\r\n", szCurrentDirectory, stripfn(batch[i].filename));
@@ -563,12 +569,12 @@ void make_dl_batch_list(char *pszListFileName) {
       char szFileNameToSend[ MAX_PATH ];
       if (directories[batch[i].dir].mask & mask_cdrom) {
         char szCurrentDirectory[ MAX_PATH ];
-        WWIV_ChangeDirTo(syscfgovr.tempdir);
+        chdir(syscfgovr.tempdir);
         WWIV_GetDir(szCurrentDirectory, true);
         sprintf(szFileNameToSend, "%s%s", szCurrentDirectory, stripfn(batch[i].filename));
         if (!WFile::Exists(szFileNameToSend)) {
           char szSourceFileName[ MAX_PATH ];
-          WWIV_ChangeDirTo(directories[batch[i].dir].path);
+          chdir(directories[batch[i].dir].path);
           WWIV_GetDir(szSourceFileName, true);
           strcat(szSourceFileName, stripfn(batch[i].filename));
           copyfile(szSourceFileName, szFileNameToSend, true);
@@ -576,7 +582,7 @@ void make_dl_batch_list(char *pszListFileName) {
         strcat(szFileNameToSend, "\r\n");
       } else {
         char szCurrentDirectory[ MAX_PATH ];
-        WWIV_ChangeDirTo(directories[batch[i].dir].path);
+        chdir(directories[batch[i].dir].path);
         WWIV_GetDir(szCurrentDirectory, true);
         sprintf(szFileNameToSend, "%s%s\r\n", szCurrentDirectory, stripfn(batch[i].filename));
       }
@@ -632,7 +638,7 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
     if (incom) {
       WFile::SetFilePermissions(g_szDSZLogFileName, WFile::permWrite);
       WFile::Remove(g_szDSZLogFileName);
-      WWIV_ChangeDirTo(syscfgovr.batchdir);
+      chdir(syscfgovr.batchdir);
       ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPWANOPT_PROT_BATCH));
       if (bHangupAfterDl) {
         bihangup(1);
