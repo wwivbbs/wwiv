@@ -18,11 +18,9 @@
 #include <algorithm>
 #include <conio.h>
 
-#ifndef NOT_BBS
 #include "wwiv.h"
 #include "core/wutil.h"
 #include "wcomm.h"
-#endif
 
 extern int oldy = 0;
 
@@ -141,7 +139,7 @@ void WLocalIO::global_char(char ch) {
 }
 
 void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
-  static bool nOldGlobalHandle;
+  static bool nOldGlobalHandle = false;
 
   if (x_only) {
     if (!tf) {

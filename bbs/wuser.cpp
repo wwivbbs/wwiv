@@ -16,103 +16,44 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include "core/wfile.h"
-#include "wuser.h"
-#include "core/strings.h"
-#include "filenames.h"
 #include <iostream>
 #include <memory>
+#include "bbs/filenames.h"
+#include "bbs/wuser.h"
+#include "core/strings.h"
+#include "core/wfile.h"
 
 #if defined( _WIN32 )
 #define snprintf _snprintf
 #endif // _WIN32
 
 #ifndef NOT_BBS
-#include "wsession.h"
 #include "bbs.h"
-#include "wconstants.h"
 #include "vars.h"
 #include "wstatus.h"
 #endif // NOT_BBS
-
-
-
-const int WUser::userDeleted                = 0x01;
-const int WUser::userInactive               = 0x02;
-
-// USERREC.exempt
-const int WUser::exemptRatio                = 0x01;
-const int WUser::exemptTime                 = 0x02;
-const int WUser::exemptPost                 = 0x04;
-const int WUser::exemptAll                  = 0x08;
-const int WUser::exemptAutoDelete           = 0x10;
-
-// USERREC.restrict
-const int WUser::restrictLogon              = 0x0001;
-const int WUser::restrictChat               = 0x0002;
-const int WUser::restrictValidate           = 0x0004;
-const int WUser::restrictAutomessage        = 0x0008;
-const int WUser::restrictAnony              = 0x0010;
-const int WUser::restrictPost               = 0x0020;
-const int WUser::restrictEmail              = 0x0040;
-const int WUser::restrictVote               = 0x0080;
-const int WUser::restrictMultiNodeChat      = 0x0100;
-const int WUser::restrictNet                = 0x0200;
-const int WUser::restrictUpload             = 0x0400;
-
-// USERREC.sysstatus
-const int WUser::ansi                       = 0x00000001;
-const int WUser::color                      = 0x00000002;
-const int WUser::music                      = 0x00000004;
-const int WUser::pauseOnPage                = 0x00000008;
-const int WUser::expert                     = 0x00000010;
-const int WUser::SMW                        = 0x00000020;
-const int WUser::fullScreen                 = 0x00000040;
-const int WUser::nscanFileSystem            = 0x00000080;
-const int WUser::extraColor                 = 0x00000100;
-const int WUser::clearScreen                = 0x00000200;
-const int WUser::upperASCII                 = 0x00000400;
-const int WUser::noTag                      = 0x00000800;
-const int WUser::conference                 = 0x00001000;
-const int WUser::noChat                     = 0x00002000;
-const int WUser::noMsgs                     = 0x00004000;
-const int WUser::menuSys                    = 0x00008000;
-const int WUser::listPlus                   = 0x00010000;
-const int WUser::autoQuote                  = 0x00020000;
-const int WUser::twentyFourHourClock        = 0x00040000;
-const int WUser::msgPriority                = 0x00080000;
-
 extern unsigned char *translate_letters[];
-
 
 WUser::WUser() {
   ZeroUserData();
 }
 
-
-WUser::~WUser() {
-}
-
+WUser::~WUser() { }
 
 WUser::WUser(const WUser& w) {
   memcpy(&data, &w.data, sizeof(userrec));
 }
 
-
 WUser& WUser::operator=(const WUser& rhs) {
   if (this == &rhs) {
     return *this;
   }
-
   memcpy(&data, &rhs.data, sizeof(userrec));
-
   return *this;
 }
-
 
 void WUser::FixUp() {
   data.name[sizeof(data.name) - 1]      = '\0';
@@ -136,21 +77,17 @@ void WUser::FixUp() {
   data.macros[2][sizeof(data.macros[2]) - 1]  = '\0';
 }
 
-
 void WUser::ZeroUserData() {
   memset(&data, 0, sizeof(userrec));
 }
-
 
 const char *WUser::GetUserNameAndNumber(int nUserNumber) const {
   return nam(nUserNumber);
 }
 
-
 const char *WUser::GetUserNameNumberAndSystem(int nUserNumber, int nSystemNumber) const {
   return nam1(nUserNumber, nSystemNumber);
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -162,13 +99,10 @@ WUserManager::WUserManager(std::string dataDirectory, int nUserRecordLength, int
   m_bUserWritesAllowed(true), m_bInitalized(true) {
 }
 
-WUserManager::WUserManager() : m_bUserWritesAllowed(true), m_bInitalized(false) {
-}
+WUserManager::WUserManager() : m_bUserWritesAllowed(true), m_bInitalized(false) { }
 
 
-WUserManager::~WUserManager() {
-}
-
+WUserManager::~WUserManager() { }
 
 void WUserManager::InitializeUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers) {
   m_bInitalized = true;
@@ -186,7 +120,6 @@ int  WUserManager::GetNumberOfUserRecords() const {
   }
   return 0;
 }
-
 
 bool WUserManager::ReadUserNoCache(WUser *pUser, int nUserNumber) {
   WFile userList(m_dataDirectory, USER_LST);
@@ -210,7 +143,6 @@ bool WUserManager::ReadUserNoCache(WUser *pUser, int nUserNumber) {
   return true;
 }
 
-
 bool WUserManager::ReadUser(WUser *pUser, int nUserNumber, bool bForceRead) {
 #ifndef NOT_BBS
   if (!bForceRead) {
@@ -227,7 +159,6 @@ bool WUserManager::ReadUser(WUser *pUser, int nUserNumber, bool bForceRead) {
   return this->ReadUserNoCache(pUser, nUserNumber);
 }
 
-
 bool WUserManager::WriteUserNoCache(WUser *pUser, int nUserNumber) {
   WFile userList(m_dataDirectory, USER_LST);
   if (userList.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
@@ -239,7 +170,6 @@ bool WUserManager::WriteUserNoCache(WUser *pUser, int nUserNumber) {
   }
   return false;
 }
-
 
 bool WUserManager::WriteUser(WUser *pUser, int nUserNumber) {
   if (nUserNumber < 1 || nUserNumber > m_nMaxNumberOfUsers || !IsUserWritesAllowed()) {
@@ -287,7 +217,7 @@ int WUserManager::FindUser(std::string searchString) {
 }
 
 char *WUser::nam(int nUserNumber) const {
-  static char s_szNamBuffer[ 255 ];
+  static char s_szNamBuffer[255];
   bool f = true;
   unsigned int p = 0;
   for (p = 0; p < strlen(this->GetName()); p++) {
@@ -316,13 +246,12 @@ char *WUser::nam(int nUserNumber) const {
   return s_szNamBuffer;
 }
 
-
 char *WUser::nam1(int nUserNumber, int nSystemNumber) const {
   static char s_szNamBuffer[ 255 ];
 
   strcpy(s_szNamBuffer, nam(nUserNumber));
   if (nSystemNumber) {
-    char szBuffer[ 10 ];
+    char szBuffer[10];
     snprintf(szBuffer, sizeof(szBuffer), " @%u", nSystemNumber);
     strcat(s_szNamBuffer, szBuffer);
   }
