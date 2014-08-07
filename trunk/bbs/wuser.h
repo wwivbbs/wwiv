@@ -33,50 +33,50 @@ class WUser {
   // Constants
 
   // USERREC.inact
-  static const int userDeleted                ;// = 0x01;
-  static const int userInactive               ;// = 0x02;
+  static const int userDeleted                = 0x01;
+  static const int userInactive               = 0x02;
 
   // USERREC.exempt
-  static const int exemptRatio                ;// = 0x01;
-  static const int exemptTime                 ;// = 0x02;
-  static const int exemptPost                 ;// = 0x04;
-  static const int exemptAll                  ;// = 0x08;
-  static const int exemptAutoDelete           ;// = 0x10;
+  static const int exemptRatio                = 0x01;
+  static const int exemptTime                 = 0x02;
+  static const int exemptPost                 = 0x04;
+  static const int exemptAll                  = 0x08;
+  static const int exemptAutoDelete           = 0x10;
 
   // USERREC.restrict
-  static const int restrictLogon              ;// = 0x0001;
-  static const int restrictChat               ;// = 0x0002;
-  static const int restrictValidate           ;// = 0x0004;
-  static const int restrictAutomessage        ;// = 0x0008;
-  static const int restrictAnony              ;// = 0x0010;
-  static const int restrictPost               ;// = 0x0020;
-  static const int restrictEmail              ;// = 0x0040;
-  static const int restrictVote               ;// = 0x0080;
-  static const int restrictMultiNodeChat      ;// = 0x0100;
-  static const int restrictNet                ;// = 0x0200;
-  static const int restrictUpload             ;// = 0x0400;
+  static const int restrictLogon              = 0x0001;
+  static const int restrictChat               = 0x0002;
+  static const int restrictValidate           = 0x0004;
+  static const int restrictAutomessage        = 0x0008;
+  static const int restrictAnony              = 0x0010;
+  static const int restrictPost               = 0x0020;
+  static const int restrictEmail              = 0x0040;
+  static const int restrictVote               = 0x0080;
+  static const int restrictMultiNodeChat      = 0x0100;
+  static const int restrictNet                = 0x0200;
+  static const int restrictUpload             = 0x0400;
 
   // USERREC.sysstatus
-  static const int ansi                       ;// = 0x00000001;
-  static const int color                      ;// = 0x00000002;
-  static const int music                      ;// = 0x00000004;
-  static const int pauseOnPage                ;// = 0x00000008;
-  static const int expert                     ;// = 0x00000010;
-  static const int SMW                        ;// = 0x00000020;
-  static const int fullScreen                 ;// = 0x00000040;
-  static const int nscanFileSystem            ;// = 0x00000080;
-  static const int extraColor                 ;// = 0x00000100;
-  static const int clearScreen                ;// = 0x00000200;
-  static const int upperASCII                 ;// = 0x00000400;
-  static const int noTag                      ;// = 0x00000800;
-  static const int conference                 ;// = 0x00001000;
-  static const int noChat                     ;// = 0x00002000;
-  static const int noMsgs                     ;// = 0x00004000;
-  static const int menuSys                    ;// = 0x00008000; // not used?
-  static const int listPlus                   ;// = 0x00010000;
-  static const int autoQuote                  ;// = 0x00020000;
-  static const int twentyFourHourClock        ;// = 0x00040000;
-  static const int msgPriority                ;// = 0x00080000;  // not used?
+  static const int ansi                       = 0x00000001;
+  static const int color                      = 0x00000002;
+  static const int music                      = 0x00000004;
+  static const int pauseOnPage                = 0x00000008;
+  static const int expert                     = 0x00000010;
+  static const int SMW                        = 0x00000020;
+  static const int fullScreen                 = 0x00000040;
+  static const int nscanFileSystem            = 0x00000080;
+  static const int extraColor                 = 0x00000100;
+  static const int clearScreen                = 0x00000200;
+  static const int upperASCII                 = 0x00000400;
+  static const int noTag                      = 0x00000800;
+  static const int conference                 = 0x00001000;
+  static const int noChat                     = 0x00002000;
+  static const int noMsgs                     = 0x00004000;
+  static const int menuSys                    = 0x00008000; // not used?
+  static const int listPlus                   = 0x00010000;
+  static const int autoQuote                  = 0x00020000;
+  static const int twentyFourHourClock        = 0x00040000;
+  static const int msgPriority                = 0x00080000;  // not used?
 
   //
   // Data
