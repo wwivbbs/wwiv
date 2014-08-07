@@ -17,11 +17,19 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef NOT_BBS
-#include "bbs/wwiv.h"
-#endif
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
 #include "bbs/subxtr.h"
 #include "bbs/pause.h"
+#include "bbs/vardec.h"
+#include "bbs/vars.h"
+#include "bbs/woutstreambuffer.h"
+#include "bbs/wsession.h"
+#include "bbs/wstatus.h"
+#include "core/strings.h"
+#include "core/wfile.h"
+#include "core/wwivassert.h"
+#include "core/wwivport.h"
 
 #ifndef MAX_TO_CACHE
 #define MAX_TO_CACHE 15                     // max postrecs to hold in cache
