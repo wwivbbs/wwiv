@@ -199,8 +199,6 @@ int mode_switch(double d, bool allowa) {
 /** Picks up/Hangs up phone */
 void holdphone(bool bPickUpPhone) {
 #ifndef __unix__
-  double xtime = 0;
-
   if (!ok_modem_stuff) {
     return;
   }
@@ -210,11 +208,9 @@ void holdphone(bool bPickUpPhone) {
   if ((!(modem_i->pick)) || (!(modem_i->hang))) {
     return;
   }
-
   if (GetSession()->remoteIO() == NULL) {
     return ;
   }
-
   GetSession()->remoteIO()->dtr(true);
 #endif
 }
@@ -333,7 +329,6 @@ void answer_phone() {
   }
 #endif
 }
-
 
 bool InitializeComPort(int nComPortNumber) {
 #ifndef __unix__
