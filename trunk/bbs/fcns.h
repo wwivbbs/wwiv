@@ -198,7 +198,8 @@ bool noyes();
 char ynq();
 char onek(const char *pszAllowableChars, bool bAutoMpl = false);
 char onek1(const char *pszAllowableChars);
-
+void rputs(const char *pszText);
+void holdphone(bool bPickUpPhone);
 
 
 // File: conf.cpp
@@ -509,17 +510,6 @@ void time_bank();
 int  getnetnum(const char *pszNetworkName);
 void uudecode(const char *pszInputFileName, const char *pszOutputFileName);
 void Packers();
-
-
-// File: modem.cpp
-
-void rputs(const char *pszText);
-void do_result(result_info * ri);
-void process_full_result(const std::string& resultCode);
-int  mode_switch(double d, bool allowa);
-void holdphone(bool bPickUpPhone);
-void imodem(bool bSetup);
-void answer_phone();
 
 
 // File: msgbase.cpp

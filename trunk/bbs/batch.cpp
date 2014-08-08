@@ -861,16 +861,6 @@ int batchdl(int mode) {
       break;
     case 'B':
       if (mode != 3) {
-        if (modem_flag & flag_as) {
-          GetSession()->bout << "\r\n|#6WARNING: You have an asymmetrical modem speed connection.\r\n" <<
-                             "|#6         This means bi-directional transfers may have significantly\r\n" <<
-                             "|#6         lower throughput than you would expect.\r\n\n" <<
-                             "|#5Are you sure you want to continue? ";
-          if (!yesno()) {
-            done = true;
-            break;
-          }
-        }
         GetSession()->bout << "\r\n|#5Hang up after transfer? ";
         bHangupAfterDl = yesno();
         GetSession()->bout.NewLine(2);

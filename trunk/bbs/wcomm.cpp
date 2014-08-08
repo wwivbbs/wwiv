@@ -21,7 +21,6 @@
 #if defined ( _WIN32 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include "platform/win32/wios.h"
 #include "platform/win32/wiot.h"
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
 #include "wiou.h"
@@ -63,23 +62,8 @@ const char* WComm::GetLastErrorText() {
 
 WComm* WComm::CreateComm(bool bUseSockets, unsigned int nHandle) {
 #if defined ( _WIN32 )
-  if (bUseSockets) {
-    return new WIOTelnet(nHandle);
-  } else {
-    return new WIOSerial(nHandle);
-  }
+  return new WIOTelnet(nHandle);
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
   return new WIOUnix();
-  /*
-#elif defined ( __APPLE__ )
-  if ( bUseSockets )
-  {
-    //return new WIOTelnet( nHandle );
-  }
-  else
-  {
-    //return new WIOSerial( nHandle );
-  }
-  */
 #endif
 }

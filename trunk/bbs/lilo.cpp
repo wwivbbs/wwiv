@@ -280,7 +280,7 @@ void ExecuteWWIVNetworkRequest(const char *pszUserName) {
   switch (GetSession()->usernum) {
   case -2: {
     std::stringstream networkCommand;
-    networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F" << modem_flag;
+    networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
     write_inst(INST_LOC_NET, 0, INST_FLAGS_NONE);
     ExecuteExternalProgram(networkCommand.str().c_str(), EFLAG_NONE);
     if (GetApplication()->GetInstanceNumber() != 1) {
@@ -292,7 +292,7 @@ void ExecuteWWIVNetworkRequest(const char *pszUserName) {
 #ifdef ENABLE_REMOTE_VIA_SPECIAL_LOGINS
   case -3: {
     std::stringstream networkCommand;
-    networkCommand << "REMOTE /B" << modem_speed << " /F" << modem_flag;
+    networkCommand << "REMOTE /B" << modem_speed << " /F0";
     ExecuteExternalProgram(networkCommand.str().c_str() , EFLAG_NONE);
   }
   break;
@@ -300,7 +300,7 @@ void ExecuteWWIVNetworkRequest(const char *pszUserName) {
     szUserName[8] = '\0';
     if (szUserName[0]) {
       std::stringstream networkCommand;
-      networkCommand << szUserName << " /B" << modem_speed << " /F" << modem_flag;
+      networkCommand << szUserName << " /B" << modem_speed << " /F0";
       std::stringstream remoteDatFileName;
       remoteDatFileName << syscfg.datadir << REMOTES_DAT;
       WTextFile file(remoteDatFileName.str(), "rt");
@@ -334,7 +334,6 @@ void ExecuteWWIVNetworkRequest(const char *pszUserName) {
   GetSession()->remoteIO()->dtr(true);
   Wait(0.1);
   cleanup_net();
-  imodem(false);
   hangup = true;
 }
 
@@ -394,55 +393,7 @@ void CheckCallRestrictions() {
 
 
 void DoCallBackVerification() {
-  int cbv = 0;
-  if (!GetSession()->cbv.forced) {
-    GetSession()->bout << "|#1Callback verification now (y/N):|#0 ";
-    if (yesno()) {
-      if (GetSession()->GetCurrentUser()->GetCbv() & 4) {
-        printfile(CBV6_NOEXT);                 // user explains and
-        feedback(false);                       // makes excuses
-      }
-      cbv = callback();
-    } else {
-      cbv = 4;
-    }
-  } else {
-    if (GetSession()->GetCurrentUser()->GetCbv() & 4) {
-      printfile(CBV6_NOEXT);                   // user explains and
-      feedback(false);                         // makes excuses
-    }
-    cbv = callback();
-  }
-  if (cbv & 1) {
-    GetSession()->GetCurrentUser()->SetCbv(GetSession()->GetCurrentUser()->GetCbv() | 1);
-    if (GetSession()->GetCurrentUser()->GetSl() < GetSession()->cbv.sl) {
-      GetSession()->GetCurrentUser()->SetSl(GetSession()->cbv.sl);
-    }
-    if (GetSession()->GetCurrentUser()->GetDsl() < GetSession()->cbv.dsl) {
-      GetSession()->GetCurrentUser()->SetDsl(GetSession()->cbv.dsl);
-    }
-    GetSession()->GetCurrentUser()->SetArFlag(GetSession()->cbv.ar);
-    GetSession()->GetCurrentUser()->SetDarFlag(GetSession()->cbv.dar);
-    GetSession()->GetCurrentUser()->SetExemptFlag(GetSession()->cbv.exempt);
-    GetSession()->GetCurrentUser()->SetRestrictionFlag(GetSession()->cbv.restrict);
-    GetSession()->WriteCurrentUser();
-  } else {
-    GetSession()->GetCurrentUser()->SetCbv(GetSession()->GetCurrentUser()->GetCbv() | 4);
-    GetSession()->WriteCurrentUser();
-  }
-  if (cbv & 2) {
-    if (GetSession()->cbv.longdistance) {
-      printfile(CBV4_NOEXT);   // long distance verified
-      pausescr();
-      hangup = true;
-    } else {
-      printfile(CBV5_NOEXT);   // long distance no call
-      pausescr();
-    }
-  }
-  if (cbv == 0) {
-    hangup = true;
-  }
+  // TODO(rushfan): This is where we would do internet email validation.
 }
 
 

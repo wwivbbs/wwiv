@@ -71,11 +71,9 @@ StatusMgr* WApplication::GetStatusManager() {
   return statusMgr;
 }
 
-
 WUserManager* WApplication::GetUserManager() {
   return userManager;
 }
-
 
 #if !defined ( __unix__ )
 void WApplication::GetCaller() {
@@ -88,7 +86,6 @@ void WApplication::GetCaller() {
   if (GetSession()->wfc_status == 0) {
     GetSession()->localIO()->LocalCls();
   }
-  imodem(false);
   GetSession()->usernum = 0;
   SetWfcStatus(0);
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
@@ -116,8 +113,7 @@ void WApplication::GetCaller() {
 
   okskey = true;
   GetSession()->localIO()->LocalCls();
-  GetSession()->localIO()->LocalPrintf("%s %s ...\r\n",
-                                       ((modem_mode == mode_fax) ? "Fax connection at" : "Logging on at"),
+  GetSession()->localIO()->LocalPrintf("Logging on at %s ...\r\n",
                                        GetSession()->GetCurrentSpeed().c_str());
   SetWfcStatus(0);
 }
@@ -292,14 +288,6 @@ int WApplication::doWFCEvents() {
           QuitBBS();
         }
         GetSession()->localIO()->LocalCls();
-        break;
-      // Answer Phone
-      case 'A':
-        if (!ok_modem_stuff) {
-          break;
-        }
-        GetSession()->localIO()->LocalGotoXY(2, 23);
-        answer_phone();
         break;
       // BoardEdit
       case 'B':
@@ -542,28 +530,7 @@ int WApplication::doWFCEvents() {
       catsl();
       write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     }
-#if !defined ( __unix__ )
-    if (ok_modem_stuff && sess->remoteIO()->incoming() && !lokb) {
-      any = true;
-      if (rpeek_wfconly() == SOFTRETURN) {
-        bgetchraw();
-      } else {
-        if (mode_switch(1.0, false) == mode_ring) {
-          if (GetSession()->wfc_status == 1) {
-            GetSession()->localIO()->LocalXYAPrintf(58, 13, 14, "%-20s", "Ringing....");
-          }
-          answer_phone();
-        } else if (modem_mode == mode_con) {
-          incom = outcom = true;
-          if (!(modem_flag & flag_ec)) {
-            wait1(45);
-          } else {
-            wait1(2);
-          }
-        }
-      }
-    }
-#endif // !__unix__
+
     if (!any) {
       if (GetSession()->GetMessageAreaCacheNumber() < GetSession()->num_subs) {
         if (!GetSession()->m_SubDateCache[GetSession()->GetMessageAreaCacheNumber()]) {
@@ -771,7 +738,6 @@ int WApplication::Run(int argc, char *argv[]) {
   ooneuser = true;
 #endif
 
-  std::string fullResultCode;
   std::string systemPassword;
 
   for (int i = 1; i < argc; i++) {
@@ -798,11 +764,6 @@ int WApplication::Run(int argc, char *argv[]) {
         break;
       case 'E':
         event_only = true;
-        break;
-      case 'F':
-        fullResultCode = argument;
-        StringUpperCase(&fullResultCode);
-        m_bUserAlreadyOn = true;
         break;
       case 'S':
         us = static_cast<unsigned int>(std::stol(argument));
@@ -858,7 +819,7 @@ int WApplication::Run(int argc, char *argv[]) {
       } break;
       case 'X': {
         char argument2Char = wwiv::UpperCase<char>(argument.at(0));
-        if (argument2Char == 'T' || argument2Char == 'C') {
+        if (argument2Char == 'T') {
           // This more of a hack to make sure the Telnet
           // Server's -Bxxx parameter doesn't hose us.
           GetSession()->SetCurrentSpeed("115200");
@@ -872,7 +833,7 @@ int WApplication::Run(int argc, char *argv[]) {
           incom               = true;
           outcom              = false;
           global_xx           = false;
-          bTelnetInstance = (argument2Char == 'T') ? true : false;
+          bTelnetInstance = true;
         } else {
           std::cout << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
           exit(m_nErrorLevel);
@@ -953,10 +914,6 @@ int WApplication::Run(int argc, char *argv[]) {
     this_usernum = 0;
     m_bUserAlreadyOn = false;
   }
-  if (fullResultCode.length() > 0) {
-    process_full_result(fullResultCode);
-  }
-
   GetSession()->localIO()->UpdateNativeTitleBar();
 
   // If we are telnet...
@@ -1026,13 +983,6 @@ int WApplication::Run(int argc, char *argv[]) {
 #endif
     }
 
-    if (modem_mode == mode_fax) {
-      if (WFile::ExistsWildcard("WWIVFAX.*")) {
-        const std::string command = stuff_in("WWIVFAX %S %P", "", "", "", "", "");
-        ExecuteExternalProgram(command, EFLAG_NONE);
-      }
-      goto hanging_up;
-    }
     if (GetSession()->using_modem > -1) {
       if (!GetSession()->using_modem) {
         holdphone(true);
