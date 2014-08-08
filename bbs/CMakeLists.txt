@@ -58,7 +58,6 @@ set(COMMON_SOURCES
  menuspec.cpp
  menusupp.cpp
  misccmd.cpp
- modem.cpp
  msgbase.cpp
  msgbase1.cpp
  msgscan.cpp

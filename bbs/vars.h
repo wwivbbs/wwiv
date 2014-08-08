@@ -114,9 +114,7 @@ __EXTRN__ unsigned short
 net_sysnum,
 #endif // NETWORK
 crc,
-*gat,
-modem_flag,
-modem_mode;
+*gat;
 
 __EXTRN__ int modem_speed;
 

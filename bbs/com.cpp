@@ -340,3 +340,16 @@ char onek1(const char *pszAllowableChars) {
   }
   return ch;
 }
+
+/* This function ouputs a string to the com port.  This is mainly used
+ * for modem commands
+ */
+void rputs(const char *pszText) {
+  // Rushfan fix for COM/IP weirdness
+  if (ok_modem_stuff) {
+    GetSession()->remoteIO()->write(pszText, strlen(pszText));
+  }
+}
+
+// TODO(rushfan): Remove this.
+void holdphone(bool bPickUpPhone) { /* NOOP */ }

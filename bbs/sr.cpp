@@ -199,11 +199,6 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
       case xf_none:
         break;
       }
-      if (externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].othr & othr_error_correct) {
-        if (!(modem_flag & flag_ec)) {
-          ok = false;
-        }
-      }
       break;
     }
   }
