@@ -954,7 +954,6 @@ void download() {
   if (ip > 0) {
     switch (ip) {
     case WWIV_INTERNAL_PROT_YMODEM: {
-      // %%TODO: This needs to be updated for handling internal zmodem
       if (over_intern && (over_intern[2].othr & othr_override_internal) &&
           (over_intern[2].sendbatchfn[0])) {
         dszbatchdl(had, over_intern[2].sendbatchfn, prot_name(WWIV_INTERNAL_PROT_YMODEM));
