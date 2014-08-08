@@ -933,42 +933,44 @@ void qwk_menu(void) {
 }
 
 void qwk_send_file(const char *fn, bool *sent, bool *abort) {
-  int i, i1;
-  double percent = 0.0;
-
+  // TODO(rushfan): Should this just call send_file from sr.cpp?
   *sent = 0;
   *abort = 0;
 
+  int protocol = -1;
   if (GetSession()->GetCurrentUser()->data.qwk_protocol <= 1 || qwk_bi_mode) {
     if (qwk_bi_mode) {
-      i = get_protocol(xf_bi);
+      protocol = get_protocol(xf_bi);
     } else {
-      i = get_protocol(xf_down_temp);
+      protocol = get_protocol(xf_down_temp);
     }
   } else {
-    i = GetSession()->GetCurrentUser()->data.qwk_protocol;
+    protocol = GetSession()->GetCurrentUser()->data.qwk_protocol;
   }
-  switch (i) {
+  switch (protocol) {
   case -1:
     *abort = 1;
 
     break;
   case 0:
+  case WWIV_INTERNAL_PROT_ASCII:
     break;
 
-  case 2:
-  case 3:
-  case 4:
-    maybe_internal(fn, sent, &percent, false, i);
-    break;
+  case WWIV_INTERNAL_PROT_XMODEM:
+  case WWIV_INTERNAL_PROT_XMODEMCRC:
+  case WWIV_INTERNAL_PROT_YMODEM:
+  case WWIV_INTERNAL_PROT_ZMODEM: {
+    double percent = 0.0;
+    maybe_internal(fn, sent, &percent, true, protocol);
+  } break;
 
-  default:
-    i1 = extern_prot(i - 6, fn, 1);
+  default: {
+    int exit_code = extern_prot(protocol - 6, fn, 1);
     *abort = 0;
-    if (i1 == externs[i - 6].ok1) {
+    if (exit_code == externs[protocol - 6].ok1) {
       *sent = 1;
     }
-    break;
+  } break;
   }
 }
 
