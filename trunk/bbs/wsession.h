@@ -202,6 +202,12 @@ class WSession {
   int  GetNumberOfExternalProtocols() const { return m_nNumberOfExternalProtocols; }
   void SetNumberOfExternalProtocols(int n) { m_nNumberOfExternalProtocols = n; }
 
+  bool wwivmail_enabled() const { return wwivmail_enabled_; }
+  void set_wwivmail_enabled(bool wwivmail_enabled) { wwivmail_enabled_ = wwivmail_enabled; }
+
+  bool internal_qwk_enabled() const { return internal_qwk_enabled_; }
+  void set_internal_qwk_enabled(bool internal_qwk_enabled) { internal_qwk_enabled_ = internal_qwk_enabled; }
+
 
  private:
   bool            m_bLastKeyLocal;
@@ -210,6 +216,8 @@ class WSession {
   WUser           m_thisuser;
   WComm*          m_pComm;
   WLocalIO*       m_pLocalIO;
+  bool wwivmail_enabled_;
+  bool internal_qwk_enabled_;
 
  public:
   //
