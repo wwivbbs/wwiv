@@ -310,10 +310,6 @@ void zmbatchdl(bool bHangupAfterDl) {
   GetSession()->bout << szMessage;
   GetSession()->bout.NewLine(2);
 
-//    char szTempTelnet[21];
-//    sprintf(szTempTelnet, "%c%c%c", 255, 253, 0); // DO BINARY
-//    GetSession()->remoteIO()->write(szTempTelnet, 3, true);
-
   bool bRatioBad = false;
   bool ok = true;
   do {
@@ -364,21 +360,15 @@ void zmbatchdl(bool bHangupAfterDl) {
     }
   } while (ok && !hangup && GetSession()->numbatch > cur && !bRatioBad);
 
-  /*
-  if ( ok && !hangup )
-      {
-          endbatch();
-      }
-  */
+  if (ok && !hangup) {
+    endbatch();
+  }
   if (bRatioBad) {
     GetSession()->bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n\n";
   }
   if (bHangupAfterDl) {
     bihangup(0);
   }
-
-//    sprintf(szTempTelnet, "%c%c%c", 255, 254, 0); // DONT BINARY
-//    GetSession()->remoteIO()->write(szTempTelnet, 3, true);
 }
 
 
@@ -894,13 +884,15 @@ int batchdl(int mode) {
         GetSession()->bout.NewLine();
         i = get_protocol(xf_down_batch);
         if (i > 0) {
-          if (i == 4) {
+          if (i == WWIV_INTERNAL_PROT_YMODEM) {
             if (over_intern && (over_intern[2].othr & othr_override_internal) &&
                 (over_intern[2].sendbatchfn[0])) {
               dszbatchdl(bHangupAfterDl, over_intern[2].sendbatchfn, prot_name(4));
             } else {
               ymbatchdl(bHangupAfterDl);
             }
+          } else if (i == WWIV_INTERNAL_PROT_ZMODEM) {
+            zmbatchdl(bHangupAfterDl);
           } else {
             dszbatchdl(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
                        externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
