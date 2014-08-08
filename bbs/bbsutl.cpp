@@ -453,10 +453,7 @@ int check_ansi() {
 
   rputs("\x1b[6n");
 
-  long l = timer1() + 36;
-  if (modem_flag & flag_ec) {
-    l += 18;
-  }
+  long l = timer1() + 36 + 18;
 
   while ((timer1() < l) && (!hangup)) {
     CheckForHangup();

@@ -347,10 +347,6 @@ void do_callout(int sn) {
         run_exp();
 #endif
         send_inst_cleannet();
-#ifndef _UNUX
-        holdphone(false);
-        imodem(false);
-#endif
       }
     }
   }

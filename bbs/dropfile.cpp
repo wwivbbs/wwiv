@@ -143,7 +143,7 @@ void CreatePCBoardSysDropFile() {
     strcpy(pcb.printer, "0"); // -1 if logging is to the printer, 0 otherwise;
     strcpy(pcb.page_bell, " 0");
     strcpy(pcb.alarm, (GetSession()->localIO()->GetSysopAlert()) ? "-1" : " 0");
-    strcpy(pcb.errcheck, (modem_flag & flag_ec) ? "-1" : " 0");
+    strcpy(pcb.errcheck, "-1");
     if (okansi()) {
       pcb.graphics = 'Y';
       pcb.ansi = '1';
@@ -379,7 +379,7 @@ void CreateDoorSysDropFile() {
             syscfg.sysopname,
             GetSession()->GetCurrentUser()->GetName(),
             "00:01",                        // event time
-            (modem_flag & flag_ec) ? 'Y' : 'N',
+            'Y',
             (okansi()) ? 'N' : 'Y',           // ansi ok but graphics turned off
             'N',                            // record-locking
             GetSession()->GetCurrentUser()->GetColor(0),

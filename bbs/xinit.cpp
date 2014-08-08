@@ -1356,7 +1356,6 @@ void WApplication::InitializeBBS() {
     TempDisablePause disable_pause;
     remove_from_temp("*.*", syscfgovr.tempdir, true);
     remove_from_temp("*.*", syscfgovr.batchdir, true);
-    imodem(true);
     cleanup_net();
   }
   subconfnum = dirconfnum = 0;
