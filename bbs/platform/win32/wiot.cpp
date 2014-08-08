@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2007, WWIV Software Services             */
+/*             Copyright (C)1998-2014, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,43 +16,19 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "Wiot.h"
-#pragma comment(lib, "Ws2_32.lib")
+#include "bbs/platform/win32/wiot.h"
 
 #include <iostream>
 #include <process.h>
 
-#include "WUser.h"
+#include "bbs/wuser.h"
+#include "bbs/platform/platformfcns.h"
+#include "bbs/fcns.h"
 #include "core/wfile.h"
-#include "platform/platformfcns.h"
-#include "fcns.h"
-
 #include "core/wwivport.h"
 #include "core/wwivassert.h"
-//
-// Constants related to Telnet IAC options and such.
-//
-const char WIOTelnet::CHAR_TELNET_OPTION_IAC        = '\xFF';
-const int  WIOTelnet::TELNET_OPTION_IAC             = 255;
-const int  WIOTelnet::TELNET_OPTION_NOP             = 241;
-const int  WIOTelnet::TELNET_OPTION_BRK             = 243;
 
-const int  WIOTelnet::TELNET_OPTION_WILL            = 251;
-const int  WIOTelnet::TELNET_OPTION_WONT            = 252;
-const int  WIOTelnet::TELNET_OPTION_DO              = 253;
-const int  WIOTelnet::TELNET_OPTION_DONT            = 254;
-
-const int  WIOTelnet::TELNET_SB                     = 250;
-const int  WIOTelnet::TELNET_SE                     = 240;
-
-const int  WIOTelnet::TELNET_OPTION_BINARY          = 0;
-const int  WIOTelnet::TELNET_OPTION_ECHO            = 1;
-const int  WIOTelnet::TELNET_OPTION_RECONNECTION    = 2;
-const int  WIOTelnet::TELNET_OPTION_SUPPRESSS_GA    = 3;
-const int  WIOTelnet::TELNET_OPTION_TERMINAL_TYPE   = 24;
-const int  WIOTelnet::TELNET_OPTION_WINDOW_SIZE     = 31;
-const int  WIOTelnet::TELNET_OPTION_TERMINAL_SPEED  = 32;
-const int  WIOTelnet::TELNET_OPTION_LINEMODE        = 34;
+#pragma comment(lib, "Ws2_32.lib")
 
 WIOTelnet::WIOTelnet(unsigned int nHandle) : m_hSocket(static_cast<SOCKET>(nHandle)), m_bThreadsStarted(false) {
   WIOTelnet::InitializeWinsock();

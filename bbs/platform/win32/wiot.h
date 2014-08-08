@@ -30,27 +30,27 @@ extern "C" {
 
 class WIOTelnet : public WComm {
  public:
-  static const char CHAR_TELNET_OPTION_IAC;
-  static const int  TELNET_OPTION_IAC;
-  static const int  TELNET_OPTION_NOP;
-  static const int  TELNET_OPTION_BRK;
+  static const char CHAR_TELNET_OPTION_IAC = '\xFF';;
+  static const int  TELNET_OPTION_IAC = 255;
+  static const int  TELNET_OPTION_NOP = 241;
+  static const int  TELNET_OPTION_BRK = 243;
 
-  static const int  TELNET_OPTION_WILL;
-  static const int  TELNET_OPTION_WONT;
-  static const int  TELNET_OPTION_DO;
-  static const int  TELNET_OPTION_DONT;
+  static const int  TELNET_OPTION_WILL = 251;
+  static const int  TELNET_OPTION_WONT = 252;
+  static const int  TELNET_OPTION_DO = 253;
+  static const int  TELNET_OPTION_DONT = 254;
 
-  static const int TELNET_SB;
-  static const int TELNET_SE;
+  static const int TELNET_SB = 250;
+  static const int TELNET_SE = 240;
 
-  static const int TELNET_OPTION_BINARY;
-  static const int TELNET_OPTION_ECHO;
-  static const int TELNET_OPTION_RECONNECTION;
-  static const int TELNET_OPTION_SUPPRESSS_GA;
-  static const int TELNET_OPTION_TERMINAL_TYPE;
-  static const int TELNET_OPTION_WINDOW_SIZE;
-  static const int TELNET_OPTION_TERMINAL_SPEED;
-  static const int TELNET_OPTION_LINEMODE;
+  static const int TELNET_OPTION_BINARY = 0;
+  static const int TELNET_OPTION_ECHO = 1;
+  static const int TELNET_OPTION_RECONNECTION = 2;
+  static const int TELNET_OPTION_SUPPRESSS_GA = 3;
+  static const int TELNET_OPTION_TERMINAL_TYPE = 24;
+  static const int TELNET_OPTION_WINDOW_SIZE = 31;
+  static const int TELNET_OPTION_TERMINAL_SPEED = 32;
+  static const int TELNET_OPTION_LINEMODE = 34;
 
  public:
   WIOTelnet(unsigned int nHandle);
