@@ -262,6 +262,8 @@ EXEC_WAITFORIDLETIME   = 2000               ; Time to wait for the DOOR to load
                                             ; (used under WinNT)
 NEW_SCAN_AT_LOGIN      = Y                  ; Ask the user to scan for new 
                                             ; messages when they log in.
+USE_WWIVMAIL           = Y                  ; Add WWIVMail to the //QWK menu
+USE_INTERNAL_QWK       = Y                  ; Use internal QWK support
 
 ;
 ;=============================================================================

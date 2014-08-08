@@ -26,6 +26,8 @@ What's New in 2014
   you want to try it just delete archiver.dat (back it up first) and rerun
   INIT to create the new defaults.
 * Internal QWK support has been added and only works with ZIP archives for now.
+  If you use this, please add the QWK.ANS and QWK.MSG files from the release
+  archive into your GFILES directory.
 * Added new wwiv.ini setting to enable/disable internal QWK and wwivmail from
   the //QWK menu.  These currently both default to 'Y' (the wwivmail one will
   shortly default to 'N', so if you use it please add this to your INI)
