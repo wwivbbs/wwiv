@@ -512,24 +512,36 @@ void Packers() {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#1Message Packet Options:\r\n";
     GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7[|#21|#7] |#1QWK Format Packet\r\n";
-    GetSession()->bout << "|#7[|#22|#7] |#1Zipped ASCII Text\r\n";
-    GetSession()->bout << "|#7[|#23|#7] |#1Configure Sub Scan\r\n";
+    if (GetSession()->internal_qwk_enabled()) {
+      GetSession()->bout << "|#7[|#2I|#7] |#1Internal WWIV QWK\r\n";
+    }
+    if (GetSession()->wwivmail_enabled()) {
+      GetSession()->bout << "|#7[|#2W|#7] |#1WWIVMail/QWK\r\n";
+    }
+    GetSession()->bout << "|#7[|#2Z|#7] |#1Zipped ASCII Text\r\n";
+    GetSession()->bout << "|#7[|#2C|#7] |#1Configure Sub Scan\r\n";
     GetSession()->bout << "|#7[|#2Q|#7] |#1Quit back to BBS!\r\n";
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#5Choice : ";
-    char ch = onek("1234EQ\r ");
+    char ch = onek("WIZCQ\r ");
     switch (ch) {
-    case '1': {
-      // We used to write STATUS_DAT here.  I don't think we need to anymore.
-      GetSession()->localIO()->set_protect(0);
-      sysoplog("@ Ran WWIVMail/QWK");
-      std::string chain_file = create_chain_file();
-      std::string command_line = wwiv::strings::StringPrintf("wwivqwk %s", chain_file.c_str());
-      ExecuteExternalProgram(command_line, EFLAG_FOSSIL);
-      return;
+    case 'W': {
+      if (GetSession()->wwivmail_enabled()) {
+        // We used to write STATUS_DAT here.  I don't think we need to anymore.
+        GetSession()->localIO()->set_protect(0);
+        sysoplog("@ Ran WWIVMail/QWK");
+        std::string chain_file = create_chain_file();
+        std::string command_line = wwiv::strings::StringPrintf("wwivqwk %s", chain_file.c_str());
+        ExecuteExternalProgram(command_line, EFLAG_FOSSIL);
+        return;
+      }
     }
-    case '2':
+    case 'I':
+      if (GetSession()->internal_qwk_enabled()) {
+        qwk_menu();
+      }
+      break;
+    case 'Z':
       // TODO(rushfan): Merge this with the code in DownloadPosts
       GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
       if (yesno()) {
@@ -554,13 +566,10 @@ void Packers() {
         GetSession()->bout << "|#6Aborted.\r\n";
       }
       return;
-    case '3':
+    case 'C':
       GetSession()->bout.ClearScreen();
       config_qscan();
       GetSession()->bout.ClearScreen();
-      break;
-    case 'E':
-      qwk_menu();
       break;
     default:
       return;

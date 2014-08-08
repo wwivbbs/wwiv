@@ -454,6 +454,9 @@ IniFile* WApplication::ReadINIFile() {
   if (omg) {
     GetSession()->max_gfilesec = omg;
   }
+
+  GetSession()->set_wwivmail_enabled(ini->GetBooleanValue("USE_WWIVMAIL", true));
+  GetSession()->set_internal_qwk_enabled(ini->GetBooleanValue("USE_INTERNAL_QWK", true));
   return ini;
 }
 
