@@ -54,7 +54,6 @@ const int  WIOTelnet::TELNET_OPTION_WINDOW_SIZE     = 31;
 const int  WIOTelnet::TELNET_OPTION_TERMINAL_SPEED  = 32;
 const int  WIOTelnet::TELNET_OPTION_LINEMODE        = 34;
 
-
 WIOTelnet::WIOTelnet(unsigned int nHandle) : m_hSocket(static_cast<SOCKET>(nHandle)), m_bThreadsStarted(false) {
   WIOTelnet::InitializeWinsock();
   if (!DuplicateHandle(GetCurrentProcess(), reinterpret_cast<HANDLE>(m_hSocket),
@@ -73,11 +72,9 @@ WIOTelnet::WIOTelnet(unsigned int nHandle) : m_hSocket(static_cast<SOCKET>(nHand
   }
 }
 
-
 bool WIOTelnet::setup(char, int, int, unsigned long) {
   return true;
 }
-
 
 unsigned int WIOTelnet::GetHandle() const {
   return static_cast<unsigned int>(m_hSocket);
@@ -86,7 +83,6 @@ unsigned int WIOTelnet::GetHandle() const {
 unsigned int WIOTelnet::GetDoorHandle() const {
   return static_cast<unsigned int>(m_hDuplicateSocket);
 }
-
 
 unsigned int WIOTelnet::open() {
   StartThreads();
@@ -114,7 +110,6 @@ unsigned int WIOTelnet::open() {
   return 0;
 }
 
-
 void WIOTelnet::close(bool bIsTemporary) {
   if (!bIsTemporary) {
     // this will stop the threads
@@ -123,7 +118,6 @@ void WIOTelnet::close(bool bIsTemporary) {
     StopThreads();
   }
 }
-
 
 unsigned int WIOTelnet::putW(unsigned char ch) {
   if (m_hSocket == INVALID_SOCKET) {
@@ -157,7 +151,6 @@ unsigned int WIOTelnet::putW(unsigned char ch) {
   }
 }
 
-
 unsigned char WIOTelnet::getW() {
   char ch = 0;
   WaitForSingleObject(m_hInBufferMutex, INFINITE);
@@ -169,7 +162,6 @@ unsigned char WIOTelnet::getW() {
   return static_cast<unsigned char>(ch);
 }
 
-
 bool WIOTelnet::dtr(bool raise) {
   if (!raise) {
     closesocket(m_hSocket);
@@ -180,16 +172,13 @@ bool WIOTelnet::dtr(bool raise) {
   return true;
 }
 
-
 void WIOTelnet::flushOut() {
   // NOP - We don't wait for output
 }
 
-
 void WIOTelnet::purgeOut() {
   // NOP - We don't wait for output
 }
-
 
 void WIOTelnet::purgeIn() {
   // Implementing this is new as of 2003-03-31, so if this causes problems,
@@ -201,11 +190,9 @@ void WIOTelnet::purgeIn() {
   ReleaseMutex(m_hInBufferMutex);
 }
 
-
 unsigned int WIOTelnet::put(unsigned char ch) {
   return putW(ch);
 }
-
 
 char WIOTelnet::peek() {
   char ch = 0;
@@ -215,10 +202,8 @@ char WIOTelnet::peek() {
     ch = m_inputQueue.front();
   }
   ReleaseMutex(m_hInBufferMutex);
-
   return ch;
 }
-
 
 unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
   unsigned int nRet = 0;
@@ -232,12 +217,9 @@ unsigned int WIOTelnet::read(char *buffer, unsigned int count) {
     nRet++;
   }
   *pszTemp++ = '\0';
-
   ReleaseMutex(m_hInBufferMutex);
-
   return nRet;
 }
-
 
 unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTranslation) {
   int nRet;
@@ -282,20 +264,16 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
   }
 }
 
-
 bool WIOTelnet::carrier() {
-  return (m_hSocket != INVALID_SOCKET) ? true : false;
+  return (m_hSocket != INVALID_SOCKET);
 }
-
 
 bool WIOTelnet::incoming() {
   WaitForSingleObject(m_hInBufferMutex, INFINITE);
-  bool bRet = (m_inputQueue.size() > 0) ? true : false;
+  bool bRet = (m_inputQueue.size() > 0);
   ReleaseMutex(m_hInBufferMutex);
   return bRet;
 }
-
-
 
 void WIOTelnet::StopThreads() {
   if (!m_bThreadsStarted) {
@@ -307,17 +285,17 @@ void WIOTelnet::StopThreads() {
   }
   WWIV_Delay(0);
 
-  // Stop read thread
+  // Wait for read thread to exit.
   DWORD dwRes = WaitForSingleObject(m_hReadThread, 5000);
   switch (dwRes) {
   case WAIT_OBJECT_0:
-    CloseHandle(m_hReadThread);
-    m_hReadThread = nullptr;
     // Thread Ended
     break;
   case WAIT_TIMEOUT:
     // The exit code of 123 doesn't mean anything, and isn't used anywhere.
     ::TerminateThread(m_hReadThread, 123);
+    break;
+  default:
     break;
   }
   m_bThreadsStarted = false;
@@ -436,7 +414,6 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid) {
       while ((pTelnet->m_inputQueue.size() > 32678) && (nNumSleeps++ <= 10) && !bDone) {
         ::Sleep(100);
       }
-
 
       pTelnet->AddStringToInputBuffer(0, nRet, szBuffer);
     } else if (events.lNetworkEvents & FD_CLOSE) {
