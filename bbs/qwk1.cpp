@@ -530,7 +530,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     if (sy != 0) {
       GetSession()->bout.NewLine();
       GetSession()->bout.WriteFormatted("Name of system: ");
-      GetSession()->bout.Write(csne -> name);
+      GetSession()->bout.Write(csne->name);
       GetSession()->bout.WriteFormatted("Number of hops:");
       GetSession()->bout.WriteFormatted("%d", csne->numhops);
       GetSession()->bout.NewLine(2);
@@ -544,7 +544,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     GetSession()->bout.WriteFormatted("Titled    : %s", title);
     GetSession()->bout.NewLine(2);
     GetSession()->bout.Color(5);
-    GetSession()->bout.WriteFormatted("Correct?");
+    GetSession()->bout.WriteFormatted("Correct? ");
 
     if (!yesno()) {
       return;
@@ -1001,13 +1001,14 @@ void qwk_receive_file(char *fn, bool *received, int i) {
   switch (i) {
   case -1:
   case 0:
-  case 1:
-  case 5:
+  case WWIV_INTERNAL_PROT_ASCII:
+  case WWIV_INTERNAL_PROT_BATCH:
     *received = 0;
     break;
-  case 2:
-  case 3:
-  case 4:
+  case WWIV_INTERNAL_PROT_XMODEM:
+  case WWIV_INTERNAL_PROT_XMODEMCRC:
+  case WWIV_INTERNAL_PROT_YMODEM:
+  case WWIV_INTERNAL_PROT_ZMODEM:
     maybe_internal(fn, received, nullptr, false, i);
     break;
   default:
