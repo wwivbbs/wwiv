@@ -126,7 +126,7 @@ void save_status() {
 
   sprintf(szFileName, "%sstatus.dat", syscfg.datadir);
   int statusfile = open(szFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  write(statusfile, (void *)(&status), sizeof(statusrec));
+  write(statusfile, &status, sizeof(statusrec));
   close(statusfile);
 }
 
@@ -137,7 +137,7 @@ bool read_status() {
   sprintf(szFileName, "%sstatus.dat", syscfg.datadir);
   int statusfile = open(szFileName, O_RDWR | O_BINARY);
   if (statusfile >= 0) {
-    read(statusfile, (void *)(&status), sizeof(statusrec));
+    read(statusfile, &status, sizeof(statusrec));
     close(statusfile);
     return true;
   }

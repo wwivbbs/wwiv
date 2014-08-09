@@ -167,6 +167,6 @@ void extrn_editors() {
   char szFileName[ MAX_PATH ];
   sprintf(szFileName, "%seditors.dat", syscfg.datadir);
   int hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(hFile, (void *)editors, initinfo.numeditors * sizeof(editorrec));
+  write(hFile, editors, initinfo.numeditors * sizeof(editorrec));
   close(hFile);
 }

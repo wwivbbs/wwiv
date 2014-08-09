@@ -213,7 +213,7 @@ void edit_languages() {
   sprintf(szFileName, "%slanguage.dat", syscfg.datadir);
   unlink(szFileName);
   int hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(hFile, (void *)languages, initinfo.num_languages * sizeof(languagerec));
+  write(hFile, languages, initinfo.num_languages * sizeof(languagerec));
   close(hFile);
 }
 

@@ -79,7 +79,7 @@ static void write_subs() {
     sprintf(szFileName, "%ssubs.dat", syscfg.datadir);
     int i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     if (i > 0) {
-      write(i, (void *)&subboards[0], initinfo.num_subs * sizeof(subboardrec));
+      write(i, &subboards[0], initinfo.num_subs * sizeof(subboardrec));
       close(i);
     }
     initinfo.num_subs = 0;
@@ -139,7 +139,7 @@ static void del_net(int nn) {
     t = (int)(filelength(hFile) / sizeof(mailrec));
     for (r = 0; r < t; r++) {
       lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
-      read(hFile, (void *)&m, sizeof(mailrec));
+      read(hFile, &m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
         if (m.status & status_source_verified) {
           i = 78;
@@ -156,7 +156,7 @@ static void del_net(int nn) {
           m.title[i]--;
         }
         lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
-        write(hFile, (void *)&m, sizeof(mailrec));
+        write(hFile, &m, sizeof(mailrec));
       }
     }
     close(hFile);
@@ -189,7 +189,7 @@ static void del_net(int nn) {
 
   sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
   i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(i, (void *)net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
+  write(i, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   close(i);
 }
 
@@ -237,7 +237,7 @@ static void insert_net(int nn) {
     t = (int)(filelength(hFile) / sizeof(mailrec));
     for (r = 0; r < t; r++) {
       lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
-      read(hFile, (void *)&m, sizeof(mailrec));
+      read(hFile, &m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
         i = (m.status & status_source_verified) ? 78 : 80;
         if ((int) strlen(m.title) >= i) {
@@ -248,7 +248,7 @@ static void insert_net(int nn) {
           m.title[i]++;
         }
         lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
-        write(hFile, (void *)&m, sizeof(mailrec));
+        write(hFile, &m, sizeof(mailrec));
       }
     }
     close(hFile);
@@ -281,7 +281,7 @@ static void insert_net(int nn) {
 
   sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
   i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(i, (void *)net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
+  write(i, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   close(i);
 
   edit_net(nn);

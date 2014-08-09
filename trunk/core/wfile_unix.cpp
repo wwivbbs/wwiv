@@ -78,11 +78,11 @@ bool WFile::CopyFile(const std::string sourceFileName, const std::string destFil
       return false;
     }
 
-    int i = read(hSourceFile, (void *) pBuffer, 16384);
+    int i = read(hSourceFile, pBuffer, 16384);
 
     while (i > 0) {
-      write(hDestFile, (void *) pBuffer, i);
-      i = read(hSourceFile, (void *) pBuffer, 16384);
+      write(hDestFile, pBuffer, i);
+      i = read(hSourceFile, pBuffer, 16384);
     }
 
     hSourceFile = close(hSourceFile);

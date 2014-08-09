@@ -309,7 +309,7 @@ static void init_files() {
   s1.maxmsgs = 50;
   s1.storage_type = 2;
   hFile = open("data/subs.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  write(hFile, (void *)(&s1), sizeof(subboardrec));
+  write(hFile, &s1, sizeof(subboardrec));
   close(hFile);
 
   memset(&d1, 0, sizeof(directoryrec));
@@ -338,7 +338,7 @@ static void init_files() {
   d1.maxfiles = 50;
   d1.mask = 0;
   d1.type = 0;
-  write(hFile, (void *)(&d1), sizeof(directoryrec));
+  write(hFile, &d1, sizeof(directoryrec));
   close(hFile);
   Printf(".\n");
   ////////////////////////////////////////////////////////////////////////////

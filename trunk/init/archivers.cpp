@@ -178,7 +178,7 @@ void edit_arc(int nn) {
   // seek to beginning of file, write arcrecs, close file
 
   _lseek(hFile, 0L, SEEK_SET);
-  _write(hFile, (void *)arc, MAX_ARCS * sizeof(arcrec));
+  _write(hFile, arc, MAX_ARCS * sizeof(arcrec));
   _close(hFile);
 }
 
@@ -245,7 +245,7 @@ void create_arcs() {
     Printf("Couldn't open '%s' for writing.\n", szFileName);
     exit_init(1);
   }
-  _write(hFile, (void *)arc, MAX_ARCS * sizeof(arcrec));
+  _write(hFile, arc, MAX_ARCS * sizeof(arcrec));
   _close(hFile);
 }
 
