@@ -17,13 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include <qwk.h>
-#include "wwiv.h"
-#include "vars.h"
-#include <memory>
-#include "bbs.h"
-#include "subxtr.h"
-#include "vardec.h"
 
+#include <memory>
 #include <ctype.h>
 #include <fcntl.h>
 #ifdef _WIN32
@@ -33,8 +28,16 @@
 #include <unistd.h>
 #endif
 #include <sys/stat.h>
-#include "wconstants.h"
-#include "wwivcolors.h"
+
+#include "bbs/archivers.h"
+#include "bbs/bbs.h"
+#include "bbs/subxtr.h"
+#include "bbs/vardec.h"
+#include "bbs/vars.h"
+#include "bbs/wwiv.h"
+
+#include "bbs/wconstants.h"
+#include "bbs/wwivcolors.h"
 
 
 #ifdef STATS
@@ -385,13 +388,6 @@ void upload_reply_packet(void) {
   GetSession()->SetCurrentMessageArea(save_sub);
 }
 
-
-static int match_archiver(const std::string filename) {
-  // This should find the right archiver for the given filename's extension.
-  // Right now in xfertmp.cpp we hard code this to 0.
-  return 0;
-}
-
 void ready_reply_packet(const char *packet_name, const char *msg_name) {
   int archiver = match_archiver(packet_name);
   std::string command = stuff_in(arcs[archiver].arce, packet_name, msg_name, "", "", "");
@@ -538,7 +534,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
 
     GetSession()->bout.ClearScreen();
     GetSession()->bout.Color(2);
-    GetSession()->bout.WriteFormatted("Sending to: %s", s2);
+    GetSession()->bout.WriteFormatted("Sending to: %s", s2);
     GetSession()->bout.NewLine();
     GetSession()->bout.Color(2);
     GetSession()->bout.WriteFormatted("Titled    : %s", title);

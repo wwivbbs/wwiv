@@ -127,6 +127,7 @@
     <ClInclude Include="xinitini.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="archivers.cpp" />
     <ClCompile Include="asv.cpp" />
     <ClCompile Include="attach.cpp" />
     <ClCompile Include="automsg.cpp" />
