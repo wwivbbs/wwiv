@@ -64,7 +64,6 @@ long filelength(int handle) {
   }
   return fileinfo.st_size;
 }
-
 #else  // _WIN32
 
 #if !defined(ftruncate)
@@ -359,7 +358,7 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
     ++amount;
     checka(&qwk_info->abort);
 
-  } while ((!done) && (!hangup) && !qwk_info->abort);
+  } while (!done && !hangup && !qwk_info->abort);
   bputch('\r');
 }
 
@@ -500,7 +499,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   qwk_info->qwk_rec.conf_num = usub[GetSession()->GetCurrentMessageArea()].subnum + 1;
   qwk_info->qwk_rec.logical_num = qwk_info->qwk_rec_num;
 
-  if (append_block(qwk_info->file, (void *)&qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
+  if (append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
     qwk_info->abort = 1; // Must be out of disk space
     GetSession()->bout.Write("Write error");
     pausescr();
@@ -524,10 +523,10 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
       qwk_info->index = open(filename, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
     }
 
-    append_block(qwk_info->index, (void *)&qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
+    append_block(qwk_info->index, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
   } else { // Write to email indexes
-    append_block(qwk_info->zero, (void *)&qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
-    append_block(qwk_info->personal, (void *)&qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
+    append_block(qwk_info->zero, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
+    append_block(qwk_info->personal, &qwk_info->qwk_ndx, sizeof(qwk_info->qwk_ndx));
   }
 
   // Setup next NDX position
@@ -544,7 +543,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
               ? (int)len - this_pos - 1 : sizeof(qwk_info->qwk_rec));
     }
     // Save this block
-    append_block(qwk_info->file, (void *)&qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));
+    append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec));
 
     this_pos += sizeof(qwk_info->qwk_rec);
     ++cur_block;
@@ -821,13 +820,12 @@ char * qwk_system_name(char *qwkname) {
 }
 
 void qwk_menu(void) {
-  int done = 0;
-  int key;
   char temp[101], namepath[101];
 
   qwk_percent = 0;
   qwk_bi_mode = 0;
 
+  bool done = false;
   while (!done && !hangup) {
     GetSession()->bout.ClearScreen();
     printfile("QWK");
@@ -853,7 +851,7 @@ void qwk_menu(void) {
     if (so()) {
       strcat(temp, "1");
     }
-    key = onek(temp);
+    int key = onek(temp);
 
     switch (key) {
     case '?':
@@ -861,7 +859,7 @@ void qwk_menu(void) {
 
     case 'Q':
     case '\r':
-      done = 1;
+      done = true;
       break;
 
     case 'U':
@@ -977,14 +975,11 @@ void qwk_send_file(const char *fn, bool *sent, bool *abort) {
 }
 
 int select_qwk_protocol(struct qwk_junk *qwk_info) {
-  int i = get_protocol(xf_down_temp);
-  switch (i) {
-  case -1:
+  int protocol = get_protocol(xf_down_temp);
+  if (protocol == -1) {
     qwk_info->abort = 1;
-    return i;
-  default:
-    return i;
   }
+  return protocol;
 }
 
 void insert_after_routing(char *text, char *text2insert, long *len) {
@@ -1019,7 +1014,6 @@ void insert_after_routing(char *text, char *text2insert, long *len) {
 
 void close_qwk_cfg(struct qwk_config *qwk_cfg) {
   int x = 0;
-
   while (x < qwk_cfg->amount_blts) {
     if (qwk_cfg->blt[x]) {
       free(qwk_cfg->blt[x]);
@@ -1040,7 +1034,7 @@ void read_qwk_cfg(struct qwk_config *qwk_cfg) {
   if (f < 0) {
     return;
   }
-  read(f, (void *) qwk_cfg, sizeof(struct qwk_config));
+  read(f,  qwk_cfg, sizeof(struct qwk_config));
   int x = 0;
   while (x < qwk_cfg->amount_blts) {
     long pos = sizeof(struct qwk_config) + (x * BULL_SIZE);
@@ -1074,7 +1068,7 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
     return;
   }
 
-  write(f, (void *) qwk_cfg, sizeof(struct qwk_config));
+  write(f, qwk_cfg, sizeof(struct qwk_config));
 
   int x = 0;
   while (x < qwk_cfg->amount_blts) {
@@ -1094,7 +1088,7 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
     lseek(f, pos, SEEK_SET);
 
     if (qwk_cfg->bltname[x]) {
-      write(f, (void *)qwk_cfg->bltname[x], BNAME_SIZE);
+      write(f, qwk_cfg->bltname[x], BNAME_SIZE);
     }
 
     ++x;
@@ -1184,15 +1178,15 @@ void qwk_nscan(void) {
         sprintf(s, "\r\n\r\n%s - #%s, %d %s.\r\n\r\n",
                 directories[udir[GetSession()->GetCurrentFileArea()].subnum].name,
                 udir[GetSession()->GetCurrentFileArea()].keys, numf, "files");
-        write(newfile, (void *) s, strlen(s));
+        write(newfile,  s, strlen(s));
 
         f = open(dlfn, O_RDONLY | O_BINARY);
         for (i5 = 1; (i5 <= numf) && (!(abort)) && (!hangup); i5++) {
           SETREC(f, i5);
-          read(f, (void *)&u, sizeof(uploadsrec));
+          read(f, &u, sizeof(uploadsrec));
           if (u.daten >= nscandate) {
             sprintf(s, "%s %5ldk  %s\r\n", u.filename, (long) bytes_to_k(u.numbytes), u.description);
-            write(newfile, (void *) s, strlen(s));
+            write(newfile,  s, strlen(s));
 
 
 #ifndef HUGE_TRAN
@@ -1214,8 +1208,8 @@ void qwk_nscan(void) {
 
                   if (x == '\n' || x == 0) {
                     s[spos] = 0;
-                    write(newfile, (void *)s, strlen(s));
-                    write(newfile, (void *)"\r\n", 2);
+                    write(newfile, s, strlen(s));
+                    write(newfile, "\r\n", 2);
                     strcpy(s, "                     ");
                     spos = 21;
                   }
@@ -1418,14 +1412,14 @@ int qwk_open_file(char *fn) {
     if (f < 0) {
       return (-1);
     }
-    write(f, (void *)gat, 4096);
+    write(f, gat, 4096);
     // strcpy(gatfn,fn); (removed with g_szMessageGatFileName)
     ftruncate(f, 4096L + (75L * 1024L));
     current_gat_section(0);
   }
 
   lseek(f, 0L, SEEK_SET);
-  read(f, (void *)gat, 4096);
+  read(f, gat, 4096);
   // strcpy(gatfn,fn); (removed with g_szMessageGatFileName)
   current_gat_section(0);
   return f;

@@ -39,14 +39,9 @@
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
 
-
-#ifdef STATS
-#include <sys\timeb.h>
-#endif
-
+using std::string;
 
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
-
 
 #define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
 #define qwk_iscan_literal(x) (iscan1(x, 1))
@@ -67,9 +62,6 @@ void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, lo
 int  read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 
 void qwk_remove_email(void) {
-  int mfl, curmail, done;
-  mailrec m;
-
   emchg = false;
 
   tmpmailrec* mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
@@ -85,9 +77,10 @@ void qwk_remove_email(void) {
     return;
   }
 
-  mfl = f->GetLength() / sizeof(mailrec);
+  int mfl = f->GetLength() / sizeof(mailrec);
   uint8_t mw = 0;
 
+  mailrec m;
   for (long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(i * sizeof(mailrec), WFile::seekBegin);
     f->Read(&m, sizeof(mailrec));
@@ -111,22 +104,17 @@ void qwk_remove_email(void) {
     return;
   }
 
-  if (mw == 1) {
-    curmail = 0;
-  }
-
-  curmail = 0;
-  done = 0;
-
+  int curmail = 0;
+  bool done = false;
   do {
     delmail(f.get(), mloc[curmail].index);
 
     ++curmail;
     if (curmail >= mw) {
-      done = 1;
+      done = true;
     }
 
-  } while ((!hangup) && (!done));
+  } while (!hangup && !done);
 }
 
 
@@ -136,8 +124,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   mailrec m;
   postrec junk;
 
-  emchg = 0;
-
+  emchg = false;
   tmpmailrec *mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
   if (!mloc) {
     GetSession()->bout.Write("Not enough memory");
@@ -327,7 +314,7 @@ void qwk_which_protocol(char *thisprotocol) {
 void upload_reply_packet(void) {
   char name[21], namepath[101];
   bool rec = true;
-  int save_conf = 0, save_sub, do_it;
+  int save_conf = 0, save_sub;
   struct qwk_config qwk_cfg;
 
 
@@ -353,11 +340,10 @@ void upload_reply_packet(void) {
   GetSession()->bout.WriteFormatted("Hit 'Y' to upload reply packet %s :", name);
 
   sprintf(namepath, "%s%s", QWK_DIRECTORY, name);
-
+  
+  bool do_it = true;
   if (!qwk_bi_mode) {
     do_it = yesno();
-  } else {
-    do_it = 1;
   }
 
   if (do_it) {
@@ -390,7 +376,7 @@ void upload_reply_packet(void) {
 
 void ready_reply_packet(const char *packet_name, const char *msg_name) {
   int archiver = match_archiver(packet_name);
-  std::string command = stuff_in(arcs[archiver].arce, packet_name, msg_name, "", "", "");
+  string command = stuff_in(arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
   chdir(QWK_DIRECTORY);
   ExecuteExternalProgram(command, EFLAG_NOPAUSE);
@@ -427,7 +413,7 @@ char * make_text_file(int filenumber, long *size, int curpos, int blocks) {
 
   SET_BLOCK(filenumber, curpos, sizeof(struct qwk_record));
 
-  read(filenumber, (void *)qwk, sizeof(struct qwk_record) * blocks);
+  read(filenumber, qwk, sizeof(struct qwk_record) * blocks);
   make_text_ready((char *)qwk, sizeof(struct qwk_record)*blocks);
 
   *size = sizeof(struct qwk_record) * blocks;
@@ -623,7 +609,7 @@ void process_reply_dat(char *name) {
     SET_BLOCK(repfile, curpos, sizeof(struct qwk_record));
     ++curpos;
 
-    if (read(repfile, (void *)&qwk, sizeof(struct qwk_record)) < 1) {
+    if (read(repfile, &qwk, sizeof(struct qwk_record)) < 1) {
       done = 1;
     } else {
       char blocks[7];
