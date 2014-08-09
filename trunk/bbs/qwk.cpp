@@ -29,16 +29,18 @@
 #endif
 #include <sys/stat.h>
 
-#include "wwiv.h"
-#include "instmsg.h"
-#include "pause.h"
-#include "qscan.h"
-#include "subxtr.h"
-#include "subxtr.h"
-#include "vardec.h"
+#include "bbs/instmsg.h"
+#include "bbs/pause.h"
+#include "bbs/qscan.h"
+#include "bbs/subxtr.h"
+#include "bbs/subxtr.h"
+#include "bbs/vardec.h"
+#include "bbs/wwiv.h"
+#include "bbs/wconstants.h"
+#include "bbs/wwivcolors.h"
+
 #include "core/strings.h"
-#include "wconstants.h"
-#include "wwivcolors.h"
+
 
 // from msgbase.cpp
 long current_gat_section();
