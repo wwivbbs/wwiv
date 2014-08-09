@@ -278,7 +278,7 @@ void extrn_prots() {
   char szFileName[ MAX_PATH ];
   sprintf(szFileName, "%snextern.dat", syscfg.datadir);
   int hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(hFile, (void *)externs, initinfo.numexterns * sizeof(newexternalrec));
+  write(hFile, externs, initinfo.numexterns * sizeof(newexternalrec));
   close(hFile);
 
   sprintf(szFileName, "%snintern.dat", syscfg.datadir);

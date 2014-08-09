@@ -88,7 +88,7 @@ static void convcfg() {
     out->SetColor(Scheme::INFO);
     Printf("Converting config.dat to 4.30/5.00 format...\n");
     out->SetColor(Scheme::NORMAL);
-    read(hFile, (void *)(&syscfg), sizeof(configrec));
+    read(hFile, &syscfg, sizeof(configrec));
     sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
     strcpy(syscfg.logoff_c, " ");
     strcpy(syscfg.v_scan_c, " ");
@@ -109,7 +109,7 @@ static void convcfg() {
       }
     }
     lseek(hFile, 0L, SEEK_SET);
-    write(hFile, (void *)(&syscfg), sizeof(configrec));
+    write(hFile, &syscfg, sizeof(configrec));
     close(hFile);
 
     char szFileName[ MAX_PATH ];
@@ -122,7 +122,7 @@ static void convcfg() {
       Printf("\n");
       hFile = open(szFileName, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
     }
-    write(hFile, (void *)arc, MAX_ARCS * sizeof(arcrec));
+    write(hFile, arc, MAX_ARCS * sizeof(arcrec));
     close(hFile);
   }
 }
@@ -280,7 +280,7 @@ int WInitApp::main(int argc, char *argv[]) {
   sprintf(s, "%snextern.dat", syscfg.datadir);
   hFile = open(s, O_RDWR | O_BINARY);
   if (hFile > 0) {
-    initinfo.numexterns = (read(hFile, (void *)externs, 15 * sizeof(newexternalrec))) / sizeof(newexternalrec);
+    initinfo.numexterns = (read(hFile, externs, 15 * sizeof(newexternalrec))) / sizeof(newexternalrec);
     close(hFile);
   }
   over_intern = (newexternalrec *) malloc(3 * sizeof(newexternalrec));
@@ -297,7 +297,7 @@ int WInitApp::main(int argc, char *argv[]) {
   sprintf(s, "%seditors.dat", syscfg.datadir);
   hFile = open(s, O_RDWR | O_BINARY);
   if (hFile > 0) {
-    initinfo.numeditors = (read(hFile, (void *)editors, 10 * sizeof(editorrec))) / sizeof(editorrec);
+    initinfo.numeditors = (read(hFile, editors, 10 * sizeof(editorrec))) / sizeof(editorrec);
     initinfo.numeditors = initinfo.numeditors;
     close(hFile);
   }
