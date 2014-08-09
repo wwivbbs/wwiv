@@ -6,6 +6,7 @@ include_directories(..)
 include_directories(platform)
 
 set(COMMON_SOURCES 
+ archivers.cpp
  asv.cpp
  attach.cpp
  automsg.cpp
