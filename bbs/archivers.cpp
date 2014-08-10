@@ -23,6 +23,7 @@
 
 #include "bbs/wwiv.h"
 #include "bbs/wconstants.h"
+#include "core/strings.h"
 #include "core/wfile.h"
 
 using std::string;
@@ -74,21 +75,21 @@ static int check_arc(const char* filename)
     return COMPRESSION_UNKNOWN;
   }
   ++ext;
-  if (stricmp(ext, "ZIP") == 0) {
+  if (strcasecmp(ext, "ZIP") == 0) {
     return COMPRESSION_ZIP;
-  } else if (stricmp(ext, "LHA") == 0) {
+  } else if (strcasecmp(ext, "LHA") == 0) {
     return COMPRESSION_LHA;
-  } else if (stricmp(ext, "LZH") == 0) {
+  } else if (strcasecmp(ext, "LZH") == 0) {
     return COMPRESSION_LHA;
-  } else if (stricmp(ext, "ZOO") == 0) {
+  } else if (strcasecmp(ext, "ZOO") == 0) {
     return COMPRESSION_ZOO;
-  } else if (stricmp(ext, "ARC") == 0) {
+  } else if (strcasecmp(ext, "ARC") == 0) {
     return COMPRESSION_PAK;
-  } else if (stricmp(ext, "PAK") == 0) {
+  } else if (strcasecmp(ext, "PAK") == 0) {
     return COMPRESSION_PAK;
-  } else if (stricmp(ext, "ARJ") == 0) {
+  } else if (strcasecmp(ext, "ARJ") == 0) {
     return COMPRESSION_ARJ;
-  } else if (stricmp(ext, "RAR") == 0) {
+  } else if (strcasecmp(ext, "RAR") == 0) {
     return COMPRESSION_RAR;
   }
   return COMPRESSION_UNKNOWN;
@@ -129,7 +130,7 @@ int match_archiver(const char *filename) {
 
   x = 0;
   while (x < 4) {
-    if (stricmp(type, arcs[x].extension) == 0) {
+    if (strcasecmp(type, arcs[x].extension) == 0) {
       return x;
     }
     ++x;
