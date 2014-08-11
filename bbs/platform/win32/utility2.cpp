@@ -19,6 +19,8 @@
 #include <direct.h>
 #include "wwiv.h"
 
+#include "core/wfile.h"
+
 #ifndef NOT_BBS
 // Used only by WWIV_make_abs_cmd
 
@@ -107,17 +109,14 @@ void WWIV_make_abs_cmd(std::string& out) {
 }
 #endif
 
-#define LAST(s) s[strlen(s)-1]
-
-
 int WWIV_make_path(const char *s) {
   char drive, current_path[MAX_PATH], current_drive, *p, *flp;
 
   p = flp = strdup(s);
   _getdcwd(0, current_path, MAX_PATH);
   current_drive = static_cast< char >(*current_path - '@');
-  if (LAST(p) == WWIV_FILE_SEPERATOR_CHAR) {
-    LAST(p) = 0;
+  if (p[strlen(p)-1] == WFile::pathSeparatorChar) {
+    p[strlen(p)-1] = 0;
   }
   if (p[1] == ':') {
     drive = static_cast< char >(wwiv::UpperCase<char>(p[0]) - 'A' + 1);
@@ -128,11 +127,11 @@ int WWIV_make_path(const char *s) {
     }
     p += 2;
   }
-  if (*p == WWIV_FILE_SEPERATOR_CHAR) {
-    _chdir(WWIV_FILE_SEPERATOR_STRING);
+  if (*p == WFile::pathSeparatorChar) {
+    _chdir(WFile::pathSeparatorString);
     p++;
   }
-  for (; (p = strtok(p, WWIV_FILE_SEPERATOR_STRING)) != 0; p = 0) {
+  for (; (p = strtok(p, WFile::pathSeparatorString)) != 0; p = 0) {
     if (_chdir(p)) {
       if (_mkdir(p)) {
         _chdir(current_path);

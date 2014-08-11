@@ -376,11 +376,11 @@ char *get_wildlist(char *pszFileMask) {
     GetSession()->bout.WriteFormatted("%12.12s ", fnd.GetFileName());
   }
 
-  if (strchr(pszFileMask, WWIV_FILE_SEPERATOR_CHAR) == NULL) {
+  if (strchr(pszFileMask, WFile::pathSeparatorChar) == NULL) {
     pszFileMask[0] = '\0';
   } else {
     for (int i = 0; i < wwiv::strings::GetStringLength(pszFileMask); i++) {
-      if (pszFileMask[i] == WWIV_FILE_SEPERATOR_CHAR) {
+      if (pszFileMask[i] == WFile::pathSeparatorChar) {
         mark = i + 1;
       }
     }

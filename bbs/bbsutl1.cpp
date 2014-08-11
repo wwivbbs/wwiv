@@ -320,7 +320,7 @@ bool play_sdf(const std::string soundFileName, bool abortable) {
 
   std::string fullPathName;
   // append gfilesdir if no path specified
-  if (soundFileName.find(WWIV_FILE_SEPERATOR_CHAR) == std::string::npos) {
+  if (soundFileName.find(WFile::pathSeparatorChar) == std::string::npos) {
     std::ostringstream ss;
     ss << syscfg.gfilesdir << soundFileName;
     fullPathName = ss.str();
@@ -422,7 +422,7 @@ void describe_area_code_prefix(int nAreaCode, int nTargetTown, char *pszDescript
           "%s%s%c%s.%-3d",
           syscfg.datadir,
           REGIONS_DIR,
-          WWIV_FILE_SEPERATOR_CHAR,
+          WFile::pathSeparatorChar,
           REGIONS_DIR,
           nAreaCode);
   WFile file(szFileName);

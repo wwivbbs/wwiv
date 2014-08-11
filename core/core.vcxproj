@@ -99,6 +99,7 @@
     <ClInclude Include="wfile.h" />
     <ClInclude Include="wtextfile.h" />
     <ClInclude Include="wwivassert.h" />
+    <ClInclude Include="wwivport.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

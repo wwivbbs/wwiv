@@ -149,13 +149,13 @@ void print_local_file(const char *ss, const char *ss1) {
   WWIV_ASSERT(ss);
 
   char *pszTempSS = strdup(ss);
-  char *bs = strchr(pszTempSS, WWIV_FILE_SEPERATOR_CHAR);
+  char *bs = strchr(pszTempSS, WFile::pathSeparatorChar);
   if ((syscfg.sysconfig & sysconfig_list) && !incom) {
     if (!bs) {
       char * pszTempSS1 = strdup(ss1);
       sprintf(szCmdLine, "%s %s%s", "LIST", syscfg.gfilesdir, ss);
       if (ss1[0]) {
-        bs = strchr(pszTempSS1, WWIV_FILE_SEPERATOR_CHAR);
+        bs = strchr(pszTempSS1, WFile::pathSeparatorChar);
         if (!bs) {
           sprintf(szCmdLine2, "%s %s%s", szCmdLine, syscfg.gfilesdir, ss1);
         } else {
@@ -168,7 +168,7 @@ void print_local_file(const char *ss, const char *ss1) {
       sprintf(szCmdLine, "%s %s", "LIST", ss);
       if (ss1[0]) {
         char * pszTempSS1 = strdup(ss1);
-        bs = strchr(pszTempSS1, WWIV_FILE_SEPERATOR_CHAR);
+        bs = strchr(pszTempSS1, WFile::pathSeparatorChar);
         if (!bs) {
           sprintf(szCmdLine2, "%s %s%s", szCmdLine, syscfg.gfilesdir, ss1);
         } else {

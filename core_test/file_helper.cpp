@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #endif
 
+#include "core/wfile.h"
 #include "core/wwivport.h"
 #include "core/strings.h"
 
@@ -49,7 +50,7 @@ FileHelper::FileHelper() {
 
 const std::string FileHelper::DirName(const std::string& name) const {
     return wwiv::strings::StringPrintf("%s%c%s%c", tmp_.c_str(), 
-        WWIV_FILE_SEPERATOR_CHAR, name.c_str(), WWIV_FILE_SEPERATOR_CHAR);
+        WFile::pathSeparatorChar, name.c_str(), WFile::pathSeparatorChar);
 }
 
 bool FileHelper::Mkdir(const std::string& name) const {
@@ -86,10 +87,10 @@ FILE* FileHelper::OpenTempFile(const string& orig_name, string* path) {
     std::string tmp = TempDir();
     string name = orig_name;
 #ifdef _WIN32
-    std::replace(name.begin(), name.end(), '/', WWIV_FILE_SEPERATOR_CHAR);
+    std::replace(name.begin(), name.end(), '/', WFile::pathSeparatorChar);
 #endif  // _WIN32
     path->assign(wwiv::strings::StringPrintf("%s%c%s", tmp.c_str(), 
-        WWIV_FILE_SEPERATOR_CHAR, name.c_str()));
+        WFile::pathSeparatorChar, name.c_str()));
     FILE* file = fopen(path->c_str(), "wt");
     assert(file);
     return file;

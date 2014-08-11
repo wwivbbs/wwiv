@@ -25,9 +25,6 @@
 
 #if defined (_WIN32)
 
-#define WWIV_FILE_SEPERATOR_CHAR  '\\'
-#define WWIV_FILE_SEPERATOR_STRING  "\\"
-
 #define vsnprintf _vsnprintf
 #define snprintf _snprintf
 
