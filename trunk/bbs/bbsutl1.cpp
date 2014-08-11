@@ -280,12 +280,12 @@ void hang_it_up() {
     return;
   }
 
-  wait1(9);
+  Wait(0.5);
   if (!GetSession()->remoteIO()->carrier()) {
     return;
   }
 
-  wait1(9);
+  Wait(0.5);
   if (!GetSession()->remoteIO()->carrier()) {
     return;
   }

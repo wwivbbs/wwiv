@@ -634,7 +634,7 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
         bihangup(1);
         if (!GetSession()->remoteIO()->carrier()) {
           GetSession()->remoteIO()->dtr(true);
-          wait1(5);
+          Wait(0.274);
           holdphone(true);
         }
       } else {
@@ -954,10 +954,10 @@ void bihangup(int up)
         GetSession()->remoteIO()->dtr(false);
         hangup = true;
         if (up) {
-          wait1(2);
+          Wait(0.1);
           if (!GetSession()->remoteIO()->carrier()) {
             GetSession()->remoteIO()->dtr(true);
-            wait1(2);
+            Wait(0.1);
             holdphone(true);
           }
         }

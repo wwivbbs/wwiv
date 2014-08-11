@@ -34,7 +34,6 @@ void frequent_init();
 double ratio();
 double post_ratio();
 double nsl();
-void wait1(long l);
 void Wait(double d);
 double freek1(const char *pszPathName);
 void send_net(net_header_rec * nh, unsigned short int *list, const char *text, const char *byname);
