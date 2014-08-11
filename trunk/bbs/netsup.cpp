@@ -294,8 +294,7 @@ void do_callout(int sn) {
     if (csne) {
       sprintf(s, "network /N%u /A%s /P%s /S%u /T%ld",
               sn, (net_networks[GetSession()->GetNetworkNumber()].con[i].options & options_sendback) ? "1" : "0",
-              csne->phone, (NULL != modem_i) ? modem_i->defl.com_speed : 0, tCurrentTime);
-      // if modem_i is null, we are on a telnet node, and PPP project, so we don't care...
+              csne->phone, 0, tCurrentTime);
       if (net_networks[GetSession()->GetNetworkNumber()].con[i].macnum) {
         sprintf(s1, " /M%d", static_cast<int>(net_networks[GetSession()->GetNetworkNumber()].con[i].macnum));
         strcat(s, s1);

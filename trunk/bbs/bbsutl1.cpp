@@ -289,16 +289,6 @@ void hang_it_up() {
   if (!GetSession()->remoteIO()->carrier()) {
     return;
   }
-  int i = 0;
-  GetSession()->remoteIO()->dtr(true);
-  while (i++ < 2 && GetSession()->remoteIO()->carrier()) {
-    wait1(27);
-    rputs("\x1\x1\x1");
-    wait1(54);
-    rputs((modem_i->hang[0]) ? modem_i->hang : "ATH\r");
-    wait1(6);
-  }
-  GetSession()->remoteIO()->dtr(true);
 #endif
 }
 

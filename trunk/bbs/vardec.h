@@ -914,24 +914,6 @@ struct languagerec {
 };
 
 
-// modem info structure
-
-#define mode_norm     1                     // normal status
-#define mode_ring     2                     // phone is ringing
-#define mode_dis      3                     // disconnected (no connection)
-#define mode_err      4                     // error encountered
-#define mode_ringing  5                     // remote phone is ringing
-#define mode_con      6                     // connection established
-#define mode_ndt      7                     // no dial tone
-#define mode_fax      8                     // fax connection
-#define mode_cid_num  9                     // caller-id info, phone #
-#define mode_cid_name 10                    // caller-id info, caller's name
-
-#define flag_as       1                     // asymmetrical baud rates
-#define flag_ec       2                     // error correction in use
-#define flag_dc       4                     // data compression in use
-#define flag_fc       8                     // flow control should be used
-#define flag_append   16                    // description string should be appended
 ///////////////////////////////////////////////////////////////////////////////
 
 #define SECONDS_PER_HOUR        3600L
@@ -944,45 +926,6 @@ struct languagerec {
 #define MINUTES_PER_HOUR_FLOAT      60.0
 #define SECONDS_PER_MINUTE          60L
 #define SECONDS_PER_MINUTE_FLOAT  60.0
-
-
-struct result_info {
-  char result[41];
-  char description[31];
-  uint16_t main_mode;
-  uint16_t flag_mask;
-  uint16_t flag_value;
-  uint16_t com_speed;
-  uint16_t modem_speed;
-};
-
-
-struct modem_info {
-  uint16_t ver;
-
-  char name[81];
-
-  char init[161];
-
-  char setu[161];
-
-  char ansr[81];
-
-  char pick[81];
-
-  char hang[81];
-
-  char dial[81];
-
-  char sepr[10];
-
-  result_info defl;
-
-  uint16_t num_resl;
-
-  result_info resl[1];
-};
-
 
 // Dropfile stuff
 
@@ -1379,8 +1322,6 @@ static_assert(sizeof(ext_desc_type) == 15, "ext_desc_type == 15");
 static_assert(sizeof(gfiledirrec) == 56, "gfiledirrec == 56");
 static_assert(sizeof(gfilerec) == 98, "gfilerec == 98");
 static_assert(sizeof(languagerec) == 258, "languagerec == 258");
-static_assert(sizeof(result_info) == 82, "result_info == 82");
-static_assert(sizeof(modem_info) == 905, "modem_info == 905");
 static_assert(sizeof(filestatusrec) == 23, "filestatusrec == 23");
 static_assert(sizeof(asv_rec) == 9, "asv_rec == 9");
 static_assert(sizeof(adv_asv_rec) == 4, "adv_asv_rec == 4");

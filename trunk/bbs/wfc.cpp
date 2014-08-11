@@ -175,13 +175,8 @@ void wfc_screen() {
       GetSession()->localIO()->LocalXYAPrintf(58, 10, 14, "N/A");
     }
     GetSession()->localIO()->LocalXYAPrintf(58, 11, 14, sysop2() ? "Available    " : "Not Available");
-    if (ok_modem_stuff) {
-      GetSession()->localIO()->LocalXYAPrintf(58, 12, 14, "%-20.20s", modem_i->name);
-      GetSession()->localIO()->LocalXYAPrintf(58, 13, 14, "%-20s", "Waiting For Call");
-    } else {
-      GetSession()->localIO()->LocalXYAPrintf(58, 12, 14, "Local %code", (syscfgovr.primaryport) ? 'M' : 'N');
-      GetSession()->localIO()->LocalXYAPrintf(58, 13, 14, "Waiting For Command");
-    }
+    GetSession()->localIO()->LocalXYAPrintf(58, 12, 14, "Local %code", (syscfgovr.primaryport) ? 'M' : 'N');
+    GetSession()->localIO()->LocalXYAPrintf(58, 13, 14, "Waiting For Command");
 
     int i = 0, i1 = 0;
     while (GetSession()->wfcdrvs[i] > 0 && GetSession()->wfcdrvs[i] < GetApplication()->GetHomeDir()[0] && i1 < 5) {

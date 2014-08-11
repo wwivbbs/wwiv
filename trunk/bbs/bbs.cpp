@@ -103,7 +103,7 @@ void WApplication::GetCaller() {
   int lokb = doWFCEvents();
 
   if (lokb) {
-    modem_speed = (ok_modem_stuff) ? modem_i->defl.modem_speed : 14400;
+    modem_speed = 14400;
   }
 
   GetSession()->using_modem = incom;
