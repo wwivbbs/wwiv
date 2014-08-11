@@ -621,7 +621,7 @@ int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile, WFile::shareUnknown,
                        WFile::permReadWrite)) {
-      wait1(2);
+      Wait(0.1);
     }
   }
   if (!userFile.IsOpen()) {
@@ -641,7 +641,7 @@ int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
         for (int n = 0; !userFile.IsOpen() && (n < 20); n++) {
           if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile, WFile::shareUnknown,
                              WFile::permReadWrite)) {
-            wait1(2);
+            Wait(0.1);
           }
         }
         if (!userFile.IsOpen()) {

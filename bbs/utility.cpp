@@ -200,24 +200,17 @@ double nsl() {
   return in_range<double>(0.0, 32767.0, rtn);
 }
 
-void wait1(long l) {
-  long lStartTime = timer1();
-
-  WWIV_ASSERT(l >= 0);
-
-  if (l < 0) {
+void Wait(double d) {
+  WWIV_ASSERT(d >= 0);
+  if (d < 0) {
     return ;
   }
-
+  const long lStartTime = timer1();
+  auto l = d * 18.2;
   while (labs(timer1() - lStartTime) < l) {
     giveup_timeslice();
   }
 }
-
-void Wait(double d) {
-  wait1(static_cast<long>(18.2 * d));
-}
-
 
 /**
  * Returns the number of bytes free on the disk/volume specified.
@@ -228,7 +221,6 @@ double freek1(const char *pszPathName) {
   WWIV_ASSERT(pszPathName);
   return WWIV_GetFreeSpaceForPath(pszPathName);
 }
-
 
 void send_net(net_header_rec * nh, unsigned short int *list, const char *text, const char *byname) {
   WWIV_ASSERT(nh);

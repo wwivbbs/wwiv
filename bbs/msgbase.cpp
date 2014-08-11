@@ -462,7 +462,7 @@ WFile *OpenEmailFile(bool bAllowWrite) {
     if (file->IsOpen()) {
       break;
     }
-    wait1(DELAY_BETWEEN_EMAIL_ATTEMPTS);
+    Wait(DELAY_BETWEEN_EMAIL_ATTEMPTS);
   }
 
   return file;
