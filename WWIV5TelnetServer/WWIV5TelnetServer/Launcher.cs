@@ -24,7 +24,7 @@ namespace WWIV5TelnetServer
         }
 
         private const int SW_MINIMIZED = 2;
-        [DllImport("user32.dll")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass"), DllImport("user32.dll")]
         private static extern int ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
         public Process launchLocalNode(int node) {
