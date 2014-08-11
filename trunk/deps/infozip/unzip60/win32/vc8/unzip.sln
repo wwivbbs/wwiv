@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unzip", "unzip.vcxproj", "{BCBD96B1-A86D-415C-9BF7-AC8EEEC669A2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		ASM Debug|Win32 = ASM Debug|Win32
+		ASM Release|Win32 = ASM Release|Win32
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BCBD96B1-A86D-415C-9BF7-AC8EEEC669A2}.ASM Debug|Win32.ActiveCfg = ASM Debug|Win32
+		{BCBD96B1-A86D-415C-9BF7-AC8EEEC669A2}.ASM Debug|Win32.Build.0 = ASM Debug|Win32
+		{BCBD96B1-A86D-415C-9BF7-AC8EEEC669A2}.ASM Release|Win32.ActiveCfg = ASM Release|Win32
+		{BCBD96B1-A86D-415C-9BF7-AC8EEEC669A2}.ASM Release|Win32.Build.0 = ASM Release|Win32
+		{BCBD96B1-A86D-415C-9BF7-AC8EEEC669A2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BCBD96B1-A86D-415C-9BF7-AC8EEEC669A2}.Debug|Win32.Build.0 = Debug|Win32
+		{BCBD96B1-A86D-415C-9BF7-AC8EEEC669A2}.Release|Win32.ActiveCfg = Release|Win32
+		{BCBD96B1-A86D-415C-9BF7-AC8EEEC669A2}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
