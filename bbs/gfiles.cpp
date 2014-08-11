@@ -259,7 +259,7 @@ void list_gfiles(gfilerec * g, int nf, int sn) {
     sprintf(lnum, "%d", i + 1);
     strncpy(s4, g[i].description, 29);
     s4[29] = '\0';
-    sprintf(path_name, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, WWIV_FILE_SEPERATOR_CHAR, g[i].filename);
+    sprintf(path_name, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, WFile::pathSeparatorChar, g[i].filename);
     if (WFile::Exists(path_name)) {
       WFile handle(path_name);
       sprintf(lsize, "%ld""k", bytes_to_k(handle.GetLength()));
@@ -281,7 +281,7 @@ void list_gfiles(gfilerec * g, int nf, int sn) {
       strncpy(s5, g[i + 1].description, 29);
       s5[29] = '\0';
       sprintf(path_name, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename,
-              WWIV_FILE_SEPERATOR_CHAR, g[i + 1].filename);
+              WFile::pathSeparatorChar, g[i + 1].filename);
       if (WFile::Exists(path_name)) {
         WFile handle(path_name);
         sprintf(rsize, "%ld", bytes_to_k(handle.GetLength()));
@@ -410,7 +410,7 @@ void gfile_sec(int sn) {
           GetSession()->bout << "|#5Erase file too? ";
           if (yesno()) {
             sprintf(szFileName, "%s%s%c%s", syscfg.gfilesdir,
-                    gfilesec[sn].filename, WWIV_FILE_SEPERATOR_CHAR, g[i - 1].filename);
+                    gfilesec[sn].filename, WFile::pathSeparatorChar, g[i - 1].filename);
             WFile::Remove(szFileName);
           }
           for (i1 = i; i1 < nf; i1++) {
@@ -431,7 +431,7 @@ void gfile_sec(int sn) {
     } else if (wwiv::strings::IsEquals(ss, "Q")) {
       done = true;
     } else if (i > 0 && i <= nf) {
-      sprintf(szFileName, "%s%c%s", gfilesec[sn].filename, WWIV_FILE_SEPERATOR_CHAR, g[i - 1].filename);
+      sprintf(szFileName, "%s%c%s", gfilesec[sn].filename, WFile::pathSeparatorChar, g[i - 1].filename);
       i1 = printfile(szFileName);
       GetSession()->GetCurrentUser()->SetNumGFilesRead(GetSession()->GetCurrentUser()->GetNumGFilesRead() + 1);
       if (i1 == 0) {
@@ -452,7 +452,7 @@ void gfile_sec(int sn) {
           done1 = true;
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
-            sprintf(szFileName, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, WWIV_FILE_SEPERATOR_CHAR, g[i2 - 1].filename);
+            sprintf(szFileName, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, WFile::pathSeparatorChar, g[i2 - 1].filename);
             WFile file(szFileName);
             if (!file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
               GetSession()->bout << "|#6File not found : [" << file.GetFullPathName() << "]";

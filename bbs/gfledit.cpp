@@ -287,7 +287,7 @@ bool fill_sec(int sn) {
   bool bFound = false;
 
   gfilerec *g = read_sec(sn, &n1);
-  sprintf(s1, "%s%s%c*.*", syscfg.gfilesdir, gfilesec[sn].filename, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(s1, "%s%s%c*.*", syscfg.gfilesdir, gfilesec[sn].filename, WFile::pathSeparatorChar);
   bFound = fnd.open(s1, 0);
   bool ok = true;
   int chd = 0;

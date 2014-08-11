@@ -797,7 +797,7 @@ void DoFullNewUser() {
   if (syscfg.sysconfig & sysconfig_extended_info) {
     input_street();
     char szZipFileName[ MAX_PATH ];
-    sprintf(szZipFileName, "%s%s%czip1.dat", syscfg.datadir, ZIPCITY_DIR, WWIV_FILE_SEPERATOR_CHAR);
+    sprintf(szZipFileName, "%s%s%czip1.dat", syscfg.datadir, ZIPCITY_DIR, WFile::pathSeparatorChar);
     if (WFile::Exists(szZipFileName)) {
       input_zipcode();
       if (!check_zip(GetSession()->GetCurrentUser()->GetZipcode(), 1)) {
@@ -1191,7 +1191,7 @@ bool check_zip(const char *pszZipCode, int mode) {
   bool found = false;
 
   char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%s%s%czip%c.dat", syscfg.datadir, ZIPCITY_DIR, WWIV_FILE_SEPERATOR_CHAR, pszZipCode[0]);
+  sprintf(szFileName, "%s%s%czip%c.dat", syscfg.datadir, ZIPCITY_DIR, WFile::pathSeparatorChar, pszZipCode[0]);
 
   WTextFile zip_file(szFileName, "r");
   if (!zip_file.IsOpen()) {

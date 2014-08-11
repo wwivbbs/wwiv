@@ -80,6 +80,7 @@ class WFile {
   static const int invalid_handle;
 
   static const char pathSeparatorChar;
+  static const char pathSeparatorString[];
   static const char separatorChar;
 
  private:

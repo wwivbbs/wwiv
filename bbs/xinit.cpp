@@ -426,12 +426,12 @@ IniFile* WApplication::ReadINIFile() {
 
     if ((ss = ini->GetValue(get_key_str(INI_STR_ATTACH_DIR))) != NULL) {
       m_attachmentDirectory = ss;
-      if (m_attachmentDirectory.at(m_attachmentDirectory.length() - 1) != WWIV_FILE_SEPERATOR_CHAR) {
-        m_attachmentDirectory += WWIV_FILE_SEPERATOR_STRING;
+      if (m_attachmentDirectory.at(m_attachmentDirectory.length() - 1) != WFile::pathSeparatorChar) {
+        m_attachmentDirectory += WFile::pathSeparatorString;
       }
     } else {
       std::ostringstream os;
-      os << GetHomeDir() << ATTACH_DIR << WWIV_FILE_SEPERATOR_STRING;
+      os << GetHomeDir() << ATTACH_DIR << WFile::pathSeparatorString;
       m_attachmentDirectory = os.str();
     }
 

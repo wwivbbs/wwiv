@@ -36,9 +36,10 @@
 
 #include "core/inifile.h"
 #include "core/strings.h"
-#include "core/wwivport.h"
 #include "core/wfile.h"
 #include "core/wfndfile.h"
+#include "core/wwivport.h"
+
 #include "init/archivers.h"
 #include "init/editors.h"
 #include "init/ifcns.h"
@@ -89,7 +90,7 @@ static void convcfg() {
     Printf("Converting config.dat to 4.30/5.00 format...\n");
     out->SetColor(Scheme::NORMAL);
     read(hFile, &syscfg, sizeof(configrec));
-    sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WWIV_FILE_SEPERATOR_CHAR);
+    sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WFile::pathSeparatorChar);
     strcpy(syscfg.logoff_c, " ");
     strcpy(syscfg.v_scan_c, " ");
 

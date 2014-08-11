@@ -313,7 +313,7 @@ void do_callout(int sn) {
         GetSession()->bout << "@" << sn << wwiv::endl;
         char szRegionsFileName[ MAX_PATH ];
         sprintf(szRegionsFileName, "%s%s%c%s.%-3u", syscfg.datadir,
-                REGIONS_DAT, WWIV_FILE_SEPERATOR_CHAR, REGIONS_DAT, atoi(csne->phone));
+                REGIONS_DAT, WFile::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
         if (WFile::Exists(szRegionsFileName)) {
           sprintf(town, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
           describe_area_code_prefix(atoi(csne->phone), atoi(town), s1);

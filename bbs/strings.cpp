@@ -197,8 +197,8 @@ int set_strings_fn(int filen, char *pszDirectoryName, char *pszFileName, int all
 
     if (pszDirectoryName && pszDirectoryName[0]) {
       strcpy(sfi->fn, pszDirectoryName);
-      if (sfi->fn[strlen(sfi->fn) - 1] != WWIV_FILE_SEPERATOR_CHAR)
-        strcat(sfi->fn, WWIV_FILE_SEPERATOR_STRING);
+      if (sfi->fn[strlen(sfi->fn) - 1] != WFile::pathSeparatorChar)
+        strcat(sfi->fn, WFile::pathSeparatorString);
     } else
       sfi->fn[0] = 0;
     strcat(sfi->fn, pszFileName);

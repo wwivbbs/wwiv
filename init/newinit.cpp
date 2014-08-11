@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "newinit.h"
 
-#include <curses.h>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -30,23 +29,29 @@
 #endif
 #include <string>
 #include <sys/stat.h>
+#include <vector>
 
-#include "archivers.h"
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
-#include "wwivinit.h"
+#include <curses.h>
+
+#include "core/wfile.h"
 #include "core/wwivport.h"
-#include "utility.h"
+#include "init/archivers.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "initlib/input.h"
+#include "init/wwivinit.h"
+#include "init/utility.h"
 
 extern char bbsdir[];
 
+using std::string;
+using std::vector;
 
 static void create_text(const char *pszFileName) {
   char szFullFileName[MAX_PATH];
   char szMessage[ 255 ];
 
-  sprintf(szFullFileName, "gfiles%c%s", WWIV_FILE_SEPERATOR_CHAR, pszFileName);
+  sprintf(szFullFileName, "gfiles%c%s", WFile::pathSeparatorChar, pszFileName);
   int hFile = open(szFullFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   sprintf(szMessage, "This is %s.\nEdit to suit your needs.\r\n", pszFileName);
   write(hFile, szMessage, strlen(szMessage));
@@ -115,17 +120,17 @@ static void init_files() {
 
   strcpy(syscfg.systempw, "SYSOP");
   Printf(".");
-  sprintf(syscfg.msgsdir, "%smsgs%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(syscfg.msgsdir, "%smsgs%c", bbsdir, WFile::pathSeparatorChar);
   Printf(".");
-  sprintf(syscfg.gfilesdir, "%sgfiles%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(syscfg.gfilesdir, "%sgfiles%c", bbsdir, WFile::pathSeparatorChar);
   Printf(".");
-  sprintf(syscfg.datadir, "%sdata%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(syscfg.datadir, "%sdata%c", bbsdir, WFile::pathSeparatorChar);
   Printf(".");
-  sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir, WFile::pathSeparatorChar);
   Printf(".");
-  sprintf(syscfg.tempdir, "%stemp1%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(syscfg.tempdir, "%stemp1%c", bbsdir, WFile::pathSeparatorChar);
   Printf(".");
-  sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir, WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir, WFile::pathSeparatorChar, WFile::pathSeparatorChar);
   Printf(".");
   strcpy(syscfg.batchdir, syscfg.tempdir);
   Printf(".");
@@ -317,7 +322,7 @@ static void init_files() {
   Printf(".");
   strcpy(d1.name, "Sysop");
   strcpy(d1.filename, "SYSOP");
-  sprintf(d1.path, "dloads%csysop%c", WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(d1.path, "dloads%csysop%c", WFile::pathSeparatorChar, WFile::pathSeparatorChar);
   mkdir(d1.path);
   d1.dsl = 100;
   d1.maxfiles = 50;
@@ -330,7 +335,7 @@ static void init_files() {
 
   strcpy(d1.name, "Miscellaneous");
   strcpy(d1.filename, "misc");
-  sprintf(d1.path, "dloads%cmisc%c", WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(d1.path, "dloads%cmisc%c", WFile::pathSeparatorChar, WFile::pathSeparatorChar);
   mkdir(d1.path);
   d1.dsl = 10;
   d1.age = 0;
@@ -350,13 +355,13 @@ static void init_files() {
   rename("wwivini.500", "wwiv.ini");
   Printf(".");
   char szDestination[MAX_PATH];
-  sprintf(szDestination, "data%cmenucmds.dat", WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(szDestination, "data%cmenucmds.dat", WFile::pathSeparatorChar);
   rename("menucmds.dat", szDestination);
   Printf(".");
-  sprintf(szDestination, "data%cregions.dat", WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(szDestination, "data%cregions.dat", WFile::pathSeparatorChar);
   rename("regions.dat", szDestination);
   Printf(".");
-  sprintf(szDestination, "data%cwfc.dat", WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(szDestination, "data%cwfc.dat", WFile::pathSeparatorChar);
   rename("wfc.dat", szDestination);
   Printf(".");
   Printf(".");
@@ -381,7 +386,7 @@ static void init_files() {
     system("unzip -qq -o EN-menus.zip -dgfiles ");
     Printf(".");
     sprintf(szDestination, "dloads%csysop%cen-menus.zip",
-            WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
+            WFile::pathSeparatorChar, WFile::pathSeparatorChar);
     rename("en-menus.zip", szDestination);
     Printf(".");
   }
@@ -391,7 +396,7 @@ static void init_files() {
     system("unzip -qq -o regions.zip -ddata");
     Printf(".");
     sprintf(szDestination, "dloads%csysop%cregions.zip",
-            WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
+            WFile::pathSeparatorChar, WFile::pathSeparatorChar);
     rename("regions.zip", szDestination);
     Printf(".");
   }
@@ -401,7 +406,7 @@ static void init_files() {
     system("unzip -qq -o zip-city.zip -ddata");
     Printf(".");
     sprintf(szDestination, "dloads%csysop%czip-city.zip",
-            WWIV_FILE_SEPERATOR_CHAR, WWIV_FILE_SEPERATOR_CHAR);
+            WFile::pathSeparatorChar, WFile::pathSeparatorChar);
     rename("zip-city.zip", szDestination);
     Printf(".");
   }
@@ -410,8 +415,7 @@ static void init_files() {
 }
 
 void new_init() {
-  const int ENTRIES = 12;
-  const char *dirname[] = {
+  static const vector<string> dirnames = {
     "attach",
     "data",
     "data/regions",
@@ -422,22 +426,19 @@ void new_init() {
     "dloads",
     "dloads/misc",
     "dloads/sysop",
-    "temp1",
-    "temp2",
-    0L,
   };
   out->SetColor(Scheme::PROMPT);
   Puts("\n\nNow performing installation.  Please wait...\n\n");
   Puts("Creating Directories");
   out->SetColor(Scheme::NORMAL);
-  for (int i = 0; i < ENTRIES; ++i) {
+  for (const auto& dirname : dirnames) {
     out->SetColor(Scheme::NORMAL);
     Printf(".");
-    int nRet = chdir(dirname[i]);
+    int nRet = chdir(dirname.c_str());
     if (nRet) {
-      if (mkdir(dirname[i])) {
+      if (mkdir(dirname.c_str())) {
         out->SetColor(Scheme::ERROR_TEXT);
-        Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname[i]);
+        Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname.c_str());
         exit_init(2);
       }
     } else {

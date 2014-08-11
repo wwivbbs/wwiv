@@ -951,20 +951,20 @@ const string GetMenuDescriptionFile() {
 
 const string GetMenuDirectory(const string menuPath) {
   std::ostringstream os;
-  os << GetMenuDirectory() << menuPath << WWIV_FILE_SEPERATOR_STRING;
+  os << GetMenuDirectory() << menuPath << WFile::pathSeparatorString;
   return string(os.str());
 }
 
 const string GetMenuDirectory(const string menuPath, const string menuName,
                                    const string extension) {
   std::ostringstream os;
-  os << GetMenuDirectory() << menuPath << WWIV_FILE_SEPERATOR_STRING << menuName << "." << extension;
+  os << GetMenuDirectory() << menuPath << WFile::pathSeparatorString << menuName << "." << extension;
   return string(os.str());
 }
 
 const string GetMenuDirectory() {
   std::ostringstream os;
-  os << GetSession()->language_dir << "menus" << WWIV_FILE_SEPERATOR_CHAR;
+  os << GetSession()->language_dir << "menus" << WFile::pathSeparatorChar;
   return string(os.str());
 }
 

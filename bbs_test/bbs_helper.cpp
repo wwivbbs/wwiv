@@ -46,8 +46,8 @@ void BbsHelper::SetUp() {
     dir_gfiles_ = files_.DirName("gfiles");
     dir_en_gfiles_ = files_.DirName("en/gfiles");
 #ifdef _WIN32
-    std::replace(dir_gfiles_.begin(), dir_gfiles_.end(), '/', WWIV_FILE_SEPERATOR_CHAR);
-    std::replace(dir_en_gfiles_.begin(), dir_en_gfiles_.end(), '/', WWIV_FILE_SEPERATOR_CHAR);
+    std::replace(dir_gfiles_.begin(), dir_gfiles_.end(), '/', WFile::pathSeparatorChar);
+    std::replace(dir_en_gfiles_.begin(), dir_en_gfiles_.end(), '/', WFile::pathSeparatorChar);
 #endif  // _WIN32
 
     syscfg.gfilesdir = const_cast<char*>(dir_gfiles_.c_str());
