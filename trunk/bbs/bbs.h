@@ -228,7 +228,6 @@ class WApplication : public WLogger, Runnable {
   bool read_dirs();
   void read_chains();
   bool read_language();
-  bool read_modem();
   void read_gfile();
   void make_abs_path(char *dir);
   void check_phonenum();
