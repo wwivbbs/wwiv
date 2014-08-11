@@ -1023,43 +1023,6 @@ bool WApplication::read_language() {
 }
 
 
-bool WApplication::read_modem() {
-  if (modem_i) {
-    free(modem_i);
-  }
-  modem_i = NULL;
-  if (!ok_modem_stuff) {
-    return true;
-  }
-  char szFileName[MAX_PATH];
-  if (GetApplication()->GetInstanceNumber() > 1) {
-    snprintf(szFileName, sizeof(szFileName), "%s%s.%3.3d", syscfg.datadir, MODEM_XXX,
-             GetApplication()->GetInstanceNumber());
-    if (!WFile::Exists(szFileName)) {
-      char modemMDMFile[MAX_PATH];
-      snprintf(modemMDMFile, sizeof(modemMDMFile), "%s%s", syscfg.datadir, MODEM_DAT);
-      if (WFile::Exists(modemMDMFile)) {
-        std::cout << "\r\nRun Cloning modem data from " << modemMDMFile << " to " << szFileName << "\r\n\n";
-        WFile::CopyFile(modemMDMFile, szFileName);
-      }
-    }
-  } else {
-    snprintf(szFileName, sizeof(szFileName), "%s%s", syscfg.datadir, MODEM_DAT);
-  }
-  WFile file(szFileName);
-  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
-    long lFileSize = file.GetLength();
-    modem_i = static_cast<modem_info *>(BbsAllocA(lFileSize));
-    WWIV_ASSERT(modem_i != NULL);
-    file.Read(modem_i, lFileSize);
-    return true;
-  } else {
-    std::cout << "\r\nRun INIT.EXE to convert modem data.\r\n\n";
-    return false;
-  }
-}
-
-
 void WApplication::read_gfile() {
   if (gfilesec != NULL) {
     free(gfilesec);
@@ -1226,13 +1189,6 @@ void WApplication::InitializeBBS() {
   chains = NULL;
   read_chains();
 
-#ifndef __unix__
-  XINIT_PRINTF("* Reading Modem Configuration.\r\n");
-  modem_i = NULL;
-  if (!read_modem()) {
-    AbortBBS();
-  }
-#endif
   XINIT_PRINTF("* Reading File Transfer Protocols.\r\n");
   externs = NULL;
   read_nextern();
