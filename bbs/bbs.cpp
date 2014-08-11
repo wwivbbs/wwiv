@@ -1014,7 +1014,6 @@ int WApplication::Run(int argc, char *argv[]) {
       }
       logoff();
     }
-hanging_up:
 
     if (!no_hangup && GetSession()->using_modem && ok_modem_stuff) {
       hang_it_up();
@@ -1035,7 +1034,7 @@ hanging_up:
     m_bUserAlreadyOn = false;
     if (GetSession()->localIO()->GetSysopAlert() && (!GetSession()->localIO()->LocalKeyPressed())) {
       sess->remoteIO()->dtr(true);
-      wait1(2);
+      Wait(0.1);
       holdphone(true);
       double dt = timer();
       GetSession()->localIO()->LocalCls();
