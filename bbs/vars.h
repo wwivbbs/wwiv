@@ -168,7 +168,6 @@ __EXTRN__ chainregrec *chains_reg;
 __EXTRN__ newexternalrec *externs, *over_intern;
 __EXTRN__ editorrec *editors;
 __EXTRN__ gfiledirrec *gfilesec;
-__EXTRN__ modem_info *modem_i;
 __EXTRN__ net_system_list_rec *csn;
 __EXTRN__ net_networks_rec *net_networks;
 __EXTRN__ arcrec *arcs;
