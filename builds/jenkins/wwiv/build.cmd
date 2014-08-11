@@ -59,6 +59,13 @@ msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release /detailedsumma
 msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release /detailedsummary
 msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release /detailedsummary
 
+
+@rem build DEPS
+cd %WORKSPACE%\deps\infozip
+
+msbuild unzip60\win32\vc8\unzip.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild zip30\win32\vc6\zip.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+
 cd %WORKSPACE%\
 if not exist %WORKSPACE%\release (
   echo Creating %WORKSPACE\release
@@ -100,6 +107,14 @@ copy /v/y %WINS%\pppurge\Release\pppurge.exe %WORKSPACE%\release\pppurge.exe
 copy /v/y %WINS%\ppputil\Release\ppputil.exe %WORKSPACE%\release\ppputil.exe
 copy /v/y %WINS%\qotd\Release\qotd.exe %WORKSPACE%\release\qotd.exe
 copy /v/y %WINS%\uu\Release\uu.exe %WORKSPACE%\release\uu.exe
+
+echo Copying INFOZIP files to staging area
+set INFOZIP=%WORKSPACE%\deps\infozip
+dir %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe
+dir %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe
+copy /v/y %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe %WORKSPACE%\release\unzip.exe
+copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %WORKSPACE%\release\zip.exe
+
 
 echo Creating build.nfo file
 echo Build URL %BUILD_URL% > release\build.nfo
