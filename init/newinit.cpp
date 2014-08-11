@@ -364,7 +364,6 @@ static void init_files() {
   sprintf(szDestination, "data%cwfc.dat", WFile::pathSeparatorChar);
   rename("wfc.dat", szDestination);
   Printf(".");
-  Printf(".");
   // Create the sample files.
   create_text("welcome.msg");
   create_text("newuser.msg");
