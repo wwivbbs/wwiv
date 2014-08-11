@@ -28,14 +28,15 @@
 #endif
 #include <sys/stat.h>
 
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "initlib/input.h"
 #include "core/strings.h"
+#include "core/wfile.h"
 #include "core/wwivport.h"
-#include "subacc.h"
-#include "utility.h"
-#include "wwivinit.h"
+#include "init/subacc.h"
+#include "init/utility.h"
+#include "init/wwivinit.h"
 
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
@@ -277,7 +278,7 @@ static void insert_net(int nn) {
   initinfo.net_num_max++;
   memset(&(net_networks[nn]), 0, sizeof(net_networks_rec));
   strcpy(net_networks[nn].name, "NewNet");
-  sprintf(net_networks[nn].dir, "newnet.dir%c", WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(net_networks[nn].dir, "newnet.dir%c", WFile::pathSeparatorChar);
 
   sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
   i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
@@ -411,7 +412,7 @@ void networks() {
   } while (!done);
 
   char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%s%cnetworks.dat", syscfg.datadir, WWIV_FILE_SEPERATOR_CHAR);
+  sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
   int hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   write(hFile, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   close(hFile);

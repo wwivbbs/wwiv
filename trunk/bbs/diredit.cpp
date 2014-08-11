@@ -173,8 +173,8 @@ void modify_dir(int n) {
           }
         }
         if (s[0]) {
-          if (LAST(s) != WWIV_FILE_SEPERATOR_CHAR) {
-            strcat(s, WWIV_FILE_SEPERATOR_STRING);
+          if (LAST(s) != WFile::pathSeparatorChar) {
+            strcat(s, WFile::pathSeparatorString);
           }
           strcpy(r.path, s);
           GetSession()->bout.NewLine(2);

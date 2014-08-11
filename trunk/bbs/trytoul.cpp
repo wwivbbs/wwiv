@@ -57,7 +57,7 @@ int try_to_ul(char *pszFileName) {
 
   char src[MAX_PATH];
   sprintf(src, "%s%s", syscfgovr.batchdir, pszFileName);
-  sprintf(dest, "%sTRY2UL%c%s", syscfg.dloadsdir, WWIV_FILE_SEPERATOR_CHAR, pszFileName);
+  sprintf(dest, "%sTRY2UL%c%s", syscfg.dloadsdir, WFile::pathSeparatorChar, pszFileName);
 
   if (WFile::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
     WFile::Remove(dest);                           // remove duplicates in try2ul dir, so keep

@@ -608,7 +608,7 @@ void print_net_listing(bool bForcePause) {
           } else {
             if (useregion && strncmp(s, csne.phone, 3) != 0) {
               strcpy(s, csne.phone);
-              sprintf(s2, "%s%s%c%s.%-3u", syscfg.datadir, REGIONS_DIR, WWIV_FILE_SEPERATOR_CHAR, REGIONS_DIR, atoi(csne.phone));
+              sprintf(s2, "%s%s%c%s.%-3u", syscfg.datadir, REGIONS_DIR, WFile::pathSeparatorChar, REGIONS_DIR, atoi(csne.phone));
               if (WFile::Exists(s2)) {
                 sprintf(town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
                 describe_area_code_prefix(atoi(csne.phone), atoi(town), s3);

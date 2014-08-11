@@ -81,7 +81,7 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOu
               "%s%s%c%s.%-3u",
               syscfg.datadir,
               REGIONS_DIR,
-              WWIV_FILE_SEPERATOR_CHAR,
+              WFile::pathSeparatorChar,
               REGIONS_DIR,
               atoi(csne->phone));
 

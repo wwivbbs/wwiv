@@ -52,6 +52,7 @@ const int WFile::permRead           = _S_IREAD;
 const int WFile::permReadWrite      = (_S_IREAD | _S_IWRITE);
 
 const char WFile::pathSeparatorChar = '\\';
+const char WFile::pathSeparatorString[] = "\\";
 const char WFile::separatorChar     = ';';
 
 /////////////////////////////////////////////////////////////////////////////

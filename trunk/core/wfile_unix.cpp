@@ -45,6 +45,8 @@ const int WFile::permRead           = O_RDONLY;
 const int WFile::permReadWrite      = O_RDWR;
 
 const char WFile::pathSeparatorChar = '/';
+const char WFile::pathSeparatorString[] = "/";
+
 const char WFile::separatorChar     = ':';
 
 /////////////////////////////////////////////////////////////////////////////
