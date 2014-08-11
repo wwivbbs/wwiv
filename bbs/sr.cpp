@@ -142,7 +142,8 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
         ok = true;
       }
       if (nProtocolNum == WWIV_INTERNAL_PROT_ZMODEM && xt == xf_up_batch) {
-        ok = true;
+        // TODO(rushfan): Internal ZModem doesn't support internal batch uploads
+        // ok = true;
       }
       if (nProtocolNum == WWIV_INTERNAL_PROT_ZMODEM && !GetSession()->IsUseInternalZmodem()) {
         // If AllowInternalZmodem is not true, don't allow it.
