@@ -16,35 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
+#include <vector>
 
 #include "wwiv.h"
 #include "core/inifile.h"
 
+using std::string;
+using std::vector;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
-
-/**
- * The default list of computer types
- */
-static const char *default_ctypes[] = {
-  "IBM PC (8088)",
-  "IBM PS/2",
-  "IBM AT (80286)",
-  "IBM AT (80386)",
-  "IBM AT (80486)",
-  "Pentium",
-  "Apple 2",
-  "Apple Mac",
-  "Commodore Amiga",
-  "Commodore",
-  "Atari",
-  "Other",
-  0L,
-};
-
-
-static const int MAX_DEFAULT_CTYPE_VALUE = 11;
-
 
 /**
  * Display character x repeated amount times in nColor, and if bAddNL is true
@@ -60,8 +41,6 @@ void repeat_char(char x, int amount, int nColor) {
   GetSession()->bout.NewLine();
 }
 
-
-
 /**
  * Returns the computer type string for computer type number num.
  *
@@ -71,6 +50,22 @@ void repeat_char(char x, int amount, int nColor) {
  */
 const char *ctypes(int num) {
   static char szCtype[81];
+
+  // The default list of computer types
+  static const vector<string> default_ctypes = {
+    "IBM PC (8088)",
+    "IBM PS/2",
+    "IBM AT (80286)",
+    "IBM AT (80386)",
+    "IBM AT (80486)",
+    "Pentium",
+    "Apple 2",
+    "Apple Mac",
+    "Commodore Amiga",
+    "Commodore",
+    "Atari",
+    "Other",
+  };
 
   IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), "CTYPES");
   if (iniFile.IsOpen()) {
@@ -83,12 +78,12 @@ const char *ctypes(int num) {
         return szCtype;
       }
     }
-    return NULL;
+    return nullptr;
   }
-  if ((num < 0) || (num > MAX_DEFAULT_CTYPE_VALUE)) {
-    return NULL;
+  if ((num < 0) || (num > default_ctypes.size())) {
+    return nullptr;
   }
-  return default_ctypes[num];
+  return default_ctypes[num].c_str();
 }
 
 
