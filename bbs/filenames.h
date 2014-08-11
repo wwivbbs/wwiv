@@ -129,8 +129,6 @@
 #define MENUWEL_NOEXT "menuwel"
 #define MEXTRACT_NOEXT "mextract"
 #define MMAIL_NOEXT "mmail"
-#define MODEM_DAT "modem.dat"
-#define MODEM_XXX "modem"
 #define MUSTREAD_NOEXT "mustread"
 
 #define NAMES_LST "names.lst"
