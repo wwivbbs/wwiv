@@ -257,7 +257,8 @@ void WIOTelnet::StopThreads() {
   }
   if (!SetEvent(m_hReadStopEvent)) {
     const char *pText = GetLastErrorText();
-    std::cout << "Error with PulseEvent " << GetLastError() << " - '" << pText << "'" << std::endl;
+    std::cout << "WIOTelnet::StopThreads: Error with SetEvent " << GetLastError() 
+              << " - '" << pText << "'" << std::endl;
   }
   WWIV_Delay(0);
 
@@ -270,13 +271,13 @@ void WIOTelnet::StopThreads() {
   case WAIT_TIMEOUT:
     // The exit code of 123 doesn't mean anything, and isn't used anywhere.
     ::TerminateThread(m_hReadThread, 123);
+    std::cout << "WIOTelnet::StopThreads: Terminated the read thread" << std::endl;
     break;
   default:
     break;
   }
   m_bThreadsStarted = false;
 }
-
 
 void WIOTelnet::StartThreads() {
   if (m_bThreadsStarted) {
@@ -285,7 +286,8 @@ void WIOTelnet::StartThreads() {
 
   if (!ResetEvent(m_hReadStopEvent)) {
     const char *pText = GetLastErrorText();
-    std::cout << "Error with PulseEvent " << GetLastError() << " - '" << pText << "'" << std::endl;
+    std::cout << "WIOTelnet::StartThreads: Error with ResetEvent " << GetLastError()
+              << " - '" << pText << "'" << std::endl;
   }
 
   m_hInBufferMutex = ::CreateMutex(NULL, false, "WWIV Input Buffer");
@@ -293,18 +295,15 @@ void WIOTelnet::StartThreads() {
   m_bThreadsStarted = true;
 }
 
-
 WIOTelnet::~WIOTelnet() {
   StopThreads();
   CloseHandle(m_hReadStopEvent);
   WSACleanup();
 }
 
-
 //
 // Static Class Members.
 //
-
 
 void WIOTelnet::InitializeWinsock() {
   WSADATA wsaData;
@@ -332,10 +331,7 @@ void WIOTelnet::InitializeWinsock() {
       break;
     }
   }
-
 }
-
-
 
 void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid) {
   WIOTelnet* pTelnet = static_cast<WIOTelnet*>(pTelnetVoid);
@@ -357,7 +353,8 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid) {
     if (dwWaitRet == (WSA_WAIT_EVENT_0 + 1)) {
       if (!ResetEvent(pTelnet->m_hReadStopEvent)) {
         const char *pText = GetLastErrorText();
-        std::cout << "Error with PulseEvent " << GetLastError() << " - '" << pText << "'" << std::endl;
+        std::cout << "WIOTelnet::InboundTelnetProc: Error with ResetEvent " 
+                  << GetLastError() << " - '" << pText << "'" << std::endl;
       }
 
       bDone = true;
@@ -409,7 +406,6 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid) {
 
   WSACloseEvent(hEvent);
 }
-
 
 void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   //
@@ -463,7 +459,6 @@ void WIOTelnet::HandleTelnetIAC(unsigned char nCmd, unsigned char nParam) {
   }
 }
 
-
 void WIOTelnet::AddStringToInputBuffer(int nStart, int nEnd, char *pszBuffer) {
   WWIV_ASSERT(pszBuffer);
   WaitForSingleObject(m_hInBufferMutex, INFINITE);
@@ -496,9 +491,6 @@ void WIOTelnet::AddStringToInputBuffer(int nStart, int nEnd, char *pszBuffer) {
   ReleaseMutex(m_hInBufferMutex);
 }
 
-
 void WIOTelnet::AddCharToInputBuffer(char ch) {
   m_inputQueue.push(ch);
 }
-
-
