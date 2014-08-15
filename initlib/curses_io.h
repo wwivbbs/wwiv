@@ -21,6 +21,7 @@
 
 #include <map>
 #include <curses.h>
+#include "curses_win.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
@@ -80,13 +81,13 @@ class CursesIO {
   virtual void PutsXY(int x, int y, const char *pszText);
   virtual int GetChar();
   virtual void Refresh();
-  virtual WINDOW* window() const { return window_; }
-  virtual WINDOW* footer() const { return footer_; }
-  virtual WINDOW* header() const { return header_; }
+  virtual CursesWindow* window() const { return window_; }
+  virtual CursesWindow* footer() const { return footer_; }
+  virtual CursesWindow* header() const { return header_; }
   virtual void SetDefaultFooter();
   virtual void SetIndicatorMode(IndicatorMode mode);
   virtual attr_t GetAttributesForScheme(Scheme id);
-  virtual void SetColor(WINDOW* window, Scheme scheme);
+  virtual void SetColor(CursesWindow* window, Scheme scheme);
   virtual void SetColor(Scheme scheme) { SetColor(window_, scheme); }
 
   static void Init();
@@ -96,9 +97,9 @@ class CursesIO {
 
   int max_x_;
   int max_y_;
-  WINDOW* window_;
-  WINDOW* footer_;
-  WINDOW* header_;
+  CursesWindow* window_;
+  CursesWindow* footer_;
+  CursesWindow* header_;
   std::map<Scheme, SchemeDescription> scheme_;
   IndicatorMode indicator_mode_;
 };
