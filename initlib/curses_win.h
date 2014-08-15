@@ -38,7 +38,7 @@ class CursesWindow {
 
   int AddCh(chtype ch) { return ::waddch(window_, ch); }
   int AddStr(const std::string s) { return ::waddstr(window_, s.c_str()); }
-  int MvAddStr(int y, int x, const std::string s) { return ::mvwaddstr(window_, y, x, s.c_str()); }
+  int MvAddStr(int y, int x, const std::string s) { return mvwaddstr(window_, y, x, s.c_str()); }
   void Bkgd(chtype ch) { ::wbkgd(window_, ch); }
   int RedrawWin() { return ::redrawwin(window_); } 
   int TouchWin() { return ::touchwin(window_); }
