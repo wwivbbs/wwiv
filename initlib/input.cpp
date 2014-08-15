@@ -117,17 +117,17 @@ void EditItems::Display() const {
 
 
 void EditItems::ShowHelpItems(const std::vector<HelpItem>& help_items) const {
-  out->footer()->move(0, 0);
-  out->footer()->clrtoeol();
+  out->footer()->Move(0, 0);
+  out->footer()->ClrtoEol();
   for (const auto& h : help_items) {
     out->SetColor(out->footer(), Scheme::FOOTER_KEY);
-    out->footer()->addstr(h.key);
+    out->footer()->AddStr(h.key);
     out->SetColor(out->footer(), Scheme::FOOTER_TEXT);
-    out->footer()->addstr("-");
-    out->footer()->addstr(h.description.c_str());
-    out->footer()->addstr(" ");
+    out->footer()->AddStr("-");
+    out->footer()->AddStr(h.description.c_str());
+    out->footer()->AddStr(" ");
   }
-  out->footer()->refresh();
+  out->footer()->Refresh();
 }
 
 EditItems::~EditItems() {
@@ -139,8 +139,8 @@ EditItems::~EditItems() {
   }
 
   // Clear the help bar on exit.
-  out->footer()->erase();
-  out->footer()->refresh();
+  out->footer()->Erase();
+  out->footer()->Refresh();
   out->SetIndicatorMode(IndicatorMode::NONE);
 }
 
@@ -190,25 +190,25 @@ static CursesWindow* CreateDialogWindow(int height, int width) {
   const int startx = (maxx - width - 4) / 2;
   const int starty = (maxy - height - 2) / 2;
   CursesWindow *dialog = new CursesWindow(height + 2, width + 4, starty, startx);
-  dialog->bkgd(out->GetAttributesForScheme(Scheme::DIALOG_BOX));
+  dialog->Bkgd(out->GetAttributesForScheme(Scheme::DIALOG_BOX));
   out->SetColor(dialog, Scheme::DIALOG_BOX);
-  dialog->box(0, 0);
+  dialog->Box(0, 0);
   return dialog;
 }
 
 static void CloseDialog(CursesWindow* dialog) {
   delete dialog;
-  out->window()->redrawwin();
+  out->window()->RedrawWin();
   out->Refresh();
-  out->window()->touchwin();
+  out->window()->TouchWin();
 }
 
 bool dialog_yn(const std::string prompt) {
   std::string s = prompt + " ? ";
   CursesWindow *dialog = CreateDialogWindow(1, s.size());
-  dialog->mvaddstr(1, 2, s);
-  dialog->refresh();
-  int ch = dialog->getchar();
+  dialog->MvAddStr(1, 2, s);
+  dialog->Refresh();
+  int ch = dialog->GetChar();
   CloseDialog(dialog);
   return ch == 'Y' || ch == 'y';
 }
@@ -229,11 +229,11 @@ void input_password(const std::string prompt, const vector<std::string>& text, c
 
   int curline = 1;
   for (const auto& s : text) {
-    dialog->mvaddstr(curline++, 2, s);
+    dialog->MvAddStr(curline++, 2, s);
   }
   out->SetColor(dialog, Scheme::DIALOG_PROMPT);
-  dialog->mvaddstr(text.size() + 2, 2, prompt);
-  dialog->refresh();
+  dialog->MvAddStr(text.size() + 2, 2, prompt);
+  dialog->Refresh();
   winput_password(dialog, output, max_length);
   CloseDialog(dialog);
 }
@@ -243,7 +243,7 @@ void messagebox(const std::string text) {
   messagebox(vector);
 }
 
-void messagebox(const std::vector<std::string>& text) {
+void messagebox(const vector<string>& text) {
   const string prompt = "Press Any Key";
   int maxlen = prompt.length();
   for (const auto& s : text) {
@@ -253,13 +253,13 @@ void messagebox(const std::vector<std::string>& text) {
   out->SetColor(dialog, Scheme::DIALOG_TEXT);
   int curline = 1;
   for (const auto& s : text) {
-    dialog->mvaddstr(curline++, 2, s);
+    dialog->MvAddStr(curline++, 2, s);
   }
   out->SetColor(dialog, Scheme::DIALOG_PROMPT);
   int x = (maxlen - prompt.length()) / 2;
-  dialog->mvaddstr(text.size() + 2, x + 2, prompt);
-  dialog->refresh();
-  dialog->getchar();
+  dialog->MvAddStr(text.size() + 2, x + 2, prompt);
+  dialog->Refresh();
+  dialog->GetChar();
   CloseDialog(dialog);
 }
 
@@ -284,7 +284,7 @@ void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength) {
   int curpos = 0;
 
   for (;;) {
-    int ch = dialog->getchar();
+    int ch = dialog->GetChar();
     switch (ch) {
     case 14:
     case 13: // 13 on Win32
@@ -299,9 +299,9 @@ void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength) {
       if (curpos) {
         do {
           curpos--;
-          dialog->addstr("\b \b");
+          dialog->AddStr("\b \b");
           if (pszOutText[curpos] == 26) {
-            dialog->addstr("\b \b");
+            dialog->AddStr("\b \b");
           }
         } while (curpos && (pszOutText[curpos - 1] != 32));
       }
@@ -317,9 +317,9 @@ void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength) {
     case KEY_BACKSPACE:
       if (curpos) {
         curpos--;
-        dialog->addstr("\b \b");
+        dialog->AddStr("\b \b");
         if (pszOutText[curpos] == 26) {
-          dialog->addstr("\b \b");
+          dialog->AddStr("\b \b");
         }
       }
       break;
@@ -327,9 +327,9 @@ void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength) {
     case 24: // control X
       while (curpos) {
         curpos--;
-       dialog->addstr("\b \b");
+       dialog->AddStr("\b \b");
         if (pszOutText[curpos] == 26) {
-         dialog->addstr("\b \b");
+         dialog->AddStr("\b \b");
         }
       }
       break;
@@ -338,9 +338,9 @@ void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength) {
         ch = toupper(ch);
         pszOutText[curpos++] = ch;
 #ifdef _WIN32
-        dialog->addch(ACS_CKBOARD);
+        dialog->AddCh(ACS_CKBOARD);
 #else
-        dialog->addch(ACS_DIAMOND);
+        dialog->AddCh(ACS_DIAMOND);
 #endif  // _WIN32
       }
       break;
@@ -377,7 +377,7 @@ void editline(std::string* s, int len, int status, int *returncode, const char *
 void editline(char *s, int len, int status, int *returncode, const char *ss) {
   attr_t old_attr;
   short old_pair;
-  out->window()->attr_get(&old_attr, &old_pair);
+  out->window()->AttrGet(&old_attr, &old_pair);
   int cx = out->WhereX();
   int cy = out->WhereY();
   int i;
@@ -393,7 +393,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   int pos = 0;
   bool bInsert = false;
   do {
-    int ch = out->window()->getchar();
+    int ch = out->window()->GetChar();
     switch (ch) {
     case KEY_F(1): // curses
       done = true;
@@ -549,7 +549,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   sprintf(szFinishedString, "%-255s", s);
   szFinishedString[ len ] = '\0';
   out->GotoXY(cx, cy);
-  out->window()->attrset(COLOR_PAIR(old_pair) | old_attr);
+  out->window()->AttrSet(COLOR_PAIR(old_pair) | old_attr);
   out->Puts(szFinishedString);
   out->GotoXY(cx, cy);
 }
@@ -561,7 +561,7 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
 
   attr_t old_attr;
   short old_pair;
-  out->window()->attr_get(&old_attr, &old_pair);
+  out->window()->AttrGet(&old_attr, &old_pair);
   int cx = out->WhereX();
   int cy = out->WhereY();
   int curatr = 0x1f;
@@ -604,7 +604,7 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
     }
   } while (!done);
   out->GotoXY(cx, cy);
-  out->window()->attrset(COLOR_PAIR(old_pair) | old_attr);
+  out->window()->AttrSet(COLOR_PAIR(old_pair) | old_attr);
   out->Puts(strings[value]);
   out->GotoXY(cx, cy);
   return value;
@@ -639,8 +639,8 @@ void pausescr() {
   out->SetColor(Scheme::INFO);
   Puts("[PAUSE]");
   out->SetColor(Scheme::NORMAL);
-  out->window()->getchar();
+  out->window()->GetChar();
   for (int i = 0; i < 7; i++) {
-    out->window()->addstr("\b \b");
+    out->window()->AddStr("\b \b");
   }
 }
