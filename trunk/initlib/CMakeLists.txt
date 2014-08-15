@@ -7,8 +7,8 @@ include_directories(..)
 add_definitions(-DNOT_BBS)
 
 set(COMMON_SOURCES
+  curses_io.cpp
   input.cpp
-  platform/curses_io.cpp
   )
 
 if(UNIX) 

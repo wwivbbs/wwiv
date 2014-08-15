@@ -59,7 +59,7 @@
 #include "init/utility.h"
 
 #include "initlib/input.h"
-#include "initlib/platform/curses_io.h"
+#include "initlib/curses_io.h"
 
 using std::string;
 using std::vector;
