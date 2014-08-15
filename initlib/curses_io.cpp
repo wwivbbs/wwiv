@@ -22,8 +22,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "platform/curses_io.h"
 #include "curses.h"
+#include "curses_io.h"
 
 extern const char *wwiv_version;
 extern const char *beta_version;

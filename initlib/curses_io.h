@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_PLATFORM_CURSESIO_H__
-#define __INCLUDED_PLATFORM_CURSESIO_H__
+#ifndef __INCLUDED_PLATFORM_CURSES_IO_H__
+#define __INCLUDED_PLATFORM_CURSES_IO_H__
 
 #include <map>
 #include <curses.h>
@@ -107,4 +107,4 @@ class CursesIO {
 extern CursesIO* out;
 
 
-#endif // __INCLUDED_PLATFORM_CURSESIO_H__
+#endif // __INCLUDED_PLATFORM_CURSES_IO_H__

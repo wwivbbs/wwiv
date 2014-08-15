@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-#include "initlib/platform/curses_io.h"
+#include "initlib/curses_io.h"
 
 #define NUM_ONLY            1
 #define UPPER_ONLY          2
