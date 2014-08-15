@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-#include "platform/curses_io.h"
+#include "initlib/curses_io.h"
 #include "bbs/wconstants.h"  // TODO(rushfan): Stop including this
 
 #ifdef INSERT // defined in wconstants.h
