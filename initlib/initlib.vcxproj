@@ -84,11 +84,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="curses_io.h" />
+    <ClInclude Include="curses_win.h" />
     <ClInclude Include="input.h" />
-    <ClInclude Include="platform\curses_io.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="curses_io.cpp" />
+    <ClCompile Include="curses_win.cpp" />
     <ClCompile Include="input.cpp" />
   </ItemGroup>
   <ItemGroup>

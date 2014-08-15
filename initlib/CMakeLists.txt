@@ -8,6 +8,7 @@ add_definitions(-DNOT_BBS)
 
 set(COMMON_SOURCES
   curses_io.cpp
+  curses_win.cpp
   input.cpp
   )
 
