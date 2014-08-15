@@ -20,14 +20,14 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="platform\curses_io.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="curses_win.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="curses_io.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -35,6 +35,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="curses_io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="curses_win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
