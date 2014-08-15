@@ -188,7 +188,7 @@ void create_arcs() {
   strncpy(arc[0].name, "Zip", 32);
   strncpy(arc[0].extension, "ZIP", 4);
   strncpy(arc[0].arca, "zip %1 %2", 50);
-  strncpy(arc[0].arce, "unzip %1 %2", 50);
+  strncpy(arc[0].arce, "unzip -C %1 %2", 50);
   strncpy(arc[0].arcl, "unzip -l %1", 50);
   strncpy(arc[0].arcd, "zip -d %1 -@ < BBSADS.TXT", 50);
   strncpy(arc[0].arck, "zip -z %1 < COMMENT.TXT", 50);
