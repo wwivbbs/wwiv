@@ -27,6 +27,8 @@
 
 CursesWindow::CursesWindow(int nlines, int ncols, int begin_y, int begin_x) {
   window_ = newwin(nlines, ncols, begin_y, begin_x);
-  max_x_ = getmaxx(window_);
-  max_y_ = getmaxy(window_);
+}
+
+CursesWindow::~CursesWindow() {
+  delwin(window_);
 }

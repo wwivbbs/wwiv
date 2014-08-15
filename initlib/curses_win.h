@@ -47,12 +47,18 @@ class CursesWindow {
   int getcurx() { return ::getcurx(window_); }
   int getcury() { return ::getcury(window_); }
   int clear() { return ::wclear(window_); }
+  int erase() { return ::werase(window_); }
   int getchar() { return ::wgetch(window_); }
   int attrset(chtype attrs) { return ::wattrset(window_, attrs); }
+  int keypad(bool b) { return ::keypad(window_, b); }
+  WINDOW* window() const { return window_; }
+  int getmaxx() const { return ::getmaxx(window_); }
+  int getmaxy() const { return ::getmaxy(window_); }
+  int clrtoeol() const { return ::wclrtoeol(window_); }
+  int attr_get(attr_t* a, short* c) const { return ::wattr_get(window_, a, c, nullptr); }
+  int box(chtype vert_ch, chtype horiz_ch) { return ::box(window_, vert_ch, horiz_ch); }
 
  private:
-  int max_x_;
-  int max_y_;
   WINDOW* window_;
 };
 

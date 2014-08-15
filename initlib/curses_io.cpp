@@ -47,38 +47,38 @@ CursesIO::CursesIO()
 
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
-  header_ = newwin(2, 0, 0, 0);
-  footer_ = newwin(2, 0, stdscr_maxy-2, 0);
-  wbkgd(header_, GetAttributesForScheme(Scheme::HEADER));
+  header_ = new CursesWindow(2, 0, 0, 0);
+  footer_ = new CursesWindow(2, 0, stdscr_maxy-2, 0);
+  header_->bkgd(GetAttributesForScheme(Scheme::HEADER));
   char s[81];
   sprintf(s, "WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
   SetColor(header_, Scheme::HEADER);
-  mvwprintw(header_, 0, 0, s);
+  header_->mvaddstr(0, 0, s);
   SetColor(header_, Scheme::HEADER_COPYRIGHT);
-  mvwaddstr(header_, 1, 0, copyrightString);
-  wbkgd(footer_, GetAttributesForScheme(Scheme::HEADER));
-  wrefresh(header_);
-  wrefresh(footer_);
-  redrawwin(header_);
+  header_->mvaddstr(1, 0, copyrightString);
+  footer_->bkgd(GetAttributesForScheme(Scheme::HEADER));
+  header_->refresh();
+  footer_->refresh();
+  header_->redrawwin();
 
-  window_ = newwin(stdscr_maxy-4, stdscr_maxx, 2, 0);
-  keypad(window_, TRUE);
+  window_ = new CursesWindow(stdscr_maxy-4, stdscr_maxx, 2, 0);
+  window_->keypad(true);
 
   touchwin(stdscr);
-  max_x_ = getmaxx(window_);
-  max_y_ = getmaxy(window_);
-  touchwin(window_);
-  wrefresh(window_);
+  max_x_ = window_->getmaxx();
+  max_y_ = window_->getmaxy();
+  window_->touchwin();
+  window_->refresh();
 }
 
 CursesIO::~CursesIO() {
-  delwin(footer_);
-  delwin(header_);
-  delwin(window_);
+  delete footer_;
+  delete header_;
+  delete window_;
   endwin();
 }
 
-void CursesIO::Refresh() { wrefresh(window_); }
+void CursesIO::Refresh() { window_->refresh(); }
 
 /**
  * Moves the cursor to the location specified
@@ -90,8 +90,8 @@ void CursesIO::GotoXY(int x, int y) {
   y = std::max<int>(y, 0);
   y = std::min<int>(y, max_y_);
 
-  wmove(window_, y, x);
-  wrefresh(window_);
+  window_->move(y, x);
+  window_->refresh();
 }
 
 /* This function returns the current X cursor position, as the number of
@@ -99,14 +99,14 @@ void CursesIO::GotoXY(int x, int y) {
 * means the cursor is at the left-most position
 */
 int CursesIO::WhereX() {
-  return getcurx(window_);
+  return window_->getcurx();
 }
 
 /* This function returns the Y cursor position, as the line number from
 * the top of the logical window_.
 */
 int CursesIO::WhereY() {
-  return getcury(window_);
+  return window_->getcury();
 }
 
 /**
@@ -114,14 +114,14 @@ int CursesIO::WhereY() {
  */
 void CursesIO::Cls() {
   SetColor(Scheme::NORMAL);
-  wclear(window_);
-  wrefresh(window_);
+  window_->clear();
+  window_->refresh();
   GotoXY(0, 0);
 }
 
 void CursesIO::Putch(unsigned char ch) {
-  waddch(window_, ch);
-  wrefresh(window_);
+  window_->addch(ch);
+  window_->refresh();
 }
 
 void CursesIO::Puts(const char *pszText) {
@@ -131,8 +131,8 @@ void CursesIO::Puts(const char *pszText) {
       return;
     }
   }
-  waddstr(window_, pszText);
-  wrefresh(window_);
+  window_->addstr(pszText);
+  window_->refresh();
 }
 
 void CursesIO::PutsXY(int x, int y, const char *pszText) {
@@ -141,17 +141,17 @@ void CursesIO::PutsXY(int x, int y, const char *pszText) {
 }
 
 int CursesIO::GetChar() {
-  return wgetch(window_);
+  return window_->getchar();
 }
 
 void CursesIO::SetDefaultFooter() {
-  werase(footer_);
-  wmove(footer_, 0, 0);
+  window_->erase();
+  window_->move(0, 0);
   SetColor(footer_, Scheme::FOOTER_KEY);
-  mvwaddstr(footer_, 0, 0, "Esc");
+  footer_->mvaddstr(0, 0, "Esc");
   SetColor(footer_, Scheme::FOOTER_TEXT);
-  waddstr(footer_, "-Exit ");
-  wrefresh(footer_);
+  footer_->addstr("-Exit ");
+  footer_->refresh();
 }
 
 void CursesIO::SetIndicatorMode(IndicatorMode mode) {
@@ -168,8 +168,8 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
     s = "OVR";
     break;
   }
-  mvwaddstr(header_, 1, x, s.c_str());
-  wrefresh(header_);
+  header_->mvaddstr(1, x, s.c_str());
+  header_->refresh();
   indicator_mode_ = mode;
 }
 
@@ -182,8 +182,8 @@ attr_t CursesIO::GetAttributesForScheme(Scheme id) {
   return attr;
 }
 
-void CursesIO::SetColor(WINDOW* window, Scheme id) {
-  wattrset(window, GetAttributesForScheme(id));
+void CursesIO::SetColor(CursesWindow* window, Scheme id) {
+  window->attrset(GetAttributesForScheme(id));
 }
 
 // static 

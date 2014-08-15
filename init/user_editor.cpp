@@ -184,8 +184,8 @@ void user_editor() {
           write_user(current_usernum, &user);
         }
       }
-      wmove(out->window(), PROMPT_LINE, 0); 
-      wclrtoeol(out->window());
+      out->window()->move(PROMPT_LINE, 0); 
+      out->window()->clrtoeol();
       out->Refresh();
     } break;
     case 'Q':
