@@ -40,7 +40,7 @@ int  num_strings(int filen) {
   return 0;
 }
 
-char *getrandomstring(int filen) {
+const char *getrandomstring(int filen) {
   return "";
 }
 

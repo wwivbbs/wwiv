@@ -225,7 +225,7 @@ void read_in_conferences(int conftype);
 void read_all_conferences();
 int get_num_conferences(const char *pszFileName);
 int wordcount(const std::string& instr, const char *delimstr);
-char *extractword(int ww,  const std::string& instr, const char *delimstr);
+const char *extractword(int ww,  const std::string& instr, const char *delimstr);
 void sort_conf_str(char *pszConferenceStr);
 
 
@@ -678,7 +678,7 @@ int  set_strings_fn(int filen, char *pszDirectoryName, char *pszFileName, int al
 void put_string(int filen, int n, char *pszText);
 int  cachestat();
 int  num_strings(int filen);
-char *getrandomstring(int filen);
+const char *getrandomstring(int filen);
 void close_strfiles();
 
 

@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <random>
+#include <string>
 
 #include "core/wfile.h"
 #include "core/wutil.h"
@@ -31,6 +32,8 @@
 //#include "macversioninfo.h"
 #endif  // __APPLE__
 
+
+using std::string;
 
 void WWIV_Sound(int nFreq, int nDly) {
 #ifdef _WIN32
@@ -47,7 +50,7 @@ int WWIV_GetRandomNumber(int nMaxValue) {
   return dist(re);
 }
 
-std::string WWIV_GetOSVersion() {
+string WWIV_GetOSVersion() {
 #if defined (_WIN32)
   OSVERSIONINFO os;
   os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -110,12 +113,12 @@ std::string WWIV_GetOSVersion() {
   }
   return std::string("Linux");
 #elif defined ( __APPLE__ )
-  return ""; // wwiv::strings::StringPrintf("%s %s", GetOSNameString(), GetMacVersionString());
+  return string(""); // wwiv::strings::StringPrintf("%s %s", GetOSNameString(), GetMacVersionString());
 #elif defined ( __unix__ )
   // TODO Add Linux version information code here..
-  return std::string("UNIX");
+  return string("UNIX");
 #else
 #error "What's the platform here???"
 #endif
-  return std::string("UNKNOWN OS");
+  return string("UNKNOWN OS");
 }
