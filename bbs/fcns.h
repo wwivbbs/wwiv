@@ -403,7 +403,6 @@ const char *interpret(char chKey);
 
 // File: lilo.cpp
 
-bool random_screen(const char *mpfn);
 bool IsPhoneNumberUSAFormat(WUser *pUser);
 void getuser();
 void logon();
