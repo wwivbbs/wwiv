@@ -54,7 +54,7 @@ using std::vector;
 
 int CustomEditItem::Run() {
   out->GotoXY(x_, y_);
-  std::string s = to_field_();
+  string s = to_field_();
 
   int return_code = 0;
   editline(&s, maxsize_, ALL, &return_code, "");
@@ -64,7 +64,7 @@ int CustomEditItem::Run() {
 
 void CustomEditItem::Display() const {
   out->GotoXY(x_, y_);
-  std::string blanks(maxsize_, ' ');
+  string blanks(maxsize_, ' ');
   Puts(blanks.c_str());
 
   string s = to_field_();
@@ -200,12 +200,12 @@ static void CloseDialog(CursesWindow* dialog) {
   delete dialog;
   out->window()->RedrawWin();
   out->Refresh();
-  out->window()->TouchWin();
 }
 
-bool dialog_yn(const std::string prompt) {
-  std::string s = prompt + " ? ";
-  CursesWindow *dialog = CreateDialogWindow(1, s.size());
+bool dialog_yn(const string prompt) {
+  string s = prompt + " ? ";
+  
+  CursesWindow* dialog(CreateDialogWindow(1, s.size()));
   dialog->MvAddStr(1, 2, s);
   dialog->Refresh();
   int ch = dialog->GetChar();
@@ -214,12 +214,12 @@ bool dialog_yn(const std::string prompt) {
 }
 
 
-void input_password(const std::string prompt, char *output, int max_length) {
-  vector<std::string> empty;
+void input_password(const string prompt, char *output, int max_length) {
+  vector<string> empty;
   input_password(prompt, empty, output, max_length);
 }
 
-void input_password(const std::string prompt, const vector<std::string>& text, char *output, int max_length) {
+void input_password(const string prompt, const vector<string>& text, char *output, int max_length) {
   int maxlen = prompt.size() + max_length;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
@@ -238,7 +238,7 @@ void input_password(const std::string prompt, const vector<std::string>& text, c
   CloseDialog(dialog);
 }
 
-void messagebox(const std::string text) {
+void messagebox(const string text) {
   const vector<string> vector = { text };
   messagebox(vector);
 }
@@ -366,7 +366,7 @@ static int editlinestrlen(char *pszText) {
   return i;
 }
 
-void editline(std::string* s, int len, int status, int *returncode, const char *ss) {
+void editline(string* s, int len, int status, int *returncode, const char *ss) {
   char pszBuffer[255];
   strcpy(pszBuffer, s->c_str());
   editline(pszBuffer, len, status, returncode, ss);
