@@ -157,7 +157,6 @@ namespace WWIV5TelnetServer
             }
         }
 
-
         public void Dispose()
         {
             Stop();
