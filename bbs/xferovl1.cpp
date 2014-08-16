@@ -97,7 +97,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
         (*sss)[ fileExtDesc.GetLength() ] = 0;
         fileExtDesc.Close();
       }
-      for (size_t i3 = strlen(*sss) - 1; i3 >= 0; i3--) {
+      for (int i3 = strlen(*sss) - 1; i3 >= 0; i3--) {
         if ((*sss)[i3] == 1) {
           (*sss)[i3] = ' ';
         }

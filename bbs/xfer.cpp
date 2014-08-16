@@ -740,14 +740,13 @@ void printinfo(uploadsrec * u, bool *abort) {
 
 
 void printtitle(bool *abort) {
-  char szBuffer[ 255 ], *ss;
+  char szBuffer[ 255 ];
 
   if (x_only) {
     GetSession()->bout.NewLine();
-    ss = "";
-  } else {
-    ss = "\r";
   }
+  const char* ss = (x_only) ? "" : "\r";
+
   if (lines_listed >= GetSession()->screenlinest - 7 && !x_only &&
       !GetSession()->GetCurrentUser()->IsUseNoTagging() && filelist && g_num_listed) {
     tag_files();
