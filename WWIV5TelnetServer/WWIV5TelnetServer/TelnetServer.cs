@@ -52,6 +52,7 @@ namespace WWIV5TelnetServer
         public void Start()
         {
             launcherThread = new Thread(Run);
+            launcherThread.Name = "TelnetServer";
             launcherThread.Start();
             OnStatusMessageUpdated("Telnet Server Started", StatusMessageEventArgs.MessageType.LogInfo);
             lowNode = Convert.ToInt32(Properties.Settings.Default.startNode);
@@ -113,6 +114,7 @@ namespace WWIV5TelnetServer
                         node.RemoteAddress = ip;
                         OnStatusMessageUpdated("Launching Node #" + node.Node, StatusMessageEventArgs.MessageType.LogInfo);
                         Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
+                        instanceThread.Name = "Instance #" + node.Node;
                         instanceThread.Start();
                         OnNodeUpdated(node);
                     }
@@ -145,6 +147,8 @@ namespace WWIV5TelnetServer
                 var socketHandle = socket.Handle.ToInt32();
                 Process p = launcher.launchTelnetNode(node.Node, socketHandle);
                 p.WaitForExit();
+                socket.Shutdown(SocketShutdown.Both);
+                socket.Close();
                 lock (nodeLock)
                 {
                     node.InUse = false;

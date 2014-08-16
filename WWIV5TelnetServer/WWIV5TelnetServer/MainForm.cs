@@ -159,6 +159,7 @@ namespace WWIV5TelnetServer
             Thread localNodeCleanupThread = new Thread(delegate()
             {
                 p.WaitForExit();
+                this.Name = "localNodeCleanupThread";
                 MethodInvoker d = delegate() { this.runLocalNodeToolStripMenuItem.Enabled = true; };
                 this.Invoke(d);                
             });
