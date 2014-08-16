@@ -30,7 +30,7 @@
 
 
 static void print_time(unsigned short t, char *s) {
-  sprintf(s, "%02.2d:%02.2d", t / 60, t % 60);
+  sprintf(s, "%02d:%02d", t / 60, t % 60);
 }
 
 static unsigned short get_time(char *s) {
