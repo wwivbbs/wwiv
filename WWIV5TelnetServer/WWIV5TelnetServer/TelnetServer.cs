@@ -149,12 +149,12 @@ namespace WWIV5TelnetServer
                 p.WaitForExit();
                 socket.Shutdown(SocketShutdown.Both);
                 socket.Close();
-                lock (nodeLock)
-                {
-                    node.InUse = false;
-                }
-                OnNodeUpdated(node);
             }
+            lock (nodeLock)
+            {
+              node.InUse = false;
+            }
+            OnNodeUpdated(node);
         }
 
         public void Dispose()
