@@ -18,7 +18,9 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include <limits>
 #include <memory>
+#include <string>
 
 #include "core/inifile.h"
 #include "instmsg.h"
@@ -27,8 +29,10 @@
 #include "printfile.h"
 #include "wcomm.h"
 
+using std::string;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::strings::StringPrintf;
 
 #define SECS_PER_DAY 86400L
 
@@ -526,6 +530,30 @@ static void PrintLogonFile() {
   }
 }
 
+static void PrintUserSpecificFiles() {
+  const WUser* user = GetSession()->GetCurrentUser();  // not-owned
+
+  const string sl_fn = StringPrintf("sl%d", user->GetSl());
+  printfile(sl_fn.c_str());
+  const string dsl_fn = StringPrintf("dsl%d", user->GetDsl());
+  printfile(dsl_fn.c_str());
+
+  const int short_size = std::numeric_limits<unsigned short>::digits - 1;
+  for (int i=0; i < short_size; i++) {
+    if (user->HasArFlag(1 << i)) {
+      const string ar_fn = StringPrintf("ar%c", static_cast<char>('A' + i));
+      printfile(ar_fn.c_str());
+    }
+  }
+
+  for (int i=0; i < short_size; i++) {
+    if (user->HasDarFlag(1 << i)) {
+      const string ar_fn = StringPrintf("dar%c", static_cast<char>('A' + i));
+      printfile(ar_fn.c_str());
+    }
+  }
+}
+
 static void UpdateLastOnFileAndUserLog() {
   char s1[181], szLastOnTxtFileName[ MAX_PATH ], szLogLine[ 255 ];
   long len;
@@ -883,6 +911,7 @@ void logon() {
   UpdateUserStatsForLogin();
   PrintLogonFile();
   UpdateLastOnFileAndUserLog();
+  PrintUserSpecificFiles();
 
   read_automessage();
   timeon = timer();
