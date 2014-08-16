@@ -29,7 +29,6 @@
 
 // Curses implementation of screen display routines for Init.
 class CursesWindow {
-
  public:
   // Constructor/Destructor
   CursesWindow(int nlines, int ncols, int begin_y, int begin_x);
