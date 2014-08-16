@@ -44,7 +44,7 @@ static char g_szLastLoginDate[9];
 // Local functions
 //
 
-void CleanUserInfo() {
+static void CleanUserInfo() {
   if (okconf(GetSession()->GetCurrentUser())) {
     setuconf(CONF_SUBS, GetSession()->GetCurrentUser()->GetLastSubConf(), 0);
     setuconf(CONF_DIRS, GetSession()->GetCurrentUser()->GetLastDirConf(), 0);
@@ -64,8 +64,7 @@ void CleanUserInfo() {
 
 }
 
-
-bool random_screen(const char *mpfn) {
+static bool random_screen(const char *mpfn) {
   char szBuffer[ 255 ];
   sprintf(szBuffer, "%s%s%s", GetSession()->language_dir.c_str(), mpfn, ".0");
   if (WFile::Exists(szBuffer)) {
@@ -85,14 +84,12 @@ bool random_screen(const char *mpfn) {
   return false;
 }
 
-
 bool IsPhoneNumberUSAFormat(WUser *pUser) {
   std::string country = pUser->GetCountry();
   return (country == "USA" || country == "CAN" || country == "MEX");
 }
 
-
-int GetNetworkOnlyStatus() {
+static int GetNetworkOnlyStatus() {
   int nNetworkOnly = 1;
   if (syscfg.netlowtime != syscfg.nethightime) {
     if (syscfg.nethightime > syscfg.netlowtime) {
@@ -112,7 +109,7 @@ int GetNetworkOnlyStatus() {
   return nNetworkOnly;
 }
 
-int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
+static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
   int ans = -1;
   if (!nNetworkOnly && incom) {
     if (GetSession()->GetCurrentSpeed().length() > 0) {
@@ -233,25 +230,22 @@ bool VerifyPhoneNumber() {
   return true;
 }
 
-
-bool VerifyPassword() {
+static bool VerifyPassword() {
   GetApplication()->UpdateTopScreen();
 
   std::string password;
   input_password("PW: ", password, 8);
 
-  return (password == GetSession()->GetCurrentUser()->GetPassword()) ? true : false;
+  return (password == GetSession()->GetCurrentUser()->GetPassword());
 }
 
-
-bool VerifySysopPassword() {
+static bool VerifySysopPassword() {
   std::string password;
   input_password("SY: ", password, 20);
   return (password == syscfg.systempw) ? true : false;
 }
 
-
-void DoFailedLoginAttempt() {
+static void DoFailedLoginAttempt() {
   GetSession()->GetCurrentUser()->SetNumIllegalLogons(GetSession()->GetCurrentUser()->GetNumIllegalLogons() + 1);
   GetSession()->WriteCurrentUser();
   GetSession()->bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
@@ -265,7 +259,6 @@ void DoFailedLoginAttempt() {
   sysoplog("", false);
   GetSession()->usernum = 0;
 }
-
 
 void ExecuteWWIVNetworkRequest(const char *pszUserName) {
   char szUserName[ 255 ];
@@ -337,8 +330,7 @@ void ExecuteWWIVNetworkRequest(const char *pszUserName) {
   hangup = true;
 }
 
-
-void LeaveBadPasswordFeedback(int ans) {
+static void LeaveBadPasswordFeedback(int ans) {
   if (ans > 0) {
     GetSession()->GetCurrentUser()->SetStatusFlag(WUser::ansi);
   } else {
@@ -380,8 +372,7 @@ void LeaveBadPasswordFeedback(int ans) {
   hangup = 1;
 }
 
-
-void CheckCallRestrictions() {
+static void CheckCallRestrictions() {
   if (!hangup && GetSession()->usernum > 0 && GetSession()->GetCurrentUser()->IsRestrictionLogon() &&
       wwiv::strings::IsEquals(date(), GetSession()->GetCurrentUser()->GetLastOn()) &&
       GetSession()->GetCurrentUser()->GetTimesOnToday() > 0) {
@@ -391,11 +382,9 @@ void CheckCallRestrictions() {
   }
 }
 
-
-void DoCallBackVerification() {
+static void DoCallBackVerification() {
   // TODO(rushfan): This is where we would do internet email validation.
 }
-
 
 void getuser() {
   char szUserName[ 255 ];
@@ -488,8 +477,7 @@ void getuser() {
   }
 }
 
-
-void FixUserLinesAndColors() {
+static void FixUserLinesAndColors() {
   if (GetSession()->GetCurrentUser()->GetNumExtended() > GetSession()->max_extend_lines) {
     GetSession()->GetCurrentUser()->SetNumExtended(GetSession()->max_extend_lines);
   }
@@ -499,7 +487,7 @@ void FixUserLinesAndColors() {
   }
 }
 
-void UpdateUserStatsForLogin() {
+static void UpdateUserStatsForLogin() {
   strcpy(g_szLastLoginDate, date());
   if (wwiv::strings::IsEquals(g_szLastLoginDate, GetSession()->GetCurrentUser()->GetLastOn())) {
     GetSession()->GetCurrentUser()->SetTimesOnToday(GetSession()->GetCurrentUser()->GetTimesOnToday() + 1);
@@ -528,7 +516,7 @@ void UpdateUserStatsForLogin() {
   }
 }
 
-void PrintLogonFile() {
+static void PrintLogonFile() {
   if (!incom) {
     return;
   }
@@ -538,8 +526,7 @@ void PrintLogonFile() {
   }
 }
 
-
-void UpdateLastOnFileAndUserLog() {
+static void UpdateLastOnFileAndUserLog() {
   char s1[181], szLastOnTxtFileName[ MAX_PATH ], szLogLine[ 255 ];
   long len;
 
@@ -653,8 +640,7 @@ void UpdateLastOnFileAndUserLog() {
   }
 }
 
-
-void CheckAndUpdateUserInfo() {
+static void CheckAndUpdateUserInfo() {
   fsenttoday = 0;
   if (GetSession()->GetCurrentUser()->GetBirthdayYear() == 0) {
     GetSession()->bout << "\r\nPlease enter the following information:\r\n";
@@ -749,8 +735,7 @@ void CheckAndUpdateUserInfo() {
   }
 }
 
-
-void DisplayUserLoginInformation() {
+static void DisplayUserLoginInformation() {
   char s1[255];
   GetSession()->bout.NewLine();
 
@@ -811,9 +796,7 @@ void DisplayUserLoginInformation() {
     }
   }
 
-
   GetSession()->bout << "|#9OS|#0................ |#2" << WWIV_GetOSVersion() << wwiv::endl;
-
   GetSession()->bout << "|#9Instance|#0.......... |#2" << GetApplication()->GetInstanceNumber() << "\r\n\n";
   if (GetSession()->GetCurrentUser()->GetForwardUserNumber()) {
     if (GetSession()->GetCurrentUser()->GetForwardSystemNumber() != 0) {
@@ -852,7 +835,7 @@ void DisplayUserLoginInformation() {
   }
 }
 
-void LoginCheckForNewMail() {
+static void LoginCheckForNewMail() {
   GetSession()->bout << "|#9Scanning for new mail... ";
   if (GetSession()->GetCurrentUser()->GetNumMailWaiting() > 0) {
     int nNumNewMessages = check_new_mail(GetSession()->usernum);
@@ -871,7 +854,7 @@ void LoginCheckForNewMail() {
   }
 }
 
-void CheckUserForVotingBooth() {
+static void CheckUserForVotingBooth() {
   if (!GetSession()->GetCurrentUser()->IsRestrictionVote() && GetSession()->GetEffectiveSl() > syscfg.newusersl) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && GetSession()->GetCurrentUser()->GetVote(i) == 0) {
@@ -897,11 +880,8 @@ void logon() {
   GetSession()->bout.ClearScreen();
 
   FixUserLinesAndColors();
-
   UpdateUserStatsForLogin();
-
   PrintLogonFile();
-
   UpdateLastOnFileAndUserLog();
 
   read_automessage();
@@ -978,7 +958,6 @@ void logon() {
   }
   CleanUserInfo();
 }
-
 
 void logoff() {
   mailrec m;
