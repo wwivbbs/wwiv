@@ -34,6 +34,11 @@ What's New in 2014
   Here are the ini keys and default values:
     USE_WWIVMAIL = Y
     USE_INTERNAL_QWK = Y
+* New files will optionally be displayed at login (right after "login" file):
+  sl### : where ### is the current user SL.
+  dsl### : where ### is the current user DSL.
+  arX : Where X is one of the AR for the user.
+  darX : Where X is one of the DAR for the user.
 
 What's New in Beta-2
 ~~~~~~~~~~~~~~~~~~~~~
