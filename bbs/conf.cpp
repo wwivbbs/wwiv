@@ -1496,7 +1496,7 @@ int wordcount(const std::string& instr, const char *delimstr) {
  * Returns pointer to string representing the nth "word" of a string, using
  * a specified set of characters as delimiters.
  */
-char *extractword(int ww, const std::string& instr, const char *delimstr) {
+const char *extractword(int ww, const std::string& instr, const char *delimstr) {
   char szTempBuffer[MAX_CONF_LINE];
   static char rs[41];
   int i = 0;
