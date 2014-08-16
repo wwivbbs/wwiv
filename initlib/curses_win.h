@@ -35,27 +35,27 @@ class CursesWindow {
   CursesWindow(const CursesWindow& copy) = delete;
   virtual ~CursesWindow();
 
-  int AddCh(chtype ch) { return ::waddch(window_, ch); }
-  int AddStr(const std::string s) { return ::waddstr(window_, s.c_str()); }
+  int AddCh(chtype ch) { return waddch(window_, ch); }
+  int AddStr(const std::string s) { return waddstr(window_, s.c_str()); }
   int MvAddStr(int y, int x, const std::string s) { return mvwaddstr(window_, y, x, s.c_str()); }
-  void Bkgd(chtype ch) { ::wbkgd(window_, ch); }
-  int RedrawWin() { return ::redrawwin(window_); } 
-  int TouchWin() { return ::touchwin(window_); }
-  int Refresh() { return ::wrefresh(window_); }
-  int Move(int y, int x) { return ::wmove(window_, y, x); }
-  int GetcurX() { return ::getcurx(window_); }
-  int GetcurY() { return ::getcury(window_); }
-  int Clear() { return ::wclear(window_); }
-  int Erase() { return ::werase(window_); }
-  int GetChar() { return ::wgetch(window_); }
-  int AttrSet(chtype attrs) { return ::wattrset(window_, attrs); }
-  int Keypad(bool b) { return ::keypad(window_, b); }
+  void Bkgd(chtype ch) { wbkgd(window_, ch); }
+  int RedrawWin() { return redrawwin(window_); } 
+  int TouchWin() { return touchwin(window_); }
+  int Refresh() { return wrefresh(window_); }
+  int Move(int y, int x) { return wmove(window_, y, x); }
+  int GetcurX() { return getcurx(window_); }
+  int GetcurY() { return getcury(window_); }
+  int Clear() { return wclear(window_); }
+  int Erase() { return werase(window_); }
+  int GetChar() { return wgetch(window_); }
+  int AttrSet(chtype attrs) { return wattrset(window_, attrs); }
+  int Keypad(bool b) { return keypad(window_, b); }
   WINDOW* window() const { return window_; }
-  int GetMaxX() const { return ::getmaxx(window_); }
-  int GetMaxY() const { return ::getmaxy(window_); }
-  int ClrtoEol() const { return ::wclrtoeol(window_); }
-  int AttrGet(attr_t* a, short* c) const { return ::wattr_get(window_, a, c, nullptr); }
-  int Box(chtype vert_ch, chtype horiz_ch) { return ::box(window_, vert_ch, horiz_ch); }
+  int GetMaxX() const { return getmaxx(window_); }
+  int GetMaxY() const { return getmaxy(window_); }
+  int ClrtoEol() const { return wclrtoeol(window_); }
+  int AttrGet(attr_t* a, short* c) const { return wattr_get(window_, a, c, nullptr); }
+  int Box(chtype vert_ch, chtype horiz_ch) { return box(window_, vert_ch, horiz_ch); }
 
  private:
   WINDOW* window_;
