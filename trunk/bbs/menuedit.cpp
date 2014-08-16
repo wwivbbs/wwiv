@@ -545,7 +545,7 @@ bool GetMenuDir(std::string& menuName) {
 
   while (!hangup) {
     GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Enter menuset to edit ?=List : |#0";
+    GetSession()->bout << "|#9(Q=Quit, ?=List) Enter menuset to edit: |#0";
     input(menuName, 8);
 
     if (menuName.empty()) {
@@ -556,7 +556,7 @@ bool GetMenuDir(std::string& menuName) {
       WFile dir(GetMenuDirectory(), menuName);
       if (!dir.Exists()) {
         GetSession()->bout << "The path " << dir.GetFullPathName() << wwiv::endl <<
-                           "does not exist, create it? (Y) : ";
+                           "does not exist, create it? (N) : ";
         if (noyes()) {
           GetApplication()->CdHome(); // go to the wwiv dir
           WWIV_make_path(dir.GetFullPathName().c_str());  // Create the new path
@@ -567,11 +567,11 @@ bool GetMenuDir(std::string& menuName) {
           } else {
             GetApplication()->CdHome();
             GetSession()->bout << "Unable to create\r\n";
-            return true;
+            return false;
           }
         } else {
           GetSession()->bout << "Not created\r\n";
-          return true;
+          return false;
         }
       }
       GetApplication()->CdHome();
@@ -588,7 +588,7 @@ bool GetMenuMenu(const std::string& directoryName, std::string& menuName) {
 
   while (!hangup) {
     GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Enter menu file to edit ?=List : |#0";
+    GetSession()->bout << "|#9(Q=Quit, ?=List) Enter menu file to edit: |#0";
     input(menuName, 8);
 
     if (menuName.empty()) {
