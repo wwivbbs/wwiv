@@ -1144,7 +1144,6 @@ void WApplication::ExitBBSImpl(int nExitLevel) {
              wwiv_version, GetInstanceNumber(), times(), fulldate(), nExitLevel);
   sysoplog("", false);
   catsl();
-  close_strfiles();
   write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
   std::cout << "\r\n";
   std::cout << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << nExitLevel

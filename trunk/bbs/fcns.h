@@ -671,16 +671,6 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
 void zmodem_send(const char *pszFileName, bool *sent, double *percent);
 
 
-// File: strings.cpp
-
-int  set_strings_fn(int filen, char *pszDirectoryName, char *pszFileName, int allowwrite);
-void put_string(int filen, int n, char *pszText);
-int  cachestat();
-int  num_strings(int filen);
-const char *getrandomstring(int filen);
-void close_strfiles();
-
-
 // File: stuffin.cpp
 
 const std::string stuff_in(const std::string commandline, const std::string arg1,

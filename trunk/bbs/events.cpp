@@ -236,7 +236,6 @@ void run_event(int evnt) {
   }
   if (events[evnt].status & EVENT_EXIT) {
     exitlevel = static_cast<int>(events[evnt].cmd[0]);
-    close_strfiles();
     if (ok_modem_stuff && GetSession()->remoteIO() != NULL) {
       GetSession()->remoteIO()->close();
     }

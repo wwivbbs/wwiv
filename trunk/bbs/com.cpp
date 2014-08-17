@@ -233,18 +233,7 @@ char getkey()
 
 
 static void print_yn(bool yes) {
-// TODO Add random Strings back in.
-  /*
-
-      if (num_strings(i))
-      {
-          GetSession()->bout << getrandomstring(i);
-      }
-      else
-      {
-  */
   GetSession()->bout << YesNoString(yes);
-//    }
   GetSession()->bout.NewLine();
 }
 

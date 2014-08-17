@@ -81,7 +81,6 @@ set(COMMON_SOURCES
  srrcv.cpp
  srsend.cpp
  status.cpp
- strings.cpp
  stuffin.cpp
  subacc.cpp
  subedit.cpp
