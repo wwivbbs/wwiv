@@ -52,7 +52,6 @@ int ExecuteExternalProgram(const std::string commandLine, int nFlags) {
     GetSession()->WriteCurrentUser();
     write_qscn(GetSession()->usernum, qsc, false);
   }
-  close_strfiles();
   GetSession()->localIO()->set_global_handle(false);
 
   // extra processing for net programs
