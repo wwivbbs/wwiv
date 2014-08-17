@@ -229,7 +229,7 @@ void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const 
         return;
       }
       string command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
-      WWIV_make_abs_cmd(&command);
+      WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &command);
       strcpy(pszOutBuffer, command.c_str());
       return;
     }

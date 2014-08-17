@@ -16,25 +16,37 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <direct.h>
-#include "wwiv.h"
+#include <string>
+#include <vector>
 
+#include <direct.h>
+
+#include "core/strings.h"
 #include "core/wfile.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#undef WIN32_LEAN_AND_MEAN
+
+using std::string;
+using std::vector;
+
+using wwiv::UpperCase;
+using wwiv::strings::StrCat;
+
 #ifndef NOT_BBS
-// Used only by WWIV_make_abs_cmd
 
-const char *exts[] = {
-  "",
-  ".COM",
-  ".EXE",
-  ".BAT",
-  ".BTM",
-  ".CMD",
-  0
-};
+void WWIV_make_abs_cmd(const std::string root, std::string* out) {
+  
+  static const vector<string> exts{
+    "",
+    ".com",
+    ".exe",
+    ".bat",
+    ".btm",
+    ".cmd",
+  };
 
-void WWIV_make_abs_cmd(std::string* out) {
   // pszOutBuffer must be at least MAX_PATH in size.
   char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH], *ss1;
   char szTempBuf[MAX_PATH];
@@ -51,12 +63,12 @@ void WWIV_make_abs_cmd(std::string* out) {
       }
     }
   } else if (s1[0] == '\\') {
-    _snprintf(s1, sizeof(s1), "%c:%s", GetApplication()->GetHomeDir()[0], out->c_str());
+    _snprintf(s1, sizeof(s1), "%c:%s", root.c_str(), out->c_str());
   } else {
     strncpy(s2, s1, sizeof(s2));
     strtok(s2, " \t");
     if (strchr(s2, '\\')) {
-      _snprintf(s1, sizeof(s1), "%s%s", GetApplication()->GetHomeDir().c_str(), out->c_str());
+      _snprintf(s1, sizeof(s1), "%s%s", root.c_str(), out->c_str());
     }
   }
 
@@ -67,8 +79,8 @@ void WWIV_make_abs_cmd(std::string* out) {
   } else {
     s2[0] = '\0';
   }
-  for (int i = 0; exts[i]; i++) {
-    if (i == 0) {
+  for (const string& ext : exts) {
+    if (ext.size() == 0) {
       ss1 = strrchr(s1, '\\');
       if (!ss1) {
         ss1 = s1;
@@ -77,42 +89,34 @@ void WWIV_make_abs_cmd(std::string* out) {
         continue;
       }
     }
-    _snprintf(s, sizeof(s), "%s%s", s1, exts[i]);
+    _snprintf(s, sizeof(s), "%s%s", s1, ext.c_str());
     if (s1[1] == ':') {
       if (WFile::Exists(s)) {
-        std::ostringstream os;
-        os << s << s2;
-        *out = os.str();
+        *out = StrCat(s, s2);
         return;
       }
     } else {
       if (WFile::Exists(s)) {
-        std::ostringstream os;
-        os << GetApplication()->GetHomeDir() << s << s2;
-        *out = os.str();
+        *out = StrCat(root, s, s2);
       } else {
         _searchenv(s, "PATH", szTempBuf);
         ss1 = szTempBuf;
         if (ss1 && strlen(ss1) > 0) {
-          std::ostringstream os;
-          os << ss1 << s2;
-          *out = os.str();
+          *out = wwiv::strings::StringPrintf("%s%s", ss1, s2);
           return;
         }
       }
     }
   }
 
-  std::ostringstream os;
-  os << GetApplication()->GetHomeDir() << s1 << s2;
-  *out = os.str();
+  *out = StrCat(root, s1, s2);
 }
 #endif
 
 int WWIV_make_path(const char *s) {
-  char drive, current_path[MAX_PATH], current_drive, *p, *flp;
+  char drive, current_path[MAX_PATH], current_drive, *flp;
 
-  p = flp = strdup(s);
+  char* p = flp = strdup(s);
   _getdcwd(0, current_path, MAX_PATH);
   current_drive = static_cast< char >(*current_path - '@');
   if (p[strlen(p)-1] == WFile::pathSeparatorChar) {
@@ -147,11 +151,6 @@ int WWIV_make_path(const char *s) {
   }
   return 0;
 }
-
-#if defined (LAST)
-#undef LAST
-#endif
-
 
 void WWIV_Delay(unsigned long msec) {
   Sleep(msec);

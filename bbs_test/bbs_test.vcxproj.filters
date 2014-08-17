@@ -11,6 +11,7 @@
     <ClCompile Include="datetime_test.cpp" />
     <ClCompile Include="bputch_test.cpp" />
     <ClCompile Include="pause_test.cpp" />
+    <ClCompile Include="make_abs_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs_helper.h" />

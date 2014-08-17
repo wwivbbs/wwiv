@@ -594,7 +594,7 @@ bool external_edit(const char *pszEditFileName, const char *pszNewDirectory, int
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
     return false;
   }
-  WWIV_make_abs_cmd(&editorCommand);
+  WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &editorCommand);
 
   WWIV_GetDir(szCurrentDirectory, false);
   chdir(pszNewDirectory);

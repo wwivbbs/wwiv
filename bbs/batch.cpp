@@ -617,7 +617,7 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
 
   std::string commandLine = stuff_in(pszCommandLine, sx1, sx2, downlist, sx3, uplist);
   if (!commandLine.empty()) {
-    WWIV_make_abs_cmd(&commandLine);
+    WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &commandLine);
     GetSession()->localIO()->LocalCls();
     char szMessage[ 1024 ];
     sprintf(szMessage,

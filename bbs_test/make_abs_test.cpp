@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2007, WWIV Software Services             */
+/*             Copyright (C)2014, WWIV Software Services                  */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,62 +16,45 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <iostream>
 
-#include "wwiv.h"
+#include "gtest/gtest.h"
+#include "bbs_test/bbs_helper.h"
 
-#include "core/wfile.h"
+#include "bbs/utility.h"
+#include "bbs/platform/platformfcns.h"
 
-#if !defined(NOT_BBS)
+using std::cout;
+using std::endl;
+using std::string;
 
-void WWIV_make_abs_cmd(const std::string root, std::string* out) {
-  if (out.find("/") != std::string::npos) {
-    *gout = std::string(GetApplication()->GetHomeDir()) + out;
-  }
-}
-#endif  // NOT_BBS
-
-
-#define LAST(s) s[strlen(s)-1]
-
-int WWIV_make_path(const char *s) {
-  char current_path[MAX_PATH], *p, *flp;
-
-  p = flp = strdup(s);
-  getcwd(current_path, MAX_PATH);
-  if (LAST(p) == WFile::pathSeparatorChar) {
-    LAST(p) = 0;
-  }
-  if (*p == WFile::pathSeparatorChar) {
-    chdir(WFile::pathSeparatorString);
-    p++;
-  }
-  for (; (p = strtok(p, WFile::pathSeparatorString)) != 0; p = 0) {
-    if (chdir(p)) {
-      if (mkdir(p)) {
-        chdir(current_path);
-        return -1;
-      }
-      chdir(p);
+class MakeAbsTest : public ::testing::Test {
+protected:
+    virtual void SetUp() {
+        helper.SetUp();
+        root = helper.app_->GetHomeDir();
     }
-  }
-  chdir(current_path);
-  if (flp) {
-    free(flp);
-  }
-  return 0;
+    BbsHelper helper;
+    string root;
+};
+
+#ifdef _WIN32
+
+TEST_F(MakeAbsTest, Smoke) {
+  const string expected = "c:\\windows\\system32\\cmd.exe foo";
+  string cmdline = "cmd foo";
+  WWIV_make_abs_cmd(root, &cmdline);
+  EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
 
-#if defined (LAST)
-#undef LAST
-#endif
+#else 
 
-void WWIV_Delay(unsigned long msec) {
-  if (msec) {
-    unsigned long usec = msec * 1000;
-    usleep(usec);
-  }
+TEST_F(MakeAbsTest, Smoke) {
+  const string expected = "/bin/ls foo";
+  string cmdline = "ls foo";
+  WWIV_make_abs_cmd(root, &cmdline);
+  EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
 
-void WWIV_OutputDebugString(const char *pszString) {
-  //std::cout << pszString;
-}
+
+#endif  // _WIN32
