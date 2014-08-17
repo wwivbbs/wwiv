@@ -173,12 +173,11 @@ void input1(char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl)
   }
 }
 
-
-void input1(std::string &strOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl) {
+void input1(std::string* strOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl) {
   char szTempBuffer[ 255 ];
   WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
   input1(szTempBuffer, nMaxLength, lc, crend, bAutoMpl);
-  strOutText.assign(szTempBuffer);
+  strOutText->assign(szTempBuffer);
 }
 
 
@@ -189,12 +188,12 @@ void input(char *pszOutText, int nMaxLength, bool bAutoMpl)
 }
 
 
-void input(std::string &strOutText, int nMaxLength, bool bAutoMpl)
+void input(std::string* strOutText, int nMaxLength, bool bAutoMpl)
 // This will input an upper-case string
 {
   char szTempBuffer[ 255 ];
   input(szTempBuffer, nMaxLength, bAutoMpl);
-  strOutText.assign(szTempBuffer);
+  strOutText->assign(szTempBuffer);
 }
 
 
@@ -205,16 +204,16 @@ void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl)
 }
 
 
-void inputl(std::string &strOutText, int nMaxLength, bool bAutoMpl)
+void inputl(std::string* strOutText, int nMaxLength, bool bAutoMpl)
 // This will input an upper or lowercase string of characters
 {
   char szTempBuffer[ 255 ];
   WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
   inputl(szTempBuffer, nMaxLength, bAutoMpl);
-  strOutText.assign(szTempBuffer);
+  strOutText->assign(szTempBuffer);
 }
 
-void input_password(std::string promptText, std::string &strOutPassword, int nMaxLength) {
+void input_password(std::string promptText, std::string* strOutPassword, int nMaxLength) {
   GetSession()->bout << promptText;
   GetSession()->bout.ColorizedInputField(nMaxLength);
   local_echo = false;
@@ -454,12 +453,12 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
 }
 
 
-int Input1(std::string &strOutText, std::string origText, int nMaxLength, bool bInsert, int mode) {
+int Input1(std::string* strOutText, std::string origText, int nMaxLength, bool bInsert, int mode) {
   char szTempBuffer[ 255 ];
   WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
 
   int nLength = Input1(szTempBuffer, origText, nMaxLength, bInsert, mode);
-  strOutText.assign(szTempBuffer);
+  strOutText->assign(szTempBuffer);
   return nLength;
 }
 

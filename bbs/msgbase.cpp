@@ -852,7 +852,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
         do {
           std::string emailAddress;
           GetSession()->bout << "|#9Enter Address (blank to end) : ";
-          input(emailAddress, 75);
+          input(&emailAddress, 75);
           if (emailAddress.empty()) {
             done = true;
             break;

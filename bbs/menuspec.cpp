@@ -329,7 +329,7 @@ void ReadMessages() {
     GetSession()->bout << "|#7(S)elected  (A)ll Subs  (L)ist  (Q)uit or Sub# : |#0";
 
     std::string subsText;
-    input(subsText, 3);
+    input(&subsText, 3);
 
     if (subsText[0] == 'Q') {
       return;

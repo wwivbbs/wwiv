@@ -59,7 +59,7 @@ void input_phone() {
   do {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
-    Input1(phoneNumber,  GetSession()->GetCurrentUser()->GetVoicePhoneNumber(), 12, true, INPUT_MODE_PHONE);
+    Input1(&phoneNumber,  GetSession()->GetCurrentUser()->GetVoicePhoneNumber(), 12, true, INPUT_MODE_PHONE);
 
     ok = valid_phone(phoneNumber.c_str());
     if (!ok) {
@@ -247,7 +247,7 @@ void input_callsign() {
   GetSession()->bout.NewLine();
   GetSession()->bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
   std::string s;
-  input(s, 6, true);
+  input(&s, 6, true);
   GetSession()->GetCurrentUser()->SetCallsign(s.c_str());
 
 }
@@ -285,7 +285,7 @@ void input_street() {
   do {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Enter your street address.\r\n";
-    Input1(street, GetSession()->GetCurrentUser()->GetStreet(), 30, true, INPUT_MODE_FILE_PROPER);
+    Input1(&street, GetSession()->GetCurrentUser()->GetStreet(), 30, true, INPUT_MODE_FILE_PROPER);
 
     if (street.empty()) {
       GetSession()->bout.NewLine();
@@ -324,7 +324,7 @@ void input_state() {
       GetSession()->bout << "|#3Enter your state (i.e. CA). \r\n";
     }
     GetSession()->bout << "|#2:";
-    input(state, 2, true);
+    input(&state, 2, true);
 
     if (state.empty()) {
       GetSession()->bout.NewLine();
@@ -342,7 +342,7 @@ void input_country() {
     GetSession()->bout << "|#3Enter your country (i.e. USA). \r\n";
     GetSession()->bout << "|#3Hit Enter for \"USA\"\r\n";
     GetSession()->bout << "|#2:";
-    input(country, 3, true);
+    input(&country, 3, true);
     if (country.empty()) {
       country = "USA";
     }
@@ -364,7 +364,7 @@ void input_zipcode() {
       len = 7;
     }
     GetSession()->bout << "|#2:";
-    input(zipcode, len, true);
+    input(&zipcode, len, true);
 
     if (zipcode.empty()) {
       GetSession()->bout.NewLine();
@@ -553,7 +553,7 @@ void input_pw(WUser *pUser) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Please enter a new password, 3-8 chars.\r\n";
     password.clear();
-    Input1(password, "", 8, false, INPUT_MODE_FILE_UPPER);
+    Input1(&password, "", 8, false, INPUT_MODE_FILE_UPPER);
 
     std::string realName = GetSession()->GetCurrentUser()->GetRealName();
     StringUpperCase(&realName);
@@ -757,7 +757,7 @@ bool CanCreateNewUserAccountHere() {
     do {
       GetSession()->bout << "New User Password :";
       std::string password;
-      input(password, 20);
+      input(&password, 20);
       if (password == syscfg.newuserpw) {
         ok = true;
       } else {
@@ -877,7 +877,7 @@ void DoNewUserASV() {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#5Please enter your BBS name and number.\r\n";
       std::string note;
-      inputl(note, 60, true);
+      inputl(&note, 60, true);
       GetSession()->GetCurrentUser()->SetNote(note.c_str());
       GetSession()->GetCurrentUser()->SetSl(GetSession()->asv.sl);
       GetSession()->GetCurrentUser()->SetDsl(GetSession()->asv.dsl);
@@ -1036,7 +1036,7 @@ void VerifyNewUserPassword() {
     GetSession()->bout << "|#9Please write down this information, and enter your password for verification.\r\n";
     GetSession()->bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
     std::string password;
-    input_password("|#9PW: ", password, 8);
+    input_password("|#9PW: ", &password, 8);
     if (password == GetSession()->GetCurrentUser()->GetPassword()) {
       ok = true;
     }
@@ -1461,7 +1461,7 @@ void DoMinimalNewUser() {
     GetSession()->bout << "|#1[G] Internet Mail Address   : ";
     if (GetSession()->GetCurrentUser()->GetEmailAddress()[0] == 0) {
       std::string emailAddress;
-      Input1(emailAddress, s1, 44, true, INPUT_MODE_FILE_MIXED);
+      Input1(&emailAddress, s1, 44, true, INPUT_MODE_FILE_MIXED);
       GetSession()->GetCurrentUser()->SetEmailAddress(emailAddress.c_str());
       if (!check_inet_addr(GetSession()->GetCurrentUser()->GetEmailAddress())) {
         cln_nu();

@@ -222,7 +222,7 @@ bool IsPhoneRequired() {
 bool VerifyPhoneNumber() {
   if (IsPhoneNumberUSAFormat(GetSession()->GetCurrentUser()) || !GetSession()->GetCurrentUser()->GetCountry()[0]) {
     std::string phoneNumber;
-    input_password("PH: ###-###-", phoneNumber, 4);
+    input_password("PH: ###-###-", &phoneNumber, 4);
 
     if (phoneNumber != &GetSession()->GetCurrentUser()->GetVoicePhoneNumber()[8]) {
       if (phoneNumber.length() == 4 && phoneNumber[3] == '-') {
@@ -238,14 +238,14 @@ static bool VerifyPassword() {
   GetApplication()->UpdateTopScreen();
 
   std::string password;
-  input_password("PW: ", password, 8);
+  input_password("PW: ", &password, 8);
 
   return (password == GetSession()->GetCurrentUser()->GetPassword());
 }
 
 static bool VerifySysopPassword() {
   std::string password;
-  input_password("SY: ", password, 20);
+  input_password("SY: ", &password, 20);
   return (password == syscfg.systempw) ? true : false;
 }
 
@@ -346,7 +346,7 @@ static void LeaveBadPasswordFeedback(int ans) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "What is your NAME or HANDLE? ";
     std::string tempName;
-    input1(tempName, 31, INPUT_MODE_FILE_PROPER, true);
+    input1(&tempName, 31, INPUT_MODE_FILE_PROPER, true);
     if (!tempName.empty()) {
       GetSession()->bout.NewLine();
       GetSession()->usernum = 1;
@@ -1152,9 +1152,9 @@ void logon_guest() {
   int count = 0;
   do {
     GetSession()->bout << "\r\n|#5Enter your real name : ";
-    input(userName, 25, true);
+    input(&userName, 25, true);
     GetSession()->bout << "\r\n|#5Purpose of your call?\r\n";
-    input(reason, 79, true);
+    input(&reason, 79, true);
     if (!userName.empty() && !reason.empty()) {
       break;
     }

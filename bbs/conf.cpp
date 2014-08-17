@@ -534,7 +534,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#2Add: ";
     std::string text;
-    input(text, 60, true);
+    input(&text, 60, true);
     if (text.empty()) {
       return;
     }
@@ -590,7 +590,7 @@ void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#2Remove: ";
     std::string text;
-    input(text, 60, true);
+    input(&text, 60, true);
     if (text.empty()) {
       return;
     }
@@ -742,7 +742,7 @@ int modify_conf(int conftype,  int which) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2Conference Name: ";
       std::string conferenceName;
-      inputl(conferenceName, 60);
+      inputl(&conferenceName, 60);
       if (!conferenceName.empty()) {
         strcpy(reinterpret_cast<char*>(c.name), conferenceName.c_str());
         changed = 1;
@@ -753,7 +753,7 @@ int modify_conf(int conftype,  int which) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2Min SL: ";
       std::string minSl;
-      input(minSl, 3);
+      input(&minSl, 3);
       if (!minSl.empty()) {
         if (atoi(minSl.c_str()) >= 0 && atoi(minSl.c_str()) <= 255) {
           c.minsl = wwiv::strings::StringToUnsignedChar(minSl.c_str());

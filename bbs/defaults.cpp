@@ -644,15 +644,15 @@ void change_password() {
 
   std::string password, password2;
   GetSession()->bout.NewLine();
-  input_password("|#9You must now enter your current password.\r\n|#7: ", password, 8);
+  input_password("|#9You must now enter your current password.\r\n|#7: ", &password, 8);
   if (password != GetSession()->GetCurrentUser()->GetPassword()) {
     GetSession()->bout << "\r\nIncorrect.\r\n\n";
     return;
   }
   GetSession()->bout.NewLine(2);
-  input_password("|#9Enter your new password, 3 to 8 characters long.\r\n|#7: ", password, 8);
+  input_password("|#9Enter your new password, 3 to 8 characters long.\r\n|#7: ", &password, 8);
   GetSession()->bout.NewLine(2);
-  input_password("|#9Repeat password for verification.\r\n|#7: ", password2, 8);
+  input_password("|#9Repeat password for verification.\r\n|#7: ", &password2, 8);
   if (password == password2) {
     if (password2.length() < 3) {
       GetSession()->bout.NewLine();
@@ -742,7 +742,7 @@ void optional_lines() {
   GetSession()->bout << "|#20 |#9being all, |#210 |#9being none.\r\n";
   GetSession()->bout << "|#2What value? ";
   std::string lines;
-  input(lines, 2);
+  input(&lines, 2);
 
   int nNumLines = atoi(lines.c_str());
   if (!lines.empty() && nNumLines >= 0 && nNumLines < 11) {
@@ -755,7 +755,7 @@ void optional_lines() {
 void enter_regnum() {
   GetSession()->bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
   std::string regnum;
-  input(regnum, 5, true);
+  input(&regnum, 5, true);
 
   long lRegNum = atol(regnum.c_str());
   if (!regnum.empty() && lRegNum >= 0) {
@@ -831,7 +831,7 @@ void defaults(MenuInstanceData * pMenuData) {
       std::string internetAddress;
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#9Enter your Internet mailing address.\r\n|#7:";
-      inputl(internetAddress, 65, true);
+      inputl(&internetAddress, 65, true);
       if (!internetAddress.empty()) {
         if (check_inet_addr(internetAddress.c_str())) {
           GetSession()->GetCurrentUser()->SetEmailAddress(internetAddress.c_str());

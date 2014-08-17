@@ -113,7 +113,7 @@ void ValidateUser() {
   GetSession()->bout.NewLine(2);
   GetSession()->bout << "|#9Enter user name or number:\r\n:";
   std::string userName;
-  input(userName, 30, true);
+  input(&userName, 30, true);
   int nUserNum = finduser1(userName.c_str());
   if (nUserNum > 0) {
     sysoplogf("@ Validated user #%d", nUserNum);
@@ -487,7 +487,7 @@ void LoadTextFile() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#9Enter Filename: ";
   std::string fileName;
-  input(fileName, 50, true);
+  input(&fileName, 50, true);
   if (!fileName.empty()) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#5Allow editing? ";
@@ -507,7 +507,7 @@ void EditText() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#7Enter Filespec: ";
   std::string fileName;
-  input(fileName, 50);
+  input(&fileName, 50);
   if (!fileName.empty()) {
     external_edit(fileName.c_str(), "", GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, ".", fileName.c_str(),
                   MSGED_FLAG_NO_TAGLINE);
