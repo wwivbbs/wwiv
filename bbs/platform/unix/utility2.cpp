@@ -19,13 +19,20 @@
 
 #include "wwiv.h"
 
+#include <string>
+
+#include "core/strings.h"
 #include "core/wfile.h"
+
+using std::string;
+using wwiv::strings::StrCat;
 
 #if !defined(NOT_BBS)
 
-void WWIV_make_abs_cmd(const std::string root, std::string* out) {
-  if (out.find("/") != std::string::npos) {
-    *gout = std::string(GetApplication()->GetHomeDir()) + out;
+void WWIV_make_abs_cmd(const string root, string* out) {
+  if (out->find("/") != string::npos) {
+    string s(*out);
+    *out = StrCat(GetApplication()->GetHomeDir(), s);
   }
 }
 #endif  // NOT_BBS
