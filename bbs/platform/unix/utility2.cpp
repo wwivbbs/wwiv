@@ -19,11 +19,13 @@
 
 #include "wwiv.h"
 
+#include "core/wfile.h"
+
 #if !defined(NOT_BBS)
 
-void WWIV_make_abs_cmd(std::string& out) {
+void WWIV_make_abs_cmd(std::string* out) {
   if (out.find("/") != std::string::npos) {
-    out = std::string(GetApplication()->GetHomeDir()) + out;
+    *out = std::string(GetApplication()->GetHomeDir()) + out;
   }
 }
 #endif  // NOT_BBS
@@ -36,14 +38,14 @@ int WWIV_make_path(const char *s) {
 
   p = flp = strdup(s);
   getcwd(current_path, MAX_PATH);
-  if (LAST(p) == WWIV_FILE_SEPERATOR_CHAR) {
+  if (LAST(p) == WFile::pathSeparatorChar) {
     LAST(p) = 0;
   }
-  if (*p == WWIV_FILE_SEPERATOR_CHAR) {
-    chdir(WWIV_FILE_SEPERATOR_STRING);
+  if (*p == WFile::pathSeparatorChar) {
+    chdir(WFile::pathSeparatorString);
     p++;
   }
-  for (; (p = strtok(p, WWIV_FILE_SEPERATOR_STRING)) != 0; p = 0) {
+  for (; (p = strtok(p, WFile::pathSeparatorString)) != 0; p = 0) {
     if (chdir(p)) {
       if (mkdir(p)) {
         chdir(current_path);

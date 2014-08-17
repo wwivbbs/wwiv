@@ -64,6 +64,13 @@ bool bad_filename(const char *pszFileName) {
   return false;
 }
 
+struct arch {
+  unsigned char type;
+  char name[13];
+  int32_t len;
+  int16_t date, time, crc;
+  int32_t size;
+};
 
 int check_for_files_arc(const char *pszFileName) {
   WFile file(pszFileName);
@@ -119,6 +126,55 @@ int check_for_files_arc(const char *pszFileName) {
   return 1;
 }
 
+// .ZIP structures and defines
+#define ZIP_LOCAL_SIG 0x04034b50
+#define ZIP_CENT_START_SIG 0x02014b50
+#define ZIP_CENT_END_SIG 0x06054b50
+
+struct zip_local_header {
+  uint32_t   signature;                  // 0x04034b50
+  uint16_t  extract_ver;
+  uint16_t  flags;
+  uint16_t  comp_meth;
+  uint16_t  mod_time;
+  uint16_t  mod_date;
+  uint32_t   crc_32;
+  uint32_t   comp_size;
+  uint32_t   uncomp_size;
+  uint16_t  filename_len;
+  uint16_t  extra_length;
+};
+
+struct zip_central_dir {
+  uint32_t   signature;                  // 0x02014b50
+  uint16_t  made_ver;
+  uint16_t  extract_ver;
+  uint16_t  flags;
+  uint16_t  comp_meth;
+  uint16_t  mod_time;
+  uint16_t  mod_date;
+  uint32_t   crc_32;
+  uint32_t   comp_size;
+  uint32_t   uncomp_size;
+  uint16_t  filename_len;
+  uint16_t  extra_len;
+  uint16_t  comment_len;
+  uint16_t  disk_start;
+  uint16_t  int_attr;
+  uint32_t   ext_attr;
+  uint32_t   rel_ofs_header;
+};
+
+struct zip_end_dir {
+  uint32_t   signature;                  // 0x06054b50
+  uint16_t  disk_num;
+  uint16_t  cent_dir_disk_num;
+  uint16_t  total_entries_this_disk;
+  uint16_t  total_entries_total;
+  uint32_t   central_dir_size;
+  uint32_t   ofs_cent_dir;
+  uint16_t  comment_len;
+};
 
 int check_for_files_zip(const char *pszFileName) {
   zip_local_header zl;
