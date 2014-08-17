@@ -95,7 +95,7 @@ void ListAllColors();
 // File: bbsutl.cpp
 
 void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long lBufferLength);
-bool inli(std::string &outBuffer, std::string rollOver, std::string::size_type nMaxLen, bool bAddCRLF = true,
+bool inli(std::string* outBuffer, std::string* rollOver, std::string::size_type nMaxLen, bool bAddCRLF = true,
           bool bAllowPrevious = false, bool bTwoColorChatMode = false);
 bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bool bAddCRLF = true,
           bool bAllowPrevious = false, bool bTwoColorChatMode = false);
@@ -361,14 +361,14 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 // File: input.cpp
 
 void input1(char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false);
-void input1(std::string &strOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false);
+void input1(std::string *strOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false);
 void input(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
-void input(std::string &strOutText, int nMaxLength, bool bAutoMpl = false);
+void input(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
 void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
-void inputl(std::string &strOutText, int nMaxLength, bool bAutoMpl = false);
+void inputl(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
 int  Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert, int mode);
-int  Input1(std::string &strOutText, std::string origText, int nMaxLength, bool bInsert, int mode);
-void input_password(std::string promptText, std::string &strOutPassword, int nMaxLength);
+int  Input1(std::string *strOutText, std::string origText, int nMaxLength, bool bInsert, int mode);
+void input_password(std::string promptText, std::string *strOutPassword, int nMaxLength);
 
 // File: inetmsg.cpp
 

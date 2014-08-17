@@ -596,7 +596,7 @@ void uedit(int usern, int other) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New FULL real name? ";
         std::string realName;
-        Input1(realName, user.GetRealName(), 20, true, INPUT_MODE_FILE_PROPER);
+        Input1(&realName, user.GetRealName(), 20, true, INPUT_MODE_FILE_PROPER);
         if (!realName.empty()) {
           user.SetRealName(realName.c_str());
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
@@ -647,7 +647,7 @@ void uedit(int usern, int other) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New phone number? ";
         std::string phoneNumber;
-        Input1(phoneNumber, user.GetVoicePhoneNumber(), 12, true, INPUT_MODE_PHONE);
+        Input1(&phoneNumber, user.GetVoicePhoneNumber(), 12, true, INPUT_MODE_PHONE);
         if (!phoneNumber.empty()) {
           if (phoneNumber != user.GetVoicePhoneNumber()) {
             delete_phone_number(nUserNumber, user.GetVoicePhoneNumber());
@@ -658,7 +658,7 @@ void uedit(int usern, int other) {
         }
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New DataPhone (0=none)? ";
-        Input1(phoneNumber, user.GetDataPhoneNumber(), 12, true, INPUT_MODE_PHONE);
+        Input1(&phoneNumber, user.GetDataPhoneNumber(), 12, true, INPUT_MODE_PHONE);
         if (!phoneNumber.empty()) {
           if (phoneNumber[0] == '0') {
             user.SetDataPhoneNumber("");
@@ -752,7 +752,7 @@ void uedit(int usern, int other) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New SL? ";
         std::string sl;
-        input(sl, 3);
+        input(&sl, 3);
         int nNewSL = atoi(sl.c_str());
         if (!GetApplication()->GetWfcStatus() && nNewSL >= GetSession()->GetEffectiveSl() && nUserNumber != 1) {
           GetSession()->bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
@@ -775,7 +775,7 @@ void uedit(int usern, int other) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New DSL? ";
         std::string dsl;
-        input(dsl, 3);
+        input(&dsl, 3);
         int nNewDSL = atoi(dsl.c_str());
         if (!GetApplication()->GetWfcStatus() && nNewDSL >= GetSession()->GetCurrentUser()->GetDsl() && nUserNumber != 1) {
           GetSession()->bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
@@ -792,7 +792,7 @@ void uedit(int usern, int other) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7User name/number: ";
         std::string name;
-        input(name, 30);
+        input(&name, 30);
         int nFoundUserNumber = finduser1(name.c_str());
         if (nFoundUserNumber > 0) {
           nUserNumber = nFoundUserNumber;
@@ -824,7 +824,7 @@ void uedit(int usern, int other) {
           GetSession()->bout.NewLine();
           GetSession()->bout << "Enter registration date, <CR> for today: \r\n";
           GetSession()->bout << " MM/DD/YY\r\n:";
-          input(newRegDate, 8);
+          input(&newRegDate, 8);
         } while (newRegDate.length() != 8 && !newRegDate.empty());
 
         if (newRegDate.empty()) {
@@ -843,7 +843,7 @@ void uedit(int usern, int other) {
           GetSession()->bout.NewLine();
           GetSession()->bout << "Enter expiration date, <CR> to clear registration fields: \r\n";
           GetSession()->bout << " MM/DD/YY\r\n:";
-          input(newExpDate, 8);
+          input(&newExpDate, 8);
         } while (newExpDate.length() != 8 && !newExpDate.empty());
         if (newExpDate.length() == 8) {
           m = atoi(newExpDate.c_str());
@@ -863,7 +863,7 @@ void uedit(int usern, int other) {
           GetSession()->bout.NewLine();
           GetSession()->bout << "|#7(999=None) New sysop sub? ";
           std::string sysopSubNum;
-          input(sysopSubNum, 3);
+          input(&sysopSubNum, 3);
           int nSysopSubNum = atoi(sysopSubNum.c_str());
           if (nSysopSubNum >= 0 && nSysopSubNum <= 999 && !sysopSubNum.empty()) {
             *u_qsc = nSysopSubNum;

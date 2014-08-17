@@ -375,7 +375,7 @@ int WApplication::doWFCEvents() {
           holdphone(true);
           GetSession()->bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
           std::string buffer;
-          input(buffer, 50);
+          input(&buffer, 50);
           LoadFileIntoWorkspace(buffer.c_str(), false);
           send_email();
           GetSession()->WriteCurrentUser(1);
@@ -424,7 +424,7 @@ int WApplication::doWFCEvents() {
           _getcwd(szFileName, MAX_PATH);
           snprintf(szFileName, sizeof(szFileName), "%c", WFile::pathSeparatorChar);
           std::string newFileName;
-          Input1(newFileName, szFileName, 50, true, INPUT_MODE_FILE_UPPER);
+          Input1(&newFileName, szFileName, 50, true, INPUT_MODE_FILE_UPPER);
           if (!newFileName.empty()) {
             external_edit(newFileName.c_str(), "", GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, ".", szFileName,
                           MSGED_FLAG_NO_TAGLINE);

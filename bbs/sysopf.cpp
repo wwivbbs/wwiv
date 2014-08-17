@@ -781,7 +781,7 @@ void chuser() {
 
   GetSession()->bout << "|#9Enter user to change to: ";
   std::string userName;
-  input(userName, 30, true);
+  input(&userName, 30, true);
   int nUserNumber = finduser1(userName);
   if (nUserNumber > 0) {
     GetSession()->WriteCurrentUser();

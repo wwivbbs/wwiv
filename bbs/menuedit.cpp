@@ -546,7 +546,7 @@ bool GetMenuDir(std::string& menuName) {
   while (!hangup) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#9(Enter=Quit, ?=List) Enter menuset to edit: |#0";
-    input(menuName, 8);
+    input(&menuName, 8);
 
     if (menuName.empty()) {
       return false;
@@ -589,7 +589,7 @@ bool GetMenuMenu(const std::string& directoryName, std::string& menuName) {
   while (!hangup) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#9(Enter=Quit, ?=List) Enter menu file to edit: |#0";
-    input(menuName, 8);
+    input(&menuName, 8);
 
     if (menuName.empty()) {
       return false;

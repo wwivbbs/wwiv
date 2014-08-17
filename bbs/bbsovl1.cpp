@@ -131,7 +131,7 @@ void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
   GetSession()->bout << "\r\n\n|#9Enter user name or number:\r\n:";
   std::string username;
-  input(username, 75, true);
+  input(&username, 75, true);
   irt[0] = '\0';
   irt_name[0] = '\0';
   std::string::size_type atpos = username.find_first_of("@");
@@ -257,7 +257,7 @@ void text_edit() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#9Enter Filename: ";
   std::string filename;
-  input(filename, 12, true);
+  input(&filename, 12, true);
   if (filename.find(".log") != std::string::npos || !okfn(filename)) {
     return;
   }
