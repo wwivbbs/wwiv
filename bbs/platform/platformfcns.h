@@ -36,7 +36,7 @@ void WWIV_GetDir(char *s, bool be);
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName);
 
 // $PLATFORM/utility2.cpp
-void WWIV_make_abs_cmd(std::string& out);
+void WWIV_make_abs_cmd(std::string* out);
 int WWIV_make_path(const char *s);
 void WWIV_Delay(unsigned long msec);
 void WWIV_OutputDebugString(const char *pszString);

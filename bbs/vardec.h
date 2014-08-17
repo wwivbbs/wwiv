@@ -658,8 +658,6 @@ struct editorrec {
   char res[119];
 };
 
-
-
 // DATA FOR CONVERSION OF MAIN MENU KEYS TO SUB-BOARD NUMBERS
 struct usersubrec {
   char keys[5];
@@ -684,7 +682,6 @@ struct batchrec {
 
   int32_t len;
 };
-
 
 enum xfertype {
   xf_up,
@@ -1089,36 +1086,6 @@ struct filestatusrec {
 #define OP_FLAGS_VOICE_VAL                0x40000000
 #define OP_FLAGS_ADV_ASV                  0x80000000
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct asv_rec {
-  uint8_t
-  sl, dsl, exempt;
-
-  uint16_t
-  ar, dar, restrict;
-};
-
-struct adv_asv_rec {
-  uint8_t reg_wwiv, nonreg_wwiv, non_wwiv, cosysop;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// begin callback additions
-
-struct cbv_rec {
-  uint8_t
-  sl, dsl, exempt, longdistance, forced, repeat;
-
-  uint16_t
-  ar, dar, restrict;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// end callback additions
-
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
 
 struct phonerec {
@@ -1170,11 +1137,8 @@ struct threadrec {
 
 struct ext_desc_rec {
   char name[13];
-
   int32_t offset;
 };
-
-
 
 // Text editing modes for input routines
 #define INPUT_MODE_FILE_UPPER     0
@@ -1188,7 +1152,6 @@ struct ext_desc_rec {
 #define SCAN_OPTION_READ_PROMPT   0
 #define SCAN_OPTION_LIST_TITLES   1
 #define SCAN_OPTION_READ_MESSAGE  2
-
 
 struct instancerec {
   short
@@ -1227,68 +1190,6 @@ struct fedit_data_rec {
        anon;
 };
 
-
-// .ZIP structures and defines
-#define ZIP_LOCAL_SIG 0x04034b50
-#define ZIP_CENT_START_SIG 0x02014b50
-#define ZIP_CENT_END_SIG 0x06054b50
-
-struct zip_local_header {
-  uint32_t   signature;                  // 0x04034b50
-  uint16_t  extract_ver;
-  uint16_t  flags;
-  uint16_t  comp_meth;
-  uint16_t  mod_time;
-  uint16_t  mod_date;
-  uint32_t   crc_32;
-  uint32_t   comp_size;
-  uint32_t   uncomp_size;
-  uint16_t  filename_len;
-  uint16_t  extra_length;
-};
-
-
-struct zip_central_dir {
-  uint32_t   signature;                  // 0x02014b50
-  uint16_t  made_ver;
-  uint16_t  extract_ver;
-  uint16_t  flags;
-  uint16_t  comp_meth;
-  uint16_t  mod_time;
-  uint16_t  mod_date;
-  uint32_t   crc_32;
-  uint32_t   comp_size;
-  uint32_t   uncomp_size;
-  uint16_t  filename_len;
-  uint16_t  extra_len;
-  uint16_t  comment_len;
-  uint16_t  disk_start;
-  uint16_t  int_attr;
-  uint32_t   ext_attr;
-  uint32_t   rel_ofs_header;
-};
-
-
-struct zip_end_dir {
-  uint32_t   signature;                  // 0x06054b50
-  uint16_t  disk_num;
-  uint16_t  cent_dir_disk_num;
-  uint16_t  total_entries_this_disk;
-  uint16_t  total_entries_total;
-  uint32_t   central_dir_size;
-  uint32_t   ofs_cent_dir;
-  uint16_t  comment_len;
-};
-
-
-struct arch {
-  unsigned char type;
-  char name[13];
-  int32_t len;
-  int16_t date, time, crc;
-  int32_t size;
-};
-
 #pragma pack(pop)
 
 static_assert(sizeof(userrec) == 1024, "userrec == 1024");
@@ -1323,9 +1224,6 @@ static_assert(sizeof(gfiledirrec) == 56, "gfiledirrec == 56");
 static_assert(sizeof(gfilerec) == 98, "gfilerec == 98");
 static_assert(sizeof(languagerec) == 258, "languagerec == 258");
 static_assert(sizeof(filestatusrec) == 23, "filestatusrec == 23");
-static_assert(sizeof(asv_rec) == 9, "asv_rec == 9");
-static_assert(sizeof(adv_asv_rec) == 4, "adv_asv_rec == 4");
-static_assert(sizeof(cbv_rec) == 12, "cbv_rec == 12");
 static_assert(sizeof(phonerec) == 15, "phonerec == 15");
 static_assert(sizeof(eventsrec) == 118, "eventsrec == 118");
 static_assert(sizeof(ext_desc_rec) == 17, "ext_desc_rec == 17");
