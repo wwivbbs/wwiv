@@ -216,7 +216,6 @@
     <ClCompile Include="srrcv.cpp" />
     <ClCompile Include="srsend.cpp" />
     <ClCompile Include="status.cpp" />
-    <ClCompile Include="strings.cpp" />
     <ClCompile Include="stuffin.cpp" />
     <ClCompile Include="subacc.cpp" />
     <ClCompile Include="subedit.cpp" />
