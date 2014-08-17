@@ -1315,7 +1315,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     ExecuteExternalProgram(command, EFLAG_NOPAUSE);
 
     command = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
-    WWIV_make_abs_cmd(&command);
+    WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &command);
 
     f = open(command.c_str(), O_RDONLY | O_BINARY);
     if (f < 0) {

@@ -34,6 +34,9 @@
 
 void BbsHelper::SetUp() {
     std::string temp = files_.TempDir();
+    // We want the "BBS Home" to be our temp dir.
+    chdir(files_.TempDir().c_str());
+
     ASSERT_TRUE(files_.Mkdir("gfiles"));
     ASSERT_TRUE(files_.Mkdir("en"));
     ASSERT_TRUE(files_.Mkdir("en/gfiles"));
