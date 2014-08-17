@@ -46,6 +46,35 @@ class WLocalIO;
 class WComm;
 class WUser;
 
+///////////////////////////////////////////////////////////////////////////////
+// ASV Settings (populated by INI file
+//
+struct asv_rec {
+  uint8_t
+  sl, dsl, exempt;
+
+  uint16_t
+  ar, dar, restrict;
+};
+
+struct adv_asv_rec {
+  uint8_t reg_wwiv, nonreg_wwiv, non_wwiv, cosysop;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// begin callback additions
+
+struct cbv_rec {
+  uint8_t
+  sl, dsl, exempt, longdistance, forced, repeat;
+
+  uint16_t
+  ar, dar, restrict;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Per-user session data
+//
 class WSession {
  public:
   WSession(WApplication* app);

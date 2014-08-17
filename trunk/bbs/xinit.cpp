@@ -198,7 +198,6 @@ static const char *get_key_str(int n, const char *index = nullptr) {
 
 #define NEL(s) (sizeof(s) / sizeof((s)[0]))
 
-
 static ini_flags_type sysinfo_flags[] = {
   {INI_STR_FORCE_FBACK, false, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
   {INI_STR_CHECK_DUP_PHONES, false, OP_FLAGS_CHECK_DUPE_PHONENUM},
