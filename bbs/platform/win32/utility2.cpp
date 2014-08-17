@@ -48,8 +48,7 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
   };
 
   // pszOutBuffer must be at least MAX_PATH in size.
-  char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH], *ss1;
-  char szTempBuf[MAX_PATH];
+  char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH];
 
   strncpy(s1, out->c_str(), MAX_PATH);
 
@@ -81,7 +80,7 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
   }
   for (const string& ext : exts) {
     if (ext.size() == 0) {
-      ss1 = strrchr(s1, '\\');
+      const char* ss1 = strrchr(s1, '\\');
       if (!ss1) {
         ss1 = s1;
       }
@@ -98,11 +97,12 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
     } else {
       if (WFile::Exists(s)) {
         *out = StrCat(root, s, s2);
+        return;
       } else {
-        _searchenv(s, "PATH", szTempBuf);
-        ss1 = szTempBuf;
-        if (ss1 && strlen(ss1) > 0) {
-          *out = wwiv::strings::StringPrintf("%s%s", ss1, s2);
+        char szFoundPath[MAX_PATH];
+        _searchenv(s, "PATH", szFoundPath);
+        if (strlen(szFoundPath) > 0) {
+          *out = wwiv::strings::StringPrintf("%s%s", szFoundPath, s2);
           return;
         }
       }

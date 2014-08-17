@@ -40,9 +40,17 @@ protected:
 
 #ifdef _WIN32
 
-TEST_F(MakeAbsTest, Smoke) {
+TEST_F(MakeAbsTest, NotUnderRoot) {
   const string expected = "c:\\windows\\system32\\cmd.exe foo";
   string cmdline = "cmd foo";
+  WWIV_make_abs_cmd(root, &cmdline);
+  EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
+}
+
+TEST_F(MakeAbsTest, UnderRoot) {
+  const string foo = helper.files().CreateTempFile("foo.exe", "");
+  const string expected = foo + " bar";
+  string cmdline = "foo bar";
   WWIV_make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
@@ -55,6 +63,5 @@ TEST_F(MakeAbsTest, Smoke) {
   WWIV_make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
-
 
 #endif  // _WIN32
