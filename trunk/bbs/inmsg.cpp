@@ -258,15 +258,15 @@ bool GetMessageToName(const char *aux) {
         bHasAddress = true;
         GetSession()->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
         newline = false;
-        std::string toName;
-        input1(toName, 40, INPUT_MODE_FILE_MIXED, false, true);
+        std::string to_name;
+        input1(&to_name, 40, INPUT_MODE_FILE_MIXED, false, true);
         newline = newlsave;
-        if (toName.empty()) {
+        if (to_name.empty()) {
           strcpy(irt_name, "ALL");
           GetSession()->bout << "|#4All\r\n";
           GetSession()->bout.Color(0);
         } else {
-          strcpy(irt_name, toName.c_str());
+          strcpy(irt_name, to_name.c_str());
         }
         strcpy(irt, "\xAB");
       }

@@ -74,7 +74,7 @@ bool CheckMenuPassword(char* pszCorrectPassword) {
 
   GetSession()->bout.NewLine();
   string passwordFromUser;
-  input_password("|#2SY: ", passwordFromUser, 20);
+  input_password("|#2SY: ", &passwordFromUser, 20);
   return passwordFromUser == password;
 }
 
@@ -544,7 +544,7 @@ void ConfigUserMenuSet() {
       GetSession()->bout.NewLine(2);
       GetSession()->bout << "|15Enter the menu set to use : |#0";
       string menuSetName;
-      inputl(menuSetName, 8);
+      inputl(&menuSetName, 8);
       if (ValidateMenuSet(menuSetName.c_str())) {
         OpenMenuDescriptions();
         GetSession()->bout.NewLine();
@@ -731,7 +731,7 @@ string GetCommand(MenuInstanceData * pMenuData) {
     }
   } else {
     string text;
-    input(text, 50);
+    input(&text, 50);
     return string(text);
   }
 }

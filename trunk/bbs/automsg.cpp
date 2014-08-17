@@ -75,7 +75,7 @@ void write_automessage() {
   for (int i = 0; i < 5; i++) {
     GetSession()->bout << "|#7" << i + 1 << ":|#0";
     std::string line;
-    inli(line, rollOver, 70);
+    inli(&line, &rollOver, 70);
     StringTrimEnd(&line);
     lines.push_back(line);
   }

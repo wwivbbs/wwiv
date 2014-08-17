@@ -547,7 +547,7 @@ void modify_sub(int n) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2Enter new Description : \r\n|#7:";
       std::string description;
-      Input1(description, xsubs[n].desc, 60, true, INPUT_MODE_FILE_MIXED);
+      Input1(&description, xsubs[n].desc, 60, true, INPUT_MODE_FILE_MIXED);
       GetSession()->bout.Color(0);
       if (description.length() > 0) {
         strcpy(xsubs[n].desc, description.c_str());

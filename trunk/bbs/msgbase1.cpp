@@ -452,7 +452,7 @@ void ScanMessageTitles() {
   GetSession()->bout.WriteFormatted("|#9Start listing at (|#21|#9-|#2%d|#9): ",
                                     GetSession()->GetNumMessagesInCurrentMessageArea());
   std::string messageNumber;
-  input(messageNumber, 5, true);
+  input(&messageNumber, 5, true);
   int nMessageNumber = atoi(messageNumber.c_str());
   if (nMessageNumber < 1) {
     nMessageNumber = 0;
@@ -551,7 +551,7 @@ void remove_post() {
   }
   GetSession()->bout << "\r\n|#2Remove which? ";
   std::string postNumberToRemove;
-  input(postNumberToRemove, 5);
+  input(&postNumberToRemove, 5);
   int nPostNumber = atoi(postNumberToRemove.c_str());
   open_sub(true);
   if (nPostNumber > 0 && nPostNumber <= GetSession()->GetNumMessagesInCurrentMessageArea()) {

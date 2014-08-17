@@ -250,7 +250,7 @@ bool ValidateSysopPassword() {
   if (so()) {
     if (incom) {
       std::string password;
-      input_password("|#7SY: ", password, 20);
+      input_password("|#7SY: ", &password, 20);
       if (password == syscfg.systempw) {
         return true;
       }

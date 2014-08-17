@@ -1172,7 +1172,7 @@ void readmail(int mode) {
         }
         GetSession()->bout << "\r\n|#2Filename: ";
         std::string fileName;
-        input(fileName, 50);
+        input(&fileName, 50);
         if (!fileName.empty()) {
           GetSession()->bout.NewLine();
           GetSession()->bout << "|#5Allow editing? ";
@@ -1191,7 +1191,7 @@ void readmail(int mode) {
           std::string downloadFileName;
           char *b = readfile(&(m.msg), "email", &len);
           GetSession()->bout << "E-mail download -\r\n\n|#2Filename: ";
-          input(downloadFileName, 12);
+          input(&downloadFileName, 12);
           if (!okfn(downloadFileName.c_str())) {
             break;
           }

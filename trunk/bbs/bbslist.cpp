@@ -128,18 +128,18 @@ void AddBBSListLine(const std::string bbsListLine) {
 void AddBBSListEntryImpl() {
   GetSession()->bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
   std::string bbsPhoneNumber;
-  input(bbsPhoneNumber, 12, true);
+  input(&bbsPhoneNumber, 12, true);
   if (IsBBSPhoneNumberValid(bbsPhoneNumber.c_str())) {
     if (IsBBSPhoneNumberUnique(bbsPhoneNumber.c_str())) {
       std::string bbsName, bbsSpeed, bbsType;
       GetSession()->bout << "|#3This number can be added! It is not yet in BBS list.\r\n\n\n"
                          << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
-      inputl(bbsName, 50, true);
+      inputl(&bbsName, 50, true);
       GetSession()->bout << "\r\n|#7Enter maximum speed of the BBS:\r\n"
                          << "|#7(|#1example: 14.4,28.8, 33.6, 56k|#7)\r\n:";
-      input(bbsSpeed, 4, true);
+      input(&bbsSpeed, 4, true);
       GetSession()->bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
-      input(bbsType, 4, true);
+      input(&bbsType, 4, true);
 
       char szBbsListLine[ 255 ];
       snprintf(szBbsListLine, sizeof(szBbsListLine), "%12s  %-50s  [%4s] (%4s)\r\n",
@@ -178,7 +178,7 @@ void DeleteBBSListEntry() {
   GetSession()->bout << "\r\n|#7Please enter phone number in the following format:\r\n";
   GetSession()->bout << "|#1 ###-###-####\r\n:";
   std::string bbsPhoneNumber;
-  input(bbsPhoneNumber, 12, true);
+  input(&bbsPhoneNumber, 12, true);
   if (bbsPhoneNumber[3] != '-' || bbsPhoneNumber[7] != '-') {
     bbsPhoneNumber.clear();
   }
