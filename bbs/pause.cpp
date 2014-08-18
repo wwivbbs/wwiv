@@ -20,6 +20,8 @@
 #include "wwiv.h"
 #include "pause.h"
 
+extern char str_pause[];
+
 namespace wwiv {
 namespace bbs {
 

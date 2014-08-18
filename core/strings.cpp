@@ -249,7 +249,7 @@ char *stripcolors(const char *pszOrig) {
  * @param pszOrig The text from which to remove the color codes.
  * @return A new string without the color codes
  */
-std::string stripcolors(const string orig) {
+std::string stripcolors(const string& orig) {
   std::ostringstream os;
   for (string::const_iterator i = orig.begin(); i != orig.end(); i++) {
     if (*i == '|' && (i + 1) != orig.end() && (i + 2) != orig.end() && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {

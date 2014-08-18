@@ -36,12 +36,13 @@
 #include "wconstants.h"
 
 using std::string;
+using std::unique_ptr;
 using wwiv::strings::StringPrintf;
 
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-string CreateFullPathToPrint(const std::string& basename) {
+const string CreateFullPathToPrint(const std::string& basename) {
   if (WFile::Exists(basename)) {
     return basename;
   }
@@ -94,47 +95,45 @@ string CreateFullPathToPrint(const std::string& basename) {
  *
  * @return true if the file exists and is not zero length
  */
-bool printfile(const char *pszFileName, bool bAbortable, bool bForcePause) {
-  std::string full_path_name = CreateFullPathToPrint(pszFileName);
+bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
+  std::string full_path_name = CreateFullPathToPrint(filename);
   long lFileSize;
-  char *ss = get_file(full_path_name.c_str(), &lFileSize);
-
-  if (ss != nullptr) {
-    long lCurPos = 0;
-    bool bHasAnsi = false;
-    while (lCurPos < lFileSize && !hangup) {
-      if (ss[lCurPos] == ESC) {
-        // if we have an ESC, then this file probably contains
-        // an ansi sequence
-        bHasAnsi = true;
+  unique_ptr<char[], void (*)(void*)> ss(get_file(full_path_name.c_str(), &lFileSize), &std::free);
+  if (!ss) {
+    return false;
+  }
+  long lCurPos = 0;
+  bool bHasAnsi = false;
+  while (lCurPos < lFileSize && !hangup) {
+    if (ss[lCurPos] == ESC) {
+      // if we have an ESC, then this file probably contains
+      // an ansi sequence
+      bHasAnsi = true;
+    }
+    if (bHasAnsi && !bForcePause) {
+      // If this is an ANSI file, then don't pause
+      // (since we may be moving around
+      // on the screen, unless the caller tells us to pause anyway)
+      lines_listed = 0;
+    }
+    bputch(ss[lCurPos++], true);
+    if (bAbortable) {
+      bool abort = false;
+      checka(&abort);
+      if (abort) {
+        break;
       }
-      if (bHasAnsi && !bForcePause) {
-        // If this is an ANSI file, then don't pause
-        // (since we may be moving around
-        // on the screen, unless the caller tells us to pause anyway)
-        lines_listed = 0;
-      }
-      bputch(ss[lCurPos++], true);
-      if (bAbortable) {
-        bool abort = false;
-        checka(&abort);
-        if (abort) {
+      if (bkbhit()) {
+        char ch = bgetch();
+        if (ch == ' ') {
           break;
-        }
-        if (bkbhit()) {
-          char ch = bgetch();
-          if (ch == ' ') {
-            break;
-          }
         }
       }
     }
-    FlushOutComChBuffer();
-    free(ss);
-    // If the file is empty, lets' return false here since nothing was displayed.
-    return (lFileSize > 0);
   }
-  return false;
+  FlushOutComChBuffer();
+  // If the file is empty, lets' return false here since nothing was displayed.
+  return lFileSize > 0;
 }
 
 
