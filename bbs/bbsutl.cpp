@@ -19,6 +19,11 @@
 
 #include "wwiv.h"
 
+static char str_yes[81],
+            str_no[81];
+char  str_pause[81],
+      str_quit[81];
+
 
 /**
  * Copies the next line located at pszWholeBuffer[ plBufferPtr ] to pszOutLine
