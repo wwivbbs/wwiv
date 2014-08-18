@@ -55,10 +55,6 @@ __EXTRN__ char  ansistr[81],
           odc[81],
           *quotes_nrm,
           *quotes_ind,
-          str_no[81],
-          str_pause[81],
-          str_quit[81],
-          str_yes[81],
           tc[81];
 
 __EXTRN__ unsigned char  checksum;

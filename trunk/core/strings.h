@@ -66,7 +66,7 @@ const T LowerCase(const T a) {
 const char *charstr(int nStringLength, int chRepeatChar);
 void StringTrimEnd(char *pszString);
 char *stripcolors(const char *pszOrig);
-std::string stripcolors(const std::string orig);
+std::string stripcolors(const std::string& orig);
 unsigned char upcase(unsigned char ch);
 unsigned char locase(unsigned char ch);
 char *StringJustify(char *pszString, int nLength, int bg, int nJustificationType);

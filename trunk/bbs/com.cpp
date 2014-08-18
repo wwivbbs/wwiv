@@ -22,6 +22,8 @@
 #include "wwiv.h"
 #include "wcomm.h"
 
+extern char str_quit[];
+
 //
 // Local functions
 //

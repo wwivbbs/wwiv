@@ -24,11 +24,9 @@
 #include "instmsg.h"
 
 //////////////////////////////////////////////////////////////////////////////
-//
 // Implementation
-//
-//
-//
+
+extern char str_quit[];
 
 /**
  * Displays a horizontal bar of nSize characters in nColor
@@ -39,7 +37,6 @@ void DisplayHorizontalBar(int nSize, int nColor) {
   unsigned char ch = (okansi()) ? '\xC4' : '-';
   repeat_char(ch, nSize, nColor);
 }
-
 
 /**
  * Displays some basic user statistics for the current user.

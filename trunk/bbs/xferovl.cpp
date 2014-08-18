@@ -21,6 +21,8 @@
 #include "core/wfndfile.h"
 #include "core/wtextfile.h"
 
+extern char str_quit[];
+
 //
 // private functions
 //

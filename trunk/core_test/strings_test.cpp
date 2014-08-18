@@ -28,7 +28,7 @@ using std::string;
 using namespace wwiv::strings;
 
 
-TEST(StringsTest, StringColors) {
+TEST(StringsTest, StripColors) {
     EXPECT_EQ( string(""), stripcolors(string("")) );
     EXPECT_EQ( string("|"), stripcolors(string("|")) );
     EXPECT_EQ( string("|0"), stripcolors(string("|0")) );
