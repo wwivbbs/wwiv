@@ -41,10 +41,11 @@ void WWIV_make_abs_cmd(const string root, string* out) {
 #define LAST(s) s[strlen(s)-1]
 
 int WWIV_make_path(const char *s) {
-  char current_path[MAX_PATH], *p, *flp;
-
-  p = flp = strdup(s);
+  char current_path[MAX_PATH];
   getcwd(current_path, MAX_PATH);
+
+  char* flp = strdup(s);
+  char* p = flp;
   if (LAST(p) == WFile::pathSeparatorChar) {
     LAST(p) = 0;
   }
@@ -79,6 +80,4 @@ void WWIV_Delay(unsigned long msec) {
   }
 }
 
-void WWIV_OutputDebugString(const char *pszString) {
-  //std::cout << pszString;
-}
+void WWIV_OutputDebugString(const char *pszString) { }

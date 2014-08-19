@@ -28,13 +28,12 @@
 
 #define TTY "/dev/tty"
 
-#ifndef TIOCGETA
-#define TIOCGETA TCGETS
-#endif  // TIOCGETA
-
-#ifndef TIOCSETA
-#define TIOCSETA TCSETS
-#endif  // TIOCSETA
+#if !defined(TCGETS) && defined(TIOCGETA)
+#define TCGETS TIOCGETA
+#endif
+#if !defined(TCSETS) && defined(TIOCSETA)
+#define TCSETS TIOCSETA
+#endif
 
 void WIOUnix::set_terminal(bool initMode) {
   static struct termios foo;
@@ -64,44 +63,27 @@ WIOUnix::WIOUnix() : tty_open(0), ttyf(nullptr) {
 
   struct termios ttyb;
 
-#ifdef linux
   ioctl(f, TCGETS, &ttysav);
   ioctl(f, TCGETS, &ttyb);
   ttyb.c_lflag &= ~(ECHO | ISIG);
   ioctl(f, TCSETS, &ttyb);
-#else
-  ioctl(f, TIOCGETA, &ttysav);
-  ioctl(f, TIOCGETA, &ttyb);
-  ttyb.c_lflag &= ~(ECHO | ISIG);
-  ioctl(f, TIOCSETA, &ttyb);
-#endif
 }
-
 
 WIOUnix::~WIOUnix() {
   int f = fileno(ttyf);
-
-#ifdef linux
   ioctl(f, TCSETS, &ttysav);
-#else
-  ioctl(f, TIOCSETA, &ttysav);
-#endif
 
   if (ttyf != stdin) {
     fclose(ttyf);
   }
-
   set_terminal(false);
 }
-
 
 bool WIOUnix::setup(char parity, int wordlen, int stopbits, unsigned long baud) {
   return true;
 }
 
-unsigned int WIOUnix::open() {
-  return 0;
-}
+unsigned int WIOUnix::open() { return 0; }
 
 void WIOUnix::close(bool bIsTemporary = false) {
   bIsTemporary = bIsTemporary;
@@ -132,28 +114,17 @@ unsigned char WIOUnix::getW() {
   return ch;
 }
 
+bool WIOUnix::dtr(bool raise) { return true; }
 
-bool WIOUnix::dtr(bool raise) {
-  return true;
-}
+void WIOUnix::flushOut() {}
 
+void WIOUnix::purgeOut() {}
 
-void WIOUnix::flushOut() {
-}
-
-
-void WIOUnix::purgeOut() {
-}
-
-
-void WIOUnix::purgeIn() {
-}
-
+void WIOUnix::purgeIn() {}
 
 unsigned int WIOUnix::put(unsigned char ch) {
   return putW(ch);
 }
-
 
 char WIOUnix::peek() {
   // This is only called by function rpeek_wfconly which is only
@@ -188,9 +159,8 @@ unsigned int WIOUnix::write(const char *buffer, unsigned int count, bool bNoTran
 }
 
 bool WIOUnix::carrier() {
-  return (!hangup && !hungup) ? true : false;
+  return (!hangup && !hungup);
 }
-
 
 bool WIOUnix::incoming() {
   struct pollfd p;
@@ -204,14 +174,9 @@ bool WIOUnix::incoming() {
   return false;
 }
 
+void WIOUnix::StopThreads() {}
 
-void WIOUnix::StopThreads() {
-}
-
-
-void WIOUnix::StartThreads() {
-}
-
+void WIOUnix::StartThreads() {}
 
 unsigned int WIOUnix::GetHandle() const {
   // Is this needed or should we just return 0?
