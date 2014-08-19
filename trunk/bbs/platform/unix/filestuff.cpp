@@ -28,11 +28,8 @@
 double WWIV_GetFreeSpaceForPath(const char * szPath) {
   struct statfs fs;
   if (statfs(szPath, &fs)) {
-#ifdef _DEBUG_BBS
-    fprintf(stderr, "%s: ", szPath);
-#endif
     perror("freek1()");
-    return (0.0);
+    return 0.0;
   }
   return ((double) fs.f_bsize * (double) fs.f_bavail) / 1024.0;
 }
@@ -49,7 +46,7 @@ void WWIV_GetDir(char *pszDirectoryName, bool bSlashAtEnd) {
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
   char *pszTemp = strdup(pszPath);
   char *pTempFn = strrchr(pszTemp, '/');
-  if (pTempFn != NULL) {
+  if (pTempFn != nullptr) {
     *pTempFn = 0;
     pTempFn++;
   } else {
