@@ -343,7 +343,7 @@ IniFile* WApplication::ReadINIFile() {
     GetSession()->max_batch = ini->GetNumericValue(get_key_str(INI_STR_MAX_BATCH), GetSession()->max_batch);
     GetSession()->max_extend_lines = ini->GetNumericValue(get_key_str(INI_STR_MAX_EXTEND_LINES),
                                      GetSession()->max_extend_lines);
-    GetSession()->max_gfilesec = ini->GetNumericValue(get_key_str(INI_STR_MAX_CHAINS), GetSession()->max_gfilesec);
+    GetSession()->max_chains = ini->GetNumericValue(get_key_str(INI_STR_MAX_CHAINS), GetSession()->max_chains);
     GetSession()->max_gfilesec = ini->GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), GetSession()->max_gfilesec);
 
     // pull out strings
