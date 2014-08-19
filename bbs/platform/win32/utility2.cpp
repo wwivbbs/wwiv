@@ -114,16 +114,18 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
 #endif
 
 int WWIV_make_path(const char *s) {
-  char drive, current_path[MAX_PATH], current_drive, *flp;
+  char* flp = strdup(s);
+  char* p = flp;
 
-  char* p = flp = strdup(s);
+  char current_path[MAX_PATH];
   _getdcwd(0, current_path, MAX_PATH);
-  current_drive = static_cast< char >(*current_path - '@');
+  
+  char current_drive = static_cast< char >(*current_path - '@');
   if (p[strlen(p)-1] == WFile::pathSeparatorChar) {
     p[strlen(p)-1] = 0;
   }
   if (p[1] == ':') {
-    drive = static_cast< char >(wwiv::UpperCase<char>(p[0]) - 'A' + 1);
+    char drive = static_cast< char >(wwiv::UpperCase<char>(p[0]) - 'A' + 1);
     if (_chdrive(drive)) {
       _chdir(current_path);
       _chdrive(current_drive);
