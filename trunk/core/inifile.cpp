@@ -33,7 +33,7 @@ using std::string;
 namespace wwiv {
 namespace core {
 
-string FilePath(const string directoryName, const string fileName) {
+string FilePath(const string& directoryName, const string& fileName) {
   std::string fullPathName(directoryName);
   char last_char = directoryName.back();
   if (last_char != WFile::pathSeparatorChar) {
@@ -43,7 +43,7 @@ string FilePath(const string directoryName, const string fileName) {
   return fullPathName;
 }
 
-IniFile::IniFile(const std::string fileName, const std::string primary, const std::string secondary) 
+IniFile::IniFile(const std::string& fileName, const std::string& primary, const std::string& secondary) 
     : file_name_(fileName), open_(false), primary_(primary), secondary_(secondary) {
 
   WTextFile file(file_name_, "rt");
@@ -86,13 +86,10 @@ IniFile::IniFile(const std::string fileName, const std::string primary, const st
   open_ = true;
 }
 
-IniFile::~IniFile() {
-  open_ = false;
-}
+IniFile::~IniFile() { open_ = false; }
 
 /* Close is now a NOP */
-void IniFile::Close() {
-}
+void IniFile::Close() {}
 
 const char* IniFile::GetValue(const char *key, const char *default_value)  const {
   const string primary_key = primary_ + "." + key;
