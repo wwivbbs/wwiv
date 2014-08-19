@@ -25,11 +25,11 @@
 namespace wwiv {
 namespace core {
 
-std::string FilePath(const std::string directoryName, const std::string fileName);
+std::string FilePath(const std::string& directoryName, const std::string& fileName);
 
 class IniFile {
  public:
-  IniFile(const std::string filename, const std::string primarySection, const std::string secondarySection = "");
+  IniFile(const std::string& filename, const std::string& primarySection, const std::string& secondarySection = "");
   // Constructor/Destructor
   virtual ~IniFile(); 
 
