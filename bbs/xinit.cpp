@@ -59,6 +59,7 @@ using std::string;
 using wwiv::bbs::TempDisablePause;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::strings::StringPrintf;
 using wwiv::strings::StringReplace;
 
 uint32_t GetFlagsFromIniFile(IniFile *pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
@@ -297,9 +298,8 @@ IniFile* WApplication::ReadINIFile() {
   }
 
   // initialize ini communication
-  char szInstanceName[255];
-  snprintf(szInstanceName, sizeof(szInstanceName), "WWIV-%u", GetInstanceNumber());
-  IniFile* ini(new IniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), szInstanceName, INI_TAG));
+  string instance_name = StringPrintf("WWIV-%u", GetInstanceNumber());
+  IniFile* ini(new IniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), instance_name, INI_TAG));
   if (ini->IsOpen()) {
     // found something
     // pull out event flags
