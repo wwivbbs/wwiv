@@ -539,18 +539,6 @@ bool WApplication::ReadConfig() {
     return false;
   }
 
-  make_abs_path(full_syscfg.gfilesdir);
-  make_abs_path(full_syscfg.datadir);
-  make_abs_path(full_syscfg.msgsdir);
-  make_abs_path(full_syscfg.dloadsdir);
-  make_abs_path(full_syscfg.menudir);
-
-  make_abs_path(syscfgovr.tempdir);
-  strncpy(full_syscfg.tempdir, syscfgovr.tempdir, sizeof(full_syscfg.tempdir));
-
-  make_abs_path(syscfgovr.batchdir);
-  strncpy(full_syscfg.batchdir, syscfgovr.batchdir, sizeof(full_syscfg.batchdir));
-
   // update user info data
   int userreclen = sizeof(userrec);
   int waitingoffset = OFFOF(waiting);
@@ -637,6 +625,15 @@ bool WApplication::ReadConfig() {
   syscfg.wwiv_reg_number  = full_syscfg.wwiv_reg_number;
   syscfg.sysconfig1       = full_syscfg.sysconfig1;
 
+  make_abs_path(syscfg.gfilesdir);
+  make_abs_path(syscfg.datadir);
+  make_abs_path(syscfg.msgsdir);
+  make_abs_path(syscfg.dloadsdir);
+  make_abs_path(syscfg.menudir);
+
+  make_abs_path(syscfgovr.tempdir);
+  make_abs_path(syscfgovr.batchdir);
+
   return true;
 }
 
@@ -646,6 +643,11 @@ bool WApplication::SaveConfig() {
   if (configFile.Open(WFile::modeBinary | WFile::modeReadWrite)) {
     configrec full_syscfg;
     configFile.Read(&full_syscfg, sizeof(configrec));
+
+  /*
+    These should not ever be mutated by the BBS (only init) 
+    Commenting them out for now just in case.
+
     strcpy(full_syscfg.newuserpw, syscfg.newuserpw);
     strcpy(full_syscfg.systempw, syscfg.systempw);
 
@@ -687,6 +689,10 @@ bool WApplication::SaveConfig() {
     full_syscfg.nethightime     = syscfg.nethightime;
     full_syscfg.max_subs        = syscfg.max_subs;
     full_syscfg.max_dirs        = syscfg.max_dirs;
+    */
+
+    // These are set by WWIV.INI, set them back so that changes
+    // will be propagated to config.dat
     full_syscfg.qscn_len        = syscfg.qscn_len;
     full_syscfg.userreclen      = syscfg.userreclen;
 
