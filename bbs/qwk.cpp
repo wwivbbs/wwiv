@@ -646,7 +646,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   int amount = 0;
   int cur = 0;
   char file[201];
-  char system_name[20], temp[20];
+  char system_name[20];
   char date_time[51];
   time_t secs_now;
   struct tm *time_now;
@@ -690,11 +690,14 @@ void build_control_dat(struct qwk_junk *qwk_info) {
 
   for (cur = 0; (usub[cur].subnum != -1) && (cur < GetSession()->num_subs) && (!hangup); cur++) {
     if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
-      strncpy(temp, stripcolors(subboards[usub[cur].subnum].name), 13);
-      temp[13] = 0;
+      // QWK support says this should be truncated to 10 or 13 characters
+      // however QWKE allows for 255 characters. This works fine in multimail which
+      // is the only still maintained QWK reader I'm aware of at this time, so we'll
+      // allow it to be the full length.
+      string sub_name = stripcolors(subboards[usub[cur].subnum].name);
 
       fprintf(fp, "%d\r\n", usub[cur].subnum + 1);
-      fprintf(fp, "%s\r\n", temp);
+      fprintf(fp, "%s\r\n", sub_name.c_str());
     }
   }
 
