@@ -23,12 +23,9 @@
 #include "printfile.h"
 
 #define QWK_DIRECTORY (syscfgovr.batchdir)
-/* #define QWK_DIRECTORY (sysinfo.qwk_dir) */
 
-
-#define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
-#define qwk_iscan_literal(x) (iscan1(x, 1))
-
+#define qwk_iscan(x)         (iscan1(usub[x].subnum, true))
+#define qwk_iscan_literal(x) (iscan1(x, true))
 
 // If you have a HUGE transfer section, this define will not read extended
 // descriptions
@@ -58,8 +55,6 @@
 
 // Give us 3000 extra bytes to play with in the message text
 #define PAD_SPACE 3000
-
-extern int numlock;
 
 #pragma pack(push, 1)
 struct qwk_record {
@@ -160,7 +155,6 @@ int _fmsbintoieee(float *src4, float *dest4);
 int _fieeetomsbin(float *src4, float *dest4);
 char * qwk_system_name(char *qwkname);
 void qwk_menu(void);
-void qwk_send_file(char *fn, bool *sent, bool *abort);
 int select_qwk_protocol(struct qwk_junk *qwk_info);
 void insert_after_routing(char *text, char *text2insert, long *len);
 void close_qwk_cfg(struct qwk_config *qwk_cfg);
