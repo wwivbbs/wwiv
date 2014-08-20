@@ -29,7 +29,7 @@
 ;
 ; Options can be combined like so:
 ;
-; SPAWNOPTS[FSED]=COMIO,NOHANGUP
+; SPAWNOPTS[FSED]=FOSSIL,NOHANGUP
 ;
 ; Valid locations that can have spawn options specified are:
 ;
@@ -51,13 +51,13 @@
 ;SPAWNOPT[TIMED]        = FILES                         ; for timed event
 ;SPAWNOPT[NEWUSER]      =                               ; for newuser event
 ;SPAWNOPT[BEGINDAY]     =                               ; for beginday event
-;SPAWNOPT[LOGON]        = COMIO,INTERNAL                ; for logon event
-;SPAWNOPT[LOGOFF]       = COMIO,INTERNAL                ; for logoff event
+;SPAWNOPT[LOGON]        = INTERNAL                ; for logon event
+;SPAWNOPT[LOGOFF]       = INTERNAL                ; for logoff event
 ;SPAWNOPT[ULCHK]        = NOHUP                         ; for upload event
 ;
 ; External program spawn options
 ;
-;SPAWNOPT[FSED]         = COMIO                         ; for FSEDs
+;SPAWNOPT[FSED]         = FOSSIL                        ; for FSEDs
 ;SPAWNOPT[PROT_SINGLE]  = NONE                          ; for single file xfers
 ;SPAWNOPT[PROT_BATCH]   = TOPSCREEN                     ; for batch xfers
 ;SPAWNOPT[CHAT]         = FILES                         ; for wwivchat.exe
@@ -65,12 +65,12 @@
 ;
 ; Archiver spawn settings
 ;
-;SPAWNOPT[ARCH_E]       = COMIO,INTERNAL                ; for extracting archives
-;SPAWNOPT[ARCH_L]       = COMIO,INTERNAL, ABORT         ; for viewing archives
-;SPAWNOPT[ARCH_A]       = COMIO,INTERNAL                ; for adding to archives
-;SPAWNOPT[ARCH_D]       = COMIO,INTERNAL                ; for deleting from archives
-;SPAWNOPT[ARCH_K]       = COMIO,INTERNAL                ; for commenting archives
-;SPAWNOPT[ARCH_T]       = COMIO,INTERNAL                ; for testing archives
+;SPAWNOPT[ARCH_E]       = INTERNAL                ; for extracting archives
+;SPAWNOPT[ARCH_L]       = INTERNAL, ABORT         ; for viewing archives
+;SPAWNOPT[ARCH_A]       = INTERNAL                ; for adding to archives
+;SPAWNOPT[ARCH_D]       = INTERNAL                ; for deleting from archives
+;SPAWNOPT[ARCH_K]       = INTERNAL                ; for commenting archives
+;SPAWNOPT[ARCH_T]       = INTERNAL                ; for testing archives
 ;
 ;Network spawn options
 ;
@@ -141,10 +141,10 @@ NUCOLORBW[9]   = 7
 ;
 ; System Colors
 ;
-TOPCOLOR               = 14                 ; for topscreen info
-F1COLOR                = 2                  ; for F1 user editor
-EDITLINECOLOR          = 10                 ; current field in F1
-CHATSELCOLOR           = 15                 ; for selecting sysop
+TOPCOLOR               = 27                 ; for topscreen info
+F1COLOR                = 9                  ; for F1 user editor
+EDITLINECOLOR          = 31                 ; current field in F1
+CHATSELCOLOR           = 11                 ; for selecting sysop
 MSG_COLOR              = 3                  ; for color msgs
 ;
 ;=============================================================================
