@@ -264,31 +264,14 @@ NEW_SCAN_AT_LOGIN      = Y                  ; Ask the user to scan for new
                                             ; messages when they log in.
 USE_WWIVMAIL           = Y                  ; Add WWIVMail to the //QWK menu
 USE_INTERNAL_QWK       = Y                  ; Use internal QWK support
-
 ;
 ;=============================================================================
-;                         AVAILABLE COMPUTER TYPES
+;                        TEMPORARY DIRECTORY SETTING
 ;=============================================================================
-; These are the computer types offered to new users to choose from.
-; You may add as many as you like or edit the existing entries.  They
-; must be enumerated as shown.  Keep in mind that if you include too
-; many types, they will scroll off the screen.
+NUM_INSTANCES        = 4
+TEMP_DIRECTORY       = temp%n
+BATCH_DIRECTORY      = batch%n
 ;
-[CTYPES]
-COMP_TYPE[1]  = IBM AT (80286/80386)
-COMP_TYPE[2]  = IBM AT (80486/80586)
-COMP_TYPE[3]  = AMD 80686 K6/K6-2
-COMP_TYPE[4]  = Pentium
-COMP_TYPE[5]  = Pentium MMX/Pro
-COMP_TYPE[6]  = Pentium II
-COMP_TYPE[7]  = Pentium III
-COMP_TYPE[8]  = Alpha 500-550
-COMP_TYPE[9]  = Sparc Workstation
-COMP_TYPE[10] = Apple / MacIntosh
-COMP_TYPE[11] = Commodore
-COMP_TYPE[12] = Amiga
-COMP_TYPE[13] = Atari
-COMP_TYPE[14] = Others
 ;
 ;=============================================================================
 ;                           ASV / CALLBACK OPTIONS
@@ -338,14 +321,6 @@ USE_VOICE_VAL                 = N           ; Voice validation
 ;
 ;
 ;=============================================================================
-;                        TEMPORARY DIRECTORY SETTING
-;=============================================================================
-NUM_INSTANCES        = 4
-TEMP_DIRECTORY       = temp%n
-BATCH_DIRECTORY      = batch%n
-;
-;
-;=============================================================================
 ;                        INSTANCE SPECIFIC OPTIONS
 ;=============================================================================
 ; There are only a very few settings that would or should be used for
@@ -366,6 +341,31 @@ BATCH_DIRECTORY      = batch%n
 ;FIDO_PROCESS           = Y                 ; process fido packets this instance
 ;WFC_SCREEN             = Y                 ; Use ANSI WFC screen?
 ;SCREEN_SAVER_TIME      = 120               ; Screen saver invoke time
+;
+;
+;=============================================================================
+;                         AVAILABLE COMPUTER TYPES
+;=============================================================================
+; These are the computer types offered to new users to choose from.
+; You may add as many as you like or edit the existing entries.  They
+; must be enumerated as shown.  Keep in mind that if you include too
+; many types, they will scroll off the screen.
+;
+[CTYPES]
+COMP_TYPE[1]  = IBM AT (80286/80386)
+COMP_TYPE[2]  = IBM AT (80486/80586)
+COMP_TYPE[3]  = AMD 80686 K6/K6-2
+COMP_TYPE[4]  = Pentium
+COMP_TYPE[5]  = Pentium MMX/Pro
+COMP_TYPE[6]  = Pentium II
+COMP_TYPE[7]  = Pentium III
+COMP_TYPE[8]  = Alpha 500-550
+COMP_TYPE[9]  = Sparc Workstation
+COMP_TYPE[10] = Apple / MacIntosh
+COMP_TYPE[11] = Commodore
+COMP_TYPE[12] = Amiga
+COMP_TYPE[13] = Atari
+COMP_TYPE[14] = Others
 ;
 ;
 ;=============================================================================
