@@ -15,34 +15,25 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/platform/wlocal_io.h"
+
 #include <algorithm>
 #include <conio.h>
 
 #include "wwiv.h"
+#include "core/wfile.h"
 #include "core/wutil.h"
 #include "wcomm.h"
 
 extern int oldy = 0;
 
-const int WLocalIO::cursorNone      = 0;
-const int WLocalIO::cursorNormal    = 1;
-const int WLocalIO::cursorSolid     = 2;
-
-const int WLocalIO::topdataNone     = 0;
-const int WLocalIO::topdataSystem   = 1;
-const int WLocalIO::topdataUser     = 2;
-
-//
 // local functions
-//
-
 bool HasKeyBeenPressed();
 unsigned char GetKeyboardChar();
 
 /*
  * Sets screen attribute at screen pos x,y to attribute contained in a.
  */
-
 void WLocalIO::set_attr_xy(int x, int y, int a) {
   COORD loc = {0};
   DWORD cb = {0};
@@ -52,7 +43,6 @@ void WLocalIO::set_attr_xy(int x, int y, int a) {
 
   WriteConsoleOutputAttribute(m_hConOut, reinterpret_cast< LPWORD >(&a), 1, loc, &cb);
 }
-
 
 WLocalIO::WLocalIO() {
   SetTopLine(0);
@@ -86,12 +76,10 @@ WLocalIO::WLocalIO() {
   GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
 }
 
-
 WLocalIO::~WLocalIO() {
   SetConsoleScreenBufferSize(m_hConOut, m_originalConsoleSize);
   SetConsoleTextAttribute(m_hConOut, 0x07);
 }
-
 
 void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
   if (x_only) {
@@ -107,7 +95,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
       bool bOpen = fileGlobalCap.Open(WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite,
                                       WFile::shareUnknown, WFile::permReadWrite);
       global_ptr = 0;
-      global_buf = static_cast<char *>(BbsAllocA(GLOBAL_SIZE));
+      global_buf = static_cast<char*>(BbsAllocA(GLOBAL_SIZE));
       if (!bOpen || !global_buf) {
         if (global_buf) {
           free(global_buf);
@@ -126,7 +114,6 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
     }
   }
 }
-
 
 void WLocalIO::global_char(char ch) {
   if (global_buf && fileGlobalCap.IsOpen()) {
@@ -187,12 +174,10 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
   timelastchar1 = timer1();
 }
 
-
-void WLocalIO::LocalGotoXY(int x, int y)
 // This, obviously, moves the cursor to the location specified, offset from
 // the protected dispaly at the top of the screen.  Note: this function
 // is 0 based, so (0,0) is the upper left hand corner.
-{
+void WLocalIO::LocalGotoXY(int x, int y) {
   x = std::max<int>(x, 0);
   x = std::min<int>(x, 79);
   y = std::max<int>(y, 0);
@@ -208,15 +193,11 @@ void WLocalIO::LocalGotoXY(int x, int y)
   SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
 }
 
-
-
-
-int WLocalIO::WhereX()
 /* This function returns the current X cursor position, as the number of
 * characters from the left hand side of the screen.  An X position of zero
 * means the cursor is at the left-most position
 */
-{
+int WLocalIO::WhereX() {
   if (x_only) {
     return (wx);
   }
@@ -230,15 +211,12 @@ int WLocalIO::WhereX()
   return m_cursorPosition.X;
 }
 
-
-
-int WLocalIO::WhereY()
 /* This function returns the Y cursor position, as the line number from
 * the top of the logical window.  The offset due to the protected top
 * of the screen display is taken into account.  A WhereY() of zero means
 * the cursor is at the top-most position it can be at.
 */
-{
+int WLocalIO::WhereY() {
   CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
 
   GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
@@ -249,14 +227,11 @@ int WLocalIO::WhereY()
   return m_cursorPosition.Y - GetTopLine();
 }
 
-
-
-void WLocalIO::LocalLf()
+void WLocalIO::LocalLf() {
 /* This function performs a linefeed to the screen (but not remotely) by
 * either moving the cursor down one line, or scrolling the logical screen
 * up one line.
 */
-{
   SMALL_RECT scrollRect;
   COORD dest;
   CHAR_INFO fill;
@@ -277,8 +252,6 @@ void WLocalIO::LocalLf()
     SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
   }
 }
-
-
 
 /**
  * Returns the local cursor to the left-most position on the screen.
