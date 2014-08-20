@@ -16,9 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #ifndef __INCLUDED_PLATFORM_WLOCALIO_H__
 #define __INCLUDED_PLATFORM_WLOCALIO_H__
+
+#include <string>
+#include "core/wfile.h"
 
 #ifdef _WIN32
 #define NOGDICAPMASKS
@@ -60,7 +62,6 @@
 
 #define GLOBAL_SIZE 4096
 
-class WFile;
 class WStatus;
 class WSession;
 
@@ -77,13 +78,13 @@ struct screentype {
 class WLocalIO {
 
  public:
-  static const int cursorNone;
-  static const int cursorNormal;
-  static const int cursorSolid;
+  static const int cursorNone = 0;
+  static const int cursorNormal = 1;
+  static const int cursorSolid = 2;
 
-  static const int topdataNone;
-  static const int topdataSystem;
-  static const int topdataUser;
+  static const int topdataNone = 0;
+  static const int topdataSystem = 1;
+  static const int topdataUser = 2;
 
  private:
   std::string  m_chatReason;
