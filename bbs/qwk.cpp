@@ -48,7 +48,7 @@ void current_gat_section(long section);
 
 // Also used in qwk1.cpp
 const char *QWKFrom = "\x04""0QWKFrom:";
-int qwk_bi_mode;
+bool qwk_bi_mode;
 
 static int qwk_percent;
 static uint16_t max_msgs;
@@ -641,29 +641,25 @@ void qwk_remove_null(char *memory, int size) {
 }
 
 void build_control_dat(struct qwk_junk *qwk_info) {
-  FILE *fp;
-  struct qwk_config qwk_cfg;
-  int amount = 0;
-  int cur = 0;
   char file[201];
   char system_name[20];
   char date_time[51];
   time_t secs_now;
-  struct tm *time_now;
 
   time(&secs_now);
-  time_now = localtime(&secs_now);
+  struct tm* time_now = localtime(&secs_now);
 
   // Creates a string like 'mm-dd-yyyy,hh:mm:ss'
   strftime(date_time, 50, "%m-%d-%Y,%H:%M:%S", time_now);
 
   sprintf(file, "%sCONTROL.DAT", QWK_DIRECTORY);
-  fp = fopen(file, "wb");
+  FILE* fp = fopen(file, "wb");
 
   if (!fp) {
     return;
   }
 
+  struct qwk_config qwk_cfg;
   read_qwk_cfg(&qwk_cfg);
   qwk_system_name(system_name);
 
@@ -678,7 +674,8 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "%s\r\n", "0");
   fprintf(fp, "%d\r\n", qwk_info->qwk_rec_num);
   
-  for (cur = 0; (usub[cur].subnum != -1) && (cur < GetSession()->num_subs) && (!hangup); cur++) {
+  int amount = 0;
+  for (int cur = 0; (usub[cur].subnum != -1) && (cur < GetSession()->num_subs) && (!hangup); cur++) {
     if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
       ++amount;
     }
@@ -688,7 +685,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "0\r\n");
   fprintf(fp, "E-Mail\r\n");
 
-  for (cur = 0; (usub[cur].subnum != -1) && (cur < GetSession()->num_subs) && (!hangup); cur++) {
+  for (int cur = 0; (usub[cur].subnum != -1) && (cur < GetSession()->num_subs) && (!hangup); cur++) {
     if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
       // QWK support says this should be truncated to 10 or 13 characters
       // however QWKE allows for 255 characters. This works fine in multimail which
@@ -770,7 +767,6 @@ int _fieeetomsbin(float *src4, float *dest4) {
   unsigned char *msbin = (unsigned char *)dest4;
   unsigned char sign = 0x00;
   unsigned char msbin_exp = 0x00;
-  int i;
 
   /* See _fmsbintoieee() for details of formats   */
   sign = ieee[3] & 0x80;
@@ -784,12 +780,11 @@ int _fieeetomsbin(float *src4, float *dest4) {
 
   msbin_exp += 2;     /* actually, -127 + 128 + 1 */
 
-  for (i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     msbin[i] = 0;
   }
 
   msbin[3] = msbin_exp;
-
   msbin[2] |= sign;
   msbin[2] |= ieee[2] & 0x7f;
   msbin[1] = ieee[1];
@@ -798,7 +793,7 @@ int _fieeetomsbin(float *src4, float *dest4) {
   return 0;
 }
 
-char * qwk_system_name(char *qwkname) {
+char* qwk_system_name(char *qwkname) {
   struct qwk_config qwk_cfg;
 
   read_qwk_cfg(&qwk_cfg);
@@ -826,7 +821,7 @@ void qwk_menu(void) {
   char temp[101], namepath[101];
 
   qwk_percent = 0;
-  qwk_bi_mode = 0;
+  qwk_bi_mode = false;
 
   bool done = false;
   while (!done && !hangup) {
@@ -867,7 +862,7 @@ void qwk_menu(void) {
 
     case 'U':
       sysoplog("Upload REP packet");
-      qwk_bi_mode = 0;
+      qwk_bi_mode = false;
       upload_reply_packet();
       break;
 
@@ -882,14 +877,14 @@ void qwk_menu(void) {
 
       if (WFile::Exists(namepath)) {
         sysoplog("REP was uploaded");
-        qwk_bi_mode = 1;
+        qwk_bi_mode = true;
         upload_reply_packet();
       }
       break;
 
     case 'B':
       sysoplog("Down/Up QWK/REP packet");
-      qwk_bi_mode = 1;
+      qwk_bi_mode = true;
 
       qwk_system_name(temp);
       strcat(temp, ".REP");
@@ -935,7 +930,7 @@ void qwk_menu(void) {
   }
 }
 
-void qwk_send_file(const char *fn, bool *sent, bool *abort) {
+static void qwk_send_file(string fn, bool *sent, bool *abort) {
   // TODO(rushfan): Should this just call send_file from sr.cpp?
   *sent = 0;
   *abort = 0;
@@ -964,11 +959,11 @@ void qwk_send_file(const char *fn, bool *sent, bool *abort) {
   case WWIV_INTERNAL_PROT_YMODEM:
   case WWIV_INTERNAL_PROT_ZMODEM: {
     double percent = 0.0;
-    maybe_internal(fn, sent, &percent, true, protocol);
+    maybe_internal(fn.c_str(), sent, &percent, true, protocol);
   } break;
 
   default: {
-    int exit_code = extern_prot(protocol - 6, fn, 1);
+    int exit_code = extern_prot(protocol - 6, fn.c_str(), 1);
     *abort = 0;
     if (exit_code == externs[protocol - 6].ok1) {
       *sent = 1;
@@ -1061,7 +1056,6 @@ void read_qwk_cfg(struct qwk_config *qwk_cfg) {
 }
 
 void write_qwk_cfg(struct qwk_config *qwk_cfg) {
-  int new_amount = 0;
   char s[201];
 
   sprintf(s, "%s%s", syscfg.datadir, "QWK.CFG");
@@ -1074,6 +1068,7 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
   write(f, qwk_cfg, sizeof(struct qwk_config));
 
   int x = 0;
+  int new_amount = 0;
   while (x < qwk_cfg->amount_blts) {
     long pos = sizeof(struct qwk_config) + (new_amount * BULL_SIZE);
     lseek(f, pos, SEEK_SET);
@@ -1129,7 +1124,6 @@ int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
   }
 
   *max_per_sub = static_cast<uint16_t>(atoi(temp)); 
-
   return 1;
 }
 
@@ -1239,8 +1233,6 @@ void qwk_nscan(void) {
 
     }
   }
-
-
   newfile = close(newfile);
 #endif  // NEVER
 }
@@ -1309,16 +1301,17 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     archiver = GetSession()->GetCurrentUser()->data.qwk_archive - 1;
   }
 
-  std::string command;
+  string qwk_file_to_send;
   if (!qwk_info->abort) {
     sprintf(parem1, "%s%s", QWK_DIRECTORY, qwkname);
     sprintf(parem2, "%s*.*", QWK_DIRECTORY);
 
-    command = stuff_in(arcs[archiver].arca, parem1, parem2, "", "", "");
+    string command = stuff_in(arcs[archiver].arca, parem1, parem2, "", "", "");
     ExecuteExternalProgram(command, EFLAG_NOPAUSE);
 
-    command = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
-    WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &command);
+    qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
+    // TODO(rushfan): Should we just have a make abs path?
+    WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &qwk_file_to_send);
 
     f = open(command.c_str(), O_RDONLY | O_BINARY);
     if (f < 0) {
@@ -1341,7 +1334,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
   if (incom) {
     while (!done && !qwk_info->abort && !hangup) {
       bool abort = false;
-      qwk_send_file(command.c_str(), &sent, &abort);
+      qwk_send_file(qwk_file_to_send, &sent, &abort);
       if (sent) {
         done = 1;
       } else {
@@ -1403,7 +1396,7 @@ int qwk_open_file(char *fn) {
   int i;
   char s[81];
 
-  sprintf(s, "%s%s.DAT", syscfg.msgsdir, fn);
+  sprintf(s, "%s%s.dat", syscfg.msgsdir, fn);
   int f = open(s, O_RDWR | O_BINARY);
 
   if (f < 0) {

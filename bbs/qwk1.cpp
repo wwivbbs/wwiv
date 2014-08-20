@@ -51,9 +51,7 @@ using std::string;
 
 extern const char *QWKFrom;
 extern int qwk_percent;
-extern int qwk_bi_mode;
-
-extern int numlock;
+extern bool qwk_bi_mode;
 
 // from inmsg.cpp
 void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength);
