@@ -21,15 +21,6 @@
 #include "core/wutil.h"
 #include "wcomm.h"
 
-const int WLocalIO::cursorNone      = 0;
-const int WLocalIO::cursorNormal    = 1;
-const int WLocalIO::cursorSolid     = 2;
-
-const int WLocalIO::topdataNone     = 0;
-const int WLocalIO::topdataSystem   = 1;
-const int WLocalIO::topdataUser     = 2;
-
-
 WLocalIO::WLocalIO() : global_buf(nullptr), global_ptr(0) {
   // These 2 lines must remain in here.
   ExtendedKeyWaiting = 0;
@@ -39,15 +30,11 @@ WLocalIO::WLocalIO() : global_buf(nullptr), global_ptr(0) {
   // TODO (for kwalker) Add Linux platform specific console maniuplation stuff
 }
 
-
 WLocalIO::WLocalIO(const WLocalIO& copy) {
   printf("OOPS! - WLocalIO Copy Constructor called!\r\n");
 }
 
-
-WLocalIO::~WLocalIO() {
-}
-
+WLocalIO::~WLocalIO() {}
 
 void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
   char szFileName[ MAX_PATH ];
@@ -83,9 +70,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
   }
 }
 
-
 void WLocalIO::global_char(char ch) {
-
   if (global_buf && fileGlobalCap.IsOpen()) {
     global_buf[global_ptr++] = ch;
     if (global_ptr == GLOBAL_SIZE) {
@@ -145,7 +130,6 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
   timelastchar1 = timer1();
 }
 
-
 /*
  * This, obviously, moves the cursor to the location specified, offset from
  * the protected dispaly at the top of the screen.  Note: this function
@@ -170,9 +154,6 @@ void WLocalIO::LocalGotoXY(int x, int y) {
 #endif
 }
 
-
-
-
 /* This function returns the current X cursor position, as the number of
  * characters from the left hand side of the screen.  An X position of zero
  * means the cursor is at the left-most position
@@ -188,8 +169,6 @@ int WLocalIO::WhereX() {
 #endif
 }
 
-
-
 /* This function returns the Y cursor position, as the line number from
  * the top of the logical window.  The offset due to the protected top
  * of the screen display is taken into account.  A WhereY() of zero means
@@ -202,8 +181,6 @@ int WLocalIO::WhereY() {
   return 0;
 #endif
 }
-
-
 
 /* This function performs a linefeed to the screen (but not remotely) by
  * either moving the cursor down one line, or scrolling the logical screen
@@ -218,8 +195,6 @@ void WLocalIO::LocalLf() {
   }
 #endif
 }
-
-
 
 /* This short function returns the local cursor to the left-most position
  * on the screen.
@@ -242,8 +217,6 @@ void WLocalIO::LocalCls() {
 #endif
 }
 
-
-
 /* This function moves the cursor one position to the left, or if the cursor
  * is currently at its left-most position, the cursor is moved to the end of
  * the previous line, except if it is on the top line, in which case nothing
@@ -260,8 +233,6 @@ void WLocalIO::LocalBackspace() {
   }
 #endif
 }
-
-
 
 /* This function outputs one character to the screen, then updates the
  * cursor position accordingly, scolling the screen if necessary.  Not that
@@ -283,9 +254,6 @@ void WLocalIO::LocalPutchRaw(unsigned char ch) {
   }
 #endif
 }
-
-
-
 
 /* This function outputs one character to the local screen.  C/R, L/F, TOF,
  * BS, and BELL are interpreted as commands instead of characters.
@@ -323,7 +291,6 @@ void WLocalIO::LocalPutch(unsigned char ch) {
 #endif
 }
 
-
 /*
  * This (obviously) outputs a string TO THE SCREEN ONLY
  */
@@ -335,14 +302,12 @@ void WLocalIO::LocalPuts(const char *s) {
 #endif
 }
 
-
 void WLocalIO::LocalXYPuts(int x, int y, const char *pszText) {
 #if defined( __APPLE__ )
   LocalGotoXY(x, y);
   LocalFastPuts(pszText);
 #endif
 }
-
 
 /*
  * This RAPIDLY outputs ONE LINE to the screen only
@@ -357,7 +322,6 @@ void WLocalIO::LocalFastPuts(const char *s) {
   std::cout << s;
 #endif
 }
-
 
 int  WLocalIO::LocalPrintf(const char *pszFormattedText, ...) {
 #if defined( __APPLE__ )
@@ -374,7 +338,6 @@ int  WLocalIO::LocalPrintf(const char *pszFormattedText, ...) {
   return 0;
 }
 
-
 int  WLocalIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
 #if defined( __APPLE__ )
   va_list ap;
@@ -389,7 +352,6 @@ int  WLocalIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
   // NOP
   return 0;
 }
-
 
 int  WLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) {
 #if defined( __APPLE__ )
@@ -410,8 +372,6 @@ int  WLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszForma
   return 0;
 }
 
-
-
 /*
  * set_protect sets the number of lines protected at the top of the screen.
  */
@@ -423,21 +383,12 @@ void WLocalIO::set_protect(int l) {
 #endif
 }
 
+void WLocalIO::savescreen() {}
 
-void WLocalIO::savescreen() {
-}
-
-
-/*
- * restorescreen restores a screen previously saved with savescreen
- */
 void WLocalIO::restorescreen() {
 }
 
-
-void WLocalIO::ExecuteTemporaryCommand(const char *pszCommand) {
-}
-
+void WLocalIO::ExecuteTemporaryCommand(const char *pszCommand) {}
 
 char xlate[] = {
   'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, 0, 0, 0,
@@ -445,16 +396,13 @@ char xlate[] = {
   'Z', 'X', 'C', 'V', 'B', 'N', 'M',
 };
 
-
 char WLocalIO::scan_to_char(int nKeyCode) {
   return (nKeyCode >= 16 && nKeyCode <= 50) ? xlate[ nKeyCode - 16 ] : '\x00';
 }
 
-
 void WLocalIO::alt_key(int nKeyCode) {
   // TODO: implement macro support
 }
-
 
 /*
  * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
@@ -579,7 +527,6 @@ void WLocalIO::skey(char ch) {
 #endif
 }
 
-
 static const char * pszTopScrItems[] = {
   "Comm Disabled",
   "Temp Sysop",
@@ -611,7 +558,6 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
   SetTopLine(0);
   double nsln = nsl();
   int nLineNumber = (chatcall && (GetSession()->topdata == WLocalIO::topdataUser)) ? 5 : 4;
-
 
   if (GetSession()->topdata) {
     if (GetSession()->using_modem && !incom) {
@@ -671,10 +617,7 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
 #endif
 }
 
-
 /****************************************************************************/
-
-
 /**
  * IsLocalKeyPressed - returns whether or not a key been pressed at the local console.
  *
@@ -698,7 +641,6 @@ unsigned char WLocalIO::getchd() {
   return 0;
 }
 
-
 /****************************************************************************/
 /*
 * returns the ASCII code of the next character waiting in the
@@ -714,7 +656,6 @@ unsigned char WLocalIO::getchd1() {
   return 0;
 }
 
-
 void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
   *cl = 0;
   *atr = 0;
@@ -722,18 +663,15 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
   strcpy(xl, endofline);
 }
 
-
 /**
  * LocalGetChar - gets character entered at local console.
  *                <B>Note: This is a blocking function call.</B>
  *
  * @return int value of key entered
  */
-
 int  WLocalIO::LocalGetChar() {
   return getchar();
 }
-
 
 void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   x = x;
@@ -742,32 +680,22 @@ void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   ylen = ylen;
 }
 
+void WLocalIO::SetCursor(int cursorStyle) {}
 
-void WLocalIO::SetCursor(int cursorStyle) {
-}
-
-
-
-void WLocalIO::LocalClrEol() {
-}
-
+void WLocalIO::LocalClrEol() {}
 
 void WLocalIO::LocalWriteScreenBuffer(const char *pszBuffer) {
   pszBuffer = pszBuffer; // No warning
 }
 
-
 int WLocalIO::GetDefaultScreenBottom() {
   return 25;
 }
 
-
 /**
  * Edits a string, doing local screen I/O only.
  */
-void WLocalIO::LocalEditLine(char *s, int len, int status, int *returncode, char *ss) {
-}
-
+void WLocalIO::LocalEditLine(char *s, int len, int status, int *returncode, char *ss) {}
 
 int WLocalIO::GetEditLineStringLength(const char *pszText) {
   int i = strlen(pszText);
@@ -777,9 +705,7 @@ int WLocalIO::GetEditLineStringLength(const char *pszText) {
   return i;
 }
 
-
-void WLocalIO::UpdateNativeTitleBar() {
-}
+void WLocalIO::UpdateNativeTitleBar() {}
 
 void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {
 #if defined ( __APPLE__ )
