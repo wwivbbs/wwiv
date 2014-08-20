@@ -25,6 +25,11 @@
 #include "curses.h"
 #include "curses_io.h"
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif  // _WIN32
+
 extern const char *wwiv_version;
 extern const char *beta_version;
 extern const char *wwiv_date;
@@ -32,11 +37,41 @@ extern unsigned short wwiv_num_version;
 
 static const char* copyrightString = "Copyright (c) 1998-2014, WWIV Software Services";
 
+#if defined ( _WIN32 )
+static HANDLE hConOut;
+static COORD originalConsoleSize;
+#endif
+
 CursesIO* out;
 
 CursesIO::CursesIO() 
     : max_x_(0), max_y_(0), window_(nullptr), footer_(nullptr), 
       header_(nullptr), indicator_mode_(IndicatorMode::NONE) {
+
+#ifdef _WIN32
+  // Save the original window size and also resize the window buffer size
+  // to match the visible window size so we do not have scroll bars.  The
+  // scroll bars don't work with text based UIs well so we will remove them
+  // like we do in bbs.exe
+  hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (hConOut != INVALID_HANDLE_VALUE) {
+    CONSOLE_SCREEN_BUFFER_INFO consoleBufferInfo;
+    GetConsoleScreenBufferInfo(hConOut, &consoleBufferInfo);
+    originalConsoleSize = consoleBufferInfo.dwSize;
+    SMALL_RECT rect = consoleBufferInfo.srWindow;
+    COORD bufSize;
+    bufSize.X = static_cast<short>(rect.Right - rect.Left + 1);
+    bufSize.Y = static_cast<short>(rect.Bottom - rect.Top + 1);
+    bufSize.X = static_cast<short>(std::min<SHORT>(bufSize.X, 80));
+    bufSize.Y = static_cast<short>(std::min<SHORT>(bufSize.Y, 25));
+    SetConsoleWindowInfo(hConOut, TRUE, &rect);
+    SetConsoleScreenBufferSize(hConOut, bufSize);
+
+    // Have to reset this info, otherwise bad things happen.
+    GetConsoleScreenBufferInfo(hConOut, &consoleBufferInfo);
+  }
+#endif  // _WIN32
+
   initscr();
   raw();
   keypad(stdscr, TRUE);
@@ -76,6 +111,11 @@ CursesIO::~CursesIO() {
   delete header_;
   delete window_;
   endwin();
+
+#ifdef _WIN32
+  // restore the original window size.
+  SetConsoleScreenBufferSize(hConOut, originalConsoleSize);
+#endif  // _WIN32
 }
 
 void CursesIO::Refresh() { window_->Refresh(); }
