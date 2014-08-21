@@ -71,8 +71,7 @@ void CustomEditItem::Display() const {
   if (display_) {
     display_(s);
   } else {
-    out->GotoXY(x_, y_);
-    Puts(s.c_str());
+    out->PutsXY(x_, y_, s.c_str());
   }
 }
 
@@ -451,8 +450,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
           s[i] = s[i + 1];
         }
         s[len - 1] = static_cast<char>(background_character);
-        out->GotoXY(cx, cy);
-        out->Puts(s);
+        out->PutsXY(cx, cy, s);
         out->GotoXY(cx + pos, cy);
       }
       break;
@@ -489,8 +487,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
               s[i] = s[i - 1];
             }
             s[pos++] = ch;
-            out->GotoXY(cx, cy);
-            out->Puts(s);
+            out->PutsXY(cx, cy, s);
             out->GotoXY(cx + pos, cy);
           }  else  {
             s[pos++] = ch;
@@ -522,8 +519,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
           }
           s[len - 1] = static_cast<char>(background_character);
           pos--;
-          out->GotoXY(cx, cy);
-          out->Puts(s);
+          out->PutsXY(cx, cy, s);
           out->GotoXY(cx + pos, cy);
         }
       }
@@ -548,9 +544,8 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   char szFinishedString[ 260 ];
   sprintf(szFinishedString, "%-255s", s);
   szFinishedString[ len ] = '\0';
-  out->GotoXY(cx, cy);
   out->window()->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-  out->Puts(szFinishedString);
+  out->PutsXY(cx, cy, szFinishedString);
   out->GotoXY(cx, cy);
 }
 
@@ -603,9 +598,8 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
       break;
     }
   } while (!done);
-  out->GotoXY(cx, cy);
   out->window()->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-  out->Puts(strings[value]);
+  out->PutsXY(cx, cy, strings[value]);
   out->GotoXY(cx, cy);
   return value;
 }
