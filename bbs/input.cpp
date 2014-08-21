@@ -241,7 +241,6 @@ void input_password(std::string promptText, std::string* strOutPassword, int nMa
 
 int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert, InputMode mode) {
   char szTemp[ 255 ];
-  int nLength, pos, i;
   const char dash = '-';
   const char slash = '/';
 
@@ -254,7 +253,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
   if (!okansi()) {
     input1(szTemp, nMaxLength, mode, true);
     strcpy(pszOutText, szTemp);
-    return static_cast<unsigned char>(strlen(szTemp));
+    return static_cast<int>(strlen(szTemp));
   }
   int nTopDataSaved = GetSession()->topdata;
   if (GetSession()->topdata != WLocalIO::topdataNone) {
@@ -266,7 +265,8 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
   }
   int nTopLineSaved = GetSession()->localIO()->GetTopLine();
   GetSession()->localIO()->SetTopLine(0);
-  pos = nLength = 0;
+  int pos = 0;
+  int nLength = 0;
   szTemp[0] = '\0';
 
   nMaxLength = std::min<int>(nMaxLength, 80);
@@ -275,7 +275,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
   int y = GetSession()->localIO()->WhereY() + 1;
 
   GetSession()->bout.GotoXY(x, y);
-  for (i = 0; i < nMaxLength; i++) {
+  for (int i = 0; i < nMaxLength; i++) {
     GetSession()->bout << "\xB1";
   }
   GetSession()->bout.GotoXY(x, y);
@@ -341,11 +341,11 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
       if ((pos == nLength) || (mode == InputMode::DATE) || (mode == InputMode::PHONE)) {
         break;
       }
-      for (i = pos; i < nLength; i++) {
+      for (int i = pos; i < nLength; i++) {
         szTemp[i] = szTemp[i + 1];
       }
       nLength--;
-      for (i = pos; i < nLength; i++) {
+      for (int i = pos; i < nLength; i++) {
         bputch(szTemp[i]);
       }
       bputch('\xB1');
@@ -354,13 +354,13 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
       if (pos) {
         if (pos != nLength) {
           if ((mode != InputMode::DATE) && (mode != InputMode::PHONE)) {
-            for (i = pos - 1; i < nLength; i++) {
+            for (int i = pos - 1; i < nLength; i++) {
               szTemp[i] = szTemp[i + 1];
             }
             pos--;
             nLength--;
             GetSession()->bout.GotoXY(pos + x, y);
-            for (i = pos; i < nLength; i++) {
+            for (int i = pos; i < nLength; i++) {
               bputch(szTemp[i]);
             }
             GetSession()->bout << "\xB1";
@@ -383,10 +383,14 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
       break;
     default:                              // All others < 256
       if (c < 255 && c > 31 && ((bInsert && nLength < nMaxLength) || (!bInsert && pos < nMaxLength))) {
-        if (mode != InputMode::MIXED) {
-          c = wwiv::UpperCase<unsigned char> (static_cast< unsigned char >(c));
+        if (mode != InputMode::MIXED && mode != InputMode::FILENAME) {
+          c = upcase(static_cast<unsigned char>(c));
         }
         if (mode == InputMode::FILENAME) {
+#ifdef _WIN32
+          // Only uppercase filenames on Win32.
+          c = wwiv::UpperCase<unsigned char> (static_cast<unsigned char>(c)); 
+#endif  // _WIN32
           if (strchr("/\\+ <>|*?.,=\";:[]", c)) {
             c = 0;
           }
@@ -395,12 +399,12 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
           const char *ss = strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(valid_letters)), c);
           // if it's a valid char and the previous char was a space
           if (ss != NULL && szTemp[pos - 1] != 32) {
-            c = locase(static_cast< unsigned char >(c));
+            c = locase(static_cast<unsigned char>(c));
           }
         }
         if (mode == InputMode::DATE && (pos == 2 || pos == 5)) {
           bputch(slash);
-          for (i = nLength++; i >= pos; i--) {
+          for (int i = nLength++; i >= pos; i--) {
             szTemp[i + 1] = szTemp[i];
           }
           szTemp[pos++] = slash;
@@ -409,7 +413,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
         }
         if (mode == InputMode::PHONE && (pos == 3 || pos == 7)) {
           bputch(dash);
-          for (i = nLength++; i >= pos; i--) {
+          for (int i = nLength++; i >= pos; i--) {
             szTemp[i + 1] = szTemp[i];
           }
           szTemp[pos++] = dash;
@@ -427,7 +431,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
             }
           } else {
             bputch((unsigned char) c);
-            for (i = nLength++; i >= pos; i--) {
+            for (int i = nLength++; i >= pos; i--) {
               szTemp[i + 1] = szTemp[i];
             }
             szTemp[pos++] = (char) c;
