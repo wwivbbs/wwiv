@@ -21,6 +21,7 @@
 #include "printfile.h"
 #include "core/strings.h"
 
+using namespace wwiv::bbs;
 
 static uint32_t *u_qsc = 0;
 static char *sp = NULL;
@@ -596,7 +597,7 @@ void uedit(int usern, int other) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New FULL real name? ";
         std::string realName;
-        Input1(&realName, user.GetRealName(), 20, true, INPUT_MODE_FILE_PROPER);
+        Input1(&realName, user.GetRealName(), 20, true, InputMode::PROPER);
         if (!realName.empty()) {
           user.SetRealName(realName.c_str());
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
@@ -647,7 +648,7 @@ void uedit(int usern, int other) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New phone number? ";
         std::string phoneNumber;
-        Input1(&phoneNumber, user.GetVoicePhoneNumber(), 12, true, INPUT_MODE_PHONE);
+        Input1(&phoneNumber, user.GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
         if (!phoneNumber.empty()) {
           if (phoneNumber != user.GetVoicePhoneNumber()) {
             delete_phone_number(nUserNumber, user.GetVoicePhoneNumber());
@@ -658,7 +659,7 @@ void uedit(int usern, int other) {
         }
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New DataPhone (0=none)? ";
-        Input1(&phoneNumber, user.GetDataPhoneNumber(), 12, true, INPUT_MODE_PHONE);
+        Input1(&phoneNumber, user.GetDataPhoneNumber(), 12, true, InputMode::PHONE);
         if (!phoneNumber.empty()) {
           if (phoneNumber[0] == '0') {
             user.SetDataPhoneNumber("");

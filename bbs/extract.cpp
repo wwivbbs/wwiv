@@ -234,7 +234,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
         goto go_away;
       case 'E':
         GetSession()->bout << "Input the description:\r\n\n";
-        Input1(szDescription, desc1, 58, true, INPUT_MODE_FILE_MIXED);
+        Input1(szDescription, desc1, 58, true, wwiv::bbs::InputMode::MIXED);
         break;
       case '\r':
       case '1':

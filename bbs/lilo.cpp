@@ -346,7 +346,7 @@ static void LeaveBadPasswordFeedback(int ans) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "What is your NAME or HANDLE? ";
     std::string tempName;
-    input1(&tempName, 31, INPUT_MODE_FILE_PROPER, true);
+    input1(&tempName, 31, wwiv::bbs::InputMode::PROPER, true);
     if (!tempName.empty()) {
       GetSession()->bout.NewLine();
       GetSession()->usernum = 1;

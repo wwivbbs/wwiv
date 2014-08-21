@@ -54,6 +54,8 @@ extern time_t last_time_c;
 static WApplication *app;
 static WSession* sess;
 
+using wwiv::bbs::InputMode;
+
 //////////////////////////////////////////////////////////////////////////////
 // Implementation
 //
@@ -424,7 +426,7 @@ int WApplication::doWFCEvents() {
           _getcwd(szFileName, MAX_PATH);
           snprintf(szFileName, sizeof(szFileName), "%c", WFile::pathSeparatorChar);
           std::string newFileName;
-          Input1(&newFileName, szFileName, 50, true, INPUT_MODE_FILE_UPPER);
+          Input1(&newFileName, szFileName, 50, true, InputMode::UPPER);
           if (!newFileName.empty()) {
             external_edit(newFileName.c_str(), "", GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, ".", szFileName,
                           MSGED_FLAG_NO_TAGLINE);

@@ -1140,14 +1140,6 @@ struct ext_desc_rec {
   int32_t offset;
 };
 
-// Text editing modes for input routines
-#define INPUT_MODE_FILE_UPPER     0
-#define INPUT_MODE_FILE_MIXED     1
-#define INPUT_MODE_FILE_PROPER    2
-#define INPUT_MODE_FILE_NAME 3
-#define INPUT_MODE_DATE      4
-#define INPUT_MODE_PHONE     5
-
 // Used by scan(...)
 #define SCAN_OPTION_READ_PROMPT   0
 #define SCAN_OPTION_LIST_TITLES   1

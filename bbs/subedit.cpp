@@ -22,6 +22,8 @@
 #include "core/wtextfile.h"
 #include "core/strings.h"
 
+using wwiv::bbs::InputMode;
+
 //
 // Local Function Prototypes
 //
@@ -305,7 +307,7 @@ void modify_sub(int n) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2New name? ";
       char szSubName[ 81 ];
-      Input1(szSubName, r.name, 40, true, INPUT_MODE_FILE_MIXED);
+      Input1(szSubName, r.name, 40, true, InputMode::MIXED);
       GetSession()->bout.Color(0);
       if (szSubName[0]) {
         strcpy(r.name, szSubName);
@@ -316,7 +318,7 @@ void modify_sub(int n) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2New filename? ";
       char szSubBaseName[ MAX_PATH ];
-      Input1(szSubBaseName, r.filename, 8, true, INPUT_MODE_FILE_NAME);
+      Input1(szSubBaseName, r.filename, 8, true, InputMode::FILENAME);
       if (szSubBaseName[0] != 0 && strchr(szSubBaseName, '.') == 0) {
         char szOldSubFileName[MAX_PATH];
         sprintf(szOldSubFileName, "%s%s.sub", syscfg.datadir, szSubBaseName);
@@ -371,7 +373,7 @@ void modify_sub(int n) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2New Read SL? ";
       char szNewSL[ 10 ];
-      Input1(szNewSL, szDef, 3, true, INPUT_MODE_FILE_UPPER);
+      Input1(szNewSL, szDef, 3, true, InputMode::UPPER);
       int nNewSL = atoi(szNewSL);
       if (nNewSL >= 0 && nNewSL < 256 && szNewSL[0]) {
         r.readsl = static_cast<unsigned char>(nNewSL);
@@ -384,7 +386,7 @@ void modify_sub(int n) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2New Post SL? ";
       char szNewSL[ 10 ];
-      Input1(szNewSL, szDef, 3, true, INPUT_MODE_FILE_UPPER);
+      Input1(szNewSL, szDef, 3, true, InputMode::UPPER);
       int nNewSL = atoi(szNewSL);
       if (nNewSL >= 0 && nNewSL < 256 && szNewSL[0]) {
         r.postsl = static_cast<unsigned char>(nNewSL);
@@ -440,7 +442,7 @@ void modify_sub(int n) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2New Max Msgs? ";
       char szMaxMsgs[ 21 ];
-      Input1(szMaxMsgs, szDef, 5, true, INPUT_MODE_FILE_UPPER);
+      Input1(szMaxMsgs, szDef, 5, true, InputMode::UPPER);
       int nMaxMsgs = atoi(szMaxMsgs);
       if (nMaxMsgs > 0 && nMaxMsgs < 16384 && szMaxMsgs[0]) {
         r.maxmsgs = static_cast<unsigned short>(nMaxMsgs);
@@ -547,7 +549,7 @@ void modify_sub(int n) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2Enter new Description : \r\n|#7:";
       std::string description;
-      Input1(&description, xsubs[n].desc, 60, true, INPUT_MODE_FILE_MIXED);
+      Input1(&description, xsubs[n].desc, 60, true, InputMode::MIXED);
       GetSession()->bout.Color(0);
       if (description.length() > 0) {
         strcpy(xsubs[n].desc, description.c_str());
