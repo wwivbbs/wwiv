@@ -359,16 +359,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
 
 
 // File: input.cpp
-
-void input1(char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false);
-void input1(std::string *strOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false);
-void input(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
-void input(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
-void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
-void inputl(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
-int  Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert, int mode);
-int  Input1(std::string *strOutText, std::string origText, int nMaxLength, bool bInsert, int mode);
-void input_password(std::string promptText, std::string *strOutPassword, int nMaxLength);
+#include "bbs/input.h"
 
 // File: inetmsg.cpp
 

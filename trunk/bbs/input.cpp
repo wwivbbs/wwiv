@@ -16,10 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/input.h"
+
 #include <algorithm>
 
 #include "wwiv.h"
-
 
 // TODO: put back in high ascii characters after finding proper hex codes
 static const unsigned char *valid_letters =
