@@ -19,7 +19,8 @@
 #include <cstdint>
 
 #include "wwiv.h"
-#include "menu.h"
+#include "bbs/input.h"
+#include "bbs/menu.h"
 #include "core/wfndfile.h"
 
 bool GetMenuDir(std::string& menuDir);
@@ -42,6 +43,7 @@ void ListMenuMenus(const char *pszDirectoryName);
 #endif  // HIBYTE
 #endif
 
+using wwiv::bbs::InputMode;
 
 void EditMenus() {
   char szTemp1[21];
@@ -546,7 +548,7 @@ bool GetMenuDir(std::string& menuName) {
   while (!hangup) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#9(Enter=Quit, ?=List) Enter menuset to edit: |#0";
-    input(&menuName, 8);
+    input1(&menuName, 8, InputMode::FILENAME, true, true);
 
     if (menuName.empty()) {
       return false;
