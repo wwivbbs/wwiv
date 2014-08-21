@@ -20,10 +20,12 @@
 #include "wwiv.h"
 #include <algorithm>
 
-#include "core/inifile.h"
+#include "bbs/input.h"
 #include "bbs/printfile.h"
+#include "core/inifile.h"
 #include "core/wtextfile.h"
 
+using wwiv::bbs::InputMode;
 using wwiv::core::FilePath;
 using wwiv::core::IniFile;
 
@@ -59,7 +61,7 @@ void input_phone() {
   do {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
-    Input1(&phoneNumber,  GetSession()->GetCurrentUser()->GetVoicePhoneNumber(), 12, true, INPUT_MODE_PHONE);
+    Input1(&phoneNumber,  GetSession()->GetCurrentUser()->GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
 
     ok = valid_phone(phoneNumber.c_str());
     if (!ok) {
@@ -81,7 +83,7 @@ void input_dataphone() {
     GetSession()->bout << "|#3Enter your DATA phone no. in the form. \r\n";
     GetSession()->bout << "|#3 ###-###-#### - Press Enter to use [" << GetSession()->GetCurrentUser()->GetVoicePhoneNumber()
                        << "].\r\n";
-    Input1(szTempDataPhoneNum, GetSession()->GetCurrentUser()->GetDataPhoneNumber(), 12, true, INPUT_MODE_PHONE);
+    Input1(szTempDataPhoneNum, GetSession()->GetCurrentUser()->GetDataPhoneNumber(), 12, true, InputMode::PHONE);
     if (szTempDataPhoneNum[0] == '\0') {
       snprintf(szTempDataPhoneNum, 21, "%s", GetSession()->GetCurrentUser()->GetVoicePhoneNumber());
     }
@@ -204,7 +206,7 @@ void input_name() {
       GetSession()->bout << "|#3Enter your full name, or your alias.\r\n";
     }
     char szTempLocalName[ 255 ];
-    Input1(szTempLocalName, GetSession()->GetCurrentUser()->GetName(), 30, true, INPUT_MODE_FILE_UPPER);
+    Input1(szTempLocalName, GetSession()->GetCurrentUser()->GetName(), 30, true, InputMode::UPPER);
     ok = check_name(szTempLocalName);
     if (ok) {
       GetSession()->GetCurrentUser()->SetName(szTempLocalName);
@@ -228,7 +230,7 @@ void input_realname() {
       GetSession()->bout << "|#3Enter your FULL real name.\r\n";
       char szTempLocalName[ 255 ];
       Input1(szTempLocalName,
-             GetSession()->GetCurrentUser()->GetRealName(), 30, true, INPUT_MODE_FILE_PROPER);
+             GetSession()->GetCurrentUser()->GetRealName(), 30, true, InputMode::PROPER);
 
       if (szTempLocalName[0] == '\0') {
         GetSession()->bout.NewLine();
@@ -285,7 +287,7 @@ void input_street() {
   do {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Enter your street address.\r\n";
-    Input1(&street, GetSession()->GetCurrentUser()->GetStreet(), 30, true, INPUT_MODE_FILE_PROPER);
+    Input1(&street, GetSession()->GetCurrentUser()->GetStreet(), 30, true, InputMode::PROPER);
 
     if (street.empty()) {
       GetSession()->bout.NewLine();
@@ -303,7 +305,7 @@ void input_city() {
   do {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Enter your city (i.e San Francisco). \r\n";
-    Input1(szCity, GetSession()->GetCurrentUser()->GetCity(), 30, false, INPUT_MODE_FILE_PROPER);
+    Input1(szCity, GetSession()->GetCurrentUser()->GetCity(), 30, false, InputMode::PROPER);
 
     if (szCity[0] == '\0') {
       GetSession()->bout.NewLine();
@@ -411,7 +413,7 @@ void input_age(WUser *pUser) {
       y = static_cast<int>(pTm->tm_year + 1900 - 10) / 100;
       GetSession()->bout << "|#2Year you were born: ";
       sprintf(s, "%2d", y);
-      Input1(ag, s, 4, true, INPUT_MODE_FILE_MIXED);
+      Input1(ag, s, 4, true, InputMode::MIXED);
       y = atoi(ag);
       if (y == 1919) {
         GetSession()->bout.NewLine();
@@ -553,7 +555,7 @@ void input_pw(WUser *pUser) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Please enter a new password, 3-8 chars.\r\n";
     password.clear();
-    Input1(&password, "", 8, false, INPUT_MODE_FILE_UPPER);
+    Input1(&password, "", 8, false, InputMode::UPPER);
 
     std::string realName = GetSession()->GetCurrentUser()->GetRealName();
     StringUpperCase(&realName);
@@ -1335,7 +1337,7 @@ void DoMinimalNewUser() {
       bool ok = true;
       char szTempName[ 81 ];
       do {
-        Input1(szTempName, s1, 30, true, INPUT_MODE_FILE_UPPER);
+        Input1(szTempName, s1, 30, true, InputMode::UPPER);
         ok = check_name(szTempName);
         if (!ok) {
           cln_nu();
@@ -1354,7 +1356,7 @@ void DoMinimalNewUser() {
       do {
         ok = false;
         cln_nu();
-        if ((Input1(s, s1, 10, false, INPUT_MODE_DATE)) == 10) {
+        if ((Input1(s, s1, 10, false, InputMode::DATE)) == 10) {
           sprintf(m1, "%c%c", s[0], s[1]);
           sprintf(d1, "%c%c", s[3], s[4]);
           sprintf(y1, "%c%c%c%c", s[6], s[7], s[8], s[9]);
@@ -1407,7 +1409,7 @@ void DoMinimalNewUser() {
     GetSession()->bout << "|#2" << (GetSession()->GetCurrentUser()->GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
     GetSession()->bout <<  "|#1[D] Country                 : " ;
     if (GetSession()->GetCurrentUser()->GetCountry()[0] == '\0') {
-      Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.country), "", 3, false, INPUT_MODE_FILE_UPPER);
+      Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.country), "", 3, false, InputMode::UPPER);
       if (GetSession()->GetCurrentUser()->GetCountry()[0] == '\0') {
         GetSession()->GetCurrentUser()->SetCountry("USA");
       }
@@ -1420,10 +1422,10 @@ void DoMinimalNewUser() {
       bool ok = false;
       do {
         if (wwiv::strings::IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "USA")) {
-          Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.zipcode), s1, 5, true, INPUT_MODE_FILE_UPPER);
+          Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.zipcode), s1, 5, true, InputMode::UPPER);
           check_zip(GetSession()->GetCurrentUser()->GetZipcode(), 2);
         } else {
-          Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.zipcode), s1, 7, true, INPUT_MODE_FILE_UPPER);
+          Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.zipcode), s1, 7, true, InputMode::UPPER);
         }
         if (GetSession()->GetCurrentUser()->GetZipcode()[0]) {
           ok = true;
@@ -1437,7 +1439,7 @@ void DoMinimalNewUser() {
     if (GetSession()->GetCurrentUser()->GetCity()[0] == 0) {
       bool ok = false;
       do {
-        Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.city), s1, 30, true, INPUT_MODE_FILE_PROPER);
+        Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.city), s1, 30, true, InputMode::PROPER);
         if (GetSession()->GetCurrentUser()->GetCity()[0]) {
           ok = true;
         }
@@ -1446,7 +1448,7 @@ void DoMinimalNewUser() {
       if (GetSession()->GetCurrentUser()->GetState()[0] == 0) {
         do {
           bool ok = false;
-          Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.state), s1, 2, true, INPUT_MODE_FILE_UPPER);
+          Input1(reinterpret_cast<char*>(GetSession()->GetCurrentUser()->data.state), s1, 2, true, InputMode::UPPER);
           if (GetSession()->GetCurrentUser()->GetState()[0]) {
             ok = true;
           }
@@ -1461,7 +1463,7 @@ void DoMinimalNewUser() {
     GetSession()->bout << "|#1[G] Internet Mail Address   : ";
     if (GetSession()->GetCurrentUser()->GetEmailAddress()[0] == 0) {
       std::string emailAddress;
-      Input1(&emailAddress, s1, 44, true, INPUT_MODE_FILE_MIXED);
+      Input1(&emailAddress, s1, 44, true, InputMode::MIXED);
       GetSession()->GetCurrentUser()->SetEmailAddress(emailAddress.c_str());
       if (!check_inet_addr(GetSession()->GetCurrentUser()->GetEmailAddress())) {
         cln_nu();

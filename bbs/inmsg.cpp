@@ -23,6 +23,8 @@
 #include "printfile.h"
 #include "core/wtextfile.h"
 
+using wwiv::bbs::InputMode;
+
 //
 // Local function prototypes
 //
@@ -259,7 +261,7 @@ bool GetMessageToName(const char *aux) {
         GetSession()->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
         newline = false;
         std::string to_name;
-        input1(&to_name, 40, INPUT_MODE_FILE_MIXED, false, true);
+        input1(&to_name, 40, InputMode::MIXED, false, true);
         newline = newlsave;
         if (to_name.empty()) {
           strcpy(irt_name, "ALL");
