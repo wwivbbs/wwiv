@@ -95,7 +95,9 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
           if (strchr("/\\+ <>|*?.,=\";:[]", chCurrent)) {
             chCurrent = 0;
           } else {
+#ifdef _WIN32
             chCurrent = upcase(chCurrent);
+#endif  // _WIN32
           }
           break;
         }
