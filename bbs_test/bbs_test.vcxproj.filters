@@ -1,19 +1,51 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="bbs_test_main.cpp" />
-    <ClCompile Include="stuffin_test.cpp" />
-    <ClCompile Include="xfer_test.cpp" />
-    <ClCompile Include="printfile_test.cpp" />
-    <ClCompile Include="bbs_helper.cpp" />
-    <ClCompile Include="utility_test.cpp" />
-    <ClCompile Include="wutil_test.cpp" />
-    <ClCompile Include="datetime_test.cpp" />
-    <ClCompile Include="bputch_test.cpp" />
-    <ClCompile Include="pause_test.cpp" />
-    <ClCompile Include="make_abs_test.cpp" />
+    <ClCompile Include="xfer_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="bputch_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="datetime_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="make_abs_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="pause_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="printfile_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="stuffin_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="utility_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="wutil_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="bbs_helper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="bbs_test_main.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bbs_helper.h" />
+    <Filter Include="Tests">
+      <UniqueIdentifier>{4d8282bf-8f35-43ad-b055-b38afce62ca5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{94332c11-e6e2-4c80-9ea4-752e68c88ad2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bbs_helper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
