@@ -92,6 +92,7 @@
     <ClInclude Include="datetime.h" />
     <ClInclude Include="fcns.h" />
     <ClInclude Include="filenames.h" />
+    <ClInclude Include="input.h" />
     <ClInclude Include="instmsg.h" />
     <ClInclude Include="listplus.h" />
     <ClInclude Include="menu.h" />
