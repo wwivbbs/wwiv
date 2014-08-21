@@ -24,15 +24,9 @@
 
 #define QWK_DIRECTORY (syscfgovr.batchdir)
 
-#define qwk_iscan(x)         (iscan1(usub[x].subnum, true))
-#define qwk_iscan_literal(x) (iscan1(x, true))
-
 // If you have a HUGE transfer section, this define will not read extended
 // descriptions
 // #define HUGE_TRAN
-
-
-/* #define SLOWER_BUT_SAFER */
 
 #define MAXMAIL 255
 #define EMAIL_STORAGE 2

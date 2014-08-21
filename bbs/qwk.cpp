@@ -41,6 +41,7 @@
 
 #include "core/strings.h"
 
+#define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
 
 // from msgbase.cpp
 long current_gat_section();
