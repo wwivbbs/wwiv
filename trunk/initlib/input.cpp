@@ -464,10 +464,10 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
         if (status == SET) {
           ch = toupper(ch);
           if (ch != ' ')  {
-            int i1 = 1;
-            for (i = 0; i < len; i++) {
-              if (ch == ss[i] && i1) {
-                i1 = 0;
+            bool bLookingForSpace = true;
+            for (int i = 0; i < len; i++) {
+              if (ch == ss[i] && bLookingForSpace) {
+                bLookingForSpace = false;
                 pos = i;
                 out->GotoXY(cx + pos, cy);
                 if (s[pos] == ' ') {
@@ -476,9 +476,9 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
                   ch = ' ';
                 }
               }
-              if (i1) {
-                ch = ss[pos];
-              }
+            }
+            if (bLookingForSpace) {
+              ch = ss[pos];
             }
           }
         }
