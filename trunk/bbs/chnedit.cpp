@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 
+using wwiv::bbs::InputMode;
 
 void showchains();
 void modify_chain(int nCurrentChainNumber);
@@ -187,7 +188,7 @@ void modify_chain(int nCurrentChainNumber) {
     case 'A':
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#7New Description? ";
-      Input1(s, c.description, 40, true, INPUT_MODE_FILE_MIXED);
+      Input1(s, c.description, 40, true, InputMode::MIXED);
       if (s[0]) {
         strcpy(c.description, s);
       }
@@ -196,7 +197,7 @@ void modify_chain(int nCurrentChainNumber) {
       GetSession()->bout.ClearScreen();
       ShowChainCommandLineHelp();
       GetSession()->bout << "\r\n|#9Enter Command Line.\r\n|#7:";
-      Input1(s, c.filename, 79, true, INPUT_MODE_FILE_MIXED);
+      Input1(s, c.filename, 79, true, InputMode::MIXED);
       if (s[0] != 0) {
         strcpy(c.filename, s);
       }

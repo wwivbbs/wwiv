@@ -855,7 +855,7 @@ void download() {
         GetSession()->bout.Color(1);
         bool onl = newline;
         newline = false;
-        input1(s, 12, INPUT_MODE_FILE_UPPER, false);
+        input1(s, 12, wwiv::bbs::InputMode::UPPER, false);
         newline = onl;
         if ((s[0]) && (s[0] != ' ')) {
           if (strchr(s, '.') == NULL) {

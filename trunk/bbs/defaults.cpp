@@ -694,7 +694,8 @@ void modify_mailbox() {
       GetSession()->bout << "|#5Do you want to forward to your Internet address? ";
       if (yesno()) {
         GetSession()->bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
-        Input1(s, GetSession()->GetCurrentUser()->GetEmailAddress(), 75, true, INPUT_MODE_FILE_MIXED);
+        Input1(s, GetSession()->GetCurrentUser()->GetEmailAddress(), 75, true, 
+            wwiv::bbs::InputMode::MIXED);
         if (check_inet_addr(s)) {
           GetSession()->GetCurrentUser()->SetEmailAddress(s);
           write_inet_addr(s, GetSession()->usernum);

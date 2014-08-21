@@ -21,14 +21,29 @@
 
 #include <string>
 
-void input1(char *pszOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false);
-void input1(std::string *strOutText, int nMaxLength, int lc, bool crend, bool bAutoMpl = false);
+namespace wwiv {
+namespace bbs {
+// Text editing modes for input routines
+enum class InputMode {
+  UPPER,
+  MIXED,
+  PROPER,
+  FILENAME,
+  DATE,
+  PHONE 
+};
+
+}  // namespace bbs
+}  // namespace wwiv
+
+void input1(char *pszOutText, int nMaxLength, wwiv::bbs::InputMode lc, bool crend, bool bAutoMpl = false);
+void input1(std::string *strOutText, int nMaxLength, wwiv::bbs::InputMode lc, bool crend, bool bAutoMpl = false);
 void input(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
 void input(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
 void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl = false);
 void inputl(std::string *strOutText, int nMaxLength, bool bAutoMpl = false);
-int  Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert, int mode);
-int  Input1(std::string *strOutText, std::string origText, int nMaxLength, bool bInsert, int mode);
+int  Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert, wwiv::bbs::InputMode mode);
+int  Input1(std::string *strOutText, std::string origText, int nMaxLength, bool bInsert, wwiv::bbs::InputMode mode);
 void input_password(std::string promptText, std::string *strOutPassword, int nMaxLength);
 
 #endif  // __INCLUDED_INPUT_H__

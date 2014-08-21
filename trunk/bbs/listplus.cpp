@@ -1539,7 +1539,7 @@ int rename_filename(const char *pszFileName, int dn) {
     }
     GetSession()->bout.NewLine();
     GetSession()->bout << "New description:\r\n|#2: ";
-    Input1(s, u.description, 58, false, INPUT_MODE_FILE_MIXED);
+    Input1(s, u.description, 58, false, wwiv::bbs::InputMode::MIXED);
     if (s[0]) {
       strcpy(u.description, s);
     }
