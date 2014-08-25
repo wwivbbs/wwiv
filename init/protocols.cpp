@@ -91,18 +91,18 @@ static void edit_prot(int n) {
   Printf("Receive batch command line:\n%s\n", c.receivebatchfn);
   Printf("Send batch command line:\n%s\n", c.sendbatchfn);
   Printf("Bi-directional transfer command line:\n%s\n", c.bibatchfn);
-  out->SetColor(Scheme::PROMPT);
+  out->SetColor(SchemeId::PROMPT);
   Puts("\n<ESC> when done.\n\n");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   Printf("%%1 = com port baud rate\n");
   Printf("%%2 = port number\n");
   Printf("%%3 = filename to send/receive, filename list to send for batch\n");
   Printf("%%4 = modem speed\n");
   Printf("%%5 = filename list to receive for batch UL and bi-directional batch\n");
   nlx();
-  out->SetColor(Scheme::WARNING);
+  out->SetColor(SchemeId::WARNING);
   Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\n");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
 
   do {
     if (cp < 3) {
@@ -210,9 +210,9 @@ void extrn_prots() {
     }
     int nMaxProtocolNumber = initinfo.numexterns + 6;
     nlx();
-    out->SetColor(Scheme::PROMPT);
+    out->SetColor(SchemeId::PROMPT);
     Puts("Externals: M:odify, D:elete, I:nsert, Q:uit : ");
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     char ch = onek("Q\033MID");
     switch (ch) {
     case 'Q':
@@ -221,9 +221,9 @@ void extrn_prots() {
       break;
     case 'M': {
       nlx();
-      out->SetColor(Scheme::PROMPT);
+      out->SetColor(SchemeId::PROMPT);
       Printf("Edit which (2-%d) ? ", nMaxProtocolNumber);
-      out->SetColor(Scheme::NORMAL);
+      out->SetColor(SchemeId::NORMAL);
       int i = input_number(2);
       if ((i > -1) && (i < initinfo.numexterns + 6)) {
         edit_prot(i);
@@ -233,9 +233,9 @@ void extrn_prots() {
     case 'D':
       if (initinfo.numexterns) {
         nlx();
-        out->SetColor(Scheme::PROMPT);
+        out->SetColor(SchemeId::PROMPT);
         Printf("Delete which (6-%d) ? ", nMaxProtocolNumber);
-        out->SetColor(Scheme::NORMAL);
+        out->SetColor(SchemeId::NORMAL);
         int i = input_number(2);
         if (i > 0) {
           i -= 6;
@@ -250,16 +250,16 @@ void extrn_prots() {
       break;
     case 'I':
       if (initinfo.numexterns >= 15) {
-        out->SetColor(Scheme::ERROR_TEXT);
+        out->SetColor(SchemeId::ERROR_TEXT);
         Printf("Too many external protocols.\n");
-        out->SetColor(Scheme::NORMAL);
+        out->SetColor(SchemeId::NORMAL);
         nlx();
         break;
       }
       nlx();
-      out->SetColor(Scheme::PROMPT);
+      out->SetColor(SchemeId::PROMPT);
       Printf("Insert before which (6-%d) ? ", nMaxProtocolNumber);
-      out->SetColor(Scheme::NORMAL);
+      out->SetColor(SchemeId::NORMAL);
       int i = input_number(2);
       if ((i > -1) && (i <= initinfo.numexterns + 6)) {
         for (int i1 = initinfo.numexterns; i1 > i - 6; i1--) {

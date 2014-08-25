@@ -78,25 +78,25 @@ CursesIO::CursesIO()
   noecho();
   nonl();
   start_color();
-  scheme_ = LoadColorSchemes();
+  color_scheme_.reset(new ColorScheme());
 
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
-  header_ = new CursesWindow(2, 0, 0, 0);
-  footer_ = new CursesWindow(2, 0, stdscr_maxy-2, 0);
-  header_->Bkgd(GetAttributesForScheme(Scheme::HEADER));
+  header_ = new CursesWindow(nullptr, 2, 0, 0, 0);
+  footer_ = new CursesWindow(nullptr, 2, 0, stdscr_maxy-2, 0);
+  header_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   char s[81];
   sprintf(s, "WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
-  SetColor(header_, Scheme::HEADER);
+  color_scheme_->SetColor(header_, SchemeId::HEADER);
   header_->MvAddStr(0, 0, s);
-  SetColor(header_, Scheme::HEADER_COPYRIGHT);
+  color_scheme_->SetColor(header_, SchemeId::HEADER_COPYRIGHT);
   header_->MvAddStr(1, 0, copyrightString);
-  footer_->Bkgd(GetAttributesForScheme(Scheme::HEADER));
+  footer_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   header_->Refresh();
   footer_->Refresh();
   header_->RedrawWin();
 
-  window_ = new CursesWindow(stdscr_maxy-4, stdscr_maxx, 2, 0);
+  window_ = new CursesWindow(nullptr, stdscr_maxy-4, stdscr_maxx, 2, 0);
   window_->Keypad(true);
 
   touchwin(stdscr);
@@ -153,7 +153,7 @@ int CursesIO::WhereY() {
  * Clears the local logical screen
  */
 void CursesIO::Cls() {
-  SetColor(Scheme::NORMAL);
+  color_scheme_->SetColor(window_, SchemeId::NORMAL);
   window_->Clear();
   window_->Refresh();
   GotoXY(0, 0);
@@ -187,9 +187,9 @@ int CursesIO::GetChar() {
 void CursesIO::SetDefaultFooter() {
   window_->Erase();
   window_->Move(0, 0);
-  SetColor(footer_, Scheme::FOOTER_KEY);
+  color_scheme_->SetColor(footer_, SchemeId::FOOTER_KEY);
   footer_->MvAddStr(0, 0, "Esc");
-  SetColor(footer_, Scheme::FOOTER_TEXT);
+  color_scheme_->SetColor(footer_, SchemeId::FOOTER_TEXT);
   footer_->AddStr("-Exit ");
   footer_->Refresh();
 }
@@ -211,47 +211,6 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
   header_->MvAddStr(1, x, s.c_str());
   header_->Refresh();
   indicator_mode_ = mode;
-}
-
-attr_t CursesIO::GetAttributesForScheme(Scheme id) {
-  const SchemeDescription& s = scheme_[id];
-  attr_t attr = COLOR_PAIR(s.color_pair());
-  if (s.bold()) {
-    attr |= A_BOLD;
-  }
-  return attr;
-}
-
-void CursesIO::SetColor(CursesWindow* window, Scheme id) {
-  window->AttrSet(GetAttributesForScheme(id));
-}
-
-// static 
-std::map<Scheme, SchemeDescription> CursesIO::LoadColorSchemes() {
-  std::map<Scheme, SchemeDescription> scheme;
-
-  // Create a default color scheme, ideally this would be loaded from an INI file or some other
-  // configuration file, but this is a sufficient start.
-  scheme[Scheme::NORMAL] = SchemeDescription(Scheme::NORMAL, COLOR_CYAN, COLOR_BLACK, false);
-  scheme[Scheme::ERROR_TEXT] = SchemeDescription(Scheme::ERROR_TEXT, COLOR_RED, COLOR_BLACK, false);
-  scheme[Scheme::WARNING] = SchemeDescription(Scheme::WARNING, COLOR_MAGENTA, COLOR_BLACK, true);
-  scheme[Scheme::HIGHLIGHT] = SchemeDescription(Scheme::HIGHLIGHT, COLOR_CYAN, COLOR_BLACK, true);
-  scheme[Scheme::HEADER] = SchemeDescription(Scheme::HEADER, COLOR_YELLOW, COLOR_BLUE, true);
-  scheme[Scheme::HEADER_COPYRIGHT] = SchemeDescription(Scheme::HEADER_COPYRIGHT, COLOR_WHITE, COLOR_BLUE, true);
-  scheme[Scheme::FOOTER_KEY] = SchemeDescription(Scheme::FOOTER_KEY, COLOR_YELLOW, COLOR_BLUE, true);
-  scheme[Scheme::FOOTER_TEXT] = SchemeDescription(Scheme::FOOTER_TEXT, COLOR_CYAN, COLOR_BLUE, false);
-  scheme[Scheme::PROMPT] = SchemeDescription(Scheme::PROMPT, COLOR_YELLOW, COLOR_BLACK, true);
-  scheme[Scheme::EDITLINE] = SchemeDescription(Scheme::EDITLINE, COLOR_WHITE, COLOR_BLUE, true);
-  scheme[Scheme::INFO] = SchemeDescription(Scheme::INFO, COLOR_CYAN, COLOR_BLACK, false);
-  scheme[Scheme::DIALOG_PROMPT] = SchemeDescription(Scheme::DIALOG_PROMPT, COLOR_YELLOW, COLOR_BLUE, true);
-  scheme[Scheme::DIALOG_BOX] = SchemeDescription(Scheme::DIALOG_BOX, COLOR_GREEN, COLOR_BLUE, true);
-  scheme[Scheme::DIALOG_TEXT] = SchemeDescription(Scheme::DIALOG_TEXT, COLOR_CYAN, COLOR_BLUE, true);
-
-  // Create the color pairs for each of the colors defined in the color scheme.
-  for (const auto& kv : scheme) {
-    init_pair(kv.second.color_pair(), kv.second.f(), kv.second.b());
-  }
-  return scheme;
 }
 
 // static

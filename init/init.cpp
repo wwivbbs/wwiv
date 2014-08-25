@@ -60,6 +60,7 @@
 
 #include "initlib/input.h"
 #include "initlib/curses_io.h"
+#include "initlib/listbox.h"
 
 using std::string;
 using std::vector;
@@ -86,9 +87,9 @@ static void convcfg() {
 
   int hFile = open(configdat, O_RDWR | O_BINARY);
   if (hFile > 0) {
-    out->SetColor(Scheme::INFO);
+    out->SetColor(SchemeId::INFO);
     Printf("Converting config.dat to 4.30/5.00 format...\n");
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     read(hFile, &syscfg, sizeof(configrec));
     sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WFile::pathSeparatorChar);
     strcpy(syscfg.logoff_c, " ");
@@ -143,7 +144,7 @@ static void ValidateConfigOverlayExists() {
     write_instance(1, syscfg.batchdir, syscfg.tempdir);
   }
 
-  if (config_overlay.GetLength() < (num_instances * sizeof(configoverrec))) {
+  if (config_overlay.GetLength() < static_cast<long>(num_instances * sizeof(configoverrec))) {
     const string base(bbsdir);
     // Not enough instances are configured.  Recreate all of them based on INI setting.
     for (int i=1; i <= num_instances; i++) {
@@ -202,7 +203,7 @@ int WInitApp::main(int argc, char *argv[]) {
   trimstrpath(bbsdir);
 
   out->Cls();
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
 
   int configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile > 0) {
@@ -241,7 +242,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile < 0) {
-    out->SetColor(Scheme::ERROR_TEXT);
+    out->SetColor(SchemeId::ERROR_TEXT);
     Printf("%s NOT FOUND.\n\n", configdat);
     if (dialog_yn("Perform initial installation")) {
       new_init();
@@ -363,7 +364,7 @@ int WInitApp::main(int argc, char *argv[]) {
     if (strcmp(s, (syscfg.systempw)) != 0) {
       out->Cls();
       nlx(2);
-      out->SetColor(Scheme::ERROR_TEXT);
+      out->SetColor(SchemeId::ERROR_TEXT);
       Printf("I'm sorry, that isn't the correct system password.\n");
       exit_init(2);
     }
@@ -374,74 +375,74 @@ int WInitApp::main(int argc, char *argv[]) {
     out->Cls();
     out->SetDefaultFooter();
 
-    out->SetColor(Scheme::NORMAL);
-    int y = 1;
-    int x = 0;
-    out->PutsXY(x, y++, "G. General System Configuration");
-    out->PutsXY(x, y++, "P. System Paths");
-    out->PutsXY(x, y++, "T. External Transfer Protocol Configuration");
-    out->PutsXY(x, y++, "E. External Editor Configuration");
-    out->PutsXY(x, y++, "S. Security Level Configuration");
-    out->PutsXY(x, y++, "V. Auto-Validation Level Configuration");
-    out->PutsXY(x, y++, "A. Archiver Configuration");
-    out->PutsXY(x, y++, "I. Instance Configuration");
-    out->PutsXY(x, y++, "L. Language Configuration");
-    out->PutsXY(x, y++, "N. Network Configuration");
-    out->PutsXY(x, y++, "R. Registration Information");
-    out->PutsXY(x, y++, "U. User Editor");
-    out->PutsXY(x, y++, "X. Update Sub/Directory Maximums");
-    out->PutsXY(x, y++, "Q. Quit");
+    vector<ListBoxItem> items = {
+        { "G. General System Configuration", 'G' },
+        { "P. System Paths", 'P' },
+        { "T. External Transfer Protocol Configuration", 'T' },
+        { "E. External Editor Configuration", 'E' },
+        { "S. Security Level Configuration", 'S' },
+        { "V. Auto-Validation Level Configuration", 'V' },
+        { "A. Archiver Configuration", 'A' },
+        { "I. Instance Configuration", 'I' },
+        { "L. Language Configuration", 'L' },
+        { "N. Network Configuration", 'N' },
+        { "R. Registration Information", 'R' },
+        { "U. User Editor", 'U' },
+        { "X. Update Sub/Directory Maximums", 'X' },
+        { "Q. Quit", 'Q' }
+    };
 
-    y++;
-    out->SetColor(Scheme::PROMPT);
-    out->PutsXY(x, y++, "Command? ");
-    out->SetColor(Scheme::NORMAL);
-    switch (onek("QAEGILNPRSTUVX$\033")) {
+    int selected_hotkey = -1;
+    {
+      ListBox list(out->window(), "Main Menu", static_cast<int>(floor(out->window()->GetMaxX() * 0.8)), 
+        static_cast<int>(floor(out->window()->GetMaxY() * 0.8)), items, out->color_scheme());
+      list.set_hotkey_executes_item(true);
+      int selected_item = list.Run();
+      if (selected_item < 0) {
+        done = true;
+        continue;
+      }
+      selected_hotkey = items[selected_item].hotkey();
+    }
+    out->SetDefaultFooter();
+
+    // It's easier to use the hotkey for this case statement so it's simple to know
+    // which case statement matches which item.
+    switch (selected_hotkey) {
     case 'Q':
-    case '\033':
       done = true;
       break;
     case 'G':
-      out->SetDefaultFooter();
       sysinfo1();
       break;
     case 'P':
-      out->SetDefaultFooter();
       setpaths();
       break;
     case 'T':
-      out->SetDefaultFooter();
       extrn_prots();
       break;
     case 'E':
-      out->SetDefaultFooter();
       extrn_editors();
       break;
     case 'S':
-      out->SetDefaultFooter();
       sec_levs();
       break;
     case 'V':
-      out->SetDefaultFooter();
       autoval_levs();
       break;
     case 'A':
-      out->SetDefaultFooter();
       edit_arc(0);
       break;
     case 'I':
       instance_editor();
       break;
     case 'L':
-      out->SetDefaultFooter();
       edit_languages();
       break;
     case 'N':
-      out->SetDefaultFooter();
       networks();
       break;
     case 'R':
-      out->SetDefaultFooter();
       edit_registration_code();
       break;
     case 'U':
@@ -449,13 +450,11 @@ int WInitApp::main(int argc, char *argv[]) {
       break;
     case '$':
       nlx();
-      out->SetDefaultFooter();
       Printf("QSCan Lenth: %lu\n", syscfg.qscn_len);
       Printf("WWIV %s%s INIT compiled %s\n", wwiv_version, beta_version, const_cast<char*>(wwiv_date));
       out->GetChar();
       break;
     case 'X':
-      out->SetDefaultFooter();
       up_subs_dirs();
       break;
     }

@@ -31,7 +31,7 @@
 class CursesWindow {
  public:
   // Constructor/Destructor
-  CursesWindow(int nlines, int ncols, int begin_y, int begin_x);
+  CursesWindow(CursesWindow* parent, int nlines, int ncols, int begin_y, int begin_x);
   CursesWindow(const CursesWindow& copy) = delete;
   virtual ~CursesWindow();
 
@@ -59,6 +59,7 @@ class CursesWindow {
 
  private:
   WINDOW* window_;
+  CursesWindow* parent_;
 };
 
 #endif // __INCLUDED_PLATFORM_CURSES_WIN_H__

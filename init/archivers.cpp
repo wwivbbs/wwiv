@@ -59,17 +59,17 @@ void edit_arc(int nn) {
     int cp = 4;
     done1 = false;
     out->Cls();
-    out->SetColor(Scheme::PROMPT);
+    out->SetColor(SchemeId::PROMPT);
     Printf("                 Archiver Configuration\n\n");
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     if (i == 0) {
       Printf("Archiver #%d  ", i + 1);
-      out->SetColor(Scheme::PROMPT);
+      out->SetColor(SchemeId::PROMPT);
       Printf("(Default)\n\n");
     } else {
       Printf("Archiver #%d           \n\n", i + 1);
     }
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     Printf("Archiver Name      : %s\n", arc[i].name);
     Printf("Archiver Extension : %s\n", arc[i].extension);
     Printf("List Archive       : %s\n", arc[i].arcl);
@@ -80,14 +80,14 @@ void edit_arc(int nn) {
     Printf("Test Archive       : %s\n", arc[i].arct);
     out->GotoXY(0, 13);
     Printf("                                                             \n");
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     Printf("[ = Previous Archiver  ] = Next Archiver\n");
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     Printf("                                                             \n");
     Printf("                                                             \n");
-    out->SetColor(Scheme::PROMPT);
+    out->SetColor(SchemeId::PROMPT);
     Puts("<ENTER> to edit    <ESC> when done.");
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     nlx();
     char ch = onek("\033[]\r");
     switch (ch) {
@@ -99,9 +99,9 @@ void edit_arc(int nn) {
       Printf("the archiver and extension should be used. i.e.:             \n");
       Printf("c:\\bin\\arcs\\zip.exe -a %%1 %%2                              \n");
       Printf("                                                             \n");
-      out->SetColor(Scheme::PROMPT);
+      out->SetColor(SchemeId::PROMPT);
       Printf("<ESC> when done\n");
-      out->SetColor(Scheme::NORMAL);
+      out->SetColor(SchemeId::NORMAL);
       bool done = false;
       do {
         int i1 = 0;

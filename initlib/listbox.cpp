@@ -1,0 +1,160 @@
+/**************************************************************************/
+/*                                                                        */
+/*                 WWIV Initialization Utility Version 5.0                */
+/*             Copyright (C)1998-2014, WWIV Software Services             */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/*                                                                        */
+/**************************************************************************/
+#include "listbox.h"
+
+#include <algorithm>
+#include <cstring>
+#include <iostream>
+#include <sstream>
+
+#include "core/strings.h"
+#include "initlib/colors.h"
+
+using std::string;
+using wwiv::strings::StringPrintf;
+
+ListBox::ListBox(CursesWindow* parent, const string& title, int max_x, int max_y, 
+                 std::vector<ListBoxItem>& items, ColorScheme* scheme) 
+    : title_(title), selected_(-1), items_(items), window_top_(0), width_(4), 
+      height_(2), color_scheme_(scheme), 
+      window_top_min_(title.empty() ? 1 : 3) {
+  height_ = std::min<int>(items.size(), max_y);
+  int window_height = 2 + height_ + window_top_min_ - 1;
+  int longest_line = std::max<int>(2, title.size() + 4);
+  for (const auto& item : items) {
+    longest_line = std::max<int>(longest_line, item.text().size());
+  }
+  width_ = std::min<int>(max_x, longest_line);
+  int window_width = 4 + width_;
+  int maxx = parent->GetMaxX();
+  int maxy = parent->GetMaxY();
+  int begin_x = ((maxx - window_width) / 2);
+  int begin_y = ((maxy - window_height) / 2);
+
+  window_.reset(new CursesWindow(parent, window_height, window_width, begin_y, begin_x));
+  color_scheme_->SetColor(window_.get(), SchemeId::DIALOG_BOX);
+  window_->Box(0, 0);
+  window_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::DIALOG_TEXT));
+  if (!title.empty()) {
+    color_scheme_->SetColor(window_.get(), SchemeId::DIALOG_PROMPT);
+    window_->MvAddStr(1, 2, title);
+  }
+}
+
+void ListBox::DrawAllItems() {
+  for (int y = 0; y < height_; y++) {
+    int current_item = window_top_ + y - window_top_min_;
+    string line(items_[current_item].text());
+    if (line.size() > width_) {
+      line = line.substr(0, width_);
+    } else {
+      for (int i=line.size(); i < width_; i++) {
+        line.push_back(' ');
+      }
+    }
+    if (selected_ == current_item) {
+      color_scheme_->SetColor(window_.get(), SchemeId::DIALOG_SELECTION);
+    } else {
+      color_scheme_->SetColor(window_.get(), SchemeId::DIALOG_TEXT);
+    }
+    line.insert(line.begin(), 1, ' ');
+    line.push_back(' ');
+    window_->MvAddStr(y + window_top_min_, 1, line.c_str());
+  }
+}
+
+bool ListBox::RunDialog() {
+  window_top_ = window_top_min_;
+  selected_ = 0;
+
+  while (true) {
+    DrawAllItems();
+    window_->Move(selected_ - (window_top_ - window_top_min_) + window_top_min_, 1);
+    window_->Refresh();
+    int ch = window_->GetChar();
+    switch (ch) {
+    case KEY_HOME:
+      selected_ = 0;
+      window_top_ = window_top_min_;
+      break;
+    case KEY_END:
+      window_top_ = items_.size() - height_ + window_top_min_;
+      selected_ = window_top_ - window_top_min_;
+      break;
+    case KEY_PREVIOUS:  // What is this key?
+    case KEY_UP:
+      if (selected_ + window_top_min_ == window_top_) {
+        // At the top of the window, move the window up one.
+        if (window_top_ > window_top_min_) {
+          window_top_--;
+          selected_--;
+        }
+      } else {
+        selected_--;
+      }
+      break;
+    case KEY_PPAGE: {
+      window_top_ -= height_;
+      selected_ -= height_;
+      window_top_ = std::max<int>(window_top_, window_top_min_);
+      selected_ = std::max<int>(selected_, 0);
+    } break;
+    case KEY_NEXT: // What is this key?
+    case KEY_DOWN: {
+      int window_bottom = window_top_ + height_ - window_top_min_ - 1;
+      if (selected_ < window_bottom) {
+        selected_++;
+      } else if (window_top_ < items_.size() - height_ + window_top_min_) {
+        selected_++;
+        window_top_++;
+      }
+    } break;
+    case KEY_NPAGE: {
+      window_top_ += height_;
+      selected_ += height_;
+      window_top_ = std::min<int>(window_top_, items_.size() - height_ + window_top_min_);
+      selected_ = std::min<int>(selected_, items_.size() - 1);
+    } break;
+#ifdef PADENTER
+    case PADENTER:
+#endif
+    case KEY_ENTER:
+    case 13:
+      return true;
+    case 27:  // ESCAPE_KEY
+      return false;
+    default: {
+      ch = toupper(ch);
+      for (auto current=0; current < items_.size(); current++) {
+        const auto& item = items_[current];
+        if (ch == toupper(item.hotkey())) {
+          selected_ = current;
+          window_top_ = selected_ - (height_ / 2) + window_top_min_;
+          window_top_ = std::max<int>(window_top_, window_top_min_);
+          window_top_ = std::min<int>(window_top_, items_.size() - height_ + window_top_min_);
+          if (hotkey_executes_item_) {
+            return true;
+          }
+        }
+      }
+    }
+    }
+  }
+
+}
