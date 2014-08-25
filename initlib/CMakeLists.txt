@@ -7,9 +7,11 @@ include_directories(..)
 add_definitions(-DNOT_BBS)
 
 set(COMMON_SOURCES
+  colors.cpp
   curses_io.cpp
   curses_win.cpp
   input.cpp
+  listbox.cpp
   )
 
 if(UNIX) 
