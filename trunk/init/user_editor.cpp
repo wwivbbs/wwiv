@@ -47,15 +47,15 @@ void show_user(EditItems* items, userrec* user) {
     std::string blank(30, ' ');
     out->PutsXY(50, i, blank.c_str());
   }
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   if (user->inact & inact_deleted) {
-    out->SetColor(Scheme::ERROR_TEXT);
+    out->SetColor(SchemeId::ERROR_TEXT);
     PutsXY(COL2_POSITION, 0, "[[ DELETED USER ]]");
   } else if (user->inact & inact_inactive) {
-    out->SetColor(Scheme::ERROR_TEXT);
+    out->SetColor(SchemeId::ERROR_TEXT);
     PutsXY(COL2_POSITION, 0, "[[ INACTIVE USER ]]");
   }
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   int y = 2;
   PrintfXY(COL2_POSITION, y++, "First on         : %s", user->firston);
   PrintfXY(COL2_POSITION, y++, "Last on          : %s", user->laston);
@@ -73,7 +73,7 @@ void show_user(EditItems* items, userrec* user) {
 }
 
 static void show_error_no_users() {
-  out->SetColor(Scheme::ERROR_TEXT);
+  out->SetColor(SchemeId::ERROR_TEXT);
   Printf("You must have users added before using user editor.");
   Printf("\n\n");
   pausescr();
@@ -93,7 +93,7 @@ void user_editor() {
     return;
   }
 
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   out->GotoXY(0, 1);
   Printf("Name/Handle      : \n");
   Printf("Real Name        : \n");
@@ -175,7 +175,7 @@ void user_editor() {
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
-        out->SetColor(Scheme::ERROR_TEXT);
+        out->SetColor(SchemeId::ERROR_TEXT);
         PutsXY(0, PROMPT_LINE, "Can not edit a deleted user.\n\n");
         pausescr();
       } else {

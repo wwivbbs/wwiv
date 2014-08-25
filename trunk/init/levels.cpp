@@ -208,7 +208,7 @@ static void ed_slx(int *sln) {
 
 void sec_levs() {
   out->Cls();
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   Printf("Security level   : \n");
   Printf("Time per day     : \n");
   Printf("Time per logon   : \n");
@@ -225,13 +225,13 @@ void sec_levs() {
   up_sl(cursl);
   bool done = false;
   out->GotoXY(0, 12);
-  out->SetColor(Scheme::PROMPT);
+  out->SetColor(SchemeId::PROMPT);
   Puts("\n<ESC> to exit\n");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   Printf("[ = down one SL    ] = up one SL\n");
   Printf("{ = down 10 SL     } = up 10 SL\n");
   Printf("<C/R> = edit SL data\n");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   do {
     out->GotoXY(0, 18);
     Puts("Command: ");
@@ -239,22 +239,22 @@ void sec_levs() {
     switch (ch) {
     case '\r':
       out->GotoXY(0, 12);
-      out->SetColor(Scheme::PROMPT);
+      out->SetColor(SchemeId::PROMPT);
       Puts("\n<ESC> to exit\n");
-      out->SetColor(Scheme::NORMAL);
+      out->SetColor(SchemeId::NORMAL);
       Printf("                                \n");
       Printf("                               \n");
       Printf("                    \n");
       Puts("\n          \n");
       ed_slx(&cursl);
       out->GotoXY(0, 12);
-      out->SetColor(Scheme::PROMPT);
+      out->SetColor(SchemeId::PROMPT);
       Puts("\n<ESC> to exit\n");
-      out->SetColor(Scheme::NORMAL);
+      out->SetColor(SchemeId::NORMAL);
       Printf("[ = down one SL    ] = up one SL\n");
       Printf("{ = down 10 SL     } = up 10 SL\n");
       Printf("<C/R> = edit SL data\n");
-      out->SetColor(Scheme::NORMAL);
+      out->SetColor(SchemeId::NORMAL);
       break;
     case '\033':
       done = true;
@@ -375,9 +375,9 @@ static void edit_autoval(int n) {
   Printf("AR           : %s\n", ar);
   Printf("DAR          : %s\n", dar);
   Printf("Restrictions : %s\n", r);
-  out->SetColor(Scheme::PROMPT);
+  out->SetColor(SchemeId::PROMPT);
   Puts("\n\n<ESC> to exit\n");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   bool done = false;
   cp = 0;
   do {
@@ -444,9 +444,9 @@ void autoval_levs() {
   bool done = false;
   do {
     list_autoval();
-    out->SetColor(Scheme::PROMPT);
+    out->SetColor(SchemeId::PROMPT);
     Puts("Which (0-9, Q=Quit) ? ");
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     char ch = onek("Q0123456789\033");
     if (ch == 'Q' || ch == '\033') {
       done = true;

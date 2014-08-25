@@ -45,14 +45,14 @@ static int verify_dir(char *typeDir, char *dirName) {
   if (fnd.next() && fnd.IsDirectory()) {
     out->GotoXY(0, 8);
     sprintf(s, "The %s directory: %s is invalid!", typeDir, dirName);
-    out->SetColor(Scheme::ERROR_TEXT);
+    out->SetColor(SchemeId::ERROR_TEXT);
     out->Puts(s);
     for (unsigned int i = 0; i < strlen(s); i++) {
       Printf("\b \b");
     }
     if ((strcmp(typeDir, "Temporary") == 0) || (strcmp(typeDir, "Batch") == 0)) {
       sprintf(s, "Create %s? ", dirName);
-      out->SetColor(Scheme::PROMPT);
+      out->SetColor(SchemeId::PROMPT);
       out->Puts(s);
       ch = out->GetChar();
       if (toupper(ch) == 'Y') {
@@ -62,7 +62,7 @@ static int verify_dir(char *typeDir, char *dirName) {
         Printf("\b \b");
       }
     }
-    out->SetColor(Scheme::PROMPT);
+    out->SetColor(SchemeId::PROMPT);
     out->Puts("<ESC> when done.");
     rc = 1;
   }
@@ -73,7 +73,7 @@ static int verify_dir(char *typeDir, char *dirName) {
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir */
 void setpaths() {
   out->Cls();
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   Printf("Messages Directory : %s\n", syscfg.msgsdir);
   Printf("GFiles Directory   : %s\n", syscfg.gfilesdir);
   Printf("Menu Directory     : %s\n", syscfg.menudir);
@@ -81,13 +81,13 @@ void setpaths() {
   Printf("Downloads Directory: %s\n", syscfg.dloadsdir);
 
   nlx(2);
-  out->SetColor(Scheme::WARNING);
+  out->SetColor(SchemeId::WARNING);
   Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\n\n");
-  out->SetColor(Scheme::PROMPT);
+  out->SetColor(SchemeId::PROMPT);
   Printf(" Changing any of these requires YOU to MANUALLY move files and / or \n");
   Printf(" directory structures.  Consult the documentation prior to changing \n");
   Printf(" any of these settings.\n");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
 
   int i1;
   int cp = 0;

@@ -25,10 +25,25 @@
 #include "curses.h"
 #include "curses_win.h"
 
-CursesWindow::CursesWindow(int nlines, int ncols, int begin_y, int begin_x) {
-  window_ = newwin(nlines, ncols, begin_y, begin_x);
+CursesWindow::CursesWindow(CursesWindow* parent, int nlines, int ncols, int begin_y, int begin_x) 
+    : parent_(parent) {
+  if (parent != nullptr) {
+    window_ =  newwin(nlines, ncols, begin_y + getbegy(parent->window()), 
+      begin_x + getbegx(parent->window()));
+  } else {
+    window_ = newwin(nlines, ncols, begin_y, begin_x);
+  }
+  keypad(window_, true);
+  werase(window_);
+  touchwin(window_);
+  Refresh();
 }
 
 CursesWindow::~CursesWindow() {
   delwin(window_);
+  if (parent_) {
+    parent_->RedrawWin();
+    parent_->Refresh();
+    doupdate();
+  }
 }

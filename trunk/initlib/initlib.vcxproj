@@ -83,14 +83,18 @@
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="colors.h" />
     <ClInclude Include="curses_io.h" />
     <ClInclude Include="curses_win.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="listbox.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="colors.cpp" />
     <ClCompile Include="curses_io.cpp" />
     <ClCompile Include="curses_win.cpp" />
     <ClCompile Include="input.cpp" />
+    <ClCompile Include="listbox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\core.vcxproj">

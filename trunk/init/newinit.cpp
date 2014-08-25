@@ -112,9 +112,9 @@ static void init_files() {
   subboardrec s1;
   directoryrec d1;
 
-  out->SetColor(Scheme::PROMPT);
+  out->SetColor(SchemeId::PROMPT);
   Puts("Creating Data Files.");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
 
   memset(&syscfg, 0, sizeof(configrec));
 
@@ -347,9 +347,9 @@ static void init_files() {
   close(hFile);
   Printf(".\n");
   ////////////////////////////////////////////////////////////////////////////
-  out->SetColor(Scheme::PROMPT);
+  out->SetColor(SchemeId::PROMPT);
   Puts("Copying String and Miscellaneous files.");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
 
   Printf(".");
   rename("wwivini.500", "wwiv.ini");
@@ -376,9 +376,9 @@ static void init_files() {
   Printf(".\n");
 
   ////////////////////////////////////////////////////////////////////////////
-  out->SetColor(Scheme::PROMPT);
+  out->SetColor(SchemeId::PROMPT);
   Puts("Decompressing archives.  Please wait");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   if (exist("en-menus.zip")) {
     char szDestination[MAX_PATH];
     Printf(".");
@@ -409,7 +409,7 @@ static void init_files() {
     rename("zip-city.zip", szDestination);
     Printf(".");
   }
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   Printf(".\n");
 }
 
@@ -426,17 +426,17 @@ void new_init() {
     "dloads/misc",
     "dloads/sysop",
   };
-  out->SetColor(Scheme::PROMPT);
+  out->SetColor(SchemeId::PROMPT);
   Puts("\n\nNow performing installation.  Please wait...\n\n");
   Puts("Creating Directories");
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   for (const auto& dirname : dirnames) {
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     Printf(".");
     int nRet = chdir(dirname.c_str());
     if (nRet) {
       if (mkdir(dirname.c_str())) {
-        out->SetColor(Scheme::ERROR_TEXT);
+        out->SetColor(SchemeId::ERROR_TEXT);
         Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname.c_str());
         exit_init(2);
       }
