@@ -19,6 +19,7 @@
 #define _DEFINE_GLOBALS_
 
 #include <cctype>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <curses.h>
