@@ -130,13 +130,13 @@ void instance_editor() {
     int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
     out->Cls();
 
-    out->SetColor(Scheme::NORMAL);
+    out->SetColor(SchemeId::NORMAL);
     out->GotoXY(0, 1);
     Printf("Temporary Dir Pattern : %s\n", temp.c_str());
     Printf("Batch Dir Pattern     : %s\n", batch.c_str());
     Printf("Number of Instances:  : %d\n", num_instances);
     nlx(2);
-    out->SetColor(Scheme::WARNING);
+    out->SetColor(SchemeId::WARNING);
     Printf("To change these values please edit 'wwiv.ini'\n");
     nlx(2);
     pausescr();
@@ -150,7 +150,7 @@ void instance_editor() {
   int current_instance = 1;
   read_instance(current_instance, &instance);
 
-  out->SetColor(Scheme::NORMAL);
+  out->SetColor(SchemeId::NORMAL);
   out->GotoXY(0, 1);
   Printf("Temporary Directory: %s\n", instance.tempdir);
   Printf("Batch Directory    : %s\n", instance.batchdir);
