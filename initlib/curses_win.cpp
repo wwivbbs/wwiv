@@ -47,3 +47,39 @@ CursesWindow::~CursesWindow() {
     doupdate();
   }
 }
+
+void CursesWindow::GotoXY(int x, int y) {
+  x = std::max<int>(x, 0);
+  x = std::min<int>(x, GetMaxX());
+  y = std::max<int>(y, 0);
+  y = std::min<int>(y, GetMaxY());
+
+  Move(y, x);
+  Refresh();
+}
+
+void CursesWindow::Putch(unsigned char ch) {
+  AddCh(ch);
+  Refresh();
+}
+
+void CursesWindow::Puts(const std::string& text) {
+  AddStr(text.c_str());
+  Refresh();
+}
+
+void CursesWindow::PutsXY(int x, int y, const std::string& text) {
+  GotoXY(x, y);
+  Puts(text.c_str());
+}
+
+void CursesWindow::PrintfXY(int x, int y, const char *pszFormat, ...) {
+  va_list ap;
+  char szBuffer[1024];
+
+  va_start(ap, pszFormat);
+  vsnprintf(szBuffer, 1024, pszFormat, ap);
+  va_end(ap);
+  PutsXY(x, y, szBuffer);
+}
+

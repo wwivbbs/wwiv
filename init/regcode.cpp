@@ -37,6 +37,7 @@ void edit_registration_code() {
   Printf("<ESC> when done.\n");
 
   EditItems items{ new NumberEditItem<uint32_t>(23, 1, &syscfg.wwiv_reg_number) };
+  items.set_curses_io(out, out->window());
   items.Run();
   save_config();
 }

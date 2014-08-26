@@ -302,7 +302,7 @@ void networks() {
     Printf("You have not installed the networking software.  Unzip netxx.zip\n");
     Printf("to the main BBS directory and re-run init.\n\n");
     Printf("Hit any key to continue.\n");
-    out->GetChar();
+    out->window()->GetChar();
   }
 
   do {
@@ -341,7 +341,7 @@ void networks() {
         out->SetColor(SchemeId::ERROR_TEXT);
         Printf("You must run the BBS once to set up some variables before deleting a network.\n");
         out->SetColor(SchemeId::NORMAL);
-        out->GetChar();
+        out->window()->GetChar();
         break;
       }
       if (initinfo.net_num_max > 1) {
@@ -373,7 +373,7 @@ void networks() {
         Printf("You must leave at least one network.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
-        out->GetChar();
+        out->window()->GetChar();
       }
       break;
     case 'I':
@@ -381,7 +381,7 @@ void networks() {
         out->SetColor(SchemeId::PROMPT);
         Printf("You must run the BBS once to set up some variables before inserting a network.\n");
         out->SetColor(SchemeId::NORMAL);
-        out->GetChar();
+        out->window()->GetChar();
         break;
       }
       if (initinfo.net_num_max >= MAX_NETWORKS) {
@@ -389,7 +389,7 @@ void networks() {
         Printf("Too many networks.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
-        out->GetChar();
+        out->window()->GetChar();
         break;
       }
       nlx();
@@ -442,9 +442,9 @@ static void edit_net(int nn) {
   out->SetColor(SchemeId::NORMAL);
   do {
     if (cp) {
-      out->GotoXY(17, cp + 1);
+      out->window()->GotoXY(17, cp + 1);
     } else {
-      out->GotoXY(17, cp);
+      out->window()->GotoXY(17, cp);
     }
     int nNext = 0;
     switch (cp) {

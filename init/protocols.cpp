@@ -106,9 +106,9 @@ static void edit_prot(int n) {
 
   do {
     if (cp < 3) {
-      out->GotoXY(23, cp);
+      out->window()->GotoXY(23, cp);
     } else {
-      out->GotoXY(0, cp * 2 - 2);
+      out->window()->GotoXY(0, cp * 2 - 2);
     }
     switch (cp) {
     case 0:
@@ -136,7 +136,7 @@ static void edit_prot(int n) {
         } else {
           c.othr &= (~othr_error_correct);
         }
-        out->Puts(s1);
+        out->window()->Puts(s1);
       }
       break;
     case 3:
@@ -270,7 +270,7 @@ void extrn_prots() {
         edit_prot(i);
       } else {
         Printf("Invalid entry: %d", i);
-        out->GetChar();
+        out->window()->GetChar();
       }
       break;
     }

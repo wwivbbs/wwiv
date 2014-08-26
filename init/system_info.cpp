@@ -134,7 +134,7 @@ void sysinfo1() {
   cp = 0;
   bool done = false;
   do {
-    out->GotoXY(19, cp);
+    out->window()->GotoXY(19, cp);
     switch (cp) {
     case 0:
       editline(syscfg.systempw, 20, UPPER_ONLY, &i1, "");

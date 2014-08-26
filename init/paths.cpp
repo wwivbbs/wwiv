@@ -43,18 +43,18 @@ static int verify_dir(char *typeDir, char *dirName) {
   fnd.open(dirName, 0);
 
   if (fnd.next() && fnd.IsDirectory()) {
-    out->GotoXY(0, 8);
+    out->window()->GotoXY(0, 8);
     sprintf(s, "The %s directory: %s is invalid!", typeDir, dirName);
     out->SetColor(SchemeId::ERROR_TEXT);
-    out->Puts(s);
+    out->window()->Puts(s);
     for (unsigned int i = 0; i < strlen(s); i++) {
       Printf("\b \b");
     }
     if ((strcmp(typeDir, "Temporary") == 0) || (strcmp(typeDir, "Batch") == 0)) {
       sprintf(s, "Create %s? ", dirName);
       out->SetColor(SchemeId::PROMPT);
-      out->Puts(s);
-      ch = out->GetChar();
+      out->window()->Puts(s);
+      ch = out->window()->GetChar();
       if (toupper(ch) == 'Y') {
         mkdir(dirName);
       }
@@ -63,7 +63,7 @@ static int verify_dir(char *typeDir, char *dirName) {
       }
     }
     out->SetColor(SchemeId::PROMPT);
-    out->Puts("<ESC> when done.");
+    out->window()->Puts("<ESC> when done.");
     rc = 1;
   }
   chdir(bbsdir);
@@ -96,35 +96,35 @@ void setpaths() {
     done = false;
     switch (cp) {
     case 0:
-      out->GotoXY(21, cp);
+      out->window()->GotoXY(21, cp);
       editline(syscfg.msgsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.msgsdir);
       Puts(syscfg.msgsdir);
       //          verify_dir("Messages", syscfg.msgsdir);
       break;
     case 1:
-      out->GotoXY(21, cp);
+      out->window()->GotoXY(21, cp);
       editline(syscfg.gfilesdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.gfilesdir);
       Puts(syscfg.gfilesdir);
       //          verify_dir("Gfiles", syscfg.gfilesdir);
       break;
     case 2:
-      out->GotoXY(21, cp);
+      out->window()->GotoXY(21, cp);
       editline(syscfg.menudir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.menudir);
       Puts(syscfg.menudir);
       //          verify_dir("Menu", syscfg.menudir);
       break;
     case 3:
-      out->GotoXY(21, cp);
+      out->window()->GotoXY(21, cp);
       editline(syscfg.datadir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.datadir);
       Puts(syscfg.datadir);
       //          verify_dir("Data", syscfg.datadir);
       break;
     case 4:
-      out->GotoXY(21, cp);
+      out->window()->GotoXY(21, cp);
       editline(syscfg.dloadsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.dloadsdir);
       Puts(syscfg.dloadsdir);
