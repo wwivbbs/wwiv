@@ -32,13 +32,13 @@ echo Archive:   %RELEASE_ZIP%
 cd %WORKSPACE%\bbs
 %TEXT_TRANSFORM% -a !!version!%SVN_REVISION% version.template
 msbuild bbs_lib.vcxproj /t:Build /p:Configuration=Release /detailedsummary
-msbuild bbs.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild bbs.vcxproj /t:Rebuild /p:Configuration=Release /detailedsummary
 
 cd %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer
 msbuild WWIV5TelnetServer.csproj /t:Rebuild /p:Configuration=Release /detailedsummary
 
 cd %WORKSPACE%\initlib
-msbuild initlib.vcxproj /t:Build /p:Configuration=Release /detailedsummary
+msbuild initlib.vcxproj /t:Rebuild /p:Configuration=Release /detailedsummary
 
 cd %WORKSPACE%\init
 msbuild init.vcxproj /t:Build /p:Configuration=Release /detailedsummary
