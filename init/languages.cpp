@@ -54,7 +54,7 @@ static void edit_lang(int nn) {
   Puts("\n<ESC> when done.\n\n");
   out->SetColor(SchemeId::NORMAL);
   do {
-    out->GotoXY(17, cp);
+    out->window()->GotoXY(17, cp);
     switch (cp) {
     case 0:
       editline(n->name, sizeof(n->name) - 1, ALL, &i1, "");
@@ -151,7 +151,7 @@ void edit_languages() {
         Printf("You must leave at least one language.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
-        out->GetChar();
+        out->window()->GetChar();
       }
       break;
     case 'I':
@@ -160,7 +160,7 @@ void edit_languages() {
         Printf("Too many languages.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
-        out->GetChar();
+        out->window()->GetChar();
         break;
       }
       nlx();

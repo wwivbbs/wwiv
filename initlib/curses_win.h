@@ -57,6 +57,12 @@ class CursesWindow {
   int AttrGet(attr_t* a, short* c) const { return wattr_get(window_, a, c, nullptr); }
   int Box(chtype vert_ch, chtype horiz_ch) { return box(window_, vert_ch, horiz_ch); }
 
+  void GotoXY(int x, int y);
+  void Putch(unsigned char ch);
+  void Puts(const std::string& text);
+  void PutsXY(int x, int y, const std::string& text);
+  void PrintfXY(int x, int y, const char *pszFormat, ...);
+
  private:
   WINDOW* window_;
   CursesWindow* parent_;

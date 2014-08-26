@@ -43,23 +43,23 @@ static void pr_st(int cursl, int ln, int an) {
   char s[81];
 
   up_str(s, cursl, an);
-  out->GotoXY(19, ln);
+  out->window()->GotoXY(19, ln);
   Puts(s);
 }
 
 static void up_sl(int cursl) {
   slrec ss = syscfg.sl[cursl];
-  out->GotoXY(19, 0);
+  out->window()->GotoXY(19, 0);
   Printf("%-3u", cursl);
-  out->GotoXY(19, 1);
+  out->window()->GotoXY(19, 1);
   Printf("%-5u", ss.time_per_day);
-  out->GotoXY(19, 2);
+  out->window()->GotoXY(19, 2);
   Printf("%-5u", ss.time_per_logon);
-  out->GotoXY(19, 3);
+  out->window()->GotoXY(19, 3);
   Printf("%-5u", ss.messages_read);
-  out->GotoXY(19, 4);
+  out->window()->GotoXY(19, 4);
   Printf("%-3u", ss.emails);
-  out->GotoXY(19, 5);
+  out->window()->GotoXY(19, 5);
   Printf("%-3u", ss.posts);
   pr_st(cursl, 6, ability_post_anony);
   pr_st(cursl, 7, ability_email_anony);
@@ -79,7 +79,7 @@ static void ed_slx(int *sln) {
   int cp = 0;
   do {
     int i1 = 0;
-    out->GotoXY(19, cp);
+    out->window()->GotoXY(19, cp);
     switch (cp) {
     case 0:
       sprintf(s, "%d", cursl);
@@ -224,7 +224,7 @@ void sec_levs() {
   int cursl = 10;
   up_sl(cursl);
   bool done = false;
-  out->GotoXY(0, 12);
+  out->window()->GotoXY(0, 12);
   out->SetColor(SchemeId::PROMPT);
   Puts("\n<ESC> to exit\n");
   out->SetColor(SchemeId::NORMAL);
@@ -233,12 +233,12 @@ void sec_levs() {
   Printf("<C/R> = edit SL data\n");
   out->SetColor(SchemeId::NORMAL);
   do {
-    out->GotoXY(0, 18);
+    out->window()->GotoXY(0, 18);
     Puts("Command: ");
     char ch = onek("\033[]{}\r");
     switch (ch) {
     case '\r':
-      out->GotoXY(0, 12);
+      out->window()->GotoXY(0, 12);
       out->SetColor(SchemeId::PROMPT);
       Puts("\n<ESC> to exit\n");
       out->SetColor(SchemeId::NORMAL);
@@ -247,7 +247,7 @@ void sec_levs() {
       Printf("                    \n");
       Puts("\n          \n");
       ed_slx(&cursl);
-      out->GotoXY(0, 12);
+      out->window()->GotoXY(0, 12);
       out->SetColor(SchemeId::PROMPT);
       Puts("\n<ESC> to exit\n");
       out->SetColor(SchemeId::NORMAL);
@@ -382,7 +382,7 @@ static void edit_autoval(int n) {
   cp = 0;
   do {
     int i1 = 0;
-    out->GotoXY(15, cp + 2);
+    out->window()->GotoXY(15, cp + 2);
     switch (cp) {
     case 0:
       sprintf(s, "%u", v.sl);

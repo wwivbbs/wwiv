@@ -41,15 +41,7 @@ class CursesIO {
   CursesIO(const CursesIO& copy);
   virtual ~CursesIO();
 
-  virtual void GotoXY(int x, int y);
-  virtual int  WhereX();
-  virtual int  WhereY();
   virtual void Cls();
-  virtual void Putch(unsigned char ch);
-  virtual void Puts(const char *pszText);
-  virtual void PutsXY(int x, int y, const char *pszText);
-  virtual int GetChar();
-  virtual void Refresh();
   virtual CursesWindow* window() const { return window_; }
   virtual CursesWindow* footer() const { return footer_; }
   virtual CursesWindow* header() const { return header_; }
