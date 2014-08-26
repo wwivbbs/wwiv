@@ -78,7 +78,7 @@ void edit_arc(int nn) {
     Printf("Delete from Archive: %s\n", arc[i].arcd);
     Printf("Comment Archive    : %s\n", arc[i].arck);
     Printf("Test Archive       : %s\n", arc[i].arct);
-    out->GotoXY(0, 13);
+    out->window()->GotoXY(0, 13);
     Printf("                                                             \n");
     out->SetColor(SchemeId::NORMAL);
     Printf("[ = Previous Archiver  ] = Next Archiver\n");
@@ -92,7 +92,7 @@ void edit_arc(int nn) {
     char ch = onek("\033[]\r");
     switch (ch) {
     case '\r': {
-      out->GotoXY(0, 13);
+      out->window()->GotoXY(0, 13);
       Printf("                                                             \n");
       Printf("%%1 %%2 etc. are parameters passed.  Minimum of two on Add and \n");
       Printf("Extract command lines. For added security, a complete path to\n");
@@ -105,7 +105,7 @@ void edit_arc(int nn) {
       bool done = false;
       do {
         int i1 = 0;
-        out->GotoXY(21, cp);
+        out->window()->GotoXY(21, cp);
         switch (cp) {
         case 4:
           editline(arc[i].name, 31, ALL, &i1, "");

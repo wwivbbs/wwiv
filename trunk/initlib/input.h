@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "initlib/curses_io.h"
+#include "initlib/curses_win.h"
 
 #define NUM_ONLY            1
 #define UPPER_ONLY          2
@@ -61,8 +62,8 @@ public:
     : x_(x), y_(y), maxsize_(maxsize) {};
   virtual ~BaseEditItem() {}
 
-  virtual int Run() = 0;
-  virtual void Display() const = 0;
+  virtual int Run(CursesWindow* window) = 0;
+  virtual void Display(CursesWindow* window) const = 0;
 
 protected:
   int x_;
@@ -82,22 +83,22 @@ public:
   virtual ~EditItem() {}
 
   void set_displayfn(displayfn f) { display_ = f; }
-  virtual void Display(const std::string& custom) const {
+  virtual void Display(CursesWindow* window, const std::string& custom) const {
     std::string blanks(maxsize_, ' ');
-    PutsXY(x_, y_, blanks.c_str());
-    PutsXY(x_, y_, custom.c_str());
+    window->PutsXY(x_, y_, blanks.c_str());
+    window->PutsXY(x_, y_, custom.c_str());
   };
 
-  virtual void Display() const { 
+  virtual void Display(CursesWindow* window) const { 
     if (display_) { 
-      Display(display_()); 
+      Display(window, display_()); 
     } else {
-      DefaultDisplay();
+      DefaultDisplay(window);
     }
   }
 
 protected:
-  virtual void DefaultDisplay() const = 0;
+  virtual void DefaultDisplay(CursesWindow* window) const = 0;
 
   const T data() const { return data_; }
   void set_data(T data) { data_ = data; }
@@ -112,8 +113,8 @@ public:
     : EditItem<T>(x, y, maxsize, data), uppercase_(uppercase) {}
   virtual ~StringEditItem() {}
 
-  virtual int Run() {
-    out->GotoXY(this->x_, this->y_);
+  virtual int Run(CursesWindow* window) override {
+    out->window()->GotoXY(this->x_, this->y_);
     int return_code = 0;
     int status = uppercase_ ? UPPER_ONLY : ALL;
     editline(reinterpret_cast<char*>(this->data_), this->maxsize_, status, &return_code, "");
@@ -121,9 +122,9 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay() const {
+  virtual void DefaultDisplay(CursesWindow* window) const override {
     std::string blanks(this->maxsize_, ' ');
-    PutsXY(this->x_, this->y_, blanks.c_str());
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
 
     char pattern[81];
     sprintf(pattern, "%%-%ds", this->maxsize_);
@@ -139,8 +140,8 @@ public:
   NumberEditItem(int x, int y, T* data) : EditItem<T*>(x, y, 0, data) {}
   virtual ~NumberEditItem() {}
 
-  virtual int Run() {
-    out->GotoXY(this->x_, this->y_);
+  virtual int Run(CursesWindow* window) {
+    out->window()->GotoXY(this->x_, this->y_);
     char s[21];
     int return_code = 0;
     sprintf(s, "%-7u", *this->data_);
@@ -150,10 +151,10 @@ public:
   }
 
 protected:
-  virtual void DefaultDisplay() const {
+  virtual void DefaultDisplay(CursesWindow* window) const {
     std::string blanks(this->maxsize_, ' ');
-    PutsXY(this->x_, this->y_, blanks.c_str());
-    PrintfXY(this->x_, this->y_, "%-7d", *this->data_);
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+    window->PrintfXY(this->x_, this->y_, "%-7d", *this->data_);
   }
 };
 
@@ -168,8 +169,8 @@ public:
       : BaseEditItem(x, y, maxsize), 
         to_field_(to_field), from_field_(from_field) {}
 
-  virtual int Run();
-  virtual void Display() const;
+  virtual int Run(CursesWindow* window);
+  virtual void Display(CursesWindow* window) const;
   void set_displayfn(CustomEditItem::displayfn f) { display_ = f; }
 
 private:
@@ -199,6 +200,8 @@ public:
   void set_navigation_help_items(const std::vector<HelpItem> items) { navigation_help_items_ = items; }
   void set_editor__help_items(const std::vector<HelpItem> items) { editor_help_items_ = items; }
 
+  void set_curses_io(CursesIO* io, CursesWindow* window) { io_ = io; window_ = window; }
+
   static std::vector<HelpItem> StandardNavigationHelpItems() {
     return { {"Esc", "Exit"}, 
         { "Enter", "Edit" },
@@ -225,6 +228,8 @@ private:
   std::vector<BaseEditItem*> items_;
   std::vector<HelpItem> navigation_help_items_;
   std::vector<HelpItem> editor_help_items_;
+  CursesWindow* window_;
+  CursesIO* io_;
   bool edit_mode_;
 };
 

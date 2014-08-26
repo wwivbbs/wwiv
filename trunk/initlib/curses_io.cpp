@@ -118,37 +118,6 @@ CursesIO::~CursesIO() {
 #endif  // _WIN32
 }
 
-void CursesIO::Refresh() { window_->Refresh(); }
-
-/**
- * Moves the cursor to the location specified
- * Note: this function is 0 based, so (0,0) is the upper left hand corner.
- */
-void CursesIO::GotoXY(int x, int y) {
-  x = std::max<int>(x, 0);
-  x = std::min<int>(x, max_x_);
-  y = std::max<int>(y, 0);
-  y = std::min<int>(y, max_y_);
-
-  window_->Move(y, x);
-  window_->Refresh();
-}
-
-/* This function returns the current X cursor position, as the number of
-* characters from the left hand side of the screen.  An X position of zero
-* means the cursor is at the left-most position
-*/
-int CursesIO::WhereX() {
-  return window_->GetcurX();
-}
-
-/* This function returns the Y cursor position, as the line number from
-* the top of the logical window_.
-*/
-int CursesIO::WhereY() {
-  return window_->GetcurY();
-}
-
 /**
  * Clears the local logical screen
  */
@@ -156,32 +125,7 @@ void CursesIO::Cls() {
   color_scheme_->SetColor(window_, SchemeId::NORMAL);
   window_->Clear();
   window_->Refresh();
-  GotoXY(0, 0);
-}
-
-void CursesIO::Putch(unsigned char ch) {
-  window_->AddCh(ch);
-  window_->Refresh();
-}
-
-void CursesIO::Puts(const char *pszText) {
-  if (strlen(pszText) == 2) {
-    if (pszText[0] == '\r' && pszText[1] == '\n') {
-      GotoXY(0, WhereY() + 1);
-      return;
-    }
-  }
-  window_->AddStr(pszText);
-  window_->Refresh();
-}
-
-void CursesIO::PutsXY(int x, int y, const char *pszText) {
-  GotoXY(x, y);
-  Puts(pszText);
-}
-
-int CursesIO::GetChar() {
-  return window_->GetChar();
+  window_->GotoXY(0, 0);
 }
 
 void CursesIO::SetDefaultFooter() {

@@ -45,35 +45,35 @@ void show_user(EditItems* items, userrec* user) {
 
   for (int i=0; i<13; i++) {
     std::string blank(30, ' ');
-    out->PutsXY(50, i, blank.c_str());
+    out->window()->PutsXY(50, i, blank.c_str());
   }
-  out->SetColor(SchemeId::NORMAL);
+  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
   if (user->inact & inact_deleted) {
-    out->SetColor(SchemeId::ERROR_TEXT);
+    out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
     PutsXY(COL2_POSITION, 0, "[[ DELETED USER ]]");
   } else if (user->inact & inact_inactive) {
-    out->SetColor(SchemeId::ERROR_TEXT);
+    out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
     PutsXY(COL2_POSITION, 0, "[[ INACTIVE USER ]]");
   }
-  out->SetColor(SchemeId::NORMAL);
+  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
   int y = 2;
-  PrintfXY(COL2_POSITION, y++, "First on         : %s", user->firston);
-  PrintfXY(COL2_POSITION, y++, "Last on          : %s", user->laston);
+  PrintfXY(COL2_POSITION, y++, "First on     : %s", user->firston);
+  PrintfXY(COL2_POSITION, y++, "Last on      : %s", user->laston);
   y++;
-  PrintfXY(COL2_POSITION, y++, "Total Calls      : %d", user->logons);
-  PrintfXY(COL2_POSITION, y++, "Today Calls      : %d", user->ontoday);
-  PrintfXY(COL2_POSITION, y++, "Illegal Logons   : %d", user->illegal);
+  PrintfXY(COL2_POSITION, y++, "Total Calls  : %d", user->logons);
+  PrintfXY(COL2_POSITION, y++, "Today Calls  : %d", user->ontoday);
+  PrintfXY(COL2_POSITION, y++, "Bad Logins   : %d", user->illegal);
   y++;
-  PrintfXY(COL2_POSITION, y++, "Number of Posts  : %d", user->msgpost);
-  PrintfXY(COL2_POSITION, y++, "Number of Emails : %d", user->emailsent);
-  PrintfXY(COL2_POSITION, y++, "Num Feedback Sent: %d", user->feedbacksent);
-  PrintfXY(COL2_POSITION, y++, "Messages Waiting : %d", user->waiting);
-  PrintfXY(COL2_POSITION, y++, "Net Email Sent   : %d", user->emailnet);
-  PrintfXY(COL2_POSITION, y++, "Num Deleted Posts: %d", user->deletedposts);
+  PrintfXY(COL2_POSITION, y++, "Num of Posts : %d", user->msgpost);
+  PrintfXY(COL2_POSITION, y++, "Num of Emails: %d", user->emailsent);
+  PrintfXY(COL2_POSITION, y++, "Feedback Sent: %d", user->feedbacksent);
+  PrintfXY(COL2_POSITION, y++, "Msgs Waiting : %d", user->waiting);
+  PrintfXY(COL2_POSITION, y++, "Netmail Sent : %d", user->emailnet);
+  PrintfXY(COL2_POSITION, y++, "Deleted Posts: %d", user->deletedposts);
 }
 
 static void show_error_no_users() {
-  out->SetColor(SchemeId::ERROR_TEXT);
+  out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
   Printf("You must have users added before using user editor.");
   Printf("\n\n");
   pausescr();
@@ -93,23 +93,23 @@ void user_editor() {
     return;
   }
 
-  out->SetColor(SchemeId::NORMAL);
-  out->GotoXY(0, 1);
-  Printf("Name/Handle      : \n");
-  Printf("Real Name        : \n");
-  Printf("SL               : \n");
-  Printf("DSL              : \n");
-  Printf("Address          : \n");
-  Printf("City             : \n");
-  Printf("State            : \n");
-  Printf("Postal Code      : \n");
-  Printf("Birthday         : \n");
-  Printf("Password         : \n");
-  Printf("Phone Number     : \n");
-  Printf("Data Phone Number: \n");
-  Printf("Computer Type    : \n");
-  Printf("WWIV Registration: \n");
-  Printf("Sysop Note       : \n");
+  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
+  out->window()->GotoXY(0, 1);
+  Printf("    Name/Handle  : \n");
+  Printf("    Real Name    : \n");
+  Printf("    SL           : \n");
+  Printf("    DSL          : \n");
+  Printf("    Address      : \n");
+  Printf("    City         : \n");
+  Printf("    State        : \n");
+  Printf("    Postal Code  : \n");
+  Printf("    Birthday     : \n");
+  Printf("    Password     : \n");
+  Printf("    Phone Number : \n");
+  Printf("    Data Number  : \n");
+  Printf("    Computer Type: \n");
+  Printf("    WWIV Reg     : \n");
+  Printf("    Sysop Note   : \n");
 
   int current_usernum = 1;
   userrec user;
@@ -166,16 +166,16 @@ void user_editor() {
     new StringEditItem<unsigned char*>(COL1_POSITION, 15, 60, user.note, false),
   };
   items.set_navigation_help_items(create_help_items());
+  items.set_curses_io(out, out->window());
 
   show_user(&items, &user);
 
   for (;;)  {
-    PutsXY(0, PROMPT_LINE, "Command: ");
     char ch = onek("\033Q[]{}\r");
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
-        out->SetColor(SchemeId::ERROR_TEXT);
+        out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
         PutsXY(0, PROMPT_LINE, "Can not edit a deleted user.\n\n");
         pausescr();
       } else {
@@ -186,7 +186,7 @@ void user_editor() {
       }
       out->window()->Move(PROMPT_LINE, 0); 
       out->window()->ClrtoEol();
-      out->Refresh();
+      out->window()->Refresh();
     } break;
     case 'Q':
     case '\033':

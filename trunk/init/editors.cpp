@@ -60,13 +60,13 @@ void edit_editor(int n) {
   do {
     switch (cp) {
     case 0:
-      out->GotoXY(18, 0);
+      out->window()->GotoXY(18, 0);
       break;
     case 1:
-      out->GotoXY(0, 2);
+      out->window()->GotoXY(0, 2);
       break;
     case 2:
-      out->GotoXY(0, 4);
+      out->window()->GotoXY(0, 4);
       break;
     }
     switch (cp) {

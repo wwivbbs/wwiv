@@ -131,7 +131,7 @@ void instance_editor() {
     out->Cls();
 
     out->SetColor(SchemeId::NORMAL);
-    out->GotoXY(0, 1);
+    out->window()->GotoXY(0, 1);
     Printf("Temporary Dir Pattern : %s\n", temp.c_str());
     Printf("Batch Dir Pattern     : %s\n", batch.c_str());
     Printf("Number of Instances:  : %d\n", num_instances);
@@ -151,7 +151,7 @@ void instance_editor() {
   read_instance(current_instance, &instance);
 
   out->SetColor(SchemeId::NORMAL);
-  out->GotoXY(0, 1);
+  out->window()->GotoXY(0, 1);
   Printf("Temporary Directory: %s\n", instance.tempdir);
   Printf("Batch Directory    : %s\n", instance.batchdir);
 
@@ -159,13 +159,14 @@ void instance_editor() {
     new StringEditItem<char*>(COL1_POSITION, 1, 50, instance.tempdir, FILENAME_UPPERCASE),
     new StringEditItem<char*>(COL1_POSITION, 2, 50, instance.batchdir, FILENAME_UPPERCASE),
   };
+  items.set_curses_io(out, out->window());
   vector<HelpItem> help_items = EditItems::StandardNavigationHelpItems();
   help_items.push_back({ "A", "Add" });
   items.set_navigation_help_items(help_items);
   show_instance(&items);
 
   for (;;)  {
-    PutsXY(0, PROMPT_LINE, "Command: ");
+    out->window()->PutsXY(0, PROMPT_LINE, "Command: ");
     char ch = onek("\033AQ[]{}\r");
     switch (ch) {
     case '\r': {

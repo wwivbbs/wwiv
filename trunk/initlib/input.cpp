@@ -52,8 +52,8 @@ void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength);
 using std::string;
 using std::vector;
 
-int CustomEditItem::Run() {
-  out->GotoXY(x_, y_);
+int CustomEditItem::Run(CursesWindow* window) {
+  out->window()->GotoXY(x_, y_);
   string s = to_field_();
 
   int return_code = 0;
@@ -62,8 +62,8 @@ int CustomEditItem::Run() {
   return return_code;
 }
 
-void CustomEditItem::Display() const {
-  out->GotoXY(x_, y_);
+void CustomEditItem::Display(CursesWindow* window) const {
+  out->window()->GotoXY(x_, y_);
   string blanks(maxsize_, ' ');
   Puts(blanks.c_str());
 
@@ -71,7 +71,7 @@ void CustomEditItem::Display() const {
   if (display_) {
     display_(s);
   } else {
-    out->PutsXY(x_, y_, s.c_str());
+    out->window()->PutsXY(x_, y_, s.c_str());
   }
 }
 
@@ -81,7 +81,7 @@ void EditItems::Run() {
   const int size = static_cast<int>(items_.size());
   Display();
   for (;;) {
-    int i1 = items_[cp]->Run();
+    int i1 = items_[cp]->Run(window_);
     if (i1 == PREV) {
       if (--cp < 0) {
         cp = size - 1;
@@ -110,7 +110,7 @@ void EditItems::Display() const {
   out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
 
   for (BaseEditItem* item : items_) {
-    item->Display();
+    item->Display(window_);
   }
 }
 
@@ -153,15 +153,15 @@ void PrintfXY(int x, int y, const char *pszFormat, ...) {
   va_start(ap, pszFormat);
   vsnprintf(szBuffer, 1024, pszFormat, ap);
   va_end(ap);
-  out->PutsXY(x, y, szBuffer);
+  out->window()->PutsXY(x, y, szBuffer);
 }
 
 void Puts(const char *pszText) {
-  out->Puts(pszText);
+  out->window()->Puts(pszText);
 }
 
 void PutsXY(int x, int y, const char *pszText) {
-  out->PutsXY(x, y, pszText);
+  out->window()->PutsXY(x, y, pszText);
 }
 
 /**
@@ -174,7 +174,7 @@ void Printf(const char *pszFormat, ...) {
   va_start(ap, pszFormat);
   vsnprintf(szBuffer, 1024, pszFormat, ap);
   va_end(ap);
-  out->Puts(szBuffer);
+  out->window()->Puts(szBuffer);
 }
 
 void nlx(int numLines) {
@@ -198,7 +198,7 @@ static CursesWindow* CreateDialogWindow(int height, int width) {
 static void CloseDialog(CursesWindow* dialog) {
   delete dialog;
   out->window()->RedrawWin();
-  out->Refresh();
+  out->window()->Refresh();
 }
 
 bool dialog_yn(const string prompt) {
@@ -377,17 +377,16 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   attr_t old_attr;
   short old_pair;
   out->window()->AttrGet(&old_attr, &old_pair);
-  int cx = out->WhereX();
-  int cy = out->WhereY();
-  int i;
-  for (i = strlen(s); i < len; i++) {
+  int cx = out->window()->GetcurX();
+  int cy = out->window()->GetcurY();
+  for (int i = strlen(s); i < len; i++) {
     s[i] = static_cast<char>(background_character);
   }
   s[len] = '\0';
   out->color_scheme()->SetColor(out->window(), SchemeId::EDITLINE);
-  out->Puts(s);
+  out->window()->Puts(s);
   out->SetIndicatorMode(IndicatorMode::OVERWRITE);
-  out->GotoXY(cx, cy);
+  out->window()->GotoXY(cx, cy);
   bool done = false;
   int pos = 0;
   bool bInsert = false;
@@ -400,25 +399,25 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
       break;
     case KEY_HOME: // curses
       pos = 0;
-      out->GotoXY(cx, cy);
+      out->window()->GotoXY(cx, cy);
       break;
     case KEY_END: // curses
       pos = editlinestrlen(s);
-      out->GotoXY(cx + pos, cy);
+      out->window()->GotoXY(cx + pos, cy);
       break;
     case KEY_RIGHT: // curses
       if (pos < len) {                       //right
         int nMaxPos = editlinestrlen(s);
         if (pos < nMaxPos) {
           pos++;
-          out->GotoXY(cx + pos, cy);
+          out->window()->GotoXY(cx + pos, cy);
         }
       }
       break;
     case KEY_LEFT: // curses
       if (pos > 0) { //left
         pos--;
-        out->GotoXY(cx + pos, cy);
+        out->window()->GotoXY(cx + pos, cy);
       }
       break;
     case CO:                                      //return
@@ -435,23 +434,23 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
         if (bInsert) {
           bInsert = false;
 	        out->SetIndicatorMode(IndicatorMode::OVERWRITE);
-          out->GotoXY(cx + pos, cy);
+          out->window()->GotoXY(cx + pos, cy);
         } else {
           bInsert = true;
 	        out->SetIndicatorMode(IndicatorMode::INSERT);
-          out->GotoXY(cx + pos, cy);
+          out->window()->GotoXY(cx + pos, cy);
         }
       }
       break;
     case KEY_DC: // curses
     case CD: // control-d
       if (status != SET) {
-        for (i = pos; i < len; i++) {
+        for (int i = pos; i < len; i++) {
           s[i] = s[i + 1];
         }
         s[len - 1] = static_cast<char>(background_character);
-        out->PutsXY(cx, cy, s);
-        out->GotoXY(cx + pos, cy);
+        out->window()->PutsXY(cx, cy, s);
+        out->window()->GotoXY(cx + pos, cy);
       }
       break;
     default:
@@ -467,7 +466,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
               if (ch == ss[i] && bLookingForSpace) {
                 bLookingForSpace = false;
                 pos = i;
-                out->GotoXY(cx + pos, cy);
+                out->window()->GotoXY(cx + pos, cy);
                 if (s[pos] == ' ') {
                   ch = ss[pos];
                 } else {
@@ -483,15 +482,15 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
         if ((pos < len) && ((status == ALL) || (status == UPPER_ONLY) || (status == SET) ||
                             ((status == NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == ' '))))) {
           if (bInsert)  {
-            for (i = len - 1; i > pos; i--) {
+            for (int i = len - 1; i > pos; i--) {
               s[i] = s[i - 1];
             }
             s[pos++] = ch;
-            out->PutsXY(cx, cy, s);
-            out->GotoXY(cx + pos, cy);
+            out->window()->PutsXY(cx, cy, s);
+            out->window()->GotoXY(cx + pos, cy);
           }  else  {
             s[pos++] = ch;
-            out->Putch(ch);
+            out->window()->Putch(ch);
           }
         }
       }
@@ -514,23 +513,23 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
     case BACKSPACE:  //backspace
       if (status != SET) {
         if (pos > 0) {
-          for (i = pos - 1; i < len; i++) {
+          for (int i = pos - 1; i < len; i++) {
             s[i] = s[i + 1];
           }
           s[len - 1] = static_cast<char>(background_character);
           pos--;
-          out->PutsXY(cx, cy, s);
-          out->GotoXY(cx + pos, cy);
+          out->window()->PutsXY(cx, cy, s);
+          out->window()->GotoXY(cx + pos, cy);
         }
       }
       break;
     case CA: // control-a
       pos = 0;
-      out->GotoXY(cx, cy);
+      out->window()->GotoXY(cx, cy);
       break;
     case CE: // control-e
       pos = editlinestrlen(s);
-      out->GotoXY(cx + pos, cy);
+      out->window()->GotoXY(cx + pos, cy);
       break;
     }
   } while (!done);
@@ -545,8 +544,8 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   sprintf(szFinishedString, "%-255s", s);
   szFinishedString[ len ] = '\0';
   out->window()->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-  out->PutsXY(cx, cy, szFinishedString);
-  out->GotoXY(cx, cy);
+  out->window()->PutsXY(cx, cy, szFinishedString);
+  out->window()->GotoXY(cx, cy);
 }
 
 int toggleitem(int value, const char **strings, int num, int *returncode) {
@@ -557,14 +556,14 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
   attr_t old_attr;
   short old_pair;
   out->window()->AttrGet(&old_attr, &old_pair);
-  int cx = out->WhereX();
-  int cy = out->WhereY();
+  int cx = out->window()->GetcurX();
+  int cy = out->window()->GetcurY();
   int curatr = 0x1f;
-  out->Puts(strings[value]);
-  out->GotoXY(cx, cy);
+  out->window()->Puts(strings[value]);
+  out->window()->GotoXY(cx, cy);
   bool done = false;
   do  {
-    int ch = out->GetChar();
+    int ch = out->window()->GetChar();
     switch (ch) {
     case KEY_ENTER:
     case RETURN:
@@ -592,15 +591,15 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
     default:
       if (ch == 32) {
         value = (value + 1) % num;
-        out->Puts(strings[value]);
-        out->GotoXY(cx, cy);
+        out->window()->Puts(strings[value]);
+        out->window()->GotoXY(cx, cy);
       }
       break;
     }
   } while (!done);
   out->window()->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-  out->PutsXY(cx, cy, strings[value]);
-  out->GotoXY(cx, cy);
+  out->window()->PutsXY(cx, cy, strings[value]);
+  out->window()->GotoXY(cx, cy);
   return value;
 }
 
@@ -630,9 +629,9 @@ int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCod
 * a key to be hit.
 */
 void pausescr() {
-  out->SetColor(SchemeId::INFO);
-  Puts("[PAUSE]");
-  out->SetColor(SchemeId::NORMAL);
+  out->color_scheme()->SetColor(out->window(), SchemeId::INFO);
+  out->window()->Puts("[PAUSE]");
+  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
   out->window()->GetChar();
   for (int i = 0; i < 7; i++) {
     out->window()->AddStr("\b \b");
