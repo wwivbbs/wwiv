@@ -61,6 +61,7 @@ class CursesWindow {
   void Putch(unsigned char ch);
   void Puts(const std::string& text);
   void PutsXY(int x, int y, const std::string& text);
+  void Printf(const char *pszFormat, ...);
   void PrintfXY(int x, int y, const char *pszFormat, ...);
 
  private:

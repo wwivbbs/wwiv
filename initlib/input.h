@@ -34,22 +34,17 @@
 
 
 // Function prototypes
-void Puts(const char *pszText);
-void PutsXY(int x, int y, const char *pszText);
-void Printf(const char *pszFormat, ...);
-void PrintfXY(int x, int y, const char *pszFormat, ...);
 void nlx(int numLines = 1);
 
 bool dialog_yn(const std::string prompt);
-int input_number(int max_digits);
+int input_number(CursesWindow* window, int max_digits);
 char onek(const char *s);
-void editline(std::string* s, int len, int status, int *returncode, const char *ss);
-void editline(char *s, int len, int status, int *returncode, const char *ss);
-int toggleitem(int value, const char **strings, int num, int *returncode);
+void editline(CursesWindow* window, std::string* s, int len, int status, int *returncode, const char *ss);
+void editline(CursesWindow* window, char *s, int len, int status, int *returncode, const char *ss);
+int toggleitem(CursesWindow* window, int value, const char **strings, int num, int *returncode);
 void pausescr();
 
 int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode);
-void input_password(const std::string prompt, char *out, int max_length);
 void input_password(const std::string prompt, const std::vector<std::string>& text, char *output, int max_length);
 void messagebox(const std::string text);
 void messagebox(const std::vector<std::string>& text);
@@ -117,7 +112,7 @@ public:
     out->window()->GotoXY(this->x_, this->y_);
     int return_code = 0;
     int status = uppercase_ ? UPPER_ONLY : ALL;
-    editline(reinterpret_cast<char*>(this->data_), this->maxsize_, status, &return_code, "");
+    editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, status, &return_code, "");
     return return_code;
   }
 
@@ -128,7 +123,7 @@ protected:
 
     char pattern[81];
     sprintf(pattern, "%%-%ds", this->maxsize_);
-    PrintfXY(this->x_, this->y_, pattern, this->data_);
+   out->window()->PrintfXY(this->x_, this->y_, pattern, this->data_);
   }
 private:
   bool uppercase_;
@@ -145,7 +140,7 @@ public:
     char s[21];
     int return_code = 0;
     sprintf(s, "%-7u", *this->data_);
-    editline(s, MAXLEN + 1, NUM_ONLY, &return_code, "");
+    editline(window, s, MAXLEN + 1, NUM_ONLY, &return_code, "");
     *this->data_ = atoi(s);
     return return_code;
   }

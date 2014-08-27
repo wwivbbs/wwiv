@@ -83,25 +83,25 @@ static void edit_prot(int n) {
   } else {
     strcpy(s1, "N");
   }
-  Printf("Description          : %s\n", c.description);
-  Printf("Xfer OK code         : %s\n", s);
-  Printf("Require MNP/LAPM     : %s\n", s1);
-  Printf("Receive command line:\n%s\n", c.receivefn);
-  Printf("Send command line:\n%s\n", c.sendfn);
-  Printf("Receive batch command line:\n%s\n", c.receivebatchfn);
-  Printf("Send batch command line:\n%s\n", c.sendbatchfn);
-  Printf("Bi-directional transfer command line:\n%s\n", c.bibatchfn);
+  out->window()->Printf("Description          : %s\n", c.description);
+  out->window()->Printf("Xfer OK code         : %s\n", s);
+  out->window()->Printf("Require MNP/LAPM     : %s\n", s1);
+  out->window()->Printf("Receive command line:\n%s\n", c.receivefn);
+  out->window()->Printf("Send command line:\n%s\n", c.sendfn);
+  out->window()->Printf("Receive batch command line:\n%s\n", c.receivebatchfn);
+  out->window()->Printf("Send batch command line:\n%s\n", c.sendbatchfn);
+  out->window()->Printf("Bi-directional transfer command line:\n%s\n", c.bibatchfn);
   out->SetColor(SchemeId::PROMPT);
-  Puts("\n<ESC> when done.\n\n");
+  out->window()->Puts("\n<ESC> when done.\n\n");
   out->SetColor(SchemeId::NORMAL);
-  Printf("%%1 = com port baud rate\n");
-  Printf("%%2 = port number\n");
-  Printf("%%3 = filename to send/receive, filename list to send for batch\n");
-  Printf("%%4 = modem speed\n");
-  Printf("%%5 = filename list to receive for batch UL and bi-directional batch\n");
+  out->window()->Printf("%%1 = com port baud rate\n");
+  out->window()->Printf("%%2 = port number\n");
+  out->window()->Printf("%%3 = filename to send/receive, filename list to send for batch\n");
+  out->window()->Printf("%%4 = modem speed\n");
+  out->window()->Printf("%%5 = filename list to receive for batch UL and bi-directional batch\n");
   nlx();
   out->SetColor(SchemeId::WARNING);
-  Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\n");
+  out->window()->Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\n");
   out->SetColor(SchemeId::NORMAL);
 
   do {
@@ -113,20 +113,20 @@ static void edit_prot(int n) {
     switch (cp) {
     case 0:
       if (n >= 6) {
-        editline(c.description, 50, ALL, &i1, "");
+        editline(out->window(), c.description, 50, ALL, &i1, "");
         trimstr(c.description);
       }
       break;
     case 1:
-      editline(s, 3, NUM_ONLY, &i1, "");
+      editline(out->window(), s, 3, NUM_ONLY, &i1, "");
       trimstr(s);
       c.ok1 = atoi(s);
       sprintf(s, "%u", c.ok1);
-      Puts(s);
+      out->window()->Puts(s);
       break;
     case 2:
       if (n >= 6) {
-        editline(s1, 1, UPPER_ONLY, &i1, "");
+        editline(out->window(), s1, 1, UPPER_ONLY, &i1, "");
         if (s1[0] != 'Y') {
           s1[0] = 'N';
         }
@@ -140,7 +140,7 @@ static void edit_prot(int n) {
       }
       break;
     case 3:
-      editline(c.receivefn, 78, ALL, &i1, "");
+      editline(out->window(), c.receivefn, 78, ALL, &i1, "");
       trimstr(c.receivefn);
       if (c.sendfn[0] == 0) {
         strcpy(c.sendfn, c.receivefn);
@@ -153,24 +153,24 @@ static void edit_prot(int n) {
       }
       break;
     case 4:
-      editline(c.sendfn, 78, ALL, &i1, "");
+      editline(out->window(), c.sendfn, 78, ALL, &i1, "");
       trimstr(c.sendfn);
       break;
     case 5:
       if (n >= 6) {
-        editline(c.receivebatchfn, 78, ALL, &i1, "");
+        editline(out->window(), c.receivebatchfn, 78, ALL, &i1, "");
         trimstr(c.receivebatchfn);
       }
       break;
     case 6:
       if (n >= 4) {
-        editline(c.sendbatchfn, 78, ALL, &i1, "");
+        editline(out->window(), c.sendbatchfn, 78, ALL, &i1, "");
         trimstr(c.sendbatchfn);
       }
       break;
     case 7:
       if (n >= 6) {
-        editline(c.bibatchfn, 78, ALL, &i1, "");
+        editline(out->window(), c.bibatchfn, 78, ALL, &i1, "");
         trimstr(c.bibatchfn);
       }
       break;
@@ -206,12 +206,12 @@ void extrn_prots() {
       if (i == 5) {
         continue;
       }
-      Printf("%c. %s\n", (i < 10) ? (i + '0') : (i - 10 + BASE_CHAR), prot_name(i));
+      out->window()->Printf("%c. %s\n", (i < 10) ? (i + '0') : (i - 10 + BASE_CHAR), prot_name(i));
     }
     int nMaxProtocolNumber = initinfo.numexterns + 6;
     nlx();
     out->SetColor(SchemeId::PROMPT);
-    Puts("Externals: M:odify, D:elete, I:nsert, Q:uit : ");
+    out->window()->Puts("Externals: M:odify, D:elete, I:nsert, Q:uit : ");
     out->SetColor(SchemeId::NORMAL);
     char ch = onek("Q\033MID");
     switch (ch) {
@@ -222,9 +222,9 @@ void extrn_prots() {
     case 'M': {
       nlx();
       out->SetColor(SchemeId::PROMPT);
-      Printf("Edit which (2-%d) ? ", nMaxProtocolNumber);
+      out->window()->Printf("Edit which (2-%d) ? ", nMaxProtocolNumber);
       out->SetColor(SchemeId::NORMAL);
-      int i = input_number(2);
+      int i = input_number(out->window(), 2);
       if ((i > -1) && (i < initinfo.numexterns + 6)) {
         edit_prot(i);
       }
@@ -234,9 +234,9 @@ void extrn_prots() {
       if (initinfo.numexterns) {
         nlx();
         out->SetColor(SchemeId::PROMPT);
-        Printf("Delete which (6-%d) ? ", nMaxProtocolNumber);
+        out->window()->Printf("Delete which (6-%d) ? ", nMaxProtocolNumber);
         out->SetColor(SchemeId::NORMAL);
-        int i = input_number(2);
+        int i = input_number(out->window(), 2);
         if (i > 0) {
           i -= 6;
         }
@@ -251,16 +251,16 @@ void extrn_prots() {
     case 'I':
       if (initinfo.numexterns >= 15) {
         out->SetColor(SchemeId::ERROR_TEXT);
-        Printf("Too many external protocols.\n");
+        out->window()->Printf("Too many external protocols.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
         break;
       }
       nlx();
       out->SetColor(SchemeId::PROMPT);
-      Printf("Insert before which (6-%d) ? ", nMaxProtocolNumber);
+      out->window()->Printf("Insert before which (6-%d) ? ", nMaxProtocolNumber);
       out->SetColor(SchemeId::NORMAL);
-      int i = input_number(2);
+      int i = input_number(out->window(), 2);
       if ((i > -1) && (i <= initinfo.numexterns + 6)) {
         for (int i1 = initinfo.numexterns; i1 > i - 6; i1--) {
           externs[i1] = externs[i1 - 1];
@@ -269,7 +269,7 @@ void extrn_prots() {
         memset(externs + i - 6, 0, sizeof(newexternalrec));
         edit_prot(i);
       } else {
-        Printf("Invalid entry: %d", i);
+        out->window()->Printf("Invalid entry: %d", i);
         out->window()->GetChar();
       }
       break;

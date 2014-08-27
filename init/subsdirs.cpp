@@ -88,7 +88,7 @@ static void convert_to(int num_subs, int num_dirs) {
 
   nqsc = (uint32_t *)malloc(nqscn_len);
   if (!nqsc) {
-    Printf("Could not allocate %d bytes for new quickscan rec\n", nqscn_len);
+    out->window()->Printf("Could not allocate %d bytes for new quickscan rec\n", nqscn_len);
     return;
   }
   memset(nqsc, 0, nqscn_len);
@@ -103,7 +103,7 @@ static void convert_to(int num_subs, int num_dirs) {
   oqsc = (uint32_t *)malloc(syscfg.qscn_len);
   if (!oqsc) {
     free(nqsc);
-    Printf("Could not allocate %d bytes for old quickscan rec\n", syscfg.qscn_len);
+    out->window()->Printf("Could not allocate %d bytes for old quickscan rec\n", syscfg.qscn_len);
     return;
   }
   memset(oqsc, 0, syscfg.qscn_len);
@@ -134,7 +134,7 @@ static void convert_to(int num_subs, int num_dirs) {
   if (oqf < 0) {
     free(nqsc);
     free(oqsc);
-    Printf("Could not open user.qsc\n");
+    out->window()->Printf("Could not open user.qsc\n");
     return;
   }
   nqf = open(nqfn, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
@@ -142,14 +142,14 @@ static void convert_to(int num_subs, int num_dirs) {
     free(nqsc);
     free(oqsc);
     close(oqf);
-    Printf("Could not open userqsc.new\n");
+    out->window()->Printf("Could not open userqsc.new\n");
     return;
   }
 
   nu = filelength(oqf) / syscfg.qscn_len;
   for (i = 0; i < nu; i++) {
     if (i % 10 == 0) {
-      Printf("%u/%u\r", i, nu);
+      out->window()->Printf("%u/%u\r", i, nu);
     }
     read(oqf, oqsc, syscfg.qscn_len);
 
@@ -174,7 +174,7 @@ static void convert_to(int num_subs, int num_dirs) {
 
   free(nqsc);
   free(oqsc);
-  Printf("\nDone\n");
+  out->window()->Printf("\nDone\n");
 }
 
 
@@ -184,27 +184,27 @@ void up_subs_dirs() {
   out->Cls();
 
   out->SetColor(SchemeId::NORMAL);
-  Printf("Current max # subs: %d\n", syscfg.max_subs);
-  Printf("Current max # dirs: %d\n", syscfg.max_dirs);
+  out->window()->Printf("Current max # subs: %d\n", syscfg.max_subs);
+  out->window()->Printf("Current max # dirs: %d\n", syscfg.max_dirs);
   nlx(2);
 
   if (dialog_yn("Change # subs or # dirs")) {
     nlx();
     out->SetColor(SchemeId::INFO);
-    Printf("Enter the new max subs/dirs you wish.  Just hit <enter> to leave that\n");
-    Printf("value unchanged.  All values will be rounded up to the next 32.\n");
-    Printf("Values can range from 32-1024\n\n");
+    out->window()->Printf("Enter the new max subs/dirs you wish.  Just hit <enter> to leave that\n");
+    out->window()->Printf("value unchanged.  All values will be rounded up to the next 32.\n");
+    out->window()->Printf("Values can range from 32-1024\n\n");
 
     out->SetColor(SchemeId::PROMPT);
-    Puts("New max subs: ");
-    num_subs = input_number(4);
+    out->window()->Puts("New max subs: ");
+    num_subs = input_number(out->window(), 4);
     if (!num_subs) {
       num_subs = syscfg.max_subs;
     }
     nlx(2);
     out->SetColor(SchemeId::PROMPT);
-    Puts("New max dirs: ");
-    num_dirs = input_number(4);
+    out->window()->Puts("New max dirs: ");
+    num_dirs = input_number(out->window(), 4);
     if (!num_dirs) {
       num_dirs = syscfg.max_dirs;
     }
@@ -239,7 +239,7 @@ void up_subs_dirs() {
       if (dialog_yn(text)) {
         nlx();
         out->SetColor(SchemeId::INFO);
-        Printf("Please wait...\n");
+        out->window()->Printf("Please wait...\n");
         convert_to(num_subs, num_dirs);
       }
     }

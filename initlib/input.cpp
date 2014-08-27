@@ -53,25 +53,25 @@ using std::string;
 using std::vector;
 
 int CustomEditItem::Run(CursesWindow* window) {
-  out->window()->GotoXY(x_, y_);
+  window->GotoXY(x_, y_);
   string s = to_field_();
 
   int return_code = 0;
-  editline(&s, maxsize_, ALL, &return_code, "");
+  editline(window, &s, maxsize_, ALL, &return_code, "");
   from_field_(s);
   return return_code;
 }
 
 void CustomEditItem::Display(CursesWindow* window) const {
-  out->window()->GotoXY(x_, y_);
+  window->GotoXY(x_, y_);
   string blanks(maxsize_, ' ');
-  Puts(blanks.c_str());
+  window->Puts(blanks.c_str());
 
   string s = to_field_();
   if (display_) {
     display_(s);
   } else {
-    out->window()->PutsXY(x_, y_, s.c_str());
+    window->PutsXY(x_, y_, s.c_str());
   }
 }
 
@@ -91,7 +91,7 @@ void EditItems::Run() {
         cp = 0;
       }
     } else if (i1 == DONE) {
-      out->SetIndicatorMode(IndicatorMode::NONE);
+      io_->SetIndicatorMode(IndicatorMode::NONE);
       edit_mode_ = false;
       Display();
       return;
@@ -107,7 +107,8 @@ void EditItems::Display() const {
     ShowHelpItems(navigation_help_items_);
   }
 
-  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
+  
+  io_->color_scheme()->SetColor(window_, SchemeId::NORMAL);
 
   for (BaseEditItem* item : items_) {
     item->Display(window_);
@@ -116,17 +117,17 @@ void EditItems::Display() const {
 
 
 void EditItems::ShowHelpItems(const std::vector<HelpItem>& help_items) const {
-  out->footer()->Move(0, 0);
-  out->footer()->ClrtoEol();
+  io_->footer()->Move(0, 0);
+  io_->footer()->ClrtoEol();
   for (const auto& h : help_items) {
-    out->color_scheme()->SetColor(out->footer(), SchemeId::FOOTER_KEY);
-    out->footer()->AddStr(h.key);
-    out->color_scheme()->SetColor(out->footer(), SchemeId::FOOTER_TEXT);
-    out->footer()->AddStr("-");
-    out->footer()->AddStr(h.description.c_str());
-    out->footer()->AddStr(" ");
+    io_->color_scheme()->SetColor(io_->footer(), SchemeId::FOOTER_KEY);
+    io_->footer()->AddStr(h.key);
+    io_->color_scheme()->SetColor(io_->footer(), SchemeId::FOOTER_TEXT);
+    io_->footer()->AddStr("-");
+    io_->footer()->AddStr(h.description.c_str());
+    io_->footer()->AddStr(" ");
   }
-  out->footer()->Refresh();
+  io_->footer()->Refresh();
 }
 
 EditItems::~EditItems() {
@@ -138,52 +139,18 @@ EditItems::~EditItems() {
   }
 
   // Clear the help bar on exit.
-  out->footer()->Erase();
-  out->footer()->Refresh();
-  out->SetIndicatorMode(IndicatorMode::NONE);
-}
-
-/**
- * Printf sytle output function.  Most init output code should use this.
- */
-void PrintfXY(int x, int y, const char *pszFormat, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, 1024, pszFormat, ap);
-  va_end(ap);
-  out->window()->PutsXY(x, y, szBuffer);
-}
-
-void Puts(const char *pszText) {
-  out->window()->Puts(pszText);
-}
-
-void PutsXY(int x, int y, const char *pszText) {
-  out->window()->PutsXY(x, y, pszText);
-}
-
-/**
- * Printf sytle output function.  Most init output code should use this.
- */
-void Printf(const char *pszFormat, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, 1024, pszFormat, ap);
-  va_end(ap);
-  out->window()->Puts(szBuffer);
+  io_->footer()->Erase();
+  io_->footer()->Refresh();
+  io_->SetIndicatorMode(IndicatorMode::NONE);
 }
 
 void nlx(int numLines) {
   for (int i = 0; i < numLines; i++) {
-    Puts("\r\n");
+    out->window()->Puts("\r\n");
   }
 }
 
-static CursesWindow* CreateDialogWindow(int height, int width) {
+static CursesWindow* CreateDialogWindow(CursesWindow* parent, int height, int width) {
   const int maxx = getmaxx(stdscr);
   const int maxy = getmaxy(stdscr);
   const int startx = (maxx - width - 4) / 2;
@@ -204,7 +171,7 @@ static void CloseDialog(CursesWindow* dialog) {
 bool dialog_yn(const string prompt) {
   string s = prompt + " ? ";
   
-  CursesWindow* dialog(CreateDialogWindow(1, s.size()));
+  CursesWindow* dialog(CreateDialogWindow(out->window(), 1, s.size()));
   dialog->MvAddStr(1, 2, s);
   dialog->Refresh();
   int ch = dialog->GetChar();
@@ -212,18 +179,12 @@ bool dialog_yn(const string prompt) {
   return ch == 'Y' || ch == 'y';
 }
 
-
-void input_password(const string prompt, char *output, int max_length) {
-  vector<string> empty;
-  input_password(prompt, empty, output, max_length);
-}
-
 void input_password(const string prompt, const vector<string>& text, char *output, int max_length) {
   int maxlen = prompt.size() + max_length;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
-  CursesWindow *dialog = CreateDialogWindow(text.size() + 2, maxlen);
+  CursesWindow *dialog = CreateDialogWindow(out->window(), text.size() + 2, maxlen);
   out->color_scheme()->SetColor(dialog, SchemeId::DIALOG_TEXT);
 
   int curline = 1;
@@ -248,7 +209,7 @@ void messagebox(const vector<string>& text) {
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
-  CursesWindow *dialog = CreateDialogWindow(text.size() + 2, maxlen);
+  CursesWindow *dialog = CreateDialogWindow(out->window(), text.size() + 2, maxlen);
   out->color_scheme()->SetColor(dialog, SchemeId::DIALOG_TEXT);
   int curline = 1;
   for (const auto& s : text) {
@@ -262,11 +223,11 @@ void messagebox(const vector<string>& text) {
   CloseDialog(dialog);
 }
 
-int input_number(int max_digits) {
+int input_number(CursesWindow* window, int max_digits) {
   char s[81];
   int return_code = 0;
   memset(&s, 0, 81);
-  editline(s, max_digits, NUM_ONLY, &return_code, "");
+  editline(window, s, max_digits, NUM_ONLY, &return_code, "");
   if (strlen(s) == 0) {
     return 0;
   }
@@ -365,33 +326,33 @@ static int editlinestrlen(char *pszText) {
   return i;
 }
 
-void editline(string* s, int len, int status, int *returncode, const char *ss) {
+void editline(CursesWindow* window, string* s, int len, int status, int *returncode, const char *ss) {
   char pszBuffer[255];
   strcpy(pszBuffer, s->c_str());
-  editline(pszBuffer, len, status, returncode, ss);
+  editline(window, pszBuffer, len, status, returncode, ss);
   s->assign(pszBuffer);
 }
 
 /* editline edits a string, doing I/O to the screen only. */
-void editline(char *s, int len, int status, int *returncode, const char *ss) {
+void editline(CursesWindow* window, char *s, int len, int status, int *returncode, const char *ss) {
   attr_t old_attr;
   short old_pair;
-  out->window()->AttrGet(&old_attr, &old_pair);
-  int cx = out->window()->GetcurX();
-  int cy = out->window()->GetcurY();
+  window->AttrGet(&old_attr, &old_pair);
+  int cx = window->GetcurX();
+  int cy = window->GetcurY();
   for (int i = strlen(s); i < len; i++) {
     s[i] = static_cast<char>(background_character);
   }
   s[len] = '\0';
-  out->color_scheme()->SetColor(out->window(), SchemeId::EDITLINE);
-  out->window()->Puts(s);
+  out->color_scheme()->SetColor(window, SchemeId::EDITLINE);
+  window->Puts(s);
   out->SetIndicatorMode(IndicatorMode::OVERWRITE);
-  out->window()->GotoXY(cx, cy);
+  window->GotoXY(cx, cy);
   bool done = false;
   int pos = 0;
   bool bInsert = false;
   do {
-    int ch = out->window()->GetChar();
+    int ch = window->GetChar();
     switch (ch) {
     case KEY_F(1): // curses
       done = true;
@@ -399,25 +360,25 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
       break;
     case KEY_HOME: // curses
       pos = 0;
-      out->window()->GotoXY(cx, cy);
+      window->GotoXY(cx, cy);
       break;
     case KEY_END: // curses
       pos = editlinestrlen(s);
-      out->window()->GotoXY(cx + pos, cy);
+      window->GotoXY(cx + pos, cy);
       break;
     case KEY_RIGHT: // curses
       if (pos < len) {                       //right
         int nMaxPos = editlinestrlen(s);
         if (pos < nMaxPos) {
           pos++;
-          out->window()->GotoXY(cx + pos, cy);
+          window->GotoXY(cx + pos, cy);
         }
       }
       break;
     case KEY_LEFT: // curses
       if (pos > 0) { //left
         pos--;
-        out->window()->GotoXY(cx + pos, cy);
+        window->GotoXY(cx + pos, cy);
       }
       break;
     case CO:                                      //return
@@ -434,11 +395,11 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
         if (bInsert) {
           bInsert = false;
 	        out->SetIndicatorMode(IndicatorMode::OVERWRITE);
-          out->window()->GotoXY(cx + pos, cy);
+          window->GotoXY(cx + pos, cy);
         } else {
           bInsert = true;
 	        out->SetIndicatorMode(IndicatorMode::INSERT);
-          out->window()->GotoXY(cx + pos, cy);
+          window->GotoXY(cx + pos, cy);
         }
       }
       break;
@@ -449,8 +410,8 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
           s[i] = s[i + 1];
         }
         s[len - 1] = static_cast<char>(background_character);
-        out->window()->PutsXY(cx, cy, s);
-        out->window()->GotoXY(cx + pos, cy);
+        window->PutsXY(cx, cy, s);
+        window->GotoXY(cx + pos, cy);
       }
       break;
     default:
@@ -466,7 +427,7 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
               if (ch == ss[i] && bLookingForSpace) {
                 bLookingForSpace = false;
                 pos = i;
-                out->window()->GotoXY(cx + pos, cy);
+                window->GotoXY(cx + pos, cy);
                 if (s[pos] == ' ') {
                   ch = ss[pos];
                 } else {
@@ -486,11 +447,11 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
               s[i] = s[i - 1];
             }
             s[pos++] = ch;
-            out->window()->PutsXY(cx, cy, s);
-            out->window()->GotoXY(cx + pos, cy);
+            window->PutsXY(cx, cy, s);
+            window->GotoXY(cx + pos, cy);
           }  else  {
             s[pos++] = ch;
-            out->window()->Putch(ch);
+            window->Putch(ch);
           }
         }
       }
@@ -518,18 +479,18 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
           }
           s[len - 1] = static_cast<char>(background_character);
           pos--;
-          out->window()->PutsXY(cx, cy, s);
-          out->window()->GotoXY(cx + pos, cy);
+          window->PutsXY(cx, cy, s);
+          window->GotoXY(cx + pos, cy);
         }
       }
       break;
     case CA: // control-a
       pos = 0;
-      out->window()->GotoXY(cx, cy);
+      window->GotoXY(cx, cy);
       break;
     case CE: // control-e
       pos = editlinestrlen(s);
-      out->window()->GotoXY(cx + pos, cy);
+      window->GotoXY(cx + pos, cy);
       break;
     }
   } while (!done);
@@ -543,27 +504,27 @@ void editline(char *s, int len, int status, int *returncode, const char *ss) {
   char szFinishedString[ 260 ];
   sprintf(szFinishedString, "%-255s", s);
   szFinishedString[ len ] = '\0';
-  out->window()->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-  out->window()->PutsXY(cx, cy, szFinishedString);
-  out->window()->GotoXY(cx, cy);
+  window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
+  window->PutsXY(cx, cy, szFinishedString);
+  window->GotoXY(cx, cy);
 }
 
-int toggleitem(int value, const char **strings, int num, int *returncode) {
+int toggleitem(CursesWindow* window, int value, const char **strings, int num, int *returncode) {
   if (value < 0 || value >= num) {
     value = 0;
   }
 
   attr_t old_attr;
   short old_pair;
-  out->window()->AttrGet(&old_attr, &old_pair);
-  int cx = out->window()->GetcurX();
-  int cy = out->window()->GetcurY();
+  window->AttrGet(&old_attr, &old_pair);
+  int cx = window->GetcurX();
+  int cy = window->GetcurY();
   int curatr = 0x1f;
-  out->window()->Puts(strings[value]);
-  out->window()->GotoXY(cx, cy);
+  window->Puts(strings[value]);
+  window->GotoXY(cx, cy);
   bool done = false;
   do  {
-    int ch = out->window()->GetChar();
+    int ch = window->GetChar();
     switch (ch) {
     case KEY_ENTER:
     case RETURN:
@@ -591,15 +552,15 @@ int toggleitem(int value, const char **strings, int num, int *returncode) {
     default:
       if (ch == 32) {
         value = (value + 1) % num;
-        out->window()->Puts(strings[value]);
-        out->window()->GotoXY(cx, cy);
+        window->Puts(strings[value]);
+        window->GotoXY(cx, cy);
       }
       break;
     }
   } while (!done);
-  out->window()->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-  out->window()->PutsXY(cx, cy, strings[value]);
-  out->window()->GotoXY(cx, cy);
+  window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
+  window->PutsXY(cx, cy, strings[value]);
+  window->GotoXY(cx, cy);
   return value;
 }
 

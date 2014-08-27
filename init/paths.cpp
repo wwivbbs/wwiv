@@ -48,7 +48,7 @@ static int verify_dir(char *typeDir, char *dirName) {
     out->SetColor(SchemeId::ERROR_TEXT);
     out->window()->Puts(s);
     for (unsigned int i = 0; i < strlen(s); i++) {
-      Printf("\b \b");
+      out->window()->Printf("\b \b");
     }
     if ((strcmp(typeDir, "Temporary") == 0) || (strcmp(typeDir, "Batch") == 0)) {
       sprintf(s, "Create %s? ", dirName);
@@ -59,7 +59,7 @@ static int verify_dir(char *typeDir, char *dirName) {
         mkdir(dirName);
       }
       for (unsigned int j = 0; j < strlen(s); j++) {
-        Printf("\b \b");
+        out->window()->Printf("\b \b");
       }
     }
     out->SetColor(SchemeId::PROMPT);
@@ -74,19 +74,19 @@ static int verify_dir(char *typeDir, char *dirName) {
 void setpaths() {
   out->Cls();
   out->SetColor(SchemeId::NORMAL);
-  Printf("Messages Directory : %s\n", syscfg.msgsdir);
-  Printf("GFiles Directory   : %s\n", syscfg.gfilesdir);
-  Printf("Menu Directory     : %s\n", syscfg.menudir);
-  Printf("Data Directory     : %s\n", syscfg.datadir);
-  Printf("Downloads Directory: %s\n", syscfg.dloadsdir);
+  out->window()->Printf("Messages Directory : %s\n", syscfg.msgsdir);
+  out->window()->Printf("GFiles Directory   : %s\n", syscfg.gfilesdir);
+  out->window()->Printf("Menu Directory     : %s\n", syscfg.menudir);
+  out->window()->Printf("Data Directory     : %s\n", syscfg.datadir);
+  out->window()->Printf("Downloads Directory: %s\n", syscfg.dloadsdir);
 
   nlx(2);
   out->SetColor(SchemeId::WARNING);
-  Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\n\n");
+  out->window()->Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\n\n");
   out->SetColor(SchemeId::PROMPT);
-  Printf(" Changing any of these requires YOU to MANUALLY move files and / or \n");
-  Printf(" directory structures.  Consult the documentation prior to changing \n");
-  Printf(" any of these settings.\n");
+  out->window()->Printf(" Changing any of these requires YOU to MANUALLY move files and / or \n");
+  out->window()->Printf(" directory structures.  Consult the documentation prior to changing \n");
+  out->window()->Printf(" any of these settings.\n");
   out->SetColor(SchemeId::NORMAL);
 
   int i1;
@@ -97,37 +97,37 @@ void setpaths() {
     switch (cp) {
     case 0:
       out->window()->GotoXY(21, cp);
-      editline(syscfg.msgsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
+      editline(out->window(), syscfg.msgsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.msgsdir);
-      Puts(syscfg.msgsdir);
+      out->window()->Puts(syscfg.msgsdir);
       //          verify_dir("Messages", syscfg.msgsdir);
       break;
     case 1:
       out->window()->GotoXY(21, cp);
-      editline(syscfg.gfilesdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
+      editline(out->window(), syscfg.gfilesdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.gfilesdir);
-      Puts(syscfg.gfilesdir);
+      out->window()->Puts(syscfg.gfilesdir);
       //          verify_dir("Gfiles", syscfg.gfilesdir);
       break;
     case 2:
       out->window()->GotoXY(21, cp);
-      editline(syscfg.menudir, 50, EDITLINE_FILENAME_CASE, &i1, "");
+      editline(out->window(), syscfg.menudir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.menudir);
-      Puts(syscfg.menudir);
+      out->window()->Puts(syscfg.menudir);
       //          verify_dir("Menu", syscfg.menudir);
       break;
     case 3:
       out->window()->GotoXY(21, cp);
-      editline(syscfg.datadir, 50, EDITLINE_FILENAME_CASE, &i1, "");
+      editline(out->window(), syscfg.datadir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.datadir);
-      Puts(syscfg.datadir);
+      out->window()->Puts(syscfg.datadir);
       //          verify_dir("Data", syscfg.datadir);
       break;
     case 4:
       out->window()->GotoXY(21, cp);
-      editline(syscfg.dloadsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
+      editline(out->window(), syscfg.dloadsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(syscfg.dloadsdir);
-      Puts(syscfg.dloadsdir);
+      out->window()->Puts(syscfg.dloadsdir);
       //          verify_dir("Downloads", syscfg.dloadsdir);
       break;
     }

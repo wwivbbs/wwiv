@@ -31,10 +31,10 @@ void edit_registration_code() {
   out->SetColor(SchemeId::NORMAL);
   out->Cls();
   nlx();
-  Printf("Registration Number  : %d\n", syscfg.wwiv_reg_number);
+  out->window()->Printf("Registration Number  : %d\n", syscfg.wwiv_reg_number);
   nlx(2);
   out->SetColor(SchemeId::PROMPT);
-  Printf("<ESC> when done.\n");
+  out->window()->Printf("<ESC> when done.\n");
 
   EditItems items{ new NumberEditItem<uint32_t>(23, 1, &syscfg.wwiv_reg_number) };
   items.set_curses_io(out, out->window());

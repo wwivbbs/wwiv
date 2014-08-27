@@ -89,7 +89,7 @@ static void convcfg() {
   int hFile = open(configdat, O_RDWR | O_BINARY);
   if (hFile > 0) {
     out->SetColor(SchemeId::INFO);
-    Printf("Converting config.dat to 4.30/5.00 format...\n");
+    out->window()->Printf("Converting config.dat to 4.30/5.00 format...\n");
     out->SetColor(SchemeId::NORMAL);
     read(hFile, &syscfg, sizeof(configrec));
     sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WFile::pathSeparatorChar);
@@ -119,10 +119,10 @@ static void convcfg() {
     sprintf(szFileName, "%sarchiver.dat", syscfg.datadir);
     hFile = open(szFileName, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
     if (hFile < 0) {
-      Printf("Couldn't open '%s' for writing.\n", szFileName);
-      Printf("Creating new file....");
+      out->window()->Printf("Couldn't open '%s' for writing.\n", szFileName);
+      out->window()->Printf("Creating new file....");
       create_arcs();
-      Printf("\n");
+      out->window()->Printf("\n");
       hFile = open(szFileName, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
     }
     write(hFile, arc, MAX_ARCS * sizeof(arcrec));
@@ -131,8 +131,8 @@ static void convcfg() {
 }
 
 static void show_help() {
-  Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
-  Printf("\n\n\n");
+  out->window()->Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
+  out->window()->Printf("\n\n\n");
 }
 
 static void ValidateConfigOverlayExists() {
@@ -244,7 +244,7 @@ int WInitApp::main(int argc, char *argv[]) {
   configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile < 0) {
     out->SetColor(SchemeId::ERROR_TEXT);
-    Printf("%s NOT FOUND.\n\n", configdat);
+    out->window()->Printf("%s NOT FOUND.\n\n", configdat);
     if (dialog_yn("Perform initial installation")) {
       new_init();
       newbbs = 1;
@@ -310,7 +310,7 @@ int WInitApp::main(int argc, char *argv[]) {
     if ((status.net_version >= 31) || (status.net_version == 0)) {
       net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
       if (!net_networks) {
-        Printf("needed %d bytes\n", MAX_NETWORKS * sizeof(net_networks_rec));
+        out->window()->Printf("needed %d bytes\n", MAX_NETWORKS * sizeof(net_networks_rec));
         exit_init(2);
       }
       memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
@@ -332,7 +332,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   languages = (languagerec*) malloc(MAX_LANGUAGES * sizeof(languagerec));
   if (!languages) {
-    Printf("needed %d bytes\n", MAX_LANGUAGES * sizeof(languagerec));
+    out->window()->Printf("needed %d bytes\n", MAX_LANGUAGES * sizeof(languagerec));
     exit_init(2);
   }
 
@@ -366,7 +366,7 @@ int WInitApp::main(int argc, char *argv[]) {
       out->Cls();
       nlx(2);
       out->SetColor(SchemeId::ERROR_TEXT);
-      Printf("I'm sorry, that isn't the correct system password.\n");
+      out->window()->Printf("I'm sorry, that isn't the correct system password.\n");
       exit_init(2);
     }
   }
@@ -451,8 +451,8 @@ int WInitApp::main(int argc, char *argv[]) {
       break;
     case '$':
       nlx();
-      Printf("QSCan Lenth: %lu\n", syscfg.qscn_len);
-      Printf("WWIV %s%s INIT compiled %s\n", wwiv_version, beta_version, const_cast<char*>(wwiv_date));
+      out->window()->Printf("QSCan Lenth: %lu\n", syscfg.qscn_len);
+      out->window()->Printf("WWIV %s%s INIT compiled %s\n", wwiv_version, beta_version, const_cast<char*>(wwiv_date));
       out->window()->GetChar();
       break;
     case 'X':
