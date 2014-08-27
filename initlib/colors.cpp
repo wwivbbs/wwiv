@@ -38,10 +38,6 @@ attr_t ColorScheme::GetAttributesForScheme(SchemeId id) {
   return attr;
 }
 
-void ColorScheme::SetColor(CursesWindow* window, SchemeId id) {
-  window->AttrSet(GetAttributesForScheme(id));
-}
-
 // static 
 std::map<SchemeId, SchemeDescription> ColorScheme::LoadColorSchemes() {
   std::map<SchemeId, SchemeDescription> scheme;

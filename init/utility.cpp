@@ -151,7 +151,7 @@ void save_config() {
 }
 
 void exit_init(int level) {
-  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
+  out->window()->SetColor(out->color_scheme(), SchemeId::NORMAL);
   // Don't leak the localIO (also fix the color when the app exits)
   delete out;
   out = nullptr;

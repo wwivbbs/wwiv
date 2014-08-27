@@ -96,7 +96,7 @@ void edit_languages() {
     nlx();
     for (i = 0; i < initinfo.num_languages; i++) {
       if (i && ((i % 23) == 0)) {
-        pausescr();
+        pausescr(out->window());
       }
       out->window()->Printf("%-2d. %-20s    %-50s\n", i + 1, languages[i].name, languages[i].dir);
     }

@@ -26,7 +26,6 @@
 #include <utility>
 #include <vector>
 #include <curses.h>
-#include "curses_win.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
@@ -52,7 +51,6 @@ public:
   SchemeDescription(): scheme_(SchemeId::UNKNOWN), f_(COLOR_MAGENTA), b_(COLOR_RED), bold_(true) {}
 
   // Don't provide a user defined destructor since that will block move semantics
-  // virtual ~SchemeDescription() {}
 
   int color_pair() const { return static_cast<int>(scheme_); }
   int f() const { return f_; }
@@ -73,7 +71,6 @@ class ColorScheme {
   ColorScheme();
   virtual ~ColorScheme() {}
   virtual attr_t GetAttributesForScheme(SchemeId id);
-  virtual void SetColor(CursesWindow* window, SchemeId scheme);
 private:
   static std::map<SchemeId, SchemeDescription> LoadColorSchemes();
   std::map<SchemeId, SchemeDescription> scheme_;

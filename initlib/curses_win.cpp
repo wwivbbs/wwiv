@@ -96,3 +96,7 @@ void CursesWindow::PrintfXY(int x, int y, const char *pszFormat, ...) {
   PutsXY(x, y, szBuffer);
 }
 
+void CursesWindow::SetColor(ColorScheme* scheme, SchemeId id) {
+  AttrSet(scheme->GetAttributesForScheme(id));
+}
+

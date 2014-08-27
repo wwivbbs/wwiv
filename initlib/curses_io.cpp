@@ -87,9 +87,9 @@ CursesIO::CursesIO()
   header_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   char s[81];
   sprintf(s, "WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
-  color_scheme_->SetColor(header_, SchemeId::HEADER);
+  header_->SetColor(color_scheme_.get(), SchemeId::HEADER);
   header_->MvAddStr(0, 0, s);
-  color_scheme_->SetColor(header_, SchemeId::HEADER_COPYRIGHT);
+  header_->SetColor(color_scheme_.get(), SchemeId::HEADER_COPYRIGHT);
   header_->MvAddStr(1, 0, copyrightString);
   footer_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   header_->Refresh();
@@ -122,7 +122,7 @@ CursesIO::~CursesIO() {
  * Clears the local logical screen
  */
 void CursesIO::Cls() {
-  color_scheme_->SetColor(window_, SchemeId::NORMAL);
+  window_->SetColor(color_scheme_.get(), SchemeId::NORMAL);
   window_->Clear();
   window_->Refresh();
   window_->GotoXY(0, 0);
@@ -131,9 +131,9 @@ void CursesIO::Cls() {
 void CursesIO::SetDefaultFooter() {
   window_->Erase();
   window_->Move(0, 0);
-  color_scheme_->SetColor(footer_, SchemeId::FOOTER_KEY);
+  footer_->SetColor(color_scheme_.get(), SchemeId::FOOTER_KEY);
   footer_->MvAddStr(0, 0, "Esc");
-  color_scheme_->SetColor(footer_, SchemeId::FOOTER_TEXT);
+  footer_->SetColor(color_scheme_.get(), SchemeId::FOOTER_TEXT);
   footer_->AddStr("-Exit ");
   footer_->Refresh();
 }
