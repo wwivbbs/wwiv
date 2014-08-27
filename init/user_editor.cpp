@@ -47,15 +47,15 @@ void show_user(EditItems* items, userrec* user) {
     std::string blank(30, ' ');
     out->window()->PutsXY(50, i, blank.c_str());
   }
-  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
+  out->window()->SetColor(out->color_scheme(), SchemeId::NORMAL);
   if (user->inact & inact_deleted) {
-    out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
+    out->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
     out->window()->PutsXY(COL2_POSITION, 0, "[[ DELETED USER ]]");
   } else if (user->inact & inact_inactive) {
-    out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
+    out->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
     out->window()->PutsXY(COL2_POSITION, 0, "[[ INACTIVE USER ]]");
   }
-  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
+  out->window()->SetColor(out->color_scheme(), SchemeId::NORMAL);
   int y = 2;
  out->window()->PrintfXY(COL2_POSITION, y++, "First on     : %s", user->firston);
  out->window()->PrintfXY(COL2_POSITION, y++, "Last on      : %s", user->laston);
@@ -73,7 +73,7 @@ void show_user(EditItems* items, userrec* user) {
 }
 
 static void show_error_no_users() {
-  out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
+  out->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
   out->window()->Printf("You must have users added before using user editor.");
   out->window()->Printf("\n\n");
   pausescr(out->window());
@@ -93,7 +93,7 @@ void user_editor() {
     return;
   }
 
-  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
+  out->window()->SetColor(out->color_scheme(), SchemeId::NORMAL);
   out->window()->GotoXY(0, 1);
   out->window()->Printf("    Name/Handle  : \n");
   out->window()->Printf("    Real Name    : \n");
@@ -175,7 +175,7 @@ void user_editor() {
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
-        out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
+        out->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
         out->window()->PutsXY(0, PROMPT_LINE, "Can not edit a deleted user.\n\n");
         pausescr(out->window());
       } else {

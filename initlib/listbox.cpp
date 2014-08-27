@@ -48,11 +48,11 @@ ListBox::ListBox(CursesWindow* parent, const string& title, int max_x, int max_y
   int begin_y = ((maxy - window_height) / 2);
 
   window_.reset(new CursesWindow(parent, window_height, window_width, begin_y, begin_x));
-  color_scheme_->SetColor(window_.get(), SchemeId::DIALOG_BOX);
+  window_->SetColor(color_scheme_, SchemeId::DIALOG_BOX);
   window_->Box(0, 0);
   window_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::DIALOG_TEXT));
   if (!title.empty()) {
-    color_scheme_->SetColor(window_.get(), SchemeId::DIALOG_PROMPT);
+    window_->SetColor(color_scheme_, SchemeId::DIALOG_PROMPT);
     window_->MvAddStr(1, 2, title);
   }
 }
@@ -69,9 +69,9 @@ void ListBox::DrawAllItems() {
       }
     }
     if (selected_ == current_item) {
-      color_scheme_->SetColor(window_.get(), SchemeId::DIALOG_SELECTION);
+      window_->SetColor(color_scheme_, SchemeId::DIALOG_SELECTION);
     } else {
-      color_scheme_->SetColor(window_.get(), SchemeId::DIALOG_TEXT);
+      window_->SetColor(color_scheme_, SchemeId::DIALOG_TEXT);
     }
     line.insert(line.begin(), 1, ' ');
     line.push_back(' ');

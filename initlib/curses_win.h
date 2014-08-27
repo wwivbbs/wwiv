@@ -22,6 +22,7 @@
 #include <map>
 #include <string>
 #include <curses.h>
+#include "colors.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
@@ -62,6 +63,9 @@ class CursesWindow {
   void PutsXY(int x, int y, const std::string& text);
   void Printf(const char *pszFormat, ...);
   void PrintfXY(int x, int y, const char *pszFormat, ...);
+
+  void SetColor(ColorScheme* scheme, SchemeId id);
+  
 
   WINDOW* window() const { return window_; }
   CursesWindow* parent() const { parent_; }
