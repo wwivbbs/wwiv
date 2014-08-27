@@ -104,9 +104,9 @@ void EditItems::Run() {
 void EditItems::Display() const {
   // Show help bar.
   if (edit_mode_) {
-    ShowHelpItems(editor_help_items_);
+    io_->footer()->ShowHelpItems(editor_help_items_);
   } else {
-    ShowHelpItems(navigation_help_items_);
+    io_->footer()->ShowHelpItems(navigation_help_items_);
   }
 
   
@@ -115,21 +115,6 @@ void EditItems::Display() const {
   for (BaseEditItem* item : items_) {
     item->Display(window_);
   }
-}
-
-
-void EditItems::ShowHelpItems(const std::vector<HelpItem>& help_items) const {
-  io_->footer()->Move(0, 0);
-  io_->footer()->ClrtoEol();
-  for (const auto& h : help_items) {
-    io_->footer()->SetColor(io_->color_scheme(), SchemeId::FOOTER_KEY);
-    io_->footer()->AddStr(h.key);
-    io_->footer()->SetColor(io_->color_scheme(), SchemeId::FOOTER_TEXT);
-    io_->footer()->AddStr("-");
-    io_->footer()->AddStr(h.description.c_str());
-    io_->footer()->AddStr(" ");
-  }
-  io_->footer()->Refresh();
 }
 
 EditItems::~EditItems() {
@@ -141,8 +126,8 @@ EditItems::~EditItems() {
   }
 
   // Clear the help bar on exit.
-  io_->footer()->Erase();
-  io_->footer()->Refresh();
+  io_->footer()->window()->Erase();
+  io_->footer()->window()->Refresh();
   io_->SetIndicatorMode(IndicatorMode::NONE);
 }
 
