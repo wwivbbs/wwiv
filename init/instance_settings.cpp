@@ -139,7 +139,7 @@ void instance_editor() {
     out->SetColor(SchemeId::WARNING);
     out->window()->Printf("To change these values please edit 'wwiv.ini'\n");
     nlx(2);
-    pausescr();
+    pausescr(out->window());
     return;
   }
 
@@ -167,11 +167,11 @@ void instance_editor() {
 
   for (;;)  {
     out->window()->PutsXY(0, PROMPT_LINE, "Command: ");
-    char ch = onek("\033AQ[]{}\r");
+    char ch = onek(out->window(), "\033AQ[]{}\r");
     switch (ch) {
     case '\r': {
       items.Run();
-      if (dialog_yn("Save Instance")) {
+      if (dialog_yn(out->window(), "Save Instance")) {
         write_instance(current_instance, &instance);
       }
     } break;

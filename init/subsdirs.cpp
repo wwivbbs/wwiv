@@ -177,7 +177,6 @@ static void convert_to(int num_subs, int num_dirs) {
   out->window()->Printf("\nDone\n");
 }
 
-
 void up_subs_dirs() {
   int num_subs, num_dirs;
 
@@ -188,7 +187,7 @@ void up_subs_dirs() {
   out->window()->Printf("Current max # dirs: %d\n", syscfg.max_dirs);
   nlx(2);
 
-  if (dialog_yn("Change # subs or # dirs")) {
+  if (dialog_yn(out->window(), "Change # subs or # dirs")) {
     nlx();
     out->SetColor(SchemeId::INFO);
     out->window()->Printf("Enter the new max subs/dirs you wish.  Just hit <enter> to leave that\n");
@@ -236,7 +235,7 @@ void up_subs_dirs() {
       char text[81];
       sprintf(text, "Change to %d subs and %d dirs? ", num_subs, num_dirs);
 
-      if (dialog_yn(text)) {
+      if (dialog_yn(out->window(), text)) {
         nlx();
         out->SetColor(SchemeId::INFO);
         out->window()->Printf("Please wait...\n");

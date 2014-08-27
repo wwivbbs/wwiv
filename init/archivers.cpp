@@ -89,7 +89,7 @@ void edit_arc(int nn) {
     out->window()->Puts("<ENTER> to edit    <ESC> when done.");
     out->SetColor(SchemeId::NORMAL);
     nlx();
-    char ch = onek("\033[]\r");
+    char ch = onek(out->window(), "\033[]\r");
     switch (ch) {
     case '\r': {
       out->window()->GotoXY(0, 13);

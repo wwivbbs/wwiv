@@ -50,7 +50,6 @@ class CursesWindow {
   int GetChar() { return wgetch(window_); }
   int AttrSet(chtype attrs) { return wattrset(window_, attrs); }
   int Keypad(bool b) { return keypad(window_, b); }
-  WINDOW* window() const { return window_; }
   int GetMaxX() const { return getmaxx(window_); }
   int GetMaxY() const { return getmaxy(window_); }
   int ClrtoEol() const { return wclrtoeol(window_); }
@@ -64,7 +63,10 @@ class CursesWindow {
   void Printf(const char *pszFormat, ...);
   void PrintfXY(int x, int y, const char *pszFormat, ...);
 
- private:
+  WINDOW* window() const { return window_; }
+  CursesWindow* parent() const { parent_; }
+
+private:
   WINDOW* window_;
   CursesWindow* parent_;
 };
