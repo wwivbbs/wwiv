@@ -153,7 +153,6 @@ protected:
   }
 };
 
-
 class CustomEditItem : public BaseEditItem {
 public:
   typedef std::function<void(const std::string&)> displayfn;
@@ -174,15 +173,10 @@ private:
   displayfn display_;
 };
 
-struct HelpItem {
-  std::string key;
-  std::string description;
-};
-
 class EditItems {
 public:
   typedef std::function<void(void)> additional_helpfn;
-  EditItems(std::initializer_list<BaseEditItem*> l) 
+  EditItems(std::initializer_list<BaseEditItem*> l)
     : items_(l), navigation_help_items_(StandardNavigationHelpItems()),
       editor_help_items_(StandardEditorHelpItems()), 
       edit_mode_(false) {}
@@ -190,10 +184,9 @@ public:
 
   virtual void Run();
   virtual void Display() const;
-  virtual void ShowHelpItems(const std::vector<HelpItem>& help_items) const;
 
   void set_navigation_help_items(const std::vector<HelpItem> items) { navigation_help_items_ = items; }
-  void set_editor__help_items(const std::vector<HelpItem> items) { editor_help_items_ = items; }
+  void set_editor_help_items(const std::vector<HelpItem> items) { editor_help_items_ = items; }
 
   void set_curses_io(CursesIO* io, CursesWindow* window) { io_ = io; window_ = window; }
 
