@@ -21,6 +21,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <curses.h>
 #include "curses_win.h"
 #include "colors.h"
@@ -32,9 +33,28 @@
 // Indicator mode for the header bar while editing text.
 enum class IndicatorMode { INSERT, OVERWRITE, NONE };
 
+struct HelpItem {
+  std::string key;
+  std::string description;
+};
+
+class CursesFooter {
+public:
+  CursesFooter(CursesWindow* window, ColorScheme* color_scheme) 
+    : window_(window), color_scheme_(color_scheme) {}
+  virtual ~CursesFooter() {}
+  virtual void ShowHelpItems(const std::vector<HelpItem>& help_items) const;
+  virtual void ShowContextHelp(const std::string& help_text) const;
+  virtual void SetDefaultFooter() const;
+  virtual CursesWindow* window() const { return window_.get(); }
+
+ private:
+   std::unique_ptr<CursesWindow> window_;
+   ColorScheme* color_scheme_;
+};
+
 // Curses implementation of screen display routines for Init.
 class CursesIO {
-
  public:
   // Constructor/Destructor
   CursesIO();
@@ -43,9 +63,8 @@ class CursesIO {
 
   virtual void Cls();
   virtual CursesWindow* window() const { return window_; }
-  virtual CursesWindow* footer() const { return footer_; }
+  virtual CursesFooter* footer() const { return footer_; }
   virtual CursesWindow* header() const { return header_; }
-  virtual void SetDefaultFooter();
   virtual void SetIndicatorMode(IndicatorMode mode);
 
   ColorScheme* color_scheme() { return color_scheme_.get(); }
@@ -56,14 +75,12 @@ class CursesIO {
   int max_x_;
   int max_y_;
   CursesWindow* window_;
-  CursesWindow* footer_;
+  CursesFooter* footer_;
   CursesWindow* header_;
   IndicatorMode indicator_mode_;
   std::unique_ptr<ColorScheme> color_scheme_;
 };
 
-
 extern CursesIO* out;
-
 
 #endif // __INCLUDED_PLATFORM_CURSES_IO_H__

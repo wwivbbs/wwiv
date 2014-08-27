@@ -24,11 +24,15 @@
 
 #include "curses.h"
 #include "curses_io.h"
+#include "core/strings.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif  // _WIN32
+
+using std::string;
+using wwiv::strings::StringPrintf;
 
 extern const char *wwiv_version;
 extern const char *beta_version;
@@ -43,6 +47,36 @@ static COORD originalConsoleSize;
 #endif
 
 CursesIO* out;
+
+void CursesFooter::ShowHelpItems(const std::vector<HelpItem>& help_items) const {
+  window_->Move(0, 0);
+  window_->ClrtoEol();
+  for (const auto& h : help_items) {
+    window_->SetColor(color_scheme_, SchemeId::FOOTER_KEY);
+    window_->AddStr(h.key);
+    window_->SetColor(color_scheme_, SchemeId::FOOTER_TEXT);
+    window_->AddStr("-");
+    window_->AddStr(h.description);
+    window_->AddStr(" ");
+  }
+  window_->Refresh();
+}
+
+void CursesFooter::ShowContextHelp(const std::string& help_text) const {
+  window_->Move(0, 0);
+  window_->ClrtoEol();
+  window_->AddStr(help_text);
+}
+
+void CursesFooter::SetDefaultFooter() const {
+  window_->Erase();
+  window_->Move(0, 0);
+  window_->SetColor(color_scheme_, SchemeId::FOOTER_KEY);
+  window_->MvAddStr(0, 0, "Esc");
+  window_->SetColor(color_scheme_, SchemeId::FOOTER_TEXT);
+  window_->AddStr("-Exit ");
+  window_->Refresh();
+}
 
 CursesIO::CursesIO() 
     : max_x_(0), max_y_(0), window_(nullptr), footer_(nullptr), 
@@ -83,17 +117,17 @@ CursesIO::CursesIO()
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
   header_ = new CursesWindow(nullptr, 2, 0, 0, 0);
-  footer_ = new CursesWindow(nullptr, 2, 0, stdscr_maxy-2, 0);
+  footer_ = new CursesFooter(new CursesWindow(nullptr, 2, 0, stdscr_maxy-2, 0), 
+    color_scheme_.get());
   header_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
-  char s[81];
-  sprintf(s, "WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
+  const string s = StringPrintf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
   header_->SetColor(color_scheme_.get(), SchemeId::HEADER);
   header_->MvAddStr(0, 0, s);
   header_->SetColor(color_scheme_.get(), SchemeId::HEADER_COPYRIGHT);
   header_->MvAddStr(1, 0, copyrightString);
-  footer_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
+  footer_->window()->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   header_->Refresh();
-  footer_->Refresh();
+  footer_->window()->Refresh();
   header_->RedrawWin();
 
   window_ = new CursesWindow(nullptr, stdscr_maxy-4, stdscr_maxx, 2, 0);
@@ -126,16 +160,6 @@ void CursesIO::Cls() {
   window_->Clear();
   window_->Refresh();
   window_->GotoXY(0, 0);
-}
-
-void CursesIO::SetDefaultFooter() {
-  window_->Erase();
-  window_->Move(0, 0);
-  footer_->SetColor(color_scheme_.get(), SchemeId::FOOTER_KEY);
-  footer_->MvAddStr(0, 0, "Esc");
-  footer_->SetColor(color_scheme_.get(), SchemeId::FOOTER_TEXT);
-  footer_->AddStr("-Exit ");
-  footer_->Refresh();
 }
 
 void CursesIO::SetIndicatorMode(IndicatorMode mode) {

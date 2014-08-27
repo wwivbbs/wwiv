@@ -374,7 +374,7 @@ int WInitApp::main(int argc, char *argv[]) {
   bool done = false;
   do {
     out->Cls();
-    out->SetDefaultFooter();
+    out->footer()->SetDefaultFooter();
 
     vector<ListBoxItem> items = {
         { "G. General System Configuration", 'G' },
@@ -405,7 +405,7 @@ int WInitApp::main(int argc, char *argv[]) {
       }
       selected_hotkey = items[selected_item].hotkey();
     }
-    out->SetDefaultFooter();
+    out->footer()->SetDefaultFooter();
 
     // It's easier to use the hotkey for this case statement so it's simple to know
     // which case statement matches which item.
