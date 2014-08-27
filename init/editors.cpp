@@ -44,17 +44,17 @@ void edit_editor(int n) {
   c = editors[n];
   bool done = false;
   int cp = 0;
-  Printf("Description     : %s\n", c.description);
-  Printf("Filename to run remotely\n%s\n", c.filename);
-  Printf("Filename to run locally\n%s\n", c.filenamecon);
+  out->window()->Printf("Description     : %s\n", c.description);
+  out->window()->Printf("Filename to run remotely\n%s\n", c.filename);
+  out->window()->Printf("Filename to run locally\n%s\n", c.filenamecon);
   out->SetColor(SchemeId::PROMPT);
-  Puts("\n<ESC> when done.\n\n");
+  out->window()->Puts("\n<ESC> when done.\n\n");
   out->SetColor(SchemeId::NORMAL);
-  Printf("%%1 = filename to edit\n");
-  Printf("%%2 = chars per line\n");
-  Printf("%%3 = lines per page\n");
-  Printf("%%4 = max lines\n");
-  Printf("%%5 = instance number\n");
+  out->window()->Printf("%%1 = filename to edit\n");
+  out->window()->Printf("%%2 = chars per line\n");
+  out->window()->Printf("%%3 = lines per page\n");
+  out->window()->Printf("%%4 = max lines\n");
+  out->window()->Printf("%%5 = instance number\n");
   out->SetColor(SchemeId::NORMAL);
 
   do {
@@ -71,15 +71,15 @@ void edit_editor(int n) {
     }
     switch (cp) {
     case 0:
-      editline(c.description, 35, ALL, &i1, "");
+      editline(out->window(), c.description, 35, ALL, &i1, "");
       trimstr(c.description);
       break;
     case 1:
-      editline(c.filename, 75, ALL, &i1, "");
+      editline(out->window(), c.filename, 75, ALL, &i1, "");
       trimstr(c.filename);
       break;
     case 2:
-      editline(c.filenamecon, 75, ALL, &i1, "");
+      editline(out->window(), c.filenamecon, 75, ALL, &i1, "");
       trimstr(c.filenamecon);
       break;
     }
@@ -99,11 +99,11 @@ void extrn_editors() {
     out->Cls();
     nlx();
     for (int i = 0; i < initinfo.numeditors; i++) {
-      Printf("%d. %s\n", i + 1, editors[i].description);
+      out->window()->Printf("%d. %s\n", i + 1, editors[i].description);
     }
     nlx();
     out->SetColor(SchemeId::PROMPT);
-    Puts("Editors: M:odify, D:elete, I:nsert, Q:uit : ");
+    out->window()->Puts("Editors: M:odify, D:elete, I:nsert, Q:uit : ");
     out->SetColor(SchemeId::NORMAL);
     char ch = onek("Q\033MID");
     switch (ch) {
@@ -115,9 +115,9 @@ void extrn_editors() {
       if (initinfo.numeditors) {
         nlx();
         out->SetColor(SchemeId::ERROR_TEXT);
-        Printf("Edit which (1-%d) ? ", initinfo.numeditors);
+        out->window()->Printf("Edit which (1-%d) ? ", initinfo.numeditors);
         out->SetColor(SchemeId::NORMAL);
-        int i = input_number(2);
+        int i = input_number(out->window(), 2);
         if ((i > 0) && (i <= initinfo.numeditors)) {
           edit_editor(i - 1);
         }
@@ -127,9 +127,9 @@ void extrn_editors() {
       if (initinfo.numeditors) {
         nlx();
         out->SetColor(SchemeId::ERROR_TEXT);
-        Printf("Delete which (1-%d) ? ", initinfo.numeditors);
+        out->window()->Printf("Delete which (1-%d) ? ", initinfo.numeditors);
         out->SetColor(SchemeId::NORMAL);
-        int i = input_number(2);
+        int i = input_number(out->window(), 2);
         if ((i > 0) && (i <= initinfo.numeditors)) {
           for (i1 = i - 1; i1 < initinfo.numeditors; i1++) {
             editors[i1] = editors[i1 + 1];
@@ -141,16 +141,16 @@ void extrn_editors() {
     case 'I':
       if (initinfo.numeditors >= 10) {
         out->SetColor(SchemeId::ERROR_TEXT);
-        Printf("Too many editors.\n");
+        out->window()->Printf("Too many editors.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
         break;
       }
       nlx();
       out->SetColor(SchemeId::PROMPT);
-      Printf("Insert before which (1-%d) ? ", initinfo.numeditors + 1);
+      out->window()->Printf("Insert before which (1-%d) ? ", initinfo.numeditors + 1);
       out->SetColor(SchemeId::NORMAL);
-      int i = input_number(2);
+      int i = input_number(out->window(), 2);
       if ((i > 0) && (i <= initinfo.numeditors + 1)) {
         for (i1 = initinfo.numeditors; i1 > i - 1; i1--) {
           editors[i1] = editors[i1 - 1];

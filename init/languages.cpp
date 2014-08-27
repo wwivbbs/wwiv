@@ -47,17 +47,17 @@ static void edit_lang(int nn) {
   n = &(languages[nn]);
   out->SetColor(SchemeId::NORMAL);
 
-  Printf("Language name  : %s\n", n->name);
-  Printf("Data Directory : %s\n", n->dir);
-  Printf("Menu Directory : %s\n", n->mdir);
+  out->window()->Printf("Language name  : %s\n", n->name);
+  out->window()->Printf("Data Directory : %s\n", n->dir);
+  out->window()->Printf("Menu Directory : %s\n", n->mdir);
   out->SetColor(SchemeId::PROMPT);
-  Puts("\n<ESC> when done.\n\n");
+  out->window()->Puts("\n<ESC> when done.\n\n");
   out->SetColor(SchemeId::NORMAL);
   do {
     out->window()->GotoXY(17, cp);
     switch (cp) {
     case 0:
-      editline(n->name, sizeof(n->name) - 1, ALL, &i1, "");
+      editline(out->window(), n->name, sizeof(n->name) - 1, ALL, &i1, "");
       trimstr(n->name);
 #ifdef WHY
       ss = strchr(n->name, ' ');
@@ -65,18 +65,18 @@ static void edit_lang(int nn) {
         *ss = 0;
       }
 #endif
-      Puts(n->name);
-      Puts("                  ");
+      out->window()->Puts(n->name);
+       out->window()->Puts("                  ");
       break;
     case 1:
-      editline(n->dir, 60, EDITLINE_FILENAME_CASE, &i1, "");
+      editline(out->window(), n->dir, 60, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(n->dir);
-      Puts(n->dir);
+      out->window()->Puts(n->dir);
       break;
     case 2:
-      editline(n->mdir, 60, EDITLINE_FILENAME_CASE, &i1, "");
+      editline(out->window(), n->mdir, 60, EDITLINE_FILENAME_CASE, &i1, "");
       trimstrpath(n->mdir);
-      Puts(n->mdir);
+      out->window()->Puts(n->mdir);
       break;
     }
     cp = GetNextSelectionPosition(0, 2, cp, i1);
@@ -98,11 +98,11 @@ void edit_languages() {
       if (i && ((i % 23) == 0)) {
         pausescr();
       }
-      Printf("%-2d. %-20s    %-50s\n", i + 1, languages[i].name, languages[i].dir);
+      out->window()->Printf("%-2d. %-20s    %-50s\n", i + 1, languages[i].name, languages[i].dir);
     }
     nlx();
     out->SetColor(SchemeId::PROMPT);
-    Puts("Languages: M:odify, D:elete, I:nsert, Q:uit : ");
+    out->window()->Puts("Languages: M:odify, D:elete, I:nsert, Q:uit : ");
     out->SetColor(SchemeId::NORMAL);
     char ch = onek("Q\033MID");
     switch (ch) {
@@ -114,9 +114,9 @@ void edit_languages() {
       nlx();
       out->SetColor(SchemeId::PROMPT);
       sprintf(s1, "Edit which (1-%d) ? ", initinfo.num_languages);
-      Puts(s1);
+      out->window()->Puts(s1);
       out->SetColor(SchemeId::NORMAL);
-      i = input_number(2);
+      i = input_number(out->window(), 2);
       if ((i > 0) && (i <= initinfo.num_languages)) {
         edit_lang(i - 1);
       }
@@ -126,13 +126,13 @@ void edit_languages() {
         nlx();
         sprintf(s1, "Delete which (1-%d) ? ", initinfo.num_languages);
         out->SetColor(SchemeId::PROMPT);
-        Puts(s1);
+        out->window()->Puts(s1);
         out->SetColor(SchemeId::NORMAL);
-        i = input_number(2);
+        i = input_number(out->window(), 2);
         if ((i > 0) && (i <= initinfo.num_languages)) {
           nlx();
           out->SetColor(SchemeId::ERROR_TEXT);
-          Puts("Are you sure? ");
+          out->window()->Puts("Are you sure? ");
           out->SetColor(SchemeId::NORMAL);
           ch = onek("YN\r");
           if (ch == 'Y') {
@@ -148,7 +148,7 @@ void edit_languages() {
       } else {
         nlx();
         out->SetColor(SchemeId::ERROR_TEXT);
-        Printf("You must leave at least one language.\n");
+        out->window()->Printf("You must leave at least one language.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
         out->window()->GetChar();
@@ -157,7 +157,7 @@ void edit_languages() {
     case 'I':
       if (initinfo.num_languages >= MAX_LANGUAGES) {
         out->SetColor(SchemeId::ERROR_TEXT);
-        Printf("Too many languages.\n");
+        out->window()->Printf("Too many languages.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
         out->window()->GetChar();
@@ -166,12 +166,12 @@ void edit_languages() {
       nlx();
       out->SetColor(SchemeId::PROMPT);
       sprintf(s1, "Insert before which (1-%d) ? ", initinfo.num_languages + 1);
-      Puts(s1);
+      out->window()->Puts(s1);
       out->SetColor(SchemeId::NORMAL);
-      i = input_number(2);
+      i = input_number(out->window(), 2);
       if ((i > 0) && (i <= initinfo.num_languages + 1)) {
         out->SetColor(SchemeId::ERROR_TEXT);
-        Puts("Are you sure? ");
+        out->window()->Puts("Are you sure? ");
         out->SetColor(SchemeId::NORMAL);
         ch = onek("YN\r");
         if (ch == 'Y') {
