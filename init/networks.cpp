@@ -310,7 +310,7 @@ void networks() {
     nlx();
     for (int i = 0; i < initinfo.net_num_max; i++) {
       if (i && ((i % 23) == 0)) {
-        pausescr();
+        pausescr(out->window());
       }
       out->window()->Printf("%-2d. %-15s   @%-5u  %s\n", i + 1, net_networks[i].name, net_networks[i].sysnum, net_networks[i].dir);
     }
@@ -318,7 +318,7 @@ void networks() {
     out->SetColor(SchemeId::PROMPT);
     out->window()->Puts("(Q=Quit) Networks: (M)odify, (D)elete, (I)nsert : ");
     out->SetColor(SchemeId::NORMAL);
-    char ch = onek("Q\033MID");
+    char ch = onek(out->window(), "Q\033MID");
     switch (ch) {
     case 'Q':
     case '\033':
@@ -355,13 +355,13 @@ void networks() {
           nlx();
           out->SetColor(SchemeId::PROMPT);
           out->window()->Puts("Are you sure? ");
-          ch = onek("YN\r");
+          ch = onek(out->window(), "YN\r");
           if (ch == 'Y') {
             nlx();
             out->SetColor(SchemeId::ERROR_TEXT);
             out->window()->Puts("Are you REALLY sure? ");
             out->SetColor(SchemeId::NORMAL);
-            ch = onek("YN\r");
+            ch = onek(out->window(), "YN\r");
             if (ch == 'Y') {
               del_net(nNetNumber - 1);
             }
@@ -402,7 +402,7 @@ void networks() {
         out->SetColor(SchemeId::PROMPT);
         out->window()->Puts("Are you sure? ");
         out->SetColor(SchemeId::NORMAL);
-        ch = onek("YN\r");
+        ch = onek(out->window(), "YN\r");
         if (ch == 'Y') {
           insert_net(nNetNumber - 1);
         }

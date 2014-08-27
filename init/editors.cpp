@@ -105,7 +105,7 @@ void extrn_editors() {
     out->SetColor(SchemeId::PROMPT);
     out->window()->Puts("Editors: M:odify, D:elete, I:nsert, Q:uit : ");
     out->SetColor(SchemeId::NORMAL);
-    char ch = onek("Q\033MID");
+    char ch = onek(out->window(), "Q\033MID");
     switch (ch) {
     case 'Q':
     case '\033':
