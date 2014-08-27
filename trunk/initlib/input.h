@@ -36,18 +36,18 @@
 // Function prototypes
 void nlx(int numLines = 1);
 
-bool dialog_yn(const std::string prompt);
+bool dialog_yn(CursesWindow* window, const std::string prompt);
 int input_number(CursesWindow* window, int max_digits);
-char onek(const char *s);
+char onek(CursesWindow* window, const char *s);
 void editline(CursesWindow* window, std::string* s, int len, int status, int *returncode, const char *ss);
 void editline(CursesWindow* window, char *s, int len, int status, int *returncode, const char *ss);
 int toggleitem(CursesWindow* window, int value, const char **strings, int num, int *returncode);
-void pausescr();
+void pausescr(CursesWindow* window);
 
 int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode);
-void input_password(const std::string prompt, const std::vector<std::string>& text, char *output, int max_length);
-void messagebox(const std::string text);
-void messagebox(const std::vector<std::string>& text);
+void input_password(CursesWindow* window, const std::string prompt, const std::vector<std::string>& text, char *output, int max_length);
+void messagebox(CursesWindow* window, const std::string text);
+void messagebox(CursesWindow* window, const std::vector<std::string>& text);
 
 
 // Base item of an editable value, this class does not use templates.
@@ -109,7 +109,7 @@ public:
   virtual ~StringEditItem() {}
 
   virtual int Run(CursesWindow* window) override {
-    out->window()->GotoXY(this->x_, this->y_);
+    window->GotoXY(this->x_, this->y_);
     int return_code = 0;
     int status = uppercase_ ? UPPER_ONLY : ALL;
     editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, status, &return_code, "");
@@ -123,7 +123,7 @@ protected:
 
     char pattern[81];
     sprintf(pattern, "%%-%ds", this->maxsize_);
-   out->window()->PrintfXY(this->x_, this->y_, pattern, this->data_);
+    window->PrintfXY(this->x_, this->y_, pattern, this->data_);
   }
 private:
   bool uppercase_;
@@ -136,7 +136,7 @@ public:
   virtual ~NumberEditItem() {}
 
   virtual int Run(CursesWindow* window) {
-    out->window()->GotoXY(this->x_, this->y_);
+    window->GotoXY(this->x_, this->y_);
     char s[21];
     int return_code = 0;
     sprintf(s, "%-7u", *this->data_);

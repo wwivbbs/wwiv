@@ -245,7 +245,7 @@ int WInitApp::main(int argc, char *argv[]) {
   if (configfile < 0) {
     out->SetColor(SchemeId::ERROR_TEXT);
     out->window()->Printf("%s NOT FOUND.\n\n", configdat);
-    if (dialog_yn("Perform initial installation")) {
+    if (dialog_yn(out->window(), "Perform initial installation")) {
       new_init();
       newbbs = 1;
       configfile = open(configdat, O_RDWR | O_BINARY);
@@ -361,7 +361,7 @@ int WInitApp::main(int argc, char *argv[]) {
       lines.insert(lines.begin(), "");
       lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");
     }
-    input_password("SY:", lines, s, 20);
+    input_password(out->window(), "SY:", lines, s, 20);
     if (strcmp(s, (syscfg.systempw)) != 0) {
       out->Cls();
       nlx(2);

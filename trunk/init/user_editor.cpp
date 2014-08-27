@@ -76,7 +76,7 @@ static void show_error_no_users() {
   out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
   out->window()->Printf("You must have users added before using user editor.");
   out->window()->Printf("\n\n");
-  pausescr();
+  pausescr(out->window());
 }
 
 static vector<HelpItem> create_help_items() {
@@ -171,16 +171,16 @@ void user_editor() {
   show_user(&items, &user);
 
   for (;;)  {
-    char ch = onek("\033Q[]{}\r");
+    char ch = onek(out->window(), "\033Q[]{}\r");
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
         out->color_scheme()->SetColor(out->window(), SchemeId::ERROR_TEXT);
         out->window()->PutsXY(0, PROMPT_LINE, "Can not edit a deleted user.\n\n");
-        pausescr();
+        pausescr(out->window());
       } else {
         items.Run();
-        if (dialog_yn("Save User")) {
+        if (dialog_yn(out->window(), "Save User")) {
           write_user(current_usernum, &user);
         }
       }

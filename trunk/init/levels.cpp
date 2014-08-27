@@ -235,7 +235,7 @@ void sec_levs() {
   do {
     out->window()->GotoXY(0, 18);
     out->window()->Puts("Command: ");
-    char ch = onek("\033[]{}\r");
+    char ch = onek(out->window(), "\033[]{}\r");
     switch (ch) {
     case '\r':
       out->window()->GotoXY(0, 12);
@@ -447,7 +447,7 @@ void autoval_levs() {
     out->SetColor(SchemeId::PROMPT);
     out->window()->Puts("Which (0-9, Q=Quit) ? ");
     out->SetColor(SchemeId::NORMAL);
-    char ch = onek("Q0123456789\033");
+    char ch = onek(out->window(), "Q0123456789\033");
     if (ch == 'Q' || ch == '\033') {
       done = true;
     } else {

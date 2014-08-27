@@ -104,7 +104,7 @@ void edit_languages() {
     out->SetColor(SchemeId::PROMPT);
     out->window()->Puts("Languages: M:odify, D:elete, I:nsert, Q:uit : ");
     out->SetColor(SchemeId::NORMAL);
-    char ch = onek("Q\033MID");
+    char ch = onek(out->window(), "Q\033MID");
     switch (ch) {
     case 'Q':
     case '\033':
@@ -134,7 +134,7 @@ void edit_languages() {
           out->SetColor(SchemeId::ERROR_TEXT);
           out->window()->Puts("Are you sure? ");
           out->SetColor(SchemeId::NORMAL);
-          ch = onek("YN\r");
+          ch = onek(out->window(), "YN\r");
           if (ch == 'Y') {
             initinfo.num_languages--;
             for (i1 = i - 1; i1 < initinfo.num_languages; i1++) {
@@ -173,7 +173,7 @@ void edit_languages() {
         out->SetColor(SchemeId::ERROR_TEXT);
         out->window()->Puts("Are you sure? ");
         out->SetColor(SchemeId::NORMAL);
-        ch = onek("YN\r");
+        ch = onek(out->window(), "YN\r");
         if (ch == 'Y') {
           --i;
           for (i1 = initinfo.num_languages; i1 > i; i1--) {

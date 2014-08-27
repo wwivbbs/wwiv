@@ -26,6 +26,7 @@
 #include <cstring>
 #include <functional>
 #include <initializer_list>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -50,6 +51,7 @@
 void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength);
 
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
 int CustomEditItem::Run(CursesWindow* window) {
@@ -155,72 +157,63 @@ static CursesWindow* CreateDialogWindow(CursesWindow* parent, int height, int wi
   const int maxy = getmaxy(stdscr);
   const int startx = (maxx - width - 4) / 2;
   const int starty = (maxy - height - 2) / 2;
-  CursesWindow *dialog = new CursesWindow(out->window(), height + 2, width + 4, starty, startx);
+  CursesWindow *dialog = new CursesWindow(parent, height + 2, width + 4, starty, startx);
   dialog->Bkgd(out->color_scheme()->GetAttributesForScheme(SchemeId::DIALOG_BOX));
   out->color_scheme()->SetColor(dialog, SchemeId::DIALOG_BOX);
   dialog->Box(0, 0);
   return dialog;
 }
 
-static void CloseDialog(CursesWindow* dialog) {
-  delete dialog;
-  out->window()->RedrawWin();
-  out->window()->Refresh();
-}
-
-bool dialog_yn(const string prompt) {
+bool dialog_yn(CursesWindow* window, const string prompt) {
   string s = prompt + " ? ";
   
-  CursesWindow* dialog(CreateDialogWindow(out->window(), 1, s.size()));
+  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, 1, s.size()));
   dialog->MvAddStr(1, 2, s);
   dialog->Refresh();
   int ch = dialog->GetChar();
-  CloseDialog(dialog);
   return ch == 'Y' || ch == 'y';
 }
 
-void input_password(const string prompt, const vector<string>& text, char *output, int max_length) {
+void input_password(CursesWindow* window, const string prompt, const vector<string>& text, char *output, int max_length) {
   int maxlen = prompt.size() + max_length;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
-  CursesWindow *dialog = CreateDialogWindow(out->window(), text.size() + 2, maxlen);
-  out->color_scheme()->SetColor(dialog, SchemeId::DIALOG_TEXT);
+  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, text.size() + 2, maxlen));
+  out->color_scheme()->SetColor(dialog.get(), SchemeId::DIALOG_TEXT);
 
   int curline = 1;
   for (const auto& s : text) {
     dialog->MvAddStr(curline++, 2, s);
   }
-  out->color_scheme()->SetColor(dialog, SchemeId::DIALOG_PROMPT);
+  out->color_scheme()->SetColor(dialog.get(), SchemeId::DIALOG_PROMPT);
   dialog->MvAddStr(text.size() + 2, 2, prompt);
   dialog->Refresh();
-  winput_password(dialog, output, max_length);
-  CloseDialog(dialog);
+  winput_password(dialog.get(), output, max_length);
 }
 
-void messagebox(const string text) {
+void messagebox(CursesWindow* window, const string text) {
   const vector<string> vector = { text };
-  messagebox(vector);
+  messagebox(window, vector);
 }
 
-void messagebox(const vector<string>& text) {
+void messagebox(CursesWindow* window, const vector<string>& text) {
   const string prompt = "Press Any Key";
   int maxlen = prompt.length();
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
-  CursesWindow *dialog = CreateDialogWindow(out->window(), text.size() + 2, maxlen);
-  out->color_scheme()->SetColor(dialog, SchemeId::DIALOG_TEXT);
+  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, text.size() + 2, maxlen));
+  out->color_scheme()->SetColor(dialog.get(), SchemeId::DIALOG_TEXT);
   int curline = 1;
   for (const auto& s : text) {
     dialog->MvAddStr(curline++, 2, s);
   }
-  out->color_scheme()->SetColor(dialog, SchemeId::DIALOG_PROMPT);
+  out->color_scheme()->SetColor(dialog.get(), SchemeId::DIALOG_PROMPT);
   int x = (maxlen - prompt.length()) / 2;
   dialog->MvAddStr(text.size() + 2, x + 2, prompt);
   dialog->Refresh();
   dialog->GetChar();
-  CloseDialog(dialog);
 }
 
 int input_number(CursesWindow* window, int max_digits) {
@@ -308,10 +301,10 @@ void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength) {
   }
 }
 
-char onek(const char *pszKeys) {
+char onek(CursesWindow* window, const char *pszKeys) {
   char ch = 0;
 
-  while (!strchr(pszKeys, ch = toupper(wgetch(out->window()->window()))))
+  while (!strchr(pszKeys, ch = toupper(wgetch(window->window()))))
     ;
   return ch;
 }
@@ -589,12 +582,12 @@ int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCod
 /* This will pause output, displaying the [PAUSE] message, and wait for
 * a key to be hit.
 */
-void pausescr() {
-  out->color_scheme()->SetColor(out->window(), SchemeId::INFO);
-  out->window()->Puts("[PAUSE]");
-  out->color_scheme()->SetColor(out->window(), SchemeId::NORMAL);
-  out->window()->GetChar();
+void pausescr(CursesWindow* window) {
+  out->color_scheme()->SetColor(window, SchemeId::INFO);
+  window->Puts("[PAUSE]");
+  out->color_scheme()->SetColor(window, SchemeId::NORMAL);
+  window->GetChar();
   for (int i = 0; i < 7; i++) {
-    out->window()->AddStr("\b \b");
+    window->AddStr("\b \b");
   }
 }
