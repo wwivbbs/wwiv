@@ -132,12 +132,12 @@ void instance_editor() {
 
     out->SetColor(SchemeId::NORMAL);
     out->window()->GotoXY(0, 1);
-    Printf("Temporary Dir Pattern : %s\n", temp.c_str());
-    Printf("Batch Dir Pattern     : %s\n", batch.c_str());
-    Printf("Number of Instances:  : %d\n", num_instances);
+    out->window()->Printf("Temporary Dir Pattern : %s\n", temp.c_str());
+    out->window()->Printf("Batch Dir Pattern     : %s\n", batch.c_str());
+    out->window()->Printf("Number of Instances:  : %d\n", num_instances);
     nlx(2);
     out->SetColor(SchemeId::WARNING);
-    Printf("To change these values please edit 'wwiv.ini'\n");
+    out->window()->Printf("To change these values please edit 'wwiv.ini'\n");
     nlx(2);
     pausescr();
     return;
@@ -152,8 +152,8 @@ void instance_editor() {
 
   out->SetColor(SchemeId::NORMAL);
   out->window()->GotoXY(0, 1);
-  Printf("Temporary Directory: %s\n", instance.tempdir);
-  Printf("Batch Directory    : %s\n", instance.batchdir);
+  out->window()->Printf("Temporary Directory: %s\n", instance.tempdir);
+  out->window()->Printf("Batch Directory    : %s\n", instance.batchdir);
 
   EditItems items{
     new StringEditItem<char*>(COL1_POSITION, 1, 50, instance.tempdir, FILENAME_UPPERCASE),

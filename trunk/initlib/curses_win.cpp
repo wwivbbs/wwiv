@@ -73,6 +73,19 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
   Puts(text.c_str());
 }
 
+/**
+ * Printf sytle output function.  Most init output code should use this.
+ */
+void CursesWindow::Printf(const char *pszFormat, ...) {
+  va_list ap;
+  char szBuffer[1024];
+
+  va_start(ap, pszFormat);
+  vsnprintf(szBuffer, 1024, pszFormat, ap);
+  va_end(ap);
+  Puts(szBuffer);
+}
+
 void CursesWindow::PrintfXY(int x, int y, const char *pszFormat, ...) {
   va_list ap;
   char szBuffer[1024];

@@ -59,7 +59,7 @@ static int read_subs() {
   if (i > 0) {
     subboards = (subboardrec *) malloc(filelength(i) + 1);
     if (!subboards) {
-      Printf("needed %ld bytes\n", filelength(i));
+      out->window()->Printf("needed %ld bytes\n", filelength(i));
       exit_init(2);
     }
 
@@ -67,7 +67,7 @@ static int read_subs() {
                         sizeof(subboardrec);
     close(i);
   } else {
-    Printf("%s NOT FOUND.\n", szFileName);
+    out->window()->Printf("%s NOT FOUND.\n", szFileName);
     exit_init(2);
   }
   return 0;
@@ -298,10 +298,10 @@ void networks() {
     out->Cls();
     nlx();
     out->SetColor(SchemeId::WARNING);
-    Printf("WARNING\n");
-    Printf("You have not installed the networking software.  Unzip netxx.zip\n");
-    Printf("to the main BBS directory and re-run init.\n\n");
-    Printf("Hit any key to continue.\n");
+    out->window()->Printf("WARNING\n");
+    out->window()->Printf("You have not installed the networking software.  Unzip netxx.zip\n");
+    out->window()->Printf("to the main BBS directory and re-run init.\n\n");
+    out->window()->Printf("Hit any key to continue.\n");
     out->window()->GetChar();
   }
 
@@ -312,11 +312,11 @@ void networks() {
       if (i && ((i % 23) == 0)) {
         pausescr();
       }
-      Printf("%-2d. %-15s   @%-5u  %s\n", i + 1, net_networks[i].name, net_networks[i].sysnum, net_networks[i].dir);
+      out->window()->Printf("%-2d. %-15s   @%-5u  %s\n", i + 1, net_networks[i].name, net_networks[i].sysnum, net_networks[i].dir);
     }
     nlx();
     out->SetColor(SchemeId::PROMPT);
-    Puts("(Q=Quit) Networks: (M)odify, (D)elete, (I)nsert : ");
+    out->window()->Puts("(Q=Quit) Networks: (M)odify, (D)elete, (I)nsert : ");
     out->SetColor(SchemeId::NORMAL);
     char ch = onek("Q\033MID");
     switch (ch) {
@@ -328,9 +328,9 @@ void networks() {
       nlx();
       sprintf(s1, "Edit which (1-%d) ? ", initinfo.net_num_max);
       out->SetColor(SchemeId::PROMPT);
-      Puts(s1);
+      out->window()->Puts(s1);
       out->SetColor(SchemeId::NORMAL);
-      int nNetNumber = input_number(2);
+      int nNetNumber = input_number(out->window(), 2);
       if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max) {
         edit_net(nNetNumber - 1);
       }
@@ -339,7 +339,7 @@ void networks() {
     case 'D':
       if (!OKAD) {
         out->SetColor(SchemeId::ERROR_TEXT);
-        Printf("You must run the BBS once to set up some variables before deleting a network.\n");
+        out->window()->Printf("You must run the BBS once to set up some variables before deleting a network.\n");
         out->SetColor(SchemeId::NORMAL);
         out->window()->GetChar();
         break;
@@ -349,17 +349,17 @@ void networks() {
         out->SetColor(SchemeId::PROMPT);
         sprintf(s1, "Delete which (1-%d) ? ", initinfo.net_num_max);
         out->SetColor(SchemeId::NORMAL);
-        Puts(s1);
-        int nNetNumber = input_number(2);
-        if ((nNetNumber > 0) && (nNetNumber <= initinfo.net_num_max)) {
+        out->window()->Puts(s1);
+        int nNetNumber = input_number(out->window(), 2);
+        if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max) {
           nlx();
           out->SetColor(SchemeId::PROMPT);
-          Puts("Are you sure? ");
+          out->window()->Puts("Are you sure? ");
           ch = onek("YN\r");
           if (ch == 'Y') {
             nlx();
             out->SetColor(SchemeId::ERROR_TEXT);
-            Puts("Are you REALLY sure? ");
+            out->window()->Puts("Are you REALLY sure? ");
             out->SetColor(SchemeId::NORMAL);
             ch = onek("YN\r");
             if (ch == 'Y') {
@@ -370,7 +370,7 @@ void networks() {
       } else {
         nlx();
         out->SetColor(SchemeId::ERROR_TEXT);
-        Printf("You must leave at least one network.\n");
+        out->window()->Printf("You must leave at least one network.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
         out->window()->GetChar();
@@ -379,14 +379,14 @@ void networks() {
     case 'I':
       if (!OKAD) {
         out->SetColor(SchemeId::PROMPT);
-        Printf("You must run the BBS once to set up some variables before inserting a network.\n");
+        out->window()->Printf("You must run the BBS once to set up some variables before inserting a network.\n");
         out->SetColor(SchemeId::NORMAL);
         out->window()->GetChar();
         break;
       }
       if (initinfo.net_num_max >= MAX_NETWORKS) {
         out->SetColor(SchemeId::ERROR_TEXT);
-        Printf("Too many networks.\n");
+        out->window()->Printf("Too many networks.\n");
         out->SetColor(SchemeId::NORMAL);
         nlx();
         out->window()->GetChar();
@@ -395,12 +395,12 @@ void networks() {
       nlx();
       out->SetColor(SchemeId::PROMPT);
       sprintf(s1, "Insert before which (1-%d) ? ", initinfo.net_num_max + 1);
-      Puts(s1);
+      out->window()->Puts(s1);
       out->SetColor(SchemeId::NORMAL);
-      int nNetNumber = input_number(2);
-      if ((nNetNumber > 0) && (nNetNumber <= initinfo.net_num_max + 1)) {
+      int nNetNumber = input_number(out->window(), 2);
+      if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max + 1) {
         out->SetColor(SchemeId::PROMPT);
-        Puts("Are you sure? ");
+        out->window()->Puts("Are you sure? ");
         out->SetColor(SchemeId::NORMAL);
         ch = onek("YN\r");
         if (ch == 'Y') {
@@ -432,13 +432,12 @@ static void edit_net(int nn) {
     n->type = 0;
   }
 
-  Printf("Network type   : %s\n\n", nettypes[n->type]);
-
-  Printf("Network name   : %s\n", n->name);
-  Printf("Node number    : %u\n", n->sysnum);
-  Printf("Data Directory : %s\n", n->dir);
+  out->window()->Printf("Network type   : %s\n\n", nettypes[n->type]);
+  out->window()->Printf("Network name   : %s\n", n->name);
+  out->window()->Printf("Node number    : %u\n", n->sysnum);
+  out->window()->Printf("Data Directory : %s\n", n->dir);
   out->SetColor(SchemeId::PROMPT);
-  Puts("\n<ESC> when done.\n\n");
+  out->window()->Puts("\n<ESC> when done.\n\n");
   out->SetColor(SchemeId::NORMAL);
   do {
     if (cp) {
@@ -449,33 +448,33 @@ static void edit_net(int nn) {
     int nNext = 0;
     switch (cp) {
     case 0:
-      n->type = toggleitem(n->type, nettypes, MAX_NETTYPES, &nNext);
+      n->type = toggleitem(out->window(), n->type, nettypes, MAX_NETTYPES, &nNext);
       break;
     case 1: {
-      editline(n->name, 15, ALL, &nNext, "");
+      editline(out->window(), n->name, 15, ALL, &nNext, "");
       trimstr(n->name);
       ss = strchr(n->name, ' ');
       if (ss) {
         *ss = 0;
       }
-      Puts(n->name);
-      Puts("                  ");
+      out->window()->Puts(n->name);
+      out->window()->Puts("                  ");
     }
     break;
     case 2: {
       char szTempBuffer[ 255 ];
       sprintf(szTempBuffer, "%u", n->sysnum);
-      editline(szTempBuffer, 5, NUM_ONLY, &nNext, "");
+      editline(out->window(), szTempBuffer, 5, NUM_ONLY, &nNext, "");
       trimstr(szTempBuffer);
       n->sysnum = atoi(szTempBuffer);
       sprintf(szTempBuffer, "%u", n->sysnum);
-      Puts(szTempBuffer);
+      out->window()->Puts(szTempBuffer);
     }
     break;
     case 3: {
-      editline(n->dir, 60, UPPER_ONLY, &nNext, "");
+      editline(out->window(), n->dir, 60, UPPER_ONLY, &nNext, "");
       trimstrpath(n->dir);
-      Puts(n->dir);
+      out->window()->Puts(n->dir);
     }
     break;
     }

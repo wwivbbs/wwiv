@@ -104,31 +104,31 @@ void sysinfo1() {
   j2[16] = 0;
   out->Cls();
   out->SetColor(SchemeId::NORMAL);
-  Printf("System PW        : %s\n", syscfg.systempw);
-  Printf("System name      : %s\n", syscfg.systemname);
-  Printf("System phone     : %s\n", syscfg.systemphone);
-  Printf("Closed system    : %s\n", j12);
+  out->window()->Printf("System PW        : %s\n", syscfg.systempw);
+  out->window()->Printf("System name      : %s\n", syscfg.systemname);
+  out->window()->Printf("System phone     : %s\n", syscfg.systemphone);
+  out->window()->Printf("Closed system    : %s\n", j12);
 
-  Printf("Newuser PW       : %s\n", syscfg.newuserpw);
-  Printf("Newuser restrict : %s\n", j2);
-  Printf("Newuser SL       : %-3s\n", j3);
-  Printf("Newuser DSL      : %-3s\n", j4);
-  Printf("Newuser gold     : %-5s\n", j5);
+  out->window()->Printf("Newuser PW       : %s\n", syscfg.newuserpw);
+  out->window()->Printf("Newuser restrict : %s\n", j2);
+  out->window()->Printf("Newuser SL       : %-3s\n", j3);
+  out->window()->Printf("Newuser DSL      : %-3s\n", j4);
+  out->window()->Printf("Newuser gold     : %-5s\n", j5);
 
-  Printf("Sysop name       : %s\n", syscfg.sysopname);
-  Printf("Sysop low time   : %-5s\n", j6);
-  Printf("Sysop high time  : %-5s\n", j7);
+  out->window()->Printf("Sysop name       : %s\n", syscfg.sysopname);
+  out->window()->Printf("Sysop low time   : %-5s\n", j6);
+  out->window()->Printf("Sysop high time  : %-5s\n", j7);
 
-  Printf("Net low time     : %-5s\n", j1);
-  Printf("Net high time    : %-5s\n", j10);
+  out->window()->Printf("Net low time     : %-5s\n", j1);
+  out->window()->Printf("Net high time    : %-5s\n", j10);
 
-  Printf("Up/Download ratio: %-5s\n", j8);
-  Printf("Post/Call ratio  : %-5s\n", j18);
+  out->window()->Printf("Up/Download ratio: %-5s\n", j8);
+  out->window()->Printf("Post/Call ratio  : %-5s\n", j18);
 
-  Printf("Max waiting      : %-3s\n", j9);
-  Printf("Max users        : %-5s\n", j11);
-  Printf("Caller number    : %-7s\n", j17);
-  Printf("Days active      : %-7s\n", j19);
+  out->window()->Printf("Max waiting      : %-3s\n", j9);
+  out->window()->Printf("Max users        : %-5s\n", j11);
+  out->window()->Printf("Caller number    : %-7s\n", j17);
+  out->window()->Printf("Days active      : %-7s\n", j19);
 
   out->SetColor(SchemeId::NORMAL);
   cp = 0;
@@ -137,18 +137,18 @@ void sysinfo1() {
     out->window()->GotoXY(19, cp);
     switch (cp) {
     case 0:
-      editline(syscfg.systempw, 20, UPPER_ONLY, &i1, "");
+      editline(out->window(), syscfg.systempw, 20, UPPER_ONLY, &i1, "");
       trimstr(syscfg.systempw);
       break;
     case 1:
-      editline(syscfg.systemname, 50, ALL, &i1, "");
+      editline(out->window(), syscfg.systemname, 50, ALL, &i1, "");
       trimstr(syscfg.systemname);
       break;
     case 2:
-      editline(syscfg.systemphone, 12, UPPER_ONLY, &i1, "");
+      editline(out->window(), syscfg.systemphone, 12, UPPER_ONLY, &i1, "");
       break;
     case 3:
-      editline(j12, 1, UPPER_ONLY, &i1, "");
+      editline(out->window(), j12, 1, UPPER_ONLY, &i1, "");
       if (j12[0] == 'Y') {
         syscfg.closedsystem = 1;
         strcpy(j12, "Y");
@@ -156,14 +156,14 @@ void sysinfo1() {
         syscfg.closedsystem = 0;
         strcpy(j12, "N");
       }
-      Printf("%-1s", j12);
+      out->window()->Printf("%-1s", j12);
       break;
     case 4:
-      editline(syscfg.newuserpw, 20, UPPER_ONLY, &i1, "");
+      editline(out->window(), syscfg.newuserpw, 20, UPPER_ONLY, &i1, "");
       trimstr(syscfg.newuserpw);
       break;
     case 5:
-      editline(j2, 16, SET, &i1, rs);
+      editline(out->window(), j2, 16, SET, &i1, rs);
       syscfg.newuser_restrict = 0;
       for (i = 0; i < 16; i++) {
         if (j2[i] != 32) {
@@ -172,61 +172,61 @@ void sysinfo1() {
       }
       break;
     case 6:
-      editline(j3, 3, NUM_ONLY, &i1, "");
+      editline(out->window(), j3, 3, NUM_ONLY, &i1, "");
       syscfg.newusersl = atoi(j3);
       sprintf(j3, "%u", syscfg.newusersl);
-      Printf("%-3s", j3);
+      out->window()->Printf("%-3s", j3);
       break;
     case 7:
-      editline(j4, 3, NUM_ONLY, &i1, "");
+      editline(out->window(), j4, 3, NUM_ONLY, &i1, "");
       syscfg.newuserdsl = atoi(j4);
       sprintf(j4, "%u", syscfg.newuserdsl);
-      Printf("%-3s", j4);
+      out->window()->Printf("%-3s", j4);
       break;
     case 8:
-      editline(j5, 5, NUM_ONLY, &i1, "");
+      editline(out->window(), j5, 5, NUM_ONLY, &i1, "");
       syscfg.newusergold = (float) atoi(j5);
       sprintf(j5, "%g", syscfg.newusergold);
-      Printf("%-5s", j5);
+      out->window()->Printf("%-5s", j5);
       break;
     case 9:
-      editline(syscfg.sysopname, 50, ALL, &i1, "");
+      editline(out->window(), syscfg.sysopname, 50, ALL, &i1, "");
       trimstr(syscfg.sysopname);
       break;
     case 10:
-      editline(j6, 5, UPPER_ONLY, &i1, "");
+      editline(out->window(), j6, 5, UPPER_ONLY, &i1, "");
       if (get_time(j6) != 0xffff) {
         syscfg.sysoplowtime = get_time(j6);
       }
       print_time(syscfg.sysoplowtime, j6);
-      Printf("%-5s", j6);
+      out->window()->Printf("%-5s", j6);
       break;
     case 11:
-      editline(j7, 5, UPPER_ONLY, &i1, "");
+      editline(out->window(), j7, 5, UPPER_ONLY, &i1, "");
       if (get_time(j7) != 0xffff) {
         syscfg.sysophightime = get_time(j7);
       }
       print_time(syscfg.sysophightime, j7);
-      Printf("%-5s", j7);
+      out->window()->Printf("%-5s", j7);
       break;
     case 12:
-      editline(j1, 5, UPPER_ONLY, &i1, "");
+      editline(out->window(), j1, 5, UPPER_ONLY, &i1, "");
       if (get_time(j1) != 0xffff) {
         syscfg.netlowtime = get_time(j1);
       }
       print_time(syscfg.netlowtime, j1);
-      Printf("%-5s", j1);
+      out->window()->Printf("%-5s", j1);
       break;
     case 13:
-      editline(j10, 5, UPPER_ONLY, &i1, "");
+      editline(out->window(), j10, 5, UPPER_ONLY, &i1, "");
       if (get_time(j10) != 0xffff) {
         syscfg.nethightime = get_time(j10);
       }
       print_time(syscfg.nethightime, j10);
-      Printf("%-5s", j10);
+      out->window()->Printf("%-5s", j10);
       break;
     case 14: {
-      editline(j8, 5, UPPER_ONLY, &i1, "");
+      editline(out->window(), j8, 5, UPPER_ONLY, &i1, "");
       float fRatio = syscfg.req_ratio;
       sscanf(j8, "%f", &fRatio);
       if ((fRatio > 9.999) || (fRatio < 0.001)) {
@@ -234,11 +234,11 @@ void sysinfo1() {
       }
       syscfg.req_ratio = fRatio;
       sprintf(j8, "%5.3f", syscfg.req_ratio);
-      Puts(j8);
+      out->window()->Puts(j8);
     }
     break;
     case 15: {
-      editline(j18, 5, UPPER_ONLY, &i1, "");
+      editline(out->window(), j18, 5, UPPER_ONLY, &i1, "");
       float fRatio = syscfg.post_call_ratio;
       sscanf(j18, "%f", &fRatio);
       if ((fRatio > 9.999) || (fRatio < 0.001)) {
@@ -246,36 +246,36 @@ void sysinfo1() {
       }
       syscfg.post_call_ratio = fRatio;
       sprintf(j18, "%5.3f", syscfg.post_call_ratio);
-      Puts(j18);
+      out->window()->Puts(j18);
     }
     break;
     case 16:
-      editline(j9, 3, NUM_ONLY, &i1, "");
+      editline(out->window(), j9, 3, NUM_ONLY, &i1, "");
       syscfg.maxwaiting = atoi(j9);
       sprintf(j9, "%u", syscfg.maxwaiting);
-      Printf("%-3s", j9);
+      out->window()->Printf("%-3s", j9);
       break;
     case 17:
-      editline(j11, 5, NUM_ONLY, &i1, "");
+      editline(out->window(), j11, 5, NUM_ONLY, &i1, "");
       syscfg.maxusers = atoi(j11);
       sprintf(j11, "%u", syscfg.maxusers);
-      Printf("%-5s", j11);
+      out->window()->Printf("%-5s", j11);
       break;
     case 18:
-      editline(j17, 7, NUM_ONLY, &i1, "");
+      editline(out->window(), j17, 7, NUM_ONLY, &i1, "");
       if ((unsigned long) atol(j17) != status.callernum1) {
         status.callernum1 = atol(j17);
         sprintf(j17, "%u", status.callernum1);
-        Printf("%-7s", j17);
+        out->window()->Printf("%-7s", j17);
         save_status();
       }
       break;
     case 19:
-      editline(j19, 7, NUM_ONLY, &i1, "");
+      editline(out->window(), j19, 7, NUM_ONLY, &i1, "");
       if (atoi(j19) != status.days) {
         status.days = atoi(j19);
         sprintf(j19, "%u", status.days);
-        Printf("%-7s", j19);
+        out->window()->Printf("%-7s", j19);
         save_status();
       }
       break;
