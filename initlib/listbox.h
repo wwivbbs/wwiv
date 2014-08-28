@@ -35,16 +35,16 @@
 class ColorScheme;
 
 struct ListBoxItem {
-  ListBoxItem(const std::string& text, int hotkey=0, const void* data = nullptr) : text_(text), hotkey_(hotkey), data_(data) {}
+  ListBoxItem(const std::string& text, int hotkey=0, int data = 0) : text_(text), hotkey_(hotkey), data_(data) {}
   ~ListBoxItem() {}
 
   const std::string& text() const { return text_; }
   const int hotkey() const { return hotkey_; }
-  const void* data() const { return data_; }
+  const int data() const { return data_; }
 
   std::string text_;
   int hotkey_;
-  const void* data_;
+  int data_;
 };
 
 // Curses implementation of a list box.

@@ -30,17 +30,22 @@
 #include "utility.h"
 #include "wwivinit.h"
 
+#include "core/strings.h"
+#include "core/wfile.h"
+#include "initlib/listbox.h"
+
 static const int COL1_POSITION = 19;
 static const int COL2_POSITION = 50;
 static const int PROMPT_LINE = 18;
 
 using std::vector;
+using wwiv::strings::StringPrintf;
 
 static bool IsUserDeleted(userrec *user) {
   return user->inact & inact_deleted;
 }
 
-void show_user(EditItems* items, userrec* user) {
+static void show_user(EditItems* items, userrec* user) {
   items->Display();
 
   for (int i=0; i<13; i++) {
@@ -82,7 +87,40 @@ static void show_error_no_users() {
 static vector<HelpItem> create_help_items() {
   vector<HelpItem> help_items = EditItems::StandardNavigationHelpItems();
   help_items.push_back({ "A", "Add" });
+  help_items.push_back({ "J", "Jump" });
   return help_items;
+}
+
+static const int JumpToUser() {
+  vector<ListBoxItem> items;
+
+  WFile file(syscfg.datadir, "names.lst");
+  int num_reconds = file.GetLength() / sizeof(smalrec);
+  if (!file.Open(WFile::modeReadOnly | WFile::modeBinary, WFile::shareDenyWrite)) {
+    show_error_no_users();
+    return -1;
+  }
+
+  for (int i = 0; i < num_reconds; i++) {
+    smalrec name;
+    int bytes_read = file.Read(&name, sizeof(smalrec));
+    if (bytes_read != sizeof(smalrec)) {
+      messagebox(out->window(), "Error reading smalrec");
+      return -1;
+    }
+    items.emplace_back(StringPrintf("%s #%d", name.name, name.number), 0, name.number);
+  }
+  file.Close();
+  
+  ListBox list(out->window(), "Select User", static_cast<int>(floor(out->window()->GetMaxX() * 0.8)), 
+    static_cast<int>(floor(out->window()->GetMaxY() * 0.8)), items, out->color_scheme());
+  list.set_hotkey_executes_item(true);
+  int selected_item = list.Run();
+  if (selected_item >= 0) {
+    return items[selected_item].data();
+  }
+
+  return -1;
 }
 
 void user_editor() {
@@ -171,7 +209,7 @@ void user_editor() {
   show_user(&items, &user);
 
   for (;;)  {
-    char ch = onek(out->window(), "\033Q[]{}\r");
+    char ch = onek(out->window(), "\033JQ[]{}\r");
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
@@ -187,6 +225,12 @@ void user_editor() {
       out->window()->Move(PROMPT_LINE, 0); 
       out->window()->ClrtoEol();
       out->window()->Refresh();
+    } break;
+    case 'J': {
+      int user_number = JumpToUser();
+      if (user_number >= 1) {
+        current_usernum = user_number;
+      }
     } break;
     case 'Q':
     case '\033':
