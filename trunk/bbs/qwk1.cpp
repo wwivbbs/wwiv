@@ -819,11 +819,13 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     GetSession()->bout.WriteFormatted("Posting    :");
     GetSession()->bout.Color(3);
     GetSession()->bout.Write(title);
+    GetSession()->bout.NewLine();
 
     GetSession()->bout.Color(2);
     GetSession()->bout.WriteFormatted("Posting on :");
     GetSession()->bout.Color(3);
     GetSession()->bout.Write(stripcolors(subboards[GetSession()->GetCurrentReadMessageArea()].name));
+    GetSession()->bout.NewLine();
 
     if (xsubs[GetSession()->GetCurrentReadMessageArea()].nets) {
       GetSession()->bout.Color(2);
@@ -831,6 +833,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       GetSession()->bout.Color(3);
       GetSession()->bout.Write(
         net_networks[xsubs[GetSession()->GetCurrentReadMessageArea()].nets[xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets].net_num].name);
+      GetSession()->bout.NewLine();
     }
 
     GetSession()->bout.NewLine();
@@ -843,6 +846,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       ++pass;
     }
   }
+  GetSession()->bout.NewLine();
 
   if (subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_real_name) {
     strcpy(user_name, GetSession()->GetCurrentUser()->GetRealName());
