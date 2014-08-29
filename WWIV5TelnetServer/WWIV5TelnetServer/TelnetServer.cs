@@ -135,9 +135,9 @@ namespace WWIV5TelnetServer
             }
         }
 
-        private void LaunchInstance(NodeStatus node, Socket socketParam)
+        private void LaunchInstance(NodeStatus node, Socket socket)
         {
-            using (Socket socket = socketParam)
+            try
             {
                 var executable = Properties.Settings.Default.executable;
                 var argumentsTemplate = Properties.Settings.Default.parameters;
@@ -149,6 +149,10 @@ namespace WWIV5TelnetServer
                 p.WaitForExit();
                 socket.Shutdown(SocketShutdown.Both);
                 socket.Close();
+            }
+            catch (SocketException e)
+            {
+              Console.WriteLine(e.ToString());
             }
             lock (nodeLock)
             {
