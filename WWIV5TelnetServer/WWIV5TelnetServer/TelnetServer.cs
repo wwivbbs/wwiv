@@ -154,11 +154,18 @@ namespace WWIV5TelnetServer
             {
               Console.WriteLine(e.ToString());
             }
-            lock (nodeLock)
+            catch (Exception e)
             {
-              node.InUse = false;
+              Console.WriteLine(e.ToString());
             }
-            OnNodeUpdated(node);
+            finally
+            {
+              lock (nodeLock)
+              {
+                node.InUse = false;
+              }
+              OnNodeUpdated(node);
+            }
         }
 
         public void Dispose()
