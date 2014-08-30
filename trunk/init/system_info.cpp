@@ -118,7 +118,7 @@ void sysinfo1() {
   }
 
   out->Cls(ACS_BOARD);
-  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 19, 76, 1, 2));
+  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 19, 76));
   window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
   window->Box(0, 0);
   window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);

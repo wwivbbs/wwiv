@@ -230,7 +230,6 @@ int WInitApp::main(int argc, char *argv[]) {
       }
       case 'D': {
         setpaths();
-        out->Cls();
         exit_init(0);
       } break;
       case '?':
@@ -363,10 +362,8 @@ int WInitApp::main(int argc, char *argv[]) {
     }
     input_password(out->window(), "SY:", lines, s, 20);
     if (strcmp(s, (syscfg.systempw)) != 0) {
-      out->Cls();
-      nlx(2);
-      out->SetColor(SchemeId::ERROR_TEXT);
-      out->window()->Printf("I'm sorry, that isn't the correct system password.\n");
+      out->Cls(ACS_BOARD);
+      messagebox(out->window(), "I'm sorry, that isn't the correct system password.");
       exit_init(2);
     }
   }

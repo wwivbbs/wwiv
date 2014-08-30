@@ -32,7 +32,7 @@
 class CursesWindow {
  public:
   // Constructor/Destructor
-  CursesWindow(CursesWindow* parent, int nlines, int ncols, int begin_y, int begin_x);
+  CursesWindow(CursesWindow* parent, int nlines, int ncols, int begin_y = 0, int begin_x = 0);
   CursesWindow(const CursesWindow& copy) = delete;
   virtual ~CursesWindow();
 
