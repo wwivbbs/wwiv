@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "instance_settings.h"
 
+#include <memory>
+
 #include <curses.h>
 #include <cstdint>
 #include <cstring>
@@ -51,6 +53,7 @@ static const int PROMPT_LINE = 6;
 #define FILENAME_UPPERCASE true
 #endif  // __unix__
 
+using std::auto_ptr;
 using std::vector;
 
 void show_instance(EditItems* items) {
@@ -128,18 +131,25 @@ void instance_editor() {
     string temp(ini.GetValue("TEMP_DIRECTORY"));
     string batch(ini.GetValue("BATCH_DIRECTORY", temp.c_str()));
     int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
-    out->Cls();
 
-    out->SetColor(SchemeId::NORMAL);
-    out->window()->GotoXY(0, 1);
-    out->window()->Printf("Temporary Dir Pattern : %s\n", temp.c_str());
-    out->window()->Printf("Batch Dir Pattern     : %s\n", batch.c_str());
-    out->window()->Printf("Number of Instances:  : %d\n", num_instances);
-    nlx(2);
-    out->SetColor(SchemeId::WARNING);
-    out->window()->Printf("To change these values please edit 'wwiv.ini'\n");
-    nlx(2);
-    pausescr(out->window());
+    out->Cls(ACS_BOARD);
+    auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 10, 76));
+    window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
+    window->Box(0, 0);
+    window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+
+    window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+
+    window->PrintfXY(2, 1, "Temporary Dir Pattern : %s", temp.c_str());
+    window->PrintfXY(2, 2, "Batch Dir Pattern     : %s", batch.c_str());
+    window->PrintfXY(2, 3, "Number of Instances:  : %d", num_instances);
+
+    window->SetColor(out->color_scheme(), SchemeId::WINDOW_DATA);
+    window->PrintfXY(2, 5, "To change these values please edit 'wwiv.ini'");
+
+    window->SetColor(out->color_scheme(), SchemeId::WINDOW_PROMPT);
+    window->PrintfXY(2, 7, "Press Any Key");
+    window->GetChar();
     return;
   }
 
