@@ -25,8 +25,8 @@
 #include "curses.h"
 #include "curses_win.h"
 
-CursesWindow::CursesWindow(CursesWindow* parent, int nlines, int ncols, int begin_y, int begin_x) 
-    : parent_(parent) {
+CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols, int begin_y, int begin_x) 
+    : parent_(parent), color_scheme_(color_scheme) {
   if (parent != nullptr) {
     if (begin_x == 0) {
       begin_x = (parent->GetMaxX() - ncols) / 2;
@@ -102,7 +102,7 @@ void CursesWindow::PrintfXY(int x, int y, const char *pszFormat, ...) {
   PutsXY(x, y, szBuffer);
 }
 
-void CursesWindow::SetColor(ColorScheme* scheme, SchemeId id) {
-  AttrSet(scheme->GetAttributesForScheme(id));
+void CursesWindow::SetColor(SchemeId id) {
+  AttrSet(color_scheme_->GetAttributesForScheme(id));
 }
 

@@ -133,19 +133,19 @@ void instance_editor() {
     int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
 
     out->Cls(ACS_CKBOARD);
-    auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 10, 76));
-    window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
+    auto_ptr<CursesWindow> window(new CursesWindow(out->window(), out->color_scheme(), 10, 76));
+    window->SetColor(SchemeId::WINDOW_BOX);
     window->Box(0, 0);
-    window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+    window->SetColor(SchemeId::WINDOW_TEXT);
 
     window->PrintfXY(2, 1, "Temporary Dir Pattern : %s", temp.c_str());
     window->PrintfXY(2, 2, "Batch Dir Pattern     : %s", batch.c_str());
     window->PrintfXY(2, 3, "Number of Instances:  : %d", num_instances);
 
-    window->SetColor(out->color_scheme(), SchemeId::WINDOW_DATA);
+    window->SetColor(SchemeId::WINDOW_DATA);
     window->PrintfXY(2, 5, "To change these values please edit 'wwiv.ini'");
 
-    window->SetColor(out->color_scheme(), SchemeId::WINDOW_PROMPT);
+    window->SetColor(SchemeId::WINDOW_PROMPT);
     window->PrintfXY(2, 7, "Press Any Key");
     window->GetChar();
     return;

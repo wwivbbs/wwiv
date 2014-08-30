@@ -32,7 +32,7 @@
 class CursesWindow {
  public:
   // Constructor/Destructor
-  CursesWindow(CursesWindow* parent, int nlines, int ncols, int begin_y = 0, int begin_x = 0);
+  CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols, int begin_y = 0, int begin_x = 0);
   CursesWindow(const CursesWindow& copy) = delete;
   virtual ~CursesWindow();
 
@@ -44,16 +44,16 @@ class CursesWindow {
   int TouchWin() { return touchwin(window_); }
   int Refresh() { return wrefresh(window_); }
   int Move(int y, int x) { return wmove(window_, y, x); }
-  int GetcurX() { return getcurx(window_); }
-  int GetcurY() { return getcury(window_); }
+  int GetcurX() const { return getcurx(window_); }
+  int GetcurY() const { return getcury(window_); }
   int Clear() { return wclear(window_); }
   int Erase() { return werase(window_); }
-  int GetChar() { return wgetch(window_); }
+  int GetChar() const { return wgetch(window_); }
   int AttrSet(chtype attrs) { return wattrset(window_, attrs); }
   int Keypad(bool b) { return keypad(window_, b); }
   int GetMaxX() const { return getmaxx(window_); }
   int GetMaxY() const { return getmaxy(window_); }
-  int ClrtoEol() const { return wclrtoeol(window_); }
+  int ClrtoEol() { return wclrtoeol(window_); }
   int AttrGet(attr_t* a, short* c) const { return wattr_get(window_, a, c, nullptr); }
   int Box(chtype vert_ch, chtype horiz_ch) { return box(window_, vert_ch, horiz_ch); }
 
@@ -64,15 +64,16 @@ class CursesWindow {
   void Printf(const char *pszFormat, ...);
   void PrintfXY(int x, int y, const char *pszFormat, ...);
 
-  void SetColor(ColorScheme* scheme, SchemeId id);
-  
+  void SetColor(SchemeId id);
 
   WINDOW* window() const { return window_; }
   CursesWindow* parent() const { return parent_; }
+  ColorScheme* color_scheme() const { return color_scheme_; }
 
 private:
   WINDOW* window_;
   CursesWindow* parent_;
+  ColorScheme* color_scheme_;
 };
 
 #endif // __INCLUDED_PLATFORM_CURSES_WIN_H__

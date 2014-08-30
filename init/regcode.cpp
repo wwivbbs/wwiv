@@ -32,13 +32,13 @@ using std::auto_ptr;
 
 void edit_registration_code() {
   out->Cls(ACS_CKBOARD);
-  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 6, 38));
-  window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
+  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), out->color_scheme(), 6, 38));
+  window->SetColor(SchemeId::WINDOW_BOX);
   window->Box(0, 0);
-  window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+  window->SetColor(SchemeId::WINDOW_TEXT);
   window->PrintfXY(2, 2, "Registration Number  : %d", syscfg.wwiv_reg_number);
   nlx(2);
-  window->SetColor(out->color_scheme(), SchemeId::WINDOW_PROMPT);
+  window->SetColor(SchemeId::WINDOW_PROMPT);
   window->PrintfXY(2, 4, "<ESC> when done.");
 
   EditItems items{ new NumberEditItem<uint32_t>(25, 2, &syscfg.wwiv_reg_number) };
