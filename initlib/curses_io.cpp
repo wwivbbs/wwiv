@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <memory>
 #include <sstream>
 
 #include "curses.h"
@@ -31,6 +32,7 @@
 #include <windows.h>
 #endif  // _WIN32
 
+using std::auto_ptr;
 using std::string;
 using wwiv::strings::StringPrintf;
 
@@ -180,6 +182,15 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
   header_->MvAddStr(1, x, s.c_str());
   header_->Refresh();
   indicator_mode_ = mode;
+}
+
+CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, int ncols) {
+  auto_ptr<CursesWindow> window(new CursesWindow(window_, color_scheme_.get(), nlines, ncols));
+  window->SetColor(SchemeId::WINDOW_BOX);
+  window->Box(0, 0);
+  window->SetTitle(title);
+  window->SetColor(SchemeId::WINDOW_TEXT);
+  return window.release();
 }
 
 // static
