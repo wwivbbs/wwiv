@@ -148,6 +148,7 @@ void user_editor() {
   window->PrintfXY(COL1_LINE, y++, "Phone Number :");
   window->PrintfXY(COL1_LINE, y++, "Data Number  :");
   window->PrintfXY(COL1_LINE, y++, "Computer Type:");
+  window->PrintfXY(COL1_LINE, y++, "Restrictions :");
   window->PrintfXY(COL1_LINE, y++, "WWIV Reg     :");
   window->PrintfXY(COL1_LINE, y++, "Sysop Note   :");
   window->Refresh();
@@ -203,8 +204,9 @@ void user_editor() {
     new StringEditItem<unsigned char*>(COL1_POSITION, 11, 12, user.phone, true),
     new StringEditItem<unsigned char*>(COL1_POSITION, 12, 12, user.dataphone, true),
     new NumberEditItem<int8_t>(COL1_POSITION, 13, &user.comp_type),
-    new NumberEditItem<uint32_t>(COL1_POSITION, 14, &user.wwiv_regnum),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 15, 57, user.note, false),
+    new RestrictionsEditItem(COL1_POSITION, 14, &user.restrict),
+    new NumberEditItem<uint32_t>(COL1_POSITION, 15, &user.wwiv_regnum),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 16, 57, user.note, false),
   };
   items.set_navigation_help_items(create_help_items());
   items.set_curses_io(out, window.get());
