@@ -211,6 +211,34 @@ protected:
   }
 };
 
+class BooleanEditItem : public EditItem<bool*> {
+public:
+  BooleanEditItem(int x, int y, bool* data) : EditItem<bool*>(x, y, 4, data) {}
+  virtual ~BooleanEditItem() {}
+
+  virtual int Run(CursesWindow* window) {
+    static const std::vector<std::string> boolean_strings = { "No ", "Yes" };
+
+    window->GotoXY(this->x_, this->y_);
+    int data = *this->data_ ? 1 : 0;
+    int return_code = 0;
+    data = toggleitem(window, data, boolean_strings, &return_code);
+
+    *this->data_ = (data > 0) ? true : false;
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const {
+    static const std::vector<std::string> boolean_strings = { "No ", "Yes" };
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+
+    int data = *this->data_ ? 1 : 0;
+    window->PrintfXY(this->x_, this->y_, "%s", boolean_strings.at(data).c_str());
+  }
+};
+
 class CustomEditItem : public BaseEditItem {
 public:
   typedef std::function<void(const std::string&)> displayfn;
