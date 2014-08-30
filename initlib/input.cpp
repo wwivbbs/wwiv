@@ -487,8 +487,8 @@ void editline(CursesWindow* window, char *s, int len, int status, int *returncod
   window->GotoXY(cx, cy);
 }
 
-int toggleitem(CursesWindow* window, int value, const char **strings, int num, int *returncode) {
-  if (value < 0 || value >= num) {
+int toggleitem(CursesWindow* window, int value, const std::vector<std::string>& strings, int *returncode) {
+  if (value < 0 || value >= static_cast<int>(strings.size())) {
     value = 0;
   }
 
@@ -498,7 +498,7 @@ int toggleitem(CursesWindow* window, int value, const char **strings, int num, i
   int cx = window->GetcurX();
   int cy = window->GetcurY();
   int curatr = 0x1f;
-  window->Puts(strings[value]);
+  window->Puts(strings.at(value));
   window->GotoXY(cx, cy);
   bool done = false;
   do  {
@@ -529,15 +529,15 @@ int toggleitem(CursesWindow* window, int value, const char **strings, int num, i
       break;
     default:
       if (ch == 32) {
-        value = (value + 1) % num;
-        window->Puts(strings[value]);
+        value = (value + 1) % strings.size();
+        window->Puts(strings.at(value));
         window->GotoXY(cx, cy);
       }
       break;
     }
   } while (!done);
   window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-  window->PutsXY(cx, cy, strings[value]);
+  window->PutsXY(cx, cy, strings.at(value));
   window->GotoXY(cx, cy);
   return value;
 }

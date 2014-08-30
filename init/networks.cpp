@@ -21,6 +21,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <string>
+#include <vector>
+
 #include <fcntl.h>
 #ifdef _WIN32
 #include <direct.h>
@@ -41,15 +43,10 @@
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
 
-static const char *nettypes[] = {
-  "WWIVnet ",
-  "Fido    ",
-  "Internet",
-};
-
-static const int MAX_NETTYPES = sizeof(nettypes)/sizeof(nettypes[0]);
-
 static void edit_net(int nn);
+
+using std::string;
+using std::vector;
 
 static int read_subs() {
   char szFileName[MAX_PATH];
@@ -419,6 +416,13 @@ void networks() {
 }
 
 static void edit_net(int nn) {
+
+  static const vector<string> nettypes = {
+    "WWIVnet ",
+    "Fido    ",
+    "Internet",
+  };
+
   char szOldNetworkName[20];
   char *ss;
 
@@ -428,11 +432,11 @@ static void edit_net(int nn) {
   net_networks_rec *n = &(net_networks[nn]);
   strcpy(szOldNetworkName, n->name);
 
-  if (n->type >= MAX_NETTYPES) {
+  if (n->type >= nettypes.size()) {
     n->type = 0;
   }
 
-  out->window()->Printf("Network type   : %s\n\n", nettypes[n->type]);
+  out->window()->Printf("Network type   : %s\n\n", nettypes[n->type].c_str());
   out->window()->Printf("Network name   : %s\n", n->name);
   out->window()->Printf("Node number    : %u\n", n->sysnum);
   out->window()->Printf("Data Directory : %s\n", n->dir);
@@ -448,7 +452,7 @@ static void edit_net(int nn) {
     int nNext = 0;
     switch (cp) {
     case 0:
-      n->type = toggleitem(out->window(), n->type, nettypes, MAX_NETTYPES, &nNext);
+      n->type = toggleitem(out->window(), n->type, nettypes, &nNext);
       break;
     case 1: {
       editline(out->window(), n->name, 15, ALL, &nNext, "");
