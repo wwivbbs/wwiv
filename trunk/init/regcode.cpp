@@ -32,10 +32,8 @@ using std::auto_ptr;
 
 void edit_registration_code() {
   out->Cls(ACS_CKBOARD);
-  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), out->color_scheme(), 6, 38));
-  window->SetColor(SchemeId::WINDOW_BOX);
-  window->Box(0, 0);
-  window->SetColor(SchemeId::WINDOW_TEXT);
+  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("WWIV 4.x Registration", 6, 38));
+
   window->PrintfXY(2, 2, "Registration Number  : %d", syscfg.wwiv_reg_number);
   nlx(2);
   window->SetColor(SchemeId::WINDOW_PROMPT);

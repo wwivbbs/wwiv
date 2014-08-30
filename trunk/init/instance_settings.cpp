@@ -133,10 +133,7 @@ void instance_editor() {
     int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
 
     out->Cls(ACS_CKBOARD);
-    auto_ptr<CursesWindow> window(new CursesWindow(out->window(), out->color_scheme(), 10, 76));
-    window->SetColor(SchemeId::WINDOW_BOX);
-    window->Box(0, 0);
-    window->SetColor(SchemeId::WINDOW_TEXT);
+    auto_ptr<CursesWindow> window(out->CreateBoxedWindow("Temporary Directory Configuration", 10, 76));
 
     window->PrintfXY(2, 1, "Temporary Dir Pattern : %s", temp.c_str());
     window->PrintfXY(2, 2, "Batch Dir Pattern     : %s", batch.c_str());
