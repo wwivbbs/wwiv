@@ -138,8 +138,6 @@ void instance_editor() {
     window->Box(0, 0);
     window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
 
-    window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
-
     window->PrintfXY(2, 1, "Temporary Dir Pattern : %s", temp.c_str());
     window->PrintfXY(2, 2, "Batch Dir Pattern     : %s", batch.c_str());
     window->PrintfXY(2, 3, "Number of Instances:  : %d", num_instances);
