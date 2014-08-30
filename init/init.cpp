@@ -203,7 +203,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   trimstrpath(bbsdir);
 
-  out->Cls();
+  out->Cls(ACS_BOARD);
   out->SetColor(SchemeId::NORMAL);
 
   int configfile = open(configdat, O_RDWR | O_BINARY);
@@ -373,7 +373,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   bool done = false;
   do {
-    out->Cls();
+    out->Cls(ACS_BOARD);
     out->footer()->SetDefaultFooter();
 
     vector<ListBoxItem> items = {

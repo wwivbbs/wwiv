@@ -61,7 +61,7 @@ class CursesIO {
   CursesIO(const CursesIO& copy);
   virtual ~CursesIO();
 
-  virtual void Cls();
+  virtual void Cls(chtype background_char = ' ');
   virtual CursesWindow* window() const { return window_; }
   virtual CursesFooter* footer() const { return footer_; }
   virtual CursesWindow* header() const { return header_; }

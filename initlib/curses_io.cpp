@@ -155,8 +155,9 @@ CursesIO::~CursesIO() {
 /**
  * Clears the local logical screen
  */
-void CursesIO::Cls() {
+void CursesIO::Cls(chtype background_char) {
   window_->SetColor(color_scheme_.get(), SchemeId::NORMAL);
+  window_->Bkgd(background_char);
   window_->Clear();
   window_->Refresh();
   window_->GotoXY(0, 0);
