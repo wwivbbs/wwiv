@@ -31,7 +31,7 @@
 using std::auto_ptr;
 
 void edit_registration_code() {
-  out->Cls();
+  out->Cls(ACS_BOARD);
   auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 6, 38, 5, 21));
   window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
   window->Box(0, 0);
