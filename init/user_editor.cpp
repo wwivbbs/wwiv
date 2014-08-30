@@ -19,6 +19,7 @@
 #include "user_editor.h"
 
 #include <curses.h>
+#include <cmath>
 #include <cstdint>
 #include <ctime>
 #include <string>
