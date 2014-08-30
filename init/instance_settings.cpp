@@ -132,7 +132,7 @@ void instance_editor() {
     string batch(ini.GetValue("BATCH_DIRECTORY", temp.c_str()));
     int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
 
-    out->Cls(ACS_BOARD);
+    out->Cls(ACS_CKBOARD);
     auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 10, 76));
     window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
     window->Box(0, 0);
