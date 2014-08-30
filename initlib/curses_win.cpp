@@ -28,6 +28,12 @@
 CursesWindow::CursesWindow(CursesWindow* parent, int nlines, int ncols, int begin_y, int begin_x) 
     : parent_(parent) {
   if (parent != nullptr) {
+    if (begin_x == 0) {
+      begin_x = (parent->GetMaxX() - ncols) / 2;
+    }
+    if (begin_y == 0) {
+      begin_y = (parent->GetMaxY() - nlines) / 2;
+    }
     window_ =  newwin(nlines, ncols, begin_y + getbegy(parent->window()), 
       begin_x + getbegx(parent->window()));
   } else {
