@@ -275,11 +275,7 @@ void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength) {
       if (ch > 31 && curpos < nMaxLength) {
         ch = toupper(ch);
         pszOutText[curpos++] = ch;
-#ifdef _WIN32
-        dialog->AddCh(ACS_CKBOARD);
-#else
         dialog->AddCh(ACS_DIAMOND);
-#endif  // _WIN32
       }
       break;
     }
