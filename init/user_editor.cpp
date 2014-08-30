@@ -34,10 +34,11 @@
 #include "core/wfile.h"
 #include "initlib/listbox.h"
 
-static const int COL1_POSITION = 19;
+static const int COL1_POSITION = 17;
 static const int COL2_POSITION = 50;
-static const int PROMPT_LINE = 18;
+static const int COL1_LINE = 2;
 
+using std::auto_ptr;
 using std::vector;
 using wwiv::strings::StringPrintf;
 
@@ -48,40 +49,37 @@ static bool IsUserDeleted(userrec *user) {
 static void show_user(EditItems* items, userrec* user) {
   items->Display();
 
-  for (int i=0; i<13; i++) {
-    std::string blank(30, ' ');
-    out->window()->PutsXY(50, i, blank.c_str());
+  items->window()->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+  for (int i=1; i<13; i++) {
+    std::string blank(24, ' ');
+    items->window()->PutsXY(COL2_POSITION, i, blank.c_str());
   }
-  out->window()->SetColor(out->color_scheme(), SchemeId::NORMAL);
   if (user->inact & inact_deleted) {
-    out->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
-    out->window()->PutsXY(COL2_POSITION, 0, "[[ DELETED USER ]]");
+    items->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
+    items->window()->PutsXY(COL2_POSITION, 0, "[[ DELETED USER ]]");
   } else if (user->inact & inact_inactive) {
-    out->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
-    out->window()->PutsXY(COL2_POSITION, 0, "[[ INACTIVE USER ]]");
+    items->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
+    items->window()->PutsXY(COL2_POSITION, 0, "[[ INACTIVE USER ]]");
   }
-  out->window()->SetColor(out->color_scheme(), SchemeId::NORMAL);
+  items->window()->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
   int y = 2;
- out->window()->PrintfXY(COL2_POSITION, y++, "First on     : %s", user->firston);
- out->window()->PrintfXY(COL2_POSITION, y++, "Last on      : %s", user->laston);
+  items->window()->PrintfXY(COL2_POSITION, y++, "First on     : %s", user->firston);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Last on      : %s", user->laston);
   y++;
- out->window()->PrintfXY(COL2_POSITION, y++, "Total Calls  : %d", user->logons);
- out->window()->PrintfXY(COL2_POSITION, y++, "Today Calls  : %d", user->ontoday);
- out->window()->PrintfXY(COL2_POSITION, y++, "Bad Logins   : %d", user->illegal);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Total Calls  : %d", user->logons);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Today Calls  : %d", user->ontoday);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Bad Logins   : %d", user->illegal);
   y++;
- out->window()->PrintfXY(COL2_POSITION, y++, "Num of Posts : %d", user->msgpost);
- out->window()->PrintfXY(COL2_POSITION, y++, "Num of Emails: %d", user->emailsent);
- out->window()->PrintfXY(COL2_POSITION, y++, "Feedback Sent: %d", user->feedbacksent);
- out->window()->PrintfXY(COL2_POSITION, y++, "Msgs Waiting : %d", user->waiting);
- out->window()->PrintfXY(COL2_POSITION, y++, "Netmail Sent : %d", user->emailnet);
- out->window()->PrintfXY(COL2_POSITION, y++, "Deleted Posts: %d", user->deletedposts);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Num of Posts : %d", user->msgpost);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Num of Emails: %d", user->emailsent);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Feedback Sent: %d", user->feedbacksent);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Msgs Waiting : %d", user->waiting);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Netmail Sent : %d", user->emailnet);
+  items->window()->PrintfXY(COL2_POSITION, y++, "Deleted Posts: %d", user->deletedposts);
 }
 
-static void show_error_no_users() {
-  out->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
-  out->window()->Printf("You must have users added before using user editor.");
-  out->window()->Printf("\n\n");
-  pausescr(out->window());
+static void show_error_no_users(CursesWindow* window) {
+  messagebox(window, "You must have users added before using user editor.");
 }
 
 static vector<HelpItem> create_help_items() {
@@ -91,13 +89,13 @@ static vector<HelpItem> create_help_items() {
   return help_items;
 }
 
-static const int JumpToUser() {
+static const int JumpToUser(CursesWindow* window) {
   vector<ListBoxItem> items;
 
   WFile file(syscfg.datadir, "names.lst");
   int num_reconds = file.GetLength() / sizeof(smalrec);
   if (!file.Open(WFile::modeReadOnly | WFile::modeBinary, WFile::shareDenyWrite)) {
-    show_error_no_users();
+    show_error_no_users(window);
     return -1;
   }
 
@@ -105,15 +103,15 @@ static const int JumpToUser() {
     smalrec name;
     int bytes_read = file.Read(&name, sizeof(smalrec));
     if (bytes_read != sizeof(smalrec)) {
-      messagebox(out->window(), "Error reading smalrec");
+      messagebox(window, "Error reading smalrec");
       return -1;
     }
     items.emplace_back(StringPrintf("%s #%d", name.name, name.number), 0, name.number);
   }
   file.Close();
   
-  ListBox list(out->window(), "Select User", static_cast<int>(floor(out->window()->GetMaxX() * 0.8)), 
-    static_cast<int>(floor(out->window()->GetMaxY() * 0.8)), items, out->color_scheme());
+  ListBox list(window, "Select User", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
+    static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
   list.set_hotkey_executes_item(true);
   int selected_item = list.Run();
   if (selected_item >= 0) {
@@ -126,28 +124,33 @@ static const int JumpToUser() {
 void user_editor() {
   int number_users = number_userrecs();
   out->Cls();
+  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 18, 76, 1, 2));
+  window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
+  window->Box(0, 0);
+  window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+
   if (number_users < 1) {
-    show_error_no_users();
+    show_error_no_users(window.get());
     return;
   }
 
-  out->window()->SetColor(out->color_scheme(), SchemeId::NORMAL);
-  out->window()->GotoXY(0, 1);
-  out->window()->Printf("    Name/Handle  : \n");
-  out->window()->Printf("    Real Name    : \n");
-  out->window()->Printf("    SL           : \n");
-  out->window()->Printf("    DSL          : \n");
-  out->window()->Printf("    Address      : \n");
-  out->window()->Printf("    City         : \n");
-  out->window()->Printf("    State        : \n");
-  out->window()->Printf("    Postal Code  : \n");
-  out->window()->Printf("    Birthday     : \n");
-  out->window()->Printf("    Password     : \n");
-  out->window()->Printf("    Phone Number : \n");
-  out->window()->Printf("    Data Number  : \n");
-  out->window()->Printf("    Computer Type: \n");
-  out->window()->Printf("    WWIV Reg     : \n");
-  out->window()->Printf("    Sysop Note   : \n");
+  int y = 1;
+  window->PrintfXY(COL1_LINE, y++, "Name/Handle  :");
+  window->PrintfXY(COL1_LINE, y++, "Real Name    :");
+  window->PrintfXY(COL1_LINE, y++, "SL           :");
+  window->PrintfXY(COL1_LINE, y++, "DSL          :");
+  window->PrintfXY(COL1_LINE, y++, "Address      :");
+  window->PrintfXY(COL1_LINE, y++, "City         :");
+  window->PrintfXY(COL1_LINE, y++, "State        :");
+  window->PrintfXY(COL1_LINE, y++, "Postal Code  :");
+  window->PrintfXY(COL1_LINE, y++, "Birthday     :");
+  window->PrintfXY(COL1_LINE, y++, "Password     :");
+  window->PrintfXY(COL1_LINE, y++, "Phone Number :");
+  window->PrintfXY(COL1_LINE, y++, "Data Number  :");
+  window->PrintfXY(COL1_LINE, y++, "Computer Type:");
+  window->PrintfXY(COL1_LINE, y++, "WWIV Reg     :");
+  window->PrintfXY(COL1_LINE, y++, "Sysop Note   :");
+  window->Refresh();
 
   int current_usernum = 1;
   userrec user;
@@ -201,33 +204,30 @@ void user_editor() {
     new StringEditItem<unsigned char*>(COL1_POSITION, 12, 12, user.dataphone, true),
     new NumberEditItem<int8_t>(COL1_POSITION, 13, &user.comp_type),
     new NumberEditItem<uint32_t>(COL1_POSITION, 14, &user.wwiv_regnum),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 15, 60, user.note, false),
+    new StringEditItem<unsigned char*>(COL1_POSITION, 15, 57, user.note, false),
   };
   items.set_navigation_help_items(create_help_items());
-  items.set_curses_io(out, out->window());
+  items.set_curses_io(out, window.get());
 
   show_user(&items, &user);
 
   for (;;)  {
-    char ch = onek(out->window(), "\033JQ[]{}\r");
+    char ch = onek(window.get(), "\033JQ[]{}\r");
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
-        out->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
-        out->window()->PutsXY(0, PROMPT_LINE, "Can not edit a deleted user.\n\n");
-        pausescr(out->window());
+        window->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
+        messagebox(window.get(), "Can not edit a deleted user.");
       } else {
         items.Run();
-        if (dialog_yn(out->window(), "Save User")) {
+        if (dialog_yn(window.get(), "Save User")) {
           write_user(current_usernum, &user);
         }
       }
-      out->window()->Move(PROMPT_LINE, 0); 
-      out->window()->ClrtoEol();
-      out->window()->Refresh();
+      window->Refresh();
     } break;
     case 'J': {
-      int user_number = JumpToUser();
+      int user_number = JumpToUser(window.get());
       if (user_number >= 1) {
         current_usernum = user_number;
       }
