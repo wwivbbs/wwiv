@@ -41,7 +41,7 @@ int input_number(CursesWindow* window, int max_digits);
 char onek(CursesWindow* window, const char *s);
 void editline(CursesWindow* window, std::string* s, int len, int status, int *returncode, const char *ss);
 void editline(CursesWindow* window, char *s, int len, int status, int *returncode, const char *ss);
-int toggleitem(CursesWindow* window, int value, const char **strings, int num, int *returncode);
+int toggleitem(CursesWindow* window, int value, const std::vector<std::string>& strings, int *returncode);
 void pausescr(CursesWindow* window);
 
 int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode);
