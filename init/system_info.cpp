@@ -18,8 +18,10 @@
 /**************************************************************************/
 #include "user_editor.h"
 
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <string>
 
 #include "ifcns.h"
@@ -28,262 +30,206 @@
 #include "utility.h"
 #include "wwivinit.h"
 
+using std::auto_ptr;
 
-static void print_time(unsigned short t, char *s) {
+static const int COL1_LINE = 2;
+static const int COL1_POSITION = 21;
+
+static void print_time(uint16_t t, char *s) {
   sprintf(s, "%02d:%02d", t / 60, t % 60);
 }
 
-static unsigned short get_time(char *s) {
+static uint16_t get_time(char *s) {
   if (s[2] != ':') {
-    return 0xffff;
+    return std::numeric_limits<uint16_t>::max();
   }
 
   unsigned short h = atoi(s);
   unsigned short m = atoi(s + 3);
-
   if (h > 23 || m > 59) {
-    return 0xffff;
+    return std::numeric_limits<uint16_t>::max();
   }
-
-  unsigned short t = h * 60 + m;
-
-  return t;
+  return static_cast<uint16_t>(h * 60 + m);
 }
 
-/* change newuserpw, systempw, systemname, systemphone, sysopname,
-   newusersl, newuserdsl, maxwaiting, closedsystem, systemnumber,
-   maxusers, newuser_restrict, sysconfig, sysoplowtime, sysophightime,
-   req_ratio, newusergold, sl, autoval
- */
+static const int MAX_TIME_EDIT_LEN = 5;
+
+class TimeEditItem : public EditItem<uint16_t*> {
+public:
+  TimeEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 0, data) {}
+  virtual ~TimeEditItem() {}
+
+  virtual int Run(CursesWindow* window) {
+    window->GotoXY(this->x_, this->y_);
+    char s[21];
+    int return_code = 0;
+    print_time(*this->data_, s);
+    editline(window, s, MAX_TIME_EDIT_LEN + 1, ALL, &return_code, "");
+    *this->data_ = get_time(s);
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+    char s[21];
+    print_time(*this->data_, s);
+    window->PrintfXY(this->x_, this->y_, "%s", s);
+  }
+};
+
+class Float53EditItem : public EditItem<float*> {
+public:
+  Float53EditItem(int x, int y, float* data) : EditItem<float*>(x, y, 0, data) {}
+  virtual ~Float53EditItem() {}
+
+  virtual int Run(CursesWindow* window) {
+    window->GotoXY(this->x_, this->y_);
+    char s[21];
+    int return_code = 0;
+    sprintf(s, "%5.3f", *this->data_);
+    editline(window, s, 5 + 1, NUM_ONLY, &return_code, "");
+
+    float f;
+    sscanf(s, "%f", &f);
+    if (f > 9.999 || f < 0.001) {
+      f = 0.0;
+    }
+    *this->data_ = f;
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+    window->PrintfXY(this->x_, this->y_, "%5.3f", *this->data_);
+  }
+};
+
+class RestrictionsEditItem : public EditItem<uint16_t*> {
+public:
+  RestrictionsEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 0, data) {}
+  virtual ~RestrictionsEditItem() {}
+
+  virtual int Run(CursesWindow* window) {
+    window->GotoXY(this->x_, this->y_);
+    char s[21];
+    char rs[21];
+    char ch1 = '0';
+    int return_code = 0;
+
+    strcpy(rs, restrict_string);
+    for (int i = 0; i <= 15; i++) {
+      if (rs[i] == ' ') {
+        rs[i] = ch1++;
+      }
+      if (*this->data_ & (1 << i)) {
+        s[i] = rs[i];
+      } else {
+        s[i] = 32;
+      }
+    }
+    s[16] = 0;
+
+    editline(window, s, 16, SET, &return_code, rs);
+
+    *this->data_ = 0;
+    for (int i = 0; i < 16; i++) {
+      if (s[i] != 32 && s[i] != 0) {
+        *this->data_ |= (1 << i);
+      }
+    }
+
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+
+    char s[21];
+    for (int i=0; i < 16; i++) {
+      if (*this->data_ & (1 << i)) {
+        s[i] = restrict_string[i];
+      } else {
+        s[i] = 32;
+      }
+    }
+    s[16] = 0;
+    window->PrintfXY(this->x_, this->y_, "%s", s);
+  }
+};
+
 void sysinfo1() {
-  char j0[15], j1[10], j2[20], j3[5], j4[5], j5[20], j6[10], j7[10], j8[10],
-       j9[5], j10[10], j11[10], j12[5], j17[10], j18[10], j19[10], rs[20];
-  int i, i1, cp;
-
-  char ch1 = '0';
-
   read_status();
 
   if (status.callernum != 65535) {
-    status.callernum1 = (long)status.callernum;
+    status.callernum1 = static_cast<long>(status.callernum);
     status.callernum = 65535;
     save_status();
   }
 
-  sprintf(j3, "%u", syscfg.newusersl);
-  sprintf(j4, "%u", syscfg.newuserdsl);
-  print_time(syscfg.sysoplowtime, j6);
-  print_time(syscfg.sysophightime, j7);
-  print_time(syscfg.netlowtime, j1);
-  print_time(syscfg.nethightime, j10);
-  sprintf(j9, "%u", syscfg.maxwaiting);
-  sprintf(j11, "%u", syscfg.maxusers);
-  if (syscfg.closedsystem) {
-    strcpy(j12, "Y");
-  } else {
-    strcpy(j12, "N");
-  }
-  sprintf(j17, "%u", status.callernum1);
-  sprintf(j19, "%u", status.days);
-  sprintf(j5, "%g", syscfg.newusergold);
-  sprintf(j8, "%5.3f", syscfg.req_ratio);
-  sprintf(j18, "%5.3f", syscfg.post_call_ratio);
-  sprintf(j0, "%d", syscfg.wwiv_reg_number);
+  out->Cls(ACS_BOARD);
+  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 19, 76, 1, 2));
+  window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
+  window->Box(0, 0);
+  window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
 
-  strcpy(rs, restrict_string);
-  for (i = 0; i <= 15; i++) {
-    if (rs[i] == ' ') {
-      rs[i] = ch1++;
-    }
-    if (syscfg.newuser_restrict & (1 << i)) {
-      j2[i] = rs[i];
-    } else {
-      j2[i] = 32;
-    }
-  }
-  j2[16] = 0;
-  out->Cls();
-  out->SetColor(SchemeId::NORMAL);
-  out->window()->Printf("System PW        : %s\n", syscfg.systempw);
-  out->window()->Printf("System name      : %s\n", syscfg.systemname);
-  out->window()->Printf("System phone     : %s\n", syscfg.systemphone);
-  out->window()->Printf("Closed system    : %s\n", j12);
+  int y = 1;
+  window->PrintfXY(COL1_LINE, y++, "System PW        : ");
+  window->PrintfXY(COL1_LINE, y++, "System name      : ");
+  window->PrintfXY(COL1_LINE, y++, "System phone     : ");
+  window->PrintfXY(COL1_LINE, y++, "Closed system    : ");
 
-  out->window()->Printf("Newuser PW       : %s\n", syscfg.newuserpw);
-  out->window()->Printf("Newuser restrict : %s\n", j2);
-  out->window()->Printf("Newuser SL       : %-3s\n", j3);
-  out->window()->Printf("Newuser DSL      : %-3s\n", j4);
-  out->window()->Printf("Newuser gold     : %-5s\n", j5);
+  window->PrintfXY(COL1_LINE, y++, "Newuser PW       : ");
+  window->PrintfXY(COL1_LINE, y++, "Newuser restrict : ");
+  window->PrintfXY(COL1_LINE, y++, "Newuser SL       : ");
+  window->PrintfXY(COL1_LINE, y++, "Newuser DSL      : ");
+  window->PrintfXY(COL1_LINE, y++, "Newuser gold     : ");
 
-  out->window()->Printf("Sysop name       : %s\n", syscfg.sysopname);
-  out->window()->Printf("Sysop low time   : %-5s\n", j6);
-  out->window()->Printf("Sysop high time  : %-5s\n", j7);
+  window->PrintfXY(COL1_LINE, y++, "Sysop name       : ");
+  window->PrintfXY(COL1_LINE, y++, "Sysop time: from : ");
 
-  out->window()->Printf("Net low time     : %-5s\n", j1);
-  out->window()->Printf("Net high time    : %-5s\n", j10);
+  window->PrintfXY(COL1_LINE, y++, "Net time  : from :       to: ");
 
-  out->window()->Printf("Up/Download ratio: %-5s\n", j8);
-  out->window()->Printf("Post/Call ratio  : %-5s\n", j18);
+  window->PrintfXY(COL1_LINE, y++, "Ratios    :  U/D :        Post/Call: ");
 
-  out->window()->Printf("Max waiting      : %-3s\n", j9);
-  out->window()->Printf("Max users        : %-5s\n", j11);
-  out->window()->Printf("Caller number    : %-7s\n", j17);
-  out->window()->Printf("Days active      : %-7s\n", j19);
+  window->PrintfXY(COL1_LINE, y++, "Max waiting      : ");
+  window->PrintfXY(COL1_LINE, y++, "Max users        : ");
+  window->PrintfXY(COL1_LINE, y++, "Caller number    : ");
+  window->PrintfXY(COL1_LINE, y++, "Days active      : ");
 
-  out->SetColor(SchemeId::NORMAL);
-  cp = 0;
-  bool done = false;
-  do {
-    out->window()->GotoXY(19, cp);
-    switch (cp) {
-    case 0:
-      editline(out->window(), syscfg.systempw, 20, UPPER_ONLY, &i1, "");
-      trimstr(syscfg.systempw);
-      break;
-    case 1:
-      editline(out->window(), syscfg.systemname, 50, ALL, &i1, "");
-      trimstr(syscfg.systemname);
-      break;
-    case 2:
-      editline(out->window(), syscfg.systemphone, 12, UPPER_ONLY, &i1, "");
-      break;
-    case 3:
-      editline(out->window(), j12, 1, UPPER_ONLY, &i1, "");
-      if (j12[0] == 'Y') {
-        syscfg.closedsystem = 1;
-        strcpy(j12, "Y");
-      } else {
-        syscfg.closedsystem = 0;
-        strcpy(j12, "N");
-      }
-      out->window()->Printf("%-1s", j12);
-      break;
-    case 4:
-      editline(out->window(), syscfg.newuserpw, 20, UPPER_ONLY, &i1, "");
-      trimstr(syscfg.newuserpw);
-      break;
-    case 5:
-      editline(out->window(), j2, 16, SET, &i1, rs);
-      syscfg.newuser_restrict = 0;
-      for (i = 0; i < 16; i++) {
-        if (j2[i] != 32) {
-          syscfg.newuser_restrict |= (1 << i);
-        }
-      }
-      break;
-    case 6:
-      editline(out->window(), j3, 3, NUM_ONLY, &i1, "");
-      syscfg.newusersl = atoi(j3);
-      sprintf(j3, "%u", syscfg.newusersl);
-      out->window()->Printf("%-3s", j3);
-      break;
-    case 7:
-      editline(out->window(), j4, 3, NUM_ONLY, &i1, "");
-      syscfg.newuserdsl = atoi(j4);
-      sprintf(j4, "%u", syscfg.newuserdsl);
-      out->window()->Printf("%-3s", j4);
-      break;
-    case 8:
-      editline(out->window(), j5, 5, NUM_ONLY, &i1, "");
-      syscfg.newusergold = (float) atoi(j5);
-      sprintf(j5, "%g", syscfg.newusergold);
-      out->window()->Printf("%-5s", j5);
-      break;
-    case 9:
-      editline(out->window(), syscfg.sysopname, 50, ALL, &i1, "");
-      trimstr(syscfg.sysopname);
-      break;
-    case 10:
-      editline(out->window(), j6, 5, UPPER_ONLY, &i1, "");
-      if (get_time(j6) != 0xffff) {
-        syscfg.sysoplowtime = get_time(j6);
-      }
-      print_time(syscfg.sysoplowtime, j6);
-      out->window()->Printf("%-5s", j6);
-      break;
-    case 11:
-      editline(out->window(), j7, 5, UPPER_ONLY, &i1, "");
-      if (get_time(j7) != 0xffff) {
-        syscfg.sysophightime = get_time(j7);
-      }
-      print_time(syscfg.sysophightime, j7);
-      out->window()->Printf("%-5s", j7);
-      break;
-    case 12:
-      editline(out->window(), j1, 5, UPPER_ONLY, &i1, "");
-      if (get_time(j1) != 0xffff) {
-        syscfg.netlowtime = get_time(j1);
-      }
-      print_time(syscfg.netlowtime, j1);
-      out->window()->Printf("%-5s", j1);
-      break;
-    case 13:
-      editline(out->window(), j10, 5, UPPER_ONLY, &i1, "");
-      if (get_time(j10) != 0xffff) {
-        syscfg.nethightime = get_time(j10);
-      }
-      print_time(syscfg.nethightime, j10);
-      out->window()->Printf("%-5s", j10);
-      break;
-    case 14: {
-      editline(out->window(), j8, 5, UPPER_ONLY, &i1, "");
-      float fRatio = syscfg.req_ratio;
-      sscanf(j8, "%f", &fRatio);
-      if ((fRatio > 9.999) || (fRatio < 0.001)) {
-        fRatio = 0.0;
-      }
-      syscfg.req_ratio = fRatio;
-      sprintf(j8, "%5.3f", syscfg.req_ratio);
-      out->window()->Puts(j8);
-    }
-    break;
-    case 15: {
-      editline(out->window(), j18, 5, UPPER_ONLY, &i1, "");
-      float fRatio = syscfg.post_call_ratio;
-      sscanf(j18, "%f", &fRatio);
-      if ((fRatio > 9.999) || (fRatio < 0.001)) {
-        fRatio = 0.0;
-      }
-      syscfg.post_call_ratio = fRatio;
-      sprintf(j18, "%5.3f", syscfg.post_call_ratio);
-      out->window()->Puts(j18);
-    }
-    break;
-    case 16:
-      editline(out->window(), j9, 3, NUM_ONLY, &i1, "");
-      syscfg.maxwaiting = atoi(j9);
-      sprintf(j9, "%u", syscfg.maxwaiting);
-      out->window()->Printf("%-3s", j9);
-      break;
-    case 17:
-      editline(out->window(), j11, 5, NUM_ONLY, &i1, "");
-      syscfg.maxusers = atoi(j11);
-      sprintf(j11, "%u", syscfg.maxusers);
-      out->window()->Printf("%-5s", j11);
-      break;
-    case 18:
-      editline(out->window(), j17, 7, NUM_ONLY, &i1, "");
-      if ((unsigned long) atol(j17) != status.callernum1) {
-        status.callernum1 = atol(j17);
-        sprintf(j17, "%u", status.callernum1);
-        out->window()->Printf("%-7s", j17);
-        save_status();
-      }
-      break;
-    case 19:
-      editline(out->window(), j19, 7, NUM_ONLY, &i1, "");
-      if (atoi(j19) != status.days) {
-        status.days = atoi(j19);
-        sprintf(j19, "%u", status.days);
-        out->window()->Printf("%-7s", j19);
-        save_status();
-      }
-      break;
-    }
-    cp = GetNextSelectionPosition(0, 19, cp, i1);
-    if (i1 == DONE) {
-      done = true;
-    }
-  } while (!done);
+  EditItems items{
+    new StringEditItem<char*>(COL1_POSITION, 1, 20, syscfg.systempw, true),
+    new StringEditItem<char*>(COL1_POSITION, 2, 50, syscfg.systemname, false),
+    new StringEditItem<char*>(COL1_POSITION, 3, 12, syscfg.systemphone, true),
+    // TODO(rushfan): Make an editor for bool
+    new NumberEditItem<uint8_t>(COL1_POSITION, 4, &syscfg.closedsystem),
+    new StringEditItem<char*>(COL1_POSITION, 5, 20, syscfg.newuserpw, true),
+    new RestrictionsEditItem(COL1_POSITION, 6, &syscfg.newuser_restrict),
+    new NumberEditItem<uint8_t>(COL1_POSITION, 7, &syscfg.newusersl),
+    new NumberEditItem<uint8_t>(COL1_POSITION, 8, &syscfg.newuserdsl),
+    new NumberEditItem<float>(COL1_POSITION, 9, &syscfg.newusergold),
+    new StringEditItem<char*>(COL1_POSITION, 10, 50, syscfg.sysopname, false),
+    new TimeEditItem(COL1_POSITION, 11, &syscfg.sysoplowtime),
+    new TimeEditItem(COL1_POSITION + 10, 11, &syscfg.sysophightime),
+    new TimeEditItem(COL1_POSITION, 12, &syscfg.netlowtime),
+    new TimeEditItem(COL1_POSITION + 10, 12, &syscfg.nethightime),
+
+    new Float53EditItem(COL1_POSITION, 13, &syscfg.req_ratio),
+    new Float53EditItem(COL1_POSITION + 18, 13, &syscfg.post_call_ratio),
+
+    new NumberEditItem<uint8_t>(COL1_POSITION, 14, &syscfg.maxwaiting),
+    new NumberEditItem<uint16_t>(COL1_POSITION, 15, &syscfg.maxusers),
+    new NumberEditItem<uint32_t>(COL1_POSITION, 16, &status.callernum1),
+    new NumberEditItem<uint16_t>(COL1_POSITION, 17, &status.days),
+  };
+
+  items.set_curses_io(out, window.get());
+  items.Run();
+
   save_config();
 }
