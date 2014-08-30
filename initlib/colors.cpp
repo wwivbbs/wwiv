@@ -63,6 +63,7 @@ std::map<SchemeId, SchemeDescription> ColorScheme::LoadColorSchemes() {
   scheme[SchemeId::WINDOW_PROMPT] = SchemeDescription(SchemeId::WINDOW_PROMPT, COLOR_YELLOW, COLOR_BLACK, true);
   scheme[SchemeId::DESKTOP] = SchemeDescription(SchemeId::DESKTOP, COLOR_CYAN, COLOR_BLACK, false);
   scheme[SchemeId::WINDOW_DATA] = SchemeDescription(SchemeId::WINDOW_SELECTED, COLOR_YELLOW, COLOR_BLACK, true);
+  scheme[SchemeId::WINDOW_TITLE] = SchemeDescription(SchemeId::WINDOW_TITLE, COLOR_YELLOW, COLOR_BLUE, true);
 
   // Create the color pairs for each of the colors defined in the color scheme.
   for (const auto& kv : scheme) {

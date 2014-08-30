@@ -36,6 +36,8 @@ class CursesWindow {
   CursesWindow(const CursesWindow& copy) = delete;
   virtual ~CursesWindow();
 
+  void SetTitle(const std::string& title);
+
   int AddCh(chtype ch) { return waddch(window_, ch); }
   int AddStr(const std::string s) { return waddstr(window_, s.c_str()); }
   int MvAddStr(int y, int x, const std::string s) { return mvwaddstr(window_, y, x, s.c_str()); }
@@ -69,11 +71,13 @@ class CursesWindow {
   WINDOW* window() const { return window_; }
   CursesWindow* parent() const { return parent_; }
   ColorScheme* color_scheme() const { return color_scheme_; }
+  SchemeId current_scheme_id() const { return current_scheme_id_; }
 
 private:
   WINDOW* window_;
   CursesWindow* parent_;
   ColorScheme* color_scheme_;
+  SchemeId current_scheme_id_;
 };
 
 #endif // __INCLUDED_PLATFORM_CURSES_WIN_H__

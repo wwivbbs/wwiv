@@ -21,12 +21,17 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include "curses.h"
-#include "curses_win.h"
+#include "core/strings.h"
+#include "initlib/curses_win.h"
+
+using std::string;
+using wwiv::strings::StringPrintf;
 
 CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols, int begin_y, int begin_x) 
-    : parent_(parent), color_scheme_(color_scheme) {
+    : parent_(parent), color_scheme_(color_scheme), current_scheme_id_(SchemeId::UNKNOWN) {
   if (parent != nullptr) {
     if (begin_x == 0) {
       begin_x = (parent->GetMaxX() - ncols) / 2;
@@ -52,6 +57,22 @@ CursesWindow::~CursesWindow() {
     parent_->Refresh();
     doupdate();
   }
+}
+
+void CursesWindow::SetTitle(const std::string& title) {
+  SchemeId saved_scheme(this->current_scheme_id());
+  SetColor(SchemeId::WINDOW_TITLE);
+  int max_title_size = GetMaxX() - 6;
+  string working_title(StringPrintf(" %s ", title.c_str()));
+  if (title.size() > max_title_size) {
+    working_title = " ";
+    working_title += title.substr(0, max_title_size);
+    working_title += " ";
+  }
+
+  int x = GetMaxX() - 1 - working_title.size();
+  PutsXY(x, 0, working_title);
+  SetColor(saved_scheme);
 }
 
 void CursesWindow::GotoXY(int x, int y) {
@@ -104,5 +125,6 @@ void CursesWindow::PrintfXY(int x, int y, const char *pszFormat, ...) {
 
 void CursesWindow::SetColor(SchemeId id) {
   AttrSet(color_scheme_->GetAttributesForScheme(id));
+  current_scheme_id_ = id;
 }
 

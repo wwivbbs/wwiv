@@ -118,10 +118,7 @@ void sysinfo1() {
   }
 
   out->Cls(ACS_CKBOARD);
-  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), out->color_scheme(), 19, 76));
-  window->SetColor(SchemeId::WINDOW_BOX);
-  window->Box(0, 0);
-  window->SetColor(SchemeId::WINDOW_TEXT);
+  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 19, 76));
 
   int y = 1;
   window->PrintfXY(COL1_LINE, y++, "System PW        : ");
