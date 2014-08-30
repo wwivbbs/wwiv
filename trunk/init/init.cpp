@@ -203,7 +203,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   trimstrpath(bbsdir);
 
-  out->Cls(ACS_BOARD);
+  out->Cls(ACS_CKBOARD);
   out->SetColor(SchemeId::NORMAL);
 
   int configfile = open(configdat, O_RDWR | O_BINARY);
@@ -362,7 +362,7 @@ int WInitApp::main(int argc, char *argv[]) {
     }
     input_password(out->window(), "SY:", lines, s, 20);
     if (strcmp(s, (syscfg.systempw)) != 0) {
-      out->Cls(ACS_BOARD);
+      out->Cls(ACS_CKBOARD);
       messagebox(out->window(), "I'm sorry, that isn't the correct system password.");
       exit_init(2);
     }
@@ -370,7 +370,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   bool done = false;
   do {
-    out->Cls(ACS_BOARD);
+    out->Cls(ACS_CKBOARD);
     out->footer()->SetDefaultFooter();
 
     vector<ListBoxItem> items = {
