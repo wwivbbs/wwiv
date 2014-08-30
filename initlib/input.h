@@ -25,6 +25,8 @@
 #include <string>
 #include <vector>
 
+#include <string.h>
+
 #include "initlib/curses_io.h"
 #include "initlib/curses_win.h"
 
