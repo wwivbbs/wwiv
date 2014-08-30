@@ -31,7 +31,7 @@
 #define NUM_ONLY            1
 #define UPPER_ONLY          2
 #define ALL                 4
-
+#define SET                 8
 
 // Function prototypes
 void nlx(int numLines = 1);
@@ -150,6 +150,64 @@ protected:
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
     window->PrintfXY(this->x_, this->y_, "%-7d", *this->data_);
+  }
+};
+
+class RestrictionsEditItem : public EditItem<uint16_t*> {
+public:
+  RestrictionsEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 0, data) {}
+  virtual ~RestrictionsEditItem() {}
+
+  virtual int Run(CursesWindow* window) {
+    static const char* restrictstring = "LCMA*PEVKNU     ";
+
+    window->GotoXY(this->x_, this->y_);
+    char s[21];
+    char rs[21];
+    char ch1 = '0';
+    int return_code = 0;
+
+    strcpy(rs, restrictstring);
+    for (int i = 0; i <= 15; i++) {
+      if (rs[i] == ' ') {
+        rs[i] = ch1++;
+      }
+      if (*this->data_ & (1 << i)) {
+        s[i] = rs[i];
+      } else {
+        s[i] = 32;
+      }
+    }
+    s[16] = 0;
+
+    editline(window, s, 16, SET, &return_code, rs);
+
+    *this->data_ = 0;
+    for (int i = 0; i < 16; i++) {
+      if (s[i] != 32 && s[i] != 0) {
+        *this->data_ |= (1 << i);
+      }
+    }
+
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+    static const char* restrictstring = "LCMA*PEVKNU     ";
+
+    char s[21];
+    for (int i=0; i < 16; i++) {
+      if (*this->data_ & (1 << i)) {
+        s[i] = restrictstring[i];
+      } else {
+        s[i] = 32;
+      }
+    }
+    s[16] = 0;
+    window->PrintfXY(this->x_, this->y_, "%s", s);
   }
 };
 
