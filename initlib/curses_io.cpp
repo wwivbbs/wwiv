@@ -52,9 +52,9 @@ void CursesFooter::ShowHelpItems(const std::vector<HelpItem>& help_items) const 
   window_->Move(0, 0);
   window_->ClrtoEol();
   for (const auto& h : help_items) {
-    window_->SetColor(color_scheme_, SchemeId::FOOTER_KEY);
+    window_->SetColor(SchemeId::FOOTER_KEY);
     window_->AddStr(h.key);
-    window_->SetColor(color_scheme_, SchemeId::FOOTER_TEXT);
+    window_->SetColor(SchemeId::FOOTER_TEXT);
     window_->AddStr("-");
     window_->AddStr(h.description);
     window_->AddStr(" ");
@@ -71,9 +71,9 @@ void CursesFooter::ShowContextHelp(const std::string& help_text) const {
 void CursesFooter::SetDefaultFooter() const {
   window_->Erase();
   window_->Move(0, 0);
-  window_->SetColor(color_scheme_, SchemeId::FOOTER_KEY);
+  window_->SetColor(SchemeId::FOOTER_KEY);
   window_->MvAddStr(0, 0, "Esc");
-  window_->SetColor(color_scheme_, SchemeId::FOOTER_TEXT);
+  window_->SetColor(SchemeId::FOOTER_TEXT);
   window_->AddStr("-Exit ");
   window_->Refresh();
 }
@@ -116,21 +116,21 @@ CursesIO::CursesIO()
 
   int stdscr_maxx = getmaxx(stdscr);
   int stdscr_maxy = getmaxy(stdscr);
-  header_ = new CursesWindow(nullptr, 2, 0, 0, 0);
-  footer_ = new CursesFooter(new CursesWindow(nullptr, 2, 0, stdscr_maxy-2, 0), 
+  header_ = new CursesWindow(nullptr, color_scheme_.get(), 2, 0, 0, 0);
+  footer_ = new CursesFooter(new CursesWindow(nullptr, color_scheme_.get(), 2, 0, stdscr_maxy-2, 0), 
     color_scheme_.get());
   header_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   const string s = StringPrintf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
-  header_->SetColor(color_scheme_.get(), SchemeId::HEADER);
+  header_->SetColor(SchemeId::HEADER);
   header_->MvAddStr(0, 0, s);
-  header_->SetColor(color_scheme_.get(), SchemeId::HEADER_COPYRIGHT);
+  header_->SetColor(SchemeId::HEADER_COPYRIGHT);
   header_->MvAddStr(1, 0, copyrightString);
   footer_->window()->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   header_->Refresh();
   footer_->window()->Refresh();
   header_->RedrawWin();
 
-  window_ = new CursesWindow(nullptr, stdscr_maxy-4, stdscr_maxx, 2, 0);
+  window_ = new CursesWindow(nullptr, color_scheme_.get(), stdscr_maxy-4, stdscr_maxx, 2, 0);
   window_->Keypad(true);
 
   touchwin(stdscr);
@@ -156,7 +156,7 @@ CursesIO::~CursesIO() {
  * Clears the local logical screen
  */
 void CursesIO::Cls(chtype background_char) {
-  window_->SetColor(color_scheme_.get(), SchemeId::NORMAL);
+  window_->SetColor(SchemeId::NORMAL);
   window_->Bkgd(background_char);
   window_->Clear();
   window_->Refresh();

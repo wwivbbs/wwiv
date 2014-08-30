@@ -68,7 +68,7 @@ class CursesIO {
   virtual void SetIndicatorMode(IndicatorMode mode);
 
   ColorScheme* color_scheme() { return color_scheme_.get(); }
-  void SetColor(SchemeId scheme) { window_->SetColor(color_scheme_.get(), scheme); }
+  void SetColor(SchemeId scheme) const { window_->SetColor(scheme); }
   static void Init();
 
  private:

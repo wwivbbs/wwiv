@@ -109,8 +109,7 @@ void EditItems::Display() const {
     io_->footer()->ShowHelpItems(navigation_help_items_);
   }
 
-  
-  window_->SetColor(io_->color_scheme(), SchemeId::WINDOW_DATA);
+  window_->SetColor(SchemeId::WINDOW_DATA);
 
   for (BaseEditItem* item : items_) {
     item->Display(window_);
@@ -142,9 +141,9 @@ static CursesWindow* CreateDialogWindow(CursesWindow* parent, int height, int wi
   const int maxy = getmaxy(stdscr);
   const int startx = (maxx - width - 4) / 2;
   const int starty = (maxy - height - 2) / 2;
-  CursesWindow *dialog = new CursesWindow(parent, height + 2, width + 4, starty, startx);
+  CursesWindow *dialog = new CursesWindow(parent, parent->color_scheme(), height + 2, width + 4, starty, startx);
   dialog->Bkgd(out->color_scheme()->GetAttributesForScheme(SchemeId::DIALOG_BOX));
-  dialog->SetColor(out->color_scheme(), SchemeId::DIALOG_BOX);
+  dialog->SetColor(SchemeId::DIALOG_BOX);
   dialog->Box(0, 0);
   return dialog;
 }
@@ -165,13 +164,13 @@ void input_password(CursesWindow* window, const string prompt, const vector<stri
     maxlen = std::max<int>(maxlen, s.length());
   }
   unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, text.size() + 2, maxlen));
-  dialog->SetColor(out->color_scheme(), SchemeId::DIALOG_TEXT);
+  dialog->SetColor(SchemeId::DIALOG_TEXT);
 
   int curline = 1;
   for (const auto& s : text) {
     dialog->MvAddStr(curline++, 2, s);
   }
-  dialog->SetColor(out->color_scheme(), SchemeId::DIALOG_PROMPT);
+  dialog->SetColor(SchemeId::DIALOG_PROMPT);
   dialog->MvAddStr(text.size() + 2, 2, prompt);
   dialog->Refresh();
   winput_password(dialog.get(), output, max_length);
@@ -189,12 +188,12 @@ void messagebox(CursesWindow* window, const vector<string>& text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
   unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, text.size() + 2, maxlen));
-  dialog->SetColor(out->color_scheme(), SchemeId::DIALOG_TEXT);
+  dialog->SetColor(SchemeId::DIALOG_TEXT);
   int curline = 1;
   for (const auto& s : text) {
     dialog->MvAddStr(curline++, 2, s);
   }
-  dialog->SetColor(out->color_scheme(), SchemeId::DIALOG_PROMPT);
+  dialog->SetColor( SchemeId::DIALOG_PROMPT);
   int x = (maxlen - prompt.length()) / 2;
   dialog->MvAddStr(text.size() + 2, x + 2, prompt);
   dialog->Refresh();
@@ -217,7 +216,7 @@ int input_number(CursesWindow* window, int max_digits) {
 * characters are converted to uppercase.
 */
 void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength) {
-  dialog->SetColor(out->color_scheme(), SchemeId::DIALOG_PROMPT);
+  dialog->SetColor(SchemeId::DIALOG_PROMPT);
 
   int curpos = 0;
 
@@ -318,7 +317,7 @@ void editline(CursesWindow* window, char *s, int len, int status, int *returncod
     s[i] = static_cast<char>(background_character);
   }
   s[len] = '\0';
-  window->SetColor(out->color_scheme(), SchemeId::EDITLINE);
+  window->SetColor(SchemeId::EDITLINE);
   window->Puts(s);
   out->SetIndicatorMode(IndicatorMode::OVERWRITE);
   window->GotoXY(cx, cy);
@@ -564,9 +563,9 @@ int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCod
 * a key to be hit.
 */
 void pausescr(CursesWindow* window) {
-  window->SetColor(out->color_scheme(), SchemeId::INFO);
+  window->SetColor(SchemeId::INFO);
   window->Puts("[PAUSE]");
-  window->SetColor(out->color_scheme(), SchemeId::NORMAL);
+  window->SetColor(SchemeId::NORMAL);
   window->GetChar();
   for (int i = 0; i < 7; i++) {
     window->AddStr("\b \b");

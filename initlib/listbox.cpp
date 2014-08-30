@@ -47,12 +47,12 @@ ListBox::ListBox(CursesWindow* parent, const string& title, int max_x, int max_y
   int begin_x = ((maxx - window_width) / 2);
   int begin_y = ((maxy - window_height) / 2);
 
-  window_.reset(new CursesWindow(parent, window_height, window_width, begin_y, begin_x));
-  window_->SetColor(color_scheme_, SchemeId::DIALOG_BOX);
+  window_.reset(new CursesWindow(parent, parent->color_scheme(), window_height, window_width, begin_y, begin_x));
+  window_->SetColor(SchemeId::DIALOG_BOX);
   window_->Box(0, 0);
   window_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::DIALOG_TEXT));
   if (!title.empty()) {
-    window_->SetColor(color_scheme_, SchemeId::DIALOG_PROMPT);
+    window_->SetColor(SchemeId::DIALOG_PROMPT);
     window_->MvAddStr(1, 2, title);
   }
 }
@@ -61,7 +61,7 @@ void ListBox::DrawAllItems() {
   for (int y = 0; y < height_; y++) {
     int current_item = window_top_ + y - window_top_min_;
     string line(items_[current_item].text());
-    if (line.size() > width_) {
+    if (static_cast<int>(line.size()) > width_) {
       line = line.substr(0, width_);
     } else {
       for (int i=line.size(); i < width_; i++) {
@@ -69,9 +69,9 @@ void ListBox::DrawAllItems() {
       }
     }
     if (selected_ == current_item) {
-      window_->SetColor(color_scheme_, SchemeId::DIALOG_SELECTION);
+      window_->SetColor(SchemeId::DIALOG_SELECTION);
     } else {
-      window_->SetColor(color_scheme_, SchemeId::DIALOG_TEXT);
+      window_->SetColor(SchemeId::DIALOG_TEXT);
     }
     line.insert(line.begin(), 1, ' ');
     line.push_back(' ');
@@ -120,7 +120,7 @@ bool ListBox::RunDialog() {
       int window_bottom = window_top_ + height_ - window_top_min_ - 1;
       if (selected_ < window_bottom) {
         selected_++;
-      } else if (window_top_ < items_.size() - height_ + window_top_min_) {
+      } else if (window_top_ < static_cast<int>(items_.size()) - height_ + window_top_min_) {
         selected_++;
         window_top_++;
       }
@@ -141,7 +141,7 @@ bool ListBox::RunDialog() {
       return false;
     default: {
       ch = toupper(ch);
-      for (auto current=0; current < items_.size(); current++) {
+      for (auto current=0; current < static_cast<int>(items_.size()); current++) {
         const auto& item = items_[current];
         if (ch == toupper(item.hotkey())) {
           selected_ = current;

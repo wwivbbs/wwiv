@@ -25,12 +25,10 @@
 
 #include "core/strings.h"
 
-ColorScheme::ColorScheme() { 
-  scheme_ = LoadColorSchemes(); 
-}
+ColorScheme::ColorScheme() : scheme_(LoadColorSchemes()) { }
 
-attr_t ColorScheme::GetAttributesForScheme(SchemeId id) {
-  const SchemeDescription& s = scheme_[id];
+attr_t ColorScheme::GetAttributesForScheme(SchemeId id) const {
+  const SchemeDescription& s = scheme_.at(id);
   attr_t attr = COLOR_PAIR(s.color_pair());
   if (s.bold()) {
     attr |= A_BOLD;

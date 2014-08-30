@@ -50,19 +50,19 @@ static bool IsUserDeleted(userrec *user) {
 static void show_user(EditItems* items, userrec* user) {
   items->Display();
 
-  items->window()->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+  items->window()->SetColor(SchemeId::WINDOW_TEXT);
   for (int i=1; i<13; i++) {
     std::string blank(24, ' ');
     items->window()->PutsXY(COL2_POSITION, i, blank.c_str());
   }
   if (user->inact & inact_deleted) {
-    items->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
+    items->window()->SetColor(SchemeId::ERROR_TEXT);
     items->window()->PutsXY(COL2_POSITION, 0, "[[ DELETED USER ]]");
   } else if (user->inact & inact_inactive) {
-    items->window()->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
+    items->window()->SetColor(SchemeId::ERROR_TEXT);
     items->window()->PutsXY(COL2_POSITION, 0, "[[ INACTIVE USER ]]");
   }
-  items->window()->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+  items->window()->SetColor(SchemeId::WINDOW_TEXT);
   int y = 2;
   items->window()->PrintfXY(COL2_POSITION, y++, "First on     : %s", user->firston);
   items->window()->PrintfXY(COL2_POSITION, y++, "Last on      : %s", user->laston);
@@ -125,10 +125,10 @@ static const int JumpToUser(CursesWindow* window) {
 void user_editor() {
   int number_users = number_userrecs();
   out->Cls(ACS_CKBOARD);
-  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 18, 76));
-  window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
+  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), out->color_scheme(), 18, 76));
+  window->SetColor(SchemeId::WINDOW_BOX);
   window->Box(0, 0);
-  window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+  window->SetColor(SchemeId::WINDOW_TEXT);
 
   if (number_users < 1) {
     show_error_no_users(window.get());
@@ -219,7 +219,7 @@ void user_editor() {
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
-        window->SetColor(out->color_scheme(), SchemeId::ERROR_TEXT);
+        window->SetColor(SchemeId::ERROR_TEXT);
         messagebox(window.get(), "Can not edit a deleted user.");
       } else {
         items.Run();
