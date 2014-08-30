@@ -147,12 +147,12 @@ void sysinfo1() {
   window->PrintfXY(COL1_LINE, y++, "Caller number    : ");
   window->PrintfXY(COL1_LINE, y++, "Days active      : ");
 
+  bool closed_system = syscfg.closedsystem > 0;
   EditItems items{
     new StringEditItem<char*>(COL1_POSITION, 1, 20, syscfg.systempw, true),
     new StringEditItem<char*>(COL1_POSITION, 2, 50, syscfg.systemname, false),
     new StringEditItem<char*>(COL1_POSITION, 3, 12, syscfg.systemphone, true),
-    // TODO(rushfan): Make an editor for bool
-    new NumberEditItem<uint8_t>(COL1_POSITION, 4, &syscfg.closedsystem),
+    new BooleanEditItem(COL1_POSITION, 4, &closed_system),
     new StringEditItem<char*>(COL1_POSITION, 5, 20, syscfg.newuserpw, true),
     new RestrictionsEditItem(COL1_POSITION, 6, &syscfg.newuser_restrict),
     new NumberEditItem<uint8_t>(COL1_POSITION, 7, &syscfg.newusersl),
@@ -175,6 +175,8 @@ void sysinfo1() {
 
   items.set_curses_io(out, window.get());
   items.Run();
+  syscfg.closedsystem = closed_system;
+
 
   save_config();
 }
