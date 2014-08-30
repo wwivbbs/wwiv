@@ -73,9 +73,9 @@ class ColorScheme {
  public:
   ColorScheme();
   virtual ~ColorScheme() {}
-  virtual attr_t GetAttributesForScheme(SchemeId id);
+  virtual attr_t GetAttributesForScheme(SchemeId id) const;
 private:
   static std::map<SchemeId, SchemeDescription> LoadColorSchemes();
-  std::map<SchemeId, SchemeDescription> scheme_;
+  const std::map<SchemeId, SchemeDescription> scheme_;
 };
 #endif // __INCLUDED_PLATFORM_COLORS_H__
