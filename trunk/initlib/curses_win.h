@@ -68,7 +68,7 @@ class CursesWindow {
   
 
   WINDOW* window() const { return window_; }
-  CursesWindow* parent() const { parent_; }
+  CursesWindow* parent() const { return parent_; }
 
 private:
   WINDOW* window_;
