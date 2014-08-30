@@ -141,7 +141,7 @@ public:
     int return_code = 0;
     sprintf(s, "%-7u", *this->data_);
     editline(window, s, MAXLEN + 1, NUM_ONLY, &return_code, "");
-    *this->data_ = atoi(s);
+    *this->data_ = static_cast<T>(atoi(s));
     return return_code;
   }
 
