@@ -110,7 +110,7 @@ void EditItems::Display() const {
   }
 
   
-  window_->SetColor(io_->color_scheme(), SchemeId::NORMAL);
+  window_->SetColor(io_->color_scheme(), SchemeId::WINDOW_DATA);
 
   for (BaseEditItem* item : items_) {
     item->Display(window_);

@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "regcode.h"
 
+#include <memory>
+
 #include <curses.h>
 
 #include "ifcns.h"
@@ -26,18 +28,21 @@
 #include "utility.h"
 #include "wwivinit.h"
 
+using std::auto_ptr;
 
 void edit_registration_code() {
-  out->SetColor(SchemeId::NORMAL);
   out->Cls();
-  nlx();
-  out->window()->Printf("Registration Number  : %d\n", syscfg.wwiv_reg_number);
+  auto_ptr<CursesWindow> window(new CursesWindow(out->window(), 6, 38, 5, 21));
+  window->SetColor(out->color_scheme(), SchemeId::WINDOW_BOX);
+  window->Box(0, 0);
+  window->SetColor(out->color_scheme(), SchemeId::WINDOW_TEXT);
+  window->PrintfXY(2, 2, "Registration Number  : %d", syscfg.wwiv_reg_number);
   nlx(2);
-  out->SetColor(SchemeId::PROMPT);
-  out->window()->Printf("<ESC> when done.\n");
+  window->SetColor(out->color_scheme(), SchemeId::WINDOW_PROMPT);
+  window->PrintfXY(2, 4, "<ESC> when done.");
 
-  EditItems items{ new NumberEditItem<uint32_t>(23, 1, &syscfg.wwiv_reg_number) };
-  items.set_curses_io(out, out->window());
+  EditItems items{ new NumberEditItem<uint32_t>(25, 2, &syscfg.wwiv_reg_number) };
+  items.set_curses_io(out, window.get());
   items.Run();
   save_config();
 }
