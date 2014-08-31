@@ -27,6 +27,7 @@
 
 #include <string.h>
 
+#include "core/strings.h"
 #include "initlib/curses_io.h"
 #include "initlib/curses_win.h"
 
@@ -139,11 +140,10 @@ public:
 
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
-    char s[21];
     int return_code = 0;
-    sprintf(s, "%-7u", *this->data_);
-    editline(window, s, MAXLEN + 1, NUM_ONLY, &return_code, "");
-    *this->data_ = static_cast<T>(atoi(s));
+    std::string s = wwiv::strings::StringPrintf("%-7u", *this->data_);
+    editline(window, &s, MAXLEN + 1, NUM_ONLY, &return_code, "");
+    *this->data_ = static_cast<T>(atoi(s.c_str()));
     return return_code;
   }
 

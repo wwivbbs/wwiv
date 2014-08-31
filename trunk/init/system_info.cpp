@@ -69,13 +69,13 @@ public:
     int return_code = 0;
     string s = print_time(*this->data_);
     editline(window, &s, MAX_TIME_EDIT_LEN + 1, ALL, &return_code, "");
-    *this->data_ = get_time(s.c_str());
+    *this->data_ = get_time(s);
     return return_code;
   }
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    std::string blanks(this->maxsize_, ' ');
+    string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
     string s = print_time(*this->data_);
     window->PutsXY(this->x_, this->y_, s);
@@ -104,7 +104,7 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    std::string blanks(this->maxsize_, ' ');
+    string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
     window->PrintfXY(this->x_, this->y_, "%5.3f", *this->data_);
   }
