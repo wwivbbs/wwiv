@@ -201,14 +201,13 @@ void messagebox(CursesWindow* window, const vector<string>& text) {
 }
 
 int input_number(CursesWindow* window, int max_digits) {
-  char s[81];
+  string s;
   int return_code = 0;
-  memset(&s, 0, 81);
-  editline(window, s, max_digits, NUM_ONLY, &return_code, "");
-  if (strlen(s) == 0) {
+  editline(window, &s, max_digits, NUM_ONLY, &return_code, "");
+  if (s.empty()) {
     return 0;
   }
-  return atoi(s);
+  return atoi(s.c_str());
 }
 
 /* This will input a line of data, maximum nMaxLength characters long, terminated
