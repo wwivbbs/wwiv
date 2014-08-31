@@ -24,6 +24,8 @@
 #include <memory>
 #include <string>
 
+#include "core/strings.h"
+
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
@@ -31,21 +33,24 @@
 #include "wwivinit.h"
 
 using std::auto_ptr;
+using std::string;
+using wwiv::strings::StringPrintf;
 
 static const int COL1_LINE = 2;
 static const int COL1_POSITION = 21;
 
-static void print_time(uint16_t t, char *s) {
-  sprintf(s, "%02d:%02d", t / 60, t % 60);
+static string print_time(uint16_t t) {
+  return StringPrintf("%02d:%02d", t / 60, t % 60);
 }
 
-static uint16_t get_time(char *s) {
+static uint16_t get_time(const string& s) {
   if (s[2] != ':') {
     return std::numeric_limits<uint16_t>::max();
   }
 
-  unsigned short h = atoi(s);
-  unsigned short m = atoi(s + 3);
+  unsigned short h = atoi(s.c_str());
+  string minutes = s.substr(3);
+  unsigned short m = atoi(minutes.c_str());
   if (h > 23 || m > 59) {
     return std::numeric_limits<uint16_t>::max();
   }
@@ -61,11 +66,10 @@ public:
 
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
-    char s[21];
     int return_code = 0;
-    print_time(*this->data_, s);
-    editline(window, s, MAX_TIME_EDIT_LEN + 1, ALL, &return_code, "");
-    *this->data_ = get_time(s);
+    string s = print_time(*this->data_);
+    editline(window, &s, MAX_TIME_EDIT_LEN + 1, ALL, &return_code, "");
+    *this->data_ = get_time(s.c_str());
     return return_code;
   }
 
@@ -73,9 +77,8 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
-    char s[21];
-    print_time(*this->data_, s);
-    window->PrintfXY(this->x_, this->y_, "%s", s);
+    string s = print_time(*this->data_);
+    window->PutsXY(this->x_, this->y_, s);
   }
 };
 
@@ -86,13 +89,12 @@ public:
 
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
-    char s[21];
     int return_code = 0;
-    sprintf(s, "%5.3f", *this->data_);
-    editline(window, s, 5 + 1, NUM_ONLY, &return_code, "");
+    string s = StringPrintf("%5.3f", *this->data_);
+    editline(window, &s, 5 + 1, NUM_ONLY, &return_code, "");
 
     float f;
-    sscanf(s, "%f", &f);
+    sscanf(s.c_str(), "%f", &f);
     if (f > 9.999 || f < 0.001) {
       f = 0.0;
     }
