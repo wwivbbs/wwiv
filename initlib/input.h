@@ -104,7 +104,6 @@ protected:
   displayfn display_;
 };
 
-
 template<typename T> class StringEditItem : public EditItem<T> {
 public:
   StringEditItem(int x, int y, int maxsize, T data, bool uppercase) 

@@ -120,7 +120,7 @@ void sysinfo1() {
   }
 
   out->Cls(ACS_CKBOARD);
-  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 19, 76));
+  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 19, 74));
 
   int y = 1;
   window->PrintfXY(COL1_LINE, y++, "System PW        : ");
