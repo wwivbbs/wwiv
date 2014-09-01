@@ -56,7 +56,7 @@ std::map<SchemeId, SchemeDescription> ColorScheme::LoadColorSchemes() {
   scheme[SchemeId::DIALOG_PROMPT] = SchemeDescription(SchemeId::DIALOG_PROMPT, COLOR_YELLOW, COLOR_BLUE, true);
   scheme[SchemeId::DIALOG_BOX] = SchemeDescription(SchemeId::DIALOG_BOX, COLOR_GREEN, COLOR_BLUE, true);
   scheme[SchemeId::DIALOG_TEXT] = SchemeDescription(SchemeId::DIALOG_TEXT, COLOR_CYAN, COLOR_BLUE, true);
-  scheme[SchemeId::DIALOG_SELECTION] = SchemeDescription(SchemeId::DIALOG_SELECTION, COLOR_CYAN, COLOR_RED, true);
+  scheme[SchemeId::DIALOG_SELECTION] = SchemeDescription(SchemeId::DIALOG_SELECTION, COLOR_CYAN, COLOR_BLUE, true);
   scheme[SchemeId::WINDOW_BOX] = SchemeDescription(SchemeId::WINDOW_BOX, COLOR_CYAN, COLOR_BLACK, true);
   scheme[SchemeId::WINDOW_TEXT] = SchemeDescription(SchemeId::WINDOW_TEXT, COLOR_CYAN, COLOR_BLACK, false);
   scheme[SchemeId::WINDOW_SELECTED] = SchemeDescription(SchemeId::WINDOW_SELECTED, COLOR_CYAN , COLOR_BLACK, true);

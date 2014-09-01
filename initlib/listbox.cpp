@@ -33,7 +33,7 @@ ListBox::ListBox(CursesWindow* parent, const string& title, int max_x, int max_y
                  std::vector<ListBoxItem>& items, ColorScheme* scheme) 
     : title_(title), selected_(-1), items_(items), window_top_(0), width_(4), 
       height_(2), color_scheme_(scheme), 
-      window_top_min_(title.empty() ? 1 : 3) {
+      window_top_min_(title.empty() ? 1 : 1 /* 3 */) {
   height_ = std::min<int>(items.size(), max_y);
   int window_height = 2 + height_ + window_top_min_ - 1;
   int longest_line = std::max<int>(2, title.size() + 4);
@@ -48,12 +48,11 @@ ListBox::ListBox(CursesWindow* parent, const string& title, int max_x, int max_y
   int begin_y = ((maxy - window_height) / 2);
 
   window_.reset(new CursesWindow(parent, parent->color_scheme(), window_height, window_width, begin_y, begin_x));
-  window_->SetColor(SchemeId::DIALOG_BOX);
+  window_->SetColor(SchemeId::WINDOW_BOX);
   window_->Box(0, 0);
-  window_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::DIALOG_TEXT));
+  window_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::WINDOW_TEXT));
   if (!title.empty()) {
-    window_->SetColor(SchemeId::DIALOG_PROMPT);
-    window_->MvAddStr(1, 2, title);
+    window_->SetTitle(title);
   }
 }
 
@@ -71,7 +70,7 @@ void ListBox::DrawAllItems() {
     if (selected_ == current_item) {
       window_->SetColor(SchemeId::DIALOG_SELECTION);
     } else {
-      window_->SetColor(SchemeId::DIALOG_TEXT);
+      window_->SetColor(SchemeId::WINDOW_TEXT);
     }
     line.insert(line.begin(), 1, ' ');
     line.push_back(' ');
