@@ -191,7 +191,8 @@ int main(int argc, char* argv[]) {
 
 int WInitApp::main(int argc, char *argv[]) {
   char s[81];
-  int newbbs = 0, pwok = 0;
+  bool newbbs = false;
+  bool pwok = false;
 
   setlocale (LC_ALL,"");
 
@@ -223,7 +224,7 @@ int WInitApp::main(int argc, char *argv[]) {
       case 'P': {
         if (strlen(argv[i]) > 2) {
           if (strcasecmp(argv[i] + 2, syscfg.systempw) == 0) {
-            pwok = 1;
+            pwok = true;
           }
         }
         break;
@@ -246,7 +247,7 @@ int WInitApp::main(int argc, char *argv[]) {
     out->window()->Printf("%s NOT FOUND.\n\n", configdat);
     if (dialog_yn(out->window(), "Perform initial installation")) {
       new_init();
-      newbbs = 1;
+      newbbs = true;
       configfile = open(configdat, O_RDWR | O_BINARY);
     } else {
       exit_init(1);
