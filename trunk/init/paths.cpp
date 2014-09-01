@@ -20,6 +20,7 @@
 
 #include <curses.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 #ifdef _WIN32
 #include <direct.h>
@@ -32,6 +33,9 @@
 #include "core/wfndfile.h"
 #include "utility.h"
 #include "wwivinit.h"
+
+using std::auto_ptr;
+using std::string;
 
 extern char bbsdir[];
 
@@ -70,72 +74,64 @@ static int verify_dir(char *typeDir, char *dirName) {
   return rc;
 }
 
+class FilePathItem : public EditItem<char*> {
+public:
+  FilePathItem(int x, int y, int maxsize, char* data) 
+    : EditItem<char*>(x, y, maxsize, data) {}
+  virtual ~FilePathItem() {}
+
+  virtual int Run(CursesWindow* window) override {
+    window->GotoXY(this->x_, this->y_);
+    int return_code = 0;
+    editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
+    trimstrpath(this->data_);
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const override {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+
+    char pattern[81];
+    sprintf(pattern, "%%-%ds", this->maxsize_);
+    window->PrintfXY(this->x_, this->y_, pattern, this->data_);
+  }
+};
+
+static const int COL1_LINE = 2;
+static const int COL1_POSITION = 14;
+
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir */
 void setpaths() {
-  out->Cls();
-  out->SetColor(SchemeId::NORMAL);
-  out->window()->Printf("Messages Directory : %s\n", syscfg.msgsdir);
-  out->window()->Printf("GFiles Directory   : %s\n", syscfg.gfilesdir);
-  out->window()->Printf("Menu Directory     : %s\n", syscfg.menudir);
-  out->window()->Printf("Data Directory     : %s\n", syscfg.datadir);
-  out->window()->Printf("Downloads Directory: %s\n", syscfg.dloadsdir);
+  out->Cls(ACS_CKBOARD);
+  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("System Paths", 15, 76));
 
-  nlx(2);
-  out->SetColor(SchemeId::WARNING);
-  out->window()->Printf("CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.\n\n");
-  out->SetColor(SchemeId::PROMPT);
-  out->window()->Printf(" Changing any of these requires YOU to MANUALLY move files and / or \n");
-  out->window()->Printf(" directory structures.  Consult the documentation prior to changing \n");
-  out->window()->Printf(" any of these settings.\n");
-  out->SetColor(SchemeId::NORMAL);
+  int y = 1;
+  window->PrintfXY(COL1_LINE, y++, "Messages  : %s", syscfg.msgsdir);
+  window->PrintfXY(COL1_LINE, y++, "GFiles    : %s", syscfg.gfilesdir);
+  window->PrintfXY(COL1_LINE, y++, "Menus     : %s", syscfg.menudir);
+  window->PrintfXY(COL1_LINE, y++, "Data      : %s", syscfg.datadir);
+  window->PrintfXY(COL1_LINE, y++, "Downloads : %s", syscfg.dloadsdir);
+  y+=2;
+  window->SetColor(SchemeId::WARNING);
+  window->PrintfXY(COL1_LINE, y++, "CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.");
+  y+=1;
+  window->SetColor(SchemeId::WINDOW_TEXT);
+  window->PrintfXY(COL1_LINE + 2, y++, "Changing any of these requires YOU to MANUALLY move files and / or");
+  window->PrintfXY(COL1_LINE + 2, y++, "directory structures.  Consult the documentation prior to changing");
+  window->PrintfXY(COL1_LINE + 2, y++, "any of these settings.");
 
-  int i1;
-  int cp = 0;
-  bool done = false;
-  do {
-    done = false;
-    switch (cp) {
-    case 0:
-      out->window()->GotoXY(21, cp);
-      editline(out->window(), syscfg.msgsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
-      trimstrpath(syscfg.msgsdir);
-      out->window()->Puts(syscfg.msgsdir);
-      //          verify_dir("Messages", syscfg.msgsdir);
-      break;
-    case 1:
-      out->window()->GotoXY(21, cp);
-      editline(out->window(), syscfg.gfilesdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
-      trimstrpath(syscfg.gfilesdir);
-      out->window()->Puts(syscfg.gfilesdir);
-      //          verify_dir("Gfiles", syscfg.gfilesdir);
-      break;
-    case 2:
-      out->window()->GotoXY(21, cp);
-      editline(out->window(), syscfg.menudir, 50, EDITLINE_FILENAME_CASE, &i1, "");
-      trimstrpath(syscfg.menudir);
-      out->window()->Puts(syscfg.menudir);
-      //          verify_dir("Menu", syscfg.menudir);
-      break;
-    case 3:
-      out->window()->GotoXY(21, cp);
-      editline(out->window(), syscfg.datadir, 50, EDITLINE_FILENAME_CASE, &i1, "");
-      trimstrpath(syscfg.datadir);
-      out->window()->Puts(syscfg.datadir);
-      //          verify_dir("Data", syscfg.datadir);
-      break;
-    case 4:
-      out->window()->GotoXY(21, cp);
-      editline(out->window(), syscfg.dloadsdir, 50, EDITLINE_FILENAME_CASE, &i1, "");
-      trimstrpath(syscfg.dloadsdir);
-      out->window()->Puts(syscfg.dloadsdir);
-      //          verify_dir("Downloads", syscfg.dloadsdir);
-      break;
-    }
-    cp = GetNextSelectionPosition(0, 4, cp, i1);
-    if (i1 == DONE) {
-      done = true;
-    }
-  } while (!done);
+  EditItems items{
+    new FilePathItem(COL1_POSITION, 1, 60, syscfg.msgsdir),
+    new FilePathItem(COL1_POSITION, 2, 60, syscfg.gfilesdir),
+    new FilePathItem(COL1_POSITION, 3, 60, syscfg.menudir),
+    new FilePathItem(COL1_POSITION, 4, 60, syscfg.datadir),
+    new FilePathItem(COL1_POSITION, 5, 60, syscfg.dloadsdir),
+  };
+
+  items.set_curses_io(out, window.get());
+  items.Run();
 
   save_config();
 }
