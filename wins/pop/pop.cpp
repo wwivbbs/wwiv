@@ -934,10 +934,10 @@ int pop_top(SOCKET sock, unsigned int msg_num, int usernum)
             }
         }
         _temp_buffer[_TEMP_BUFFER_LEN-1]=0;
-#ifdef MEGA_DEBUG_LOG_INFO
+#ifdef MEGA_DEBUG_LOG_MESSAGE_TEXT_INFO
         output("\n DEBUG: ");
         puts( _temp_buffer );
-#endif // MEGA_DEBUG_LOG_INFO
+#endif  // MEGA_DEBUG_LOG_MESSAGE_TEXT_INFO
         if (usernum == 0) 
         {
             if (_strnicmp(_temp_buffer, "NET: ", 5) == 0)
