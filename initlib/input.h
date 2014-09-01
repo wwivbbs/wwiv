@@ -273,7 +273,8 @@ public:
   virtual void Display() const;
 
   void set_navigation_help_items(const std::vector<HelpItem> items) { navigation_help_items_ = items; }
-  void set_editor_help_items(const std::vector<HelpItem> items) { editor_help_items_ = items; }
+  void set_editmode_help_items(const std::vector<HelpItem> items) { editor_help_items_ = items; }
+  void set_navigation_extra_help_items(const std::vector<HelpItem> items) { navigation_extra_help_items_ = items; }
 
   void set_curses_io(CursesIO* io, CursesWindow* window) { io_ = io; window_ = window; }
   CursesWindow* window() const { return window_; }
@@ -289,20 +290,17 @@ public:
   }
 
   static std::vector<HelpItem> StandardEditorHelpItems() {
-    return { {"Esc", "Exit"}, 
-        { "Enter", "Edit" },
-    };
+    return { {"Esc", "Exit"} };
   }
 
   static std::vector<HelpItem> ExitOnlyHelpItems() {
-    return { {"Esc", "Exit"}, 
-    };
+    return { {"Esc", "Exit"} };
   }
-
 
 private:
   std::vector<BaseEditItem*> items_;
   std::vector<HelpItem> navigation_help_items_;
+  std::vector<HelpItem> navigation_extra_help_items_;
   std::vector<HelpItem> editor_help_items_;
   CursesWindow* window_;
   CursesIO* io_;

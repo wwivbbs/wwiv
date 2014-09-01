@@ -50,8 +50,11 @@ static COORD originalConsoleSize;
 
 CursesIO* out;
 
-void CursesFooter::ShowHelpItems(const std::vector<HelpItem>& help_items) const {
-  window_->Move(0, 0);
+void CursesFooter::ShowHelpItems(int line, const std::vector<HelpItem>& help_items) const {
+  if (line < 0 || line > 1) {
+    line = 0;
+  }
+  window_->Move(line, 0);
   window_->ClrtoEol();
   for (const auto& h : help_items) {
     window_->SetColor(SchemeId::FOOTER_KEY);
