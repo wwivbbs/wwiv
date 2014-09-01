@@ -165,9 +165,8 @@ void instance_editor() {
     new StringEditItem<char*>(COL1_POSITION, 2, 50, instance.batchdir, FILENAME_UPPERCASE),
   };
   items.set_curses_io(out, out->window());
-  vector<HelpItem> help_items = EditItems::StandardNavigationHelpItems();
-  help_items.push_back({ "A", "Add" });
-  items.set_navigation_help_items(help_items);
+  vector<HelpItem> help_items = { { "A", "Add" } };
+  items.set_navigation_extra_help_items(help_items);
   show_instance(&items);
 
   for (;;)  {

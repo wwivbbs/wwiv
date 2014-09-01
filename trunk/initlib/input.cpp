@@ -104,9 +104,12 @@ void EditItems::Run() {
 void EditItems::Display() const {
   // Show help bar.
   if (edit_mode_) {
-    io_->footer()->ShowHelpItems(editor_help_items_);
+    io_->footer()->window()->Move(1, 0);
+    io_->footer()->window()->ClrtoEol();
+    io_->footer()->ShowHelpItems(0, editor_help_items_);
   } else {
-    io_->footer()->ShowHelpItems(navigation_help_items_);
+    io_->footer()->ShowHelpItems(0, navigation_help_items_);
+    io_->footer()->ShowHelpItems(1, navigation_extra_help_items_);
   }
 
   window_->SetColor(SchemeId::WINDOW_DATA);

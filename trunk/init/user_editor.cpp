@@ -83,10 +83,8 @@ static void show_error_no_users(CursesWindow* window) {
   messagebox(window, "You must have users added before using user editor.");
 }
 
-static vector<HelpItem> create_help_items() {
-  vector<HelpItem> help_items = EditItems::StandardNavigationHelpItems();
-  help_items.push_back({ "A", "Add" });
-  help_items.push_back({ "J", "Jump" });
+static vector<HelpItem> create_extra_help_items() {
+  vector<HelpItem> help_items = { { "A", "Add" }, { "J", "Jump" } };
   return help_items;
 }
 
@@ -206,7 +204,7 @@ void user_editor() {
     new NumberEditItem<uint32_t>(COL1_POSITION, 15, &user.wwiv_regnum),
     new StringEditItem<unsigned char*>(COL1_POSITION, 16, 57, user.note, false),
   };
-  items.set_navigation_help_items(create_help_items());
+  items.set_navigation_extra_help_items(create_extra_help_items());
   items.set_curses_io(out, window.get());
 
   show_user(&items, &user);

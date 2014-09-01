@@ -43,7 +43,7 @@ public:
   CursesFooter(CursesWindow* window, ColorScheme* color_scheme) 
     : window_(window), color_scheme_(color_scheme) {}
   virtual ~CursesFooter() {}
-  virtual void ShowHelpItems(const std::vector<HelpItem>& help_items) const;
+  virtual void ShowHelpItems(int line, const std::vector<HelpItem>& help_items) const;
   virtual void ShowContextHelp(const std::string& help_text) const;
   virtual void SetDefaultFooter() const;
   virtual CursesWindow* window() const { return window_.get(); }
