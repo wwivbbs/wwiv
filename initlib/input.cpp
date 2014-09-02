@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <curses.h>
 #include <cstdint>
 #include <cstdlib>
@@ -210,7 +211,32 @@ int input_number(CursesWindow* window, int max_digits) {
   if (s.empty()) {
     return 0;
   }
-  return atoi(s.c_str());
+  try {
+    return std::stoi(s);
+  } catch (std::invalid_argument) { 
+    // No conversion possible.
+    return 0;
+  }
+}
+
+int dialog_input_number(CursesWindow* window, const string prompt, int min_value, int max_value) {
+  int num_digits = max_value > 0 ? static_cast<int>(floor(log10(max_value))) + 1 : 1;
+  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, 3, prompt.size() + 4 + num_digits));
+  dialog->PutsXY(2, 2, prompt);
+  dialog->Refresh();
+
+  int return_code = 0;
+  string s;
+  editline(dialog.get(), &s, num_digits, NUM_ONLY, &return_code, "");
+  if (s.empty()) {
+    return 0;
+  }
+  try {
+    return std::stoi(s);
+  } catch (std::invalid_argument) { 
+    // No conversion possible.
+    return 0;
+  }
 }
 
 /* This will input a line of data, maximum nMaxLength characters long, terminated
