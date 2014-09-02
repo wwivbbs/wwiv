@@ -31,10 +31,13 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
 #include "utility.h"
 #include "wwivinit.h"
 
+using std::string;
+using wwiv::strings::StringPrintf;
 
 void edit_editor(int n) {
   int i1;
@@ -114,23 +117,18 @@ void extrn_editors() {
     case 'M':
       if (initinfo.numeditors) {
         nlx();
-        out->SetColor(SchemeId::ERROR_TEXT);
-        out->window()->Printf("Edit which (1-%d) ? ", initinfo.numeditors);
-        out->SetColor(SchemeId::NORMAL);
-        int i = input_number(out->window(), 2);
-        if ((i > 0) && (i <= initinfo.numeditors)) {
+        string prompt = StringPrintf("Edit which (1-%d) : ", initinfo.numeditors);
+        int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
+        if (i > 0 && i <= initinfo.numeditors) {
           edit_editor(i - 1);
         }
       }
       break;
     case 'D':
       if (initinfo.numeditors) {
-        nlx();
-        out->SetColor(SchemeId::ERROR_TEXT);
-        out->window()->Printf("Delete which (1-%d) ? ", initinfo.numeditors);
-        out->SetColor(SchemeId::NORMAL);
-        int i = input_number(out->window(), 2);
-        if ((i > 0) && (i <= initinfo.numeditors)) {
+        string prompt = StringPrintf("Delete which (1-%d) : ", initinfo.numeditors);
+        int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
+        if (i > 0 && i <= initinfo.numeditors) {
           for (i1 = i - 1; i1 < initinfo.numeditors; i1++) {
             editors[i1] = editors[i1 + 1];
           }
@@ -140,18 +138,13 @@ void extrn_editors() {
       break;
     case 'I':
       if (initinfo.numeditors >= 10) {
-        out->SetColor(SchemeId::ERROR_TEXT);
-        out->window()->Printf("Too many editors.\n");
-        out->SetColor(SchemeId::NORMAL);
-        nlx();
+        messagebox(out->window(), "Too many editors.");
         break;
       }
       nlx();
-      out->SetColor(SchemeId::PROMPT);
-      out->window()->Printf("Insert before which (1-%d) ? ", initinfo.numeditors + 1);
-      out->SetColor(SchemeId::NORMAL);
-      int i = input_number(out->window(), 2);
-      if ((i > 0) && (i <= initinfo.numeditors + 1)) {
+      string prompt = StringPrintf("Insert before which (1-%d) : ", initinfo.numeditors + 1);
+      int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
+      if (i > 0 && i <= initinfo.numeditors + 1) {
         for (i1 = initinfo.numeditors; i1 > i - 1; i1--) {
           editors[i1] = editors[i1 - 1];
         }
@@ -164,6 +157,7 @@ void extrn_editors() {
       break;
     }
   } while (!done);
+
   char szFileName[ MAX_PATH ];
   sprintf(szFileName, "%seditors.dat", syscfg.datadir);
   int hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);

@@ -41,6 +41,7 @@ void nlx(int numLines = 1);
 
 bool dialog_yn(CursesWindow* window, const std::string prompt);
 int input_number(CursesWindow* window, int max_digits);
+int dialog_input_number(CursesWindow* window, const std::string prompt, int min_value, int max_value);
 char onek(CursesWindow* window, const char *s);
 void editline(CursesWindow* window, std::string* s, int len, int status, int *returncode, const char *ss);
 void editline(CursesWindow* window, char *s, int len, int status, int *returncode, const char *ss);
