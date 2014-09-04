@@ -28,6 +28,7 @@
 #include <functional>
 #include <initializer_list>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
