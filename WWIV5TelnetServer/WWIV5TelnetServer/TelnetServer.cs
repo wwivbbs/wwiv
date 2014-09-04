@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
+using System.Timers;
 
 namespace WWIV5TelnetServer
 {
@@ -70,7 +71,7 @@ namespace WWIV5TelnetServer
             if (launcherThread == null)
             {
               OnStatusMessageUpdated("ERROR: LauncherThread was never set.", StatusMessageEventArgs.MessageType.LogError);
-                return;
+              return;
             }
             OnStatusMessageUpdated("Stopping Telnet Server.", StatusMessageEventArgs.MessageType.LogInfo);
             if (server != null)

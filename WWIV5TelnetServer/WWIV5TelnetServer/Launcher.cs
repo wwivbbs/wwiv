@@ -27,10 +27,16 @@ namespace WWIV5TelnetServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass"), DllImport("user32.dll")]
         private static extern int ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
-        public Process launchLocalNode(int node) {
-            return launchNode("-N@N -M", node, -1, false);
+        public Process launchLocalNode(int node)
+        {
+          return launchNode("-N@N -M", node, -1, false);
         }
-        
+
+        public Process launchBeginDayEvent(int node)
+        {
+          return launchNode("-N@N -E", node, -1, false);
+        }
+
         public Process launchTelnetNode(int node, Int32 socketHandle)
         {
             return launchNode(argumentsTemplate, node, socketHandle, Properties.Settings.Default.launchMinimized);
