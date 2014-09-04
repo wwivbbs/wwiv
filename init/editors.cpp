@@ -116,7 +116,6 @@ void extrn_editors() {
       break;
     case 'M':
       if (initinfo.numeditors) {
-        nlx();
         string prompt = StringPrintf("Edit which (1-%d) : ", initinfo.numeditors);
         int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
         if (i > 0 && i <= initinfo.numeditors) {
@@ -141,7 +140,6 @@ void extrn_editors() {
         messagebox(out->window(), "Too many editors.");
         break;
       }
-      nlx();
       string prompt = StringPrintf("Insert before which (1-%d) : ", initinfo.numeditors + 1);
       int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
       if (i > 0 && i <= initinfo.numeditors + 1) {
