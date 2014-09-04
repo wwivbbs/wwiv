@@ -38,5 +38,8 @@
     <Setting Name="useEvents" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="lastBeginDayDate" Type="System.String" Scope="User">
+      <Value Profile="(Default)">2014-01-01</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
