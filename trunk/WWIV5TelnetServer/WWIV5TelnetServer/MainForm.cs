@@ -33,6 +33,7 @@ namespace WWIV5TelnetServer
     public partial class MainForm : Form
     {
         private TelnetServer server = new TelnetServer();
+        private BeginDayHandler beginDay;
     
         public MainForm()
         {
@@ -42,6 +43,11 @@ namespace WWIV5TelnetServer
             notifyIcon1.Visible = false;
             server.StatusMessageChanged += server_StatusMessage;
             server.NodeStatusChanged += server_NodeStatusChanged;
+
+            Action<string> logger = delegate(string s)
+            {
+              server_StatusMessage(this, new StatusMessageEventArgs(s, StatusMessageEventArgs.MessageType.LogInfo));
+            };
         }
 
         private void server_NodeStatusChanged(object sender, NodeStatusEventArgs e)

@@ -166,5 +166,17 @@ namespace WWIV5TelnetServer.Properties {
                 this["useEvents"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2014-01-01")]
+        public string lastBeginDayDate {
+            get {
+                return ((string)(this["lastBeginDayDate"]));
+            }
+            set {
+                this["lastBeginDayDate"] = value;
+            }
+        }
     }
 }
