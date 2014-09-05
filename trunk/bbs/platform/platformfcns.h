@@ -31,7 +31,7 @@ char * strrev(char *s);
 
 // $PLATFORM/filesupp.cpp
 
-double WWIV_GetFreeSpaceForPath(const char * szPath);
+long WWIV_GetFreeSpaceForPath(const char * szPath);
 void WWIV_GetDir(char *s, bool be);
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName);
 

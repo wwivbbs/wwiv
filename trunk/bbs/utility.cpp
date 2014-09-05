@@ -217,7 +217,7 @@ void Wait(double d) {
  *
  * @param pszPathName Directory or Drive of which to list the free space.
  */
-double freek1(const char *pszPathName) {
+long freek1(const char *pszPathName) {
   WWIV_ASSERT(pszPathName);
   return WWIV_GetFreeSpaceForPath(pszPathName);
 }

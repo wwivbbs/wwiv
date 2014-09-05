@@ -976,7 +976,7 @@ void bihangup(int up)
 void upload(int dn) {
   dliscan1(dn);
   directoryrec d = directories[ dn ];
-  long lFreeSpace = static_cast<long>(freek1(d.path));
+  long lFreeSpace = freek1(d.path);
   if (lFreeSpace < 100) {
     GetSession()->bout << "\r\nNot enough disk space to upload here.\r\n\n";
     return;

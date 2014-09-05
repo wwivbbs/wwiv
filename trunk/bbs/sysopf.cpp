@@ -971,10 +971,10 @@ void beginday(bool displayStatus) {
     GetSession()->bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }
 
-  double fk = freek1(syscfg.datadir);
+  long fk = freek1(syscfg.datadir);
 
-  if (fk < 512.0) {
-    ssm(1, 0, "Only %dk free in data directory.", static_cast<int>(fk));
+  if (fk < 512) {
+    ssm(1, 0, "Only %dk free in data directory.", fk);
   }
   if (!syscfg.closedsystem && nus < 15) {
     ssm(1, 0, "Only %d new user slots left.", nus);
