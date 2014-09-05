@@ -56,12 +56,13 @@ const DWORD SBBSEXEC_IOCTL_STOP             = 0x8006;
 const int CONST_NUM_LOOPS_BEFORE_EXIT_CHECK         = 500;
 typedef HANDLE(WINAPI *OPENVXDHANDLEFUNC)(HANDLE);
 
+using std::string;
+using wwiv::strings::StrCat;
 
 // Helper functions
 
-static void GetSyncFosTempFilePath(std::string &outFileName) {
-  outFileName = syscfgovr.tempdir;
-  outFileName += "WWIVSYNC.ENV";
+static string GetSyncFosTempFilePath() {
+  return StrCat(syscfgovr.tempdir, "WWIVSYNC.ENV");
 }
 
 static const std::string GetDosXtrnPath() {
@@ -70,17 +71,16 @@ static const std::string GetDosXtrnPath() {
   return std::string(sstream.str());
 }
 
-static void CreateSyncFosCommandLine(std::string &outCommandLine, const std::string tempFilePath, int nSyncMode) {
+static void CreateSyncFosCommandLine(std::string *out, const std::string& tempFilePath, int nSyncMode) {
   std::stringstream sstream;
   sstream << GetDosXtrnPath() << " " << tempFilePath << " " << "NT" << " ";
   sstream << GetApplication()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
-  outCommandLine = sstream.str();
+  out->assign(sstream.str());
 }
 
 // returns true if the file is deleted.
 static bool DeleteSyncTempFile() {
-  std::string tempFileName;
-  GetSyncFosTempFilePath(tempFileName);
+  const std::string tempFileName = GetSyncFosTempFilePath();
   if (WFile::Exists(tempFileName)) {
     WFile::Remove(tempFileName);
     return true;
@@ -88,11 +88,11 @@ static bool DeleteSyncTempFile() {
   return false;
 }
 
-static bool CreateSyncTempFile(std::string &outFileName, const std::string commandLine) {
-  GetSyncFosTempFilePath(outFileName);
+static bool CreateSyncTempFile(std::string *out, const std::string commandLine) {
+  out->assign(GetSyncFosTempFilePath());
   DeleteSyncTempFile();
 
-  WTextFile file(outFileName, "wt");
+  WTextFile file(*out, "wt");
   if (!file.IsOpen()) {
     return false;
   }
@@ -282,8 +282,6 @@ bool ExpandWWIVHeartCodes(char *pszBuffer) {
 //  Main code that launches external programs and handle sbbsexec support
 
 int ExecExternalProgram(const std::string commandLine, int flags) {
-  bool bUsingSync = false;
-
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
 
@@ -293,6 +291,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
   std::string workingCommandLine;
 
   bool bShouldUseSync = false;
+  bool bUsingSync = false;
   int nSyncMode = 0;
   if (GetSession()->using_modem) {
     if (flags & EFLAG_FOSSIL) {
@@ -306,10 +305,10 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
 
   if (bShouldUseSync) {
     std::string syncFosTempFile;
-    if (!CreateSyncTempFile(syncFosTempFile, commandLine)) {
+    if (!CreateSyncTempFile(&syncFosTempFile, commandLine)) {
       return -1;
     }
-    CreateSyncFosCommandLine(workingCommandLine, syncFosTempFile, nSyncMode);
+    CreateSyncFosCommandLine(&workingCommandLine, syncFosTempFile, nSyncMode);
     bUsingSync = true;
 
     char szTempLogFileName[ MAX_PATH ];
