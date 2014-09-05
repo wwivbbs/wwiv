@@ -789,12 +789,12 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
     if (GetSession()->using_modem && !incom) {
       LocalXYPuts(1, nLineNumber, ss[0]);
       for (std::string::size_type i = 19; i < GetSession()->GetCurrentSpeed().length(); i++) {
-        LocalPutch(static_cast< unsigned char >('Í'));
+        LocalPutch(static_cast<unsigned char>('\xCD'));
       }
     } else {
       LocalXYPuts(1, nLineNumber, GetSession()->GetCurrentSpeed().c_str());
       for (int i = WhereX(); i < 23; i++) {
-        LocalPutch(static_cast< unsigned char >('Í'));
+        LocalPutch(static_cast<unsigned char>('\xCD'));
       }
     }
 

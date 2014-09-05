@@ -220,7 +220,8 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
         i1 = strlen(b) + 1;
         i3 = i1;
         while (b[i3] >= '0' && b[i3] <= '9' && (i3 - i1) < 15) {
-          x[i3 - i1] = b[i3++];
+          x[i3 - i1] = b[i3];
+          i3++;
         }
         x[i3 - i1] = '\0';
         reallen = atol(x);
