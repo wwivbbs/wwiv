@@ -294,12 +294,14 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
 
   bool bShouldUseSync = false;
   int nSyncMode = 0;
-  if (GetSession()->using_modem && (flags & EFLAG_FOSSIL)) {
-    bShouldUseSync = true;
-  } else if (flags & EFLAG_COMIO) {
-    nSyncMode |= CONST_SBBSFOS_DOSIN_MODE;
-    nSyncMode |= CONST_SBBSFOS_DOSOUT_MODE;
-    bShouldUseSync = true;
+  if (GetSession()->using_modem) {
+    if (flags & EFLAG_FOSSIL) {
+      bShouldUseSync = true;
+    } else if (flags & EFLAG_COMIO) {
+      nSyncMode |= CONST_SBBSFOS_DOSIN_MODE;
+      nSyncMode |= CONST_SBBSFOS_DOSOUT_MODE;
+      bShouldUseSync = true;
+    }
   }
 
   if (bShouldUseSync) {
