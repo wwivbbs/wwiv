@@ -1326,7 +1326,7 @@ void WApplication::InitializeBBS() {
 
   if (!m_bUserAlreadyOn) {
     sysoplog("", false);
-    sysoplogf("WWIV %s, inst %ld, brought up at %s on %s.", wwiv_version, GetInstanceNumber(), times(), fulldate());
+    sysoplogfi(false, "WWIV %s, inst %ld, brought up at %s on %s.", wwiv_version, GetInstanceNumber(), times(), fulldate());
     sysoplog("", false);
   }
   if (GetInstanceNumber() > 1) {
