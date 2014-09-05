@@ -20,12 +20,14 @@
 #include <memory>
 
 #include "bbs/wwiv.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 
+using wwiv::bbs::InputMode;
 using wwiv::bbs::TempDisablePause;
 
 void UnQScan() {
@@ -487,7 +489,7 @@ void LoadTextFile() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#9Enter Filename: ";
   std::string fileName;
-  input(&fileName, 50, true);
+  input1(&fileName, 50, InputMode::FULL_PATH_NAME, true, true);
   if (!fileName.empty()) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#5Allow editing? ";
