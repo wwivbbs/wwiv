@@ -696,7 +696,6 @@ void SubList();
 
 // File: subreq.cpp
 
-void sub_req(int main_type, int minor_type, int tosys, char *extra);
 void sub_xtr_del(int n, int nn, int f);
 void sub_xtr_add(int n, int nn);
 int  amount_of_subscribers(const char *pszNetworkFileName);

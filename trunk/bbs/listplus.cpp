@@ -113,18 +113,18 @@ void colorize_foundtext(char *text, struct search_record * search_rec, int color
 
 
 void printtitle_plus_old() {
-  GetSession()->bout << "|16|15" << charstr(79, 'Ü') << wwiv::endl;
+  GetSession()->bout << "|16|15" << charstr(79, '\xDC') << wwiv::endl;
 
   char szBuffer[255];
   sprintf(szBuffer, "Area %d : %-30.30s (%ld files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
           directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
-  GetSession()->bout.WriteFormatted("|23|01 ù %-56s Space=Tag/?=Help ù \r\n", szBuffer);
+  GetSession()->bout.WriteFormatted("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", szBuffer);
 
   if (config_listing.lp_options & cfl_header) {
     build_header();
   }
 
-  GetSession()->bout << "|16|08" << charstr(79, 'ß') << wwiv::endl;
+  GetSession()->bout << "|16|08" << charstr(79, '\xDF') << wwiv::endl;
   GetSession()->bout.Color(0);
 }
 
@@ -138,7 +138,7 @@ void printtitle_plus() {
     printtitle_plus_old();
   } else {
     char szBuffer[255];
-    sprintf(szBuffer, "Area %d : %-30.30s (%ld files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
+    sprintf(szBuffer, "Area %d : %-30.30s (%d files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
             directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
     GetSession()->bout.DisplayLiteBar(" %-54s Space=Tag/?=Help ", szBuffer);
     GetSession()->bout.Color(0);
@@ -762,7 +762,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 
 void show_fileinfo(uploadsrec * u) {
   GetSession()->bout.ClearScreen();
-  repeat_char('Í', 78);
+  repeat_char('\xCD', 78);
   GetSession()->bout << "  |#1Filename    : |#2" << u->filename << wwiv::endl;
   GetSession()->bout << "  |#1Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
@@ -772,7 +772,7 @@ void show_fileinfo(uploadsrec * u) {
   GetSession()->bout << "  |#1Downloads   : |#2" << u->numdloads << "|#1" << wwiv::endl;
   GetSession()->bout << "  |#1Description : |#2" << u->description << wwiv::endl;
   print_extended_plus(u->filename, 255, 16, YELLOW, NULL);
-  repeat_char('Í', 78);
+  repeat_char('\xCD', 78);
   pausescr();
 }
 

@@ -1071,8 +1071,6 @@ int grabname(char *pszMessage, int ch) {
   return node;
 }
 
-
-
 bool usercomp(const char *st1, const char *st2) {
   for (int i = 0; i < wwiv::strings::GetStringLength(st1); i++) {
     if (st1[i] != st2[i]) {

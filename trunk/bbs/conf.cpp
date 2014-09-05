@@ -1097,10 +1097,10 @@ void list_confs(int conftype, int ssc) {
   }
 
   pla("|#2  Des Name                    LSL HSL LDSL HDSL LAge HAge LoBPS AR  DAR S A W", &abort);
-  pla("|#7ษออออ อออออออออออออออออออออออ อออ อออ ออออ ออออ ออออ ออออ อออออ อออ อออ อ อ อ", &abort);
+  pla("|#7ษ\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD", &abort);
 
   for (i = 0; (i < num && !abort); i++) {
-    sprintf(s, "%cอ|B1|15 %c |B0|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ",
+    sprintf(s, "%c\xCD|B1|15 %c |B0|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ",
             (i == (num - 1)) ? 'ศ' : 'ฬ', cp[i].designator, cp[i].name, cp[i].minsl,
             cp[i].maxsl, cp[i].mindsl, cp[i].maxdsl, cp[i].minage, cp[i].maxage,
             cp[i].minbps, word_to_arstr(cp[i].ar));

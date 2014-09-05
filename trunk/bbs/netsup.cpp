@@ -713,9 +713,9 @@ void print_pending_list() {
           strcpy(s1, "   |#6NEVER!    ");
         }
 
-        sprintf(s3, "%ld""k", ((ncn[i2].bytes_sent) + 1023) / 1024);
-        sprintf(s4, "%ld""k", ((ncn[i2].bytes_received) + 1023) / 1024);
-        sprintf(s5, "%ld""k", ((ncn[i2].bytes_waiting) + 1023) / 1024);
+        sprintf(s3, "%d""k", ((ncn[i2].bytes_sent) + 1023) / 1024);
+        sprintf(s4, "%d""k", ((ncn[i2].bytes_received) + 1023) / 1024);
+        sprintf(s5, "%d""k", ((ncn[i2].bytes_waiting) + 1023) / 1024);
 
         if (con[i1].options & options_ATT_night) {
           if ((nDow != 0) && (nDow != 6)) {

@@ -17,12 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdint>
+#include <string>
 
 #include "wwiv.h"
 #include "instmsg.h"
 #include "subxtr.h"
 #include "printfile.h"
 #include "core/wtextfile.h"
+
+using std::string;
+
 //
 // Local Functions
 //
@@ -312,7 +316,7 @@ void readmail(int mode) {
   int i, i1, i2, i3, curmail = 0, tp, nn = 0, delme;
   bool done, okmail;
   unsigned short xx;
-  char s[201], s1[205], s2[81], *ss1, *ss2, mnu[81];
+  char s[201], s1[205], s2[81], *ss2, mnu[81];
   mailrec m, m1;
   postrec p;
   char ch;
@@ -425,10 +429,11 @@ void readmail(int mode) {
         } else {
           set_net_num(nn);
           csne = next_system(m.fromsys);
+          string system_name;
           if (csne) {
-            ss1 = csne->name;
+            system_name = csne->name;
           } else {
-            ss1 = "Unknown System";
+            system_name = "Unknown System";
           }
           if (nn == 255) {
             sprintf(s1, "#%u @%u.%s", m.fromuser, m.fromsys, "<deleted network>");
@@ -445,7 +450,7 @@ void readmail(int mode) {
                         m.fromuser,
                         m.fromsys,
                         net_networks[nn].name,
-                        ss1);
+                        system_name.c_str());
               }
               if (strlen(s1) > GetSession()->mail_who_field_len) {
                 s1[ GetSession()->mail_who_field_len ] = '\0';
@@ -453,9 +458,9 @@ void readmail(int mode) {
               free(b);
             } else {
               if (GetSession()->GetMaxNetworkNumber() > 1) {
-                sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, net_networks[nn].name, ss1);
+                sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, net_networks[nn].name, system_name.c_str());
               } else {
-                sprintf(s1, "#%u @%u (%s)", m.fromuser, m.fromsys, ss1);
+                sprintf(s1, "#%u @%u (%s)", m.fromuser, m.fromsys, system_name.c_str());
               }
             }
           }
@@ -796,6 +801,7 @@ void readmail(int mode) {
           }
           tmp_disable_conf(true);
           GetSession()->bout.NewLine();
+          char *ss1;
           do {
             GetSession()->bout << "|#2Move to which sub? ";
             ss1 = mmkey(0);
