@@ -489,7 +489,7 @@ void LoadTextFile() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#9Enter Filename: ";
   std::string fileName;
-  input1(&fileName, 50, InputMode::FULL_PATH_NAME, true, true);
+  Input1(&fileName, "", 50, true, InputMode::FULL_PATH_NAME);
   if (!fileName.empty()) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#5Allow editing? ";
