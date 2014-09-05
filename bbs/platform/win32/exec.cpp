@@ -126,7 +126,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
   }
   si.lpTitle = pszTitle;
 
-  if (ok_modem_stuff && !bUsingSync) {
+  if (ok_modem_stuff && !bUsingSync && GetSession()->using_modem) {
     GetSession()->remoteIO()->close(true);
   }
 
@@ -189,7 +189,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
     }
 
     // If we return here, we may have to reopen the communications port.
-    if (ok_modem_stuff && !bUsingSync) {
+    if (ok_modem_stuff && !bUsingSync && GetSession()->using_modem) {
       GetSession()->remoteIO()->open();
       GetSession()->remoteIO()->dtr(true);
     }
@@ -251,7 +251,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
   delete[] pszTitle;
 
   // reengage comm stuff
-  if (ok_modem_stuff && !bUsingSync) {
+  if (ok_modem_stuff && !bUsingSync && GetSession()->using_modem) {
     GetSession()->remoteIO()->open();
     GetSession()->remoteIO()->dtr(true);
   }
