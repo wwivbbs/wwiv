@@ -367,7 +367,7 @@ struct small_configrec {
 
 
   uint32_t wwiv_reg_number,   // user's reg number
-           sysconfig1,
+           sysconfig1,        // This appears to be unused
            rrd;
 };
 
