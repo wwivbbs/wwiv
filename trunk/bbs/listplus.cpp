@@ -245,12 +245,10 @@ void print_searching(struct search_record * search_rec) {
                                     directories[udir[GetSession()->GetCurrentFileArea()].subnum].name);
 }
 
-
-void catch_divide_by_zero(int x) {
-  if (x != x) {
-    x = x;
+void catch_divide_by_zero(int signum) {
+  if (signum == SIGFPE) {
+    sysoplog("Caught divide by 0");
   }
-  sysoplog("Caught divide by 0");
 }
 
 int listfiles_plus(int type) {
