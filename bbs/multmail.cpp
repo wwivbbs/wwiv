@@ -37,7 +37,7 @@ void multimail(int *pnUserNumber, int numu) {
   char s[255], t[81], s1[81], s2[81];
   WUser user;
 
-  if (freek1(syscfg.msgsdir) < 10.0) {
+  if (freek1(syscfg.msgsdir) < 10) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "Sorry, not enough disk space left.\r\n\n";
     return;
@@ -285,7 +285,7 @@ void slash_e() {
 
   mml_s = NULL;
   mml_started = 0;
-  if (freek1(syscfg.msgsdir) < 10.0) {
+  if (freek1(syscfg.msgsdir) < 10) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "Sorry, not enough disk space left.\r\n\n";
     return;

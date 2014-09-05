@@ -25,7 +25,7 @@
 #include "core/wwivport.h"
 #include "core/strings.h"
 
-double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);
+long WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);
 
 typedef BOOL (WINAPI *P_GDFSE)(LPCTSTR, PULARGE_INTEGER,
                                PULARGE_INTEGER, PULARGE_INTEGER);
@@ -37,7 +37,7 @@ typedef UINT(WINAPI *P_GDT)(LPCTSTR);
  *
  * @param nDrive The drive number to get the free disk space for.
  */
-double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive) {
+long WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive) {
   unsigned __int64 i64FreeBytesToCaller, i64TotalBytes, i64FreeBytes;
   DWORD dwSectPerClust, dwBytesPerSect, dwFreeClusters, dwTotalClusters;
   P_GDFSE pGetDiskFreeSpaceEx = NULL;
@@ -75,7 +75,7 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive) {
                                  &dwFreeClusters,
                                  &dwTotalClusters);
       if (fResult) {
-        return (static_cast<double>(dwTotalClusters * dwSectPerClust * dwBytesPerSect)) / 1024.0;
+        return (static_cast<long>(dwTotalClusters * dwSectPerClust * dwBytesPerSect)) / 1024;
       }
     }
   }
@@ -84,7 +84,7 @@ double WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive) {
   return -1.0;
 }
 
-double WWIV_GetFreeSpaceForPath(const char * szPath) {
+long WWIV_GetFreeSpaceForPath(const char * szPath) {
 #ifndef NOT_BBS
   int nDrive = GetApplication()->GetHomeDir()[0];
   if (szPath[1] == ':') {

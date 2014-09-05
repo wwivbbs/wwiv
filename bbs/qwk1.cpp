@@ -459,7 +459,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
     char s2[81];
     net_system_list_rec *csne = nullptr;
 
-    if (freek1(syscfg.msgsdir) < 10.0) {
+    if (freek1(syscfg.msgsdir) < 10) {
       GetSession()->bout.NewLine();
       GetSession()->bout.Write("Sorry, not enough disk space left.");
       GetSession()->bout.NewLine();
@@ -694,7 +694,7 @@ void process_reply_dat(char *name) {
             
       if (to_email) {
         qwk_email_text(text, size, title, to);
-      } else if (freek1(syscfg.msgsdir) < 10.0) {
+      } else if (freek1(syscfg.msgsdir) < 10) {
         // Not enough disk space
         GetSession()->bout.NewLine();
         GetSession()->bout.Write("Sorry, not enough disk space left.");
