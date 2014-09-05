@@ -215,15 +215,15 @@ struct configrec {
        tempdir[81],                            // path for temporary directory
        xmark,                                  // 0xff
        unused_regcode[83],                     // registration code
-       bbs_init_modem[51],                     // modem initialization cmd
-       answer[21],                             // modem answer cmd
-       connect_300[21],                        // modem responses for
-       connect_1200[21],                       // connections made at
-       connect_2400[21],                       // various speeds
-       connect_9600[21],                       // ""
-       connect_19200[21],                      // ""
-       no_carrier[21],                         // modem disconnect
-       ring[21],                               // modem ring
+       unused_bbs_init_modem[51],              // modem initialization cmd
+       unused_answer[21],                      // modem answer cmd
+       unused_connect_300[21],                 // modem responses for
+       unused_connect_1200[21],                // connections made at
+       unused_connect_2400[21],                // various speeds
+       unused_connect_9600[21],                // ""
+       unused_connect_19200[21],               // ""
+       unused_no_carrier[21],                  // modem disconnect
+       unused_ring[21],                        // modem ring
        unused_terminal[21],                    // UNUSED DOS cmd for run term prg
        systemname[51],                         // BBS system name
        systemphone[13],                        // BBS system phone number
@@ -262,11 +262,11 @@ struct configrec {
   uint16_t netlowtime,                         // net time on
            nethightime;                        // net time off
 
-  char connect_300_a[21],                      // alternate connect string
-       connect_1200_a[21],                     // alternate connect string
-       connect_2400_a[21],                     // alternate connect string
-       connect_9600_a[21],                     // alternate connect string
-       connect_19200_a[21];                    // alternate connect string
+  char unused_connect_300_a[21],               // alternate connect string
+       unused_connect_1200_a[21],              // alternate connect string
+       unused_connect_2400_a[21],              // alternate connect string
+       unused_connect_9600_a[21],              // alternate connect string
+       unused_connect_19200_a[21];             // alternate connect string
 
   oldarcrec arcs[4];                          // old archivers
 
@@ -281,7 +281,7 @@ struct configrec {
 
   uint32_t wwiv_reg_number;                   // user's reg number
 
-  char dial_prefix[21];
+  char unused_dial_prefix[21];
 
   float post_call_ratio;
 
@@ -300,7 +300,7 @@ struct configrec {
 
   uint8_t email_storage_type;           // how to store email
 
-  uint32_t sysconfig1,
+  uint32_t unused_sysconfig1,
            unused_rrd;                        // shareware expiration date
 
   char menudir[81];                           // path for menu dir
@@ -335,8 +335,7 @@ struct small_configrec {
                 * newuser_c,          // newuser event
                 * upload_c,           // upload event
                 * v_scan_c,           // virus scanner command line
-                * dszbatchdl,
-                * dial_prefix;
+                * dszbatchdl;
 
   uint8_t  newusersl,          // new user SL
            newuserdsl,         // new user DSL
@@ -366,9 +365,7 @@ struct small_configrec {
   valrec          autoval[10];        // sysop quik-validation dat
 
 
-  uint32_t wwiv_reg_number,   // user's reg number
-           sysconfig1,        // This appears to be unused
-           rrd;
+  uint32_t wwiv_reg_number;   // user's reg number
 };
 
 
