@@ -168,7 +168,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
       for (i5 = 0; i5 < i6 + 1; i5++) {
         if (!start) {
           if (irt[i5] == ' ') {
-            strcpy("", temp_irt);
+            strcpy(temp_irt, "");
             start = 1;
             i7 = 0;
           }
