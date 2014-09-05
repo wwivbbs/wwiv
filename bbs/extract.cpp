@@ -18,59 +18,32 @@
 /**************************************************************************/
 #include "wwiv.h"
 
+#include "bbs/printfile.h"
+#include "core/strings.h"
 #include "core/wfndfile.h"
-#include "printfile.h"
 #include "core/wtextfile.h"
 
-//////////////////////////////////////////////////////////////////////////////
-//
-//
-// module private functions
-//
-//
+using std::string;
+using wwiv::strings::StrCat;
 
-
-void compress_file(const char *pszFileName, const char *pszDirectoryName);
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Implementation
-//
-//
-
-
-//
 // Compresses file *pszFileName to directory *pszDirectoryName.
-//
-
-
-void compress_file(const char *pszFileName, const char *pszDirectoryName) {
-  WWIV_ASSERT(pszFileName);
-  WWIV_ASSERT(pszDirectoryName);
-
-  GetSession()->bout << "|#2Now compressing " << pszFileName << wwiv::endl;
-  std::string fileName = pszFileName;
+void compress_file(const string& orig_filename, const string& directory) {
+  GetSession()->bout << "|#2Now compressing " << orig_filename << wwiv::endl;
+  std::string fileName(orig_filename);
   if (fileName.find_first_of(".") == std::string::npos) {
     fileName += ".msg";
   }
 
   std::string baseFileName = fileName.substr(0, fileName.find_last_of(".")) + arcs[0].extension;
-  std::string directory = pszDirectoryName;
-  std::string arcName = directory + baseFileName;
-  std::string origName = fileName;
+  std::string arcName = StrCat(directory, baseFileName);
 
-  const std::string command = stuff_in(arcs[0].arca, arcName.c_str(), origName.c_str(), "", "", "");
+  const std::string command = stuff_in(arcs[0].arca, arcName, orig_filename, "", "", "");
   ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPWANOPT_ARCH_A));
-  WFile::Remove(origName);
+  WFile::Remove(orig_filename);
   GetApplication()->UpdateTopScreen();
 }
 
-
-//
 // Allows extracting a message into a file area, directly.
-//
-
 void extract_mod(const char *b, long len, time_t tDateTime) {
   char s1[81], s2[81],                  // reusable strings
        szFileName[MAX_PATH],                    // mod filename

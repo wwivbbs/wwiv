@@ -29,6 +29,7 @@ enum class InputMode {
   MIXED,
   PROPER,
   FILENAME,
+  FULL_PATH_NAME,
   DATE,
   PHONE 
 };
