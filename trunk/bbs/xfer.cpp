@@ -20,6 +20,11 @@
 #include "wwiv.h"
 #include <vector>
 
+#include "core/strings.h"
+
+using std::string;
+using wwiv::strings::StringPrintf;
+
 // How far to indent extended descriptions
 #define INDENTION 24
 
@@ -108,12 +113,11 @@ int check_batch_queue(const char *pszFileName) {
  * returns true if everything is ok, false if the file
  */
 bool check_ul_event(int nDirectoryNum, uploadsrec * u) {
-  if (syscfg.upload_c[0]) {
-    char szComPort[ 10 ];
-    sprintf(szComPort, "%d", incom ? syscfgovr.primaryport : 0);
+  if (!syscfg.upload_cmd.empty()) {
+    string comport = StringPrintf("%d", incom ? syscfgovr.primaryport : 0);
 
-    const string cmdLine = stuff_in(syscfg.upload_c, create_chain_file(), directories[nDirectoryNum].path,
-                                    stripfn(u->filename), szComPort, "");
+    const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[nDirectoryNum].path,
+                                    stripfn(u->filename), comport, "");
     ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPWANOPT_ULCHK));
 
     WFile file(directories[nDirectoryNum].path, stripfn(u->filename));

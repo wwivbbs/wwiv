@@ -363,7 +363,7 @@ int try_to_ul_wh(char *pszFileName) {
     t2u_error(pszFileName, "DOS error - File not found.");
     return 1;
   }
-  if (syscfg.upload_c[0]) {
+  if (!syscfg.upload_cmd.empty()) {
     file.Close();
     GetSession()->bout << "Please wait...\r\n";
     if (!check_ul_event(dn, &u)) {
