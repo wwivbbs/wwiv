@@ -539,7 +539,7 @@ bool external_edit(const char *pszEditFileName, const char *pszNewDirectory, int
 
 // File: multinst.cpp
 
-void make_inst_str(int nInstanceNum, char *pszOutInstanceString, int nInstanceFormat);
+void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat);
 void multi_instance();
 int  inst_ok(int loc, int subloc);
 
