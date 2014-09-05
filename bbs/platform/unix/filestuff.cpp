@@ -25,16 +25,16 @@
 #include <sys/vfs.h>
 #endif // __APPLE__
 
-double WWIV_GetFreeSpaceForPath(const char * szPath) {
+long WWIV_GetFreeSpaceForPath(const char* szPath) {
   struct statfs fs;
   if (statfs(szPath, &fs)) {
     perror("freek1()");
-    return 0.0;
+    return 0;
   }
-  return ((double) fs.f_bsize * (double) fs.f_bavail) / 1024.0;
+  return ((long) fs.f_bsize * (double) fs.f_bavail) / 1024;
 }
 
-void WWIV_GetDir(char *pszDirectoryName, bool bSlashAtEnd) {
+void WWIV_GetDir(char* pszDirectoryName, bool bSlashAtEnd) {
   getcwd(pszDirectoryName, 80);
   if (bSlashAtEnd) {
     if (pszDirectoryName[ strlen(pszDirectoryName) - 1 ] != '/') {
@@ -43,9 +43,9 @@ void WWIV_GetDir(char *pszDirectoryName, bool bSlashAtEnd) {
   }
 }
 
-void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
-  char *pszTemp = strdup(pszPath);
-  char *pTempFn = strrchr(pszTemp, '/');
+void WWIV_GetFileNameFromPath(const char* pszPath, char* pszFileName) {
+  char* pszTemp = strdup(pszPath);
+  char* pTempFn = strrchr(pszTemp, '/');
   if (pTempFn != nullptr) {
     *pTempFn = 0;
     pTempFn++;
