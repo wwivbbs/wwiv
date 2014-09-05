@@ -455,7 +455,6 @@ int GotRinit( ZModem *info ) {
 	ZFlowControl(1,info);
 
 	if( (info->zrinitflags & (CANFDX|CANOVIO)) == (CANFDX|CANOVIO) &&
-	        (SendSample||SendAttn)  &&
 	        info->bufsize == 0 ) {
 		if( info->windowsize == 0 ) {
 			info->Streaming = ZModem::Full;
