@@ -585,7 +585,6 @@ bool WApplication::ReadConfig() {
   syscfg.upload_c         = strdup(full_syscfg.upload_c);
   syscfg.v_scan_c         = strdup(full_syscfg.v_scan_c);
   syscfg.dszbatchdl       = strdup(full_syscfg.dszbatchdl);
-  syscfg.dial_prefix      = strdup(full_syscfg.dial_prefix);
 
   syscfg.newusersl        = full_syscfg.newusersl;
   syscfg.newuserdsl       = full_syscfg.newuserdsl;
@@ -623,7 +622,6 @@ bool WApplication::ReadConfig() {
   syscfg.autoval[9]       = full_syscfg.autoval[9];
 
   syscfg.wwiv_reg_number  = full_syscfg.wwiv_reg_number;
-  syscfg.sysconfig1       = full_syscfg.sysconfig1;
 
   make_abs_path(syscfg.gfilesdir);
   make_abs_path(syscfg.datadir);
@@ -679,7 +677,6 @@ bool WApplication::SaveConfig() {
     strcpy(full_syscfg.upload_c, syscfg.upload_c);
     strcpy(full_syscfg.v_scan_c, syscfg.v_scan_c);
     strcpy(full_syscfg.dszbatchdl, syscfg.dszbatchdl);
-    strcpy(full_syscfg.dial_prefix, syscfg.dial_prefix);
 
     full_syscfg.newusersl       = syscfg.newusersl;
     full_syscfg.newuserdsl      = syscfg.newuserdsl;

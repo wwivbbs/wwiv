@@ -274,10 +274,6 @@ int WInitApp::main(int argc, char *argv[]) {
     close(hFile);
   }
 
-  if (!syscfg.dial_prefix[0]) {
-    strcpy(syscfg.dial_prefix, "ATDT");
-  }
-
   externs = (newexternalrec *) malloc(15 * sizeof(newexternalrec));
   initinfo.numexterns = 0;
   sprintf(s, "%snextern.dat", syscfg.datadir);

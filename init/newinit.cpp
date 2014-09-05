@@ -134,18 +134,18 @@ static void init_files() {
   out->window()->Printf(".");
   strcpy(syscfg.batchdir, syscfg.tempdir);
   out->window()->Printf(".");
-  strcpy(syscfg.bbs_init_modem, "ATS0=0M0Q0V0E0S2=1S7=20H0{");
+  strcpy(syscfg.unused_bbs_init_modem, "ATS0=0M0Q0V0E0S2=1S7=20H0{");
   out->window()->Printf(".");
-  strcpy(syscfg.answer, "ATA{");
-  strcpy(syscfg.connect_300, "1");
-  strcpy(syscfg.connect_1200, "5");
+  strcpy(syscfg.unused_answer, "ATA{");
+  strcpy(syscfg.unused_connect_300, "1");
+  strcpy(syscfg.unused_connect_1200, "5");
   out->window()->Printf(".");
-  strcpy(syscfg.connect_2400, "10");
-  strcpy(syscfg.connect_9600, "13");
-  strcpy(syscfg.connect_19200, "50");
+  strcpy(syscfg.unused_connect_2400, "10");
+  strcpy(syscfg.unused_connect_9600, "13");
+  strcpy(syscfg.unused_connect_19200, "50");
   out->window()->Printf(".");
-  strcpy(syscfg.no_carrier, "3");
-  strcpy(syscfg.ring, "2");
+  strcpy(syscfg.unused_no_carrier, "3");
+  strcpy(syscfg.unused_ring, "2");
   strcpy(syscfg.hangupphone, "ATH0{");
   out->window()->Printf(".");
   strcpy(syscfg.pickupphone, "ATH1{");
@@ -263,7 +263,7 @@ static void init_files() {
   out->window()->Printf(".");
   syscfg.qscn_len = 4 * (1 + syscfg.max_subs + ((syscfg.max_subs + 31) / 32) + ((syscfg.max_dirs + 31) / 32));
 
-  strcpy(syscfg.dial_prefix, "ATDT");
+  strcpy(syscfg.unused_dial_prefix, "ATDT");
   syscfg.post_call_ratio = 0.0;
   strcpy(syscfg.modem_type, "H2400");
 
