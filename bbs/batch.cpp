@@ -239,7 +239,7 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
           }
           WFile file(szDestFileName);
           if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
-            if (syscfg.upload_c[0]) {
+            if (!syscfg.upload_cmd.empty()) {
               file.Close();
               if (!check_ul_event(batch[i1].dir, &u)) {
                 didnt_upload(i1);

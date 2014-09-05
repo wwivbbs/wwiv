@@ -21,6 +21,7 @@
 #define __INCLUDED_VARDEC_H__
 
 #include <cstdint>
+#include <string>
 
 #pragma pack(push, 1)
 
@@ -270,14 +271,14 @@ struct configrec {
 
   oldarcrec arcs[4];                          // old archivers
 
-  char beginday_c[51],                        // beginday event
-       logon_c[51];                           // logon event
+  char legacy_beginday_c[51],                 // beginday event
+       legacy_logon_c[51];                    // logon event
 
   int16_t userreclen,                         // user record length
         waitingoffset,                        // mail waiting offset
         inactoffset;                          // inactive offset
 
-  char newuser_c[51];                         // newuser event
+  char legacy_newuser_c[51];                  // newuser event
 
   uint32_t wwiv_reg_number;                   // user's reg number
 
@@ -285,7 +286,7 @@ struct configrec {
 
   float post_call_ratio;
 
-  char upload_c[51],                          // upload event
+  char legacy_upload_c[51],                          // upload event
        unused_dszbatchdl[81],
        modem_type[9],
        batchdir[81];
@@ -329,12 +330,12 @@ struct small_configrec {
 
                 * systemname,         // BBS system name
                 * systemphone,        // BBS system phone number
-                * sysopname,          // sysop's name
+                * sysopname;          // sysop's name
 
-                * beginday_c,         // beginday event
-                * logon_c,            // logon event
-                * newuser_c,          // newuser event
-                * upload_c;           // upload event
+                std::string beginday_cmd; // beginday event
+                std::string logon_cmd;            // logon event
+                std::string newuser_cmd;          // newuser event
+                std::string upload_cmd;           // upload event
 
   uint8_t  newusersl,          // new user SL
            newuserdsl,         // new user DSL

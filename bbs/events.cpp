@@ -563,9 +563,9 @@ void eventedit() {
     show_events();
     GetSession()->bout.NewLine();
     GetSession()->bout <<
-                       "|#9Events: |#1I|#9nsert, |#1D|#9elete, |#1M|#9odify, e|#1X|#9ecute, |#1S|#2ystem Events|#9, |#1Q|#9uit :";
+                       "|#9Events: |#1I|#9nsert, |#1D|#9elete, |#1M|#9odify, e|#1X|#9ecute, |#1Q|#9uit :";
     if (so()) {
-      ch = onek("QDIMS?X");
+      ch = onek("QDIM?X");
     } else {
       ch = onek("QDIM?");
     }
@@ -627,50 +627,6 @@ void eventedit() {
         pausescr();
       }
       break;
-    case 'S': {
-      bool bSysEventsDone = false;
-
-      do {
-        GetSession()->localIO()->LocalCls();
-        std::string title = "|B1|15System Events Configuration";
-        GetSession()->bout.WriteFormatted("%-85s", title.c_str());
-        GetSession()->bout.Color(0);
-        GetSession()->bout.NewLine(2);
-        GetSession()->bout << "|#92) Begin Day Event      : |#2" << syscfg.beginday_c   << wwiv::endl;
-        GetSession()->bout << "|#93) Logon Event          : |#2" << syscfg.logon_c      << wwiv::endl;
-        GetSession()->bout << "|#95) Newuser Event        : |#2" << syscfg.newuser_c    << wwiv::endl;
-        GetSession()->bout << "|#96) Upload  Event        : |#2" << syscfg.upload_c     << wwiv::endl;
-        GetSession()->bout << "|#9Q) Quit\r\n";
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7, |#2?|#7=|#1Help|#7) Which? (|#11|#7-|#17|#7) :";
-        ch = onek("Q2356?");
-        GetSession()->localIO()->LocalGotoXY(26, ch - 47);
-        switch (ch) {
-        case '2':
-          Input1(syscfg.beginday_c, syscfg.beginday_c, 51, true, InputMode::UPPER);
-          break;
-        case '3':
-          Input1(syscfg.logon_c, syscfg.logon_c, 51, true, InputMode::UPPER);
-          break;
-        case '5':
-          Input1(syscfg.newuser_c, syscfg.newuser_c, 51, true, InputMode::UPPER);
-          break;
-        case '6':
-          Input1(syscfg.upload_c, syscfg.upload_c, 51, true, InputMode::UPPER);
-          break;
-        case '?':
-          GetSession()->localIO()->LocalCls();
-          printfile(CMDPARAM_NOEXT);
-          pausescr();
-          break;
-        case 'Q':
-          bSysEventsDone = true;
-          GetApplication()->SaveConfig();
-          break;
-        }
-      } while (!bSysEventsDone);
-    }
-    break;
     }
   } while (!done && !hangup);
   sort_events();

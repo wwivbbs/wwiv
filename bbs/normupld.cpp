@@ -229,7 +229,7 @@ void normalupload(int dn) {
               delete_extended_description(u.filename);
             }
           }
-          if (ok && syscfg.upload_c[0]) {
+          if (ok && !syscfg.upload_cmd.empty()) {
             file.Close();
             GetSession()->bout << "Please wait...\r\n";
             if (!check_ul_event(dn, &u)) {

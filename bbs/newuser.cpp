@@ -1075,8 +1075,8 @@ void SendNewUserFeedbackIfRequired() {
 
 
 void ExecNewUserCommand() {
-  if (!hangup && syscfg.newuser_c[0]) {
-    const std::string commandLine = stuff_in(syscfg.newuser_c, create_chain_file(), "", "", "", "");
+  if (!hangup && !syscfg.newuser_cmd.empty()) {
+    const std::string commandLine = stuff_in(syscfg.newuser_cmd, create_chain_file(), "", "", "", "");
 
     // Log what is happening here.
     sysoplog("Executing New User Event: ", false);

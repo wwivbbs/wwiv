@@ -189,6 +189,15 @@ static const char *get_key_str(int n, const char *index = nullptr) {
   return str;
 }
 
+static void set_string(IniFile* ini, int key_idx, string* out)
+{
+  const char *s = ini->GetValue(get_key_str(key_idx));
+  if (s) {
+    out->assign(s);
+  }
+}
+
+#define INI_INIT_STR(n, f) { set_string(ini, n, &syscfg.f); }
 
 #define INI_GET_ASV(s, f, func, d) \
 {if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=NULL) GetSession()->asv.f = func (ss); else GetSession()->asv.f = d;}
@@ -347,11 +356,10 @@ IniFile* WApplication::ReadINIFile() {
     GetSession()->max_gfilesec = ini->GetNumericValue(get_key_str(INI_STR_MAX_GFILESEC), GetSession()->max_gfilesec);
 
     // pull out strings
-    //    INI_INIT_STR(INI_STR_UPLOAD_CMD, upload_c);
-    //    INI_INIT_STR(INI_STR_BEGINDAY_CMD, beginday_c);
-    //    INI_INIT_STR(INI_STR_NEWUSER_CMD, newuser_c);
-    //    INI_INIT_STR(INI_STR_LOGON_CMD, logon_c);
-    //    INI_INIT_STR(INI_STR_LOGOFF_CMD, logoff_c);
+    INI_INIT_STR(INI_STR_UPLOAD_CMD, upload_cmd);
+    INI_INIT_STR(INI_STR_BEGINDAY_CMD, beginday_cmd);
+    INI_INIT_STR(INI_STR_NEWUSER_CMD, newuser_cmd);
+    INI_INIT_STR(INI_STR_LOGON_CMD, logon_cmd);
 
     GetSession()->m_nForcedReadSubNumber = ini->GetNumericValue(get_key_str(INI_STR_FORCE_SCAN_SUBNUM),
                                            GetSession()->m_nForcedReadSubNumber);
@@ -578,11 +586,6 @@ bool WApplication::ReadConfig() {
   syscfg.systemphone      = strdup(full_syscfg.systemphone);
   syscfg.sysopname        = strdup(full_syscfg.sysopname);
 
-  syscfg.beginday_c       = strdup(full_syscfg.beginday_c);
-  syscfg.logon_c          = strdup(full_syscfg.logon_c);
-  syscfg.newuser_c        = strdup(full_syscfg.newuser_c);
-  syscfg.upload_c         = strdup(full_syscfg.upload_c);
-
   syscfg.newusersl        = full_syscfg.newusersl;
   syscfg.newuserdsl       = full_syscfg.newuserdsl;
   syscfg.maxwaiting       = full_syscfg.maxwaiting;
@@ -638,13 +641,6 @@ bool WApplication::SaveConfig() {
   if (configFile.Open(WFile::modeBinary | WFile::modeReadWrite)) {
     configrec full_syscfg;
     configFile.Read(&full_syscfg, sizeof(configrec));
-
-    // These are editable in the event editor (for now)
-    // so save them back until they move to init.
-    strcpy(full_syscfg.beginday_c, syscfg.beginday_c);
-    strcpy(full_syscfg.logon_c, syscfg.logon_c);
-    strcpy(full_syscfg.newuser_c, syscfg.newuser_c);
-    strcpy(full_syscfg.upload_c, syscfg.upload_c);
 
   /*
     These should not ever be mutated by the BBS (only init) 

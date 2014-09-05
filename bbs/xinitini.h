@@ -156,8 +156,8 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "BEGINDAY_CMD",
   "NEWUSER_CMD",
   "LOGON_CMD",
-  "LOGOFF_CMD",               // 20
-  "VSCAN_CMD",
+  "LOGOFF_CMD",  //NOT USED             // 20
+  "VSCAN_CMD", // NOTUSED
   "",
   "",
   "//---NETWORK SETTINGS---*",
