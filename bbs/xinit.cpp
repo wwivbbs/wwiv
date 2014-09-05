@@ -580,11 +580,8 @@ bool WApplication::ReadConfig() {
 
   syscfg.beginday_c       = strdup(full_syscfg.beginday_c);
   syscfg.logon_c          = strdup(full_syscfg.logon_c);
-  syscfg.logoff_c         = strdup(full_syscfg.logoff_c);
   syscfg.newuser_c        = strdup(full_syscfg.newuser_c);
   syscfg.upload_c         = strdup(full_syscfg.upload_c);
-  syscfg.v_scan_c         = strdup(full_syscfg.v_scan_c);
-  syscfg.dszbatchdl       = strdup(full_syscfg.dszbatchdl);
 
   syscfg.newusersl        = full_syscfg.newusersl;
   syscfg.newuserdsl       = full_syscfg.newuserdsl;
@@ -646,10 +643,8 @@ bool WApplication::SaveConfig() {
     // so save them back until they move to init.
     strcpy(full_syscfg.beginday_c, syscfg.beginday_c);
     strcpy(full_syscfg.logon_c, syscfg.logon_c);
-    strcpy(full_syscfg.logoff_c, syscfg.logoff_c);
     strcpy(full_syscfg.newuser_c, syscfg.newuser_c);
     strcpy(full_syscfg.upload_c, syscfg.upload_c);
-    strcpy(full_syscfg.v_scan_c, syscfg.v_scan_c);
 
   /*
     These should not ever be mutated by the BBS (only init) 
@@ -672,11 +667,8 @@ bool WApplication::SaveConfig() {
 
     strcpy(full_syscfg.beginday_c, syscfg.beginday_c);
     strcpy(full_syscfg.logon_c, syscfg.logon_c);
-    strcpy(full_syscfg.logoff_c, syscfg.logoff_c);
     strcpy(full_syscfg.newuser_c, syscfg.newuser_c);
     strcpy(full_syscfg.upload_c, syscfg.upload_c);
-    strcpy(full_syscfg.v_scan_c, syscfg.v_scan_c);
-    strcpy(full_syscfg.dszbatchdl, syscfg.dszbatchdl);
 
     full_syscfg.newusersl       = syscfg.newusersl;
     full_syscfg.newuserdsl      = syscfg.newuserdsl;
