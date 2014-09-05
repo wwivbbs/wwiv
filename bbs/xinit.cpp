@@ -644,6 +644,15 @@ bool WApplication::SaveConfig() {
     configrec full_syscfg;
     configFile.Read(&full_syscfg, sizeof(configrec));
 
+    // These are editable in the event editor (for now)
+    // so save them back until they move to init.
+    strcpy(full_syscfg.beginday_c, syscfg.beginday_c);
+    strcpy(full_syscfg.logon_c, syscfg.logon_c);
+    strcpy(full_syscfg.logoff_c, syscfg.logoff_c);
+    strcpy(full_syscfg.newuser_c, syscfg.newuser_c);
+    strcpy(full_syscfg.upload_c, syscfg.upload_c);
+    strcpy(full_syscfg.v_scan_c, syscfg.v_scan_c);
+
   /*
     These should not ever be mutated by the BBS (only init) 
     Commenting them out for now just in case.
@@ -681,7 +690,6 @@ bool WApplication::SaveConfig() {
     full_syscfg.systemnumber    = syscfg.systemnumber;
     full_syscfg.maxusers        = syscfg.maxusers;
     full_syscfg.newuser_restrict = syscfg.newuser_restrict;
-    full_syscfg.sysconfig       = syscfg.sysconfig;
     full_syscfg.sysoplowtime    = syscfg.sysoplowtime;
     full_syscfg.sysophightime   = syscfg.sysophightime;
     full_syscfg.executetime     = syscfg.executetime;
@@ -689,16 +697,22 @@ bool WApplication::SaveConfig() {
     full_syscfg.nethightime     = syscfg.nethightime;
     full_syscfg.max_subs        = syscfg.max_subs;
     full_syscfg.max_dirs        = syscfg.max_dirs;
+
+    full_syscfg.wwiv_reg_number = syscfg.wwiv_reg_number;
+    full_syscfg.sysconfig1      = syscfg.sysconfig1;
+
+    // Should these move to wwiv.ini?
+    full_syscfg.post_call_ratio = syscfg.post_call_ratio;
+    full_syscfg.newusergold     = syscfg.newusergold;
     */
 
     // These are set by WWIV.INI, set them back so that changes
     // will be propagated to config.dat
+    full_syscfg.sysconfig       = syscfg.sysconfig;
     full_syscfg.qscn_len        = syscfg.qscn_len;
     full_syscfg.userreclen      = syscfg.userreclen;
 
-    full_syscfg.post_call_ratio = syscfg.post_call_ratio;
     full_syscfg.req_ratio       = syscfg.req_ratio;
-    full_syscfg.newusergold     = syscfg.newusergold;
 
     full_syscfg.autoval[0]      = syscfg.autoval[0];
     full_syscfg.autoval[1]      = syscfg.autoval[1];
@@ -718,10 +732,8 @@ bool WApplication::SaveConfig() {
       strcpy(full_syscfg.arcs[ nTempArcNum ].arcl, arcs[ nTempArcNum ].arcl);
     }
 
-    full_syscfg.wwiv_reg_number = syscfg.wwiv_reg_number;
-    full_syscfg.sysconfig1      = syscfg.sysconfig1;
     full_syscfg.unused_rrd = 0;
-    full_syscfg.unused_regcode[0] = 0;
+    memset(full_syscfg.unused_regcode, '\0', 83);
 
     configFile.Seek(0, WFile::seekBegin);
     configFile.Write(&full_syscfg, sizeof(configrec));
