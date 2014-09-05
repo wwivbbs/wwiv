@@ -40,7 +40,7 @@ static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
   }
 }
 
-void sub_req(int main_type, int minor_type, int tosys, char *extra) {
+static void sub_req(int main_type, int minor_type, int tosys, char *extra) {
   net_header_rec nh;
 
   nh.tosys = static_cast<unsigned short>(tosys);
@@ -55,11 +55,11 @@ void sub_req(int main_type, int minor_type, int tosys, char *extra) {
     nh.length = strlen(extra) + 1;
   } else {
     nh.length = 1;
-    extra = "";
+    extra[0] = 0;
   }
   nh.method = 0;
 
-  send_net(&nh, NULL, extra, NULL);
+  send_net(&nh, nullptr, extra, nullptr);
 
   GetSession()->bout.NewLine();
   if (main_type == main_type_sub_add_req) {

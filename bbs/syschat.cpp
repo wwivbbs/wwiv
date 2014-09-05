@@ -474,8 +474,8 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
     if (side == 0) {
       i = cp0 - 1;
       while ((i > 0) && (side0[GetSession()->localIO()->WhereY()][i] != SPACE) &&
-             (side0[GetSession()->localIO()->WhereY()][i] != BACKSPACE) ||
-             (side0[GetSession()->localIO()->WhereY()][i - 1] == CC)) {
+             ((side0[GetSession()->localIO()->WhereY()][i] != BACKSPACE) ||
+             (side0[GetSession()->localIO()->WhereY()][i - 1] == CC))) {
         i--;
       }
       if ((i > (GetSession()->localIO()->WhereX() / 2)) && (i != (cp0 - 1))) {
@@ -496,8 +496,8 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
     } else {
       i = cp1 - 1;
       while ((i > 0) && (side1[GetSession()->localIO()->WhereY() - 13][i] != SPACE) &&
-             (side1[GetSession()->localIO()->WhereY() - 13][i] != BACKSPACE) ||
-             (side1[GetSession()->localIO()->WhereY() - 13][i - 1] == CC)) {
+             ((side1[GetSession()->localIO()->WhereY() - 13][i] != BACKSPACE) ||
+             (side1[GetSession()->localIO()->WhereY() - 13][i - 1] == CC))) {
         i--;
       }
       if ((i > (GetSession()->localIO()->WhereX() / 2)) && (i != (cp1 - 1))) {
