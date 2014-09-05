@@ -1097,11 +1097,11 @@ void list_confs(int conftype, int ssc) {
   }
 
   pla("|#2  Des Name                    LSL HSL LDSL HDSL LAge HAge LoBPS AR  DAR S A W", &abort);
-  pla("|#7É\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD", &abort);
+  pla("|#7\xC9\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD", &abort);
 
   for (i = 0; (i < num && !abort); i++) {
     sprintf(s, "%c\xCD|B1|15 %c |B0|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ",
-            (i == (num - 1)) ? 'È' : 'Ì', cp[i].designator, cp[i].name, cp[i].minsl,
+            (i == (num - 1)) ? '\xC8' : '\xCC', cp[i].designator, cp[i].name, cp[i].minsl,
             cp[i].maxsl, cp[i].mindsl, cp[i].maxdsl, cp[i].minage, cp[i].maxage,
             cp[i].minbps, word_to_arstr(cp[i].ar));
     sprintf(s1, "%-3.3s %c %1.1s %1.1s",
@@ -1117,9 +1117,9 @@ void list_confs(int conftype, int ssc) {
         for (i2 = 0; ((i2 < cp[i].num) && !abort); i2++) {
           if (cp[i].subs[i2] < num_s) {
             GetSession()->bout.Color(7);
-            sprintf(s, "%c  %cÄÄÄ |#9",
-                    (i != (num - 1)) ? 'º' : ' ',
-                    (i2 == (cp[i].num - 1)) ? 'À' : 'Ã');
+            sprintf(s, "%c  %c\xC4\xC4\xC4 |#9",
+                    (i != (num - 1)) ? '\xBA' : ' ',
+                    (i2 == (cp[i].num - 1)) ? '\xC0' : '\xC3');
             switch (conftype) {
             case CONF_SUBS:
               sprintf(s1, "%s%-3d : %s", "Sub #", subconfs[i].subs[i2],
