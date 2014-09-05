@@ -80,7 +80,7 @@ const char *ctypes(int num) {
     }
     return nullptr;
   }
-  if ((num < 0) || (num > default_ctypes.size())) {
+  if ((num < 0) || (num > static_cast<int>(default_ctypes.size()))) {
     return nullptr;
   }
   return default_ctypes[num].c_str();
