@@ -187,7 +187,7 @@ void wfc_screen() {
       } else {
         char szTmpPath[4];
         sprintf(szTmpPath, "%c:\\", GetSession()->wfcdrvs[i] + '@');
-        long lFreeDiskSpace = static_cast<long>(freek1(szTmpPath));
+        long lFreeDiskSpace = freek1(szTmpPath);
         char szTempDiskSize[81];
         if (lFreeDiskSpace > 0) {
           if (lFreeDiskSpace > 2048) {

@@ -731,7 +731,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
 
   bool cc = false, bcc = false;
 
-  if (freek1(syscfg.msgsdir) < 10.0) {
+  if (freek1(syscfg.msgsdir) < 10) {
     GetSession()->bout << "\r\nSorry, not enough disk space left.\r\n\n";
     return;
   }
