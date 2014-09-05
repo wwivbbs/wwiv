@@ -1798,7 +1798,7 @@ int move_filename(const char *pszFileName, int dn) {
           ok = false;
           GetSession()->bout << "\r\nToo many files in that directory.\r\n";
         }
-        if (freek1(directories[nDestDirNum].path) < (u.numbytes / 1024L) + 3) {
+        if (freek1(directories[nDestDirNum].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
           ok = false;
           GetSession()->bout << "\r\nNot enough disk space to move it.\r\n";
         }

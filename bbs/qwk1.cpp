@@ -200,8 +200,8 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     tp = 80;
 
     if (m.status & status_new_net) {
-      tp -= 1;
-      if (strlen(m.title) <= tp) {
+      tp--;
+      if (static_cast<int>(strlen(m.title)) <= tp) {
         nn = m.title[tp + 1];
       } else {
         nn = 0;
@@ -798,7 +798,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       continue;
     }
 
-    m.storage_type = subboards[GetSession()->GetCurrentReadMessageArea()].storage_type;
+    m.storage_type = static_cast<uint8_t>(subboards[GetSession()->GetCurrentReadMessageArea()].storage_type);
 
     a = 0;
 
@@ -888,7 +888,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     p.anony = a;
     p.msg = m;
     p.ownersys = 0;
-    p.owneruser = GetSession()->usernum;
+    p.owneruser = static_cast<uint16_t>(GetSession()->usernum);
     {
       WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
       p.qscan = pStatus->IncrementQScanPointer();

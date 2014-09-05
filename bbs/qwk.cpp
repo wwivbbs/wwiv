@@ -540,7 +540,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     this_pos = ((cur_block - 2) * sizeof(qwk_info->qwk_rec));
 
     if (this_pos < len) {
-      memmove(&qwk_info->qwk_rec, ss + cur + this_pos, this_pos + sizeof(qwk_info->qwk_rec) > (int)len
+      memmove(&qwk_info->qwk_rec, ss + cur + this_pos, this_pos + sizeof(qwk_info->qwk_rec) > len
               ? (int)len - this_pos - 1 : sizeof(qwk_info->qwk_rec));
     }
     // Save this block
@@ -560,7 +560,8 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 // Takes text, deletes all ascii '10' and converts '13' to '227' (ã)
 // And does other conversions as specified
 void make_qwk_ready(char *text, long *len, char *address) {
-  unsigned pos = 0, new_pos = 0;
+  int pos = 0;
+  int new_pos = 0;
   unsigned char x;
   long new_size = *len + PAD_SPACE + 1;
 
@@ -600,7 +601,7 @@ void make_qwk_ready(char *text, long *len, char *address) {
     } else if (GetSession()->GetCurrentUser()->data.qwk_keep_routing == false && x == 4 && text[pos + 1] == '0') {
       if (text[pos + 1] == 0) {
         ++pos;
-      } else {
+      } else { 
         while (text[pos] != '\xE3' && text[pos] != '\r' && pos < *len && text[pos] != 0 && !hangup) {
           ++pos;
         }
