@@ -918,9 +918,9 @@ void logon() {
   GetApplication()->UpdateTopScreen();
   GetSession()->bout.NewLine(2);
   pausescr();
-  if (syscfg.logon_c[0]) {
+  if (!syscfg.logon_cmd.empty()) {
     GetSession()->bout.NewLine();
-    const std::string command = stuff_in(syscfg.logon_c, create_chain_file(), "", "", "", "");
+    const std::string command = stuff_in(syscfg.logon_cmd, create_chain_file(), "", "", "", "");
     ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPWANOPT_LOGON));
     GetSession()->bout.NewLine(2);
   }

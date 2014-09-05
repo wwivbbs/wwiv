@@ -150,7 +150,12 @@ MSG_COLOR              = 3                  ; for color msgs
 ;=============================================================================
 ;                          EXTERNAL PROGRAM OPTIONS
 ;=============================================================================
-; **** NOTE:  These settings are made in the Event Editor/System Events.
+;
+;UPLOAD_CMD     =                           ; upload event
+;BEGINDAY_CMD   =                           ; beginday even
+;NEWUSER_CMD    =                           ; newuser event
+;LOGON_CMD      =                           ; logon event
+;
 ;
 ;=============================================================================
 ;                            NETWORK OPTIONS
