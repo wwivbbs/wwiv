@@ -19,10 +19,15 @@
 #include "bbs/input.h"
 
 #include <algorithm>
+#include <string>
 
 #include "wwiv.h"
 
+using std::string;
 using wwiv::bbs::InputMode;
+
+static const char* FILENAME_DISALLOWED = "/\\<>|*?\";:";
+static const char* FULL_PATH_NAME_DISALLOWED = "<>|*?\";";
 
 // TODO: put back in high ascii characters after finding proper hex codes
 static const unsigned char *valid_letters =
@@ -92,14 +97,16 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
           }
           break;
         case InputMode::FILENAME:
-          if (strchr("/\\+ <>|*?.,=\";:[]", chCurrent)) {
+        case InputMode::FULL_PATH_NAME: {
+          string disallowed = (lc == InputMode::FILENAME) ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
+          if (strchr(disallowed.c_str(), chCurrent)) {
             chCurrent = 0;
           } else {
 #ifdef _WIN32
             chCurrent = upcase(chCurrent);
 #endif  // _WIN32
           }
-          break;
+        } break;
         }
         if (curpos < nMaxLength && chCurrent) {
           pszOutText[curpos++] = chCurrent;
@@ -385,17 +392,19 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
       break;
     default:                              // All others < 256
       if (c < 255 && c > 31 && ((bInsert && nLength < nMaxLength) || (!bInsert && pos < nMaxLength))) {
-        if (mode != InputMode::MIXED && mode != InputMode::FILENAME) {
+        if (mode != InputMode::MIXED && mode != InputMode::FILENAME && mode != InputMode::FULL_PATH_NAME) {
           c = upcase(static_cast<unsigned char>(c));
         }
-        if (mode == InputMode::FILENAME) {
+        if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
 #ifdef _WIN32
           // Only uppercase filenames on Win32.
           c = wwiv::UpperCase<unsigned char> (static_cast<unsigned char>(c)); 
 #endif  // _WIN32
-          if (strchr("/\\+ <>|*?.,=\";:[]", c)) {
+          if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
             c = 0;
-          }
+          } else if (mode == InputMode::FILENAME && strchr("<>|*?\";", c)) {
+            c = 0;
+          }  
         }
         if (mode == InputMode::PROPER && pos) {
           const char *ss = strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(valid_letters)), c);
