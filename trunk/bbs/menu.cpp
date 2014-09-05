@@ -61,7 +61,7 @@ void QueryMenuSet();
 void WriteMenuSetup(int nUserNum);
 void UnloadMenuSetup();
 string GetCommand(MenuInstanceData * pMenuData);
-bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool bCheckPassword);
+bool CheckMenuItemSecurity(MenuRec * pMenu, bool bCheckPassword);
 void GenerateMenu(MenuInstanceData * pMenuData);
 char *MenuDoParenCheck(char *pszSrc, int bMore, char *porig);
 char *MenuGetParam(char *pszSrc, char *pszParam);
@@ -396,7 +396,7 @@ bool LoadMenuRecord(MenuInstanceData * pMenuData, string& command, MenuRec * pMe
           pMenuData->pMenuFile->Seek(pMenuData->index[x].nRec * sizeof(MenuRec), WFile::seekBegin);
           pMenuData->pMenuFile->Read(pMenu, sizeof(MenuRec));
 
-          if (CheckMenuItemSecurity(pMenuData, pMenu, 1)) {
+          if (CheckMenuItemSecurity(pMenu, 1)) {
             return true;
           } else {
             std::ostringstream msg;
@@ -736,12 +736,7 @@ string GetCommand(MenuInstanceData * pMenuData) {
   }
 }
 
-bool CheckMenuItemSecurity(MenuInstanceData * pMenuData, MenuRec * pMenu, bool bCheckPassword) {
-  // Looks like this is here just to keep a compiler warning away
-  if (pMenuData != pMenuData) {
-    pMenuData = pMenuData;
-  }
-
+bool CheckMenuItemSecurity(MenuRec * pMenu, bool bCheckPassword) {
   // if deleted, return as failed
   if ((pMenu->nFlags & MENU_FLAG_DELETED) ||
       (GetSession()->GetEffectiveSl() < pMenu->nMinSL) ||
@@ -988,7 +983,7 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
         pMenuData->pMenuFile->Seek(pMenuData->index[x].nRec * sizeof(MenuRec), WFile::seekBegin);
         pMenuData->pMenuFile->Read(&menu, sizeof(MenuRec));
 
-        if (CheckMenuItemSecurity(pMenuData, &menu, 0) &&
+        if (CheckMenuItemSecurity(&menu, false) &&
             menu.nHide != MENU_HIDE_REGULAR &&
             menu.nHide != MENU_HIDE_BOTH) {
           char szKey[30];
