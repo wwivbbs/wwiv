@@ -18,12 +18,14 @@
 /**************************************************************************/
 
 #include <memory>
+#include <string>
 
 #include "wwiv.h"
 #include "instmsg.h"
 #include "core/wutil.h"
 #include "core/inifile.h"
 
+using std::string;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 
@@ -91,10 +93,9 @@ void wfc_update() {
     GetSession()->localIO()->LocalXYAPrintf(42, 19, 14, "%-25.25s", "Nobody");
   }
 
-  char szBuffer[ 255 ];
-  szBuffer[0] = '\0';
-  make_inst_str(inst_num, szBuffer, INST_FORMAT_WFC);
-  GetSession()->localIO()->LocalXYAPrintf(42, 20, 14, "%-25.25s", szBuffer);
+  string activity_string;
+  make_inst_str(inst_num, &activity_string, INST_FORMAT_WFC);
+  GetSession()->localIO()->LocalXYAPrintf(42, 20, 14, "%-25.25s", activity_string.c_str());
   if (num_instances() > 1) {
     do {
       ++inst_num;

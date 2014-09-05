@@ -16,15 +16,97 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "wwiv.h"
 #include "instmsg.h"
 
-//
-// Local funciton prototypes
-//
+#include "core/strings.h"
 
-void GetInstanceActivityString(instancerec &ir, char *pszOutActivity);
+using std::string;
+using wwiv::strings::StrCat;
+using wwiv::strings::StringPrintf;
+
+// Local funciton prototypes
+
+string GetInstanceActivityString(instancerec &ir) {
+  if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
+    return string("WWIV Chatroom");
+  } 
+  switch (ir.loc) {
+    case INST_LOC_DOWN:
+      return string("Offline");
+    case INST_LOC_INIT:
+      return string("Initializing BBS");
+    case INST_LOC_EMAIL:
+      return string("Sending Email");
+    case INST_LOC_MAIN:
+      return string("Main Menu");
+    case INST_LOC_XFER:
+      if (so() && ir.subloc < GetSession()->num_dirs) {
+        string temp = StringPrintf("Dir : %s", stripcolors(directories[ ir.subloc ].name));
+        return StrCat("Transfer Area", temp);
+      }
+    case INST_LOC_CHAINS:
+      if (ir.subloc > 0 && ir.subloc <= GetSession()->GetNumberOfChains()) {
+        string temp = StringPrintf("Door: %s", stripcolors(chains[ ir.subloc - 1 ].description));
+        return StrCat("Chains", temp);
+      }
+    case INST_LOC_NET: return string("Network Transmission");
+    case INST_LOC_GFILES: return string("GFiles");
+    case INST_LOC_BEGINDAY: return string("Running BeginDay");
+    case INST_LOC_EVENT: return string("Executing Event");
+    case INST_LOC_CHAT: return string("Normal Chat");
+    case INST_LOC_CHAT2: return string("SplitScreen Chat");
+    case INST_LOC_CHATROOM: return string("ChatRoom");
+    case INST_LOC_LOGON: return string("Logging On");
+    case INST_LOC_LOGOFF: return string("Logging off");
+    case INST_LOC_FSED: return ("FullScreen Editor");
+    case INST_LOC_UEDIT: return ("In UEDIT");
+    case INST_LOC_CHAINEDIT: return ("In CHAINEDIT");
+    case INST_LOC_BOARDEDIT: return ("In BOARDEDIT");
+    case INST_LOC_DIREDIT: return ("In DIREDIT");
+    case INST_LOC_GFILEEDIT: return ("In GFILEEDIT");
+    case INST_LOC_CONFEDIT: return ("In CONFEDIT");
+    case INST_LOC_DOS: return ("In DOS");
+    case INST_LOC_DEFAULTS: return ("In Defaults");
+    case INST_LOC_REBOOT: return ("Rebooting");
+    case INST_LOC_RELOAD: return ("Reloading BBS data");
+    case INST_LOC_VOTE: return ("Voting");
+    case INST_LOC_BANK: return ("In TimeBank");
+    case INST_LOC_AMSG: return ("AutoMessage");
+    case INST_LOC_SUBS:
+      if (so() && ir.subloc < GetSession()->num_subs) {
+        string temp = StringPrintf("(Sub: %s)", stripcolors(subboards[ ir.subloc ].name));
+        return StrCat("Reading Messages", temp);
+      }
+    case INST_LOC_CHUSER: return string("Changing User");
+    case INST_LOC_TEDIT: return string("In TEDIT");
+    case INST_LOC_MAILR: return string("Reading All Mail");
+    case INST_LOC_RESETQSCAN: return string("Resetting QSCAN pointers");
+    case INST_LOC_VOTEEDIT: return string("In VOTEEDIT");
+    case INST_LOC_VOTEPRINT: return string("Printing Voting Data");
+    case INST_LOC_RESETF: return string("Resetting NAMES.LST");
+    case INST_LOC_FEEDBACK: return string("Leaving Feedback");
+    case INST_LOC_KILLEMAIL: return string("Viewing Old Email");
+    case INST_LOC_POST:
+      if (so() && ir.subloc < GetSession()->num_subs) {
+        string temp = StringPrintf(" (Sub: %s)", stripcolors(subboards[ir.subloc].name));
+        return StrCat("Posting a Message", temp);
+      }
+    case INST_LOC_NEWUSER: return string("Registering a Newuser");
+    case INST_LOC_RMAIL: return string("Reading Email");
+    case INST_LOC_DOWNLOAD: return string("Downloading");
+    case INST_LOC_UPLOAD: return string("Uploading");
+    case INST_LOC_BIXFER: return string("Bi-directional Transfer");
+    case INST_LOC_NETLIST: return string("Listing Net Info");
+    case INST_LOC_TERM: return string("In a terminal program");
+    case INST_LOC_GETUSER: return string("Getting User ID");
+    case INST_LOC_WFC: return string("Waiting for Call");
+    case INST_LOC_QWK: return string("In QWK");
+  }
+  return string("Unknown BBS Location!");
+}
 
 /*
  * Builds a string (in pszOutInstanceString) like:
@@ -37,23 +119,21 @@ void GetInstanceActivityString(instancerec &ir, char *pszOutActivity);
  * Instance  22: Network transmission
  *     CurrUser: Sysop #1
  */
-void make_inst_str(int nInstanceNum, char *pszOutInstanceString, int nInstanceFormat) {
-  char s[255];
-  snprintf(s, sizeof(s), "|#1Instance %-3d: |#2", nInstanceNum);
+void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
+  const string s = StringPrintf("|#1Instance %-3d: |#2", nInstanceNum);
 
   instancerec ir;
   get_inst_info(nInstanceNum, &ir);
 
-  char szNodeActivity[81];
-  GetInstanceActivityString(ir, szNodeActivity);
+  const string activity_string = GetInstanceActivityString(ir);
 
   switch (nInstanceFormat) {
   case INST_FORMAT_WFC:
-    strcpy(pszOutInstanceString, szNodeActivity);                 // WFC Addition
+    out->assign(activity_string); // WFC addition
     break;
   case INST_FORMAT_OLD:
     // Not used anymore.
-    strcpy(pszOutInstanceString, s);
+    out->assign(s);
     break;
   case INST_FORMAT_LIST: {
     std::string userName;
@@ -69,21 +149,16 @@ void make_inst_str(int nInstanceNum, char *pszOutInstanceString, int nInstanceFo
     } else {
       userName = "(Nobody)";
     }
-    char szBuffer[ 255 ];
-    snprintf(szBuffer, sizeof(szBuffer), "|#5%-4d |#2%-35.35s |#1%-37.37s", nInstanceNum, userName.c_str(), szNodeActivity);
-    strcpy(pszOutInstanceString, szBuffer);
+    out->assign(StringPrintf("|#5%-4d |#2%-35.35s |#1%-37.37s", nInstanceNum, userName.c_str(), activity_string.c_str()));
   }
   break;
   default:
-    snprintf(pszOutInstanceString, sizeof(pszOutInstanceString), "** INVALID INSTANCE FORMAT PASSED [%d] **",
-             nInstanceFormat);
+    out->assign(StringPrintf("** INVALID INSTANCE FORMAT PASSED [%d] **", nInstanceFormat));
     break;
   }
 }
 
-
 void multi_instance() {
-
   GetSession()->bout.NewLine();
   int nNumInstances = num_instances();
   if (nNumInstances < 1) {
@@ -99,13 +174,12 @@ void multi_instance() {
   GetSession()->bout.WriteFormatted("|#7%-4.4s %-35.35s %-37.37s\r\n", s1, s2, s3);
 
   for (int nInstance = 1; nInstance <= nNumInstances; nInstance++) {
-    char szBuffer[255];
-    make_inst_str(nInstance, szBuffer, INST_FORMAT_LIST);
-    GetSession()->bout << szBuffer;
+    string activity;
+    make_inst_str(nInstance, &activity, INST_FORMAT_LIST);
+    GetSession()->bout << activity;
     GetSession()->bout.NewLine();
   }
 }
-
 
 int inst_ok(int loc, int subloc) {
   instancerec instance_temp;
@@ -134,188 +208,4 @@ int inst_ok(int loc, int subloc) {
     }
   }
   return nInstNum;
-}
-
-
-void GetInstanceActivityString(instancerec &ir, char *pszOutActivity) {
-  char szNodeActivity[81];
-
-  if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
-    snprintf(szNodeActivity, sizeof(szNodeActivity), "%s", "WWIV Chatroom");
-  } else switch (ir.loc) {
-    case INST_LOC_DOWN:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Offline");
-      break;
-    case INST_LOC_INIT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Initializing BBS");
-      break;
-    case INST_LOC_EMAIL:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Sending Email");
-      break;
-    case INST_LOC_MAIN:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Main Menu");
-      break;
-    case INST_LOC_XFER:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Transfer Area");
-      if (so() && ir.subloc < GetSession()->num_dirs) {
-        char szTemp2[ 100 ];
-        snprintf(szTemp2, sizeof(szTemp2), "%s: %s", "Dir ", stripcolors(directories[ ir.subloc ].name));
-        strncat(szNodeActivity, szTemp2, sizeof(szNodeActivity));
-      }
-      break;
-    case INST_LOC_CHAINS:
-      snprintf(szNodeActivity, sizeof(szNodeActivity), "%s", "Chains");
-      if (ir.subloc > 0 && ir.subloc <= GetSession()->GetNumberOfChains()) {
-        char szTemp2[ 100 ];
-        snprintf(szTemp2, sizeof(szTemp2), "Door: %s", stripcolors(chains[ ir.subloc - 1 ].description));
-        strncat(szNodeActivity, szTemp2, sizeof(szNodeActivity));
-      }
-      break;
-    case INST_LOC_NET:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Network Transmission");
-      break;
-    case INST_LOC_GFILES:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "GFiles");
-      break;
-    case INST_LOC_BEGINDAY:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Running BeginDay");
-      break;
-    case INST_LOC_EVENT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Executing Event");
-      break;
-    case INST_LOC_CHAT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Normal Chat");
-      break;
-    case INST_LOC_CHAT2:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "SplitScreen Chat");
-      break;
-    case INST_LOC_CHATROOM:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "ChatRoom");
-      break;
-    case INST_LOC_LOGON:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Logging On");
-      break;
-    case INST_LOC_LOGOFF:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Logging off");
-      break;
-    case INST_LOC_FSED:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "FullScreen Editor");
-      break;
-    case INST_LOC_UEDIT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In UEDIT");
-      break;
-    case INST_LOC_CHAINEDIT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In CHAINEDIT");
-      break;
-    case INST_LOC_BOARDEDIT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In BOARDEDIT");
-      break;
-    case INST_LOC_DIREDIT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In DIREDIT");
-      break;
-    case INST_LOC_GFILEEDIT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In GFILEEDIT");
-      break;
-    case INST_LOC_CONFEDIT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In CONFEDIT");
-      break;
-    case INST_LOC_DOS:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In DOS");
-      break;
-    case INST_LOC_DEFAULTS:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In Defaults");
-      break;
-    case INST_LOC_REBOOT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Rebooting");
-      break;
-    case INST_LOC_RELOAD:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Reloading BBS data");
-      break;
-    case INST_LOC_VOTE:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Voting");
-      break;
-    case INST_LOC_BANK:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In TimeBank");
-      break;
-    case INST_LOC_AMSG:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "AutoMessage");
-      break;
-    case INST_LOC_SUBS:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Reading Messages");
-      if (so() && ir.subloc < GetSession()->num_subs) {
-        char szTemp2[ 100 ];
-        snprintf(szTemp2, sizeof(szTemp2), "(Sub: %s)", stripcolors(subboards[ ir.subloc ].name));
-        strncat(szNodeActivity, szTemp2, sizeof(szNodeActivity));
-      }
-      break;
-    case INST_LOC_CHUSER:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Changing User");
-      break;
-    case INST_LOC_TEDIT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In TEDIT");
-      break;
-    case INST_LOC_MAILR:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Reading All Mail");
-      break;
-    case INST_LOC_RESETQSCAN:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Resetting QSCAN pointers");
-      break;
-    case INST_LOC_VOTEEDIT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In VOTEEDIT");
-      break;
-    case INST_LOC_VOTEPRINT:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Printing Voting Data");
-      break;
-    case INST_LOC_RESETF:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Resetting NAMES.LST");
-      break;
-    case INST_LOC_FEEDBACK:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Leaving Feedback");
-      break;
-    case INST_LOC_KILLEMAIL:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Viewing Old Email");
-      break;
-    case INST_LOC_POST:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Posting a Message");
-      if (so() && ir.subloc < GetSession()->num_subs) {
-        char szTemp2[ 100 ];
-        snprintf(szTemp2, sizeof(szTemp2), "(Sub: %s)", stripcolors(subboards[ir.subloc].name));
-        strncat(szNodeActivity, szTemp2, sizeof(szNodeActivity));
-      }
-      break;
-    case INST_LOC_NEWUSER:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Registering a Newuser");
-      break;
-    case INST_LOC_RMAIL:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Reading Email");
-      break;
-    case INST_LOC_DOWNLOAD:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Downloading");
-      break;
-    case INST_LOC_UPLOAD:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Uploading");
-      break;
-    case INST_LOC_BIXFER:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Bi-directional Transfer");
-      break;
-    case INST_LOC_NETLIST:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Listing Net Info");
-      break;
-    case INST_LOC_TERM:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In a terminal program");
-      break;
-    case INST_LOC_GETUSER:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Getting User ID");
-      break;
-    case INST_LOC_WFC:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Waiting for Call");
-      break;
-    case INST_LOC_QWK:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "In QWK");
-      break;
-    default:
-      snprintf(szNodeActivity, sizeof(szNodeActivity),  "%s", "Unknown BBS Location!");
-      break;
-    }
-  strcpy(pszOutActivity, szNodeActivity);
 }
