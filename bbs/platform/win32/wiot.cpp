@@ -298,6 +298,7 @@ void WIOTelnet::StartThreads() {
 WIOTelnet::~WIOTelnet() {
   StopThreads();
   CloseHandle(m_hReadStopEvent);
+  m_hReadStopEvent = INVALID_HANDLE_VALUE;
   WSACleanup();
 }
 

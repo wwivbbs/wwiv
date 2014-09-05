@@ -41,17 +41,12 @@ void makeansi(int attr, char *pszOutBuffer, bool forceit);
 bool CreateSyncTempFile(std::string &outFileName, const std::string commandLine);
 void CreateSyncFosCommandLine(std::string &outCommandLine, const std::string tempFilePath, int nSyncMode);
 bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadSlot, int nSyncMode);
-bool DoSyncFosLoop9X(HANDLE hProcess, HMODULE hKernel32, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd,
-                     HANDLE hSyncHangupEvent, int nSyncMode);
-bool DoSyncFosLoop9XImpl(HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd, HANDLE hSyncHangupEvent,
-                         int nSyncMode);
 
 void GetSyncFosTempFilePath(std::string &outFileName);
 bool VerifyDosXtrnExists();
 const std::string GetDosXtrnPath();
 const std::string GetSyncFosOSMode();
 bool DeleteSyncTempFile();
-bool IsWindowsNT();
 bool ExpandWWIVHeartCodes(char *pszBuffer);
 
 
@@ -73,17 +68,13 @@ const DWORD SBBSEXEC_IOCTL_DISCONNECT         = 0x8005;
 const DWORD SBBSEXEC_IOCTL_STOP             = 0x8006;
 
 const int CONST_NUM_LOOPS_BEFORE_EXIT_CHECK         = 500;
-const int CONST_WIN9X_NUM_LOOPS_BEFORE_EXIT_CHECK   = 10;
 
 struct sbbsexecrec {
   DWORD dwMode;
   HANDLE  hEvent;
 };
 
-
-
 typedef HANDLE(WINAPI *OPENVXDHANDLEFUNC)(HANDLE);
-
 
 int ExecExternalProgram(const std::string commandLine, int flags) {
   bool bUsingSync = false;
@@ -113,6 +104,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
     }
     CreateSyncFosCommandLine(workingCommandLine, syncFosTempFile, nSyncMode);
     bUsingSync = true;
+
     char szTempLogFileName[ MAX_PATH ];
     _snprintf(szTempLogFileName, sizeof(szTempLogFileName), "%swwivsync.log", GetApplication()->GetHomeDir().c_str());
     hLogFile = fopen(szTempLogFileName, "at");
@@ -123,14 +115,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
     workingCommandLine = commandLine;
   }
 
-
   DWORD dwCreationFlags = 0;
-
-  if (!IsWindowsNT()) {
-    // We only need the detached console on Win9x.
-    dwCreationFlags = CREATE_NEW_CONSOLE;
-  }
-
   char * pszTitle = new char[ 255 ];
   memset(pszTitle, 0, sizeof(pszTitle));
   if (flags & EFLAG_NETPROG) {
@@ -149,74 +134,9 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
   HANDLE hSyncStartEvent = INVALID_HANDLE_VALUE;
   HANDLE hSbbsExecVxd = INVALID_HANDLE_VALUE;
   HANDLE hSyncHangupEvent = INVALID_HANDLE_VALUE;
-
   HANDLE hSyncReadSlot    = INVALID_HANDLE_VALUE;     // Mailslot for reading
-
-
-  if (bUsingSync && !IsWindowsNT()) {
-    hKernel32 = LoadLibrary("KERNEL32");
-    if (hKernel32 == NULL) {
-      // TODO Show error
-      return false;
-    }
-
-    fprintf(hLogFile, " Starting DoSyncFosLoop9XImpl\r\n");
-
-    OPENVXDHANDLEFUNC OpenVxDHandle = (OPENVXDHANDLEFUNC) GetProcAddress(hKernel32, "OpenVxDHandle");
-    if (OpenVxDHandle == NULL) {
-      fprintf(hLogFile, " ERROR 1\r\n");
-      // TODO Show error
-      return false;
-    }
-
-    hSyncHangupEvent = INVALID_HANDLE_VALUE;     // Event to hangup program
-
-    char szSbbsExecVxdName[ MAX_PATH ];
-    _snprintf(szSbbsExecVxdName, sizeof(szSbbsExecVxdName), "\\\\.\\%ssbbsexec.vxd",
-              GetApplication()->GetHomeDir().c_str());
-    fprintf(hLogFile, "Opening VXD: [%s]\r\n", szSbbsExecVxdName);
-    hSbbsExecVxd = CreateFile(szSbbsExecVxdName, 0, 0, 0, CREATE_NEW, FILE_FLAG_DELETE_ON_CLOSE, 0);
-    if (hSbbsExecVxd == INVALID_HANDLE_VALUE) {
-      fprintf(hLogFile, " ERROR 2\r\n");
-      // TODO Show error
-      return false;
-    }
-
-    hSyncStartEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-    if (hSyncStartEvent == INVALID_HANDLE_VALUE) {
-      sysoplogf("!!! Unable to create Start Event for SyncFoss External program [%ld]", GetLastError());
-      fprintf(hLogFile, "!!! Unable to create Start Event for SyncFoss External program [%ld]", GetLastError());
-      return false;
-    }
-
-    sbbsexecrec start;
-    if (OpenVxDHandle != NULL) {
-      start.hEvent = OpenVxDHandle(hSyncStartEvent);
-    } else {
-      start.hEvent = hSyncStartEvent;
-    }
-    start.dwMode = (DWORD) nSyncMode;
-
-    DWORD dwRecvCount = 0;
-
-    if (!DeviceIoControl
-        (
-          hSbbsExecVxd,
-          SBBSEXEC_IOCTL_START,
-          &start,                 // pointer to buffer to supply input data
-          sizeof(start),          // size of input buffer
-          NULL,                   // pointer to buffer to receive output data
-          0,                      // size of output buffer
-          &dwRecvCount,           // pointer to variable to receive output byte count
-          NULL                    // Overlapped I/O
-        )
-       ) {
-      // TODO Show error
-      CloseHandle(hSbbsExecVxd);
-      fprintf(hLogFile, " ERROR 4\r\n");
-      return false;
-    }
-  } else if (bUsingSync && IsWindowsNT()) {
+    
+  if (bUsingSync) {
     // Create Hangup Event.
     char szHangupEventName[ MAX_PATH + 1 ];
     _snprintf(szHangupEventName, sizeof(szHangupEventName), "sbbsexec_hungup%d", GetApplication()->GetInstanceNumber());
@@ -240,7 +160,6 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
       return false;
     }
   }
-
 
   char szCurDir[ MAX_PATH ];
   WWIV_GetDir(szCurDir, true);
@@ -278,7 +197,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
   }
 
   // If we are on Windows NT and GetSession()->IsExecUseWaitForInputIdle() is true use this.
-  if (IsWindowsNT() && GetSession()->IsExecUseWaitForInputIdle()) {
+  if (GetSession()->IsExecUseWaitForInputIdle()) {
     int dwWaitRet = ::WaitForInputIdle(pi.hProcess, GetSession()->GetExecWaitForInputTimeout());
     if (dwWaitRet != 0) {
       if (bUsingSync) {
@@ -301,14 +220,9 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
   if (bUsingSync) {
     bool bSavedBinaryMode = GetSession()->remoteIO()->GetBinaryMode();
     GetSession()->remoteIO()->SetBinaryMode(true);
-    bool bSyncLoopStatus = false;
-    if (IsWindowsNT()) {
-      bSyncLoopStatus = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
-      fprintf(hLogFile,  "DoSyncFosLoopNT: Returning %s\r\n", (bSyncLoopStatus) ? "TRUE" : "FALSE");
-    } else {
-      bSyncLoopStatus = DoSyncFosLoop9X(pi.hProcess, hKernel32, hSyncStartEvent, hSbbsExecVxd, hSyncHangupEvent, nSyncMode);
-      fprintf(hLogFile,  "DoSyncFosLoop9X: Returning %s\r\n", (bSyncLoopStatus) ? "TRUE" : "FALSE");
-    }
+    bool bSyncLoopStatus = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
+    fprintf(hLogFile,  "DoSyncFosLoopNT: Returning %s\r\n", (bSyncLoopStatus) ? "TRUE" : "FALSE");
+
     fprintf(hLogFile, charstr(78, '='));
     fprintf(hLogFile, "\r\n\r\n\r\n");
     fclose(hLogFile);
@@ -371,10 +285,9 @@ void GetSyncFosTempFilePath(std::string &outFileName) {
   outFileName += "WWIVSYNC.ENV";
 }
 
-
 void CreateSyncFosCommandLine(std::string &outCommandLine, const std::string tempFilePath, int nSyncMode) {
   std::stringstream sstream;
-  sstream << GetDosXtrnPath() << " " << tempFilePath << " " << GetSyncFosOSMode() << " ";
+  sstream << GetDosXtrnPath() << " " << tempFilePath << " " << "NT" << " ";
   sstream << GetApplication()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
   outCommandLine = sstream.str();
 }
@@ -383,29 +296,11 @@ bool VerifyDosXtrnExists() {
   return WFile::Exists(GetDosXtrnPath());
 }
 
-
 const std::string GetDosXtrnPath() {
   std::stringstream sstream;
   sstream << GetApplication()->GetHomeDir() << "DOSXTRN.EXE";
   return std::string(sstream.str());
 }
-
-
-const std::string GetSyncFosOSMode() {
-  return IsWindowsNT() ? std::string("NT") : std::string("95");
-}
-
-
-bool IsWindowsNT() {
-#if !defined(_USING_V110_SDK71_) && ( _MSC_VER >= 1800 )
-  return IsWindowsXPOrGreater();
-#else
-  DWORD dwVersion = GetVersion();
-  // Windows NT/2000/XP is < 0x80000000
-  return (dwVersion < 0x80000000) ? true : false;
-#endif
-}
-
 
 // returns true if the file is deleted.
 bool DeleteSyncTempFile() {
@@ -423,7 +318,6 @@ bool DeleteSyncTempFile() {
     if ( hSyncReadSlot    != INVALID_HANDLE_VALUE ) CloseHandle( hSyncReadSlot );    hSyncReadSlot    = INVALID_HANDLE_VALUE; \
     if ( hSyncWriteSlot   != INVALID_HANDLE_VALUE ) CloseHandle( hSyncWriteSlot );   hSyncWriteSlot   = INVALID_HANDLE_VALUE; \
 }
-
 
 bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadSlot, int nSyncMode) {
   fprintf(hLogFile, "Starting DoSyncFosLoopNT()\r\n");
@@ -564,180 +458,6 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
     }
   }
 }
-
-
-bool DoSyncFosLoop9X(HANDLE hProcess, HMODULE hKernel32, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd,
-                     HANDLE hSyncHangupEvent, int nSyncMode) {
-  bool bRet = DoSyncFosLoop9XImpl(hProcess, hSyncStartEvent, hSbbsExecVxd, hSyncHangupEvent, nSyncMode);
-
-  if (hKernel32 != NULL) {
-    FreeLibrary(hKernel32);
-    hKernel32 = NULL;
-  }
-
-  fprintf(hLogFile,  "DoSyncFosLoop9X: Returning %s\r\n", (bRet) ? "TRUE" : "FALSE");
-  fprintf(hLogFile, charstr(78, '='));
-  fprintf(hLogFile, "\r\n\r\n\r\n");
-  fclose(hLogFile);
-
-  return bRet;
-}
-
-
-bool DoSyncFosLoop9XImpl(HANDLE hProcess, HANDLE hSyncStartEvent, HANDLE hSbbsExecVxd, HANDLE hSyncHangupEvent,
-                         int nSyncMode) {
-  DWORD hVM;
-  DWORD rd;
-  DWORD dwRecvCount = 0;
-
-  time_t then = time(NULL);
-  fprintf(hLogFile, "Starting Wait at [%ld]\r\n", then);
-  DWORD dwWaitStatus = WaitForSingleObject(hSyncStartEvent, 15000);
-  if (dwWaitStatus != WAIT_OBJECT_0) {
-    time_t now = time(NULL);
-    fprintf(hLogFile, " ERROR 5 at [%ld] (elapsed = %ld)\r\n", now, (now - then));
-    if (!TerminateProcess(hProcess, 1)) {
-      fprintf(hLogFile, " UNABLE TO TERM PROCESS AFTER ERROR 5\r\n");
-    }
-    // TODO Show error
-    return false;
-  }
-
-  CloseHandle(hSyncStartEvent);
-  hSyncStartEvent = NULL;
-
-  if (!DeviceIoControl(
-        hSbbsExecVxd,         // handle to device of interest
-        SBBSEXEC_IOCTL_COMPLETE,  // control code of operation to perform
-        NULL,         // pointer to buffer to supply input data
-        0,            // size of input buffer
-        &hVM,         // pointer to buffer to receive output data
-        sizeof(hVM),      // size of output buffer
-        &rd,          // pointer to variable to receive output byte count
-        NULL          // Overlapped I/O
-      )) {
-    TerminateProcess(hProcess, 1);
-    CloseHandle(hProcess);
-    CloseHandle(hSbbsExecVxd);
-    if (hSyncStartEvent != INVALID_HANDLE_VALUE) {
-      CloseHandle(hSyncStartEvent);
-      hSyncStartEvent = INVALID_HANDLE_VALUE;
-    }
-    fprintf(hLogFile, " ERROR 6\r\n");
-    // TODO Show error
-    return false;
-  }
-
-// BEGIN LOOP
-
-  char szReadBuffer[ CONST_SBBSFOS_BUFFER_SIZE ];
-
-  int nCounter = 0;
-  for (;;) {
-    fprintf(hLogFile, " IN LOOP\r\n");
-    nCounter++;
-    if (GetSession()->using_modem && (!GetSession()->remoteIO()->carrier())) {
-      SetEvent(hSyncHangupEvent);
-      nCounter += CONST_WIN9X_NUM_LOOPS_BEFORE_EXIT_CHECK;
-      ::Sleep(1000);
-    }
-
-    DWORD dwExitCode = 0;
-    if (nCounter > CONST_WIN9X_NUM_LOOPS_BEFORE_EXIT_CHECK) {
-      // Changed this to 10 loops since Eli said this was hanging on Win9x
-      if (GetExitCodeProcess(hProcess, &dwExitCode)) {
-        if (dwExitCode != STILL_ACTIVE) {
-          // process is done and so are we.
-          //SYNC_LOOP_CLEANUP();
-          fprintf(hLogFile, " APP TERMINATED \r\n");
-          return true;
-        }
-      }
-    }
-
-    if (GetSession()->remoteIO()->incoming()) {
-      nCounter = 0;
-      // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-      int nNumReadFromComm = GetSession()->remoteIO()->read((szReadBuffer + sizeof(hVM)),
-                             CONST_SBBSFOS_BUFFER_SIZE - sizeof(hVM));
-      fprintf(hLogFile, "nNumReadFromComm = [%d]\r\n", nNumReadFromComm);
-      for (int i = sizeof(hVM); i < static_cast<int>(nNumReadFromComm + sizeof(hVM)); i++) {
-        fprintf(hLogFile, "COMM: [%d][%c]", szReadBuffer[i], szReadBuffer[i]);
-      }
-      nNumReadFromComm += sizeof(hVM);
-      *(DWORD*) szReadBuffer = hVM;
-      if (!DeviceIoControl(
-            hSbbsExecVxd,           // handle to device of interest
-            SBBSEXEC_IOCTL_WRITE,   // control code of operation to perform
-            szReadBuffer,           // pointer to buffer to supply input data
-            nNumReadFromComm,       // size of input buffer
-            &rd,                    // pointer to buffer to receive output data
-            sizeof(rd),             // size of output buffer
-            &dwRecvCount,           // pointer to variable to receive output byte count
-            NULL                    // Overlapped I/O
-          )) {
-        fprintf(hLogFile, " BREAK 1\r\n");
-        // TODO Show error
-        break;
-      }
-      fprintf(hLogFile, "Read from COMM = [%d]\r\n", nNumReadFromComm - sizeof(hVM));
-    }
-
-    fprintf(hLogFile, "hVM = [%lud]\r\n", hVM);
-
-    DWORD dwNumReadFromVXD = 0;
-    DWORD dwOutBufferSize = sizeof(szReadBuffer);
-    if (!DeviceIoControl(
-          hSbbsExecVxd,     // handle to device of interest
-          SBBSEXEC_IOCTL_READ,  // control code of operation to perform
-          &hVM,         // pointer to buffer to supply input data
-          sizeof(hVM),       // size of input buffer
-          szReadBuffer,     // pointer to buffer to receive output data
-          dwOutBufferSize,    // size of output buffer
-          &dwNumReadFromVXD,    // pointer to variable to receive output byte count
-          NULL          // Overlapped I/O
-        )) {
-      fprintf(hLogFile, " BREAK 2\r\n");
-      // TODO Show error
-      break;
-    }
-
-    fprintf(hLogFile, "dwNumReadFromVXD = [%ld]\r\n", dwNumReadFromVXD);
-    if (dwNumReadFromVXD > 0) {
-      // LogDebug( "Number of bytes to send to the user=%d ", nBufferPtr );
-      nCounter = 0;
-      if (nSyncMode & CONST_SBBSFOS_DOSOUT_MODE) {
-        ExpandWWIVHeartCodes(szReadBuffer);
-      }
-      GetSession()->remoteIO()->write(szReadBuffer, dwNumReadFromVXD);
-    }
-
-    if (nCounter > 0) {
-      ::Sleep(100);
-    }
-  }
-
-// END LOOP
-  fprintf(hLogFile, " END LOOP \r\n");
-
-  if (!DeviceIoControl(
-        hSbbsExecVxd,     // handle to device of interest
-        SBBSEXEC_IOCTL_STOP,  // control code of operation to perform
-        &hVM,         // pointer to buffer to supply input data
-        sizeof(hVM),      // size of input buffer
-        NULL,         // pointer to buffer to receive output data
-        0,            // size of output buffer
-        &rd,          // pointer to variable to receive output byte count
-        NULL          // Overlapped I/O
-      )) {
-    // TODO Show error
-    TerminateProcess(hProcess, 1);
-    return false;
-  }
-
-  return true;
-}
-
 
 bool ExpandWWIVHeartCodes(char *pszBuffer) {
   curatr = 0;
