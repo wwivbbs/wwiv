@@ -817,7 +817,7 @@ void move_file_t() {
             ok = false;
             GetSession()->bout << "Too many files in that directory.\r\n";
           }
-          if (freek1(directories[d1].path) < (u.numbytes / 1024L) + 3) {
+          if (freek1(directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
             ok = false;
             GetSession()->bout << "Not enough disk space to move it.\r\n";
           }
