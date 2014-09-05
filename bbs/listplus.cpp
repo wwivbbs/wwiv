@@ -116,7 +116,7 @@ void printtitle_plus_old() {
   GetSession()->bout << "|16|15" << charstr(79, '\xDC') << wwiv::endl;
 
   char szBuffer[255];
-  sprintf(szBuffer, "Area %d : %-30.30s (%ld files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
+  sprintf(szBuffer, "Area %d : %-30.30s (%d files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
           directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
   GetSession()->bout.WriteFormatted("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", szBuffer);
 

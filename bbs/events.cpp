@@ -353,7 +353,7 @@ void modify_event(int evnt) {
     if (events[i].status & EVENT_EXIT) {
       sprintf(s1, "Exit BBS with DOS Errorlevel %d", events[i].cmd[0]);
     } else {
-      sprintf(s1, events[i].cmd);
+      strcpy(s1, events[i].cmd);
     }
     GetSession()->bout << "B) Event Command...: " << s1 << wwiv::endl;
     GetSession()->bout << "C) Phone Off Hook?.: " << ((events[i].status & EVENT_HOLD) ? "Yes" : "No") << wwiv::endl;
