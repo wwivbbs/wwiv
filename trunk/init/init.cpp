@@ -93,8 +93,8 @@ static void convcfg() {
     out->SetColor(SchemeId::NORMAL);
     read(hFile, &syscfg, sizeof(configrec));
     sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WFile::pathSeparatorChar);
-    strcpy(syscfg.logoff_c, " ");
-    strcpy(syscfg.v_scan_c, " ");
+    strcpy(syscfg.unused_logoff_c, " ");
+    strcpy(syscfg.unused_v_scan_c, " ");
 
     for (int i = 0; i < MAX_ARCS; i++) {
       if ((syscfg.arcs[i].extension[0]) && (i < 4)) {

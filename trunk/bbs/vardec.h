@@ -286,7 +286,9 @@ struct configrec {
   float post_call_ratio;
 
   char upload_c[51],                          // upload event
-       dszbatchdl[81], modem_type[9], batchdir[81];
+       unused_dszbatchdl[81],
+       modem_type[9],
+       batchdir[81];
 
   int16_t sysstatusoffset;                      // system status offset
 
@@ -298,16 +300,16 @@ struct configrec {
            max_dirs,                               // max directories
            qscn_len;                               // qscan pointer length
 
-  uint8_t email_storage_type;           // how to store email
+  uint8_t email_storage_type;                 // how to store email
 
   uint32_t unused_sysconfig1,
            unused_rrd;                        // shareware expiration date
 
   char menudir[81];                           // path for menu dir
 
-  char logoff_c[51];                          // logoff event
+  char unused_logoff_c[51];                   // logoff event
 
-  char v_scan_c[51];                          // virus scanning event
+  char unused_v_scan_c[51];                   // virus scanning event
 
   char res[400];                              // RESERVED
 };
@@ -331,11 +333,8 @@ struct small_configrec {
 
                 * beginday_c,         // beginday event
                 * logon_c,            // logon event
-                * logoff_c,           // logoff event
                 * newuser_c,          // newuser event
-                * upload_c,           // upload event
-                * v_scan_c,           // virus scanner command line
-                * dszbatchdl;
+                * upload_c;           // upload event
 
   uint8_t  newusersl,          // new user SL
            newuserdsl,         // new user DSL
