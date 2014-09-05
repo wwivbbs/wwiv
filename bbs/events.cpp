@@ -638,14 +638,12 @@ void eventedit() {
         GetSession()->bout.NewLine(2);
         GetSession()->bout << "|#92) Begin Day Event      : |#2" << syscfg.beginday_c   << wwiv::endl;
         GetSession()->bout << "|#93) Logon Event          : |#2" << syscfg.logon_c      << wwiv::endl;
-        GetSession()->bout << "|#94) Logoff Event         : |#2" << syscfg.logoff_c     << wwiv::endl;
         GetSession()->bout << "|#95) Newuser Event        : |#2" << syscfg.newuser_c    << wwiv::endl;
         GetSession()->bout << "|#96) Upload  Event        : |#2" << syscfg.upload_c     << wwiv::endl;
-        GetSession()->bout << "|#97) Virus Scanner CmdLine: |#2" << syscfg.v_scan_c     << wwiv::endl;
         GetSession()->bout << "|#9Q) Quit\r\n";
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7, |#2?|#7=|#1Help|#7) Which? (|#11|#7-|#17|#7) :";
-        ch = onek("Q234567?");
+        ch = onek("Q2356?");
         GetSession()->localIO()->LocalGotoXY(26, ch - 47);
         switch (ch) {
         case '2':
@@ -654,17 +652,11 @@ void eventedit() {
         case '3':
           Input1(syscfg.logon_c, syscfg.logon_c, 51, true, InputMode::UPPER);
           break;
-        case '4':
-          Input1(syscfg.logoff_c, syscfg.logoff_c, 51, true, InputMode::UPPER);
-          break;
         case '5':
           Input1(syscfg.newuser_c, syscfg.newuser_c, 51, true, InputMode::UPPER);
           break;
         case '6':
           Input1(syscfg.upload_c, syscfg.upload_c, 51, true, InputMode::UPPER);
-          break;
-        case '7':
-          Input1(syscfg.v_scan_c, syscfg.v_scan_c, 51, true, InputMode::UPPER);
           break;
         case '?':
           GetSession()->localIO()->LocalCls();
