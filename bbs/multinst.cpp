@@ -34,24 +34,22 @@ string GetInstanceActivityString(instancerec &ir) {
     return string("WWIV Chatroom");
   } 
   switch (ir.loc) {
-    case INST_LOC_DOWN:
-      return string("Offline");
-    case INST_LOC_INIT:
-      return string("Initializing BBS");
-    case INST_LOC_EMAIL:
-      return string("Sending Email");
-    case INST_LOC_MAIN:
-      return string("Main Menu");
+    case INST_LOC_DOWN: return string("Offline");
+    case INST_LOC_INIT: return string("Initializing BBS");
+    case INST_LOC_EMAIL: return string("Sending Email");
+    case INST_LOC_MAIN: return string("Main Menu");
     case INST_LOC_XFER:
       if (so() && ir.subloc < GetSession()->num_dirs) {
         string temp = StringPrintf("Dir : %s", stripcolors(directories[ ir.subloc ].name));
         return StrCat("Transfer Area", temp);
       }
+      return string("Transfer Area");
     case INST_LOC_CHAINS:
       if (ir.subloc > 0 && ir.subloc <= GetSession()->GetNumberOfChains()) {
         string temp = StringPrintf("Door: %s", stripcolors(chains[ ir.subloc - 1 ].description));
         return StrCat("Chains", temp);
       }
+      return string("Chains");
     case INST_LOC_NET: return string("Network Transmission");
     case INST_LOC_GFILES: return string("GFiles");
     case INST_LOC_BEGINDAY: return string("Running BeginDay");
@@ -80,6 +78,7 @@ string GetInstanceActivityString(instancerec &ir) {
         string temp = StringPrintf("(Sub: %s)", stripcolors(subboards[ ir.subloc ].name));
         return StrCat("Reading Messages", temp);
       }
+      return string("Reading Messages");
     case INST_LOC_CHUSER: return string("Changing User");
     case INST_LOC_TEDIT: return string("In TEDIT");
     case INST_LOC_MAILR: return string("Reading All Mail");
@@ -94,6 +93,7 @@ string GetInstanceActivityString(instancerec &ir) {
         string temp = StringPrintf(" (Sub: %s)", stripcolors(subboards[ir.subloc].name));
         return StrCat("Posting a Message", temp);
       }
+      return string("Posting a Message");
     case INST_LOC_NEWUSER: return string("Registering a Newuser");
     case INST_LOC_RMAIL: return string("Reading Email");
     case INST_LOC_DOWNLOAD: return string("Downloading");
