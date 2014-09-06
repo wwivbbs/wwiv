@@ -19,29 +19,21 @@
 
 #include "wwiv.h"
 
-
-//
 // Local data structures
-//
 
 static int MACRO_KEY_TABLE[] = { 0, 2, 0, 0, 0, 0, 1 };
 
-//
 // Local functions
-//
-
 void HandleControlKey(char *ch);
 void PrintTime();
 void RedrawCurrentLine();
 
-
-char bgetch()
 /* This function checks both the local keyboard, and the remote terminal
-* (if any) for input.  If there is input, the key is returned.  If there
-* is no input, a zero is returned.  Function keys hit are interpreted as
-* such within the routine and not returned.
-*/
-{
+ * (if any) for input.  If there is input, the key is returned.  If there
+ * is no input, a zero is returned.  Function keys hit are interpreted as
+ * such within the routine and not returned.
+ */
+char bgetch() {
   char ch = 0;
   static int qpointer = 0, cpointer;
 
@@ -126,7 +118,6 @@ char bgetch()
   return ch;
 }
 
-
 void HandleControlKey(char *ch) {
   char c = *ch;
 
@@ -183,7 +174,6 @@ void HandleControlKey(char *ch) {
   }
   *ch = c;
 }
-
 
 void PrintTime() {
   char xl[81], cl[81], atr[81], cc;

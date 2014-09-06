@@ -19,17 +19,22 @@
 
 #include <algorithm>
 #include <conio.h>
+#include <string>
+#include <vector>
 
 #include "wwiv.h"
+#include "core/strings.h"
 #include "core/wfile.h"
 #include "core/wutil.h"
 #include "wcomm.h"
 
-extern int oldy = 0;
-
 // local functions
 bool HasKeyBeenPressed();
 unsigned char GetKeyboardChar();
+
+using std::string;
+using std::vector;
+using wwiv::strings::StringPrintf;
 
 /*
  * Sets screen attribute at screen pos x,y to attribute contained in a.
@@ -261,7 +266,6 @@ void WLocalIO::LocalCr() {
   SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
 }
 
-
 /**
  * Clears the local logical screen
  */
@@ -288,15 +292,12 @@ void WLocalIO::LocalCls() {
   curatr = nOldCurrentAttribute;
 }
 
-
-
-void WLocalIO::LocalBackspace()
+void WLocalIO::LocalBackspace() {
 /* This function moves the cursor one position to the left, or if the cursor
 * is currently at its left-most position, the cursor is moved to the end of
 * the previous line, except if it is on the top line, in which case nothing
 * happens.
 */
-{
   if (m_cursorPosition.X >= 0) {
     m_cursorPosition.X--;
   } else if (m_cursorPosition.Y != GetTopLine()) {
@@ -306,9 +307,7 @@ void WLocalIO::LocalBackspace()
   SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
 }
 
-
-
-void WLocalIO::LocalPutchRaw(unsigned char ch)
+void WLocalIO::LocalPutchRaw(unsigned char ch) {
 /* This function outputs one character to the screen, then updates the
 * cursor position accordingly, scolling the screen if necessary.  Not that
 * this function performs no commands such as a C/R or L/F.  If a value of
@@ -316,7 +315,6 @@ void WLocalIO::LocalPutchRaw(unsigned char ch)
 * type characters are passed, the appropriate corresponding "graphics"
 * symbol will be output to the screen as a normal character.
 */
-{
   DWORD cb;
 
   SetConsoleTextAttribute(m_hConOut, static_cast< short >(curatr));
@@ -352,7 +350,6 @@ void WLocalIO::LocalPutchRaw(unsigned char ch)
     m_cursorPosition.Y++;
   }
 }
-
 
 /**
  * This function outputs one character to the local screen.  C/R, L/F, TOF,
@@ -390,25 +387,20 @@ void WLocalIO::LocalPutch(unsigned char ch) {
   }
 }
 
-
-void WLocalIO::LocalPuts(const char *pszText)
+void WLocalIO::LocalPuts(const char *pszText) {
 // This (obviously) outputs a string TO THE SCREEN ONLY
-{
   while (*pszText) {
     LocalPutch(*pszText++);
   }
 }
-
 
 void WLocalIO::LocalXYPuts(int x, int y, const char *pszText) {
   LocalGotoXY(x, y);
   LocalFastPuts(pszText);
 }
 
-
-void WLocalIO::LocalFastPuts(const char *pszText)
+void WLocalIO::LocalFastPuts(const char *pszText) {
 // This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
-{
   DWORD cb = 0;
   int len = strlen(pszText);
 
@@ -416,7 +408,6 @@ void WLocalIO::LocalFastPuts(const char *pszText)
   WriteConsole(m_hConOut, pszText, len, &cb, NULL);
   m_cursorPosition.X = m_cursorPosition.X + static_cast< short >(cb);
 }
-
 
 int  WLocalIO::LocalPrintf(const char *pszFormattedText, ...) {
   va_list ap;
@@ -429,7 +420,6 @@ int  WLocalIO::LocalPrintf(const char *pszFormattedText, ...) {
   return nNumWritten;
 }
 
-
 int  WLocalIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
   va_list ap;
   char szBuffer[ 1024 ];
@@ -440,7 +430,6 @@ int  WLocalIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
   LocalXYPuts(x, y, szBuffer);
   return nNumWritten;
 }
-
 
 int  WLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) {
   va_list ap;
@@ -458,10 +447,8 @@ int  WLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszForma
   return nNumWritten;
 }
 
-
-void WLocalIO::set_protect(int l) //JZ Set_Protect Fix
+void WLocalIO::set_protect(int l) { //JZ Set_Protect Fix
 // set_protect sets the number of lines protected at the top of the screen.
-{
   if (l != GetTopLine()) {
     COORD coord;
     coord.X = 0;
@@ -485,18 +472,15 @@ void WLocalIO::set_protect(int l) //JZ Set_Protect Fix
         ScrollConsoleScreenBuffer(m_hConOut, &scrnl, NULL, coord, &lpFill);
         LocalGotoXY(WhereX(), WhereY() + l - GetTopLine());
       }
-      oldy += (GetTopLine() - l);
     } else {
       DWORD written;
       FillConsoleOutputAttribute(m_hConOut, 0, (GetTopLine() - l) * 80, coord, &written);
-      oldy += (GetTopLine() - l);
     }
   }
   SetTopLine(l);
   GetSession()->screenlinest = (GetSession()->using_modem) ? GetSession()->GetCurrentUser()->GetScreenLines() :
                                defscreenbottom + 1 - GetTopLine();
 }
-
 
 void WLocalIO::savescreen() {
   COORD topleft;
@@ -522,7 +506,6 @@ void WLocalIO::savescreen() {
   m_ScreenSave.curatr1 = static_cast< short >(curatr);
 }
 
-
 /*
  * restorescreen restores a screen previously saved with savescreen
  */
@@ -547,32 +530,15 @@ void WLocalIO::restorescreen() {
   LocalGotoXY(m_ScreenSave.x1, m_ScreenSave.y1);
 }
 
-
-void WLocalIO::ExecuteTemporaryCommand(const char *pszCommand) {
-  GetSession()->DisplaySysopWorkingIndicator(true);
-  savescreen();
-  int i = GetTopLine();
-  SetTopLine(0);
-  curatr = 0x07;
-  LocalCls();
-  ExecuteExternalProgram(pszCommand, EFLAG_TOPSCREEN);
-  restorescreen();
-  SetTopLine(i);
-  GetSession()->DisplaySysopWorkingIndicator(false);
-}
-
-
 char xlate[] = {
   'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, 0, 0, 0,
   'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0, 0, 0, 0, 0,
   'Z', 'X', 'C', 'V', 'B', 'N', 'M',
 };
 
-
 char WLocalIO::scan_to_char(int nKeyCode) {
   return (nKeyCode >= 16 && nKeyCode <= 50) ? xlate[ nKeyCode - 16 ] : '\x00';
 }
-
 
 void WLocalIO::alt_key(int nKeyCode) {
   char ch1 = scan_to_char(nKeyCode);
@@ -616,23 +582,10 @@ void WLocalIO::alt_key(int nKeyCode) {
             }
           }
         }
-        // TODO - Re-enable this at some point, but since we don't answer calls
-        // too well, it's not too important right now.
-        /*
-        else if (m_nWfcStatus == 1)
-        {
-            holdphone( true );
-            ExecuteTemporaryCommand(szCommand);
-            cleanup_net();
-            holdphone( false );
-        }
-        */
-
       }
     }
   }
 }
-
 
 /*
  * skey handles all f-keys and the like hit FROM THE KEYBOARD ONLY
@@ -751,8 +704,7 @@ void WLocalIO::skey(char ch) {
   }
 }
 
-
-static const char * pszTopScrItems[] = {
+static const vector<string> top_screen_items = {
   "Comm Disabled",
   "Temp Sysop",
   "Capture",
@@ -763,18 +715,7 @@ static const char * pszTopScrItems[] = {
   "%s chatting with %s"
 };
 
-
 void WLocalIO::tleft(bool bCheckForTimeOut) {
-  static char sbuf[200];
-  static char *ss[8];
-
-  if (!sbuf[0]) {
-    ss[0] = sbuf;
-    for (int i = 0; i < 7; i++) {
-      strcpy(ss[i], pszTopScrItems[i]);
-      ss[i + 1] = ss[i] + strlen(ss[i]) + 1;
-    }
-  }
   int cx = WhereX();
   int cy = WhereY();
   int ctl = GetTopLine();
@@ -787,7 +728,7 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
 
   if (GetSession()->topdata) {
     if (GetSession()->using_modem && !incom) {
-      LocalXYPuts(1, nLineNumber, ss[0]);
+      LocalXYPuts(1, nLineNumber, top_screen_items[0].c_str());
       for (std::string::size_type i = 19; i < GetSession()->GetCurrentSpeed().length(); i++) {
         LocalPutch(static_cast<unsigned char>('\xCD'));
       }
@@ -799,21 +740,21 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
     }
 
     if (GetSession()->GetCurrentUser()->GetSl() != 255 && GetSession()->GetEffectiveSl() == 255) {
-      LocalXYPuts(23, nLineNumber, ss[1]);
+      LocalXYPuts(23, nLineNumber, top_screen_items[1].c_str());
     }
     if (fileGlobalCap.IsOpen()) {
-      LocalXYPuts(40, nLineNumber, ss[2]);
+      LocalXYPuts(40, nLineNumber, top_screen_items[2].c_str());
     }
     if (GetSysopAlert()) {
-      LocalXYPuts(54, nLineNumber, ss[3]);
+      LocalXYPuts(54, nLineNumber, top_screen_items[3].c_str());
     } else {
-      LocalXYPuts(54, nLineNumber, ss[4]);
+      LocalXYPuts(54, nLineNumber, top_screen_items[4].c_str());
     }
 
     if (sysop1()) {
-      LocalXYPuts(64, nLineNumber, ss[5]);
+      LocalXYPuts(64, nLineNumber, top_screen_items[5].c_str());
     } else {
-      LocalXYPuts(64, nLineNumber, ss[6]);
+      LocalXYPuts(64, nLineNumber, top_screen_items[6].c_str());
     }
   }
   switch (GetSession()->topdata) {
@@ -842,7 +783,6 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
   }
 }
 
-
 void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {
   char i;
   char sl[82], ar[17], dar[17], restrict[17], rst[17], lo[90];
@@ -855,10 +795,9 @@ void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstan
 
   if (syscfg.sysconfig & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
-    char szConsoleTitle[ 255 ];
-    _snprintf(szConsoleTitle, sizeof(szConsoleTitle), "WWIV Node %d (User: %s)", nInstanceNumber,
+    string title = StringPrintf("WWIV Node %d (User: %s)", nInstanceNumber,
               pSession->GetCurrentUser()->GetUserNameAndNumber(pSession->usernum));
-    ::SetConsoleTitle(szConsoleTitle);
+    ::SetConsoleTitle(title.c_str());
   }
 
   switch (pSession->topdata) {
@@ -982,8 +921,6 @@ void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstan
     }
   }
   break;
-  default:
-    break;
   }
   if (nOldTopLine != 0) {
     LocalXYPuts(0, nOldTopLine - 1, sl);
@@ -996,20 +933,15 @@ void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstan
   lines_listed = lll;
 }
 
-
-/****************************************************************************/
-
-
 /**
  * IsLocalKeyPressed - returns whether or not a key been pressed at the local console.
  *
  * @return true if a key has been pressed at the local console, false otherwise
  */
 bool WLocalIO::LocalKeyPressed() {
-  return (x_only ? 0 : (HasKeyBeenPressed() || ExtendedKeyWaiting)) ? true : false;
+  return (x_only ? 0 : (HasKeyBeenPressed() || ExtendedKeyWaiting));
 }
 
-/****************************************************************************/
 /*
 * returns the ASCII code of the next character waiting in the
 * keyboard buffer.  If there are no characters waiting in the
@@ -1031,8 +963,6 @@ unsigned char WLocalIO::getchd() {
   return rc;
 }
 
-
-/****************************************************************************/
 /*
 * returns the ASCII code of the next character waiting in the
 * keyboard buffer.  If there are no characters waiting in the
@@ -1058,7 +988,6 @@ unsigned char WLocalIO::getchd1() {
   return rc;
 }
 
-
 void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
   *cc = static_cast<char>(curatr);
   strcpy(xl, endofline);
@@ -1081,7 +1010,6 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
   atr[ WhereX() ] = 0;
 }
 
-
 /**
  * LocalGetChar - gets character entered at local console.
  *                <B>Note: This is a blocking function call.</B>
@@ -1092,10 +1020,9 @@ int  WLocalIO::LocalGetChar() {
   return GetKeyboardChar();
 }
 
-
 void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
-  xlen = std::min<int>(xlen, 80);
+  xlen = std::min(xlen, 80);
   if (ylen > (GetScreenBottom() + 1 - GetTopLine())) {
     ylen = (GetScreenBottom() + 1 - GetTopLine());
   }
@@ -1133,10 +1060,7 @@ void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // our current position within the CHAR_INFO buffer
   int nCiPtr  = 0;
 
-  //
   // Loop through Y, each time looping through X adding the right character
-  //
-
   for (int yloop = 0; yloop < size.Y; yloop++) {
     for (int xloop = 0; xloop < size.X; xloop++) {
       ci[nCiPtr].Attributes = static_cast< short >(curatr);
@@ -1153,9 +1077,7 @@ void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
     }
   }
 
-  //
   // sum of the lengths of the previous lines (+0) is the start of next line
-  //
 
   ci[0].Char.AsciiChar                    = '\xDA';      // upper left
   ci[xlen - 1].Char.AsciiChar               = '\xBF';    // upper right
@@ -1163,17 +1085,13 @@ void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   ci[xlen * (ylen - 1)].Char.AsciiChar        = '\xC0';  // lower left
   ci[xlen * (ylen - 1) + xlen - 1].Char.AsciiChar = '\xD9'; // lower right
 
-  //
   // Send it all to the screen with 1 WIN32 API call (Windows 95's console mode API support
   // is MUCH slower than NT/Win2k, therefore it is MUCH faster to render the buffer off
   // screen and then write it with one fell swoop.
-  //
 
   WriteConsoleOutput(m_hConOut, ci, size, pos, &rect);
 
-  //
   // Draw shadow around boxed window
-  //
   for (int i = 0; i < xlen; i++) {
     set_attr_xy(x + 1 + i, y + ylen, 0x08);
   }
@@ -1183,9 +1101,7 @@ void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   }
 
   LocalGotoXY(xx, yy);
-
 }
-
 
 void WLocalIO::SetCursor(int cursorStyle) {
   CONSOLE_CURSOR_INFO cursInfo;
@@ -1212,7 +1128,6 @@ void WLocalIO::SetCursor(int cursorStyle) {
   }
 }
 
-
 void WLocalIO::LocalClrEol() {
   CONSOLE_SCREEN_BUFFER_INFO ConInfo;
   DWORD cb;
@@ -1223,22 +1138,21 @@ void WLocalIO::LocalClrEol() {
   FillConsoleOutputAttribute(m_hConOut, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb);
 }
 
-
-
 void WLocalIO::LocalWriteScreenBuffer(const char *pszBuffer) {
   CHAR_INFO ci[2000];
-
-  COORD pos       = { 0, 0};
-  COORD size      = { 80, 25 };
-  SMALL_RECT rect = { 0, 0, 79, 24 };
+  const char *p = pszBuffer;
 
   for (int i = 0; i < 2000; i++) {
-    ci[i].Char.AsciiChar = (char) * (pszBuffer + ((i * 2) + 0));
-    ci[i].Attributes     = (unsigned char) * (pszBuffer + ((i * 2) + 1));
+    ci[i].Char.AsciiChar = *p++;
+    ci[i].Attributes     = *p++;
   }
+
+  COORD pos = { 0, 0};
+  COORD size = { 80, 25 };
+  SMALL_RECT rect = { 0, 0, 79, 24 };
+
   WriteConsoleOutput(m_hConOut, ci, size, pos, &rect);
 }
-
 
 int WLocalIO::GetDefaultScreenBottom() {
   return (m_consoleBufferInfo.dwSize.Y - 1);
@@ -1304,11 +1218,9 @@ for (; NumPeeked > 0 ; NumPeeked--, pIRBuf++) {
 
 }
 
-
 unsigned char GetKeyboardChar() {
   return static_cast< unsigned char >(_getch());
 }
-
 
 void WLocalIO::LocalEditLine(char *pszInOutText, int len, int status, int *returncode, char *pszAllowedSet) {
   WWIV_ASSERT(pszInOutText);

@@ -96,7 +96,6 @@ class WLocalIO {
 
 
  private:
-  void ExecuteTemporaryCommand(const char *pszCommand);
   char scan_to_char(int nKeyCode);
   void alt_key(int nKeyCode);
   int  GetEditLineStringLength(const char *pszText);
@@ -127,7 +126,7 @@ class WLocalIO {
 
   // Constructor/Destructor
   WLocalIO();
-  WLocalIO(const WLocalIO& copy);
+  WLocalIO(const WLocalIO& copy) = delete;
   virtual ~WLocalIO();
 
   void SetChatReason(char* pszChatReason) {

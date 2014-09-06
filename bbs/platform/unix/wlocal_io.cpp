@@ -388,8 +388,6 @@ void WLocalIO::savescreen() {}
 void WLocalIO::restorescreen() {
 }
 
-void WLocalIO::ExecuteTemporaryCommand(const char *pszCommand) {}
-
 char xlate[] = {
   'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, 0, 0, 0,
   'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0, 0, 0, 0, 0,
