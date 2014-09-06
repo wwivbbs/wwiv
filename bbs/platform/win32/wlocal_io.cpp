@@ -944,7 +944,15 @@ void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstan
  * @return true if a key has been pressed at the local console, false otherwise
  */
 bool WLocalIO::LocalKeyPressed() {
-  return (x_only ? 0 : (HasKeyBeenPressed(m_hConIn) || ExtendedKeyWaiting));
+  if (x_only) {
+    return false;
+  }
+
+  if (ExtendedKeyWaiting) {
+    return true;
+  }
+
+  return HasKeyBeenPressed(m_hConIn);
 }
 
 /*
@@ -1129,9 +1137,6 @@ int WLocalIO::GetDefaultScreenBottom() {
 }
 
 bool HasKeyBeenPressed(HANDLE in) {
-  return _kbhit() != 0;
-
-#ifdef EXPERIMENTAL_WIN32_INPUT_ROUTINES
   DWORD num_events;  // NumPending
   GetNumberOfConsoleInputEvents(in, &num_events);
   if (num_events == 0) {
@@ -1150,15 +1155,20 @@ bool HasKeyBeenPressed(HANDLE in) {
       if (!input[i].Event.KeyEvent.bKeyDown) {
         continue;
       }
-      if (input[i].Event.KeyEvent.uChar.AsciiChar) { 
-        return true;
-      } else {
-        std::cerr << "{KeyCode=" << input[i].Event.KeyEvent.wVirtualKeyCode << "; ScanCode=" << input[i].Event.KeyEvent.wVirtualScanCode << "} ";
+      if (input[i].Event.KeyEvent.wVirtualKeyCode == VK_SHIFT   ||
+          input[i].Event.KeyEvent.wVirtualKeyCode == VK_CONTROL ||
+          input[i].Event.KeyEvent.wVirtualKeyCode == VK_MENU) {
+        continue;
       }
+      if (input[i].Event.KeyEvent.dwControlKeyState & LEFT_ALT_PRESSED ||
+          input[i].Event.KeyEvent.dwControlKeyState & RIGHT_ALT_PRESSED) {
+        // std::cerr << "ALT KEY ";
+      } 
+      // std::cerr << "{KeyCode=" << input[i].Event.KeyEvent.wVirtualKeyCode << "; ScanCode=" << input[i].Event.KeyEvent.wVirtualScanCode << "} ";
+      return true;
     }
   }
   return false;
-#endif  // EXPERIMENTAL_WIN32_INPUT_ROUTINES
 }
 
 unsigned char GetKeyboardChar() {
