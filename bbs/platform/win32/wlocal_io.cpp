@@ -79,11 +79,14 @@ WLocalIO::WLocalIO() {
 
   // Have to reset this info, otherwise bad things happen.
   GetConsoleScreenBufferInfo(m_hConOut, &m_consoleBufferInfo);
+  GetConsoleMode(m_hConIn, &saved_input_mode_);
+  SetConsoleMode(m_hConIn, 0);
 }
 
 WLocalIO::~WLocalIO() {
   SetConsoleScreenBufferSize(m_hConOut, m_originalConsoleSize);
   SetConsoleTextAttribute(m_hConOut, 0x07);
+  SetConsoleMode(m_hConIn, saved_input_mode_);
 }
 
 void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
