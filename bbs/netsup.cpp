@@ -1422,7 +1422,7 @@ void force_callout(int dw) {
           while ((tc < nr) && (!abort)) {
             if (GetSession()->localIO()->LocalKeyPressed()) {
               while (GetSession()->localIO()->LocalKeyPressed()) {
-                ch = wwiv::UpperCase<char>(GetSession()->localIO()->getchd1());
+                ch = wwiv::UpperCase<char>(GetSession()->localIO()->LocalGetChar());
                 if (!abort) {
                   abort = (ch == ESC) ? true : false;
                 }

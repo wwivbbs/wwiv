@@ -174,9 +174,9 @@ int WApplication::doWFCEvents() {
       read_qscn(1, qsc, false);
       fwaiting = GetSession()->GetCurrentUser()->GetNumMailWaiting();
       SetWfcStatus(1);
-      ch = wwiv::UpperCase<char>(GetSession()->localIO()->getchd1());
+      ch = wwiv::UpperCase<char>(GetSession()->localIO()->LocalGetChar());
       if (!ch) {
-        ch = GetSession()->localIO()->getchd1();
+        ch = GetSession()->localIO()->LocalGetChar();
         GetSession()->localIO()->skey(ch);
         ch = 0;
       }
@@ -572,14 +572,14 @@ int WApplication::LocalLogon() {
     ;
 
   if (GetSession()->localIO()->LocalKeyPressed()) {
-    char ch = wwiv::UpperCase<char>(GetSession()->localIO()->getchd1());
+    char ch = wwiv::UpperCase<char>(GetSession()->localIO()->LocalGetChar());
     if (ch == 'Y') {
       GetSession()->localIO()->LocalFastPuts(YesNoString(true));
       GetSession()->bout << wwiv::endl;
       lokb = 1;
     } else if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
       // The ch == 224 is a Win32'ism
-      GetSession()->localIO()->getchd1();
+      GetSession()->localIO()->LocalGetChar();
     } else {
       bool fast = false;
       if (!AllowLocalSysop()) {
@@ -634,7 +634,7 @@ int WApplication::LocalLogon() {
     }
     if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
       // The 224 is a Win32'ism
-      GetSession()->localIO()->getchd1();
+      GetSession()->localIO()->LocalGetChar();
     }
   }
   if (lokb == 0) {

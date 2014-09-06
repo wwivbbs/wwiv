@@ -187,11 +187,9 @@ class WLocalIO {
   void skey(char ch);
   void tleft(bool bCheckForTimeOut);
   void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber);
-  bool  LocalKeyPressed();
-  unsigned char getchd();
-  unsigned char getchd1();
+  bool LocalKeyPressed();
+  unsigned char LocalGetChar();
   void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc);
-  int  LocalGetChar();
   /*
    * MakeLocalWindow makes a "shadowized" window with the upper-left hand corner at
    * (x,y), and the lower-right corner at (x+xlen,y+ylen).
