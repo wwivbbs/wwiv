@@ -18,6 +18,7 @@
 #include "bbs/platform/wlocal_io.h"
 
 #include <algorithm>
+#include <memory>
 #include <conio.h>
 #include <string>
 #include <vector>
@@ -29,10 +30,11 @@
 #include "wcomm.h"
 
 // local functions
-bool HasKeyBeenPressed();
+bool HasKeyBeenPressed(HANDLE in);
 unsigned char GetKeyboardChar();
 
 using std::string;
+using std::unique_ptr;
 using std::vector;
 using wwiv::strings::StringPrintf;
 
@@ -942,7 +944,7 @@ void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstan
  * @return true if a key has been pressed at the local console, false otherwise
  */
 bool WLocalIO::LocalKeyPressed() {
-  return (x_only ? 0 : (HasKeyBeenPressed() || ExtendedKeyWaiting));
+  return (x_only ? 0 : (HasKeyBeenPressed(m_hConIn) || ExtendedKeyWaiting));
 }
 
 /*
@@ -977,7 +979,7 @@ unsigned char WLocalIO::getchd() {
 * a value of 0 to obtain the value of the extended key pressed.
 */
 unsigned char WLocalIO::getchd1() {
-  if (!(HasKeyBeenPressed() || ExtendedKeyWaiting)) {
+  if (!(HasKeyBeenPressed(m_hConIn) || ExtendedKeyWaiting)) {
     return 255;
   }
   if (ExtendedKeyWaiting) {
@@ -1161,64 +1163,37 @@ int WLocalIO::GetDefaultScreenBottom() {
   return (m_consoleBufferInfo.dwSize.Y - 1);
 }
 
+bool HasKeyBeenPressed(HANDLE in) {
+  return _kbhit();
 
-bool HasKeyBeenPressed() {
-  return (_kbhit()) ? true : false;
-
-  // TODO - This code below doesn't work, hence we aren't using it.
-  // Ideally, we should support mouse input, and try to not use the
-  // generic CRT functions whenever possible to get a better Win32
-  // feel to everything, but until the code works, it's disabled.
-#if 0
-
-  PINPUT_RECORD pIRBuf;
-  DWORD NumPeeked;
-  bool bHasKeyBeenPressed = false;
-
-  DWORD dwNumEvents;  // NumPending
-  GetNumberOfConsoleInputEvents(m_hConIn, &dwNumEvents);
-  if (dwNumEvents == 0) {
+#ifdef EXPERIMENTAL_WIN32_INPUT_ROUTINES
+  DWORD num_events;  // NumPending
+  GetNumberOfConsoleInputEvents(in, &num_events);
+  if (num_events == 0) {
     return false;
   }
 
-  PINPUT_RECORD pInputRec = (PINPUT_RECORD) malloc(dwNumEvents * sizeof(INPUT_RECORD));
-  if (!pInputRec) {
-    // Really something bad happened here.
-    return false;
-  }
+  unique_ptr<INPUT_RECORD[]> input(new INPUT_RECORD[num_events]);
+  ZeroMemory(input.get(), sizeof(INPUT_RECORD) * num_events);
 
-  DWORD dwNumEventsRead;
-  if (PeekConsoleInput(m_hConIn, pInputRec, dwNumEvents, &dwNumEventsRead)) {
-    for (int i = 0; i < dwNumEventsRead; i++) {
-      if (pInputRec->EventType == KEY_EVENT &&
-          pInputRec->Event.KeyEvent.bKeyDown &&
-          (pInputRec->Event.KeyEvent.uChar.AsciiChar ||
-      IsExtendedKeyCode(pInputRec->Event.KeyEvent)) {
-      bHasKeyBeenPressed = true;
-      break;
-    }
-    pInputRec++;
-  }
-}
-
-// Scan all of the peeked events to determine if any is a key event
-// which should be recognized.
-for (; NumPeeked > 0 ; NumPeeked--, pIRBuf++) {
-    if ((pIRBuf->EventType == KEY_EVENT) &&
-        (pIRBuf->Event.KeyEvent.bKeyDown) &&
-        (pIRBuf->Event.KeyEvent.uChar.AsciiChar ||
-         _getextendedkeycode(&(pIRBuf->Event.KeyEvent)))) {
-      // Key event corresponding to an ASCII character or an
-      // extended code. In either case, success!
-      ret = TRUE;
+  DWORD actually_read;
+  if (PeekConsoleInput(in, input.get(), num_events, &actually_read)) {
+    for (int i = 0; i < actually_read; i++) {
+      if (input[i].EventType != KEY_EVENT) {
+        continue;
+      }
+      if (!input[i].Event.KeyEvent.bKeyDown) {
+        continue;
+      }
+      if (input[i].Event.KeyEvent.uChar.AsciiChar) { 
+        return true;
+      } else {
+        std::cerr << "{KeyCode=" << input[i].Event.KeyEvent.wVirtualKeyCode << "; ScanCode=" << input[i].Event.KeyEvent.wVirtualScanCode << "} ";
+      }
     }
   }
-
-  free(pInputRec);
-
-  return bHasKeyBeenPressed;
-#endif
-
+  return false;
+#endif  // EXPERIMENTAL_WIN32_INPUT_ROUTINES
 }
 
 unsigned char GetKeyboardChar() {
