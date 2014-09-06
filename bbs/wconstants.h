@@ -16,11 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #ifndef __INCLUDED_WCONSTANTS_H__
 #define __INCLUDED_WCONSTANTS_H__
-
-
 
 #define COMMAND_F1        (F1+256)
 #define COMMAND_SF1       (SF1+256)
@@ -163,9 +160,6 @@
 #define ARARROW     157
 #define AUARROW     152
 #define ADARROW     160
-
-//#define AUPARROW    AUARROW
-//#define ADNARROW    ADARROW
 
 #define HOME        71
 #define CHOME       119
