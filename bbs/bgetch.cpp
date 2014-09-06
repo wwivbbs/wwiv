@@ -96,11 +96,11 @@ char bgetch() {
     }
   }
   if (GetSession()->localIO()->LocalKeyPressed()) {
-    ch = GetSession()->localIO()->getchd1();
+    ch = GetSession()->localIO()->LocalGetChar();
     GetSession()->SetLastKeyLocal(true);
     if (!(g_flags & g_flag_allow_extended)) {
       if (!ch) {
-        ch = GetSession()->localIO()->getchd1();
+        ch = GetSession()->localIO()->LocalGetChar();
         GetSession()->localIO()->skey(ch);
         ch = static_cast< char >(((ch == F10) || (ch == CF10)) ? 2 : 0);
       }

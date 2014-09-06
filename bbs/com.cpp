@@ -64,7 +64,7 @@ char bgetchraw() {
       return (GetSession()->remoteIO()->getW());
     }
     if (GetSession()->localIO()->LocalKeyPressed()) {
-      return (GetSession()->localIO()->getchd1());
+      return GetSession()->localIO()->LocalGetChar();
     }
   }
   return 0;

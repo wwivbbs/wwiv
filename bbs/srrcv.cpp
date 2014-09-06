@@ -194,9 +194,9 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
     while (fabs(timer() - d1) < 10.0 && !bkbhitraw() && !hangup) {
       CheckForHangup();
       if (GetSession()->localIO()->LocalKeyPressed()) {
-        ch = GetSession()->localIO()->getchd();
+        ch = GetSession()->localIO()->LocalGetChar();
         if (ch == 0) {
-          GetSession()->localIO()->getchd();
+          GetSession()->localIO()->LocalGetChar();
         } else if (ch == ESC) {
           done = true;
           ok = false;

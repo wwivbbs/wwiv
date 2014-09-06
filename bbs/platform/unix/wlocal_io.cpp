@@ -635,22 +635,7 @@ bool WLocalIO::LocalKeyPressed() {
 * Alt-X, etc.).  The function must be called again upon receiving
 * a value of 0 to obtain the value of the extended key pressed.
 */
-unsigned char WLocalIO::getchd() {
-  return 0;
-}
-
-/****************************************************************************/
-/*
-* returns the ASCII code of the next character waiting in the
-* keyboard buffer.  If there are no characters waiting in the
-* keyboard buffer, then it returns immediately with a value
-* of 255.
-*
-* A value of 0 is returned for all extended keys (such as F1,
-* Alt-X, etc.).  The function must be called again upon receiving
-* a value of 0 to obtain the value of the extended key pressed.
-*/
-unsigned char WLocalIO::getchd1() {
+unsigned char WLocalIO::LocalGetChar() {
   return 0;
 }
 
