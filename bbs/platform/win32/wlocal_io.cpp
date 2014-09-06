@@ -1162,9 +1162,11 @@ bool HasKeyBeenPressed(HANDLE in) {
       }
       if (input[i].Event.KeyEvent.dwControlKeyState & LEFT_ALT_PRESSED ||
           input[i].Event.KeyEvent.dwControlKeyState & RIGHT_ALT_PRESSED) {
-        // std::cerr << "ALT KEY ";
+        //std::cerr << "ALT KEY uchar=" << input[i].Event.KeyEvent.uChar.AsciiChar << "} ";
       } 
-      // std::cerr << "{KeyCode=" << input[i].Event.KeyEvent.wVirtualKeyCode << "; ScanCode=" << input[i].Event.KeyEvent.wVirtualScanCode << "} ";
+      //std::cerr << "{KeyCode=" << input[i].Event.KeyEvent.wVirtualKeyCode << "; ScanCode=" 
+      //          << input[i].Event.KeyEvent.wVirtualScanCode << ", char=" 
+      //          << input[i].Event.KeyEvent.uChar.AsciiChar << "} ";
       return true;
     }
   }
