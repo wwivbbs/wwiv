@@ -956,32 +956,7 @@ bool WLocalIO::LocalKeyPressed() {
 * Alt-X, etc.).  The function must be called again upon receiving
 * a value of 0 to obtain the value of the extended key pressed.
 */
-unsigned char WLocalIO::getchd() {
-  if (ExtendedKeyWaiting) {
-    ExtendedKeyWaiting = 0;
-    return GetKeyboardChar();
-  }
-  unsigned char rc = GetKeyboardChar();
-  if (rc == 0 || rc == 0xe0) {
-    ExtendedKeyWaiting = 1;
-  }
-  return rc;
-}
-
-/*
-* returns the ASCII code of the next character waiting in the
-* keyboard buffer.  If there are no characters waiting in the
-* keyboard buffer, then it returns immediately with a value
-* of 255.
-*
-* A value of 0 is returned for all extended keys (such as F1,
-* Alt-X, etc.).  The function must be called again upon receiving
-* a value of 0 to obtain the value of the extended key pressed.
-*/
-unsigned char WLocalIO::getchd1() {
-  if (!(HasKeyBeenPressed(m_hConIn) || ExtendedKeyWaiting)) {
-    return 255;
-  }
+unsigned char WLocalIO::LocalGetChar() {
   if (ExtendedKeyWaiting) {
     ExtendedKeyWaiting = 0;
     return GetKeyboardChar();
@@ -1013,16 +988,6 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
   }
   cl[ WhereX() ]  = 0;
   atr[ WhereX() ] = 0;
-}
-
-/**
- * LocalGetChar - gets character entered at local console.
- *                <B>Note: This is a blocking function call.</B>
- *
- * @return int value of key entered
- */
-int  WLocalIO::LocalGetChar() {
-  return GetKeyboardChar();
 }
 
 void WLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
@@ -1164,7 +1129,7 @@ int WLocalIO::GetDefaultScreenBottom() {
 }
 
 bool HasKeyBeenPressed(HANDLE in) {
-  return _kbhit();
+  return _kbhit() != 0;
 
 #ifdef EXPERIMENTAL_WIN32_INPUT_ROUTINES
   DWORD num_events;  // NumPending
@@ -1218,9 +1183,9 @@ void WLocalIO::LocalEditLine(char *pszInOutText, int len, int status, int *retur
   int pos = 0;
   bool insert = false;
   do {
-    unsigned char ch = getchd();
+    unsigned char ch = LocalGetChar();
     if (ch == 0 || ch == 224) {
-      ch = getchd();
+      ch = LocalGetChar();
       switch (ch) {
       case F1:
         done = true;

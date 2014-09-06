@@ -44,9 +44,9 @@ char gettimeout(double d, bool *abort) {
   double d1 = timer();
   while (fabs(timer() - d1) < d && !bkbhitraw() && !hangup && !*abort) {
     if (GetSession()->localIO()->LocalKeyPressed()) {
-      char ch = GetSession()->localIO()->getchd();
+      char ch = GetSession()->localIO()->LocalGetChar();
       if (ch == 0) {
-        GetSession()->localIO()->getchd();
+        GetSession()->localIO()->LocalGetChar();
       } else if (ch == ESC) {
         *abort = true;
       }
