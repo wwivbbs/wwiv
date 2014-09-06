@@ -111,6 +111,7 @@ class WLocalIO {
   HANDLE m_hConOut;
   HANDLE m_hConIn;
   CONSOLE_SCREEN_BUFFER_INFO m_consoleBufferInfo;
+  DWORD saved_input_mode_ = 0;
 #endif
 
 #if defined ( __APPLE__ )
