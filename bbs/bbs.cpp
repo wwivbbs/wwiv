@@ -175,7 +175,7 @@ int WApplication::doWFCEvents() {
       fwaiting = GetSession()->GetCurrentUser()->GetNumMailWaiting();
       SetWfcStatus(1);
       ch = wwiv::UpperCase<char>(GetSession()->localIO()->LocalGetChar());
-      if (!ch) {
+      if (ch == 0) {
         ch = GetSession()->localIO()->LocalGetChar();
         GetSession()->localIO()->skey(ch);
         ch = 0;
