@@ -99,7 +99,7 @@ void extrn_editors() {
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
-    list.set_help_items({{"Esc", "Exit"}, {"D", "Delete"}, {"I", "Insert"} });
+    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
     ListBoxResult result = list.Run();
     if (result.type == ListBoxResultType::HOTKEY) {
       switch (result.hotkey) {
