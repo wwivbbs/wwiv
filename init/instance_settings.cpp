@@ -53,7 +53,7 @@ static const int PROMPT_LINE = 6;
 #define FILENAME_UPPERCASE true
 #endif  // __unix__
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::vector;
 
 void show_instance(EditItems* items) {
@@ -133,7 +133,7 @@ void instance_editor() {
     int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
 
     out->Cls(ACS_CKBOARD);
-    auto_ptr<CursesWindow> window(out->CreateBoxedWindow("Temporary Directory Configuration", 10, 76));
+    unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Temporary Directory Configuration", 10, 76));
 
     window->PrintfXY(2, 1, "Temporary Dir Pattern : %s", temp.c_str());
     window->PrintfXY(2, 2, "Batch Dir Pattern     : %s", batch.c_str());

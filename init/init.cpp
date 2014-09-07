@@ -291,16 +291,6 @@ int WInitApp::main(int argc, char *argv[]) {
     close(hFile);
   }
 
-  initinfo.numeditors = 0;    
-  editors = (editorrec *)   malloc(10 * sizeof(editorrec));
-  sprintf(s, "%seditors.dat", syscfg.datadir);
-  hFile = open(s, O_RDWR | O_BINARY);
-  if (hFile > 0) {
-    initinfo.numeditors = (read(hFile, editors, 10 * sizeof(editorrec))) / sizeof(editorrec);
-    initinfo.numeditors = initinfo.numeditors;
-    close(hFile);
-  }
-
   bool bDataDirectoryOk = read_status();
   if (bDataDirectoryOk) {
     if ((status.net_version >= 31) || (status.net_version == 0)) {

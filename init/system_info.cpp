@@ -32,7 +32,7 @@
 #include "utility.h"
 #include "wwivinit.h"
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using wwiv::strings::StringPrintf;
 
@@ -120,7 +120,7 @@ void sysinfo1() {
   }
 
   out->Cls(ACS_CKBOARD);
-  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 19, 74));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 19, 74));
 
   int y = 1;
   window->PrintfXY(COL1_LINE, y++, "System PW        : ");

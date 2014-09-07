@@ -39,7 +39,7 @@ static const int COL1_POSITION = 17;
 static const int COL2_POSITION = 50;
 static const int COL1_LINE = 2;
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::vector;
 using wwiv::strings::StringPrintf;
 
@@ -121,7 +121,7 @@ static const int JumpToUser(CursesIO* io, CursesWindow* window) {
 void user_editor() {
   int number_users = number_userrecs();
   out->Cls(ACS_CKBOARD);
-  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("User Editor", 18, 76));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("User Editor", 18, 76));
 
   if (number_users < 1) {
     show_error_no_users(window.get());

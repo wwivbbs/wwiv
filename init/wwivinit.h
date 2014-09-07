@@ -51,7 +51,6 @@ extern statusrec status;
 extern subboardrec *subboards;
 extern chainfilerec *chains;
 extern newexternalrec *externs, *over_intern;
-extern editorrec *editors;
 extern arcrec *arcs;
 extern net_networks_rec *net_networks;
 extern languagerec *languages;
