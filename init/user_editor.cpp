@@ -111,11 +111,10 @@ static const int JumpToUser(CursesWindow* window) {
   
   ListBox list(window, "Select User", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
     static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
-  int selected_item = list.Run();
-  if (selected_item >= 0) {
-    return items[selected_item].data();
+  ListBoxResult result = list.Run();
+  if (result.type == ListBoxResultType::SELECTION) {
+    return items[result.selected].data();
   }
-
   return -1;
 }
 

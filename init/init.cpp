@@ -391,13 +391,13 @@ int WInitApp::main(int argc, char *argv[]) {
     {
       ListBox list(out->window(), "Main Menu", static_cast<int>(floor(out->window()->GetMaxX() * 0.8)), 
         static_cast<int>(floor(out->window()->GetMaxY() * 0.8)), items, out->color_scheme());
-      list.set_hotkey_executes_item(true);
-      int selected_item = list.Run();
-      if (selected_item < 0) {
+      list.selection_returns_hotkey(true);
+      ListBoxResult result = list.Run();
+      if (result.type == ListBoxResultType::HOTKEY) {
+        selected_hotkey = result.hotkey;
+      } else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
-        continue;
       }
-      selected_hotkey = items[selected_item].hotkey();
     }
     out->footer()->SetDefaultFooter();
 
