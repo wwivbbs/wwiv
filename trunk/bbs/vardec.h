@@ -605,11 +605,11 @@ struct zlogrec {
 
 // DATA FOR OTHER PROGRAMS AVAILABLE
 struct chainfilerec {
-  char filename[81],                          // filename for .chn file
-       description[81];                        // description of it
+  char filename[81],                    // filename for .chn file
+       description[81];                 // description of it
 
   uint8_t sl,                           // seclev restriction
-           ansir;                                  // if ANSI required
+          ansir;                        // chain flags (ANSI required, FOSSIL, etc)
 
   uint16_t ar;                          // AR restriction
 };
@@ -646,9 +646,10 @@ struct newexternalrec {
 // DATA FOR EXTERNAL EDITORS
 struct editorrec {
   char description[81],                       // description of editor
-       filename[81];                           // how to run the editor
-
-  uint32_t xxUNUSED;                     // TODO This was not used (config)
+       filename[81];                          // how to run the editor
+  uint8_t bbs_type;                           // 0=WWIV, 1=QBBS
+  uint8_t ansir;                              // Editor Flags (ANSI required, FOSSIL, etc)
+  uint8_t unused[2];                          // TODO This was not used (config)
 
   char filenamecon[81];                       // how to run locally
 
