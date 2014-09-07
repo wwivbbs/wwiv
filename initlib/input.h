@@ -155,6 +155,34 @@ protected:
   }
 };
 
+template<typename T> 
+class ToggleEditItem : public EditItem<T*> {
+public:
+  ToggleEditItem(int x, int y, const std::vector<std::string> items, T* data) 
+      : EditItem<T*>(x, y, 0, data), items_(items) {
+    for (const auto& item : items) {
+      maxlen_ = std::max(maxlen_, item.size());
+    }
+  }
+  virtual ~ToggleEditItem() {}
+
+  virtual int Run(CursesWindow* window) {
+    window->GotoXY(this->x_, this->y_);
+    int return_code = 0;
+    *this->data_ = toggleitem(window, *this->data_, items_, &return_code);
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+    window->PrintfXY(this->x_, this->y_, "%s", this->items_.at(*this->data_).c_str());
+  }
+private:
+  const std::vector<std::string> items_;
+};
+
 class RestrictionsEditItem : public EditItem<uint16_t*> {
 public:
   RestrictionsEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 0, data) {}
