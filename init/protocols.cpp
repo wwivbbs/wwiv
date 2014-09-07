@@ -66,6 +66,10 @@ static void edit_prot(int n) {
   if (n >= 6) {
     c = externs[n - 6];
   } else {
+    if (n == 5) {
+      // This is the "Batch" protocol which has no override.
+      return;
+    }
     c = over_intern[n - 2];
     strcpy(c.description, prot_name(n));
     strcpy(c.receivebatchfn, "-- N/A --");
