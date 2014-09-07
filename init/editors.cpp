@@ -62,17 +62,17 @@ void edit_editor(editorrec* c) {
   items.set_curses_io(out, window.get());
 
   int y = 1;
-  window->PrintfXY(2, y++, "Description     : %s", c->description);
-  window->PrintfXY(2, y++, "BBS Type        : %s", bbs_types.at(c->bbs_type).c_str());
-  window->PrintfXY(2, y++, "Filename to run remotely:", c->filename);
+  window->PutsXY(2, y++, "Description     : ");
+  window->PutsXY(2, y++, "BBS Type        : ");
+  window->PutsXY(2, y++, "Filename to run remotely:");
   y+=2;
-  window->PrintfXY(2, y++, "Filename to run locally:", c->filenamecon);
+  window->PutsXY(2, y++, "Filename to run locally:");
   y+=2;
-  window->PrintfXY(2, y++, "%%1 = filename to edit");
-  window->PrintfXY(2, y++, "%%2 = chars per line");
-  window->PrintfXY(2, y++, "%%3 = lines per page");
-  window->PrintfXY(2, y++, "%%4 = max lines");
-  window->PrintfXY(2, y++, "%%5 = instance number");
+  window->PutsXY(2, y++, "%%1 = filename to edit");
+  window->PutsXY(2, y++, "%%2 = chars per line");
+  window->PutsXY(2, y++, "%%3 = lines per page");
+  window->PutsXY(2, y++, "%%4 = max lines");
+  window->PutsXY(2, y++, "%%5 = instance number");
   items.Run();
 }
 
