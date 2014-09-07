@@ -39,6 +39,9 @@ ListBox::ListBox(CursesWindow* parent, const string& title, int max_x, int max_y
   int longest_line = std::max<int>(2, title.size() + 4);
   for (const auto& item : items) {
     longest_line = std::max<int>(longest_line, item.text().size());
+    if (item.hotkey() > 0) {
+      hotkeys_.push_back(toupper(item.hotkey()));
+    }
   }
   width_ = std::min<int>(max_x, longest_line);
   int window_width = 4 + width_;
@@ -78,7 +81,7 @@ void ListBox::DrawAllItems() {
   }
 }
 
-bool ListBox::RunDialog() {
+ListBoxResult ListBox::RunDialog() {
   window_top_ = window_top_min_;
   selected_ = 0;
 
@@ -134,26 +137,20 @@ bool ListBox::RunDialog() {
     case PADENTER:
 #endif
     case KEY_ENTER:
-    case 13:
-      return true;
+    case 13: {
+      int hotkey = items_.at(selected_).hotkey();
+      if (selection_returns_hotkey_ && hotkey > 0) {
+        return ListBoxResult{ ListBoxResultType::HOTKEY, selected_, hotkey};
+      }
+      return ListBoxResult{ ListBoxResultType::SELECTION, selected_, hotkey};
+    } break;
     case 27:  // ESCAPE_KEY
-      return false;
-    default: {
+      return ListBoxResult{ ListBoxResultType::NO_SELECTION, 0, 0};
+    default:
       ch = toupper(ch);
-      for (auto current=0; current < static_cast<int>(items_.size()); current++) {
-        const auto& item = items_[current];
-        if (ch == toupper(item.hotkey())) {
-          selected_ = current;
-          window_top_ = selected_ - (height_ / 2) + window_top_min_;
-          window_top_ = std::max<int>(window_top_, window_top_min_);
-          window_top_ = std::min<int>(window_top_, items_.size() - height_ + window_top_min_);
-          if (hotkey_executes_item_) {
-            return true;
-          }
-        }
+      if (hotkeys_.find(ch) != string::npos) {
+        return ListBoxResult{ ListBoxResultType::HOTKEY, 0, ch};
       }
     }
-    }
   }
-
 }

@@ -47,6 +47,13 @@ struct ListBoxItem {
   int data_;
 };
 
+enum class ListBoxResultType { NO_SELECTION, SELECTION, HOTKEY };
+struct ListBoxResult {
+  ListBoxResultType type;
+  int selected;
+  int hotkey;
+};
+
 // Curses implementation of a list box.
 class ListBox {
  public:
@@ -57,26 +64,20 @@ class ListBox {
   virtual ~ListBox() {}
 
   // Execute the listbox returning the index of the selected item.
-  int Run() {
-    if (!RunDialog()) {
-      return -1;
-    }
-    return selected();
+  ListBoxResult Run() {
+    return RunDialog();
   }
 
   // Returns the index of the selected item.
   int selected() const { return selected_; }
 
-  // If true the hotkey press will return true from Run.  If false the item is just selected
-  // but the dialog remains open.
-  bool hotkey_executes_item() const { return hotkey_executes_item_; }
-
-  // If true the hotkey press will return true from Run.  If false the item is just selected
-  // but the dialog remains open.
-  void set_hotkey_executes_item(bool hotkey_executes_item) { hotkey_executes_item_ = hotkey_executes_item; }
+  // List of additionally allowed hotkeys.
+  void set_additional_hotkeys(const std::string& hotkeys) { hotkeys_.append(hotkeys); }
+  // If true, a selection will return as a hotkey if a hotkey is set on the item.
+  void selection_returns_hotkey(bool selection_returns_hotkey) { selection_returns_hotkey_ = selection_returns_hotkey; }
 
  private:
-  bool RunDialog();
+  ListBoxResult RunDialog();
   void DrawAllItems();
   int selected_;
   const std::string title_;
@@ -87,7 +88,8 @@ class ListBox {
   std::unique_ptr<CursesWindow> window_;
   ColorScheme* color_scheme_;
   const int window_top_min_;
-  bool hotkey_executes_item_;
+  std::string hotkeys_;
+  bool selection_returns_hotkey_;
 };
 
 #endif // __INCLUDED_PLATFORM_LISTBOX_H__
