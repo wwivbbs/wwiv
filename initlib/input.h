@@ -50,8 +50,8 @@ void pausescr(CursesWindow* window);
 
 int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode);
 void input_password(CursesWindow* window, const std::string prompt, const std::vector<std::string>& text, char *output, int max_length);
-void messagebox(CursesWindow* window, const std::string text);
-void messagebox(CursesWindow* window, const std::vector<std::string>& text);
+int messagebox(CursesWindow* window, const std::string text);
+int messagebox(CursesWindow* window, const std::vector<std::string>& text);
 
 
 // Base item of an editable value, this class does not use templates.
