@@ -36,6 +36,7 @@
 #include "core/strings.h"
 #include "core/wfile.h"
 #include "core/wwivport.h"
+#include "core/wfile.h"
 #include "init/subacc.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
@@ -291,7 +292,7 @@ void networks() {
   char s1[81];
   bool done = false;
 
-  if (!exist("NETWORK.EXE")) {
+  if (!WFile::Exists("NETWORK.EXE")) {
     out->Cls();
     nlx();
     out->SetColor(SchemeId::WARNING);
@@ -456,7 +457,7 @@ static void edit_net(int nn) {
       break;
     case 1: {
       editline(out->window(), n->name, 15, ALL, &nNext, "");
-      trimstr(n->name);
+      StringTrimEnd(n->name);
       ss = strchr(n->name, ' ');
       if (ss) {
         *ss = 0;
@@ -469,7 +470,7 @@ static void edit_net(int nn) {
       char szTempBuffer[ 255 ];
       sprintf(szTempBuffer, "%u", n->sysnum);
       editline(out->window(), szTempBuffer, 5, NUM_ONLY, &nNext, "");
-      trimstr(szTempBuffer);
+      StringTrimEnd(szTempBuffer);
       n->sysnum = atoi(szTempBuffer);
       sprintf(szTempBuffer, "%u", n->sysnum);
       out->window()->Puts(szTempBuffer);

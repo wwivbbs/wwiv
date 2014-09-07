@@ -32,6 +32,7 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
 #include "utility.h"
 #include "wwivinit.h"
@@ -58,7 +59,7 @@ static void edit_lang(int nn) {
     switch (cp) {
     case 0:
       editline(out->window(), n->name, sizeof(n->name) - 1, ALL, &i1, "");
-      trimstr(n->name);
+      StringTrimEnd(n->name);
 #ifdef WHY
       ss = strchr(n->name, ' ');
       if (ss) {
