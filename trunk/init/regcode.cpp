@@ -28,11 +28,11 @@
 #include "utility.h"
 #include "wwivinit.h"
 
-using std::auto_ptr;
+using std::unique_ptr;
 
 void edit_registration_code() {
   out->Cls(ACS_CKBOARD);
-  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("WWIV 4.x Registration", 5, 38));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("WWIV 4.x Registration", 5, 38));
 
   window->PrintfXY(2, 2, "Registration Number  : %d", syscfg.wwiv_reg_number);
 

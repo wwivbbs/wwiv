@@ -32,7 +32,7 @@
 #include <windows.h>
 #endif  // _WIN32
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using wwiv::strings::StringPrintf;
 
@@ -188,7 +188,7 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
 }
 
 CursesWindow* CursesIO::CreateBoxedWindow(const std::string& title, int nlines, int ncols) {
-  auto_ptr<CursesWindow> window(new CursesWindow(window_, color_scheme_.get(), nlines, ncols));
+  unique_ptr<CursesWindow> window(new CursesWindow(window_, color_scheme_.get(), nlines, ncols));
   window->SetColor(SchemeId::WINDOW_BOX);
   window->Box(0, 0);
   window->SetTitle(title);

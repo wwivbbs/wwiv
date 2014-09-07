@@ -34,7 +34,7 @@
 #include "utility.h"
 #include "wwivinit.h"
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 extern char bbsdir[];
@@ -105,7 +105,7 @@ static const int COL1_POSITION = 14;
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir */
 void setpaths() {
   out->Cls(ACS_CKBOARD);
-  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("System Paths", 15, 76));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Paths", 15, 76));
 
   int y = 1;
   window->PrintfXY(COL1_LINE, y++, "Messages  : %s", syscfg.msgsdir);
