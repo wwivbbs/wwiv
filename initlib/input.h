@@ -158,10 +158,10 @@ protected:
 template<typename T> 
 class ToggleEditItem : public EditItem<T*> {
 public:
-  ToggleEditItem(int x, int y, const std::vector<std::string> items, T* data) 
+  ToggleEditItem(int x, int y, const std::vector<std::string>& items, T* data) 
       : EditItem<T*>(x, y, 0, data), items_(items) {
     for (const auto& item : items) {
-      maxlen_ = std::max(maxlen_, item.size());
+      this->maxsize_ = std::max<std::size_t>(this->maxsize_, item.size());
     }
   }
   virtual ~ToggleEditItem() {}
