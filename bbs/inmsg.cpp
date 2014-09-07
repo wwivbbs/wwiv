@@ -17,13 +17,18 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <string>
 
 #include "wwiv.h"
 #include "subxtr.h"
 #include "printfile.h"
+#include "core/strings.h"
 #include "core/wtextfile.h"
+#include "bbs/external_edit.h"
 
+using std::string;
 using wwiv::bbs::InputMode;
+using wwiv::strings::StringPrintf;
 
 //
 // Local function prototypes
@@ -33,18 +38,15 @@ bool GetMessageToName(const char *aux);
 void ReplaceString(char *pszResult, char *pszOld, char *pszNew);
 
 
-bool InternalMessageEditor(char *lin, int maxli, int &curli, int &setanon, char *pszTitle);
+bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, char *pszTitle);
 void GetMessageTitle(char *pszTitle, bool force_title);
-bool ExternalMessageEditor(int maxli, int &setanon, char *pszTitle, const char *pszDestination, int flags);
 void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux);
 void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux);
 void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, const char *aux);
 void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLength);
 void GetMessageAnonStatus(bool &real_name, int *anony, int setanon);
 
-
-#define LEN 161
-
+static const int LEN = 161;
 
 void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtitle, const char *aux, int fsed,
            const char *pszDestination, int flags, bool force_title) {
@@ -68,9 +70,6 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
       fsed = INMSG_FSED_WORKSPACE;
     }
   }
-  int setanon = 0;
-  bool bSaveMessage = false;
-  int curli = 0;
 
   int maxli = GetMaxMessageLinesAllowed();
   if (!fsed) {
@@ -102,10 +101,13 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     return;
   }
 
+  int setanon = 0;
+  int curli = 0;
+  bool bSaveMessage = false;
   if (fsed == INMSG_NOFSED) {   // Use Internal Message Editor
-    bSaveMessage = InternalMessageEditor(lin, maxli, curli, setanon, pszTitle);
+    bSaveMessage = InternalMessageEditor(lin, maxli, &curli, &setanon, pszTitle);
   } else if (fsed == INMSG_FSED) {   // Use Full Screen Editor
-    bSaveMessage = ExternalMessageEditor(maxli, setanon, pszTitle, pszDestination, flags);
+    bSaveMessage = ExternalMessageEditor(maxli, &setanon, pszTitle, pszDestination, flags);
   } else if (fsed == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
     bSaveMessage = WFile::Exists(szExtEdFileName);
     if (bSaveMessage && !GetSession()->IsNewMailWatiting()) {
@@ -134,9 +136,6 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     }
     lMaxMessageSize  += 1024;
     if ((b = static_cast<char *>(BbsAllocA(lMaxMessageSize))) == NULL) {
-      if (fileExtEd.IsOpen()) {
-        fileExtEd.Close();
-      }
       free(lin);
       GetSession()->bout << "Out of memory.\r\n";
       pMessageRecord->stored_as = 0xffffffff;
@@ -150,9 +149,8 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
       AddLineToMessageBuffer(b, GetSession()->GetCurrentUser()->GetRealName(), &lCurrentMessageSize);
     } else {
       if (GetSession()->IsNewMailWatiting()) {
-        char szSysopName[ 255 ];
-        sprintf(szSysopName, "%s #1", syscfg.sysopname);
-        AddLineToMessageBuffer(b, szSysopName, &lCurrentMessageSize);
+        const string sysop_name = StringPrintf("%s #1", syscfg.sysopname);
+        AddLineToMessageBuffer(b, sysop_name.c_str(), &lCurrentMessageSize);
       } else {
         AddLineToMessageBuffer(b, GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem(GetSession()->usernum, net_sysnum),
                                &lCurrentMessageSize);
@@ -160,12 +158,9 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     }
 
     // Add date to message body
-    time_t lTime;
-    time(&lTime);
-    char szTime[ 255 ];
-    strcpy(szTime, asctime(localtime(&lTime)));
-    szTime[ strlen(szTime) - 1 ] = '\0';
-    AddLineToMessageBuffer(b, szTime, &lCurrentMessageSize);
+    time_t lTime = time(NULL);
+    string time_string(asctime(localtime(&lTime)));
+    AddLineToMessageBuffer(b, time_string.c_str(), &lCurrentMessageSize);
 
     UpdateMessageBufferQuotesCtrlLines(b, &lCurrentMessageSize);
 
@@ -195,15 +190,12 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
       b[lCurrentMessageSize++] = CZ;
     }
     savefile(b, lCurrentMessageSize, pMessageRecord, aux);
-    if (fsed) {
-      WFile::Remove(szExtEdFileName);
-    }
   } else {
-    if (fsed) {
-      WFile::Remove(szExtEdFileName);
-    }
     GetSession()->bout << "|#6Aborted.\r\n";
     pMessageRecord->stored_as = 0xffffffff;
+  }
+  if (fsed) {
+    WFile::Remove(szExtEdFileName);
   }
   if (!fsed) {
     free(lin);
@@ -278,7 +270,7 @@ bool GetMessageToName(const char *aux) {
 }
 
 
-bool InternalMessageEditor(char *lin, int maxli, int &curli, int &setanon, char *pszTitle) {
+bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, char *pszTitle) {
   bool abort, next;
   char s[ 255 ];
   char s1[ 255 ];
@@ -305,10 +297,10 @@ bool InternalMessageEditor(char *lin, int maxli, int &curli, int &setanon, char 
   char szRollOverLine[ 81 ];
   szRollOverLine[ 0 ] = '\0';
   while (!done && !hangup) {
-    bool bAllowPrevious = (curli > 0) ? true : false;
+    bool bAllowPrevious = (*curli > 0) ? true : false;
     while (inli(s, szRollOverLine, 160, true, bAllowPrevious)) {
-      --curli;
-      strcpy(szRollOverLine, &(lin[(curli) * LEN]));
+      (*curli)--;
+      strcpy(szRollOverLine, &(lin[(*curli) * LEN]));
       if (wwiv::strings::GetStringLength(szRollOverLine) > GetSession()->GetCurrentUser()->GetScreenChars() - 1) {
         szRollOverLine[ GetSession()->GetCurrentUser()->GetScreenChars() - 2 ] = '\0';
       }
@@ -338,7 +330,7 @@ bool InternalMessageEditor(char *lin, int maxli, int &curli, int &setanon, char 
           next = yesno();
         }
         abort = false;
-        for (int i = 0; (i < curli) && (!abort); i++) {
+        for (int i = 0; (i < *curli) && !abort; i++) {
           if (next) {
             GetSession()->bout << i + 1 << ":" << wwiv::endl;
           }
@@ -378,25 +370,25 @@ bool InternalMessageEditor(char *lin, int maxli, int &curli, int &setanon, char 
         bSaveMessage = true;
         done = true;
         bCheckMessageSize = false;
-        setanon = 1;
+        *setanon = 1;
       } else if (wwiv::strings::IsEqualsIgnoreCase(s, "/ESN") ||
                  wwiv::strings::IsEqualsIgnoreCase(s, "/SN")) {
         bSaveMessage = true;
         done = true;
         bCheckMessageSize = false;
-        setanon = -1;
+        *setanon = -1;
       } else if (wwiv::strings::IsEqualsIgnoreCase(s, "/ABT") ||
                  wwiv::strings::IsEqualsIgnoreCase(s, "/A")) {
         done = true;
         bCheckMessageSize = false;
       } else if (wwiv::strings::IsEqualsIgnoreCase(s, "/CLR")) {
         bCheckMessageSize = false;
-        curli = 0;
+        *curli = 0;
         GetSession()->bout << "Message cleared... Start over...\r\n\n";
       } else if (wwiv::strings::IsEqualsIgnoreCase(s, "/RL")) {
         bCheckMessageSize = false;
-        if (curli) {
-          --curli;
+        if (*curli) {
+          (*curli)--;
           GetSession()->bout << "Replace:\r\n";
         } else {
           GetSession()->bout << "Nothing to replace.\r\n";
@@ -420,32 +412,32 @@ bool InternalMessageEditor(char *lin, int maxli, int &curli, int &setanon, char 
         strcpy((&s1[1]), &(s[3]));
         strcpy(s, s1);
       } else if (wwiv::strings::IsEqualsIgnoreCase(s1, "/SU") &&
-                 s[3] == '/' && curli > 0) {
+                 s[3] == '/' && *curli > 0) {
         strcpy(s1, &(s[4]));
         char *ss = strstr(s1, "/");
         if (ss) {
           char *ss1 = &(ss[1]);
           ss[0] = '\0';
-          ReplaceString(&(lin[(curli - 1) * LEN]), s1, ss1);
-          GetSession()->bout << "Last line:\r\n" << &(lin[(curli - 1) * LEN]) << "\r\nContinue...\r\n";
+          ReplaceString(&(lin[(*curli - 1) * LEN]), s1, ss1);
+          GetSession()->bout << "Last line:\r\n" << &(lin[(*curli - 1) * LEN]) << "\r\nContinue...\r\n";
         }
         bCheckMessageSize = false;
       }
     }
 
     if (bCheckMessageSize) {
-      strcpy(&(lin[(curli++) * LEN ]), s);
-      if (curli == (maxli + 1)) {
+      strcpy(&(lin[((*curli)++) * LEN]), s);
+      if (*curli == (maxli + 1)) {
         GetSession()->bout << "\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n";
-        --curli;
-      } else if (curli == maxli) {
+        (*curli)--;
+      } else if (*curli == maxli) {
         GetSession()->bout << "-= Message limit reached, /S to save =-\r\n";
-      } else if ((curli + 5) == maxli) {
+      } else if ((*curli + 5) == maxli) {
         GetSession()->bout << "-= 5 lines left =-\r\n";
       }
     }
   }
-  if (curli == 0) {
+  if (*curli == 0) {
     bSaveMessage = false;
   }
   return bSaveMessage;
@@ -513,62 +505,6 @@ void GetMessageTitle(char *pszTitle, bool force_title) {
   }
 }
 
-
-bool ExternalMessageEditor(int maxli, int &setanon, char *pszTitle, const char *pszDestination, int flags) {
-  char szFileNameFEditInf[MAX_PATH], szFileNameResultEd[MAX_PATH];
-  sprintf(szFileNameFEditInf, "%s%s", syscfgovr.tempdir, FEDIT_INF);
-  sprintf(szFileNameResultEd, "%s%s", syscfgovr.tempdir, RESULT_ED);
-  WFile::SetFilePermissions(szFileNameFEditInf, WFile::permReadWrite);
-  WFile::Remove(szFileNameFEditInf);
-  WFile::SetFilePermissions(szFileNameResultEd, WFile::permReadWrite);
-  WFile::Remove(szFileNameResultEd);
-  fedit_data_rec fedit_data;
-  fedit_data.tlen = 60;
-  strcpy(fedit_data.ttl, pszTitle);
-  fedit_data.anon = 0;
-
-  WFile fileFEditInf(szFileNameFEditInf);
-  if (fileFEditInf.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyRead,
-                        WFile::permReadWrite)) {
-    fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
-    fileFEditInf.Close();
-  }
-  bool bSaveMessage = external_edit(INPUT_MSG, syscfgovr.tempdir, GetSession()->GetCurrentUser()->GetDefaultEditor() - 1,
-                                    maxli, pszDestination, pszTitle, flags);
-  if (bSaveMessage) {
-    if (WFile::Exists(szFileNameResultEd)) {
-      WTextFile file(szFileNameResultEd, "rt");
-      char szAnonString[ 81 ];
-      if (file.ReadLine(szAnonString, 80)) {
-        char *ss = strchr(szAnonString, '\n');
-        if (ss) {
-          *ss = '\0';
-        }
-        setanon = atoi(szAnonString);
-        if (file.ReadLine(pszTitle, 80)) {
-          ss = strchr(pszTitle, '\n');
-          if (ss) {
-            *ss = '\0';
-          }
-          // Strip whitespace from title to avoid issues like bug #29
-          StringTrim(pszTitle);
-        }
-      }
-      file.Close();
-    } else if (WFile::Exists(szFileNameFEditInf)) {
-      WFile file(szFileNameFEditInf);
-      file.Open(WFile::modeBinary | WFile::modeReadOnly);
-      if (file.Read(&fedit_data, sizeof(fedit_data))) {
-        strcpy(pszTitle, fedit_data.ttl);
-        setanon = fedit_data.anon;
-      }
-      file.Close();
-    }
-  }
-  WFile::Remove(szFileNameFEditInf);
-  WFile::Remove(szFileNameResultEd);
-  return bSaveMessage;
-}
 
 
 void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux) {

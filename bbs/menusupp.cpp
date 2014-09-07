@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "bbs/wwiv.h"
+#include "bbs/external_edit.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/menu.h"
@@ -511,8 +512,7 @@ void EditText() {
   std::string fileName;
   input(&fileName, 50);
   if (!fileName.empty()) {
-    external_edit(fileName.c_str(), "", GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, ".", fileName.c_str(),
-                  MSGED_FLAG_NO_TAGLINE);
+    external_text_edit(fileName.c_str(), "", 500, ".", MSGED_FLAG_NO_TAGLINE);
   }
 }
 

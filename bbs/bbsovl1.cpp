@@ -20,8 +20,9 @@
 #include <sstream>
 #include <string>
 
-#include "wwiv.h"
-#include "instmsg.h"
+#include "bbs/wwiv.h"
+#include "bbs/external_edit.h"
+#include "bbs/instmsg.h"
 
 //////////////////////////////////////////////////////////////////////////////
 // Implementation
@@ -262,8 +263,7 @@ void text_edit() {
   logText << "@ Edited: " << filename;
   sysoplog(logText.str());
   if (okfsed()) {
-    external_edit(filename.c_str(), syscfg.gfilesdir, GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500,
-                  syscfg.gfilesdir, logText.str().c_str(), MSGED_FLAG_NO_TAGLINE);
+    external_text_edit(filename.c_str(), syscfg.gfilesdir, 500, syscfg.gfilesdir, MSGED_FLAG_NO_TAGLINE);
   }
 }
 
