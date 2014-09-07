@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "editors.h"
+#include "init/editors.h"
 
 #include <curses.h>
 #include <cstdint>
@@ -30,13 +30,14 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
+#include "init/ifcns.h"
+#include "init/init.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "utility.h"
-#include "wwivinit.h"
+#include "init/utility.h"
+#include "init/wwivinit.h"
+#include "initlib/input.h"
+#include "initlib/listbox.h"
 
 using std::auto_ptr;
 using std::string;
@@ -77,64 +78,57 @@ void edit_editor(int n) {
 }
 
 void extrn_editors() {
-  int i1;
-
   bool done = false;
   do {
-    out->Cls();
-    nlx();
+    out->Cls(ACS_CKBOARD);
+    vector<ListBoxItem> items;
     for (int i = 0; i < initinfo.numeditors; i++) {
-      out->window()->Printf("%d. %s\n", i + 1, editors[i].description);
+      items.emplace_back(StringPrintf("%d. %s", i + 1, editors[i].description));
     }
-    nlx();
-    out->SetColor(SchemeId::PROMPT);
-    out->window()->Puts("Editors: M:odify, D:elete, I:nsert, Q:uit : ");
-    out->SetColor(SchemeId::NORMAL);
-    char ch = onek(out->window(), "Q\033MID");
-    switch (ch) {
-    case 'Q':
-    case '\033':
-      done = true;
-      break;
-    case 'M':
-      if (initinfo.numeditors) {
-        string prompt = StringPrintf("Edit which (1-%d) : ", initinfo.numeditors);
-        int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
-        if (i > 0 && i <= initinfo.numeditors) {
-          edit_editor(i - 1);
-        }
-      }
-      break;
-    case 'D':
-      if (initinfo.numeditors) {
-        string prompt = StringPrintf("Delete which (1-%d) : ", initinfo.numeditors);
-        int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
-        if (i > 0 && i <= initinfo.numeditors) {
-          for (i1 = i - 1; i1 < initinfo.numeditors; i1++) {
-            editors[i1] = editors[i1 + 1];
+    CursesWindow* window = out->window();
+    ListBox list(out, window, "Select Editor", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
+        static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+
+    list.selection_returns_hotkey(true);
+    list.set_additional_hotkeys("DI");
+    list.set_help_items({{"Esc", "Exit"}, {"D", "Delete"}, {"I", "Insert"} });
+    ListBoxResult result = list.Run();
+    if (result.type == ListBoxResultType::HOTKEY) {
+      switch (result.hotkey) {
+        case 'D': {
+          if (initinfo.numeditors) {
+            string prompt = StringPrintf("Delete '%s'", items[result.selected].text().c_str());
+            bool yn = dialog_yn(window, prompt);
+            if (!yn) {
+              break;
+            }
+            for (int i1 = result.selected; i1 < initinfo.numeditors; i1++) {
+              editors[i1] = editors[i1 + 1];
+            }
+            --initinfo.numeditors;
           }
-          --initinfo.numeditors;
-        }
+        } break;
+        case 'I': {
+          if (initinfo.numeditors >= 10) {
+            messagebox(out->window(), "Too many editors.");
+            break;
+          }
+          string prompt = StringPrintf("Insert before which (1-%d) : ", initinfo.numeditors + 1);
+          int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
+          if (i > 0 && i <= initinfo.numeditors + 1) {
+            for (int i1 = initinfo.numeditors; i1 > i - 1; i1--) {
+              editors[i1] = editors[i1 - 1];
+            }
+            ++initinfo.numeditors;
+            memset(&editors[i-1], 0, sizeof(editorrec));
+            edit_editor(i - 1);
+          }
+        } break;
       }
-      break;
-    case 'I':
-      if (initinfo.numeditors >= 10) {
-        messagebox(out->window(), "Too many editors.");
-        break;
-      }
-      string prompt = StringPrintf("Insert before which (1-%d) : ", initinfo.numeditors + 1);
-      int i = dialog_input_number(out->window(), prompt, 1, initinfo.numeditors);
-      if (i > 0 && i <= initinfo.numeditors + 1) {
-        for (i1 = initinfo.numeditors; i1 > i - 1; i1--) {
-          editors[i1] = editors[i1 - 1];
-        }
-        ++initinfo.numeditors;
-        editors[i - 1].description[0] = 0;
-        editors[i - 1].filenamecon[0] = 0;
-        editors[i - 1].filename[0] = 0;
-        edit_editor(i - 1);
-      }
-      break;
+    } else if (result.type == ListBoxResultType::SELECTION) {
+      edit_editor(result.selected);
+    } else if (result.type == ListBoxResultType::NO_SELECTION) {
+      done = true;
     }
   } while (!done);
 
