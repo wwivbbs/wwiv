@@ -30,10 +30,6 @@ WLocalIO::WLocalIO() : global_buf(nullptr), global_ptr(0) {
   // TODO (for kwalker) Add Linux platform specific console maniuplation stuff
 }
 
-WLocalIO::WLocalIO(const WLocalIO& copy) {
-  printf("OOPS! - WLocalIO Copy Constructor called!\r\n");
-}
-
 WLocalIO::~WLocalIO() {}
 
 void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
@@ -625,20 +621,6 @@ bool WLocalIO::LocalKeyPressed() {
   return false;
 }
 
-/****************************************************************************/
-/*
-* returns the ASCII code of the next character waiting in the
-* keyboard buffer.  If there are no characters waiting in the
-* keyboard buffer, then it waits for one.
-*
-* A value of 0 is returned for all extended keys (such as F1,
-* Alt-X, etc.).  The function must be called again upon receiving
-* a value of 0 to obtain the value of the extended key pressed.
-*/
-unsigned char WLocalIO::LocalGetChar() {
-  return 0;
-}
-
 void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
   *cl = 0;
   *atr = 0;
@@ -652,7 +634,7 @@ void WLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
  *
  * @return int value of key entered
  */
-int  WLocalIO::LocalGetChar() {
+unsigned char WLocalIO::LocalGetChar() {
   return getchar();
 }
 
