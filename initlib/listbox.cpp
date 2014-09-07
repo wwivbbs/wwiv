@@ -29,9 +29,13 @@
 using std::string;
 using wwiv::strings::StringPrintf;
 
-ListBox::ListBox(CursesWindow* parent, const string& title, int max_x, int max_y, 
+static std::vector<HelpItem> StandardHelpItems() {
+  return { {"Esc", "Exit"} };
+}
+
+ListBox::ListBox(CursesIO* io, CursesWindow* parent, const string& title, int max_x, int max_y, 
                  std::vector<ListBoxItem>& items, ColorScheme* scheme) 
-    : title_(title), selected_(-1), items_(items), window_top_(0), width_(4), 
+    : io_(io), title_(title), selected_(-1), items_(items), window_top_(0), width_(4), 
       height_(2), color_scheme_(scheme), 
       window_top_min_(title.empty() ? 1 : 1 /* 3 */) {
   height_ = std::min<int>(items.size(), max_y);
@@ -57,6 +61,7 @@ ListBox::ListBox(CursesWindow* parent, const string& title, int max_x, int max_y
   if (!title.empty()) {
     window_->SetTitle(title);
   }
+  help_items_ = StandardHelpItems();
 }
 
 void ListBox::DrawAllItems() {
@@ -138,6 +143,10 @@ ListBoxResult ListBox::RunDialog() {
 #endif
     case KEY_ENTER:
     case 13: {
+      if (items_.empty()) {
+        // Can not select an item when the list is empty.
+        break;
+      }
       int hotkey = items_.at(selected_).hotkey();
       if (selection_returns_hotkey_ && hotkey > 0) {
         return ListBoxResult{ ListBoxResultType::HOTKEY, selected_, hotkey};
@@ -149,8 +158,15 @@ ListBoxResult ListBox::RunDialog() {
     default:
       ch = toupper(ch);
       if (hotkeys_.find(ch) != string::npos) {
-        return ListBoxResult{ ListBoxResultType::HOTKEY, 0, ch};
+        return ListBoxResult{ ListBoxResultType::HOTKEY, selected_, ch};
       }
     }
   }
+}
+
+void ListBox::DisplayFooter() {
+  // Show help bar.
+  io_->footer()->window()->Move(1, 0);
+  io_->footer()->window()->ClrtoEol();
+  io_->footer()->ShowHelpItems(0, help_items_);
 }

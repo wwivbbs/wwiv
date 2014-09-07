@@ -88,7 +88,7 @@ static vector<HelpItem> create_extra_help_items() {
   return help_items;
 }
 
-static const int JumpToUser(CursesWindow* window) {
+static const int JumpToUser(CursesIO* io, CursesWindow* window) {
   vector<ListBoxItem> items;
 
   WFile file(syscfg.datadir, "names.lst");
@@ -109,7 +109,7 @@ static const int JumpToUser(CursesWindow* window) {
   }
   file.Close();
   
-  ListBox list(window, "Select User", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
+  ListBox list(io, window, "Select User", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
     static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
   ListBoxResult result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
@@ -223,7 +223,7 @@ void user_editor() {
       window->Refresh();
     } break;
     case 'J': {
-      int user_number = JumpToUser(window.get());
+      int user_number = JumpToUser(out, window.get());
       if (user_number >= 1) {
         current_usernum = user_number;
       }

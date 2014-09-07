@@ -26,7 +26,9 @@
 #include <utility>
 #include <vector>
 #include <curses.h>
-#include "curses_win.h"
+
+#include "initlib/curses_io.h"
+#include "initlib/curses_win.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
@@ -58,14 +60,17 @@ struct ListBoxResult {
 class ListBox {
  public:
   // Constructor/Destructor
-  ListBox(CursesWindow* parent, const std::string& title, int max_x, int max_y, 
+  ListBox(CursesIO* io, CursesWindow* parent, const std::string& title, int max_x, int max_y, 
           std::vector<ListBoxItem>& items, ColorScheme* scheme);
   ListBox(const ListBox& copy) = delete;
   virtual ~ListBox() {}
 
   // Execute the listbox returning the index of the selected item.
   ListBoxResult Run() {
-    return RunDialog();
+    this->DisplayFooter();
+    ListBoxResult result = RunDialog();
+    io_->footer()->SetDefaultFooter();
+    return result;
   }
 
   // Returns the index of the selected item.
@@ -75,13 +80,19 @@ class ListBox {
   void set_additional_hotkeys(const std::string& hotkeys) { hotkeys_.append(hotkeys); }
   // If true, a selection will return as a hotkey if a hotkey is set on the item.
   void selection_returns_hotkey(bool selection_returns_hotkey) { selection_returns_hotkey_ = selection_returns_hotkey; }
+  // Sets the extra help items.
+  void set_help_items(const std::vector<HelpItem> items) { help_items_ = items; }
 
  private:
   ListBoxResult RunDialog();
   void DrawAllItems();
+  void DisplayFooter();
+
+  CursesIO* io_;
   int selected_;
   const std::string title_;
   std::vector<ListBoxItem> items_;
+  std::vector<HelpItem> help_items_;
   int window_top_;
   int width_;
   int height_;
