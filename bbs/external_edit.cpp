@@ -35,57 +35,61 @@
 using std::string;
 using wwiv::strings::StringPrintf;
 
-static string WWIV_GetCurrentDirectory(int be) {
+static string WWIV_GetCurrentDirectory(bool be) {
   char szDir[MAX_PATH];
   WWIV_GetDir(szDir, be);
   return string(szDir);
 }
 
-bool ExternalMessageEditor(int maxli, int *setanon, char *pszTitle, const char *pszDestination, int flags) {
-  char szFileNameFEditInf[MAX_PATH], szFileNameResultEd[MAX_PATH];
-  sprintf(szFileNameFEditInf, "%s%s", syscfgovr.tempdir, FEDIT_INF);
-  sprintf(szFileNameResultEd, "%s%s", syscfgovr.tempdir, RESULT_ED);
-  WFile::SetFilePermissions(szFileNameFEditInf, WFile::permReadWrite);
-  WFile::Remove(szFileNameFEditInf);
-  WFile::SetFilePermissions(szFileNameResultEd, WFile::permReadWrite);
-  WFile::Remove(szFileNameResultEd);
+static void RemoveEditorFileFromTemp(const string& filename) {
+  WFile file(syscfgovr.tempdir, filename);
+  file.SetFilePermissions(WFile::permReadWrite);
+  file.Delete();
+}
+
+bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string destination, int flags) {
+  RemoveEditorFileFromTemp(FEDIT_INF);
+  RemoveEditorFileFromTemp(RESULT_ED);
+
   fedit_data_rec fedit_data;
+  memset(&fedit_data, '\0', sizeof(fedit_data_rec));
   fedit_data.tlen = 60;
-  strcpy(fedit_data.ttl, pszTitle);
+  strcpy(fedit_data.ttl, title->c_str());
   fedit_data.anon = 0;
 
-  WFile fileFEditInf(szFileNameFEditInf);
+  WFile fileFEditInf(syscfgovr.tempdir, FEDIT_INF);
   if (fileFEditInf.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyRead,
                         WFile::permReadWrite)) {
     fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
     fileFEditInf.Close();
   }
   bool bSaveMessage = external_edit(INPUT_MSG, syscfgovr.tempdir, GetSession()->GetCurrentUser()->GetDefaultEditor() - 1,
-                                    maxli, pszDestination, pszTitle, flags);
+                                    maxli, destination, *title, flags);
   if (bSaveMessage) {
-    if (WFile::Exists(szFileNameResultEd)) {
-      WTextFile file(szFileNameResultEd, "rt");
-      char szAnonString[ 81 ];
-      if (file.ReadLine(szAnonString, 80)) {
-        *setanon = atoi(szAnonString);
-        if (file.ReadLine(pszTitle, 80)) {
+    if (WFile::Exists(syscfgovr.tempdir, RESULT_ED)) {
+      WTextFile file(syscfgovr.tempdir, RESULT_ED, "rt");
+      string anon_string;
+      if (file.ReadLine(&anon_string)) {
+        *setanon = atoi(anon_string.c_str());
+        if (file.ReadLine(title)) {
           // Strip whitespace from title to avoid issues like bug #29
-          StringTrim(pszTitle);
+          StringTrim(title);
         }
       }
       file.Close();
-    } else if (WFile::Exists(szFileNameFEditInf)) {
-      WFile file(szFileNameFEditInf);
+    } else if (WFile::Exists(fileFEditInf.GetFullPathName())) {
+      WFile file(fileFEditInf.GetFullPathName());
       file.Open(WFile::modeBinary | WFile::modeReadOnly);
       if (file.Read(&fedit_data, sizeof(fedit_data))) {
-        strcpy(pszTitle, fedit_data.ttl);
+        title->assign(fedit_data.ttl);
         *setanon = fedit_data.anon;
       }
       file.Close();
     }
   }
-  WFile::Remove(szFileNameFEditInf);
-  WFile::Remove(szFileNameResultEd);
+
+  RemoveEditorFileFromTemp(FEDIT_INF);
+  RemoveEditorFileFromTemp(RESULT_ED);
   return bSaveMessage;
 }
 
@@ -96,23 +100,23 @@ bool external_text_edit(const std::string& edit_filename, const std::string& new
 }
 
 bool external_edit(const std::string& edit_filename, const std::string& new_directory, int nEditorNumber, int numlines,
-                   const std::string& destination, const std::string title, int flags) {
+                   const std::string& destination, const std::string& title, int flags) {
   if (nEditorNumber >= GetSession()->GetNumberOfEditors() || !okansi()) {
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
     return false;
   }
-  std::string editorCommand = (incom) ? editors[nEditorNumber].filename : editors[nEditorNumber].filenamecon;
+  
+  string editorCommand = (incom) ? editors[nEditorNumber].filename : editors[nEditorNumber].filenamecon;
   if (editorCommand.empty()) {
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
     return false;
   }
+
   WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &editorCommand);
   const string current_directory = WWIV_GetCurrentDirectory(false);
 
-  WFile::SetFilePermissions(EDITOR_INF, WFile::permReadWrite);
-  WFile::Remove(EDITOR_INF);
-  WFile::SetFilePermissions(RESULT_ED, WFile::permReadWrite);
-  WFile::Remove(RESULT_ED);
+  RemoveEditorFileFromTemp(EDITOR_INF);
+  RemoveEditorFileFromTemp(RESULT_ED);
 
   string strippedFileName(stripfn(edit_filename.c_str()));
   string full_filename;

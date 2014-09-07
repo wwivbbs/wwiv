@@ -38,8 +38,8 @@ bool GetMessageToName(const char *aux);
 void ReplaceString(char *pszResult, char *pszOld, char *pszNew);
 
 
-bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, char *pszTitle);
-void GetMessageTitle(char *pszTitle, bool force_title);
+bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, string *title);
+void GetMessageTitle(string *title, bool force_title);
 void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux);
 void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux);
 void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, const char *aux);
@@ -51,6 +51,7 @@ static const int LEN = 161;
 void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtitle, const char *aux, int fsed,
            const char *pszDestination, int flags, bool force_title) {
   char *lin = NULL, *b = NULL;
+  string title(pszTitle);
 
   int oiia = setiia(0);
 
@@ -90,8 +91,8 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     }
   }
 
-  GetMessageTitle(pszTitle, force_title);
-  if (pszTitle[0] == '\0' && needtitle) {
+  GetMessageTitle(&title, force_title);
+  if (title.empty() && needtitle) {
     GetSession()->bout << "|#6Aborted.\r\n";
     pMessageRecord->stored_as = 0xffffffff;
     if (!fsed) {
@@ -105,9 +106,9 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
   int curli = 0;
   bool bSaveMessage = false;
   if (fsed == INMSG_NOFSED) {   // Use Internal Message Editor
-    bSaveMessage = InternalMessageEditor(lin, maxli, &curli, &setanon, pszTitle);
+    bSaveMessage = InternalMessageEditor(lin, maxli, &curli, &setanon, &title);
   } else if (fsed == INMSG_FSED) {   // Use Full Screen Editor
-    bSaveMessage = ExternalMessageEditor(maxli, &setanon, pszTitle, pszDestination, flags);
+    bSaveMessage = ExternalMessageEditor(maxli, &setanon, &title, pszDestination, flags);
   } else if (fsed == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
     bSaveMessage = WFile::Exists(szExtEdFileName);
     if (bSaveMessage && !GetSession()->IsNewMailWatiting()) {
@@ -204,6 +205,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
   charbuffer[0] = '\0';
   setiia(oiia);
   grab_quotes(NULL, NULL);
+  strcpy(pszTitle, title.c_str());
 }
 
 
@@ -269,8 +271,7 @@ bool GetMessageToName(const char *aux) {
   return bHasAddress;
 }
 
-
-bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, char *pszTitle) {
+bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, string *title) {
   bool abort, next;
   char s[ 255 ];
   char s1[ 255 ];
@@ -397,11 +398,11 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, char 
         bCheckMessageSize = false;
         if (okansi()) {
           GetSession()->bout << "|#1Subj|#7: |#2" ;
-          inputl(pszTitle, 60, true);
+          inputl(title, 60, true);
         } else {
           GetSession()->bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
           GetSession()->bout << "|#1Subj|#7: |#2";
-          inputl(pszTitle, 60);
+          inputl(title, 60);
         }
         GetSession()->bout << "Continue...\r\n\n";
       }
@@ -443,8 +444,7 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, char 
   return bSaveMessage;
 }
 
-
-void GetMessageTitle(char *pszTitle, bool force_title) {
+void GetMessageTitle(string *title, bool force_title) {
   if (okansi()) {
     if (!GetSession()->IsNewMailWatiting()) {
       GetSession()->bout << "|#2Title: ";
@@ -472,7 +472,7 @@ void GetMessageTitle(char *pszTitle, bool force_title) {
           ch = getkey();
         }
       } else {
-        strcpy(pszTitle, s1);
+        title->assign(s1);
         ch = RETURN;
       }
       force_title = false;
@@ -486,26 +486,24 @@ void GetMessageTitle(char *pszTitle, bool force_title) {
         char szRollOverLine[ 81 ];
         sprintf(szRollOverLine, "%c", ch);
         inli(s1, szRollOverLine, 60, true, false);
-        sprintf(pszTitle, "%s", s1);
+        title->assign(s1);
       } else {
         GetSession()->bout.NewLine();
-        strcpy(pszTitle, s1);
+        title->assign(s1);
       }
     } else {
-      inputl(pszTitle, 60);
+      inputl(title, 60);
     }
   } else {
     if (GetSession()->IsNewMailWatiting() || force_title) {
-      strcpy(pszTitle, irt);
+      title->assign(irt);
     } else {
       GetSession()->bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
       GetSession()->bout << "Title: ";
-      inputl(pszTitle, 60);
+      inputl(title, 60);
     }
   }
 }
-
-
 
 void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
   if (!wwiv::strings::IsEqualsIgnoreCase(aux, "email")) {
