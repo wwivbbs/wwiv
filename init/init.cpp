@@ -245,7 +245,7 @@ int WInitApp::main(int argc, char *argv[]) {
   if (configfile < 0) {
     out->SetColor(SchemeId::ERROR_TEXT);
     out->window()->Printf("%s NOT FOUND.\n\n", configdat);
-    if (dialog_yn(out->window(), "Perform initial installation")) {
+    if (dialog_yn(out->window(), "Perform initial installation?")) {
       new_init();
       newbbs = true;
       configfile = open(configdat, O_RDWR | O_BINARY);

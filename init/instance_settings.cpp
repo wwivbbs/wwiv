@@ -175,7 +175,7 @@ void instance_editor() {
     switch (ch) {
     case '\r': {
       items.Run();
-      if (dialog_yn(out->window(), "Save Instance")) {
+      if (dialog_yn(out->window(), "Save Instance?")) {
         write_instance(current_instance, &instance);
       }
     } break;

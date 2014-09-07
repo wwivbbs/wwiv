@@ -142,8 +142,8 @@ void nlx(int numLines) {
 }
 
 static CursesWindow* CreateDialogWindow(CursesWindow* parent, int height, int width) {
-  const int maxx = getmaxx(stdscr);
-  const int maxy = getmaxy(stdscr);
+  const int maxx = parent->GetMaxX();
+  const int maxy = parent->GetMaxY();
   const int startx = (maxx - width - 4) / 2;
   const int starty = (maxy - height - 2) / 2;
   CursesWindow *dialog = new CursesWindow(parent, parent->color_scheme(), height + 2, width + 4, starty, startx);
@@ -153,14 +153,26 @@ static CursesWindow* CreateDialogWindow(CursesWindow* parent, int height, int wi
   return dialog;
 }
 
-bool dialog_yn(CursesWindow* window, const string prompt) {
-  string s = prompt + " ? ";
-  
-  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, 1, s.size()));
-  dialog->MvAddStr(1, 2, s);
+bool dialog_yn(CursesWindow* window, const vector<string>& text) {
+  int maxlen = 4;
+  for (const auto& s : text) {
+    maxlen = std::max<int>(maxlen, s.length());
+  }
+  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, text.size(), maxlen));
+  dialog->SetColor(SchemeId::DIALOG_TEXT);
+  int curline = 1;
+  for (const auto& s : text) {
+    dialog->MvAddStr(curline++, 2, s);
+  }
+  dialog->SetColor(SchemeId::DIALOG_PROMPT);
   dialog->Refresh();
-  int ch = dialog->GetChar();
-  return ch == 'Y' || ch == 'y';
+  return toupper(dialog->GetChar()) == 'Y';
+
+}
+
+bool dialog_yn(CursesWindow* window, const string text) {
+  const vector<string> text_vector = { text };
+  return dialog_yn(window, text_vector);
 }
 
 void input_password(CursesWindow* window, const string prompt, const vector<string>& text, char *output, int max_length) {
@@ -181,12 +193,12 @@ void input_password(CursesWindow* window, const string prompt, const vector<stri
   winput_password(dialog.get(), output, max_length);
 }
 
-void messagebox(CursesWindow* window, const string text) {
+int messagebox(CursesWindow* window, const string text) {
   const vector<string> vector = { text };
-  messagebox(window, vector);
+  return messagebox(window, vector);
 }
 
-void messagebox(CursesWindow* window, const vector<string>& text) {
+int messagebox(CursesWindow* window, const vector<string>& text) {
   const string prompt = "Press Any Key";
   int maxlen = prompt.length();
   for (const auto& s : text) {
@@ -202,7 +214,7 @@ void messagebox(CursesWindow* window, const vector<string>& text) {
   int x = (maxlen - prompt.length()) / 2;
   dialog->MvAddStr(text.size() + 2, x + 2, prompt);
   dialog->Refresh();
-  dialog->GetChar();
+  return dialog->GetChar();
 }
 
 int input_number(CursesWindow* window, int max_digits) {
