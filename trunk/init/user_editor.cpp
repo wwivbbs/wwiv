@@ -216,7 +216,7 @@ void user_editor() {
         messagebox(window.get(), "Can not edit a deleted user.");
       } else {
         items.Run();
-        if (dialog_yn(window.get(), "Save User")) {
+        if (dialog_yn(window.get(), "Save User?")) {
           write_user(current_usernum, &user);
         }
       }
