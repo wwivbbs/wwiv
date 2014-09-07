@@ -355,6 +355,9 @@
     <ClCompile Include="prot\zmwwiv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="external_edit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -475,6 +478,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external_edit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

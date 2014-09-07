@@ -37,6 +37,7 @@
 #include "bbs.h"
 #include "instmsg.h"
 #include "menu.h" // for mainmenu
+#include "bbs/external_edit.h"
 #include "core/wutil.h"
 
 #if defined( _WIN32 )
@@ -428,8 +429,7 @@ int WApplication::doWFCEvents() {
           std::string newFileName;
           Input1(&newFileName, szFileName, 50, true, InputMode::UPPER);
           if (!newFileName.empty()) {
-            external_edit(newFileName.c_str(), "", GetSession()->GetCurrentUser()->GetDefaultEditor() - 1, 500, ".", szFileName,
-                          MSGED_FLAG_NO_TAGLINE);
+            external_text_edit(newFileName.c_str(), "", 500, ".", MSGED_FLAG_NO_TAGLINE);
           }
           holdphone(false);
         }

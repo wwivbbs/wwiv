@@ -533,9 +533,6 @@ void nscan(int nStartingSubNum = 0);
 void ScanMessageTitles();
 void delmail(WFile *pFile, int loc);
 void remove_post();
-bool external_edit(const char *pszEditFileName, const char *pszNewDirectory, int ednum, int numlines,
-                   const char *pszDestination, const char *pszTitle, int flags);
-
 
 // File: multinst.cpp
 

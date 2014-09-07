@@ -26,10 +26,7 @@ using std::string;
 using wwiv::strings::StringPrintf;
 
 // How far to indent extended descriptions
-#define INDENTION 24
-
-// the archive type to use
-#define ARC_NUMBER 0
+static const int INDENTION = 24;
 
 int foundany;
 
