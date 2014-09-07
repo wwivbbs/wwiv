@@ -19,6 +19,7 @@
 #include "init/editors.h"
 
 #include <curses.h>
+#include <cmath>
 #include <cstdint>
 #include <fcntl.h>
 #ifdef _WIN32
