@@ -39,6 +39,7 @@ set(COMMON_SOURCES
  dupphone.cpp
  events.cpp
  execexternal.cpp
+ external_edit.cpp
  extract.cpp
  finduser.cpp
  gfiles.cpp

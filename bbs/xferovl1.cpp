@@ -25,18 +25,19 @@
 #endif  // _WIN32
 
 #include "bbs/wwiv.h"
+#include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 
 // How far to indent extended descriptions
-#define INDENTION 24
+static const int INDENTION = 24;
 
 // the archive type to use
-#define ARC_NUMBER 0
+static const int ARC_NUMBER = 0;
 
 extern int foundany;
-const unsigned char *invalid_chars =
+static const unsigned char *invalid_chars =
   (unsigned char *)"Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
 
 using wwiv::bbs::TempDisablePause;
@@ -78,15 +79,15 @@ void modify_extended_description(char **sss, const char *dest, const char *title
       } else {
         WFile::Remove(s);
       }
-      int nSavedScreenChars = GetSession()->GetCurrentUser()->GetScreenChars();
+
+      const int saved_screen_chars = GetSession()->GetCurrentUser()->GetScreenChars();
       if (GetSession()->GetCurrentUser()->GetScreenChars() > (76 - INDENTION)) {
         GetSession()->GetCurrentUser()->SetScreenChars(76 - INDENTION);
       }
-      bool bEditOK = external_edit("extended.dsc", syscfgovr.tempdir,
-                                   GetSession()->GetCurrentUser()->GetDefaultEditor() - 1,
-                                   GetSession()->max_extend_lines, dest, title,
-                                   MSGED_FLAG_NO_TAGLINE);
-      GetSession()->GetCurrentUser()->SetScreenChars(nSavedScreenChars);
+
+      bool bEditOK = external_text_edit("extended.dsc", syscfgovr.tempdir,
+          GetSession()->max_extend_lines, dest, MSGED_FLAG_NO_TAGLINE);
+      GetSession()->GetCurrentUser()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
         if ((*sss = static_cast<char *>(BbsAllocA(10240))) == NULL) {
           return;
