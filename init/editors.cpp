@@ -25,8 +25,10 @@
 #include <direct.h>
 #include <io.h>
 #endif
+#include <memory>
 #include <string>
 #include <sys/stat.h>
+#include <vector>
 
 #include "ifcns.h"
 #include "init.h"
@@ -36,61 +38,41 @@
 #include "utility.h"
 #include "wwivinit.h"
 
+using std::auto_ptr;
 using std::string;
+using std::vector;
 using wwiv::strings::StringPrintf;
 
 void edit_editor(int n) {
-  int i1;
-  editorrec c;
+  out->Cls(ACS_CKBOARD);
+  auto_ptr<CursesWindow> window(out->CreateBoxedWindow("External Editor Configuration", 15, 78));
 
-  out->Cls();
-  c = editors[n];
-  bool done = false;
-  int cp = 0;
-  out->window()->Printf("Description     : %s\n", c.description);
-  out->window()->Printf("Filename to run remotely\n%s\n", c.filename);
-  out->window()->Printf("Filename to run locally\n%s\n", c.filenamecon);
-  out->SetColor(SchemeId::PROMPT);
-  out->window()->Puts("\n<ESC> when done.\n\n");
-  out->SetColor(SchemeId::NORMAL);
-  out->window()->Printf("%%1 = filename to edit\n");
-  out->window()->Printf("%%2 = chars per line\n");
-  out->window()->Printf("%%3 = lines per page\n");
-  out->window()->Printf("%%4 = max lines\n");
-  out->window()->Printf("%%5 = instance number\n");
-  out->SetColor(SchemeId::NORMAL);
+  const vector<string> bbs_types = { "WWIV    ", "QuickBBS" };
+  const int COL1_POSITION = 20;
+  editorrec c = editors[n];
 
-  do {
-    switch (cp) {
-    case 0:
-      out->window()->GotoXY(18, 0);
-      break;
-    case 1:
-      out->window()->GotoXY(0, 2);
-      break;
-    case 2:
-      out->window()->GotoXY(0, 4);
-      break;
-    }
-    switch (cp) {
-    case 0:
-      editline(out->window(), c.description, 35, ALL, &i1, "");
-      trimstr(c.description);
-      break;
-    case 1:
-      editline(out->window(), c.filename, 75, ALL, &i1, "");
-      trimstr(c.filename);
-      break;
-    case 2:
-      editline(out->window(), c.filenamecon, 75, ALL, &i1, "");
-      trimstr(c.filenamecon);
-      break;
-    }
-    cp = GetNextSelectionPosition(0, 2, cp, i1);
-    if (i1 == DONE) {
-      done = true;
-    }
-  } while (!done);
+  EditItems items{
+    new StringEditItem<char*>(COL1_POSITION, 1, 35, c.description, false),
+    new ToggleEditItem<uint8_t>(COL1_POSITION, 2, bbs_types, &c.bbs_type),
+    new StringEditItem<char*>(2, 4, 75, c.filename, false),
+    new StringEditItem<char*>(2, 7, 75, c.filenamecon, false)
+  };
+  items.set_curses_io(out, window.get());
+
+  int y = 1;
+  window->PrintfXY(2, y++, "Description     : %s", c.description);
+  window->PrintfXY(2, y++, "BBS Type        : %s", bbs_types.at(c.bbs_type).c_str());
+  window->PrintfXY(2, y++, "Filename to run remotely:", c.filename);
+  y+=2;
+  window->PrintfXY(2, y++, "Filename to run locally:", c.filenamecon);
+  y+=2;
+  window->PrintfXY(2, y++, "%%1 = filename to edit");
+  window->PrintfXY(2, y++, "%%2 = chars per line");
+  window->PrintfXY(2, y++, "%%3 = lines per page");
+  window->PrintfXY(2, y++, "%%4 = max lines");
+  window->PrintfXY(2, y++, "%%5 = instance number");
+  items.Run();
+
   editors[n] = c;
 }
 
