@@ -379,7 +379,7 @@ static void init_files() {
   out->SetColor(SchemeId::PROMPT);
   out->window()->Puts("Decompressing archives.  Please wait");
   out->SetColor(SchemeId::NORMAL);
-  if (exist("en-menus.zip")) {
+  if (WFile::Exists("en-menus.zip")) {
     char szDestination[MAX_PATH];
     out->window()->Printf(".");
     system("unzip -qq -o EN-menus.zip -dgfiles ");
@@ -389,7 +389,7 @@ static void init_files() {
     rename("en-menus.zip", szDestination);
     out->window()->Printf(".");
   }
-  if (exist("regions.zip")) {
+  if (WFile::Exists("regions.zip")) {
     char szDestination[MAX_PATH];
     out->window()->Printf(".");
     system("unzip -qq -o regions.zip -ddata");
@@ -399,7 +399,7 @@ static void init_files() {
     rename("regions.zip", szDestination);
     out->window()->Printf(".");
   }
-  if (exist("zip-city.zip")) {
+  if (WFile::Exists("zip-city.zip")) {
     char szDestination[MAX_PATH];
     out->window()->Printf(".");
     system("unzip -qq -o zip-city.zip -ddata");

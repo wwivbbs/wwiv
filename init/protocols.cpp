@@ -33,6 +33,7 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
 #include "utility.h"
 #include "wwivinit.h"
@@ -118,12 +119,12 @@ static void edit_prot(int n) {
     case 0:
       if (n >= 6) {
         editline(out->window(), c.description, 50, ALL, &i1, "");
-        trimstr(c.description);
+        StringTrimEnd(c.description);
       }
       break;
     case 1:
       editline(out->window(), s, 3, NUM_ONLY, &i1, "");
-      trimstr(s);
+      StringTrimEnd(s);
       c.ok1 = atoi(s);
       sprintf(s, "%u", c.ok1);
       out->window()->Puts(s);
@@ -145,7 +146,7 @@ static void edit_prot(int n) {
       break;
     case 3:
       editline(out->window(), c.receivefn, 78, ALL, &i1, "");
-      trimstr(c.receivefn);
+      StringTrimEnd(c.receivefn);
       if (c.sendfn[0] == 0) {
         strcpy(c.sendfn, c.receivefn);
       }
@@ -158,24 +159,24 @@ static void edit_prot(int n) {
       break;
     case 4:
       editline(out->window(), c.sendfn, 78, ALL, &i1, "");
-      trimstr(c.sendfn);
+      StringTrimEnd(c.sendfn);
       break;
     case 5:
       if (n >= 6) {
         editline(out->window(), c.receivebatchfn, 78, ALL, &i1, "");
-        trimstr(c.receivebatchfn);
+        StringTrimEnd(c.receivebatchfn);
       }
       break;
     case 6:
       if (n >= 4) {
         editline(out->window(), c.sendbatchfn, 78, ALL, &i1, "");
-        trimstr(c.sendbatchfn);
+        StringTrimEnd(c.sendbatchfn);
       }
       break;
     case 7:
       if (n >= 6) {
         editline(out->window(), c.bibatchfn, 78, ALL, &i1, "");
-        trimstr(c.bibatchfn);
+        StringTrimEnd(c.bibatchfn);
       }
       break;
 

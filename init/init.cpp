@@ -382,6 +382,7 @@ int WInitApp::main(int argc, char *argv[]) {
       ListBox list(out, out->window(), "Main Menu", static_cast<int>(floor(out->window()->GetMaxX() * 0.8)), 
         static_cast<int>(floor(out->window()->GetMaxY() * 0.8)), items, out->color_scheme());
       list.selection_returns_hotkey(true);
+      list.set_additional_hotkeys("$");
       ListBoxResult result = list.Run();
       if (result.type == ListBoxResultType::HOTKEY) {
         selected_hotkey = result.hotkey;
