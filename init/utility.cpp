@@ -116,11 +116,6 @@ void write_user(unsigned int un, userrec *u) {
 
 }
 
-int exist(const char *pszFileName) {
-  WFindFile fnd;
-  return ((fnd.open(pszFileName, 0) == false) ? 0 : 1);
-}
-
 void save_status() {
   char szFileName[MAX_PATH];
 
@@ -157,4 +152,15 @@ void exit_init(int level) {
   out = nullptr;
 
   exit(level);
+}
+
+void trimstrpath(char *s) {
+  StringTrimEnd(s);
+
+  int i = strlen(s);
+  if (i && (s[i - 1] != WFile::pathSeparatorChar)) {
+    // We don't have pathSeparatorString.
+    s[i] = WFile::pathSeparatorChar;
+    s[i + 1] = 0;
+  }
 }

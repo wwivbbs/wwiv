@@ -32,6 +32,7 @@
 #include "ifcns.h"
 #include "init.h"
 #include "input.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
 #include "bbs/wconstants.h" // for MAX_ARCHIVERS
 #include "utility.h"
@@ -109,35 +110,35 @@ void edit_arc(int nn) {
         switch (cp) {
         case 4:
           editline(out->window(), arc[i].name, 31, ALL, &i1, "");
-          trimstr(arc[i].name);
+          StringTrimEnd(arc[i].name);
           break;
         case 5:
           editline(out->window(), arc[i].extension, 3, UPPER_ONLY, &i1, "");
-          trimstr(arc[i].extension);
+          StringTrimEnd(arc[i].extension);
           break;
         case 6:
           editline(out->window(), arc[i].arcl, 49, ALL, &i1, "");
-          trimstr(arc[i].arcl);
+          StringTrimEnd(arc[i].arcl);
           break;
         case 7:
           editline(out->window(), arc[i].arce, 49, ALL, &i1, "");
-          trimstr(arc[i].arce);
+          StringTrimEnd(arc[i].arce);
           break;
         case 8:
           editline(out->window(), arc[i].arca, 49, ALL, &i1, "");
-          trimstr(arc[i].arca);
+          StringTrimEnd(arc[i].arca);
           break;
         case 9:
           editline(out->window(), arc[i].arcd, 49, ALL, &i1, "");
-          trimstr(arc[i].arcd);
+          StringTrimEnd(arc[i].arcd);
           break;
         case 10:
           editline(out->window(), arc[i].arck, 49, ALL, &i1, "");
-          trimstr(arc[i].arck);
+          StringTrimEnd(arc[i].arck);
           break;
         case 11:
           editline(out->window(), arc[i].arct, 49, ALL, &i1, "");
-          trimstr(arc[i].arct);
+          StringTrimEnd(arc[i].arct);
           break;
         }
         cp = GetNextSelectionPosition(4, 11, cp, i1);

@@ -39,41 +39,6 @@ using std::string;
 
 extern char bbsdir[];
 
-static int verify_dir(char *typeDir, char *dirName) {
-  int rc = 0;
-  char s[81], ch;
-
-  WFindFile fnd;
-  fnd.open(dirName, 0);
-
-  if (fnd.next() && fnd.IsDirectory()) {
-    out->window()->GotoXY(0, 8);
-    sprintf(s, "The %s directory: %s is invalid!", typeDir, dirName);
-    out->SetColor(SchemeId::ERROR_TEXT);
-    out->window()->Puts(s);
-    for (unsigned int i = 0; i < strlen(s); i++) {
-      out->window()->Printf("\b \b");
-    }
-    if ((strcmp(typeDir, "Temporary") == 0) || (strcmp(typeDir, "Batch") == 0)) {
-      sprintf(s, "Create %s? ", dirName);
-      out->SetColor(SchemeId::PROMPT);
-      out->window()->Puts(s);
-      ch = out->window()->GetChar();
-      if (toupper(ch) == 'Y') {
-        mkdir(dirName);
-      }
-      for (unsigned int j = 0; j < strlen(s); j++) {
-        out->window()->Printf("\b \b");
-      }
-    }
-    out->SetColor(SchemeId::PROMPT);
-    out->window()->Puts("<ESC> when done.");
-    rc = 1;
-  }
-  chdir(bbsdir);
-  return rc;
-}
-
 class FilePathItem : public EditItem<char*> {
 public:
   FilePathItem(int x, int y, int maxsize, char* data) 
