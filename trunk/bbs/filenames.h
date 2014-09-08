@@ -129,6 +129,11 @@
 #define MENUWEL_NOEXT "menuwel"
 #define MEXTRACT_NOEXT "mextract"
 #define MMAIL_NOEXT "mmail"
+
+// Used by QBBS style editors.
+#define MSGINF "msginf"
+#define MSGTMP "msgtmp"
+
 #define MUSTREAD_NOEXT "mustread"
 
 #define NAMES_LST "names.lst"
