@@ -96,6 +96,7 @@
   <ItemGroup>
     <ClCompile Include="core_test_main.cpp" />
     <ClCompile Include="inifile_test.cpp" />
+    <ClCompile Include="scope_exit_test.cpp" />
     <ClCompile Include="strings_test.cpp" />
     <ClCompile Include="transaction_test.cpp" />
     <ClCompile Include="wfile_test.cpp" />
