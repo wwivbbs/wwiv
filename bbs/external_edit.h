@@ -20,15 +20,12 @@
 #define __INCLUDED_EXTERNAL_EDIT_H__
 
 #include <string>
+#include "bbs/vardec.h"
 
 bool ExternalMessageEditor(int maxli, int *setanon, std::string* pszTitle, const std::string destination, int flags);
 
 bool external_text_edit(const std::string& edit_filename, const std::string& new_directory, int numlines,
                         const std::string& destination, int flags);
-
-bool external_edit(const std::string& edit_filename, const std::string& new_directory, int nEditorNumber, int numlines,
-                   const std::string& destination, const std::string& title, int flags);
-
 
 #endif  // __INCLUDED_EXTERNAL_EDIT_H__
 

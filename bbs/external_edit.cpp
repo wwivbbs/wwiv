@@ -35,6 +35,10 @@
 using std::string;
 using wwiv::strings::StringPrintf;
 
+// Local prototypes.
+bool external_edit_internal(const std::string& edit_filename, const std::string& new_directory, const editorrec& editor, int numlines,
+                            const std::string& destination, const std::string& title, int flags);
+
 static string WWIV_GetCurrentDirectory(bool be) {
   char szDir[MAX_PATH];
   WWIV_GetDir(szDir, be);
@@ -47,14 +51,22 @@ static void RemoveEditorFileFromTemp(const string& filename) {
   file.Delete();
 }
 
-bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string destination, int flags) {
+static void RemoveWWIVControlFiles() {
   RemoveEditorFileFromTemp(FEDIT_INF);
   RemoveEditorFileFromTemp(RESULT_ED);
+  RemoveEditorFileFromTemp(EDITOR_INF);
+}
 
+static void RemoveQBBSControlFiles() {
+  RemoveEditorFileFromTemp(MSGINF);
+  RemoveEditorFileFromTemp(MSGTMP);
+}
+
+static void WriteFEditInf(const string& title) {
   fedit_data_rec fedit_data;
   memset(&fedit_data, '\0', sizeof(fedit_data_rec));
   fedit_data.tlen = 60;
-  strcpy(fedit_data.ttl, title->c_str());
+  strcpy(fedit_data.ttl, title.c_str());
   fedit_data.anon = 0;
 
   WFile fileFEditInf(syscfgovr.tempdir, FEDIT_INF);
@@ -63,50 +75,114 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string 
     fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
     fileFEditInf.Close();
   }
-  bool bSaveMessage = external_edit(INPUT_MSG, syscfgovr.tempdir, GetSession()->GetCurrentUser()->GetDefaultEditor() - 1,
-                                    maxli, destination, *title, flags);
-  if (bSaveMessage) {
-    if (WFile::Exists(syscfgovr.tempdir, RESULT_ED)) {
-      WTextFile file(syscfgovr.tempdir, RESULT_ED, "rt");
-      string anon_string;
-      if (file.ReadLine(&anon_string)) {
-        *setanon = atoi(anon_string.c_str());
-        if (file.ReadLine(title)) {
-          // Strip whitespace from title to avoid issues like bug #29
-          StringTrim(title);
-        }
+}
+
+static void ReadWWIVResultFiles(string* title, int* anon) {
+  if (WFile::Exists(syscfgovr.tempdir, RESULT_ED)) {
+    WTextFile file(syscfgovr.tempdir, RESULT_ED, "rt");
+    string anon_string;
+    if (file.ReadLine(&anon_string)) {
+      *anon = atoi(anon_string.c_str());
+      if (file.ReadLine(title)) {
+        // Strip whitespace from title to avoid issues like bug #29
+        StringTrim(title);
       }
-      file.Close();
-    } else if (WFile::Exists(fileFEditInf.GetFullPathName())) {
-      WFile file(fileFEditInf.GetFullPathName());
-      file.Open(WFile::modeBinary | WFile::modeReadOnly);
+    }
+    file.Close();
+  } else if (WFile::Exists(syscfgovr.tempdir, FEDIT_INF)) {
+    fedit_data_rec fedit_data;
+    memset(&fedit_data, '\0', sizeof(fedit_data_rec));
+    WFile file(syscfgovr.tempdir, FEDIT_INF);
+    file.Open(WFile::modeBinary | WFile::modeReadOnly);
       if (file.Read(&fedit_data, sizeof(fedit_data))) {
         title->assign(fedit_data.ttl);
-        *setanon = fedit_data.anon;
+        *anon = fedit_data.anon;
       }
-      file.Close();
+
+  }
+}
+
+static void WriteWWIVEditorControlFiles(const string& title, const string destination, int flags) {
+  WTextFile fileEditorInf(syscfgovr.tempdir, EDITOR_INF, "wt");
+  if (fileEditorInf.IsOpen()) {
+    if (irt_name[0]) {
+      flags |= MSGED_FLAG_HAS_REPLY_NAME;
     }
+    if (irt[0]) {
+      flags |= MSGED_FLAG_HAS_REPLY_TITLE;
+    }
+    fileEditorInf.WriteFormatted(
+      "%s\n%s\n%lu\n%s\n%s\n%u\n%u\n%lu\n%u\n",
+      title.c_str(),
+      destination.c_str(),
+      GetSession()->usernum,
+      GetSession()->GetCurrentUser()->GetName(),
+      GetSession()->GetCurrentUser()->GetRealName(),
+      GetSession()->GetCurrentUser()->GetSl(),
+      flags,
+      GetSession()->localIO()->GetTopLine(),
+      GetSession()->GetCurrentUser()->GetLanguage());
+    fileEditorInf.Close();
+  }
+  if (flags & MSGED_FLAG_NO_TAGLINE) {
+    // disable tag lines by creating a DISABLE.TAG file
+    WTextFile fileDisableTag(DISABLE_TAG, "w");
+  } else {
+    RemoveEditorFileFromTemp(DISABLE_TAG);
+  }
+  if (!irt[0]) {
+    RemoveEditorFileFromTemp(QUOTES_TXT);
+    RemoveEditorFileFromTemp(QUOTES_IND);
   }
 
-  RemoveEditorFileFromTemp(FEDIT_INF);
-  RemoveEditorFileFromTemp(RESULT_ED);
-  return bSaveMessage;
+  WriteFEditInf(title);
+}
+
+bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string destination, int flags) {
+  RemoveWWIVControlFiles();
+  const auto editor_number = GetSession()->GetCurrentUser()->GetDefaultEditor() - 1;
+  if (editor_number >= GetSession()->GetNumberOfEditors() || !okansi()) {
+    GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
+    return false;
+  }
+
+  WriteWWIVEditorControlFiles(*title, destination, flags);
+  const editorrec& editor = editors[editor_number];
+  bool save_message = external_edit_internal(INPUT_MSG, syscfgovr.tempdir, editor,
+                                             maxli, destination, *title, flags);
+
+  if (!save_message) {
+    RemoveWWIVControlFiles();
+    return false;
+  }
+
+  ReadWWIVResultFiles(title, setanon);
+  RemoveWWIVControlFiles();
+  return true;
 }
 
 bool external_text_edit(const std::string& edit_filename, const std::string& new_directory, int numlines,
                         const std::string& destination, int flags) {
   const auto editor_number = GetSession()->GetCurrentUser()->GetDefaultEditor() - 1;
-  return external_edit(edit_filename, new_directory, editor_number, numlines, destination, edit_filename, flags);
-}
-
-bool external_edit(const std::string& edit_filename, const std::string& new_directory, int nEditorNumber, int numlines,
-                   const std::string& destination, const std::string& title, int flags) {
-  if (nEditorNumber >= GetSession()->GetNumberOfEditors() || !okansi()) {
+  if (editor_number >= GetSession()->GetNumberOfEditors() || !okansi()) {
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
     return false;
   }
+
+  RemoveWWIVControlFiles();
+  WriteWWIVEditorControlFiles(edit_filename, destination, flags);
+  const editorrec& editor = editors[editor_number];
+  bool result = external_edit_internal(edit_filename, new_directory, editor, numlines, destination, edit_filename, flags);
+  RemoveWWIVControlFiles();
+  return result;
+}
+
+// Actually launch the editor. This won't create any control files, etc.
+bool external_edit_internal(const std::string& edit_filename, const std::string& new_directory, 
+                            const editorrec& editor, int numlines,
+                            const std::string& destination, const std::string& title, int flags) {
   
-  string editorCommand = (incom) ? editors[nEditorNumber].filename : editors[nEditorNumber].filenamecon;
+  string editorCommand = (incom) ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
     return false;
@@ -114,9 +190,6 @@ bool external_edit(const std::string& edit_filename, const std::string& new_dire
 
   WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &editorCommand);
   const string current_directory = WWIV_GetCurrentDirectory(false);
-
-  RemoveEditorFileFromTemp(EDITOR_INF);
-  RemoveEditorFileFromTemp(RESULT_ED);
 
   string strippedFileName(stripfn(edit_filename.c_str()));
   string full_filename;
@@ -144,43 +217,12 @@ bool external_edit(const std::string& edit_filename, const std::string& new_dire
   const string sx3 = StringPrintf("%d", numlines);
   const std::string cmdLine = stuff_in(editorCommand, full_filename, sx1, sx2, sx3, "");
 
-  WTextFile fileEditorInf(EDITOR_INF, "wt");
-
-  if (fileEditorInf.IsOpen()) {
-    if (irt_name[0]) {
-      flags |= MSGED_FLAG_HAS_REPLY_NAME;
-    }
-    if (irt[0]) {
-      flags |= MSGED_FLAG_HAS_REPLY_TITLE;
-    }
-    fileEditorInf.WriteFormatted(
-      "%s\n%s\n%lu\n%s\n%s\n%u\n%u\n%lu\n%u\n",
-      title.c_str(),
-      destination.c_str(),
-      GetSession()->usernum,
-      GetSession()->GetCurrentUser()->GetName(),
-      GetSession()->GetCurrentUser()->GetRealName(),
-      GetSession()->GetCurrentUser()->GetSl(),
-      flags,
-      GetSession()->localIO()->GetTopLine(),
-      GetSession()->GetCurrentUser()->GetLanguage());
-    fileEditorInf.Close();
-  }
-  if (flags & MSGED_FLAG_NO_TAGLINE) {
-    // disable tag lines by creating a DISABLE.TAG file
-    WTextFile fileDisableTag(DISABLE_TAG, "w");
-  } else {
-    WFile::Remove(DISABLE_TAG);
-  }
-  if (!irt[0]) {
-    WFile::Remove(QUOTES_TXT);
-    WFile::Remove(QUOTES_IND);
-  }
   ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPWANOPT_FSED));
+  
+  // After launched FSED
   lines_listed = 0;
   chdir(new_directory.c_str());
-  WFile::Remove(EDITOR_INF);
-  WFile::Remove(DISABLE_TAG);
+
   bool bModifiedOrExists = false;
   if (!bIsFileThere) {
     bModifiedOrExists = WFile::Exists(full_filename);
