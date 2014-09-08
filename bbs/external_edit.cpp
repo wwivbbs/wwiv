@@ -29,10 +29,12 @@
 
 #include "wwiv.h"
 
+#include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
 
 using std::string;
+using wwiv::core::ScopeExit;
 using wwiv::strings::StringPrintf;
 
 // Local prototypes.
@@ -140,6 +142,8 @@ static void WriteWWIVEditorControlFiles(const string& title, const string destin
 
 bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string destination, int flags) {
   RemoveWWIVControlFiles();
+  ScopeExit on_exit(RemoveWWIVControlFiles);
+  
   const auto editor_number = GetSession()->GetCurrentUser()->GetDefaultEditor() - 1;
   if (editor_number >= GetSession()->GetNumberOfEditors() || !okansi()) {
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
@@ -152,12 +156,10 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string 
                                              maxli, destination, *title, flags);
 
   if (!save_message) {
-    RemoveWWIVControlFiles();
     return false;
   }
 
   ReadWWIVResultFiles(title, setanon);
-  RemoveWWIVControlFiles();
   return true;
 }
 

@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inifile.h" />
+    <ClInclude Include="scope_exit.h" />
     <ClInclude Include="transaction.h" />
     <ClInclude Include="strings.h" />
     <ClInclude Include="wfile.h" />
