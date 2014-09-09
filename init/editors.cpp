@@ -68,11 +68,10 @@ void edit_editor(editorrec* c) {
   y+=2;
   window->PutsXY(2, y++, "Filename to run locally:");
   y+=2;
-  window->PutsXY(2, y++, "%%1 = filename to edit");
-  window->PutsXY(2, y++, "%%2 = chars per line");
-  window->PutsXY(2, y++, "%%3 = lines per page");
-  window->PutsXY(2, y++, "%%4 = max lines");
-  window->PutsXY(2, y++, "%%5 = instance number");
+  window->PutsXY(2, y++, "%1 = filename to edit");
+  window->PutsXY(2, y++, "%2 = chars per line");
+  window->PutsXY(2, y++, "%3 = lines per page");
+  window->PutsXY(2, y++, "%4 = max lines");
   items.Run();
 }
 
