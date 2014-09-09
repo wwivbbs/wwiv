@@ -135,7 +135,7 @@ void grab_quotes(messagerec * m, const char *aux) {
       quotes_nrm_l = lMessageLength;
 
       WFile quotesTextFile(szQuotesTextFileName);
-      if (quotesTextFile.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyRead,
+      if (quotesTextFile.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyNone,
                               WFile::permReadWrite)) {
         quotesTextFile.Write(ss, lMessageLength);
         quotesTextFile.Close();

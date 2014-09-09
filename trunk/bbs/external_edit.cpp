@@ -38,8 +38,7 @@ using wwiv::core::ScopeExit;
 using wwiv::strings::StringPrintf;
 
 // Local prototypes.
-bool external_edit_internal(const std::string& edit_filename, const std::string& new_directory, const editorrec& editor, int numlines,
-                            const std::string& destination, const std::string& title, int flags);
+bool external_edit_internal(const std::string& edit_filename, const std::string& new_directory, const editorrec& editor, int numlines);
 
 static string WWIV_GetCurrentDirectory(bool be) {
   char szDir[MAX_PATH];
@@ -64,18 +63,11 @@ static void RemoveQBBSControlFiles() {
   RemoveEditorFileFromTemp(MSGTMP);
 }
 
-static void WriteFEditInf(const string& title) {
-  fedit_data_rec fedit_data;
-  memset(&fedit_data, '\0', sizeof(fedit_data_rec));
-  fedit_data.tlen = 60;
-  strcpy(fedit_data.ttl, title.c_str());
-  fedit_data.anon = 0;
-
-  WFile fileFEditInf(syscfgovr.tempdir, FEDIT_INF);
-  if (fileFEditInf.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyRead,
-                        WFile::permReadWrite)) {
-    fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
-    fileFEditInf.Close();
+static void RemoveControlFiles(const editorrec& editor) {
+  if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
+    RemoveQBBSControlFiles();
+  } else {
+    RemoveWWIVControlFiles();
   }
 }
 
@@ -104,7 +96,23 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
   }
 }
 
-static void WriteWWIVEditorControlFiles(const string& title, const string destination, int flags) {
+static bool WriteMsgInf(const string& title, const string& destination) {
+  WTextFile file(syscfgovr.tempdir, MSGINF, "wt");
+  if (!file.IsOpen()) {
+    return false;
+  }
+
+  file.WriteLine(GetSession()->GetCurrentUser()->GetName());
+  file.WriteLine(destination);
+  file.WriteLine(title);
+  file.WriteLine("0"); // Message area - We are not QBBS
+  file.WriteLine("unknown"); // What type of message, Netmail, Email, sub name
+  // Is the message private [YES|NO]
+  file.Close();
+  return true;
+}
+
+static void WriteWWIVEditorControlFiles(const string& title, const string& destination, int flags) {
   WTextFile fileEditorInf(syscfgovr.tempdir, EDITOR_INF, "wt");
   if (fileEditorInf.IsOpen()) {
     if (irt_name[0]) {
@@ -137,29 +145,68 @@ static void WriteWWIVEditorControlFiles(const string& title, const string destin
     RemoveEditorFileFromTemp(QUOTES_IND);
   }
 
-  WriteFEditInf(title);
+  // Write FEDIT.INF
+  fedit_data_rec fedit_data;
+  memset(&fedit_data, '\0', sizeof(fedit_data_rec));
+  fedit_data.tlen = 60;
+  strcpy(fedit_data.ttl, title.c_str());
+  fedit_data.anon = 0;
+
+  WFile fileFEditInf(syscfgovr.tempdir, FEDIT_INF);
+  if (fileFEditInf.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyRead,
+                        WFile::permReadWrite)) {
+    fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
+    fileFEditInf.Close();
+  }
+}
+
+bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags) {
+  if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
+    if (WFile::Exists(syscfgovr.tempdir, QUOTES_TXT)) {
+      // Copy quotes.txt to MSGTMP if it exists
+      WFile source(syscfgovr.tempdir, QUOTES_TXT);
+      WFile dest(syscfgovr.tempdir, MSGTMP);
+      WFile::CopyFile(source.GetFullPathName(), dest.GetFullPathName());
+    }
+    return WriteMsgInf(title, destination);
+  } 
+
+  WriteWWIVEditorControlFiles(title, destination, flags);
+  return true;
 }
 
 bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string destination, int flags) {
-  RemoveWWIVControlFiles();
-  ScopeExit on_exit(RemoveWWIVControlFiles);
-  
   const auto editor_number = GetSession()->GetCurrentUser()->GetDefaultEditor() - 1;
   if (editor_number >= GetSession()->GetNumberOfEditors() || !okansi()) {
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
     return false;
   }
 
-  WriteWWIVEditorControlFiles(*title, destination, flags);
   const editorrec& editor = editors[editor_number];
-  bool save_message = external_edit_internal(INPUT_MSG, syscfgovr.tempdir, editor,
-                                             maxli, destination, *title, flags);
+  RemoveControlFiles(editor);
+  ScopeExit on_exit([=] { RemoveControlFiles(editor); });
+
+  const string editor_filenme = (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) ? MSGTMP : INPUT_MSG;
+  
+  WriteExternalEditorControlFiles(editor, *title, destination, flags);
+  bool save_message = external_edit_internal(editor_filenme, syscfgovr.tempdir, editor, maxli);
 
   if (!save_message) {
     return false;
   }
 
-  ReadWWIVResultFiles(title, setanon);
+  if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
+    // Copy MSGTMP to INPUT_MSG since that's what the rest of WWIV expectes.
+    // TODO(rushfan): Let this function return an object with result and filename and anything
+    // else that needs to be passed back.
+    WFile source(syscfgovr.tempdir, MSGTMP);
+    WFile dest(syscfgovr.tempdir, INPUT_MSG);
+    WFile::CopyFile(source.GetFullPathName(), dest.GetFullPathName());
+
+    // TODO(rushfan): Do we need to re-read MSGINF to look for changes to title or setanon?
+  } else {
+    ReadWWIVResultFiles(title, setanon);
+  }
   return true;
 }
 
@@ -172,17 +219,16 @@ bool external_text_edit(const std::string& edit_filename, const std::string& new
   }
 
   RemoveWWIVControlFiles();
-  WriteWWIVEditorControlFiles(edit_filename, destination, flags);
   const editorrec& editor = editors[editor_number];
-  bool result = external_edit_internal(edit_filename, new_directory, editor, numlines, destination, edit_filename, flags);
+  WriteExternalEditorControlFiles(editor, edit_filename, destination, flags);
+  bool result = external_edit_internal(edit_filename, new_directory, editor, numlines);
   RemoveWWIVControlFiles();
   return result;
 }
 
 // Actually launch the editor. This won't create any control files, etc.
 bool external_edit_internal(const std::string& edit_filename, const std::string& new_directory, 
-                            const editorrec& editor, int numlines,
-                            const std::string& destination, const std::string& title, int flags) {
+                            const editorrec& editor, int numlines) {
   
   string editorCommand = (incom) ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {

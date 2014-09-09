@@ -44,7 +44,7 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
 void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux);
 void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, const char *aux);
 void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLength);
-void GetMessageAnonStatus(bool &real_name, int *anony, int setanon);
+void GetMessageAnonStatus(bool *real_name, int *anony, int setanon);
 
 static const int LEN = 161;
 
@@ -120,7 +120,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
   if (bSaveMessage) {
     long lMaxMessageSize = 0;
     bool real_name = false;
-    GetMessageAnonStatus(real_name, anony, setanon);
+    GetMessageAnonStatus(&real_name, anony, setanon);
     GetSession()->bout.BackLine();
     if (!GetSession()->IsNewMailWatiting()) {
       SpinPuts("Saving...", 2);
@@ -655,7 +655,7 @@ void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLe
 
 }
 
-void GetMessageAnonStatus(bool &real_name, int *anony, int setanon) {
+void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
   // Changed *anony to anony
   switch (*anony) {
   case 0:
@@ -702,7 +702,7 @@ void GetMessageAnonStatus(bool &real_name, int *anony, int setanon) {
     *anony = anony_sender;
     break;
   case anony_real_name:
-    real_name = true;
+    *real_name = true;
     *anony = 0;
     break;
   }
