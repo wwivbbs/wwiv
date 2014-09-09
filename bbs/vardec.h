@@ -643,6 +643,9 @@ struct newexternalrec {
 };
 
 
+#define EDITORREC_EDITOR_TYPE_WWIV 0
+#define EDITORREC_EDITOR_TYPE_QBBS 1
+
 // DATA FOR EXTERNAL EDITORS
 struct editorrec {
   char description[81],                       // description of editor
