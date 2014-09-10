@@ -34,9 +34,6 @@ using wwiv::strings::StringPrintf;
 // Local function prototypes
 //
 void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength);
-bool GetMessageToName(const char *aux);
-void ReplaceString(char *pszResult, char *pszOld, char *pszNew);
-
 
 bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, string *title);
 void GetMessageTitle(string *title, bool force_title);
@@ -47,6 +44,44 @@ void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLe
 void GetMessageAnonStatus(bool *real_name, int *anony, int setanon);
 
 static const int LEN = 161;
+
+static bool GetMessageToName(const char *aux) {
+  // If GetSession()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
+  // also, if we are using e-mail, this is definately NOT a FidoNet
+  // post so there's no reason in wasting everyone's time in the loop...
+  WWIV_ASSERT(aux);
+  if (GetSession()->GetCurrentReadMessageArea() == -1 ||
+      wwiv::strings::IsEqualsIgnoreCase(aux, "email")) {
+    return 0;
+  }
+
+  bool bHasAddress = false;
+  bool newlsave = newline;
+
+  if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
+    for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++) {
+      xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
+      if (net_networks[xnp->net_num].type == net_type_fidonet &&
+          !wwiv::strings::IsEqualsIgnoreCase(aux, "email")) {
+        bHasAddress = true;
+        GetSession()->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
+        newline = false;
+        std::string to_name;
+        input1(&to_name, 40, InputMode::MIXED, false, true);
+        newline = newlsave;
+        if (to_name.empty()) {
+          strcpy(irt_name, "ALL");
+          GetSession()->bout << "|#4All\r\n";
+          GetSession()->bout.Color(0);
+        } else {
+          strcpy(irt_name, to_name.c_str());
+        }
+        strcpy(irt, "\xAB");
+      }
+    }
+  }
+  return bHasAddress;
+}
 
 void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtitle, const char *aux, int fsed,
            const char *pszDestination, int flags, bool force_title) {
@@ -108,7 +143,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
   if (fsed == INMSG_NOFSED) {   // Use Internal Message Editor
     bSaveMessage = InternalMessageEditor(lin, maxli, &curli, &setanon, &title);
   } else if (fsed == INMSG_FSED) {   // Use Full Screen Editor
-    bSaveMessage = ExternalMessageEditor(maxli, &setanon, &title, pszDestination, flags);
+    bSaveMessage = ExternalMessageEditor(maxli, &setanon, &title, pszDestination, flags, aux);
   } else if (fsed == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
     bSaveMessage = WFile::Exists(szExtEdFileName);
     if (bSaveMessage && !GetSession()->IsNewMailWatiting()) {
@@ -217,7 +252,7 @@ void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, lo
 }
 
 
-void ReplaceString(char *pszResult, char *pszOld, char *pszNew) {
+static void ReplaceString(char *pszResult, char *pszOld, char *pszNew) {
   if (strlen(pszResult) - strlen(pszOld) + strlen(pszNew) >= LEN) {
     return;
   }
@@ -230,45 +265,6 @@ void ReplaceString(char *pszResult, char *pszOld, char *pszNew) {
   char szTempResult[LEN];
   sprintf(szTempResult, "%s%s%s", pszResult, pszNew, ss + strlen(pszOld));
   strcpy(pszResult, szTempResult);
-}
-
-
-bool GetMessageToName(const char *aux) {
-  // If GetSession()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
-  // also, if we are using e-mail, this is definately NOT a FidoNet
-  // post so there's no reason in wasting everyone's time in the loop...
-  WWIV_ASSERT(aux);
-  if (GetSession()->GetCurrentReadMessageArea() == -1 ||
-      wwiv::strings::IsEqualsIgnoreCase(aux, "email")) {
-    return 0;
-  }
-
-  bool bHasAddress = false;
-  bool newlsave = newline;
-
-  if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
-    for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++) {
-      xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
-      if (net_networks[xnp->net_num].type == net_type_fidonet &&
-          !wwiv::strings::IsEqualsIgnoreCase(aux, "email")) {
-        bHasAddress = true;
-        GetSession()->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
-        newline = false;
-        std::string to_name;
-        input1(&to_name, 40, InputMode::MIXED, false, true);
-        newline = newlsave;
-        if (to_name.empty()) {
-          strcpy(irt_name, "ALL");
-          GetSession()->bout << "|#4All\r\n";
-          GetSession()->bout.Color(0);
-        } else {
-          strcpy(irt_name, to_name.c_str());
-        }
-        strcpy(irt, "\xAB");
-      }
-    }
-  }
-  return bHasAddress;
 }
 
 bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, string *title) {
