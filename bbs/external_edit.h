@@ -22,7 +22,7 @@
 #include <string>
 #include "bbs/vardec.h"
 
-bool ExternalMessageEditor(int maxli, int *setanon, std::string* pszTitle, const std::string destination, int flags);
+bool ExternalMessageEditor(int maxli, int *setanon, std::string* pszTitle, const std::string& destination, int flags, const std::string& aux);
 
 bool external_text_edit(const std::string& edit_filename, const std::string& new_directory, int numlines,
                         const std::string& destination, int flags);
