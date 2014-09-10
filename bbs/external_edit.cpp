@@ -96,18 +96,35 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
   }
 }
 
-static bool WriteMsgInf(const string& title, const string& destination) {
+static bool WriteMsgInf(const string& title, const string& destination, const std::string& aux) {
   WTextFile file(syscfgovr.tempdir, MSGINF, "wt");
   if (!file.IsOpen()) {
     return false;
   }
 
   file.WriteLine(GetSession()->GetCurrentUser()->GetName());
-  file.WriteLine(destination);
+  if (aux == "email") {
+    // destination == to address for email
+    file.WriteLine(destination);
+  } else {
+    if (strlen(irt_name) > 0) {
+      file.WriteLine(irt_name);
+    } else {
+      // Since we don't know who this is to, make it all.
+      file.WriteLine("All"); 
+    }
+  }
   file.WriteLine(title);
-  file.WriteLine("0"); // Message area - We are not QBBS
-  file.WriteLine("unknown"); // What type of message, Netmail, Email, sub name
-  // Is the message private [YES|NO]
+  file.WriteLine("0"); // Message area # - We are not QBBS
+  if (aux == "email") {
+    file.WriteLine("E-mail");
+    // Is the message private [YES|NO]
+    file.WriteLine("YES");
+  } else {
+    file.WriteLine(destination);
+    // Is the message private [YES|NO]
+    file.WriteLine("NO");
+  }
   file.Close();
   return true;
 }
@@ -160,7 +177,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   }
 }
 
-bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags) {
+bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, const std::string& aux) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
     if (WFile::Exists(syscfgovr.tempdir, QUOTES_TXT)) {
       // Copy quotes.txt to MSGTMP if it exists
@@ -168,14 +185,14 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
       WFile dest(syscfgovr.tempdir, MSGTMP);
       WFile::CopyFile(source.GetFullPathName(), dest.GetFullPathName());
     }
-    return WriteMsgInf(title, destination);
+    return WriteMsgInf(title, destination, aux);
   } 
 
   WriteWWIVEditorControlFiles(title, destination, flags);
   return true;
 }
 
-bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string destination, int flags) {
+bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& destination, int flags, const std::string& aux) {
   const auto editor_number = GetSession()->GetCurrentUser()->GetDefaultEditor() - 1;
   if (editor_number >= GetSession()->GetNumberOfEditors() || !okansi()) {
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
@@ -187,8 +204,8 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string 
   ScopeExit on_exit([=] { RemoveControlFiles(editor); });
 
   const string editor_filenme = (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) ? MSGTMP : INPUT_MSG;
-  
-  WriteExternalEditorControlFiles(editor, *title, destination, flags);
+
+  WriteExternalEditorControlFiles(editor, *title, destination, flags, aux);
   bool save_message = external_edit_internal(editor_filenme, syscfgovr.tempdir, editor, maxli);
 
   if (!save_message) {
@@ -220,7 +237,7 @@ bool external_text_edit(const std::string& edit_filename, const std::string& new
 
   RemoveWWIVControlFiles();
   const editorrec& editor = editors[editor_number];
-  WriteExternalEditorControlFiles(editor, edit_filename, destination, flags);
+  WriteExternalEditorControlFiles(editor, edit_filename, destination, flags, "");
   bool result = external_edit_internal(edit_filename, new_directory, editor, numlines);
   RemoveWWIVControlFiles();
   return result;
