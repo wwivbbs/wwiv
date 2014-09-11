@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <functional>
+#include <string>
+#include <vector>
 #ifdef _WIN32
 #include <direct.h>
 #else
@@ -26,33 +29,33 @@
 #include "core/wfndfile.h"
 #include "printfile.h"
 
-
 // the archive type to use
 #define ARC_NUMBER 0
 
-
-// strings not to allow in a .zip file to extract from
-const char *bad_words[] = {
-  "COMMAND",
-  "..",
-  "CMD"
-  "4DOS"
-  "4OS2"
-  "4NT"
-  "PKZIP",
-  "PKUNZIP",
-  "ARJ",
-  "RAR",
-  "LHA",
-  "LHARC",
-  "PKPAK",
-  NULL,
-};
-
+using std::function;
+using std::string;
+using std::vector;
 
 bool bad_filename(const char *pszFileName) {
-  for (int i = 0; bad_words[i]; i++) {
-    if (strstr(pszFileName, bad_words[i])) {
+  // strings not to allow in a .zip file to extract from
+  static const vector<string> bad_words = {
+      "COMMAND",
+      "..",
+      "CMD"
+      "4DOS"
+      "4OS2"
+      "4NT"
+      "PKZIP",
+      "PKUNZIP",
+      "ARJ",
+      "RAR",
+      "LHA",
+      "LHARC",
+      "PKPAK",
+    };
+
+  for (const auto& bad_word : bad_words) {
+    if (strstr(pszFileName, bad_word.c_str())) {
       GetSession()->bout << "Can't extract from that because it has " << pszFileName << wwiv::endl;
       return true;
     }
@@ -245,8 +248,6 @@ struct lharc_header {
   unsigned char     fn_len;
 };
 
-
-
 int check_for_files_lzh(const char *pszFileName) {
   lharc_header a;
 
@@ -290,7 +291,6 @@ int check_for_files_lzh(const char *pszFileName) {
   file.Close();
   return err;
 }
-
 
 int check_for_files_arj(const char *pszFileName) {
   WFile file(pszFileName);
@@ -348,30 +348,25 @@ int check_for_files_arj(const char *pszFileName) {
   return 1;
 }
 
-
 struct arc_testers {
   const char *  arc_name;
-  int (*func)(const char *);
+  function<int(const char*)> func;
 };
 
-
-arc_testers arc_t[] = {
+static vector<arc_testers> arc_t = {
   { "ZIP", check_for_files_zip },
   { "ARC", check_for_files_arc },
   { "LZH", check_for_files_lzh },
   { "ARJ", check_for_files_arj },
-  { NULL, NULL },
 };
 
-
-
-int check_for_files(const char *pszFileName) {
+static bool check_for_files(const char *pszFileName) {
   const char * ss = strrchr(pszFileName, '.');
   if (ss) {
     ss++;
-    for (int i = 0; arc_t[i].arc_name; i++) {
-      if (wwiv::strings::IsEqualsIgnoreCase(ss, arc_t[i].arc_name)) {
-        return arc_t[i].func(pszFileName);
+    for (const auto& t : arc_t) {
+      if (wwiv::strings::IsEqualsIgnoreCase(ss, t.arc_name)) {
+        return t.func(pszFileName);
       }
     }
   } else {
@@ -381,7 +376,6 @@ int check_for_files(const char *pszFileName) {
   }
   return 0;
 }
-
 
 bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
   GetSession()->bout << "Downloading " << pszFileName << "." << arcs[ARC_NUMBER].extension << ":\r\n\r\n";
@@ -430,7 +424,6 @@ bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
   return false;
 }
 
-
 void add_arc(const char *arc, const char *pszFileName, int dos) {
   char szAddArchiveCommand[ MAX_PATH ], szArchiveFileName[ MAX_PATH ];
 
@@ -462,7 +455,6 @@ void add_arc(const char *arc, const char *pszFileName, int dos) {
   }
 }
 
-
 void add_temp_arc() {
   char szInputFileMask[ MAX_PATH ], szFileMask[ MAX_PATH];
 
@@ -490,7 +482,6 @@ void add_temp_arc() {
   add_arc("temp", szFileMask, 1);
 }
 
-
 void del_temp() {
   char szFileName[MAX_PATH];
 
@@ -507,7 +498,6 @@ void del_temp() {
     remove_from_temp(szFileName, syscfgovr.tempdir, true);
   }
 }
-
 
 void list_temp_dir() {
   char szFileMask[ MAX_PATH ];
@@ -596,7 +586,7 @@ void temp_extract() {
       WWIV_GetDir(s4, true);
       strcat(s4, stripfn(u.filename));
       GetApplication()->CdHome();
-      if (!check_for_files(s4)) {
+      if (check_for_files(s4)) {
         bool ok1 = false;
         do {
           GetSession()->bout << "|#2Extract what (?=list,Q=abort) ? ";
