@@ -46,7 +46,6 @@ void  make_dl_batch_list(char *pszListFileName);
 void  run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, const char *dl, bool bHangupAfterDl);
 void  ProcessDSZLogFile();
 void  dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
-void  bibatch(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
 void  bihangup(int up);
 int   try_to_ul(char *pszFileName);
 int   try_to_ul_wh(char *pszFileName);
@@ -499,7 +498,6 @@ void handle_dszline(char *l) {
   }
 }
 
-
 double ratio1(long a) {
   if (GetSession()->GetCurrentUser()->GetDownloadK() == 0 && a == 0) {
     return 99.999;
@@ -509,7 +507,6 @@ double ratio1(long a) {
   r  = std::min< double >(r, 99.998);
   return r;
 }
-
 
 void make_ul_batch_list(char *pszListFileName) {
   sprintf(pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir().c_str(), FILESUL_NOEXT,
@@ -536,7 +533,6 @@ void make_ul_batch_list(char *pszListFileName) {
   }
   fileList.Close();
 }
-
 
 void make_dl_batch_list(char *pszListFileName) {
   sprintf(pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir().c_str(), FILESDL_NOEXT,
@@ -599,7 +595,6 @@ void make_dl_batch_list(char *pszListFileName) {
   fileList.Close();
 }
 
-
 void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, const char *dl, bool bHangupAfterDl) {
   char sx1[21], sx2[21], sx3[21];
 
@@ -654,7 +649,6 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
   }
 }
 
-
 void ProcessDSZLogFile() {
   char **lines = static_cast<char **>(BbsAllocA(GetSession()->max_batch * sizeof(char *) * 2));
   WWIV_ASSERT(lines != nullptr);
@@ -688,7 +682,6 @@ void ProcessDSZLogFile() {
   free(lines);
 }
 
-
 void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
   char szListFileName[MAX_PATH], szDownloadLogEntry[255];
 
@@ -706,7 +699,6 @@ void dszbatchdl(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
   make_dl_batch_list(szListFileName);
   run_cmd(pszCommandLine, szListFileName, "", szDownloadLogEntry, bHangupAfterDl);
 }
-
 
 void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
   char szListFileName[MAX_PATH], szDownloadLogEntry[255];
@@ -733,29 +725,6 @@ void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
   GetSession()->GetCurrentUser()->SetExtraTime(GetSession()->GetCurrentUser()->GetExtraTime() + static_cast< float >(ti));
 }
 
-
-void bibatch(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription) {
-  char szDownloadLogEntry[ 255 ];
-
-  sprintf(szDownloadLogEntry, "%s BATCH Transfer: Send - %d, Rec'd - %d",
-          pszDescription, GetSession()->numbatchdl, GetSession()->numbatch - GetSession()->numbatchdl);
-  if (bHangupAfterDl) {
-    strcat(szDownloadLogEntry, ", HAD");
-  }
-  sysoplog(szDownloadLogEntry);
-  GetSession()->bout.NewLine();
-  GetSession()->bout << szDownloadLogEntry;
-  GetSession()->bout.NewLine(2);
-
-  write_inst(INST_LOC_BIXFER, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
-  char szListFileName[MAX_PATH], szListFileName2[MAX_PATH];
-  make_ul_batch_list(szListFileName);
-  make_dl_batch_list(szListFileName2);
-
-  run_cmd(pszCommandLine, szListFileName2, szListFileName, szDownloadLogEntry, bHangupAfterDl);
-}
-
-
 int batchdl(int mode) {
   int i;
   char s[81];
@@ -775,8 +744,8 @@ int batchdl(int mode) {
                            "|#7[|#2L|#7]|#1ist Files, |#7[|#2C|#7]|#1lear Queue, |#7[|#2R|#7]|#1emove File, |#7[|#2Q|#7]|#1uit or |#7[|#2D|#7]|#1ownload : |#0";
         ch = onek("QLRDC\r");
       } else {
-        GetSession()->bout << "|#9Batch: L,R,Q,C,D,U,B,? : ";
-        ch = onek("Q?CLRDUB");
+        GetSession()->bout << "|#9Batch: L,R,Q,C,D,U,? : ";
+        ch = onek("Q?CLRDU");
       }
       break;
     case 1:
@@ -842,22 +811,6 @@ int batchdl(int mode) {
         if (i > 0) {
           dszbatchul(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
                      externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
-          if (!bHangupAfterDl) {
-            GetSession()->bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
-          }
-        }
-        done = true;
-      }
-      break;
-    case 'B':
-      if (mode != 3) {
-        GetSession()->bout << "\r\n|#5Hang up after transfer? ";
-        bHangupAfterDl = yesno();
-        GetSession()->bout.NewLine(2);
-        i = get_protocol(xf_bi);
-        if (i > 0) {
-          bibatch(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].bibatchfn,
-                  externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           if (!bHangupAfterDl) {
             GetSession()->bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
           }
