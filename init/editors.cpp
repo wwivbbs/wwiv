@@ -48,22 +48,32 @@ using wwiv::strings::StringPrintf;
 
 void edit_editor(editorrec* c) {
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("External Editor Configuration", 15, 78));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("External Editor Configuration", 17, 78));
 
   const vector<string> bbs_types = { "WWIV    ", "QuickBBS" };
-  const int COL1_POSITION = 20;
+  const int COL1_POSITION = 22;
+
+  if (!(c->ansir & ansir_ansi)) {
+    c->ansir |= ansir_emulate_fossil;
+    c->ansir |= ansir_no_DOS;
+    c->ansir |= ansir_ansi;
+  }
 
   EditItems items{
     new StringEditItem<char*>(COL1_POSITION, 1, 35, c->description, false),
     new ToggleEditItem<uint8_t>(COL1_POSITION, 2, bbs_types, &c->bbs_type),
-    new StringEditItem<char*>(2, 4, 75, c->filename, false),
-    new StringEditItem<char*>(2, 7, 75, c->filenamecon, false)
+    new FlagEditItem<uint8_t>(COL1_POSITION, 3, ansir_no_DOS, "No ", "Yes", &c->ansir),
+    new FlagEditItem<uint8_t>(COL1_POSITION, 4, ansir_emulate_fossil, "Yes", "No ", &c->ansir),
+    new StringEditItem<char*>(2, 6, 75, c->filename, false),
+    new StringEditItem<char*>(2, 9, 75, c->filenamecon, false)
   };
   items.set_curses_io(out, window.get());
 
   int y = 1;
-  window->PutsXY(2, y++, "Description     : ");
-  window->PutsXY(2, y++, "BBS Type        : ");
+  window->PutsXY(2, y++, "Description       : ");
+  window->PutsXY(2, y++, "BBS Type          : ");
+  window->PutsXY(2, y++, "Use DOS Interrupts: ");
+  window->PutsXY(2, y++, "Emulate FOSSIL    : ");
   window->PutsXY(2, y++, "Filename to run remotely:");
   y+=2;
   window->PutsXY(2, y++, "Filename to run locally:");
