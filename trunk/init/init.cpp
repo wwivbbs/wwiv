@@ -146,10 +146,6 @@ int main(int argc, char* argv[]) {
 }
 
 int WInitApp::main(int argc, char *argv[]) {
-  char s[81];
-  bool newbbs = false;
-  bool pwok = false;
-
   setlocale (LC_ALL,"");
 
   char *ss = getenv("WWIV_DIR");
@@ -157,47 +153,13 @@ int WInitApp::main(int argc, char *argv[]) {
     chdir(ss);
   }
   getcwd(bbsdir, MAX_PATH);
-
   trimstrpath(bbsdir);
 
   out->Cls(ACS_CKBOARD);
   out->SetColor(SchemeId::NORMAL);
 
+  bool newbbs = false;
   int configfile = open(configdat, O_RDWR | O_BINARY);
-  if (configfile > 0) {
-    // try to read it initially so we can process args right.
-    read(configfile, &syscfg, sizeof(configrec));
-    close(configfile);
-  }
-  for (int i = 1; i < argc; ++i) {
-    if (strlen(argv[i]) < 2) {
-      continue;
-    }
-
-    if (argv[i][0] == '-') {
-      char ch = toupper(argv[i][1]);
-      switch (ch) {
-      case 'P': {
-        if (strlen(argv[i]) > 2) {
-          if (strcasecmp(argv[i] + 2, syscfg.systempw) == 0) {
-            pwok = true;
-          }
-        }
-        break;
-      }
-      case 'D': {
-        setpaths();
-        exit_init(0);
-      } break;
-      case '?':
-        show_help();
-        exit_init(0);
-        break;
-      }
-    }
-  }
-
-  configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile < 0) {
     out->SetColor(SchemeId::ERROR_TEXT);
     out->window()->Printf("%s NOT FOUND.\n\n", configdat);
@@ -222,6 +184,7 @@ int WInitApp::main(int argc, char *argv[]) {
 
   ValidateConfigOverlayExists();
 
+  char s[MAX_PATH];
   sprintf(s, "%sarchiver.dat", syscfg.datadir);
   int hFile = open(s, O_RDONLY | O_BINARY);
   if (hFile < 0) {
@@ -296,18 +259,20 @@ int WInitApp::main(int argc, char *argv[]) {
     strncpy(languages->mdir, syscfg.gfilesdir, sizeof(languages->mdir) - 1);
   }
 
-  if (!pwok) {
-    nlx();
-    vector<string> lines { "Please enter the System Password. "};
-    if (newbbs) {
+  if (newbbs) {
+    bool pwok = false;
+    while (!pwok) {
+      nlx();
+      vector<string> lines { "Please enter the System Password. "};
       lines.insert(lines.begin(), "");
       lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");
-    }
-    input_password(out->window(), "SY:", lines, s, 20);
-    if (strcmp(s, (syscfg.systempw)) != 0) {
-      out->Cls(ACS_CKBOARD);
-      messagebox(out->window(), "I'm sorry, that isn't the correct system password.");
-      exit_init(2);
+      input_password(out->window(), "SY:", lines, s, 20);
+      if (strcmp(s, (syscfg.systempw)) != 0) {
+        out->Cls(ACS_CKBOARD);
+        messagebox(out->window(), "I'm sorry, that isn't the correct system password.");
+      } else {
+        pwok = true;
+      }
     }
   }
 
