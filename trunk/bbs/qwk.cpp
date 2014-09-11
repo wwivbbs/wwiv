@@ -956,9 +956,9 @@ static void qwk_send_file(string fn, bool *sent, bool *abort) {
   } break;
 
   default: {
-    int exit_code = extern_prot(protocol - 6, fn.c_str(), 1);
+    int exit_code = extern_prot(protocol - WWIV_NUM_INTERNAL_PROTOCOLS, fn.c_str(), 1);
     *abort = 0;
-    if (exit_code == externs[protocol - 6].ok1) {
+    if (exit_code == externs[protocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
       *sent = 1;
     }
   } break;
@@ -1306,16 +1306,14 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     // TODO(rushfan): Should we just have a make abs path?
     WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &qwk_file_to_send);
 
-    f = open(command.c_str(), O_RDONLY | O_BINARY);
-    if (f < 0) {
+    WFile qwk_file_to_send_file(qwk_file_to_send);
+    if (!WFile::Exists(qwk_file_to_send)){
       GetSession()->bout.Write("No such file.");
       GetSession()->bout.NewLine();
       qwk_info->abort = 1;
       return;
     }
-    numbytes = filelength(f);
-
-    close(f);
+    numbytes = qwk_file_to_send_file.GetLength();
 
     if (numbytes == 0L) {
       GetSession()->bout.Write("File has nothing in it.");

@@ -78,7 +78,8 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
     }
   }
   strcpy(szFileName, pszFileNameToSend);
-  stripfn_inplace(szFileName);
+  // TODO(rushfan): Why do we do this, we are not guaranteed to be in the right dir.
+  //stripfn_inplace(szFileName);
   int nEffectiveXferSpeed = std::min<int>(com_speed, 57600);
   sprintf(sx1, "%d", nEffectiveXferSpeed);
   if (com_speed == 1) {
@@ -377,7 +378,6 @@ int get_protocol(xfertype xt) {
   return -1;
 }
 
-
 void ascii_send(const char *pszFileName, bool *sent, double *percent) {
   char b[2048];
 
@@ -395,7 +395,7 @@ void ascii_send(const char *pszFileName, bool *sent, double *percent) {
         bputch(b[nBufferPos++]);
         checka(&abort);
       }
-      lTotalBytes += static_cast<long>(nBufferPos);
+      lTotalBytes += nBufferPos;
       checka(&abort);
       nNumRead = file.Read(b, 1024);
     }
@@ -414,7 +414,6 @@ void ascii_send(const char *pszFileName, bool *sent, double *percent) {
     *percent = 0.0;
   }
 }
-
 
 void maybe_internal(const char *pszFileName, bool *xferred, double *percent, bool bSend, int prot) {
   if (over_intern && (over_intern[prot - 2].othr & othr_override_internal) &&
@@ -460,10 +459,7 @@ void maybe_internal(const char *pszFileName, bool *xferred, double *percent, boo
   }
 }
 
-
 void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn, int dn, long fs) {
-  double percent, t;
-
   *sent = false;
   *abort = false;
   int nProtocol = 0;
@@ -473,7 +469,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
     nProtocol = (dn == -1) ? get_protocol(xf_down_temp) : get_protocol(xf_down);
   }
   bool ok = false;
-  percent = 0.0;
+  double percent = 0.0;
   if (check_batch_queue(sfn)) {
     *sent = false;
     if (nProtocol > 0) {
@@ -508,11 +504,7 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
         *sent = false;
         *abort = false;
       } else {
-        if (modem_speed) {
-          t = (12.656) / ((double)(modem_speed)) * ((double)(fs));
-        } else {
-          t = 0.0;
-        }
+        double t = (modem_speed) ? (12.656) / ((double)(modem_speed)) * ((double)(fs)) : 0;
         if (nsl() <= (batchtime + t)) {
           GetSession()->bout.NewLine();
           GetSession()->bout << "Not enough time left in queue.\r\n\n";
@@ -562,7 +554,6 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
     }
   }
 }
-
 
 void receive_file(const char *pszFileName, int *received, const char *sfn, int dn) {
   bool bReceived;
