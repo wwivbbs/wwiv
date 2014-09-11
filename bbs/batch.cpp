@@ -629,7 +629,7 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
       WFile::SetFilePermissions(g_szDSZLogFileName, WFile::permWrite);
       WFile::Remove(g_szDSZLogFileName);
       chdir(syscfgovr.batchdir);
-      ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPWANOPT_PROT_BATCH));
+      ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
       if (bHangupAfterDl) {
         bihangup(1);
         if (!GetSession()->remoteIO()->carrier()) {

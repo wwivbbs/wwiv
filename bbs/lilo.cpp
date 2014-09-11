@@ -921,7 +921,7 @@ void logon() {
   if (!syscfg.logon_cmd.empty()) {
     GetSession()->bout.NewLine();
     const std::string command = stuff_in(syscfg.logon_cmd, create_chain_file(), "", "", "", "");
-    ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPWANOPT_LOGON));
+    ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_LOGON));
     GetSession()->bout.NewLine(2);
   }
 

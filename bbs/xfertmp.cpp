@@ -449,7 +449,7 @@ void add_arc(const char *arc, const char *pszFileName, int dos) {
     GetSession()->localIO()->LocalPuts(szAddArchiveCommand);
     GetSession()->localIO()->LocalPuts("\r\n");
     if (dos) {
-      ExecuteExternalProgram(szAddArchiveCommand, GetApplication()->GetSpawnOptions(SPWANOPT_ARCH_A));
+      ExecuteExternalProgram(szAddArchiveCommand, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_A));
     } else {
       ExecuteExternalProgram(szAddArchiveCommand, EFLAG_NONE);
       GetApplication()->UpdateTopScreen();
@@ -632,7 +632,7 @@ void temp_extract() {
               s3[0] = '\0';
             }
             if (s3[0]) {
-              ExecuteExternalProgram(s3, GetApplication()->GetSpawnOptions(SPWANOPT_ARCH_E));
+              ExecuteExternalProgram(s3, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_E));
               sprintf(s2, "Extracted out \"%s\" from \"%s\"", s1, u.filename);
             } else {
               s2[0] = '\0';
