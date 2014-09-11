@@ -2170,13 +2170,13 @@ void view_file(const char *pszFileName) {
       if (GetSession()->GetCurrentUser()->HasPause()) {
         GetSession()->GetCurrentUser()->ToggleStatusFlag(WUser::pauseOnPage);
       }
-      ExecuteExternalProgram(szCommandLine, EFLAG_INTERNAL | EFLAG_TOPSCREEN | EFLAG_COMIO | EFLAG_NOPAUSE);
+      ExecuteExternalProgram(szCommandLine, EFLAG_COMIO);
       GetSession()->GetCurrentUser()->SetStatus(osysstatus);
     } else {
       sprintf(szCommandLine, "AVIEWCOM.EXE %s%s com0 -o%u -p%s -a1 -d",
               directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, szBuffer,
               GetApplication()->GetInstanceNumber(), syscfgovr.tempdir);
-      ExecuteExternalProgram(szCommandLine, EFLAG_NOPAUSE | EFLAG_TOPSCREEN);
+      ExecuteExternalProgram(szCommandLine, EFLAG_NONE);
     }
   } else {
     dliscan();

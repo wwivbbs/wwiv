@@ -74,12 +74,6 @@ unsigned short WApplication::str2spawnopt(const char *s) {
   strcpy(ts, s);
   strupr(ts);
 
-  if (strstr(ts, "ABORT") != NULL) {
-    return_val |= EFLAG_ABORT;
-  }
-  if (strstr(ts, "INTERNAL") != NULL) {
-    return_val |= EFLAG_INTERNAL;
-  }
   if (strstr(ts, "NOHUP") != NULL) {
     return_val |= EFLAG_NOHUP;
   }
@@ -89,16 +83,9 @@ unsigned short WApplication::str2spawnopt(const char *s) {
   if (strstr(ts, "FOSSIL") != NULL) {
     return_val |= EFLAG_FOSSIL; // RF20020929
   }
-  if (strstr(ts, "NOPAUSE") != NULL) {
-    return_val |= EFLAG_NOPAUSE;
-  }
   if (strstr(ts, "NETPROG") != NULL) {
     return_val |= EFLAG_NETPROG;
   }
-  if (strstr(ts, "TOPSCREEN") != NULL) {
-    return_val |= EFLAG_TOPSCREEN;
-  }
-
   return return_val;
 }
 
@@ -157,25 +144,25 @@ struct eventinfo_t {
 
 
 static eventinfo_t eventinfo[] = {
-  {"TIMED",         0},
+  {"TIMED",         EFLAG_NONE},
   {"NEWUSER",       0},
   {"BEGINDAY",      0},
-  {"LOGON",         EFLAG_INTERNAL},
+  {"LOGON",         EFLAG_NONE},
   {"ULCHK",         EFLAG_NOHUP},
   {"FSED",          EFLAG_FOSSIL},  // UNUSED
   {"PROT_SINGLE",   0},
-  {"PROT_BATCH",    EFLAG_TOPSCREEN},
+  {"PROT_BATCH",    EFLAG_NONE},
   {"CHAT",          0},
-  {"ARCH_E",        EFLAG_INTERNAL},
-  {"ARCH_L",        EFLAG_INTERNAL | EFLAG_ABORT},
-  {"ARCH_A",        EFLAG_INTERNAL},
-  {"ARCH_D",        EFLAG_INTERNAL},
-  {"ARCH_K",        EFLAG_INTERNAL},
-  {"ARCH_T",        EFLAG_INTERNAL},
-  {"NET_CMD1",      EFLAG_INTERNAL},
-  {"NET_CMD2",      EFLAG_NETPROG | EFLAG_INTERNAL},
-  {"LOGOFF",        EFLAG_INTERNAL},
-  {"V_SCAN",        EFLAG_NOPAUSE},
+  {"ARCH_E",        EFLAG_NONE},
+  {"ARCH_L",        EFLAG_NONE},
+  {"ARCH_A",        EFLAG_NONE},
+  {"ARCH_D",        EFLAG_NONE},
+  {"ARCH_K",        EFLAG_NONE},
+  {"ARCH_T",        EFLAG_NONE},
+  {"NET_CMD1",      EFLAG_NONE},
+  {"NET_CMD2",      EFLAG_NETPROG},
+  {"LOGOFF",        EFLAG_NONE},
+  {"V_SCAN",        EFLAG_NONE},
   {"NETWORK",       0},
 };
 

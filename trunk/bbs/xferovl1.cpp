@@ -222,7 +222,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
   GetApplication()->CdHome();
   get_arc_cmd(cmd, s, 1, "FILE_ID.DIZ DESC.SDI");
   chdir(syscfgovr.tempdir);
-  ExecuteExternalProgram(cmd, EFLAG_TOPSCREEN | EFLAG_NOHUP);
+  ExecuteExternalProgram(cmd, EFLAG_NOHUP);
   GetApplication()->CdHome();
   sprintf(s, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
   if (!WFile::Exists(s)) {

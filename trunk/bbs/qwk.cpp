@@ -1309,7 +1309,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     sprintf(parem2, "%s*.*", QWK_DIRECTORY);
 
     string command = stuff_in(arcs[archiver].arca, parem1, parem2, "", "", "");
-    ExecuteExternalProgram(command, EFLAG_NOPAUSE);
+    ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_A));
 
     qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
     // TODO(rushfan): Should we just have a make abs path?

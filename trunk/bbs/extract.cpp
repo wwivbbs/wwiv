@@ -142,7 +142,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
     file.Close();
     GetSession()->bout << "Message written to: " << szFileName << wwiv::endl;
     sprintf(strip_cmd, "STRIPNET.EXE %s", szFileName);
-    ExecuteExternalProgram(strip_cmd, EFLAG_ABORT | EFLAG_TOPSCREEN);
+    ExecuteExternalProgram(strip_cmd, EFLAG_NONE);
     compress_file(s2, s1);
     GetSession()->bout.NewLine(2);
     GetSession()->bout << "|#2//UPLOAD the file? ";
