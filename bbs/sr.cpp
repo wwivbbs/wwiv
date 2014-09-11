@@ -130,7 +130,7 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
     case WWIV_INTERNAL_PROT_XMODEMCRC:
     case WWIV_INTERNAL_PROT_YMODEM:
     case WWIV_INTERNAL_PROT_ZMODEM:
-      if (xt != xf_up_batch && xt != xf_down_batch && xt != xf_bi) {
+      if (xt != xf_up_batch && xt != xf_down_batch) {
         ok = true;
       }
       if (nProtocolNum == WWIV_INTERNAL_PROT_YMODEM && xt == xf_down_batch) {
@@ -154,13 +154,13 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
     case WWIV_INTERNAL_PROT_BATCH:
       if (xt == xf_up) {
         for (int i = 0; i < GetSession()->GetNumberOfExternalProtocols(); i++) {
-          if (externs[i].receivebatchfn[0] || externs[i].bibatchfn) {
+          if (externs[i].receivebatchfn[0]) {
             ok = true;
           }
         }
       } else if (xt == xf_down) {
         for (int i = 0; i < GetSession()->GetNumberOfExternalProtocols(); i++) {
-          if (externs[i].sendbatchfn[0] || externs[i].bibatchfn) {
+          if (externs[i].sendbatchfn[0]) {
             ok = true;
           }
         }
@@ -190,11 +190,6 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
         break;
       case xf_down_batch:
         if (externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn[0]) {
-          ok = true;
-        }
-        break;
-      case xf_bi:
-        if (externs[nProtocolNum - WWIV_NUM_INTERNAL_PROTOCOLS].bibatchfn[0]) {
           ok = true;
         }
         break;

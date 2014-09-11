@@ -629,15 +629,15 @@ struct chainregrec {
 // DATA FOR EXTERNAL PROTOCOLS
 
 struct newexternalrec {
-  char description[81],                       // protocol description
+  char description[81],                        // protocol description
        receivefn[81],                          // receive filename
        sendfn[81],                             // send filename
        receivebatchfn[81],                     // batch receive cmd
        sendbatchfn[81],                        // batch send cmd
-       bibatchfn[81];                          // batch send/receive cmd
+       unused_bibatchfn[81];                   // batch send/receive cmd
 
-  uint16_t ok1,                         // if sent
-           othr;                                   // other flags
+  uint16_t ok1,                                // if sent
+           othr;                               // other flags
 
   char pad[22];
 };
@@ -691,7 +691,6 @@ enum xfertype {
   xf_down_temp,
   xf_up_batch,
   xf_down_batch,
-  xf_bi,
   xf_none
 };
 
