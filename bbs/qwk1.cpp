@@ -38,14 +38,13 @@
 
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
+#include "core/strings.h"
 
 using std::string;
+using wwiv::strings::StringPrintf;
 
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
-
-
 #define qwk_iscan_literal(x) (iscan1(x, 1))
-
 #define MAXMAIL 255
 #define EMAIL_STORAGE 2
 
@@ -280,7 +279,7 @@ int select_qwk_archiver(struct qwk_junk *qwk_info, int ask) {
 
 }
 
-void qwk_which_zip(char *thiszip) {
+string qwk_which_zip() {
   if (GetSession()->GetCurrentUser()->data.qwk_archive > 4) {
     GetSession()->GetCurrentUser()->data.qwk_archive = 0;
   }
@@ -290,24 +289,28 @@ void qwk_which_zip(char *thiszip) {
   }
 
   if (GetSession()->GetCurrentUser()->data.qwk_archive == 0) {
-    strcpy(thiszip, "ASK");
+    return string("ASK");
   } else {
-    strcpy(thiszip, arcs[GetSession()->GetCurrentUser()->data.qwk_archive - 1].extension);
+    return string((arcs[GetSession()->GetCurrentUser()->data.qwk_archive - 1].extension));
   }
 }
 
-void qwk_which_protocol(char *thisprotocol) {
+string qwk_which_protocol() {
   if (GetSession()->GetCurrentUser()->data.qwk_protocol == 1) {
     GetSession()->GetCurrentUser()->data.qwk_protocol = 0;
   }
 
   if (GetSession()->GetCurrentUser()->data.qwk_protocol == 0) {
-    strcpy(thisprotocol, "ASK");
+    return string("ASK");
   } else {
-    strncpy(thisprotocol, prot_name(GetSession()->GetCurrentUser()->data.qwk_protocol), 22);
-    thisprotocol[22] = 0;
+    string thisprotocol(prot_name(GetSession()->GetCurrentUser()->data.qwk_protocol));
+    if (thisprotocol.size() > 22) {
+      return thisprotocol.substr(0, 21);
+    }
+    return thisprotocol;
   }
 }
+
 void upload_reply_packet(void) {
   char name[21], namepath[101];
   bool rec = true;
@@ -993,7 +996,7 @@ void qwk_receive_file(char *fn, bool *received, int i) {
     break;
   default:
     if (incom) {
-      extern_prot(i - 6, fn, 0);
+      extern_prot(i - WWIV_NUM_INTERNAL_PROTOCOLS, fn, 0);
       *received = WFile::Exists(fn);
     }
     break;
@@ -1003,10 +1006,7 @@ void qwk_receive_file(char *fn, bool *received, int i) {
 
 void qwk_sysop(void) {
   struct qwk_config qwk_cfg;
-  char temp[10];
   char sn[10];
-  int done = 0;
-  int x;
 
   if (!so()) {
     return;
@@ -1014,6 +1014,7 @@ void qwk_sysop(void) {
 
   read_qwk_cfg(&qwk_cfg);
 
+  bool done = false;
   while (!done && !hangup) {
     qwk_system_name(sn);
     GetSession()->bout.ClearScreen();
@@ -1025,7 +1026,7 @@ void qwk_sysop(void) {
     GetSession()->bout.WriteFormatted("[6] Modify Bulletins - Current amount= %d\r\n\n", qwk_cfg.amount_blts);
     GetSession()->bout.WriteFormatted("Hit <Enter> or Q to save and exit: [12345<CR>] ");
 
-    x = onek("Q123456\r\n");
+    int x = onek("Q123456\r\n");
     if (x == '1' || x == '2' || x == '3') {
       GetSession()->bout.NewLine();
       GetSession()->bout.Color(1);
@@ -1060,18 +1061,19 @@ void qwk_sysop(void) {
       write_qwk_cfg(&qwk_cfg);
       break;
 
-    case '5':
+    case '5': {
       GetSession()->bout.Color(1);
       GetSession()->bout.WriteFormatted("Enter max messages per packet, 0=No Max: ");
       GetSession()->bout.ColorizedInputField(5);
-      input(temp, 5);
-      qwk_cfg.max_msgs = static_cast<uint16_t>(atoi(temp));
-      break;
+      string tmp;
+      input(&tmp, 5);
+      qwk_cfg.max_msgs = static_cast<uint16_t>(atoi(tmp.c_str()));
+    } break;
     case '6':
       modify_bulletins(&qwk_cfg);
       break;
     default:
-      done = 1;
+      done = true;
     }
   }
 
@@ -1080,28 +1082,27 @@ void qwk_sysop(void) {
 }
 
 void modify_bulletins(struct qwk_config *qwk_cfg) {
-  int x, abort = 0, key, done = 0;
   char s[101], t[101];
 
+  bool done = false;
   while (!done && !hangup) {
     GetSession()->bout.NewLine();
     GetSession()->bout.WriteFormatted("Add - Delete - ? List - Quit");
     GetSession()->bout.ColorizedInputField(1);
 
-    key = onek("Q\rAD?");
+    int key = onek("Q\rAD?");
 
     switch (key) {
     case 'Q':
     case '\r':
       return;
-
-    case 'D':
+    case 'D': {
       GetSession()->bout.NewLine();
       GetSession()->bout.WriteFormatted("Which one?");
       GetSession()->bout.ColorizedInputField(2);
 
       input(s, 2);
-      x = atoi(s);
+      int x = atoi(s);
 
       if (x <= qwk_cfg->amount_blts) {
         strcpy(qwk_cfg->blt[x], qwk_cfg->blt[qwk_cfg->amount_blts - 1]);
@@ -1112,8 +1113,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
 
         --qwk_cfg->amount_blts;
       }
-      break;
-
+    } break;
     case 'A':
       GetSession()->bout.NewLine();
       GetSession()->bout.Write("Enter complete path to Bulletin");
@@ -1141,73 +1141,56 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
       strcpy(qwk_cfg->bltname[qwk_cfg->amount_blts], t);
       ++qwk_cfg->amount_blts;
       break;
-
-
-    case '?':
-      abort = 0;
-      x = 0;
+    case '?': {
+      bool abort = false;
+      int x = 0;
       while (x < qwk_cfg->amount_blts && !abort && !hangup) {
         GetSession()->bout.WriteFormatted("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
         GetSession()->bout.NewLine();
         repeat_char(' ', 5);
         GetSession()->bout.WriteFormatted(qwk_cfg->blt[x]);
         GetSession()->bout.NewLine();
-
         abort = checka();
-
         ++x;
       }
-      break;
+    } break;
     }
   }
 }
 
-void config_qwk_bw(void) {
-  char text[101];
-  int done = 0, key;
+void config_qwk_bw() {
+  bool done = false;
 
   while (!done && !hangup) {
-    GetSession()->bout.WriteFormatted("A) Scan E-Mail ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(0, text));
+    GetSession()->bout << "A) Scan E-Mail " << qwk_current_text(0);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("B) Delete Scanned E-Mail ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(1, text));
+    GetSession()->bout<< "B) Delete Scanned E-Mail " << qwk_current_text(1);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("C) Set N-Scan of messages ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(2, text));
+    GetSession()->bout << "C) Set N-Scan of messages " << qwk_current_text(2);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("D) Remove WWIV color codes ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(3, text));
+    GetSession()->bout << "D) Remove WWIV color codes " << qwk_current_text(3);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("E) Convert WWIV color to ANSI ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(4, text));
+    GetSession()->bout << "E) Convert WWIV color to ANSI " << qwk_current_text(4);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("F) Pack Bulletins ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(5, text));
+    GetSession()->bout << "F) Pack Bulletins " << qwk_current_text(5);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("G) Scan New Files ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(6, text));
+    GetSession()->bout << "G) Scan New Files " << qwk_current_text(6);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("H) Remove routing information ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(7, text));
+    GetSession()->bout << "H) Remove routing information " << qwk_current_text(7);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("I) Archive to pack QWK with ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(8, text));
+    GetSession()->bout << "I) Archive to pack QWK with " << qwk_current_text(8);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("J) Default transfer protocol ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(9, text));
+    GetSession()->bout << "J) Default transfer protocol " << qwk_current_text(9);
     GetSession()->bout.NewLine();
-    GetSession()->bout.WriteFormatted("K) Max messages per pack ");
-    GetSession()->bout.WriteFormatted(qwk_current_text(10, text));
+    GetSession()->bout << "K) Max messages per pack " << qwk_current_text(10);
     GetSession()->bout.NewLine();
-    GetSession()->bout.Write("Q) Done");
+    GetSession()->bout << "Q) Done";
 
-    key = onek("QABCDEFGHIJK");
+    int key = onek("QABCDEFGHIJK");
 
     if (key == 'Q') {
-      done = 1;
+      done = true;
     }
-
     key = key - 'A';
 
     switch (key) {
@@ -1235,37 +1218,27 @@ void config_qwk_bw(void) {
     case 7:
       GetSession()->GetCurrentUser()->data.qwk_keep_routing = !GetSession()->GetCurrentUser()->data.qwk_keep_routing;
       break;
-
     case 8: {
       struct qwk_junk qj;
-      int a;
-
       memset(&qj, 0, sizeof(struct qwk_junk));
       GetSession()->bout.ClearScreen();
 
-      a = select_qwk_archiver(&qj, 1);
+      int a = select_qwk_archiver(&qj, 1);
       if (!qj.abort) {
         GetSession()->GetCurrentUser()->data.qwk_archive = a;
       }
-
       break;
     }
-
     case 9: {
       struct qwk_junk qj;
-      int a;
-
       memset(&qj, 0, sizeof(struct qwk_junk));
       GetSession()->bout.ClearScreen();
 
-      a = select_qwk_protocol(&qj);
+      int a = select_qwk_protocol(&qj);
       if (!qj.abort) {
         GetSession()->GetCurrentUser()->data.qwk_protocol = a;
       }
-
-      break;
-    }
-
+    } break;
     case 10: {
       uint16_t max_msgs, max_per_sub;
 
@@ -1273,14 +1246,12 @@ void config_qwk_bw(void) {
         GetSession()->GetCurrentUser()->data.qwk_max_msgs = max_msgs;
         GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub = max_per_sub;
       }
-      break;
-    }
-
+    } break;
     }
   }
 }
 
-const char *qwk_current_text(int pos, char *text) {
+string qwk_current_text(int pos) {
   static const char *yesorno[] = { "YES", "NO" };
 
   switch (pos) {
@@ -1337,31 +1308,25 @@ const char *qwk_current_text(int pos, char *text) {
     }
 
   case 8:
-    qwk_which_zip(text);
-    return text;
+    return qwk_which_zip();
 
   case 9:
-    qwk_which_protocol(text);
-    return text;
+    return qwk_which_protocol();
 
   case 10:
     if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub && !GetSession()->GetCurrentUser()->data.qwk_max_msgs) {
       return "Unlimited/Unlimited";
     } else if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub) {
-      sprintf(text, "Unlimited/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs);
-      return text;
+      return StringPrintf("Unlimited/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs);
     } else if (!GetSession()->GetCurrentUser()->data.qwk_max_msgs) {
-      sprintf(text, "%u/Unlimited", GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub);
-      return text;
+      return StringPrintf("%u/Unlimited", GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub);
     } else {
-      sprintf(text, "%u/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs,
+      return StringPrintf("%u/%u", GetSession()->GetCurrentUser()->data.qwk_max_msgs,
               GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub);
-      return text;
     }
 
   case 11:
-    strcpy(text, "DONE");
-    return text;
+    return string("DONE");
   }
 
   return nullptr;

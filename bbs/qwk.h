@@ -19,6 +19,8 @@
 #ifndef _QWK_H_
 #define _QWK_H_
 
+#include <string>
+
 #include "vardec.h"
 #include "printfile.h"
 
@@ -166,8 +168,8 @@ int qwk_open_file(char *fn);
 void qwk_remove_email(void);
 void qwk_gather_email(struct qwk_junk *qwk_info);
 int select_qwk_archiver(struct qwk_junk *qwk_info, int ask);
-void qwk_which_zip(char *thiszip);
-void qwk_which_protocol(char *thisprotocol);
+std::string qwk_which_zip();
+std::string qwk_which_protocol();
 void upload_reply_packet(void);
 void ready_reply_packet(const char *packet_name, const char *msg_name);
 void make_text_ready(char *text, long len);
@@ -181,12 +183,6 @@ void qwk_receive_file(char *fn, bool *received, int i);
 void qwk_sysop(void);
 void modify_bulletins(struct qwk_config *qwk_cfg);
 void config_qwk_bw(void);
-const char *qwk_current_text(int pos, char *text);
-
-
-// HACKS
-#if defined(__unix__) || defined(__APPLE__)
-
-#endif  // __unix__
+std::string qwk_current_text(int pos);
 
 #endif  // _QWK_H_
