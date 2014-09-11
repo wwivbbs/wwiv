@@ -86,11 +86,6 @@ char configdat[20] = "config.dat";
 // from convert.cpp
 void convcfg(CursesWindow* window, const string& config_filename);
 
-static void show_help() {
-  out->window()->Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
-  out->window()->Printf("\n\n\n");
-}
-
 static void ValidateConfigOverlayExists() {
   IniFile ini("wwiv.ini", "WWIV");
   int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
@@ -156,15 +151,16 @@ int WInitApp::main(int argc, char *argv[]) {
   trimstrpath(bbsdir);
 
   out->Cls(ACS_CKBOARD);
-  out->SetColor(SchemeId::NORMAL);
+  out->window()->SetColor(SchemeId::NORMAL);
 
   bool newbbs = false;
   int configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile < 0) {
-    out->SetColor(SchemeId::ERROR_TEXT);
-    out->window()->Printf("%s NOT FOUND.\n\n", configdat);
-    if (dialog_yn(out->window(), "Perform initial installation?")) {
-      new_init();
+    vector<string> lines = { StringPrintf("%s NOT FOUND.\n\n", configdat), "Perform initial installation?" };
+    if (dialog_yn(out->window(), lines)) {
+      // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
+      out->window()->Bkgd(' ');
+      new_init(out->window());
       newbbs = true;
       configfile = open(configdat, O_RDWR | O_BINARY);
     } else {
@@ -175,6 +171,7 @@ int WInitApp::main(int argc, char *argv[]) {
   // Convert 4.2X to 4.3 format if needed.
   if (filelength(configfile) != sizeof(configrec)) {
     close(configfile);
+    // TODO(rushfan): Create a subwindow
     convcfg(out->window(), configdat);
     configfile = open(configdat, O_RDWR | O_BINARY);
   }
@@ -188,7 +185,7 @@ int WInitApp::main(int argc, char *argv[]) {
   sprintf(s, "%sarchiver.dat", syscfg.datadir);
   int hFile = open(s, O_RDONLY | O_BINARY);
   if (hFile < 0) {
-    create_arcs();
+    create_arcs(out->window());
   } else {
     close(hFile);
   }
@@ -214,10 +211,6 @@ int WInitApp::main(int argc, char *argv[]) {
   if (bDataDirectoryOk) {
     if ((status.net_version >= 31) || (status.net_version == 0)) {
       net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
-      if (!net_networks) {
-        out->window()->Printf("needed %d bytes\n", MAX_NETWORKS * sizeof(net_networks_rec));
-        exit_init(2);
-      }
       memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
 
       sprintf(s, "%snetworks.dat", syscfg.datadir);
@@ -236,10 +229,6 @@ int WInitApp::main(int argc, char *argv[]) {
   }
 
   languages = (languagerec*) malloc(MAX_LANGUAGES * sizeof(languagerec));
-  if (!languages) {
-    out->window()->Printf("needed %d bytes\n", MAX_LANGUAGES * sizeof(languagerec));
-    exit_init(2);
-  }
 
   sprintf(s, "%slanguage.dat", syscfg.datadir);
   int hLanguageFile = open(s, O_RDONLY | O_BINARY);
@@ -338,7 +327,7 @@ int WInitApp::main(int argc, char *argv[]) {
       autoval_levs();
       break;
     case 'A':
-      edit_arc(0);
+      edit_arc(out->window(), 0);
       break;
     case 'I':
       instance_editor();

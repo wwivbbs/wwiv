@@ -38,8 +38,9 @@
 #include "utility.h"
 #include "wwivinit.h"
 
+using wwiv::strings::StringPrintf;
 
-void edit_arc(int nn) {
+void edit_arc(CursesWindow* window, int nn) {
   arcrec arc[MAX_ARCS];
 
   int i = nn;
@@ -47,7 +48,7 @@ void edit_arc(int nn) {
   sprintf(szFileName, "%sarchiver.dat", syscfg.datadir);
   int hFile = _open(szFileName, O_RDWR | O_BINARY);
   if (hFile < 0) {
-    create_arcs();
+    create_arcs(window);
     hFile = _open(szFileName, O_RDWR | O_BINARY);
   }
 
@@ -60,84 +61,84 @@ void edit_arc(int nn) {
     int cp = 4;
     done1 = false;
     out->Cls();
-    out->SetColor(SchemeId::PROMPT);
-    out->window()->Printf("                 Archiver Configuration\n\n");
-    out->SetColor(SchemeId::NORMAL);
+    window->SetColor(SchemeId::PROMPT);
+    window->Printf("                 Archiver Configuration\n\n");
+    window->SetColor(SchemeId::NORMAL);
     if (i == 0) {
-      out->window()->Printf("Archiver #%d  ", i + 1);
-      out->SetColor(SchemeId::PROMPT);
-      out->window()->Printf("(Default)\n\n");
+      window->Printf("Archiver #%d  ", i + 1);
+      window->SetColor(SchemeId::PROMPT);
+      window->Printf("(Default)\n\n");
     } else {
-      out->window()->Printf("Archiver #%d           \n\n", i + 1);
+      window->Printf("Archiver #%d           \n\n", i + 1);
     }
-    out->SetColor(SchemeId::NORMAL);
-    out->window()->Printf("Archiver Name      : %s\n", arc[i].name);
-    out->window()->Printf("Archiver Extension : %s\n", arc[i].extension);
-    out->window()->Printf("List Archive       : %s\n", arc[i].arcl);
-    out->window()->Printf("Extract Archive    : %s\n", arc[i].arce);
-    out->window()->Printf("Add to Archive     : %s\n", arc[i].arca);
-    out->window()->Printf("Delete from Archive: %s\n", arc[i].arcd);
-    out->window()->Printf("Comment Archive    : %s\n", arc[i].arck);
-    out->window()->Printf("Test Archive       : %s\n", arc[i].arct);
-    out->window()->GotoXY(0, 13);
-    out->window()->Printf("                                                             \n");
-    out->SetColor(SchemeId::NORMAL);
-    out->window()->Printf("[ = Previous Archiver  ] = Next Archiver\n");
-    out->SetColor(SchemeId::NORMAL);
-    out->window()->Printf("                                                             \n");
-    out->window()->Printf("                                                             \n");
-    out->SetColor(SchemeId::PROMPT);
-    out->window()->Puts("<ENTER> to edit    <ESC> when done.");
-    out->SetColor(SchemeId::NORMAL);
+    window->SetColor(SchemeId::NORMAL);
+    window->Printf("Archiver Name      : %s\n", arc[i].name);
+    window->Printf("Archiver Extension : %s\n", arc[i].extension);
+    window->Printf("List Archive       : %s\n", arc[i].arcl);
+    window->Printf("Extract Archive    : %s\n", arc[i].arce);
+    window->Printf("Add to Archive     : %s\n", arc[i].arca);
+    window->Printf("Delete from Archive: %s\n", arc[i].arcd);
+    window->Printf("Comment Archive    : %s\n", arc[i].arck);
+    window->Printf("Test Archive       : %s\n", arc[i].arct);
+    window->GotoXY(0, 13);
+    window->Printf("                                                             \n");
+    window->SetColor(SchemeId::NORMAL);
+    window->Printf("[ = Previous Archiver  ] = Next Archiver\n");
+    window->SetColor(SchemeId::NORMAL);
+    window->Printf("                                                             \n");
+    window->Printf("                                                             \n");
+    window->SetColor(SchemeId::PROMPT);
+    window->Puts("<ENTER> to edit    <ESC> when done.");
+    window->SetColor(SchemeId::NORMAL);
     nlx();
-    char ch = onek(out->window(), "\033[]\r");
+    char ch = onek(window, "\033[]\r");
     switch (ch) {
     case '\r': {
-      out->window()->GotoXY(0, 13);
-      out->window()->Printf("                                                             \n");
-      out->window()->Printf("%%1 %%2 etc. are parameters passed.  Minimum of two on Add and \n");
-      out->window()->Printf("Extract command lines. For added security, a complete path to\n");
-      out->window()->Printf("the archiver and extension should be used. i.e.:             \n");
-      out->window()->Printf("c:\\bin\\arcs\\zip.exe -a %%1 %%2                              \n");
-      out->window()->Printf("                                                             \n");
-      out->SetColor(SchemeId::PROMPT);
-      out->window()->Printf("<ESC> when done\n");
-      out->SetColor(SchemeId::NORMAL);
+      window->GotoXY(0, 13);
+      window->Printf("                                                             \n");
+      window->Printf("%%1 %%2 etc. are parameters passed.  Minimum of two on Add and \n");
+      window->Printf("Extract command lines. For added security, a complete path to\n");
+      window->Printf("the archiver and extension should be used. i.e.:             \n");
+      window->Printf("c:\\bin\\arcs\\zip.exe -a %%1 %%2                              \n");
+      window->Printf("                                                             \n");
+      window->SetColor(SchemeId::PROMPT);
+      window->Printf("<ESC> when done\n");
+      window->SetColor(SchemeId::NORMAL);
       bool done = false;
       do {
         int i1 = 0;
-        out->window()->GotoXY(21, cp);
+        window->GotoXY(21, cp);
         switch (cp) {
         case 4:
-          editline(out->window(), arc[i].name, 31, ALL, &i1, "");
+          editline(window, arc[i].name, 31, ALL, &i1, "");
           StringTrimEnd(arc[i].name);
           break;
         case 5:
-          editline(out->window(), arc[i].extension, 3, UPPER_ONLY, &i1, "");
+          editline(window, arc[i].extension, 3, UPPER_ONLY, &i1, "");
           StringTrimEnd(arc[i].extension);
           break;
         case 6:
-          editline(out->window(), arc[i].arcl, 49, ALL, &i1, "");
+          editline(window, arc[i].arcl, 49, ALL, &i1, "");
           StringTrimEnd(arc[i].arcl);
           break;
         case 7:
-          editline(out->window(), arc[i].arce, 49, ALL, &i1, "");
+          editline(window, arc[i].arce, 49, ALL, &i1, "");
           StringTrimEnd(arc[i].arce);
           break;
         case 8:
-          editline(out->window(), arc[i].arca, 49, ALL, &i1, "");
+          editline(window, arc[i].arca, 49, ALL, &i1, "");
           StringTrimEnd(arc[i].arca);
           break;
         case 9:
-          editline(out->window(), arc[i].arcd, 49, ALL, &i1, "");
+          editline(window, arc[i].arcd, 49, ALL, &i1, "");
           StringTrimEnd(arc[i].arcd);
           break;
         case 10:
-          editline(out->window(), arc[i].arck, 49, ALL, &i1, "");
+          editline(window, arc[i].arck, 49, ALL, &i1, "");
           StringTrimEnd(arc[i].arck);
           break;
         case 11:
-          editline(out->window(), arc[i].arct, 49, ALL, &i1, "");
+          editline(window, arc[i].arct, 49, ALL, &i1, "");
           StringTrimEnd(arc[i].arct);
           break;
         }
@@ -183,7 +184,7 @@ void edit_arc(int nn) {
   _close(hFile);
 }
 
-void create_arcs() {
+void create_arcs(CursesWindow* window) {
   arcrec arc[MAX_ARCS];
 
   strncpy(arc[0].name, "Zip", 32);
@@ -243,7 +244,7 @@ void create_arcs() {
   sprintf(szFileName, "%sarchiver.dat", syscfg.datadir);
   int hFile = _open(szFileName, O_WRONLY | O_BINARY | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
   if (hFile < 0) {
-    out->window()->Printf("Couldn't open '%s' for writing.\n", szFileName);
+    messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", szFileName));
     exit_init(1);
   }
   _write(hFile, arc, MAX_ARCS * sizeof(arcrec));
