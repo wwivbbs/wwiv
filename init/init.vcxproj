@@ -107,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="archivers.cpp" />
+    <ClCompile Include="convert.cpp" />
     <ClCompile Include="editors.cpp" />
     <ClCompile Include="init.cpp" />
     <ClCompile Include="instance_settings.cpp" />
