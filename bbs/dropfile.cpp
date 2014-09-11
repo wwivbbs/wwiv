@@ -93,7 +93,15 @@ string GetComSpeedInDropfileFormat(unsigned long lComSpeed) {
 
 
 long GetMinutesRemainingForDropFile() {
-  return std::max<long>((static_cast<long>(nsl() / 60)) - 1L, 0);
+  long time_left = std::max<long>((static_cast<long>(nsl() / 60)) - 1L, 0);
+  bool using_modem = GetSession()->using_modem != 0;
+  if (!using_modem) {
+    // When we generate a dropfile from the WFC, give it a suitable amount
+    // of time remaining vs. 1 minute since we don't have an active session.
+    // Also allow at least an hour for all local users.
+    return std::min<long>(60, time_left);
+  }
+  return time_left;
 }
 
 
