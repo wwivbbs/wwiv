@@ -83,52 +83,8 @@ languagerec *languages;
 char bbsdir[MAX_PATH];
 char configdat[20] = "config.dat";
 
-static void convcfg() {
-  arcrec arc[MAX_ARCS];
-
-  int hFile = open(configdat, O_RDWR | O_BINARY);
-  if (hFile > 0) {
-    out->SetColor(SchemeId::INFO);
-    out->window()->Printf("Converting config.dat to 4.30/5.00 format...\n");
-    out->SetColor(SchemeId::NORMAL);
-    read(hFile, &syscfg, sizeof(configrec));
-    sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, WFile::pathSeparatorChar);
-    strcpy(syscfg.unused_logoff_c, " ");
-    strcpy(syscfg.unused_v_scan_c, " ");
-
-    for (int i = 0; i < MAX_ARCS; i++) {
-      if ((syscfg.arcs[i].extension[0]) && (i < 4)) {
-        strncpy(arc[i].name, syscfg.arcs[i].extension, 32);
-        strncpy(arc[i].extension, syscfg.arcs[i].extension, 4);
-        strncpy(arc[i].arca, syscfg.arcs[i].arca, 32);
-        strncpy(arc[i].arce, syscfg.arcs[i].arce, 32);
-        strncpy(arc[i].arcl, syscfg.arcs[i].arcl, 32);
-      } else {
-        strncpy(arc[i].name, "New Archiver Name", 32);
-        strncpy(arc[i].extension, "EXT", 4);
-        strncpy(arc[i].arca, "archive add command", 32);
-        strncpy(arc[i].arce, "archive extract command", 32);
-        strncpy(arc[i].arcl, "archive list command", 32);
-      }
-    }
-    lseek(hFile, 0L, SEEK_SET);
-    write(hFile, &syscfg, sizeof(configrec));
-    close(hFile);
-
-    char szFileName[ MAX_PATH ];
-    sprintf(szFileName, "%sarchiver.dat", syscfg.datadir);
-    hFile = open(szFileName, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-    if (hFile < 0) {
-      out->window()->Printf("Couldn't open '%s' for writing.\n", szFileName);
-      out->window()->Printf("Creating new file....");
-      create_arcs();
-      out->window()->Printf("\n");
-      hFile = open(szFileName, O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-    }
-    write(hFile, arc, MAX_ARCS * sizeof(arcrec));
-    close(hFile);
-  }
-}
+// from convert.cpp
+void convcfg(CursesWindow* window, const string& config_filename);
 
 static void show_help() {
   out->window()->Printf("   -Pxxx - Password via commandline (where xxx is your password)\n");
@@ -257,7 +213,7 @@ int WInitApp::main(int argc, char *argv[]) {
   // Convert 4.2X to 4.3 format if needed.
   if (filelength(configfile) != sizeof(configrec)) {
     close(configfile);
-    convcfg();
+    convcfg(out->window(), configdat);
     configfile = open(configdat, O_RDWR | O_BINARY);
   }
 
