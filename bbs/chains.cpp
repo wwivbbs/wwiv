@@ -190,7 +190,7 @@ void run_chain(int nChainNumber) {
   sysoplogf("!Ran \"%s\"", chains[nChainNumber].description);
   GetSession()->GetCurrentUser()->SetNumChainsRun(GetSession()->GetCurrentUser()->GetNumChainsRun() + 1);
 
-  unsigned short flags = 0;
+  int flags = 0;
   if (!(chains[nChainNumber].ansir & ansir_no_DOS)) {
     flags |= EFLAG_COMIO;
   }

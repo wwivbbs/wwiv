@@ -282,7 +282,19 @@ bool external_edit_internal(const std::string& edit_filename, const std::string&
   const string sx3 = StringPrintf("%d", numlines);
   const std::string cmdLine = stuff_in(editorCommand, full_filename, sx1, sx2, sx3, "");
 
-  ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPWANOPT_FSED));
+  // TODO(rushfan): Make this a common function shared between here and chains.
+  int flags = 0;
+  if (!(editor.ansir & ansir_no_DOS)) {
+    flags |= EFLAG_COMIO;
+  }
+  if (editor.ansir & ansir_no_pause) {
+    flags |= EFLAG_NOPAUSE;
+  }
+  if (editor.ansir & ansir_emulate_fossil) {
+    flags |= EFLAG_FOSSIL;
+  }
+
+  ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(flags));
   
   // After launched FSED
   lines_listed = 0;
