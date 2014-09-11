@@ -1035,7 +1035,7 @@ struct filestatusrec {
 #define SPWANOPT_BEGINDAY       2
 #define SPWANOPT_LOGON          3
 #define SPWANOPT_ULCHK          4
-#define SPWANOPT_FSED           5
+// SPAWNOPT[FSED] nolonger used.
 #define SPWANOPT_PROT_SINGLE    6
 #define SPWANOPT_PROT_BATCH     7
 #define SPWANOPT_CHAT           8

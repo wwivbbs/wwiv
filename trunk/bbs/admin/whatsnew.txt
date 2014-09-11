@@ -41,6 +41,8 @@ What's New in 2014
   darX : Where X is one of the DAR for the user.
 * Added support for QBBS style external editors. Just set the editor type to
   QuickBBS instead of WWIV.
+* SPAWNOPT[FSED] is now unused and no longer supported.  Spawn options are now
+  set on a per-editor bases in INIT (similiar to how chains work).
 
 What's New in Beta-2
 ~~~~~~~~~~~~~~~~~~~~~
