@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_NEWINIT_H__
 #define __INCLUDED_NEWINIT_H__
 
-void new_init();
+class CursesWindow;
+
+void new_init(CursesWindow* window);
 
 #endif // __INCLUDED_NEWINIT_H__

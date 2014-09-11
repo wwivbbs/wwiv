@@ -155,7 +155,7 @@ void instance_editor() {
   int current_instance = 1;
   read_instance(current_instance, &instance);
 
-  out->SetColor(SchemeId::NORMAL);
+  out->window()->SetColor(SchemeId::NORMAL);
   out->window()->GotoXY(0, 1);
   out->window()->Printf("Temporary Directory: %s\n", instance.tempdir);
   out->window()->Printf("Batch Directory    : %s\n", instance.batchdir);

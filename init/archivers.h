@@ -19,7 +19,9 @@
 #ifndef __INCLUDED_ARCHIVERS_H__
 #define __INCLUDED_ARCHIVERS_H__
 
-void edit_arc(int nn);
-void create_arcs();
+class CursesWindow;
+
+void edit_arc(CursesWindow* window, int nn);
+void create_arcs(CursesWindow* window);
 
 #endif // __INCLUDED_ARCHIVERS_H__
