@@ -503,7 +503,7 @@ void uudecode(const char *pszInputFileName, const char *pszOutputFileName) {
 
   char szCmdLine[ MAX_PATH ];
   sprintf(szCmdLine, "UUDECODE %s %s", pszInputFileName, pszOutputFileName);
-  ExecuteExternalProgram(szCmdLine, EFLAG_NOPAUSE);    // run command
+  ExecuteExternalProgram(szCmdLine, EFLAG_NONE);    // run command
   WFile::Remove(pszInputFileName);        // delete the input file
 }
 

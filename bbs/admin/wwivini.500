@@ -17,15 +17,10 @@
 ;
 ; The various spawn options that may be used are:
 ;
-; ABORT        Allows ^C to break the spwaned program.
-; INTERNAL     Makes extern appear as part of BBS
 ; NOHUP        Doesn't check for hangup
 ; COMIO        Intercept DOS interrupts (Win32 Only)
 ; FOSSIL       Emulate the FOSSIL for DOS applications (Win32 Only)
-; FILES        Creates STAT.WWV and RETURN.WWV files.
-; NOPAUSE      Turns off user's pause-on-screen.
 ; NETPROG      Tries to run program in network data dir first.
-; TOPSCREEN    Redraws topscreen after execution.
 ;
 ; Options can be combined like so:
 ;
@@ -48,29 +43,29 @@
 ;
 ; Event spawn options
 ;
-;SPAWNOPT[TIMED]        = FILES                         ; for timed event
+;SPAWNOPT[TIMED]        =                               ; for timed event
 ;SPAWNOPT[NEWUSER]      =                               ; for newuser event
 ;SPAWNOPT[BEGINDAY]     =                               ; for beginday event
-;SPAWNOPT[LOGON]        = INTERNAL                ; for logon event
-;SPAWNOPT[LOGOFF]       = INTERNAL                ; for logoff event
+;SPAWNOPT[LOGON]        =                               ; for logon event
+;SPAWNOPT[LOGOFF]       =                               ; for logoff event
 ;SPAWNOPT[ULCHK]        = NOHUP                         ; for upload event
 ;
 ; External program spawn options
 ;
 ;SPAWNOPT[FSED]         = FOSSIL                        ; for FSEDs
 ;SPAWNOPT[PROT_SINGLE]  = NONE                          ; for single file xfers
-;SPAWNOPT[PROT_BATCH]   = TOPSCREEN                     ; for batch xfers
+;SPAWNOPT[PROT_BATCH]   = NONE                          ; for batch xfers
 ;SPAWNOPT[CHAT]         = NONE                          ; for wwivchat.exe
-;SPAWNOPT[V_SCAN]       = NOPAUSE                       ; for virus scanning
+;SPAWNOPT[V_SCAN]       = NONE                          ; for virus scanning
 ;
 ; Archiver spawn settings
 ;
-;SPAWNOPT[ARCH_E]       = INTERNAL                ; for extracting archives
-;SPAWNOPT[ARCH_L]       = INTERNAL, ABORT         ; for viewing archives
-;SPAWNOPT[ARCH_A]       = INTERNAL                ; for adding to archives
-;SPAWNOPT[ARCH_D]       = INTERNAL                ; for deleting from archives
-;SPAWNOPT[ARCH_K]       = INTERNAL                ; for commenting archives
-;SPAWNOPT[ARCH_T]       = INTERNAL                ; for testing archives
+;SPAWNOPT[ARCH_E]       =                         ; for extracting archives
+;SPAWNOPT[ARCH_L]       =                         ; for viewing archives
+;SPAWNOPT[ARCH_A]       =                         ; for adding to archives
+;SPAWNOPT[ARCH_D]       =                         ; for deleting from archives
+;SPAWNOPT[ARCH_K]       =                         ; for commenting archives
+;SPAWNOPT[ARCH_T]       =                         ; for testing archives
 ;
 ;Network spawn options
 ;
@@ -78,11 +73,11 @@
 ; in the main BBS directory.  To run a file from the network data
 ; directory, add the NETPROG option.
 ;
-;SPAWNOPT[NET_CMD1]     = INTERNAL                      ; for NET_CLEANUP_CMD1
+;SPAWNOPT[NET_CMD1]     =                               ; for NET_CLEANUP_CMD1
 ;
 ; NET_CMD2 already has the NETPROG option set by default.
 ;
-;SPAWNOPT[NET_CMD2]     = NETPROG,INTERNAL              ; for NET_CLEANUP_CMD2
+;SPAWNOPT[NET_CMD2]     = NETPROG                       ; for NET_CLEANUP_CMD2
 ;
 ; NETWORK is the setting to use when running network.exe
 ;
