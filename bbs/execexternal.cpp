@@ -20,24 +20,6 @@
 #include "wwiv.h"
 #include "instmsg.h"
 
-#if defined ( __unix__ ) || defined ( __APPLE__ )
-#include <sys/types.h>
-#include <sys/wait.h>
-
-//
-// Local UNIX functions
-//
-int UnixSpawn(char *pszCommand, char* environ[]);
-
-#endif // __unix__
-
-
-
-//
-// Implementation
-//
-
-
 int ExecuteExternalProgram(const std::string commandLine, int nFlags) {
   // forget it if the user has hung up
   if (!(nFlags & EFLAG_NOHUP)) {
