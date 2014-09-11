@@ -85,7 +85,7 @@ void convcfg(CursesWindow* window, const string& config_filename) {
     if (hFile < 0) {
       window->Printf("Couldn't open '%s' for writing.\n", filename.c_str());
       window->Printf("Creating new file....");
-      create_arcs();
+      create_arcs(window);
       window->Printf("\n");
       hFile = open(filename.c_str(), O_WRONLY | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
     }

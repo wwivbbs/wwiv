@@ -59,7 +59,7 @@ static const char *prot_name(int pn) {
   return ">NONE<";
 }
 
-static void edit_prot(int n) {
+static void edit_prot(CursesWindow* window, int n) {
   char s[81], s1[81];
   newexternalrec c;
 
@@ -87,49 +87,49 @@ static void edit_prot(int n) {
   } else {
     strcpy(s1, "N");
   }
-  out->window()->Printf("Description          : %s\n", c.description);
-  out->window()->Printf("Xfer OK code         : %s\n", s);
-  out->window()->Printf("Require MNP/LAPM     : %s\n", s1);
-  out->window()->Printf("Receive command line:\n%s\n", c.receivefn);
-  out->window()->Printf("Send command line:\n%s\n", c.sendfn);
-  out->window()->Printf("Receive batch command line:\n%s\n", c.receivebatchfn);
-  out->window()->Printf("Send batch command line:\n%s\n", c.sendbatchfn);
-  out->SetColor(SchemeId::PROMPT);
-  out->window()->Puts("\n<ESC> when done.\n\n");
-  out->SetColor(SchemeId::NORMAL);
-  out->window()->Printf("%%1 = com port baud rate\n");
-  out->window()->Printf("%%2 = port number\n");
-  out->window()->Printf("%%3 = filename to send/receive, filename list to send for batch\n");
-  out->window()->Printf("%%4 = modem speed\n");
-  out->window()->Printf("%%5 = filename list to receive for batch UL and bi-directional batch\n");
+  window->Printf("Description          : %s\n", c.description);
+  window->Printf("Xfer OK code         : %s\n", s);
+  window->Printf("Require MNP/LAPM     : %s\n", s1);
+  window->Printf("Receive command line:\n%s\n", c.receivefn);
+  window->Printf("Send command line:\n%s\n", c.sendfn);
+  window->Printf("Receive batch command line:\n%s\n", c.receivebatchfn);
+  window->Printf("Send batch command line:\n%s\n", c.sendbatchfn);
+  window->SetColor(SchemeId::PROMPT);
+  window->Puts("\n<ESC> when done.\n\n");
+  window->SetColor(SchemeId::NORMAL);
+  window->Puts("%1 = com port baud rate\n");
+  window->Puts("%2 = port number\n");
+  window->Puts("%3 = filename to send/receive, filename list to send for batch\n");
+  window->Puts("%4 = modem speed\n");
+  window->Puts("%5 = filename list to receive for batch UL and bi-directional batch\n");
   nlx();
-  out->SetColor(SchemeId::WARNING);
-  out->window()->Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\n");
-  out->SetColor(SchemeId::NORMAL);
+  window->SetColor(SchemeId::WARNING);
+  window->Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\n");
+  window->SetColor(SchemeId::NORMAL);
 
   do {
     if (cp < 3) {
-      out->window()->GotoXY(23, cp);
+      window->GotoXY(23, cp);
     } else {
-      out->window()->GotoXY(0, cp * 2 - 2);
+      window->GotoXY(0, cp * 2 - 2);
     }
     switch (cp) {
     case 0:
       if (n >= 6) {
-        editline(out->window(), c.description, 50, ALL, &i1, "");
+        editline(window, c.description, 50, ALL, &i1, "");
         StringTrimEnd(c.description);
       }
       break;
     case 1:
-      editline(out->window(), s, 3, NUM_ONLY, &i1, "");
+      editline(window, s, 3, NUM_ONLY, &i1, "");
       StringTrimEnd(s);
       c.ok1 = atoi(s);
       sprintf(s, "%u", c.ok1);
-      out->window()->Puts(s);
+      window->Puts(s);
       break;
     case 2:
       if (n >= 6) {
-        editline(out->window(), s1, 1, UPPER_ONLY, &i1, "");
+        editline(window, s1, 1, UPPER_ONLY, &i1, "");
         if (s1[0] != 'Y') {
           s1[0] = 'N';
         }
@@ -139,11 +139,11 @@ static void edit_prot(int n) {
         } else {
           c.othr &= (~othr_error_correct);
         }
-        out->window()->Puts(s1);
+        window->Puts(s1);
       }
       break;
     case 3:
-      editline(out->window(), c.receivefn, 78, ALL, &i1, "");
+      editline(window, c.receivefn, 78, ALL, &i1, "");
       StringTrimEnd(c.receivefn);
       if (c.sendfn[0] == 0) {
         strcpy(c.sendfn, c.receivefn);
@@ -156,18 +156,18 @@ static void edit_prot(int n) {
       }
       break;
     case 4:
-      editline(out->window(), c.sendfn, 78, ALL, &i1, "");
+      editline(window, c.sendfn, 78, ALL, &i1, "");
       StringTrimEnd(c.sendfn);
       break;
     case 5:
       if (n >= 6) {
-        editline(out->window(), c.receivebatchfn, 78, ALL, &i1, "");
+        editline(window, c.receivebatchfn, 78, ALL, &i1, "");
         StringTrimEnd(c.receivebatchfn);
       }
       break;
     case 6:
       if (n >= 4) {
-        editline(out->window(), c.sendbatchfn, 78, ALL, &i1, "");
+        editline(window, c.sendbatchfn, 78, ALL, &i1, "");
         StringTrimEnd(c.sendbatchfn);
       }
       break;
@@ -195,6 +195,7 @@ static void edit_prot(int n) {
 
 void extrn_prots() {
   bool done = false;
+  CursesWindow* window(out->window());
   do {
     out->Cls();
     nlx();
@@ -202,14 +203,14 @@ void extrn_prots() {
       if (i == 5) {
         continue;
       }
-      out->window()->Printf("%c. %s\n", (i < 10) ? (i + '0') : (i - 10 + BASE_CHAR), prot_name(i));
+      window->Printf("%c. %s\n", (i < 10) ? (i + '0') : (i - 10 + BASE_CHAR), prot_name(i));
     }
     int nMaxProtocolNumber = initinfo.numexterns + 6;
     nlx();
-    out->SetColor(SchemeId::PROMPT);
-    out->window()->Puts("Externals: M:odify, D:elete, I:nsert, Q:uit : ");
-    out->SetColor(SchemeId::NORMAL);
-    char ch = onek(out->window(), "Q\033MID");
+    window->SetColor(SchemeId::PROMPT);
+    window->Puts("Externals: M:odify, D:elete, I:nsert, Q:uit : ");
+    window->SetColor(SchemeId::NORMAL);
+    char ch = onek(window, "Q\033MID");
     switch (ch) {
     case 'Q':
     case '\033':
@@ -217,22 +218,22 @@ void extrn_prots() {
       break;
     case 'M': {
       nlx();
-      out->SetColor(SchemeId::PROMPT);
-      out->window()->Printf("Edit which (2-%d) ? ", nMaxProtocolNumber);
-      out->SetColor(SchemeId::NORMAL);
-      int i = input_number(out->window(), 2);
+      window->SetColor(SchemeId::PROMPT);
+      window->Printf("Edit which (2-%d) ? ", nMaxProtocolNumber);
+      window->SetColor(SchemeId::NORMAL);
+      int i = input_number(window, 2);
       if ((i > -1) && (i < initinfo.numexterns + 6)) {
-        edit_prot(i);
+        edit_prot(window, i);
       }
     }
     break;
     case 'D':
       if (initinfo.numexterns) {
         nlx();
-        out->SetColor(SchemeId::PROMPT);
-        out->window()->Printf("Delete which (6-%d) ? ", nMaxProtocolNumber);
-        out->SetColor(SchemeId::NORMAL);
-        int i = input_number(out->window(), 2);
+        window->SetColor(SchemeId::PROMPT);
+        window->Printf("Delete which (6-%d) ? ", nMaxProtocolNumber);
+        window->SetColor(SchemeId::NORMAL);
+        int i = input_number(window, 2);
         if (i > 0) {
           i -= 6;
         }
@@ -246,27 +247,27 @@ void extrn_prots() {
       break;
     case 'I':
       if (initinfo.numexterns >= 15) {
-        out->SetColor(SchemeId::ERROR_TEXT);
-        out->window()->Printf("Too many external protocols.\n");
-        out->SetColor(SchemeId::NORMAL);
+        window->SetColor(SchemeId::ERROR_TEXT);
+        window->Printf("Too many external protocols.\n");
+        window->SetColor(SchemeId::NORMAL);
         nlx();
         break;
       }
       nlx();
-      out->SetColor(SchemeId::PROMPT);
-      out->window()->Printf("Insert before which (6-%d) ? ", nMaxProtocolNumber);
-      out->SetColor(SchemeId::NORMAL);
-      int i = input_number(out->window(), 2);
+      window->SetColor(SchemeId::PROMPT);
+      window->Printf("Insert before which (6-%d) ? ", nMaxProtocolNumber);
+      window->SetColor(SchemeId::NORMAL);
+      int i = input_number(window, 2);
       if ((i > -1) && (i <= initinfo.numexterns + 6)) {
         for (int i1 = initinfo.numexterns; i1 > i - 6; i1--) {
           externs[i1] = externs[i1 - 1];
         }
         ++initinfo.numexterns;
         memset(externs + i - 6, 0, sizeof(newexternalrec));
-        edit_prot(i);
+        edit_prot(window, i);
       } else {
-        out->window()->Printf("Invalid entry: %d", i);
-        out->window()->GetChar();
+        window->Printf("Invalid entry: %d", i);
+        window->GetChar();
       }
       break;
     }
