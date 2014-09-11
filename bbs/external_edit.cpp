@@ -294,7 +294,7 @@ bool external_edit_internal(const std::string& edit_filename, const std::string&
     flags |= EFLAG_FOSSIL;
   }
 
-  ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(flags));
+  ExecuteExternalProgram(cmdLine, flags);
   
   // After launched FSED
   lines_listed = 0;
