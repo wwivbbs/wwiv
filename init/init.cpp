@@ -355,12 +355,12 @@ int WInitApp::main(int argc, char *argv[]) {
     case 'U':
       user_editor();
       break;
-    case '$':
-      nlx();
-      out->window()->Printf("QSCan Lenth: %lu\n", syscfg.qscn_len);
-      out->window()->Printf("WWIV %s%s INIT compiled %s\n", wwiv_version, beta_version, const_cast<char*>(wwiv_date));
-      out->window()->GetChar();
-      break;
+    case '$': {
+      vector<string> lines;
+      lines.push_back(StringPrintf("QSCan Lenth: %lu", syscfg.qscn_len));
+      lines.push_back(StringPrintf("WWIV %s%s INIT compiled %s", wwiv_version, beta_version, const_cast<char*>(wwiv_date)));
+      messagebox(out->window(), lines);
+    } break;
     case 'X':
       up_subs_dirs();
       break;
