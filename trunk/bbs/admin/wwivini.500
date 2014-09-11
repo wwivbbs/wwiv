@@ -60,7 +60,7 @@
 ;SPAWNOPT[FSED]         = FOSSIL                        ; for FSEDs
 ;SPAWNOPT[PROT_SINGLE]  = NONE                          ; for single file xfers
 ;SPAWNOPT[PROT_BATCH]   = TOPSCREEN                     ; for batch xfers
-;SPAWNOPT[CHAT]         = FILES                         ; for wwivchat.exe
+;SPAWNOPT[CHAT]         = NONE                          ; for wwivchat.exe
 ;SPAWNOPT[V_SCAN]       = NOPAUSE                       ; for virus scanning
 ;
 ; Archiver spawn settings
@@ -255,10 +255,8 @@ WFC_DRIVES             = C                  ; Drives to show in WFC (max: 5)
 SCREEN_SAVER_TIME      = 120                ; Screen saver invoke time (min.)
 
 BEGINDAYNODENUMBER     = 1                  ; Node number to handle beginday
-INTERNALZMODEM         = Y                  ; Set this to N to disable the
-                                            ; internal Zmodem Support
-
-EXEC_LOGSYNCFOSS       = Y                  ; Create wwivsync.log when 
+INTERNALZMODEM         = Y                  ; Set to N to disable internal Zmodem
+EXEC_LOGSYNCFOSS       = N                  ; Create wwivsync.log when 
                                             ; executing a FOSSIL door.
 EXEC_USECWAITFORIDLE   = Y                  ; Use WaitForIdleInput under WinNT
 EXEC_CHILDWAITTIME     = 500                ; Time to wait for the DOOR to load
@@ -267,7 +265,7 @@ EXEC_WAITFORIDLETIME   = 2000               ; Time to wait for the DOOR to load
                                             ; (used under WinNT)
 NEW_SCAN_AT_LOGIN      = Y                  ; Ask the user to scan for new 
                                             ; messages when they log in.
-USE_WWIVMAIL           = Y                  ; Add WWIVMail to the //QWK menu
+USE_WWIVMAIL           = N                  ; Add WWIVMail to the //QWK menu
 USE_INTERNAL_QWK       = Y                  ; Use internal QWK support
 ;
 ;=============================================================================
