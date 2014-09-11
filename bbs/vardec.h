@@ -1019,13 +1019,13 @@ struct filestatusrec {
 ///////////////////////////////////////////////////////////////////////////////
 
 #define EFLAG_NONE            0x0000        // nothing.
-#define EFLAG_ABORT           0x0001        // check for a ^C to abort program
-#define EFLAG_INTERNAL        0x0002        // make it look internal to BBS
+//#define EFLAG_ABORT           0x0001        // UNUSED check for a ^C to abort program
+//#define EFLAG_INTERNAL        0x0002        // UNUSED make it look internal to BBS
 #define EFLAG_NOHUP           0x0004        // don't check for hangup (UL event)
 #define EFLAG_COMIO           0x0008        // redirect IO to com port
-#define EFLAG_NOPAUSE         0x0040        // disable pause in remote
+//#define EFLAG_NOPAUSE         0x0040        // UNUSED disable pause in remote
 #define EFLAG_NETPROG         0x0080        // try running out of net dir first
-#define EFLAG_TOPSCREEN       0x0100        // leave topscreen as-is
+//#define EFLAG_TOPSCREEN       0x0100        // UNUSED leave topscreen as-is
 #define EFLAG_FOSSIL          0x0200        // Use Win32 Emulated FOSSIL
 
 ///////////////////////////////////////////////////////////////////////////////

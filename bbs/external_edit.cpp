@@ -287,9 +287,6 @@ bool external_edit_internal(const std::string& edit_filename, const std::string&
   if (!(editor.ansir & ansir_no_DOS)) {
     flags |= EFLAG_COMIO;
   }
-  if (editor.ansir & ansir_no_pause) {
-    flags |= EFLAG_NOPAUSE;
-  }
   if (editor.ansir & ansir_emulate_fossil) {
     flags |= EFLAG_FOSSIL;
   }

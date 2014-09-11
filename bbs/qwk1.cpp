@@ -377,7 +377,7 @@ void ready_reply_packet(const char *packet_name, const char *msg_name) {
   string command = stuff_in(arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
   chdir(QWK_DIRECTORY);
-  ExecuteExternalProgram(command, EFLAG_NOPAUSE);
+  ExecuteExternalProgram(command, EFLAG_NONE);
   GetApplication()->CdHome();
 }
 

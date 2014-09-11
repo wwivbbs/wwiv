@@ -194,9 +194,6 @@ void run_chain(int nChainNumber) {
   if (!(chains[nChainNumber].ansir & ansir_no_DOS)) {
     flags |= EFLAG_COMIO;
   }
-  if (chains[nChainNumber].ansir & ansir_no_pause) {
-    flags |= EFLAG_NOPAUSE;
-  }
   if (chains[nChainNumber].ansir & ansir_emulate_fossil) {
     flags |= EFLAG_FOSSIL;
   }
