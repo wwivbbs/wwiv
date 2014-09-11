@@ -99,7 +99,7 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
     GetSession()->localIO()->LocalPuts(command.c_str());
     GetSession()->localIO()->LocalPuts("\r\n");
     if (incom) {
-      int nRetCode = ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPWANOPT_PROT_SINGLE));
+      int nRetCode = ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_PROT_SINGLE));
       GetApplication()->UpdateTopScreen();
       return nRetCode;
     } else {

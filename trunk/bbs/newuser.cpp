@@ -1083,7 +1083,7 @@ void ExecNewUserCommand() {
     sysoplog(commandLine.c_str(), true);
 
     GetSession()->WriteCurrentUser();
-    ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPWANOPT_NEWUSER));
+    ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPAWNOPT_NEWUSER));
     GetSession()->ReadCurrentUser();
   }
 }

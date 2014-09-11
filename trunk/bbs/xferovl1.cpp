@@ -650,7 +650,7 @@ void tag_files() {
         if (s[0] != 0) {
           GetSession()->bout.NewLine();
           GetSession()->tagging = 0;
-          ExecuteExternalProgram(s, GetApplication()->GetSpawnOptions(SPWANOPT_ARCH_L));
+          ExecuteExternalProgram(s, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_L));
           GetSession()->bout.NewLine();
           pausescr();
           GetSession()->tagging = 1;

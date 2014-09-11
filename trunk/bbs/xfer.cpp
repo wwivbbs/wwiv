@@ -115,7 +115,7 @@ bool check_ul_event(int nDirectoryNum, uploadsrec * u) {
 
     const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[nDirectoryNum].path,
                                     stripfn(u->filename), comport, "");
-    ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPWANOPT_ULCHK));
+    ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPAWNOPT_ULCHK));
 
     WFile file(directories[nDirectoryNum].path, stripfn(u->filename));
     if (!file.Exists()) {
@@ -265,7 +265,7 @@ int list_arc_out(const char *pszFileName, const char *pszDirectory) {
     GetSession()->bout.NewLine(2);
     GetSession()->bout << "Archive listing for " << pszFileName << wwiv::endl;
     GetSession()->bout.NewLine();
-    nRetCode = ExecuteExternalProgram(szArchiveCmd, GetApplication()->GetSpawnOptions(SPWANOPT_ARCH_L));
+    nRetCode = ExecuteExternalProgram(szArchiveCmd, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_L));
     GetSession()->bout.NewLine();
   } else {
     GetSession()->bout.NewLine();

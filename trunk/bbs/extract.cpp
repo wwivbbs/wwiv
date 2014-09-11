@@ -38,7 +38,7 @@ void compress_file(const string& orig_filename, const string& directory) {
   std::string arcName = StrCat(directory, baseFileName);
 
   const std::string command = stuff_in(arcs[0].arca, arcName, orig_filename, "", "", "");
-  ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPWANOPT_ARCH_A));
+  ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_A));
   WFile::Remove(orig_filename);
   GetApplication()->UpdateTopScreen();
 }
