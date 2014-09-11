@@ -1030,26 +1030,26 @@ struct filestatusrec {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define SPWANOPT_TIMED          0
-#define SPWANOPT_NEWUSER        1
-#define SPWANOPT_BEGINDAY       2
-#define SPWANOPT_LOGON          3
-#define SPWANOPT_ULCHK          4
+#define SPAWNOPT_TIMED          0
+#define SPAWNOPT_NEWUSER        1
+#define SPAWNOPT_BEGINDAY       2
+#define SPAWNOPT_LOGON          3
+#define SPAWNOPT_ULCHK          4
 // SPAWNOPT[FSED] nolonger used.
-#define SPWANOPT_PROT_SINGLE    6
-#define SPWANOPT_PROT_BATCH     7
-#define SPWANOPT_CHAT           8
-#define SPWANOPT_ARCH_E         9
-#define SPWANOPT_ARCH_L         10
-#define SPWANOPT_ARCH_A         11
-#define SPWANOPT_ARCH_D         12
-#define SPWANOPT_ARCH_K         13
-#define SPWANOPT_ARCH_T         14
-#define SPWANOPT_NET_CMD1       15
-#define SPWANOPT_NET_CMD2       16
-#define SPWANOPT_LOGOFF         17
-#define SPWANOPT_V_SCAN         18
-#define SPWANOPT_NETWORK        19
+#define SPAWNOPT_PROT_SINGLE    6
+#define SPAWNOPT_PROT_BATCH     7
+#define SPAWNOPT_CHAT           8
+#define SPAWNOPT_ARCH_E         9
+#define SPAWNOPT_ARCH_L         10
+#define SPAWNOPT_ARCH_A         11
+#define SPAWNOPT_ARCH_D         12
+#define SPAWNOPT_ARCH_K         13
+#define SPAWNOPT_ARCH_T         14
+#define SPAWNOPT_NET_CMD1       15
+#define SPAWNOPT_NET_CMD2       16
+#define SPAWNOPT_LOGOFF         17
+#define SPAWNOPT_V_SCAN         18
+#define SPAWNOPT_NETWORK        19
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -133,12 +133,12 @@ void cleanup_net() {
     if (iniFile.IsOpen()) {
       const char *pszValue = iniFile.GetValue("NET_CLEANUP_CMD1");
       if (pszValue != NULL) {
-        ExecuteExternalProgram(pszValue, GetApplication()->GetSpawnOptions(SPWANOPT_NET_CMD1));
+        ExecuteExternalProgram(pszValue, GetApplication()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
         cleanup_net1();
       }
       pszValue = iniFile.GetValue("NET_CLEANUP_CMD2");
       if (pszValue != NULL) {
-        ExecuteExternalProgram(pszValue, GetApplication()->GetSpawnOptions(SPWANOPT_NET_CMD2));
+        ExecuteExternalProgram(pszValue, GetApplication()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
         cleanup_net1();
       }
       iniFile.Close();

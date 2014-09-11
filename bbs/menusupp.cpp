@@ -734,7 +734,7 @@ void ChatRoom() {
   if (WFile::Exists("WWIVCHAT.EXE")) {
     std::ostringstream cmdline;
     cmdline << "WWIVCHAT.EXE " << create_chain_file();
-    ExecuteExternalProgram(cmdline.str(), GetApplication()->GetSpawnOptions(SPWANOPT_CHAT));
+    ExecuteExternalProgram(cmdline.str(), GetApplication()->GetSpawnOptions(SPAWNOPT_CHAT));
   } else {
     chat_room();
   }
