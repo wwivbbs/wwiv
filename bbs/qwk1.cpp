@@ -51,7 +51,6 @@ using std::string;
 
 extern const char *QWKFrom;
 extern int qwk_percent;
-extern bool qwk_bi_mode;
 
 // from inmsg.cpp
 void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength);
@@ -339,13 +338,10 @@ void upload_reply_packet(void) {
 
   sprintf(namepath, "%s%s", QWK_DIRECTORY, name);
   
-  bool do_it = true;
-  if (!qwk_bi_mode) {
-    do_it = yesno();
-  }
+  bool do_it = yesno();
 
   if (do_it) {
-    if (!qwk_bi_mode && incom) {
+    if (incom) {
       qwk_receive_file(namepath, &rec, GetSession()->GetCurrentUser()->data.qwk_protocol);
       WWIV_Delay(500);
     }
