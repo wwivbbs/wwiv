@@ -49,7 +49,6 @@ void current_gat_section(long section);
 
 // Also used in qwk1.cpp
 const char *QWKFrom = "\x04""0QWKFrom:";
-bool qwk_bi_mode;
 
 static int qwk_percent;
 static uint16_t max_msgs;
@@ -823,8 +822,7 @@ void qwk_menu(void) {
   char temp[101], namepath[101];
 
   qwk_percent = 0;
-  qwk_bi_mode = false;
-
+  
   bool done = false;
   while (!done && !hangup) {
     GetSession()->bout.ClearScreen();
@@ -864,7 +862,6 @@ void qwk_menu(void) {
 
     case 'U':
       sysoplog("Upload REP packet");
-      qwk_bi_mode = false;
       upload_reply_packet();
       break;
 
@@ -879,14 +876,12 @@ void qwk_menu(void) {
 
       if (WFile::Exists(namepath)) {
         sysoplog("REP was uploaded");
-        qwk_bi_mode = true;
         upload_reply_packet();
       }
       break;
 
     case 'B':
       sysoplog("Down/Up QWK/REP packet");
-      qwk_bi_mode = true;
 
       qwk_system_name(temp);
       strcat(temp, ".REP");
@@ -938,12 +933,8 @@ static void qwk_send_file(string fn, bool *sent, bool *abort) {
   *abort = 0;
 
   int protocol = -1;
-  if (GetSession()->GetCurrentUser()->data.qwk_protocol <= 1 || qwk_bi_mode) {
-    if (qwk_bi_mode) {
-      protocol = get_protocol(xf_bi);
-    } else {
-      protocol = get_protocol(xf_down_temp);
-    }
+  if (GetSession()->GetCurrentUser()->data.qwk_protocol <= 1) {
+    protocol = get_protocol(xf_down_temp);
   } else {
     protocol = GetSession()->GetCurrentUser()->data.qwk_protocol;
   }
