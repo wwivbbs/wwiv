@@ -74,7 +74,6 @@ static void edit_prot(int n) {
     c = over_intern[n - 2];
     strcpy(c.description, prot_name(n));
     strcpy(c.receivebatchfn, "-- N/A --");
-    strcpy(c.bibatchfn, "-- N/A --");
     if (n != 4) {
       strcpy(c.sendbatchfn, "-- N/A --");
     }
@@ -95,7 +94,6 @@ static void edit_prot(int n) {
   out->window()->Printf("Send command line:\n%s\n", c.sendfn);
   out->window()->Printf("Receive batch command line:\n%s\n", c.receivebatchfn);
   out->window()->Printf("Send batch command line:\n%s\n", c.sendbatchfn);
-  out->window()->Printf("Bi-directional transfer command line:\n%s\n", c.bibatchfn);
   out->SetColor(SchemeId::PROMPT);
   out->window()->Puts("\n<ESC> when done.\n\n");
   out->SetColor(SchemeId::NORMAL);
@@ -173,13 +171,6 @@ static void edit_prot(int n) {
         StringTrimEnd(c.sendbatchfn);
       }
       break;
-    case 7:
-      if (n >= 6) {
-        editline(out->window(), c.bibatchfn, 78, ALL, &i1, "");
-        StringTrimEnd(c.bibatchfn);
-      }
-      break;
-
     }
     cp = GetNextSelectionPosition(0, 7, cp, i1);
     if (i1 == DONE) {
