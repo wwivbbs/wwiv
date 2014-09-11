@@ -474,7 +474,7 @@ void write_inst(int loc, int subloc, int flags) {
   static instancerec ti;
   instancerec ir;
 
-  int re_write = 0;
+  bool re_write = false;
   if (ti.user == 0) {
     if (get_inst_info(GetApplication()->GetInstanceNumber(), &ir)) {
       ti.user = ir.user;
@@ -482,7 +482,7 @@ void write_inst(int loc, int subloc, int flags) {
       ti.user = 1;
     }
     ti.inst_started = static_cast<unsigned long>(time(NULL));
-    re_write = 1;
+    re_write = true;
   }
 
   unsigned short cf = ti.flags & (~(INST_FLAGS_ONLINE | INST_FLAGS_MSG_AVAIL));
@@ -513,7 +513,7 @@ void write_inst(int loc, int subloc, int flags) {
     unsigned short ms = (GetSession()->using_modem) ? modem_speed : 0;
     if (ti.modem_speed != ms) {
       ti.modem_speed = ms;
-      re_write = 1;
+      re_write = true;
     }
   }
   if (flags != INST_FLAGS_NONE) {
@@ -533,22 +533,22 @@ void write_inst(int loc, int subloc, int flags) {
     if (ti.flags & INST_FLAGS_MSG_AVAIL) {
       cf |= INST_FLAGS_MSG_AVAIL;
     }
-    re_write = 1;
+    re_write = true;
   }
   if (cf != ti.flags) {
-    re_write = 1;
+    re_write = true;
     ti.flags = cf;
   }
   if (ti.number != GetApplication()->GetInstanceNumber()) {
-    re_write = 1;
+    re_write = true;
     ti.number = static_cast<short>(GetApplication()->GetInstanceNumber());
   }
   if (loc == INST_LOC_DOWN) {
-    re_write = 1;
+    re_write = true;
   } else {
     if (GetSession()->IsUserOnline()) {
       if (ti.user != GetSession()->usernum) {
-        re_write = 1;
+        re_write = true;
         if ((GetSession()->usernum > 0) && (GetSession()->usernum <= syscfg.maxusers)) {
           ti.user = static_cast<short>(GetSession()->usernum);
         }
@@ -557,11 +557,11 @@ void write_inst(int loc, int subloc, int flags) {
   }
 
   if (ti.subloc != static_cast<unsigned short>(subloc)) {
-    re_write = 1;
+    re_write = true;
     ti.subloc = static_cast<unsigned short>(subloc);
   }
   if (ti.loc != static_cast<unsigned short>(loc)) {
-    re_write = 1;
+    re_write = true;
     ti.loc = static_cast<unsigned short>(loc);
   }
   if ((((ti.flags & INST_FLAGS_INVIS) && (!invis)) ||
@@ -569,7 +569,7 @@ void write_inst(int loc, int subloc, int flags) {
       (((ti.flags & INST_FLAGS_MSG_AVAIL) && (!avail)) ||
        ((!(ti.flags & INST_FLAGS_MSG_AVAIL)) && (avail))) &&
       (ti.loc != INST_LOC_WFC)) {
-    re_write = 1;
+    re_write = true;
   }
   if (re_write && syscfg.datadir != nullptr) {
     ti.last_update = static_cast<unsigned long>(time(NULL));
