@@ -183,6 +183,42 @@ private:
   const std::vector<std::string> items_;
 };
 
+template<typename T> 
+class FlagEditItem : public EditItem<T*> {
+public:
+  FlagEditItem(int x, int y, int flag, const std::string& on, const std::string& off, T* data) 
+      : EditItem<T*>(x, y, 0, data), flag_(flag) {
+    this->maxsize_ = std::max<int>(on.size(), off.size());
+    this->items_.push_back(off);
+    this->items_.push_back(on);
+  }
+  virtual ~FlagEditItem() {}
+
+  virtual int Run(CursesWindow* window) {
+    window->GotoXY(this->x_, this->y_);
+    int return_code = 0;
+    int state = (*this->data_ & this->flag_) ? 1 : 0;
+    state = toggleitem(window, state, this->items_, &return_code);
+    if (state == 0) {
+      *this->data_ &= ~this->flag_;
+    } else {
+      *this->data_ |= this->flag_;
+    }
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+    int state = (*this->data_ & this->flag_) ? 1 : 0;
+    window->PrintfXY(this->x_, this->y_, "%s", this->items_.at(state).c_str());
+  }
+private:
+  std::vector<std::string> items_;
+  int flag_;
+};
+
 class RestrictionsEditItem : public EditItem<uint16_t*> {
 public:
   RestrictionsEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 0, data) {}
