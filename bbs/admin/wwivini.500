@@ -29,18 +29,18 @@
 ;
 ; Options can be combined like so:
 ;
-; SPAWNOPTS[FSED]=FOSSIL,NOHANGUP
+; SPAWNOPTS[LOGON]=FOSSIL,NOHANGUP
 ;
 ; Valid locations that can have spawn options specified are:
 ;
-; TIMED, NEWUSER, BEGINDAY, LOGON, LOGOFF ULCHK, FSED, PROT_SINGLE,
-; PROT_BATCH CHAT, ARCH_E, ARCH_V, ARCH_A, ARCH_D, ARCH_K, ARCH_T,
+; TIMED, NEWUSER, BEGINDAY, LOGON, LOGOFF ULCHK, PROT_SINGLE,
+; PROT_BATCH, CHAT, ARCH_E, ARCH_V, ARCH_A, ARCH_D, ARCH_K, ARCH_T,
 ; NET_CMD1, NET_CMD2, V_SCAN
 ;
 ; Values listed for lines commented out are the default settings.  Under
 ; normal conditions, you should not have to edit these settings.  If you
 ; have problems getting the stock spawn options to work properly with
-; your supporting program, try adding COMIO, or FILES.  These are
+; your supporting program, try adding COMIO.  These are
 ; the most commonly used settings.
 ;
 ; -----------------------------------------------------------------------------
