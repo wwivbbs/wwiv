@@ -37,9 +37,9 @@ class IniFile {
   void Close();
   bool IsOpen() const { return open_; }
 
-  const char* GetValue(const char *key, const char *default_value = NULL) const;
-  const long GetNumericValue(const char *key, int default_value = 0) const;
-  const bool GetBooleanValue(const char *key, bool default_value = false) const;
+  const char* GetValue(const std::string& key, const char *default_value = NULL) const;
+  const long GetNumericValue(const std::string& key, int default_value = 0) const;
+  const bool GetBooleanValue(const std::string& key, bool default_value = false) const;
 
  private:
   // This class should not be assigneable via '=' so remove the implicit operator=

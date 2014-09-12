@@ -217,7 +217,7 @@ bool WFile::SetName(const std::string& dirName, const std::string& fileName) {
   return SetName(fullPathName.str());
 }
 
-int WFile::Read(void * pBuffer, size_t nCount) {
+int WFile::Read(void* pBuffer, size_t nCount) {
   int ret = read(handle_, pBuffer, nCount);
   if (ret == -1) {
     std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
@@ -226,7 +226,7 @@ int WFile::Read(void * pBuffer, size_t nCount) {
   return ret;
 }
 
-int WFile::Write(const void * pBuffer, size_t nCount) {
+int WFile::Write(const void* pBuffer, size_t nCount) {
   int nRet = write(handle_, pBuffer, nCount);
   if (nRet == -1) {
     std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
