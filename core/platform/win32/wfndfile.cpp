@@ -22,19 +22,18 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
+bool WFindFile::open(const std::string& file_spec, unsigned int nTypeMask) {
+  __open(file_spec, nTypeMask);
 
-bool WFindFile::open(const char* pszFileSpec, unsigned int nTypeMask) {
-  __open(pszFileSpec, nTypeMask);
-
-  hFind = FindFirstFile(pszFileSpec, &ffdata);
+  hFind = FindFirstFile(file_spec.c_str(), &ffdata);
   if (hFind == INVALID_HANDLE_VALUE) {
     return false;
   }
 
   if (ffdata.cAlternateFileName[0] == '\0') {
-    strncpy(szFileName, ffdata.cFileName, sizeof(szFileName));
+    filename_ = ffdata.cFileName;
   } else {
-    strncpy(szFileName, ffdata.cAlternateFileName, sizeof(szFileName));
+    filename_ = ffdata.cAlternateFileName;
   }
   lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
   return true;
@@ -49,9 +48,9 @@ bool WFindFile::next() {
   }
 
   if (ffdata.cAlternateFileName[0] == '\0') {
-    strncpy(szFileName, ffdata.cFileName, sizeof(szFileName));
+    filename_ = ffdata.cFileName;
   } else {
-    strncpy(szFileName, ffdata.cAlternateFileName, sizeof(szFileName));
+    filename_ = ffdata.cAlternateFileName;
   }
   lFileSize = (ffdata.nFileSizeHigh * MAXDWORD) + ffdata.nFileSizeLow;
   return true;

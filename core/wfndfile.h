@@ -21,6 +21,7 @@
 #define __INCLUDED_WFNDFILE_H__
 
 #include <cstring>
+#include <string>
 
 #if defined( _WIN32 )
 #define VC_EXTRALEAN
@@ -34,21 +35,21 @@
 
 class WFindFile {
  protected:
-  char szFileName[MAX_PATH];
-  char szFileSpec[MAX_PATH];
+  std::string filename_;
+  std::string filespec_;
   long lFileSize;
   long lTypeMask;
   unsigned char nFileType;
   bool bIsOpen;
 
-  void __open(const char * pszFileSpec, unsigned int nTypeMask) {
-    strcpy(szFileSpec, pszFileSpec);
+  void __open(const std::string& file_spec, unsigned int nTypeMask) {
+    filespec_ = file_spec;
     lTypeMask = nTypeMask;
   }
 
   void __close() {
-    szFileName[0] = '\0';
-    szFileSpec[0] = '\0';
+    filespec_.clear();
+    filename_.clear();
     lFileSize = 0;
     lTypeMask = 0;
     bIsOpen = false;
@@ -64,22 +65,14 @@ class WFindFile {
 #endif
 
  public:
-  WFindFile() {
-    this->__close();
-  }
-  bool open(const char * pszFileSpec, unsigned int nTypeMask);
+  WFindFile() { this->__close(); }
+  bool open(const std::string& filespec, unsigned int nTypeMask);
   bool next();
   bool close();
-  virtual ~WFindFile() {
-    close();
-  }
+  virtual ~WFindFile() { close(); }
 
-  const char * GetFileName() {
-    return (const char*) &szFileName;
-  }
-  long GetFileSize() {
-    return lFileSize;
-  }
+  const char * GetFileName() { return filename_.c_str(); }
+  long GetFileSize() { return lFileSize; }
   bool IsDirectory();
   bool IsFile();
 };

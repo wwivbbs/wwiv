@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "core/wfndfile.h"
 
+#include <string>
+
 #include <dirent.h>
 #include <iostream>
 #include "core/strings.h"
@@ -30,6 +32,7 @@ long lTypeMask;
 #define TYPE_DIRECTORY  DT_DIR
 #define TYPE_FILE DT_BLK
 
+using std::string;
 
 //////////////////////////////////////////////////////////////////////////////
 // Local function prototypes
@@ -38,16 +41,16 @@ int fname_ok(const struct dirent *ent);
 char *strip_filename(const char *pszFileName);
 
 
-bool WFindFile::open(const char* pszFileSpec, unsigned int nTypeMask) {
+bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
   char szFileName[MAX_PATH];
   char szDirectoryName[MAX_PATH];
   unsigned int i, f, laststar;
 
-  __open(pszFileSpec, nTypeMask);
+  __open(filespec, nTypeMask);
   dos_flag = 0;
 
-  strcpy(szDirectoryName, getdir_from_file(pszFileSpec));
-  strcpy(szFileName, strip_filename(pszFileSpec));
+  strcpy(szDirectoryName, getdir_from_file(filespec.c_str()));
+  strcpy(szFileName, strip_filename(filespec.c_str()));
 
   if (wwiv::strings::IsEquals(szFileName, "*.*")  ||
       wwiv::strings::IsEquals(szFileName, "*")) {
