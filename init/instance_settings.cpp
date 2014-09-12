@@ -150,8 +150,6 @@ void instance_editor() {
 
   configoverrec instance;
   int num_instances = number_instances();
-  out->Cls();
-
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Temporary Directory Configuration", 4, 76));
 

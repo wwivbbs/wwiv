@@ -20,6 +20,7 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -33,6 +34,7 @@
 #include "init/ifcns.h"
 #include "init/init.h"
 #include "initlib/input.h"
+#include "initlib/listbox.h"
 #include "core/strings.h"
 #include "core/wfile.h"
 #include "core/wwivport.h"
@@ -47,53 +49,48 @@
 static void edit_net(int nn);
 
 using std::string;
+using std::unique_ptr;
 using std::vector;
+using wwiv::strings::StringPrintf;
 
-static int read_subs() {
+static int read_subs(CursesWindow* window) {
   char szFileName[MAX_PATH];
 
   sprintf(szFileName, "%ssubs.dat", syscfg.datadir);
   int i = open(szFileName, O_RDWR | O_BINARY);
   if (i > 0) {
     subboards = (subboardrec *) malloc(filelength(i) + 1);
-    if (!subboards) {
-      out->window()->Printf("needed %ld bytes\n", filelength(i));
-      exit_init(2);
-    }
-
     initinfo.num_subs = (read(i, subboards, (filelength(i)))) /
                         sizeof(subboardrec);
     close(i);
   } else {
-    out->window()->Printf("%s NOT FOUND.\n", szFileName);
+    messagebox(window, StringPrintf("%s NOT FOUND.\n", szFileName));
     exit_init(2);
   }
   return 0;
 }
 
 static void write_subs() {
-  char szFileName[MAX_PATH];
-
   if (subboards) {
-    sprintf(szFileName, "%ssubs.dat", syscfg.datadir);
-    int i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+    const string filename = StringPrintf("%ssubs.dat", syscfg.datadir);
+    int i = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     if (i > 0) {
       write(i, &subboards[0], initinfo.num_subs * sizeof(subboardrec));
       close(i);
     }
     initinfo.num_subs = 0;
     free(subboards);
-    subboards = NULL;
+    subboards = nullptr;
   }
 }
 
-static void del_net(int nn) {
+static void del_net(CursesWindow* window, int nn) {
   int i, t, r, nu, i1, i2;
   mailrec m;
   char *u;
   postrec *p;
 
-  read_subs();
+  read_subs(window);
 
   for (i = 0; i < initinfo.num_subs; i++) {
     if (subboards[i].age & 0x80) {
@@ -192,13 +189,13 @@ static void del_net(int nn) {
   close(i);
 }
 
-static void insert_net(int nn) {
+static void insert_net(CursesWindow* window, int nn) {
   int i, t, r, nu, i1, i2;
   mailrec m;
   char *u;
   postrec *p;
 
-  read_subs();
+  read_subs(window);
 
   for (i = 0; i < initinfo.num_subs; i++) {
     if (subboards[i].age & 0x80) {
@@ -266,8 +263,6 @@ static void insert_net(int nn) {
       }
     }
   }
-
-
   free(u);
 
   for (i = initinfo.net_num_max; i > nn; i--) {
@@ -289,123 +284,80 @@ static void insert_net(int nn) {
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
 void networks() {
-  char s1[81];
   bool done = false;
 
   if (!WFile::Exists("NETWORK.EXE")) {
-    out->Cls();
-    nlx();
-    out->window()->SetColor(SchemeId::WARNING);
-    out->window()->Printf("WARNING\n");
-    out->window()->Printf("You have not installed the networking software.  Unzip netxx.zip\n");
-    out->window()->Printf("to the main BBS directory and re-run init.\n\n");
-    out->window()->Printf("Hit any key to continue.\n");
-    out->window()->GetChar();
+    vector<string> lines{
+      "WARNING",
+      "You have not installed the networking software.  Unzip netxx.zip",
+      "to the main BBS directory and re-run init.",
+      "",
+      "Hit any key to continue."
+    };
+    out->Cls(ACS_CKBOARD);
+    messagebox(out->window(), lines);
   }
 
   do {
-    out->Cls();
-    nlx();
+    out->Cls(ACS_CKBOARD);
+
+    vector<ListBoxItem> items;
     for (int i = 0; i < initinfo.net_num_max; i++) {
-      if (i && ((i % 23) == 0)) {
-        pausescr(out->window());
-      }
-      out->window()->Printf("%-2d. %-15s   @%-5u  %s\n", i + 1, net_networks[i].name, net_networks[i].sysnum, net_networks[i].dir);
+      items.emplace_back(StringPrintf("%-2d. %-15s   @%-5u  %s", i + 1, net_networks[i].name, net_networks[i].sysnum, net_networks[i].dir));
     }
-    nlx();
-    out->window()->SetColor(SchemeId::PROMPT);
-    out->window()->Puts("(Q=Quit) Networks: (M)odify, (D)elete, (I)nsert : ");
-    out->window()->SetColor(SchemeId::NORMAL);
-    char ch = onek(out->window(), "Q\033MID");
-    switch (ch) {
-    case 'Q':
-    case '\033':
+    CursesWindow* window = out->window();
+    ListBox list(out, window, "Select Network", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
+        static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+
+    list.selection_returns_hotkey(true);
+    list.set_additional_hotkeys("DI");
+    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
+    ListBoxResult result = list.Run();
+
+    if (result.type == ListBoxResultType::SELECTION) {
+      edit_net(result.selected);
+    } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
-      break;
-    case 'M': {
-      nlx();
-      sprintf(s1, "Edit which (1-%d) ? ", initinfo.net_num_max);
-      out->window()->SetColor(SchemeId::PROMPT);
-      out->window()->Puts(s1);
-      out->window()->SetColor(SchemeId::NORMAL);
-      int nNetNumber = input_number(out->window(), 2);
-      if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max) {
-        edit_net(nNetNumber - 1);
-      }
-    }
-    break;
-    case 'D':
-      if (!OKAD) {
-        out->window()->SetColor(SchemeId::ERROR_TEXT);
-        out->window()->Printf("You must run the BBS once to set up some variables before deleting a network.\n");
-        out->window()->SetColor(SchemeId::NORMAL);
-        out->window()->GetChar();
-        break;
-      }
-      if (initinfo.net_num_max > 1) {
-        nlx();
-        out->window()->SetColor(SchemeId::PROMPT);
-        sprintf(s1, "Delete which (1-%d) ? ", initinfo.net_num_max);
-        out->window()->SetColor(SchemeId::NORMAL);
-        out->window()->Puts(s1);
-        int nNetNumber = input_number(out->window(), 2);
-        if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max) {
-          nlx();
-          out->window()->SetColor(SchemeId::PROMPT);
-          out->window()->Puts("Are you sure? ");
-          ch = onek(out->window(), "YN\r");
-          if (ch == 'Y') {
-            nlx();
-            out->window()->SetColor(SchemeId::ERROR_TEXT);
-            out->window()->Puts("Are you REALLY sure? ");
-            out->window()->SetColor(SchemeId::NORMAL);
-            ch = onek(out->window(), "YN\r");
-            if (ch == 'Y') {
-              del_net(nNetNumber - 1);
+    } else if (result.type == ListBoxResultType::HOTKEY) {
+      switch (result.hotkey) {
+      case 'D':
+        if (!OKAD) {
+          messagebox(window, { "You must run the BBS once", "to set up some variables before ", "deleting a network." });
+          break;
+        }
+        if (initinfo.net_num_max > 1) {
+          const string prompt = StringPrintf("Delete '%s'", net_networks[result.selected].name);
+          bool yn = dialog_yn(window, prompt);
+          if (yn) {
+            yn = dialog_yn(window, "Are you REALLY sure? ");
+            if (yn) {
+              del_net(window, result.selected);
             }
           }
+        } else {
+          messagebox(window, "You must leave at least one network.");
         }
-      } else {
-        nlx();
-        out->window()->SetColor(SchemeId::ERROR_TEXT);
-        out->window()->Printf("You must leave at least one network.\n");
-        out->window()->SetColor(SchemeId::NORMAL);
-        nlx();
-        out->window()->GetChar();
-      }
-      break;
-    case 'I':
-      if (!OKAD) {
-        out->window()->SetColor(SchemeId::PROMPT);
-        out->window()->Printf("You must run the BBS once to set up some variables before inserting a network.\n");
-        out->window()->SetColor(SchemeId::NORMAL);
-        out->window()->GetChar();
+        break;
+      case 'I':
+        if (!OKAD) {
+          vector<string> lines{ "You must run the BBS once to set up ", "some variables before inserting a network." };
+          messagebox(window, lines);
+          break;
+        }
+        if (initinfo.net_num_max >= MAX_NETWORKS) {
+          messagebox(window, "Too many networks.");
+          break;
+        }
+        const string prompt = StringPrintf("Insert before which (1-%d) ? ", initinfo.net_num_max + 1);
+        int nNetNumber = dialog_input_number(window, prompt, 1, initinfo.net_num_max + 1);
+        if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max + 1) {
+          bool yn = dialog_yn(window, "Are you sure? ");
+          if (yn) {
+            insert_net(window, nNetNumber - 1);
+          }
+        }
         break;
       }
-      if (initinfo.net_num_max >= MAX_NETWORKS) {
-        out->window()->SetColor(SchemeId::ERROR_TEXT);
-        out->window()->Printf("Too many networks.\n");
-        out->window()->SetColor(SchemeId::NORMAL);
-        nlx();
-        out->window()->GetChar();
-        break;
-      }
-      nlx();
-      out->window()->SetColor(SchemeId::PROMPT);
-      sprintf(s1, "Insert before which (1-%d) ? ", initinfo.net_num_max + 1);
-      out->window()->Puts(s1);
-      out->window()->SetColor(SchemeId::NORMAL);
-      int nNetNumber = input_number(out->window(), 2);
-      if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max + 1) {
-        out->window()->SetColor(SchemeId::PROMPT);
-        out->window()->Puts("Are you sure? ");
-        out->window()->SetColor(SchemeId::NORMAL);
-        ch = onek(out->window(), "YN\r");
-        if (ch == 'Y') {
-          insert_net(nNetNumber - 1);
-        }
-      }
-      break;
     }
   } while (!done);
 
@@ -427,7 +379,8 @@ static void edit_net(int nn) {
   char szOldNetworkName[20];
   char *ss;
 
-  out->Cls();
+  out->Cls(ACS_CKBOARD);
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", 6, 76));
   bool done = false;
   int cp = 1;
   net_networks_rec *n = &(net_networks[nn]);
@@ -437,57 +390,22 @@ static void edit_net(int nn) {
     n->type = 0;
   }
 
-  out->window()->Printf("Network type   : %s\n\n", nettypes[n->type].c_str());
-  out->window()->Printf("Network name   : %s\n", n->name);
-  out->window()->Printf("Node number    : %u\n", n->sysnum);
-  out->window()->Printf("Data Directory : %s\n", n->dir);
-  out->window()->SetColor(SchemeId::PROMPT);
-  out->window()->Puts("\n<ESC> when done.\n\n");
-  out->window()->SetColor(SchemeId::NORMAL);
-  do {
-    if (cp) {
-      out->window()->GotoXY(17, cp + 1);
-    } else {
-      out->window()->GotoXY(17, cp);
-    }
-    int nNext = 0;
-    switch (cp) {
-    case 0:
-      n->type = toggleitem(out->window(), n->type, nettypes, &nNext);
-      break;
-    case 1: {
-      editline(out->window(), n->name, 15, ALL, &nNext, "");
-      StringTrimEnd(n->name);
-      ss = strchr(n->name, ' ');
-      if (ss) {
-        *ss = 0;
-      }
-      out->window()->Puts(n->name);
-      out->window()->Puts("                  ");
-    }
-    break;
-    case 2: {
-      char szTempBuffer[ 255 ];
-      sprintf(szTempBuffer, "%u", n->sysnum);
-      editline(out->window(), szTempBuffer, 5, NUM_ONLY, &nNext, "");
-      StringTrimEnd(szTempBuffer);
-      n->sysnum = atoi(szTempBuffer);
-      sprintf(szTempBuffer, "%u", n->sysnum);
-      out->window()->Puts(szTempBuffer);
-    }
-    break;
-    case 3: {
-      editline(out->window(), n->dir, 60, UPPER_ONLY, &nNext, "");
-      trimstrpath(n->dir);
-      out->window()->Puts(n->dir);
-    }
-    break;
-    }
-    cp = GetNextSelectionPosition(0, 3, cp, nNext);
-    if (nNext == DONE) {
-      done = true;
-    }
-  } while (!done);
+  const int COL1_POSITION = 14;
+  EditItems items{
+    new ToggleEditItem<uint8_t>(COL1_POSITION, 1, nettypes, &n->type),
+    new StringEditItem<char*>(COL1_POSITION, 2, 15, n->name, false),
+    new NumberEditItem<uint16_t>(COL1_POSITION, 3, &n->sysnum),
+    new FilePathItem(COL1_POSITION, 4, 60, n->dir),
+  };
+  items.set_curses_io(out, window.get());
+
+  int y = 1;
+  window->PutsXY(2, y++, "Net Type  :");
+  window->PutsXY(2, y++, "Net Name  :");
+  window->PutsXY(2, y++, "Node #    :");
+  window->PutsXY(2, y++, "Directory :");
+
+  items.Run();
 
   if (strcmp(szOldNetworkName, n->name)) {
     char szInputFileName[ MAX_PATH ];
