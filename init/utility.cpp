@@ -56,7 +56,7 @@ static void fix_user_rec(userrec *u) {
 int number_userrecs() {
   WFile file(syscfg.datadir, "user.lst");
   if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                WFile::shareDenyReadWrite, WFile::permRead)) {
+                WFile::shareDenyReadWrite, WFile::permReadWrite)) {
     return static_cast<int>(file.GetLength() / sizeof(userrec)) - 1;
   }
   return -1;

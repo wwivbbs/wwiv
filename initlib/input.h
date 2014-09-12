@@ -360,6 +360,31 @@ protected:
   }
 };
 
+class CommandLineItem : public EditItem<char*> {
+public:
+  CommandLineItem(int x, int y, int maxsize, char* data) 
+    : EditItem<char*>(x, y, maxsize, data) {}
+  virtual ~CommandLineItem() {}
+
+  virtual int Run(CursesWindow* window) override {
+    window->GotoXY(this->x_, this->y_);
+    int return_code = 0;
+    editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
+    StringTrimEnd(this->data_);
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const override {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+
+    char pattern[81];
+    sprintf(pattern, "%%-%ds", this->maxsize_);
+    window->PrintfXY(this->x_, this->y_, pattern, this->data_);
+  }
+};
+
 class EditItems {
 public:
   typedef std::function<void(void)> additional_helpfn;
