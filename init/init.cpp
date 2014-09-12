@@ -163,6 +163,9 @@ int WInitApp::main(int argc, char *argv[]) {
       new_init(out->window());
       newbbs = true;
       configfile = open(configdat, O_RDWR | O_BINARY);
+      if (configfile == -1) {
+        messagebox(out->window(), StringPrintf("Unable to open config.dat, error: %d", errno));
+      }
     } else {
       exit_init(1);
     }
@@ -257,7 +260,7 @@ int WInitApp::main(int argc, char *argv[]) {
       lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");
       string given_password;
       input_password(out->window(), "SY:", lines, &given_password, 20);
-      if (strcmp(s, (syscfg.systempw)) != 0) {
+      if (given_password != syscfg.systempw) {
         out->Cls(ACS_CKBOARD);
         messagebox(out->window(), "I'm sorry, that isn't the correct system password.");
       } else {
