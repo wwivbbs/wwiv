@@ -25,9 +25,9 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
-int dos_flag = false;
-char fileSpec[256];
-long lTypeMask;
+static int dos_flag = false;
+static long lTypeMask;
+static const char* filespec_ptr;
 
 #define TYPE_DIRECTORY  DT_DIR
 #define TYPE_FILE DT_BLK
@@ -44,6 +44,7 @@ char *strip_filename(const char *pszFileName);
 bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
   char szFileName[MAX_PATH];
   char szDirectoryName[MAX_PATH];
+  char szFileSpec[MAX_PATH];
   unsigned int i, f, laststar;
 
   __open(filespec, nTypeMask);
@@ -104,7 +105,9 @@ bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
     szFileSpec[12] = 0;
   }
 
-  strcpy(fileSpec, szFileSpec);
+  filespec_.assign(szFileSpec);
+  filespec_ptr = filespec_.c_str();
+  filename_.assign(szFileName);
 
   nMatches = scandir(szDirectoryName, &entries, fname_ok, alphasort);
   if (nMatches < 0) {
@@ -124,7 +127,7 @@ bool WFindFile::next() {
   }
   struct dirent *entry = entries[nCurrentEntry++];
 
-  strcpy(szFileName, entry->d_name);
+  filename_.assign(entry->d_name);
   lFileSize = entry->d_reclen;
   nFileType = entry->d_type;
 
@@ -179,7 +182,8 @@ char *getdir_from_file(const char *pszFileName) {
 int fname_ok(const struct dirent *ent) {
   int ok, i;
   char f[13], *ptr = NULL, s3[13];
-  const char *s1 = fileSpec;
+  // kinda a hack but there's no way to pass parameters into this easily.
+  const char *s1 = filespec_ptr;
   const char *s2 = ent->d_name;
 
   if (wwiv::strings::IsEquals(s2, ".") ||
