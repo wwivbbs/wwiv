@@ -73,8 +73,6 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
   }
 }
 
-
-
 /**
  * Does the currently online user have ANSI.  The user record is
  * checked for this information
@@ -84,7 +82,6 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
 bool okansi() {
   return GetSession()->GetCurrentUser()->HasAnsi() && !x_only;
 }
-
 
 /**
  * Should be called after a user is logged off, and will initialize
@@ -258,8 +255,6 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
   file.Close();
 }
 
-
-
 /**
  * Tells the OS that it is safe to preempt this task now.
  */
@@ -273,7 +268,6 @@ void giveup_timeslice() {
     }
   }
 }
-
 
 char *stripfn(const char *pszFileName) {
   static char szStaticFileName[15];
@@ -309,11 +303,9 @@ char *stripfn(const char *pszFileName) {
   return szStaticFileName;
 }
 
-
 void stripfn_inplace(char *pszFileName) {
   strcpy(pszFileName, stripfn(pszFileName));
 }
-
 
 void preload_subs() {
   bool abort = false;
@@ -531,7 +523,6 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
   return 0;
 }
 
-
 slrec getslrec(int nSl) {
   static int nCurSl = -1;
   static slrec CurSlRec;
@@ -554,7 +545,6 @@ slrec getslrec(int nSl) {
   return CurSlRec;
 }
 
-
 void WWIV_SetFileTime(const char* pszFileName, const time_t tTime) {
   struct utimbuf utbuf;
 
@@ -565,7 +555,6 @@ void WWIV_SetFileTime(const char* pszFileName, const time_t tTime) {
 
   utime(pszFileName, &utbuf);
 }
-
 
 bool okfsed() {
   return (!okansi() ||

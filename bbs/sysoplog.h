@@ -20,7 +20,7 @@
 
 #include <string>
 
-void GetSysopLogFileName(const char *d, char *pszLogFileName);
+std::string GetSysopLogFileName(const std::string& date);
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName);
 void catsl();
 void sysopchar(const std::string text);

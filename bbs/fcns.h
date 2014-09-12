@@ -77,9 +77,9 @@ void text_edit();
 // File: bbsovl2.cpp
 
 void OnlineUserEditor();
-void BackPrint(std::string text, int nColorCode, int nCharDelay, int nStringDelay);
+void BackPrint(const std::string& text, int nColorCode, int nCharDelay, int nStringDelay);
 void MoveLeft(int nNumberOfChars);
-void SpinPuts(const std::string text, int nColorCode);
+void SpinPuts(const std::string& text, int nColorCode);
 
 
 // File: bbsovl3.cpp
@@ -87,8 +87,8 @@ void SpinPuts(const std::string text, int nColorCode);
 int  get_kb_event(int nNumLockMode);
 char onek_ncr(const char *pszAllowableChars);
 bool do_sysop_command(int command);
-bool copyfile(const std::string sourceFileName, const std::string destFileName, bool stats);
-bool movefile(const std::string sourceFileName, const std::string destFileName, bool stats);
+bool copyfile(const std::string& sourceFileName, const std::string& destFileName, bool stats);
+bool movefile(const std::string& sourceFileName, const std::string& destFileName, bool stats);
 void ListAllColors();
 
 

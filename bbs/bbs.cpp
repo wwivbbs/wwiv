@@ -55,6 +55,7 @@ extern time_t last_time_c;
 static WApplication *app;
 static WSession* sess;
 
+using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
 
@@ -391,11 +392,9 @@ int WApplication::doWFCEvents() {
       case 'L':
         if (AllowLocalSysop()) {
           wfc_cls();
-          WStatus *pStatus = GetStatusManager()->GetStatus();
-          char szSysopLogFileName[ MAX_PATH ];
-          GetSysopLogFileName(date(), szSysopLogFileName);
-          print_local_file(szSysopLogFileName, pStatus->GetLogFileName());
-          delete pStatus;
+          unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
+          const string sysop_log_file = GetSysopLogFileName(date());
+          print_local_file(sysop_log_file.c_str(), pStatus->GetLogFileName());
         }
         break;
       // Read User Mail
@@ -505,11 +504,9 @@ int WApplication::doWFCEvents() {
       case 'Y':
         if (AllowLocalSysop()) {
           wfc_cls();
-          WStatus *pStatus = GetStatusManager()->GetStatus();
-          char szSysopLogFileName[ MAX_PATH ];
-          GetSysopLogFileName(date(), szSysopLogFileName);
-          print_local_file(pStatus->GetLogFileName(), szSysopLogFileName);
-          delete pStatus;
+          unique_ptr<WStatus> pStatus(GetStatusManager()->GetStatus());
+          const string sysop_log_file = GetSysopLogFileName(date());
+          print_local_file(pStatus->GetLogFileName(), sysop_log_file.c_str());
         }
         break;
       // Print Activity (Z) Log

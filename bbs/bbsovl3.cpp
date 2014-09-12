@@ -19,9 +19,6 @@
 
 #include "wwiv.h"
 
-int pd_getkey();
-
-
 // The final character of an ansi sequence
 #define OB ('[')
 #define O ('O')
@@ -34,15 +31,12 @@ int pd_getkey();
 #define A_INSERT ('r')
 #define A_DELETE ('s')
 
-
-int pd_getkey() {
+static int pd_getkey() {
   g_flags |= g_flag_allow_extended;
   int x = getkey();
   g_flags &= ~g_flag_allow_extended;
-
   return x;
 }
-
 
 int get_kb_event(int nNumLockMode) {
   int key = 0;
@@ -209,8 +203,6 @@ int get_kb_event(int nNumLockMode) {
   return 0;                                 // must have hung up
 }
 
-
-
 // Like onek but does not put cursor down a line
 // One key, no carriage return
 char onek_ncr(const char *pszAllowableChars) {
@@ -225,7 +217,6 @@ char onek_ncr(const char *pszAllowableChars) {
   bputch(ch);
   return ch;
 }
-
 
 bool do_sysop_command(int nCommandID) {
   unsigned int nKeyStroke = 0;
@@ -291,9 +282,6 @@ bool do_sysop_command(int nCommandID) {
   return bNeedToRedraw;
 }
 
-
-
-
 /**
  * copyfile - Copies a file from one location to another
  *
@@ -304,7 +292,7 @@ bool do_sysop_command(int nCommandID) {
  * @return - false on failure, true on success
  *
  */
-bool copyfile(const std::string sourceFileName, const std::string destFileName, bool stats) {
+bool copyfile(const std::string& sourceFileName, const std::string& destFileName, bool stats) {
   if (stats) {
     GetSession()->bout << "|#7File movement ";
   }
@@ -319,7 +307,6 @@ bool copyfile(const std::string sourceFileName, const std::string destFileName, 
   return false;
 }
 
-
 /**
  * movefile - Moves a file from one location to another
  *
@@ -330,7 +317,7 @@ bool copyfile(const std::string sourceFileName, const std::string destFileName, 
  * @return - false on failure, true on success
  *
  */
-bool movefile(const std::string sourceFileName, const std::string destFileName, bool stats) {
+bool movefile(const std::string& sourceFileName, const std::string& destFileName, bool stats) {
   if (sourceFileName != destFileName && WFile::Exists(sourceFileName)) {
     bool bCanUseRename = false;
 
@@ -354,7 +341,6 @@ bool movefile(const std::string sourceFileName, const std::string destFileName, 
   return bCopyFileResult;
 }
 
-
 void ListAllColors() {
   GetSession()->bout.NewLine();
   for (int i = 0; i < 128; i++) {
@@ -367,4 +353,3 @@ void ListAllColors() {
   GetSession()->bout.Color(0);
   GetSession()->bout.NewLine();
 }
-
