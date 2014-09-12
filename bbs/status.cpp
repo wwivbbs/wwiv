@@ -210,10 +210,10 @@ WStatus* StatusMgr::GetStatus() {
 }
 
 void StatusMgr::AbortTransaction(WStatus* pStatus) {
+  unique_ptr<WStatus> deleter(pStatus);
   if (m_statusFile.IsOpen()) {
     m_statusFile.Close();
   }
-  delete pStatus;
 }
 
 WStatus* StatusMgr::BeginTransaction() {
@@ -222,7 +222,7 @@ WStatus* StatusMgr::BeginTransaction() {
 }
 
 bool StatusMgr::CommitTransaction(WStatus* pStatus) {
-  unique_ptr<WStatus>(pStatus);
+  unique_ptr<WStatus> deleter(pStatus);
   return this->Write(pStatus->m_pStatusRecord);
 }
 
