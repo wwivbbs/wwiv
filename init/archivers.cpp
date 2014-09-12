@@ -26,8 +26,10 @@
 #include <direct.h>
 #include <io.h>
 #endif
+#include <memory>
 #include <string>
 #include <sys/stat.h>
+#include <vector>
 
 #include "ifcns.h"
 #include "init.h"
@@ -35,153 +37,51 @@
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "bbs/wconstants.h" // for MAX_ARCHIVERS
+#include "initlib/input.h"
+#include "initlib/listbox.h"
 #include "utility.h"
 #include "wwivinit.h"
 
+using std::string;
+using std::unique_ptr;
+using std::vector;
 using wwiv::strings::StringPrintf;
 
-void edit_arc(CursesWindow* window, int nn) {
-  arcrec arc[MAX_ARCS];
+static void edit_arc(int arc_number, arcrec* a) {
+  out->Cls(ACS_CKBOARD);
+  const string title = StringPrintf("Archiver #%d  %s", arc_number,
+                                    ((arc_number == 1) ? "(Default)" : ""));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, 16, 74));
 
-  int i = nn;
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%sarchiver.dat", syscfg.datadir);
-  int hFile = _open(szFileName, O_RDWR | O_BINARY);
-  if (hFile < 0) {
-    create_arcs(window);
-    hFile = _open(szFileName, O_RDWR | O_BINARY);
-  }
+  static const int COL1_POSITION = 23;
+  int y=1;
+  window->PutsXY(2, y++, "Archiver Name      :");
+  window->PutsXY(2, y++, "Archiver Extension :");
+  window->PutsXY(2, y++, "List Archive       :");
+  window->PutsXY(2, y++, "Extract Archive    :");
+  window->PutsXY(2, y++, "Add to Archive     :");
+  window->PutsXY(2, y++, "Delete from Archive:");
+  window->PutsXY(2, y++, "Comment Archive    :");
+  window->PutsXY(2, y++, "Test Archive       :");
+  
+  y++;
+  window->PutsXY(6, y++, "%1 %2 etc. are parameters passed.  Minimum of two on Add and");
+  window->PutsXY(6, y++, "Extract command lines. For added security, a complete path to");
+  window->PutsXY(6, y++, "the archiver and extension should be used. i.e.:");
+  window->PutsXY(6, y++, "c:\\bin\\arcs\\zip.exe -a %1 %2");
 
-  _read(hFile, &arc, MAX_ARCS * sizeof(arcrec));
-
-  // display arcs and edit menu, get choice
-
-  bool done1 = false;
-  do {
-    int cp = 4;
-    done1 = false;
-    out->Cls();
-    window->SetColor(SchemeId::PROMPT);
-    window->Printf("                 Archiver Configuration\n\n");
-    window->SetColor(SchemeId::NORMAL);
-    if (i == 0) {
-      window->Printf("Archiver #%d  ", i + 1);
-      window->SetColor(SchemeId::PROMPT);
-      window->Printf("(Default)\n\n");
-    } else {
-      window->Printf("Archiver #%d           \n\n", i + 1);
-    }
-    window->SetColor(SchemeId::NORMAL);
-    window->Printf("Archiver Name      : %s\n", arc[i].name);
-    window->Printf("Archiver Extension : %s\n", arc[i].extension);
-    window->Printf("List Archive       : %s\n", arc[i].arcl);
-    window->Printf("Extract Archive    : %s\n", arc[i].arce);
-    window->Printf("Add to Archive     : %s\n", arc[i].arca);
-    window->Printf("Delete from Archive: %s\n", arc[i].arcd);
-    window->Printf("Comment Archive    : %s\n", arc[i].arck);
-    window->Printf("Test Archive       : %s\n", arc[i].arct);
-    window->GotoXY(0, 13);
-    window->Printf("                                                             \n");
-    window->SetColor(SchemeId::NORMAL);
-    window->Printf("[ = Previous Archiver  ] = Next Archiver\n");
-    window->SetColor(SchemeId::NORMAL);
-    window->Printf("                                                             \n");
-    window->Printf("                                                             \n");
-    window->SetColor(SchemeId::PROMPT);
-    window->Puts("<ENTER> to edit    <ESC> when done.");
-    window->SetColor(SchemeId::NORMAL);
-    nlx();
-    char ch = onek(window, "\033[]\r");
-    switch (ch) {
-    case '\r': {
-      window->GotoXY(0, 13);
-      window->Printf("                                                             \n");
-      window->Printf("%%1 %%2 etc. are parameters passed.  Minimum of two on Add and \n");
-      window->Printf("Extract command lines. For added security, a complete path to\n");
-      window->Printf("the archiver and extension should be used. i.e.:             \n");
-      window->Printf("c:\\bin\\arcs\\zip.exe -a %%1 %%2                              \n");
-      window->Printf("                                                             \n");
-      window->SetColor(SchemeId::PROMPT);
-      window->Printf("<ESC> when done\n");
-      window->SetColor(SchemeId::NORMAL);
-      bool done = false;
-      do {
-        int i1 = 0;
-        window->GotoXY(21, cp);
-        switch (cp) {
-        case 4:
-          editline(window, arc[i].name, 31, ALL, &i1, "");
-          StringTrimEnd(arc[i].name);
-          break;
-        case 5:
-          editline(window, arc[i].extension, 3, UPPER_ONLY, &i1, "");
-          StringTrimEnd(arc[i].extension);
-          break;
-        case 6:
-          editline(window, arc[i].arcl, 49, ALL, &i1, "");
-          StringTrimEnd(arc[i].arcl);
-          break;
-        case 7:
-          editline(window, arc[i].arce, 49, ALL, &i1, "");
-          StringTrimEnd(arc[i].arce);
-          break;
-        case 8:
-          editline(window, arc[i].arca, 49, ALL, &i1, "");
-          StringTrimEnd(arc[i].arca);
-          break;
-        case 9:
-          editline(window, arc[i].arcd, 49, ALL, &i1, "");
-          StringTrimEnd(arc[i].arcd);
-          break;
-        case 10:
-          editline(window, arc[i].arck, 49, ALL, &i1, "");
-          StringTrimEnd(arc[i].arck);
-          break;
-        case 11:
-          editline(window, arc[i].arct, 49, ALL, &i1, "");
-          StringTrimEnd(arc[i].arct);
-          break;
-        }
-        cp = GetNextSelectionPosition(4, 11, cp, i1);
-        if (i1 == DONE) {
-          done = true;
-        }
-      } while (!done);
-    }
-    break;
-    case '\033': {
-      done1 = true;
-    }
-    break;
-    case ']':
-      i++;
-      if (i > MAX_ARCS - 1) {
-        i = 0;
-      }
-      break;
-    case '[':
-      i--;
-      if (i < 0) {
-        i = MAX_ARCS - 1;
-      }
-      break;
-    }
-  } while (!done1);
-
-  // copy first four new fomat archivers to oldarcsrec
-
-  for (int j = 0; j < 4; j++) {
-    strncpy(syscfg.arcs[j].extension, arc[j].extension, 4);
-    strncpy(syscfg.arcs[j].arca     , arc[j].arca     , 32);
-    strncpy(syscfg.arcs[j].arce     , arc[j].arce     , 32);
-    strncpy(syscfg.arcs[j].arcl     , arc[j].arcl     , 32);
-  }
-
-  // seek to beginning of file, write arcrecs, close file
-
-  _lseek(hFile, 0L, SEEK_SET);
-  _write(hFile, arc, MAX_ARCS * sizeof(arcrec));
-  _close(hFile);
+  EditItems items{
+    new StringEditItem<char*>(COL1_POSITION, 1, 31, a->name, false),
+    new StringEditItem<char*>(COL1_POSITION, 2, 3, a->extension, true),
+    new CommandLineItem(COL1_POSITION, 3, 49, a->arcl),
+    new CommandLineItem(COL1_POSITION, 4, 49, a->arce),
+    new CommandLineItem(COL1_POSITION, 5, 49, a->arca),
+    new CommandLineItem(COL1_POSITION, 6, 49, a->arcd),
+    new CommandLineItem(COL1_POSITION, 7, 49, a->arck),
+    new CommandLineItem(COL1_POSITION, 8, 49, a->arct),
+  };
+  items.set_curses_io(out, window.get());
+  items.Run();
 }
 
 void create_arcs(CursesWindow* window) {
@@ -247,6 +147,56 @@ void create_arcs(CursesWindow* window) {
     messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", szFileName));
     exit_init(1);
   }
+  _write(hFile, arc, MAX_ARCS * sizeof(arcrec));
+  _close(hFile);
+}
+
+void edit_archivers() {
+  arcrec arc[MAX_ARCS];
+
+  char szFileName[MAX_PATH];
+  sprintf(szFileName, "%sarchiver.dat", syscfg.datadir);
+  int hFile = open(szFileName, O_RDWR | O_BINARY);
+  if (hFile < 0) {
+    create_arcs(out->window());
+    hFile = open(szFileName, O_RDWR | O_BINARY);
+  }
+  read(hFile, &arc, MAX_ARCS * sizeof(arcrec));
+  
+  bool done = false;
+  do {
+    out->Cls(ACS_CKBOARD);
+    vector<ListBoxItem> items;
+    for (int i = 0; i < MAX_ARCS; i++) {
+      items.emplace_back(StringPrintf("[%s] %s", arc[i].extension, arc[i].name));
+    }
+    CursesWindow* window = out->window();
+    ListBox list(out, window, "Select Archiver",
+        static_cast<int>(floor(window->GetMaxX() * 0.8)), 
+        std::min<int>(10, static_cast<int>(floor(window->GetMaxY() * 0.8))),
+        items, out->color_scheme());
+
+    list.selection_returns_hotkey(true);
+    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"} });
+    ListBoxResult result = list.Run();
+    if (result.type == ListBoxResultType::HOTKEY) {
+    } else if (result.type == ListBoxResultType::SELECTION) {
+      edit_arc(result.selected + 1, &arc[result.selected]);
+    } else if (result.type == ListBoxResultType::NO_SELECTION) {
+      done = true;
+    }
+  } while (!done);
+
+  // copy first four new fomat archivers to oldarcsrec
+  for (int j = 0; j < 4; j++) {
+    strncpy(syscfg.arcs[j].extension, arc[j].extension, 4);
+    strncpy(syscfg.arcs[j].arca     , arc[j].arca     , 32);
+    strncpy(syscfg.arcs[j].arce     , arc[j].arce     , 32);
+    strncpy(syscfg.arcs[j].arcl     , arc[j].arcl     , 32);
+  }
+
+  // seek to beginning of file, write arcrecs, close file
+  _lseek(hFile, 0L, SEEK_SET);
   _write(hFile, arc, MAX_ARCS * sizeof(arcrec));
   _close(hFile);
 }
