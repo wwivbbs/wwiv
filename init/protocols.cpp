@@ -149,7 +149,7 @@ static void edit_prot(CursesWindow* window, int n) {
         strcpy(c.sendfn, c.receivefn);
       }
       if (c.sendbatchfn[0] == 0) {
-        strcpy(c.sendbatchfn, c.receivefn);
+        strcpy(c.sendbatchfn, c.sendfn);
       }
       if (c.receivebatchfn[0] == 0) {
         strcpy(c.receivebatchfn, c.receivefn);
