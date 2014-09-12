@@ -39,6 +39,7 @@ static const int COL1_POSITION = 17;
 static const int COL2_POSITION = 50;
 static const int COL1_LINE = 2;
 
+using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::strings::StringPrintf;
@@ -52,7 +53,7 @@ static void show_user(EditItems* items, userrec* user) {
 
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   for (int i=1; i<13; i++) {
-    std::string blank(24, ' ');
+    string blank(24, ' ');
     items->window()->PutsXY(COL2_POSITION, i, blank.c_str());
   }
   if (user->inact & inact_deleted) {
@@ -89,8 +90,6 @@ static vector<HelpItem> create_extra_help_items() {
 }
 
 static const int JumpToUser(CursesIO* io, CursesWindow* window) {
-  vector<ListBoxItem> items;
-
   WFile file(syscfg.datadir, "names.lst");
   int num_reconds = file.GetLength() / sizeof(smalrec);
   if (!file.Open(WFile::modeReadOnly | WFile::modeBinary, WFile::shareDenyWrite)) {
@@ -98,6 +97,7 @@ static const int JumpToUser(CursesIO* io, CursesWindow* window) {
     return -1;
   }
 
+  vector<ListBoxItem> items;
   for (int i = 0; i < num_reconds; i++) {
     smalrec name;
     int bytes_read = file.Read(&name, sizeof(smalrec));
@@ -152,19 +152,15 @@ void user_editor() {
   read_user(current_usernum, &user);
 
   auto user_name_field = new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, user.name, true);
-  user_name_field->set_displayfn([&]() -> std::string {
-    char name[81];
-    sprintf(name, "%s #%d", user.name, current_usernum);
-    return std::string(name);
+  user_name_field->set_displayfn([&]() -> string {
+    return StringPrintf("%s #%d", user.name, current_usernum);
   });
 
   auto birthday_field = new CustomEditItem(COL1_POSITION, 9, 10, 
-      [&user]() -> std::string { 
-        char birthday[81];
-        sprintf(birthday, "%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
-        return std::string(birthday);
+      [&user]() -> string { 
+        return StringPrintf("%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
       },
-      [&user](const std::string& s) {
+      [&user](const string& s) {
         if (s[2] != '/' || s[5] != '/') {
           return;
         }

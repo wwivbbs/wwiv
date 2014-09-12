@@ -114,32 +114,27 @@ void write_user(unsigned int un, userrec *u) {
 }
 
 void save_status() {
-  char szFileName[MAX_PATH];
-
-  sprintf(szFileName, "%sstatus.dat", syscfg.datadir);
-  int statusfile = open(szFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  write(statusfile, &status, sizeof(statusrec));
-  close(statusfile);
+  WFile file(syscfg.datadir, "status.dat");
+  if (file.Open(WFile::modeBinary|WFile::modeReadWrite|WFile::modeCreateFile)) {
+    file.Write(&status, sizeof(statusrec));
+  }
 }
 
 /** returns true if status.dat is read correctly */
 bool read_status() {
-  char szFileName[81];
-
-  sprintf(szFileName, "%sstatus.dat", syscfg.datadir);
-  int statusfile = open(szFileName, O_RDWR | O_BINARY);
-  if (statusfile >= 0) {
-    read(statusfile, &status, sizeof(statusrec));
-    close(statusfile);
+  WFile file(syscfg.datadir, "status.dat");
+  if (file.Open(WFile::modeBinary|WFile::modeReadWrite)) {
+    file.Read(&status, sizeof(statusrec));
     return true;
   }
   return false;
 }
 
 void save_config() {
-  int configfile = open("config.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-  write(configfile, &syscfg, sizeof(configrec));
-  close(configfile);
+  WFile file("config.dat");
+  if (file.Open(WFile::modeBinary|WFile::modeReadWrite|WFile::modeCreateFile)) {
+    file.Write(&syscfg, sizeof(configrec));
+  }
 }
 
 void exit_init(int level) {
