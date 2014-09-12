@@ -92,7 +92,7 @@ void kill_old_email() {
         GetSession()->bout << "|#1Sent|#7: |#" << GetSession()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
           WFile fileAttach(syscfg.datadir, ATTACH_DAT);
-          if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareUnknown, WFile::permReadWrite)) {
+          if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly)) {
             bool found = false;
             long l1 = fileAttach.Read(&fsr, sizeof(fsr));
             while (l1 > 0 && !found) {

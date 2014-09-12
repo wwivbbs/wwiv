@@ -121,8 +121,7 @@ void move_file() {
         u.daten = static_cast<unsigned long>(time(NULL));
       }
       --nCurrentPos;
-      fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                        WFile::permReadWrite);
+      fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
       for (int i1 = nCurRecNum; i1 < GetSession()->numf; i1++) {
         FileAreaSetRecord(fileDownload, i1 + 1);
         fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -143,8 +142,7 @@ void move_file() {
 
       sprintf(s2, "%s%s", directories[d1].path, u.filename);
       dliscan1(d1);
-      fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                        WFile::permReadWrite);
+      fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
       for (int i = GetSession()->numf; i >= 1; i--) {
         FileAreaSetRecord(fileDownload, i);
         fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -226,8 +224,7 @@ void quicksort(int l, int r, int type) {
   int i = l;
   int j = r;
   WFile fileDownload(g_szDownloadFileName);
-  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                    WFile::permReadWrite);
+  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
 
   FileAreaSetRecord(fileDownload, ((l + r) / 2));
   fileDownload.Read(&x, sizeof(uploadsrec));
@@ -396,8 +393,7 @@ void rename_file() {
     } else {
       u.mask &= ~mask_extended;
     }
-    fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                      WFile::permReadWrite);
+    fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
     FileAreaSetRecord(fileDownload, nRecNum);
     fileDownload.Write(&u, sizeof(uploadsrec));
     fileDownload.Close();
@@ -474,8 +470,7 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
     time_t tCurrentTime = time(NULL);
     u.daten = static_cast<unsigned long>(tCurrentTime);
     WFile fileDownload(g_szDownloadFileName);
-    fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                      WFile::permReadWrite);
+    fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
     for (int i = GetSession()->numf; i >= 1; i--) {
       FileAreaSetRecord(fileDownload, i);
       fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -625,8 +620,7 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
         if (ok1) {
           if (last_fn[0] && ext && *ext) {
             WFile fileDownload(g_szDownloadFileName);
-            fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                              WFile::permReadWrite);
+            fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
             FileAreaSetRecord(fileDownload, 1);
             fileDownload.Read(&u, sizeof(uploadsrec));
             if (wwiv::strings::IsEquals(last_fn, u.filename)) {
@@ -660,8 +654,7 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
     file.Close();
     if (ok && last_fn[0] && ext && *ext) {
       WFile fileDownload(g_szDownloadFileName);
-      fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                        WFile::permReadWrite);
+      fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
       FileAreaSetRecord(fileDownload, 1);
       fileDownload.Read(&u, sizeof(uploadsrec));
       if (wwiv::strings::IsEquals(last_fn, u.filename)) {
@@ -971,8 +964,7 @@ void modify_database(const char *pszFileName, bool add) {
   }
 
   WFile fileAllow(syscfg.datadir, ALLOW_DAT);
-  if (!fileAllow.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                      WFile::permReadWrite)) {
+  if (!fileAllow.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
     return;
   }
 

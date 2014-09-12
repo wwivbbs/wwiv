@@ -135,8 +135,7 @@ void grab_quotes(messagerec * m, const char *aux) {
       quotes_nrm_l = lMessageLength;
 
       WFile quotesTextFile(szQuotesTextFileName);
-      if (quotesTextFile.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyNone,
-                              WFile::permReadWrite)) {
+      if (quotesTextFile.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyNone)) {
         quotesTextFile.Write(ss, lMessageLength);
         quotesTextFile.Close();
       }
@@ -303,8 +302,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
   WFile fileInputMsg(syscfgovr.tempdir, INPUT_MSG);
   fileInputMsg.Delete();
   if (!hangup) {
-    fileInputMsg.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                      WFile::permReadWrite);
+    fileInputMsg.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
     fileInputMsg.Seek(0L, WFile::seekEnd);
     while (*p != '\r') {
       ++p;

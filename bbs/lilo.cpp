@@ -638,16 +638,14 @@ static void UpdateLastOnFileAndUserLog() {
 
     if (GetSession()->GetEffectiveSl() != 255) {
       WFile userLog(syscfg.gfilesdir, USER_LOG);
-      if (userLog.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                       WFile::shareUnknown, WFile::permReadWrite)) {
+      if (userLog.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
         userLog.Seek(0L, WFile::seekEnd);
         userLog.Write(szLogLine, strlen(szLogLine));
         userLog.Close();
       }
       WFile lastonFile(szLastOnTxtFileName);
       if (lastonFile.Open(WFile::modeReadWrite | WFile::modeBinary |
-                          WFile::modeCreateFile | WFile::modeTruncate,
-                          WFile::shareUnknown, WFile::permReadWrite)) {
+                          WFile::modeCreateFile | WFile::modeTruncate)) {
         if (ss != NULL) {
           // Need to ensure ss is not null here
           pos = 0;
@@ -1098,8 +1096,7 @@ void logoff() {
   }
   if (smwcheck) {
     WFile smwFile(syscfg.datadir, SMW_DAT);
-    if (smwFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                     WFile::permReadWrite)) {
+    if (smwFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
       int t = static_cast<int>(smwFile.GetLength() / sizeof(shortmsgrec));
       int r = 0;
       int w = 0;

@@ -55,8 +55,7 @@ bool open_sub(bool wr) {
 
   if (wr) {
     fileSub.SetName(subdat_fn);
-    fileSub.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                 WFile::permReadWrite);
+    fileSub.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
     if (fileSub.IsOpen()) {
       // re-read info from file, to be safe
       believe_cache = false;

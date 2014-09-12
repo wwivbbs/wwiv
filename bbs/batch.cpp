@@ -42,7 +42,6 @@ void    uploaded(char *pszFileName, long lCharsPerSecond);
 void    handle_dszline(char *l);
 double  ratio1(long a);
 void  make_ul_batch_list(char *pszListFileName);
-void  make_dl_batch_list(char *pszListFileName);
 void  run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, const char *dl, bool bHangupAfterDl);
 void  ProcessDSZLogFile();
 void  dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription);
@@ -114,8 +113,7 @@ void downloaded(char *pszFileName, long lCharsPerSecond) {
       int nRecNum = recno(batch[i1].filename);
       if (nRecNum > 0) {
         WFile file(g_szDownloadFileName);
-        file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                  WFile::shareUnknown, WFile::permReadWrite);
+        file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
         FileAreaSetRecord(file, nRecNum);
         file.Read(&u, sizeof(uploadsrec));
         GetSession()->GetCurrentUser()->SetFilesDownloaded(GetSession()->GetCurrentUser()->GetFilesDownloaded() + 1);
@@ -160,14 +158,14 @@ void didnt_upload(int nBatchIndex) {
   int nRecNum = recno(batch[nBatchIndex].filename);
   if (nRecNum > 0) {
     WFile file(g_szDownloadFileName);
-    file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareDenyNone, WFile::permReadWrite);
+    file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareDenyNone);
     do {
       FileAreaSetRecord(file, nRecNum);
       file.Read(&u, sizeof(uploadsrec));
       if (u.numbytes != 0) {
         file.Close();
         nRecNum = nrecno(batch[ nBatchIndex ].filename, nRecNum);
-        file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareDenyNone, WFile::permReadWrite);
+        file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareDenyNone);
       }
     } while (nRecNum != -1 && u.numbytes != 0);
 
@@ -205,8 +203,7 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
       int nRecNum = recno(batch[i1].filename);
       if (nRecNum > 0) {
         WFile downFile(g_szDownloadFileName);
-        downFile.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                      WFile::permReadWrite);
+        downFile.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
         do {
           FileAreaSetRecord(downFile, nRecNum);
           downFile.Read(&u, sizeof(uploadsrec));
@@ -259,8 +256,7 @@ void uploaded(char *pszFileName, long lCharsPerSecond) {
               pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
               GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
               WFile fileDn(g_szDownloadFileName);
-              fileDn.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                          WFile::permReadWrite);
+              fileDn.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
               FileAreaSetRecord(fileDn, nRecNum);
               fileDn.Write(&u, sizeof(uploadsrec));
               fileDn.Close();
@@ -332,7 +328,7 @@ void zmbatchdl(bool bHangupAfterDl) {
         sprintf(szMessage, "Files left - %d, Time left - %s\r\n", GetSession()->numbatchdl, ctim(batchtime));
         GetSession()->localIO()->LocalPuts(szMessage);
         WFile file(g_szDownloadFileName);
-        file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
+        file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
@@ -411,7 +407,7 @@ void ymbatchdl(bool bHangupAfterDl) {
         sprintf(szMessage, "Files left - %d, Time left - %s\r\n", GetSession()->numbatchdl, ctim(batchtime));
         GetSession()->localIO()->LocalPuts(szMessage);
         WFile file(g_szDownloadFileName);
-        file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
+        file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
@@ -512,12 +508,11 @@ void make_ul_batch_list(char *pszListFileName) {
   sprintf(pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir().c_str(), FILESUL_NOEXT,
           GetApplication()->GetInstanceNumber());
 
-  WFile::SetFilePermissions(pszListFileName, WFile::permWrite);
+  WFile::SetFilePermissions(pszListFileName, WFile::permReadWrite);
   WFile::Remove(pszListFileName);
 
   WFile fileList(pszListFileName);
-  if (!fileList.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite,
-                     WFile::shareUnknown, WFile::permReadWrite)) {
+  if (!fileList.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite)) {
     pszListFileName[0] = '\0';
     return;
   }
@@ -534,16 +529,15 @@ void make_ul_batch_list(char *pszListFileName) {
   fileList.Close();
 }
 
-void make_dl_batch_list(char *pszListFileName) {
+static void make_dl_batch_list(char *pszListFileName) {
   sprintf(pszListFileName, "%s%s.%3.3u", GetApplication()->GetHomeDir().c_str(), FILESDL_NOEXT,
           GetApplication()->GetInstanceNumber());
 
-  WFile::SetFilePermissions(pszListFileName, WFile::permWrite);
+  WFile::SetFilePermissions(pszListFileName, WFile::permReadWrite);
   WFile::Remove(pszListFileName);
 
   WFile fileList(pszListFileName);
-  if (!fileList.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite,
-                     WFile::shareUnknown, WFile::permReadWrite)) {
+  if (!fileList.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite)) {
     pszListFileName[0] = '\0';
     return;
   }
@@ -621,7 +615,7 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
             modem_speed, dl, commandLine.c_str());
     GetSession()->localIO()->LocalPuts(szMessage);
     if (incom) {
-      WFile::SetFilePermissions(g_szDSZLogFileName, WFile::permWrite);
+      WFile::SetFilePermissions(g_szDSZLogFileName, WFile::permReadWrite);
       WFile::Remove(g_szDSZLogFileName);
       chdir(syscfgovr.batchdir);
       ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
@@ -640,11 +634,11 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
     }
   }
   if (downlist[0]) {
-    WFile::SetFilePermissions(downlist, WFile::permWrite);
+    WFile::SetFilePermissions(downlist, WFile::permReadWrite);
     WFile::Remove(downlist);
   }
   if (uplist[0 ]) {
-    WFile::SetFilePermissions(uplist, WFile::permWrite);
+    WFile::SetFilePermissions(uplist, WFile::permReadWrite);
     WFile::Remove(uplist);
   }
 }

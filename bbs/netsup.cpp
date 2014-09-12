@@ -906,8 +906,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
       char szPacketFileName[ MAX_PATH ];
       sprintf(szPacketFileName, "%sp1%s", net_networks[nNetNumber].dir, GetApplication()->GetNetworkExtension());
       WFile packetFile(szPacketFileName);
-      if (packetFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                          WFile::permReadWrite)) {
+      if (packetFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
         packetFile.Seek(0L, WFile::seekEnd);
         if (!pList) {
           nh->list_len = 0;

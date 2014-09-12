@@ -150,8 +150,7 @@ WFile * OpenMessageFile(const std::string messageAreaFileName) {
   WFile *pFileMessage = new WFile(sstream.str());
   if (!pFileMessage->Open(WFile::modeReadWrite | WFile::modeBinary)) {
     // Create message area file if it doesn't exist.
-    pFileMessage->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                       WFile::permReadWrite);
+    pFileMessage->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
     for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
       gat[i] = 0;
     }
@@ -327,8 +326,7 @@ void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
   }
 
   WFile fileOut(syscfgovr.tempdir, INPUT_MSG);
-  fileOut.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-               WFile::permReadWrite);
+  fileOut.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
   fileOut.Write(b, lOrigSize);
   fileOut.Close();
   free(b);
@@ -449,13 +447,13 @@ WFile *OpenEmailFile(bool bAllowWrite) {
   if (!file->Exists()) {
     // if it does not exist, try to create it via the open call
     // sf bug 1215434
-    file->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
+    file->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
     return file;
   }
 
   for (int nAttempNum = 0; nAttempNum < NUM_ATTEMPTS_TO_OPEN_EMAIL; nAttempNum++) {
     if (bAllowWrite) {
-      file->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
+      file->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
     } else {
       file->Open(WFile::modeBinary | WFile::modeReadOnly);
     }
@@ -578,8 +576,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
         sprintf(szNetFileName, "%sp0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
       }
       WFile fileNetworkPacket(szNetFileName);
-      fileNetworkPacket.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                             WFile::permReadWrite);
+      fileNetworkPacket.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
       fileNetworkPacket.Seek(0L, WFile::seekEnd);
       fileNetworkPacket.Write(&nh, sizeof(net_header_rec));
       fileNetworkPacket.Write(b1, nh.length);

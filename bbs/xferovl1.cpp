@@ -70,8 +70,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
       sprintf(s, "%sEXTENDED.DSC", syscfgovr.tempdir);
       if (*sss) {
         WFile fileExtDesc(s);
-        fileExtDesc.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                         WFile::permReadWrite);
+        fileExtDesc.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
         fileExtDesc.Write(*sss, strlen(*sss));
         fileExtDesc.Close();
         free(*sss);
@@ -327,8 +326,7 @@ int read_idz(int mode, int tempdir) {
                                     directories[udir[tempdir].subnum].name,
                                     udir[tempdir].keys);
   WFile fileDownload(g_szDownloadFileName);
-  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                    WFile::permReadWrite);
+  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
   for (i = 1; (i <= GetSession()->numf) && (!hangup) && !abort; i++) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1194,8 +1192,7 @@ void removefilesnotthere(int dn, int *autodel) {
           delete_extended_description(u.filename);
         }
         sysoplogf("-%s Removed from %s", u.filename, directories[dn].name);
-        fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                          WFile::permReadWrite);
+        fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
         for (int i1 = i; i1 < GetSession()->numf; i1++) {
           FileAreaSetRecord(fileDownload, i1 + 1);
           fileDownload.Read(&u, sizeof(uploadsrec));

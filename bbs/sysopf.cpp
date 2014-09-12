@@ -696,7 +696,7 @@ void mailr() {
           GetSession()->bout << "|#1Subj|#7: |#" << GetSession()->GetMessageColor() << m.title << wwiv::endl;
           if (m.status & status_file) {
             WFile attachDat(syscfg.datadir, ATTACH_DAT);
-            if (attachDat.Open(WFile::modeReadOnly | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite)) {
+            if (attachDat.Open(WFile::modeReadOnly | WFile::modeBinary)) {
               bool found = false;
               long lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
               while (lAttachFileSize > 0 && !found) {
@@ -937,8 +937,7 @@ void beginday(bool displayStatus) {
   WFile fileZLog(syscfg.datadir, ZLOG_DAT);
   zlogrec z1;
   if (!fileZLog.Open(WFile::modeReadWrite | WFile::modeBinary)) {
-    fileZLog.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone,
-                  WFile::permReadWrite);
+    fileZLog.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone);
     z1.date[0]  = '\0';
     z1.active   = 0;
     z1.calls    = 0;

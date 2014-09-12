@@ -385,8 +385,7 @@ int try_to_ul_wh(char *pszFileName) {
   time(&tCurrentDate);
   u.daten = static_cast<unsigned long>(tCurrentDate);
   WFile fileDownload(g_szDownloadFileName);
-  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                    WFile::permReadWrite);
+  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
   for (i = GetSession()->numf; i >= 1; i--) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u1, sizeof(uploadsrec));

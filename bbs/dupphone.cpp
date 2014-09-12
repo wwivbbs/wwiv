@@ -26,8 +26,7 @@ void add_phone_number(int usernum, const char *phone) {
   }
 
   WFile phoneFile(syscfg.datadir, PHONENUM_DAT);
-  if (!phoneFile.Open(WFile::modeReadWrite | WFile::modeAppend | WFile::modeBinary | WFile::modeCreateFile,
-                      WFile::shareUnknown, WFile::permReadWrite)) {
+  if (!phoneFile.Open(WFile::modeReadWrite | WFile::modeAppend | WFile::modeBinary | WFile::modeCreateFile)) {
     return;
   }
 
@@ -66,8 +65,7 @@ void delete_phone_number(int usernum, const char *phone) {
     }
     --nNumRecords;
     phoneFile.Delete();
-    phoneFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                   WFile::permReadWrite);
+    phoneFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
     phoneFile.Write(p, static_cast<long>(nNumRecords * sizeof(phonerec)));
     phoneFile.Close();
   }

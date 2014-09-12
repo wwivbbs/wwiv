@@ -56,7 +56,7 @@ static void fix_user_rec(userrec *u) {
 int number_userrecs() {
   WFile file(syscfg.datadir, "user.lst");
   if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                WFile::shareDenyReadWrite, WFile::permReadWrite)) {
+                WFile::shareDenyReadWrite)) {
     return static_cast<int>(file.GetLength() / sizeof(userrec)) - 1;
   }
   return -1;
@@ -64,8 +64,7 @@ int number_userrecs() {
 
 void read_user(unsigned int un, userrec *u) {
   WFile file(syscfg.datadir, "user.lst");
-  if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyReadWrite,
-                 WFile::permReadWrite)) {
+  if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyReadWrite)) {
     u->inact = inact_deleted;
     fix_user_rec(u);
     return;
@@ -92,8 +91,7 @@ void write_user(unsigned int un, userrec *u) {
   }
 
   WFile file(syscfg.datadir, "user.lst");
-  if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                WFile::permReadWrite)) {
+  if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
     long pos = un * syscfg.userreclen;
     file.Seek(pos, WFile::seekBegin);
     file.Write(u, syscfg.userreclen);
@@ -107,8 +105,7 @@ void write_user(unsigned int un, userrec *u) {
   SecondUserRec.cMenuType = 0;
 
   WFile userdat(syscfg.datadir, "user.dat");
-  if (userdat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone,
-                   WFile::permReadWrite)) {
+  if (userdat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone)) {
     userdat.Seek(un * sizeof(user_config), WFile::seekBegin);
     userdat.Write(&SecondUserRec, sizeof(user_config));
     userdat.Close();

@@ -47,8 +47,6 @@ const int WFile::shareDenyWrite     = SH_DENYWR;
 const int WFile::shareDenyRead      = SH_DENYRD;
 const int WFile::shareDenyNone      = SH_DENYNO;
 
-const int WFile::permWrite          = _S_IWRITE;
-const int WFile::permRead           = _S_IREAD;
 const int WFile::permReadWrite      = (_S_IREAD | _S_IWRITE);
 
 const char WFile::pathSeparatorChar = '\\';

@@ -136,7 +136,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 
   if (!quit && !hangup) {
     WFile file(szFileName);
-    file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
+    file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
     file.Seek(0L, WFile::seekEnd);
     file.Write(b, len);
     file.Close();
@@ -372,8 +372,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
       if (s3[0] && !hangup) {
         if (s3[0] != '\x01') {
           WFile file(s3);
-          if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                         WFile::permReadWrite)) {
+          if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
             GetSession()->bout << "|#6Could not open file for writing.\r\n";
           } else {
             if (file.GetLength() > 0) {
@@ -433,8 +432,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
 
     if (s1[0] && !hangup) {
       WFile file(s2);
-      if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                     WFile::permReadWrite)) {
+      if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
         GetSession()->bout << "|#6Could not open file for writing.\r\n";
       } else {
         if (file.GetLength() > 0) {

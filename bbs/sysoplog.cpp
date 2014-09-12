@@ -66,8 +66,7 @@ void catsl() {
 
     char* pLogBuffer = static_cast<char *>(BbsAllocA(CAT_BUFSIZE));
     if (pLogBuffer) {
-      if (wholeLogFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                            WFile::permReadWrite)) {
+      if (wholeLogFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
         wholeLogFile.Seek(0, WFile::seekBegin);
         wholeLogFile.Seek(0, WFile::seekEnd);
 
@@ -115,8 +114,7 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text) {
   switch (cmd) {
   case LOG_STRING: {  // Write line to sysop's log
     WFile logFile(s_szLogFileName);
-    if (!logFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                      WFile::permReadWrite)) {
+    if (!logFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
       return;
     }
     if (logFile.GetLength()) {
@@ -137,8 +135,7 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text) {
   break;
   case LOG_CHAR: {
     WFile logFile(s_szLogFileName);
-    if (!logFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                      WFile::permReadWrite)) {
+    if (!logFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
       // sysop log ?
       return;
     }
