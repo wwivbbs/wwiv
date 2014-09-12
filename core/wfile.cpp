@@ -112,12 +112,12 @@ WFile::WFile() {
   init();
 }
 
-WFile::WFile(const std::string fileName) {
+WFile::WFile(const std::string& fileName) {
   init();
   this->SetName(fileName);
 }
 
-WFile::WFile(const std::string dirName, const std::string fileName) {
+WFile::WFile(const std::string& dirName, const std::string& fileName) {
   init();
   this->SetName(dirName, fileName);
 }
@@ -201,15 +201,15 @@ void WFile::Close() {
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
-bool WFile::SetName(const std::string fileName) {
+bool WFile::SetName(const std::string& fileName) {
   full_path_name_ = fileName;
   return true;
 }
 
-bool WFile::SetName(const std::string dirName, const std::string fileName) {
+bool WFile::SetName(const std::string& dirName, const std::string& fileName) {
   std::stringstream fullPathName;
   fullPathName << dirName;
-  if (!dirName.empty() && dirName[ dirName.length() - 1 ] == pathSeparatorChar) {
+  if (!dirName.empty() && dirName[dirName.length() - 1] == pathSeparatorChar) {
     fullPathName << fileName;
   } else {
     fullPathName << pathSeparatorChar << fileName;
@@ -250,7 +250,7 @@ bool WFile::Delete() {
   if (this->IsOpen()) {
     this->Close();
   }
-  return (unlink(full_path_name_.c_str()) == 0) ? true : false;
+  return unlink(full_path_name_.c_str()) == 0;
 }
 
 void WFile::SetLength(long lNewLength) {
