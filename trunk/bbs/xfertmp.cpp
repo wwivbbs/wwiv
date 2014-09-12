@@ -366,7 +366,7 @@ static bool check_for_files(const char *pszFileName) {
     ss++;
     for (const auto& t : arc_t) {
       if (wwiv::strings::IsEqualsIgnoreCase(ss, t.arc_name)) {
-        return t.func(pszFileName);
+        return t.func(pszFileName) == 0;
       }
     }
   } else {
