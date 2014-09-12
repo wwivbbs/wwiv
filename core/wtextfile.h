@@ -26,9 +26,9 @@
 
 class WTextFile {
 public:
-  WTextFile(const std::string file_name, const std::string file_mode);
-  WTextFile(const std::string directory_name, const std::string file_name, const std::string file_mode);
-  bool Open(const std::string file_name, const std::string file_mode);
+  WTextFile(const std::string& file_name, const std::string& file_mode);
+  WTextFile(const std::string& directory_name, const std::string& file_name, const std::string& file_mode);
+  bool Open(const std::string& file_name, const std::string& file_mode);
   bool Close();
 
   bool IsOpen() const { return file_ != nullptr; }

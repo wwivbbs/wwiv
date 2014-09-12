@@ -44,11 +44,11 @@
 const int WTextFile::WAIT_TIME = 10;
 const int WTextFile::TRIES = 100;
 
-WTextFile::WTextFile(const std::string fileName, const std::string fileMode) {
+WTextFile::WTextFile(const std::string& fileName, const std::string& fileMode) {
   Open(fileName, fileMode);
 }
 
-WTextFile::WTextFile(const std::string directoryName, const std::string fileName, const std::string fileMode) {
+WTextFile::WTextFile(const std::string& directoryName, const std::string& fileName, const std::string& fileMode) {
   std::string fullPathName(directoryName);
   char last_char = directoryName.back();
   if (last_char != WFile::pathSeparatorChar) {
@@ -59,7 +59,7 @@ WTextFile::WTextFile(const std::string directoryName, const std::string fileName
   Open(fullPathName, fileMode);
 }
 
-bool WTextFile::Open(const std::string file_name, const std::string file_mode) {
+bool WTextFile::Open(const std::string& file_name, const std::string& file_mode) {
   file_name_ = file_name;
   file_mode_ = file_mode;
   file_ = WTextFile::OpenImpl();
@@ -67,7 +67,6 @@ bool WTextFile::Open(const std::string file_name, const std::string file_mode) {
 }
 
 #ifdef _WIN32
-
 FILE* WTextFile::OpenImpl() {
   int share = SH_DENYWR;
   int md = 0;
@@ -125,7 +124,6 @@ FILE* WTextFile::OpenImpl() {
   }
   return f;
 }
-
 #endif  // _WIN32
 
 bool WTextFile::Close() {
@@ -144,7 +142,6 @@ int WTextFile::WriteLine(const std::string text) {
   num_written += 2;
   return num_written;
 }
-
 
 int WTextFile::WriteFormatted(const char *pszFormatText, ...) {
   va_list ap;

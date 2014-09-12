@@ -91,8 +91,8 @@ IniFile::~IniFile() { open_ = false; }
 /* Close is now a NOP */
 void IniFile::Close() {}
 
-const char* IniFile::GetValue(const char *key, const char *default_value)  const {
-  const string primary_key = primary_ + "." + key;
+const char* IniFile::GetValue(const std::string& key, const char *default_value)  const {
+  const string primary_key = StrCat(primary_, ".", key);
   {
     const auto& it = data_.find(primary_key);
     if (it != data_.end()) {
@@ -110,8 +110,8 @@ const char* IniFile::GetValue(const char *key, const char *default_value)  const
   return default_value;
 }
 
-const bool IniFile::GetBooleanValue(const char *pszKey, bool defaultValue)  const {
-  const char *s = GetValue(pszKey);
+const bool IniFile::GetBooleanValue(const std::string& key, bool defaultValue)  const {
+  const char *s = GetValue(key);
   return (s != nullptr) ? IniFile::StringToBoolean(s) : defaultValue;
 }
 
@@ -124,7 +124,7 @@ bool IniFile::StringToBoolean(const char *p) {
   return (ch == 'Y' || ch == 'T' || ch == '1');
 }
 
-const long IniFile::GetNumericValue(const char *key, int default_value) const {
+const long IniFile::GetNumericValue(const std::string& key, int default_value) const {
   const char *s = GetValue(key);
   return (s != nullptr) ? atoi(s) : default_value;
 }

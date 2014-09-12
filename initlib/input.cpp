@@ -49,9 +49,6 @@
 #define ALL                 4
 #define SET                   8
 
-// local functions.
-void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength);
-
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -170,12 +167,80 @@ bool dialog_yn(CursesWindow* window, const vector<string>& text) {
 
 }
 
-bool dialog_yn(CursesWindow* window, const string text) {
+bool dialog_yn(CursesWindow* window, const string& text) {
   const vector<string> text_vector = { text };
   return dialog_yn(window, text_vector);
 }
 
-void input_password(CursesWindow* window, const string prompt, const vector<string>& text, char *output, int max_length) {
+static void winput_password(CursesWindow* dialog, string *output, int nMaxLength) {
+  dialog->SetColor(SchemeId::DIALOG_PROMPT);
+
+  int curpos = 0;
+  string s;
+  output->clear();
+  for (;;) {
+    int ch = dialog->GetChar();
+    switch (ch) {
+    case 14:
+    case 13: // 13 on Win32
+    case 10: // 10 on unix
+    case KEY_ENTER:
+#ifdef PADENTER
+    case PADENTER:
+#endif
+      s[curpos] = '\0';
+      output->assign(s);
+      return;
+    case 23: // Ctrl-W
+      if (curpos) {
+        do {
+          curpos--;
+          dialog->AddStr("\b \b");
+          if (s[curpos] == 26) {
+            dialog->AddStr("\b \b");
+          }
+        } while (curpos && (s[curpos - 1] != 32));
+      }
+      break;
+    case 26:  // control Z
+      break;
+    case 27:  { // escape
+      s.clear();
+      output->assign(s);
+      return;
+    };
+    case 8:
+    case 0x7f: // some other backspace
+    case KEY_BACKSPACE:
+      if (curpos) {
+        curpos--;
+        dialog->AddStr("\b \b");
+        if (s[curpos] == 26) {
+          dialog->AddStr("\b \b");
+        }
+      }
+      break;
+    case 21: // control U
+    case 24: // control X
+      while (curpos) {
+        curpos--;
+        dialog->AddStr("\b \b");
+        if (s[curpos] == 26) {
+         dialog->AddStr("\b \b");
+        }
+      }
+      break;
+    default:
+      if (ch > 31 && curpos < nMaxLength) {
+        s[curpos++] = toupper(ch);
+        dialog->AddCh(ACS_DIAMOND);
+      }
+      break;
+    }
+  }
+}
+
+void input_password(CursesWindow* window, const string& prompt, const vector<string>& text, string *output, int max_length) {
   int maxlen = prompt.size() + max_length;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
@@ -193,7 +258,7 @@ void input_password(CursesWindow* window, const string prompt, const vector<stri
   winput_password(dialog.get(), output, max_length);
 }
 
-int messagebox(CursesWindow* window, const string text) {
+int messagebox(CursesWindow* window, const string& text) {
   const vector<string> vector = { text };
   return messagebox(window, vector);
 }
@@ -232,7 +297,7 @@ int input_number(CursesWindow* window, int max_digits) {
   }
 }
 
-int dialog_input_number(CursesWindow* window, const string prompt, int min_value, int max_value) {
+int dialog_input_number(CursesWindow* window, const string& prompt, int min_value, int max_value) {
   int num_digits = max_value > 0 ? static_cast<int>(floor(log10(max_value))) + 1 : 1;
   unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, 3, prompt.size() + 4 + num_digits));
   dialog->PutsXY(2, 2, prompt);
@@ -252,76 +317,6 @@ int dialog_input_number(CursesWindow* window, const string prompt, int min_value
   }
 }
 
-/* This will input a line of data, maximum nMaxLength characters long, terminated
-* by a C/R.  if (bAllowLowerCase) is true lowercase is allowed, otherwise all
-* characters are converted to uppercase.
-*/
-void winput_password(CursesWindow* dialog, char *pszOutText, int nMaxLength) {
-  dialog->SetColor(SchemeId::DIALOG_PROMPT);
-
-  int curpos = 0;
-
-  for (;;) {
-    int ch = dialog->GetChar();
-    switch (ch) {
-    case 14:
-    case 13: // 13 on Win32
-    case 10: // 10 on unix
-    case KEY_ENTER:
-#ifdef PADENTER
-    case PADENTER:
-#endif
-      pszOutText[curpos] = '\0';
-      return;
-    case 23: // Ctrl-W
-      if (curpos) {
-        do {
-          curpos--;
-          dialog->AddStr("\b \b");
-          if (pszOutText[curpos] == 26) {
-            dialog->AddStr("\b \b");
-          }
-        } while (curpos && (pszOutText[curpos - 1] != 32));
-      }
-      break;
-    case 26:  // control Z
-      break;
-    case 27:  { // escape
-      pszOutText[0] = '\0';
-      return;
-    };
-    case 8:
-    case 0x7f: // some other backspace
-    case KEY_BACKSPACE:
-      if (curpos) {
-        curpos--;
-        dialog->AddStr("\b \b");
-        if (pszOutText[curpos] == 26) {
-          dialog->AddStr("\b \b");
-        }
-      }
-      break;
-    case 21: // control U
-    case 24: // control X
-      while (curpos) {
-        curpos--;
-       dialog->AddStr("\b \b");
-        if (pszOutText[curpos] == 26) {
-         dialog->AddStr("\b \b");
-        }
-      }
-      break;
-    default:
-      if (ch > 31 && curpos < nMaxLength) {
-        ch = toupper(ch);
-        pszOutText[curpos++] = ch;
-        dialog->AddCh(ACS_DIAMOND);
-      }
-      break;
-    }
-  }
-}
-
 char onek(CursesWindow* window, const char *pszKeys) {
   char ch = 0;
 
@@ -330,7 +325,7 @@ char onek(CursesWindow* window, const char *pszKeys) {
   return ch;
 }
 
-static int background_character = 32;;
+static const int background_character = 32;;
 
 static int editlinestrlen(char *pszText) {
   int i = strlen(pszText);
@@ -519,7 +514,7 @@ void editline(CursesWindow* window, char *s, int len, int status, int *returncod
   sprintf(szFinishedString, "%-255s", s);
   szFinishedString[ len ] = '\0';
   window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-  window->PutsXY(cx, cy, szFinishedString);
+  window->PrintfXY(cx, cy, szFinishedString);
   window->GotoXY(cx, cy);
 }
 
