@@ -44,7 +44,7 @@ using std::string;
 using wwiv::core::FilePath;
 using wwiv::core::IniFile;
 
-static const int COL1_POSITION = 21;
+static const int COL1_POSITION = 24;
 static const int PROMPT_LINE = 6;
 
 #if __unix__
@@ -152,30 +152,30 @@ void instance_editor() {
   int num_instances = number_instances();
   out->Cls();
 
+  out->Cls(ACS_CKBOARD);
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Temporary Directory Configuration", 4, 76));
+
   int current_instance = 1;
   read_instance(current_instance, &instance);
 
-  out->window()->SetColor(SchemeId::NORMAL);
-  out->window()->GotoXY(0, 1);
-  out->window()->Printf("Temporary Directory: %s\n", instance.tempdir);
-  out->window()->Printf("Batch Directory    : %s\n", instance.batchdir);
+  window->PrintfXY(2, 1, "Temporary Directory :");
+  window->PrintfXY(2, 2, "Batch Directory     :");
 
   EditItems items{
     new StringEditItem<char*>(COL1_POSITION, 1, 50, instance.tempdir, FILENAME_UPPERCASE),
     new StringEditItem<char*>(COL1_POSITION, 2, 50, instance.batchdir, FILENAME_UPPERCASE),
   };
-  items.set_curses_io(out, out->window());
+  items.set_curses_io(out, window.get());
   vector<HelpItem> help_items = { { "A", "Add" } };
   items.set_navigation_extra_help_items(help_items);
   show_instance(&items);
 
   for (;;)  {
-    out->window()->PutsXY(0, PROMPT_LINE, "Command: ");
-    char ch = onek(out->window(), "\033AQ[]{}\r");
+    char ch = onek(window.get(), "\033AQ[]{}\r");
     switch (ch) {
     case '\r': {
       items.Run();
-      if (dialog_yn(out->window(), "Save Instance?")) {
+      if (dialog_yn(window.get(), "Save Instance?")) {
         write_instance(current_instance, &instance);
       }
     } break;
