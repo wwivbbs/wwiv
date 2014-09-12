@@ -39,51 +39,51 @@ static void up_str(char *s, int cursl, int an) {
   strcpy(s, (syscfg.sl[cursl].ability & an) ? "Y" : "N");
 }
 
-static void pr_st(int cursl, int ln, int an) {
+static void pr_st(CursesWindow* window, int cursl, int ln, int an) {
   char s[81];
 
   up_str(s, cursl, an);
-  out->window()->GotoXY(19, ln);
-  out->window()->Puts(s);
+  window->GotoXY(19, ln);
+  window->Puts(s);
 }
 
-static void up_sl(int cursl) {
+static void up_sl(CursesWindow* window, int cursl) {
   slrec ss = syscfg.sl[cursl];
-  out->window()->GotoXY(19, 0);
-  out->window()->Printf("%-3u", cursl);
-  out->window()->GotoXY(19, 1);
-  out->window()->Printf("%-5u", ss.time_per_day);
-  out->window()->GotoXY(19, 2);
-  out->window()->Printf("%-5u", ss.time_per_logon);
-  out->window()->GotoXY(19, 3);
-  out->window()->Printf("%-5u", ss.messages_read);
-  out->window()->GotoXY(19, 4);
-  out->window()->Printf("%-3u", ss.emails);
-  out->window()->GotoXY(19, 5);
-  out->window()->Printf("%-3u", ss.posts);
-  pr_st(cursl, 6, ability_post_anony);
-  pr_st(cursl, 7, ability_email_anony);
-  pr_st(cursl, 8, ability_read_post_anony);
-  pr_st(cursl, 9, ability_read_email_anony);
-  pr_st(cursl, 10, ability_limited_cosysop);
-  pr_st(cursl, 11, ability_cosysop);
+  window->GotoXY(19, 0);
+  window->Printf("%-3u", cursl);
+  window->GotoXY(19, 1);
+  window->Printf("%-5u", ss.time_per_day);
+  window->GotoXY(19, 2);
+  window->Printf("%-5u", ss.time_per_logon);
+  window->GotoXY(19, 3);
+  window->Printf("%-5u", ss.messages_read);
+  window->GotoXY(19, 4);
+  window->Printf("%-3u", ss.emails);
+  window->GotoXY(19, 5);
+  window->Printf("%-3u", ss.posts);
+  pr_st(window, cursl, 6, ability_post_anony);
+  pr_st(window, cursl, 7, ability_email_anony);
+  pr_st(window, cursl, 8, ability_read_post_anony);
+  pr_st(window, cursl, 9, ability_read_email_anony);
+  pr_st(window, cursl, 10, ability_limited_cosysop);
+  pr_st(window, cursl, 11, ability_cosysop);
 }
 
-static void ed_slx(int *sln) {
+static void ed_slx(CursesWindow* window, int *sln) {
   int i;
   char s[81];
 
   int cursl = *sln;
-  up_sl(cursl);
+  up_sl(window, cursl);
   bool done = false;
   int cp = 0;
   do {
     int i1 = 0;
-    out->window()->GotoXY(19, cp);
+    window->GotoXY(19, cp);
     switch (cp) {
     case 0:
       sprintf(s, "%d", cursl);
-      editline(out->window(), s, 3, NUM_ONLY, &i1, "");
+      editline(window, s, 3, NUM_ONLY, &i1, "");
       i = atoi(s);
       while (i < 0) {
         i += 255;
@@ -93,109 +93,109 @@ static void ed_slx(int *sln) {
       }
       if (i != cursl) {
         cursl = i;
-        up_sl(cursl);
+        up_sl(window, cursl);
       }
       break;
     case 1:
       sprintf(s, "%u", syscfg.sl[cursl].time_per_day);
-      editline(out->window(), s, 5, NUM_ONLY, &i1, "");
+      editline(window, s, 5, NUM_ONLY, &i1, "");
       i = atoi(s);
       syscfg.sl[cursl].time_per_day = i;
-      out->window()->Printf("%-5u", i);
+      window->Printf("%-5u", i);
       break;
     case 2:
       sprintf(s, "%u", syscfg.sl[cursl].time_per_logon);
-      editline(out->window(), s, 5, NUM_ONLY, &i1, "");
+      editline(window, s, 5, NUM_ONLY, &i1, "");
       i = atoi(s);
       syscfg.sl[cursl].time_per_logon = i;
-      out->window()->Printf("%-5u", i);
+      window->Printf("%-5u", i);
       break;
     case 3:
       sprintf(s, "%u", syscfg.sl[cursl].messages_read);
-      editline(out->window(), s, 5, NUM_ONLY, &i1, "");
+      editline(window, s, 5, NUM_ONLY, &i1, "");
       i = atoi(s);
       syscfg.sl[cursl].messages_read = i;
-      out->window()->Printf("%-5u", i);
+      window->Printf("%-5u", i);
       break;
     case 4:
       sprintf(s, "%u", syscfg.sl[cursl].emails);
-      editline(out->window(), s, 3, NUM_ONLY, &i1, "");
+      editline(window, s, 3, NUM_ONLY, &i1, "");
       i = atoi(s);
       syscfg.sl[cursl].emails = i;
-      out->window()->Printf("%-3u", i);
+      window->Printf("%-3u", i);
       break;
     case 5:
       sprintf(s, "%u", syscfg.sl[cursl].posts);
-      editline(out->window(), s, 3, NUM_ONLY, &i1, "");
+      editline(window, s, 3, NUM_ONLY, &i1, "");
       i = atoi(s);
       syscfg.sl[cursl].posts = i;
-      out->window()->Printf("%-3u", i);
+      window->Printf("%-3u", i);
       break;
     case 6:
       i = ability_post_anony;
       up_str(s, cursl, i);
-      editline(out->window(), s, 1, UPPER_ONLY, &i1, "");
+      editline(window, s, 1, UPPER_ONLY, &i1, "");
       if (s[0] == 'Y') {
         syscfg.sl[cursl].ability |= i;
       } else {
         syscfg.sl[cursl].ability &= (~i);
       }
-      pr_st(cursl, cp, i);
+      pr_st(window, cursl, cp, i);
       break;
     case 7:
       i = ability_email_anony;
       up_str(s, cursl, i);
-      editline(out->window(), s, 1, UPPER_ONLY, &i1, "");
+      editline(window, s, 1, UPPER_ONLY, &i1, "");
       if (s[0] == 'Y') {
         syscfg.sl[cursl].ability |= i;
       } else {
         syscfg.sl[cursl].ability &= (~i);
       }
-      pr_st(cursl, cp, i);
+      pr_st(window, cursl, cp, i);
       break;
     case 8:
       i = ability_read_post_anony;
       up_str(s, cursl, i);
-      editline(out->window(), s, 1, UPPER_ONLY, &i1, "");
+      editline(window, s, 1, UPPER_ONLY, &i1, "");
       if (s[0] == 'Y') {
         syscfg.sl[cursl].ability |= i;
       } else {
         syscfg.sl[cursl].ability &= (~i);
       }
-      pr_st(cursl, cp, i);
+      pr_st(window, cursl, cp, i);
       break;
     case 9:
       i = ability_read_email_anony;
       up_str(s, cursl, i);
-      editline(out->window(), s, 1, UPPER_ONLY, &i1, "");
+      editline(window, s, 1, UPPER_ONLY, &i1, "");
       if (s[0] == 'Y') {
         syscfg.sl[cursl].ability |= i;
       } else {
         syscfg.sl[cursl].ability &= (~i);
       }
-      pr_st(cursl, cp, i);
+      pr_st(window, cursl, cp, i);
       break;
     case 10:
       i = ability_limited_cosysop;
       up_str(s, cursl, i);
-      editline(out->window(), s, 1, UPPER_ONLY, &i1, "");
+      editline(window, s, 1, UPPER_ONLY, &i1, "");
       if (s[0] == 'Y') {
         syscfg.sl[cursl].ability |= i;
       } else {
         syscfg.sl[cursl].ability &= (~i);
       }
-      pr_st(cursl, cp, i);
+      pr_st(window, cursl, cp, i);
       break;
     case 11:
       i = ability_cosysop;
       up_str(s, cursl, i);
-      editline(out->window(), s, 1, UPPER_ONLY, &i1, "");
+      editline(window, s, 1, UPPER_ONLY, &i1, "");
       if (s[0] == 'Y') {
         syscfg.sl[cursl].ability |= i;
       } else {
         syscfg.sl[cursl].ability &= (~i);
       }
-      pr_st(cursl, cp, i);
+      pr_st(window, cursl, cp, i);
       break;
     }
     cp = GetNextSelectionPosition(0, 11, cp, i1);
@@ -208,53 +208,54 @@ static void ed_slx(int *sln) {
 
 void sec_levs() {
   out->Cls();
-  out->window()->SetColor(SchemeId::NORMAL);
-  out->window()->Printf("Security level   : \n");
-  out->window()->Printf("Time per day     : \n");
-  out->window()->Printf("Time per logon   : \n");
-  out->window()->Printf("Messages read    : \n");
-  out->window()->Printf("Emails per day   : \n");
-  out->window()->Printf("Posts per day    : \n");
-  out->window()->Printf("Post anony       : \n");
-  out->window()->Printf("Email anony      : \n");
-  out->window()->Printf("Read anony posts : \n");
-  out->window()->Printf("Read anony email : \n");
-  out->window()->Printf("Limited co-sysop : \n");
-  out->window()->Printf("Co-sysop         : \n");
+  CursesWindow* window(out->window());
+  window->SetColor(SchemeId::NORMAL);
+  window->Printf("Security level   : \n");
+  window->Printf("Time per day     : \n");
+  window->Printf("Time per logon   : \n");
+  window->Printf("Messages read    : \n");
+  window->Printf("Emails per day   : \n");
+  window->Printf("Posts per day    : \n");
+  window->Printf("Post anony       : \n");
+  window->Printf("Email anony      : \n");
+  window->Printf("Read anony posts : \n");
+  window->Printf("Read anony email : \n");
+  window->Printf("Limited co-sysop : \n");
+  window->Printf("Co-sysop         : \n");
   int cursl = 10;
-  up_sl(cursl);
+  up_sl(window, cursl);
   bool done = false;
-  out->window()->GotoXY(0, 12);
-  out->window()->SetColor(SchemeId::PROMPT);
-  out->window()->Puts("\n<ESC> to exit\n");
-  out->window()->SetColor(SchemeId::NORMAL);
-  out->window()->Printf("[ = down one SL    ] = up one SL\n");
-  out->window()->Printf("{ = down 10 SL     } = up 10 SL\n");
-  out->window()->Printf("<C/R> = edit SL data\n");
-  out->window()->SetColor(SchemeId::NORMAL);
+  window->GotoXY(0, 12);
+  window->SetColor(SchemeId::PROMPT);
+  window->Puts("\n<ESC> to exit\n");
+  window->SetColor(SchemeId::NORMAL);
+  window->Printf("[ = down one SL    ] = up one SL\n");
+  window->Printf("{ = down 10 SL     } = up 10 SL\n");
+  window->Printf("<C/R> = edit SL data\n");
+  window->SetColor(SchemeId::NORMAL);
   do {
-    out->window()->GotoXY(0, 18);
-    out->window()->Puts("Command: ");
-    char ch = onek(out->window(), "\033[]{}\r");
+    window->GotoXY(0, 18);
+    window->Puts("Command: ");
+    char ch = onek(window, "\033[]{}\r");
     switch (ch) {
     case '\r':
-      out->window()->GotoXY(0, 12);
-      out->window()->SetColor(SchemeId::PROMPT);
-      out->window()->Puts("\n<ESC> to exit\n");
-      out->window()->SetColor(SchemeId::NORMAL);
-      out->window()->Printf("                                \n");
-      out->window()->Printf("                               \n");
-      out->window()->Printf("                    \n");
-      out->window()->Puts("\n          \n");
-      ed_slx(&cursl);
-      out->window()->GotoXY(0, 12);
-      out->window()->SetColor(SchemeId::PROMPT);
-      out->window()->Puts("\n<ESC> to exit\n");
-      out->window()->SetColor(SchemeId::NORMAL);
-      out->window()->Printf("[ = down one SL    ] = up one SL\n");
-      out->window()->Printf("{ = down 10 SL     } = up 10 SL\n");
-      out->window()->Printf("<C/R> = edit SL data\n");
-      out->window()->SetColor(SchemeId::NORMAL);
+      window->GotoXY(0, 12);
+      window->SetColor(SchemeId::PROMPT);
+      window->Puts("\n<ESC> to exit\n");
+      window->SetColor(SchemeId::NORMAL);
+      window->Printf("                                \n");
+      window->Printf("                               \n");
+      window->Printf("                    \n");
+      window->Puts("\n          \n");
+      ed_slx(window, &cursl);
+      window->GotoXY(0, 12);
+      window->SetColor(SchemeId::PROMPT);
+      window->Puts("\n<ESC> to exit\n");
+      window->SetColor(SchemeId::NORMAL);
+      window->Printf("[ = down one SL    ] = up one SL\n");
+      window->Printf("{ = down 10 SL     } = up 10 SL\n");
+      window->Printf("<C/R> = edit SL data\n");
+      window->SetColor(SchemeId::NORMAL);
       break;
     case '\033':
       done = true;
@@ -267,7 +268,7 @@ void sec_levs() {
       if (cursl < 0) {
         cursl += 256;
       }
-      up_sl(cursl);
+      up_sl(window, cursl);
       break;
     case '[':
       cursl -= 1;
@@ -277,7 +278,7 @@ void sec_levs() {
       if (cursl < 0) {
         cursl += 256;
       }
-      up_sl(cursl);
+      up_sl(window, cursl);
       break;
     case '}':
       cursl += 10;
@@ -287,7 +288,7 @@ void sec_levs() {
       if (cursl < 0) {
         cursl += 256;
       }
-      up_sl(cursl);
+      up_sl(window, cursl);
       break;
     case '{':
       cursl -= 10;
@@ -297,7 +298,7 @@ void sec_levs() {
       if (cursl < 0) {
         cursl += 256;
       }
-      up_sl(cursl);
+      up_sl(window, cursl);
       break;
     }
   } while (!done);
@@ -310,8 +311,9 @@ static void list_autoval() {
   valrec v;
 
   out->Cls();
-  out->window()->Printf("NUM  SL   DSL  AR                DAR               RESTRICTIONS\n");
-  out->window()->Printf("---  ---  ---  ----------------  ----------------  ----------------\n");
+  CursesWindow* window(out->window());
+  window->Printf("NUM  SL   DSL  AR                DAR               RESTRICTIONS\n");
+  window->Printf("---  ---  ---  ----------------  ----------------  ----------------\n");
   strcpy(s3, restrict_string);
   for (int i1 = 0; i1 < 10; i1++) {
     v = syscfg.autoval[i1];
@@ -336,12 +338,12 @@ static void list_autoval() {
     ar[16] = 0;
     dar[16] = 0;
 
-    out->window()->Printf("%3d  %3d  %3d  %16s  %16s  %16s\n", i1 + 1, v.sl, v.dsl, ar, dar, r);
+    window->Printf("%3d  %3d  %3d  %16s  %16s  %16s\n", i1 + 1, v.sl, v.dsl, ar, dar, r);
   }
   nlx(2);
 }
 
-static void edit_autoval(int n) {
+static void edit_autoval(CursesWindow* window, int n) {
   char s[81], ar[20], dar[20], r[20];
   int i, cp;
   valrec v;
@@ -369,43 +371,43 @@ static void edit_autoval(int n) {
   ar[16] = 0;
   dar[16] = 0;
   out->Cls();
-  out->window()->Printf("Auto-validation data for: Alt-F%d\n\n", n + 1);
-  out->window()->Printf("SL           : %d\n", v.sl);
-  out->window()->Printf("DSL          : %d\n", v.dsl);
-  out->window()->Printf("AR           : %s\n", ar);
-  out->window()->Printf("DAR          : %s\n", dar);
-  out->window()->Printf("Restrictions : %s\n", r);
-  out->window()->SetColor(SchemeId::PROMPT);
-  out->window()->Puts("\n\n<ESC> to exit\n");
-  out->window()->SetColor(SchemeId::NORMAL);
+  window->Printf("Auto-validation data for: Alt-F%d\n\n", n + 1);
+  window->Printf("SL           : %d\n", v.sl);
+  window->Printf("DSL          : %d\n", v.dsl);
+  window->Printf("AR           : %s\n", ar);
+  window->Printf("DAR          : %s\n", dar);
+  window->Printf("Restrictions : %s\n", r);
+  window->SetColor(SchemeId::PROMPT);
+  window->Puts("\n\n<ESC> to exit\n");
+  window->SetColor(SchemeId::NORMAL);
   bool done = false;
   cp = 0;
   do {
     int i1 = 0;
-    out->window()->GotoXY(15, cp + 2);
+    window->GotoXY(15, cp + 2);
     switch (cp) {
     case 0:
       sprintf(s, "%u", v.sl);
-      editline(out->window(), s, 3, NUM_ONLY, &i1, "");
+      editline(window, s, 3, NUM_ONLY, &i1, "");
       i = atoi(s);
       if ((i < 0) || (i > 254)) {
         i = 10;
       }
       v.sl = i;
-      out->window()->Printf("%-3d", i);
+      window->Printf("%-3d", i);
       break;
     case 1:
       sprintf(s, "%u", v.dsl);
-      editline(out->window(), s, 3, NUM_ONLY, &i1, "");
+      editline(window, s, 3, NUM_ONLY, &i1, "");
       i = atoi(s);
       if ((i < 0) || (i > 254)) {
         i = 0;
       }
       v.dsl = i;
-      out->window()->Printf("%-3d", i);
+      window->Printf("%-3d", i);
       break;
     case 2:
-      editline(out->window(), ar, 16, SET, &i1, "ABCDEFGHIJKLMNOP");
+      editline(window, ar, 16, SET, &i1, "ABCDEFGHIJKLMNOP");
       v.ar = 0;
       for (i = 0; i < 16; i++) {
         if (ar[i] != 32) {
@@ -414,7 +416,7 @@ static void edit_autoval(int n) {
       }
       break;
     case 3:
-      editline(out->window(), dar, 16, SET, &i1, "ABCDEFGHIJKLMNOP");
+      editline(window, dar, 16, SET, &i1, "ABCDEFGHIJKLMNOP");
       v.dar = 0;
       for (i = 0; i < 16; i++) {
         if (dar[i] != 32) {
@@ -423,7 +425,7 @@ static void edit_autoval(int n) {
       }
       break;
     case 4:
-      editline(out->window(), r, 16, SET, &i1, restrict_string);
+      editline(window, r, 16, SET, &i1, restrict_string);
       v.restrict = 0;
       for (i = 0; i < 16; i++) {
         if (r[i] != 32) {
@@ -442,19 +444,20 @@ static void edit_autoval(int n) {
 
 void autoval_levs() {
   bool done = false;
+  CursesWindow* window(out->window());
   do {
     list_autoval();
-    out->window()->SetColor(SchemeId::PROMPT);
-    out->window()->Puts("Which (0-9, Q=Quit) ? ");
-    out->window()->SetColor(SchemeId::NORMAL);
-    char ch = onek(out->window(), "Q0123456789\033");
+    window->SetColor(SchemeId::PROMPT);
+    window->Puts("Which (0-9, Q=Quit) ? ");
+    window->SetColor(SchemeId::NORMAL);
+    char ch = onek(window, "Q0123456789\033");
     if (ch == 'Q' || ch == '\033') {
       done = true;
     } else {
       if (ch == '0') {
-        edit_autoval(9);
+        edit_autoval(window, 9);
       } else {
-        edit_autoval(ch - '1');
+        edit_autoval(window, ch - '1');
       }
     }
   } while (!done);
