@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "archivers.h"
 
+#include <cmath>
 #include <curses.h>
 #include <cstdint>
 #include <cstring>
