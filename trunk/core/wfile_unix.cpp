@@ -40,8 +40,6 @@ const int WFile::shareDenyWrite     = 0;
 const int WFile::shareDenyRead      = S_IREAD;
 const int WFile::shareDenyNone      = 0;
 
-const int WFile::permWrite          = O_WRONLY;
-const int WFile::permRead           = O_RDONLY;
 const int WFile::permReadWrite      = O_RDWR;
 
 const char WFile::pathSeparatorChar = '/';

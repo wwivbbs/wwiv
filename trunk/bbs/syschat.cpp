@@ -618,8 +618,7 @@ void chat1(char *pszChatLine, bool two_way) {
     if (chat_file && !two_way) {
       if (!chatFile.IsOpen()) {
         GetSession()->localIO()->LocalFastPuts("-] Chat file opened.\r\n");
-        if (chatFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                          WFile::shareUnknown, WFile::permReadWrite)) {
+        if (chatFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
           chatFile.Seek(0L, WFile::seekEnd);
           sprintf(s2, "\r\n\r\nChat file opened %s %s\r\n", fulldate(), times());
           chatFile.Write(s2, strlen(s2));

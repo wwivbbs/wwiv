@@ -68,9 +68,6 @@ class WFile {
   static const int shareDenyRead;
   static const int shareDenyNone;
 
-  static const int permUnknown;
-  static const int permWrite;
-  static const int permRead;
   static const int permReadWrite;
 
   static const int seekBegin;
@@ -115,8 +112,7 @@ class WFile {
   virtual bool SetName(const std::string dirName, const std::string fileName);
 
   virtual bool Open(int nFileMode = WFile::modeDefault,
-                    int nShareMode = WFile::shareUnknown,
-                    int nPermissions = WFile::permUnknown);
+                    int nShareMode = WFile::shareUnknown);
 
   virtual void Close();
   virtual bool IsOpen() const {

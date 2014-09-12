@@ -419,8 +419,7 @@ void gfile_sec(int sn) {
           --nf;
           sprintf(szFileName, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
           WFile file(szFileName);
-          file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareUnknown,
-                    WFile::permReadWrite);
+          file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate);
           file.Write(g, nf * sizeof(gfilerec));
           file.Close();
           GetSession()->bout << "\r\nDeleted.\r\n\n";

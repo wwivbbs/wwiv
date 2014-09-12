@@ -273,8 +273,7 @@ void gfileedit() {
     }
   } while (!done && !hangup);
   WFile gfileDat(syscfg.datadir, GFILE_DAT);
-  gfileDat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate,
-                WFile::shareUnknown, WFile::permReadWrite);
+  gfileDat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate);
   gfileDat.Write(&gfilesec[0], GetSession()->num_sec * sizeof(gfiledirrec));
   gfileDat.Close();
 }
@@ -338,8 +337,7 @@ bool fill_sec(int sn) {
     char szFileName[ MAX_PATH ];
     sprintf(szFileName, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
     WFile gflFile(szFileName);
-    gflFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate,
-                 WFile::shareUnknown, WFile::permReadWrite);
+    gflFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));
     gflFile.Close();
     WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();

@@ -151,7 +151,7 @@ void extrn_editors() {
 
   WFile editors_dat(syscfg.datadir, "editors.dat");
   if (editors_dat.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate,
-    WFile::shareDenyReadWrite, WFile::permReadWrite)) {
+    WFile::shareDenyReadWrite)) {
     editors_dat.Write(editors.get(), initinfo.numeditors * sizeof(editorrec));
   }
   editors_dat.Close();

@@ -108,7 +108,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
               (bytes_to_k(u.numbytes)));
         }
         ++u.numdloads;
-        fileDownload.Open(WFile::modeBinary | WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
+        fileDownload.Open(WFile::modeBinary | WFile::modeReadWrite);
         FileAreaSetRecord(fileDownload, nRecordNumber);
         fileDownload.Write(&u, sizeof(uploadsrec));
         fileDownload.Close();

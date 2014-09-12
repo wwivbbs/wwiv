@@ -318,8 +318,7 @@ bool dcs() {
 void dliscan1(int nDirectoryNum) {
   sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, directories[nDirectoryNum].filename);
   WFile fileDownload(g_szDownloadFileName);
-  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                    WFile::permReadWrite);
+  fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
   int nNumRecords = fileDownload.GetLength() / sizeof(uploadsrec);
   uploadsrec u;
   if (nNumRecords == 0) {
@@ -397,9 +396,7 @@ void add_extended_description(const char *pszFileName, const char *pszDescriptio
   ed.len = static_cast<short>(wwiv::strings::GetStringLength(pszDescription));
 
   WFile file(g_szExtDescrFileName);
-  file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-            WFile::shareUnknown,
-            WFile::permReadWrite);
+  file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
   file.Seek(0L, WFile::seekEnd);
   file.Write(&ed, sizeof(ext_desc_type));
   file.Write(pszDescription, ed.len);
@@ -418,8 +415,7 @@ void delete_extended_description(const char *pszFileName) {
   }
 
   WFile fileExtDescr(g_szExtDescrFileName);
-  fileExtDescr.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                    WFile::permReadWrite);
+  fileExtDescr.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
   long lFileSize = fileExtDescr.GetLength();
   long r = 0, w = 0;
   while (r < lFileSize) {

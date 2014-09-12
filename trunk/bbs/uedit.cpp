@@ -61,7 +61,7 @@ void deluser(int nUserNumber) {
       delete pFileEmail;
     }
     WFile voteFile(syscfg.datadir, VOTING_DAT);
-    voteFile.Open(WFile::modeReadWrite | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite);
+    voteFile.Open(WFile::modeReadWrite | WFile::modeBinary);
     long nNumVoteRecords = static_cast<int>(voteFile.GetLength() / sizeof(votingrec)) - 1;
     for (long lCurVoteRecord = 0; lCurVoteRecord < 20; lCurVoteRecord++) {
       if (user.GetVote(lCurVoteRecord)) {

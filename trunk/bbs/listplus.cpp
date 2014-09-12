@@ -669,8 +669,7 @@ void write_config_listing(int config) {
   strcpy(config_listing.name, user.GetName());
 
   WFile fileUserConfig(syscfg.datadir, CONFIG_USR);
-  if (!fileUserConfig.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                           WFile::permReadWrite)) {
+  if (!fileUserConfig.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
     return;
   }
 
@@ -1577,8 +1576,7 @@ int rename_filename(const char *pszFileName, int dn) {
     } else {
       u.mask &= ~mask_extended;
     }
-    if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                          WFile::permReadWrite)) {
+    if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
       FileAreaSetRecord(fileDownload, i);
       fileDownload.Write(&u, sizeof(uploadsrec));
       fileDownload.Close();
@@ -1677,8 +1675,7 @@ int remove_filename(const char *pszFileName, int dn) {
         }
         sysoplogf("- \"%s\" removed off of %s", u.filename, directories[dn].name);
 
-        if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                              WFile::permReadWrite)) {
+        if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
           for (int i1 = i; i1 < GetSession()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);
             fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1817,8 +1814,7 @@ int move_filename(const char *pszFileName, int dn) {
         u.daten = static_cast<unsigned long>(time(NULL));
       }
       --cp;
-      if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                            WFile::permReadWrite)) {
+      if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
         for (int i2 = nRecNum; i2 < GetSession()->numf; i2++) {
           FileAreaSetRecord(fileDownload, i2 + 1);
           fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -1839,8 +1835,7 @@ int move_filename(const char *pszFileName, int dn) {
       }
       sprintf(szDestFileName, "%s%s", directories[nDestDirNum].path, u.filename);
       dliscan1(nDestDirNum);
-      if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                            WFile::permReadWrite)) {
+      if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
         for (int i = GetSession()->numf; i >= 1; i--) {
           FileAreaSetRecord(fileDownload, i);
           fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -2010,8 +2005,7 @@ void load_lp_config() {
 void save_lp_config() {
   if (lp_config_loaded) {
     WFile fileConfig(syscfg.datadir, LISTPLUS_CFG);
-    if (fileConfig.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite,
-                        WFile::shareUnknown, WFile::permReadWrite)) {
+    if (fileConfig.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite)) {
       fileConfig.Write(&lp_config, sizeof(struct listplus_config));
       fileConfig.Close();
     }

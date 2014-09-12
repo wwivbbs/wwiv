@@ -161,8 +161,7 @@ bool WUserManager::ReadUser(WUser *pUser, int nUserNumber, bool bForceRead) {
 
 bool WUserManager::WriteUserNoCache(WUser *pUser, int nUserNumber) {
   WFile userList(m_dataDirectory, USER_LST);
-  if (userList.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                    WFile::shareUnknown, WFile::permReadWrite)) {
+  if (userList.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
     long pos = static_cast<long>(m_nUserRecordLength) * static_cast<long>(nUserNumber);
     userList.Seek(pos, WFile::seekBegin);
     userList.Write(&pUser->data,  m_nUserRecordLength);

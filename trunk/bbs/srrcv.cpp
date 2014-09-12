@@ -152,8 +152,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   int  nConsecErrors = 0;
 
   WFile file(pszFileName);
-  if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                 WFile::permReadWrite)) {
+  if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
     GetSession()->bout << "\r\n\nDOS error - Can't create file.\r\n\n";
     *received = false;
     return;

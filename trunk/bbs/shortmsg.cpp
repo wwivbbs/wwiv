@@ -38,8 +38,7 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
   int bShownAllMessages = true;
   if (pUser->HasShortMessage()) {
     WFile file(syscfg.datadir, SMW_DAT);
-    if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                   WFile::shareUnknown, WFile::permReadWrite)) {
+    if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
       return;
     }
     int nTotalMsgsInFile = static_cast<int>(file.GetLength() / sizeof(shortmsgrec));
@@ -94,8 +93,7 @@ void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char 
   GetApplication()->GetUserManager()->ReadUser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
     WFile file(syscfg.datadir, SMW_DAT);
-    if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                   WFile::shareUnknown, WFile::permReadWrite)) {
+    if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
       return;
     }
     int nTotalMsgsInFile = static_cast<int>(file.GetLength() / sizeof(shortmsgrec));
@@ -145,7 +143,7 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) 
   char szPacketName[MAX_PATH];
   sprintf(szPacketName, "%sp0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
   WFile file(szPacketName);
-  file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown, WFile::permReadWrite);
+  file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
   file.Seek(0L, WFile::seekEnd);
   file.Write(&nh, sizeof(net_header_rec));
   file.Write(pszMessageText, nh.length);

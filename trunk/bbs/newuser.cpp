@@ -621,8 +621,7 @@ void input_ansistat() {
 int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
   WFile userFile(syscfg.datadir, USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
-    if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile, WFile::shareUnknown,
-                       WFile::permReadWrite)) {
+    if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile)) {
       Wait(0.1);
     }
   }
@@ -641,8 +640,7 @@ int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
       if (nUserNumber % 25 == 0) {
         userFile.Close();
         for (int n = 0; !userFile.IsOpen() && (n < 20); n++) {
-          if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile, WFile::shareUnknown,
-                             WFile::permReadWrite)) {
+          if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile)) {
             Wait(0.1);
           }
         }

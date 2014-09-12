@@ -70,8 +70,7 @@ void EditMenus() {
   WFile fileEditMenu(GetMenuDirectory(menuDir, menuName, "mnu"));
   if (!fileEditMenu.Exists()) {
     GetSession()->bout << "Creating menu...\r\n";
-    if (!fileEditMenu.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone,
-                           WFile::permReadWrite)) {
+    if (!fileEditMenu.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone)) {
       GetSession()->bout << "Unable to create menu.\r\n";
       return;
     }
@@ -93,8 +92,7 @@ void EditMenus() {
     fileEditMenu.Write(&Menu, sizeof(MenuRec));
     nAmount = 0;
   } else {
-    if (!fileEditMenu.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone,
-                           WFile::permReadWrite)) {
+    if (!fileEditMenu.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyNone)) {
       MenuSysopLog("Unable to open menu.");
       MenuSysopLog(fileEditMenu.GetFullPathName());
       return;
@@ -480,7 +478,7 @@ void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *
 
   WFile fileIdx(GetMenuDirectory(pszDirectoryName, pszMenuName, "idx"));
   if (!fileIdx.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite,
-                    WFile::shareDenyWrite, WFile::permReadWrite)) {
+                    WFile::shareDenyWrite)) {
     GetSession()->bout << "Unable to reindex\r\n";
     pausescr();
     return;

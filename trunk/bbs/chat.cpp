@@ -456,9 +456,7 @@ void secure_ch(int ch) {
     GetSession()->bout << "|#1[|#9Channel already secured!|#1]\r\n";
   } else {
     WFile file(szFileName);
-    file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeText,
-              WFile::shareUnknown,
-              WFile::permReadWrite);
+    file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeText);
     file.Write(GetSession()->GetCurrentUser()->GetName(), strlen(GetSession()->GetCurrentUser()->GetName()));
     file.Close();
     GetSession()->bout << "|#1[|#9Channel Secured|#1]\r\n";

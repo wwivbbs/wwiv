@@ -592,7 +592,7 @@ void readmail(int mode) {
       attach_exists = false;
       if (m.status & status_file) {
         WFile fileAttach(syscfg.datadir, ATTACH_DAT);
-        if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareUnknown, WFile::permReadWrite)) {
+        if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly)) {
           l1 = fileAttach.Read(&fsr, sizeof(fsr));
           while (l1 > 0 && !found) {
             if (m.daten == static_cast<unsigned long>(fsr.id)) {
@@ -1203,8 +1203,7 @@ void readmail(int mode) {
           }
           WFile fileTemp(syscfgovr.tempdir, downloadFileName.c_str());
           fileTemp.Delete();
-          fileTemp.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                        WFile::permReadWrite);
+          fileTemp.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
           fileTemp.Write(b, len);
           fileTemp.Close();
           free(b);

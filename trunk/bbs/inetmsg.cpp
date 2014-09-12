@@ -176,8 +176,7 @@ char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber) {
     *pszInternetEmailAddress = 0;
     WFile inetAddrFile(syscfg.datadir, INETADDR_DAT);
     if (!inetAddrFile.Exists()) {
-      inetAddrFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                        WFile::permReadWrite);
+      inetAddrFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
       for (int i = 0; i <= syscfg.maxusers; i++) {
         long lCurPos = 80L * static_cast<long>(i);
         inetAddrFile.Seek(lCurPos, WFile::seekBegin);
@@ -211,8 +210,7 @@ void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber) {
   }
 
   WFile inetAddrFile(syscfg.datadir, INETADDR_DAT);
-  inetAddrFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                    WFile::permReadWrite);
+  inetAddrFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
   long lCurPos = 80L * static_cast<long>(nUserNumber);
   inetAddrFile.Seek(lCurPos, WFile::seekBegin);
   inetAddrFile.Write(pszInternetEmailAddress, 80L);
