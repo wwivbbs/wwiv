@@ -16,16 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "wwiv.h"
 
-
-//
-// Allows local-only editing of some of the user data in a shadowized
-// window.
-//
-
-
+// Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
 #if !defined ( __unix__ ) && !defined( __APPLE__ )
   char sl[4], dsl[4], exempt[4], sysopsub[4], ar[17], dar[17], restrict[17], rst[17], uk[8], dk[8], up[6], down[6],
@@ -270,8 +263,6 @@ void OnlineUserEditor() {
 #endif // !defined ( __unix__ )
 }
 
-
-
 /**
  * This function prints out a string, with a user-specifiable delay between
  * each character, and a user-definable pause after the entire string has
@@ -289,24 +280,23 @@ void OnlineUserEditor() {
  * @param nCharDelay Delay between each character, in milliseconds
  * @param nStringDelay Delay between completion of string and backspacing
  */
-void BackPrint(std::string strText, int nColorCode, int nCharDelay, int nStringDelay) {
+void BackPrint(const std::string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
   bool oecho = local_echo;
   local_echo = true;
   GetSession()->bout.Color(nColorCode);
   WWIV_Delay(nCharDelay);
-  for (std::string::const_iterator iter = strText.begin(); iter != strText.end() && !hangup; ++iter) {
+  for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
     bputch(*iter);
     WWIV_Delay(nCharDelay);
   }
 
   WWIV_Delay(nStringDelay);
-  for (std::string::const_iterator iter = strText.begin(); iter != strText.end() && !hangup; ++iter) {
+  for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
     GetSession()->bout.BackSpace();
     WWIV_Delay(5);
   }
   local_echo = oecho;
 }
-
 
 /**
  * This function will reposition the cursor i spaces to the left, or if the
@@ -320,7 +310,6 @@ void MoveLeft(int nNumberOfChars) {
   }
 }
 
-
 /**
  * This function will print out a string, making each character "spin"
  * using the / - \ | sequence. The color is definable and is the
@@ -328,14 +317,14 @@ void MoveLeft(int nNumberOfChars) {
  * then the string is simply printed normally.
  * @param
  */
-void SpinPuts(const std::string strText, int nColorCode) {
+void SpinPuts(const std::string& strText, int nColorCode) {
   bool oecho  = local_echo;
   local_echo    = true;
 
   if (okansi()) {
     GetSession()->bout.Color(nColorCode);
     const int dly = 30;
-    for (std::string::const_iterator iter = strText.begin(); iter != strText.end() && !hangup; ++iter) {
+    for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
       WWIV_Delay(dly);
       GetSession()->bout << "/";
       MoveLeft(1);

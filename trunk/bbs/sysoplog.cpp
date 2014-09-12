@@ -16,14 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <stdarg.h>
+#include <cstdarg>
+#include <string>
+
+#include "core/strings.h"
 
 #include "wwiv.h"
 
+using std::string;
+using wwiv::strings::StringPrintf;
 
-//
 // Local function prototypes
-//
 void AddLineToSysopLogImpl(int cmd, const std::string& text);
 
 #define LOG_STRING 0
@@ -32,15 +35,13 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text);
 /*
 * Creates sysoplog filename in s, from datestring.
 */
-
-void GetSysopLogFileName(const char *d, char *pszLogFileName) {
-  sprintf(pszLogFileName, "%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
+string GetSysopLogFileName(const string& d) {
+  return StringPrintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 
 /*
 * Returns instance (temporary) sysoplog filename in s.
 */
-
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName) {
   sprintf(pszInstanceLogFileName, "inst-%3.3u.log", GetApplication()->GetInstanceNumber());
 }
@@ -50,7 +51,6 @@ void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName) {
 /*
 * Copies temporary/instance sysoplog to primary sysoplog file.
 */
-
 void catsl() {
   char szInstanceBaseName[MAX_PATH];
   char szInstanceLogFileName[MAX_PATH];
@@ -59,10 +59,8 @@ void catsl() {
   sprintf(szInstanceLogFileName, "%s%s", syscfg.gfilesdir, szInstanceBaseName);
 
   if (WFile::Exists(szInstanceLogFileName)) {
-    char szLogFileBaseName[MAX_PATH];
-
-    GetSysopLogFileName(date(), szLogFileBaseName);
-    WFile wholeLogFile(syscfg.gfilesdir, szLogFileBaseName);
+    string basename = GetSysopLogFileName(date());
+    WFile wholeLogFile(syscfg.gfilesdir, basename);
 
     char* pLogBuffer = static_cast<char *>(BbsAllocA(CAT_BUFSIZE));
     if (pLogBuffer) {
@@ -167,7 +165,6 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text) {
 /*
 * Writes a string to the sysoplog, if user online and EffectiveSl < 255.
 */
-
 void sysopchar(const std::string text) {
   if ((incom || GetSession()->GetEffectiveSl() != 255) && !text.empty()) {
     AddLineToSysopLogImpl(LOG_CHAR, text);
@@ -178,7 +175,6 @@ void sysopchar(const std::string text) {
 * Writes a string to the sysoplog, if EffectiveSl < 255 and user online,
 * indented a few spaces.
 */
-
 void sysoplog(const std::string text, bool bIndent) {
   if (bIndent) {
     std::ostringstream os;
@@ -200,7 +196,6 @@ void sysoplogf(const char *pszFormat, ...) {
   sysoplog(szBuffer);
 }
 
-
 // printf style function to write to the sysop log
 void sysoplogfi(bool bIndent, const char *pszFormat, ...) {
   va_list ap;
@@ -211,4 +206,3 @@ void sysoplogfi(bool bIndent, const char *pszFormat, ...) {
   va_end(ap);
   sysoplog(szBuffer, bIndent);
 }
-

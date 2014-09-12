@@ -17,11 +17,13 @@
 /*                                                                        */
 /**************************************************************************/
 #include <memory>
+#include <string>
 
 #include "wwiv.h"
 
 statusrec status;
 
+using std::string;
 using std::unique_ptr;
 
 // WStatus
@@ -73,7 +75,7 @@ void WStatus::ValidateAndFixDates() {
     m_pStatusRecord->date1[8] = '\0'; // forgot to add null termination
   }
 
-  std::string currentDate = date();
+  string currentDate = date();
   if (m_pStatusRecord->date3[8] != '\0') {
     m_pStatusRecord->date3[6] = currentDate[6];
     m_pStatusRecord->date3[7] = currentDate[7];
@@ -114,7 +116,8 @@ bool WStatus::NewDay() {
   strcpy(m_pStatusRecord->date1, date());
   strcpy(m_pStatusRecord->log2, m_pStatusRecord->log1);
 
-  GetSysopLogFileName(GetLastDate(1), m_pStatusRecord->log1);
+  const string log = GetSysopLogFileName(GetLastDate(1));
+  strcpy(m_pStatusRecord->log1, log.c_str());
   return true;
 }
 

@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include <memory>
+#include <string>
 
 #include "bbs/wwiv.h"
 #include "bbs/external_edit.h"
@@ -28,6 +29,7 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 
+using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::bbs::TempDisablePause;
 
@@ -56,11 +58,9 @@ void UnQScan() {
   }
 }
 
-
 void DirList() {
   dirlist(0);
 }
-
 
 void UpSubConf() {
   if (okconf(GetSession()->GetCurrentUser())) {
@@ -73,7 +73,6 @@ void UpSubConf() {
     setuconf(CONF_SUBS, GetSession()->GetCurrentConferenceMessageArea(), -1);
   }
 }
-
 
 void DownSubConf() {
   if (okconf(GetSession()->GetCurrentUser())) {
@@ -89,7 +88,6 @@ void DownSubConf() {
   }
 }
 
-
 void DownSub() {
   if (GetSession()->GetCurrentMessageArea() > 0) {
     GetSession()->SetCurrentMessageArea(GetSession()->GetCurrentMessageArea() - 1);
@@ -101,7 +99,6 @@ void DownSub() {
   }
 }
 
-
 void UpSub() {
   if (GetSession()->GetCurrentMessageArea() < GetSession()->num_subs - 1 &&
       usub[GetSession()->GetCurrentMessageArea() + 1].subnum >= 0) {
@@ -110,7 +107,6 @@ void UpSub() {
     GetSession()->SetCurrentMessageArea(0);
   }
 }
-
 
 void ValidateUser() {
   GetSession()->bout.NewLine(2);
@@ -126,7 +122,6 @@ void ValidateUser() {
   }
 }
 
-
 void Chains() {
   if (GuestCheck()) {
     write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
@@ -139,7 +134,6 @@ void Chains() {
   }
 }
 
-
 void TimeBank() {
   if (GuestCheck()) {
     write_inst(INST_LOC_BANK, 0, INST_FLAGS_NONE);
@@ -147,13 +141,10 @@ void TimeBank() {
   }
 }
 
-
 void AutoMessage() {
   write_inst(INST_LOC_AMSG, 0, INST_FLAGS_NONE);
   do_automessage();
 }
-
-
 
 void Defaults(MenuInstanceData * pMenuData) {
   if (GuestCheck()) {
@@ -165,24 +156,20 @@ void Defaults(MenuInstanceData * pMenuData) {
   }
 }
 
-
 void SendEMail() {
   send_email();
 }
-
 
 void FeedBack() {
   write_inst(INST_LOC_FEEDBACK, 0, INST_FLAGS_NONE);
   feedback(false);
 }
 
-
 void Bulletins() {
   write_inst(INST_LOC_GFILES, 0, INST_FLAGS_NONE);
   printfile(GFILES_NOEXT);
   gfiles();
 }
-
 
 void SystemInfo() {
   WWIVVersion();
@@ -197,7 +184,6 @@ void SystemInfo() {
   }
 }
 
-
 void JumpSubConf() {
   if (okconf(GetSession()->GetCurrentUser())) {
     jump_conf(CONF_SUBS);
@@ -210,7 +196,6 @@ void KillEMail() {
     kill_old_email();
   }
 }
-
 
 void LastCallers() {
   std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
@@ -227,11 +212,9 @@ void LastCallers() {
   printfile(USER_LOG);
 }
 
-
 void ReadEMail() {
   readmail(0);
 }
-
 
 void NewMessageScan() {
   if (okconf(GetSession()->GetCurrentUser())) {
@@ -250,7 +233,6 @@ void NewMessageScan() {
   nscan();
   newline = true;
 }
-
 
 void GoodBye() {
   char szFileName[ MAX_PATH ];
@@ -328,7 +310,6 @@ void GoodBye() {
   }
 }
 
-
 void WWIV_PostMessage() {
   irt[0] = 0;
   irt_name[0] = 0;
@@ -337,7 +318,6 @@ void WWIV_PostMessage() {
     post();
   }
 }
-
 
 void ScanSub() {
   if (usub[0].subnum != -1) {
@@ -348,14 +328,12 @@ void ScanSub() {
   }
 }
 
-
 void RemovePost() {
   if (usub[0].subnum != -1) {
     write_inst(INST_LOC_SUBS, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
     remove_post();
   }
 }
-
 
 void TitleScan() {
   if (usub[0].subnum != -1) {
@@ -366,11 +344,9 @@ void TitleScan() {
   }
 }
 
-
 void ListUsers() {
   list_users(LIST_USERS_MESSAGE_AREA);
 }
-
 
 void Vote() {
   if (GuestCheck()) {
@@ -379,11 +355,9 @@ void Vote() {
   }
 }
 
-
 void ToggleExpert() {
   GetSession()->GetCurrentUser()->ToggleStatusFlag(WUser::expert);
 }
-
 
 void ExpressScan() {
   express = true;
@@ -396,7 +370,6 @@ void ExpressScan() {
   express = false;
   expressabort = false;
 }
-
 
 void WWIVVersion() {
   GetSession()->bout.NewLine();
@@ -413,17 +386,14 @@ void WWIVVersion() {
   pausescr();
 }
 
-
 void InstanceEdit() {
   instance_edit();
 }
-
 
 void JumpEdit() {
   write_inst(INST_LOC_CONFEDIT, 0, INST_FLAGS_NONE);
   edit_confs();
 }
-
 
 void BoardEdit() {
   write_inst(INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE);
@@ -431,13 +401,11 @@ void BoardEdit() {
   boardedit();
 }
 
-
 void ChainEdit() {
   write_inst(INST_LOC_CHAINEDIT, 0, INST_FLAGS_NONE);
   sysoplog("@ Ran Chain Edit");
   chainedit();
 }
-
 
 void ToggleChat() {
   GetSession()->bout.NewLine(2);
@@ -453,17 +421,14 @@ void ToggleChat() {
   GetApplication()->UpdateTopScreen();
 }
 
-
 void ChangeUser() {
   write_inst(INST_LOC_CHUSER, 0, INST_FLAGS_NONE);
   chuser();
 }
 
-
 void CallOut() {
   force_callout(2);
 }
-
 
 void Debug() {
   int new_level = (WFile::GetDebugLevel() + 1) % 5;
@@ -471,20 +436,17 @@ void Debug() {
   GetSession()->bout << "|#5New Debug Level: " << new_level << wwiv::endl;
 }
 
-
 void DirEdit() {
   write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
   sysoplog("@ Ran Directory Edit");
   dlboardedit();
 }
 
-
 void EventEdit() {
   write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
   sysoplog("- Ran Event Editor");
   eventedit();
 }
-
 
 void LoadTextFile() {
   GetSession()->bout.NewLine();
@@ -504,7 +466,6 @@ void LoadTextFile() {
   }
 }
 
-
 void EditText() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
   GetSession()->bout.NewLine();
@@ -516,13 +477,11 @@ void EditText() {
   }
 }
 
-
 void EditBulletins() {
   write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
   sysoplog("@ Ran Gfile Edit");
   gfileedit();
 }
-
 
 void ReadAllMail() {
   write_inst(INST_LOC_MAILR, 0, INST_FLAGS_NONE);
@@ -530,23 +489,19 @@ void ReadAllMail() {
   mailr();
 }
 
-
 void RebootComputer() {
   // Does nothing.
 }
-
 
 void ReloadMenus() {
   write_inst(INST_LOC_RELOAD, 0, INST_FLAGS_NONE);
   read_new_stuff();
 }
 
-
 void ResetFiles() {
   write_inst(INST_LOC_RESETF, 0, INST_FLAGS_NONE);
   reset_files();
 }
-
 
 void ResetQscan() {
   GetSession()->bout << "|#5Reset all QScan/NScan pointers (For All Users)? ";
@@ -563,13 +518,11 @@ void ResetQscan() {
   }
 }
 
-
 void MemoryStatus() {
   std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
   GetSession()->bout.NewLine();
   GetSession()->bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
 }
-
 
 void PackMessages() {
   GetSession()->bout.NewLine();
@@ -581,36 +534,28 @@ void PackMessages() {
   }
 }
 
-
 void InitVotes() {
   write_inst(INST_LOC_VOTE, 0, INST_FLAGS_NONE);
   sysoplog("@ Ran Ivotes");
   ivotes();
 }
 
-
 void ReadLog() {
-  char szLogFileName[ 255 ];
-
-  GetSysopLogFileName(date(), szLogFileName);
-  print_local_file(szLogFileName, "");
+  const string sysop_log_file = GetSysopLogFileName(date());
+  print_local_file(sysop_log_file.c_str(), "");
 }
-
 
 void ReadNetLog() {
   print_local_file("NET.LOG", "");
 }
 
-
 void PrintPending() {
   print_pending_list();
 }
 
-
 void PrintStatus() {
   prstatus(false);
 }
-
 
 void TextEdit() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
@@ -618,30 +563,25 @@ void TextEdit() {
   text_edit();
 }
 
-
 void UserEdit() {
   write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
   sysoplog("@ Ran User Edit");
   uedit(GetSession()->usernum, UEDIT_NONE);
 }
 
-
 void VotePrint() {
   write_inst(INST_LOC_VOTEPRINT, 0, INST_FLAGS_NONE);
   voteprint();
 }
-
 
 void YesturdaysLog() {
   std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
   print_local_file(pStatus->GetLogFileName(), "");
 }
 
-
 void ZLog() {
   zlog();
 }
-
 
 void ViewNetDataLog() {
   bool done = false;
@@ -667,23 +607,19 @@ void ViewNetDataLog() {
   }
 }
 
-
 void UploadPost() {
   upload_post();
 }
 
-
 void NetListing() {
   print_net_listing(false);
 }
-
 
 void WhoIsOnline() {
   multi_instance();
   GetSession()->bout.NewLine();
   pausescr();
 }
-
 
 void NewMsgsAllConfs() {
   bool ac = false;
@@ -704,7 +640,6 @@ void NewMsgsAllConfs() {
   }
 }
 
-
 void MultiEmail() {
   slash_e();
 }
@@ -713,7 +648,6 @@ void InternetEmail() {
   send_inet_email();
 }
 
-
 void NewMsgScanFromHere() {
   newline = false;
   preload_subs();
@@ -721,13 +655,11 @@ void NewMsgScanFromHere() {
   newline = true;
 }
 
-
 void ValidateScan() {
   newline = false;
   valscan();
   newline = true;
 }
-
 
 void ChatRoom() {
   write_inst(INST_LOC_CHATROOM, 0, INST_FLAGS_NONE);
@@ -739,7 +671,6 @@ void ChatRoom() {
     chat_room();
   }
 }
-
 
 void DownloadPosts() {
   if (GetApplication()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
@@ -764,7 +695,6 @@ void DownloadPosts() {
   }
 }
 
-
 void DownloadFileList() {
   if (GetApplication()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
     GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
@@ -778,7 +708,6 @@ void DownloadFileList() {
     }
   }
 }
-
 
 void ClearQScan() {
   GetSession()->bout.NewLine();
@@ -807,7 +736,6 @@ void ClearQScan() {
   }
 }
 
-
 void FastGoodBye() {
   if (GetSession()->numbatchdl != 0) {
     GetSession()->bout.NewLine();
@@ -828,7 +756,6 @@ void FastGoodBye() {
   }
 }
 
-
 void NewFilesAllConfs() {
   GetSession()->bout.NewLine();
   int ac = 0;
@@ -846,7 +773,6 @@ void NewFilesAllConfs() {
   }
 }
 
-
 void ReadIDZ() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#5Read FILE_ID.DIZ for all directories? ";
@@ -857,11 +783,9 @@ void ReadIDZ() {
   }
 }
 
-
 void RemoveNotThere() {
   removenotthere();
 }
-
 
 void UploadAllDirs() {
   GetSession()->bout.NewLine(2);
@@ -877,16 +801,13 @@ void UploadCurDir() {
   uploadall(GetSession()->GetCurrentFileArea());
 }
 
-
 void RenameFiles() {
   rename_file();
 }
 
-
 void MoveFiles() {
   move_file();
 }
-
 
 void SortDirs() {
   GetSession()->bout.NewLine();
@@ -908,7 +829,6 @@ void SortDirs() {
   }
 }
 
-
 void ReverseSort() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#5Sort all dirs? ";
@@ -922,11 +842,9 @@ void ReverseSort() {
   }
 }
 
-
 void AllowEdit() {
   edit_database();
 }
-
 
 void UploadFilesBBS() {
   char s2[81];
@@ -958,7 +876,6 @@ void UploadFilesBBS() {
   }
 }
 
-
 void UpDirConf() {
   if (okconf(GetSession()->GetCurrentUser())) {
     if (GetSession()->GetCurrentConferenceFileArea() < dirconfnum - 1
@@ -971,7 +888,6 @@ void UpDirConf() {
   }
 }
 
-
 void UpDir() {
   if (GetSession()->GetCurrentFileArea() < GetSession()->num_dirs - 1
       && udir[GetSession()->GetCurrentFileArea() + 1].subnum >= 0) {
@@ -980,7 +896,6 @@ void UpDir() {
     GetSession()->SetCurrentFileArea(0);
   }
 }
-
 
 void DownDirConf() {
   if (okconf(GetSession()->GetCurrentUser())) {
@@ -996,7 +911,6 @@ void DownDirConf() {
   }
 }
 
-
 void DownDir() {
   if (GetSession()->GetCurrentFileArea() > 0) {
     GetSession()->SetCurrentFileArea(GetSession()->GetCurrentFileArea() - 1);
@@ -1008,11 +922,9 @@ void DownDir() {
   }
 }
 
-
 void ListUsersDL() {
   list_users(LIST_USERS_FILE_AREA);
 }
-
 
 void PrintDSZLog() {
   if (WFile::Exists(g_szDSZLogFileName)) {
@@ -1020,21 +932,17 @@ void PrintDSZLog() {
   }
 }
 
-
 void PrintDevices() {
   print_devices();
 }
-
 
 void ViewArchive() {
   arc_l();
 }
 
-
 void BatchMenu() {
   batchdl(0);
 }
-
 
 void Download() {
   play_sdf(DOWNLOAD_NOEXT, false);
@@ -1042,11 +950,9 @@ void Download() {
   download();
 }
 
-
 void TempExtract() {
   temp_extract();
 }
-
 
 void FindDescription() {
   GetSession()->tagging = 1;
@@ -1054,11 +960,9 @@ void FindDescription() {
   GetSession()->tagging = 0;
 }
 
-
 void TemporaryStuff() {
   temporary_stuff();
 }
-
 
 void JumpDirConf() {
   if (okconf(GetSession()->GetCurrentUser())) {
@@ -1072,13 +976,11 @@ void ConfigFileList() {
   }
 }
 
-
 void ListFiles() {
   GetSession()->tagging = 1;
   listfiles();
   GetSession()->tagging = 0;
 }
-
 
 void NewFileScan() {
   if (GetApplication()->HasConfigFlag(OP_FLAGS_SETLDATE)) {
@@ -1105,13 +1007,11 @@ void NewFileScan() {
   GetSession()->tagging = 0;
 }
 
-
 void RemoveFiles() {
   if (GuestCheck()) {
     removefile();
   }
 }
-
 
 void SearchAllFiles() {
   GetSession()->tagging = 1;
@@ -1119,13 +1019,11 @@ void SearchAllFiles() {
   GetSession()->tagging = 0;
 }
 
-
 void XferDefaults() {
   if (GuestCheck()) {
     xfer_defaults();
   }
 }
-
 
 void Upload() {
   play_sdf(UPLOAD_NOEXT, false);
@@ -1142,11 +1040,9 @@ void Upload() {
   }
 }
 
-
 void YourInfoDL() {
   YourInfo();
 }
-
 
 void UploadToSysop() {
   printfile(ZUPLOAD_NOEXT);
@@ -1155,11 +1051,9 @@ void UploadToSysop() {
   upload(0);
 }
 
-
 void ReadAutoMessage() {
   read_automessage();
 }
-
 
 void GuestApply() {
   if (guest_user) {
@@ -1169,11 +1063,9 @@ void GuestApply() {
   }
 }
 
-
 void AttachFile() {
   attach_file(0);
 }
-
 
 bool GuestCheck() {
   if (guest_user) {
@@ -1183,7 +1075,6 @@ bool GuestCheck() {
   return true;
 }
 
-
 void SetSubNumber(char *pszSubKeys) {
   for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(usub[i].keys, pszSubKeys)) {
@@ -1192,7 +1083,6 @@ void SetSubNumber(char *pszSubKeys) {
   }
 }
 
-
 void SetDirNumber(char *pszDirectoryKeys) {
   for (int i = 0; i < GetSession()->num_dirs; i++) {
     if (wwiv::strings::IsEquals(udir[i].keys, pszDirectoryKeys)) {
@@ -1200,5 +1090,3 @@ void SetDirNumber(char *pszDirectoryKeys) {
     }
   }
 }
-
-

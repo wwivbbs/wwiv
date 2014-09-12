@@ -80,34 +80,13 @@ static bool replacefile(char *src, char *dst, bool stats) {
   if (strlen(dst) == 0) {
     return false;
   }
-
-  if (WFile::Exists(dst)) {
-    WFile::Remove(dst);
-  }
-
   return copyfile(src, dst, stats);
-}
-
-static void strip_heart_colors(char *text) {
-  int pos = 0;
-  int len = strlen(text);
-
-  while (pos < len && text[pos] != 26 && !hangup) {
-    if (text[pos] == 3) {
-      memmove(text + pos, text + pos + 2, len - pos);
-      --len;
-      --len;
-    } else {
-      ++pos;
-    }
-  }
 }
 
 void build_qwk_packet(void) {
   struct qwk_junk qwk_info;
   struct qwk_config qwk_cfg;
   char filename[201];
-  int i, msgs_ok;
   bool save_conf = false;
   SaveQScanPointers save_qscan;
 
@@ -186,10 +165,9 @@ void build_qwk_packet(void) {
         << '\xC5' << string(4, '\xC4') << '\xB4' << wwiv::endl;
   }
 
-  msgs_ok = 1;
-
-  for (i = 0; (usub[i].subnum != -1) && (i < GetSession()->num_subs) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
-    msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : 1);
+  bool msgs_ok = true;
+  for (int i = 0; (usub[i].subnum != -1) && (i < GetSession()->num_subs) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
+    msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
     if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
     }
@@ -323,12 +301,8 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 }
 
 void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
-  int amount = 1;
-
   irt[0] = 0;
   irt_name[0] = 0;
-  int done = 0;
-  int val = 0;
 
   if (GetSession()->GetCurrentReadMessageArea() < 0) {
     return;
@@ -340,20 +314,22 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
     set_net_num(0);
   }
 
+  int amount = 1;
+  bool done = false;
   do {
     if ((msgnum > 0) && (msgnum <= GetSession()->GetNumMessagesInCurrentMessageArea())) {
-      make_pre_qwk(msgnum, &val, qwk_info);
+      make_pre_qwk(msgnum, qwk_info);
     }
     ++msgnum;
     if (msgnum > GetSession()->GetNumMessagesInCurrentMessageArea()) {
-      done = 1;
+      done = true;
     }
     if (GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub ? amount >
         GetSession()->GetCurrentUser()->data.qwk_max_msgs_per_sub : 0) {
-      done = 1;
+      done = true;
     }
     if (max_msgs ? qwk_info->qwk_rec_num > max_msgs : 0) {
-      done = 1;
+      done = true;
     }
     ++amount;
     checka(&qwk_info->abort);
@@ -362,13 +338,10 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
   bputch('\r');
 }
 
-void make_pre_qwk(int msgnum, int *val, struct qwk_junk *qwk_info) {
+void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   postrec* p = get_post(msgnum);
-  if (p->status & (status_unvalidated | status_delete)) {
-    if (!lcs()) {
-      return;
-    }
-    *val |= 1;
+  if ((p->status & (status_unvalidated | status_delete)) && !lcs()) {
+    return;
   }
 
   int nn = GetSession()->GetNetworkNumber();
@@ -466,9 +439,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
     strncpy(qwk_info->qwk_rec.to, temp, 25);
   }
-
-  strip_heart_colors(n);
-  strncpy(qwk_info->qwk_rec.from, strupr(n), 25);
+  strncpy(qwk_info->qwk_rec.from, strupr(stripcolors(n)), 25);
 
   struct tm *time_now = localtime((time_t *)&m1->daten);
   strftime(date, 10, "%m-%d-%y", time_now);
@@ -486,13 +457,10 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   sprintf(qwk_info->qwk_rec.amount_blocks, "%d", amount_blocks);
   sprintf(qwk_info->qwk_rec.msgnum, "%d", msgnum);
 
-  strip_heart_colors(pr->title);
-  strip_heart_colors(qwk_info->email_title);
-
   if (!qwk_info->in_email) {
-    strncpy(qwk_info->qwk_rec.subject, pr->title, 25);
+    strncpy(qwk_info->qwk_rec.subject, stripcolors(pr->title), 25);
   } else {
-    strncpy(qwk_info->qwk_rec.subject, qwk_info->email_title, 25);
+    strncpy(qwk_info->qwk_rec.subject, stripcolors(qwk_info->email_title), 25);
   }
 
   qwk_remove_null((char *) &qwk_info->qwk_rec, 123);
@@ -974,7 +942,8 @@ int select_qwk_protocol(struct qwk_junk *qwk_info) {
 }
 
 void insert_after_routing(char *text, char *text2insert, long *len) {
-  strip_heart_colors(text2insert);
+  string temp = stripcolors(text2insert);
+  strcpy(text2insert, temp.c_str());
 
   int pos = 0;
   while (pos < *len && text[pos] != 0 && !hangup) {
@@ -1233,7 +1202,6 @@ void qwk_nscan(void) {
 void finish_qwk(struct qwk_junk *qwk_info) {
   char parem1[201], parem2[201];
   char qwkname[201];
-  int f;
   bool sent = false;
   long numbytes;
 
