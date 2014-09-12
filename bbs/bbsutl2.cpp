@@ -21,11 +21,13 @@
 
 #include "wwiv.h"
 #include "core/inifile.h"
+#include "core/strings.h"
 
 using std::string;
 using std::vector;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::strings::StringPrintf;
 
 /**
  * Display character x repeated amount times in nColor, and if bAddNL is true
@@ -52,7 +54,7 @@ const char *ctypes(int num) {
   static char szCtype[81];
 
   // The default list of computer types
-  static const vector<string> default_ctypes = {
+  static const vector<string> default_ctypes{
     "IBM PC (8088)",
     "IBM PS/2",
     "IBM AT (80286)",
@@ -69,14 +71,11 @@ const char *ctypes(int num) {
 
   IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), "CTYPES");
   if (iniFile.IsOpen()) {
-    char szCompType[ 100 ];
-    sprintf(szCompType, "COMP_TYPE[%d]", num + 1);
-    const char *ss = iniFile.GetValue(szCompType);
+    const string comptype = StringPrintf("COMP_TYPE[%d]", num + 1);
+    const char *ss = iniFile.GetValue(comptype.c_str());
     if (ss && *ss) {
       strcpy(szCtype, ss);
-      if (ss) {
-        return szCtype;
-      }
+      return szCtype;
     }
     return nullptr;
   }

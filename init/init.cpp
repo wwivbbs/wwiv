@@ -255,7 +255,8 @@ int WInitApp::main(int argc, char *argv[]) {
       vector<string> lines { "Please enter the System Password. "};
       lines.insert(lines.begin(), "");
       lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");
-      input_password(out->window(), "SY:", lines, s, 20);
+      string given_password;
+      input_password(out->window(), "SY:", lines, &given_password, 20);
       if (strcmp(s, (syscfg.systempw)) != 0) {
         out->Cls(ACS_CKBOARD);
         messagebox(out->window(), "I'm sorry, that isn't the correct system password.");
