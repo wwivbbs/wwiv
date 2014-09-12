@@ -26,14 +26,6 @@
 #error "INIT MUST BE DEFINED"
 #endif  // INIT
 
-#ifndef EDITLINE_FILENAME_CASE
-#if __unix__
-#define EDITLINE_FILENAME_CASE ALL
-#else
-#define EDITLINE_FILENAME_CASE UPPER_ONLY
-#endif  // __unix__
-#endif  // EDITLINE_FILENAME_CASE
-
 #include "bbs/vardec.h"
 #include "bbs/net.h"
 #include "ivardec.h"

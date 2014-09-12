@@ -30,11 +30,20 @@
 #include "core/strings.h"
 #include "initlib/curses_io.h"
 #include "initlib/curses_win.h"
+#include "init/utility.h"
 
 #define NUM_ONLY            1
 #define UPPER_ONLY          2
 #define ALL                 4
 #define SET                 8
+
+#ifndef EDITLINE_FILENAME_CASE
+#if __unix__
+#define EDITLINE_FILENAME_CASE ALL
+#else
+#define EDITLINE_FILENAME_CASE UPPER_ONLY
+#endif  // __unix__
+#endif  // EDITLINE_FILENAME_CASE
 
 // Function prototypes
 void nlx(int numLines = 1);
@@ -324,6 +333,31 @@ private:
   prefn to_field_;
   postfn from_field_;
   displayfn display_;
+};
+
+class FilePathItem : public EditItem<char*> {
+public:
+  FilePathItem(int x, int y, int maxsize, char* data) 
+    : EditItem<char*>(x, y, maxsize, data) {}
+  virtual ~FilePathItem() {}
+
+  virtual int Run(CursesWindow* window) override {
+    window->GotoXY(this->x_, this->y_);
+    int return_code = 0;
+    editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
+    trimstrpath(this->data_);
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const override {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+
+    char pattern[81];
+    sprintf(pattern, "%%-%ds", this->maxsize_);
+    window->PrintfXY(this->x_, this->y_, pattern, this->data_);
+  }
 };
 
 class EditItems {
