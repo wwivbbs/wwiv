@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <functional>
 #include <limits>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -179,6 +180,10 @@ public:
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
+    if (*this->data_ > items_.size()) {
+      // Data is out of bounds, reset it to a senible value.
+      *this->data_ = 0;
+    }
     *this->data_ = toggleitem(window, *this->data_, items_, &return_code);
     return return_code;
   }
@@ -187,7 +192,11 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
-    window->PrintfXY(this->x_, this->y_, "%s", this->items_.at(*this->data_).c_str());
+    try {
+      window->PutsXY(this->x_, this->y_, this->items_.at(*this->data_).c_str());
+    } catch (const std::out_of_range) {
+      // Leave it empty since we are out of range.
+    }
   }
 private:
   const std::vector<std::string> items_;
