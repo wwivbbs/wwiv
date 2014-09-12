@@ -20,13 +20,11 @@
 
 #include "wwiv.h"
 
-// 
 statusrec status;
 
-//
-// WStatus
-//
+using std::unique_ptr;
 
+// WStatus
 const int WStatus::fileChangeNames = 0;
 const int WStatus::fileChangeUpload = 1;
 const int WStatus::fileChangePosts = 2;
@@ -48,7 +46,6 @@ const char* WStatus::GetLastDate(int nDaysAgo) const {
   }
 }
 
-
 const char* WStatus::GetLogFileName(int nDaysAgo) const {
   WWIV_ASSERT(nDaysAgo >= 0);
   WWIV_ASSERT(nDaysAgo <= 1);
@@ -62,14 +59,12 @@ const char* WStatus::GetLogFileName(int nDaysAgo) const {
   }
 }
 
-
 void WStatus::EnsureCallerNumberIsValid() {
   if (m_pStatusRecord->callernum != 65535) {
     this->SetCallerNumber(m_pStatusRecord->callernum);
     m_pStatusRecord->callernum = 65535;
   }
 }
-
 
 void WStatus::ValidateAndFixDates() {
   if (m_pStatusRecord->date1[8] != '\0') {
@@ -101,7 +96,6 @@ void WStatus::ValidateAndFixDates() {
   }
 }
 
-
 bool WStatus::NewDay() {
   m_pStatusRecord->callstoday   = 0;
   m_pStatusRecord->msgposttoday = 0;
@@ -124,12 +118,7 @@ bool WStatus::NewDay() {
   return true;
 }
 
-
-
-//
 // StatusMgr
-//
-
 bool StatusMgr::Get(bool bLockFile) {
   if (!m_statusFile.IsOpen()) {
     m_statusFile.SetName(syscfg.datadir, STATUS_DAT);
@@ -211,7 +200,6 @@ bool StatusMgr::Get(bool bLockFile) {
   return true;
 }
 
-
 bool StatusMgr::RefreshStatusCache() {
   return this->Get(false);
 }
@@ -234,12 +222,9 @@ WStatus* StatusMgr::BeginTransaction() {
 }
 
 bool StatusMgr::CommitTransaction(WStatus* pStatus) {
-  bool returnValue = this->Write(pStatus->m_pStatusRecord);
-
-  delete pStatus;
-  return returnValue;
+  unique_ptr<WStatus>(pStatus);
+  return this->Write(pStatus->m_pStatusRecord);
 }
-
 
 bool StatusMgr::Write(statusrec *pStatus) {
   if (!m_statusFile.IsOpen()) {
@@ -253,13 +238,12 @@ bool StatusMgr::Write(statusrec *pStatus) {
     sysoplog("CANNOT SAVE STATUS");
     return false;
   }
-  ////////
   m_statusFile.Write(pStatus, sizeof(statusrec));
   m_statusFile.Close();
   return true;
 }
 
 const int StatusMgr::GetUserCount() {
-  std::unique_ptr<WStatus>pStatus(GetStatus());
+  unique_ptr<WStatus>pStatus(GetStatus());
   return pStatus->GetNumUsers();
 }

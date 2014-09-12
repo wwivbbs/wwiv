@@ -30,11 +30,7 @@
 
 class WLogger {
  public:
-  /////////////////////////////////////////////////////////////////////////
-  //
   // Member functions
-  //
-
   WLogger() {}
   virtual ~WLogger() {}
   virtual bool LogMessage(const char* pszFormat, ...) = 0;
@@ -44,13 +40,8 @@ class WLogger {
  * WFile - File I/O Class.
  */
 class WFile {
-
  public:
-  /////////////////////////////////////////////////////////////////////////
-  //
   // Constants
-  //
-
   static const int modeDefault;
   static const int modeUnknown;
   static const int modeAppend;
@@ -81,43 +72,28 @@ class WFile {
   static const char separatorChar;
 
  private:
-
   int handle_;
   bool open_;
   std::string full_path_name_;
   std::string error_text_;
   static  WLogger* logger_;
   static int debug_level_;
-
   void init();
 
  public:
-
-  /////////////////////////////////////////////////////////////////////////
-  //
   // Constructor/Destructor
-  //
-
   WFile();
-  WFile(const std::string dirName, const std::string fileName);
-  explicit WFile(const std::string strFileName);
+  WFile(const std::string& dirName, const std::string& fileName);
+  explicit WFile(const std::string& strFileName);
   virtual ~WFile();
 
-  /////////////////////////////////////////////////////////////////////////
-  //
   // Public Member functions
-  //
-
-  virtual bool SetName(const std::string fileName);
-  virtual bool SetName(const std::string dirName, const std::string fileName);
-
+  virtual bool SetName(const std::string& fileName);
+  virtual bool SetName(const std::string& dirName, const std::string& fileName);
   virtual bool Open(int nFileMode = WFile::modeDefault,
                     int nShareMode = WFile::shareUnknown);
-
   virtual void Close();
-  virtual bool IsOpen() const {
-    return open_;
-  }
+  virtual bool IsOpen() const { return open_; }
 
   virtual int Read(void * pBuffer, size_t nCount);
   virtual int Write(const void * pBuffer, size_t nCount);
@@ -169,12 +145,7 @@ class WFile {
   virtual const std::string GetLastError() const { return error_text_; }
 
  public:
-
-  /////////////////////////////////////////////////////////////////////////
-  //
   // static functions
-  //
-
   static bool Remove(const std::string fileName);
   static bool Remove(const std::string directoryName, const std::string fileName);
   static bool Rename(const std::string origFileName, const std::string newFileName);
