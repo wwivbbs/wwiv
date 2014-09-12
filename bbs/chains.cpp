@@ -170,8 +170,7 @@ void run_chain(int nChainNumber) {
   if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg) {
     chains_reg[nChainNumber].usage++;
     WFile regFile(syscfg.datadir, CHAINS_REG);
-    if (regFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate,
-                     WFile::shareUnknown, WFile::permReadWrite)) {
+    if (regFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate)) {
       regFile.Write(chains_reg, GetSession()->GetNumberOfChains() * sizeof(chainregrec));
     }
   }

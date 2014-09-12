@@ -247,7 +247,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   // Open up the main data file
   // --------------------------
   pMenuData->pMenuFile = new WFile(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "mnu"));
-  pMenuData->pMenuFile->Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite);
+  pMenuData->pMenuFile->Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone);
 
   // -----------------------------------
   // Find out how many records there are
@@ -275,7 +275,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   // Open/Read/Close the index file
   // ------------------------------
   WFile fileIndex(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "idx"));
-  if (fileIndex.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite)) {
+  if (fileIndex.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone)) {
     if (fileIndex.GetLength() > static_cast<long>(pMenuData->nAmountRecs * sizeof(MenuRecIndex))) {
       MenuSysopLog("Index is corrupt");
       MenuSysopLog(fileIndex.GetFullPathName());
@@ -297,7 +297,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   // Open/Rease/Close Prompt file
   // ----------------------------
   WFile filePrompt(GetMenuDirectory(pMenuData->szPath, pMenuData->szMenu, "pro"));
-  if (filePrompt.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone, WFile::permReadWrite)) {
+  if (filePrompt.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone)) {
     long lSize = filePrompt.GetLength();
     pMenuData->szPrompt = static_cast<char *>(malloc(lSize + 10 + TEST_PADDING));
     if (pMenuData->szPrompt != NULL) {

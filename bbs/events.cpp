@@ -166,7 +166,7 @@ void cleanup_events() {
   }
 
   WFile eventsFile(syscfg.datadir, EVENTS_DAT);
-  eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite);
+  eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary);
   eventsFile.Write(events, GetSession()->num_events * sizeof(eventsrec));
   eventsFile.Close();
 }
@@ -183,7 +183,7 @@ void check_event() {
          (events[i].instance == 0))) {
       // make sure the event hasn't already been executed on another node,then mark it as run
       WFile eventsFile(syscfg.datadir, EVENTS_DAT);
-      eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite);
+      eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary);
       eventsFile.Seek(i * sizeof(eventsrec), WFile::seekBegin);
       eventsFile.Read(&events[i], sizeof(eventsrec));
 
@@ -204,7 +204,7 @@ void check_event() {
       if (nextrun <= tl) {
         // flag the event to run
         WFile eventsFile(syscfg.datadir, EVENTS_DAT);
-        eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite);
+        eventsFile.Open(WFile::modeReadWrite | WFile::modeBinary);
         eventsFile.Seek(i * sizeof(eventsrec), WFile::seekBegin);
         eventsFile.Read(&events[i], sizeof(eventsrec));
 
@@ -633,8 +633,7 @@ void eventedit() {
 
   WFile eventsFile(syscfg.datadir, EVENTS_DAT);
   if (GetSession()->num_events) {
-    eventsFile.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate,
-                    WFile::shareUnknown, WFile::permReadWrite);
+    eventsFile.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate);
     eventsFile.Write(events, GetSession()->num_events * sizeof(eventsrec));
     eventsFile.Close();
   } else {

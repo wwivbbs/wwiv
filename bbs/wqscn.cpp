@@ -26,8 +26,7 @@ static WFile qscanFile;
 bool open_qscn() {
   if (!qscanFile.IsOpen()) {
     qscanFile.SetName(syscfg.datadir, USER_QSC);
-    if (!qscanFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                        WFile::permReadWrite)) {
+    if (!qscanFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
       return false;
     }
   }

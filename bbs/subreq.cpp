@@ -310,8 +310,7 @@ void sub_xtr_add(int n, int nn) {
     char szFileName[MAX_PATH];
     sprintf(szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory(), xnp->stype);
     WFile file(szFileName);
-    if (file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                  WFile::permReadWrite)) {
+    if (file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
       file.Close();
     }
 

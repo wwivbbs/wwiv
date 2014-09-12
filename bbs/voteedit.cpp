@@ -85,8 +85,7 @@ void set_question(int ii) {
   }
 
   WFile votingDat(syscfg.datadir, VOTING_DAT);
-  votingDat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                 WFile::permReadWrite);
+  votingDat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
   votingDat.Seek(ii * sizeof(votingrec), WFile::seekBegin);
   votingDat.Write(&v, sizeof(votingrec));
   votingDat.Close();
@@ -108,8 +107,7 @@ void ivotes() {
   votingrec v;
 
   WFile votingDat(syscfg.datadir, VOTING_DAT);
-  votingDat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                 WFile::permReadWrite);
+  votingDat.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
   int n = static_cast<int>((votingDat.GetLength() / sizeof(votingrec)) - 1);
   if (n < 20) {
     v.question[0] = '\0';
@@ -153,8 +151,7 @@ void voteprint() {
     }
   }
   WFile votingText(syscfg.gfilesdir, VOTING_TXT);
-  votingText.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeText,
-                  WFile::shareUnknown, WFile::permReadWrite);
+  votingText.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeText);
   votingText.Write(votingText.GetFullPathName());
 
   WFile votingDat(syscfg.datadir, VOTING_DAT);

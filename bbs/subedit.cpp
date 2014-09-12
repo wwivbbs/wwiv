@@ -45,8 +45,7 @@ void save_subs() {
   }
 
   WFile subsFile(syscfg.datadir, SUBS_DAT);
-  if (!subsFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate,
-                     WFile::shareUnknown, WFile::permReadWrite)) {
+  if (!subsFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate)) {
     GetSession()->bout << "Error writing subs.dat file." << wwiv::endl;
     pausescr();
   } else {

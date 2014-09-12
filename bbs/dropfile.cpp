@@ -143,8 +143,7 @@ void CreatePCBoardSysDropFile() {
   string fileName = create_filename(CHAINFILE_PCBOARD);
   WFile pcbFile(fileName);
   pcbFile.Delete();
-  if (pcbFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
-                   WFile::shareUnknown, WFile::permReadWrite)) {
+  if (pcbFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
     pcboard_sys_rec pcb;
     memset(&pcb, 0, sizeof(pcb));
     strcpy(pcb.display, "-1");

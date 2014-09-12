@@ -228,8 +228,7 @@ void send_net(net_header_rec * nh, unsigned short int *list, const char *text, c
   char szFileName[MAX_PATH];
   sprintf(szFileName, "%sp1%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
   WFile file(szFileName);
-  if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                 WFile::permReadWrite)) {
+  if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
     return;
   }
   file.Seek(0L, WFile::seekEnd);

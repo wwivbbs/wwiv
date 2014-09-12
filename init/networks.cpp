@@ -355,7 +355,7 @@ void networks() {
 
   WFile file (syscfg.datadir, "networks.dat");
   if (file.Open(WFile::modeReadWrite|WFile::modeCreateFile|WFile::modeTruncate|WFile::modeBinary,
-    WFile::shareDenyReadWrite, WFile::permReadWrite)) {
+    WFile::shareDenyReadWrite)) {
     file.Write(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   }
   file.Close();

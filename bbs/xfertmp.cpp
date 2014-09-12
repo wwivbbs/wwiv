@@ -824,8 +824,7 @@ void move_file_t() {
           u.daten = static_cast<unsigned long>(time(NULL));
         }
         --nCurPos;
-        fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                          WFile::permReadWrite);
+        fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
         for (int i1 = nTempRecordNum; i1 < GetSession()->numf; i1++) {
           FileAreaSetRecord(fileDownload, i1 + 1);
           fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -847,8 +846,7 @@ void move_file_t() {
         sprintf(s2, "%s%s", directories[d1].path, u.filename);
         StringRemoveWhitespace(s2);
         dliscan1(d1);
-        fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                          WFile::permReadWrite);
+        fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
         for (int i = GetSession()->numf; i >= 1; i--) {
           FileAreaSetRecord(fileDownload, i);
           fileDownload.Read(&u1, sizeof(uploadsrec));
@@ -983,8 +981,7 @@ void removefile() {
             delete_extended_description(u.filename);
           }
           sysoplogf("- \"%s\" removed off of %s", u.filename, directories[udir[GetSession()->GetCurrentFileArea()].subnum].name);
-          fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                            WFile::permReadWrite);
+          fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
           for (int i1 = i; i1 < GetSession()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);
             fileDownload.Read(&u, sizeof(uploadsrec));

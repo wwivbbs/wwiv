@@ -109,8 +109,7 @@ bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
 
 void AddBBSListLine(const std::string bbsListLine) {
   WFile file(syscfg.gfilesdir, BBSLIST_MSG);
-  bool bOpen = file.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary, WFile::shareUnknown,
-                         WFile::permReadWrite);
+  bool bOpen = file.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary);
   if (bOpen && file.GetLength() > 0) {
     file.Seek(-1L, WFile::seekEnd);
     char chLastChar = 0;

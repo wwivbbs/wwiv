@@ -448,15 +448,13 @@ void chainedit() {
   } while (!done && !hangup);
 
   WFile chainsFile(syscfg.datadir, CHAINS_DAT);
-  if (chainsFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile| WFile::modeTruncate, WFile::shareUnknown,
-                      WFile::permReadWrite)) {
+  if (chainsFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile| WFile::modeTruncate)) {
     chainsFile.Write(chains, GetSession()->GetNumberOfChains() * sizeof(chainfilerec));
     chainsFile.Close();
   }
   if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     WFile regFile(syscfg.datadir, CHAINS_REG);
-    if (regFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate,
-                     WFile::shareUnknown, WFile::permReadWrite)) {
+    if (regFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate)) {
       regFile.Write(chains_reg, GetSession()->GetNumberOfChains() * sizeof(chainregrec));
       regFile.Close();
     }

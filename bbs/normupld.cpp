@@ -259,8 +259,7 @@ void normalupload(int dn) {
           time(&lCurrentTime);
           u.daten = static_cast<unsigned long>(lCurrentTime);
           WFile fileDownload(g_szDownloadFileName);
-          fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                            WFile::permReadWrite);
+          fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
           for (int j = GetSession()->numf; j >= 1; j--) {
             FileAreaSetRecord(fileDownload, j);
             fileDownload.Read(&u1, sizeof(uploadsrec));

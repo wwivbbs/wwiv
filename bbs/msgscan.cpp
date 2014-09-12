@@ -671,8 +671,7 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
           WFile::Remove(szFileName);
         }
         WFile fileExtract(szFileName);
-        if (!fileExtract.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                              WFile::permReadWrite)) {
+        if (!fileExtract.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
           GetSession()->bout << "|#6Could not open file for writing.\r\n";
         } else {
           if (fileExtract.GetLength() > 0) {
@@ -920,8 +919,7 @@ void HandleMessageDownload(int nMessageNumber) {
     }
     WFile fileTemp(syscfgovr.tempdir, szFileName);
     fileTemp.Delete();
-    fileTemp.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite, WFile::shareUnknown,
-                  WFile::permReadWrite);
+    fileTemp.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
     fileTemp.Write(b, lMessageLen);
     fileTemp.Close();
     free(b);

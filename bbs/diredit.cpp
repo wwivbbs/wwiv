@@ -548,8 +548,7 @@ void dlboardedit() {
     }
   } while (!done && !hangup);
   WFile dirsFile(syscfg.datadir, DIRS_DAT);
-  bool bDirsOpen = dirsFile.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate,
-                                 WFile::shareUnknown, WFile::permReadWrite);
+  bool bDirsOpen = dirsFile.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary | WFile::modeTruncate);
   if (!bDirsOpen) {
     sysoplog("!!! Unable to open DIRS.DAT for writing, some changes may have been lost", false);
   } else {

@@ -333,7 +333,7 @@ bool inst_available_chat(instancerec * ir) {
  */
 int num_instances() {
   WFile instFile(syscfg.datadir, INSTANCE_DAT);
-  if (!instFile.Open(WFile::modeReadOnly | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite)) {
+  if (!instFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
     return 0;
   }
   int nNumInstances = static_cast<int>(instFile.GetLength() / sizeof(instancerec)) - 1;
@@ -574,8 +574,7 @@ void write_inst(int loc, int subloc, int flags) {
   if (re_write && syscfg.datadir != nullptr) {
     ti.last_update = static_cast<unsigned long>(time(NULL));
     WFile instFile(syscfg.datadir, INSTANCE_DAT);
-    if (instFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                      WFile::permReadWrite)) {
+    if (instFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
       instFile.Seek(static_cast<long>(GetApplication()->GetInstanceNumber() * sizeof(instancerec)), WFile::seekBegin);
       instFile.Write(&ti, sizeof(instancerec));
       instFile.Close();

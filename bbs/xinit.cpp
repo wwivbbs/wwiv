@@ -970,8 +970,7 @@ void WApplication::read_chains() {
         chains_reg[ nTempChainNum ].minage  = 0;
         chains_reg[ nTempChainNum ].maxage  = 255;
       }
-      regFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                   WFile::permReadWrite);
+      regFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
       regFile.Write(chains_reg , sizeof(chainregrec) * GetSession()->GetNumberOfChains());
     }
     regFile.Close();
@@ -1355,8 +1354,7 @@ void WApplication::create_phone_file() {
   int nNumberOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
 
   WFile phoneNumFile(syscfg.datadir, PHONENUM_DAT);
-  if (!phoneNumFile.Open(WFile::modeReadWrite | WFile::modeAppend | WFile::modeBinary | WFile::modeCreateFile,
-                         WFile::shareUnknown, WFile::permReadWrite)) {
+  if (!phoneNumFile.Open(WFile::modeReadWrite | WFile::modeAppend | WFile::modeBinary | WFile::modeCreateFile)) {
     return;
   }
 

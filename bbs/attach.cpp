@@ -83,7 +83,7 @@ void attach_file(int mode) {
         GetSession()->bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
           WFile fileAttach(syscfg.datadir, ATTACH_DAT);
-          if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareUnknown, WFile::permReadWrite)) {
+          if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly)) {
             bFound = false;
             long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
             while (lNumRead > 0 && !bFound) {
@@ -227,7 +227,7 @@ void attach_file(int mode) {
                 } while (!done3 && !hangup);
               }
               WFile fileAttach(syscfg.datadir, ATTACH_DAT);
-              if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareUnknown, WFile::permReadWrite)) {
+              if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly)) {
                 long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
                   if (m.daten == static_cast<unsigned long>(fsr.id)) {
@@ -274,8 +274,7 @@ void attach_file(int mode) {
                       pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, WFile::seekCurrent);
                       pFileEmail->Write(&m, sizeof(mailrec));
                       WFile attachFile(syscfg.datadir, ATTACH_DAT);
-                      if (!attachFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareUnknown,
-                                           WFile::permReadWrite)) {
+                      if (!attachFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
                         GetSession()->bout << "Could not write attachment data.\r\n";
                         m.status ^= status_file;
                         pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, WFile::seekCurrent);
@@ -329,7 +328,7 @@ void attach_file(int mode) {
           read_message1(&m.msg, static_cast< char >(m.anony & 0x0f), false, &next, "email", 0, 0);
           if (m.status & status_file) {
             WFile fileAttach(syscfg.datadir, ATTACH_DAT);
-            if (fileAttach.Open(WFile::modeReadOnly | WFile::modeBinary, WFile::shareUnknown, WFile::permReadWrite)) {
+            if (fileAttach.Open(WFile::modeReadOnly | WFile::modeBinary)) {
               bFound = false;
               long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
               while (lNumRead > 0 && !bFound) {
