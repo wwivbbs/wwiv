@@ -75,6 +75,7 @@ long filelength(int handle) {
 using std::string;
 using wwiv::bbs::SaveQScanPointers;
 using wwiv::bbs::TempDisablePause;
+using wwiv::strings::StringPrintf;
 
 static bool replacefile(char *src, char *dst, bool stats) {
   if (strlen(dst) == 0) {
@@ -86,7 +87,6 @@ static bool replacefile(char *src, char *dst, bool stats) {
 void build_qwk_packet(void) {
   struct qwk_junk qwk_info;
   struct qwk_config qwk_cfg;
-  char filename[201];
   bool save_conf = false;
   SaveQScanPointers save_qscan;
 
@@ -114,8 +114,8 @@ void build_qwk_packet(void) {
 
   write_inst(INST_LOC_QWK, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_ONLINE);
 
-  sprintf(filename, "%sMESSAGES.DAT", QWK_DIRECTORY);
-  qwk_info.file = open(filename, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  const string filename = StringPrintf("%sMESSAGES.DAT", QWK_DIRECTORY);
+  qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   if (qwk_info.file < 1) {
     GetSession()->bout.Write("Open error");
