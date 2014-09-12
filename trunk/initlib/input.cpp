@@ -510,11 +510,11 @@ void editline(CursesWindow* window, char *s, int len, int status, int *returncod
   }
   s[z] = '\0';
 
-  char szFinishedString[ 260 ];
+  char szFinishedString[260];
   sprintf(szFinishedString, "%-255s", s);
-  szFinishedString[ len ] = '\0';
+  szFinishedString[len] = '\0';
   window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
-  window->PrintfXY(cx, cy, szFinishedString);
+  window->PutsXY(cx, cy, szFinishedString);
   window->GotoXY(cx, cy);
 }
 

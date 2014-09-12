@@ -21,7 +21,7 @@
 
 class CursesWindow;
 
-void edit_arc(CursesWindow* window, int nn);
+void edit_archivers();
 void create_arcs(CursesWindow* window);
 
 #endif // __INCLUDED_ARCHIVERS_H__

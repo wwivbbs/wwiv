@@ -328,7 +328,7 @@ int WInitApp::main(int argc, char *argv[]) {
       autoval_levs();
       break;
     case 'A':
-      edit_arc(out->window(), 0);
+      edit_archivers();
       break;
     case 'I':
       instance_editor();
