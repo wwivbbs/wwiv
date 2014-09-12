@@ -17,35 +17,40 @@
 /*                                                                        */
 /**************************************************************************/
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "wwiv.h"
 #include "core/wtextfile.h"
 
-char ShowAMsgMenuAndGetInput(const std::string& autoMessageLockFileName);
-void write_automessage();
+using std::string;
+using std::stringstream;
+using std::unique_ptr;
+using std::vector;
 
+char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName);
+void write_automessage();
 
 /**
  * Reads the auto message
  */
 void read_automessage() {
   GetSession()->bout.NewLine();
-  std::unique_ptr<WStatus> status(GetApplication()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> status(GetApplication()->GetStatusManager()->GetStatus());
   bool bAutoMessageAnonymous = status->IsAutoMessageAnonymous();
 
   WTextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
-  std::string line;
+  string line;
   if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(&line)) {
     GetSession()->bout << "|#3No auto-message.\r\n";
     GetSession()->bout.NewLine();
     return;
   }
 
-  std::string authorName = StringTrimEnd(&line);
+  string authorName = StringTrimEnd(&line);
   if (bAutoMessageAnonymous) {
     if (getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_post_anony) {
-      std::stringstream ss;
+      stringstream ss;
       ss << "<<< " << line << " >>>";
       authorName = ss.str();
     } else {
@@ -68,13 +73,13 @@ void read_automessage() {
  * Writes the auto message
  */
 void write_automessage() {
-  std::vector<std::string> lines;
-  std::string rollOver;
+  vector<string> lines;
+  string rollOver;
 
   GetSession()->bout << "\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n";
   for (int i = 0; i < 5; i++) {
     GetSession()->bout << "|#7" << i + 1 << ":|#0";
-    std::string line;
+    string line;
     inli(&line, &rollOver, 70);
     StringTrimEnd(&line);
     lines.push_back(line);
@@ -94,7 +99,7 @@ void write_automessage() {
     GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
 
     WTextFile file(syscfg.gfilesdir, AUTO_MSG, "wt");
-    std::string authorName = GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum);
+    string authorName = GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum);
     file.WriteFormatted("%s\r\n", authorName.c_str());
     sysoplog("Changed Auto-message");
     for (const auto& line : lines) {
@@ -108,7 +113,7 @@ void write_automessage() {
 }
 
 
-char ShowAMsgMenuAndGetInput(const std::string& autoMessageLockFileName) {
+char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName) {
   bool bCanWrite = false;
   if (!GetSession()->GetCurrentUser()->IsRestrictionAutomessage() && !WFile::Exists(autoMessageLockFileName)) {
     bCanWrite = (getslrec(GetSession()->GetEffectiveSl()).posts) ? true : false;
@@ -133,13 +138,13 @@ char ShowAMsgMenuAndGetInput(const std::string& autoMessageLockFileName) {
  * Main Automessage menu.  Displays the auto message then queries for input.
  */
 void do_automessage() {
-  std::stringstream lockFileStream;
+  stringstream lockFileStream;
   lockFileStream << syscfg.gfilesdir << LOCKAUTO_MSG;
-  std::string automessageLockFile = lockFileStream.str();
+  string automessageLockFile = lockFileStream.str();
 
-  std::stringstream autoMessageStream;
+  stringstream autoMessageStream;
   autoMessageStream << syscfg.gfilesdir << AUTO_MSG;
-  std::string autoMessageFile = autoMessageStream.str();
+  string autoMessageFile = autoMessageStream.str();
 
   // initally show the auto message
   read_automessage();
@@ -160,12 +165,11 @@ void do_automessage() {
       break;
     case 'A': {
       grab_quotes(NULL, NULL);
-      WStatus *pStatus = GetApplication()->GetStatusManager()->GetStatus();
+      unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
       if (pStatus->GetAutoMessageAuthorUserNumber() > 0) {
         strcpy(irt, "Re: AutoMessage");
         email(pStatus->GetAutoMessageAuthorUserNumber(), 0, false, pStatus->IsAutoMessageAnonymous() ? anony_sender : 0);
       }
-      delete pStatus;
     }
     break;
     case 'D':
