@@ -177,6 +177,7 @@ static void winput_password(CursesWindow* dialog, string *output, int nMaxLength
 
   int curpos = 0;
   string s;
+  s.resize(nMaxLength);
   output->clear();
   for (;;) {
     int ch = dialog->GetChar();
@@ -188,7 +189,7 @@ static void winput_password(CursesWindow* dialog, string *output, int nMaxLength
 #ifdef PADENTER
     case PADENTER:
 #endif
-      s[curpos] = '\0';
+      s.resize(curpos);
       output->assign(s);
       return;
     case 23: // Ctrl-W
@@ -205,8 +206,7 @@ static void winput_password(CursesWindow* dialog, string *output, int nMaxLength
     case 26:  // control Z
       break;
     case 27:  { // escape
-      s.clear();
-      output->assign(s);
+      output->clear();
       return;
     };
     case 8:
