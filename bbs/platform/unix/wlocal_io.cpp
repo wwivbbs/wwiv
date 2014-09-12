@@ -43,8 +43,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
     if (!fileGlobalCap.IsOpen()) {
       snprintf(szFileName, sizeof(szFileName), "%sglobal-%d.txt", syscfg.gfilesdir, GetApplication()->GetInstanceNumber());
       fileGlobalCap.SetName(szFileName);
-      bool bOpen = fileGlobalCap.Open(WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite,
-                                      WFile::shareUnknown, WFile::permReadWrite);
+      bool bOpen = fileGlobalCap.Open(WFile::modeBinary | WFile::modeAppend | WFile::modeCreateFile | WFile::modeReadWrite);
       global_ptr = 0;
       global_buf = static_cast<char *>(BbsAllocA(GLOBAL_SIZE));
       if (!bOpen || (!global_buf)) {
@@ -104,11 +103,10 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
       snprintf(szTempFileName, sizeof(szTempFileName), "%s%s", syscfgovr.tempdir, pszFileName);
       fileGlobalCap.SetName(szTempFileName);
       if (ovwr) {
-        fileGlobalCap.Open(WFile::modeBinary | WFile::modeText | WFile::modeCreateFile | WFile::modeReadWrite,
-                           WFile::shareUnknown, WFile::permReadWrite);
+        fileGlobalCap.Open(WFile::modeBinary | WFile::modeText | WFile::modeCreateFile | WFile::modeReadWrite);
       } else {
         fileGlobalCap.Open(WFile::modeBinary | WFile::modeText | WFile::modeCreateFile | WFile::modeAppend |
-                           WFile::modeReadWrite, WFile::shareUnknown, WFile::permReadWrite);
+                           WFile::modeReadWrite);
       }
       global_ptr = 0;
       express = true;

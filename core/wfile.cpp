@@ -71,7 +71,7 @@
 #define _stat stat
 #define _fstat fstat
 #define Sleep(x) usleep((x)*1000)
-#define _sopen(n, f, s, p) open(n, f, 0644)
+#define _sopen(n, f, s) open(n, f, 0644)
 
 #endif  // _WIN32
 

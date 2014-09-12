@@ -863,11 +863,6 @@ void remove_batch(const char *pszFileName);
 // File: xfertmp.cpp
 
 bool bad_filename(const char *pszFileName);
-int  check_for_files_arc(const char *pszFileName);
-int  check_for_files_zip(const char *pszFileName);
-int  check_for_files_lzh(const char *pszFileName);
-int  check_for_files_arj(const char *pszFileName);
-bool check_for_files(const char *pszFileName);
 // returns true if the file is downloaded.
 bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio);
 void add_arc(const char *arc, const char *pszFileName, int dos);

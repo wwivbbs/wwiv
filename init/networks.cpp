@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "template.h"
 
+#include <cmath>
 #include <cstring>
 #include <cstdlib>
 #include <memory>
