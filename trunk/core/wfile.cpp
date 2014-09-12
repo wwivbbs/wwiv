@@ -152,12 +152,12 @@ bool WFile::Open(int nFileMode, int nShareMode) {
     logger_->LogMessage("\rSH_OPEN %s, access=%u\r\n", full_path_name_.c_str(), nFileMode);
   }
 
-  handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode);
+  handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
   if (handle_ < 0) {
     int count = 1;
     if (access(full_path_name_.c_str(), 0) != -1) {
       Sleep(WAIT_TIME_SECONDS);
-      handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode);
+      handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
       while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
         Sleep((count % 2) ? WAIT_TIME_SECONDS : 0);
         if (debug_level_ > 0) {
