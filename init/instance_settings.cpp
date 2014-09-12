@@ -160,8 +160,8 @@ void instance_editor() {
   window->PrintfXY(2, 2, "Batch Directory     :");
 
   EditItems items{
-    new StringEditItem<char*>(COL1_POSITION, 1, 50, instance.tempdir, FILENAME_UPPERCASE),
-    new StringEditItem<char*>(COL1_POSITION, 2, 50, instance.batchdir, FILENAME_UPPERCASE),
+    new FilePathItem(COL1_POSITION, 1, 50, instance.tempdir),
+    new FilePathItem(COL1_POSITION, 2, 50, instance.batchdir),
   };
   items.set_curses_io(out, window.get());
   vector<HelpItem> help_items = { { "A", "Add" } };

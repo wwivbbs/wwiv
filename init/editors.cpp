@@ -64,8 +64,8 @@ void edit_editor(editorrec* c) {
     new ToggleEditItem<uint8_t>(COL1_POSITION, 2, bbs_types, &c->bbs_type),
     new FlagEditItem<uint8_t>(COL1_POSITION, 3, ansir_no_DOS, "No ", "Yes", &c->ansir),
     new FlagEditItem<uint8_t>(COL1_POSITION, 4, ansir_emulate_fossil, "Yes", "No ", &c->ansir),
-    new StringEditItem<char*>(2, 6, 75, c->filename, false),
-    new StringEditItem<char*>(2, 9, 75, c->filenamecon, false)
+    new CommandLineItem(2, 6, 75, c->filename),
+    new CommandLineItem(2, 9, 75, c->filenamecon)
   };
   items.set_curses_io(out, window.get());
 
