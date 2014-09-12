@@ -85,14 +85,11 @@ static void write_subs() {
 }
 
 static void del_net(CursesWindow* window, int nn) {
-  int i, t, r, nu, i1, i2;
-  mailrec m;
-  char *u;
-  postrec *p;
+//  int i, nu, i1, i2;
 
   read_subs(window);
 
-  for (i = 0; i < initinfo.num_subs; i++) {
+  for (int i = 0; i < initinfo.num_subs; i++) {
     if (subboards[i].age & 0x80) {
       if (subboards[i].name[40] == nn) {
         subboards[i].type = 0;
@@ -102,6 +99,7 @@ static void del_net(CursesWindow* window, int nn) {
         subboards[i].name[40]--;
       }
     }
+    int i2;
     for (i2 = 0; i2 < i; i2++) {
       if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
         break;
@@ -110,8 +108,8 @@ static void del_net(CursesWindow* window, int nn) {
     if (i2 >= i) {
       iscan1(i);
       open_sub(true);
-      for (i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
-        p = get_post(i1);
+      for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
+        postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
           if (p->title[80] == nn) {
             p->title[80] = -1;
@@ -132,16 +130,13 @@ static void del_net(CursesWindow* window, int nn) {
   sprintf(szFileName, "%semail.dat", syscfg.datadir);
   int hFile = open(szFileName, O_BINARY | O_RDWR);
   if (hFile != -1) {
-    t = (int)(filelength(hFile) / sizeof(mailrec));
-    for (r = 0; r < t; r++) {
-      lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
+    long t = filelength(hFile) / sizeof(mailrec);
+    for (int r = 0; r < t; r++) {
+      mailrec m;
+      lseek(hFile, r*sizeof(mailrec), SEEK_SET);
       read(hFile, &m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
-        if (m.status & status_source_verified) {
-          i = 78;
-        } else {
-          i = 80;
-        }
+        int i = (m.status & status_source_verified) ? 78 : 80;
         if ((int) strlen(m.title) >= i) {
           m.title[i] = m.title[i - 1] = 0;
         }
@@ -151,7 +146,7 @@ static void del_net(CursesWindow* window, int nn) {
         } else if (m.title[i] > nn) {
           m.title[i]--;
         }
-        lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
+        lseek(hFile, r*sizeof(mailrec), SEEK_SET);
         write(hFile, &m, sizeof(mailrec));
       }
     }
@@ -159,11 +154,11 @@ static void del_net(CursesWindow* window, int nn) {
   }
 
 
-  u = (char *)malloc(syscfg.userreclen);
+  char* u = (char *)malloc(syscfg.userreclen);
 
   read_user(1, (userrec *)u);
-  nu = number_userrecs();
-  for (i = 1; i <= nu; i++) {
+  int nu = number_userrecs();
+  for (int i = 1; i <= nu; i++) {
     read_user(i, (userrec *)u);
     if (UINT(u, syscfg.fsoffset)) {
       if (UCHAR(u, syscfg.fnoffset) == nn) {
@@ -178,22 +173,19 @@ static void del_net(CursesWindow* window, int nn) {
 
   free(u);
 
-  for (i = nn; i < initinfo.net_num_max; i++) {
+  for (int i = nn; i < initinfo.net_num_max; i++) {
     net_networks[i] = net_networks[i + 1];
   }
   initinfo.net_num_max--;
 
   sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
-  i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(i, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
-  close(i);
+  int f = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  write(f, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
+  close(f);
 }
 
 static void insert_net(CursesWindow* window, int nn) {
-  int i, t, r, nu, i1, i2;
-  mailrec m;
-  char *u;
-  postrec *p;
+  int i, i1, i2;
 
   read_subs(window);
 
@@ -212,7 +204,7 @@ static void insert_net(CursesWindow* window, int nn) {
       iscan1(i);
       open_sub(true);
       for (i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
-        p = get_post(i1);
+        postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
           if (p->title[80] >= nn) {
             p->title[80]++;
@@ -230,9 +222,10 @@ static void insert_net(CursesWindow* window, int nn) {
   sprintf(szFileName, "%semail.dat", syscfg.datadir);
   int hFile = open(szFileName, O_BINARY | O_RDWR);
   if (hFile != -1) {
-    t = (int)(filelength(hFile) / sizeof(mailrec));
-    for (r = 0; r < t; r++) {
-      lseek(hFile, (long)(sizeof(mailrec)) * (long)(r), SEEK_SET);
+    long t = filelength(hFile) / sizeof(mailrec);
+    for (int r = 0; r < t; r++) {
+      mailrec m;
+      lseek(hFile, sizeof(mailrec) * r, SEEK_SET);
       read(hFile, &m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
         i = (m.status & status_source_verified) ? 78 : 80;
@@ -250,10 +243,10 @@ static void insert_net(CursesWindow* window, int nn) {
     close(hFile);
   }
 
-  u = (char *)malloc(syscfg.userreclen);
+  char* u = (char *)malloc(syscfg.userreclen);
 
   read_user(1, (userrec *)u);
-  nu = number_userrecs();
+  int nu = number_userrecs();
   for (i = 1; i <= nu; i++) {
     read_user(i, (userrec *)u);
     if (UINT(u, syscfg.fsoffset)) {
@@ -284,8 +277,6 @@ static void insert_net(CursesWindow* window, int nn) {
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
 
 void networks() {
-  bool done = false;
-
   if (!WFile::Exists("NETWORK.EXE")) {
     vector<string> lines{
       "WARNING",
@@ -298,12 +289,13 @@ void networks() {
     messagebox(out->window(), lines);
   }
 
+  bool done = false;
   do {
     out->Cls(ACS_CKBOARD);
 
     vector<ListBoxItem> items;
     for (int i = 0; i < initinfo.net_num_max; i++) {
-      items.emplace_back(StringPrintf("%-2d. %-15s   @%-5u  %s", i + 1, net_networks[i].name, net_networks[i].sysnum, net_networks[i].dir));
+      items.emplace_back(StringPrintf("@%u %s", net_networks[i].sysnum, net_networks[i].name));
     }
     CursesWindow* window = out->window();
     ListBox list(out, window, "Select Network", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
@@ -361,11 +353,12 @@ void networks() {
     }
   } while (!done);
 
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
-  int hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  write(hFile, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
-  close(hFile);
+  WFile file (syscfg.datadir, "networks.dat");
+  if (file.Open(WFile::modeReadWrite|WFile::modeCreateFile|WFile::modeTruncate|WFile::modeBinary,
+    WFile::shareDenyReadWrite, WFile::permReadWrite)) {
+    file.Write(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
+  }
+  file.Close();
 }
 
 static void edit_net(int nn) {
