@@ -33,7 +33,9 @@
 
 #include <curses.h>
 
+#include "core/strings.h"
 #include "core/wfile.h"
+#include "core/wtextfile.h"
 #include "core/wwivport.h"
 #include "init/archivers.h"
 #include "init/ifcns.h"
@@ -46,62 +48,31 @@ extern char bbsdir[];
 
 using std::string;
 using std::vector;
+using wwiv::strings::StringPrintf;
 
 static void create_text(const char *pszFileName) {
-  char szFullFileName[MAX_PATH];
-  char szMessage[ 255 ];
-
-  sprintf(szFullFileName, "gfiles%c%s", WFile::pathSeparatorChar, pszFileName);
-  int hFile = open(szFullFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
-  sprintf(szMessage, "This is %s.\nEdit to suit your needs.\r\n", pszFileName);
-  write(hFile, szMessage, strlen(szMessage));
-  close(hFile);
+  WTextFile file("gfiles", pszFileName, "wt");
+  file.WriteLine(StringPrintf("This is %s.", pszFileName));
+  file.WriteLine("Edit to suit your needs.");
+  file.Close();
 }
 
-static char *date() {
-  static char ds[9];
-  time_t t;
-  time(&t);
+static string date() {
+  time_t t = time(NULL);
   struct tm * pTm = localtime(&t);
-
-  sprintf(ds, "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
-  return ds;
+  return StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
 }
 
 #define OFFOF(x) (short) (((long)(&(user_record.x))) - ((long)&user_record))
 
-static int qscn_file = -1;
 static uint32_t *qsc;
 
-static int open_qscn() {
-  char szFileName[MAX_PATH];
-
-  if (qscn_file == -1) {
-    sprintf(szFileName, "%suser.qsc", syscfg.datadir);
-    qscn_file = open(szFileName, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
-    if (qscn_file < 0) {
-      qscn_file = -1;
-      return 0;
-    }
-  }
-  return 1;
-}
-
-static void close_qscn() {
-  if (qscn_file != -1) {
-    close(qscn_file);
-    qscn_file = -1;
-  }
-}
-
-static void write_qscn(unsigned int un, uint32_t *qscn, int stayopen) {
-  if (open_qscn()) {
-    long pos = ((long)syscfg.qscn_len) * ((long)un);
-    lseek(qscn_file, pos, SEEK_SET);
-    write(qscn_file, qscn, syscfg.qscn_len);
-    if (!stayopen) {
-      close_qscn();
-    }
+static void write_qscn(unsigned int un, uint32_t *qscn) {
+  WFile file(syscfg.datadir, "user.qsc");
+  if (file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile)) {
+    file.Seek(syscfg.qscn_len * un, WFile::seekBegin);
+    file.Write(qscn, syscfg.qscn_len);
+    file.Close();
   }
 }
 
@@ -275,12 +246,13 @@ static void init_files(CursesWindow* window) {
 
   memset(&status, 0, sizeof(statusrec));
 
-  strcpy(status.date1, date());
+  string now(date());
+  strcpy(status.date1, now.c_str());
   strcpy(status.date2, "00/00/00");
   strcpy(status.date3, "00/00/00");
   strcpy(status.log1, "000000.LOG");
   strcpy(status.log2, "000000.LOG");
-  strcpy(status.gfiledate, date());
+  strcpy(status.gfiledate, now.c_str());
   window->Printf(".");
   status.callernum = 65535;
   status.qscanptr = 2;
@@ -295,11 +267,11 @@ static void init_files(CursesWindow* window) {
   userrec u;
   memset(&u, 0, sizeof(u));
   write_user(0, &u);
-  write_qscn(0, qsc, 0);
+  write_qscn(0, qsc);
   u.inact = inact_deleted;
   // Note: this is where init makes a user record #1 that is deleted for new installs.
   write_user(1, &u);
-  write_qscn(1, qsc, 0);
+  write_qscn(1, qsc);
   window->Printf(".");
   int hFile = open("data/names.lst", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   close(hFile);
@@ -319,7 +291,7 @@ static void init_files(CursesWindow* window) {
 
   memset(&d1, 0, sizeof(directoryrec));
 
-   window->Printf(".");
+  window->Printf(".");
   strcpy(d1.name, "Sysop");
   strcpy(d1.filename, "SYSOP");
   sprintf(d1.path, "dloads%csysop%c", WFile::pathSeparatorChar, WFile::pathSeparatorChar);
@@ -327,7 +299,7 @@ static void init_files(CursesWindow* window) {
   d1.dsl = 100;
   d1.maxfiles = 50;
   d1.type = 65535;
-   window->Printf(".");
+  window->Printf(".");
   hFile = open("data/dirs.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   write(hFile, &d1, sizeof(directoryrec));
 
@@ -345,7 +317,7 @@ static void init_files(CursesWindow* window) {
   d1.type = 0;
   write(hFile, &d1, sizeof(directoryrec));
   close(hFile);
-   window->Printf(".\n");
+  window->Printf(".\n");
   ////////////////////////////////////////////////////////////////////////////
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Copying String and Miscellaneous files.");
@@ -390,27 +362,25 @@ static void init_files(CursesWindow* window) {
     window->Printf(".");
   }
   if (WFile::Exists("regions.zip")) {
-    char szDestination[MAX_PATH];
     window->Printf(".");
     system("unzip -qq -o regions.zip -ddata");
     window->Printf(".");
-    sprintf(szDestination, "dloads%csysop%cregions.zip",
+    const string dest = StringPrintf("dloads%csysop%cregions.zip",
             WFile::pathSeparatorChar, WFile::pathSeparatorChar);
-    rename("regions.zip", szDestination);
+    rename("regions.zip", dest.c_str());
     window->Printf(".");
   }
   if (WFile::Exists("zip-city.zip")) {
-    char szDestination[MAX_PATH];
     window->Printf(".");
     system("unzip -qq -o zip-city.zip -ddata");
     window->Printf(".");
-    sprintf(szDestination, "dloads%csysop%czip-city.zip",
+    const string dest = StringPrintf("dloads%csysop%czip-city.zip",
             WFile::pathSeparatorChar, WFile::pathSeparatorChar);
-    rename("zip-city.zip", szDestination);
+    rename("zip-city.zip", dest.c_str());
     window->Printf(".");
   }
   window->SetColor(SchemeId::NORMAL);
-  window->Printf(".\n");
+  window->Printf(".");
 }
 
 void new_init(CursesWindow* window) {
@@ -444,7 +414,7 @@ void new_init(CursesWindow* window) {
       chdir(bbsdir);
     }
   }
-  window->Printf(".\n");
+  window->Printf(".");
 
   init_files(window);
 }

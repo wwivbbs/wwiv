@@ -36,6 +36,7 @@
 #include "init.h"
 #include "input.h"
 #include "core/strings.h"
+#include "core/wfile.h"
 #include "core/wwivport.h"
 #include "bbs/wconstants.h" // for MAX_ARCHIVERS
 #include "initlib/input.h"
@@ -141,28 +142,23 @@ void create_arcs(CursesWindow* window) {
     strncpy(arc[i].arct, "archive test command", 50);
   }
 
-  char szFileName[MAX_PATH];
-  sprintf(szFileName, "%sarchiver.dat", syscfg.datadir);
-  int hFile = _open(szFileName, O_WRONLY | O_BINARY | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
-  if (hFile < 0) {
-    messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", szFileName));
+  WFile file(syscfg.datadir, "archiver.dat");
+  if (!file.Open(WFile::modeWriteOnly|WFile::modeBinary|WFile::modeCreateFile)) {
+    messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", file.GetFullPathName().c_str()));
     exit_init(1);
   }
-  _write(hFile, arc, MAX_ARCS * sizeof(arcrec));
-  _close(hFile);
+  file.Write(arc, MAX_ARCS * sizeof(arcrec));
 }
 
 void edit_archivers() {
   arcrec arc[MAX_ARCS];
 
-  char szFileName[MAX_PATH];
-  sprintf(szFileName, "%sarchiver.dat", syscfg.datadir);
-  int hFile = open(szFileName, O_RDWR | O_BINARY);
-  if (hFile < 0) {
+  WFile file(syscfg.datadir, "archiver.dat");
+  if (!file.Open(WFile::modeReadWrite|WFile::modeBinary)) {
     create_arcs(out->window());
-    hFile = open(szFileName, O_RDWR | O_BINARY);
+    file.Open(WFile::modeReadWrite|WFile::modeBinary);
   }
-  read(hFile, &arc, MAX_ARCS * sizeof(arcrec));
+  file.Read(&arc, MAX_ARCS * sizeof(arcrec));
   
   bool done = false;
   do {
@@ -197,8 +193,7 @@ void edit_archivers() {
   }
 
   // seek to beginning of file, write arcrecs, close file
-  _lseek(hFile, 0L, SEEK_SET);
-  _write(hFile, arc, MAX_ARCS * sizeof(arcrec));
-  _close(hFile);
+  file.Seek(0, WFile::seekBegin);
+  file.Write(arc, MAX_ARCS * sizeof(arcrec));
 }
 

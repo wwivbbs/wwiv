@@ -36,10 +36,10 @@ public:
   bool IsEndOfFile() { return feof(file_) ? true : false; }
 
   // Writes a line of text without \r\n
-  int Write(const std::string text) { return (fputs(text.c_str(), file_) >= 0) ? text.size() : 0; }
+  int Write(const std::string& text) { return (fputs(text.c_str(), file_) >= 0) ? text.size() : 0; }
   
   // Writes a line of text including \r\n
-  int WriteLine(const std::string text);
+  int WriteLine(const std::string& text);
   
   // Writes a single character to a text file.
   int WriteChar(char ch) { return fputc(ch, file_); }
