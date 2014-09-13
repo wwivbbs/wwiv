@@ -20,7 +20,10 @@
 
 #include "wwiv.h"
 
-static char *mallocin_file(const char *pszFileName, long *len) {
+static xtrasubsnetrec *xsubsn;
+static int nn;
+
+static char *mallocin_file(const char *pszFileName, size_t *len) {
   *len = 0;
   char* ss = NULL;
 
@@ -38,7 +41,6 @@ static char *mallocin_file(const char *pszFileName, long *len) {
   return ss;
 }
 
-
 static char *skipspace(char *ss2) {
   while ((*ss2) && ((*ss2 != ' ') && (*ss2 != '\t'))) {
     ++ss2;
@@ -51,11 +53,6 @@ static char *skipspace(char *ss2) {
   }
   return ss2;
 }
-
-
-static xtrasubsnetrec *xsubsn;
-static int nn;
-
 
 static xtrasubsnetrec *fsub(int netnum, int type) {
   if (type != 0) {
@@ -70,7 +67,7 @@ static xtrasubsnetrec *fsub(int netnum, int type) {
 
 
 bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
-  char *ss, *ss1, *ss2;
+  char *ss1, *ss2;
   int n, curn;
   short i = 0;
   char s[81];
@@ -89,26 +86,16 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
     xsubsn = NULL;
     xsubs = NULL;
   }
-  long l = static_cast<long>(nMaxSubs) * sizeof(xtrasubsrec);
+  size_t l = nMaxSubs * sizeof(xtrasubsrec);
   xsubs = static_cast<xtrasubsrec *>(malloc(l + 1));
   if (!xsubs) {
     std::cout << "Insufficient memory (" << l << "d bytes) for SUBS.XTR" << std::endl;
     return false;
   }
-  char *xx = reinterpret_cast<char*>(xsubs);
-  while (l > 0) {
-    if (l > 32768) {
-      memset(xx, 0, 32768);
-      l -= 32768;
-      xx += 32768;
-    } else {
-      memset(xx, 0, l);
-      break;
-    }
-  }
+  memset(xsubs, 0, l);
 
   sprintf(s, "%s%s", syscfg.datadir, SUBS_XTR);
-  ss = mallocin_file(s, &l);
+  char* ss = mallocin_file(s, &l);
   nn = 0;
   if (ss) {
     for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(NULL, "\r\n")) {
