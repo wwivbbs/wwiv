@@ -18,12 +18,16 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include <string>
+#include <vector>
+
 #include "core/strings.h"
 
 using std::cout;
 using std::endl;
 using std::ostringstream;
 using std::string;
+using std::vector;
 
 using namespace wwiv::strings;
 
@@ -95,4 +99,43 @@ TEST(StringsTest, StringReplace_NotFound) {
   string expected(s);
   EXPECT_EQ(expected, StringReplace(&s, "Dude", "Where's my car"));
   EXPECT_EQ(expected, s);
+}
+
+TEST(StringsTest, SplitString_Basic) {
+  const string s = "Hello World";
+  vector<string> expected = { "Hello", "World" };
+  vector<string> actual;
+  SplitString(s, " ", &actual);
+  EXPECT_EQ(expected, actual);
+}
+
+TEST(StringsTest, SplitString_BasicReturned) {
+  const string s = "Hello World";
+  vector<string> expected = { "Hello", "World" };
+  vector<string> actual = SplitString(s, " ");
+  EXPECT_EQ(expected, actual);
+}
+
+TEST(StringsTest, SplitString_ExtraSingleDelim) {
+  const string s = "Hello   World";
+  vector<string> expected = { "Hello", "World" };
+  vector<string> actual;
+  SplitString(s, " ", &actual);
+  EXPECT_EQ(expected, actual);
+}
+
+TEST(StringsTest, SplitString_TwoDelims) {
+  const string s = "Hello\tWorld Everyone";
+  vector<string> expected = { "Hello", "World", "Everyone" };
+  vector<string> actual;
+  SplitString(s, " \t", &actual);
+  EXPECT_EQ(expected, actual);
+}
+
+TEST(StringsTest, SplitString_TwoDelimsBackToBack) {
+  const string s = "Hello\t\tWorld  \t\t  Everyone";
+  vector<string> expected = { "Hello", "World", "Everyone" };
+  vector<string> actual;
+  SplitString(s, " \t", &actual);
+  EXPECT_EQ(expected, actual);
 }

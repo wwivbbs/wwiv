@@ -26,6 +26,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
+
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
@@ -39,7 +41,10 @@ const char *DELIMS_WHITE = " \t\r\n";
 
 bool IsColorCode(char c);
 
+using std::ostringstream;
 using std::string;
+using std::stringstream;
+using std::vector;
 
 namespace wwiv {
 namespace strings {
@@ -60,35 +65,34 @@ string StringPrintf(const char *pszFormattedText, ...) {
 }
 
 string StrCat(string s1, string s2) {
-  std::ostringstream ss;
+  ostringstream ss;
   ss << s1 << s2;
   return ss.str();
 }
 
 string StrCat(string s1, string s2, string s3) {
-  std::ostringstream ss;
+  ostringstream ss;
   ss << s1 << s2 << s3;
   return ss.str();
 }
 
 string StrCat(string s1, string s2, string s3, string s4) {
-  std::ostringstream ss;
+  ostringstream ss;
   ss << s1 << s2 << s3 << s4;
   return ss.str();
 }
 
 string StrCat(string s1, string s2, string s3, string s4, string s5) {
-  std::ostringstream ss;
+  ostringstream ss;
   ss << s1 << s2 << s3 << s4 << s5;
   return ss.str();
 }
 
 string StrCat(string s1, string s2, string s3, string s4, string s5, string s6) {
-  std::ostringstream ss;
+  ostringstream ss;
   ss << s1 << s2 << s3 << s4 << s5 << s6;
   return ss.str();
 }
-
 
 /**
  * Gets the length of the C style string.  This function returns an int
@@ -129,14 +133,12 @@ bool IsEqualsIgnoreCase(const char *pszString1, const char *pszString2) {
   return (StringCompareIgnoreCase(pszString1, pszString2) == 0) ? true : false;
 }
 
-
 int StringCompareIgnoreCase(const char *pszString1, const char *pszString2) {
   WWIV_ASSERT(pszString1);
   WWIV_ASSERT(pszString2);
 
   return strcasecmp(pszString1, pszString2);
 }
-
 
 int StringCompare(const char *pszString1, const char *pszString2) {
   WWIV_ASSERT(pszString1);
@@ -150,18 +152,15 @@ short StringToShort(const char *pszString) {
   return static_cast<short>(atoi(pszString));
 }
 
-
 unsigned short StringToUnsignedShort(const char *pszString) {
   WWIV_ASSERT(pszString);
   return static_cast<unsigned short>(atoi(pszString));
 }
 
-
 char StringToChar(const char *pszString) {
   WWIV_ASSERT(pszString);
   return static_cast<char>(atoi(pszString));
 }
-
 
 unsigned char StringToUnsignedChar(const char *pszString) {
   WWIV_ASSERT(pszString);
@@ -177,10 +176,26 @@ const string& StringReplace(string* orig, const string old_string, const string 
   return *orig;
 }
 
+vector<string> SplitString(const string& original_string, const string& delims) {
+  vector<string> v;
+  SplitString(original_string, delims, &v);
+  return v;
+}
+
+void SplitString(const string& original_string, const string& delims, vector<string>* out) {
+  string s(original_string);
+  for (string::size_type found = s.find_first_of(delims); found != string::npos; s = s.substr(found + 1), found = s.find_first_of(delims)) {
+    if (found) {
+      out->push_back(s.substr(0, found));
+    }
+  }
+  if (!s.empty()){
+    out->push_back(s);
+  }
+}
 
 }  // namespace strings
 }  // namespace wwiv
-
 
 /**
  * Returns string comprised of char chRepeatChar, nStringLength characters in length
@@ -250,7 +265,7 @@ char *stripcolors(const char *pszOrig) {
  * @return A new string without the color codes
  */
 std::string stripcolors(const string& orig) {
-  std::ostringstream os;
+  ostringstream os;
   for (string::const_iterator i = orig.begin(); i != orig.end(); i++) {
     if (*i == '|' && (i + 1) != orig.end() && (i + 2) != orig.end() && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {
       ++i;
@@ -530,7 +545,7 @@ std::string properize(const std::string text) {
   }
 
   char last = ' ';
-  std::ostringstream os;
+  ostringstream os;
   for (std::string::const_iterator i = text.begin(); i != text.end(); i++) {
     if (last == ' ' || last == '-' || last == '.') {
       os << wwiv::UpperCase<char>(*i);
