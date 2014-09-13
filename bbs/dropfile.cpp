@@ -26,12 +26,9 @@
 
 using std::string;
 
-//
 // Local functions
-//
 int GetDoor32Emulation();
 int GetDoor32CommType();
-int GetDoor32TimeLeft(double seconds);
 void GetNamePartForDropFile(bool lastName, char *pszName);
 void create_drop_files();
 string GetComSpeedInDropfileFormat(unsigned long lComSpeed);
@@ -66,7 +63,6 @@ const string create_filename(int nDropFileType) {
   return string(os.str());
 }
 
-
 /**
  * Returns first or last name from string (s) back into s
  */
@@ -91,7 +87,6 @@ string GetComSpeedInDropfileFormat(unsigned long lComSpeed) {
   return string(os.str());
 }
 
-
 long GetMinutesRemainingForDropFile() {
   long time_left = std::max<long>((static_cast<long>(nsl() / 60)) - 1L, 0);
   bool using_modem = GetSession()->using_modem != 0;
@@ -99,11 +94,10 @@ long GetMinutesRemainingForDropFile() {
     // When we generate a dropfile from the WFC, give it a suitable amount
     // of time remaining vs. 1 minute since we don't have an active session.
     // Also allow at least an hour for all local users.
-    return std::min<long>(60, time_left);
+    return std::max<long>(60, time_left);
   }
   return time_left;
 }
-
 
 /** make DORINFO1.DEF (RBBS and many others) dropfile */
 void CreateDoorInfoDropFile() {
@@ -268,7 +262,6 @@ void CreateCallInfoBbsDropFile() {
   }
 }
 
-
 /** Make DOOR32.SYS drop file */
 void CreateDoor32SysDropFile() {
   /* =========================================================================
@@ -286,7 +279,6 @@ void CreateDoor32SysDropFile() {
      58                      Line 9 : User's time left (in minutes)
      1                       Line 10: Emulation *See Below
      1                       Line 11: Current node number
-
 
     * The following are values we've predefined for the emulation:
 
@@ -311,13 +303,12 @@ void CreateDoor32SysDropFile() {
     file.WriteFormatted("%s\n",      GetSession()->GetCurrentUser()->GetRealName());
     file.WriteFormatted("%s\n",      GetSession()->GetCurrentUser()->GetName());
     file.WriteFormatted("%d\n",      GetSession()->GetCurrentUser()->GetSl());
-    file.WriteFormatted("%d\n",      GetDoor32TimeLeft(nsl()));
+    file.WriteFormatted("%d\n",      60 * GetMinutesRemainingForDropFile());
     file.WriteFormatted("%d\n",      GetDoor32Emulation());
     file.WriteFormatted("%u\n",      GetApplication()->GetInstanceNumber());
     file.Close();
   }
 }
-
 
 /** Create generic DOOR.SYS dropfile */
 void CreateDoorSysDropFile() {
@@ -408,8 +399,6 @@ void CreateDoorSysDropFile() {
   }
 }
 
-
-
 void create_drop_files() {
   CreateDoorInfoDropFile();
   CreatePCBoardSysDropFile();
@@ -417,7 +406,6 @@ void create_drop_files() {
   CreateDoorSysDropFile();
   CreateDoor32SysDropFile();
 }
-
 
 const std::string create_chain_file() {
   std::string cspeed;
@@ -429,7 +417,6 @@ const std::string create_chain_file() {
     // often than not.
     syscfgovr.primaryport = 1;
   }
-
 
   if (com_speed == 1 || com_speed == 49664) {
     cspeed = "115200";
@@ -495,7 +482,6 @@ const std::string create_chain_file() {
   return std::string(fileName);
 }
 
-
 int GetDoor32CommType() {
   if (!GetSession()->using_modem) {
     return 0;
@@ -507,14 +493,6 @@ int GetDoor32CommType() {
 #endif
 }
 
-
 int GetDoor32Emulation() {
   return (okansi()) ? 1 : 0;
 }
-
-
-int GetDoor32TimeLeft(double seconds) {
-  return (seconds <= 0) ? 0 : static_cast<int>(seconds / 60);
-}
-
-
