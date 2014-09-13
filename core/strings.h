@@ -20,6 +20,7 @@
 #define __INCLUDED_STRINGS_H__
 
 #include <string>
+#include <vector>
 
 #define JUSTIFY_LEFT   0
 #define JUSTIFY_RIGHT  1
@@ -45,6 +46,9 @@ unsigned short StringToUnsignedShort(const char *pszString);
 char StringToChar(const char *pszString);
 unsigned char StringToUnsignedChar(const char *pszString);
 const std::string& StringReplace(std::string* orig, const std::string old_string, const std::string new_string);
+std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims);
+void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out);
+
 
 }  // namespace strings
 
