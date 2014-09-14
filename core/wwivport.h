@@ -20,19 +20,6 @@
 #ifndef __INCLUDED_PLATFORM_INCL1_H__
 #define __INCLUDED_PLATFORM_INCL1_H__
 
-////////////////////////////////////////////////////////////////////////////////
-// WIN32 Specific section
-
-#if defined (_WIN32)
-
-#define vsnprintf _vsnprintf
-#define snprintf _snprintf
-
-#endif   // _WIN32
-
-////////////////////////////////////////////////////////////////////////////////
-// UNIX Common Section.
-
 #if defined ( __unix__ ) || defined ( __APPLE__ )
 
 #include <unistd.h>
@@ -50,12 +37,6 @@
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif
-#define MAX_EXT   260
-#define MAX_DIR   260
-#define MAX_FNAME 260
-#define MAX_DRIVE 260
-#define WWIV_FILE_SEPERATOR_CHAR  '/'
-#define WWIV_FILE_SEPERATOR_STRING  "/"
 
 #define _tzset(s) tzset(s)
 #define _putenv(s)  putenv(s)

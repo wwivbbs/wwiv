@@ -24,6 +24,7 @@
 #include "bbs/wuser.h"
 #include "bbs/platform/platformfcns.h"
 #include "bbs/fcns.h"
+#include "core/strings.h"
 #include "core/wfile.h"
 #include "core/wwivport.h"
 #include "core/wwivassert.h"
