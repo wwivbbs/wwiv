@@ -375,7 +375,7 @@ bool checka(bool *abort, bool *next) {
 
 // Prints an abortable string (contained in *pszText). Returns 1 in *abort if the
 // string was aborted, else *abort should be zero.
-void pla(const std::string text, bool *abort) {
+void pla(const std::string& text, bool *abort) {
   if (CheckForHangup()) {
     *abort = true;
   }
@@ -390,7 +390,7 @@ void pla(const std::string text, bool *abort) {
   }
 }
 
-void plal(const std::string text, std::string::size_type limit, bool *abort) {
+void plal(const std::string& text, std::string::size_type limit, bool *abort) {
   CheckForHangup();
   if (hangup) {
     *abort = true;

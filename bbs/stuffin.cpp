@@ -16,7 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/stuffin.h"
 
+#include <string>
 #include <vector>
 
 #include "wcomm.h"
@@ -52,8 +54,9 @@ const unsigned int GetTimeLeft();
  * @todo Document this
  */
 
-const std::string stuff_in(const std::string commandline, const std::string arg1,
-                           const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5) {
+const std::string stuff_in(const std::string& commandline, const std::string& arg1,
+                           const std::string& arg2, const std::string& arg3,
+                           const std::string& arg4, const std::string& arg5) {
   std::vector<std::string> flags;
   flags.push_back(arg1);
   flags.push_back(arg2);

@@ -17,11 +17,12 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #include <algorithm>
 
 #include "bbs/input.h"
 #include "bbs/printfile.h"
+#include "bbs/stuffin.h"
 #include "core/inifile.h"
 #include "core/wtextfile.h"
 

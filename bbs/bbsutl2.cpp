@@ -95,7 +95,7 @@ const char *ctypes(int num) {
  * @param abort The abort flag (Output Parameter)
  * @param next The next flag (Output Parameter)
  */
-void osan(const std::string text, bool *abort, bool *next) {
+void osan(const std::string& text, bool *abort, bool *next) {
   CheckForHangup();
   checka(abort, next);
 
@@ -105,7 +105,6 @@ void osan(const std::string text, bool *abort, bool *next) {
   }
   FlushOutComChBuffer();
 }
-
 
 /**
  * Displays pszText in color nWWIVColor which checking for abort and next with a nl
@@ -117,7 +116,7 @@ void osan(const std::string text, bool *abort, bool *next) {
  * @param abort The abort flag (Output Parameter)
  * @param next The next flag (Output Parameter)
  */
-void plan(int nWWIVColor, const std::string text, bool *abort, bool *next) {
+void plan(int nWWIVColor, const std::string& text, bool *abort, bool *next) {
   GetSession()->bout.Color(nWWIVColor);
   osan(text, abort, next);
   if (!(*abort)) {
@@ -128,7 +127,7 @@ void plan(int nWWIVColor, const std::string text, bool *abort, bool *next) {
 /**
  * @todo Document this
  */
-std::string strip_to_node(const std::string txt) {
+std::string strip_to_node(const std::string& txt) {
   std::ostringstream os;
   if (txt.find("@") != std::string::npos) {
     bool ok = true;

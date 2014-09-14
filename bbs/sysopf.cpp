@@ -19,10 +19,11 @@
 
 #include <memory>
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #include "core/inifile.h"
-#include "instmsg.h"
-#include "printfile.h"
+#include "bbs/instmsg.h"
+#include "bbs/printfile.h"
+#include "bbs/stuffin.h"
 
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
