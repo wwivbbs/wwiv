@@ -71,7 +71,7 @@
 #define _stat stat
 #define _fstat fstat
 #define Sleep(x) usleep((x)*1000)
-#define _sopen(n, f, s) open(n, f, 0644)
+#define _sopen(n, f, s, p) open(n, f, 0644)
 
 #endif  // _WIN32
 
@@ -164,7 +164,7 @@ bool WFile::Open(int nFileMode, int nShareMode) {
           logger_->LogMessage("\rWaiting to access %s %d.  \r", full_path_name_.c_str(), TRIES - count);
         }
         count++;
-        handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode);
+        handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
       }
 
       if ((handle_ < 0) && (debug_level_ > 0)) {
