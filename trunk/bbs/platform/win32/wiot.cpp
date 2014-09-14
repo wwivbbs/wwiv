@@ -257,9 +257,9 @@ void WIOTelnet::StopThreads() {
     return;
   }
   if (!SetEvent(m_hReadStopEvent)) {
-    const char *pText = GetLastErrorText();
+    const std::string error_text = GetLastErrorText();
     std::cout << "WIOTelnet::StopThreads: Error with SetEvent " << GetLastError() 
-              << " - '" << pText << "'" << std::endl;
+              << " - '" << error_text << "'" << std::endl;
   }
   WWIV_Delay(0);
 
@@ -286,9 +286,9 @@ void WIOTelnet::StartThreads() {
   }
 
   if (!ResetEvent(m_hReadStopEvent)) {
-    const char *pText = GetLastErrorText();
+    const std::string error_text = GetLastErrorText();
     std::cout << "WIOTelnet::StartThreads: Error with ResetEvent " << GetLastError()
-              << " - '" << pText << "'" << std::endl;
+              << " - '" << error_text << "'" << std::endl;
   }
 
   m_hInBufferMutex = ::CreateMutex(NULL, false, "WWIV Input Buffer");
@@ -354,9 +354,9 @@ void WIOTelnet::InboundTelnetProc(LPVOID pTelnetVoid) {
     DWORD dwWaitRet = WSAWaitForMultipleEvents(2, hArray, false, 10000, false);
     if (dwWaitRet == (WSA_WAIT_EVENT_0 + 1)) {
       if (!ResetEvent(pTelnet->m_hReadStopEvent)) {
-        const char *pText = GetLastErrorText();
+        const std::string error_text = GetLastErrorText();
         std::cout << "WIOTelnet::InboundTelnetProc: Error with ResetEvent " 
-                  << GetLastError() << " - '" << pText << "'" << std::endl;
+                  << GetLastError() << " - '" << error_text << "'" << std::endl;
       }
 
       bDone = true;
