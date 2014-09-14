@@ -28,20 +28,20 @@
 class WComm {
  private:
   // used by the GetLastErrorText() method
-  static char m_szErrorText[8192];
-  std::string m_remoteName;
-  std::string m_remoteAddress;
+  static std::string error_text_;
+  std::string remote_name_;
+  std::string remote_address_;
 
  protected:
   // Com Port Number.  Only used by Serial IO derivatives
   // of this class
-  int m_ComPort;
-  bool m_bBinaryMode;
+  int comport_;
+  bool binary_mode_;
 
-  static const char* GetLastErrorText();
+  static const std::string GetLastErrorText();
 
  public:
-  WComm() : m_ComPort(0), m_bBinaryMode(false) {}
+  WComm() : comport_(0), binary_mode_(false) {}
   virtual ~WComm() {}
 
   virtual unsigned int open() = 0;
@@ -69,25 +69,18 @@ class WComm {
   virtual int  GetComPort() const;
   virtual void SetComPort(int nNewPort);
 
-  void SetBinaryMode(bool b) { m_bBinaryMode = b; }
-  bool GetBinaryMode() const { return m_bBinaryMode; }
+  void SetBinaryMode(bool b) { binary_mode_ = b; }
+  bool GetBinaryMode() const { return binary_mode_; }
 
   void ClearRemoteInformation() {
-    m_remoteName = "";
-    m_remoteAddress = "";
+    remote_name_ = "";
+    remote_address_ = "";
   }
-  void SetRemoteName(std::string name) {
-    m_remoteName = name;
-  }
-  void SetRemoteAddress(std::string address) {
-    m_remoteAddress = address;
-  }
-  const std::string GetRemoteName() const {
-    return m_remoteName;
-  }
-  const std::string GetRemoteAddress() const {
-    return m_remoteAddress;
-  }
+
+  void SetRemoteName(std::string name) { remote_name_ = name; }
+  void SetRemoteAddress(std::string address) { remote_address_ = address; }
+  const std::string GetRemoteName() const { return remote_name_; }
+  const std::string GetRemoteAddress() const { return remote_address_; }
 
  public:
   // static factory methods
