@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include "printfile.h"
 #include "wcomm.h"
+#include "core/strings.h"
 
 
 void wwivnode(WUser *pUser, int mode) {

@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <string>
 
+#include "core/strings.h"
+#include "core/wwivassert.h"
 #include "wwiv.h"
 
 using std::string;

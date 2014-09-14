@@ -23,6 +23,9 @@
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
+
 
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;

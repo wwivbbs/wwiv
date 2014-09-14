@@ -28,6 +28,7 @@
 #include "bbs/menusupp.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "core/strings.h"
 
 using std::string;
 using wwiv::bbs::InputMode;

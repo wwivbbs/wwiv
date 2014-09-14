@@ -25,6 +25,7 @@
 #include "wwiv.h"
 #include "instmsg.h"
 #include "subxtr.h"
+#include "core/strings.h"
 #include "core/wtextfile.h"
 
 void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber) {

@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "core/strings.h"
 
 using wwiv::bbs::InputMode;
 

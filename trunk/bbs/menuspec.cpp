@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include "instmsg.h"
 #include "menusupp.h"
+#include "core/strings.h"
 
 /* ---------------------------------------------------------------------- */
 /* menuspec.cpp - Menu Specific support functions                           */

@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include "core/strings.h"
+
 #include "wcomm.h"
 #include "wsession.h"
 #include "wwiv.h"

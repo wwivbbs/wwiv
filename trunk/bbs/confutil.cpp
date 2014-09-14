@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "core/wwivassert.h"
 
 //
 // Local functions

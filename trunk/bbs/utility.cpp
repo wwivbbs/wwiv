@@ -24,7 +24,9 @@
 
 #include "wwiv.h"
 #include "common.h"
+#include "core/strings.h"
 #include "core/wfndfile.h"
+#include "core/wwivassert.h"
 
 extern const unsigned char *translate_letters[];
 

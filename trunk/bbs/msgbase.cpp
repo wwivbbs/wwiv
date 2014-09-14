@@ -19,6 +19,9 @@
 
 #include "wwiv.h"
 #include "instmsg.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
+
 
 #define EMAIL_STORAGE 2
 

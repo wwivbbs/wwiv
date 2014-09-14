@@ -22,6 +22,7 @@
 
 #include "wwiv.h"
 #include "wcomm.h"
+#include "core/strings.h"
 #include "core/wtextfile.h"
 
 using std::string;

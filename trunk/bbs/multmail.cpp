@@ -19,7 +19,8 @@
 
 #include "wwiv.h"
 #include "core/wfndfile.h"
-#include "printfile.h"
+#include "core/strings.h"
+#include "bbs/printfile.h"
 
 //
 // local function prototypes

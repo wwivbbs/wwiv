@@ -22,6 +22,7 @@
 #include "platform/wlocal_io.h"
 #include "net.h"
 #include "wcomm.h"
+#include "core/wwivassert.h"
 
 
 WSession::WSession(WApplication* app) : WSession(app, nullptr) {}

@@ -20,6 +20,8 @@
 #include "wwiv.h"
 #include "instmsg.h"
 #include "printfile.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 
 void gfl_hdr(int which);

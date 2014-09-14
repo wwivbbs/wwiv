@@ -21,6 +21,8 @@
 #include "common.h"
 #include "listplus.h"
 #include "printfile.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 //
 // Local function prototypes

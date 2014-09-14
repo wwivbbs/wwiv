@@ -25,10 +25,12 @@
 #include "core/inifile.h"
 #include "bbs/instmsg.h"
 #include "bbs/menusupp.h"
+#include "core/strings.h"
 #include "core/wutil.h"
+#include "core/wwivassert.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
-#include "wcomm.h"
+#include "bbs/wcomm.h"
 
 using std::string;
 using wwiv::core::IniFile;

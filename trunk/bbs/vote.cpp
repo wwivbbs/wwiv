@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "core/strings.h"
 
 
 void print_quest(int mapp, int map[21]) {

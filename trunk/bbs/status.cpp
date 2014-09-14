@@ -20,6 +20,7 @@
 #include <string>
 
 #include "wwiv.h"
+#include "core/wwivassert.h"
 
 statusrec status;
 

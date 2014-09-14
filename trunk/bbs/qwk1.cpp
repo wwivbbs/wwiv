@@ -36,6 +36,7 @@
 #include "bbs/vars.h"
 #include "bbs/wwiv.h"
 
+#include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
 #include "core/strings.h"

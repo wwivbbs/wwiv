@@ -27,6 +27,9 @@
 #include "bbs/printfile.h"
 #include "bbs/wwivcolors.h"
 
+#include "core/strings.h"
+#include "core/wwivassert.h"
+
 
 user_config config_listing;
 int list_loaded;
