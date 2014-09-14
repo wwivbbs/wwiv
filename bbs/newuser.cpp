@@ -1179,6 +1179,33 @@ void newuser() {
   new_mail();
 }
 
+/**
+ * Takes an input string and reduces repeated spaces in the string to one space.
+ */
+void single_space(char *pszText) {
+  if (!pszText || !*pszText) {
+    return;
+  }
+  char *pInputBuffer = pszText;
+  char *pOutputBuffer = pszText;
+  int i = 0;
+  int cnt = 0;
+
+  while (*pInputBuffer) {
+    if (isspace(*pInputBuffer) && cnt) {
+      pInputBuffer++;
+    } else {
+      if (!isspace(*pInputBuffer)) {
+        cnt = 0;
+      } else {
+        *pInputBuffer = ' ';
+        cnt = 1;
+      }
+      pOutputBuffer[i++] = *pInputBuffer++;
+    }
+  }
+  pOutputBuffer[i] = '\0';
+}
 
 bool check_zip(const char *pszZipCode, int mode) {
   char city[81], state[21];

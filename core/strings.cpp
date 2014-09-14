@@ -472,38 +472,6 @@ char *stristr(char *pszString, char *pszPattern) {
   return nullptr;
 }
 
-/**
- * single_space() takes an input string and reduces repeated spaces in the
- * string to one space, e.g. "The    brown  fox" becomes "The brown fox", to
- * facilitate "tokenizing" a string.
- */
-void single_space(char *pszText) {
-  WWIV_ASSERT(pszText);
-
-  if (pszText) {
-    char *pInputBuffer = pszText;
-    char *pOutputBuffer = pszText;
-    int i = 0;
-    int cnt = 0;
-
-    while (*pInputBuffer) {
-      if (isspace(*pInputBuffer) && cnt) {
-        pInputBuffer++;
-      } else {
-        if (!isspace(*pInputBuffer)) {
-          cnt = 0;
-        } else {
-          *pInputBuffer = ' ';
-          cnt = 1;
-        }
-        pOutputBuffer[i++] = *pInputBuffer++;
-      }
-    }
-    pOutputBuffer[i] = '\0';
-  }
-}
-
-
 char *StringRemoveWhitespace(char *str) {
   WWIV_ASSERT(str);
 
