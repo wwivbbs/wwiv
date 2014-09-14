@@ -19,6 +19,17 @@
 #ifndef _ARCHIVERS_H_
 #define _ARCHIVERS_H_
 
+enum COMPRESSIONS {
+  COMPRESSION_UNKNOWN,
+  COMPRESSION_ARJ,
+  COMPRESSION_ZIP,
+  COMPRESSION_PAK,
+  COMPRESSION_ZOO,
+  COMPRESSION_LHA,
+  COMPRESSION_RAR,
+};
+
+
 int match_archiver(const char *filename);
 
 #endif  // _ARCHIVERS_H_
