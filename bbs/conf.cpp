@@ -21,7 +21,9 @@
 #include "bbs/conf.h"
 
 #include "wwiv.h"
+#include "core/strings.h"
 #include "core/wtextfile.h"
+#include "core/wwivassert.h"
 
 static int disable_conf_cnt = 0;
 

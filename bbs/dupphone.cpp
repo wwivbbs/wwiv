@@ -18,6 +18,8 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 
 void add_phone_number(int usernum, const char *phone) {

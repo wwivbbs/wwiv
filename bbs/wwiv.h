@@ -19,23 +19,20 @@
 #ifndef __INCLUDED_WWIV_H__
 #define __INCLUDED_WWIV_H__
 
-#include "core/wwivassert.h"
 #include "core/wwivport.h"
-#include "core/strings.h"
 
 // WWIV includes
-#include "vardec.h"
-#include "wuser.h"
-#include "wsession.h"
-#include "bbs.h"
-#include "core/wfile.h"
-#include "wconstants.h"
-#include "fcns.h"
-#include "platform/platformfcns.h"
-#include "vars.h"
-#include "wstatus.h"
-#include "platform/wlocal_io.h"
+#include "bbs/vardec.h"
+#include "bbs/wuser.h"
+#include "bbs/wsession.h"
+#include "bbs/bbs.h"
+#include "bbs/wconstants.h"
+#include "bbs/fcns.h"
+#include "bbs/platform/platformfcns.h"
+#include "bbs/vars.h"
+#include "bbs/wstatus.h"
+#include "bbs/platform/wlocal_io.h"
 
-#include "filenames.h"
+#include "bbs/filenames.h"
 
 #endif  // __INCLUDED_WWIV_H__

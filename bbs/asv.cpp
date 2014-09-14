@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "core/strings.h"
 
 // Local prototypes
 int  printasv(const char *pszFileName, int num, bool abort);

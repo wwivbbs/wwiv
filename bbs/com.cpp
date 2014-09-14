@@ -21,6 +21,8 @@
 
 #include "wwiv.h"
 #include "wcomm.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 extern char str_quit[];
 

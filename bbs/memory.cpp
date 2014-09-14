@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "core/wwivassert.h"
 
 /**
  * Attempts to allocate nbytes (+1) bytes on the heap, returns ptr to memory

@@ -32,7 +32,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
-#include "bbs/subxtr.h"
+#include "bbs/stuffin.h"
 #include "bbs/subxtr.h"
 #include "bbs/vardec.h"
 #include "bbs/wwiv.h"

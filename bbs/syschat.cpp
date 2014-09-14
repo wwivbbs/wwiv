@@ -20,14 +20,10 @@
 
 #include "wwiv.h"
 #include "instmsg.h"
+#include "core/strings.h"
 #include "core/wutil.h"
 
-//////////////////////////////////////////////////////////////////////////////
-//
-//
 // module private functions
-//
-//
 
 void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp);
 

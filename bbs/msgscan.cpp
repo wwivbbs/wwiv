@@ -23,6 +23,8 @@
 #include "instmsg.h"
 #include "subxtr.h"
 #include "printfile.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 
 void SetupThreadRecordsBeforeScan();

@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include "printfile.h"
 #include "core/strings.h"
+#include "core/wwivassert.h"
 
 using namespace wwiv::bbs;
 

@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "wwiv.h"
+#include "core/strings.h"
 #include "core/wtextfile.h"
 
 using std::string;

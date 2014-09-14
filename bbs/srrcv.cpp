@@ -20,6 +20,7 @@
 
 #include "wwiv.h"
 #include "wcomm.h"
+#include "core/strings.h"
 
 bool NewZModemReceiveFile(const char *pszFileName);
 

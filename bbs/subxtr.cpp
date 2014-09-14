@@ -19,6 +19,7 @@
 #include "subxtr.h"
 
 #include "wwiv.h"
+#include "core/strings.h"
 
 static xtrasubsnetrec *xsubsn;
 static int nn;

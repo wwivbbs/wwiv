@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "subxtr.h"
+#include "core/strings.h"
 #include "core/wtextfile.h"
 
 bool display_sub_categories();

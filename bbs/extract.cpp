@@ -22,6 +22,7 @@
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wtextfile.h"
+#include "core/wwivassert.h"
 
 #include "bbs/stuffin.h"
 

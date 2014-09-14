@@ -21,6 +21,7 @@
 #include "instmsg.h"
 #include "printfile.h"
 #include "wcomm.h"
+#include "core/wwivassert.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
 #define __unix__ 1

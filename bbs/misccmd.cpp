@@ -21,6 +21,8 @@
 
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 // from qwk.c
 void qwk_menu();

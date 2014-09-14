@@ -24,6 +24,8 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "core/strings.h"
+
 #include "bbs/wwiv.h"
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"

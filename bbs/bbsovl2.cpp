@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "wwiv.h"
+#include "core/strings.h"
 
 // Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
