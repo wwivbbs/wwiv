@@ -197,7 +197,6 @@ bool yesno();
 bool noyes();
 char ynq();
 char onek(const char *pszAllowableChars, bool bAutoMpl = false);
-char onek1(const char *pszAllowableChars);
 void rputs(const char *pszText);
 void holdphone(bool bPickUpPhone);
 

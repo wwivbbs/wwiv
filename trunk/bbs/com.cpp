@@ -314,23 +314,8 @@ char onek(const char *pszAllowableChars, bool bAutoMpl) {
   if (bAutoMpl) {
     GetSession()->bout.ColorizedInputField(1);
   }
-  char ch = onek1(pszAllowableChars);
-  bputch(ch);
+  char ch = onek_ncr(pszAllowableChars);
   GetSession()->bout.NewLine();
-  return ch;
-}
-
-
-char onek1(const char *pszAllowableChars) {
-  WWIV_ASSERT(pszAllowableChars);
-  char ch = 0;
-
-  while (!strchr(pszAllowableChars, ch = upcase(getkey())) && !hangup)
-    ;
-
-  if (hangup) {
-    ch = pszAllowableChars[0];
-  }
   return ch;
 }
 
