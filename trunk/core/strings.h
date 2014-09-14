@@ -27,6 +27,13 @@
 #define JUSTIFY_RIGHT  1
 #define JUSTIFY_CENTER 2
 
+#if defined (_WIN32)
+
+#define vsnprintf _vsnprintf
+#define snprintf _snprintf
+
+#endif   // _WIN32
+
 
 namespace wwiv {
 namespace strings {

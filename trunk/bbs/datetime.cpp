@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "datetime.h"
 #include "wwiv.h"
+#include "core/strings.h"
 #include "core/wwivassert.h"
 
 char *dateFromTimeTForLog(time_t t) {

@@ -22,6 +22,8 @@
 #include <map>
 #include <memory>
 
+#include "core/strings.h"
+
 #define _DEFINE_GLOBALS_
 #include "wwiv.h"
 #include "log.h"
