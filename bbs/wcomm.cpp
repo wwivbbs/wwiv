@@ -26,18 +26,13 @@
 #include "wiou.h"
 #endif
 
-char WComm::m_szErrorText[8192];
+// static
+std::string WComm::error_text_;
 
-int WComm::GetComPort() const {
-  return m_ComPort;
-}
+int WComm::GetComPort() const { return comport_; }
+void WComm::SetComPort(int nNewPort) { comport_ = nNewPort; }
 
-
-void WComm::SetComPort(int nNewPort) {
-  m_ComPort = nNewPort;
-}
-
-const char* WComm::GetLastErrorText() {
+const std::string WComm::GetLastErrorText() {
 #if defined ( _WIN32 )
   LPVOID lpMsgBuf;
   FormatMessage(
@@ -51,14 +46,11 @@ const char* WComm::GetLastErrorText() {
     0,
     NULL
   );
-  strcpy(m_szErrorText, (LPCTSTR)lpMsgBuf);
+  error_text_.assign((LPCTSTR)lpMsgBuf);
   LocalFree(lpMsgBuf);
-  return static_cast<const char *>(m_szErrorText);
-#else
-  return NULL;
 #endif
+  return error_text_;
 }
-
 
 WComm* WComm::CreateComm(bool bUseSockets, unsigned int nHandle) {
 #if defined ( _WIN32 )
