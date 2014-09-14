@@ -992,7 +992,7 @@ char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
   GetSession()->localIO()->tleft(true);
   if (okansi()) {
     GetSession()->bout << s1;
-    ch = onek1(s3);
+    ch = onek_ncr(s3);
     GetSession()->bout << "\x1b[" << i1 << "D";
     for (int i = 0; i < i1; i++) {
       bputch(' ');
@@ -1000,7 +1000,7 @@ char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
     GetSession()->bout << "\x1b[" << i1 << "D";
   } else {
     GetSession()->bout << s2;
-    ch = onek1(s3);
+    ch = onek_ncr(s3);
     for (int i = 0; i < i1; i++) {
       GetSession()->bout.BackSpace();
     }
