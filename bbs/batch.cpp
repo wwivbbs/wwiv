@@ -24,10 +24,11 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#include "wwiv.h"
-#include "instmsg.h"
-#include "printfile.h"
-#include "wcomm.h"
+#include "bbs/wwiv.h"
+#include "bbs/instmsg.h"
+#include "bbs/printfile.h"
+#include "bbs/stuffin.h"
+#include "bbs/wcomm.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

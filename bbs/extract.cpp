@@ -23,6 +23,8 @@
 #include "core/wfndfile.h"
 #include "core/wtextfile.h"
 
+#include "bbs/stuffin.h"
+
 using std::string;
 using wwiv::strings::StrCat;
 

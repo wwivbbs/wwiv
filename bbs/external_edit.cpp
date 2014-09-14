@@ -33,6 +33,9 @@
 #include "core/strings.h"
 #include "core/wtextfile.h"
 
+#include "bbs/stuffin.h"
+
+
 using std::string;
 using wwiv::core::ScopeExit;
 using wwiv::strings::StringPrintf;

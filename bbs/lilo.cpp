@@ -23,10 +23,11 @@
 #include <string>
 
 #include "core/inifile.h"
-#include "instmsg.h"
-#include "menusupp.h"
+#include "bbs/instmsg.h"
+#include "bbs/menusupp.h"
 #include "core/wutil.h"
-#include "printfile.h"
+#include "bbs/printfile.h"
+#include "bbs/stuffin.h"
 #include "wcomm.h"
 
 using std::string;
