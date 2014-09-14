@@ -1178,7 +1178,7 @@ void xfer_defaults() {
                        YesNoString(GetSession()->GetCurrentUser()->IsNewScanFiles()) << ").\r\n";
     GetSession()->bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print [" <<
                        GetSession()->GetCurrentUser()->GetNumExtended() << " line(s)].\r\n";
-    GetSession()->bout << "|#7[|#25|#7]|#1 File GetSession()->tagging (";
+    GetSession()->bout << "|#7[|#25|#7]|#1 File tagging (";
     if (GetSession()->GetCurrentUser()->IsUseNoTagging()) {
       GetSession()->bout << "Disabled)\r\n";
     } else {
