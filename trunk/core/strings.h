@@ -84,7 +84,6 @@ std::string StringTrimBegin(std::string* s);
 std::string StringUpperCase(std::string* s);
 std::string StringLowerCase(std::string* s);
 char *stristr(char *pszString, char *pszPattern);
-void single_space(char *pszText);
 char *StringRemoveWhitespace(char *str);
 char *StringRemoveChar(const char *pszString, char chCharacterToRemove);
 
