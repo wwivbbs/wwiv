@@ -139,3 +139,52 @@ TEST(StringsTest, SplitString_TwoDelimsBackToBack) {
   SplitString(s, " \t", &actual);
   EXPECT_EQ(expected, actual);
 }
+
+TEST(StringsTest, StringToShort) {
+  EXPECT_EQ(1234, StringToShort("1234"));
+  EXPECT_EQ(0, StringToShort("0"));
+  EXPECT_EQ(-1234, StringToShort("-1234"));
+
+  EXPECT_EQ(std::numeric_limits<int16_t>::max(), StringToShort("999999"));
+  EXPECT_EQ(std::numeric_limits<int16_t>::min(), StringToShort("-999999"));
+
+  EXPECT_EQ(0, StringToShort(""));
+  EXPECT_EQ(0, StringToShort("ASDF"));
+}
+
+TEST(StringsTest, StringToUnsignedShort) {
+  EXPECT_EQ(1234, StringToUnsignedShort("1234"));
+  EXPECT_EQ(0, StringToUnsignedShort("0"));
+
+  EXPECT_EQ(std::numeric_limits<uint16_t>::max(), StringToUnsignedShort("999999"));
+  EXPECT_EQ(std::numeric_limits<uint16_t>::min(), StringToUnsignedShort("-999999"));
+
+  EXPECT_EQ(0, StringToUnsignedShort(""));
+  EXPECT_EQ(0, StringToUnsignedShort("ASDF"));
+}
+
+TEST(StringsTest, StringToChar) {
+  EXPECT_EQ(std::numeric_limits<int8_t>::max(), StringToChar("1234"));
+  EXPECT_EQ(0, StringToChar("0"));
+  EXPECT_EQ(std::numeric_limits<int8_t>::min(), StringToChar("-1234"));
+
+  EXPECT_EQ(std::numeric_limits<int8_t>::max(), StringToChar("999999"));
+  EXPECT_EQ(std::numeric_limits<int8_t>::min(), StringToChar("-999999"));
+
+  EXPECT_EQ(0, StringToChar(""));
+  EXPECT_EQ(0, StringToChar("ASDF"));
+}
+
+TEST(StringsTest, StringToUnsignedChar) {
+  EXPECT_EQ(12, StringToUnsignedChar("12"));
+  EXPECT_EQ(255, StringToUnsignedChar("255"));
+  EXPECT_EQ(0, StringToUnsignedChar("0"));
+  EXPECT_EQ(0, StringToUnsignedChar("-123"));
+
+  EXPECT_EQ(std::numeric_limits<uint8_t>::max(), StringToUnsignedChar("999999"));
+  EXPECT_EQ(std::numeric_limits<uint8_t>::min(), StringToUnsignedChar("-999999"));
+
+  EXPECT_EQ(0, StringToUnsignedChar(""));
+  EXPECT_EQ(0, StringToUnsignedChar("ASDF"));
+}
+
