@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wtextfile.h"
 

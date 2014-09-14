@@ -22,6 +22,7 @@
 
 #include "wwiv.h"
 #include "instmsg.h"
+#include "core/strings.h"
 #include "core/wutil.h"
 #include "core/inifile.h"
 

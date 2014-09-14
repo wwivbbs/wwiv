@@ -24,6 +24,7 @@
 #include "printfile.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
+#include "core/wwivassert.h"
 #include "bbs/external_edit.h"
 
 using std::string;

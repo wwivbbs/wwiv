@@ -19,6 +19,7 @@
 #include <random>
 
 #include "wwiv.h"
+#include "core/strings.h"
 #include "core/wutil.h"
 
 #if defined(__APPLE__)

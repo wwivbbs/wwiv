@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "core/strings.h"
+#include "bbs/stuffin.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;

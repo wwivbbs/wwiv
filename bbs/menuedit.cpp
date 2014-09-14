@@ -21,6 +21,7 @@
 #include "wwiv.h"
 #include "bbs/input.h"
 #include "bbs/menu.h"
+#include "core/strings.h"
 #include "core/wfndfile.h"
 
 bool GetMenuDir(std::string& menuDir);

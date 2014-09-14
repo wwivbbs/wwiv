@@ -17,16 +17,14 @@
 /*                                                                        */
 /**************************************************************************/
 
-// *************************************
-// DO NOT EXTRACT STRINGS FROM THIS FILE
-// **************************************
-
 #if defined (NET)
 #include "vardec.h"
 #include "net.h"
 #else
 #include "wwiv.h"
 #endif
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 
 void read_bbs_list();

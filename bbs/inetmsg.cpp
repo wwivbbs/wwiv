@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "instmsg.h"
+#include "core/strings.h"
 #include "core/wtextfile.h"
 
 //////////////////////////////////////////////////////////////////////////////

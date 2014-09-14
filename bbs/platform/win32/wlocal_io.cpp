@@ -27,7 +27,8 @@
 #include "core/strings.h"
 #include "core/wfile.h"
 #include "core/wutil.h"
-#include "wcomm.h"
+#include "bbs/wcomm.h"
+#include "core/wwivassert.h"
 
 // local functions
 bool HasKeyBeenPressed(HANDLE in);

@@ -38,7 +38,9 @@
 #include "instmsg.h"
 #include "menu.h" // for mainmenu
 #include "bbs/external_edit.h"
+#include "core/strings.h"
 #include "core/wutil.h"
+#include "core/wwivassert.h"
 
 #if defined( _WIN32 )
 #include <direct.h>

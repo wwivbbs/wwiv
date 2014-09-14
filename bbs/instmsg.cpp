@@ -22,6 +22,7 @@
 
 #include "bbs/wwiv.h"
 #include "core/wfndfile.h"
+#include "core/wwivassert.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 

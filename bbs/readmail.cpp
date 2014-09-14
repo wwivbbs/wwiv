@@ -23,7 +23,9 @@
 #include "instmsg.h"
 #include "subxtr.h"
 #include "printfile.h"
+#include "core/strings.h"
 #include "core/wtextfile.h"
+#include "core/wwivassert.h"
 
 using std::string;
 

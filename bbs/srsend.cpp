@@ -1,5 +1,3 @@
-
-
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.0x                         */
@@ -21,6 +19,7 @@
 #include <cmath>
 #include "wwiv.h"
 #include "wcomm.h"
+#include "core/strings.h"
 
 bool NewZModemSendFile(const char *pszFileName);
 

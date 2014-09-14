@@ -20,6 +20,7 @@
 
 #include "wwiv.h"
 #include "core/inifile.h"
+#include "core/strings.h"
 #include "core/wfndfile.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )

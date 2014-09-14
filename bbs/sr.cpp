@@ -20,6 +20,8 @@
 #include <cmath>
 
 #include "wwiv.h"
+#include "bbs/stuffin.h"
+#include "core/strings.h"
 
 void calc_CRC(unsigned char b) {
   checksum = checksum + b;

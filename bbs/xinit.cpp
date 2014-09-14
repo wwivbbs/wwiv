@@ -29,6 +29,7 @@
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
+#include "core/wwivassert.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
 #define __unix__ 1

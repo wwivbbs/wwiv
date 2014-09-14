@@ -18,6 +18,9 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
+
 
 // The final character of an ansi sequence
 #define OB ('[')
