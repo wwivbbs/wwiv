@@ -22,14 +22,21 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <functional>
 #include <iostream>
-#include <iostream>
+#include <limits>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
+
+using std::numeric_limits;
+using std::stoi;
+using std::string;
+using std::out_of_range;
 
 unsigned char *translate_letters[] = {
   (unsigned char *)"abcdefghijklmnopqrstuvwxyzáÑÜÇÅî§",
@@ -147,24 +154,41 @@ int StringCompare(const char *pszString1, const char *pszString2) {
   return strcmp(pszString1, pszString2);
 }
 
-short StringToShort(const char *pszString) {
-  WWIV_ASSERT(pszString);
-  return static_cast<short>(atoi(pszString));
+template <typename T, typename R>
+static T StringToT(std::function<R(const string&)> f, const string& s) {
+  try {
+    R ret = f(s);
+    if (ret > numeric_limits<T>::max()) {
+      return numeric_limits<T>::max();
+    }
+    if (ret < numeric_limits<T>::min()) {
+      return numeric_limits<T>::min();
+    }
+    return static_cast<T>(ret);
+  } catch (std::logic_error) {
+    // Handle invalid_argument and out_of_range.
+    return 0;
+  }
 }
 
-unsigned short StringToUnsignedShort(const char *pszString) {
-  WWIV_ASSERT(pszString);
-  return static_cast<unsigned short>(atoi(pszString));
+int16_t StringToShort(const string& s) {
+  return StringToT<int16_t, int>(
+      [](const string& s) { return std::stoi(s); }, s);
 }
 
-char StringToChar(const char *pszString) {
-  WWIV_ASSERT(pszString);
-  return static_cast<char>(atoi(pszString));
+uint16_t StringToUnsignedShort(const string& s) {
+  return StringToT<uint16_t, int>(
+      [](const string& s) { return std::stoul(s); }, s);
 }
 
-unsigned char StringToUnsignedChar(const char *pszString) {
-  WWIV_ASSERT(pszString);
-  return static_cast<unsigned char>(atoi(pszString));
+char StringToChar(const std::string& s) {
+  return StringToT<char, int>(
+      [](const string& s) { return std::stoi(s); }, s);
+}
+
+uint8_t StringToUnsignedChar(const std::string& s) {
+  return StringToT<uint8_t, int>(
+      [](const string& s) { return std::stoul(s); }, s);
 }
 
 const string& StringReplace(string* orig, const string old_string, const string new_string) {

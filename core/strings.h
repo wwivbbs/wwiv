@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_STRINGS_H__
 #define __INCLUDED_STRINGS_H__
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -41,10 +42,12 @@ bool IsEquals(const char *pszString1, const char *pszString2);
 bool IsEqualsIgnoreCase(const char *pszString1, const char *pszString2);
 int  StringCompareIgnoreCase(const char *pszString1, const char *pszString2);
 int  StringCompare(const char *pszString1, const char *pszString2);
-short StringToShort(const char *pszString);
-unsigned short StringToUnsignedShort(const char *pszString);
-char StringToChar(const char *pszString);
-unsigned char StringToUnsignedChar(const char *pszString);
+
+int16_t StringToShort(const std::string& s);
+uint16_t StringToUnsignedShort(const std::string& s);
+char StringToChar(const std::string& s);
+uint8_t StringToUnsignedChar(const std::string& s);
+
 const std::string& StringReplace(std::string* orig, const std::string old_string, const std::string new_string);
 std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims);
 void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out);
