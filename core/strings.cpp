@@ -43,7 +43,6 @@ unsigned char *translate_letters[] = {
   (unsigned char *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ€š™¥",
   0L,
 };
-const char *DELIMS_NORMAL = " ;.!:-?,\t\r\n";
 const char *DELIMS_WHITE = " \t\r\n";
 
 bool IsColorCode(char c);

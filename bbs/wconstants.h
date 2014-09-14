@@ -266,23 +266,6 @@
 #define AY  21
 #define AZ  44
 
-#define AR_A 1                                     /* Added */
-#define AR_B 2                                     /* Added */
-#define AR_C 4                                     /* Added */
-#define AR_D 8                                     /* Added */
-#define AR_E 16                                    /* Added */
-#define AR_F 32                                    /* Added */
-#define AR_G 64                                    /* Added */
-#define AR_H 128                                   /* Added */
-#define AR_I 256                                   /* Added */
-#define AR_J 512                                   /* Added */
-#define AR_K 1024                                  /* Added */
-#define AR_L 2048                                  /* Added */
-#define AR_M 4096                                  /* Added */
-#define AR_N 8192                                  /* Added */
-#define AR_O 16384                                 /* Added */
-#define AR_P 32768                                 /* Added */
-
 #ifndef JUSTIFY_LEFT
 #define JUSTIFY_LEFT   0
 #define JUSTIFY_RIGHT  1
@@ -348,20 +331,7 @@
 #define MAX_ARCS 15
 #define MAXMAIL 255
 
-extern const char *DELIMS_NORMAL;
-extern const char *DELIMS_WHITE;
-
 #define LIST_USERS_MESSAGE_AREA     0
 #define LIST_USERS_FILE_AREA        1
-
-enum COMPRESSIONS {
-  COMPRESSION_UNKNOWN,
-  COMPRESSION_ARJ,
-  COMPRESSION_ZIP,
-  COMPRESSION_PAK,
-  COMPRESSION_ZOO,
-  COMPRESSION_LHA,
-  COMPRESSION_RAR,
-};
 
 #endif // __INCLUDED_WCONSTANTS_H__

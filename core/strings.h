@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 
+extern const char *DELIMS_WHITE;
+
 #define JUSTIFY_LEFT   0
 #define JUSTIFY_RIGHT  1
 #define JUSTIFY_CENTER 2
