@@ -105,8 +105,8 @@ bool lcs();
 bool checka();
 bool checka(bool *abort);
 bool checka(bool *abort, bool *next);
-void pla(const std::string text, bool *abort);
-void plal(const std::string text, std::string::size_type limit, bool *abort);
+void pla(const std::string& text, bool *abort);
+void plal(const std::string& text, std::string::size_type limit, bool *abort);
 bool sysop2();
 bool checkcomp(const char *pszComputerType);
 int  check_ansi();
@@ -131,9 +131,9 @@ void describe_area_code_prefix(int nAreaCode, int town, char *pszDescription);
 
 void repeat_char(char x, int amount, int nColor = 7);
 const char *ctypes(int num);
-void osan(const std::string text, bool *abort, bool *next);
-void plan(int nWWIVColor, const std::string text, bool *abort, bool *next);
-std::string strip_to_node(const std::string txt);
+void osan(const std::string& text, bool *abort, bool *next);
+void plan(int nWWIVColor, const std::string& text, bool *abort, bool *next);
+std::string strip_to_node(const std::string& txt);
 
 
 // File: bgetch.cpp
@@ -316,7 +316,7 @@ void eventedit();
 
 // File: execexternal.cpp
 
-int  ExecuteExternalProgram(const std::string commandLine, int nFlags);
+int  ExecuteExternalProgram(const std::string& commandLine, int nFlags);
 
 
 // File: extract.cpp
@@ -657,12 +657,6 @@ bool okstart(bool *bUseCRC, bool *abort);
 void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUseCRC, bool bUseYModem,
                   bool bUseYModemBatch);
 void zmodem_send(const char *pszFileName, bool *sent, double *percent);
-
-
-// File: stuffin.cpp
-
-const std::string stuff_in(const std::string commandline, const std::string arg1,
-                           const std::string arg2, const std::string arg3, const std::string arg4, const std::string arg5);
 
 
 // File: subacc.cpp

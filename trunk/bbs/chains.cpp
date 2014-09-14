@@ -18,8 +18,9 @@
 /**************************************************************************/
 #include <algorithm>
 
-#include "wwiv.h"
-#include "instmsg.h"
+#include "bbs/wwiv.h"
+#include "bbs/instmsg.h"
+#include "bbs/stuffin.h"
 
 
 //////////////////////////////////////////////////////////////////////////////
