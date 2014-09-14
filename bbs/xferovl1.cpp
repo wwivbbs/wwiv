@@ -96,10 +96,11 @@ void modify_extended_description(char **sss, const char *dest, const char *title
         fileExtDesc.Read(*sss, fileExtDesc.GetLength());
         (*sss)[ fileExtDesc.GetLength() ] = 0;
         fileExtDesc.Close();
-      }
-      for (int i3 = strlen(*sss) - 1; i3 >= 0; i3--) {
-        if ((*sss)[i3] == 1) {
-          (*sss)[i3] = ' ';
+
+        for (int i3 = strlen(*sss) - 1; i3 >= 0; i3--) {
+          if ((*sss)[i3] == 1) {
+            (*sss)[i3] = ' ';
+          }
         }
       }
     } else {
