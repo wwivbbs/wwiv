@@ -19,11 +19,10 @@
 
 #include "wwiv.h"
 #include "printfile.h"
+#include "core/strings.h"
 #include "core/wtextfile.h"
 
-//
 // Local function prototypes
-//
 
 char ShowBBSListMenuAndGetChoice();
 bool IsBBSPhoneNumberUnique(const std::string& phoneNumber);
@@ -32,7 +31,6 @@ void AddBBSListLine(const std::string bbsListLine);
 void AddBBSListEntryImpl();
 void AddBBSListEntry();
 void DeleteBBSListEntry();
-
 
 
 char ShowBBSListMenuAndGetChoice() {
@@ -46,7 +44,6 @@ char ShowBBSListMenuAndGetChoice() {
     return onek("QRNA");
   }
 }
-
 
 bool IsBBSPhoneNumberUnique(const std::string& phoneNumber) {
   bool ok = true;
@@ -87,7 +84,6 @@ bool IsBBSPhoneNumberUnique(const std::string& phoneNumber) {
   return ok;
 }
 
-
 bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
   if (phoneNumber.empty()) {
     return false;
@@ -106,7 +102,6 @@ bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
   return true;
 }
 
-
 void AddBBSListLine(const std::string bbsListLine) {
   WFile file(syscfg.gfilesdir, BBSLIST_MSG);
   bool bOpen = file.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary);
@@ -122,7 +117,6 @@ void AddBBSListLine(const std::string bbsListLine) {
   file.Write(bbsListLine.c_str(), bbsListLine.length());
   file.Close();
 }
-
 
 void AddBBSListEntryImpl() {
   GetSession()->bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
@@ -160,7 +154,6 @@ void AddBBSListEntryImpl() {
   }
 }
 
-
 void AddBBSListEntry() {
   if (GetSession()->GetEffectiveSl() <= 10) {
     GetSession()->bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
@@ -171,7 +164,6 @@ void AddBBSListEntry() {
   }
 
 }
-
 
 void DeleteBBSListEntry() {
   GetSession()->bout << "\r\n|#7Please enter phone number in the following format:\r\n";
@@ -213,7 +205,6 @@ void DeleteBBSListEntry() {
   }
 }
 
-
 void BBSList() {
   bool done = false;
   do {
@@ -237,5 +228,3 @@ void BBSList() {
     }
   } while (!done && !hangup);
 }
-
-

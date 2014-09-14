@@ -19,7 +19,7 @@
 #ifndef __INCLUDED_WWIV_H__
 #define __INCLUDED_WWIV_H__
 
-#include "core/wwivport.h"
+//#include "core/wwivport.h"
 
 // WWIV includes
 #include "bbs/vardec.h"
