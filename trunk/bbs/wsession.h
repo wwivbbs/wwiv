@@ -22,8 +22,8 @@
 #include <iostream>
 #include <string>
 
-#include "vardec.h"
-#include "wuser.h"
+#include "bbs/vardec.h"
+#include "bbs/wuser.h"
 
 //
 // WSession - Holds information and status data about the current user

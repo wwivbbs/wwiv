@@ -38,6 +38,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
+#include "bbs/wstatus.h"
 
 #include "core/strings.h"
 

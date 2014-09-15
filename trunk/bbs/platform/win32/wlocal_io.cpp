@@ -23,13 +23,14 @@
 #include <string>
 #include <vector>
 
+#include "bbs/keycodes.h"
+#include "bbs/wcomm.h"
+#include "bbs/wstatus.h"
 #include "wwiv.h"
 #include "core/strings.h"
 #include "core/wfile.h"
 #include "core/wutil.h"
-#include "bbs/wcomm.h"
 #include "core/wwivassert.h"
-#include "bbs/keycodes.h"
 
 // local functions
 bool HasKeyBeenPressed(HANDLE in);

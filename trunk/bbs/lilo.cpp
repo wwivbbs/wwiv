@@ -22,15 +22,16 @@
 #include <memory>
 #include <string>
 
-#include "core/inifile.h"
 #include "bbs/instmsg.h"
 #include "bbs/menusupp.h"
-#include "core/strings.h"
-#include "core/wutil.h"
-#include "core/wwivassert.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wcomm.h"
+#include "bbs/wstatus.h"
+#include "core/inifile.h"
+#include "core/strings.h"
+#include "core/wutil.h"
+#include "core/wwivassert.h"
 
 using std::string;
 using wwiv::core::IniFile;

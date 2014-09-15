@@ -34,6 +34,7 @@
 #include "bbs/subxtr.h"
 #include "bbs/vardec.h"
 #include "bbs/vars.h"
+#include "bbs/wstatus.h"
 #include "bbs/wwiv.h"
 
 #include "bbs/stuffin.h"

@@ -23,6 +23,7 @@
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "bbs/keycodes.h"
+#include "bbs/wstatus.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
 #define __unix__ 1
@@ -33,6 +34,7 @@ time_t last_time_c;
 
 void fixup_long(uint32_t *f, time_t l);
 
+using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 
@@ -77,7 +79,7 @@ int check_bbsdata() {
     sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), BBSLIST_UPD);
     ok = WFile::Exists(s) ? 1 : 0;
   }
-  std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
+  unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
   if (ok && pStatus->IsUsingNetEdit()) {
     holdphone(true);
     sprintf(s, "NETEDIT .%d /U", GetSession()->GetNetworkNumber());
