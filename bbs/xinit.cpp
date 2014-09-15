@@ -167,7 +167,6 @@ static eventinfo_t eventinfo[] = {
   {"NETWORK",       0},
 };
 
-
 static const char *get_key_str(int n, const char *index = nullptr) {
   static char str[255];
   if (!index) {
@@ -177,8 +176,7 @@ static const char *get_key_str(int n, const char *index = nullptr) {
   return str;
 }
 
-static void set_string(IniFile* ini, int key_idx, string* out)
-{
+static void set_string(IniFile* ini, int key_idx, string* out) {
   const char *s = ini->GetValue(get_key_str(key_idx));
   if (s) {
     out->assign(s);
@@ -188,9 +186,9 @@ static void set_string(IniFile* ini, int key_idx, string* out)
 #define INI_INIT_STR(n, f) { set_string(ini, n, &syscfg.f); }
 
 #define INI_GET_ASV(s, f, func, d) \
-{if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=NULL) GetSession()->asv.f = func (ss); else GetSession()->asv.f = d;}
+{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=NULL) GetSession()->asv.f = func (ss); else GetSession()->asv.f = d;}
 #define INI_GET_CALLBACK(s, f, func, d) \
-{if ((ss=ini->GetValue(get_key_str(INI_STR_CALLBACK,s)))!=NULL) \
+{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_CALLBACK,s)))!=NULL) \
     GetSession()->cbv.f = func (ss); \
     else GetSession()->cbv.f = d;}
 
@@ -249,15 +247,8 @@ static ini_flags_type sysconfig_flags[] = {
   {INI_STR_ENABLE_MCI, false, sysconfig_enable_mci},
 };
 
-
 IniFile* WApplication::ReadINIFile() {
-  // can't allow user to change these on-the-fly
-  unsigned short omb = GetSession()->max_batch;
-  unsigned short omc = GetSession()->max_chains;
-  unsigned short omg = GetSession()->max_gfilesec;
-
   // Setup default GetSession()-> data
-
   for (int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++) {
     GetSession()->newuser_colors[ nTempColorNum ] = nucol[ nTempColorNum ];
     GetSession()->newuser_bwcolors[ nTempColorNum ] = nucolbw[ nTempColorNum ];
@@ -295,36 +286,35 @@ IniFile* WApplication::ReadINIFile() {
   }
 
   // initialize ini communication
-  string instance_name = StringPrintf("WWIV-%u", GetInstanceNumber());
+  const string instance_name = StringPrintf("WWIV-%u", GetInstanceNumber());
   IniFile* ini(new IniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), instance_name, INI_TAG));
   if (ini->IsOpen()) {
     // found something
     // pull out event flags
-    const char *ss;
     for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(GetApplication()->spawn_opts); nTempSpawnOptNum++) {
-      char szKeyName[255];
-      sprintf(szKeyName, "%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[nTempSpawnOptNum].name);
-      if ((ss = ini->GetValue(szKeyName)) != nullptr) {
+      const string key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[nTempSpawnOptNum].name);
+      const char *ss = ini->GetValue(key_name);
+      if (ss != nullptr) {
         GetApplication()->spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
       }
     }
 
     // pull out newuser colors
     for (int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++) {
-      char szKeyName[255];
-      sprintf(szKeyName, "%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
-      if ((ss = ini->GetValue(szKeyName)) != NULL && atoi(ss) > 0) {
+      string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
+      const char *ss = ini->GetValue(key_name);
+      if (ss != nullptr && atoi(ss) > 0) {
         GetSession()->newuser_colors[nTempColorNum] = atoi(ss);
       }
-      sprintf(szKeyName, "%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
-      if ((ss = ini->GetValue(szKeyName)) != NULL && atoi(ss) > 0) {
+      key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
+      ss = ini->GetValue(key_name);
+      if (ss != nullptr && atoi(ss) > 0) {
         GetSession()->newuser_bwcolors[nTempColorNum] = atoi(ss);
       }
     }
 
     GetSession()->SetMessageThreadingEnabled(ini->GetBooleanValue("THREAD_SUBS"));
     GetSession()->SetCarbonCopyEnabled(ini->GetBooleanValue("ALLOW_CC_BCC"));
-
 
     // pull out sysop-side colors
     GetSession()->SetTopScreenColor(ini->GetNumericValue(get_key_str(INI_STR_TOPCOLOR),
@@ -391,7 +381,6 @@ IniFile* WApplication::ReadINIFile() {
       GetSession()->advasv.cosysop = ini->GetNumericValue(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
     }
 
-
     // get callback values
     if (GetApplication()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
       INI_GET_CALLBACK("SL", sl, atoi, syscfg.autoval[2].sl);
@@ -405,11 +394,11 @@ IniFile* WApplication::ReadINIFile() {
       INI_GET_CALLBACK("REPEAT", repeat, atoi, 0);
     }
 
-
     // sysconfig flags
     syscfg.sysconfig = static_cast<unsigned short>(GetFlagsFromIniFile(ini, sysconfig_flags,
                        NEL(sysconfig_flags), syscfg.sysconfig));
 
+    const char* ss;
     // misc stuff
     if (((ss = ini->GetValue(get_key_str(INI_STR_MAIL_WHO_LEN))) != NULL) &&
         (atoi(ss) > 0 || ss[0] == '0')) {
@@ -440,12 +429,16 @@ IniFile* WApplication::ReadINIFile() {
   GetSession()->max_chains          = std::min<unsigned short>(GetSession()->max_chains, 999);
   GetSession()->max_gfilesec        = std::min<unsigned short>(GetSession()->max_gfilesec, 999);
 
+  // can't allow user to change these on-the-fly
+  unsigned short omb = GetSession()->max_batch;
   if (omb) {
     GetSession()->max_batch = omb;
   }
+  unsigned short omc = GetSession()->max_chains;
   if (omc) {
     GetSession()->max_chains = omc;
   }
+  unsigned short omg = GetSession()->max_gfilesec;
   if (omg) {
     GetSession()->max_gfilesec = omg;
   }
@@ -629,55 +622,9 @@ bool WApplication::SaveConfig() {
   if (configFile.Open(WFile::modeBinary | WFile::modeReadWrite)) {
     configrec full_syscfg;
     configFile.Read(&full_syscfg, sizeof(configrec));
-
-  /*
-    These should not ever be mutated by the BBS (only init) 
-    Commenting them out for now just in case.
-
-    strcpy(full_syscfg.newuserpw, syscfg.newuserpw);
-    strcpy(full_syscfg.systempw, syscfg.systempw);
-
-    strcpy(full_syscfg.msgsdir, syscfg.msgsdir);
-    strcpy(full_syscfg.gfilesdir, syscfg.gfilesdir);
-    strcpy(full_syscfg.datadir, syscfg.datadir);
-    strcpy(full_syscfg.dloadsdir, syscfg.dloadsdir);
-    strcpy(full_syscfg.batchdir, syscfg.batchdir);
-    strcpy(full_syscfg.menudir, syscfg.menudir);
-    strcpy(full_syscfg.unused_terminal, "");
-
-    strcpy(full_syscfg.systemname, syscfg.systemname);
-    strcpy(full_syscfg.systemphone, syscfg.systemphone);
-    strcpy(full_syscfg.sysopname, syscfg.sysopname);
-
-    strcpy(full_syscfg.beginday_c, syscfg.beginday_c);
-    strcpy(full_syscfg.logon_c, syscfg.logon_c);
-    strcpy(full_syscfg.newuser_c, syscfg.newuser_c);
-    strcpy(full_syscfg.upload_c, syscfg.upload_c);
-
-    full_syscfg.newusersl       = syscfg.newusersl;
-    full_syscfg.newuserdsl      = syscfg.newuserdsl;
-    full_syscfg.maxwaiting      = syscfg.maxwaiting;
-    full_syscfg.newuploads      = syscfg.newuploads;
-    full_syscfg.closedsystem    = syscfg.closedsystem;
-
-    full_syscfg.systemnumber    = syscfg.systemnumber;
-    full_syscfg.maxusers        = syscfg.maxusers;
-    full_syscfg.newuser_restrict = syscfg.newuser_restrict;
-    full_syscfg.sysoplowtime    = syscfg.sysoplowtime;
-    full_syscfg.sysophightime   = syscfg.sysophightime;
-    full_syscfg.executetime     = syscfg.executetime;
-    full_syscfg.netlowtime      = syscfg.netlowtime;
-    full_syscfg.nethightime     = syscfg.nethightime;
-    full_syscfg.max_subs        = syscfg.max_subs;
-    full_syscfg.max_dirs        = syscfg.max_dirs;
-
-    full_syscfg.wwiv_reg_number = syscfg.wwiv_reg_number;
-    full_syscfg.sysconfig1      = syscfg.sysconfig1;
-
     // Should these move to wwiv.ini?
-    full_syscfg.post_call_ratio = syscfg.post_call_ratio;
-    full_syscfg.newusergold     = syscfg.newusergold;
-    */
+    // full_syscfg.post_call_ratio = syscfg.post_call_ratio;
+    // full_syscfg.newusergold     = syscfg.newusergold;
 
     // These are set by WWIV.INI, set them back so that changes
     // will be propagated to config.dat
