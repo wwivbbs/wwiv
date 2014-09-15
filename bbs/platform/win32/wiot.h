@@ -87,13 +87,13 @@ class WIOTelnet : public WComm {
   static void InboundTelnetProc(void *pTelnet);
 
  protected:
-  std::queue<char> m_inputQueue;
-  HANDLE m_hInBufferMutex;
-  SOCKET m_hSocket;
-  SOCKET m_hDuplicateSocket;
-  HANDLE m_hReadThread;
-  HANDLE m_hReadStopEvent;
-  bool   m_bThreadsStarted;
+  std::queue<char> queue_;
+  HANDLE mu_;
+  SOCKET socket_;
+  SOCKET duplicate_socket_;
+  HANDLE read_thread_;
+  HANDLE stop_event_;
+  bool   threads_started_;
 };
 
 #endif  // #if !defined (__INCLUDED_WIOT_H__)
