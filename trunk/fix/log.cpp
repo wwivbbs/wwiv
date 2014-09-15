@@ -16,10 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <stdarg.h>
+#include <cstdarg>
+#include <ctime>
 
-#include "wwiv.h"
 #include "log.h"
+#include "bbs/wwiv.h"
+#include "core/wwivport.h"
 
 WFile hLogFile;
 

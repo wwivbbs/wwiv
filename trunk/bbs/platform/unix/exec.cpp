@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include "wwiv.h"
 #include "wcomm.h"

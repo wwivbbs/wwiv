@@ -41,6 +41,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
 #include "core/strings.h"
+#include "core/wwivport.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;

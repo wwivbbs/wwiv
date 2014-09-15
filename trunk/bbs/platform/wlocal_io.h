@@ -20,6 +20,7 @@
 #define __INCLUDED_PLATFORM_WLOCALIO_H__
 
 #include <string>
+#include "bbs/keycodes.h"
 #include "core/wfile.h"
 
 #ifdef _WIN32

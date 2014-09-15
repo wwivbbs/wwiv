@@ -21,10 +21,13 @@
 #include "wwiv.h"
 #include "wcomm.h"
 #include "wiou.h"
+#include <fcntl.h>
 #include <termios.h>
+#include <unistd.h>
 #include <sys/poll.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+
 
 #define TTY "/dev/tty"
 
