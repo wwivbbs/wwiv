@@ -21,6 +21,7 @@
 #include "wwiv.h"
 #include "core/strings.h"
 #include "core/wutil.h"
+#include "core/wwivport.h"
 
 #if defined(__APPLE__)
 #include "macversioninfo.h"

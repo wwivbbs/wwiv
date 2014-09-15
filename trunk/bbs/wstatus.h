@@ -20,6 +20,7 @@
 /**************************************************************************/
 
 #include "vardec.h"
+#include "core/wfile.h"
 
 extern statusrec status;
 

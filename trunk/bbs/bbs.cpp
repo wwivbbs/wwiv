@@ -16,10 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if defined ( __APPLE__ ) && !defined ( __unix__ )
-#define __unix__ 1
-#endif
-
 #ifdef _WIN32
 #include <direct.h>
 #endif  // WIN32
@@ -43,6 +39,7 @@
 #include "core/strings.h"
 #include "core/wutil.h"
 #include "core/wwivassert.h"
+#include "core/wwivport.h"
 
 #if defined( _WIN32 )
 #include <direct.h>

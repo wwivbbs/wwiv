@@ -16,13 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "wwiv.h"
-#include "core/strings.h"
+#include "bbs/wwiv.h"
 #include "bbs/keycodes.h"
+#include "core/strings.h"
+#include "core/wwivport.h"
 
 // Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
-#if !defined ( __unix__ ) && !defined( __APPLE__ )
+#if !defined ( __unix__ )
   char sl[4], dsl[4], exempt[4], sysopsub[4], ar[17], dar[17], restrict[17], rst[17], uk[8], dk[8], up[6], down[6],
        posts[6], banktime[6], gold[10], ass[6], logons[6];
   int cp, i, rc = ABORTED;

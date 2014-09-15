@@ -22,11 +22,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "platform/win32/wiot.h"
-#elif defined ( __unix__ ) || defined ( __APPLE__ )
+#elif defined ( __unix__ )
 #include "wiou.h"
 #endif
 
 #include "core/scope_exit.h"
+#include "core/wwivport.h"
 
 // static
 std::string WComm::error_text_;
