@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "bbs/keycodes.h"
 
 
 static char str_yes[81],

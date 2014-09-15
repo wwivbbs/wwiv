@@ -22,6 +22,7 @@
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
+#include "bbs/keycodes.h"
 
 #if defined( __APPLE__ ) && !defined( __unix__ )
 #define __unix__ 1

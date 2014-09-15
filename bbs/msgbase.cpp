@@ -21,6 +21,8 @@
 #include "instmsg.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 
 #define EMAIL_STORAGE 2

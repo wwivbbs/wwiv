@@ -25,6 +25,7 @@
 #include "printfile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "bbs/keycodes.h"
 
 
 void SetupThreadRecordsBeforeScan();

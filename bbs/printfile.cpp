@@ -32,6 +32,7 @@
 #include "core/wwivassert.h"
 #include "platform/wlocal_io.h"
 #include "fcns.h"
+#include "bbs/keycodes.h"
 #include "vars.h"
 #include "wconstants.h"
 

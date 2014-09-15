@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include "wcomm.h"
 #include "core/strings.h"
+#include "bbs/keycodes.h"
 
 bool NewZModemSendFile(const char *pszFileName);
 

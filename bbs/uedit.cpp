@@ -21,6 +21,7 @@
 #include "printfile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "bbs/keycodes.h"
 
 using namespace wwiv::bbs;
 

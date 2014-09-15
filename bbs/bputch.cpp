@@ -24,6 +24,7 @@
 #include "wcomm.h"
 #include "platform/wlocal_io.h"
 #include "wsession.h"
+#include "bbs/keycodes.h"
 
 
 void execute_ansi();

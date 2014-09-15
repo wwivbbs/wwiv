@@ -20,6 +20,8 @@
 #include "wwiv.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 
 // The final character of an ansi sequence

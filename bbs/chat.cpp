@@ -20,9 +20,11 @@
 #include "bbs/wwiv.h"
 
 #include "core/inifile.h"
+#include "bbs/keycodes.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 

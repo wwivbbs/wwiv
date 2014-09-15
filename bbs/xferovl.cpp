@@ -21,6 +21,8 @@
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wtextfile.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 extern char str_quit[];
 

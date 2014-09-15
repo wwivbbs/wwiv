@@ -22,6 +22,8 @@
 #include "wwiv.h"
 #include "bbs/stuffin.h"
 #include "core/strings.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 void calc_CRC(unsigned char b) {
   checksum = checksum + b;

@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "core/strings.h"
+#include "bbs/wconstants.h"
 
 
 int try_to_ul_wh(char *pszFileName);

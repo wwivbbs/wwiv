@@ -18,8 +18,9 @@
 /**************************************************************************/
 #include <string>
 
-#include "wwiv.h"
-#include "instmsg.h"
+#include "bbs/wwiv.h"
+#include "bbs/instmsg.h"
+#include "bbs/wconstants.h"
 
 #include "core/strings.h"
 

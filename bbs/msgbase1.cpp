@@ -25,6 +25,7 @@
 #include "wwiv.h"
 #include "instmsg.h"
 #include "subxtr.h"
+#include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
 
