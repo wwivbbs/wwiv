@@ -24,6 +24,7 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "bbs/instmsg.h"
+#include "bbs/keycodes.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 

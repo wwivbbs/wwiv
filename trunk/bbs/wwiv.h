@@ -19,14 +19,10 @@
 #ifndef __INCLUDED_WWIV_H__
 #define __INCLUDED_WWIV_H__
 
-//#include "core/wwivport.h"
-
-// WWIV includes
 #include "bbs/vardec.h"
 #include "bbs/wuser.h"
 #include "bbs/wsession.h"
 #include "bbs/bbs.h"
-#include "bbs/wconstants.h"
 #include "bbs/fcns.h"
 #include "bbs/platform/platformfcns.h"
 #include "bbs/vars.h"

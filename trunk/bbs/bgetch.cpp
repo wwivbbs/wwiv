@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "bbs/keycodes.h"
 
 // Local data structures
 

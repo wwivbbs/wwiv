@@ -20,6 +20,8 @@
 #include "wwiv.h"
 #include "instmsg.h"
 #include "core/strings.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 
 //////////////////////////////////////////////////////////////////////////////

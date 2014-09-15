@@ -27,6 +27,8 @@
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 extern const unsigned char *translate_letters[];
 

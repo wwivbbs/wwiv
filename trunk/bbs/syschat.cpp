@@ -22,6 +22,8 @@
 #include "instmsg.h"
 #include "core/strings.h"
 #include "core/wutil.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 // module private functions
 

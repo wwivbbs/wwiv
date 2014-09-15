@@ -20,6 +20,7 @@
 #include "wwiv.h"
 #include "core/strings.h"
 #include "pause.h"
+#include "bbs/keycodes.h"
 
 extern char str_pause[];
 

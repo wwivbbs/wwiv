@@ -19,6 +19,8 @@
 
 #include "wwiv.h"
 #include "core/strings.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 // Local prototypes
 int  printasv(const char *pszFileName, int num, bool abort);

@@ -23,6 +23,8 @@
 #include "menu.h"
 #include "printfile.h"
 #include "core/strings.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 #define STOP_LIST 0
 #define MAX_SCREEN_LINES_TO_SHOW 24

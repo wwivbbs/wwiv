@@ -34,6 +34,7 @@
 #include "core/wtextfile.h"
 
 #include "bbs/stuffin.h"
+#include "bbs/wconstants.h"
 
 
 using std::string;

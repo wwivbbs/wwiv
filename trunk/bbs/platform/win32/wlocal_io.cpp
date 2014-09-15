@@ -29,6 +29,7 @@
 #include "core/wutil.h"
 #include "bbs/wcomm.h"
 #include "core/wwivassert.h"
+#include "bbs/keycodes.h"
 
 // local functions
 bool HasKeyBeenPressed(HANDLE in);

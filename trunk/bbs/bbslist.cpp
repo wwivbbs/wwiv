@@ -21,6 +21,7 @@
 #include "printfile.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
+#include "bbs/keycodes.h"
 
 // Local function prototypes
 

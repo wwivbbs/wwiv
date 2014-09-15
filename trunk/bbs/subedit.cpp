@@ -21,6 +21,7 @@
 #include "subxtr.h"
 #include "core/wtextfile.h"
 #include "core/strings.h"
+#include "bbs/keycodes.h"
 
 using wwiv::bbs::InputMode;
 

@@ -95,6 +95,7 @@
     <ClInclude Include="filenames.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="instmsg.h" />
+    <ClInclude Include="keycodes.h" />
     <ClInclude Include="listplus.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="menusupp.h" />

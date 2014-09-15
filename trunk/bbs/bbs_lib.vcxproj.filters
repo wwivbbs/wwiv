@@ -483,6 +483,9 @@
     <ClInclude Include="external_edit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="keycodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
