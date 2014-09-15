@@ -47,7 +47,7 @@ using wwiv::core::IniFile;
 static const int COL1_POSITION = 24;
 static const int PROMPT_LINE = 6;
 
-#if __unix__
+#ifdef __unix__
 #define FILENAME_UPPERCASE false
 #else
 #define FILENAME_UPPERCASE true

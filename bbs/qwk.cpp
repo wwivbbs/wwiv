@@ -41,6 +41,7 @@
 #include "bbs/wstatus.h"
 
 #include "core/strings.h"
+#include "core/wwivport.h"
 
 #define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
 
