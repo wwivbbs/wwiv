@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "core/strings.h"
+#include "core/wwivport.h"
 #include "initlib/curses_io.h"
 #include "initlib/curses_win.h"
 #include "init/utility.h"
@@ -39,7 +40,7 @@
 #define SET                 8
 
 #ifndef EDITLINE_FILENAME_CASE
-#if __unix__
+#ifdef __unix__
 #define EDITLINE_FILENAME_CASE ALL
 #else
 #define EDITLINE_FILENAME_CASE UPPER_ONLY

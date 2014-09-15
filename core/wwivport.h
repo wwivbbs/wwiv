@@ -20,7 +20,11 @@
 #ifndef __INCLUDED_PLATFORM_INCL1_H__
 #define __INCLUDED_PLATFORM_INCL1_H__
 
-#if defined ( __unix__ ) || defined ( __APPLE__ )
+#if defined( __APPLE__ ) && !defined( __unix__ )
+#define __unix__
+#endif
+
+#if defined ( __unix__ )
 
 #include <unistd.h>
 #include <fcntl.h>

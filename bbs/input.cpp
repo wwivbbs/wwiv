@@ -23,6 +23,7 @@
 
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "core/wwivport.h"
 #include "bbs/wwiv.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
@@ -257,7 +258,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
   const char dash = '-';
   const char slash = '/';
 
-#if defined( __unix__ ) || defined( __APPLE__ )
+#if defined( __unix__ )
   input1(szTemp, nMaxLength, mode, true);
   strcpy(pszOutText, szTemp);
   return strlen(szTemp);
