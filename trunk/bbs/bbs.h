@@ -16,6 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+/*
+ * @header WWIV 5.0 Main Application
+ * Main Starting point of the WWIV 5.0 System.
+ */
+
 #ifndef __INCLUDED_BBS_H__
 #define __INCLUDED_BBS_H__
 
@@ -28,11 +33,6 @@
 class StatusMgr;
 class WComm;
 class WUserManager;
-
-/*!
- * @header WWIV 5.0 Main Application
- * Main Starting point of the WWIV 5.0 System.
- */
 
 /*!
  * @class WApplication  Main Application object for WWIV 5.0
@@ -94,9 +94,7 @@ class WApplication : public WLogger, Runnable {
 
   WUserManager* GetUserManager();
 
-  const std::string& GetAttachmentDirectory() {
-    return m_attachmentDirectory;
-  }
+  const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
 
   /*!
    * @var m_networkNumEnvVar Environment variable style
@@ -124,13 +122,9 @@ class WApplication : public WLogger, Runnable {
   /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
   void QuitBBS();
 
-  int  GetInstanceNumber() {
-    return m_nInstance;
-  }
+  int  GetInstanceNumber() { return m_nInstance; }
 
-  const char* GetNetworkExtension() {
-    return m_szNetworkExtension;
-  }
+  const char* GetNetworkExtension() { return m_szNetworkExtension; }
 
   void UpdateTopScreen();
 
@@ -139,53 +133,25 @@ class WApplication : public WLogger, Runnable {
 
   bool SaveConfig();
 
-  void SetConfigFlag(int nFlag)         {
-    flags |= nFlag;
-  }
-  void ToggleConfigFlag(int nFlag)      {
-    flags ^= nFlag;
-  }
-  void ClearConfigFlag(int nFlag)       {
-    flags &= ~nFlag;
-  }
-  bool HasConfigFlag(int nFlag) const   {
-    return (flags & nFlag) != 0;
-  }
-  void SetConfigFlags(int nFlags)       {
-    flags = nFlags;
-  }
-  unsigned long GetConfigFlags() const    {
-    return flags;
-  }
+  void SetConfigFlag(int nFlag) { flags |= nFlag; }
+  void ToggleConfigFlag(int nFlag) { flags ^= nFlag; }
+  void ClearConfigFlag(int nFlag) { flags &= ~nFlag; }
+  bool HasConfigFlag(int nFlag) const { return (flags & nFlag) != 0; }
+  void SetConfigFlags(int nFlags) { flags = nFlags; }
+  unsigned long GetConfigFlags() const { return flags; }
 
-  unsigned short GetSpawnOptions(int nCmdID)    {
-    return spawn_opts[ nCmdID ];
-  }
+  unsigned short GetSpawnOptions(int nCmdID) { return spawn_opts[ nCmdID ]; }
 
-  bool IsCleanNetNeeded() const     {
-    return m_bNeedToCleanNetwork;
-  }
-  void SetCleanNetNeeded(bool b)   {
-    m_bNeedToCleanNetwork = b;
-  }
+  bool IsCleanNetNeeded() const { return m_bNeedToCleanNetwork; }
+  void SetCleanNetNeeded(bool b) { m_bNeedToCleanNetwork = b; }
 
-  bool IsShutDownActive() const           {
-    return m_nBbsShutdownStatus > 0;
-  }
+  bool IsShutDownActive() const { return m_nBbsShutdownStatus > 0; }
 
-  double GetShutDownTime() const          {
-    return m_fShutDownTime;
-  }
-  void   SetShutDownTime(double d)      {
-    m_fShutDownTime = d;
-  }
+  double GetShutDownTime() const { return m_fShutDownTime; }
+  void   SetShutDownTime(double d) { m_fShutDownTime = d; }
 
-  void SetWfcStatus(int nStatus)        {
-    m_nWfcStatus = nStatus;
-  }
-  int  GetWfcStatus()                     {
-    return m_nWfcStatus;
-  }
+  void SetWfcStatus(int nStatus) { m_nWfcStatus = nStatus; }
+  int  GetWfcStatus() { return m_nWfcStatus; }
 
   bool read_subs();
   void UpdateShutDownStatus();
@@ -198,12 +164,8 @@ class WApplication : public WLogger, Runnable {
 
 
  private:
-  int  GetShutDownStatus() const {
-    return m_nBbsShutdownStatus;
-  }
-  void SetShutDownStatus(int n)         {
-    m_nBbsShutdownStatus = n;
-  }
+  int  GetShutDownStatus() const { return m_nBbsShutdownStatus; }
+  void SetShutDownStatus(int n) { m_nBbsShutdownStatus = n; }
   void ShutDownBBS(int nShutDownStatus);
 
   void ExitBBSImpl(int nExitLevel);
