@@ -16,14 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "wcomm.h"
+#include "bbs/wcomm.h"
+#include "core/wwivport.h"
 
 #if defined ( _WIN32 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "platform/win32/wiot.h"
 #elif defined ( __unix__ )
-#include "wiou.h"
+#include "bbs/platform/unix/wiou.h"
 #endif
 
 #include "core/scope_exit.h"
@@ -59,7 +60,7 @@ const std::string WComm::GetLastErrorText() {
 WComm* WComm::CreateComm(unsigned int nHandle) {
 #if defined ( _WIN32 )
   return new WIOTelnet(nHandle);
-#elif defined ( __unix__ ) || defined ( __APPLE__ )
+#elif defined ( __unix__ )
   return new WIOUnix();
 #endif
 }

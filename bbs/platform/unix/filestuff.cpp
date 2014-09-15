@@ -16,7 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "wwiv.h"
+#include <unistd.h>
+#include "bbs/wwiv.h"
 
 #ifdef __APPLE__
 #include <sys/param.h>

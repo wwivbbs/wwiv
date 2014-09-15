@@ -17,12 +17,15 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-
+#include <sys/stat.h>
+#include <unistd.h>
 #include <string>
+
+#include "bbs/wwiv.h"
 
 #include "core/strings.h"
 #include "core/wfile.h"
+#include "core/wwivport.h"
 
 using std::string;
 using wwiv::strings::StrCat;

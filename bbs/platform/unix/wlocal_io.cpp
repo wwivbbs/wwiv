@@ -18,8 +18,11 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+
+#include "bbs/wcomm.h"
+#include "bbs/wstatus.h"
+#include "core/strings.h"
 #include "core/wutil.h"
-#include "wcomm.h"
 
 WLocalIO::WLocalIO() : global_buf(nullptr), global_ptr(0) {
   // These 2 lines must remain in here.
