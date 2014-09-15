@@ -26,6 +26,8 @@
 #include "wiou.h"
 #endif
 
+#include "core/scope_exit.h"
+
 // static
 std::string WComm::error_text_;
 
@@ -34,7 +36,9 @@ void WComm::SetComPort(int nNewPort) { comport_ = nNewPort; }
 
 const std::string WComm::GetLastErrorText() {
 #if defined ( _WIN32 )
-  LPVOID lpMsgBuf;
+  char* error_text;
+  wwiv::core::ScopeExit on_exit([&error_text] {LocalFree(error_text);});
+  
   FormatMessage(
     FORMAT_MESSAGE_ALLOCATE_BUFFER |
     FORMAT_MESSAGE_FROM_SYSTEM |
@@ -42,12 +46,11 @@ const std::string WComm::GetLastErrorText() {
     NULL,
     GetLastError(),
     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-    (LPTSTR) &lpMsgBuf,
+    (LPTSTR) &error_text,
     0,
     NULL
   );
-  error_text_.assign((LPCTSTR)lpMsgBuf);
-  LocalFree(lpMsgBuf);
+  error_text_.assign(error_text);
 #endif
   return error_text_;
 }
