@@ -84,7 +84,7 @@ class WComm {
 
  public:
   // static factory methods
-  static WComm* CreateComm(bool bUseSockets, unsigned int nHandle);
+  static WComm* CreateComm(unsigned int nHandle);
 };
 
 
