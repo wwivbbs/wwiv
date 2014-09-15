@@ -127,24 +127,18 @@ WSession::~WSession() {
   }
 }
 
-
-
-
-void WSession::CreateComm(bool bUseSockets, unsigned int nHandle) {
-  m_pComm = WComm::CreateComm(bUseSockets, nHandle);
+void WSession::CreateComm(unsigned int nHandle) {
+  m_pComm = WComm::CreateComm(nHandle);
   GetSession()->bout.SetComm(m_pComm);
 }
-
 
 WLocalIO* WSession::localIO() {
   return m_pLocalIO;
 }
 
-
 WComm* WSession::remoteIO() {
   return m_pComm;
 }
-
 
 bool WSession::ReadCurrentUser() {
   return ReadCurrentUser(usernum, false);

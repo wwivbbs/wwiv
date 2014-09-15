@@ -93,7 +93,7 @@ class WSession {
   WComm* remoteIO();
   WLocalIO* localIO();
   /*! @function CreateComm Creates up the communications subsystem */
-  void CreateComm(bool bUseSockets, unsigned int nHandle);
+  void CreateComm(unsigned int nHandle);
 
   bool IsLastKeyLocal() const { return m_bLastKeyLocal; }
   void SetLastKeyLocal(bool b) { m_bLastKeyLocal = b; }

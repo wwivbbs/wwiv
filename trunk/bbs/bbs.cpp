@@ -905,7 +905,7 @@ int WApplication::Run(int argc, char *argv[]) {
   m_bUserAlreadyOn = true;
 #endif
 
-  GetSession()->CreateComm(bTelnetInstance, hSockOrComm);
+  GetSession()->CreateComm(hSockOrComm);
   this->InitializeBBS();
 
   if (systemPassword.length() > 0) {
