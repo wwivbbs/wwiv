@@ -55,7 +55,7 @@ const std::string WComm::GetLastErrorText() {
   return error_text_;
 }
 
-WComm* WComm::CreateComm(bool bUseSockets, unsigned int nHandle) {
+WComm* WComm::CreateComm(unsigned int nHandle) {
 #if defined ( _WIN32 )
   return new WIOTelnet(nHandle);
 #elif defined ( __unix__ ) || defined ( __APPLE__ )
