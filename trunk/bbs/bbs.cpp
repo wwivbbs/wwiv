@@ -125,13 +125,13 @@ void WApplication::GetCaller() {
                                        GetSession()->GetCurrentSpeed().c_str());
   SetWfcStatus(0);
 }
-#endif // __unix))
 
-#if defined( __APPLE__ )
+#else  // _unix__
+
 void wfc_screen() {}
 void wfc_cls() {}
-#endif
 
+#endif  // __unix__
 
 int WApplication::doWFCEvents() {
   char ch;
