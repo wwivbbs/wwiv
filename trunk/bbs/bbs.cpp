@@ -1105,20 +1105,6 @@ WApplication::WApplication() : statusMgr(new StatusMgr()), userManager(new WUser
   _getcwd(m_szCurrentDirectory, MAX_PATH);
 }
 
-
-WApplication::WApplication(const WApplication& copy) {
-  statusMgr = copy.statusMgr;
-  userManager = copy.userManager;
-  m_nOkLevel = copy.m_nOkLevel;
-  m_nErrorLevel = copy.m_nErrorLevel;
-  m_nInstance = copy.m_nInstance;
-  m_bUserAlreadyOn = copy.m_bUserAlreadyOn;
-  m_fShutDownTime = copy.m_fShutDownTime;
-  m_nWfcStatus = copy.m_nWfcStatus;
-
-  strcpy(m_szCurrentDirectory, copy.m_szCurrentDirectory);
-}
-
 void WApplication::CdHome() {
   chdir(m_szCurrentDirectory);
 }
