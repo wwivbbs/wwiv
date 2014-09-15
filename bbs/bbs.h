@@ -52,7 +52,7 @@ class WApplication : public WLogger, Runnable {
 
  public:
   WApplication();
-  WApplication(const WApplication& copy);
+  WApplication(const WApplication& copy) = delete;
   virtual ~WApplication();
 
  protected:
