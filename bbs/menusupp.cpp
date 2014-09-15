@@ -24,9 +24,11 @@
 #include "bbs/external_edit.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/keycodes.h"
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
 #include "bbs/pause.h"
+#include "bbs/wconstants.h"
 #include "bbs/printfile.h"
 #include "core/strings.h"
 

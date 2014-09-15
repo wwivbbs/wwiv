@@ -23,6 +23,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
+#include "bbs/wconstants.h"
 #include "core/strings.h"
 
 //////////////////////////////////////////////////////////////////////////////

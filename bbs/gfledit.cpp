@@ -20,7 +20,7 @@
 #include "wwiv.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
-
+#include "bbs/keycodes.h"
 
 char *gfiledata(int nSectionNum, char *pBuffer);
 

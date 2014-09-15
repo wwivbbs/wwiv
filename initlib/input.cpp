@@ -33,7 +33,8 @@
 #include <vector>
 
 #include "initlib/curses_io.h"
-#include "bbs/wconstants.h"  // TODO(rushfan): Stop including this
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h" 
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT

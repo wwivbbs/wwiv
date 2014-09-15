@@ -26,6 +26,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
+#include "bbs/wconstants.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"

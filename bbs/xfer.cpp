@@ -22,6 +22,8 @@
 
 #include "core/strings.h"
 #include "bbs/stuffin.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;

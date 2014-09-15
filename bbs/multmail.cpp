@@ -21,6 +21,7 @@
 #include "core/wfndfile.h"
 #include "core/strings.h"
 #include "bbs/printfile.h"
+#include "bbs/wconstants.h"
 
 //
 // local function prototypes

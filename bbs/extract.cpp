@@ -25,6 +25,7 @@
 #include "core/wwivassert.h"
 
 #include "bbs/stuffin.h"
+#include "bbs/keycodes.h"
 
 using std::string;
 using wwiv::strings::StrCat;

@@ -22,6 +22,7 @@
 #include "wwiv.h"
 #include "woutstreambuffer.h"
 #include "core/strings.h"
+#include "bbs/keycodes.h"
 
 using std::ostream;
 

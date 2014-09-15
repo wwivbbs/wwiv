@@ -38,6 +38,7 @@
 #include "instmsg.h"
 #include "menu.h" // for mainmenu
 #include "bbs/external_edit.h"
+#include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wutil.h"
 #include "core/wwivassert.h"
@@ -51,6 +52,8 @@
 #endif // _WIN32
 #include "printfile.h"
 #include "wcomm.h"
+#include "bbs/keycodes.h"
+
 
 static bool bUsingPppProject = true;
 extern time_t last_time_c;

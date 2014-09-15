@@ -19,6 +19,7 @@
 
 #include "wwiv.h"
 #include "core/strings.h"
+#include "bbs/keycodes.h"
 
 using wwiv::bbs::InputMode;
 

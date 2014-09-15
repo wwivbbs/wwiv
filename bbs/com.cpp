@@ -23,6 +23,7 @@
 #include "wcomm.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "bbs/keycodes.h"
 
 extern char str_quit[];
 

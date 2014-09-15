@@ -31,6 +31,8 @@
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 // How far to indent extended descriptions
 static const int INDENTION = 24;

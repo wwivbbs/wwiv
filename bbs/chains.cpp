@@ -21,6 +21,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
 #include "bbs/stuffin.h"
+#include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 

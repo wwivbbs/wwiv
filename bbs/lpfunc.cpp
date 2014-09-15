@@ -23,6 +23,8 @@
 #include "printfile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "bbs/keycodes.h"
+#include "bbs/wconstants.h"
 
 //
 // Local function prototypes

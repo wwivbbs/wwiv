@@ -22,9 +22,11 @@
 #include "bbs/wwiv.h"
 
 #include "bbs/instmsg.h"
+#include "bbs/keycodes.h"
 #include "bbs/listplus.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
 
 #include "core/strings.h"

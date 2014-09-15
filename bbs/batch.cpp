@@ -29,6 +29,7 @@
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wcomm.h"
+#include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
