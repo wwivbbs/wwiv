@@ -23,6 +23,7 @@
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wutil.h"
 #include "core/inifile.h"

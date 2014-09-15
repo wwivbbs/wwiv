@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "wwiv.h"
+#include "bbs/wstatus.h"
 #include "core/strings.h"
 
 

@@ -22,6 +22,7 @@
 #include "core/strings.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
 
 //
 // local function prototypes

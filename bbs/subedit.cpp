@@ -22,6 +22,7 @@
 #include "core/wtextfile.h"
 #include "core/strings.h"
 #include "bbs/keycodes.h"
+#include "bbs/wstatus.h"
 
 using wwiv::bbs::InputMode;
 
