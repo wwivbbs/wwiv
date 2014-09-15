@@ -23,6 +23,7 @@
 #include "core/wwivassert.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
 
 
 #define EMAIL_STORAGE 2

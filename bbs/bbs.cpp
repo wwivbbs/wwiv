@@ -39,6 +39,7 @@
 #include "menu.h" // for mainmenu
 #include "bbs/external_edit.h"
 #include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wutil.h"
 #include "core/wwivassert.h"

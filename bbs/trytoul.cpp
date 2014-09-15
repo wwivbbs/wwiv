@@ -18,8 +18,9 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "core/strings.h"
 #include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
+#include "core/strings.h"
 
 
 int try_to_ul_wh(char *pszFileName);

@@ -24,6 +24,7 @@
 #include "bbs/wconstants.h"
 #include "subxtr.h"
 #include "printfile.h"
+#include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
 #include "core/wwivassert.h"

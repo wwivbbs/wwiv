@@ -30,6 +30,7 @@
 #include "bbs/pause.h"
 #include "bbs/wconstants.h"
 #include "bbs/printfile.h"
+#include "bbs/wstatus.h"
 #include "core/strings.h"
 
 using std::string;

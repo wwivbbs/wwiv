@@ -23,6 +23,7 @@
 #include "core/wtextfile.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
 
 extern char str_quit[];
 

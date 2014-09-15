@@ -23,9 +23,10 @@
 #endif  // _WIN32
 
 #include "wwiv.h"
-#include "instmsg.h"
-#include "subxtr.h"
+#include "bbs/instmsg.h"
+#include "bbs/subxtr.h"
 #include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
 

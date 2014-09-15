@@ -19,6 +19,8 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "vardec.h"
+
 extern statusrec status;
 
 class WStatus {

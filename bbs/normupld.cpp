@@ -18,10 +18,11 @@
 /**************************************************************************/
 
 #include "wwiv.h"
-#include "instmsg.h"
-#include "core/strings.h"
+#include "bbs/instmsg.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
+#include "core/strings.h"
 
 
 //////////////////////////////////////////////////////////////////////////////

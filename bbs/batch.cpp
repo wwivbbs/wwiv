@@ -30,6 +30,7 @@
 #include "bbs/stuffin.h"
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
+#include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
