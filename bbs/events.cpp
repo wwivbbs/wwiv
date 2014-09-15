@@ -22,10 +22,7 @@
 #include "printfile.h"
 #include "wcomm.h"
 #include "core/wwivassert.h"
-
-#if defined( __APPLE__ ) && !defined( __unix__ )
-#define __unix__ 1
-#endif
+#include "core/wwivport.h"
 
 using wwiv::bbs::InputMode;
 

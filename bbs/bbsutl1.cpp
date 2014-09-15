@@ -23,7 +23,7 @@
 #include "core/strings.h"
 #include "core/wtextfile.h"
 #include "core/wwivassert.h"
-
+#include "core/wwivport.h"
 
 /**
  * Returns true if local sysop functions accessible, else returns false.
@@ -263,16 +263,13 @@ bool ValidateSysopPassword() {
   return false;
 }
 
-
-
 /**
  * Hangs up the modem if user online. Whether using modem or not, sets
  * hangup to 1.
  */
 void hang_it_up() {
   hangup = true;
-#if !defined( __unix__ ) && !defined( __APPLE__ )
-
+#if !defined( __unix__ )
   if (!ok_modem_stuff) {
     return;
   }

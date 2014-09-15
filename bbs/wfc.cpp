@@ -24,6 +24,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
+#include "core/wwivport.h"
 #include "core/strings.h"
 #include "core/wutil.h"
 #include "core/inifile.h"
@@ -109,9 +110,8 @@ void wfc_update() {
   }
 }
 
-
 bool iscdrom(char drive) {
-#if !defined ( __unix__ ) && !defined ( __APPLE__ )
+#if !defined ( __unix__ )
   // TODO Make this function platform specific
   char szDrivePath[10];
   sprintf(szDrivePath, "%c:\\", drive + '@');

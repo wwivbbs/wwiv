@@ -29,6 +29,8 @@
 #include "bbs/vardec.h"
 #include "bbs/net.h"
 #include "ivardec.h"
+#include "core/wwivport.h"
+
 
 #if !defined (MAX_PATH)
 #define MAX_PATH 260

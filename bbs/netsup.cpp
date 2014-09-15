@@ -18,16 +18,13 @@
 /**************************************************************************/
 #include <memory>
 
-#include "wwiv.h"
+#include "bbs/keycodes.h"
+#include "bbs/wstatus.h"
+#include "bbs/wwiv.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
-#include "bbs/keycodes.h"
-#include "bbs/wstatus.h"
-
-#if defined( __APPLE__ ) && !defined( __unix__ )
-#define __unix__ 1
-#endif
+#include "core/wwivport.h"
 
 static int netw;
 time_t last_time_c;

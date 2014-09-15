@@ -22,6 +22,7 @@
 
 #include <cstring>
 #include <string>
+#include "core/wwivport.h"
 
 #if defined( _WIN32 )
 #define VC_EXTRALEAN
@@ -29,8 +30,6 @@
 #include <windows.h>
 #undef CopyFile
 #undef GetFullPathName
-#else  // _WIN32
-#include "core/wwivport.h"
 #endif // _WIN32
 
 class WFindFile {
@@ -58,7 +57,7 @@ class WFindFile {
 #if defined (_WIN32)
   WIN32_FIND_DATA ffdata;
   HANDLE  hFind;
-#elif defined ( __unix__ ) || defined( __APPLE__ )
+#elif defined ( __unix__ )
   struct dirent **entries;
   int nMatches;
   int nCurrentEntry;
