@@ -76,7 +76,7 @@ void kill_old_email() {
       bool done1 = false;
       do {
         GetSession()->bout.NewLine();
-        GetSession()->bout << "|#1  To|#7: |#" << GetSession()->GetMessageColor();
+        GetSession()->bout << "|#1  To|#9: |#" << GetSession()->GetMessageColor();
 
         if (m.tosys == 0) {
           GetApplication()->GetUserManager()->ReadUser(&user, m.touser);
@@ -90,11 +90,11 @@ void kill_old_email() {
         } else {
           GetSession()->bout << "#" << m.tosys << " @" << m.tosys << wwiv::endl;
         }
-        GetSession()->bout.WriteFormatted("|#1Subj|#7: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
+        GetSession()->bout.WriteFormatted("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
         time_t lCurrentTime;
         time(&lCurrentTime);
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
-        GetSession()->bout << "|#1Sent|#7: |#" << GetSession()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
+        GetSession()->bout << "|#1Sent|#9: |#" << GetSession()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
           WFile fileAttach(syscfg.datadir, ATTACH_DAT);
           if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -178,7 +178,7 @@ void kill_old_email() {
         break;
         case 'R': {
           GetSession()->bout.NewLine(2);
-          GetSession()->bout.WriteFormatted("|#1Subj|#7: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
+          GetSession()->bout.WriteFormatted("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
           bool next;
           read_message1(&m.msg, static_cast<char>(m.anony & 0x0f), false, &next, "email", 0, 0);
         }
@@ -431,14 +431,14 @@ void time_bank() {
     GetSession()->bout.ClearScreen();
     GetSession()->bout << "|#5WWIV TimeBank\r\n";
     GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2D|#7)|#1eposit Time\r\n";
-    GetSession()->bout << "|#2W|#7)|#1ithdraw Time\r\n";
-    GetSession()->bout << "|#2Q|#7)|#1uit\r\n";
+    GetSession()->bout << "|#2D|#9)eposit Time\r\n";
+    GetSession()->bout << "|#2W|#9)ithdraw Time\r\n";
+    GetSession()->bout << "|#2Q|#9)uit\r\n";
     GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7Balance: |#1" << GetSession()->GetCurrentUser()->GetTimeBankMinutes() << "|#7 minutes\r\n";
-    GetSession()->bout << "|#7Time Left: |#1" << static_cast<int>(nsl() / 60) << "|#7 minutes\r\n";
+    GetSession()->bout << "|#9Balance: |#2" << GetSession()->GetCurrentUser()->GetTimeBankMinutes() << "|#9 minutes\r\n";
+    GetSession()->bout << "|#9Time Left: |#2" << static_cast<int>(nsl() / 60) << "|#9 minutes\r\n";
     GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) [|#2Time Bank|#7] Enter Command: |#2";
+    GetSession()->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2Time Bank|#9] Enter Command: |#2";
     GetSession()->bout.ColorizedInputField(1);
     char c = onek("QDW");
     switch (c) {
@@ -515,19 +515,19 @@ void uudecode(const char *pszInputFileName, const char *pszOutputFileName) {
 void Packers() {
   do {
     GetSession()->bout.NewLine();
-    GetSession()->bout << "|#1Message Packet Options:\r\n";
+    GetSession()->bout << "|#2Message Packet Options:\r\n";
     GetSession()->bout.NewLine();
     if (GetSession()->internal_qwk_enabled()) {
-      GetSession()->bout << "|#7[|#2I|#7] |#1Internal WWIV QWK\r\n";
+      GetSession()->bout << "|#9[|#2I|#9] Internal WWIV QWK\r\n";
     }
     if (GetSession()->wwivmail_enabled()) {
-      GetSession()->bout << "|#7[|#2W|#7] |#1WWIVMail/QWK\r\n";
+      GetSession()->bout << "|#9[|#2W|#9] WWIVMail/QWK\r\n";
     }
-    GetSession()->bout << "|#7[|#2Z|#7] |#1Zipped ASCII Text\r\n";
-    GetSession()->bout << "|#7[|#2C|#7] |#1Configure Sub Scan\r\n";
-    GetSession()->bout << "|#7[|#2Q|#7] |#1Quit back to BBS!\r\n";
+    GetSession()->bout << "|#9[|#2Z|#9] Zipped ASCII Text\r\n";
+    GetSession()->bout << "|#9[|#2C|#9] Configure Sub Scan\r\n";
+    GetSession()->bout << "|#9[|#2Q|#9] Quit back to BBS!\r\n";
     GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Choice : ";
+    GetSession()->bout << "|#9Choice : ";
     char ch = onek("WIZCQ\r ");
     switch (ch) {
     case 'W': {
