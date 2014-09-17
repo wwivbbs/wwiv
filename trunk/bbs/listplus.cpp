@@ -271,11 +271,6 @@ int listfiles_plus(int type) {
   GetSession()->bout.ClearScreen();
 
   int nReturn = listfiles_plus_function(type);
-
-#ifdef FAST_EXTENDED_DESCRIPTION
-  lp_zap_ed_info();
-#endif
-
   GetSession()->bout.Color(0);
   GetSession()->bout.GotoXY(1, GetSession()->GetCurrentUser()->GetScreenLines() - 3);
   GetSession()->bout.NewLine(3);
@@ -663,7 +658,6 @@ int load_config_listing(int config) {
   return 0;
 }
 
-
 void write_config_listing(int config) {
   if (!config) {
     return;
@@ -686,12 +680,10 @@ void write_config_listing(int config) {
   fileUserConfig.Close();
 }
 
-
 void unload_config_listing() {
   list_loaded = 0;
   memset(&config_listing, 0, sizeof(user_config));
 }
-
 
 int print_extended_plus(const char *pszFileName, int numlist, int indent, int color,
                         struct search_record * search_rec) {
@@ -761,7 +753,6 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
   return numl;
 }
 
-
 void show_fileinfo(uploadsrec * u) {
   GetSession()->bout.ClearScreen();
   repeat_char('\xCD', 78);
@@ -823,96 +814,6 @@ int check_lines_needed(uploadsrec * u) {
 
   return lc_lines_used + elines;
 }
-
-static int ed_num;
-static ext_desc_rec *ed_info;
-static char last_g_szExtDescrFileName[131];
-static WFile fileExt;
-
-char *lp_read_extended_description(const char *pszFileName) {
-  ext_desc_type ed;
-  long l;
-  char *ss = NULL;
-
-  lp_get_ed_info();
-
-  if (ed_info && fileExt.IsOpen()) {
-    for (int i = 0; i < ed_num; i++) {
-      if (wwiv::strings::IsEquals(pszFileName, ed_info[i].name)) {
-        fileExt.Seek(ed_info[i].offset, WFile::seekBegin);
-        l = fileExt.Read(&ed, sizeof(ext_desc_type));
-
-        if (l == sizeof(ext_desc_type) && wwiv::strings::IsEquals(pszFileName, ed.name)) {
-          ss = static_cast<char *>(BbsAllocA(ed.len + 10));
-          WWIV_ASSERT(ss);
-          if (ss) {
-            fileExt.Read(ss, ed.len);
-            ss[ed.len] = 0;
-          }
-          return ss;
-        } else {
-          break;
-        }
-      }
-    }
-  }
-  return NULL;
-}
-
-void lp_zap_ed_info() {
-  if (ed_info) {
-    free(ed_info);
-    ed_info = NULL;
-  }
-  if (fileExt.IsOpen()) {
-    fileExt.Close();
-  }
-
-  last_g_szExtDescrFileName[0] = 0;
-  ed_num = 0;
-}
-
-void lp_get_ed_info() {
-  long l, l1;
-  ext_desc_type ed;
-
-  if (!wwiv::strings::IsEquals(last_g_szExtDescrFileName, g_szExtDescrFileName)) {
-    lp_zap_ed_info();
-    strcpy(last_g_szExtDescrFileName, g_szExtDescrFileName);
-
-    if (!GetSession()->numf) {
-      return;
-    }
-
-    l = 0;
-
-    fileExt.SetName(g_szExtDescrFileName);
-    fileExt.Open(WFile::modeBinary | WFile::modeReadOnly);
-
-    if (fileExt.IsOpen()) {
-      l1 = fileExt.GetLength();
-      if (l1 > 0) {
-        ed_info = static_cast<ext_desc_rec *>(BbsAllocA(GetSession()->numf * sizeof(ext_desc_rec)));
-        WWIV_ASSERT(ed_info);
-        if (ed_info == NULL) {
-          fileExt.Close();
-          return;
-        }
-        ed_num = 0;
-        while ((l < l1) && (ed_num < GetSession()->numf)) {
-          fileExt.Seek(l, WFile::seekBegin);
-          if (fileExt.Read(&ed, sizeof(ext_desc_type)) == sizeof(ext_desc_type)) {
-            strcpy(ed_info[ed_num].name, ed.name);
-            ed_info[ed_num].offset = l;
-            l += static_cast<long>(ed.len + sizeof(ext_desc_type));
-            ed_num++;
-          }
-        }
-      }
-    }
-  }
-}
-
 
 void prep_menu_items(char **menu_items) {
   strcpy(menu_items[0], "Next");
@@ -1469,10 +1370,6 @@ int rename_filename(const char *pszFileName, int dn) {
   int i, cp, ret = 1;
   uploadsrec u;
 
-#ifdef FAST_EXTENDED_DESCRIPTION
-  lp_zap_ed_info();
-#endif
-
   dliscan1(dn);
   strcpy(s, pszFileName);
 
@@ -1598,10 +1495,6 @@ int remove_filename(const char *pszFileName, int dn) {
   uploadsrec u;
   memset(&u, 0, sizeof(uploadsrec));
 
-#ifdef FAST_EXTENDED_DESCRIPTION
-  lp_zap_ed_info();
-#endif
-
   dliscan1(dn);
   strcpy(szTempFileName, pszFileName);
 
@@ -1708,10 +1601,6 @@ int move_filename(const char *pszFileName, int dn) {
   char szTempMoveFileName[81], szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH], *ss;
   int nDestDirNum = -1, ret = 1;
   uploadsrec u, u1;
-
-#ifdef FAST_EXTENDED_DESCRIPTION
-  lp_zap_ed_info();
-#endif
 
   strcpy(szTempMoveFileName, pszFileName);
   dliscan1(dn);

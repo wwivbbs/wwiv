@@ -424,9 +424,6 @@ int  print_extended_plus(const char *pszFileName, int numlist, int indent, int c
                          struct search_record * search_rec);
 void show_fileinfo(uploadsrec *pUploadRecord);
 int  check_lines_needed(uploadsrec * pUploadRecord);
-char *lp_read_extended_description(const char *pszFileName);
-void lp_zap_ed_info();
-void lp_get_ed_info();
 void prep_menu_items(char **menu_items);
 int  prep_search_rec(struct search_record * search_rec, int type);
 int  calc_max_lines();
