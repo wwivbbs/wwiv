@@ -1203,7 +1203,7 @@ short SelectColor(int which) {
 }
 
 void check_listplus() {
-  GetSession()->bout << "|#5Use listplus file GetSession()->tagging? ";
+  GetSession()->bout << "|#5Use listplus file tagging? ";
 
   if (noyes()) {
     if (GetSession()->GetCurrentUser()->IsUseListPlus()) {
