@@ -22,8 +22,8 @@
 
 #include "common.h"
 
-// #define FORCE_LP
 // If the person has ansi, then they are foced to use listplus
+#define FORCE_LP
 
 
 #define EXTRA_SPACE
@@ -33,7 +33,9 @@
 // The only drawback to it is that if you are multiline, you can not add
 // an extended description while someone is listing that area, of course it
 // can be added when the person is done with the area and all...
-#define FAST_EXTENDED_DESCRIPTION
+
+// Disabled by Rushfan - This was missing some extended descriptions.
+//#define FAST_EXTENDED_DESCRIPTION
 
 
 // Uncomment for use with Spotnicks File Point mod

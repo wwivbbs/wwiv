@@ -2350,17 +2350,15 @@ bool ok_listplus() {
   if (GetSession()->GetCurrentUser()->IsUseNoTagging()) {
     return false;
   }
-
   if (GetSession()->GetCurrentUser()->IsUseListPlus()) {
-    return false;
-  }
-
-  if (x_only) {
     return false;
   }
 #endif
 
-  return 1;
+  if (x_only) {
+    return false;
+  }
+  return true;
 }
 
 
