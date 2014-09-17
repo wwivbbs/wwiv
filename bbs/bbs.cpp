@@ -259,7 +259,7 @@ int WApplication::doWFCEvents() {
       case ',':
         if (net_sysnum > 0 || (GetSession()->GetMaxNetworkNumber() > 1 && AllowLocalSysop())) {
           GetSession()->localIO()->LocalGotoXY(2, 23);
-          GetSession()->bout << "|7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
+          GetSession()->bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
           ch = onek("Q012");
           switch (ch) {
           case '0':
