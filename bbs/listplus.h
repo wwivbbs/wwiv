@@ -34,10 +34,6 @@
 // an extended description while someone is listing that area, of course it
 // can be added when the person is done with the area and all...
 
-// Disabled by Rushfan - This was missing some extended descriptions.
-//#define FAST_EXTENDED_DESCRIPTION
-
-
 // Uncomment for use with Spotnicks File Point mod
 // #define FILE_POINTS
 
@@ -64,12 +60,7 @@ extern int foundany;
 #define STOP_LIST 0
 
 
-#ifdef FAST_EXTENDED_DESCRIPTION
-#define READ_EXTENDED_DESCRIPTION(f) lp_read_extended_description((f))
-#else
 #define READ_EXTENDED_DESCRIPTION(f) read_extended_description((f))
-#endif
-
 
 #define MAX_EXTENDED_SIZE (1000)
 
