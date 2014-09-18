@@ -857,6 +857,17 @@ void listfiles() {
     if (compare(szFileMask, u.filename)) {
       fileDownload.Close();
       printinfo(&u, &abort);
+
+      // Moved to here from bputch.cpp
+      if (lines_listed >= GetSession()->screenlinest - 3) {
+        if (GetSession()->tagging && !GetSession()->GetCurrentUser()->IsUseNoTagging() && filelist && !chatting) {
+          if (g_num_listed != 0) {
+            tag_files();
+          }
+          lines_listed = 0;
+        }
+      }
+
       fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
     } else if (bkbhit()) {
       checka(&abort);
