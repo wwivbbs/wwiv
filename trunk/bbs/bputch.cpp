@@ -176,14 +176,7 @@ int bputch(char c, bool bUseInternalBuffer) {
 
       if (c == SOFTRETURN) {
         ++lines_listed;
-        if (lines_listed >= GetSession()->screenlinest - 3) {
-          if (GetSession()->tagging && !GetSession()->GetCurrentUser()->IsUseNoTagging() && filelist && !chatting) {
-            if (g_num_listed != 0) {
-              tag_files();
-            }
-            lines_listed = 0;
-          }
-        }
+        // Note: The call to end_tag has moved to listfiles() where it belongs.
         if (lines_listed >= (GetSession()->screenlinest - 1)) {         // change Build3 + 5.0 to fix message read
           if (GetSession()->GetCurrentUser()->HasPause() && !x_only) {
             pausescr();
