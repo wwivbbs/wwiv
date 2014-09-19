@@ -35,7 +35,7 @@ void *BbsAllocA(size_t lNumBytes) {
   if (pBuffer == NULL) {
     GetSession()->bout << "\r\nNot enough memory, needed " << lNumBytes << " bytes.\r\n\n";
     char szLogLine[ 255 ];
-    snprintf(szLogLine, sizeof(szLogLine), "!!! Ran out of memory, needed %ld bytes !!!", lNumBytes);
+    snprintf(szLogLine, sizeof(szLogLine), "!!! Ran out of memory, needed %u bytes !!!", lNumBytes);
     sysoplog(szLogLine);
     WWIV_OutputDebugString(szLogLine);
   }

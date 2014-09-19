@@ -86,7 +86,7 @@ int FixUsersCommand::Execute() {
 		return equal < 0;
 	});
 
-	printf("size=%lu %ld\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
+	printf("size=%u %u\n", smallrecords.size(), sizeof(smalrec) * smallrecords.size());
 
 	Print(OK, true, "Checking NAMES.LST");
 	WFile nameFile(syscfg.datadir, NAMES_LST);
