@@ -727,7 +727,7 @@ void action_help(int num) {
 
 // Executes a GA command
 
-static void ga(const char *pszMessage, char *pszColorString, int loc, int type) {
+void ga(const char *pszMessage, char *pszColorString, int loc, int type) {
   if (!strlen(pszMessage) || pszMessage[0] == '\0') {
     GetSession()->bout << "|#1[|#9A message is required after the GA command|#1]\r\n";
     return;
