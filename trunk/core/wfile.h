@@ -31,8 +31,8 @@
 class WLogger {
  public:
   // Member functions
-  WLogger() = default;
-  virtual ~WLogger() = default;
+   WLogger() {}
+  virtual ~WLogger() {}
   virtual bool LogMessage(const char* pszFormat, ...) = 0;
 };
 
