@@ -43,28 +43,28 @@ int  main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, cha
                int loc, int g_nNumActions);
 void who_online(int *nodes, int loc);
 void intro(int loc);
-void ch_direct(char *pszMessage, int loc, char *pszColorString, int node, int nOffSet);
-void ch_whisper(char *pszMessage, char *pszColorString, int node, int nOffSet);
+void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, int nOffSet);
+void ch_whisper(const char *pszMessage, char *pszColorString, int node, int nOffSet);
 int  wusrinst(char *n);
 void secure_ch(int ch);
 void cleanup_chat();
 void page_user(int loc);
 void moving(bool bOnline, int loc);
-void out_msg(char *pszMessage, int loc);
+void out_msg(const char *pszMessage, int loc);
 void get_colors(char *pszColorString, IniFile *pIniFile);
 void load_actions(IniFile *pIniFile);
 void add_action(ch_action act);
 void free_actions();
 bool check_action(char *pszMessage, char *pszColorString, int loc);
-void exec_action(char *pszMessage, char *pszColorString, int loc, int nact);
+void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact);
 void action_help(int num);
-void ga(char *pszMessage, char *pszColorString, int loc, int type);
+void ga(const char *pszMessage, char *pszColorString, int loc, int type);
 void list_channels();
 int  change_channels(int loc);
 bool check_ch(int ch);
 void load_channels(IniFile *pIniFile);
 int  userinst(char *user);
-int  grabname(char *pszMessage, int ch);
+int  grabname(const char *pszMessage, int ch);
 bool usercomp(const char *st1, const char *st2);
 
 using wwiv::bbs::TempDisablePause;
@@ -369,7 +369,7 @@ void intro(int loc) {
 // This function is called when a > sign is encountered at the beginning of
 //   a line, it's used for directing messages
 
-void ch_direct(char *pszMessage, int loc, char *pszColorString, int node, int nOffSet) {
+void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, int nOffSet) {
   if (strlen(pszMessage + nOffSet) == 0) {
     GetSession()->bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
@@ -405,8 +405,7 @@ void ch_direct(char *pszMessage, int loc, char *pszColorString, int node, int nO
 
 // This function is called when a / sign is encountered at the beginning of
 //   a message, used for whispering
-
-void ch_whisper(char *pszMessage, char *pszColorString, int node, int nOffSet) {
+void ch_whisper(const char *pszMessage, char *pszColorString, int node, int nOffSet) {
   if (strlen(pszMessage + nOffSet) == 0) {
     GetSession()->bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
@@ -541,7 +540,7 @@ void moving(bool bOnline, int loc) {
 }
 
 // Sends out a message to everyone in channel LOC
-void out_msg(char *pszMessage, int loc) {
+void out_msg(const char *pszMessage, int loc) {
   for (int i = 1; i <= num_instances(); i++) {
     instancerec ir;
     get_inst_info(i, &ir);
@@ -659,7 +658,7 @@ bool check_action(char *pszMessage, char *pszColorString, int loc) {
 
 // "Executes" an action
 
-void exec_action(char *pszMessage, char *pszColorString, int loc, int nact) {
+void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact) {
   char tmsg[150], final[170];
   instancerec ir;
   WUser u;
@@ -728,7 +727,7 @@ void action_help(int num) {
 
 // Executes a GA command
 
-void ga(char *pszMessage, char *pszColorString, int loc, int type) {
+static void ga(const char *pszMessage, char *pszColorString, int loc, int type) {
   if (!strlen(pszMessage) || pszMessage[0] == '\0') {
     GetSession()->bout << "|#1[|#9A message is required after the GA command|#1]\r\n";
     return;
@@ -977,7 +976,7 @@ int userinst(char *user) {
 }
 
 
-int grabname(char *pszMessage, int ch) {
+int grabname(const char *pszMessage, int ch) {
   int c = 0, node = 0, dupe = 0, sp = 0;
   char name[41];
   WUser u;
@@ -1008,7 +1007,6 @@ int grabname(char *pszMessage, int ch) {
           sp = 1;
         }
       }
-      pszMessage[0] = static_cast< char >(c);
       return n;
     }
     char szBuffer[ 255 ];
@@ -1068,8 +1066,6 @@ int grabname(char *pszMessage, int ch) {
     } else {
       GetSession()->bout << "|#1[|#9Specified user is not online|#1]\r\n";
     }
-  } else {
-    pszMessage[0] = static_cast< char >(c - 1);
   }
   return node;
 }
