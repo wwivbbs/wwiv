@@ -25,7 +25,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 #include "bbs/filenames.h"
 
 using namespace std;
