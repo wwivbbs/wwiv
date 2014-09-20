@@ -26,7 +26,7 @@
 #error "INIT MUST BE DEFINED"
 #endif  // INIT
 
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 #include "bbs/net.h"
 #include "ivardec.h"
 #include "core/wwivport.h"

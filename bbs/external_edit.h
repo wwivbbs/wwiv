@@ -20,7 +20,7 @@
 #define __INCLUDED_EXTERNAL_EDIT_H__
 
 #include <string>
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 
 bool ExternalMessageEditor(int maxli, int *setanon, std::string* pszTitle, const std::string& destination, int flags, const std::string& aux);
 

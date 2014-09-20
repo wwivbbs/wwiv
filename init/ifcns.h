@@ -21,7 +21,7 @@
 
 #include <string>
 #include "ivardec.h"
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 
 #ifndef _WIN32
 /* File: utility2.cpp */

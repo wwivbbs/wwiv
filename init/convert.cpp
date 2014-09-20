@@ -29,7 +29,7 @@
 #endif
 #include <sys/stat.h>
 
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 #include "bbs/wconstants.h"
 
 #include "core/strings.h"

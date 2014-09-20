@@ -22,7 +22,7 @@
 #include <iostream>
 #include <string>
 
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 #include "bbs/wuser.h"
 
 //

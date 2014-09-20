@@ -23,7 +23,7 @@
 #include <sstream>
 #include <cstring>
 #include <string>
-#include "vardec.h"
+#include "sdk/vardec.h"
 
 /**
  * User Class - Represents a User record

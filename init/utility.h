@@ -19,7 +19,7 @@
 #ifndef __INCLUDED_UTILITY_H__
 #define __INCLUDED_UTILITY_H__
 
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 
 int number_userrecs();
 void save_status();

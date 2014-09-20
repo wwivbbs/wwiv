@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #if defined (NET)
-#include "vardec.h"
+#include "sdk/vardec.h"
 #include "net.h"
 #else
 #include "wwiv.h"
