@@ -100,7 +100,6 @@ set(COMMON_SOURCES
  vote.cpp
  voteedit.cpp
  wcomm.cpp
- wfc.cpp
  woutstream.cpp
  woutstreambuffer.cpp
  wqscn.cpp
