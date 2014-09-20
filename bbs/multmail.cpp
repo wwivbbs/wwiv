@@ -33,11 +33,13 @@ int  oneuser();
 
 #define EMAIL_STORAGE 2
 
+using std::string;
+using std::unique_ptr;
 
 void multimail(int *pnUserNumber, int numu) {
   int i1, cv;
   mailrec m, m1;
-  char s[255], t[81], s1[81], s2[81];
+  char s[255], s1[81], s2[81];
   WUser user;
 
   if (freek1(syscfg.msgsdir) < 10) {
@@ -60,11 +62,12 @@ void multimail(int *pnUserNumber, int numu) {
   strcpy(irt, "Multi-Mail");
   irt_name[0] = 0;
   WFile::Remove(QUOTES_TXT);
-  inmsg(&m.msg, t, &i, true, "email", INMSG_FSED, "Multi-Mail", MSGED_FLAG_NONE);
+  std::string t;
+  inmsg(&m.msg, &t, &i, true, "email", INMSG_FSED, "Multi-Mail", MSGED_FLAG_NONE);
   if (m.msg.stored_as == 0xffffffff) {
     return;
   }
-  strcpy(m.title, t);
+  strcpy(m.title, t.c_str());
 
   GetSession()->bout <<  "Mail sent to:\r\n";
   sysoplog("Multi-Mail to:");
@@ -138,7 +141,7 @@ void multimail(int *pnUserNumber, int numu) {
   m.status = status_multimail;
   m.daten = static_cast<unsigned long>(time(NULL));
 
-  WFile *pFileEmail = OpenEmailFile(true);
+  unique_ptr<WFile> pFileEmail(OpenEmailFile(true));
   int len = pFileEmail->GetLength() / sizeof(mailrec);
   if (len == 0) {
     i = 0;
@@ -166,7 +169,6 @@ void multimail(int *pnUserNumber, int numu) {
     }
   }
   pFileEmail->Close();
-  delete pFileEmail;
 }
 
 

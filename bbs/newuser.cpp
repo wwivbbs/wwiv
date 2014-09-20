@@ -29,9 +29,11 @@
 #include "core/strings.h"
 #include "core/wtextfile.h"
 
+using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::core::FilePath;
 using wwiv::core::IniFile;
+using wwiv::strings::StringPrintf;
 
 //
 // Local function prototypes
@@ -1562,14 +1564,14 @@ void new_mail() {
   GetSession()->GetCurrentUser()->SetDefaultEditor(0);
   LoadFileIntoWorkspace(file.GetFullPathName().c_str(), true);
   use_workspace = true;
-  std::string userName = GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum);
-  sprintf(irt, "Welcome to %s!", syscfg.systemname);
+  string userName = GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum);
+  string title = StringPrintf("Welcome to %s!", syscfg.systemname);
 
   int nAllowAnon = 0;
   messagerec msg;
   msg.storage_type = 2;
-  inmsg(&msg, irt, &nAllowAnon, false, "email", INMSG_NOFSED, userName.c_str(), MSGED_FLAG_NONE, true);
-  sendout_email(irt, &msg, 0, GetSession()->usernum, 0, 1, 1, 0, 1, 0);
+  inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, userName.c_str(), MSGED_FLAG_NONE, true);
+  sendout_email(title, &msg, 0, GetSession()->usernum, 0, 1, 1, 0, 1, 0);
   GetSession()->GetCurrentUser()->SetNumMailWaiting(GetSession()->GetCurrentUser()->GetNumMailWaiting() + 1);
   GetSession()->GetCurrentUser()->SetDefaultEditor(save_ed);
   GetSession()->SetNewMailWaiting(false);

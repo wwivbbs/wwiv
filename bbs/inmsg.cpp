@@ -86,10 +86,9 @@ static bool GetMessageToName(const char *aux) {
   return bHasAddress;
 }
 
-void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtitle, const char *aux, int fsed,
+void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
            const char *pszDestination, int flags, bool force_title) {
   char *lin = NULL, *b = NULL;
-  string title(pszTitle);
 
   int oiia = setiia(0);
 
@@ -97,13 +96,12 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     fsed = INMSG_NOFSED;
   }
 
-  char szExtEdFileName[MAX_PATH];
-  sprintf(szExtEdFileName, "%s%s", syscfgovr.tempdir, INPUT_MSG);
+  const string exted_filename = StringPrintf("%s%s", syscfgovr.tempdir, INPUT_MSG);
   if (fsed) {
     fsed = INMSG_FSED;
   }
   if (use_workspace) {
-    if (!WFile::Exists(szExtEdFileName)) {
+    if (!WFile::Exists(exted_filename)) {
       use_workspace = false;
     } else {
       fsed = INMSG_FSED_WORKSPACE;
@@ -129,8 +127,8 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     }
   }
 
-  GetMessageTitle(&title, force_title);
-  if (title.empty() && needtitle) {
+  GetMessageTitle(title, force_title);
+  if (title->empty() && needtitle) {
     GetSession()->bout << "|#6Aborted.\r\n";
     pMessageRecord->stored_as = 0xffffffff;
     if (!fsed) {
@@ -144,11 +142,11 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
   int curli = 0;
   bool bSaveMessage = false;
   if (fsed == INMSG_NOFSED) {   // Use Internal Message Editor
-    bSaveMessage = InternalMessageEditor(lin, maxli, &curli, &setanon, &title);
+    bSaveMessage = InternalMessageEditor(lin, maxli, &curli, &setanon, title);
   } else if (fsed == INMSG_FSED) {   // Use Full Screen Editor
-    bSaveMessage = ExternalMessageEditor(maxli, &setanon, &title, pszDestination, flags, aux);
+    bSaveMessage = ExternalMessageEditor(maxli, &setanon, title, pszDestination, flags, aux);
   } else if (fsed == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
-    bSaveMessage = WFile::Exists(szExtEdFileName);
+    bSaveMessage = WFile::Exists(exted_filename);
     if (bSaveMessage && !GetSession()->IsNewMailWatiting()) {
       GetSession()->bout << "Reading in file...\r\n";
     }
@@ -163,7 +161,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     if (!GetSession()->IsNewMailWatiting()) {
       SpinPuts("Saving...", 2);
     }
-    WFile fileExtEd(szExtEdFileName);
+    WFile fileExtEd(exted_filename);
     if (fsed) {
       fileExtEd.Open(WFile::modeBinary | WFile::modeReadOnly);
       long lExternalEditorFileSize = fileExtEd.GetLength();
@@ -234,7 +232,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
     pMessageRecord->stored_as = 0xffffffff;
   }
   if (fsed) {
-    WFile::Remove(szExtEdFileName);
+    WFile::Remove(exted_filename);
   }
   if (!fsed) {
     free(lin);
@@ -243,9 +241,7 @@ void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtit
   charbuffer[0] = '\0';
   setiia(oiia);
   grab_quotes(NULL, NULL);
-  strcpy(pszTitle, title.c_str());
 }
-
 
 void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength) {
   strcpy(&(pszMessageBuffer[ *plBufferLength ]), pszLineToAdd);
@@ -253,7 +249,6 @@ void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, lo
   strcpy(&(pszMessageBuffer[ *plBufferLength ]), "\r\n");
   *plBufferLength += 2;
 }
-
 
 static void ReplaceString(char *pszResult, char *pszOld, char *pszNew) {
   if (strlen(pszResult) - strlen(pszOld) + strlen(pszNew) >= LEN) {
@@ -265,9 +260,8 @@ static void ReplaceString(char *pszResult, char *pszOld, char *pszNew) {
   }
   ss[0] = '\0';
 
-  char szTempResult[LEN];
-  sprintf(szTempResult, "%s%s%s", pszResult, pszNew, ss + strlen(pszOld));
-  strcpy(pszResult, szTempResult);
+  const string result = StringPrintf("%s%s%s", pszResult, pszNew, ss + strlen(pszOld));
+  strcpy(pszResult, result.c_str());
 }
 
 bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, string *title) {
@@ -508,36 +502,33 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
   if (!wwiv::strings::IsEqualsIgnoreCase(aux, "email")) {
     long msgid = time(NULL);
     long targcrc = crc32buf(pszMessageBuffer, strlen(pszMessageBuffer));
-    char szBuffer[ 255 ];
-    sprintf(szBuffer, "0P %lX-%lX", targcrc, msgid);
-    AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
+    const string buf = StringPrintf("0P %lX-%lX", targcrc, msgid);
+    AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
     if (thread) {
       thread [GetSession()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short>
           (GetSession()->GetNumMessagesInCurrentMessageArea() + 1);
-      strcpy(thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &szBuffer[4]);
+      strcpy(thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &buf.c_str()[4]);
     }
     if (GetSession()->threadID.length() > 0) {
-      sprintf(szBuffer, "0W %s", GetSession()->threadID.c_str());
-      AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
+      const string buf = StringPrintf("0W %s", GetSession()->threadID.c_str());
+      AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
       if (thread) {
-        strcpy(thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &szBuffer[4]);
+        strcpy(thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &buf.c_str()[4]);
         thread[ GetSession()->GetNumMessagesInCurrentMessageArea() + 1 ].used = 1;
       }
     }
   }
 }
 
-
 void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
-  char szBuffer[ 255 ];
   if (irt_name[0] &&
       !wwiv::strings::IsEqualsIgnoreCase(aux, "email") &&
       xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
     for (int i = 0; i < xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets; i++) {
       xtrasubsnetrec *xnp = &xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i];
       if (net_networks[xnp->net_num].type == net_type_fidonet) {
-        sprintf(szBuffer, "0FidoAddr: %s", irt_name);
-        AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
+        const string buf = StringPrintf("0FidoAddr: %s", irt_name);
+        AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
         break;
       }
     }
@@ -545,17 +536,17 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
   if ((strncasecmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
       (strncasecmp("filenet", GetSession()->GetNetworkName(), 7) == 0)) {
     if (GetSession()->usenetReferencesLine.length() > 0) {
-      sprintf(szBuffer, "%c0RReferences: %s", CD, GetSession()->usenetReferencesLine.c_str());
-      AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
+      const string buf = StringPrintf("%c0RReferences: %s", CD, GetSession()->usenetReferencesLine.c_str());
+      AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
       GetSession()->usenetReferencesLine = "";
     }
   }
   if (irt[0] != '"') {
-    sprintf(szBuffer, "RE: %s", irt);
-    AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
+    const string buf = StringPrintf("RE: %s", irt);
+    AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
     if (irt_sub[0]) {
-      sprintf(szBuffer, "ON: %s", irt_sub);
-      AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
+      const string buf = StringPrintf("ON: %s", irt_sub);
+      AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
     }
   } else {
     irt_sub[0] = '\0';
@@ -563,8 +554,8 @@ void UpdateMessageBufferInReplyToInfo(char *pszMessageBuffer, long *plBufferLeng
 
   if (irt_name[0] &&
       !wwiv::strings::IsEqualsIgnoreCase(aux, "email")) {
-    sprintf(szBuffer, "BY: %s", irt_name);
-    AddLineToMessageBuffer(pszMessageBuffer, szBuffer, plBufferLength);
+    const string buf = StringPrintf("BY: %s", irt_name);
+    AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
   }
   AddLineToMessageBuffer(pszMessageBuffer, "", plBufferLength);
 }

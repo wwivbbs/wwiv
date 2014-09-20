@@ -266,7 +266,7 @@ int cleanup_net1() {
 
 
 void do_callout(int sn) {
-  char s[81], s1[81], town[5];
+  char s[81], s1[81];
 
   time_t tCurrentTime;
   time(&tCurrentTime);
@@ -315,6 +315,7 @@ void do_callout(int sn) {
         sprintf(szRegionsFileName, "%s%s%c%s.%-3u", syscfg.datadir,
                 REGIONS_DAT, WFile::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
         if (WFile::Exists(szRegionsFileName)) {
+          char town[5];
           sprintf(town, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
           describe_area_code_prefix(atoi(csne->phone), atoi(town), s1);
         } else {
