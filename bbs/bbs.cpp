@@ -448,6 +448,7 @@ int WApplication::doWFCEvents() {
         break;
       // Quit BBS
       case 'Q':
+        GetSession()->localIO()->LocalGotoXY(2, 23);
         QuitBBS();
         break;
       // Read All Mail
