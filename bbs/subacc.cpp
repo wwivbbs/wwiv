@@ -21,7 +21,7 @@
 #include "bbs/fcns.h"
 #include "bbs/subxtr.h"
 #include "bbs/pause.h"
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 #include "bbs/vars.h"
 #include "bbs/woutstreambuffer.h"
 #include "bbs/wsession.h"

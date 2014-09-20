@@ -19,7 +19,7 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "vardec.h"
+#include "sdk/vardec.h"
 #include "core/wfile.h"
 
 extern statusrec status;

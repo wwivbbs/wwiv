@@ -21,7 +21,7 @@
 
 #include <ctime>
 
-#include "vardec.h"
+#include "sdk/vardec.h"
 #include "net.h"
 
 #ifndef MAX_PATH
