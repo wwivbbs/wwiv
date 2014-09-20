@@ -21,52 +21,45 @@
 #include "core/strings.h"
 #include "bbs/keycodes.h"
 
+using std::string;
 using wwiv::bbs::InputMode;
+using wwiv::strings::StringPrintf;
 
-void showchains();
 void modify_chain(int nCurrentChainNumber);
 void insert_chain(int nCurrentChainNumber);
 void delete_chain(int nCurrentChainNumber);
-void chaindata(int nCurrentChainNumber, char *pszData);
 
-
-void chaindata(int nCurrentChainNumber, char *pszData) {
+static string chaindata(int nCurrentChainNumber) {
   chainfilerec c = chains[ nCurrentChainNumber ];
   char chAr = SPACE;
 
   if (c.ar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & c.ar) {
-        chAr = static_cast< char >('A' + i);
+        chAr = static_cast<char>('A' + i);
       }
     }
   }
-
   char chAnsiReq = (c.ansir & ansir_ansi) ? 'Y' : 'N';
-  sprintf(pszData,
-          "|#2%2d |#1%-28.28s  |#2%-30.30s |#9%-3d    %1c  %1c",
-          nCurrentChainNumber,
-          stripcolors(c.description),
-          c.filename,
-          c.sl,
-          chAnsiReq,
-          chAr);
+  return StringPrintf("|#2%2d |#1%-28.28s  |#2%-30.30s |#9%-3d    %1c  %1c",
+      nCurrentChainNumber,
+      stripcolors(c.description),
+      c.filename,
+      c.sl,
+      chAnsiReq,
+      chAr);
 }
 
-
-void showchains() {
-  char szChainData[255];
-
+static void showchains() {
   GetSession()->bout.ClearScreen();
   bool abort = false;
   pla("|#2NN Description                   Path Name                      SL  ANSI AR", &abort);
   pla("|#7== ----------------------------  ============================== --- ==== --", &abort);
   for (int nChainNum = 0; nChainNum < GetSession()->GetNumberOfChains() && !abort; nChainNum++) {
-    chaindata(nChainNum, szChainData);
-    pla(szChainData, &abort);
+    const string s = chaindata(nChainNum);
+    pla(s, &abort);
   }
 }
-
 
 void ShowChainCommandLineHelp() {
   GetSession()->bout << "|#2  Macro   Value\r\n";
@@ -88,11 +81,9 @@ void ShowChainCommandLineHelp() {
   GetSession()->bout.NewLine();
 }
 
-
 void modify_chain(int nCurrentChainNumber) {
   chainregrec r;
   char s[255], s1[255], ch, ch2;
-  char szChainNum[81];
   int i, nUserNumber;
   memset(&r, 0, sizeof(chainregrec));
 
@@ -103,8 +94,8 @@ void modify_chain(int nCurrentChainNumber) {
   bool done = false;
   do {
     GetSession()->bout.ClearScreen();
-    sprintf(szChainNum, "|B1|15Editing Chain # %d", nCurrentChainNumber);
-    GetSession()->bout.WriteFormatted("%-85s", szChainNum);
+    const string header = StringPrintf("|B1|15Editing Chain # %d", nCurrentChainNumber);
+    GetSession()->bout << header;
     GetSession()->bout.NewLine(2);
     GetSession()->bout.Color(0);
     GetSession()->bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
@@ -125,7 +116,6 @@ void modify_chain(int nCurrentChainNumber) {
     GetSession()->bout << "|#9F) DOS Interrupt: |#2" << ((c.ansir & ansir_no_DOS) ? "NOT Used" : "Used") << wwiv::endl;
     GetSession()->bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString((c.ansir & ansir_emulate_fossil) ? true : false) <<
                        wwiv::endl;
-    //GetSession()->bout << "|#9I) Disable pause: |#2%s\r\n", YesNoString( ( c.ansir & ansir_no_pause ) ) << wwiv::endl;
     GetSession()->bout << "|#9J) Local only   : |#2" << YesNoString((c.ansir & ansir_local_only) ? true : false) <<
                        wwiv::endl;
     GetSession()->bout << "|#9K) Multi user   : |#2" << YesNoString((c.ansir & ansir_multi_user) ? true : false) <<
@@ -250,20 +240,6 @@ void modify_chain(int nCurrentChainNumber) {
         c.ansir &= ~ansir_emulate_fossil;
       }
       break;
-    /*
-            case 'I':
-                GetSession()->bout.NewLine();
-                GetSession()->bout << "|#5Disable screen pause in program? ";
-                if (yesno())
-                {
-                    c.ansir |= ansir_no_pause;
-                }
-                else
-                {
-                    c.ansir &= ~ansir_no_pause;
-                }
-                break;
-    */
     case 'J':
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#5Allow program to be run locally only? ";
@@ -350,7 +326,6 @@ void modify_chain(int nCurrentChainNumber) {
   }
 }
 
-
 void insert_chain(int nCurrentChainNumber) {
   chainfilerec c;
   chainregrec r;
@@ -377,7 +352,6 @@ void insert_chain(int nCurrentChainNumber) {
   modify_chain(nCurrentChainNumber);
 }
 
-
 void delete_chain(int nCurrentChainNumber) {
   for (int i = nCurrentChainNumber; i < GetSession()->GetNumberOfChains(); i++) {
     chains[i] = chains[i + 1];
@@ -388,11 +362,7 @@ void delete_chain(int nCurrentChainNumber) {
   GetSession()->SetNumberOfChains(GetSession()->GetNumberOfChains() - 1);
 }
 
-
 void chainedit() {
-  int i;
-  char s[81];
-
   if (!ValidateSysopPassword()) {
     return;
   }
@@ -409,35 +379,39 @@ void chainedit() {
     case 'Q':
       done = true;
       break;
-    case 'M':
+    case 'M': {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2Chain number? ";
-      input(s, 2);
-      i = atoi(s);
+      string s;
+      input(&s, 2);
+      int i = atoi(s.c_str());
       if (s[0] != '\0' && i >= 0 && i < GetSession()->GetNumberOfChains()) {
         modify_chain(i);
       }
-      break;
-    case 'I':
+    } break;
+    case 'I': {
       if (GetSession()->GetNumberOfChains() < GetSession()->max_chains) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#2Insert before which chain ('$' for end) : ";
-        input(s, 2);
+        int chain = 0;
+        string s;
+        input(&s, 2);
         if (s[0] == '$') {
-          i =  GetSession()->GetNumberOfChains();
+          chain =  GetSession()->GetNumberOfChains();
         } else {
-          i = atoi(s);
+          chain = atoi(s.c_str());
         }
-        if (s[0] != '\0' && i >= 0 && i <= GetSession()->GetNumberOfChains()) {
-          insert_chain(i);
+        if (s[0] != '\0' && chain >= 0 && chain <= GetSession()->GetNumberOfChains()) {
+          insert_chain(chain);
         }
       }
-      break;
-    case 'D':
+    } break;
+    case 'D': {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2Delete which chain? ";
-      input(s, 2);
-      i = atoi(s);
+      string s;
+      input(&s, 2);
+      int i = atoi(s.c_str());
       if (s[0] != '\0' && i >= 0 && i < GetSession()->GetNumberOfChains()) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#5Delete " << chains[i].description << "? ";
@@ -445,7 +419,7 @@ void chainedit() {
           delete_chain(i);
         }
       }
-      break;
+    } break;
     }
   } while (!done && !hangup);
 
