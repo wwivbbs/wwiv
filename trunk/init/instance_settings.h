@@ -20,7 +20,7 @@
 #define __INCLUDED_INSTANCE_SETTINGS_H__
 
 #include <string>
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 
 void instance_editor();
 bool read_instance(int num, configoverrec* instance);

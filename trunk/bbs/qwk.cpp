@@ -34,7 +34,7 @@
 #include "bbs/qscan.h"
 #include "bbs/stuffin.h"
 #include "bbs/subxtr.h"
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 #include "bbs/wwiv.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"

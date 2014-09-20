@@ -23,7 +23,7 @@
 #include <string>
 
 #include "net.h"
-#include "vardec.h"
+#include "sdk/vardec.h"
 
 void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, bool bPrintStatus);
 bool sysop1();

@@ -32,7 +32,7 @@
 #include "bbs/archivers.h"
 #include "bbs/bbs.h"
 #include "bbs/subxtr.h"
-#include "bbs/vardec.h"
+#include "sdk/vardec.h"
 #include "bbs/vars.h"
 #include "bbs/wstatus.h"
 #include "bbs/wwiv.h"
