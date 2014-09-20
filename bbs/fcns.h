@@ -353,7 +353,7 @@ void HopDir();
 
 // File: inmsg.cpp
 
-void inmsg(messagerec * pMessageRecord, char *pszTitle, int *anony, bool needtitle, const char *aux, int fsed,
+void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
            const char *pszDestination, int flags, bool force_title = false);
 
 
@@ -506,7 +506,7 @@ char *readfile(messagerec * pMessageRecord, const std::string fileName, long *pl
 void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed);
 bool ForwardMessage(int *pUserNumber, int *pSystemNumber);
 WFile *OpenEmailFile(bool bAllowWrite);
-void sendout_email(const char *title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an,
+void sendout_email(const std::string& title, messagerec * msg, int anony, int nUserNumber, int nSystemNumber, int an,
                    int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber);
 bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit);
 void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool force_title = false,

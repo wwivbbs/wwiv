@@ -35,6 +35,10 @@
 
 using std::string;
 using std::stringstream;
+using std::unique_ptr;
+using wwiv::strings::IsEqualsIgnoreCase;
+using wwiv::strings::StrCat;
+using wwiv::strings::StringPrintf;
 
 // Local function prototypes
 WFile* OpenMessageFile(const string messageAreaFileName);
@@ -47,40 +51,37 @@ static long gat_section;
  * Sets the global variables pszOutOriginStr and pszOutOriginStr2.
  * Note: This is a private function
  */
-void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string& strOutOriginStr,
-                          string& strOutOriginStr2) {
+static void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string* strOutOriginStr,
+                                 string* strOutOriginStr2) {
   string netName;
 
   if (GetSession()->GetMaxNetworkNumber() > 1) {
-    netName = net_networks[GetSession()->GetNetworkNumber()].name;
-    netName += "- ";
+    netName = StrCat(net_networks[GetSession()->GetNetworkNumber()].name, "- ");
   }
 
-  strOutOriginStr.clear();
-  strOutOriginStr2.clear();
+  strOutOriginStr->clear();
+  strOutOriginStr2->clear();
 
-  if (wwiv::strings::IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet") ||
+  if (IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet") ||
       nSystemNumber == 32767) {
-    strOutOriginStr = "Internet Mail and Newsgroups";
+    strOutOriginStr->assign("Internet Mail and Newsgroups");
     return;
   }
 
   if (nSystemNumber && GetSession()->GetCurrentNetworkType() == net_type_wwivnet) {
     net_system_list_rec *csne = next_system(nSystemNumber);
     if (csne) {
-      char szNetStatus[12];
-      szNetStatus[0] = '\0';
+      string netstatus;
       if (nUserNumber == 1) {
         if (csne->other & other_net_coord) {
-          strcpy(szNetStatus, "{NC}");
+          netstatus = "{NC}";
         } else if (csne->other & other_group_coord) {
-          sprintf(szNetStatus, "{GC%d}", csne->group);
+          netstatus = StringPrintf("{GC%d}", csne->group);
         } else if (csne->other & other_area_coord) {
-          strcpy(szNetStatus, "{AC}");
+          netstatus = "{AC}";
         }
       }
-      char szFileName[ MAX_PATH ];
-      sprintf(szFileName,
+      const string filename = StringPrintf(
               "%s%s%c%s.%-3u",
               syscfg.datadir,
               REGIONS_DIR,
@@ -89,23 +90,18 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string& strOutOrig
               atoi(csne->phone));
 
       char szDescription[ 81 ];
-      if (WFile::Exists(szFileName)) {
-        char szPhonePrefix[ 10 ];
-        sprintf(szPhonePrefix, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-        describe_area_code_prefix(atoi(csne->phone), atoi(szPhonePrefix), szDescription);
+      if (WFile::Exists(filename)) {
+        const string phone_prefix = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
+        describe_area_code_prefix(atoi(csne->phone), atoi(phone_prefix.c_str()), szDescription);
       } else {
         describe_area_code(atoi(csne->phone), szDescription);
       }
 
-      stringstream sstream;
-      sstream << netName << csne->name << " [" << csne->phone << "] " << szNetStatus;
-      strOutOriginStr = sstream.str();
-      strOutOriginStr2 = (szDescription[0]) ? szDescription : "Unknown Area";
+      *strOutOriginStr = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus.c_str());
+      *strOutOriginStr2 = (szDescription[0]) ? szDescription : "Unknown Area";
     } else {
-      stringstream sstream;
-      sstream << netName << "Unknown System";
-      strOutOriginStr = sstream.str();
-      strOutOriginStr2 = "Unknown Area";
+      *strOutOriginStr = StrCat(netName, "Unknown System");
+      *strOutOriginStr2 = "Unknown Area";
     }
   }
 }
@@ -470,14 +466,14 @@ WFile *OpenEmailFile(bool bAllowWrite) {
 }
 
 
-void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, int nUserNumber, int nSystemNumber,
+void sendout_email(const string& title, messagerec * pMessageRec, int anony, int nUserNumber, int nSystemNumber,
                    int an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber) {
   mailrec m, messageRecord;
   net_header_rec nh;
   int i;
   char *b, *b1;
 
-  strcpy(m.title, pszTitle);
+  strcpy(m.title, title.c_str());
   m.msg = *pMessageRec;
   m.anony = static_cast< unsigned char >(anony);
   if (nFromSystem == net_sysnum) {
@@ -572,13 +568,13 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
     if (nFromNetworkNumber != GetSession()->GetNetworkNumber()) {
       gate_msg(&nh, b1, GetSession()->GetNetworkNumber(), net_email_name, NULL, nFromNetworkNumber);
     } else {
-      char szNetFileName[MAX_PATH];
+      string net_filename;
       if (nForwardedCode) {
-        sprintf(szNetFileName, "%sp1%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
+        net_filename = StringPrintf("%sp1%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
       } else {
-        sprintf(szNetFileName, "%sp0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
+        net_filename = StringPrintf("%sp0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
       }
-      WFile fileNetworkPacket(szNetFileName);
+      WFile fileNetworkPacket(net_filename);
       fileNetworkPacket.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
       fileNetworkPacket.Seek(0L, WFile::seekEnd);
       fileNetworkPacket.Write(&nh, sizeof(net_header_rec));
@@ -618,23 +614,22 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
     }
   } else {
     string logMessagePart;
-    if ((nSystemNumber == 1 &&
-         wwiv::strings::IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet")) ||
+    if ((nSystemNumber == 1 && IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet")) ||
         nSystemNumber == 32767) {
       logMessagePart = net_email_name;
     } else {
       if (GetSession()->GetMaxNetworkNumber() > 1) {
         if (nUserNumber == 0) {
-          logMessagePart = wwiv::strings::StringPrintf("%s @%u.%s", net_email_name, nSystemNumber,
+          logMessagePart = StringPrintf("%s @%u.%s", net_email_name, nSystemNumber,
                            GetSession()->GetNetworkName());
         } else {
-          logMessagePart = wwiv::strings::StringPrintf("#%u @%u.%s", nUserNumber, nSystemNumber, GetSession()->GetNetworkName());
+          logMessagePart = StringPrintf("#%u @%u.%s", nUserNumber, nSystemNumber, GetSession()->GetNetworkName());
         }
       } else {
         if (nUserNumber == 0) {
-          logMessagePart = wwiv::strings::StringPrintf("%s @%u", net_email_name, nSystemNumber);
+          logMessagePart = StringPrintf("%s @%u", net_email_name, nSystemNumber);
         } else {
-          logMessagePart = wwiv::strings::StringPrintf("#%u @%u", nUserNumber, nSystemNumber);
+          logMessagePart = StringPrintf("#%u @%u", nUserNumber, nSystemNumber);
         }
       }
     }
@@ -721,7 +716,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   int an;
   int nNumUsers = 0;
   messagerec messageRecord;
-  char szDestination[81], szTitle[81];
+  char szDestination[81];
   WUser userRecord;
   net_system_list_rec *csne = NULL;
   struct {
@@ -772,7 +767,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
     }
   } else {
     if ((nSystemNumber == 1 && nUserNumber == 0 &&
-         wwiv::strings::IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet")) ||
+         IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet")) ||
         nSystemNumber == 32767) {
       strcpy(szDestination, net_email_name);
     } else {
@@ -822,7 +817,8 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
 
   messageRecord.storage_type = EMAIL_STORAGE;
   int nUseFSED = (bAllowFSED) ? INMSG_FSED : INMSG_NOFSED;
-  inmsg(&messageRecord, szTitle, &i, !forceit, "email", nUseFSED, szDestination, MSGED_FLAG_NONE, force_title);
+  string title;
+  inmsg(&messageRecord, &title, &i, !forceit, "email", nUseFSED, szDestination, MSGED_FLAG_NONE, force_title);
   if (messageRecord.stored_as == 0xffffffff) {
     return;
   }
@@ -892,7 +888,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
         } else {
           if (carbon_copy[j].nSystemNumber == 1 &&
               carbon_copy[j].nUserNumber == 0 &&
-              wwiv::strings::IsEqualsIgnoreCase(carbon_copy[j].net_name, "Internet")) {
+              IsEqualsIgnoreCase(carbon_copy[j].net_name, "Internet")) {
             strcpy(szDestination, carbon_copy[j].net_email_name);
           } else {
             set_net_num(carbon_copy[j].net_num);
@@ -913,7 +909,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
           }
         }
         if (j == 0) {
-          s1 = wwiv::strings::StringPrintf("\003""6Original To: \003""1%s", szDestination);
+          s1 = StringPrintf("\003""6Original To: \003""1%s", szDestination);
           lineadd(&messageRecord, s1.c_str(), "email");
           s1 = "\003""6Carbon Copy: \003""1";
         } else {
@@ -941,11 +937,11 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   if (cc) {
     for (int nCounter = 0; nCounter < nNumUsers; nCounter++) {
       set_net_num(carbon_copy[nCounter].net_num);
-      sendout_email(szTitle, &messageRecord, i, carbon_copy[nCounter].nUserNumber, carbon_copy[nCounter].nSystemNumber, an,
+      sendout_email(title, &messageRecord, i, carbon_copy[nCounter].nUserNumber, carbon_copy[nCounter].nSystemNumber, an,
                     GetSession()->usernum, net_sysnum, 0, carbon_copy[nCounter].net_num);
     }
   } else {
-    sendout_email(szTitle, &messageRecord, i, nUserNumber, nSystemNumber, an, GetSession()->usernum, net_sysnum, 0,
+    sendout_email(title, &messageRecord, i, nUserNumber, nSystemNumber, an, GetSession()->usernum, net_sysnum, 0,
                   GetSession()->GetNetworkNumber());
   }
 }
@@ -1009,7 +1005,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   string origin_str2;
 
   // Moved internally from outside this method
-  SetMessageOriginInfo(nFromSystem, nFromUser, origin_str, origin_str2);
+  SetMessageOriginInfo(nFromSystem, nFromUser, &origin_str, &origin_str2);
 
   g_flags &= ~g_flag_ansi_movement;
 
@@ -1327,16 +1323,15 @@ void read_message(int n, bool *next, int *val) {
 }
 
 void lineadd(messagerec * pMessageRecord, const char *sx, string fileName) {
-  char szLine[ 255 ];
-  sprintf(szLine, "%s\r\n\x1a", sx);
+  const string line = StringPrintf("%s\r\n\x1a", sx);
 
   switch (pMessageRecord->storage_type) {
   case 0:
   case 1:
     break;
   case 2: {
-    WFile * pMessageFile = OpenMessageFile(fileName);
-    set_gat_section(pMessageFile, pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
+    unique_ptr<WFile> message_file(OpenMessageFile(fileName));
+    set_gat_section(message_file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
     int new1 = 1;
     while (new1 < GAT_NUMBER_ELEMENTS && gat[new1] != 0) {
       ++new1;
@@ -1347,29 +1342,27 @@ void lineadd(messagerec * pMessageRecord, const char *sx, string fileName) {
     }
     char *b = NULL;
     if ((b = static_cast<char*>(BbsAllocA(GAT_NUMBER_ELEMENTS))) == NULL) {
-      pMessageFile->Close();
-      delete pMessageFile;
+      message_file->Close();
       return;
     }
-    pMessageFile->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, WFile::seekBegin);
-    pMessageFile->Read(b, MSG_BLOCK_SIZE);
+    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, WFile::seekBegin);
+    message_file->Read(b, MSG_BLOCK_SIZE);
     int j = 0;
     while (j < MSG_BLOCK_SIZE && b[j] != CZ) {
       ++j;
     }
-    strcpy(&(b[j]), szLine);
-    pMessageFile->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, WFile::seekBegin);
-    pMessageFile->Write(b, MSG_BLOCK_SIZE);
-    if (((j + strlen(szLine)) > MSG_BLOCK_SIZE) && (new1 != GAT_NUMBER_ELEMENTS)) {
-      pMessageFile->Seek(MSG_STARTING + static_cast<long>(new1)  * MSG_BLOCK_SIZE, WFile::seekBegin);
-      pMessageFile->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
+    strcpy(&(b[j]), line.c_str());
+    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, WFile::seekBegin);
+    message_file->Write(b, MSG_BLOCK_SIZE);
+    if (((j + line.size()) > MSG_BLOCK_SIZE) && (new1 != GAT_NUMBER_ELEMENTS)) {
+      message_file->Seek(MSG_STARTING + static_cast<long>(new1)  * MSG_BLOCK_SIZE, WFile::seekBegin);
+      message_file->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
       gat[new1] = 65535;
       gat[i] = static_cast< unsigned short >(new1);
-      save_gat(pMessageFile);
+      save_gat(message_file.get());
     }
     free(b);
-    pMessageFile->Close();
-    delete pMessageFile;
+    message_file->Close();
   }
   break;
   default:
