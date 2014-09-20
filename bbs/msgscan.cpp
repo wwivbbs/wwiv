@@ -28,7 +28,6 @@
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
 
-
 void SetupThreadRecordsBeforeScan();
 void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
                           bool &quit, int &val);
@@ -45,8 +44,12 @@ void HandleMessageExtract(int &nMessageNumber);
 void HandleMessageHelp();
 void HandleListReplies(int nMessageNumber);
 
-
 static char s_szFindString[21];
+
+using std::string;
+using wwiv::endl;
+using wwiv::strings::IsEquals;
+
 
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan) {
   irt[0] = '\0';
@@ -72,7 +75,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
            nTempOuterMessageIterator++) {
         for (int nTempMessageIterator = 0; nTempMessageIterator <= GetSession()->GetNumMessagesInCurrentMessageArea();
              nTempMessageIterator++) {
-          if (wwiv::strings::IsEquals(thread[nTempOuterMessageIterator].parent_code, thread[nTempMessageIterator].message_code)) {
+          if (IsEquals(thread[nTempOuterMessageIterator].parent_code, thread[nTempMessageIterator].message_code)) {
             thread[nTempOuterMessageIterator].parent_num = thread[nTempMessageIterator].msg_num;
             nTempMessageIterator = GetSession()->GetNumMessagesInCurrentMessageArea() + 1;
           }
@@ -112,14 +115,12 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
       GetSession()->bout.NewLine();
       if (GetSession()->IsMessageThreadingEnabled()) {
         if (thread[nMessageNumber].used) {
-          GetSession()->bout << "|#9Current Message is a reply to Msg #|#2" << thread[nMessageNumber].parent_num << wwiv::endl;
-          //temp isn't used anywhere else here, not sure why this code is here.
-          //strcpy(temp, thread[nMessageNumber].message_code);
+          GetSession()->bout << "|#9Current Message is a reply to Msg #|#2" << thread[nMessageNumber].parent_num << endl;
         }
         int nNumRepliesForThisThread = 0;
         for (int nTempMessageIterator = 0; nTempMessageIterator <= GetSession()->GetNumMessagesInCurrentMessageArea();
              nTempMessageIterator++) {
-          if (wwiv::strings::IsEquals(thread[nTempMessageIterator].parent_code, thread[nMessageNumber].message_code) &&
+          if (IsEquals(thread[nTempMessageIterator].parent_code, thread[nMessageNumber].message_code) &&
               nTempMessageIterator != nMessageNumber) {
             nNumRepliesForThisThread++;
           }
@@ -128,7 +129,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
           GetSession()->bout << "|#9Current Message has |#6" << nNumRepliesForThisThread << "|#9"
                              << ((nNumRepliesForThisThread == 1) ? " reply." : " replies.");
         }
-        GetSession()->bout << wwiv::endl;;
+        GetSession()->bout << endl;;
       }
       if (next) {
         ++nMessageNumber;
@@ -439,7 +440,7 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
           printfile(MUSTREAD_NOEXT);
         } else {
           for (int j = nMessageNumber; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++) {
-            if (wwiv::strings::IsEquals(thread[j].parent_code, thread[nMessageNumber].message_code) &&
+            if (IsEquals(thread[j].parent_code, thread[nMessageNumber].message_code) &&
                 j != nMessageNumber) {
               nMessageNumber = j;
               j = GetSession()->GetNumMessagesInCurrentMessageArea();
@@ -461,7 +462,7 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
           }
           int j = 0;
           for (j = nMessageNumber; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++) {
-            if (wwiv::strings::IsEquals(thread[j].parent_code, thread[original].message_code) &&
+            if (IsEquals(thread[j].parent_code, thread[original].message_code) &&
                 j != nMessageNumber) {
               nMessageNumber = j;
               break;
@@ -547,7 +548,7 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
       HandleMessageLoad();
       break;
     }
-  } else if (wwiv::strings::IsEquals(szUserInput, "ClearScreen")) {
+  } else if (IsEquals(szUserInput, "ClearScreen")) {
     bputch('\x0c');
   }
 }
@@ -957,10 +958,10 @@ void HandleMessageMove(int &nMessageNumber) {
     }
     bool ok = false;
     for (int i1 = 0; (i1 < GetSession()->num_subs && usub[i1].subnum != -1 && !ok); i1++) {
-      if (wwiv::strings::IsEquals(usub[i1].keys, ss1)) {
+      if (IsEquals(usub[i1].keys, ss1)) {
         nTempSubNum = i1;
         GetSession()->bout.NewLine();
-        GetSession()->bout << "|#9Copying to " << subboards[usub[nTempSubNum].subnum].name << wwiv::endl;
+        GetSession()->bout << "|#9Copying to " << subboards[usub[nTempSubNum].subnum].name << endl;
         ok = true;
       }
     }
@@ -1105,7 +1106,7 @@ void HandleMessageDelete(int &nMessageNumber) {
               tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<unsigned short>(nNumCredits));
             }
             GetSession()->bout.NewLine();
-            GetSession()->bout << "|#7Post credit removed = " << nNumCredits << wwiv::endl;
+            GetSession()->bout << "|#7Post credit removed = " << nNumCredits << endl;
             tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() - 1);
             GetApplication()->GetUserManager()->WriteUser(&tu, p2.owneruser);
             GetApplication()->UpdateTopScreen();
@@ -1153,7 +1154,7 @@ void HandleListReplies(int nMessageNumber) {
       GetSession()->bout << "|#2Current Message has the following replies:\r\n";
       int nNumRepliesForThisThread = 0;
       for (int j = 0; j <= GetSession()->GetNumMessagesInCurrentMessageArea(); j++) {
-        if (wwiv::strings::IsEquals(thread[j].parent_code, thread[nMessageNumber].message_code)) {
+        if (IsEquals(thread[j].parent_code, thread[nMessageNumber].message_code)) {
           GetSession()->bout << "    |#9Message #|#6" << j << ".\r\n";
           nNumRepliesForThisThread++;
         }
