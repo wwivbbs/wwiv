@@ -16,7 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "wwiv.h"
 #include "instmsg.h"
 #include "core/strings.h"
@@ -24,7 +23,6 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
-
 
 #define EMAIL_STORAGE 2
 
@@ -35,24 +33,23 @@
 #define GAT_SECTION_SIZE    4096
 #define MSG_BLOCK_SIZE      512
 
+using std::string;
+using std::stringstream;
 
-//
 // Local function prototypes
-//
-WFile * OpenMessageFile(const std::string messageAreaFileName);
+WFile* OpenMessageFile(const string messageAreaFileName);
 void set_gat_section(WFile *pMessageFile, int section);
 void save_gat(WFile *pMessageFile);
 
 static long gat_section;
 
-
 /**
  * Sets the global variables pszOutOriginStr and pszOutOriginStr2.
  * Note: This is a private function
  */
-void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOutOriginStr,
-                          std::string& strOutOriginStr2) {
-  std::string netName;
+void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string& strOutOriginStr,
+                          string& strOutOriginStr2) {
+  string netName;
 
   if (GetSession()->GetMaxNetworkNumber() > 1) {
     netName = net_networks[GetSession()->GetNetworkNumber()].name;
@@ -100,12 +97,12 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOu
         describe_area_code(atoi(csne->phone), szDescription);
       }
 
-      std::stringstream sstream;
+      stringstream sstream;
       sstream << netName << csne->name << " [" << csne->phone << "] " << szNetStatus;
       strOutOriginStr = sstream.str();
       strOutOriginStr2 = (szDescription[0]) ? szDescription : "Unknown Area";
     } else {
-      std::stringstream sstream;
+      stringstream sstream;
       sstream << netName << "Unknown System";
       strOutOriginStr = sstream.str();
       strOutOriginStr2 = "Unknown Area";
@@ -117,7 +114,7 @@ void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, std::string& strOu
  * Deletes a message
  * This is a public function.
  */
-void remove_link(messagerec * pMessageRecord, std::string fileName) {
+void remove_link(messagerec * pMessageRecord, string fileName) {
   switch (pMessageRecord->storage_type) {
   case 0:
   case 1:
@@ -148,10 +145,10 @@ void remove_link(messagerec * pMessageRecord, std::string fileName) {
  * Opens the message area file {pszMessageAreaFileName} and returns the file handle.
  * Note: This is a Private method to this module.
  */
-WFile * OpenMessageFile(const std::string messageAreaFileName) {
+WFile * OpenMessageFile(const string messageAreaFileName) {
   GetApplication()->GetStatusManager()->RefreshStatusCache();
 
-  std::stringstream sstream;
+  stringstream sstream;
   sstream << syscfg.msgsdir << messageAreaFileName << FILENAME_DAT_EXTENSION << std::ends;
   WFile *pFileMessage = new WFile(sstream.str());
   if (!pFileMessage->Open(WFile::modeReadWrite | WFile::modeBinary)) {
@@ -211,7 +208,7 @@ void save_gat(WFile *pMessageFile) {
   GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
 }
 
-void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const std::string fileName) {
+void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const string fileName) {
   WWIV_ASSERT(pMessageRecord);
   switch (pMessageRecord->storage_type) {
   case 0:
@@ -258,7 +255,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
   free(b);
 }
 
-char *readfile(messagerec * pMessageRecord, std::string fileName, long *plMessageLength) {
+char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLength) {
   char *b =  NULL;
 
   *plMessageLength = 0L;
@@ -591,7 +588,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
     free(b);
     free(b1);
   }
-  std::string logMessage = "Mail sent to ";
+  string logMessage = "Mail sent to ";
   if (nSystemNumber == 0) {
     WUser userRecord;
     GetApplication()->GetUserManager()->ReadUser(&userRecord, nUserNumber);
@@ -607,7 +604,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
       logMessage += userRecord.GetUserNameAndNumber(nUserNumber);
       sysoplog(logMessage.c_str());
     } else {
-      std::string tempLogMessage = logMessage;
+      string tempLogMessage = logMessage;
       tempLogMessage += userRecord.GetUserNameAndNumber(nUserNumber);
       sysoplog(tempLogMessage);
       logMessage += ">UNKNOWN<";
@@ -620,7 +617,7 @@ void sendout_email(const char *pszTitle, messagerec * pMessageRec, int anony, in
       }
     }
   } else {
-    std::string logMessagePart;
+    string logMessagePart;
     if ((nSystemNumber == 1 &&
          wwiv::strings::IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet")) ||
         nSystemNumber == 32767) {
@@ -853,7 +850,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
         carbon_copy[nNumUsers].net_num = GetSession()->GetNetworkNumber();
         nNumUsers++;
         do {
-          std::string emailAddress;
+          string emailAddress;
           GetSession()->bout << "|#9Enter Address (blank to end) : ";
           input(&emailAddress, 75);
           if (emailAddress.empty()) {
@@ -885,7 +882,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
 
     if (cc && !bcc) {
       int listed = 0;
-      std::string s1 = "\003""6Carbon Copy: \003""1";
+      string s1 = "\003""6Carbon Copy: \003""1";
       lineadd(&messageRecord, "\003""7----", "email");
       for (int j = 0; j < nNumUsers; j++) {
         if (carbon_copy[j].nSystemNumber == 0) {
@@ -1004,12 +1001,12 @@ void imail(int nUserNumber, int nSystemNumber) {
 
 void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *pszFileName,
                    int nFromSystem, int nFromUser) {
-  std::string strName, strDate;
+  string strName, strDate;
   char s[205];
   long lMessageTextLength;
 
-  std::string origin_str;
-  std::string origin_str2;
+  string origin_str;
+  string origin_str2;
 
   // Moved internally from outside this method
   SetMessageOriginInfo(nFromSystem, nFromUser, origin_str, origin_str2);
@@ -1087,7 +1084,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   case anony_sender:
     if (readit) {
       osan("|#1Name|#7: ", &abort, next);
-      std::stringstream toName;
+      stringstream toName;
       toName << "<<< " << strName << " >>>";
       plan(GetSession()->GetMessageColor(), toName.str(), &abort, next);
       osan("|#1Date|#7: ", &abort, next);
@@ -1264,7 +1261,7 @@ void read_message(int n, bool *next, int *val) {
     GetSession()->bout << "|#4   FORCED SCAN OF SYSOP INFORMATION - YOU MAY NOT ABORT.  PLEASE READ THESE!  |#0\r\n";
   }
 
-  std::string subjectLine;
+  string subjectLine;
   GetSession()->bout.WriteFormatted(" |#1Msg|#7: [|#2%u|#7/|#2%lu|#7]|#%d %s\r\n", n,
                                     GetSession()->GetNumMessagesInCurrentMessageArea(), GetSession()->GetMessageColor(),
                                     subboards[GetSession()->GetCurrentReadMessageArea()].name);
@@ -1329,7 +1326,7 @@ void read_message(int n, bool *next, int *val) {
   }
 }
 
-void lineadd(messagerec * pMessageRecord, const char *sx, std::string fileName) {
+void lineadd(messagerec * pMessageRecord, const char *sx, string fileName) {
   char szLine[ 255 ];
   sprintf(szLine, "%s\r\n\x1a", sx);
 

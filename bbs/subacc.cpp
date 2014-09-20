@@ -39,7 +39,7 @@ static postrec *cache;                      // points to sub cache memory
 static bool believe_cache;                  // true if cache is valid
 static int cache_start;                     // starting msgnum of cache
 static int last_msgnum;                     // last msgnum read
-static WFile fileSub;           // WFile object for '.sub' file
+static WFile fileSub;                       // WFile object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
 using wwiv::bbs::TempDisablePause;
@@ -245,8 +245,6 @@ postrec *get_post(int mn) {
   return (cache + (mn - cache_start));
 }
 
-
-
 void write_post(int mn, postrec * pp) {
   if (fileSub.IsOpen()) {
     fileSub.Seek(mn * sizeof(postrec), WFile::seekBegin);
@@ -263,7 +261,6 @@ void write_post(int mn, postrec * pp) {
 }
 
 void add_post(postrec * pp) {
-  postrec p;
   bool bCloseSubFile = false;
 
   // open the sub, if necessary
@@ -276,6 +273,7 @@ void add_post(postrec * pp) {
     // get updated info
     GetApplication()->GetStatusManager()->RefreshStatusCache();
     fileSub.Seek(0L, WFile::seekBegin);
+    postrec p;
     fileSub.Read(&p, sizeof(postrec));
 
     // one more post
@@ -457,7 +455,6 @@ void pack_sub(int si) {
     }
   }
 }
-
 
 void pack_all_subs() {
   TempDisablePause disable_pause;

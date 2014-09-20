@@ -30,7 +30,10 @@
 #include "core/strings.h"
 #include "core/wtextfile.h"
 
-void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber) {
+using std::string;
+using wwiv::strings::StringPrintf;
+
+void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   long lMessageLength;
   char* b = readfile(&(pPostRecord->msg), extra, &lMessageLength);
   if (b == NULL) {
@@ -156,7 +159,6 @@ void send_net_post(postrec * pPostRecord, const char *extra, int nSubNumber) {
   free(b1);
   set_net_num(nOrigNetNumber);
 }
-
 
 void post() {
   if (!iscan(GetSession()->GetCurrentMessageArea())) {
@@ -305,8 +307,7 @@ void post() {
   }
 }
 
-
-void grab_user_name(messagerec * pMessageRecord, const char *pszFileName) {
+void grab_user_name(messagerec* pMessageRecord, const char* pszFileName) {
   long lMessageLen;
   char* ss = readfile(pMessageRecord, pszFileName, &lMessageLen);
   if (ss) {
@@ -333,7 +334,6 @@ void grab_user_name(messagerec * pMessageRecord, const char *pszFileName) {
     net_email_name[0] = '\0';
   }
 }
-
 
 void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   int nSubNumber = usub[nBeginSubNumber].subnum;
@@ -405,7 +405,6 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   GetSession()->bout.NewLine();
 }
 
-
 void nscan(int nStartingSubNum) {
   int nNextSubNumber = 1;
 
@@ -435,8 +434,6 @@ void nscan(int nStartingSubNum) {
   }
 }
 
-
-
 void ScanMessageTitles() {
   if (!iscan(GetSession()->GetCurrentMessageArea())) {
     GetSession()->bout << "\r\n|#7A file required is in use by another instance. Try again later.\r\n";
@@ -454,7 +451,7 @@ void ScanMessageTitles() {
   }
   GetSession()->bout.WriteFormatted("|#9Start listing at (|#21|#9-|#2%d|#9): ",
                                     GetSession()->GetNumMessagesInCurrentMessageArea());
-  std::string messageNumber;
+  string messageNumber;
   input(&messageNumber, 5, true);
   int nMessageNumber = atoi(messageNumber.c_str());
   if (nMessageNumber < 1) {
@@ -472,7 +469,6 @@ void ScanMessageTitles() {
     scan(nMessageNumber, SCAN_OPTION_LIST_TITLES, &nNextSubNumber, true);
   }
 }
-
 
 void delmail(WFile *pFile, int loc) {
   mailrec m, m1;
@@ -526,7 +522,6 @@ void delmail(WFile *pFile, int loc) {
   mailcheck = true;
 }
 
-
 void remove_post() {
   if (!iscan(GetSession()->GetCurrentMessageArea())) {
     GetSession()->bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n\n";
@@ -542,7 +537,7 @@ void remove_post() {
   for (int j = 1; j <= GetSession()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == GetSession()->usernum) {
       any = true;
-      std::string buffer = wwiv::strings::StringPrintf("%u: %60.60s", j, get_post(j)->title);
+      string buffer = StringPrintf("%u: %60.60s", j, get_post(j)->title);
       pla(buffer.c_str(), &abort);
     }
   }
@@ -553,7 +548,7 @@ void remove_post() {
     }
   }
   GetSession()->bout << "\r\n|#2Remove which? ";
-  std::string postNumberToRemove;
+  string postNumberToRemove;
   input(&postNumberToRemove, 5);
   int nPostNumber = atoi(postNumberToRemove.c_str());
   open_sub(true);
