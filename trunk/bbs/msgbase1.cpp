@@ -101,9 +101,8 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
       nh.tosys = xnp->host;
     } else {
       nh.main_type = main_type_post;
-      char szFileName[ MAX_PATH ];
-      sprintf(szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory(), xnp->stype);
-      WFile file(szFileName);
+      const string filename = StringPrintf("%sn%s.net", GetSession()->GetNetworkDataDirectory(), xnp->stype);
+      WFile file(filename);
       if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
         int len1 = file.GetLength();
         pList = static_cast<unsigned short int *>(BbsAllocA(len1 * 2 + 1));
@@ -215,9 +214,11 @@ void post() {
   write_inst(INST_LOC_POST, GetSession()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
   postrec p;
-  inmsg(&m, p.title, &a, true, (subboards[GetSession()->GetCurrentReadMessageArea()].filename), INMSG_FSED,
+  string title;
+  inmsg(&m, &title, &a, true, (subboards[GetSession()->GetCurrentReadMessageArea()].filename), INMSG_FSED,
         subboards[GetSession()->GetCurrentReadMessageArea()].name,
         (subboards[GetSession()->GetCurrentReadMessageArea()].anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE);
+  strcpy(p.title, title.c_str());
   if (m.stored_as != 0xffffffff) {
     p.anony   = static_cast< unsigned char >(a);
     p.msg   = m;
@@ -342,9 +343,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   if (hangup || nSubNumber < 0) {
     return;
   }
-
   GetSession()->bout.NewLine();
-
   uint32_t lQuickScanPointer = qsc_p[nSubNumber];
 
   if (!GetSession()->m_SubDateCache[nSubNumber]) {

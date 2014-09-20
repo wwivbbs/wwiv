@@ -26,6 +26,10 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 
+using std::string;
+using wwiv::strings::IsEquals;
+using wwiv::strings::StringPrintf;
+
 #define STOP_LIST 0
 #define MAX_SCREEN_LINES_TO_SHOW 24
 
@@ -41,7 +45,7 @@
 // Local functions
 //
 void reset_user_colors_to_defaults();
-const std::string DisplayColorName(int c);
+const string DisplayColorName(int c);
 
 
 void select_editor() {
@@ -73,49 +77,42 @@ void select_editor() {
   int nEditor = atoi(ss);
   if (nEditor >= 1 && nEditor <= GetSession()->GetNumberOfEditors()) {
     GetSession()->GetCurrentUser()->SetDefaultEditor(nEditor);
-  } else if (wwiv::strings::IsEquals(ss, "0")) {
+  } else if (IsEquals(ss, "0")) {
     GetSession()->GetCurrentUser()->SetDefaultEditor(0);
     GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::autoQuote);
   }
 }
 
-
-const char* GetMailBoxStatus(char* pszStatusOut) {
+static string GetMailBoxStatus() {
   if (GetSession()->GetCurrentUser()->GetForwardSystemNumber() == 0 &&
       GetSession()->GetCurrentUser()->GetForwardUserNumber() == 0) {
-    strcpy(pszStatusOut, "Normal");
-    return pszStatusOut;
+    return string("Normal");
   }
   if (GetSession()->GetCurrentUser()->GetForwardSystemNumber() != 0) {
     if (GetSession()->GetCurrentUser()->IsMailboxForwarded()) {
-      sprintf(pszStatusOut, "Forward to #%u @%u.%s.",
+      return StringPrintf("Forward to #%u @%u.%s.",
               GetSession()->GetCurrentUser()->GetForwardUserNumber(),
               GetSession()->GetCurrentUser()->GetForwardSystemNumber(),
               net_networks[ GetSession()->GetCurrentUser()->GetForwardNetNumber() ].name);
     } else {
       char szForwardUserName[80];
       read_inet_addr(szForwardUserName, GetSession()->usernum);
-      sprintf(pszStatusOut, "Forwarded to Internet %s", szForwardUserName);
+      return StringPrintf("Forwarded to Internet %s", szForwardUserName);
     }
-    return pszStatusOut;
   }
 
   if (GetSession()->GetCurrentUser()->IsMailboxClosed()) {
-    strcpy(pszStatusOut, "Closed");
-    return pszStatusOut;
+    return string("Closed");
   }
 
   WUser ur;
   GetApplication()->GetUserManager()->ReadUser(&ur, GetSession()->GetCurrentUser()->GetForwardUserNumber());
   if (ur.IsUserDeleted()) {
     GetSession()->GetCurrentUser()->SetForwardUserNumber(0);
-    strcpy(pszStatusOut, "Normal");
-    return pszStatusOut;
+    return string("Normal");
   }
-  sprintf(pszStatusOut, "Forward to %s", ur.GetUserNameAndNumber(GetSession()->GetCurrentUser()->GetForwardUserNumber()));
-  return pszStatusOut;
+  return StringPrintf("Forward to %s", ur.GetUserNameAndNumber(GetSession()->GetCurrentUser()->GetForwardUserNumber()));
 }
-
 
 void print_cur_stat() {
   char s1[255], s2[255];
@@ -128,8 +125,8 @@ void print_cur_stat() {
   GetSession()->bout.WriteFormatted("%-48s %-45s\r\n", s1, s2);
 
   sprintf(s1, "|#13|#9) Pause on screen   : |#2%s", GetSession()->GetCurrentUser()->HasPause() ? "On" : "Off");
-  char szMailBoxStatus[81];
-  sprintf(s2, "|#14|#9) Mailbox           : |#2%s", GetMailBoxStatus(szMailBoxStatus));
+  const string mailbox_status = GetMailBoxStatus();
+  sprintf(s2, "|#14|#9) Mailbox           : |#2%s", mailbox_status.c_str());
   GetSession()->bout.WriteFormatted("%-48s %-45s\r\n", s1, s2);
 
   sprintf(s1, "|#15|#9) Configured Q-scan");
@@ -182,38 +179,36 @@ void print_cur_stat() {
   GetSession()->bout << "|#1Q|#9) Quit to main menu\r\n";
 }
 
-
-const std::string DisplayColorName(int c) {
+const string DisplayColorName(int c) {
   if (checkcomp("Ami") || checkcomp("Mac")) {
     std::ostringstream os;
     os << "Color #" << c;
-    return std::string(os.str());
+    return string(os.str());
   }
 
   switch (c) {
   case 0:
-    return std::string("Black");
+    return string("Black");
   case 1:
-    return std::string("Blue");
+    return string("Blue");
   case 2:
-    return std::string("Green");
+    return string("Green");
   case 3:
-    return std::string("Cyan");
+    return string("Cyan");
   case 4:
-    return std::string("Red");
+    return string("Red");
   case 5:
-    return std::string("Magenta");
+    return string("Magenta");
   case 6:
-    return std::string("Yellow");
+    return string("Yellow");
   case 7:
-    return std::string("White");
+    return string("White");
   default:
-    return std::string("");
+    return string("");
   }
 }
 
-
-const std::string DescribeColorCode(int nColorCode) {
+const string DescribeColorCode(int nColorCode) {
   std::ostringstream os;
 
   if (GetSession()->GetCurrentUser()->HasColor()) {
@@ -234,9 +229,8 @@ const std::string DescribeColorCode(int nColorCode) {
       os << ", Blinking";
     }
   }
-  return std::string(os.str());
+  return string(os.str());
 }
-
 
 void color_list() {
   GetSession()->bout.NewLine(2);
@@ -245,7 +239,6 @@ void color_list() {
     GetSession()->bout << i << ". " << DisplayColorName(static_cast< char >(i)).c_str() << "|#0" << wwiv::endl;
   }
 }
-
 
 void change_colors() {
   bool done = false;
@@ -393,8 +386,6 @@ void change_colors() {
   } while (!done && !hangup);
 }
 
-
-
 void l_config_qscan() {
   bool abort = false;
   GetSession()->bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
@@ -408,7 +399,6 @@ void l_config_qscan() {
   }
   GetSession()->bout.NewLine(2);
 }
-
 
 void config_qscan() {
   if (okansi()) {
@@ -469,20 +459,20 @@ void config_qscan() {
         char* s = mmkey(0);
         if (s[0]) {
           for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1); i++) {
-            if (wwiv::strings::IsEquals(usub[i].keys, s)) {
+            if (IsEquals(usub[i].keys, s)) {
               qsc_q[usub[i].subnum / 32] ^= (1L << (usub[i].subnum % 32));
             }
-            if (wwiv::strings::IsEquals(s, "S")) {
+            if (IsEquals(s, "S")) {
               qsc_q[usub[i].subnum / 32] |= (1L << (usub[i].subnum % 32));
             }
-            if (wwiv::strings::IsEquals(s, "C")) {
+            if (IsEquals(s, "C")) {
               qsc_q[usub[i].subnum / 32] &= ~(1L << (usub[i].subnum % 32));
             }
           }
-          if (wwiv::strings::IsEquals(s, "Q")) {
+          if (IsEquals(s, "Q")) {
             done = true;
           }
-          if (wwiv::strings::IsEquals(s, "?")) {
+          if (IsEquals(s, "?")) {
             l_config_qscan();
           }
         }
@@ -637,7 +627,6 @@ char *macroedit(char *pszMacroText) {
   return pszMacroText;
 }
 
-
 void change_password() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#9Change password? ";
@@ -645,7 +634,7 @@ void change_password() {
     return;
   }
 
-  std::string password, password2;
+  string password, password2;
   GetSession()->bout.NewLine();
   input_password("|#9You must now enter your current password.\r\n|#7: ", &password, 8);
   if (password != GetSession()->GetCurrentUser()->GetPassword()) {
@@ -745,7 +734,7 @@ void optional_lines() {
   GetSession()->bout << "|#9You may specify your optional lines value from 0-10,\r\n" ;
   GetSession()->bout << "|#20 |#9being all, |#210 |#9being none.\r\n";
   GetSession()->bout << "|#2What value? ";
-  std::string lines;
+  string lines;
   input(&lines, 2);
 
   int nNumLines = atoi(lines.c_str());
@@ -758,7 +747,7 @@ void optional_lines() {
 
 void enter_regnum() {
   GetSession()->bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
-  std::string regnum;
+  string regnum;
   input(&regnum, 5, true);
 
   long lRegNum = atol(regnum.c_str());
@@ -767,7 +756,6 @@ void enter_regnum() {
     changedsl();
   }
 }
-
 
 void defaults(MenuInstanceData * pMenuData) {
   bool done = false;
@@ -832,7 +820,7 @@ void defaults(MenuInstanceData * pMenuData) {
       break;
 
     case 'I': {
-      std::string internetAddress;
+      string internetAddress;
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#9Enter your Internet mailing address.\r\n|#7:";
       inputl(&internetAddress, 65, true);
@@ -903,7 +891,6 @@ int GetMaxLinesToShowForScanPlus() {
 #endif
 }
 
-
 void list_config_scan_plus(int first, int *amount, int type) {
   char s[101];
 
@@ -965,7 +952,6 @@ void list_config_scan_plus(int first, int *amount, int type) {
   GetSession()->bout.NewLine();
   lines_listed = 0;
 }
-
 
 void config_scan_plus(int type) {
   char **menu_items, s[50];
@@ -1080,12 +1066,12 @@ void config_scan_plus(int type) {
 #endif
             qsc_q[usub[top + pos].subnum / 32] ^= (1L << (usub[top + pos].subnum % 32));
         } else {
-          if (wwiv::strings::IsEquals(udir[0].keys, "0")) {
+          if (IsEquals(udir[0].keys, "0")) {
             sysdir = 1;
           }
           for (this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
             sprintf(s, "%d", sysdir ? top + pos : top + pos + 1);
-            if (wwiv::strings::IsEquals(s, udir[this_dir].keys)) {
+            if (IsEquals(s, udir[this_dir].keys)) {
               ad = udir[this_dir].subnum;
               qsc_n[ad / 32] ^= (1L << (ad % 32));
             }
@@ -1131,12 +1117,12 @@ void config_scan_plus(int type) {
           } else {
             int this_dir, sysdir = 0;
             int ad;
-            if (wwiv::strings::IsEquals(udir[0].keys, "0")) {
+            if (IsEquals(udir[0].keys, "0")) {
               sysdir = 1;
             }
             for (this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
               sprintf(s, "%d", sysdir ? top + pos : top + pos + 1);
-              if (wwiv::strings::IsEquals(s, udir[this_dir].keys)) {
+              if (IsEquals(s, udir[this_dir].keys)) {
                 ad = udir[this_dir].subnum;
                 qsc_n[ad / 32] ^= (1L << (ad % 32));
               }
@@ -1300,7 +1286,6 @@ void drawscan(int filepos, long tagged) {
   }
 }
 
-
 void undrawscan(int filepos, long tagged) {
   int max_lines = GetMaxLinesToShowForScanPlus();
 
@@ -1312,25 +1297,22 @@ void undrawscan(int filepos, long tagged) {
   GetSession()->bout.WriteFormatted("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
 }
 
-
 long is_inscan(int dir) {
   bool sysdir = false;
-  if (wwiv::strings::IsEquals(udir[0].keys, "0")) {
+  if (IsEquals(udir[0].keys, "0")) {
     sysdir = true;
   }
 
   for (int this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
     char szDir[50];
     sprintf(szDir, "%d", sysdir ? dir : dir + 1);
-    if (wwiv::strings::IsEquals(szDir, udir[this_dir].keys)) {
+    if (IsEquals(szDir, udir[this_dir].keys)) {
       int ad = udir[this_dir].subnum;
       return (qsc_n[ad / 32] & (1L << ad % 32));
     }
   }
-
   return 0;
 }
-
 
 void reset_user_colors_to_defaults() {
   for (int i = 0; i <= 9; i++) {
@@ -1338,4 +1320,3 @@ void reset_user_colors_to_defaults() {
     GetSession()->GetCurrentUser()->SetBWColor(i, GetSession()->newuser_bwcolors[ i ]);
   }
 }
-

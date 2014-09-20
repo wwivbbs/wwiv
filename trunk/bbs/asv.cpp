@@ -22,9 +22,10 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 
-// Local prototypes
-int  printasv(const char *pszFileName, int num, bool abort);
+using std::string;
 
+// Local prototypes
+int  printasv(const string& filename, int num, bool abort);
 
 void asv() {
   int i = 0;
@@ -218,8 +219,9 @@ void asv() {
           msg.storage_type = 2;
           GetSession()->SetNewMailWaiting(true);
           sprintf(net_email_name, "%s #1@%u", syscfg.sysopname, net_sysnum);
-          inmsg(&msg, irt, &nAllowAnon, false, "email", INMSG_NOFSED, snode, MSGED_FLAG_NONE, true);
-          sendout_email(irt, &msg, 0, 1, inode, 0, 1, net_sysnum, 1, GetSession()->GetNetworkNumber());
+          string title(irt);
+          inmsg(&msg, &title, &nAllowAnon, false, "email", INMSG_NOFSED, snode, MSGED_FLAG_NONE, true);
+          sendout_email(title, &msg, 0, 1, inode, 0, 1, net_sysnum, 1, GetSession()->GetNetworkNumber());
         }
         irt[0] = '\0';
         GetSession()->SetNewMailWaiting(false);
@@ -289,7 +291,7 @@ void asv() {
 }
 
 
-int printasv(const char *pszFileName, int num, bool abort) {
+int printasv(const string& filename, int num, bool abort) {
   char buff[1024], nums[9];
   unsigned int j;
   int bytes_read;
@@ -301,7 +303,7 @@ int printasv(const char *pszFileName, int num, bool abort) {
   GetSession()->bout.NewLine();
 
   char szFileName[ MAX_PATH ], szFileName1[ MAX_PATH ];
-  sprintf(szFileName, "%s%s", syscfg.gfilesdir, pszFileName);
+  sprintf(szFileName, "%s%s", syscfg.gfilesdir, filename.c_str());
   if (!strrchr(szFileName, '.')) {
     if (GetSession()->GetCurrentUser()->HasAnsi()) {
       if (GetSession()->GetCurrentUser()->HasColor()) {
