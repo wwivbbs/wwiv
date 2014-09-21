@@ -38,8 +38,8 @@ void checkAllDirsExist() {
 
   vector<string> dirs{ syscfg.msgsdir, syscfg.gfilesdir, syscfg.menudir, syscfg.datadir, syscfg.dloadsdir, syscfg.tempdir };
 
-  for (const auto& dir : dirs) {
-		WFile dir(dir);
+  for (const auto& dir_name : dirs) {
+		WFile dir(dir_name);
     auto full_pathname = dir.GetFullPathName().c_str();
 		if(!checkDirExists(dir, full_pathname)) {
 			Print(NOK, true, "%s directory is missing", full_pathname);
