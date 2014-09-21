@@ -17,10 +17,18 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <string>
+#include <vector>
+
 #include "wwiv.h"
 #include "fix.h"
 #include "log.h"
 #include "dirs.h"
+
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
 
 namespace wwiv {
 namespace fix {
@@ -28,18 +36,15 @@ namespace fix {
 void checkAllDirsExist() {
 	Print(OK, true, "Checking Directories...");
 
-	const char *dirs[] = {syscfg.msgsdir, syscfg.gfilesdir, syscfg.menudir, syscfg.datadir, syscfg.dloadsdir,
-	                      syscfg.tempdir, nullptr
-	                     };
+  vector<string> dirs{ syscfg.msgsdir, syscfg.gfilesdir, syscfg.menudir, syscfg.datadir, syscfg.dloadsdir, syscfg.tempdir };
 
-	int i = 0;
-	while(dirs[i] != nullptr) {
-		WFile dir(dirs[i]);
-		if(!checkDirExists(dir, dir.GetFullPathName().c_str())) {
-			Print(NOK, true, "%s directory is missing", dir.GetFullPathName().c_str());
+  for (const auto& dir : dirs) {
+		WFile dir(dir);
+    auto full_pathname = dir.GetFullPathName().c_str();
+		if(!checkDirExists(dir, full_pathname)) {
+			Print(NOK, true, "%s directory is missing", full_pathname);
 			giveUp();
 		}
-		i++;
 	}
 	Print(OK, true, "Basic directories present...");
 }
@@ -51,16 +56,16 @@ static char *unalign(char *pszFileName) {
 		*pszTemp++ = '\0';
 		char* pszTemp2 = strstr(pszTemp, ".");
 		if (pszTemp2) {
-			strcat( pszFileName, pszTemp2 );
+			strcat(pszFileName, pszTemp2 );
 		}
 	}
 	return pszFileName;
 }
 
-static std::string Unalign(const char* filename) {
+static string Unalign(const char* filename) {
     char s[MAX_PATH];
     strcpy(s, filename);
-    return std::string(unalign(s));
+    return string(unalign(s));
 }
 
 void checkFileAreas(int num_dirs) {
@@ -70,7 +75,7 @@ void checkFileAreas(int num_dirs) {
 			WFile dir(directories[i].path);
 			if(checkDirExists(dir, directories[i].name)) {
 				Print(OK, true, "Checking directory '%s'", directories[i].name);
-				std::string filename = directories[i].filename;
+				string filename = directories[i].filename;
 				filename.append(".dir");
 				WFile recordFile(syscfg.datadir, filename.c_str());
 				if(recordFile.Exists()) {
@@ -89,7 +94,7 @@ void checkFileAreas(int num_dirs) {
 						if(numFiles >= 1) {
 							ext_desc_rec *extDesc = nullptr;
 							unsigned int recNo = 0;
-							std::string filenameExt = directories[i].filename;
+							string filenameExt = directories[i].filename;
 							filenameExt.append(".ext");
 							WFile extDescFile(syscfg.datadir, filenameExt.c_str());
 							if(extDescFile.Exists()) {
@@ -170,14 +175,12 @@ void checkFileAreas(int num_dirs) {
 	}
 }
 
-
 int FixDirectoriesCommand::Execute() {
-    std::cout << "Runnning FixDirectoriesCommand::Execute" << std::endl;
+  cout << "Runnning FixDirectoriesCommand::Execute" << endl;
 	checkAllDirsExist();
 	checkFileAreas(num_dirs_);
-    return 0;
+  return 0;
 }
-
 
 }  // namespace fix
 }  // namespavce wwiv
