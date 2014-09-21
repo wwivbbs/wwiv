@@ -84,77 +84,57 @@ static void init_files(CursesWindow* window) {
   directoryrec d1;
 
   window->SetColor(SchemeId::PROMPT);
-  window->Puts("Creating Data Files.");
+  window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
 
   memset(&syscfg, 0, sizeof(configrec));
 
   strcpy(syscfg.systempw, "SYSOP");
-  window->Printf(".");
   sprintf(syscfg.msgsdir, "%smsgs%c", bbsdir, WFile::pathSeparatorChar);
-  window->Printf(".");
   sprintf(syscfg.gfilesdir, "%sgfiles%c", bbsdir, WFile::pathSeparatorChar);
-  window->Printf(".");
   sprintf(syscfg.datadir, "%sdata%c", bbsdir, WFile::pathSeparatorChar);
-  window->Printf(".");
   sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir, WFile::pathSeparatorChar);
-  window->Printf(".");
   sprintf(syscfg.tempdir, "%stemp1%c", bbsdir, WFile::pathSeparatorChar);
-  window->Printf(".");
   sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir, WFile::pathSeparatorChar, WFile::pathSeparatorChar);
-  window->Printf(".");
   strcpy(syscfg.batchdir, syscfg.tempdir);
-  window->Printf(".");
   strcpy(syscfg.unused_bbs_init_modem, "ATS0=0M0Q0V0E0S2=1S7=20H0{");
-  window->Printf(".");
   strcpy(syscfg.unused_answer, "ATA{");
   strcpy(syscfg.unused_connect_300, "1");
   strcpy(syscfg.unused_connect_1200, "5");
-  window->Printf(".");
   strcpy(syscfg.unused_connect_2400, "10");
   strcpy(syscfg.unused_connect_9600, "13");
   strcpy(syscfg.unused_connect_19200, "50");
-  window->Printf(".");
   strcpy(syscfg.unused_no_carrier, "3");
   strcpy(syscfg.unused_ring, "2");
   strcpy(syscfg.hangupphone, "ATH0{");
-  window->Printf(".");
   strcpy(syscfg.pickupphone, "ATH1{");
   strcpy(syscfg.unused_terminal, "");
   strcpy(syscfg.systemname, "My WWIV BBS");
-  window->Printf(".");
   strcpy(syscfg.systemphone, "   -   -    ");
   strcpy(syscfg.sysopname, "The New Sysop");
-  window->Printf(".");
 
   syscfg.newusersl = 10;
   syscfg.newuserdsl = 0;
   syscfg.maxwaiting = 50;
-  window->Printf(".");
   for (i = 0; i < 5; i++) {
     syscfg.baudrate[i] = 300;
   }
-  window->Printf(".");
   syscfg.com_ISR[0] = 0;
   syscfg.com_ISR[1] = 4;
   syscfg.com_ISR[2] = 3;
   syscfg.com_ISR[3] = 4;
   syscfg.com_ISR[4] = 3;
-  window->Printf(".");
   syscfg.com_base[0] = 0;
   syscfg.com_base[1] = 0x3f8;
   syscfg.com_base[2] = 0x2f8;
   syscfg.com_base[3] = 0x3e8;
   syscfg.com_base[4] = 0x2e8;
-  window->Printf(".");
   syscfg.comport[1] = 0;
   // Always use 1 for the primary port.
   syscfg.primaryport = 1;
-  window->Printf(".");
   syscfg.newuploads = 0;
   syscfg.maxusers = 500;
   syscfg.newuser_restrict = restrict_validate;
-  window->Printf(".");
   syscfg.req_ratio = 0.0;
   syscfg.newusergold = 100.0;
   v.ar = 0;
@@ -162,7 +142,6 @@ static void init_files(CursesWindow* window) {
   v.restrict = 0;
   v.sl = 10;
   v.dsl = 0;
-  window->Printf(".");
   for (i = 0; i < 10; i++) {
     syscfg.autoval[i] = v;
   }
@@ -231,7 +210,6 @@ static void init_files(CursesWindow* window) {
   syscfg.max_subs = 64;
   syscfg.max_dirs = 64;
 
-  window->Printf(".");
   syscfg.qscn_len = 4 * (1 + syscfg.max_subs + ((syscfg.max_subs + 31) / 32) + ((syscfg.max_dirs + 31) / 32));
 
   strcpy(syscfg.unused_dial_prefix, "ATDT");
@@ -242,8 +220,6 @@ static void init_files(CursesWindow* window) {
 
   create_arcs(out->window());
 
-  window->Printf(".");
-
   memset(&status, 0, sizeof(statusrec));
 
   string now(date());
@@ -253,14 +229,12 @@ static void init_files(CursesWindow* window) {
   strcpy(status.log1, "000000.LOG");
   strcpy(status.log2, "000000.LOG");
   strcpy(status.gfiledate, now.c_str());
-  window->Printf(".");
   status.callernum = 65535;
   status.qscanptr = 2;
   status.net_bias = 0.001f;
   status.net_req_free = 3.0;
 
   qsc = (uint32_t *)malloc(syscfg.qscn_len);
-  window->Printf(".");
   memset(qsc, 0, syscfg.qscn_len);
 
   save_status();
@@ -272,11 +246,9 @@ static void init_files(CursesWindow* window) {
   // Note: this is where init makes a user record #1 that is deleted for new installs.
   write_user(1, &u);
   write_qscn(1, qsc);
-  window->Printf(".");
   int hFile = open("data/names.lst", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   close(hFile);
 
-  window->Printf(".");
   memset(&s1, 0, sizeof(subboardrec));
 
   strcpy(s1.name, "General");
@@ -291,7 +263,6 @@ static void init_files(CursesWindow* window) {
 
   memset(&d1, 0, sizeof(directoryrec));
 
-  window->Printf(".");
   strcpy(d1.name, "Sysop");
   strcpy(d1.filename, "SYSOP");
   sprintf(d1.path, "dloads%csysop%c", WFile::pathSeparatorChar, WFile::pathSeparatorChar);
@@ -299,7 +270,6 @@ static void init_files(CursesWindow* window) {
   d1.dsl = 100;
   d1.maxfiles = 50;
   d1.type = 65535;
-  window->Printf(".");
   hFile = open("data/dirs.dat", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   write(hFile, &d1, sizeof(directoryrec));
 
@@ -320,22 +290,17 @@ static void init_files(CursesWindow* window) {
   window->Printf(".\n");
   ////////////////////////////////////////////////////////////////////////////
   window->SetColor(SchemeId::PROMPT);
-  window->Puts("Copying String and Miscellaneous files.");
+  window->Puts("Copying String and Miscellaneous files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  window->Printf(".");
   rename("wwivini.500", "wwiv.ini");
-  window->Printf(".");
   char szDestination[MAX_PATH];
   sprintf(szDestination, "data%cmenucmds.dat", WFile::pathSeparatorChar);
   rename("menucmds.dat", szDestination);
-  window->Printf(".");
   sprintf(szDestination, "data%cregions.dat", WFile::pathSeparatorChar);
   rename("regions.dat", szDestination);
-  window->Printf(".");
   sprintf(szDestination, "data%cwfc.dat", WFile::pathSeparatorChar);
   rename("wfc.dat", szDestination);
-  window->Printf(".");
   // Create the sample files.
   create_text("welcome.msg");
   create_text("newuser.msg");
@@ -353,34 +318,24 @@ static void init_files(CursesWindow* window) {
   window->SetColor(SchemeId::NORMAL);
   if (WFile::Exists("en-menus.zip")) {
     char szDestination[MAX_PATH];
-    window->Printf(".");
     system("unzip -qq -o EN-menus.zip -dgfiles ");
-    window->Printf(".");
     sprintf(szDestination, "dloads%csysop%cen-menus.zip",
             WFile::pathSeparatorChar, WFile::pathSeparatorChar);
     rename("en-menus.zip", szDestination);
-    window->Printf(".");
   }
   if (WFile::Exists("regions.zip")) {
-    window->Printf(".");
     system("unzip -qq -o regions.zip -ddata");
-    window->Printf(".");
     const string dest = StringPrintf("dloads%csysop%cregions.zip",
             WFile::pathSeparatorChar, WFile::pathSeparatorChar);
     rename("regions.zip", dest.c_str());
-    window->Printf(".");
   }
   if (WFile::Exists("zip-city.zip")) {
-    window->Printf(".");
     system("unzip -qq -o zip-city.zip -ddata");
-    window->Printf(".");
     const string dest = StringPrintf("dloads%csysop%czip-city.zip",
             WFile::pathSeparatorChar, WFile::pathSeparatorChar);
     rename("zip-city.zip", dest.c_str());
-    window->Printf(".");
   }
   window->SetColor(SchemeId::NORMAL);
-  window->Printf(".");
 }
 
 void new_init(CursesWindow* window) {
@@ -398,11 +353,10 @@ void new_init(CursesWindow* window) {
   };
   window->SetColor(SchemeId::PROMPT);
   window->Puts("\n\nNow performing installation.  Please wait...\n\n");
-  window->Puts("Creating Directories");
+  window->Puts("Creating Directories\n");
   window->SetColor(SchemeId::NORMAL);
   for (const auto& dirname : dirnames) {
     window->SetColor(SchemeId::NORMAL);
-    window->Printf(".");
     int nRet = chdir(dirname.c_str());
     if (nRet) {
       if (mkdir(dirname.c_str())) {
@@ -414,7 +368,6 @@ void new_init(CursesWindow* window) {
       chdir(bbsdir);
     }
   }
-  window->Printf(".");
 
   init_files(window);
 }

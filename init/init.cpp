@@ -157,7 +157,7 @@ int WInitApp::main(int argc, char *argv[]) {
   bool newbbs = false;
   int configfile = open(configdat, O_RDWR | O_BINARY);
   if (configfile < 0) {
-    vector<string> lines = { StringPrintf("%s NOT FOUND.\n\n", configdat), "Perform initial installation?" };
+    vector<string> lines = { StringPrintf("%s NOT FOUND.", configdat), "", "Perform initial installation?" };
     if (dialog_yn(out->window(), lines)) {
       // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
       out->window()->Bkgd(' ');
@@ -253,9 +253,9 @@ int WInitApp::main(int argc, char *argv[]) {
   }
 
   if (newbbs) {
+    out->Cls(ACS_CKBOARD);
     bool pwok = false;
     while (!pwok) {
-      nlx();
       vector<string> lines { "Please enter the System Password. "};
       lines.insert(lines.begin(), "");
       lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");
