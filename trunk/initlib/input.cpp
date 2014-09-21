@@ -266,7 +266,7 @@ int messagebox(CursesWindow* window, const string& text) {
 
 int messagebox(CursesWindow* window, const vector<string>& text) {
   const string prompt = "Press Any Key";
-  int maxlen = prompt.length();
+  int maxlen = prompt.length() + 2;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
