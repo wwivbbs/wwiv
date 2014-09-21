@@ -26,38 +26,41 @@ namespace wwiv {
 namespace fix {
 
 void FixConfiguration::ParseCommandLine(int argc, char** argv) {
-    	for (int i = 1; i < argc; i++) {
-		char* ss = argv[i];
-		if (*ss == '/' || *ss == '-') {
-			switch (toupper(ss[1])) {
-			case 'Y':
-                this->flag_yes = true;
-				break;
-			case 'U':
-                flag_check_users = false;
-                commands_.erase(std::remove(commands_.begin(), commands_.end(), std::string("users")), 
-                    commands_.end());
-				break;
-			case 'X':
-                flag_experimental = true;
-				break;
-			case '?':
-				this->ShowHelp();
-				break;
-			}
-		} else {
-			std::cerr << "Unknown argument: '" << ss << "'" << std::endl;
-		}
-	}
+  for (int i = 1; i < argc; i++) {
+    char* ss = argv[i];
+    if (*ss == '/' || *ss == '-') {
+      switch (toupper(ss[1])) {
+      case 'Y':
+        this->flag_yes = true;
+        break;
+      case 'D':
+        commands_.emplace_back("dirs");
+        break;
+      case 'U':
+        commands_.emplace_back("users");
+        break;
+      case 'X':
+        flag_experimental = true;
+        break;
+      case '?':
+        this->ShowHelp();
+        break;
+      }
+    }
+    else {
+      std::cerr << "Unknown argument: '" << ss << "'" << std::endl;
+    }
+  }
 }
 
 void FixConfiguration::ShowHelp() {
-    std::cerr << "Command Line Usage:\n\n" 
-        << "\t-Y\t= Force Yes to All Prompts\n"
-        << "\t-U\t= Skip User Record Check\n"
-        << "\t-X\t= Use Experimental features\n"
-        << "\n";
-	exit(0);
+  std::cerr << "Command Line Usage:\n\n"
+    << "\t-Y\t= Force Yes to All Prompts\n"
+    << "\t-D\t= Check Directories\n"
+    << "\t-U\t= Check User Records\n"
+    << "\t-X\t= Use Experimental features\n"
+    << "\n";
+  exit(0);
 }
 
 }  // namespace fix
