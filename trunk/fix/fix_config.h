@@ -27,20 +27,19 @@ namespace fix {
 
 class FixConfiguration {
 public:
-	FixConfiguration(const std::vector<std::string> commands) 
-        : flag_yes(false), flag_experimental(false), flag_check_users(true), commands_(commands) {}
+	FixConfiguration(const std::vector<std::string> default_commands) 
+        : flag_yes(false), flag_experimental(false), commands_(default_commands) {}
 	~FixConfiguration() {}
 
-    void ParseCommandLine(int argc, char** argv);
-
-	bool flag_yes;
-	bool flag_experimental;
-	bool flag_check_users;
-    const std::vector<std::string>& commands() const { return commands_; }
+  void ParseCommandLine(int argc, char** argv);
+  const std::vector<std::string>& commands() const { return commands_; }
+  bool enable_experimental() const { return flag_experimental; }
 
 private:
-    void ShowHelp();
-    std::vector<std::string> commands_;
+  void ShowHelp();
+  std::vector<std::string> commands_;
+	bool flag_yes;
+	bool flag_experimental;
 };
 
 }  // namespace wwiv
