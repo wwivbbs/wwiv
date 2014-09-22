@@ -62,7 +62,7 @@ char rpeek_wfconly() {
 
 
 char bgetchraw() {
-  if (ok_modem_stuff && !global_xx && NULL != GetSession()->remoteIO()) {
+  if (ok_modem_stuff && !global_xx && nullptr != GetSession()->remoteIO()) {
     if (GetSession()->remoteIO()->incoming()) {
       return (GetSession()->remoteIO()->getW());
     }

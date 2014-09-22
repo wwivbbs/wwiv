@@ -46,10 +46,10 @@ static int pd_getkey() {
 int get_kb_event(int nNumLockMode) {
   int key = 0;
   GetSession()->localIO()->tleft(true);
-  time_t time1 = time(NULL);
+  time_t time1 = time(nullptr);
 
   do {
-    time_t time2 = time(NULL);
+    time_t time2 = time(nullptr);
     if (difftime(time2, time1) > 180) {
       // greater than 3 minutes
       hangup = true;
@@ -122,10 +122,10 @@ int get_kb_event(int nNumLockMode) {
         if (key == RETURN || key == CL) {
           return EXECUTE;
         } else if (key == ESC) {
-          time_t time1 = time(NULL);
-          time_t time2 = time(NULL);
+          time_t time1 = time(nullptr);
+          time_t time2 = time(nullptr);
           do {
-            time2 = time(NULL);
+            time2 = time(nullptr);
             if (bkbhitraw()) {
               key = pd_getkey();
               if (key == OB || key == O) {
@@ -199,7 +199,7 @@ int get_kb_event(int nNumLockMode) {
           return key;
         }
       }
-      time1 = time(NULL);                           // reset timer
+      time1 = time(nullptr);                           // reset timer
     } else {
       giveup_timeslice();
     }

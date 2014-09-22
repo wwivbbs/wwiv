@@ -45,7 +45,7 @@ char *GetQuoteInitials();
 #define FLSH {if (ss1) {if (cp && (l3+cp>=linelen)) NL else if (ns)\
               cp+=file.WriteBinary(" ",1);if (!cp) {if (ctld)\
               file.WriteFormatted("\x4%c",ctld); WRTPFX; } file.WriteBinary(ss1,l2);\
-              cp+=l3;ss1=NULL;l2=l3=0;ns=1;}}
+              cp+=l3;ss1=nullptr;l2=l3=0;ns=1;}}
 
 static int brtnm;
 
@@ -121,7 +121,7 @@ void grab_quotes(messagerec * m, const char *aux) {
     free(quotes_ind);
   }
 
-  quotes_nrm = quotes_ind = NULL;
+  quotes_nrm = quotes_ind = nullptr;
   quotes_nrm_l = quotes_ind_l = 0;
 
   if (m && aux) {
@@ -144,7 +144,7 @@ void grab_quotes(messagerec * m, const char *aux) {
       WTextFile file(szQuotesIndexFileName, "wb");
       if (file.IsOpen()) {
         l3 = l2 = 0;
-        ss1 = NULL;
+        ss1 = nullptr;
         GetSession()->internetFullEmailAddress = "";
         if ((strncasecmp("internet", GetSession()->GetNetworkName(), 8) == 0) ||
             (strncasecmp("filenet", GetSession()->GetNetworkName(), 7) == 0)) {
@@ -161,7 +161,7 @@ void grab_quotes(messagerec * m, const char *aux) {
                 if (temp[0] != 0) {
                   ss1 = strtok(temp, ":");
                   if (ss1) {
-                    ss1 = strtok(NULL, "\r\n");
+                    ss1 = strtok(nullptr, "\r\n");
                   }
                   if (ss1) {
                     GetSession()->usenetReferencesLine = ss1;
@@ -173,7 +173,7 @@ void grab_quotes(messagerec * m, const char *aux) {
           }
         }
         l3 = l2 = 0;
-        ss1 = NULL;
+        ss1 = nullptr;
         if (GetSession()->IsMessageThreadingEnabled()) {
           for (l1 = 0; l1 < lMessageLength; l1++) {
             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'P')) {
@@ -283,7 +283,7 @@ void grab_quotes(messagerec * m, const char *aux) {
         }
 #else
         free(quotes_nrm);
-        quotes_nrm = NULL;
+        quotes_nrm = nullptr;
         quotes_nrm_l = 0;
 #endif
       }
@@ -344,14 +344,14 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
     strcat(buf, "\r\n");
     fileInputMsg.Writeln(buf, strlen(buf));
     while (len > 0) {
-      while ((strchr("\r\001", *p) == NULL) && ((p - b) < (len < 253 ? len : 253))) {
+      while ((strchr("\r\001", *p) == nullptr) && ((p - b) < (len < 253 ? len : 253))) {
         ++p;
       }
       if (*p == '\001') {
         *(p++) = '\0';
       }
       *p = '\0';
-      if (*b != '\004' && strchr(b, '\033') == NULL) {
+      if (*b != '\004' && strchr(b, '\033') == nullptr) {
         int jj = 0;
         for (int j = 0; j < static_cast<int>(77 - (strlen(tb1))); j++) {
           if (((b[j] == '0') && (b[j - 1] != '\003')) || (b[j] != '0')) {
@@ -385,7 +385,7 @@ void get_quote(int fsed) {
   static int l1, l2;
 
   GetSession()->SetQuoting((fsed) ? true : false);
-  if (quotes_ind == NULL) {
+  if (quotes_ind == nullptr) {
     if (fsed) {
       GetSession()->bout << "\x0c";
     } else {

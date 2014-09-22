@@ -105,7 +105,7 @@ int finduser1(const string searchString) {
   string userNamePart = searchString;
   StringUpperCase(&userNamePart);
   for (int i1 = 0; i1 < GetApplication()->GetStatusManager()->GetUserCount(); i1++) {
-    if (strstr(reinterpret_cast<char*>(smallist[i1].name), userNamePart.c_str()) != NULL) {
+    if (strstr(reinterpret_cast<char*>(smallist[i1].name), userNamePart.c_str()) != nullptr) {
       int nCurrentUserNum = smallist[i1].number;
       WUser user;
       GetApplication()->GetUserManager()->ReadUser(&user, nCurrentUserNum);

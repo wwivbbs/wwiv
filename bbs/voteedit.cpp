@@ -141,7 +141,7 @@ void voteprint() {
 
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
   char *x = static_cast<char *>(BbsAllocA(20 * (2 + nNumUserRecords)));
-  if (x == NULL) {
+  if (x == nullptr) {
     return;
   }
   for (int i = 0; i <= nNumUserRecords; i++) {

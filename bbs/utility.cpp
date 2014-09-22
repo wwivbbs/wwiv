@@ -132,7 +132,7 @@ void frequent_init() {
   WFile::SetFilePermissions(g_szDSZLogFileName, WFile::permReadWrite);
   WFile::Remove(g_szDSZLogFileName);
   GetSession()->SetTimeOnlineLimited(false);
-  GetSession()->localIO()->set_x_only(0, NULL, 0);
+  GetSession()->localIO()->set_x_only(0, nullptr, 0);
   set_net_num(0);
   set_language(GetSession()->GetCurrentUser()->GetLanguage());
   reset_disable_conf();
@@ -363,7 +363,7 @@ char *get_wildlist(char *pszFileMask) {
     GetSession()->bout.WriteFormatted("%12.12s ", fnd.GetFileName());
   }
 
-  if (strchr(pszFileMask, WFile::pathSeparatorChar) == NULL) {
+  if (strchr(pszFileMask, WFile::pathSeparatorChar) == nullptr) {
     pszFileMask[0] = '\0';
   } else {
     for (int i = 0; i < wwiv::strings::GetStringLength(pszFileMask); i++) {

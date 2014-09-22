@@ -203,7 +203,7 @@ struct net_call_out_rec {
   uint8_t   times_per_day;  /* number of calls per day */
   uint8_t   call_x_days;    /* call only every x days */
   uint16_t  min_k;          /* minimum # k before callout */
-  char *          opts;           /* options or NULL */
+  char *          opts;           /* options or nullptr */
 };
 
 /* This record holds info about other systems that the sysop has determined

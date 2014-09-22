@@ -584,17 +584,17 @@ void print_net_listing(bool bForcePause) {
           }
           break;
         case NET_SEARCH_SUBSTR:
-          if (strstr(s2, substr) != NULL) {
+          if (strstr(s2, substr) != nullptr) {
             matched = true;
           } else {
             sprintf(s3, "@%u", csne.sysnum);
-            if (strstr(s3, substr) != NULL) {
+            if (strstr(s3, substr) != nullptr) {
               matched = true;
             }
           }
           break;
         case NET_SEARCH_PHSUBSTR:
-          if (strstr(s1, phstr) != NULL) {
+          if (strstr(s1, phstr) != nullptr) {
             matched = true;
           }
           break;
@@ -879,7 +879,7 @@ void auto_purge() {
     return;
   }
 
-  time_t tTime = time(NULL);
+  time_t tTime = time(nullptr);
   int nUserNumber = 1;
   sysoplogfi(false, "Auto-Purged Inactive Users (over %d days, SL less than %d)", days, skipsl);
 

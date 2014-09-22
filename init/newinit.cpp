@@ -58,8 +58,8 @@ static void create_text(const char *pszFileName) {
 }
 
 static string date() {
-  time_t t = time(NULL);
-  struct tm * pTm = localtime(&t);
+  time_t t = time(nullptr);
+  struct tm* pTm = localtime(&t);
   return StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
 }
 
@@ -77,12 +77,6 @@ static void write_qscn(unsigned int un, uint32_t *qscn) {
 }
 
 static void init_files(CursesWindow* window) {
-  int i;
-  valrec v;
-  slrec sl;
-  subboardrec s1;
-  directoryrec d1;
-
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
@@ -116,7 +110,7 @@ static void init_files(CursesWindow* window) {
   syscfg.newusersl = 10;
   syscfg.newuserdsl = 0;
   syscfg.maxwaiting = 50;
-  for (i = 0; i < 5; i++) {
+  for (int i = 0; i < 5; i++) {
     syscfg.baudrate[i] = 300;
   }
   syscfg.com_ISR[0] = 0;
@@ -137,15 +131,18 @@ static void init_files(CursesWindow* window) {
   syscfg.newuser_restrict = restrict_validate;
   syscfg.req_ratio = 0.0;
   syscfg.newusergold = 100.0;
+
+  valrec v;
   v.ar = 0;
   v.dar = 0;
   v.restrict = 0;
   v.sl = 10;
   v.dsl = 0;
-  for (i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; i++) {
     syscfg.autoval[i] = v;
   }
-  for (i = 0; i < 256; i++) {
+  for (int i = 0; i < 256; i++) {
+    slrec sl;
     sl.time_per_logon = (i / 10) * 10;
     sl.time_per_day = static_cast<unsigned short>(((float)sl.time_per_logon) * 2.5);
     sl.messages_read = (i / 10) * 100;
@@ -170,7 +167,6 @@ static void init_files(CursesWindow* window) {
     }
 
     sl.ability = 0;
-
     if (i >= 150) {
       sl.ability |= ability_cosysop;
     }
@@ -209,19 +205,15 @@ static void init_files(CursesWindow* window) {
 
   syscfg.max_subs = 64;
   syscfg.max_dirs = 64;
-
   syscfg.qscn_len = 4 * (1 + syscfg.max_subs + ((syscfg.max_subs + 31) / 32) + ((syscfg.max_dirs + 31) / 32));
 
   strcpy(syscfg.unused_dial_prefix, "ATDT");
   syscfg.post_call_ratio = 0.0;
   strcpy(syscfg.modem_type, "H2400");
-
   save_config();
 
   create_arcs(out->window());
-
   memset(&status, 0, sizeof(statusrec));
-
   string now(date());
   strcpy(status.date1, now.c_str());
   strcpy(status.date2, "00/00/00");
@@ -249,6 +241,7 @@ static void init_files(CursesWindow* window) {
   int hFile = open("data/names.lst", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   close(hFile);
 
+  subboardrec s1;
   memset(&s1, 0, sizeof(subboardrec));
 
   strcpy(s1.name, "General");
@@ -261,6 +254,7 @@ static void init_files(CursesWindow* window) {
   write(hFile, &s1, sizeof(subboardrec));
   close(hFile);
 
+  directoryrec d1;
   memset(&d1, 0, sizeof(directoryrec));
 
   strcpy(d1.name, "Sysop");
@@ -317,23 +311,22 @@ static void init_files(CursesWindow* window) {
   window->Puts("Decompressing archives.  Please wait");
   window->SetColor(SchemeId::NORMAL);
   if (WFile::Exists("en-menus.zip")) {
-    char szDestination[MAX_PATH];
     system("unzip -qq -o EN-menus.zip -dgfiles ");
-    sprintf(szDestination, "dloads%csysop%cen-menus.zip",
-            WFile::pathSeparatorChar, WFile::pathSeparatorChar);
-    rename("en-menus.zip", szDestination);
+    const string destination = StringPrintf("dloads%csysop%cen-menus.zip",
+        WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+    rename("en-menus.zip", destination.c_str());
   }
   if (WFile::Exists("regions.zip")) {
     system("unzip -qq -o regions.zip -ddata");
-    const string dest = StringPrintf("dloads%csysop%cregions.zip",
-            WFile::pathSeparatorChar, WFile::pathSeparatorChar);
-    rename("regions.zip", dest.c_str());
+    const string destination = StringPrintf("dloads%csysop%cregions.zip",
+        WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+    rename("regions.zip", destination.c_str());
   }
   if (WFile::Exists("zip-city.zip")) {
     system("unzip -qq -o zip-city.zip -ddata");
-    const string dest = StringPrintf("dloads%csysop%czip-city.zip",
-            WFile::pathSeparatorChar, WFile::pathSeparatorChar);
-    rename("zip-city.zip", dest.c_str());
+    const string destination = StringPrintf("dloads%csysop%czip-city.zip",
+        WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+    rename("zip-city.zip", destination.c_str());
   }
   window->SetColor(SchemeId::NORMAL);
 }

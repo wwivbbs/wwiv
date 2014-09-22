@@ -113,17 +113,17 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) {
 }
 
 WSession::~WSession() {
-  if (ok_modem_stuff && m_pComm != NULL) {
+  if (ok_modem_stuff && m_pComm != nullptr) {
     m_pComm->close();
-    if (m_pComm != NULL) {
+    if (m_pComm != nullptr) {
       delete m_pComm;
-      m_pComm = NULL;
+      m_pComm = nullptr;
     }
   }
-  if (m_pLocalIO != NULL) {
+  if (m_pLocalIO != nullptr) {
     m_pLocalIO->SetCursor(WLocalIO::cursorNormal);
     delete m_pLocalIO;
-    m_pLocalIO = NULL;
+    m_pLocalIO = nullptr;
   }
 }
 

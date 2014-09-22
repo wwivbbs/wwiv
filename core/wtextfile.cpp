@@ -70,19 +70,19 @@ bool WTextFile::Open(const std::string& file_name, const std::string& file_mode)
 FILE* WTextFile::OpenImpl() {
   int share = SH_DENYWR;
   int md = 0;
-  if (strchr(file_mode_.c_str(), 'w') != NULL) {
+  if (strchr(file_mode_.c_str(), 'w') != nullptr) {
     share = SH_DENYRD;
     md = O_RDWR | O_CREAT | O_TRUNC;
-  } else if (strchr(file_mode_.c_str(), 'a') != NULL) {
+  } else if (strchr(file_mode_.c_str(), 'a') != nullptr) {
     share = SH_DENYRD;
     md = O_RDWR | O_CREAT;
   } else {
     md = O_RDONLY;
   }
-  if (strchr(file_mode_.c_str(), 'b') != NULL) {
+  if (strchr(file_mode_.c_str(), 'b') != nullptr) {
     md |= O_BINARY;
   }
-  if (strchr(file_mode_.c_str(), '+') != NULL) {
+  if (strchr(file_mode_.c_str(), '+') != nullptr) {
     md &= ~O_RDONLY;
     md |= O_RDWR;
     share = SH_DENYRD;
@@ -119,7 +119,7 @@ FILE* WTextFile::OpenImpl() {
 #else  // _WIN32
 FILE* WTextFile::OpenImpl() {
   FILE *f = fopen(file_name_.c_str(), file_mode_.c_str());
-  if (f != NULL) {
+  if (f != nullptr`) {
     flock(fileno(f), (strpbrk(file_mode_.c_str(), "wa+")) ? LOCK_EX : LOCK_SH);
   }
   return f;

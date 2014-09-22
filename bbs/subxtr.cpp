@@ -26,7 +26,7 @@ static int nn;
 
 static char *mallocin_file(const char *pszFileName, size_t *len) {
   *len = 0;
-  char* ss = NULL;
+  char* ss = nullptr;
 
   WFile file(pszFileName);
   if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
@@ -63,7 +63,7 @@ static xtrasubsnetrec *fsub(int netnum, int type) {
       }
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -84,8 +84,8 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
     if (xsubsn) {
       free(xsubsn);
     }
-    xsubsn = NULL;
-    xsubs = NULL;
+    xsubsn = nullptr;
+    xsubs = nullptr;
   }
   size_t l = nMaxSubs * sizeof(xtrasubsrec);
   xsubs = static_cast<xtrasubsrec *>(malloc(l + 1));
@@ -99,7 +99,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
   char* ss = mallocin_file(s, &l);
   nn = 0;
   if (ss) {
-    for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(NULL, "\r\n")) {
+    for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(nullptr, "\r\n")) {
       if (*ss1 == '$') {
         ++nn;
       }
@@ -125,7 +125,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
     ss = mallocin_file(s, &l);
     if (ss) {
       curn = -1;
-      for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(NULL, "\r\n")) {
+      for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(nullptr, "\r\n")) {
         switch (*ss1) {
         case '!':                         /* sub idx */
           curn = atoi(ss1 + 1);
@@ -209,7 +209,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
         sprintf(s, "%s%s", net_networks[n].dir, ALLOW_NET);
         ss = mallocin_file(s, &l);
         if (ss) {
-          for (ss1 = strtok(ss, " \t\r\n"); ss1; ss1 = strtok(NULL, " \t\r\n")) {
+          for (ss1 = strtok(ss, " \t\r\n"); ss1; ss1 = strtok(nullptr, " \t\r\n")) {
             xnp = fsub(n, atoi(ss1));
             if (xnp) {
               xnp->flags |= XTRA_NET_AUTO_ADDDROP;
@@ -220,7 +220,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
         sprintf(s, "%sSUBS.PUB", net_networks[n].dir);
         ss = mallocin_file(s, &l);
         if (ss) {
-          for (ss1 = strtok(ss, " \t\r\n"); ss1; ss1 = strtok(NULL, " \t\r\n")) {
+          for (ss1 = strtok(ss, " \t\r\n"); ss1; ss1 = strtok(nullptr, " \t\r\n")) {
             xnp = fsub(n, atoi(ss1));
             if (xnp) {
               xnp->flags |= XTRA_NET_AUTO_INFO;
@@ -231,7 +231,7 @@ bool read_subs_xtr(int nMaxSubs, int nNumSubs, subboardrec * subboards) {
         sprintf(s, "%sNNALL.NET", net_networks[n].dir);
         ss = mallocin_file(s, &l);
         if (ss) {
-          for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(NULL, "\r\n")) {
+          for (ss1 = strtok(ss, "\r\n"); ss1; ss1 = strtok(nullptr, "\r\n")) {
             while ((*ss1 == ' ') || (*ss1 == '\t')) {
               ++ss1;
             }

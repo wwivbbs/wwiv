@@ -146,7 +146,7 @@ bool UIMenuBar::ProcessKeyEvent( int key )
 		//return false;
 	}
 
-    if ( previousMenu != NULL && previousMenu != currentMenu )
+    if ( previousMenu != nullptr && previousMenu != currentMenu )
     {
         previousMenu->HidePopupMenu();
     }

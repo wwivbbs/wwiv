@@ -45,7 +45,7 @@ void finddevs(std::vector<string>& devices);
 void zap_ed_info() {
   if (ed_info) {
     free(ed_info);
-    ed_info = NULL;
+    ed_info = nullptr;
   }
   ed_num = 0;
   ed_got = 0;
@@ -70,7 +70,7 @@ void get_ed_info() {
     long lFileSize = fileExtDescr.GetLength();
     if (lFileSize > 0) {
       ed_info = static_cast<ext_desc_rec *>(BbsAllocA(static_cast<long>(GetSession()->numf) * sizeof(ext_desc_rec)));
-      if (ed_info == NULL) {
+      if (ed_info == nullptr) {
         fileExtDescr.Close();
         return;
       }
@@ -202,7 +202,7 @@ void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const 
 
   pszOutBuffer[0] = '\0';
   const char* ss = strrchr(pszArcFileName, '.');
-  if (ss == NULL) {
+  if (ss == nullptr) {
     return;
   }
   ++ss;
@@ -413,7 +413,7 @@ void delete_extended_description(const char *pszFileName) {
   ext_desc_type ed;
 
   char* ss = static_cast<char *>(BbsAllocA(10240L));
-  if (ss == NULL) {
+  if (ss == nullptr) {
     return;
   }
 
@@ -452,7 +452,7 @@ char *read_extended_description(const char *pszFileName) {
       if (wwiv::strings::IsEquals(pszFileName, ed_info[i].name)) {
         WFile fileExtDescr(g_szExtDescrFileName);
         if (!fileExtDescr.Open(WFile::modeBinary | WFile::modeReadOnly)) {
-          return NULL;
+          return nullptr;
         }
         fileExtDescr.Seek(ed_info[i].offset, WFile::seekBegin);
         ext_desc_type ed;
@@ -498,7 +498,7 @@ char *read_extended_description(const char *pszFileName) {
       fileExtDescr.Close();
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -582,7 +582,7 @@ void align(char *pszFileName) {
     return;
   }
   char* s2 = strrchr(pszFileName, '.');
-  if (s2 == NULL || strrchr(pszFileName, '\\') > s2) {
+  if (s2 == nullptr || strrchr(pszFileName, '\\') > s2) {
     szExtension[0] = '\0';
   } else {
     strcpy(szExtension, &(s2[ 1 ]));
@@ -826,7 +826,7 @@ void file_mask(char *pszFileMask) {
   if (pszFileMask[0] == '\0') {
     strcpy(pszFileMask, "*.*");
   }
-  if (strchr(pszFileMask, '.') == NULL) {
+  if (strchr(pszFileMask, '.') == nullptr) {
     strcat(pszFileMask, ".*");
   }
   align(pszFileMask);

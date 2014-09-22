@@ -48,7 +48,7 @@ void move_file() {
   GetSession()->bout << "|#2Filename to move: ";
   char szFileMask[ MAX_PATH ];
   input(szFileMask, 12);
-  if (strchr(szFileMask, '.') == NULL) {
+  if (strchr(szFileMask, '.') == nullptr) {
     strcat(szFileMask, ".*");
   }
   align(szFileMask);
@@ -78,7 +78,7 @@ void move_file() {
       done = true;
     } else if (ch == 'Y') {
       sprintf(s1, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
-      char *ss = NULL;
+      char *ss = nullptr;
       do {
         GetSession()->bout.NewLine(2);
         GetSession()->bout << "|#2To which directory? ";
@@ -122,7 +122,7 @@ void move_file() {
     if (ok && !done) {
       GetSession()->bout << "|#5Reset upload time for file? ";
       if (yesno()) {
-        u.daten = static_cast<unsigned long>(time(NULL));
+        u.daten = static_cast<unsigned long>(time(nullptr));
       }
       --nCurrentPos;
       fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
@@ -295,7 +295,7 @@ void rename_file() {
   if (s[0] == 0) {
     return;
   }
-  if (strchr(s, '.') == NULL) {
+  if (strchr(s, '.') == nullptr) {
     strcat(s, ".*");
   }
   align(s);
@@ -471,7 +471,7 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
       modify_database(u.filename, true);
     }
     GetSession()->GetCurrentUser()->SetUploadK(GetSession()->GetCurrentUser()->GetUploadK() + bytes_to_k(lFileSize));
-    time_t tCurrentTime = time(NULL);
+    time_t tCurrentTime = time(nullptr);
     u.daten = static_cast<unsigned long>(tCurrentTime);
     WFile fileDownload(g_szDownloadFileName);
     fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
@@ -610,12 +610,12 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
         if (fn1) {
           ok1 = 1;
           for (i = 0; ok1 && (i < type); i++) {
-            if (strtok(NULL, " \t\n") == NULL) {
+            if (strtok(nullptr, " \t\n") == nullptr) {
               ok1 = 0;
             }
           }
           if (ok1) {
-            pszDescription = strtok(NULL, "\n");
+            pszDescription = strtok(nullptr, "\n");
             if (!pszDescription) {
               ok1 = 0;
             }
@@ -698,7 +698,7 @@ bool uploadall(int nDirectoryNum) {
         *pszCurrentFile &&
         !wwiv::strings::IsEquals(pszCurrentFile, ".") &&
         !wwiv::strings::IsEquals(pszCurrentFile, "..")) {
-      ok = maybe_upload(pszCurrentFile, nDirectoryNum, NULL);
+      ok = maybe_upload(pszCurrentFile, nDirectoryNum, nullptr);
     }
     bFound = fnd.next();
     checka(&abort);
@@ -1317,7 +1317,7 @@ void finddescription() {
         for (i2 = 0; i2 < wwiv::strings::GetStringLength(s); i2++) {
           s[i2] = upcase(s[i2]);
         }
-        if (strstr(s, s1) != NULL) {
+        if (strstr(s, s1) != nullptr) {
           fileDownload.Close();
           printinfo(&u, &abort);
           fileDownload.Open(WFile::modeBinary | WFile::modeReadOnly);
@@ -1343,7 +1343,7 @@ void arc_l() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#2File for listing: ";
   input(szFileSpec, 12);
-  if (strchr(szFileSpec, '.') == NULL) {
+  if (strchr(szFileSpec, '.') == nullptr) {
     strcat(szFileSpec, ".*");
   }
   if (!okfn(szFileSpec)) {

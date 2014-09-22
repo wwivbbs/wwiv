@@ -24,7 +24,7 @@ bool NewZModemSendFile( const char *pszFileName ) {
 	info.ifd = info.ofd = -1;
 	info.zrinitflags = 0;
 	info.zsinitflags = 0;
-	info.attn = NULL;
+	info.attn = nullptr;
 	info.packetsize = 0;
 	info.windowsize = 0;
 	info.bufsize = 0;
@@ -87,7 +87,7 @@ bool NewZModemReceiveFile( const char *pszFileName ) {
 	info.ifd = info.ofd = -1;
 	info.zrinitflags = 0;
 	info.zsinitflags = 0;
-	info.attn = NULL;
+	info.attn = nullptr;
 	info.packetsize = 0;
 	info.windowsize = 0;
 	info.bufsize = 0;
@@ -164,7 +164,7 @@ int doIO( ZModem *info ) {
 		if ( info->timeout > 0 ) {
 			WWIV_Delay( 0 );
 		}
-		time_t tThen = time( NULL );
+		time_t tThen = time( nullptr );
 #if defined(_DEBUG)
 		if ( info->timeout > 0 ) {
 			zmodemlog( "[%ld] Then.  Timeout = %ld\r\n", tThen, info->timeout );
@@ -174,7 +174,7 @@ int doIO( ZModem *info ) {
 		// performance < 1k/second vs. 8-9k/second locally
 		while ( ( info->timeout > 0 ) && !GetSession()->remoteIO()->incoming() && !hangup ) {
 			WWIV_Delay( 100 );
-			time_t tNow = time( NULL );
+			time_t tNow = time( nullptr );
 			if ( ( tNow - tThen ) > info->timeout ) {
 #if defined(_DEBUG)
 				zmodemlog( "Break: [%ld] Now.  Timedout = %ld.  Time = %d\r\n", tNow, info->timeout, ( tNow - tThen ) );
@@ -235,7 +235,7 @@ void ZOFlush(ZModem *info) {
 }
 
 int ZAttn(ZModem *info) {
-	if ( info->attn == NULL ) {
+	if ( info->attn == nullptr ) {
 		return 0;
 	}
 
@@ -347,7 +347,7 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//	 */
 	//
 	//	if( *pszFileName == '/' )	/* for now, disallow absolute paths */
-	//	  return NULL;
+	//	  return nullptr;
 	//
 	//	buf.st_size = 0;
 	//	if( stat(pszFileName, &buf) == 0 )
@@ -355,7 +355,7 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//	else if( errno == ENOENT )
 	//	  exists = False;
 	//	else
-	//	  return NULL;
+	//	  return nullptr;
 	//
 	//
 	//	/* if remote end has not specified transfer flags, we can
@@ -386,31 +386,31 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//
 	//	if( f0 == ZCRESUM ) {	/* if exists, and we already have it, return */
 	//	  if( exists  &&  buf.st_size == info->len )
-	//	    return NULL;
+	//	    return nullptr;
 	//	  apnd = 1;
 	//	}
 	//
 	//	/* reject if file not found and it must be there (ZMSKNOLOC) */
 	//	if( !exists && (f1 & ZMSKNOLOC) )
-	//	  return NULL;
+	//	  return nullptr;
 	//
 	//	switch( f1 & ZMMASK ) {
 	//	  case 0:	/* Implementation-dependent.  In this case, we
 	//			 * reject if file exists (and ZMSKNOLOC not set) */
 	//	    if( exists && !(f1 & ZMSKNOLOC) )
-	//	      return NULL;
+	//	      return nullptr;
 	//	    break;
 	//
 	//	  case ZMNEWL:	/* take if newer or longer than file on disk */
 	//	    if( exists  &&  info->date <= buf.st_mtime  &&
 	//		info->len <= buf.st_size )
-	//	      return NULL;
+	//	      return nullptr;
 	//	    break;
 	//
 	//	  case ZMCRC:		/* take if different CRC or length */
 	//	    zmodemlog("  ZMCRC: crc=%x, FileCrc=%x\n", crc, FileCrc(pszFileName) );
 	//	    if( exists  &&  info->len == buf.st_size && crc == FileCrc(pszFileName) )
-	//	      return NULL;
+	//	      return nullptr;
 	//	    break;
 	//
 	//	  case ZMAPND:	/* append */
@@ -420,18 +420,18 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//
 	//	  case ZMNEW:	/* take if newer than file on disk */
 	//	    if( exists  &&  info->date <= buf.st_mtime )
-	//	      return NULL;
+	//	      return nullptr;
 	//	    break;
 	//
 	//	  case ZMDIFF:	/* take if different date or length */
 	//	    if( exists  &&  info->date == buf.st_mtime  &&
 	//		info->len == buf.st_size )
-	//	      return NULL;
+	//	      return nullptr;
 	//	    break;
 	//
 	//	  case ZMPROT:	/* only if dest does not exist */
 	//	    if( exists )
-	//	      return NULL;
+	//	      return nullptr;
 	//	    break;
 	//
 	//	  case ZMCHNG:	/* invent new filename if exists */
@@ -447,7 +447,7 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//
 	//	/* here if we've decided to accept */
 	//	if( exists && !apnd && unlink(pszFileName) != 0 )
-	//	  return NULL;
+	//	  return nullptr;
 	//
 	//	/* TODO: build directory path if needed */
 	//
@@ -461,7 +461,7 @@ FILE * ZOpenFile(char *pszFileName, u_long crc, ZModem *info) {
 	//	  getcwd(path,sizeof(path)), pszFileName, apnd, (long)ofile);
 	//
 	//	return ofile;
-	//return NULL;
+	//return nullptr;
 }
 
 

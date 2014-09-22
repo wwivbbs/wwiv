@@ -135,12 +135,12 @@ int get_conf_info(int conftype, int *num, confrec ** cpp,
 void jump_conf(int conftype) {
   int i;
   char s[81], s1[101];
-  confrec *cp = NULL;
-  userconfrec *uc = NULL;
+  confrec *cp = nullptr;
+  userconfrec *uc = nullptr;
   int nc;
 
   GetSession()->bout.DisplayLiteBar(" [ %s Conference Selection ] ", syscfg.systemname);
-  get_conf_info(conftype, &nc, &cp, NULL, NULL, &uc);
+  get_conf_info(conftype, &nc, &cp, nullptr, nullptr, &uc);
   bool abort = false;
   strcpy(s, " ");
   GetSession()->bout.NewLine();
@@ -171,13 +171,13 @@ void jump_conf(int conftype) {
  * type.
  */
 void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int action) {
-  confrec *cp = NULL;
+  confrec *cp = nullptr;
   int nc, num_s;
   int pos1, pos2;
   int i, i1;
   confrec c;
 
-  if (get_conf_info(conftype, &nc, &cp, NULL, &num_s, NULL)) {
+  if (get_conf_info(conftype, &nc, &cp, nullptr, &num_s, nullptr)) {
     return;
   }
 
@@ -201,7 +201,7 @@ void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int act
       }
       cp[i] = c;
     }
-    save_confs(conftype, -1, NULL);
+    save_confs(conftype, -1, nullptr);
     break;
   case CONF_UPDATE_DELETE:
     if (!sub1) {
@@ -221,7 +221,7 @@ void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int act
       }
       cp[i] = c;
     }
-    save_confs(conftype, -1, NULL);
+    save_confs(conftype, -1, nullptr);
     break;
   case CONF_UPDATE_SWAP:
     if ((!sub1) || (!sub2)) {
@@ -239,7 +239,7 @@ void update_conf(int conftype, SUBCONF_TYPE * sub1, SUBCONF_TYPE * sub2, int act
       }
       cp[i] = c;
     }
-    save_confs(conftype, -1, NULL);
+    save_confs(conftype, -1, nullptr);
     break;
   }
 }
@@ -257,7 +257,7 @@ int str_to_arword(const char *arstr) {
   strupr(s);
 
   for (int i = 0; i < 16; i++) {
-    if (strchr(s, i + 'A') != NULL) {
+    if (strchr(s, i + 'A') != nullptr) {
       rar |= (1 << i);
     }
   }
@@ -291,10 +291,10 @@ char *word_to_arstr(int ar) {
  * type.
  */
 char first_available_designator(int conftype) {
-  confrec *cp = NULL;
+  confrec *cp = nullptr;
   int nc;
 
-  if (get_conf_info(conftype, &nc, &cp, NULL, NULL, NULL)  || nc == MAX_CONFERENCES) {
+  if (get_conf_info(conftype, &nc, &cp, nullptr, nullptr, nullptr)  || nc == MAX_CONFERENCES) {
     return 0;
   }
 
@@ -339,9 +339,9 @@ int in_conference(int subnum, confrec * c) {
 void save_confs(int conftype, int whichnum, confrec * c) {
   char szFileName[MAX_PATH];
   int num, num1;
-  confrec *cp = NULL;
+  confrec *cp = nullptr;
 
-  if (get_conf_info(conftype, &num, &cp, szFileName, NULL, NULL)) {
+  if (get_conf_info(conftype, &num, &cp, szFileName, nullptr, nullptr)) {
     return;
   }
 
@@ -365,7 +365,7 @@ void save_confs(int conftype, int whichnum, confrec * c) {
                          c->maxdsl, c->minage, c->maxage, c->minbps, c->sex,
                          word_to_arstr(c->ar));
         f.WriteFormatted("%s\n@", word_to_arstr(c->dar));
-        if (((c->num) > 0) && (c->subs != NULL)) {
+        if (((c->num) > 0) && (c->subs != nullptr)) {
           for (int i2 = 0; i2 < c->num; i2++) {
             f.WriteFormatted("%d ", c->subs[i2]);
           }
@@ -406,7 +406,7 @@ void showsubconfs(int conftype, confrec * c) {
 
   int num, nc;
   confrec *cp;
-  if (get_conf_info(conftype, &nc, &cp, NULL, &num, NULL)) {
+  if (get_conf_info(conftype, &nc, &cp, nullptr, &num, nullptr)) {
     return;
   }
 
@@ -520,7 +520,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
   }
 
   int num;
-  if (get_conf_info(conftype, NULL, NULL, NULL, &num, NULL)) {
+  if (get_conf_info(conftype, nullptr, nullptr, nullptr, &num, nullptr)) {
     return;
   }
 
@@ -532,7 +532,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
     GetSession()->bout << "Maximum number of subconfs already in that conference.\r\n";
     return;
   }
-  if (which == NULL) {
+  if (which == nullptr) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#2Add: ";
     std::string text;
@@ -558,7 +558,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
     if (c->num >= c->maxnum) {
       c->maxnum = c->maxnum + static_cast< unsigned short >(CONF_MULTIPLE);
       SUBCONF_TYPE *tptr = static_cast<SUBCONF_TYPE *>(BbsAllocA(c->maxnum * sizeof(SUBCONF_TYPE)));
-      WWIV_ASSERT(tptr != NULL);
+      WWIV_ASSERT(tptr != nullptr);
       if (tptr) {
         memmove(tptr, c->subs, (c->maxnum - CONF_MULTIPLE) * sizeof(SUBCONF_TYPE));
         free(c->subs);
@@ -583,12 +583,12 @@ void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
   }
 
   int num;
-  if (get_conf_info(conftype, NULL, NULL, NULL, &num, NULL)) {
+  if (get_conf_info(conftype, nullptr, nullptr, nullptr, &num, nullptr)) {
     return;
   }
 
   std::vector<int> intlist;
-  if (which == NULL) {
+  if (which == nullptr) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#2Remove: ";
     std::string text;
@@ -649,7 +649,7 @@ int modify_conf(int conftype,  int which) {
   int n = which;
 
   confrec *cp;
-  if (get_conf_info(conftype, &num, &cp, NULL, &ns, NULL) || (n >= static_cast<int>(num))) {
+  if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= static_cast<int>(num))) {
     return 0;
   }
 
@@ -687,16 +687,16 @@ int modify_conf(int conftype,  int which) {
     switch (ch) {
     case '[':
       cp[n] = c;
-      save_confs(conftype, n, NULL);
+      save_confs(conftype, n, nullptr);
       if (n == 0) {
-        for (n = MAX_CONFERENCES; get_conf_info(conftype, &num, &cp, NULL, &ns, NULL) || (n >= num); n--)
+        for (n = MAX_CONFERENCES; get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= num); n--)
           ;
       } else {
         --n;
       }
-      if (get_conf_info(conftype, &num, &cp, NULL, &ns, NULL) || (n >= num)) {
+      if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= num)) {
         n = 0;
-        if (get_conf_info(conftype, &num, &cp, NULL, &ns, NULL) || (n >= static_cast<int>(num))) {
+        if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= static_cast<int>(num))) {
           return 0;
         }
       }
@@ -704,15 +704,15 @@ int modify_conf(int conftype,  int which) {
       continue;
     case ']':
       cp[n] = c;
-      save_confs(conftype, n, NULL);
+      save_confs(conftype, n, nullptr);
       if (n == num) {
         n = 0;
       } else {
         ++n;
       }
-      if (get_conf_info(conftype, &num, &cp, NULL, &ns, NULL) || (n >= num)) {
+      if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= num)) {
         n = 0;
-        if (get_conf_info(conftype, &num, &cp, NULL, &ns, NULL) || (n >= num)) {
+        if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= num)) {
           return 0;
         }
       }
@@ -908,11 +908,11 @@ int modify_conf(int conftype,  int which) {
         ch1 = onek("QARCFS");
         switch (ch1) {
         case 'A':
-          addsubconf(conftype, &c, NULL);
+          addsubconf(conftype, &c, nullptr);
           changed = 1;
           break;
         case 'R':
-          delsubconf(conftype, &c, NULL);
+          delsubconf(conftype, &c, nullptr);
           changed = 1;
           break;
         case 'C':
@@ -965,7 +965,7 @@ void insert_conf(int conftype,  int n) {
   confrec c;
   int num;
 
-  if (get_conf_info(conftype, &num, NULL, NULL, NULL, NULL) || (n > num)) {
+  if (get_conf_info(conftype, &num, nullptr, nullptr, nullptr, nullptr) || (n > num)) {
     return;
   }
 
@@ -988,14 +988,14 @@ void insert_conf(int conftype,  int n) {
   c.ar = 0;
   c.dar = 0;
   c.num = 0;
-  c.subs = NULL;
+  c.subs = nullptr;
 
   save_confs(conftype, n, &c);
 
   read_in_conferences(conftype);
 
   if (modify_conf(conftype, n)) {
-    save_confs(conftype, -1, NULL);
+    save_confs(conftype, -1, nullptr);
   }
 }
 
@@ -1006,11 +1006,11 @@ void insert_conf(int conftype,  int n) {
 void delete_conf(int conftype,  int n) {
   int num;
 
-  if (get_conf_info(conftype, &num, NULL, NULL, NULL, NULL) || (n >= num)) {
+  if (get_conf_info(conftype, &num, nullptr, nullptr, nullptr, nullptr) || (n >= num)) {
     return;
   }
 
-  save_confs(conftype, n, NULL);
+  save_confs(conftype, n, nullptr);
   read_in_conferences(conftype);
 }
 
@@ -1024,7 +1024,7 @@ void conf_edit(int conftype) {
   confrec *cp;
   int num;
 
-  if (get_conf_info(conftype, &num, &cp, NULL, NULL, NULL)) {
+  if (get_conf_info(conftype, &num, &cp, nullptr, nullptr, nullptr)) {
     return;
   }
 
@@ -1035,7 +1035,7 @@ void conf_edit(int conftype) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#2I|#7)|#1nsert, |#2D|#7)|#1elete, |#2M|#7)|#1odify, |#2Q|#7)|#1uit, |#2? |#7 : ";
     ch = onek("QIDM?", true);
-    get_conf_info(conftype, &num, &cp, NULL, NULL, NULL);
+    get_conf_info(conftype, &num, &cp, nullptr, nullptr, nullptr);
     switch (ch) {
     case 'D':
       if (num == 1) {
@@ -1064,7 +1064,7 @@ void conf_edit(int conftype) {
       int ec = select_conf("Modify which conference? ", conftype, 0);
       if (ec >= 0) {
         if (modify_conf(conftype, ec)) {
-          save_confs(conftype, -1, NULL);
+          save_confs(conftype, -1, nullptr);
         }
       }
     }
@@ -1094,7 +1094,7 @@ void list_confs(int conftype, int ssc) {
   int i, i2, num, num_s;
   confrec *cp;
 
-  if (get_conf_info(conftype, &num, &cp, NULL, &num_s, NULL)) {
+  if (get_conf_info(conftype, &num, &cp, nullptr, &num_s, nullptr)) {
     return;
   }
 
@@ -1115,7 +1115,7 @@ void list_confs(int conftype, int ssc) {
     GetSession()->bout.Color(7);
     pla(s, &abort);
     if (GetApplication()->HasConfigFlag(OP_FLAGS_SHOW_HIER)) {
-      if ((cp[i].num > 0) && (cp[i].subs != NULL) && (ssc)) {
+      if ((cp[i].num > 0) && (cp[i].subs != nullptr) && (ssc)) {
         for (i2 = 0; ((i2 < cp[i].num) && !abort); i2++) {
           if (cp[i].subs[i2] < num_s) {
             GetSession()->bout.Color(7);
@@ -1216,7 +1216,7 @@ bool create_conf_file(int conftype) {
   char szFileName[MAX_PATH];
   int num;
 
-  if (get_conf_info(conftype, NULL, NULL, szFileName, &num, NULL)) {
+  if (get_conf_info(conftype, nullptr, nullptr, szFileName, &num, nullptr)) {
     return false;
   }
 
@@ -1248,32 +1248,32 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
 
   *nc = get_num_conferences(pszFileName);
   if (*nc < 1) {
-    return NULL;
+    return nullptr;
   }
 
   if (!WFile::Exists(pszFileName)) {
-    return NULL;
+    return nullptr;
   }
 
   WTextFile f(pszFileName, "rt");
   if (!f.IsOpen()) {
-    return NULL;
+    return nullptr;
   }
 
   unsigned long l = static_cast<long>(*nc) * sizeof(confrec);
   confrec *conferences = static_cast<confrec *>(BbsAllocA(l));
-  WWIV_ASSERT(conferences != NULL);
+  WWIV_ASSERT(conferences != nullptr);
   if (!conferences) {
     std::cout << "Out of memory reading file [" << pszFileName << "]." << std::endl;
     f.Close();
-    return NULL;
+    return nullptr;
   }
   memset(conferences, 0, l);
   char * ls = static_cast<char*>(BbsAllocA(MAX_CONF_LINE));
-  WWIV_ASSERT(ls != NULL);
+  WWIV_ASSERT(ls != nullptr);
   if (!ls) {
     f.Close();
-    return NULL;
+    return nullptr;
   }
   while (f.ReadLine(ls, MAX_CONF_LINE) && cc < MAX_CONFERENCES) {
     int nw = wordcount(ls, DELIMS_WHITE);
@@ -1347,8 +1347,8 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
           conferences[cc].maxnum = conferences[cc].num;
           l = static_cast<long>(conferences[cc].num * sizeof(unsigned int) + 1);
           conferences[cc].subs = static_cast<unsigned short *>(BbsAllocA(l));
-          WWIV_ASSERT(conferences[cc].subs != NULL);
-          ok = (conferences[cc].subs != NULL) ? true : false;
+          WWIV_ASSERT(conferences[cc].subs != nullptr);
+          ok = (conferences[cc].subs != nullptr) ? true : false;
           if (ok) {
             memset(conferences[cc].subs, 0, l);
           } else {
@@ -1360,11 +1360,11 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
             free(conferences);
             free(ls);
             f.Close();
-            return NULL;
+            return nullptr;
           }
           i = 0;
           i1 = 0;
-          for (ss = strtok(ls, DELIMS_WHITE); ((ss) && (i++ < nw)); ss = strtok(NULL, DELIMS_WHITE)) {
+          for (ss = strtok(ls, DELIMS_WHITE); ((ss) && (i++ < nw)); ss = strtok(nullptr, DELIMS_WHITE)) {
             if (i == 1) {
               if (strlen(ss) >= 2) {
                 i3 = atoi(ss + 1);
@@ -1397,11 +1397,11 @@ confrec *read_conferences(const char *pszFileName, int *nc, int max) {
  */
 void read_in_conferences(int conftype) {
   int i, max;
-  int *np = NULL;
+  int *np = nullptr;
   char s[81];
-  confrec **cpp = NULL;
+  confrec **cpp = nullptr;
 
-  if (get_conf_info(conftype, NULL, NULL, s, &max, NULL)) {
+  if (get_conf_info(conftype, nullptr, nullptr, s, &max, nullptr)) {
     return;
   }
 
@@ -1424,7 +1424,7 @@ void read_in_conferences(int conftype) {
       }
     }
     free(*cpp);
-    *cpp = NULL;
+    *cpp = nullptr;
   }
   if (!WFile::Exists(s)) {
     if (!create_conf_file(conftype)) {
@@ -1487,7 +1487,7 @@ int wordcount(const std::string& instr, const char *delimstr) {
   int i = 0;
 
   strcpy(szTempBuffer, instr.c_str());
-  for (char *s = strtok(szTempBuffer, delimstr); s; s = strtok(NULL, delimstr)) {
+  for (char *s = strtok(szTempBuffer, delimstr); s; s = strtok(nullptr, delimstr)) {
     i++;
   }
   return i;
@@ -1508,7 +1508,7 @@ const char *extractword(int ww, const std::string& instr, const char *delimstr) 
   }
 
   strcpy(szTempBuffer, instr.c_str());
-  for (char *s = strtok(szTempBuffer, delimstr); s && (i++ < ww); s = strtok(NULL, delimstr)) {
+  for (char *s = strtok(szTempBuffer, delimstr); s && (i++ < ww); s = strtok(nullptr, delimstr)) {
     if (i == ww) {
       strcpy(rs, s);
       return rs;
@@ -1525,7 +1525,7 @@ void sort_conf_str(char *pszConferenceStr) {
   strncpy(s2, charstr(MAX_CONFERENCES, 32), sizeof(s2));
 
   for (char i = 'A'; i <= 'Z'; i++) {
-    if (strchr(s1, i) != NULL) {
+    if (strchr(s1, i) != nullptr) {
       s2[i - 'A'] = i;
     }
   }

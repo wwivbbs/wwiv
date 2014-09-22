@@ -78,7 +78,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
         fileExtDesc.Write(*sss, strlen(*sss));
         fileExtDesc.Close();
         free(*sss);
-        *sss = NULL;
+        *sss = nullptr;
       } else {
         WFile::Remove(s);
       }
@@ -92,7 +92,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
           GetSession()->max_extend_lines, dest, MSGED_FLAG_NO_TAGLINE);
       GetSession()->GetCurrentUser()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
-        if ((*sss = static_cast<char *>(BbsAllocA(10240))) == NULL) {
+        if ((*sss = static_cast<char *>(BbsAllocA(10240))) == nullptr) {
           return;
         }
         WFile fileExtDesc(s);
@@ -111,7 +111,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
       if (*sss) {
         free(*sss);
       }
-      if ((*sss = static_cast<char *>(BbsAllocA(10240))) == NULL) {
+      if ((*sss = static_cast<char *>(BbsAllocA(10240))) == nullptr) {
         return;
       }
       *sss[0] = 0;
@@ -165,14 +165,14 @@ void modify_extended_description(char **sss, const char *dest, const char *title
       GetSession()->GetCurrentUser()->SetScreenChars(nSavedScreenSize);
       if (*sss[0] == '\0') {
         free(*sss);
-        *sss = NULL;
+        *sss = nullptr;
       }
     }
     GetSession()->bout << "|#5Is this what you want? ";
     i = !yesno();
     if (i) {
       free(*sss);
-      *sss = NULL;
+      *sss = nullptr;
     }
   } while (i);
 }
@@ -204,7 +204,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
   sprintf(s, "%s%s", directories[dn].path, stripfn(u->filename));
   filedate(s, u->actualdate);
   ss = strchr(stripfn(u->filename), '.');
-  if (ss == NULL) {
+  if (ss == nullptr) {
     return false;
   }
   ++ss;
@@ -240,7 +240,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
       free(ss);
       delete_extended_description(u->filename);
     }
-    if ((b = static_cast<char *>(BbsAllocA(GetSession()->max_extend_lines * 256 + 1))) == NULL) {
+    if ((b = static_cast<char *>(BbsAllocA(GetSession()->max_extend_lines * 256 + 1))) == nullptr) {
       return false;
     }
     WFile file(s);
@@ -258,13 +258,13 @@ bool get_file_idz(uploadsrec * u, int dn) {
       ss = strtok(b, "\n");
       if (ss) {
         for (i = 0; i < wwiv::strings::GetStringLength(ss); i++) {
-          if ((strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(invalid_chars)), ss[i]) != NULL) && (ss[i] != CZ)) {
+          if ((strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(invalid_chars)), ss[i]) != nullptr) && (ss[i] != CZ)) {
             ss[i] = '\x20';
           }
         }
         if (!valid_desc(ss)) {
           do {
-            ss = strtok(NULL, "\n");
+            ss = strtok(nullptr, "\n");
           } while (!valid_desc(ss));
         }
       }
@@ -272,7 +272,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
         ss[strlen(ss) - 1] = '\0';
       }
       sprintf(u->description, "%.55s", ss);
-      ss = strtok(NULL, "");
+      ss = strtok(nullptr, "");
     } else {
       ss = b;
     }
@@ -336,8 +336,8 @@ int read_idz(int mode, int tempdir) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     if ((compare(s, u.filename)) &&
-        (strstr(u.filename, ".COM") == NULL) &&
-        (strstr(u.filename, ".EXE") == NULL)) {
+        (strstr(u.filename, ".COM") == nullptr) &&
+        (strstr(u.filename, ".EXE") == nullptr)) {
       chdir(directories[udir[tempdir].subnum].path);
       WWIV_GetDir(s1, true);
       strcat(s1, stripfn(u.filename));
@@ -862,7 +862,7 @@ void download() {
         input1(s, 12, wwiv::bbs::InputMode::UPPER, false);
         newline = onl;
         if ((s[0]) && (s[0] != ' ')) {
-          if (strchr(s, '.') == NULL) {
+          if (strchr(s, '.') == nullptr) {
             strcat(s, ".*");
           }
           align(s);

@@ -35,7 +35,7 @@ using wwiv::strings::StringPrintf;
 void zap_call_out_list() {
   if (net_networks[GetSession()->GetNetworkNumber()].con) {
     free(net_networks[GetSession()->GetNetworkNumber()].con);
-    net_networks[ GetSession()->GetNetworkNumber() ].con = NULL;
+    net_networks[ GetSession()->GetNetworkNumber() ].con = nullptr;
     net_networks[ GetSession()->GetNetworkNumber() ].num_con = 0;
   }
 }
@@ -49,9 +49,9 @@ void read_call_out_list() {
   WFile fileCallout(GetSession()->GetNetworkDataDirectory(), CALLOUT_NET);
   if (fileCallout.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     long lFileLength = fileCallout.GetLength();
-    char *ss = NULL;
-    if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == NULL) {
-      WWIV_ASSERT(ss != NULL);
+    char *ss = nullptr;
+    if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == nullptr) {
+      WWIV_ASSERT(ss != nullptr);
       GetApplication()->AbortBBS(true);
     }
     fileCallout.Read(ss, lFileLength);
@@ -64,22 +64,22 @@ void read_call_out_list() {
     free(ss);
     if ((net_networks[GetSession()->GetNetworkNumber()].con = (net_call_out_rec *)
          BbsAllocA(static_cast<long>((net_networks[GetSession()->GetNetworkNumber()].num_con + 2) *
-                                     sizeof(net_call_out_rec)))) == NULL) {
-      WWIV_ASSERT(net_networks[GetSession()->GetNetworkNumber()].con != NULL);
+                                     sizeof(net_call_out_rec)))) == nullptr) {
+      WWIV_ASSERT(net_networks[GetSession()->GetNetworkNumber()].con != nullptr);
       GetApplication()->AbortBBS(true);
     }
     con = net_networks[GetSession()->GetNetworkNumber()].con;
     con--;
     fileCallout.Open(WFile::modeBinary | WFile::modeReadOnly);
-    if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == NULL) {
-      WWIV_ASSERT(ss != NULL);
+    if ((ss = static_cast<char*>(BbsAllocA(lFileLength + 512))) == nullptr) {
+      WWIV_ASSERT(ss != nullptr);
       GetApplication()->AbortBBS(true);
     }
     fileCallout.Read(ss, lFileLength);
     fileCallout.Close();
     long p = 0L;
     while (p < lFileLength) {
-      while ((p < lFileLength) && (strchr("@%/\"&-=+~!();^|#$_*", ss[p]) == NULL)) {
+      while ((p < lFileLength) && (strchr("@%/\"&-=+~!();^|#$_*", ss[p]) == nullptr)) {
         ++p;
       }
       if (p < lFileLength) {
@@ -202,11 +202,11 @@ int bbs_list_net_no = -1;
 void zap_bbs_list() {
   if (csn) {
     free(csn);
-    csn = NULL;
+    csn = nullptr;
   }
   if (csn_index) {
     free(csn_index);
-    csn_index = NULL;
+    csn_index = nullptr;
   }
   GetSession()->num_sys_list  = 0;
   bbs_list_net_no     = -1;
@@ -223,8 +223,8 @@ void read_bbs_list() {
   if (fileBbsData.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     GetSession()->num_sys_list = static_cast<int>(lFileLength / sizeof(net_system_list_rec));
-    if ((csn = static_cast<net_system_list_rec *>(BbsAllocA(lFileLength + 512L))) == NULL) {
-      WWIV_ASSERT(csn != NULL);
+    if ((csn = static_cast<net_system_list_rec *>(BbsAllocA(lFileLength + 512L))) == nullptr) {
+      WWIV_ASSERT(csn != nullptr);
       GetApplication()->AbortBBS(true);
     }
     for (int i = 0; i < GetSession()->num_sys_list; i += 256) {
@@ -246,8 +246,8 @@ void read_bbs_list_index() {
   if (fileBbsData.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     long lFileLength = fileBbsData.GetLength();
     GetSession()->num_sys_list = static_cast<int>(lFileLength / 2);
-    if ((csn_index = static_cast<unsigned short *>(BbsAllocA(lFileLength))) == NULL) {
-      WWIV_ASSERT(csn_index != NULL);
+    if ((csn_index = static_cast<unsigned short *>(BbsAllocA(lFileLength))) == nullptr) {
+      WWIV_ASSERT(csn_index != nullptr);
       GetApplication()->AbortBBS(true);
     }
     fileBbsData.Read(csn_index, lFileLength);
@@ -291,7 +291,7 @@ net_system_list_rec *next_system(int ts) {
   int nIndex = system_index(ts);
 
   if (nIndex == -1) {
-    return NULL;
+    return nullptr;
   } else if (csn) {
     return ((net_system_list_rec *) & (csn[nIndex]));
   } else {
@@ -300,7 +300,7 @@ net_system_list_rec *next_system(int ts) {
     fileBbsData.Seek(sizeof(net_system_list_rec) * static_cast<long>(nIndex), WFile::seekBegin);
     fileBbsData.Read(&csne, sizeof(net_system_list_rec));
     fileBbsData.Close();
-    return (csne.forsys == 65535) ? NULL : (&csne);
+    return (csne.forsys == 65535) ? nullptr : (&csne);
   }
 }
 
@@ -309,7 +309,7 @@ net_system_list_rec *next_system(int ts) {
 void zap_contacts() {
   if (net_networks[GetSession()->GetNetworkNumber()].ncn) {
     free(net_networks[GetSession()->GetNetworkNumber()].ncn);
-    net_networks[GetSession()->GetNetworkNumber()].ncn = NULL;
+    net_networks[GetSession()->GetNetworkNumber()].ncn = nullptr;
     net_networks[GetSession()->GetNetworkNumber()].num_ncn = 0;
   }
 }
@@ -323,8 +323,8 @@ void read_contacts() {
     net_networks[GetSession()->GetNetworkNumber()].num_ncn = static_cast< short >(lFileLength / sizeof(net_contact_rec));
     if ((net_networks[GetSession()->GetNetworkNumber()].ncn =
            static_cast<net_contact_rec *>(BbsAllocA((net_networks[GetSession()->GetNetworkNumber()].num_ncn + 2) * sizeof(
-                                            net_contact_rec)))) == NULL) {
-      WWIV_ASSERT(net_networks[GetSession()->GetNetworkNumber()].ncn != NULL);
+                                            net_contact_rec)))) == nullptr) {
+      WWIV_ASSERT(net_networks[GetSession()->GetNetworkNumber()].ncn != nullptr);
       GetApplication()->AbortBBS(true);
     }
     fileContact.Seek(0L, WFile::seekBegin);

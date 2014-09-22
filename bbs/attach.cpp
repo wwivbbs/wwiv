@@ -79,7 +79,7 @@ void attach_file(int mode) {
           GetSession()->bout << "|#1To|#7: |#2User " << m.tosys << " System " << m.touser << wwiv::endl;
         }
         GetSession()->bout << "|#1Subj|#7: |#2" << m.title << wwiv::endl;
-        time_t tTimeNow = time(NULL);
+        time_t tTimeNow = time(nullptr);
         int nDaysAgo = static_cast<int>((tTimeNow - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
         GetSession()->bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
@@ -177,7 +177,7 @@ void attach_file(int mode) {
                   input(szFileToAttach, 35, true);
                   if (szFileToAttach[0]) {
                     GetSession()->bout.NewLine();
-                    if (strchr(szFileToAttach, '*') != NULL || strchr(szFileToAttach, '?') != NULL) {
+                    if (strchr(szFileToAttach, '*') != nullptr || strchr(szFileToAttach, '?') != nullptr) {
                       strcpy(szFileToAttach, get_wildlist(szFileToAttach));
                     }
                     if (!WFile::Exists(szFileToAttach)) {

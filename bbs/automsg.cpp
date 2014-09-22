@@ -166,7 +166,7 @@ void do_automessage() {
       write_automessage();
       break;
     case 'A': {
-      grab_quotes(NULL, NULL);
+      grab_quotes(nullptr, nullptr);
       unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
       if (pStatus->GetAutoMessageAuthorUserNumber() > 0) {
         strcpy(irt, "Re: AutoMessage");

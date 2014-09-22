@@ -272,10 +272,10 @@ void ChangeDirNumber() {
 // have a little conference ability...
 void SetMsgConf(int iConf) {
   int nc;
-  confrec *cp = NULL;
-  userconfrec *uc = NULL;
+  confrec *cp = nullptr;
+  userconfrec *uc = nullptr;
 
-  get_conf_info(CONF_SUBS, &nc, &cp, NULL, NULL, &uc);
+  get_conf_info(CONF_SUBS, &nc, &cp, nullptr, nullptr, &uc);
 
   for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
     if (iConf == cp[uc[i].confnum].designator) {
@@ -288,10 +288,10 @@ void SetMsgConf(int iConf) {
 
 void SetDirConf(int iConf) {
   int nc;
-  confrec *cp = NULL;
-  userconfrec *uc = NULL;
+  confrec *cp = nullptr;
+  userconfrec *uc = nullptr;
 
-  get_conf_info(CONF_DIRS, &nc, &cp, NULL, NULL, &uc);
+  get_conf_info(CONF_DIRS, &nc, &cp, nullptr, nullptr, &uc);
 
   for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
     if (iConf == cp[uc[i].confnum].designator) {
