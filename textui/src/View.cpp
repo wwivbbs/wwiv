@@ -25,16 +25,16 @@ UIView::UIView(UIView* view, WINDOW *peer) : m_parent( view ), m_peer( peer )
 {
 }
 
-UIView::UIView() : m_peer( NULL ), m_parent( NULL )
+UIView::UIView() : m_peer( nullptr ), m_parent( nullptr )
 {
 }
 
 UIView::~UIView()
 {
-    if ( m_peer != stdscr && m_peer != NULL )
+    if ( m_peer != stdscr && m_peer != nullptr )
     {
         delwin( m_peer );
-        m_peer = NULL;
+        m_peer = nullptr;
     }
 }
 
@@ -222,7 +222,7 @@ bool UIView::RunLoop()
         int key = GetKey();
         // bubble from active view to root view looking for someone to process this.
         UIView* view = UIView::GetActiveView();
-        while ( view != NULL && !view->ProcessKeyEvent( key ) )
+        while ( view != nullptr && !view->ProcessKeyEvent( key ) )
         {
             view = view->GetParent();
         }

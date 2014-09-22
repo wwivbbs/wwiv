@@ -292,7 +292,7 @@ void swap_dirs(int dir1, int dir2) {
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
   uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
-  WWIV_ASSERT(pTempQScan != NULL);
+  WWIV_ASSERT(pTempQScan != nullptr);
   if (pTempQScan) {
     for (int i = 1; i <= nNumUserRecords; i++) {
       read_qscn(i, pTempQScan, true);
@@ -333,7 +333,7 @@ void insert_dir(int n) {
     return;
   }
 
-  update_conf(CONF_DIRS, &nconv, NULL, CONF_UPDATE_INSERT);
+  update_conf(CONF_DIRS, &nconv, nullptr, CONF_UPDATE_INSERT);
 
   n = static_cast< int >(nconv);
 
@@ -359,7 +359,7 @@ void insert_dir(int n) {
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
   uint32_t* pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
-  WWIV_ASSERT(pTempQScan != NULL);
+  WWIV_ASSERT(pTempQScan != nullptr);
   if (pTempQScan) {
    uint32_t* pTempQScan_n = pTempQScan + 1;
 
@@ -395,7 +395,7 @@ void delete_dir(int n) {
     return;
   }
 
-  update_conf(CONF_DIRS, &nconv, NULL, CONF_UPDATE_DELETE);
+  update_conf(CONF_DIRS, &nconv, nullptr, CONF_UPDATE_DELETE);
 
   n = static_cast<int>(nconv);
 
@@ -408,7 +408,7 @@ void delete_dir(int n) {
   int nNumUserRecords = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
 
   pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
-  WWIV_ASSERT(pTempQScan != NULL);
+  WWIV_ASSERT(pTempQScan != nullptr);
   if (pTempQScan) {
     pTempQScan_n = pTempQScan + 1;
 
@@ -559,7 +559,7 @@ void dlboardedit() {
     dirsFile.Close();
   }
   if (confchg) {
-    save_confs(CONF_DIRS, -1, NULL);
+    save_confs(CONF_DIRS, -1, nullptr);
   }
   if (!GetApplication()->GetWfcStatus()) {
     changedsl();

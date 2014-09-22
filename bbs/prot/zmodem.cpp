@@ -95,7 +95,7 @@ int ZmodemRcv( u_char *str, int len, ZModem *info ) {
 
 		if( c == CAN ) {
 			if( ++info->canCount >= 5 ) {
-				ZStatus(RmtCancel, 0, NULL);
+				ZStatus(RmtCancel, 0, nullptr);
 				return ZmErrCancel;
 			}
 		} else {
@@ -673,7 +673,7 @@ int ZmodemTimeout(  ZModem *info ) {
 	case RSinitWait:
 	case RFileName:
 		if( info->timeout > 0 ) {
-			ZStatus(SndTimeout, info->timeoutCount, NULL);
+			ZStatus(SndTimeout, info->timeoutCount, nullptr);
 		}
 		if( info->timeoutCount > 4 ) {
 			return ZmErrRcvTo;
@@ -683,7 +683,7 @@ int ZmodemTimeout(  ZModem *info ) {
 	case RCrc:
 	case RFile:
 	case RData:
-		ZStatus(SndTimeout, info->timeoutCount, NULL);
+		ZStatus(SndTimeout, info->timeoutCount, nullptr);
 		if( info->timeoutCount > 2 ) {
 			info->timeoutCount = 0;
 			info->state = RStart;
@@ -691,7 +691,7 @@ int ZmodemTimeout(  ZModem *info ) {
 		}
 		return info->state == RCrc ? ResendCrcReq(info) : ResendRpos(info);
 	case RFinish:
-		ZStatus(SndTimeout, info->timeoutCount, NULL);
+		ZStatus(SndTimeout, info->timeoutCount, nullptr);
 		return ZmDone;
 	case YRStart:
 	case YRDataWait:
@@ -712,7 +712,7 @@ int ZmodemTimeout(  ZModem *info ) {
 	case YTData:
 	case YTEOF:
 	case YTFin:
-		ZStatus(RcvTimeout,0,NULL);
+		ZStatus(RcvTimeout,0,nullptr);
 		return ZmErrRcvTo;
 	case Sending:		/* sending data subpackets, ready for int */
 		return SendMoreFileData(info);
@@ -826,7 +826,7 @@ int GotStderrData(  ZModem *info ) {
 
 int ZPF( ZModem *info ) {
 	info->waitflag = 1;	/* pause any in-progress transmission */
-	ZStatus(ProtocolErr, info->hdrData[0], NULL);
+	ZStatus(ProtocolErr, info->hdrData[0], nullptr);
 	return 0;
 }
 
@@ -837,7 +837,7 @@ int AnswerChallenge(  ZModem *info ) {
 
 
 int GotAbort(  ZModem *info ) {
-	ZStatus(RmtCancel, 0, NULL);
+	ZStatus(RmtCancel, 0, nullptr);
 	return ZXmitHdrHex(ZFIN, zeros, info);
 }
 

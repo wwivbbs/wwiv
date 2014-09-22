@@ -191,7 +191,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
     xtc = tc;
     xdc[0] = '/';
     if (which == -1) {
-      c = NULL;
+      c = nullptr;
     } else {
       if (which < 0 || which >= subconfnum) {
         return false;
@@ -214,7 +214,7 @@ bool setconf(unsigned int nConferenceType, int which, int nOldSubNumber) {
     xtc = dtc;
     xdc[0] = '/';
     if (which == -1) {
-      c = NULL;
+      c = nullptr;
     } else {
       if (which < 0 || which >= dirconfnum) {
         return false;

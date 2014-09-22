@@ -92,9 +92,8 @@ int GetMenuIndex(const char* pszCommand) {
   return -1;
 }
 
-
 void ReadMenuSetup() {
-  if (pMenuStrings == NULL) {
+  if (pMenuStrings == nullptr) {
     char szMenuCmdsFileName[MAX_PATH];
     sprintf(szMenuCmdsFileName, "%s%s", syscfg.datadir, MENUCMDS_DAT);
     FILE* fp = fopen(szMenuCmdsFileName, "rb");
@@ -133,7 +132,7 @@ void ReadMenuSetup() {
 void mainmenu() {
   if (pSecondUserRec) {
     free(pSecondUserRec);
-    pSecondUserRec = NULL;
+    pSecondUserRec = nullptr;
   }
   pSecondUserRec = static_cast<user_config *>(malloc(sizeof(user_config)));
   if (!pSecondUserRec) {
@@ -147,18 +146,18 @@ void mainmenu() {
   }
 
   free(pSecondUserRec);
-  pSecondUserRec = NULL;
+  pSecondUserRec = nullptr;
   nSecondUserRecLoaded = 0;
 
   free(pMenuStrings);
-  pMenuStrings = NULL;
+  pMenuStrings = nullptr;
   free(ppMenuStringsIndex);
-  ppMenuStringsIndex = NULL;
+  ppMenuStringsIndex = nullptr;
 }
 
 void StartMenus() {
   MenuInstanceData* pMenuData = static_cast<MenuInstanceData *>(malloc(sizeof(MenuInstanceData)));
-  pMenuData->pMenuFile = NULL;
+  pMenuData->pMenuFile = nullptr;
   if (!pMenuData) {
     sysoplog("Unable to allocate memory for pMenuData");
     hangup = true;
@@ -173,9 +172,9 @@ void StartMenus() {
     WriteMenuSetup(GetSession()->usernum);
   }
   while (pMenuData->nReload != 0 && !hangup) {
-    if (pMenuData->pMenuFile != NULL) {
+    if (pMenuData->pMenuFile != nullptr) {
       delete pMenuData->pMenuFile;
-      pMenuData->pMenuFile = NULL;
+      pMenuData->pMenuFile = nullptr;
 
     }
     memset(pMenuData, 0, sizeof(MenuInstanceData));
@@ -225,20 +224,20 @@ void Menus(MenuInstanceData * pMenuData, const string menuDirectory, const strin
 }
 
 void CloseMenu(MenuInstanceData * pMenuData) {
-  if (pMenuData->pMenuFile != NULL && pMenuData->pMenuFile->IsOpen()) {
+  if (pMenuData->pMenuFile != nullptr && pMenuData->pMenuFile->IsOpen()) {
     pMenuData->pMenuFile->Close();
     delete pMenuData->pMenuFile;
-    pMenuData->pMenuFile = NULL;
+    pMenuData->pMenuFile = nullptr;
   }
 
-  if (pMenuData->index != NULL) {
+  if (pMenuData->index != nullptr) {
     free(pMenuData->index);
-    pMenuData->index = NULL;
+    pMenuData->index = nullptr;
   }
 
-  if (pMenuData->szPrompt != NULL) {
+  if (pMenuData->szPrompt != nullptr) {
     free(pMenuData->szPrompt);
-    pMenuData->szPrompt = NULL;
+    pMenuData->szPrompt = nullptr;
   }
 }
 
@@ -284,7 +283,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
       return false;
     }
     pMenuData->index = static_cast<MenuRecIndex *>(malloc(pMenuData->nAmountRecs * sizeof(MenuRecIndex) + TEST_PADDING));
-    if (pMenuData->index != NULL) {
+    if (pMenuData->index != nullptr) {
       fileIndex.Read(pMenuData->index, pMenuData->nAmountRecs * sizeof(MenuRecIndex));
     }
     fileIndex.Close();          // close the file
@@ -302,7 +301,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   if (filePrompt.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone)) {
     long lSize = filePrompt.GetLength();
     pMenuData->szPrompt = static_cast<char *>(malloc(lSize + 10 + TEST_PADDING));
-    if (pMenuData->szPrompt != NULL) {
+    if (pMenuData->szPrompt != nullptr) {
       lSize = filePrompt.Read(pMenuData->szPrompt, lSize);
       pMenuData->szPrompt[lSize] = 0;
 
@@ -637,12 +636,10 @@ void QueryMenuSet() {
   }
 
   if (bSecondUserRecLoaded) {
-    pSecondUserRec = NULL;
+    pSecondUserRec = nullptr;
     nSecondUserRecLoaded = 0;
   }
 }
-
-
 
 bool ValidateMenuSet(const char *pszMenuDir) {
   if (GetSession()->usernum != nSecondUserRecLoaded) {
@@ -801,14 +798,13 @@ void CloseMenuDescriptions() {
     fclose(hMenuDesc);
   }
 
-  hMenuDesc = NULL;
+  hMenuDesc = nullptr;
 }
-
 
 char *GetMenuDescription(const string& name, char *pszDesc) {
   if (!hMenuDesc) {
     *pszDesc = 0;
-    return NULL;
+    return nullptr;
   }
   fseek(hMenuDesc, 0, SEEK_SET);
 
@@ -1128,7 +1124,7 @@ char *MenuGetParam(char *pszSrc, char *pszParam) {
       }
       ++pszSrc;
     }
-    if (*pszSrc) {                           // We should either be on NULL or the CLOSING QUOTE
+    if (*pszSrc) {                           // We should either be on nullptr or the CLOSING QUOTE
       ++pszSrc;                              // If on the Quote, advance one
     }
     pszParam[nLen] = '\0';

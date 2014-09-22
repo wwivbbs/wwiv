@@ -145,7 +145,7 @@ void send_email() {
 
   int nSystemNumber, nUserNumber;
   parse_email_info(username, &nUserNumber, &nSystemNumber);
-  grab_quotes(NULL, NULL);
+  grab_quotes(nullptr, nullptr);
   if (nUserNumber || nSystemNumber) {
     email(nUserNumber, nSystemNumber, false, 0);
   }
@@ -191,7 +191,7 @@ void feedback(bool bNewUserFeedback) {
   char onek_str[20], ch;
 
   irt_name[0] = '\0';
-  grab_quotes(NULL, NULL);
+  grab_quotes(nullptr, nullptr);
 
   if (bNewUserFeedback) {
     sprintf(irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)",

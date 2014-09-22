@@ -504,7 +504,7 @@ void readmail(int mode) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ";
     input(s, 3, true);
-    if (strchr(s, 'Q') != NULL) {
+    if (strchr(s, 'Q') != nullptr) {
       free(mloc);
       return;
     }
@@ -727,7 +727,7 @@ void readmail(int mode) {
             num_mail =  static_cast<long>(GetSession()->GetCurrentUser()->GetNumFeedbackSent()) +
                         static_cast<long>(GetSession()->GetCurrentUser()->GetNumEmailSent()) +
                         static_cast<long>(GetSession()->GetCurrentUser()->GetNumNetEmailSent());
-            grab_quotes(NULL, NULL);
+            grab_quotes(nullptr, nullptr);
             if (m.fromuser != 65535) {
               email(m.fromuser, m.fromsys, false, m.anony);
             }
@@ -953,7 +953,7 @@ void readmail(int mode) {
         GetSession()->bout << "|#2Forward to: ";
         input(s, 75);
         if (((i3 = strcspn(s, "@")) != (wwiv::strings::GetStringLength(s))) && (isalpha(s[i3 + 1]))) {
-          if (strstr(s, "@32767") == NULL) {
+          if (strstr(s, "@32767") == nullptr) {
             strlwr(s1);
             strcat(s, " @32767");
           }
@@ -1097,7 +1097,7 @@ void readmail(int mode) {
             input(s, 75, true);
             if (((i = strcspn(s, "@")) != wwiv::strings::GetStringLength(s))
                 && isalpha(s[i + 1])) {
-              if (strstr(s, "@32767") == NULL) {
+              if (strstr(s, "@32767") == nullptr) {
                 strlwr(s);
                 strcat(s, " @32767");
               }
@@ -1109,7 +1109,7 @@ void readmail(int mode) {
           } else {
             email(m.fromuser, m.fromsys, false, m.anony);
           }
-          grab_quotes(NULL, NULL);
+          grab_quotes(nullptr, nullptr);
         }
         num_mail1 = static_cast<long>(GetSession()->GetCurrentUser()->GetNumFeedbackSent()) +
                     static_cast<long>(GetSession()->GetCurrentUser()->GetNumEmailSent()) +

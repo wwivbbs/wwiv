@@ -166,7 +166,7 @@ int WApplication::doWFCEvents() {
 
     lokb = 0;
     GetSession()->SetCurrentSpeed("KB");
-    time_t lCurrentTime = time(NULL);
+    time_t lCurrentTime = time(nullptr);
     if (!any && (((rand() % 8000) == 0) || (lCurrentTime - last_time_c > 1200)) &&
         (net_sysnum) && (ok_modem_stuff || bUsingPppProject) &&
         (this->flags & OP_FLAGS_NET_CALLOUT)) {
@@ -667,7 +667,7 @@ void WApplication::GotCaller(unsigned int ms, unsigned long cs) {
   GetSession()->localIO()->LocalCls();
   GetSession()->localIO()->LocalPrintf("Logging on at %s...\r\n", GetSession()->GetCurrentSpeed().c_str());
   if (ms) {
-    if (ok_modem_stuff && NULL != sess->remoteIO()) {
+    if (ok_modem_stuff && nullptr != sess->remoteIO()) {
       sess->remoteIO()->setup('N', 8, 1, cs);
     }
     incom   = true;
@@ -1012,7 +1012,7 @@ int WApplication::Run(int argc, char *argv[]) {
       while (!hangup) {
         if (filelist) {
           free(filelist);
-          filelist = NULL;
+          filelist = nullptr;
         }
         zap_ed_info();
         write_inst(INST_LOC_MAIN, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
@@ -1228,19 +1228,19 @@ void WApplication::ToggleShutDown() {
 
 
 WApplication::~WApplication() {
-  if (sess != NULL) {
+  if (sess != nullptr) {
     delete sess;
-    sess = NULL;
+    sess = nullptr;
   }
 
-  if (statusMgr != NULL) {
+  if (statusMgr != nullptr) {
     delete statusMgr;
-    statusMgr = NULL;
+    statusMgr = nullptr;
   }
 
-  if (userManager != NULL) {
+  if (userManager != nullptr) {
     delete userManager;
-    userManager = NULL;
+    userManager = nullptr;
   }
 }
 

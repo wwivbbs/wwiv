@@ -183,7 +183,7 @@ class FixApplication {
 			  giveUp();
 		  }
 
-		  time_t val = time(NULL);
+		  time_t val = time(nullptr);
 		  char *curDate = dateFromTimeT(val);
 		  if(strcmp(status.date1, curDate)) {
 			  strcpy(status.date1, curDate);
@@ -237,7 +237,7 @@ class FixApplication {
 	  int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
 	  dirsDat.Open(nFileMode);
 	  directories = (directoryrec *)malloc(dirsDat.GetLength() + 1);
-	  if(directories == NULL) {
+	  if(directories == nullptr) {
 		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", dirsDat.GetLength(), dirsDat.GetFullPathName().c_str());
 		  giveUp();
 	  }
@@ -257,7 +257,7 @@ class FixApplication {
 	  int nFileMode = WFile::modeReadOnly | WFile::modeBinary;
 	  subsDat.Open(nFileMode);
 	  subboards = (subboardrec *)malloc(subsDat.GetLength() + 1);
-	  if(subboards == NULL) {
+	  if(subboards == nullptr) {
 		  Print(NOK, true, "Couldn't allocate %ld bytes for %s.", subsDat.GetLength(), subsDat.GetFullPathName().c_str());
 		  giveUp();
 	  }

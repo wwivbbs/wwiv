@@ -74,7 +74,7 @@ void send_inst_str1(int m, int whichinst, const char *pszSendString) {
   ih.from_user = static_cast<unsigned short>(GetSession()->usernum);
   ih.msg_size = strlen(szTempSendString) + 1;
   ih.dest_inst = static_cast<unsigned short>(whichinst);
-  ih.daten = static_cast<unsigned long>(time(NULL));
+  ih.daten = static_cast<unsigned long>(time(nullptr));
 
   send_inst_msg(&ih, szTempSendString);
 }
@@ -96,7 +96,7 @@ void send_inst_shutdown(int whichinst) {
   ih.from_user = static_cast<unsigned short>(GetSession()->usernum);
   ih.msg_size = 0;
   ih.dest_inst = static_cast<unsigned short>(whichinst);
-  ih.daten = static_cast<unsigned long>(time(NULL));
+  ih.daten = static_cast<unsigned long>(time(nullptr));
 
   send_inst_msg(&ih, nullptr);
 }
@@ -117,7 +117,7 @@ void send_inst_cleannet() {
     ih.from_user = 1;
     ih.msg_size = 0;
     ih.dest_inst = 1;
-    ih.daten = static_cast<unsigned long>(time(NULL));
+    ih.daten = static_cast<unsigned long>(time(nullptr));
 
     send_inst_msg(&ih, nullptr);
   }
@@ -482,7 +482,7 @@ void write_inst(int loc, int subloc, int flags) {
     } else {
       ti.user = 1;
     }
-    ti.inst_started = static_cast<unsigned long>(time(NULL));
+    ti.inst_started = static_cast<unsigned long>(time(nullptr));
     re_write = true;
   }
 
@@ -573,7 +573,7 @@ void write_inst(int loc, int subloc, int flags) {
     re_write = true;
   }
   if (re_write && syscfg.datadir != nullptr) {
-    ti.last_update = static_cast<unsigned long>(time(NULL));
+    ti.last_update = static_cast<unsigned long>(time(nullptr));
     WFile instFile(syscfg.datadir, INSTANCE_DAT);
     if (instFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
       instFile.Seek(static_cast<long>(GetApplication()->GetInstanceNumber() * sizeof(instancerec)), WFile::seekBegin);

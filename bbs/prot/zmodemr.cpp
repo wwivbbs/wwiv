@@ -53,11 +53,11 @@ int ZmodemRInit(ZModem *info) {
 	info->escCtrl = info->escHibit = info->atSign = info->escape = 0;
 	info->InputState = ZModem::Idle;
 	info->canCount = info->chrCount = 0;
-	info->filename = NULL;
+	info->filename = nullptr;
 	info->interrupt = 0;
 	info->waitflag = 0;
-	info->attn = NULL;
-	info->file = NULL;
+	info->attn = nullptr;
+	info->file = nullptr;
 
 	info->buffer = (u_char *)malloc(8192);
 
@@ -84,10 +84,10 @@ int YmodemRInit(ZModem *info) {
 	info->InputState = ZModem::Yrcv;
 	info->canCount = info->chrCount = 0;
 	info->noiseCount = 0;
-	info->filename = NULL;
-	info->file = NULL;
+	info->filename = nullptr;
+	info->file = nullptr;
 
-	if( info->buffer == NULL ) {
+	if( info->buffer == nullptr ) {
 		info->buffer = (u_char *)malloc(1024);
 	}
 
@@ -248,10 +248,10 @@ int GotSinitData( ZModem *info, int crcGood ) {
 		return ZXmitHdrHex(ZNAK, zeros, info);
 	}
 
-	if( info->attn != NULL ) {
+	if( info->attn != nullptr ) {
 		free(info->attn);
 	}
-	info->attn = NULL;
+	info->attn = nullptr;
 	if( info->buffer[0] != '\0' ) {
 		info->attn = strdup(reinterpret_cast<char*>( info->buffer ) );
 	}
@@ -282,7 +282,7 @@ int GotFile( ZModem *info ) {
 int requestFile( ZModem *info, u_long crc ) {
 	info->file = ZOpenFile( reinterpret_cast<char*>( info->buffer ), crc, info);
 
-	if( info->file == NULL ) {
+	if( info->file == nullptr ) {
 #if defined(_DEBUG)
 		zmodemlog("requestFile[%s]: send ZSKIP\n", sname(info));
 #endif
@@ -310,7 +310,7 @@ void parseFileName( ZModem *info, char *fileinfo ) {
 
 	info->len = info->mode = info->filesRem = info->bytesRem = info->fileType = 0;
 	ptr = fileinfo + strlen(fileinfo) + 1;
-	if( info->filename != NULL ) {
+	if( info->filename != nullptr ) {
 		free(info->filename);
 	}
 	info->filename = strdup(fileinfo);
@@ -391,7 +391,7 @@ int GotData( ZModem *info ) {
 	zmodemlog("GotData[%s]:\n", sname(info));
 #endif
 	if( ZDec4(info->hdrData+1) != info->offset ) {
-		if( info->attn != NULL  &&  (err=ZAttn(info)) != 0 )
+		if( info->attn != nullptr  &&  (err=ZAttn(info)) != 0 )
 			return err;
 #if defined(_DEBUG)
 		zmodemlog("  bad, send ZRPOS(%ld)\n", info->offset);
@@ -415,7 +415,7 @@ int fileError( ZModem *info, int type, int data ) {
 	info->InputState = ZModem::Idle;
 	info->chrCount=0;
 
-	if( info->attn != NULL  &&  (err=ZAttn(info)) != 0 ) {
+	if( info->attn != nullptr  &&  (err=ZAttn(info)) != 0 ) {
 		return err;
 	}
 	return ZXmitHdrHex(type, ZEnc4(data), info);
@@ -437,7 +437,7 @@ int GotFileData( ZModem *info, int crcGood ) {
 		zmodemlog( "GotFileData[%s]: bad crc, send ZRPOS(%ld), new state = RFile\n",
 		           sname(info), info->offset);
 #endif
-		ZStatus(DataErr, ++info->errCount, NULL);
+		ZStatus(DataErr, ++info->errCount, nullptr);
 		if( info->errCount > MaxErrs ) {
 			ZmodemAbort(info);
 			return ZmDataErr;
@@ -451,7 +451,7 @@ int GotFileData( ZModem *info, int crcGood ) {
 
 	if( ZWriteFile(info->buffer, info->chrCount, info->file, info) ) {
 		/* RED ALERT!  Could not write the file. */
-		ZStatus(FileErr, errno, NULL);
+		ZStatus(FileErr, errno, nullptr);
 		info->state = RFinish;
 		info->InputState = ZModem::Idle;
 		info->chrCount=0;
@@ -463,7 +463,7 @@ int GotFileData( ZModem *info, int crcGood ) {
 	          sname(info), info->offset, info->chrCount);
 #endif
 	info->offset += info->chrCount;
-	ZStatus(RcvByteCount, info->offset, NULL);
+	ZStatus(RcvByteCount, info->offset, nullptr);
 
 	/* if this was the last data subpacket, leave data mode */
 	if( info->PacketType == ZCRCE  ||  info->PacketType == ZCRCW ) {
@@ -512,11 +512,11 @@ int GotEof( ZModem *info ) {
 
 	/* TODO: if we can't close the file, send a ZFERR */
 	ZCloseFile(info);
-	info->file = NULL;
+	info->file = nullptr;
 	ZStatus(FileEnd, 0, info->filename);
-	if( info->filename != NULL ) {
+	if( info->filename != nullptr ) {
 		free(info->filename);
-		info->filename = NULL;
+		info->filename = nullptr;
 	}
 	return SendRinit(info);
 }
@@ -531,7 +531,7 @@ int GotFin( ZModem *info ) {
 #endif
 	info->InputState = ZModem::Finish;
 	info->chrCount = 0;
-	if( info->filename != NULL ) {
+	if( info->filename != nullptr ) {
 		free(info->filename);
 	}
 	return ZXmitHdrHex(ZFIN, zeros, info);
@@ -561,7 +561,7 @@ int YrcvChar( char c, ZModem *info ) {
 	int	err;
 
 	if( info->canCount >= 2 ) {
-		ZStatus(RmtCancel, 0, NULL);
+		ZStatus(RmtCancel, 0, nullptr);
 		return ZmErrCancel;
 	}
 
@@ -569,9 +569,9 @@ int YrcvChar( char c, ZModem *info ) {
 	case YREOF:
 		if( c == EOT ) {
 			ZCloseFile(info);
-			info->file = NULL;
+			info->file = nullptr;
 			ZStatus(FileEnd, 0, info->filename);
-			if( info->filename != NULL ) {
+			if( info->filename != nullptr ) {
 				free(info->filename);
 			}
 			if( (err = acceptPacket(info)) != 0 ) {
@@ -654,7 +654,7 @@ int ProcessPacket( ZModem *info ) {
 	info->state = YRDataWait;
 
 	if( idxc != 255 - idx ) {
-		ZStatus(DataErr, ++info->errCount, NULL);
+		ZStatus(DataErr, ++info->errCount, nullptr);
 		return rejectPacket(info);
 	}
 
@@ -672,7 +672,7 @@ int ProcessPacket( ZModem *info ) {
 	        (u_char)info->buffer[info->pktLen-1];
 	crc1 = calcCrc(info->buffer+2, info->pktLen-4);
 	if( crc0 != crc1 ) {
-		ZStatus(DataErr, ++info->errCount, NULL);
+		ZStatus(DataErr, ++info->errCount, nullptr);
 		return rejectPacket(info);
 	}
 
@@ -687,7 +687,7 @@ int ProcessPacket( ZModem *info ) {
 
 		parseFileName(info, reinterpret_cast<char*>( info->buffer + 2 ) );
 		info->file = ZOpenFile(info->filename, 0, info);
-		if( info->file == NULL ) {
+		if( info->file == nullptr ) {
 			ZXmitStr(CanStr, 2, info);
 			return ZmErrCantOpen;
 		}
@@ -699,12 +699,12 @@ int ProcessPacket( ZModem *info ) {
 
 
 	if( ZWriteFile(info->buffer+2, info->pktLen-4, info->file, info) ) {
-		ZStatus(FileErr, errno, NULL);
+		ZStatus(FileErr, errno, nullptr);
 		ZXmitStr(CanStr, 2, info);
 		return ZmErrSys;
 	}
 	info->offset += info->pktLen-4;
-	ZStatus(RcvByteCount, info->offset, NULL);
+	ZStatus(RcvByteCount, info->offset, nullptr);
 
 	acceptPacket(info);
 	return 0;

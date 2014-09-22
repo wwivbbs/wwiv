@@ -62,7 +62,7 @@ bool WFile::IsDirectory() {
 bool WFile::CopyFile(const std::string sourceFileName, const std::string destFileName) {
   if (sourceFileName != destFileName && WFile::Exists(sourceFileName) && !WFile::Exists(destFileName)) {
     char *pBuffer = static_cast<char *>(malloc(16400));
-    if (pBuffer == NULL) {
+    if (pBuffer == nullptr) {
       return false;
     }
     int hSourceFile = open(sourceFileName.c_str(), O_RDONLY | O_BINARY);

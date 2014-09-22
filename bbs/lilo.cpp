@@ -277,7 +277,7 @@ void ExecuteWWIVNetworkRequest(const char *pszUserName) {
   }
 
   GetApplication()->GetStatusManager()->RefreshStatusCache();
-  long lTime = time(NULL);
+  long lTime = time(nullptr);
   switch (GetSession()->usernum) {
   case -2: {
     std::stringstream networkCommand;
@@ -575,7 +575,7 @@ static void UpdateLastOnFileAndUserLog() {
   sprintf(szLastOnTxtFileName, "%s%s", syscfg.gfilesdir, LASTON_TXT);
   char *ss = get_file(szLastOnTxtFileName, &len);
   long pos = 0;
-  if (ss != NULL) {
+  if (ss != nullptr) {
     if (!cs()) {
       for (int i = 0; i < 4; i++) {
         copy_line(s1, ss, &pos, len);
@@ -650,7 +650,7 @@ static void UpdateLastOnFileAndUserLog() {
       WFile lastonFile(szLastOnTxtFileName);
       if (lastonFile.Open(WFile::modeReadWrite | WFile::modeBinary |
                           WFile::modeCreateFile | WFile::modeTruncate)) {
-        if (ss != NULL) {
+        if (ss != nullptr) {
           // Need to ensure ss is not null here
           pos = 0;
           copy_line(s1, ss, &pos, len);
@@ -665,7 +665,7 @@ static void UpdateLastOnFileAndUserLog() {
       }
     }
   }
-  if (ss != NULL) {
+  if (ss != nullptr) {
     free(ss);
   }
 }
@@ -724,7 +724,7 @@ static void CheckAndUpdateUserInfo() {
     return;
   }
 
-  time_t lTime = time(NULL);
+  time_t lTime = time(nullptr);
   if ((GetSession()->GetCurrentUser()->GetExpiresDateNum() < static_cast<unsigned long>(lTime + 30 * SECS_PER_DAY))
       && (GetSession()->GetCurrentUser()->GetExpiresDateNum() > static_cast<unsigned long>(lTime + 10 * SECS_PER_DAY))) {
     GetSession()->bout << "Your registration expires in " <<
@@ -1035,7 +1035,7 @@ void logoff() {
   if (g_flags & g_flag_scanned_files) {
     GetSession()->GetCurrentUser()->SetNewScanDateNumber(GetSession()->GetCurrentUser()->GetLastOnDateNumber());
   }
-  long lTime = time(NULL);
+  long lTime = time(nullptr);
   GetSession()->GetCurrentUser()->SetLastOnDateNumber(lTime);
   sysoplogfi(false, "Read: %lu   Time on: %u", GetSession()->GetNumMessagesReadThisLogon(),
              static_cast<int>((timer() - timeon) / MINUTES_PER_HOUR_FLOAT));

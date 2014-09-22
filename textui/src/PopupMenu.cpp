@@ -81,7 +81,7 @@ bool UIPopupMenu::ProcessKeyEvent( int key )
             // Set status bar text with the description
             UIDesktop::GetDesktop()->SetStatusBarText( menuItem->GetDescription() );
             UICommand* command = menuItem->GetCommand();
-            if ( command != NULL )
+            if ( command != nullptr )
             {
                 command->Execute();
             }

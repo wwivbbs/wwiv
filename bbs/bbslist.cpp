@@ -23,18 +23,7 @@
 #include "core/wtextfile.h"
 #include "bbs/keycodes.h"
 
-// Local function prototypes
-
-char ShowBBSListMenuAndGetChoice();
-bool IsBBSPhoneNumberUnique(const std::string& phoneNumber);
-bool IsBBSPhoneNumberValid(const std::string& phoneNumber);
-void AddBBSListLine(const std::string bbsListLine);
-void AddBBSListEntryImpl();
-void AddBBSListEntry();
-void DeleteBBSListEntry();
-
-
-char ShowBBSListMenuAndGetChoice() {
+static char ShowBBSListMenuAndGetChoice() {
   GetSession()->bout.NewLine();
   if (so()) {
     GetSession()->bout <<
@@ -46,21 +35,21 @@ char ShowBBSListMenuAndGetChoice() {
   }
 }
 
-bool IsBBSPhoneNumberUnique(const std::string& phoneNumber) {
+static bool IsBBSPhoneNumberUnique(const std::string& phoneNumber) {
   bool ok = true;
   WFile file(syscfg.gfilesdir, BBSLIST_MSG);
   if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
     file.Seek(0L, WFile::seekBegin);
     long lBbsListLength = file.GetLength();
     char *ss = static_cast<char *>(BbsAllocA(lBbsListLength + 500L));
-    if (ss == NULL) {
+    if (ss == nullptr) {
       file.Close();
       return true;
     }
     file.Read(ss, lBbsListLength);
     long lBbsListPos = 0L;
     while (lBbsListPos < lBbsListLength && ok) {
-      char szBbsListLine[ 255 ];
+      char szBbsListLine[255];
       int i = 0;
       char ch = '\0';
       do {
@@ -71,7 +60,7 @@ bool IsBBSPhoneNumberUnique(const std::string& phoneNumber) {
         }
         ++i;
       } while (ch != '\n' && i < 120 && lBbsListPos < lBbsListLength);
-      if (strstr(szBbsListLine, phoneNumber.c_str()) != NULL) {
+      if (strstr(szBbsListLine, phoneNumber.c_str()) != nullptr) {
         ok = false;
       }
       if (strncmp(szBbsListLine, phoneNumber.c_str(), 12) == 0) {
@@ -79,13 +68,12 @@ bool IsBBSPhoneNumberUnique(const std::string& phoneNumber) {
       }
     }
     free(ss);
-    ss = NULL;
     file.Close();
   }
   return ok;
 }
 
-bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
+static bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
   if (phoneNumber.empty()) {
     return false;
   }
@@ -103,7 +91,7 @@ bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
   return true;
 }
 
-void AddBBSListLine(const std::string bbsListLine) {
+static void AddBBSListLine(const std::string bbsListLine) {
   WFile file(syscfg.gfilesdir, BBSLIST_MSG);
   bool bOpen = file.Open(WFile::modeReadWrite | WFile::modeCreateFile | WFile::modeBinary);
   if (bOpen && file.GetLength() > 0) {
@@ -119,7 +107,7 @@ void AddBBSListLine(const std::string bbsListLine) {
   file.Close();
 }
 
-void AddBBSListEntryImpl() {
+static void AddBBSListEntryImpl() {
   GetSession()->bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
   std::string bbsPhoneNumber;
   input(&bbsPhoneNumber, 12, true);
@@ -155,7 +143,7 @@ void AddBBSListEntryImpl() {
   }
 }
 
-void AddBBSListEntry() {
+static void AddBBSListEntry() {
   if (GetSession()->GetEffectiveSl() <= 10) {
     GetSession()->bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
   } else if (GetSession()->GetCurrentUser()->IsRestrictionAutomessage()) {
@@ -166,7 +154,7 @@ void AddBBSListEntry() {
 
 }
 
-void DeleteBBSListEntry() {
+static void DeleteBBSListEntry() {
   GetSession()->bout << "\r\n|#7Please enter phone number in the following format:\r\n";
   GetSession()->bout << "|#1 ###-###-####\r\n:";
   std::string bbsPhoneNumber;

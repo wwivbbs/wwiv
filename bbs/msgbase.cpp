@@ -116,18 +116,17 @@ void remove_link(messagerec * pMessageRecord, string fileName) {
   case 1:
     break;
   case 2: {
-    WFile *pMessageFile = OpenMessageFile(fileName);
-    if (pMessageFile->IsOpen()) {
-      set_gat_section(pMessageFile, static_cast<int>(pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS));
+    unique_ptr<WFile> file(OpenMessageFile(fileName));
+    if (file->IsOpen()) {
+      set_gat_section(file.get(), static_cast<int>(pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS));
       long lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
       while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
         long lNextSection = static_cast<long>(gat[ lCurrentSection ]);
         gat[lCurrentSection] = 0;
         lCurrentSection = lNextSection;
       }
-      save_gat(pMessageFile);
-      pMessageFile->Close();
-      delete pMessageFile;
+      save_gat(file.get());
+      file->Close();
     }
   }
   break;
@@ -141,7 +140,7 @@ void remove_link(messagerec * pMessageRecord, string fileName) {
  * Opens the message area file {pszMessageAreaFileName} and returns the file handle.
  * Note: This is a Private method to this module.
  */
-WFile * OpenMessageFile(const string messageAreaFileName) {
+WFile* OpenMessageFile(const string messageAreaFileName) {
   GetApplication()->GetStatusManager()->RefreshStatusCache();
 
   stringstream sstream;
@@ -165,7 +164,6 @@ WFile * OpenMessageFile(const string messageAreaFileName) {
   return pFileMessage;
 }
 
-
 #define GATSECLEN ( GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE )
 #ifndef MSG_STARTING
 #define MSG_STARTING ( gat_section * GATSECLEN + GAT_SECTION_SIZE )
@@ -185,7 +183,7 @@ void set_gat_section(WFile *pMessageFile, int section) {
     pMessageFile->Seek(lSectionPos, WFile::seekBegin);
     if (lFileSize < (lSectionPos + GAT_SECTION_SIZE)) {
       for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
-        gat[ i ] = 0;
+        gat[i] = 0;
       }
       pMessageFile->Write(gat, GAT_SECTION_SIZE);
     } else {
@@ -220,13 +218,13 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
         int nNumBlocksRequired = static_cast<int>((lMessageLength + 511L) / MSG_BLOCK_SIZE);
         int i4 = 1;
         while (gatp < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
-          if (gat[ i4 ] == 0) {
-            gati[ gatp++ ] = i4;
+          if (gat[i4] == 0) {
+            gati[gatp++] = i4;
           }
           ++i4;
         }
         if (gatp >= nNumBlocksRequired) {
-          gati[ gatp ] = -1;
+          gati[gatp] = -1;
           for (int i = 0; i < nNumBlocksRequired; i++) {
             pMessageFile->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), WFile::seekBegin);
             pMessageFile->Write((&b[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
@@ -252,16 +250,15 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
 }
 
 char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLength) {
-  char *b =  NULL;
-
+  char *b =  nullptr;
   *plMessageLength = 0L;
   switch (pMessageRecord->storage_type) {
   case 0:
   case 1:
     break;
   case 2: {
-    WFile * pMessageFile = OpenMessageFile(fileName);
-    set_gat_section(pMessageFile, static_cast< int >(pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS));
+    unique_ptr<WFile> file(OpenMessageFile(fileName));
+    set_gat_section(file.get(), static_cast< int >(pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS));
     int lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
     long lMessageLength = 0;
     while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
@@ -270,36 +267,33 @@ char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLeng
     }
     if (lMessageLength == 0) {
       GetSession()->bout << "\r\nNo message found.\r\n\n";
-      pMessageFile->Close();
-      delete pMessageFile;
-      return NULL;
+      file->Close();
+      return nullptr;
     }
-    if ((b = static_cast<char *>(BbsAllocA(lMessageLength + 512))) == NULL) {         // was +3
-      pMessageFile->Close();
-      delete pMessageFile;
-      return NULL;
+    if ((b = static_cast<char *>(BbsAllocA(lMessageLength + 512))) == nullptr) {         // was +3
+      file->Close();
+      return nullptr;
     }
     lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
     long lMessageBytesRead = 0;
     while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
-      pMessageFile->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast< long >(lCurrentSection), WFile::seekBegin);
-      lMessageBytesRead += static_cast<long>(pMessageFile->Read(&(b[lMessageBytesRead]), MSG_BLOCK_SIZE));
+      file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast< long >(lCurrentSection), WFile::seekBegin);
+      lMessageBytesRead += static_cast<long>(file->Read(&(b[lMessageBytesRead]), MSG_BLOCK_SIZE));
       lCurrentSection = gat[ lCurrentSection ];
     }
-    pMessageFile->Close();
-    delete pMessageFile;
+    file->Close();
     long lRealMessageLength = lMessageBytesRead - MSG_BLOCK_SIZE;
     while ((lRealMessageLength < lMessageBytesRead) && (b[lRealMessageLength] != CZ)) {
       ++lRealMessageLength;
     }
     *plMessageLength = lRealMessageLength;
-    b[ lRealMessageLength + 1 ] = '\0';
+    b[lRealMessageLength + 1] = '\0';
   }
   break;
   default:
     // illegal storage type
     *plMessageLength = 0L;
-    b = NULL;
+    b = nullptr;
     break;
   }
   return b;
@@ -314,7 +308,7 @@ void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
 
   long lOrigSize = fileOrig.GetLength();
   char* b = static_cast<char*>(BbsAllocA(lOrigSize + 1024));
-  if (b == NULL) {
+  if (b == nullptr) {
     fileOrig.Close();
     return;
   }
@@ -391,7 +385,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
     return false;
   }
   char *ss = static_cast<char*>(BbsAllocA(static_cast<long>(syscfg.maxusers) + 300L));
-  if (ss == NULL) {
+  if (ss == nullptr) {
     return false;
   }
   for (int i = 0; i < syscfg.maxusers + 300; i++) {
@@ -485,7 +479,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   m.tosys   = static_cast< unsigned short >(nSystemNumber);
   m.touser  = static_cast< unsigned short >(nUserNumber);
   m.status  = 0;
-  m.daten = static_cast<unsigned long>(time(NULL));
+  m.daten = static_cast<unsigned long>(time(nullptr));
 
   if (m.fromsys && GetSession()->GetMaxNetworkNumber() > 1) {
     m.status |= status_new_net;
@@ -528,7 +522,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     }
   } else {
     long lEmailFileLen;
-    if ((b = readfile(&(m.msg), "email", &lEmailFileLen)) == NULL) {
+    if ((b = readfile(&(m.msg), "email", &lEmailFileLen)) == nullptr) {
       return;
     }
     if (nForwardedCode == 2) {
@@ -547,7 +541,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     nh.list_len = 0;
     nh.daten = m.daten;
     nh.method = 0;
-    if ((b1 = static_cast<char*>(BbsAllocA(lEmailFileLen + 768))) == NULL) {
+    if ((b1 = static_cast<char*>(BbsAllocA(lEmailFileLen + 768))) == nullptr) {
       free(b);
       return;
     }
@@ -566,7 +560,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       nh.length = 32760;
     }
     if (nFromNetworkNumber != GetSession()->GetNetworkNumber()) {
-      gate_msg(&nh, b1, GetSession()->GetNetworkNumber(), net_email_name, NULL, nFromNetworkNumber);
+      gate_msg(&nh, b1, GetSession()->GetNetworkNumber(), net_email_name, nullptr, nFromNetworkNumber);
     } else {
       string net_filename;
       if (nForwardedCode) {
@@ -718,7 +712,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   messagerec messageRecord;
   char szDestination[81];
   WUser userRecord;
-  net_system_list_rec *csne = NULL;
+  net_system_list_rec *csne = nullptr;
   struct {
     int nUserNumber, nSystemNumber, net_num;
     char net_name[20], net_email_name[40];
@@ -910,7 +904,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
         }
         if (j == 0) {
           s1 = StringPrintf("\003""6Original To: \003""1%s", szDestination);
-          lineadd(&messageRecord, s1.c_str(), "email");
+          lineadd(&messageRecord, s1, "email");
           s1 = "\003""6Carbon Copy: \003""1";
         } else {
           if (s1.length() + strlen(szDestination) < 77) {
@@ -922,7 +916,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
             }
             listed = 0;
           } else {
-            lineadd(&messageRecord, s1.c_str(), "email");
+            lineadd(&messageRecord, s1, "email");
             s1 += "\003""1             ";
             j--;
             listed = 1;
@@ -930,7 +924,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
         }
       }
       if (!listed) {
-        lineadd(&messageRecord, s1.c_str(), "email");
+        lineadd(&messageRecord, s1, "email");
       }
     }
   }
@@ -988,7 +982,7 @@ void imail(int nUserNumber, int nSystemNumber) {
       i = 0;
     }
   }
-  grab_quotes(NULL, NULL);
+  grab_quotes(nullptr, nullptr);
   if (i) {
     email(nUserNumber, nSystemNumber, false, 0);
   }
@@ -1009,7 +1003,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
 
   g_flags &= ~g_flag_ansi_movement;
 
-  char* ss = NULL;
+  char* ss = nullptr;
   bool ansi = false;
   *next = false;
   long lCurrentCharPointer = 0;
@@ -1019,7 +1013,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   case 1:
   case 2: {
     ss = readfile(pMessageRecord, pszFileName, &lMessageTextLength);
-    if (ss == NULL) {
+    if (ss == nullptr) {
       plan(6, "File not found.", &abort, next);
       GetSession()->bout.NewLine();
       return;
@@ -1233,7 +1227,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   if (express && abort && !*next) {
     expressabort = true;
   }
-  if (ss != NULL) {
+  if (ss != nullptr) {
     free(ss);
   }
   if (ansi && GetSession()->topdata && GetSession()->IsUserOnline()) {
@@ -1322,8 +1316,8 @@ void read_message(int n, bool *next, int *val) {
   }
 }
 
-void lineadd(messagerec * pMessageRecord, const char *sx, string fileName) {
-  const string line = StringPrintf("%s\r\n\x1a", sx);
+void lineadd(messagerec* pMessageRecord, const string& sx, string fileName) {
+  const string line = StringPrintf("%s\r\n\x1a", sx.c_str());
 
   switch (pMessageRecord->storage_type) {
   case 0:
@@ -1340,8 +1334,8 @@ void lineadd(messagerec * pMessageRecord, const char *sx, string fileName) {
     while (gat[i] != 65535) {
       i = gat[i];
     }
-    char *b = NULL;
-    if ((b = static_cast<char*>(BbsAllocA(GAT_NUMBER_ELEMENTS))) == NULL) {
+    char *b = nullptr;
+    if ((b = static_cast<char*>(BbsAllocA(GAT_NUMBER_ELEMENTS))) == nullptr) {
       message_file->Close();
       return;
     }

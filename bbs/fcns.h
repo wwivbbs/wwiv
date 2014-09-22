@@ -515,7 +515,7 @@ void imail(int nUserNumber, int nSystemNumber);
 void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *pszFileName,
                    int nFromSystem, int nFromUser);
 void read_message(int n, bool *next, int *val);
-void lineadd(messagerec * pMessageRecord, const char *sx, const std::string fileName);
+void lineadd(messagerec* pMessageRecord, const std::string& sx, const std::string fileName);
 
 
 // File: msgbase1.cpp

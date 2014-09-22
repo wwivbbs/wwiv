@@ -168,10 +168,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         hSyncWriteSlot = CreateFile(szWriteSlotName,
                                     GENERIC_WRITE,
                                     FILE_SHARE_READ,
-                                    NULL,
+                                    nullptr,
                                     OPEN_EXISTING,
                                     FILE_ATTRIBUTE_NORMAL,
-                                    (HANDLE) NULL);
+                                    (HANDLE) nullptr);
         if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
           sysoplogf("!!! Unable to create mail slot for writing for SyncFoss External program [%ld]", GetLastError());
           fprintf(hLogFile, "!!! Unable to create mail slot for writing for SyncFoss External program [%ld]", GetLastError());
@@ -183,7 +183,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       }
 
       DWORD dwNumWrittenToSlot = 0;
-      WriteFile(hSyncWriteSlot, szReadBuffer, nNumReadFromComm, &dwNumWrittenToSlot, NULL);
+      WriteFile(hSyncWriteSlot, szReadBuffer, nNumReadFromComm, &dwNumWrittenToSlot, nullptr);
       fprintf(hLogFile, "Wrote [%ld] to MailSlot\r\n", dwNumWrittenToSlot);
     }
 
@@ -192,7 +192,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
     DWORD dwNumMessages = 0;    // TmpLong
     DWORD dwReadTimeOut = 0;    // -------
 
-    if (GetMailslotInfo(hSyncReadSlot, NULL, &dwNextSize, &dwNumMessages, &dwReadTimeOut)) {
+    if (GetMailslotInfo(hSyncReadSlot, nullptr, &dwNextSize, &dwNumMessages, &dwReadTimeOut)) {
       if (dwNumMessages > 0) {
         fprintf(hLogFile, "[%ld/%ld] slot messages\r\n", dwNumMessages, std::min<DWORD>(dwNumMessages,
                 CONST_SBBSFOS_BUFFER_SIZE - 1000));
@@ -204,7 +204,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
                        &szReadBuffer[ nBufferPtr ],
                        CONST_SBBSFOS_BUFFER_SIZE - nBufferPtr,
                        &dwNextSize,
-                       NULL)) {
+                       nullptr)) {
             if (dwNextSize > 1) {
               fprintf(hLogFile, "[%ld] bytes read   \r\n", dwNextSize);
             }
@@ -343,7 +343,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
     // Create Hangup Event.
     char szHangupEventName[ MAX_PATH + 1 ];
     _snprintf(szHangupEventName, sizeof(szHangupEventName), "sbbsexec_hungup%d", GetApplication()->GetInstanceNumber());
-    hSyncHangupEvent = CreateEvent(NULL, TRUE, FALSE, szHangupEventName);
+    hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, szHangupEventName);
     if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
       sysoplogf("!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
@@ -354,7 +354,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
     char szReadSlotName[ MAX_PATH + 1];
     _snprintf(szReadSlotName, sizeof(szReadSlotName), "\\\\.\\mailslot\\sbbsexec\\rd%d",
               GetApplication()->GetInstanceNumber());
-    hSyncReadSlot = CreateMailslot(szReadSlotName, CONST_SBBSFOS_BUFFER_SIZE, 0, NULL);
+    hSyncReadSlot = CreateMailslot(szReadSlotName, CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
     if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
       sysoplogf("!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
@@ -372,13 +372,13 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
   char szTempWorkingCommandline[MAX_PATH + 1];
   strncpy(szTempWorkingCommandline, workingCommandLine.c_str(), MAX_PATH);
   BOOL bRetCP = CreateProcess(
-                  NULL,
+                  nullptr,
                   szTempWorkingCommandline,
-                  NULL,
-                  NULL,
+                  nullptr,
+                  nullptr,
                   TRUE,
                   dwCreationFlags,
-                  NULL, // GetApplication()->xenviron not using NULL causes things to not work.
+                  nullptr, // GetApplication()->xenviron not using nullptr causes things to not work.
                   szCurDir,
                   &si,
                   &pi);

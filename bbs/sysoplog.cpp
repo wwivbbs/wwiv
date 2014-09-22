@@ -100,7 +100,7 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text) {
     return;
   }
 
-  if (&syscfg.gfilesdir[0] == NULL) {
+  if (&syscfg.gfilesdir[0] == nullptr) {
     // If we try to write we will throw a NPE.
     return;
   }

@@ -183,7 +183,7 @@ void PrintTime() {
 
   GetSession()->bout.Color(0);
   GetSession()->bout.NewLine(2);
-  time_t l = time(NULL);
+  time_t l = time(nullptr);
   std::string currentTime = asctime(localtime(&l));
 
   //Remove the ending \n character.

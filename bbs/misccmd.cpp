@@ -560,7 +560,7 @@ void Packers() {
         }
         preload_subs();
         nscan();
-        GetSession()->localIO()->set_x_only(0, NULL, 0);
+        GetSession()->localIO()->set_x_only(0, nullptr, 0);
         add_arc("offline", "posts.txt", 0);
         bool sent = download_temp_arc("offline", false);
         if (!sent) {

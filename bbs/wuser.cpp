@@ -193,7 +193,7 @@ int WUserManager::FindUser(std::string searchString) {
                                    static_cast<size_t>(GetApplication()->GetStatusManager()->GetUserCount()),
                                    sizeof(smalrec),
                                    (int(*)(const void *, const void *)) wwiv::strings::StringCompareIgnoreCase);
-  if (sr != NULL) {
+  if (sr != nullptr) {
     return sr->number;
   }
 #else

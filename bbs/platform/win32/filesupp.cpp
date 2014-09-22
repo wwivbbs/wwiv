@@ -39,7 +39,7 @@ long WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive);
 long WWIV_WIN32_FreeSpaceForDriveLetter(int nDrive) {
   char s[] = "X:\\";
   s[0] = static_cast< char >('A' + static_cast< char >(nDrive - 1));
-  char *pszDrive = (nDrive) ? s : NULL;
+  char *pszDrive = (nDrive) ? s : nullptr;
   UINT driveType = GetDriveType(pszDrive);
 
   // check if the drive exists
@@ -84,5 +84,5 @@ void WWIV_GetDir(char *s, bool be) {
 }
 
 void WWIV_GetFileNameFromPath(const char *pszPath, char *pszFileName) {
-  _splitpath(pszPath, NULL, NULL, pszFileName, NULL);
+  _splitpath(pszPath, nullptr, nullptr, pszFileName, nullptr);
 }

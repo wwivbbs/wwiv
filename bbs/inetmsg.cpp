@@ -76,7 +76,7 @@ void get_user_ppp_addr() {
         int nUserNum = atoi(&szLine[4]);
         if (nUserNum == GetSession()->usernum) {
           char* ss = strtok(szLine, "=");
-          ss = strtok(NULL, "\r\n");
+          ss = strtok(nullptr, "\r\n");
           if (ss) {
             while (ss[0] == ' ') {
               strcpy(ss, &ss[1]);
@@ -134,7 +134,7 @@ void send_inet_email() {
     unsigned short nSystemNumber = 32767;
     irt[0] = 0;
     irt_name[0] = 0;
-    grab_quotes(NULL, NULL);
+    grab_quotes(nullptr, nullptr);
     if (nUserNumber || nSystemNumber) {
       email(nUserNumber, nSystemNumber, false, 0);
     }
@@ -158,7 +158,7 @@ bool check_inet_addr(const char *inetaddr) {
 
   strcpy(szBuffer, inetaddr);
   char *p = strchr(szBuffer, '@');
-  if (p == NULL || strchr(p, '.') == NULL) {
+  if (p == nullptr || strchr(p, '.') == nullptr) {
     return false;
   }
   return true;
@@ -167,13 +167,13 @@ bool check_inet_addr(const char *inetaddr) {
 
 char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber) {
   if (!nUserNumber) {
-    return NULL;
+    return nullptr;
   }
 
   if (nUserNumber == GetSession()->usernum && check_inet_addr(GetSession()->GetCurrentUser()->GetEmailAddress())) {
     strcpy(pszInternetEmailAddress, GetSession()->GetCurrentUser()->GetEmailAddress());
   } else {
-    //pszInternetEmailAddress = NULL;
+    //pszInternetEmailAddress = nullptr;
     *pszInternetEmailAddress = 0;
     WFile inetAddrFile(syscfg.datadir, INETADDR_DAT);
     if (!inetAddrFile.Exists()) {
@@ -207,7 +207,7 @@ char *read_inet_addr(char *pszInternetEmailAddress, int nUserNumber) {
 
 void write_inet_addr(const char *pszInternetEmailAddress, int nUserNumber) {
   if (!nUserNumber) {
-    return; /*NULL;*/
+    return; /*nullptr;*/
   }
 
   WFile inetAddrFile(syscfg.datadir, INETADDR_DAT);

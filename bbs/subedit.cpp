@@ -644,7 +644,7 @@ void insert_sub(int n) {
     return;
   }
 
-  update_conf(CONF_SUBS, &nconv, NULL, CONF_UPDATE_INSERT);
+  update_conf(CONF_SUBS, &nconv, nullptr, CONF_UPDATE_INSERT);
 
   n = static_cast<int>(nconv);
 
@@ -718,7 +718,7 @@ void delete_sub(int n) {
     return;
   }
 
-  update_conf(CONF_SUBS, &nconv, NULL, CONF_UPDATE_DELETE);
+  update_conf(CONF_SUBS, &nconv, nullptr, CONF_UPDATE_DELETE);
 
   n = static_cast<int>(nconv);
 
@@ -913,6 +913,6 @@ void boardedit() {
   GetSession()->subchg = 1;
   //g_szMessageGatFileName[0] = '\0';
   if (confchg) {
-    save_confs(CONF_SUBS, -1, NULL);
+    save_confs(CONF_SUBS, -1, nullptr);
   }
 }

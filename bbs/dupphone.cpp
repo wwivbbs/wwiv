@@ -49,7 +49,7 @@ void delete_phone_number(int usernum, const char *phone) {
   int nNumRecords = static_cast<int>(lFileSize / sizeof(phonerec));
   phonerec *p = static_cast<phonerec *>(BbsAllocA(lFileSize));
   WWIV_ASSERT(p);
-  if (p == NULL) {
+  if (p == nullptr) {
     return;
   }
   phoneFile.Read(p, lFileSize);
@@ -84,7 +84,7 @@ int find_phone_number(const char *phone) {
   int nNumRecords = static_cast<int>(lFileSize / sizeof(phonerec));
   phonerec *p = static_cast<phonerec *>(BbsAllocA(lFileSize));
   WWIV_ASSERT(p);
-  if (p == NULL) {
+  if (p == nullptr) {
     return 0;
   }
   phoneFile.Read(p, lFileSize);

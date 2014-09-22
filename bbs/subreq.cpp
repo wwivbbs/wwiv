@@ -51,7 +51,7 @@ static void sub_req(int main_type, int minor_type, int tosys, char *extra) {
   nh.main_type = static_cast<unsigned short>(main_type);
   nh.minor_type = static_cast<unsigned short>(minor_type) ;
   nh.list_len = 0;
-  nh.daten = static_cast<unsigned long>(time(NULL));
+  nh.daten = static_cast<unsigned long>(time(nullptr));
   if (!minor_type) {
     nh.length = strlen(extra) + 1;
   } else {
@@ -102,11 +102,11 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
           ss = strtok(s, " \r\n\t");
           if (ss) {
             if (wwiv::strings::IsEqualsIgnoreCase(ss, type)) {
-              ss = strtok(NULL, " \r\n\t");
+              ss = strtok(nullptr, " \r\n\t");
               if (ss) {
                 short h = static_cast<short>(atol(ss));
                 short o = 0;
-                ss = strtok(NULL, "\r\n");
+                ss = strtok(nullptr, "\r\n");
                 if (ss) {
                   int i1 = 0;
                   while (*ss && ((*ss == ' ') || (*ss == '\t'))) {
@@ -196,7 +196,7 @@ void sub_xtr_del(int n, int nn, int f) {
   set_net_num(xn.net_num);
 
   if ((xn.host) && (valid_system(xn.host))) {
-    int ok = find_hostfor(xn.stype, &xn.host, NULL, &opt);
+    int ok = find_hostfor(xn.stype, &xn.host, nullptr, &opt);
     if (ok) {
       if (opt & OPTION_AUTO) {
         GetSession()->bout << "|#5Attempt automated drop request? ";

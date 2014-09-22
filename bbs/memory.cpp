@@ -32,7 +32,7 @@ void *BbsAllocA(size_t lNumBytes) {
   memset(pBuffer, 0, lNumBytes);
   WWIV_ASSERT(pBuffer);
 #ifndef NOT_BBS
-  if (pBuffer == NULL) {
+  if (pBuffer == nullptr) {
     GetSession()->bout << "\r\nNot enough memory, needed " << lNumBytes << " bytes.\r\n\n";
     char szLogLine[ 255 ];
     snprintf(szLogLine, sizeof(szLogLine), "!!! Ran out of memory, needed %u bytes !!!", lNumBytes);
@@ -51,7 +51,7 @@ char **BbsAlloc2D(int nRow, int nCol, int nSize) {
 #endif
 
   char* pdata = reinterpret_cast<char*>(calloc(nRow * nCol, nSize));
-  if (pdata == NULL) {
+  if (pdata == nullptr) {
 #ifndef NOT_BBS
     GetSession()->bout << szErrorMessage;
     WWIV_OutputDebugString(szErrorMessage);
@@ -59,10 +59,10 @@ char **BbsAlloc2D(int nRow, int nCol, int nSize) {
     hangup = true;
     GetSession()->bout.NewLine();
 #endif
-    return NULL;
+    return nullptr;
   }
   char** prow = static_cast< char ** >(BbsAllocA(nRow * sizeof(char *)));
-  if (prow == (char **) NULL) {
+  if (prow == (char **) nullptr) {
 #ifndef NOT_BBS
     GetSession()->bout << szErrorMessage;
     WWIV_OutputDebugString(szErrorMessage);
@@ -71,7 +71,7 @@ char **BbsAlloc2D(int nRow, int nCol, int nSize) {
     GetSession()->bout.NewLine();
 #endif
     free(pdata);
-    return NULL;
+    return nullptr;
   }
   for (int i = 0; i < nRow; i++) {
     prow[i] = pdata;

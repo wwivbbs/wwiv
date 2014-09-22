@@ -204,7 +204,7 @@ void normalupload(int dn) {
       GetSession()->bout << "Please enter a one line description.\r\n:";
       inputl(u.description, 58);
       GetSession()->bout.NewLine();
-      char *pszExtendedDescription = NULL;
+      char *pszExtendedDescription = nullptr;
       modify_extended_description(&pszExtendedDescription, directories[dn].name, u.filename);
       if (pszExtendedDescription) {
         add_extended_description(u.filename, pszExtendedDescription);
