@@ -119,7 +119,7 @@ FILE* WTextFile::OpenImpl() {
 #else  // _WIN32
 FILE* WTextFile::OpenImpl() {
   FILE *f = fopen(file_name_.c_str(), file_mode_.c_str());
-  if (f != nullptr`) {
+  if (f != nullptr) {
     flock(fileno(f), (strpbrk(file_mode_.c_str(), "wa+")) ? LOCK_EX : LOCK_SH);
   }
   return f;
