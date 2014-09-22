@@ -215,7 +215,7 @@ void run_chain(int nChainNumber) {
 
 void do_chains() {
   int *map = static_cast<int*>(BbsAllocA(GetSession()->max_chains * sizeof(int)));
-  WWIV_ASSERT(map != NULL);
+  WWIV_ASSERT(map != nullptr);
   if (!map) {
     return;
   }
@@ -263,10 +263,10 @@ void do_chains() {
   }
   show_chains(&mapp, map);
 
-  bool done   = false;
+  bool done  = false;
   GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
-  int start   = 0;
-  char *ss    = NULL;
+  int start  = 0;
+  char* ss = nullptr;
 
   do {
     GetSession()->SetMMKeyArea(WSession::mmkeyChains);

@@ -36,7 +36,7 @@ using wwiv::strings::StringPrintf;
 void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   long lMessageLength;
   char* b = readfile(&(pPostRecord->msg), extra, &lMessageLength);
-  if (b == NULL) {
+  if (b == nullptr) {
     return;
   }
 
@@ -71,7 +71,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
     lMessageLength = netHeaderOrig.length - strlen(pPostRecord->title) - 1;
   }
   char* b1 = static_cast<char *>(BbsAllocA(netHeaderOrig.length + 100));
-  if (b1 == NULL) {
+  if (b1 == nullptr) {
     free(b);
     set_net_num(nOrigNetNumber);
     return;
@@ -90,7 +90,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
     set_net_num(xnp->net_num);
 
     net_header_rec nh = netHeaderOrig;
-    unsigned short int *pList = NULL;
+    unsigned short int *pList = nullptr;
     nh.minor_type = xnp->type;
     if (!nh.fromsys) {
       nh.fromsys = net_sysnum;
@@ -109,7 +109,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
         if (!pList) {
           continue;
         }
-        if ((b = static_cast<char *>(BbsAllocA(len1 + 100L))) == NULL) {
+        if ((b = static_cast<char *>(BbsAllocA(len1 + 100L))) == nullptr) {
           free(pList);
           continue;
         }
@@ -146,7 +146,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
       nh.main_type = main_type_new_post;
     }
     if (nn1 == GetSession()->GetNetworkNumber()) {
-      send_net(&nh, pList, b1, xnp->type ? NULL : xnp->stype);
+      send_net(&nh, pList, b1, xnp->type ? nullptr : xnp->stype);
     } else {
       gate_msg(&nh, b1, xnp->net_num, xnp->stype, pList, nNetNumber);
     }
@@ -209,7 +209,7 @@ void post() {
       GetSession()->bout << ".\r\n\n";
     }
   }
-  time_t lStartTime = time(NULL);
+  time_t lStartTime = time(nullptr);
 
   write_inst(INST_LOC_POST, GetSession()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
@@ -227,7 +227,7 @@ void post() {
     WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
     p.qscan = pStatus->IncrementQScanPointer();
     GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
-    p.daten = static_cast<unsigned long>(time(NULL));
+    p.daten = static_cast<unsigned long>(time(nullptr));
     if (GetSession()->GetCurrentUser()->IsRestrictionValidate()) {
       p.status = status_unvalidated;
     } else {
@@ -280,7 +280,7 @@ void post() {
     pStatus->IncrementNumLocalPosts();
 
     if (GetApplication()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
-      time_t lEndTime = time(NULL);
+      time_t lEndTime = time(nullptr);
       if (lStartTime > lEndTime) {
         lEndTime += HOURS_PER_DAY * SECONDS_PER_DAY;
       }

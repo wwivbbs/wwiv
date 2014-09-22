@@ -468,7 +468,7 @@ void add_temp_arc() {
   if (szInputFileMask[0] == '\0') {
     return;
   }
-  if (strchr(szInputFileMask, '.') == NULL) {
+  if (strchr(szInputFileMask, '.') == nullptr) {
     strcat(szInputFileMask, ".*");
   }
   strcpy(szFileMask, stripfn(szInputFileMask));
@@ -493,7 +493,7 @@ void del_temp() {
     return;
   }
   if (szFileName[0]) {
-    if (strchr(szFileName, '.') == NULL) {
+    if (strchr(szFileName, '.') == nullptr) {
       strcat(szFileName, ".*");
     }
     remove_from_temp(szFileName, syscfgovr.tempdir, true);
@@ -548,7 +548,7 @@ void temp_extract() {
   if (!okfn(s) || s[0] == '\0') {
     return;
   }
-  if (strchr(s, '.') == NULL) {
+  if (strchr(s, '.') == nullptr) {
     strcat(s, ".*");
   }
   align(s);
@@ -614,7 +614,7 @@ void temp_extract() {
             s1[0] = '\0';
           }
           if (s1[0]) {
-            if (strchr(s1, '.') == NULL) {
+            if (strchr(s1, '.') == nullptr) {
               strcat(s1, ".*");
             }
             get_arc_cmd(s3, s4, 1, stripfn(s1));
@@ -658,7 +658,7 @@ void list_temp_text() {
     return;
   }
   if (s[0]) {
-    if (strchr(s, '.') == NULL) {
+    if (strchr(s, '.') == nullptr) {
       strcat(s, ".*");
     }
     sprintf(s1, "%s%s", syscfgovr.tempdir, stripfn(s));
@@ -779,7 +779,7 @@ void move_file_t() {
       } else if (ch == 'Y') {
         sprintf(s1, "%s%s", directories[batch[nCurBatchPos].dir].path, u.filename);
         StringRemoveWhitespace(s1);
-        char *pszDirectoryNum = NULL;
+        char *pszDirectoryNum = nullptr;
         do {
           GetSession()->bout << "|#2To which directory? ";
           pszDirectoryNum = mmkey(1);
@@ -822,7 +822,7 @@ void move_file_t() {
       if (ok && !done) {
         GetSession()->bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          u.daten = static_cast<unsigned long>(time(NULL));
+          u.daten = static_cast<unsigned long>(time(nullptr));
         }
         --nCurPos;
         fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
@@ -919,7 +919,7 @@ void removefile() {
   if (szFileToRemove[0] == '\0') {
     return;
   }
-  if (strchr(szFileToRemove, '.') == NULL) {
+  if (strchr(szFileToRemove, '.') == nullptr) {
     strcat(szFileToRemove, ".*");
   }
   align(szFileToRemove);

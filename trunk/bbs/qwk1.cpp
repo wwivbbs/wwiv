@@ -324,7 +324,7 @@ void upload_reply_packet(void) {
   read_qwk_cfg(&qwk_cfg);
 
   if (!qwk_cfg.fu) {
-    qwk_cfg.fu = time(NULL);
+    qwk_cfg.fu = time(nullptr);
   }
 
   ++qwk_cfg.timesu;

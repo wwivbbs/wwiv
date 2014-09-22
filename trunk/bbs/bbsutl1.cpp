@@ -53,7 +53,7 @@ void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSy
   *pSystemNumber = 0;
   net_email_name[0] = '\0';
   char *ss = strrchr(szEmailAddress, '@');
-  if (ss == NULL) {
+  if (ss == nullptr) {
     nUserNumber = finduser1(szEmailAddress);
     if (nUserNumber > 0) {
       *pUserNumber = static_cast< unsigned short >(nUserNumber);
@@ -153,7 +153,7 @@ void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSy
       nv = 0;
       on = GetSession()->GetNetworkNumber();
       ss = static_cast<char *>(BbsAllocA(GetSession()->GetMaxNetworkNumber()));
-      WWIV_ASSERT(ss != NULL);
+      WWIV_ASSERT(ss != nullptr);
       xx = -1;
       for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
         set_net_num(i);
@@ -390,7 +390,7 @@ void describe_area_code(int nAreaCode, char *pszDescription) {
     } else if (!nCurrentAreaCode) {
       strcpy(pszDescription, ss1);
     }
-    ss1 = strtok(NULL, "\r\n");
+    ss1 = strtok(nullptr, "\r\n");
   }
 
   free(ss);
@@ -433,7 +433,7 @@ void describe_area_code_prefix(int nAreaCode, int nTargetTown, char *pszDescript
     } else if (!nCurrentTown) {
       strcpy(pszDescription, ss1);
     }
-    ss1 = strtok(NULL, "\r\n");
+    ss1 = strtok(nullptr, "\r\n");
   }
   free(ss);
 }

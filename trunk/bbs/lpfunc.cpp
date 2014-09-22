@@ -580,12 +580,10 @@ int compare_criteria(struct search_record * sr, uploadsrec * ur) {
       return 0;
     }
   }
+
   // the above test was passed if it got here
-
-
-
   if (sr->search[0]) {
-    char *buff = NULL;
+    char *buff = nullptr;
     int desc_len = 0, fname_len = 0, ext_len = 0;
 
     // we want to seach the filename, description and ext description
@@ -593,11 +591,9 @@ int compare_criteria(struct search_record * sr, uploadsrec * ur) {
     // and one is located in the description and two is in the
     // extended description, then it will properly find the search
 
-
     if (sr->search_extended && ur->mask & mask_extended) {
       buff = READ_EXTENDED_DESCRIPTION(ur->filename);
     }
-
 
     desc_len = strlen(ur->description);
 

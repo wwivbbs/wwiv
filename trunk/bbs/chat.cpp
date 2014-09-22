@@ -575,22 +575,22 @@ void load_actions(IniFile *pIniFile) {
       const char* pszIniValue = pIniFile->GetValue(rstr);
       switch (ca) {
       case 0:
-        act.r = atoi((pszIniValue != NULL) ? pszIniValue : "0");
+        act.r = atoi((pszIniValue != nullptr) ? pszIniValue : "0");
         break;
       case 1:
-        strcpy(act.aword, (pszIniValue != NULL) ? pszIniValue : "");
+        strcpy(act.aword, (pszIniValue != nullptr) ? pszIniValue : "");
         break;
       case 2:
-        strcpy(act.toprint, (pszIniValue != NULL) ? pszIniValue : "");
+        strcpy(act.toprint, (pszIniValue != nullptr) ? pszIniValue : "");
         break;
       case 3:
-        strcpy(act.toperson, (pszIniValue != NULL) ? pszIniValue : "");
+        strcpy(act.toperson, (pszIniValue != nullptr) ? pszIniValue : "");
         break;
       case 4:
-        strcpy(act.toall, (pszIniValue != NULL) ? pszIniValue : "");
+        strcpy(act.toall, (pszIniValue != nullptr) ? pszIniValue : "");
         break;
       case 5:
-        strcpy(act.singular, (pszIniValue != NULL) ? pszIniValue : "");
+        strcpy(act.singular, (pszIniValue != nullptr) ? pszIniValue : "");
         break;
       default:
         //TODO Should an error be displayed here?
@@ -612,7 +612,7 @@ void add_action(ch_action act) {
     return;
   }
   addact = static_cast<ch_action *>(BbsAllocA(sizeof(ch_action)));
-  WWIV_ASSERT(addact != NULL);
+  WWIV_ASSERT(addact != nullptr);
   addact->r = act.r;
   strcpy(addact->aword, act.aword);
   strcpy(addact->toprint, act.toprint);

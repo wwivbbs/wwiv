@@ -321,7 +321,7 @@ bool fill_sec(int sn) {
         gfilerec g1;
         strcpy(g1.filename, fnd.GetFileName());
         strcpy(g1.description, s1);
-        g1.daten = static_cast<long>(time(NULL));
+        g1.daten = static_cast<long>(time(nullptr));
         g[i] = g1;
       } else {
         ok = false;

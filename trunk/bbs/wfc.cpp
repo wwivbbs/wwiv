@@ -37,7 +37,7 @@ using wwiv::core::FilePath;
 
 // Local Functions
 void DisplayWFCScreen(const char *pszBuffer);
-static char * pszScreenBuffer = NULL;
+static char * pszScreenBuffer = nullptr;
 
 static int inst_num;
 
@@ -60,7 +60,7 @@ void wfc_init() {
   IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
     const char *pszDriveList = iniFile.GetValue("WFC_DRIVES");
-    if (pszDriveList != NULL) {
+    if (pszDriveList != nullptr) {
       for (int j = 0; j < wwiv::strings::GetStringLength(pszDriveList); j++) {
         GetSession()->wfcdrvs[ j ] = pszDriveList[ j ] - '@';
         if (GetSession()->wfcdrvs[ j ] < 2) {
@@ -137,7 +137,7 @@ void wfc_screen() {
   if (GetSession()->wfc_status == 0) {
     GetSession()->localIO()->SetCursor(WLocalIO::cursorNone);
     GetSession()->localIO()->LocalCls();
-    if (pszScreenBuffer == NULL) {
+    if (pszScreenBuffer == nullptr) {
       pszScreenBuffer = new char[4000];
       WFile wfcFile(syscfg.datadir, WFC_DAT);
       if (!wfcFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {

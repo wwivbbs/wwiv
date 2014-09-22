@@ -99,7 +99,7 @@ void colorize_foundtext(char *text, struct search_record * search_rec, int color
       StringTrim(word);
 
       while (pszTempBuffer && word[0]) {
-        if ((pszTempBuffer = stristr(pszTempBuffer, word)) != NULL) {
+        if ((pszTempBuffer = stristr(pszTempBuffer, word)) != nullptr) {
           size = strlen(pszTempBuffer) + 1;
           memmove(&pszTempBuffer[6], &pszTempBuffer[0], size);
           strncpy(pszTempBuffer, found_color, 6);
@@ -111,7 +111,7 @@ void colorize_foundtext(char *text, struct search_record * search_rec, int color
           ++pszTempBuffer;
         }
       }
-      tok = strtok(NULL, "&|!()");
+      tok = strtok(nullptr, "&|!()");
     }
   }
 }
@@ -393,7 +393,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
     strcpy(szFileExt, "   ");
   }
 
-  time_t tTimeNow = time(NULL);
+  time_t tTimeNow = time(nullptr);
   long lDiffTime = static_cast<long>(difftime(tTimeNow, u->daten));
   int nDaysOld = lDiffTime / SECONDS_PER_DAY;
 
@@ -764,7 +764,7 @@ void show_fileinfo(uploadsrec * u) {
   GetSession()->bout << "  |#1Size        : |#2" << bytes_to_k(u->numbytes) << wwiv::endl;
   GetSession()->bout << "  |#1Downloads   : |#2" << u->numdloads << "|#1" << wwiv::endl;
   GetSession()->bout << "  |#1Description : |#2" << u->description << wwiv::endl;
-  print_extended_plus(u->filename, 255, 16, YELLOW, NULL);
+  print_extended_plus(u->filename, 255, 16, YELLOW, nullptr);
   repeat_char('\xCD', 78);
   pausescr();
 }
@@ -796,12 +796,12 @@ int check_lines_needed(uploadsrec * u) {
     if (ext_is_on && mask_extended & u->mask) {
       ss = READ_EXTENDED_DESCRIPTION(u->filename);
     } else {
-      ss = NULL;
+      ss = nullptr;
     }
 
     if (ss) {
       tmp = ss;
-      while ((elines < max_extended) && ((tmp = strchr(tmp, '\r')) != NULL)) {
+      while ((elines < max_extended) && ((tmp = strchr(tmp, '\r')) != nullptr)) {
         ++elines;
         ++tmp;
       }
@@ -870,7 +870,7 @@ int prep_search_rec(struct search_record * search_rec, int type) {
   }
 
   if (search_rec->filemask[0]) {
-    if (strchr(search_rec->filemask, '.') == NULL) {
+    if (strchr(search_rec->filemask, '.') == nullptr) {
       strcat(search_rec->filemask, ".*");
     }
   }
@@ -1129,7 +1129,7 @@ void config_file_list() {
   strcpy(reinterpret_cast<char*>(u.upby), GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum));
   u.numdloads = 50;
   u.numbytes = 655535L;
-  u.daten = time(NULL) - 10000;
+  u.daten = time(nullptr) - 10000;
 
   load_lp_config();
 
@@ -1377,7 +1377,7 @@ int rename_filename(const char *pszFileName, int dn) {
     return ret;
   }
 
-  if (strchr(s, '.') == NULL) {
+  if (strchr(s, '.') == nullptr) {
     strcat(s, ".*");
   }
   align(s);
@@ -1501,7 +1501,7 @@ int remove_filename(const char *pszFileName, int dn) {
   if (szTempFileName[0] == '\0') {
     return ret;
   }
-  if (strchr(szTempFileName, '.') == NULL) {
+  if (strchr(szTempFileName, '.') == nullptr) {
     strcat(szTempFileName, ".*");
   }
   align(szTempFileName);
@@ -1702,10 +1702,10 @@ int move_filename(const char *pszFileName, int dn) {
       if (!bulk_move) {
         GetSession()->bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          u.daten = static_cast<unsigned long>(time(NULL));
+          u.daten = static_cast<unsigned long>(time(nullptr));
         }
       } else {
-        u.daten = static_cast<unsigned long>(time(NULL));
+        u.daten = static_cast<unsigned long>(time(nullptr));
       }
       --cp;
       if (fileDownload.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
@@ -1856,7 +1856,7 @@ void load_lp_config() {
     WFile fileConfig(syscfg.datadir, LISTPLUS_CFG);
     if (!fileConfig.Open(WFile::modeBinary | WFile::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(struct listplus_config));
-      lp_config.fi = lp_config.lssm = static_cast<long>(time(NULL));
+      lp_config.fi = lp_config.lssm = static_cast<long>(time(nullptr));
 
       lp_config.normal_highlight  = (YELLOW + (BLACK << 4));
       lp_config.normal_menu_item  = (CYAN + (BLACK << 4));
@@ -2167,7 +2167,7 @@ void download_plus(const char *pszFileName) {
   if (szFileName[0] == '\0') {
     return;
   }
-  if (strchr(szFileName, '.') == NULL) {
+  if (strchr(szFileName, '.') == nullptr) {
     strcat(szFileName, ".*");
   }
   align(szFileName);

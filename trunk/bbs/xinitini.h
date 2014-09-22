@@ -269,8 +269,8 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "EXEC_CHILDWAITTIME",   // 130
   "EXEC_WAITFORIDLETIME",   // 131
   "NEW_SCAN_AT_LOGIN",    // 132
-  NULL,
-  NULL
+  nullptr,
+  nullptr
 };
 
 

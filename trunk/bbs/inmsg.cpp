@@ -88,7 +88,7 @@ static bool GetMessageToName(const char *aux) {
 
 void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
            const char *pszDestination, int flags, bool force_title) {
-  char *lin = NULL, *b = NULL;
+  char *lin = nullptr, *b = nullptr;
 
   int oiia = setiia(0);
 
@@ -110,7 +110,7 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
 
   int maxli = GetMaxMessageLinesAllowed();
   if (!fsed) {
-    if ((lin = static_cast<char *>(BbsAllocA((maxli + 10) * LEN))) == NULL) {
+    if ((lin = static_cast<char *>(BbsAllocA((maxli + 10) * LEN))) == nullptr) {
       pMessageRecord->stored_as = 0xffffffff;
       setiia(oiia);
       return;
@@ -172,7 +172,7 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
       }
     }
     lMaxMessageSize  += 1024;
-    if ((b = static_cast<char *>(BbsAllocA(lMaxMessageSize))) == NULL) {
+    if ((b = static_cast<char *>(BbsAllocA(lMaxMessageSize))) == nullptr) {
       free(lin);
       GetSession()->bout << "Out of memory.\r\n";
       pMessageRecord->stored_as = 0xffffffff;
@@ -195,7 +195,7 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
     }
 
     // Add date to message body
-    time_t lTime = time(NULL);
+    time_t lTime = time(nullptr);
     string time_string(asctime(localtime(&lTime)));
     AddLineToMessageBuffer(b, time_string.c_str(), &lCurrentMessageSize);
 
@@ -240,7 +240,7 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
   charbufferpointer = 0;
   charbuffer[0] = '\0';
   setiia(oiia);
-  grab_quotes(NULL, NULL);
+  grab_quotes(nullptr, nullptr);
 }
 
 void AddLineToMessageBuffer(char *pszMessageBuffer, const char *pszLineToAdd, long *plBufferLength) {
@@ -255,7 +255,7 @@ static void ReplaceString(char *pszResult, char *pszOld, char *pszNew) {
     return;
   }
   char* ss = strstr(pszResult, pszOld);
-  if (ss == NULL) {
+  if (ss == nullptr) {
     return;
   }
   ss[0] = '\0';
@@ -312,7 +312,7 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
       } else if (wwiv::strings::IsEqualsIgnoreCase(s, "/QUOTE") ||
                  wwiv::strings::IsEqualsIgnoreCase(s, "/Q")) {
         bCheckMessageSize = false;
-        if (quotes_ind != NULL) {
+        if (quotes_ind != nullptr) {
           get_quote(0);
         }
       } else if (wwiv::strings::IsEqualsIgnoreCase(s, "/LI")) {
@@ -500,7 +500,7 @@ void GetMessageTitle(string *title, bool force_title) {
 
 void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength, const char *aux) {
   if (!wwiv::strings::IsEqualsIgnoreCase(aux, "email")) {
-    long msgid = time(NULL);
+    long msgid = time(nullptr);
     long targcrc = crc32buf(pszMessageBuffer, strlen(pszMessageBuffer));
     const string buf = StringPrintf("0P %lX-%lX", targcrc, msgid);
     AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);

@@ -74,16 +74,16 @@ unsigned short WApplication::str2spawnopt(const char *s) {
   strcpy(ts, s);
   strupr(ts);
 
-  if (strstr(ts, "NOHUP") != NULL) {
+  if (strstr(ts, "NOHUP") != nullptr) {
     return_val |= EFLAG_NOHUP;
   }
-  if (strstr(ts, "COMIO") != NULL) {
+  if (strstr(ts, "COMIO") != nullptr) {
     return_val |= EFLAG_COMIO;
   }
-  if (strstr(ts, "FOSSIL") != NULL) {
+  if (strstr(ts, "FOSSIL") != nullptr) {
     return_val |= EFLAG_FOSSIL; // RF20020929
   }
-  if (strstr(ts, "NETPROG") != NULL) {
+  if (strstr(ts, "NETPROG") != nullptr) {
     return_val |= EFLAG_NETPROG;
   }
   return return_val;
@@ -185,9 +185,9 @@ static void set_string(IniFile* ini, int key_idx, string* out) {
 #define INI_INIT_STR(n, f) { set_string(ini, n, &syscfg.f); }
 
 #define INI_GET_ASV(s, f, func, d) \
-{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=NULL) GetSession()->asv.f = func (ss); else GetSession()->asv.f = d;}
+{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_SIMPLE_ASV,s)))!=nullptr) GetSession()->asv.f = func (ss); else GetSession()->asv.f = d;}
 #define INI_GET_CALLBACK(s, f, func, d) \
-{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_CALLBACK,s)))!=NULL) \
+{const char* ss; if ((ss=ini->GetValue(get_key_str(INI_STR_CALLBACK,s)))!=nullptr) \
     GetSession()->cbv.f = func (ss); \
     else GetSession()->cbv.f = d;}
 
@@ -399,15 +399,15 @@ IniFile* WApplication::ReadINIFile() {
 
     const char* ss;
     // misc stuff
-    if (((ss = ini->GetValue(get_key_str(INI_STR_MAIL_WHO_LEN))) != NULL) &&
+    if (((ss = ini->GetValue(get_key_str(INI_STR_MAIL_WHO_LEN))) != nullptr) &&
         (atoi(ss) > 0 || ss[0] == '0')) {
       GetSession()->mail_who_field_len = atoi(ss);
     }
-    if ((ss = ini->GetValue(get_key_str(INI_STR_RATIO))) != NULL) {
+    if ((ss = ini->GetValue(get_key_str(INI_STR_RATIO))) != nullptr) {
       syscfg.req_ratio = static_cast<float>(atof(ss));
     }
 
-    if ((ss = ini->GetValue(get_key_str(INI_STR_ATTACH_DIR))) != NULL) {
+    if ((ss = ini->GetValue(get_key_str(INI_STR_ATTACH_DIR))) != nullptr) {
       m_attachmentDirectory = ss;
       if (m_attachmentDirectory.at(m_attachmentDirectory.length() - 1) != WFile::pathSeparatorChar) {
         m_attachmentDirectory += WFile::pathSeparatorString;
@@ -666,7 +666,7 @@ void WApplication::read_nextern() {
   GetSession()->SetNumberOfExternalProtocols(0);
   if (externs) {
     free(externs);
-    externs = NULL;
+    externs = nullptr;
   }
 
   WFile externalFile(syscfg.datadir, NEXTERN_DAT);
@@ -676,7 +676,7 @@ void WApplication::read_nextern() {
       lFileSize = 15 * sizeof(newexternalrec);
     }
     externs = static_cast<newexternalrec *>(BbsAllocA(lFileSize + 10));
-    WWIV_ASSERT(externs != NULL);
+    WWIV_ASSERT(externs != nullptr);
     GetSession()->SetNumberOfExternalProtocols(externalFile.Read(externs, lFileSize) / sizeof(newexternalrec));
   }
 }
@@ -685,7 +685,7 @@ void WApplication::read_nextern() {
 void WApplication::read_arcs() {
   if (arcs) {
     free(arcs);
-    arcs = NULL;
+    arcs = nullptr;
   }
 
   WFile archiverFile(syscfg.datadir, ARCHIVER_DAT);
@@ -696,7 +696,7 @@ void WApplication::read_arcs() {
     }
     arcs = static_cast<arcrec *>(BbsAllocA(lFileSize));
     archiverFile.Read(arcs, lFileSize);
-    WWIV_ASSERT(arcs != NULL);
+    WWIV_ASSERT(arcs != nullptr);
   }
 }
 
@@ -704,7 +704,7 @@ void WApplication::read_arcs() {
 void WApplication::read_editors() {
   if (editors) {
     free(editors);
-    editors = NULL;
+    editors = nullptr;
   }
   GetSession()->SetNumberOfEditors(0);
 
@@ -715,7 +715,7 @@ void WApplication::read_editors() {
       lFileSize = 10 * sizeof(editorrec);
     }
     editors = static_cast<editorrec *>(BbsAllocA(lFileSize + 10));
-    WWIV_ASSERT(editors != NULL);
+    WWIV_ASSERT(editors != nullptr);
     GetSession()->SetNumberOfEditors(file.Read(editors, lFileSize) / sizeof(editorrec));
   }
 }
@@ -724,12 +724,12 @@ void WApplication::read_editors() {
 void WApplication::read_nintern() {
   if (over_intern) {
     free(over_intern);
-    over_intern = NULL;
+    over_intern = nullptr;
   }
   WFile file(syscfg.datadir, NINTERN_DAT);
   if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     over_intern = static_cast<newexternalrec *>(BbsAllocA(3 * sizeof(newexternalrec)));
-    WWIV_ASSERT(over_intern != NULL);
+    WWIV_ASSERT(over_intern != nullptr);
 
     file.Read(over_intern, 3 * sizeof(newexternalrec));
   }
@@ -740,10 +740,10 @@ bool WApplication::read_subs() {
   if (subboards) {
     free(subboards);
   }
-  subboards = NULL;
+  subboards = nullptr;
   GetSession()->SetMaxNumberMessageAreas(syscfg.max_subs);
   subboards = static_cast< subboardrec * >(BbsAllocA(GetSession()->GetMaxNumberMessageAreas() * sizeof(subboardrec)));
-  WWIV_ASSERT(subboards != NULL);
+  WWIV_ASSERT(subboards != nullptr);
 
   WFile file(syscfg.datadir, SUBS_DAT);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -790,14 +790,14 @@ void WApplication::read_networks() {
   if (net_networks) {
     free(net_networks);
   }
-  net_networks = NULL;
+  net_networks = nullptr;
   WFile file(syscfg.datadir, NETWORKS_DAT);
   if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     GetSession()->SetMaxNetworkNumber(file.GetLength() / sizeof(net_networks_rec));
     if (GetSession()->GetMaxNetworkNumber()) {
       net_networks = static_cast<net_networks_rec *>(BbsAllocA(GetSession()->GetMaxNetworkNumber() * sizeof(
                        net_networks_rec)));
-      WWIV_ASSERT(net_networks != NULL);
+      WWIV_ASSERT(net_networks != nullptr);
 
       file.Read(net_networks, GetSession()->GetMaxNetworkNumber() * sizeof(net_networks_rec));
     }
@@ -811,7 +811,7 @@ void WApplication::read_networks() {
   }
   if (!net_networks) {
     net_networks = static_cast<net_networks_rec *>(BbsAllocA(sizeof(net_networks_rec)));
-    WWIV_ASSERT(net_networks != NULL);
+    WWIV_ASSERT(net_networks != nullptr);
     GetSession()->SetMaxNetworkNumber(1);
     strcpy(net_networks->name, "WWIVnet");
     strcpy(net_networks->dir, syscfg.datadir);
@@ -828,7 +828,7 @@ bool WApplication::read_names() {
   int maxNumberOfUsers = std::max<int>(statusMgr->GetUserCount(), syscfg.maxusers);
 
   smallist = static_cast<smalrec *>(BbsAllocA(static_cast<long>(maxNumberOfUsers) * static_cast<long>(sizeof(smalrec))));
-  WWIV_ASSERT(smallist != NULL);
+  WWIV_ASSERT(smallist != nullptr);
 
   WFile file(syscfg.datadir, NAMES_LST);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -865,11 +865,11 @@ bool WApplication::read_dirs() {
   if (directories) {
     free(directories);
   }
-  directories = NULL;
+  directories = nullptr;
   GetSession()->SetMaxNumberFileAreas(syscfg.max_dirs);
   directories = static_cast<directoryrec *>(BbsAllocA(static_cast<long>(GetSession()->GetMaxNumberFileAreas()) *
                 static_cast<long>(sizeof(directoryrec))));
-  WWIV_ASSERT(directories != NULL);
+  WWIV_ASSERT(directories != nullptr);
 
   WFile file(syscfg.datadir, DIRS_DAT);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -886,9 +886,9 @@ void WApplication::read_chains() {
   if (chains) {
     free(chains);
   }
-  chains = NULL;
+  chains = nullptr;
   chains = static_cast<chainfilerec *>(BbsAllocA(GetSession()->max_chains * sizeof(chainfilerec)));
-  WWIV_ASSERT(chains != NULL);
+  WWIV_ASSERT(chains != nullptr);
   WFile file(syscfg.datadir, CHAINS_DAT);
   if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     GetSession()->SetNumberOfChains(file.Read(chains,
@@ -899,9 +899,9 @@ void WApplication::read_chains() {
     if (chains_reg) {
       free(chains_reg);
     }
-    chains_reg = NULL;
+    chains_reg = nullptr;
     chains_reg = static_cast<chainregrec *>(BbsAllocA(GetSession()->max_chains * sizeof(chainregrec)));
-    WWIV_ASSERT(chains_reg != NULL);
+    WWIV_ASSERT(chains_reg != nullptr);
 
     WFile regFile(syscfg.datadir, CHAINS_REG);
     if (regFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -929,13 +929,13 @@ bool WApplication::read_language() {
   if (languages) {
     free(languages);
   }
-  languages = NULL;
+  languages = nullptr;
   WFile file(syscfg.datadir, LANGUAGE_DAT);
   if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     GetSession()->num_languages = file.GetLength() / sizeof(languagerec);
     if (GetSession()->num_languages) {
       languages = static_cast<languagerec *>(BbsAllocA(GetSession()->num_languages * sizeof(languagerec)));
-      WWIV_ASSERT(languages != NULL);
+      WWIV_ASSERT(languages != nullptr);
 
       file.Read(languages, GetSession()->num_languages * sizeof(languagerec));
     }
@@ -943,7 +943,7 @@ bool WApplication::read_language() {
   }
   if (!GetSession()->num_languages) {
     languages = static_cast<languagerec *>(BbsAllocA(sizeof(languagerec)));
-    WWIV_ASSERT(languages != NULL);
+    WWIV_ASSERT(languages != nullptr);
     GetSession()->num_languages = 1;
     strcpy(languages->name, "English");
     strncpy(languages->dir, syscfg.gfilesdir, sizeof(languages->dir) - 1);
@@ -959,12 +959,12 @@ bool WApplication::read_language() {
 
 
 void WApplication::read_gfile() {
-  if (gfilesec != NULL) {
+  if (gfilesec != nullptr) {
     free(gfilesec);
-    gfilesec = NULL;
+    gfilesec = nullptr;
   }
   gfilesec = static_cast<gfiledirrec *>(BbsAllocA(static_cast<long>(GetSession()->max_gfilesec * sizeof(gfiledirrec))));
-  WWIV_ASSERT(gfilesec != NULL);
+  WWIV_ASSERT(gfilesec != nullptr);
   WFile file(syscfg.datadir, GFILE_DAT);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     GetSession()->num_sec = 0;
@@ -1006,7 +1006,7 @@ void WApplication::InitializeBBS() {
   GetSession()->SetQuoting(false);
   GetSession()->tagptr = 0;
 
-  time_t t = time(NULL);
+  time_t t = time(nullptr);
   // Struct tm_year is -= 1900
   struct tm * pTm = localtime(&t);
   if (pTm->tm_year < 88) {
@@ -1070,7 +1070,7 @@ void WApplication::InitializeBBS() {
     AbortBBS();
   }
 
-  net_networks = NULL;
+  net_networks = nullptr;
   GetSession()->SetNetworkNumber(0);
   read_networks();
   set_net_num(0);
@@ -1094,13 +1094,13 @@ void WApplication::InitializeBBS() {
   statusMgr->CommitTransaction(pStatus);
 
   gat = static_cast<unsigned short *>(BbsAllocA(2048 * sizeof(short)));
-  WWIV_ASSERT(gat != NULL);
+  WWIV_ASSERT(gat != nullptr);
 
   XINIT_PRINTF("* Reading Gfiles.\r\n");
-  gfilesec = NULL;
+  gfilesec = nullptr;
   read_gfile();
 
-  smallist = NULL;
+  smallist = nullptr;
 
   XINIT_PRINTF("* Reading user names.\r\n");
   if (!read_names()) {
@@ -1108,27 +1108,27 @@ void WApplication::InitializeBBS() {
   }
 
   XINIT_PRINTF("* Reading Message Areas.\r\n");
-  subboards = NULL;
+  subboards = nullptr;
   if (!read_subs()) {
     AbortBBS();
   }
 
   XINIT_PRINTF("* Reading File Areas.\r\n");
-  directories = NULL;
+  directories = nullptr;
   if (!read_dirs()) {
     AbortBBS();
   }
 
   XINIT_PRINTF("* Reading Chains.\r\n");
   GetSession()->SetNumberOfChains(0);
-  chains = NULL;
+  chains = nullptr;
   read_chains();
 
   XINIT_PRINTF("* Reading File Transfer Protocols.\r\n");
-  externs = NULL;
+  externs = nullptr;
   read_nextern();
 
-  over_intern = NULL;
+  over_intern = nullptr;
   read_nintern();
 
   XINIT_PRINTF("* Reading File Archivers.\r\n");
@@ -1151,7 +1151,7 @@ void WApplication::InitializeBBS() {
   iscan1(-1, false);
 
   batch = static_cast<batchrec *>(BbsAllocA(GetSession()->max_batch * sizeof(batchrec)));
-  WWIV_ASSERT(batch != NULL);
+  WWIV_ASSERT(batch != nullptr);
 
   XINIT_PRINTF("* Reading User Information.\r\n");
   GetSession()->ReadCurrentUser(1, false);
@@ -1210,24 +1210,24 @@ void WApplication::InitializeBBS() {
   XINIT_PRINTF("* Allocating Memory for Message/File Areas.\r\n");
   do_event = 0;
   usub = static_cast<usersubrec *>(BbsAllocA(GetSession()->GetMaxNumberMessageAreas() * sizeof(usersubrec)));
-  WWIV_ASSERT(usub != NULL);
+  WWIV_ASSERT(usub != nullptr);
   GetSession()->m_SubDateCache = static_cast<unsigned int*>(BbsAllocA(GetSession()->GetMaxNumberMessageAreas() * sizeof(
                                    long)));
-  WWIV_ASSERT(GetSession()->m_SubDateCache != NULL);
+  WWIV_ASSERT(GetSession()->m_SubDateCache != nullptr);
 
   udir = static_cast<usersubrec *>(BbsAllocA(GetSession()->GetMaxNumberFileAreas() * sizeof(usersubrec)));
-  WWIV_ASSERT(udir != NULL);
+  WWIV_ASSERT(udir != nullptr);
   GetSession()->m_DirectoryDateCache = static_cast<unsigned int*>(BbsAllocA(GetSession()->GetMaxNumberFileAreas() *
                                        sizeof(long)));
-  WWIV_ASSERT(GetSession()->m_DirectoryDateCache != NULL);
+  WWIV_ASSERT(GetSession()->m_DirectoryDateCache != nullptr);
 
   uconfsub = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
-  WWIV_ASSERT(uconfsub != NULL);
+  WWIV_ASSERT(uconfsub != nullptr);
   uconfdir = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
-  WWIV_ASSERT(uconfdir != NULL);
+  WWIV_ASSERT(uconfdir != nullptr);
 
   qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
-  WWIV_ASSERT(qsc != NULL);
+  WWIV_ASSERT(qsc != nullptr);
   qsc_n = qsc + 1;
   qsc_q = qsc_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
   qsc_p = qsc_q + (GetSession()->GetMaxNumberMessageAreas() + 31) / 32;
@@ -1270,7 +1270,7 @@ void WApplication::InitializeBBS() {
     WFile::Remove(WWIV_NET_DAT);
   }
 
-  srand(time(NULL));
+  srand(time(nullptr));
   catsl();
 
   XINIT_PRINTF("* Saving Instance information.\r\n");

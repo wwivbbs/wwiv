@@ -317,7 +317,7 @@ void GoodBye() {
 void WWIV_PostMessage() {
   irt[0] = 0;
   irt_name[0] = 0;
-  grab_quotes(NULL, NULL);
+  grab_quotes(nullptr, nullptr);
   if (usub[0].subnum != -1) {
     post();
   }
@@ -692,7 +692,7 @@ void DownloadPosts() {
       if (ac) {
         tmp_disable_conf(false);
       }
-      GetSession()->localIO()->set_x_only(0, NULL, 0);
+      GetSession()->localIO()->set_x_only(0, nullptr, 0);
       add_arc("offline", "posts.txt", 0);
       download_temp_arc("offline", false);
     }
@@ -706,7 +706,7 @@ void DownloadFileList() {
       GetSession()->bout << "Please wait...\r\n";
       GetSession()->localIO()->set_x_only(1, "files.txt", 1);
       searchall();
-      GetSession()->localIO()->set_x_only(0, NULL, 0);
+      GetSession()->localIO()->set_x_only(0, nullptr, 0);
       add_arc("temp", "files.txt", 0);
       download_temp_arc("temp", false);
     }

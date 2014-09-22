@@ -56,7 +56,7 @@ const std::string FileHelper::DirName(const std::string& name) const {
 bool FileHelper::Mkdir(const std::string& name) const {
     const std::string path = DirName(name); 
 #ifdef _WIN32
-    return CreateDirectory(path.c_str(), NULL) ? true:false;
+    return CreateDirectory(path.c_str(), nullptr) ? true : false;
 #else
     return (mkdir(path.c_str()) == 0);
 #endif
@@ -70,7 +70,7 @@ std::string FileHelper::CreateTempDir(const string base) {
     GetTempPath(_MAX_PATH, temp_path);
     time_t now = time(nullptr);
     sprintf(local_dir_template, "%s%s.%lx", temp_path, base.c_str(), now);
-    if (!CreateDirectory(local_dir_template, NULL)) {
+    if (!CreateDirectory(local_dir_template, nullptr)) {
         return string();
     }
     return std::string(local_dir_template);

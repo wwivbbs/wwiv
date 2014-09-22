@@ -484,12 +484,14 @@ const std::string create_chain_file() {
   return std::string(fileName);
 }
 
+static const int NULL_HANDLE = 0;
+
 int GetDoor32CommType() {
   if (!GetSession()->using_modem) {
     return 0;
   }
 #ifdef _WIN32
-  return (GetSession()->remoteIO()->GetHandle() == NULL) ? 1 : 2;
+  return (GetSession()->remoteIO()->GetHandle() == NULL_HANDLE) ? 1 : 2;
 #else
   return 0;
 #endif

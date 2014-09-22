@@ -112,7 +112,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
         goto go_away;
       }
     }
-    if (strchr(s2, '.') == NULL) {
+    if (strchr(s2, '.') == nullptr) {
       strcat(s2, ".mod");
     }
     sprintf(szFileName, "%s%s", s1, s2);
@@ -331,11 +331,11 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
 
           strcpy(s4, s2);
 
-          if (strstr(s3, ".UUE") != NULL) {
+          if (strstr(s3, ".UUE") != nullptr) {
             GetSession()->bout << "|#1UUEncoded File.  Save Output File As? ";
 
             input(s1, 30);
-            if (strchr(s1, '.') == NULL) {
+            if (strchr(s1, '.') == nullptr) {
               strcat(s1, ".MOD");
             }
 

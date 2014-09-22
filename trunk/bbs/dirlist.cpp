@@ -41,11 +41,11 @@ void dirlist(int mode) {
   bool done   = false;
 
   do {
-    bool is     = false;
-    bool abort  = false;
-    int p       = 1;
-    int i       = sn;
-    char *ss    = NULL;
+    bool is = false;
+    bool abort = false;
+    int p = 1;
+    int i = sn;
+    char *ss = nullptr;
 
     while (i <= en && uconfdir[i].confnum != -1 && !abort) {
       int i1 = 0;

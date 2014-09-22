@@ -125,7 +125,7 @@ int crc32file( char *name ) {
 
 	oldcrc32 = 0xFFFFFFFF;
 	charcnt = 0;
-	if ((fin=fopen(name, "r"))==NULL) {
+	if ((fin=fopen(name, "r"))==nullptr) {
 		perror(name);
 		return ERROR;
 	}

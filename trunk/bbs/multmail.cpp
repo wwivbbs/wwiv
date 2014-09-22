@@ -24,22 +24,19 @@
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 
-//
 // local function prototypes
-//
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup);
 int  oneuser();
-
 
 #define EMAIL_STORAGE 2
 
 using std::string;
 using std::unique_ptr;
+using wwiv::strings::StringPrintf;
 
 void multimail(int *pnUserNumber, int numu) {
-  int i1, cv;
   mailrec m, m1;
-  char s[255], s1[81], s2[81];
+  char s[255], s2[81];
   WUser user;
 
   if (freek1(syscfg.msgsdir) < 10) {
@@ -56,7 +53,7 @@ void multimail(int *pnUserNumber, int numu) {
   GetSession()->bout << "|#5Show all recipients in mail? ";
   bool show_all = yesno();
   int j = 0;
-  strcpy(s1, "\003""6CC: \003""1");
+  string s1 = StringPrintf("\003""6CC: \003""1");
 
   m.msg.storage_type = EMAIL_STORAGE;
   strcpy(irt, "Multi-Mail");
@@ -74,7 +71,7 @@ void multimail(int *pnUserNumber, int numu) {
 
   lineadd(&m.msg, "\003""7----", "email");
 
-  for (cv = 0; cv < numu; cv++) {
+  for (int cv = 0; cv < numu; cv++) {
     if (pnUserNumber[cv] < 0) {
       continue;
     }
@@ -115,12 +112,12 @@ void multimail(int *pnUserNumber, int numu) {
     GetSession()->bout.NewLine();
     if (show_all) {
       sprintf(s2, "%-22.22s  ", user.GetUserNameAndNumber(pnUserNumber[cv]));
-      strcat(s1, s2);
+      s1.assign(s2);
       j++;
       if (j >= 3) {
         lineadd(&m.msg, s1, "email");
         j = 0;
-        strcpy(s1, "\003""1    ");
+        s1 = "\003""1    ";
       }
     }
   }
@@ -129,7 +126,7 @@ void multimail(int *pnUserNumber, int numu) {
       lineadd(&m.msg, s1, "email");
     }
   }
-  sprintf(s1, "\003""2Mail Sent to %d Addresses!", numu);
+  s1 = StringPrintf("\003""2Mail Sent to %d Addresses!", numu);
   lineadd(&m.msg, "\003""7----", "email");
   lineadd(&m.msg, s1, "email");
 
@@ -139,7 +136,7 @@ void multimail(int *pnUserNumber, int numu) {
   m.tosys = 0;
   m.touser = 0;
   m.status = status_multimail;
-  m.daten = static_cast<unsigned long>(time(NULL));
+  m.daten = static_cast<unsigned long>(time(nullptr));
 
   unique_ptr<WFile> pFileEmail(OpenEmailFile(true));
   int len = pFileEmail->GetLength() / sizeof(mailrec);
@@ -152,7 +149,7 @@ void multimail(int *pnUserNumber, int numu) {
     while ((i > 0) && (m1.tosys == 0) && (m1.touser == 0)) {
       --i;
       pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), WFile::seekBegin);
-      i1 = pFileEmail->Read(&m1, sizeof(mailrec));
+      int i1 = pFileEmail->Read(&m1, sizeof(mailrec));
       if (i1 == -1) {
         GetSession()->bout << "|#6DIDN'T READ WRITE!\r\n";
       }
@@ -162,7 +159,7 @@ void multimail(int *pnUserNumber, int numu) {
     }
   }
   pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), WFile::seekBegin);
-  for (cv = 0; cv < numu; cv++) {
+  for (int cv = 0; cv < numu; cv++) {
     if (pnUserNumber[cv] > 0) {
       m.touser = static_cast<unsigned short>(pnUserNumber[cv]);
       pFileEmail->Write(&m, sizeof(mailrec));
@@ -171,10 +168,8 @@ void multimail(int *pnUserNumber, int numu) {
   pFileEmail->Close();
 }
 
-
-char *mml_s;
-int mml_started;
-
+static char *mml_s;
+static int mml_started;
 
 int oneuser() {
   char s[81], *ss;
@@ -183,14 +178,14 @@ int oneuser() {
 
   if (mml_s) {
     if (mml_started) {
-      ss = strtok(NULL, "\r\n");
+      ss = strtok(nullptr, "\r\n");
     } else {
       ss = strtok(mml_s, "\r\n");
     }
     mml_started = 1;
-    if (ss == NULL) {
+    if (ss == nullptr) {
       free(mml_s);
-      mml_s = NULL;
+      mml_s = nullptr;
       return -1;
     }
     strcpy(s, ss);
@@ -248,7 +243,7 @@ int oneuser() {
 
 void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
   bool done = false;
-  int mml = (mml_s != NULL);
+  int mml = (mml_s != nullptr);
   mml_started = 0;
   while (!done && !hangup && (*numu < maxu)) {
     int i = oneuser();
@@ -288,7 +283,7 @@ void slash_e() {
   bool bFound = false;
   WFindFile fnd;
 
-  mml_s = NULL;
+  mml_s = nullptr;
   mml_started = 0;
   if (freek1(syscfg.msgsdir) < 10) {
     GetSession()->bout.NewLine();
@@ -321,7 +316,7 @@ void slash_e() {
     case 'A':
       GetSession()->bout.NewLine();
       GetSession()->bout << "Enter names/numbers for users, one per line, max 20.\r\n\n";
-      mml_s = NULL;
+      mml_s = nullptr;
       add_list(nUserNumber, &numu, MAX_LIST, so());
       break;
     case 'M': {
@@ -365,7 +360,7 @@ void slash_e() {
         add_list(nUserNumber, &numu, MAX_LIST, so());
         if (mml_s) {
           free(mml_s);
-          mml_s = NULL;
+          mml_s = nullptr;
         }
       }
     }

@@ -133,12 +133,12 @@ void cleanup_net() {
     IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
       const char *pszValue = iniFile.GetValue("NET_CLEANUP_CMD1");
-      if (pszValue != NULL) {
+      if (pszValue != nullptr) {
         ExecuteExternalProgram(pszValue, GetApplication()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
         cleanup_net1();
       }
       pszValue = iniFile.GetValue("NET_CLEANUP_CMD2");
-      if (pszValue != NULL) {
+      if (pszValue != nullptr) {
         ExecuteExternalProgram(pszValue, GetApplication()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
         cleanup_net1();
       }
@@ -489,10 +489,10 @@ void attempt_callout() {
     last_time_c = tCurrentTime;
     return;
   }
-  if ((try1 = static_cast<int **>(BbsAllocA(sizeof(int *) * GetSession()->GetMaxNetworkNumber()))) == NULL) {
+  if ((try1 = static_cast<int **>(BbsAllocA(sizeof(int *) * GetSession()->GetMaxNetworkNumber()))) == nullptr) {
     return;
   }
-  if ((weight = static_cast<float **>(BbsAllocA(sizeof(float *) * GetSession()->GetMaxNetworkNumber()))) == NULL) {
+  if ((weight = static_cast<float **>(BbsAllocA(sizeof(float *) * GetSession()->GetMaxNetworkNumber()))) == nullptr) {
     free(try1);
     return;
   }
@@ -611,8 +611,8 @@ void attempt_callout() {
       }
       if (i1 != -1) {
         free_vars(weight, try1);
-        weight = NULL;
-        try1 = NULL;
+        weight = nullptr;
+        try1 = nullptr;
         do_callout(net_networks[GetSession()->GetNetworkNumber()].con[i1].sysnum);
         time(&tCurrentTime);
         last_time_c = tCurrentTime;
@@ -956,7 +956,7 @@ void print_call(int sn, int nNetNumber, int i2) {
     IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
       const char *ss = iniFile.GetValue("CALLOUT_COLOR_TEXT");
-      if (ss != NULL) {
+      if (ss != nullptr) {
         color = atoi(ss);
       }
       iniFile.Close();
@@ -1441,7 +1441,7 @@ void force_callout(int dw) {
                                  tc << "|#9. ESC to abort.\r\n";
               if (nr == tc) {
                 free(ss);
-                ss = NULL;
+                ss = nullptr;
               }
               do_callout(sn);
             }
@@ -1468,7 +1468,7 @@ long *next_system_reg(int ts) {
     for (int i = 0; i < GetSession()->num_sys_list; i++) {
       if (i == ts) {
         if (i == (GetSession()->num_sys_list - 1)) {
-          return NULL;
+          return nullptr;
         } else {
           return (long*)(&(csn[i]));
         }
@@ -1483,14 +1483,14 @@ long *next_system_reg(int ts) {
         bbsdataReg.Read(&reg_num, sizeof(long));
         bbsdataReg.Close();
         if (i == GetSession()->num_sys_list - 1) {
-          return NULL;
+          return nullptr;
         } else {
           return &reg_num;
         }
       }
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 

@@ -111,7 +111,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
       if (!bOpen || !global_buf) {
         if (global_buf) {
           free(global_buf);
-          global_buf = NULL;
+          global_buf = nullptr;
         }
       }
     }
@@ -121,7 +121,7 @@ void WLocalIO::set_global_handle(bool bOpenFile, bool bOnlyUpdateVariable) {
       fileGlobalCap.Close();
       if (global_buf) {
         free(global_buf);
-        global_buf = NULL;
+        global_buf = nullptr;
       }
     }
   }
@@ -147,7 +147,7 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
         fileGlobalCap.Close();
         if (global_buf) {
           free(global_buf);
-          global_buf = NULL;
+          global_buf = nullptr;
         }
       }
       x_only = false;
@@ -175,9 +175,9 @@ void WLocalIO::set_x_only(int tf, const char *pszFileName, int ovwr) {
       if (!fileGlobalCap.IsOpen() || !global_buf) {
         if (global_buf) {
           free(global_buf);
-          global_buf = NULL;
+          global_buf = nullptr;
         }
-        set_x_only(0, NULL, 0);
+        set_x_only(0, nullptr, 0);
       }
     }
   }
@@ -256,7 +256,7 @@ void WLocalIO::LocalLf() {
     fill.Attributes = static_cast< short >(curatr);
     fill.Char.AsciiChar = ' ';
 
-    ScrollConsoleScreenBuffer(m_hConOut, &scrollRect, NULL, dest, &fill);
+    ScrollConsoleScreenBuffer(m_hConOut, &scrollRect, nullptr, dest, &fill);
   } else {
     m_cursorPosition.Y++;
     SetConsoleCursorPosition(m_hConOut, m_cursorPosition);
@@ -290,7 +290,7 @@ void WLocalIO::LocalCls() {
   fill.Attributes = static_cast< short >(curatr);
   fill.Char.AsciiChar = ' ';
 
-  ScrollConsoleScreenBuffer(m_hConOut, &scrollRect, NULL, dest, &fill);
+  ScrollConsoleScreenBuffer(m_hConOut, &scrollRect, nullptr, dest, &fill);
 
   LocalGotoXY(0, 0);
   lines_listed = 0;
@@ -323,7 +323,7 @@ void WLocalIO::LocalPutchRaw(unsigned char ch) {
   DWORD cb;
 
   SetConsoleTextAttribute(m_hConOut, static_cast< short >(curatr));
-  WriteConsole(m_hConOut, &ch, 1, &cb, NULL);
+  WriteConsole(m_hConOut, &ch, 1, &cb, nullptr);
 
   if (m_cursorPosition.X <= 79) {
     m_cursorPosition.X++;
@@ -410,7 +410,7 @@ void WLocalIO::LocalFastPuts(const char *pszText) {
   int len = strlen(pszText);
 
   SetConsoleTextAttribute(m_hConOut, static_cast< short >(curatr));
-  WriteConsole(m_hConOut, pszText, len, &cb, NULL);
+  WriteConsole(m_hConOut, pszText, len, &cb, nullptr);
   m_cursorPosition.X = m_cursorPosition.X + static_cast< short >(cb);
 }
 
@@ -474,7 +474,7 @@ void WLocalIO::set_protect(int l) { //JZ Set_Protect Fix
 
         coord.X = 0;
         coord.Y = static_cast< short >(l);
-        ScrollConsoleScreenBuffer(m_hConOut, &scrnl, NULL, coord, &lpFill);
+        ScrollConsoleScreenBuffer(m_hConOut, &scrnl, nullptr, coord, &lpFill);
         LocalGotoXY(WhereX(), WhereY() + l - GetTopLine());
       }
     } else {
@@ -528,7 +528,7 @@ void WLocalIO::restorescreen() {
 
     WriteConsoleOutput(m_hConOut, m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
     free(m_ScreenSave.scrn1);
-    m_ScreenSave.scrn1 = NULL;
+    m_ScreenSave.scrn1 = nullptr;
   }
   SetTopLine(m_ScreenSave.topline1);
   curatr = m_ScreenSave.curatr1;
@@ -563,13 +563,13 @@ void WLocalIO::alt_key(int nKeyCode) {
         while (ss1) {
           if (upcase(*ss1) == ch1) {
             strtok(ss1, " \t");
-            ss1 = strtok(NULL, "\r\n");
+            ss1 = strtok(nullptr, "\r\n");
             if (ss1 && (strlen(ss1) < 128)) {
               strncpy(szCommand, ss1, sizeof(szCommand));
             }
-            ss1 = NULL;
+            ss1 = nullptr;
           } else {
-            ss1 = strtok(NULL, "\r\n");
+            ss1 = strtok(nullptr, "\r\n");
           }
         }
         free(ss);

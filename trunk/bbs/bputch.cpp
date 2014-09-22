@@ -324,7 +324,7 @@ void execute_ansi() {
 
 void rputch(char ch, bool bUseInternalBuffer) {
 
-  if (ok_modem_stuff && NULL != GetSession()->remoteIO()) {
+  if (ok_modem_stuff && nullptr != GetSession()->remoteIO()) {
     if (bUseInternalBuffer) {
       if (s_nOutComChBufferPosition >= OUTCOMCH_BUFFER_SIZE) {
         FlushOutComChBuffer();

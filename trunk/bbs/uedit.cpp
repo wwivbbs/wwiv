@@ -26,7 +26,7 @@
 using namespace wwiv::bbs;
 
 static uint32_t *u_qsc = 0;
-static char *sp = NULL;
+static char *sp = nullptr;
 static char search_pattern[81];
 char *daten_to_date(time_t dt);
 
@@ -378,7 +378,7 @@ int matchuser(WUser *pUser) {
           } else if (wwiv::strings::IsEquals(fcn, "REALNAME")) {
             strcpy(ts, pUser->GetRealName());
             strupr(ts);
-            tmp = (strstr(ts, parm) != NULL);
+            tmp = (strstr(ts, parm) != nullptr);
           } else if (wwiv::strings::IsEquals(fcn, "BAUD")) {
             if (less) {
               tmp = pUser->GetLastBaudRate() < tmp1;
@@ -1097,7 +1097,7 @@ void uedit(int usern, int other) {
     free(u_qsc);
   }
 
-  u_qsc = NULL;
+  u_qsc = nullptr;
 }
 
 

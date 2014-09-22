@@ -188,7 +188,7 @@ bool check_name(const std::string userName) {
       s[i] = upcase(s[i]);
     }
     sprintf(s1, " %s ", s);
-    if (strstr(s2, s1) != NULL) {
+    if (strstr(s2, s1) != nullptr) {
       ok = false;
     }
   }
@@ -850,7 +850,7 @@ void DoFullNewUser() {
       for (int nEditor = 0; nEditor < GetSession()->GetNumberOfEditors(); nEditor++) {
         char szEditorDesc[ 121 ];
         strcpy(szEditorDesc, editors[nEditor].description);
-        if (strstr(strupr(szEditorDesc) , "WWIVEDIT") != NULL) {
+        if (strstr(strupr(szEditorDesc) , "WWIVEDIT") != nullptr) {
           GetSession()->GetCurrentUser()->SetDefaultEditor(nEditor + 1);
           nEditor = GetSession()->GetNumberOfEditors();
         }
@@ -1239,10 +1239,10 @@ bool check_zip(const char *pszZipCode, int mode) {
       if (strncmp(zip_buf, pszZipCode, 5) == 0) {
         found = true;
         char* ss = strtok(zip_buf, " ");
-        ss = strtok(NULL, " ");
+        ss = strtok(nullptr, " ");
         StringTrim(ss);
         strcpy(state, ss);
-        ss = strtok(NULL, "\r\n");
+        ss = strtok(nullptr, "\r\n");
         StringTrim(ss);
         strncpy(city, ss, 30);
         city[31] = '\0';

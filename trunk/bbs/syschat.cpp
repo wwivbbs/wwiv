@@ -640,11 +640,11 @@ void chat1(char *pszChatLine, bool two_way) {
   }
   if (side0) {
     delete[] side0;
-    side0 = NULL;
+    side0 = nullptr;
   }
   if (side1) {
     delete[] side1;
-    side1 = NULL;
+    side1 = nullptr;
   }
   GetSession()->bout.Color(0);
 

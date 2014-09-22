@@ -45,12 +45,12 @@ const std::string WComm::GetLastErrorText() {
     FORMAT_MESSAGE_ALLOCATE_BUFFER |
     FORMAT_MESSAGE_FROM_SYSTEM |
     FORMAT_MESSAGE_IGNORE_INSERTS,
-    NULL,
+    nullptr,
     GetLastError(),
     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
     (LPTSTR) &error_text,
     0,
-    NULL
+    nullptr
   );
   error_text_.assign(error_text);
 #endif

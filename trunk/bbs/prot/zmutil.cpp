@@ -87,7 +87,7 @@ static	const char	hexChars[] = "0123456789abcdef";
 
 extern	const char	*hdrnames[];
 
-FILE	*zmodemlogfile = NULL;
+FILE	*zmodemlogfile = nullptr;
 
 
 /** put a number as two hex digits */
@@ -299,7 +299,7 @@ u_long FileCrc( char *name ) {
 	FILE	*ifile = fopen(name, "r");
 	int	i;
 
-	if( ifile == NULL ) {	/* shouldn't happen, since we did access( 2 ) */
+	if( ifile == nullptr ) {	/* shouldn't happen, since we did access( 2 ) */
 		return 0;
 	}
 
@@ -362,16 +362,16 @@ void zmodemlog(const char *fmt, ... ) {
 	static	int	do_ts = 1;
 
 	zmodemlogfile = fopen( "zmodem_log.txt", "at" );
-	if( zmodemlogfile == NULL ) {
+	if( zmodemlogfile == nullptr ) {
 		zmodemlogfile = stderr;
 	}
 
 	if( do_ts ) {
-		time_t t = time( NULL );
+		time_t t = time( nullptr );
 		tm = localtime( &t );
 		fprintf( zmodemlogfile, "%2.2d:%2.2d:%2.2d: ", tm->tm_hour, tm->tm_min, tm->tm_sec );
 	}
-	do_ts = strchr( fmt, '\n' ) != NULL;
+	do_ts = strchr( fmt, '\n' ) != nullptr;
 
 	va_start( ap, fmt );
 	vfprintf( zmodemlogfile, fmt, ap );

@@ -224,7 +224,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
       GetSession()->bout << "|#5Post on " << subboards[GetSession()->GetCurrentReadMessageArea()].name << "? ";
       irt[0] = '\0';
       irt_name[0] = '\0';
-      grab_quotes(NULL, NULL);
+      grab_quotes(nullptr, nullptr);
       if (yesno()) {
         post();
       }
@@ -234,7 +234,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
   if (thread) {
     free(thread);
   }
-  thread = NULL;
+  thread = nullptr;
 }
 
 
@@ -246,7 +246,7 @@ void SetupThreadRecordsBeforeScan() {
   // We use +2 since if we post a message we'll need more than +1
   thread = static_cast<threadrec *>(BbsAllocA((GetSession()->GetNumMessagesInCurrentMessageArea() + 2) * sizeof(
                                       threadrec)));
-  WWIV_ASSERT(thread != NULL);
+  WWIV_ASSERT(thread != nullptr);
 
   for (unsigned short tempnum = 1; tempnum <= GetSession()->GetNumMessagesInCurrentMessageArea(); tempnum++) { // was 0.
     strcpy(thread[tempnum].parent_code, "");
@@ -631,7 +631,7 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
     if (WFile::Exists(szFullPathName)) {
       LoadFileIntoWorkspace(szFullPathName, true);
       email(get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, get_post(nMessageNumber)->anony);
-      grab_quotes(NULL, NULL);
+      grab_quotes(nullptr, nullptr);
     }
   } else if (pszUserInput[0] == '@') {
     GetSession()->bout.NewLine();
@@ -652,7 +652,7 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
       input(szUserNameOrNumber, 75, true);
       size_t nAtPos = strcspn(szUserNameOrNumber, "@");
       if (nAtPos != strlen(szUserNameOrNumber) && isalpha(szUserNameOrNumber[ nAtPos + 1 ])) {
-        if (strstr(szUserNameOrNumber, "@32767") == NULL) {
+        if (strstr(szUserNameOrNumber, "@32767") == nullptr) {
           strlwr(szUserNameOrNumber);
           strcat(szUserNameOrNumber, " @32767");
         }
@@ -723,14 +723,14 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
       email(get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, get_post(nMessageNumber)->anony);
     }
     irt_sub[0] = 0;
-    grab_quotes(NULL, NULL);
+    grab_quotes(nullptr, nullptr);
   }
 }
 
 
 void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
   bool abort = false;
-  char *pszTempFindString = NULL;
+  char *pszTempFindString = nullptr;
   if (!(g_flags & g_flag_made_find_str)) {
     pszTempFindString = strupr(stripcolors(get_post(nMessageNumber)->title));
     strncpy(s_szFindString, pszTempFindString, sizeof(s_szFindString) - 1);
@@ -941,7 +941,7 @@ void HandleMessageDownload(int nMessageNumber) {
 
 void HandleMessageMove(int &nMessageNumber) {
   if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= GetSession()->GetNumMessagesInCurrentMessageArea())) {
-    char *ss1 = NULL;
+    char *ss1 = nullptr;
     tmp_disable_conf(true);
     GetSession()->bout.NewLine();
     do {
@@ -1077,7 +1077,7 @@ void HandleMessageReply(int &nMessageNumber) {
   }
   post();
   resynch(&nMessageNumber, &p2);
-  grab_quotes(NULL, NULL);
+  grab_quotes(nullptr, nullptr);
 }
 
 void HandleMessageDelete(int &nMessageNumber) {

@@ -52,7 +52,7 @@ void StatusBar::SetText( const std::string text )
 
 
 
-UIDesktop::UIDesktop( bool hasMenuBar, bool hasStatusBar ) : UIView(), m_menuBar( NULL ), m_statusBar( NULL )
+UIDesktop::UIDesktop( bool hasMenuBar, bool hasStatusBar ) : UIView(), m_menuBar( nullptr ), m_statusBar( nullptr )
 {
     initscr();
     start_color();
@@ -87,15 +87,15 @@ UIDesktop::UIDesktop( bool hasMenuBar, bool hasStatusBar ) : UIView(), m_menuBar
 UIDesktop::~UIDesktop()
 {
     delete m_menuBar;
-    m_menuBar = NULL;
+    m_menuBar = nullptr;
     delete m_statusBar;
-    m_statusBar = NULL;
+    m_statusBar = nullptr;
 }
 
 
 UIDesktop* UIDesktop::InitializeDesktop( bool hasMenuBar, bool hasStatusBar )
 {
-    if ( m_desktop == NULL )
+    if ( m_desktop == nullptr )
     {
         m_desktop = new UIDesktop( hasMenuBar, hasStatusBar );
     }
@@ -125,7 +125,7 @@ UIView* UIDesktop::GetStatusBar() const
 
 void UIDesktop::SetStatusBarText( const std::string text )
 {
-    if ( m_statusBar != NULL )
+    if ( m_statusBar != nullptr )
     {
         m_statusBar->SetText( text );
     }

@@ -25,12 +25,12 @@ using std::string;
 const int PADDING_X = 4;
 const int PADDING_Y = 2;
 
-UIMenu::UIMenu( std::string text ) : UIMenuItem( text, NULL ), m_screenPosition( -1 ), m_popupMenu( NULL ), m_currentMenuItem( 0 )
+UIMenu::UIMenu( std::string text ) : UIMenuItem( text, nullptr ), m_screenPosition( -1 ), m_popupMenu( nullptr ), m_currentMenuItem( 0 )
 {
 }
 
 
-UIMenu::UIMenu( const UIMenu& m ) : UIMenuItem( m ), m_screenPosition( -1 ), m_popupMenu( NULL ), m_currentMenuItem( 0 )
+UIMenu::UIMenu( const UIMenu& m ) : UIMenuItem( m ), m_screenPosition( -1 ), m_popupMenu( nullptr ), m_currentMenuItem( 0 )
 {
     *this = m;
 }

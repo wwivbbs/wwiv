@@ -575,21 +575,21 @@ char *mmkey(int dl, bool bListOption) {
     switch (dl) {
 
     case 1:
-      if (strchr(dtc, ch) != NULL) {
+      if (strchr(dtc, ch) != nullptr) {
         p = 2;
-      } else if (strchr(dcd, ch) != NULL) {
+      } else if (strchr(dcd, ch) != nullptr) {
         p = 1;
       }
       break;
     case 2:
-      if (strchr(odc, ch) != NULL) {
+      if (strchr(odc, ch) != nullptr) {
         p = 1;
       }
       break;
     case 0:
-      if (strchr(tc, ch) != NULL) {
+      if (strchr(tc, ch) != nullptr) {
         p = 2;
-      } else if (strchr(dc, ch) != NULL) {
+      } else if (strchr(dc, ch) != nullptr) {
         p = 1;
       }
       break;

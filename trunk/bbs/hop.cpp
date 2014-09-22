@@ -60,7 +60,7 @@ void HopSub() {
       strcpy(s2, subboards[usub[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
-      if (strstr(s2, s1) != NULL) {
+      if (strstr(s2, s1) != nullptr) {
         if (okansi()) {
           GetSession()->bout << "\r\x1b[K";
         }
@@ -133,7 +133,7 @@ void HopDir() {
       strcpy(s2, directories[udir[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
-      if (strstr(s2, s1) != NULL) {
+      if (strstr(s2, s1) != nullptr) {
         if (okansi()) {
           GetSession()->bout << "\r\x1b[K";
         } else {

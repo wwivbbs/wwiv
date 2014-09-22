@@ -39,7 +39,7 @@ char *dateFromTimeT(time_t t) {
 
 char *date() {
   static char szDateString[11];
-  time_t t = time(NULL);
+  time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
 
   snprintf(szDateString, sizeof(szDateString), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
@@ -49,7 +49,7 @@ char *date() {
 
 char *fulldate() {
   static char szDateString[11];
-  time_t t = time(NULL);
+  time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
 
   snprintf(szDateString, sizeof(szDateString), "%02d/%02d/%4d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year + 1900);
@@ -60,7 +60,7 @@ char *fulldate() {
 char *times() {
   static char szTimeString[9];
 
-  time_t tim = time(NULL);
+  time_t tim = time(nullptr);
   struct tm *t = localtime(&tim);
   snprintf(szTimeString, sizeof(szTimeString), "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
   return szTimeString;
@@ -77,7 +77,7 @@ time_t date_to_daten(const char *datet) {
     return 0;
   }
 
-  time_t t = time(NULL);
+  time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
   pTm->tm_mon   = atoi(datet) - 1;
   pTm->tm_mday  = atoi(datet + 3);
@@ -112,14 +112,14 @@ void filedate(const char *pszFileName, char *pszReturnValue) {
   time_t tFileDate = file.GetFileTime();
   struct tm *pTm = localtime(&tFileDate);
 
-  // We use 9 here since that is the size of the date format MM/DD/YY + NULL
+  // We use 9 here since that is the size of the date format MM/DD/YY + nullptr
   snprintf(pszReturnValue, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, (pTm->tm_year % 100));
 }
 
 
 /* This function returns the time, in seconds since midnight. */
 double timer() {
-  time_t ti       = time(NULL);
+  time_t ti       = time(nullptr);
   struct tm *t    = localtime(&ti);
 
   return static_cast<double>(t->tm_hour * SECONDS_PER_HOUR_FLOAT) +
@@ -252,7 +252,7 @@ std::string ctim2(double d) {
 
 
 int years_old(int nMonth, int nDay, int nYear) {
-  time_t t = time(NULL);
+  time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
   nYear = nYear - 1900;
   --nMonth; // Reduce by one because tm_mon is 0-11, not 1-12

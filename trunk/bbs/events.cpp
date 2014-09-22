@@ -40,7 +40,7 @@ void delete_event(int n);
 
 
 int t_now() {
-  time_t t = time(NULL);
+  time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
   return (pTm->tm_hour * 60) + pTm->tm_min;
 }
@@ -86,10 +86,10 @@ void sort_events() {
 void init_events() {
   if (events) {
     free(events);
-    events = NULL;
+    events = nullptr;
   }
   events = static_cast<eventsrec *>(BbsAllocA(MAX_EVENT * sizeof(eventsrec)));
-  WWIV_ASSERT(events != NULL);
+  WWIV_ASSERT(events != nullptr);
 
   WFile eventsFile(syscfg.datadir, EVENTS_DAT);
   if (eventsFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -236,7 +236,7 @@ void run_event(int evnt) {
   }
   if (events[evnt].status & EVENT_EXIT) {
     exitlevel = static_cast<int>(events[evnt].cmd[0]);
-    if (ok_modem_stuff && GetSession()->remoteIO() != NULL) {
+    if (ok_modem_stuff && GetSession()->remoteIO() != nullptr) {
       GetSession()->remoteIO()->close();
     }
     exit(exitlevel);

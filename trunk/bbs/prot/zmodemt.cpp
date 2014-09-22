@@ -208,7 +208,7 @@ int ZmodemTInit( ZModem *info ) {
 	info->InputState = ZModem::Idle;
 	info->canCount = info->chrCount = 0;
 	info->windowCount = 0;
-	info->filename = NULL;
+	info->filename = nullptr;
 	info->bufsize = 0;
 	info->interrupt = 0;
 	info->waitflag = 0;
@@ -258,7 +258,7 @@ int YmodemTInit( ZModem *info ) {
 	info->InputState = ZModem::Ysend;
 	info->canCount = info->chrCount = 0;
 	info->windowCount = 0;
-	info->filename = NULL;
+	info->filename = nullptr;
 
 	if( info->packetsize != 1024 ) {
 		info->packetsize = 128;
@@ -296,13 +296,13 @@ int ZmodemTFile(const char	*pszFileName,
                 int	filesRem,
                 int	bytesRem,
                 ZModem	*info ) {
-	if( pszFileName == NULL || (info->file = fopen(pszFileName, "rb")) == NULL ) {
+	if( pszFileName == nullptr || (info->file = fopen(pszFileName, "rb")) == nullptr ) {
 		return ZmErrCantOpen;
 	}
 
 	info->fileEof = 0;
 	info->filename = strdup(pszFileName);
-	info->rfilename = strdup((pszRemoteFileName != NULL) ? pszRemoteFileName : "noname");
+	info->rfilename = strdup((pszRemoteFileName != nullptr) ? pszRemoteFileName : "noname");
 	info->filesRem = filesRem;
 	info->bytesRem = bytesRem;
 	info->fileFlags[3] = f0;
@@ -311,7 +311,7 @@ int ZmodemTFile(const char	*pszFileName,
 	info->fileFlags[0] = f3;
 	info->offset = info->lastOffset = 0;
 	info->len = info->date = info->fileType = info->mode = 0;
-	if( info->filename != NULL ) {
+	if( info->filename != nullptr ) {
 		struct stat buf;
 		if( stat(info->filename, &buf) == 0 ) {
 			info->len = buf.st_size;
@@ -377,17 +377,17 @@ int ZmodemTFinish( ZModem *info ) {
 	}
 
 	info->state = TFinish;
-	if ( info->filename != NULL ) {
+	if ( info->filename != nullptr ) {
 		free( info->filename );
-		info->filename = NULL;
+		info->filename = nullptr;
 	}
-	if ( info->rfilename != NULL ) {
+	if ( info->rfilename != nullptr ) {
 		free( info->rfilename );
-		info->rfilename = NULL;
+		info->rfilename = nullptr;
 	}
-	if( info->buffer != NULL ) {
+	if( info->buffer != nullptr ) {
 		free( info->buffer );
-		info->buffer = NULL;
+		info->buffer = nullptr;
 	}
 #if defined(_DEBUG)
 	zmodemlog("ZmodemTFinish[%s]: send ZFIN\n", sname(info));
@@ -476,7 +476,7 @@ int GotRinit( ZModem *info ) {
 	zmodemlog("GotRinit[%s]\n", sname(info));
 #endif
 
-	if( AlwaysSinit || info->zsinitflags != 0  ||  info->attn != NULL ) {
+	if( AlwaysSinit || info->zsinitflags != 0  ||  info->attn != nullptr ) {
 		return SendZSInit(info);
 	} else {
 		return ZmDone;	/* caller now calls ZmodemTFile() */
@@ -486,7 +486,7 @@ int GotRinit( ZModem *info ) {
 
 int SendZSInit( ZModem *info ) {
 	int	err;
-	const char	*at = (info->attn != NULL) ? info->attn : "";
+	const char	*at = (info->attn != nullptr) ? info->attn : "";
 	u_char	fbuf[4];
 
 	/* TODO: zmodem8.doc states: "If the ZSINIT header specifies
@@ -634,7 +634,7 @@ int SkipFile( ZModem *info ) {
 */
 
 int GotSendPos( ZModem *info ) {
-	ZStatus(DataErr, ++info->errCount, NULL);
+	ZStatus(DataErr, ++info->errCount, nullptr);
 	info->waitflag = 1;		/* next pkt should wait, to resync */
 #if defined(_DEBUG)
 	zmodemlog("GotSendPos[%s]\n", sname(info), info->offset);
@@ -849,7 +849,7 @@ int SendMoreFileData( ZModem *info ) {
 	len = ptr - info->buffer;
 
 
-	ZStatus(SndByteCount, info->offset, NULL);
+	ZStatus(SndByteCount, info->offset, nullptr);
 
 	if( (err = ZXmitStr(info->buffer, len, info)) ) {
 		return err;
@@ -920,7 +920,7 @@ int YsendChar( char c, ZModem *info ) {
 	int	err;
 
 	if( info->canCount >= 2 ) {
-		ZStatus(RmtCancel, 0, NULL);
+		ZStatus(RmtCancel, 0, nullptr);
 		return ZmErrCancel;
 	}
 
@@ -941,7 +941,7 @@ int YsendChar( char c, ZModem *info ) {
 		case NAK:		/* resend */
 		case 'C':
 		case 'G':
-			ZStatus(DataErr, ++info->errCount, NULL);
+			ZStatus(DataErr, ++info->errCount, nullptr);
 			return YSendFilename(info);
 		case ACK:
 			info->state = YTDataWait;
@@ -971,20 +971,20 @@ int YsendChar( char c, ZModem *info ) {
 		case 'C':
 		case 'G':		/* protocol failure, resend filename */
 			if( info->Protocol == ZModem::YMODEM ) {
-				ZStatus(DataErr, ++info->errCount, NULL);
+				ZStatus(DataErr, ++info->errCount, nullptr);
 				info->state = YTFile;
 				rewind(info->file);
 				return YSendFilename(info);
 			}
 		/* else XModem, treat it like a NAK */
 		case NAK:
-			ZStatus(DataErr, ++info->errCount, NULL);
+			ZStatus(DataErr, ++info->errCount, nullptr);
 			return YXmitData(info->buffer + info->bufp, info->ylen, info);
 		case ACK:
 			info->offset += info->ylen;
 			info->bufp += info->ylen;
 			info->chrCount -= info->ylen;
-			ZStatus(SndByteCount, info->offset, NULL);
+			ZStatus(SndByteCount, info->offset, nullptr);
 			return YSendData(info);
 		default:
 			return 0;

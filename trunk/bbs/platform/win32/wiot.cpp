@@ -40,7 +40,7 @@ WIOTelnet::WIOTelnet(unsigned int nHandle) : socket_(static_cast<SOCKET>(nHandle
   }
   if (socket_ != 0 && socket_ != INVALID_SOCKET) {
     // Make sure our signal event is not set to the "signaled" state
-    stop_event_ = CreateEvent(NULL, true, false, NULL);
+    stop_event_ = CreateEvent(nullptr, true, false, nullptr);
     std::cout << "Created Stop Event: " << GetLastErrorText() << std::endl;
   } else {
     const char *message = "**ERROR: UNABLE to create STOP EVENT FOR WIOTelnet";
@@ -204,7 +204,7 @@ unsigned int WIOTelnet::write(const char *buffer, unsigned int count, bool bNoTr
   ZeroMemory(pszBuffer, (count * 2) + 100);
   int nCount = count;
 
-  if (!bNoTranslation && (memchr(buffer, CHAR_TELNET_OPTION_IAC, count) != NULL)) {
+  if (!bNoTranslation && (memchr(buffer, CHAR_TELNET_OPTION_IAC, count) != nullptr)) {
     // If there is a #255 then excape the #255's
     const char * p = buffer;
     char * p2 = pszBuffer;
@@ -291,7 +291,7 @@ void WIOTelnet::StartThreads() {
               << " - '" << error_text << "'" << std::endl;
   }
 
-  mu_ = ::CreateMutex(NULL, false, "WWIV Input Buffer");
+  mu_ = ::CreateMutex(nullptr, false, "WWIV Input Buffer");
   read_thread_ = reinterpret_cast<HANDLE>(_beginthread(WIOTelnet::InboundTelnetProc, 0, static_cast< void * >(this)));
   threads_started_ = true;
 }

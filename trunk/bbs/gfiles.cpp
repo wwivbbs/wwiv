@@ -31,19 +31,18 @@ void gfile_sec(int sn);
 void gfiles2();
 void gfiles3(int n);
 
-
 char *get_file(const char *pszFileName, long *len) {
   WFile file(pszFileName);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     *len = 0L;
-    return NULL;
+    return nullptr;
   }
 
   long lFileSize = file.GetLength();
   char* pszFileText = static_cast< char *>(BbsAllocA(lFileSize + 50));
-  if (pszFileText == NULL) {
+  if (pszFileText == nullptr) {
     *len = 0L;
-    return NULL;
+    return nullptr;
   }
   *len = static_cast< long >(file.Read(pszFileText, lFileSize));
   return pszFileText;
@@ -54,9 +53,9 @@ gfilerec *read_sec(int sn, int *nf) {
   gfilerec *pRecord;
 
   int nSectionSize = sizeof(gfilerec) * gfilesec[sn].maxfiles;
-  if ((pRecord = static_cast< gfilerec *>(BbsAllocA(nSectionSize))) == NULL) {
+  if ((pRecord = static_cast< gfilerec *>(BbsAllocA(nSectionSize))) == nullptr) {
     *nf = 0;
-    return NULL;
+    return nullptr;
   }
 
   char szFileName[ MAX_PATH ];
@@ -363,7 +362,7 @@ void gfile_sec(int sn) {
   bool abort;
 
   gfilerec *g = read_sec(sn, &nf);
-  if (g == NULL) {
+  if (g == nullptr) {
     return;
   }
   strcpy(xdc, odc);
@@ -392,7 +391,7 @@ void gfile_sec(int sn) {
       free(g);
       fill_sec(sn);
       g = read_sec(sn, &nf);
-      if (g == NULL) {
+      if (g == nullptr) {
         return;
       }
       for (i = 0; i < 20; i++) {
