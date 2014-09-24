@@ -3,7 +3,6 @@ cmake_minimum_required (VERSION 2.6)
 project (WWIV5)
 include_directories(.)
 include_directories(..)
-include_directories(platform)
 
 set(COMMON_SOURCES 
  archivers.cpp
