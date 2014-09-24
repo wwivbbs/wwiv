@@ -19,6 +19,7 @@
 #include "languages.h"
 
 #include <curses.h>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <fcntl.h>
