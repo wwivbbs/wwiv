@@ -26,7 +26,7 @@
 #include <unistd.h>
 
 #include "sdk/vardec.h"
-#include "bbs/filenames.h"
+#include "sdk/filenames.h"
 
 using namespace std;
 
