@@ -44,6 +44,8 @@
 #include "init/wwivinit.h"
 #include "init/utility.h"
 
+#include "sdk/filenames.h"
+
 extern char bbsdir[];
 
 using std::string;
@@ -68,7 +70,7 @@ static string date() {
 static uint32_t *qsc;
 
 static void write_qscn(unsigned int un, uint32_t *qscn) {
-  WFile file(syscfg.datadir, "user.qsc");
+  WFile file(syscfg.datadir, USER_QSC);
   if (file.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile)) {
     file.Seek(syscfg.qscn_len * un, WFile::seekBegin);
     file.Write(qscn, syscfg.qscn_len);
