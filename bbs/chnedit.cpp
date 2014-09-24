@@ -84,7 +84,7 @@ void ShowChainCommandLineHelp() {
 void modify_chain(int nCurrentChainNumber) {
   chainregrec r;
   char s[255], s1[255], ch, ch2;
-  int i, nUserNumber;
+  int i;
   memset(&r, 0, sizeof(chainregrec));
 
   chainfilerec c = chains[ nCurrentChainNumber ];
@@ -103,7 +103,7 @@ void modify_chain(int nCurrentChainNumber) {
     GetSession()->bout << "|#9C) SL           : |#2" << static_cast<int>(c.sl) << wwiv::endl;
     strcpy(s, "None.");
     if (c.ar != 0) {
-      for (i = 0; i < 16; i++) {
+      for (int i = 0; i < 16; i++) {
         if ((1 << i) & c.ar) {
           s[0] = static_cast< char >('A' + i);
         }
@@ -126,7 +126,7 @@ void modify_chain(int nCurrentChainNumber) {
         GetApplication()->GetUserManager()->ReadUser(&regUser, r.regby[0]);
       }
       GetSession()->bout << "|#9L) Registered by: |#2" << ((r.regby[0]) ? regUser.GetName() : "AVAILABLE") << wwiv::endl;
-      for (i = 1; i < 5; i++) {
+      for (int i = 1; i < 5; i++) {
         if (r.regby[i] != 0) {
           GetApplication()->GetUserManager()->ReadUser(&regUser, r.regby[i]);
           GetSession()->bout << charstr(18, ' ') << regUser.GetName() << wwiv::endl;
@@ -270,7 +270,7 @@ void modify_chain(int nCurrentChainNumber) {
           if (s1[0] == '0') {
             r.regby[i] = 0;
           } else {
-            nUserNumber = finduser1(s1);
+            int nUserNumber = finduser1(s1);
             if (nUserNumber > 0) {
               WUser regUser;
               GetApplication()->GetUserManager()->ReadUser(&regUser, nUserNumber);

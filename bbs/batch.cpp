@@ -34,13 +34,10 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
-//////////////////////////////////////////////////////////////////////////////
-//
-//
-// module private functions
-//
-//
+using std::string;
 
+
+// module private functions
 void  listbatch();
 void  downloaded(char *pszFileName, long lCharsPerSecond);
 void    uploaded(char *pszFileName, long lCharsPerSecond);
@@ -106,7 +103,6 @@ void delbatch(int nBatchEntryNum) {
     }
   }
 }
-
 
 void downloaded(char *pszFileName, long lCharsPerSecond) {
   uploadsrec u;
@@ -725,9 +721,6 @@ void dszbatchul(bool bHangupAfterDl, char *pszCommandLine, char *pszDescription)
 }
 
 int batchdl(int mode) {
-  int i;
-  char s[81];
-
   bool bHangupAfterDl = false;
   bool done = false;
   int  otag = GetSession()->tagging;
@@ -769,11 +762,12 @@ int batchdl(int mode) {
     case 'L':
       listbatch();
       break;
-    case 'R':
+    case 'R': {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#9Remove which? ";
-      input(s, 4);
-      i = atoi(s);
+      string s;
+      input(&s, 4);
+      int i = atoi(s.c_str());
       if ((i > 0) && (i <= GetSession()->numbatch)) {
         didnt_upload(i - 1);
         delbatch(i - 1);
@@ -782,11 +776,11 @@ int batchdl(int mode) {
         GetSession()->bout << "\r\nBatch queue empty.\r\n\n";
         done = true;
       }
-      break;
+    } break;
     case 'C':
       GetSession()->bout << "|#5Clear queue? ";
       if (yesno()) {
-        for (i = 0; i < GetSession()->numbatch; i++) {
+        for (int i = 0; i < GetSession()->numbatch; i++) {
           didnt_upload(i);
         }
         GetSession()->numbatch = 0;
@@ -800,13 +794,13 @@ int batchdl(int mode) {
       }
       done = true;
       break;
-    case 'U':
+    case 'U': {
       if (mode != 3) {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#5Hang up after transfer? ";
         bHangupAfterDl = yesno();
         GetSession()->bout.NewLine(2);
-        i = get_protocol(xf_up_batch);
+        int i = get_protocol(xf_up_batch);
         if (i > 0) {
           dszbatchul(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
                      externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
@@ -816,7 +810,7 @@ int batchdl(int mode) {
         }
         done = true;
       }
-      break;
+    } break;
     case 'D':
     case 13:
       if (mode != 3) {
@@ -834,7 +828,7 @@ int batchdl(int mode) {
         GetSession()->bout << "|#5Hang up after transfer? ";
         bHangupAfterDl = yesno();
         GetSession()->bout.NewLine();
-        i = get_protocol(xf_down_batch);
+        int i = get_protocol(xf_down_batch);
         if (i > 0) {
           if (i == WWIV_INTERNAL_PROT_YMODEM) {
             if (over_intern && (over_intern[2].othr & othr_override_internal) &&
@@ -862,8 +856,6 @@ int batchdl(int mode) {
   GetSession()->tagging = otag;
   return 0;
 }
-
-
 
 void bihangup(int up)
 // This function returns one character from either the local keyboard or

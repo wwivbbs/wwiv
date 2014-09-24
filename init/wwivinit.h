@@ -47,7 +47,6 @@ extern chainfilerec *chains;
 extern newexternalrec *externs, *over_intern;
 extern arcrec *arcs;
 extern net_networks_rec *net_networks;
-extern languagerec *languages;
 extern initinfo_rec initinfo;
 
 #if defined(__unix__)
