@@ -36,6 +36,7 @@
 #include "core/wwivport.h"
 #include "core/wfile.h"
 #include "core/wfndfile.h"
+#include "sdk/filenames.h"
 
 
 extern char bbsdir[];
@@ -54,7 +55,7 @@ static void fix_user_rec(userrec *u) {
 }
 
 int number_userrecs() {
-  WFile file(syscfg.datadir, "user.lst");
+  WFile file(syscfg.datadir, USER_LST);
   if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile,
                 WFile::shareDenyReadWrite)) {
     return static_cast<int>(file.GetLength() / sizeof(userrec)) - 1;
@@ -63,7 +64,7 @@ int number_userrecs() {
 }
 
 void read_user(unsigned int un, userrec *u) {
-  WFile file(syscfg.datadir, "user.lst");
+  WFile file(syscfg.datadir, USER_LST);
   if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile, WFile::shareDenyReadWrite)) {
     u->inact = inact_deleted;
     fix_user_rec(u);
@@ -90,7 +91,7 @@ void write_user(unsigned int un, userrec *u) {
     return;
   }
 
-  WFile file(syscfg.datadir, "user.lst");
+  WFile file(syscfg.datadir, USER_LST);
   if (file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
     long pos = un * syscfg.userreclen;
     file.Seek(pos, WFile::seekBegin);
@@ -114,7 +115,7 @@ void write_user(unsigned int un, userrec *u) {
 }
 
 void save_status() {
-  WFile file(syscfg.datadir, "status.dat");
+  WFile file(syscfg.datadir, STATUS_DAT);
   if (file.Open(WFile::modeBinary|WFile::modeReadWrite|WFile::modeCreateFile)) {
     file.Write(&status, sizeof(statusrec));
   }
@@ -122,7 +123,7 @@ void save_status() {
 
 /** returns true if status.dat is read correctly */
 bool read_status() {
-  WFile file(syscfg.datadir, "status.dat");
+  WFile file(syscfg.datadir, STATUS_DAT);
   if (file.Open(WFile::modeBinary|WFile::modeReadWrite)) {
     file.Read(&status, sizeof(statusrec));
     return true;
@@ -131,7 +132,7 @@ bool read_status() {
 }
 
 void save_config() {
-  WFile file("config.dat");
+  WFile file(CONFIG_DAT);
   if (file.Open(WFile::modeBinary|WFile::modeReadWrite|WFile::modeCreateFile)) {
     file.Write(&syscfg, sizeof(configrec));
   }

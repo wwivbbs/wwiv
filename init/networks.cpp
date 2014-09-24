@@ -43,6 +43,7 @@
 #include "init/subacc.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
+#include "sdk/filenames.h"
 
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
@@ -354,7 +355,7 @@ void networks() {
     }
   } while (!done);
 
-  WFile file (syscfg.datadir, "networks.dat");
+  WFile file (syscfg.datadir, NETWORKS_DAT);
   if (file.Open(WFile::modeReadWrite|WFile::modeCreateFile|WFile::modeTruncate|WFile::modeBinary,
     WFile::shareDenyReadWrite)) {
     file.Write(net_networks, initinfo.net_num_max * sizeof(net_networks_rec));

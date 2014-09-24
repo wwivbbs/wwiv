@@ -64,6 +64,8 @@
 #include "initlib/curses_io.h"
 #include "initlib/listbox.h"
 
+#include "sdk/filenames.h"
+
 using std::string;
 using std::vector;
 using wwiv::core::IniFile;
@@ -81,16 +83,15 @@ arcrec *arcs;
 net_networks_rec *net_networks;
 
 char bbsdir[MAX_PATH];
-char configdat[20] = "config.dat";
 
 // from convert.cpp
 void convcfg(CursesWindow* window, const string& config_filename);
 
 static void ValidateConfigOverlayExists() {
-  IniFile ini("wwiv.ini", "WWIV");
+  IniFile ini(WWIV_INI, "WWIV");
   int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
 
-  WFile config_overlay("config.ovr");
+  WFile config_overlay(CONFIG_OVR);
   if (!config_overlay.Exists() || config_overlay.GetLength() < sizeof(configoverrec)) {
     // Handle the case where there is no config.ovr.
     write_instance(1, syscfg.batchdir, syscfg.tempdir);
@@ -154,15 +155,15 @@ int WInitApp::main(int argc, char *argv[]) {
   out->window()->SetColor(SchemeId::NORMAL);
 
   bool newbbs = false;
-  int configfile = open(configdat, O_RDWR | O_BINARY);
+  int configfile = open(CONFIG_DAT, O_RDWR | O_BINARY);
   if (configfile < 0) {
-    vector<string> lines = { StringPrintf("%s NOT FOUND.", configdat), "", "Perform initial installation?" };
+    vector<string> lines = { StringPrintf("%s NOT FOUND.", CONFIG_DAT), "", "Perform initial installation?" };
     if (dialog_yn(out->window(), lines)) {
       // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
       out->window()->Bkgd(' ');
       new_init(out->window());
       newbbs = true;
-      configfile = open(configdat, O_RDWR | O_BINARY);
+      configfile = open(CONFIG_DAT, O_RDWR | O_BINARY);
       if (configfile == -1) {
         messagebox(out->window(), StringPrintf("Unable to open config.dat, error: %d", errno));
       }
@@ -175,8 +176,8 @@ int WInitApp::main(int argc, char *argv[]) {
   if (filelength(configfile) != sizeof(configrec)) {
     close(configfile);
     // TODO(rushfan): Create a subwindow
-    convcfg(out->window(), configdat);
-    configfile = open(configdat, O_RDWR | O_BINARY);
+    convcfg(out->window(), CONFIG_DAT);
+    configfile = open(CONFIG_DAT, O_RDWR | O_BINARY);
   }
 
   read(configfile, &syscfg, sizeof(configrec));

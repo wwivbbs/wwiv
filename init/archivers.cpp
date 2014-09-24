@@ -43,6 +43,7 @@
 #include "initlib/listbox.h"
 #include "utility.h"
 #include "wwivinit.h"
+#include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;
@@ -142,7 +143,7 @@ void create_arcs(CursesWindow* window) {
     strncpy(arc[i].arct, "archive test command", 50);
   }
 
-  WFile file(syscfg.datadir, "archiver.dat");
+  WFile file(syscfg.datadir, ARCHIVER_DAT);
   if (!file.Open(WFile::modeWriteOnly|WFile::modeBinary|WFile::modeCreateFile)) {
     messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", file.GetFullPathName().c_str()));
     exit_init(1);
@@ -153,7 +154,7 @@ void create_arcs(CursesWindow* window) {
 void edit_archivers() {
   arcrec arc[MAX_ARCS];
 
-  WFile file(syscfg.datadir, "archiver.dat");
+  WFile file(syscfg.datadir, ARCHIVER_DAT);
   if (!file.Open(WFile::modeReadWrite|WFile::modeBinary)) {
     create_arcs(out->window());
     file.Open(WFile::modeReadWrite|WFile::modeBinary);

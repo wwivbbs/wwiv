@@ -18,7 +18,7 @@
 /**************************************************************************/
 
 #include "wconstants.h"
-#include "filenames.h"
+#include "sdk/filenames.h"
 #include "core/wfile.h"
 #include "wuser.h"
 #include "wsession.h"

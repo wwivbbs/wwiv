@@ -40,6 +40,7 @@
 #include "init/wwivinit.h"
 #include "initlib/input.h"
 #include "initlib/listbox.h"
+#include "sdk/filenames.h"
 
 using std::unique_ptr;
 using std::string;
@@ -88,7 +89,7 @@ void edit_editor(editorrec* c) {
 void extrn_editors() {
   initinfo.numeditors = 0;
   unique_ptr<editorrec[]> editors(new editorrec[10]);
-  WFile file (syscfg.datadir, "editors.dat");
+  WFile file (syscfg.datadir, EDITORS_DAT);
   if (file.Open(WFile::modeReadOnly|WFile::modeBinary)) {
     int num_read = file.Read(editors.get(), 10 * sizeof(editorrec));
     initinfo.numeditors = num_read / sizeof(editorrec);
@@ -149,7 +150,7 @@ void extrn_editors() {
     }
   } while (!done);
 
-  WFile editors_dat(syscfg.datadir, "editors.dat");
+  WFile editors_dat(syscfg.datadir, EDITORS_DAT);
   if (editors_dat.Open(WFile::modeReadWrite|WFile::modeBinary|WFile::modeCreateFile|WFile::modeTruncate,
     WFile::shareDenyReadWrite)) {
     editors_dat.Write(editors.get(), initinfo.numeditors * sizeof(editorrec));
