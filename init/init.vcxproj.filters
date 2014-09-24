@@ -15,7 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
     <Text Include="CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>
