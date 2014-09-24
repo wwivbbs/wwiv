@@ -38,6 +38,9 @@
 #include "utility.h"
 #include "wwivinit.h"
 
+using std::string;
+using wwiv::strings::StringPrintf;
+
 
 static const char *prot_name(int pn) {
   switch (pn) {
@@ -60,7 +63,6 @@ static const char *prot_name(int pn) {
 }
 
 static void edit_prot(CursesWindow* window, int n) {
-  char s[81], s1[81];
   newexternalrec c;
 
   out->Cls();
@@ -81,15 +83,11 @@ static void edit_prot(CursesWindow* window, int n) {
   bool done = false;
   int cp = 0;
   int i1 = NEXT;
-  sprintf(s, "%u", c.ok1);
-  if (c.othr & othr_error_correct) {
-    strcpy(s1, "Y");
-  } else {
-    strcpy(s1, "N");
-  }
+  string mnp = StringPrintf("%u", c.ok1);
+  string xferok = (c.othr & othr_error_correct)  ? "Y" : "N";
   window->Printf("Description          : %s\n", c.description);
-  window->Printf("Xfer OK code         : %s\n", s);
-  window->Printf("Require MNP/LAPM     : %s\n", s1);
+  window->Printf("Xfer OK code         : %s\n", xferok.c_str());
+  window->Printf("Require MNP/LAPM     : %s\n", mnp.c_str());
   window->Printf("Receive command line:\n%s\n", c.receivefn);
   window->Printf("Send command line:\n%s\n", c.sendfn);
   window->Printf("Receive batch command line:\n%s\n", c.receivebatchfn);
@@ -121,25 +119,23 @@ static void edit_prot(CursesWindow* window, int n) {
       }
       break;
     case 1:
-      editline(window, s, 3, NUM_ONLY, &i1, "");
-      StringTrimEnd(s);
-      c.ok1 = atoi(s);
-      sprintf(s, "%u", c.ok1);
-      window->Puts(s);
+      editline(window, &xferok, 3, NUM_ONLY, &i1, "");
+      StringTrimEnd(&xferok);
+      c.ok1 = atoi(xferok.c_str());
+      window->Printf("%u", c.ok1);
       break;
     case 2:
       if (n >= 6) {
-        editline(window, s1, 1, UPPER_ONLY, &i1, "");
-        if (s1[0] != 'Y') {
-          s1[0] = 'N';
+        editline(window, &mnp, 1, UPPER_ONLY, &i1, "");
+        if (mnp[0] != 'Y') {
+          mnp = "N";
         }
-        s1[1] = 0;
-        if (s1[0] == 'Y') {
+        if (mnp[0] == 'Y') {
           c.othr |= othr_error_correct;
         } else {
           c.othr &= (~othr_error_correct);
         }
-        window->Puts(s1);
+        window->Puts(mnp);
       }
       break;
     case 3:
