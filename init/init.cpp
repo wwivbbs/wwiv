@@ -76,9 +76,7 @@ initinfo_rec initinfo;
 configrec syscfg;
 statusrec status;
 subboardrec *subboards;
-chainfilerec *chains;
 newexternalrec *externs, *over_intern;
-editorrec *editors;
 arcrec *arcs;
 net_networks_rec *net_networks;
 
@@ -212,22 +210,20 @@ int WInitApp::main(int argc, char *argv[]) {
 
   bool bDataDirectoryOk = read_status();
   if (bDataDirectoryOk) {
-    if ((status.net_version >= 31) || (status.net_version == 0)) {
-      net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
-      memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
+    net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
+    memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
 
-      filename = StringPrintf("%snetworks.dat", syscfg.datadir);
-      hFile = open(filename.c_str(), O_RDONLY | O_BINARY);
-      if (hFile > 0) {
-        initinfo.net_num_max = filelength(hFile) / sizeof(net_networks_rec);
-        if (initinfo.net_num_max > MAX_NETWORKS) {
-          initinfo.net_num_max = MAX_NETWORKS;
-        }
-        if (initinfo.net_num_max) {
-          read(hFile, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
-        }
-        close(hFile);
+    filename = StringPrintf("%snetworks.dat", syscfg.datadir);
+    hFile = open(filename.c_str(), O_RDONLY | O_BINARY);
+    if (hFile > 0) {
+      initinfo.net_num_max = filelength(hFile) / sizeof(net_networks_rec);
+      if (initinfo.net_num_max > MAX_NETWORKS) {
+        initinfo.net_num_max = MAX_NETWORKS;
       }
+      if (initinfo.net_num_max) {
+        read(hFile, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
+      }
+      close(hFile);
     }
   }
 
