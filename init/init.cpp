@@ -79,7 +79,6 @@ newexternalrec *externs, *over_intern;
 editorrec *editors;
 arcrec *arcs;
 net_networks_rec *net_networks;
-languagerec *languages;
 
 char bbsdir[MAX_PATH];
 char configdat[20] = "config.dat";
@@ -185,9 +184,8 @@ int WInitApp::main(int argc, char *argv[]) {
 
   ValidateConfigOverlayExists();
 
-  char s[MAX_PATH];
-  sprintf(s, "%sarchiver.dat", syscfg.datadir);
-  int hFile = open(s, O_RDONLY | O_BINARY);
+  string filename = StringPrintf("%sarchiver.dat", syscfg.datadir);
+  int hFile = open(filename.c_str(), O_RDONLY | O_BINARY);
   if (hFile < 0) {
     create_arcs(out->window());
   } else {
@@ -196,16 +194,16 @@ int WInitApp::main(int argc, char *argv[]) {
 
   externs = (newexternalrec *) malloc(15 * sizeof(newexternalrec));
   initinfo.numexterns = 0;
-  sprintf(s, "%snextern.dat", syscfg.datadir);
-  hFile = open(s, O_RDWR | O_BINARY);
+  filename = StringPrintf("%snextern.dat", syscfg.datadir);
+  hFile = open(filename.c_str(), O_RDWR | O_BINARY);
   if (hFile > 0) {
     initinfo.numexterns = (read(hFile, externs, 15 * sizeof(newexternalrec))) / sizeof(newexternalrec);
     close(hFile);
   }
   over_intern = (newexternalrec *) malloc(3 * sizeof(newexternalrec));
   memset(over_intern, 0, 3 * sizeof(newexternalrec));
-  sprintf(s, "%snintern.dat", syscfg.datadir);
-  hFile = open(s, O_RDWR | O_BINARY);
+  filename = StringPrintf("%snintern.dat", syscfg.datadir);
+  hFile = open(filename.c_str(), O_RDWR | O_BINARY);
   if (hFile > 0) {
     read(hFile, over_intern, 3 * sizeof(newexternalrec));
     close(hFile);
@@ -217,8 +215,8 @@ int WInitApp::main(int argc, char *argv[]) {
       net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
       memset(net_networks, 0, MAX_NETWORKS * sizeof(net_networks_rec));
 
-      sprintf(s, "%snetworks.dat", syscfg.datadir);
-      hFile = open(s, O_RDONLY | O_BINARY);
+      filename = StringPrintf("%snetworks.dat", syscfg.datadir);
+      hFile = open(filename.c_str(), O_RDONLY | O_BINARY);
       if (hFile > 0) {
         initinfo.net_num_max = filelength(hFile) / sizeof(net_networks_rec);
         if (initinfo.net_num_max > MAX_NETWORKS) {
@@ -230,26 +228,6 @@ int WInitApp::main(int argc, char *argv[]) {
         close(hFile);
       }
     }
-  }
-
-  languages = (languagerec*) malloc(MAX_LANGUAGES * sizeof(languagerec));
-
-  sprintf(s, "%slanguage.dat", syscfg.datadir);
-  int hLanguageFile = open(s, O_RDONLY | O_BINARY);
-  if (hLanguageFile >= 0) {
-    initinfo.num_languages = filelength(hLanguageFile) / sizeof(languagerec);
-    read(hLanguageFile, languages, initinfo.num_languages * sizeof(languagerec));
-    close(hLanguageFile);
-  }
-  if (!initinfo.num_languages) {
-    initinfo.num_languages = 1;
-    strcpy(languages->name, "English");
-    strncpy(languages->dir, syscfg.gfilesdir, sizeof(languages->dir) - 1);
-    strncpy(languages->mdir, syscfg.gfilesdir, sizeof(languages->mdir) - 1);
-  }
-
-  if (languages->mdir[0] == 0) {
-    strncpy(languages->mdir, syscfg.gfilesdir, sizeof(languages->mdir) - 1);
   }
 
   if (newbbs) {
@@ -295,7 +273,7 @@ int WInitApp::main(int argc, char *argv[]) {
     int selected_hotkey = -1;
     {
       ListBox list(out, out->window(), "Main Menu", static_cast<int>(floor(out->window()->GetMaxX() * 0.8)), 
-        static_cast<int>(floor(out->window()->GetMaxY() * 0.8)), items, out->color_scheme());
+          static_cast<int>(floor(out->window()->GetMaxY() * 0.8)), items, out->color_scheme());
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("$");
       ListBoxResult result = list.Run();
