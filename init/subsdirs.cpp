@@ -36,9 +36,7 @@
 #include "core/wfile.h"
 #include "utility.h"
 
-extern net_networks_rec *net_networks;
-
-#define MAX_SUBS_DIRS 4096
+static const int MAX_SUBS_DIRS = 4096;
 
 using std::unique_ptr;
 using std::string;
