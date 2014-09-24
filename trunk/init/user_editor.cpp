@@ -35,6 +35,8 @@
 #include "core/wfile.h"
 #include "initlib/listbox.h"
 
+#include "sdk/filenames.h"
+
 static const int COL1_POSITION = 17;
 static const int COL2_POSITION = 50;
 static const int COL1_LINE = 2;
@@ -90,7 +92,7 @@ static vector<HelpItem> create_extra_help_items() {
 }
 
 static const int JumpToUser(CursesIO* io, CursesWindow* window) {
-  WFile file(syscfg.datadir, "names.lst");
+  WFile file(syscfg.datadir, NAMES_LST);
   int num_reconds = file.GetLength() / sizeof(smalrec);
   if (!file.Open(WFile::modeReadOnly | WFile::modeBinary, WFile::shareDenyWrite)) {
     show_error_no_users(window);

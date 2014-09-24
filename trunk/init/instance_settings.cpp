@@ -40,6 +40,8 @@
 #include "init/wwivinit.h"
 #include "initlib/input.h"
 
+#include "sdk/filenames.h"
+
 using std::string;
 using wwiv::core::FilePath;
 using wwiv::core::IniFile;
@@ -61,7 +63,7 @@ void show_instance(EditItems* items) {
 }
 
 int number_instances() {
-  int configfile = open("config.ovr", O_RDWR | O_BINARY);
+  int configfile = open(CONFIG_OVR, O_RDWR | O_BINARY);
   if (configfile < 0) {
     return 0;
   }
@@ -71,7 +73,7 @@ int number_instances() {
 }
 
 bool read_instance(int num, configoverrec* instance) {
-  int configfile = open("config.ovr", O_RDWR | O_BINARY);
+  int configfile = open(CONFIG_OVR, O_RDWR | O_BINARY);
   if (configfile < 0) {
     return false;
   }
@@ -82,7 +84,7 @@ bool read_instance(int num, configoverrec* instance) {
 }
 
 bool write_instance(int num, configoverrec* instance) {
-  int configfile = open("config.ovr", O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
+  int configfile = open(CONFIG_OVR, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
   if (configfile > 0) {
     int n = filelength(configfile) / sizeof(configoverrec);
     while (n < (num - 1)) {

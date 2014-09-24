@@ -21,7 +21,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
-#include "bbs/filenames.h"
+#include "sdk/filenames.h"
 #include "bbs/wuser.h"
 #include "core/strings.h"
 #include "core/wfile.h"

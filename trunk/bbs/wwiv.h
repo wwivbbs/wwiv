@@ -26,6 +26,6 @@
 #include "bbs/vars.h"
 #include "bbs/platform/wlocal_io.h"
 
-#include "bbs/filenames.h"
+#include "sdk/filenames.h"
 
 #endif  // __INCLUDED_WWIV_H__
