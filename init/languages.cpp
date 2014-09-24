@@ -50,7 +50,7 @@ using wwiv::strings::StringPrintf;
 
 static void edit_lang(languagerec* n) {
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Language Configuration", 17, 78));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Language Configuration", 9, 78));
   const int COL1_POSITION = 19;
 
   EditItems items{
@@ -109,7 +109,7 @@ void edit_languages() {
       items.emplace_back(StringPrintf("%d. %s (%s)", i + 1, languages[i].name, languages[i].dir));
     }
     CursesWindow* window = out->window();
-    ListBox list(out, window, "Select Editor", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
+    ListBox list(out, window, "Select Language", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
         static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
 
     list.selection_returns_hotkey(true);
