@@ -347,7 +347,7 @@ void networks() {
           break;
         }
         const string prompt = StringPrintf("Insert before which (1-%d) ? ", initinfo.net_num_max + 1);
-        int nNetNumber = dialog_input_number(window, prompt, 1, initinfo.net_num_max + 1);
+        int nNetNumber = dialog_input_number(window, prompt, 1, initinfo.net_num_max + 1  );
         if (nNetNumber > 0 && nNetNumber <= initinfo.net_num_max + 1) {
           bool yn = dialog_yn(window, "Are you sure? ");
           if (yn) {

@@ -43,6 +43,7 @@
 #include "core/wwivport.h"
 
 #include "init/archivers.h"
+#include "init/autoval.h"
 #include "init/editors.h"
 #include "init/ifcns.h"
 #include "init/init.h"

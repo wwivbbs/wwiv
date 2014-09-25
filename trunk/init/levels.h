@@ -19,10 +19,6 @@
 #ifndef __INCLUDED_LEVELS_H__
 #define __INCLUDED_LEVELS_H__
 
-
 void sec_levs();
-void autoval_levs();
-
-
 
 #endif // __INCLUDED_LEVELS_H__
