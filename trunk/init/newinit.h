@@ -23,6 +23,6 @@
 
 class CursesWindow;
 
-void new_init(CursesWindow* window, const std::string& bbsdir);
+bool new_init(CursesWindow* window, const std::string& bbsdir);
 
 #endif // __INCLUDED_NEWINIT_H__

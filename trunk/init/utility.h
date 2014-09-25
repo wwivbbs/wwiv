@@ -27,7 +27,6 @@ bool read_status();
 void save_config();
 void read_user(unsigned int un, userrec *u);
 void write_user(unsigned int un, userrec *u);
-void exit_init(int level);
 void trimstrpath(char *s);
 
 #endif // __INCLUDED_UTILITY_H__

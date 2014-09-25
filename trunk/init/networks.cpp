@@ -55,7 +55,7 @@ using std::unique_ptr;
 using std::vector;
 using wwiv::strings::StringPrintf;
 
-static int read_subs(CursesWindow* window) {
+static bool read_subs(CursesWindow* window) {
   char szFileName[MAX_PATH];
 
   sprintf(szFileName, "%ssubs.dat", syscfg.datadir);
@@ -67,9 +67,9 @@ static int read_subs(CursesWindow* window) {
     close(i);
   } else {
     messagebox(window, StringPrintf("%s NOT FOUND.\n", szFileName));
-    exit_init(2);
+    return false;
   }
-  return 0;
+  return true;
 }
 
 static void write_subs() {
@@ -86,10 +86,10 @@ static void write_subs() {
   }
 }
 
-static void del_net(CursesWindow* window, int nn) {
-//  int i, nu, i1, i2;
-
-  read_subs(window);
+static bool del_net(CursesWindow* window, int nn) {
+  if (!read_subs(window)) {
+    return false;
+  }
 
   for (int i = 0; i < initinfo.num_subs; i++) {
     if (subboards[i].age & 0x80) {
@@ -155,9 +155,7 @@ static void del_net(CursesWindow* window, int nn) {
     close(hFile);
   }
 
-
   char* u = (char *)malloc(syscfg.userreclen);
-
   read_user(1, (userrec *)u);
   int nu = number_userrecs();
   for (int i = 1; i <= nu; i++) {
@@ -184,12 +182,16 @@ static void del_net(CursesWindow* window, int nn) {
   int f = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   write(f, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   close(f);
+
+  return true;
 }
 
-static void insert_net(CursesWindow* window, int nn) {
+static bool insert_net(CursesWindow* window, int nn) {
   int i, i1, i2;
 
-  read_subs(window);
+  if (!read_subs(window)) {
+    return false;
+  }
 
   for (i = 0; i < initinfo.num_subs; i++) {
     if (subboards[i].age & 0x80) {
@@ -274,6 +276,8 @@ static void insert_net(CursesWindow* window, int nn) {
   close(i);
 
   edit_net(nn);
+
+  return true;
 }
 
 #define OKAD (syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)
