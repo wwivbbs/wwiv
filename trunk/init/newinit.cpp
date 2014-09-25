@@ -46,8 +46,6 @@
 
 #include "sdk/filenames.h"
 
-extern char bbsdir[];
-
 using std::string;
 using std::vector;
 using wwiv::strings::StringPrintf;
@@ -78,7 +76,7 @@ static void write_qscn(unsigned int un, uint32_t *qscn) {
   }
 }
 
-static void init_files(CursesWindow* window) {
+static void init_files(CursesWindow* window, const std::string& bbsdir) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
@@ -86,12 +84,12 @@ static void init_files(CursesWindow* window) {
   memset(&syscfg, 0, sizeof(configrec));
 
   strcpy(syscfg.systempw, "SYSOP");
-  sprintf(syscfg.msgsdir, "%smsgs%c", bbsdir, WFile::pathSeparatorChar);
-  sprintf(syscfg.gfilesdir, "%sgfiles%c", bbsdir, WFile::pathSeparatorChar);
-  sprintf(syscfg.datadir, "%sdata%c", bbsdir, WFile::pathSeparatorChar);
-  sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir, WFile::pathSeparatorChar);
-  sprintf(syscfg.tempdir, "%stemp1%c", bbsdir, WFile::pathSeparatorChar);
-  sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir, WFile::pathSeparatorChar, WFile::pathSeparatorChar);
+  sprintf(syscfg.msgsdir, "%smsgs%c", bbsdir.c_str(), WFile::pathSeparatorChar);
+  sprintf(syscfg.gfilesdir, "%sgfiles%c", bbsdir.c_str(), WFile::pathSeparatorChar);
+  sprintf(syscfg.datadir, "%sdata%c", bbsdir.c_str(), WFile::pathSeparatorChar);
+  sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir.c_str(), WFile::pathSeparatorChar);
+  sprintf(syscfg.tempdir, "%stemp1%c", bbsdir.c_str(), WFile::pathSeparatorChar);
+  sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir.c_str(), WFile::pathSeparatorChar, WFile::pathSeparatorChar);
   strcpy(syscfg.batchdir, syscfg.tempdir);
   strcpy(syscfg.unused_bbs_init_modem, "ATS0=0M0Q0V0E0S2=1S7=20H0{");
   strcpy(syscfg.unused_answer, "ATA{");
@@ -333,7 +331,7 @@ static void init_files(CursesWindow* window) {
   window->SetColor(SchemeId::NORMAL);
 }
 
-void new_init(CursesWindow* window) {
+void new_init(CursesWindow* window, const std::string& bbsdir) {
   static const vector<string> dirnames = {
     "attach",
     "data",
@@ -360,9 +358,9 @@ void new_init(CursesWindow* window) {
         exit_init(2);
       }
     } else {
-      chdir(bbsdir);
+      chdir(bbsdir.c_str());
     }
   }
 
-  init_files(window);
+  init_files(window, bbsdir);
 }

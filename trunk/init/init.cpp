@@ -80,12 +80,10 @@ newexternalrec *externs, *over_intern;
 arcrec *arcs;
 net_networks_rec *net_networks;
 
-char bbsdir[MAX_PATH];
-
 // from convert.cpp
 void convcfg(CursesWindow* window, const string& config_filename);
 
-static void ValidateConfigOverlayExists() {
+static void ValidateConfigOverlayExists(const string& bbsdir) {
   IniFile ini(WWIV_INI, "WWIV");
   int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
 
@@ -146,8 +144,11 @@ int WInitApp::main(int argc, char *argv[]) {
   if (ss) {
     chdir(ss);
   }
-  getcwd(bbsdir, MAX_PATH);
-  trimstrpath(bbsdir);
+
+  char current_dir[MAX_PATH];
+  getcwd(current_dir, MAX_PATH);
+  trimstrpath(current_dir);
+  const string bbsdir(current_dir);
 
   out->Cls(ACS_CKBOARD);
   out->window()->SetColor(SchemeId::NORMAL);
@@ -159,7 +160,7 @@ int WInitApp::main(int argc, char *argv[]) {
     if (dialog_yn(out->window(), lines)) {
       // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
       out->window()->Bkgd(' ');
-      new_init(out->window());
+      new_init(out->window(), bbsdir);
       newbbs = true;
       configfile = open(CONFIG_DAT, O_RDWR | O_BINARY);
       if (configfile == -1) {
@@ -181,7 +182,7 @@ int WInitApp::main(int argc, char *argv[]) {
   read(configfile, &syscfg, sizeof(configrec));
   close(configfile);
 
-  ValidateConfigOverlayExists();
+  ValidateConfigOverlayExists(bbsdir);
 
   string filename = StringPrintf("%sarchiver.dat", syscfg.datadir);
   int hFile = open(filename.c_str(), O_RDONLY | O_BINARY);
