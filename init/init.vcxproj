@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="archivers.h" />
+    <ClInclude Include="autoval.h" />
     <ClInclude Include="editors.h" />
     <ClInclude Include="ifcns.h" />
     <ClInclude Include="init.h" />
@@ -106,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="archivers.cpp" />
+    <ClCompile Include="autoval.cpp" />
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="editors.cpp" />
     <ClCompile Include="init.cpp" />

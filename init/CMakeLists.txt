@@ -10,6 +10,7 @@ add_definitions(-DINIT -DNOT_BBS)
 
 set(COMMON_SOURCES
   archivers.cpp
+  autoval.cpp
   convert.cpp
   editors.cpp
   init.cpp 
