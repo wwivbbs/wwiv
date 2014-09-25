@@ -19,8 +19,10 @@
 #ifndef __INCLUDED_NEWINIT_H__
 #define __INCLUDED_NEWINIT_H__
 
+#include <string>
+
 class CursesWindow;
 
-void new_init(CursesWindow* window);
+void new_init(CursesWindow* window, const std::string& bbsdir);
 
 #endif // __INCLUDED_NEWINIT_H__
