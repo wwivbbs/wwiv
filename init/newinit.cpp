@@ -331,7 +331,7 @@ static void init_files(CursesWindow* window, const std::string& bbsdir) {
   window->SetColor(SchemeId::NORMAL);
 }
 
-void new_init(CursesWindow* window, const std::string& bbsdir) {
+bool new_init(CursesWindow* window, const std::string& bbsdir) {
   static const vector<string> dirnames = {
     "attach",
     "data",
@@ -355,7 +355,7 @@ void new_init(CursesWindow* window, const std::string& bbsdir) {
       if (mkdir(dirname.c_str())) {
         window->SetColor(SchemeId::ERROR_TEXT);
         window->Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname.c_str());
-        exit_init(2);
+        return false;
       }
     } else {
       chdir(bbsdir.c_str());
@@ -363,4 +363,5 @@ void new_init(CursesWindow* window, const std::string& bbsdir) {
   }
 
   init_files(window, bbsdir);
+  return true;
 }

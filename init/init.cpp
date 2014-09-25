@@ -161,14 +161,16 @@ int WInitApp::main(int argc, char *argv[]) {
     if (dialog_yn(out->window(), lines)) {
       // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
       out->window()->Bkgd(' ');
-      new_init(out->window(), bbsdir);
+      if (!new_init(out->window(), bbsdir)) {
+        return 2;
+      }
       newbbs = true;
       configfile = open(CONFIG_DAT, O_RDWR | O_BINARY);
       if (configfile == -1) {
         messagebox(out->window(), StringPrintf("Unable to open config.dat, error: %d", errno));
       }
     } else {
-      exit_init(1);
+      return 1;
     }
   }
 
