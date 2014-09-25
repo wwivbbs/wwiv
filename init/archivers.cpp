@@ -88,58 +88,33 @@ static void edit_arc(int arc_number, arcrec* a) {
 }
 
 bool create_arcs(CursesWindow* window) {
-  arcrec arc[MAX_ARCS];
-
-  strncpy(arc[0].name, "Zip", 32);
-  strncpy(arc[0].extension, "ZIP", 4);
-  strncpy(arc[0].arca, "zip %1 %2", 50);
-  strncpy(arc[0].arce, "unzip -C %1 %2", 50);
-  strncpy(arc[0].arcl, "unzip -l %1", 50);
-  strncpy(arc[0].arcd, "zip -d %1 -@ < BBSADS.TXT", 50);
-  strncpy(arc[0].arck, "zip -z %1 < COMMENT.TXT", 50);
-  strncpy(arc[0].arct, "unzip -t %1", 50);
-  strncpy(arc[1].name, "ARJ", 32);
-  strncpy(arc[1].extension, "ARJ", 4);
-  strncpy(arc[1].arca, "arj.exe a %1 %2", 50);
-  strncpy(arc[1].arce, "arj.exe e %1 %2", 50);
-  strncpy(arc[1].arcl, "arj.exe i %1", 50);
-  strncpy(arc[1].arcd, "arj.exe d %1 !BBSADS.TXT", 50);
-  strncpy(arc[1].arck, "arj.exe c %1 -zCOMMENT.TXT", 50);
-  strncpy(arc[1].arct, "arj.exe t %1", 50);
-  strncpy(arc[2].name, "RAR", 32);
-  strncpy(arc[2].extension, "RAR", 4);
-  strncpy(arc[2].arca, "rar.exe a -std -s- %1 %2", 50);
-  strncpy(arc[2].arce, "rar.exe e -std -o+ %1 %2", 50);
-  strncpy(arc[2].arcl, "rar.exe l -std %1", 50);
-  strncpy(arc[2].arcd, "rar.exe d -std %1 < BBSADS.TXT ", 50);
-  strncpy(arc[2].arck, "rar.exe zCOMMENT.TXT -std %1", 50);
-  strncpy(arc[2].arct, "rar.exe t -std %1", 50);
-  strncpy(arc[3].name, "LZH", 32);
-  strncpy(arc[3].extension, "LZH", 4);
-  strncpy(arc[3].arca, "lha.exe a %1 %2", 50);
-  strncpy(arc[3].arce, "lha.exe eo  %1 %2", 50);
-  strncpy(arc[3].arcl, "lha.exe l %1", 50);
-  strncpy(arc[3].arcd, "lha.exe d %1  < BBSADS.TXT", 50);
-  strncpy(arc[3].arck, "", 50);
-  strncpy(arc[3].arct, "lha.exe t %1", 50);
-  strncpy(arc[4].name, "PAK", 32);
-  strncpy(arc[4].extension, "PAK", 4);
-  strncpy(arc[4].arca, "pkpak.exe -a %1 %2", 50);
-  strncpy(arc[4].arce, "pkunpak.exe -e  %1 %2", 50);
-  strncpy(arc[4].arcl, "pkunpak.exe -p %1", 50);
-  strncpy(arc[4].arcd, "pkpak.exe -d %1  @BBSADS.TXT", 50);
-  strncpy(arc[4].arck, "pkpak.exe -c %1 < COMMENT.TXT ", 50);
-  strncpy(arc[4].arct, "pkunpak.exe -t %1", 50);
+  vector<arcrec> arc;
+  arc.emplace_back(arcrec{"Zip", "ZIP", 
+    "zip %1 %2", "unzip -C %1 %2", 
+    "unzip -l %1", "zip -d %1 -@ < BBSADS.TXT", 
+    "zip -z %1 < COMMENT.TXT", "unzip -t %1" });
+  arc.emplace_back(arcrec{"Arj","ARJ", 
+    "arj.exe a %1 %2", "arj.exe e %1 %2", 
+    "arj.exe i %1", "arj.exe d %1 !BBSADS.TXT", 
+    "arj.exe c %1 -zCOMMENT.TXT", "arj.exe t %1" });
+  arc.emplace_back(arcrec{ "Rar", "RAR", 
+    "rar.exe a -std -s- %1 %2", "rar.exe e -std -o+ %1 %2", 
+    "rar.exe l -std %1", "rar.exe d -std %1 < BBSADS.TXT ",
+    "rar.exe zCOMMENT.TXT -std %1", "rar.exe t -std %1" });
+  arc.emplace_back(arcrec{ "Lzh", "LZH", 
+    "lha.exe a %1 %2", "lha.exe eo  %1 %2", 
+    "lha.exe l %1", "lha.exe d %1  < BBSADS.TXT", 
+    "", "lha.exe t %1" });
+  arc.emplace_back(arcrec{ "Pak", "PAK", 
+    "pkpak.exe -a %1 %2", "pkunpak.exe -e  %1 %2", 
+    "pkunpak.exe -p %1", "pkpak.exe -d %1  @BBSADS.TXT", 
+    "pkpak.exe -c %1 < COMMENT.TXT ", "pkunpak.exe -t %1" });
 
   for (int i = 5; i < MAX_ARCS; i++) {
-    strncpy(arc[i].name, "New Archiver Name", 32);
-    strncpy(arc[i].extension, "EXT", 4);
-    strncpy(arc[i].arca, "archive add command", 50);
-    strncpy(arc[i].arce, "archive extract command", 50);
-    strncpy(arc[i].arcl, "archive list command", 50);
-    strncpy(arc[i].arcd, "archive delete command", 50);
-    strncpy(arc[i].arck, "archive comment command", 50);
-    strncpy(arc[i].arct, "archive test command", 50);
+    arc.emplace_back(arcrec{ "New Archiver Name", "EXT", 
+      "archive add command", "archive extract command", 
+      "archive list command", "archive delete command", 
+      "archive comment command", "archive test command" });
   }
 
   WFile file(syscfg.datadir, ARCHIVER_DAT);
@@ -147,7 +122,7 @@ bool create_arcs(CursesWindow* window) {
     messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", file.GetFullPathName().c_str()));
     return false;
   }
-  file.Write(arc, MAX_ARCS * sizeof(arcrec));
+  file.Write(&arc[0], MAX_ARCS * sizeof(arcrec));
   return true;
 }
 
