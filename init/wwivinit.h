@@ -44,7 +44,6 @@ extern configrec syscfg;
 extern statusrec status;
 extern subboardrec *subboards;
 extern newexternalrec *externs, *over_intern;
-extern arcrec *arcs;
 extern net_networks_rec *net_networks;
 extern initinfo_rec initinfo;
 

@@ -78,7 +78,6 @@ configrec syscfg;
 statusrec status;
 subboardrec *subboards;
 newexternalrec *externs, *over_intern;
-arcrec *arcs;
 net_networks_rec *net_networks;
 
 // from convert.cpp
