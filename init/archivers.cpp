@@ -87,7 +87,7 @@ static void edit_arc(int arc_number, arcrec* a) {
   items.Run();
 }
 
-void create_arcs(CursesWindow* window) {
+bool create_arcs(CursesWindow* window) {
   arcrec arc[MAX_ARCS];
 
   strncpy(arc[0].name, "Zip", 32);
@@ -131,7 +131,6 @@ void create_arcs(CursesWindow* window) {
   strncpy(arc[4].arck, "pkpak.exe -c %1 < COMMENT.TXT ", 50);
   strncpy(arc[4].arct, "pkunpak.exe -t %1", 50);
 
-
   for (int i = 5; i < MAX_ARCS; i++) {
     strncpy(arc[i].name, "New Archiver Name", 32);
     strncpy(arc[i].extension, "EXT", 4);
@@ -146,17 +145,20 @@ void create_arcs(CursesWindow* window) {
   WFile file(syscfg.datadir, ARCHIVER_DAT);
   if (!file.Open(WFile::modeWriteOnly|WFile::modeBinary|WFile::modeCreateFile)) {
     messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", file.GetFullPathName().c_str()));
-    exit_init(1);
+    return false;
   }
   file.Write(arc, MAX_ARCS * sizeof(arcrec));
+  return true;
 }
 
-void edit_archivers() {
+bool edit_archivers() {
   arcrec arc[MAX_ARCS];
 
   WFile file(syscfg.datadir, ARCHIVER_DAT);
   if (!file.Open(WFile::modeReadWrite|WFile::modeBinary)) {
-    create_arcs(out->window());
+    if (!create_arcs(out->window())) {
+      return false;
+    }
     file.Open(WFile::modeReadWrite|WFile::modeBinary);
   }
   file.Read(&arc, MAX_ARCS * sizeof(arcrec));
@@ -188,13 +190,14 @@ void edit_archivers() {
   // copy first four new fomat archivers to oldarcsrec
   for (int j = 0; j < 4; j++) {
     strncpy(syscfg.arcs[j].extension, arc[j].extension, 4);
-    strncpy(syscfg.arcs[j].arca     , arc[j].arca     , 32);
-    strncpy(syscfg.arcs[j].arce     , arc[j].arce     , 32);
-    strncpy(syscfg.arcs[j].arcl     , arc[j].arcl     , 32);
+    strncpy(syscfg.arcs[j].arca, arc[j].arca     , 32);
+    strncpy(syscfg.arcs[j].arce, arc[j].arce     , 32);
+    strncpy(syscfg.arcs[j].arcl, arc[j].arcl     , 32);
   }
 
   // seek to beginning of file, write arcrecs, close file
   file.Seek(0, WFile::seekBegin);
   file.Write(arc, MAX_ARCS * sizeof(arcrec));
+  return true;
 }
 
