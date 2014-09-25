@@ -128,6 +128,7 @@ WInitApp::WInitApp() {
 }
 
 WInitApp::~WInitApp() {
+  // Don't leak the localIO (also fix the color when the app exits)
   delete out;
   out = nullptr;
 }
@@ -338,8 +339,5 @@ int WInitApp::main(int argc, char *argv[]) {
     out->SetIndicatorMode(IndicatorMode::NONE);
   } while (!done);
 
-  // Don't leak the localIO (also fix the color when the app exits)
-  delete out;
-  out = nullptr;
   return 0;
 }
