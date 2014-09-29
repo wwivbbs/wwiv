@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <memory>
+#include <string>
 
 #include "bbs/keycodes.h"
 #include "bbs/wstatus.h"
@@ -31,6 +32,7 @@ time_t last_time_c;
 
 void fixup_long(uint32_t *f, time_t l);
 
+using std::string;
 using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
@@ -314,14 +316,15 @@ void do_callout(int sn) {
         char szRegionsFileName[ MAX_PATH ];
         sprintf(szRegionsFileName, "%s%s%c%s.%-3u", syscfg.datadir,
                 REGIONS_DAT, WFile::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
+        string region;
         if (WFile::Exists(szRegionsFileName)) {
           char town[5];
           sprintf(town, "%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-          describe_area_code_prefix(atoi(csne->phone), atoi(town), s1);
+          region = describe_area_code_prefix(atoi(csne->phone), atoi(town));
         } else {
-          describe_area_code(atoi(csne->phone), s1);
+          region = describe_area_code(atoi(csne->phone));
         }
-        GetSession()->bout << "|#7Sys located in: |#2" << s1 << wwiv::endl;
+        GetSession()->bout << "|#7Sys located in: |#2" << region << wwiv::endl;
         if (i2 != -1 && net_networks[GetSession()->GetNetworkNumber()].ncn[i2].bytes_waiting) {
           GetSession()->bout << "|#7Amount pending: |#2" <<
                              bytes_to_k(net_networks[GetSession()->GetNetworkNumber()].ncn[i2].bytes_waiting) <<
@@ -1024,8 +1027,9 @@ void print_call(int sn, int nNetNumber, int i2) {
   GetSession()->localIO()->LocalXYAPrintf(23, 19, color, "%-17.17s", csne->phone);
   sprintf(s1, "%u Bps", csne->speed);
   GetSession()->localIO()->LocalXYAPrintf(58, 18, color, "%-10.16s", s1);
-  describe_area_code(atoi(csne->phone), s1);
-  GetSession()->localIO()->LocalXYAPrintf(58, 19, color, "%-17.17s", stripcolors(s1));
+  const string areacode= describe_area_code(atoi(csne->phone));
+  const string stripped = stripcolors(areacode);
+  GetSession()->localIO()->LocalXYAPrintf(58, 19, color, "%-17.17s", stripped.c_str());
   GetSession()->localIO()->LocalXYAPrintf(14, 3, color, "%-11.16s", GetSession()->GetNetworkName());
 }
 

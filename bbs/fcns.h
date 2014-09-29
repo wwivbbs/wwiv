@@ -123,8 +123,8 @@ void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSy
 bool ValidateSysopPassword();
 void hang_it_up();
 bool play_sdf(const std::string soundFileName, bool abortable);
-void describe_area_code(int nAreaCode, char *pszDescription);
-void describe_area_code_prefix(int nAreaCode, int town, char *pszDescription);
+std::string describe_area_code(int nAreaCode);
+std::string describe_area_code_prefix(int nAreaCode, int town);
 
 
 // File: bbsutl2.cpp

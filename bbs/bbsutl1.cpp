@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <memory>
+#include <string>
 
 #include "wwiv.h"
 #include "core/wutil.h"
@@ -24,6 +26,10 @@
 #include "core/wtextfile.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
+
+using std::string;
+using std::unique_ptr;
+using wwiv::strings::StringPrintf;
 
 /**
  * Returns true if local sysop functions accessible, else returns false.
@@ -369,73 +375,56 @@ bool play_sdf(const std::string soundFileName, bool abortable) {
  * @param pszDescription point to return the description for the specified
  *        area code.
  */
-void describe_area_code(int nAreaCode, char *pszDescription) {
-  pszDescription[0] = '\0';
-
-  WFile file(syscfg.datadir, REGIONS_DAT);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
-    // Failed to open REGIONS.DAT
-    return;
+string describe_area_code(int nAreaCode) {
+  WTextFile file(syscfg.datadir, REGIONS_DAT, "rt");
+  if (!file.IsOpen()) {
+    // Failed to open regions area code file
+    return "";
   }
-  char* ss = static_cast<char *>(BbsAllocA(file.GetLength()));
-  int nNumRead = file.Read(ss, file.GetLength());
-  ss[nNumRead] = '\0';
-  file.Close();
-  char* ss1 = strtok(ss, "\r\n");
-  bool done = false;
-  while (ss1 && !done) {
-    int nCurrentAreaCode = atoi(ss1);
-    if (nCurrentAreaCode && nCurrentAreaCode == nAreaCode) {
-      done = true;
-    } else if (!nCurrentAreaCode) {
-      strcpy(pszDescription, ss1);
+
+  string previous;
+  string current;
+  while (file.ReadLine(&current)) {
+    int nCurrentTown = atoi(current.c_str()); 
+    if (nCurrentTown == nAreaCode) {
+      return previous;
+    } else if (nCurrentTown == 0) {
+      // Only set this on values that are town names and not area codes.
+      previous = current;
     }
-    ss1 = strtok(nullptr, "\r\n");
   }
-
-  free(ss);
+  return "";
 }
-
 
 /**
  * Describes the Town (area code + prefix) as listed in the regions file.
  * @param nAreaCode The area code to describe
  * @param nTargetTown The phone number prefix to describe
- * @param pszDescription point to return the description for the specified
- *        area code.
+ * @return the description for the specified area code.
  */
-void describe_area_code_prefix(int nAreaCode, int nTargetTown, char *pszDescription) {
-  char szFileName[ MAX_PATH ];
-  pszDescription[0] = '\0';
-  sprintf(szFileName,
-          "%s%s%c%s.%-3d",
+string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
+  const string filename = StringPrintf("%s%s%c%s.%-3d",
           syscfg.datadir,
           REGIONS_DIR,
           WFile::pathSeparatorChar,
           REGIONS_DIR,
           nAreaCode);
-  WFile file(szFileName);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+  WTextFile file(filename, "rt");
+  if (!file.IsOpen()) {
     // Failed to open regions area code file
-    return;
+    return "";
   }
-  char* ss = static_cast<char *>(BbsAllocA(file.GetLength()));
-  int nNumRead = file.Read(ss, file.GetLength());
-  ss[nNumRead] = 0;
-  file.Close();
 
-  char* ss1 = strtok(ss, "\r\n");
-  bool done = false;
-  while (ss1 && !done) {
-    int nCurrentTown = atoi(ss1);
-    if (nCurrentTown && nCurrentTown == nTargetTown) {
-      done = true;
-    } else if (!nCurrentTown) {
-      strcpy(pszDescription, ss1);
+  string previous;
+  string current;
+  while (file.ReadLine(&current)) {
+    int nCurrentTown = atoi(current.c_str()); 
+    if (nCurrentTown == nTargetTown) {
+      return previous;
+    } else if (nCurrentTown == 0) {
+      // Only set this on values that are town names and not area codes.
+      previous = current;
     }
-    ss1 = strtok(nullptr, "\r\n");
   }
-  free(ss);
+  return "";
 }
-
-
