@@ -89,16 +89,19 @@ static void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string* str
               REGIONS_DIR,
               atoi(csne->phone));
 
-      char szDescription[ 81 ];
+      string description;
       if (WFile::Exists(filename)) {
+        // Try to use the town first.
         const string phone_prefix = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-        describe_area_code_prefix(atoi(csne->phone), atoi(phone_prefix.c_str()), szDescription);
-      } else {
-        describe_area_code(atoi(csne->phone), szDescription);
+        description = describe_area_code_prefix(atoi(csne->phone), atoi(phone_prefix.c_str()));
+      }
+      if (description.empty()) {
+        // Try area code if we still don't have a description.
+        description = describe_area_code(atoi(csne->phone));
       }
 
       *strOutOriginStr = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus.c_str());
-      *strOutOriginStr2 = (szDescription[0]) ? szDescription : "Unknown Area";
+      *strOutOriginStr2 = (!description.empty()) ? description : "Unknown Area";
     } else {
       *strOutOriginStr = StrCat(netName, "Unknown System");
       *strOutOriginStr2 = "Unknown Area";
@@ -121,7 +124,7 @@ void remove_link(messagerec * pMessageRecord, string fileName) {
       set_gat_section(file.get(), static_cast<int>(pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS));
       long lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
       while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
-        long lNextSection = static_cast<long>(gat[ lCurrentSection ]);
+        long lNextSection = static_cast<long>(gat[lCurrentSection]);
         gat[lCurrentSection] = 0;
         lCurrentSection = lNextSection;
       }
@@ -250,7 +253,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
 }
 
 char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLength) {
-  char *b =  nullptr;
+  char* b =  nullptr;
   *plMessageLength = 0L;
   switch (pMessageRecord->storage_type) {
   case 0:
@@ -258,20 +261,18 @@ char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLeng
     break;
   case 2: {
     unique_ptr<WFile> file(OpenMessageFile(fileName));
-    set_gat_section(file.get(), static_cast< int >(pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS));
+    set_gat_section(file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
     int lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
     long lMessageLength = 0;
     while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
       lMessageLength += MSG_BLOCK_SIZE;
-      lCurrentSection = gat[ lCurrentSection ];
+      lCurrentSection = gat[lCurrentSection];
     }
     if (lMessageLength == 0) {
       GetSession()->bout << "\r\nNo message found.\r\n\n";
-      file->Close();
       return nullptr;
     }
     if ((b = static_cast<char *>(BbsAllocA(lMessageLength + 512))) == nullptr) {         // was +3
-      file->Close();
       return nullptr;
     }
     lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
@@ -279,7 +280,7 @@ char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLeng
     while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
       file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast< long >(lCurrentSection), WFile::seekBegin);
       lMessageBytesRead += static_cast<long>(file->Read(&(b[lMessageBytesRead]), MSG_BLOCK_SIZE));
-      lCurrentSection = gat[ lCurrentSection ];
+      lCurrentSection = gat[lCurrentSection];
     }
     file->Close();
     long lRealMessageLength = lMessageBytesRead - MSG_BLOCK_SIZE;
@@ -404,11 +405,11 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
       set_net_num(userRecord.GetForwardNetNumber());
       return true;
     }
-    if (ss[ nCurrentUser ]) {
+    if (ss[nCurrentUser]) {
       free(ss);
       return false;
     }
-    ss[ nCurrentUser ] = 1;
+    ss[nCurrentUser] = 1;
     if (userRecord.IsMailboxClosed()) {
       GetSession()->bout << "Mailbox Closed.\r\n";
       if (so()) {
@@ -942,7 +943,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
 
 
 void imail(int nUserNumber, int nSystemNumber) {
-  char szInternetAddr[ 255 ];
+  char szInternetAddr[255];
   WUser userRecord;
 
   int fwdu = nUserNumber;
@@ -1032,7 +1033,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
     while ((ss[nNamePtr + nDatePtr] != RETURN) &&
            static_cast<long>(nNamePtr + nDatePtr < lMessageTextLength) &&
            (nDatePtr < 60)) {
-      strDate.push_back(ss[(nDatePtr++) + nNamePtr ]);
+      strDate.push_back(ss[(nDatePtr++) + nNamePtr]);
     }
 
     lCurrentCharPointer = nNamePtr + nDatePtr + 1;
