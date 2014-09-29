@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include <memory>
+#include <string>
 
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
@@ -29,8 +30,10 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
+using std::string;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::strings::StringPrintf;
 
 
 bool isr1(int nUserNumber, int nNumUsers, const char *pszName) {
@@ -318,7 +321,7 @@ void print_net_listing(bool bForcePause) {
   net_system_list_rec csne;
   unsigned short slist, cmdbit = 0;
   char substr[81], onx[20], acstr[4], phstr[13], *mmk;
-  char s[255], s1[101], s2[101], s3[101], s4[101], bbstype;
+  char s[255], s1[101], s2[101], bbstype;
   bool bHadPause = false;
 
   GetApplication()->GetStatusManager()->RefreshStatusCache();
@@ -587,6 +590,7 @@ void print_net_listing(bool bForcePause) {
           if (strstr(s2, substr) != nullptr) {
             matched = true;
           } else {
+            char s3[81];
             sprintf(s3, "@%u", csne.sysnum);
             if (strstr(s3, substr) != nullptr) {
               matched = true;
@@ -614,27 +618,29 @@ void print_net_listing(bool bForcePause) {
             if (useregion && strncmp(s, csne.phone, 3) != 0) {
               strcpy(s, csne.phone);
               sprintf(s2, "%s%s%c%s.%-3u", syscfg.datadir, REGIONS_DIR, WFile::pathSeparatorChar, REGIONS_DIR, atoi(csne.phone));
+              string areacode;
               if (WFile::Exists(s2)) {
                 sprintf(town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
-                describe_area_code_prefix(atoi(csne.phone), atoi(town), s3);
+                areacode = describe_area_code_prefix(atoi(csne.phone), atoi(town));
               } else {
-                describe_area_code(atoi(csne.phone), s3);
+                areacode = describe_area_code(atoi(csne.phone));
               }
-              sprintf(s4, "\r\n%s%s\r\n", "|#2Region|#0: |#2", s3);
-              pla(s4, &abort);
+              const string line = StringPrintf("\r\n%s%s\r\n", "|#2Region|#0: |#2", areacode.c_str());
+              pla(line, &abort);
               pla("|#1 Node  Phone         BBS Name                                 Hop  Next Gr", &abort);
               pla("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
             }
           }
+          string line;
           if (cmdbit != NET_SEARCH_NOCONNECT) {
-            sprintf(s3, "%5u%c %12s  %-40s %3d %5u %2d",
+            line = StringPrintf("%5u%c %12s  %-40s %3d %5u %2d",
                     csne.sysnum, bbstype, csne.phone, csne.name,
                     csne.numhops, csne.forsys, csne.group);
           } else {
-            sprintf(s3, "%5u%c %12s  %-40s%s%2d",
+            line = StringPrintf("%5u%c %12s  %-40s%s%2d",
                     csne.sysnum, bbstype, csne.phone, csne.name, " |B1|15--- ----- |#0", csne.group);
           }
-          pla(s3, &abort);
+          pla(line, &abort);
         }
       }
       bbsListFile.Close();
