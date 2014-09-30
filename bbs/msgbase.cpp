@@ -51,20 +51,20 @@ static long gat_section;
  * Sets the global variables pszOutOriginStr and pszOutOriginStr2.
  * Note: This is a private function
  */
-static void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string* strOutOriginStr,
-                                 string* strOutOriginStr2) {
+static void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string* outNetworkName,
+                                 string* outLocation) {
   string netName;
 
   if (GetSession()->GetMaxNetworkNumber() > 1) {
     netName = StrCat(net_networks[GetSession()->GetNetworkNumber()].name, "- ");
   }
 
-  strOutOriginStr->clear();
-  strOutOriginStr2->clear();
+  outNetworkName->clear();
+  outLocation->clear();
 
   if (IsEqualsIgnoreCase(GetSession()->GetNetworkName(), "Internet") ||
       nSystemNumber == 32767) {
-    strOutOriginStr->assign("Internet Mail and Newsgroups");
+    outNetworkName->assign("Internet Mail and Newsgroups");
     return;
   }
 
@@ -100,11 +100,11 @@ static void SetMessageOriginInfo(int nSystemNumber, int nUserNumber, string* str
         description = describe_area_code(atoi(csne->phone));
       }
 
-      *strOutOriginStr = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus.c_str());
-      *strOutOriginStr2 = (!description.empty()) ? description : "Unknown Area";
+      *outNetworkName = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus.c_str());
+      *outLocation = (!description.empty()) ? description : "Unknown Area";
     } else {
-      *strOutOriginStr = StrCat(netName, "Unknown System");
-      *strOutOriginStr2 = "Unknown Area";
+      *outNetworkName = StrCat(netName, "Unknown System");
+      *outLocation = "Unknown Area";
     }
   }
 }
@@ -146,9 +146,8 @@ void remove_link(messagerec * pMessageRecord, string fileName) {
 WFile* OpenMessageFile(const string messageAreaFileName) {
   GetApplication()->GetStatusManager()->RefreshStatusCache();
 
-  stringstream sstream;
-  sstream << syscfg.msgsdir << messageAreaFileName << FILENAME_DAT_EXTENSION << std::ends;
-  WFile *pFileMessage = new WFile(sstream.str());
+  const string filename = StrCat(syscfg.msgsdir, messageAreaFileName, FILENAME_DAT_EXTENSION);
+  WFile *pFileMessage = new WFile(filename);
   if (!pFileMessage->Open(WFile::modeReadWrite | WFile::modeBinary)) {
     // Create message area file if it doesn't exist.
     pFileMessage->Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
@@ -156,20 +155,19 @@ WFile* OpenMessageFile(const string messageAreaFileName) {
       gat[i] = 0;
     }
     pFileMessage->Write(gat, GAT_SECTION_SIZE);
-    //strcpy( g_szMessageGatFileName, pFileMessage->GetFullPathName() );
     pFileMessage->SetLength(GAT_SECTION_SIZE + (75L * 1024L));
     gat_section = 0;
   }
   pFileMessage->Seek(0L, WFile::seekBegin);
   pFileMessage->Read(gat, GAT_SECTION_SIZE);
-  //strcpy( g_szMessageGatFileName, pFileMessage->GetFullPathName() );
+
   gat_section = 0;
   return pFileMessage;
 }
 
-#define GATSECLEN ( GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE )
+#define GATSECLEN (GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE)
 #ifndef MSG_STARTING
-#define MSG_STARTING ( gat_section * GATSECLEN + GAT_SECTION_SIZE )
+#define MSG_STARTING (gat_section * GATSECLEN + GAT_SECTION_SIZE)
 #endif  // MSG_STARTING
 
 long current_gat_section() { return gat_section; }
@@ -308,12 +306,8 @@ void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
   }
 
   long lOrigSize = fileOrig.GetLength();
-  char* b = static_cast<char*>(BbsAllocA(lOrigSize + 1024));
-  if (b == nullptr) {
-    fileOrig.Close();
-    return;
-  }
-  fileOrig.Read(b, lOrigSize);
+  unique_ptr<char[]> b(new char[lOrigSize + 1024]);
+  fileOrig.Read(b.get(), lOrigSize);
   fileOrig.Close();
   if (b[lOrigSize - 1] != CZ) {
     b[lOrigSize++] = CZ;
@@ -321,9 +315,8 @@ void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
 
   WFile fileOut(syscfgovr.tempdir, INPUT_MSG);
   fileOut.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
-  fileOut.Write(b, lOrigSize);
+  fileOut.Write(b.get(), lOrigSize);
   fileOut.Close();
-  free(b);
 
   use_workspace = (bNoEditAllowed || !okfsed()) ? true : false;
 
@@ -432,7 +425,6 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   return true;
 }
 
-
 WFile *OpenEmailFile(bool bAllowWrite) {
   WFile *file = new WFile(syscfg.datadir, EMAIL_DAT);
 
@@ -459,7 +451,6 @@ WFile *OpenEmailFile(bool bAllowWrite) {
 
   return file;
 }
-
 
 void sendout_email(const string& title, messagerec * pMessageRec, int anony, int nUserNumber, int nSystemNumber,
                    int an, int nFromUser, int nFromSystem, int nForwardedCode, int nFromNetworkNumber) {
@@ -655,7 +646,6 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   }
 }
 
-
 bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit) {
   if (nSystemNumber != 0 && net_sysnum == 0) {
     GetSession()->bout << "\r\nSorry, this system is not a part of WWIVnet.\r\n\n";
@@ -705,7 +695,6 @@ bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit) {
   }
   return true;
 }
-
 
 void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool force_title, bool bAllowFSED) {
   int an;
@@ -941,7 +930,6 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   }
 }
 
-
 void imail(int nUserNumber, int nSystemNumber) {
   char szInternetAddr[255];
   WUser userRecord;
@@ -988,7 +976,6 @@ void imail(int nUserNumber, int nSystemNumber) {
     email(nUserNumber, nSystemNumber, false, 0);
   }
 }
-
 
 void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *pszFileName,
                    int nFromSystem, int nFromUser) {
@@ -1303,6 +1290,7 @@ void read_message(int n, bool *next, int *val) {
   if (p.qscan > qsc_p[GetSession()->GetCurrentReadMessageArea()]) {
     qsc_p[GetSession()->GetCurrentReadMessageArea()] = p.qscan;
   }
+  
   WStatus *pStatus = GetApplication()->GetStatusManager()->GetStatus();
   // not sure why we check this twice...
   // maybe we need a getCachedQScanPointer?
