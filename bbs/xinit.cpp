@@ -1190,7 +1190,6 @@ void WApplication::InitializeBBS() {
     _putenv("PKNOFASTCHAR=Y");
   }
 
-
   m_wwivVerEnvVar = "BBS=";
   m_wwivVerEnvVar += wwiv_version;
   _putenv(m_wwivVerEnvVar.c_str());
