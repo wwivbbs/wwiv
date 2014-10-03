@@ -198,7 +198,6 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
     time_t lTime = time(nullptr);
     string time_string(asctime(localtime(&lTime)));
     AddLineToMessageBuffer(b, time_string.c_str(), &lCurrentMessageSize);
-
     UpdateMessageBufferQuotesCtrlLines(b, &lCurrentMessageSize);
 
     if (GetSession()->IsMessageThreadingEnabled()) {
@@ -619,7 +618,6 @@ void UpdateMessageBufferTagLine(char *pszMessageBuffer, long *plBufferLength, co
     }
   }
 }
-
 
 void UpdateMessageBufferQuotesCtrlLines(char *pszMessageBuffer, long *plBufferLength) {
   char szQuotesFileName[ MAX_PATH ];
