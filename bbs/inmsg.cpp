@@ -197,6 +197,8 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
     // Add date to message body
     time_t lTime = time(nullptr);
     string time_string(asctime(localtime(&lTime)));
+    // asctime appends a \n to the end of the string.
+    StringTrimEnd(&time_string);
     AddLineToMessageBuffer(b, time_string.c_str(), &lCurrentMessageSize);
     UpdateMessageBufferQuotesCtrlLines(b, &lCurrentMessageSize);
 
