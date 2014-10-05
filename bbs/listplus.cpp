@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include <algorithm>
 #include <csignal>
+#include <string>
+#include <vector>
 
 #include "bbs/wwiv.h"
 
@@ -32,6 +34,9 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
+using std::string;
+using std::vector;
+using wwiv::strings::StringPrintf;
 
 user_config config_listing;
 int list_loaded;
@@ -53,35 +58,15 @@ int lp_config_loaded;
 long fpts;
 #endif  // FILE_POINTS
 
-const char *lp_color_list[] = {
-  "Black   ",
-  "Blue    ",
-  "Green   ",
-  "Cyan    ",
-  "Red     ",
-  "Purple  ",
-  "Brown   ",
-  "L-Gray  ",
-  "D-Gray  ",
-  "L-Blue  ",
-  "L-Green ",
-  "L-Cyan  ",
-  "L-Red   ",
-  "L-Purple",
-  "Yellow  ",
-  "White   "
-};
-
 // TODO remove this hack and fix the real problem of fake spaces in filenames everywhere
-bool ListPlusExist(const char *pszFileName) {
-  char szRealFileName[ MAX_PATH ];
+static bool ListPlusExist(const char *pszFileName) {
+  char szRealFileName[MAX_PATH];
   strcpy(szRealFileName, pszFileName);
   StringRemoveWhitespace(szRealFileName);
   return (*szRealFileName) ? WFile::Exists(szRealFileName) : false;
 }
 
-
-void colorize_foundtext(char *text, struct search_record * search_rec, int color) {
+static void colorize_foundtext(char *text, struct search_record * search_rec, int color) {
   int size;
   char *pszTempBuffer, found_color[10], normal_color[10], *tok;
   char find[101], word[101];
@@ -116,42 +101,7 @@ void colorize_foundtext(char *text, struct search_record * search_rec, int color
   }
 }
 
-
-void printtitle_plus_old() {
-  GetSession()->bout << "|16|15" << charstr(79, '\xDC') << wwiv::endl;
-
-  char szBuffer[255];
-  sprintf(szBuffer, "Area %d : %-30.30s (%d files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
-          directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
-  GetSession()->bout.WriteFormatted("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", szBuffer);
-
-  if (config_listing.lp_options & cfl_header) {
-    build_header();
-  }
-
-  GetSession()->bout << "|16|08" << charstr(79, '\xDF') << wwiv::endl;
-  GetSession()->bout.Color(0);
-}
-
-
-void printtitle_plus() {
-  if (GetSession()->localIO()->WhereY() != 0 || GetSession()->localIO()->WhereX() != 0) {
-    GetSession()->bout.ClearScreen();
-  }
-
-  if (config_listing.lp_options & cfl_header) {
-    printtitle_plus_old();
-  } else {
-    char szBuffer[255];
-    sprintf(szBuffer, "Area %d : %-30.30s (%d files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
-            directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
-    GetSession()->bout.DisplayLiteBar(" %-54s Space=Tag/?=Help ", szBuffer);
-    GetSession()->bout.Color(0);
-  }
-}
-
-
-void build_header() {
+static void build_header() {
   char szHeader[255];
   int desc_pos = 30;
 
@@ -214,27 +164,48 @@ void build_header() {
   }
 }
 
+static void printtitle_plus_old() {
+  GetSession()->bout << "|16|15" << charstr(79, '\xDC') << wwiv::endl;
 
-int first_file_pos() {
-  int i = FIRST_FILE_POS;
+  const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
+          directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
+  GetSession()->bout.WriteFormatted("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf.c_str());
 
   if (config_listing.lp_options & cfl_header) {
-    i += lp_configured_lines();
+    build_header();
   }
 
-  return i;
+  GetSession()->bout << "|16|08" << charstr(79, '\xDF') << wwiv::endl;
+  GetSession()->bout.Color(0);
 }
 
-
-int lp_configured_lines() {
-  if (config_listing.lp_options & cfl_date_uploaded
-      || config_listing.lp_options & cfl_upby) {
-    return 2;
+void printtitle_plus() {
+  if (GetSession()->localIO()->WhereY() != 0 || GetSession()->localIO()->WhereX() != 0) {
+    GetSession()->bout.ClearScreen();
   }
 
-  return 1;
+  if (config_listing.lp_options & cfl_header) {
+    printtitle_plus_old();
+  } else {
+    const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
+            directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
+    GetSession()->bout.DisplayLiteBar(" %-54s Space=Tag/?=Help ", buf.c_str());
+    GetSession()->bout.Color(0);
+  }
 }
 
+static int lp_configured_lines() {
+  return (config_listing.lp_options & cfl_date_uploaded || 
+          config_listing.lp_options & cfl_upby) ? 2 : 1;
+}
+
+int first_file_pos() {
+  int pos = FIRST_FILE_POS;
+  if (config_listing.lp_options & cfl_header) {
+    pos += lp_configured_lines();
+  }
+  return pos;
+}
 
 void print_searching(struct search_record * search_rec) {
   if (GetSession()->localIO()->WhereY() != 0 || GetSession()->localIO()->WhereX() != 0) {
@@ -250,7 +221,7 @@ void print_searching(struct search_record * search_rec) {
                                     directories[udir[GetSession()->GetCurrentFileArea()].subnum].name);
 }
 
-void catch_divide_by_zero(int signum) {
+static void catch_divide_by_zero(int signum) {
   if (signum == SIGFPE) {
     sysoplog("Caught divide by 0");
   }
@@ -606,7 +577,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
   return numl;
 }
 
-void CheckLPColors() {
+static void CheckLPColors() {
   for (int i = 0; i < 32; i++) {
     if (config_listing.lp_colors[i] == 0) {
       config_listing.lp_colors[i] = 7;
@@ -614,7 +585,12 @@ void CheckLPColors() {
   }
 }
 
-int load_config_listing(int config) {
+static void unload_config_listing() {
+  list_loaded = 0;
+  memset(&config_listing, 0, sizeof(user_config));
+}
+
+static int load_config_listing(int config) {
   int len;
 
   unload_config_listing();
@@ -658,7 +634,7 @@ int load_config_listing(int config) {
   return 0;
 }
 
-void write_config_listing(int config) {
+static void write_config_listing(int config) {
   if (!config) {
     return;
   }
@@ -678,11 +654,6 @@ void write_config_listing(int config) {
   fileUserConfig.Seek(config * sizeof(user_config), WFile::seekBegin);
   fileUserConfig.Write(&config_listing, sizeof(user_config));
   fileUserConfig.Close();
-}
-
-void unload_config_listing() {
-  list_loaded = 0;
-  memset(&config_listing, 0, sizeof(user_config));
 }
 
 int print_extended_plus(const char *pszFileName, int numlist, int indent, int color,
@@ -891,6 +862,68 @@ int calc_max_lines() {
   return max_lines;
 }
 
+static void check_lp_colors() {
+  for (int i = 0; i < 32; i++) {
+    if (!config_listing.lp_colors[i]) {
+      config_listing.lp_colors[i] = 1;
+    }
+  }
+}
+
+void load_lp_config() {
+  if (!lp_config_loaded) {
+    WFile fileConfig(syscfg.datadir, LISTPLUS_CFG);
+    if (!fileConfig.Open(WFile::modeBinary | WFile::modeReadOnly)) {
+      memset(&lp_config, 0, sizeof(struct listplus_config));
+      lp_config.fi = lp_config.lssm = static_cast<long>(time(nullptr));
+
+      lp_config.normal_highlight  = (YELLOW + (BLACK << 4));
+      lp_config.normal_menu_item  = (CYAN + (BLACK << 4));
+      lp_config.current_highlight = (BLUE + (LIGHTGRAY << 4));
+      lp_config.current_menu_item = (BLACK + (LIGHTGRAY << 4));
+
+      lp_config.tagged_color      = LIGHTGRAY;
+      lp_config.file_num_color    = GREEN;
+
+      lp_config.found_fore_color  = RED;
+      lp_config.found_back_color  = (LIGHTGRAY) + 16;
+
+      lp_config.current_file_color = BLACK + (LIGHTGRAY << 4);
+
+      lp_config.max_screen_lines_to_show = 24;
+      lp_config.show_at_least_extended = 5;
+
+      lp_config.edit_enable = 1;            // Do or don't let users edit their config
+      lp_config.request_file = 1;           // Do or don't use file request
+      lp_config.colorize_found_text = 1;    // Do or don't colorize found text
+      lp_config.search_extended_on =
+        0;     // Defaults to either on or off in adv search, or is either on or off in simple search
+      lp_config.simple_search = 1;          // Which one is entered when searching, can switch to other still
+      lp_config.no_configuration = 0;       // Toggles configurable menus on and off
+      lp_config.check_exist = 1;            // Will check to see if the file exists on hardrive and put N/A if not
+      lp_config_loaded = 1;
+      lp_config.forced_config = 0;
+
+      save_lp_config();
+    } else {
+      fileConfig.Read(&lp_config, sizeof(struct listplus_config));
+      lp_config_loaded = 1;
+      fileConfig.Close();
+    }
+  }
+  check_lp_colors();
+}
+
+void save_lp_config() {
+  if (lp_config_loaded) {
+    WFile fileConfig(syscfg.datadir, LISTPLUS_CFG);
+    if (fileConfig.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite)) {
+      fileConfig.Write(&lp_config, sizeof(struct listplus_config));
+      fileConfig.Close();
+    }
+  }
+}
+
 void sysop_configure() {
   short color = 0;
   bool done = false;
@@ -1040,7 +1073,6 @@ void sysop_configure() {
   save_lp_config();
   load_lp_config();
 }
-
 
 short SelectColor(int which) {
   char ch, nc;
@@ -1267,9 +1299,26 @@ void config_file_list() {
   GetSession()->bout.NewLine(4);
 }
 
-
 void update_user_config_screen(uploadsrec * u, int which) {
   struct search_record sr;
+  static const vector<string> lp_color_list{
+    "Black   ",
+    "Blue    ",
+    "Green   ",
+    "Cyan    ",
+    "Red     ",
+    "Purple  ",
+    "Brown   ",
+    "L-Gray  ",
+    "D-Gray  ",
+    "L-Blue  ",
+    "L-Green ",
+    "L-Cyan  ",
+    "L-Red   ",
+    "L-Purple",
+    "Yellow  ",
+    "White   "
+  };
 
   memset(&sr, 0, sizeof(struct search_record));
 
@@ -1363,8 +1412,7 @@ void update_user_config_screen(uploadsrec * u, int which) {
   GetSession()->bout.BackSpace();
 }
 
-
-int rename_filename(const char *pszFileName, int dn) {
+static int rename_filename(const char *pszFileName, int dn) {
   char s[81], s1[81], s2[81], *ss, s3[81], ch;
   int i, cp, ret = 1;
   uploadsrec u;
@@ -1487,8 +1535,7 @@ int rename_filename(const char *pszFileName, int dn) {
   return ret;
 }
 
-
-int remove_filename(const char *pszFileName, int dn) {
+static int remove_filename(const char *pszFileName, int dn) {
   int ret = 1;
   char szTempFileName[MAX_PATH];
   uploadsrec u;
@@ -1595,8 +1642,7 @@ int remove_filename(const char *pszFileName, int dn) {
   return ret;
 }
 
-
-int move_filename(const char *pszFileName, int dn) {
+static int move_filename(const char *pszFileName, int dn) {
   char szTempMoveFileName[81], szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH], *ss;
   int nDestDirNum = -1, ret = 1;
   uploadsrec u, u1;
@@ -1782,12 +1828,9 @@ int move_filename(const char *pszFileName, int dn) {
     dliscan();
     nRecNum = nrecno(szTempMoveFileName, cp);
   }
-
   tmp_disable_conf(false);
-
   return ret;
 }
-
 
 void do_batch_sysop_command(int mode, const char *pszFileName) {
   int save_curdir = GetSession()->GetCurrentFileArea();
@@ -1807,7 +1850,6 @@ void do_batch_sysop_command(int mode, const char *pszFileName) {
             delbatch(pos);
           }
           break;
-
         case SYSOP_RENAME:
           if (!rename_filename(batch[pos].filename, batch[pos].dir)) {
             done = true;
@@ -1815,7 +1857,6 @@ void do_batch_sysop_command(int mode, const char *pszFileName) {
             delbatch(pos);
           }
           break;
-
         case SYSOP_MOVE:
           if (!move_filename(batch[pos].filename, batch[pos].dir)) {
             done = true;
@@ -1834,75 +1875,16 @@ void do_batch_sysop_command(int mode, const char *pszFileName) {
     case SYSOP_DELETE:
       remove_filename(pszFileName, udir[GetSession()->GetCurrentFileArea()].subnum);
       break;
-
     case SYSOP_RENAME:
       rename_filename(pszFileName, udir[GetSession()->GetCurrentFileArea()].subnum);
       break;
-
     case SYSOP_MOVE:
       move_filename(pszFileName, udir[GetSession()->GetCurrentFileArea()].subnum);
       break;
     }
   }
-
-
   GetSession()->SetCurrentFileArea(save_curdir);
   dliscan();
-}
-
-void load_lp_config() {
-  if (!lp_config_loaded) {
-    WFile fileConfig(syscfg.datadir, LISTPLUS_CFG);
-    if (!fileConfig.Open(WFile::modeBinary | WFile::modeReadOnly)) {
-      memset(&lp_config, 0, sizeof(struct listplus_config));
-      lp_config.fi = lp_config.lssm = static_cast<long>(time(nullptr));
-
-      lp_config.normal_highlight  = (YELLOW + (BLACK << 4));
-      lp_config.normal_menu_item  = (CYAN + (BLACK << 4));
-      lp_config.current_highlight = (BLUE + (LIGHTGRAY << 4));
-      lp_config.current_menu_item = (BLACK + (LIGHTGRAY << 4));
-
-      lp_config.tagged_color      = LIGHTGRAY;
-      lp_config.file_num_color    = GREEN;
-
-      lp_config.found_fore_color  = RED;
-      lp_config.found_back_color  = (LIGHTGRAY) + 16;
-
-      lp_config.current_file_color = BLACK + (LIGHTGRAY << 4);
-
-      lp_config.max_screen_lines_to_show = 24;
-      lp_config.show_at_least_extended = 5;
-
-      lp_config.edit_enable = 1;            // Do or don't let users edit their config
-      lp_config.request_file = 1;           // Do or don't use file request
-      lp_config.colorize_found_text = 1;    // Do or don't colorize found text
-      lp_config.search_extended_on =
-        0;     // Defaults to either on or off in adv search, or is either on or off in simple search
-      lp_config.simple_search = 1;          // Which one is entered when searching, can switch to other still
-      lp_config.no_configuration = 0;       // Toggles configurable menus on and off
-      lp_config.check_exist = 1;            // Will check to see if the file exists on hardrive and put N/A if not
-      lp_config_loaded = 1;
-      lp_config.forced_config = 0;
-
-      save_lp_config();
-    } else {
-      fileConfig.Read(&lp_config, sizeof(struct listplus_config));
-      lp_config_loaded = 1;
-      fileConfig.Close();
-    }
-  }
-  check_lp_colors();
-}
-
-
-void save_lp_config() {
-  if (lp_config_loaded) {
-    WFile fileConfig(syscfg.datadir, LISTPLUS_CFG);
-    if (fileConfig.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeTruncate | WFile::modeReadWrite)) {
-      fileConfig.Write(&lp_config, sizeof(struct listplus_config));
-      fileConfig.Close();
-    }
-  }
 }
 
 int search_criteria(struct search_record * sr) {
@@ -2090,7 +2072,6 @@ void view_file(const char *pszFileName) {
   }
 }
 
-
 int lp_try_to_download(const char *pszFileMask, int dn) {
   int i, rtn, ok2;
   bool abort = false;
@@ -2150,7 +2131,6 @@ int lp_try_to_download(const char *pszFileMask, int dn) {
   }
 }
 
-
 void download_plus(const char *pszFileName) {
   char szFileName[MAX_PATH];
 
@@ -2208,13 +2188,11 @@ void download_plus(const char *pszFileName) {
   }
 }
 
-
 void request_file(const char *pszFileName) {
   GetSession()->bout.ClearScreen();
   GetSession()->bout.NewLine();
 
   printfile(LPFREQ_NOEXT);
-
   GetSession()->bout << "|#2File missing.  Request it? ";
 
   if (noyes()) {
@@ -2223,11 +2201,8 @@ void request_file(const char *pszFileName) {
   } else {
     GetSession()->bout << "File request NOT sent\r\n";
   }
-
   pausescr();
-
 }
-
 
 bool ok_listplus() {
   if (!okansi()) {
@@ -2248,13 +2223,3 @@ bool ok_listplus() {
   }
   return true;
 }
-
-
-void check_lp_colors() {
-  for (int i = 0; i < 32; i++) {
-    if (!config_listing.lp_colors[i]) {
-      config_listing.lp_colors[i] = 1;
-    }
-  }
-}
-
