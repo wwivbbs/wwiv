@@ -402,24 +402,15 @@ void logon_guest();
 
 // File: listplus.cpp
 
-void colorize_foundtext(char *text, struct search_record * search_rec, int color);
-void printtitle_plus_old();
 void printtitle_plus();
-void build_header();
 int  first_file_pos();
-int  lp_configured_lines();
 void print_searching(struct search_record * search_rec);
-void catch_divide_by_zero(int x);
 int  listfiles_plus(int type);
 void drawfile(int filepos, int filenum);
 void undrawfile(int filepos, int filenum);
 int  lp_add_batch(const char *pszFileName, int dn, long fs);
 int  printinfo_plus(uploadsrec *pUploadRecord, int filenum, int marked, int LinesLeft,
                     struct search_record * search_rec);
-void CheckLPColors();
-int  load_config_listing(int config);
-void write_config_listing(int config);
-void unload_config_listing();
 int  print_extended_plus(const char *pszFileName, int numlist, int indent, int color,
                          struct search_record * search_rec);
 void show_fileinfo(uploadsrec *pUploadRecord);
@@ -427,17 +418,14 @@ int  check_lines_needed(uploadsrec * pUploadRecord);
 void prep_menu_items(char **menu_items);
 int  prep_search_rec(struct search_record * search_rec, int type);
 int  calc_max_lines();
+void load_lp_config();
+void save_lp_config();
 void sysop_configure();
 short SelectColor(int which);
 void check_listplus();
 void config_file_list();
 void update_user_config_screen(uploadsrec * pUploadRecord, int which);
-int  rename_filename(const char *pszFileName, int dn);
-int  remove_filename(const char *pszFileName, int dn);
-int  move_filename(const char *pszFileName, int dn);
 void do_batch_sysop_command(int mode, const char *pszFileName);
-void load_lp_config();
-void save_lp_config();
 int  search_criteria(struct search_record * sr);
 void load_listing();
 void view_file(const char *pszFileName);
@@ -445,7 +433,6 @@ int  lp_try_to_download(const char *pszFileMask, int dn);
 void download_plus(const char *pszFileName);
 void request_file(const char *pszFileName);
 bool ok_listplus();
-void check_lp_colors();
 
 
 // File: lpfunc.cpp
