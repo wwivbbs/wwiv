@@ -693,7 +693,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 
   int will_fit = 80 - abs(indent) - 2;
 
-  char * ss = READ_EXTENDED_DESCRIPTION(pszFileName);
+  char * ss = read_extended_description(pszFileName);
 
   if (!ss) {
     return 0;
@@ -770,7 +770,7 @@ void show_fileinfo(uploadsrec * u) {
 }
 
 int check_lines_needed(uploadsrec * u) {
-  char *ss, *tmp;
+  char *tmp;
   int elines = 0;
   int max_extended;
 
@@ -793,10 +793,9 @@ int check_lines_needed(uploadsrec * u) {
       max_extended = lp_config.show_at_least_extended;
     }
 
+    char* ss = nullptr;
     if (ext_is_on && mask_extended & u->mask) {
-      ss = READ_EXTENDED_DESCRIPTION(u->filename);
-    } else {
-      ss = nullptr;
+      ss = read_extended_description(u->filename);
     }
 
     if (ss) {

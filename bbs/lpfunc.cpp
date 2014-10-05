@@ -590,9 +590,8 @@ int compare_criteria(struct search_record * sr, uploadsrec * ur) {
     // as one unit, that way, if you specify something like 'one & two
     // and one is located in the description and two is in the
     // extended description, then it will properly find the search
-
     if (sr->search_extended && ur->mask & mask_extended) {
-      buff = READ_EXTENDED_DESCRIPTION(ur->filename);
+      buff = read_extended_description(ur->filename);
     }
 
     desc_len = strlen(ur->description);
