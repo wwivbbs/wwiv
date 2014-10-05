@@ -42,7 +42,6 @@ int  lp_get_value(char *raw, char *formula, unsigned *pos);
 extern int bulk_move;
 extern bool ext_is_on;
 
-
 int listfiles_plus_function(int type) {
   uploadsrec(*file_recs)[1];
   int file_handle[51];
