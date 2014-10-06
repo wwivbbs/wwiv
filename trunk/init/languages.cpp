@@ -48,6 +48,9 @@ using std::unique_ptr;
 using std::vector;
 using wwiv::strings::StringPrintf;
 
+#define MAX_LANGUAGES 100
+
+
 static void edit_lang(languagerec* n) {
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Language Configuration", 9, 78));

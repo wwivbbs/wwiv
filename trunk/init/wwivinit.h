@@ -37,13 +37,10 @@
 #endif  // MAX_PATH
 
 #define MAX_NETWORKS 100
-#define MAX_LANGUAGES 100
-#define MAX_ALLOWED_PORT 8
 
 extern configrec syscfg;
 extern statusrec status;
 extern subboardrec *subboards;
-extern newexternalrec *externs, *over_intern;
 extern net_networks_rec *net_networks;
 extern initinfo_rec initinfo;
 
