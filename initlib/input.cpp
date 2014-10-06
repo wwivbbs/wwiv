@@ -133,12 +133,6 @@ EditItems::~EditItems() {
   io_->SetIndicatorMode(IndicatorMode::NONE);
 }
 
-void nlx(int numLines) {
-  for (int i = 0; i < numLines; i++) {
-    out->window()->Puts("\r\n");
-  }
-}
-
 static CursesWindow* CreateDialogWindow(CursesWindow* parent, int height, int width) {
   const int maxx = parent->GetMaxX();
   const int maxy = parent->GetMaxY();
@@ -281,21 +275,6 @@ int messagebox(CursesWindow* window, const vector<string>& text) {
   dialog->MvAddStr(text.size() + 2, x + 2, prompt);
   dialog->Refresh();
   return dialog->GetChar();
-}
-
-int input_number(CursesWindow* window, int max_digits) {
-  string s;
-  int return_code = 0;
-  editline(window, &s, max_digits, NUM_ONLY, &return_code, "");
-  if (s.empty()) {
-    return 0;
-  }
-  try {
-    return std::stoi(s);
-  } catch (std::invalid_argument) { 
-    // No conversion possible.
-    return 0;
-  }
 }
 
 int dialog_input_number(CursesWindow* window, const string& prompt, int min_value, int max_value) {
@@ -572,39 +551,4 @@ int toggleitem(CursesWindow* window, int value, const std::vector<std::string>& 
   window->PutsXY(cx, cy, strings.at(value));
   window->GotoXY(cx, cy);
   return value;
-}
-
-int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode) {
-  switch (nReturnCode) {
-  case PREV:
-    --nCurrentPos;
-    if (nCurrentPos < nMin) {
-      nCurrentPos = nMax;
-    }
-    break;
-  case NEXT:
-    ++nCurrentPos;
-    if (nCurrentPos > nMax) {
-      nCurrentPos = nMin;
-    }
-    break;
-  case DONE:
-    nCurrentPos = nMin;
-    break;
-  }
-  return nCurrentPos;
-}
-
-
-/* This will pause output, displaying the [PAUSE] message, and wait for
-* a key to be hit.
-*/
-void pausescr(CursesWindow* window) {
-  window->SetColor(SchemeId::INFO);
-  window->Puts("[PAUSE]");
-  window->SetColor(SchemeId::NORMAL);
-  window->GetChar();
-  for (int i = 0; i < 7; i++) {
-    window->AddStr("\b \b");
-  }
 }

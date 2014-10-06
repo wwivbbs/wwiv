@@ -26,18 +26,17 @@
 #include <curses.h>
 #include <sys/stat.h>
 
-#include "archivers.h"
+#include "init/archivers.h"
 #include "bbs/common.h"
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "initlib/input.h"
 #include "bbs/wconstants.h"
 #include "wwivinit.h"
 #include "core/wwivport.h"
 #include "core/wfile.h"
 #include "core/wfndfile.h"
 #include "sdk/filenames.h"
-
 
 extern char bbsdir[];
 

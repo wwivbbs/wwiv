@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "user_editor.h"
+#include "init/user_editor.h"
 
 #include <curses.h>
 #include <cmath>
@@ -25,11 +25,11 @@
 #include <string>
 #include <vector>
 
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
-#include "utility.h"
-#include "wwivinit.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "initlib/input.h"
+#include "init/utility.h"
+#include "init/wwivinit.h"
 
 #include "core/strings.h"
 #include "core/wfile.h"
