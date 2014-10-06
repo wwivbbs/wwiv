@@ -27,65 +27,28 @@
 #endif
 #include <string>
 #include <sys/stat.h>
+#include <vector>
 
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "initlib/input.h"
+#include "initlib/listbox.h"
 #include "bbs/wconstants.h"
-#include "wwivinit.h"
+#include "init/wwivinit.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "utility.h"
+#include "init/utility.h"
 
 using std::string;
+using std::unique_ptr;
+using std::vector;
 using wwiv::strings::StringPrintf;
 
-static void list_autoval() {
+static string create_autoval_line(int n) {
   char s3[81], ar[20], dar[20], r[20];
-  int i;
-  valrec v;
-
-  out->Cls();
-  CursesWindow* window(out->window());
-  window->Printf("NUM  SL   DSL  AR                DAR               RESTRICTIONS\n");
-  window->Printf("---  ---  ---  ----------------  ----------------  ----------------\n");
+  valrec v = syscfg.autoval[n];
   strcpy(s3, restrict_string);
-  for (int i1 = 0; i1 < 10; i1++) {
-    v = syscfg.autoval[i1];
-    for (i = 0; i <= 15; i++) {
-      if (v.ar & (1 << i)) {
-        ar[i] = 'A' + i;
-      } else {
-        ar[i] = 32;
-      }
-      if (v.dar & (1 << i)) {
-        dar[i] = 'A' + i;
-      } else {
-        dar[i] = 32;
-      }
-      if (v.restrict & (1 << i)) {
-        r[i] = s3[i];
-      } else {
-        r[i] = 32;
-      }
-    }
-    r[16] = 0;
-    ar[16] = 0;
-    dar[16] = 0;
-
-    window->Printf("%3d  %3d  %3d  %16s  %16s  %16s\n", i1 + 1, v.sl, v.dsl, ar, dar, r);
-  }
-  nlx(2);
-}
-
-static void edit_autoval(CursesWindow* window, int n) {
-  char s[81], ar[20], dar[20], r[20];
-  int i, cp;
-  valrec v;
-
-  v = syscfg.autoval[n];
-  strcpy(s, restrict_string);
-  for (i = 0; i <= 15; i++) {
+  for (int i = 0; i <= 15; i++) {
     if (v.ar & (1 << i)) {
       ar[i] = 'A' + i;
     } else {
@@ -97,7 +60,7 @@ static void edit_autoval(CursesWindow* window, int n) {
       dar[i] = 32;
     }
     if (v.restrict & (1 << i)) {
-      r[i] = s[i];
+      r[i] = s3[i];
     } else {
       r[i] = 32;
     }
@@ -105,95 +68,57 @@ static void edit_autoval(CursesWindow* window, int n) {
   r[16] = 0;
   ar[16] = 0;
   dar[16] = 0;
-  out->Cls();
-  window->Printf("Auto-validation data for: Alt-F%d\n\n", n + 1);
-  window->Printf("SL           : %d\n", v.sl);
-  window->Printf("DSL          : %d\n", v.dsl);
-  window->Printf("AR           : %s\n", ar);
-  window->Printf("DAR          : %s\n", dar);
-  window->Printf("Restrictions : %s\n", r);
-  window->SetColor(SchemeId::PROMPT);
-  window->Puts("\n\n<ESC> to exit\n");
-  window->SetColor(SchemeId::NORMAL);
-  bool done = false;
-  cp = 0;
-  do {
-    int i1 = 0;
-    window->GotoXY(15, cp + 2);
-    switch (cp) {
-    case 0:
-      sprintf(s, "%u", v.sl);
-      editline(window, s, 3, NUM_ONLY, &i1, "");
-      i = atoi(s);
-      if ((i < 0) || (i > 254)) {
-        i = 10;
-      }
-      v.sl = i;
-      window->Printf("%-3d", i);
-      break;
-    case 1:
-      sprintf(s, "%u", v.dsl);
-      editline(window, s, 3, NUM_ONLY, &i1, "");
-      i = atoi(s);
-      if ((i < 0) || (i > 254)) {
-        i = 0;
-      }
-      v.dsl = i;
-      window->Printf("%-3d", i);
-      break;
-    case 2:
-      editline(window, ar, 16, SET, &i1, "ABCDEFGHIJKLMNOP");
-      v.ar = 0;
-      for (i = 0; i < 16; i++) {
-        if (ar[i] != 32) {
-          v.ar |= (1 << i);
-        }
-      }
-      break;
-    case 3:
-      editline(window, dar, 16, SET, &i1, "ABCDEFGHIJKLMNOP");
-      v.dar = 0;
-      for (i = 0; i < 16; i++) {
-        if (dar[i] != 32) {
-          v.dar |= (1 << i);
-        }
-      }
-      break;
-    case 4:
-      editline(window, r, 16, SET, &i1, restrict_string);
-      v.restrict = 0;
-      for (i = 0; i < 16; i++) {
-        if (r[i] != 32) {
-          v.restrict |= (1 << i);
-        }
-      }
-      break;
-    }
-    cp = GetNextSelectionPosition(0, 4, cp, i1);
-    if (i1 == DONE) {
-      done = true;
-    }
-  } while (!done);
+  const string key = StringPrintf("ALT-F%d", n + 1);
+  return StringPrintf("%-7s  %3d  %3d  %16s  %16s  %20s", key.c_str(), v.sl, v.dsl, ar, dar, r);
+}
+
+static void edit_autoval(int n) {
+  out->Cls(ACS_CKBOARD);
+  const string title = StringPrintf("Auto-validation data for: Alt-F%d", n + 1);
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, 7, 40));
+  const int COL1_POSITION = 17;
+
+  valrec v = syscfg.autoval[n];
+  EditItems items{
+    new NumberEditItem<uint8_t>(COL1_POSITION, 1, &v.sl),
+    new NumberEditItem<uint8_t>(COL1_POSITION, 2, &v.dsl),
+    new ArEditItem(COL1_POSITION, 3, &v.ar),
+    new ArEditItem(COL1_POSITION, 4, &v.dar),
+    new RestrictionsEditItem(COL1_POSITION, 5, &v.restrict),
+  };
+  items.set_curses_io(out, window.get());
+  int y = 1;
+  window->PutsXY(2, y++, "SL           : ");
+  window->PutsXY(2, y++, "DSL          : ");
+  window->PutsXY(2, y++, "AR           : ");
+  window->PutsXY(2, y++, "DAR          : ");
+  window->PutsXY(2, y++, "Restrictions : ");
+  items.Run();
   syscfg.autoval[n] = v;
 }
 
 void autoval_levs() {
   bool done = false;
-  CursesWindow* window(out->window());
   do {
-    list_autoval();
-    window->SetColor(SchemeId::PROMPT);
-    window->Puts("Which (0-9, Q=Quit) ? ");
-    window->SetColor(SchemeId::NORMAL);
-    char ch = onek(window, "Q0123456789\033");
-    if (ch == 'Q' || ch == '\033') {
+    out->Cls(ACS_CKBOARD);
+    vector<ListBoxItem> items;
+    for (int i = 0; i < 10; i++) {
+      items.emplace_back(create_autoval_line(i));
+    }
+    CursesWindow* window(out->window());
+    ListBox list(out, window, "Select AutoVal", static_cast<int>(floor(window->GetMaxX() * 0.99)), 
+        static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+
+    list.selection_returns_hotkey(true);
+    list.set_additional_hotkeys("DI");
+    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"} });
+    ListBoxResult result = list.Run();
+
+    if (result.type == ListBoxResultType::HOTKEY) {
+    } else if (result.type == ListBoxResultType::SELECTION) {
+      edit_autoval(result.selected);
+    } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
-    } else {
-      if (ch == '0') {
-        edit_autoval(window, 9);
-      } else {
-        edit_autoval(window, ch - '1');
-      }
     }
   } while (!done);
   save_config();
