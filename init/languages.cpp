@@ -120,7 +120,7 @@ void edit_languages() {
       switch (result.hotkey) {
       case 'D': {
         if (initinfo.num_languages > 1) {
-          string prompt = StringPrintf("Delete '%s'", items[result.selected].text().c_str());
+          string prompt = StringPrintf("Delete '%s' ?", items[result.selected].text().c_str());
           bool yn = dialog_yn(window, prompt);
           if (!yn) {
             break;
