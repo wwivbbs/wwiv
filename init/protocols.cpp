@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "init/protocols.h"
 
+#include <cmath>
 #include <curses.h>
 #include <cstdint>
 #include <cstdlib>
