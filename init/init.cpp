@@ -194,24 +194,6 @@ int WInitApp::main(int argc, char *argv[]) {
   } else {
     close(hFile);
   }
-
-  externs = (newexternalrec *) malloc(15 * sizeof(newexternalrec));
-  initinfo.numexterns = 0;
-  filename = StringPrintf("%snextern.dat", syscfg.datadir);
-  hFile = open(filename.c_str(), O_RDWR | O_BINARY);
-  if (hFile > 0) {
-    initinfo.numexterns = (read(hFile, externs, 15 * sizeof(newexternalrec))) / sizeof(newexternalrec);
-    close(hFile);
-  }
-  over_intern = (newexternalrec *) malloc(3 * sizeof(newexternalrec));
-  memset(over_intern, 0, 3 * sizeof(newexternalrec));
-  filename = StringPrintf("%snintern.dat", syscfg.datadir);
-  hFile = open(filename.c_str(), O_RDWR | O_BINARY);
-  if (hFile > 0) {
-    read(hFile, over_intern, 3 * sizeof(newexternalrec));
-    close(hFile);
-  }
-
   bool bDataDirectoryOk = read_status();
   if (bDataDirectoryOk) {
     net_networks = (net_networks_rec *) malloc(MAX_NETWORKS * sizeof(net_networks_rec));
