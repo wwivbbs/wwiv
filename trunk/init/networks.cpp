@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "template.h"
+#include "init/networks.h"
 
 #include <cmath>
 #include <cstring>

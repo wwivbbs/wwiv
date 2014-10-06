@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "languages.h"
+#include "init/languages.h"
 
 #include <curses.h>
 #include <cmath>

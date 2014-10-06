@@ -26,21 +26,36 @@
 #endif
 #include <sys/stat.h>
 
-#include "wwivinit.h"
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
-#include "subacc.h"
+#include "init/wwivinit.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "initlib/input.h"
+#include "init/subacc.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "core/wfile.h"
-#include "utility.h"
+#include "init/utility.h"
 
 static const int MAX_SUBS_DIRS = 4096;
 
 using std::unique_ptr;
 using std::string;
 using wwiv::strings::StringPrintf;
+
+static int input_number(CursesWindow* window, int max_digits) {
+  string s;
+  int return_code = 0;
+  editline(window, &s, max_digits, NUM_ONLY, &return_code, "");
+  if (s.empty()) {
+    return 0;
+  }
+  try {
+    return std::stoi(s);
+  } catch (std::invalid_argument) { 
+    // No conversion possible.
+    return 0;
+  }
+}
 
 static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
   int oqf, nqf, nu, i;

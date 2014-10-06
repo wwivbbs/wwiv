@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "newinit.h"
+#include "init/newinit.h"
 
 #include <cstdint>
 #include <cstdlib>

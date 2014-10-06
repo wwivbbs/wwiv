@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "archivers.h"
+#include "init/archivers.h"
 
 #include <cmath>
 #include <curses.h>
@@ -32,17 +32,16 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
+#include "init/ifcns.h"
+#include "init/init.h"
 #include "core/strings.h"
 #include "core/wfile.h"
 #include "core/wwivport.h"
 #include "bbs/wconstants.h" // for MAX_ARCHIVERS
 #include "initlib/input.h"
 #include "initlib/listbox.h"
-#include "utility.h"
-#include "wwivinit.h"
+#include "init/utility.h"
+#include "init/wwivinit.h"
 #include "sdk/filenames.h"
 
 using std::string;
