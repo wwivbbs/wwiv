@@ -410,6 +410,7 @@ public:
   void set_navigation_help_items(const std::vector<HelpItem> items) { navigation_help_items_ = items; }
   void set_editmode_help_items(const std::vector<HelpItem> items) { editor_help_items_ = items; }
   void set_navigation_extra_help_items(const std::vector<HelpItem> items) { navigation_extra_help_items_ = items; }
+  std::vector<BaseEditItem*>& items() { return items_; }
 
   void set_curses_io(CursesIO* io, CursesWindow* window) { io_ = io; window_ = window; }
   CursesWindow* window() const { return window_; }

@@ -27,18 +27,21 @@
 #include <direct.h>
 #include <io.h>
 #endif
+#include <memory>
 #include <string>
 #include <sys/stat.h>
 
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "initlib/input.h"
+#include "initlib/listbox.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "utility.h"
-#include "wwivinit.h"
+#include "init/utility.h"
+#include "init/wwivinit.h"
 
 using std::string;
+using std::unique_ptr;
 using wwiv::strings::StringPrintf;
 
 
@@ -62,10 +65,8 @@ static const char *prot_name(int pn) {
   return ">NONE<";
 }
 
-static void edit_prot(CursesWindow* window, int n) {
+static void edit_prot(int n) {
   newexternalrec c;
-
-  out->Cls();
   if (n >= 6) {
     c = externs[n - 6];
   } else {
@@ -80,99 +81,46 @@ static void edit_prot(CursesWindow* window, int n) {
       strcpy(c.sendbatchfn, "-- N/A --");
     }
   }
-  bool done = false;
-  int cp = 0;
-  int i1 = NEXT;
-  string mnp = StringPrintf("%u", c.ok1);
-  string xferok = (c.othr & othr_error_correct)  ? "Y" : "N";
-  window->Printf("Description          : %s\n", c.description);
-  window->Printf("Xfer OK code         : %s\n", xferok.c_str());
-  window->Printf("Require MNP/LAPM     : %s\n", mnp.c_str());
-  window->Printf("Receive command line:\n%s\n", c.receivefn);
-  window->Printf("Send command line:\n%s\n", c.sendfn);
-  window->Printf("Receive batch command line:\n%s\n", c.receivebatchfn);
-  window->Printf("Send batch command line:\n%s\n", c.sendbatchfn);
-  window->SetColor(SchemeId::PROMPT);
-  window->Puts("\n<ESC> when done.\n\n");
-  window->SetColor(SchemeId::NORMAL);
-  window->Puts("%1 = com port baud rate\n");
-  window->Puts("%2 = port number\n");
-  window->Puts("%3 = filename to send/receive, filename list to send for batch\n");
-  window->Puts("%4 = modem speed\n");
-  window->Puts("%5 = filename list to receive for batch UL and bi-directional batch\n");
-  nlx();
-  window->SetColor(SchemeId::WARNING);
-  window->Printf("NOTE: Batch protocols >MUST< correctly support DSZLOG.\n");
-  window->SetColor(SchemeId::NORMAL);
 
-  do {
-    if (cp < 3) {
-      window->GotoXY(23, cp);
-    } else {
-      window->GotoXY(0, cp * 2 - 2);
-    }
-    switch (cp) {
-    case 0:
-      if (n >= 6) {
-        editline(window, c.description, 50, ALL, &i1, "");
-        StringTrimEnd(c.description);
-      }
-      break;
-    case 1:
-      editline(window, &xferok, 3, NUM_ONLY, &i1, "");
-      StringTrimEnd(&xferok);
-      c.ok1 = atoi(xferok.c_str());
-      window->Printf("%u", c.ok1);
-      break;
-    case 2:
-      if (n >= 6) {
-        editline(window, &mnp, 1, UPPER_ONLY, &i1, "");
-        if (mnp[0] != 'Y') {
-          mnp = "N";
-        }
-        if (mnp[0] == 'Y') {
-          c.othr |= othr_error_correct;
-        } else {
-          c.othr &= (~othr_error_correct);
-        }
-        window->Puts(mnp);
-      }
-      break;
-    case 3:
-      editline(window, c.receivefn, 78, ALL, &i1, "");
-      StringTrimEnd(c.receivefn);
-      if (c.sendfn[0] == 0) {
-        strcpy(c.sendfn, c.receivefn);
-      }
-      if (c.sendbatchfn[0] == 0) {
-        strcpy(c.sendbatchfn, c.sendfn);
-      }
-      if (c.receivebatchfn[0] == 0) {
-        strcpy(c.receivebatchfn, c.receivefn);
-      }
-      break;
-    case 4:
-      editline(window, c.sendfn, 78, ALL, &i1, "");
-      StringTrimEnd(c.sendfn);
-      break;
-    case 5:
-      if (n >= 6) {
-        editline(window, c.receivebatchfn, 78, ALL, &i1, "");
-        StringTrimEnd(c.receivebatchfn);
-      }
-      break;
-    case 6:
-      if (n >= 4) {
-        editline(window, c.sendbatchfn, 78, ALL, &i1, "");
-        StringTrimEnd(c.sendbatchfn);
-      }
-      break;
-    }
-    cp = GetNextSelectionPosition(0, 7, cp, i1);
-    if (i1 == DONE) {
-      done = true;
-    }
-  } while (!done);
+  out->Cls(ACS_CKBOARD);
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Protocol Configuration", 19, 78));
+  const int COL1_POSITION = 19;
+
+  EditItems items{
+    new StringEditItem<char*>(COL1_POSITION, 1, 50, c.description, false),
+    new NumberEditItem<uint16_t>(COL1_POSITION, 2, &c.ok1),
+    new CommandLineItem(2, 4, 70, c.receivefn),
+    new CommandLineItem(2, 6, 70, c.sendfn),
+  };
+  items.set_curses_io(out, window.get());
+  if (n < 6) {
+    items.items().erase(items.items().begin());
+  } else if (n >= 6) {
+    items.items().emplace_back(new CommandLineItem(2, 8, 70, c.receivebatchfn));
+    items.items().emplace_back(new CommandLineItem(2, 10, 70, c.sendbatchfn));
+  } else if (n >= 4) {
+    items.items().emplace_back(new CommandLineItem(2, 8, 70, c.sendbatchfn));
+  }
+
+  int y = 1;
+  window->PrintfXY(2, y++, "Description    : %s", c.description);
+  window->PutsXY(2, y++, "Xfer OK code   : ");
+  window->PutsXY(2, y++, "Receive command line: ");
+  y++;
+  window->PutsXY(2, y++, "Send command line   : ");
+  y++;
+  window->PutsXY(2, y++, "Receive batch command line:");
+  y++;
+  window->PutsXY(2, y++, "Send batch command line:");
+  y+=2;
+  window->PutsXY(2, y++, "%1 = com port baud rate");
+  window->PutsXY(2, y++, "%2 = port number");
+  window->PutsXY(2, y++, "%3 = filename to transfer, filename list to send for batch");
+  window->PutsXY(2, y++, "%4 = modem speed");
+  window->PutsXY(2, y++, "%5 = filename list to receive for batch UL");
+  window->SetColor(SchemeId::WARNING);
+  window->PutsXY(2, y++, "NOTE: Batch protocols >MUST< correctly support DSZLOG.");
+  items.Run();
 
   if (n >= 6) {
     externs[n - 6] = c;
@@ -201,7 +149,7 @@ void extrn_prots() {
       }
       window->Printf("%c. %s\n", (i < 10) ? (i + '0') : (i - 10 + BASE_CHAR), prot_name(i));
     }
-    int nMaxProtocolNumber = initinfo.numexterns + 6;
+    int nMaxProtocolNumber = initinfo.numexterns + 6 - 1;
     nlx();
     window->SetColor(SchemeId::PROMPT);
     window->Puts("Externals: M:odify, D:elete, I:nsert, Q:uit : ");
@@ -213,23 +161,17 @@ void extrn_prots() {
       done = true;
       break;
     case 'M': {
-      nlx();
-      window->SetColor(SchemeId::PROMPT);
-      window->Printf("Edit which (2-%d) ? ", nMaxProtocolNumber);
-      window->SetColor(SchemeId::NORMAL);
-      int i = input_number(window, 2);
-      if ((i > -1) && (i < initinfo.numexterns + 6)) {
-        edit_prot(window, i);
+      string prompt = StringPrintf("Edit which (2-%d) ? ", nMaxProtocolNumber);
+      int i = dialog_input_number(out->window(), prompt, 2, initinfo.num_languages);
+      if ((i >= 2) && (i < initinfo.numexterns + 6)) {
+        edit_prot(i);
       }
     }
     break;
     case 'D':
       if (initinfo.numexterns) {
-        nlx();
-        window->SetColor(SchemeId::PROMPT);
-        window->Printf("Delete which (6-%d) ? ", nMaxProtocolNumber);
-        window->SetColor(SchemeId::NORMAL);
-        int i = input_number(window, 2);
+        string prompt = StringPrintf("Delete which (2-%d) ? ", nMaxProtocolNumber);
+        int i = dialog_input_number(out->window(), prompt, 2, initinfo.num_languages);
         if (i > 0) {
           i -= 6;
         }
@@ -243,45 +185,37 @@ void extrn_prots() {
       break;
     case 'I':
       if (initinfo.numexterns >= 15) {
-        window->SetColor(SchemeId::ERROR_TEXT);
-        window->Printf("Too many external protocols.\n");
-        window->SetColor(SchemeId::NORMAL);
-        nlx();
+        messagebox(out->window(), "Too many external protocols.");
         break;
       }
-      nlx();
-      window->SetColor(SchemeId::PROMPT);
-      window->Printf("Insert before which (6-%d) ? ", nMaxProtocolNumber);
-      window->SetColor(SchemeId::NORMAL);
-      int i = input_number(window, 2);
+      string prompt = StringPrintf("Insert before which (6-%d) ? ", nMaxProtocolNumber);
+      int i = dialog_input_number(out->window(), prompt, 2, initinfo.num_languages);
       if ((i > -1) && (i <= initinfo.numexterns + 6)) {
         for (int i1 = initinfo.numexterns; i1 > i - 6; i1--) {
           externs[i1] = externs[i1 - 1];
         }
         ++initinfo.numexterns;
         memset(externs + i - 6, 0, sizeof(newexternalrec));
-        edit_prot(window, i);
+        edit_prot(i);
       } else {
-        window->Printf("Invalid entry: %d", i);
-        window->GetChar();
+        messagebox(out->window(), StringPrintf("Invalid entry: %d", i));
       }
       break;
     }
   } while (!done);
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%snextern.dat", syscfg.datadir);
-  int hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  string filename = StringPrintf("%snextern.dat", syscfg.datadir);
+  int hFile = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   write(hFile, externs, initinfo.numexterns * sizeof(newexternalrec));
   close(hFile);
 
-  sprintf(szFileName, "%snintern.dat", syscfg.datadir);
+  filename = StringPrintf("%snintern.dat", syscfg.datadir);
   if ((over_intern[0].othr | over_intern[1].othr | over_intern[2].othr)&othr_override_internal) {
-    hFile = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+    hFile = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     if (hFile > 0) {
       write(hFile, over_intern, 3 * sizeof(newexternalrec));
       close(hFile);
     }
   } else {
-    unlink(szFileName);
+    unlink(filename.c_str());
   }
 }
