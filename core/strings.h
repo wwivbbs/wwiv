@@ -61,6 +61,8 @@ const std::string& StringReplace(std::string* orig, const std::string old_string
 std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims);
 void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out);
 
+void RemoveWhitespace(std::string* s);
+
 
 }  // namespace strings
 

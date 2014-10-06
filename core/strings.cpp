@@ -217,6 +217,10 @@ void SplitString(const string& original_string, const string& delims, vector<str
   }
 }
 
+void RemoveWhitespace(string* s) {
+  s->erase(std::remove_if(s->begin(), s->end(), ::isspace), s->end());
+}
+
 }  // namespace strings
 }  // namespace wwiv
 
@@ -424,7 +428,6 @@ std::string StringTrim(std::string* s) {
   return *s;
 }
 
-
 std::string StringTrimBegin(std::string* s) {
   std::string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
@@ -485,7 +488,6 @@ char *StringRemoveWhitespace(char *str) {
   }
   return str;
 }
-
 
 char *StringRemoveChar(const char *pszString, char chCharacterToRemove) {
   static char s_strip_string[ 255 ];
