@@ -19,10 +19,6 @@
 #ifndef __INCLUDED_IFCNS_H__
 #define __INCLUDED_IFCNS_H__
 
-#include <string>
-#include "ivardec.h"
-#include "sdk/vardec.h"
-
 #ifndef _WIN32
 /* File: utility2.cpp */
 long filelength(int handle);

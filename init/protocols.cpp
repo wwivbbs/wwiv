@@ -46,6 +46,8 @@ using std::unique_ptr;
 using std::vector;
 using wwiv::strings::StringPrintf;
 
+static newexternalrec *externs, *over_intern;
+
 static const char *prot_name(int pn) {
   switch (pn) {
   case 1:
@@ -142,6 +144,8 @@ static void edit_prot(int n) {
 #define END_CHAR (BASE_CHAR+10)
 
 void extrn_prots() {
+  load_protocols();
+
   bool done = false;
   do {
     out->Cls(ACS_CKBOARD);
@@ -222,5 +226,24 @@ void extrn_prots() {
     }
   } else {
     unlink(filename.c_str());
+  }
+}
+
+void load_protocols() {
+  externs = (newexternalrec *) malloc(15 * sizeof(newexternalrec));
+  initinfo.numexterns = 0;
+  string filename = StringPrintf("%snextern.dat", syscfg.datadir);
+  int hFile = open(filename.c_str(), O_RDWR | O_BINARY);
+  if (hFile > 0) {
+    initinfo.numexterns = (read(hFile, externs, 15 * sizeof(newexternalrec))) / sizeof(newexternalrec);
+    close(hFile);
+  }
+  over_intern = (newexternalrec *) malloc(3 * sizeof(newexternalrec));
+  memset(over_intern, 0, 3 * sizeof(newexternalrec));
+  filename = StringPrintf("%snintern.dat", syscfg.datadir);
+  hFile = open(filename.c_str(), O_RDWR | O_BINARY);
+  if (hFile > 0) {
+    read(hFile, over_intern, 3 * sizeof(newexternalrec));
+    close(hFile);
   }
 }
