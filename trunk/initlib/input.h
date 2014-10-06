@@ -239,13 +239,13 @@ private:
   int flag_;
 };
 
+static const char* restrictstring = "LCMA*PEVKNU     ";
 class RestrictionsEditItem : public EditItem<uint16_t*> {
 public:
   RestrictionsEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 0, data) {}
   virtual ~RestrictionsEditItem() {}
 
   virtual int Run(CursesWindow* window) {
-    static const char* restrictstring = "LCMA*PEVKNU     ";
 
     window->GotoXY(this->x_, this->y_);
     char s[21];
@@ -282,12 +282,63 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
-    static const char* restrictstring = "LCMA*PEVKNU     ";
-
     char s[21];
     for (int i=0; i < 16; i++) {
       if (*this->data_ & (1 << i)) {
         s[i] = restrictstring[i];
+      } else {
+        s[i] = 32;
+      }
+    }
+    s[16] = 0;
+    window->PrintfXY(this->x_, this->y_, "%s", s);
+  }
+};
+
+static const char* ar_string = "ABCDEFGHIJKLMNOP";
+class ArEditItem : public EditItem<uint16_t*> {
+public:
+  ArEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 0, data) {}
+  virtual ~ArEditItem() {}
+
+  virtual int Run(CursesWindow* window) {
+
+    window->GotoXY(this->x_, this->y_);
+    char s[21];
+    char rs[21];
+    char ch1 = '0';
+    int return_code = 0;
+
+    strcpy(rs, ar_string);
+    for (int i = 0; i <= 15; i++) {
+      if (rs[i] == ' ') {
+        rs[i] = ch1++;
+      }
+      if (*this->data_ & (1 << i)) {
+        s[i] = rs[i];
+      } else {
+        s[i] = 32;
+      }
+    }
+    s[16] = 0;
+    editline(window, s, 16, SET, &return_code, rs);
+    *this->data_ = 0;
+    for (int i = 0; i < 16; i++) {
+      if (s[i] != 32 && s[i] != 0) {
+        *this->data_ |= (1 << i);
+      }
+    }
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+    char s[21];
+    for (int i=0; i < 16; i++) {
+      if (*this->data_ & (1 << i)) {
+        s[i] = ar_string[i];
       } else {
         s[i] = 32;
       }

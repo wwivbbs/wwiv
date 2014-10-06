@@ -72,7 +72,7 @@ static const int JumpToSl(CursesIO* io, CursesWindow* window) {
 
 void sec_levs() {
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Security Level Editor", 18, 76));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Security Level Editor", 14, 29));
   int y = 1;
   window->PrintfXY(COL1_LINE, y++, "Security level   :");
   window->PrintfXY(COL1_LINE, y++, "Time per day     :");
