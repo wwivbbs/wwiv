@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdlib>
-#include "wwivinit.h"
+#include "init/wwivinit.h"
 #include "core/wfile.h"
 
 #ifndef MAX_TO_CACHE

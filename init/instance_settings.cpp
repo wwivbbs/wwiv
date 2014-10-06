@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "instance_settings.h"
+#include "init/instance_settings.h"
 
 #include <memory>
 

@@ -16,17 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "regcode.h"
+#include "init/regcode.h"
 
 #include <memory>
 
 #include <curses.h>
 
-#include "ifcns.h"
-#include "input.h"
-#include "init.h"
-#include "utility.h"
-#include "wwivinit.h"
+#include "init/ifcns.h"
+#include "initlib/input.h"
+#include "init/init.h"
+#include "init/utility.h"
+#include "init/wwivinit.h"
 
 using std::unique_ptr;
 

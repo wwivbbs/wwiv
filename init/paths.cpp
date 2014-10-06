@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "paths.h"
+#include "init/paths.h"
 
 #include <curses.h>
 #include <cstdint>
@@ -26,13 +26,13 @@
 #include <direct.h>
 #endif
 
-#include "ifcns.h"
-#include "init.h"
-#include "input.h"
+#include "init/ifcns.h"
+#include "init/init.h"
+#include "initlib/input.h"
 #include "core/wwivport.h"
 #include "core/wfndfile.h"
-#include "utility.h"
-#include "wwivinit.h"
+#include "init/utility.h"
+#include "init/wwivinit.h"
 
 using std::unique_ptr;
 using std::string;

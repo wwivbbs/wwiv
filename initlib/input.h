@@ -48,19 +48,15 @@
 #endif  // EDITLINE_FILENAME_CASE
 
 // Function prototypes
-void nlx(int numLines = 1);
 
 bool dialog_yn(CursesWindow* window, const std::vector<std::string>& text);
 bool dialog_yn(CursesWindow* window, const std::string& prompt);
-int input_number(CursesWindow* window, int max_digits);
 int dialog_input_number(CursesWindow* window, const std::string& prompt, int min_value, int max_value);
 char onek(CursesWindow* window, const char *s);
 void editline(CursesWindow* window, std::string* s, int len, int status, int *returncode, const char *ss);
 void editline(CursesWindow* window, char *s, int len, int status, int *returncode, const char *ss);
 int toggleitem(CursesWindow* window, int value, const std::vector<std::string>& strings, int *returncode);
-void pausescr(CursesWindow* window);
 
-int GetNextSelectionPosition(int nMin, int nMax, int nCurrentPos, int nReturnCode);
 void input_password(CursesWindow* window, const std::string& prompt, const std::vector<std::string>& text, std::string *output, int max_length);
 int messagebox(CursesWindow* window, const std::string& text);
 int messagebox(CursesWindow* window, const std::vector<std::string>& text);

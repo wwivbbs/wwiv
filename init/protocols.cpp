@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "protocols.h"
+#include "init/protocols.h"
 
 #include <curses.h>
 #include <cstdint>
