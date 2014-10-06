@@ -130,7 +130,10 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
         ok = true;
       }
       break;
+    // Stop using the legacy XModem
     case WWIV_INTERNAL_PROT_XMODEM:
+      ok = false;
+      break;
     case WWIV_INTERNAL_PROT_XMODEMCRC:
     case WWIV_INTERNAL_PROT_YMODEM:
     case WWIV_INTERNAL_PROT_ZMODEM:
@@ -205,7 +208,6 @@ bool ok_prot(int nProtocolNum, xfertype xt) {
   }
   return ok;
 }
-
 
 char *prot_name(int nProtocolNum) {
   static char szProtocolName[ 21 ];
