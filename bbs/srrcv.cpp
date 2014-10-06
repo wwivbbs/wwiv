@@ -17,14 +17,16 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cmath>
+#include <string>
 
 #include "wwiv.h"
 #include "wcomm.h"
 #include "core/strings.h"
 #include "bbs/keycodes.h"
 
-bool NewZModemReceiveFile(const char *pszFileName);
+using std::string;
 
+bool NewZModemReceiveFile(const char *pszFileName);
 
 char modemkey(int *tout) {
   if (bkbhitraw()) {
@@ -139,7 +141,6 @@ int receive_block(char *b, unsigned char *bln, bool bUseCRC) {
     return 9;
   }
 }
-
 
 void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   char b[1025], x[81], ch;
@@ -322,17 +323,14 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   }
 }
 
-
-void zmodem_receive(const char *pszFileName, bool *received) {
-  char *pszWorkingFileName = strdup(pszFileName);
-  StringRemoveWhitespace(pszWorkingFileName);
+void zmodem_receive(const string filename, bool *received) {
+  string local_filename(filename);
+  wwiv::strings::RemoveWhitespace(&local_filename);
 
   bool bOldBinaryMode = GetSession()->remoteIO()->GetBinaryMode();
   GetSession()->remoteIO()->SetBinaryMode(true);
-  bool bResult = NewZModemReceiveFile(pszWorkingFileName);
+  bool bResult = NewZModemReceiveFile(local_filename.c_str());
   GetSession()->remoteIO()->SetBinaryMode(bOldBinaryMode);
 
   *received = (bResult) ? true : false;
-  free(pszWorkingFileName);
 }
-
