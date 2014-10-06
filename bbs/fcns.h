@@ -628,7 +628,7 @@ void endbatch();
 char modemkey(int *tout);
 int  receive_block(char *b, unsigned char *bln, bool bUseCRC);
 void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC);
-void zmodem_receive(const char *pszFileName, bool *received);
+void zmodem_receive(const std::string filename, bool *received);
 
 
 // File: srsend.cpp
