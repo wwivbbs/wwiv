@@ -419,41 +419,42 @@ void maybe_internal(const char *pszFileName, bool *xferred, double *percent, boo
       ((bSend && over_intern[prot - 2].sendfn[0]) ||
        (!bSend && over_intern[prot - 2].receivefn[0]))) {
     if (extern_prot(-(prot - 1), pszFileName, bSend) == over_intern[prot - 2].ok1) {
-      *xferred = 1;
+      *xferred = true;
+    }
+    return;
+  }
+  if (!incom) {
+    GetSession()->bout << "Would use internal " << prot_name(prot) << wwiv::endl;
+    return;
+  }
+
+  if (bSend) {
+    switch (prot) {
+    case WWIV_INTERNAL_PROT_XMODEM:
+      xymodem_send(pszFileName, xferred, percent, false, false, false);
+      break;
+    case WWIV_INTERNAL_PROT_XMODEMCRC:
+      xymodem_send(pszFileName, xferred, percent, true, false, false);
+      break;
+    case WWIV_INTERNAL_PROT_YMODEM:
+      xymodem_send(pszFileName, xferred, percent, true, true, false);
+      break;
+    case WWIV_INTERNAL_PROT_ZMODEM:
+      zmodem_send(pszFileName, xferred, percent);
+      break;
     }
   } else {
-    if (incom) {
-      if (bSend) {
-        switch (prot) {
-        case WWIV_INTERNAL_PROT_XMODEM:
-          xymodem_send(pszFileName, xferred, percent, false, false, false);
-          break;
-        case WWIV_INTERNAL_PROT_XMODEMCRC:
-          xymodem_send(pszFileName, xferred, percent, true, false, false);
-          break;
-        case WWIV_INTERNAL_PROT_YMODEM:
-          xymodem_send(pszFileName, xferred, percent, true, true, false);
-          break;
-        case WWIV_INTERNAL_PROT_ZMODEM:
-          zmodem_send(pszFileName, xferred, percent);
-          break;
-        }
-      } else {
-        switch (prot) {
-        case WWIV_INTERNAL_PROT_XMODEM:
-          xymodem_receive(pszFileName, xferred, false);
-          break;
-        case WWIV_INTERNAL_PROT_XMODEMCRC:
-        case WWIV_INTERNAL_PROT_YMODEM:
-          xymodem_receive(pszFileName, xferred, true);
-          break;
-        case WWIV_INTERNAL_PROT_ZMODEM:
-          zmodem_receive(pszFileName, xferred);
-          break;
-        }
-      }
-    } else {
-      GetSession()->bout << "Would use internal " << prot_name(prot) << wwiv::endl;
+    switch (prot) {
+    case WWIV_INTERNAL_PROT_XMODEM:
+      xymodem_receive(pszFileName, xferred, false);
+      break;
+    case WWIV_INTERNAL_PROT_XMODEMCRC:
+    case WWIV_INTERNAL_PROT_YMODEM:
+      xymodem_receive(pszFileName, xferred, true);
+      break;
+    case WWIV_INTERNAL_PROT_ZMODEM:
+      zmodem_receive(pszFileName, xferred);
+      break;
     }
   }
 }
