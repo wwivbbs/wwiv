@@ -172,7 +172,7 @@ postrec *get_post(int mn) {
     // sub has changed (detected in GetApplication()->GetStatusManager()->Read); invalidate cache
     believe_cache = false;
 
-    // kludge: subch==2 leaves subch indicating change, but the '2' value
+    // kludge: subchg==2 leaves subchg indicating change, but the '2' value
     // indicates, to this routine, that it has been handled at this level
     GetSession()->subchg = 2;
   }
@@ -194,7 +194,7 @@ postrec *get_post(int mn) {
       fileSub.Read(&p, sizeof(postrec));
       GetSession()->SetNumMessagesInCurrentMessageArea(p.owneruser);
 
-      // another kludge: subch==3 indicates we have re-read # msgs also
+      // another kludge: subchg==3 indicates we have re-read # msgs also
       // only used so we don't do this every time through
       GetSession()->subchg = 3;
 

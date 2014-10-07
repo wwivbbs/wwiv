@@ -58,11 +58,7 @@ static int input_number(CursesWindow* window, int max_digits) {
 }
 
 static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
-  int oqf, nqf, nu, i;
-  char oqfn[81], nqfn[81];
-  uint32_t *nqsc, *nqsc_n, *nqsc_q, *nqsc_p;
-  uint32_t *oqsc, *oqsc_n, *oqsc_q, *oqsc_p;
-  int l1, l2, l3, nqscn_len;
+  int l1, l2, l3;
 
   if (num_subs % 32) {
     num_subs = (num_subs / 32 + 1) * 32;
@@ -85,22 +81,21 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
     num_dirs = MAX_SUBS_DIRS;
   }
 
-  nqscn_len = 4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32));
-
-  nqsc = (uint32_t *)malloc(nqscn_len);
+  int nqscn_len = 4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32));
+  uint32_t* nqsc = (uint32_t *)malloc(nqscn_len);
   if (!nqsc) {
     return;
   }
   memset(nqsc, 0, nqscn_len);
 
-  nqsc_n = nqsc + 1;
-  nqsc_q = nqsc_n + ((num_dirs + 31) / 32);
-  nqsc_p = nqsc_q + ((num_subs + 31) / 32);
+  uint32_t* nqsc_n = nqsc + 1;
+  uint32_t* nqsc_q = nqsc_n + ((num_dirs + 31) / 32);
+  uint32_t* nqsc_p = nqsc_q + ((num_subs + 31) / 32);
 
   memset(nqsc_n, 0xff, ((num_dirs + 31) / 32) * 4);
   memset(nqsc_q, 0xff, ((num_subs + 31) / 32) * 4);
 
-  oqsc = (uint32_t *)malloc(syscfg.qscn_len);
+  uint32_t* oqsc = (uint32_t *)malloc(syscfg.qscn_len);
   if (!oqsc) {
     free(nqsc);
     messagebox(window, StringPrintf("Could not allocate %d bytes for old quickscan rec\n", syscfg.qscn_len));
@@ -108,9 +103,9 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
   }
   memset(oqsc, 0, syscfg.qscn_len);
 
-  oqsc_n = oqsc + 1;
-  oqsc_q = oqsc_n + ((syscfg.max_dirs + 31) / 32);
-  oqsc_p = oqsc_q + ((syscfg.max_subs + 31) / 32);
+  uint32_t* oqsc_n = oqsc + 1;
+  uint32_t* oqsc_q = oqsc_n + ((syscfg.max_dirs + 31) / 32);
+  uint32_t* oqsc_p = oqsc_q + ((syscfg.max_subs + 31) / 32);
 
   if (num_dirs < syscfg.max_dirs) {
     l1 = ((num_dirs + 31) / 32) * 4;
@@ -126,18 +121,17 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
     l3 = syscfg.max_subs * 4;
   }
 
+  const string oqfn = StringPrintf("%suser.qsc", syscfg.datadir);
+  const string nqfn = StringPrintf("%suserqsc.new", syscfg.datadir);
 
-  sprintf(oqfn, "%suser.qsc", syscfg.datadir);
-  sprintf(nqfn, "%suserqsc.new", syscfg.datadir);
-
-  oqf = open(oqfn, O_RDWR | O_BINARY);
+  int oqf = open(oqfn.c_str(), O_RDWR | O_BINARY);
   if (oqf < 0) {
     free(nqsc);
     free(oqsc);
     messagebox(window, "Could not open user.qsc");
     return;
   }
-  nqf = open(nqfn, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  int nqf = open(nqfn.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   if (nqf < 0) {
     free(nqsc);
     free(oqsc);
@@ -146,8 +140,8 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
     return;
   }
 
-  nu = filelength(oqf) / syscfg.qscn_len;
-  for (i = 0; i < nu; i++) {
+  int nu = filelength(oqf) / syscfg.qscn_len;
+  for (int i = 0; i < nu; i++) {
     if (i % 10 == 0) {
       window->Printf("%u/%u\r", i, nu);
     }
@@ -163,8 +157,8 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
 
   close(oqf);
   close(nqf);
-  unlink(oqfn);
-  rename(nqfn, oqfn);
+  unlink(oqfn.c_str());
+  rename(nqfn.c_str(), oqfn.c_str());
 
   syscfg.max_subs = num_subs;
   syscfg.max_dirs = num_dirs;

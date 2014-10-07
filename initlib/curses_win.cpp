@@ -103,22 +103,22 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
 /**
  * Printf sytle output function.  Most init output code should use this.
  */
-void CursesWindow::Printf(const char *pszFormat, ...) {
+void CursesWindow::Printf(const string& format, ...) {
   va_list ap;
   char szBuffer[1024];
 
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, 1024, pszFormat, ap);
+  va_start(ap, format);
+  vsnprintf(szBuffer, 1024, format.c_str(), ap);
   va_end(ap);
   Puts(szBuffer);
 }
 
-void CursesWindow::PrintfXY(int x, int y, const char *pszFormat, ...) {
+void CursesWindow::PrintfXY(int x, int y, const string& format, ...) {
   va_list ap;
   char szBuffer[1024];
 
-  va_start(ap, pszFormat);
-  vsnprintf(szBuffer, 1024, pszFormat, ap);
+  va_start(ap, format);
+  vsnprintf(szBuffer, 1024, format.c_str(), ap);
   va_end(ap);
   PutsXY(x, y, szBuffer);
 }
@@ -127,4 +127,3 @@ void CursesWindow::SetColor(SchemeId id) {
   AttrSet(color_scheme_->GetAttributesForScheme(id));
   current_scheme_id_ = id;
 }
-
