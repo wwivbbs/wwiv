@@ -288,13 +288,12 @@ static void init_files(CursesWindow* window, const std::string& bbsdir) {
   window->SetColor(SchemeId::NORMAL);
 
   rename("wwivini.500", "wwiv.ini");
-  char szDestination[MAX_PATH];
-  sprintf(szDestination, "data%cmenucmds.dat", WFile::pathSeparatorChar);
-  rename("menucmds.dat", szDestination);
-  sprintf(szDestination, "data%cregions.dat", WFile::pathSeparatorChar);
-  rename("regions.dat", szDestination);
-  sprintf(szDestination, "data%cwfc.dat", WFile::pathSeparatorChar);
-  rename("wfc.dat", szDestination);
+  string destination = StringPrintf("data%cmenucmds.dat", WFile::pathSeparatorChar);
+  rename("menucmds.dat", destination.c_str());
+  destination = StringPrintf("data%cregions.dat", WFile::pathSeparatorChar);
+  rename("regions.dat", destination.c_str());
+  destination = StringPrintf("data%cwfc.dat", WFile::pathSeparatorChar);
+  rename("wfc.dat", destination.c_str());
   // Create the sample files.
   create_text("welcome.msg");
   create_text("newuser.msg");
