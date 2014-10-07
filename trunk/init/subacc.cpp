@@ -32,24 +32,25 @@ static postrec *cache;                      // points to sub cache memory
 static bool believe_cache;                  // true if cache is valid
 static int cache_start;                     // starting msgnum of cache
 static int last_msgnum;                     // last msgnum read
-static WFile fileSub;           // WFile object for '.sub' file
+static WFile fileSub;                       // WFile object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
-
 // locals
-static int m_nCurrentReadMessageArea, m_nNumMsgsInCurrentSub, subchg;
-int  GetCurrentReadMessageArea() {
+static int m_nCurrentReadMessageArea, subchg;
+static int  GetCurrentReadMessageArea() {
   return m_nCurrentReadMessageArea;
 }
-void SetCurrentReadMessageArea(int n) {
+
+static void SetCurrentReadMessageArea(int n) {
   m_nCurrentReadMessageArea = n;
 }
 
-int  GetNumMessagesInCurrentMessageArea() {
-  return m_nNumMsgsInCurrentSub;
+static int  GetNumMessagesInCurrentMessageArea() {
+  return initinfo.nNumMsgsInCurrentSub;
 }
-void SetNumMessagesInCurrentMessageArea(int n) {
-  m_nNumMsgsInCurrentSub = n;
+
+static void SetNumMessagesInCurrentMessageArea(int n) {
+  initinfo.nNumMsgsInCurrentSub = n;
 }
 
 void close_sub() {
@@ -82,10 +83,9 @@ bool open_sub(bool wr) {
   return fileSub.IsOpen();
 }
 
-bool iscan1(int si)
+bool iscan1(int si) {
 // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
 // don't worry about anything detailed, just grab qscan info.
-{
   postrec p;
 
   // make sure we have cache space
@@ -143,10 +143,9 @@ bool iscan1(int si)
   return true;
 }
 
-postrec *get_post(int mn)
+postrec *get_post(int mn) {
 // Returns info for a post.  Maintains a cache.  Does not correct anything
 // if the sub has changed.
-{
   postrec p;
   bool bCloseSubFile = false;
 

@@ -23,7 +23,7 @@
 #include "bbs/wwiv.h"
 #include "core/wwivport.h"
 
-WFile hLogFile;
+static WFile hLogFile;
 
 static const char* szLogTypeArray[] = {
 	"+ ",

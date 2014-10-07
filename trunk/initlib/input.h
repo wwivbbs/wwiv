@@ -132,8 +132,7 @@ protected:
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
 
-    char pattern[81];
-    sprintf(pattern, "%%-%ds", this->maxsize_);
+    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
     window->PrintfXY(this->x_, this->y_, pattern, this->data_);
   }
 private:
@@ -411,8 +410,7 @@ protected:
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
 
-    char pattern[81];
-    sprintf(pattern, "%%-%ds", this->maxsize_);
+    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
     window->PrintfXY(this->x_, this->y_, pattern, this->data_);
   }
 };
@@ -436,8 +434,7 @@ protected:
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
 
-    char pattern[81];
-    sprintf(pattern, "%%-%ds", this->maxsize_);
+    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
     window->PrintfXY(this->x_, this->y_, pattern, this->data_);
   }
 };

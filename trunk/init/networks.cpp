@@ -56,17 +56,15 @@ using std::vector;
 using wwiv::strings::StringPrintf;
 
 static bool read_subs(CursesWindow* window) {
-  char szFileName[MAX_PATH];
-
-  sprintf(szFileName, "%ssubs.dat", syscfg.datadir);
-  int i = open(szFileName, O_RDWR | O_BINARY);
+  const string filename = StringPrintf("%ssubs.dat", syscfg.datadir);
+  int i = open(filename.c_str(), O_RDWR | O_BINARY);
   if (i > 0) {
     subboards = (subboardrec *) malloc(filelength(i) + 1);
     initinfo.num_subs = (read(i, subboards, (filelength(i)))) /
                         sizeof(subboardrec);
     close(i);
   } else {
-    messagebox(window, StringPrintf("%s NOT FOUND.\n", szFileName));
+    messagebox(window, StringPrintf("%s NOT FOUND.\n", filename.c_str()));
     return false;
   }
   return true;
@@ -128,9 +126,8 @@ static bool del_net(CursesWindow* window, int nn) {
 
   write_subs();
 
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%semail.dat", syscfg.datadir);
-  int hFile = open(szFileName, O_BINARY | O_RDWR);
+  string filename = StringPrintf("%semail.dat", syscfg.datadir);
+  int hFile = open(filename.c_str(), O_BINARY | O_RDWR);
   if (hFile != -1) {
     long t = filelength(hFile) / sizeof(mailrec);
     for (int r = 0; r < t; r++) {
@@ -178,8 +175,8 @@ static bool del_net(CursesWindow* window, int nn) {
   }
   initinfo.net_num_max--;
 
-  sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
-  int f = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  filename = StringPrintf("%snetworks.dat", syscfg.datadir);
+  int f = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   write(f, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   close(f);
 
@@ -221,10 +218,8 @@ static bool insert_net(CursesWindow* window, int nn) {
   }
 
   write_subs();
-
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%semail.dat", syscfg.datadir);
-  int hFile = open(szFileName, O_BINARY | O_RDWR);
+  string filename = StringPrintf("%semail.dat", syscfg.datadir);
+  int hFile = open(filename.c_str(), O_BINARY | O_RDWR);
   if (hFile != -1) {
     long t = filelength(hFile) / sizeof(mailrec);
     for (int r = 0; r < t; r++) {
@@ -270,13 +265,12 @@ static bool insert_net(CursesWindow* window, int nn) {
   strcpy(net_networks[nn].name, "NewNet");
   sprintf(net_networks[nn].dir, "newnet.dir%c", WFile::pathSeparatorChar);
 
-  sprintf(szFileName, "%snetworks.dat", syscfg.datadir);
-  i = open(szFileName, O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  filename = StringPrintf("%snetworks.dat", syscfg.datadir);
+  i = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   write(i, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   close(i);
 
   edit_net(nn);
-
   return true;
 }
 
@@ -407,15 +401,13 @@ static void edit_net(int nn) {
   items.Run();
 
   if (strcmp(szOldNetworkName, n->name)) {
-    char szInputFileName[ MAX_PATH ];
-    char szOutputFileName[ MAX_PATH ];
-    sprintf(szInputFileName, "%ssubs.xtr", syscfg.datadir);
-    sprintf(szOutputFileName, "%ssubsxtr.new", syscfg.datadir);
-    FILE *pInputFile = fopen(szInputFileName, "r");
+    const string input_filename = StringPrintf("%ssubs.xtr", syscfg.datadir);
+    const string output_filename = StringPrintf("%ssubsxtr.new", syscfg.datadir);
+    FILE *pInputFile = fopen(input_filename.c_str(), "r");
     if (pInputFile) {
-      FILE *pOutputFile = fopen(szOutputFileName, "w");
+      FILE *pOutputFile = fopen(output_filename.c_str(), "w");
       if (pOutputFile) {
-        char szBuffer[ 255 ];
+        char szBuffer[255];
         while (fgets(szBuffer, 80, pInputFile)) {
           if (szBuffer[0] == '$') {
             ss = strchr(szBuffer, ' ');
@@ -435,12 +427,11 @@ static void edit_net(int nn) {
         }
         fclose(pOutputFile);
         fclose(pInputFile);
-        char szOldSubsFileName[ MAX_PATH ];
-        sprintf(szOldSubsFileName, "%ssubsxtr.old", syscfg.datadir);
-        unlink(szOldSubsFileName);
-        rename(szInputFileName, szOldSubsFileName);
-        unlink(szInputFileName);
-        rename(szOutputFileName, szInputFileName);
+        const string old_filename = StringPrintf("%ssubsxtr.old", syscfg.datadir);
+        unlink(old_filename.c_str());
+        rename(input_filename.c_str(), old_filename.c_str());
+        unlink(input_filename.c_str());
+        rename(output_filename.c_str(), input_filename.c_str());
       } else {
         fclose(pInputFile);
       }
