@@ -44,6 +44,7 @@
 #include "init/utility.h"
 #include "init/wwivinit.h"
 #include "sdk/filenames.h"
+#include "init/subacc.h"
 
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))

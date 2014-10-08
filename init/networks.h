@@ -19,6 +19,12 @@
 #ifndef __INCLUDED_TEMPLATE_H__
 #define __INCLUDED_TEMPLATE_H__
 
+#include "bbs/net.h"
+
+#define MAX_NETWORKS 100
+
+extern net_networks_rec *net_networks;
+
 void networks();
 
 #endif // __INCLUDED_TEMPLATE_H__

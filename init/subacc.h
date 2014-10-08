@@ -16,9 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #ifndef __INCLUDED_SUBACC_H__
 #define __INCLUDED_SUBACC_H__
+
+extern subboardrec *subboards;
 
 void    close_sub();
 bool    open_sub(bool wr);
