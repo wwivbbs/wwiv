@@ -47,12 +47,6 @@
 #define _getcwd(a,b)  getcwd(a,b)
 #define mkdir(x)  mkdir(x, S_IRWXU | S_IRWXG)
 
-#define _close close
-#define _write write
-#define _lseek lseek
-#define _read read
-#define _open open
-
 #endif // defined ( __unix__ )
 
 #endif // __INCLUDED_PLATFORM_INCL1_H__
