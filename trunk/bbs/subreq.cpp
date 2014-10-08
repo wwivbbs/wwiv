@@ -91,9 +91,9 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
   bool done = false;
   for (int i = 0; i < 256 && !done; i++) {
     if (i) {
-      sprintf(s, "%s%s.%d", GetSession()->GetNetworkDataDirectory(), SUBS_NOEXT, i);
+      sprintf(s, "%s%s.%d", GetSession()->GetNetworkDataDirectory().c_str(), SUBS_NOEXT, i);
     } else {
-      sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), SUBS_LST);
+      sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), SUBS_LST);
     }
     WTextFile file(s, "r");
     if (file.IsOpen()) {
@@ -309,7 +309,7 @@ void sub_xtr_add(int n, int nn) {
   GetSession()->bout << "|#5Will you be hosting the sub? ";
   if (yesno()) {
     char szFileName[MAX_PATH];
-    sprintf(szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory(), xnp->stype);
+    sprintf(szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory().c_str(), xnp->stype);
     WFile file(szFileName);
     if (file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
       file.Close();

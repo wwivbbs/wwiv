@@ -343,7 +343,7 @@ void set_net_num(int nNetworkNumber) {
     net_sysnum = net_networks[GetSession()->GetNetworkNumber()].sysnum;
     GetSession()->SetCurrentNetworkType(net_networks[ GetSession()->GetNetworkNumber() ].type);
 
-    GetApplication()->m_networkNumEnvVar = StringPrintf("WWIV_NET=%d", GetSession()->GetNetworkNumber());
+    GetApplication()->networkNumEnvVar = StringPrintf("WWIV_NET=%d", GetSession()->GetNetworkNumber());
   }
 }
 

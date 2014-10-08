@@ -66,7 +66,7 @@ bool OpenLogFile(const char* szFileName) {
 		return false;
 	}
 
-	_tzset();
+	tzset();
 	time(&secs_now);
 	time_now = localtime(&secs_now);
 	strftime(str, 80, "%a %d %b %Y", time_now);

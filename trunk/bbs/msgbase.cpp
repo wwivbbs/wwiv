@@ -556,9 +556,13 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     } else {
       string net_filename;
       if (nForwardedCode) {
-        net_filename = StringPrintf("%sp1%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
+        net_filename = StringPrintf("%sp1%s",
+          GetSession()->GetNetworkDataDirectory().c_str(),
+          GetApplication()->GetNetworkExtension().c_str());
       } else {
-        net_filename = StringPrintf("%sp0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
+        net_filename = StringPrintf("%sp0%s",
+          GetSession()->GetNetworkDataDirectory().c_str(),
+          GetApplication()->GetNetworkExtension().c_str());
       }
       WFile fileNetworkPacket(net_filename);
       fileNetworkPacket.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);

@@ -238,7 +238,7 @@ void add_netsubscriber(int nSystemNumber) {
   }
   strcpy(s1, s);
   char szNetworkFileName[ MAX_PATH ];
-  sprintf(szNetworkFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory(), s);
+  sprintf(szNetworkFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory().c_str(), s);
   if (!WFile::Exists(szNetworkFileName)) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#6Subscriber file not found: " << szNetworkFileName << wwiv::endl;
