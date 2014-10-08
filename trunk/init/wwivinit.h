@@ -19,39 +19,10 @@
 #ifndef __INCLUDED_WWIVINIT_H__
 #define __INCLUDED_WWIVINIT_H__
 
-#ifndef NOT_BBS
-#error "NOT_BBS MUST BE DEFINED"
-#endif  // NOT_BBS
-#ifndef INIT
-#error "INIT MUST BE DEFINED"
-#endif  // INIT
-
 #include "sdk/vardec.h"
-#include "bbs/net.h"
 #include "ivardec.h"
-#include "core/wwivport.h"
-
-
-#if !defined (MAX_PATH)
-#define MAX_PATH 260
-#endif  // MAX_PATH
-
-#define MAX_NETWORKS 100
 
 extern configrec syscfg;
-extern statusrec status;
-extern subboardrec *subboards;
-extern net_networks_rec *net_networks;
 extern initinfo_rec initinfo;
-
-#if defined(__unix__)
-
-#define _open open
-#define _close close
-#define _lseek lseek
-#define _read read
-#define _write write
-
-#endif  // __unix__
 
 #endif // __INCLUDED_WWIVINIT_H__
