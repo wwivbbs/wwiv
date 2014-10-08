@@ -42,9 +42,7 @@
 #define MAX_PATH 260
 #endif
 
-#define _tzset(s) tzset(s)
 #define _putenv(s)  putenv(s)
-#define _getcwd(a,b)  getcwd(a,b)
 #define mkdir(x)  mkdir(x, S_IRWXU | S_IRWXG)
 
 #endif // defined ( __unix__ )

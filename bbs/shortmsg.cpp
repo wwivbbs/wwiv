@@ -16,18 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include <stdarg.h>
+#include <cstdarg>
+#include <string>
+#include "core//strings.h"
+#include "bbs/wwiv.h"
 
-#include "wwiv.h"
+using std::string;
+using wwiv::strings::StringPrintf;
 
-
-//
 // Local function prototypes
-//
-
 void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *pszMessageText);
 void SendRemoteShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *pszMessageText);
-
 
 /*
  * Handles reading short messages. This is also where PackScan file requests
@@ -87,7 +86,6 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
   }
 }
 
-
 void SendLocalShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *pszMessageText) {
   WUser user;
   GetApplication()->GetUserManager()->ReadUser(&user, nUserNum);
@@ -140,17 +138,16 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *pszMessageText) 
   }
   nh.length = strlen(pszMessageText);
   nh.method = 0;
-  char szPacketName[MAX_PATH];
-  sprintf(szPacketName, "%sp0%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
-  WFile file(szPacketName);
+  const string packet_filename = StringPrintf("%sp0%s", 
+    GetSession()->GetNetworkDataDirectory().c_str(),
+    GetApplication()->GetNetworkExtension().c_str());
+  WFile file(packet_filename);
   file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
   file.Seek(0L, WFile::seekEnd);
   file.Write(&nh, sizeof(net_header_rec));
   file.Write(pszMessageText, nh.length);
   file.Close();
 }
-
-
 
 /*
  * Sends a short message to a user. Takes user number and system number
@@ -175,5 +172,3 @@ void ssm(int nUserNum, int nSystemNum, const char *pszFormat, ...) {
     SendRemoteShortMessage(nUserNum, nSystemNum, szMessageText);
   }
 }
-
-

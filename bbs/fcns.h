@@ -532,7 +532,7 @@ void slash_e();
 
 // File: netsup.cpp
 
-void rename_pend(const char *pszDirectory, const char *pszFileName);
+void rename_pend(const std::string directory, const std::string filename);
 int  checkup2(const time_t tFileTime, const char *pszFileName);
 int  check_bbsdata();
 void cleanup_net();
