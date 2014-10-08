@@ -97,16 +97,16 @@ class WApplication : public WLogger, Runnable {
   const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
 
   /*!
-   * @var m_networkNumEnvVar Environment variable style
+   * @var networkNumEnvVar Environment variable style
    *      listing of WWIV net number, (only used for the xenviron)
    */
-  std::string m_networkNumEnvVar;
+  std::string networkNumEnvVar;
 
   /*!
-   * @var m_wwivVerEnvVar Environment variable for the WWIV
+   * @var wwivVerEnvVar Environment variable for the WWIV
    *      version (set as BBS env variable)
    */
-  std::string m_wwivVerEnvVar;
+  std::string wwivVerEnvVar;
 
   /*!
    * @function GetHomeDir Returns the current home directory
@@ -122,9 +122,8 @@ class WApplication : public WLogger, Runnable {
   /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
   void QuitBBS();
 
-  int  GetInstanceNumber() { return m_nInstance; }
-
-  const char* GetNetworkExtension() { return m_szNetworkExtension; }
+  int  GetInstanceNumber() const { return instance_number; }
+  const std::string& GetNetworkExtension() const { return network_extension; }
 
   void UpdateTopScreen();
 
@@ -201,8 +200,8 @@ private:
   char            m_szCurrentDirectory[ MAX_PATH ];
   int             m_nOkLevel;
   int             m_nErrorLevel;
-  int             m_nInstance;
-  char            m_szNetworkExtension[ 5 ];
+  int             instance_number;
+  std::string     network_extension;
   double          last_time;
   bool            m_bUserAlreadyOn;
   bool            m_bNeedToCleanNetwork;

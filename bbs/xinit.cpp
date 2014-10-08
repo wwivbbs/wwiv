@@ -1176,7 +1176,7 @@ void WApplication::InitializeBBS() {
   }
   // put in our environment since passing the xenviron wasn't working
   // with sync emulated fossil
-  _putenv(newprompt.c_str());
+  putenv(newprompt.c_str());
 
   std::string dszLogEnvironmentVariable("DSZLOG=");
   dszLogEnvironmentVariable.append(g_szDSZLogFileName);
@@ -1184,16 +1184,16 @@ void WApplication::InitializeBBS() {
   ss = getenv("DSZLOG");
 
   if (!ss) {
-    _putenv(dszLogEnvironmentVariable.c_str());
+    putenv(dszLogEnvironmentVariable.c_str());
   }
   if (!pk) {
-    _putenv("PKNOFASTCHAR=Y");
+    putenv("PKNOFASTCHAR=Y");
   }
 
-  m_wwivVerEnvVar = "BBS=";
-  m_wwivVerEnvVar += wwiv_version;
-  _putenv(m_wwivVerEnvVar.c_str());
-  _putenv(m_networkNumEnvVar.c_str());
+  wwivVerEnvVar = "BBS=";
+  wwivVerEnvVar += wwiv_version;
+  putenv(wwivVerEnvVar.c_str());
+  putenv(networkNumEnvVar.c_str());
 #endif // defined ( __unix__ )
 
   XINIT_PRINTF("* Reading Voting Booth Configuration.\r\n");
@@ -1231,15 +1231,15 @@ void WApplication::InitializeBBS() {
   qsc_q = qsc_n + (GetSession()->GetMaxNumberFileAreas() + 31) / 32;
   qsc_p = qsc_q + (GetSession()->GetMaxNumberMessageAreas() + 31) / 32;
 
+  network_extension = ".NET";
   ss = getenv("WWIV_INSTANCE");
-  strcpy(m_szNetworkExtension, ".NET");
   if (ss) {
     int nTempInstanceNumber = atoi(ss);
     if (nTempInstanceNumber > 0) {
-      snprintf(m_szNetworkExtension, sizeof(m_szNetworkExtension), ".%3.3d", nTempInstanceNumber);
+      network_extension = StringPrintf(".%3.3d", nTempInstanceNumber);
       // Fix... Set the global instance variable to match this.  When you run WWIV with the -n<instance> parameter
       // it sets the WWIV_INSTANCE environment variable, however it wasn't doing the reverse.
-      m_nInstance = nTempInstanceNumber;
+      instance_number = nTempInstanceNumber;
     }
   }
 

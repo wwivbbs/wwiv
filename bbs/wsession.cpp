@@ -24,6 +24,7 @@
 #include "wcomm.h"
 #include "core/wwivassert.h"
 
+using std::string;
 
 WSession::WSession(WApplication* app) : WSession(app, nullptr) {}
 
@@ -132,13 +133,8 @@ void WSession::CreateComm(unsigned int nHandle) {
   GetSession()->bout.SetComm(m_pComm);
 }
 
-WLocalIO* WSession::localIO() {
-  return m_pLocalIO;
-}
-
-WComm* WSession::remoteIO() {
-  return m_pComm;
-}
+WLocalIO* WSession::localIO() { return m_pLocalIO; }
+WComm* WSession::remoteIO() { return m_pComm; }
 
 bool WSession::ReadCurrentUser() {
   return ReadCurrentUser(usernum, false);
@@ -196,8 +192,6 @@ const char* WSession::GetNetworkName() const {
   return net_networks[m_nNetworkNumber].name;
 }
 
-
-const char* WSession::GetNetworkDataDirectory() const {
-  return net_networks[m_nNetworkNumber].dir;
+const string WSession::GetNetworkDataDirectory() const {
+  return string(net_networks[m_nNetworkNumber].dir);
 }
-

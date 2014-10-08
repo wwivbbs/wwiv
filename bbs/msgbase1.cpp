@@ -101,7 +101,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
       nh.tosys = xnp->host;
     } else {
       nh.main_type = main_type_post;
-      const string filename = StringPrintf("%sn%s.net", GetSession()->GetNetworkDataDirectory(), xnp->stype);
+      const string filename = StringPrintf("%sn%s.net", GetSession()->GetNetworkDataDirectory().c_str(), xnp->stype);
       WFile file(filename);
       if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
         int len1 = file.GetLength();

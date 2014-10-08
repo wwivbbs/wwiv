@@ -130,7 +130,7 @@ class WSession {
   void SetCurrentSpeed(const char *s) { m_currentSpeed = s; }
 
   const char* GetNetworkName() const;
-  const char* GetNetworkDataDirectory() const;
+  const std::string GetNetworkDataDirectory() const;
 
   bool IsMessageThreadingEnabled() const { return m_bThreadSubs; }
   void SetMessageThreadingEnabled(bool b) { m_bThreadSubs = b; }

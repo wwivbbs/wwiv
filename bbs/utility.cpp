@@ -21,6 +21,7 @@
 #ifdef _WIN32
 #include <sys/utime.h>
 #endif  // WIN32
+#include <string>
 
 #include "wwiv.h"
 #include "common.h"
@@ -29,6 +30,10 @@
 #include "core/wwivassert.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+
+using std::string;
+using wwiv::strings::IsEqualsIgnoreCase;
+using wwiv::strings::StringPrintf;
 
 extern const unsigned char *translate_letters[];
 
@@ -60,14 +65,14 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
     // We don't want to delete ".", "..", or any of the door drop files
     // (you can't delete . or .. anyway!  but it's a waste of time to try...
     //
-    if (!wwiv::strings::IsEqualsIgnoreCase(szFileName, "chain.txt") &&
-        !wwiv::strings::IsEqualsIgnoreCase(szFileName, "door.sys") &&
-        !wwiv::strings::IsEqualsIgnoreCase(szFileName, "door32.sys") &&
-        !wwiv::strings::IsEqualsIgnoreCase(szFileName, "dorinfo1.def") &&
-        !wwiv::strings::IsEqualsIgnoreCase(szFileName, "callinfo.bbs") &&
-        !wwiv::strings::IsEqualsIgnoreCase(szFileName, "pcboard.sys") &&
-        !wwiv::strings::IsEqualsIgnoreCase(szFileName, ".") &&
-        !wwiv::strings::IsEqualsIgnoreCase(szFileName, "..")) {
+    if (!IsEqualsIgnoreCase(szFileName, "chain.txt") &&
+        !IsEqualsIgnoreCase(szFileName, "door.sys") &&
+        !IsEqualsIgnoreCase(szFileName, "door32.sys") &&
+        !IsEqualsIgnoreCase(szFileName, "dorinfo1.def") &&
+        !IsEqualsIgnoreCase(szFileName, "callinfo.bbs") &&
+        !IsEqualsIgnoreCase(szFileName, "pcboard.sys") &&
+        !IsEqualsIgnoreCase(szFileName, ".") &&
+        !IsEqualsIgnoreCase(szFileName, "..")) {
       if (bPrintStatus) {
         std::cout << "Deleting TEMP file: " << pszDirectoryName << szFileName << std::endl;
       }
@@ -226,9 +231,10 @@ long freek1(const char *pszPathName) {
 void send_net(net_header_rec * nh, unsigned short int *list, const char *text, const char *byname) {
   WWIV_ASSERT(nh);
 
-  char szFileName[MAX_PATH];
-  sprintf(szFileName, "%sp1%s", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetNetworkExtension());
-  WFile file(szFileName);
+  const string filename = StringPrintf("%sp1%s",
+    GetSession()->GetNetworkDataDirectory().c_str(),
+    GetApplication()->GetNetworkExtension().c_str());
+  WFile file(filename);
   if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
     return;
   }

@@ -145,7 +145,7 @@ int WApplication::doWFCEvents() {
     bool any = false;
     SetWfcStatus(1);
     if (!wwiv::strings::IsEquals(date(), pStatus->GetLastDate())) {
-      if ((GetSession()->GetBeginDayNodeNumber() == 0) || (m_nInstance == GetSession()->GetBeginDayNodeNumber())) {
+      if ((GetSession()->GetBeginDayNodeNumber() == 0) || (instance_number == GetSession()->GetBeginDayNodeNumber())) {
         cleanup_events();
         holdphone(true);
         beginday(true);
@@ -733,7 +733,7 @@ int WApplication::Run(int argc, char *argv[]) {
   }
 
   // Set the instance, this may be changed by a command line argument
-  m_nInstance = 1;
+  instance_number = 1;
   no_hangup = false;
   ok_modem_stuff = true;
 
@@ -795,9 +795,9 @@ int WApplication::Run(int argc, char *argv[]) {
         break;
       case 'I':
       case 'N': {
-        m_nInstance = std::stoi(argument);
-        if (m_nInstance <= 0 || m_nInstance > 999) {
-          std::cout << "Your Instance can only be 1..999, you tried instance #" << m_nInstance << std::endl;
+        instance_number = std::stoi(argument);
+        if (instance_number <= 0 || instance_number > 999) {
+          std::cout << "Your Instance can only be 1..999, you tried instance #" << instance_number << std::endl;
           exit(m_nErrorLevel);
         }
       }
@@ -901,7 +901,7 @@ int WApplication::Run(int argc, char *argv[]) {
   char szInstanceEnvVar[81];
 #if !defined ( __unix__ )
   snprintf(szInstanceEnvVar, sizeof(szInstanceEnvVar), "WWIV_INSTANCE=%ld", GetInstanceNumber());
-  _putenv(szInstanceEnvVar);
+  putenv(szInstanceEnvVar);
 #else
   // For some reason putenv() doesn't work sometimes when setenv() does...
   snprintf(szInstanceEnvVar, sizeof(szInstanceEnvVar), "%u", GetInstanceNumber());
@@ -1095,15 +1095,15 @@ void WApplication::ShowUsage() {
 
 
 WApplication::WApplication() : statusMgr(new StatusMgr()), userManager(new WUserManager()), m_nOkLevel(exitLevelOK), 
-    m_nErrorLevel(exitLevelNotOK), m_nInstance(-1), m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone), m_fShutDownTime(0),
+    m_nErrorLevel(exitLevelNotOK), instance_number(-1), m_bUserAlreadyOn(false), m_nBbsShutdownStatus(shutdownNone), m_fShutDownTime(0),
     m_nWfcStatus(0) {
   // TODO this should move into the WSystemConfig object (syscfg wrapper) once it is established.
   if (syscfg.userreclen == 0) {
     syscfg.userreclen = sizeof(userrec);
   }
-  _tzset();
+  tzset();
   // Set the home directory
-  _getcwd(m_szCurrentDirectory, MAX_PATH);
+  getcwd(m_szCurrentDirectory, MAX_PATH);
 }
 
 void WApplication::CdHome() {

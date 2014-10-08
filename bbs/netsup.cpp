@@ -36,26 +36,27 @@ using std::string;
 using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::strings::StringPrintf;
 
-void rename_pend(const char *pszDirectory, const char *pszFileName) {
+void rename_pend(const std::string directory, const std::string filename) {
   char s[ MAX_PATH ], s1[ MAX_PATH ], s2[ MAX_PATH ];
 
-  sprintf(s, "%s%s", pszDirectory, pszFileName);
+  sprintf(s, "%s%s", directory.c_str(), filename.c_str());
 
-  if (atoi(pszFileName + 1)) {
+  string num = filename.substr(1);
+  if (atoi(num.c_str())) {
     strcpy(s2, "p1-");
   } else {
     strcpy(s2, "p0-");
   }
 
   for (int i = 0; i < 1000; i++) {
-    sprintf(s1, "%s%s%u.net", pszDirectory, s2, i);
+    sprintf(s1, "%s%s%u.net", directory.c_str(), s2, i);
     if (!WFile::Rename(s, s1) || errno != EACCES) {
       break;
     }
   }
 }
-
 
 int checkup2(const time_t tFileTime, const char *pszFileName) {
   WFile file(GetSession()->GetNetworkDataDirectory(), pszFileName);
@@ -73,9 +74,9 @@ int check_bbsdata() {
   char s[MAX_PATH];
   int ok = 0, ok2 = 0;
 
-  sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CONNECT_UPD);
+  sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), CONNECT_UPD);
   if ((ok = WFile::Exists(s)) == 0) {
-    sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), BBSLIST_UPD);
+    sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), BBSLIST_UPD);
     ok = WFile::Exists(s) ? 1 : 0;
   }
   unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
@@ -84,7 +85,7 @@ int check_bbsdata() {
     sprintf(s, "NETEDIT .%d /U", GetSession()->GetNetworkNumber());
     ExecuteExternalProgram(s, EFLAG_NETPROG);
   } else {
-    WFile bbsdataNet(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
+    WFile bbsdataNet(GetSession()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
     if (bbsdataNet.Open(WFile::modeReadOnly)) {
       time_t tFileTime = bbsdataNet.GetFileTime();
       bbsdataNet.Close();
@@ -94,15 +95,15 @@ int check_bbsdata() {
       ok = ok2 = 1;
     }
   }
-  sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
+  sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
   if (!WFile::Exists(s)) {
     ok = ok2 = 0;
   }
-  sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CONNECT_NET);
+  sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), CONNECT_NET);
   if (!WFile::Exists(s)) {
     ok = ok2 = 0;
   }
-  sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), CALLOUT_NET);
+  sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), CALLOUT_NET);
   if (!WFile::Exists(s)) {
     ok = ok2 = 0;
   }
@@ -183,7 +184,7 @@ int cleanup_net1() {
         ok2 = 0;
         ok = 0;
         WFindFile fnd;
-        sprintf(s, "%sp*.%3.3d", GetSession()->GetNetworkDataDirectory(), GetApplication()->GetInstanceNumber());
+        sprintf(s, "%sp*.%3.3d", GetSession()->GetNetworkDataDirectory().c_str(), GetApplication()->GetInstanceNumber());
         bool bFound = fnd.open(s, 0);
         while (bFound) {
           ok = 1;
@@ -195,7 +196,7 @@ int cleanup_net1() {
 
         if (GetApplication()->GetInstanceNumber() == 1) {
           if (!ok) {
-            sprintf(s, "%sp*.net", GetSession()->GetNetworkDataDirectory());
+            sprintf(s, "%sp*.net", GetSession()->GetNetworkDataDirectory().c_str());
             WFindFile fnd;
             ok = fnd.open(s, 0);
           }
@@ -220,7 +221,7 @@ int cleanup_net1() {
             }
             ok2 = 1;
           }
-          sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory(), LOCAL_NET);
+          sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), LOCAL_NET);
           if (WFile::Exists(s)) {
 #ifndef __unix__
             if (GetSession()->wfc_status == 0) {
@@ -805,132 +806,133 @@ void print_pending_list() {
   }
 }
 
-
 void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const char *pszAuthorName,
               unsigned short int *pList, int nFromNetworkNumber) {
   char newname[256], qn[200], on[200];
   char nm[205];
   int i;
 
-  if (strlen(pszMessageText) < 80) {
-    char *pszOriginalText = pszMessageText;
-    pszMessageText += strlen(pszOriginalText) + 1;
-    unsigned short ntl = static_cast<unsigned short>(nh->length - strlen(pszOriginalText) - 1);
-    char *ss = strchr(pszMessageText, '\r');
-    if (ss && (ss - pszMessageText < 200) && (ss - pszMessageText < ntl)) {
-      strncpy(nm, pszMessageText, ss - pszMessageText);
-      nm[ss - pszMessageText] = 0;
+  if (strlen(pszMessageText) >= 80) {
+    return;
+  }
+
+  char *pszOriginalText = pszMessageText;
+  pszMessageText += strlen(pszOriginalText) + 1;
+  unsigned short ntl = static_cast<unsigned short>(nh->length - strlen(pszOriginalText) - 1);
+  char *ss = strchr(pszMessageText, '\r');
+  if (ss && (ss - pszMessageText < 200) && (ss - pszMessageText < ntl)) {
+    strncpy(nm, pszMessageText, ss - pszMessageText);
+    nm[ss - pszMessageText] = 0;
+    ss++;
+    if (*ss == '\n') {
       ss++;
-      if (*ss == '\n') {
-        ss++;
-      }
-      nh->length -= (ss - pszMessageText);
-      ntl = ntl - static_cast<unsigned short>(ss - pszMessageText);
-      pszMessageText = ss;
+    }
+    nh->length -= (ss - pszMessageText);
+    ntl = ntl - static_cast<unsigned short>(ss - pszMessageText);
+    pszMessageText = ss;
 
-      qn[0] = on[0] = '\0';
+    qn[0] = on[0] = '\0';
 
-      if (nFromNetworkNumber == 65535 || nh->fromsys == net_networks[nFromNetworkNumber].sysnum) {
+    if (nFromNetworkNumber == 65535 || nh->fromsys == net_networks[nFromNetworkNumber].sysnum) {
 
-        strcpy(newname, nm);
-        ss = strrchr(newname, '@');
+      strcpy(newname, nm);
+      ss = strrchr(newname, '@');
+      if (ss) {
+        sprintf(ss + 1, "%u", net_networks[nNetNumber].sysnum);
+        ss = strrchr(nm, '@');
         if (ss) {
-          sprintf(ss + 1, "%u", net_networks[nNetNumber].sysnum);
-          ss = strrchr(nm, '@');
-          if (ss) {
+          ++ss;
+          while ((*ss >= '0') && (*ss <= '9')) {
             ++ss;
-            while ((*ss >= '0') && (*ss <= '9')) {
-              ++ss;
-            }
-            strcat(newname, ss);
           }
-          strcat(newname, "\r\n");
-          nh->fromsys = net_networks[nNetNumber].sysnum;
+          strcat(newname, ss);
+        }
+        strcat(newname, "\r\n");
+        nh->fromsys = net_networks[nNetNumber].sysnum;
+      }
+    } else {
+      if ((nm[0] == '`') && (nm[1] == '`')) {
+        for (i = strlen(nm) - 2; i > 0; i--) {
+          if ((nm[i] == '`') && (nm[i + 1] == '`')) {
+            break;
+          }
+        }
+        if (i > 0) {
+          i += 2;
+          strncpy(qn, nm, i);
+          qn[i] = ' ';
+          qn[i + 1] = 0;
         }
       } else {
-        if ((nm[0] == '`') && (nm[1] == '`')) {
-          for (i = strlen(nm) - 2; i > 0; i--) {
-            if ((nm[i] == '`') && (nm[i + 1] == '`')) {
-              break;
-            }
-          }
-          if (i > 0) {
-            i += 2;
-            strncpy(qn, nm, i);
-            qn[i] = ' ';
-            qn[i + 1] = 0;
-          }
-        } else {
-          i = 0;
-        }
-        if (qn[0] == 0) {
-          ss = strrchr(nm, '#');
-          if (ss) {
-            if ((ss[1] >= '0') && (ss[1] <= '9')) {
+        i = 0;
+      }
+      if (qn[0] == 0) {
+        ss = strrchr(nm, '#');
+        if (ss) {
+          if ((ss[1] >= '0') && (ss[1] <= '9')) {
+            *ss = 0;
+            ss--;
+            while ((ss > nm) && (*ss == ' ')) {
               *ss = 0;
               ss--;
-              while ((ss > nm) && (*ss == ' ')) {
-                *ss = 0;
-                ss--;
-              }
-            }
-          }
-          if (nm[0]) {
-            if (nh->fromuser) {
-              sprintf(qn, "``%s`` ", nm);
-            } else {
-              strcpy(on, nm);
             }
           }
         }
-        if ((on[0] == 0) && (nh->fromuser == 0)) {
-          strcpy(on, nm + i);
-        }
-        if (net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
-            wwiv::strings::IsEqualsIgnoreCase(net_networks[nFromNetworkNumber].name, "Internet")) {
-          sprintf(newname, "%s%s", qn, on);
-        } else {
-          if (on[0]) {
-            sprintf(newname, "%s%s@%u.%s\r\n", qn, on, nh->fromsys,
-                    net_networks[nFromNetworkNumber].name);
+        if (nm[0]) {
+          if (nh->fromuser) {
+            sprintf(qn, "``%s`` ", nm);
           } else {
-            sprintf(newname, "%s#%u@%u.%s\r\n", qn, nh->fromuser, nh->fromsys,
-                    net_networks[nFromNetworkNumber].name);
+            strcpy(on, nm);
           }
         }
-        nh->fromsys = net_networks[nNetNumber].sysnum;
-        nh->fromuser = 0;
       }
+      if ((on[0] == 0) && (nh->fromuser == 0)) {
+        strcpy(on, nm + i);
+      }
+      if (net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
+          wwiv::strings::IsEqualsIgnoreCase(net_networks[nFromNetworkNumber].name, "Internet")) {
+        sprintf(newname, "%s%s", qn, on);
+      } else {
+        if (on[0]) {
+          sprintf(newname, "%s%s@%u.%s\r\n", qn, on, nh->fromsys,
+                  net_networks[nFromNetworkNumber].name);
+        } else {
+          sprintf(newname, "%s#%u@%u.%s\r\n", qn, nh->fromuser, nh->fromsys,
+                  net_networks[nFromNetworkNumber].name);
+        }
+      }
+      nh->fromsys = net_networks[nNetNumber].sysnum;
+      nh->fromuser = 0;
+    }
 
 
-      nh->length += strlen(newname);
-      if ((nh->main_type == main_type_email_name) ||
-          (nh->main_type == main_type_new_post)) {
-        nh->length += strlen(pszAuthorName) + 1;
+    nh->length += strlen(newname);
+    if ((nh->main_type == main_type_email_name) ||
+        (nh->main_type == main_type_new_post)) {
+      nh->length += strlen(pszAuthorName) + 1;
+    }
+    const string packet_filename = StringPrintf("%sp1%s",
+      net_networks[nNetNumber].dir, GetApplication()->GetNetworkExtension().c_str());
+    WFile packetFile(packet_filename);
+    if (packetFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
+      packetFile.Seek(0L, WFile::seekEnd);
+      if (!pList) {
+        nh->list_len = 0;
       }
-      char szPacketFileName[ MAX_PATH ];
-      sprintf(szPacketFileName, "%sp1%s", net_networks[nNetNumber].dir, GetApplication()->GetNetworkExtension());
-      WFile packetFile(szPacketFileName);
-      if (packetFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
-        packetFile.Seek(0L, WFile::seekEnd);
-        if (!pList) {
-          nh->list_len = 0;
-        }
-        if (nh->list_len) {
-          nh->tosys = 0;
-        }
-        packetFile.Write(nh, sizeof(net_header_rec));
-        if (nh->list_len) {
-          packetFile.Write(pList, 2 * (nh->list_len));
-        }
-        if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
-          packetFile.Write(pszAuthorName, strlen(pszAuthorName) + 1);
-        }
-        packetFile.Write(pszOriginalText, strlen(pszOriginalText) + 1);
-        packetFile.Write(newname, strlen(newname));
-        packetFile.Write(pszMessageText, ntl);
-        packetFile.Close();
+      if (nh->list_len) {
+        nh->tosys = 0;
       }
+      packetFile.Write(nh, sizeof(net_header_rec));
+      if (nh->list_len) {
+        packetFile.Write(pList, 2 * (nh->list_len));
+      }
+      if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
+        packetFile.Write(pszAuthorName, strlen(pszAuthorName) + 1);
+      }
+      packetFile.Write(pszOriginalText, strlen(pszOriginalText) + 1);
+      packetFile.Write(newname, strlen(newname));
+      packetFile.Write(pszMessageText, ntl);
+      packetFile.Close();
     }
   }
 }
@@ -1508,7 +1510,7 @@ void run_exp() {
   set_net_num(nFileNetNetworkNumber);
 
   char szExpCommand[MAX_PATH];
-  sprintf(szExpCommand, "EXP S32767.NET %s %d %s %s %s", GetSession()->GetNetworkDataDirectory(), net_sysnum,
+  sprintf(szExpCommand, "EXP S32767.NET %s %d %s %s %s", GetSession()->GetNetworkDataDirectory().c_str(), net_sysnum,
           GetSession()->internetEmailName.c_str(), GetSession()->internetEmailDomain.c_str(), GetSession()->GetNetworkName());
   ExecuteExternalProgram(szExpCommand, EFLAG_NETPROG);
 
