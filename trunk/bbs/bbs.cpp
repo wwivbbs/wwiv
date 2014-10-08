@@ -429,7 +429,7 @@ int WApplication::doWFCEvents() {
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
           GetSession()->bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
           char szFileName[ MAX_PATH ];
-          _getcwd(szFileName, MAX_PATH);
+          getcwd(szFileName, MAX_PATH);
           snprintf(szFileName, sizeof(szFileName), "%c", WFile::pathSeparatorChar);
           std::string newFileName;
           Input1(&newFileName, szFileName, 50, true, InputMode::UPPER);
