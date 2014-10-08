@@ -16,9 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #ifndef __INCLUDED_INIT_H__
 #define __INCLUDED_INIT_H__
+
+#ifndef NOT_BBS
+#error "NOT_BBS MUST BE DEFINED"
+#endif  // NOT_BBS
+#ifndef INIT
+#error "INIT MUST BE DEFINED"
+#endif  // INIT
 
 /*!
  * @class WInitApp  Main Application object for WWIV 5.0
