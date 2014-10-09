@@ -36,48 +36,42 @@ using std::string;
 using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::strings::IsEqualsIgnoreCase;
 using wwiv::strings::StringPrintf;
 
 void rename_pend(const std::string directory, const std::string filename) {
-  char s[ MAX_PATH ], s1[ MAX_PATH ], s2[ MAX_PATH ];
-
-  sprintf(s, "%s%s", directory.c_str(), filename.c_str());
-
-  string num = filename.substr(1);
-  if (atoi(num.c_str())) {
-    strcpy(s2, "p1-");
-  } else {
-    strcpy(s2, "p0-");
-  }
+  const string pend_filename = StringPrintf("%s%s", directory.c_str(), filename.c_str());
+  const string num = filename.substr(1);
+  const string prefix = (atoi(num.c_str())) ? "p1-" : "p0-";
 
   for (int i = 0; i < 1000; i++) {
-    sprintf(s1, "%s%s%u.net", directory.c_str(), s2, i);
-    if (!WFile::Rename(s, s1) || errno != EACCES) {
-      break;
+    const string new_filename = StringPrintf("%s%s%u.net", directory.c_str(), prefix.c_str(), i);
+    if (!WFile::Rename(pend_filename, new_filename) || errno != EACCES) {
+      return;
     }
   }
 }
 
-int checkup2(const time_t tFileTime, const char *pszFileName) {
+static bool checkup2(const time_t tFileTime, const char *pszFileName) {
   WFile file(GetSession()->GetNetworkDataDirectory(), pszFileName);
 
   if (file.Open(WFile::modeReadOnly)) {
     time_t tNewFileTime = file.GetFileTime();
     file.Close();
-    return (tNewFileTime > (tFileTime + 2)) ? 1 : 0;
+    return (tNewFileTime > (tFileTime + 2))
   }
-  return 1;
+  return true;
 }
 
-
-int check_bbsdata() {
+static bool check_bbsdata() {
   char s[MAX_PATH];
-  int ok = 0, ok2 = 0;
+  bool ok2 = false;
 
   sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), CONNECT_UPD);
-  if ((ok = WFile::Exists(s)) == 0) {
+  bool ok = WFile::Exists(s);
+  if (!ok) {
     sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), BBSLIST_UPD);
-    ok = WFile::Exists(s) ? 1 : 0;
+    ok = WFile::Exists(s);
   }
   unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
   if (ok && pStatus->IsUsingNetEdit()) {
@@ -92,20 +86,20 @@ int check_bbsdata() {
       ok = checkup2(tFileTime, BBSDATA_NET) || checkup2(tFileTime, CONNECT_NET);
       ok2 = checkup2(tFileTime, CALLOUT_NET);
     } else {
-      ok = ok2 = 1;
+      ok = ok2 = true;
     }
   }
   sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
   if (!WFile::Exists(s)) {
-    ok = ok2 = 0;
+    ok = ok2 = false;
   }
   sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), CONNECT_NET);
   if (!WFile::Exists(s)) {
-    ok = ok2 = 0;
+    ok = ok2 = false;
   }
   sprintf(s, "%s%s", GetSession()->GetNetworkDataDirectory().c_str(), CALLOUT_NET);
   if (!WFile::Exists(s)) {
-    ok = ok2 = 0;
+    ok = ok2 = false;
   }
   if (ok || ok2) {
     sprintf(s, "network3 %s .%d", (ok ? " Y" : ""), GetSession()->GetNetworkNumber());
@@ -119,13 +113,12 @@ int check_bbsdata() {
     zap_call_out_list();
     zap_contacts();
     zap_bbs_list();
-    if (ok >= 0) {
-      return 1;
+    if (ok) {
+      return true;
     }
   }
-  return 0;
+  return false;
 }
-
 
 void cleanup_net() {
   if (cleanup_net1() && GetApplication()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
@@ -151,7 +144,6 @@ void cleanup_net() {
 
   holdphone(false);
 }
-
 
 int cleanup_net1() {
   char s[81], cl[81];
@@ -267,7 +259,6 @@ int cleanup_net1() {
   return i;
 }
 
-
 void do_callout(int sn) {
   char s[81], s1[81];
 
@@ -356,7 +347,6 @@ void do_callout(int sn) {
     }
   }
 }
-
 
 bool ok_to_call(int i) {
   net_call_out_rec *con = &(net_networks[GetSession()->GetNetworkNumber()].con[i]);
@@ -890,7 +880,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
         strcpy(on, nm + i);
       }
       if (net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
-          wwiv::strings::IsEqualsIgnoreCase(net_networks[nFromNetworkNumber].name, "Internet")) {
+          IsEqualsIgnoreCase(net_networks[nFromNetworkNumber].name, "Internet")) {
         sprintf(newname, "%s%s", qn, on);
       } else {
         if (on[0]) {
@@ -1297,7 +1287,6 @@ int ansicallout() {
   return sn;
 }
 
-
 void force_callout(int dw) {
   int i, i1, i2;
   bool  abort = false;
@@ -1381,7 +1370,7 @@ void force_callout(int dw) {
             odc[odci - 1] = static_cast< char >(odci + '0');
             odc[odci] = 0;
           }
-          if (wwiv::strings::IsEqualsIgnoreCase(net_networks[netw].name, GetSession()->GetNetworkName())) {
+          if (IsEqualsIgnoreCase(net_networks[netw].name, GetSession()->GetNetworkName())) {
             nitu = i;
           }
         }
@@ -1498,7 +1487,6 @@ long *next_system_reg(int ts) {
   }
   return nullptr;
 }
-
 
 #ifndef _UNUX
 void run_exp() {
