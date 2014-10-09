@@ -63,8 +63,8 @@ class CursesWindow {
   void Putch(unsigned char ch);
   void Puts(const std::string& text);
   void PutsXY(int x, int y, const std::string& text);
-  void Printf(const std::string& format, ...);
-  void PrintfXY(int x, int y, const std::string& format, ...);
+  void Printf(const char* format, ...);
+  void PrintfXY(int x, int y, const char* format, ...);
 
   void SetColor(SchemeId id);
 
