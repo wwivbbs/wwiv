@@ -58,7 +58,7 @@ static bool checkup2(const time_t tFileTime, const char *pszFileName) {
   if (file.Open(WFile::modeReadOnly)) {
     time_t tNewFileTime = file.GetFileTime();
     file.Close();
-    return (tNewFileTime > (tFileTime + 2))
+    return (tNewFileTime > (tFileTime + 2));
   }
   return true;
 }
