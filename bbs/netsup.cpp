@@ -46,7 +46,7 @@ void rename_pend(const std::string directory, const std::string filename) {
 
   for (int i = 0; i < 1000; i++) {
     const string new_filename = StringPrintf("%s%s%u.net", directory.c_str(), prefix.c_str(), i);
-    if (!WFile::Rename(pend_filename, new_filename) || errno != EACCES) {
+    if (WFile::Rename(pend_filename, new_filename) || errno != EACCES) {
       return;
     }
   }
