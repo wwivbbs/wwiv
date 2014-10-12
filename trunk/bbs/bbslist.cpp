@@ -159,38 +159,36 @@ static void DeleteBBSListEntry() {
   GetSession()->bout << "|#1 ###-###-####\r\n:";
   std::string bbsPhoneNumber;
   input(&bbsPhoneNumber, 12, true);
-  if (bbsPhoneNumber[3] != '-' || bbsPhoneNumber[7] != '-') {
-    bbsPhoneNumber.clear();
+  if (bbsPhoneNumber.length() != 12 || bbsPhoneNumber[3] != '-' || bbsPhoneNumber[7] != '-') {
+    GetSession()->bout << "\r\n|#6Error: Please enter number in correct format.\r\n";
+    return;
   }
-  if (bbsPhoneNumber.length() == 12) {
-    bool ok = false;
-    WTextFile fi(syscfg.gfilesdir, BBSLIST_MSG, "r");
-    WTextFile fo(syscfg.gfilesdir, BBSLIST_TMP, "w");
-    if (fi.IsOpen()) {
-      if (fo.IsOpen()) {
-        std::string line;
-        while (fi.ReadLine(&line)) {
-          if (strstr(line.c_str(), bbsPhoneNumber.c_str())) {
-            ok = true;
-          } else {
-            fo.WriteLine(line);
-          }
+
+  bool ok = false;
+  WTextFile fi(syscfg.gfilesdir, BBSLIST_MSG, "r");
+  WTextFile fo(syscfg.gfilesdir, BBSLIST_TMP, "w");
+  if (fi.IsOpen()) {
+    if (fo.IsOpen()) {
+      std::string line;
+      while (fi.ReadLine(&line)) {
+        if (strstr(line.c_str(), bbsPhoneNumber.c_str())) {
+          ok = true;
+        } else {
+          fo.WriteLine(line);
         }
-        fo.Close();
       }
-      fi.Close();
+      fo.Close();
     }
-    GetSession()->bout.NewLine();
-    if (ok) {
-      WFile::Remove(fi.GetFullPathName());
-      WFile::Rename(fo.GetFullPathName(), fi.GetFullPathName());
-      GetSession()->bout << "|#7* |#1Number removed.\r\n";
-    } else {
-      WFile::Remove(fo.GetFullPathName());
-      GetSession()->bout << "|#6Error: Couldn't find that in the bbslist file.\r\n";
-    }
+    fi.Close();
+  }
+  GetSession()->bout.NewLine();
+  if (ok) {
+    WFile::Remove(fi.GetFullPathName());
+    WFile::Rename(fo.GetFullPathName(), fi.GetFullPathName());
+    GetSession()->bout << "|#7* |#1Number removed.\r\n";
   } else {
-    GetSession()->bout << "\r\n|#6Error: Please enter number in correct format.\r\n\n";
+    WFile::Remove(fo.GetFullPathName());
+    GetSession()->bout << "|#6Error: Couldn't find that in the bbslist file.\r\n";
   }
 }
 
