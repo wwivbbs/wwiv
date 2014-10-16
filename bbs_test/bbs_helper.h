@@ -44,6 +44,7 @@ public:
     TestIO* io() const { return io_.get(); }
 public:
     FileHelper files_;
+    std::string dir_data_;
     std::string dir_gfiles_;
     std::string dir_en_gfiles_;
     std::string dir_menus_;

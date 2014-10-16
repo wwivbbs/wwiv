@@ -37,6 +37,7 @@ void BbsHelper::SetUp() {
     // We want the "BBS Home" to be our temp dir.
     chdir(files_.TempDir().c_str());
 
+    ASSERT_TRUE(files_.Mkdir("data"));
     ASSERT_TRUE(files_.Mkdir("gfiles"));
     ASSERT_TRUE(files_.Mkdir("en"));
     ASSERT_TRUE(files_.Mkdir("en/gfiles"));
@@ -46,6 +47,7 @@ void BbsHelper::SetUp() {
     local_echo = true;
     app_.reset(CreateApplication(io_->local_io()));
 
+    dir_data_ = files_.DirName("data");
     dir_gfiles_ = files_.DirName("gfiles");
     dir_en_gfiles_ = files_.DirName("en/gfiles");
 #ifdef _WIN32
@@ -53,6 +55,7 @@ void BbsHelper::SetUp() {
     std::replace(dir_en_gfiles_.begin(), dir_en_gfiles_.end(), '/', WFile::pathSeparatorChar);
 #endif  // _WIN32
 
+    syscfg.datadir = const_cast<char*>(dir_data_.c_str());
     syscfg.gfilesdir = const_cast<char*>(dir_gfiles_.c_str());
     WSession* session = GetSession();
 

@@ -192,7 +192,7 @@ static void DeleteBBSListEntry() {
   }
 }
 
-void BBSList() {
+void LegacyBBSList() {
   bool done = false;
   do {
     char chInput = ShowBBSListMenuAndGetChoice();

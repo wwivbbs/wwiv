@@ -32,7 +32,6 @@ public:
   bool Close();
 
   bool IsOpen() const { return file_ != nullptr; }
-  
   bool IsEndOfFile() { return feof(file_) ? true : false; }
 
   // Writes a line of text without \r\n
@@ -61,6 +60,7 @@ public:
   bool ReadLine(std::string *buffer);
   long GetPosition() { return ftell(file_); }
   const std::string GetFullPathName() const { return file_name_; }
+  FILE* GetFILE() { return file_; } 
 
  public:
   ~WTextFile();
