@@ -86,6 +86,7 @@
     <ClCompile Include="bputch_test.cpp" />
     <ClCompile Include="datetime_test.cpp" />
     <ClCompile Include="make_abs_test.cpp" />
+    <ClCompile Include="new_bbslist_test.cpp" />
     <ClCompile Include="pause_test.cpp" />
     <ClCompile Include="printfile_test.cpp" />
     <ClCompile Include="stuffin_test.cpp" />

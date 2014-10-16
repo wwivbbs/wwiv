@@ -41,11 +41,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\..\;$(IncludePath);..\deps\rapidjson-master\include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\..\;$(IncludePath);..\deps\rapidjson-master\include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -100,6 +100,7 @@
     <ClInclude Include="menu.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="net.h" />
+    <ClInclude Include="new_bbslist.h" />
     <ClInclude Include="pause.h" />
     <ClInclude Include="platform\platformfcns.h" />
     <ClInclude Include="platform\win32\InternalTelnetServer.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="multmail.cpp" />
     <ClCompile Include="netsup.cpp" />
     <ClCompile Include="newuser.cpp" />
+    <ClCompile Include="new_bbslist.cpp" />
     <ClCompile Include="normupld.cpp" />
     <ClCompile Include="pause.cpp" />
     <ClCompile Include="datetime.cpp" />
