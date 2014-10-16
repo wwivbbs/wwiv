@@ -42,6 +42,7 @@
 #define BBSLIST_MSG "bbslist.msg"
 #define BBSLIST_TMP "bbslist.tmp"
 #define BBSLIST_UPD "bbslist.upd"
+#define BBSLIST_JSON "bbslist.json"
 
 #define CALLOUT_NET "callout.net"
 #define CATEG_NET "categ.net"

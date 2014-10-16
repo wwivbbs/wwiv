@@ -25,13 +25,14 @@
 #include <string>
 #include <vector>
 
-#include "printfile.h"
+#include "bbs/printfile.h"
+#include "bbs/vars.h"  // for syscfg
+#include "bbs/bbs.h"
+#include "bbs/fcns.h"
+#include "bbs/wsession.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
-#include "bbs/vars.h"  // for syscfg
-#include <bbs/bbs.h>
-#include <bbs/fcns.h>
-#include <bbs/wsession.h>
+#include "sdk/filenames.h"
 
 #include <rapidjson/document.h>
 #include <rapidjson/rapidjson.h>
@@ -47,12 +48,10 @@ using rapidjson::FileWriteStream;
 using rapidjson::StringRef;
 using rapidjson::Value;
 using rapidjson::Writer;
-
 using std::map;
 using std::string;
 using std::unique_ptr;
 using std::vector;
-
 using wwiv::strings::StringPrintf;
 
 namespace wwiv {
@@ -82,7 +81,7 @@ bool LoadFromJSON(const string& dir, const string& filename,
                   std::vector<std::unique_ptr<BbsListEntry>>* entries) {
   int id = 1;
   Document document;
-  WTextFile file(dir, "bbslist.json", "r");
+  WTextFile file(dir, filename, "r");
   if (!file.IsOpen()) {
     // rapidjson will assert if the file does not exist, so we need to 
     // verify that the file exists first.
@@ -193,7 +192,7 @@ static bool ConvertLegacyList(
     const string& dir, const string& filename, 
     std::vector<std::unique_ptr<BbsListEntry>>* entries) {
 
-  WTextFile legacy_file(syscfg.gfilesdir, "bbslist.msg", "r");
+  WTextFile legacy_file(dir, filename, "r");
   if (!legacy_file.IsOpen()) {
     return false;
   }
@@ -224,17 +223,16 @@ static string GetBbsListEntryAddress(const BbsListEntry* entry) {
   if (addresses.size() == 0) {
     return "";
   }
-
   return addresses.begin()->second;
 }
 
 static void ReadBBSList() {
   vector<unique_ptr<BbsListEntry>> entries;
-  LoadFromJSON(syscfg.datadir, "bbslist.json", &entries);
+  LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
 
   if (entries.empty()) {
-    ConvertLegacyList(syscfg.datadir, "bbslist.json", &entries);
-    SaveToJSON(syscfg.datadir, "bbslist.json", entries);
+    ConvertLegacyList(syscfg.datadir, BBSLIST_JSON, &entries);
+    SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
   }
 
   for (const auto& entry : entries) {
@@ -246,17 +244,14 @@ static void ReadBBSList() {
 }
 
 static bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
-  if (phoneNumber.empty()) {
+  if (phoneNumber.length() != 12) {
     return false;
   }
   if (phoneNumber[3] != '-' || phoneNumber[7] != '-') {
     return false;
   }
-  if (phoneNumber.length() != 12) {
-    return false;
-  }
-  for (std::string::const_iterator iter = phoneNumber.begin(); iter != phoneNumber.end(); iter++) {
-    if (strchr("0123456789-", (*iter)) == 0) {
+  for (const auto ch : phoneNumber) {
+    if (strchr("0123456789-", ch) == 0) {
       return false;
     }
   }
@@ -264,8 +259,8 @@ static bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
 }
 
 static bool IsBBSPhoneNumberUnique(
-    const std::string& phoneNumber,
-    const std::vector<std::unique_ptr<BbsListEntry>>& entries) {
+    const string& phoneNumber,
+    const vector<unique_ptr<BbsListEntry>>& entries) {
   for (const auto& e : entries) {
     const auto& a = e->addresses.find(ConnectionType::MODEM);
     if (a == e->addresses.end()) {
@@ -278,30 +273,26 @@ static bool IsBBSPhoneNumberUnique(
   return true;
 }
 
-static bool AddBBSListEntryImpl(std::vector<std::unique_ptr<BbsListEntry>>* entries) {
+static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
   GetSession()->bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
-  string bbsPhoneNumber;
-  input(&bbsPhoneNumber, 12, true);
-  if (!IsBBSPhoneNumberValid(bbsPhoneNumber)) {
+  string phone_number;
+  input(&phone_number, 12, true);
+  if (!IsBBSPhoneNumberValid(phone_number)) {
     GetSession()->bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
     return false;
   }
-  if (!IsBBSPhoneNumberUnique(bbsPhoneNumber, *entries)) {
+  if (!IsBBSPhoneNumberUnique(phone_number, *entries)) {
     GetSession()->bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
     return false;
   }
   GetSession()->bout << "|#3This number can be added! It is not yet in BBS list.\r\n\n\n"
                       << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
-  string bbsName;
-  inputl(&bbsName, 50, true);
-  GetSession()->bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
-  string bbsType;
-  input(&bbsType, 4, true);
-
   unique_ptr<BbsListEntry> entry(new BbsListEntry());
-  entry->name = bbsName;
-  entry->software = bbsType;
-  entry->addresses.emplace(ConnectionType::MODEM, bbsPhoneNumber);
+  inputl(&entry->name, 50, true);
+  GetSession()->bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
+  input(&entry->software, 12, true);
+
+  entry->addresses.emplace(ConnectionType::MODEM, phone_number);
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#5Is this information correct? ";
   if (yesno()) {
@@ -319,7 +310,7 @@ void NewBBSList() {
     switch (ch) {
     case 'A': {
       vector<unique_ptr<BbsListEntry>> entries;
-      LoadFromJSON(syscfg.datadir, "bbslist.json", &entries);
+      LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
       if (GetSession()->GetEffectiveSl() <= 10) {
         GetSession()->bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
         break;
@@ -327,8 +318,8 @@ void NewBBSList() {
         GetSession()->bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
         break;
       }
-      if (AddBBSListEntryImpl(&entries)) {
-        SaveToJSON(syscfg.datadir, "bbslist.json", entries);
+      if (AddBBSListEntry(&entries)) {
+        SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
       }
 
     } break;
