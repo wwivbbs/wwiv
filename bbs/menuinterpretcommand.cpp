@@ -17,11 +17,23 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "menu.h"
-#include "menusupp.h"
-#include "printfile.h"
+#include "bbs/wwiv.h"
+#include "bbs/menu.h"
+#include "bbs/menusupp.h"
+#include "bbs/printfile.h"
+#include "bbs/new_bbslist.h"
+#include "core/inifile.h"
 
+using wwiv::core::FilePath;
+using wwiv::core::IniFile;
+
+bool UseNewBBSList() {
+  IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
+  if (iniFile.IsOpen()) {
+    return iniFile.GetBooleanValue("USE_NEW_BBSLIST");
+  }
+  return false;
+}
 
 void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
   char szCmd[31], szParam1[51], szParam2[51];
@@ -226,7 +238,11 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
     break;
     case 31: {
       // "BBSList"
-      BBSList();
+      if (UseNewBBSList()) {
+        wwiv::bbslist::NewBBSList();
+      } else {
+        LegacyBBSList();
+      }
     }
     break;
     case 32: {

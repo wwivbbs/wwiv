@@ -59,7 +59,7 @@ void zmbatchdl(bool bHangupAfterDl);
 
 // File: bbslist.cpp
 
-void BBSList();
+void LegacyBBSList();
 
 
 // File: bbsovl1.cpp

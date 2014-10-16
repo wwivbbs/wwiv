@@ -358,6 +358,9 @@
     <ClCompile Include="external_edit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="new_bbslist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -484,6 +487,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="keycodes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="new_bbslist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
