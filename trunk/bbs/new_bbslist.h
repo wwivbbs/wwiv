@@ -44,8 +44,7 @@ bool SaveToJSON(const std::string& dir, const std::string& filename,
 
 void NewBBSList();
 
-#endif  // __INCLUDED_NEW_BBSLIST_H__
-
-
 }  // bbslist
 }  // wwiv
+
+#endif  // __INCLUDED_NEW_BBSLIST_H__
