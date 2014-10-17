@@ -211,7 +211,7 @@ static bool ConvertLegacyList(
     string name = line.substr(14, 42);
     StringTrimEnd(&name);
     e->name = name;
-    e->addresses.emplace(ConnectionType::MODEM, line.substr(0, 12));
+    e->addresses.insert(std::make_pair(ConnectionType::MODEM, line.substr(0, 12)));
     e->software = line.substr(74, 4);
     entries->emplace_back(e.release());
   }
@@ -292,7 +292,7 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
   GetSession()->bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
   input(&entry->software, 12, true);
 
-  entry->addresses.emplace(ConnectionType::MODEM, phone_number);
+  entry->addresses.insert(std::make_pair(ConnectionType::MODEM, phone_number));
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#5Is this information correct? ";
   if (yesno()) {
