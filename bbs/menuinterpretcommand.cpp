@@ -26,6 +26,7 @@
 
 using wwiv::core::FilePath;
 using wwiv::core::IniFile;
+using wwiv::bbslist::NewBBSList;
 
 bool UseNewBBSList() {
   IniFile iniFile(FilePath(GetApplication()->GetHomeDir(), WWIV_INI), INI_TAG);
@@ -239,7 +240,7 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
     case 31: {
       // "BBSList"
       if (UseNewBBSList()) {
-        wwiv::bbslist::NewBBSList();
+        NewBBSList();
       } else {
         LegacyBBSList();
       }

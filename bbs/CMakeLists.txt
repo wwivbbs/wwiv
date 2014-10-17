@@ -67,6 +67,7 @@ set(COMMON_SOURCES
  multmail.cpp
  netsup.cpp
  newuser.cpp
+ new_bbslist.cpp
  normupld.cpp
  pause.cpp
  printfile.cpp
