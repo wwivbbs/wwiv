@@ -17,9 +17,10 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 
 #include "bbs/wcomm.h"
+#include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wutil.h"
