@@ -24,6 +24,7 @@
 #include "bbs/stuffin.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+#include "bbs/xfer_common.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;

@@ -862,17 +862,6 @@ enum xfertype {
 #define ALL                 4
 #define SET                   8
 
-#define XFER_TIME(b) (modem_speed?\
-    (((double)(((b)+127)/128))*1280.0/((double)modem_speed))\
-    :0.0)
-
-struct line {
-  char text[160];
-
-  struct line *prev, *next;
-};
-
-
 struct ext_desc_type {
   char name[13];
 
@@ -908,60 +897,6 @@ struct languagerec {
   char dir[79],                               // language directory
        mdir[79],                               // menu directory
        adir[79];                               // ansi directory
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-#define SECONDS_PER_HOUR        3600L
-#define SECONDS_PER_HOUR_FLOAT      3600.0
-#define SECONDS_PER_DAY         86400L
-#define SECONDS_PER_DAY_FLOAT       86400.0
-#define HOURS_PER_DAY               24L
-#define HOURS_PER_DAY_FLOAT         24.0
-#define MINUTES_PER_HOUR            60L
-#define MINUTES_PER_HOUR_FLOAT      60.0
-#define SECONDS_PER_MINUTE          60L
-#define SECONDS_PER_MINUTE_FLOAT  60.0
-
-// Dropfile stuff
-
-struct pcboard_sys_rec {
-  char    display[2], printer[2], page_bell[2], alarm[2], sysop_next,
-          errcheck[2], graphics, nodechat, openbps[5], connectbps[5];
-
-  int16_t usernum;
-
-  char firstname[15], password[12];
-
-  int16_t time_on, prev_used;
-
-  char time_logged[5];
-
-  int16_t time_limit, down_limit;
-
-  char curconf, bitmap1[5], bitmap2[5];
-
-  int16_t time_added, time_credit;
-
-  char slanguage[4], name[25];
-
-  int16_t sminsleft;
-
-  char snodenum, seventtime[5], seventactive[2],
-       sslide[2], smemmsg[4], scomport, packflag, bpsflag;
-
-  // PCB 14.5 extra stuff
-  char ansi, lastevent[8];
-
-  int16_t lasteventmin;
-
-  char exittodos, eventupcoming;
-
-  int16_t lastconfarea;
-
-  char hconfbitmap;
-  // end PCB 14.5 additions
 };
 
 // conferencing stuff
@@ -1008,23 +943,14 @@ struct filestatusrec {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define CHAINFILE_CHAIN       0
-#define CHAINFILE_DORINFO     1
-#define CHAINFILE_PCBOARD     2
-#define CHAINFILE_CALLINFO    3
-#define CHAINFILE_DOOR        4
-#define CHAINFILE_DOOR32      5
-
-///////////////////////////////////////////////////////////////////////////////
-
 #define EFLAG_NONE            0x0000        // nothing.
-//#define EFLAG_ABORT           0x0001        // UNUSED check for a ^C to abort program
-//#define EFLAG_INTERNAL        0x0002        // UNUSED make it look internal to BBS
+//#define UNUSED_EFLAG_ABORT           0x0001        // UNUSED check for a ^C to abort program
+//#define UNUSED_EFLAG_INTERNAL        0x0002        // UNUSED make it look internal to BBS
 #define EFLAG_NOHUP           0x0004        // don't check for hangup (UL event)
 #define EFLAG_COMIO           0x0008        // redirect IO to com port
-//#define EFLAG_NOPAUSE         0x0040        // UNUSED disable pause in remote
+//#define UNUSED_EFLAG_NOPAUSE         0x0040        // UNUSED disable pause in remote
 #define EFLAG_NETPROG         0x0080        // try running out of net dir first
-//#define EFLAG_TOPSCREEN       0x0100        // UNUSED leave topscreen as-is
+//#define UNUSED_EFLAG_TOPSCREEN       0x0100        // UNUSED leave topscreen as-is
 #define EFLAG_FOSSIL          0x0200        // Use Win32 Emulated FOSSIL
 
 ///////////////////////////////////////////////////////////////////////////////

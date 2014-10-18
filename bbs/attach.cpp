@@ -17,7 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include "bbs/wconstants.h"
+#include "bbs/wwiv.h"
 #include "core/wwivassert.h"
 
 void attach_file(int mode) {

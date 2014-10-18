@@ -292,9 +292,7 @@ void dirlist(int mode);
 
 // File: dropfile.cpp
 
-const std::string create_filename(int nDropFileType);
-const std::string create_chain_file();
-
+#include "bbs/dropfile.h"
 
 // File: dupphone.cpp
 
