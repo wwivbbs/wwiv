@@ -27,6 +27,7 @@
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wcomm.h"
+#include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
 #include "core/strings.h"

@@ -23,9 +23,11 @@
 
 #include "core/strings.h"
 
-#include "wcomm.h"
-#include "wsession.h"
-#include "wwiv.h"
+#include "bbs/dropfile.h"
+#include "bbs/wcomm.h"
+#include "bbs/wconstants.h"
+#include "bbs/wsession.h"
+#include "bbs/wwiv.h"
 
 const unsigned int GetTimeLeft();
 
