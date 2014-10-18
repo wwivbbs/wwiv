@@ -16,17 +16,57 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/dropfile.h"
 #include <algorithm>
 #include <memory>
 #include <string>
 
-#include "wwiv.h"
-#include "wcomm.h"
+#include "bbs/wwiv.h"
+#include "bbs/wcomm.h"
+#include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
 
 using std::string;
+
+struct pcboard_sys_rec {
+  char    display[2], printer[2], page_bell[2], alarm[2], sysop_next,
+          errcheck[2], graphics, nodechat, openbps[5], connectbps[5];
+
+  int16_t usernum;
+
+  char firstname[15], password[12];
+
+  int16_t time_on, prev_used;
+
+  char time_logged[5];
+
+  int16_t time_limit, down_limit;
+
+  char curconf, bitmap1[5], bitmap2[5];
+
+  int16_t time_added, time_credit;
+
+  char slanguage[4], name[25];
+
+  int16_t sminsleft;
+
+  char snodenum, seventtime[5], seventactive[2],
+       sslide[2], smemmsg[4], scomport, packflag, bpsflag;
+
+  // PCB 14.5 extra stuff
+  char ansi, lastevent[8];
+
+  int16_t lasteventmin;
+
+  char exittodos, eventupcoming;
+
+  int16_t lastconfarea;
+
+  char hconfbitmap;
+  // end PCB 14.5 additions
+};
 
 // Local functions
 int GetDoor32Emulation();

@@ -87,4 +87,17 @@
 #define LIST_USERS_MESSAGE_AREA     0
 #define LIST_USERS_FILE_AREA        1
 
+// Time
+#define SECONDS_PER_HOUR        3600L
+#define SECONDS_PER_HOUR_FLOAT      3600.0
+#define SECONDS_PER_DAY         86400L
+#define SECONDS_PER_DAY_FLOAT       86400.0
+#define HOURS_PER_DAY               24L
+#define HOURS_PER_DAY_FLOAT         24.0
+#define MINUTES_PER_HOUR            60L
+#define MINUTES_PER_HOUR_FLOAT      60.0
+#define SECONDS_PER_MINUTE          60L
+#define SECONDS_PER_MINUTE_FLOAT  60.0
+
+
 #endif // __INCLUDED_WCONSTANTS_H__

@@ -17,8 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "printfile.h"
+#include "bbs/wwiv.h"
+#include "bbs/printfile.h"
+#include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "bbs/keycodes.h"

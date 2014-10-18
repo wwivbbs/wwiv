@@ -25,10 +25,11 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#include "wwiv.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
-#include "printfile.h"
+#include "bbs/printfile.h"
+#include "bbs/xfer_common.h"
 
 // the archive type to use
 #define ARC_NUMBER 0

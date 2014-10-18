@@ -16,8 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "datetime.h"
-#include "wwiv.h"
+#include "bbs/datetime.h"
+#include "bbs/wconstants.h"
+#include "bbs/wwiv.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 

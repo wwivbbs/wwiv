@@ -17,10 +17,11 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
-#include "instmsg.h"
-#include "printfile.h"
-#include "wcomm.h"
+#include "bbs/wwiv.h"
+#include "bbs/instmsg.h"
+#include "bbs/printfile.h"
+#include "bbs/wcomm.h"
+#include "bbs/wconstants.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
