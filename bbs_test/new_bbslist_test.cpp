@@ -55,7 +55,7 @@ TEST_F(NewBbsListTest, SingleItem_NoAddress) {
   vector<unique_ptr<BbsListEntry>> entries;
   ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", &entries));
 
-  EXPECT_EQ(1, entries.size());
+  ASSERT_EQ(1, entries.size());
   EXPECT_STREQ("n1", entries[0]->name.c_str());
   EXPECT_STREQ("s1", entries[0]->software.c_str());
 }
