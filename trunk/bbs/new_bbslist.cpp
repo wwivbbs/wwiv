@@ -38,6 +38,7 @@
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/filewritestream.h>
+#include "rapidjson/prettywriter.h"
 #include <rapidjson/reader.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -45,6 +46,7 @@
 using rapidjson::Document;
 using rapidjson::FileReadStream;
 using rapidjson::FileWriteStream;
+using rapidjson::PrettyWriter;
 using rapidjson::StringRef;
 using rapidjson::Value;
 using rapidjson::Writer;
@@ -77,6 +79,36 @@ static string ConnectionTypeString(const ConnectionType t) {
   }
 }
 
+
+static void ParseAddresses(BbsListEntry* entry, const Value& addresses) {
+  if (!addresses.IsArray()) {
+    return;
+  }
+  for (int j=0; j < addresses.Size(); j++) {
+    const Value& address = addresses[j];
+    if (!address.IsObject()) {
+      continue;
+    }
+    ConnectionType type = ConnectionTypeFromString(address["type"].GetString());
+    entry->addresses[type] = address["address"].GetString();
+  }
+}
+
+static BbsListEntry* JsonValueToBbsListEntry(const Value& json_entry, int id) {
+  if (!json_entry.IsObject()) {
+    return nullptr;
+  }
+  BbsListEntry* bbs_entry = new BbsListEntry();
+  bbs_entry->id = id;
+  bbs_entry->name = json_entry["name"].GetString();
+  bbs_entry->software = json_entry["software"].GetString();
+  if (json_entry.HasMember("addresses")) {
+    const Value& addresses = json_entry["addresses"];
+    ParseAddresses(bbs_entry, addresses);
+  }
+  return bbs_entry;
+}
+
 bool LoadFromJSON(const string& dir, const string& filename, 
                   std::vector<std::unique_ptr<BbsListEntry>>* entries) {
   int id = 1;
@@ -103,34 +135,41 @@ bool LoadFromJSON(const string& dir, const string& filename,
     }
 
     for (int i=0; i<bbslist.Size(); i++) {
-      const Value& json_entry = bbslist[i];
-      if (!json_entry.IsObject()) {
-        continue;
-      }
-      unique_ptr<BbsListEntry> scoped_bbs_entry(new BbsListEntry());
-      scoped_bbs_entry->name = json_entry["name"].GetString();
-      scoped_bbs_entry->software = json_entry["software"].GetString();
-      // Get the raw pointer from the smart pointer, then release the smart pointer into
-      // the output once we are sure this entry is viable.
-      BbsListEntry* bbs_entry = scoped_bbs_entry.get();
-      bbs_entry->id = id++;
-      entries->emplace_back(scoped_bbs_entry.release());
-      if (!json_entry.HasMember("addresses")) {
-        continue;
-      }
-      const Value& addresses = json_entry["addresses"];
-      if (!addresses.IsArray()) {
-        continue;
-      }
-      for (int j=0; j < addresses.Size(); j++) {
-        const Value& address = addresses[j];
-        ConnectionType type = ConnectionTypeFromString(address["type"].GetString());
-        bbs_entry->addresses[type] = address["address"].GetString();
+      BbsListEntry* entry = JsonValueToBbsListEntry(bbslist[i], id++);
+      if (entry != nullptr) {
+        entries->emplace_back(entry);
       }
     }
   }
 
   return true;
+}
+
+static Value BbsListEntryToJsonValue(const BbsListEntry& entry, Document::AllocatorType& allocator) {
+  Value json_entry(rapidjson::kObjectType);
+  json_entry.AddMember("name", StringRef(entry.name.c_str()), allocator);
+  json_entry.AddMember("software", StringRef(entry.software.c_str()), allocator);
+  if (!entry.addresses.empty()) {
+    Value addresses_json_entry(rapidjson::kArrayType);
+    for (const auto& a : entry.addresses) {
+      Value address_json_entry(rapidjson::kObjectType);
+      const string type = ConnectionTypeString(a.first);
+
+      Value type_value(rapidjson::kStringType);
+      type_value.SetString(type.c_str(), allocator);
+      address_json_entry.AddMember("type", type_value.Move(), allocator);
+
+      Value address_value(rapidjson::kStringType);
+      address_value.SetString(a.second.c_str(), allocator);
+      address_json_entry.AddMember(StringRef("address"), address_value, allocator);
+      
+      addresses_json_entry.PushBack(address_json_entry.Move(), allocator);
+    }
+    json_entry.AddMember(StringRef("addresses"), addresses_json_entry, allocator);
+  }
+
+  // rapidjson supports C++11 move semantics.
+  return json_entry;
 }
 
 bool SaveToJSON(const string& dir, const string& filename, 
@@ -143,34 +182,18 @@ bool SaveToJSON(const string& dir, const string& filename,
     return false;
   }
 
+  Document::AllocatorType& allocator = document.GetAllocator();
   document.SetObject();
   Value bbs_list(rapidjson::kArrayType);
   for (const auto& e : entries) {
-    Value json_entry(rapidjson::kObjectType);
-    json_entry.AddMember("name", StringRef(e->name.c_str()), document.GetAllocator());
-    json_entry.AddMember("software", StringRef(e->software.c_str()), document.GetAllocator());
-    if (!e->addresses.empty()) {
-      Value addresses_json_entry(rapidjson::kArrayType);
-      for (const auto& a : e->addresses) {
-        Value address_json_entry(rapidjson::kObjectType);
-        const string type = ConnectionTypeString(a.first);
-        Value type_value(rapidjson::kStringType);
-        type_value.SetString(type.c_str(), document.GetAllocator());
-        address_json_entry.AddMember("type", type_value, document.GetAllocator());
-        Value address_value(rapidjson::kStringType);
-        address_value.SetString(a.second.c_str(), document.GetAllocator());
-        address_json_entry.AddMember("address", address_value, document.GetAllocator());
-        addresses_json_entry.PushBack(address_json_entry, document.GetAllocator());
-      }
-      json_entry.AddMember(StringRef("addresses"), addresses_json_entry, document.GetAllocator());
-    }
-    bbs_list.PushBack(json_entry, document.GetAllocator());
+    Value json_entry = BbsListEntryToJsonValue(*e, allocator);
+    bbs_list.PushBack(json_entry, allocator);
   }
-  document.AddMember("bbslist", bbs_list, document.GetAllocator());
+  document.AddMember("bbslist", bbs_list, allocator);
   
   char buf[8192];
   FileWriteStream stream(file.GetFILE(), buf, sizeof(buf));
-  Writer<FileWriteStream> writer(stream);
+  PrettyWriter<FileWriteStream> writer(stream);
   bool result = document.Accept(writer);
   stream.Flush();
   return result;
@@ -189,10 +212,10 @@ static char ShowBBSListMenuAndGetChoice() {
 }
 
 static bool ConvertLegacyList(
-    const string& dir, const string& filename, 
+    const string& dir, const string& legacy_filename, 
     std::vector<std::unique_ptr<BbsListEntry>>* entries) {
 
-  WTextFile legacy_file(dir, filename, "r");
+  WTextFile legacy_file(dir, legacy_filename, "r");
   if (!legacy_file.IsOpen()) {
     return false;
   }
@@ -209,8 +232,7 @@ static bool ConvertLegacyList(
     }
     unique_ptr<BbsListEntry> e(new BbsListEntry());
     string name = line.substr(14, 42);
-    StringTrimEnd(&name);
-    e->name = name;
+    e->name = StringTrimEnd(&name);
     e->addresses.insert(std::make_pair(ConnectionType::MODEM, line.substr(0, 12)));
     e->software = line.substr(74, 4);
     entries->emplace_back(e.release());
@@ -231,7 +253,7 @@ static void ReadBBSList() {
   LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
 
   if (entries.empty()) {
-    ConvertLegacyList(syscfg.datadir, BBSLIST_JSON, &entries);
+    ConvertLegacyList(syscfg.gfilesdir, BBSLIST_MSG, &entries);
     SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
   }
 
