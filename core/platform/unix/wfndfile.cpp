@@ -44,8 +44,9 @@ char *strip_filename(const char *pszFileName);
 bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
   char szFileName[MAX_PATH];
   char szDirectoryName[MAX_PATH];
-  char szFileSpec[MAX_PATH];
+  char szFileSpec[MAX_PATH+1];
   unsigned int i, f, laststar;
+  memset(szFileSpec, 0, MAX_PATH + 1);
 
   __open(filespec, nTypeMask);
   dos_flag = 0;
@@ -55,7 +56,7 @@ bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
 
   if (wwiv::strings::IsEquals(szFileName, "*.*")  ||
       wwiv::strings::IsEquals(szFileName, "*")) {
-    memset(szFileSpec, '?', 255);
+    memset(szFileSpec, '?', MAX_PATH);
   } else {
     f = laststar = szFileSpec[0] = 0;
     for (i = 0; i < strlen(szFileName); i++) {
@@ -79,27 +80,27 @@ bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
             break;
           }
           szFileSpec[f++] = '?';
-        } while (++i < 255);
+        } while (++i < MAX_PATH);
 
       } else {
         szFileSpec[f++] = szFileName[i];
       }
     }
 
-    if (strchr(szFileSpec, '.') == NULL && f < 255) {
-      memset(&szFileSpec[f], '?', 255 - f);
+    if (strchr(szFileSpec, '.') == NULL && f < MAX_PATH) {
+      memset(&szFileSpec[f], '?', MAX_PATH - f);
     }
 
     if (strstr(szFileName, ".*") != NULL && dos_flag) {
       memset(&szFileSpec[9], '?', 3);
     }
 
-    if (strlen(szFileSpec) < 255 && !dos_flag) {
-      memset(&szFileSpec[f], 32, 255 - f);
+    if (strlen(szFileSpec) < MAX_PATH && !dos_flag) {
+      memset(&szFileSpec[f], 32, MAX_PATH - f);
     }
 
   }
-  szFileSpec[255] = 0;
+  szFileSpec[MAX_PATH] = 0;
 
   if (dos_flag) {
     szFileSpec[12] = 0;
@@ -232,7 +233,7 @@ int fname_ok(const struct dirent *ent) {
   }
 
   if (!dos_flag) {
-    for (i = 0; i < 255 && ok; i++) {
+    for (i = 0; i < MAX_PATH && ok; i++) {
       if ((s1[i] != s2[i]) && (s1[i] != '?') && (s2[i] != '?')) {
         ok = 0;
       }
