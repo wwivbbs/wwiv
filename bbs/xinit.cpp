@@ -501,6 +501,12 @@ bool WApplication::ReadConfigOverlayFile(int instance_number, configrec* full_sy
   return true;
 }
 
+static char* DuplicatePath(const char* path) {
+  char* out = new char[MAX_PATH + 1];
+  strncpy(out, path, MAX_PATH);
+  return out;
+}
+
 bool WApplication::ReadConfig() {
   configrec full_syscfg;
 
@@ -555,12 +561,12 @@ bool WApplication::ReadConfig() {
   syscfg.newuserpw        = strdup(full_syscfg.newuserpw);
   syscfg.systempw         = strdup(full_syscfg.systempw);
 
-  syscfg.msgsdir          = strdup(full_syscfg.msgsdir);
-  syscfg.gfilesdir        = strdup(full_syscfg.gfilesdir);
-  syscfg.datadir          = strdup(full_syscfg.datadir);
-  syscfg.dloadsdir        = strdup(full_syscfg.dloadsdir);
-  syscfg.batchdir         = strdup(full_syscfg.batchdir);
-  syscfg.menudir          = strdup(full_syscfg.menudir);
+  syscfg.msgsdir          = DuplicatePath(full_syscfg.msgsdir);
+  syscfg.gfilesdir        = DuplicatePath(full_syscfg.gfilesdir);
+  syscfg.datadir          = DuplicatePath(full_syscfg.datadir);
+  syscfg.dloadsdir        = DuplicatePath(full_syscfg.dloadsdir);
+  syscfg.batchdir         = DuplicatePath(full_syscfg.batchdir);
+  syscfg.menudir          = DuplicatePath(full_syscfg.menudir);
 
   syscfg.systemname       = strdup(full_syscfg.systemname);
   syscfg.systemphone      = strdup(full_syscfg.systemphone);
@@ -614,7 +620,6 @@ bool WApplication::ReadConfig() {
 
   return true;
 }
-
 
 bool WApplication::SaveConfig() {
   WFile configFile(CONFIG_DAT);
