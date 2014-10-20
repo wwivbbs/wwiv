@@ -1072,7 +1072,7 @@ struct ext_desc_rec {
 #define SCAN_OPTION_READ_MESSAGE  2
 
 struct instancerec {
-  short
+  int16_t
   number, user;
   uint16_t
   flags, loc, subloc;
