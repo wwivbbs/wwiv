@@ -547,6 +547,7 @@ bool GetMenuDir(std::string& menuName) {
   while (!hangup) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#9(Enter=Quit, ?=List) Enter menuset to edit: |#0";
+
     input1(&menuName, 8, InputMode::FILENAME, true, true);
 
     if (menuName.empty()) {
