@@ -79,7 +79,6 @@ static string ConnectionTypeString(const ConnectionType t) {
   }
 }
 
-
 static void ParseAddresses(BbsListEntry* entry, const Value& addresses) {
   if (!addresses.IsArray()) {
     return;
@@ -127,13 +126,11 @@ bool LoadFromJSON(const string& dir, const string& filename,
   if (document.HasParseError()) {
     return false;
   }
-
   if (document.HasMember("bbslist")) {
     const Value& bbslist = document["bbslist"];
     if (!bbslist.IsArray()) {
       return false;
     }
-
     for (int i=0; i<bbslist.Size(); i++) {
       BbsListEntry* entry = JsonValueToBbsListEntry(bbslist[i], id++);
       if (entry != nullptr) {
@@ -141,7 +138,6 @@ bool LoadFromJSON(const string& dir, const string& filename,
       }
     }
   }
-
   return true;
 }
 
@@ -258,7 +254,8 @@ static void ReadBBSList() {
   }
 
   for (const auto& entry : entries) {
-    const string s = StringPrintf("|#9[|#1%-12s|#9] %-40.40s |#9(%s|#9)", 
+    const string s = StringPrintf("|#9%3d: [|#1%-12s|#9] %-40.40s |#9(%s|#9)",
+        entry->id,
         GetBbsListEntryAddress(entry.get()).c_str(),
         entry->name.c_str(), entry->software.c_str());
     GetSession()->bout << s << wwiv::endl;
@@ -343,7 +340,6 @@ void NewBBSList() {
       if (AddBBSListEntry(&entries)) {
         SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
       }
-
     } break;
     case 'R':
       ReadBBSList();
