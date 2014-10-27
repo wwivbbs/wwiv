@@ -254,7 +254,7 @@ static void DeleteBbsListEntry() {
   }
 
   ReadBBSList(entries);
-  GetSession()->bout << "Enter Entry Number to Delete: ";
+  GetSession()->bout << "|03Enter Entry Number to Delete: ";
   string s;
   input(&s, 4, true);
   int entry_num = atoi(s.c_str());
@@ -263,9 +263,10 @@ static void DeleteBbsListEntry() {
     return;
   }
 
-  for (vector<unique_ptr<BbsListEntry>>::iterator b = entries.begin(); b != entries.cend(); b++) {
+  for (auto b = entries.begin(); b != entries.end(); b++) {
     if (b->get()->id == entry_num) {
       entries.erase(b);
+      GetSession()->bout << "|10Entry deleted." << wwiv::endl;
       SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
       return;
     }
@@ -314,8 +315,7 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
     GetSession()->bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
     return false;
   }
-  GetSession()->bout << "|#3This number can be added! It is not yet in BBS list.\r\n\n\n"
-                      << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
+  GetSession()->bout << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
   unique_ptr<BbsListEntry> entry(new BbsListEntry());
   inputl(&entry->name, 50, true);
   GetSession()->bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
