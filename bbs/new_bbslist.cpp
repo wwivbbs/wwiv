@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/new_bbslist.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <iostream>
 #include <map>
@@ -83,7 +84,7 @@ static void ParseAddresses(BbsListEntry* entry, const Value& addresses) {
   if (!addresses.IsArray()) {
     return;
   }
-  for (int j=0; j < addresses.Size(); j++) {
+  for (size_t j=0; j < addresses.Size(); j++) {
     const Value& address = addresses[j];
     if (!address.IsObject()) {
       continue;
@@ -131,7 +132,7 @@ bool LoadFromJSON(const string& dir, const string& filename,
     if (!bbslist.IsArray()) {
       return false;
     }
-    for (int i=0; i<bbslist.Size(); i++) {
+    for (size_t i=0; i<bbslist.Size(); i++) {
       BbsListEntry* entry = JsonValueToBbsListEntry(bbslist[i], id++);
       if (entry != nullptr) {
         entries->emplace_back(entry);
@@ -195,18 +196,6 @@ bool SaveToJSON(const string& dir, const string& filename,
   return result;
 }
 
-static char ShowBBSListMenuAndGetChoice() {
-  GetSession()->bout.NewLine();
-  if (so()) {
-    GetSession()->bout <<
-                       "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
-    return onek("QRNAD");
-  } else {
-    GetSession()->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
-    return onek("QRNA");
-  }
-}
-
 static bool ConvertLegacyList(
     const string& dir, const string& legacy_filename, 
     std::vector<std::unique_ptr<BbsListEntry>>* entries) {
@@ -244,21 +233,42 @@ static string GetBbsListEntryAddress(const BbsListEntry* entry) {
   return addresses.begin()->second;
 }
 
-static void ReadBBSList() {
-  vector<unique_ptr<BbsListEntry>> entries;
-  LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
-
-  if (entries.empty()) {
-    ConvertLegacyList(syscfg.gfilesdir, BBSLIST_MSG, &entries);
-    SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
-  }
-
+static void ReadBBSList(const vector<unique_ptr<BbsListEntry>>& entries) {
   for (const auto& entry : entries) {
     const string s = StringPrintf("|#9%3d: [|#1%-12s|#9] %-40.40s |#9(%s|#9)",
         entry->id,
         GetBbsListEntryAddress(entry.get()).c_str(),
         entry->name.c_str(), entry->software.c_str());
     GetSession()->bout << s << wwiv::endl;
+  }
+}
+
+static void DeleteBbsListEntry() {
+  vector<unique_ptr<BbsListEntry>> entries;
+  LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
+
+  if (entries.empty()) {
+    GetSession()->bout << "|12You can not delete an entry when the list is empty." << wwiv::endl;
+    pausescr();
+    return;
+  }
+
+  ReadBBSList(entries);
+  GetSession()->bout << "Enter Entry Number to Delete: ";
+  string s;
+  input(&s, 4, true);
+  int entry_num = atoi(s.c_str());
+  if (entry_num <= 0) {
+    // atoi returns a 0 on "" too.
+    return;
+  }
+
+  for (vector<unique_ptr<BbsListEntry>>::iterator b = entries.begin(); b != entries.cend(); b++) {
+    if (b->get()->id == entry_num) {
+      entries.erase(b);
+      SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
+      return;
+    }
   }
 }
 
@@ -322,6 +332,18 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
   return false;
 }
 
+static char ShowBBSListMenuAndGetChoice() {
+  GetSession()->bout.NewLine();
+  if (so()) {
+    GetSession()->bout <<
+                       "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
+    return onek("QRNAD");
+  } else {
+    GetSession()->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
+    return onek("QRNA");
+  }
+}
+
 void NewBBSList() {
   bool done = false;
   while (!done) {
@@ -341,12 +363,21 @@ void NewBBSList() {
         SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
       }
     } break;
-    case 'R':
-      ReadBBSList();
-      break;
+    case 'D': {
+      DeleteBbsListEntry();
+    } break;
     case 'N':
       print_net_listing(false);
       break;
+    case 'R': {
+      vector<unique_ptr<BbsListEntry>> entries;
+      LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
+      if (entries.empty()) {
+        ConvertLegacyList(syscfg.gfilesdir, BBSLIST_MSG, &entries);
+        SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
+      }
+      ReadBBSList(entries);
+    } break;
     case 'Q': return;
     }
   }
