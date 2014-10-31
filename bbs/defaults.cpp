@@ -117,7 +117,7 @@ static string GetMailBoxStatus() {
 void print_cur_stat() {
   char s1[255], s2[255];
   GetSession()->bout.ClearScreen();
-  GetSession()->bout << "|#5Your Preferences\r\n\n";
+  GetSession()->bout.DisplayLiteBar("[ Your Preferences ]");
   sprintf(s1, "|#11|#9) Screen size       : |#2%d X %d", GetSession()->GetCurrentUser()->GetScreenChars(),
           GetSession()->GetCurrentUser()->GetScreenLines());
   sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->HasAnsi() ?
