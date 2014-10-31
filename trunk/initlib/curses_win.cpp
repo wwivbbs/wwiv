@@ -75,6 +75,15 @@ void CursesWindow::SetTitle(const std::string& title) {
   SetColor(saved_scheme);
 }
 
+int CursesWindow::GetChar() const {
+  for (;;) {
+    int ch = wgetch(window_);
+    if (ch != ERR) {
+      return ch;
+    }
+  }
+}
+
 void CursesWindow::GotoXY(int x, int y) {
   x = std::max<int>(x, 0);
   x = std::min<int>(x, GetMaxX());
