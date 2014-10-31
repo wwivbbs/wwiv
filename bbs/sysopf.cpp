@@ -687,7 +687,7 @@ void mailr() {
         do {
           WUser user;
           GetApplication()->GetUserManager()->ReadUser(&user, m.touser);
-          GetSession()->bout << "|#1  To|#7: |#" << GetSession()->GetMessageColor() << user.GetUserNameAndNumber(
+          GetSession()->bout << "|#9  To|#7: |#" << GetSession()->GetMessageColor() << user.GetUserNameAndNumber(
                                m.touser) << wwiv::endl;
           int tp = 80;
           int nn = 0;
@@ -705,7 +705,7 @@ void mailr() {
             nn = 0;
           }
           set_net_num(nn);
-          GetSession()->bout << "|#1Subj|#7: |#" << GetSession()->GetMessageColor() << m.title << wwiv::endl;
+          GetSession()->bout << "|#9Subj|#7: |#" << GetSession()->GetMessageColor() << m.title << wwiv::endl;
           if (m.status & status_file) {
             WFile attachDat(syscfg.datadir, ATTACH_DAT);
             if (attachDat.Open(WFile::modeReadOnly | WFile::modeBinary)) {
@@ -713,7 +713,7 @@ void mailr() {
               long lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
               while (lAttachFileSize > 0 && !found) {
                 if (m.daten == static_cast<unsigned long>(fsr.id)) {
-                  GetSession()->bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
+                  GetSession()->bout << "|#9Filename.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
                   found = true;
                 }
                 if (!found) {
