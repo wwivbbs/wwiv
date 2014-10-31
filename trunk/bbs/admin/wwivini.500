@@ -140,7 +140,7 @@ TOPCOLOR               = 27                 ; for topscreen info
 F1COLOR                = 9                  ; for F1 user editor
 EDITLINECOLOR          = 31                 ; current field in F1
 CHATSELCOLOR           = 11                 ; for selecting sysop
-MSG_COLOR              = 3                  ; for color msgs
+MSG_COLOR              = 2                  ; for color msgs
 ;
 ;=============================================================================
 ;                          EXTERNAL PROGRAM OPTIONS

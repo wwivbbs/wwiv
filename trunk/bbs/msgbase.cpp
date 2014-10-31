@@ -1045,55 +1045,55 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
     if (syscfg.sysconfig & sysconfig_enable_mci) {
       g_flags &= ~g_flag_disable_mci;
     }
-    osan("|#1Name|#7: ", &abort, next);
+    osan("|#9Name|#7: ", &abort, next);
     plan(GetSession()->GetMessageColor(), strName, &abort, next);
     strcpy(irt_name, strName.c_str());
-    osan("|#1Date|#7: ", &abort, next);
+    osan("|#9Date|#7: ", &abort, next);
     plan(GetSession()->GetMessageColor(), strDate, &abort, next);
     if (!origin_str.empty()) {
       if (strName[1] == '`') {
-        osan("|#1Gated From|#7: ", &abort, next);
+        osan("|#9Gated From|#7: ", &abort, next);
       } else {
-        osan("|#1From|#7: ", &abort, next);
+        osan("|#9From|#7: ", &abort, next);
       }
       plan(GetSession()->GetMessageColor(), origin_str, &abort, next);
     }
     if (!origin_str2.empty()) {
-      osan("|#1Loc|#7:  ", &abort, next);
+      osan("|#9Loc|#7:  ", &abort, next);
       plan(GetSession()->GetMessageColor(), origin_str2, &abort, next);
     }
     break;
   case anony_sender:
     if (readit) {
-      osan("|#1Name|#7: ", &abort, next);
+      osan("|#9Name|#7: ", &abort, next);
       stringstream toName;
       toName << "<<< " << strName << " >>>";
       plan(GetSession()->GetMessageColor(), toName.str(), &abort, next);
-      osan("|#1Date|#7: ", &abort, next);
+      osan("|#9Date|#7: ", &abort, next);
       plan(GetSession()->GetMessageColor(), strDate, &abort, next);
     } else {
-      osan("|#1Name|#7: ", &abort, next);
+      osan("|#9Name|#7: ", &abort, next);
       plan(GetSession()->GetMessageColor(), ">UNKNOWN<", &abort, next);
-      osan("|#1Date|#7: ", &abort, next);
+      osan("|#9Date|#7: ", &abort, next);
       plan(GetSession()->GetMessageColor(), ">UNKNOWN<", &abort, next);
     }
     break;
   case anony_sender_da:
   case anony_sender_pp:
     if (an == anony_sender_da) {
-      osan("|#1Name|#7: ", &abort, next);
+      osan("|#9Name|#7: ", &abort, next);
       plan(GetSession()->GetMessageColor(), "Abby", &abort, next);
     } else {
-      osan("|#1Name|#7: ", &abort, next);
+      osan("|#9Name|#7: ", &abort, next);
       plan(GetSession()->GetMessageColor(), "Problemed Person", &abort, next);
     }
     if (readit) {
-      osan("|#1Name|#7: ", &abort, next);
+      osan("|#9Name|#7: ", &abort, next);
       plan(GetSession()->GetMessageColor(), strName, &abort, next);
-      osan("|#1Date|#7: ", &abort, next);
+      osan("|#9Date|#7: ", &abort, next);
       plan(GetSession()->GetMessageColor(), strDate, &abort, next);
     } else {
-      osan("|#1Date|#7: ", &abort, next);
+      osan("|#9Date|#7: ", &abort, next);
       plan(GetSession()->GetMessageColor(), ">UNKNOWN<", &abort, next);
     }
     break;
@@ -1243,11 +1243,10 @@ void read_message(int n, bool *next, int *val) {
     GetSession()->bout << "|#4   FORCED SCAN OF SYSOP INFORMATION - YOU MAY NOT ABORT.  PLEASE READ THESE!  |#0\r\n";
   }
 
-  string subjectLine;
-  GetSession()->bout.WriteFormatted(" |#1Msg|#7: [|#2%u|#7/|#2%lu|#7]|#%d %s\r\n", n,
+  GetSession()->bout.WriteFormatted(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d |#2%s\r\n", n,
                                     GetSession()->GetNumMessagesInCurrentMessageArea(), GetSession()->GetMessageColor(),
                                     subboards[GetSession()->GetCurrentReadMessageArea()].name);
-  subjectLine = "|#1Subj|#7: ";
+  const string subjectLine = "|#9Subj|#7: ";
   osan(subjectLine, &abort, next);
   GetSession()->bout.Color(GetSession()->GetMessageColor());
   postrec p = *get_post(n);
@@ -1264,11 +1263,11 @@ void read_message(int n, bool *next, int *val) {
   irt_name[0] = '\0';
   plan(GetSession()->GetMessageColor(), irt, &abort, next);
   if ((p.status & status_no_delete) && lcs()) {
-    osan("|#1Info|#7: ", &abort, next);
+    osan("|#9Info|#7: ", &abort, next);
     plan(GetSession()->GetMessageColor(), "Permanent Message", &abort, next);
   }
   if ((p.status & status_pending_net) && GetSession()->GetCurrentUser()->GetSl() > syscfg.newusersl) {
-    osan("|#1Val|#7:  ", &abort, next);
+    osan("|#9Val|#7:  ", &abort, next);
     plan(GetSession()->GetMessageColor(), "Not Network Validated", &abort, next);
     *val |= 2;
   }

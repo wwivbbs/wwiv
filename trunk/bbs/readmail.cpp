@@ -524,9 +524,9 @@ void readmail(int mode) {
   do {
     abort = false;
     GetSession()->bout.NewLine(2);
-    sprintf(s, "|#1Msg|#7:  [|#2%u|#7/|#2%d|#7] |#%dE-Mail\r\n", curmail + 1, mw, GetSession()->GetMessageColor());
+    sprintf(s, "|#9Msg|#7:  [|#2%u|#7/|#2%d|#7] |#%dE-Mail\r\n", curmail + 1, mw, GetSession()->GetMessageColor());
     osan(s, &abort, &next);
-    sprintf(s, "|#1Subj|#7: ");
+    sprintf(s, "|#9Subj|#7: ");
     osan(s, &abort, &next);
     next = false;
     GetSession()->bout.Color(GetSession()->GetMessageColor());
