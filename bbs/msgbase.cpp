@@ -1066,9 +1066,8 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   case anony_sender:
     if (readit) {
       osan("|#9Name|#7: ", &abort, next);
-      stringstream toName;
-      toName << "<<< " << strName << " >>>";
-      plan(GetSession()->GetMessageColor(), toName.str(), &abort, next);
+      string toName = StrCat("<<< ", strName, " >>>");
+      plan(GetSession()->GetMessageColor(), toName, &abort, next);
       osan("|#9Date|#7: ", &abort, next);
       plan(GetSession()->GetMessageColor(), strDate, &abort, next);
     } else {
