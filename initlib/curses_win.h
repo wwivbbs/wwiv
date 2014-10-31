@@ -50,7 +50,7 @@ class CursesWindow {
   int GetcurY() const { return getcury(window_); }
   int Clear() { return wclear(window_); }
   int Erase() { return werase(window_); }
-  int GetChar() const { return wgetch(window_); }
+  int GetChar() const;
   int AttrSet(chtype attrs) { return wattrset(window_, attrs); }
   int Keypad(bool b) { return keypad(window_, b); }
   int GetMaxX() const { return getmaxx(window_); }
