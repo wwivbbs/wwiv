@@ -3,45 +3,13 @@
               Copyright 2002-2014 WWIV Software Services
 ==============================================================================
 
-
-GENERAL INFORMATION:
-
-    WWIV 5.0 is built with the following compilers:
-        MS Visual C++ 2013.
-
-    I recommend using MSVC 2013. (Since there is a the "express" edition
-    available for free.
-    
-    The command line parameters have changed quite a bit, I suggest
-    running "WWIV50 -? | MORE" to see the list of changes.  Currently
-    WWIV50 is command line compatable with EleBBS (for all of the
-    major command line arguments)
-
-    So far, WWIV 5.0 is still fully compatable with your existing WWIV 4.30
-    installation (Just drop it in and go).
-
-    If you run a local node (i.e. -M) then WWIVnet callouts will still occur,
-    (this is due to the fact that many use the PPP Project that that is not
-    affected by Serial Communications for the node.  There is a bool setting
-    at the top of BBS.CPP which you can set to false to disable this feature)
-
-    Another note: If you want to use the FOSSIL emulation (thanks to Rob from
-    Synchronet for the VXD/VDD and also tons of help using it), you MUST
-    get the WWIVSYNC.ZIP and unzip it into your WWIV50 directory.
-
-
-
-                       *** Attention XP Users ***
-   
-    You need to download the Visual Studio 2013 redistributable files from:
-    http://www.microsoft.com/en-us/download/details.aspx?id=40784
-    and install this package before using WWIV (or any other software
-    compiled with Visual Studio 2013).
+This is the legacy changelog.  More recent changes can be found from the
+subversion commit log.
 
 ==============================================================================
 
 LABEL: WWIV-5_0_62
-DATE:  02/??/2014
+DATE:  February 2014
 
 Rushfan - Created start of a cmake makefile. It build bbs on mac and linux so far.
 WSS     - Fixed XY locations of line when editing system event in Event Editor.
