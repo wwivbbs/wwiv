@@ -78,9 +78,10 @@ void CursesWindow::SetTitle(const std::string& title) {
 int CursesWindow::GetChar() const {
   for (;;) {
     int ch = wgetch(window_);
-    if (ch != ERR) {
-      return ch;
+    if (ch == ERR || ch == KEY_RESIZE) {
+      continue;
     }
+    return ch;
   }
 }
 
