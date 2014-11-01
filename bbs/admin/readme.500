@@ -1,12 +1,26 @@
 readme.500
 09/10/2014
 
+                *** Attention XP and Windows 10 Users ***
+
+    You need to download the Visual Studio 2013 redistributable files from:
+    http://www.microsoft.com/en-us/download/details.aspx?id=40784
+    and install this package before using WWIV (or any other software
+    compiled with Visual Studio 2013).
+
 
 WWIV 5.0 Getting Started
-========================
+~~~~~~~~~~~~~~~~~~~~~~~~
 If you already have WWIV 5.0 installed, just copy the EXE and DLL files over
-your existing 4.30 installation. (please backup your previous binaries and
-configuration files)
+your existing 4.30 installation. Please backup your previous binaries and
+configuration files.
+
+The command line parameters have changed quite a bit, I suggest running
+"WWIV50 -? | MORE" to see the list of changes.  Currently WWIV50 is command
+line compatable with EleBBS (for all of the major command line arguments)
+
+So far, WWIV 5.0 is still fully compatable with your existing WWIV 4.30
+installation (Just drop it in and go).
 
 Run WWIV5TelnetServer.exe and then select the menu Edit > Preferences and setup
 the information for your configuration (paths, and the starting and ending
@@ -18,20 +32,17 @@ at all times, as the WTS will spawn them as required.
 *** Be sure to read WHATSNEW.TXT for a list of all the new major features and
 other changes that have happened since 4.30. ***
 
-NOTE: Serial I/O Support does not work.  Use one of the serial -> telnet
+NOTE: Serial I/O Support has been removed. Use one of the serial -> telnet
 bridges for "Dial Up" support.
 
+DEVELOPMENT INFORMATION
+~~~~~~~~~~~~~~~~~~~~~~~
 
-File List
-=========
-dosxtrn.exe             - FOSSIL support from Synchronet BBS
-file_id.diz             - Description
-init.exe                - Win32 Console Mode INIT
-license.agr             - License Agreement
-sbbsexec.dll            - FOSSIL support from Synchronet BBS
-whatsnew.txt            - New Feature List in WWIV 5.0
-bbs.exe                 - Win32 Replacement for bbs.exe
-WWIV5TelnetServer.exe   - WWIV Telnet Server main executable
+    WWIV is compiled with the following compilers:
+        MS Visual C++ 2013.
+
+    I recommend using MSVC 2013. (There is a the "express" edition
+    available for free.
 
 
 ===============================================================================
