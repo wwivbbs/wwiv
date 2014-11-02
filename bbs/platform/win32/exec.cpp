@@ -65,13 +65,13 @@ static string GetSyncFosTempFilePath() {
   return StrCat(syscfgovr.tempdir, "WWIVSYNC.ENV");
 }
 
-static const std::string GetDosXtrnPath() {
+static const string GetDosXtrnPath() {
   std::stringstream sstream;
   sstream << GetApplication()->GetHomeDir() << "DOSXTRN.EXE";
-  return std::string(sstream.str());
+  return string(sstream.str());
 }
 
-static void CreateSyncFosCommandLine(std::string *out, const std::string& tempFilePath, int nSyncMode) {
+static void CreateSyncFosCommandLine(string *out, const string& tempFilePath, int nSyncMode) {
   std::stringstream sstream;
   sstream << GetDosXtrnPath() << " " << tempFilePath << " " << "NT" << " ";
   sstream << GetApplication()->GetInstanceNumber() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
@@ -80,7 +80,7 @@ static void CreateSyncFosCommandLine(std::string *out, const std::string& tempFi
 
 // returns true if the file is deleted.
 static bool DeleteSyncTempFile() {
-  const std::string tempFileName = GetSyncFosTempFilePath();
+  const string tempFileName = GetSyncFosTempFilePath();
   if (WFile::Exists(tempFileName)) {
     WFile::Remove(tempFileName);
     return true;
@@ -88,7 +88,7 @@ static bool DeleteSyncTempFile() {
   return false;
 }
 
-static bool CreateSyncTempFile(std::string *out, const std::string commandLine) {
+static bool CreateSyncTempFile(string *out, const string commandLine) {
   out->assign(GetSyncFosTempFilePath());
   DeleteSyncTempFile();
 
@@ -281,14 +281,14 @@ bool ExpandWWIVHeartCodes(char *pszBuffer) {
 
 //  Main code that launches external programs and handle sbbsexec support
 
-int ExecExternalProgram(const std::string commandLine, int flags) {
+int ExecExternalProgram(const string commandLine, int flags) {
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
 
   ZeroMemory(&si, sizeof(si));
   si.cb = sizeof(si);
   ZeroMemory(&pi, sizeof(pi));
-  std::string workingCommandLine;
+  string workingCommandLine;
 
   bool bShouldUseSync = false;
   bool bUsingSync = false;
@@ -304,7 +304,7 @@ int ExecExternalProgram(const std::string commandLine, int flags) {
   }
 
   if (bShouldUseSync) {
-    std::string syncFosTempFile;
+    string syncFosTempFile;
     if (!CreateSyncTempFile(&syncFosTempFile, commandLine)) {
       return -1;
     }

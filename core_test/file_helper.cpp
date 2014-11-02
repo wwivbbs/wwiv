@@ -48,13 +48,13 @@ FileHelper::FileHelper() {
   tmp_ = FileHelper::CreateTempDir(dir);
 }
 
-const std::string FileHelper::DirName(const std::string& name) const {
+const string FileHelper::DirName(const string& name) const {
     return wwiv::strings::StringPrintf("%s%c%s%c", tmp_.c_str(), 
         WFile::pathSeparatorChar, name.c_str(), WFile::pathSeparatorChar);
 }
 
-bool FileHelper::Mkdir(const std::string& name) const {
-    const std::string path = DirName(name); 
+bool FileHelper::Mkdir(const string& name) const {
+    const string path = DirName(name); 
 #ifdef _WIN32
     return CreateDirectory(path.c_str(), nullptr) ? true : false;
 #else
@@ -63,7 +63,7 @@ bool FileHelper::Mkdir(const std::string& name) const {
 }
 
 // static
-std::string FileHelper::CreateTempDir(const string base) {
+string FileHelper::CreateTempDir(const string base) {
 #ifdef _WIN32
     char local_dir_template[_MAX_PATH];
     char temp_path[_MAX_PATH];
@@ -73,18 +73,18 @@ std::string FileHelper::CreateTempDir(const string base) {
     if (!CreateDirectory(local_dir_template, nullptr)) {
         return string();
     }
-    return std::string(local_dir_template);
+    return string(local_dir_template);
 #else
     char local_dir_template[MAX_PATH];
     static const char kTemplate[] = "/tmp/fileXXXXXX";
     strcpy(local_dir_template, kTemplate);
     char *result = mkdtemp(local_dir_template);
-    return std::string(result);
+    return string(result);
 #endif
 }
 
 FILE* FileHelper::OpenTempFile(const string& orig_name, string* path) {
-    std::string tmp = TempDir();
+    string tmp = TempDir();
     string name = orig_name;
 #ifdef _WIN32
     std::replace(name.begin(), name.end(), '/', WFile::pathSeparatorChar);
@@ -96,8 +96,8 @@ FILE* FileHelper::OpenTempFile(const string& orig_name, string* path) {
     return file;
 }
 
-std::string FileHelper::CreateTempFile(const std::string& orig_name, const std::string& contents) {
-  std::string path;
+string FileHelper::CreateTempFile(const string& orig_name, const string& contents) {
+  string path;
   FILE* file = OpenTempFile(orig_name, &path);
   assert(file);
   fputs(contents.c_str(), file);
@@ -105,7 +105,7 @@ std::string FileHelper::CreateTempFile(const std::string& orig_name, const std::
   return path;
 }
 
-const std::string FileHelper::ReadFile(const std::string name) const {
+const string FileHelper::ReadFile(const string name) const {
   std::FILE *fp = fopen(name.c_str(), "rt");
   if (!fp) {
     throw (errno);

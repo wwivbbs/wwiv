@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <string>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -57,11 +58,7 @@ using namespace wwiv::strings;
 
 
 //////////////////////////////////////////////////////////////////////////////
-//
 // Implementation
-//
-//
-//
 
 // Shows listing of files currently in batch queue(s), both upload and
 // download. Shows estimated time, by item, for files in the d/l queue.
@@ -296,14 +293,13 @@ void zmbatchdl(bool bHangupAfterDl) {
     return;
   }
 
-  char szMessage[ 255 ];
-  sprintf(szMessage, "ZModem Download: Files - %d Time - %s", GetSession()->numbatchdl, ctim(batchtime));
+  string message = StringPrintf("ZModem Download: Files - %d Time - %s", GetSession()->numbatchdl, ctim(batchtime));
   if (bHangupAfterDl) {
-    strcat(szMessage, ", HAD");
+    message += ", HAD";
   }
-  sysoplog(szMessage);
+  sysoplog(message);
   GetSession()->bout.NewLine();
-  GetSession()->bout << szMessage;
+  GetSession()->bout << message;
   GetSession()->bout.NewLine(2);
 
   bool bRatioBad = false;
@@ -326,8 +322,8 @@ void zmbatchdl(bool bHangupAfterDl) {
       if (nRecordNumber <= 0) {
         delbatch(cur);
       } else {
-        sprintf(szMessage, "Files left - %d, Time left - %s\r\n", GetSession()->numbatchdl, ctim(batchtime));
-        GetSession()->localIO()->LocalPuts(szMessage);
+        const string message = StringPrintf("Files left - %d, Time left - %s\r\n", GetSession()->numbatchdl, ctim(batchtime));
+        GetSession()->localIO()->LocalPuts(message);
         WFile file(g_szDownloadFileName);
         file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
@@ -375,14 +371,13 @@ void ymbatchdl(bool bHangupAfterDl) {
   if (!incom) {
     return;
   }
-  char szMessage[ 255 ];
-  sprintf(szMessage, "Ymodem Download: Files - %d, Time - %s", GetSession()->numbatchdl, ctim(batchtime));
+  string message = StringPrintf("Ymodem Download: Files - %d, Time - %s", GetSession()->numbatchdl, ctim(batchtime));
   if (bHangupAfterDl) {
-    strcat(szMessage, ", HAD");
+    message += ", HAD";
   }
-  sysoplog(szMessage);
+  sysoplog(message);
   GetSession()->bout.NewLine();
-  GetSession()->bout << szMessage;
+  GetSession()->bout << message;
   GetSession()->bout.NewLine(2);
 
   bool bRatioBad = false;
@@ -405,8 +400,8 @@ void ymbatchdl(bool bHangupAfterDl) {
       if (nRecordNumber <= 0) {
         delbatch(cur);
       } else {
-        sprintf(szMessage, "Files left - %d, Time left - %s\r\n", GetSession()->numbatchdl, ctim(batchtime));
-        GetSession()->localIO()->LocalPuts(szMessage);
+        const string message = StringPrintf("Files left - %d, Time left - %s\r\n", GetSession()->numbatchdl, ctim(batchtime));
+        GetSession()->localIO()->LocalPuts(message);
         WFile file(g_szDownloadFileName);
         file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
@@ -601,20 +596,19 @@ void run_cmd(char *pszCommandLine, const char *downlist, const char *uplist, con
     sprintf(sx1, "%d", nSpeed);
   }
 
-  nSpeed = std::min< int >(modem_speed, 57600);
+  nSpeed = std::min<int>(modem_speed, 57600);
   sprintf(sx3, "%d", nSpeed);
   sprintf(sx2, "%d", syscfgovr.primaryport);
 
-  std::string commandLine = stuff_in(pszCommandLine, sx1, sx2, downlist, sx3, uplist);
+  string commandLine = stuff_in(pszCommandLine, sx1, sx2, downlist, sx3, uplist);
   if (!commandLine.empty()) {
     WWIV_make_abs_cmd(GetApplication()->GetHomeDir(), &commandLine);
     GetSession()->localIO()->LocalCls();
-    char szMessage[ 1024 ];
-    sprintf(szMessage,
-            "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
-            GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum),
-            modem_speed, dl, commandLine.c_str());
-    GetSession()->localIO()->LocalPuts(szMessage);
+    const string message = StringPrintf(
+        "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
+        GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum),
+        modem_speed, dl, commandLine.c_str());
+    GetSession()->localIO()->LocalPuts(message);
     if (incom) {
       WFile::SetFilePermissions(g_szDSZLogFileName, WFile::permReadWrite);
       WFile::Remove(g_szDSZLogFileName);

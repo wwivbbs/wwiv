@@ -393,25 +393,25 @@ void WLocalIO::LocalPutch(unsigned char ch) {
   }
 }
 
-void WLocalIO::LocalPuts(const char *pszText) {
-// This (obviously) outputs a string TO THE SCREEN ONLY
-  while (*pszText) {
-    LocalPutch(*pszText++);
+// Outputs a string to the local screen.
+void WLocalIO::LocalPuts(const string& text) {
+  for (char ch : text) {
+    LocalPutch(ch);
   }
 }
 
-void WLocalIO::LocalXYPuts(int x, int y, const char *pszText) {
+void WLocalIO::LocalXYPuts(int x, int y, const string& text) {
   LocalGotoXY(x, y);
-  LocalFastPuts(pszText);
+  LocalFastPuts(text);
 }
 
-void WLocalIO::LocalFastPuts(const char *pszText) {
+void WLocalIO::LocalFastPuts(const string& text) {
 // This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
   DWORD cb = 0;
-  int len = strlen(pszText);
+  int len = text.length();
 
   SetConsoleTextAttribute(m_hConOut, static_cast< short >(curatr));
-  WriteConsole(m_hConOut, pszText, len, &cb, nullptr);
+  WriteConsole(m_hConOut, text.c_str(), len, &cb, nullptr);
   m_cursorPosition.X = m_cursorPosition.X + static_cast< short >(cb);
 }
 
@@ -734,33 +734,33 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
 
   if (GetSession()->topdata) {
     if (GetSession()->using_modem && !incom) {
-      LocalXYPuts(1, nLineNumber, top_screen_items[0].c_str());
+      LocalXYPuts(1, nLineNumber, top_screen_items[0]);
       for (std::string::size_type i = 19; i < GetSession()->GetCurrentSpeed().length(); i++) {
         LocalPutch(static_cast<unsigned char>('\xCD'));
       }
     } else {
-      LocalXYPuts(1, nLineNumber, GetSession()->GetCurrentSpeed().c_str());
+      LocalXYPuts(1, nLineNumber, GetSession()->GetCurrentSpeed());
       for (int i = WhereX(); i < 23; i++) {
         LocalPutch(static_cast<unsigned char>('\xCD'));
       }
     }
 
     if (GetSession()->GetCurrentUser()->GetSl() != 255 && GetSession()->GetEffectiveSl() == 255) {
-      LocalXYPuts(23, nLineNumber, top_screen_items[1].c_str());
+      LocalXYPuts(23, nLineNumber, top_screen_items[1]);
     }
     if (fileGlobalCap.IsOpen()) {
-      LocalXYPuts(40, nLineNumber, top_screen_items[2].c_str());
+      LocalXYPuts(40, nLineNumber, top_screen_items[2]);
     }
     if (GetSysopAlert()) {
-      LocalXYPuts(54, nLineNumber, top_screen_items[3].c_str());
+      LocalXYPuts(54, nLineNumber, top_screen_items[3]);
     } else {
-      LocalXYPuts(54, nLineNumber, top_screen_items[4].c_str());
+      LocalXYPuts(54, nLineNumber, top_screen_items[4]);
     }
 
     if (sysop1()) {
-      LocalXYPuts(64, nLineNumber, top_screen_items[5].c_str());
+      LocalXYPuts(64, nLineNumber, top_screen_items[5]);
     } else {
-      LocalXYPuts(64, nLineNumber, top_screen_items[6].c_str());
+      LocalXYPuts(64, nLineNumber, top_screen_items[6]);
     }
   }
   switch (GetSession()->topdata) {
@@ -923,7 +923,7 @@ void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstan
                   ctypes(pSession->GetCurrentUser()->GetComputerType()), fwaiting);
 
     if (chatcall) {
-      LocalXYPuts(0, 4, m_chatReason.c_str());
+      LocalXYPuts(0, 4, m_chatReason);
     }
   }
   break;
@@ -1149,7 +1149,7 @@ bool HasKeyBeenPressed(HANDLE in) {
 
   DWORD actually_read;
   if (PeekConsoleInput(in, input.get(), num_events, &actually_read)) {
-    for (int i = 0; i < actually_read; i++) {
+    for (DWORD i = 0; i < actually_read; i++) {
       if (input[i].EventType != KEY_EVENT) {
         continue;
       }

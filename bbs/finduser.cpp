@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "wconstants.h"
 #include "sdk/filenames.h"
@@ -50,7 +51,7 @@ using std::string;
 //  -3      = Remote Command
 //  -4      = Unknown Special Login
 //
-int finduser(const std::string searchString) {
+int finduser(const string searchString) {
   WUser user;
 
   guest_user = false;

@@ -175,9 +175,9 @@ class WLocalIO {
   void LocalBackspace();
   void LocalPutchRaw(unsigned char ch);
   virtual void LocalPutch(unsigned char ch);
-  void LocalPuts(const char *pszText);
-  void LocalXYPuts(int x, int y, const char *pszText);
-  void LocalFastPuts(const char *pszText);
+  void LocalPuts(const std::string& text);
+  void LocalXYPuts(int x, int y, const std::string& text);
+  void LocalFastPuts(const std::string &text);
   int  LocalPrintf(const char *pszFormattedText, ...);
   int  LocalXYPrintf(int x, int y, const char *pszFormattedText, ...);
   int  LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...);

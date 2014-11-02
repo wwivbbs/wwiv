@@ -41,15 +41,17 @@
 #include <unistd.h>
 #endif  // _WIN32
 
+using std::string;
+
 const int WTextFile::WAIT_TIME = 10;
 const int WTextFile::TRIES = 100;
 
-WTextFile::WTextFile(const std::string& fileName, const std::string& fileMode) {
+WTextFile::WTextFile(const string& fileName, const string& fileMode) {
   Open(fileName, fileMode);
 }
 
-WTextFile::WTextFile(const std::string& directoryName, const std::string& fileName, const std::string& fileMode) {
-  std::string fullPathName(directoryName);
+WTextFile::WTextFile(const string& directoryName, const string& fileName, const string& fileMode) {
+  string fullPathName(directoryName);
   char last_char = directoryName.back();
   if (last_char != WFile::pathSeparatorChar) {
     fullPathName.push_back(WFile::pathSeparatorChar);
@@ -59,7 +61,7 @@ WTextFile::WTextFile(const std::string& directoryName, const std::string& fileNa
   Open(fullPathName, fileMode);
 }
 
-bool WTextFile::Open(const std::string& file_name, const std::string& file_mode) {
+bool WTextFile::Open(const string& file_name, const string& file_mode) {
   file_name_ = file_name;
   file_mode_ = file_mode;
   file_ = WTextFile::OpenImpl();
@@ -135,7 +137,7 @@ bool WTextFile::Close() {
   return true;
 }
 
-int WTextFile::WriteLine(const std::string& text) { 
+int WTextFile::WriteLine(const string& text) { 
   int num_written = (fputs(text.c_str(), file_) >= 0) ? text.size() : 0;
   // fopen in text mode will force \n -> \r\n on win32
   fputs("\n", file_);
@@ -161,7 +163,7 @@ static void StripLineEnd(char *pszString) {
   pszString[i] = '\0';
 }
 
-bool WTextFile::ReadLine(std::string *buffer) {
+bool WTextFile::ReadLine(string *buffer) {
   char szBuffer[4096];
   char *p = fgets(szBuffer, sizeof(szBuffer), file_);
   if (p == nullptr) {

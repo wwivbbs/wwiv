@@ -18,12 +18,15 @@
 /**************************************************************************/
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "wwiv.h"
 #include "bbs/stuffin.h"
 #include "core/strings.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
+
+using std::string;
 
 void calc_CRC(unsigned char b) {
   checksum = checksum + b;
@@ -94,14 +97,14 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   sprintf(sx3, "%d", nEffectiveXferSpeed);
   sx2[0] = '0' + syscfgovr.primaryport;
   sx2[1] = '\0';
-  const std::string command = stuff_in(s1, sx1, sx2, szFileName, sx3, "");
+  const string command = stuff_in(s1, sx1, sx2, szFileName, sx3, "");
   if (!command.empty()) {
     GetSession()->localIO()->set_protect(0);
     sprintf(s2, "%s is currently online at %u bps",
             GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum), modem_speed);
     GetSession()->localIO()->LocalPuts(s2);
     GetSession()->localIO()->LocalPuts("\r\n\r\n");
-    GetSession()->localIO()->LocalPuts(command.c_str());
+    GetSession()->localIO()->LocalPuts(command);
     GetSession()->localIO()->LocalPuts("\r\n");
     if (incom) {
       int nRetCode = ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_PROT_SINGLE));

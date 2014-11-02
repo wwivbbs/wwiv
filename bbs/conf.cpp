@@ -18,12 +18,15 @@
 /**************************************************************************/
 #include <algorithm>
 #include <vector>
+#include <string>
 #include "bbs/conf.h"
 
 #include "wwiv.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
 #include "core/wwivassert.h"
+
+using std::string;
 
 static int disable_conf_cnt = 0;
 
@@ -313,7 +316,6 @@ char first_available_designator(int conftype) {
   return 0;
 }
 
-
 /*
  * Returns 1 if subnum is allocated to conference c, 0 otherwise.
  */
@@ -331,7 +333,6 @@ int in_conference(int subnum, confrec * c) {
 
   return nInit;
 }
-
 
 /*
  * Saves conferences of a specified conference-type.
@@ -393,7 +394,6 @@ void save_confs(int conftype, int whichnum, confrec * c) {
   f.Close();
 }
 
-
 /*
  * Lists subs/dirs/whatever allocated to a specific conference.
  */
@@ -442,7 +442,6 @@ void showsubconfs(int conftype, confrec * c) {
   }
 }
 
-
 /*
  * Takes a string like "100-150,201,333" and returns pointer to list of
  * numbers. Number of numbers in the list is returned in numinlist.
@@ -468,7 +467,7 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
       return false;
     }
 
-    std::string temp = extractword(word, pszNumbersText, ",");
+    string temp = extractword(word, pszNumbersText, ",");
     int nRangeCount = wordcount(temp, " -\t\r\n");
     switch (nRangeCount) {
     case 0:
@@ -535,7 +534,7 @@ void addsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
   if (which == nullptr) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#2Add: ";
-    std::string text;
+    string text;
     input(&text, 60, true);
     if (text.empty()) {
       return;
@@ -591,7 +590,7 @@ void delsubconf(int conftype, confrec * c, SUBCONF_TYPE * which) {
   if (which == nullptr) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#2Remove: ";
-    std::string text;
+    string text;
     input(&text, 60, true);
     if (text.empty()) {
       return;
@@ -743,7 +742,7 @@ int modify_conf(int conftype,  int which) {
     case 'B': {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2Conference Name: ";
-      std::string conferenceName;
+      string conferenceName;
       inputl(&conferenceName, 60);
       if (!conferenceName.empty()) {
         strcpy(reinterpret_cast<char*>(c.name), conferenceName.c_str());
@@ -754,7 +753,7 @@ int modify_conf(int conftype,  int which) {
     case 'C': {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#2Min SL: ";
-      std::string minSl;
+      string minSl;
       input(&minSl, 3);
       if (!minSl.empty()) {
         if (atoi(minSl.c_str()) >= 0 && atoi(minSl.c_str()) <= 255) {
@@ -1482,7 +1481,7 @@ int get_num_conferences(const char *pszFileName) {
  * Returns number of "words" in a specified string, using a specified set
  * of characters as delimiters.
  */
-int wordcount(const std::string& instr, const char *delimstr) {
+int wordcount(const string& instr, const char *delimstr) {
   char szTempBuffer[MAX_CONF_LINE];
   int i = 0;
 
@@ -1498,7 +1497,7 @@ int wordcount(const std::string& instr, const char *delimstr) {
  * Returns pointer to string representing the nth "word" of a string, using
  * a specified set of characters as delimiters.
  */
-const char *extractword(int ww, const std::string& instr, const char *delimstr) {
+const char *extractword(int ww, const string& instr, const char *delimstr) {
   char szTempBuffer[MAX_CONF_LINE];
   static char rs[41];
   int i = 0;

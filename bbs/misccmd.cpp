@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "bbs/wwiv.h"
 
@@ -30,6 +31,7 @@
 // from qwk.c
 void qwk_menu();
 
+using std::string;
 using wwiv::bbs::TempDisablePause;
 using wwiv::bbs::SaveQScanPointers;
 
@@ -80,7 +82,7 @@ void kill_old_email() {
 
         if (m.tosys == 0) {
           GetApplication()->GetUserManager()->ReadUser(&user, m.touser);
-          std::string tempName = user.GetUserNameAndNumber(m.touser);
+          string tempName = user.GetUserNameAndNumber(m.touser);
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
               && ((getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_email_anony) == 0)) {
             tempName = ">UNKNOWN<";
@@ -352,7 +354,7 @@ void list_users(int mode) {
         s5[19] = '\0';
         sprintf(szCity, "%s, %s", s5, user.GetState());
       }
-      std::string properName = properize(user.GetName());
+      string properName = properize(user.GetName());
       char szUserListLine[ 255 ];
       sprintf(szUserListLine,
               "|#%d\xB3|#9%5d |#%d\xB3|#6%c|#1%-20.20s|#%d\xB3|#2 %-24.24s|#%d\xB3 |#1%-9s |#%d\xB3  |#3%-5u  |#%d\xB3",
@@ -535,8 +537,8 @@ void Packers() {
         // We used to write STATUS_DAT here.  I don't think we need to anymore.
         GetSession()->localIO()->set_protect(0);
         sysoplog("@ Ran WWIVMail/QWK");
-        std::string chain_file = create_chain_file();
-        std::string command_line = wwiv::strings::StringPrintf("wwivqwk %s", chain_file.c_str());
+        string chain_file = create_chain_file();
+        string command_line = wwiv::strings::StringPrintf("wwivqwk %s", chain_file.c_str());
         ExecuteExternalProgram(command_line, EFLAG_FOSSIL);
         return;
       }

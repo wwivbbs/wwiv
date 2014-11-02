@@ -46,7 +46,7 @@ bool AllowLocalSysop() {
  * @param pUserNumber OUT The User Number
  * @param pSystemmNumber OUT The System Number
  */
-void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSystemNumber) {
+void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemNumber) {
   char *ss1, onx[20], ch, *mmk;
   unsigned nUserNumber, nSystemNumber;
   int i, nv, on, xx, onxi, odci;
@@ -257,7 +257,7 @@ bool ValidateSysopPassword() {
   GetSession()->bout.NewLine();
   if (so()) {
     if (incom) {
-      std::string password;
+      string password;
       input_password("|#7SY: ", &password, 20);
       if (password == syscfg.systempw) {
         return true;
@@ -310,12 +310,12 @@ void hang_it_up() {
  * Returns 1 if sucessful, else returns 0. The pause_delay is optional and
  * is used to insert silences between tones.
  */
-bool play_sdf(const std::string soundFileName, bool abortable) {
+bool play_sdf(const string soundFileName, bool abortable) {
   WWIV_ASSERT(!soundFileName.empty());
 
-  std::string fullPathName;
+  string fullPathName;
   // append gfilesdir if no path specified
-  if (soundFileName.find(WFile::pathSeparatorChar) == std::string::npos) {
+  if (soundFileName.find(WFile::pathSeparatorChar) == string::npos) {
     std::ostringstream ss;
     ss << syscfg.gfilesdir << soundFileName;
     fullPathName = ss.str();
@@ -324,7 +324,7 @@ bool play_sdf(const std::string soundFileName, bool abortable) {
   }
 
   // append .SDF if no extension specified
-  if (fullPathName.find('.') == std::string::npos) {
+  if (fullPathName.find('.') == string::npos) {
     fullPathName += ".sdf";
   }
 
@@ -340,7 +340,7 @@ bool play_sdf(const std::string soundFileName, bool abortable) {
   }
 
   // scan each line, ignore lines with words<2
-  std::string soundLine;
+  string soundLine;
   while (soundFile.ReadLine(&soundLine)) {
     if (abortable && bkbhit()) {
       break;

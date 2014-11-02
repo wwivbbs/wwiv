@@ -27,7 +27,7 @@ using std::string;
 using wwiv::strings::StringPrintf;
 
 // Local function prototypes
-void AddLineToSysopLogImpl(int cmd, const std::string& text);
+void AddLineToSysopLogImpl(int cmd, const string& text);
 
 #define LOG_STRING 0
 #define LOG_CHAR   4
@@ -91,8 +91,8 @@ void catsl() {
 /*
 * Writes a line to the sysoplog.
 */
-void AddLineToSysopLogImpl(int cmd, const std::string& text) {
-  static std::string::size_type midline = 0;
+void AddLineToSysopLogImpl(int cmd, const string& text) {
+  static string::size_type midline = 0;
   static char s_szLogFileName[MAX_PATH];
 
   if (!(syscfg.gfilesdir)) {
@@ -118,7 +118,7 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text) {
     if (logFile.GetLength()) {
       logFile.Seek(0L, WFile::seekEnd);
     }
-    std::string logLine;
+    string logLine;
     if (midline > 0) {
       logLine = "\r\n";
       logLine += text;
@@ -140,7 +140,7 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text) {
     if (logFile.GetLength()) {
       logFile.Seek(0L, WFile::seekEnd);
     }
-    std::string logLine;
+    string logLine;
     if (midline == 0 || (midline + 2 + text.length()) > 78) {
       logLine = (midline) ? "\r\n   " : "  ";
       midline = 3 + text.length();
@@ -165,7 +165,7 @@ void AddLineToSysopLogImpl(int cmd, const std::string& text) {
 /*
 * Writes a string to the sysoplog, if user online and EffectiveSl < 255.
 */
-void sysopchar(const std::string text) {
+void sysopchar(const string text) {
   if ((incom || GetSession()->GetEffectiveSl() != 255) && !text.empty()) {
     AddLineToSysopLogImpl(LOG_CHAR, text);
   }
@@ -175,7 +175,7 @@ void sysopchar(const std::string text) {
 * Writes a string to the sysoplog, if EffectiveSl < 255 and user online,
 * indented a few spaces.
 */
-void sysoplog(const std::string text, bool bIndent) {
+void sysoplog(const string text, bool bIndent) {
   if (bIndent) {
     std::ostringstream os;
     os << "   " << text;

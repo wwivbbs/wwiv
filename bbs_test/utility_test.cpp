@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include <ctime>
+#include <string>
 #include "gtest/gtest.h"
 #include "bbs_test/bbs_helper.h"
 
@@ -39,19 +40,17 @@ protected:
 };
 
 TEST_F(UtilityTest, DateString_Y) {
-    std::string res = W_DateString(MAY_18_2014, "Y", "");
+    string res = W_DateString(MAY_18_2014, "Y", "");
     ASSERT_STREQ("2014", res.c_str());
 
-    std::string res2 = W_DateString(MAY_18_2014, "YY", "");
+    string res2 = W_DateString(MAY_18_2014, "YY", "");
     ASSERT_STREQ("2014 2014", res2.c_str());
 }
 
 TEST_F(UtilityTest, DateString_WDT) {
-    std::string res = W_DateString(MAY_18_2014, "WDT", "");
+    string res = W_DateString(MAY_18_2014, "WDT", "");
     ASSERT_STREQ("Sunday, May 18, 2014 06:00 PM", res.c_str());
 
-    std::string res2 = W_DateString(MAY_18_2014, "WDT", "at");
+    string res2 = W_DateString(MAY_18_2014, "WDT", "at");
     ASSERT_STREQ("Sunday, May 18, 2014 at 06:00 PM", res2.c_str());
-
-
 }

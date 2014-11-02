@@ -298,7 +298,7 @@ void CreateCallInfoBbsDropFile() {
     szTemp[2] = '\0';
     memmove(&(szDate[ 8 - strlen(szTemp) ]), &(szTemp[0]), strlen(szTemp));
     file.WriteFormatted("%s\n", szDate);
-    std::string cspeed = GetComSpeedInDropfileFormat(com_speed);
+    string cspeed = GetComSpeedInDropfileFormat(com_speed);
     file.WriteFormatted("%s\n", (incom) ? cspeed.c_str() : "14400");
     file.Close();
   }
@@ -331,14 +331,14 @@ void CreateDoor32SysDropFile() {
       4 = Max Graphics
 
      ========================================================================= */
-  std::string fileName = create_filename(CHAINFILE_DOOR32);
+  string fileName = create_filename(CHAINFILE_DOOR32);
   WFile::Remove(fileName);
 
   WTextFile file(fileName, "wt");
   if (file.IsOpen()) {
     file.WriteFormatted("%d\n",     GetDoor32CommType());
     file.WriteFormatted("%u\n",     GetSession()->remoteIO()->GetDoorHandle());
-    std::string cspeed = GetComSpeedInDropfileFormat(com_speed);
+    string cspeed = GetComSpeedInDropfileFormat(com_speed);
     file.WriteFormatted("%s\n",      cspeed.c_str());
     file.WriteFormatted("WWIV %s\n", wwiv_version);
     file.WriteFormatted("999999\n"); // we don't want to share this
@@ -354,13 +354,13 @@ void CreateDoor32SysDropFile() {
 
 /** Create generic DOOR.SYS dropfile */
 void CreateDoorSysDropFile() {
-  std::string fileName = create_filename(CHAINFILE_DOOR);
+  string fileName = create_filename(CHAINFILE_DOOR);
   WFile::Remove(fileName);
 
   WTextFile file(fileName, "wt");
   if (file.IsOpen()) {
     char szLine[255];
-    std::string cspeed = GetComSpeedInDropfileFormat(com_speed);
+    string cspeed = GetComSpeedInDropfileFormat(com_speed);
     sprintf(szLine, "COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
             (GetSession()->using_modem) ? syscfgovr.primaryport : 0,
             cspeed.c_str(),
@@ -385,7 +385,7 @@ void CreateDoorSysDropFile() {
             static_cast<unsigned long>(60L * GetMinutesRemainingForDropFile()),
             GetMinutesRemainingForDropFile());
     file.WriteFormatted(szLine);
-    std::string ansiStatus = (okansi()) ? "GR" : "NG";
+    string ansiStatus = (okansi()) ? "GR" : "NG";
     sprintf(szLine, "%s\n%u\n%c\n%s\n%d\n%s\n%d\n%c\n%u\n%u\n%u\n%u\n",
             ansiStatus.c_str(),
             GetSession()->GetCurrentUser()->GetScreenLines(),
@@ -449,8 +449,8 @@ void create_drop_files() {
   CreateDoor32SysDropFile();
 }
 
-const std::string create_chain_file() {
-  std::string cspeed;
+const string create_chain_file() {
+  string cspeed;
 
   unsigned char nSaveComPortNum = syscfgovr.primaryport;
   if (syscfgovr.primaryport == 0 && ok_modem_stuff) {
@@ -476,7 +476,7 @@ const std::string create_chain_file() {
     l1 += SECONDS_PER_HOUR * HOURS_PER_DAY;
   }
 
-  std::string fileName = create_filename(CHAINFILE_CHAIN);
+  string fileName = create_filename(CHAINFILE_CHAIN);
 
   WFile::Remove(fileName);
   WTextFile file(fileName, "wt");
@@ -521,7 +521,7 @@ const std::string create_chain_file() {
   }
   syscfgovr.primaryport = nSaveComPortNum;
 
-  return std::string(fileName);
+  return string(fileName);
 }
 
 static const int NULL_HANDLE = 0;

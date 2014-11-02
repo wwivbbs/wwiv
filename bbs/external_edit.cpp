@@ -42,7 +42,7 @@ using wwiv::core::ScopeExit;
 using wwiv::strings::StringPrintf;
 
 // Local prototypes.
-bool external_edit_internal(const std::string& edit_filename, const std::string& new_directory, const editorrec& editor, int numlines);
+bool external_edit_internal(const string& edit_filename, const string& new_directory, const editorrec& editor, int numlines);
 
 static string WWIV_GetCurrentDirectory(bool be) {
   char szDir[MAX_PATH];
@@ -100,7 +100,7 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
   }
 }
 
-static bool WriteMsgInf(const string& title, const string& destination, const std::string& aux) {
+static bool WriteMsgInf(const string& title, const string& destination, const string& aux) {
   WTextFile file(syscfgovr.tempdir, MSGINF, "wt");
   if (!file.IsOpen()) {
     return false;
@@ -180,7 +180,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   }
 }
 
-bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, const std::string& aux) {
+bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, const string& aux) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
     if (WFile::Exists(syscfgovr.tempdir, QUOTES_TXT)) {
       // Copy quotes.txt to MSGTMP if it exists
@@ -195,7 +195,7 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
   return true;
 }
 
-bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& destination, int flags, const std::string& aux) {
+bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& destination, int flags, const string& aux) {
   const auto editor_number = GetSession()->GetCurrentUser()->GetDefaultEditor() - 1;
   if (editor_number >= GetSession()->GetNumberOfEditors() || !okansi()) {
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
@@ -230,8 +230,8 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
   return true;
 }
 
-bool external_text_edit(const std::string& edit_filename, const std::string& new_directory, int numlines,
-                        const std::string& destination, int flags) {
+bool external_text_edit(const string& edit_filename, const string& new_directory, int numlines,
+                        const string& destination, int flags) {
   const auto editor_number = GetSession()->GetCurrentUser()->GetDefaultEditor() - 1;
   if (editor_number >= GetSession()->GetNumberOfEditors() || !okansi()) {
     GetSession()->bout << "\r\nYou can't use that full screen editor.\r\n\n";
@@ -247,7 +247,7 @@ bool external_text_edit(const std::string& edit_filename, const std::string& new
 }
 
 // Actually launch the editor. This won't create any control files, etc.
-bool external_edit_internal(const std::string& edit_filename, const std::string& new_directory, 
+bool external_edit_internal(const string& edit_filename, const string& new_directory, 
                             const editorrec& editor, int numlines) {
   
   string editorCommand = (incom) ? editor.filename : editor.filenamecon;
@@ -283,7 +283,7 @@ bool external_edit_internal(const std::string& edit_filename, const std::string&
   }
   const string sx2 = StringPrintf("%d", num_screen_lines);
   const string sx3 = StringPrintf("%d", numlines);
-  const std::string cmdLine = stuff_in(editorCommand, full_filename, sx1, sx2, sx3, "");
+  const string cmdLine = stuff_in(editorCommand, full_filename, sx1, sx2, sx3, "");
 
   // TODO(rushfan): Make this a common function shared between here and chains.
   int flags = 0;

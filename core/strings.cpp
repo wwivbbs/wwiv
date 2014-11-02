@@ -180,12 +180,12 @@ uint16_t StringToUnsignedShort(const string& s) {
       [](const string& s) { return std::stoul(s); }, s);
 }
 
-char StringToChar(const std::string& s) {
+char StringToChar(const string& s) {
   return StringToT<char, int>(
       [](const string& s) { return std::stoi(s); }, s);
 }
 
-uint8_t StringToUnsignedChar(const std::string& s) {
+uint8_t StringToUnsignedChar(const string& s) {
   return StringToT<uint8_t, int>(
       [](const string& s) { return std::stoul(s); }, s);
 }
@@ -251,7 +251,7 @@ const char *charstr(int nStringLength, int chRepeatChar) {
  */
 void StringTrimEnd(char *pszString) {
   WWIV_ASSERT(pszString);
-  std::string::size_type i = strlen(pszString);
+  string::size_type i = strlen(pszString);
   while ((i > 0) && (pszString[i - 1] == 32)) {
     WWIV_ASSERT(i > 0);
     --i;
@@ -291,7 +291,7 @@ char *stripcolors(const char *pszOrig) {
  * @param pszOrig The text from which to remove the color codes.
  * @return A new string without the color codes
  */
-std::string stripcolors(const string& orig) {
+string stripcolors(const string& orig) {
   ostringstream os;
   for (string::const_iterator i = orig.begin(); i != orig.end(); i++) {
     if (*i == '|' && (i + 1) != orig.end() && (i + 2) != orig.end() && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {
@@ -418,8 +418,8 @@ char *StringTrim(char *pszString) {
  * @param s the string from which to remove spaces
  * @return s with spaces removed.
  */
-std::string StringTrim(std::string* s) {
-  std::string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
+string StringTrim(string* s) {
+  string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
 
   pos = s->find_last_not_of(DELIMS_WHITE);
@@ -428,24 +428,24 @@ std::string StringTrim(std::string* s) {
   return *s;
 }
 
-std::string StringTrimBegin(std::string* s) {
-  std::string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
+string StringTrimBegin(string* s) {
+  string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
   return *s;
 }
 
-std::string StringTrimEnd(std::string* s) {
-  std::string::size_type pos = s->find_last_not_of(DELIMS_WHITE);
+string StringTrimEnd(string* s) {
+  string::size_type pos = s->find_last_not_of(DELIMS_WHITE);
   s->erase(pos + 1);
   return *s;
 }
 
-std::string StringUpperCase(std::string* s) {
+string StringUpperCase(string* s) {
   std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) toupper);
   return *s;
 }
 
-std::string StringLowerCase(std::string* s) {
+string StringLowerCase(string* s) {
   std::transform(s->begin(), s->end(), s->begin(), (int(*)(int)) tolower);
   return *s;
 }
@@ -532,14 +532,14 @@ void properize(char *pszText) {
   }
 }
 
-std::string properize(const std::string text) {
+string properize(const string text) {
   if (text.empty()) {
-    return std::string("");
+    return string("");
   }
 
   char last = ' ';
   ostringstream os;
-  for (std::string::const_iterator i = text.begin(); i != text.end(); i++) {
+  for (string::const_iterator i = text.begin(); i != text.end(); i++) {
     if (last == ' ' || last == '-' || last == '.') {
       os << wwiv::UpperCase<char>(*i);
     } else {
@@ -547,5 +547,5 @@ std::string properize(const std::string text) {
     }
     last = *i;
   }
-  return std::string(os.str());
+  return string(os.str());
 }

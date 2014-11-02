@@ -29,6 +29,9 @@
 #include "bbs/wsession.h"
 #include "bbs/wwiv.h"
 
+using std::string;
+using std::vector;
+
 const unsigned int GetTimeLeft();
 
 
@@ -58,19 +61,19 @@ const unsigned int GetTimeLeft();
  * @todo Document this
  */
 
-const std::string stuff_in(const std::string& commandline, const std::string& arg1,
-                           const std::string& arg2, const std::string& arg3,
-                           const std::string& arg4, const std::string& arg5) {
-  std::vector<std::string> flags;
+const string stuff_in(const string& commandline, const string& arg1,
+                      const string& arg2, const string& arg3,
+                      const string& arg4, const string& arg5) {
+  vector<string> flags;
   flags.push_back(arg1);
   flags.push_back(arg2);
   flags.push_back(arg3);
   flags.push_back(arg4);
   flags.push_back(arg5);
 
-  std::string::const_iterator iter = commandline.begin();
+  auto iter = begin(commandline);
   std::ostringstream os;
-  while (iter != commandline.end()) {
+  while (iter != end(commandline)) {
     if (*iter == '%') {
       ++iter;
       char ch = wwiv::UpperCase<char>(*iter);
@@ -134,7 +137,7 @@ const std::string stuff_in(const std::string& commandline, const std::string& ar
       os << *iter++;
     }
   }
-  return std::string(os.str());
+  return string(os.str());
 }
 
 const unsigned int GetTimeLeft() {

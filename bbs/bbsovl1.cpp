@@ -27,6 +27,8 @@
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 
+using std::string;
+
 //////////////////////////////////////////////////////////////////////////////
 // Implementation
 
@@ -131,13 +133,13 @@ void upload_post() {
 void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
   GetSession()->bout << "\r\n\n|#9Enter user name or number:\r\n:";
-  std::string username;
+  string username;
   input(&username, 75, true);
   irt[0] = '\0';
   irt_name[0] = '\0';
-  std::string::size_type atpos = username.find_first_of("@");
-  if (atpos != std::string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
-    if (username.find("@32767") == std::string::npos) {
+  string::size_type atpos = username.find_first_of("@");
+  if (atpos != string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
+    if (username.find("@32767") == string::npos) {
       StringLowerCase(&username);
       username += " @32767";
     }
@@ -249,7 +251,6 @@ void feedback(bool bNewUserFeedback) {
   email(static_cast< unsigned short >(i), 0, false, 0, true);
 }
 
-
 /**
  * Allows editing of ASCII textfiles. Must have an external editor defined,
  * and toggled for use in defaults.
@@ -257,9 +258,9 @@ void feedback(bool bNewUserFeedback) {
 void text_edit() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#9Enter Filename: ";
-  std::string filename;
+  string filename;
   input(&filename, 12, true);
-  if (filename.find(".log") != std::string::npos || !okfn(filename)) {
+  if (filename.find(".log") != string::npos || !okfn(filename)) {
     return;
   }
   std::stringstream logText;

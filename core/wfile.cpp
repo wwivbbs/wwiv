@@ -112,12 +112,12 @@ WFile::WFile() {
   init();
 }
 
-WFile::WFile(const std::string& fileName) {
+WFile::WFile(const string& fileName) {
   init();
   this->SetName(fileName);
 }
 
-WFile::WFile(const std::string& dirName, const std::string& fileName) {
+WFile::WFile(const string& dirName, const string& fileName) {
   init();
   this->SetName(dirName, fileName);
 }
@@ -201,12 +201,12 @@ void WFile::Close() {
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
-bool WFile::SetName(const std::string& fileName) {
+bool WFile::SetName(const string& fileName) {
   full_path_name_ = fileName;
   return true;
 }
 
-bool WFile::SetName(const std::string& dirName, const std::string& fileName) {
+bool WFile::SetName(const string& dirName, const string& fileName) {
   std::stringstream fullPathName;
   fullPathName << dirName;
   if (!dirName.empty() && dirName[dirName.length() - 1] == pathSeparatorChar) {
@@ -304,21 +304,21 @@ time_t WFile::GetFileTime() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool WFile::Rename(const std::string origFileName, const std::string newFileName) {
+bool WFile::Rename(const string origFileName, const string newFileName) {
   return rename(origFileName.c_str(), newFileName.c_str()) == 0;
 }
 
-bool WFile::Remove(const std::string fileName) {
+bool WFile::Remove(const string fileName) {
   return (unlink(fileName.c_str()) ? false : true);
 }
 
-bool WFile::Remove(const std::string directoryName, const std::string fileName) {
-  std::string strFullFileName = directoryName;
+bool WFile::Remove(const string directoryName, const string fileName) {
+  string strFullFileName = directoryName;
   strFullFileName += fileName;
   return WFile::Remove(strFullFileName);
 }
 
-bool WFile::Exists(const std::string original_pathname) {
+bool WFile::Exists(const string original_pathname) {
   struct _stat buf;
   string fn(original_pathname);
   if (fn.back() == pathSeparatorChar) {
@@ -329,7 +329,7 @@ bool WFile::Exists(const std::string original_pathname) {
   return ret == 0;
 }
 
-bool WFile::Exists(const std::string directoryName, const std::string fileName) {
+bool WFile::Exists(const string directoryName, const string fileName) {
   std::stringstream fullPathName;
   if (!directoryName.empty() && directoryName[directoryName.length() - 1] == pathSeparatorChar) {
     fullPathName << directoryName << fileName;
@@ -339,12 +339,12 @@ bool WFile::Exists(const std::string directoryName, const std::string fileName) 
   return Exists(fullPathName.str());
 }
 
-bool WFile::ExistsWildcard(const std::string wildCard) {
+bool WFile::ExistsWildcard(const string wildCard) {
   WFindFile fnd;
   return (fnd.open(wildCard.c_str(), 0));
 }
 
-bool WFile::SetFilePermissions(const std::string fileName, int nPermissions) {
+bool WFile::SetFilePermissions(const string fileName, int nPermissions) {
   WWIV_ASSERT(!fileName.empty());
   return (chmod(fileName.c_str(), nPermissions) == 0) ? true : false;
 }
@@ -369,7 +369,7 @@ void WFile::CurrentDirectory(string* current_dir) {
 }
 
 // static
-void WFile::MakeAbsolutePath(const std::string base, std::string* relative) {
+void WFile::MakeAbsolutePath(const string base, string* relative) {
   if (!WFile::IsAbsolutePath(*relative)) {
     WFile dir(base, *relative);
     relative->assign(dir.GetFullPathName());
@@ -377,7 +377,7 @@ void WFile::MakeAbsolutePath(const std::string base, std::string* relative) {
 }
 
 // static
-bool WFile::IsAbsolutePath(const std::string path) {
+bool WFile::IsAbsolutePath(const string path) {
   if (path.empty()) {
     return false;
   }
