@@ -31,12 +31,13 @@
 #include "core/wtextfile.h"
 
 using std::string;
+using std::unique_ptr;
 using wwiv::strings::StringPrintf;
 
 void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   long lMessageLength;
-  char* b = readfile(&(pPostRecord->msg), extra, &lMessageLength);
-  if (b == nullptr) {
+  unique_ptr<char[]> b(readfile(&(pPostRecord->msg), extra, &lMessageLength));
+  if (!b) {
     return;
   }
 
@@ -70,32 +71,26 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
     netHeaderOrig.length = 32755;
     lMessageLength = netHeaderOrig.length - strlen(pPostRecord->title) - 1;
   }
-  char* b1 = static_cast<char *>(BbsAllocA(netHeaderOrig.length + 100));
-  if (b1 == nullptr) {
-    free(b);
+  unique_ptr<char[]> b1(new char[netHeaderOrig.length + 100]);
+  if (!b1) {
     set_net_num(nOrigNetNumber);
     return;
   }
-  strcpy(b1, pPostRecord->title);
-  memmove(&(b1[strlen(pPostRecord->title) + 1]), b, lMessageLength);
-  free(b);
+  strcpy(b1.get(), pPostRecord->title);
+  memmove(&(b1[strlen(pPostRecord->title) + 1]), b.get(), lMessageLength);
 
   for (int n = 0; n < xsubs[nSubNumber].num_nets; n++) {
     xtrasubsnetrec* xnp = &(xsubs[nSubNumber].nets[n]);
-
     if (xnp->net_num == nNetNumber && xnp->host) {
       continue;
     }
-
     set_net_num(xnp->net_num);
-
     net_header_rec nh = netHeaderOrig;
     unsigned short int *pList = nullptr;
     nh.minor_type = xnp->type;
     if (!nh.fromsys) {
       nh.fromsys = net_sysnum;
     }
-
     if (xnp->host) {
       nh.main_type = main_type_pre_post;
       nh.tosys = xnp->host;
@@ -109,11 +104,13 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
         if (!pList) {
           continue;
         }
-        if ((b = static_cast<char *>(BbsAllocA(len1 + 100L))) == nullptr) {
+        // looks like this leaks
+        b.reset(new char[len1 + 100]);
+        if (!b) {
           free(pList);
           continue;
         }
-        file.Read(b, len1);
+        file.Read(b.get(), len1);
         file.Close();
         b[len1] = '\0';
         int len2 = 0;
@@ -133,7 +130,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
             }
           }
         }
-        free(b);
+        // delete[] p
       }
       if (!nh.list_len) {
         if (pList) {
@@ -146,16 +143,15 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
       nh.main_type = main_type_new_post;
     }
     if (nn1 == GetSession()->GetNetworkNumber()) {
-      send_net(&nh, pList, b1, xnp->type ? nullptr : xnp->stype);
+      send_net(&nh, pList, b1.get(), xnp->type ? nullptr : xnp->stype);
     } else {
-      gate_msg(&nh, b1, xnp->net_num, xnp->stype, pList, nNetNumber);
+      gate_msg(&nh, b1.get(), xnp->net_num, xnp->stype, pList, nNetNumber);
     }
     if (pList) {
       free(pList);
     }
   }
 
-  free(b1);
   set_net_num(nOrigNetNumber);
 }
 
@@ -310,14 +306,14 @@ void post() {
 
 void grab_user_name(messagerec* pMessageRecord, const char* pszFileName) {
   long lMessageLen;
-  char* ss = readfile(pMessageRecord, pszFileName, &lMessageLen);
-  if (ss) {
-    char* ss1 = strchr(ss, '\r');
+  unique_ptr<char[]> ss(readfile(pMessageRecord, pszFileName, &lMessageLen));
+  if (ss.get()) {
+    char* ss1 = strchr(ss.get(), '\r');
     if (ss1) {
       *ss1 = '\0';
-      char* ss2 = ss;
+      char* ss2 = ss.get();
       if (ss[0] == '`' && ss[1] == '`') {
-        for (ss1 = ss + 2; *ss1; ss1++) {
+        for (ss1 = ss2 + 2; *ss1; ss1++) {
           if (ss1[0] == '`' && ss1[1] == '`') {
             ss2 = ss1 + 2;
           }
@@ -330,7 +326,6 @@ void grab_user_name(messagerec* pMessageRecord, const char* pszFileName) {
     } else {
       net_email_name[0] = '\0';
     }
-    free(ss);
   } else {
     net_email_name[0] = '\0';
   }

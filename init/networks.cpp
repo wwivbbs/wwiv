@@ -49,6 +49,8 @@
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
 
+subboardrec *subboards;
+
 static void edit_net(int nn);
 
 using std::string;
@@ -107,7 +109,7 @@ static bool del_net(CursesWindow* window, int nn) {
       }
     }
     if (i2 >= i) {
-      iscan1(i);
+      iscan1(i, subboards);
       open_sub(true);
       for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
         postrec* p = get_post(i1);
@@ -203,7 +205,7 @@ static bool insert_net(CursesWindow* window, int nn) {
       }
     }
     if (i2 >= i) {
-      iscan1(i);
+      iscan1(i, subboards);
       open_sub(true);
       for (i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
         postrec* p = get_post(i1);

@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <memory>
+#include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
@@ -42,6 +44,7 @@ static int last_msgnum;                     // last msgnum read
 static WFile fileSub;                       // WFile object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
+using std::unique_ptr;
 using wwiv::bbs::TempDisablePause;
 
 void close_sub() {
@@ -429,17 +432,16 @@ void pack_sub(int si) {
         postrec *p = get_post(i);
         if (p) {
           long lMessageSize;
-          char *mt = readfile(&(p->msg), sfn, &lMessageSize);
+          unique_ptr<char[]> mt(readfile(&(p->msg), sfn, &lMessageSize));
           if (!mt) {
-            mt = static_cast<char *>(BbsAllocA(10));
-            WWIV_ASSERT(mt);
+            mt.reset(new char[10]);
             if (mt) {
-              strcpy(mt, "??");
+              strcpy(mt.get(), "??");
               lMessageSize = 3;
             }
           }
           if (mt) {
-            savefile(mt, lMessageSize, &(p->msg), nfn);
+            savefile(mt.get(), lMessageSize, &(p->msg), nfn);
             write_post(i, p);
           }
         }

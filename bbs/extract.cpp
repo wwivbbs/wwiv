@@ -455,6 +455,5 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
       }
     }
   }
-  free(b);
 }
 

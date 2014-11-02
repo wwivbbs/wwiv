@@ -247,17 +247,11 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
   }
   break;
   }
-  free(b);
 }
 
 char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLength) {
-  char* b =  nullptr;
   *plMessageLength = 0L;
-  switch (pMessageRecord->storage_type) {
-  case 0:
-  case 1:
-    break;
-  case 2: {
+  if (pMessageRecord->storage_type == 2) {
     unique_ptr<WFile> file(OpenMessageFile(fileName));
     set_gat_section(file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
     int lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
@@ -270,7 +264,8 @@ char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLeng
       GetSession()->bout << "\r\nNo message found.\r\n\n";
       return nullptr;
     }
-    if ((b = static_cast<char *>(BbsAllocA(lMessageLength + 512))) == nullptr) {         // was +3
+    char* b = new char[lMessageLength + 512];
+    if (!b) {
       return nullptr;
     }
     lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
@@ -287,15 +282,9 @@ char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLeng
     }
     *plMessageLength = lRealMessageLength;
     b[lRealMessageLength + 1] = '\0';
+    return b;
   }
-  break;
-  default:
-    // illegal storage type
-    *plMessageLength = 0L;
-    b = nullptr;
-    break;
-  }
-  return b;
+  return nullptr;
 }
 
 void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
@@ -457,7 +446,6 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   mailrec m, messageRecord;
   net_header_rec nh;
   int i;
-  char *b, *b1;
 
   strcpy(m.title, title.c_str());
   m.msg = *pMessageRec;
@@ -514,7 +502,8 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     }
   } else {
     long lEmailFileLen;
-    if ((b = readfile(&(m.msg), "email", &lEmailFileLen)) == nullptr) {
+    unique_ptr<char[]> b(readfile(&(m.msg), "email", &lEmailFileLen));
+    if (!b) {
       return;
     }
     if (nForwardedCode == 2) {
@@ -533,10 +522,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     nh.list_len = 0;
     nh.daten = m.daten;
     nh.method = 0;
-    if ((b1 = static_cast<char*>(BbsAllocA(lEmailFileLen + 768))) == nullptr) {
-      free(b);
-      return;
-    }
+    unique_ptr<char[]> b1(new char[lEmailFileLen + 768]);
     i = 0;
     if (nUserNumber == 0 && nFromNetworkNumber == GetSession()->GetNetworkNumber()) {
       nh.main_type = main_type_email_name;
@@ -545,14 +531,14 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     }
     strcpy(&(b1[i]), m.title);
     i += strlen(m.title) + 1;
-    memmove(&(b1[i]), b,  lEmailFileLen);
+    memmove(&(b1[i]), b.get(), lEmailFileLen);
     nh.length = lEmailFileLen + i;
     if (nh.length > 32760) {
       GetSession()->bout.WriteFormatted("Message truncated by %lu bytes for the network.", nh.length - 32760L);
       nh.length = 32760;
     }
     if (nFromNetworkNumber != GetSession()->GetNetworkNumber()) {
-      gate_msg(&nh, b1, GetSession()->GetNetworkNumber(), net_email_name, nullptr, nFromNetworkNumber);
+      gate_msg(&nh, b1.get(), GetSession()->GetNetworkNumber(), net_email_name, nullptr, nFromNetworkNumber);
     } else {
       string net_filename;
       if (nForwardedCode) {
@@ -568,11 +554,9 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
       fileNetworkPacket.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
       fileNetworkPacket.Seek(0L, WFile::seekEnd);
       fileNetworkPacket.Write(&nh, sizeof(net_header_rec));
-      fileNetworkPacket.Write(b1, nh.length);
+      fileNetworkPacket.Write(b1.get(), nh.length);
       fileNetworkPacket.Close();
     }
-    free(b);
-    free(b1);
   }
   string logMessage = "Mail sent to ";
   if (nSystemNumber == 0) {
@@ -995,7 +979,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
 
   g_flags &= ~g_flag_ansi_movement;
 
-  char* ss = nullptr;
+  unique_ptr<char[]> ss;
   bool ansi = false;
   *next = false;
   long lCurrentCharPointer = 0;
@@ -1004,7 +988,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   case 0:
   case 1:
   case 2: {
-    ss = readfile(pMessageRecord, pszFileName, &lMessageTextLength);
+    ss.reset(readfile(pMessageRecord, pszFileName, &lMessageTextLength));
     if (ss == nullptr) {
       plan(6, "File not found.", &abort, next);
       GetSession()->bout.NewLine();
@@ -1204,9 +1188,6 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   GetSession()->bout.NewLine();
   if (express && abort && !*next) {
     expressabort = true;
-  }
-  if (ss != nullptr) {
-    free(ss);
   }
   if (ansi && GetSession()->topdata && GetSession()->IsUserOnline()) {
     GetApplication()->UpdateTopScreen();

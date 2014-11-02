@@ -16,8 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
 #include "wwiv.h"
+
+#include <memory>
+
 #include "printfile.h"
 #include "core/strings.h"
 #include "core/wtextfile.h"
@@ -52,6 +54,8 @@ static int brtnm;
 static int quotes_nrm_l;
 static int quotes_ind_l;
 
+using std::string;
+using std::unique_ptr;
 
 int ste(int i) {
   if (irt_name[i] == 32 && irt_name[i + 1] == 'O' && irt_name[i + 2] == 'F' && irt_name[i + 3] == 32) {
@@ -98,7 +102,7 @@ char *GetQuoteInitials() {
 }
 
 void grab_quotes(messagerec * m, const char *aux) {
-  char *ss, *ss1, temp[255];
+  char *ss1, temp[255];
   long l1, l2, l3;
   char *pfx;
   int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
@@ -130,15 +134,15 @@ void grab_quotes(messagerec * m, const char *aux) {
     pfxlen = strlen(pfx);
 
     long lMessageLength = 0;
-    ss = readfile(m, aux, &lMessageLength);
+    unique_ptr<char[]> ss(readfile(m, aux, &lMessageLength));
 
     if (ss) {
-      quotes_nrm = ss;
+      quotes_nrm = ss.get();
       quotes_nrm_l = lMessageLength;
 
       WFile quotesTextFile(szQuotesTextFileName);
       if (quotesTextFile.Open(WFile::modeDefault | WFile::modeCreateFile | WFile::modeTruncate, WFile::shareDenyNone)) {
-        quotesTextFile.Write(ss, lMessageLength);
+        quotesTextFile.Write(ss.get(), lMessageLength);
         quotesTextFile.Close();
       }
       WTextFile file(szQuotesIndexFileName, "wb");
@@ -199,7 +203,7 @@ void grab_quotes(messagerec * m, const char *aux) {
               break;
             case 3:
               if (!ss1) {
-                ss1 = ss + l1;
+                ss1 = ss.get() + l1;
               }
               l2++;
               ctlc = 1;
@@ -240,7 +244,7 @@ void grab_quotes(messagerec * m, const char *aux) {
               break;
             default:
               if (!ss1) {
-                ss1 = ss + l1;
+                ss1 = ss.get() + l1;
               }
               l2++;
               if (ctlc) {
@@ -290,8 +294,6 @@ void grab_quotes(messagerec * m, const char *aux) {
     }
   }
 }
-
-
 
 void auto_quote(char *org, long len, int type, time_t tDateTime) {
   char s1[81], s2[81], buf[255],

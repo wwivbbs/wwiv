@@ -86,7 +86,7 @@ bool open_sub(bool wr) {
   return fileSub.IsOpen();
 }
 
-bool iscan1(int si) {
+bool iscan1(int si, subboardrec *subboards) {
 // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
 // don't worry about anything detailed, just grab qscan info.
   postrec p;
