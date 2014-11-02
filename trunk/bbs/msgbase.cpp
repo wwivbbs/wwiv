@@ -1012,7 +1012,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
     }
     int nNamePtr = 0;
     while ((ss[nNamePtr] != RETURN) &&
-           (static_cast<long>(nNamePtr) < lMessageTextLength) &&
+           (nNamePtr < lMessageTextLength) &&
            (nNamePtr < 200)) {
       strName.push_back(ss[nNamePtr++]);
     }
@@ -1039,63 +1039,49 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
 
   irt_name[0] = '\0';
   g_flags |= g_flag_disable_mci;
+  string name;
+  string date = strDate;
+  string from;
+  string loc;
   switch (an) {
   default:
   case 0:
     if (syscfg.sysconfig & sysconfig_enable_mci) {
       g_flags &= ~g_flag_disable_mci;
     }
-    osan("|#9Name|#7: ", &abort, next);
-    plan(GetSession()->GetMessageColor(), strName, &abort, next);
     strcpy(irt_name, strName.c_str());
-    osan("|#9Date|#7: ", &abort, next);
-    plan(GetSession()->GetMessageColor(), strDate, &abort, next);
-    if (!origin_str.empty()) {
-      if (strName[1] == '`') {
-        osan("|#9Gated From|#7: ", &abort, next);
-      } else {
-        osan("|#9From|#7: ", &abort, next);
-      }
-      plan(GetSession()->GetMessageColor(), origin_str, &abort, next);
-    }
-    if (!origin_str2.empty()) {
-      osan("|#9Loc|#7:  ", &abort, next);
-      plan(GetSession()->GetMessageColor(), origin_str2, &abort, next);
-    }
+    name = strName;
+    from = origin_str;
+    loc = origin_str2;
     break;
   case anony_sender:
     if (readit) {
-      osan("|#9Name|#7: ", &abort, next);
-      string toName = StrCat("<<< ", strName, " >>>");
-      plan(GetSession()->GetMessageColor(), toName, &abort, next);
-      osan("|#9Date|#7: ", &abort, next);
-      plan(GetSession()->GetMessageColor(), strDate, &abort, next);
+      name = StrCat("<<< ", strName, " >>>");
     } else {
-      osan("|#9Name|#7: ", &abort, next);
-      plan(GetSession()->GetMessageColor(), ">UNKNOWN<", &abort, next);
-      osan("|#9Date|#7: ", &abort, next);
-      plan(GetSession()->GetMessageColor(), ">UNKNOWN<", &abort, next);
+      name = ">UNKNOWN<";
     }
     break;
   case anony_sender_da:
   case anony_sender_pp:
+    date = ">UNKNOWN<";
     if (an == anony_sender_da) {
-      osan("|#9Name|#7: ", &abort, next);
-      plan(GetSession()->GetMessageColor(), "Abby", &abort, next);
+      name = "Abby";
     } else {
-      osan("|#9Name|#7: ", &abort, next);
-      plan(GetSession()->GetMessageColor(), "Problemed Person", &abort, next);
+      name = "Problemed Person";
     }
     if (readit) {
-      osan("|#9Name|#7: ", &abort, next);
-      plan(GetSession()->GetMessageColor(), strName, &abort, next);
-      osan("|#9Date|#7: ", &abort, next);
-      plan(GetSession()->GetMessageColor(), strDate, &abort, next);
-    } else {
-      osan("|#9Date|#7: ", &abort, next);
-      plan(GetSession()->GetMessageColor(), ">UNKNOWN<", &abort, next);
+      name = StrCat("<<< ", strName, " >>>");
     }
     break;
+  }
+
+  GetSession()->bout << "|#9Name|#7: |#1" << name << wwiv::endl;
+  GetSession()->bout << "|#9Date|#7: |#1" << date << wwiv::endl;
+  if (!from.empty()) {
+    GetSession()->bout << "|#9From|#7: |#1" << from << wwiv::endl;
+  }
+  if (!loc.empty()) {
+    GetSession()->bout << "|#9Loc|#7:  |#1" << loc << wwiv::endl;
   }
 
   int nNumCharsPtr  = 0;
@@ -1107,6 +1093,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   bool ctrla      = false;
   bool centre     = false;
 
+  checka(&abort, next);
   GetSession()->bout.NewLine();
   while (!done && !abort && !hangup) {
     switch (pMessageRecord->storage_type) {
