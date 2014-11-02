@@ -21,7 +21,7 @@
 #include <ctime>
 #include "bbs/datetime.h"
 
-static const time_t t20140704 = 1404457200; // 1404507982;
+static const time_t t20140704 = 1404460800; // 1404457200;
 
 
 TEST(DateTime, DateFromTimeTForLog) {
