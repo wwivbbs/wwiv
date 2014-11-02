@@ -19,6 +19,7 @@
 #include "wwiv.h"
 
 #include <memory>
+#include <string>
 
 #include "printfile.h"
 #include "core/strings.h"
@@ -322,11 +323,11 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
     p += 2;
     len = len - (p - b);
     b = p;
-    const std::string datetime = W_DateString(tDateTime, "WDT", "at");
+    const string datetime = W_DateString(tDateTime, "WDT", "at");
     strcpy(s2, datetime.c_str());
 
     //    s2[strlen(s2)-1]='\0';
-    std::string tb = properize(strip_to_node(s1));
+    string tb = properize(strip_to_node(s1));
     tb1 = GetQuoteInitials();
     switch (type) {
     case 1:

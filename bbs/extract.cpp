@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 #include "wwiv.h"
 
 #include "bbs/printfile.h"
@@ -33,15 +34,15 @@ using wwiv::strings::StrCat;
 // Compresses file *pszFileName to directory *pszDirectoryName.
 void compress_file(const string& orig_filename, const string& directory) {
   GetSession()->bout << "|#2Now compressing " << orig_filename << wwiv::endl;
-  std::string fileName(orig_filename);
-  if (fileName.find_first_of(".") == std::string::npos) {
+  string fileName(orig_filename);
+  if (fileName.find_first_of(".") == string::npos) {
     fileName += ".msg";
   }
 
-  std::string baseFileName = fileName.substr(0, fileName.find_last_of(".")) + arcs[0].extension;
-  std::string arcName = StrCat(directory, baseFileName);
+  string baseFileName = fileName.substr(0, fileName.find_last_of(".")) + arcs[0].extension;
+  string arcName = StrCat(directory, baseFileName);
 
-  const std::string command = stuff_in(arcs[0].arca, arcName, orig_filename, "", "", "");
+  const string command = stuff_in(arcs[0].arca, arcName, orig_filename, "", "", "");
   ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_ARCH_A));
   WFile::Remove(orig_filename);
   GetApplication()->UpdateTopScreen();
@@ -232,7 +233,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
         sprintf(dir_path, "%s%s", directories[udir[mod_dir].subnum].path, StringRemoveChar(s2, '.'));
         WTextFile file(idz_fn, "w");
         file.WriteFormatted("%.58s\n", szDescription);
-        const std::string datetime = W_DateString(tDateTime, "Y", "");
+        const string datetime = W_DateString(tDateTime, "Y", "");
         file.WriteFormatted("Copyright (c) %s, %s\n", datetime.c_str(), author);
         file.WriteFormatted("Distribution is LIMITED by the WWIV Source\n");
         file.WriteFormatted("Code EULA.  Email WSS at 1@50 or wss@wwiv.com\n");

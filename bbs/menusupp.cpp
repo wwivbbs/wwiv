@@ -115,7 +115,7 @@ void UpSub() {
 void ValidateUser() {
   GetSession()->bout.NewLine(2);
   GetSession()->bout << "|#9Enter user name or number:\r\n:";
-  std::string userName;
+  string userName;
   input(&userName, 30, true);
   int nUserNum = finduser1(userName.c_str());
   if (nUserNum > 0) {
@@ -455,7 +455,7 @@ void EventEdit() {
 void LoadTextFile() {
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#9Enter Filename: ";
-  std::string fileName;
+  string fileName;
   Input1(&fileName, "", 50, true, InputMode::FULL_PATH_NAME);
   if (!fileName.empty()) {
     GetSession()->bout.NewLine();
@@ -474,7 +474,7 @@ void EditText() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#7Enter Filespec: ";
-  std::string fileName;
+  string fileName;
   input(&fileName, 50);
   if (!fileName.empty()) {
     external_text_edit(fileName.c_str(), "", 500, ".", MSGED_FLAG_NO_TAGLINE);

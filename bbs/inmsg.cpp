@@ -72,7 +72,7 @@ static bool GetMessageToName(const char *aux) {
         bHasAddress = true;
         GetSession()->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
         newline = false;
-        std::string to_name;
+        string to_name;
         input1(&to_name, 40, InputMode::MIXED, false, true);
         newline = newlsave;
         if (to_name.empty()) {
@@ -89,7 +89,7 @@ static bool GetMessageToName(const char *aux) {
   return bHasAddress;
 }
 
-void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
+void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitle, const char *aux, int fsed,
            const char *pszDestination, int flags, bool force_title) {
   char *lin = nullptr;
 

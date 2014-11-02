@@ -94,7 +94,7 @@ static bool random_screen(const char *mpfn) {
 }
 
 bool IsPhoneNumberUSAFormat(WUser *pUser) {
-  std::string country = pUser->GetCountry();
+  string country = pUser->GetCountry();
   return (country == "USA" || country == "CAN" || country == "MEX");
 }
 
@@ -126,7 +126,7 @@ static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
       strcpy(szCurrentSpeed, GetSession()->GetCurrentSpeed().c_str());
       GetSession()->bout << "CONNECT " << strupr(szCurrentSpeed) << "\r\n\r\n";
     }
-    std::string osVersion = WWIV_GetOSVersion();
+    string osVersion = WWIV_GetOSVersion();
     GetSession()->bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
     GetSession()->bout << "Copyright (c) 1998-2014 WWIV Software Services." << wwiv::endl;
     GetSession()->bout << "All Rights Reserved." << wwiv::endl;
@@ -226,7 +226,7 @@ bool IsPhoneRequired() {
 
 bool VerifyPhoneNumber() {
   if (IsPhoneNumberUSAFormat(GetSession()->GetCurrentUser()) || !GetSession()->GetCurrentUser()->GetCountry()[0]) {
-    std::string phoneNumber;
+    string phoneNumber;
     input_password("PH: ###-###-", &phoneNumber, 4);
 
     if (phoneNumber != &GetSession()->GetCurrentUser()->GetVoicePhoneNumber()[8]) {
@@ -242,14 +242,14 @@ bool VerifyPhoneNumber() {
 static bool VerifyPassword() {
   GetApplication()->UpdateTopScreen();
 
-  std::string password;
+  string password;
   input_password("PW: ", &password, 8);
 
   return (password == GetSession()->GetCurrentUser()->GetPassword());
 }
 
 static bool VerifySysopPassword() {
-  std::string password;
+  string password;
   input_password("SY: ", &password, 20);
   return (password == syscfg.systempw) ? true : false;
 }
@@ -350,7 +350,7 @@ static void LeaveBadPasswordFeedback(int ans) {
   if (yesno()) {
     GetSession()->bout.NewLine();
     GetSession()->bout << "What is your NAME or HANDLE? ";
-    std::string tempName;
+    string tempName;
     input1(&tempName, 31, wwiv::bbs::InputMode::PROPER, true);
     if (!tempName.empty()) {
       GetSession()->bout.NewLine();
@@ -610,8 +610,8 @@ static void UpdateLastOnFileAndUserLog() {
     sysoplog("", false);
     sysoplog(stripcolors(szLogLine), false);
     sysoplog("", false);
-    std::string remoteAddress = GetSession()->remoteIO()->GetRemoteAddress();
-    std::string remoteName = GetSession()->remoteIO()->GetRemoteName();
+    string remoteAddress = GetSession()->remoteIO()->GetRemoteAddress();
+    string remoteName = GetSession()->remoteIO()->GetRemoteName();
     if (remoteAddress.length() > 0) {
       sysoplogf("CID NUM : %s", remoteAddress.c_str());
     }
@@ -923,7 +923,7 @@ void logon() {
   pausescr();
   if (!syscfg.logon_cmd.empty()) {
     GetSession()->bout.NewLine();
-    const std::string command = stuff_in(syscfg.logon_cmd, create_chain_file(), "", "", "", "");
+    const string command = stuff_in(syscfg.logon_cmd, create_chain_file(), "", "", "", "");
     ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_LOGON));
     GetSession()->bout.NewLine(2);
   }
@@ -1010,7 +1010,7 @@ void logoff() {
     return;
   }
 
-  std::string text = "  Logged Off At ";
+  string text = "  Logged Off At ";
   text += times();
   if (GetSession()->GetEffectiveSl() != 255 || incom) {
     sysoplog("", false);
@@ -1150,7 +1150,7 @@ void logon_guest() {
   printfile(GUEST_NOEXT);
   pausescr();
 
-  std::string userName, reason;
+  string userName, reason;
   int count = 0;
   do {
     GetSession()->bout << "\r\n|#5Enter your real name : ";

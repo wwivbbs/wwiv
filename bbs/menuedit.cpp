@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdint>
+#include <string>
 
 #include "wwiv.h"
 #include "bbs/input.h"
@@ -24,8 +25,10 @@
 #include "core/strings.h"
 #include "core/wfndfile.h"
 
-bool GetMenuDir(std::string& menuDir);
-bool GetMenuMenu(const std::string& pszDirectoryName, std::string& menuName);
+using std::string;
+
+bool GetMenuDir(string& menuDir);
+bool GetMenuMenu(const string& pszDirectoryName, string& menuName);
 void ReIndexMenu(WFile &fileEditMenu, const char *pszDirectoryName, const char *pszMenuName);
 void ReadMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur);
 void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur);
@@ -58,12 +61,12 @@ void EditMenus() {
   GetSession()->bout.ClearScreen();
   GetSession()->bout << "|#2WWIV Menu Editor|#0\r\n";
 
-  std::string menuDir;
+  string menuDir;
   if (!GetMenuDir(menuDir)) {
     return;
   }
 
-  std::string menuName;
+  string menuName;
   if (!GetMenuMenu(menuDir, menuName)) {
     return;
   }
@@ -541,7 +544,7 @@ void WriteMenuRec(WFile &fileEditMenu, MenuRec * Menu, int nCur) {
 }
 
 
-bool GetMenuDir(std::string& menuName) {
+bool GetMenuDir(string& menuName) {
   ListMenuDirs();
 
   while (!hangup) {
@@ -585,7 +588,7 @@ bool GetMenuDir(std::string& menuName) {
 }
 
 
-bool GetMenuMenu(const std::string& directoryName, std::string& menuName) {
+bool GetMenuMenu(const string& directoryName, string& menuName) {
   ListMenuMenus(directoryName.c_str());
 
   while (!hangup) {
@@ -676,7 +679,7 @@ void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszD
                        static_cast<int>(HIBYTE(pHeader->nVersion)) <<
                        static_cast<int>(LOBYTE(pHeader->nVersion)) << wwiv::endl;
     char szDesc[101];
-    GetSession()->bout << "0) Menu Description     : " << GetMenuDescription(std::string(pszDirectoryName),
+    GetSession()->bout << "0) Menu Description     : " << GetMenuDescription(string(pszDirectoryName),
                        szDesc) << wwiv::endl;
     GetSession()->bout << "1) Deleted              : " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") <<
                        wwiv::endl;
@@ -904,7 +907,7 @@ void ListMenuDirs() {
   WFindFile fnd;
   bool bFound;
 
-  std::string path = GetMenuDirectory() + "*";
+  string path = GetMenuDirectory() + "*";
 
   OpenMenuDescriptions();
 
@@ -914,7 +917,7 @@ void ListMenuDirs() {
 
   bFound = fnd.open(path.c_str(), 0);
   while (bFound && !hangup) {
-    std::string fileName = fnd.GetFileName();
+    string fileName = fnd.GetFileName();
     if (fnd.IsDirectory()) {
       WWIV_GetFileNameFromPath(fileName.c_str(), szName);
       GetSession()->bout.WriteFormatted("|#2%-8.8s |15%-60.60s\r\n", szName, GetMenuDescription(fileName, szDesc));
@@ -929,7 +932,7 @@ void ListMenuDirs() {
 
 
 void ListMenuMenus(const char *pszDirectoryName) {
-  std::string path = GetMenuDirectory(pszDirectoryName) + "*.mnu";
+  string path = GetMenuDirectory(pszDirectoryName) + "*.mnu";
 
   GetSession()->bout.NewLine();
   GetSession()->bout << "|#7Available Menus\r\n";
@@ -939,7 +942,7 @@ void ListMenuMenus(const char *pszDirectoryName) {
   bool bFound = fnd.open(path.c_str(), 0);
   while (bFound && !hangup) {
     if (fnd.IsFile()) {
-      std::string s = fnd.GetFileName();
+      string s = fnd.GetFileName();
       GetSession()->bout << s.substr(0, s.find_last_of('.')) << wwiv::endl;
     }
     bFound = fnd.next();

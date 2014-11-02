@@ -95,11 +95,11 @@ const char *ctypes(int num) {
  * @param abort The abort flag (Output Parameter)
  * @param next The next flag (Output Parameter)
  */
-void osan(const std::string& text, bool *abort, bool *next) {
+void osan(const string& text, bool *abort, bool *next) {
   CheckForHangup();
   checka(abort, next);
 
-  for (std::string::const_iterator iter = text.begin(); iter != text.end() && !(*abort) && !hangup; iter++) {
+  for (string::const_iterator iter = text.begin(); iter != text.end() && !(*abort) && !hangup; iter++) {
     bputch(*iter, true);     // RF20020927 use buffered bputch
     checka(abort, next);
   }
@@ -116,7 +116,7 @@ void osan(const std::string& text, bool *abort, bool *next) {
  * @param abort The abort flag (Output Parameter)
  * @param next The next flag (Output Parameter)
  */
-void plan(int nWWIVColor, const std::string& text, bool *abort, bool *next) {
+void plan(int nWWIVColor, const string& text, bool *abort, bool *next) {
   GetSession()->bout.Color(nWWIVColor);
   osan(text, abort, next);
   if (!(*abort)) {
@@ -127,11 +127,11 @@ void plan(int nWWIVColor, const std::string& text, bool *abort, bool *next) {
 /**
  * @todo Document this
  */
-std::string strip_to_node(const std::string& txt) {
+string strip_to_node(const string& txt) {
   std::ostringstream os;
-  if (txt.find("@") != std::string::npos) {
+  if (txt.find("@") != string::npos) {
     bool ok = true;
-    for (std::string::const_iterator i = txt.begin(); i != txt.end(); i++) {
+    for (string::const_iterator i = txt.begin(); i != txt.end(); i++) {
       if (ok) {
         os << *i;
       }
@@ -139,10 +139,10 @@ std::string strip_to_node(const std::string& txt) {
         ok = false;
       }
     }
-    return std::string(os.str());
-  } else if (txt.find("AT") != std::string::npos) {
+    return string(os.str());
+  } else if (txt.find("AT") != string::npos) {
     bool ok = true;
-    for (std::string::const_iterator i = txt.begin() + 2; i != txt.end(); i++) {
+    for (string::const_iterator i = txt.begin() + 2; i != txt.end(); i++) {
       if (ok) {
         os << *i;
       }
@@ -150,7 +150,7 @@ std::string strip_to_node(const std::string& txt) {
         ok = false;
       }
     }
-    return std::string(os.str());
+    return string(os.str());
   }
-  return std::string(txt);
+  return string(txt);
 }

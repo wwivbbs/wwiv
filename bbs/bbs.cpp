@@ -214,7 +214,7 @@ int WApplication::doWFCEvents() {
       // Show WFC Menu
       case '?':
         if (AllowLocalSysop()) {
-          std::string helpFileName = SWFC_NOEXT;
+          string helpFileName = SWFC_NOEXT;
           char chHelp = ESC;
           do {
             GetSession()->localIO()->LocalCls();
@@ -384,7 +384,7 @@ int WApplication::doWFCEvents() {
           GetSession()->usernum = 1;
           holdphone(true);
           GetSession()->bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
-          std::string buffer;
+          string buffer;
           input(&buffer, 50);
           LoadFileIntoWorkspace(buffer.c_str(), false);
           send_email();
@@ -431,7 +431,7 @@ int WApplication::doWFCEvents() {
           char szFileName[ MAX_PATH ];
           getcwd(szFileName, MAX_PATH);
           snprintf(szFileName, sizeof(szFileName), "%c", WFile::pathSeparatorChar);
-          std::string newFileName;
+          string newFileName;
           Input1(&newFileName, szFileName, 50, true, InputMode::UPPER);
           if (!newFileName.empty()) {
             external_text_edit(newFileName.c_str(), "", 500, ".", MSGED_FLAG_NO_TAGLINE);
@@ -744,12 +744,12 @@ int WApplication::Run(int argc, char *argv[]) {
   ooneuser = true;
 #endif
 
-  std::string systemPassword;
+  string systemPassword;
 
   for (int i = 1; i < argc; i++) {
-    std::string argumentRaw = argv[i];
+    string argumentRaw = argv[i];
     if (argumentRaw.length() > 1 && (argumentRaw[0] == '-' || argumentRaw[0] == '/')) {
-      std::string argument = argumentRaw.substr(2);
+      string argument = argumentRaw.substr(2);
       char ch = wwiv::UpperCase<char>(argumentRaw[1]);
       switch (ch) {
       case 'B': {
@@ -1110,10 +1110,10 @@ void WApplication::CdHome() {
   chdir(m_szCurrentDirectory);
 }
 
-const std::string WApplication::GetHomeDir() {
-  std::string dir = m_szCurrentDirectory;
+const string WApplication::GetHomeDir() {
+  string dir = m_szCurrentDirectory;
   WFile::EnsureTrailingSlash(&dir);
-  return std::string(dir);
+  return string(dir);
 }
 
 void WApplication::AbortBBS(bool bSkipShutdown) {
