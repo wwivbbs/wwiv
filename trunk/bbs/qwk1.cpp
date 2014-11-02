@@ -44,6 +44,7 @@
 #include "core/wwivport.h"
 
 using std::string;
+using std::unique_ptr;
 using wwiv::strings::StringPrintf;
 
 #define SET_BLOCK(file, pos, size) lseek(file, (long)pos * (long)size, SEEK_SET)
@@ -395,36 +396,28 @@ void make_text_ready(char *text, long len) {
   }
 }
 
-char * make_text_file(int filenumber, long *size, int curpos, int blocks) {
-  struct qwk_junk *qwk;
-  char *temp;
-
-
+char* make_text_file(int filenumber, long *size, int curpos, int blocks) {
   *size = 0;
 
   // This memory has to be freed later, after text is 'emailed' or 'posted'
   // Enough memory is allocated for all blocks, plus 2k extra for other
   // 'addline' stuff
-  qwk = (struct qwk_junk *) malloc((blocks * sizeof(struct qwk_junk)) + 2048);
+  qwk_junk *qwk = (qwk_junk *) malloc((blocks * sizeof(qwk_junk)) + 2048);
   if (!qwk) {
     return nullptr;
   }
+  SET_BLOCK(filenumber, curpos, sizeof(qwk_record));
+  read(filenumber, qwk, sizeof(qwk_record) * blocks);
+  make_text_ready((char *)qwk, sizeof(qwk_record)*blocks);
 
-
-  SET_BLOCK(filenumber, curpos, sizeof(struct qwk_record));
-
-  read(filenumber, qwk, sizeof(struct qwk_record) * blocks);
-  make_text_ready((char *)qwk, sizeof(struct qwk_record)*blocks);
-
-  *size = sizeof(struct qwk_record) * blocks;
+  *size = sizeof(qwk_record) * blocks;
 
   // Remove trailing spaces
-  temp = (char *)qwk;
+  char* temp = reinterpret_cast<char*>(qwk);
   while (isspace(temp[*size - 1]) && *size && !hangup) {
     --*size;
   }
-
-  return (temp);
+  return temp;
 }
 
 void qwk_email_text(char *text, long size, char *title, char *to) {
@@ -454,7 +447,6 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
   irt_name[0] = 0;
   parse_email_info(to, &un, &sy);
   grab_quotes(nullptr, nullptr);
-
 
   if (un || sy) {
     messagerec msg;
@@ -554,21 +546,21 @@ void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, con
   setiia(0);
 
   messagerec m = *m1;
-  char* t = (char *)malloc(size + 2048);
+  unique_ptr<char[]> t(new char[size + 2048]);
   long pos = 0;
-  AddLineToMessageBuffer(t, name, &pos);
+  AddLineToMessageBuffer(t.get(), name, &pos);
 
   strcpy(s, ctime(&thetime));
   s[strlen(s) - 1] = 0;
-  AddLineToMessageBuffer(t, s, &pos);
+  AddLineToMessageBuffer(t.get(), s, &pos);
 
-  memmove(t + pos, text, size);
+  memmove(t.get() + pos, text, size);
   pos += size;
 
   if (t[pos - 1] != 26) {
     t[pos++] = 26;
   }
-  savefile(t, pos, &m, aux);
+  savefile(t.get(), pos, &m, aux);
 
   *m1 = m;
 
@@ -579,7 +571,6 @@ void qwk_inmsg(const char *text, long size, messagerec *m1, const char *aux, con
 
 void process_reply_dat(char *name) {
   struct qwk_record qwk;
-  char *text;
   long size;
   int curpos = 0;
   int done = 0;
@@ -649,7 +640,7 @@ void process_reply_dat(char *name) {
         }
       }
 
-      text = make_text_file(repfile, &size, curpos, atoi(blocks) - 1);
+      char* text = make_text_file(repfile, &size, curpos, atoi(blocks) - 1);
       if (!text) {
         curpos += atoi(blocks) - 1;
         continue;

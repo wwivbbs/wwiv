@@ -19,11 +19,9 @@
 #ifndef __INCLUDED_SUBACC_H__
 #define __INCLUDED_SUBACC_H__
 
-extern subboardrec *subboards;
-
 void    close_sub();
 bool    open_sub(bool wr);
-bool    iscan1(int si);
+bool    iscan1(int si, subboardrec *subboards);
 postrec *get_post(int mn);
 void    write_post(int mn, postrec * pp);
 
