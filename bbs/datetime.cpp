@@ -90,6 +90,7 @@ time_t date_to_daten(const char *datet) {
   pTm->tm_hour = 0;
   pTm->tm_min = 0;
   pTm->tm_sec = 0;
+  pTm->tm_isdst = 0;  // Since this is used for arbitrary compare of date strings, this is ok.
 
   return mktime(pTm);
 }

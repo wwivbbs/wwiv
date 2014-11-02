@@ -130,7 +130,7 @@ void downloaded(char *pszFileName, long lCharsPerSecond) {
           WUser user;
           GetApplication()->GetUserManager()->ReadUser(&user, u.ownerusr);
           if (!user.IsUserDeleted()) {
-            if (date_to_daten(user.GetFirstOn()) < static_cast<signed int>(u.daten)) {
+            if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
               ssm(u.ownerusr, 0, "%s downloaded|#1 \"%s\" |#7on %s",
                   GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum), u.filename, fulldate());
             }

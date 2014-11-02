@@ -552,7 +552,7 @@ void remove_post() {
         WUser tu;
         GetApplication()->GetUserManager()->ReadUser(&tu, get_post(nPostNumber)->owneruser);
         if (!tu.IsUserDeleted()) {
-          if (date_to_daten(tu.GetFirstOn()) < (signed) get_post(nPostNumber)->daten) {
+          if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(get_post(nPostNumber)->daten)) {
             if (tu.GetNumMessagesPosted()) {
               tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - 1);
               GetApplication()->GetUserManager()->WriteUser(&tu, get_post(nPostNumber)->owneruser);

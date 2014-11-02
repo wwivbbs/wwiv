@@ -971,7 +971,7 @@ void removefile() {
             if (bRemoveDlPoints && u.ownersys == 0) {
               GetApplication()->GetUserManager()->ReadUser(&uu, u.ownerusr);
               if (!uu.IsUserDeleted()) {
-                if (date_to_daten(uu.GetFirstOn()) < static_cast<signed int>(u.daten)) {
+                if (date_to_daten(uu.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                   uu.SetFilesUploaded(uu.GetFilesUploaded() - 1);
                   uu.SetUploadK(uu.GetUploadK() - bytes_to_k(u.numbytes));
                   GetApplication()->GetUserManager()->WriteUser(&uu, u.ownerusr);

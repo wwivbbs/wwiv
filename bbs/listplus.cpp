@@ -1595,7 +1595,7 @@ static int remove_filename(const char *pszFileName, int dn) {
             WUser user;
             GetApplication()->GetUserManager()->ReadUser(&user, u.ownerusr);
             if (!user.IsUserDeleted()) {
-              if (date_to_daten(user.GetFirstOn()) < static_cast<signed int>(u.daten)) {
+              if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                 user.SetFilesUploaded(user.GetFilesUploaded() - 1);
                 user.SetUploadK(user.GetUploadK() - bytes_to_k(u.numbytes));
 
