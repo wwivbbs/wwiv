@@ -49,8 +49,6 @@
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
 
-subboardrec *subboards;
-
 static void edit_net(int nn);
 
 using std::string;
@@ -58,13 +56,15 @@ using std::unique_ptr;
 using std::vector;
 using wwiv::strings::StringPrintf;
 
+unique_ptr<subboardrec[]> subboards;
+
 static bool read_subs(CursesWindow* window) {
   const string filename = StringPrintf("%ssubs.dat", syscfg.datadir);
   int i = open(filename.c_str(), O_RDWR | O_BINARY);
   if (i > 0) {
-    subboards = (subboardrec *) malloc(filelength(i) + 1);
-    initinfo.num_subs = (read(i, subboards, (filelength(i)))) /
-                        sizeof(subboardrec);
+    int num_subs = filelength(i) / sizeof(subboardrec);
+    subboards.reset(new subboardrec[num_subs]);
+    initinfo.num_subs = read(i, subboards.get(), filelength(i)) / sizeof(subboardrec);
     close(i);
   } else {
     messagebox(window, StringPrintf("%s NOT FOUND.\n", filename.c_str()));
@@ -78,12 +78,11 @@ static void write_subs() {
     const string filename = StringPrintf("%ssubs.dat", syscfg.datadir);
     int i = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     if (i > 0) {
-      write(i, &subboards[0], initinfo.num_subs * sizeof(subboardrec));
+      write(i, subboards.get(), initinfo.num_subs * sizeof(subboardrec));
       close(i);
     }
     initinfo.num_subs = 0;
-    free(subboards);
-    subboards = nullptr;
+    subboards.reset();
   }
 }
 
@@ -109,7 +108,7 @@ static bool del_net(CursesWindow* window, int nn) {
       }
     }
     if (i2 >= i) {
-      iscan1(i, subboards);
+      iscan1(i, subboards.get());
       open_sub(true);
       for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
         postrec* p = get_post(i1);
@@ -155,24 +154,21 @@ static bool del_net(CursesWindow* window, int nn) {
     close(hFile);
   }
 
-  char* u = (char *)malloc(syscfg.userreclen);
-  read_user(1, (userrec *)u);
+  unique_ptr<char[]> u(new char[syscfg.userreclen]);
+  read_user(1, reinterpret_cast<userrec*>(u.get()));
   int nu = number_userrecs();
   for (int i = 1; i <= nu; i++) {
-    read_user(i, (userrec *)u);
-    if (UINT(u, syscfg.fsoffset)) {
-      if (UCHAR(u, syscfg.fnoffset) == nn) {
-        UINT(u, syscfg.fsoffset) = UINT(u, syscfg.fuoffset) = UCHAR(u, syscfg.fnoffset) = 0;
-        write_user(i, (userrec *)u);
-      } else if (UCHAR(u, syscfg.fnoffset) > nn) {
-        UCHAR(u, syscfg.fnoffset)--;
-        write_user(i, (userrec *)u);
+    read_user(i, reinterpret_cast<userrec*>(u.get()));
+    if (UINT(u.get(), syscfg.fsoffset)) {
+      if (UCHAR(u.get(), syscfg.fnoffset) == nn) {
+        UINT(u.get(), syscfg.fsoffset) = UINT(u.get(), syscfg.fuoffset) = UCHAR(u.get(), syscfg.fnoffset) = 0;
+        write_user(i, reinterpret_cast<userrec*>(u.get()));
+      } else if (UCHAR(u.get(), syscfg.fnoffset) > nn) {
+        UCHAR(u.get(), syscfg.fnoffset)--;
+        write_user(i, reinterpret_cast<userrec*>(u.get()));
       }
     }
   }
-
-  free(u);
-
   for (int i = nn; i < initinfo.net_num_max; i++) {
     net_networks[i] = net_networks[i + 1];
   }
@@ -187,27 +183,26 @@ static bool del_net(CursesWindow* window, int nn) {
 }
 
 static bool insert_net(CursesWindow* window, int nn) {
-  int i, i1, i2;
-
   if (!read_subs(window)) {
     return false;
   }
 
-  for (i = 0; i < initinfo.num_subs; i++) {
+  for (int i = 0; i < initinfo.num_subs; i++) {
     if (subboards[i].age & 0x80) {
       if (subboards[i].name[40] >= nn) {
         subboards[i].name[40]++;
       }
     }
+    int i2 = 0;
     for (i2 = 0; i2 < i; i2++) {
       if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
         break;
       }
     }
     if (i2 >= i) {
-      iscan1(i, subboards);
+      iscan1(i, subboards.get());
       open_sub(true);
-      for (i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
+      for (int i1 = 1; i1 <= initinfo.nNumMsgsInCurrentSub; i1++) {
         postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
           if (p->title[80] >= nn) {
@@ -230,7 +225,7 @@ static bool insert_net(CursesWindow* window, int nn) {
       lseek(hFile, sizeof(mailrec) * r, SEEK_SET);
       read(hFile, &m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
-        i = (m.status & status_source_verified) ? 78 : 80;
+        int i = (m.status & status_source_verified) ? 78 : 80;
         if ((int) strlen(m.title) >= i) {
           m.title[i] = m.title[i - 1] = 0;
         }
@@ -245,22 +240,21 @@ static bool insert_net(CursesWindow* window, int nn) {
     close(hFile);
   }
 
-  char* u = (char *)malloc(syscfg.userreclen);
+  unique_ptr<char[]> u(new char[syscfg.userreclen]);
 
-  read_user(1, (userrec *)u);
+  read_user(1, reinterpret_cast<userrec*>(u.get()));
   int nu = number_userrecs();
-  for (i = 1; i <= nu; i++) {
-    read_user(i, (userrec *)u);
-    if (UINT(u, syscfg.fsoffset)) {
-      if (UCHAR(u, syscfg.fnoffset) >= nn) {
-        UCHAR(u, syscfg.fnoffset)++;
-        write_user(i, (userrec *)u);
+  for (int i = 1; i <= nu; i++) {
+    read_user(i, reinterpret_cast<userrec*>(u.get()));
+    if (UINT(u.get(), syscfg.fsoffset)) {
+      if (UCHAR(u.get(), syscfg.fnoffset) >= nn) {
+        UCHAR(u.get(), syscfg.fnoffset)++;
+        write_user(i, reinterpret_cast<userrec*>(u.get()));
       }
     }
   }
-  free(u);
 
-  for (i = initinfo.net_num_max; i > nn; i--) {
+  for (int i = initinfo.net_num_max; i > nn; i--) {
     net_networks[i] = net_networks[i - 1];
   }
   initinfo.net_num_max++;
@@ -269,7 +263,7 @@ static bool insert_net(CursesWindow* window, int nn) {
   sprintf(net_networks[nn].dir, "newnet.dir%c", WFile::pathSeparatorChar);
 
   filename = StringPrintf("%snetworks.dat", syscfg.datadir);
-  i = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  int i = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   write(i, net_networks, initinfo.net_num_max * sizeof(net_networks_rec));
   close(i);
 
@@ -365,21 +359,18 @@ void networks() {
 }
 
 static void edit_net(int nn) {
-
   static const vector<string> nettypes = {
     "WWIVnet ",
     "Fido    ",
     "Internet",
   };
 
-  char szOldNetworkName[20];
-  char *ss;
-
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", 6, 76));
   bool done = false;
   int cp = 1;
   net_networks_rec *n = &(net_networks[nn]);
+  char szOldNetworkName[20];
   strcpy(szOldNetworkName, n->name);
 
   if (n->type >= nettypes.size()) {
@@ -413,7 +404,7 @@ static void edit_net(int nn) {
         char szBuffer[255];
         while (fgets(szBuffer, 80, pInputFile)) {
           if (szBuffer[0] == '$') {
-            ss = strchr(szBuffer, ' ');
+            char* ss = strchr(szBuffer, ' ');
             if (ss) {
               *ss = 0;
               if (strcasecmp(szOldNetworkName, szBuffer + 1) == 0) {
