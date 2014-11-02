@@ -32,8 +32,10 @@
 
 #include "gtest/gtest.h"
 
+using std::string;
+
 void BbsHelper::SetUp() {
-    std::string temp = files_.TempDir();
+    string temp = files_.TempDir();
     // We want the "BBS Home" to be our temp dir.
     chdir(files_.TempDir().c_str());
 
@@ -70,13 +72,13 @@ TestIO::TestIO() {
   local_io_ = new TestLocalIO(&this->captured_);
 }
 
-std::string TestIO::captured() {
-  std::string captured(captured_);
+string TestIO::captured() {
+  string captured(captured_);
   captured_.clear();
   return captured;
 }
 
-TestLocalIO::TestLocalIO(std::string* captured) : WLocalIO(), captured_(captured) {}
+TestLocalIO::TestLocalIO(string* captured) : WLocalIO(), captured_(captured) {}
 
 void TestLocalIO::LocalPutch(unsigned char ch) {
   captured_->push_back(ch);

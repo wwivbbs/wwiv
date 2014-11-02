@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "wwiv.h"
 #include "core/strings.h"
@@ -23,6 +24,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 
+using std::string;
 
 // The final character of an ansi sequence
 #define OB ('[')
@@ -297,7 +299,7 @@ bool do_sysop_command(int nCommandID) {
  * @return - false on failure, true on success
  *
  */
-bool copyfile(const std::string& sourceFileName, const std::string& destFileName, bool stats) {
+bool copyfile(const string& sourceFileName, const string& destFileName, bool stats) {
   if (stats) {
     GetSession()->bout << "|#7File movement ";
   }
@@ -322,7 +324,7 @@ bool copyfile(const std::string& sourceFileName, const std::string& destFileName
  * @return - false on failure, true on success
  *
  */
-bool movefile(const std::string& sourceFileName, const std::string& destFileName, bool stats) {
+bool movefile(const string& sourceFileName, const string& destFileName, bool stats) {
   if (sourceFileName != destFileName && WFile::Exists(sourceFileName)) {
     bool bCanUseRename = false;
 

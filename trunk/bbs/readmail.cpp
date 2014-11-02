@@ -884,7 +884,7 @@ void readmail(int mode) {
           }
         }
       case 'D': {
-        std::string message;
+        string message;
         if (!okmail) {
           break;
         }
@@ -1115,7 +1115,7 @@ void readmail(int mode) {
                     static_cast<long>(GetSession()->GetCurrentUser()->GetNumNetEmailSent());
         if (ch == 'A' || ch == '@') {
           if (num_mail != num_mail1) {
-            std::string message;
+            string message;
             if (m.fromsys != 0) {
               message = GetSession()->GetNetworkName();
               message += ": ";
@@ -1180,7 +1180,7 @@ void readmail(int mode) {
           break;
         }
         GetSession()->bout << "\r\n|#2Filename: ";
-        std::string fileName;
+        string fileName;
         input(&fileName, 50);
         if (!fileName.empty()) {
           GetSession()->bout.NewLine();
@@ -1197,7 +1197,7 @@ void readmail(int mode) {
       break;
       case 'Y':   // Add from here
         if (curmail >= 0) {
-          std::string downloadFileName;
+          string downloadFileName;
           unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
           GetSession()->bout << "E-mail download -\r\n\n|#2Filename: ";
           input(&downloadFileName, 12);

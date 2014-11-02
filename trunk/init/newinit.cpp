@@ -76,7 +76,7 @@ static void write_qscn(unsigned int un, uint32_t *qscn) {
   }
 }
 
-static void init_files(CursesWindow* window, const std::string& bbsdir) {
+static void init_files(CursesWindow* window, const string& bbsdir) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
@@ -330,7 +330,7 @@ static void init_files(CursesWindow* window, const std::string& bbsdir) {
   window->SetColor(SchemeId::NORMAL);
 }
 
-bool new_init(CursesWindow* window, const std::string& bbsdir) {
+bool new_init(CursesWindow* window, const string& bbsdir) {
   static const vector<string> dirnames = {
     "attach",
     "data",

@@ -19,6 +19,7 @@
 
 #include "bbs/wwiv.h"
 #include <algorithm>
+#include <string>
 
 #include "bbs/input.h"
 #include "bbs/printfile.h"
@@ -40,7 +41,7 @@ using wwiv::strings::StringPrintf;
 //
 
 void input_phone();
-bool check_name(const std::string userName);
+bool check_name(const string userName);
 void input_callsign();
 int  find_new_usernum(const WUser *pUser, uint32_t* qsc);
 void cln_nu();
@@ -58,12 +59,12 @@ void VerifyNewUserPassword();
 void SendNewUserFeedbackIfRequired();
 void ExecNewUserCommand();
 void new_mail();
-bool CheckPasswordComplexity(WUser *pUser, std::string& password);
+bool CheckPasswordComplexity(WUser *pUser, string& password);
 
 
 void input_phone() {
   bool ok = true;
-  std::string phoneNumber;
+  string phoneNumber;
   do {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
@@ -143,7 +144,7 @@ void input_language() {
 }
 
 
-bool check_name(const std::string userName) {
+bool check_name(const string userName) {
   // Since finduser is called with userName, it can not be const.  A better idea may be
   // to change this behaviour in the future.
   char s[255], s1[255], s2[MAX_PATH];
@@ -152,8 +153,8 @@ bool check_name(const std::string userName) {
       userName[ userName.length() - 1 ] == 32   ||
       userName[0] < 65                 ||
       finduser(userName) != 0          ||
-      userName.find("@") != std::string::npos ||
-      userName.find("#") != std::string::npos) {
+      userName.find("@") != string::npos ||
+      userName.find("#") != string::npos) {
     return false;
   }
 
@@ -254,14 +255,14 @@ void input_realname() {
 void input_callsign() {
   GetSession()->bout.NewLine();
   GetSession()->bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
-  std::string s;
+  string s;
   input(&s, 6, true);
   GetSession()->GetCurrentUser()->SetCallsign(s.c_str());
 
 }
 
 
-bool valid_phone(const std::string phoneNumber) {
+bool valid_phone(const string phoneNumber) {
   if (syscfg.sysconfig & sysconfig_free_phone) {
     return true;
   }
@@ -289,7 +290,7 @@ bool valid_phone(const std::string phoneNumber) {
 
 
 void input_street() {
-  std::string street;
+  string street;
   do {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Enter your street address.\r\n";
@@ -323,7 +324,7 @@ void input_city() {
 
 
 void input_state() {
-  std::string state;
+  string state;
   do {
     GetSession()->bout.NewLine();
     if (wwiv::strings::IsEquals(GetSession()->GetCurrentUser()->GetCountry(), "CAN")) {
@@ -344,7 +345,7 @@ void input_state() {
 
 
 void input_country() {
-  std::string country;
+  string country;
   do {
     GetSession()->bout.NewLine();
     GetSession()->bout << "|#3Enter your country (i.e. USA). \r\n";
@@ -360,7 +361,7 @@ void input_country() {
 
 
 void input_zipcode() {
-  std::string zipcode;
+  string zipcode;
   do {
     int len = 7;
     GetSession()->bout.NewLine();
@@ -523,28 +524,28 @@ void input_screensize() {
 }
 
 
-bool CheckPasswordComplexity(WUser *, std::string& password) {
+bool CheckPasswordComplexity(WUser *, string& password) {
   if (password.length() < 3) {
     //TODO - the min length should be in wwiv.ini
     return false;
   }
 
-  //if ( password.find( pUser->GetName() ) != std::string::npos )
+  //if ( password.find( pUser->GetName() ) != string::npos )
   //{
   //    return false;
   //}
 
-  //if ( password.find( realName ) != std::string::npos )
+  //if ( password.find( realName ) != string::npos )
   //{
   //    return false;
   //}
 
-  //if( password.find( pUser->GetVoicePhoneNumber() ) != std::string::npos )
+  //if( password.find( pUser->GetVoicePhoneNumber() ) != string::npos )
   //{
   //    return false;
   //}
 
-  //if ( password.find( pUser->GetDataPhoneNumber() ) != std::string::npos )
+  //if ( password.find( pUser->GetDataPhoneNumber() ) != string::npos )
   //{
   //    return false;
   //}
@@ -554,7 +555,7 @@ bool CheckPasswordComplexity(WUser *, std::string& password) {
 
 
 void input_pw(WUser *pUser) {
-  std::string password;
+  string password;
   bool ok = true;
   do {
     ok = true;
@@ -563,7 +564,7 @@ void input_pw(WUser *pUser) {
     password.clear();
     Input1(&password, "", 8, false, InputMode::UPPER);
 
-    std::string realName = GetSession()->GetCurrentUser()->GetRealName();
+    string realName = GetSession()->GetCurrentUser()->GetRealName();
     StringUpperCase(&realName);
     if (!CheckPasswordComplexity(pUser, password)) {
       ok = false;
@@ -724,7 +725,7 @@ void CreateNewUserRecord() {
   }
 
   GetSession()->ResetEffectiveSl();
-  std::string randomPassword;
+  string randomPassword;
   for (int i = 0; i < 6; i++) {
     char ch = static_cast< char >(rand() % 36);
     if (ch < 10) {
@@ -762,7 +763,7 @@ bool CanCreateNewUserAccountHere() {
     int nPasswordAttempt = 0;
     do {
       GetSession()->bout << "New User Password :";
-      std::string password;
+      string password;
       input(&password, 20);
       if (password == syscfg.newuserpw) {
         ok = true;
@@ -882,7 +883,7 @@ void DoNewUserASV() {
     if (yesno()) {
       GetSession()->bout.NewLine();
       GetSession()->bout << "|#5Please enter your BBS name and number.\r\n";
-      std::string note;
+      string note;
       inputl(&note, 60, true);
       GetSession()->GetCurrentUser()->SetNote(note.c_str());
       GetSession()->GetCurrentUser()->SetSl(GetSession()->asv.sl);
@@ -1041,7 +1042,7 @@ void VerifyNewUserPassword() {
     GetSession()->bout.NewLine(1);
     GetSession()->bout << "|#9Please write down this information, and enter your password for verification.\r\n";
     GetSession()->bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
-    std::string password;
+    string password;
     input_password("|#9PW: ", &password, 8);
     if (password == GetSession()->GetCurrentUser()->GetPassword()) {
       ok = true;
@@ -1080,7 +1081,7 @@ void SendNewUserFeedbackIfRequired() {
 
 void ExecNewUserCommand() {
   if (!hangup && !syscfg.newuser_cmd.empty()) {
-    const std::string commandLine = stuff_in(syscfg.newuser_cmd, create_chain_file(), "", "", "", "");
+    const string commandLine = stuff_in(syscfg.newuser_cmd, create_chain_file(), "", "", "", "");
 
     // Log what is happening here.
     sysoplog("Executing New User Event: ", false);
@@ -1493,7 +1494,7 @@ void DoMinimalNewUser() {
                        GetSession()->GetCurrentUser()->GetState() << wwiv::endl;
     GetSession()->bout << "|#1[G] Internet Mail Address   : ";
     if (GetSession()->GetCurrentUser()->GetEmailAddress()[0] == 0) {
-      std::string emailAddress;
+      string emailAddress;
       Input1(&emailAddress, s1, 44, true, InputMode::MIXED);
       GetSession()->GetCurrentUser()->SetEmailAddress(emailAddress.c_str());
       if (!check_inet_addr(GetSession()->GetCurrentUser()->GetEmailAddress())) {

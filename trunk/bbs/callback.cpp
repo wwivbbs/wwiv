@@ -16,12 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "wwiv.h"
 #include "printfile.h"
 #include "wcomm.h"
 #include "core/strings.h"
 
+using std::string;
 
 void wwivnode(WUser *pUser, int mode) {
   char sysnum[6], s[81];
@@ -57,7 +59,7 @@ void wwivnode(WUser *pUser, int mode) {
   }
   net_system_list_rec *csne = next_system(nSystemNumber);
   sprintf(s, "Sysop @%u %s %s", nSystemNumber, csne->name, GetSession()->GetNetworkName());
-  std::string ph, ph1;
+  string ph, ph1;
   if (!mode) {
     ph1 = pUser->GetDataPhoneNumber();
     input_dataphone();

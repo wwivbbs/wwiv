@@ -562,7 +562,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
       GetSession()->bout.NewLine();
       ++numl;
     }
-    std::string tmp = u->upby;
+    string tmp = u->upby;
     tmp = properize(tmp).substr(0, 15);
     sprintf(element, "|%02dUpby: %s", config_listing.lp_colors[7], tmp.c_str());
     strcpy(szFileInformation, element);

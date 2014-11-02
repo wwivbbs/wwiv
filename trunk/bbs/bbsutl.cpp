@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "bbs/wconstants.h"
 #include "bbs/wwiv.h"
@@ -23,6 +24,7 @@
 #include "core/wwivassert.h"
 #include "bbs/keycodes.h"
 
+using std::string;
 
 static char str_yes[81],
             str_no[81];
@@ -63,8 +65,7 @@ void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long l
   *plBufferPtr = lCurrentPtr;
 }
 
-
-bool inli(std::string* outBuffer, std::string* rollOver, std::string::size_type nMaxLen, bool bAddCRLF,
+bool inli(string* outBuffer, string* rollOver, string::size_type nMaxLen, bool bAddCRLF,
           bool bAllowPrevious, bool bTwoColorChatMode) {
   char szBuffer[ 4096 ] = {0}, szRollover[ 4096 ] = {0};
   strcpy(szBuffer, outBuffer->c_str());
@@ -75,9 +76,8 @@ bool inli(std::string* outBuffer, std::string* rollOver, std::string::size_type 
   return ret;
 }
 
-
 // returns true if needs to keep inputting this line
-bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bool bAddCRLF, bool bAllowPrevious,
+bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bAddCRLF, bool bAllowPrevious,
           bool bTwoColorChatMode) {
   char szRollOver[255];
 
@@ -113,7 +113,7 @@ bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bo
     }
     pszRollover[0] = '\0';
   }
-  std::string::size_type cp = 0;
+  string::size_type cp = 0;
   bool done = false;
   unsigned char ch = '\0';
   do {
@@ -154,7 +154,7 @@ bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bo
             cp -= 2;
             GetSession()->bout.Color(0);
           } else if (pszBuffer[cp - 2] == CO) {
-            for (std::string::size_type i = strlen(interpret(pszBuffer[cp - 1])); i > 0; i--) {
+            for (string::size_type i = strlen(interpret(pszBuffer[cp - 1])); i > 0; i--) {
               GetSession()->bout.BackSpace();
             }
             cp -= 2;
@@ -252,20 +252,20 @@ bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bo
   }
 
   if (ch != RETURN) {
-    std::string::size_type lastwordstart = cp - 1;
+    string::size_type lastwordstart = cp - 1;
     while (lastwordstart > 0 && pszBuffer[lastwordstart] != SPACE && pszBuffer[lastwordstart] != BACKSPACE) {
       lastwordstart--;
     }
-    if (lastwordstart > static_cast<std::string::size_type>(GetSession()->localIO()->WhereX() / 2)
+    if (lastwordstart > static_cast<string::size_type>(GetSession()->localIO()->WhereX() / 2)
         && lastwordstart != (cp - 1)) {
-      std::string::size_type lastwordlen = cp - lastwordstart - 1;
-      for (std::string::size_type j = 0; j < lastwordlen; j++) {
+      string::size_type lastwordlen = cp - lastwordstart - 1;
+      for (string::size_type j = 0; j < lastwordlen; j++) {
         bputch(BACKSPACE);
       }
-      for (std::string::size_type j = 0; j < lastwordlen; j++) {
+      for (string::size_type j = 0; j < lastwordlen; j++) {
         bputch(SPACE);
       }
-      for (std::string::size_type j = 0; j < lastwordlen; j++) {
+      for (string::size_type j = 0; j < lastwordlen; j++) {
         pszRollover[j] = pszBuffer[cp - lastwordlen + j];
       }
       pszRollover[lastwordlen] = '\0';
@@ -380,12 +380,12 @@ bool checka(bool *abort, bool *next) {
 
 // Prints an abortable string (contained in *pszText). Returns 1 in *abort if the
 // string was aborted, else *abort should be zero.
-void pla(const std::string& text, bool *abort) {
+void pla(const string& text, bool *abort) {
   if (CheckForHangup()) {
     *abort = true;
   }
   checka(abort);
-  for (std::string::const_iterator iter = text.begin(); iter != text.end() && !*abort; ++iter) {
+  for (string::const_iterator iter = text.begin(); iter != text.end() && !*abort; ++iter) {
     bputch(*iter, true);
     checka(abort);
   }
@@ -395,7 +395,7 @@ void pla(const std::string& text, bool *abort) {
   }
 }
 
-void plal(const std::string& text, std::string::size_type limit, bool *abort) {
+void plal(const string& text, string::size_type limit, bool *abort) {
   CheckForHangup();
   if (hangup) {
     *abort = true;
@@ -404,8 +404,8 @@ void plal(const std::string& text, std::string::size_type limit, bool *abort) {
   checka(abort);
 
   limit += text.length() - stripcolors(text).length();
-  std::string::size_type nCharsDisplayed = 0;
-  for (std::string::const_iterator iter = text.begin(); iter != text.end() && nCharsDisplayed++ < limit
+  string::size_type nCharsDisplayed = 0;
+  for (string::const_iterator iter = text.begin(); iter != text.end() && nCharsDisplayed++ < limit
        && !*abort; ++iter) {
     if (*iter != '\r' && *iter != '\n') {
       bputch(*iter, true);

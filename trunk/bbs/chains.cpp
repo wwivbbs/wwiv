@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <string>
 
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
@@ -25,32 +26,10 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
+using std::string;
 
-//////////////////////////////////////////////////////////////////////////////
-//
-//
-// module private functions
-//
-//
-
-void show_chains(int *mapp, int *map);
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Implementation
-//
-//
-//
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
 // Displays the list of chains to a user
-//
-
-void show_chains(int *mapp, int *map) {
+static void show_chains(int *mapp, int *map) {
   char szBuffer[ 255 ];
 
   GetSession()->bout.Color(0);
@@ -146,12 +125,10 @@ void show_chains(int *mapp, int *map) {
   }
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // Executes a "chain", index number nChainNumber.
 //
-
 
 void run_chain(int nChainNumber) {
   int inst = inst_ok(INST_LOC_CHAINS, nChainNumber + 1);
@@ -187,8 +164,8 @@ void run_chain(int nChainNumber) {
   char szModemSpeed[ 11 ];
   sprintf(szModemSpeed, "%d", modem_speed);
 
-  const std::string chainCmdLine = stuff_in(chains[nChainNumber].filename, create_chain_file(), szComSpeed, szComPortNum,
-                                   szModemSpeed, "");
+  const string chainCmdLine = stuff_in(chains[nChainNumber].filename, create_chain_file(), szComSpeed, szComPortNum,
+                                       szModemSpeed, "");
 
   sysoplogf("!Ran \"%s\"", chains[nChainNumber].description);
   GetSession()->GetCurrentUser()->SetNumChainsRun(GetSession()->GetCurrentUser()->GetNumChainsRun() + 1);

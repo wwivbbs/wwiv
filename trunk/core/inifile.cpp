@@ -34,7 +34,7 @@ namespace wwiv {
 namespace core {
 
 string FilePath(const string& directoryName, const string& fileName) {
-  std::string fullPathName(directoryName);
+  string fullPathName(directoryName);
   char last_char = directoryName.back();
   if (last_char != WFile::pathSeparatorChar) {
     fullPathName.push_back(WFile::pathSeparatorChar);
@@ -43,7 +43,7 @@ string FilePath(const string& directoryName, const string& fileName) {
   return fullPathName;
 }
 
-IniFile::IniFile(const std::string& fileName, const std::string& primary, const std::string& secondary) 
+IniFile::IniFile(const string& fileName, const string& primary, const string& secondary) 
     : file_name_(fileName), open_(false), primary_(primary), secondary_(secondary) {
 
   WTextFile file(file_name_, "rt");
@@ -91,7 +91,7 @@ IniFile::~IniFile() { open_ = false; }
 /* Close is now a NOP */
 void IniFile::Close() {}
 
-const char* IniFile::GetValue(const std::string& key, const char *default_value)  const {
+const char* IniFile::GetValue(const string& key, const char *default_value)  const {
   const string primary_key = StrCat(primary_, ".", key);
   {
     const auto& it = data_.find(primary_key);
@@ -110,7 +110,7 @@ const char* IniFile::GetValue(const std::string& key, const char *default_value)
   return default_value;
 }
 
-const bool IniFile::GetBooleanValue(const std::string& key, bool defaultValue)  const {
+const bool IniFile::GetBooleanValue(const string& key, bool defaultValue)  const {
   const char *s = GetValue(key);
   return (s != nullptr) ? IniFile::StringToBoolean(s) : defaultValue;
 }
@@ -124,7 +124,7 @@ bool IniFile::StringToBoolean(const char *p) {
   return (ch == 'Y' || ch == 'T' || ch == '1');
 }
 
-const long IniFile::GetNumericValue(const std::string& key, int default_value) const {
+const long IniFile::GetNumericValue(const string& key, int default_value) const {
   const char *s = GetValue(key);
   return (s != nullptr) ? atoi(s) : default_value;
 }

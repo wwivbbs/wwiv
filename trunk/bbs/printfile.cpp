@@ -43,7 +43,7 @@ using wwiv::strings::StringPrintf;
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-const string CreateFullPathToPrint(const std::string& basename) {
+const string CreateFullPathToPrint(const string& basename) {
   if (WFile::Exists(basename)) {
     return basename;
   }
@@ -97,7 +97,7 @@ const string CreateFullPathToPrint(const std::string& basename) {
  * @return true if the file exists and is not zero length
  */
 bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
-  std::string full_path_name = CreateFullPathToPrint(filename);
+  string full_path_name = CreateFullPathToPrint(filename);
   long lFileSize;
   unique_ptr<char[], void (*)(void*)> ss(get_file(full_path_name.c_str(), &lFileSize), &std::free);
   if (!ss) {

@@ -190,7 +190,7 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
   }
 }
 
-void input1(std::string* strOutText, int nMaxLength, InputMode lc, bool crend, bool bAutoMpl) {
+void input1(string* strOutText, int nMaxLength, InputMode lc, bool crend, bool bAutoMpl) {
   char szTempBuffer[ 255 ];
   WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
   input1(szTempBuffer, nMaxLength, lc, crend, bAutoMpl);
@@ -205,7 +205,7 @@ void input(char *pszOutText, int nMaxLength, bool bAutoMpl)
 }
 
 
-void input(std::string* strOutText, int nMaxLength, bool bAutoMpl)
+void input(string* strOutText, int nMaxLength, bool bAutoMpl)
 // This will input an upper-case string
 {
   char szTempBuffer[ 255 ];
@@ -221,7 +221,7 @@ void inputl(char *pszOutText, int nMaxLength, bool bAutoMpl)
 }
 
 
-void inputl(std::string* strOutText, int nMaxLength, bool bAutoMpl)
+void inputl(string* strOutText, int nMaxLength, bool bAutoMpl)
 // This will input an upper or lowercase string of characters
 {
   char szTempBuffer[ 255 ];
@@ -230,7 +230,7 @@ void inputl(std::string* strOutText, int nMaxLength, bool bAutoMpl)
   strOutText->assign(szTempBuffer);
 }
 
-void input_password(std::string promptText, std::string* strOutPassword, int nMaxLength) {
+void input_password(string promptText, string* strOutPassword, int nMaxLength) {
   GetSession()->bout << promptText;
   GetSession()->bout.ColorizedInputField(nMaxLength);
   local_echo = false;
@@ -253,7 +253,7 @@ void input_password(std::string promptText, std::string* strOutPassword, int nMa
 // Returns: length of string
 //==================================================================
 
-int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert, InputMode mode) {
+int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, InputMode mode) {
   char szTemp[ 255 ];
   const char dash = '-';
   const char slash = '/';
@@ -475,7 +475,7 @@ int Input1(char *pszOutText, std::string origText, int nMaxLength, bool bInsert,
 }
 
 
-int Input1(std::string* strOutText, std::string origText, int nMaxLength, bool bInsert, InputMode mode) {
+int Input1(string* strOutText, string origText, int nMaxLength, bool bInsert, InputMode mode) {
   char szTempBuffer[ 255 ];
   WWIV_ASSERT(nMaxLength < sizeof(szTempBuffer));
 

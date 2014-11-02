@@ -99,7 +99,7 @@ bool write_instance(int num, configoverrec* instance) {
   return true;
 }
 
-bool write_instance(int num, const std::string batch_dir, const std::string temp_dir) {
+bool write_instance(int num, const string batch_dir, const string temp_dir) {
   configoverrec instance;
   memset(&instance, 0, sizeof(configoverrec));
 

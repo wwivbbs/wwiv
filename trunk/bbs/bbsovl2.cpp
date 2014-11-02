@@ -16,10 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
+
 #include "bbs/wwiv.h"
 #include "bbs/keycodes.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+
+using std::string;
 
 // Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
@@ -283,7 +287,7 @@ void OnlineUserEditor() {
  * @param nCharDelay Delay between each character, in milliseconds
  * @param nStringDelay Delay between completion of string and backspacing
  */
-void BackPrint(const std::string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
+void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
   bool oecho = local_echo;
   local_echo = true;
   GetSession()->bout.Color(nColorCode);
@@ -320,7 +324,7 @@ void MoveLeft(int nNumberOfChars) {
  * then the string is simply printed normally.
  * @param
  */
-void SpinPuts(const std::string& strText, int nColorCode) {
+void SpinPuts(const string& strText, int nColorCode) {
   bool oecho  = local_echo;
   local_echo    = true;
 
