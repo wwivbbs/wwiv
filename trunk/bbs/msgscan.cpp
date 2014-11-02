@@ -1087,7 +1087,7 @@ void HandleMessageDelete(int &nMessageNumber) {
         WUser tu;
         GetApplication()->GetUserManager()->ReadUser(&tu, p2.owneruser);
         if (!tu.IsUserDeleted()) {
-          if (date_to_daten(tu.GetFirstOn()) < static_cast<signed int>(p2.daten)) {
+          if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
             GetSession()->bout.NewLine();
             GetSession()->bout << "|#2Remove how many posts credit? ";
             char szNumCredits[ 10 ];
