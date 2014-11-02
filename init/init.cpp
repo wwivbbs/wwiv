@@ -76,7 +76,6 @@ using wwiv::strings::StringReplace;
 initinfo_rec initinfo;
 configrec syscfg;
 statusrec status;
-subboardrec *subboards;
 newexternalrec *externs, *over_intern;
 net_networks_rec *net_networks;
 

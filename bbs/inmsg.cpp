@@ -30,6 +30,7 @@
 #include "bbs/wconstants.h"
 
 using std::string;
+using std::unique_ptr;
 using wwiv::bbs::InputMode;
 using wwiv::strings::GetStringLength;
 using wwiv::strings::IsEqualsIgnoreCase;
@@ -90,7 +91,7 @@ static bool GetMessageToName(const char *aux) {
 
 void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool needtitle, const char *aux, int fsed,
            const char *pszDestination, int flags, bool force_title) {
-  char *lin = nullptr, *b = nullptr;
+  char *lin = nullptr;
 
   int oiia = setiia(0);
 
@@ -174,7 +175,8 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
       }
     }
     lMaxMessageSize  += 1024;
-    if ((b = static_cast<char *>(BbsAllocA(lMaxMessageSize))) == nullptr) {
+    unique_ptr<char[]> b(new char[lMaxMessageSize]);
+    if (!b) {
       free(lin);
       GetSession()->bout << "Out of memory.\r\n";
       pMessageRecord->stored_as = 0xffffffff;
@@ -185,13 +187,13 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
 
     // Add author name
     if (real_name) {
-      AddLineToMessageBuffer(b, GetSession()->GetCurrentUser()->GetRealName(), &lCurrentMessageSize);
+      AddLineToMessageBuffer(b.get(), GetSession()->GetCurrentUser()->GetRealName(), &lCurrentMessageSize);
     } else {
       if (GetSession()->IsNewMailWatiting()) {
         const string sysop_name = StringPrintf("%s #1", syscfg.sysopname);
-        AddLineToMessageBuffer(b, sysop_name.c_str(), &lCurrentMessageSize);
+        AddLineToMessageBuffer(b.get(), sysop_name.c_str(), &lCurrentMessageSize);
       } else {
-        AddLineToMessageBuffer(b, GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem(GetSession()->usernum, net_sysnum),
+        AddLineToMessageBuffer(b.get(), GetSession()->GetCurrentUser()->GetUserNameNumberAndSystem(GetSession()->usernum, net_sysnum),
                                &lCurrentMessageSize);
       }
     }
@@ -201,14 +203,14 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
     string time_string(asctime(localtime(&lTime)));
     // asctime appends a \n to the end of the string.
     StringTrimEnd(&time_string);
-    AddLineToMessageBuffer(b, time_string.c_str(), &lCurrentMessageSize);
-    UpdateMessageBufferQuotesCtrlLines(b, &lCurrentMessageSize);
+    AddLineToMessageBuffer(b.get(), time_string.c_str(), &lCurrentMessageSize);
+    UpdateMessageBufferQuotesCtrlLines(b.get(), &lCurrentMessageSize);
 
     if (GetSession()->IsMessageThreadingEnabled()) {
-      UpdateMessageBufferTheadsInfo(b, &lCurrentMessageSize, aux);
+      UpdateMessageBufferTheadsInfo(b.get(), &lCurrentMessageSize, aux);
     }
     if (irt[0]) {
-      UpdateMessageBufferInReplyToInfo(b, &lCurrentMessageSize, aux);
+      UpdateMessageBufferInReplyToInfo(b.get(), &lCurrentMessageSize, aux);
     }
     if (fsed) {
       // Read the file produced by the external editor and add it to 'b'
@@ -219,17 +221,17 @@ void inmsg(messagerec * pMessageRecord, std::string* title, int *anony, bool nee
     } else {
       // iterate through the lines in "char *lin" and append them to 'b'
       for (int i5 = 0; i5 < curli; i5++) {
-        AddLineToMessageBuffer(b, &(lin[i5 * LEN]), &lCurrentMessageSize);
+        AddLineToMessageBuffer(b.get(), &(lin[i5 * LEN]), &lCurrentMessageSize);
       }
     }
 
     if (GetApplication()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
-      UpdateMessageBufferTagLine(b, &lCurrentMessageSize, aux);
+      UpdateMessageBufferTagLine(b.get(), &lCurrentMessageSize, aux);
     }
     if (b[lCurrentMessageSize - 1] != CZ) {
       b[lCurrentMessageSize++] = CZ;
     }
-    savefile(b, lCurrentMessageSize, pMessageRecord, aux);
+    savefile(b.get(), lCurrentMessageSize, pMessageRecord, aux);
   } else {
     GetSession()->bout << "|#6Aborted.\r\n";
     pMessageRecord->stored_as = 0xffffffff;

@@ -45,6 +45,8 @@
 
 #define qwk_iscan(x)         (iscan1(usub[x].subnum, 1))
 
+using std::unique_ptr;
+
 // from msgbase.cpp
 long current_gat_section();
 void current_gat_section(long section);
@@ -278,7 +280,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
       }
     }
 
-    std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
+    unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
     qsc_p[GetSession()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     GetSession()->SetCurrentMessageArea(os);
   } else {
@@ -392,9 +394,9 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   int cur = 0;
 
   long len;
-  char* ss = readfile(&m, fn, &len);
+  unique_ptr<char[]> ss(readfile(&m, fn, &len));
 
-  if (ss == nullptr) {
+  if (!ss) {
     GetSession()->bout.WriteFormatted("File not found.");
     GetSession()->bout.NewLine();
     return;
@@ -451,7 +453,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   p1 = 0;
 
   len = len - cur;
-  make_qwk_ready(ss + cur, &len, qwk_address);
+  make_qwk_ready(ss.get() + cur, &len, qwk_address);
 
   int amount_blocks = ((int)len / sizeof(qwk_info->qwk_rec)) + 2;
 
@@ -509,7 +511,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     this_pos = ((cur_block - 2) * sizeof(qwk_info->qwk_rec));
 
     if (this_pos < len) {
-      memmove(&qwk_info->qwk_rec, ss + cur + this_pos, this_pos + sizeof(qwk_info->qwk_rec) > len
+      memmove(&qwk_info->qwk_rec, ss.get() + cur + this_pos, this_pos + sizeof(qwk_info->qwk_rec) > len
               ? (int)len - this_pos - 1 : sizeof(qwk_info->qwk_rec));
     }
     // Save this block
@@ -520,10 +522,6 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   }
   // Global variable on total amount of records saved
   ++qwk_info->qwk_rec_num;
-
-  if (ss != nullptr) {
-    free(ss);
-  }
 }
 
 // Takes text, deletes all ascii '10' and converts '13' to '227' (ã)

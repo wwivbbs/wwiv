@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdint>
+#include <memory>
 #include <string>
 
 #include "wwiv.h"
@@ -30,10 +31,9 @@
 #include "core/wwivassert.h"
 
 using std::string;
+using std::unique_ptr;
 
-//
 // Local Functions
-//
 
 bool same_email(tmpmailrec * tm, mailrec * m);
 void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss);
@@ -442,9 +442,9 @@ void readmail(int mode) {
           if (nn == 255) {
             sprintf(s1, "#%u @%u.%s", m.fromuser, m.fromsys, "<deleted network>");
           } else {
-            char *b = readfile(&(m.msg), "email", &len);
+            unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
             if (b) {
-              strncpy(s2, b, sizeof(s2) - 1);
+              strncpy(s2, b.get(), sizeof(s2) - 1);
               ss2 = strtok(s2, "\r");
               if (m.fromsys == 32767) {
                 sprintf(s1, "%s", stripcolors(ss2));
@@ -459,7 +459,6 @@ void readmail(int mode) {
               if (strlen(s1) > GetSession()->mail_who_field_len) {
                 s1[ GetSession()->mail_who_field_len ] = '\0';
               }
-              free(b);
             } else {
               if (GetSession()->GetMaxNetworkNumber() > 1) {
                 sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, net_networks[nn].name, system_name.c_str());
@@ -698,8 +697,8 @@ void readmail(int mode) {
         break;
       case 'E':
         if (so() && okmail) {
-          char *b = readfile(&(m.msg), "email", &len);
-          extract_out(b, len, m.title, m.daten);
+          unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
+          extract_out(b.get(), len, m.title, m.daten);
         }
         i1 = 0;
         break;
@@ -832,7 +831,7 @@ void readmail(int mode) {
             }
           }
           if (i != -1) {
-            char *b = readfile(&(m.msg), "email", &len);
+            unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
 
             strcpy(p.title, m.title);
             p.anony = m.anony;
@@ -849,7 +848,7 @@ void readmail(int mode) {
               p.status |= status_pending_net;
             }
             p.msg.storage_type = (uint8_t) subboards[GetSession()->GetCurrentReadMessageArea()].storage_type;
-            savefile(b, len, &(p.msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename);
+            savefile(b.get(), len, &(p.msg), subboards[GetSession()->GetCurrentReadMessageArea()].filename);
             WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
             p.qscan = pStatus->IncrementQScanPointer();
             GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
@@ -944,8 +943,8 @@ void readmail(int mode) {
         }
         GetSession()->bout.NewLine(2);
         if (okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote()) {
-          char *b = readfile(&(m.msg), "email", &len);
-          auto_quote(b, len, 4, m.daten);
+          unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
+          auto_quote(b.get(), len, 4, m.daten);
           send_email();
           break;
         }
@@ -1019,8 +1018,8 @@ void readmail(int mode) {
                   pFileEmail->Seek(mloc[curmail].index * sizeof(mailrec), WFile::seekBegin);
                   pFileEmail->Write(&m1, sizeof(mailrec));
                 } else {
-                  char *b = readfile(&(m.msg), "email", &len);
-                  savefile(b, len, &(m.msg), "email");
+                  unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
+                  savefile(b.get(), len, &(m.msg), "email");
                 }
                 m.status |= status_forwarded;
                 m.status |= status_seen;
@@ -1083,11 +1082,11 @@ void readmail(int mode) {
           break;
         } else if (m.fromuser != 65535) {
           if (okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote()) {
-            char *b = readfile(&(m.msg), "email", &len);
+            unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
             if (s[0] == '@') {
-              auto_quote(b, len, 1, m.daten);
+              auto_quote(b.get(), len, 1, m.daten);
             } else {
-              auto_quote(b, len, 2, m.daten);
+              auto_quote(b.get(), len, 2, m.daten);
             }
           }
 
@@ -1199,7 +1198,7 @@ void readmail(int mode) {
       case 'Y':   // Add from here
         if (curmail >= 0) {
           std::string downloadFileName;
-          char *b = readfile(&(m.msg), "email", &len);
+          unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
           GetSession()->bout << "E-mail download -\r\n\n|#2Filename: ";
           input(&downloadFileName, 12);
           if (!okfn(downloadFileName.c_str())) {
@@ -1208,9 +1207,8 @@ void readmail(int mode) {
           WFile fileTemp(syscfgovr.tempdir, downloadFileName.c_str());
           fileTemp.Delete();
           fileTemp.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite);
-          fileTemp.Write(b, len);
+          fileTemp.Write(b.get(), len);
           fileTemp.Close();
-          free(b);
           bool bSent;
           send_file(fileTemp.GetFullPathName().c_str(), &bSent, 0, fileTemp.GetFullPathName().c_str(), -1, len);
           if (i) {
