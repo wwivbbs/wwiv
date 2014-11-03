@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "wwiv.h"
 #include "bbs/instmsg.h"
@@ -24,14 +25,10 @@
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 
+using std::string;
 
 //////////////////////////////////////////////////////////////////////////////
-//
 // Implementation
-//
-//
-//
-
 
 void normalupload(int dn) {
   uploadsrec u, u1;
@@ -78,7 +75,7 @@ void normalupload(int dn) {
   }
   if (d.mask & mask_archive) {
     ok = 0;
-    std::string supportedExtensions;
+    string supportedExtensions;
     for (int k = 0; k < MAX_ARCS; k++) {
       if (arcs[k].extension[0] && arcs[k].extension[0] != ' ') {
         if (!supportedExtensions.empty()) {
@@ -165,7 +162,7 @@ void normalupload(int dn) {
       bout << "Checking for same file in other directories...\r\n\n";
       int nLastLineLength = 0;
       for (int i = 0; i < GetSession()->num_dirs && udir[i].subnum != -1; i++) {
-        std::string buffer = "Scanning ";
+        string buffer = "Scanning ";
         buffer += directories[udir[i].subnum].name;
         int nBufferLen = buffer.length();
         for (int i3 = nBufferLen; i3 < nLastLineLength; i3++) {
@@ -192,7 +189,7 @@ void normalupload(int dn) {
           }
         }
       }
-      std::string filler = charstr(nLastLineLength, SPACE);
+      string filler = charstr(nLastLineLength, SPACE);
       bout << filler << "\r";
       if (ok) {
         dliscan1(dn);

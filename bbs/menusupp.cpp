@@ -210,8 +210,8 @@ void LastCallers() {
     } else {
       bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
     }
-    int i = okansi() ? 205 : '=';
-    bout << "|#7" << charstr(79, i) << wwiv::endl;
+    unsigned char i = okansi() ? 205 : '=';
+    bout << "|#7" << string(79, i) << wwiv::endl;
   }
   printfile(USER_LOG);
 }
