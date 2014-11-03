@@ -261,11 +261,7 @@ void modify_sub(int n) {
     char szAr[81];
 
     bout.cls();
-    char szSubNum[81];
-    sprintf(szSubNum, "%s %d", "|B1|15Editing Message Area #", n);
-    bout.bprintf("%-85s", szSubNum);
-    bout.Color(0);
-    bout.nl(2);
+    bout.litebar("%s %d", "Editing Message Area #", n);
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
     bout << "|#9C) Key        : |#2" << GetKey(r, szKey) << wwiv::endl;

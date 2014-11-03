@@ -79,10 +79,7 @@ void modify_sec(int n) {
   bool done = false;
   do {
     bout.cls();
-    sprintf(szSubNum, "|B1|15Editing G-File Area # %d", n);
-    bout.bprintf("%-85s", szSubNum);
-    bout.Color(0);
-    bout.nl(2);
+    bout.litebar("Editing G-File Area # %d", n);
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
     bout << "|#9C) SL         : |#2" << static_cast<int>(r.sl) << wwiv::endl;

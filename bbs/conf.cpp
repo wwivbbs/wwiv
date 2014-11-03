@@ -142,7 +142,7 @@ void jump_conf(int conftype) {
   userconfrec *uc = nullptr;
   int nc;
 
-  bout.litebar(" [ %s Conference Selection ] ", syscfg.systemname);
+  bout.litebar("%s Conference Selection", syscfg.systemname);
   get_conf_info(conftype, &nc, &cp, nullptr, nullptr, &uc);
   bool abort = false;
   strcpy(s, " ");

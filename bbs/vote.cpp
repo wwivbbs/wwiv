@@ -27,7 +27,7 @@ void print_quest(int mapp, int map[21]) {
 
   bout.cls();
   if (okansi()) {
-    bout.litebar("[ %s Voting Questions ]", syscfg.systemname);
+    bout.litebar("%s Voting Questions", syscfg.systemname);
   } else {
     bout << "|#5Voting Questions:\r\n\n";
   }

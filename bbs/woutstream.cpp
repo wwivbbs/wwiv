@@ -129,6 +129,7 @@ void WOutStream::litebar(const char *pszFormatText, ...) {
   vsnprintf(s, sizeof(s), pszFormatText, ap);
   va_end(ap);
 
+#ifdef OLD_LITEBAR
   if (strlen(s) % 2 != 0) {
     strcat(s, " ");
   }
@@ -141,6 +142,12 @@ void WOutStream::litebar(const char *pszFormatText, ...) {
   } else {
     *this << charstr(i, ' ') << s << wwiv::endl;
   }
+#else
+  const string header = StringPrintf("|B1|15 %-78s", s);
+  bout << header;
+  bout.Color(0);
+  bout.nl(2);
+#endif
 }
 
 void WOutStream::backline() {

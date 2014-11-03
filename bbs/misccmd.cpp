@@ -274,7 +274,7 @@ void list_users(int mode) {
     if (p == 0 && found) {
       bout.cls();
       char szTitleLine[255];
-      sprintf(szTitleLine, "[ %s User Listing ]", syscfg.systemname);
+      sprintf(szTitleLine, "%s User Listing", syscfg.systemname);
       if (okansi()) {
         bout.litebar(szTitleLine);
       } else {
