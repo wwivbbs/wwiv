@@ -102,7 +102,7 @@ void dirlist(int mode) {
           DisplayHorizontalBar(78, 7);
           bout.WriteFormatted("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ",
                                             is ? firstp : firstp + 1, lastp);
-          ss = mmkey(1, true);
+          ss = mmkey(1, WSession::mmkeyFileAreas, true);
           if (isdigit(ss[0])) {
             for (int i3 = 0; i3 < GetSession()->num_dirs; i3++) {
               if (wwiv::strings::IsEquals(udir[i3].keys, ss)) {

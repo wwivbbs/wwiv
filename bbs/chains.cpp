@@ -21,6 +21,7 @@
 
 #include "bbs/wwiv.h"
 #include "bbs/instmsg.h"
+#include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
@@ -192,6 +193,8 @@ void run_chain(int nChainNumber) {
 
 
 void do_chains() {
+  printfile(CHAINS_NOEXT);
+
   int *map = static_cast<int*>(BbsAllocA(GetSession()->max_chains * sizeof(int)));
   WWIV_ASSERT(map != nullptr);
   if (!map) {
@@ -236,18 +239,15 @@ void do_chains() {
   if (mapp == 0) {
     bout << "\r\n\n|#5Sorry, no external programs available.\r\n";
     free(map);
-    GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
     return;
   }
   show_chains(&mapp, map);
 
   bool done  = false;
-  GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
   int start  = 0;
   char* ss = nullptr;
 
   do {
-    GetSession()->SetMMKeyArea(WSession::mmkeyChains);
     GetSession()->localIO()->tleft(true);
     bout.nl();
     bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
@@ -262,12 +262,9 @@ void do_chains() {
       nChainNumber = atoi(szChainNumber);
     }
     if (nChainNumber > 0 && nChainNumber <= mapp) {
-      done = true;
-      GetSession()->SetMMKeyArea(WSession::mmkeyChains);
       bout << "\r\n|#6Please wait...\r\n";
       run_chain(map[ nChainNumber - 1 ]);
     } else if (IsEquals(ss, "Q")) {
-      GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
       done = true;
     } else if (IsEquals(ss, "?")) {
       show_chains(&mapp, map);

@@ -130,11 +130,7 @@ void Chains() {
   if (GuestCheck()) {
     write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
     play_sdf(CHAINS_NOEXT, false);
-    printfile(CHAINS_NOEXT);
-    GetSession()->SetMMKeyArea(WSession::mmkeyChains);
-    while (GetSession()->GetMMKeyArea() == WSession::mmkeyChains && !hangup) {
-      do_chains();
-    }
+    do_chains();
   }
 }
 
