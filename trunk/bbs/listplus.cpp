@@ -165,7 +165,7 @@ static void build_header() {
 }
 
 static void printtitle_plus_old() {
-  bout << "|16|15" << charstr(79, '\xDC') << wwiv::endl;
+  bout << "|16|15" << string(79, '\xDC') << wwiv::endl;
 
   const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
           directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
@@ -175,7 +175,7 @@ static void printtitle_plus_old() {
     build_header();
   }
 
-  bout << "|16|08" << charstr(79, '\xDF') << wwiv::endl;
+  bout << "|16|08" << string(79, '\xDF') << wwiv::endl;
   bout.Color(0);
 }
 
