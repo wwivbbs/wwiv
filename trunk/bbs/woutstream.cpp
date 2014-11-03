@@ -123,7 +123,7 @@ void WOutStream::SystemColor(int nColor) {
 
 void WOutStream::litebar(const char *pszFormatText, ...) {
   va_list ap;
-  char s[1024], s1[1024];
+  char s[1024];
 
   va_start(ap, pszFormatText);
   vsnprintf(s, sizeof(s), pszFormatText, ap);
@@ -135,6 +135,7 @@ void WOutStream::litebar(const char *pszFormatText, ...) {
   }
   int i = (74 - strlen(s)) / 2;
   if (okansi()) {
+    char s1[1024];
     snprintf(s1, sizeof(s1), "%s%s%s", charstr(i, ' '), stripcolors(s), charstr(i, ' '));
     *this << "\x1B[0;1;37m" << string(strlen(s1) + 4, '\xDC') << wwiv::endl;
     *this << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
