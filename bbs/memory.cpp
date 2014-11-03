@@ -16,76 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-
-#include "wwiv.h"
-#include "core/strings.h"
+#include <cstdlib>
+#include <cstring>
 #include "core/wwivassert.h"
 
 /**
- * Attempts to allocate nbytes (+1) bytes on the heap, returns ptr to memory
- * if successful.  Writes to sysoplog if unable to allocate the required memory
- * <P>
+ * Attempts to allocate nbytes (+1) bytes on the heap, returns ptr to memory if successful.
  * @param lNumBytes Number of bytes to allocate
  */
 void *BbsAllocA(size_t lNumBytes) {
   void* pBuffer = malloc(lNumBytes + 1);
-  memset(pBuffer, 0, lNumBytes);
   WWIV_ASSERT(pBuffer);
-#ifndef NOT_BBS
-  if (pBuffer == nullptr) {
-    bout << "\r\nNot enough memory, needed " << lNumBytes << " bytes.\r\n\n";
-    char szLogLine[ 255 ];
-    snprintf(szLogLine, sizeof(szLogLine), "!!! Ran out of memory, needed %u bytes !!!", lNumBytes);
-    sysoplog(szLogLine);
-    WWIV_OutputDebugString(szLogLine);
-  }
-#endif
+  memset(pBuffer, 0, lNumBytes);
   return pBuffer;
 }
-
-
-char **BbsAlloc2D(int nRow, int nCol, int nSize) {
-  WWIV_ASSERT(nSize > 0);
-#ifndef NOT_BBS
-  const char szErrorMessage[] = "WWIV: BbsAlloc2D: Memory Allocation Error -- Please inform the SysOp!";
-#endif
-
-  char* pdata = reinterpret_cast<char*>(calloc(nRow * nCol, nSize));
-  if (pdata == nullptr) {
-#ifndef NOT_BBS
-    bout << szErrorMessage;
-    WWIV_OutputDebugString(szErrorMessage);
-    sysoplog(szErrorMessage);
-    hangup = true;
-    bout.nl();
-#endif
-    return nullptr;
-  }
-  char** prow = static_cast< char ** >(BbsAllocA(nRow * sizeof(char *)));
-  if (prow == (char **) nullptr) {
-#ifndef NOT_BBS
-    bout << szErrorMessage;
-    WWIV_OutputDebugString(szErrorMessage);
-    sysoplog(szErrorMessage);
-    hangup = true;
-    bout.nl();
-#endif
-    free(pdata);
-    return nullptr;
-  }
-  for (int i = 0; i < nRow; i++) {
-    prow[i] = pdata;
-    pdata += nSize * nCol;
-  }
-  return prow;
-}
-
-
-void BbsFree2D(char **pa) {
-  if (pa) {
-    free(*pa);
-    free(pa);
-  }
-}
-
-

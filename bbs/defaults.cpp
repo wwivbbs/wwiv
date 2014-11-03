@@ -16,6 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
+#include <vector>
+
 #include "wwivcolors.h"
 
 #include "wwiv.h"
@@ -27,11 +30,12 @@
 #include "bbs/wconstants.h"
 
 using std::string;
+using std::vector;
 using wwiv::strings::IsEquals;
 using wwiv::strings::StringPrintf;
 
-#define STOP_LIST 0
-#define MAX_SCREEN_LINES_TO_SHOW 24
+static const int STOP_LIST = 0;
+static const int MAX_SCREEN_LINES_TO_SHOW = 24;
 
 #define NORMAL_HIGHLIGHT   (YELLOW+(BLACK<<4))
 #define NORMAL_MENU_ITEM   (CYAN+(BLACK<<4))
@@ -39,14 +43,6 @@ using wwiv::strings::StringPrintf;
 #define CURRENT_MENU_ITEM  (BLACK+(LIGHTGRAY<<4))
 // Undefine this so users can not toggle the sysop sub on and off
 // #define NOTOGGLESYSOP
-
-
-//
-// Local functions
-//
-void reset_user_colors_to_defaults();
-const string DisplayColorName(int c);
-
 
 void select_editor() {
   if (GetSession()->GetNumberOfEditors() == 0) {
@@ -114,7 +110,7 @@ static string GetMailBoxStatus() {
   return StringPrintf("Forward to %s", ur.GetUserNameAndNumber(GetSession()->GetCurrentUser()->GetForwardUserNumber()));
 }
 
-void print_cur_stat() {
+static void print_cur_stat() {
   char s1[255], s2[255];
   bout.cls();
   bout.litebar("[ Your Preferences ]");
@@ -179,32 +175,30 @@ void print_cur_stat() {
   bout << "|#1Q|#9) Quit to main menu\r\n";
 }
 
-const string DisplayColorName(int c) {
+static const string DisplayColorName(int c) {
   if (checkcomp("Ami") || checkcomp("Mac")) {
-    std::ostringstream os;
-    os << "Color #" << c;
-    return string(os.str());
+    return StringPrintf("Color #%d", c);
   }
 
   switch (c) {
   case 0:
-    return string("Black");
+    return "Black";
   case 1:
-    return string("Blue");
+    return "Blue";
   case 2:
-    return string("Green");
+    return "Green";
   case 3:
-    return string("Cyan");
+    return "Cyan";
   case 4:
-    return string("Red");
+    return "Red";
   case 5:
-    return string("Magenta");
+    return "Magenta";
   case 6:
-    return string("Yellow");
+    return "Yellow";
   case 7:
-    return string("White");
+    return "White";
   default:
-    return string("");
+    return "";
   }
 }
 
@@ -240,7 +234,14 @@ void color_list() {
   }
 }
 
-void change_colors() {
+static void reset_user_colors_to_defaults() {
+  for (int i = 0; i <= 9; i++) {
+    GetSession()->GetCurrentUser()->SetColor(i, GetSession()->newuser_colors[ i ]);
+    GetSession()->GetCurrentUser()->SetBWColor(i, GetSession()->newuser_bwcolors[ i ]);
+  }
+}
+
+static void change_colors() {
   bool done = false;
   bout.nl();
   do {
@@ -490,52 +491,7 @@ void config_qscan() {
   }
 }
 
-void make_macros() {
-  char szMacro[255], ch;
-  bool done = false;
-
-  do {
-    bputch(CL);
-    bout << "|#4Macro A: \r\n";
-    list_macro(GetSession()->GetCurrentUser()->GetMacro(2));
-    bout.nl();
-    bout << "|#4Macro D: \r\n";
-    list_macro(GetSession()->GetCurrentUser()->GetMacro(0));
-    bout.nl();
-    bout << "|#4Macro F: \r\n";
-    list_macro(GetSession()->GetCurrentUser()->GetMacro(1));
-    bout.nl(2);
-    bout << "|#9Macro to edit or Q:uit (A,D,F,Q) : |#0";
-    ch = onek("QADF");
-    szMacro[0] = 0;
-    switch (ch) {
-    case 'A':
-      macroedit(szMacro);
-      if (szMacro[0]) {
-        GetSession()->GetCurrentUser()->SetMacro(2, szMacro);
-      }
-      break;
-    case 'D':
-      macroedit(szMacro);
-      if (szMacro[0]) {
-        GetSession()->GetCurrentUser()->SetMacro(0, szMacro);
-      }
-      break;
-    case 'F':
-      macroedit(szMacro);
-      if (szMacro[0]) {
-        GetSession()->GetCurrentUser()->SetMacro(1, szMacro);
-      }
-      break;
-    case 'Q':
-      done = true;
-      break;
-    }
-  } while (!done && !hangup);
-}
-
-
-void list_macro(const char *pszMacroText) {
+static void list_macro(const char *pszMacroText) {
   int i = 0;
 
   while ((i < 80) && (pszMacroText[i] != 0)) {
@@ -564,7 +520,7 @@ void list_macro(const char *pszMacroText) {
   bout.nl();
 }
 
-char *macroedit(char *pszMacroText) {
+static char *macroedit(char *pszMacroText) {
   *pszMacroText = '\0';
   bout.nl();
   bout << "|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n";
@@ -627,7 +583,51 @@ char *macroedit(char *pszMacroText) {
   return pszMacroText;
 }
 
-void change_password() {
+static void make_macros() {
+  char szMacro[255], ch;
+  bool done = false;
+
+  do {
+    bputch(CL);
+    bout << "|#4Macro A: \r\n";
+    list_macro(GetSession()->GetCurrentUser()->GetMacro(2));
+    bout.nl();
+    bout << "|#4Macro D: \r\n";
+    list_macro(GetSession()->GetCurrentUser()->GetMacro(0));
+    bout.nl();
+    bout << "|#4Macro F: \r\n";
+    list_macro(GetSession()->GetCurrentUser()->GetMacro(1));
+    bout.nl(2);
+    bout << "|#9Macro to edit or Q:uit (A,D,F,Q) : |#0";
+    ch = onek("QADF");
+    szMacro[0] = 0;
+    switch (ch) {
+    case 'A':
+      macroedit(szMacro);
+      if (szMacro[0]) {
+        GetSession()->GetCurrentUser()->SetMacro(2, szMacro);
+      }
+      break;
+    case 'D':
+      macroedit(szMacro);
+      if (szMacro[0]) {
+        GetSession()->GetCurrentUser()->SetMacro(0, szMacro);
+      }
+      break;
+    case 'F':
+      macroedit(szMacro);
+      if (szMacro[0]) {
+        GetSession()->GetCurrentUser()->SetMacro(1, szMacro);
+      }
+      break;
+    case 'Q':
+      done = true;
+      break;
+    }
+  } while (!done && !hangup);
+}
+
+static void change_password() {
   bout.nl();
   bout << "|#9Change password? ";
   if (!yesno()) {
@@ -659,8 +659,7 @@ void change_password() {
   }
 }
 
-
-void modify_mailbox() {
+static void modify_mailbox() {
   char s[81];
 
   bout.nl();
@@ -729,8 +728,7 @@ void modify_mailbox() {
   bout.nl();
 }
 
-
-void optional_lines() {
+static void optional_lines() {
   bout << "|#9You may specify your optional lines value from 0-10,\r\n" ;
   bout << "|#20 |#9being all, |#210 |#9being none.\r\n";
   bout << "|#2What value? ";
@@ -877,21 +875,15 @@ void defaults(MenuInstanceData * pMenuData) {
   GetSession()->WriteCurrentUser();
 }
 
-
-
 // private function used by list_config_scan_plus and drawscan
-int GetMaxLinesToShowForScanPlus() {
-#ifdef MAX_SCREEN_LINES_TO_SHOW
+static int GetMaxLinesToShowForScanPlus() {
   return (GetSession()->GetCurrentUser()->GetScreenLines() - (4 + STOP_LIST) >
           MAX_SCREEN_LINES_TO_SHOW - (4 + STOP_LIST) ?
           MAX_SCREEN_LINES_TO_SHOW - (4 + STOP_LIST) :
           GetSession()->GetCurrentUser()->GetScreenLines() - (4 + STOP_LIST));
-#else
-  return GetSession()->GetCurrentUser()->GetScreenLines() - (4 + STOP_LIST);
-#endif
 }
 
-void list_config_scan_plus(int first, int *amount, int type) {
+static void list_config_scan_plus(int first, int *amount, int type) {
   char s[101];
 
   bool bUseConf = (subconfnum > 1 && okconf(GetSession()->GetCurrentUser())) ? true : false;
@@ -953,11 +945,58 @@ void list_config_scan_plus(int first, int *amount, int type) {
   lines_listed = 0;
 }
 
+static void drawscan(int filepos, long tagged) {
+  int max_lines = GetMaxLinesToShowForScanPlus();
+  if (filepos >= max_lines) {
+    bout.GotoXY(40, 3 + filepos - max_lines);
+  } else {
+    bout.GotoXY(1, filepos + 3);
+  }
+
+  bout.SystemColor(BLACK + (CYAN << 4));
+  bout.WriteFormatted("[%c]", tagged ? '\xFE' : ' ');
+  bout.SystemColor(YELLOW + (BLACK << 4));
+
+  if (filepos >= max_lines) {
+    bout.GotoXY(41, 3 + filepos - max_lines);
+  } else {
+    bout.GotoXY(2, filepos + 3);
+  }
+}
+
+static void undrawscan(int filepos, long tagged) {
+  int max_lines = GetMaxLinesToShowForScanPlus();
+
+  if (filepos >= max_lines) {
+    bout.GotoXY(40, 3 + filepos - max_lines);
+  } else {
+    bout.GotoXY(1, filepos + 3);
+  }
+  bout.WriteFormatted("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
+}
+
+static long is_inscan(int dir) {
+  bool sysdir = false;
+  if (IsEquals(udir[0].keys, "0")) {
+    sysdir = true;
+  }
+
+  for (int this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
+    char szDir[50];
+    sprintf(szDir, "%d", sysdir ? dir : dir + 1);
+    if (IsEquals(szDir, udir[this_dir].keys)) {
+      int ad = udir[this_dir].subnum;
+      return (qsc_n[ad / 32] & (1L << ad % 32));
+    }
+  }
+  return 0;
+}
+
 void config_scan_plus(int type) {
-  char **menu_items, s[50];
+  char s[50];
   int i, command, this_dir, this_sub, ad;
   int sysdir = 0, top = 0, amount = 0, pos = 0, side_pos = 0;
-  struct side_menu_colors smc = {
+  side_menu_colors smc = {
     NORMAL_HIGHLIGHT,
     NORMAL_MENU_ITEM,
     CURRENT_HIGHLIGHT,
@@ -968,29 +1007,22 @@ void config_scan_plus(int type) {
   GetSession()->topdata = WLocalIO::topdataNone;
   GetApplication()->UpdateTopScreen();
 
-  menu_items = static_cast<char **>(BbsAlloc2D(10, 10, sizeof(char)));
-  strcpy(menu_items[0], "Next");
-  strcpy(menu_items[1], "Previous");
-  strcpy(menu_items[2], "Toggle");
-  strcpy(menu_items[3], "Clear All");
-  strcpy(menu_items[4], "Set All");
+  vector<string> menu_items = { "Next",  "Previous", "Toggle", "Clear All", "Set All" };
 
   if (type == 0) {
-    strcpy(menu_items[5], "Read New");
+    menu_items.push_back("Read New");
   } else {
-    strcpy(menu_items[5], "List");
+    menu_items.push_back("List");
   }
 
   if (useconf) {
-    strcpy(menu_items[6], "{ Conf");
-    strcpy(menu_items[7], "} Conf");
-    strcpy(menu_items[8], "Quit");
-    strcpy(menu_items[9], "?");
-    menu_items[9][0] = 0;
+    menu_items.push_back("{ Conf");
+    menu_items.push_back("} Conf");
+    menu_items.push_back("Quit");
+    menu_items.push_back("?");
   } else {
-    strcpy(menu_items[6], "Quit");
-    strcpy(menu_items[7], "?");
-    menu_items[7][0] = 0;
+    menu_items.push_back("Quit");
+    menu_items.push_back("?");
   }
   bool done = false;
   while (!done && !hangup) {
@@ -1011,13 +1043,9 @@ void config_scan_plus(int type) {
     bool menu_done = false;
     while (!menu_done && !hangup && !done) {
       command = side_menu(&side_pos, redraw, menu_items, 1,
-#ifdef MAX_SCREEN_LINES_TO_SHOW
                           GetSession()->GetCurrentUser()->GetScreenLines() - STOP_LIST > MAX_SCREEN_LINES_TO_SHOW - STOP_LIST ?
                           MAX_SCREEN_LINES_TO_SHOW - STOP_LIST :
                           GetSession()->GetCurrentUser()->GetScreenLines() - STOP_LIST, &smc);
-#else
-                          GetSession()->GetCurrentUser()->GetScreenLines() - STOP_LIST, &smc);
-#endif
       lines_listed = 0;
       redraw = true;
       bout.Color(0);
@@ -1263,60 +1291,4 @@ void config_scan_plus(int type) {
   }
   lines_listed = 0;
   bout.nl();
-  BbsFree2D(menu_items);
-}
-
-
-void drawscan(int filepos, long tagged) {
-  int max_lines = GetMaxLinesToShowForScanPlus();
-  if (filepos >= max_lines) {
-    bout.GotoXY(40, 3 + filepos - max_lines);
-  } else {
-    bout.GotoXY(1, filepos + 3);
-  }
-
-  bout.SystemColor(BLACK + (CYAN << 4));
-  bout.WriteFormatted("[%c]", tagged ? '\xFE' : ' ');
-  bout.SystemColor(YELLOW + (BLACK << 4));
-
-  if (filepos >= max_lines) {
-    bout.GotoXY(41, 3 + filepos - max_lines);
-  } else {
-    bout.GotoXY(2, filepos + 3);
-  }
-}
-
-void undrawscan(int filepos, long tagged) {
-  int max_lines = GetMaxLinesToShowForScanPlus();
-
-  if (filepos >= max_lines) {
-    bout.GotoXY(40, 3 + filepos - max_lines);
-  } else {
-    bout.GotoXY(1, filepos + 3);
-  }
-  bout.WriteFormatted("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
-}
-
-long is_inscan(int dir) {
-  bool sysdir = false;
-  if (IsEquals(udir[0].keys, "0")) {
-    sysdir = true;
-  }
-
-  for (int this_dir = 0; (this_dir < GetSession()->num_dirs); this_dir++) {
-    char szDir[50];
-    sprintf(szDir, "%d", sysdir ? dir : dir + 1);
-    if (IsEquals(szDir, udir[this_dir].keys)) {
-      int ad = udir[this_dir].subnum;
-      return (qsc_n[ad / 32] & (1L << ad % 32));
-    }
-  }
-  return 0;
-}
-
-void reset_user_colors_to_defaults() {
-  for (int i = 0; i <= 9; i++) {
-    GetSession()->GetCurrentUser()->SetColor(i, GetSession()->newuser_colors[ i ]);
-    GetSession()->GetCurrentUser()->SetBWColor(i, GetSession()->newuser_bwcolors[ i ]);
-  }
 }

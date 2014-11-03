@@ -785,32 +785,6 @@ int check_lines_needed(uploadsrec * u) {
   return lc_lines_used + elines;
 }
 
-void prep_menu_items(char **menu_items) {
-  strcpy(menu_items[0], "Next");
-  strcpy(menu_items[1], "Prev");
-  strcpy(menu_items[2], "Tag");
-  strcpy(menu_items[3], "Info");
-  strcpy(menu_items[4], "ViewZip");
-
-  if (GetSession()->using_modem != 0) {
-    strcpy(menu_items[5], "Dload");
-  } else {
-    strcpy(menu_items[5], "Move");
-  }
-
-  strcpy(menu_items[6], "+Dir");
-  strcpy(menu_items[7], "-Dir");
-  strcpy(menu_items[8], "Full-Desc");
-  strcpy(menu_items[9], "Quit");
-  strcpy(menu_items[10], "?");
-  if (so()) {
-    strcpy(menu_items[11], "Sysop");
-    menu_items[13][0] = 0;
-  } else {
-    menu_items[12][0] = 0;
-  }
-}
-
 int prep_search_rec(struct search_record * search_rec, int type) {
   memset(search_rec, 0, sizeof(struct search_record));
   search_rec->search_extended = lp_config.search_extended_on;

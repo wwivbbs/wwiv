@@ -259,25 +259,12 @@ unsigned long int crc32buf(const char *pBuffer, size_t nLength);
 // File: defaults.cpp
 
 void select_editor();
-void print_cur_stat();
 const std::string DescribeColorCode(int nColorCode);
 void color_list();
-void change_colors();
-void l_config_qscan();
 void config_qscan();
-void make_macros();
-void list_macro(const char *pszMacroText);
-char *macroedit(char *pszMacroText);
-void change_password();
-void modify_mailbox();
-void optional_lines();
 void enter_regnum();
 void defaults(MenuInstanceData * MenuData);
-void list_config_scan_plus(int first, int *amount, int type);
 void config_scan_plus(int type);
-void drawscan(int filepos, long tagged);
-void undrawscan(int filepos, long tagged);
-long is_inscan(int dir);
 
 
 // File: diredit.cpp
@@ -413,7 +400,6 @@ int  print_extended_plus(const char *pszFileName, int numlist, int indent, int c
                          struct search_record * search_rec);
 void show_fileinfo(uploadsrec *pUploadRecord);
 int  check_lines_needed(uploadsrec * pUploadRecord);
-void prep_menu_items(char **menu_items);
 int  prep_search_rec(struct search_record * search_rec, int type);
 int  calc_max_lines();
 void load_lp_config();
@@ -441,8 +427,6 @@ int  listfiles_plus_function(int type);
 // File: memory.cpp
 
 void *BbsAllocA(size_t lNumBytes);
-char **BbsAlloc2D(int nRow, int nCol, int nSize);
-void BbsFree2D(char **pa);
 
 // File: menuedit.cpp
 
