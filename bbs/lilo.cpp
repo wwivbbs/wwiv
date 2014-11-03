@@ -908,7 +908,7 @@ void logon() {
   get_next_forced_event();
   bout.ResetColors();
   bout.Color(0);
-  bout.ClearScreen();
+  bout.cls();
 
   FixUserLinesAndColors();
   UpdateUserStatsForLogin();

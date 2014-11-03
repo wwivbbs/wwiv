@@ -184,7 +184,7 @@ void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
       bout << "\x1b[" << nNumPrintableChars << "D";
     } else {
       for (unsigned int j = 0; j < nNumPrintableChars; j++) {
-        bout.BackSpace();
+        bout.bs();
       }
     }
   }

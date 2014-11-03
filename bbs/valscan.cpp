@@ -53,10 +53,10 @@ void valscan() {
 
     bout.nl();
     bout.Color(2);
-    bout.ClearEOL();
+    bout.clreol();
     bout << "{{ ValScanning " << subboards[GetSession()->GetCurrentReadMessageArea()].name << " }}\r\n";
     lines_listed = 0;
-    bout.ClearEOL();
+    bout.clreol();
     if (okansi() && !newline) {
       bout << "\r\x1b[2A";
     }

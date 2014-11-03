@@ -59,7 +59,7 @@ void EditMenus() {
   int nAmount = 0;
   MenuHeader header;
   MenuRec Menu;
-  bout.ClearScreen();
+  bout.cls();
   bout << "|#2WWIV Menu Editor|#0\r\n";
 
   string menuDir;
@@ -629,7 +629,7 @@ bool GetMenuMenu(const string& directoryName, string& menuName) {
 
 
 void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
-  bout.ClearScreen();
+  bout.cls();
 
   bout << "|02(|#9" << nCur << "|02/|#9" << nAmount << "|02)" << wwiv::endl;
 
@@ -669,7 +669,7 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
 
 
 void DisplayHeader(MenuHeader * pHeader, int nCur, int nAmount, const char *pszDirectoryName) {
-  bout.ClearScreen();
+  bout.cls();
 
   OpenMenuDescriptions();
 
@@ -723,7 +723,7 @@ void EditPulldownColors(MenuHeader * pMenuHeader) {
 
   bool done = false;
   while (!done && !hangup) {
-    bout.ClearScreen();
+    bout.cls();
     bout.Color(0);
 
     bout.WriteFormatted("%-35.35s", "A) Title color");

@@ -510,7 +510,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
       bout.nl(2);
     }
 
-    bout.ClearScreen();
+    bout.cls();
     bout.Color(2);
     bout.WriteFormatted("Sending to: %s", s2);
     bout.nl();
@@ -592,7 +592,7 @@ void process_reply_dat(char *name) {
   // Should check to makesure first block contains our bbs id
   ++curpos;
 
-  bout.ClearScreen();
+  bout.cls();
 
   while (!done && !hangup) {
     to_email = 0;
@@ -626,7 +626,7 @@ void process_reply_dat(char *name) {
       if (atoi(tosub) == 0) {
         to_email = 1;
       } else if (qwk.status != ' ' && qwk.status != '-') { // if not public
-        bout.ClearScreen();
+        bout.cls();
         bout.Color(1);
         bout.WriteFormatted("Message '2%s1' is marked 3PRIVATE", title);
         bout.nl();
@@ -673,7 +673,7 @@ void process_reply_dat(char *name) {
               bout.nl(2);
 
               bout.WriteFormatted("Which address is correct?");
-              bout.ColorizedInputField(1);
+              bout.mpl(1);
 
               x = onek("12");
 
@@ -807,7 +807,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
       }
     }
 
-    bout.ClearScreen();
+    bout.cls();
     bout.Color(2);
     bout.WriteFormatted("Posting    :");
     bout.Color(3);
@@ -1011,7 +1011,7 @@ void qwk_sysop(void) {
   bool done = false;
   while (!done && !hangup) {
     qwk_system_name(sn);
-    bout.ClearScreen();
+    bout.cls();
     bout.WriteFormatted("[1] Hello   file : %s\r\n", qwk_cfg.hello);
     bout.WriteFormatted("[2] News    file : %s\r\n", qwk_cfg.news);
     bout.WriteFormatted("[3] Goodbye file : %s\r\n", qwk_cfg.bye);
@@ -1025,7 +1025,7 @@ void qwk_sysop(void) {
       bout.nl();
       bout.Color(1);
       bout.WriteFormatted("Enter new filename:");
-      bout.ColorizedInputField(12);
+      bout.mpl(12);
     }
 
     switch (x) {
@@ -1058,7 +1058,7 @@ void qwk_sysop(void) {
     case '5': {
       bout.Color(1);
       bout.WriteFormatted("Enter max messages per packet, 0=No Max: ");
-      bout.ColorizedInputField(5);
+      bout.mpl(5);
       string tmp;
       input(&tmp, 5);
       qwk_cfg.max_msgs = static_cast<uint16_t>(atoi(tmp.c_str()));
@@ -1082,7 +1082,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
   while (!done && !hangup) {
     bout.nl();
     bout.WriteFormatted("Add - Delete - ? List - Quit");
-    bout.ColorizedInputField(1);
+    bout.mpl(1);
 
     int key = onek("Q\rAD?");
 
@@ -1093,7 +1093,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
     case 'D': {
       bout.nl();
       bout.WriteFormatted("Which one?");
-      bout.ColorizedInputField(2);
+      bout.mpl(2);
 
       input(s, 2);
       int x = atoi(s);
@@ -1215,7 +1215,7 @@ void config_qwk_bw() {
     case 8: {
       struct qwk_junk qj;
       memset(&qj, 0, sizeof(struct qwk_junk));
-      bout.ClearScreen();
+      bout.cls();
 
       int a = select_qwk_archiver(&qj, 1);
       if (!qj.abort) {
@@ -1226,7 +1226,7 @@ void config_qwk_bw() {
     case 9: {
       struct qwk_junk qj;
       memset(&qj, 0, sizeof(struct qwk_junk));
-      bout.ClearScreen();
+      bout.cls();
 
       int a = select_qwk_protocol(&qj);
       if (!qj.abort) {

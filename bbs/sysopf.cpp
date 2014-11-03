@@ -103,7 +103,7 @@ void reset_files() {
 
 void prstatus(bool bIsWFC) {
   GetApplication()->GetStatusManager()->RefreshStatusCache();
-  bout.ClearScreen();
+  bout.cls();
   if (syscfg.newuserpw[0] != '\0') {
     bout << "|#9New User Pass   : " << syscfg.newuserpw << wwiv::endl;
   }
@@ -341,7 +341,7 @@ void print_net_listing(bool bForcePause) {
   }
   bool done = false;
   while (!done && !hangup) {
-    bout.ClearScreen();
+    bout.cls();
     if (GetSession()->GetMaxNetworkNumber() > 1) {
       odc[0] = 0;
       int odci = 0;
@@ -404,7 +404,7 @@ void print_net_listing(bool bForcePause) {
       acstr[0] = 0;
       phstr[0] = 0;
 
-      bout.ClearScreen();
+      bout.cls();
       bout.nl();
       bout << "|#9Network|#2: |#1" << GetSession()->GetNetworkName() << wwiv::endl;
       bout.nl();
@@ -820,7 +820,7 @@ void zlog() {
   zlogrec z;
   file.Read(&z, sizeof(zlogrec));
   bout.nl();
-  bout.ClearScreen();
+  bout.cls();
   bout.nl(2);
   pla("|#2  Date     Calls  Active   Posts   Email   Fback    U/L    %Act   T/user", &abort);
   pla("|#7--------   -----  ------   -----   -----   -----    ---    ----   ------", &abort);

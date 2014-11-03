@@ -45,7 +45,7 @@ char *gfiledata(int nSectionNum, char *pBuffer) {
 void showsec() {
   char szBuffer[255];
 
-  bout.ClearScreen();
+  bout.cls();
   bool abort = false;
   pla("|#2NN AR Name                                      FN       SL  AGE MAX", &abort);
   pla("|#7-- == ----------------------------------------  ======== --- === ---", &abort);
@@ -78,7 +78,7 @@ void modify_sec(int n) {
   gfiledirrec r = gfilesec[n];
   bool done = false;
   do {
-    bout.ClearScreen();
+    bout.cls();
     sprintf(szSubNum, "|B1|15Editing G-File Area # %d", n);
     bout.WriteFormatted("%-85s", szSubNum);
     bout.Color(0);

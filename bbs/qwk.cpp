@@ -150,7 +150,7 @@ void build_qwk_packet(void) {
 
   checka(&qwk_info.abort);
 
-  bout.ClearScreen();
+  bout.cls();
   if (!qwk_info.abort) {
     bout << "|#7\xDA" << string(4, '\xC4') << '\xC2' << string(60, '\xC4') << '\xC2' << string(5, '\xC4') 
       << '\xC2' << string(4, '\xC4') << '\xBF' << wwiv::endl;
@@ -793,7 +793,7 @@ void qwk_menu(void) {
   
   bool done = false;
   while (!done && !hangup) {
-    bout.ClearScreen();
+    bout.cls();
     printfile("QWK");
     if (so()) {
       bout.Write("1) Sysop QWK config");
@@ -811,7 +811,7 @@ void qwk_menu(void) {
     }
     strcat(temp, "7] ");
     bout.WriteFormatted(temp);
-    bout.ColorizedInputField(1);
+    bout.mpl(1);
 
     strcpy(temp, "Q\r?CDUBS%");
     if (so()) {
@@ -877,7 +877,7 @@ void qwk_menu(void) {
       sysoplog("Set %");
       bout.Color(2);
       bout.WriteFormatted("Enter percent of all messages in all QSCAN subs to pack:");
-      bout.ColorizedInputField(3);
+      bout.mpl(3);
       input(temp, 3);
       qwk_percent = atoi(temp);
       if (qwk_percent > 100) {
@@ -1062,11 +1062,11 @@ void write_qwk_cfg(struct qwk_config *qwk_cfg) {
 }
 
 int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
-  bout.ClearScreen();
+  bout.cls();
   bout.nl();
   bout.Color(2);
   bout.WriteFormatted("Largest packet you want, in msgs? (0=Unlimited) : ");
-  bout.ColorizedInputField(5);
+  bout.mpl(5);
 
   char temp[6];
   input(temp, 5);
@@ -1078,7 +1078,7 @@ int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
   *max_msgs = static_cast<uint16_t>(atoi(temp)); 
 
   bout.WriteFormatted("Most messages you want per sub? ");
-  bout.ColorizedInputField(5);
+  bout.mpl(5);
   input(temp, 5);
 
   if (!temp[0]) {
@@ -1322,7 +1322,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
       bout.Color(2);
       bout.WriteFormatted("Move to what dir? ");
-      bout.ColorizedInputField(60);
+      bout.mpl(60);
       input(new_dir, 60);
 
       StringTrim(new_dir);
