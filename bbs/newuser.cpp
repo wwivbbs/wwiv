@@ -36,15 +36,7 @@ using wwiv::core::FilePath;
 using wwiv::core::IniFile;
 using wwiv::strings::StringPrintf;
 
-//
 // Local function prototypes
-//
-
-void input_phone();
-bool check_name(const string userName);
-void input_callsign();
-int  find_new_usernum(const WUser *pUser, uint32_t* qsc);
-void cln_nu();
 
 void CreateNewUserRecord();
 bool CanCreateNewUserAccountHere();
@@ -62,7 +54,7 @@ void new_mail();
 bool CheckPasswordComplexity(WUser *pUser, string& password);
 
 
-void input_phone() {
+static void input_phone() {
   bool ok = true;
   string phoneNumber;
   do {
@@ -143,8 +135,7 @@ void input_language() {
   }
 }
 
-
-bool check_name(const string userName) {
+static bool check_name(const string userName) {
   // Since finduser is called with userName, it can not be const.  A better idea may be
   // to change this behaviour in the future.
   char s[255], s1[255], s2[MAX_PATH];
@@ -201,7 +192,6 @@ bool check_name(const string userName) {
   return ok;
 }
 
-
 void input_name() {
   int count = 0;
   bool ok = true;
@@ -229,7 +219,6 @@ void input_name() {
   } while (!ok && !hangup);
 }
 
-
 void input_realname() {
   if (!(syscfg.sysconfig & sysconfig_no_alias)) {
     do {
@@ -251,8 +240,7 @@ void input_realname() {
   }
 }
 
-
-void input_callsign() {
+static void input_callsign() {
   bout.nl();
   bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
   string s;
@@ -261,8 +249,7 @@ void input_callsign() {
 
 }
 
-
-bool valid_phone(const string phoneNumber) {
+bool valid_phone(const string& phoneNumber) {
   if (syscfg.sysconfig & sysconfig_free_phone) {
     return true;
   }
@@ -287,7 +274,6 @@ bool valid_phone(const string phoneNumber) {
   }
   return true;
 }
-
 
 void input_street() {
   string street;
@@ -624,8 +610,7 @@ void input_ansistat() {
   }
 }
 
-
-int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
+static int find_new_usernum(const WUser* pUser, uint32_t* qsc) {
   WFile userFile(syscfg.datadir, USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(WFile::modeBinary | WFile::modeReadWrite | WFile::modeCreateFile)) {
@@ -1307,8 +1292,6 @@ bool check_dupes(const char *pszPhoneNumber) {
   return false;
 }
 
-
-
 void noabort(const char *pszFileName) {
   bool oic = false;
 
@@ -1324,8 +1307,7 @@ void noabort(const char *pszFileName) {
   }
 }
 
-
-void cln_nu() {
+static void cln_nu() {
   bout.Color(0);
   int i1 = GetSession()->localIO()->WhereX();
   if (i1 > 28) {

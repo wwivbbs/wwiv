@@ -90,10 +90,8 @@ const char *WUser::GetUserNameNumberAndSystem(int nUserNumber, int nSystemNumber
 }
 
 /////////////////////////////////////////////////////////////////////////////
-//
 // class WUserManager
-//
-//
+
 WUserManager::WUserManager(std::string dataDirectory, int nUserRecordLength, int nMaxNumberOfUsers) :
   m_dataDirectory(dataDirectory), m_nUserRecordLength(nUserRecordLength), m_nMaxNumberOfUsers(nMaxNumberOfUsers),
   m_bUserWritesAllowed(true), m_bInitalized(true) {

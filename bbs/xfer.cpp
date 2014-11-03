@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "wwiv.h"
+#include <string>
 #include <vector>
 
 #include "core/strings.h"
@@ -25,23 +25,25 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
+#include "bbs/wwiv.h"
 
 using std::string;
+using wwiv::strings::GetStringLength;
+using wwiv::strings::IsEquals;
+using wwiv::strings::IsEqualsIgnoreCase;
 using wwiv::strings::StringPrintf;
 
 // How far to indent extended descriptions
 static const int INDENTION = 24;
 
 int foundany;
-
 int this_date;
 
 static int ed_num, ed_got;
 static ext_desc_rec *ed_info;
 
 using std::string;
-
-void finddevs(std::vector<string>& devices);
+using std::vector;
 
 void zap_ed_info() {
   if (ed_info) {
@@ -51,7 +53,6 @@ void zap_ed_info() {
   ed_num = 0;
   ed_got = 0;
 }
-
 
 void get_ed_info() {
   if (ed_got) {
@@ -95,15 +96,13 @@ void get_ed_info() {
   }
 }
 
-
 unsigned long bytes_to_k(unsigned long lBytes) {
   return (lBytes) ? ((unsigned long)((lBytes + 1023) / 1024)) : 0L;
 }
 
-
 int check_batch_queue(const char *pszFileName) {
   for (int i = 0; i < GetSession()->numbatch; i++) {
-    if (wwiv::strings::IsEquals(pszFileName, batch[i].filename)) {
+    if (IsEquals(pszFileName, batch[i].filename)) {
       return (batch[i].sending) ? 1 : -1;
     }
   }
@@ -114,40 +113,37 @@ int check_batch_queue(const char *pszFileName) {
  * returns true if everything is ok, false if the file
  */
 bool check_ul_event(int nDirectoryNum, uploadsrec * u) {
-  if (!syscfg.upload_cmd.empty()) {
-    string comport = StringPrintf("%d", incom ? syscfgovr.primaryport : 0);
-
-    const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[nDirectoryNum].path,
-                                    stripfn(u->filename), comport, "");
-    ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPAWNOPT_ULCHK));
-
-    WFile file(directories[nDirectoryNum].path, stripfn(u->filename));
-    if (!file.Exists()) {
-      sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, directories[nDirectoryNum].name);
-      bout << u->filename << " was deleted by the upload event.\r\n";
-      return false;
-    }
+  if (syscfg.upload_cmd.empty()) {
+    return true;
   }
-  return true;
-}
+  const string comport = StringPrintf("%d", incom ? syscfgovr.primaryport : 0);
+  const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(), directories[nDirectoryNum].path,
+                                  stripfn(u->filename), comport, "");
+  ExecuteExternalProgram(cmdLine, GetApplication()->GetSpawnOptions(SPAWNOPT_ULCHK));
 
+  WFile file(directories[nDirectoryNum].path, stripfn(u->filename));
+  if (!file.Exists()) {
+    sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, directories[nDirectoryNum].name);
+    bout << u->filename << " was deleted by the upload event.\r\n";
+    return false;
+  }
+}
 
 static const char *DeviceNames[] = {
   "KBD$", "PRN", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
   "COM8", "LPT1", "LPT2", "LPT3", "CLOCK$", "SCREEN$", "POINTER$", "MOUSE$"
 };
+
 const int NUM_DEVICES = 17; // length of DeviceNames
 
-
-void finddevs(std::vector<string>& devices) {
-  devices.clear();
+static void finddevs(vector<string>* devices) {
+  devices->clear();
   for (int i = 0; i < NUM_DEVICES; i++) {
-    devices.push_back(DeviceNames[i]);
+    devices->push_back(DeviceNames[i]);
   }
 }
 
-
-bool okfn(const string filename) {
+bool okfn(const string& filename) {
   if (filename.empty()) {
     return false;
   }
@@ -156,13 +152,11 @@ bool okfn(const string filename) {
   if (len == 0) {
     return false;
   }
-
   if (filename[0] == '-' || filename[0] == ' ' || filename[0] == '.' || filename[0] == '@') {
     return false;
   }
-
-  for (string::const_iterator iter = filename.begin(); iter != filename.end(); iter++) {
-    unsigned char ch = (*iter);
+  for (char c : filename) {
+    unsigned char ch = c;
     if (ch == ' '  || ch == '/' || ch == '\\' || ch == ':'  ||
         ch == '>'  || ch == '<' || ch == '|'  || ch == '+'  ||
         ch == ','  || ch == ';' || ch == '^'  || ch == '\"' ||
@@ -172,10 +166,9 @@ bool okfn(const string filename) {
   }
 
   std::vector<string> devices;
-  finddevs(devices);
+  finddevs(&devices);
 
-  for (std::vector<string>::iterator iter = devices.begin(); iter != devices.end(); iter++) {
-    string device = (*iter);
+  for (const auto& device : devices) {
     string::size_type deviceLen = device.length();
     if (filename.length() >= deviceLen && filename.substr(0, deviceLen) == device) {
       if (filename[deviceLen] == '\0' || filename[deviceLen] == '.' || deviceLen == 8) {
@@ -186,17 +179,15 @@ bool okfn(const string filename) {
   return true;
 }
 
-
 void print_devices() {
   std::vector<string> devices;
-  finddevs(devices);
+  finddevs(&devices);
 
-  for (std::vector<string>::iterator iter = devices.begin(); iter != devices.end(); iter++) {
-    bout << (*iter);
+  for (const auto& device : devices) {
+    bout << device;
     bout.nl();
   }
 }
-
 
 void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const char *ofn) {
   char szArcCmd[ MAX_PATH ];
@@ -208,7 +199,7 @@ void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const 
   }
   ++ss;
   for (int i = 0; i < MAX_ARCS; i++) {
-    if (wwiv::strings::IsEqualsIgnoreCase(ss, arcs[i].extension)) {
+    if (IsEqualsIgnoreCase(ss, arcs[i].extension)) {
       switch (cmd) {
       case 0:
         strcpy(szArcCmd, arcs[i].arcl);
@@ -240,7 +231,6 @@ void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const 
     }
   }
 }
-
 
 int list_arc_out(const char *pszFileName, const char *pszDirectory) {
   char szFileNameToDelete[81];
@@ -286,7 +276,6 @@ int list_arc_out(const char *pszFileName, const char *pszDirectory) {
   return nRetCode;
 }
 
-
 bool ratio_ok() {
   bool bRetValue = true;
 
@@ -313,11 +302,9 @@ bool ratio_ok() {
   return bRetValue;
 }
 
-
 bool dcs() {
   return (cs() || GetSession()->GetCurrentUser()->GetDsl() >= 100) ? true : false;
 }
-
 
 void dliscan1(int nDirectoryNum) {
   sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, directories[nDirectoryNum].filename);
@@ -336,7 +323,7 @@ void dliscan1(int nDirectoryNum) {
   } else {
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Read(&u, sizeof(uploadsrec));
-    if (!wwiv::strings::IsEquals(u.filename, "|MARKER|")) {
+    if (!IsEquals(u.filename, "|MARKER|")) {
       GetSession()->numf = u.numbytes;
       memset(&u, 0, sizeof(uploadsrec));
       strcpy(u.filename, "|MARKER|");
@@ -357,7 +344,6 @@ void dliscan1(int nDirectoryNum) {
   zap_ed_info();
 }
 
-
 void dliscan_hash(int nDirectoryNum) {
   uploadsrec u;
 
@@ -365,7 +351,7 @@ void dliscan_hash(int nDirectoryNum) {
     return;
   }
 
-  std::string dir = wwiv::strings::StringPrintf("%s%s.dir", 
+  string dir = StringPrintf("%s%s.dir",
       syscfg.datadir, directories[nDirectoryNum].filename);
   WFile file(dir);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -378,7 +364,7 @@ void dliscan_hash(int nDirectoryNum) {
   } else {
     FileAreaSetRecord(file, 0);
     file.Read(&u, sizeof(uploadsrec));
-    if (wwiv::strings::IsEquals(u.filename, "|MARKER|")) {
+    if (IsEquals(u.filename, "|MARKER|")) {
       GetSession()->m_DirectoryDateCache[nDirectoryNum] = u.daten;
     } else {
       time((time_t *) & (GetSession()->m_DirectoryDateCache[nDirectoryNum]));
@@ -387,17 +373,15 @@ void dliscan_hash(int nDirectoryNum) {
   file.Close();
 }
 
-
 void dliscan() {
   dliscan1(udir[GetSession()->GetCurrentFileArea()].subnum);
 }
-
 
 void add_extended_description(const char *pszFileName, const char *pszDescription) {
   ext_desc_type ed;
 
   strcpy(ed.name, pszFileName);
-  ed.len = static_cast<short>(wwiv::strings::GetStringLength(pszDescription));
+  ed.len = static_cast<short>(GetStringLength(pszDescription));
 
   WFile file(g_szExtDescrFileName);
   file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile);
@@ -408,7 +392,6 @@ void add_extended_description(const char *pszFileName, const char *pszDescriptio
 
   zap_ed_info();
 }
-
 
 void delete_extended_description(const char *pszFileName) {
   ext_desc_type ed;
@@ -427,7 +410,7 @@ void delete_extended_description(const char *pszFileName) {
     fileExtDescr.Read(&ed, sizeof(ext_desc_type));
     if (ed.len < 10000) {
       fileExtDescr.Read(ss, ed.len);
-      if (!wwiv::strings::IsEquals(pszFileName, ed.name)) {
+      if (!IsEquals(pszFileName, ed.name)) {
         if (r != w) {
           fileExtDescr.Seek(w, WFile::seekBegin);
           fileExtDescr.Write(&ed, sizeof(ext_desc_type));
@@ -444,13 +427,12 @@ void delete_extended_description(const char *pszFileName) {
   zap_ed_info();
 }
 
-
 char *read_extended_description(const char *pszFileName) {
   get_ed_info();
 
   if (ed_got && ed_info) {
     for (int i = 0; i < ed_num; i++) {
-      if (wwiv::strings::IsEquals(pszFileName, ed_info[i].name)) {
+      if (IsEquals(pszFileName, ed_info[i].name)) {
         WFile fileExtDescr(g_szExtDescrFileName);
         if (!fileExtDescr.Open(WFile::modeBinary | WFile::modeReadOnly)) {
           return nullptr;
@@ -459,7 +441,7 @@ char *read_extended_description(const char *pszFileName) {
         ext_desc_type ed;
         int nNumRead = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
         if (nNumRead == sizeof(ext_desc_type) &&
-            wwiv::strings::IsEquals(pszFileName, ed.name)) {
+            IsEquals(pszFileName, ed.name)) {
           char* ss = static_cast<char *>(BbsAllocA(ed.len + 10));
           if (ss) {
             fileExtDescr.Read(ss, ed.len);
@@ -484,7 +466,7 @@ char *read_extended_description(const char *pszFileName) {
         fileExtDescr.Seek(lCurPos, WFile::seekBegin);
         ext_desc_type ed;
         lCurPos += static_cast<long>(fileExtDescr.Read(&ed, sizeof(ext_desc_type)));
-        if (wwiv::strings::IsEquals(pszFileName, ed.name)) {
+        if (IsEquals(pszFileName, ed.name)) {
           char* ss = static_cast<char *>(BbsAllocA(ed.len + 10));
           if (ss) {
             fileExtDescr.Read(ss, ed.len);
@@ -501,8 +483,6 @@ char *read_extended_description(const char *pszFileName) {
   }
   return nullptr;
 }
-
-
 
 void print_extended(const char *pszFileName, bool *abort, int numlist, int indent) {
   bool next = false;
@@ -561,7 +541,6 @@ void print_extended(const char *pszFileName, bool *abort, int numlist, int inden
   }
 }
 
-
 void align(char *pszFileName) {
   // TODO Modify this to handle long filenames
   char szFileName[40], szExtension[40];
@@ -571,7 +550,7 @@ void align(char *pszFileName) {
     bInvalid = true;
   }
 
-  for (int i = 0; i < wwiv::strings::GetStringLength(pszFileName); i++) {
+  for (int i = 0; i < GetStringLength(pszFileName); i++) {
     if (pszFileName[i] == '\\' || pszFileName[i] == '/' ||
         pszFileName[i] == ':'  || pszFileName[i] == '<' ||
         pszFileName[i] == '>'  || pszFileName[i] == '|') {
@@ -640,7 +619,6 @@ void align(char *pszFileName) {
   }
 }
 
-
 bool compare(const char *pszFileName1, const char *pszFileName2) {
   for (int i = 0; i < 12; i++) {
     if (pszFileName1[i] != pszFileName2[i] && pszFileName1[i] != '?' && pszFileName2[i] != '?') {
@@ -649,7 +627,6 @@ bool compare(const char *pszFileName1, const char *pszFileName2) {
   }
   return true;
 }
-
 
 void printinfo(uploadsrec * u, bool *abort) {
   char s[85], s1[40], s2[81];
@@ -699,7 +676,7 @@ void printinfo(uploadsrec * u, bool *abort) {
       strcpy(s1, "N/A");
     }
   }
-  for (i = 0; i < 5 - wwiv::strings::GetStringLength(s1); i++) {
+  for (i = 0; i < 5 - GetStringLength(s1); i++) {
     s[i] = SPACE;
   }
   s[i] = '\0';
@@ -712,7 +689,7 @@ void printinfo(uploadsrec * u, bool *abort) {
     osan((okansi() ? "\xBA" : "|"), abort, &next);
     sprintf(s1, "%d", u->numdloads);
 
-    for (i = 0; i < 4 - wwiv::strings::GetStringLength(s1); i++) {
+    for (i = 0; i < 4 - GetStringLength(s1); i++) {
       s[i] = SPACE;
     }
     s[i] = '\0';
@@ -738,7 +715,6 @@ void printinfo(uploadsrec * u, bool *abort) {
     GetSession()->tagging = 0;
   }
 }
-
 
 void printtitle(bool *abort) {
   char szBuffer[ 255 ];
@@ -819,7 +795,6 @@ void printtitle(bool *abort) {
   GetSession()->titled = 0;
 }
 
-
 void file_mask(char *pszFileMask) {
   bout.nl();
   bout << "|#2File mask: ";
@@ -878,7 +853,6 @@ void listfiles() {
   endlist(1);
 }
 
-
 void nscandir(int nDirNum, bool *abort) {
   if (GetSession()->m_DirectoryDateCache[udir[nDirNum].subnum]
       && GetSession()->m_DirectoryDateCache[udir[nDirNum].subnum] < static_cast<unsigned long>(nscandate)) {
@@ -913,7 +887,6 @@ void nscandir(int nDirNum, bool *abort) {
   }
   GetSession()->SetCurrentFileArea(nOldCurDir);
 }
-
 
 void nscanall() {
   bool bScanAllConfs = false;
@@ -976,7 +949,6 @@ void nscanall() {
     tmp_disable_conf(false);
   }
 }
-
 
 void searchall() {
   char szFileMask[81];
@@ -1070,11 +1042,9 @@ void searchall() {
   }
 }
 
-
 int recno(const char *pszFileMask) {
   return nrecno(pszFileMask, 0);
 }
-
 
 int nrecno(const char *pszFileMask, int nStartingRec) {
   int nRecNum = nStartingRec + 1;
@@ -1095,7 +1065,6 @@ int nrecno(const char *pszFileMask, int nStartingRec) {
   fileDownload.Close();
   return (compare(pszFileMask, u.filename)) ? nRecNum : -1;
 }
-
 
 int printfileinfo(uploadsrec * u, int nDirectoryNum) {
   double d = XFER_TIME(u->numbytes);
@@ -1125,7 +1094,6 @@ int printfileinfo(uploadsrec * u, int nDirectoryNum) {
   return (nsl() >= d) ? 1 : 0;
 }
 
-
 void remlist(const char *pszFileName) {
   char szFileName[MAX_PATH], szListFileName[MAX_PATH];
 
@@ -1136,7 +1104,7 @@ void remlist(const char *pszFileName) {
     for (int i = 0; i < GetSession()->tagptr; i++) {
       strcpy(szListFileName, filelist[i].u.filename);
       align(szListFileName);
-      if (wwiv::strings::IsEquals(szFileName, szListFileName)) {
+      if (IsEquals(szFileName, szListFileName)) {
         for (int i2 = i; i2 < GetSession()->tagptr - 1; i2++) {
           filelist[ i2 ] = filelist[ i2 + 1 ];
         }
@@ -1147,8 +1115,6 @@ void remlist(const char *pszFileName) {
   }
 }
 
-
 int FileAreaSetRecord(WFile &file, int nRecordNumber) {
   return file.Seek(nRecordNumber * sizeof(uploadsrec), WFile::seekBegin);
 }
-

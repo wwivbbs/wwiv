@@ -119,10 +119,10 @@ const char *YesNoString(bool bYesNo);
 // File: bbsutl1.cpp
 
 bool AllowLocalSysop();
-void parse_email_info(const std::string emailAddress, int *pUserNumber, int *pSystemNumber);
+void parse_email_info(const std::string& emailAddress, int *pUserNumber, int *pSystemNumber);
 bool ValidateSysopPassword();
 void hang_it_up();
-bool play_sdf(const std::string soundFileName, bool abortable);
+bool play_sdf(const std::string& soundFileName, bool abortable);
 std::string describe_area_code(int nAreaCode);
 std::string describe_area_code_prefix(int nAreaCode, int town);
 
@@ -325,13 +325,13 @@ bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDe
 
 // File: finduser.cpp
 
-int finduser(const std::string searchString);
-int  finduser1(const std::string searchString);
+int finduser(const std::string& searchString);
+int finduser1(const std::string& searchString);
 
 
 // File: gfiles.cpp
 
-char *get_file(const char *pszFileName, long *len);
+char *get_file(const std::string& filename, long *len);
 gfilerec *read_sec(int sn, int *nf);
 void gfiles();
 
@@ -554,7 +554,7 @@ void input_dataphone();
 void input_language();
 void input_name();
 void input_realname();
-bool valid_phone(const std::string phoneNumber);
+bool valid_phone(const std::string& phoneNumber);
 void input_street();
 void input_city();
 void input_state();
@@ -624,7 +624,7 @@ void endbatch();
 char modemkey(int *tout);
 int  receive_block(char *b, unsigned char *bln, bool bUseCRC);
 void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC);
-void zmodem_receive(const std::string filename, bool *received);
+void zmodem_receive(const std::string& filename, bool *received);
 
 
 // File: srsend.cpp
@@ -765,7 +765,7 @@ void get_ed_info();
 unsigned long bytes_to_k(unsigned long lBytes);
 int  check_batch_queue(const char *pszFileName);
 bool check_ul_event(int nDirectoryNum, uploadsrec * pUploadRecord);
-bool okfn(const std::string fileName);
+bool okfn(const std::string& fileName);
 void print_devices();
 void get_arc_cmd(char *pszOutBuffer, const char *pszArcFileName, int cmd, const char *ofn);
 int  list_arc_out(const char *pszFileName, const char *pszDirectory);
