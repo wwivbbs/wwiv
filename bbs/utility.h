@@ -21,6 +21,7 @@
 
 #include <ctime>
 #include <string>
+#include <vector>
 
 #include "net.h"
 #include "sdk/vardec.h"
@@ -42,7 +43,7 @@ char *stripfn(const char *pszFileName);
 void stripfn_inplace(char *pszFileName);
 void preload_subs();
 char *get_wildlist(char *pszFileMask);
-int side_menu(int *menu_pos, bool redraw, char *menu_items[], int xpos, int ypos, struct side_menu_colors * smc);
+int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);
 void WWIV_SetFileTime(const char* pszFileName, const time_t tTime);
 bool okfsed();

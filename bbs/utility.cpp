@@ -22,6 +22,7 @@
 #include <sys/utime.h>
 #endif  // WIN32
 #include <string>
+#include <vector>
 
 #include "wwiv.h"
 #include "common.h"
@@ -32,6 +33,7 @@
 #include "bbs/wconstants.h"
 
 using std::string;
+using std::vector;
 using wwiv::strings::IsEqualsIgnoreCase;
 using wwiv::strings::StringPrintf;
 
@@ -416,12 +418,10 @@ char *get_wildlist(char *pszFileMask) {
   return pszPath;
 }
 
-
-int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, int ypos, struct side_menu_colors * smc) {
+int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items, int xpos, int ypos, side_menu_colors * smc) {
   static int positions[20], amount = 1;
 
   WWIV_ASSERT(menu_pos);
-  WWIV_ASSERT(menu_items);
   WWIV_ASSERT(smc);
 
   GetSession()->localIO()->tleft(true);
@@ -429,27 +429,30 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
   if (bNeedsRedraw) {
     amount = 1;
     positions[0] = xpos;
-    while (menu_items[amount] && menu_items[amount][0] && !hangup) {
-      positions[amount] = positions[amount - 1] + strlen(menu_items[amount - 1]) + 2;
+    for (const string& menu_item : menu_items) {
+      positions[amount] = positions[amount-1] + menu_item.length() + 2;
       ++amount;
     }
 
     int x = 0;
     bout.SystemColor(smc->normal_menu_item);
 
-    while (menu_items[x] && menu_items[x][0] && !hangup) {
+    for (const string& menu_item : menu_items) {
+      if (hangup) {
+        break;
+      }
       bout.GotoXY(positions[x], ypos);
 
       if (*menu_pos == x) {
         bout.SystemColor(smc->current_highlight);
-        bputch(menu_items[x][0]);
+        bputch(menu_item[0]);
         bout.SystemColor(smc->current_menu_item);
-        bout.WriteFormatted(menu_items[x] + 1);
+        bout.Write(menu_item.substr(1));
       } else {
         bout.SystemColor(smc->normal_highlight);
-        bputch(menu_items[x][0]);
+        bputch(menu_item[0]);
         bout.SystemColor(smc->normal_menu_item);
-        bout.WriteFormatted(menu_items[x] + 1);
+        bout.Write(menu_item.substr(1));
       }
       ++x;
     }
@@ -460,22 +463,20 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
     int event = get_kb_event(NOTNUMBERS);
     if (event < 128) {
       int x = 0;
-      while (menu_items[x] && menu_items[x][0] && !hangup) {
-        if (event == wwiv::UpperCase<int>(menu_items[x][0]) || event == wwiv::LowerCase<int>(menu_items[x][0])) {
+      for (const string& menu_item : menu_items) {
+        if (event == wwiv::UpperCase<int>(menu_item[0]) || event == wwiv::LowerCase<int>(menu_item[0])) {
           bout.GotoXY(positions[*menu_pos], ypos);
           bout.SystemColor(smc->normal_highlight);
           bputch(menu_items[*menu_pos][0]);
           bout.SystemColor(smc->normal_menu_item);
-          bout.WriteFormatted(menu_items[*menu_pos] + 1);
+          bout.Write(menu_items[*menu_pos].substr(1));
           *menu_pos = x;
           bout.SystemColor(smc->current_highlight);
           bout.GotoXY(positions[*menu_pos], ypos);
           bputch(menu_items[*menu_pos][0]);
           bout.SystemColor(smc->current_menu_item);
-          bout.WriteFormatted(menu_items[*menu_pos] + 1);
-          if (modem_speed > 2400 || !GetSession()->using_modem) {
-            bout.GotoXY(positions[*menu_pos], ypos);
-          }
+          bout.Write(menu_items[*menu_pos].substr(1));
+          bout.GotoXY(positions[*menu_pos], ypos);
           return EXECUTE;
         }
         ++x;
@@ -488,9 +489,9 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
         bout.SystemColor(smc->normal_highlight);
         bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->normal_menu_item);
-        bout.WriteFormatted(menu_items[*menu_pos] + 1);
+        bout.Write(menu_items[*menu_pos].substr(1));
         if (!*menu_pos) {
-          *menu_pos = amount - 1;
+          *menu_pos = menu_items.size() - 1;
         } else {
           --* menu_pos;
         }
@@ -498,10 +499,8 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
         bout.GotoXY(positions[*menu_pos], ypos);
         bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->current_menu_item);
-        bout.WriteFormatted(menu_items[*menu_pos] + 1);
-        if (modem_speed > 2400 || !GetSession()->using_modem) {
-          bout.GotoXY(positions[*menu_pos], ypos);
-        }
+        bout.Write(menu_items[*menu_pos].substr(1));
+        bout.GotoXY(positions[*menu_pos], ypos);
         break;
 
       case COMMAND_RIGHT:
@@ -509,8 +508,8 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
         bout.SystemColor(smc->normal_highlight);
         bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->normal_menu_item);
-        bout.WriteFormatted(menu_items[*menu_pos] + 1);
-        if (*menu_pos == amount - 1) {
+        bout.Write(menu_items[*menu_pos].substr(1));
+        if (*menu_pos == menu_items.size() - 1) {
           *menu_pos = 0;
         } else {
           ++* menu_pos;
@@ -519,12 +518,9 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
         bout.GotoXY(positions[*menu_pos], ypos);
         bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->current_menu_item);
-        bout.WriteFormatted(menu_items[*menu_pos] + 1);
-        if (modem_speed > 2400 || !GetSession()->using_modem) {
-          bout.GotoXY(positions[*menu_pos], ypos);
-        }
+        bout.Write(menu_items[*menu_pos].substr(1));
+        bout.GotoXY(positions[*menu_pos], ypos);
         break;
-
       default:
         return event;
       }

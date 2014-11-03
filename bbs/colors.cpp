@@ -29,7 +29,6 @@ void get_colordata() {
   file.Read(&rescolor, sizeof(colorrec));
 }
 
-
 void save_colordata() {
   WFile file(syscfg.datadir, COLOR_DAT);
   if (!file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
@@ -89,7 +88,6 @@ void list_ext_colors() {
 #if defined( _MSC_VER )
 #pragma warning( pop )
 #endif // _MSC_VER
-
 
 void color_config() {
   char s[81], ch, ch1;
@@ -185,7 +183,6 @@ void color_config() {
   bout.nl(3);
 }
 
-
 void buildcolorfile() {
   for (int i = 0; i < 240; i++) {
     rescolor.resx[i] = static_cast< unsigned char >(i + 1);
@@ -194,6 +191,3 @@ void buildcolorfile() {
   bout.nl();
   save_colordata();
 }
-
-
-
