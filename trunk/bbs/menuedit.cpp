@@ -655,7 +655,7 @@ void DisplayItem(MenuRec * Menu, int nCur, int nAmount) {
     bout << "|#9V) Hide text from : |#2" << (Menu->nHide == MENU_HIDE_NONE ? "None" : Menu->nHide ==
                        MENU_HIDE_PULLDOWN ? "Pulldown Menus" : Menu->nHide == MENU_HIDE_REGULAR ? "Regular Menus" : Menu->nHide ==
                        MENU_HIDE_BOTH ? "Both Menus" : "Out of Range") << wwiv::endl;
-    bout.WriteFormatted("|#9W) Pulldown flags : |#5%-20.20s |#1%-18.18s |#6%-20.20s",
+    bout.bprintf("|#9W) Pulldown flags : |#5%-20.20s |#1%-18.18s |#6%-20.20s",
                                       Menu->nPDFlags & PDFLAGS_NOCLEAR ? "No Clear before run" : "Clear before run",
                                       Menu->nPDFlags & PDFLAGS_NOPAUSEAFTER ? "No Pause after run" : "Pause after run",
                                       Menu->nPDFlags & PDFLAGS_NORESTORE ? "No Restore after run" : "Restore after run");
@@ -726,80 +726,80 @@ void EditPulldownColors(MenuHeader * pMenuHeader) {
     bout.cls();
     bout.Color(0);
 
-    bout.WriteFormatted("%-35.35s", "A) Title color");
+    bout.bprintf("%-35.35s", "A) Title color");
     if (pMenuHeader->nTitleColor) {
       bout.SystemColor(pMenuHeader->nTitleColor);
     }
     bout << static_cast<int>(pMenuHeader->nTitleColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "B) Main border color");
+    bout.bprintf("%-35.35s", "B) Main border color");
     if (pMenuHeader->nMainBorderColor) {
       bout.SystemColor(pMenuHeader->nMainBorderColor);
     }
     bout << static_cast<int>(pMenuHeader->nMainBorderColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "C) Main box color");
+    bout.bprintf("%-35.35s", "C) Main box color");
     if (pMenuHeader->nMainBoxColor) {
       bout.SystemColor(pMenuHeader->nMainBoxColor);
     }
     bout << static_cast<int>(pMenuHeader->nMainBoxColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "D) Main text color");
+    bout.bprintf("%-35.35s", "D) Main text color");
     if (pMenuHeader->nMainTextColor) {
       bout.SystemColor(pMenuHeader->nMainTextColor);
     }
     bout << static_cast<int>(pMenuHeader->nMainTextColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "E) Main text highlight color");
+    bout.bprintf("%-35.35s", "E) Main text highlight color");
     if (pMenuHeader->nMainTextHLColor) {
       bout.SystemColor(pMenuHeader->nMainTextHLColor);
     }
     bout << static_cast<int>(pMenuHeader->nMainTextHLColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "F) Main selected color");
+    bout.bprintf("%-35.35s", "F) Main selected color");
     if (pMenuHeader->nMainSelectedColor) {
       bout.SystemColor(pMenuHeader->nMainSelectedColor);
     }
     bout << static_cast<int>(pMenuHeader->nMainSelectedColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "G) Main selected hightlight color");
+    bout.bprintf("%-35.35s", "G) Main selected hightlight color");
     if (pMenuHeader->nMainSelectedHLColor) {
       bout.SystemColor(pMenuHeader->nMainSelectedHLColor);
     }
     bout << static_cast<int>(pMenuHeader->nMainSelectedHLColor) << wwiv::endl;
     bout.Color(0);
 
-    bout.WriteFormatted("%-35.35s", "K) Item border color");
+    bout.bprintf("%-35.35s", "K) Item border color");
     if (pMenuHeader->nItemBorderColor) {
       bout.SystemColor(pMenuHeader->nItemBorderColor);
     }
     bout << static_cast<int>(pMenuHeader->nItemBorderColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "L) Item box color");
+    bout.bprintf("%-35.35s", "L) Item box color");
     if (pMenuHeader->nItemBoxColor) {
       bout.SystemColor(pMenuHeader->nItemBoxColor);
     }
     bout << static_cast<int>(pMenuHeader->nItemBoxColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "M) Item text color");
+    bout.bprintf("%-35.35s", "M) Item text color");
     if (pMenuHeader->nItemTextColor) {
       bout.SystemColor(pMenuHeader->nItemTextColor);
     }
     bout << static_cast<int>(pMenuHeader->nItemTextColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "N) Item text highlight color");
+    bout.bprintf("%-35.35s", "N) Item text highlight color");
     if (pMenuHeader->nItemTextHLColor) {
       bout.SystemColor(pMenuHeader->nItemTextHLColor);
     }
     bout << static_cast<int>(pMenuHeader->nItemTextHLColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "O) Item selected color");
+    bout.bprintf("%-35.35s", "O) Item selected color");
     if (pMenuHeader->nItemSelectedColor) {
       bout.SystemColor(pMenuHeader->nItemSelectedColor);
     }
     bout << static_cast<int>(pMenuHeader->nItemSelectedColor) << wwiv::endl;
     bout.Color(0);
-    bout.WriteFormatted("%-35.35s", "P) Item selected hightlight color");
+    bout.bprintf("%-35.35s", "P) Item selected hightlight color");
     if (pMenuHeader->nItemSelectedHLColor) {
       bout.SystemColor(pMenuHeader->nItemSelectedHLColor);
     }
@@ -921,7 +921,7 @@ void ListMenuDirs() {
     string fileName = fnd.GetFileName();
     if (fnd.IsDirectory()) {
       WWIV_GetFileNameFromPath(fileName.c_str(), szName);
-      bout.WriteFormatted("|#2%-8.8s |15%-60.60s\r\n", szName, GetMenuDescription(fileName, szDesc));
+      bout.bprintf("|#2%-8.8s |15%-60.60s\r\n", szName, GetMenuDescription(fileName, szDesc));
     }
     bFound = fnd.next();
   }

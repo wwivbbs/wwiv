@@ -55,7 +55,7 @@ int bputch(char c, bool bUseInternalBuffer) {
 
   if (change_color == BPUTCH_MACRO_CHAR_CODE) {
     change_color = BPUTCH_NO_CODE;
-    return bout.Write(static_cast<const char *>(interpret(c)));
+    return bout.bputs(static_cast<const char *>(interpret(c)));
   } else if (change_color == BPUTCH_CTRLO_CODE) {
     if (c == CO) {
       change_color = BPUTCH_MACRO_CHAR_CODE;
@@ -91,7 +91,7 @@ int bputch(char c, bool bUseInternalBuffer) {
 
     if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
       bout << "|" ;
-      return bout.Write(pipe_color) + 1;
+      return bout.bputs(pipe_color) + 1;
     } else {
       char szAnsiColorCode[20];
       if (nc < 16) {
@@ -99,7 +99,7 @@ int bputch(char c, bool bUseInternalBuffer) {
       } else {
         makeansi((curatr & 0x0f) | (nc << 4), szAnsiColorCode, false);
       }
-      bout.Write(szAnsiColorCode);
+      bout.bputs(szAnsiColorCode);
     }
     return 0; // color was printed, no chars displayed
   } else if (change_color == BPUTCH_AT_MACRO_CODE) {
@@ -129,7 +129,7 @@ int bputch(char c, bool bUseInternalBuffer) {
     change_color = BPUTCH_AT_MACRO_CODE;
     return 0;
   } else if (c == SOFTRETURN && endofline[0]) {
-    displayed = bout.Write(endofline);
+    displayed = bout.bputs(endofline);
     endofline[0] = '\0';
   } else if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
     change_color = BPUTCH_NO_CODE;

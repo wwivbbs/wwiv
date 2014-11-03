@@ -317,7 +317,7 @@ ADD_OR_REMOVE_BATCH:
                       kbbatch -= bytes_to_k(file_recs[file_pos]->numbytes);
 #endif
                       bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
-                      bout.WriteFormatted("|%2d %c ", lp_config.tagged_color,
+                      bout.bprintf("|%2d %c ", lp_config.tagged_color,
                                                         check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
                       undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                       ++file_pos;
@@ -575,7 +575,7 @@ void drawfile(int filepos, int filenum) {
   lines_listed = 0;
   bout.GotoXY(4, filepos + first_file_pos());
   bout.SystemColor(lp_config.current_file_color);
-  bout.WriteFormatted("%3d|#0", filenum);
+  bout.bprintf("%3d|#0", filenum);
   bout.GotoXY(4, filepos + first_file_pos());
 }
 

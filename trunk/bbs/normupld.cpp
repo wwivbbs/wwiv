@@ -285,7 +285,7 @@ void normalupload(int dn) {
             GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
             sysoplogf("+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
             bout.nl(2);
-            bout.WriteFormatted("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
+            bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);
             if (GetSession()->IsUserOnline()) {
               GetApplication()->UpdateTopScreen();

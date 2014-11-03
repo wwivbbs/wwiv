@@ -118,49 +118,49 @@ static void print_cur_stat() {
           GetSession()->GetCurrentUser()->GetScreenLines());
   sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->HasAnsi() ?
           (GetSession()->GetCurrentUser()->HasColor() ? "Color" : "Monochrome") : "No ANSI");
-  bout.WriteFormatted("%-48s %-45s\r\n", s1, s2);
+  bout.bprintf("%-48s %-45s\r\n", s1, s2);
 
   sprintf(s1, "|#13|#9) Pause on screen   : |#2%s", GetSession()->GetCurrentUser()->HasPause() ? "On" : "Off");
   const string mailbox_status = GetMailBoxStatus();
   sprintf(s2, "|#14|#9) Mailbox           : |#2%s", mailbox_status.c_str());
-  bout.WriteFormatted("%-48s %-45s\r\n", s1, s2);
+  bout.bprintf("%-48s %-45s\r\n", s1, s2);
 
   sprintf(s1, "|#15|#9) Configured Q-scan");
   sprintf(s2, "|#16|#9) Change password");
-  bout.WriteFormatted("%-45s %-45s\r\n", s1, s2);
+  bout.bprintf("%-45s %-45s\r\n", s1, s2);
 
   if (okansi()) {
     sprintf(s1, "|#17|#9) Update macros");
     sprintf(s2, "|#18|#9) Change colors");
-    bout.WriteFormatted("%-45s %-45s\r\n", s1, s2);
+    bout.bprintf("%-45s %-45s\r\n", s1, s2);
     int nEditorNum = GetSession()->GetCurrentUser()->GetDefaultEditor();
     sprintf(s1, "|#19|#9) Full screen editor: |#2%s",
             ((nEditorNum > 0) && (nEditorNum <= GetSession()->GetNumberOfEditors())) ?
             editors[ nEditorNum - 1 ].description : "None");
     sprintf(s2, "|#1A|#9) Extended colors   : |#2%s", YesNoString(GetSession()->GetCurrentUser()->IsUseExtraColor()));
-    bout.WriteFormatted("%-48.48s %-45s\r\n", s1, s2);
+    bout.bprintf("%-48.48s %-45s\r\n", s1, s2);
   } else {
     bout << "|#17|#9) Update macros\r\n";
   }
   sprintf(s1, "|#1B|#9) Optional lines    : |#2%d", GetSession()->GetCurrentUser()->GetOptionalVal());
   sprintf(s2, "|#1C|#9) Conferencing      : |#2%s", YesNoString(GetSession()->GetCurrentUser()->IsUseConference()));
-  bout.WriteFormatted("%-48s %-45s\r\n", s1, s2);
+  bout.bprintf("%-48s %-45s\r\n", s1, s2);
   bout << "|#1I|#9) Internet Address  : |#2" << ((GetSession()->GetCurrentUser()->GetEmailAddress()[0] ==
                      '\0') ? "None." : GetSession()->GetCurrentUser()->GetEmailAddress()) << wwiv::endl;
   bout << "|#1K|#9) Configure Menus\r\n";
   if (GetSession()->num_languages > 1) {
     sprintf(s1, "|#1L|#9) Language          : |#2%s", cur_lang_name);
-    bout.WriteFormatted("%-48s ", s1);
+    bout.bprintf("%-48s ", s1);
   }
   if (num_instances() > 1) {
     sprintf(s1, "|#1M|#9) Allow user msgs   : |#2%s",
             YesNoString(GetSession()->GetCurrentUser()->IsIgnoreNodeMessages() ? false : true));
-    bout.WriteFormatted("%-48s", s1);
+    bout.bprintf("%-48s", s1);
   }
   bout.nl();
   sprintf(s1, "|#1S|#9) Cls Between Msgs? : |#2%s", YesNoString(GetSession()->GetCurrentUser()->IsUseClearScreen()));
   sprintf(s2, "|#1T|#9) 12hr or 24hr clock: |#2%s", GetSession()->GetCurrentUser()->IsUse24HourClock() ? "24hr" : "12hr");
-  bout.WriteFormatted("%-48s %-45s\r\n", s1, s2);
+  bout.bprintf("%-48s %-45s\r\n", s1, s2);
   sprintf(s1, "|#1U|#9) Use Msg AutoQuote : |#2%s", YesNoString(GetSession()->GetCurrentUser()->IsUseAutoQuote()));
 
   char szWWIVRegNum[80];
@@ -170,7 +170,7 @@ static void print_cur_stat() {
     strcpy(szWWIVRegNum, "(None)");
   }
   sprintf(s2, "|#1W|#9) WWIV reg num      : |#2%s", szWWIVRegNum);
-  bout.WriteFormatted("%-48s %-45s\r\n", s1, s2);
+  bout.bprintf("%-48s %-45s\r\n", s1, s2);
 
   bout << "|#1Q|#9) Quit to main menu\r\n";
 }
@@ -896,10 +896,10 @@ static void list_config_scan_plus(int first, int *amount, int type) {
                                        (subconfs[uconfsub[GetSession()->GetCurrentConferenceMessageArea()].confnum].name)) : stripcolors(
               reinterpret_cast<char*>(dirconfs[uconfdir[GetSession()->GetCurrentConferenceFileArea()].confnum].name)), 26);
     s[26] = '\0';
-    bout.WriteFormatted("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
+    bout.bprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                                       type == 0 ? 'Q' : 'N', s, type == 0 ? "sub" : "dir");
   } else {
-    bout.WriteFormatted("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
+    bout.bprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
                                       type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
   repeat_char('\xC4', 79);
@@ -954,7 +954,7 @@ static void drawscan(int filepos, long tagged) {
   }
 
   bout.SystemColor(BLACK + (CYAN << 4));
-  bout.WriteFormatted("[%c]", tagged ? '\xFE' : ' ');
+  bout.bprintf("[%c]", tagged ? '\xFE' : ' ');
   bout.SystemColor(YELLOW + (BLACK << 4));
 
   if (filepos >= max_lines) {
@@ -972,7 +972,7 @@ static void undrawscan(int filepos, long tagged) {
   } else {
     bout.GotoXY(1, filepos + 3);
   }
-  bout.WriteFormatted("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
+  bout.bprintf("|#7[|#1%c|#7]", tagged ? '\xFE' : ' ');
 }
 
 static long is_inscan(int dir) {

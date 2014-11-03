@@ -122,7 +122,7 @@ void build_qwk_packet(void) {
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   if (qwk_info.file < 1) {
-    bout.Write("Open error");
+    bout.bputs("Open error");
     sysoplog("Couldn't open MESSAGES.DAT");
     return;
   }
@@ -183,7 +183,7 @@ void build_qwk_packet(void) {
 
   if (qwk_info.abort) {
     bout.Color(1);
-    bout.WriteFormatted("Abort everything? (NO=Download what I have gathered)");
+    bout.bprintf("Abort everything? (NO=Download what I have gathered)");
     if (!yesno()) {
       qwk_info.abort = 0;
     }
@@ -268,7 +268,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     sprintf(subinfo, "|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, GetSession()->GetNumMessagesInCurrentMessageArea(),
             GetSession()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
-    bout.Write(subinfo);
+    bout.bputs(subinfo);
     bout.nl();
 
     checka(&qwk_info->abort);
@@ -294,7 +294,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     thissub[60] = 0;
     sprintf(subinfo, "|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, GetSession()->GetNumMessagesInCurrentMessageArea(), 0);
-    bout.Write(subinfo);
+    bout.bputs(subinfo);
     bout.nl();
 
     GetSession()->SetCurrentMessageArea(os);
@@ -397,7 +397,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   unique_ptr<char[]> ss(readfile(&m, fn, &len));
 
   if (!ss) {
-    bout.WriteFormatted("File not found.");
+    bout.bprintf("File not found.");
     bout.nl();
     return;
   }
@@ -473,7 +473,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   if (append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
     qwk_info->abort = 1; // Must be out of disk space
-    bout.Write("Write error");
+    bout.bputs("Write error");
     pausescr();
   }
 
@@ -796,13 +796,13 @@ void qwk_menu(void) {
     bout.cls();
     printfile("QWK");
     if (so()) {
-      bout.Write("1) Sysop QWK config");
+      bout.bputs("1) Sysop QWK config");
     }
 
     if (qwk_percent) {
       bout.Color(3);
       bout.nl();
-      bout.WriteFormatted("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
+      bout.bprintf("Of all messages, you will be downloading %d%%\r\n", qwk_percent);
     }
     bout.nl();
     strcpy(temp, "7[3Q1DCUBS%");
@@ -810,7 +810,7 @@ void qwk_menu(void) {
       strcat(temp, "1");
     }
     strcat(temp, "7] ");
-    bout.WriteFormatted(temp);
+    bout.bprintf(temp);
     bout.mpl(1);
 
     strcpy(temp, "Q\r?CDUBS%");
@@ -876,7 +876,7 @@ void qwk_menu(void) {
     case '%':
       sysoplog("Set %");
       bout.Color(2);
-      bout.WriteFormatted("Enter percent of all messages in all QSCAN subs to pack:");
+      bout.bprintf("Enter percent of all messages in all QSCAN subs to pack:");
       bout.mpl(3);
       input(temp, 3);
       qwk_percent = atoi(temp);
@@ -1065,7 +1065,7 @@ int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
   bout.cls();
   bout.nl();
   bout.Color(2);
-  bout.WriteFormatted("Largest packet you want, in msgs? (0=Unlimited) : ");
+  bout.bprintf("Largest packet you want, in msgs? (0=Unlimited) : ");
   bout.mpl(5);
 
   char temp[6];
@@ -1077,7 +1077,7 @@ int get_qwk_max_msgs(uint16_t *max_msgs, uint16_t *max_per_sub) {
 
   *max_msgs = static_cast<uint16_t>(atoi(temp)); 
 
-  bout.WriteFormatted("Most messages you want per sub? ");
+  bout.bprintf("Most messages you want per sub? ");
   bout.mpl(5);
   input(temp, 5);
 
@@ -1097,12 +1097,12 @@ void qwk_nscan(void) {
   char s[201], *ext;
 
   bout.Color(3);
-  bout.Write("Building NEWFILES.DAT");
+  bout.bputs("Building NEWFILES.DAT");
 
   sprintf(s, "%s%s", QWK_DIRECTORY, "NEWFILES.DAT");
   newfile = open(s, O_BINARY | O_RDWR | O_TRUNC | O_CREAT, S_IREAD | S_IWRITE;
   if (newfile < 1) {
-    bout.Write("Open Error");
+    bout.bputs("Open Error");
     return;
   }
 
@@ -1110,10 +1110,10 @@ void qwk_nscan(void) {
     checka(&abort);
     count++;
 
-    bout.WriteFormatted("%d.", color);
+    bout.bprintf("%d.", color);
     if (count >= DOTS) {
-      bout.WriteFormatted("\r");
-      bout.WriteFormatted("Searching");
+      bout.bprintf("\r");
+      bout.bprintf("Searching");
       color++;
       count = 0;
       if (color == 4) {
@@ -1216,7 +1216,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
   read_qwk_cfg(&qwk_cfg);
   if (!GetSession()->GetCurrentUser()->data.qwk_leave_bulletin) {
-    bout.Write("Grabbing hello/news/goodbye text files...");
+    bout.bputs("Grabbing hello/news/goodbye text files...");
 
     if (qwk_cfg.hello[0]) {
       sprintf(parem1, "%s%s", syscfg.gfilesdir, qwk_cfg.hello);
@@ -1276,7 +1276,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     WFile qwk_file_to_send_file(qwk_file_to_send);
     if (!WFile::Exists(qwk_file_to_send)){
-      bout.Write("No such file.");
+      bout.bputs("No such file.");
       bout.nl();
       qwk_info->abort = 1;
       return;
@@ -1284,7 +1284,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     numbytes = qwk_file_to_send_file.GetLength();
 
     if (numbytes == 0L) {
-      bout.Write("File has nothing in it.");
+      bout.bputs("File has nothing in it.");
       qwk_info->abort = 1;
       return;
     }
@@ -1299,9 +1299,9 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       } else {
         bout.nl();
         bout.Color(2);
-        bout.Write("Packet was not successful...");
+        bout.bputs("Packet was not successful...");
         bout.Color(1);
-        bout.WriteFormatted("Try transfer again?");
+        bout.bprintf("Try transfer again?");
 
         if (!noyes()) {
           done = 1;
@@ -1321,7 +1321,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       char nfile[81];
 
       bout.Color(2);
-      bout.WriteFormatted("Move to what dir? ");
+      bout.bprintf("Move to what dir? ");
       bout.mpl(60);
       input(new_dir, 60);
 
@@ -1340,7 +1340,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
       if (!replacefile(parem1, nfile, true)) {
         bout.Color(7);
-        bout.WriteFormatted("Try again?");
+        bout.bprintf("Try again?");
         if (!noyes()) {
           qwk_info->abort = 1;
           done = 1;

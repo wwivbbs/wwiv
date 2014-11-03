@@ -368,7 +368,7 @@ char *get_wildlist(char *pszFileMask) {
     pszFileMask[0] = '\0';
     return pszFileMask;
   } else {
-    bout.WriteFormatted("%12.12s ", fnd.GetFileName());
+    bout.bprintf("%12.12s ", fnd.GetFileName());
   }
 
   if (strchr(pszFileMask, WFile::pathSeparatorChar) == nullptr) {
@@ -394,7 +394,7 @@ char *get_wildlist(char *pszFileMask) {
     if (!fnd.next()) {
       break;
     }
-    bout.WriteFormatted("%12.12s ", fnd.GetFileName());
+    bout.bprintf("%12.12s ", fnd.GetFileName());
     if (bgetch() == SPACE) {
       bout.nl();
       break;
@@ -447,12 +447,12 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         bout.SystemColor(smc->current_highlight);
         bputch(menu_item[0]);
         bout.SystemColor(smc->current_menu_item);
-        bout.Write(menu_item.substr(1));
+        bout.bputs(menu_item.substr(1));
       } else {
         bout.SystemColor(smc->normal_highlight);
         bputch(menu_item[0]);
         bout.SystemColor(smc->normal_menu_item);
-        bout.Write(menu_item.substr(1));
+        bout.bputs(menu_item.substr(1));
       }
       ++x;
     }
@@ -469,13 +469,13 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
           bout.SystemColor(smc->normal_highlight);
           bputch(menu_items[*menu_pos][0]);
           bout.SystemColor(smc->normal_menu_item);
-          bout.Write(menu_items[*menu_pos].substr(1));
+          bout.bputs(menu_items[*menu_pos].substr(1));
           *menu_pos = x;
           bout.SystemColor(smc->current_highlight);
           bout.GotoXY(positions[*menu_pos], ypos);
           bputch(menu_items[*menu_pos][0]);
           bout.SystemColor(smc->current_menu_item);
-          bout.Write(menu_items[*menu_pos].substr(1));
+          bout.bputs(menu_items[*menu_pos].substr(1));
           bout.GotoXY(positions[*menu_pos], ypos);
           return EXECUTE;
         }
@@ -489,7 +489,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         bout.SystemColor(smc->normal_highlight);
         bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->normal_menu_item);
-        bout.Write(menu_items[*menu_pos].substr(1));
+        bout.bputs(menu_items[*menu_pos].substr(1));
         if (!*menu_pos) {
           *menu_pos = menu_items.size() - 1;
         } else {
@@ -499,7 +499,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         bout.GotoXY(positions[*menu_pos], ypos);
         bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->current_menu_item);
-        bout.Write(menu_items[*menu_pos].substr(1));
+        bout.bputs(menu_items[*menu_pos].substr(1));
         bout.GotoXY(positions[*menu_pos], ypos);
         break;
 
@@ -508,7 +508,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         bout.SystemColor(smc->normal_highlight);
         bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->normal_menu_item);
-        bout.Write(menu_items[*menu_pos].substr(1));
+        bout.bputs(menu_items[*menu_pos].substr(1));
         if (*menu_pos == menu_items.size() - 1) {
           *menu_pos = 0;
         } else {
@@ -518,7 +518,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         bout.GotoXY(positions[*menu_pos], ypos);
         bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->current_menu_item);
-        bout.Write(menu_items[*menu_pos].substr(1));
+        bout.bputs(menu_items[*menu_pos].substr(1));
         bout.GotoXY(positions[*menu_pos], ypos);
         break;
       default:

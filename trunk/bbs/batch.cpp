@@ -799,7 +799,7 @@ int batchdl(int mode) {
           dszbatchul(bHangupAfterDl, externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].receivebatchfn,
                      externs[i - WWIV_NUM_INTERNAL_PROTOCOLS].description);
           if (!bHangupAfterDl) {
-            bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
+            bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
           }
         }
         done = true;
@@ -839,7 +839,7 @@ int batchdl(int mode) {
           }
           if (!bHangupAfterDl) {
             bout.nl();
-            bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
+            bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
           }
         }
       }

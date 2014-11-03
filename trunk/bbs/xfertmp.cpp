@@ -411,7 +411,7 @@ bool download_temp_arc(const char *pszFileName, bool count_against_xfer_ratio) {
         GetSession()->GetCurrentUser()->SetFilesDownloaded(GetSession()->GetCurrentUser()->GetFilesDownloaded() + 1);
         GetSession()->GetCurrentUser()->SetDownloadK(GetSession()->GetCurrentUser()->GetDownloadK() + bytes_to_k(lFileSize));
         bout.nl(2);
-        bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
+        bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
       }
       sysoplogf("Downloaded %ldk of \"%s\"", bytes_to_k(lFileSize), szFileToSend);
       if (GetSession()->IsUserOnline()) {

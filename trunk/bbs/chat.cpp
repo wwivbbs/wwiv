@@ -232,7 +232,7 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
   } else if (IsEqualsIgnoreCase(pszMessage, "list")) {
     bout.nl();
     for (int i2 = 0; i2 <= g_nNumActions; i2++) {
-      bout.WriteFormatted("%-16.16s", actions[i2]->aword);
+      bout.bprintf("%-16.16s", actions[i2]->aword);
     }
     bout.nl();
     bActionHandled = 0;

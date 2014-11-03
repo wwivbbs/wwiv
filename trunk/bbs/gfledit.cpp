@@ -80,7 +80,7 @@ void modify_sec(int n) {
   do {
     bout.cls();
     sprintf(szSubNum, "|B1|15Editing G-File Area # %d", n);
-    bout.WriteFormatted("%-85s", szSubNum);
+    bout.bprintf("%-85s", szSubNum);
     bout.Color(0);
     bout.nl(2);
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
