@@ -37,15 +37,15 @@ void write_automessage();
  * Reads the auto message
  */
 void read_automessage() {
-  GetSession()->bout.NewLine();
+  bout.nl();
   unique_ptr<WStatus> status(GetApplication()->GetStatusManager()->GetStatus());
   bool bAutoMessageAnonymous = status->IsAutoMessageAnonymous();
 
   WTextFile autoMessageFile(syscfg.gfilesdir, AUTO_MSG, "rt");
   string line;
   if (!autoMessageFile.IsOpen() || !autoMessageFile.ReadLine(&line)) {
-    GetSession()->bout << "|#3No auto-message.\r\n";
-    GetSession()->bout.NewLine();
+    bout << "|#3No auto-message.\r\n";
+    bout.nl();
     return;
   }
 
@@ -59,15 +59,15 @@ void read_automessage() {
       authorName = ">UNKNOWN<";
     }
   }
-  GetSession()->bout << "\r\n|#9Auto message by: |#2" << authorName << "|#0\r\n\n";
+  bout << "\r\n|#9Auto message by: |#2" << authorName << "|#0\r\n\n";
 
   int nLineNumber = 0;
   while (autoMessageFile.ReadLine(&line) && nLineNumber++ < 10) {
     StringTrim(&line);
-    GetSession()->bout.Color(9);
-    GetSession()->bout << "|#9" << line << wwiv::endl;
+    bout.Color(9);
+    bout << "|#9" << line << wwiv::endl;
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
 }
 
 
@@ -78,22 +78,22 @@ void write_automessage() {
   vector<string> lines;
   string rollOver;
 
-  GetSession()->bout << "\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n";
+  bout << "\r\n|#9Enter auto-message. Max 5 lines. Colors allowed:|#0\r\n\n";
   for (int i = 0; i < 5; i++) {
-    GetSession()->bout << "|#7" << i + 1 << ":|#0";
+    bout << "|#7" << i + 1 << ":|#0";
     string line;
     inli(&line, &rollOver, 70);
     StringTrimEnd(&line);
     lines.push_back(line);
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   bool bAnonStatus = false;
   if (getslrec(GetSession()->GetEffectiveSl()).ability & ability_post_anony) {
-    GetSession()->bout << "|#9Anonymous? ";
+    bout << "|#9Anonymous? ";
     bAnonStatus = yesno();
   }
 
-  GetSession()->bout << "|#9Is this OK? ";
+  bout << "|#9Is this OK? ";
   if (yesno()) {
     WStatus *pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
     pStatus->SetAutoMessageAnonymous(bAnonStatus);
@@ -109,7 +109,7 @@ void write_automessage() {
       file.Write("\r\n");
       sysoplog(line, true);
     }
-    GetSession()->bout << "\r\n|#5Auto-message saved.\r\n\n";
+    bout << "\r\n|#5Auto-message saved.\r\n\n";
     file.Close();
   }
 }
@@ -123,14 +123,14 @@ char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName) {
 
   char cmdKey = 0;
   if (cs()) {
-    GetSession()->bout <<
+    bout <<
                        "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, (|#2D|#9)el, (|#2U|#9)nlock : ";
     cmdKey = onek("QRWALDU", true);
   } else if (bCanWrite) {
-    GetSession()->bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite : ";
+    bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite : ";
     cmdKey = onek("QRWA", true);
   } else {
-    GetSession()->bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply : ";
+    bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply : ";
     cmdKey = onek("QRA", true);
   }
   return cmdKey;
@@ -153,7 +153,7 @@ void do_automessage() {
 
   bool done = false;
   do {
-    GetSession()->bout.NewLine();
+    bout.nl();
     char cmdKey = ShowAMsgMenuAndGetInput(automessageLockFile);
     switch (cmdKey) {
     case 'Q':
@@ -175,17 +175,17 @@ void do_automessage() {
     }
     break;
     case 'D':
-      GetSession()->bout << "\r\n|#3Delete Auto-message, Are you sure? ";
+      bout << "\r\n|#3Delete Auto-message, Are you sure? ";
       if (yesno()) {
         WFile::Remove(autoMessageFile);
       }
-      GetSession()->bout.NewLine(2);
+      bout.nl(2);
       break;
     case 'L':
       if (WFile::Exists(automessageLockFile)) {
-        GetSession()->bout << "\r\n|#3Message is already locked.\r\n\n";
+        bout << "\r\n|#3Message is already locked.\r\n\n";
       } else {
-        GetSession()->bout <<  "|#9Do you want to lock the Auto-message? ";
+        bout <<  "|#9Do you want to lock the Auto-message? ";
         if (yesno()) {
           /////////////////////////////////////////////////////////
           // This makes a file in your GFILES dir 1 bytes long,
@@ -200,9 +200,9 @@ void do_automessage() {
       break;
     case 'U':
       if (!WFile::Exists(automessageLockFile)) {
-        GetSession()->bout << "Message not locked.\r\n";
+        bout << "Message not locked.\r\n";
       } else {
-        GetSession()->bout << "|#5Unlock message? ";
+        bout << "|#5Unlock message? ";
         if (yesno()) {
           WFile::Remove(automessageLockFile);
         }

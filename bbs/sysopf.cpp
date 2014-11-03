@@ -59,7 +59,7 @@ void reset_files() {
 
   WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
   pStatus->SetNumUsers(0);
-  GetSession()->bout.NewLine();
+  bout.nl();
   int nNumUsers = GetApplication()->GetUserManager()->GetNumberOfUserRecords();
   WFile userFile(syscfg.datadir, USER_LST);
   if (userFile.Open(WFile::modeBinary | WFile::modeReadWrite)) {
@@ -81,13 +81,13 @@ void reset_files() {
       userFile.Write(&user.data, syscfg.userreclen);
       if ((i % 10) == 0) {
         userFile.Close();
-        GetSession()->bout << i << "\r ";
+        bout << i << "\r ";
         userFile.Open(WFile::modeBinary | WFile::modeReadWrite);
       }
     }
     userFile.Close();
   }
-  GetSession()->bout << "\r\n\r\n";
+  bout << "\r\n\r\n";
 
   WFile namesFile(syscfg.datadir, NAMES_LST);
   if (!namesFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate)) {
@@ -103,31 +103,31 @@ void reset_files() {
 
 void prstatus(bool bIsWFC) {
   GetApplication()->GetStatusManager()->RefreshStatusCache();
-  GetSession()->bout.ClearScreen();
+  bout.ClearScreen();
   if (syscfg.newuserpw[0] != '\0') {
-    GetSession()->bout << "|#9New User Pass   : " << syscfg.newuserpw << wwiv::endl;
+    bout << "|#9New User Pass   : " << syscfg.newuserpw << wwiv::endl;
   }
-  GetSession()->bout << "|#9Board is        : " << (syscfg.closedsystem ? "Closed" : "Open") << wwiv::endl;
+  bout << "|#9Board is        : " << (syscfg.closedsystem ? "Closed" : "Open") << wwiv::endl;
 
   std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
   if (!bIsWFC) {
     // All of this information is on the WFC Screen
-    GetSession()->bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
-    GetSession()->bout << "|#9Number Calls    : |#2" << pStatus->GetCallerNumber() << wwiv::endl;
-    GetSession()->bout << "|#9Last Date       : |#2" << pStatus->GetLastDate() << wwiv::endl;
-    GetSession()->bout << "|#9Time            : |#2" << times() << wwiv::endl;
-    GetSession()->bout << "|#9Active Today    : |#2" << pStatus->GetMinutesActiveToday() << wwiv::endl;
-    GetSession()->bout << "|#9Calls Today     : |#2" << pStatus->GetNumCallsToday() << wwiv::endl;
-    GetSession()->bout << "|#9Net Posts Today : |#2" << (pStatus->GetNumMessagesPostedToday() - pStatus->GetNumLocalPosts())
+    bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
+    bout << "|#9Number Calls    : |#2" << pStatus->GetCallerNumber() << wwiv::endl;
+    bout << "|#9Last Date       : |#2" << pStatus->GetLastDate() << wwiv::endl;
+    bout << "|#9Time            : |#2" << times() << wwiv::endl;
+    bout << "|#9Active Today    : |#2" << pStatus->GetMinutesActiveToday() << wwiv::endl;
+    bout << "|#9Calls Today     : |#2" << pStatus->GetNumCallsToday() << wwiv::endl;
+    bout << "|#9Net Posts Today : |#2" << (pStatus->GetNumMessagesPostedToday() - pStatus->GetNumLocalPosts())
                        << wwiv::endl;
-    GetSession()->bout << "|#9Local Post Today: |#2" << pStatus->GetNumLocalPosts() << wwiv::endl;
-    GetSession()->bout << "|#9E Sent Today    : |#2" << pStatus->GetNumEmailSentToday() << wwiv::endl;
-    GetSession()->bout << "|#9F Sent Today    : |#2" << pStatus->GetNumFeedbackSentToday() << wwiv::endl;
-    GetSession()->bout << "|#9Uploads Today   : |#2" << pStatus->GetNumUploadsToday() << wwiv::endl;
-    GetSession()->bout << "|#9Feedback Waiting: |#2" << fwaiting << wwiv::endl;
-    GetSession()->bout << "|#9Sysop           : |#2" << ((sysop2()) ? "Available" : "NOT Available") << wwiv::endl;
+    bout << "|#9Local Post Today: |#2" << pStatus->GetNumLocalPosts() << wwiv::endl;
+    bout << "|#9E Sent Today    : |#2" << pStatus->GetNumEmailSentToday() << wwiv::endl;
+    bout << "|#9F Sent Today    : |#2" << pStatus->GetNumFeedbackSentToday() << wwiv::endl;
+    bout << "|#9Uploads Today   : |#2" << pStatus->GetNumUploadsToday() << wwiv::endl;
+    bout << "|#9Feedback Waiting: |#2" << fwaiting << wwiv::endl;
+    bout << "|#9Sysop           : |#2" << ((sysop2()) ? "Available" : "NOT Available") << wwiv::endl;
   }
-  GetSession()->bout << "|#9Q-Scan Pointer  : |#2" << pStatus->GetQScanPointer() << wwiv::endl;
+  bout << "|#9Q-Scan Pointer  : |#2" << pStatus->GetQScanPointer() << wwiv::endl;
 
   if (num_instances() > 1) {
     multi_instance();
@@ -141,18 +141,18 @@ void valuser(int nUserNumber) {
   WUser user;
   GetApplication()->GetUserManager()->ReadUser(&user, nUserNumber);
   if (!user.IsUserDeleted()) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Name: |#2" << user.GetUserNameAndNumber(nUserNumber) << wwiv::endl;
-    GetSession()->bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
-    GetSession()->bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
-    GetSession()->bout << "|#9Age : |#2" << user.GetAge() << " " << user.GetGender() << wwiv::endl;
-    GetSession()->bout << "|#9Comp: |#2" << ctypes(user.GetComputerType()) << wwiv::endl;
+    bout.nl();
+    bout << "|#9Name: |#2" << user.GetUserNameAndNumber(nUserNumber) << wwiv::endl;
+    bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
+    bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
+    bout << "|#9Age : |#2" << user.GetAge() << " " << user.GetGender() << wwiv::endl;
+    bout << "|#9Comp: |#2" << ctypes(user.GetComputerType()) << wwiv::endl;
     if (user.GetNote()[0]) {
-      GetSession()->bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
+      bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
     }
-    GetSession()->bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
+    bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
     if (user.GetSl() != 255 && user.GetSl() < GetSession()->GetEffectiveSl()) {
-      GetSession()->bout << "|#9New : ";
+      bout << "|#9New : ";
       input(s, 3, true);
       if (s[0]) {
         int nSl = atoi(s);
@@ -163,24 +163,24 @@ void valuser(int nUserNumber) {
           user.SetSl(nSl);
         }
         if (nSl == -1) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "|#9Delete? ";
+          bout.nl();
+          bout << "|#9Delete? ";
           if (yesno()) {
             deluser(nUserNumber);
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#6Deleted.\r\n\n";
+            bout.nl();
+            bout << "|#6Deleted.\r\n\n";
           } else {
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#3NOT deleted.\r\n";
+            bout.nl();
+            bout << "|#3NOT deleted.\r\n";
           }
           return;
         }
       }
     }
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9DSL : |#2" << user.GetDsl() << wwiv::endl;
+    bout.nl();
+    bout << "|#9DSL : |#2" << user.GetDsl() << wwiv::endl;
     if (user.GetDsl() != 255 && user.GetDsl() < GetSession()->GetCurrentUser()->GetDsl()) {
-      GetSession()->bout << "|#9New ? ";
+      bout << "|#9New ? ";
       input(s, 3, true);
       if (s[0]) {
         int nDsl = atoi(s);
@@ -225,12 +225,12 @@ void valuser(int nUserNumber) {
     s2[16]      = '\0';
     ar1[ar2]    = '\0';
     dar1[dar2]  = '\0';
-    GetSession()->bout.NewLine();
+    bout.nl();
     char ch1 = '\0';
     if (ar2 > 1) {
       do {
-        GetSession()->bout << "|#9AR  : |#2" << s << wwiv::endl;
-        GetSession()->bout << "|#9Togl? ";
+        bout << "|#9AR  : |#2" << s << wwiv::endl;
+        bout << "|#9Togl? ";
         ch1 = onek(ar1);
         if (ch1 != RETURN) {
           ch1 -= 'A';
@@ -244,12 +244,12 @@ void valuser(int nUserNumber) {
         }
       } while (!hangup && ch1 != RETURN);
     }
-    GetSession()->bout.NewLine();
+    bout.nl();
     ch1 = 0;
     if (dar2 > 1) {
       do {
-        GetSession()->bout << "|#9DAR : |#2" << s1 << wwiv::endl;
-        GetSession()->bout << "|#9Togl? ";
+        bout << "|#9DAR : |#2" << s1 << wwiv::endl;
+        bout << "|#9Togl? ";
         ch1 = onek(dar1);
         if (ch1 != RETURN) {
           ch1 -= 'A';
@@ -263,15 +263,15 @@ void valuser(int nUserNumber) {
         }
       } while (!hangup && ch1 != RETURN);
     }
-    GetSession()->bout.NewLine();
+    bout.nl();
     ch1     = 0;
     s[0]    = RETURN;
     s[1]    = '?';
     strcpy(&(s[2]), restrict_string);
     do {
-      GetSession()->bout << "      |#2" << s3 << wwiv::endl;
-      GetSession()->bout << "|#9Rstr: |#2" << s2 << wwiv::endl;
-      GetSession()->bout << "|#9Togl? ";
+      bout << "      |#2" << s3 << wwiv::endl;
+      bout << "|#9Rstr: |#2" << s2 << wwiv::endl;
+      bout << "|#9Togl? ";
       ch1 = onek(s);
       if (ch1 != RETURN && ch1 != SPACE && ch1 != '?') {
         int i = -1;
@@ -296,9 +296,9 @@ void valuser(int nUserNumber) {
       }
     } while (!hangup && ch1 == 0);
     GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
-    GetSession()->bout.NewLine();
+    bout.nl();
   } else {
-    GetSession()->bout << "\r\n|#6No Such User.\r\n\n";
+    bout << "\r\n|#6No Such User.\r\n\n";
   }
 }
 
@@ -341,14 +341,14 @@ void print_net_listing(bool bForcePause) {
   }
   bool done = false;
   while (!done && !hangup) {
-    GetSession()->bout.ClearScreen();
+    bout.ClearScreen();
     if (GetSession()->GetMaxNetworkNumber() > 1) {
       odc[0] = 0;
       int odci = 0;
       onx[0] = 'Q';
       onx[1] = 0;
       int onxi = 1;
-      GetSession()->bout.NewLine();
+      bout.nl();
       for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
         if (i < 9) {
           onx[onxi++] = static_cast<char>(i + '1');
@@ -358,10 +358,10 @@ void print_net_listing(bool bForcePause) {
           odc[odci - 1] = static_cast<char>(odci + '0');
           odc[odci] = 0;
         }
-        GetSession()->bout << "|#2" << i + 1 << "|#9)|#1 " << net_networks[i].name << wwiv::endl;
+        bout << "|#2" << i + 1 << "|#9)|#1 " << net_networks[i].name << wwiv::endl;
       }
-      GetSession()->bout << "|#2Q|#9)|#1 Quit\r\n\n";
-      GetSession()->bout << "|#9Which network? |#2";
+      bout << "|#2Q|#9)|#1 Quit\r\n\n";
+      bout << "|#9Which network? |#2";
       if (GetSession()->GetMaxNetworkNumber() < 9) {
         char ch = onek(onx);
         if (ch == 'Q') {
@@ -404,24 +404,24 @@ void print_net_listing(bool bForcePause) {
       acstr[0] = 0;
       phstr[0] = 0;
 
-      GetSession()->bout.ClearScreen();
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#9Network|#2: |#1" << GetSession()->GetNetworkName() << wwiv::endl;
-      GetSession()->bout.NewLine();
+      bout.ClearScreen();
+      bout.nl();
+      bout << "|#9Network|#2: |#1" << GetSession()->GetNetworkName() << wwiv::endl;
+      bout.nl();
 
-      GetSession()->bout << "|#21|#9) = |#1List All\r\n";
-      GetSession()->bout << "|#22|#9) = |#1Area Code\r\n";
-      GetSession()->bout << "|#23|#9) = |#1Group\r\n";
-      GetSession()->bout << "|#24|#9) = |#1Subs Coordinators\r\n";
-      GetSession()->bout << "|#25|#9) = |#1Area Coordinators\r\n";
-      GetSession()->bout << "|#26|#9) = |#1Group Coordinators\r\n";
-      GetSession()->bout << "|#27|#9) = |#1Net Coordinator\r\n";
-      GetSession()->bout << "|#28|#9) = |#1BBS Name SubString\r\n";
-      GetSession()->bout << "|#29|#9) = |#1Phone SubString\r\n";
-      GetSession()->bout << "|#20|#9) = |#1Unconnected Systems\r\n";
-      GetSession()->bout << "|#2Q|#9) = |#1Quit NetList\r\n";
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#9Select: |#2";
+      bout << "|#21|#9) = |#1List All\r\n";
+      bout << "|#22|#9) = |#1Area Code\r\n";
+      bout << "|#23|#9) = |#1Group\r\n";
+      bout << "|#24|#9) = |#1Subs Coordinators\r\n";
+      bout << "|#25|#9) = |#1Area Coordinators\r\n";
+      bout << "|#26|#9) = |#1Group Coordinators\r\n";
+      bout << "|#27|#9) = |#1Net Coordinator\r\n";
+      bout << "|#28|#9) = |#1BBS Name SubString\r\n";
+      bout << "|#29|#9) = |#1Phone SubString\r\n";
+      bout << "|#20|#9) = |#1Unconnected Systems\r\n";
+      bout << "|#2Q|#9) = |#1Quit NetList\r\n";
+      bout.nl();
+      bout << "|#9Select: |#2";
       char cmd = onek("Q1234567890");
 
       switch (cmd) {
@@ -436,8 +436,8 @@ void print_net_listing(bool bForcePause) {
         break;
       case '2':
         cmdbit = NET_SEARCH_AREACODE;
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#1Enter Area Code|#2: |#0";
+        bout.nl();
+        bout << "|#1Enter Area Code|#2: |#0";
         input(acstr, 3);
         if (strlen(acstr) != 3) {
           abort = true;
@@ -450,18 +450,18 @@ void print_net_listing(bool bForcePause) {
           }
         }
         if (abort) {
-          GetSession()->bout << "|#6Area code must be a 3-digit number!\r\n";
+          bout << "|#6Area code must be a 3-digit number!\r\n";
           pausescr();
           cmdbit = 0;
         }
         break;
       case '3':
         cmdbit = NET_SEARCH_GROUP;
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#1Enter group number|#2: |#0";
+        bout.nl();
+        bout << "|#1Enter group number|#2: |#0";
         input(s, 2);
         if ((s[0] == 0) || (atoi(s) < 1)) {
-          GetSession()->bout << "|#6Invalid group number!\r\n";
+          bout << "|#6Invalid group number!\r\n";
           pausescr();
           cmdbit = 0;
           break;
@@ -482,22 +482,22 @@ void print_net_listing(bool bForcePause) {
         break;
       case '8':
         cmdbit = NET_SEARCH_SUBSTR;
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#1Enter SubString|#2: |#0";
+        bout.nl();
+        bout << "|#1Enter SubString|#2: |#0";
         input(substr, 40);
         if (substr[0] == 0) {
-          GetSession()->bout << "|#6Enter a substring!\r\n";
+          bout << "|#6Enter a substring!\r\n";
           pausescr();
           cmdbit = 0;
         }
         break;
       case '9':
         cmdbit = NET_SEARCH_PHSUBSTR;
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#1Enter phone substring|#2: |#0";
+        bout.nl();
+        bout << "|#1Enter phone substring|#2: |#0";
         input(phstr, 12);
         if (phstr[0] == 0) {
-          GetSession()->bout << "|#6Enter a phone substring!\r\n";
+          bout << "|#6Enter a phone substring!\r\n";
           pausescr();
           cmdbit = 0;
         }
@@ -515,18 +515,18 @@ void print_net_listing(bool bForcePause) {
         break;
       }
 
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#1Print BBS region info? ";
+      bout.nl();
+      bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
       WFile bbsListFile(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
       if (!bbsListFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
-        GetSession()->bout << "|#6Error opening " << bbsListFile.GetFullPathName() << "!\r\n";
+        bout << "|#6Error opening " << bbsListFile.GetFullPathName() << "!\r\n";
         pausescr();
         continue;
       }
       strcpy(s, "000-000-0000");
-      GetSession()->bout.NewLine(2);
+      bout.nl(2);
 
       for (i = 0; (i < GetSession()->num_sys_list) && (!abort); i++) {
         bool matched = false;
@@ -646,10 +646,10 @@ void print_net_listing(bool bForcePause) {
       }
       bbsListFile.Close();
       if (!abort && slist) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#1Systems Listed |#7: |#2" << slist;
+        bout.nl();
+        bout << "|#1Systems Listed |#7: |#2" << slist;
       }
-      GetSession()->bout.NewLine(2);
+      bout.nl(2);
       pausescr();
     }
   }
@@ -687,7 +687,7 @@ void mailr() {
         do {
           WUser user;
           GetApplication()->GetUserManager()->ReadUser(&user, m.touser);
-          GetSession()->bout << "|#9  To|#7: |#" << GetSession()->GetMessageColor() << user.GetUserNameAndNumber(
+          bout << "|#9  To|#7: |#" << GetSession()->GetMessageColor() << user.GetUserNameAndNumber(
                                m.touser) << wwiv::endl;
           int tp = 80;
           int nn = 0;
@@ -705,7 +705,7 @@ void mailr() {
             nn = 0;
           }
           set_net_num(nn);
-          GetSession()->bout << "|#9Subj|#7: |#" << GetSession()->GetMessageColor() << m.title << wwiv::endl;
+          bout << "|#9Subj|#7: |#" << GetSession()->GetMessageColor() << m.title << wwiv::endl;
           if (m.status & status_file) {
             WFile attachDat(syscfg.datadir, ATTACH_DAT);
             if (attachDat.Open(WFile::modeReadOnly | WFile::modeBinary)) {
@@ -713,7 +713,7 @@ void mailr() {
               long lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
               while (lAttachFileSize > 0 && !found) {
                 if (m.daten == static_cast<unsigned long>(fsr.id)) {
-                  GetSession()->bout << "|#9Filename.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
+                  bout << "|#9Filename.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
                   found = true;
                 }
                 if (!found) {
@@ -721,16 +721,16 @@ void mailr() {
                 }
               }
               if (!found) {
-                GetSession()->bout << "|#1Filename|#0.... |#2File : Unknown or Missing|#0\r\n";
+                bout << "|#1Filename|#0.... |#2File : Unknown or Missing|#0\r\n";
               }
               attachDat.Close();
             } else {
-              GetSession()->bout << "|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n";
+              bout << "|#1Filename|#0.... |#2|#2File : Unknown or Missing|#0\r\n";
             }
           }
           bool next;
           read_message1(&(m.msg), (char)(m.anony & 0x0f), true, &next, "email", m.fromsys, m.fromuser);
-          GetSession()->bout << "|#2R,D,Q,<space>  : ";
+          bout << "|#2R,D,Q,<space>  : ";
           if (next) {
             c = ' ';
           } else {
@@ -762,14 +762,14 @@ void mailr() {
                 }
               }
             } else {
-              GetSession()->bout << "Mail file changed; try again.\r\n";
+              bout << "Mail file changed; try again.\r\n";
             }
             pFileEmail->Close();
             if (!GetSession()->IsUserOnline() && m.touser == 1 && m.tosys == 0) {
               GetSession()->GetCurrentUser()->SetNumMailWaiting(GetSession()->GetCurrentUser()->GetNumMailWaiting() - 1);
             }
           }
-          GetSession()->bout.NewLine(2);
+          bout.nl(2);
         } while ((c == 'R') && (!hangup));
 
         pFileEmail = OpenEmailFile(false);
@@ -791,7 +791,7 @@ void chuser() {
     return;
   }
 
-  GetSession()->bout << "|#9Enter user to change to: ";
+  bout << "|#9Enter user to change to: ";
   std::string userName;
   input(&userName, 30, true);
   int nUserNumber = finduser1(userName);
@@ -806,7 +806,7 @@ void chuser() {
     changedsl();
     GetApplication()->UpdateTopScreen();
   } else {
-    GetSession()->bout << "|#6Unknown user.\r\n";
+    bout << "|#6Unknown user.\r\n";
   }
 }
 
@@ -819,9 +819,9 @@ void zlog() {
   bool abort = false;
   zlogrec z;
   file.Read(&z, sizeof(zlogrec));
-  GetSession()->bout.NewLine();
-  GetSession()->bout.ClearScreen();
-  GetSession()->bout.NewLine(2);
+  bout.nl();
+  bout.ClearScreen();
+  bout.nl(2);
   pla("|#2  Date     Calls  Active   Posts   Email   Fback    U/L    %Act   T/user", &abort);
   pla("|#7--------   -----  ------   -----   -----   -----    ---    ----   ------", &abort);
   while (i < 97 && !abort && !hangup && z.date[0] != 0) {
@@ -834,10 +834,10 @@ void zlog() {
             z.date, z.calls, z.active, z.posts, z.email, z.fback, z.up, 10 * z.active / 144, nTimePerUser);
     // alternate colors to make it easier to read across the lines
     if (i % 2) {
-      GetSession()->bout << "|#1";
+      bout << "|#1";
       pla(szBuffer, &abort);
     } else {
-      GetSession()->bout << "|#3";
+      bout << "|#3";
       pla(szBuffer, &abort);
     }
     ++i;
@@ -923,8 +923,8 @@ void beginday(bool displayStatus) {
     return;
   }
   if (displayStatus) {
-    GetSession()->bout << "|#7* |#1Running Daily Maintenance...\r\n";
-    GetSession()->bout << "  |#7* |#1Updating system activity...\r\n";
+    bout << "|#7* |#1Running Daily Maintenance...\r\n";
+    bout << "  |#7* |#1Updating system activity...\r\n";
   }
 
   zlogrec z;
@@ -938,13 +938,13 @@ void beginday(bool displayStatus) {
   pStatus->NewDay();
 
   if (displayStatus) {
-    GetSession()->bout << "  |#7* |#1Cleaning up log files...\r\n";
+    bout << "  |#7* |#1Cleaning up log files...\r\n";
   }
   WFile::Remove(syscfg.gfilesdir, pStatus->GetLogFileName(1));
   WFile::Remove(syscfg.gfilesdir, USER_LOG);
 
   if (displayStatus) {
-    GetSession()->bout << "  |#7* |#1Updating ZLOG information...\r\n";
+    bout << "  |#7* |#1Updating ZLOG information...\r\n";
   }
   WFile fileZLog(syscfg.datadir, ZLOG_DAT);
   zlogrec z1;
@@ -973,13 +973,13 @@ void beginday(bool displayStatus) {
   fileZLog.Close();
 
   if (displayStatus) {
-    GetSession()->bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
+    bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
   }
   int nus = syscfg.maxusers - pStatus->GetNumUsers();
 
   GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
   if (displayStatus) {
-    GetSession()->bout << "  |#7* |#1Checking system directories and user space...\r\n";
+    bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }
 
   long fk = freek1(syscfg.datadir);
@@ -995,15 +995,15 @@ void beginday(bool displayStatus) {
     ExecuteExternalProgram(commandLine, GetApplication()->GetSpawnOptions(SPAWNOPT_BEGINDAY));
   }
   if (displayStatus) {
-    GetSession()->bout << "  |#7* |#1Purging inactive users (if enabled)...\r\n";
+    bout << "  |#7* |#1Purging inactive users (if enabled)...\r\n";
   }
   auto_purge();
   if (displayStatus) {
-    GetSession()->bout << "  |#7* |#1Updating user ages...\r\n";
+    bout << "  |#7* |#1Updating user ages...\r\n";
   }
   set_user_age();
   if (displayStatus) {
-    GetSession()->bout << "|#7* |#1Done!\r\n";
+    bout << "|#7* |#1Done!\r\n";
   }
 
   sysoplog("", false);

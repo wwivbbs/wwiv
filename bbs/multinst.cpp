@@ -160,25 +160,25 @@ void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
 }
 
 void multi_instance() {
-  GetSession()->bout.NewLine();
+  bout.nl();
   int nNumInstances = num_instances();
   if (nNumInstances < 1) {
-    GetSession()->bout << "|#6Couldn't find instance data file.\r\n";
+    bout << "|#6Couldn't find instance data file.\r\n";
     return;
   }
 
-  GetSession()->bout.WriteFormatted("|#5Node |#1%-35.35s |#2%-37.37s\r\n", "User Name", "Activity");
+  bout.WriteFormatted("|#5Node |#1%-35.35s |#2%-37.37s\r\n", "User Name", "Activity");
   char s1[81], s2[81], s3[81];
   strcpy(s1, charstr(4, '='));
   strcpy(s2, charstr(35, '='));
   strcpy(s3, charstr(37, '='));
-  GetSession()->bout.WriteFormatted("|#7%-4.4s %-35.35s %-37.37s\r\n", s1, s2, s3);
+  bout.WriteFormatted("|#7%-4.4s %-35.35s %-37.37s\r\n", s1, s2, s3);
 
   for (int nInstance = 1; nInstance <= nNumInstances; nInstance++) {
     string activity;
     make_inst_str(nInstance, &activity, INST_FORMAT_LIST);
-    GetSession()->bout << activity;
-    GetSession()->bout.NewLine();
+    bout << activity;
+    bout.nl();
   }
 }
 

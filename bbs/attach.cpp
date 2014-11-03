@@ -27,12 +27,12 @@ void attach_file(int mode) {
   WUser u;
   filestatusrec fsr;
 
-  GetSession()->bout.NewLine();
+  bout.nl();
   bool bDirectionForward = true;
   WFile *pFileEmail = OpenEmailFile(true);
   WWIV_ASSERT(pFileEmail);
   if (!pFileEmail->IsOpen()) {
-    GetSession()->bout << "\r\nNo mail.\r\n";
+    bout << "\r\nNo mail.\r\n";
     pFileEmail->Close();
     delete pFileEmail;
     return;
@@ -64,25 +64,25 @@ void attach_file(int mode) {
       bool done1 = false;
       do {
         done1 = false;
-        GetSession()->bout.NewLine();
+        bout.nl();
         if (m.tosys == 0) {
           char szBuffer[ 255 ];
           GetApplication()->GetUserManager()->ReadUser(&u, m.touser);
-          GetSession()->bout << "|#1  To|#7: |#2";
+          bout << "|#1  To|#7: |#2";
           strcpy(szBuffer, u.GetUserNameAndNumber(m.touser));
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
               (getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_email_anony) == 0) {
             strcpy(szBuffer, ">UNKNOWN<");
           }
-          GetSession()->bout << szBuffer;
-          GetSession()->bout.NewLine();
+          bout << szBuffer;
+          bout.nl();
         } else {
-          GetSession()->bout << "|#1To|#7: |#2User " << m.tosys << " System " << m.touser << wwiv::endl;
+          bout << "|#1To|#7: |#2User " << m.tosys << " System " << m.touser << wwiv::endl;
         }
-        GetSession()->bout << "|#1Subj|#7: |#2" << m.title << wwiv::endl;
+        bout << "|#1Subj|#7: |#2" << m.title << wwiv::endl;
         time_t tTimeNow = time(nullptr);
         int nDaysAgo = static_cast<int>((tTimeNow - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
-        GetSession()->bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
+        bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
           WFile fileAttach(syscfg.datadir, ATTACH_DAT);
           if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -90,7 +90,7 @@ void attach_file(int mode) {
             long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
             while (lNumRead > 0 && !bFound) {
               if (m.daten == static_cast<unsigned long>(fsr.id)) {
-                GetSession()->bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0";
+                bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0";
                 bFound = true;
               }
               if (!bFound) {
@@ -98,20 +98,20 @@ void attach_file(int mode) {
               }
             }
             if (!bFound) {
-              GetSession()->bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
+              bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
             }
             fileAttach.Close();
           } else {
-            GetSession()->bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
+            bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
           }
         }
-        GetSession()->bout.NewLine();
+        bout.nl();
         char ch = 0;
         if (mode == 0) {
-          GetSession()->bout << "|#9(R)ead, (A)ttach, (N)ext, (Q)uit : ";
+          bout << "|#9(R)ead, (A)ttach, (N)ext, (Q)uit : ";
           ch = onek("QRAN");
         } else {
-          GetSession()->bout << "|#9(R)ead, (A)ttach, (Q)uit : ";
+          bout << "|#9(R)ead, (A)ttach, (Q)uit : ";
           ch = onek("QRA");
         }
         switch (ch) {
@@ -123,7 +123,7 @@ void attach_file(int mode) {
           bool newname    = false;
           bool done2      = false;
           if (m.status & status_file) {
-            GetSession()->bout << "|#6File already attached, (D)elete, (O)verwrite, or (Q)uit? : ";
+            bout << "|#6File already attached, (D)elete, (O)verwrite, or (Q)uit? : ";
             char ch1 = onek("QDO");
             switch (ch1) {
             case 'Q':
@@ -150,7 +150,7 @@ void attach_file(int mode) {
                   }
                 }
                 attachFile.Close();
-                GetSession()->bout << "File attachment removed.\r\n";
+                bout << "File attachment removed.\r\n";
               }
               if (ch1 == 'D') {
                 done2 = true;
@@ -160,24 +160,24 @@ void attach_file(int mode) {
             }
           }
           if (freek1(GetApplication()->GetAttachmentDirectory().c_str()) < 500) {
-            GetSession()->bout << "Not enough free space to attach a file.\r\n";
+            bout << "Not enough free space to attach a file.\r\n";
           } else {
             if (!done2) {
               bool bRemoteUpload = false;
               bFound = false;
-              GetSession()->bout.NewLine();
+              bout.nl();
               if (so()) {
                 if (incom) {
-                  GetSession()->bout << "|#5Upload from remote? ";
+                  bout << "|#5Upload from remote? ";
                   if (yesno()) {
                     bRemoteUpload = true;
                   }
                 }
                 if (!bRemoteUpload) {
-                  GetSession()->bout << "|#5Path/filename (wildcards okay) : \r\n";
+                  bout << "|#5Path/filename (wildcards okay) : \r\n";
                   input(szFileToAttach, 35, true);
                   if (szFileToAttach[0]) {
-                    GetSession()->bout.NewLine();
+                    bout.nl();
                     if (strchr(szFileToAttach, '*') != nullptr || strchr(szFileToAttach, '?') != nullptr) {
                       strcpy(szFileToAttach, get_wildlist(szFileToAttach));
                     }
@@ -190,8 +190,8 @@ void attach_file(int mode) {
                   }
                   if (!bFound && szFileToAttach[0]) {
                     sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), stripfn(szFileToAttach));
-                    GetSession()->bout.NewLine();
-                    GetSession()->bout << "|#5" << szFileToAttach << "? ";
+                    bout.nl();
+                    bout << "|#5" << szFileToAttach << "? ";
                     if (!yesno()) {
                       bFound = true;
                     }
@@ -199,7 +199,7 @@ void attach_file(int mode) {
                 }
               }
               if (!so() || bRemoteUpload) {
-                GetSession()->bout << "|#2Filename: ";
+                bout << "|#2Filename: ";
                 input(szFileToAttach, 12, true);
                 sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), szFileToAttach);
                 if (!okfn(szFileToAttach) || strchr(szFileToAttach, '?')) {
@@ -207,13 +207,13 @@ void attach_file(int mode) {
                 }
               }
               if (WFile::Exists(szFullPathName)) {
-                GetSession()->bout << "Target file exists.\r\n";
+                bout << "Target file exists.\r\n";
                 bool done3 = false;
                 do {
                   bFound = true;
-                  GetSession()->bout << "|#5New name? ";
+                  bout << "|#5New name? ";
                   if (yesno()) {
-                    GetSession()->bout << "|#5Filename: ";
+                    bout << "|#5Filename: ";
                     input(szNewFileName, 12, true);
                     sprintf(szFullPathName, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), szNewFileName);
                     if (okfn(szNewFileName) && !strchr(szNewFileName, '?') && !WFile::Exists(szFullPathName)) {
@@ -221,7 +221,7 @@ void attach_file(int mode) {
                       done3   = true;
                       newname = true;
                     } else {
-                      GetSession()->bout << "Try Again.\r\n";
+                      bout << "Try Again.\r\n";
                     }
                   } else {
                     done3 = true;
@@ -241,15 +241,15 @@ void attach_file(int mode) {
                 fileAttach.Close();
               }
               if (bFound) {
-                GetSession()->bout << "File already exists or invalid filename.\r\n";
+                bout << "File already exists or invalid filename.\r\n";
               } else {
                 if (so() && !bRemoteUpload) {
                   // Copy file s to szFullPathName.
                   if (!WFile::CopyFile(szFileToAttach, szFullPathName)) {
-                    GetSession()->bout << "done.\r\n";
+                    bout << "done.\r\n";
                     ok = 1;
                   } else {
-                    GetSession()->bout << "\r\n|#6Error in copy.\r\n";
+                    bout << "\r\n|#6Error in copy.\r\n";
                     getkey();
                   }
                 } else {
@@ -260,7 +260,7 @@ void attach_file(int mode) {
                   WFile attachmentFile(szFullPathName);
                   if (!attachmentFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
                     ok = 0;
-                    GetSession()->bout << "\r\n\nDOS error - File not bFound.\r\n\n";
+                    bout << "\r\n\nDOS error - File not bFound.\r\n\n";
                   } else {
                     fsr.numbytes = attachmentFile.GetLength();
                     attachmentFile.Close();
@@ -270,14 +270,14 @@ void attach_file(int mode) {
                       strcpy(fsr.filename, stripfn(szFileToAttach));
                     }
                     fsr.id = m.daten;
-                    GetSession()->bout << "|#5Attach " << fsr.filename << " (" << fsr.numbytes << " bytes) to Email? ";
+                    bout << "|#5Attach " << fsr.filename << " (" << fsr.numbytes << " bytes) to Email? ";
                     if (yesno()) {
                       m.status ^= status_file;
                       pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, WFile::seekCurrent);
                       pFileEmail->Write(&m, sizeof(mailrec));
                       WFile attachFile(syscfg.datadir, ATTACH_DAT);
                       if (!attachFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile)) {
-                        GetSession()->bout << "Could not write attachment data.\r\n";
+                        bout << "Could not write attachment data.\r\n";
                         m.status ^= status_file;
                         pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, WFile::seekCurrent);
                         pFileEmail->Write(&m, sizeof(mailrec));
@@ -299,7 +299,7 @@ void attach_file(int mode) {
                         char szLogLine[ 255 ];
                         sprintf(szLogLine, "Attached %s (%u bytes) in message to %s",
                                 fsr.filename, fsr.numbytes, u.GetUserNameAndNumber(m.touser));
-                        GetSession()->bout << "File attached.\r\n" ;
+                        bout << "File attached.\r\n" ;
                         sysoplog(szLogLine);
                       }
                     } else {
@@ -324,8 +324,8 @@ void attach_file(int mode) {
           }
           break;
         case 'R': {
-          GetSession()->bout.NewLine(2);
-          GetSession()->bout << "Title: " << m.title;
+          bout.nl(2);
+          bout << "Title: " << m.title;
           bool next;
           read_message1(&m.msg, static_cast< char >(m.anony & 0x0f), false, &next, "email", 0, 0);
           if (m.status & status_file) {
@@ -335,8 +335,8 @@ void attach_file(int mode) {
               long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
               while (lNumRead > 0 && !bFound) {
                 if (m.daten == static_cast<unsigned long>(fsr.id)) {
-                  GetSession()->bout << "Attached file: " << fsr.filename << " (" << fsr.numbytes << " bytes).";
-                  GetSession()->bout.NewLine();
+                  bout << "Attached file: " << fsr.filename << " (" << fsr.numbytes << " bytes).";
+                  bout.nl();
                   bFound = true;
                 }
                 if (!bFound) {
@@ -344,11 +344,11 @@ void attach_file(int mode) {
                 }
               }
               if (!bFound) {
-                GetSession()->bout << "File attached but attachment data missing.  Alert sysop!\r\n";
+                bout << "File attached but attachment data missing.  Alert sysop!\r\n";
               }
               fileAttach.Close();
             } else {
-              GetSession()->bout << "File attached but attachment data missing.  Alert sysop!\r\n";
+              bout << "File attached but attachment data missing.  Alert sysop!\r\n";
             }
           }
         }

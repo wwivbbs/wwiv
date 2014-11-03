@@ -230,8 +230,8 @@ void run_event(int evnt) {
 #ifndef __unix__
   GetSession()->localIO()->SetCursor(WLocalIO::cursorNormal);
 #endif
-  GetSession()->bout.ClearScreen();
-  GetSession()->bout << "\r\nNow running external event.\r\n\n";
+  bout.ClearScreen();
+  bout << "\r\nNow running external event.\r\n\n";
   if (events[evnt].status & EVENT_HOLD) {
     holdphone(true);
   }
@@ -255,7 +255,7 @@ void run_event(int evnt) {
 void show_events() {
   char s[121] = { 0 }, s1[81] = { 0 }, daystr[8] = { 0 };
 
-  GetSession()->bout.ClearScreen();
+  bout.ClearScreen();
   bool abort = false;
   char y = "Yes"[0];
   char n = "No"[0];
@@ -309,7 +309,7 @@ void select_event_days(int evnt) {
   int i;
   char ch, daystr[9], days[8];
 
-  GetSession()->bout.NewLine();
+  bout.nl();
   strcpy(days, "SMTWTFS");
   for (i = 0; i <= 6; i++) {
     if (events[evnt].days & (1 << i)) {
@@ -319,11 +319,11 @@ void select_event_days(int evnt) {
     }
   }
   daystr[8] = '\0';
-  GetSession()->bout << "Enter number to toggle day of the week, 'Q' to quit.\r\n\n";
-  GetSession()->bout << "                   1234567\r\n";
-  GetSession()->bout << "Days to run event: ";
+  bout << "Enter number to toggle day of the week, 'Q' to quit.\r\n\n";
+  bout << "                   1234567\r\n";
+  bout << "Days to run event: ";
   do {
-    GetSession()->bout << daystr;
+    bout << daystr;
     ch = onek_ncr("1234567Q");
     if ((ch >= '1') && (ch <= '7')) {
       i = ch - '1';
@@ -333,7 +333,7 @@ void select_event_days(int evnt) {
       } else {
         daystr[i] = ' ';
       }
-      GetSession()->bout << "\b\b\b\b\b\b\b";
+      bout << "\b\b\b\b\b\b\b";
     }
   } while (ch != 'Q' && !hangup);
 }
@@ -347,33 +347,33 @@ void modify_event(int evnt) {
   bool done   = false;
   int i       = evnt;
   do {
-    GetSession()->bout.ClearScreen();
-    GetSession()->bout << "A) Event Time......: " << ttc(events[i].time) << wwiv::endl;
+    bout.ClearScreen();
+    bout << "A) Event Time......: " << ttc(events[i].time) << wwiv::endl;
     if (events[i].status & EVENT_EXIT) {
       sprintf(s1, "Exit BBS with DOS Errorlevel %d", events[i].cmd[0]);
     } else {
       strcpy(s1, events[i].cmd);
     }
-    GetSession()->bout << "B) Event Command...: " << s1 << wwiv::endl;
-    GetSession()->bout << "C) Phone Off Hook?.: " << ((events[i].status & EVENT_HOLD) ? "Yes" : "No") << wwiv::endl;
-    GetSession()->bout << "D) Already Run?....: " << ((events[i].status & EVENT_RUNTODAY) ? "Yes" : "No") << wwiv::endl;
-    GetSession()->bout << "E) Shrink?.........: " << ((events[i].status & EVENT_SHRINK) ? "Yes" : "No") << wwiv::endl;
-    GetSession()->bout << "F) Force User Off?.: " << ((events[i].status & EVENT_FORCED) ? "Yes" : "No") << wwiv::endl;
+    bout << "B) Event Command...: " << s1 << wwiv::endl;
+    bout << "C) Phone Off Hook?.: " << ((events[i].status & EVENT_HOLD) ? "Yes" : "No") << wwiv::endl;
+    bout << "D) Already Run?....: " << ((events[i].status & EVENT_RUNTODAY) ? "Yes" : "No") << wwiv::endl;
+    bout << "E) Shrink?.........: " << ((events[i].status & EVENT_SHRINK) ? "Yes" : "No") << wwiv::endl;
+    bout << "F) Force User Off?.: " << ((events[i].status & EVENT_FORCED) ? "Yes" : "No") << wwiv::endl;
     strcpy(s1, "SMTWTFS");
     for (j = 0; j <= 6; j++) {
       if ((events[i].days & (1 << j)) == 0) {
         s1[j] = ' ';
       }
     }
-    GetSession()->bout << "G) Days to Execute.: " << s1 << wwiv::endl;
-    GetSession()->bout << "H) Node (0=Any)....: " << events[i].instance << wwiv::endl;
-    GetSession()->bout << "I) Periodic........: " << ((events[i].status & EVENT_PERIODIC) ? "Yes" : "No");
+    bout << "G) Days to Execute.: " << s1 << wwiv::endl;
+    bout << "H) Node (0=Any)....: " << events[i].instance << wwiv::endl;
+    bout << "I) Periodic........: " << ((events[i].status & EVENT_PERIODIC) ? "Yes" : "No");
     if (events[i].status & EVENT_PERIODIC) {
-      GetSession()->bout << " (every " << std::to_string(events[i].period) << " minutes)";
+      bout << " (every " << std::to_string(events[i].period) << " minutes)";
     }
-    GetSession()->bout << wwiv::endl;
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Which? |#7[|#1A-I,[,],Q=Quit|#7] |#0: ";
+    bout << wwiv::endl;
+    bout.nl();
+    bout << "|#5Which? |#7[|#1A-I,[,],Q=Quit|#7] |#0: ";
     ch = onek("QABCDEFGHI[]");
     switch (ch) {
     case 'Q':
@@ -392,9 +392,9 @@ void modify_event(int evnt) {
       }
       break;
     case 'A':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Enter event times in 24 hour format. i.e. 00:01 or 15:20\r\n";
-      GetSession()->bout << "|#2Event time? ";
+      bout.nl();
+      bout << "|#2Enter event times in 24 hour format. i.e. 00:01 or 15:20\r\n";
+      bout << "|#2Event time? ";
       ok = true;
       j = 0;
       do {
@@ -441,10 +441,10 @@ void modify_event(int evnt) {
             }
             break;
           case '\b':
-            GetSession()->bout << " \b";
+            bout << " \b";
             --j;
             if (j == 2) {
-              GetSession()->bout.BackSpace();
+              bout.BackSpace();
               --j;
             }
             break;
@@ -459,11 +459,11 @@ void modify_event(int evnt) {
       }
       break;
     case 'B':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Exit BBS for event? ";
+      bout.nl();
+      bout << "|#2Exit BBS for event? ";
       if (yesno()) {
         events[i].status |= EVENT_EXIT;
-        GetSession()->bout << "|#2DOS ERRORLEVEL on exit? ";
+        bout << "|#2DOS ERRORLEVEL on exit? ";
         input(s, 3);
         j = atoi(s);
         if (s[0] != 0 && j >= 0 && j < 256) {
@@ -471,7 +471,7 @@ void modify_event(int evnt) {
         }
       } else {
         events[i].status &= ~EVENT_EXIT;
-        GetSession()->bout << "|#2Commandline to run? ";
+        bout << "|#2Commandline to run? ";
         input(s, 80);
         if (s[0] != '\0') {
           strcpy(events[i].cmd, s);
@@ -493,8 +493,8 @@ void modify_event(int evnt) {
       events[i].status ^= EVENT_FORCED;
       break;
     case 'G':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Run event every day? ";
+      bout.nl();
+      bout << "|#2Run event every day? ";
       if (noyes()) {
         events[i].days = 127;
       } else {
@@ -502,8 +502,8 @@ void modify_event(int evnt) {
       }
       break;
     case 'H':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Run event on which node (0=any)? ";
+      bout.nl();
+      bout << "|#2Run event on which node (0=any)? ";
       input(s, 3);
       j = atoi(s);
       if (s[0] != '\0' && j >= 0 && j < 1000) {
@@ -513,8 +513,8 @@ void modify_event(int evnt) {
     case 'I':
       events[i].status ^= EVENT_PERIODIC;
       if (events[i].status & EVENT_PERIODIC) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#2Run again after how many minutes (0=never, max=240)? ";
+        bout.nl();
+        bout << "|#2Run again after how many minutes (0=never, max=240)? ";
         input(s, 4);
         j = atoi(s);
         if (s[0] != '\0' && j >= 1 && j <= 240) {
@@ -560,8 +560,8 @@ void eventedit() {
   do {
     char ch = 0;
     show_events();
-    GetSession()->bout.NewLine();
-    GetSession()->bout <<
+    bout.nl();
+    bout <<
                        "|#9Events: |#1I|#9nsert, |#1D|#9elete, |#1M|#9odify, e|#1X|#9ecute, |#1Q|#9uit :";
     if (so()) {
       ch = onek("QDIM?X");
@@ -576,8 +576,8 @@ void eventedit() {
       done = true;
       break;
     case 'X': {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Run which Event? ";
+      bout.nl();
+      bout << "|#2Run which Event? ";
       input(s, 2);
       int nEventNum = atoi(s);
       if (s[0] != '\0' && nEventNum >= 0 && nEventNum < GetSession()->num_events) {
@@ -586,8 +586,8 @@ void eventedit() {
     }
     break;
     case 'M': {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Modify which Event? ";
+      bout.nl();
+      bout << "|#2Modify which Event? ";
       input(s, 2);
       int nEventNum = atoi(s);
       if (s[0] != '\0' && nEventNum >= 0 && nEventNum < GetSession()->num_events) {
@@ -599,30 +599,30 @@ void eventedit() {
       if (GetSession()->num_events < MAX_EVENT) {
         insert_event();
       } else {
-        GetSession()->bout << "\r\n|#6Can't add any more events!\r\n\n";
+        bout << "\r\n|#6Can't add any more events!\r\n\n";
         pausescr();
       }
       break;
     case 'D':
       if (GetSession()->num_events) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#2Delete which Event? ";
+        bout.nl();
+        bout << "|#2Delete which Event? ";
         input(s, 2);
         int nEventNum = atoi(s);
         if (s[0] && nEventNum >= 0 && nEventNum < GetSession()->num_events) {
-          GetSession()->bout.NewLine();
+          bout.nl();
           if (events[nEventNum].status & EVENT_EXIT) {
             sprintf(s, "Exit Level = %d", events[nEventNum].cmd[0]);
           } else {
             strcpy(s, events[nEventNum].cmd);
           }
-          GetSession()->bout << "|#5Delete " << s << "?";
+          bout << "|#5Delete " << s << "?";
           if (yesno()) {
             delete_event(nEventNum);
           }
         }
       } else {
-        GetSession()->bout << "\r\n|#6No events to delete!\r\n\n";
+        bout << "\r\n|#6No events to delete!\r\n\n";
         pausescr();
       }
       break;

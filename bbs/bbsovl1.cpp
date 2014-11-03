@@ -48,42 +48,42 @@ void DisplayHorizontalBar(int nSize, int nColor) {
  * Displays some basic user statistics for the current user.
  */
 void YourInfo() {
-  GetSession()->bout.ClearScreen();
+  bout.ClearScreen();
   if (okansi()) {
-    GetSession()->bout.DisplayLiteBar("[ Your User Information ]");
+    bout.DisplayLiteBar("[ Your User Information ]");
   } else {
-    GetSession()->bout << "|#5Your User Information:\r\n";
+    bout << "|#5Your User Information:\r\n";
   }
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#9Your name      : |#2" << GetSession()->GetCurrentUser()->GetUserNameAndNumber(
+  bout.nl();
+  bout << "|#9Your name      : |#2" << GetSession()->GetCurrentUser()->GetUserNameAndNumber(
                        GetSession()->usernum) << wwiv::endl;
-  GetSession()->bout << "|#9Phone number   : |#2" << GetSession()->GetCurrentUser()->GetVoicePhoneNumber() << wwiv::endl;
+  bout << "|#9Phone number   : |#2" << GetSession()->GetCurrentUser()->GetVoicePhoneNumber() << wwiv::endl;
   if (GetSession()->GetCurrentUser()->GetNumMailWaiting() > 0) {
-    GetSession()->bout << "|#9Mail Waiting   : |#2" << GetSession()->GetCurrentUser()->GetNumMailWaiting() << wwiv::endl;
+    bout << "|#9Mail Waiting   : |#2" << GetSession()->GetCurrentUser()->GetNumMailWaiting() << wwiv::endl;
   }
-  GetSession()->bout << "|#9Security Level : |#2" << GetSession()->GetCurrentUser()->GetSl() << wwiv::endl;
+  bout << "|#9Security Level : |#2" << GetSession()->GetCurrentUser()->GetSl() << wwiv::endl;
   if (GetSession()->GetEffectiveSl() != GetSession()->GetCurrentUser()->GetSl()) {
-    GetSession()->bout << "|#1 (temporarily |#2" << GetSession()->GetEffectiveSl() << "|#1)";
+    bout << "|#1 (temporarily |#2" << GetSession()->GetEffectiveSl() << "|#1)";
   }
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#9Transfer SL    : |#2" << GetSession()->GetCurrentUser()->GetDsl() << wwiv::endl;
-  GetSession()->bout << "|#9Date Last On   : |#2" << GetSession()->GetCurrentUser()->GetLastOn() << wwiv::endl;
-  GetSession()->bout << "|#9Times on       : |#2" << GetSession()->GetCurrentUser()->GetNumLogons() << wwiv::endl;
-  GetSession()->bout << "|#9On today       : |#2" << GetSession()->GetCurrentUser()->GetTimesOnToday() << wwiv::endl;
-  GetSession()->bout << "|#9Messages posted: |#2" << GetSession()->GetCurrentUser()->GetNumMessagesPosted() << wwiv::endl;
-  GetSession()->bout << "|#9E-mail sent    : |#2" << (GetSession()->GetCurrentUser()->GetNumEmailSent() +
+  bout.nl();
+  bout << "|#9Transfer SL    : |#2" << GetSession()->GetCurrentUser()->GetDsl() << wwiv::endl;
+  bout << "|#9Date Last On   : |#2" << GetSession()->GetCurrentUser()->GetLastOn() << wwiv::endl;
+  bout << "|#9Times on       : |#2" << GetSession()->GetCurrentUser()->GetNumLogons() << wwiv::endl;
+  bout << "|#9On today       : |#2" << GetSession()->GetCurrentUser()->GetTimesOnToday() << wwiv::endl;
+  bout << "|#9Messages posted: |#2" << GetSession()->GetCurrentUser()->GetNumMessagesPosted() << wwiv::endl;
+  bout << "|#9E-mail sent    : |#2" << (GetSession()->GetCurrentUser()->GetNumEmailSent() +
                      GetSession()->GetCurrentUser()->GetNumFeedbackSent() + GetSession()->GetCurrentUser()->GetNumNetEmailSent()) <<
                      wwiv::endl;
-  GetSession()->bout << "|#9Time spent on  : |#2" << static_cast<long>((GetSession()->GetCurrentUser()->GetTimeOn() +
+  bout << "|#9Time spent on  : |#2" << static_cast<long>((GetSession()->GetCurrentUser()->GetTimeOn() +
                      timer() - timeon) / SECONDS_PER_MINUTE_FLOAT) << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
-  GetSession()->bout << "|#9Uploads        : |#2" << GetSession()->GetCurrentUser()->GetUploadK() << "|#9k in|#2 " <<
+  bout << "|#9Uploads        : |#2" << GetSession()->GetCurrentUser()->GetUploadK() << "|#9k in|#2 " <<
                      GetSession()->GetCurrentUser()->GetFilesUploaded() << " |#9files" << wwiv::endl;
-  GetSession()->bout << "|#9Downloads      : |#2" << GetSession()->GetCurrentUser()->GetDownloadK() << "|#9k in|#2 " <<
+  bout << "|#9Downloads      : |#2" << GetSession()->GetCurrentUser()->GetDownloadK() << "|#9k in|#2 " <<
                      GetSession()->GetCurrentUser()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
-  GetSession()->bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
-  GetSession()->bout.NewLine();
+  bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
+  bout.nl();
   pausescr();
 }
 
@@ -107,22 +107,22 @@ void upload_post() {
   WFile file(syscfgovr.tempdir, INPUT_MSG);
   long lMaxBytes = 250 * static_cast<long>(GetMaxMessageLinesAllowed());
 
-  GetSession()->bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
+  bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
   int i = 0;
   receive_file(file.GetFullPathName().c_str(), &i, INPUT_MSG, -1);
   if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
     long lFileSize = file.GetLength();
     if (lFileSize > lMaxBytes) {
-      GetSession()->bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
+      bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
       file.Close();
       file.Delete();
     } else {
       file.Close();
       use_workspace = true;
-      GetSession()->bout << "\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n";
+      bout << "\r\n|#7* |#1Message uploaded.  The next post or email will contain that text.\r\n\n";
     }
   } else {
-    GetSession()->bout << "\r\n|#3Nothing saved.\r\n\n";
+    bout << "\r\n|#3Nothing saved.\r\n\n";
   }
 }
 
@@ -132,7 +132,7 @@ void upload_post() {
  */
 void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
-  GetSession()->bout << "\r\n\n|#9Enter user name or number:\r\n:";
+  bout << "\r\n\n|#9Enter user name or number:\r\n:";
   string username;
   input(&username, 75, true);
   irt[0] = '\0';
@@ -162,10 +162,10 @@ void edit_confs() {
   }
 
   while (!hangup) {
-    GetSession()->bout << "\r\n\n|#5Edit Which Conferences:\r\n\n";
-    GetSession()->bout << "|#21|#9)|#1 Subs\r\n";
-    GetSession()->bout << "|#22|#9)|#1 Dirs\r\n";
-    GetSession()->bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";
+    bout << "\r\n\n|#5Edit Which Conferences:\r\n\n";
+    bout << "|#21|#9)|#1 Subs\r\n";
+    bout << "|#22|#9)|#1 Dirs\r\n";
+    bout << "\r\n|#9Select [|#21|#9,|#22|#9,|#2Q|#9]: ";
     char ch = onek("Q12", true);
     switch (ch) {
     case '1':
@@ -227,25 +227,25 @@ void feedback(bool bNewUserFeedback) {
   } else {
     onek_str[0] = '\0';
     i1 = 0;
-    GetSession()->bout.NewLine();
+    bout.nl();
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
       WUser user;
       GetApplication()->GetUserManager()->ReadUser(&user, i);
       if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {
-        GetSession()->bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber(i) << wwiv::endl;
+        bout << "|#2" << i << "|#7)|#1 " << user.GetUserNameAndNumber(i) << wwiv::endl;
         onek_str[i1++] = static_cast< char >('0' + i);
       }
     }
     onek_str[i1++] = *str_quit;
     onek_str[i1] = '\0';
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#1Feedback to (" << onek_str << "): ";
+    bout.nl();
+    bout << "|#1Feedback to (" << onek_str << "): ";
     ch = onek(onek_str, true);
     if (ch == *str_quit) {
       return;
     }
-    GetSession()->bout.NewLine();
+    bout.nl();
     i = ch - '0';
   }
   email(static_cast< unsigned short >(i), 0, false, 0, true);
@@ -256,8 +256,8 @@ void feedback(bool bNewUserFeedback) {
  * and toggled for use in defaults.
  */
 void text_edit() {
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#9Enter Filename: ";
+  bout.nl();
+  bout << "|#9Enter Filename: ";
   string filename;
   input(&filename, 12, true);
   if (filename.find(".log") != string::npos || !okfn(filename)) {

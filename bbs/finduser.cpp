@@ -110,7 +110,7 @@ int finduser1(const string searchString) {
       int nCurrentUserNum = smallist[i1].number;
       WUser user;
       GetApplication()->GetUserManager()->ReadUser(&user, nCurrentUserNum);
-      GetSession()->bout << "|#5Do you mean " << user.GetUserNameAndNumber(nCurrentUserNum) << " (Y/N/Q)? ";
+      bout << "|#5Do you mean " << user.GetUserNameAndNumber(nCurrentUserNum) << " (Y/N/Q)? ";
       char ch = ynq();
       if (ch == 'Y') {
         return nCurrentUserNum;

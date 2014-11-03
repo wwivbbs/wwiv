@@ -185,7 +185,7 @@ void print_local_file(const char *ss, const char *ss1) {
     }
   } else {
     printfile(ss);
-    GetSession()->bout.NewLine(2);
+    bout.nl(2);
     pausescr();
   }
   free(pszTempSS);

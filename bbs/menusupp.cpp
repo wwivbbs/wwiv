@@ -38,8 +38,8 @@ using wwiv::bbs::InputMode;
 using wwiv::bbs::TempDisablePause;
 
 void UnQScan() {
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#9Mark messages as unread on [C]urrent sub or [A]ll subs (A/C/Q)? ";
+  bout.nl();
+  bout << "|#9Mark messages as unread on [C]urrent sub or [A]ll subs (A/C/Q)? ";
   char ch = onek("QAC\r");
   switch (ch) {
   case 'Q':
@@ -49,13 +49,13 @@ void UnQScan() {
     for (int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++) {
       qsc_p[i] = 0;
     }
-    GetSession()->bout << "\r\nQ-Scan pointers reset.\r\n\n";
+    bout << "\r\nQ-Scan pointers reset.\r\n\n";
   }
   break;
   case 'C': {
-    GetSession()->bout.NewLine();
+    bout.nl();
     qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = 0;
-    GetSession()->bout << "Messages on " << subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name <<
+    bout << "Messages on " << subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name <<
                        " marked as unread.\r\n";
   }
   break;
@@ -113,8 +113,8 @@ void UpSub() {
 }
 
 void ValidateUser() {
-  GetSession()->bout.NewLine(2);
-  GetSession()->bout << "|#9Enter user name or number:\r\n:";
+  bout.nl(2);
+  bout << "|#9Enter user name or number:\r\n:";
   string userName;
   input(&userName, 30, true);
   int nUserNum = finduser1(userName.c_str());
@@ -122,7 +122,7 @@ void ValidateUser() {
     sysoplogf("@ Validated user #%d", nUserNum);
     valuser(nUserNum);
   } else {
-    GetSession()->bout << "Unknown user.\r\n";
+    bout << "Unknown user.\r\n";
   }
 }
 
@@ -206,12 +206,12 @@ void LastCallers() {
   if (pStatus->GetNumCallsToday() > 0) {
     if (GetApplication()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
         (syscfg.sysconfig & sysconfig_extended_info)) {
-      GetSession()->bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
+      bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
     } else {
-      GetSession()->bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
+      bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
     }
     int i = okansi() ? 205 : '=';
-    GetSession()->bout << "|#7" << charstr(79, i) << wwiv::endl;
+    bout << "|#7" << charstr(79, i) << wwiv::endl;
   }
   printfile(USER_LOG);
 }
@@ -222,8 +222,8 @@ void ReadEMail() {
 
 void NewMessageScan() {
   if (okconf(GetSession()->GetCurrentUser())) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5New message scan in all conferences? ";
+    bout.nl();
+    bout << "|#5New message scan in all conferences? ";
     if (noyes()) {
       NewMsgsAllConfs();
       return;
@@ -244,8 +244,8 @@ void GoodBye() {
   int ch;
 
   if (GetSession()->numbatchdl != 0) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
+    bout.nl();
+    bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
     if (noyes()) {
       batchdl(1);
     }
@@ -257,7 +257,7 @@ void GoodBye() {
   if (WFile::Exists(szFileName)) {
     cycle = 0;
     do {
-      GetSession()->bout.ClearScreen();
+      bout.ClearScreen();
       printfile(szFileName);
       ch = onek("QFTO", true);
       switch (ch) {
@@ -276,8 +276,8 @@ void GoodBye() {
       case 'O':
         cycle = 1;
         write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
-        GetSession()->bout.ClearScreen();
-        GetSession()->bout <<  "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
+        bout.ClearScreen();
+        bout <<  "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
         {
           TempDisablePause disable_pause;
           printfile(LOGOFF_NOEXT);
@@ -293,12 +293,12 @@ void GoodBye() {
       }
     } while (cycle == 0);
   } else {
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout << "|#5Log Off? ";
+    bout.nl(2);
+    bout << "|#5Log Off? ";
     if (yesno()) {
       write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
-      GetSession()->bout.ClearScreen();
-      GetSession()->bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
+      bout.ClearScreen();
+      bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
       {
         TempDisablePause disable_pause;
         printfile(LOGOFF_NOEXT);
@@ -376,17 +376,17 @@ void ExpressScan() {
 }
 
 void WWIVVersion() {
-  GetSession()->bout.NewLine();
-  GetSession()->bout.ClearScreen();
-  GetSession()->bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
-  GetSession()->bout << "|#9Copyright (C) 1998-2014, WWIV Software Services.\r\n";
-  GetSession()->bout << "|#9All Rights Reserved.\r\n\r\n";
-  GetSession()->bout << "|#9Licensed under the Apache License.  " << wwiv::endl;
-  GetSession()->bout << "|#9Please see |#1http://wwiv.sourceforge.net |#9for more information" << wwiv::endl <<
+  bout.nl();
+  bout.ClearScreen();
+  bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
+  bout << "|#9Copyright (C) 1998-2014, WWIV Software Services.\r\n";
+  bout << "|#9All Rights Reserved.\r\n\r\n";
+  bout << "|#9Licensed under the Apache License.  " << wwiv::endl;
+  bout << "|#9Please see |#1http://wwiv.sourceforge.net |#9for more information" << wwiv::endl <<
                      wwiv::endl;
-  GetSession()->bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
-  GetSession()->bout << "|#9SysOp Name:   : |#2" << syscfg.sysopname << wwiv::endl;
-  GetSession()->bout.NewLine(3);
+  bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
+  bout << "|#9SysOp Name:   : |#2" << syscfg.sysopname << wwiv::endl;
+  bout.nl(3);
   pausescr();
 }
 
@@ -412,15 +412,15 @@ void ChainEdit() {
 }
 
 void ToggleChat() {
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
   bool bOldAvail = sysop2();
   ToggleScrollLockKey();
   bool bNewAvail = sysop2();
   if (bOldAvail != bNewAvail) {
-    GetSession()->bout << ((bNewAvail) ? "|#5Sysop now available\r\n" : "|#3Sysop now unavailable\r\n");
+    bout << ((bNewAvail) ? "|#5Sysop now available\r\n" : "|#3Sysop now unavailable\r\n");
     sysoplog("@ Changed sysop available status");
   } else {
-    GetSession()->bout << "|#6Unable to toggle Sysop availability (hours restriction)\r\n";
+    bout << "|#6Unable to toggle Sysop availability (hours restriction)\r\n";
   }
   GetApplication()->UpdateTopScreen();
 }
@@ -437,7 +437,7 @@ void CallOut() {
 void Debug() {
   int new_level = (WFile::GetDebugLevel() + 1) % 5;
   WFile::SetDebugLevel(new_level);
-  GetSession()->bout << "|#5New Debug Level: " << new_level << wwiv::endl;
+  bout << "|#5New Debug Level: " << new_level << wwiv::endl;
 }
 
 void DirEdit() {
@@ -453,18 +453,18 @@ void EventEdit() {
 }
 
 void LoadTextFile() {
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#9Enter Filename: ";
+  bout.nl();
+  bout << "|#9Enter Filename: ";
   string fileName;
   Input1(&fileName, "", 50, true, InputMode::FULL_PATH_NAME);
   if (!fileName.empty()) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Allow editing? ";
+    bout.nl();
+    bout << "|#5Allow editing? ";
     if (yesno()) {
-      GetSession()->bout.NewLine();
+      bout.nl();
       LoadFileIntoWorkspace(fileName.c_str(), false);
     } else {
-      GetSession()->bout.NewLine();
+      bout.nl();
       LoadFileIntoWorkspace(fileName.c_str(), true);
     }
   }
@@ -472,8 +472,8 @@ void LoadTextFile() {
 
 void EditText() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#7Enter Filespec: ";
+  bout.nl();
+  bout << "|#7Enter Filespec: ";
   string fileName;
   input(&fileName, 50);
   if (!fileName.empty()) {
@@ -508,7 +508,7 @@ void ResetFiles() {
 }
 
 void ResetQscan() {
-  GetSession()->bout << "|#5Reset all QScan/NScan pointers (For All Users)? ";
+  bout << "|#5Reset all QScan/NScan pointers (For All Users)? ";
   if (yesno()) {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
     for (int i = 0; i <= GetApplication()->GetUserManager()->GetNumberOfUserRecords(); i++) {
@@ -524,13 +524,13 @@ void ResetQscan() {
 
 void MemoryStatus() {
   std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
+  bout.nl();
+  bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
 }
 
 void PackMessages() {
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Pack all subs? ";
+  bout.nl();
+  bout << "|#5Pack all subs? ";
   if (yesno()) {
     pack_all_subs();
   } else {
@@ -591,8 +591,8 @@ void ViewNetDataLog() {
   bool done = false;
 
   while (!done && !hangup) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Which NETDAT log (0-2,Q)? ";
+    bout.nl();
+    bout << "|#9Which NETDAT log (0-2,Q)? ";
     char ch = onek("Q012");
     switch (ch) {
     case 'Q':
@@ -621,7 +621,7 @@ void NetListing() {
 
 void WhoIsOnline() {
   multi_instance();
-  GetSession()->bout.NewLine();
+  bout.nl();
   pausescr();
 }
 
@@ -678,9 +678,9 @@ void ChatRoom() {
 
 void DownloadPosts() {
   if (GetApplication()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
-    GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
+    bout << "|#5This could take quite a while.  Are you sure? ";
     if (yesno()) {
-      GetSession()->bout << "Please wait...\r\n";
+      bout << "Please wait...\r\n";
       GetSession()->localIO()->set_x_only(1, "posts.txt", 0);
       bool ac = false;
       if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
@@ -701,9 +701,9 @@ void DownloadPosts() {
 
 void DownloadFileList() {
   if (GetApplication()->HasConfigFlag(OP_FLAGS_SLASH_SZ)) {
-    GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
+    bout << "|#5This could take quite a while.  Are you sure? ";
     if (yesno()) {
-      GetSession()->bout << "Please wait...\r\n";
+      bout << "Please wait...\r\n";
       GetSession()->localIO()->set_x_only(1, "files.txt", 1);
       searchall();
       GetSession()->localIO()->set_x_only(0, nullptr, 0);
@@ -714,8 +714,8 @@ void DownloadFileList() {
 }
 
 void ClearQScan() {
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ";
+  bout.nl();
+  bout << "|#5Mark messages as read on [C]urrent sub or [A]ll subs (A/C/Q)? ";
   char ch = onek("QAC\r");
   switch (ch) {
   case 'Q':
@@ -726,15 +726,15 @@ void ClearQScan() {
     for (int i = 0; i < GetSession()->GetMaxNumberMessageAreas(); i++) {
       qsc_p[i] = pStatus->GetQScanPointer() - 1L;
     }
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "Q-Scan pointers cleared.\r\n";
+    bout.nl();
+    bout << "Q-Scan pointers cleared.\r\n";
   }
   break;
   case 'C':
     std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
-    GetSession()->bout.NewLine();
+    bout.nl();
     qsc_p[usub[GetSession()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
-    GetSession()->bout << "Messages on " << subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name <<
+    bout << "Messages on " << subboards[usub[GetSession()->GetCurrentMessageArea()].subnum].name <<
                        " marked as read.\r\n";
     break;
   }
@@ -742,8 +742,8 @@ void ClearQScan() {
 
 void FastGoodBye() {
   if (GetSession()->numbatchdl != 0) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
+    bout.nl();
+    bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
     if (noyes()) {
       batchdl(1);
     } else {
@@ -761,7 +761,7 @@ void FastGoodBye() {
 }
 
 void NewFilesAllConfs() {
-  GetSession()->bout.NewLine();
+  bout.nl();
   int ac = 0;
   if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
     ac = 1;
@@ -778,8 +778,8 @@ void NewFilesAllConfs() {
 }
 
 void ReadIDZ() {
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Read FILE_ID.DIZ for all directories? ";
+  bout.nl();
+  bout << "|#5Read FILE_ID.DIZ for all directories? ";
   if (yesno()) {
     read_idz_all();
   } else {
@@ -792,10 +792,10 @@ void RemoveNotThere() {
 }
 
 void UploadAllDirs() {
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
   bool ok = true;
   for (int nDirNum = 0; nDirNum < GetSession()->num_dirs && udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++) {
-    GetSession()->bout << "|#9Now uploading files for: |#2" << directories[udir[nDirNum].subnum].name << wwiv::endl;
+    bout << "|#9Now uploading files for: |#2" << directories[udir[nDirNum].subnum].name << wwiv::endl;
     ok = uploadall(nDirNum);
   }
 }
@@ -814,11 +814,11 @@ void MoveFiles() {
 }
 
 void SortDirs() {
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Sort all dirs? ";
+  bout.nl();
+  bout << "|#5Sort all dirs? ";
   bool bSortAll = yesno();
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Sort by date? ";
+  bout.nl();
+  bout << "|#5Sort by date? ";
 
   int nType = 0;
   if (yesno()) {
@@ -834,10 +834,10 @@ void SortDirs() {
 }
 
 void ReverseSort() {
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Sort all dirs? ";
+  bout.nl();
+  bout << "|#5Sort all dirs? ";
   bool bSortAll = yesno();
-  GetSession()->bout.NewLine();
+  bout.nl();
   TempDisablePause disable_pause;
   if (bSortAll) {
     sort_all(1);
@@ -853,17 +853,17 @@ void AllowEdit() {
 void UploadFilesBBS() {
   char s2[81];
 
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#21|#9) PCB, RBBS   - <filename> <size> <date> <description>\r\n";
-  GetSession()->bout << "|#22|#9) QBBS format - <filename> <description>\r\n";
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#Select Format (1,2,Q) : ";
+  bout.nl();
+  bout << "|#21|#9) PCB, RBBS   - <filename> <size> <date> <description>\r\n";
+  bout << "|#22|#9) QBBS format - <filename> <description>\r\n";
+  bout.nl();
+  bout << "|#Select Format (1,2,Q) : ";
   char ch = onek("Q12");
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (ch != 'Q') {
     int nType = 0;
-    GetSession()->bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
-    GetSession()->bout.ColorizedInputField(77);
+    bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
+    bout.ColorizedInputField(77);
     inputl(s2, 80);
     switch (ch) {
     case '1':
@@ -994,18 +994,18 @@ void NewFileScan() {
   g_num_listed = 0;
   GetSession()->tagging = 1;
   GetSession()->titled = 1;
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Search all directories? ";
+  bout.nl();
+  bout << "|#5Search all directories? ";
   if (yesno()) {
     nscanall();
   } else {
-    GetSession()->bout.NewLine();
+    bout.nl();
     nscandir(GetSession()->GetCurrentFileArea(), &abort);
     if (g_num_listed) {
       endlist(2);
     } else {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2No new files found.\r\n";
+      bout.nl();
+      bout << "|#2No new files found.\r\n";
     }
   }
   GetSession()->tagging = 0;
@@ -1050,8 +1050,8 @@ void YourInfoDL() {
 
 void UploadToSysop() {
   printfile(ZUPLOAD_NOEXT);
-  GetSession()->bout.NewLine(2);
-  GetSession()->bout << "Sending file to sysop :-\r\n\n";
+  bout.nl(2);
+  bout << "Sending file to sysop :-\r\n\n";
   upload(0);
 }
 
@@ -1063,7 +1063,7 @@ void GuestApply() {
   if (guest_user) {
     newuser();
   } else {
-    GetSession()->bout << "You already have an account on here!\r\n\r\n";
+    bout << "You already have an account on here!\r\n\r\n";
   }
 }
 
@@ -1073,7 +1073,7 @@ void AttachFile() {
 
 bool GuestCheck() {
   if (guest_user) {
-    GetSession()->bout << "|#6This command is only for registered users.\r\n";
+    bout << "|#6This command is only for registered users.\r\n";
     return false;
   }
   return true;

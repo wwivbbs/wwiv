@@ -90,22 +90,22 @@ void chat_room() {
     get_colors(szColorString, &iniFile);
     iniFile.Close();
   } else {
-    GetSession()->bout << "|#6[CHAT] SECTION MISSING IN CHAT.INI - ALERT THE SYSOP IMMEDIATELY!\r\n";
+    bout << "|#6[CHAT] SECTION MISSING IN CHAT.INI - ALERT THE SYSOP IMMEDIATELY!\r\n";
     pausescr();
     return;
   }
   cleanup_chat();
-  GetSession()->bout << "\r\n|#2Welcome to the WWIV Chatroom\n\r\n";
+  bout << "\r\n|#2Welcome to the WWIV Chatroom\n\r\n";
   int loc = 0;
   if (bShowPrompt) {
     while (!loc) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#1Select a chat channel to enter:\r\n";
+      bout.nl();
+      bout << "|#1Select a chat channel to enter:\r\n";
       loc = change_channels(-1);
     }
   } else {
     if (GetSession()->GetCurrentUser()->IsRestrictionMultiNodeChat() || !check_ch(1)) {
-      GetSession()->bout << "\r\n|#6You may not access inter-instance chat facilities.\r\n";
+      bout << "\r\n|#6You may not access inter-instance chat facilities.\r\n";
       pausescr();
       return;
     }
@@ -113,7 +113,7 @@ void chat_room() {
     write_inst(static_cast< unsigned short >(loc), 0, INST_FLAGS_NONE);
     moving(true, loc);
     intro(loc);
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
 
   TempDisablePause disable_pause;
@@ -129,7 +129,7 @@ void chat_room() {
     if (inst_msg_waiting()) {
       process_inst_msgs();
     }
-    GetSession()->bout << "|#1: " << szColorString;
+    bout << "|#1: " << szColorString;
     GetSession()->localIO()->tleft(true);
     bChatLine = false;
     char szMessage[ 300 ];
@@ -222,32 +222,32 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     * VARDEC.H file and rename the function to read_entry() */
 #ifdef REG_IS_INSTALLED
     read_entry(1);
-    GetSession()->bout.NewLine();
+    bout.nl();
     bActionHandled = 0;
 #endif
   } else if (IsEqualsIgnoreCase(pszMessage, "/w")) {
     bActionHandled = 0;
     multi_instance();
-    GetSession()->bout.NewLine();
+    bout.nl();
   } else if (IsEqualsIgnoreCase(pszMessage, "list")) {
-    GetSession()->bout.NewLine();
+    bout.nl();
     for (int i2 = 0; i2 <= g_nNumActions; i2++) {
-      GetSession()->bout.WriteFormatted("%-16.16s", actions[i2]->aword);
+      bout.WriteFormatted("%-16.16s", actions[i2]->aword);
     }
-    GetSession()->bout.NewLine();
+    bout.nl();
     bActionHandled = 0;
   } else if (IsEqualsIgnoreCase(pszMessage, "/q") ||
              IsEqualsIgnoreCase(pszMessage, "x")) {
     bActionHandled = 0;
-    GetSession()->bout << "\r\n|#2Exiting Chatroom\r\n";
+    bout << "\r\n|#2Exiting Chatroom\r\n";
     return 0;
   } else if (IsEqualsIgnoreCase(pszMessage, "/a")) {
     bActionHandled = 0;
     if (bActionMode) {
-      GetSession()->bout << "|#1[|#9Action mode disabled|#1]\r\n";
+      bout << "|#1[|#9Action mode disabled|#1]\r\n";
       bActionMode = false;
     } else {
-      GetSession()->bout << "|#1[|#9Action mode enabled|#1]\r\n";
+      bout << "|#1[|#9Action mode enabled|#1]\r\n";
       bActionMode = true;
     }
   } else if (IsEqualsIgnoreCase(pszMessage, "/s")) {
@@ -261,21 +261,21 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
       WFile::Remove(szFileName);
       sprintf(szFileName, "\r\n|#1[|#9%s has unsecured the channel|#1]", GetSession()->GetCurrentUser()->GetName());
       out_msg(szFileName, loc);
-      GetSession()->bout << "|#1[|#9Channel Unsecured|#1]\r\n";
+      bout << "|#1[|#9Channel Unsecured|#1]\r\n";
     } else {
-      GetSession()->bout << "|#1[|#9Channel not secured!|#1]\r\n";
+      bout << "|#1[|#9Channel not secured!|#1]\r\n";
     }
   } else if (IsEqualsIgnoreCase(pszMessage, "/l") &&
              GetSession()->GetCurrentUser()->GetSl() >= g_nChatOpSecLvl) {
-    GetSession()->bout << "\r\n|#9Username: ";
+    bout << "\r\n|#9Username: ";
     input(szText, 30);
-    GetSession()->bout.NewLine();
+    bout.nl();
     int nTempUserNum = finduser1(szText);
     if (nTempUserNum > 0) {
       GetApplication()->GetUserManager()->ReadUser(&u, nTempUserNum);
       print_data(nTempUserNum, &u, true, false);
     } else {
-      GetSession()->bout << "|#6Unknown user.\r\n";
+      bout << "|#6Unknown user.\r\n";
     }
     bActionHandled = 0;
   } else if (IsEqualsIgnoreCase(pszMessage, "/p")) {
@@ -303,7 +303,7 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     bActionHandled = 0;
   } else {
     if (bActionHandled) {
-      GetSession()->bout << pszMessageSent;
+      bout << pszMessageSent;
     }
     if (!pszMessage[0]) {
       return loc;
@@ -339,32 +339,32 @@ void who_online(int *nodes, int loc) {
 void intro(int loc) {
   int nodes[20];
 
-  GetSession()->bout << "|#7You are in " << channels[loc - INST_LOC_CH1 + 1].name << wwiv::endl;
+  bout << "|#7You are in " << channels[loc - INST_LOC_CH1 + 1].name << wwiv::endl;
   who_online(nodes, loc);
   if (nodes[0]) {
     for (int i = 1; i <= nodes[0]; i++) {
       WUser u;
       GetApplication()->GetUserManager()->ReadUser(&u, nodes[i]);
       if (((nodes[0] - i) == 1) && (nodes[0] >= 2)) {
-        GetSession()->bout << "|#1" << u.GetName() << " |#7and ";
+        bout << "|#1" << u.GetName() << " |#7and ";
       } else {
-        GetSession()->bout << "|#1" << u.GetName() << (((nodes[0] > 1) && (i != nodes[0])) ? "|#7, " : " ");
+        bout << "|#1" << u.GetName() << (((nodes[0] > 1) && (i != nodes[0])) ? "|#7, " : " ");
       }
     }
   }
   if (nodes[0] == 1) {
-    GetSession()->bout << "|#7is here with you.\r\n";
+    bout << "|#7is here with you.\r\n";
   } else if (nodes[0] > 1) {
-    GetSession()->bout << "|#7are here with you.\r\n";
+    bout << "|#7are here with you.\r\n";
   } else {
-    GetSession()->bout << "|#7You are the only one here.\r\n";
+    bout << "|#7You are the only one here.\r\n";
   }
   char szFileName[ MAX_PATH ];
   sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
   if (loc != INST_LOC_CH1 && WFile::Exists(szFileName)) {
-    GetSession()->bout << "|#7This channel is |#1secured|#7.\r\n";
+    bout << "|#7This channel is |#1secured|#7.\r\n";
   }
-  GetSession()->bout << "|#7Type ? for help.\r\n";
+  bout << "|#7Type ? for help.\r\n";
 }
 
 // This function is called when a > sign is encountered at the beginning of
@@ -372,7 +372,7 @@ void intro(int loc) {
 
 void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, int nOffSet) {
   if (strlen(pszMessage + nOffSet) == 0) {
-    GetSession()->bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
+    bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
   }
 
@@ -381,7 +381,7 @@ void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, 
   char szMessage[ 512 ];
   if (ir.loc == loc) {
     if (!strlen(pszMessage + nOffSet)) {
-      GetSession()->bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
+      bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
       return;
     }
     WUser u;
@@ -397,10 +397,10 @@ void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, 
         send_inst_str(i, szMessage);
       }
     }
-    GetSession()->bout << "|#1[|#9Message directed to " << szUserName << "|#1\r\n";
+    bout << "|#1[|#9Message directed to " << szUserName << "|#1\r\n";
   } else {
-    GetSession()->bout << szMessage;
-    GetSession()->bout.NewLine();
+    bout << szMessage;
+    bout.nl();
   }
 }
 
@@ -408,7 +408,7 @@ void ch_direct(const char *pszMessage, int loc, char *pszColorString, int node, 
 //   a message, used for whispering
 void ch_whisper(const char *pszMessage, char *pszColorString, int node, int nOffSet) {
   if (strlen(pszMessage + nOffSet) == 0) {
-    GetSession()->bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
+    bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
   }
   if (!node) {
@@ -427,7 +427,7 @@ void ch_whisper(const char *pszMessage, char *pszColorString, int node, int nOff
   send_inst_str(node, szText);
   WUser u;
   GetApplication()->GetUserManager()->ReadUser(&u, ir.user);
-  GetSession()->bout << "|#1[|#9Message sent only to " << u.GetName() << "|#1]\r\n";
+  bout << "|#1[|#9Message sent only to " << u.GetName() << "|#1]\r\n";
 }
 
 // This function determines whether or not user N is online
@@ -453,18 +453,18 @@ int wusrinst(char *n) {
 void secure_ch(int ch) {
   char szFileName[ MAX_PATH ];
   if (ch == INST_LOC_CH1) {
-    GetSession()->bout << "|#1[|#9Cannot secure channel 1|#1]\r\n";
+    bout << "|#1[|#9Cannot secure channel 1|#1]\r\n";
     return;
   }
   sprintf(szFileName, "CHANNEL.%d", (ch + 1 - INST_LOC_CH1));
   if (WFile::Exists(szFileName)) {
-    GetSession()->bout << "|#1[|#9Channel already secured!|#1]\r\n";
+    bout << "|#1[|#9Channel already secured!|#1]\r\n";
   } else {
     WFile file(szFileName);
     file.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeText);
     file.Write(GetSession()->GetCurrentUser()->GetName(), strlen(GetSession()->GetCurrentUser()->GetName()));
     file.Close();
-    GetSession()->bout << "|#1[|#9Channel Secured|#1]\r\n";
+    bout << "|#1[|#9Channel Secured|#1]\r\n";
     sprintf(szFileName, "\r\n|#1[|#9%s has secured the channel|#1]", GetSession()->GetCurrentUser()->GetName());
     out_msg(szFileName, ch);
   }
@@ -495,12 +495,12 @@ void page_user(int loc) {
   int i = 0;
 
   loc = loc + 1 - INST_LOC_CH1;
-  GetSession()->bout.NewLine();
+  bout.nl();
   multi_instance();
-  GetSession()->bout.NewLine();
+  bout.nl();
   while ((i < 1 || i > num_instances()) && !hangup) {
     CheckForHangup();
-    GetSession()->bout << "|#2Which instance would you like to page? (1-" << num_instances() << ", Q): ";
+    bout << "|#2Which instance would you like to page? (1-" << num_instances() << ", Q): ";
     input(s, 2);
     if (s[0] == 'Q') {
       return;
@@ -508,24 +508,24 @@ void page_user(int loc) {
     i = atoi(s);
   }
   if (i == GetApplication()->GetInstanceNumber()) {
-    GetSession()->bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
+    bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
     return;
   } else {
     get_inst_info(i, &ir);
     if ((!(ir.flags & INST_FLAGS_ONLINE)) ||
         ((ir.flags & INST_FLAGS_INVIS) && (!so()))) {
-      GetSession()->bout << "|#1[|#9There is no user on instance " << i << " |#1]\r\n";
+      bout << "|#1[|#9There is no user on instance " << i << " |#1]\r\n";
       return;
     }
     if ((!(ir.flags & INST_FLAGS_MSG_AVAIL)) && (!so())) {
-      GetSession()->bout << "|#1[|#9That user is not available for chat!|#1]";
+      bout << "|#1[|#9That user is not available for chat!|#1]";
       return;
     }
     sprintf(s, "%s is paging you from Chatroom channel %d.  Type /C from the MAIN MENU to enter the Chatroom.",
             GetSession()->GetCurrentUser()->GetName(), loc);
     send_inst_str(i, s);
   }
-  GetSession()->bout << "|#1[|#9Page Sent|#1]\r\n";
+  bout << "|#1[|#9Page Sent|#1]\r\n";
 }
 
 // Announces when a user has left a channel
@@ -682,12 +682,12 @@ void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact
     GetApplication()->GetUserManager()->ReadUser(&u, ir.user);
     sprintf(tmsg, actions[nact]->toperson, GetSession()->GetCurrentUser()->GetName());
   } else if (actions[nact]->r) {
-    GetSession()->bout << "This action requires a recipient.\r\n";
+    bout << "This action requires a recipient.\r\n";
     return;
   } else {
     sprintf(tmsg, actions[nact]->singular, GetSession()->GetCurrentUser()->GetName());
   }
-  GetSession()->bout << actions[nact]->toprint << wwiv::endl;
+  bout << actions[nact]->toprint << wwiv::endl;
   sprintf(final, "%s%s", pszColorString, tmsg);
   if (!bOk) {
     out_msg(final, loc);
@@ -711,32 +711,32 @@ void action_help(int num) {
 
   strcpy(ac, "|#6[USER]|#1");
   strcpy(rec, "|#6[RECIPIENT]|#1");
-  GetSession()->bout << "\r\n|#5Word:|#1 " << actions[num]->aword << wwiv::endl;
-  GetSession()->bout << "|#5To user:|#1 " << actions[num]->toprint << wwiv::endl;
+  bout << "\r\n|#5Word:|#1 " << actions[num]->aword << wwiv::endl;
+  bout << "|#5To user:|#1 " << actions[num]->toprint << wwiv::endl;
   sprintf(szBuffer, actions[num]->toperson, ac);
-  GetSession()->bout << "|#5To recipient:|#1 " << szBuffer << wwiv::endl;
+  bout << "|#5To recipient:|#1 " << szBuffer << wwiv::endl;
   sprintf(szBuffer, actions[num]->toall, ac, rec);
-  GetSession()->bout << "|#5To everyone else:|#1 " << szBuffer << wwiv::endl;
+  bout << "|#5To everyone else:|#1 " << szBuffer << wwiv::endl;
   if (actions[num]->r == 1) {
-    GetSession()->bout << "|#5This action requires a recipient.\n\r\n";
+    bout << "|#5This action requires a recipient.\n\r\n";
     return;
   }
   sprintf(szBuffer, actions[num]->singular, ac);
-  GetSession()->bout << "|#5Used singular:|#1 " << szBuffer << wwiv::endl;
-  GetSession()->bout << "|#5This action does not require a recipient.\n\r\n";
+  bout << "|#5Used singular:|#1 " << szBuffer << wwiv::endl;
+  bout << "|#5This action does not require a recipient.\n\r\n";
 }
 
 // Executes a GA command
 
 void ga(const char *pszMessage, char *pszColorString, int loc, int type) {
   if (!strlen(pszMessage) || pszMessage[0] == '\0') {
-    GetSession()->bout << "|#1[|#9A message is required after the GA command|#1]\r\n";
+    bout << "|#1[|#9A message is required after the GA command|#1]\r\n";
     return;
   }
   char szBuffer[500];
   sprintf(szBuffer, "%s%s%s %s", pszColorString, GetSession()->GetCurrentUser()->GetName(), (type ? "'s" : ""),
           pszMessage);
-  GetSession()->bout << "|#1[|#9Generic Action Sent|#1]\r\n";
+  bout << "|#1[|#9Generic Action Sent|#1]\r\n";
   out_msg(szBuffer, loc);
 }
 
@@ -750,8 +750,8 @@ void toggle_avail() {
   get_inst_info(GetApplication()->GetInstanceNumber(), &ir);
   avail = !avail;
 
-  GetSession()->bout << "\n\rYou are now ";
-  GetSession()->bout << (avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
+  bout << "\n\rYou are now ";
+  bout << (avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
   write_inst(ir.loc, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
@@ -766,8 +766,8 @@ void toggle_invis() {
   get_inst_info(GetApplication()->GetInstanceNumber(), &ir);
   invis = !invis;
 
-  GetSession()->bout << "\r\n|#1You are now ";
-  GetSession()->bout << (invis ? "invisible.\n\r\n" : "visible.\n\r\n");
+  bout << "\r\n|#1You are now ";
+  bout << (invis ? "invisible.\n\r\n" : "visible.\n\r\n");
   write_inst(ir.loc, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
@@ -795,26 +795,26 @@ void list_channels() {
   }
 
   for (tl = 1; tl <= 10; tl++) {
-    GetSession()->bout << "|#1" << tl << " |#7-|#9 " << channels[tl].name << wwiv::endl;
+    bout << "|#1" << tl << " |#7-|#9 " << channels[tl].name << wwiv::endl;
     if (check[tl]) {
       who_online(nodes, tl + INST_LOC_CH1 - 1);
       if (nodes[0]) {
         if (tl == 10) {
           bputch(SPACE);
         }
-        GetSession()->bout << "    |#9Users in channel: ";
+        bout << "    |#9Users in channel: ";
         for (int i2 = 1; i2 <= nodes[0]; i2++) {
           GetApplication()->GetUserManager()->ReadUser(&u, nodes[i2]);
           if (((nodes[0] - i2) == 1) && (nodes[0] >= 2)) {
-            GetSession()->bout << "|#1" << u.GetName() << " |#7and ";
+            bout << "|#1" << u.GetName() << " |#7and ";
           } else {
-            GetSession()->bout << "|#1" << u.GetName() << (((nodes[0] > 1) && (i2 != nodes[0])) ? "|#7, " : " ");
+            bout << "|#1" << u.GetName() << (((nodes[0] > 1) && (i2 != nodes[0])) ? "|#7, " : " ");
           }
         }
         if (secure[tl]) {
-          GetSession()->bout << "|#6[SECURED]";
+          bout << "|#6[SECURED]";
         }
-        GetSession()->bout.NewLine();
+        bout.nl();
       }
     }
   }
@@ -827,12 +827,12 @@ int change_channels(int loc) {
   char szMessage[80];
 
   cleanup_chat();
-  GetSession()->bout.NewLine();
+  bout.nl();
   list_channels();
-  GetSession()->bout.NewLine();
+  bout.nl();
   while ((temploc < 1 || temploc > 10) && !hangup) {
     CheckForHangup();
-    GetSession()->bout << "|#1Enter a channel number, 1 to 10, Q to quit: ";
+    bout << "|#1Enter a channel number, 1 to 10, Q to quit: ";
     input(szMessage, 2);
     if (wwiv::UpperCase<char>(szMessage[0]) == 'Q') {
       return loc;
@@ -845,12 +845,12 @@ int change_channels(int loc) {
       ch_ok = 1;
     } else {
       if (GetSession()->GetCurrentUser()->GetSl() >= g_nChatOpSecLvl || so()) {
-        GetSession()->bout << "|#9This channel is secured.  Are you |#1SURE|#9 you wish to enter? ";
+        bout << "|#9This channel is secured.  Are you |#1SURE|#9 you wish to enter? ";
         if (yesno()) {
           ch_ok = 1;
         }
       } else {
-        GetSession()->bout << "|#1Channel is secured.  You cannot enter it.\r\n";
+        bout << "|#1Channel is secured.  You cannot enter it.\r\n";
       }
     }
     if (ch_ok) {
@@ -860,7 +860,7 @@ int change_channels(int loc) {
       loc = temploc + (INST_LOC_CH1 - 1);
       write_inst(static_cast< unsigned short >(loc), 0, INST_FLAGS_NONE);
       moving(true, loc);
-      GetSession()->bout.NewLine();
+      bout.nl();
       intro(loc);
     }
   }
@@ -875,9 +875,9 @@ bool check_ch(int ch) {
   char szMessage[80];
 
   if (GetSession()->GetCurrentUser()->GetSl() < channels[ch].sl && !so()) {
-    GetSession()->bout << "\r\n|#9A security level of |#1" << channels[ch].sl <<
+    bout << "\r\n|#9A security level of |#1" << channels[ch].sl <<
                        "|#9 is required to access this channel.\r\n";
-    GetSession()->bout << "|#9Your security level is |#1" << GetSession()->GetCurrentUser()->GetSl() << "|#9.\r\n";
+    bout << "|#9Your security level is |#1" << GetSession()->GetCurrentUser()->GetSl() << "|#9.\r\n";
     return false;
   }
   if (channels[ch].ar != '0') {
@@ -887,29 +887,29 @@ bool check_ch(int ch) {
   }
   if (c_ar && !GetSession()->GetCurrentUser()->HasArFlag(c_ar)) {
     sprintf(szMessage, "\r\n|#9The \"|#1%c|#9\" AR is required to access this chat channel.\r\n", channels[ch].ar);
-    GetSession()->bout << szMessage;
+    bout << szMessage;
     return false;
   }
   char gender = channels[ch].sex;
   if (gender != 65 && GetSession()->GetCurrentUser()->GetGender() != gender
       && GetSession()->GetCurrentUser()->GetSl() < g_nChatOpSecLvl) {
     if (gender == 77) {
-      GetSession()->bout << "\r\n|#9Only |#1males|#9 are allowed in this channel.\r\n";
+      bout << "\r\n|#9Only |#1males|#9 are allowed in this channel.\r\n";
     } else if (gender == 70) {
-      GetSession()->bout << "\r\n|#9Only |#1females|#9 are allowed in this channel.\r\n";
+      bout << "\r\n|#9Only |#1females|#9 are allowed in this channel.\r\n";
     } else {
-      GetSession()->bout << "\r\n|#6The sysop has configured this channel improperly!\r\n";
+      bout << "\r\n|#6The sysop has configured this channel improperly!\r\n";
     }
     return false;
   }
   if (GetSession()->GetCurrentUser()->GetAge() < channels[ch].min_age
       && GetSession()->GetCurrentUser()->GetSl() < g_nChatOpSecLvl) {
-    GetSession()->bout << "\r\n|#9You must be |#1" << channels[ch].min_age << "|#9 or older to enter this channel.\r\n";
+    bout << "\r\n|#9You must be |#1" << channels[ch].min_age << "|#9 or older to enter this channel.\r\n";
     return false;
   }
   if (GetSession()->GetCurrentUser()->GetAge() > channels[ch].max_age
       && GetSession()->GetCurrentUser()->GetSl() < g_nChatOpSecLvl) {
-    GetSession()->bout << "\r\n|#9You must be |#1" << channels[ch].max_age << "|#9 or younger to enter this channel.\r\n";
+    bout << "\r\n|#9You must be |#1" << channels[ch].max_age << "|#9 or younger to enter this channel.\r\n";
     return false;
   }
   return true;
@@ -992,14 +992,14 @@ int grabname(const char *pszMessage, int ch) {
     if (n < 1 || n > num_instances()) {
       char szBuffer[ 255 ];
       sprintf(szBuffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
-      GetSession()->bout << szBuffer;
+      bout << szBuffer;
       return 0;
     }
     get_inst_info(n, &ir);
     if ((ir.flags & INST_FLAGS_ONLINE) &&
         ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
       if (ch && (ir.loc != ch)) {
-        GetSession()->bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
+        bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
         return 0;
       }
       while (!sp) {
@@ -1012,7 +1012,7 @@ int grabname(const char *pszMessage, int ch) {
     }
     char szBuffer[ 255 ];
     sprintf(szBuffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
-    GetSession()->bout << szBuffer;
+    bout << szBuffer;
     return 0;
   }
   while (!node && c < wwiv::strings::GetStringLength(pszMessage) && c < 40) {
@@ -1061,11 +1061,11 @@ int grabname(const char *pszMessage, int ch) {
   }
   if (!node) {
     if (dupe) {
-      GetSession()->bout << "|#1[|#9Name specified matched multiple users.|#1]\r\n";
+      bout << "|#1[|#9Name specified matched multiple users.|#1]\r\n";
     } else if (ch) {
-      GetSession()->bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
+      bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
     } else {
-      GetSession()->bout << "|#1[|#9Specified user is not online|#1]\r\n";
+      bout << "|#1[|#9Specified user is not online|#1]\r\n";
     }
   }
   return node;

@@ -66,7 +66,7 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
     } else if (wwiv::strings::IsEquals(szEmailAddress, "SYSOP")) {     // Add 4.31 Build3
       *pUserNumber = 1;
     } else {
-      GetSession()->bout << "Unknown user.\r\n";
+      bout << "Unknown user.\r\n";
     }
   } else if (atoi(ss + 1) == 0) {
     for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
@@ -84,7 +84,7 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
       }
     }
     if (i >= GetSession()->GetMaxNetworkNumber()) {
-      GetSession()->bout << "Unknown user.\r\n";
+      bout << "Unknown user.\r\n";
     }
   } else {
     ss[0] = '\0';
@@ -116,7 +116,7 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
       if (net_email_name[0]) {
         *pSystemNumber = static_cast< unsigned short >(nSystemNumber);
       } else {
-        GetSession()->bout << "Unknown user.\r\n";
+        bout << "Unknown user.\r\n";
       }
     } else {
       *pUserNumber = static_cast< unsigned short >(nUserNumber);
@@ -127,8 +127,8 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
         set_net_num(i);
         if (wwiv::strings::IsEqualsIgnoreCase(ss1, GetSession()->GetNetworkName())) {
           if (!valid_system(*pSystemNumber)) {
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
+            bout.nl();
+            bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
             *pSystemNumber = *pUserNumber = 0;
           } else {
             if (*pSystemNumber == net_sysnum) {
@@ -138,7 +138,7 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
               }
               if (*pUserNumber == 0 || *pUserNumber > 32767) {
                 *pUserNumber = 0;
-                GetSession()->bout << "Unknown user.\r\n";
+                bout << "Unknown user.\r\n";
               }
             }
           }
@@ -146,8 +146,8 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
         }
       }
       if (i >= GetSession()->GetMaxNetworkNumber()) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "This system isn't connected to " << ss1 << "\r\n";
+        bout.nl();
+        bout << "This system isn't connected to " << ss1 << "\r\n";
         *pSystemNumber = *pUserNumber = 0;
       }
     } else if (*pSystemNumber && GetSession()->GetMaxNetworkNumber() > 1) {
@@ -178,18 +178,18 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
             *pUserNumber = static_cast< unsigned short >(finduser(net_email_name));
             if (*pUserNumber == 0 || *pUserNumber > 32767) {
               *pUserNumber = 0;
-              GetSession()->bout << "Unknown user.\r\n";
+              bout << "Unknown user.\r\n";
             }
           }
         } else {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "Unknown system\r\n";
+          bout.nl();
+          bout << "Unknown system\r\n";
           *pSystemNumber = *pUserNumber = 0;
         }
       } else if (nv == 1) {
         set_net_num(ss[0]);
       } else {
-        GetSession()->bout.NewLine();
+        bout.nl();
         for (i = 0; i < nv; i++) {
           set_net_num(ss[i]);
           csne = next_system(*pSystemNumber);
@@ -202,11 +202,11 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
               odc[odci - 1] = static_cast< char >(odci + '0');
               odc[odci] = 0;
             }
-            GetSession()->bout << i + 1 << ". " << GetSession()->GetNetworkName() << " (" << csne->name << ")\r\n";
+            bout << i + 1 << ". " << GetSession()->GetNetworkName() << " (" << csne->name << ")\r\n";
           }
         }
-        GetSession()->bout << "Q. Quit\r\n\n";
-        GetSession()->bout << "|#2Which network (number): ";
+        bout << "Q. Quit\r\n\n";
+        bout << "|#2Which network (number): ";
         if (nv < 9) {
           ch = onek(onx);
           if (ch == 'Q') {
@@ -225,7 +225,7 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
         if (i >= 0 && i < nv) {
           set_net_num(ss[i]);
         } else {
-          GetSession()->bout << "\r\n|#6Aborted.\r\n\n";
+          bout << "\r\n|#6Aborted.\r\n\n";
           *pUserNumber = *pSystemNumber = 0;
         }
       }
@@ -238,10 +238,10 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
         }
         if (*pUserNumber == 0 || *pUserNumber > 32767) {
           *pUserNumber = 0;
-          GetSession()->bout << "Unknown user.\r\n";
+          bout << "Unknown user.\r\n";
         }
       } else if (!valid_system(*pSystemNumber)) {
-        GetSession()->bout << "\r\nUnknown user.\r\n";
+        bout << "\r\nUnknown user.\r\n";
         *pSystemNumber = *pUserNumber = 0;
       }
     }
@@ -254,7 +254,7 @@ void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemN
  * @return true if the password entered is valid.
  */
 bool ValidateSysopPassword() {
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (so()) {
     if (incom) {
       string password;

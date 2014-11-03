@@ -67,7 +67,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   netHeaderOrig.method  = 0;
 
   if (netHeaderOrig.length > 32755) {
-    GetSession()->bout.WriteFormatted("Message truncated by %lu bytes for the network.", netHeaderOrig.length - 32755L);
+    bout.WriteFormatted("Message truncated by %lu bytes for the network.", netHeaderOrig.length - 32755L);
     netHeaderOrig.length = 32755;
     lMessageLength = netHeaderOrig.length - strlen(pPostRecord->title) - 1;
   }
@@ -157,25 +157,25 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
 
 void post() {
   if (!iscan(GetSession()->GetCurrentMessageArea())) {
-    GetSession()->bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n";
+    bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n";
     return;
   }
   if (GetSession()->GetCurrentReadMessageArea() < 0) {
-    GetSession()->bout << "\r\nNo subs available.\r\n\n";
+    bout << "\r\nNo subs available.\r\n\n";
     return;
   }
 
   if (freek1(syscfg.msgsdir) < 10) {
-    GetSession()->bout << "\r\nSorry, not enough disk space left.\r\n\n";
+    bout << "\r\nSorry, not enough disk space left.\r\n\n";
     return;
   }
   if (GetSession()->GetCurrentUser()->IsRestrictionPost()
       || GetSession()->GetCurrentUser()->GetNumPostsToday() >= getslrec(GetSession()->GetEffectiveSl()).posts) {
-    GetSession()->bout << "\r\nToo many messages posted today.\r\n\n";
+    bout << "\r\nToo many messages posted today.\r\n\n";
     return;
   }
   if (GetSession()->GetEffectiveSl() < subboards[GetSession()->GetCurrentReadMessageArea()].postsl) {
-    GetSession()->bout << "\r\nYou can't post here.\r\n\n";
+    bout << "\r\nYou can't post here.\r\n\n";
     return;
   }
 
@@ -191,18 +191,18 @@ void post() {
   if (xsubs[ GetSession()->GetCurrentReadMessageArea() ].num_nets) {
     a &= (anony_real_name);
     if (GetSession()->GetCurrentUser()->IsRestrictionNet()) {
-      GetSession()->bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
+      bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
       return;
     }
     if (net_sysnum) {
-      GetSession()->bout << "\r\nThis post will go out on ";
+      bout << "\r\nThis post will go out on ";
       for (int i = 0; i < xsubs[ GetSession()->GetCurrentReadMessageArea() ].num_nets; i++) {
         if (i) {
-          GetSession()->bout << ", ";
+          bout << ", ";
         }
-        GetSession()->bout << net_networks[xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i].net_num].name;
+        bout << net_networks[xsubs[GetSession()->GetCurrentReadMessageArea()].nets[i].net_num].name;
       }
-      GetSession()->bout << ".\r\n\n";
+      bout << ".\r\n\n";
     }
   }
   time_t lStartTime = time(nullptr);
@@ -293,7 +293,7 @@ void post() {
 
     GetApplication()->UpdateTopScreen();
     sysoplogf("+ \"%s\" posted on %s", p.title, subboards[GetSession()->GetCurrentReadMessageArea()].name);
-    GetSession()->bout << "Posted on " << subboards[GetSession()->GetCurrentReadMessageArea()].name << wwiv::endl;
+    bout << "Posted on " << subboards[GetSession()->GetCurrentReadMessageArea()].name << wwiv::endl;
     if (xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets) {
       GetSession()->GetCurrentUser()->SetNumNetPosts(GetSession()->GetCurrentUser()->GetNumNetPosts() + 1);
       if (!(p.status & status_pending_net)) {
@@ -338,7 +338,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   if (hangup || nSubNumber < 0) {
     return;
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   uint32_t lQuickScanPointer = qsc_p[nSubNumber];
 
   if (!GetSession()->m_SubDateCache[nSubNumber]) {
@@ -352,12 +352,12 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     GetSession()->SetCurrentMessageArea(nBeginSubNumber);
 
     if (!iscan(GetSession()->GetCurrentMessageArea())) {
-      GetSession()->bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
+      bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
       return;
     }
     lQuickScanPointer = qsc_p[nSubNumber];
 
-    GetSession()->bout.WriteFormatted("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
+    bout.WriteFormatted("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
                                       subboards[GetSession()->GetCurrentReadMessageArea()].name,
                                       usub[GetSession()->GetCurrentMessageArea()].keys, GetSession()->GetNumMessagesInCurrentMessageArea());
 
@@ -377,32 +377,32 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 
     GetSession()->SetCurrentMessageArea(nOldSubNumber);
     *pnNextSubNumber = nNextSubNumber;
-    GetSession()->bout.WriteFormatted("|#1< %s Q-Scan Done >", subboards[GetSession()->GetCurrentReadMessageArea()].name);
-    GetSession()->bout.ClearEOL();
-    GetSession()->bout.NewLine();
+    bout.WriteFormatted("|#1< %s Q-Scan Done >", subboards[GetSession()->GetCurrentReadMessageArea()].name);
+    bout.ClearEOL();
+    bout.nl();
     lines_listed = 0;
-    GetSession()->bout.ClearEOL();
+    bout.ClearEOL();
     if (okansi() && !newline) {
-      GetSession()->bout << "\r\x1b[4A";
+      bout << "\r\x1b[4A";
     }
   } else {
-    GetSession()->bout.WriteFormatted("|#1< Nothing new on %s %s >", subboards[nSubNumber].name,
+    bout.WriteFormatted("|#1< Nothing new on %s %s >", subboards[nSubNumber].name,
                                       usub[nBeginSubNumber].keys);
-    GetSession()->bout.ClearEOL();
-    GetSession()->bout.NewLine();
+    bout.ClearEOL();
+    bout.nl();
     lines_listed = 0;
-    GetSession()->bout.ClearEOL();
+    bout.ClearEOL();
     if (okansi() && !newline) {
-      GetSession()->bout << "\r\x1b[3A";
+      bout << "\r\x1b[3A";
     }
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
 }
 
 void nscan(int nStartingSubNum) {
   int nNextSubNumber = 1;
 
-  GetSession()->bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
+  bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
   for (int i = nStartingSubNum; usub[i].subnum != -1 && i < GetSession()->num_subs && nNextSubNumber && !hangup; i++) {
     if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
       qscan(i, &nNextSubNumber);
@@ -413,9 +413,9 @@ void nscan(int nStartingSubNum) {
       nNextSubNumber = 0;
     }
   }
-  GetSession()->bout.NewLine();
-  GetSession()->bout.ClearEOL();
-  GetSession()->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
+  bout.nl();
+  bout.ClearEOL();
+  bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
   if (nNextSubNumber && GetSession()->GetCurrentUser()->IsNewScanFiles() &&
       (syscfg.sysconfig & sysconfig_no_xfer) == 0 &&
       (!(g_flags & g_flag_scanned_files))) {
@@ -430,20 +430,20 @@ void nscan(int nStartingSubNum) {
 
 void ScanMessageTitles() {
   if (!iscan(GetSession()->GetCurrentMessageArea())) {
-    GetSession()->bout << "\r\n|#7A file required is in use by another instance. Try again later.\r\n";
+    bout << "\r\n|#7A file required is in use by another instance. Try again later.\r\n";
     return;
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (GetSession()->GetCurrentReadMessageArea() < 0) {
-    GetSession()->bout << "No subs available.\r\n";
+    bout << "No subs available.\r\n";
     return;
   }
-  GetSession()->bout.WriteFormatted("|#2%d |#9messages in area |#2%s\r\n",
+  bout.WriteFormatted("|#2%d |#9messages in area |#2%s\r\n",
                                     GetSession()->GetNumMessagesInCurrentMessageArea(), subboards[GetSession()->GetCurrentReadMessageArea()].name);
   if (GetSession()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;
   }
-  GetSession()->bout.WriteFormatted("|#9Start listing at (|#21|#9-|#2%d|#9): ",
+  bout.WriteFormatted("|#9Start listing at (|#21|#9-|#2%d|#9): ",
                                     GetSession()->GetNumMessagesInCurrentMessageArea());
   string messageNumber;
   input(&messageNumber, 5, true);
@@ -518,15 +518,15 @@ void delmail(WFile *pFile, int loc) {
 
 void remove_post() {
   if (!iscan(GetSession()->GetCurrentMessageArea())) {
-    GetSession()->bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n\n";
+    bout << "\r\n|12A file required is in use by another instance. Try again later.\r\n\n";
     return;
   }
   if (GetSession()->GetCurrentReadMessageArea() < 0) {
-    GetSession()->bout << "\r\nNo subs available.\r\n\n";
+    bout << "\r\nNo subs available.\r\n\n";
     return;
   }
   bool any = false, abort = false;
-  GetSession()->bout.WriteFormatted("\r\n\nPosts by you on %s\r\n\n",
+  bout.WriteFormatted("\r\n\nPosts by you on %s\r\n\n",
                                     subboards[GetSession()->GetCurrentReadMessageArea()].name);
   for (int j = 1; j <= GetSession()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == GetSession()->usernum) {
@@ -536,12 +536,12 @@ void remove_post() {
     }
   }
   if (!any) {
-    GetSession()->bout << "None.\r\n";
+    bout << "None.\r\n";
     if (!cs()) {
       return;
     }
   }
-  GetSession()->bout << "\r\n|#2Remove which? ";
+  bout << "\r\n|#2Remove which? ";
   string postNumberToRemove;
   input(&postNumberToRemove, 5);
   int nPostNumber = atoi(postNumberToRemove.c_str());
@@ -563,7 +563,7 @@ void remove_post() {
       sysoplogf("- \"%s\" removed from %s", get_post(nPostNumber)->title,
                 subboards[GetSession()->GetCurrentReadMessageArea()].name);
       delete_message(nPostNumber);
-      GetSession()->bout << "\r\nMessage removed.\r\n\n";
+      bout << "\r\nMessage removed.\r\n\n";
     }
   }
   close_sub();

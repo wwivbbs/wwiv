@@ -242,7 +242,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
   }
   break;
   default: {
-    GetSession()->bout.WriteFormatted("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", pMessageRecord->storage_type);
+    bout.WriteFormatted("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", pMessageRecord->storage_type);
     WWIV_ASSERT(false);
   }
   break;
@@ -261,7 +261,7 @@ char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLeng
       lCurrentSection = gat[lCurrentSection];
     }
     if (lMessageLength == 0) {
-      GetSession()->bout << "\r\nNo message found.\r\n\n";
+      bout << "\r\nNo message found.\r\n\n";
       return nullptr;
     }
     char* b = new char[lMessageLength + 512];
@@ -290,7 +290,7 @@ char *readfile(messagerec * pMessageRecord, string fileName, long *plMessageLeng
 void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
   WFile fileOrig(pszFileName);
   if (!fileOrig.Open(WFile::modeBinary | WFile::modeReadOnly)) {
-    GetSession()->bout << "\r\nFile not found.\r\n\n";
+    bout << "\r\nFile not found.\r\n\n";
     return;
   }
 
@@ -310,9 +310,9 @@ void LoadFileIntoWorkspace(const char *pszFileName, bool bNoEditAllowed) {
   use_workspace = (bNoEditAllowed || !okfsed()) ? true : false;
 
   if (!GetSession()->IsNewMailWatiting()) {
-    GetSession()->bout << "\r\nFile loaded into workspace.\r\n\n";
+    bout << "\r\nFile loaded into workspace.\r\n\n";
     if (!use_workspace) {
-      GetSession()->bout << "Editing will be allowed.\r\n";
+      bout << "Editing will be allowed.\r\n";
     }
   }
 }
@@ -358,9 +358,9 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   }
   int nCurrentUser = userRecord.GetForwardUserNumber();
   if (nCurrentUser == -1) {
-    GetSession()->bout << "Mailbox Closed.\r\n";
+    bout << "Mailbox Closed.\r\n";
     if (so()) {
-      GetSession()->bout << "(Forcing)\r\n";
+      bout << "(Forcing)\r\n";
     } else {
       *pUserNumber = 0;
       *pSystemNumber = 0;
@@ -393,9 +393,9 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
     }
     ss[nCurrentUser] = 1;
     if (userRecord.IsMailboxClosed()) {
-      GetSession()->bout << "Mailbox Closed.\r\n";
+      bout << "Mailbox Closed.\r\n";
       if (so()) {
-        GetSession()->bout << "(Forcing)\r\n";
+        bout << "(Forcing)\r\n";
         *pUserNumber = nCurrentUser;
         *pSystemNumber = 0;
       } else {
@@ -485,7 +485,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
         pFileEmail->Seek(i * sizeof(mailrec), WFile::seekBegin);
         int i1 = pFileEmail->Read(&messageRecord, sizeof(mailrec));
         if (i1 == -1) {
-          GetSession()->bout << "|#6DIDN'T READ WRITE!\r\n";
+          bout << "|#6DIDN'T READ WRITE!\r\n";
         }
       }
       if (messageRecord.tosys || messageRecord.touser) {
@@ -498,7 +498,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     pFileEmail->Close();
     delete pFileEmail;
     if (nBytesWritten == -1) {
-      GetSession()->bout << "|#6DIDN'T SAVE RIGHT!\r\n";
+      bout << "|#6DIDN'T SAVE RIGHT!\r\n";
     }
   } else {
     long lEmailFileLen;
@@ -534,7 +534,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     memmove(&(b1[i]), b.get(), lEmailFileLen);
     nh.length = lEmailFileLen + i;
     if (nh.length > 32760) {
-      GetSession()->bout.WriteFormatted("Message truncated by %lu bytes for the network.", nh.length - 32760L);
+      bout.WriteFormatted("Message truncated by %lu bytes for the network.", nh.length - 32760L);
       nh.length = 32760;
     }
     if (nFromNetworkNumber != GetSession()->GetNetworkNumber()) {
@@ -581,7 +581,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     }
     if (nSystemNumber == 0 && GetSession()->GetEffectiveSl() > syscfg.newusersl && userRecord.GetForwardSystemNumber() == 0
         && !GetSession()->IsNewMailWatiting()) {
-      GetSession()->bout << "|#5Attach a file to this message? ";
+      bout << "|#5Attach a file to this message? ";
       if (yesno()) {
         attach_file(1);
       }
@@ -628,15 +628,15 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
   }
   GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
   if (!GetSession()->IsNewMailWatiting()) {
-    GetSession()->bout.Color(3);
-    GetSession()->bout << logMessage;
-    GetSession()->bout.NewLine();
+    bout.Color(3);
+    bout << logMessage;
+    bout.nl();
   }
 }
 
 bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit) {
   if (nSystemNumber != 0 && net_sysnum == 0) {
-    GetSession()->bout << "\r\nSorry, this system is not a part of WWIVnet.\r\n\n";
+    bout << "\r\nSorry, this system is not a part of WWIVnet.\r\n\n";
     return false;
   }
   if (nSystemNumber == 0) {
@@ -649,21 +649,21 @@ bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit) {
         (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > syscfg.maxwaiting) ||
         userRecord.GetNumMailWaiting() > 200) {
       if (!bForceit) {
-        GetSession()->bout << "\r\nMailbox full.\r\n";
+        bout << "\r\nMailbox full.\r\n";
         return false;
       }
     }
     if (userRecord.IsUserDeleted()) {
-      GetSession()->bout << "\r\nDeleted user.\r\n\n";
+      bout << "\r\nDeleted user.\r\n\n";
       return false;
     }
   } else {
     if (!valid_system(nSystemNumber)) {
-      GetSession()->bout << "\r\nUnknown system number.\r\n\n";
+      bout << "\r\nUnknown system number.\r\n\n";
       return false;
     }
     if (GetSession()->GetCurrentUser()->IsRestrictionNet()) {
-      GetSession()->bout << "\r\nYou can't send mail off the system.\r\n";
+      bout << "\r\nYou can't send mail off the system.\r\n";
       return false;
     }
   }
@@ -673,11 +673,11 @@ bool ok_to_mail(int nUserNumber, int nSystemNumber, bool bForceit) {
          ((nUserNumber != 1 || nSystemNumber != 0) &&
           (GetSession()->GetCurrentUser()->GetNumEmailSentToday() >= getslrec(GetSession()->GetEffectiveSl()).emails)))
         && !cs()) {
-      GetSession()->bout << "\r\nToo much mail sent today.\r\n\n";
+      bout << "\r\nToo much mail sent today.\r\n\n";
       return false;
     }
     if (GetSession()->GetCurrentUser()->IsRestrictionEmail() && nUserNumber != 1) {
-      GetSession()->bout << "\r\nYou can't send mail.\r\n\n";
+      bout << "\r\nYou can't send mail.\r\n\n";
       return false;
     }
   }
@@ -699,17 +699,17 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
   bool cc = false, bcc = false;
 
   if (freek1(syscfg.msgsdir) < 10) {
-    GetSession()->bout << "\r\nSorry, not enough disk space left.\r\n\n";
+    bout << "\r\nSorry, not enough disk space left.\r\n\n";
     return;
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (ForwardMessage(&nUserNumber, &nSystemNumber)) {
     if (nSystemNumber == 32767) {
       read_inet_addr(szDestination, nUserNumber);
     }
-    GetSession()->bout << "\r\nMail Forwarded.\r\n\n";
+    bout << "\r\nMail Forwarded.\r\n\n";
     if (nUserNumber == 0 && nSystemNumber == 0) {
-      GetSession()->bout << "Forwarded to unknown user.\r\n";
+      bout << "Forwarded to unknown user.\r\n";
       return;
     }
   }
@@ -759,10 +759,10 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
     }
   }
   if (!GetSession()->IsNewMailWatiting()) {
-    GetSession()->bout << "|#9E-mailing |#2";
+    bout << "|#9E-mailing |#2";
   }
-  GetSession()->bout << szDestination;
-  GetSession()->bout.NewLine();
+  bout << szDestination;
+  bout.nl();
   int i = (getslrec(GetSession()->GetEffectiveSl()).ability & ability_email_anony) ? anony_enable_anony : 0;
 
   if (anony & (anony_receiver_pp | anony_receiver_da)) {
@@ -778,11 +778,11 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
     if (nSystemNumber != 32767) {
       i = 0;
       anony = 0;
-      GetSession()->bout.NewLine();
+      bout.nl();
       WWIV_ASSERT(csne);
-      GetSession()->bout << "|#9Name of system: |#2" << csne->name << wwiv::endl;
-      GetSession()->bout << "|#9Number of hops: |#2" << csne->numhops << wwiv::endl;
-      GetSession()->bout.NewLine();
+      bout << "|#9Name of system: |#2" << csne->name << wwiv::endl;
+      bout << "|#9Number of hops: |#2" << csne->numhops << wwiv::endl;
+      bout.nl();
     }
   }
   write_inst(INST_LOC_EMAIL, (nSystemNumber == 0) ? nUserNumber : 0, INST_FLAGS_NONE);
@@ -806,8 +806,8 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
 
   if (GetSession()->IsCarbonCopyEnabled()) {
     if (!GetSession()->IsNewMailWatiting()) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#9Copy this mail to others? ";
+      bout.nl();
+      bout << "|#9Copy this mail to others? ";
       nNumUsers = 0;
       if (yesno()) {
         bool done = false;
@@ -819,7 +819,7 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
         nNumUsers++;
         do {
           string emailAddress;
-          GetSession()->bout << "|#9Enter Address (blank to end) : ";
+          bout << "|#9Enter Address (blank to end) : ";
           input(&emailAddress, 75);
           if (emailAddress.empty()) {
             done = true;
@@ -837,12 +837,12 @@ void email(int nUserNumber, int nSystemNumber, bool forceit, int anony, bool for
             cc = true;
           }
           if (nNumUsers == 20) {
-            GetSession()->bout << "|#6Maximum number of addresses reached!";
+            bout << "|#6Maximum number of addresses reached!";
             done = true;
           }
         } while (!done);
         if (cc) {
-          GetSession()->bout << "|#9Show Recipients in message? ";
+          bout << "|#9Show Recipients in message? ";
           bcc = !yesno();
         }
       }
@@ -926,7 +926,7 @@ void imail(int nUserNumber, int nSystemNumber) {
   bool fwdm = false;
 
   if (ForwardMessage(&nUserNumber, &nSystemNumber)) {
-    GetSession()->bout << "Mail forwarded.\r\n";
+    bout << "Mail forwarded.\r\n";
     fwdm = true;
   }
 
@@ -942,7 +942,7 @@ void imail(int nUserNumber, int nSystemNumber) {
   if (nSystemNumber == 0) {
     GetApplication()->GetUserManager()->ReadUser(&userRecord, nUserNumber);
     if (!userRecord.IsUserDeleted()) {
-      GetSession()->bout << "|#5E-mail " << userRecord.GetUserNameAndNumber(nUserNumber) << "? ";
+      bout << "|#5E-mail " << userRecord.GetUserNameAndNumber(nUserNumber) << "? ";
       if (!yesno()) {
         i = 0;
       }
@@ -951,9 +951,9 @@ void imail(int nUserNumber, int nSystemNumber) {
     }
   } else {
     if (fwdm) {
-      GetSession()->bout << "|#5E-mail " << szInternetAddr << "? ";
+      bout << "|#5E-mail " << szInternetAddr << "? ";
     } else {
-      GetSession()->bout << "|#5E-mail User " << nUserNumber << " @" << nSystemNumber << " ? ";
+      bout << "|#5E-mail User " << nUserNumber << " @" << nSystemNumber << " ? ";
     }
     if (!yesno()) {
       i = 0;
@@ -991,7 +991,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
     ss.reset(readfile(pMessageRecord, pszFileName, &lMessageTextLength));
     if (ss == nullptr) {
       plan(6, "File not found.", &abort, next);
-      GetSession()->bout.NewLine();
+      bout.nl();
       return;
     }
     int nNamePtr = 0;
@@ -1016,8 +1016,8 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   break;
   default:
     // illegal storage type
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "->ILLEGAL STORAGE TYPE<-\r\n\n";
+    bout.nl();
+    bout << "->ILLEGAL STORAGE TYPE<-\r\n\n";
     return;
   }
 
@@ -1059,13 +1059,13 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
     break;
   }
 
-  GetSession()->bout << "|#9Name|#7: |#1" << name << wwiv::endl;
-  GetSession()->bout << "|#9Date|#7: |#1" << date << wwiv::endl;
+  bout << "|#9Name|#7: |#1" << name << wwiv::endl;
+  bout << "|#9Date|#7: |#1" << date << wwiv::endl;
   if (!from.empty()) {
-    GetSession()->bout << "|#9From|#7: |#1" << from << wwiv::endl;
+    bout << "|#9From|#7: |#1" << from << wwiv::endl;
   }
   if (!loc.empty()) {
-    GetSession()->bout << "|#9Loc|#7:  |#1" << loc << wwiv::endl;
+    bout << "|#9Loc|#7:  |#1" << loc << wwiv::endl;
   }
 
   int nNumCharsPtr  = 0;
@@ -1078,7 +1078,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   bool centre     = false;
 
   checka(&abort, next);
-  GetSession()->bout.NewLine();
+  bout.nl();
   while (!done && !abort && !hangup) {
     switch (pMessageRecord->storage_type) {
     case 0:
@@ -1141,7 +1141,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
             if (ctrld != -1) {
               if ((GetSession()->localIO()->WhereX() + nLineLenPtr >= GetSession()->GetCurrentUser()->GetScreenChars()) && !centre
                   && !ansi) {
-                GetSession()->bout.NewLine();
+                bout.nl();
               }
               s[nNumCharsPtr] = '\0';
               osan(s, &abort, next);
@@ -1149,7 +1149,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
                 if (GetSession()->localIO()->WhereX() < GetSession()->GetCurrentUser()->GetScreenChars() - 1) {
                   bputch(SPACE);
                 } else {
-                  GetSession()->bout.NewLine();
+                  bout.nl();
                 }
                 checka(&abort, next);
               }
@@ -1162,7 +1162,7 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
         if (ch == RETURN) {
           if (ctrla == false) {
             if (ctrld != -1) {
-              GetSession()->bout.NewLine();
+              bout.nl();
               checka(&abort, next);
             }
           } else {
@@ -1181,11 +1181,11 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
   }
   if (!abort && nNumCharsPtr) {
     s[nNumCharsPtr] = '\0';
-    GetSession()->bout << s;
-    GetSession()->bout.NewLine();
+    bout << s;
+    bout.nl();
   }
-  GetSession()->bout.Color(0);
-  GetSession()->bout.NewLine();
+  bout.Color(0);
+  bout.nl();
   if (express && abort && !*next) {
     expressabort = true;
   }
@@ -1198,24 +1198,24 @@ void read_message1(messagerec * pMessageRecord, char an, bool readit, bool *next
 }
 
 void read_message(int n, bool *next, int *val) {
-  GetSession()->bout.NewLine();
+  bout.nl();
   bool abort = false;
   *next = false;
   if (GetSession()->GetCurrentUser()->IsUseClearScreen()) {
-    GetSession()->bout.ClearScreen();
+    bout.ClearScreen();
   }
   if (forcescansub) {
-    GetSession()->bout.ClearScreen();
-    GetSession()->bout.GotoXY(1, 1);
-    GetSession()->bout << "|#4   FORCED SCAN OF SYSOP INFORMATION - YOU MAY NOT ABORT.  PLEASE READ THESE!  |#0\r\n";
+    bout.ClearScreen();
+    bout.GotoXY(1, 1);
+    bout << "|#4   FORCED SCAN OF SYSOP INFORMATION - YOU MAY NOT ABORT.  PLEASE READ THESE!  |#0\r\n";
   }
 
-  GetSession()->bout.WriteFormatted(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d |#2%s\r\n", n,
+  bout.WriteFormatted(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d |#2%s\r\n", n,
                                     GetSession()->GetNumMessagesInCurrentMessageArea(), GetSession()->GetMessageColor(),
                                     subboards[GetSession()->GetCurrentReadMessageArea()].name);
   const string subjectLine = "|#9Subj|#7: ";
   osan(subjectLine, &abort, next);
-  GetSession()->bout.Color(GetSession()->GetMessageColor());
+  bout.Color(GetSession()->GetMessageColor());
   postrec p = *get_post(n);
   if (p.status & (status_unvalidated | status_delete)) {
     plan(6, "<<< NOT VALIDATED YET >>>", &abort, next);
@@ -1224,7 +1224,7 @@ void read_message(int n, bool *next, int *val) {
     }
     *val |= 1;
     osan(subjectLine, &abort, next);
-    GetSession()->bout.Color(GetSession()->GetMessageColor());
+    bout.Color(GetSession()->GetMessageColor());
   }
   strncpy(irt, p.title, 60);
   irt_name[0] = '\0';

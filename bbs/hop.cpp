@@ -31,11 +31,11 @@ void HopSub() {
   }
 
   if (okansi()) {
-    GetSession()->bout << "\r\x1b[K";
+    bout << "\r\x1b[K";
   } else {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
-  GetSession()->bout << "|#9Enter name or partial name of sub to hop to:\r\n:";
+  bout << "|#9Enter name or partial name of sub to hop to:\r\n:";
   if (okansi()) {
     newline = false;
   }
@@ -44,7 +44,7 @@ void HopSub() {
     return;
   }
   if (!okansi()) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
 
   int c = 0;
@@ -62,12 +62,12 @@ void HopSub() {
         ;
       if (strstr(s2, s1) != nullptr) {
         if (okansi()) {
-          GetSession()->bout << "\r\x1b[K";
+          bout << "\r\x1b[K";
         }
         if (!okansi()) {
-          GetSession()->bout.NewLine();
+          bout.nl();
         }
-        GetSession()->bout << "|#5Do you mean \"" << subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
+        bout << "|#5Do you mean \"" << subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
@@ -104,11 +104,11 @@ void HopDir() {
   }
 
   if (okansi()) {
-    GetSession()->bout << "\r\x1b[K";
+    bout << "\r\x1b[K";
   } else {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
-  GetSession()->bout << "|#9Enter name or partial name of dir to hop to:\r\n:";
+  bout << "|#9Enter name or partial name of dir to hop to:\r\n:";
   if (okansi()) {
     newline = false;
   }
@@ -117,7 +117,7 @@ void HopDir() {
     return;
   }
   if (!okansi()) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
 
   int c = 0;
@@ -135,11 +135,11 @@ void HopDir() {
         ;
       if (strstr(s2, s1) != nullptr) {
         if (okansi()) {
-          GetSession()->bout << "\r\x1b[K";
+          bout << "\r\x1b[K";
         } else {
-          GetSession()->bout.NewLine();
+          bout.nl();
         }
-        GetSession()->bout << "|#5Do you mean \"" << directories[udir[i].subnum].name << "\" (Y/N/Q)? ";
+        bout << "|#5Do you mean \"" << directories[udir[i].subnum].name << "\" (Y/N/Q)? ";
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;

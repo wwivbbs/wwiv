@@ -239,7 +239,7 @@ static void ReadBBSList(const vector<unique_ptr<BbsListEntry>>& entries) {
         entry->id,
         GetBbsListEntryAddress(entry.get()).c_str(),
         entry->name.c_str(), entry->software.c_str());
-    GetSession()->bout << s << wwiv::endl;
+    bout << s << wwiv::endl;
   }
 }
 
@@ -248,13 +248,13 @@ static void DeleteBbsListEntry() {
   LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
 
   if (entries.empty()) {
-    GetSession()->bout << "|12You can not delete an entry when the list is empty." << wwiv::endl;
+    bout << "|12You can not delete an entry when the list is empty." << wwiv::endl;
     pausescr();
     return;
   }
 
   ReadBBSList(entries);
-  GetSession()->bout << "|03Enter Entry Number to Delete: ";
+  bout << "|03Enter Entry Number to Delete: ";
   string s;
   input(&s, 4, true);
   int entry_num = atoi(s.c_str());
@@ -266,7 +266,7 @@ static void DeleteBbsListEntry() {
   for (auto b = entries.begin(); b != entries.end(); b++) {
     if (b->get()->id == entry_num) {
       entries.erase(b);
-      GetSession()->bout << "|10Entry deleted." << wwiv::endl;
+      bout << "|10Entry deleted." << wwiv::endl;
       SaveToJSON(syscfg.datadir, BBSLIST_JSON, entries);
       return;
     }
@@ -304,42 +304,42 @@ static bool IsBBSPhoneNumberUnique(
 }
 
 static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
-  GetSession()->bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
+  bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
   string phone_number;
   input(&phone_number, 12, true);
   if (!IsBBSPhoneNumberValid(phone_number)) {
-    GetSession()->bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
+    bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
     return false;
   }
   if (!IsBBSPhoneNumberUnique(phone_number, *entries)) {
-    GetSession()->bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
+    bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
     return false;
   }
-  GetSession()->bout << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
+  bout << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
   unique_ptr<BbsListEntry> entry(new BbsListEntry());
   inputl(&entry->name, 50, true);
-  GetSession()->bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
+  bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
   input(&entry->software, 12, true);
 
   entry->addresses.insert(std::make_pair(ConnectionType::MODEM, phone_number));
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Is this information correct? ";
+  bout.nl();
+  bout << "|#5Is this information correct? ";
   if (yesno()) {
     entries->emplace_back(entry.release());
-    GetSession()->bout << "\r\n|#3This entry will be added to BBS list.\r\n";
+    bout << "\r\n|#3This entry will be added to BBS list.\r\n";
     return true;
   }
   return false;
 }
 
 static char ShowBBSListMenuAndGetChoice() {
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (so()) {
-    GetSession()->bout <<
+    bout <<
                        "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
     return onek("QRNAD");
   } else {
-    GetSession()->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
+    bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
     return onek("QRNA");
   }
 }
@@ -353,10 +353,10 @@ void NewBBSList() {
       vector<unique_ptr<BbsListEntry>> entries;
       LoadFromJSON(syscfg.datadir, BBSLIST_JSON, &entries);
       if (GetSession()->GetEffectiveSl() <= 10) {
-        GetSession()->bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
+        bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
         break;
       } else if (GetSession()->GetCurrentUser()->IsRestrictionAutomessage()) {
-        GetSession()->bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
+        bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
         break;
       }
       if (AddBBSListEntry(&entries)) {

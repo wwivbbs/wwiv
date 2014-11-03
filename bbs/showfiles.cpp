@@ -47,7 +47,7 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
   char drive[MAX_PATH], direc[MAX_PATH], file[MAX_PATH], ext[MAX_PATH];
 
   char c = (okansi()) ? '\xCD' : '=';
-  GetSession()->bout.NewLine();
+  bout.nl();
 #if defined (_WIN32)
   _splitpath(pszDirectoryName, drive, direc, file, ext);
 #else
@@ -59,9 +59,9 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
 
   SNPRINTF(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(pszFileName)), drive, direc);
   int i = (GetSession()->GetCurrentUser()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
-  GetSession()->bout << "|#7" << charstr(i, c) << s;
+  bout << "|#7" << charstr(i, c) << s;
   i = GetSession()->GetCurrentUser()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
-  GetSession()->bout << "|#7" << charstr(i, c);
+  bout << "|#7" << charstr(i, c);
 
   char szFullPathName[ MAX_PATH ];
   SNPRINTF(szFullPathName, sizeof(szFullPathName), "%s%s", pszDirectoryName, strupr(stripfn(pszFileName)));
@@ -72,16 +72,16 @@ void show_files(const char *pszFileName, const char *pszDirectoryName) {
     align(s);
     SNPRINTF(szFullPathName, sizeof(szFullPathName), "|#7[|#2%s|#7]|#1 ", s);
     if (GetSession()->localIO()->WhereX() > (GetSession()->GetCurrentUser()->GetScreenChars() - 15)) {
-      GetSession()->bout.NewLine();
+      bout.nl();
     }
-    GetSession()->bout << szFullPathName;
+    bout << szFullPathName;
     bFound = fnd.next();
   }
 
-  GetSession()->bout.NewLine();
-  GetSession()->bout.Color(7);
-  GetSession()->bout << charstr(GetSession()->GetCurrentUser()->GetScreenChars() - 1, c);
-  GetSession()->bout.NewLine(2);
+  bout.nl();
+  bout.Color(7);
+  bout << charstr(GetSession()->GetCurrentUser()->GetScreenChars() - 1, c);
+  bout.nl(2);
 }
 
 

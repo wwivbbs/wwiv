@@ -37,14 +37,14 @@ void addto(char *pszAnsiString, int nNumber);
 
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc) {
   if (GetSession()->localIO()->WhereX()) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
   for (int i = 0; cl[i] != 0; i++) {
-    GetSession()->bout.SystemColor(atr[i]);
+    bout.SystemColor(atr[i]);
     bputch(cl[i], true);
   }
   FlushOutComChBuffer();
-  GetSession()->bout.SystemColor(*cc);
+  bout.SystemColor(*cc);
   strcpy(endofline, xl);
 }
 
@@ -226,8 +226,8 @@ char getkey()
       }
       GetApplication()->UpdateShutDownStatus();
       if (labs(dd - timelastchar1) > tv) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "Call back later when you are there.\r\n";
+        bout.nl();
+        bout << "Call back later when you are there.\r\n";
         hangup = true;
       }
       CheckForHangup();
@@ -239,8 +239,8 @@ char getkey()
 
 
 static void print_yn(bool yes) {
-  GetSession()->bout << YesNoString(yes);
-  GetSession()->bout.NewLine();
+  bout << YesNoString(yes);
+  bout.nl();
 }
 
 
@@ -252,7 +252,7 @@ bool yesno()
 {
   char ch = 0;
 
-  GetSession()->bout.Color(1);
+  bout.Color(1);
   while ((!hangup) && ((ch = wwiv::UpperCase<char>(getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
@@ -272,7 +272,7 @@ bool yesno()
 bool noyes() {
   char ch = 0;
 
-  GetSession()->bout.Color(1);
+  bout.Color(1);
   while ((!hangup) && ((ch = wwiv::UpperCase<char>(getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
@@ -289,7 +289,7 @@ bool noyes() {
 char ynq() {
   char ch = 0;
 
-  GetSession()->bout.Color(1);
+  bout.Color(1);
   while (!hangup &&
          (ch = wwiv::UpperCase<char>(getkey())) != *(YesNoString(true)) &&
          ch != *(YesNoString(false)) &&
@@ -302,8 +302,8 @@ char ynq() {
     print_yn(true);
   } else if (ch == *str_quit) {
     ch = 'Q';
-    GetSession()->bout << str_quit;
-    GetSession()->bout.NewLine();
+    bout << str_quit;
+    bout.nl();
   } else {
     ch = 'N';
     print_yn(false);
@@ -314,10 +314,10 @@ char ynq() {
 
 char onek(const char *pszAllowableChars, bool bAutoMpl) {
   if (bAutoMpl) {
-    GetSession()->bout.ColorizedInputField(1);
+    bout.ColorizedInputField(1);
   }
   char ch = onek_ncr(pszAllowableChars);
-  GetSession()->bout.NewLine();
+  bout.nl();
   return ch;
 }
 

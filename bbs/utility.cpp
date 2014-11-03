@@ -56,7 +56,7 @@ void remove_from_temp(const char *pszFileName, const char *pszDirectoryName, boo
   sprintf(szFileSpecification, "%s%s", pszDirectoryName, stripfn(pszFileName));
   WFindFile fnd;
   bool bFound = fnd.open(szFileSpecification, 0);
-  GetSession()->bout.NewLine();
+  bout.nl();
   while (bFound) {
     char szFileName[MAX_PATH];
     strcpy(szFileName, fnd.GetFileName());
@@ -324,8 +324,8 @@ void preload_subs() {
     return;
   }
 
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#1Caching message areas";
+  bout.nl();
+  bout << "|#1Caching message areas";
   int i1 = 3;
   for (GetSession()->SetMessageAreaCacheNumber(0);
        GetSession()->GetMessageAreaCacheNumber() < GetSession()->num_subs && !abort;
@@ -333,7 +333,7 @@ void preload_subs() {
     if (!GetSession()->m_SubDateCache[GetSession()->GetMessageAreaCacheNumber()]) {
       iscan1(GetSession()->GetMessageAreaCacheNumber(), true);
     }
-    GetSession()->bout << "\x03" << i1 << ".";
+    bout << "\x03" << i1 << ".";
     if ((GetSession()->GetMessageAreaCacheNumber() % 5) == 4) {
       i1++;
       if (i1 == 4) {
@@ -342,14 +342,14 @@ void preload_subs() {
       if (i1 == 10) {
         i1 = 3;
       }
-      GetSession()->bout << "\b\b\b\b\b";
+      bout << "\b\b\b\b\b";
     }
     checka(&abort);
   }
   if (!abort) {
-    GetSession()->bout << "|#1...done!\r\n";
+    bout << "|#1...done!\r\n";
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   g_preloaded = true;
 }
 
@@ -362,11 +362,11 @@ char *get_wildlist(char *pszFileMask) {
   WWIV_ASSERT(pszFileMask);
 
   if (!fnd.open(pszFileMask, 0)) {
-    GetSession()->bout << "No files found\r\n";
+    bout << "No files found\r\n";
     pszFileMask[0] = '\0';
     return pszFileMask;
   } else {
-    GetSession()->bout.WriteFormatted("%12.12s ", fnd.GetFileName());
+    bout.WriteFormatted("%12.12s ", fnd.GetFileName());
   }
 
   if (strchr(pszFileMask, WFile::pathSeparatorChar) == nullptr) {
@@ -387,21 +387,21 @@ char *get_wildlist(char *pszFileMask) {
   int i = 1;
   for (int i = 1;; i++) {
     if (i % 5 == 0) {
-      GetSession()->bout.NewLine();
+      bout.nl();
     }
     if (!fnd.next()) {
       break;
     }
-    GetSession()->bout.WriteFormatted("%12.12s ", fnd.GetFileName());
+    bout.WriteFormatted("%12.12s ", fnd.GetFileName());
     if (bgetch() == SPACE) {
-      GetSession()->bout.NewLine();
+      bout.nl();
       break;
     }
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (i == 1) {
-    GetSession()->bout << "One file found: " << fnd.GetFileName() << wwiv::endl;
-    GetSession()->bout << "Use this file? ";
+    bout << "One file found: " << fnd.GetFileName() << wwiv::endl;
+    bout << "Use this file? ";
     if (yesno()) {
       return pszPath;
     } else {
@@ -410,7 +410,7 @@ char *get_wildlist(char *pszFileMask) {
     }
   }
   pszPath[t] = '\0';
-  GetSession()->bout << "Filename: ";
+  bout << "Filename: ";
   input(pszFileMask, 12, true);
   strcat(pszPath, pszFileMask);
   return pszPath;
@@ -435,26 +435,26 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
     }
 
     int x = 0;
-    GetSession()->bout.SystemColor(smc->normal_menu_item);
+    bout.SystemColor(smc->normal_menu_item);
 
     while (menu_items[x] && menu_items[x][0] && !hangup) {
-      GetSession()->bout.GotoXY(positions[x], ypos);
+      bout.GotoXY(positions[x], ypos);
 
       if (*menu_pos == x) {
-        GetSession()->bout.SystemColor(smc->current_highlight);
+        bout.SystemColor(smc->current_highlight);
         bputch(menu_items[x][0]);
-        GetSession()->bout.SystemColor(smc->current_menu_item);
-        GetSession()->bout.WriteFormatted(menu_items[x] + 1);
+        bout.SystemColor(smc->current_menu_item);
+        bout.WriteFormatted(menu_items[x] + 1);
       } else {
-        GetSession()->bout.SystemColor(smc->normal_highlight);
+        bout.SystemColor(smc->normal_highlight);
         bputch(menu_items[x][0]);
-        GetSession()->bout.SystemColor(smc->normal_menu_item);
-        GetSession()->bout.WriteFormatted(menu_items[x] + 1);
+        bout.SystemColor(smc->normal_menu_item);
+        bout.WriteFormatted(menu_items[x] + 1);
       }
       ++x;
     }
   }
-  GetSession()->bout.SystemColor(smc->normal_menu_item);
+  bout.SystemColor(smc->normal_menu_item);
 
   while (!hangup) {
     int event = get_kb_event(NOTNUMBERS);
@@ -462,19 +462,19 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
       int x = 0;
       while (menu_items[x] && menu_items[x][0] && !hangup) {
         if (event == wwiv::UpperCase<int>(menu_items[x][0]) || event == wwiv::LowerCase<int>(menu_items[x][0])) {
-          GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
-          GetSession()->bout.SystemColor(smc->normal_highlight);
+          bout.GotoXY(positions[*menu_pos], ypos);
+          bout.SystemColor(smc->normal_highlight);
           bputch(menu_items[*menu_pos][0]);
-          GetSession()->bout.SystemColor(smc->normal_menu_item);
-          GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
+          bout.SystemColor(smc->normal_menu_item);
+          bout.WriteFormatted(menu_items[*menu_pos] + 1);
           *menu_pos = x;
-          GetSession()->bout.SystemColor(smc->current_highlight);
-          GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+          bout.SystemColor(smc->current_highlight);
+          bout.GotoXY(positions[*menu_pos], ypos);
           bputch(menu_items[*menu_pos][0]);
-          GetSession()->bout.SystemColor(smc->current_menu_item);
-          GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
+          bout.SystemColor(smc->current_menu_item);
+          bout.WriteFormatted(menu_items[*menu_pos] + 1);
           if (modem_speed > 2400 || !GetSession()->using_modem) {
-            GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+            bout.GotoXY(positions[*menu_pos], ypos);
           }
           return EXECUTE;
         }
@@ -484,44 +484,44 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, char *menu_items[], int xpos, in
     } else {
       switch (event) {
       case COMMAND_LEFT:
-        GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
-        GetSession()->bout.SystemColor(smc->normal_highlight);
+        bout.GotoXY(positions[*menu_pos], ypos);
+        bout.SystemColor(smc->normal_highlight);
         bputch(menu_items[*menu_pos][0]);
-        GetSession()->bout.SystemColor(smc->normal_menu_item);
-        GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
+        bout.SystemColor(smc->normal_menu_item);
+        bout.WriteFormatted(menu_items[*menu_pos] + 1);
         if (!*menu_pos) {
           *menu_pos = amount - 1;
         } else {
           --* menu_pos;
         }
-        GetSession()->bout.SystemColor(smc->current_highlight);
-        GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+        bout.SystemColor(smc->current_highlight);
+        bout.GotoXY(positions[*menu_pos], ypos);
         bputch(menu_items[*menu_pos][0]);
-        GetSession()->bout.SystemColor(smc->current_menu_item);
-        GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
+        bout.SystemColor(smc->current_menu_item);
+        bout.WriteFormatted(menu_items[*menu_pos] + 1);
         if (modem_speed > 2400 || !GetSession()->using_modem) {
-          GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+          bout.GotoXY(positions[*menu_pos], ypos);
         }
         break;
 
       case COMMAND_RIGHT:
-        GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
-        GetSession()->bout.SystemColor(smc->normal_highlight);
+        bout.GotoXY(positions[*menu_pos], ypos);
+        bout.SystemColor(smc->normal_highlight);
         bputch(menu_items[*menu_pos][0]);
-        GetSession()->bout.SystemColor(smc->normal_menu_item);
-        GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
+        bout.SystemColor(smc->normal_menu_item);
+        bout.WriteFormatted(menu_items[*menu_pos] + 1);
         if (*menu_pos == amount - 1) {
           *menu_pos = 0;
         } else {
           ++* menu_pos;
         }
-        GetSession()->bout.SystemColor(smc->current_highlight);
-        GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+        bout.SystemColor(smc->current_highlight);
+        bout.GotoXY(positions[*menu_pos], ypos);
         bputch(menu_items[*menu_pos][0]);
-        GetSession()->bout.SystemColor(smc->current_menu_item);
-        GetSession()->bout.WriteFormatted(menu_items[*menu_pos] + 1);
+        bout.SystemColor(smc->current_menu_item);
+        bout.WriteFormatted(menu_items[*menu_pos] + 1);
         if (modem_speed > 2400 || !GetSession()->using_modem) {
-          GetSession()->bout.GotoXY(positions[*menu_pos], ypos);
+          bout.GotoXY(positions[*menu_pos], ypos);
         }
         break;
 

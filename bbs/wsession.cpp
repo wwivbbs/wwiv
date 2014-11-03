@@ -30,7 +30,7 @@ WOutStream bout;
 
 WSession::WSession(WApplication* app) : WSession(app, nullptr) {}
 
-WSession::WSession(WApplication* app, WLocalIO* localIO) : bout(::bout) {
+WSession::WSession(WApplication* app, WLocalIO* localIO) {
   if (localIO == nullptr) {
     m_pLocalIO = new WLocalIO();
   } else {
@@ -132,7 +132,7 @@ WSession::~WSession() {
 
 void WSession::CreateComm(unsigned int nHandle) {
   m_pComm = WComm::CreateComm(nHandle);
-  GetSession()->bout.SetComm(m_pComm);
+  bout.SetComm(m_pComm);
 }
 
 WLocalIO* WSession::localIO() { return m_pLocalIO; }
@@ -184,7 +184,7 @@ void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
       bout << "\x1b[" << nNumPrintableChars << "D";
     } else {
       for (unsigned int j = 0; j < nNumPrintableChars; j++) {
-        GetSession()->bout.BackSpace();
+        bout.BackSpace();
       }
     }
   }

@@ -27,13 +27,13 @@
 using std::string;
 
 static char ShowBBSListMenuAndGetChoice() {
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (so()) {
-    GetSession()->bout <<
+    bout <<
                        "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9]: (|#1R|#9)ead, (|#1A|#9)dd, (|#1D|#9)elete, (|#1N|#9)et : ";
     return onek("QRNAD");
   } else {
-    GetSession()->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
+    bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2BBS list|#9] (|#1R|#9)ead, (|#1A|#9)dd, (|#1N|#9)et : ";
     return onek("QRNA");
   }
 }
@@ -111,46 +111,46 @@ static void AddBBSListLine(const string bbsListLine) {
 }
 
 static void AddBBSListEntryImpl() {
-  GetSession()->bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
+  bout << "\r\nPlease enter phone number:\r\n ###-###-####\r\n:";
   string bbsPhoneNumber;
   input(&bbsPhoneNumber, 12, true);
   if (IsBBSPhoneNumberValid(bbsPhoneNumber.c_str())) {
     if (IsBBSPhoneNumberUnique(bbsPhoneNumber.c_str())) {
       string bbsName, bbsSpeed, bbsType;
-      GetSession()->bout << "|#3This number can be added! It is not yet in BBS list.\r\n\n\n"
+      bout << "|#3This number can be added! It is not yet in BBS list.\r\n\n\n"
                          << "|#7Enter the BBS name and comments about it (incl. V.32/HST) :\r\n:";
       inputl(&bbsName, 50, true);
-      GetSession()->bout << "\r\n|#7Enter maximum speed of the BBS:\r\n"
+      bout << "\r\n|#7Enter maximum speed of the BBS:\r\n"
                          << "|#7(|#1example: 14.4,28.8, 33.6, 56k|#7)\r\n:";
       input(&bbsSpeed, 4, true);
-      GetSession()->bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
+      bout << "\r\n|#7Enter BBS type (ie, |#1WWIV|#7):\r\n:";
       input(&bbsType, 4, true);
 
       char szBbsListLine[ 255 ];
       snprintf(szBbsListLine, sizeof(szBbsListLine), "%12s  %-50s  [%4s] (%4s)\r\n",
                bbsPhoneNumber.c_str(), bbsName.c_str(), bbsSpeed.c_str(), bbsType.c_str());
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout << szBbsListLine;
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout << "|#5Is this information correct? ";
+      bout.nl(2);
+      bout << szBbsListLine;
+      bout.nl(2);
+      bout << "|#5Is this information correct? ";
       if (yesno()) {
         AddBBSListLine(szBbsListLine);
-        GetSession()->bout << "\r\n|#3This entry was added to BBS list.\r\n";
+        bout << "\r\n|#3This entry was added to BBS list.\r\n";
       }
-      GetSession()->bout.NewLine();
+      bout.nl();
     } else {
-      GetSession()->bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
+      bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
     }
   } else {
-    GetSession()->bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
+    bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
   }
 }
 
 static void AddBBSListEntry() {
   if (GetSession()->GetEffectiveSl() <= 10) {
-    GetSession()->bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
+    bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
   } else if (GetSession()->GetCurrentUser()->IsRestrictionAutomessage()) {
-    GetSession()->bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
+    bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
   } else {
     AddBBSListEntryImpl();
   }
@@ -158,12 +158,12 @@ static void AddBBSListEntry() {
 }
 
 static void DeleteBBSListEntry() {
-  GetSession()->bout << "\r\n|#7Please enter phone number in the following format:\r\n";
-  GetSession()->bout << "|#1 ###-###-####\r\n:";
+  bout << "\r\n|#7Please enter phone number in the following format:\r\n";
+  bout << "|#1 ###-###-####\r\n:";
   string bbsPhoneNumber;
   input(&bbsPhoneNumber, 12, true);
   if (bbsPhoneNumber.length() != 12 || bbsPhoneNumber[3] != '-' || bbsPhoneNumber[7] != '-') {
-    GetSession()->bout << "\r\n|#6Error: Please enter number in correct format.\r\n";
+    bout << "\r\n|#6Error: Please enter number in correct format.\r\n";
     return;
   }
 
@@ -184,14 +184,14 @@ static void DeleteBBSListEntry() {
     }
     fi.Close();
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (ok) {
     WFile::Remove(fi.GetFullPathName());
     WFile::Rename(fo.GetFullPathName(), fi.GetFullPathName());
-    GetSession()->bout << "|#7* |#1Number removed.\r\n";
+    bout << "|#7* |#1Number removed.\r\n";
   } else {
     WFile::Remove(fo.GetFullPathName());
-    GetSession()->bout << "|#6Error: Couldn't find that in the bbslist file.\r\n";
+    bout << "|#6Error: Couldn't find that in the bbslist file.\r\n";
   }
 }
 

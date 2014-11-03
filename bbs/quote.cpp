@@ -390,11 +390,11 @@ void get_quote(int fsed) {
   GetSession()->SetQuoting((fsed) ? true : false);
   if (quotes_ind == nullptr) {
     if (fsed) {
-      GetSession()->bout << "\x0c";
+      bout << "\x0c";
     } else {
-      GetSession()->bout.NewLine();
+      bout.nl();
     }
-    GetSession()->bout << "Not replying to a message!  Nothing to quote!\r\n\n";
+    bout << "Not replying to a message!  Nothing to quote!\r\n\n";
     if (fsed) {
       pausescr();
     }
@@ -404,7 +404,7 @@ void get_quote(int fsed) {
   rl = 1;
   do {
     if (fsed) {
-      GetSession()->bout << "\x0c";
+      bout << "\x0c";
     }
     if (rl) {
       i = 1;
@@ -448,12 +448,12 @@ void get_quote(int fsed) {
       } while (l2 < quotes_ind_l);
       --i;
     }
-    GetSession()->bout.NewLine();
+    bout.nl();
 
     if (!i1 && !hangup) {
       do {
         sprintf(s, "Quote from line 1-%d? (?=relist, Q=quit) ", i);
-        GetSession()->bout << "|#2" << s;
+        bout << "|#2" << s;
         input(s, 3);
       } while (!s[0] && !hangup);
       if (s[0] == 'Q') {
@@ -471,7 +471,7 @@ void get_quote(int fsed) {
 
     if (i1 && !i2 && !hangup) {
       do {
-        GetSession()->bout << "|#2through line " << i1 << "-" << i << "? (Q=quit) ";
+        bout << "|#2through line " << i1 << "-" << i << "? (Q=quit) ";
         input(s, 3);
       } while (!s[0] && !hangup);
       if (s[0] == 'Q') {
@@ -488,9 +488,9 @@ void get_quote(int fsed) {
     }
     if (i2 && rl && !hangup) {
       if (i1 == i2) {
-        GetSession()->bout << "|#5Quote line " << i1 << "? ";
+        bout << "|#5Quote line " << i1 << "? ";
       } else {
-        GetSession()->bout << "|#5Quote lines " << i1 << "-" << i2 << "? ";
+        bout << "|#5Quote lines " << i1 << "-" << i2 << "? ";
       }
       if (!noyes()) {
         i1 = 0;

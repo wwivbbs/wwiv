@@ -119,7 +119,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
   do {
     ch = getkey();
     if (bTwoColorChatMode) {
-      GetSession()->bout.Color(GetSession()->IsLastKeyLocal() ? 1 : 0);
+      bout.Color(GetSession()->IsLastKeyLocal() ? 1 : 0);
     }
     if (cm) {
       if (chatting == 0) {
@@ -152,10 +152,10 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
         if (cp) {
           if (pszBuffer[cp - 2] == CC) {
             cp -= 2;
-            GetSession()->bout.Color(0);
+            bout.Color(0);
           } else if (pszBuffer[cp - 2] == CO) {
             for (string::size_type i = strlen(interpret(pszBuffer[cp - 1])); i > 0; i--) {
-              GetSession()->bout.BackSpace();
+              bout.BackSpace();
             }
             cp -= 2;
             if (pszBuffer[cp - 1] == CO) {
@@ -167,40 +167,40 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
               bputch(SPACE);
             } else {
               cp--;
-              GetSession()->bout.BackSpace();
+              bout.BackSpace();
             }
           }
         } else if (bAllowPrevious) {
           if (okansi()) {
             if (GetSession()->GetMMKeyArea() == WSession::mmkeyFileAreas) {
-              GetSession()->bout << "\r\x1b[K";
+              bout << "\r\x1b[K";
             }
-            GetSession()->bout << "\x1b[1A";
+            bout << "\x1b[1A";
           } else {
-            GetSession()->bout << "[*> Previous Line <*]\r\n";
+            bout << "[*> Previous Line <*]\r\n";
           }
           return true;
         }
         break;
       case CX:                            // Ctrl-X
         while (GetSession()->localIO()->WhereX() > begx) {
-          GetSession()->bout.BackSpace();
+          bout.BackSpace();
           cp = 0;
         }
-        GetSession()->bout.Color(0);
+        bout.Color(0);
         break;
       case CW:                            // Ctrl-W
         if (cp) {
           do {
             if (pszBuffer[cp - 2] == CC) {
               cp -= 2;
-              GetSession()->bout.Color(0);
+              bout.Color(0);
             } else if (pszBuffer[cp - 1] == BACKSPACE) {
               cp--;
               bputch(SPACE);
             } else {
               cp--;
-              GetSession()->bout.BackSpace();
+              bout.BackSpace();
             }
           } while (cp && pszBuffer[cp - 1] != SPACE && pszBuffer[cp - 1] != BACKSPACE);
         }
@@ -217,7 +217,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
           if (ch >= SPACE && ch <= 126) {
             pszBuffer[cp++] = CC;
             pszBuffer[cp++] = ch;
-            GetSession()->bout.Color(ch - '0');
+            bout.Color(ch - '0');
           } else if (ch == CP && cp < nMaxLen - 2) {
             ch = getkey();
             if (ch != CP) {
@@ -275,7 +275,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
     pszBuffer[cp] = '\0';
   }
   if (bAddCRLF) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
   return false;
 }
@@ -391,7 +391,7 @@ void pla(const string& text, bool *abort) {
   }
   FlushOutComChBuffer();
   if (!*abort) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
 }
 
@@ -415,7 +415,7 @@ void plal(const string& text, string::size_type limit, bool *abort) {
 
   FlushOutComChBuffer();
   if (!*abort) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
 }
 
@@ -603,9 +603,9 @@ char *mmkey(int dl, bool bListOption) {
         } while ((((ch < ' ') && (ch != RETURN) && (ch != BACKSPACE)) || (ch > 126)) && !hangup);
         ch = upcase(ch);
         if (ch == RETURN) {
-          GetSession()->bout.NewLine();
+          bout.nl();
           if (dl == 2) {
-            GetSession()->bout.NewLine();
+            bout.nl();
           }
           if (!GetSession()->GetCurrentUser()->IsExpert() && !okansi()) {
             newline = true;
@@ -613,7 +613,7 @@ char *mmkey(int dl, bool bListOption) {
           return cmd1;
         } else {
           if (ch == BACKSPACE) {
-            GetSession()->bout.BackSpace();
+            bout.BackSpace();
             cmd1[ --cp ] = '\0';
           } else {
             cmd1[ cp++ ]  = ch;
@@ -627,7 +627,7 @@ char *mmkey(int dl, bool bListOption) {
                   if (GetSession()->GetMMKeyArea() == WSession::mmkeyMessageAreas && dl == 0) {
                     for (i = 0; i < GetSession()->num_subs && usub[i].subnum != -1; i++) {
                       if (wwiv::strings::IsEquals(usub[i].keys, cmd2)) {
-                        GetSession()->bout.NewLine();
+                        bout.nl();
                         break;
                       }
                     }
@@ -635,16 +635,16 @@ char *mmkey(int dl, bool bListOption) {
                   if (GetSession()->GetMMKeyArea() == WSession::mmkeyFileAreas && dl == 1) {
                     for (i = 0; i < GetSession()->num_dirs; i++) {
                       if (wwiv::strings::IsEquals(udir[i].keys, cmd2)) {
-                        GetSession()->bout.NewLine();
+                        bout.nl();
                         break;
                       }
                     }
                   }
                   if (dl == 2) {
-                    GetSession()->bout.NewLine();
+                    bout.nl();
                   }
                 } else {
-                  GetSession()->bout.NewLine();
+                  bout.nl();
                 }
                 newline = true;
               }
@@ -654,17 +654,17 @@ char *mmkey(int dl, bool bListOption) {
                    GetSession()->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2) || !newline) {
                 if (isdigit(cmd1[ 0 ])) {
                   if (dl == 2 || !okansi()) {
-                    GetSession()->bout.NewLine();
+                    bout.nl();
                   }
                   if (!GetSession()->GetCurrentUser()->IsExpert() && !okansi()) {
                     newline = true;
                   }
                 } else {
-                  GetSession()->bout.NewLine();
+                  bout.nl();
                   newline = true;
                 }
               } else {
-                GetSession()->bout.NewLine();
+                bout.nl();
                 newline = true;
               }
               return cmd1;
@@ -686,7 +686,7 @@ char *mmkey(int dl, bool bListOption) {
         case '{':
         case 'H':
           if (dl == 2 || !okansi()) {
-            GetSession()->bout.NewLine();
+            bout.nl();
           }
           if (!GetSession()->GetCurrentUser()->IsExpert() && !okansi()) {
             newline = true;
@@ -695,19 +695,19 @@ char *mmkey(int dl, bool bListOption) {
         default:
           if (isdigit(cmd1[0])) {
             if (dl == 2 || !okansi()) {
-              GetSession()->bout.NewLine();
+              bout.nl();
             }
             if (!GetSession()->GetCurrentUser()->IsExpert() && !okansi()) {
               newline = true;
             }
           } else {
-            GetSession()->bout.NewLine();
+            bout.nl();
             newline = true;
           }
           break;
         }
       } else {
-        GetSession()->bout.NewLine();
+        bout.nl();
         newline = true;
       }
       return cmd1;

@@ -184,7 +184,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   WFile file(pszWorkingFileName);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     if (!bUseYModemBatch) {
-      GetSession()->bout << "\r\nFile not found.\r\n\n";
+      bout << "\r\nFile not found.\r\n\n";
     }
     *sent = false;
     *percent = 0.0;
@@ -197,7 +197,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   double tpb = (12.656) / ((double) modem_speed);
 
   if (!bUseYModemBatch) {
-    GetSession()->bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
+    bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
   }
   int xx1 = GetSession()->localIO()->WhereX();
   int yy1 = GetSession()->localIO()->WhereY();
@@ -267,7 +267,7 @@ void xymodem_send(const char *pszFileName, bool *sent, double *percent, bool bUs
   file.Close();
   GetSession()->localIO()->LocalGotoXY(xx1, yy1);
   if (*sent && !bUseYModemBatch) {
-    GetSession()->bout << "-=> File transmission complete.\r\n\n";
+    bout << "-=> File transmission complete.\r\n\n";
   }
   free(pszWorkingFileName);
 }

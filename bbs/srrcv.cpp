@@ -156,7 +156,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
 
   WFile file(pszFileName);
   if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
-    GetSession()->bout << "\r\n\nDOS error - Can't create file.\r\n\n";
+    bout << "\r\n\nDOS error - Can't create file.\r\n\n";
     *received = false;
     return;
   }
@@ -166,7 +166,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   unsigned int bn = 1;
   bool done = false;
   double tpb = (12.656) / ((double)(modem_speed));
-  GetSession()->bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
+  bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
   int nOldXPos = GetSession()->localIO()->WhereX();
   int nOldYPos = GetSession()->localIO()->WhereY();
   GetSession()->localIO()->LocalXYPuts(52, 0, "\xB3 Filename :               ");

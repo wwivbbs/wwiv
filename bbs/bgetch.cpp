@@ -148,10 +148,10 @@ void HandleControlKey(char *ch) {
       if (local_echo) {
         char xl[81], cl[81], atr[81], cc;
         GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-        GetSession()->bout.Color(0);
-        GetSession()->bout.NewLine(2);
+        bout.Color(0);
+        bout.nl(2);
         multi_instance();
-        GetSession()->bout.NewLine();
+        bout.nl();
         RestoreCurrentLine(cl, atr, xl, &cc);
       }
       break;
@@ -181,20 +181,20 @@ void PrintTime() {
 
   GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
 
-  GetSession()->bout.Color(0);
-  GetSession()->bout.NewLine(2);
+  bout.Color(0);
+  bout.nl(2);
   time_t l = time(nullptr);
   std::string currentTime = asctime(localtime(&l));
 
   //Remove the ending \n character.
   currentTime.erase(currentTime.find_last_of("\r\n"));
 
-  GetSession()->bout << "|#2" << currentTime << wwiv::endl;
+  bout << "|#2" << currentTime << wwiv::endl;
   if (GetSession()->IsUserOnline()) {
-    GetSession()->bout << "|#9Time on   = |#1" << ctim(timer() - timeon) << wwiv::endl;
-    GetSession()->bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
+    bout << "|#9Time on   = |#1" << ctim(timer() - timeon) << wwiv::endl;
+    bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
 
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
@@ -209,7 +209,7 @@ void RedrawCurrentLine() {
   strncpy(ansistr_1, ansistr, sizeof(ansistr_1) - 1);
 
   GetSession()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-  GetSession()->bout.NewLine();
+  bout.nl();
   RestoreCurrentLine(cl, atr, xl, &cc);
 
   strcpy(ansistr, ansistr_1);
