@@ -515,7 +515,7 @@ bool maybe_upload(const char *pszFileName, int nDirectoryNum, const char *pszDes
 
   if (i == -1) {
     if (GetApplication()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(pszFileName) && dcs())) {
-      bout.WriteFormatted("|#2%-12s: ", pszFileName);
+      bout.bprintf("|#2%-12s: ", pszFileName);
       bout << "|#5In filename database - add anyway? ";
       ch = ynq();
       if (ch == *str_quit) {

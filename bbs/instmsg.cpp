@@ -184,7 +184,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
       if (ih->main == INST_MSG_STRING) {
         WUser user;
         GetApplication()->GetUserManager()->ReadUser(&user, ih->from_user);
-        bout.WriteFormatted("|#1%.12s (%d)|#0> |#2", user.GetUserNameAndNumber(ih->from_user), ih->from_inst);
+        bout.bprintf("|#1%.12s (%d)|#0> |#2", user.GetUserNameAndNumber(ih->from_user), ih->from_inst);
       } else {
         bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
       }

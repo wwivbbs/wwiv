@@ -678,7 +678,7 @@ static void CheckAndUpdateUserInfo() {
       bout.nl();
       input_age(GetSession()->GetCurrentUser());
       bout.nl();
-      bout.WriteFormatted("%02d/%02d/%02d -- Correct? ",
+      bout.bprintf("%02d/%02d/%02d -- Correct? ",
                                         GetSession()->GetCurrentUser()->GetBirthdayMonth(),
                                         GetSession()->GetCurrentUser()->GetBirthdayDay(),
                                         GetSession()->GetCurrentUser()->GetBirthdayYear());

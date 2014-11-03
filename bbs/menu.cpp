@@ -969,7 +969,7 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
 
   int iDisplayed = 0;
   if (pMenuData->header.nNumbers != MENU_NUMFLAG_NOTHING) {
-    bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
+    bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
     ++iDisplayed;
   }
   for (int x = 0; x < pMenuData->nAmountRecs - 1; x++) {
@@ -989,7 +989,7 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
             sprintf(szKey, "[%s]", menu.szKey);
           }
 
-          bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ", szKey,
+          bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", szKey,
                                             menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
 
           if (iDisplayed % 2) {
@@ -1005,7 +1005,7 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
     if (iDisplayed % 2) {
       bout.nl();
     }
-    bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ",
+    bout.bprintf("|#1%-8.8s  |#2%-25.25s  ",
                                       pSecondUserRec->cHotKeys == HOTKEYS_ON ? "//APPLY" : "[APPLY]",
                                       "Guest Account Application");
     ++iDisplayed;

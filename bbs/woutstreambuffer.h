@@ -94,8 +94,8 @@ class WOutStream : public std::ostream {
    * if applicable).  The com port is also checked first to see if a remote
    * user has hung up
    */
-  int Write(const std::string& text);
-  int WriteFormatted(const char *fmt, ...);
+  int bputs(const std::string& text);
+  int bprintf(const char *fmt, ...);
 };
 
 namespace wwiv {

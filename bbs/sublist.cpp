@@ -248,7 +248,7 @@ void SubList() {
           p = 1;
           lines_listed = 0;
           DisplayHorizontalBar(78, 7);
-          bout.WriteFormatted("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ", firstp + 1, lastp + 1);
+          bout.bprintf("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ", firstp + 1, lastp + 1);
           const char* ss = mmkey(0, true);
           if (isdigit(ss[0])) {
             for (i2 = 0; i2 < GetSession()->num_subs; i2++) {
@@ -285,12 +285,12 @@ void SubList() {
         DisplayHorizontalBar(78, 7);
         if (okconf(GetSession()->GetCurrentUser())) {
           if (uconfsub[1].confnum != -1) {
-            bout.WriteFormatted("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+            bout.bprintf("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
           } else {
-            bout.WriteFormatted("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+            bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
           }
         } else {
-          bout.WriteFormatted("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
+          bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
         }
         const char* ss = mmkey(0, true);
 

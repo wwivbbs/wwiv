@@ -129,7 +129,7 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
       }
 
       bout.nl(2);
-      bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
+      bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
 
       if (GetSession()->IsUserOnline()) {
         GetApplication()->UpdateTopScreen();

@@ -102,7 +102,7 @@ void modify_dir(int n) {
   do {
     bout.cls();
     sprintf(szSubNum, "%s %d", "|B1|15Editing File Area #", n);
-    bout.WriteFormatted("%-85s", szSubNum);
+    bout.bprintf("%-85s", szSubNum);
     bout.Color(0);
     bout.nl(2);
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
