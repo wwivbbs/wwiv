@@ -127,6 +127,7 @@ bool check_ul_event(int nDirectoryNum, uploadsrec * u) {
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;
   }
+  return true;
 }
 
 static const char *DeviceNames[] = {
