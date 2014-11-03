@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "bbs/wwiv.h"
 #include "bbs/printfile.h"
@@ -25,6 +26,8 @@
 #include "bbs/keycodes.h"
 
 using namespace wwiv::bbs;
+using std::string;
+using wwiv::strings::IsEquals;
 
 static uint32_t *u_qsc = 0;
 static char *sp = nullptr;
@@ -170,7 +173,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
                                       pUser->GetNumFeedbackSent(), pUser->GetNumMailWaiting(), pUser->GetNumNetEmailSent(), pUser->GetNumDeletedPosts());
 
     GetSession()->bout.WriteFormatted("|#9   Call Stats   : |#9(Total: |#1%u|#9) (Today: |#1%d|#9) (Illegal: |#6%d|#9)\r\n",
-                                      pUser->GetNumLogons(), (!wwiv::strings::IsEquals(pUser->GetLastOn(), date())) ? 0 : pUser->GetTimesOnToday(),
+                                      pUser->GetNumLogons(), (!IsEquals(pUser->GetLastOn(), date())) ? 0 : pUser->GetTimesOnToday(),
                                       pUser->GetNumIllegalLogons());
 
     GetSession()->bout.WriteFormatted("|#9   Up/Dnld Stats: |#9(Up: |#1%u |#9files in |#1%lu|#9k)  (Dn: |#1%u |#9files in |#1%lu|#9k)\r\n",
@@ -324,41 +327,41 @@ int matchuser(WUser *pUser) {
           tmp = 1;
           tmp1 = atoi(parm);
 
-          if (wwiv::strings::IsEquals(fcn, "SL")) {
+          if (IsEquals(fcn, "SL")) {
             if (less) {
               tmp = (tmp1 > pUser->GetSl());
             } else {
               tmp = (tmp1 < pUser->GetSl());
             }
-          } else if (wwiv::strings::IsEquals(fcn, "DSL")) {
+          } else if (IsEquals(fcn, "DSL")) {
             if (less) {
               tmp = (tmp1 > pUser->GetDsl());
             } else {
               tmp = (tmp1 < pUser->GetDsl());
             }
-          } else if (wwiv::strings::IsEquals(fcn, "AR")) {
+          } else if (IsEquals(fcn, "AR")) {
             if (parm[0] >= 'A' && parm[0] <= 'P') {
               tmp1 = 1 << (parm[0] - 'A');
               tmp = pUser->HasArFlag(tmp1) ? 1 : 0;
             } else {
               tmp = 0;
             }
-          } else if (wwiv::strings::IsEquals(fcn, "DAR")) {
+          } else if (IsEquals(fcn, "DAR")) {
             if ((parm[0] >= 'A') && (parm[0] <= 'P')) {
               tmp1 = 1 << (parm[0] - 'A');
               tmp = pUser->HasDarFlag(tmp1) ? 1 : 0;
             } else {
               tmp = 0;
             }
-          } else if (wwiv::strings::IsEquals(fcn, "SEX")) {
+          } else if (IsEquals(fcn, "SEX")) {
             tmp = parm[0] == pUser->GetGender();
-          } else if (wwiv::strings::IsEquals(fcn, "AGE")) {
+          } else if (IsEquals(fcn, "AGE")) {
             if (less) {
               tmp = (tmp1 > pUser->GetAge());
             } else {
               tmp = (tmp1 < pUser->GetAge());
             }
-          } else if (wwiv::strings::IsEquals(fcn, "LASTON")) {
+          } else if (IsEquals(fcn, "LASTON")) {
             time(&l);
             tmp2 = static_cast<unsigned int>((l - pUser->GetLastOnDateNumber()) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
             if (less) {
@@ -366,21 +369,21 @@ int matchuser(WUser *pUser) {
             } else {
               tmp = tmp2 > tmp1;
             }
-          } else if (wwiv::strings::IsEquals(fcn, "AREACODE")) {
+          } else if (IsEquals(fcn, "AREACODE")) {
             tmp = !strncmp(parm, pUser->GetVoicePhoneNumber(), 3);
-          } else if (wwiv::strings::IsEquals(fcn, "RESTRICT")) {
+          } else if (IsEquals(fcn, "RESTRICT")) {
             ;
-          } else if (wwiv::strings::IsEquals(fcn, "LOGONS")) {
+          } else if (IsEquals(fcn, "LOGONS")) {
             if (less) {
               tmp = pUser->GetNumLogons() < tmp1;
             } else {
               tmp = pUser->GetNumLogons() > tmp1;
             }
-          } else if (wwiv::strings::IsEquals(fcn, "REALNAME")) {
+          } else if (IsEquals(fcn, "REALNAME")) {
             strcpy(ts, pUser->GetRealName());
             strupr(ts);
             tmp = (strstr(ts, parm) != nullptr);
-          } else if (wwiv::strings::IsEquals(fcn, "BAUD")) {
+          } else if (IsEquals(fcn, "BAUD")) {
             if (less) {
               tmp = pUser->GetLastBaudRate() < tmp1;
             } else {
@@ -389,7 +392,7 @@ int matchuser(WUser *pUser) {
 
             // begin callback additions
 
-          } else if (wwiv::strings::IsEquals(fcn, "CBV")) {
+          } else if (IsEquals(fcn, "CBV")) {
             if (less) {
               tmp = pUser->GetCbv() < tmp1;
             } else {
@@ -398,7 +401,7 @@ int matchuser(WUser *pUser) {
 
             // end callback additions
 
-          } else if (wwiv::strings::IsEquals(fcn, "COMP_TYPE")) {
+          } else if (IsEquals(fcn, "COMP_TYPE")) {
             tmp = pUser->GetComputerType() == tmp1;
           }
         } else {
@@ -599,7 +602,7 @@ void uedit(int usern, int other) {
       case 'L': {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New FULL real name? ";
-        std::string realName;
+        string realName;
         Input1(&realName, user.GetRealName(), 20, true, InputMode::PROPER);
         if (!realName.empty()) {
           user.SetRealName(realName.c_str());
@@ -650,7 +653,7 @@ void uedit(int usern, int other) {
         bool bWriteUser = false;
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New phone number? ";
-        std::string phoneNumber;
+        string phoneNumber;
         Input1(&phoneNumber, user.GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
         if (!phoneNumber.empty()) {
           if (phoneNumber != user.GetVoicePhoneNumber()) {
@@ -741,7 +744,7 @@ void uedit(int usern, int other) {
             add_phone_number(nUserNumber, user.GetVoicePhoneNumber());
           }
           if (user.GetDataPhoneNumber()[0] &&
-              !wwiv::strings::IsEquals(user.GetVoicePhoneNumber(),  user.GetDataPhoneNumber())) {
+              !IsEquals(user.GetVoicePhoneNumber(),  user.GetDataPhoneNumber())) {
             add_phone_number(nUserNumber, user.GetDataPhoneNumber());
           }
 
@@ -755,7 +758,7 @@ void uedit(int usern, int other) {
         }
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New SL? ";
-        std::string sl;
+        string sl;
         input(&sl, 3);
         int nNewSL = atoi(sl.c_str());
         if (!GetApplication()->GetWfcStatus() && nNewSL >= GetSession()->GetEffectiveSl() && nUserNumber != 1) {
@@ -778,7 +781,7 @@ void uedit(int usern, int other) {
         }
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7New DSL? ";
-        std::string dsl;
+        string dsl;
         input(&dsl, 3);
         int nNewDSL = atoi(dsl.c_str());
         if (!GetApplication()->GetWfcStatus() && nNewDSL >= GetSession()->GetCurrentUser()->GetDsl() && nUserNumber != 1) {
@@ -795,7 +798,7 @@ void uedit(int usern, int other) {
       case 'U': {
         GetSession()->bout.NewLine();
         GetSession()->bout << "|#7User name/number: ";
-        std::string name;
+        string name;
         input(&name, 30);
         int nFoundUserNumber = finduser1(name.c_str());
         if (nFoundUserNumber > 0) {
@@ -811,7 +814,7 @@ void uedit(int usern, int other) {
         break;
       // end callback additions
       case 'X': {
-        std::string regDate, expDate;
+        string regDate, expDate;
         if (!GetApplication()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {
           break;
         }
@@ -823,7 +826,7 @@ void uedit(int usern, int other) {
         } else {
           GetSession()->bout << "Not registered.\r\n";
         }
-        std::string newRegDate;
+        string newRegDate;
         do {
           GetSession()->bout.NewLine();
           GetSession()->bout << "Enter registration date, <CR> for today: \r\n";
@@ -842,7 +845,7 @@ void uedit(int usern, int other) {
         } else {
           GetSession()->bout.NewLine();
         }
-        std::string newExpDate;
+        string newExpDate;
         do {
           GetSession()->bout.NewLine();
           GetSession()->bout << "Enter expiration date, <CR> to clear registration fields: \r\n";
@@ -866,7 +869,7 @@ void uedit(int usern, int other) {
         if (u_qsc) {
           GetSession()->bout.NewLine();
           GetSession()->bout << "|#7(999=None) New sysop sub? ";
-          std::string sysopSubNum;
+          string sysopSubNum;
           input(&sysopSubNum, 3);
           int nSysopSubNum = atoi(sysopSubNum.c_str());
           if (nSysopSubNum >= 0 && nSysopSubNum <= 999 && !sysopSubNum.empty()) {
