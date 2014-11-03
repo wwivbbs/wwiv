@@ -113,7 +113,7 @@ static string GetMailBoxStatus() {
 static void print_cur_stat() {
   char s1[255], s2[255];
   bout.cls();
-  bout.litebar("[ Your Preferences ]");
+  bout.litebar("Your Preferences");
   sprintf(s1, "|#11|#9) Screen size       : |#2%d X %d", GetSession()->GetCurrentUser()->GetScreenChars(),
           GetSession()->GetCurrentUser()->GetScreenLines());
   sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->HasAnsi() ?

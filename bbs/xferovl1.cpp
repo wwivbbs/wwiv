@@ -836,7 +836,7 @@ void download() {
   useconf = 0;
 
   bout.cls();
-  bout.litebar(" [ %s Batch Downloads ] ", syscfg.systemname);
+  bout.litebar("%s Batch Downloads", syscfg.systemname);
   bout.nl();
   do {
     if (!i) {

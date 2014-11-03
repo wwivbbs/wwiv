@@ -50,7 +50,7 @@ void DisplayHorizontalBar(int nSize, int nColor) {
 void YourInfo() {
   bout.cls();
   if (okansi()) {
-    bout.litebar("[ Your User Information ]");
+    bout.litebar("Your User Information");
   } else {
     bout << "|#5Your User Information:\r\n";
   }

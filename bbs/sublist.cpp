@@ -181,11 +181,11 @@ void SubList() {
           firstp = i1;
           bout.cls();
           if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
-            sprintf(s, " [ %s %c ] [ %s ] ", "Conference",
+            sprintf(s, "Conference %c: %s",
                     subconfs[uconfsub[i].confnum].designator,
                     stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
           } else {
-            sprintf(s, " [ %s Message Areas ] ", syscfg.systemname);
+            sprintf(s, "%s Message Areas", syscfg.systemname);
           }
           bout.litebar(s);
           DisplayHorizontalBar(78, 7);
