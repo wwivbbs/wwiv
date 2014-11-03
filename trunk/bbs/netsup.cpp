@@ -31,8 +31,6 @@
 static int netw;
 time_t last_time_c;
 
-void fixup_long(uint32_t *f, time_t l);
-
 using std::string;
 using std::unique_ptr;
 using wwiv::core::IniFile;
@@ -40,7 +38,7 @@ using wwiv::core::FilePath;
 using wwiv::strings::IsEqualsIgnoreCase;
 using wwiv::strings::StringPrintf;
 
-void rename_pend(const std::string directory, const std::string filename) {
+static void rename_pend(const string& directory, const string& filename) {
   const string pend_filename = StringPrintf("%s%s", directory.c_str(), filename.c_str());
   const string num = filename.substr(1);
   const string prefix = (atoi(num.c_str())) ? "p1-" : "p0-";
@@ -349,7 +347,7 @@ void do_callout(int sn) {
   }
 }
 
-bool ok_to_call(int i) {
+static bool ok_to_call(int i) {
   net_call_out_rec *con = &(net_networks[GetSession()->GetNetworkNumber()].con[i]);
 
   bool ok = ((con->options & options_no_call) == 0) ? true : false;
@@ -414,8 +412,6 @@ bool ok_to_call(int i) {
   return ok;
 }
 
-
-
 #define WEIGHT 30.0
 
 void fixup_long(uint32_t *f, time_t l) {
@@ -428,8 +424,7 @@ void fixup_long(uint32_t *f, time_t l) {
   }
 }
 
-
-void free_vars(float **weight, int **try1) {
+static void free_vars(float **weight, int **try1) {
   if (weight || try1) {
     for (int nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++) {
       if (try1 && try1[nNetNumber]) {
@@ -616,10 +611,8 @@ void attempt_callout() {
     }
   }
   free_vars(weight, try1);
-
   set_net_num(0);
 }
-
 
 void print_pending_list() {
   int i = 0,
@@ -651,12 +644,9 @@ void print_pending_list() {
   bout << "                           |#3-> |#9Network Status |#3<-\r\n";
   bout.nl();
 
-  bout <<
-                     "|#7\xDA\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
-  bout <<
-                     "|#7\xB3 |#1Ok? |#7\xB3 |#1Network  |#7\xB3 |#1 Node |#7\xB3  |#1 Sent  |#7\xB3|#1Received |#7\xB3|#1Ready |#7\xB3|#1Fails|#7\xB3  |#1Elapsed  |#7\xB3|#1/HrWt|#7\xB3\r\n";
-  bout <<
-                     "|#7\xC3\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xB4\r\n";
+  bout << "|#7\xDA\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
+  bout << "|#7\xB3 |#1Ok? |#7\xB3 |#1Network  |#7\xB3 |#1 Node |#7\xB3  |#1 Sent  |#7\xB3|#1Received |#7\xB3|#1Ready |#7\xB3|#1Fails|#7\xB3  |#1Elapsed  |#7\xB3|#1/HrWt|#7\xB3\r\n";
+  bout << "|#7\xC3\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xB4\r\n";
 
   int nNetNumber;
   for (nNetNumber = 0; nNetNumber < GetSession()->GetMaxNetworkNumber(); nNetNumber++) {
@@ -930,7 +920,7 @@ void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const c
 
 // begin callout additions
 
-void print_call(int sn, int nNetNumber, int i2) {
+static void print_call(int sn, int nNetNumber, int i2) {
   static int color, got_color = 0;
 
   char s[100], s1[100];
@@ -1026,7 +1016,7 @@ void print_call(int sn, int nNetNumber, int i2) {
   GetSession()->localIO()->LocalXYAPrintf(14, 3, color, "%-11.16s", GetSession()->GetNetworkName());
 }
 
-void fill_call(int color, int row, int netmax, int *nodenum) {
+static void fill_call(int color, int row, int netmax, int *nodenum) {
   int i, x = 0, y = 0;
   char s1[6];
 
@@ -1048,10 +1038,8 @@ void fill_call(int color, int row, int netmax, int *nodenum) {
 
 #define MAX_CONNECTS 2000
 
-
-int ansicallout() {
+static int ansicallout() {
   static int callout_ansi, color1, color2, color3, color4, got_info = 0;
-
   char ch = 0;
   int i, i1, nNetNumber, netnum = 0, x = 0, y = 0, pos = 0, sn = 0;
   int num_ncn, num_call_sys, rownum = 0, *nodenum, *netpos, *ipos;
@@ -1507,6 +1495,3 @@ void run_exp() {
   GetSession()->localIO()->LocalCls();
 }
 #endif
-
-
-

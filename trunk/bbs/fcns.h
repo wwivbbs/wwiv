@@ -515,19 +515,13 @@ void slash_e();
 
 // File: netsup.cpp
 
-void rename_pend(const std::string directory, const std::string filename);
 void cleanup_net();
 int  cleanup_net1();
 void do_callout(int sn);
-bool ok_to_call(int i);
-void free_vars(float **weight, int **try1);
 void attempt_callout();
 void print_pending_list();
 void gate_msg(net_header_rec * nh, char *pszMessageText, int nNetNumber, const char *pszAuthorName,
               unsigned short int *pList, int nFromNetworkNumber);
-void print_call(int sn, int nn, int i2);
-void fill_call(int color, int row, int netmax, int *nodenum);
-int  ansicallout();
 void force_callout(int dw);
 long *next_system_reg(int ts);
 void run_exp();
