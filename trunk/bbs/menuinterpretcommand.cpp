@@ -518,8 +518,8 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
     }
     break;
     case 87: {
-      // "ClearScreen"
-      bout.ClearScreen();
+      // "cls"
+      bout.cls();
     }
     break;
     case 88: {

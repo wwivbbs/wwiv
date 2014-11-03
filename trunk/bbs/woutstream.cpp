@@ -17,7 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
-#include <stdarg.h>
+#include <cstdarg>
+#include <string>
 
 #include "wwiv.h"
 #include "woutstreambuffer.h"
@@ -25,6 +26,8 @@
 #include "bbs/keycodes.h"
 
 using std::ostream;
+using std::string;
+using wwiv::strings::StringPrintf;
 
 std::ostream::int_type WOutStreamBuffer::overflow(std::ostream::int_type c) {
   if (c != EOF) {
@@ -105,7 +108,7 @@ void WOutStream::nl(int nNumLines) {
   }
 }
 
-void WOutStream::BackSpace() {
+void WOutStream::bs() {
   bool bSavedEcho = local_echo;
   local_echo = true;
   Write("\b \b");
@@ -118,7 +121,7 @@ void WOutStream::SystemColor(int nColor) {
   Write(szBuffer);
 }
 
-void WOutStream::DisplayLiteBar(const char *pszFormatText, ...) {
+void WOutStream::litebar(const char *pszFormatText, ...) {
   va_list ap;
   char s[1024], s1[1024];
 
@@ -132,27 +135,26 @@ void WOutStream::DisplayLiteBar(const char *pszFormatText, ...) {
   int i = (74 - strlen(s)) / 2;
   if (okansi()) {
     snprintf(s1, sizeof(s1), "%s%s%s", charstr(i, ' '), stripcolors(s), charstr(i, ' '));
-    *this << "\x1B[0;1;37m" << charstr(strlen(s1) + 4, '\xDC') << wwiv::endl;
+    *this << "\x1B[0;1;37m" << string(strlen(s1) + 4, '\xDC') << wwiv::endl;
     *this << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
-    *this << "\x1B[0;1;30m" << charstr(strlen(s1) + 4, '\xDF') << wwiv::endl;
+    *this << "\x1B[0;1;30m" << string(strlen(s1) + 4, '\xDF') << wwiv::endl;
   } else {
     *this << charstr(i, ' ') << s << wwiv::endl;
   }
 }
 
-
-void WOutStream::BackLine() {
+void WOutStream::backline() {
   Color(0);
   bputch(SPACE);
   for (int i = localIO()->WhereX() + 1; i >= 0; i--) {
-    this->BackSpace();
+    this->bs();
   }
 }
 
 /**
  * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
  */
-void WOutStream::ClearScreen() {
+void WOutStream::cls() {
   if (okansi()) {
     Write("\x1b[2J");
     GotoXY(1, 1);
@@ -165,47 +167,36 @@ void WOutStream::ClearScreen() {
  * Moves the cursor to the end of the line using ANSI sequences.  If the user
  * does not have ansi, this this function does nothing.
  */
-void WOutStream::ClearEOL() {
+void WOutStream::clreol() {
   if (okansi()) {
     Write("\x1b[K");
   }
 }
 
-void WOutStream::ColorizedInputField(int nNumberOfChars) {
-  if (okansi()) {
-    Color(4);
-    for (int i = 0; i < nNumberOfChars; i++) {
-      bputch(' ', true);
-    }
-
-    char szLine[255];
-    sprintf(szLine, "\x1b[%dD", nNumberOfChars);
-    Write(szLine);
+void WOutStream::mpl(int length) {
+  if (!okansi()) {
+    return;
   }
+  Color(4);
+  Write(string(length, ' '));
+  Write(StringPrintf("\x1b[%dD", length));
 }
 
-int WOutStream::Write(const char *pszText) {
-  if (!pszText || !(*pszText)) {
-    return 0;
-  }
-  int displayed = strlen(pszText);
-
+int WOutStream::Write(const string& text) {
   CheckForHangup();
-  if (!hangup) {
-    int i = 0;
+  if (text.empty() || hangup) { return 0; }
 
-    while (pszText[i]) {
-      bputch(pszText[i++], true);
-    }
-    FlushOutComChBuffer();
+  for (char c : text) {
+    bputch(c, true);
   }
 
-  return displayed;
+  FlushOutComChBuffer();
+  return text.size();
 }
 
 int WOutStream::WriteFormatted(const char *pszFormatText, ...) {
   va_list ap;
-  char szBuffer[ 4096 ];
+  char szBuffer[4096];
 
   va_start(ap, pszFormatText);
   vsnprintf(szBuffer, sizeof(szBuffer), pszFormatText, ap);

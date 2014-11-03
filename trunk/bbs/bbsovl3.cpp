@@ -277,13 +277,13 @@ bool do_sysop_command(int nCommandID) {
 
   if (nKeyStroke) {
     if (bNeedToRedraw) {
-      bout.ClearScreen();
+      bout.cls();
     }
 
     GetSession()->localIO()->skey(static_cast<char>(nKeyStroke));
 
     if (bNeedToRedraw) {
-      bout.ClearScreen();
+      bout.cls();
     }
   }
   return bNeedToRedraw;

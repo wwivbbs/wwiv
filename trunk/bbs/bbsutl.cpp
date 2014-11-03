@@ -155,7 +155,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
             bout.Color(0);
           } else if (pszBuffer[cp - 2] == CO) {
             for (string::size_type i = strlen(interpret(pszBuffer[cp - 1])); i > 0; i--) {
-              bout.BackSpace();
+              bout.bs();
             }
             cp -= 2;
             if (pszBuffer[cp - 1] == CO) {
@@ -167,7 +167,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
               bputch(SPACE);
             } else {
               cp--;
-              bout.BackSpace();
+              bout.bs();
             }
           }
         } else if (bAllowPrevious) {
@@ -184,7 +184,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
         break;
       case CX:                            // Ctrl-X
         while (GetSession()->localIO()->WhereX() > begx) {
-          bout.BackSpace();
+          bout.bs();
           cp = 0;
         }
         bout.Color(0);
@@ -200,7 +200,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
               bputch(SPACE);
             } else {
               cp--;
-              bout.BackSpace();
+              bout.bs();
             }
           } while (cp && pszBuffer[cp - 1] != SPACE && pszBuffer[cp - 1] != BACKSPACE);
         }
@@ -613,7 +613,7 @@ char *mmkey(int dl, bool bListOption) {
           return cmd1;
         } else {
           if (ch == BACKSPACE) {
-            bout.BackSpace();
+            bout.bs();
             cmd1[ --cp ] = '\0';
           } else {
             cmd1[ cp++ ]  = ch;

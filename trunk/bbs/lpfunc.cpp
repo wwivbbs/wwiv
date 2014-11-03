@@ -189,7 +189,7 @@ int listfiles_plus_function(int type) {
                   goto TOGGLE_EXTENDED;
                 case '?':
                 case CO:
-                  bout.ClearScreen();
+                  bout.cls();
                   printfile(LISTPLUS_HLP);
                   pausescr();
                   menu_done = true;
@@ -261,7 +261,7 @@ ADD_OR_REMOVE_BATCH:
                                 ((file_recs[file_pos]->filepoints > GetSession()->GetCurrentUser()->GetFilePoints())) &&
                                 !GetSession()->GetCurrentUser()->IsExemptRatio()) &&
                                !sysop_mode) {
-                        bout.ClearScreen();
+                        bout.cls();
                         bout << "You don't have enough file points to download this file\r\n";
                         bout << "Or this file is not validated yet.\r\n";
 #else
@@ -340,7 +340,7 @@ ADD_OR_REMOVE_BATCH:
                     break;
                   case 5:
                     if (!sysop_mode && GetSession()->using_modem) {
-                      bout.ClearScreen();
+                      bout.cls();
                       menu_done = true;
                       save_file_pos = file_pos;
                       amount = lines = matches = 0;
@@ -348,7 +348,7 @@ ADD_OR_REMOVE_BATCH:
                       if (((!(file_recs[file_pos]->mask & mask_validated))
                            || ((file_recs[file_pos]->filepoints > GetSession()->GetCurrentUser()->GetFilePoints())) &&
                            !GetSession()->GetCurrentUser()->IsExemptRatio()) && !sysop_mode) {
-                        bout.ClearScreen();
+                        bout.cls();
                         bout << "You don't have enough file points to download this file\r\n";
                         bout << "Or this file is not validated yet.\r\n";
 #else
@@ -463,7 +463,7 @@ TOGGLE_EXTENDED:
                     lines_listed = 0;
                     break;
                   case 10:
-                    bout.ClearScreen();
+                    bout.cls();
                     printfile(LISTPLUS_HLP);
                     pausescr();
                     menu_done = true;
@@ -483,7 +483,7 @@ TOGGLE_EXTENDED:
                       prep_menu_items(menu_items);
                     }
                     bputch('\r');
-                    bout.ClearEOL();
+                    bout.clreol();
                     break;
                   }
                   break;

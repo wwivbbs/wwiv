@@ -179,7 +179,7 @@ void SubList() {
         if (p) {
           p = 0;
           firstp = i1;
-          bout.ClearScreen();
+          bout.cls();
           if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
             sprintf(s, " [ %s %c ] [ %s ] ", "Conference",
                     subconfs[uconfsub[i].confnum].designator,
@@ -187,7 +187,7 @@ void SubList() {
           } else {
             sprintf(s, " [ %s Message Areas ] ", syscfg.systemname);
           }
-          bout.DisplayLiteBar(s);
+          bout.litebar(s);
           DisplayHorizontalBar(78, 7);
           bout << "|#2 Sub   Scan   Net/Local   Sub Name                                 Old   New\r\n";
           DisplayHorizontalBar(78, 7);
@@ -270,7 +270,7 @@ void SubList() {
             }
             break;
             default:
-              bout.BackLine();
+              bout.backline();
               break;
             }
           }

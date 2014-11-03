@@ -132,7 +132,7 @@ void boarddata(int n, char *s) {
 
 void showsubs() {
   char szSubString[ 41 ];
-  bout.ClearScreen();
+  bout.cls();
   bool abort = false;
   bout << "|#7(|#1Message Areas Editor|#7) Enter Substring: ";
   input(szSubString, 20, true);
@@ -260,7 +260,7 @@ void modify_sub(int n) {
     char szAnon[81];
     char szAr[81];
 
-    bout.ClearScreen();
+    bout.cls();
     char szSubNum[81];
     sprintf(szSubNum, "%s %d", "|B1|15Editing Message Area #", n);
     bout.WriteFormatted("%-85s", szSubNum);

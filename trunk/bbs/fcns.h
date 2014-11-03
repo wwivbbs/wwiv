@@ -189,7 +189,7 @@ bool bkbhitraw();
 void dump();
 bool CheckForHangup();
 void makeansi(int attr, char *pszOutBuffer, bool forceit);
-void BackSpace();
+void bs();
 void resetnsp();
 bool bkbhit();
 char getkey();

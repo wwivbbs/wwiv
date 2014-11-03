@@ -94,7 +94,7 @@ int try_to_ul_wh(char *pszFileName) {
     t2u_error(pszFileName, "Bad filename");          // bad filename
     return 1;
   }
-  bout.ClearScreen();
+  bout.cls();
   bout.nl(3);
 
   bool done = false;
@@ -284,7 +284,7 @@ int try_to_ul_wh(char *pszFileName) {
   while (!done && !hangup && !file_id_avail) {
     bool abort = false;
 
-    bout.ClearScreen();
+    bout.cls();
     bout.nl();
     bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
     bout << "   |#1Filename    |01: |#7" << pszFileName << wwiv::endl;

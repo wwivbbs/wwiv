@@ -48,9 +48,9 @@ void DisplayHorizontalBar(int nSize, int nColor) {
  * Displays some basic user statistics for the current user.
  */
 void YourInfo() {
-  bout.ClearScreen();
+  bout.cls();
   if (okansi()) {
-    bout.DisplayLiteBar("[ Your User Information ]");
+    bout.litebar("[ Your User Information ]");
   } else {
     bout << "|#5Your User Information:\r\n";
   }

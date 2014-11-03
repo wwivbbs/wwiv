@@ -116,8 +116,8 @@ static string GetMailBoxStatus() {
 
 void print_cur_stat() {
   char s1[255], s2[255];
-  bout.ClearScreen();
-  bout.DisplayLiteBar("[ Your Preferences ]");
+  bout.cls();
+  bout.litebar("[ Your Preferences ]");
   sprintf(s1, "|#11|#9) Screen size       : |#2%d X %d", GetSession()->GetCurrentUser()->GetScreenChars(),
           GetSession()->GetCurrentUser()->GetScreenLines());
   sprintf(s2, "|#12|#9) ANSI              : |#2%s", GetSession()->GetCurrentUser()->HasAnsi() ?
@@ -244,7 +244,7 @@ void change_colors() {
   bool done = false;
   bout.nl();
   do {
-    bout.ClearScreen();
+    bout.cls();
     bout << "|#5Customize Colors:";
     bout.nl(2);
     if (!GetSession()->GetCurrentUser()->HasColor()) {
@@ -581,7 +581,7 @@ char *macroedit(char *pszMacroText) {
       done = true;
       break;
     case BACKSPACE:
-      bout.BackSpace();
+      bout.bs();
       i--;
       if (i < 0) {
         i = 0;
@@ -896,7 +896,7 @@ void list_config_scan_plus(int first, int *amount, int type) {
 
   bool bUseConf = (subconfnum > 1 && okconf(GetSession()->GetCurrentUser())) ? true : false;
 
-  bout.ClearScreen();
+  bout.cls();
   lines_listed = 0;
 
   if (bUseConf) {
@@ -1028,7 +1028,7 @@ void config_scan_plus(int type) {
       switch (command) {
       case '?':
       case CO:
-        bout.ClearScreen();
+        bout.cls();
         printfile(SCONFIG_HLP);
         pausescr();
         menu_done = true;
@@ -1243,7 +1243,7 @@ void config_scan_plus(int type) {
           done = true;
           break;
         case 9:
-          bout.ClearScreen();
+          bout.cls();
           printfile(SCONFIG_HLP);
           pausescr();
           menu_done = true;

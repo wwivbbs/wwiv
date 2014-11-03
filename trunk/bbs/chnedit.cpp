@@ -51,7 +51,7 @@ static string chaindata(int nCurrentChainNumber) {
 }
 
 static void showchains() {
-  bout.ClearScreen();
+  bout.cls();
   bool abort = false;
   pla("|#2NN Description                   Path Name                      SL  ANSI AR", &abort);
   pla("|#7== ----------------------------  ============================== --- ==== --", &abort);
@@ -93,7 +93,7 @@ void modify_chain(int nCurrentChainNumber) {
   }
   bool done = false;
   do {
-    bout.ClearScreen();
+    bout.cls();
     const string header = StringPrintf("|B1|15Editing Chain # %d", nCurrentChainNumber);
     bout << header;
     bout.nl(2);
@@ -129,7 +129,7 @@ void modify_chain(int nCurrentChainNumber) {
       for (int i = 1; i < 5; i++) {
         if (r.regby[i] != 0) {
           GetApplication()->GetUserManager()->ReadUser(&regUser, r.regby[i]);
-          bout << charstr(18, ' ') << regUser.GetName() << wwiv::endl;
+          bout << string(18, ' ') << regUser.GetName() << wwiv::endl;
         }
       }
       bout << "|#9M) Usage        : |#2" << r.usage << wwiv::endl;
@@ -186,7 +186,7 @@ void modify_chain(int nCurrentChainNumber) {
       }
       break;
     case 'B':
-      bout.ClearScreen();
+      bout.cls();
       ShowChainCommandLineHelp();
       bout << "\r\n|#9Enter Command Line.\r\n|#7:";
       Input1(s, c.filename, 79, true, InputMode::MIXED);

@@ -160,7 +160,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     long lMaxMessageSize = 0;
     bool real_name = false;
     GetMessageAnonStatus(&real_name, anony, setanon);
-    bout.BackLine();
+    bout.backline();
     if (!GetSession()->IsNewMailWatiting()) {
       SpinPuts("Saving...", 2);
     }
@@ -446,7 +446,7 @@ void GetMessageTitle(string *title, bool force_title) {
   if (okansi()) {
     if (!GetSession()->IsNewMailWatiting()) {
       bout << "|#2Title: ";
-      bout.ColorizedInputField(60);
+      bout.mpl(60);
     }
     if (irt[0] != '\xAB' && irt[0]) {
       char s1[ 255 ];
@@ -480,7 +480,7 @@ void GetMessageTitle(string *title, bool force_title) {
           ch = '\0';
         }
         bout << "|#2Title: ";
-        bout.ColorizedInputField(60);
+        bout.mpl(60);
         char szRollOverLine[ 81 ];
         sprintf(szRollOverLine, "%c", ch);
         inli(s1, szRollOverLine, 60, true, false);

@@ -378,20 +378,20 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     GetSession()->SetCurrentMessageArea(nOldSubNumber);
     *pnNextSubNumber = nNextSubNumber;
     bout.WriteFormatted("|#1< %s Q-Scan Done >", subboards[GetSession()->GetCurrentReadMessageArea()].name);
-    bout.ClearEOL();
+    bout.clreol();
     bout.nl();
     lines_listed = 0;
-    bout.ClearEOL();
+    bout.clreol();
     if (okansi() && !newline) {
       bout << "\r\x1b[4A";
     }
   } else {
     bout.WriteFormatted("|#1< Nothing new on %s %s >", subboards[nSubNumber].name,
                                       usub[nBeginSubNumber].keys);
-    bout.ClearEOL();
+    bout.clreol();
     bout.nl();
     lines_listed = 0;
-    bout.ClearEOL();
+    bout.clreol();
     if (okansi() && !newline) {
       bout << "\r\x1b[3A";
     }
@@ -414,7 +414,7 @@ void nscan(int nStartingSubNum) {
     }
   }
   bout.nl();
-  bout.ClearEOL();
+  bout.clreol();
   bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
   if (nNextSubNumber && GetSession()->GetCurrentUser()->IsNewScanFiles() &&
       (syscfg.sysconfig & sysconfig_no_xfer) == 0 &&

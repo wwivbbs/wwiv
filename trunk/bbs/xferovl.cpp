@@ -723,7 +723,7 @@ void relist() {
   if (!filelist) {
     return;
   }
-  bout.ClearScreen();
+  bout.cls();
   lines_listed = 0;
   otag = GetSession()->tagging;
   GetSession()->tagging = 0;
@@ -1175,7 +1175,7 @@ void xfer_defaults() {
   bool done = false;
 
   do {
-    bout.ClearScreen();
+    bout.cls();
     bout << "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
     bout << "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
     bout << "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base (" <<

@@ -47,11 +47,11 @@ static const unsigned char *valid_letters =
  * @param nMaxLength Maximum length to allow for the input text
  * @param lc The case to return, this can be InputMode::UPPER, InputMode::MIXED, InputMode::PROPER, or InputMode::FILENAME
  * @param crend Add a CR to the end of the input text
- * @param bAutoMpl Call bout.ColorizedInputField(nMaxLength) automatically.
+ * @param bAutoMpl Call bout.mpl(nMaxLength) automatically.
  */
 void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAutoMpl) {
   if (bAutoMpl) {
-    bout.ColorizedInputField(nMaxLength);
+    bout.mpl(nMaxLength);
   }
 
   int curpos = 0, in_ansi = 0;
@@ -146,9 +146,9 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
           if (curpos) {
             do {
               curpos--;
-              bout.BackSpace();
+              bout.bs();
               if (pszOutText[curpos] == CZ) {
-                bout.BackSpace();
+                bout.bs();
               }
             } while (curpos && pszOutText[curpos - 1] != SPACE);
           }
@@ -158,9 +158,9 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
         case BACKSPACE:
           if (curpos) {
             curpos--;
-            bout.BackSpace();
+            bout.bs();
             if (pszOutText[curpos] == CZ) {
-              bout.BackSpace();
+              bout.bs();
             }
           }
           break;
@@ -168,9 +168,9 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
         case CX:
           while (curpos) {
             curpos--;
-            bout.BackSpace();
+            bout.bs();
             if (pszOutText[curpos] == CZ) {
-              bout.BackSpace();
+              bout.bs();
             }
           }
           break;
@@ -232,7 +232,7 @@ void inputl(string* strOutText, int nMaxLength, bool bAutoMpl)
 
 void input_password(string promptText, string* strOutPassword, int nMaxLength) {
   bout << promptText;
-  bout.ColorizedInputField(nMaxLength);
+  bout.mpl(nMaxLength);
   local_echo = false;
   input1(strOutPassword, nMaxLength, InputMode::UPPER, true);
 }

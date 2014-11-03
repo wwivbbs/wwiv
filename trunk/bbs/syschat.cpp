@@ -345,7 +345,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
               bputch(SPACE);
             } else {
               cp0--;
-              bout.BackSpace();
+              bout.bs();
             }
           }
         } else if (cp1) {
@@ -357,14 +357,14 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
             bputch(SPACE);
           } else {
             cp1--;
-            bout.BackSpace();
+            bout.bs();
           }
         }
       }
       break;
       case CX:                            /* Ctrl-X */
         while (GetSession()->localIO()->WhereX() > begx) {
-          bout.BackSpace();
+          bout.bs();
           if (side == 0) {
             cp0 = 0;
           } else {
@@ -385,7 +385,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
                 bputch(SPACE);
               } else {
                 cp0--;
-                bout.BackSpace();
+                bout.bs();
               }
             } while ((cp0) && (side0[GetSession()->localIO()->WhereY()][cp0 - 1] != SPACE) &&
                      (side0[GetSession()->localIO()->WhereY()][cp0 - 1] != BACKSPACE) &&
@@ -402,7 +402,7 @@ void two_way_chat(char *pszRollover, int nMaxLength, bool crend, char *pszSysopN
                 bputch(SPACE);
               } else {
                 cp1--;
-                bout.BackSpace();
+                bout.bs();
               }
             } while ((cp1) && (side1[GetSession()->localIO()->WhereY() - 13][cp1 - 1] != SPACE) &&
                      (side1[GetSession()->localIO()->WhereY() - 13][cp1 - 1] != BACKSPACE) &&

@@ -152,7 +152,7 @@ void list_sec(int *map, int nmap) {
     strcpy(s7, charstr(12, '-'));
   }
 
-  bout.DisplayLiteBar(" [ %s G-Files Section ] ", syscfg.systemname);
+  bout.litebar(" [ %s G-Files Section ] ", syscfg.systemname);
   gfl_hdr(0);
   for (int i = 0; i < nmap && !abort && !hangup; i++) {
     sprintf(lnum, "%d", i + 1);
@@ -245,7 +245,7 @@ void list_gfiles(gfilerec * g, int nf, int sn) {
   char lnum[5], rnum[5], lsize[5], rsize[5], path_name[255];
 
   bool abort = false;
-  bout.DisplayLiteBar(" [ %s] ", gfilesec[sn].name);
+  bout.litebar(" [ %s] ", gfilesec[sn].name);
   i2 = 0;
   if (okansi()) {
     strcpy(s2, charstr(29, '\xC4'));

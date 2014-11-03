@@ -392,7 +392,7 @@ void ReadSelectedMessages(int chWhichMessages, int iWhere) {
   switch (iWhere) {
   case RM_ALL_SUBS:
   case RM_QSCAN_SUBS: {
-    bout.ClearScreen();
+    bout.cls();
 
     bout << "|#3-=< Q-Scan All >=-\r\n";
     for (int i = 0; (usub[i].subnum != -1) && (i < GetSession()->num_subs) && nextsub && !hangup; i++) {

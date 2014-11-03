@@ -98,7 +98,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
   char s[81], s1[81], s2[81], s3[81];
 
   if (bClearScreen) {
-    bout.ClearScreen();
+    bout.cls();
   }
   if (pUser->IsUserDeleted()) {
     bout << "|#6>>> This User Is DELETED - Use 'R' to Restore <<<\r\n\n";
@@ -427,7 +427,7 @@ int matchuser(WUser *pUser) {
 
 
 void changeopt() {
-  bout.ClearScreen();
+  bout.cls();
   bout << "Current search string:\r\n";
   bout << ((search_pattern[0]) ? search_pattern : "-NONE-");
   bout.nl(3);
@@ -892,7 +892,7 @@ void uedit(int usern, int other) {
             ch1 = RETURN;
           }
           if (ch1 == '?') {
-            bout.ClearScreen();
+            bout.cls();
             printfile(SRESTRCT_NOEXT);
           }
           if (ch1 != RETURN && ch1 != '?') {
@@ -988,7 +988,7 @@ void uedit(int usern, int other) {
         temp_full = full;
         break;
       case '?': {
-        bout.ClearScreen();
+        bout.cls();
         printfile(SUEDIT_NOEXT);
         getkey();
       }

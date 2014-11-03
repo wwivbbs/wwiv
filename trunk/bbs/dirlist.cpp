@@ -55,7 +55,7 @@ void dirlist(int mode) {
         if (p && mode == 0) {
           p = 0;
           firstp = i1;
-          bout.ClearScreen();
+          bout.cls();
           if (uconfdir[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
             sprintf(s, " [ %s %c ] [ %s ] ", "Conference",
                     dirconfs[uconfdir[i].confnum].designator,
@@ -63,7 +63,7 @@ void dirlist(int mode) {
           } else {
             sprintf(s, " [ %s File Areas ] ", syscfg.systemname);
           }
-          bout.DisplayLiteBar(s);
+          bout.litebar(s);
           DisplayHorizontalBar(78, 7);
           bout << "|#2 Dir Qscan?     Directory Name                          Total Files\r\n";
           DisplayHorizontalBar(78, 7);
@@ -122,7 +122,7 @@ void dirlist(int mode) {
               abort   = true;
               break;
             default:
-              bout.BackLine();
+              bout.backline();
               break;
             }
           }

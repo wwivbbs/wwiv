@@ -34,7 +34,7 @@ static void show_chains(int *mapp, int *map) {
   char szBuffer[ 255 ];
 
   bout.Color(0);
-  bout.ClearScreen();
+  bout.cls();
   bout.nl();
   bool abort = false;
   bool next = false;
@@ -104,7 +104,7 @@ static void show_chains(int *mapp, int *map) {
     pla(szBuffer, &abort);
 
   } else {
-    bout.DisplayLiteBar(" [ %s Online Programs ] ", syscfg.systemname);
+    bout.litebar(" [ %s Online Programs ] ", syscfg.systemname);
     bout <<
                        "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {

@@ -529,7 +529,7 @@ void tag_files() {
       lines_listed = 0;
       GetSession()->tagptr = 0;
       GetSession()->titled = 2;
-      bout.ClearScreen();
+      bout.cls();
       done = true;
       break;
     case 'D':
@@ -538,7 +538,7 @@ void tag_files() {
       if (!had) {
         bout.nl();
         pausescr();
-        bout.ClearScreen();
+        bout.cls();
       }
       done = true;
       break;
@@ -659,7 +659,7 @@ void tag_files() {
           pausescr();
           GetSession()->tagging = 1;
           GetApplication()->UpdateTopScreen();
-          bout.ClearScreen();
+          bout.cls();
           relist();
         } else {
           bout << "|#6Unknown archive.\r\n";
@@ -669,7 +669,7 @@ void tag_files() {
       }
       break;
     default:
-      bout.ClearScreen();
+      bout.cls();
       done = true;
       break;
     }
@@ -705,11 +705,11 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
           pszDescription[i] = SPACE;
         }
       }
-      bout.BackLine();
+      bout.backline();
       bout.WriteFormatted(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", pszFileName,
                                         bytes_to_k(fs), stripcolors(pszDescription));
       ch = onek_ncr("QYN\r");
-      bout.BackLine();
+      bout.backline();
       if (wwiv::UpperCase<char>(ch) == 'Y') {
         if (directories[dn].mask & mask_cdrom) {
           sprintf(s2, "%s%s", directories[dn].path, pszFileName);
@@ -719,19 +719,19 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
               bout << "|#6 file unavailable... press any key.";
               getkey();
             }
-            bout.BackLine();
-            bout.ClearEOL();
+            bout.backline();
+            bout.clreol();
           }
         } else {
           sprintf(s2, "%s%s", directories[dn].path, pszFileName);
           StringRemoveWhitespace(s2);
           if ((!WFile::Exists(s2)) && (!so())) {
             bout << "\r";
-            bout.ClearEOL();
+            bout.clreol();
             bout << "|#6 file unavailable... press any key.";
             getkey();
             bout << "\r";
-            bout.ClearEOL();
+            bout.clreol();
             return 0;
           }
         }
@@ -757,10 +757,10 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
           return 1;
         }
       } else if (ch == 'Q') {
-        bout.BackLine();
+        bout.backline();
         return -3;
       } else {
-        bout.BackLine();
+        bout.backline();
       }
     }
   }
@@ -835,8 +835,8 @@ void download() {
   returning = false;
   useconf = 0;
 
-  bout.ClearScreen();
-  bout.DisplayLiteBar(" [ %s Batch Downloads ] ", syscfg.systemname);
+  bout.cls();
+  bout.litebar(" [ %s Batch Downloads ] ", syscfg.systemname);
   bout.nl();
   do {
     if (!i) {
@@ -855,7 +855,7 @@ void download() {
       do {
         count = 0;
         ok = true;
-        bout.BackLine();
+        bout.backline();
         bout.WriteFormatted("|#2%3d ", GetSession()->numbatch + 1);
         bout.Color(1);
         bool onl = newline;
@@ -870,7 +870,7 @@ void download() {
           rtn = try_to_download(s, udir[GetSession()->GetCurrentFileArea()].subnum);
           if (rtn == 0) {
             if (uconfdir[1].confnum != -10 && okconf(GetSession()->GetCurrentUser())) {
-              bout.BackLine();
+              bout.backline();
               bout << " |#5Search all conferences? ";
               ch = onek_ncr("YN\r");
               if (ch == '\r' || wwiv::UpperCase<char>(ch) == 'Y') {
@@ -878,7 +878,7 @@ void download() {
                 useconf = 1;
               }
             }
-            bout.BackLine();
+            bout.backline();
             sprintf(s1, "%3d %s", GetSession()->numbatch + 1, s);
             bout.Color(1);
             bout << s1;
@@ -914,12 +914,12 @@ void download() {
             if (!foundany) {
               bout << "|#6 File not found... press any key.";
               getkey();
-              bout.BackLine();
+              bout.backline();
               ok = false;
             }
           }
         } else {
-          bout.BackLine();
+          bout.backline();
           done = true;
         }
       } while (!ok && !hangup);
@@ -1005,7 +1005,7 @@ char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
     bout << s2;
     ch = onek_ncr(s3);
     for (int i = 0; i < i1; i++) {
-      bout.BackSpace();
+      bout.bs();
     }
   }
   return ch;
@@ -1058,7 +1058,7 @@ void SetNewFileScanDate() {
   bout.nl();
   bout << "|#9Enter new limiting date in the following format: \r\n";
   bout << "|#1 MM/DD/YY\r\n|#7:";
-  bout.ColorizedInputField(8);
+  bout.mpl(8);
   int i = 0;
   char ch = 0;
   do {
@@ -1103,7 +1103,7 @@ void SetNewFileScanDate() {
         bout << " \b";
         --i;
         if (i == 2 || i == 5) {
-          bout.BackSpace();
+          bout.bs();
           --i;
         }
         break;
@@ -1179,7 +1179,7 @@ void removefilesnotthere(int dn, int *autodel) {
       StringTrim(u.description);
       sprintf(szCandidateFileName, "|#2%s :|#1 %-40.40s", u.filename, u.description);
       if (!*autodel) {
-        bout.BackLine();
+        bout.backline();
         bout << szCandidateFileName;
         bout.nl();
         bout << "|#5Remove Entry (Yes/No/Quit/All) : ";
