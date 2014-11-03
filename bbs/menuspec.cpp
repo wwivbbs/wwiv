@@ -70,10 +70,10 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
     FileAreaSetRecord(fileDownload, nRecordNumber);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    GetSession()->bout.NewLine();
+    bout.nl();
 
     if (bTitle) {
-      GetSession()->bout << "Directory  : " << directories[dn].name << wwiv::endl;
+      bout << "Directory  : " << directories[dn].name << wwiv::endl;
     }
     bOkToDL = printfileinfo(&u, dn);
 
@@ -128,14 +128,14 @@ int MenuDownload(char *pszDirFileName, char *pszDownloadFileName, bool bFreeDL, 
         }
       }
 
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
+      bout.nl(2);
+      bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
 
       if (GetSession()->IsUserOnline()) {
         GetApplication()->UpdateTopScreen();
       }
     } else {
-      GetSession()->bout << "\r\n\nNot enough time left to D/L.\r\n";
+      bout << "\r\n\nNot enough time left to D/L.\r\n";
     }
     if (abort) {
       ok = false;
@@ -197,10 +197,10 @@ bool ValidateDoorAccess(int nDoorNumber) {
     char szChainInUse[255];
     sprintf(szChainInUse,  "|#2Chain %s is in use on instance %d.  ", chains[nDoorNumber].description, inst);
     if (!(chains[nDoorNumber].ansir & ansir_multi_user)) {
-      GetSession()->bout << szChainInUse << " Try again later.\r\n";
+      bout << szChainInUse << " Try again later.\r\n";
       return false;
     } else {
-      GetSession()->bout << szChainInUse << " Care to join in? ";
+      bout << szChainInUse << " Care to join in? ";
       if (!(yesno())) {
         return false;
       }
@@ -236,7 +236,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
 /* End of run door section */
 /* ----------------------- */
 void ChangeSubNumber() {
-  GetSession()->bout << "|#7Select Sub number : |#0";
+  bout << "|#7Select Sub number : |#0";
 
   char* s = mmkey(0);
   for (int i = 0; (i < GetSession()->num_subs) && (usub[i].subnum != -1); i++) {
@@ -250,13 +250,13 @@ void ChangeSubNumber() {
 void ChangeDirNumber() {
   bool done = false;
   while (!done && !hangup) {
-    GetSession()->bout << "|#7Select Dir number : |#0";
+    bout << "|#7Select Dir number : |#0";
 
     char* s = mmkey(1);
 
     if (s[0] == '?') {
       DirList();
-      GetSession()->bout.NewLine();
+      bout.nl();
       continue;
     }
     for (int i = 0; i < GetSession()->num_dirs; i++) {
@@ -319,15 +319,15 @@ void SetNewScanMsg() {
 
 
 void ReadMessages() {
-  GetSession()->bout << "\r\n|#8Which messages?\r\n|#7(N)ew (A)ll (Q)uit : ";
+  bout << "\r\n|#8Which messages?\r\n|#7(N)ew (A)ll (Q)uit : ";
   char chWhichMessages = onek("QNA");
   if (chWhichMessages == 'Q') {
     return;
   }
 
   while (!hangup) {
-    GetSession()->bout << "|#8Which Subs?\r\n";
-    GetSession()->bout << "|#7(S)elected  (A)ll Subs  (L)ist  (Q)uit or Sub# : |#0";
+    bout << "|#8Which Subs?\r\n";
+    bout << "|#7(S)elected  (A)ll Subs  (L)ist  (Q)uit or Sub# : |#0";
 
     std::string subsText;
     input(&subsText, 3);
@@ -392,9 +392,9 @@ void ReadSelectedMessages(int chWhichMessages, int iWhere) {
   switch (iWhere) {
   case RM_ALL_SUBS:
   case RM_QSCAN_SUBS: {
-    GetSession()->bout.ClearScreen();
+    bout.ClearScreen();
 
-    GetSession()->bout << "|#3-=< Q-Scan All >=-\r\n";
+    bout << "|#3-=< Q-Scan All >=-\r\n";
     for (int i = 0; (usub[i].subnum != -1) && (i < GetSession()->num_subs) && nextsub && !hangup; i++) {
       GetSession()->SetCurrentMessageArea(i);
       iscan(GetSession()->GetCurrentMessageArea());
@@ -417,8 +417,8 @@ void ReadSelectedMessages(int chWhichMessages, int iWhere) {
         nextsub = 0;
       }
     }
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
+    bout.nl();
+    bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
   }
   break;
 

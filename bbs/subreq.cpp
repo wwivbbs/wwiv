@@ -27,7 +27,7 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt);
 
 
 static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
-  GetSession()->bout << "|#5Send email request to the host now? ";
+  bout << "|#5Send email request to the host now? ";
   if (yesno()) {
     strcpy(irt, "Sub type ");
     strcat(irt, ni->stype);
@@ -62,11 +62,11 @@ static void sub_req(int main_type, int minor_type, int tosys, char *extra) {
 
   send_net(&nh, nullptr, extra, nullptr);
 
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (main_type == main_type_sub_add_req) {
-    GetSession()->bout <<  "Automated add request sent to @" << tosys << wwiv::endl;
+    bout <<  "Automated add request sent to @" << tosys << wwiv::endl;
   } else {
-    GetSession()->bout << "Automated drop request sent to @" << tosys << wwiv::endl;
+    bout << "Automated drop request sent to @" << tosys << wwiv::endl;
   }
   pausescr();
 }
@@ -148,12 +148,12 @@ int find_hostfor(char *type, short *ui, char *pszDescription, short *opt) {
                       }
                     }
                   } else {
-                    GetSession()->bout.NewLine();
-                    GetSession()->bout << "Type: " << type << wwiv::endl;
-                    GetSession()->bout << "Host: " << h << wwiv::endl;
-                    GetSession()->bout << "Sub : " << ss << wwiv::endl;
-                    GetSession()->bout.NewLine();
-                    GetSession()->bout << "|#5Is this the sub you want? ";
+                    bout.nl();
+                    bout << "Type: " << type << wwiv::endl;
+                    bout << "Host: " << h << wwiv::endl;
+                    bout << "Sub : " << ss << wwiv::endl;
+                    bout.nl();
+                    bout << "|#5Is this the sub you want? ";
                     if (yesno()) {
                       done = true;
                       *ui = h;
@@ -199,7 +199,7 @@ void sub_xtr_del(int n, int nn, int f) {
     int ok = find_hostfor(xn.stype, &xn.host, nullptr, &opt);
     if (ok) {
       if (opt & OPTION_AUTO) {
-        GetSession()->bout << "|#5Attempt automated drop request? ";
+        bout << "|#5Attempt automated drop request? ";
         if (yesno()) {
           sub_req(main_type_sub_drop_req, xn.type, xn.host, xn.stype);
         }
@@ -207,7 +207,7 @@ void sub_xtr_del(int n, int nn, int f) {
         maybe_netmail(&xn, false);
       }
     } else {
-      GetSession()->bout << "|#5Attempt automated drop request? ";
+      bout << "|#5Attempt automated drop request? ";
       if (yesno()) {
         sub_req(main_type_sub_drop_req, xn.type, xn.host, xn.stype);
       } else {
@@ -256,7 +256,7 @@ void sub_xtr_add(int n, int nn) {
     onx[0] = 'Q';
     onx[1] = 0;
     onxi = 1;
-    GetSession()->bout.NewLine();
+    bout.nl();
     for (ii = 0; ii < GetSession()->GetMaxNetworkNumber(); ii++) {
       if (ii < 9) {
         onx[onxi++] = static_cast<char>(ii + '1');
@@ -266,10 +266,10 @@ void sub_xtr_add(int n, int nn) {
         odc[odci - 1] = static_cast<char>(odci + '0');
         odc[odci] = 0;
       }
-      GetSession()->bout << "(" << ii + 1 << ") " << net_networks[ii].name << wwiv::endl;
+      bout << "(" << ii + 1 << ") " << net_networks[ii].name << wwiv::endl;
     }
-    GetSession()->bout << "Q. Quit\r\n\n";
-    GetSession()->bout << "|#2Which network (number): ";
+    bout << "Q. Quit\r\n\n";
+    bout << "|#2Which network (number): ";
     if (GetSession()->GetMaxNetworkNumber() < 9) {
       ch = onek(onx);
       if (ch == 'Q') {
@@ -293,8 +293,8 @@ void sub_xtr_add(int n, int nn) {
   }
   xnp->net_num = static_cast<short>(GetSession()->GetNetworkNumber());
 
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#2What sub type? ";
+  bout.nl();
+  bout << "|#2What sub type? ";
   input(xnp->stype, 7);
   if (xnp->stype[0] == 0) {
     return;
@@ -306,7 +306,7 @@ void sub_xtr_add(int n, int nn) {
     sprintf(xnp->stype, "%u", xnp->type);
   }
 
-  GetSession()->bout << "|#5Will you be hosting the sub? ";
+  bout << "|#5Will you be hosting the sub? ";
   if (yesno()) {
     char szFileName[MAX_PATH];
     sprintf(szFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory().c_str(), xnp->stype);
@@ -315,19 +315,19 @@ void sub_xtr_add(int n, int nn) {
       file.Close();
     }
 
-    GetSession()->bout << "|#5Allow auto add/drop requests? ";
+    bout << "|#5Allow auto add/drop requests? ";
     if (noyes()) {
       xnp->flags |= XTRA_NET_AUTO_ADDDROP;
     }
 
-    GetSession()->bout << "|#5Make this sub public (in subs.lst)?";
+    bout << "|#5Make this sub public (in subs.lst)?";
     if (noyes()) {
       xnp->flags |= XTRA_NET_AUTO_INFO;
       if (display_sub_categories()) {
         gc = 0;
         while (!gc) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "|#2Which category is this sub in (0 for unknown/misc)? ";
+          bout.nl();
+          bout << "|#2Which category is this sub in (0 for unknown/misc)? ";
           input(s, 3);
           i = wwiv::strings::StringToUnsignedShort(s);
           if (i || wwiv::strings::IsEquals(s, "0")) {
@@ -344,7 +344,7 @@ void sub_xtr_add(int n, int nn) {
             if (wwiv::strings::IsEquals(s, "0")) {
               gc = 1;
             } else if (!xnp->category) {
-              GetSession()->bout << "Illegal/invalid category.\r\n\n";
+              bout << "Illegal/invalid category.\r\n\n";
             }
           } else {
             if (strlen(s) == 1 && s[0] == '?') {
@@ -359,8 +359,8 @@ void sub_xtr_add(int n, int nn) {
     int ok = find_hostfor(xnp->stype, &(xnp->host), szDescription, &opt);
 
     if (!ok) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Which system (number) is the host? ";
+      bout.nl();
+      bout << "|#2Which system (number) is the host? ";
       input(szDescription, 6);
       xnp->host = static_cast<unsigned short>(atol(szDescription));
       szDescription[0] = '\0';
@@ -379,9 +379,9 @@ void sub_xtr_add(int n, int nn) {
           if (opt & OPTION_NO_TAG) {
             subboards[n].anony |= anony_no_tag;
           }
-          GetSession()->bout.NewLine();
+          bout.nl();
           if (opt & OPTION_AUTO) {
-            GetSession()->bout << "|#5Attempt automated add request? ";
+            bout << "|#5Attempt automated add request? ";
             if (yesno()) {
               sub_req(main_type_sub_add_req, xnp->type, xnp->host, xnp->stype);
             }
@@ -389,8 +389,8 @@ void sub_xtr_add(int n, int nn) {
             maybe_netmail(xnp, true);
           }
         } else {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "|#5Attempt automated add request? ";
+          bout.nl();
+          bout << "|#5Attempt automated add request? ";
           bool bTryAutoAddReq = yesno();
           if (bTryAutoAddReq) {
             sub_req(main_type_sub_add_req, xnp->type, xnp->host, xnp->stype);
@@ -399,8 +399,8 @@ void sub_xtr_add(int n, int nn) {
           }
         }
       } else {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "The host is not listed in the network.\r\n";
+        bout.nl();
+        bout << "The host is not listed in the network.\r\n";
         pausescr();
       }
     }
@@ -418,8 +418,8 @@ bool display_sub_categories() {
 
   WTextFile ff(GetSession()->GetNetworkDataDirectory(), CATEG_NET, "rt");
   if (ff.IsOpen()) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "Available sub categories are:\r\n";
+    bout.nl();
+    bout << "Available sub categories are:\r\n";
     bool abort = false;
     char szLine[255];
     while (!abort && ff.ReadLine(szLine, 100)) {

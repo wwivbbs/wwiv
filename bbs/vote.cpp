@@ -25,11 +25,11 @@
 void print_quest(int mapp, int map[21]) {
   votingrec v;
 
-  GetSession()->bout.ClearScreen();
+  bout.ClearScreen();
   if (okansi()) {
-    GetSession()->bout.DisplayLiteBar("[ %s Voting Questions ]", syscfg.systemname);
+    bout.DisplayLiteBar("[ %s Voting Questions ]", syscfg.systemname);
   } else {
-    GetSession()->bout << "|#5Voting Questions:\r\n\n";
+    bout << "|#5Voting Questions:\r\n\n";
   }
   bool abort = false;
   WFile voteFile(syscfg.datadir, VOTING_DAT);
@@ -47,9 +47,9 @@ void print_quest(int mapp, int map[21]) {
     pla(szBuffer, &abort);
   }
   voteFile.Close();
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (abort) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
 }
 
@@ -70,13 +70,13 @@ bool print_question(int i, int ii) {
     return false;
   }
 
-  GetSession()->bout.ClearScreen();
+  bout.ClearScreen();
   char szBuffer[255];
   sprintf(szBuffer, "%s%d", "|#5Voting question #", i);
   pla(szBuffer, &abort);
-  GetSession()->bout.Color(1);
+  bout.Color(1);
   pla(v.question, &abort);
-  GetSession()->bout.NewLine();
+  bout.nl();
   int t = 0;
   voting_response vr;
   for (int i1 = 0; i1 < v.numanswers; i1++) {
@@ -103,9 +103,9 @@ bool print_question(int i, int ii) {
             static_cast<float>(vr.numresponses) / static_cast<float>(t1) * 100.0);
     pla(szBuffer , &abort);
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (abort) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
   return (abort) ? false : true;
 }
@@ -138,15 +138,15 @@ void vote_question(int i, int ii) {
   } else {
     message +=  "No Comment";
   }
-  GetSession()->bout <<  message;
-  GetSession()->bout.NewLine(2);
-  GetSession()->bout << "|#5Change it? ";
+  bout <<  message;
+  bout.nl(2);
+  bout << "|#5Change it? ";
   if (!yesno()) {
     return;
   }
 
-  GetSession()->bout << "|#5Which (0-" << static_cast<int>(v.numanswers) << ")? ";
-  GetSession()->bout.ColorizedInputField(2);
+  bout << "|#5Which (0-" << static_cast<int>(v.numanswers) << ")? ";
+  bout.ColorizedInputField(2);
   char* pszAnswer = mmkey(2);
   int i1 = atoi(pszAnswer);
   if (i1 > v.numanswers) {
@@ -176,7 +176,7 @@ void vote_question(int i, int ii) {
   voteFile.Seek(ii * sizeof(votingrec), WFile::seekBegin);
   voteFile.Write(&v, sizeof(votingrec));
   voteFile.Close();
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
 }
 
 
@@ -217,16 +217,16 @@ void vote() {
   char sodc[ 10 ];
   strcpy(sodc, odc);
   if (mapp == 0) {
-    GetSession()->bout << "\r\n\n|#6No voting questions currently.\r\n\n";
+    bout << "\r\n\n|#6No voting questions currently.\r\n\n";
     return;
   }
   bool done = false;
   do {
     print_quest(mapp, &map[0]);
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
+    bout.nl();
+    bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
     strcpy(odc, sodc);
-    GetSession()->bout.ColorizedInputField(2);
+    bout.ColorizedInputField(2);
     char* pszAnswer = mmkey(2);
     int nQuestionNum = atoi(pszAnswer);
     if (nQuestionNum > 0 && nQuestionNum <= mapp) {

@@ -68,16 +68,16 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   char s1[81], s2[81], szFileName[81], sx1[21], sx2[21], sx3[21];
 
   if (bSending) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "-=> Beginning file transmission, Ctrl+X to abort.\r\n";
+    bout.nl();
+    bout << "-=> Beginning file transmission, Ctrl+X to abort.\r\n";
     if (nProtocolNum < 0) {
       strcpy(s1, over_intern[(-nProtocolNum) - 1].sendfn);
     } else {
       strcpy(s1, (externs[nProtocolNum].sendfn));
     }
   } else {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "-=> Ready to receive, Ctrl+X to abort.\r\n";
+    bout.nl();
+    bout << "-=> Ready to receive, Ctrl+X to abort.\r\n";
     if (nProtocolNum < 0) {
       strcpy(s1, over_intern[(-nProtocolNum) - 1].receivefn);
     } else {
@@ -297,8 +297,8 @@ int get_protocol(xfertype xt) {
   }
 
   if (only == 0 && xt != xf_none) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "No protocols available for that.\r\n\n";
+    bout.nl();
+    bout << "No protocols available for that.\r\n\n";
     return -1;
   }
   if (prot) {
@@ -311,45 +311,45 @@ int get_protocol(xfertype xt) {
     strcpy(s1, oks);
   }
   if (!prot) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#3Available Protocols :|#1\r\n\n";
-    GetSession()->bout << "|#8[|#7Q|#8] |#1Abort Transfer(s)\r\n";
-    GetSession()->bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
+    bout.nl();
+    bout << "|#3Available Protocols :|#1\r\n\n";
+    bout << "|#8[|#7Q|#8] |#1Abort Transfer(s)\r\n";
+    bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
     for (int j = 1; j <= maxprot; j++) {
       if (ok_prot(j, xt)) {
         ch1 = upcase(*prot_name(j));
         if (fl[j] == 0) {
-          GetSession()->bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
+          bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
                                             prot_name(j));
         } else {
-          GetSession()->bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", *prot_name(j), prot_name(j));
+          bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", *prot_name(j), prot_name(j));
         }
       }
     }
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
   bool done = false;
   do {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7" << s;
+    bout.nl();
+    bout << "|#7" << s;
     ch = onek(s1);
     if (ch == '?') {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#3Available Protocols :|#1\r\n\n";
-      GetSession()->bout << "|#8[|#7Q|#8] |#1Abort Transfer(s)\r\n";
-      GetSession()->bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
+      bout.nl();
+      bout << "|#3Available Protocols :|#1\r\n\n";
+      bout << "|#8[|#7Q|#8] |#1Abort Transfer(s)\r\n";
+      bout << "|#8[|#70|#8] |#1Don't Transfer\r\n";
       for (int j = 1; j <= maxprot; j++) {
         if (ok_prot(j, xt)) {
           ch1 = upcase(*prot_name(j));
           if (fl[ j ] == 0) {
-            GetSession()->bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
+            bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", (j < 10) ? (j + '0') : (j + BASE_CHAR - 10),
                                               prot_name(j));
           } else {
-            GetSession()->bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", *prot_name(j), prot_name(j));
+            bout.WriteFormatted("|#8[|#7%c|#8] |#1%s\r\n", *prot_name(j), prot_name(j));
           }
         }
       }
-      GetSession()->bout.NewLine();
+      bout.nl();
     } else {
       done = true;
     }
@@ -412,8 +412,8 @@ void ascii_send(const char *pszFileName, bool *sent, double *percent) {
     }
     *percent = static_cast<double>(lTotalBytes) / static_cast<double>(lFileSize);
   } else {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "File not found.\r\n\n";
+    bout.nl();
+    bout << "File not found.\r\n\n";
     *sent = false;
     *percent = 0.0;
   }
@@ -429,7 +429,7 @@ void maybe_internal(const char *pszFileName, bool *xferred, double *percent, boo
     return;
   }
   if (!incom) {
-    GetSession()->bout << "Would use internal " << prot_name(prot) << wwiv::endl;
+    bout << "Would use internal " << prot_name(prot) << wwiv::endl;
     return;
   }
 
@@ -478,8 +478,8 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
   if (check_batch_queue(sfn)) {
     *sent = false;
     if (nProtocol > 0) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "That file is already in the batch queue.\r\n\n";
+      bout.nl();
+      bout << "That file is already in the batch queue.\r\n\n";
     } else if (nProtocol == -1) {
       *abort = true;
     }
@@ -504,21 +504,21 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
     case WWIV_INTERNAL_PROT_BATCH:
       ok = true;
       if (GetSession()->numbatch >= GetSession()->max_batch) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "No room left in batch queue.\r\n\n";
+        bout.nl();
+        bout << "No room left in batch queue.\r\n\n";
         *sent = false;
         *abort = false;
       } else {
         double t = (modem_speed) ? (12.656) / ((double)(modem_speed)) * ((double)(fs)) : 0;
         if (nsl() <= (batchtime + t)) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "Not enough time left in queue.\r\n\n";
+          bout.nl();
+          bout << "Not enough time left in queue.\r\n\n";
           *sent = false;
           *abort = false;
         } else {
           if (dn == -1) {
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "Can't add temporary file to batch queue.\r\n\n";
+            bout.nl();
+            bout << "Can't add temporary file to batch queue.\r\n\n";
             *sent = false;
             *abort = false;
           } else {
@@ -531,9 +531,9 @@ void send_file(const char *pszFileName, bool *sent, bool *abort, const char *sfn
 
             GetSession()->numbatch++;
             ++GetSession()->numbatchdl;
-            GetSession()->bout.NewLine(2);
-            GetSession()->bout << "File added to batch queue.\r\n";
-            GetSession()->bout << "Batch: Files - " << GetSession()->numbatch <<
+            bout.nl(2);
+            bout << "File added to batch queue.\r\n";
+            bout << "Batch: Files - " << GetSession()->numbatch <<
                                "  Time - " << ctim(batchtime) << "\r\n\n";
             *sent = false;
             *abort = false;
@@ -583,8 +583,8 @@ void receive_file(const char *pszFileName, int *received, const char *sfn, int d
   case WWIV_INTERNAL_PROT_BATCH:
     if (dn != -1) {
       if (GetSession()->numbatch >= GetSession()->max_batch) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "No room left in batch queue.\r\n\n";
+        bout.nl();
+        bout << "No room left in batch queue.\r\n\n";
         *received = 0;
       } else {
         *received = 2;
@@ -595,13 +595,13 @@ void receive_file(const char *pszFileName, int *received, const char *sfn, int d
         batch[GetSession()->numbatch].len = 0;
 
         GetSession()->numbatch++;
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "File added to batch queue.\r\n\n";
-        GetSession()->bout << "Batch upload: files - " << (GetSession()->numbatch - GetSession()->numbatchdl) << "\r\n\n";
+        bout.nl();
+        bout << "File added to batch queue.\r\n\n";
+        bout << "Batch upload: files - " << (GetSession()->numbatch - GetSession()->numbatchdl) << "\r\n\n";
       }
     } else {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "Can't batch upload that.\r\n\n";
+      bout.nl();
+      bout << "Can't batch upload that.\r\n\n";
     }
     break;
   default:

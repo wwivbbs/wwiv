@@ -124,18 +124,18 @@ static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
     if (GetSession()->GetCurrentSpeed().length() > 0) {
       char szCurrentSpeed[ 81 ];
       strcpy(szCurrentSpeed, GetSession()->GetCurrentSpeed().c_str());
-      GetSession()->bout << "CONNECT " << strupr(szCurrentSpeed) << "\r\n\r\n";
+      bout << "CONNECT " << strupr(szCurrentSpeed) << "\r\n\r\n";
     }
     string osVersion = WWIV_GetOSVersion();
-    GetSession()->bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
-    GetSession()->bout << "Copyright (c) 1998-2014 WWIV Software Services." << wwiv::endl;
-    GetSession()->bout << "All Rights Reserved." << wwiv::endl;
+    bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
+    bout << "Copyright (c) 1998-2014 WWIV Software Services." << wwiv::endl;
+    bout << "All Rights Reserved." << wwiv::endl;
 
     ans = check_ansi();
     char szFileName[ MAX_PATH ];
     sprintf(szFileName, "%s%s", GetSession()->language_dir.c_str(), WELCOME_ANS);
     if (WFile::Exists(szFileName)) {
-      GetSession()->bout.NewLine();
+      bout.nl();
       if (ans > 0) {
         GetSession()->GetCurrentUser()->SetStatusFlag(WUser::ansi);
         GetSession()->GetCurrentUser()->SetStatusFlag(WUser::color);
@@ -159,7 +159,7 @@ static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
     }
   }
   if (curatr != 7) {
-    GetSession()->bout.ResetColors();
+    bout.ResetColors();
   }
   return ans;
 }
@@ -168,27 +168,27 @@ static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
 int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
   char szUserName[ 255 ];
 
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (nNetworkOnly) {
-    GetSession()->bout << "This time is reserved for net-mail ONLY.  Please try calling back again later.\r\n";
+    bout << "This time is reserved for net-mail ONLY.  Please try calling back again later.\r\n";
   } else {
-    GetSession()->bout << "Enter number or name or 'NEW'\r\n";
+    bout << "Enter number or name or 'NEW'\r\n";
   }
 
   memset(&szUserName, 0, 255);
 
-  GetSession()->bout << "NN: ";
+  bout << "NN: ";
   input(szUserName, 30);
   StringTrim(szUserName);
 
   int nUserNumber = finduser(szUserName);
   if (nUserNumber == 0 && szUserName[ 0 ] != '\0') {
-    GetSession()->bout << "Searching...";
+    bout << "Searching...";
     bool abort = false;
     for (int i = 1; i < GetApplication()->GetStatusManager()->GetUserCount() && nUserNumber == 0 && !hangup
          && !abort; i++) {
       if (i % 25 == 0) {   // changed from 15 since computers are faster now-a-days
-        GetSession()->bout << ".";
+        bout << ".";
       }
       int nTempUserNumber = smallist[i].number;
       GetSession()->ReadCurrentUser(nTempUserNumber);
@@ -197,7 +197,7 @@ int ShowLoginAndGetUserNumber(int nNetworkOnly, char* pszUserName) {
         strcpy(szTempUserName, GetSession()->GetCurrentUser()->GetRealName());
         if (wwiv::strings::IsEquals(szUserName, strupr(szTempUserName)) &&
             !GetSession()->GetCurrentUser()->IsUserDeleted()) {
-          GetSession()->bout << "|#5Do you mean " << GetSession()->GetCurrentUser()->GetUserNameAndNumber(i) << "? ";
+          bout << "|#5Do you mean " << GetSession()->GetCurrentUser()->GetUserNameAndNumber(i) << "? ";
           if (yesno()) {
             nUserNumber = nTempUserNumber;
           }
@@ -231,7 +231,7 @@ bool VerifyPhoneNumber() {
 
     if (phoneNumber != &GetSession()->GetCurrentUser()->GetVoicePhoneNumber()[8]) {
       if (phoneNumber.length() == 4 && phoneNumber[3] == '-') {
-        GetSession()->bout << "\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n";
+        bout << "\r\n!! Enter the LAST 4 DIGITS of your phone number ONLY !!\r\n\n";
       }
       return false;
     }
@@ -257,7 +257,7 @@ static bool VerifySysopPassword() {
 static void DoFailedLoginAttempt() {
   GetSession()->GetCurrentUser()->SetNumIllegalLogons(GetSession()->GetCurrentUser()->GetNumIllegalLogons() + 1);
   GetSession()->WriteCurrentUser();
-  GetSession()->bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
+  bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
   std::stringstream logLine;
   logLine << "### ILLEGAL LOGON for " <<
@@ -345,15 +345,15 @@ static void LeaveBadPasswordFeedback(int ans) {
   } else {
     GetSession()->GetCurrentUser()->ClearStatusFlag(WUser::ansi);
   }
-  GetSession()->bout << "|#6Too many logon attempts!!\r\n\n";
-  GetSession()->bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
+  bout << "|#6Too many logon attempts!!\r\n\n";
+  bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
   if (yesno()) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "What is your NAME or HANDLE? ";
+    bout.nl();
+    bout << "What is your NAME or HANDLE? ";
     string tempName;
     input1(&tempName, 31, wwiv::bbs::InputMode::PROPER, true);
     if (!tempName.empty()) {
-      GetSession()->bout.NewLine();
+      bout.nl();
       GetSession()->usernum = 1;
       sprintf(irt, "** Illegal logon feedback from %s", tempName.c_str());
       GetSession()->GetCurrentUser()->SetName(tempName.c_str());
@@ -385,8 +385,8 @@ static void CheckCallRestrictions() {
   if (!hangup && GetSession()->usernum > 0 && GetSession()->GetCurrentUser()->IsRestrictionLogon() &&
       wwiv::strings::IsEquals(date(), GetSession()->GetCurrentUser()->GetLastOn()) &&
       GetSession()->GetCurrentUser()->GetTimesOnToday() > 0) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#6Sorry, you can only logon once per day.\r\n";
+    bout.nl();
+    bout << "|#6Sorry, you can only logon once per day.\r\n";
     hangup = true;
   }
 }
@@ -429,7 +429,7 @@ void getuser() {
       }
       int nInstanceNumber;
       if (GetSession()->GetCurrentUser()->GetSl() < 255 && user_online(GetSession()->usernum, &nInstanceNumber)) {
-        GetSession()->bout << "\r\n|#6You are already online on instance " << nInstanceNumber << "!\r\n\n";
+        bout << "\r\n|#6You are already online on instance " << nInstanceNumber << "!\r\n\n";
         continue;
       }
       ok = true;
@@ -459,9 +459,9 @@ void getuser() {
         DoFailedLoginAttempt();
       }
     } else if (GetSession()->usernum == 0) {
-      GetSession()->bout.NewLine();
+      bout.nl();
       if (!nNetworkOnly) {
-        GetSession()->bout << "|#6Unknown user.\r\n";
+        bout << "|#6Unknown user.\r\n";
       }
     } else if (GetSession()->usernum == -1) {
       write_inst(INST_LOC_NEWUSER, 0, INST_FLAGS_NONE);
@@ -587,22 +587,22 @@ static void UpdateLastOnFileAndUserLog() {
       copy_line(s1, ss, &pos, len);
       if (s1[0]) {
         if (i) {
-          GetSession()->bout << "\r\n\n|#1Last few callers|#7: |#0\r\n\n";
+          bout << "\r\n\n|#1Last few callers|#7: |#0\r\n\n";
           if (GetApplication()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
               (syscfg.sysconfig & sysconfig_extended_info)) {
-            GetSession()->bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
+            bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
           } else {
-            GetSession()->bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
+            bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
           }
           unsigned char chLine = (okansi()) ? 205 : '=';
-          GetSession()->bout << "|#7" << charstr(79, chLine) << wwiv::endl;
+          bout << "|#7" << charstr(79, chLine) << wwiv::endl;
           i = 0;
         }
-        GetSession()->bout << s1;
-        GetSession()->bout.NewLine();
+        bout << s1;
+        bout.nl();
       }
     } while (pos < len);
-    GetSession()->bout.NewLine(2);
+    bout.nl(2);
     pausescr();
   }
 
@@ -674,12 +674,12 @@ static void UpdateLastOnFileAndUserLog() {
 static void CheckAndUpdateUserInfo() {
   fsenttoday = 0;
   if (GetSession()->GetCurrentUser()->GetBirthdayYear() == 0) {
-    GetSession()->bout << "\r\nPlease enter the following information:\r\n";
+    bout << "\r\nPlease enter the following information:\r\n";
     do {
-      GetSession()->bout.NewLine();
+      bout.nl();
       input_age(GetSession()->GetCurrentUser());
-      GetSession()->bout.NewLine();
-      GetSession()->bout.WriteFormatted("%02d/%02d/%02d -- Correct? ",
+      bout.nl();
+      bout.WriteFormatted("%02d/%02d/%02d -- Correct? ",
                                         GetSession()->GetCurrentUser()->GetBirthdayMonth(),
                                         GetSession()->GetCurrentUser()->GetBirthdayDay(),
                                         GetSession()->GetCurrentUser()->GetBirthdayYear());
@@ -728,23 +728,23 @@ static void CheckAndUpdateUserInfo() {
   time_t lTime = time(nullptr);
   if ((GetSession()->GetCurrentUser()->GetExpiresDateNum() < static_cast<unsigned long>(lTime + 30 * SECS_PER_DAY))
       && (GetSession()->GetCurrentUser()->GetExpiresDateNum() > static_cast<unsigned long>(lTime + 10 * SECS_PER_DAY))) {
-    GetSession()->bout << "Your registration expires in " <<
+    bout << "Your registration expires in " <<
                        static_cast<int>((GetSession()->GetCurrentUser()->GetExpiresDateNum() - lTime) / SECS_PER_DAY) <<
                        "days";
   } else if ((GetSession()->GetCurrentUser()->GetExpiresDateNum() > static_cast<unsigned long>(lTime)) &&
              (GetSession()->GetCurrentUser()->GetExpiresDateNum() < static_cast<unsigned long>(lTime + 10 * SECS_PER_DAY))) {
     if (static_cast<int>((GetSession()->GetCurrentUser()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>
                          (SECS_PER_DAY)) > 1) {
-      GetSession()->bout << "|#6Your registration expires in " <<
+      bout << "|#6Your registration expires in " <<
                          static_cast<int>((GetSession()->GetCurrentUser()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>
                                           (SECS_PER_DAY))
                          << " days";
     } else {
-      GetSession()->bout << "|#6Your registration expires in " <<
+      bout << "|#6Your registration expires in " <<
                          static_cast<int>((GetSession()->GetCurrentUser()->GetExpiresDateNum() - lTime) / static_cast<unsigned long>(3600L))
                          << " hours.";
     }
-    GetSession()->bout.NewLine(2);
+    bout.nl(2);
     pausescr();
   }
   if (GetSession()->GetCurrentUser()->GetExpiresDateNum() < static_cast<unsigned long>(lTime)) {
@@ -761,50 +761,50 @@ static void CheckAndUpdateUserInfo() {
         changedsl();
       }
     }
-    GetSession()->bout << "|#6Your registration has expired.\r\n\n";
+    bout << "|#6Your registration has expired.\r\n\n";
     pausescr();
   }
 }
 
 static void DisplayUserLoginInformation() {
   char s1[255];
-  GetSession()->bout.NewLine();
+  bout.nl();
 
-  GetSession()->bout << "|#9Name/Handle|#0....... |#2" << GetSession()->GetCurrentUser()->GetUserNameAndNumber(
+  bout << "|#9Name/Handle|#0....... |#2" << GetSession()->GetCurrentUser()->GetUserNameAndNumber(
                        GetSession()->usernum) << wwiv::endl;
-  GetSession()->bout << "|#9Internet Address|#0.. |#2";
+  bout << "|#9Internet Address|#0.. |#2";
   if (check_inet_addr(GetSession()->GetCurrentUser()->GetEmailAddress())) {
-    GetSession()->bout << GetSession()->GetCurrentUser()->GetEmailAddress() << wwiv::endl;
+    bout << GetSession()->GetCurrentUser()->GetEmailAddress() << wwiv::endl;
   } else if (!GetSession()->internetEmailName.empty()) {
-    GetSession()->bout << (GetSession()->IsInternetUseRealNames() ? GetSession()->GetCurrentUser()->GetRealName() :
+    bout << (GetSession()->IsInternetUseRealNames() ? GetSession()->GetCurrentUser()->GetRealName() :
                            GetSession()->GetCurrentUser()->GetName())
                        << "<" << GetSession()->internetFullEmailAddress << ">\r\n";
   } else {
-    GetSession()->bout << "None.\r\n";
+    bout << "None.\r\n";
   }
-  GetSession()->bout << "|#9Time allowed on|#0... |#2" << static_cast<int>((nsl() + 30) / SECONDS_PER_MINUTE_FLOAT) <<
+  bout << "|#9Time allowed on|#0... |#2" << static_cast<int>((nsl() + 30) / SECONDS_PER_MINUTE_FLOAT) <<
                      wwiv::endl;
   if (GetSession()->GetCurrentUser()->GetNumIllegalLogons() > 0) {
-    GetSession()->bout << "|#9Illegal logons|#0.... |#2" << GetSession()->GetCurrentUser()->GetNumIllegalLogons() <<
+    bout << "|#9Illegal logons|#0.... |#2" << GetSession()->GetCurrentUser()->GetNumIllegalLogons() <<
                        wwiv::endl;
   }
   if (GetSession()->GetCurrentUser()->GetNumMailWaiting() > 0) {
-    GetSession()->bout << "|#9Mail waiting|#0...... |#2" << GetSession()->GetCurrentUser()->GetNumMailWaiting() <<
+    bout << "|#9Mail waiting|#0...... |#2" << GetSession()->GetCurrentUser()->GetNumMailWaiting() <<
                        wwiv::endl;
   }
   if (GetSession()->GetCurrentUser()->GetTimesOnToday() == 1) {
-    GetSession()->bout << "|#9Date last on|#0...... |#2" << GetSession()->GetCurrentUser()->GetLastOn() << wwiv::endl;
+    bout << "|#9Date last on|#0...... |#2" << GetSession()->GetCurrentUser()->GetLastOn() << wwiv::endl;
   } else {
-    GetSession()->bout << "|#9Times on today|#0.... |#2" << GetSession()->GetCurrentUser()->GetTimesOnToday() << wwiv::endl;
+    bout << "|#9Times on today|#0.... |#2" << GetSession()->GetCurrentUser()->GetTimesOnToday() << wwiv::endl;
   }
-  GetSession()->bout << "|#9Sysop currently|#0... |#2";
+  bout << "|#9Sysop currently|#0... |#2";
   if (sysop2()) {
-    GetSession()->bout << "Available\r\n";
+    bout << "Available\r\n";
   } else {
-    GetSession()->bout << "NOT Available\r\n";
+    bout << "NOT Available\r\n";
   }
 
-  GetSession()->bout << "|#9System is|#0......... |#2WWIV " << wwiv_version << beta_version << "  " << wwiv::endl;
+  bout << "|#9System is|#0......... |#2WWIV " << wwiv_version << beta_version << "  " << wwiv::endl;
 
   /////////////////////////////////////////////////////////////////////////
   GetApplication()->GetStatusManager()->RefreshStatusCache();
@@ -813,8 +813,8 @@ static void DisplayUserLoginInformation() {
       sprintf(s1, "|#9%s node|#0%s|#2 @%u", net_networks[i].name, charstr(13 - strlen(net_networks[i].name), '.'),
               net_networks[i].sysnum);
       if (i) {
-        GetSession()->bout << s1;
-        GetSession()->bout.NewLine();
+        bout << s1;
+        bout.nl();
       } else {
         int i1;
         for (i1 = strlen(s1); i1 < 26; i1++) {
@@ -822,66 +822,66 @@ static void DisplayUserLoginInformation() {
         }
         s1[i1] = '\0';
         std::unique_ptr<WStatus> pStatus(GetApplication()->GetStatusManager()->GetStatus());
-        GetSession()->bout << s1 << "(net" << pStatus->GetNetworkVersion() << ")\r\n";
+        bout << s1 << "(net" << pStatus->GetNetworkVersion() << ")\r\n";
       }
     }
   }
 
-  GetSession()->bout << "|#9OS|#0................ |#2" << WWIV_GetOSVersion() << wwiv::endl;
-  GetSession()->bout << "|#9Instance|#0.......... |#2" << GetApplication()->GetInstanceNumber() << "\r\n\n";
+  bout << "|#9OS|#0................ |#2" << WWIV_GetOSVersion() << wwiv::endl;
+  bout << "|#9Instance|#0.......... |#2" << GetApplication()->GetInstanceNumber() << "\r\n\n";
   if (GetSession()->GetCurrentUser()->GetForwardUserNumber()) {
     if (GetSession()->GetCurrentUser()->GetForwardSystemNumber() != 0) {
       set_net_num(GetSession()->GetCurrentUser()->GetForwardNetNumber());
       if (!valid_system(GetSession()->GetCurrentUser()->GetForwardSystemNumber())) {
         GetSession()->GetCurrentUser()->ClearMailboxForward();
-        GetSession()->bout << "Forwarded to unknown system; forwarding reset.\r\n";
+        bout << "Forwarded to unknown system; forwarding reset.\r\n";
       } else {
-        GetSession()->bout << "Mail set to be forwarded to ";
+        bout << "Mail set to be forwarded to ";
         if (GetSession()->GetMaxNetworkNumber() > 1) {
-          GetSession()->bout << "#" << GetSession()->GetCurrentUser()->GetForwardUserNumber()
+          bout << "#" << GetSession()->GetCurrentUser()->GetForwardUserNumber()
                              << " @"
                              << GetSession()->GetCurrentUser()->GetForwardSystemNumber()
                              << "." << GetSession()->GetNetworkName() << "."
                              << wwiv::endl;
         } else {
-          GetSession()->bout << "#" << GetSession()->GetCurrentUser()->GetForwardUserNumber() << " @"
+          bout << "#" << GetSession()->GetCurrentUser()->GetForwardUserNumber() << " @"
                              << GetSession()->GetCurrentUser()->GetForwardSystemNumber() << "." << wwiv::endl;
         }
       }
     } else {
       if (GetSession()->GetCurrentUser()->IsMailboxClosed()) {
-        GetSession()->bout << "Your mailbox is closed.\r\n\n";
+        bout << "Your mailbox is closed.\r\n\n";
       } else {
-        GetSession()->bout << "Mail set to be forwarded to #" << GetSession()->GetCurrentUser()->GetForwardUserNumber() <<
+        bout << "Mail set to be forwarded to #" << GetSession()->GetCurrentUser()->GetForwardUserNumber() <<
                            wwiv::endl;
       }
     }
   } else if (GetSession()->GetCurrentUser()->GetForwardSystemNumber() != 0) {
     char szInternetEmailAddress[ 255 ];
     read_inet_addr(szInternetEmailAddress, GetSession()->usernum);
-    GetSession()->bout << "Mail forwarded to Internet " << szInternetEmailAddress << ".\r\n";
+    bout << "Mail forwarded to Internet " << szInternetEmailAddress << ".\r\n";
   }
   if (GetSession()->IsTimeOnlineLimited()) {
-    GetSession()->bout << "\r\n|#3Your on-line time is limited by an external event.\r\n\n";
+    bout << "\r\n|#3Your on-line time is limited by an external event.\r\n\n";
   }
 }
 
 static void LoginCheckForNewMail() {
-  GetSession()->bout << "|#9Scanning for new mail... ";
+  bout << "|#9Scanning for new mail... ";
   if (GetSession()->GetCurrentUser()->GetNumMailWaiting() > 0) {
     int nNumNewMessages = check_new_mail(GetSession()->usernum);
     if (nNumNewMessages) {
-      GetSession()->bout << "|#9You have |#2" << nNumNewMessages << "|#9 new message(s).\r\n\r\n" <<
+      bout << "|#9You have |#2" << nNumNewMessages << "|#9 new message(s).\r\n\r\n" <<
                          "|#9Read your mail now? ";
       if (noyes()) {
         readmail(1);
       }
     } else {
-      GetSession()->bout << "|#9You have |#2" << GetSession()->GetCurrentUser()->GetNumMailWaiting() <<
+      bout << "|#9You have |#2" << GetSession()->GetCurrentUser()->GetNumMailWaiting() <<
                          "|#9 old message(s) in your mailbox.\r\n";
     }
   } else {
-    GetSession()->bout << " |#9No mail found.\r\n";
+    bout << " |#9No mail found.\r\n";
   }
 }
 
@@ -889,8 +889,8 @@ static void CheckUserForVotingBooth() {
   if (!GetSession()->GetCurrentUser()->IsRestrictionVote() && GetSession()->GetEffectiveSl() > syscfg.newusersl) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && GetSession()->GetCurrentUser()->GetVote(i) == 0) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#9You haven't voted yet.\r\n";
+        bout.nl();
+        bout << "|#9You haven't voted yet.\r\n";
         return;
       }
     }
@@ -906,9 +906,9 @@ void logon() {
   write_inst(INST_LOC_LOGON, 0, INST_FLAGS_NONE);
   get_user_ppp_addr();
   get_next_forced_event();
-  GetSession()->bout.ResetColors();
-  GetSession()->bout.Color(0);
-  GetSession()->bout.ClearScreen();
+  bout.ResetColors();
+  bout.Color(0);
+  bout.ClearScreen();
 
   FixUserLinesAndColors();
   UpdateUserStatsForLogin();
@@ -919,13 +919,13 @@ void logon() {
   read_automessage();
   timeon = timer();
   GetApplication()->UpdateTopScreen();
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
   pausescr();
   if (!syscfg.logon_cmd.empty()) {
-    GetSession()->bout.NewLine();
+    bout.nl();
     const string command = stuff_in(syscfg.logon_cmd, create_chain_file(), "", "", "", "");
     ExecuteExternalProgram(command, GetApplication()->GetSpawnOptions(SPAWNOPT_LOGON));
-    GetSession()->bout.NewLine(2);
+    bout.nl(2);
   }
 
   DisplayUserLoginInformation();
@@ -955,7 +955,7 @@ void logon() {
 
   // New Message Scan
   if (GetSession()->IsNewScanAtLogin()) {
-    GetSession()->bout << "\r\n|#5Scan All Message Areas For New Messages? ";
+    bout << "\r\n|#5Scan All Message Areas For New Messages? ";
     if (yesno()) {
       NewMsgsAllConfs();
     }
@@ -1144,7 +1144,7 @@ void logoff() {
 
 
 void logon_guest() {
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
   input_ansistat();
 
   printfile(GUEST_NOEXT);
@@ -1153,9 +1153,9 @@ void logon_guest() {
   string userName, reason;
   int count = 0;
   do {
-    GetSession()->bout << "\r\n|#5Enter your real name : ";
+    bout << "\r\n|#5Enter your real name : ";
     input(&userName, 25, true);
-    GetSession()->bout << "\r\n|#5Purpose of your call?\r\n";
+    bout << "\r\n|#5Purpose of your call?\r\n";
     input(&reason, 79, true);
     if (!userName.empty() && !reason.empty()) {
       break;

@@ -70,15 +70,15 @@ static bool GetMessageToName(const char *aux) {
       if (net_networks[xnp->net_num].type == net_type_fidonet &&
           !IsEqualsIgnoreCase(aux, "email")) {
         bHasAddress = true;
-        GetSession()->bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
+        bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
         newline = false;
         string to_name;
         input1(&to_name, 40, InputMode::MIXED, false, true);
         newline = newlsave;
         if (to_name.empty()) {
           strcpy(irt_name, "ALL");
-          GetSession()->bout << "|#4All\r\n";
-          GetSession()->bout.Color(0);
+          bout << "|#4All\r\n";
+          bout.Color(0);
         } else {
           strcpy(irt_name, to_name.c_str());
         }
@@ -122,17 +122,17 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
       lin[i * LEN] = '\0';
     }
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
 
   if (irt_name[0] == '\0') {
     if (GetMessageToName(aux)) {
-      GetSession()->bout.NewLine();
+      bout.nl();
     }
   }
 
   GetMessageTitle(title, force_title);
   if (title->empty() && needtitle) {
-    GetSession()->bout << "|#6Aborted.\r\n";
+    bout << "|#6Aborted.\r\n";
     pMessageRecord->stored_as = 0xffffffff;
     if (!fsed) {
       free(lin);
@@ -151,7 +151,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
   } else if (fsed == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
     bSaveMessage = WFile::Exists(exted_filename);
     if (bSaveMessage && !GetSession()->IsNewMailWatiting()) {
-      GetSession()->bout << "Reading in file...\r\n";
+      bout << "Reading in file...\r\n";
     }
     use_workspace = false;
   }
@@ -160,7 +160,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     long lMaxMessageSize = 0;
     bool real_name = false;
     GetMessageAnonStatus(&real_name, anony, setanon);
-    GetSession()->bout.BackLine();
+    bout.BackLine();
     if (!GetSession()->IsNewMailWatiting()) {
       SpinPuts("Saving...", 2);
     }
@@ -178,7 +178,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     unique_ptr<char[]> b(new char[lMaxMessageSize]);
     if (!b) {
       free(lin);
-      GetSession()->bout << "Out of memory.\r\n";
+      bout << "Out of memory.\r\n";
       pMessageRecord->stored_as = 0xffffffff;
       setiia(oiia);
       return;
@@ -233,7 +233,7 @@ void inmsg(messagerec * pMessageRecord, string* title, int *anony, bool needtitl
     }
     savefile(b.get(), lCurrentMessageSize, pMessageRecord, aux);
   } else {
-    GetSession()->bout << "|#6Aborted.\r\n";
+    bout << "|#6Aborted.\r\n";
     pMessageRecord->stored_as = 0xffffffff;
   }
   if (fsed) {
@@ -274,21 +274,21 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
   char s[ 255 ];
   char s1[ 255 ];
 
-  GetSession()->bout.NewLine(2);
-  GetSession()->bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
-  GetSession()->bout <<
+  bout.nl(2);
+  bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
+  bout <<
                      "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""AA\003""BB\003""CC\003""DD\003""EE\003""FF\003""GG\003""HH\003""II\003""JJ\003""KK\003""LL\003""MM\003""NN\003""OO\003""PP\003""QQ\003""RR\003""SS\003""""\003""0";
-  GetSession()->bout <<
+  bout <<
                      "\003""TT\003""UU\003""VV\003""WW\003""XX\003""YY\003""ZZ\003""aa\003""bb\003""cc\003""dd\003""ee\003""ff\003""gg\003""hh\003""ii\003""jj\003""kk\003""ll\003""mm\003""nn\003""oo\003""pp\003""qq\003""rr\003""ss\003""tt\003""uu\003""vv\003""ww\003""xx\003""yy\003""zz\r\n";
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#1Enter |#2/Q|#1 to quote previous message, |#2/HELP|#1 for other editor commands.\r\n";
+  bout.nl();
+  bout << "|#1Enter |#2/Q|#1 to quote previous message, |#2/HELP|#1 for other editor commands.\r\n";
   strcpy(s, "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]");
   if (GetSession()->GetCurrentUser()->GetScreenChars() < 80) {
     s[ GetSession()->GetCurrentUser()->GetScreenChars() ] = '\0';
   }
-  GetSession()->bout.Color(7);
-  GetSession()->bout << s;
-  GetSession()->bout.NewLine();
+  bout.Color(7);
+  bout << s;
+  bout.nl();
 
   bool bCheckMessageSize = true;
   bool bSaveMessage = false;
@@ -325,13 +325,13 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
         if (okansi()) {
           next = false;
         } else {
-          GetSession()->bout << "|#5With line numbers? ";
+          bout << "|#5With line numbers? ";
           next = yesno();
         }
         abort = false;
         for (int i = 0; (i < *curli) && !abort; i++) {
           if (next) {
-            GetSession()->bout << i + 1 << ":" << wwiv::endl;
+            bout << i + 1 << ":" << wwiv::endl;
           }
           strcpy(s1, &(lin[i * LEN]));
           int i3 = strlen(s1);
@@ -356,8 +356,8 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
           pla(s1, &abort);
         }
         if (!okansi() || next) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "Continue...\r\n";
+          bout.nl();
+          bout << "Continue...\r\n";
         }
       } else if (IsEqualsIgnoreCase(s, "/ES") ||
                  IsEqualsIgnoreCase(s, "/S")) {
@@ -383,26 +383,26 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
       } else if (IsEqualsIgnoreCase(s, "/CLR")) {
         bCheckMessageSize = false;
         *curli = 0;
-        GetSession()->bout << "Message cleared... Start over...\r\n\n";
+        bout << "Message cleared... Start over...\r\n\n";
       } else if (IsEqualsIgnoreCase(s, "/RL")) {
         bCheckMessageSize = false;
         if (*curli) {
           (*curli)--;
-          GetSession()->bout << "Replace:\r\n";
+          bout << "Replace:\r\n";
         } else {
-          GetSession()->bout << "Nothing to replace.\r\n";
+          bout << "Nothing to replace.\r\n";
         }
       } else if (IsEqualsIgnoreCase(s, "/TI")) {
         bCheckMessageSize = false;
         if (okansi()) {
-          GetSession()->bout << "|#1Subj|#7: |#2" ;
+          bout << "|#1Subj|#7: |#2" ;
           inputl(title, 60, true);
         } else {
-          GetSession()->bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
-          GetSession()->bout << "|#1Subj|#7: |#2";
+          bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
+          bout << "|#1Subj|#7: |#2";
           inputl(title, 60);
         }
-        GetSession()->bout << "Continue...\r\n\n";
+        bout << "Continue...\r\n\n";
       }
       strcpy(s1, s);
       s1[3] = '\0';
@@ -418,7 +418,7 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
           char *ss1 = &(ss[1]);
           ss[0] = '\0';
           ReplaceString(&(lin[(*curli - 1) * LEN]), s1, ss1);
-          GetSession()->bout << "Last line:\r\n" << &(lin[(*curli - 1) * LEN]) << "\r\nContinue...\r\n";
+          bout << "Last line:\r\n" << &(lin[(*curli - 1) * LEN]) << "\r\nContinue...\r\n";
         }
         bCheckMessageSize = false;
       }
@@ -427,12 +427,12 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
     if (bCheckMessageSize) {
       strcpy(&(lin[((*curli)++) * LEN]), s);
       if (*curli == (maxli + 1)) {
-        GetSession()->bout << "\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n";
+        bout << "\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n";
         (*curli)--;
       } else if (*curli == maxli) {
-        GetSession()->bout << "-= Message limit reached, /S to save =-\r\n";
+        bout << "-= Message limit reached, /S to save =-\r\n";
       } else if ((*curli + 5) == maxli) {
-        GetSession()->bout << "-= 5 lines left =-\r\n";
+        bout << "-= 5 lines left =-\r\n";
       }
     }
   }
@@ -445,8 +445,8 @@ bool InternalMessageEditor(char* lin, int maxli, int* curli, int* setanon, strin
 void GetMessageTitle(string *title, bool force_title) {
   if (okansi()) {
     if (!GetSession()->IsNewMailWatiting()) {
-      GetSession()->bout << "|#2Title: ";
-      GetSession()->bout.ColorizedInputField(60);
+      bout << "|#2Title: ";
+      bout.ColorizedInputField(60);
     }
     if (irt[0] != '\xAB' && irt[0]) {
       char s1[ 255 ];
@@ -464,7 +464,7 @@ void GetMessageTitle(string *title, bool force_title) {
       }
       s1[60] = '\0';
       if (!GetSession()->IsNewMailWatiting() && !force_title) {
-        GetSession()->bout << s1;
+        bout << s1;
         ch = getkey();
         if (ch == 10) {
           ch = getkey();
@@ -475,18 +475,18 @@ void GetMessageTitle(string *title, bool force_title) {
       }
       force_title = false;
       if (ch != RETURN) {
-        GetSession()->bout << "\r";
+        bout << "\r";
         if (ch == SPACE || ch == ESC) {
           ch = '\0';
         }
-        GetSession()->bout << "|#2Title: ";
-        GetSession()->bout.ColorizedInputField(60);
+        bout << "|#2Title: ";
+        bout.ColorizedInputField(60);
         char szRollOverLine[ 81 ];
         sprintf(szRollOverLine, "%c", ch);
         inli(s1, szRollOverLine, 60, true, false);
         title->assign(s1);
       } else {
-        GetSession()->bout.NewLine();
+        bout.nl();
         title->assign(s1);
       }
     } else {
@@ -496,8 +496,8 @@ void GetMessageTitle(string *title, bool force_title) {
     if (GetSession()->IsNewMailWatiting() || force_title) {
       title->assign(irt);
     } else {
-      GetSession()->bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
-      GetSession()->bout << "Title: ";
+      bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
+      bout << "Title: ";
       inputl(title, 60);
     }
   }
@@ -663,7 +663,7 @@ void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
         *anony = 0;
       }
     } else {
-      GetSession()->bout << "|#5Anonymous? ";
+      bout << "|#5Anonymous? ";
       if (yesno()) {
         *anony = anony_sender;
       } else {
@@ -672,12 +672,12 @@ void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
     }
     break;
   case anony_enable_dear_abby: {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "1. " << GetSession()->GetCurrentUser()->GetUserNameAndNumber(
+    bout.nl();
+    bout << "1. " << GetSession()->GetCurrentUser()->GetUserNameAndNumber(
                          GetSession()->usernum) << wwiv::endl;
-    GetSession()->bout << "2. Abby\r\n";
-    GetSession()->bout << "3. Problemed Person\r\n\n";
-    GetSession()->bout << "|#5Which? ";
+    bout << "2. Abby\r\n";
+    bout << "3. Problemed Person\r\n\n";
+    bout << "|#5Which? ";
     char chx = onek("\r123");
     switch (chx) {
     case '\r':

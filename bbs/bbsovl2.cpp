@@ -290,7 +290,7 @@ void OnlineUserEditor() {
 void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
   bool oecho = local_echo;
   local_echo = true;
-  GetSession()->bout.Color(nColorCode);
+  bout.Color(nColorCode);
   WWIV_Delay(nCharDelay);
   for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
     bputch(*iter);
@@ -299,7 +299,7 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
 
   WWIV_Delay(nStringDelay);
   for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
-    GetSession()->bout.BackSpace();
+    bout.BackSpace();
     WWIV_Delay(5);
   }
   local_echo = oecho;
@@ -313,7 +313,7 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
  */
 void MoveLeft(int nNumberOfChars) {
   if (okansi()) {
-    GetSession()->bout << "\x1b[" << nNumberOfChars << "D";
+    bout << "\x1b[" << nNumberOfChars << "D";
   }
 }
 
@@ -329,26 +329,26 @@ void SpinPuts(const string& strText, int nColorCode) {
   local_echo    = true;
 
   if (okansi()) {
-    GetSession()->bout.Color(nColorCode);
+    bout.Color(nColorCode);
     const int dly = 30;
     for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
       WWIV_Delay(dly);
-      GetSession()->bout << "/";
+      bout << "/";
       MoveLeft(1);
       WWIV_Delay(dly);
-      GetSession()->bout << "-";
+      bout << "-";
       MoveLeft(1);
       WWIV_Delay(dly);
-      GetSession()->bout << "\\";
+      bout << "\\";
       MoveLeft(1);
       WWIV_Delay(dly);
-      GetSession()->bout << "|";
+      bout << "|";
       MoveLeft(1);
       WWIV_Delay(dly);
       bputch(*iter);
     }
   } else {
-    GetSession()->bout << strText;
+    bout << strText;
   }
   local_echo = oecho;
 }

@@ -30,18 +30,18 @@ void wwivnode(WUser *pUser, int mode) {
   int nUserNumber, nSystemNumber;
 
   if (!mode) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7Are you an active WWIV SysOp (y/N): ";
+    bout.nl();
+    bout << "|#7Are you an active WWIV SysOp (y/N): ";
     if (!yesno()) {
       return;
     }
   }
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#7Node:|#0 ";
+  bout.nl();
+  bout << "|#7Node:|#0 ";
   input(sysnum, 5);
   if (sysnum[0] == 'L' && mode) {
     print_net_listing(false);
-    GetSession()->bout << "|#7Node:|#0 ";
+    bout << "|#7Node:|#0 ";
     input(sysnum, 5);
   }
   if (sysnum[0] == '0' && mode) {
@@ -53,7 +53,7 @@ void wwivnode(WUser *pUser, int mode) {
   sprintf(s, "1@%s", sysnum);
   parse_email_info(s, &nUserNumber, &nSystemNumber);
   if (nSystemNumber == 0) {
-    GetSession()->bout << "|#2No match for " << sysnum << "." << wwiv::endl;
+    bout << "|#2No match for " << sysnum << "." << wwiv::endl;
     pausescr();
     return;
   }
@@ -70,10 +70,10 @@ void wwivnode(WUser *pUser, int mode) {
     ph = csne->phone;
   }
   if (ph != csne->phone) {
-    GetSession()->bout.NewLine();
+    bout.nl();
     if (printfile(ASV0_NOEXT)) {
       // failed
-      GetSession()->bout.NewLine();
+      bout.nl();
       pausescr();
     }
     sprintf(s, "Attempted WWIV SysOp autovalidation.");
@@ -93,10 +93,10 @@ void wwivnode(WUser *pUser, int mode) {
   pUser->SetAr(GetSession()->asv.ar);
   pUser->SetDar(GetSession()->asv.dar);
   if (!mode) {
-    GetSession()->bout.NewLine();
+    bout.nl();
     if (printfile(ASV1_NOEXT)) {
       // passed
-      GetSession()->bout.NewLine();
+      bout.nl();
       pausescr();
     }
   }
@@ -110,10 +110,10 @@ void wwivnode(WUser *pUser, int mode) {
     }
   } else {
     if (!mode) {
-      GetSession()->bout.NewLine();
+      bout.nl();
       if (printfile(ASV2_NOEXT)) {
         // data phone not bbs
-        GetSession()->bout.NewLine();
+        bout.nl();
         pausescr();
       }
     }
@@ -128,11 +128,11 @@ void wwivnode(WUser *pUser, int mode) {
   pUser->SetForwardUserNumber(pUser->GetHomeUserNumber());
   pUser->SetForwardSystemNumber(pUser->GetHomeSystemNumber());
   if (!mode) {
-    GetSession()->bout.NewLine();
+    bout.nl();
     if (printfile(ASV3_NOEXT)) {
       \
       // mail forwarded
-      GetSession()->bout.NewLine();
+      bout.nl();
       pausescr();
     }
   }

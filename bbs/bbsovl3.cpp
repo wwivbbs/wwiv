@@ -277,13 +277,13 @@ bool do_sysop_command(int nCommandID) {
 
   if (nKeyStroke) {
     if (bNeedToRedraw) {
-      GetSession()->bout.ClearScreen();
+      bout.ClearScreen();
     }
 
     GetSession()->localIO()->skey(static_cast<char>(nKeyStroke));
 
     if (bNeedToRedraw) {
-      GetSession()->bout.ClearScreen();
+      bout.ClearScreen();
     }
   }
   return bNeedToRedraw;
@@ -301,7 +301,7 @@ bool do_sysop_command(int nCommandID) {
  */
 bool copyfile(const string& sourceFileName, const string& destFileName, bool stats) {
   if (stats) {
-    GetSession()->bout << "|#7File movement ";
+    bout << "|#7File movement ";
   }
 
   if ((sourceFileName != destFileName) &&
@@ -349,14 +349,14 @@ bool movefile(const string& sourceFileName, const string& destFileName, bool sta
 }
 
 void ListAllColors() {
-  GetSession()->bout.NewLine();
+  bout.nl();
   for (int i = 0; i < 128; i++) {
     if ((i % 26) == 0) {
-      GetSession()->bout.NewLine();
+      bout.nl();
     }
-    GetSession()->bout.SystemColor(i);
-    GetSession()->bout.WriteFormatted("%3d", i);
+    bout.SystemColor(i);
+    bout.WriteFormatted("%3d", i);
   }
-  GetSession()->bout.Color(0);
-  GetSession()->bout.NewLine();
+  bout.Color(0);
+  bout.nl();
 }

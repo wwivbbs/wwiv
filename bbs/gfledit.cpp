@@ -45,7 +45,7 @@ char *gfiledata(int nSectionNum, char *pBuffer) {
 void showsec() {
   char szBuffer[255];
 
-  GetSession()->bout.ClearScreen();
+  bout.ClearScreen();
   bool abort = false;
   pla("|#2NN AR Name                                      FN       SL  AGE MAX", &abort);
   pla("|#7-- == ----------------------------------------  ======== --- === ---", &abort);
@@ -78,19 +78,19 @@ void modify_sec(int n) {
   gfiledirrec r = gfilesec[n];
   bool done = false;
   do {
-    GetSession()->bout.ClearScreen();
+    bout.ClearScreen();
     sprintf(szSubNum, "|B1|15Editing G-File Area # %d", n);
-    GetSession()->bout.WriteFormatted("%-85s", szSubNum);
-    GetSession()->bout.Color(0);
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
-    GetSession()->bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
-    GetSession()->bout << "|#9C) SL         : |#2" << static_cast<int>(r.sl) << wwiv::endl;
-    GetSession()->bout << "|#9D) Min. Age   : |#2" << static_cast<int>(r.age) << wwiv::endl;
-    GetSession()->bout << "|#9E) Max Files  : |#2" << r.maxfiles << wwiv::endl;
-    GetSession()->bout << "|#9F) AR         : |#2" << GetArString(r, s) << wwiv::endl;
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1F,|#1[|#7,|#1]|#7) : ";
+    bout.WriteFormatted("%-85s", szSubNum);
+    bout.Color(0);
+    bout.nl(2);
+    bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
+    bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
+    bout << "|#9C) SL         : |#2" << static_cast<int>(r.sl) << wwiv::endl;
+    bout << "|#9D) Min. Age   : |#2" << static_cast<int>(r.age) << wwiv::endl;
+    bout << "|#9E) Max Files  : |#2" << r.maxfiles << wwiv::endl;
+    bout << "|#9F) AR         : |#2" << GetArString(r, s) << wwiv::endl;
+    bout.nl();
+    bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1F,|#1[|#7,|#1]|#7) : ";
     char ch = onek("QABCDEF[]", true);
     switch (ch) {
     case 'Q':
@@ -111,45 +111,45 @@ void modify_sec(int n) {
       r = gfilesec[n];
       break;
     case 'A':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2New name? ";
+      bout.nl();
+      bout << "|#2New name? ";
       inputl(s, 40);
       if (s[0]) {
         strcpy(r.name, s);
       }
       break;
     case 'B': {
-      GetSession()->bout.NewLine();
+      bout.nl();
       WFile dir(syscfg.gfilesdir, r.filename);
       if (dir.Exists()) {
-        GetSession()->bout << "\r\nThere is currently a directory for this g-file section.\r\n";
-        GetSession()->bout << "If you change the filename, the directory will still be there.\r\n\n";
+        bout << "\r\nThere is currently a directory for this g-file section.\r\n";
+        bout << "If you change the filename, the directory will still be there.\r\n\n";
       }
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2New filename? ";
+      bout.nl();
+      bout << "|#2New filename? ";
       input(s, 8);
       if ((s[0] != 0) && (strchr(s, '.') == 0)) {
         strcpy(r.filename, s);
         WFile dir(syscfg.gfilesdir, r.filename);
         if (!dir.Exists()) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "|#5Create directory for this section? ";
+          bout.nl();
+          bout << "|#5Create directory for this section? ";
           if (yesno()) {
             WFile *dir = new WFile(syscfg.gfilesdir, r.filename);
             WWIV_make_path(dir->GetFullPathName().c_str());
           } else {
-            GetSession()->bout << "\r\nYou will have to create the directory manually, then.\r\n\n";
+            bout << "\r\nYou will have to create the directory manually, then.\r\n\n";
           }
         } else {
-          GetSession()->bout << "\r\nA directory already exists under this filename.\r\n\n";
+          bout << "\r\nA directory already exists under this filename.\r\n\n";
         }
         pausescr();
       }
     }
     break;
     case 'C': {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2New SL? ";
+      bout.nl();
+      bout << "|#2New SL? ";
       input(s, 3);
       int i = atoi(s);
       if (i >= 0 && i < 256 && s[0]) {
@@ -158,8 +158,8 @@ void modify_sec(int n) {
     }
     break;
     case 'D': {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2New Min Age? ";
+      bout.nl();
+      bout << "|#2New Min Age? ";
       input(s, 3);
       int i = atoi(s);
       if ((i >= 0) && (i < 128) && (s[0])) {
@@ -168,8 +168,8 @@ void modify_sec(int n) {
     }
     break;
     case 'E': {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#1Max 99 files/section.\r\n|#2New max files? ";
+      bout.nl();
+      bout << "|#1Max 99 files/section.\r\n|#2New max files? ";
       input(s, 3);
       int i = atoi(s);
       if ((i >= 0) && (i < 99) && (s[0])) {
@@ -178,8 +178,8 @@ void modify_sec(int n) {
     }
     break;
     case 'F':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2New AR (<SPC>=None) ? ";
+      bout.nl();
+      bout << "|#2New AR (<SPC>=None) ? ";
       char ch2 = onek("ABCDEFGHIJKLMNOP ");
       if (ch2 == SPACE) {
         r.ar = 0;
@@ -229,8 +229,8 @@ void gfileedit() {
   showsec();
   bool done = false;
   do {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2G-files: D:elete, I:nsert, M:odify, Q:uit, ? : ";
+    bout.nl();
+    bout << "|#2G-files: D:elete, I:nsert, M:odify, Q:uit, ? : ";
     char ch = onek("QDIM?");
     switch (ch) {
     case '?':
@@ -240,8 +240,8 @@ void gfileedit() {
       done = true;
       break;
     case 'M':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Section number? ";
+      bout.nl();
+      bout << "|#2Section number? ";
       input(s, 2);
       i = atoi(s);
       if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_sec)) {
@@ -250,8 +250,8 @@ void gfileedit() {
       break;
     case 'I':
       if (GetSession()->num_sec < GetSession()->max_gfilesec) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#2Insert before which section? ";
+        bout.nl();
+        bout << "|#2Insert before which section? ";
         input(s, 2);
         i = atoi(s);
         if ((s[0] != 0) && (i >= 0) && (i <= GetSession()->num_sec)) {
@@ -260,13 +260,13 @@ void gfileedit() {
       }
       break;
     case 'D':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Delete which section? ";
+      bout.nl();
+      bout << "|#2Delete which section? ";
       input(s, 2);
       i = atoi(s);
       if ((s[0] != 0) && (i >= 0) && (i < GetSession()->num_sec)) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#5Delete " << gfilesec[i].name << "?";
+        bout.nl();
+        bout << "|#5Delete " << gfilesec[i].name << "?";
         if (yesno()) {
           delete_sec(i);
         }
@@ -306,7 +306,7 @@ bool fill_sec(int sn) {
       }
     }
     if (i) {
-      GetSession()->bout << "|#2" << s << " : ";
+      bout << "|#2" << s << " : ";
       inputl(s1, 60);
       if (s1[0]) {
         chd = 1;
@@ -330,10 +330,10 @@ bool fill_sec(int sn) {
     bFound = fnd.next();
   }
   if (!ok) {
-    GetSession()->bout << "|#6Aborted.\r\n";
+    bout << "|#6Aborted.\r\n";
   }
   if (nf >= gfilesec[sn].maxfiles) {
-    GetSession()->bout << "Section full.\r\n";
+    bout << "Section full.\r\n";
   }
   if (chd) {
     char szFileName[ MAX_PATH ];

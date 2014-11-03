@@ -74,7 +74,7 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript);
 bool CheckMenuPassword(char* pszCorrectPassword) {
   string password = IsEqualsIgnoreCase(pszCorrectPassword, "*SYSTEM") ? syscfg.systempw : pszCorrectPassword;
 
-  GetSession()->bout.NewLine();
+  bout.nl();
   string passwordFromUser;
   input_password("|#2SY: ", &passwordFromUser, 20);
   return passwordFromUser == password;
@@ -203,7 +203,7 @@ void Menus(MenuInstanceData * pMenuData, const string menuDirectory, const strin
 
   if (OpenMenu(pMenuData)) {
     if (pMenuData->header.nNumbers == MENU_NUMFLAG_DIRNUMBER && udir[0].subnum == -1) {
-      GetSession()->bout << "\r\nYou cannot currently access the file section.\r\n\n";
+      bout << "\r\nYou cannot currently access the file section.\r\n\n";
       CloseMenu(pMenuData);
       return;
     }
@@ -447,8 +447,8 @@ void MenuSysopLog(const string msg) {
   logStream << "*MENU* : " << msg;
 
   sysopchar(logStream.str().c_str());
-  GetSession()->bout << logStream.str();
-  GetSession()->bout.NewLine();
+  bout << logStream.str();
+  bout.nl();
 }
 
 void PrintMenuPrompt(MenuInstanceData * pMenuData) {
@@ -457,7 +457,7 @@ void PrintMenuPrompt(MenuInstanceData * pMenuData) {
   }
   TurnMCIOn();
   if (pMenuData->szPrompt) {
-    GetSession()->bout << pMenuData->szPrompt;
+    bout << pMenuData->szPrompt;
   }
   TurnMCIOff();
 }
@@ -522,16 +522,16 @@ void ConfigUserMenuSet() {
 
   nSecondUserRecLoaded = GetSession()->usernum;
 
-  GetSession()->bout.ClearScreen();
+  bout.ClearScreen();
   printfile(MENUWEL_NOEXT);
   bool bDone = false;
   while (!bDone && !hangup) {
-    GetSession()->bout << "   |#1WWIV |#6Menu |#1Editor|#0\r\n\r\n";
-    GetSession()->bout << "|#21|06) |#1Menuset      |06: |15" << pSecondUserRec->szMenuSet << wwiv::endl;
-    GetSession()->bout << "|#22|06) |#1Use hot keys |06: |15" << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ") <<
+    bout << "   |#1WWIV |#6Menu |#1Editor|#0\r\n\r\n";
+    bout << "|#21|06) |#1Menuset      |06: |15" << pSecondUserRec->szMenuSet << wwiv::endl;
+    bout << "|#22|06) |#1Use hot keys |06: |15" << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ") <<
                        wwiv::endl;
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9[|0212? |08Q|02=Quit|#9] :|#0 ";
+    bout.nl();
+    bout << "|#9[|0212? |08Q|02=Quit|#9] :|#0 ";
 
     char chKey = onek("Q12?");
 
@@ -542,24 +542,24 @@ void ConfigUserMenuSet() {
 
     case '1': {
       ListMenuDirs();
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout << "|15Enter the menu set to use : |#0";
+      bout.nl(2);
+      bout << "|15Enter the menu set to use : |#0";
       string menuSetName;
       inputl(&menuSetName, 8);
       if (ValidateMenuSet(menuSetName.c_str())) {
         OpenMenuDescriptions();
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#1Menu Set : |#2" <<  menuSetName.c_str() << "  -  |15" << GetMenuDescription(menuSetName,
+        bout.nl();
+        bout << "|#1Menu Set : |#2" <<  menuSetName.c_str() << "  -  |15" << GetMenuDescription(menuSetName,
                            szDesc) << wwiv::endl;
-        GetSession()->bout << "|#5Use this menu set? ";
+        bout << "|#5Use this menu set? ";
         if (noyes()) {
           strcpy(pSecondUserRec->szMenuSet, menuSetName.c_str());
           break;
         }
         CloseMenuDescriptions();
       }
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#8That menu set does not exists, resetting to the default menu set" << wwiv::endl;
+      bout.nl();
+      bout << "|#8That menu set does not exists, resetting to the default menu set" << wwiv::endl;
       pausescr();
       if (pSecondUserRec->szMenuSet[0] == '\0') {
         strcpy(pSecondUserRec->szMenuSet, "wwiv");
@@ -580,13 +580,13 @@ void ConfigUserMenuSet() {
       continue;                           // bypass the below cls()
     }
 
-    GetSession()->bout.ClearScreen();
+    bout.ClearScreen();
   }
 
   // If menu is invalid, it picks the first one it finds
   if (!ValidateMenuSet(pSecondUserRec->szMenuSet)) {
     if (GetSession()->num_languages > 1 && GetSession()->GetCurrentUser()->GetLanguage() != 0) {
-      GetSession()->bout << "|#6No menus for " << languages[GetSession()->GetCurrentUser()->GetLanguage()].name <<
+      bout << "|#6No menus for " << languages[GetSession()->GetCurrentUser()->GetLanguage()].name <<
                          " language.";
       input_language();
     }
@@ -597,7 +597,7 @@ void ConfigUserMenuSet() {
   sprintf(szMsg, "Menu in use : %s - %s - %s", pSecondUserRec->szMenuSet,
           pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Hot" : "Off", pSecondUserRec->cMenuType == MENUTYPE_REGULAR ? "REG" : "PD");
   MenuSysopLog(szMsg);
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
 }
 
 
@@ -621,16 +621,16 @@ void QueryMenuSet() {
 
   ValidateMenuSet(pSecondUserRec->szMenuSet);
 
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
   if (pSecondUserRec->szMenuSet[0] == 0) {
     strcpy(pSecondUserRec->szMenuSet, "WWIV");
   }
-  GetSession()->bout << "|#7Configurable menu set status:\r\n\r\n";
-  GetSession()->bout << "|#8Menu in use  : |#9" << pSecondUserRec->szMenuSet << wwiv::endl;
-  GetSession()->bout << "|#8Hot keys are : |#9" << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "On" : "Off") << wwiv::endl;
-  GetSession()->bout.NewLine();
+  bout << "|#7Configurable menu set status:\r\n\r\n";
+  bout << "|#8Menu in use  : |#9" << pSecondUserRec->szMenuSet << wwiv::endl;
+  bout << "|#8Hot keys are : |#9" << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "On" : "Off") << wwiv::endl;
+  bout.nl();
 
-  GetSession()->bout << "|#7Would you like to change these? (N) ";
+  bout << "|#7Would you like to change these? (N) ";
   if (yesno()) {
     ConfigUserMenuSet();
   }
@@ -966,12 +966,12 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
 
   memset(&menu, 0, sizeof(MenuRec));
 
-  GetSession()->bout.Color(0);
-  GetSession()->bout.NewLine();
+  bout.Color(0);
+  bout.nl();
 
   int iDisplayed = 0;
   if (pMenuData->header.nNumbers != MENU_NUMFLAG_NOTHING) {
-    GetSession()->bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
+    bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
     ++iDisplayed;
   }
   for (int x = 0; x < pMenuData->nAmountRecs - 1; x++) {
@@ -991,11 +991,11 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
             sprintf(szKey, "[%s]", menu.szKey);
           }
 
-          GetSession()->bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ", szKey,
+          bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ", szKey,
                                             menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
 
           if (iDisplayed % 2) {
-            GetSession()->bout.NewLine();
+            bout.nl();
           }
 
           ++iDisplayed;
@@ -1005,14 +1005,14 @@ void GenerateMenu(MenuInstanceData * pMenuData) {
   }
   if (IsEquals(GetSession()->GetCurrentUser()->GetName(), "GUEST")) {
     if (iDisplayed % 2) {
-      GetSession()->bout.NewLine();
+      bout.nl();
     }
-    GetSession()->bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ",
+    bout.WriteFormatted("|#1%-8.8s  |#2%-25.25s  ",
                                       pSecondUserRec->cHotKeys == HOTKEYS_ON ? "//APPLY" : "[APPLY]",
                                       "Guest Account Application");
     ++iDisplayed;
   }
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
   return;
 }
 

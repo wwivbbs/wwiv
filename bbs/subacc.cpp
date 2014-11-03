@@ -423,11 +423,11 @@ void pack_sub(int si) {
       sprintf(fn1, "%s%s.dat", syscfg.msgsdir, sfn);
       sprintf(fn2, "%s%s.dat", syscfg.msgsdir, nfn);
 
-      GetSession()->bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" << subboards[si].name << wwiv::endl;
+      bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" << subboards[si].name << wwiv::endl;
 
       for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea(); i++) {
         if (i % 10 == 0) {
-          GetSession()->bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
+          bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
         }
         postrec *p = get_post(i);
         if (p) {
@@ -445,14 +445,14 @@ void pack_sub(int si) {
             write_post(i, p);
           }
         }
-        GetSession()->bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
+        bout << i << "/" << GetSession()->GetNumMessagesInCurrentMessageArea() << "\r";
       }
 
       WFile::Remove(fn1);
       WFile::Rename(fn2, fn1);
 
       close_sub();
-      GetSession()->bout << "|#7\xFE |#1Done Packing " << GetSession()->GetNumMessagesInCurrentMessageArea() <<
+      bout << "|#7\xFE |#1Done Packing " << GetSession()->GetNumMessagesInCurrentMessageArea() <<
                          " messages.                              \r\n";
     }
   }
@@ -465,7 +465,7 @@ void pack_all_subs() {
     pack_sub(i);
     bool abort = checka();
     if (abort) {
-      GetSession()->bout << "|#6Aborted.\r\n";
+      bout << "|#6Aborted.\r\n";
       return;
     }
   }

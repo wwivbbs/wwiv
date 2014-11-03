@@ -33,9 +33,9 @@ using wwiv::strings::IsEquals;
 static void show_chains(int *mapp, int *map) {
   char szBuffer[ 255 ];
 
-  GetSession()->bout.Color(0);
-  GetSession()->bout.ClearScreen();
-  GetSession()->bout.NewLine();
+  bout.Color(0);
+  bout.ClearScreen();
+  bout.nl();
   bool abort = false;
   bool next = false;
   if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG) && chains_reg) {
@@ -104,8 +104,8 @@ static void show_chains(int *mapp, int *map) {
     pla(szBuffer, &abort);
 
   } else {
-    GetSession()->bout.DisplayLiteBar(" [ %s Online Programs ] ", syscfg.systemname);
-    GetSession()->bout <<
+    bout.DisplayLiteBar(" [ %s Online Programs ] ", syscfg.systemname);
+    bout <<
                        "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
       sprintf(szBuffer, "|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, chains[map[i]].description);
@@ -121,7 +121,7 @@ static void show_chains(int *mapp, int *map) {
         pla(szBuffer, &abort);
       }
     }
-    GetSession()->bout <<
+    bout <<
                        "|#7\xC0\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
   }
 }
@@ -138,11 +138,11 @@ void run_chain(int nChainNumber) {
     sprintf(szMessage, "|#2Chain %s is in use on instance %d", chains[nChainNumber].description, inst);
     if (!(chains[nChainNumber].ansir & ansir_multi_user)) {
       strcat(szMessage, "Try again later.\r\n");
-      GetSession()->bout << szMessage;
+      bout << szMessage;
       return;
     } else {
       strcat(szMessage, "Care to join in? ");
-      GetSession()->bout << szMessage;
+      bout << szMessage;
       if (!yesno()) {
         return;
       }
@@ -234,7 +234,7 @@ void do_chains() {
     }
   }
   if (mapp == 0) {
-    GetSession()->bout << "\r\n\n|#5Sorry, no external programs available.\r\n";
+    bout << "\r\n\n|#5Sorry, no external programs available.\r\n";
     free(map);
     GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
     return;
@@ -249,8 +249,8 @@ void do_chains() {
   do {
     GetSession()->SetMMKeyArea(WSession::mmkeyChains);
     GetSession()->localIO()->tleft(true);
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
+    bout.nl();
+    bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 
     int nChainNumber = -1;
     if (mapp < 100) {
@@ -264,7 +264,7 @@ void do_chains() {
     if (nChainNumber > 0 && nChainNumber <= mapp) {
       done = true;
       GetSession()->SetMMKeyArea(WSession::mmkeyChains);
-      GetSession()->bout << "\r\n|#6Please wait...\r\n";
+      bout << "\r\n|#6Please wait...\r\n";
       run_chain(map[ nChainNumber - 1 ]);
     } else if (IsEquals(ss, "Q")) {
       GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);

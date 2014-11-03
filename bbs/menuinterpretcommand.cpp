@@ -519,7 +519,7 @@ void InterpretCommand(MenuInstanceData * pMenuData, const char *pszScript) {
     break;
     case 87: {
       // "ClearScreen"
-      GetSession()->bout.ClearScreen();
+      bout.ClearScreen();
     }
     break;
     case 88: {

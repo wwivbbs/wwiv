@@ -33,7 +33,7 @@ using wwiv::strings::StrCat;
 
 // Compresses file *pszFileName to directory *pszDirectoryName.
 void compress_file(const string& orig_filename, const string& directory) {
-  GetSession()->bout << "|#2Now compressing " << orig_filename << wwiv::endl;
+  bout << "|#2Now compressing " << orig_filename << wwiv::endl;
   string fileName(orig_filename);
   if (fileName.find_first_of(".") == string::npos) {
     fileName += ".msg";
@@ -77,8 +77,8 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
 
   // get directory number to extract to
   do {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2Which dir? ";
+    bout.nl();
+    bout << "|#2Which dir? ";
     ss1 = mmkey(1);
     if (ss1[0] == '?') {
       dirlist(0);
@@ -102,9 +102,9 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
   strcpy(s1, directories[udir[mod_dir].subnum].path);
   do {
     if (irt) {
-      GetSession()->bout << "|#2Press |#7[|#9Enter|#7]|#2 for |#1" << StringRemoveChar(irt, '.') << ".mod.\r\n";
+      bout << "|#2Press |#7[|#9Enter|#7]|#2 for |#1" << StringRemoveChar(irt, '.') << ".mod.\r\n";
     }
-    GetSession()->bout << "|#2Save under what filename? ";
+    bout << "|#2Save under what filename? ";
     input(s2, 12);
     if (!s2[0]) {
       if (irt) {
@@ -120,12 +120,12 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
     if (WFile::Exists(szFileName)) {
       exists = true;
       sprintf(szFileName, "%s already exists.", s2);
-      GetSession()->bout.NewLine();
-      GetSession()->bout << szFileName;
-      GetSession()->bout.NewLine(2);
+      bout.nl();
+      bout << szFileName;
+      bout.nl(2);
     }
     if (exists) {
-      GetSession()->bout << "|#2Which (N:ew Name, Q:uit): ";
+      bout << "|#2Which (N:ew Name, Q:uit): ";
       ch = onek("QN");
       switch (ch) {
       case 'Q':
@@ -135,7 +135,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
         s2[0] = '\0';
         break;
       }
-      GetSession()->bout.NewLine();
+      bout.nl();
     }
   } while (!hangup && s2[0] == '\0' && !quit);
 
@@ -145,15 +145,15 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
     file.Seek(0L, WFile::seekEnd);
     file.Write(b, len);
     file.Close();
-    GetSession()->bout << "Message written to: " << szFileName << wwiv::endl;
+    bout << "Message written to: " << szFileName << wwiv::endl;
     sprintf(strip_cmd, "STRIPNET.EXE %s", szFileName);
     ExecuteExternalProgram(strip_cmd, EFLAG_NONE);
     compress_file(s2, s1);
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout << "|#2//UPLOAD the file? ";
+    bout.nl(2);
+    bout << "|#2//UPLOAD the file? ";
     if (noyes()) {
       sprintf(compressed_fn, "%s.%s", StringRemoveChar(s2, '.'), arcs[0].extension);
-      GetSession()->bout << "|#2Now //UPLOAD'ing the file...";
+      bout << "|#2Now //UPLOAD'ing the file...";
       strcpy(szDescription, stripcolors(irt));
       strcpy(author, stripcolors(StringRemoveChar(net_email_name, '#')));
 
@@ -187,7 +187,7 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
         }
       }
 
-      GetSession()->bout.NewLine();
+      bout.nl();
       strcpy(desc2, temp_irt);
       strcpy(desc1, author);
       strcat(desc1, ": ");
@@ -197,21 +197,21 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
       desc2[58] = '\0';
       desc3[58] = '\0';
       bputch(CL);
-      GetSession()->bout << "|#7Available Descriptions For |#1" << s2 << " |#7by |#1" << author << "|#7.";
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout << "|#21) |#1" << desc1 << wwiv::endl;
-      GetSession()->bout << "|#22) |#1" <<  desc2 << wwiv::endl;
-      GetSession()->bout << "|#23) |#1" << desc3 << wwiv::endl;
-      GetSession()->bout << "|#2E) |#1Enter your own description\r\n";
-      GetSession()->bout << "|#7Q) |#1Quit\r\n";
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout << "|#2Press [ENTER] for 1 or enter your selection:";
+      bout << "|#7Available Descriptions For |#1" << s2 << " |#7by |#1" << author << "|#7.";
+      bout.nl(2);
+      bout << "|#21) |#1" << desc1 << wwiv::endl;
+      bout << "|#22) |#1" <<  desc2 << wwiv::endl;
+      bout << "|#23) |#1" << desc3 << wwiv::endl;
+      bout << "|#2E) |#1Enter your own description\r\n";
+      bout << "|#7Q) |#1Quit\r\n";
+      bout.nl(2);
+      bout << "|#2Press [ENTER] for 1 or enter your selection:";
       ch = onek("QE123\r");
       switch (ch) {
       case 'Q':
         goto go_away;
       case 'E':
-        GetSession()->bout << "Input the description:\r\n\n";
+        bout << "Input the description:\r\n\n";
         Input1(szDescription, desc1, 58, true, wwiv::bbs::InputMode::MIXED);
         break;
       case '\r':
@@ -226,8 +226,8 @@ void extract_mod(const char *b, long len, time_t tDateTime) {
         break;
       }
       szDescription[58] = '\0';
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout << "|#9Add a |#1FILE_ID.DIZ|#9 to archive? ";
+      bout.nl(2);
+      bout << "|#9Add a |#1FILE_ID.DIZ|#9 to archive? ";
       if (noyes()) {
         sprintf(idz_fn, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
         sprintf(dir_path, "%s%s", directories[udir[mod_dir].subnum].path, StringRemoveChar(s2, '.'));
@@ -257,7 +257,7 @@ bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDe
   WWIV_ASSERT(pszFileName);
 
   dliscan1(udir[nDirectoryNumber].subnum);
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
   strcpy(s, pszFileName);
   strcpy(s1, directories[udir[nDirectoryNumber].subnum].path);
   int maxf = directories[udir[nDirectoryNumber].subnum].maxfiles;
@@ -269,13 +269,13 @@ bool upload_mod(int nDirectoryNumber, const char *pszFileName, const char *pszDe
     ok = maybe_upload(fnd.GetFileName(), nDirectoryNumber, pszDescription);
   }
   if (ok) {
-    GetSession()->bout << "Uploaded " << pszFileName << "....\r\n";
+    bout << "Uploaded " << pszFileName << "....\r\n";
   }
   if (!ok) {
-    GetSession()->bout << "|#6Aborted.\r\n";
+    bout << "|#6Aborted.\r\n";
   }
   if (GetSession()->numf >= maxf) {
-    GetSession()->bout << "directory full.\r\n";
+    bout << "directory full.\r\n";
   }
   return false;
 }
@@ -297,7 +297,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
       s2[0] = 0;
       s3[0] = 0;
       done = true;
-      GetSession()->bout << "|#5Which (1-4,Q,?): ";
+      bout << "|#5Which (1-4,Q,?): ";
       ch1 = onek("Q1234?");
       switch (ch1) {
       case '1':
@@ -321,7 +321,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
 
     if (s2[0]) {
       do {
-        GetSession()->bout << "|#2Save under what filename? ";
+        bout << "|#2Save under what filename? ";
         input(s1, 50);
         if (s1[0]) {
           if ((strchr(s1, ':')) || (strchr(s1, '\\'))) {
@@ -333,7 +333,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
           strcpy(s4, s2);
 
           if (strstr(s3, ".UUE") != nullptr) {
-            GetSession()->bout << "|#1UUEncoded File.  Save Output File As? ";
+            bout << "|#1UUEncoded File.  Save Output File As? ";
 
             input(s1, 30);
             if (strchr(s1, '.') == nullptr) {
@@ -344,14 +344,14 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
             uued = true;
 
             if (WFile::Exists(s4)) {
-              GetSession()->bout << s1 << s4 << " already exists!\r\n";
+              bout << s1 << s4 << " already exists!\r\n";
               uued = false;
             }
           }
 
           if (WFile::Exists(s3)) {
-            GetSession()->bout << "\r\nFilename already in use.\r\n\n";
-            GetSession()->bout << "|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0";
+            bout << "\r\nFilename already in use.\r\n\n";
+            bout << "|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0";
             ch1 = onek("QOAN");
             switch (ch1) {
             case 'Q':
@@ -367,7 +367,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
               WFile::Remove(s3);
               break;
             }
-            GetSession()->bout.NewLine();
+            bout.nl();
           }
         } else {
           s3[0] = 1;
@@ -378,7 +378,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
         if (s3[0] != '\x01') {
           WFile file(s3);
           if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
-            GetSession()->bout << "|#6Could not open file for writing.\r\n";
+            bout << "|#6Could not open file for writing.\r\n";
           } else {
             if (file.GetLength() > 0) {
               file.Seek(-1L, WFile::seekEnd);
@@ -392,7 +392,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
             file.Write(b, len);
             file.Write(&ch, 1);
             file.Close();
-            GetSession()->bout <<  "|#9Message written to|#0: |#2" << s3 << wwiv::endl;
+            bout <<  "|#9Message written to|#0: |#2" << s3 << wwiv::endl;
             if (uued == true) {
               uudecode(s3, s4);
             }
@@ -402,7 +402,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
     }
   } else {
     do {
-      GetSession()->bout << "|#2Save under what filename? ";
+      bout << "|#2Save under what filename? ";
       input(s1, 50);
       if (s1[0]) {
         if (strchr(s1, ':') || strchr(s1, '\\')) {
@@ -411,8 +411,8 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
           sprintf(s2, "%s%s", syscfg.gfilesdir, s1);
         }
         if (WFile::Exists(s2)) {
-          GetSession()->bout << "\r\nFilename already in use.\r\n\n";
-          GetSession()->bout << "|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0";
+          bout << "\r\nFilename already in use.\r\n\n";
+          bout << "|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0";
           ch1 = onek("QOAN");
           switch (ch1) {
           case 'Q':
@@ -428,7 +428,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
             WFile::Remove(s2);
             break;
           }
-          GetSession()->bout.NewLine();
+          bout.nl();
         }
       } else {
         s2[0] = '\0';
@@ -438,7 +438,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
     if (s1[0] && !hangup) {
       WFile file(s2);
       if (!file.Open(WFile::modeBinary | WFile::modeCreateFile | WFile::modeReadWrite)) {
-        GetSession()->bout << "|#6Could not open file for writing.\r\n";
+        bout << "|#6Could not open file for writing.\r\n";
       } else {
         if (file.GetLength() > 0) {
           file.Seek(-1L, WFile::seekEnd);
@@ -452,7 +452,7 @@ void extract_out(char *b, long len, const char *pszTitle, time_t tDateTime) {
         file.Write(b, len);
         file.Write(&ch, 1);
         file.Close();
-        GetSession()->bout <<  "|#9Message written to|#0: |#2" << s2 << wwiv::endl;
+        bout <<  "|#9Message written to|#0: |#2" << s2 << wwiv::endl;
       }
     }
   }

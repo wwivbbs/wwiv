@@ -68,7 +68,7 @@ class WOutStream : public std::ostream {
   void Color(int wwivColor);
   void ResetColors();
   void GotoXY(int x, int y);
-  void NewLine(int nNumLines = 1);
+  void nl(int nNumLines = 1);
   void BackSpace();
   /* This sets the current color (both locally and remotely) to that
    * specified (in IBM format).

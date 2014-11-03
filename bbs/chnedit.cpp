@@ -51,7 +51,7 @@ static string chaindata(int nCurrentChainNumber) {
 }
 
 static void showchains() {
-  GetSession()->bout.ClearScreen();
+  bout.ClearScreen();
   bool abort = false;
   pla("|#2NN Description                   Path Name                      SL  ANSI AR", &abort);
   pla("|#7== ----------------------------  ============================== --- ==== --", &abort);
@@ -62,23 +62,23 @@ static void showchains() {
 }
 
 void ShowChainCommandLineHelp() {
-  GetSession()->bout << "|#2  Macro   Value\r\n";
-  GetSession()->bout << "|#7 ======== =======================================\r\n";
-  GetSession()->bout << "|#1   %     |#9 A single \'%\' Character\r\n";
-  GetSession()->bout << "|#1   %1    |#9 CHAIN.TXT full pathname (legacy parameter)\r\n";
-  GetSession()->bout << "|#1   %A    |#9 CALLINFO.BBS full pathname \r\n";
-  GetSession()->bout << "|#1   %C    |#9 CHAIN.TXT full pathname \r\n";
-  GetSession()->bout << "|#1   %D    |#9 DORIFOx.DEF full pathname \r\n";
-  GetSession()->bout << "|#1   %E    |#9 DOOR32.SYS full pathname \r\n";
-  GetSession()->bout << "|#1   %K    |#9 GFiles Comment File For Archives\r\n";
-  GetSession()->bout << "|#1   %M    |#9 Modem Baud Rate\r\n";
-  GetSession()->bout << "|#1   %N    |#9 Node (Instance) number\r\n";
-  GetSession()->bout << "|#1   %O    |#9 PCBOARD.SYS full pathname\r\n";
-  GetSession()->bout << "|#1   %P    |#9 ComPort Number\r\n";
-  GetSession()->bout << "|#1   %R    |#9 DOOR.SYS Full Pathname\r\n";
-  GetSession()->bout << "|#1   %S    |#9 Com Port Baud Rate\r\n";
-  GetSession()->bout << "|#1   %T    |#9 Minutes Remaining\r\n";
-  GetSession()->bout.NewLine();
+  bout << "|#2  Macro   Value\r\n";
+  bout << "|#7 ======== =======================================\r\n";
+  bout << "|#1   %     |#9 A single \'%\' Character\r\n";
+  bout << "|#1   %1    |#9 CHAIN.TXT full pathname (legacy parameter)\r\n";
+  bout << "|#1   %A    |#9 CALLINFO.BBS full pathname \r\n";
+  bout << "|#1   %C    |#9 CHAIN.TXT full pathname \r\n";
+  bout << "|#1   %D    |#9 DORIFOx.DEF full pathname \r\n";
+  bout << "|#1   %E    |#9 DOOR32.SYS full pathname \r\n";
+  bout << "|#1   %K    |#9 GFiles Comment File For Archives\r\n";
+  bout << "|#1   %M    |#9 Modem Baud Rate\r\n";
+  bout << "|#1   %N    |#9 Node (Instance) number\r\n";
+  bout << "|#1   %O    |#9 PCBOARD.SYS full pathname\r\n";
+  bout << "|#1   %P    |#9 ComPort Number\r\n";
+  bout << "|#1   %R    |#9 DOOR.SYS Full Pathname\r\n";
+  bout << "|#1   %S    |#9 Com Port Baud Rate\r\n";
+  bout << "|#1   %T    |#9 Minutes Remaining\r\n";
+  bout.nl();
 }
 
 void modify_chain(int nCurrentChainNumber) {
@@ -93,14 +93,14 @@ void modify_chain(int nCurrentChainNumber) {
   }
   bool done = false;
   do {
-    GetSession()->bout.ClearScreen();
+    bout.ClearScreen();
     const string header = StringPrintf("|B1|15Editing Chain # %d", nCurrentChainNumber);
-    GetSession()->bout << header;
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout.Color(0);
-    GetSession()->bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
-    GetSession()->bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
-    GetSession()->bout << "|#9C) SL           : |#2" << static_cast<int>(c.sl) << wwiv::endl;
+    bout << header;
+    bout.nl(2);
+    bout.Color(0);
+    bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
+    bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
+    bout << "|#9C) SL           : |#2" << static_cast<int>(c.sl) << wwiv::endl;
     strcpy(s, "None.");
     if (c.ar != 0) {
       for (int i = 0; i < 16; i++) {
@@ -110,40 +110,40 @@ void modify_chain(int nCurrentChainNumber) {
       }
       s[1] = 0;
     }
-    GetSession()->bout << "|#9D) AR           : |#2" << s << wwiv::endl;
-    GetSession()->bout << "|#9E) ANSI         : |#2" << ((c.ansir & ansir_ansi) ? "|#6Required" : "|#1Optional") <<
+    bout << "|#9D) AR           : |#2" << s << wwiv::endl;
+    bout << "|#9E) ANSI         : |#2" << ((c.ansir & ansir_ansi) ? "|#6Required" : "|#1Optional") <<
                        wwiv::endl;
-    GetSession()->bout << "|#9F) DOS Interrupt: |#2" << ((c.ansir & ansir_no_DOS) ? "NOT Used" : "Used") << wwiv::endl;
-    GetSession()->bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString((c.ansir & ansir_emulate_fossil) ? true : false) <<
+    bout << "|#9F) DOS Interrupt: |#2" << ((c.ansir & ansir_no_DOS) ? "NOT Used" : "Used") << wwiv::endl;
+    bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString((c.ansir & ansir_emulate_fossil) ? true : false) <<
                        wwiv::endl;
-    GetSession()->bout << "|#9J) Local only   : |#2" << YesNoString((c.ansir & ansir_local_only) ? true : false) <<
+    bout << "|#9J) Local only   : |#2" << YesNoString((c.ansir & ansir_local_only) ? true : false) <<
                        wwiv::endl;
-    GetSession()->bout << "|#9K) Multi user   : |#2" << YesNoString((c.ansir & ansir_multi_user) ? true : false) <<
+    bout << "|#9K) Multi user   : |#2" << YesNoString((c.ansir & ansir_multi_user) ? true : false) <<
                        wwiv::endl;
     if (GetApplication()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
       WUser regUser;
       if (r.regby[0]) {
         GetApplication()->GetUserManager()->ReadUser(&regUser, r.regby[0]);
       }
-      GetSession()->bout << "|#9L) Registered by: |#2" << ((r.regby[0]) ? regUser.GetName() : "AVAILABLE") << wwiv::endl;
+      bout << "|#9L) Registered by: |#2" << ((r.regby[0]) ? regUser.GetName() : "AVAILABLE") << wwiv::endl;
       for (int i = 1; i < 5; i++) {
         if (r.regby[i] != 0) {
           GetApplication()->GetUserManager()->ReadUser(&regUser, r.regby[i]);
-          GetSession()->bout << charstr(18, ' ') << regUser.GetName() << wwiv::endl;
+          bout << charstr(18, ' ') << regUser.GetName() << wwiv::endl;
         }
       }
-      GetSession()->bout << "|#9M) Usage        : |#2" << r.usage << wwiv::endl;
+      bout << "|#9M) Usage        : |#2" << r.usage << wwiv::endl;
       if (r.maxage == 0 && r.minage == 0) {
         r.maxage = 255;
       }
-      GetSession()->bout << "|#9N) Age limit    : |#2" << static_cast<int>(r.minage) << " - " << static_cast<int>
+      bout << "|#9N) Age limit    : |#2" << static_cast<int>(r.minage) << " - " << static_cast<int>
                          (r.maxage) << wwiv::endl;
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
+      bout.nl();
+      bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
       ch = onek("QABCDEFGJKLMN[]", true);     // removed i
     } else {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#9Which (A-K,R,[,],Q) ? ";
+      bout.nl();
+      bout << "|#9Which (A-K,R,[,],Q) ? ";
       ch = onek("QABCDEFGJK[]", true);   // removed i
     }
     switch (ch) {
@@ -178,25 +178,25 @@ void modify_chain(int nCurrentChainNumber) {
       }
       break;
     case 'A':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#7New Description? ";
+      bout.nl();
+      bout << "|#7New Description? ";
       Input1(s, c.description, 40, true, InputMode::MIXED);
       if (s[0]) {
         strcpy(c.description, s);
       }
       break;
     case 'B':
-      GetSession()->bout.ClearScreen();
+      bout.ClearScreen();
       ShowChainCommandLineHelp();
-      GetSession()->bout << "\r\n|#9Enter Command Line.\r\n|#7:";
+      bout << "\r\n|#9Enter Command Line.\r\n|#7:";
       Input1(s, c.filename, 79, true, InputMode::MIXED);
       if (s[0] != 0) {
         strcpy(c.filename, s);
       }
       break;
     case 'C':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#7New SL? ";
+      bout.nl();
+      bout << "|#7New SL? ";
       input(s, 3, true);
       i = atoi(s);
       if ((i >= 0) && (i < 256) && (s[0])) {
@@ -204,8 +204,8 @@ void modify_chain(int nCurrentChainNumber) {
       }
       break;
     case 'D':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#7New AR (<SPC>=None) ? ";
+      bout.nl();
+      bout << "|#7New AR (<SPC>=None) ? ";
       ch2 = onek(" ABCDEFGHIJKLMNOP");
       if (ch2 == SPACE) {
         c.ar = 0;
@@ -214,8 +214,8 @@ void modify_chain(int nCurrentChainNumber) {
       }
       break;
     case 'E':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#5Require ANSI? ";
+      bout.nl();
+      bout << "|#5Require ANSI? ";
       if (yesno()) {
         c.ansir |= ansir_ansi;
       } else {
@@ -223,8 +223,8 @@ void modify_chain(int nCurrentChainNumber) {
       }
       break;
     case 'F':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#5Have BBS intercept DOS calls? ";
+      bout.nl();
+      bout << "|#5Have BBS intercept DOS calls? ";
       if (noyes()) {
         c.ansir &= ~ansir_no_DOS;
       } else {
@@ -232,8 +232,8 @@ void modify_chain(int nCurrentChainNumber) {
       }
       break;
     case 'G':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#5Under Windows Use Emulated FOSSIL Support? ";
+      bout.nl();
+      bout << "|#5Under Windows Use Emulated FOSSIL Support? ";
       if (noyes()) {
         c.ansir |= ansir_emulate_fossil;
       } else {
@@ -241,8 +241,8 @@ void modify_chain(int nCurrentChainNumber) {
       }
       break;
     case 'J':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#5Allow program to be run locally only? ";
+      bout.nl();
+      bout << "|#5Allow program to be run locally only? ";
       if (yesno()) {
         c.ansir |= ansir_local_only;
       } else {
@@ -250,8 +250,8 @@ void modify_chain(int nCurrentChainNumber) {
       }
       break;
     case 'K':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#5Chain is multi-user? ";
+      bout.nl();
+      bout << "|#5Chain is multi-user? ";
       if (yesno()) {
         c.ansir |= ansir_multi_user;
       } else {
@@ -263,8 +263,8 @@ void modify_chain(int nCurrentChainNumber) {
         break;
       }
       for (i = 0; i < 5; i++) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#9(Q=Quit, 0=None) User name/number: : ";
+        bout.nl();
+        bout << "|#9(Q=Quit, 0=None) User name/number: : ";
         input(s1, 30, true);
         if (s1[0] != 'Q' && s1[0] != 'q') {
           if (s1[0] == '0') {
@@ -275,8 +275,8 @@ void modify_chain(int nCurrentChainNumber) {
               WUser regUser;
               GetApplication()->GetUserManager()->ReadUser(&regUser, nUserNumber);
               r.regby[i] = static_cast< short >(nUserNumber);
-              GetSession()->bout.NewLine();
-              GetSession()->bout << "|#1Registered by       |#2" << nUserNumber << " " << ((r.regby[i]) ? regUser.GetName() :
+              bout.nl();
+              bout << "|#1Registered by       |#2" << nUserNumber << " " << ((r.regby[i]) ? regUser.GetName() :
                                  "AVAILABLE");
             }
           }
@@ -287,16 +287,16 @@ void modify_chain(int nCurrentChainNumber) {
       break;
     case 'M':
       r.usage = 0;
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#5Times Run : ";
+      bout.nl();
+      bout << "|#5Times Run : ";
       input(s, 3);
       if (s[0] != 0) {
         r.usage = static_cast< short >(atoi(s));
       }
       break;
     case 'N':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#5New minimum age? ";
+      bout.nl();
+      bout << "|#5New minimum age? ";
       input(s, 3);
       if (s[0]) {
         if ((atoi(s) > 255) || (atoi(s) < 0)) {
@@ -304,7 +304,7 @@ void modify_chain(int nCurrentChainNumber) {
         } else {
           r.minage = wwiv::strings::StringToUnsignedChar(s);
         }
-        GetSession()->bout << "|#5New maximum age? ";
+        bout << "|#5New maximum age? ";
         input(s, 3);
         if (s[0]) {
           if (atoi(s) < r.minage) {
@@ -369,8 +369,8 @@ void chainedit() {
   showchains();
   bool done = false;
   do {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7Chains: (D)elete, (I)nsert, (M)odify, (Q)uit, ? : ";
+    bout.nl();
+    bout << "|#7Chains: (D)elete, (I)nsert, (M)odify, (Q)uit, ? : ";
     char ch = onek("QDIM?");
     switch (ch) {
     case '?':
@@ -380,8 +380,8 @@ void chainedit() {
       done = true;
       break;
     case 'M': {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Chain number? ";
+      bout.nl();
+      bout << "|#2Chain number? ";
       string s;
       input(&s, 2);
       int i = atoi(s.c_str());
@@ -391,8 +391,8 @@ void chainedit() {
     } break;
     case 'I': {
       if (GetSession()->GetNumberOfChains() < GetSession()->max_chains) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#2Insert before which chain ('$' for end) : ";
+        bout.nl();
+        bout << "|#2Insert before which chain ('$' for end) : ";
         int chain = 0;
         string s;
         input(&s, 2);
@@ -407,14 +407,14 @@ void chainedit() {
       }
     } break;
     case 'D': {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Delete which chain? ";
+      bout.nl();
+      bout << "|#2Delete which chain? ";
       string s;
       input(&s, 2);
       int i = atoi(s.c_str());
       if (s[0] != '\0' && i >= 0 && i < GetSession()->GetNumberOfChains()) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#5Delete " << chains[i].description << "? ";
+        bout.nl();
+        bout << "|#5Delete " << chains[i].description << "? ";
         if (yesno()) {
           delete_chain(i);
         }

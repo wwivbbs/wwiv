@@ -40,12 +40,12 @@ void kill_old_email() {
   WUser user;
   filestatusrec fsr;
 
-  GetSession()->bout << "|#5List mail starting at most recent? ";
+  bout << "|#5List mail starting at most recent? ";
   int forward = (yesno());
   WFile *pFileEmail = OpenEmailFile(false);
   WWIV_ASSERT(pFileEmail);
   if (!pFileEmail->IsOpen()) {
-    GetSession()->bout << "\r\nNo mail.\r\n";
+    bout << "\r\nNo mail.\r\n";
     return;
   }
   int max = static_cast< int >(pFileEmail->GetLength() / sizeof(mailrec));
@@ -77,8 +77,8 @@ void kill_old_email() {
 
       bool done1 = false;
       do {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#1  To|#9: |#" << GetSession()->GetMessageColor();
+        bout.nl();
+        bout << "|#1  To|#9: |#" << GetSession()->GetMessageColor();
 
         if (m.tosys == 0) {
           GetApplication()->GetUserManager()->ReadUser(&user, m.touser);
@@ -87,16 +87,16 @@ void kill_old_email() {
               && ((getslrec(GetSession()->GetEffectiveSl()).ability & ability_read_email_anony) == 0)) {
             tempName = ">UNKNOWN<";
           }
-          GetSession()->bout << tempName;
-          GetSession()->bout.NewLine();
+          bout << tempName;
+          bout.nl();
         } else {
-          GetSession()->bout << "#" << m.tosys << " @" << m.tosys << wwiv::endl;
+          bout << "#" << m.tosys << " @" << m.tosys << wwiv::endl;
         }
-        GetSession()->bout.WriteFormatted("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
+        bout.WriteFormatted("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
         time_t lCurrentTime;
         time(&lCurrentTime);
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
-        GetSession()->bout << "|#1Sent|#9: |#" << GetSession()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
+        bout << "|#1Sent|#9: |#" << GetSession()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
           WFile fileAttach(syscfg.datadir, ATTACH_DAT);
           if (fileAttach.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -104,7 +104,7 @@ void kill_old_email() {
             long l1 = fileAttach.Read(&fsr, sizeof(fsr));
             while (l1 > 0 && !found) {
               if (m.daten == static_cast<unsigned long>(fsr.id)) {
-                GetSession()->bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0" << wwiv::endl;
+                bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0" << wwiv::endl;
                 found = true;
               }
               if (!found) {
@@ -112,15 +112,15 @@ void kill_old_email() {
               }
             }
             if (!found) {
-              GetSession()->bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
+              bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
             }
             fileAttach.Close();
           } else {
-            GetSession()->bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
+            bout << "|#1Filename|#0.... |#2Unknown or missing|#0\r\n";
           }
         }
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#9(R)ead, (D)elete, (N)ext, (Q)uit : ";
+        bout.nl();
+        bout << "|#9(R)ead, (D)elete, (N)ext, (Q)uit : ";
         char ch = onek("QRDN");
         switch (ch) {
         case 'Q':
@@ -164,23 +164,23 @@ void kill_old_email() {
                 fileAttach.Close();
               }
             }
-            GetSession()->bout.NewLine();
+            bout.nl();
             if (found) {
-              GetSession()->bout << "Mail and file deleted.\r\n\n";
+              bout << "Mail and file deleted.\r\n\n";
               sysoplogf("Deleted mail and attached file %s.", fsr.filename);
             } else {
-              GetSession()->bout << "Mail deleted.\r\n\n";
+              bout << "Mail deleted.\r\n\n";
               sysoplogf("Deleted mail sent to %s", user.GetUserNameAndNumber(m1.touser));
             }
           } else {
-            GetSession()->bout << "Mail file changed; try again.\r\n";
+            bout << "Mail file changed; try again.\r\n";
           }
           pFileEmail->Close();
         }
         break;
         case 'R': {
-          GetSession()->bout.NewLine(2);
-          GetSession()->bout.WriteFormatted("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
+          bout.nl(2);
+          bout.WriteFormatted("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
           bool next;
           read_message1(&m.msg, static_cast<char>(m.anony & 0x0f), false, &next, "email", 0, 0);
         }
@@ -208,24 +208,24 @@ void list_users(int mode) {
   char szFindText[21];
 
   if (usub[GetSession()->GetCurrentMessageArea()].subnum == -1 && mode == LIST_USERS_MESSAGE_AREA) {
-    GetSession()->bout << "\r\n|#6No Message Area Available!\r\n\n";
+    bout << "\r\n|#6No Message Area Available!\r\n\n";
     return;
   }
   if (udir[GetSession()->GetCurrentFileArea()].subnum == -1 && mode == LIST_USERS_FILE_AREA) {
-    GetSession()->bout << "\r\n|#6 No Dirs Available.\r\n\n";
+    bout << "\r\n|#6 No Dirs Available.\r\n\n";
     return;
   }
 
   int snum = GetSession()->usernum;
 
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Sort by user number? ";
+  bout.nl();
+  bout << "|#5Sort by user number? ";
   bool bSortByUserNumber = yesno();
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Search for a name or city? ";
+  bout.nl();
+  bout << "|#5Search for a name or city? ";
   if (yesno()) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Enter text to find: ";
+    bout.nl();
+    bout << "|#5Enter text to find: ";
     input(szFindText, 10, true);
   } else {
     szFindText[0] = '\0';
@@ -257,7 +257,7 @@ void list_users(int mode) {
     GetSession()->usernum = 0;
     if (ncnm > 5) {
       count++;
-      GetSession()->bout << "|#" << color << ".";
+      bout << "|#" << color << ".";
       if (count == NUM_DOTS) {
         osan("\r", &abort, &next);
         osan("|#2Searching ", &abort, &next);
@@ -272,25 +272,25 @@ void list_users(int mode) {
       }
     }
     if (p == 0 && found) {
-      GetSession()->bout.ClearScreen();
+      bout.ClearScreen();
       char szTitleLine[255];
       sprintf(szTitleLine, "[ %s User Listing ]", syscfg.systemname);
       if (okansi()) {
-        GetSession()->bout.DisplayLiteBar(szTitleLine);
+        bout.DisplayLiteBar(szTitleLine);
       } else {
         int i1;
         for (i1 = 0; i1 < 78; i1++) {
           bputch(45);
         }
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#5" << szTitleLine;
-        GetSession()->bout.NewLine();
+        bout.nl();
+        bout << "|#5" << szTitleLine;
+        bout.nl();
         for (i1 = 0; i1 < 78; i1++) {
           bputch(45);
         }
-        GetSession()->bout.NewLine();
+        bout.nl();
       }
-      GetSession()->bout.Color(FRAME_COLOR);
+      bout.Color(FRAME_COLOR);
       pla("\xD5\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xD1\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xB8",
           &abort);
       found = false;
@@ -339,8 +339,8 @@ void list_users(int mode) {
     }
     if (ok) {
       found = true;
-      //GetSession()->bout.BackLine();
-      GetSession()->bout.ClearEOL();
+      //bout.BackLine();
+      bout.ClearEOL();
       if (user.GetLastBaudRate() > 32767 || user.GetLastBaudRate() < 300) {
         user.SetLastBaudRate(33600);
       }
@@ -368,12 +368,12 @@ void list_users(int mode) {
       }
       ++p;
       if (p == (GetSession()->GetCurrentUser()->GetScreenLines() - 6)) {
-        //GetSession()->bout.BackLine();
-        GetSession()->bout.ClearEOL();
-        GetSession()->bout.Color(FRAME_COLOR);
+        //bout.BackLine();
+        bout.ClearEOL();
+        bout.Color(FRAME_COLOR);
         pla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE",
             &abort);
-        GetSession()->bout << "|#1[Enter] to continue or Q=Quit : ";
+        bout << "|#1[Enter] to continue or Q=Quit : ";
         char ch = onek("Q\r ");
         switch (ch) {
         case 'Q':
@@ -390,15 +390,15 @@ void list_users(int mode) {
       ncnm++;
     }
   }
-  //GetSession()->bout.BackLine();
-  GetSession()->bout.ClearEOL();
-  GetSession()->bout.Color(FRAME_COLOR);
+  //bout.BackLine();
+  bout.ClearEOL();
+  bout.Color(FRAME_COLOR);
   pla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE",
       &abort);
   if (!abort) {
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout << "|#1" << num << " user(s) have access and " << numscn << " user(s) scan this subboard.";
-    GetSession()->bout.NewLine();
+    bout.nl(2);
+    bout << "|#1" << num << " user(s) have access and " << numscn << " user(s) scan this subboard.";
+    bout.nl();
     pausescr();
   }
   GetSession()->ReadCurrentUser(snum);
@@ -413,9 +413,9 @@ void time_bank() {
   int i;
   double nsln;
 
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (GetSession()->GetCurrentUser()->GetSl() <= syscfg.newusersl) {
-    GetSession()->bout << "|#6You must be validated to access the timebank.\r\n";
+    bout << "|#6You must be validated to access the timebank.\r\n";
     return;
   }
   if (GetSession()->GetCurrentUser()->GetTimeBankMinutes() > getslrec(GetSession()->GetEffectiveSl()).time_per_logon) {
@@ -430,23 +430,23 @@ void time_bank() {
 
   bool done = false;
   do {
-    GetSession()->bout.ClearScreen();
-    GetSession()->bout << "|#5WWIV TimeBank\r\n";
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2D|#9)eposit Time\r\n";
-    GetSession()->bout << "|#2W|#9)ithdraw Time\r\n";
-    GetSession()->bout << "|#2Q|#9)uit\r\n";
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Balance: |#2" << GetSession()->GetCurrentUser()->GetTimeBankMinutes() << "|#9 minutes\r\n";
-    GetSession()->bout << "|#9Time Left: |#2" << static_cast<int>(nsl() / 60) << "|#9 minutes\r\n";
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2Time Bank|#9] Enter Command: |#2";
-    GetSession()->bout.ColorizedInputField(1);
+    bout.ClearScreen();
+    bout << "|#5WWIV TimeBank\r\n";
+    bout.nl();
+    bout << "|#2D|#9)eposit Time\r\n";
+    bout << "|#2W|#9)ithdraw Time\r\n";
+    bout << "|#2Q|#9)uit\r\n";
+    bout.nl();
+    bout << "|#9Balance: |#2" << GetSession()->GetCurrentUser()->GetTimeBankMinutes() << "|#9 minutes\r\n";
+    bout << "|#9Time Left: |#2" << static_cast<int>(nsl() / 60) << "|#9 minutes\r\n";
+    bout.nl();
+    bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2Time Bank|#9] Enter Command: |#2";
+    bout.ColorizedInputField(1);
     char c = onek("QDW");
     switch (c) {
     case 'D':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#1Deposit how many minutes: ";
+      bout.nl();
+      bout << "|#1Deposit how many minutes: ";
       input(s, 3, true);
       i = atoi(s);
       if (i > 0) {
@@ -466,11 +466,11 @@ void time_bank() {
       }
       break;
     case 'W':
-      GetSession()->bout.NewLine();
+      bout.nl();
       if (GetSession()->GetCurrentUser()->GetTimeBankMinutes() == 0) {
         break;
       }
-      GetSession()->bout << "|#1Withdraw How Many Minutes: ";
+      bout << "|#1Withdraw How Many Minutes: ";
       input(s, 3, true);
       i = atoi(s);
       if (i > 0) {
@@ -505,8 +505,8 @@ int getnetnum(const char *pszNetworkName) {
 
 
 void uudecode(const char *pszInputFileName, const char *pszOutputFileName) {
-  GetSession()->bout << "|#2Now UUDECODING " << pszInputFileName;
-  GetSession()->bout.NewLine();
+  bout << "|#2Now UUDECODING " << pszInputFileName;
+  bout.nl();
 
   char szCmdLine[ MAX_PATH ];
   sprintf(szCmdLine, "UUDECODE %s %s", pszInputFileName, pszOutputFileName);
@@ -516,20 +516,20 @@ void uudecode(const char *pszInputFileName, const char *pszOutputFileName) {
 
 void Packers() {
   do {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2Message Packet Options:\r\n";
-    GetSession()->bout.NewLine();
+    bout.nl();
+    bout << "|#2Message Packet Options:\r\n";
+    bout.nl();
     if (GetSession()->internal_qwk_enabled()) {
-      GetSession()->bout << "|#9[|#2I|#9] Internal WWIV QWK\r\n";
+      bout << "|#9[|#2I|#9] Internal WWIV QWK\r\n";
     }
     if (GetSession()->wwivmail_enabled()) {
-      GetSession()->bout << "|#9[|#2W|#9] WWIVMail/QWK\r\n";
+      bout << "|#9[|#2W|#9] WWIVMail/QWK\r\n";
     }
-    GetSession()->bout << "|#9[|#2Z|#9] Zipped ASCII Text\r\n";
-    GetSession()->bout << "|#9[|#2C|#9] Configure Sub Scan\r\n";
-    GetSession()->bout << "|#9[|#2Q|#9] Quit back to BBS!\r\n";
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9Choice : ";
+    bout << "|#9[|#2Z|#9] Zipped ASCII Text\r\n";
+    bout << "|#9[|#2C|#9] Configure Sub Scan\r\n";
+    bout << "|#9[|#2Q|#9] Quit back to BBS!\r\n";
+    bout.nl();
+    bout << "|#9Choice : ";
     char ch = onek("WIZCQ\r ");
     switch (ch) {
     case 'W': {
@@ -550,11 +550,11 @@ void Packers() {
       break;
     case 'Z':
       // TODO(rushfan): Merge this with the code in DownloadPosts
-      GetSession()->bout << "|#5This could take quite a while.  Are you sure? ";
+      bout << "|#5This could take quite a while.  Are you sure? ";
       if (yesno()) {
         TempDisablePause disable_pause;
         SaveQScanPointers save_qscan;
-        GetSession()->bout << "\r\nPlease wait...\r\n";
+        bout << "\r\nPlease wait...\r\n";
         GetSession()->localIO()->set_x_only(1, "posts.txt", 0);
         bool ac = false;
         if (uconfsub[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
@@ -570,13 +570,13 @@ void Packers() {
           save_qscan.restore();
         }
       } else {
-        GetSession()->bout << "|#6Aborted.\r\n";
+        bout << "|#6Aborted.\r\n";
       }
       return;
     case 'C':
-      GetSession()->bout.ClearScreen();
+      bout.ClearScreen();
       config_qscan();
-      GetSession()->bout.ClearScreen();
+      bout.ClearScreen();
       break;
     default:
       return;

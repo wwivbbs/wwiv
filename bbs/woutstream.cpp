@@ -53,7 +53,6 @@ std::streamsize WOutStreamBuffer::xsputn(const char *pszText, std::streamsize nu
   return numChars;
 }
 
-
 void WOutStream::Color(int wwivColor) {
   unsigned char c = '\0';
 
@@ -73,18 +72,16 @@ void WOutStream::Color(int wwivColor) {
     return;
   }
 
-  GetSession()->bout.SystemColor(c);
+  bout.SystemColor(c);
 
   makeansi(GetSession()->GetCurrentUser()->HasColor() ?
            GetSession()->GetCurrentUser()->GetColor(0) : GetSession()->GetCurrentUser()->GetBWColor(0), endofline, false);
 }
 
-
 void WOutStream::ResetColors() {
   // ANSI Clear Attributes String
   Write("\x1b[0m");
 }
-
 
 void WOutStream::GotoXY(int x, int y) {
   if (okansi()) {
@@ -93,8 +90,7 @@ void WOutStream::GotoXY(int x, int y) {
   }
 }
 
-
-void WOutStream::NewLine(int nNumLines) {
+void WOutStream::nl(int nNumLines) {
   for (int i = 0; i < nNumLines; i++) {
     if (endofline[0]) {
       Write(endofline);
@@ -109,7 +105,6 @@ void WOutStream::NewLine(int nNumLines) {
   }
 }
 
-
 void WOutStream::BackSpace() {
   bool bSavedEcho = local_echo;
   local_echo = true;
@@ -117,13 +112,11 @@ void WOutStream::BackSpace() {
   local_echo = bSavedEcho;
 }
 
-
 void WOutStream::SystemColor(int nColor) {
   char szBuffer[255];
   makeansi(nColor, szBuffer, false);
   Write(szBuffer);
 }
-
 
 void WOutStream::DisplayLiteBar(const char *pszFormatText, ...) {
   va_list ap;
@@ -156,7 +149,6 @@ void WOutStream::BackLine() {
   }
 }
 
-
 /**
  * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
  */
@@ -169,7 +161,6 @@ void WOutStream::ClearScreen() {
   }
 }
 
-
 /**
  * Moves the cursor to the end of the line using ANSI sequences.  If the user
  * does not have ansi, this this function does nothing.
@@ -179,7 +170,6 @@ void WOutStream::ClearEOL() {
     Write("\x1b[K");
   }
 }
-
 
 void WOutStream::ColorizedInputField(int nNumberOfChars) {
   if (okansi()) {
@@ -193,7 +183,6 @@ void WOutStream::ColorizedInputField(int nNumberOfChars) {
     Write(szLine);
   }
 }
-
 
 int WOutStream::Write(const char *pszText) {
   if (!pszText || !(*pszText)) {
@@ -214,8 +203,7 @@ int WOutStream::Write(const char *pszText) {
   return displayed;
 }
 
-
-int  WOutStream::WriteFormatted(const char *pszFormatText, ...) {
+int WOutStream::WriteFormatted(const char *pszFormatText, ...) {
   va_list ap;
   char szBuffer[ 4096 ];
 
@@ -224,6 +212,3 @@ int  WOutStream::WriteFormatted(const char *pszFormatText, ...) {
   va_end(ap);
   return Write(szBuffer);
 }
-
-
-
