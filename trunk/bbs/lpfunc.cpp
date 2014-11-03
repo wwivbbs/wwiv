@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
+#include <vector>
 
 #include "wwiv.h"
 #include "common.h"
@@ -26,9 +28,10 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 
-//
+using std::string;
+using std::vector;
+
 // Local function prototypes
-//
 int  compare_criteria(struct search_record * sr, uploadsrec * ur);
 bool lp_compare_strings(char *raw, char *formula);
 bool lp_compare_strings_wh(char *raw, char *formula, unsigned *pos, int size);
@@ -36,11 +39,32 @@ int  lp_get_token(char *formula, unsigned *pos);
 int  lp_get_value(char *raw, char *formula, unsigned *pos);
 
 
-//
 // These are defined in listplus.cpp
-//
 extern int bulk_move;
 extern bool ext_is_on;
+
+static void prep_menu_items(vector<string>* menu_items) {
+  menu_items->push_back("Next");
+  menu_items->push_back("Prev");
+  menu_items->push_back("Tag");
+  menu_items->push_back("Info");
+  menu_items->push_back("ViewZip");
+
+  if (GetSession()->using_modem != 0) {
+    menu_items->push_back("Dload");
+  } else {
+    menu_items->push_back("Move");
+  }
+
+  menu_items->push_back("+Dir");
+  menu_items->push_back("-Dir");
+  menu_items->push_back("Full-Desc");
+  menu_items->push_back("Quit");
+  menu_items->push_back("?");
+  if (so()) {
+    menu_items->push_back("Sysop");
+  }
+}
 
 int listfiles_plus_function(int type) {
   uploadsrec(*file_recs)[1];
@@ -61,22 +85,16 @@ int listfiles_plus_function(int type) {
 
   load_listing();
 
-  char **menu_items = static_cast<char **>(BbsAlloc2D(20, 15, sizeof(char)));
-  if (!menu_items) {
-    return 0;
-  }
-
-  prep_menu_items(menu_items);
+  vector<string> menu_items;
+  prep_menu_items(&menu_items);
 
   file_recs = (uploadsrec(*)[1])(BbsAllocA((GetSession()->GetCurrentUser()->GetScreenLines() + 20) * sizeof(uploadsrec)));
   WWIV_ASSERT(file_recs);
   if (!file_recs) {
-    BbsFree2D(menu_items);
     return 0;
   }
   if (!prep_search_rec(&search_rec, type)) {
     free(file_recs);
-    BbsFree2D(menu_items);
     return 0;
   }
   int max_lines = calc_max_lines();
@@ -473,14 +491,14 @@ TOGGLE_EXTENDED:
                   case 11:
                     if (so() && !sysop_mode) {
                       sysop_mode = true;
-                      strcpy(menu_items[2], "Delete");
-                      strcpy(menu_items[3], "Rename");
-                      strcpy(menu_items[4], "Move");
-                      strcpy(menu_items[5], "Config");
-                      strcpy(menu_items[11], "Back");
+                      menu_items[2] =  "Delete";
+                      menu_items[3] = "Rename";
+                      menu_items[4] = "Move";
+                      menu_items[5] = "Config";
+                      menu_items[11] = "Back";
                     } else {
                       sysop_mode = false;
-                      prep_menu_items(menu_items);
+                      prep_menu_items(&menu_items);
                     }
                     bputch('\r');
                     bout.clreol();
@@ -549,8 +567,6 @@ TOGGLE_EXTENDED:
   }
 
   free(file_recs);
-  BbsFree2D(menu_items);
-
   return (all_done) ? 1 : 0;
 }
 
