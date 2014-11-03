@@ -314,7 +314,7 @@ char ynq() {
 
 char onek(const char *pszAllowableChars, bool bAutoMpl) {
   if (bAutoMpl) {
-    bout.ColorizedInputField(1);
+    bout.mpl(1);
   }
   char ch = onek_ncr(pszAllowableChars);
   bout.nl();

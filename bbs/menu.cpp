@@ -522,7 +522,7 @@ void ConfigUserMenuSet() {
 
   nSecondUserRecLoaded = GetSession()->usernum;
 
-  bout.ClearScreen();
+  bout.cls();
   printfile(MENUWEL_NOEXT);
   bool bDone = false;
   while (!bDone && !hangup) {
@@ -580,7 +580,7 @@ void ConfigUserMenuSet() {
       continue;                           // bypass the below cls()
     }
 
-    bout.ClearScreen();
+    bout.cls();
   }
 
   // If menu is invalid, it picks the first one it finds

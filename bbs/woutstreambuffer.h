@@ -23,6 +23,7 @@
 #include <iostream>
 #include <streambuf>
 #include <ios>
+#include <string>
 
 class WOutStreamBuffer : public std::streambuf {
  public:
@@ -38,8 +39,8 @@ class WLocalIO;
 class WOutStream : public std::ostream {
  protected:
   WOutStreamBuffer buf;
-  WLocalIO *m_pLocalIO;
-  WComm *m_pComm;
+  WLocalIO *local_io_;
+  WComm *comm_;
 
  public:
   WOutStream() :
@@ -51,59 +52,50 @@ class WOutStream : public std::ostream {
   }
   virtual ~WOutStream() {}
 
-  void SetLocalIO(WLocalIO *pLocalIO) {
-    m_pLocalIO = pLocalIO;
-  }
-  WLocalIO* localIO() {
-    return m_pLocalIO;
-  }
+  void SetLocalIO(WLocalIO *local_io) { local_io_ = local_io; }
+  WLocalIO* localIO() const { return local_io_; }
 
-  void SetComm(WComm *pComm) {
-    m_pComm = pComm;
-  }
-  WComm* remoteIO() {
-    return m_pComm;
-  }
+  void SetComm(WComm *comm) { comm_ = comm; }
+  WComm* remoteIO() const { return comm_; }
 
   void Color(int wwivColor);
   void ResetColors();
   void GotoXY(int x, int y);
   void nl(int nNumLines = 1);
-  void BackSpace();
+  void bs();
   /* This sets the current color (both locally and remotely) to that
    * specified (in IBM format).
    */
   void SystemColor(int nColor);
-  void DisplayLiteBar(const char *fmt, ...);
+  void litebar(const char *fmt, ...);
   /** Backspaces from the current cursor position to the beginning of a line */
-  void BackLine();
+  void backline();
 
   /**
    * Moves the cursor to the end of the line using ANSI sequences.  If the user
    * does not have ansi, this this function does nothing.
    */
-  void ClearEOL();
+  void clreol();
 
   /**
    * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
    */
-  void ClearScreen();
+  void cls();
 
   /**
    * This will make a reverse-video prompt line i characters long, repositioning
    * the cursor at the beginning of the input prompt area.  Of course, if the
    * user does not want ansi, this routine does nothing.
    */
-  void ColorizedInputField(int nNumberOfChars);
+  void mpl(int nNumberOfChars);
 
   /**
    * This function outputs a string of characters to the screen (and remotely
    * if applicable).  The com port is also checked first to see if a remote
    * user has hung up
    */
-  int  Write(const char *pszText);
-
-  int  WriteFormatted(const char *fmt, ...);
+  int Write(const std::string& text);
+  int WriteFormatted(const char *fmt, ...);
 };
 
 namespace wwiv {

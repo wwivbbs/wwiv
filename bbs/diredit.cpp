@@ -57,7 +57,7 @@ void dirdata(int n, char *s) {
 void showdirs() {
   char s[180], s1[21];
 
-  bout.ClearScreen();
+  bout.cls();
   bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
   input(s1, 20, true);
   bool abort = false;
@@ -100,7 +100,7 @@ void modify_dir(int n) {
   directoryrec r = directories[n];
   bool done = false;
   do {
-    bout.ClearScreen();
+    bout.cls();
     sprintf(szSubNum, "%s %d", "|B1|15Editing File Area #", n);
     bout.WriteFormatted("%-85s", szSubNum);
     bout.Color(0);

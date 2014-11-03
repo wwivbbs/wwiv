@@ -167,7 +167,7 @@ void pausescr() {
     bout << ss;
     GetKeyForPause();
     for (int i3 = 0; i3 < i1; i3++) {
-      bout.BackSpace();
+      bout.bs();
     }
   }
 

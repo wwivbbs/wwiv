@@ -102,7 +102,7 @@ void asv() {
         do {
           bout << "|#5Enter your BBS phone number.\r\n";
           bout << "|#3 ###-###-####\r\n|#1:";
-          bout.ColorizedInputField(12);
+          bout.mpl(12);
           for (i2 = 0; i2 < 12; i2++) {
             bout.Color(4);
             if (i2 == 3 || i2 == 7) {
@@ -113,11 +113,11 @@ void asv() {
               if (ph1[i2] == 8) {
                 if (!(i2 == 0)) {
                   bputch(' ');
-                  bout.BackSpace();
+                  bout.bs();
                   i2--;
                   if ((i2 == 3) || (i2 == 7)) {
                     i2--;
-                    bout.BackSpace();
+                    bout.bs();
                   }
                 } else {
                   bputch(' ');
@@ -360,7 +360,7 @@ int printasv(const string& filename, int num, bool abort) {
           } else if (wwiv::UpperCase<char>(nums[0]) == 'C') {
             i1 = 2;
             if (okprint && okansi()) {
-              bout.ClearScreen();
+              bout.cls();
             }
             asvline = false;
           } else if (wwiv::UpperCase<char>(nums[0]) == 'P') {

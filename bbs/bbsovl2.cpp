@@ -299,7 +299,7 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
 
   WWIV_Delay(nStringDelay);
   for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
-    bout.BackSpace();
+    bout.bs();
     WWIV_Delay(5);
   }
   local_echo = oecho;

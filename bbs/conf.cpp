@@ -142,7 +142,7 @@ void jump_conf(int conftype) {
   userconfrec *uc = nullptr;
   int nc;
 
-  bout.DisplayLiteBar(" [ %s Conference Selection ] ", syscfg.systemname);
+  bout.litebar(" [ %s Conference Selection ] ", syscfg.systemname);
   get_conf_info(conftype, &nc, &cp, nullptr, nullptr, &uc);
   bool abort = false;
   strcpy(s, " ");
@@ -656,7 +656,7 @@ int modify_conf(int conftype,  int which) {
 
   do {
     char szGenderAllowed[ 21 ];
-    bout.ClearScreen();
+    bout.cls();
 
     bout << "|#9A) Designator           : |#2" << c.designator << wwiv::endl;
     bout << "|#9B) Conf Name            : |#2" << c.name << wwiv::endl;
@@ -1027,7 +1027,7 @@ void conf_edit(int conftype) {
     return;
   }
 
-  bout.ClearScreen();
+  bout.cls();
   list_confs(conftype, 1);
 
   do {
@@ -1072,7 +1072,7 @@ void conf_edit(int conftype) {
       done = true;
       break;
     case '?':
-      bout.ClearScreen();
+      bout.cls();
       list_confs(conftype, 1);
       break;
     }

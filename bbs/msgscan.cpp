@@ -549,7 +549,7 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
       HandleMessageLoad();
       break;
     }
-  } else if (IsEquals(szUserInput, "ClearScreen")) {
+  } else if (IsEquals(szUserInput, "cls")) {
     bputch('\x0c');
   }
 }

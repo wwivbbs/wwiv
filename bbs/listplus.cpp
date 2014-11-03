@@ -181,7 +181,7 @@ static void printtitle_plus_old() {
 
 void printtitle_plus() {
   if (GetSession()->localIO()->WhereY() != 0 || GetSession()->localIO()->WhereX() != 0) {
-    bout.ClearScreen();
+    bout.cls();
   }
 
   if (config_listing.lp_options & cfl_header) {
@@ -189,7 +189,7 @@ void printtitle_plus() {
   } else {
     const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
             directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
-    bout.DisplayLiteBar(" %-54s Space=Tag/?=Help ", buf.c_str());
+    bout.litebar(" %-54s Space=Tag/?=Help ", buf.c_str());
     bout.Color(0);
   }
 }
@@ -209,7 +209,7 @@ int first_file_pos() {
 
 void print_searching(struct search_record * search_rec) {
   if (GetSession()->localIO()->WhereY() != 0 || GetSession()->localIO()->WhereX() != 0) {
-    bout.ClearScreen();
+    bout.cls();
   }
 
   if (strlen(search_rec->search) > 3) {
@@ -239,7 +239,7 @@ int listfiles_plus(int type) {
 
   GetSession()->topdata = WLocalIO::topdataNone;
   GetApplication()->UpdateTopScreen();
-  bout.ClearScreen();
+  bout.cls();
 
   int nReturn = listfiles_plus_function(type);
   bout.Color(0);
@@ -725,7 +725,7 @@ int print_extended_plus(const char *pszFileName, int numlist, int indent, int co
 }
 
 void show_fileinfo(uploadsrec * u) {
-  bout.ClearScreen();
+  bout.cls();
   repeat_char('\xCD', 78);
   bout << "  |#1Filename    : |#2" << u->filename << wwiv::endl;
   bout << "  |#1Uploaded on : |#2" << u->date << " by |#2" << u->upby << wwiv::endl;
@@ -936,7 +936,7 @@ void sysop_configure() {
   load_lp_config();
 
   while (!done && !hangup) {
-    bout.ClearScreen();
+    bout.cls();
     printfile(LPSYSOP_NOEXT);
     bout.GotoXY(38, 2);
     bout.SystemColor(lp_config.normal_highlight);
@@ -1170,7 +1170,7 @@ void config_file_list() {
     }
   }
 
-  bout.ClearScreen();
+  bout.cls();
   printfile(LPCONFIG_NOEXT);
   if (!config_listing.lp_options & cfl_fname) {
     config_listing.lp_options |= cfl_fname;
@@ -1402,14 +1402,14 @@ void update_user_config_screen(uploadsrec * u, int which) {
   }
   bout.SystemColor(YELLOW);
   bout.GotoXY(1, 21);
-  bout.ClearEOL();
+  bout.clreol();
   bout.nl();
-  bout.ClearEOL();
+  bout.clreol();
   bout.GotoXY(1, 21);
   printinfo_plus(u, 1, 1, 30, &sr);
   bout.GotoXY(30, 17);
   bout.SystemColor(YELLOW);
-  bout.BackSpace();
+  bout.bs();
 }
 
 static int rename_filename(const char *pszFileName, int dn) {
@@ -1836,7 +1836,7 @@ void do_batch_sysop_command(int mode, const char *pszFileName) {
   int save_curdir = GetSession()->GetCurrentFileArea();
   int pos = 0;
 
-  bout.ClearScreen();
+  bout.cls();
 
   if (GetSession()->numbatchdl) {
     bool done = false;
@@ -1898,7 +1898,7 @@ int search_criteria(struct search_record * sr) {
 LP_SEARCH_HELP:
   sr->search_extended = lp_config.search_extended_on;
 
-  bout.ClearScreen();
+  bout.cls();
   printfile(LPSEARCH_NOEXT);
 
   bool done = false;
@@ -1906,7 +1906,7 @@ LP_SEARCH_HELP:
     bout.GotoXY(1, 15);
     for (int i = 0; i < 9; i++) {
       bout.GotoXY(1, 15 + i);
-      bout.ClearEOL();
+      bout.clreol();
     }
     bout.GotoXY(1, 15);
 
@@ -2025,7 +2025,7 @@ void view_file(const char *pszFileName) {
   int i, i1;
   uploadsrec u;
 
-  bout.ClearScreen();
+  bout.cls();
 
   strcpy(szBuffer, pszFileName);
   unalign(szBuffer);
@@ -2189,7 +2189,7 @@ void download_plus(const char *pszFileName) {
 }
 
 void request_file(const char *pszFileName) {
-  bout.ClearScreen();
+  bout.cls();
   bout.nl();
 
   printfile(LPFREQ_NOEXT);

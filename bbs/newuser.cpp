@@ -1122,7 +1122,7 @@ void newuser() {
   printfile(NEWUSER_NOEXT);
   bout.nl();
   pausescr();
-  bout.ClearScreen();
+  bout.cls();
   bout << "|#5Create a new user account on " << syscfg.systemname << "? ";
   if (!noyes()) {
     bout << "|#6Sorry the system does not meet your needs!\r\n";
@@ -1330,10 +1330,10 @@ void cln_nu() {
   int i1 = GetSession()->localIO()->WhereX();
   if (i1 > 28) {
     for (int i = i1; i > 28; i--) {
-      bout.BackSpace();
+      bout.bs();
     }
   }
-  bout.ClearEOL();
+  bout.clreol();
 }
 
 
@@ -1362,8 +1362,8 @@ void DoMinimalNewUser() {
   GetSession()->topdata = WLocalIO::topdataNone;
   GetApplication()->UpdateTopScreen();
   do {
-    bout.ClearScreen();
-    bout.DisplayLiteBar("%s New User Registration", syscfg.systemname);
+    bout.cls();
+    bout.litebar("%s New User Registration", syscfg.systemname);
     bout << "|#1[A] Name (real or alias)    : ";
     if (GetSession()->GetCurrentUser()->GetName()[0] == '\0') {
       bool ok = true;
@@ -1433,7 +1433,7 @@ void DoMinimalNewUser() {
                        " years old)\r\n";
     bout << "|#1[C] Sex (Gender)            : ";
     if (GetSession()->GetCurrentUser()->GetGender() != 'M' && GetSession()->GetCurrentUser()->GetGender()  != 'F') {
-      bout.ColorizedInputField(1);
+      bout.mpl(1);
       GetSession()->GetCurrentUser()->SetGender(onek_ncr("MF"));
     }
     s1[0] = '\0';

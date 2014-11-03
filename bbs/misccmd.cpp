@@ -272,11 +272,11 @@ void list_users(int mode) {
       }
     }
     if (p == 0 && found) {
-      bout.ClearScreen();
+      bout.cls();
       char szTitleLine[255];
       sprintf(szTitleLine, "[ %s User Listing ]", syscfg.systemname);
       if (okansi()) {
-        bout.DisplayLiteBar(szTitleLine);
+        bout.litebar(szTitleLine);
       } else {
         int i1;
         for (i1 = 0; i1 < 78; i1++) {
@@ -339,8 +339,8 @@ void list_users(int mode) {
     }
     if (ok) {
       found = true;
-      //bout.BackLine();
-      bout.ClearEOL();
+      //bout.backline();
+      bout.clreol();
       if (user.GetLastBaudRate() > 32767 || user.GetLastBaudRate() < 300) {
         user.SetLastBaudRate(33600);
       }
@@ -368,8 +368,8 @@ void list_users(int mode) {
       }
       ++p;
       if (p == (GetSession()->GetCurrentUser()->GetScreenLines() - 6)) {
-        //bout.BackLine();
-        bout.ClearEOL();
+        //bout.backline();
+        bout.clreol();
         bout.Color(FRAME_COLOR);
         pla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE",
             &abort);
@@ -390,8 +390,8 @@ void list_users(int mode) {
       ncnm++;
     }
   }
-  //bout.BackLine();
-  bout.ClearEOL();
+  //bout.backline();
+  bout.clreol();
   bout.Color(FRAME_COLOR);
   pla("\xD4\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCF\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBE",
       &abort);
@@ -430,7 +430,7 @@ void time_bank() {
 
   bool done = false;
   do {
-    bout.ClearScreen();
+    bout.cls();
     bout << "|#5WWIV TimeBank\r\n";
     bout.nl();
     bout << "|#2D|#9)eposit Time\r\n";
@@ -441,7 +441,7 @@ void time_bank() {
     bout << "|#9Time Left: |#2" << static_cast<int>(nsl() / 60) << "|#9 minutes\r\n";
     bout.nl();
     bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2Time Bank|#9] Enter Command: |#2";
-    bout.ColorizedInputField(1);
+    bout.mpl(1);
     char c = onek("QDW");
     switch (c) {
     case 'D':
@@ -574,9 +574,9 @@ void Packers() {
       }
       return;
     case 'C':
-      bout.ClearScreen();
+      bout.cls();
       config_qscan();
-      bout.ClearScreen();
+      bout.cls();
       break;
     default:
       return;

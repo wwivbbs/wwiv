@@ -230,7 +230,7 @@ void run_event(int evnt) {
 #ifndef __unix__
   GetSession()->localIO()->SetCursor(WLocalIO::cursorNormal);
 #endif
-  bout.ClearScreen();
+  bout.cls();
   bout << "\r\nNow running external event.\r\n\n";
   if (events[evnt].status & EVENT_HOLD) {
     holdphone(true);
@@ -255,7 +255,7 @@ void run_event(int evnt) {
 void show_events() {
   char s[121] = { 0 }, s1[81] = { 0 }, daystr[8] = { 0 };
 
-  bout.ClearScreen();
+  bout.cls();
   bool abort = false;
   char y = "Yes"[0];
   char n = "No"[0];
@@ -347,7 +347,7 @@ void modify_event(int evnt) {
   bool done   = false;
   int i       = evnt;
   do {
-    bout.ClearScreen();
+    bout.cls();
     bout << "A) Event Time......: " << ttc(events[i].time) << wwiv::endl;
     if (events[i].status & EVENT_EXIT) {
       sprintf(s1, "Exit BBS with DOS Errorlevel %d", events[i].cmd[0]);
@@ -444,7 +444,7 @@ void modify_event(int evnt) {
             bout << " \b";
             --j;
             if (j == 2) {
-              bout.BackSpace();
+              bout.bs();
               --j;
             }
             break;

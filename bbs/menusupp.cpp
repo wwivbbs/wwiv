@@ -257,7 +257,7 @@ void GoodBye() {
   if (WFile::Exists(szFileName)) {
     cycle = 0;
     do {
-      bout.ClearScreen();
+      bout.cls();
       printfile(szFileName);
       ch = onek("QFTO", true);
       switch (ch) {
@@ -276,7 +276,7 @@ void GoodBye() {
       case 'O':
         cycle = 1;
         write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
-        bout.ClearScreen();
+        bout.cls();
         bout <<  "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
         {
           TempDisablePause disable_pause;
@@ -297,7 +297,7 @@ void GoodBye() {
     bout << "|#5Log Off? ";
     if (yesno()) {
       write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
-      bout.ClearScreen();
+      bout.cls();
       bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
       {
         TempDisablePause disable_pause;
@@ -377,7 +377,7 @@ void ExpressScan() {
 
 void WWIVVersion() {
   bout.nl();
-  bout.ClearScreen();
+  bout.cls();
   bout << "|#9WWIV Bulletin Board System " << wwiv_version << " " << beta_version << wwiv::endl;
   bout << "|#9Copyright (C) 1998-2014, WWIV Software Services.\r\n";
   bout << "|#9All Rights Reserved.\r\n\r\n";
@@ -863,7 +863,7 @@ void UploadFilesBBS() {
   if (ch != 'Q') {
     int nType = 0;
     bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
-    bout.ColorizedInputField(77);
+    bout.mpl(77);
     inputl(s2, 80);
     switch (ch) {
     case '1':

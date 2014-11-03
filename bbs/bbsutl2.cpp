@@ -39,7 +39,7 @@ using wwiv::strings::StringPrintf;
  */
 void repeat_char(char x, int amount, int nColor) {
   bout.Color(nColor);
-  bout << charstr(amount, x);
+  bout << string(amount, x);
   bout.nl();
 }
 
