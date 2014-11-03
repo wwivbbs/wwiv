@@ -792,7 +792,7 @@ void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
     }
     checka(&abort);
     if (!(nTempMsgNum % 5)) {
-      bout.WriteFormatted("%5.5d", nTempMsgNum);
+      bout.bprintf("%5.5d", nTempMsgNum);
       for (int i1 = 0; i1 < 5; i1++) {
         bout << "\b";
       }

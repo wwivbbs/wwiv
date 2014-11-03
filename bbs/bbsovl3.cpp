@@ -355,7 +355,7 @@ void ListAllColors() {
       bout.nl();
     }
     bout.SystemColor(i);
-    bout.WriteFormatted("%3d", i);
+    bout.bprintf("%3d", i);
   }
   bout.Color(0);
   bout.nl();

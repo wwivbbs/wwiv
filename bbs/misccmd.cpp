@@ -92,7 +92,7 @@ void kill_old_email() {
         } else {
           bout << "#" << m.tosys << " @" << m.tosys << wwiv::endl;
         }
-        bout.WriteFormatted("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
+        bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
         time_t lCurrentTime;
         time(&lCurrentTime);
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
@@ -180,7 +180,7 @@ void kill_old_email() {
         break;
         case 'R': {
           bout.nl(2);
-          bout.WriteFormatted("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
+          bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", GetSession()->GetMessageColor(), m.title);
           bool next;
           read_message1(&m.msg, static_cast<char>(m.anony & 0x0f), false, &next, "email", 0, 0);
         }

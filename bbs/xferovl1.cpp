@@ -328,7 +328,7 @@ int read_idz(int mode, int tempdir) {
     align(s);
     dliscan1(udir[tempdir].subnum);
   }
-  bout.WriteFormatted("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
+  bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
                                     directories[udir[tempdir].subnum].name,
                                     udir[tempdir].keys);
   WFile fileDownload(g_szDownloadFileName);
@@ -416,7 +416,7 @@ void tag_it() {
       }
       if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio) &&
           !GetSession()->GetCurrentUser()->IsExemptRatio() && !bad) {
-        bout.WriteFormatted("|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
+        bout.bprintf("|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
                                           ratio(), syscfg.req_ratio);
         bad = true;
       }
@@ -706,7 +706,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
         }
       }
       bout.backline();
-      bout.WriteFormatted(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", pszFileName,
+      bout.bprintf(" |#6? |#1%s %3luK |#5%-43.43s |#7[|#2Y/N/Q|#7] |#0", pszFileName,
                                         bytes_to_k(fs), stripcolors(pszDescription));
       ch = onek_ncr("QYN\r");
       bout.backline();
@@ -742,7 +742,7 @@ int add_batch(char *pszDescription, const char *pszFileName, int dn, long fs) {
         batch[GetSession()->numbatch].sending = 1;
         batch[GetSession()->numbatch].len = fs;
         bout << "\r";
-        bout.WriteFormatted("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
+        bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
                                           GetSession()->numbatch + 1, batch[GetSession()->numbatch].filename, batch[GetSession()->numbatch].len,
                                           ctim(batch[GetSession()->numbatch].time),
                                           directories[batch[GetSession()->numbatch].dir].name);
@@ -848,7 +848,7 @@ void download() {
     }
     if (i < GetSession()->numbatch) {
       if (!returning && batch[i].sending) {
-        bout.WriteFormatted("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", i + 1, batch[i].filename,
+        bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", i + 1, batch[i].filename,
                                           batch[i].len, ctim(batch[i].time), directories[batch[i].dir].name);
       }
     } else {
@@ -856,7 +856,7 @@ void download() {
         count = 0;
         ok = true;
         bout.backline();
-        bout.WriteFormatted("|#2%3d ", GetSession()->numbatch + 1);
+        bout.bprintf("|#2%3d ", GetSession()->numbatch + 1);
         bout.Color(1);
         bool onl = newline;
         newline = false;
@@ -977,7 +977,7 @@ void download() {
     }
     if (!had) {
       bout.nl();
-      bout.WriteFormatted("Your ratio is now: %-6.3f\r\n", ratio());
+      bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
     }
   }
 }
@@ -1053,7 +1053,7 @@ void SetNewFileScanDate() {
   bout.nl();
   struct tm *pTm = localtime(&nscandate);
 
-  bout.WriteFormatted("|#9Current limiting date: |#2%02d/%02d/%02d\r\n", pTm->tm_mon + 1, pTm->tm_mday,
+  bout.bprintf("|#9Current limiting date: |#2%02d/%02d/%02d\r\n", pTm->tm_mon + 1, pTm->tm_mday,
                                     (pTm->tm_year % 100));
   bout.nl();
   bout << "|#9Enter new limiting date in the following format: \r\n";
@@ -1128,7 +1128,7 @@ void SetNewFileScanDate() {
         (dd > 31) || ((m == 0) || (y == 0) || (dd == 0)) ||
         ((m > 12) || (dd > 31))) {
       bout.nl();
-      bout.WriteFormatted("|#6%02d/%02d/%02d is invalid... date not changed!\r\n", m, dd, (y % 100));
+      bout.bprintf("|#6%02d/%02d/%02d is invalid... date not changed!\r\n", m, dd, (y % 100));
       bout.nl();
     } else {
       // Rushfan - Note, this needs a better fix, this whole routine should be replaced.
@@ -1144,7 +1144,7 @@ void SetNewFileScanDate() {
 
     // Display the new nscan date
     struct tm *pNewTime = localtime(&nscandate);
-    bout.WriteFormatted("|#9New Limiting Date: |#2%02d/%02d/%04d\r\n", pNewTime->tm_mon + 1,
+    bout.bprintf("|#9New Limiting Date: |#2%02d/%02d/%04d\r\n", pNewTime->tm_mon + 1,
                                       pNewTime->tm_mday, (pNewTime->tm_year + 1900));
 
     // Hack to make sure the date covers everythig since we had to increment the hour by one

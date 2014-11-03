@@ -100,7 +100,7 @@ void dirlist(int mode) {
           p = 1;
           lines_listed = 0;
           DisplayHorizontalBar(78, 7);
-          bout.WriteFormatted("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ",
+          bout.bprintf("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ",
                                             is ? firstp : firstp + 1, lastp);
           ss = mmkey(1, WSession::mmkeyFileAreas, true);
           if (isdigit(ss[0])) {
@@ -144,14 +144,14 @@ void dirlist(int mode) {
       DisplayHorizontalBar(78, 7);
       if (okconf(GetSession()->GetCurrentUser())) {
         if (uconfdir[1].confnum != -1) {
-          bout.WriteFormatted("|#1Select |#9[|#2%d-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ",
+          bout.bprintf("|#1Select |#9[|#2%d-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ",
                                             is ? 0 : 1, is ? nd - 1 : nd);
         } else {
-          bout.WriteFormatted("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
+          bout.bprintf("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
                                             is ? nd - 1 : nd);
         }
       } else {
-        bout.WriteFormatted("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
+        bout.bprintf("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
                                           is ? nd - 1 : nd);
       }
       ss = mmkey(0, true);

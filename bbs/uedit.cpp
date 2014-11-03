@@ -131,7 +131,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
     bout << "|#9   Data Phone # : |#1" << pUser->GetDataPhoneNumber() << wwiv::endl;
   }
 
-  bout.WriteFormatted("|#2G|#9) Birthday/Age : |#1(%02d/%02d/%02d) (Age: %d) (Gender: %c) \r\n",
+  bout.bprintf("|#2G|#9) Birthday/Age : |#1(%02d/%02d/%02d) (Age: %d) (Gender: %c) \r\n",
                                     pUser->GetBirthdayMonth(), pUser->GetBirthdayDay(),
                                     pUser->GetBirthdayYear(), pUser->GetAge(), pUser->GetGender());
 
@@ -168,15 +168,15 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
     bout << "|#9   First/Last On: |#9(Last: |#1" << pUser->GetLastOn() << "|#9)   (First: |#1" <<
                        pUser->GetFirstOn() << "|#9)\r\n";
 
-    bout.WriteFormatted("|#9   Message Stats: |#9(Post:|#1%u|#9) (Email:|#1%u|#9) (Fd:|#1%u|#9) (Wt:|#1%u|#9) (Net:|#1%u|#9) (Del:|#1%u|#9)\r\n",
+    bout.bprintf("|#9   Message Stats: |#9(Post:|#1%u|#9) (Email:|#1%u|#9) (Fd:|#1%u|#9) (Wt:|#1%u|#9) (Net:|#1%u|#9) (Del:|#1%u|#9)\r\n",
                                       pUser->GetNumMessagesPosted(), pUser->GetNumEmailSent(),
                                       pUser->GetNumFeedbackSent(), pUser->GetNumMailWaiting(), pUser->GetNumNetEmailSent(), pUser->GetNumDeletedPosts());
 
-    bout.WriteFormatted("|#9   Call Stats   : |#9(Total: |#1%u|#9) (Today: |#1%d|#9) (Illegal: |#6%d|#9)\r\n",
+    bout.bprintf("|#9   Call Stats   : |#9(Total: |#1%u|#9) (Today: |#1%d|#9) (Illegal: |#6%d|#9)\r\n",
                                       pUser->GetNumLogons(), (!IsEquals(pUser->GetLastOn(), date())) ? 0 : pUser->GetTimesOnToday(),
                                       pUser->GetNumIllegalLogons());
 
-    bout.WriteFormatted("|#9   Up/Dnld Stats: |#9(Up: |#1%u |#9files in |#1%lu|#9k)  (Dn: |#1%u |#9files in |#1%lu|#9k)\r\n",
+    bout.bprintf("|#9   Up/Dnld Stats: |#9(Up: |#1%u |#9files in |#1%lu|#9k)  (Dn: |#1%u |#9files in |#1%lu|#9k)\r\n",
                                       pUser->GetFilesUploaded(), pUser->GetUploadK(), pUser->GetFilesDownloaded(), pUser->GetDownloadK());
 
     bout << "|#9   Last Baud    : |#1" << pUser->GetLastBaudRate() << wwiv::endl;
@@ -195,7 +195,7 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
     }
   }
   if (pUser->GetExempt() != 0) {
-    bout.WriteFormatted("|#9   Exemptions   : |#1%s %s %s %s %s (%d)\r\n",
+    bout.bprintf("|#9   Exemptions   : |#1%s %s %s %s %s (%d)\r\n",
                                       pUser->IsExemptRatio() ? "XFER" : "    ",
                                       pUser->IsExemptTime() ? "TIME" : "    ",
                                       pUser->IsExemptPost() ? "POST" : "    ",
@@ -241,11 +241,11 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
   if (bLongFormat) {
     print_affil(pUser);
     if (GetApplication()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
-      bout.WriteFormatted("|#1User has%s been callback verified.  ",
+      bout.bprintf("|#1User has%s been callback verified.  ",
                                         (pUser->GetCbv() & 1) == 0 ? " |#6not" : "");
     }
     if (GetApplication()->HasConfigFlag(OP_FLAGS_VOICE_VAL)) {
-      bout.WriteFormatted("|#1User has%s been voice verified.",
+      bout.bprintf("|#1User has%s been voice verified.",
                                         (pUser->GetCbv() & 2) == 0 ? " |#6not" : "");
     }
     bout.nl(2);
@@ -573,7 +573,7 @@ void uedit(int usern, int other) {
         bout << "|#5Are you sure you want to re-enter the birthday? ";
         if (yesno()) {
           bout.nl();
-          bout.WriteFormatted("Current birthdate: %02d/%02d/%02d\r\n",
+          bout.bprintf("Current birthdate: %02d/%02d/%02d\r\n",
                                             user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
           input_age(&user);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);

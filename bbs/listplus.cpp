@@ -169,7 +169,7 @@ static void printtitle_plus_old() {
 
   const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(udir[GetSession()->GetCurrentFileArea()].keys),
           directories[udir[GetSession()->GetCurrentFileArea()].subnum].name, GetSession()->numf);
-  bout.WriteFormatted("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf.c_str());
+  bout.bprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf.c_str());
 
   if (config_listing.lp_options & cfl_header) {
     build_header();
@@ -217,7 +217,7 @@ void print_searching(struct search_record * search_rec) {
     bout.nl(2);
   }
   bout << "|#1<Space> aborts  : ";
-  bout.WriteFormatted(" |B1|15%-40.40s|B0|#0",
+  bout.bprintf(" |B1|15%-40.40s|B0|#0",
                                     directories[udir[GetSession()->GetCurrentFileArea()].subnum].name);
 }
 
@@ -269,7 +269,7 @@ int listfiles_plus(int type) {
 void undrawfile(int filepos, int filenum) {
   lines_listed = 0;
   bout.GotoXY(4, filepos + first_file_pos());
-  bout.WriteFormatted("|%2d%3d|#0", lp_config.file_num_color, filenum);
+  bout.bprintf("|%2d%3d|#0", lp_config.file_num_color, filenum);
 }
 
 
@@ -914,47 +914,47 @@ void sysop_configure() {
     printfile(LPSYSOP_NOEXT);
     bout.GotoXY(38, 2);
     bout.SystemColor(lp_config.normal_highlight);
-    bout.WriteFormatted("%3d", lp_config.normal_highlight);
+    bout.bprintf("%3d", lp_config.normal_highlight);
     bout.GotoXY(77, 2);
     bout.SystemColor(lp_config.normal_menu_item);
-    bout.WriteFormatted("%3d", lp_config.normal_menu_item);
+    bout.bprintf("%3d", lp_config.normal_menu_item);
     bout.GotoXY(38, 3);
     bout.SystemColor(lp_config.current_highlight);
-    bout.WriteFormatted("%3d", lp_config.current_highlight);
+    bout.bprintf("%3d", lp_config.current_highlight);
     bout.GotoXY(77, 3);
     bout.SystemColor(lp_config.current_menu_item);
-    bout.WriteFormatted("%3d", lp_config.current_menu_item);
+    bout.bprintf("%3d", lp_config.current_menu_item);
     bout.Color(0);
     bout.GotoXY(38, 6);
-    bout.WriteFormatted("|%2d%2d", lp_config.tagged_color, lp_config.tagged_color);
+    bout.bprintf("|%2d%2d", lp_config.tagged_color, lp_config.tagged_color);
     bout.GotoXY(77, 6);
-    bout.WriteFormatted("|%2d%2d", lp_config.file_num_color, lp_config.file_num_color);
+    bout.bprintf("|%2d%2d", lp_config.file_num_color, lp_config.file_num_color);
     bout.GotoXY(38, 7);
-    bout.WriteFormatted("|%2d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
+    bout.bprintf("|%2d%2d", lp_config.found_fore_color, lp_config.found_fore_color);
     bout.GotoXY(77, 7);
-    bout.WriteFormatted("|%2d%2d", lp_config.found_back_color, lp_config.found_back_color);
+    bout.bprintf("|%2d%2d", lp_config.found_back_color, lp_config.found_back_color);
     bout.GotoXY(38, 8);
     bout.SystemColor(lp_config.current_file_color);
-    bout.WriteFormatted("%3d", lp_config.current_file_color);
+    bout.bprintf("%3d", lp_config.current_file_color);
     bout.GotoXY(38, 11);
-    bout.WriteFormatted("|#4%2d", lp_config.max_screen_lines_to_show);
+    bout.bprintf("|#4%2d", lp_config.max_screen_lines_to_show);
     bout.GotoXY(77, 11);
-    bout.WriteFormatted("|#4%2d", lp_config.show_at_least_extended);
+    bout.bprintf("|#4%2d", lp_config.show_at_least_extended);
     bout.GotoXY(74, 14);
-    bout.WriteFormatted("|#4%s", lp_config.request_file ? _on_ : _off_);
+    bout.bprintf("|#4%s", lp_config.request_file ? _on_ : _off_);
     bout.GotoXY(74, 15);
-    bout.WriteFormatted("|#4%s", lp_config.search_extended_on ? _on_ : _off_);
+    bout.bprintf("|#4%s", lp_config.search_extended_on ? _on_ : _off_);
     bout.GotoXY(74, 16);
-    bout.WriteFormatted("|#4%s", lp_config.edit_enable ? _on_ : _off_);
+    bout.bprintf("|#4%s", lp_config.edit_enable ? _on_ : _off_);
     bout.Color(0);
     bout.GotoXY(29, 14);
-    bout.WriteFormatted("|#4%s", lp_config.no_configuration ? _on_ : _off_);
+    bout.bprintf("|#4%s", lp_config.no_configuration ? _on_ : _off_);
     bout.GotoXY(29, 15);
-    bout.WriteFormatted("|#4%s", lp_config.colorize_found_text ? _on_ : _off_);
+    bout.bprintf("|#4%s", lp_config.colorize_found_text ? _on_ : _off_);
     bout.GotoXY(29, 16);
-    bout.WriteFormatted("|#4%s", lp_config.simple_search ? _on_ : _off_);
+    bout.bprintf("|#4%s", lp_config.simple_search ? _on_ : _off_);
     bout.GotoXY(29, 17);
-    bout.WriteFormatted("|#4%s", lp_config.check_exist ? _on_ : _off_);
+    bout.bprintf("|#4%s", lp_config.check_exist ? _on_ : _off_);
     bout.GotoXY(1, 19);
     bout << "|#1Q-Quit ";
     char key = onek("Q\rABCDEFGHIJKLMNOPRS", true);

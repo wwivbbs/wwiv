@@ -242,7 +242,7 @@ void savefile(char *b, long lMessageLength, messagerec * pMessageRecord, const s
   }
   break;
   default: {
-    bout.WriteFormatted("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", pMessageRecord->storage_type);
+    bout.bprintf("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", pMessageRecord->storage_type);
     WWIV_ASSERT(false);
   }
   break;
@@ -534,7 +534,7 @@ void sendout_email(const string& title, messagerec * pMessageRec, int anony, int
     memmove(&(b1[i]), b.get(), lEmailFileLen);
     nh.length = lEmailFileLen + i;
     if (nh.length > 32760) {
-      bout.WriteFormatted("Message truncated by %lu bytes for the network.", nh.length - 32760L);
+      bout.bprintf("Message truncated by %lu bytes for the network.", nh.length - 32760L);
       nh.length = 32760;
     }
     if (nFromNetworkNumber != GetSession()->GetNetworkNumber()) {
@@ -1210,7 +1210,7 @@ void read_message(int n, bool *next, int *val) {
     bout << "|#4   FORCED SCAN OF SYSOP INFORMATION - YOU MAY NOT ABORT.  PLEASE READ THESE!  |#0\r\n";
   }
 
-  bout.WriteFormatted(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d |#2%s\r\n", n,
+  bout.bprintf(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d |#2%s\r\n", n,
                                     GetSession()->GetNumMessagesInCurrentMessageArea(), GetSession()->GetMessageColor(),
                                     subboards[GetSession()->GetCurrentReadMessageArea()].name);
   const string subjectLine = "|#9Subj|#7: ";

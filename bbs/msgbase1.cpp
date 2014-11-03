@@ -67,7 +67,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int nSubNumber) {
   netHeaderOrig.method  = 0;
 
   if (netHeaderOrig.length > 32755) {
-    bout.WriteFormatted("Message truncated by %lu bytes for the network.", netHeaderOrig.length - 32755L);
+    bout.bprintf("Message truncated by %lu bytes for the network.", netHeaderOrig.length - 32755L);
     netHeaderOrig.length = 32755;
     lMessageLength = netHeaderOrig.length - strlen(pPostRecord->title) - 1;
   }
@@ -357,7 +357,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     }
     lQuickScanPointer = qsc_p[nSubNumber];
 
-    bout.WriteFormatted("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
+    bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
                                       subboards[GetSession()->GetCurrentReadMessageArea()].name,
                                       usub[GetSession()->GetCurrentMessageArea()].keys, GetSession()->GetNumMessagesInCurrentMessageArea());
 
@@ -377,7 +377,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 
     GetSession()->SetCurrentMessageArea(nOldSubNumber);
     *pnNextSubNumber = nNextSubNumber;
-    bout.WriteFormatted("|#1< %s Q-Scan Done >", subboards[GetSession()->GetCurrentReadMessageArea()].name);
+    bout.bprintf("|#1< %s Q-Scan Done >", subboards[GetSession()->GetCurrentReadMessageArea()].name);
     bout.clreol();
     bout.nl();
     lines_listed = 0;
@@ -386,7 +386,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
       bout << "\r\x1b[4A";
     }
   } else {
-    bout.WriteFormatted("|#1< Nothing new on %s %s >", subboards[nSubNumber].name,
+    bout.bprintf("|#1< Nothing new on %s %s >", subboards[nSubNumber].name,
                                       usub[nBeginSubNumber].keys);
     bout.clreol();
     bout.nl();
@@ -438,12 +438,12 @@ void ScanMessageTitles() {
     bout << "No subs available.\r\n";
     return;
   }
-  bout.WriteFormatted("|#2%d |#9messages in area |#2%s\r\n",
+  bout.bprintf("|#2%d |#9messages in area |#2%s\r\n",
                                     GetSession()->GetNumMessagesInCurrentMessageArea(), subboards[GetSession()->GetCurrentReadMessageArea()].name);
   if (GetSession()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;
   }
-  bout.WriteFormatted("|#9Start listing at (|#21|#9-|#2%d|#9): ",
+  bout.bprintf("|#9Start listing at (|#21|#9-|#2%d|#9): ",
                                     GetSession()->GetNumMessagesInCurrentMessageArea());
   string messageNumber;
   input(&messageNumber, 5, true);
@@ -526,7 +526,7 @@ void remove_post() {
     return;
   }
   bool any = false, abort = false;
-  bout.WriteFormatted("\r\n\nPosts by you on %s\r\n\n",
+  bout.bprintf("\r\n\nPosts by you on %s\r\n\n",
                                     subboards[GetSession()->GetCurrentReadMessageArea()].name);
   for (int j = 1; j <= GetSession()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == GetSession()->usernum) {

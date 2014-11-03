@@ -83,7 +83,7 @@ void WOutStream::Color(int wwivColor) {
 
 void WOutStream::ResetColors() {
   // ANSI Clear Attributes String
-  Write("\x1b[0m");
+  bputs("\x1b[0m");
 }
 
 void WOutStream::GotoXY(int x, int y) {
@@ -96,10 +96,10 @@ void WOutStream::GotoXY(int x, int y) {
 void WOutStream::nl(int nNumLines) {
   for (int i = 0; i < nNumLines; i++) {
     if (endofline[0]) {
-      Write(endofline);
+      bputs(endofline);
       endofline[0] = '\0';
     }
-    Write("\r\n");
+    bputs("\r\n");
     // TODO Change this to fire a notification to a Subject
     // that we should process instant messages now.
     if (inst_msg_waiting() && !bChatLine) {
@@ -111,14 +111,14 @@ void WOutStream::nl(int nNumLines) {
 void WOutStream::bs() {
   bool bSavedEcho = local_echo;
   local_echo = true;
-  Write("\b \b");
+  bputs("\b \b");
   local_echo = bSavedEcho;
 }
 
 void WOutStream::SystemColor(int nColor) {
   char szBuffer[255];
   makeansi(nColor, szBuffer, false);
-  Write(szBuffer);
+  bputs(szBuffer);
 }
 
 void WOutStream::litebar(const char *pszFormatText, ...) {
@@ -156,7 +156,7 @@ void WOutStream::backline() {
  */
 void WOutStream::cls() {
   if (okansi()) {
-    Write("\x1b[2J");
+    bputs("\x1b[2J");
     GotoXY(1, 1);
   } else {
     bputch(CL);
@@ -169,7 +169,7 @@ void WOutStream::cls() {
  */
 void WOutStream::clreol() {
   if (okansi()) {
-    Write("\x1b[K");
+    bputs("\x1b[K");
   }
 }
 
@@ -178,11 +178,11 @@ void WOutStream::mpl(int length) {
     return;
   }
   Color(4);
-  Write(string(length, ' '));
-  Write(StringPrintf("\x1b[%dD", length));
+  bputs(string(length, ' '));
+  bputs(StringPrintf("\x1b[%dD", length));
 }
 
-int WOutStream::Write(const string& text) {
+int WOutStream::bputs(const string& text) {
   CheckForHangup();
   if (text.empty() || hangup) { return 0; }
 
@@ -194,12 +194,12 @@ int WOutStream::Write(const string& text) {
   return text.size();
 }
 
-int WOutStream::WriteFormatted(const char *pszFormatText, ...) {
+int WOutStream::bprintf(const char *pszFormatText, ...) {
   va_list ap;
   char szBuffer[4096];
 
   va_start(ap, pszFormatText);
   vsnprintf(szBuffer, sizeof(szBuffer), pszFormatText, ap);
   va_end(ap);
-  return Write(szBuffer);
+  return bputs(szBuffer);
 }

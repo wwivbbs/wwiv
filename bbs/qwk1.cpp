@@ -66,7 +66,7 @@ void qwk_remove_email(void) {
 
   tmpmailrec* mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
   if (!mloc) {
-    bout.Write("Not enough memory.");
+    bout.bputs("Not enough memory.");
     return;
   }
 
@@ -127,7 +127,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   emchg = false;
   tmpmailrec *mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
   if (!mloc) {
-    bout.Write("Not enough memory");
+    bout.bputs("Not enough memory");
     return;
   }
 
@@ -135,7 +135,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   std::unique_ptr<WFile> f(OpenEmailFile(false));
   if (!f->IsOpen()) {
     bout.nl(2);
-    bout.Write("No mail file exists!");
+    bout.bputs("No mail file exists!");
     bout.nl();
     free(mloc);
     return;
@@ -163,14 +163,14 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   
   if (mw == 0) {
     bout.nl();
-    bout.Write("You have no mail.");
+    bout.bputs("You have no mail.");
     bout.nl();
     free(mloc);
     return;
   }
 
   bout.Color(7);
-  bout.Write("Gathering Email");
+  bout.bputs("Gathering Email");
 
   if (mw == 1) {
     curmail = 0;
@@ -245,10 +245,10 @@ int select_qwk_archiver(struct qwk_junk *qwk_info, int ask) {
   strcpy(allowed, "Q\r");
 
   bout.nl();
-  bout.Write("Select an archiver");
+  bout.bputs("Select an archiver");
   bout.nl();
   if (ask) {
-    bout.Write("0) Ask me later");
+    bout.bputs("0) Ask me later");
   }
   for (x = 0; x < 4; ++x) {
     strcpy(temp, arcs[x].extension);
@@ -257,12 +257,12 @@ int select_qwk_archiver(struct qwk_junk *qwk_info, int ask) {
     if (temp[0]) {
       sprintf(temp, "%d", x + 1);
       strcat(allowed, temp);
-      bout.WriteFormatted("1%d) 3%s", x + 1, arcs[x].extension);
+      bout.bprintf("1%d) 3%s", x + 1, arcs[x].extension);
       bout.nl();
     }
   }
   bout.nl();
-  bout.WriteFormatted("Enter #  Q to Quit <CR>=1 :");
+  bout.bprintf("Enter #  Q to Quit <CR>=1 :");
 
   if (ask) {
     strcat(allowed, "0");
@@ -341,7 +341,7 @@ void upload_reply_packet(void) {
   qwk_system_name(name);
   strcat(name, ".REP");
 
-  bout.WriteFormatted("Hit 'Y' to upload reply packet %s :", name);
+  bout.bprintf("Hit 'Y' to upload reply packet %s :", name);
 
   sprintf(namepath, "%s%s", QWK_DIRECTORY, name);
   
@@ -364,7 +364,7 @@ void upload_reply_packet(void) {
     } else {
       sysoplog("Aborted");
       bout.nl();
-      bout.WriteFormatted("%s not found", name);
+      bout.bprintf("%s not found", name);
       bout.nl();
     }
   }
@@ -455,7 +455,7 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
 
     if (freek1(syscfg.msgsdir) < 10) {
       bout.nl();
-      bout.Write("Sorry, not enough disk space left.");
+      bout.bputs("Sorry, not enough disk space left.");
       bout.nl();
       pausescr();
       return;
@@ -463,10 +463,10 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
 
     if (ForwardMessage(&un, &sy)) {
       bout.nl();
-      bout.Write("Mail Forwarded.]");
+      bout.bputs("Mail Forwarded.]");
       bout.nl();
       if ((un == 0) && (sy == 0)) {
-        bout.Write("Forwarded to unknown user.");
+        bout.bputs("Forwarded to unknown user.");
         pausescr();
         return;
       }
@@ -503,22 +503,22 @@ void qwk_email_text(char *text, long size, char *title, char *to) {
 
     if (sy != 0) {
       bout.nl();
-      bout.WriteFormatted("Name of system: ");
-      bout.Write(csne->name);
-      bout.WriteFormatted("Number of hops:");
-      bout.WriteFormatted("%d", csne->numhops);
+      bout.bprintf("Name of system: ");
+      bout.bputs(csne->name);
+      bout.bprintf("Number of hops:");
+      bout.bprintf("%d", csne->numhops);
       bout.nl(2);
     }
 
     bout.cls();
     bout.Color(2);
-    bout.WriteFormatted("Sending to: %s", s2);
+    bout.bprintf("Sending to: %s", s2);
     bout.nl();
     bout.Color(2);
-    bout.WriteFormatted("Titled    : %s", title);
+    bout.bprintf("Titled    : %s", title);
     bout.nl(2);
     bout.Color(5);
-    bout.WriteFormatted("Correct? ");
+    bout.bprintf("Correct? ");
 
     if (!yesno()) {
       return;
@@ -581,7 +581,7 @@ void process_reply_dat(char *name) {
   if (repfile < 0) {
     bout.nl();
     bout.Color(3);
-    bout.Write("Can't open packet.");
+    bout.bputs("Can't open packet.");
     pausescr();
     return;
   }
@@ -628,13 +628,13 @@ void process_reply_dat(char *name) {
       } else if (qwk.status != ' ' && qwk.status != '-') { // if not public
         bout.cls();
         bout.Color(1);
-        bout.WriteFormatted("Message '2%s1' is marked 3PRIVATE", title);
+        bout.bprintf("Message '2%s1' is marked 3PRIVATE", title);
         bout.nl();
         bout.Color(1);
-        bout.WriteFormatted("It is addressed to 2%s", to);
+        bout.bprintf("It is addressed to 2%s", to);
         bout.nl(2);
         bout.Color(7);
-        bout.WriteFormatted("Route into E-Mail?");
+        bout.bprintf("Route into E-Mail?");
         if (noyes()) {
           to_email = 1;
         }
@@ -666,13 +666,13 @@ void process_reply_dat(char *name) {
             if (strlen(s) != strlen(temp)) {
               bout.nl();
               bout.Color(3);
-              bout.WriteFormatted("1) %s", to);
+              bout.bprintf("1) %s", to);
               bout.nl();
               bout.Color(3);
-              bout.WriteFormatted("2) %s", temp);
+              bout.bprintf("2) %s", temp);
               bout.nl(2);
 
-              bout.WriteFormatted("Which address is correct?");
+              bout.bprintf("Which address is correct?");
               bout.mpl(1);
 
               x = onek("12");
@@ -690,7 +690,7 @@ void process_reply_dat(char *name) {
       } else if (freek1(syscfg.msgsdir) < 10) {
         // Not enough disk space
         bout.nl();
-        bout.Write("Sorry, not enough disk space left.");
+        bout.bputs("Sorry, not enough disk space left.");
         pausescr();
       } else {
         qwk_post_text(text, size, title, atoi(tosub) - 1);
@@ -721,7 +721,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
       while (!done5 && !hangup) {
         bout.nl();
-        bout.WriteFormatted("Then which sub?  ?=List  Q=Don't Post :");
+        bout.bprintf("Then which sub?  ?=List  Q=Don't Post :");
         input(substr, 3);
 
         StringTrim(substr);
@@ -740,7 +740,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     if (sub >= GetSession()->num_subs || sub < 0) {
       bout.Color(5);
-      bout.Write("Sub out of range");
+      bout.bputs("Sub out of range");
 
       ++pass;
       continue;
@@ -751,7 +751,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     while (!hangup) {
       if (!qwk_iscan_literal(GetSession()->GetCurrentMessageArea())) {
         bout.nl();
-        bout.WriteFormatted("MSG file is busy on another instance, try again?");
+        bout.bprintf("MSG file is busy on another instance, try again?");
         if (!noyes()) {
           ++pass;
           continue;
@@ -763,7 +763,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     if (GetSession()->GetCurrentReadMessageArea() < 0) {
       bout.Color(5);
-      bout.Write("Sub out of range");
+      bout.bputs("Sub out of range");
 
       ++pass;
       continue;
@@ -775,7 +775,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     if ((restrict_post & GetSession()->GetCurrentUser()->data.restrict)
         || (GetSession()->GetCurrentUser()->data.posttoday >= ss.posts)) {
       bout.nl();
-      bout.Write("Too many messages posted today.");
+      bout.bputs("Too many messages posted today.");
       bout.nl();
 
       ++pass;
@@ -785,7 +785,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     // User doesn't have enough sl to post on sub
     if (GetSession()->GetEffectiveSl() < subboards[GetSession()->GetCurrentReadMessageArea()].postsl) {
       bout.nl();
-      bout.Write("You can't post here.");
+      bout.bputs("You can't post here.");
       bout.nl();
       ++pass;
       continue;
@@ -800,7 +800,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
       if (GetSession()->GetCurrentUser()->data.restrict & restrict_net) {
         bout.nl();
-        bout.Write("You can't post on networked sub-boards.");
+        bout.bputs("You can't post on networked sub-boards.");
         bout.nl();
         ++pass;
         continue;
@@ -809,29 +809,29 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
     bout.cls();
     bout.Color(2);
-    bout.WriteFormatted("Posting    :");
+    bout.bprintf("Posting    :");
     bout.Color(3);
-    bout.Write(title);
+    bout.bputs(title);
     bout.nl();
 
     bout.Color(2);
-    bout.WriteFormatted("Posting on :");
+    bout.bprintf("Posting on :");
     bout.Color(3);
-    bout.Write(stripcolors(subboards[GetSession()->GetCurrentReadMessageArea()].name));
+    bout.bputs(stripcolors(subboards[GetSession()->GetCurrentReadMessageArea()].name));
     bout.nl();
 
     if (xsubs[GetSession()->GetCurrentReadMessageArea()].nets) {
       bout.Color(2);
-      bout.WriteFormatted("Going on   :");
+      bout.bprintf("Going on   :");
       bout.Color(3);
-      bout.Write(
+      bout.bputs(
         net_networks[xsubs[GetSession()->GetCurrentReadMessageArea()].nets[xsubs[GetSession()->GetCurrentReadMessageArea()].num_nets].net_num].name);
       bout.nl();
     }
 
     bout.nl();
     bout.Color(5);
-    bout.WriteFormatted("Correct?");
+    bout.bprintf("Correct?");
 
     if (noyes()) {
       done = 1;
@@ -860,7 +860,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
 
       if (f == -1) {
         bout.nl();
-        bout.WriteFormatted("MSG file is busy on another instance, try again?");
+        bout.bprintf("MSG file is busy on another instance, try again?");
         if (!noyes()) {
           return;
         }
@@ -872,7 +872,7 @@ void qwk_post_text(char *text, long size, char *title, int sub) {
     // Anonymous
     if (a) {
       bout.Color(1);
-      bout.WriteFormatted("Anonymous?");
+      bout.bprintf("Anonymous?");
       a = yesno() ? 1 : 0;
     }
     bout.nl();
@@ -1012,19 +1012,19 @@ void qwk_sysop(void) {
   while (!done && !hangup) {
     qwk_system_name(sn);
     bout.cls();
-    bout.WriteFormatted("[1] Hello   file : %s\r\n", qwk_cfg.hello);
-    bout.WriteFormatted("[2] News    file : %s\r\n", qwk_cfg.news);
-    bout.WriteFormatted("[3] Goodbye file : %s\r\n", qwk_cfg.bye);
-    bout.WriteFormatted("[4] Packet name  : %s\r\n", sn);
-    bout.WriteFormatted("[5] Max messages per packet (0=No max): %d\r\n", qwk_cfg.max_msgs);
-    bout.WriteFormatted("[6] Modify Bulletins - Current amount= %d\r\n\n", qwk_cfg.amount_blts);
-    bout.WriteFormatted("Hit <Enter> or Q to save and exit: [12345<CR>] ");
+    bout.bprintf("[1] Hello   file : %s\r\n", qwk_cfg.hello);
+    bout.bprintf("[2] News    file : %s\r\n", qwk_cfg.news);
+    bout.bprintf("[3] Goodbye file : %s\r\n", qwk_cfg.bye);
+    bout.bprintf("[4] Packet name  : %s\r\n", sn);
+    bout.bprintf("[5] Max messages per packet (0=No max): %d\r\n", qwk_cfg.max_msgs);
+    bout.bprintf("[6] Modify Bulletins - Current amount= %d\r\n\n", qwk_cfg.amount_blts);
+    bout.bprintf("Hit <Enter> or Q to save and exit: [12345<CR>] ");
 
     int x = onek("Q123456\r\n");
     if (x == '1' || x == '2' || x == '3') {
       bout.nl();
       bout.Color(1);
-      bout.WriteFormatted("Enter new filename:");
+      bout.bprintf("Enter new filename:");
       bout.mpl(12);
     }
 
@@ -1044,9 +1044,9 @@ void qwk_sysop(void) {
       qwk_system_name(sn);
       bout.nl();
       bout.Color(1);
-      bout.WriteFormatted("Current name : %s", sn);
+      bout.bprintf("Current name : %s", sn);
       bout.nl();
-      bout.WriteFormatted("Enter new packet name: ");
+      bout.bprintf("Enter new packet name: ");
       input(sn, 8);
       if (sn[0]) {
         strcpy(qwk_cfg.packet_name, sn);
@@ -1057,7 +1057,7 @@ void qwk_sysop(void) {
 
     case '5': {
       bout.Color(1);
-      bout.WriteFormatted("Enter max messages per packet, 0=No Max: ");
+      bout.bprintf("Enter max messages per packet, 0=No Max: ");
       bout.mpl(5);
       string tmp;
       input(&tmp, 5);
@@ -1081,7 +1081,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
   bool done = false;
   while (!done && !hangup) {
     bout.nl();
-    bout.WriteFormatted("Add - Delete - ? List - Quit");
+    bout.bprintf("Add - Delete - ? List - Quit");
     bout.mpl(1);
 
     int key = onek("Q\rAD?");
@@ -1092,7 +1092,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
       return;
     case 'D': {
       bout.nl();
-      bout.WriteFormatted("Which one?");
+      bout.bprintf("Which one?");
       bout.mpl(2);
 
       input(s, 2);
@@ -1110,21 +1110,21 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
     } break;
     case 'A':
       bout.nl();
-      bout.Write("Enter complete path to Bulletin");
+      bout.bputs("Enter complete path to Bulletin");
       input(s, 80);
 
       if (!WFile::Exists(s)) {
-        bout.WriteFormatted("File doesn't exist, continue?");
+        bout.bprintf("File doesn't exist, continue?");
         if (!yesno()) {
           break;
         }
       }
 
-      bout.Write("Now enter its bulletin name, in the format BLT-????.???");
+      bout.bputs("Now enter its bulletin name, in the format BLT-????.???");
       input(t, BNAME_SIZE);
 
       if (strncasecmp(t, "BLT-", 4) != 0) {
-        bout.Write("Improper format");
+        bout.bputs("Improper format");
         break;
       }
 
@@ -1139,10 +1139,10 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
       bool abort = false;
       int x = 0;
       while (x < qwk_cfg->amount_blts && !abort && !hangup) {
-        bout.WriteFormatted("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
+        bout.bprintf("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
         bout.nl();
         repeat_char(' ', 5);
-        bout.WriteFormatted(qwk_cfg->blt[x]);
+        bout.bprintf(qwk_cfg->blt[x]);
         bout.nl();
         abort = checka();
         ++x;

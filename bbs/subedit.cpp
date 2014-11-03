@@ -208,7 +208,7 @@ char* GetAr(subboardrec r, char *pszAr) {
 
 void DisplayNetInfo(int nSubNum) {
   if (xsubs[nSubNum].num_nets) {
-    bout.WriteFormatted("\r\n      %-12.12s %-7.7s %-6.6s  Scrb  %s\r\n",
+    bout.bprintf("\r\n      %-12.12s %-7.7s %-6.6s  Scrb  %s\r\n",
                                       "Network", "Type", "Host", " Flags");
     xtrasubsnetrec *xnp = xsubs[nSubNum].nets;
     for (int i = 0; i < xsubs[nSubNum].num_nets; i++, xnp++) {
@@ -227,7 +227,7 @@ void DisplayNetInfo(int nSubNum) {
         char szNetFileName[ MAX_PATH ];
         sprintf(szNetFileName, "%sn%s.net", net_networks[xnp->net_num].dir, xnp->stype);
         int num = amount_of_subscribers(szNetFileName);
-        bout.WriteFormatted("   %c) %-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
+        bout.bprintf("   %c) %-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
                                           i + 'a',
                                           net_networks[xnp->net_num].name,
                                           xnp->stype,
@@ -236,7 +236,7 @@ void DisplayNetInfo(int nSubNum) {
                                           (xnp->flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                                           (xnp->flags & XTRA_NET_AUTO_INFO) ? szBuffer2 : "");
       } else {
-        bout.WriteFormatted("   %c) %-12.12s %-7.7s %-6.6s  %s%s\r\n",
+        bout.bprintf("   %c) %-12.12s %-7.7s %-6.6s  %s%s\r\n",
                                           i + 'a',
                                           net_networks[xnp->net_num].name,
                                           xnp->stype,
@@ -263,7 +263,7 @@ void modify_sub(int n) {
     bout.cls();
     char szSubNum[81];
     sprintf(szSubNum, "%s %d", "|B1|15Editing Message Area #", n);
-    bout.WriteFormatted("%-85s", szSubNum);
+    bout.bprintf("%-85s", szSubNum);
     bout.Color(0);
     bout.nl(2);
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
@@ -485,7 +485,7 @@ void modify_sub(int n) {
         } else {
           bout << "|#2Modify which (a-";
         }
-        bout.WriteFormatted("%c", 'a' + xsubs[n].num_nets - 1);
+        bout.bprintf("%c", 'a' + xsubs[n].num_nets - 1);
         bout << "), <space>=Quit? ";
         char szCharString[ 81 ];
         szCharString[0] = ' ';
