@@ -26,6 +26,11 @@
 #include "core/wfndfile.h"
 
 using std::string;
+using wwiv::bbs::InputMode;
+using wwiv::strings::IsEqualsIgnoreCase;
+using wwiv::strings::StringToChar;
+using wwiv::strings::StringToShort;
+using wwiv::strings::StringToUnsignedShort;
 
 bool GetMenuDir(string& menuDir);
 bool GetMenuMenu(const string& pszDirectoryName, string& menuName);
@@ -46,8 +51,6 @@ void ListMenuMenus(const char *pszDirectoryName);
 #define HIBYTE(w)           ((uint8_t)(((uint16_t)(w) >> 8) & 0xFF))
 #endif  // HIBYTE
 #endif
-
-using wwiv::bbs::InputMode;
 
 void EditMenus() {
   char szTemp1[21];
@@ -226,35 +229,35 @@ void EditMenus() {
         GetSession()->bout << "Min SL : ";
         input(szTemp1, 3);
         if (szTemp1[0]) {
-          ((MenuHeader *)(&Menu))->nMinSL = wwiv::strings::StringToShort(szTemp1);
+          ((MenuHeader *)(&Menu))->nMinSL = StringToShort(szTemp1);
         }
         break;
       case 'I':
         GetSession()->bout << "Min DSL : ";
         input(szTemp1, 3);
         if (szTemp1[0]) {
-          ((MenuHeader *)(&Menu))->nMinDSL = wwiv::strings::StringToShort(szTemp1);
+          ((MenuHeader *)(&Menu))->nMinDSL = StringToShort(szTemp1);
         }
         break;
       case 'J':
         GetSession()->bout << "AR : ";
         input(szTemp1, 5);
         if (szTemp1[0]) {
-          ((MenuHeader *)(&Menu))->uAR = wwiv::strings::StringToUnsignedShort(szTemp1);
+          ((MenuHeader *)(&Menu))->uAR = StringToUnsignedShort(szTemp1);
         }
         break;
       case 'K':
         GetSession()->bout << "DAR : ";
         input(szTemp1, 5);
         if (szTemp1[0]) {
-          ((MenuHeader *)(&Menu))->uDAR = wwiv::strings::StringToUnsignedShort(szTemp1);
+          ((MenuHeader *)(&Menu))->uDAR = StringToUnsignedShort(szTemp1);
         }
         break;
       case 'L':
         GetSession()->bout << "Restrictions : ";
         input(szTemp1, 5);
         if (szTemp1[0]) {
-          ((MenuHeader *)(&Menu))->uRestrict = wwiv::strings::StringToUnsignedShort(szTemp1);
+          ((MenuHeader *)(&Menu))->uRestrict = StringToUnsignedShort(szTemp1);
         }
         break;
       case 'M':
@@ -267,7 +270,7 @@ void EditMenus() {
         if (incom && ((MenuHeader *)(&Menu))->szPassWord[0]) {
           GetSession()->bout << "Current PW: ";
           input(szPW, 20);
-          if (!wwiv::strings::IsEqualsIgnoreCase(szPW, ((MenuHeader *)(&Menu))->szPassWord)) {
+          if (!IsEqualsIgnoreCase(szPW, ((MenuHeader *)(&Menu))->szPassWord)) {
             MenuSysopLog("Unable to change PW");
             break;
           }
@@ -371,49 +374,49 @@ void EditMenus() {
         GetSession()->bout << "Min SL : ";
         input(szTemp1, 3);
         if (szTemp1[0]) {
-          Menu.nMinSL = wwiv::strings::StringToShort(szTemp1);
+          Menu.nMinSL = StringToShort(szTemp1);
         }
         break;
       case 'L':
         GetSession()->bout << "Max SL : ";
         input(szTemp1, 3);
         if (szTemp1[0]) {
-          Menu.iMaxSL = wwiv::strings::StringToShort(szTemp1);
+          Menu.iMaxSL = StringToShort(szTemp1);
         }
         break;
       case 'M':
         GetSession()->bout << "Min DSL : ";
         input(szTemp1, 3);
         if (szTemp1[0]) {
-          Menu.nMinDSL = wwiv::strings::StringToShort(szTemp1);
+          Menu.nMinDSL = StringToShort(szTemp1);
         }
         break;
       case 'N':
         GetSession()->bout << "Max DSL : ";
         input(szTemp1, 3);
         if (szTemp1[0]) {
-          Menu.iMaxDSL = wwiv::strings::StringToShort(szTemp1);
+          Menu.iMaxDSL = StringToShort(szTemp1);
         }
         break;
       case 'O':
         GetSession()->bout << "AR : ";
         input(szTemp1, 5);
         if (szTemp1[0]) {
-          Menu.uAR = wwiv::strings::StringToUnsignedShort(szTemp1);
+          Menu.uAR = StringToUnsignedShort(szTemp1);
         }
         break;
       case 'P':
         GetSession()->bout << "DAR : ";
         input(szTemp1, 5);
         if (szTemp1[0]) {
-          Menu.uDAR = wwiv::strings::StringToUnsignedShort(szTemp1);
+          Menu.uDAR = StringToUnsignedShort(szTemp1);
         }
         break;
       case 'R':
         GetSession()->bout << "Restrictions : ";
         input(szTemp1, 5);
         if (szTemp1[0]) {
-          Menu.uRestrict = wwiv::strings::StringToUnsignedShort(szTemp1);
+          Menu.uRestrict = StringToUnsignedShort(szTemp1);
         }
         break;
       case 'S':
@@ -426,7 +429,7 @@ void EditMenus() {
         if (incom && Menu.szPassWord[0]) {
           GetSession()->bout << "Current PW: ";
           input(szPW, 20);
-          if (!wwiv::strings::IsEqualsIgnoreCase(szPW, Menu.szPassWord)) {
+          if (!IsEqualsIgnoreCase(szPW, Menu.szPassWord)) {
             MenuSysopLog("Unable to change PW");
             break;
           }
@@ -818,79 +821,79 @@ void EditPulldownColors(MenuHeader * pMenuHeader) {
     case 'A':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nTitleColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nTitleColor = StringToChar(szTemp);
       }
       break;
     case 'B':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nMainBorderColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nMainBorderColor = StringToChar(szTemp);
       }
       break;
     case 'C':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nMainBoxColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nMainBoxColor = StringToChar(szTemp);
       }
       break;
     case 'D':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nMainTextColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nMainTextColor = StringToChar(szTemp);
       }
       break;
     case 'E':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nMainTextHLColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nMainTextHLColor = StringToChar(szTemp);
       }
       break;
     case 'F':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nMainSelectedColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nMainSelectedColor = StringToChar(szTemp);
       }
       break;
     case 'G':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nMainSelectedHLColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nMainSelectedHLColor = StringToChar(szTemp);
       }
       break;
     case 'K':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nItemBorderColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nItemBorderColor = StringToChar(szTemp);
       }
       break;
     case 'L':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nItemBoxColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nItemBoxColor = StringToChar(szTemp);
       }
       break;
     case 'M':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nItemTextColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nItemTextColor = StringToChar(szTemp);
       }
       break;
     case 'N':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nItemTextHLColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nItemTextHLColor = StringToChar(szTemp);
       }
       break;
     case 'O':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nItemSelectedColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nItemSelectedColor = StringToChar(szTemp);
       }
       break;
     case 'P':
       input(szTemp, 3);
       if (szTemp[0]) {
-        pMenuHeader->nItemSelectedHLColor = wwiv::strings::StringToChar(szTemp);
+        pMenuHeader->nItemSelectedHLColor = StringToChar(szTemp);
       }
       break;
     case 'Q':
