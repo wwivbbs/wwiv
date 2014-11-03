@@ -84,9 +84,9 @@ class WSession {
   virtual ~WSession();
 
  public:
-  static const int mmkeyMessageAreas = 0;
-  static const int mmkeyFileAreas = 1;
-  static const int mmkeyChains = 2;
+  static const int mmkeyNoArea = 0;
+  static const int mmkeyMessageAreas = 1;
+  static const int mmkeyFileAreas = 2;
 
   WUser* GetCurrentUser() { return &m_thisuser; }
 
@@ -141,9 +141,6 @@ class WSession {
 
   bool IsUserOnline() const { return m_bUserOnline; }
   void SetUserOnline(bool b) { m_bUserOnline = b; }
-
-  int  GetMMKeyArea() const { return m_nMMKeyArea; }
-  void SetMMKeyArea(int n) { m_nMMKeyArea = n; }
 
   int  GetFileAreaCacheNumber() const { return m_nFileAreaCache; }
   void SetFileAreaCacheNumber(int n) { m_nFileAreaCache = n; }
@@ -276,8 +273,7 @@ class WSession {
               m_bExecUseWaitForInputIdle,
               m_bExecLogSyncFoss;
 
-  int         m_nMMKeyArea,
-              m_nNumMessagesReadThisLogon,
+  int         m_nNumMessagesReadThisLogon,
               m_nFileAreaCache,
               m_nMessageAreaCache,
               m_nCurrentLanguageNumber,
