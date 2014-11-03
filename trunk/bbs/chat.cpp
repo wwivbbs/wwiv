@@ -31,6 +31,7 @@
 
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::strings::IsEqualsIgnoreCase;
 
 static int g_nChatOpSecLvl;
 static int g_nNumActions;
@@ -179,10 +180,10 @@ int f_action(int nStartPos, int nEndPos, char *pszAWord) {
   int test = ((nEndPos - nStartPos) / 2) + nStartPos;
   if (!((nEndPos - nStartPos) / 2)) {
     test++;
-    if (wwiv::strings::IsEqualsIgnoreCase(pszAWord, actions[test]->aword)) {
+    if (IsEqualsIgnoreCase(pszAWord, actions[test]->aword)) {
       return test;
     }
-    if (wwiv::strings::IsEqualsIgnoreCase(pszAWord, actions[test - 1]->aword)) {
+    if (IsEqualsIgnoreCase(pszAWord, actions[test - 1]->aword)) {
       return test - 1;
     } else {
       return -1;
@@ -211,7 +212,7 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
   if (bActionMode) {
     bActionHandled = !check_action(pszMessage, pszColorString, loc);
   }
-  if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/r")) {
+  if (IsEqualsIgnoreCase(pszMessage, "/r")) {
     /* "Undocumented Feature" - the original alpha version of WMChat had a /r
     * command to look up a user's registry from inside chat.  I took this
     * out when I released the program, but am now putting it back in due to
@@ -224,23 +225,23 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     GetSession()->bout.NewLine();
     bActionHandled = 0;
 #endif
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/w")) {
+  } else if (IsEqualsIgnoreCase(pszMessage, "/w")) {
     bActionHandled = 0;
     multi_instance();
     GetSession()->bout.NewLine();
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "list")) {
+  } else if (IsEqualsIgnoreCase(pszMessage, "list")) {
     GetSession()->bout.NewLine();
     for (int i2 = 0; i2 <= g_nNumActions; i2++) {
       GetSession()->bout.WriteFormatted("%-16.16s", actions[i2]->aword);
     }
     GetSession()->bout.NewLine();
     bActionHandled = 0;
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/q") ||
-             wwiv::strings::IsEqualsIgnoreCase(pszMessage, "x")) {
+  } else if (IsEqualsIgnoreCase(pszMessage, "/q") ||
+             IsEqualsIgnoreCase(pszMessage, "x")) {
     bActionHandled = 0;
     GetSession()->bout << "\r\n|#2Exiting Chatroom\r\n";
     return 0;
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/a")) {
+  } else if (IsEqualsIgnoreCase(pszMessage, "/a")) {
     bActionHandled = 0;
     if (bActionMode) {
       GetSession()->bout << "|#1[|#9Action mode disabled|#1]\r\n";
@@ -249,10 +250,10 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
       GetSession()->bout << "|#1[|#9Action mode enabled|#1]\r\n";
       bActionMode = true;
     }
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/s")) {
+  } else if (IsEqualsIgnoreCase(pszMessage, "/s")) {
     bActionHandled = 0;
     secure_ch(loc);
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/u")) {
+  } else if (IsEqualsIgnoreCase(pszMessage, "/u")) {
     bActionHandled = 0;
     char szFileName[ MAX_PATH ];
     sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
@@ -264,7 +265,7 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
     } else {
       GetSession()->bout << "|#1[|#9Channel not secured!|#1]\r\n";
     }
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/l") &&
+  } else if (IsEqualsIgnoreCase(pszMessage, "/l") &&
              GetSession()->GetCurrentUser()->GetSl() >= g_nChatOpSecLvl) {
     GetSession()->bout << "\r\n|#9Username: ";
     input(szText, 30);
@@ -277,15 +278,15 @@ int main_loop(char *pszMessage, char *pszFromMessage, char *pszColorString, char
       GetSession()->bout << "|#6Unknown user.\r\n";
     }
     bActionHandled = 0;
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/p")) {
+  } else if (IsEqualsIgnoreCase(pszMessage, "/p")) {
     bActionHandled = 0;
     page_user(loc);
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/c")) {
+  } else if (IsEqualsIgnoreCase(pszMessage, "/c")) {
     int nChannel = change_channels(loc);
     loc = nChannel;
     bActionHandled = 0;
-  } else if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "?") ||
-             wwiv::strings::IsEqualsIgnoreCase(pszMessage, "/?")) {
+  } else if (IsEqualsIgnoreCase(pszMessage, "?") ||
+             IsEqualsIgnoreCase(pszMessage, "/?")) {
     bActionHandled = 0;
     printfile(CHAT_NOEXT);
   } else if (bActionHandled && pszMessage[0] == '>') {
@@ -439,7 +440,7 @@ int wusrinst(char *n) {
     if (ir.flags & INST_FLAGS_ONLINE) {
       WUser user;
       GetApplication()->GetUserManager()->ReadUser(&user, ir.user);
-      if (wwiv::strings::IsEqualsIgnoreCase(user.GetName(), n)) {
+      if (IsEqualsIgnoreCase(user.GetName(), n)) {
         return i;
       }
     }
@@ -636,11 +637,11 @@ bool check_action(char *pszMessage, char *pszColorString, int loc) {
   char s[12];
 
   unsigned int x = rip_words(0, pszMessage, s, 12, ' ');
-  if (wwiv::strings::IsEqualsIgnoreCase("GA", s)) {
+  if (IsEqualsIgnoreCase("GA", s)) {
     ga(pszMessage + x, pszColorString, loc, 0);
     return true;
   }
-  if (wwiv::strings::IsEqualsIgnoreCase("GA's", s)) {
+  if (IsEqualsIgnoreCase("GA's", s)) {
     ga(pszMessage + x, pszColorString, loc, 1);
     return true;
   }
@@ -664,7 +665,7 @@ void exec_action(const char *pszMessage, char *pszColorString, int loc, int nact
   WUser u;
 
   bool bOk = (strlen(pszMessage) == 0) ? false : true;
-  if (wwiv::strings::IsEqualsIgnoreCase(pszMessage, "?")) {
+  if (IsEqualsIgnoreCase(pszMessage, "?")) {
     action_help(nact);
     return;
   }

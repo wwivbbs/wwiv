@@ -27,6 +27,7 @@
 #include "core/wwivassert.h"
 
 using std::string;
+using wwiv::strings::IsEquals;
 
 // Displays the list of chains to a user
 static void show_chains(int *mapp, int *map) {
@@ -265,17 +266,17 @@ void do_chains() {
       GetSession()->SetMMKeyArea(WSession::mmkeyChains);
       GetSession()->bout << "\r\n|#6Please wait...\r\n";
       run_chain(map[ nChainNumber - 1 ]);
-    } else if (wwiv::strings::IsEquals(ss, "Q")) {
+    } else if (IsEquals(ss, "Q")) {
       GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
       done = true;
-    } else if (wwiv::strings::IsEquals(ss, "?")) {
+    } else if (IsEquals(ss, "?")) {
       show_chains(&mapp, map);
-    } else if (wwiv::strings::IsEquals(ss, "P")) {
+    } else if (IsEquals(ss, "P")) {
       if (start > 0) {
         start -= 14;
       }
       start = std::max<int>(start, 0);
-    } else if (wwiv::strings::IsEquals(ss, "N")) {
+    } else if (IsEquals(ss, "N")) {
       if (start + 14 < mapp) {
         start += 14;
       }
