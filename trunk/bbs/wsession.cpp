@@ -26,15 +26,17 @@
 
 using std::string;
 
+WOutStream bout;
+
 WSession::WSession(WApplication* app) : WSession(app, nullptr) {}
 
-WSession::WSession(WApplication* app, WLocalIO* localIO) {
+WSession::WSession(WApplication* app, WLocalIO* localIO) : bout(::bout) {
   if (localIO == nullptr) {
     m_pLocalIO = new WLocalIO();
   } else {
     m_pLocalIO = localIO;
   }
-  bout.SetLocalIO(m_pLocalIO);
+  ::bout.SetLocalIO(m_pLocalIO);
 
   m_bLastKeyLocal = true;
   m_pApplication  = app;

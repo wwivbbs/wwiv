@@ -59,8 +59,6 @@ void EditMenus() {
   int nAmount = 0;
   MenuHeader header;
   MenuRec Menu;
-
-
   GetSession()->bout.ClearScreen();
   GetSession()->bout << "|#2WWIV Menu Editor|#0\r\n";
 
