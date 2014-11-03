@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "wwiv.h"
 #include "instmsg.h"
@@ -23,6 +24,9 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
+using std::string;
+using wwiv::strings::IsEquals;
+using wwiv::strings::StringPrintf;
 
 void gfl_hdr(int which);
 void list_sec(int *map, int nmap);
@@ -31,8 +35,8 @@ void gfile_sec(int sn);
 void gfiles2();
 void gfiles3(int n);
 
-char *get_file(const char *pszFileName, long *len) {
-  WFile file(pszFileName);
+char *get_file(const string& filename, long *len) {
+  WFile file(filename);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     *len = 0L;
     return nullptr;
@@ -48,28 +52,22 @@ char *get_file(const char *pszFileName, long *len) {
   return pszFileText;
 }
 
-
 gfilerec *read_sec(int sn, int *nf) {
   gfilerec *pRecord;
+  *nf = 0;
 
   int nSectionSize = sizeof(gfilerec) * gfilesec[sn].maxfiles;
-  if ((pRecord = static_cast< gfilerec *>(BbsAllocA(nSectionSize))) == nullptr) {
-    *nf = 0;
+  if ((pRecord = static_cast<gfilerec *>(BbsAllocA(nSectionSize))) == nullptr) {
     return nullptr;
   }
 
-  char szFileName[ MAX_PATH ];
-  sprintf(szFileName, "%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
-
-  WFile file(szFileName);
-  if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
-    *nf = 0;
-  } else {
+  const string filename = StringPrintf("%s%s.gfl", syscfg.datadir, gfilesec[sn].filename);
+  WFile file(filename);
+  if (file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
     *nf = file.Read(pRecord, nSectionSize) / sizeof(gfilerec);
   }
   return pRecord;
 }
-
 
 void gfl_hdr(int which) {
   char s[255], s1[81], s2[81], s3[81];
@@ -134,7 +132,6 @@ void gfl_hdr(int which) {
   pla(s, &abort);
   bout.Color(0);
 }
-
 
 void list_sec(int *map, int nmap) {
   char s[255], s1[255], s2[81], s3[81], s4[81], s5[81], s7[81];
@@ -238,8 +235,7 @@ void list_sec(int *map, int nmap) {
   bout.nl();
 }
 
-
-void list_gfiles(gfilerec * g, int nf, int sn) {
+void list_gfiles(gfilerec* g, int nf, int sn) {
   int i, i2;
   char s[255], s1[255], s2[81], s3[81], s4[30], s5[30];
   char lnum[5], rnum[5], lsize[5], rsize[5], path_name[255];
@@ -355,13 +351,12 @@ void list_gfiles(gfilerec * g, int nf, int sn) {
   bout.nl();
 }
 
-
 void gfile_sec(int sn) {
   int i, i1, i2, nf;
   char xdc[81], *ss, *ss1, szFileName[ MAX_PATH ];
   bool abort;
 
-  gfilerec *g = read_sec(sn, &nf);
+  gfilerec* g = read_sec(sn, &nf);
   if (g == nullptr) {
     return;
   }
@@ -381,13 +376,13 @@ void gfile_sec(int sn) {
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
     ss = mmkey(2);
     i = atoi(ss);
-    if (wwiv::strings::IsEquals(ss, "Q")) {
+    if (IsEquals(ss, "Q")) {
       done = true;
-    } else if (wwiv::strings::IsEquals(ss, "E") && so()) {
+    } else if (IsEquals(ss, "E") && so()) {
       done = true;
       gfiles3(sn);
     }
-    if (wwiv::strings::IsEquals(ss, "A") && so()) {
+    if (IsEquals(ss, "A") && so()) {
       free(g);
       fill_sec(sn);
       g = read_sec(sn, &nf);
@@ -400,7 +395,7 @@ void gfile_sec(int sn) {
       for (i = 1; i <= nf / 10; i++) {
         odc[i - 1] = static_cast<char>(i + '0');
       }
-    } else if (wwiv::strings::IsEquals(ss, "R") && so()) {
+    } else if (IsEquals(ss, "R") && so()) {
       bout.nl();
       bout << "|#2G-file number to delete? ";
       ss1 = mmkey(2);
@@ -426,9 +421,9 @@ void gfile_sec(int sn) {
           bout << "\r\nDeleted.\r\n\n";
         }
       }
-    } else if (wwiv::strings::IsEquals(ss, "?")) {
+    } else if (IsEquals(ss, "?")) {
       list_gfiles(g, nf, sn);
-    } else if (wwiv::strings::IsEquals(ss, "Q")) {
+    } else if (IsEquals(ss, "Q")) {
       done = true;
     } else if (i > 0 && i <= nf) {
       sprintf(szFileName, "%s%c%s", gfilesec[sn].filename, WFile::pathSeparatorChar, g[i - 1].filename);
@@ -437,17 +432,17 @@ void gfile_sec(int sn) {
       if (i1 == 0) {
         sysoplogf("Read G-file '%s'", g[i - 1].filename);
       }
-    } else if (wwiv::strings::IsEquals(ss, "D")) {
+    } else if (IsEquals(ss, "D")) {
       bool done1 = false;
       while (!done1 && !hangup) {
         bout << "|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5";
         ss = mmkey(2);
         i2 = atoi(ss);
         abort = false;
-        if (wwiv::strings::IsEquals(ss, "?")) {
+        if (IsEquals(ss, "?")) {
           list_gfiles(g, nf, sn);
           bout << "|#9Current G|#1-|#9File Section |#1: |#5" << gfilesec[sn].name << wwiv::endl;
-        } else if (wwiv::strings::IsEquals(ss, "Q")) {
+        } else if (IsEquals(ss, "Q")) {
           list_gfiles(g, nf, sn);
           done1 = true;
         } else if (!abort) {
@@ -486,14 +481,12 @@ void gfile_sec(int sn) {
   strcpy(odc, xdc);
 }
 
-
 void gfiles2() {
   write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_ONLINE);
   sysoplog("@ Ran Gfile Edit");
   gfileedit();
   gfiles();
 }
-
 
 void gfiles3(int n) {
   write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_ONLINE);
@@ -502,21 +495,16 @@ void gfiles3(int n) {
   gfile_sec(n);
 }
 
-
 void gfiles() {
-  int * map = static_cast<int *>(BbsAllocA(GetSession()->max_gfilesec * sizeof(int)));
+  int* map = static_cast<int *>(BbsAllocA(GetSession()->max_gfilesec * sizeof(int)));
   WWIV_ASSERT(map);
-  if (!map) {
-    return;
-  }
 
-  bool done   = false;
-  int nmap    = 0;
-  int i       = 0;
-  for (i = 0; i < 20; i++) {
+  bool done = false;
+  int nmap = 0;
+  for (int i = 0; i < 20; i++) {
     odc[i] = 0;
   }
-  for (i = 0; i < GetSession()->num_sec; i++) {
+  for (int i = 0; i < GetSession()->num_sec; i++) {
     bool ok = true;
     if (GetSession()->GetCurrentUser()->GetAge() < gfilesec[i].age) {
       ok = false;
@@ -546,29 +534,27 @@ void gfiles() {
     bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
     char * ss = mmkey(2);
-    if (wwiv::strings::IsEquals(ss, "Q")) {
+    if (IsEquals(ss, "Q")) {
       done = true;
-    } else if (wwiv::strings::IsEquals(ss, "G") && so()) {
+    } else if (IsEquals(ss, "G") && so()) {
       done = true;
       gfiles2();
-    } else if (wwiv::strings::IsEquals(ss, "A") && cs()) {
+    } else if (IsEquals(ss, "A") && cs()) {
       bool bIsSectionFull = false;
-      for (i = 0; i < nmap && !bIsSectionFull; i++) {
+      for (int i = 0; i < nmap && !bIsSectionFull; i++) {
         bout.nl();
         bout << "Now loading files for " << gfilesec[map[i]].name << "\r\n\n";
         bIsSectionFull = fill_sec(map[i]);
       }
     } else {
-      i = atoi(ss);
+      int i = atoi(ss);
       if (i > 0 && i <= nmap) {
-        gfile_sec(map[ i - 1 ]);
+        gfile_sec(map[i-1]);
       }
     }
     if (!done) {
       list_sec(map, nmap);
     }
   }
-
   free(map);
 }
-

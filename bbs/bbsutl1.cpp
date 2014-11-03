@@ -29,6 +29,7 @@
 
 using std::string;
 using std::unique_ptr;
+using wwiv::strings::StrCat;
 using wwiv::strings::StringPrintf;
 
 /**
@@ -46,7 +47,7 @@ bool AllowLocalSysop() {
  * @param pUserNumber OUT The User Number
  * @param pSystemmNumber OUT The System Number
  */
-void parse_email_info(const string emailAddress, int *pUserNumber, int *pSystemNumber) {
+void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystemNumber) {
   char *ss1, onx[20], ch, *mmk;
   unsigned nUserNumber, nSystemNumber;
   int i, nv, on, xx, onxi, odci;
@@ -310,15 +311,13 @@ void hang_it_up() {
  * Returns 1 if sucessful, else returns 0. The pause_delay is optional and
  * is used to insert silences between tones.
  */
-bool play_sdf(const string soundFileName, bool abortable) {
+bool play_sdf(const string& soundFileName, bool abortable) {
   WWIV_ASSERT(!soundFileName.empty());
 
   string fullPathName;
   // append gfilesdir if no path specified
   if (soundFileName.find(WFile::pathSeparatorChar) == string::npos) {
-    std::ostringstream ss;
-    ss << syscfg.gfilesdir << soundFileName;
-    fullPathName = ss.str();
+    fullPathName = StrCat(syscfg.gfilesdir, soundFileName);
   } else {
     fullPathName = soundFileName;
   }
