@@ -229,7 +229,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
           // For some reason this doesn't write twice locally, so it works pretty well.
           szReadBuffer[ nBufferPtr ] = '\0';
           fprintf(hLogFile, "{%s}\r\n", szReadBuffer);
-          GetSession()->bout << szReadBuffer;
+          bout << szReadBuffer;
 
           //ExpandWWIVHeartCodes( szReadBuffer );
           //int nNumWritten = GetSession()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );

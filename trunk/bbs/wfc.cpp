@@ -44,7 +44,7 @@ static int inst_num;
 
 void wfc_cls() {
   if (GetApplication()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
-    GetSession()->bout.ResetColors();
+    bout.ResetColors();
     GetSession()->localIO()->LocalCls();
     GetSession()->wfc_status = 0;
     GetSession()->localIO()->SetCursor(WLocalIO::cursorNormal);

@@ -38,9 +38,9 @@ void print_quests() {
     sprintf(szBuffer, "|#2%2d|#7) |#1%s", i, v.numanswers ? v.question : ">>> NO QUESTION <<<");
     pla(szBuffer, &abort);
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (abort) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
 }
 
@@ -49,7 +49,7 @@ void set_question(int ii) {
   votingrec v;
   voting_response vr;
 
-  GetSession()->bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
+  bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
   std::string question;
   inputl(&question, 75, true);
   strcpy(v.question, question.c_str());
@@ -61,17 +61,17 @@ void set_question(int ii) {
     v.responses[i] = vr;
   }
   if (question.empty()) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#6Delete Question #" << ii + 1 << ", Are you sure? ";
+    bout.nl();
+    bout << "|#6Delete Question #" << ii + 1 << ", Are you sure? ";
     if (!yesno()) {
       return;
     }
   } else {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Enter answer choices, Enter a blank line when finished.";
-    GetSession()->bout.NewLine(2);
+    bout.nl();
+    bout << "|#5Enter answer choices, Enter a blank line when finished.";
+    bout.nl(2);
     while (v.numanswers < 19) {
-      GetSession()->bout << "|#2" << v.numanswers + 1 << "|#7: ";
+      bout << "|#2" << v.numanswers + 1 << "|#7: ";
       std::string response;
       inputl(&response, 63, true);
       strcpy(vr.response, response.c_str());
@@ -121,8 +121,8 @@ void ivotes() {
   bool done = false;
   do {
     print_quests();
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2Which (Q=Quit) ? ";
+    bout.nl();
+    bout << "|#2Which (Q=Quit) ? ";
     std::string questionNumber;
     input(&questionNumber, 2);
     if (questionNumber == "Q") {
@@ -165,8 +165,8 @@ void voteprint() {
     votingDat.Read(&v, sizeof(votingrec));
     votingDat.Close();
     if (v.numanswers) {
-      GetSession()->bout << v.question;
-      GetSession()->bout.NewLine();
+      bout << v.question;
+      bout.nl();
       std::ostringstream text;
       text << "\r\n" << v.question << "\r\n";
       votingText.Write(text.str());

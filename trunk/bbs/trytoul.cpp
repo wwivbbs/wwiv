@@ -54,7 +54,7 @@ int try_to_ul(char *pszFileName) {
   WWIV_make_path(dest);
   GetApplication()->CdHome();   // ensure we are in the correct directory
 
-  GetSession()->bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
+  bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
   sysoplogf("Failed to upload %s, moving to TRY2UL dir", pszFileName);
 
@@ -94,8 +94,8 @@ int try_to_ul_wh(char *pszFileName) {
     t2u_error(pszFileName, "Bad filename");          // bad filename
     return 1;
   }
-  GetSession()->bout.ClearScreen();
-  GetSession()->bout.NewLine(3);
+  bout.ClearScreen();
+  bout.nl(3);
 
   bool done = false;
   if (GetSession()->GetCurrentUser()->IsRestrictionValidate() || GetSession()->GetCurrentUser()->IsRestrictionUpload() ||
@@ -117,7 +117,7 @@ int try_to_ul_wh(char *pszFileName) {
       } else {
         // The WWIV_Delay used to be a wait_sec_or_hit( 1 )
         WWIV_Delay(500);
-        GetSession()->bout << "\r\nUpload " << pszFileName << " to which dir? <CR>=0 ?=List \r\n";
+        bout << "\r\nUpload " << pszFileName << " to which dir? <CR>=0 ?=List \r\n";
         input(temp, 5, true);
         StringTrim(temp);
         if (temp[0] == '?') {
@@ -131,7 +131,7 @@ int try_to_ul_wh(char *pszFileName) {
             dliscan1(udir[x].subnum);
             d = directories[dn];
             if ((d.mask & mask_no_uploads) && (!dcs())) {
-              GetSession()->bout << "Can't upload there...\r\n";
+              bout << "Can't upload there...\r\n";
               pausescr();
             } else {
               dn = udir[x].subnum;
@@ -155,8 +155,8 @@ int try_to_ul_wh(char *pszFileName) {
   }
   if (!is_uploadable(s)) {
     if (so()) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#5In filename database - add anyway? ";
+      bout.nl();
+      bout << "|#5In filename database - add anyway? ";
       if (!yesno()) {
         t2u_error(pszFileName, "|#6File either already here or unwanted.");
         return 1;
@@ -186,10 +186,10 @@ int try_to_ul_wh(char *pszFileName) {
       }
     }
     if (!ok) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "Sorry, all uploads to this directory must be archived.  Supported types are:\r\n";
-      GetSession()->bout << s1;
-      GetSession()->bout.NewLine(2);
+      bout.nl();
+      bout << "Sorry, all uploads to this directory must be archived.  Supported types are:\r\n";
+      bout << s1;
+      bout.nl(2);
 
       t2u_error(pszFileName, "Unsupported archive");
       return 1;
@@ -208,8 +208,8 @@ int try_to_ul_wh(char *pszFileName) {
   sprintf(s1, "%s%s", d.path, s);
   if (WFile::Exists(s1)) {
     if (dcs()) {
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout << "File already exists.\r\n|#5Add to database anyway? ";
+      bout.nl(2);
+      bout << "File already exists.\r\n|#5Add to database anyway? ";
       if (yesno() == 0) {
         t2u_error(pszFileName, "That file is already here.");
         return 1;
@@ -220,8 +220,8 @@ int try_to_ul_wh(char *pszFileName) {
     }
   }
   if (ok && (!GetApplication()->HasConfigFlag(OP_FLAGS_FAST_SEARCH))) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "Checking for same file in other directories...\r\n\n";
+    bout.nl();
+    bout << "Checking for same file in other directories...\r\n\n";
     i2 = 0;
 
     for (i = 0; (i < GetSession()->num_dirs) && (udir[i].subnum != -1); i++) {
@@ -234,23 +234,23 @@ int try_to_ul_wh(char *pszFileName) {
       }
 
       i2 = i4;
-      GetSession()->bout << s1;
+      bout << s1;
       bputch('\r');
 
       dliscan1(udir[i].subnum);
       i1 = recno(u.filename);
       if (i1 >= 0) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
+        bout.nl();
+        bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
 
         if (dcs()) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "|#5Upload anyway? ";
+          bout.nl();
+          bout << "|#5Upload anyway? ";
           if (!yesno()) {
             t2u_error(pszFileName, "That file is already here.");
             return 1;
           }
-          GetSession()->bout.NewLine();
+          bout.nl();
         } else {
           t2u_error(pszFileName, "That file is already here.");
           return 1;
@@ -263,10 +263,10 @@ int try_to_ul_wh(char *pszFileName) {
       s1[i1] = ' ';
     }
     s1[i1] = '\0';
-    GetSession()->bout << s1 << "\r";
+    bout << s1 << "\r";
 
     dliscan1(dn);
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
   sprintf(s1, "%s%s", syscfgovr.batchdir, pszFileName);
   sprintf(s2, "%s%s", d.path, pszFileName);
@@ -284,18 +284,18 @@ int try_to_ul_wh(char *pszFileName) {
   while (!done && !hangup && !file_id_avail) {
     bool abort = false;
 
-    GetSession()->bout.ClearScreen();
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
-    GetSession()->bout << "   |#1Filename    |01: |#7" << pszFileName << wwiv::endl;
-    GetSession()->bout << "|#2A|#7] |#1Description |01: |#7" << u.description << wwiv::endl;
-    GetSession()->bout << "|#2B|#7] |#1Modify extended description\r\n\n";
+    bout.ClearScreen();
+    bout.nl();
+    bout << "|#1Upload going to |#7" << d.name << "\r\n\n";
+    bout << "   |#1Filename    |01: |#7" << pszFileName << wwiv::endl;
+    bout << "|#2A|#7] |#1Description |01: |#7" << u.description << wwiv::endl;
+    bout << "|#2B|#7] |#1Modify extended description\r\n\n";
     print_extended(u.filename, &abort, 10, 0);
-    GetSession()->bout << "|#2<|#7CR|#2> |#1to continue, |#7Q|#1 to abort upload: ";
+    bout << "|#2<|#7CR|#2> |#1to continue, |#7Q|#1 to abort upload: ";
     key = onek("\rQABC", true);
     switch (key) {
     case 'Q':
-      GetSession()->bout << "Are you sure, file will be lost? ";
+      bout << "Are you sure, file will be lost? ";
       if (yesno()) {
         t2u_error(pszFileName, "Changed mind");
         // move file back to batch dir
@@ -305,19 +305,19 @@ int try_to_ul_wh(char *pszFileName) {
       break;
 
     case 'A':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "Please enter a one line description.\r\n:";
+      bout.nl();
+      bout << "Please enter a one line description.\r\n:";
       inputl(u.description, 58);
       break;
 
     case 'B':
-      GetSession()->bout.NewLine();
+      bout.nl();
       ss = read_extended_description(u.filename);
-      GetSession()->bout << "|#5Modify extended description? ";
+      bout << "|#5Modify extended description? ";
       if (yesno()) {
-        GetSession()->bout.NewLine();
+        bout.nl();
         if (ss) {
-          GetSession()->bout << "|#5Delete it? ";
+          bout << "|#5Delete it? ";
           if (yesno()) {
             free(ss);
             delete_extended_description(u.filename);
@@ -350,12 +350,12 @@ int try_to_ul_wh(char *pszFileName) {
       break;
 
     case '\r':
-      GetSession()->bout.NewLine();
+      bout.nl();
       done = true;
     }
   }
 
-  GetSession()->bout.NewLine(3);
+  bout.nl(3);
 
   WFile file(d.path, s);
   if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
@@ -368,7 +368,7 @@ int try_to_ul_wh(char *pszFileName) {
   }
   if (!syscfg.upload_cmd.empty()) {
     file.Close();
-    GetSession()->bout << "Please wait...\r\n";
+    bout << "Please wait...\r\n";
     if (!check_ul_event(dn, &u)) {
       if (u.mask & mask_extended) {
         delete_extended_description(u.filename);
@@ -424,15 +424,15 @@ int try_to_ul_wh(char *pszFileName) {
 void t2u_error(const char *pszFileName, const char *msg) {
   char szBuffer[ 255 ];
 
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
   sprintf(szBuffer, "**  %s failed T2U qualifications", pszFileName);
-  GetSession()->bout << szBuffer;
-  GetSession()->bout.NewLine();
+  bout << szBuffer;
+  bout.nl();
   sysoplog(szBuffer);
 
   sprintf(szBuffer, "** Reason : %s", msg);
-  GetSession()->bout << szBuffer;
-  GetSession()->bout.NewLine();
+  bout << szBuffer;
+  bout.nl();
   sysoplog(szBuffer);
 }
 

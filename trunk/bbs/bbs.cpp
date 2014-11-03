@@ -218,7 +218,7 @@ int WApplication::doWFCEvents() {
           char chHelp = ESC;
           do {
             GetSession()->localIO()->LocalCls();
-            GetSession()->bout.NewLine();
+            bout.nl();
             printfile(helpFileName.c_str());
             chHelp = getkey();
             helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
@@ -259,7 +259,7 @@ int WApplication::doWFCEvents() {
       case ',':
         if (net_sysnum > 0 || (GetSession()->GetMaxNetworkNumber() > 1 && AllowLocalSysop())) {
           GetSession()->localIO()->LocalGotoXY(2, 23);
-          GetSession()->bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
+          bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
           ch = onek("Q012");
           switch (ch) {
           case '0':
@@ -293,7 +293,7 @@ int WApplication::doWFCEvents() {
       // [ESC] Quit the BBS
       case ESC:
         GetSession()->localIO()->LocalGotoXY(2, 23);
-        GetSession()->bout << "|#7Exit the BBS? ";
+        bout << "|#7Exit the BBS? ";
         if (yesno()) {
           QuitBBS();
         }
@@ -333,7 +333,7 @@ int WApplication::doWFCEvents() {
           wfc_cls();
           GetSession()->usernum = 1;
           holdphone(true);
-          GetSession()->bout << "|#1Send Email:";
+          bout << "|#1Send Email:";
           send_email();
           GetSession()->WriteCurrentUser(1);
           cleanup_net();
@@ -383,7 +383,7 @@ int WApplication::doWFCEvents() {
           wfc_cls();
           GetSession()->usernum = 1;
           holdphone(true);
-          GetSession()->bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
+          bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
           string buffer;
           input(&buffer, 50);
           LoadFileIntoWorkspace(buffer.c_str(), false);
@@ -427,7 +427,7 @@ int WApplication::doWFCEvents() {
           wfc_cls();
           holdphone(true);
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-          GetSession()->bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
+          bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
           char szFileName[ MAX_PATH ];
           getcwd(szFileName, MAX_PATH);
           snprintf(szFileName, sizeof(szFileName), "%c", WFile::pathSeparatorChar);
@@ -498,7 +498,7 @@ int WApplication::doWFCEvents() {
           wfc_cls();
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
           holdphone(true);
-          GetSession()->bout << "|#1Edit " << syscfg.gfilesdir << "<filename>: \r\n";
+          bout << "|#1Edit " << syscfg.gfilesdir << "<filename>: \r\n";
           text_edit();
           holdphone(false);
         }
@@ -519,7 +519,7 @@ int WApplication::doWFCEvents() {
       case 'Z':
         if (AllowLocalSysop()) {
           zlog();
-          GetSession()->bout.NewLine();
+          bout.nl();
           getkey();
         }
         break;
@@ -569,7 +569,7 @@ int WApplication::doWFCEvents() {
 
 int WApplication::LocalLogon() {
   GetSession()->localIO()->LocalGotoXY(2, 23);
-  GetSession()->bout << "|#9Log on to the BBS?";
+  bout << "|#9Log on to the BBS?";
   double d = timer();
   int lokb = 0;
   while (!GetSession()->localIO()->LocalKeyPressed() && (fabs(timer() - d) < SECONDS_PER_MINUTE_FLOAT))
@@ -579,7 +579,7 @@ int WApplication::LocalLogon() {
     char ch = wwiv::UpperCase<char>(GetSession()->localIO()->LocalGetChar());
     if (ch == 'Y') {
       GetSession()->localIO()->LocalFastPuts(YesNoString(true));
-      GetSession()->bout << wwiv::endl;
+      bout << wwiv::endl;
       lokb = 1;
     } else if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
       // The ch == 224 is a Win32'ism
@@ -858,7 +858,7 @@ int WApplication::Run(int argc, char *argv[]) {
         GetSession()->localIO()->LocalCls();
         if ((i + 1) < argc) {
           i++;
-          GetSession()->bout << "\r\n|#7\xFE |#5Packing specified subs: \r\n";
+          bout << "\r\n|#7\xFE |#5Packing specified subs: \r\n";
           while (i < argc) {
             int nSubNumToPack = atoi(argv[ i ]);
             pack_sub(nSubNumToPack);
@@ -866,7 +866,7 @@ int WApplication::Run(int argc, char *argv[]) {
             i++;
           }
         } else {
-          GetSession()->bout << "\r\n|#7\xFE |#5Packing all subs: \r\n";
+          bout << "\r\n|#7\xFE |#5Packing all subs: \r\n";
           sysoplog("* Packing All Message Areas");
           pack_all_subs();
         }
@@ -971,7 +971,7 @@ int WApplication::Run(int argc, char *argv[]) {
             GetSession()->GetCurrentUser()->IsRestrictionLogon() &&
             wwiv::strings::IsEquals(date(), GetSession()->GetCurrentUser()->GetLastOn()) &&
             GetSession()->GetCurrentUser()->GetTimesOnToday() > 0) {
-          GetSession()->bout << "\r\n|#6Sorry, you can only logon once per day.\r\n\n";
+          bout << "\r\n|#6Sorry, you can only logon once per day.\r\n\n";
           hangup = true;
         }
       } else {
@@ -1044,7 +1044,7 @@ int WApplication::Run(int argc, char *argv[]) {
       holdphone(true);
       double dt = timer();
       GetSession()->localIO()->LocalCls();
-      GetSession()->bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
+      bout << "\r\n>> SYSOP ALERT ACTIVATED <<\r\n\n";
       while (!GetSession()->localIO()->LocalKeyPressed() && (fabs(timer() - dt) < SECONDS_PER_MINUTE_FLOAT)) {
         WWIV_Sound(500, 250);
         WWIV_Delay(1);
@@ -1176,17 +1176,17 @@ void WApplication::ShutDownBBS(int nShutDownStatus) {
   case 2:
   case 3:
     SetShutDownStatus(nShutDownStatus);
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout << "|#7***\r\n|#7To All Users, System will shut down in " <<
+    bout.nl(2);
+    bout << "|#7***\r\n|#7To All Users, System will shut down in " <<
                        4 - GetShutDownStatus() << " minunte(s) for maintenance.\r \n" <<
                        "|#7Please finish your session and log off. Thank you\r\n|#7***\r\n";
     break;
   case 4:
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout << "|#7***\r\n|#7Please call back later.\r\n|#7***\r\n\n";
+    bout.nl(2);
+    bout << "|#7***\r\n|#7Please call back later.\r\n|#7***\r\n\n";
     GetSession()->GetCurrentUser()->SetExtraTime(GetSession()->GetCurrentUser()->GetExtraTime() + static_cast<float>
         (nsl()));
-    GetSession()->bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
+    bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
     printfile(LOGOFF_NOEXT);
     hangup = true;
     SetShutDownStatus(WApplication::shutdownNone);

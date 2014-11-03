@@ -64,16 +64,16 @@ void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss
   mailrec m;
 
   if ((m1->anony & anony_sender) && ((ss->ability & ability_read_email_anony) == 0)) {
-    GetSession()->bout << "|#5Delete all mail to you from this user? ";
+    bout << "|#5Delete all mail to you from this user? ";
   } else {
-    GetSession()->bout << "|#5Delete all mail to you from ";
+    bout << "|#5Delete all mail to you from ";
     if (m1->fromsys) {
-      GetSession()->bout << "#" << m1->fromuser << " @" << m1->fromsys << "? ";
+      bout << "#" << m1->fromuser << " @" << m1->fromsys << "? ";
     } else {
       if (m1->fromuser == 65535) {
-        GetSession()->bout << "Networks? ";
+        bout << "Networks? ";
       } else {
-        GetSession()->bout << "#" << m1->fromuser << "? ";
+        bout << "#" << m1->fromuser << "? ";
       }
     }
   }
@@ -89,7 +89,7 @@ void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss
         pFileEmail->Read(&m, sizeof(mailrec));
         if (same_email(mloc + i, &m)) {
           if (m.fromuser == m1->fromuser && m.fromsys == m1->fromsys) {
-            GetSession()->bout << "Deleting mail msg #" << i + 1 << wwiv::endl;
+            bout << "Deleting mail msg #" << i + 1 << wwiv::endl;
             delmail(pFileEmail, mloc[i].index);
             mloc[i].index = -1;
             if (*curmail == i) {
@@ -229,9 +229,9 @@ void add_netsubscriber(int nSystemNumber) {
     nSystemNumber = 0;
   }
 
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#1Adding subscriber to subscriber list...\r\n\n";
-  GetSession()->bout << "|#2SubType: ";
+  bout.nl();
+  bout << "|#1Adding subscriber to subscriber list...\r\n\n";
+  bout << "|#2SubType: ";
   input(s, 7, true);
   if (s[0] == 0) {
     return;
@@ -240,23 +240,23 @@ void add_netsubscriber(int nSystemNumber) {
   char szNetworkFileName[ MAX_PATH ];
   sprintf(szNetworkFileName, "%sn%s.net", GetSession()->GetNetworkDataDirectory().c_str(), s);
   if (!WFile::Exists(szNetworkFileName)) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#6Subscriber file not found: " << szNetworkFileName << wwiv::endl;
+    bout.nl();
+    bout << "|#6Subscriber file not found: " << szNetworkFileName << wwiv::endl;
     return;
   }
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (nSystemNumber) {
-    GetSession()->bout << "Add @" << nSystemNumber << "." << GetSession()->GetNetworkName() << " to subtype " << s << "? ";
+    bout << "Add @" << nSystemNumber << "." << GetSession()->GetNetworkName() << " to subtype " << s << "? ";
   }
   if (!nSystemNumber || !noyes()) {
-    GetSession()->bout << "|#2System Number: ";
+    bout << "|#2System Number: ";
     input(s, 5, true);
     if (!s[0]) {
       return;
     }
     nSystemNumber = atoi(s);
     if (!valid_system(nSystemNumber)) {
-      GetSession()->bout << "@" << nSystemNumber << " is not a valid system in " << GetSession()->GetNetworkName() <<
+      bout << "@" << nSystemNumber << " is not a valid system in " << GetSession()->GetNetworkName() <<
                          ".\r\n\n";
       return;
     }
@@ -268,7 +268,7 @@ void add_netsubscriber(int nSystemNumber) {
     hostFile.Close();
     // TODO find replacement for autosend.exe
     if (WFile::Exists("autosend.exe")) {
-      GetSession()->bout << "AutoSend starter messages? ";
+      bout << "AutoSend starter messages? ";
       if (yesno()) {
         char szAutoSendCommand[ MAX_PATH ];
         sprintf(szAutoSendCommand, "AUTOSEND.EXE %s %u .%d", s1, nSystemNumber, GetSession()->GetNetworkNumber());
@@ -296,14 +296,14 @@ void delete_attachment(unsigned long daten, int forceit) {
         delfile = true;
         if (!forceit) {
           if (so()) {
-            GetSession()->bout << "|#5Delete attached file? ";
+            bout << "|#5Delete attached file? ";
             delfile = yesno();
           }
         }
         if (delfile) {
           WFile::Remove(GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename);
         } else {
-          GetSession()->bout << "\r\nOrphaned attach " << fsr.filename << " remains in " <<
+          bout << "\r\nOrphaned attach " << fsr.filename << " remains in " <<
                              GetApplication()->GetAttachmentDirectory() << wwiv::endl;
           pausescr();
         }
@@ -338,7 +338,7 @@ void readmail(int mode) {
 
   tmpmailrec *mloc = static_cast<tmpmailrec *>(BbsAllocA(MAXMAIL * sizeof(tmpmailrec)));
   if (!mloc) {
-    GetSession()->bout << "|#6Not enough memory.\r\n";
+    bout << "|#6Not enough memory.\r\n";
     return;
   }
   write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
@@ -346,7 +346,7 @@ void readmail(int mode) {
   WFile *pFileEmail = OpenEmailFile(false);
   WWIV_ASSERT(pFileEmail);
   if (!pFileEmail->IsOpen()) {
-    GetSession()->bout << "\r\n\nNo mail file exists!\r\n\n";
+    bout << "\r\n\nNo mail file exists!\r\n\n";
     free(mloc);
     return;
   }
@@ -371,14 +371,14 @@ void readmail(int mode) {
     fwaiting = mw;
   }
   if (mw == 0) {
-    GetSession()->bout << "\r\n\n|#3You have no mail.\r\n\n";
+    bout << "\r\n\n|#3You have no mail.\r\n\n";
     free(mloc);
     return;
   }
   if (mw == 1) {
     curmail = 0;
   } else {
-    GetSession()->bout << "\r\n\n|#7You have mail from:\r\n\n";
+    bout << "\r\n\n|#7You have mail from:\r\n\n";
 
     if ((GetSession()->GetCurrentUser()->GetScreenChars() >= 80) && GetSession()->mail_who_field_len) {
       if (okansi()) {
@@ -500,8 +500,8 @@ void readmail(int mode) {
         pla(s, &abort);
       }
     }
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ";
+    bout.nl();
+    bout << "|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ";
     input(s, 3, true);
     if (strchr(s, 'Q') != nullptr) {
       free(mloc);
@@ -522,20 +522,20 @@ void readmail(int mode) {
 
   do {
     abort = false;
-    GetSession()->bout.NewLine(2);
+    bout.nl(2);
     sprintf(s, "|#9Msg|#7:  [|#2%u|#7/|#2%d|#7] |#%dE-Mail\r\n", curmail + 1, mw, GetSession()->GetMessageColor());
     osan(s, &abort, &next);
     sprintf(s, "|#9Subj|#7: ");
     osan(s, &abort, &next);
     next = false;
-    GetSession()->bout.Color(GetSession()->GetMessageColor());
+    bout.Color(GetSession()->GetMessageColor());
     s[0] = '\0';
 
     if (!read_same_email(mloc, mw, curmail, &m, 0, 0)) {
       strcat(s, ">>> MAIL DELETED <<<");
       okmail = false;
-      GetSession()->bout << s;
-      GetSession()->bout.NewLine(3);
+      bout << s;
+      bout.nl(3);
     } else {
       strcat(s, m.title);
       strcpy(irt, m.title);
@@ -567,7 +567,7 @@ void readmail(int mode) {
           strcpy(s, "-=> Source Verified (unknown type)");
         }
         if (!abort) {
-          GetSession()->bout.Color(4);
+          bout.Color(4);
           pla(s, &abort);
         }
       }
@@ -602,10 +602,10 @@ void readmail(int mode) {
               found = true;
               sprintf(s, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename);
               if (WFile::Exists(s)) {
-                GetSession()->bout << "'T' to download attached file \"" << fsr.filename << "\" (" << fsr.numbytes << " bytes).\r\n";
+                bout << "'T' to download attached file \"" << fsr.filename << "\" (" << fsr.numbytes << " bytes).\r\n";
                 attach_exists = true;
               } else {
-                GetSession()->bout << "Attached file \"" << fsr.filename << "\" (" << fsr.numbytes << " bytes) is missing!\r\n";
+                bout << "Attached file \"" << fsr.filename << "\" (" << fsr.numbytes << " bytes) is missing!\r\n";
               }
             }
             if (!found) {
@@ -613,10 +613,10 @@ void readmail(int mode) {
             }
           }
           if (!found) {
-            GetSession()->bout << "File attached but attachment data missing.  Alert sysop!\r\n";
+            bout << "File attached but attachment data missing.  Alert sysop!\r\n";
           }
         } else {
-          GetSession()->bout << "File attached but attachment data missing.  Alert sysop!\r\n";
+          bout << "File attached but attachment data missing.  Alert sysop!\r\n";
         }
         fileAttach.Close();
       }
@@ -629,32 +629,32 @@ void readmail(int mode) {
       irt_name[0] = '\0';
       if (!GetApplication()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
         strcpy(mnu, EMAIL_NOEXT);
-        GetSession()->bout << "|#2Mail {?} : ";
+        bout << "|#2Mail {?} : ";
       }
       if (so()) {
         strcpy(mnu, SY_EMAIL_NOEXT);
         if (GetApplication()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-          GetSession()->bout << "|#2Mail |#7{|#1QSRIDAF?-+GEZPVUOLCNY@|#7} |#2: ";
+          bout << "|#2Mail |#7{|#1QSRIDAF?-+GEZPVUOLCNY@|#7} |#2: ";
         }
         strcpy(s, "QSRIDAF?-+GEZPVUOLCNY@BM");
       } else {
         if (cs()) {
           strcpy(mnu, CS_EMAIL_NOEXT);
           if (GetApplication()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-            GetSession()->bout << "|#2Mail |#7{|#1QSRIDAF?-+GZPVUOCY@|#7} |#2: ";
+            bout << "|#2Mail |#7{|#1QSRIDAF?-+GZPVUOCY@|#7} |#2: ";
           }
           strcpy(s, "QSRIDAF?-+GZPVUOCY@");
         } else {
           if (!okmail) {
             strcpy(mnu, RS_EMAIL_NOEXT);
             if (GetApplication()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-              GetSession()->bout << "|#2Mail |#7{|#1QI?-+GY|#7} |#2: ";
+              bout << "|#2Mail |#7{|#1QI?-+GY|#7} |#2: ";
             }
             strcpy(s, "QI?-+G");
           } else {
             strcpy(mnu, EMAIL_NOEXT);
             if (GetApplication()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-              GetSession()->bout << "|#2Mail |#7{|#1QSRIDAF?+-GY@|#7} |#2: ";
+              bout << "|#2Mail |#7{|#1QSRIDAF?+-GY@|#7} |#2: ";
             }
             strcpy(s, "QSRIDAF?-+GY@");
           }
@@ -662,31 +662,31 @@ void readmail(int mode) {
       }
       if ((m.status & status_file) && found && attach_exists) {
         if (GetApplication()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
-          GetSession()->bout << "\b\b|#7{|#1T|#7} |#2: |#0";
+          bout << "\b\b|#7{|#1T|#7} |#2: |#0";
         }
         strcat(s, "T");
       }
       ch = onek(s);
       if (okmail && !read_same_email(mloc, mw, curmail, &m, 0, 0)) {
-        GetSession()->bout << "\r\nMail got deleted.\r\n\n";
+        bout << "\r\nMail got deleted.\r\n\n";
         ch = 'R';
       }
       delme = 0;
       switch (ch) {
       case 'T':
-        GetSession()->bout.NewLine();
+        bout.nl();
         sprintf(s1, "%s%s", GetApplication()->GetAttachmentDirectory().c_str(), fsr.filename);
         bool sentt;
         bool abortt;
         send_file(s1, &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
         if (sentt) {
-          GetSession()->bout << "\r\nAttached file sent.\r\n";
+          bout << "\r\nAttached file sent.\r\n";
           sysoplogf("Downloaded %ldk of attached file %s.", (fsr.numbytes + 1023) / 1024, fsr.filename);
         } else {
-          GetSession()->bout << "\r\nAttached file not completely sent.\r\n";
+          bout << "\r\nAttached file not completely sent.\r\n";
           sysoplogf("Tried to download attached file %s.", fsr.filename);
         }
-        GetSession()->bout.NewLine();
+        bout.nl();
         break;
       case 'N':
         if (m.fromuser == 1) {
@@ -712,7 +712,7 @@ void readmail(int mode) {
       case 'O':
         if (cs() && okmail && m.fromuser != 65535 && nn != 255) {
           show_files("*.frm", syscfg.gfilesdir);
-          GetSession()->bout << "|#2Which form letter: ";
+          bout << "|#2Which form letter: ";
           input(s, 8, true);
           if (!s[0]) {
             break;
@@ -758,13 +758,13 @@ void readmail(int mode) {
               WFile::Remove(syscfgovr.tempdir, INPUT_MSG);
             }
           } else {
-            GetSession()->bout << "\r\nFile not found.\r\n\n";
+            bout << "\r\nFile not found.\r\n\n";
             i1 = 0;
           }
         }
         break;
       case 'G':
-        GetSession()->bout << "|#2Go to which (1-" << mw << ") ? |#0";
+        bout << "|#2Go to which (1-" << mw << ") ? |#0";
         input(s, 3);
         i1 = atoi(s);
         if (i1 > 0 && i1 <= mw) {
@@ -803,10 +803,10 @@ void readmail(int mode) {
             GetSession()->SetCurrentConferenceMessageArea(0);
           }
           tmp_disable_conf(true);
-          GetSession()->bout.NewLine();
+          bout.nl();
           char *ss1;
           do {
-            GetSession()->bout << "|#2Move to which sub? ";
+            bout << "|#2Move to which sub? ";
             ss1 = mmkey(0);
             if (ss1[0] == '?') {
               old_sublist();
@@ -815,7 +815,7 @@ void readmail(int mode) {
           i = -1;
           if ((ss1[0] == 0) || hangup) {
             i1 = 0;
-            GetSession()->bout.NewLine();
+            bout.nl();
             tmp_disable_conf(false);
             break;
           }
@@ -826,7 +826,7 @@ void readmail(int mode) {
           }
           if (i != -1) {
             if (GetSession()->GetEffectiveSl() < subboards[usub[i].subnum].postsl) {
-              GetSession()->bout << "\r\nSorry, you don't have post access on that sub.\r\n\n";
+              bout << "\r\nSorry, you don't have post access on that sub.\r\n\n";
               i = -1;
             }
           }
@@ -875,7 +875,7 @@ void readmail(int mode) {
             close_sub();
             tmp_disable_conf(false);
             iscan(GetSession()->GetCurrentMessageArea());
-            GetSession()->bout << "\r\n\n|#9Message moved.\r\n\n";
+            bout << "\r\n\n|#9Message moved.\r\n\n";
             int nTempNumMsgs = GetSession()->GetNumMessagesInCurrentMessageArea();
             resynch(&nTempNumMsgs, &p);
             GetSession()->SetNumMessagesInCurrentMessageArea(nTempNumMsgs);
@@ -888,7 +888,7 @@ void readmail(int mode) {
         if (!okmail) {
           break;
         }
-        GetSession()->bout << "|#5Delete this message? ";
+        bout << "|#5Delete this message? ";
         if (!noyes()) {
           break;
         }
@@ -938,10 +938,10 @@ void readmail(int mode) {
           break;
         }
         if (m.status & status_multimail) {
-          GetSession()->bout << "\r\nCan't forward multimail.\r\n\n";
+          bout << "\r\nCan't forward multimail.\r\n\n";
           break;
         }
-        GetSession()->bout.NewLine(2);
+        bout.nl(2);
         if (okfsed() && GetSession()->GetCurrentUser()->IsUseAutoQuote()) {
           unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
           auto_quote(b.get(), len, 4, m.daten);
@@ -949,7 +949,7 @@ void readmail(int mode) {
           break;
         }
 
-        GetSession()->bout << "|#2Forward to: ";
+        bout << "|#2Forward to: ";
         input(s, 75);
         if (((i3 = strcspn(s, "@")) != (wwiv::strings::GetStringLength(s))) && (isalpha(s[i3 + 1]))) {
           if (strstr(s, "@32767") == nullptr) {
@@ -960,10 +960,10 @@ void readmail(int mode) {
         parse_email_info(s, &nUserNumber, &nSystemNumber);
         if (nUserNumber || nSystemNumber) {
           if (ForwardMessage(&nUserNumber, &nSystemNumber)) {
-            GetSession()->bout << "Mail forwarded.\r\n";
+            bout << "Mail forwarded.\r\n";
           }
           if ((nUserNumber == GetSession()->usernum) && (nSystemNumber == 0) && (!cs())) {
-            GetSession()->bout << "Can't forward to yourself.\r\n";
+            bout << "Can't forward to yourself.\r\n";
             nUserNumber = 0;
           }
           if (nUserNumber || nSystemNumber) {
@@ -991,7 +991,7 @@ void readmail(int mode) {
               strcpy(s1, u.GetUserNameNumberAndSystem(nUserNumber, net_sysnum));
             }
             if (ok_to_mail(nUserNumber, nSystemNumber, false)) {
-              GetSession()->bout << "|#5Forward to " << s1 << "? ";
+              bout << "|#5Forward to " << s1 << "? ";
               if (yesno()) {
                 pFileEmail = OpenEmailFile(true);
                 WWIV_ASSERT(pFileEmail);
@@ -1001,10 +1001,10 @@ void readmail(int mode) {
                 pFileEmail->Seek(mloc[curmail].index * sizeof(mailrec), WFile::seekBegin);
                 pFileEmail->Read(&m, sizeof(mailrec));
                 if (!same_email(mloc + curmail, &m)) {
-                  GetSession()->bout << "Error, mail moved.\r\n";
+                  bout << "Error, mail moved.\r\n";
                   break;
                 }
-                GetSession()->bout << "|#5Delete this message? ";
+                bout << "|#5Delete this message? ";
                 if (yesno()) {
                   if (m.status & status_file) {
                     delete_attachment(m.daten, 0);
@@ -1045,7 +1045,7 @@ void readmail(int mode) {
                     --fwaiting;
                   }
                 }
-                GetSession()->bout << "Forwarding: ";
+                bout << "Forwarding: ";
                 if (nn != 255 && nn == GetSession()->GetNetworkNumber()) {
                   sendout_email(m.title, &m.msg, m.anony,
                                 nUserNumber, nSystemNumber,
@@ -1077,7 +1077,7 @@ void readmail(int mode) {
                    static_cast<long>(GetSession()->GetCurrentUser()->GetNumEmailSent()) +
                    static_cast<long>(GetSession()->GetCurrentUser()->GetNumNetEmailSent());
         if (nn == 255) {
-          GetSession()->bout << "|#6Deleted network.\r\n";
+          bout << "|#6Deleted network.\r\n";
           i1 = 0;
           break;
         } else if (m.fromuser != 65535) {
@@ -1092,7 +1092,7 @@ void readmail(int mode) {
 
           grab_quotes(&(m.msg), "email");
           if (ch == '@') {
-            GetSession()->bout << "\r\n|#9Enter user name or number:\r\n:";
+            bout << "\r\n|#9Enter user name or number:\r\n:";
             input(s, 75, true);
             if (((i = strcspn(s, "@")) != wwiv::strings::GetStringLength(s))
                 && isalpha(s[i + 1])) {
@@ -1141,7 +1141,7 @@ void readmail(int mode) {
               delete_attachment(m.daten, 0);
             }
           } else {
-            GetSession()->bout << "\r\nNo mail sent.\r\n\n";
+            bout << "\r\nNo mail sent.\r\n\n";
             i1 = 0;
           }
         } else {
@@ -1171,7 +1171,7 @@ void readmail(int mode) {
             uedit(m.fromuser, UEDIT_FULLINFO | UEDIT_CLEARSCREEN);
           }
         } else if (cs()) {
-          GetSession()->bout << "\r\nMail from another system.\r\n\n";
+          bout << "\r\nMail from another system.\r\n\n";
         }
         i1 = 0;
         break;
@@ -1179,17 +1179,17 @@ void readmail(int mode) {
         if (!so()) {
           break;
         }
-        GetSession()->bout << "\r\n|#2Filename: ";
+        bout << "\r\n|#2Filename: ";
         string fileName;
         input(&fileName, 50);
         if (!fileName.empty()) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "|#5Allow editing? ";
+          bout.nl();
+          bout << "|#5Allow editing? ";
           if (yesno()) {
-            GetSession()->bout.NewLine();
+            bout.nl();
             LoadFileIntoWorkspace(fileName.c_str(), false);
           } else {
-            GetSession()->bout.NewLine();
+            bout.nl();
             LoadFileIntoWorkspace(fileName.c_str(),  true);
           }
         }
@@ -1199,7 +1199,7 @@ void readmail(int mode) {
         if (curmail >= 0) {
           string downloadFileName;
           unique_ptr<char[]> b(readfile(&(m.msg), "email", &len));
-          GetSession()->bout << "E-mail download -\r\n\n|#2Filename: ";
+          bout << "E-mail download -\r\n\n|#2Filename: ";
           input(&downloadFileName, 12);
           if (!okfn(downloadFileName.c_str())) {
             break;
@@ -1212,10 +1212,10 @@ void readmail(int mode) {
           bool bSent;
           send_file(fileTemp.GetFullPathName().c_str(), &bSent, 0, fileTemp.GetFullPathName().c_str(), -1, len);
           if (i) {
-            GetSession()->bout << "E-mail download successful.\r\n";
+            bout << "E-mail download successful.\r\n";
             sysoplog("Downloaded E-mail");
           } else {
-            GetSession()->bout << "E-mail download aborted.\r\n";
+            bout << "E-mail download aborted.\r\n";
           }
         }
         break;

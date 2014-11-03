@@ -47,11 +47,11 @@ static const unsigned char *valid_letters =
  * @param nMaxLength Maximum length to allow for the input text
  * @param lc The case to return, this can be InputMode::UPPER, InputMode::MIXED, InputMode::PROPER, or InputMode::FILENAME
  * @param crend Add a CR to the end of the input text
- * @param bAutoMpl Call GetSession()->bout.ColorizedInputField(nMaxLength) automatically.
+ * @param bAutoMpl Call bout.ColorizedInputField(nMaxLength) automatically.
  */
 void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAutoMpl) {
   if (bAutoMpl) {
-    GetSession()->bout.ColorizedInputField(nMaxLength);
+    bout.ColorizedInputField(nMaxLength);
   }
 
   int curpos = 0, in_ansi = 0;
@@ -129,7 +129,7 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
             done = true;
             local_echo = true;
             if (newline || crend) {
-              GetSession()->bout.NewLine();
+              bout.nl();
             }
           }
           break;
@@ -139,16 +139,16 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
           done = true;
           local_echo = true;
           if (newline || crend) {
-            GetSession()->bout.NewLine();
+            bout.nl();
           }
           break;
         case CW:                          // Ctrl-W
           if (curpos) {
             do {
               curpos--;
-              GetSession()->bout.BackSpace();
+              bout.BackSpace();
               if (pszOutText[curpos] == CZ) {
-                GetSession()->bout.BackSpace();
+                bout.BackSpace();
               }
             } while (curpos && pszOutText[curpos - 1] != SPACE);
           }
@@ -158,9 +158,9 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
         case BACKSPACE:
           if (curpos) {
             curpos--;
-            GetSession()->bout.BackSpace();
+            bout.BackSpace();
             if (pszOutText[curpos] == CZ) {
-              GetSession()->bout.BackSpace();
+              bout.BackSpace();
             }
           }
           break;
@@ -168,9 +168,9 @@ void input1(char *pszOutText, int nMaxLength, InputMode lc, bool crend, bool bAu
         case CX:
           while (curpos) {
             curpos--;
-            GetSession()->bout.BackSpace();
+            bout.BackSpace();
             if (pszOutText[curpos] == CZ) {
-              GetSession()->bout.BackSpace();
+              bout.BackSpace();
             }
           }
           break;
@@ -231,8 +231,8 @@ void inputl(string* strOutText, int nMaxLength, bool bAutoMpl)
 }
 
 void input_password(string promptText, string* strOutPassword, int nMaxLength) {
-  GetSession()->bout << promptText;
-  GetSession()->bout.ColorizedInputField(nMaxLength);
+  bout << promptText;
+  bout.ColorizedInputField(nMaxLength);
   local_echo = false;
   input1(strOutPassword, nMaxLength, InputMode::UPPER, true);
 }
@@ -284,26 +284,26 @@ int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, Inpu
   szTemp[0] = '\0';
 
   nMaxLength = std::min<int>(nMaxLength, 80);
-  GetSession()->bout.Color(4);
+  bout.Color(4);
   int x = GetSession()->localIO()->WhereX() + 1;
   int y = GetSession()->localIO()->WhereY() + 1;
 
-  GetSession()->bout.GotoXY(x, y);
+  bout.GotoXY(x, y);
   for (int i = 0; i < nMaxLength; i++) {
-    GetSession()->bout << "\xB1";
+    bout << "\xB1";
   }
-  GetSession()->bout.GotoXY(x, y);
+  bout.GotoXY(x, y);
   if (!origText.empty()) {
     strcpy(szTemp, origText.c_str());
-    GetSession()->bout << szTemp;
-    GetSession()->bout.GotoXY(x, y);
+    bout << szTemp;
+    bout.GotoXY(x, y);
     pos = nLength = strlen(szTemp);
   }
   x = GetSession()->localIO()->WhereX() + 1;
 
   bool done = false;
   do {
-    GetSession()->bout.GotoXY(pos + x, y);
+    bout.GotoXY(pos + x, y);
 
     int c = get_kb_event(NUMBERS);
 
@@ -311,9 +311,9 @@ int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, Inpu
     case CX:                // Control-X
     case ESC:               // ESC
       if (nLength) {
-        GetSession()->bout.GotoXY(nLength + x, y);
+        bout.GotoXY(nLength + x, y);
         while (nLength--) {
-          GetSession()->bout.GotoXY(nLength + x, y);
+          bout.GotoXY(nLength + x, y);
           bputch('\xB1');
         }
         nLength = pos = szTemp[0] = 0;
@@ -373,20 +373,20 @@ int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, Inpu
             }
             pos--;
             nLength--;
-            GetSession()->bout.GotoXY(pos + x, y);
+            bout.GotoXY(pos + x, y);
             for (int i = pos; i < nLength; i++) {
               bputch(szTemp[i]);
             }
-            GetSession()->bout << "\xB1";
+            bout << "\xB1";
           }
         } else {
-          GetSession()->bout.GotoXY(pos - 1 + x, y);
-          GetSession()->bout << "\xB1";
+          bout.GotoXY(pos - 1 + x, y);
+          bout << "\xB1";
           pos = --nLength;
           if (((mode == InputMode::DATE) && ((pos == 2) || (pos == 5))) ||
               ((mode == InputMode::PHONE) && ((pos == 3) || (pos == 7)))) {
-            GetSession()->bout.GotoXY(pos - 1 + x, y);
-            GetSession()->bout << "\xB1";
+            bout.GotoXY(pos - 1 + x, y);
+            bout << "\xB1";
             pos = --nLength;
           }
         }
@@ -424,8 +424,8 @@ int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, Inpu
             szTemp[i + 1] = szTemp[i];
           }
           szTemp[pos++] = slash;
-          GetSession()->bout.GotoXY(pos + x, y);
-          GetSession()->bout << &szTemp[pos];
+          bout.GotoXY(pos + x, y);
+          bout << &szTemp[pos];
         }
         if (mode == InputMode::PHONE && (pos == 3 || pos == 7)) {
           bputch(dash);
@@ -433,8 +433,8 @@ int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, Inpu
             szTemp[i + 1] = szTemp[i];
           }
           szTemp[pos++] = dash;
-          GetSession()->bout.GotoXY(pos + x, y);
-          GetSession()->bout << &szTemp[pos];
+          bout.GotoXY(pos + x, y);
+          bout << &szTemp[pos];
         }
         if (((mode == InputMode::DATE && c != slash) ||
              (mode == InputMode::PHONE && c != dash)) ||
@@ -451,8 +451,8 @@ int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, Inpu
               szTemp[i + 1] = szTemp[i];
             }
             szTemp[pos++] = (char) c;
-            GetSession()->bout.GotoXY(pos + x, y);
-            GetSession()->bout << &szTemp[pos];
+            bout.GotoXY(pos + x, y);
+            bout << &szTemp[pos];
           }
         }
       }
@@ -470,7 +470,7 @@ int Input1(char *pszOutText, string origText, int nMaxLength, bool bInsert, Inpu
   GetSession()->topdata = nTopDataSaved;
   GetSession()->localIO()->SetTopLine(nTopLineSaved);
 
-  GetSession()->bout.Color(0);
+  bout.Color(0);
   return nLength;
 }
 

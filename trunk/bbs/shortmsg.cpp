@@ -46,9 +46,9 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
       file.Seek(nCurrentMsg * sizeof(shortmsgrec), WFile::seekBegin);
       file.Read(&sm, sizeof(shortmsgrec));
       if (sm.touser == nUserNum && sm.tosys == 0) {
-        GetSession()->bout.Color(9);
-        GetSession()->bout << sm.message;
-        GetSession()->bout.NewLine();
+        bout.Color(9);
+        bout << sm.message;
+        bout.nl();
         bool bHandledMessage = false;
         bShownAnyMessage = true;
         if (!so() || !bAskToSaveMsgs) {
@@ -56,7 +56,7 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
         } else {
           if (GetApplication()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
             if (!bHandledMessage && bAskToSaveMsgs) {
-              GetSession()->bout << "|#5Would you like to save this notification? ";
+              bout << "|#5Would you like to save this notification? ";
               bHandledMessage = !yesno();
             }
           } else {
@@ -79,7 +79,7 @@ void rsm(int nUserNum, WUser *pUser, bool bAskToSaveMsgs) {
     smwcheck = true;
   }
   if (bShownAnyMessage) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
   if (bShownAllMessages) {
     pUser->SetStatusFlag(WUser::SMW);

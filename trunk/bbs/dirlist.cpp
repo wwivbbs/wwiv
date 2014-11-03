@@ -55,7 +55,7 @@ void dirlist(int mode) {
         if (p && mode == 0) {
           p = 0;
           firstp = i1;
-          GetSession()->bout.ClearScreen();
+          bout.ClearScreen();
           if (uconfdir[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
             sprintf(s, " [ %s %c ] [ %s ] ", "Conference",
                     dirconfs[uconfdir[i].confnum].designator,
@@ -63,9 +63,9 @@ void dirlist(int mode) {
           } else {
             sprintf(s, " [ %s File Areas ] ", syscfg.systemname);
           }
-          GetSession()->bout.DisplayLiteBar(s);
+          bout.DisplayLiteBar(s);
           DisplayHorizontalBar(78, 7);
-          GetSession()->bout << "|#2 Dir Qscan?     Directory Name                          Total Files\r\n";
+          bout << "|#2 Dir Qscan?     Directory Name                          Total Files\r\n";
           DisplayHorizontalBar(78, 7);
         }
         ++nd;
@@ -95,12 +95,12 @@ void dirlist(int mode) {
         }
         tally += GetSession()->numf;
         int lastp = i1++;
-        GetSession()->bout.NewLine();
+        bout.nl();
         if (lines_listed >= GetSession()->screenlinest - 2 && mode == 0) {
           p = 1;
           lines_listed = 0;
           DisplayHorizontalBar(78, 7);
-          GetSession()->bout.WriteFormatted("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ",
+          bout.WriteFormatted("|#1Select |#9[|#2%d-%d, [Enter]=Next Page, Q=Quit|#9]|#0 : ",
                                             is ? firstp : firstp + 1, lastp);
           ss = mmkey(1, true);
           if (isdigit(ss[0])) {
@@ -122,7 +122,7 @@ void dirlist(int mode) {
               abort   = true;
               break;
             default:
-              GetSession()->bout.BackLine();
+              bout.BackLine();
               break;
             }
           }
@@ -137,21 +137,21 @@ void dirlist(int mode) {
     }
     if (i == 0) {
       pla("None.", &abort);
-      GetSession()->bout.NewLine();
+      bout.nl();
     }
     if (!abort && mode == 0) {
       p = 1;
       DisplayHorizontalBar(78, 7);
       if (okconf(GetSession()->GetCurrentUser())) {
         if (uconfdir[1].confnum != -1) {
-          GetSession()->bout.WriteFormatted("|#1Select |#9[|#2%d-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ",
+          bout.WriteFormatted("|#1Select |#9[|#2%d-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ",
                                             is ? 0 : 1, is ? nd - 1 : nd);
         } else {
-          GetSession()->bout.WriteFormatted("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
+          bout.WriteFormatted("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
                                             is ? nd - 1 : nd);
         }
       } else {
-        GetSession()->bout.WriteFormatted("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
+        bout.WriteFormatted("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
                                           is ? nd - 1 : nd);
       }
       ss = mmkey(0, true);

@@ -51,14 +51,14 @@ void valscan() {
       continue;
     }
 
-    GetSession()->bout.NewLine();
-    GetSession()->bout.Color(2);
-    GetSession()->bout.ClearEOL();
-    GetSession()->bout << "{{ ValScanning " << subboards[GetSession()->GetCurrentReadMessageArea()].name << " }}\r\n";
+    bout.nl();
+    bout.Color(2);
+    bout.ClearEOL();
+    bout << "{{ ValScanning " << subboards[GetSession()->GetCurrentReadMessageArea()].name << " }}\r\n";
     lines_listed = 0;
-    GetSession()->bout.ClearEOL();
+    bout.ClearEOL();
     if (okansi() && !newline) {
-      GetSession()->bout << "\r\x1b[2A";
+      bout << "\r\x1b[2A";
     }
 
     for (int i = 1; i <= GetSession()->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++) {    // was i = 0
@@ -69,8 +69,8 @@ void valscan() {
           bool next;
           int val;
           read_message(i, &next, &val);
-          GetSession()->bout << "|#4[|#4Subboard: " << subboards[GetSession()->GetCurrentReadMessageArea()].name << "|#1]\r\n";
-          GetSession()->bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
+          bout << "|#4[|#4Subboard: " << subboards[GetSession()->GetCurrentReadMessageArea()].name << "|#1]\r\n";
+          bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
           char ch = onek("QDVMR");
           switch (ch) {
           case 'Q':
@@ -88,8 +88,8 @@ void valscan() {
             close_sub();
             send_net_post(p1, subboards[GetSession()->GetCurrentReadMessageArea()].filename,
                           GetSession()->GetCurrentReadMessageArea());
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#7Message sent.\r\n\n";
+            bout.nl();
+            bout << "|#7Message sent.\r\n\n";
           }
           break;
           case 'M':
@@ -102,8 +102,8 @@ void valscan() {
               p1->status &= ~status_pending_net;
               write_post(i, p1);
               close_sub();
-              GetSession()->bout.NewLine();
-              GetSession()->bout << "|#9Not set for net pending now.\r\n\n";
+              bout.nl();
+              bout << "|#9Not set for net pending now.\r\n\n";
             }
             break;
           case 'D':
@@ -119,8 +119,8 @@ void valscan() {
                   GetApplication()->GetUserManager()->ReadUser(&tu, p2.owneruser);
                   if (!tu.IsUserDeleted()) {
                     if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
-                      GetSession()->bout.NewLine();
-                      GetSession()->bout << "|#2Remove how many posts credit? ";
+                      bout.nl();
+                      bout << "|#2Remove how many posts credit? ";
                       char szNumCredits[ 11 ];
                       input(szNumCredits, 3, true);
                       int nNumPostCredits = 1;
@@ -131,8 +131,8 @@ void valscan() {
                       if (nNumPostCredits) {
                         tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<unsigned short>(nNumPostCredits));
                       }
-                      GetSession()->bout.NewLine();
-                      GetSession()->bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
+                      bout.nl();
+                      bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
                       tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() + 1);
                       GetApplication()->GetUserManager()->WriteUser(&tu, p2.owneruser);
                       GetApplication()->UpdateTopScreen();
@@ -155,5 +155,5 @@ void valscan() {
   }
 
   GetSession()->SetCurrentMessageArea(os);
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
 }

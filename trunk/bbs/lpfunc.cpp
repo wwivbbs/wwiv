@@ -143,7 +143,7 @@ int listfiles_plus_function(int type) {
                                               check_batch_queue(file_recs[matches]->filename), lines_left, &search_rec);
 #ifdef EXTRA_SPACE
               if (lines_used > 1 && lines_used < lines_left) {
-                GetSession()->bout.NewLine();
+                bout.nl();
                 ++lines_used;
               }
 #endif
@@ -169,7 +169,7 @@ int listfiles_plus_function(int type) {
                 int command = side_menu(&menu_pos, redraw, menu_items, 2, max_lines + first_file_pos() + 1, &smc);
                 redraw = true;
                 bulk_move = 0;
-                GetSession()->bout.Color(0);
+                bout.Color(0);
                 if (do_sysop_command(command)) {
                   menu_done = true;
                   amount = lines = matches = 0;
@@ -189,7 +189,7 @@ int listfiles_plus_function(int type) {
                   goto TOGGLE_EXTENDED;
                 case '?':
                 case CO:
-                  GetSession()->bout.ClearScreen();
+                  bout.ClearScreen();
                   printfile(LISTPLUS_HLP);
                   pausescr();
                   menu_done = true;
@@ -261,9 +261,9 @@ ADD_OR_REMOVE_BATCH:
                                 ((file_recs[file_pos]->filepoints > GetSession()->GetCurrentUser()->GetFilePoints())) &&
                                 !GetSession()->GetCurrentUser()->IsExemptRatio()) &&
                                !sysop_mode) {
-                        GetSession()->bout.ClearScreen();
-                        GetSession()->bout << "You don't have enough file points to download this file\r\n";
-                        GetSession()->bout << "Or this file is not validated yet.\r\n";
+                        bout.ClearScreen();
+                        bout << "You don't have enough file points to download this file\r\n";
+                        bout << "Or this file is not validated yet.\r\n";
 #else
                       else if (!ratio_ok() && !sysop_mode) {
 #endif
@@ -298,8 +298,8 @@ ADD_OR_REMOVE_BATCH:
 #ifdef KBPERDAY
                       kbbatch -= bytes_to_k(file_recs[file_pos]->numbytes);
 #endif
-                      GetSession()->bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
-                      GetSession()->bout.WriteFormatted("|%2d %c ", lp_config.tagged_color,
+                      bout.GotoXY(1, first_file_pos() + vert_pos[file_pos]);
+                      bout.WriteFormatted("|%2d %c ", lp_config.tagged_color,
                                                         check_batch_queue(file_recs[file_pos]->filename) ? '\xFE' : ' ');
                       undrawfile(vert_pos[file_pos], file_handle[file_pos]);
                       ++file_pos;
@@ -340,7 +340,7 @@ ADD_OR_REMOVE_BATCH:
                     break;
                   case 5:
                     if (!sysop_mode && GetSession()->using_modem) {
-                      GetSession()->bout.ClearScreen();
+                      bout.ClearScreen();
                       menu_done = true;
                       save_file_pos = file_pos;
                       amount = lines = matches = 0;
@@ -348,9 +348,9 @@ ADD_OR_REMOVE_BATCH:
                       if (((!(file_recs[file_pos]->mask & mask_validated))
                            || ((file_recs[file_pos]->filepoints > GetSession()->GetCurrentUser()->GetFilePoints())) &&
                            !GetSession()->GetCurrentUser()->IsExemptRatio()) && !sysop_mode) {
-                        GetSession()->bout.ClearScreen();
-                        GetSession()->bout << "You don't have enough file points to download this file\r\n";
-                        GetSession()->bout << "Or this file is not validated yet.\r\n";
+                        bout.ClearScreen();
+                        bout << "You don't have enough file points to download this file\r\n";
+                        bout << "Or this file is not validated yet.\r\n";
 #else
                       if (!ratio_ok()) {
 #endif
@@ -463,7 +463,7 @@ TOGGLE_EXTENDED:
                     lines_listed = 0;
                     break;
                   case 10:
-                    GetSession()->bout.ClearScreen();
+                    bout.ClearScreen();
                     printfile(LISTPLUS_HLP);
                     pausescr();
                     menu_done = true;
@@ -483,7 +483,7 @@ TOGGLE_EXTENDED:
                       prep_menu_items(menu_items);
                     }
                     bputch('\r');
-                    GetSession()->bout.ClearEOL();
+                    bout.ClearEOL();
                     break;
                   }
                   break;
@@ -557,10 +557,10 @@ TOGGLE_EXTENDED:
 
 void drawfile(int filepos, int filenum) {
   lines_listed = 0;
-  GetSession()->bout.GotoXY(4, filepos + first_file_pos());
-  GetSession()->bout.SystemColor(lp_config.current_file_color);
-  GetSession()->bout.WriteFormatted("%3d|#0", filenum);
-  GetSession()->bout.GotoXY(4, filepos + first_file_pos());
+  bout.GotoXY(4, filepos + first_file_pos());
+  bout.SystemColor(lp_config.current_file_color);
+  bout.WriteFormatted("%3d|#0", filenum);
+  bout.GotoXY(4, filepos + first_file_pos());
 }
 
 

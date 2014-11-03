@@ -38,48 +38,48 @@ void asv() {
   messagerec msg;
   int nAllowAnon = 0;
 
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#5Are you the SysOp of a BBS? ";
+  bout.nl();
+  bout << "|#5Are you the SysOp of a BBS? ";
   if (yesno()) {
     printasv(ASV_HLP, 1, false);
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Select |#7[|#21-4,Q|#7]|#0 : ";
+    bout.nl();
+    bout << "|#5Select |#7[|#21-4,Q|#7]|#0 : ";
     ch = onek("Q1234");
-    GetSession()->bout.NewLine();
+    bout.nl();
     switch (ch) {
     case '1':
-      GetSession()->bout << "|#5Select a network you are in [Q=Quit].";
-      GetSession()->bout.NewLine(2);
+      bout << "|#5Select a network you are in [Q=Quit].";
+      bout.nl(2);
       for (i = 0; i < GetSession()->GetMaxNetworkNumber(); i++) {
         if (net_networks[i].sysnum) {
-          GetSession()->bout << " |#3" << i + 1 << "|#1.  |#1" << net_networks[i].name << wwiv::endl;
+          bout << " |#3" << i + 1 << "|#1.  |#1" << net_networks[i].name << wwiv::endl;
         }
       }
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#1:";
+      bout.nl();
+      bout << "|#1:";
       input(s, 2, true);
       i = atoi(s);
       if (i < 1 || i > GetSession()->GetMaxNetworkNumber()) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#6Aborted!";
+        bout.nl();
+        bout << "|#6Aborted!";
         break;
       }
       set_net_num(i - 1);
 
       do {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#5Enter your node number [Q=Quit].\r\n|#1: |#4@";
+        bout.nl();
+        bout << "|#5Enter your node number [Q=Quit].\r\n|#1: |#4@";
         input(snode, 5, true);
         inode = atoi(snode);
         csne = next_system(inode);
         if ((!csne) && (inode > 0)) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "|#6Unknown System!\r\n";
+          bout.nl();
+          bout << "|#6Unknown System!\r\n";
         }
       } while ((!csne) && (wwiv::UpperCase<char>(snode[0]) != 'Q'));
       if (wwiv::UpperCase<char>(snode[0] == 'Q')) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#6Aborted!";
+        bout.nl();
+        bout << "|#6Aborted!";
         break;
       }
       strcpy(ph, csne->phone);
@@ -88,36 +88,36 @@ void asv() {
       ph1[0] = 0;
       if (GetSession()->GetCurrentUser()->GetDataPhoneNumber()[0] &&
           !wwiv::strings::IsEquals(GetSession()->GetCurrentUser()->GetDataPhoneNumber(), "999-999-9999")) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#9Is |#2" << GetSession()->GetCurrentUser()->GetDataPhoneNumber() <<
+        bout.nl();
+        bout << "|#9Is |#2" << GetSession()->GetCurrentUser()->GetDataPhoneNumber() <<
                            "|#9 the number of your BBS? ";
         if (yesno()) {
           strcpy(ph1, GetSession()->GetCurrentUser()->GetDataPhoneNumber());
         }
-        GetSession()->bout.NewLine();
+        bout.nl();
       }
       if (!ph1[0]) {
-        GetSession()->bout.NewLine();
+        bout.nl();
         i = 3;
         do {
-          GetSession()->bout << "|#5Enter your BBS phone number.\r\n";
-          GetSession()->bout << "|#3 ###-###-####\r\n|#1:";
-          GetSession()->bout.ColorizedInputField(12);
+          bout << "|#5Enter your BBS phone number.\r\n";
+          bout << "|#3 ###-###-####\r\n|#1:";
+          bout.ColorizedInputField(12);
           for (i2 = 0; i2 < 12; i2++) {
-            GetSession()->bout.Color(4);
+            bout.Color(4);
             if (i2 == 3 || i2 == 7) {
               ph1[i2] = 45;
-              GetSession()->bout << "|#4-";
+              bout << "|#4-";
             } else {
               ph1[i2] = onek_ncr("0123456789\r");
               if (ph1[i2] == 8) {
                 if (!(i2 == 0)) {
                   bputch(' ');
-                  GetSession()->bout.BackSpace();
+                  bout.BackSpace();
                   i2--;
                   if ((i2 == 3) || (i2 == 7)) {
                     i2--;
-                    GetSession()->bout.BackSpace();
+                    bout.BackSpace();
                   }
                 } else {
                   bputch(' ');
@@ -128,11 +128,11 @@ void asv() {
             }
           }
           ph1[12] = '\0';
-          GetSession()->bout.NewLine();
+          bout.nl();
           ok = valid_phone(ph1);
           if (!ok) {
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#6Improper Format!\r\n";
+            bout.nl();
+            bout << "|#6Improper Format!\r\n";
           }
         } while (!ok && (--i > 0));
 
@@ -147,8 +147,8 @@ void asv() {
           strcpy(s, sysname);
           strcpy(s1, (strstr(strupr(s), "SERVER")));
           if (wwiv::strings::IsEquals(s1, "SERVER")) {
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#5Is " << sysname << " a server in " << GetSession()->GetNetworkName() << "? ";
+            bout.nl();
+            bout << "|#5Is " << sysname << " a server in " << GetSession()->GetNetworkName() << "? ";
             if (noyes()) {
               sysoplog("* Claims to run a network server.");
               reg = 2;
@@ -156,21 +156,21 @@ void asv() {
             }
           }
         } else if ((*reg_num > 0) && (*reg_num <= 99999)) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "|#5Have you registered WWIV? ";
+          bout.nl();
+          bout << "|#5Have you registered WWIV? ";
           if (noyes()) {
             i = 2;
             do {
-              GetSession()->bout.NewLine();
-              GetSession()->bout << "|#5Enter your registration number: ";
+              bout.nl();
+              bout << "|#5Enter your registration number: ";
               input(s, 5, true);
               reg_num1 = atol(s);
               if (*reg_num == reg_num1) {
                 reg = 1;
               } else {
                 reg = 0;
-                GetSession()->bout.NewLine();
-                GetSession()->bout << "|#6Incorrect!\r\n";
+                bout.nl();
+                bout << "|#6Incorrect!\r\n";
               }
             } while ((--i > 0) && !reg);
           }
@@ -196,7 +196,7 @@ void asv() {
         GetSession()->GetCurrentUser()->SetHomeUserNumber(1);
         GetSession()->GetCurrentUser()->SetForwardNetNumber(GetSession()->GetNetworkNumber());
         GetSession()->GetCurrentUser()->SetHomeNetNumber(GetSession()->GetNetworkNumber());
-        GetSession()->bout.NewLine();
+        bout.nl();
         if (reg != 2) {
           if (reg) {
             set_autoval(GetSession()->advasv.reg_wwiv);
@@ -232,9 +232,9 @@ void asv() {
       break;
 
     case '2':
-      GetSession()->bout.NewLine();
+      bout.nl();
       do {
-        GetSession()->bout <<  "|#3Enter your BBS name, phone and modem speed.\r\n\n|#1:";
+        bout <<  "|#3Enter your BBS name, phone and modem speed.\r\n\n|#1:";
         inputl(s, 28, true);
       } while (!s[0]);
       properize(s);
@@ -246,13 +246,13 @@ void asv() {
       sysoplog("* Validated as a WWIV SysOp");
       GetSession()->GetCurrentUser()->SetStatusFlag(WUser::expert);
       set_autoval(GetSession()->advasv.nonreg_wwiv);
-      GetSession()->bout.NewLine();
+      bout.nl();
       valfile = 9;
       break;
     case '3':
-      GetSession()->bout.NewLine();
+      bout.nl();
       do {
-        GetSession()->bout << "|#3Enter your BBS name, phone, software and modem speed.\r\n\n|#1:";
+        bout << "|#3Enter your BBS name, phone, software and modem speed.\r\n\n|#1:";
         inputl(s, 33, true);
       } while (!s[0]);
       properize(s);
@@ -264,13 +264,13 @@ void asv() {
       sysoplog("* Validation of a Non-WWIV SysOp");
       GetSession()->GetCurrentUser()->SetExempt(0);
       set_autoval(GetSession()->advasv.non_wwiv);
-      GetSession()->bout.NewLine();
+      bout.nl();
       valfile = 10;
       break;
     case '4':
-      GetSession()->bout.NewLine();
+      bout.nl();
       do {
-        GetSession()->bout << "|#3Enter the BBS name, phone, software and modem speed.\r\n\n|#1:";
+        bout << "|#3Enter the BBS name, phone, software and modem speed.\r\n\n|#1:";
         inputl(s, 30, true);
       } while (!s[0]);
       properize(s);
@@ -300,7 +300,7 @@ int printasv(const string& filename, int num, bool abort) {
 
   int temp = curatr;
   bool asvline = false;
-  GetSession()->bout.NewLine();
+  bout.nl();
 
   char szFileName[ MAX_PATH ], szFileName1[ MAX_PATH ];
   sprintf(szFileName, "%s%s", syscfg.gfilesdir, filename.c_str());
@@ -330,7 +330,7 @@ int printasv(const string& filename, int num, bool abort) {
     perror(szFileName);
     if (curatr != temp) {
       curatr = temp;
-      GetSession()->bout.SystemColor(curatr);
+      bout.SystemColor(curatr);
     }
     return -2;
   }
@@ -345,7 +345,7 @@ int printasv(const string& filename, int num, bool abort) {
           file_to_prt.Close();
           if (curatr != temp) {
             curatr = temp;
-            GetSession()->bout.SystemColor(curatr);
+            bout.SystemColor(curatr);
           }
           return 0;
         }
@@ -360,7 +360,7 @@ int printasv(const string& filename, int num, bool abort) {
           } else if (wwiv::UpperCase<char>(nums[0]) == 'C') {
             i1 = 2;
             if (okprint && okansi()) {
-              GetSession()->bout.ClearScreen();
+              bout.ClearScreen();
             }
             asvline = false;
           } else if (wwiv::UpperCase<char>(nums[0]) == 'P') {
@@ -411,7 +411,7 @@ int printasv(const string& filename, int num, bool abort) {
           file_to_prt.Close();
           if (curatr != temp) {
             curatr = temp;
-            GetSession()->bout.SystemColor(curatr);
+            bout.SystemColor(curatr);
           }
           return 1;
         }
@@ -423,10 +423,10 @@ int printasv(const string& filename, int num, bool abort) {
   file_to_prt.Close();
   if (curatr != temp) {
     curatr = temp;
-    GetSession()->bout.SystemColor(curatr);
+    bout.SystemColor(curatr);
   }
   if (!found) {
-    GetSession()->bout << "\r\n%s\r\nPlease report this to the SysOp in Feedback.\r\n";
+    bout << "\r\n%s\r\nPlease report this to the SysOp in Feedback.\r\n";
     ssm(1, 0, "Subfile #%d not found in %s.\r\n", num, szFileName);
     return -1;
   }

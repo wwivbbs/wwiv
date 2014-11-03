@@ -43,16 +43,16 @@ void normalupload(int dn) {
   dliscan1(dn);
   directoryrec d = directories[dn];
   if (GetSession()->numf >= d.maxfiles) {
-    GetSession()->bout.NewLine(3);
-    GetSession()->bout << "This directory is currently full.\r\n\n";
+    bout.nl(3);
+    bout << "This directory is currently full.\r\n\n";
     return;
   }
   if ((d.mask & mask_no_uploads) && (!dcs())) {
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout << "Uploads are not allowed to this directory.\r\n\n";
+    bout.nl(2);
+    bout << "Uploads are not allowed to this directory.\r\n\n";
     return;
   }
-  GetSession()->bout << "|#9Filename: ";
+  bout << "|#9Filename: ";
   char szInputFileName[ MAX_PATH ];
   input(szInputFileName, 12);
   if (!okfn(szInputFileName)) {
@@ -60,15 +60,15 @@ void normalupload(int dn) {
   } else {
     if (!is_uploadable(szInputFileName)) {
       if (so()) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#5In filename database - add anyway? ";
+        bout.nl();
+        bout << "|#5In filename database - add anyway? ";
         if (!yesno()) {
           szInputFileName[0] = '\0';
         }
       } else {
         szInputFileName[0] = '\0';
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#6File either already here or unwanted.\r\n";
+        bout.nl();
+        bout << "|#6File either already here or unwanted.\r\n";
       }
     }
   }
@@ -91,8 +91,8 @@ void normalupload(int dn) {
       }
     }
     if (!ok) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "Sorry, all uploads to this dir must be archived.  Supported types are:\r\n" <<
+      bout.nl();
+      bout << "Sorry, all uploads to this dir must be archived.  Supported types are:\r\n" <<
                          supportedExtensions << "\r\n\n";
       return;
     }
@@ -105,16 +105,16 @@ void normalupload(int dn) {
   u.mask = 0;
   strcpy(u.upby, GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum));
   strcpy(u.date, date());
-  GetSession()->bout.NewLine();
+  bout.nl();
   ok = 1;
   bool xfer = true;
   if (check_batch_queue(u.filename)) {
     ok = 0;
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "That file is already in the batch queue.\r\n\n";
+    bout.nl();
+    bout << "That file is already in the batch queue.\r\n\n";
   } else {
     if (!wwiv::strings::IsEquals(szInputFileName, "        .   ")) {
-      GetSession()->bout << "|#5Upload '" << szInputFileName << "' to " << d.name << "? ";
+      bout << "|#5Upload '" << szInputFileName << "' to " << d.name << "? ";
     } else {
       ok = 0;
     }
@@ -129,29 +129,29 @@ void normalupload(int dn) {
     if (file.Exists()) {
       if (dcs()) {
         xfer = false;
-        GetSession()->bout.NewLine(2);
-        GetSession()->bout << "File already exists.\r\n|#5Add to database anyway? ";
+        bout.nl(2);
+        bout << "File already exists.\r\n|#5Add to database anyway? ";
         if (!yesno()) {
           ok = 0;
         }
       } else {
-        GetSession()->bout.NewLine(2);
-        GetSession()->bout << "That file is already here.\r\n\n";
+        bout.nl(2);
+        bout << "That file is already here.\r\n\n";
         ok = 0;
       }
     } else if (!incom) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "File isn't already there.\r\nCan't upload locally.\r\n\n";
+      bout.nl();
+      bout << "File isn't already there.\r\nCan't upload locally.\r\n\n";
       ok = 0;
     }
     if ((d.mask & mask_PD) && ok) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#5Is this program PD/Shareware? ";
+      bout.nl();
+      bout << "|#5Is this program PD/Shareware? ";
       if (!yesno()) {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n";
-        GetSession()->bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
-        GetSession()->bout << "the sysop.\r\n\n";
+        bout.nl();
+        bout << "This directory is for Public Domain/\r\nShareware programs ONLY.  Please do not\r\n";
+        bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
+        bout << "the sysop.\r\n\n";
         char szBuffer[ 255 ];
         sprintf(szBuffer , "Wanted to upload \"%s\"", u.filename);
         add_ass(5, szBuffer);
@@ -161,8 +161,8 @@ void normalupload(int dn) {
       }
     }
     if (ok && !GetApplication()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "Checking for same file in other directories...\r\n\n";
+      bout.nl();
+      bout << "Checking for same file in other directories...\r\n\n";
       int nLastLineLength = 0;
       for (int i = 0; i < GetSession()->num_dirs && udir[i].subnum != -1; i++) {
         std::string buffer = "Scanning ";
@@ -172,20 +172,20 @@ void normalupload(int dn) {
           buffer += " ";
         }
         nLastLineLength = nBufferLen;
-        GetSession()->bout << buffer << "\r";
+        bout << buffer << "\r";
         dliscan1(udir[i].subnum);
         int i1 = recno(u.filename);
         if (i1 >= 0) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
+          bout.nl();
+          bout << "Same file found on " << directories[udir[i].subnum].name << wwiv::endl;
           if (dcs()) {
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#5Upload anyway? ";
+            bout.nl();
+            bout << "|#5Upload anyway? ";
             if (!yesno()) {
               ok = 0;
               break;
             }
-            GetSession()->bout.NewLine();
+            bout.nl();
           } else {
             ok = 0;
             break;
@@ -193,17 +193,17 @@ void normalupload(int dn) {
         }
       }
       std::string filler = charstr(nLastLineLength, SPACE);
-      GetSession()->bout << filler << "\r";
+      bout << filler << "\r";
       if (ok) {
         dliscan1(dn);
       }
-      GetSession()->bout.NewLine();
+      bout.nl();
     }
     if (ok) {
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "Please enter a one line description.\r\n:";
+      bout.nl();
+      bout << "Please enter a one line description.\r\n:";
       inputl(u.description, 58);
-      GetSession()->bout.NewLine();
+      bout.nl();
       char *pszExtendedDescription = nullptr;
       modify_extended_description(&pszExtendedDescription, directories[dn].name, u.filename);
       if (pszExtendedDescription) {
@@ -211,7 +211,7 @@ void normalupload(int dn) {
         u.mask |= mask_extended;
         free(pszExtendedDescription);
       }
-      GetSession()->bout.NewLine();
+      bout.nl();
       if (xfer) {
         write_inst(INST_LOC_UPLOAD, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
         double ti = timer();
@@ -227,15 +227,15 @@ void normalupload(int dn) {
         if (ok == 1) {
           if (!file.Open(WFile::modeBinary | WFile::modeReadOnly)) {
             ok = 0;
-            GetSession()->bout.NewLine(2);
-            GetSession()->bout << "OS error - File not found.\r\n\n";
+            bout.nl(2);
+            bout << "OS error - File not found.\r\n\n";
             if (u.mask & mask_extended) {
               delete_extended_description(u.filename);
             }
           }
           if (ok && !syscfg.upload_cmd.empty()) {
             file.Close();
-            GetSession()->bout << "Please wait...\r\n";
+            bout << "Please wait...\r\n";
             if (!check_ul_event(dn, &u)) {
               if (u.mask & mask_extended) {
                 delete_extended_description(u.filename);
@@ -287,17 +287,17 @@ void normalupload(int dn) {
             pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
             GetApplication()->GetStatusManager()->CommitTransaction(pStatus);
             sysoplogf("+ \"%s\" uploaded on %s", u.filename, directories[dn].name);
-            GetSession()->bout.NewLine(2);
-            GetSession()->bout.WriteFormatted("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
-            GetSession()->bout.NewLine(2);
+            bout.nl(2);
+            bout.WriteFormatted("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
+            bout.nl(2);
             if (GetSession()->IsUserOnline()) {
               GetApplication()->UpdateTopScreen();
             }
           }
         }
       } else {
-        GetSession()->bout.NewLine(2);
-        GetSession()->bout << "File transmission aborted.\r\n\n";
+        bout.nl(2);
+        bout << "File transmission aborted.\r\n\n";
         if (u.mask & mask_extended) {
           delete_extended_description(u.filename);
         }

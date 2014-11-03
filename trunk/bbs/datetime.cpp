@@ -102,7 +102,7 @@ time_t date_to_daten(const char *datet) {
  * The following line would show the date that your BBS.EXE was last changed:
  * char date[81];
  * filedate("bbs.exe", &date);
- * GetSession()->bout.Write("BBS was last modified on %s at %s\r\n", date,
+ * bout.Write("BBS was last modified on %s at %s\r\n", date,
  *     filetime("BBS.EXE"));
  *
  */

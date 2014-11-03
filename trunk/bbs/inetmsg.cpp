@@ -110,8 +110,8 @@ void get_user_ppp_addr() {
 
 void send_inet_email() {
   if (GetSession()->GetCurrentUser()->GetNumEmailSentToday() > getslrec(GetSession()->GetEffectiveSl()).emails) {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#6Too much mail sent today.\r\n";
+    bout.nl();
+    bout << "|#6Too much mail sent today.\r\n";
     return;
   }
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
@@ -121,13 +121,13 @@ void send_inet_email() {
     return;
   }
   set_net_num(GetSession()->GetNetworkNumber());
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#9Your Internet Address:|#1 " <<
+  bout.nl();
+  bout << "|#9Your Internet Address:|#1 " <<
                      (GetSession()->IsInternetUseRealNames() ? GetSession()->GetCurrentUser()->GetRealName() :
                       GetSession()->GetCurrentUser()->GetName()) <<
                      " <" << GetSession()->internetFullEmailAddress << ">";
-  GetSession()->bout.NewLine(2);
-  GetSession()->bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
+  bout.nl(2);
+  bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
   inputl(net_email_name, 75, true);
   if (check_inet_addr(net_email_name)) {
     unsigned short nUserNumber = 0;
@@ -139,11 +139,11 @@ void send_inet_email() {
       email(nUserNumber, nSystemNumber, false, 0);
     }
   } else {
-    GetSession()->bout.NewLine();
+    bout.nl();
     if (net_email_name[0]) {
-      GetSession()->bout << "|#6Invalid address format!\r\n";
+      bout << "|#6Invalid address format!\r\n";
     } else {
-      GetSession()->bout << "|#6Aborted.\r\n";
+      bout << "|#6Aborted.\r\n";
     }
   }
 }

@@ -98,15 +98,15 @@ void pausescr() {
   }
 
   if (okansi()) {
-    GetSession()->bout.ResetColors();
+    bout.ResetColors();
 
     i1 = strlen(stripcolors(ss));
     i = curatr;
-    GetSession()->bout.SystemColor(GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor(
+    bout.SystemColor(GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor(
                                      3) :
                                    GetSession()->GetCurrentUser()->GetBWColor(3));
-    GetSession()->bout << ss << "\x1b[" << i1 << "D";
-    GetSession()->bout.SystemColor(i);
+    bout << ss << "\x1b[" << i1 << "D";
+    bout.SystemColor(i);
 
     time(&tstart);
 
@@ -120,17 +120,17 @@ void pausescr() {
           if (!warned) {
             warned = 1;
             bputch(CG);
-            GetSession()->bout.SystemColor(GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor(
+            bout.SystemColor(GetSession()->GetCurrentUser()->HasColor() ? GetSession()->GetCurrentUser()->GetColor(
                                              6) :
                                            GetSession()->GetCurrentUser()->GetBWColor(6));
-            GetSession()->bout << ss;
+            bout << ss;
             for (int i3 = 0; i3 < i2; i3++) {
               if (s[i3] == 3 && i1 > 1) {
                 i1 -= 2;
               }
             }
-            GetSession()->bout << "\x1b[" << i1 << "D";
-            GetSession()->bout.SystemColor(i);
+            bout << "\x1b[" << i1 << "D";
+            bout.SystemColor(i);
           }
         } else {
           if (ttotal > 180) {
@@ -138,8 +138,8 @@ void pausescr() {
             for (i3 = 0; i3 < i1; i3++) {
               bputch(' ');
             }
-            GetSession()->bout << "\x1b[" << i1 << "D";
-            GetSession()->bout.SystemColor(i);
+            bout << "\x1b[" << i1 << "D";
+            bout.SystemColor(i);
             setiia(oiia);
             return;
           }
@@ -153,8 +153,8 @@ void pausescr() {
     for (i3 = 0; i3 < i1; i3++) {
       bputch(' ');
     }
-    GetSession()->bout << "\x1b[" << i1 << "D";
-    GetSession()->bout.SystemColor(i);
+    bout << "\x1b[" << i1 << "D";
+    bout.SystemColor(i);
     setiia(oiia);
 
   } else {
@@ -164,10 +164,10 @@ void pausescr() {
         i1 -= 2;
       }
     }
-    GetSession()->bout << ss;
+    bout << ss;
     GetKeyForPause();
     for (int i3 = 0; i3 < i1; i3++) {
-      GetSession()->bout.BackSpace();
+      bout.BackSpace();
     }
   }
 

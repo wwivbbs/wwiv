@@ -55,7 +55,7 @@ int bputch(char c, bool bUseInternalBuffer) {
 
   if (change_color == BPUTCH_MACRO_CHAR_CODE) {
     change_color = BPUTCH_NO_CODE;
-    return GetSession()->bout.Write(static_cast<const char *>(interpret(c)));
+    return bout.Write(static_cast<const char *>(interpret(c)));
   } else if (change_color == BPUTCH_CTRLO_CODE) {
     if (c == CO) {
       change_color = BPUTCH_MACRO_CHAR_CODE;
@@ -79,7 +79,7 @@ int bputch(char c, bool bUseInternalBuffer) {
     } else if (pipe_color[0] == 'b' || pipe_color[0] == 'B') {
       nc = 16 + atoi(pipe_color + 1);
     } else if (pipe_color[0] == '#' || pipe_color[0] == '#') {
-      GetSession()->bout.Color(atoi(pipe_color + 1));
+      bout.Color(atoi(pipe_color + 1));
       return 0;
     } else {
       change_color = BPUTCH_LITERAL_PIPE_CODE;
@@ -90,8 +90,8 @@ int bputch(char c, bool bUseInternalBuffer) {
 
 
     if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
-      GetSession()->bout << "|" ;
-      return GetSession()->bout.Write(pipe_color) + 1;
+      bout << "|" ;
+      return bout.Write(pipe_color) + 1;
     } else {
       char szAnsiColorCode[20];
       if (nc < 16) {
@@ -99,7 +99,7 @@ int bputch(char c, bool bUseInternalBuffer) {
       } else {
         makeansi((curatr & 0x0f) | (nc << 4), szAnsiColorCode, false);
       }
-      GetSession()->bout.Write(szAnsiColorCode);
+      bout.Write(szAnsiColorCode);
     }
     return 0; // color was printed, no chars displayed
   } else if (change_color == BPUTCH_AT_MACRO_CODE) {
@@ -114,7 +114,7 @@ int bputch(char c, bool bUseInternalBuffer) {
   } else if (change_color == BPUTCH_HEART_CODE) {
     change_color = BPUTCH_NO_CODE;
     if ((c >= SPACE) && (static_cast<unsigned char>(c) <= 126)) {
-      GetSession()->bout.Color(static_cast<unsigned char>(c) - 48);
+      bout.Color(static_cast<unsigned char>(c) - 48);
     }
     return 0;
   }
@@ -129,7 +129,7 @@ int bputch(char c, bool bUseInternalBuffer) {
     change_color = BPUTCH_AT_MACRO_CODE;
     return 0;
   } else if (c == SOFTRETURN && endofline[0]) {
-    displayed = GetSession()->bout.Write(endofline);
+    displayed = bout.Write(endofline);
     endofline[0] = '\0';
   } else if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
     change_color = BPUTCH_NO_CODE;

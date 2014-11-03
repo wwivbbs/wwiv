@@ -84,7 +84,6 @@ class WSession {
   virtual ~WSession();
 
  public:
-  WOutStream& bout;
   static const int mmkeyMessageAreas = 0;
   static const int mmkeyFileAreas = 1;
   static const int mmkeyChains = 2;

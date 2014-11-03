@@ -98,62 +98,62 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
   char s[81], s1[81], s2[81], s3[81];
 
   if (bClearScreen) {
-    GetSession()->bout.ClearScreen();
+    bout.ClearScreen();
   }
   if (pUser->IsUserDeleted()) {
-    GetSession()->bout << "|#6>>> This User Is DELETED - Use 'R' to Restore <<<\r\n\n";
+    bout << "|#6>>> This User Is DELETED - Use 'R' to Restore <<<\r\n\n";
   }
-  GetSession()->bout << "|#2N|#9) Name/Alias   : |#1" << pUser->GetName() << " #" << nUserNumber << wwiv::endl;
-  GetSession()->bout << "|#2L|#9) Real Name    : |#1" << pUser->GetRealName() << wwiv::endl;
+  bout << "|#2N|#9) Name/Alias   : |#1" << pUser->GetName() << " #" << nUserNumber << wwiv::endl;
+  bout << "|#2L|#9) Real Name    : |#1" << pUser->GetRealName() << wwiv::endl;
   if (bLongFormat) {
     if (pUser->GetStreet()[0]) {
-      GetSession()->bout << "|#2%|#9) Address      : |#1" << pUser->GetStreet() << wwiv::endl;
+      bout << "|#2%|#9) Address      : |#1" << pUser->GetStreet() << wwiv::endl;
     }
     if (pUser->GetCity()[0] || pUser->GetState()[0] ||
         pUser->GetCountry()[0] || pUser->GetZipcode()[0]) {
-      GetSession()->bout << "|#9   City         : |#1" << pUser->GetCity() << ", " <<
+      bout << "|#9   City         : |#1" << pUser->GetCity() << ", " <<
                          pUser->GetState() << "  " << pUser->GetZipcode() << " |#9(|#1" <<
                          pUser->GetCountry() << "|#9)\r\n";
     }
   }
 
   if (pUser->GetRegisteredDateNum() != 0) {
-    GetSession()->bout << "|#2X|#9) Registration : |#1" << daten_to_date(pUser->GetRegisteredDateNum()) <<
+    bout << "|#2X|#9) Registration : |#1" << daten_to_date(pUser->GetRegisteredDateNum()) <<
                        "       Expires on   : " << daten_to_date(pUser->GetExpiresDateNum()) << wwiv::endl;
   }
 
   if (pUser->GetCallsign()[0] != '\0') {
-    GetSession()->bout << "|#2C|#9) Call         : |#1" << pUser->GetCallsign() << wwiv::endl;
+    bout << "|#2C|#9) Call         : |#1" << pUser->GetCallsign() << wwiv::endl;
   }
 
-  GetSession()->bout << "|#2P|#9) Voice Phone #: |#1" << pUser->GetVoicePhoneNumber() << wwiv::endl;
+  bout << "|#2P|#9) Voice Phone #: |#1" << pUser->GetVoicePhoneNumber() << wwiv::endl;
   if (pUser->GetDataPhoneNumber()[0] != '\0') {
-    GetSession()->bout << "|#9   Data Phone # : |#1" << pUser->GetDataPhoneNumber() << wwiv::endl;
+    bout << "|#9   Data Phone # : |#1" << pUser->GetDataPhoneNumber() << wwiv::endl;
   }
 
-  GetSession()->bout.WriteFormatted("|#2G|#9) Birthday/Age : |#1(%02d/%02d/%02d) (Age: %d) (Gender: %c) \r\n",
+  bout.WriteFormatted("|#2G|#9) Birthday/Age : |#1(%02d/%02d/%02d) (Age: %d) (Gender: %c) \r\n",
                                     pUser->GetBirthdayMonth(), pUser->GetBirthdayDay(),
                                     pUser->GetBirthdayYear(), pUser->GetAge(), pUser->GetGender());
 
-  GetSession()->bout << "|#2M|#9) Comp         : |#1" << (pUser->GetComputerType() == -1 ? "Waiting for answer" : ctypes(
+  bout << "|#2M|#9) Comp         : |#1" << (pUser->GetComputerType() == -1 ? "Waiting for answer" : ctypes(
                        pUser->GetComputerType())) << wwiv::endl;
   if (pUser->GetForwardUserNumber() != 0) {
-    GetSession()->bout << "|#9   Forwarded To : |#1";
+    bout << "|#9   Forwarded To : |#1";
     if (pUser->GetForwardSystemNumber() != 0) {
       if (GetSession()->GetMaxNetworkNumber() > 1) {
-        GetSession()->bout << net_networks[ pUser->GetForwardNetNumber() ].name <<
+        bout << net_networks[ pUser->GetForwardNetNumber() ].name <<
                            " #" << pUser->GetForwardUserNumber() <<
                            " @" << pUser->GetForwardSystemNumber() << wwiv::endl;
       } else {
-        GetSession()->bout << "#" << pUser->GetForwardUserNumber() << " @" << pUser->GetForwardSystemNumber() << wwiv::endl;
+        bout << "#" << pUser->GetForwardUserNumber() << " @" << pUser->GetForwardSystemNumber() << wwiv::endl;
       }
     } else {
-      GetSession()->bout << "#" << pUser->GetForwardUserNumber() << wwiv::endl;
+      bout << "#" << pUser->GetForwardUserNumber() << wwiv::endl;
     }
   }
   if (bLongFormat) {
 
-    GetSession()->bout << "|#2H|#9) Password     : |#1";
+    bout << "|#2H|#9) Password     : |#1";
     if (AllowLocalSysop()) {
       GetSession()->localIO()->LocalPuts(pUser->GetPassword());
     }
@@ -163,39 +163,39 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
     } else {
       rputs("(not shown remotely)");
     }
-    GetSession()->bout.NewLine();
+    bout.nl();
 
-    GetSession()->bout << "|#9   First/Last On: |#9(Last: |#1" << pUser->GetLastOn() << "|#9)   (First: |#1" <<
+    bout << "|#9   First/Last On: |#9(Last: |#1" << pUser->GetLastOn() << "|#9)   (First: |#1" <<
                        pUser->GetFirstOn() << "|#9)\r\n";
 
-    GetSession()->bout.WriteFormatted("|#9   Message Stats: |#9(Post:|#1%u|#9) (Email:|#1%u|#9) (Fd:|#1%u|#9) (Wt:|#1%u|#9) (Net:|#1%u|#9) (Del:|#1%u|#9)\r\n",
+    bout.WriteFormatted("|#9   Message Stats: |#9(Post:|#1%u|#9) (Email:|#1%u|#9) (Fd:|#1%u|#9) (Wt:|#1%u|#9) (Net:|#1%u|#9) (Del:|#1%u|#9)\r\n",
                                       pUser->GetNumMessagesPosted(), pUser->GetNumEmailSent(),
                                       pUser->GetNumFeedbackSent(), pUser->GetNumMailWaiting(), pUser->GetNumNetEmailSent(), pUser->GetNumDeletedPosts());
 
-    GetSession()->bout.WriteFormatted("|#9   Call Stats   : |#9(Total: |#1%u|#9) (Today: |#1%d|#9) (Illegal: |#6%d|#9)\r\n",
+    bout.WriteFormatted("|#9   Call Stats   : |#9(Total: |#1%u|#9) (Today: |#1%d|#9) (Illegal: |#6%d|#9)\r\n",
                                       pUser->GetNumLogons(), (!IsEquals(pUser->GetLastOn(), date())) ? 0 : pUser->GetTimesOnToday(),
                                       pUser->GetNumIllegalLogons());
 
-    GetSession()->bout.WriteFormatted("|#9   Up/Dnld Stats: |#9(Up: |#1%u |#9files in |#1%lu|#9k)  (Dn: |#1%u |#9files in |#1%lu|#9k)\r\n",
+    bout.WriteFormatted("|#9   Up/Dnld Stats: |#9(Up: |#1%u |#9files in |#1%lu|#9k)  (Dn: |#1%u |#9files in |#1%lu|#9k)\r\n",
                                       pUser->GetFilesUploaded(), pUser->GetUploadK(), pUser->GetFilesDownloaded(), pUser->GetDownloadK());
 
-    GetSession()->bout << "|#9   Last Baud    : |#1" << pUser->GetLastBaudRate() << wwiv::endl;
+    bout << "|#9   Last Baud    : |#1" << pUser->GetLastBaudRate() << wwiv::endl;
   }
   if (pUser->GetNote()[0] != '\0') {
-    GetSession()->bout << "|#2O|#9) Sysop Note   : |#1" << pUser->GetNote() << wwiv::endl;
+    bout << "|#2O|#9) Sysop Note   : |#1" << pUser->GetNote() << wwiv::endl;
   }
   if (pUser->GetAssPoints()) {
-    GetSession()->bout << "|#9   Ass Points   : |#1" << pUser->GetAssPoints() << wwiv::endl;
+    bout << "|#9   Ass Points   : |#1" << pUser->GetAssPoints() << wwiv::endl;
   }
-  GetSession()->bout << "|#2S|#9) SL           : |#1" << pUser->GetSl() << wwiv::endl;
-  GetSession()->bout << "|#2T|#9) DSL          : |#1" << pUser->GetDsl() << wwiv::endl;
+  bout << "|#2S|#9) SL           : |#1" << pUser->GetSl() << wwiv::endl;
+  bout << "|#2T|#9) DSL          : |#1" << pUser->GetDsl() << wwiv::endl;
   if (u_qsc) {
     if ((*u_qsc) != 999) {
-      GetSession()->bout << "|#9    Sysop Sub #: |#1" << *u_qsc << wwiv::endl;
+      bout << "|#9    Sysop Sub #: |#1" << *u_qsc << wwiv::endl;
     }
   }
   if (pUser->GetExempt() != 0) {
-    GetSession()->bout.WriteFormatted("|#9   Exemptions   : |#1%s %s %s %s %s (%d)\r\n",
+    bout.WriteFormatted("|#9   Exemptions   : |#1%s %s %s %s %s (%d)\r\n",
                                       pUser->IsExemptRatio() ? "XFER" : "    ",
                                       pUser->IsExemptTime() ? "TIME" : "    ",
                                       pUser->IsExemptPost() ? "POST" : "    ",
@@ -225,30 +225,30 @@ void print_data(int nUserNumber, WUser *pUser, bool bLongFormat, bool bClearScre
   s1[16]  = '\0';
   s2[16]  = '\0';
   if (pUser->GetAr() != 0) {
-    GetSession()->bout << "|#2A|#9) AR Flags     : |#1" << s << wwiv::endl;
+    bout << "|#2A|#9) AR Flags     : |#1" << s << wwiv::endl;
   }
   if (pUser->GetDar() != 0) {
-    GetSession()->bout << "|#2I|#9) DAR Flags    : |#1" << s1 << wwiv::endl;
+    bout << "|#2I|#9) DAR Flags    : |#1" << s1 << wwiv::endl;
   }
   if (pUser->GetRestriction() != 0) {
-    GetSession()->bout << "|#2Z|#9) Restrictions : |#1" << s2 << wwiv::endl;
+    bout << "|#2Z|#9) Restrictions : |#1" << s2 << wwiv::endl;
   }
   if (pUser->GetWWIVRegNumber()) {
-    GetSession()->bout << "|#9   WWIV Reg Num : |#1" << pUser->GetWWIVRegNumber() << wwiv::endl;
+    bout << "|#9   WWIV Reg Num : |#1" << pUser->GetWWIVRegNumber() << wwiv::endl;
   }
   // begin callback changes
 
   if (bLongFormat) {
     print_affil(pUser);
     if (GetApplication()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
-      GetSession()->bout.WriteFormatted("|#1User has%s been callback verified.  ",
+      bout.WriteFormatted("|#1User has%s been callback verified.  ",
                                         (pUser->GetCbv() & 1) == 0 ? " |#6not" : "");
     }
     if (GetApplication()->HasConfigFlag(OP_FLAGS_VOICE_VAL)) {
-      GetSession()->bout.WriteFormatted("|#1User has%s been voice verified.",
+      bout.WriteFormatted("|#1User has%s been voice verified.",
                                         (pUser->GetCbv() & 2) == 0 ? " |#6not" : "");
     }
-    GetSession()->bout.NewLine(2);
+    bout.nl(2);
   }
   // end callback changes
 }
@@ -427,13 +427,13 @@ int matchuser(WUser *pUser) {
 
 
 void changeopt() {
-  GetSession()->bout.ClearScreen();
-  GetSession()->bout << "Current search string:\r\n";
-  GetSession()->bout << ((search_pattern[0]) ? search_pattern : "-NONE-");
-  GetSession()->bout.NewLine(3);
-  GetSession()->bout << "|#9Change it? ";
+  bout.ClearScreen();
+  bout << "Current search string:\r\n";
+  bout << ((search_pattern[0]) ? search_pattern : "-NONE-");
+  bout.nl(3);
+  bout << "|#9Change it? ";
   if (yesno()) {
-    GetSession()->bout << "Enter new search pattern:\r\n|#7:";
+    bout << "Enter new search pattern:\r\n|#7:";
     input(search_pattern, 75);
   }
 }
@@ -482,8 +482,8 @@ void uedit(int usern, int other) {
     bool temp_full = false;
     do {
       print_data(nUserNumber, &user, (full || temp_full) ? true : false, bClearScreen);
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#9(|#2Q|#9=|#1Quit, |#2?|#9=|#1Help|#9) User Editor Command: ";
+      bout.nl();
+      bout << "|#9(|#2Q|#9=|#1Quit, |#2?|#9=|#1Help|#9) User Editor Command: ";
       char ch = 0;
       if (GetSession()->GetCurrentUser()->GetSl() == 255 || GetApplication()->GetWfcStatus()) {
         ch = onek("ACDEFGHILMNOPQRSTUVWXYZ0123456789[]{}/,.?~%:", true);
@@ -492,8 +492,8 @@ void uedit(int usern, int other) {
       }
       switch (ch) {
       case 'A': {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7Toggle which AR? ";
+        bout.nl();
+        bout << "|#7Toggle which AR? ";
         char ch1 = onek("\rABCDEFGHIJKLMNOP");
         if (ch1 != RETURN) {
           ch1 -= 'A';
@@ -505,14 +505,14 @@ void uedit(int usern, int other) {
       }
       break;
       case 'C':
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New callsign? ";
+        bout.nl();
+        bout << "|#7New callsign? ";
         input(s, 6);
         if (s[0]) {
           user.SetCallsign(s);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
         } else {
-          GetSession()->bout << "|#5Delete callsign? ";
+          bout << "|#5Delete callsign? ";
           if (yesno()) {
             user.SetCallsign("");
             GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
@@ -522,7 +522,7 @@ void uedit(int usern, int other) {
       case 'D':
         if (nUserNumber != 1) {
           if (!user.IsUserDeleted() && GetSession()->GetEffectiveSl() > user.GetSl()) {
-            GetSession()->bout << "|#5Delete? ";
+            bout << "|#5Delete? ";
             if (yesno()) {
               deluser(nUserNumber);
               GetApplication()->GetUserManager()->ReadUser(&user, nUserNumber);
@@ -531,8 +531,8 @@ void uedit(int usern, int other) {
         }
         break;
       case 'E': {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New Exemption? ";
+        bout.nl();
+        bout << "|#7New Exemption? ";
         input(s, 3);
         int nExemption = atoi(s);
         if (nExemption >= 0 && nExemption <= 255 && s[0]) {
@@ -546,8 +546,8 @@ void uedit(int usern, int other) {
         GetSession()->SetNetworkNumber(nNetworkNumber);
         if (nNetworkNumber != -1) {
           set_net_num(GetSession()->GetNetworkNumber());
-          GetSession()->bout << "Current Internet Address\r\n:" << user.GetEmailAddress() << wwiv::endl;
-          GetSession()->bout << "New Address\r\n:";
+          bout << "Current Internet Address\r\n:" << user.GetEmailAddress() << wwiv::endl;
+          bout << "New Address\r\n:";
           inputl(s, 75);
           if (s[0] != '\0') {
             if (check_inet_addr(s)) {
@@ -555,12 +555,12 @@ void uedit(int usern, int other) {
               write_inet_addr(s, nUserNumber);
               user.SetForwardNetNumber(GetSession()->GetNetworkNumber());
             } else {
-              GetSession()->bout.NewLine();
-              GetSession()->bout << "Invalid format.\r\n";
+              bout.nl();
+              bout << "Invalid format.\r\n";
             }
           } else {
-            GetSession()->bout.NewLine();
-            GetSession()->bout << "|#5Remove current address? ";
+            bout.nl();
+            bout << "|#5Remove current address? ";
             if (yesno()) {
               user.SetEmailAddress("");
             }
@@ -570,25 +570,25 @@ void uedit(int usern, int other) {
       }
       break;
       case 'G':
-        GetSession()->bout << "|#5Are you sure you want to re-enter the birthday? ";
+        bout << "|#5Are you sure you want to re-enter the birthday? ";
         if (yesno()) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout.WriteFormatted("Current birthdate: %02d/%02d/%02d\r\n",
+          bout.nl();
+          bout.WriteFormatted("Current birthdate: %02d/%02d/%02d\r\n",
                                             user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
           input_age(&user);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
         }
         break;
       case 'H':
-        GetSession()->bout << "|#5Change this user's password? ";
+        bout << "|#5Change this user's password? ";
         if (yesno()) {
           input_pw(&user);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
         }
         break;
       case 'I': {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7Toggle which DAR? ";
+        bout.nl();
+        bout << "|#7Toggle which DAR? ";
         char ch1 = onek("\rABCDEFGHIJKLMNOP");
         if (ch1 != RETURN) {
           ch1 -= 'A';
@@ -600,8 +600,8 @@ void uedit(int usern, int other) {
       }
       break;
       case 'L': {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New FULL real name? ";
+        bout.nl();
+        bout << "|#7New FULL real name? ";
         string realName;
         Input1(&realName, user.GetRealName(), 20, true, InputMode::PROPER);
         if (!realName.empty()) {
@@ -612,14 +612,14 @@ void uedit(int usern, int other) {
       break;
       case 'M': {
         int nNumCompTypes = 0;
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "Known computer types:\r\n\n";
+        bout.nl();
+        bout << "Known computer types:\r\n\n";
         for (int nCurCompType = 0; ctypes(nCurCompType); nCurCompType++) {
-          GetSession()->bout << nCurCompType << ". " << ctypes(nCurCompType) << wwiv::endl;
+          bout << nCurCompType << ". " << ctypes(nCurCompType) << wwiv::endl;
           nNumCompTypes++;
         }
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7Enter new computer type: ";
+        bout.nl();
+        bout << "|#7Enter new computer type: ";
         input(s, 2);
         int nComputerType = atoi(s);
         if (nComputerType > 0 && nComputerType <= nNumCompTypes) {
@@ -629,8 +629,8 @@ void uedit(int usern, int other) {
       }
       break;
       case 'N':
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New name? ";
+        bout.nl();
+        bout << "|#7New name? ";
         input(s, 30);
         if (s[0]) {
           if (finduser(s) < 1) {
@@ -642,8 +642,8 @@ void uedit(int usern, int other) {
         }
         break;
       case 'O':
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New note? ";
+        bout.nl();
+        bout << "|#7New note? ";
         inputl(s, 60);
         user.SetNote(s);
         GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
@@ -651,8 +651,8 @@ void uedit(int usern, int other) {
 
       case 'P': {
         bool bWriteUser = false;
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New phone number? ";
+        bout.nl();
+        bout << "|#7New phone number? ";
         string phoneNumber;
         Input1(&phoneNumber, user.GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
         if (!phoneNumber.empty()) {
@@ -663,8 +663,8 @@ void uedit(int usern, int other) {
           user.SetVoicePhoneNumber(phoneNumber.c_str());
           bWriteUser = true;
         }
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New DataPhone (0=none)? ";
+        bout.nl();
+        bout << "|#7New DataPhone (0=none)? ";
         Input1(&phoneNumber, user.GetDataPhoneNumber(), 12, true, InputMode::PHONE);
         if (!phoneNumber.empty()) {
           if (phoneNumber[0] == '0') {
@@ -686,7 +686,7 @@ void uedit(int usern, int other) {
       case 'V': {
         bool bWriteUser = false;
         if (GetApplication()->HasConfigFlag(OP_FLAGS_CALLBACK)) {
-          GetSession()->bout << "|#7Toggle callback verify flag (y/N) ? ";
+          bout << "|#7Toggle callback verify flag (y/N) ? ";
           if (yesno()) {
             if (user.GetCbv() & 1) {
               GetSession()->GetCurrentUser()->SetSl(syscfg.newusersl);
@@ -713,7 +713,7 @@ void uedit(int usern, int other) {
           }
         }
         if (GetApplication()->HasConfigFlag(OP_FLAGS_VOICE_VAL)) {
-          GetSession()->bout << "|#7Toggle voice validated flag (y/N) ? ";
+          bout << "|#7Toggle voice validated flag (y/N) ? ";
           if (yesno()) {
             if (user.GetCbv() & 2) {
               user.SetCbv(user.GetCbv() - 2);
@@ -756,13 +756,13 @@ void uedit(int usern, int other) {
         if (user.GetSl() >= GetSession()->GetEffectiveSl()) {
           break;
         }
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New SL? ";
+        bout.nl();
+        bout << "|#7New SL? ";
         string sl;
         input(&sl, 3);
         int nNewSL = atoi(sl.c_str());
         if (!GetApplication()->GetWfcStatus() && nNewSL >= GetSession()->GetEffectiveSl() && nUserNumber != 1) {
-          GetSession()->bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
+          bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
           nNewSL = -1;
         }
@@ -779,13 +779,13 @@ void uedit(int usern, int other) {
         if (user.GetDsl() >= GetSession()->GetCurrentUser()->GetDsl()) {
           break;
         }
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New DSL? ";
+        bout.nl();
+        bout << "|#7New DSL? ";
         string dsl;
         input(&dsl, 3);
         int nNewDSL = atoi(dsl.c_str());
         if (!GetApplication()->GetWfcStatus() && nNewDSL >= GetSession()->GetCurrentUser()->GetDsl() && nUserNumber != 1) {
-          GetSession()->bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
+          bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
           nNewDSL = -1;
         }
@@ -796,8 +796,8 @@ void uedit(int usern, int other) {
       }
       break;
       case 'U': {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7User name/number: ";
+        bout.nl();
+        bout << "|#7User name/number: ";
         string name;
         input(&name, 30);
         int nFoundUserNumber = finduser1(name.c_str());
@@ -818,19 +818,19 @@ void uedit(int usern, int other) {
         if (!GetApplication()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {
           break;
         }
-        GetSession()->bout.NewLine();
+        bout.nl();
         if (user.GetRegisteredDateNum() != 0) {
           regDate = daten_to_date(user.GetRegisteredDateNum());
           expDate = daten_to_date(user.GetExpiresDateNum());
-          GetSession()->bout << "Registered on " << regDate << ", expires on " << expDate << wwiv::endl;
+          bout << "Registered on " << regDate << ", expires on " << expDate << wwiv::endl;
         } else {
-          GetSession()->bout << "Not registered.\r\n";
+          bout << "Not registered.\r\n";
         }
         string newRegDate;
         do {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "Enter registration date, <CR> for today: \r\n";
-          GetSession()->bout << " MM/DD/YY\r\n:";
+          bout.nl();
+          bout << "Enter registration date, <CR> for today: \r\n";
+          bout << " MM/DD/YY\r\n:";
           input(&newRegDate, 8);
         } while (newRegDate.length() != 8 && !newRegDate.empty());
 
@@ -843,13 +843,13 @@ void uedit(int usern, int other) {
         if (newRegDate.length() == 8 && m > 0 && m <= 12 && dd > 0 && dd < 32) {
           user.SetRegisteredDateNum(date_to_daten(newRegDate.c_str()));
         } else {
-          GetSession()->bout.NewLine();
+          bout.nl();
         }
         string newExpDate;
         do {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "Enter expiration date, <CR> to clear registration fields: \r\n";
-          GetSession()->bout << " MM/DD/YY\r\n:";
+          bout.nl();
+          bout << "Enter expiration date, <CR> to clear registration fields: \r\n";
+          bout << " MM/DD/YY\r\n:";
           input(&newExpDate, 8);
         } while (newExpDate.length() != 8 && !newExpDate.empty());
         if (newExpDate.length() == 8) {
@@ -867,8 +867,8 @@ void uedit(int usern, int other) {
       break;
       case 'Y':
         if (u_qsc) {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "|#7(999=None) New sysop sub? ";
+          bout.nl();
+          bout << "|#7(999=None) New sysop sub? ";
           string sysopSubNum;
           input(&sysopSubNum, 3);
           int nSysopSubNum = atoi(sysopSubNum.c_str());
@@ -880,10 +880,10 @@ void uedit(int usern, int other) {
         break;
       case 'Z': {
         char ch1;
-        GetSession()->bout.NewLine();
-        GetSession()->bout <<  "        " << restrict_string << wwiv::endl;
+        bout.nl();
+        bout <<  "        " << restrict_string << wwiv::endl;
         do {
-          GetSession()->bout << "|#7([Enter]=Quit, ?=Help) Enter Restriction to Toggle? ";
+          bout << "|#7([Enter]=Quit, ?=Help) Enter Restriction to Toggle? ";
           s[0] = RETURN;
           s[1] = '?';
           strcpy(&(s[2]), restrict_string);
@@ -892,7 +892,7 @@ void uedit(int usern, int other) {
             ch1 = RETURN;
           }
           if (ch1 == '?') {
-            GetSession()->bout.ClearScreen();
+            bout.ClearScreen();
             printfile(SRESTRCT_NOEXT);
           }
           if (ch1 != RETURN && ch1 != '?') {
@@ -988,7 +988,7 @@ void uedit(int usern, int other) {
         temp_full = full;
         break;
       case '?': {
-        GetSession()->bout.ClearScreen();
+        bout.ClearScreen();
         printfile(SUEDIT_NOEXT);
         getkey();
       }
@@ -999,38 +999,38 @@ void uedit(int usern, int other) {
         break;
       case '%': {
         char s1[ 255];
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#7New Street Address? ";
+        bout.nl();
+        bout << "|#7New Street Address? ";
         inputl(s1, 30);
         if (s1[0]) {
           user.SetStreet(s1);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
         }
-        GetSession()->bout << "|#7New City? ";
+        bout << "|#7New City? ";
         inputl(s1, 30);
         if (s1[0]) {
           user.SetCity(s1);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
         }
-        GetSession()->bout << "|#7New State? ";
+        bout << "|#7New State? ";
         input(s1, 2);
         if (s1[0]) {
           user.SetState(s1);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
         }
-        GetSession()->bout << "|#7New Country? ";
+        bout << "|#7New Country? ";
         input(s1, 3);
         if (s1[0]) {
           user.SetCountry(s1);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
         }
-        GetSession()->bout << "|#7New Zip? ";
+        bout << "|#7New Zip? ";
         input(s1, 10);
         if (s1[0]) {
           user.SetZipcode(s1);
           GetApplication()->GetUserManager()->WriteUser(&user, nUserNumber);
         }
-        GetSession()->bout << "|#7New DataPhone (0=none)? ";
+        bout << "|#7New DataPhone (0=none)? ";
         input(s1, 12);
         if (s1[0]) {
           user.SetDataPhoneNumber(s1);
@@ -1041,19 +1041,19 @@ void uedit(int usern, int other) {
       case ':': {
         bool done2 = false;
         do {
-          GetSession()->bout.NewLine();
-          GetSession()->bout << "Zap info...\r\n";
-          GetSession()->bout << "1. Realname\r\n";
-          GetSession()->bout << "2. Birthday\r\n";
-          GetSession()->bout << "3. Street address\r\n";
-          GetSession()->bout << "4. City\r\n";
-          GetSession()->bout << "5. State\r\n";
-          GetSession()->bout << "6. Country\r\n";
-          GetSession()->bout << "7. Zip Code\r\n";
-          GetSession()->bout << "8. DataPhone\r\n";
-          GetSession()->bout << "9. Computer\r\n";
-          GetSession()->bout << "Q. Quit\r\n";
-          GetSession()->bout << "Which? ";
+          bout.nl();
+          bout << "Zap info...\r\n";
+          bout << "1. Realname\r\n";
+          bout << "2. Birthday\r\n";
+          bout << "3. Street address\r\n";
+          bout << "4. City\r\n";
+          bout << "5. State\r\n";
+          bout << "6. Country\r\n";
+          bout << "7. Zip Code\r\n";
+          bout << "8. DataPhone\r\n";
+          bout << "9. Computer\r\n";
+          bout << "Q. Quit\r\n";
+          bout << "Which? ";
           char ch1 = onek("Q123456789");
           switch (ch1) {
           case '1':
@@ -1126,13 +1126,13 @@ void print_affil(WUser *pUser) {
   }
   set_net_num(pUser->GetForwardNetNumber());
   csne = next_system(pUser->GetHomeSystemNumber());
-  GetSession()->bout << "|#2   Sysp    : |#1";
+  bout << "|#2   Sysp    : |#1";
   if (csne) {
-    GetSession()->bout << "@" << pUser->GetHomeSystemNumber() << ", " << csne->name << ", on " <<
+    bout << "@" << pUser->GetHomeSystemNumber() << ", " << csne->name << ", on " <<
                        GetSession()->GetNetworkName() << ".";
   } else {
-    GetSession()->bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << GetSession()->GetNetworkName() <<
+    bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << GetSession()->GetNetworkName() <<
                        ".";
   }
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
 }

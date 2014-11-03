@@ -44,8 +44,8 @@ void move_file() {
   uploadsrec u, u1;
 
   bool ok = false;
-  GetSession()->bout.NewLine(2);
-  GetSession()->bout << "|#2Filename to move: ";
+  bout.nl(2);
+  bout << "|#2Filename to move: ";
   char szFileMask[ MAX_PATH ];
   input(szFileMask, 12);
   if (strchr(szFileMask, '.') == nullptr) {
@@ -55,7 +55,7 @@ void move_file() {
   dliscan();
   int nCurRecNum = recno(szFileMask);
   if (nCurRecNum < 0) {
-    GetSession()->bout << "\r\nFile not found.\r\n";
+    bout << "\r\nFile not found.\r\n";
     return;
   }
   bool done = false;
@@ -69,10 +69,10 @@ void move_file() {
     FileAreaSetRecord(fileDownload, nCurRecNum);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    GetSession()->bout.NewLine();
+    bout.nl();
     printfileinfo(&u, udir[GetSession()->GetCurrentFileArea()].subnum);
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Move this (Y/N/Q)? ";
+    bout.nl();
+    bout << "|#5Move this (Y/N/Q)? ";
     char ch = ynq();
     if (ch == 'Q') {
       done = true;
@@ -80,8 +80,8 @@ void move_file() {
       sprintf(s1, "%s%s", directories[udir[GetSession()->GetCurrentFileArea()].subnum].path, u.filename);
       char *ss = nullptr;
       do {
-        GetSession()->bout.NewLine(2);
-        GetSession()->bout << "|#2To which directory? ";
+        bout.nl(2);
+        bout << "|#2To which directory? ";
         ss = mmkey(1);
         if (ss[0] == '?') {
           dirlist(1);
@@ -102,15 +102,15 @@ void move_file() {
         dliscan1(d1);
         if (recno(u.filename) > 0) {
           ok = false;
-          GetSession()->bout << "\r\nFilename already in use in that directory.\r\n";
+          bout << "\r\nFilename already in use in that directory.\r\n";
         }
         if (GetSession()->numf >= directories[d1].maxfiles) {
           ok = false;
-          GetSession()->bout << "\r\nToo many files in that directory.\r\n";
+          bout << "\r\nToo many files in that directory.\r\n";
         }
         if (freek1(directories[d1].path) < ((double)(u.numbytes / 1024L) + 3)) {
           ok = false;
-          GetSession()->bout << "\r\nNot enough disk space to move it.\r\n";
+          bout << "\r\nNot enough disk space to move it.\r\n";
         }
         dliscan();
       } else {
@@ -120,7 +120,7 @@ void move_file() {
       ok = false;
     }
     if (ok && !done) {
-      GetSession()->bout << "|#5Reset upload time for file? ";
+      bout << "|#5Reset upload time for file? ";
       if (yesno()) {
         u.daten = static_cast<unsigned long>(time(nullptr));
       }
@@ -193,7 +193,7 @@ void move_file() {
           WFile::Remove(s1);
         }
       }
-      GetSession()->bout << "\r\nFile moved.\r\n";
+      bout << "\r\nFile moved.\r\n";
     }
     dliscan();
     nCurRecNum = nrecno(szFileMask, nCurrentPos);
@@ -278,7 +278,7 @@ void sort_all(int type) {
   tmp_disable_conf(true);
   for (int i = 0; (i < GetSession()->num_dirs) && (udir[i].subnum != -1) &&
        (!GetSession()->localIO()->LocalKeyPressed()); i++) {
-    GetSession()->bout << "\r\n|#1Sorting " << directories[udir[i].subnum].name << wwiv::endl;
+    bout << "\r\n|#1Sorting " << directories[udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
   }
   tmp_disable_conf(false);
@@ -289,8 +289,8 @@ void rename_file() {
   char s[81], s1[81], s2[81], *ss, s3[81];
   uploadsrec u;
 
-  GetSession()->bout.NewLine(2);
-  GetSession()->bout << "|#2File to rename: ";
+  bout.nl(2);
+  bout << "|#2File to rename: ";
   input(s, 12);
   if (s[0] == 0) {
     return;
@@ -300,7 +300,7 @@ void rename_file() {
   }
   align(s);
   dliscan();
-  GetSession()->bout.NewLine();
+  bout.nl();
   strcpy(s3, s);
   int nRecNum = recno(s);
   while (nRecNum > 0 && !hangup) {
@@ -310,10 +310,10 @@ void rename_file() {
     FileAreaSetRecord(fileDownload, nRecNum);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    GetSession()->bout.NewLine();
+    bout.nl();
     printfileinfo(&u, udir[GetSession()->GetCurrentFileArea()].subnum);
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#5Change info for this file (Y/N/Q)? ";
+    bout.nl();
+    bout << "|#5Change info for this file (Y/N/Q)? ";
     char ch = ynq();
     if (ch == 'Q') {
       break;
@@ -321,8 +321,8 @@ void rename_file() {
       nRecNum = nrecno(s3, nCurRecNum);
       continue;
     }
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2New filename? ";
+    bout.nl();
+    bout << "|#2New filename? ";
     input(s, 12);
     if (!okfn(s)) {
       s[0] = 0;
@@ -335,7 +335,7 @@ void rename_file() {
         strcat(s1, s);
         StringRemoveWhitespace(s1);
         if (WFile::Exists(s1)) {
-          GetSession()->bout << "Filename already in use; not changed.\r\n";
+          bout << "Filename already in use; not changed.\r\n";
         } else {
           strcat(s2, u.filename);
           StringRemoveWhitespace(s2);
@@ -349,23 +349,23 @@ void rename_file() {
             }
             strcpy(u.filename, s);
           } else {
-            GetSession()->bout << "Bad filename.\r\n";
+            bout << "Bad filename.\r\n";
           }
         }
       }
     }
-    GetSession()->bout << "\r\nNew description:\r\n|#2: ";
+    bout << "\r\nNew description:\r\n|#2: ";
     inputl(s, 58);
     if (s[0]) {
       strcpy(u.description, s);
     }
     ss = read_extended_description(u.filename);
-    GetSession()->bout.NewLine(2);
-    GetSession()->bout << "|#5Modify extended description? ";
+    bout.nl(2);
+    bout << "|#5Modify extended description? ";
     if (yesno()) {
-      GetSession()->bout.NewLine();
+      bout.nl();
       if (ss) {
-        GetSession()->bout << "|#5Delete it? ";
+        bout << "|#5Delete it? ";
         if (yesno()) {
           free(ss);
           delete_extended_description(u.filename);
@@ -420,7 +420,7 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
   u.unused_filetype = 0;
   u.mask = 0;
   if (!(d.mask & mask_cdrom) && !check_ul_event(nDirectoryNum, &u)) {
-    GetSession()->bout << pszFileName << " was deleted by upload event.\r\n";
+    bout << pszFileName << " was deleted by upload event.\r\n";
   } else {
     char szUnalignedFileName[ MAX_PATH ];
     strcpy(szUnalignedFileName, szTempFileName);
@@ -432,9 +432,9 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
     WFile fileUpload(szFullPathName);
     if (!fileUpload.Open(WFile::modeBinary | WFile::modeReadOnly)) {
       if (pszDescription && (*pszDescription)) {
-        GetSession()->bout << "ERR: " << pszFileName << ":" << pszDescription << wwiv::endl;
+        bout << "ERR: " << pszFileName << ":" << pszDescription << wwiv::endl;
       } else {
-        GetSession()->bout << "|#1" << pszFileName << " does not exist.";
+        bout << "|#1" << pszFileName << " does not exist.";
       }
       return true;
     }
@@ -447,21 +447,21 @@ bool upload_file(const char *pszFileName, int nDirectoryNum, const char *pszDesc
     if (d.mask & mask_PD) {
       d.mask = mask_PD;
     }
-    GetSession()->bout.NewLine();
+    bout.nl();
 
     char szTempDisplayFileName[ MAX_PATH ];
     strcpy(szTempDisplayFileName, u.filename);
-    GetSession()->bout << "|#9File name   : |#2" << StringRemoveWhitespace(szTempDisplayFileName) << wwiv::endl;
-    GetSession()->bout << "|#9File size   : |#2" << bytes_to_k(u.numbytes) << wwiv::endl;
+    bout << "|#9File name   : |#2" << StringRemoveWhitespace(szTempDisplayFileName) << wwiv::endl;
+    bout << "|#9File size   : |#2" << bytes_to_k(u.numbytes) << wwiv::endl;
     if (pszDescription && *pszDescription) {
       strncpy(u.description, pszDescription, 58);
       u.description[58] = '\0';
-      GetSession()->bout << "|#1 Description: " << u.description << wwiv::endl;
+      bout << "|#1 Description: " << u.description << wwiv::endl;
     } else {
-      GetSession()->bout << "|#9Enter a description for this file.\r\n|#7: ";
+      bout << "|#9Enter a description for this file.\r\n|#7: ";
       inputl(u.description, 58, true);
     }
-    GetSession()->bout.NewLine();
+    bout.nl();
     if (u.description[0] == 0) {
       return false;
     }
@@ -515,18 +515,18 @@ bool maybe_upload(const char *pszFileName, int nDirectoryNum, const char *pszDes
 
   if (i == -1) {
     if (GetApplication()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(pszFileName) && dcs())) {
-      GetSession()->bout.WriteFormatted("|#2%-12s: ", pszFileName);
-      GetSession()->bout << "|#5In filename database - add anyway? ";
+      bout.WriteFormatted("|#2%-12s: ", pszFileName);
+      bout << "|#5In filename database - add anyway? ";
       ch = ynq();
       if (ch == *str_quit) {
         return false;
       } else {
         if (ch == *(YesNoString(false))) {
-          GetSession()->bout << "|#5Delete it? ";
+          bout << "|#5Delete it? ";
           if (yesno()) {
             sprintf(s1, "%s%s", directories[nDirectoryNum].path, pszFileName);
             WFile::Remove(s1);
-            GetSession()->bout.NewLine();
+            bout.nl();
             return true;
           } else {
             return true;
@@ -580,7 +580,7 @@ void upload_files(const char *pszFileName, int nDirectoryNum, int type) {
     file.Open(szDefaultFileName, "r");
   }
   if (!file.IsOpen()) {
-    GetSession()->bout << pszFileName << ": not found.\r\n";
+    bout << pszFileName << ": not found.\r\n";
   } else {
     while (ok && file.ReadLine(s, 250)) {
       if (s[0] < SPACE) {
@@ -704,11 +704,11 @@ bool uploadall(int nDirectoryNum) {
     checka(&abort);
   }
   if (!ok || abort) {
-    GetSession()->bout << "|#6Aborted.\r\n";
+    bout << "|#6Aborted.\r\n";
     ok = false;
   }
   if (GetSession()->numf >= maxf) {
-    GetSession()->bout << "directory full.\r\n";
+    bout << "directory full.\r\n";
   }
   return ok;
 }
@@ -723,30 +723,30 @@ void relist() {
   if (!filelist) {
     return;
   }
-  GetSession()->bout.ClearScreen();
+  bout.ClearScreen();
   lines_listed = 0;
   otag = GetSession()->tagging;
   GetSession()->tagging = 0;
   if (GetApplication()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-    GetSession()->bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
     if (okansi()) {
-      GetSession()->bout <<
+      bout <<
                          "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\r\n";
     } else {
-      GetSession()->bout << "--+------------+-----+----+----------------------------------------------------\r\n";
+      bout << "--+------------+-----+----+----------------------------------------------------\r\n";
     }
   }
   for (i = 0; i < GetSession()->tagptr; i++) {
     if (!GetApplication()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (tcd != filelist[i].directory) {
-        GetSession()->bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
+        bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
         if (tcd != -1) {
           if (okansi()) {
-            GetSession()->bout << "\r" <<
+            bout << "\r" <<
                                "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
                                << wwiv::endl;
           } else {
-            GetSession()->bout << "\r" << "--+------------+-----+----+---------------------------------------------------" <<
+            bout << "\r" << "--+------------+-----+----+---------------------------------------------------" <<
                                wwiv::endl;
           }
         }
@@ -759,20 +759,20 @@ void relist() {
           }
         }
         if (GetSession()->GetCurrentUser()->IsUseExtraColor()) {
-          GetSession()->bout.Color(2);
+          bout.Color(2);
         }
         if (tcdi == -1) {
-          GetSession()->bout << directories[tcd].name << "." << wwiv::endl;
+          bout << directories[tcd].name << "." << wwiv::endl;
         } else {
-          GetSession()->bout << directories[tcd].name << " - #" << udir[tcdi].keys << ".\r\n";
+          bout << directories[tcd].name << " - #" << udir[tcdi].keys << ".\r\n";
         }
-        GetSession()->bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
+        bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
         if (okansi()) {
-          GetSession()->bout <<
+          bout <<
                              "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
                              << wwiv::endl;
         } else {
-          GetSession()->bout << "--+------------+-----+----+---------------------------------------------------" << wwiv::endl;
+          bout << "--+------------+-----+----+---------------------------------------------------" << wwiv::endl;
         }
       }
     }
@@ -785,7 +785,7 @@ void relist() {
             okansi() ? '\xBA' : '|');
     osan(s, &abort, &next);
     if (GetSession()->GetCurrentUser()->IsUseExtraColor()) {
-      GetSession()->bout.Color(1);
+      bout.Color(1);
     }
     strncpy(s, filelist[i].u.filename, 8);
     s[8] = 0;
@@ -793,10 +793,10 @@ void relist() {
     strncpy(s, &((filelist[i].u.filename)[8]), 4);
     s[4] = 0;
     if (GetSession()->GetCurrentUser()->IsUseExtraColor()) {
-      GetSession()->bout.Color(1);
+      bout.Color(1);
     }
     osan(s, &abort, &next);
-    GetSession()->bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
     osan((okansi() ? "\xBA" : ":"), &abort, &next);
 
     sprintf(s1, "%ld""k", bytes_to_k(filelist[i].u.numbytes));
@@ -815,11 +815,11 @@ void relist() {
     s[i1] = 0;
     strcat(s, s1);
     if (GetSession()->GetCurrentUser()->IsUseExtraColor()) {
-      GetSession()->bout.Color(2);
+      bout.Color(2);
     }
     osan(s, &abort, &next);
 
-    GetSession()->bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
     osan((okansi() ? "\xBA" : "|"), &abort, &next);
     sprintf(s1, "%d", filelist[i].u.numdloads);
 
@@ -829,11 +829,11 @@ void relist() {
     s[i1] = 0;
     strcat(s, s1);
     if (GetSession()->GetCurrentUser()->IsUseExtraColor()) {
-      GetSession()->bout.Color(2);
+      bout.Color(2);
     }
     osan(s, &abort, &next);
 
-    GetSession()->bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
     osan((okansi() ? "\xBA" : "|"), &abort, &next);
     sprintf(s, "%c%d%s",
             0x03,
@@ -841,13 +841,13 @@ void relist() {
             filelist[i].u.description);
     plal(s, GetSession()->GetCurrentUser()->GetScreenChars() - 28, &abort);
   }
-  GetSession()->bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
+  bout.Color(GetSession()->GetCurrentUser()->IsUseExtraColor() ? FRAME_COLOR : 0);
   if (okansi()) {
-    GetSession()->bout << "\r" <<
+    bout << "\r" <<
                        "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
                        << wwiv::endl;
   } else {
-    GetSession()->bout << "\r" << "--+------------+-----+----+---------------------------------------------------" <<
+    bout << "\r" << "--+------------+-----+----+---------------------------------------------------" <<
                        wwiv::endl;
   }
   GetSession()->tagging = otag;
@@ -867,25 +867,25 @@ void edit_database()
   }
 
   do {
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#2A|#7)|#9 Add to ALLOW.DAT\r\n";
-    GetSession()->bout << "|#2R|#7)|#9 Remove from ALLOW.DAT\r\n";
-    GetSession()->bout << "|#2Q|#7)|#9 Quit\r\n";
-    GetSession()->bout.NewLine();
-    GetSession()->bout << "|#7Select: ";
+    bout.nl();
+    bout << "|#2A|#7)|#9 Add to ALLOW.DAT\r\n";
+    bout << "|#2R|#7)|#9 Remove from ALLOW.DAT\r\n";
+    bout << "|#2Q|#7)|#9 Quit\r\n";
+    bout.nl();
+    bout << "|#7Select: ";
     ch = onek("QAR");
     switch (ch) {
     case 'A':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Filename: ";
+      bout.nl();
+      bout << "|#2Filename: ";
       input(s, 12, true);
       if (s[0]) {
         modify_database(s, true);
       }
       break;
     case 'R':
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "|#2Filename: ";
+      bout.nl();
+      bout << "|#2Filename: ";
       input(s, 12, true);
       if (s[0]) {
         modify_database(s, false);
@@ -1061,8 +1061,8 @@ void l_config_nscan() {
   char s[81], s2[81];
 
   bool abort = false;
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
+  bout.nl();
+  bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
   for (i = 0; (i < GetSession()->num_dirs) && (udir[i].subnum != -1) && (!abort); i++) {
     i1 = udir[i].subnum;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
@@ -1073,7 +1073,7 @@ void l_config_nscan() {
     sprintf(s2, "%s%s. %s", s, udir[i].keys, directories[i1].name);
     pla(s2, &abort);
   }
-  GetSession()->bout.NewLine(2);
+  bout.nl(2);
 }
 
 void config_nscan() {
@@ -1096,8 +1096,8 @@ void config_nscan() {
     if (okconf(GetSession()->GetCurrentUser()) && uconfdir[1].confnum != -1) {
       abort = false;
       strcpy(s1, " ");
-      GetSession()->bout.NewLine();
-      GetSession()->bout << "Select Conference: \r\n\n";
+      bout.nl();
+      bout << "Select Conference: \r\n\n";
       i = 0;
       while ((i < dirconfnum) && (uconfdir[i].confnum != -1) && (!abort)) {
         sprintf(s2, "%c) %s", dirconfs[uconfdir[i].confnum].designator,
@@ -1107,8 +1107,8 @@ void config_nscan() {
         s1[i + 2] = 0;
         i++;
       }
-      GetSession()->bout.NewLine();
-      GetSession()->bout << " Select [" << &s1[1] << ", <space> to quit]: ";
+      bout.nl();
+      bout << " Select [" << &s1[1] << ", <space> to quit]: ";
       ch = onek(s1);
     } else {
       ch = '-';
@@ -1132,8 +1132,8 @@ void config_nscan() {
       l_config_nscan();
       done = false;
       do {
-        GetSession()->bout.NewLine();
-        GetSession()->bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
+        bout.nl();
+        bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
         s = mmkey(1);
         if (s[0]) {
           for (i = 0; i < GetSession()->num_dirs; i++) {
@@ -1175,26 +1175,26 @@ void xfer_defaults() {
   bool done = false;
 
   do {
-    GetSession()->bout.ClearScreen();
-    GetSession()->bout << "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
-    GetSession()->bout << "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
-    GetSession()->bout << "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base (" <<
+    bout.ClearScreen();
+    bout << "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
+    bout << "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
+    bout << "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base (" <<
                        YesNoString(GetSession()->GetCurrentUser()->IsNewScanFiles()) << ").\r\n";
-    GetSession()->bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print [" <<
+    bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print [" <<
                        GetSession()->GetCurrentUser()->GetNumExtended() << " line(s)].\r\n";
-    GetSession()->bout << "|#7[|#25|#7]|#1 File tagging (";
+    bout << "|#7[|#25|#7]|#1 File tagging (";
     if (GetSession()->GetCurrentUser()->IsUseNoTagging()) {
-      GetSession()->bout << "Disabled)\r\n";
+      bout << "Disabled)\r\n";
     } else {
-      GetSession()->bout << "Enabled";
+      bout << "Enabled";
     }
     if (!GetSession()->GetCurrentUser()->IsUseListPlus() && !GetSession()->GetCurrentUser()->IsUseNoTagging()) {
-      GetSession()->bout << " - ListPlus!)\r\n";
+      bout << " - ListPlus!)\r\n";
     } else if (!GetSession()->GetCurrentUser()->IsUseNoTagging()) {
-      GetSession()->bout << " - Internal Tagging)\r\n";
+      bout << " - Internal Tagging)\r\n";
     }
-    GetSession()->bout << "|#7[|#2Q|#7]|#1 Quit.\r\n\n";
-    GetSession()->bout << "|#5Which? ";
+    bout << "|#7[|#2Q|#7]|#1 Quit.\r\n\n";
+    bout << "|#5Which? ";
     ch = onek("Q12345");
     switch (ch) {
     case 'Q':
@@ -1204,8 +1204,8 @@ void xfer_defaults() {
       config_nscan();
       break;
     case '2':
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout << "|#9Enter your default protocol, |#20|#9 for none.\r\n\n";
+      bout.nl(2);
+      bout << "|#9Enter your default protocol, |#20|#9 for none.\r\n\n";
       i = get_protocol(xf_down);
       if (i >= 0) {
         GetSession()->GetCurrentUser()->SetDefaultProtocol(i);
@@ -1215,11 +1215,11 @@ void xfer_defaults() {
       GetSession()->GetCurrentUser()->ToggleStatusFlag(WUser::nscanFileSystem);
       break;
     case '4':
-      GetSession()->bout.NewLine(2);
-      GetSession()->bout << "|#9How many lines of an extended description\r\n";
-      GetSession()->bout << "|#9do you want to see when listing files (|#20-" << GetSession()->max_extend_lines << "|#7)\r\n";
-      GetSession()->bout << "|#9Current # lines: |#2" << GetSession()->GetCurrentUser()->GetNumExtended() << wwiv::endl;
-      GetSession()->bout << "|#7: ";
+      bout.nl(2);
+      bout << "|#9How many lines of an extended description\r\n";
+      bout << "|#9do you want to see when listing files (|#20-" << GetSession()->max_extend_lines << "|#7)\r\n";
+      bout << "|#9Current # lines: |#2" << GetSession()->GetCurrentUser()->GetNumExtended() << wwiv::endl;
+      bout << "|#7: ";
       input(s, 3);
       if (s[0]) {
         i = atoi(s);
@@ -1252,10 +1252,10 @@ void finddescription() {
     return;
   }
 
-  GetSession()->bout.NewLine();
+  bout.nl();
   if (uconfdir[1].confnum != -1 && okconf(GetSession()->GetCurrentUser())) {
     if (!x_only) {
-      GetSession()->bout << "|#5All conferences? ";
+      bout << "|#5All conferences? ";
       ac = yesno();
     } else {
       ac = 1;
@@ -1264,8 +1264,8 @@ void finddescription() {
       tmp_disable_conf(true);
     }
   }
-  GetSession()->bout << "\r\nFind description -\r\n\n";
-  GetSession()->bout << "Enter string to search for in file description:\r\n:";
+  bout << "\r\nFind description -\r\n\n";
+  bout << "Enter string to search for in file description:\r\n:";
   input(s1, 58);
   if (s1[0] == 0) {
     tmp_disable_conf(false);
@@ -1277,7 +1277,7 @@ void finddescription() {
   count = 0;
   color = 3;
   if (!x_only) {
-    GetSession()->bout << "\r|#2Searching ";
+    bout << "\r|#2Searching ";
   }
   lines_listed = 0;
   for (i = 0; (i < GetSession()->num_dirs) && (!abort) && (!hangup) && (GetSession()->tagging != 0)
@@ -1293,9 +1293,9 @@ void finddescription() {
     if ((pts) && (!abort) && (GetSession()->tagging != 0)) {
       if (!x_only) {
         count++;
-        GetSession()->bout << static_cast<char>(3) << color << ".";
+        bout << static_cast<char>(3) << color << ".";
         if (count == NUM_DOTS) {
-          GetSession()->bout << "\r|#2Searching ";
+          bout << "\r|#2Searching ";
           color++;
           count = 0;
           if (color == 4) {
@@ -1340,8 +1340,8 @@ void arc_l() {
   char szFileSpec[MAX_PATH];
   uploadsrec u;
 
-  GetSession()->bout.NewLine();
-  GetSession()->bout << "|#2File for listing: ";
+  bout.nl();
+  bout << "|#2File for listing: ";
   input(szFileSpec, 12);
   if (strchr(szFileSpec, '.') == nullptr) {
     strcat(szFileSpec, ".*");

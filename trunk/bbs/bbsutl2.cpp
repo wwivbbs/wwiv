@@ -38,9 +38,9 @@ using wwiv::strings::StringPrintf;
  * @param bAddNL if true, add a new line character at the end.
  */
 void repeat_char(char x, int amount, int nColor) {
-  GetSession()->bout.Color(nColor);
-  GetSession()->bout << charstr(amount, x);
-  GetSession()->bout.NewLine();
+  bout.Color(nColor);
+  bout << charstr(amount, x);
+  bout.nl();
 }
 
 /**
@@ -117,10 +117,10 @@ void osan(const string& text, bool *abort, bool *next) {
  * @param next The next flag (Output Parameter)
  */
 void plan(int nWWIVColor, const string& text, bool *abort, bool *next) {
-  GetSession()->bout.Color(nWWIVColor);
+  bout.Color(nWWIVColor);
   osan(text, abort, next);
   if (!(*abort)) {
-    GetSession()->bout.NewLine();
+    bout.nl();
   }
 }
 
