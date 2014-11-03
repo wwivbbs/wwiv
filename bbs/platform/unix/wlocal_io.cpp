@@ -299,7 +299,7 @@ void WLocalIO::LocalPutch(unsigned char ch) {
 void WLocalIO::LocalPuts(const string& s) {
 #if defined( __APPLE__ )
   for (char ch : s) {
-    LocalPutch(ich);
+    LocalPutch(ch);
   }
 #endif
 }
@@ -458,7 +458,7 @@ void WLocalIO::skey(char ch) {
           GetSession()->remoteIO()->dtr(false);
           break;
         case CF5:                          /* Ctrl-F5 */
-          GetSession()->bout << "\r\nCall back later when you are there.\r\n\n";
+          bout << "\r\nCall back later when you are there.\r\n\n";
           hangup = true;
           GetSession()->remoteIO()->dtr(false);
           break;
@@ -609,7 +609,7 @@ void WLocalIO::tleft(bool bCheckForTimeOut) {
   LocalGotoXY(cx, cy);
   if (bCheckForTimeOut && GetSession()->IsUserOnline()) {
     if (nsln == 0.0) {
-      GetSession()->bout << "\r\nTime expired.\r\n\n";
+      bout << "\r\nTime expired.\r\n\n";
       hangup = true;
     }
   }
