@@ -323,7 +323,7 @@ void xymodem_receive(const char *pszFileName, bool *received, bool bUseCRC) {
   }
 }
 
-void zmodem_receive(const string filename, bool *received) {
+void zmodem_receive(const string& filename, bool *received) {
   string local_filename(filename);
   wwiv::strings::RemoveWhitespace(&local_filename);
 

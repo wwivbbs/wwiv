@@ -51,7 +51,7 @@ using std::string;
 //  -3      = Remote Command
 //  -4      = Unknown Special Login
 //
-int finduser(const string searchString) {
+int finduser(const string& searchString) {
   WUser user;
 
   guest_user = false;
@@ -94,7 +94,7 @@ int finduser(const string searchString) {
 
 // Takes user name/handle as parameter, and returns user number, if found,
 // else returns 0.
-int finduser1(const string searchString) {
+int finduser1(const string& searchString) {
   if (searchString.empty()) {
     return 0;
   }

@@ -24,7 +24,7 @@ using std::ostringstream;
 using std::string;
 
 // TODO(rushfan): Make xfer.h
-bool okfn( const std::string fileName );
+bool okfn(const string& fileName);
 
 TEST(XferTest, Okfn) {
     EXPECT_TRUE( !okfn("") );
