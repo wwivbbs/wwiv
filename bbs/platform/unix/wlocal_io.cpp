@@ -16,14 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <iostream>
+#include <string>
 
 #include "bbs/wwiv.h"
-
 #include "bbs/wcomm.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/strings.h"
 #include "core/wutil.h"
+
+using std::cout;
+using std::string;
 
 WLocalIO::WLocalIO() : global_buf(nullptr), global_ptr(0) {
   // These 2 lines must remain in here.
@@ -148,7 +152,7 @@ void WLocalIO::LocalGotoXY(int x, int y) {
   m_cursorPositionX = static_cast< short >(x);
   m_cursorPositionY = static_cast< short >(y);
 
-  std::cout << "\x1b[" << y << ";" << x << "H";
+  cout << "\x1b[" << y << ";" << x << "H";
 #endif
 }
 
@@ -186,7 +190,7 @@ int WLocalIO::WhereY() {
  */
 void WLocalIO::LocalLf() {
 #if defined( __APPLE__ )
-  std::cout << "\n";
+  cout << "\n";
   m_cursorPositionY++;
   if (m_cursorPositionY > 24) {
     m_cursorPositionY = 24;
@@ -199,7 +203,7 @@ void WLocalIO::LocalLf() {
  */
 void WLocalIO::LocalCr() {
 #if defined( __APPLE__ )
-  std::cout << "\r";
+  cout << "\r";
   m_cursorPositionX = 0;
 #endif
 }
@@ -209,7 +213,7 @@ void WLocalIO::LocalCr() {
  */
 void WLocalIO::LocalCls() {
 #if defined( __APPLE__ )
-  std::cout << "\x1b[2J";
+  cout << "\x1b[2J";
   m_cursorPositionX = 0;
   m_cursorPositionY = 0;
 #endif
@@ -222,7 +226,7 @@ void WLocalIO::LocalCls() {
  */
 void WLocalIO::LocalBackspace() {
 #if defined( __APPLE__ )
-  std::cout << "\b";
+  cout << "\b";
   if (m_cursorPositionX >= 0) {
     m_cursorPositionX--;
   } else if (m_cursorPositionY != GetTopLine()) {
@@ -241,7 +245,7 @@ void WLocalIO::LocalBackspace() {
  */
 void WLocalIO::LocalPutchRaw(unsigned char ch) {
 #if defined( __APPLE__ )
-  std::cout << ch;
+  cout << ch;
   if (m_cursorPositionX <= 79) {
     m_cursorPositionX++;
     return;
@@ -292,39 +296,38 @@ void WLocalIO::LocalPutch(unsigned char ch) {
 /*
  * This (obviously) outputs a string TO THE SCREEN ONLY
  */
-void WLocalIO::LocalPuts(const char *s) {
+void WLocalIO::LocalPuts(const string& s) {
 #if defined( __APPLE__ )
-  while (*s) {
-    LocalPutch(*s++);
+  for (char ch : s) {
+    LocalPutch(ich);
   }
 #endif
 }
 
-void WLocalIO::LocalXYPuts(int x, int y, const char *pszText) {
+void WLocalIO::LocalXYPuts(int x, int y, const string& text) {
 #if defined( __APPLE__ )
   LocalGotoXY(x, y);
-  LocalFastPuts(pszText);
+  LocalFastPuts(text);
 #endif
 }
 
 /*
  * This RAPIDLY outputs ONE LINE to the screen only
  */
-void WLocalIO::LocalFastPuts(const char *s) {
+void WLocalIO::LocalFastPuts(const string& text) {
 #if defined( __APPLE__ )
-  m_cursorPositionX += strlen(s);
+  m_cursorPositionX += text.length();
   m_cursorPositionX %= 80;
 
   // TODO: set current attributes
-
-  std::cout << s;
+  cout << text;
 #endif
 }
 
 int  WLocalIO::LocalPrintf(const char *pszFormattedText, ...) {
 #if defined( __APPLE__ )
   va_list ap;
-  char szBuffer[ 1024 ];
+  char szBuffer[1024];
 
   va_start(ap, pszFormattedText);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
@@ -339,7 +342,7 @@ int  WLocalIO::LocalPrintf(const char *pszFormattedText, ...) {
 int  WLocalIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
 #if defined( __APPLE__ )
   va_list ap;
-  char szBuffer[ 1024 ];
+  char szBuffer[1024];
 
   va_start(ap, pszFormattedText);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
@@ -354,7 +357,7 @@ int  WLocalIO::LocalXYPrintf(int x, int y, const char *pszFormattedText, ...) {
 int  WLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *pszFormattedText, ...) {
 #if defined( __APPLE__ )
   va_list ap;
-  char szBuffer[ 1024 ];
+  char szBuffer[1024];
 
   va_start(ap, pszFormattedText);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
