@@ -516,7 +516,6 @@ static void UpdateUserStatsForLogin() {
   } else {
     GetSession()->SetCurrentFileArea(0);
   }
-  GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
   if (GetSession()->GetEffectiveSl() != 255 && !guest_user) {
     WStatus* pStatus = GetApplication()->GetStatusManager()->BeginTransaction();
     pStatus->IncrementCallerNumber();

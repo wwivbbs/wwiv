@@ -716,13 +716,11 @@ void UnloadMenuSetup() {
 string GetCommand(MenuInstanceData * pMenuData) {
   if (pSecondUserRec->cHotKeys == HOTKEYS_ON) {
     if (pMenuData->header.nNumbers == MENU_NUMFLAG_DIRNUMBER) {
-      GetSession()->SetMMKeyArea(WSession::mmkeyFileAreas);
       write_inst(INST_LOC_XFER, udir[GetSession()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
-      return string(mmkey(1));
+      return string(mmkey(1, WSession::mmkeyFileAreas));
     } else if (pMenuData->header.nNumbers == MENU_NUMFLAG_SUBNUMBER) {
-      GetSession()->SetMMKeyArea(WSession::mmkeyMessageAreas);
       write_inst(INST_LOC_MAIN, usub[GetSession()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
-      return string(mmkey(0));
+      return string(mmkey(0, WSession::mmkeyMessageAreas));
     } else {
       odc[0] = '/';
       odc[1] = '\0';

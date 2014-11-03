@@ -96,9 +96,9 @@ void ListAllColors();
 
 void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long lBufferLength);
 bool inli(std::string* outBuffer, std::string* rollOver, std::string::size_type nMaxLen, bool bAddCRLF = true,
-          bool bAllowPrevious = false, bool bTwoColorChatMode = false);
+          bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
 bool inli(char *pszBuffer, char *pszRollover, std::string::size_type nMaxLen, bool bAddCRLF = true,
-          bool bAllowPrevious = false, bool bTwoColorChatMode = false);
+          bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
 bool so();
 bool cs();
 bool lcs();
@@ -112,7 +112,8 @@ bool checkcomp(const char *pszComputerType);
 int  check_ansi();
 bool set_language_1(int n);
 bool set_language(int n);
-char *mmkey(int dl, bool bListOption = false);
+// todo(rush): make this a C++11 enum
+char *mmkey(int dl, int area = 0 /* mmkeyNoArea */, bool bListOption = false);
 const char *YesNoString(bool bYesNo);
 
 

@@ -66,8 +66,8 @@ void copy_line(char *pszOutLine, char *pszWholeBuffer, long *plBufferPtr, long l
 }
 
 bool inli(string* outBuffer, string* rollOver, string::size_type nMaxLen, bool bAddCRLF,
-          bool bAllowPrevious, bool bTwoColorChatMode) {
-  char szBuffer[ 4096 ] = {0}, szRollover[ 4096 ] = {0};
+          bool bAllowPrevious, bool bTwoColorChatMode, bool clear_previous_line) {
+  char szBuffer[4096] = {0}, szRollover[4096] = {0};
   strcpy(szBuffer, outBuffer->c_str());
   strcpy(szRollover, rollOver->c_str());
   bool ret = inli(szBuffer, szRollover, nMaxLen, bAddCRLF, bAllowPrevious, bTwoColorChatMode);
@@ -78,7 +78,7 @@ bool inli(string* outBuffer, string* rollOver, string::size_type nMaxLen, bool b
 
 // returns true if needs to keep inputting this line
 bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bAddCRLF, bool bAllowPrevious,
-          bool bTwoColorChatMode) {
+          bool bTwoColorChatMode, bool clear_previous_line) {
   char szRollOver[255];
 
   WWIV_ASSERT(pszBuffer);
@@ -172,7 +172,7 @@ bool inli(char *pszBuffer, char *pszRollover, string::size_type nMaxLen, bool bA
           }
         } else if (bAllowPrevious) {
           if (okansi()) {
-            if (GetSession()->GetMMKeyArea() == WSession::mmkeyFileAreas) {
+            if (clear_previous_line) {
               bout << "\r\x1b[K";
             }
             bout << "\x1b[1A";
@@ -551,7 +551,7 @@ bool set_language(int n) {
 }
 
 
-char *mmkey(int dl, bool bListOption) {
+char *mmkey(int dl, int area, bool bListOption) {
   static char cmd1[10], cmd2[81], ch;
   int i, p, cp;
 
@@ -621,10 +621,9 @@ char *mmkey(int dl, bool bListOption) {
             bputch(ch);
             if (ch == '/' && cmd1[0] == '/') {
               input(cmd2, 50);
-              if ((GetSession()->GetMMKeyArea() != WSession::mmkeyMessageAreas &&
-                   GetSession()->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2) || !newline) {
+              if (!newline) {
                 if (isdigit(cmd2[0])) {
-                  if (GetSession()->GetMMKeyArea() == WSession::mmkeyMessageAreas && dl == 0) {
+                  if (area == WSession::mmkeyMessageAreas && dl == 0) {
                     for (i = 0; i < GetSession()->num_subs && usub[i].subnum != -1; i++) {
                       if (wwiv::strings::IsEquals(usub[i].keys, cmd2)) {
                         bout.nl();
@@ -632,7 +631,7 @@ char *mmkey(int dl, bool bListOption) {
                       }
                     }
                   }
-                  if (GetSession()->GetMMKeyArea() == WSession::mmkeyFileAreas && dl == 1) {
+                  if (area == WSession::mmkeyFileAreas && dl == 1) {
                     for (i = 0; i < GetSession()->num_dirs; i++) {
                       if (wwiv::strings::IsEquals(udir[i].keys, cmd2)) {
                         bout.nl();
@@ -650,8 +649,7 @@ char *mmkey(int dl, bool bListOption) {
               }
               return cmd2;
             } else if (cp == p + 1) {
-              if ((GetSession()->GetMMKeyArea() != WSession::mmkeyMessageAreas &&
-                   GetSession()->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2) || !newline) {
+              if (!newline) {
                 if (isdigit(cmd1[ 0 ])) {
                   if (dl == 2 || !okansi()) {
                     bout.nl();
@@ -673,8 +671,7 @@ char *mmkey(int dl, bool bListOption) {
         }
       } while (cp > 0);
     } else {
-      if ((GetSession()->GetMMKeyArea() != WSession::mmkeyMessageAreas &&
-           GetSession()->GetMMKeyArea() != WSession::mmkeyFileAreas && dl != 2) || !newline) {
+      if (!newline) {
         switch (cmd1[0]) {
         case '>':
         case '+':

@@ -72,7 +72,6 @@ WSession::WSession(WApplication* app, WLocalIO* localIO) {
   wfcdrvs[0] = wfcdrvs[1] = wfcdrvs[2] = wfcdrvs[3] = wfcdrvs[4] = wfc_status = 0;
 
   m_nCurrentFileArea                      = 0;
-  m_nMMKeyArea                            = 0;
   m_nCurrentReadMessageArea               = 0;
   m_nCurrentMessageArea                   = 0;
   m_nCurrentLanguageNumber                = 0;

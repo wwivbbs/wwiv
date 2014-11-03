@@ -130,7 +130,7 @@ void modify_extended_description(char **sss, const char *dest, const char *title
         bout << "|#2" << i << ": |#0";
         s1[0] = '\0';
         bool bAllowPrevious = (i4 > 0) ? true : false;
-        while (inli(s1, s, 90, true, bAllowPrevious)) {
+        while (inli(s1, s, 90, true, bAllowPrevious, false, true)) {
           if (i > 1) {
             --i;
           }
