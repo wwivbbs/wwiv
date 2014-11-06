@@ -119,14 +119,11 @@ void grab_quotes(messagerec * m, const char *aux) {
   WFile::Remove(szQuotesTextFileName);
   WFile::SetFilePermissions(szQuotesIndexFileName, WFile::permReadWrite);
   WFile::Remove(szQuotesIndexFileName);
-  if (quotes_nrm) {
-    free(quotes_nrm);
-  }
   if (quotes_ind) {
     free(quotes_ind);
   }
 
-  quotes_nrm = quotes_ind = nullptr;
+  quotes_ind = nullptr;
   quotes_nrm_l = quotes_ind_l = 0;
 
   if (m && aux) {
@@ -138,7 +135,6 @@ void grab_quotes(messagerec * m, const char *aux) {
     unique_ptr<char[]> ss(readfile(m, aux, &lMessageLength));
 
     if (ss) {
-      quotes_nrm = ss.get();
       quotes_nrm_l = lMessageLength;
 
       WFile quotesTextFile(szQuotesTextFileName);
@@ -287,8 +283,6 @@ void grab_quotes(messagerec * m, const char *aux) {
           ff.Close();
         }
 #else
-        free(quotes_nrm);
-        quotes_nrm = nullptr;
         quotes_nrm_l = 0;
 #endif
       }
@@ -380,7 +374,6 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
   }
   free(org);
 }
-
 
 void get_quote(int fsed) {
   static char s[141], s1[10];
