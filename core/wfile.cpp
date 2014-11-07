@@ -220,7 +220,7 @@ bool WFile::SetName(const string& dirName, const string& fileName) {
 int WFile::Read(void* pBuffer, size_t nCount) {
   int ret = read(handle_, pBuffer, nCount);
   if (ret == -1) {
-    std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
+    std::cout << "[DEBUG: Read errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
   }
   // TODO: Make this an WWIV_ASSERT once we get rid of these issues
   return ret;
@@ -229,7 +229,7 @@ int WFile::Read(void* pBuffer, size_t nCount) {
 int WFile::Write(const void* pBuffer, size_t nCount) {
   int nRet = write(handle_, pBuffer, nCount);
   if (nRet == -1) {
-    std::cout << "[DEBUG: errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
+    std::cout << "[DEBUG: Write errno: " << errno << " -- Please screen capture this and email to Rushfan]\r\n";
   }
   // TODO: Make this an WWIV_ASSERT once we get rid of these issues
   return nRet;
