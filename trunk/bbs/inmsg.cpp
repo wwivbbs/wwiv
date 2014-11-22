@@ -507,7 +507,7 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
   if (!IsEqualsIgnoreCase(aux, "email")) {
     long msgid = time(nullptr);
     long targcrc = crc32buf(pszMessageBuffer, strlen(pszMessageBuffer));
-    const string buf = StringPrintf("0P %lX-%lX", targcrc, msgid);
+    const string buf = StringPrintf("%c0P %lX-%lX", 4, targcrc, msgid);
     AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
     if (thread) {
       thread [GetSession()->GetNumMessagesInCurrentMessageArea() + 1 ].msg_num = static_cast< unsigned short>
@@ -515,7 +515,7 @@ void UpdateMessageBufferTheadsInfo(char *pszMessageBuffer, long *plBufferLength,
       strcpy(thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].message_code, &buf.c_str()[4]);
     }
     if (GetSession()->threadID.length() > 0) {
-      const string buf = StringPrintf("0W %s", GetSession()->threadID.c_str());
+      const string buf = StringPrintf("%c0W %s", 4, GetSession()->threadID.c_str());
       AddLineToMessageBuffer(pszMessageBuffer, buf.c_str(), plBufferLength);
       if (thread) {
         strcpy(thread[GetSession()->GetNumMessagesInCurrentMessageArea() + 1].parent_code, &buf.c_str()[4]);
