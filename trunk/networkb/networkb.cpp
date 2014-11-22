@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+using std::chrono::seconds;
 using std::clog;
 using std::cout;
 using std::endl;
@@ -17,9 +18,9 @@ static const int M_NUL = 0;
 static const int M_OK  = 1;
 
 void process_command(int16_t length, Connection& c) {
-  const uint8_t command_id = c.read_uint8();
+  const uint8_t command_id = c.read_uint8(seconds(1));
   unique_ptr<char[]> data(new char[length]);
-  c.receive(data.get(), length - 1);
+  c.receive(data.get(), length - 1,seconds(1));
   switch (command_id) {
   case M_NUL: {
     string s(data.get(), length - 1);
@@ -30,15 +31,19 @@ void process_command(int16_t length, Connection& c) {
 
 void process_data(int16_t length, Connection& c) {
   unique_ptr<char[]> data(new char[length]);
-  int length_received = c.receive(data.get(), length - 1);
-  cout << "len: " << length_received << "; data: " << data.get() << endl;
+  int length_received = c.receive(data.get(), length - 1, seconds(1));
+  string s(data.get(), length - 1);
+  cout << "len: " << length_received << "; data: " << s << endl;
+}
+
+void send_command(int command_id, const string& data) {
 }
 
 int main(int argc, char* argv) {
   try {
     Connection c("localhost", 24554);
     while (true) {
-      uint16_t header = c.read_uint16();
+      uint16_t header = c.read_uint16(seconds(1));
       if (header & 0x8000) {
         process_command(header & 0x7fff, c);
       } else {

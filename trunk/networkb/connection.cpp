@@ -26,6 +26,7 @@ using std::chrono::time_point;
 using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::system_clock;
+using std::string;
 using std::this_thread::sleep_for;
 using wwiv::strings::StringPrintf;
 
@@ -107,23 +108,14 @@ Connection::~Connection() {
   }
 }
 
-int Connection::receive(void* data, int size) {
-  return ::recv(sock_, reinterpret_cast<char*>(data), size, 0);
-}
-
-int Connection::send(const uint8_t* data, int size) {
-  return ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
-}
-
-template<typename TYPE>
-TYPE read_TYPE(SOCKET sock, milliseconds d) {
-  TYPE data = 0;
+template<typename TYPE, std::size_t SIZE = sizeof(TYPE)>
+static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::size_t size = SIZE) {
   auto end = system_clock::now() + d;
   while (true) {
     if (system_clock::now() > end) {
       throw socket_error("timeout error reading from socket");
     }
-    int result = ::recv(sock, reinterpret_cast<char*>(&data), sizeof(TYPE), 0);
+    int result = ::recv(sock, reinterpret_cast<char*>(data), size, 0);
     if (result == SOCKET_ERROR) {
 #ifdef _WIN32
       if (WSAGetLastError() == WSAEWOULDBLOCK) {
@@ -134,22 +126,42 @@ TYPE read_TYPE(SOCKET sock, milliseconds d) {
         continue;
       }
     }
-    if (result != sizeof(TYPE)) {
+    if (result != size) {
       // TODO(rushfan): Read error? Or mention this was in a read?
-      throw socket_error(StringPrintf("size error reading from socket. was %d expected %u", result, sizeof(TYPE)));
+      throw socket_error(StringPrintf("size error reading from socket. was %d expected %u", result, size));
     }
-    return data;
+    return result;
   }
   throw socket_error("unknown error reading from socket");
 }
 
-uint16_t Connection::read_uint16() {
-  const uint16_t data = read_TYPE<uint16_t>(sock_, seconds(10));
-  return htons(data);
+int Connection::receive(void* data, const int size, milliseconds d) {
+  return read_TYPE<void, 0>(sock_, data, d, size);
 }
 
-uint8_t Connection::read_uint8() {
-  return read_TYPE<uint8_t>(sock_, milliseconds(1000));
+int Connection::send(const void* data, int size, milliseconds d) {
+  return ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
+}
+
+uint16_t Connection::read_uint16(milliseconds d) {
+  uint16_t data = 0;
+  read_TYPE<uint16_t>(sock_, &data, seconds(10));
+  return ntohs(data);
+}
+
+bool Connection::send_uint16(uint16_t data, std::chrono::milliseconds d) {
+  uint16_t netdata = htons(data);
+  return send(&netdata, sizeof(uint16_t), d) == sizeof(uint16_t);
+}
+
+uint8_t Connection::read_uint8(milliseconds d) {
+  uint8_t data = 0;
+  read_TYPE<uint8_t>(sock_, &data, milliseconds(1000));
+  return data;
+}
+
+bool Connection::send_uint8(uint8_t data, std::chrono::milliseconds d) {
+  return send(&data, sizeof(uint8_t), d) == sizeof(uint8_t);
 }
 
 connection_error::connection_error(const string& host, int port) 
