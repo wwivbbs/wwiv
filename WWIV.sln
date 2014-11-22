@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbs", "bbs\bbs.vcxproj", "{DE1021F3-98A3-4468-A6D9-57B4D83D0165}"
 EndProject
@@ -34,6 +34,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core_fixtures", "core_test\core_fixtures.vcxproj", "{E5E45F1A-C3C0-49CA-98DE-B26185AD8694}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core_test", "core_test\core_test.vcxproj", "{B31B380B-F343-40FD-901C-A7597485716E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkb", "networkb\networkb.vcxproj", "{0756B545-A3C3-433D-8E27-B84FB3AE57C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -177,6 +179,16 @@ Global
 		{B31B380B-F343-40FD-901C-A7597485716E}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{B31B380B-F343-40FD-901C-A7597485716E}.Release|Win32.ActiveCfg = Release|Win32
 		{B31B380B-F343-40FD-901C-A7597485716E}.Release|Win32.Build.0 = Release|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Debug|Win32.Build.0 = Debug|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Release|Any CPU.ActiveCfg = Release|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Release|Win32.ActiveCfg = Release|Win32
+		{0756B545-A3C3-433D-8E27-B84FB3AE57C5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
