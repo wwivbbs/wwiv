@@ -3,6 +3,8 @@
 #define __INCLUDED_NETWORKB_BINKP_H__
 
 #include <cstdint>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,8 +26,39 @@ static const int M_SKIP = 10;
 class Connection;
 
 enum class BinkState {
+  CONN_INIT,
+  WAIT_CONN,
+  SEND_PASSWORD,
+  WAIT_ADDR,
+  AUTH_REMOTE,
+  IF_SECURE,
+  WAIT_OK,
   UNKNOWN
 };
+
+class TransferFile {
+public:
+   TransferFile(const std::string& filename, const std::string& full_pathname, long timestamp);
+   virtual ~TransferFile();
+
+   const std::string as_packet_data(int offset = 0) const;
+   const std::string filename() const { return filename_; }
+
+private:
+  const std::string filename_;
+  const std::string full_pathname_;
+  const long timestamp_;
+};
+
+class InMemoryTransferFile : public TransferFile {
+public:
+  InMemoryTransferFile(const std::string& filename, const std::string& full_pathname, long timestamp);
+   virtual ~InMemoryTransferFile();
+
+private:
+  const std::string contents_;
+};
+
 
 class BinkP {
 public:
@@ -49,12 +82,12 @@ private:
   BinkState SendPasswd();
   BinkState WaitAddr();
   BinkState WaitOk();
+  bool BinkP::SendFilePacket(TransferFile* file);
   BinkState SendDummyFile();
   Connection* conn_;
   std::string address_list;
-  //std::vector<std::string> addresses;
   bool ok_received;
-
+  std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;
 };
 
 
