@@ -48,6 +48,6 @@ struct connection_error : public socket_error {
 };
 
 }  // namespace net
-} // namespace wwiv
+}  // namespace wwiv
 
 #endif  // __INCLUDED_NETWORKB_CONNECTION_H__

@@ -87,9 +87,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="binkp.h" />
     <ClInclude Include="connection.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="binkp.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="networkb.cpp" />
   </ItemGroup>
