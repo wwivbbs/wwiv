@@ -113,7 +113,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
   auto end = system_clock::now() + d;
   while (true) {
     if (system_clock::now() > end) {
-      throw socket_error("timeout error reading from socket");
+      throw timeout_error("timeout error reading from socket.");
     }
     int result = ::recv(sock, reinterpret_cast<char*>(data), size, 0);
     if (result == SOCKET_ERROR) {
@@ -140,12 +140,13 @@ int Connection::receive(void* data, const int size, milliseconds d) {
 }
 
 int Connection::send(const void* data, int size, milliseconds d) {
+  std::clog << reinterpret_cast<const char*>(data) << std::endl;
   return ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
 }
 
 uint16_t Connection::read_uint16(milliseconds d) {
   uint16_t data = 0;
-  read_TYPE<uint16_t>(sock_, &data, seconds(10));
+  read_TYPE<uint16_t>(sock_, &data, d);
   return ntohs(data);
 }
 
@@ -156,7 +157,7 @@ bool Connection::send_uint16(uint16_t data, std::chrono::milliseconds d) {
 
 uint8_t Connection::read_uint8(milliseconds d) {
   uint8_t data = 0;
-  read_TYPE<uint8_t>(sock_, &data, milliseconds(1000));
+  read_TYPE<uint8_t>(sock_, &data, d);
   return data;
 }
 
