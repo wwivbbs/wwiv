@@ -9,7 +9,7 @@
 #include <string>
 
 
-int main(int argc, char* argv) {
+int main(int argc, char** argv) {
   try {
     wwiv::net::Connection c("localhost", 24554);
     wwiv::net::BinkP binkp(&c);
