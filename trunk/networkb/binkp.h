@@ -38,22 +38,27 @@ enum class BinkState {
 
 class TransferFile {
 public:
-   TransferFile(const std::string& filename, const std::string& full_pathname, long timestamp);
+   TransferFile(const std::string& filename, time_t timestamp);
    virtual ~TransferFile();
 
    const std::string as_packet_data(int offset = 0) const;
    const std::string filename() const { return filename_; }
 
+   virtual int file_size() const { return 0; };
+   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) { return 0; }
+
 private:
   const std::string filename_;
-  const std::string full_pathname_;
-  const long timestamp_;
+  const time_t timestamp_;
 };
 
 class InMemoryTransferFile : public TransferFile {
 public:
-  InMemoryTransferFile(const std::string& filename, const std::string& full_pathname, long timestamp);
+  InMemoryTransferFile(const std::string& filename, const std::string& contents);
    virtual ~InMemoryTransferFile();
+
+   virtual int file_size() const override final { return contents_.length(); }
+   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
 
 private:
   const std::string contents_;
@@ -82,7 +87,9 @@ private:
   BinkState SendPasswd();
   BinkState WaitAddr();
   BinkState WaitOk();
-  bool BinkP::SendFilePacket(TransferFile* file);
+  bool SendFilePacket(TransferFile* file);
+  bool SendFileData(TransferFile* file);
+  bool HandleFileGetRequest(const std::string& request_line);
   BinkState SendDummyFile();
   Connection* conn_;
   std::string address_list;
