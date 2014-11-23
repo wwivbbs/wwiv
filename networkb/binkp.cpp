@@ -11,6 +11,7 @@
 #include "core/strings.h"
 
 using std::chrono::seconds;
+using std::chrono::system_clock;
 using std::clog;
 using std::cout;
 using std::endl;
@@ -18,12 +19,28 @@ using std::map;
 using std::string;
 using std::unique_ptr;
 using wwiv::net::Connection;
+using wwiv::strings::StringPrintf;
 
 namespace wwiv {
 namespace net {
 
-  BinkP::BinkP(Connection* conn) : conn_(conn) {}
-  BinkP::~BinkP() {}
+TransferFile::TransferFile(const string& filename, const string& full_pathname, long timestamp)
+  : filename_(filename), full_pathname_(full_pathname), timestamp_(timestamp) {}
+
+TransferFile::~TransferFile() {}
+
+const string TransferFile::as_packet_data(int offset) const {
+  return StringPrintf("%s %u %d", filename_, timestamp_, offset);
+}
+
+InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents, long timestamp)
+  : TransferFile(filename, filename, system_clock::to_time_t(system_clock::now())), contents_(contents) {}
+InMemoryTransferFile::~InMemoryTransferFile() {}
+
+BinkP::BinkP(Connection* conn) : conn_(conn) {}
+BinkP::~BinkP() {
+  files_to_send_.clear();
+}
 
 string BinkP::command_id_to_name(int command_id) const {
   static const map<int, string> map = {
@@ -140,25 +157,25 @@ BinkState BinkP::ConnInit() {
   } catch (wwiv::net::timeout_error e) {
     clog << e.what() << endl;
   }
-  return BinkState::UNKNOWN;
+  return BinkState::WAIT_CONN;
 }
 
 BinkState BinkP::WaitConn() {
-  clog << "ConnInit" << endl;
+  clog << "WaitConn" << endl;
   send_command_packet(M_NUL, "OPT wwivnet");
   send_command_packet(M_NUL, "SYS NETWORKB test app");
   send_command_packet(M_NUL, "ZYZ Unknown Sysop");
   send_command_packet(M_NUL, "VER networkb/0.0 binkp/1.0");
   send_command_packet(M_NUL, "LOC San Francisco, CA");
   send_command_packet(M_ADR, "20000:20000/2@wwivnet");
-  return BinkState::UNKNOWN;
+  return BinkState::SEND_PASSWORD;
 }
 
 BinkState BinkP::SendPasswd() {
   clog << "SendPasswd" << endl;
 
   send_command_packet(M_PWD, "-");
-  return BinkState::UNKNOWN;
+  return BinkState::WAIT_ADDR;
 }
 
 BinkState BinkP::WaitAddr() {
@@ -166,7 +183,7 @@ BinkState BinkP::WaitAddr() {
   while (address_list.empty()) {
     process_one_frame();
   }
-  return BinkState::UNKNOWN;
+  return BinkState::WAIT_OK;
 }
 
 BinkState BinkP::WaitOk() {
@@ -180,6 +197,11 @@ BinkState BinkP::WaitOk() {
   return BinkState::UNKNOWN;
 }
 
+bool BinkP::SendFilePacket(TransferFile* file) {
+  files_to_send_[file->filename()] = unique_ptr<TransferFile>(file);
+  return true;
+}
+
 // TODO(rushfan): Remove this.
 BinkState BinkP::SendDummyFile() {
   clog << "SendDummyFile" << endl;
@@ -188,7 +210,6 @@ BinkState BinkP::SendDummyFile() {
 
   try {
     process_one_frame();
-    return BinkState::UNKNOWN;
   } catch (wwiv::net::timeout_error e) {
     clog << "process_one_frame: " << e.what() << endl;
   }
@@ -199,13 +220,33 @@ BinkState BinkP::SendDummyFile() {
 }
 
 void BinkP::Run() {
+  BinkState state = BinkState::CONN_INIT;
   try {
-    ConnInit();
-    WaitConn();
-    SendPasswd();
-    WaitAddr();
-    WaitOk();
-    SendDummyFile();
+    while (state != BinkState::UNKNOWN) {
+      switch (state) {
+      case BinkState::CONN_INIT:
+        state = ConnInit();
+        break;
+      case BinkState::WAIT_CONN:
+        state = WaitConn();
+        break;
+      case BinkState::SEND_PASSWORD:
+        state = SendPasswd();
+        break;
+      case BinkState::WAIT_ADDR:
+        state = WaitAddr();
+        break;
+      case BinkState::AUTH_REMOTE:
+        break;
+      case BinkState::IF_SECURE:
+        break;
+      case BinkState::WAIT_OK:
+        state = WaitOk();
+        // HACK
+        SendDummyFile();
+        break;
+      }
+    }
     clog << "End of the line..." << endl;
     while (true) {
       process_one_frame();
