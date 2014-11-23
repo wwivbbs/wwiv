@@ -94,8 +94,12 @@ Connection::Connection(const string& host, int port) : host_(host), port_(port) 
     } else {
       // success;
       freeaddrinfo(address);
-      // TODO(rushfan): check return value.
-      SetNonBlockingMode(s);
+      if (!SetNonBlockingMode(s)) {
+        std::clog << "Unable to put socket into nonblocking mode." << std::endl;
+        closesocket(s);
+        s = INVALID_SOCKET;
+        continue;
+      }
       sock_ = s;
       return;
     }
@@ -105,6 +109,7 @@ Connection::Connection(const string& host, int port) : host_(host), port_(port) 
 Connection::~Connection() {
   if (sock_ != INVALID_SOCKET) {
     closesocket(sock_);
+    sock_ = INVALID_SOCKET;
   }
 }
 
@@ -127,7 +132,6 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
       }
     }
     if (result != size) {
-      // TODO(rushfan): Read error? Or mention this was in a read?
       throw socket_error(StringPrintf("size error reading from socket. was %d expected %u", result, size));
     }
     return result;
@@ -140,7 +144,6 @@ int Connection::receive(void* data, const int size, milliseconds d) {
 }
 
 int Connection::send(const void* data, int size, milliseconds d) {
-  std::clog << reinterpret_cast<const char*>(data) << std::endl;
   return ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
 }
 
