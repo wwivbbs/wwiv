@@ -1,10 +1,10 @@
 #include "connection.h"
 
+#include <stdexcept>
 #include <chrono>
+#include <cstring>
 #include <iostream>
 #include <thread>
-
-#include "core/strings.h"
 
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -12,13 +12,21 @@
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
-#else  // _WIN32
-#include <unistd.h>
 
-#define SOCKET int
+#else  // _WIN32
+#include <netdb.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
 #define NO_ERROR 0
 #define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
 #endif  // _WIN32
+
+#include "core/strings.h"
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
