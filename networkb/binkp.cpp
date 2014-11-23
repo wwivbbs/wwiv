@@ -1,12 +1,15 @@
 #include "networkb/binkp.h"
 #include "networkb/connection.h"
 
+#include <algorithm>
 #include <chrono>
+#include <cstddef>
 #include <fcntl.h>
 #include <iostream>
 #include <memory>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "core/strings.h"
 
@@ -18,24 +21,38 @@ using std::endl;
 using std::map;
 using std::string;
 using std::unique_ptr;
+using std::vector;
 using wwiv::net::Connection;
+using wwiv::strings::SplitString;
 using wwiv::strings::StringPrintf;
 
 namespace wwiv {
 namespace net {
 
-TransferFile::TransferFile(const string& filename, const string& full_pathname, long timestamp)
-  : filename_(filename), full_pathname_(full_pathname), timestamp_(timestamp) {}
+TransferFile::TransferFile(const string& filename, time_t timestamp)
+  : filename_(filename), timestamp_(timestamp) {}
 
 TransferFile::~TransferFile() {}
 
 const string TransferFile::as_packet_data(int offset) const {
-  return StringPrintf("%s %u %d", filename_, timestamp_, offset);
+  return StringPrintf("%s %u %d", filename_.c_str(), timestamp_, offset);
 }
 
-InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents, long timestamp)
-  : TransferFile(filename, filename, system_clock::to_time_t(system_clock::now())), contents_(contents) {}
+InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents)
+  : TransferFile(filename, system_clock::to_time_t(system_clock::now())), 
+    contents_(contents) {}
+
 InMemoryTransferFile::~InMemoryTransferFile() {}
+
+bool InMemoryTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
+  if ((start + size) > contents_.size()) {
+    clog << "ERROR InMemoryTransferFile::GetChunk (start + size) > contents_.size(): values["
+         << (start + size) << ", " << contents_.size() << "]" << endl;
+    return false;
+  }
+  memcpy(chunk, &contents_.data()[start], size);
+  return true;
+}
 
 BinkP::BinkP(Connection* conn) : conn_(conn) {}
 BinkP::~BinkP() {
@@ -79,6 +96,7 @@ bool BinkP::process_command(int16_t length) {
   } break;
   case M_GET: {
     clog << "M_GET: " << s << endl;
+    HandleFileGetRequest(s);
   } break;
   case M_GOT: {
     clog << "M_GOT: " << s << endl;
@@ -198,24 +216,78 @@ BinkState BinkP::WaitOk() {
 }
 
 bool BinkP::SendFilePacket(TransferFile* file) {
-  files_to_send_[file->filename()] = unique_ptr<TransferFile>(file);
+  string filename(file->filename());
+  files_to_send_[filename] = unique_ptr<TransferFile>(file);
+  send_command_packet(M_FILE, file->as_packet_data());
+
+  try {
+    // The remote may give us a M_GET, if so send the file in response to that request.
+    process_one_frame();
+  } catch (wwiv::net::timeout_error e) {
+    clog << "process_one_frame: " << e.what() << endl;
+  }
+
+  // file* may not be viable anymore if it was already send.
+  auto iter = files_to_send_.find(filename);
+  if (iter != std::end(files_to_send_)) {
+    // We have the file still to send.
+    if (SendFileData(file)) {
+      // File was sent, erase it from the list of files to send.
+      // Since the map holds unique_ptrs the memory will be erased.
+      file = nullptr;
+      files_to_send_.erase(iter);
+    }
+  }
+  return true;
+}
+
+bool BinkP::SendFileData(TransferFile* file) {
+  long file_length = file->file_size();
+  const int chunk_size = 32768; // 1 << 15
+  long start = 0;
+  unique_ptr<char[]> chunk(new char[chunk_size]);
+  for (long start = 0; start < file_length; start+=chunk_size) {
+    int size = std::min<int>(chunk_size, file_length - start);
+    if (!file->GetChunk(chunk.get(), start, size)) {
+      // Bad chunk. Abort
+    }
+    send_data_packet(chunk.get(), size);
+  }
+  return true;
+}
+
+bool BinkP::HandleFileGetRequest(const string& request_line) {
+  clog << "HandleFileGetRequest: request_line: [" << request_line << "]" << endl; 
+  vector<string> s = SplitString(request_line, " ");
+  const string filename = s.at(0);
+  long length = std::stol(s.at(1));
+  time_t timestamp = std::stoul(s.at(2));
+  long offset = 0;
+  if (s.size() >= 4) {
+    offset = std::stol(s.at(3));
+  }
+
+  auto iter = files_to_send_.find(filename);
+  if (iter == std::end(files_to_send_)) {
+    clog << "File not found: " << filename;
+    return false;
+  }
+
+  TransferFile* file = iter->second.get();
+  if (SendFileData(file)) {
+    // File was sent, erase it from the list of files to send.  Since the map holds unique_ptrs
+    // the memory will be erased.
+    file = nullptr;
+    files_to_send_.erase(iter);
+  }
   return true;
 }
 
 // TODO(rushfan): Remove this.
 BinkState BinkP::SendDummyFile() {
   clog << "SendDummyFile" << endl;
-  // Send a file 5 chars long with timestamp of around Sat Nov 22 15:23:00 PST 2014
-  send_command_packet(M_FILE, "test.txt 5 1165408993 0"); 
-
-  try {
-    process_one_frame();
-  } catch (wwiv::net::timeout_error e) {
-    clog << "process_one_frame: " << e.what() << endl;
-  }
-
-  send_data_packet("ABCDE", 5);
-  send_command_packet(M_EOB, "");
+  const string dummy_filename = "test.txt";
+  bool result = SendFilePacket(new InMemoryTransferFile(dummy_filename, "ABCDE"));
   return BinkState::UNKNOWN;
 }
 
