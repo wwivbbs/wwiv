@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdint>
 #include <exception>
+#include <stdexcept>
 #include <string>
 
 #ifdef _WIN32
@@ -39,7 +40,7 @@ private:
 };
 
 struct socket_error : public std::runtime_error {
-  socket_error(const std::string& message) : runtime_error(message) {}
+socket_error(const std::string& message) : std::runtime_error(message) {}
 };
 
 struct timeout_error : public socket_error {

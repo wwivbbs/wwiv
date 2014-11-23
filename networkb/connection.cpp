@@ -24,6 +24,7 @@
 #define NO_ERROR 0
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
+#define closesocket(x) close(x)
 #endif  // _WIN32
 
 #include "core/strings.h"
@@ -47,15 +48,15 @@ static const auto SLEEP_MS = milliseconds(100);;
 
 
 bool InitializeSockets() {
+#ifdef _WIN32
 WSADATA wsadata;
 int result = WSAStartup(MAKEWORD(2,2), &wsadata);
   if (result != 0) {
     std::clog << "WSAStartup failed with error: " << result << std::endl;
     return false;
   }
-#ifdef _WIN32
-  return true;
 #endif  // _WIN32
+  return true;
 }
 
 static bool SetNonBlockingMode(SOCKET sock) {
@@ -67,7 +68,7 @@ static bool SetNonBlockingMode(SOCKET sock) {
   u_long nonblocking = 1;
   return ioctlsocket(sock, FIONBIO, &nonblocking) == NO_ERROR;
 #else  // _WIN32
-  int flags = fcntl(fd, F_GETFL, 0 /* ignored */);
+  int flags = fcntl(sock, F_GETFL, 0 /* ignored */);
   return fcntl(sock, F_SETFL, flags | O_NONBLOCK) != -1;
 #endif  // _WIN32
 }
