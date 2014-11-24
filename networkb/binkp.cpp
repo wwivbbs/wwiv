@@ -35,8 +35,8 @@ TransferFile::TransferFile(const string& filename, time_t timestamp)
 
 TransferFile::~TransferFile() {}
 
-const string TransferFile::as_packet_data(int offset) const {
-  return StringPrintf("%s %u %d", filename_.c_str(), timestamp_, offset);
+const string TransferFile::as_packet_data(int size, int offset) const {
+  return StringPrintf("%s %u %u %d", filename_.c_str(), size, timestamp_, offset);
 }
 
 InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents)
@@ -44,6 +44,10 @@ InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const st
     contents_(contents) {}
 
 InMemoryTransferFile::~InMemoryTransferFile() {}
+
+const string InMemoryTransferFile::as_packet_data(int offset) const {
+  return TransferFile::as_packet_data(contents_.size(), offset);
+}
 
 bool InMemoryTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   if ((start + size) > contents_.size()) {
@@ -219,7 +223,7 @@ BinkState BinkP::WaitOk() {
 bool BinkP::SendFilePacket(TransferFile* file) {
   string filename(file->filename());
   files_to_send_[filename] = unique_ptr<TransferFile>(file);
-  send_command_packet(M_FILE, file->as_packet_data());
+  send_command_packet(M_FILE, file->as_packet_data(0));
 
   try {
     // The remote may give us a M_GET, if so send the file in response to that request.
