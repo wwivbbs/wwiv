@@ -221,6 +221,11 @@ void RemoveWhitespace(string* s) {
   s->erase(std::remove_if(s->begin(), s->end(), ::isspace), s->end());
 }
 
+bool starts_with(const std::string& input, const std::string& match) {
+  return input.size() >= match.size()
+      && std::equal(match.begin(), match.end(), input.begin());
+}
+
 }  // namespace strings
 }  // namespace wwiv
 
@@ -549,3 +554,4 @@ string properize(const string text) {
   }
   return string(os.str());
 }
+

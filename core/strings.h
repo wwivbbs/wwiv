@@ -62,7 +62,7 @@ std::vector<std::string> SplitString(const std::string& original_string, const s
 void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out);
 
 void RemoveWhitespace(std::string* s);
-
+bool starts_with(const std::string& input, const std::string& match);
 
 }  // namespace strings
 

@@ -98,7 +98,7 @@ bool BinkP::process_data(int16_t length, std::chrono::milliseconds d) {
   unique_ptr<char[]> data(new char[length]);
   int length_received = conn_->receive(data.get(), length - 1, d);
   string s(data.get(), length - 1);
-  clog << "RECV:  DATA PACKET; len: " << length_received << "; data: " << s << endl;
+  clog << "RECV:  DATA PACKET; len: " << length_received << "; data: " << s.substr(3) << endl;
   return true;
 }
 
@@ -138,7 +138,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   conn_->send(packet.get(), size, seconds(3));
   clog << "SEND:  command: " << command_id_to_name(command_id)
        << "; packet_length: " << (packet_length & 0x7fff)
-       << "; data: " << string(packet.get(), size) << endl;
+       << "; data: " << data << endl;
   return true;
 }
 
