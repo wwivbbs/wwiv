@@ -2,6 +2,7 @@
 #ifndef __INCLUDED_NETWORKB_BINKP_H__
 #define __INCLUDED_NETWORKB_BINKP_H__
 
+#include <chrono>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -76,11 +77,12 @@ public:
   void Run();
 
 private:
-  bool process_one_frame();
   std::string command_id_to_name(int command_id) const;
 
-  bool process_command(int16_t length);
-  bool process_data(int16_t length);
+  bool maybe_process_all_frames(std::chrono::milliseconds d);
+  bool process_one_frame(std::chrono::milliseconds d);
+  bool process_command(int16_t length, std::chrono::milliseconds d);
+  bool process_data(int16_t length, std::chrono::milliseconds d);
 
   bool send_command_packet(uint8_t command_id, const std::string& data);
   bool send_data_packet(const char* data, std::size_t size);
@@ -93,6 +95,7 @@ private:
   bool SendFilePacket(TransferFile* file);
   bool SendFileData(TransferFile* file);
   bool HandleFileGetRequest(const std::string& request_line);
+  bool HandleFileGotRequest(const std::string& request_line);
   BinkState SendDummyFile();
   Connection* conn_;
   std::string address_list;
