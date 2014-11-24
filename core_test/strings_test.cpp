@@ -215,3 +215,13 @@ TEST(StringsTest, RemoveWhitespace_Leading) {
   RemoveWhitespace(&s);
   EXPECT_EQ(expected, s);
 }
+
+TEST(StringsTest, StartsWith) {
+  EXPECT_TRUE(starts_with("--foo", "--"));
+  EXPECT_TRUE(starts_with("asdf", "a"));
+  EXPECT_TRUE(starts_with("asdf", "as"));
+  EXPECT_TRUE(starts_with("asdf", "asd"));
+  EXPECT_TRUE(starts_with("asdf", "asdf"));
+  EXPECT_FALSE(starts_with("asdf", "asf"));
+  EXPECT_FALSE(starts_with("asdf", "asdfe"));
+}
