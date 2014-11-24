@@ -38,16 +38,18 @@ enum class BinkState {
 
 class TransferFile {
 public:
-   TransferFile(const std::string& filename, time_t timestamp);
-   virtual ~TransferFile();
+  TransferFile(const std::string& filename, time_t timestamp);
+  virtual ~TransferFile();
 
-   const std::string as_packet_data(int offset = 0) const;
-   const std::string filename() const { return filename_; }
+  const std::string filename() const { return filename_; }
+  virtual const std::string as_packet_data(int offset) const = 0;
 
-   virtual int file_size() const { return 0; };
-   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) { return 0; }
+  virtual int file_size() const { return 0; };
+  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) { return 0; }
 
-private:
+ protected:
+  virtual const std::string as_packet_data(int size, int offset) const final;
+
   const std::string filename_;
   const time_t timestamp_;
 };
@@ -55,10 +57,11 @@ private:
 class InMemoryTransferFile : public TransferFile {
 public:
   InMemoryTransferFile(const std::string& filename, const std::string& contents);
-   virtual ~InMemoryTransferFile();
+  virtual ~InMemoryTransferFile();
 
-   virtual int file_size() const override final { return contents_.length(); }
-   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
+  virtual const std::string as_packet_data(int offset) const override final;
+  virtual int file_size() const override final { return contents_.length(); }
+  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
 
 private:
   const std::string contents_;
