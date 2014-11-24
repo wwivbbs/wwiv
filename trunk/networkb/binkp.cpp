@@ -153,21 +153,19 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   return true;
 }
 
-bool BinkP::send_data_packet(const char* data, std::size_t size) {
+bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
   // for now assume everything fits within a single frame.
-  uint16_t packet_length = size & 0x7fff;
   std::unique_ptr<char[]> packet(new char[packet_length + 2]);
-  uint8_t b0 = ((packet_length & 0x7f00) >> 8);
+  packet_length &= 0x7fff;
+  uint8_t b0 = ((packet_length & 0xff00) >> 8);
   uint8_t b1 = packet_length & 0x00ff;
   char *p = packet.get();
   *p++ = b0;
   *p++ = b1;
-  memcpy(p, data, size);
+  memcpy(p, data, packet_length);
 
-  conn_->send(packet.get(), packet_length + 2, seconds(3));
-  clog << "Sending: data: packet_length: " << (int) packet_length
-       << "; size: " << size
-       << "; data: " << string(packet.get(), size + 2) << endl;
+  conn_->send(packet.get(), packet_length + 2, seconds(10));
+  clog << "Sending: data: packet_length: " << (int) packet_length << endl;
   return true;
 }
 
@@ -227,7 +225,9 @@ bool BinkP::SendFilePacket(TransferFile* file) {
 
   try {
     // The remote may give us a M_GET, if so send the file in response to that request.
-    process_one_frame();
+    while (true) {
+      process_one_frame();
+    }
   } catch (wwiv::net::timeout_error e) {
     clog << "process_one_frame: " << e.what() << endl;
   }
@@ -248,7 +248,7 @@ bool BinkP::SendFilePacket(TransferFile* file) {
 
 bool BinkP::SendFileData(TransferFile* file) {
   long file_length = file->file_size();
-  const int chunk_size = 32768; // 1 << 15
+  const int chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
   long start = 0;
   unique_ptr<char[]> chunk(new char[chunk_size]);
   for (long start = 0; start < file_length; start+=chunk_size) {
@@ -292,7 +292,7 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
 BinkState BinkP::SendDummyFile() {
   clog << "SendDummyFile" << endl;
   const string dummy_filename = "test.txt";
-  bool result = SendFilePacket(new InMemoryTransferFile(dummy_filename, "ABCDE"));
+  bool result = SendFilePacket(new InMemoryTransferFile(dummy_filename, string(40000, 'A')));
   return BinkState::UNKNOWN;
 }
 
