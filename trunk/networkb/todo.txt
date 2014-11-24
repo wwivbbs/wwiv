@@ -5,6 +5,7 @@ pre-alpha
 =========
 * make connection an abstract class then create socketconnection for socket
   communications.
+* Create WFile based TransferFile subclass for real use.
 * create daemon process to be the listener side
 * create unit tests
 * create server side of extension (OPT wwivnet) that if the server supports
