@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstring>
 #include <fcntl.h>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <map>
@@ -16,6 +17,7 @@
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
 
+using std::chrono::milliseconds;
 using std::chrono::seconds;
 using std::clog;
 using std::cout;
@@ -30,7 +32,9 @@ using wwiv::strings::SplitString;
 namespace wwiv {
 namespace net {
 
-BinkP::BinkP(Connection* conn) : conn_(conn) {}
+BinkP::BinkP(Connection* conn, BinkSide side, const string& expected_remote_address)
+  : conn_(conn), side_(side), expected_remote_address_(expected_remote_address) {}
+
 BinkP::~BinkP() {
   files_to_send_.clear();
 }
@@ -64,11 +68,11 @@ bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
   case M_ADR: {
     clog << "RECV:  M_ADR: " << s << endl;
     // TODO(rushfan): tokenize into addresses
-    address_list = s;
+    address_list_ = s;
   } break;
   case M_OK: {
     clog << "RECV:  M_OK: " << s << endl;
-    ok_received = true;
+    ok_received_ = true;
   } break;
   case M_GET: {
     clog << "RECV:  M_GET: " << s << endl;
@@ -78,8 +82,12 @@ bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
     clog << "RECV:  M_GOT: " << s << endl;
     HandleFileGotRequest(s);
   } break;
+  case M_EOB: {
+    clog << "RECV:  M_EOB: " << s << endl;
+    eob_received_ = true;
+  } break;
   default: {
-    clog << "RECV:  UNHANDLED COMMAND: " << command_id_to_name(command_id) 
+    clog << "RECV:  ** UNHANDLED COMMAND: " << command_id_to_name(command_id) 
          << " data: " << s << endl;
   } break;
   }
@@ -94,22 +102,22 @@ bool BinkP::process_data(int16_t length, std::chrono::milliseconds d) {
   return true;
 }
 
-bool BinkP::maybe_process_all_frames(std::chrono::milliseconds d) {
+bool BinkP::process_frames(std::chrono::milliseconds d) {
+  return process_frames([&]() -> bool { return false; }, d);
+}
+
+bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::milliseconds d) {
   try {
-    while (true) {
-      process_one_frame(d);
+    while (!predicate()) {
+      uint16_t header = conn_->read_uint16(d);
+      if (header & 0x8000) {
+        return process_command(header & 0x7fff, d);
+      } else {
+        return process_data(header & 0x7fff, d);
+      }
     }
   } catch (timeout_error ignores) {}
   return true;
-}
-
-bool BinkP::process_one_frame(std::chrono::milliseconds d) {
-  uint16_t header = conn_->read_uint16(d);
-  if (header & 0x8000) {
-    return process_command(header & 0x7fff, d);
-  } else {
-    return process_data(header & 0x7fff, d);
-  }
 }
 
 bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
@@ -152,7 +160,7 @@ bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
 
 BinkState BinkP::ConnInit() {
   clog << "STATE: ConnInit" << endl;
-  maybe_process_all_frames(seconds(2));
+  process_frames(seconds(2));
   return BinkState::WAIT_CONN;
 }
 
@@ -164,7 +172,7 @@ BinkState BinkP::WaitConn() {
   send_command_packet(M_NUL, "VER networkb/0.0 binkp/1.0");
   send_command_packet(M_NUL, "LOC San Francisco, CA");
   send_command_packet(M_ADR, "20000:20000/2@wwivnet");
-  return BinkState::SEND_PASSWORD;
+  return (side_ == BinkSide::ORIGINATING) ? BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
 }
 
 BinkState BinkP::SendPasswd() {
@@ -175,30 +183,88 @@ BinkState BinkP::SendPasswd() {
 
 BinkState BinkP::WaitAddr() {
   clog << "STATE: WaitAddr" << endl;
-  while (address_list.empty()) {
-    process_one_frame(seconds(5));
-  }
+  auto predicate = [&]() -> bool { return !address_list_.empty(); };
+  process_frames(predicate, seconds(1));
   return BinkState::AUTH_REMOTE;
 }
 
 BinkState BinkP::WaitOk() {
   clog << "STATE: WaitOk" << endl;
-  if (ok_received) {
+  auto predicate = [&]() -> bool { return ok_received_; };
+  process_frames(predicate, seconds(1));
+  return BinkState::TRANSFER_FILES;
+}
+
+BinkState BinkP::IfSecure() {
+  clog << "STATE: IfSecure" << endl;
+  // Wait for OK if we sent a password.
+  // Log an unsecure session of there is no password.
+  return BinkState::WAIT_OK;
+}
+
+BinkState BinkP::AuthRemote() {
+  clog << "STATE: AuthRemote" << endl;
+  // Check that the address matches who we thought we called.
+  clog << "       address line = " << address_list_ << endl;
+  if (address_list_.find(expected_remote_address_) != string::npos) {
+    return BinkState::IF_SECURE;
+  } else {
+    send_command_packet(M_ERR, wwiv::strings::StrCat("Unexpected Address: ", address_list_));
+    // TODO(rushfan): add error state?
     return BinkState::UNKNOWN;
   }
-  while (!ok_received) {
-    process_one_frame(seconds(5));
+}
+
+BinkState BinkP::TransferFiles() {
+  clog << "STATE: TransferFiles" << endl;
+  // Quickly let the inbound event loop percolate.
+  process_frames(seconds(1));
+  // HACK
+  SendDummyFile("a.txt", 'a', 40000);
+  SendDummyFile("b.txt", 'b', 50000);
+  // Quickly let the inbound event loop percolate.
+  process_frames(seconds(1));
+
+  // TODO(rushfan): Should this be in a new state?
+  if (files_to_send_.empty()) {
+    // All files are sent, let's let the remote know we are done.
+    send_command_packet(M_EOB, "");
   }
-  return BinkState::TRANSFER_FILES;
+  return BinkState::WAIT_EOB;
+}
+
+BinkState BinkP::Unknown() {
+  clog << "STATE: Unknown" << endl;
+  int count = 0;
+  auto predicate = [&]() -> bool { return count++ < 4; };
+  process_frames(predicate, seconds(3));
+  return BinkState::DONE;
+}
+
+BinkState BinkP::WaitEob() {
+  clog << "STATE: WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
+      auto predicate = [&]() -> bool { return !eob_received_; };
+  for (int count=1; count < 4; count++) {
+    try {
+      count++;
+      process_frames(predicate, seconds(3));
+      if (eob_received_) {
+        return BinkState::DONE;
+      }
+      process_frames(milliseconds(100));
+    } catch (timeout_error e) {
+      clog << "       WaitEob looping for more data. " << e.what() << std::endl;
+    }
+  }
+  return BinkState::DONE;
 }
 
 bool BinkP::SendFilePacket(TransferFile* file) {
   string filename(file->filename());
-  clog << "STATE: SendFilePacket: " << filename << endl;
+  clog << "       SendFilePacket: " << filename << endl;
   files_to_send_[filename] = unique_ptr<TransferFile>(file);
   send_command_packet(M_FILE, file->as_packet_data(0));
-
-  maybe_process_all_frames(seconds(5));
+  process_frames(seconds(2));
 
   // file* may not be viable anymore if it was already send.
   auto iter = files_to_send_.find(filename);
@@ -210,7 +276,7 @@ bool BinkP::SendFilePacket(TransferFile* file) {
 }
 
 bool BinkP::SendFileData(TransferFile* file) {
-  clog << "STATE: SendFilePacket: " << file->filename() << endl;
+  clog << "       SendFilePacket: " << file->filename() << endl;
   long file_length = file->file_size();
   const int chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
   long start = 0;
@@ -223,13 +289,13 @@ bool BinkP::SendFileData(TransferFile* file) {
     send_data_packet(chunk.get(), size);
     // sending multichunk files was not reliable.  check after each frame if we have
     // an inbound command.
-    maybe_process_all_frames(seconds(1));
+    process_frames(seconds(1));
   }
   return true;
 }
 
 bool BinkP::HandleFileGetRequest(const string& request_line) {
-  clog << "STATE: HandleFileGetRequest: request_line: [" << request_line << "]" << endl; 
+  clog << "       HandleFileGetRequest: request_line: [" << request_line << "]" << endl; 
   vector<string> s = SplitString(request_line, " ");
   const string filename = s.at(0);
   long length = std::stol(s.at(1));
@@ -249,7 +315,7 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
 }
 
 bool BinkP::HandleFileGotRequest(const string& request_line) {
-  clog << "STATE: HandleFileGotRequest: request_line: [" << request_line << "]" << endl; 
+  clog << "       HandleFileGotRequest: request_line: [" << request_line << "]" << endl; 
   vector<string> s = SplitString(request_line, " ");
   const string filename = s.at(0);
   long length = std::stol(s.at(1));
@@ -268,33 +334,17 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
 
 // TODO(rushfan): Remove this.
 BinkState BinkP::SendDummyFile(const std::string& filename, char fill, size_t size) {
-  clog << "STATE: SendDummyFile: " << filename << endl;
+  clog << "       SendDummyFile: " << filename << endl;
   bool result = SendFilePacket(new InMemoryTransferFile(filename, string(size, fill)));
   return BinkState::UNKNOWN;
 }
 
-BinkState BinkP::IfSecure() {
-  // Wait for OK if we sent a password.
-  // Log an unsecure session of there is no password.
-  return BinkState::WAIT_OK;
-}
-
-BinkState BinkP::AuthRemote() {
-  // Check that the address matches who we thought we called.
-  return BinkState::IF_SECURE;
-}
-
-BinkState BinkP::TransferFiles() {
-  // HACK
-  SendDummyFile("a.txt", 'a', 40000);
-  SendDummyFile("b.txt", 'b', 50000);
-  return BinkState::UNKNOWN;
-}
-
 void BinkP::Run() {
-  BinkState state = BinkState::CONN_INIT;
+  clog << "STATE: Run (Main Event Loop): " << endl;
   try {
-    while (state != BinkState::UNKNOWN) {
+    BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
+    while (state != BinkState::DONE) {
+      process_frames(milliseconds(100));
       switch (state) {
       case BinkState::CONN_INIT:
         state = ConnInit();
@@ -320,19 +370,16 @@ void BinkP::Run() {
       case BinkState::TRANSFER_FILES:
         state = TransferFiles();
         break;
+      case BinkState::WAIT_EOB:
+        state = WaitEob();
+        break;
+      case BinkState::UNKNOWN:
+        state = Unknown();
       }
     }
-    clog << "STATE: End of the line..." << endl;
-    for (int count=1; count < 4; count++) {
-      try {
-        count++;
-        maybe_process_all_frames(seconds(5));
-      } catch (timeout_error e) {
-        clog << "STATE: looping for more data. " << e.what() << std::endl;
-      }
-    }
+    clog << "STATE: Done." << endl;
   } catch (socket_error e) {
-    clog << "STATE: BinkP::Run() socket_error: " << e.what() << std::endl;
+    clog << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what() << std::endl;
   }
 }
   

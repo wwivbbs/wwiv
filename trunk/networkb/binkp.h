@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -37,12 +38,19 @@ enum class BinkState {
   IF_SECURE,
   WAIT_OK,
   TRANSFER_FILES,
-  UNKNOWN
+  WAIT_EOB,
+  UNKNOWN,
+  DONE
+};
+
+enum class BinkSide {
+  ORIGINATING,
+  ANSWERING
 };
 
 class BinkP {
 public:
-  explicit BinkP(Connection* conn);
+  BinkP(Connection* conn, BinkSide side, const std::string& expected_remote_address);
   virtual ~BinkP();
 
   void Run();
@@ -50,8 +58,12 @@ public:
 private:
   std::string command_id_to_name(int command_id) const;
 
-  bool maybe_process_all_frames(std::chrono::milliseconds d);
-  bool process_one_frame(std::chrono::milliseconds d);
+  // Process frames until we time out waiting for a new frame.
+  bool process_frames(std::chrono::milliseconds d);
+  // Process frames until predicate is satisfied (returns true) or we time out waiting
+  // for a new frame.
+  bool process_frames(std::function<bool()> predicate, std::chrono::milliseconds d);
+ 
   bool process_command(int16_t length, std::chrono::milliseconds d);
   bool process_data(int16_t length, std::chrono::milliseconds d);
 
@@ -66,15 +78,20 @@ private:
   BinkState IfSecure();
   BinkState AuthRemote();
   BinkState TransferFiles();
+  BinkState WaitEob();
+  BinkState Unknown();
   bool SendFilePacket(TransferFile* file);
   bool SendFileData(TransferFile* file);
   bool HandleFileGetRequest(const std::string& request_line);
   bool HandleFileGotRequest(const std::string& request_line);
   BinkState SendDummyFile(const std::string& filename, char fill, std::size_t size);
   Connection* conn_;
-  std::string address_list;
-  bool ok_received;
+  std::string address_list_;
+  bool ok_received_;
+  bool eob_received_;
   std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;
+  BinkSide side_;
+  std::string expected_remote_address_;
 };
 
 
