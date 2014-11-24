@@ -89,13 +89,20 @@
   <ItemGroup>
     <ClInclude Include="binkp.h" />
     <ClInclude Include="connection.h" />
+    <ClInclude Include="socket_connection.h" />
+    <ClInclude Include="socket_exceptions.h" />
     <ClInclude Include="transfer_file.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="binkp.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="networkb.cpp" />
+    <ClCompile Include="socket_connection.cpp" />
+    <ClCompile Include="socket_exceptions.cpp" />
     <ClCompile Include="transfer_file.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="todo.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

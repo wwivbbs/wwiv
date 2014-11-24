@@ -3,6 +3,7 @@
 #define __INCLUDED_NETWORKB_BINKP_H__
 
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -35,6 +36,7 @@ enum class BinkState {
   AUTH_REMOTE,
   IF_SECURE,
   WAIT_OK,
+  TRANSFER_FILES,
   UNKNOWN
 };
 
@@ -61,11 +63,14 @@ private:
   BinkState SendPasswd();
   BinkState WaitAddr();
   BinkState WaitOk();
+  BinkState IfSecure();
+  BinkState AuthRemote();
+  BinkState TransferFiles();
   bool SendFilePacket(TransferFile* file);
   bool SendFileData(TransferFile* file);
   bool HandleFileGetRequest(const std::string& request_line);
   bool HandleFileGotRequest(const std::string& request_line);
-  BinkState SendDummyFile();
+  BinkState SendDummyFile(const std::string& filename, char fill, std::size_t size);
   Connection* conn_;
   std::string address_list;
   bool ok_received;

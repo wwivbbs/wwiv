@@ -7,6 +7,8 @@ set(SOURCES
  binkp.cpp
  connection.cpp
  networkb.cpp
+ socket_connection.cpp
+ socket_exceptions.cpp
  transfer_file.cpp
 )
 
