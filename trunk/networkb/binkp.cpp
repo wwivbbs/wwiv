@@ -88,27 +88,27 @@ bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
   string s(data.get(), length - 1);
   switch (command_id) {
   case M_NUL: {
-    clog << "M_NUL: " << s << endl;
+    clog << "RECV:  M_NUL: " << s << endl;
   } break;
   case M_ADR: {
-    clog << "M_ADR: " << s << endl;
+    clog << "RECV:  M_ADR: " << s << endl;
     // TODO(rushfan): tokenize into addresses
     address_list = s;
   } break;
   case M_OK: {
-    clog << "M_OK: " << s << endl;
+    clog << "RECV:  M_OK: " << s << endl;
     ok_received = true;
   } break;
   case M_GET: {
-    clog << "M_GET: " << s << endl;
+    clog << "RECV:  M_GET: " << s << endl;
     HandleFileGetRequest(s);
   } break;
   case M_GOT: {
-    clog << "M_GOT: " << s << endl;
+    clog << "RECV:  M_GOT: " << s << endl;
     HandleFileGotRequest(s);
   } break;
   default: {
-    clog << "UNHANDLED COMMAND: " << command_id_to_name(command_id) 
+    clog << "RECV:  UNHANDLED COMMAND: " << command_id_to_name(command_id) 
          << " data: " << s << endl;
   } break;
   }
@@ -119,7 +119,7 @@ bool BinkP::process_data(int16_t length, std::chrono::milliseconds d) {
   unique_ptr<char[]> data(new char[length]);
   int length_received = conn_->receive(data.get(), length - 1, d);
   string s(data.get(), length - 1);
-  clog << "len: " << length_received << "; data: " << s << endl;
+  clog << "RECV:  DATA PACKET; len: " << length_received << "; data: " << s << endl;
   return true;
 }
 
@@ -157,7 +157,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   memcpy(p, data.data(), data.size());
 
   conn_->send(packet.get(), size, seconds(3));
-  clog << "Sending: command: " << command_id_to_name(command_id)
+  clog << "SEND:  command: " << command_id_to_name(command_id)
        << "; packet_length: " << (packet_length & 0x7fff)
        << "; data: " << string(packet.get(), size) << endl;
   return true;
@@ -175,18 +175,18 @@ bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
   memcpy(p, data, packet_length);
 
   conn_->send(packet.get(), packet_length + 2, seconds(10));
-  clog << "Sending: data: packet_length: " << (int) packet_length << endl;
+  clog << "SEND:  data packet: packet_length: " << (int) packet_length << endl;
   return true;
 }
 
 BinkState BinkP::ConnInit() {
-  clog << "ConnInit" << endl;
+  clog << "STATE: ConnInit" << endl;
   maybe_process_all_frames(seconds(2));
   return BinkState::WAIT_CONN;
 }
 
 BinkState BinkP::WaitConn() {
-  clog << "WaitConn" << endl;
+  clog << "STATE: WaitConn" << endl;
   send_command_packet(M_NUL, "OPT wwivnet");
   send_command_packet(M_NUL, "SYS NETWORKB test app");
   send_command_packet(M_NUL, "ZYZ Unknown Sysop");
@@ -197,13 +197,13 @@ BinkState BinkP::WaitConn() {
 }
 
 BinkState BinkP::SendPasswd() {
-  clog << "SendPasswd" << endl;
+  clog << "STATE: SendPasswd" << endl;
   send_command_packet(M_PWD, "-");
   return BinkState::WAIT_ADDR;
 }
 
 BinkState BinkP::WaitAddr() {
-  clog << "WaitAddr" << endl;
+  clog << "STATE: WaitAddr" << endl;
   while (address_list.empty()) {
     process_one_frame(seconds(5));
   }
@@ -211,7 +211,7 @@ BinkState BinkP::WaitAddr() {
 }
 
 BinkState BinkP::WaitOk() {
-  clog << "WaitOk" << endl;
+  clog << "STATE: WaitOk" << endl;
   if (ok_received) {
     return BinkState::UNKNOWN;
   }
@@ -223,7 +223,7 @@ BinkState BinkP::WaitOk() {
 
 bool BinkP::SendFilePacket(TransferFile* file) {
   string filename(file->filename());
-  clog << "SendFilePacket: " << filename << endl;
+  clog << "STATE: SendFilePacket: " << filename << endl;
   files_to_send_[filename] = unique_ptr<TransferFile>(file);
   send_command_packet(M_FILE, file->as_packet_data(0));
 
@@ -239,7 +239,7 @@ bool BinkP::SendFilePacket(TransferFile* file) {
 }
 
 bool BinkP::SendFileData(TransferFile* file) {
-  clog << "SendFilePacket: " << file->filename() << endl;
+  clog << "STATE: SendFilePacket: " << file->filename() << endl;
   long file_length = file->file_size();
   const int chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
   long start = 0;
@@ -258,7 +258,7 @@ bool BinkP::SendFileData(TransferFile* file) {
 }
 
 bool BinkP::HandleFileGetRequest(const string& request_line) {
-  clog << "HandleFileGetRequest: request_line: [" << request_line << "]" << endl; 
+  clog << "STATE: HandleFileGetRequest: request_line: [" << request_line << "]" << endl; 
   vector<string> s = SplitString(request_line, " ");
   const string filename = s.at(0);
   long length = std::stol(s.at(1));
@@ -278,7 +278,7 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
 }
 
 bool BinkP::HandleFileGotRequest(const string& request_line) {
-  clog << "HandleFileGotRequest: request_line: [" << request_line << "]" << endl; 
+  clog << "STATE: HandleFileGotRequest: request_line: [" << request_line << "]" << endl; 
   vector<string> s = SplitString(request_line, " ");
   const string filename = s.at(0);
   long length = std::stol(s.at(1));
@@ -297,7 +297,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
 
 // TODO(rushfan): Remove this.
 BinkState BinkP::SendDummyFile() {
-  clog << "SendDummyFile" << endl;
+  clog << "STATE: SendDummyFile" << endl;
   const string dummy_filename = "test.txt";
   bool result = SendFilePacket(new InMemoryTransferFile(dummy_filename, string(40000, 'A')));
   return BinkState::UNKNOWN;
@@ -331,17 +331,17 @@ void BinkP::Run() {
         break;
       }
     }
-    clog << "End of the line..." << endl;
+    clog << "STATE: End of the line..." << endl;
     for (int count=1; count < 4; count++) {
       try {
         count++;
         maybe_process_all_frames(seconds(5));
       } catch (timeout_error e) {
-        clog << "looping for more data. " << e.what() << std::endl;
+        clog << "STATE: looping for more data. " << e.what() << std::endl;
       }
     }
   } catch (socket_error e) {
-    clog << e.what() << std::endl;
+    clog << "STATE: BinkP::Run() socket_error: " << e.what() << std::endl;
   }
 }
   
