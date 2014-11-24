@@ -11,6 +11,9 @@ pre-alpha
   it then use native wwivnet addressing (format: M_NUL WWIVNET @address.netname)
 * figure out how to setup passwords for connections
 * figure out how to remove a node connection from ppp project
+* create config file (INI?) for configuring networkb (if needed. We need to
+* know wwiv dir and which nodes to send to. and which password to use)
+* create way to auto-set password (like wwiv networking did) with binkp
 
 alpha
 =====
