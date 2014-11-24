@@ -81,10 +81,10 @@ string BinkP::command_id_to_name(int command_id) const {
   return map.at(command_id);
 }
 
-bool BinkP::process_command(int16_t length) {
-  const uint8_t command_id = conn_->read_uint8(seconds(3));
+bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
+  const uint8_t command_id = conn_->read_uint8(d);
   unique_ptr<char[]> data(new char[length]);
-  conn_->receive(data.get(), length - 1,seconds(3));
+  conn_->receive(data.get(), length - 1, d);
   string s(data.get(), length - 1);
   switch (command_id) {
   case M_NUL: {
@@ -105,6 +105,7 @@ bool BinkP::process_command(int16_t length) {
   } break;
   case M_GOT: {
     clog << "M_GOT: " << s << endl;
+    HandleFileGotRequest(s);
   } break;
   default: {
     clog << "UNHANDLED COMMAND: " << command_id_to_name(command_id) 
@@ -114,20 +115,29 @@ bool BinkP::process_command(int16_t length) {
   return true;
 }
 
-bool BinkP::process_data(int16_t length) {
+bool BinkP::process_data(int16_t length, std::chrono::milliseconds d) {
   unique_ptr<char[]> data(new char[length]);
-  int length_received = conn_->receive(data.get(), length - 1, seconds(3));
+  int length_received = conn_->receive(data.get(), length - 1, d);
   string s(data.get(), length - 1);
   clog << "len: " << length_received << "; data: " << s << endl;
   return true;
 }
 
-bool BinkP::process_one_frame() {
-  uint16_t header = conn_->read_uint16(seconds(2));
+bool BinkP::maybe_process_all_frames(std::chrono::milliseconds d) {
+  try {
+    while (true) {
+      process_one_frame(d);
+    }
+  } catch (timeout_error ignores) {}
+  return true;
+}
+
+bool BinkP::process_one_frame(std::chrono::milliseconds d) {
+  uint16_t header = conn_->read_uint16(d);
   if (header & 0x8000) {
-    return process_command(header & 0x7fff);
+    return process_command(header & 0x7fff, d);
   } else {
-    return process_data(header & 0x7fff);
+    return process_data(header & 0x7fff, d);
   }
 }
 
@@ -171,13 +181,7 @@ bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
 
 BinkState BinkP::ConnInit() {
   clog << "ConnInit" << endl;
-  try {
-    while (true) {
-      process_one_frame();
-    }
-  } catch (wwiv::net::timeout_error e) {
-    clog << e.what() << endl;
-  }
+  maybe_process_all_frames(seconds(2));
   return BinkState::WAIT_CONN;
 }
 
@@ -194,7 +198,6 @@ BinkState BinkP::WaitConn() {
 
 BinkState BinkP::SendPasswd() {
   clog << "SendPasswd" << endl;
-
   send_command_packet(M_PWD, "-");
   return BinkState::WAIT_ADDR;
 }
@@ -202,7 +205,7 @@ BinkState BinkP::SendPasswd() {
 BinkState BinkP::WaitAddr() {
   clog << "WaitAddr" << endl;
   while (address_list.empty()) {
-    process_one_frame();
+    process_one_frame(seconds(5));
   }
   return BinkState::WAIT_OK;
 }
@@ -213,40 +216,30 @@ BinkState BinkP::WaitOk() {
     return BinkState::UNKNOWN;
   }
   while (!ok_received) {
-    process_one_frame();
+    process_one_frame(seconds(5));
   }
   return BinkState::UNKNOWN;
 }
 
 bool BinkP::SendFilePacket(TransferFile* file) {
   string filename(file->filename());
+  clog << "SendFilePacket: " << filename << endl;
   files_to_send_[filename] = unique_ptr<TransferFile>(file);
   send_command_packet(M_FILE, file->as_packet_data(0));
 
-  try {
-    // The remote may give us a M_GET, if so send the file in response to that request.
-    while (true) {
-      process_one_frame();
-    }
-  } catch (wwiv::net::timeout_error e) {
-    clog << "process_one_frame: " << e.what() << endl;
-  }
+  maybe_process_all_frames(seconds(5));
 
   // file* may not be viable anymore if it was already send.
   auto iter = files_to_send_.find(filename);
   if (iter != std::end(files_to_send_)) {
     // We have the file still to send.
-    if (SendFileData(file)) {
-      // File was sent, erase it from the list of files to send.
-      // Since the map holds unique_ptrs the memory will be erased.
-      file = nullptr;
-      files_to_send_.erase(iter);
-    }
+    SendFileData(file);
   }
   return true;
 }
 
 bool BinkP::SendFileData(TransferFile* file) {
+  clog << "SendFilePacket: " << file->filename() << endl;
   long file_length = file->file_size();
   const int chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
   long start = 0;
@@ -257,6 +250,9 @@ bool BinkP::SendFileData(TransferFile* file) {
       // Bad chunk. Abort
     }
     send_data_packet(chunk.get(), size);
+    // sending multichunk files was not reliable.  check after each frame if we have
+    // an inbound command.
+    maybe_process_all_frames(seconds(1));
   }
   return true;
 }
@@ -277,14 +273,25 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
     clog << "File not found: " << filename;
     return false;
   }
+  return SendFileData(iter->second.get());
+  // File was sent but wait until we receive M_GOT before we remove it from the list.
+}
+
+bool BinkP::HandleFileGotRequest(const string& request_line) {
+  clog << "HandleFileGotRequest: request_line: [" << request_line << "]" << endl; 
+  vector<string> s = SplitString(request_line, " ");
+  const string filename = s.at(0);
+  long length = std::stol(s.at(1));
+
+  auto iter = files_to_send_.find(filename);
+  if (iter == std::end(files_to_send_)) {
+    clog << "File not found: " << filename;
+    return false;
+  }
 
   TransferFile* file = iter->second.get();
-  if (SendFileData(file)) {
-    // File was sent, erase it from the list of files to send.  Since the map holds unique_ptrs
-    // the memory will be erased.
-    file = nullptr;
-    files_to_send_.erase(iter);
-  }
+  file = nullptr;
+  files_to_send_.erase(iter);
   return true;
 }
 
@@ -325,14 +332,18 @@ void BinkP::Run() {
       }
     }
     clog << "End of the line..." << endl;
-    while (true) {
-      process_one_frame();
+    for (int count=1; count < 4; count++) {
+      try {
+        count++;
+        maybe_process_all_frames(seconds(5));
+      } catch (timeout_error e) {
+        clog << "looping for more data. " << e.what() << std::endl;
+      }
     }
-  } catch (wwiv::net::socket_error e) {
+  } catch (socket_error e) {
     clog << e.what() << std::endl;
   }
 }
-
   
 }  // namespace net
 } // namespace wwiv
