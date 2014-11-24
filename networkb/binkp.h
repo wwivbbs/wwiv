@@ -25,6 +25,7 @@ static const int M_GET  = 9;
 static const int M_SKIP = 10;
 
 class Connection;
+class TransferFile;
 
 enum class BinkState {
   CONN_INIT,
@@ -36,38 +37,6 @@ enum class BinkState {
   WAIT_OK,
   UNKNOWN
 };
-
-class TransferFile {
-public:
-  TransferFile(const std::string& filename, time_t timestamp);
-  virtual ~TransferFile();
-
-  const std::string filename() const { return filename_; }
-  virtual const std::string as_packet_data(int offset) const = 0;
-
-  virtual int file_size() const { return 0; };
-  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) { return 0; }
-
- protected:
-  virtual const std::string as_packet_data(int size, int offset) const final;
-
-  const std::string filename_;
-  const time_t timestamp_;
-};
-
-class InMemoryTransferFile : public TransferFile {
-public:
-  InMemoryTransferFile(const std::string& filename, const std::string& contents);
-  virtual ~InMemoryTransferFile();
-
-  virtual const std::string as_packet_data(int offset) const override final;
-  virtual int file_size() const override final { return contents_.length(); }
-  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
-
-private:
-  const std::string contents_;
-};
-
 
 class BinkP {
 public:

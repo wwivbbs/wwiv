@@ -7,6 +7,7 @@ set(SOURCES
  binkp.cpp
  connection.cpp
  networkb.cpp
+ transfer_file.cpp
 )
 
 if(UNIX) 
