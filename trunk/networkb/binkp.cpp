@@ -13,6 +13,7 @@
 
 #include "core/strings.h"
 #include "networkb/connection.h"
+#include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
 
 using std::chrono::seconds;
@@ -177,7 +178,7 @@ BinkState BinkP::WaitAddr() {
   while (address_list.empty()) {
     process_one_frame(seconds(5));
   }
-  return BinkState::WAIT_OK;
+  return BinkState::AUTH_REMOTE;
 }
 
 BinkState BinkP::WaitOk() {
@@ -188,7 +189,7 @@ BinkState BinkP::WaitOk() {
   while (!ok_received) {
     process_one_frame(seconds(5));
   }
-  return BinkState::UNKNOWN;
+  return BinkState::TRANSFER_FILES;
 }
 
 bool BinkP::SendFilePacket(TransferFile* file) {
@@ -266,10 +267,27 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
 }
 
 // TODO(rushfan): Remove this.
-BinkState BinkP::SendDummyFile() {
-  clog << "STATE: SendDummyFile" << endl;
-  const string dummy_filename = "test.txt";
-  bool result = SendFilePacket(new InMemoryTransferFile(dummy_filename, string(40000, 'A')));
+BinkState BinkP::SendDummyFile(const std::string& filename, char fill, size_t size) {
+  clog << "STATE: SendDummyFile: " << filename << endl;
+  bool result = SendFilePacket(new InMemoryTransferFile(filename, string(size, fill)));
+  return BinkState::UNKNOWN;
+}
+
+BinkState BinkP::IfSecure() {
+  // Wait for OK if we sent a password.
+  // Log an unsecure session of there is no password.
+  return BinkState::WAIT_OK;
+}
+
+BinkState BinkP::AuthRemote() {
+  // Check that the address matches who we thought we called.
+  return BinkState::IF_SECURE;
+}
+
+BinkState BinkP::TransferFiles() {
+  // HACK
+  SendDummyFile("a.txt", 'a', 40000);
+  SendDummyFile("b.txt", 'b', 50000);
   return BinkState::UNKNOWN;
 }
 
@@ -291,13 +309,16 @@ void BinkP::Run() {
         state = WaitAddr();
         break;
       case BinkState::AUTH_REMOTE:
+        state = AuthRemote();
         break;
       case BinkState::IF_SECURE:
+        state = IfSecure();
         break;
       case BinkState::WAIT_OK:
         state = WaitOk();
-        // HACK
-        SendDummyFile();
+        break;
+      case BinkState::TRANSFER_FILES:
+        state = TransferFiles();
         break;
       }
     }
