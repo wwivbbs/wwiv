@@ -20,12 +20,18 @@
     <ClCompile Include="binkp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="transfer_file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="connection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="binkp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="transfer_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
