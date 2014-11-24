@@ -83,7 +83,8 @@ static bool WouldSocketBlock() {
 
 }  // namespace
 
-SocketConnection::SocketConnection(const string& host, int port) : host_(host), port_(port) {
+SocketConnection::SocketConnection(const string& host, int port)
+    : host_(host), port_(port) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("Unable to initialize sockets.");
