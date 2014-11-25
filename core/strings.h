@@ -63,6 +63,7 @@ void SplitString(const std::string& original_string, const std::string& delims, 
 
 void RemoveWhitespace(std::string* s);
 bool starts_with(const std::string& input, const std::string& match);
+bool ends_with(const std::string& input, const std::string& match);
 
 }  // namespace strings
 
