@@ -226,6 +226,12 @@ bool starts_with(const std::string& input, const std::string& match) {
       && std::equal(match.begin(), match.end(), input.begin());
 }
 
+bool ends_with(const std::string& input, const std::string& match) {
+  return input.size() >= match.size()
+      && std::equal(match.rbegin(), match.rend(), input.rbegin());
+}
+
+
 }  // namespace strings
 }  // namespace wwiv
 
