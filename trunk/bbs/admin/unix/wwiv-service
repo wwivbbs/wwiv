@@ -1,0 +1,12 @@
+service wwiv
+{
+	type		= UNLISTED
+	port		= 23
+	socket_type     = stream
+	wait            = no
+	user            = wwiv
+	server		= /usr/sbin/in.telnetd
+	server_args	= -L REPLACE-WWIVBASE/in.nodemgr
+	log_on_failure += USERID
+	disable         = yes
+}
