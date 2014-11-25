@@ -1,0 +1,10 @@
+#!/bin/bash 
+#
+# in.nodemgr
+# set up the nodemgr env so the wwiv user can find
+# everything it needs
+
+. REPLACE-WWIVBASE/.wwivrc
+
+cd ${WWIVBASE}
+./nodemgr

@@ -1,0 +1,16 @@
+#
+# .wwivrc
+#
+# Define all our WWIV variables for all the scripts so we can 
+# source it all from one place.  
+#
+
+HOME=REPLACE-WWIVBASE
+WWIVBASE=${HOME}
+PATH=${WWIVBASE}:/bin:/usr/bin
+WWIVDATA=${WWIVBASE}/data
+WWIVNET=${WWIVDATA}/wwivnet
+INBOUND=${WWIVNET}/inbound/new
+PROCESSED=${WWIVNET}/inbound-processed
+
+export HOME PATH WWIVBASE WWIVDATA WWIVNET INBOUND PROCESSED
