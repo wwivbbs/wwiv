@@ -1,0 +1,13 @@
+VERBOSE=on
+LOGFILE=procmail.log
+
+:0:
+* ^From:.*Cron
+/dev/null
+
+:0:
+* ^Subject:.*UUE
+REPLACE-WWIVBASE/data/wwivnet/inbound/
+
+:0:
+${DEFAULT}
