@@ -13,6 +13,10 @@ echo
 echo "Starting the install process"
 echo "Starting the install process" > ${WWIVBASE}/$LOGFILE 2>&1
 
+
+#
+# Make sure we have the necessary tools
+#
 which unzip >> ${WWIVBASE}/$LOGFILE 2>&1
 STATUS=$?
 
@@ -23,6 +27,10 @@ then
     exit 1
 fi
 
+
+#
+# Unzip the data files
+#
 echo
 echo "Configuring data directories"
 echo "Configuring data directories" >> ${WWIVBASE}/$LOGFILE 2>&1
@@ -44,6 +52,27 @@ cd ${WWIVBASE}
 cd data
 unzip ../zip-city.zip >> ${WWIVBASE}/$LOGFILE 2>&1
 cd ${WWIVBASE}
+
+
+#
+# Fixing some of the basic borked filenames
+#
+echo
+echo "Fixing filename case issues"
+echo "Fixing filename case issues" >> ${WWIVBASE}/$LOGFILE 2>&1
+
+echo "Fixing gfiles issues" >> ${WWIVBASE}/$LOGFILE 2>&1
+ln -P gfiles/mbslash.msg gfiles/MBSLASH.MSG >> ${WWIVBASE}/$LOGFILE 2>&1
+ln -P gfiles/tslash.msg gfiles/TSLASH.MSG  >> ${WWIVBASE}/$LOGFILE 2>&1
+
+cd gfiles/menus/wwiv
+for i in xfer.*
+do
+    ln -P $i XFER${i##xfer}  >> ${WWIVBASE}/$LOGFILE 2>&1
+done
+cd ${WWIVBASE}
+
+
 
 # configure scripts and helper binaries.
 echo "Configuring system scripts"
