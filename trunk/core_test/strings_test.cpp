@@ -225,3 +225,13 @@ TEST(StringsTest, StartsWith) {
   EXPECT_FALSE(starts_with("asdf", "asf"));
   EXPECT_FALSE(starts_with("asdf", "asdfe"));
 }
+
+TEST(StringsTest, EndssWith) {
+  EXPECT_TRUE(ends_with("--foo", "foo"));
+  EXPECT_TRUE(ends_with("asdf", "f"));
+  EXPECT_TRUE(ends_with("asdf", "df"));
+  EXPECT_TRUE(ends_with("asdf", "sdf"));
+  EXPECT_TRUE(ends_with("asdf", "asdf"));
+  EXPECT_FALSE(ends_with("asdf", "adf"));
+  EXPECT_FALSE(ends_with("asdf", "easdf"));
+}
