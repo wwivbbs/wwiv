@@ -17,6 +17,8 @@ echo "Starting the install process" > ${WWIVBASE}/$LOGFILE 2>&1
 #
 # Make sure we have the necessary tools
 #
+# This shouldn't be necessary (since we needed unzip to get this file in the first place)
+#
 which unzip >> ${WWIVBASE}/$LOGFILE 2>&1
 STATUS=$?
 
@@ -36,21 +38,29 @@ echo "Configuring data directories"
 echo "Configuring data directories" >> ${WWIVBASE}/$LOGFILE 2>&1
 
 # make directories
-mkdir gfiles data >> ${WWIVBASE}/$LOGFILE 2>&1
+if [ ! -d gfiles ]
+then 
+    mkdir gfiles >> ${WWIVBASE}/$LOGFILE 2>&1
+fi
+
+if [ ! -d data ]
+then 
+    mkdir data >> ${WWIVBASE}/$LOGFILE 2>&1
+fi
 
 # unzip menus
 cd gfiles
-unzip ../en-menus.zip >> ${WWIVBASE}/$LOGFILE 2>&1
+unzip -u ../en-menus.zip >> ${WWIVBASE}/$LOGFILE 2>&1
 cd ${WWIVBASE}
 
 # unzip regions
 cd data
-unzip ../regions.zip >> ${WWIVBASE}/$LOGFILE 2>&1
+unzip -u ../regions.zip >> ${WWIVBASE}/$LOGFILE 2>&1
 cd ${WWIVBASE}
 
 # unzip zip-city
 cd data
-unzip ../zip-city.zip >> ${WWIVBASE}/$LOGFILE 2>&1
+unzip -u ../zip-city.zip >> ${WWIVBASE}/$LOGFILE 2>&1
 cd ${WWIVBASE}
 
 
@@ -90,8 +100,13 @@ done
 
 echo
 echo "Your BBS basic data setup is complete."
-echo "Please compile and copy in the binary files, then"
-echo "run ./init to finalize the BBS.  Then run ./bbs" 
+echo "running ./init now to finalize the BBS.  "
+sleep 5
+
+cd ${WWIVBASE}
+./init
+
+echo
+echo "init complete.  Please run ./bbs to login "
 echo "and set up a new user to be the sysop (#1) account"
 echo
-
