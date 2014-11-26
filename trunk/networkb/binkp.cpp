@@ -171,6 +171,7 @@ BinkState BinkP::WaitConn() {
   send_command_packet(M_NUL, "ZYZ Unknown Sysop");
   send_command_packet(M_NUL, "VER networkb/0.0 binkp/1.0");
   send_command_packet(M_NUL, "LOC San Francisco, CA");
+  send_command_packet(M_NUL, "WWIV @2.wwivnet");
   send_command_packet(M_ADR, "20000:20000/2@wwivnet");
   return (side_ == BinkSide::ORIGINATING) ? BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
 }
@@ -343,7 +344,8 @@ void BinkP::Run() {
   clog << "STATE: Run (Main Event Loop): " << endl;
   try {
     BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
-    while (state != BinkState::DONE) {
+    bool done = false;
+    while (!done) {
       process_frames(milliseconds(100));
       switch (state) {
       case BinkState::CONN_INIT:
@@ -375,9 +377,13 @@ void BinkP::Run() {
         break;
       case BinkState::UNKNOWN:
         state = Unknown();
+	break;
+      case BinkState::DONE:
+	clog << "STATE: Done." << endl;
+	done = true;
+	break;
       }
     }
-    clog << "STATE: Done." << endl;
   } catch (socket_error e) {
     clog << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what() << std::endl;
   }
