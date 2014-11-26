@@ -92,6 +92,7 @@
     <ClInclude Include="socket_connection.h" />
     <ClInclude Include="socket_exceptions.h" />
     <ClInclude Include="transfer_file.h" />
+    <ClInclude Include="wfile_transfer_file.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="binkp.cpp" />
@@ -100,6 +101,7 @@
     <ClCompile Include="socket_connection.cpp" />
     <ClCompile Include="socket_exceptions.cpp" />
     <ClCompile Include="transfer_file.cpp" />
+    <ClCompile Include="wfile_transfer_file.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
