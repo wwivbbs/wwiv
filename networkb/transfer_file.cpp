@@ -35,14 +35,11 @@ InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const st
 
 InMemoryTransferFile::~InMemoryTransferFile() {}
 
-const string InMemoryTransferFile::as_packet_data(int offset) const {
-  return TransferFile::as_packet_data(contents_.size(), offset);
-}
-
 bool InMemoryTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   if ((start + size) > contents_.size()) {
-    clog << "ERROR InMemoryTransferFile::GetChunk (start + size) > contents_.size(): values["
-         << (start + size) << ", " << contents_.size() << "]" << endl;
+    clog << "ERROR InMemoryTransferFile::GetChunk (start + size) > file_size():"
+         << "values[ start: " << start << "; size: " << size
+	 << "; file_size(): " << file_size() << " ]" << endl;
     return false;
   }
   memcpy(chunk, &contents_.data()[start], size);

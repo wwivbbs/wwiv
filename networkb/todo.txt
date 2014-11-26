@@ -3,11 +3,11 @@ TODO for networkb
 
 pre-alpha
 =========
-* Create WFile based TransferFile subclass for real use.
+# * Create WFile based TransferFile subclass for real use.
 * create daemon process to be the listener side
 * create unit tests
-* create server side of extension (OPT wwivnet) that if the server supports
-  it then use native wwivnet addressing (format: M_NUL WWIVNET @address.netname)
+#* create server side of extension (OPT wwivnet) that if the server supports
+#  it then use native wwivnet addressing (format: M_NUL WWIV @address.netname)
 * figure out how to setup passwords for connections
 * figure out how to remove a node connection from ppp project
 * create config file (INI?) for configuring networkb (if needed. We need to

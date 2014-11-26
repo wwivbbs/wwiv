@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdint>
 #include <exception>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -20,10 +21,16 @@
 namespace wwiv {
 namespace net {
 
+class SocketConnection;
+
+std::unique_ptr<SocketConnection> Connect(const std::string& host, int port);
+// Accepts a single connection, used for testing.
+std::unique_ptr<SocketConnection> Accept(int port);
+
 class SocketConnection : public Connection
 {
 public:
-  SocketConnection(const std::string& host, int port);
+  SocketConnection(SOCKET sock, const std::string& host, int port);
   virtual ~SocketConnection();
 
   virtual int receive(void* data, int size, std::chrono::milliseconds d) override;
@@ -40,6 +47,7 @@ private:
   const int port_;
   SOCKET sock_;
 };
+
 
 }  // namespace net
 }  // namespace wwiv

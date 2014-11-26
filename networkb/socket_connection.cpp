@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 
 #define NO_ERROR 0
@@ -37,6 +38,7 @@ using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::system_clock;
 using std::string;
+using std::unique_ptr;
 using std::this_thread::sleep_for;
 using wwiv::strings::StringPrintf;
 
@@ -83,8 +85,11 @@ static bool WouldSocketBlock() {
 
 }  // namespace
 
-SocketConnection::SocketConnection(const string& host, int port)
-    : host_(host), port_(port) {
+SocketConnection::SocketConnection(SOCKET sock, const string& host, int port)
+  : sock_(sock), host_(host), port_(port) {}
+
+unique_ptr<SocketConnection> Connect(const string& host,
+				     int port) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("Unable to initialize sockets.");
@@ -118,10 +123,36 @@ SocketConnection::SocketConnection(const string& host, int port)
         s = INVALID_SOCKET;
         continue;
       }
-      sock_ = s;
-      return;
+      return unique_ptr<SocketConnection>(new SocketConnection(s, host, port));
     }
   }
+  throw connection_error(host, port);
+}
+
+unique_ptr<SocketConnection> Accept(int port) {
+  static bool initialized = InitializeSockets();
+  if (!initialized) {
+    throw socket_error("Unable to initialize sockets.");
+  }
+
+  SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+
+  sockaddr_in saddr;
+  saddr.sin_addr.s_addr = INADDR_ANY;
+  saddr.sin_family = PF_INET;
+  saddr.sin_port = htons(port);
+  int ret = bind(sock, reinterpret_cast<const struct sockaddr *>(&saddr), sizeof(sockaddr_in));
+  if (ret == SOCKET_ERROR) {
+    throw socket_error("Unable to bind to socket.");
+  }
+  ret = listen(sock, 1);
+  if (ret == SOCKET_ERROR) {
+    throw socket_error("Unable to listen to socket.");
+  }
+ 
+  socklen_t addr_length = sizeof(sockaddr_in);
+  SOCKET s = accept(sock, reinterpret_cast<struct sockaddr *>(&saddr), &addr_length);
+  return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));
 }
 
 SocketConnection::~SocketConnection() {

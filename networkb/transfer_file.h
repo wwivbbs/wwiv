@@ -18,10 +18,12 @@ public:
   virtual ~TransferFile();
 
   const std::string filename() const { return filename_; }
-  virtual const std::string as_packet_data(int offset) const = 0;
+  virtual const std::string as_packet_data(int offset) const {
+    return as_packet_data(file_size(), offset);
+  }
 
-  virtual int file_size() const { return 0; };
-  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) { return 0; }
+  virtual int file_size() const = 0;
+  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) = 0;
 
  protected:
   virtual const std::string as_packet_data(int size, int offset) const final;
@@ -35,7 +37,6 @@ public:
   InMemoryTransferFile(const std::string& filename, const std::string& contents);
   virtual ~InMemoryTransferFile();
 
-  virtual const std::string as_packet_data(int offset) const override final;
   virtual int file_size() const override final { return contents_.length(); }
   virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
 
