@@ -41,7 +41,8 @@ map<string, string> ParseArgs(int argc, char** argv) {
     if (starts_with(s, "--")) {
       vector<string> delims = SplitString(s, " =");
       string value = (delims.size() > 1) ? delims[1] : "";
-      args.emplace(delims[0].substr(2), value);
+      // lame old GCC doesn't have emplace.
+      args.insert(std::make_pair(delims[0].substr(2), value));
     }
   }
   return args;
