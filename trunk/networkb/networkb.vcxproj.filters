@@ -29,6 +29,9 @@
     <ClCompile Include="connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="wfile_transfer_file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="connection.h">
@@ -44,6 +47,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="socket_exceptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wfile_transfer_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
