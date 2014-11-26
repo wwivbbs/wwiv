@@ -50,7 +50,11 @@ enum class BinkSide {
 
 class BinkP {
 public:
-  BinkP(Connection* conn, BinkSide side, const std::string& expected_remote_address);
+  // TODO(rushfan): should we use a unique_ptr for Connection and own the
+  // connection?
+  BinkP(Connection* conn,
+	BinkSide side, 
+	const std::string& expected_remote_address);
   virtual ~BinkP();
 
   void Run();

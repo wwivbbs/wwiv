@@ -10,6 +10,7 @@ set(SOURCES
  socket_connection.cpp
  socket_exceptions.cpp
  transfer_file.cpp
+ wfile_transfer_file.cpp
 )
 
 if(UNIX) 

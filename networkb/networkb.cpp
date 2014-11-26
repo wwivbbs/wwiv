@@ -16,12 +16,15 @@ using std::clog;
 using std::endl;
 using std::map;
 using std::string;
+using std::unique_ptr;
 using std::vector;
 
-using wwiv::net::socket_error;
-using wwiv::net::SocketConnection;
 using wwiv::net::BinkSide;
 using wwiv::net::BinkP;
+using wwiv::net::Accept;
+using wwiv::net::Connect;
+using wwiv::net::SocketConnection;
+using wwiv::net::socket_error;
 
 using wwiv::strings::starts_with;
 using wwiv::strings::SplitString;
@@ -54,13 +57,13 @@ int main(int argc, char** argv) {
   try {
     if (contains(args, "receive")) {
       clog << "BinkP receive" << endl;
-      SocketConnection c("localhost", 24554);
-      BinkP binkp(&c, BinkSide::ORIGINATING, "20000:20000/1@wwivnet");
+      unique_ptr<SocketConnection> c(Accept(24554));
+      BinkP binkp(c.get(), BinkSide::ANSWERING, "20000:20000/1@wwivnet");
       binkp.Run();
     } else {
       // send
-      SocketConnection c("localhost", 24554);
-      BinkP binkp(&c, BinkSide::ORIGINATING, "20000:20000/1@wwivnet");
+      unique_ptr<SocketConnection> c(Connect("localhost", 24554));
+      BinkP binkp(c.get(), BinkSide::ORIGINATING, "20000:20000/1@wwivnet"); 
       binkp.Run();
     } 
   } catch (socket_error e) {
