@@ -33,8 +33,10 @@ using wwiv::strings::StringPrintf;
 namespace wwiv {
 namespace net {
 
-BinkP::BinkP(Connection* conn, BinkSide side, const string& expected_remote_address)
-  : conn_(conn), side_(side), expected_remote_address_(expected_remote_address) {}
+  BinkP::BinkP(Connection* conn, BinkSide side, int own_address,
+	       int  expected_remote_address)
+    : conn_(conn), side_(side), own_address_(own_address), 
+      expected_remote_address_(expected_remote_address) {}
 
 BinkP::~BinkP() {
   files_to_send_.clear();
@@ -106,8 +108,8 @@ bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
 
 bool BinkP::process_data(int16_t length, std::chrono::milliseconds d) {
   unique_ptr<char[]> data(new char[length]);
-  int length_received = conn_->receive(data.get(), length - 1, d);
-  string s(data.get(), length - 1);
+  int length_received = conn_->receive(data.get(), length, d);
+  string s(data.get(), length);
   clog << "RECV:  DATA PACKET; len: " << length_received << "; data: " << s.substr(3) << endl;
   return true;
 }
@@ -119,6 +121,7 @@ bool BinkP::process_frames(std::chrono::milliseconds d) {
 bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::milliseconds d) {
   try {
     while (!predicate()) {
+      // clog << "        process_frames loop" << endl;
       uint16_t header = conn_->read_uint16(d);
       if (header & 0x8000) {
         if (!process_command(header & 0x7fff, d)) {
@@ -134,6 +137,7 @@ bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::millise
       }
     }
   } catch (timeout_error ignored) {
+    // clog << "        timeout_error from process_frames" << endl;
   }
   return true;
 }
@@ -190,11 +194,12 @@ BinkState BinkP::WaitConn() {
   send_command_packet(M_NUL, "VER networkb/0.0 binkp/1.0");
   send_command_packet(M_NUL, "LOC San Francisco, CA");
   send_command_packet(M_NUL, "WWIV @2.wwivnet");
-  send_command_packet(M_ADR, "20000:20000/2@wwivnet");
+  send_command_packet(M_ADR, StringPrintf("20000:20000/%d@wwivnet", own_address_));
 
   // Try to process any inbound frames before leaving this state.
-  process_frames(seconds(2));
-  return (side_ == BinkSide::ORIGINATING) ? BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
+  process_frames(milliseconds(100));
+  return (side_ == BinkSide::ORIGINATING) ?
+    BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
 }
 
 BinkState BinkP::SendPasswd() {
@@ -206,15 +211,55 @@ BinkState BinkP::SendPasswd() {
 BinkState BinkP::WaitAddr() {
   clog << "STATE: WaitAddr" << endl;
   auto predicate = [&]() -> bool { return !address_list_.empty(); };
-  process_frames(predicate, seconds(1));
+  for (int i=0; i < 30; i++) {
+    process_frames(predicate, seconds(1));
+    if (!address_list_.empty()) {
+      return BinkState::AUTH_REMOTE;
+    }
+  }
   return BinkState::AUTH_REMOTE;
 }
 
+BinkState BinkP::PasswordAck() {
+  clog << "STATE: PasswordAck" << endl;
+  if (remote_password_ == "-") {
+    // Passwords match, send OK.
+    send_command_packet(M_OK, "Passwords match; insecure session");
+    return BinkState::WAIT_OK;
+  }
+
+  // Passwords do not match, send error.
+  send_command_packet(M_ERR,
+      StringPrintf("Password doen't match.  Received '%s' expected '%s'."
+		   "-", "-"));
+  return BinkState::DONE;
+}
+
+BinkState BinkP::WaitPwd() {
+  clog << "STATE: WaitPwd" << endl;
+  auto predicate = [&]() -> bool { return !remote_password_.empty(); };
+  for (int i=0; i < 30; i++) {
+    process_frames(predicate, seconds(1));
+    if (predicate()) {
+      return BinkState::PASSWORD_ACK;
+    }
+  }
+  return BinkState::PASSWORD_ACK;
+}
+
 BinkState BinkP::WaitOk() {
+  // TODO(rushfan): add proper timeout to wait for OK.
   clog << "STATE: WaitOk" << endl;
-  auto predicate = [&]() -> bool { return ok_received_; };
-  process_frames(predicate, seconds(1));
-  return BinkState::TRANSFER_FILES;
+  for (int i=0; i < 30; i++) {
+    process_frames([&]() -> bool { return ok_received_; }, seconds(1));
+    if (ok_received_) {
+      return BinkState::TRANSFER_FILES;
+    }
+  }
+
+  clog << "       after WaitOk: M_OK never received." << endl;
+  send_command_packet(M_ERR, "M_OK never received. Timeed out waiting for it.");
+  return BinkState::DONE;
 }
 
 BinkState BinkP::IfSecure() {
@@ -228,10 +273,14 @@ BinkState BinkP::AuthRemote() {
   clog << "STATE: AuthRemote" << endl;
   // Check that the address matches who we thought we called.
   clog << "       address line = " << address_list_ << endl;
-  if (address_list_.find(expected_remote_address_) != string::npos) {
-    return BinkState::IF_SECURE;
+  const string expected_ftn = StringPrintf("20000:20000/%d@wwivnet",
+					   expected_remote_address_);
+  if (address_list_.find(expected_ftn) != string::npos) {
+    return (side_ == BinkSide::ORIGINATING) ?
+      BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
-    send_command_packet(M_ERR, wwiv::strings::StrCat("Unexpected Address: ", address_list_));
+    send_command_packet(M_ERR, wwiv::strings::StrCat("Unexpected Address: ",
+						     address_list_));
     // TODO(rushfan): add error state?
     return BinkState::UNKNOWN;
   }
@@ -242,8 +291,8 @@ BinkState BinkP::TransferFiles() {
   // Quickly let the inbound event loop percolate.
   process_frames(seconds(1));
   // HACK
-  SendDummyFile("a.txt", 'a', 40000);
-  SendDummyFile("b.txt", 'b', 50000);
+  SendDummyFile("a.txt", 'a', 40);
+  //SendDummyFile("b.txt", 'b', 50000);
   // Quickly let the inbound event loop percolate.
   process_frames(seconds(1));
 
@@ -258,14 +307,14 @@ BinkState BinkP::TransferFiles() {
 BinkState BinkP::Unknown() {
   clog << "STATE: Unknown" << endl;
   int count = 0;
-  auto predicate = [&]() -> bool { return count++ < 4; };
+  auto predicate = [&]() -> bool { return count++ > 4; };
   process_frames(predicate, seconds(3));
   return BinkState::DONE;
 }
 
 BinkState BinkP::WaitEob() {
   clog << "STATE: WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
-      auto predicate = [&]() -> bool { return !eob_received_; };
+  auto predicate = [&]() -> bool { return eob_received_; };
   for (int count=1; count < 4; count++) {
     try {
       count++;
@@ -331,6 +380,10 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   auto d = seconds(5);
   bool done = false;
   long bytes_received = starting_offset;
+
+  // HACK
+  string contents;
+
   try {
     while (!done) {
       clog << "        loop" << endl;
@@ -344,6 +397,8 @@ bool BinkP::HandleFileRequest(const string& request_line) {
 	unique_ptr<char[]> data(new char[length]);
 	int length_received = conn_->receive(data.get(), length, d);
 	clog << "RECV:  DATA PACKET; len: " << length_received << endl;
+	string chunk(data.get(), length_received);
+	contents += chunk;
 	bytes_received += length_received;
 	if (bytes_received >= expected_length) {
 	  clog << "        file finished; bytes_received: " << bytes_received << endl;
@@ -358,6 +413,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
     clog << "        timeout_error: " << e.what() << endl;
   }
   clog << "        " << " returning true" << endl;
+  // clog << "        contents: " << contents;
   return true;
 }
 
@@ -430,6 +486,12 @@ void BinkP::Run() {
         break;
       case BinkState::IF_SECURE:
         state = IfSecure();
+        break;
+      case BinkState::WAIT_PWD:
+	state = WaitPwd();
+	break;
+      case BinkState::PASSWORD_ACK:
+	state = PasswordAck();
         break;
       case BinkState::WAIT_OK:
         state = WaitOk();

@@ -37,6 +37,8 @@ enum class BinkState {
   AUTH_REMOTE,
   IF_SECURE,
   WAIT_OK,
+  WAIT_PWD,
+  PASSWORD_ACK,
   TRANSFER_FILES,
   WAIT_EOB,
   UNKNOWN,
@@ -54,7 +56,8 @@ public:
   // connection?
   BinkP(Connection* conn,
 	BinkSide side, 
-	const std::string& expected_remote_address);
+	int my_address,
+	int expected_remote_address);
   virtual ~BinkP();
 
   void Run();
@@ -79,6 +82,8 @@ private:
   BinkState SendPasswd();
   BinkState WaitAddr();
   BinkState WaitOk();
+  BinkState WaitPwd();
+  BinkState PasswordAck();
   BinkState IfSecure();
   BinkState AuthRemote();
   BinkState TransferFiles();
@@ -97,7 +102,8 @@ private:
   bool eob_received_;
   std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;
   BinkSide side_;
-  std::string expected_remote_address_;
+  const int own_address_;
+  const int expected_remote_address_;
   std::string remote_password_;
 };
 
