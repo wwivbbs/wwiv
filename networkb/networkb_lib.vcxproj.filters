@@ -52,6 +52,9 @@
     <ClInclude Include="wfile_transfer_file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="binkp_config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
