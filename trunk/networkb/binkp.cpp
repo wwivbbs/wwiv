@@ -61,7 +61,6 @@ string BinkP::command_id_to_name(int command_id) const {
 
 bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
   const uint8_t command_id = conn_->read_uint8(d);
-  clog << "        process_command: command_id: " << std::dec << command_id << endl;
   unique_ptr<char[]> data(new char[length]);
   conn_->receive(data.get(), length - 1, d);
   string s(data.get(), length - 1);
