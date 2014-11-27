@@ -55,7 +55,7 @@ bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* con
   return true;
 }
 
-BinkConfig::BinkConfig(std::string& config_file) : config_file_(config_file) {
+BinkConfig::BinkConfig(const std::string& config_file) : config_file_(config_file) {
   WTextFile config(config_file, "rt");
   if (!config.IsOpen()) {
     throw config_error(StringPrintf("Unable to open config file: '%s'",
@@ -75,9 +75,12 @@ BinkConfig::BinkConfig(std::string& config_file) : config_file_(config_file) {
 
 BinkConfig::~BinkConfig() {}
 
-const BinkNodeConfig& BinkConfig::config_for(int node) {
-  static BinkNodeConfig config { "", 0, "" };
-  return config;
+const BinkNodeConfig* BinkConfig::config_for(int node) {
+  auto iter = node_config_.find(node);
+  if (iter != end(node_config_)) {
+    return &iter->second;
+  }
+  return nullptr;
 }
 
 

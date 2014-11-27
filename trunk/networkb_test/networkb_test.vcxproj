@@ -86,6 +86,9 @@
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\core_test\core_fixtures.vcxproj">
+      <Project>{e5e45f1a-c3c0-49ca-98de-b26185ad8694}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\deps\gtest-1.7.0\msvc\gtest.vcxproj">
       <Project>{c8f6c172-56f2-4e76-b5fa-c3b423b31be7}</Project>
     </ProjectReference>
