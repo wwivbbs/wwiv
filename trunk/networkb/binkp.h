@@ -88,7 +88,9 @@ private:
   bool SendFileData(TransferFile* file);
   bool HandleFileGetRequest(const std::string& request_line);
   bool HandleFileGotRequest(const std::string& request_line);
+  bool HandleFileRequest(const std::string& request_line);
   BinkState SendDummyFile(const std::string& filename, char fill, std::size_t size);
+
   Connection* conn_;
   std::string address_list_;
   bool ok_received_;
@@ -96,8 +98,14 @@ private:
   std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;
   BinkSide side_;
   std::string expected_remote_address_;
+  std::string remote_password_;
 };
 
+bool ParseFileRequestLine(const std::string& request_line, 
+			  std::string* filename,
+			  long* length,
+			  time_t* timestamp,
+			  long* offset);
 
 }  // namespace net
 }  // namespace wwiv
