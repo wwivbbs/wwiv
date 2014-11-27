@@ -154,6 +154,14 @@ unique_ptr<SocketConnection> Accept(int port) {
  
   socklen_t addr_length = sizeof(sockaddr_in);
   SOCKET s = accept(sock, reinterpret_cast<struct sockaddr *>(&saddr), &addr_length);
+
+  if (!SetNonBlockingMode(s)) {
+    std::clog << "Unable to put socket into nonblocking mode." << std::endl;
+    closesocket(s);
+    s = INVALID_SOCKET;
+    throw socket_error("Unable to set nonblocking mode on the socket.");
+  }
+
   return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));
 }
 

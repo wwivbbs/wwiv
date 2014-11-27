@@ -59,12 +59,12 @@ int main(int argc, char** argv) {
     if (contains(args, "receive")) {
       clog << "BinkP receive" << endl;
       unique_ptr<SocketConnection> c(Accept(24554));
-      BinkP binkp(c.get(), BinkSide::ANSWERING, "20000:20000/1@wwivnet");
+      BinkP binkp(c.get(), BinkSide::ANSWERING, 1, 2);
       binkp.Run();
     } else {
       // send
       unique_ptr<SocketConnection> c(Connect("localhost", 24554));
-      BinkP binkp(c.get(), BinkSide::ORIGINATING, "20000:20000/2@wwivnet"); 
+      BinkP binkp(c.get(), BinkSide::ORIGINATING, 2, 1);
       binkp.Run();
     } 
   } catch (socket_error e) {
