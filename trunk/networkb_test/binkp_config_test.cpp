@@ -7,6 +7,7 @@
 using std::string;
 using wwiv::net::BinkConfig;
 using wwiv::net::BinkNodeConfig;
+using wwiv::net::ParseBinkConfigLine;
 using wwiv::net::config_error;
 
 TEST(ParseBinkConfigLineTest, NoPort) {

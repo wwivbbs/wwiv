@@ -85,23 +85,12 @@
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
     </ProjectReference>
+    <ProjectReference Include="networkb_lib.vcxproj">
+      <Project>{5bdd74e7-bd9d-42ca-9b2a-397db9cda67c}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="binkp.h" />
-    <ClInclude Include="connection.h" />
-    <ClInclude Include="socket_connection.h" />
-    <ClInclude Include="socket_exceptions.h" />
-    <ClInclude Include="transfer_file.h" />
-    <ClInclude Include="wfile_transfer_file.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="binkp.cpp" />
-    <ClCompile Include="connection.cpp" />
     <ClCompile Include="networkb.cpp" />
-    <ClCompile Include="socket_connection.cpp" />
-    <ClCompile Include="socket_exceptions.cpp" />
-    <ClCompile Include="transfer_file.cpp" />
-    <ClCompile Include="wfile_transfer_file.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
