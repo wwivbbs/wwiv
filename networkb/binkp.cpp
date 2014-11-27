@@ -109,14 +109,22 @@ bool BinkP::process_frames(std::chrono::milliseconds d) {
 bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::milliseconds d) {
   try {
     while (!predicate()) {
+      clog << "       process_frames loop.: " << endl;
       uint16_t header = conn_->read_uint16(d);
       if (header & 0x8000) {
-        return process_command(header & 0x7fff, d);
+        if (!process_command(header & 0x7fff, d)) {
+	  // false return value mean san error occurred.
+	  return false;
+	}
       } else {
-        return process_data(header & 0x7fff, d);
+        if (!process_data(header & 0x7fff, d)) {
+	  // false return value mean san error occurred.
+	  return false;
+	}
       }
     }
-  } catch (timeout_error ignores) {}
+  } catch (timeout_error ignored) {
+  }
   return true;
 }
 
@@ -135,7 +143,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   *p++ = command_id;
   memcpy(p, data.data(), data.size());
 
-  conn_->send(packet.get(), size, seconds(3));
+  int sent = conn_->send(packet.get(), size, seconds(3));
   clog << "SEND:  command: " << command_id_to_name(command_id)
        << "; packet_length: " << (packet_length & 0x7fff)
        << "; data: " << data << endl;
@@ -173,6 +181,9 @@ BinkState BinkP::WaitConn() {
   send_command_packet(M_NUL, "LOC San Francisco, CA");
   send_command_packet(M_NUL, "WWIV @2.wwivnet");
   send_command_packet(M_ADR, "20000:20000/2@wwivnet");
+
+  // Try to process any inbound frames before leaving this state.
+  process_frames(seconds(2));
   return (side_ == BinkSide::ORIGINATING) ? BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
 }
 
