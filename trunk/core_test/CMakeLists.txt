@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project (WWIV5)
+project (core_test)
 include_directories(.)
 
 include_directories(../deps/gtest-1.7.0/include)

@@ -3,10 +3,12 @@ cmake_minimum_required (VERSION 2.6)
 project (NETWORKB)
 include_directories(..)
 
+set(NETWORKB_MAIN networkb.cpp)
+
 set(SOURCES 
  binkp.cpp
+ binkp_config.cpp
  connection.cpp
- networkb.cpp
  socket_connection.cpp
  socket_exceptions.cpp
  transfer_file.cpp
@@ -17,7 +19,7 @@ if(UNIX)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
-
-add_executable(networkb ${SOURCES})
-target_link_libraries(networkb core)
+add_library(networkb_lib ${SOURCES})
+add_executable(networkb ${NETWORKB_MAIN})
+target_link_libraries(networkb networkb_lib core)
 
