@@ -37,6 +37,8 @@ using std::chrono::time_point;
 using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::system_clock;
+using std::clog;
+using std::endl;
 using std::string;
 using std::unique_ptr;
 using std::this_thread::sleep_for;
@@ -189,7 +191,11 @@ int SocketConnection::receive(void* data, const int size, milliseconds d) {
 }
 
 int SocketConnection::send(const void* data, int size, milliseconds d) {
-  return ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
+  int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
+  if (sent != size) {
+    clog << "ERROR: send != packet size.  size: " << size << "; sent: " << sent << endl;
+  }
+  return size;
 }
 
 uint16_t SocketConnection::read_uint16(milliseconds d) {
