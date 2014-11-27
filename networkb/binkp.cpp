@@ -28,6 +28,7 @@ using std::unique_ptr;
 using std::vector;
 using wwiv::net::Connection;
 using wwiv::strings::SplitString;
+using wwiv::strings::StringPrintf;
 
 namespace wwiv {
 namespace net {
@@ -58,6 +59,7 @@ string BinkP::command_id_to_name(int command_id) const {
 
 bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
   const uint8_t command_id = conn_->read_uint8(d);
+  clog << "        process_command: command_id: " << std::dec << command_id << endl;
   unique_ptr<char[]> data(new char[length]);
   conn_->receive(data.get(), length - 1, d);
   string s(data.get(), length - 1);
@@ -86,6 +88,14 @@ bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
     clog << "RECV:  M_EOB: " << s << endl;
     eob_received_ = true;
   } break;
+  case M_PWD: {
+    clog << "RECV:  M_PWD: " << s << endl;
+    remote_password_ = s;
+  } break;
+  case M_FILE: {
+    clog << "RECV:  M_FILE: " << s << endl;
+    HandleFileRequest(s);
+  } break;
   default: {
     clog << "RECV:  ** UNHANDLED COMMAND: " << command_id_to_name(command_id) 
          << " data: " << s << endl;
@@ -109,7 +119,6 @@ bool BinkP::process_frames(std::chrono::milliseconds d) {
 bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::milliseconds d) {
   try {
     while (!predicate()) {
-      clog << "       process_frames loop.: " << endl;
       uint16_t header = conn_->read_uint16(d);
       if (header & 0x8000) {
         if (!process_command(header & 0x7fff, d)) {
@@ -117,6 +126,7 @@ bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::millise
 	  return false;
 	}
       } else {
+	// Unexpected data frame.
         if (!process_data(header & 0x7fff, d)) {
 	  // false return value mean san error occurred.
 	  return false;
@@ -306,6 +316,51 @@ bool BinkP::SendFileData(TransferFile* file) {
   return true;
 }
 
+// M_FILE received.
+bool BinkP::HandleFileRequest(const string& request_line) {
+  clog << "HandleFileRequest; request_line: " << request_line << endl;
+  string filename;
+  long expected_length = 0;
+  time_t timestamp = 0;
+  long starting_offset = 0;
+  if (!ParseFileRequestLine(request_line, &filename, &expected_length, &timestamp,
+			    &starting_offset)) {
+    return false;
+  }
+
+  auto d = seconds(5);
+  bool done = false;
+  long bytes_received = starting_offset;
+  try {
+    while (!done) {
+      clog << "        loop" << endl;
+      uint16_t header = conn_->read_uint16(d);
+      uint16_t length = header & 0x7fff;
+      if (header & 0x8000) {
+	// Unexpected file packet.  Could be a M_GOT, M_SKIP, or M_GET
+	// TOOD(rushfan): make process_command return the command.
+	process_command(length, d);
+      } else {
+	unique_ptr<char[]> data(new char[length]);
+	int length_received = conn_->receive(data.get(), length, d);
+	clog << "RECV:  DATA PACKET; len: " << length_received << endl;
+	bytes_received += length_received;
+	if (bytes_received >= expected_length) {
+	  clog << "        file finished; bytes_received: " << bytes_received << endl;
+	  done = true;
+	  const string data_line = StringPrintf("%s %u %u", filename.c_str(),
+						bytes_received, timestamp);
+	  send_command_packet(M_GOT, data_line);
+	}
+      }
+    }
+  } catch (timeout_error e) {
+    clog << "        timeout_error: " << e.what() << endl;
+  }
+  clog << "        " << " returning true" << endl;
+  return true;
+}
+
 bool BinkP::HandleFileGetRequest(const string& request_line) {
   clog << "       HandleFileGetRequest: request_line: [" << request_line << "]" << endl; 
   vector<string> s = SplitString(request_line, " ");
@@ -357,7 +412,6 @@ void BinkP::Run() {
     BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
     bool done = false;
     while (!done) {
-      process_frames(milliseconds(100));
       switch (state) {
       case BinkState::CONN_INIT:
         state = ConnInit();
@@ -394,10 +448,32 @@ void BinkP::Run() {
 	done = true;
 	break;
       }
+      process_frames(milliseconds(100));
     }
   } catch (socket_error e) {
     clog << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what() << std::endl;
   }
+}
+
+bool ParseFileRequestLine(const std::string& request_line, 
+			  std::string* filename,
+			  long* length,
+			  time_t* timestamp,
+			  long* offset) {
+  vector<string> s = SplitString(request_line, " ");
+  if (s.size() < 3) {
+    clog << "ERROR: INVALID request_line: "<< request_line
+         << "; had < 3 parts.  # parts: " << s.size() << endl;
+    return false;
+  }
+  *filename = s.at(0);
+  *length = std::stol(s.at(1));
+  *timestamp = std::stoul(s.at(2));
+  *offset = 0;
+  if (s.size() >= 4) {
+    *offset = std::stol(s.at(3));
+  }
+  return true;
 }
   
 }  // namespace net
