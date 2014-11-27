@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     } else {
       // send
       unique_ptr<SocketConnection> c(Connect("localhost", 24554));
-      BinkP binkp(c.get(), BinkSide::ORIGINATING, "20000:20000/1@wwivnet"); 
+      BinkP binkp(c.get(), BinkSide::ORIGINATING, "20000:20000/2@wwivnet"); 
       binkp.Run();
     } 
   } catch (socket_error e) {
