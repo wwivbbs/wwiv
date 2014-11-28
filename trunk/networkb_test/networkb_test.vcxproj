@@ -98,8 +98,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="binkp_config_test.cpp" />
+    <ClCompile Include="binkp_test.cpp" />
+    <ClCompile Include="fake_connection.cpp" />
     <ClCompile Include="networkb_test_main.cpp" />
     <ClCompile Include="transfer_file_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="fake_connection.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
