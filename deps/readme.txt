@@ -18,3 +18,7 @@ dir: infozip
 url: http://www.info-zip.org/
 license: New BSD
 
+GFlags
+dir: gflags-2.1.1
+url: code.google.com/p/gflags
+license: New BSD
