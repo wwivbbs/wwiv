@@ -7,6 +7,7 @@ include_directories(..)
 
 set(test_sources
   binkp_config_test.cpp
+  transfer_file_test.cpp
 )
 
 if(UNIX) 
