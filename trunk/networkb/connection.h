@@ -20,9 +20,6 @@ public:
 
   virtual uint16_t read_uint16(std::chrono::milliseconds d) = 0;
   virtual uint8_t read_uint8(std::chrono::milliseconds d) = 0;
-
-  virtual bool send_uint8(uint8_t data, std::chrono::milliseconds d) = 0;
-  virtual bool send_uint16(uint16_t data, std::chrono::milliseconds d) = 0;
 };
 
 }  // namespace net
