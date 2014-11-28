@@ -34,7 +34,7 @@ bool contains(C container, K key) {
   return container.find(key) != end(container);
 }
 
-map<string, string> ParseArgs(int argc, char** argv) {
+static map<string, string> ParseArgs(int argc, char** argv) {
   map<string, string> args;
   for (int i=0; i < argc; i++) {
     const string s(argv[i]);
