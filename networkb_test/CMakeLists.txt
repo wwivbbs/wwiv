@@ -15,5 +15,5 @@ if(UNIX)
 endif()
 
 add_executable(networkb_tests ${test_sources})
-target_link_libraries(networkb_tests networkb_lib core gtest_main)
+target_link_libraries(networkb_tests networkb_lib core core_fixtures gtest_main)
 
