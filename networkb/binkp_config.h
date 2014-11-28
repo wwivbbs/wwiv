@@ -20,7 +20,7 @@ class BinkConfig {
  public:
   explicit BinkConfig(const std::string& config_file);
   virtual ~BinkConfig();
-  const BinkNodeConfig* config_for(int node);
+  const BinkNodeConfig* node_config_for(int node);
 
  private:
   std::string config_file_;

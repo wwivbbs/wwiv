@@ -75,7 +75,7 @@ BinkConfig::BinkConfig(const std::string& config_file) : config_file_(config_fil
 
 BinkConfig::~BinkConfig() {}
 
-const BinkNodeConfig* BinkConfig::config_for(int node) {
+const BinkNodeConfig* BinkConfig::node_config_for(int node) {
   auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
     return &iter->second;
