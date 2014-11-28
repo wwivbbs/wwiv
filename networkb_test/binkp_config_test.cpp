@@ -11,8 +11,7 @@ using wwiv::net::BinkNodeConfig;
 using wwiv::net::ParseBinkConfigLine;
 using wwiv::net::config_error;
 
-class ParseBinkConfigLineTest : public testing::Test {
-};
+class ParseBinkConfigLineTest : public testing::Test {};
 
 class BinkConfigTest : public testing::Test {
 protected:
@@ -67,13 +66,21 @@ TEST_F(BinkConfigTest, Basic) {
   const string filename = CreateConfigFile("@1 example.com -\r\n""@2 foo.com:1234 welcome\r\n");
   BinkConfig config(filename);
 
-  const BinkNodeConfig* one = config.config_for(1);
+  const BinkNodeConfig* one = config.node_config_for(1);
   ASSERT_STREQ("example.com", one->host.c_str());
   EXPECT_EQ(24554, one->port);
   EXPECT_STREQ("-", one->password.c_str());
 
-  const BinkNodeConfig* two = config.config_for(2);
+  const BinkNodeConfig* two = config.node_config_for(2);
   ASSERT_STREQ("foo.com", two->host.c_str());
   EXPECT_EQ(1234, two->port);
   EXPECT_STREQ("welcome", two->password.c_str());
+}
+
+TEST_F(BinkConfigTest, BadConfigFile) {
+  const string filename = CreateConfigFile("");
+  try {
+    BinkConfig config(filename + "badfilename");
+    FAIL() << "config_error expected";
+  } catch (config_error expected) {}
 }

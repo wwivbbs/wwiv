@@ -29,9 +29,13 @@ const string TransferFile::as_packet_data(int size, int offset) const {
   return StringPrintf("%s %u %u %d", filename_.c_str(), size, timestamp_, offset);
 }
 
-InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents)
-  : TransferFile(filename, system_clock::to_time_t(system_clock::now())), 
+InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents,
+                                           std::chrono::time_point<std::chrono::system_clock> timestamp)
+  : TransferFile(filename, system_clock::to_time_t(timestamp)), 
     contents_(contents) {}
+
+InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents)
+  : InMemoryTransferFile(filename, contents, std::chrono::system_clock::now()) {}
 
 InMemoryTransferFile::~InMemoryTransferFile() {}
 
