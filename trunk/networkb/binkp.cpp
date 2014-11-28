@@ -34,7 +34,7 @@ namespace wwiv {
 namespace net {
 
   BinkP::BinkP(Connection* conn, BinkSide side, int own_address,
-	       int  expected_remote_address)
+         int  expected_remote_address)
     : conn_(conn), side_(side), own_address_(own_address), 
       expected_remote_address_(expected_remote_address) {}
 
@@ -124,15 +124,15 @@ bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::millise
       uint16_t header = conn_->read_uint16(d);
       if (header & 0x8000) {
         if (!process_command(header & 0x7fff, d)) {
-	  // false return value mean san error occurred.
-	  return false;
-	}
+          // false return value mean san error occurred.
+          return false;
+        }
       } else {
-	// Unexpected data frame.
+        // Unexpected data frame.
         if (!process_data(header & 0x7fff, d)) {
-	  // false return value mean san error occurred.
-	  return false;
-	}
+          // false return value mean san error occurred.
+          return false;
+        }
       }
     }
   } catch (timeout_error ignored) {
@@ -230,7 +230,7 @@ BinkState BinkP::PasswordAck() {
   // Passwords do not match, send error.
   send_command_packet(M_ERR,
       StringPrintf("Password doen't match.  Received '%s' expected '%s'."
-		   "-", "-"));
+       "-", "-"));
   return BinkState::DONE;
 }
 
@@ -273,13 +273,13 @@ BinkState BinkP::AuthRemote() {
   // Check that the address matches who we thought we called.
   clog << "       address line = " << address_list_ << endl;
   const string expected_ftn = StringPrintf("20000:20000/%d@wwivnet",
-					   expected_remote_address_);
+             expected_remote_address_);
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
     send_command_packet(M_ERR, wwiv::strings::StrCat("Unexpected Address: ",
-						     address_list_));
+                 address_list_));
     // TODO(rushfan): add error state?
     return BinkState::UNKNOWN;
   }
@@ -313,11 +313,10 @@ BinkState BinkP::Unknown() {
 
 BinkState BinkP::WaitEob() {
   clog << "STATE: WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
-  auto predicate = [&]() -> bool { return eob_received_; };
   for (int count=1; count < 4; count++) {
     try {
       count++;
-      process_frames(predicate, seconds(3));
+      process_frames( [&]() -> bool { return eob_received_; }, seconds(3));
       if (eob_received_) {
         return BinkState::DONE;
       }
@@ -372,7 +371,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   time_t timestamp = 0;
   long starting_offset = 0;
   if (!ParseFileRequestLine(request_line, &filename, &expected_length, &timestamp,
-			    &starting_offset)) {
+          &starting_offset)) {
     return false;
   }
 
@@ -389,23 +388,23 @@ bool BinkP::HandleFileRequest(const string& request_line) {
       uint16_t header = conn_->read_uint16(d);
       uint16_t length = header & 0x7fff;
       if (header & 0x8000) {
-	// Unexpected file packet.  Could be a M_GOT, M_SKIP, or M_GET
-	// TOOD(rushfan): make process_command return the command.
-	process_command(length, d);
+        // Unexpected file packet.  Could be a M_GOT, M_SKIP, or M_GET
+        // TOOD(rushfan): make process_command return the command.
+        process_command(length, d);
       } else {
-	unique_ptr<char[]> data(new char[length]);
-	int length_received = conn_->receive(data.get(), length, d);
-	clog << "RECV:  DATA PACKET; len: " << length_received << endl;
-	string chunk(data.get(), length_received);
-	contents += chunk;
-	bytes_received += length_received;
-	if (bytes_received >= expected_length) {
-	  clog << "        file finished; bytes_received: " << bytes_received << endl;
-	  done = true;
-	  const string data_line = StringPrintf("%s %u %u", filename.c_str(),
-						bytes_received, timestamp);
-	  send_command_packet(M_GOT, data_line);
-	}
+        unique_ptr<char[]> data(new char[length]);
+        int length_received = conn_->receive(data.get(), length, d);
+        clog << "RECV:  DATA PACKET; len: " << length_received << endl;
+        string chunk(data.get(), length_received);
+        contents += chunk;
+        bytes_received += length_received;
+        if (bytes_received >= expected_length) {
+          clog << "        file finished; bytes_received: " << bytes_received << endl;
+          done = true;
+          const string data_line = StringPrintf("%s %u %u", filename.c_str(),
+                  bytes_received, timestamp);
+          send_command_packet(M_GOT, data_line);
+        }
       }
     }
   } catch (timeout_error e) {
@@ -487,10 +486,10 @@ void BinkP::Run() {
         state = IfSecure();
         break;
       case BinkState::WAIT_PWD:
-	state = WaitPwd();
-	break;
+        state = WaitPwd();
+        break;
       case BinkState::PASSWORD_ACK:
-	state = PasswordAck();
+        state = PasswordAck();
         break;
       case BinkState::WAIT_OK:
         state = WaitOk();
@@ -503,11 +502,11 @@ void BinkP::Run() {
         break;
       case BinkState::UNKNOWN:
         state = Unknown();
-	break;
+        break;
       case BinkState::DONE:
-	clog << "STATE: Done." << endl;
-	done = true;
-	break;
+        clog << "STATE: Done." << endl;
+        done = true;
+        break;
       }
       process_frames(milliseconds(100));
     }
@@ -517,10 +516,10 @@ void BinkP::Run() {
 }
 
 bool ParseFileRequestLine(const std::string& request_line, 
-			  std::string* filename,
-			  long* length,
-			  time_t* timestamp,
-			  long* offset) {
+        std::string* filename,
+        long* length,
+        time_t* timestamp,
+        long* offset) {
   vector<string> s = SplitString(request_line, " ");
   if (s.size() < 3) {
     clog << "ERROR: INVALID request_line: "<< request_line
