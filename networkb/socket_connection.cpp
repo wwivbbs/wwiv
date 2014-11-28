@@ -212,19 +212,10 @@ uint16_t SocketConnection::read_uint16(milliseconds d) {
   return ntohs(data);
 }
 
-bool SocketConnection::send_uint16(uint16_t data, std::chrono::milliseconds d) {
-  uint16_t netdata = htons(data);
-  return send(&netdata, sizeof(uint16_t), d) == sizeof(uint16_t);
-}
-
 uint8_t SocketConnection::read_uint8(milliseconds d) {
   uint8_t data = 0;
   read_TYPE<uint8_t>(sock_, &data, d);
   return data;
-}
-
-bool SocketConnection::send_uint8(uint8_t data, std::chrono::milliseconds d) {
-  return send(&data, sizeof(uint8_t), d) == sizeof(uint8_t);
 }
 
 }  // namespace net
