@@ -6,11 +6,12 @@ include_directories(..)
 
 set(COMMON_SOURCES
   inifile.cpp
+  os.cpp
+  platform/wutil.cpp
+  strings.cpp
   wfile.cpp
   wfile_unix.cpp
   wtextfile.cpp
-  strings.cpp
-  platform/wutil.cpp
   )
 
 if(UNIX) 
