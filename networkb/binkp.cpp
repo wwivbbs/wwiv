@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "core/strings.h"
+#include "networkb/binkp_commands.h"
 #include "networkb/connection.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
@@ -41,67 +42,50 @@ BinkP::~BinkP() {
   files_to_send_.clear();
 }
 
-string BinkP::command_id_to_name(int command_id) const {
-  static const map<int, string> map = {
-    {M_NUL, "M_NUL"},
-    {M_ADR, "M_ADR"},
-    {M_PWD, "M_PWD"},
-    {M_FILE, "M_FILE"},
-    {M_OK, "M_OK"},
-    {M_EOB, "M_EOB"},
-    {M_GOT, "M_GOT"},
-    {M_ERR, "M_ERR"},
-    {M_BSY, "M_BSY"},
-    {M_GET, "M_GET"},
-    {M_SKIP, "M_SKIP"},
-  };
-  return map.at(command_id);
-}
-
 bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
   const uint8_t command_id = conn_->read_uint8(d);
   unique_ptr<char[]> data(new char[length]);
   conn_->receive(data.get(), length - 1, d);
   string s(data.get(), length - 1);
   switch (command_id) {
-  case M_NUL: {
+  case BinkpCommands::M_NUL: {
     clog << "RECV:  M_NUL: " << s << endl;
   } break;
-  case M_ADR: {
+  case BinkpCommands::M_ADR: {
     clog << "RECV:  M_ADR: " << s << endl;
     // TODO(rushfan): tokenize into addresses
     address_list_ = s;
   } break;
-  case M_OK: {
+  case BinkpCommands::M_OK: {
     clog << "RECV:  M_OK: " << s << endl;
     ok_received_ = true;
   } break;
-  case M_GET: {
+  case BinkpCommands::M_GET: {
     clog << "RECV:  M_GET: " << s << endl;
     HandleFileGetRequest(s);
   } break;
-  case M_GOT: {
+  case BinkpCommands::M_GOT: {
     clog << "RECV:  M_GOT: " << s << endl;
     HandleFileGotRequest(s);
   } break;
-  case M_EOB: {
+  case BinkpCommands::M_EOB: {
     clog << "RECV:  M_EOB: " << s << endl;
     eob_received_ = true;
   } break;
-  case M_PWD: {
+  case BinkpCommands::M_PWD: {
     clog << "RECV:  M_PWD: " << s << endl;
     remote_password_ = s;
   } break;
-  case M_FILE: {
+  case BinkpCommands::M_FILE: {
     clog << "RECV:  M_FILE: " << s << endl;
     HandleFileRequest(s);
   } break;
-  case M_ERR: {
+  case BinkpCommands::M_ERR: {
     clog << "RECV:  M_ERR: " << s << endl;
     error_received_ = true;
   } break;
   default: {
-    clog << "RECV:  ** UNHANDLED COMMAND: " << command_id_to_name(command_id) 
+    clog << "RECV:  ** UNHANDLED COMMAND: " << BinkpCommands::command_id_to_name(command_id) 
          << " data: " << s << endl;
   } break;
   }
@@ -160,7 +144,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   memcpy(p, data.data(), data.size());
 
   int sent = conn_->send(packet.get(), size, seconds(3));
-  clog << "SEND:  command: " << command_id_to_name(command_id)
+  clog << "SEND:  command: " << BinkpCommands::command_id_to_name(command_id)
        << "; packet_length: " << (packet_length & 0x7fff)
        << "; data: " << data << endl;
   return true;
@@ -190,13 +174,13 @@ BinkState BinkP::ConnInit() {
 
 BinkState BinkP::WaitConn() {
   clog << "STATE: WaitConn" << endl;
-  send_command_packet(M_NUL, "OPT wwivnet");
-  send_command_packet(M_NUL, "SYS NETWORKB test app");
-  send_command_packet(M_NUL, "ZYZ Unknown Sysop");
-  send_command_packet(M_NUL, "VER networkb/0.0 binkp/1.0");
-  send_command_packet(M_NUL, "LOC San Francisco, CA");
-  send_command_packet(M_NUL, "WWIV @2.wwivnet");
-  send_command_packet(M_ADR, StringPrintf("20000:20000/%d@wwivnet", own_address_));
+  send_command_packet(BinkpCommands::M_NUL, "OPT wwivnet");
+  send_command_packet(BinkpCommands::M_NUL, "SYS NETWORKB test app");
+  send_command_packet(BinkpCommands::M_NUL, "ZYZ Unknown Sysop");
+  send_command_packet(BinkpCommands::M_NUL, "VER networkb/0.0 binkp/1.0");
+  send_command_packet(BinkpCommands::M_NUL, "LOC San Francisco, CA");
+  send_command_packet(BinkpCommands::M_NUL, "WWIV @2.wwivnet");
+  send_command_packet(BinkpCommands::M_ADR, StringPrintf("20000:20000/%d@wwivnet", own_address_));
 
   // Try to process any inbound frames before leaving this state.
   process_frames(milliseconds(100));
@@ -206,7 +190,7 @@ BinkState BinkP::WaitConn() {
 
 BinkState BinkP::SendPasswd() {
   clog << "STATE: SendPasswd" << endl;
-  send_command_packet(M_PWD, "-");
+  send_command_packet(BinkpCommands::M_PWD, "-");
   return BinkState::WAIT_ADDR;
 }
 
@@ -226,12 +210,12 @@ BinkState BinkP::PasswordAck() {
   clog << "STATE: PasswordAck" << endl;
   if (remote_password_ == "-") {
     // Passwords match, send OK.
-    send_command_packet(M_OK, "Passwords match; insecure session");
+    send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");
     return BinkState::WAIT_OK;
   }
 
   // Passwords do not match, send error.
-  send_command_packet(M_ERR,
+  send_command_packet(BinkpCommands::M_ERR,
       StringPrintf("Password doen't match.  Received '%s' expected '%s'."
        "-", "-"));
   return BinkState::DONE;
@@ -260,7 +244,7 @@ BinkState BinkP::WaitOk() {
   }
 
   clog << "       after WaitOk: M_OK never received." << endl;
-  send_command_packet(M_ERR, "M_OK never received. Timeed out waiting for it.");
+  send_command_packet(BinkpCommands::M_ERR, "M_OK never received. Timeed out waiting for it.");
   return BinkState::DONE;
 }
 
@@ -281,7 +265,7 @@ BinkState BinkP::AuthRemote() {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
-    send_command_packet(M_ERR, wwiv::strings::StrCat("Unexpected Address: ",
+    send_command_packet(BinkpCommands::M_ERR, wwiv::strings::StrCat("Unexpected Address: ",
                  address_list_));
     // TODO(rushfan): add error state?
     return BinkState::UNKNOWN;
@@ -301,7 +285,7 @@ BinkState BinkP::TransferFiles() {
   // TODO(rushfan): Should this be in a new state?
   if (files_to_send_.empty()) {
     // All files are sent, let's let the remote know we are done.
-    send_command_packet(M_EOB, "");
+    send_command_packet(BinkpCommands::M_EOB, "");
   }
   return BinkState::WAIT_EOB;
 }
@@ -335,7 +319,7 @@ bool BinkP::SendFilePacket(TransferFile* file) {
   string filename(file->filename());
   clog << "       SendFilePacket: " << filename << endl;
   files_to_send_[filename] = unique_ptr<TransferFile>(file);
-  send_command_packet(M_FILE, file->as_packet_data(0));
+  send_command_packet(BinkpCommands::M_FILE, file->as_packet_data(0));
   process_frames(seconds(2));
 
   // file* may not be viable anymore if it was already send.
@@ -406,7 +390,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
           done = true;
           const string data_line = StringPrintf("%s %u %u", filename.c_str(),
                   bytes_received, timestamp);
-          send_command_packet(M_GOT, data_line);
+          send_command_packet(BinkpCommands::M_GOT, data_line);
         }
       }
     }
