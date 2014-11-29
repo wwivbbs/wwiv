@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <exception>
 #include <map>
+#include <stdexcept>
 #include <string>
 
 namespace wwiv {
