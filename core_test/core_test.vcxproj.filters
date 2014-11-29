@@ -25,6 +25,9 @@
     <ClCompile Include="os_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="stl_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Helpers">

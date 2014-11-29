@@ -98,6 +98,7 @@
     <ClCompile Include="inifile_test.cpp" />
     <ClCompile Include="os_test.cpp" />
     <ClCompile Include="scope_exit_test.cpp" />
+    <ClCompile Include="stl_test.cpp" />
     <ClCompile Include="strings_test.cpp" />
     <ClCompile Include="transaction_test.cpp" />
     <ClCompile Include="wfile_test.cpp" />
