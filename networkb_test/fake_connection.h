@@ -41,7 +41,7 @@ public:
   virtual uint8_t read_uint8(std::chrono::milliseconds d) override;
 
   FakeBinkpPacket GetNextPacket();
-  void ReplyCommand(int8_t commadn_id, const std::string& data);
+  void ReplyCommand(int8_t command_id, const std::string& data);
 
   std::queue<FakeBinkpPacket> receive_queue_;
   std::queue<FakeBinkpPacket> send_queue_;
