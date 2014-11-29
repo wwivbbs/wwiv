@@ -20,7 +20,6 @@
 using std::chrono::milliseconds;
 using std::chrono::seconds;
 using std::clog;
-using std::cout;
 using std::endl;
 using std::map;
 using std::string;
@@ -36,7 +35,7 @@ namespace net {
   BinkP::BinkP(Connection* conn, BinkSide side, int own_address,
          int  expected_remote_address)
     : conn_(conn), side_(side), own_address_(own_address), 
-      expected_remote_address_(expected_remote_address) {}
+      expected_remote_address_(expected_remote_address), error_received_(false) {}
 
 BinkP::~BinkP() {
   files_to_send_.clear();
@@ -96,6 +95,10 @@ bool BinkP::process_command(int16_t length, std::chrono::milliseconds d) {
   case M_FILE: {
     clog << "RECV:  M_FILE: " << s << endl;
     HandleFileRequest(s);
+  } break;
+  case M_ERR: {
+    clog << "RECV:  M_ERR: " << s << endl;
+    error_received_ = true;
   } break;
   default: {
     clog << "RECV:  ** UNHANDLED COMMAND: " << command_id_to_name(command_id) 
@@ -507,6 +510,11 @@ void BinkP::Run() {
         clog << "STATE: Done." << endl;
         done = true;
         break;
+      }
+
+      if (error_received_) {
+        clog << "STATE: Error Received." << endl;
+        done = true;
       }
       process_frames(milliseconds(100));
     }

@@ -33,8 +33,10 @@ protected:
   std::thread thread_;
 };
 
-TEST_F(BinkTest, Basic) {
+TEST_F(BinkTest, ErrorAbortsSession) {
   Start();
   conn_.ReplyCommand(M_ERR, "Doh!");
   Stop();
+  
+  conn_.GetNextPacket();
 };
