@@ -28,6 +28,7 @@
 #define closesocket(x) close(x)
 #endif  // _WIN32
 
+#include "core/os.h"
 #include "core/strings.h"
 #include "networkb/socket_exceptions.h"
 
@@ -41,7 +42,7 @@ using std::clog;
 using std::endl;
 using std::string;
 using std::unique_ptr;
-using std::this_thread::sleep_for;
+using wwiv::os::sleep_for;
 using wwiv::strings::StringPrintf;
 
 namespace wwiv {
@@ -182,7 +183,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
     int result = ::recv(sock, reinterpret_cast<char*>(data), size, 0);
     if (result == SOCKET_ERROR) {
       if (WouldSocketBlock()) {
-        std::this_thread::sleep_for(SLEEP_MS);
+        sleep_for(SLEEP_MS);
         continue;
       }
     }
