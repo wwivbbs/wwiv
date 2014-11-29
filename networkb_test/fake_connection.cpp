@@ -30,7 +30,6 @@ using std::unique_ptr;
 using namespace wwiv::strings;
 using namespace wwiv::net;
 
-
 FakeBinkpPacket::FakeBinkpPacket(const void* data, int size) {
   const char *p = reinterpret_cast<const char*>(data);
   header_ = (*p++) << 8;
@@ -61,12 +60,15 @@ static bool wait_for(std::function<bool()> predicate, std::chrono::milliseconds 
 FakeConnection::FakeConnection() {}
 FakeConnection::~FakeConnection() {}
 
-
 uint16_t FakeConnection::read_uint16(std::chrono::milliseconds d) {
-  auto predicate = [&]() { return !receive_queue_.empty(); };
+  auto predicate = [&]() { 
+    std::lock_guard<std::mutex> lock(mu_);
+    return !receive_queue_.empty();
+  };
   if (!wait_for(predicate, d)) {
     throw timeout_error("timedout on read_uint16");
   }
+  std::lock_guard<std::mutex> lock(mu_);
   const auto& packet = receive_queue_.front();
   uint16_t header = packet.header();
   if (packet.is_command()) {
@@ -76,11 +78,15 @@ uint16_t FakeConnection::read_uint16(std::chrono::milliseconds d) {
 }
 
 uint8_t FakeConnection::read_uint8(std::chrono::milliseconds d) {
-  auto predicate = [&]() { return !receive_queue_.empty(); };
+  auto predicate = [&]() { 
+    std::lock_guard<std::mutex> lock(mu_);
+    return !receive_queue_.empty();
+  };
   if (!wait_for(predicate, d)) {
     throw timeout_error("timedout on read_uint8");
   }
 
+  std::lock_guard<std::mutex> lock(mu_);
   const FakeBinkpPacket& front = receive_queue_.front();
   if (!front.is_command()) {
     throw std::logic_error("called read_uint8 on a data packet");
@@ -89,11 +95,15 @@ uint8_t FakeConnection::read_uint8(std::chrono::milliseconds d) {
 }
 
 int FakeConnection::receive(void* data, int size, std::chrono::milliseconds d) {
-  auto predicate = [&]() { return !receive_queue_.empty(); };
+  auto predicate = [&]() { 
+    std::lock_guard<std::mutex> lock(mu_);
+    return !receive_queue_.empty();
+  };
   if (!wait_for(predicate, d)) {
     throw timeout_error("timedout on receive");
   }
 
+  std::lock_guard<std::mutex> lock(mu_);
   const FakeBinkpPacket& front = receive_queue_.front();
   memcpy(data, front.data().data(), size);
   receive_queue_.pop();
@@ -101,11 +111,13 @@ int FakeConnection::receive(void* data, int size, std::chrono::milliseconds d) {
 }
 
 int FakeConnection::send(const void* data, int size, std::chrono::milliseconds d) {
+  std::lock_guard<std::mutex> lock(mu_);
   send_queue_.push(FakeBinkpPacket(data, size));
   return size;
 }
 
 FakeBinkpPacket FakeConnection::GetNextPacket() {
+  std::lock_guard<std::mutex> lock(mu_);
   if (send_queue_.empty()) {
     throw std::logic_error("GetNextPacket called on empty queue.");
   }
@@ -130,5 +142,6 @@ void FakeConnection::ReplyCommand(int8_t command_id, const string& data) {
   *p++ = command_id;
   memcpy(p, data.data(), data.size());
 
+  std::lock_guard<std::mutex> lock(mu_);
   receive_queue_.push(FakeBinkpPacket(packet.get(), size));
 }

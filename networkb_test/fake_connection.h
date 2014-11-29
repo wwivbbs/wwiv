@@ -4,7 +4,9 @@
 
 #include <chrono>
 #include <cstdint>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <queue>
 
 #include "networkb/connection.h"
@@ -43,8 +45,12 @@ public:
   FakeBinkpPacket GetNextPacket();
   void ReplyCommand(int8_t command_id, const std::string& data);
 
+  // GUARDED_BY(mu_)
   std::queue<FakeBinkpPacket> receive_queue_;
+  // GUARDED_BY(mu_)
   std::queue<FakeBinkpPacket> send_queue_;
+private:
+  mutable std::mutex mu_;
 };
 
 #endif  // __INCLUDED_NETWORKB_FAKE_CONNECTION_H__
