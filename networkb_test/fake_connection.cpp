@@ -9,9 +9,6 @@
 #include <thread>
 
 #ifndef _WIN32
-#include <unistd.h>  // for usleep
-#define _sleep(x) usleep((x) * 1000)
-
 #define NO_ERROR 0
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
@@ -19,6 +16,7 @@
 
 #endif  // _WIN32
 
+#include "core/os.h"
 #include "core/strings.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/socket_exceptions.h"
@@ -28,6 +26,8 @@ using std::clog;
 using std::endl;
 using std::string;
 using std::unique_ptr;
+using wwiv::os::sleep_for;
+using wwiv::os::wait_for;
 using namespace wwiv::strings;
 using namespace wwiv::net;
 
@@ -59,17 +59,6 @@ std::string FakeBinkpPacket::debug_string() const {
     ss << "[DATA] data = '" << data_ << "'";
   }
   return ss.str();
-}
-
-static bool wait_for(std::function<bool()> predicate, std::chrono::milliseconds d) {
-  auto now = std::chrono::steady_clock::now();
-  auto end = now + d;
-  while (!predicate() && now < end) {
-    now = std::chrono::steady_clock::now();
-    _sleep(100);
-    //std::this_thread::sleep_for(milliseconds(1));
-  }
-  return predicate();
 }
 
 FakeConnection::FakeConnection() {}
