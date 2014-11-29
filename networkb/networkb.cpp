@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "core/stl.h"
 #include "core/strings.h"
 
 using std::clog;
@@ -26,13 +27,10 @@ using wwiv::net::Connect;
 using wwiv::net::SocketConnection;
 using wwiv::net::socket_error;
 
+using wwiv::stl::contains;
+
 using wwiv::strings::starts_with;
 using wwiv::strings::SplitString;
-
-template <typename C, typename K>
-bool contains(C container, K key) {
-  return container.find(key) != end(container);
-}
 
 static map<string, string> ParseArgs(int argc, char** argv) {
   map<string, string> args;

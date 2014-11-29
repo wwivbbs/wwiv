@@ -84,6 +84,7 @@
     <ClCompile Include="os.cpp" />
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\wutil.cpp" />
+    <ClCompile Include="stl.cpp" />
     <ClCompile Include="wfile.cpp" />
     <ClCompile Include="wfile_unix.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -97,6 +98,7 @@
     <ClInclude Include="inifile.h" />
     <ClInclude Include="os.h" />
     <ClInclude Include="scope_exit.h" />
+    <ClInclude Include="stl.h" />
     <ClInclude Include="transaction.h" />
     <ClInclude Include="strings.h" />
     <ClInclude Include="wfile.h" />

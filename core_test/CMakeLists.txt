@@ -14,6 +14,7 @@ set(fixture_sources
 set(test_sources
   inifile_test.cpp
   scope_exit_test.cpp
+  stl_test.cpp
   strings_test.cpp
   transaction_test.cpp
   wfile_test.cpp
