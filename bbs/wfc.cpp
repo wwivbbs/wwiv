@@ -24,8 +24,9 @@
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
-#include "core/wwivport.h"
+#include "core/os.h"
 #include "core/strings.h"
+#include "core/wwivport.h"
 #include "core/wutil.h"
 #include "core/inifile.h"
 
@@ -151,7 +152,7 @@ void wfc_screen() {
     sprintf(szBuffer, "Activity and Statistics of %s Node %d", syscfg.systemname, GetApplication()->GetInstanceNumber());
     GetSession()->localIO()->LocalXYAPrintf(1 + ((76 - strlen(szBuffer)) / 2), 4, 15, szBuffer);
     GetSession()->localIO()->LocalXYAPrintf(8, 1, 14, fulldate());
-    std::string osVersion = WWIV_GetOSVersion();
+    std::string osVersion = wwiv::os::os_version_string();
     GetSession()->localIO()->LocalXYAPrintf(40, 1, 3, "OS: ");
     GetSession()->localIO()->LocalXYAPrintf(44, 1, 14, osVersion.c_str());
     GetSession()->localIO()->LocalXYAPrintf(21, 6, 14, "%d", pStatus->GetNumCallsToday());

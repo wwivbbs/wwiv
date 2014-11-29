@@ -30,6 +30,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wstatus.h"
 #include "core/inifile.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "core/wutil.h"
 #include "core/wwivassert.h"
@@ -126,7 +127,7 @@ static int GetAnsiStatusAndShowWelcomeScreen(int nNetworkOnly) {
       strcpy(szCurrentSpeed, GetSession()->GetCurrentSpeed().c_str());
       bout << "CONNECT " << strupr(szCurrentSpeed) << "\r\n\r\n";
     }
-    string osVersion = WWIV_GetOSVersion();
+    string osVersion = wwiv::os::os_version_string();
     bout << "\r\nWWIV " << wwiv_version << "/" << osVersion << " " << beta_version << wwiv::endl;
     bout << "Copyright (c) 1998-2014 WWIV Software Services." << wwiv::endl;
     bout << "All Rights Reserved." << wwiv::endl;
@@ -826,7 +827,7 @@ static void DisplayUserLoginInformation() {
     }
   }
 
-  bout << "|#9OS|#0................ |#2" << WWIV_GetOSVersion() << wwiv::endl;
+  bout << "|#9OS|#0................ |#2" << wwiv::os::os_version_string() << wwiv::endl;
   bout << "|#9Instance|#0.......... |#2" << GetApplication()->GetInstanceNumber() << "\r\n\n";
   if (GetSession()->GetCurrentUser()->GetForwardUserNumber()) {
     if (GetSession()->GetCurrentUser()->GetForwardSystemNumber() != 0) {

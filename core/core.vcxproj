@@ -101,6 +101,7 @@
     <ClInclude Include="strings.h" />
     <ClInclude Include="wfile.h" />
     <ClInclude Include="wtextfile.h" />
+    <ClInclude Include="wutil.h" />
     <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivport.h" />
   </ItemGroup>

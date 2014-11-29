@@ -22,12 +22,21 @@
 
 #include <chrono>
 #include <functional>
+#include <string>
 
 namespace wwiv {
 namespace os {
 
+// Sleeps for a duration of time d, or until predicate returns true.
+// returns the value of predicate.
 bool wait_for(std::function<bool()> predicate, std::chrono::milliseconds d);
+
+// Sleeps for a duration of time d
 void sleep_for(std::chrono::milliseconds d);
+
+// Gets the OS Version Number.
+std::string os_version_string();
+
 
 }  // namespace os
 }  // namespace wwiv
