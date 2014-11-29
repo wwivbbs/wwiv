@@ -105,6 +105,7 @@ private:
   const int own_address_;
   const int expected_remote_address_;
   std::string remote_password_;
+  bool error_received_;
 };
 
 bool ParseFileRequestLine(const std::string& request_line, 
