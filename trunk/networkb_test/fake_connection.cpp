@@ -5,6 +5,7 @@
 #include <cstring>
 #include <memory>
 #include <iostream>
+#include <sstream>
 #include <thread>
 
 #ifndef _WIN32
@@ -19,6 +20,7 @@
 #endif  // _WIN32
 
 #include "core/strings.h"
+#include "networkb/binkp_commands.h"
 #include "networkb/socket_exceptions.h"
 
 using std::chrono::milliseconds;
@@ -45,6 +47,20 @@ FakeBinkpPacket::FakeBinkpPacket(const void* data, int size) {
 }
 
 FakeBinkpPacket::~FakeBinkpPacket() {}
+FakeBinkpPacket::FakeBinkpPacket(const FakeBinkpPacket& o) : is_command_(o.is_command_), command_(o.command_), header_(o.header_), data_(o.data_) {}
+
+
+std::string FakeBinkpPacket::debug_string() const {
+  // since data_ doesn't have a trailing nullptr, use stringstream.
+  std::stringstream ss;
+  if (is_command_) {
+    const string s = (data_.size() > 0) ? data_.substr(1) : data_;
+    ss << "[" << BinkpCommands::command_id_to_name(command_) << "] data ='" << s << "'";
+  } else {
+    ss << "[DATA] data = '" << data_ << "'";
+  }
+  return ss.str();
+}
 
 static bool wait_for(std::function<bool()> predicate, std::chrono::milliseconds d) {
   auto now = std::chrono::steady_clock::now();
@@ -114,6 +130,11 @@ int FakeConnection::send(const void* data, int size, std::chrono::milliseconds d
   std::lock_guard<std::mutex> lock(mu_);
   send_queue_.push(FakeBinkpPacket(data, size));
   return size;
+}
+
+bool FakeConnection::has_sent_packets() const {
+  std::lock_guard<std::mutex> lock(mu_);
+  return !send_queue_.empty();
 }
 
 FakeBinkpPacket FakeConnection::GetNextPacket() {

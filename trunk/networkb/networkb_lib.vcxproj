@@ -89,6 +89,7 @@
   <ItemGroup>
     <ClInclude Include="binkp.h" />
     <ClInclude Include="binkp_config.h" />
+    <ClInclude Include="binkp_commands.h" />
     <ClInclude Include="connection.h" />
     <ClInclude Include="socket_connection.h" />
     <ClInclude Include="socket_exceptions.h" />
@@ -98,6 +99,7 @@
   <ItemGroup>
     <ClCompile Include="binkp.cpp" />
     <ClCompile Include="binkp_config.cpp" />
+    <ClCompile Include="binkp_commands.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="socket_connection.cpp" />
     <ClCompile Include="socket_exceptions.cpp" />

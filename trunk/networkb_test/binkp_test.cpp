@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "core_test/file_helper.h"
 #include "networkb/binkp.h"
+#include "networkb/binkp_commands.h"
 #include "networkb_test/fake_connection.h"
 
 #include <chrono>
@@ -35,8 +36,10 @@ protected:
 
 TEST_F(BinkTest, ErrorAbortsSession) {
   Start();
-  conn_.ReplyCommand(M_ERR, "Doh!");
+  conn_.ReplyCommand(BinkpCommands::M_ERR, "Doh!");
   Stop();
   
-  conn_.GetNextPacket();
+  while (conn_.has_sent_packets()) {
+    std::clog << conn_.GetNextPacket().debug_string() << std::endl;
+  }
 };
