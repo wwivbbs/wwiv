@@ -24,7 +24,6 @@
 #include "networkb/socket_exceptions.h"
 
 using std::chrono::milliseconds;
-using std::chrono::seconds;
 using std::clog;
 using std::endl;
 using std::string;
