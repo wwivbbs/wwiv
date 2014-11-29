@@ -7,6 +7,7 @@ set(NETWORKB_MAIN networkb.cpp)
 
 set(SOURCES 
  binkp.cpp
+ binkp_commands.cpp
  binkp_config.cpp
  connection.cpp
  socket_connection.cpp

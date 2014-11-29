@@ -9,6 +9,18 @@ using std::string;
 namespace wwiv {
 namespace net {
 
+const int BinkpCommands::M_NUL;
+const int BinkpCommands::M_ADR;
+const int BinkpCommands::M_PWD;
+const int BinkpCommands::M_FILE;
+const int BinkpCommands::M_OK;
+const int BinkpCommands::M_EOB;
+const int BinkpCommands::M_GOT;
+const int BinkpCommands::M_ERR;
+const int BinkpCommands::M_BSY;
+const int BinkpCommands::M_GET;
+const int BinkpCommands::M_SKIP;
+
 // static
 string BinkpCommands::command_id_to_name(int command_id) {
   static const map<int, string> map = {
