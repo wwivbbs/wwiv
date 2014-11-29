@@ -14,6 +14,7 @@
 class FakeBinkpPacket {
 public:
   FakeBinkpPacket(const void* data, int size);
+  FakeBinkpPacket(const FakeBinkpPacket& o);
   ~FakeBinkpPacket();
 
   bool is_command() const { return is_command_; }
@@ -21,7 +22,7 @@ public:
   uint16_t header() const { return header_; }
   std::string data() const { return data_; }
 
-  FakeBinkpPacket(const FakeBinkpPacket& o) : is_command_(o.is_command_), command_(o.command_), header_(o.header_), data_(o.data_) {}
+  std::string debug_string() const;
 
 private:
   bool is_command_;
@@ -42,6 +43,7 @@ public:
   virtual uint16_t read_uint16(std::chrono::milliseconds d) override;
   virtual uint8_t read_uint8(std::chrono::milliseconds d) override;
 
+  bool has_sent_packets() const;
   FakeBinkpPacket GetNextPacket();
   void ReplyCommand(int8_t command_id, const std::string& data);
 
