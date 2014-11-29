@@ -3,6 +3,7 @@
 #include "networkb/binkp.h"
 #include "networkb_test/fake_connection.h"
 
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <thread>
@@ -30,4 +31,10 @@ protected:
   unique_ptr<BinkP> binkp_;
   FakeConnection conn_;
   std::thread thread_;
+};
+
+TEST_F(BinkTest, Basic) {
+  Start();
+  conn_.ReplyCommand(M_ERR, "Doh!");
+  Stop();
 };
