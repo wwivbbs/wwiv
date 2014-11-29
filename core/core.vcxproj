@@ -81,6 +81,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="inifile.cpp" />
+    <ClCompile Include="os.cpp" />
     <ClCompile Include="platform\win32\wfndfile.cpp" />
     <ClCompile Include="platform\wutil.cpp" />
     <ClCompile Include="wfile.cpp" />
@@ -94,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inifile.h" />
+    <ClInclude Include="os.h" />
     <ClInclude Include="scope_exit.h" />
     <ClInclude Include="transaction.h" />
     <ClInclude Include="strings.h" />
