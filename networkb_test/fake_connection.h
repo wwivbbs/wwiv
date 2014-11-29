@@ -19,6 +19,8 @@ public:
   uint16_t header() const { return header_; }
   std::string data() const { return data_; }
 
+  FakeBinkpPacket(const FakeBinkpPacket& o) : is_command_(o.is_command_), command_(o.command_), header_(o.header_), data_(o.data_) {}
+
 private:
   bool is_command_;
   uint8_t command_;
@@ -37,6 +39,9 @@ public:
   virtual int send(const void* data, int size, std::chrono::milliseconds d) override;
   virtual uint16_t read_uint16(std::chrono::milliseconds d) override;
   virtual uint8_t read_uint8(std::chrono::milliseconds d) override;
+
+  FakeBinkpPacket GetNextPacket();
+  void ReplyCommand(int8_t commadn_id, const std::string& data);
 
   std::queue<FakeBinkpPacket> receive_queue_;
   std::queue<FakeBinkpPacket> send_queue_;

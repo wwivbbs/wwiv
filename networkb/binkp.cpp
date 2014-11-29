@@ -210,7 +210,7 @@ BinkState BinkP::SendPasswd() {
 BinkState BinkP::WaitAddr() {
   clog << "STATE: WaitAddr" << endl;
   auto predicate = [&]() -> bool { return !address_list_.empty(); };
-  for (int i=0; i < 30; i++) {
+  for (int i=0; i < 10; i++) {
     process_frames(predicate, seconds(1));
     if (!address_list_.empty()) {
       return BinkState::AUTH_REMOTE;
