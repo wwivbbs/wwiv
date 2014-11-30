@@ -358,10 +358,10 @@ void WFile::EnsureTrailingSlash(string* path) {
 }
 
 // static 
-void WFile::CurrentDirectory(string* current_dir) {
+string WFile::current_directory() {
   char s[MAX_PATH];
   getcwd(s, MAX_PATH);
-  current_dir->assign(s);
+  return string(s);
 }
 
 // static
