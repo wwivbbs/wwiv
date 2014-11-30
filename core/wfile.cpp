@@ -365,7 +365,7 @@ void WFile::CurrentDirectory(string* current_dir) {
 }
 
 // static
-void WFile::MakeAbsolutePath(const string base, string* relative) {
+void WFile::MakeAbsolutePath(const string& base, string* relative) {
   if (!WFile::IsAbsolutePath(*relative)) {
     WFile dir(base, *relative);
     relative->assign(dir.full_pathname());
@@ -373,7 +373,7 @@ void WFile::MakeAbsolutePath(const string base, string* relative) {
 }
 
 // static
-bool WFile::IsAbsolutePath(const string path) {
+bool WFile::IsAbsolutePath(const string& path) {
   if (path.empty()) {
     return false;
   }
