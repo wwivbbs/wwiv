@@ -1,4 +1,5 @@
 #include "networkb/binkp.h"
+#include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/socket_connection.h"
 #include "networkb/socket_exceptions.h"
@@ -12,6 +13,7 @@
 
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/wfile.h"
 
 using std::clog;
 using std::endl;
@@ -20,15 +22,8 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-using wwiv::net::BinkSide;
-using wwiv::net::BinkP;
-using wwiv::net::Accept;
-using wwiv::net::Connect;
-using wwiv::net::SocketConnection;
-using wwiv::net::socket_error;
-
+using namespace wwiv::net;
 using wwiv::stl::contains;
-
 using wwiv::strings::starts_with;
 using wwiv::strings::SplitString;
 
@@ -53,20 +48,53 @@ int main(int argc, char** argv) {
     clog << "k: " << arg.first << "; v: " << arg.second << endl;
   }
 
+  std::string config_filename;
+  std::string node_config_filename;
+
+  if (!contains(args, "config")) {
+    clog << "--config=<full path to config file> must be specified" << endl;
+    return 1;
+  }
+
+  config_filename = args["config"];
+  WFile config_file(config_filename);
+  if (!config_file.Exists()) {
+    clog << "Config file " << config_filename << " does not exist." << endl;
+    return 1;
+  }
+
+  if (contains(args, "addresses")) {
+    node_config_filename = args["addresses"];
+    if (!WFile::Exists(node_config_filename)) {
+      clog << "Node Config file " << node_config_filename << " does not exist." << endl;
+      return 1;
+    }
+  } else {
+    WFile candidate_node_config(config_file.GetParent(), "addresses.binkp");
+    node_config_filename = candidate_node_config.GetFullPathName();
+    if (!candidate_node_config.Exists()) {
+      clog << "Node Config file " << node_config_filename << " does not exist." << endl;
+      return 1;
+    }
+  }
+
   try {
+    BinkConfig config(config_filename, node_config_filename);
     if (contains(args, "receive")) {
       clog << "BinkP receive" << endl;
       unique_ptr<SocketConnection> c(Accept(24554));
-      BinkP binkp(c.get(), BinkSide::ANSWERING, 1, 2);
+      BinkP binkp(c.get(), &config, BinkSide::ANSWERING, 2);
       binkp.Run();
-    } else {
+    } else if (contains(args, "send")) {
       // send
       unique_ptr<SocketConnection> c(Connect("localhost", 24554));
-      BinkP binkp(c.get(), BinkSide::ORIGINATING, 2, 1);
+      BinkP binkp(c.get(), &config, BinkSide::ORIGINATING, 1);
       binkp.Run();
-    } 
+    } else {
+      clog << "No command given to send or receive.  Either use '--send --node=#' or --receive";
+    }
   } catch (socket_error e) {
-    std::clog << e.what() << std::endl;
+    clog << e.what() << std::endl;
   }
   
 }

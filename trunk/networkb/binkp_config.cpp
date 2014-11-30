@@ -7,6 +7,7 @@
 #include <string>
 
 #include "core/strings.h"
+#include "core/inifile.h"
 #include "core/wfile.h"
 #include "core/wtextfile.h"
 
@@ -17,6 +18,7 @@ using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
+using wwiv::core::IniFile;
 using wwiv::strings::SplitString;
 using wwiv::strings::StringToUnsignedShort;;
 using wwiv::strings::StringPrintf;
@@ -24,6 +26,7 @@ using wwiv::strings::StringPrintf;
 namespace wwiv {
 namespace net {
 
+// [[ VisibleForTesting ]]
 bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* config) {
   if (line.empty() || line[0] != '@') {
     // skip empty lines and those not starting with @.
@@ -55,27 +58,51 @@ bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* con
   return true;
 }
 
-BinkConfig::BinkConfig(const std::string& config_file) : config_file_(config_file) {
-  WTextFile config(config_file, "rt");
-  if (!config.IsOpen()) {
-    throw config_error(StringPrintf("Unable to open config file: '%s'",
-				    config_file.c_str()));
+BinkConfig::BinkConfig(const string& ini_filename, const string& node_config_filename) {
+
+  ini_file_.reset(new IniFile(ini_filename, "NETWORK"));
+  if (!ini_file_->IsOpen()) {
+    throw config_error(StringPrintf("Unable to open ini file: '%s'", ini_filename.c_str()));
   }
+
+  WTextFile node_config_file(node_config_filename, "rt");
+  if (!node_config_file.IsOpen()) {
+    throw config_error(StringPrintf("Unable to open node config file: '%s'", node_config_filename.c_str()));
+  }
+
+  node_ = ini_file_->GetNumericValue("NODE");
+  if (node_ == 0) {
+    throw config_error(StringPrintf("NODE not specified in INI file: '%s'", ini_filename.c_str()));
+  }
+  system_name_.assign(ini_file_->GetValue("SYSTEM_NAME", ""));
+  if (system_name_.empty()) {
+    system_name_ = "Unnamed WWIV BBS";
+  }
+
   // A line will be of the format @node host:port [password].
   string line;
-  while (config.ReadLine(&line)) {
-    uint16_t node;
-    BinkNodeConfig config;
-    if (ParseBinkConfigLine(line, &node, &config)) {
+  while (node_config_file.ReadLine(&line)) {
+    uint16_t node_number;
+    BinkNodeConfig node_config;
+    if (ParseBinkConfigLine(line, &node_number, &node_config)) {
       // Parsed a line correctly.
-      node_config_.insert(std::make_pair(node, config));
+      node_config_.insert(std::make_pair(node_number, node_config));
     }
   }
 }
 
+// For testing
+BinkConfig::BinkConfig(int node_number, const std::string& system_name, int node_to_call) 
+  : node_(node_number), system_name_(system_name) {
+  BinkNodeConfig node_config { "example.com", 24554, "-" };
+  node_config_.insert(std::make_pair(node_number, node_config));
+}
+
+
+
 BinkConfig::~BinkConfig() {}
 
-const BinkNodeConfig* BinkConfig::node_config_for(int node) {
+const BinkNodeConfig* BinkConfig::node_config_for(int node) const {
   auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
     return &iter->second;
