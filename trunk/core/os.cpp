@@ -36,6 +36,7 @@
 #endif  // _WIN32
 
 #include "core/strings.h"
+#include "core/wfile.h"
 
 using std::function;
 using std::string;
