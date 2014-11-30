@@ -14,7 +14,7 @@ using std::chrono::time_point;
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::net;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 class TransferFileTest : public testing::Test {
 public:
@@ -28,7 +28,6 @@ public:
   const string filename;
   InMemoryTransferFile file;
   string full_filename;
-private:
   FileHelper file_helper_;
 };
 
@@ -69,10 +68,20 @@ TEST_F(TransferFileTest, GetChunk) {
   EXPECT_FALSE(file.GetChunk(chunk, contents.size() - 1, 2));
 }
 
-TEST_F(TransferFileTest, WFileTest) {
+TEST_F(TransferFileTest, WriteChunk) {
+  char chunk[100];
+
+  // Partial file.
+  memset(chunk, 0, 100);
+  memcpy(chunk, "AB", 2);
+  ASSERT_TRUE(file.WriteChunk(chunk, 2));
+  EXPECT_STREQ("ASDFAB", file.contents().c_str());
+}
+
+TEST_F(TransferFileTest, WFileTest_Read) {
   WFileTransferFile wfile_file(filename, unique_ptr<WFile>(new WFile(full_filename)));
-  EXPECT_EQ(filename, wfile_file.filename());
-  EXPECT_EQ(contents.size(), wfile_file.file_size());
+  ASSERT_EQ(filename, wfile_file.filename());
+  ASSERT_EQ(contents.size(), wfile_file.file_size());
 
   char chunk[100];
 
@@ -96,4 +105,19 @@ TEST_F(TransferFileTest, WFileTest) {
   // Goes past the end.
   EXPECT_FALSE(wfile_file.GetChunk(chunk, contents.size() - 1, 2));
 
+}
+
+TEST_F(TransferFileTest, WFileTest_Write) {
+  const string empty_filename = StrCat(filename, "_empty");
+  const string empty_file_fullpath = file_helper_.CreateTempFilePath(empty_filename);
+  {
+    WFileTransferFile wfile_file(empty_filename, unique_ptr<WFile>(new WFile(empty_file_fullpath)));
+    EXPECT_EQ(empty_filename, wfile_file.filename());
+    EXPECT_LE(wfile_file.file_size(), 0);
+
+    wfile_file.WriteChunk(contents.c_str(), contents.size());
+    EXPECT_EQ(contents.size(), wfile_file.file_size());
+  }
+  // Needed wfile_file to go out of scope before the file can be read.
+  EXPECT_EQ(contents, file_helper_.ReadFile(empty_file_fullpath));
 }

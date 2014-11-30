@@ -21,8 +21,9 @@ public:
   WFileTransferFile(const std::string& filename, std::unique_ptr<WFile>&& file);
   virtual ~WFileTransferFile();
 
-  virtual int file_size() const override;
-  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override;
+  virtual int file_size() const override final;
+  virtual bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
+  virtual bool WriteChunk(const char* chunk, std::size_t size) override final;
 
  private:
   std::unique_ptr<WFile> file_; 
