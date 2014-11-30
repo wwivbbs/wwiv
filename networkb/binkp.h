@@ -1,6 +1,6 @@
-#pragma once
 #ifndef __INCLUDED_NETWORKB_BINKP_H__
 #define __INCLUDED_NETWORKB_BINKP_H__
+#pragma once
 
 #include <chrono>
 #include <cstddef>
@@ -41,12 +41,14 @@ enum class BinkSide {
 
 class BinkP {
 public:
+  typedef std::function<TransferFile*(const std::string& filename)> received_transfer_file_factory_t;
   // TODO(rushfan): should we use a unique_ptr for Connection and own the
   // connection?
   BinkP(Connection* conn,
         BinkConfig* config,
 	      BinkSide side, 
-	      int expected_remote_address);
+	      int expected_remote_address,
+        received_transfer_file_factory_t& received_transfer_file_factory);
   virtual ~BinkP();
 
   void Run();
@@ -94,6 +96,8 @@ private:
   const int expected_remote_address_;
   std::string remote_password_;
   bool error_received_;
+  received_transfer_file_factory_t received_transfer_file_factory_;
+  std::vector<std::unique_ptr<TransferFile>> received_files_;
 };
 
 bool ParseFileRequestLine(const std::string& request_line, 

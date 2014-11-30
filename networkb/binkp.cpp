@@ -69,9 +69,10 @@ private:
 
 
 BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
-        int expected_remote_address)
+        int expected_remote_address, received_transfer_file_factory_t& received_transfer_file_factory)
   : conn_(conn), config_(config), side_(side), own_address_(config->node_number()), 
-    expected_remote_address_(expected_remote_address), error_received_(false) {}
+    expected_remote_address_(expected_remote_address), error_received_(false),
+    received_transfer_file_factory_(received_transfer_file_factory) {}
 
 BinkP::~BinkP() {
   files_to_send_.clear();
@@ -397,8 +398,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   long expected_length = 0;
   time_t timestamp = 0;
   long starting_offset = 0;
-  if (!ParseFileRequestLine(request_line, &filename, &expected_length, &timestamp,
-          &starting_offset)) {
+  if (!ParseFileRequestLine(request_line, &filename, &expected_length, &timestamp, &starting_offset)) {
     return false;
   }
 
