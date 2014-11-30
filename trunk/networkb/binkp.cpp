@@ -244,11 +244,14 @@ BinkState BinkP::WaitAddr() {
 }
 
 BinkState BinkP::PasswordAck() {
+  // This is only on the answering side.
   clog << "STATE: PasswordAck" << endl;
   if (remote_password_ == "-") {
     // Passwords match, send OK.
     send_command_packet(BinkpCommands::M_OK, "Passwords match; insecure session");
-    return BinkState::WAIT_OK;
+    // No need to wait for OK since we are the answering side, just move straight to
+    // transfer files.
+    return BinkState::TRANSFER_FILES;
   }
 
   // Passwords do not match, send error.
@@ -345,10 +348,11 @@ BinkState BinkP::Unknown() {
 
 BinkState BinkP::WaitEob() {
   clog << "STATE: WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
-  for (int count=1; count < 4; count++) {
+  for (int count=1; count < 10; count++) {
     try {
       count++;
-      process_frames( [&]() -> bool { return eob_received_; }, seconds(3));
+      process_frames( [&]() -> bool { return eob_received_; }, seconds(1));
+      clog << "       WaitEob: eob_received: " << std::boolalpha << eob_received_ << endl;
       if (eob_received_) {
         return BinkState::DONE;
       }
