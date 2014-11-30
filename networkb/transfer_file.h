@@ -35,8 +35,7 @@ public:
 
 class InMemoryTransferFile : public TransferFile {
 public:
-  InMemoryTransferFile(const std::string& filename, const std::string& contents,
-                       std::chrono::time_point<std::chrono::system_clock> timestamp);
+  InMemoryTransferFile(const std::string& filename, const std::string& contents, time_t timestamp);
 
   InMemoryTransferFile(const std::string& filename, const std::string& contents);
   virtual ~InMemoryTransferFile();
