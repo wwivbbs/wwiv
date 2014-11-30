@@ -14,11 +14,14 @@
 
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/wfile.h"
+#include "core/wfndfile.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
+#include "networkb/wfile_transfer_file.h"
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
@@ -36,10 +39,39 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace net {
 
-  BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
-         int expected_remote_address)
-    : conn_(conn), config_(config), side_(side), own_address_(config->node_number()), 
-      expected_remote_address_(expected_remote_address), error_received_(false) {}
+class SendFiles {
+public:
+  SendFiles(const string& network_directory, uint16_t destination_node) 
+    : network_directory_(network_directory), destination_node_(destination_node) {}
+  virtual ~SendFiles() {}
+
+  vector<TransferFile*> CreateTransferFileList() {
+    vector<TransferFile*> result;
+    string dir = network_directory_;
+    WFile::EnsureTrailingSlash(&dir);
+    const string s_node_net = StringPrintf("S%d.NET", destination_node_);
+    const string search_path = StrCat(dir, WFile::pathSeparatorString, s_node_net);
+    WFindFile fnd;
+    bool found = fnd.open(search_path, 0);
+    while (found) {
+      result.push_back(new WFileTransferFile(fnd.GetFileName(), unique_ptr<WFile>(new WFile(network_directory_, fnd.GetFileName()))));
+      found = fnd.next();
+    }
+    fnd.close();
+
+    return result;
+  }
+
+private:
+  const string network_directory_;
+  const uint16_t destination_node_;
+};
+
+
+BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
+        int expected_remote_address)
+  : conn_(conn), config_(config), side_(side), own_address_(config->node_number()), 
+    expected_remote_address_(expected_remote_address), error_received_(false) {}
 
 BinkP::~BinkP() {
   files_to_send_.clear();
@@ -281,8 +313,12 @@ BinkState BinkP::TransferFiles() {
   // Quickly let the inbound event loop percolate.
   process_frames(seconds(1));
   // HACK
-  SendDummyFile("a.txt", 'a', 40);
-  //SendDummyFile("b.txt", 'b', 50000);
+  //SendDummyFile("a.txt", 'a', 40);
+  SendFiles file_sender(config_->network_dir(), expected_remote_address_);
+  const auto list = file_sender.CreateTransferFileList();
+  for (auto file : list) {
+    SendFilePacket(file);
+  }
   // Quickly let the inbound event loop percolate.
   process_frames(seconds(1));
 
@@ -290,6 +326,7 @@ BinkState BinkP::TransferFiles() {
   if (files_to_send_.empty()) {
     // All files are sent, let's let the remote know we are done.
     send_command_packet(BinkpCommands::M_EOB, "");
+    process_frames(seconds(1));
   }
   return BinkState::WAIT_EOB;
 }

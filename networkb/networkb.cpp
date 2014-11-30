@@ -11,7 +11,7 @@
 // SYSTEM_NAME=My Test System
 // NETWORK_NAME=wwivnet
 // # Normally DIR would be C:\bbs\wwivnet or something like that.
-// DIR=G:\tmp 
+// NETWORK_DIR=G:\tmp 
 //
 // addresses.binkp:
 // @1 localhost:24554 -
