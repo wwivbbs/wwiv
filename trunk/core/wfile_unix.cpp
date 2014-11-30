@@ -114,4 +114,5 @@ bool WFile::RealPath(const std::string& path, std::string* resolved) {
 
   resolved->assign(result);
   free(result);
+  return true;
 }
