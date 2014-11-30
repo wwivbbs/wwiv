@@ -111,7 +111,6 @@ int main(int argc, char** argv) {
       c = Accept(24554);
     } else if (contains(args, "send")) {
       clog << "BinkP send to: " << expected_remote_node << endl;
-      side = BinkSide::ORIGINATING;
       const BinkNodeConfig* node_config = config.node_config_for(expected_remote_node);
       if (node_config == nullptr) {
         clog << "Unable to find node condfig for node: " << expected_remote_node << endl;
@@ -120,6 +119,7 @@ int main(int argc, char** argv) {
       c = Connect(node_config->host, node_config->port);
     } else {
       clog << "No command given to send or receive.  Either use '--send --node=#' or --receive";
+      return 1;
     }
     BinkP binkp(c.get(), &config, side, expected_remote_node);
     binkp.Run();

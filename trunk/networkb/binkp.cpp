@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "core/stl.h"
 #include "core/strings.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
@@ -27,8 +28,9 @@ using std::map;
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::net::Connection;
 
+using namespace wwiv::net;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -325,8 +327,7 @@ bool BinkP::SendFilePacket(TransferFile* file) {
   process_frames(seconds(2));
 
   // file* may not be viable anymore if it was already send.
-  auto iter = files_to_send_.find(filename);
-  if (iter != std::end(files_to_send_)) {
+  if (contains(files_to_send_, filename)) {
     // We have the file still to send.
     SendFileData(file);
   }
