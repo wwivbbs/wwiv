@@ -102,7 +102,7 @@ char send_b(WFile &file, long pos, int nBlockType, char byBlockNumber, bool *bUs
     strcpy(b, stripfn(pszFileName));
     sprintf(szTempBuffer, "%ld ", pos);
     // We neede dthis cast to (long) to compile with XCode 1.5 on OS X
-    sprintf(szFileDate, "%ld", (long)file.GetFileTime() - (long)timezone);
+    sprintf(szFileDate, "%ld", (long)file.last_write_time() - (long)timezone);
 
     strcat(szTempBuffer, szFileDate);
     strcpy(&(b[strlen(b) + 1]), szTempBuffer);

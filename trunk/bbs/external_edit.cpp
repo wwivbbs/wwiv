@@ -186,7 +186,7 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
       // Copy quotes.txt to MSGTMP if it exists
       WFile source(syscfgovr.tempdir, QUOTES_TXT);
       WFile dest(syscfgovr.tempdir, MSGTMP);
-      WFile::CopyFile(source.GetFullPathName(), dest.GetFullPathName());
+      WFile::Copy(source.full_pathname(), dest.full_pathname());
     }
     return WriteMsgInf(title, destination, aux);
   } 
@@ -221,7 +221,7 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
     // else that needs to be passed back.
     WFile source(syscfgovr.tempdir, MSGTMP);
     WFile dest(syscfgovr.tempdir, INPUT_MSG);
-    WFile::CopyFile(source.GetFullPathName(), dest.GetFullPathName());
+    WFile::Copy(source.full_pathname(), dest.full_pathname());
 
     // TODO(rushfan): Do we need to re-read MSGINF to look for changes to title or setanon?
   } else {
@@ -271,7 +271,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   WFile fileTempForTime(full_filename);
   bool bIsFileThere = fileTempForTime.Exists();
   if (bIsFileThere) {
-    tFileTime = fileTempForTime.GetFileTime();
+    tFileTime = fileTempForTime.last_write_time();
   }
 
   const string sx1 = StringPrintf("%d", GetSession()->GetCurrentUser()->GetScreenChars());
@@ -306,7 +306,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   } else {
     WFile fileTempForTime(full_filename);
     if (fileTempForTime.Exists()) {
-      time_t tFileTime1 = fileTempForTime.GetFileTime();
+      time_t tFileTime1 = fileTempForTime.last_write_time();
       if (tFileTime != tFileTime1) {
         bModifiedOrExists = true;
       }

@@ -307,7 +307,7 @@ bool copyfile(const string& sourceFileName, const string& destFileName, bool sta
   if ((sourceFileName != destFileName) &&
       WFile::Exists(sourceFileName) &&
       !WFile::Exists(destFileName)) {
-    if (WFile::CopyFile(sourceFileName, destFileName)) {
+    if (WFile::Copy(sourceFileName, destFileName)) {
       return true;
     }
   }

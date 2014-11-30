@@ -59,7 +59,7 @@ public:
   // Reads one line of text, removing the \r\n in the end of the line.
   bool ReadLine(std::string *buffer);
   long GetPosition() { return ftell(file_); }
-  const std::string GetFullPathName() const { return file_name_; }
+  const std::string full_pathname() const { return file_name_; }
   FILE* GetFILE() { return file_; } 
 
  public:

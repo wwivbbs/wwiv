@@ -926,7 +926,7 @@ void HandleMessageDownload(int nMessageNumber) {
 
     bool bFileAbortStatus;
     bool bStatus;
-    send_file(fileTemp.GetFullPathName().c_str(), &bStatus, &bFileAbortStatus, fileTemp.GetFullPathName().c_str(), -1,
+    send_file(fileTemp.full_pathname().c_str(), &bStatus, &bFileAbortStatus, fileTemp.full_pathname().c_str(), -1,
               lMessageLen);
     bout << "|#1Message download... |#2" << (bStatus ? "successful" : "unsuccessful");
     if (bStatus) {

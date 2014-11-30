@@ -450,7 +450,7 @@ void gfile_sec(int sn) {
             sprintf(szFileName, "%s%s%c%s", syscfg.gfilesdir, gfilesec[sn].filename, WFile::pathSeparatorChar, g[i2 - 1].filename);
             WFile file(szFileName);
             if (!file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
-              bout << "|#6File not found : [" << file.GetFullPathName() << "]";
+              bout << "|#6File not found : [" << file.full_pathname() << "]";
             } else {
               long lFileSize = file.GetLength();
               file.Close();

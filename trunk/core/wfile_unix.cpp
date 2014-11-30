@@ -59,7 +59,7 @@ bool WFile::IsDirectory() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool WFile::CopyFile(const std::string sourceFileName, const std::string destFileName) {
+bool WFile::Copy(const std::string sourceFileName, const std::string destFileName) {
   if (sourceFileName != destFileName && WFile::Exists(sourceFileName) && !WFile::Exists(destFileName)) {
     char *pBuffer = static_cast<char *>(malloc(16400));
     if (pBuffer == nullptr) {
@@ -95,9 +95,9 @@ bool WFile::CopyFile(const std::string sourceFileName, const std::string destFil
   return true;
 }
 
-bool WFile::MoveFile(const std::string sourceFileName, const std::string destFileName) {
+bool WFile::Move(const std::string sourceFileName, const std::string destFileName) {
   //TODO: Atani needs to see if Rushfan buggered up this implementation
-  if (CopyFile(sourceFileName, destFileName)) {
+  if (Copy(sourceFileName, destFileName)) {
     return Remove(sourceFileName);
   }
   return false;

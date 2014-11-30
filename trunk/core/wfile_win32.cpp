@@ -31,10 +31,6 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#undef CopyFile
-#undef GetFileTime
-#undef GetFullPathName
-#undef MoveFile
 
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
@@ -64,10 +60,10 @@ bool WFile::IsDirectory() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool WFile::CopyFile(const std::string sourceFileName, const std::string destFileName) {
+bool WFile::Copy(const std::string sourceFileName, const std::string destFileName) {
   return ::CopyFileA(sourceFileName.c_str(), destFileName.c_str(), FALSE) ? true : false;
 }
 
-bool WFile::MoveFile(const std::string sourceFileName, const std::string destFileName) {
+bool WFile::Move(const std::string sourceFileName, const std::string destFileName) {
   return ::MoveFileA(sourceFileName.c_str(), destFileName.c_str()) ? true : false;
 }

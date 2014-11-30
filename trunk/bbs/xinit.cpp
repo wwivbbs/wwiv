@@ -1059,7 +1059,7 @@ void WApplication::InitializeBBS() {
   XINIT_PRINTF("* Reading user scan pointers.\r\n");
   WFile fileQScan(syscfg.datadir, USER_QSC);
   if (!fileQScan.Exists()) {
-    std::cout << "Could not open file '" << fileQScan.GetFullPathName() << "'\r\n";
+    std::cout << "Could not open file '" << fileQScan.full_pathname() << "'\r\n";
     std::cout << "You must go into INIT and convert your userlist before running the BBS.\r\n";
     AbortBBS();
   }

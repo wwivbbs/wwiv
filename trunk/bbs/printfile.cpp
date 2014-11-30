@@ -55,12 +55,12 @@ const string CreateFullPathToPrint(const string& basename) {
     if (basename.find('.') != string::npos) {
       // We have a file with extension.
       if (file.Exists()) {
-        return file.GetFullPathName();
+        return file.full_pathname();
       }
       // Since no wwiv filenames contain embedded dots skip to the next directory.
       continue;
     }
-    const string root_filename = file.GetFullPathName();
+    const string root_filename = file.full_pathname();
     if (GetSession()->GetCurrentUser()->HasAnsi()) {
       if (GetSession()->GetCurrentUser()->HasColor()) {
         // ANSI and color

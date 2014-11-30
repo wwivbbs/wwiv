@@ -29,7 +29,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef CopyFile
-#undef GetFullPathName
 #endif // _WIN32
 
 class WFindFile {

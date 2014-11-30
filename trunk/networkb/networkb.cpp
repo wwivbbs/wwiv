@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     }
   } else {
     WFile candidate_node_config(config_file.GetParent(), "addresses.binkp");
-    node_config_filename = candidate_node_config.GetFullPathName();
+    node_config_filename = candidate_node_config.full_pathname();
     if (!candidate_node_config.Exists()) {
       clog << "Node Config file " << node_config_filename << " does not exist." << endl;
       return 1;

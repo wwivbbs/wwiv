@@ -40,7 +40,7 @@ TEST(FileTest, DoesNotExist_Static) {
     string tmp = file.TempDir();
     GTEST_ASSERT_NE("", tmp);
     WFile dne(tmp, "doesnotexist");
-    ASSERT_FALSE(WFile::Exists(dne.GetFullPathName()));
+    ASSERT_FALSE(WFile::Exists(dne.full_pathname()));
 }
 
 TEST(FileTest, Exists) {
@@ -49,7 +49,7 @@ TEST(FileTest, Exists) {
     GTEST_ASSERT_NE("", tmp);
     ASSERT_TRUE(file.Mkdir("newdir"));
     WFile dne(tmp, "newdir");
-    ASSERT_TRUE(dne.Exists()) << dne.GetFullPathName(); 
+    ASSERT_TRUE(dne.Exists()) << dne.full_pathname(); 
 }
 
 TEST(FileTest, Exists_Static) {
@@ -58,7 +58,7 @@ TEST(FileTest, Exists_Static) {
     GTEST_ASSERT_NE("", tmp);
     ASSERT_TRUE(file.Mkdir("newdir"));
     WFile dne(tmp, "newdir");
-    ASSERT_TRUE(WFile::Exists(dne.GetFullPathName())) << dne.GetFullPathName(); 
+    ASSERT_TRUE(WFile::Exists(dne.full_pathname())) << dne.full_pathname(); 
 }
 
 TEST(FileTest, Exists_TrailingSlash) {
@@ -67,7 +67,7 @@ TEST(FileTest, Exists_TrailingSlash) {
     GTEST_ASSERT_NE("", tmp);
     ASSERT_TRUE(file.Mkdir("newdir"));
     WFile dne(tmp, "newdir");
-    string path = StringPrintf("%s%c", dne.GetFullPathName().c_str(), WFile::pathSeparatorChar);
+    string path = StringPrintf("%s%c", dne.full_pathname().c_str(), WFile::pathSeparatorChar);
     ASSERT_TRUE(WFile::Exists(path)) << path; 
 }
 
@@ -113,7 +113,7 @@ TEST(FileTest, GetFileTime_NotOpen) {
     time_t now = time(nullptr);
     string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
     WFile file(path);
-    ASSERT_LE(now, file.GetFileTime());
+    ASSERT_LE(now, file.last_write_time());
 }
 
 TEST(FileTest, GetFileTime_Open) {
@@ -123,7 +123,7 @@ TEST(FileTest, GetFileTime_Open) {
     string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
     WFile file(path);
     file.Open(WFile::modeBinary | WFile::modeReadOnly);
-    ASSERT_LE(now, file.GetFileTime());
+    ASSERT_LE(now, file.last_write_time());
 }
 
 TEST(FileTest, Read) {
