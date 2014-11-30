@@ -1,3 +1,5 @@
+#ifndef __INCLUDED_NETWORKB_BINKP_COMMANDS_H__
+#define  __INCLUDED_NETWORKB_BINKP_COMMANDS_H__
 #pragma once
 
 #include <string>
@@ -28,3 +30,5 @@ BinkpCommands() {}
 
 }  // namespace net
 } // namespace wwiv
+
+#endif  // __INCLUDED_NETWORKB_BINKP_COMMANDS_H__
