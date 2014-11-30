@@ -3,18 +3,27 @@
 //
 // example usage:
 //
+// Originating:
 // G:\tmp>\Debug\networkb.exe --send --config=G:\tmp\n.ini --node=1
 //
-// n.ini:
+// Answering Side:
+// \Debug\networkb.exe --receive --config=G:\tmp1\n.ini
+//
+// \tmp\n.ini:
 // [NETWORK]
 // NODE=2
 // SYSTEM_NAME=My Test System
 // NETWORK_NAME=wwivnet
 // # Normally DIR would be C:\bbs\wwivnet or something like that.
 // NETWORK_DIR=G:\tmp 
+// 
+// \tmp1\n.ini is the same with these differences
+// NODE=1
+// NETWORK_DIR=G:\tmp1 
 //
 // addresses.binkp:
 // @1 localhost:24554 -
+// @2 localhost:24554 -
 //
 
 #include "networkb/binkp.h"
