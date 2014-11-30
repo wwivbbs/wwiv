@@ -687,7 +687,7 @@ int WApplication::BBSMainLoop(int argc, char *argv[]) {
 #if defined ( _WIN32 )
   WIOTelnet::InitializeWinsock();
   // If there is only 1 argument "-TELSRV" then use internal telnet daemon
-  if (argc == 2 && IsEqualsIgnoreCase(argv[1], "-TELSRV") {
+  if (argc == 2 && IsEqualsIgnoreCase(argv[1], "-TELSRV")) {
     WInternalTelnetServer server(this);
     server.RunTelnetServer();
     ExitBBSImpl(0);
@@ -1251,5 +1251,6 @@ int bbsmain(int argc, char *argv[]) {
   } catch (std::exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?
     std::clog << "BBS Terminated by exception: " << e.what() << std::endl;
+    return 1;
   }
 }
