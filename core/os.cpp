@@ -61,8 +61,9 @@ void sleep_for(milliseconds d) {
 #ifdef _WIN32
   int64_t count = d.count();
   if (count > numeric_limits<int64_t>::max()) {
+    count = numeric_limits<int64_t>::max();
   }
-  ::Sleep(d.count());
+  ::Sleep(count);
 
 #else  // _WIN32
   usleep (d.count() * 1000);
