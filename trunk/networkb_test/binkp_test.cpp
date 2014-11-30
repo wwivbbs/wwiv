@@ -3,6 +3,7 @@
 #include "networkb/binkp.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
+#include "networkb/transfer_file.h"
 #include "networkb_test/fake_connection.h"
 
 #include <chrono>
@@ -23,7 +24,8 @@ class BinkTest : public testing::Test {
 protected:
   void Start() {
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, "Dummy", ANSWERING_ADDRESS);
-    binkp_.reset(new BinkP(&conn_, dummy_config, BinkSide::ANSWERING, ANSWERING_ADDRESS));
+    BinkP::received_transfer_file_factory_t null_factory = [](const string& filename) { return new InMemoryTransferFile(filename, ""); };
+    binkp_.reset(new BinkP(&conn_, dummy_config, BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
     thread_ = thread([&]() {binkp_->Run(); });
   } 
 
