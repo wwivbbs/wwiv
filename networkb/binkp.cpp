@@ -14,6 +14,7 @@
 
 #include "core/strings.h"
 #include "networkb/binkp_commands.h"
+#include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
@@ -27,15 +28,15 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::net::Connection;
-using wwiv::strings::SplitString;
-using wwiv::strings::StringPrintf;
+
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace net {
 
-  BinkP::BinkP(Connection* conn, BinkSide side, int own_address,
-         int  expected_remote_address)
-    : conn_(conn), side_(side), own_address_(own_address), 
+  BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
+         int expected_remote_address)
+    : conn_(conn), config_(config), side_(side), own_address_(config->node_number()), 
       expected_remote_address_(expected_remote_address), error_received_(false) {}
 
 BinkP::~BinkP() {
@@ -174,18 +175,21 @@ BinkState BinkP::ConnInit() {
 
 BinkState BinkP::WaitConn() {
   clog << "STATE: WaitConn" << endl;
+  const string sys = StringPrintf("SYS %s", config_->system_name().c_str());
   send_command_packet(BinkpCommands::M_NUL, "OPT wwivnet");
-  send_command_packet(BinkpCommands::M_NUL, "SYS NETWORKB test app");
+  send_command_packet(BinkpCommands::M_NUL, sys);
   send_command_packet(BinkpCommands::M_NUL, "ZYZ Unknown Sysop");
   send_command_packet(BinkpCommands::M_NUL, "VER networkb/0.0 binkp/1.0");
-  send_command_packet(BinkpCommands::M_NUL, "LOC San Francisco, CA");
-  send_command_packet(BinkpCommands::M_NUL, "WWIV @2.wwivnet");
-  send_command_packet(BinkpCommands::M_ADR, StringPrintf("20000:20000/%d@wwivnet", own_address_));
+  send_command_packet(BinkpCommands::M_NUL, "LOC Unknown");
+
+  const string address = StrCat(StringPrintf("WWIV @%u", config_->node_number()), ".wwivnet");
+  send_command_packet(BinkpCommands::M_NUL, address);
+  send_command_packet(BinkpCommands::M_ADR, StringPrintf("20000:20000/%d@wwivnet", config_->node_number()));
 
   // Try to process any inbound frames before leaving this state.
   process_frames(milliseconds(100));
   return (side_ == BinkSide::ORIGINATING) ?
-    BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
+      BinkState::SEND_PASSWORD : BinkState::WAIT_ADDR;
 }
 
 BinkState BinkP::SendPasswd() {
@@ -265,7 +269,7 @@ BinkState BinkP::AuthRemote() {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
-    send_command_packet(BinkpCommands::M_ERR, wwiv::strings::StrCat("Unexpected Address: ",
+    send_command_packet(BinkpCommands::M_ERR, StrCat("Unexpected Address: ",
                  address_list_));
     // TODO(rushfan): add error state?
     return BinkState::UNKNOWN;

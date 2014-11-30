@@ -5,8 +5,11 @@
 #include <cstdint>
 #include <exception>
 #include <map>
+#include <memory>
 #include <stdexcept>
 #include <string>
+
+#include "core/inifile.h"
 
 namespace wwiv {
 namespace net {
@@ -19,14 +22,22 @@ struct BinkNodeConfig {
 
 class BinkConfig {
  public:
-  explicit BinkConfig(const std::string& config_file);
+  BinkConfig(const std::string& ini_filename, const std::string& node_config_file);
+  BinkConfig(int node_number, const std::string& system_name, int node_to_call);
   virtual ~BinkConfig();
-  const BinkNodeConfig* node_config_for(int node);
+  const BinkNodeConfig* node_config_for(int node) const;
+  const wwiv::core::IniFile& ini_file() const { return *ini_file_.get(); }
+
+  uint16_t node_number() const { return node_; }
+  const std::string& system_name() const { return system_name_; }
 
  private:
-  std::string config_file_;
   std::map<uint16_t, BinkNodeConfig> node_config_;
   std::string home_dir_;
+  std::unique_ptr<wwiv::core::IniFile> ini_file_;
+
+  uint16_t node_;
+  std::string system_name_;
 };
 
 struct config_error : public std::runtime_error {
