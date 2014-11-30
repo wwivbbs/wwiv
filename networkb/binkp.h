@@ -14,6 +14,7 @@
 namespace wwiv {
 namespace net {
   
+class BinkConfig;
 class Connection;
 class TransferFile;
 
@@ -43,9 +44,9 @@ public:
   // TODO(rushfan): should we use a unique_ptr for Connection and own the
   // connection?
   BinkP(Connection* conn,
-	BinkSide side, 
-	int my_address,
-	int expected_remote_address);
+        BinkConfig* config,
+	      BinkSide side, 
+	      int expected_remote_address);
   virtual ~BinkP();
 
   void Run();
@@ -82,6 +83,7 @@ private:
   bool HandleFileRequest(const std::string& request_line);
   BinkState SendDummyFile(const std::string& filename, char fill, std::size_t size);
 
+  BinkConfig* config_;
   Connection* conn_;
   std::string address_list_;
   bool ok_received_;

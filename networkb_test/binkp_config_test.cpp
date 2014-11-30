@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/binkp_config.h"
 
@@ -6,10 +7,8 @@
 #include <string>
 
 using std::string;
-using wwiv::net::BinkConfig;
-using wwiv::net::BinkNodeConfig;
-using wwiv::net::ParseBinkConfigLine;
-using wwiv::net::config_error;
+using namespace wwiv::net;
+using namespace wwiv::strings;
 
 class ParseBinkConfigLineTest : public testing::Test {};
 
@@ -19,15 +18,17 @@ protected:
      const ::testing::TestInfo* const test_info =
          ::testing::UnitTest::GetInstance()->current_test_info();
       test_name_ = test_info->name();
+      ini_filename_ = CreateConfigFile("ini", "[NETWORK]\nNODE=1\nSYSTEM_NAME=Test BBS\n");
     }
 
     const string dir() { return files_.TempDir(); }
-    string CreateConfigFile(const string& contents) {
-      return files_.CreateTempFile(test_name_, contents);
+    string CreateConfigFile(const string& name, const string& contents) {
+      return files_.CreateTempFile(StrCat(test_name_, "_", name), contents);
     }
 
     FileHelper files_;
     std::string test_name_;
+    std::string ini_filename_;
 };
 
 TEST_F(ParseBinkConfigLineTest, NoPort) {
@@ -62,9 +63,17 @@ TEST_F(ParseBinkConfigLineTest, InvalidLine) {
   ASSERT_FALSE(ParseBinkConfigLine(line, &node, &config));
 }
 
-TEST_F(BinkConfigTest, Basic) {
-  const string filename = CreateConfigFile("@1 example.com -\r\n""@2 foo.com:1234 welcome\r\n");
-  BinkConfig config(filename);
+TEST_F(BinkConfigTest, IniFile) {
+  const string node_filename = CreateConfigFile("node", "@1 example.com -\n""@2 foo.com:1234 welcome\n");
+  BinkConfig config(ini_filename_, node_filename);
+
+  EXPECT_EQ(1, config.node_number());
+  EXPECT_STREQ("Test BBS", config.system_name().c_str());
+}
+
+TEST_F(BinkConfigTest, NodeConfig) {
+  const string node_filename = CreateConfigFile("node", "@1 example.com -\n""@2 foo.com:1234 welcome\n");
+  BinkConfig config(ini_filename_, node_filename);
 
   const BinkNodeConfig* one = config.node_config_for(1);
   ASSERT_STREQ("example.com", one->host.c_str());
@@ -77,10 +86,18 @@ TEST_F(BinkConfigTest, Basic) {
   EXPECT_STREQ("welcome", two->password.c_str());
 }
 
-TEST_F(BinkConfigTest, BadConfigFile) {
-  const string filename = CreateConfigFile("");
+TEST_F(BinkConfigTest, BadNodeConfigFile) {
+  const string node_filename = CreateConfigFile("node", "");
   try {
-    BinkConfig config(filename + "badfilename");
+    BinkConfig config(ini_filename_, node_filename + "badfilename");
+    FAIL() << "config_error expected";
+  } catch (config_error expected) {}
+}
+
+TEST_F(BinkConfigTest, BadIniConfigFile) {
+  const string node_filename = CreateConfigFile("node", "");
+  try {
+    BinkConfig config(ini_filename_ + "badfilename", node_filename);
     FAIL() << "config_error expected";
   } catch (config_error expected) {}
 }
