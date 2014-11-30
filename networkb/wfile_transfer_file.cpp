@@ -22,7 +22,7 @@ namespace net {
 
 WFileTransferFile::WFileTransferFile(const string& filename,
 				     std::unique_ptr<WFile>&& file)
-  : TransferFile(filename, file->GetFileTime()), file_(std::move(file)) {
+  : TransferFile(filename, file->last_write_time()), file_(std::move(file)) {
 }
 
 WFileTransferFile::~WFileTransferFile() {}

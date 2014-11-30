@@ -91,7 +91,7 @@ void reset_files() {
 
   WFile namesFile(syscfg.datadir, NAMES_LST);
   if (!namesFile.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate)) {
-    std::cout << namesFile.GetFullPathName() << " NOT FOUND" << std::endl;
+    std::cout << namesFile.full_pathname() << " NOT FOUND" << std::endl;
     GetApplication()->AbortBBS(true);
   }
   namesFile.Write(smallist, sizeof(smalrec) * pStatus->GetNumUsers());
@@ -521,7 +521,7 @@ void print_net_listing(bool bForcePause) {
 
       WFile bbsListFile(GetSession()->GetNetworkDataDirectory(), BBSDATA_NET);
       if (!bbsListFile.Open(WFile::modeReadOnly | WFile::modeBinary)) {
-        bout << "|#6Error opening " << bbsListFile.GetFullPathName() << "!\r\n";
+        bout << "|#6Error opening " << bbsListFile.full_pathname() << "!\r\n";
         pausescr();
         continue;
       }

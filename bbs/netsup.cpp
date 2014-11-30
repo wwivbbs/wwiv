@@ -55,7 +55,7 @@ static bool checkup2(const time_t tFileTime, const char *pszFileName) {
   WFile file(GetSession()->GetNetworkDataDirectory(), pszFileName);
 
   if (file.Open(WFile::modeReadOnly)) {
-    time_t tNewFileTime = file.GetFileTime();
+    time_t tNewFileTime = file.last_write_time();
     file.Close();
     return (tNewFileTime > (tFileTime + 2));
   }
@@ -80,7 +80,7 @@ static bool check_bbsdata() {
   } else {
     WFile bbsdataNet(GetSession()->GetNetworkDataDirectory().c_str(), BBSDATA_NET);
     if (bbsdataNet.Open(WFile::modeReadOnly)) {
-      time_t tFileTime = bbsdataNet.GetFileTime();
+      time_t tFileTime = bbsdataNet.last_write_time();
       bbsdataNet.Close();
       ok = checkup2(tFileTime, BBSDATA_NET) || checkup2(tFileTime, CONNECT_NET);
       ok2 = checkup2(tFileTime, CALLOUT_NET);

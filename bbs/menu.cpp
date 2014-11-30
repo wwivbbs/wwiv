@@ -279,7 +279,7 @@ bool OpenMenu(MenuInstanceData * pMenuData) {
   if (fileIndex.Open(WFile::modeBinary | WFile::modeReadOnly, WFile::shareDenyNone)) {
     if (fileIndex.GetLength() > static_cast<long>(pMenuData->nAmountRecs * sizeof(MenuRecIndex))) {
       MenuSysopLog("Index is corrupt");
-      MenuSysopLog(fileIndex.GetFullPathName());
+      MenuSysopLog(fileIndex.full_pathname());
       return false;
     }
     pMenuData->index = static_cast<MenuRecIndex *>(malloc(pMenuData->nAmountRecs * sizeof(MenuRecIndex) + TEST_PADDING));
@@ -926,8 +926,8 @@ void SetMenuDescription(const char *pszName, const char *pszDesc) {
   CloseMenuDescriptions();
 
   WFile descriptionFile(GetMenuDirectory(), DESCRIPT_ION);
-  WFile::Remove(descriptionFile.GetFullPathName());
-  WFile::Rename(tempDescriptionFile.GetFullPathName(), descriptionFile.GetFullPathName());
+  WFile::Remove(descriptionFile.full_pathname());
+  WFile::Rename(tempDescriptionFile.full_pathname(), descriptionFile.full_pathname());
 
   if (bMenuOpen) {
     OpenMenuDescriptions();

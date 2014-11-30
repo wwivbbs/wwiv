@@ -40,7 +40,7 @@ void checkAllDirsExist() {
 
   for (const auto& dir_name : dirs) {
 		WFile dir(dir_name);
-    auto full_pathname = dir.GetFullPathName().c_str();
+    auto full_pathname = dir.full_pathname().c_str();
 		if(!checkDirExists(dir, full_pathname)) {
 			Print(NOK, true, "%s directory is missing", full_pathname);
 			giveUp();
@@ -80,7 +80,7 @@ void checkFileAreas(int num_dirs) {
 				WFile recordFile(syscfg.datadir, filename.c_str());
 				if(recordFile.Exists()) {
 					if(!recordFile.Open(WFile::modeReadWrite | WFile::modeBinary)) {
-						Print(NOK, true, "Unable to open '%s'", recordFile.GetFullPathName().c_str());
+						Print(NOK, true, "Unable to open '%s'", recordFile.full_pathname().c_str());
 					} else {
 						unsigned int numFiles = recordFile.GetLength() / sizeof(uploadsrec);
 						uploadsrec upload;
@@ -136,7 +136,7 @@ void checkFileAreas(int num_dirs) {
 								WFile file(directories[i].path, Unalign(upload.filename));
 								if (strlen(upload.filename)>0 && file.Exists()) {
 									if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
-                                        Print(OK, false, "Checking file '%s'.", file.GetFullPathName().c_str());
+                                        Print(OK, false, "Checking file '%s'.", file.full_pathname().c_str());
                                         if (upload.numbytes != (unsigned long)file.GetLength()) {
 
 										    upload.numbytes = file.GetLength();
@@ -146,7 +146,7 @@ void checkFileAreas(int num_dirs) {
 									    file.Close();
                                     } else {
                                         Print(NOK, true, "Unable to open file '%s', error '%s'.", 
-                                            file.GetFullPathName().c_str(), file.GetLastError().c_str());
+                                            file.full_pathname().c_str(), file.GetLastError().c_str());
                                     }
 								}
 								if(modified) {
@@ -162,7 +162,7 @@ void checkFileAreas(int num_dirs) {
 						recordFile.Close();
 					}
 				} else {
-					Print(NOK, true, "Directory '%s' missing file '%s'", directories[i].name, recordFile.GetFullPathName().c_str());
+					Print(NOK, true, "Directory '%s' missing file '%s'", directories[i].name, recordFile.full_pathname().c_str());
 				}
 			}
 		} else if(directories[i].mask & mask_offline) {

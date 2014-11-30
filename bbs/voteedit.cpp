@@ -153,7 +153,7 @@ void voteprint() {
   }
   WFile votingText(syscfg.gfilesdir, VOTING_TXT);
   votingText.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeCreateFile | WFile::modeText);
-  votingText.Write(votingText.GetFullPathName());
+  votingText.Write(votingText.full_pathname());
 
   WFile votingDat(syscfg.datadir, VOTING_DAT);
 

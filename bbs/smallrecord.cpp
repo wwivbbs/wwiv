@@ -53,7 +53,7 @@ void InsertSmallRecord(int nUserNumber, const char *pszName) {
   smallist[cp] = sr;
   WFile namesList(syscfg.datadir, NAMES_LST);
   if (!namesList.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate)) {
-    std::cout << namesList.GetFullPathName() << " NOT FOUND" << std::endl;
+    std::cout << namesList.full_pathname() << " NOT FOUND" << std::endl;
     GetApplication()->AbortBBS();
   }
   pStatus->IncrementNumUsers();
@@ -85,7 +85,7 @@ void DeleteSmallRecord(const char *pszName) {
   }
   WFile namesList(syscfg.datadir, NAMES_LST);
   if (!namesList.Open(WFile::modeReadWrite | WFile::modeBinary | WFile::modeTruncate)) {
-    std::cout << namesList.GetFullPathName() << " COULD NOT BE CREATED" << std::endl;
+    std::cout << namesList.full_pathname() << " COULD NOT BE CREATED" << std::endl;
     GetApplication()->AbortBBS();
   }
   --status.users;

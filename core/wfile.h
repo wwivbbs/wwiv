@@ -123,7 +123,7 @@ class WFile {
   virtual bool IsFile();
 
   virtual bool SetFilePermissions(int nPermissions);
-  virtual time_t GetFileTime();
+  virtual time_t last_write_time();
 
   virtual const std::string GetParent() {
     size_t found = full_path_name_.find_last_of(WFile::pathSeparatorChar);
@@ -141,7 +141,7 @@ class WFile {
     return full_path_name_.substr(found + 1);
   }
 
-  virtual const std::string GetFullPathName() { return full_path_name_; }
+  virtual const std::string full_pathname() { return full_path_name_; }
   virtual const std::string GetLastError() const { return error_text_; }
 
  public:
@@ -152,8 +152,8 @@ class WFile {
   static bool Exists(const std::string fileName);
   static bool Exists(const std::string directoryName, const std::string fileName);
   static bool ExistsWildcard(const std::string wildCard);
-  static bool CopyFile(const std::string sourceFileName, const std::string destFileName);
-  static bool MoveFile(const std::string sourceFileName, const std::string destFileName);
+  static bool Copy(const std::string sourceFileName, const std::string destFileName);
+  static bool Move(const std::string sourceFileName, const std::string destFileName);
 
   static bool SetFilePermissions(const std::string fileName, int nPermissions);
   static bool IsFileHandleValid(int hFile);

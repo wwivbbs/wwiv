@@ -109,7 +109,7 @@ void upload_post() {
 
   bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
   int i = 0;
-  receive_file(file.GetFullPathName().c_str(), &i, INPUT_MSG, -1);
+  receive_file(file.full_pathname().c_str(), &i, INPUT_MSG, -1);
   if (file.Open(WFile::modeReadOnly | WFile::modeBinary)) {
     long lFileSize = file.GetLength();
     if (lFileSize > lMaxBytes) {

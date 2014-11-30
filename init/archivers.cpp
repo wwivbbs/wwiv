@@ -118,7 +118,7 @@ bool create_arcs(CursesWindow* window) {
 
   WFile file(syscfg.datadir, ARCHIVER_DAT);
   if (!file.Open(WFile::modeWriteOnly|WFile::modeBinary|WFile::modeCreateFile)) {
-    messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", file.GetFullPathName().c_str()));
+    messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", file.full_pathname().c_str()));
     return false;
   }
   file.Write(&arc[0], MAX_ARCS * sizeof(arcrec));

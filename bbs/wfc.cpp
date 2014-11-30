@@ -143,7 +143,7 @@ void wfc_screen() {
       WFile wfcFile(syscfg.datadir, WFC_DAT);
       if (!wfcFile.Open(WFile::modeBinary | WFile::modeReadOnly)) {
         wfc_cls();
-        std::cout << wfcFile.GetFullPathName() << " NOT FOUND." << std::endl;
+        std::cout << wfcFile.full_pathname() << " NOT FOUND." << std::endl;
         GetApplication()->AbortBBS();
       }
       wfcFile.Read(pszScreenBuffer, 4000);

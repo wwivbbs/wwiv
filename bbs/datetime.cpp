@@ -111,7 +111,7 @@ void filedate(const char *pszFileName, char *pszReturnValue) {
   if (!file.Exists() && !file.Open(WFile::modeReadOnly)) {
     return;
   }
-  time_t tFileDate = file.GetFileTime();
+  time_t tFileDate = file.last_write_time();
   struct tm *pTm = localtime(&tFileDate);
 
   // We use 9 here since that is the size of the date format MM/DD/YY + nullptr

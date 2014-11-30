@@ -1545,7 +1545,7 @@ void new_mail() {
   GetSession()->SetNewMailWaiting(true);
   int save_ed = GetSession()->GetCurrentUser()->GetDefaultEditor();
   GetSession()->GetCurrentUser()->SetDefaultEditor(0);
-  LoadFileIntoWorkspace(file.GetFullPathName().c_str(), true);
+  LoadFileIntoWorkspace(file.full_pathname().c_str(), true);
   use_workspace = true;
   string userName = GetSession()->GetCurrentUser()->GetUserNameAndNumber(GetSession()->usernum);
   string title = StringPrintf("Welcome to %s!", syscfg.systemname);

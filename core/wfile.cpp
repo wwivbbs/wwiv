@@ -40,10 +40,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "Shlwapi.h"
-#undef CopyFile
-#undef GetFileTime
-#undef GetFullPathName
-#undef MoveFile
 #endif  // _WIN32
 
 #include "core/wfndfile.h"
@@ -284,7 +280,7 @@ long WFile::GetLength() {
   return fileinfo.st_size;
 }
 
-time_t WFile::GetFileTime() {
+time_t WFile::last_write_time() {
   bool bOpenedHere = false;
   if (!this->IsOpen()) {
     bOpenedHere = true;
@@ -372,7 +368,7 @@ void WFile::CurrentDirectory(string* current_dir) {
 void WFile::MakeAbsolutePath(const string base, string* relative) {
   if (!WFile::IsAbsolutePath(*relative)) {
     WFile dir(base, *relative);
-    relative->assign(dir.GetFullPathName());
+    relative->assign(dir.full_pathname());
   }
 }
 

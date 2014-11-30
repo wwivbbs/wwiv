@@ -35,7 +35,7 @@ int FixUsersCommand::Execute() {
     std::cout << "Runnning FixUsersCommand::Execute" << std::endl;
     	WFile userFile(syscfg.datadir, USER_LST);
 	if(!userFile.Exists()) {
-		Print(NOK, true, "%s does not exist.", userFile.GetFullPathName().c_str());
+		Print(NOK, true, "%s does not exist.", userFile.full_pathname().c_str());
 		giveUp();
 	}
 
@@ -91,7 +91,7 @@ int FixUsersCommand::Execute() {
 	Print(OK, true, "Checking NAMES.LST");
 	WFile nameFile(syscfg.datadir, NAMES_LST);
 	if(!nameFile.Exists()) {
-		Print(NOK, true, "%s does not exist, regenerating with %d names", nameFile.GetFullPathName().c_str(),
+		Print(NOK, true, "%s does not exist, regenerating with %d names", nameFile.full_pathname().c_str(),
 			smallrecords.size());
 		nameFile.Close();
 		nameFile.Open(WFile::modeCreateFile | WFile::modeBinary | WFile::modeWriteOnly);
