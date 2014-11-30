@@ -162,7 +162,7 @@ class WFile {
   static void SetDebugLevel(int nDebugLevel) { debug_level_ = nDebugLevel; }
   static int GetDebugLevel() { return debug_level_; }
   static void EnsureTrailingSlash(std::string* path);
-  static void CurrentDirectory(std::string* current_dir);
+  static std::string current_directory();
   static void MakeAbsolutePath(const std::string& base, std::string* relative);
   static bool IsAbsolutePath(const std::string& path);
   static bool IsRelativePath(const std::string& path) { return !IsAbsolutePath(path); }
