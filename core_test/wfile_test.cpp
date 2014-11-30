@@ -107,7 +107,7 @@ TEST(FileTest, IsDirectory_Open) {
     ASSERT_TRUE(file.IsFile());
 }
 
-TEST(FileTest, GetFileTime_NotOpen) {
+TEST(FileTest, LastWriteTime_NotOpen) {
     static const string kHelloWorld = "Hello World";
     FileHelper helper;
     time_t now = time(nullptr);
@@ -116,7 +116,7 @@ TEST(FileTest, GetFileTime_NotOpen) {
     ASSERT_LE(now, file.last_write_time());
 }
 
-TEST(FileTest, GetFileTime_Open) {
+TEST(FileTest, LastWriteTime_Open) {
     static const string kHelloWorld = "Hello World";
     FileHelper helper;
     time_t now = time(nullptr);
