@@ -298,12 +298,15 @@ BinkState BinkP::AuthRemote() {
   clog << "       remote address_list: " << address_list_ << endl;
   const string expected_ftn = StringPrintf("20000:20000/%d@wwivnet",
              expected_remote_address_);
+  if (side_ == BinkSide::ANSWERING) {
+    return BinkState::WAIT_PWD;
+  }
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
     send_command_packet(BinkpCommands::M_ERR, StrCat("Unexpected Address: ",
-                 address_list_));
+                  address_list_));
     // TODO(rushfan): add error state?
     return BinkState::UNKNOWN;
   }
@@ -406,10 +409,8 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   bool done = false;
   long bytes_received = starting_offset;
 
-  // HACK
-  string contents;
-
   try {
+    unique_ptr<TransferFile> received_file(received_transfer_file_factory_(filename));
     while (!done) {
       clog << "        loop" << endl;
       uint16_t header = conn_->read_uint16(d);
@@ -422,8 +423,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
         unique_ptr<char[]> data(new char[length]);
         int length_received = conn_->receive(data.get(), length, d);
         clog << "RECV:  DATA PACKET; len: " << length_received << endl;
-        string chunk(data.get(), length_received);
-        contents += chunk;
+        received_file->WriteChunk(data.get(), length_received);
         bytes_received += length_received;
         if (bytes_received >= expected_length) {
           clog << "        file finished; bytes_received: " << bytes_received << endl;
@@ -431,6 +431,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
           const string data_line = StringPrintf("%s %u %u", filename.c_str(),
                   bytes_received, timestamp);
           send_command_packet(BinkpCommands::M_GOT, data_line);
+          received_files_.push_back(std::move(received_file));
         }
       }
     }
