@@ -50,5 +50,10 @@ bool InMemoryTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   return true;
 }
 
+bool InMemoryTransferFile::WriteChunk(const char* chunk, size_t size) {
+  contents_.append(string(chunk, size));
+  return true;
+}
+
 }  // namespace net
 } // namespace wwiv

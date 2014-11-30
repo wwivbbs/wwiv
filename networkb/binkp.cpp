@@ -146,7 +146,7 @@ bool BinkP::process_frames(std::function<bool()> predicate, std::chrono::millise
       uint16_t header = conn_->read_uint16(d);
       if (header & 0x8000) {
         if (!process_command(header & 0x7fff, d)) {
-          // false return value mean san error occurred.
+          // false return value means an error occurred.
           return false;
         }
       } else {

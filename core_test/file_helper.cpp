@@ -38,18 +38,17 @@
 #include "core/strings.h"
 
 using std::string;
+using namespace wwiv::strings;
 
 FileHelper::FileHelper() {
   const ::testing::TestInfo* const test_info =
       ::testing::UnitTest::GetInstance()->current_test_info();
-  const string dir = wwiv::strings::StrCat(
-    test_info->test_case_name(), "_", test_info->name());
+  const string dir = StrCat(test_info->test_case_name(), "_", test_info->name());
   tmp_ = FileHelper::CreateTempDir(dir);
 }
 
 const string FileHelper::DirName(const string& name) const {
-    return wwiv::strings::StringPrintf("%s%c%s%c", tmp_.c_str(), 
-        WFile::pathSeparatorChar, name.c_str(), WFile::pathSeparatorChar);
+  return StrCat(tmp_, WFile::pathSeparatorString, name, WFile::pathSeparatorString);
 }
 
 bool FileHelper::Mkdir(const string& name) const {
@@ -82,17 +81,19 @@ string FileHelper::CreateTempDir(const string base) {
 #endif
 }
 
-FILE* FileHelper::OpenTempFile(const string& orig_name, string* path) {
-    string tmp = TempDir();
-    string name = orig_name;
+string FileHelper::CreateTempFilePath(const string& orig_name) {
+  string name(orig_name);
 #ifdef _WIN32
-    std::replace(name.begin(), name.end(), '/', WFile::pathSeparatorChar);
+  std::replace(name.begin(), name.end(), '/', WFile::pathSeparatorChar);
 #endif  // _WIN32
-    path->assign(wwiv::strings::StringPrintf("%s%c%s", tmp.c_str(), 
-        WFile::pathSeparatorChar, name.c_str()));
-    FILE* file = fopen(path->c_str(), "wt");
-    assert(file);
-    return file;
+  return StrCat(TempDir(), WFile::pathSeparatorString, name);
+}
+
+FILE* FileHelper::OpenTempFile(const string& orig_name, string* path) {
+  *path = CreateTempFilePath(orig_name);
+  FILE* file = fopen(path->c_str(), "wt");
+  assert(file);
+  return file;
 }
 
 string FileHelper::CreateTempFile(const string& orig_name, const string& contents) {
