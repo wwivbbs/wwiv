@@ -3,7 +3,7 @@
 //
 // example usage:
 //
-// G:\tmp>\Debug\networkb.exe --send --config=G:\tmp\n.ini --addresses=G:\tmp\addresses.binkp
+// G:\tmp>\Debug\networkb.exe --send --config=G:\tmp\n.ini
 //
 // n.ini:
 // [NETWORK]
@@ -64,8 +64,8 @@ int main(int argc, char** argv) {
     clog << "k: " << arg.first << "; v: " << arg.second << endl;
   }
 
-  std::string config_filename;
-  std::string node_config_filename;
+  string config_filename;
+  string node_config_filename;
 
   if (!contains(args, "config")) {
     clog << "--config=<full path to config file> must be specified" << endl;
